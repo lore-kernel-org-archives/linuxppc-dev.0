@@ -1,49 +1,31 @@
-Return-Path: <paulmck@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mbenes@suse.cz>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vFLzN0d81zDqBX
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Feb 2017 02:54:55 +1100 (AEDT)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v13Fs3oH047990
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 3 Feb 2017 10:54:53 -0500
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
- by mx0b-001b2d01.pphosted.com with ESMTP id 28crh03bkf-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Feb 2017 10:54:53 -0500
-Received: from localhost
- by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <paulmck@linux.vnet.ibm.com>;
- Fri, 3 Feb 2017 08:54:52 -0700
-Date: Fri, 3 Feb 2017 07:54:53 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Mike Galbraith <efault@gmx.de>, Sachin Sant <sachinp@linux.vnet.ibm.com>,
- Ross Zwisler <zwisler@gmail.com>, Matt Fleming <matt@codeblueprint.co.uk>,
- Michael Ellerman <mpe@ellerman.id.au>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
- LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [tip:sched/core] sched/core: Add debugging code to catch missing
- update_rq_clock() calls
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20170130213435.GM31613@codeblueprint.co.uk>
- <33118425-8548-475A-8DED-9A2424C0BCCC@linux.vnet.ibm.com>
- <1485863317.4498.2.camel@gmx.de>
- <CAOxpaSW_GnndoxLBPtyTrqPJ9XOWvgXOQNDf8D+6OohWeObn5Q@mail.gmail.com>
- <20170202155506.GX6515@twins.programming.kicks-ass.net>
- <3BAB5673-2BF8-46E0-8018-6A0F3DEEC9F7@linux.vnet.ibm.com>
- <20170203085301.GA6515@twins.programming.kicks-ass.net>
- <1486126774.4277.6.camel@gmx.de>
- <20170203133748.GB6515@twins.programming.kicks-ass.net>
- <20170203154457.GJ30506@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vFMZQ49fPzDqBX
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Feb 2017 03:21:50 +1100 (AEDT)
+Date: Fri, 3 Feb 2017 17:21:41 +0100 (CET)
+From: Miroslav Benes <mbenes@suse.cz>
+To: Petr Mladek <pmladek@suse.com>
+cc: Josh Poimboeuf <jpoimboe@redhat.com>, Jessica Yu <jeyu@redhat.com>,
+ Jiri Kosina <jikos@kernel.org>, linux-kernel@vger.kernel.org,
+ live-patching@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, x86@kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ Vojtech Pavlik <vojtech@suse.com>, Jiri Slaby <jslaby@suse.cz>,
+ Chris J Arges <chris.j.arges@canonical.com>,
+ Andy Lutomirski <luto@kernel.org>, Ingo Molnar <mingo@kernel.org>,
+ Peter Zijlstra <peterz@infradead.org>,
+ Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+ Balbir Singh <bsingharora@gmail.com>
+Subject: Re: [PATCH v4 13/15] livepatch: change to a per-task consistency model
+In-Reply-To: <20170202115116.GB23754@pathway.suse.cz>
+Message-ID: <alpine.LSU.2.20.1702031711120.28531@pobox.suse.cz>
+References: <cover.1484839971.git.jpoimboe@redhat.com>
+ <62e96e43de6f09e16f36d3d51af766c8fcbbb05f.1484839971.git.jpoimboe@redhat.com>
+ <20170202115116.GB23754@pathway.suse.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170203154457.GJ30506@linux.vnet.ibm.com>
-Message-Id: <20170203155453.GA23760@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -53,61 +35,95 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Feb 03, 2017 at 07:44:57AM -0800, Paul E. McKenney wrote:
-> On Fri, Feb 03, 2017 at 02:37:48PM +0100, Peter Zijlstra wrote:
-> > On Fri, Feb 03, 2017 at 01:59:34PM +0100, Mike Galbraith wrote:
-> > > On Fri, 2017-02-03 at 09:53 +0100, Peter Zijlstra wrote:
-> > > > On Fri, Feb 03, 2017 at 10:03:14AM +0530, Sachin Sant wrote:
-> > > 
-> > > > > I ran few cycles of cpu hot(un)plug tests. In most cases it works except one
-> > > > > where I ran into rcu stall:
-> > > > > 
-> > > > > [  173.493453] INFO: rcu_sched detected stalls on CPUs/tasks:
-> > > > > [  173.493473] > > 	> > 8-...: (2 GPs behind) idle=006/140000000000000/0 softirq=0/0 fqs=2996 
-> > > > > [  173.493476] > > 	> > (detected by 0, t=6002 jiffies, g=885, c=884, q=6350)
-> > > > 
-> > > > Right, I actually saw that too, but I don't think that would be related
-> > > > to my patch. I'll see if I can dig into this though, ought to get fixed
-> > > > regardless.
-> > > 
-> > > FWIW, I'm not seeing stalls/hangs while beating hotplug up in tip. (so
-> > > next grew a wart?)
-> > 
-> > I've seen it on tip. It looks like hot unplug goes really slow when
-> > there's running tasks on the CPU being taken down.
-> > 
-> > What I did was something like:
-> > 
-> >   taskset -p $((1<<1)) $$
-> >   for ((i=0; i<20; i++)) do while :; do :; done & done
-> > 
-> >   taskset -p $((1<<0)) $$
-> >   echo 0 > /sys/devices/system/cpu/cpu1/online
-> > 
-> > And with those 20 tasks stuck sucking cycles on CPU1, the unplug goes
-> > _really_ slow and the RCU stall triggers. What I suspect happens is that
-> > hotplug stops participating in the RCU state machine early, but only
-> > tells RCU about it really late, and in between it gets suspicious it
-> > takes too long.
-> > 
-> > I've yet to dig through the RCU code to figure out the exact sequence of
-> > events, but found the above to be fairly reliable in triggering the
-> > issue.
+On Thu, 2 Feb 2017, Petr Mladek wrote:
 
-> If you send me the full splat from the dmesg and the RCU portions of
-> .config, I will take a look.  Is this new behavior, or a new test?
+> > diff --git a/Documentation/livepatch/livepatch.txt b/Documentation/livepatch/livepatch.txt
+> > index 7f04e13..fb00d66 100644
+> > --- a/Documentation/livepatch/livepatch.txt
+> > +++ b/Documentation/livepatch/livepatch.txt
+> 
+> > +  In that case, arches without
+> > +   HAVE_RELIABLE_STACKTRACE would still be able to use the
+> > +   non-stack-checking parts of the consistency model:
+> > +
+> > +   a) patching user tasks when they cross the kernel/user space
+> > +      boundary; and
+> > +
+> > +   b) patching kthreads and idle tasks at their designated patch points.
+> > +
+> > +   This option isn't as good as option 1 because it requires signaling
+> > +   most of the tasks to patch them.
+> 
+> Kthreads need to be waken because most of them ignore signals.
+> 
+> And idle tasks might need to be explicitely scheduled if there
+> is too big load. Mirek knows more about this.
 
-If new behavior, I would be most suspicious of these commits in -rcu which
-recently entered -tip:
+Yes, and we've already discussed it with Josh. The plan is not to do 
+anything now, because described situations should be rare and/or 
+theoretical only. It should be on our TODO lists though.
+ 
+> Well, I am not sure if you want to get into such details.
 
-19e4d983cda1 rcu: Place guard on rcu_all_qs() and rcu_note_context_switch() actions
-913324b1364f rcu: Eliminate flavor scan in rcu_momentary_dyntick_idle()
-fcdcfefafa45 rcu: Pull rcu_qs_ctr into rcu_dynticks structure
-0919a0b7e7a5 rcu: Pull rcu_sched_qs_mask into rcu_dynticks structure
-caa7c8e34293 rcu: Make rcu_note_context_switch() do deferred NOCB wakeups
-41e4b159d516 rcu: Make rcu_all_qs() do deferred NOCB wakeups
-b457a3356a68 rcu: Make call_rcu() do deferred NOCB wakeups
+I would not bother about it.
+ 
+[...]
 
-Does reverting any of these help?
+> > +/*
+> > + * Start the transition to the specified target patch state so tasks can begin
+> > + * switching to it.
+> > + */
+> > +void klp_start_transition(void)
+> > +{
+> > +	struct task_struct *g, *task;
+> > +	unsigned int cpu;
+> > +
+> > +	WARN_ON_ONCE(klp_target_state == KLP_UNDEFINED);
+> > +
+> > +	pr_notice("'%s': %s...\n", klp_transition_patch->mod->name,
+> > +		  klp_target_state == KLP_PATCHED ? "patching" : "unpatching");
+> > +
+> > +	/*
+> > +	 * If the patch can be applied or reverted immediately, skip the
+> > +	 * per-task transitions.
+> > +	 */
+> > +	if (klp_transition_patch->immediate)
+> 
+> We should call klp_try_complete_transition() here. Otherwise, it will
+> never be called and the transition will never get completed.
+> 
+> Alternative solution would be to move klp_try_complete_transition()
+> from klp_start_transition() and explicitely call it from
+> __klp_disable_patch() and klp_enable_patch(). It would actually
+> solve one issue with klp_revert_patch(), see below.
+> 
+> I kind of like the alternative solution. I hope that it was not
+> me who suggested to move klp_try_complete_transition() into
+> klp_start_transtion().
 
-							Thanx, Paul
+[...]
+
+> Hmm, we should not call klp_try_complete_transition() when
+> klp_start_transition() is called from here. I can't find a safe
+> way to cancel klp_transition_work() when we own klp_mutex.
+> It smells with a possible deadlock.
+> 
+> I suggest to move move klp_try_complete_transition() outside
+> klp_start_transition() and explicitely call it from
+>  __klp_disable_patch() and __klp_enabled_patch().
+> This would fix also the problem with immediate patches, see
+> klp_start_transition().
+
+I agree. I think the best would be to move klp_try_complete_transition() 
+out from klp_start_transition() and call it explicitly. This would solve 
+the immediate problem for free.
+
+I agree we should not call klp_try_complete_transition() from 
+klp_reverse_transition() and leave it entirely to our delayed work. We 
+discussed this in the past and the counter argument was that explicit call 
+to klp_try_complete_transition() could make the process a bit faster. 
+Possibly true, but reversion is really slow path and I would not care 
+about speed at all. I think it is cleaner and perhaps safer.
+
+Thanks,
+Miroslav
