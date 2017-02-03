@@ -1,28 +1,32 @@
-Return-Path: <bhsharma@redhat.com>
-Received: from mail-qt0-f170.google.com (mail-qt0-f170.google.com
- [209.85.216.170])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vF4jF5cSDzDqBX
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Feb 2017 16:11:45 +1100 (AEDT)
-Received: by mail-qt0-f170.google.com with SMTP id v23so17770237qtb.0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Feb 2017 21:11:45 -0800 (PST)
-From: Bhupesh Sharma <bhsharma@redhat.com>
-To: linuxppc-dev@lists.ozlabs.org,
-	kernel-hardening@lists.openwall.com
-Cc: dcashman@google.com, mpe@ellerman.id.au, bhupesh.linux@gmail.com,
- keescook@chromium.org, Bhupesh Sharma <bhsharma@redhat.com>,
- Alexander Graf <agraf@suse.com>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vF4jd5nZJzDqH1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Feb 2017 16:12:05 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Chris Packham <Chris.Packham@alliedtelesis.co.nz>,
+ Borislav Petkov <bp@alien8.de>
+Cc: "linux-edac\@vger.kernel.org" <linux-edac@vger.kernel.org>,
+ "morbidrsa\@gmail.com" <morbidrsa@gmail.com>, Rob Herring <robh+dt@kernel.org>,
+ Mark Rutland <mark.rutland@arm.com>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Anatolij Gustschin <agust@denx.de>,
- Alistair Popple <alistair@popple.id.au>,
- Matt Porter <mporter@kernel.crashing.org>,
- Vitaly Bordug <vitb@kernel.crashing.org>, Scott Wood <oss@buserror.net>,
- Kumar Gala <galak@kernel.crashing.org>,
- Daniel Cashman <dcashman@android.com>
-Subject: [PATCH v2 1/1] powerpc: mm: support ARCH_MMAP_RND_BITS
-Date: Fri,  3 Feb 2017 10:41:22 +0530
-Message-Id: <1486098682-30395-1-git-send-email-bhsharma@redhat.com>
+ Paul Mackerras <paulus@samba.org>, Mauro Carvalho Chehab <mchehab@kernel.org>,
+ "devicetree\@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linuxppc-dev\@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel\@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH v2] EDAC: mpc85xx: Add T2080 l2-cache support
+In-Reply-To: <de8ec9087f214f2fae67b8ea9be92cdc@svr-chch-ex1.atlnz.lc>
+References: <20170201231624.28843-1-chris.packham@alliedtelesis.co.nz>
+ <20170201232735.byk7bnpeoqtcc7mh@pd.tnic>
+ <01fe1af463c640a8bd48e45c2752b52c@svr-chch-ex1.atlnz.lc>
+ <20170202173005.gqesvy5owtsbrviu@pd.tnic>
+ <87h94cb11m.fsf@concordia.ellerman.id.au>
+ <de8ec9087f214f2fae67b8ea9be92cdc@svr-chch-ex1.atlnz.lc>
+Date: Fri, 03 Feb 2017 16:12:05 +1100
+Message-ID: <874m0bc0yi.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,114 +36,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-powerpc: arch_mmap_rnd() uses hard-coded values, (23-PAGE_SHIFT) for
-32-bit and (30-PAGE_SHIFT) for 64-bit, to generate the random offset
-for the mmap base address.
+Chris Packham <Chris.Packham@alliedtelesis.co.nz> writes:
 
-This value represents a compromise between increased
-ASLR effectiveness and avoiding address-space fragmentation.
-Replace it with a Kconfig option, which is sensibly bounded, so that
-platform developers may choose where to place this compromise.
-Keep default values as new minimums.
+> On 03/02/17 12:55, Michael Ellerman wrote:
+>> Chris if you want to send a patch to add the compatible string to the
+>> l2cache.txt I would merge that, but honestly it doesn't achieve much
+>> other than possibly catching a typo in the compatible name.
+>
+> I think catching a typo might be worthwhile. It's 5 minutes work for me 
+> to grep/sed through the code to find existing compatible strings and 
+> update the document. Which might save someone else a lot of time 
+> debugging only to find out they've transposed some digits in the dts.
+>
+> I'll whip something up and send it out shortly.
 
-This patch makes sure that now powerpc mmap arch_mmap_rnd() approach
-is similar to other ARCHs like x86, arm64 and arm.
+Thanks.
 
-Cc: Alexander Graf <agraf@suse.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Anatolij Gustschin <agust@denx.de>
-Cc: Alistair Popple <alistair@popple.id.au>
-Cc: Matt Porter <mporter@kernel.crashing.org>
-Cc: Vitaly Bordug <vitb@kernel.crashing.org>
-Cc: Scott Wood <oss@buserror.net>
-Cc: Kumar Gala <galak@kernel.crashing.org>
-Cc: Daniel Cashman <dcashman@android.com>
-Signed-off-by: Bhupesh Sharma <bhsharma@redhat.com>
-Reviewed-by: Kees Cook <keescook at chromium.org>
----
-Changes since v1:
-v1 can be seen here (https://lists.ozlabs.org/pipermail/linuxppc-dev/2017-February/153594.html)
-    - No functional change in this patch.
-    - Added R-B from Kees.
-    - Dropped PATCH 2/2 from v1 as recommended by Kees Cook.
-	
- arch/powerpc/Kconfig   | 34 ++++++++++++++++++++++++++++++++++
- arch/powerpc/mm/mmap.c |  7 ++++---
- 2 files changed, 38 insertions(+), 3 deletions(-)
-
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index a8ee573fe610..b4a843f68705 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -22,6 +22,38 @@ config MMU
- 	bool
- 	default y
- 
-+config ARCH_MMAP_RND_BITS_MIN
-+       default 5 if PPC_256K_PAGES && 32BIT
-+       default 12 if PPC_256K_PAGES && 64BIT
-+       default 7 if PPC_64K_PAGES && 32BIT
-+       default 14 if PPC_64K_PAGES && 64BIT
-+       default 9 if PPC_16K_PAGES && 32BIT
-+       default 16 if PPC_16K_PAGES && 64BIT
-+       default 11 if PPC_4K_PAGES && 32BIT
-+       default 18 if PPC_4K_PAGES && 64BIT
-+
-+# max bits determined by the following formula:
-+#  VA_BITS - PAGE_SHIFT - 4
-+#  for e.g for 64K page and 64BIT = 48 - 16 - 4 = 28
-+config ARCH_MMAP_RND_BITS_MAX
-+       default 10 if PPC_256K_PAGES && 32BIT
-+       default 26 if PPC_256K_PAGES && 64BIT
-+       default 12 if PPC_64K_PAGES && 32BIT
-+       default 28 if PPC_64K_PAGES && 64BIT
-+       default 14 if PPC_16K_PAGES && 32BIT
-+       default 30 if PPC_16K_PAGES && 64BIT
-+       default 16 if PPC_4K_PAGES && 32BIT
-+       default 32 if PPC_4K_PAGES && 64BIT
-+
-+config ARCH_MMAP_RND_COMPAT_BITS_MIN
-+       default 5 if PPC_256K_PAGES
-+       default 7 if PPC_64K_PAGES
-+       default 9 if PPC_16K_PAGES
-+       default 11
-+
-+config ARCH_MMAP_RND_COMPAT_BITS_MAX
-+       default 16
-+
- config HAVE_SETUP_PER_CPU_AREA
- 	def_bool PPC64
- 
-@@ -100,6 +132,8 @@ config PPC
- 	select HAVE_EFFICIENT_UNALIGNED_ACCESS if !(CPU_LITTLE_ENDIAN && POWER7_CPU)
- 	select HAVE_KPROBES
- 	select HAVE_ARCH_KGDB
-+	select HAVE_ARCH_MMAP_RND_BITS
-+	select HAVE_ARCH_MMAP_RND_COMPAT_BITS if COMPAT
- 	select HAVE_KRETPROBES
- 	select HAVE_ARCH_TRACEHOOK
- 	select HAVE_MEMBLOCK
-diff --git a/arch/powerpc/mm/mmap.c b/arch/powerpc/mm/mmap.c
-index 2f1e44362198..babf59faab3b 100644
---- a/arch/powerpc/mm/mmap.c
-+++ b/arch/powerpc/mm/mmap.c
-@@ -60,11 +60,12 @@ unsigned long arch_mmap_rnd(void)
- {
- 	unsigned long rnd;
- 
--	/* 8MB for 32bit, 1GB for 64bit */
-+#ifdef CONFIG_COMPAT
- 	if (is_32bit_task())
--		rnd = get_random_long() % (1<<(23-PAGE_SHIFT));
-+		rnd = get_random_long() & ((1UL << mmap_rnd_compat_bits) - 1);
- 	else
--		rnd = get_random_long() % (1UL<<(30-PAGE_SHIFT));
-+#endif
-+		rnd = get_random_long() & ((1UL << mmap_rnd_bits) - 1);
- 
- 	return rnd << PAGE_SHIFT;
- }
--- 
-2.7.4
+cheers
