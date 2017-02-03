@@ -1,25 +1,14 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
- [IPv6:2607:f8b0:400e:c00::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vFDPN0JtRzDqBl
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Feb 2017 21:58:32 +1100 (AEDT)
-Received: by mail-pf0-x241.google.com with SMTP id 19so1362197pfo.3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Feb 2017 02:58:31 -0800 (PST)
-From: Balbir Singh <bsingharora@gmail.com>
-Date: Fri, 3 Feb 2017 16:28:22 +0530
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Michael Neuling <michael.neuling@au1.ibm.com>,
- Balbir Singh <bsingharora@gmail.com>
-Subject: Re: [PATCH] powerpc/mm: Fix spurrious segfaults on radix with Autonuma
-Message-ID: <20170203105822.GA23829@localhost.localdomain>
-References: <1486102228.4850.52.camel@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1486102228.4850.52.camel@kernel.crashing.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vFDZD3yTwzDqBm
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Feb 2017 22:06:12 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH v3 1/9] powerpc: Move ARCH_DLINFO out of uapi
+Date: Fri,  3 Feb 2017 22:05:51 +1100
+Message-Id: <1486119959-21662-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,51 +18,81 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Feb 03, 2017 at 05:10:28PM +1100, Benjamin Herrenschmidt wrote:
-> When autonuma marks a PTE inaccessible it clears all the protection
-> bits but leave the PTE valid.
-> 
-> With the Radix MMU, an attempt at executing from such a PTE will
-> take a fault with bit 35 of SRR1 set "SRR1_ISI_N_OR_G".
-> 
-> It is thus incorrect to treat all such faults as errors. We should
-> pass them to handle_mm_fault() for autonuma to deal with. The case
-> of pages that are really not executable is handled by the existing
-> test for VM_EXEC further down.
-> 
-> That leaves us with catching the kernel attempts at executing user
-> pages. We can catch that earlier, even before we do find_vma.
-> 
-> It is never valid on powerpc for the kernel to take an exec fault
-> to begin with. So fold that test with the existing test for the
-> kernel faulting on kernel addresses to bail out early.
-> 
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Fixes: 1d18ad0 ("powerpc/mm: Detect instruction fetch denied and report")
-> Fixes: 0ab5171 ("powerpc/mm: Fix no execute fault handling on pre-POWER5")
-> ---
-> 
-> diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
-> index 6fd30ac..62a50d6 100644
-> --- a/arch/powerpc/mm/fault.c
-> +++ b/arch/powerpc/mm/fault.c
-> @@ -253,8 +253,11 @@ int do_page_fault(struct pt_regs *regs, unsigned long address,
->  	if (unlikely(debugger_fault_handler(regs)))
->  		goto bail;
->  
-> -	/* On a kernel SLB miss we can only check for a valid exception entry */
-> -	if (!user_mode(regs) && (address >= TASK_SIZE)) {
-> +	/*
-> +	 * The kernel should never take an execute fault nor should it
-> +	 * take a page fault to a kernel address.
-> +	 */
-> +	if (!user_mode(regs) && (is_exec || (address >= TASK_SIZE))) {
->  		rc = SIGSEGV;
->  		goto bail;
->  	}
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-Aneesh did suggest a check for !user_mode(regs), but we did multiple combinations
-of potential problems and decided the current check was OK. Not yet tested at my end,
-I'll do that today.
+It's an kernel private macro, it doesn't belong there
 
-Balbir Singh
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/include/asm/elf.h      | 22 ++++++++++++++++++++++
+ arch/powerpc/include/uapi/asm/elf.h | 23 -----------------------
+ 2 files changed, 22 insertions(+), 23 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/elf.h b/arch/powerpc/include/asm/elf.h
+index ee46ffef608e..730c27ed10e1 100644
+--- a/arch/powerpc/include/asm/elf.h
++++ b/arch/powerpc/include/asm/elf.h
+@@ -136,4 +136,26 @@ extern int arch_setup_additional_pages(struct linux_binprm *bprm,
+ 
+ #endif /* CONFIG_SPU_BASE */
+ 
++/*
++ * The requirements here are:
++ * - keep the final alignment of sp (sp & 0xf)
++ * - make sure the 32-bit value at the first 16 byte aligned position of
++ *   AUXV is greater than 16 for glibc compatibility.
++ *   AT_IGNOREPPC is used for that.
++ * - for compatibility with glibc ARCH_DLINFO must always be defined on PPC,
++ *   even if DLINFO_ARCH_ITEMS goes to zero or is undefined.
++ * update AT_VECTOR_SIZE_ARCH if the number of NEW_AUX_ENT entries changes
++ */
++#define ARCH_DLINFO							\
++do {									\
++	/* Handle glibc compatibility. */				\
++	NEW_AUX_ENT(AT_IGNOREPPC, AT_IGNOREPPC);			\
++	NEW_AUX_ENT(AT_IGNOREPPC, AT_IGNOREPPC);			\
++	/* Cache size items */						\
++	NEW_AUX_ENT(AT_DCACHEBSIZE, dcache_bsize);			\
++	NEW_AUX_ENT(AT_ICACHEBSIZE, icache_bsize);			\
++	NEW_AUX_ENT(AT_UCACHEBSIZE, ucache_bsize);			\
++	VDSO_AUX_ENT(AT_SYSINFO_EHDR, current->mm->context.vdso_base);	\
++} while (0)
++
+ #endif /* _ASM_POWERPC_ELF_H */
+diff --git a/arch/powerpc/include/uapi/asm/elf.h b/arch/powerpc/include/uapi/asm/elf.h
+index 3a9e44c45c78..b2c6fdd5ac30 100644
+--- a/arch/powerpc/include/uapi/asm/elf.h
++++ b/arch/powerpc/include/uapi/asm/elf.h
+@@ -162,29 +162,6 @@ typedef elf_vrreg_t elf_vrregset_t32[ELF_NVRREG32];
+ typedef elf_fpreg_t elf_vsrreghalf_t32[ELF_NVSRHALFREG];
+ #endif
+ 
+-
+-/*
+- * The requirements here are:
+- * - keep the final alignment of sp (sp & 0xf)
+- * - make sure the 32-bit value at the first 16 byte aligned position of
+- *   AUXV is greater than 16 for glibc compatibility.
+- *   AT_IGNOREPPC is used for that.
+- * - for compatibility with glibc ARCH_DLINFO must always be defined on PPC,
+- *   even if DLINFO_ARCH_ITEMS goes to zero or is undefined.
+- * update AT_VECTOR_SIZE_ARCH if the number of NEW_AUX_ENT entries changes
+- */
+-#define ARCH_DLINFO							\
+-do {									\
+-	/* Handle glibc compatibility. */				\
+-	NEW_AUX_ENT(AT_IGNOREPPC, AT_IGNOREPPC);			\
+-	NEW_AUX_ENT(AT_IGNOREPPC, AT_IGNOREPPC);			\
+-	/* Cache size items */						\
+-	NEW_AUX_ENT(AT_DCACHEBSIZE, dcache_bsize);			\
+-	NEW_AUX_ENT(AT_ICACHEBSIZE, icache_bsize);			\
+-	NEW_AUX_ENT(AT_UCACHEBSIZE, ucache_bsize);			\
+-	VDSO_AUX_ENT(AT_SYSINFO_EHDR, current->mm->context.vdso_base);	\
+-} while (0)
+-
+ /* PowerPC64 relocations defined by the ABIs */
+ #define R_PPC64_NONE    R_PPC_NONE
+ #define R_PPC64_ADDR32  R_PPC_ADDR32  /* 32bit absolute address.  */
+-- 
+2.7.4
