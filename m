@@ -1,23 +1,19 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
- [IPv6:2607:f8b0:400e:c05::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <shile.zhang@nokia.com>
+Received: from EUR01-VE1-obe.outbound.protection.outlook.com
+ (mail-ve1eur01on0104.outbound.protection.outlook.com [104.47.1.104])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vFdWZ04jYzDqCL
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Feb 2017 13:50:18 +1100 (AEDT)
-Received: by mail-pg0-x243.google.com with SMTP id 75so3448859pgf.3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Feb 2017 18:50:17 -0800 (PST)
-Date: Sat, 4 Feb 2017 12:49:59 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH 07/10] powerpc: add NMI IPI infrastructure
-Message-ID: <20170204124959.76d786f2@roar.ozlabs.ibm.com>
-In-Reply-To: <20170203214524.3ad3729a@roar.ozlabs.ibm.com>
-References: <20161219183011.28310-1-npiggin@gmail.com>
- <20161219183011.28310-8-npiggin@gmail.com>
- <20170203214524.3ad3729a@roar.ozlabs.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vFnpx1WjyzDqCW
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Feb 2017 20:04:08 +1100 (AEDT)
+From: Shile Zhang <shile.zhang@nokia.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
+ <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+CC: <linuxppc-dev@lists.ozlabs.org>, Shile Zhang <shile.zhang@nokia.com>
+Subject: [PATCH] powerpc/64: Fix checksum folding in csum_add
+Date: Sat, 4 Feb 2017 17:03:40 +0800
+Message-ID: <1486199020-59977-1-git-send-email-shile.zhang@nokia.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,55 +23,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 3 Feb 2017 21:45:24 +1000
-Nicholas Piggin <npiggin@gmail.com> wrote:
+fix the missed point in Paul's patch:
+"powerpc/64: Fix checksum folding in csum_tcpudp_nofold and
+ip_fast_csum_nofold"
 
-> On Tue, 20 Dec 2016 04:30:08 +1000
-> Nicholas Piggin <npiggin@gmail.com> wrote:
-> 
-> > +static void do_smp_send_nmi_ipi(int cpu)
-> > +{
-> > +	if (cpu >= 0) {
-> > +		do_message_pass(cpu, PPC_MSG_NMI_IPI);
-> > +	} else {
-> > +		unsigned int c;
-> > +
-> > +		for_each_online_cpu(c) {
-> > +			if (c == raw_smp_processor_id())
-> > +				continue;
-> > +			do_message_pass(cpu, PPC_MSG_NMI_IPI);  
-> 
-> Okay this has a bug in the fallback path. Needs the following
-> incremental patch. sysrq+x works okay with this (tested in mambo),
-> and also recovers with "x" okay.
-
-Also requires removal of get_online_cpus/put_online_cpus.
-
+Signed-off-by: Shile Zhang <shile.zhang@nokia.com>
 ---
- arch/powerpc/kernel/smp.c | 8 ++------
- 1 file changed, 2 insertions(+), 6 deletions(-)
+ arch/powerpc/include/asm/checksum.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
-index 81256522985d..e1a429251a7d 100644
---- a/arch/powerpc/kernel/smp.c
-+++ b/arch/powerpc/kernel/smp.c
-@@ -448,8 +448,6 @@ static int smp_send_nmi_ipi(int cpu, void (*fn)(struct pt_regs *), u64 delay_us)
- 	if (unlikely(!smp_ops))
- 		return 0;
+diff --git a/arch/powerpc/include/asm/checksum.h b/arch/powerpc/include/asm/checksum.h
+index 5b1a6e3..430d038 100644
+--- a/arch/powerpc/include/asm/checksum.h
++++ b/arch/powerpc/include/asm/checksum.h
+@@ -108,7 +108,7 @@ static inline __wsum csum_add(__wsum csum, __wsum addend)
  
--	get_online_cpus();
--
- 	/* Take the nmi_ipi_busy count/lock with interrupts hard disabled */
- 	nmi_ipi_lock_start(&flags);
- 	while (nmi_ipi_busy_count) {
-@@ -491,8 +489,6 @@ static int smp_send_nmi_ipi(int cpu, void (*fn)(struct pt_regs *), u64 delay_us)
- 	nmi_ipi_busy_count--;
- 	nmi_ipi_unlock_end(&flags);
- 
--	put_online_cpus();
--
- 	return ret;
- }
- #endif /* CONFIG_NMI_IPI */
+ #ifdef __powerpc64__
+ 	res += (__force u64)addend;
+-	return (__force __wsum)((u32)res + (res >> 32));
++	return (__force __wsum) from64to32(res);
+ #else
+ 	asm("addc %0,%0,%1;"
+ 	    "addze %0,%0;"
 -- 
-2.11.0
+2.6.2
