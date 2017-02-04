@@ -1,33 +1,23 @@
-Return-Path: <keescook@google.com>
-Received: from mail-it0-x22e.google.com (mail-it0-x22e.google.com
- [IPv6:2607:f8b0:4001:c0b::22e])
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
+ [IPv6:2607:f8b0:400e:c05::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vFZjl5q8vzDqC2
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Feb 2017 11:43:55 +1100 (AEDT)
-Received: by mail-it0-x22e.google.com with SMTP id 203so22895633ith.0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Feb 2017 16:43:55 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vFdWZ04jYzDqCL
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Feb 2017 13:50:18 +1100 (AEDT)
+Received: by mail-pg0-x243.google.com with SMTP id 75so3448859pgf.3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Feb 2017 18:50:17 -0800 (PST)
+Date: Sat, 4 Feb 2017 12:49:59 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH 07/10] powerpc: add NMI IPI infrastructure
+Message-ID: <20170204124959.76d786f2@roar.ozlabs.ibm.com>
+In-Reply-To: <20170203214524.3ad3729a@roar.ozlabs.ibm.com>
+References: <20161219183011.28310-1-npiggin@gmail.com>
+ <20161219183011.28310-8-npiggin@gmail.com>
+ <20170203214524.3ad3729a@roar.ozlabs.ibm.com>
 MIME-Version: 1.0
-Sender: keescook@google.com
-In-Reply-To: <1486098682-30395-1-git-send-email-bhsharma@redhat.com>
-References: <1486098682-30395-1-git-send-email-bhsharma@redhat.com>
-From: Kees Cook <keescook@chromium.org>
-Date: Fri, 3 Feb 2017 16:43:51 -0800
-Message-ID: <CAGXu5jJQMVJVAVQOk1zS+jRLy641fwE0NKnAme2mGbm6Y1_xeA@mail.gmail.com>
-Subject: Re: [PATCH v2 1/1] powerpc: mm: support ARCH_MMAP_RND_BITS
-To: Bhupesh Sharma <bhsharma@redhat.com>
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "kernel-hardening@lists.openwall.com" <kernel-hardening@lists.openwall.com>,
- Daniel Cashman <dcashman@google.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Bhupesh SHARMA <bhupesh.linux@gmail.com>,
- Alexander Graf <agraf@suse.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Anatolij Gustschin <agust@denx.de>,
- Alistair Popple <alistair@popple.id.au>,
- Matt Porter <mporter@kernel.crashing.org>,
- Vitaly Bordug <vitb@kernel.crashing.org>, Scott Wood <oss@buserror.net>,
- Kumar Gala <galak@kernel.crashing.org>, Daniel Cashman <dcashman@android.com>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,38 +27,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Feb 2, 2017 at 9:11 PM, Bhupesh Sharma <bhsharma@redhat.com> wrote:
-> powerpc: arch_mmap_rnd() uses hard-coded values, (23-PAGE_SHIFT) for
-> 32-bit and (30-PAGE_SHIFT) for 64-bit, to generate the random offset
-> for the mmap base address.
->
-> This value represents a compromise between increased
-> ASLR effectiveness and avoiding address-space fragmentation.
-> Replace it with a Kconfig option, which is sensibly bounded, so that
-> platform developers may choose where to place this compromise.
-> Keep default values as new minimums.
->
-> This patch makes sure that now powerpc mmap arch_mmap_rnd() approach
-> is similar to other ARCHs like x86, arm64 and arm.
->
-> Cc: Alexander Graf <agraf@suse.com>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Paul Mackerras <paulus@samba.org>
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Cc: Anatolij Gustschin <agust@denx.de>
-> Cc: Alistair Popple <alistair@popple.id.au>
-> Cc: Matt Porter <mporter@kernel.crashing.org>
-> Cc: Vitaly Bordug <vitb@kernel.crashing.org>
-> Cc: Scott Wood <oss@buserror.net>
-> Cc: Kumar Gala <galak@kernel.crashing.org>
-> Cc: Daniel Cashman <dcashman@android.com>
-> Signed-off-by: Bhupesh Sharma <bhsharma@redhat.com>
-> Reviewed-by: Kees Cook <keescook at chromium.org>
+On Fri, 3 Feb 2017 21:45:24 +1000
+Nicholas Piggin <npiggin@gmail.com> wrote:
 
-This " at " should be "@", but otherwise, yay v2! :)
+> On Tue, 20 Dec 2016 04:30:08 +1000
+> Nicholas Piggin <npiggin@gmail.com> wrote:
+> 
+> > +static void do_smp_send_nmi_ipi(int cpu)
+> > +{
+> > +	if (cpu >= 0) {
+> > +		do_message_pass(cpu, PPC_MSG_NMI_IPI);
+> > +	} else {
+> > +		unsigned int c;
+> > +
+> > +		for_each_online_cpu(c) {
+> > +			if (c == raw_smp_processor_id())
+> > +				continue;
+> > +			do_message_pass(cpu, PPC_MSG_NMI_IPI);  
+> 
+> Okay this has a bug in the fallback path. Needs the following
+> incremental patch. sysrq+x works okay with this (tested in mambo),
+> and also recovers with "x" okay.
 
--Kees
+Also requires removal of get_online_cpus/put_online_cpus.
 
+---
+ arch/powerpc/kernel/smp.c | 8 ++------
+ 1 file changed, 2 insertions(+), 6 deletions(-)
+
+diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+index 81256522985d..e1a429251a7d 100644
+--- a/arch/powerpc/kernel/smp.c
++++ b/arch/powerpc/kernel/smp.c
+@@ -448,8 +448,6 @@ static int smp_send_nmi_ipi(int cpu, void (*fn)(struct pt_regs *), u64 delay_us)
+ 	if (unlikely(!smp_ops))
+ 		return 0;
+ 
+-	get_online_cpus();
+-
+ 	/* Take the nmi_ipi_busy count/lock with interrupts hard disabled */
+ 	nmi_ipi_lock_start(&flags);
+ 	while (nmi_ipi_busy_count) {
+@@ -491,8 +489,6 @@ static int smp_send_nmi_ipi(int cpu, void (*fn)(struct pt_regs *), u64 delay_us)
+ 	nmi_ipi_busy_count--;
+ 	nmi_ipi_unlock_end(&flags);
+ 
+-	put_online_cpus();
+-
+ 	return ret;
+ }
+ #endif /* CONFIG_NMI_IPI */
 -- 
-Kees Cook
-Pixel Security
+2.11.0
