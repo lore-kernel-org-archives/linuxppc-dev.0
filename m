@@ -1,30 +1,33 @@
-Return-Path: <helgaas@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <keescook@google.com>
+Received: from mail-it0-x22e.google.com (mail-it0-x22e.google.com
+ [IPv6:2607:f8b0:4001:c0b::22e])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vFTwL017czDqC0
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Feb 2017 08:07:45 +1100 (AEDT)
-Date: Fri, 3 Feb 2017 15:07:40 -0600
-From: Bjorn Helgaas <helgaas@kernel.org>
-To: Bjorn Helgaas <bhelgaas@google.com>
-Cc: linux-pci@vger.kernel.org, Scott Branden <sbranden@broadcom.com>,
- Gabriele Paoloni <gabriele.paoloni@huawei.com>,
- Jon Mason <jonmason@broadcom.com>, Ray Jui <rjui@broadcom.com>,
- Roy Zang <tie-fei.zang@freescale.com>, linux-renesas-soc@vger.kernel.org,
- Minghuan Lian <minghuan.Lian@freescale.com>,
- Zhou Wang <wangzhou1@hisilicon.com>, Simon Horman <horms@verge.net.au>,
- Geert Uytterhoeven <geert@linux-m68k.org>,
- Shailendra Verma <shailendra.v@samsung.com>,
- bcm-kernel-feedback-list@broadcom.com,
- Mingkai Hu <mingkai.hu@freescale.com>,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
-Subject: Re: [PATCH 1 0/4] PCI: Use of_device_get_match_data() to simplify
- probe
-Message-ID: <20170203210740.GC24162@bhelgaas-glaptop.roam.corp.google.com>
-References: <20170131201400.27605.56002.stgit@bhelgaas-glaptop.roam.corp.google.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vFZjl5q8vzDqC2
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Feb 2017 11:43:55 +1100 (AEDT)
+Received: by mail-it0-x22e.google.com with SMTP id 203so22895633ith.0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Feb 2017 16:43:55 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170131201400.27605.56002.stgit@bhelgaas-glaptop.roam.corp.google.com>
+Sender: keescook@google.com
+In-Reply-To: <1486098682-30395-1-git-send-email-bhsharma@redhat.com>
+References: <1486098682-30395-1-git-send-email-bhsharma@redhat.com>
+From: Kees Cook <keescook@chromium.org>
+Date: Fri, 3 Feb 2017 16:43:51 -0800
+Message-ID: <CAGXu5jJQMVJVAVQOk1zS+jRLy641fwE0NKnAme2mGbm6Y1_xeA@mail.gmail.com>
+Subject: Re: [PATCH v2 1/1] powerpc: mm: support ARCH_MMAP_RND_BITS
+To: Bhupesh Sharma <bhsharma@redhat.com>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "kernel-hardening@lists.openwall.com" <kernel-hardening@lists.openwall.com>,
+ Daniel Cashman <dcashman@google.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Bhupesh SHARMA <bhupesh.linux@gmail.com>,
+ Alexander Graf <agraf@suse.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Anatolij Gustschin <agust@denx.de>,
+ Alistair Popple <alistair@popple.id.au>,
+ Matt Porter <mporter@kernel.crashing.org>,
+ Vitaly Bordug <vitb@kernel.crashing.org>, Scott Wood <oss@buserror.net>,
+ Kumar Gala <galak@kernel.crashing.org>, Daniel Cashman <dcashman@android.com>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,42 +37,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jan 31, 2017 at 02:19:51PM -0600, Bjorn Helgaas wrote:
-> This turned into much ado about nothing, but Shailendra's hisi patch
-> prompted similar cleanups in other drivers.  It's a minor simplification,
-> but I think worth doing consistently across drivers.
-> 
-> Basically this is Geert's observation that when the driver probe function
-> is called only as a result of matching something in <match_table>, a
-> subsequent of_match_device(<match_table>, dev) call should never fail.
-> 
-> Therefore, instead of this:
-> 
->   struct of_device_id *match;
-> 
->   match = of_match_device(<match_table>, dev);
->   ... = match->data;
-> 
-> we can do this:
-> 
->   ... = of_device_get_match_data(dev);
-> 
-> ---
-> 
-> Bjorn Helgaas (3):
->       PCI: iproc: Use of_device_get_match_data() to simplify probe
->       PCI: layerscape: Use of_device_get_match_data() to simplify probe
->       PCI: rcar: Use of_device_get_match_data() to simplify probe
-> 
-> Shailendra Verma (1):
->       PCI: hisi: Use of_device_get_match_data() to simplify probe
-> 
-> 
->  drivers/pci/host/pci-layerscape.c      |    7 +------
->  drivers/pci/host/pcie-hisi.c           |    8 +++-----
->  drivers/pci/host/pcie-iproc-platform.c |    7 +------
->  drivers/pci/host/pcie-rcar.c           |    7 +------
->  4 files changed, 6 insertions(+), 23 deletions(-)
+On Thu, Feb 2, 2017 at 9:11 PM, Bhupesh Sharma <bhsharma@redhat.com> wrote:
+> powerpc: arch_mmap_rnd() uses hard-coded values, (23-PAGE_SHIFT) for
+> 32-bit and (30-PAGE_SHIFT) for 64-bit, to generate the random offset
+> for the mmap base address.
+>
+> This value represents a compromise between increased
+> ASLR effectiveness and avoiding address-space fragmentation.
+> Replace it with a Kconfig option, which is sensibly bounded, so that
+> platform developers may choose where to place this compromise.
+> Keep default values as new minimums.
+>
+> This patch makes sure that now powerpc mmap arch_mmap_rnd() approach
+> is similar to other ARCHs like x86, arm64 and arm.
+>
+> Cc: Alexander Graf <agraf@suse.com>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Paul Mackerras <paulus@samba.org>
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> Cc: Anatolij Gustschin <agust@denx.de>
+> Cc: Alistair Popple <alistair@popple.id.au>
+> Cc: Matt Porter <mporter@kernel.crashing.org>
+> Cc: Vitaly Bordug <vitb@kernel.crashing.org>
+> Cc: Scott Wood <oss@buserror.net>
+> Cc: Kumar Gala <galak@kernel.crashing.org>
+> Cc: Daniel Cashman <dcashman@android.com>
+> Signed-off-by: Bhupesh Sharma <bhsharma@redhat.com>
+> Reviewed-by: Kees Cook <keescook at chromium.org>
 
-I applied these to pci/host-layerscape, pci/host-hisi, pci/host-iproc,
-pci/host-rcar for v4.11.
+This " at " should be "@", but otherwise, yay v2! :)
+
+-Kees
+
+-- 
+Kees Cook
+Pixel Security
