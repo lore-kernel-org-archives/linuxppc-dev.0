@@ -1,48 +1,23 @@
-Return-Path: <andrew.donnellan@au1.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vGqM60Zn8zDq5s
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Feb 2017 12:17:05 +1100 (AEDT)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v161DqmF143796
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 5 Feb 2017 20:17:03 -0500
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
- by mx0a-001b2d01.pphosted.com with ESMTP id 28e82xkkag-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 05 Feb 2017 20:17:03 -0500
-Received: from localhost
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
- Mon, 6 Feb 2017 11:16:58 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 7F1AB2BB0045
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Feb 2017 12:16:55 +1100 (EST)
-Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v161GlS419857428
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 6 Feb 2017 12:16:55 +1100
-Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
- by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v161GMAF018446
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 6 Feb 2017 12:16:23 +1100
-Subject: Re: [v2] cxl: prevent read/write to AFU config space while AFU not
- configured
-To: Michael Ellerman <patch-notifications@ellerman.id.au>,
- linuxppc-dev@lists.ozlabs.org, stable@vger.kernel.org
-References: <3v8g1Z5Gdyz9t5m@ozlabs.org>
- <1914c3dc-7e4d-30de-88b0-7959e6249f39@au1.ibm.com>
-Cc: ukrishn@linux.vnet.ibm.com, vaibhav@linux.vnet.ibm.com,
- fbarrat@linux.vnet.ibm.com, imunsie@au1.ibm.com
-From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Date: Mon, 6 Feb 2017 12:15:59 +1100
-MIME-Version: 1.0
-In-Reply-To: <1914c3dc-7e4d-30de-88b0-7959e6249f39@au1.ibm.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Message-Id: <f3a508e9-3c23-f929-7b81-fd803c920095@au1.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vGrPQ6Xh0zDqBV
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Feb 2017 13:04:10 +1100 (AEDT)
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3vGrPQ1t9kz9ryk
+ for <linuxppc-dev@ozlabs.org>; Mon,  6 Feb 2017 13:04:10 +1100 (AEDT)
+Message-ID: <1486346641.4850.81.camel@kernel.crashing.org>
+Subject: [PATCH] powerpc: Fix holes in DD1 TLB workarounds
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linuxppc-dev@ozlabs.org
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>, Michael Neuling
+ <michael.neuling@au1.ibm.com>
+Date: Mon, 06 Feb 2017 13:04:01 +1100
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,19 +27,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 27/01/17 11:57, Andrew Donnellan wrote:
-> On 27/01/17 11:40, Michael Ellerman wrote:
->> Applied to powerpc next, thanks.
->>
->> https://git.kernel.org/powerpc/c/14a3ae34bfd0bcb1cc12d55b06a858
->
-> Will fix the remaining locking issue in a follow up patch...
+This patch gets rid of the the TLB multihits observed in the lab.
 
-Stable team - please make sure this doesn't go in without 
-http://patchwork.ozlabs.org/patch/724315/ once that's merged.
+Sadly it does disable whatever remaining optimizations we had for
+TLB invalidations. It fixes 2 problems:
 
+ - We do sadly need to invalidate in radix__pte_update() even when
+the new pte is clear because what might happen otherwise is that we
+clear a bunch of PTEs, we drop the PTL, then before we get to do
+the flush_tlb_mm(), another thread puts/faults some new things in.
+It's rather unlikely and probably requires funky mappings blown by
+unmap_mapping_range() (otherwise we probably are protected by the
+mmap sem) but possible.
 
-Thanks,
--- 
-Andrew Donnellan              OzLabs, ADL Canberra
-andrew.donnellan@au1.ibm.com  IBM Australia Limited
+ - In some rare cases we call set_pte_at() on top of a protnone PTE
+which is valid, and thus we need to apply the workaround.
+
+Now, I'm working on ways to restore batching by instead coping with
+the multi-hits after the fact, but this hasn't yet been proven solid
+so this will have to do in the meantime.
+
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
+ arch/powerpc/include/asm/book3s/64/radix.h | 13 +++++++++++--
+ 1 file changed, 11 insertions(+), 2 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/book3s/64/radix.h b/arch/powerpc/include/asm/book3s/64/radix.h
+index b4d1302..b17d4a1 100644
+--- a/arch/powerpc/include/asm/book3s/64/radix.h
++++ b/arch/powerpc/include/asm/book3s/64/radix.h
+@@ -149,7 +149,7 @@ static inline unsigned long radix__pte_update(struct mm_struct *mm,
+ 		 * the below sequence and batch the tlb flush. The
+ 		 * tlb flush batching is done by mmu gather code
+ 		 */
+-		if (new_pte) {
++		if (1 || new_pte) {
+ 			asm volatile("ptesync" : : : "memory");
+ 			radix__flush_tlb_pte_p9_dd1(old_pte, mm, addr);
+ 			__radix_pte_update(ptep, 0, new_pte);
+@@ -179,7 +179,7 @@ static inline void radix__ptep_set_access_flags(struct mm_struct *mm,
+ 
+ 		unsigned long old_pte, new_pte;
+ 
+-		old_pte = __radix_pte_update(ptep, ~0, 0);
++		old_pte = __radix_pte_update(ptep, ~0ul, 0);
+ 		asm volatile("ptesync" : : : "memory");
+ 		/*
+ 		 * new value of pte
+@@ -202,9 +202,18 @@ static inline int radix__pte_none(pte_t pte)
+ 	return (pte_val(pte) & ~RADIX_PTE_NONE_MASK) == 0;
+ }
+ 
++static inline int __pte_present(pte_t pte)
++{
++	return !!(pte_raw(pte) & cpu_to_be64(_PAGE_PRESENT));
++}
+ static inline void radix__set_pte_at(struct mm_struct *mm, unsigned long addr,
+ 				 pte_t *ptep, pte_t pte, int percpu)
+ {
++	if (__pte_present(*ptep)) {
++		unsigned long old_pte = __radix_pte_update(ptep, ~0ul, 0);
++                asm volatile("ptesync" : : : "memory");
++		radix__flush_tlb_pte_p9_dd1(old_pte, mm, addr);
++	}
+ 	*ptep = pte;
+ 	asm volatile("ptesync" : : : "memory");
+ }
