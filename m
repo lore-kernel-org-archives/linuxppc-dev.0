@@ -1,22 +1,26 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <segher@gate.crashing.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vGrQs45RZzDqBV
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Feb 2017 13:05:25 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vGrbb2sxfzDqCw
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Feb 2017 13:12:59 +1100 (AEDT)
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3vGrQr5t14z9ryk
- for <linuxppc-dev@ozlabs.org>; Mon,  6 Feb 2017 13:05:24 +1100 (AEDT)
-Message-ID: <1486346716.4850.82.camel@kernel.crashing.org>
-Subject: [PATCH] powerpc/mm/radix: Update ERAT flushes when invalidating TLB
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: linuxppc-dev@ozlabs.org
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Date: Mon, 06 Feb 2017 13:05:16 +1100
-Content-Type: text/plain; charset="UTF-8"
+ by ozlabs.org (Postfix) with ESMTPS id 3vGrbZ4QpDz9ryk
+ for <linuxppc-dev@ozlabs.org>; Mon,  6 Feb 2017 13:12:58 +1100 (AEDT)
+Date: Sun, 5 Feb 2017 20:12:34 -0600
+From: Segher Boessenkool <segher@kernel.crashing.org>
+To: Benjamin Herrenschmidt <benh@au1.ibm.com>
+Cc: Fred Wright <fw@fwright.net>, linuxppc-dev@ozlabs.org, devel@ntpsec.org
+Subject: Re: Timekeeping oddities on MacMini G4s
+Message-ID: <20170206021234.GD21840@gate.crashing.org>
+References: <20170201075630.3E8FB406061@ip-64-139-1-69.sjc.megapath.net>
+ <Pine.LNX.4.58L1X.1702041524560.6886@bolt.sonic.net>
+ <1486336921.4850.74.camel@au1.ibm.com>
 Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <1486336921.4850.74.camel@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,40 +30,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Three tiny changes to the ERAT flushing logic: First don't make
-it depend on DD1. It hasn't been decided yet but we might run
-DD2 in a mode that also requires explicit flushes for performance
-reasons so make it unconditional. We also add a missing isync, and
-finally remove the flush from _tlbiel_va as it is only necessary
-for congruence-class invalidations (PID, LPID and full TLB), not
-targetted invalidations.
+On Mon, Feb 06, 2017 at 10:22:01AM +1100, Benjamin Herrenschmidt wrote:
+> >   On the plus side, that means that the values are guaranteed not
+> > to be core-specific.  On the minus side, it means that its count rate is
+> > lower, and it's sufficiently "distant" that accessing it is somewhat more
+> > expensive.
+> 
+> Right so there are various configuration options and ways to feed the timebase
+> to PowerPC chips depending on the generation and manufacturer. On the old
+> 32-bit chips, typically it was either a divisor of the bus frequency or
+> externally clocked. Apple typically used the latter.
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
- arch/powerpc/mm/tlb-radix.c | 6 +-----
- 1 file changed, 1 insertion(+), 5 deletions(-)
+On all 6xx and most 7xx/7xxx it is 1:4 of the bus clock.  And on the
+newer machines the clock chip uses clock spreading.  So you then cannot
+calibrate with a dumb fast routine (the time base ticks pretty slow
+anyhow, you cannot calibrate any fast if you want decent results; but
+with clock spreading you either have to measure for many seconds, or you
+need to find the period of the spreading and work with that).
 
-diff --git a/arch/powerpc/mm/tlb-radix.c b/arch/powerpc/mm/tlb-radix.c
-index 61b7911..e0c8162 100644
---- a/arch/powerpc/mm/tlb-radix.c
-+++ b/arch/powerpc/mm/tlb-radix.c
-@@ -50,9 +50,7 @@ static inline void _tlbiel_pid(unsigned long pid, unsigned long ric)
- 	for (set = 0; set < POWER9_TLB_SETS_RADIX ; set++) {
- 		__tlbiel_pid(pid, set, ric);
- 	}
--	if (cpu_has_feature(CPU_FTR_POWER9_DD1))
--		asm volatile(PPC_INVALIDATE_ERAT : : :"memory");
--	return;
-+	asm volatile(PPC_INVALIDATE_ERAT ";isync" : : :"memory");
- }
- 
- static inline void _tlbie_pid(unsigned long pid, unsigned long ric)
-@@ -85,8 +83,6 @@ static inline void _tlbiel_va(unsigned long va, unsigned long pid,
- 	asm volatile(PPC_TLBIEL(%0, %4, %3, %2, %1)
- 		     : : "r"(rb), "i"(r), "i"(prs), "i"(ric), "r"(rs) : "memory");
- 	asm volatile("ptesync": : :"memory");
--	if (cpu_has_feature(CPU_FTR_POWER9_DD1))
--		asm volatile(PPC_INVALIDATE_ERAT : : :"memory");
- }
- 
- static inline void _tlbie_va(unsigned long va, unsigned long pid,
+> > The PowerPC architecture permits the timebase frequency to be variable,
+> > but I'm not aware of any implementations that take advantage of that.
+> 
+> I think it's pretty much accepted that this would be a very bad idea
+> and no implementation did it.
+
+See above.
+
+> >   The
+> > Motorola 32-bit implementations in general run it on the "bus clock",
+> > which is independent of processor-clock multipliers, and is also common
+> > across processor chips in systems with more than one.
+> 
+> There's also a TBEN external pin iirc which can be used to feed it.
+
+Some implementations have an MSR bit to stop the TB as well (7450 for
+example).
+
+
+Segher
