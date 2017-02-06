@@ -1,31 +1,37 @@
-Return-Path: <jpoimboe@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <fbarrat@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vHBw86dKYzDqGJ
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Feb 2017 02:58:32 +1100 (AEDT)
-Date: Mon, 6 Feb 2017 09:58:28 -0600
-From: Josh Poimboeuf <jpoimboe@redhat.com>
-To: Miroslav Benes <mbenes@suse.cz>
-Cc: Jessica Yu <jeyu@redhat.com>, Jiri Kosina <jikos@kernel.org>,
- Petr Mladek <pmladek@suse.com>, linux-kernel@vger.kernel.org,
- live-patching@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, x86@kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- Vojtech Pavlik <vojtech@suse.com>, Jiri Slaby <jslaby@suse.cz>,
- Chris J Arges <chris.j.arges@canonical.com>,
- Andy Lutomirski <luto@kernel.org>, Ingo Molnar <mingo@kernel.org>,
- Peter Zijlstra <peterz@infradead.org>,
- Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
- Balbir Singh <bsingharora@gmail.com>
-Subject: Re: [PATCH v4 13/15] livepatch: change to a per-task consistency model
-Message-ID: <20170206155828.7mivuyzdtre4dato@treble>
-References: <cover.1484839971.git.jpoimboe@redhat.com>
- <62e96e43de6f09e16f36d3d51af766c8fcbbb05f.1484839971.git.jpoimboe@redhat.com>
- <alpine.LSU.2.20.1702031724040.28531@pobox.suse.cz>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vHCMl07H6zDqGL
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Feb 2017 03:18:58 +1100 (AEDT)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v16GIpXL130216
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 6 Feb 2017 11:18:55 -0500
+Received: from e06smtp09.uk.ibm.com (e06smtp09.uk.ibm.com [195.75.94.105])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 28et9sehdq-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Feb 2017 11:18:54 -0500
+Received: from localhost
+ by e06smtp09.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
+ Mon, 6 Feb 2017 16:18:40 -0000
+Subject: Re: [PATCH] cxl: Force context lock during EEH flow
+To: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+References: <20170203065739.3052-1-vaibhav@linux.vnet.ibm.com>
+Cc: Philippe Bergheaud <philippe.bergheaud@fr.ibm.com>,
+ frederic.barrat@fr.ibm.com, stable@vger.kernel.org,
+ Ian Munsie <ianmunsi@au1.ibm.com>, Andrew Donnellan <andonnel@au1.ibm.com>,
+ Gregory Kurz <KURZGREG@fr.ibm.com>,
+ Christophe Lombard <christophe_lombard@fr.ibm.com>
+From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+Date: Mon, 6 Feb 2017 17:18:09 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <alpine.LSU.2.20.1702031724040.28531@pobox.suse.cz>
+In-Reply-To: <20170203065739.3052-1-vaibhav@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Message-Id: <d7499436-f25c-fac8-8908-c622a24d85f1@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,111 +41,160 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Feb 03, 2017 at 05:41:28PM +0100, Miroslav Benes wrote:
-> 
-> Petr has already mentioned majority of things I too found out, so only 
-> couple of nits...
-> 
-> > diff --git a/Documentation/ABI/testing/sysfs-kernel-livepatch b/Documentation/ABI/testing/sysfs-kernel-livepatch
-> > index da87f43..24b6570 100644
-> > --- a/Documentation/ABI/testing/sysfs-kernel-livepatch
-> > +++ b/Documentation/ABI/testing/sysfs-kernel-livepatch
-> > @@ -25,6 +25,14 @@ Description:
-> >  		code is currently applied.  Writing 0 will disable the patch
-> >  		while writing 1 will re-enable the patch.
-> >  
-> > +What:		/sys/kernel/livepatch/<patch>/transition
-> > +Date:		May 2016
-> 
-> 'May 2016' looks strange, but maybe nobody cares about it...
 
-Will update the date to Feb 2017 and also the affected kernel version to
-4.12.
 
-> 
-> > diff --git a/Documentation/livepatch/livepatch.txt b/Documentation/livepatch/livepatch.txt
-> > index 7f04e13..fb00d66 100644
-> > --- a/Documentation/livepatch/livepatch.txt
-> > +++ b/Documentation/livepatch/livepatch.txt
-> >  4. Livepatch module
-> > @@ -134,7 +242,7 @@ Documentation/livepatch/module-elf-format.txt for more details.
-> >  
-> >  
-> >  4.2. Metadata
-> > -------------
-> > +-------------
-> 
-> klp_func and klp_patch have new members - immediate. Should be documented 
-> here in "4.2. Metadata" section.
+Le 03/02/2017 à 07:57, Vaibhav Jain a écrit :
+> During an eeh event when the cxl card is fenced and card sysfs attr
+> perst_reloads_same_image is set following warning message is seen in the
+> kernel logs:
+>
+>  [   60.622727] Adapter context unlocked with 0 active contexts
+>  [   60.622762] ------------[ cut here ]------------
+>  [   60.622771] WARNING: CPU: 12 PID: 627 at
+>  ../drivers/misc/cxl/main.c:325 cxl_adapter_context_unlock+0x60/0x80 [cxl]
+>
+> Even though this warning is harmless, it clutters the kernel log
+> during an eeh event. This warning is triggered as the EEH callback
+> cxl_pci_error_detected doesn't obtain a context-lock before forcibly
+> detaching all active context and when context-lock is released during
+> call to cxl_configure_adapter from cxl_pci_slot_reset, a warning in
+> cxl_adapter_context_unlock is triggered.
+>
+> To fix this warning and also prevent activation of any context during
+> eeh the patch introduces a new function cxl_adapter_context_force_lock
+> that would forcefully acquire the context_lock and warn if any active
+> contexts exists when this happens. After the EEH flow concludes with
+> call to cxl_pci_resume the context-lock is released with a call to
+> cxl_adapter_context_unlock.
+>
+> Cc: stable@vger.kernel.org
+> Fixes: 70b565bbdb91("cxl: Prevent adapter reset if an active context exists")
+> Reported-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+> Signed-off-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+> Reviewed-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+> ---
+>  drivers/misc/cxl/cxl.h  |  3 +++
+>  drivers/misc/cxl/main.c | 10 ++++++++++
+>  drivers/misc/cxl/pci.c  | 18 ++++++++++++++++--
+>  3 files changed, 29 insertions(+), 2 deletions(-)
+>
+> diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
+> index b24d767..34d2ca0 100644
+> --- a/drivers/misc/cxl/cxl.h
+> +++ b/drivers/misc/cxl/cxl.h
+> @@ -970,4 +970,7 @@ int cxl_adapter_context_lock(struct cxl *adapter);
+>  /* Unlock the contexts-lock if taken. Warn and force unlock otherwise */
+>  void cxl_adapter_context_unlock(struct cxl *adapter);
+>
+> +/* Force contexts-lock to be taken */
+> +void cxl_adapter_context_force_lock(struct cxl *adapter);
+> +
+>  #endif
+> diff --git a/drivers/misc/cxl/main.c b/drivers/misc/cxl/main.c
+> index 62e0dfb..1754a0c 100644
+> --- a/drivers/misc/cxl/main.c
+> +++ b/drivers/misc/cxl/main.c
+> @@ -301,6 +301,16 @@ void cxl_adapter_context_put(struct cxl *adapter)
+>  	atomic_dec_if_positive(&adapter->contexts_num);
+>  }
+>
+> +void cxl_adapter_context_force_lock(struct cxl *adapter)
+> +{
+> +	int count = atomic_read(&adapter->contexts_num);
+> +
+> +	if (count > 0)
+> +		pr_warn("Forcing context lock with %d active contexts\n",
+> +			count);
+> +	atomic_set(&adapter->contexts_num, -1);
+> +}
+> +
 
-Agreed.
+>  int cxl_adapter_context_lock(struct cxl *adapter)
+>  {
+>  	int rc;
+> diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
+> index 80a87ab..d76fd4d 100644
+> --- a/drivers/misc/cxl/pci.c
+> +++ b/drivers/misc/cxl/pci.c
+> @@ -1487,8 +1487,6 @@ static int cxl_configure_adapter(struct cxl *adapter, struct pci_dev *dev)
+>  	if ((rc = cxl_native_register_psl_err_irq(adapter)))
+>  		goto err;
+>
+> -	/* Release the context lock as adapter is configured */
+> -	cxl_adapter_context_unlock(adapter);
+>  	return 0;
+>
+>  err:
+> @@ -1587,6 +1585,9 @@ static struct cxl *cxl_pci_init_adapter(struct pci_dev *dev)
+>  	if ((rc = cxl_sysfs_adapter_add(adapter)))
+>  		goto err_put1;
+>
+> +	/* Release the context lock as adapter is configured */
+> +	cxl_adapter_context_unlock(adapter);
+> +
+>  	return adapter;
+>
+>  err_put1:
+> @@ -1607,6 +1608,9 @@ static void cxl_pci_remove_adapter(struct cxl *adapter)
+>  {
+>  	pr_devel("cxl_remove_adapter\n");
+>
+> +	/* Forcibly take the adapter context lock */
+> +	cxl_adapter_context_force_lock(adapter);
+> +
+>  	cxl_sysfs_adapter_remove(adapter);
+>  	cxl_debugfs_adapter_remove(adapter);
+>
+> @@ -1778,6 +1782,9 @@ static pci_ers_result_t cxl_pci_error_detected(struct pci_dev *pdev,
+>  	 */
+>  	schedule();
+>
+> +	/* forcibly take the context lock to prevent new context activation */
+> +	cxl_adapter_context_force_lock(adapter);
+> +
 
-> The section also contains this text under klp_patch bullet. It seems 
-> oudated:
-> 
-> "Also if a more complex consistency model is supported then a selected 
-> unit (thread, kernel as a whole) will see the new code from the entire 
-> patch only when it is in a safe state."
-> 
-> We now have a more complex consistency model.
+I'm not a fan of the "force lock" call and I'm not convinced it's 
+needed. When an EEH is triggered, we'll force-detach all the contexts. 
+So that in itself should bring the counter of active contexts to 0. So 
+why not just add a cxl_adapter_context_lock() call at the end of 
+cxl_pci_error_detected()? The lock would be released in 
+cxl_configure_adapter when cxl_pci_slot_reset() is called, as is already 
+the case with the current code.
+(as a side note, I don't believe the code is racy and that we need to 
+add extra protection to avoid context activation while 
+cxl_pci_error_detected() is called. We can talk about it if needed)
 
-Agreed.
+   Fred
 
-> And finally, the section "Limitations" has this text under the first 
-> bullet:
-> 
->   + The patch must not change the semantic of the patched functions.
-> 
->     The current implementation guarantees only that either the old
->     or the new function is called. The functions are patched one
->     by one. It means that the patch must _not_ change the semantic
->     of the function.
-> 
-> I think it is confusing. The consistency model allows us to change the 
-> semantic of a function. To certain degree. Of course, there are cases that 
-> cannot be patched, or have to be patched carefully. For example if a 
-> function takes a lock by calling foo_lock(), foo_lock() is not on a stack 
-> afterwards. Then the locking semantics may be changed with a livepatch. 
-> One has to make sure to patch also the caller foo_lock() to enforce the 
-> consistency. And so on... But I do not consider a limitation of livepatch. 
-> It is a feature of the consistency model, which is weaker than kGraft's or 
-> kpatch's (or stronger. It depends on your point of view.)
-> 
-> So, I propose to remove this text and better describe the properties of 
-> the consistency model above in the section 3. Maybe a quote from an old 
-> mail thread (Nov 2014) would be sufficient. I don't remember what was 
-> mentioned and what not.
-> 
-> What do you think?
 
-I'll remove the above limitation.
 
-I'm not sure how to improve the consistency model section.  It already
-has at least some mentions of changed function semantics and locking
-semantics.  I'll leave it alone for now, unless you have a specific
-suggestion.
-
-> > diff --git a/include/linux/livepatch.h b/include/linux/livepatch.h
-> > index 6602b34..ed90ad1 100644
-> > --- a/include/linux/livepatch.h
-> > +++ b/include/linux/livepatch.h
-> > @@ -68,7 +92,7 @@ struct klp_func {
-> >   * @funcs:	function entries for functions to be patched in the object
-> >   * @kobj:	kobject for sysfs resources
-> >   * @mod:	kernel module associated with the patched object
-> > - * 		(NULL for vmlinux)
-> > + *		(NULL for vmlinux)
-> 
-> This looks superfluous.
-
-This is a minor whitespace fix -- remove a space before tab.  I figured
-I'd go ahead and fix it since I'm already changing some of the
-surrounding code.
-
-> (checking my notes)... and that's it. Aside from the discussion in Petr's 
-> subthread it looks good to me. Great job.
-
-Thanks!
-
--- 
-Josh
+>  	/* If we're permanently dead, give up. */
+>  	if (state == pci_channel_io_perm_failure) {
+>  		/* Tell the AFU drivers; but we don't care what they
+> @@ -1879,11 +1886,15 @@ static pci_ers_result_t cxl_pci_error_detected(struct pci_dev *pdev,
+>  		/* Only continue if everyone agrees on NEED_RESET */
+>  		if (result != PCI_ERS_RESULT_NEED_RESET)
+>  			return result;
+> +	}
+>
+> +	for (i = 0; i < adapter->slices; i++) {
+> +		afu = adapter->afu[i];
+>  		cxl_context_detach_all(afu);
+>  		cxl_ops->afu_deactivate_mode(afu, afu->current_mode);
+>  		pci_deconfigure_afu(afu);
+>  	}
+> +
+>  	cxl_deconfigure_adapter(adapter);
+>
+>  	return result;
+> @@ -1979,6 +1990,9 @@ static void cxl_pci_resume(struct pci_dev *pdev)
+>  				afu_dev->driver->err_handler->resume(afu_dev);
+>  		}
+>  	}
+> +
+> +	/* Unlock context activation for the adapter */
+> +	cxl_adapter_context_unlock(adapter);
+>  }
+>
+>  static const struct pci_error_handlers cxl_err_handler = {
+>
