@@ -1,14 +1,16 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vH3G80870zDqDy
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vH3G85gPczDqDy
  for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Feb 2017 21:13:36 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 1/2] selftests/powerpc: Refactor the AUXV routines
-Date: Mon,  6 Feb 2017 21:13:27 +1100
-Message-Id: <1486376008-2841-1-git-send-email-mpe@ellerman.id.au>
+Subject: [PATCH 2/2] selftests/powerpc: Add cache_shape sniff test
+Date: Mon,  6 Feb 2017 21:13:28 +1100
+Message-Id: <1486376008-2841-2-git-send-email-mpe@ellerman.id.au>
+In-Reply-To: <1486376008-2841-1-git-send-email-mpe@ellerman.id.au>
+References: <1486376008-2841-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,118 +20,188 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Refactor the AUXV routines so they are more composable. In a future test
-we want to look for many AUXV entries and we don't want to have to read
-/proc/self/auxv each time.
+This is a very basic test of the new cache shape AUXV entries. All it
+does at the moment is look for the entries and error out if we don't
+find all the ones we expect. Primarily intended for folks bringing up a
+new chip to check that the cache info is making it all the way to
+userspace correctly.
 
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- tools/testing/selftests/powerpc/include/utils.h |  6 ++-
- tools/testing/selftests/powerpc/utils.c         | 53 +++++++++++++++++--------
- 2 files changed, 41 insertions(+), 18 deletions(-)
+ tools/testing/selftests/powerpc/Makefile           |   1 +
+ .../selftests/powerpc/cache_shape/.gitignore       |   1 +
+ .../testing/selftests/powerpc/cache_shape/Makefile |  10 ++
+ .../selftests/powerpc/cache_shape/cache_shape.c    | 125 +++++++++++++++++++++
+ 4 files changed, 137 insertions(+)
+ create mode 100644 tools/testing/selftests/powerpc/cache_shape/.gitignore
+ create mode 100644 tools/testing/selftests/powerpc/cache_shape/Makefile
+ create mode 100644 tools/testing/selftests/powerpc/cache_shape/cache_shape.c
 
-diff --git a/tools/testing/selftests/powerpc/include/utils.h b/tools/testing/selftests/powerpc/include/utils.h
-index 53405e8a52ab..735815b3ad7f 100644
---- a/tools/testing/selftests/powerpc/include/utils.h
-+++ b/tools/testing/selftests/powerpc/include/utils.h
-@@ -24,7 +24,11 @@ typedef uint8_t u8;
+diff --git a/tools/testing/selftests/powerpc/Makefile b/tools/testing/selftests/powerpc/Makefile
+index c2c4211ba58b..e7888e0c710d 100644
+--- a/tools/testing/selftests/powerpc/Makefile
++++ b/tools/testing/selftests/powerpc/Makefile
+@@ -14,6 +14,7 @@ export CFLAGS
  
- void test_harness_set_timeout(uint64_t time);
- int test_harness(int (test_function)(void), char *name);
--extern void *get_auxv_entry(int type);
+ SUB_DIRS = alignment		\
+ 	   benchmarks		\
++	   cache_shape		\
+ 	   copyloops		\
+ 	   context_switch	\
+ 	   dscr			\
+diff --git a/tools/testing/selftests/powerpc/cache_shape/.gitignore b/tools/testing/selftests/powerpc/cache_shape/.gitignore
+new file mode 100644
+index 000000000000..ec1848434be5
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/cache_shape/.gitignore
+@@ -0,0 +1 @@
++cache_shape
+diff --git a/tools/testing/selftests/powerpc/cache_shape/Makefile b/tools/testing/selftests/powerpc/cache_shape/Makefile
+new file mode 100644
+index 000000000000..b24485ab30e2
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/cache_shape/Makefile
+@@ -0,0 +1,10 @@
++TEST_PROGS := cache_shape
 +
-+int read_auxv(char *buf, ssize_t buf_size);
-+void *find_auxv_entry(int type, char *auxv);
-+void *get_auxv_entry(int type);
++all: $(TEST_PROGS)
 +
- int pick_online_cpu(void);
- 
- static inline bool have_hwcap(unsigned long ftr)
-diff --git a/tools/testing/selftests/powerpc/utils.c b/tools/testing/selftests/powerpc/utils.c
-index dcf74184bfd0..d46916867a6f 100644
---- a/tools/testing/selftests/powerpc/utils.c
-+++ b/tools/testing/selftests/powerpc/utils.c
-@@ -19,45 +19,64 @@
- 
- static char auxv[4096];
- 
--void *get_auxv_entry(int type)
-+int read_auxv(char *buf, ssize_t buf_size)
- {
--	ElfW(auxv_t) *p;
--	void *result;
- 	ssize_t num;
--	int fd;
-+	int rc, fd;
- 
- 	fd = open("/proc/self/auxv", O_RDONLY);
- 	if (fd == -1) {
- 		perror("open");
--		return NULL;
-+		return -errno;
- 	}
- 
--	result = NULL;
--
--	num = read(fd, auxv, sizeof(auxv));
-+	num = read(fd, buf, buf_size);
- 	if (num < 0) {
- 		perror("read");
-+		rc = -EIO;
- 		goto out;
- 	}
- 
--	if (num > sizeof(auxv)) {
--		printf("Overflowed auxv buffer\n");
-+	if (num > buf_size) {
-+		printf("overflowed auxv buffer\n");
-+		rc = -EOVERFLOW;
- 		goto out;
- 	}
- 
-+	rc = 0;
-+out:
-+	close(fd);
-+	return rc;
++$(TEST_PROGS): ../harness.c ../utils.c
++
++include ../../lib.mk
++
++clean:
++	rm -f $(TEST_PROGS) *.o
+diff --git a/tools/testing/selftests/powerpc/cache_shape/cache_shape.c b/tools/testing/selftests/powerpc/cache_shape/cache_shape.c
+new file mode 100644
+index 000000000000..29ec07eba7f9
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/cache_shape/cache_shape.c
+@@ -0,0 +1,125 @@
++/*
++ * Copyright 2017, Michael Ellerman, IBM Corp.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ */
++
++#include <elf.h>
++#include <errno.h>
++#include <fcntl.h>
++#include <link.h>
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++#include <sys/stat.h>
++#include <sys/types.h>
++#include <sys/wait.h>
++#include <unistd.h>
++
++#include "utils.h"
++
++#ifndef AT_L1I_CACHESIZE
++#define AT_L1I_CACHESIZE	40
++#define AT_L1I_CACHEGEOMETRY	41
++#define AT_L1D_CACHESIZE	42
++#define AT_L1D_CACHEGEOMETRY	43
++#define AT_L2_CACHESIZE		44
++#define AT_L2_CACHEGEOMETRY	45
++#define AT_L3_CACHESIZE		46
++#define AT_L3_CACHEGEOMETRY	47
++#endif
++
++static void print_size(const char *label, uint32_t val)
++{
++	printf("%s cache size: %#10x %10dB %10dK\n", label, val, val, val / 1024);
 +}
 +
-+void *find_auxv_entry(int type, char *auxv)
++static void print_geo(const char *label, uint32_t val)
 +{
-+	ElfW(auxv_t) *p;
++	uint16_t assoc;
 +
- 	p = (ElfW(auxv_t) *)auxv;
- 
- 	while (p->a_type != AT_NULL) {
--		if (p->a_type == type) {
--			result = (void *)p->a_un.a_val;
--			break;
--		}
-+		if (p->a_type == type)
-+			return p;
- 
- 		p++;
- 	}
--out:
--	close(fd);
--	return result;
++	printf("%s line size:  %#10x       ", label, val & 0xFFFF);
 +
-+	return NULL;
++	assoc = val >> 16;
++	if (assoc)
++		printf("%u-way", assoc);
++	else
++		printf("fully");
++
++	printf(" associative\n");
 +}
 +
-+void *get_auxv_entry(int type)
++static int test_cache_shape()
 +{
++	static char buffer[4096];
 +	ElfW(auxv_t) *p;
++	int found;
 +
-+	if (read_auxv(auxv, sizeof(auxv)))
-+		return NULL;
++	FAIL_IF(read_auxv(buffer, sizeof(buffer)));
 +
-+	p = find_auxv_entry(type, auxv);
-+	if (p)
-+		return (void *)p->a_un.a_val;
++	found = 0;
 +
-+	return NULL;
- }
- 
- int pick_online_cpu(void)
++	p = find_auxv_entry(AT_L1I_CACHESIZE, buffer);
++	if (p) {
++		found++;
++		print_size("L1I ", (uint32_t)p->a_un.a_val);
++	}
++
++	p = find_auxv_entry(AT_L1I_CACHEGEOMETRY, buffer);
++	if (p) {
++		found++;
++		print_geo("L1I ", (uint32_t)p->a_un.a_val);
++	}
++
++	p = find_auxv_entry(AT_L1D_CACHESIZE, buffer);
++	if (p) {
++		found++;
++		print_size("L1D ", (uint32_t)p->a_un.a_val);
++	}
++
++	p = find_auxv_entry(AT_L1D_CACHEGEOMETRY, buffer);
++	if (p) {
++		found++;
++		print_geo("L1D ", (uint32_t)p->a_un.a_val);
++	}
++
++	p = find_auxv_entry(AT_L2_CACHESIZE, buffer);
++	if (p) {
++		found++;
++		print_size("L2  ", (uint32_t)p->a_un.a_val);
++	}
++
++	p = find_auxv_entry(AT_L2_CACHEGEOMETRY, buffer);
++	if (p) {
++		found++;
++		print_geo("L2  ", (uint32_t)p->a_un.a_val);
++	}
++
++	p = find_auxv_entry(AT_L3_CACHESIZE, buffer);
++	if (p) {
++		found++;
++		print_size("L3  ", (uint32_t)p->a_un.a_val);
++	}
++
++	p = find_auxv_entry(AT_L3_CACHEGEOMETRY, buffer);
++	if (p) {
++		found++;
++		print_geo("L3  ", (uint32_t)p->a_un.a_val);
++	}
++
++	/* If we found none we're probably on a system where they don't exist */
++	SKIP_IF(found == 0);
++
++	/* But if we found any, we expect to find them all */
++	FAIL_IF(found != 8);
++
++	return 0;
++}
++
++int main(void)
++{
++	return test_harness(test_cache_shape, "cache_shape");
++}
 -- 
 2.7.4
