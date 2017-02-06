@@ -1,16 +1,25 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
+ [IPv6:2607:f8b0:400e:c05::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vH3G85gPczDqDy
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Feb 2017 21:13:36 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 2/2] selftests/powerpc: Add cache_shape sniff test
-Date: Mon,  6 Feb 2017 21:13:28 +1100
-Message-Id: <1486376008-2841-2-git-send-email-mpe@ellerman.id.au>
-In-Reply-To: <1486376008-2841-1-git-send-email-mpe@ellerman.id.au>
-References: <1486376008-2841-1-git-send-email-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vH3yj1JXFzDqDy
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Feb 2017 21:45:17 +1100 (AEDT)
+Received: by mail-pg0-x244.google.com with SMTP id 75so8812209pgf.3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Feb 2017 02:45:17 -0800 (PST)
+From: Balbir Singh <bsingharora@gmail.com>
+Date: Mon, 6 Feb 2017 16:15:09 +0530
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Michael Neuling <michael.neuling@au1.ibm.com>,
+ Balbir Singh <bsingharora@gmail.com>
+Subject: Re: [PATCH] powerpc/mm: Fix spurrious segfaults on radix with Autonuma
+Message-ID: <20170206104509.GA26240@dhcp-9-109-223-240.in.ibm.com>
+References: <1486102228.4850.52.camel@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1486102228.4850.52.camel@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,188 +29,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is a very basic test of the new cache shape AUXV entries. All it
-does at the moment is look for the entries and error out if we don't
-find all the ones we expect. Primarily intended for folks bringing up a
-new chip to check that the cache info is making it all the way to
-userspace correctly.
+On Fri, Feb 03, 2017 at 05:10:28PM +1100, Benjamin Herrenschmidt wrote:
+> When autonuma marks a PTE inaccessible it clears all the protection
+> bits but leave the PTE valid.
+> 
+> With the Radix MMU, an attempt at executing from such a PTE will
+> take a fault with bit 35 of SRR1 set "SRR1_ISI_N_OR_G".
+> 
+> It is thus incorrect to treat all such faults as errors. We should
+> pass them to handle_mm_fault() for autonuma to deal with. The case
+> of pages that are really not executable is handled by the existing
+> test for VM_EXEC further down.
+> 
+> That leaves us with catching the kernel attempts at executing user
+> pages. We can catch that earlier, even before we do find_vma.
+> 
+> It is never valid on powerpc for the kernel to take an exec fault
+> to begin with. So fold that test with the existing test for the
+> kernel faulting on kernel addresses to bail out early.
+> 
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Fixes: 1d18ad0 ("powerpc/mm: Detect instruction fetch denied and report")
+> Fixes: 0ab5171 ("powerpc/mm: Fix no execute fault handling on pre-POWER5")
+> ---
+>
 
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- tools/testing/selftests/powerpc/Makefile           |   1 +
- .../selftests/powerpc/cache_shape/.gitignore       |   1 +
- .../testing/selftests/powerpc/cache_shape/Makefile |  10 ++
- .../selftests/powerpc/cache_shape/cache_shape.c    | 125 +++++++++++++++++++++
- 4 files changed, 137 insertions(+)
- create mode 100644 tools/testing/selftests/powerpc/cache_shape/.gitignore
- create mode 100644 tools/testing/selftests/powerpc/cache_shape/Makefile
- create mode 100644 tools/testing/selftests/powerpc/cache_shape/cache_shape.c
-
-diff --git a/tools/testing/selftests/powerpc/Makefile b/tools/testing/selftests/powerpc/Makefile
-index c2c4211ba58b..e7888e0c710d 100644
---- a/tools/testing/selftests/powerpc/Makefile
-+++ b/tools/testing/selftests/powerpc/Makefile
-@@ -14,6 +14,7 @@ export CFLAGS
- 
- SUB_DIRS = alignment		\
- 	   benchmarks		\
-+	   cache_shape		\
- 	   copyloops		\
- 	   context_switch	\
- 	   dscr			\
-diff --git a/tools/testing/selftests/powerpc/cache_shape/.gitignore b/tools/testing/selftests/powerpc/cache_shape/.gitignore
-new file mode 100644
-index 000000000000..ec1848434be5
---- /dev/null
-+++ b/tools/testing/selftests/powerpc/cache_shape/.gitignore
-@@ -0,0 +1 @@
-+cache_shape
-diff --git a/tools/testing/selftests/powerpc/cache_shape/Makefile b/tools/testing/selftests/powerpc/cache_shape/Makefile
-new file mode 100644
-index 000000000000..b24485ab30e2
---- /dev/null
-+++ b/tools/testing/selftests/powerpc/cache_shape/Makefile
-@@ -0,0 +1,10 @@
-+TEST_PROGS := cache_shape
-+
-+all: $(TEST_PROGS)
-+
-+$(TEST_PROGS): ../harness.c ../utils.c
-+
-+include ../../lib.mk
-+
-+clean:
-+	rm -f $(TEST_PROGS) *.o
-diff --git a/tools/testing/selftests/powerpc/cache_shape/cache_shape.c b/tools/testing/selftests/powerpc/cache_shape/cache_shape.c
-new file mode 100644
-index 000000000000..29ec07eba7f9
---- /dev/null
-+++ b/tools/testing/selftests/powerpc/cache_shape/cache_shape.c
-@@ -0,0 +1,125 @@
-+/*
-+ * Copyright 2017, Michael Ellerman, IBM Corp.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
-+ */
-+
-+#include <elf.h>
-+#include <errno.h>
-+#include <fcntl.h>
-+#include <link.h>
-+#include <stdio.h>
-+#include <stdlib.h>
-+#include <string.h>
-+#include <sys/stat.h>
-+#include <sys/types.h>
-+#include <sys/wait.h>
-+#include <unistd.h>
-+
-+#include "utils.h"
-+
-+#ifndef AT_L1I_CACHESIZE
-+#define AT_L1I_CACHESIZE	40
-+#define AT_L1I_CACHEGEOMETRY	41
-+#define AT_L1D_CACHESIZE	42
-+#define AT_L1D_CACHEGEOMETRY	43
-+#define AT_L2_CACHESIZE		44
-+#define AT_L2_CACHEGEOMETRY	45
-+#define AT_L3_CACHESIZE		46
-+#define AT_L3_CACHEGEOMETRY	47
-+#endif
-+
-+static void print_size(const char *label, uint32_t val)
-+{
-+	printf("%s cache size: %#10x %10dB %10dK\n", label, val, val, val / 1024);
-+}
-+
-+static void print_geo(const char *label, uint32_t val)
-+{
-+	uint16_t assoc;
-+
-+	printf("%s line size:  %#10x       ", label, val & 0xFFFF);
-+
-+	assoc = val >> 16;
-+	if (assoc)
-+		printf("%u-way", assoc);
-+	else
-+		printf("fully");
-+
-+	printf(" associative\n");
-+}
-+
-+static int test_cache_shape()
-+{
-+	static char buffer[4096];
-+	ElfW(auxv_t) *p;
-+	int found;
-+
-+	FAIL_IF(read_auxv(buffer, sizeof(buffer)));
-+
-+	found = 0;
-+
-+	p = find_auxv_entry(AT_L1I_CACHESIZE, buffer);
-+	if (p) {
-+		found++;
-+		print_size("L1I ", (uint32_t)p->a_un.a_val);
-+	}
-+
-+	p = find_auxv_entry(AT_L1I_CACHEGEOMETRY, buffer);
-+	if (p) {
-+		found++;
-+		print_geo("L1I ", (uint32_t)p->a_un.a_val);
-+	}
-+
-+	p = find_auxv_entry(AT_L1D_CACHESIZE, buffer);
-+	if (p) {
-+		found++;
-+		print_size("L1D ", (uint32_t)p->a_un.a_val);
-+	}
-+
-+	p = find_auxv_entry(AT_L1D_CACHEGEOMETRY, buffer);
-+	if (p) {
-+		found++;
-+		print_geo("L1D ", (uint32_t)p->a_un.a_val);
-+	}
-+
-+	p = find_auxv_entry(AT_L2_CACHESIZE, buffer);
-+	if (p) {
-+		found++;
-+		print_size("L2  ", (uint32_t)p->a_un.a_val);
-+	}
-+
-+	p = find_auxv_entry(AT_L2_CACHEGEOMETRY, buffer);
-+	if (p) {
-+		found++;
-+		print_geo("L2  ", (uint32_t)p->a_un.a_val);
-+	}
-+
-+	p = find_auxv_entry(AT_L3_CACHESIZE, buffer);
-+	if (p) {
-+		found++;
-+		print_size("L3  ", (uint32_t)p->a_un.a_val);
-+	}
-+
-+	p = find_auxv_entry(AT_L3_CACHEGEOMETRY, buffer);
-+	if (p) {
-+		found++;
-+		print_geo("L3  ", (uint32_t)p->a_un.a_val);
-+	}
-+
-+	/* If we found none we're probably on a system where they don't exist */
-+	SKIP_IF(found == 0);
-+
-+	/* But if we found any, we expect to find them all */
-+	FAIL_IF(found != 8);
-+
-+	return 0;
-+}
-+
-+int main(void)
-+{
-+	return test_harness(test_cache_shape, "cache_shape");
-+}
--- 
-2.7.4
+Acked-by: Balbir Singh <bsingharora@gmail.com> 
