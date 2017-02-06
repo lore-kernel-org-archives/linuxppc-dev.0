@@ -3,40 +3,46 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vGq9B21rNzDqCs
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Feb 2017 12:08:30 +1100 (AEDT)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vGqM60Zn8zDq5s
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Feb 2017 12:17:05 +1100 (AEDT)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v1614P4U059165
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 5 Feb 2017 20:08:28 -0500
+ v161DqmF143796
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 5 Feb 2017 20:17:03 -0500
 Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
- by mx0a-001b2d01.pphosted.com with ESMTP id 28dcccdya1-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 28e82xkkag-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 05 Feb 2017 20:08:28 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 05 Feb 2017 20:17:03 -0500
 Received: from localhost
  by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
- Mon, 6 Feb 2017 11:08:25 +1000
-Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id AB57D3578053
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Feb 2017 12:08:22 +1100 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v1618E0E24576074
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 6 Feb 2017 12:08:22 +1100
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v1617nSI027564
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 6 Feb 2017 12:07:50 +1100
+ Mon, 6 Feb 2017 11:16:58 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 7F1AB2BB0045
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Feb 2017 12:16:55 +1100 (EST)
+Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v161GlS419857428
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 6 Feb 2017 12:16:55 +1100
+Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
+ by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v161GMAF018446
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 6 Feb 2017 12:16:23 +1100
+Subject: Re: [v2] cxl: prevent read/write to AFU config space while AFU not
+ configured
+To: Michael Ellerman <patch-notifications@ellerman.id.au>,
+ linuxppc-dev@lists.ozlabs.org, stable@vger.kernel.org
+References: <3v8g1Z5Gdyz9t5m@ozlabs.org>
+ <1914c3dc-7e4d-30de-88b0-7959e6249f39@au1.ibm.com>
+Cc: ukrishn@linux.vnet.ibm.com, vaibhav@linux.vnet.ibm.com,
+ fbarrat@linux.vnet.ibm.com, imunsie@au1.ibm.com
 From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: ukrishn@linux.vnet.ibm.com, pradghos@in.ibm.com,
- fbarrat@linux.vnet.ibm.com, vaibhav@linux.vnet.ibm.com,
- imunsie@au1.ibm.com, stable@vger.kernel.org
-Subject: [PATCH] cxl: fix nested locking hang during EEH hotplug
-Date: Mon,  6 Feb 2017 12:07:17 +1100
-Message-Id: <20170206010717.3460-1-andrew.donnellan@au1.ibm.com>
+Date: Mon, 6 Feb 2017 12:15:59 +1100
+MIME-Version: 1.0
+In-Reply-To: <1914c3dc-7e4d-30de-88b0-7959e6249f39@au1.ibm.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Message-Id: <f3a508e9-3c23-f929-7b81-fd803c920095@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,155 +52,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Commit 14a3ae34bfd0 ("cxl: Prevent read/write to AFU config space while AFU
-not configured") introduced a rwsem to fix an invalid memory access that
-occurred when someone attempts to access the config space of an AFU on a
-vPHB whilst the AFU is deconfigured, such as during EEH recovery.
+On 27/01/17 11:57, Andrew Donnellan wrote:
+> On 27/01/17 11:40, Michael Ellerman wrote:
+>> Applied to powerpc next, thanks.
+>>
+>> https://git.kernel.org/powerpc/c/14a3ae34bfd0bcb1cc12d55b06a858
+>
+> Will fix the remaining locking issue in a follow up patch...
 
-It turns out that it's possible to run into a nested locking issue when EEH
-recovery fails and a full device hotplug is required.
-cxl_pci_error_detected() deconfigures the AFU, taking a writer lock on
-configured_rwsem. When EEH recovery fails, the EEH code calls
-pci_hp_remove_devices() to remove the device, which in turn calls
-cxl_remove() -> cxl_pci_remove_afu() -> pci_deconfigure_afu(), which tries
-to grab the writer lock that's already held.
+Stable team - please make sure this doesn't go in without 
+http://patchwork.ozlabs.org/patch/724315/ once that's merged.
 
-Standard rwsem semantics don't express what we really want to do here and
-don't allow for nested locking. Fix this by replacing the rwsem with an
-atomic_t which we can control more finely. Allow the AFU to be locked
-multiple times so long as there are no readers.
 
-Fixes: 14a3ae34bfd0 ("cxl: Prevent read/write to AFU config space while AFU not configured")
-Cc: stable@vger.kernel.org # v4.9+
-Signed-off-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-
----
-
-I've asked Uma and Pradipta to give this a test.
-
----
- drivers/misc/cxl/cxl.h  |  5 +++--
- drivers/misc/cxl/main.c |  3 +--
- drivers/misc/cxl/pci.c  | 11 +++++++++--
- drivers/misc/cxl/vphb.c | 18 ++++++++++++++----
- 4 files changed, 27 insertions(+), 10 deletions(-)
-
-diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
-index b4a43fd14b99..08e7d3a54425 100644
---- a/drivers/misc/cxl/cxl.h
-+++ b/drivers/misc/cxl/cxl.h
-@@ -418,8 +418,9 @@ struct cxl_afu {
- 	struct dentry *debugfs;
- 	struct mutex contexts_lock;
- 	spinlock_t afu_cntl_lock;
--	/* Used to block access to AFU config space while deconfigured */
--	struct rw_semaphore configured_rwsem;
-+
-+	/* -1: AFU deconfigured/locked, >= 0: number of readers */
-+	atomic_t configured_state;
- 
- 	/* AFU error buffer fields and bin attribute for sysfs */
- 	u64 eb_len, eb_offset;
-diff --git a/drivers/misc/cxl/main.c b/drivers/misc/cxl/main.c
-index 2a6bf1d0a3a4..cc1706a92ace 100644
---- a/drivers/misc/cxl/main.c
-+++ b/drivers/misc/cxl/main.c
-@@ -268,8 +268,7 @@ struct cxl_afu *cxl_alloc_afu(struct cxl *adapter, int slice)
- 	idr_init(&afu->contexts_idr);
- 	mutex_init(&afu->contexts_lock);
- 	spin_lock_init(&afu->afu_cntl_lock);
--	init_rwsem(&afu->configured_rwsem);
--	down_write(&afu->configured_rwsem);
-+	atomic_set(&afu->configured_state, -1);
- 	afu->prefault_mode = CXL_PREFAULT_NONE;
- 	afu->irqs_max = afu->adapter->user_irqs;
- 
-diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
-index f512e13ec0f2..bdfa5ff11aea 100644
---- a/drivers/misc/cxl/pci.c
-+++ b/drivers/misc/cxl/pci.c
-@@ -1129,7 +1129,7 @@ static int pci_configure_afu(struct cxl_afu *afu, struct cxl *adapter, struct pc
- 	if ((rc = cxl_native_register_psl_irq(afu)))
- 		goto err2;
- 
--	up_write(&afu->configured_rwsem);
-+	atomic_set(&afu->configured_state, 0);
- 	return 0;
- 
- err2:
-@@ -1142,7 +1142,14 @@ static int pci_configure_afu(struct cxl_afu *afu, struct cxl *adapter, struct pc
- 
- static void pci_deconfigure_afu(struct cxl_afu *afu)
- {
--	down_write(&afu->configured_rwsem);
-+	/*
-+	 * It's okay to deconfigure when AFU is already locked, otherwise wait
-+	 * until there are no readers
-+	 */
-+	if (atomic_read(&afu->configured_state) != -1) {
-+		while (atomic_cmpxchg(&afu->configured_state, 0, -1) != -1)
-+			schedule();
-+	}
- 	cxl_native_release_psl_irq(afu);
- 	if (afu->adapter->native->sl_ops->release_serr_irq)
- 		afu->adapter->native->sl_ops->release_serr_irq(afu);
-diff --git a/drivers/misc/cxl/vphb.c b/drivers/misc/cxl/vphb.c
-index 639a343b7836..512a4897dbf6 100644
---- a/drivers/misc/cxl/vphb.c
-+++ b/drivers/misc/cxl/vphb.c
-@@ -83,6 +83,16 @@ static inline struct cxl_afu *pci_bus_to_afu(struct pci_bus *bus)
- 	return phb ? phb->private_data : NULL;
- }
- 
-+static void cxl_afu_configured_put(struct cxl_afu *afu)
-+{
-+	atomic_dec_if_positive(&afu->configured_state);
-+}
-+
-+static bool cxl_afu_configured_get(struct cxl_afu *afu)
-+{
-+	return atomic_inc_unless_negative(&afu->configured_state);
-+}
-+
- static inline int cxl_pcie_config_info(struct pci_bus *bus, unsigned int devfn,
- 				       struct cxl_afu *afu, int *_record)
- {
-@@ -107,7 +117,7 @@ static int cxl_pcie_read_config(struct pci_bus *bus, unsigned int devfn,
- 
- 	afu = pci_bus_to_afu(bus);
- 	/* Grab a reader lock on afu. */
--	if (afu == NULL || !down_read_trylock(&afu->configured_rwsem))
-+	if (afu == NULL || !cxl_afu_configured_get(afu))
- 		return PCIBIOS_DEVICE_NOT_FOUND;
- 
- 	rc = cxl_pcie_config_info(bus, devfn, afu, &record);
-@@ -132,7 +142,7 @@ static int cxl_pcie_read_config(struct pci_bus *bus, unsigned int devfn,
- 	}
- 
- out:
--	up_read(&afu->configured_rwsem);
-+	cxl_afu_configured_put(afu);
- 	return rc ? PCIBIOS_DEVICE_NOT_FOUND : PCIBIOS_SUCCESSFUL;
- }
- 
-@@ -144,7 +154,7 @@ static int cxl_pcie_write_config(struct pci_bus *bus, unsigned int devfn,
- 
- 	afu = pci_bus_to_afu(bus);
- 	/* Grab a reader lock on afu. */
--	if (afu == NULL || !down_read_trylock(&afu->configured_rwsem))
-+	if (afu == NULL || !cxl_afu_configured_get(afu))
- 		return PCIBIOS_DEVICE_NOT_FOUND;
- 
- 	rc = cxl_pcie_config_info(bus, devfn, afu, &record);
-@@ -166,7 +176,7 @@ static int cxl_pcie_write_config(struct pci_bus *bus, unsigned int devfn,
- 	}
- 
- out:
--	up_read(&afu->configured_rwsem);
-+	cxl_afu_configured_put(afu);
- 	return rc ? PCIBIOS_SET_FAILED : PCIBIOS_SUCCESSFUL;
- }
- 
+Thanks,
 -- 
 Andrew Donnellan              OzLabs, ADL Canberra
 andrew.donnellan@au1.ibm.com  IBM Australia Limited
