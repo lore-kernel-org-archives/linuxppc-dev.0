@@ -1,15 +1,19 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <christophe.jaillet@wanadoo.fr>
+Received: from smtp.smtpout.orange.fr (smtp06.smtpout.orange.fr
+ [80.12.242.128])
+ (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vHK5b5RWKzDq8M
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Feb 2017 07:37:07 +1100 (AEDT)
-In-Reply-To: <1486119959-21662-1-git-send-email-mpe@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
-From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: [v3,1/9] powerpc: Move ARCH_DLINFO out of uapi
-Message-Id: <3vHK5b2WXzz9s7N@ozlabs.org>
-Date: Tue,  7 Feb 2017 07:37:07 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vHLQ60k7kzDq8M
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Feb 2017 08:36:29 +1100 (AEDT)
+From: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ nfont@linux.vnet.ibm.com, jallen@linux.vnet.ibm.com
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ kernel-janitors@vger.kernel.org,
+ Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+Subject: [PATCH] powerpc/pseries: Fix missing of_node_put
+Date: Mon,  6 Feb 2017 22:36:16 +0100
+Message-Id: <20170206213616.3661-1-christophe.jaillet@wanadoo.fr>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,16 +23,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2017-02-03 at 11:05:51 UTC, Michael Ellerman wrote:
-> From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> 
-> It's an kernel private macro, it doesn't belong there
-> 
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+If 'dlpar_configure_connector()' fails, 'parent_dn' should be released as
+already done in the normal case.
 
-Series applied to powerpc next.
+Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+---
+ arch/powerpc/platforms/pseries/mobility.c | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
 
-https://git.kernel.org/powerpc/c/2a196e24b39a
-
-cheers
+diff --git a/arch/powerpc/platforms/pseries/mobility.c b/arch/powerpc/platforms/pseries/mobility.c
+index 5a0c7ba429ce..b8060c182ae2 100644
+--- a/arch/powerpc/platforms/pseries/mobility.c
++++ b/arch/powerpc/platforms/pseries/mobility.c
+@@ -226,13 +226,16 @@ static int add_dt_node(__be32 parent_phandle, __be32 drc_index)
+ 		return -ENOENT;
+ 
+ 	dn = dlpar_configure_connector(drc_index, parent_dn);
+-	if (!dn)
+-		return -ENOENT;
++	if (!dn) {
++		rc = -ENOENT;
++		goto out;
++	}
+ 
+ 	rc = dlpar_attach_node(dn);
+ 	if (rc)
+ 		dlpar_free_cc_nodes(dn);
+ 
++out:
+ 	of_node_put(parent_dn);
+ 	return rc;
+ }
+-- 
+2.9.3
