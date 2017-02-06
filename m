@@ -1,49 +1,31 @@
-Return-Path: <paulmck@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <jpoimboe@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vH9wv65YTzDqG9
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Feb 2017 02:14:07 +1100 (AEDT)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v16FDutG117175
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 6 Feb 2017 10:14:05 -0500
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
- by mx0a-001b2d01.pphosted.com with ESMTP id 28espxnfbt-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Feb 2017 10:14:02 -0500
-Received: from localhost
- by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <paulmck@linux.vnet.ibm.com>;
- Mon, 6 Feb 2017 08:14:02 -0700
-Date: Mon, 6 Feb 2017 07:14:06 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Sachin Sant <sachinp@linux.vnet.ibm.com>
-Cc: Peter Zijlstra <peterz@infradead.org>,
- Matt Fleming <matt@codeblueprint.co.uk>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Mike Galbraith <efault@gmx.de>, LKML <linux-kernel@vger.kernel.org>,
- "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
- Ross Zwisler <zwisler@gmail.com>
-Subject: Re: [tip:sched/core] sched/core: Add debugging code to catch missing
- update_rq_clock() calls
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <CAOxpaSW_GnndoxLBPtyTrqPJ9XOWvgXOQNDf8D+6OohWeObn5Q@mail.gmail.com>
- <20170202155506.GX6515@twins.programming.kicks-ass.net>
- <3BAB5673-2BF8-46E0-8018-6A0F3DEEC9F7@linux.vnet.ibm.com>
- <20170203085301.GA6515@twins.programming.kicks-ass.net>
- <1486126774.4277.6.camel@gmx.de>
- <20170203133748.GB6515@twins.programming.kicks-ass.net>
- <20170203154457.GJ30506@linux.vnet.ibm.com>
- <20170203155453.GA23760@linux.vnet.ibm.com>
- <45DC157B-EA1A-4E1C-9449-8DD317837FCB@linux.vnet.ibm.com>
- <20170206151048.GK30506@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vHBw86dKYzDqGJ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Feb 2017 02:58:32 +1100 (AEDT)
+Date: Mon, 6 Feb 2017 09:58:28 -0600
+From: Josh Poimboeuf <jpoimboe@redhat.com>
+To: Miroslav Benes <mbenes@suse.cz>
+Cc: Jessica Yu <jeyu@redhat.com>, Jiri Kosina <jikos@kernel.org>,
+ Petr Mladek <pmladek@suse.com>, linux-kernel@vger.kernel.org,
+ live-patching@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, x86@kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ Vojtech Pavlik <vojtech@suse.com>, Jiri Slaby <jslaby@suse.cz>,
+ Chris J Arges <chris.j.arges@canonical.com>,
+ Andy Lutomirski <luto@kernel.org>, Ingo Molnar <mingo@kernel.org>,
+ Peter Zijlstra <peterz@infradead.org>,
+ Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+ Balbir Singh <bsingharora@gmail.com>
+Subject: Re: [PATCH v4 13/15] livepatch: change to a per-task consistency model
+Message-ID: <20170206155828.7mivuyzdtre4dato@treble>
+References: <cover.1484839971.git.jpoimboe@redhat.com>
+ <62e96e43de6f09e16f36d3d51af766c8fcbbb05f.1484839971.git.jpoimboe@redhat.com>
+ <alpine.LSU.2.20.1702031724040.28531@pobox.suse.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170206151048.GK30506@linux.vnet.ibm.com>
-Message-Id: <20170206151406.GA2177@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <alpine.LSU.2.20.1702031724040.28531@pobox.suse.cz>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -53,62 +35,111 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Feb 06, 2017 at 07:10:48AM -0800, Paul E. McKenney wrote:
-> On Mon, Feb 06, 2017 at 11:53:10AM +0530, Sachin Sant wrote:
-> > 
-> > >>> I've seen it on tip. It looks like hot unplug goes really slow when
-> > >>> there's running tasks on the CPU being taken down.
-> > >>> 
-> > >>> What I did was something like:
-> > >>> 
-> > >>>  taskset -p $((1<<1)) $$
-> > >>>  for ((i=0; i<20; i++)) do while :; do :; done & done
-> > >>> 
-> > >>>  taskset -p $((1<<0)) $$
-> > >>>  echo 0 > /sys/devices/system/cpu/cpu1/online
-> > >>> 
-> > >>> And with those 20 tasks stuck sucking cycles on CPU1, the unplug goes
-> > >>> _really_ slow and the RCU stall triggers. What I suspect happens is that
-> > >>> hotplug stops participating in the RCU state machine early, but only
-> > >>> tells RCU about it really late, and in between it gets suspicious it
-> > >>> takes too long.
-> > >>> 
-> > >>> I've yet to dig through the RCU code to figure out the exact sequence of
-> > >>> events, but found the above to be fairly reliable in triggering the
-> > >>> issue.
-> > > 
-> > >> If you send me the full splat from the dmesg and the RCU portions of
-> > >> .config, I will take a look.  Is this new behavior, or a new test?
-> > > 
-> > 
-> > I have sent the required files to you via separate email.
-> > 
-> > > If new behavior, I would be most suspicious of these commits in -rcu which
-> > > recently entered -tip:
-> > > 
-> > > 19e4d983cda1 rcu: Place guard on rcu_all_qs() and rcu_note_context_switch() actions
-> > > 913324b1364f rcu: Eliminate flavor scan in rcu_momentary_dyntick_idle()
-> > > fcdcfefafa45 rcu: Pull rcu_qs_ctr into rcu_dynticks structure
-> > > 0919a0b7e7a5 rcu: Pull rcu_sched_qs_mask into rcu_dynticks structure
-> > > caa7c8e34293 rcu: Make rcu_note_context_switch() do deferred NOCB wakeups
-> > > 41e4b159d516 rcu: Make rcu_all_qs() do deferred NOCB wakeups
-> > > b457a3356a68 rcu: Make call_rcu() do deferred NOCB wakeups
-> > > 
-> > > Does reverting any of these help?
-> > 
-> > I tried reverting the above commits. That does not help. I can still recreate the issue.
+On Fri, Feb 03, 2017 at 05:41:28PM +0100, Miroslav Benes wrote:
 > 
-> Thank you for testing, Sachin!
+> Petr has already mentioned majority of things I too found out, so only 
+> couple of nits...
 > 
-> Could you please try building and testing with CONFIG_RCU_BOOST=y?
-> You will need to enable CONFIG_RCU_EXPERT=y to see this Kconfig option.
+> > diff --git a/Documentation/ABI/testing/sysfs-kernel-livepatch b/Documentation/ABI/testing/sysfs-kernel-livepatch
+> > index da87f43..24b6570 100644
+> > --- a/Documentation/ABI/testing/sysfs-kernel-livepatch
+> > +++ b/Documentation/ABI/testing/sysfs-kernel-livepatch
+> > @@ -25,6 +25,14 @@ Description:
+> >  		code is currently applied.  Writing 0 will disable the patch
+> >  		while writing 1 will re-enable the patch.
+> >  
+> > +What:		/sys/kernel/livepatch/<patch>/transition
+> > +Date:		May 2016
+> 
+> 'May 2016' looks strange, but maybe nobody cares about it...
 
-Ah, but looking ahead to your .config file, you have CONFIG_PREEMPT=n,
-which means boosting would not help and is not available in any case.
+Will update the date to Feb 2017 and also the affected kernel version to
+4.12.
 
-So it looks like there is a very long loop within an RCU read-side
-critical section, and that this critical section needs to be broken
-up a bit -- 21 seconds in pretty much any kind of critical section is
-a bit excessive, after all.
+> 
+> > diff --git a/Documentation/livepatch/livepatch.txt b/Documentation/livepatch/livepatch.txt
+> > index 7f04e13..fb00d66 100644
+> > --- a/Documentation/livepatch/livepatch.txt
+> > +++ b/Documentation/livepatch/livepatch.txt
+> >  4. Livepatch module
+> > @@ -134,7 +242,7 @@ Documentation/livepatch/module-elf-format.txt for more details.
+> >  
+> >  
+> >  4.2. Metadata
+> > -------------
+> > +-------------
+> 
+> klp_func and klp_patch have new members - immediate. Should be documented 
+> here in "4.2. Metadata" section.
 
-							Thanx, Paul
+Agreed.
+
+> The section also contains this text under klp_patch bullet. It seems 
+> oudated:
+> 
+> "Also if a more complex consistency model is supported then a selected 
+> unit (thread, kernel as a whole) will see the new code from the entire 
+> patch only when it is in a safe state."
+> 
+> We now have a more complex consistency model.
+
+Agreed.
+
+> And finally, the section "Limitations" has this text under the first 
+> bullet:
+> 
+>   + The patch must not change the semantic of the patched functions.
+> 
+>     The current implementation guarantees only that either the old
+>     or the new function is called. The functions are patched one
+>     by one. It means that the patch must _not_ change the semantic
+>     of the function.
+> 
+> I think it is confusing. The consistency model allows us to change the 
+> semantic of a function. To certain degree. Of course, there are cases that 
+> cannot be patched, or have to be patched carefully. For example if a 
+> function takes a lock by calling foo_lock(), foo_lock() is not on a stack 
+> afterwards. Then the locking semantics may be changed with a livepatch. 
+> One has to make sure to patch also the caller foo_lock() to enforce the 
+> consistency. And so on... But I do not consider a limitation of livepatch. 
+> It is a feature of the consistency model, which is weaker than kGraft's or 
+> kpatch's (or stronger. It depends on your point of view.)
+> 
+> So, I propose to remove this text and better describe the properties of 
+> the consistency model above in the section 3. Maybe a quote from an old 
+> mail thread (Nov 2014) would be sufficient. I don't remember what was 
+> mentioned and what not.
+> 
+> What do you think?
+
+I'll remove the above limitation.
+
+I'm not sure how to improve the consistency model section.  It already
+has at least some mentions of changed function semantics and locking
+semantics.  I'll leave it alone for now, unless you have a specific
+suggestion.
+
+> > diff --git a/include/linux/livepatch.h b/include/linux/livepatch.h
+> > index 6602b34..ed90ad1 100644
+> > --- a/include/linux/livepatch.h
+> > +++ b/include/linux/livepatch.h
+> > @@ -68,7 +92,7 @@ struct klp_func {
+> >   * @funcs:	function entries for functions to be patched in the object
+> >   * @kobj:	kobject for sysfs resources
+> >   * @mod:	kernel module associated with the patched object
+> > - * 		(NULL for vmlinux)
+> > + *		(NULL for vmlinux)
+> 
+> This looks superfluous.
+
+This is a minor whitespace fix -- remove a space before tab.  I figured
+I'd go ahead and fix it since I'm already changing some of the
+surrounding code.
+
+> (checking my notes)... and that's it. Aside from the discussion in Petr's 
+> subthread it looks good to me. Great job.
+
+Thanks!
+
+-- 
+Josh
