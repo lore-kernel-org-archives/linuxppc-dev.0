@@ -1,26 +1,14 @@
-Return-Path: <greg@kroah.com>
-Received: from out1-smtp.messagingengine.com (out1-smtp.messagingengine.com
- [66.111.4.25])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vH2cL5PBzzDqDy
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Feb 2017 20:44:18 +1100 (AEDT)
-Date: Mon, 6 Feb 2017 10:43:56 +0100
-From: Greg KH <greg@kroah.com>
-To: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Cc: Michael Ellerman <patch-notifications@ellerman.id.au>,
- linuxppc-dev@lists.ozlabs.org, stable@vger.kernel.org,
- ukrishn@linux.vnet.ibm.com, vaibhav@linux.vnet.ibm.com,
- fbarrat@linux.vnet.ibm.com, imunsie@au1.ibm.com
-Subject: Re: [v2] cxl: prevent read/write to AFU config space while AFU not
- configured
-Message-ID: <20170206094356.GA8583@kroah.com>
-References: <3v8g1Z5Gdyz9t5m@ozlabs.org>
- <1914c3dc-7e4d-30de-88b0-7959e6249f39@au1.ibm.com>
- <f3a508e9-3c23-f929-7b81-fd803c920095@au1.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <f3a508e9-3c23-f929-7b81-fd803c920095@au1.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vH3G80870zDqDy
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Feb 2017 21:13:36 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH 1/2] selftests/powerpc: Refactor the AUXV routines
+Date: Mon,  6 Feb 2017 21:13:27 +1100
+Message-Id: <1486376008-2841-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,20 +18,118 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Feb 06, 2017 at 12:15:59PM +1100, Andrew Donnellan wrote:
-> On 27/01/17 11:57, Andrew Donnellan wrote:
-> > On 27/01/17 11:40, Michael Ellerman wrote:
-> > > Applied to powerpc next, thanks.
-> > > 
-> > > https://git.kernel.org/powerpc/c/14a3ae34bfd0bcb1cc12d55b06a858
-> > 
-> > Will fix the remaining locking issue in a follow up patch...
-> 
-> Stable team - please make sure this doesn't go in without
-> http://patchwork.ozlabs.org/patch/724315/ once that's merged.
+Refactor the AUXV routines so they are more composable. In a future test
+we want to look for many AUXV entries and we don't want to have to read
+/proc/self/auxv each time.
 
-Ok, hopefully they show up in Linus's tree at the same time :)
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ tools/testing/selftests/powerpc/include/utils.h |  6 ++-
+ tools/testing/selftests/powerpc/utils.c         | 53 +++++++++++++++++--------
+ 2 files changed, 41 insertions(+), 18 deletions(-)
 
-thanks,
-
-greg k-h
+diff --git a/tools/testing/selftests/powerpc/include/utils.h b/tools/testing/selftests/powerpc/include/utils.h
+index 53405e8a52ab..735815b3ad7f 100644
+--- a/tools/testing/selftests/powerpc/include/utils.h
++++ b/tools/testing/selftests/powerpc/include/utils.h
+@@ -24,7 +24,11 @@ typedef uint8_t u8;
+ 
+ void test_harness_set_timeout(uint64_t time);
+ int test_harness(int (test_function)(void), char *name);
+-extern void *get_auxv_entry(int type);
++
++int read_auxv(char *buf, ssize_t buf_size);
++void *find_auxv_entry(int type, char *auxv);
++void *get_auxv_entry(int type);
++
+ int pick_online_cpu(void);
+ 
+ static inline bool have_hwcap(unsigned long ftr)
+diff --git a/tools/testing/selftests/powerpc/utils.c b/tools/testing/selftests/powerpc/utils.c
+index dcf74184bfd0..d46916867a6f 100644
+--- a/tools/testing/selftests/powerpc/utils.c
++++ b/tools/testing/selftests/powerpc/utils.c
+@@ -19,45 +19,64 @@
+ 
+ static char auxv[4096];
+ 
+-void *get_auxv_entry(int type)
++int read_auxv(char *buf, ssize_t buf_size)
+ {
+-	ElfW(auxv_t) *p;
+-	void *result;
+ 	ssize_t num;
+-	int fd;
++	int rc, fd;
+ 
+ 	fd = open("/proc/self/auxv", O_RDONLY);
+ 	if (fd == -1) {
+ 		perror("open");
+-		return NULL;
++		return -errno;
+ 	}
+ 
+-	result = NULL;
+-
+-	num = read(fd, auxv, sizeof(auxv));
++	num = read(fd, buf, buf_size);
+ 	if (num < 0) {
+ 		perror("read");
++		rc = -EIO;
+ 		goto out;
+ 	}
+ 
+-	if (num > sizeof(auxv)) {
+-		printf("Overflowed auxv buffer\n");
++	if (num > buf_size) {
++		printf("overflowed auxv buffer\n");
++		rc = -EOVERFLOW;
+ 		goto out;
+ 	}
+ 
++	rc = 0;
++out:
++	close(fd);
++	return rc;
++}
++
++void *find_auxv_entry(int type, char *auxv)
++{
++	ElfW(auxv_t) *p;
++
+ 	p = (ElfW(auxv_t) *)auxv;
+ 
+ 	while (p->a_type != AT_NULL) {
+-		if (p->a_type == type) {
+-			result = (void *)p->a_un.a_val;
+-			break;
+-		}
++		if (p->a_type == type)
++			return p;
+ 
+ 		p++;
+ 	}
+-out:
+-	close(fd);
+-	return result;
++
++	return NULL;
++}
++
++void *get_auxv_entry(int type)
++{
++	ElfW(auxv_t) *p;
++
++	if (read_auxv(auxv, sizeof(auxv)))
++		return NULL;
++
++	p = find_auxv_entry(type, auxv);
++	if (p)
++		return (void *)p->a_un.a_val;
++
++	return NULL;
+ }
+ 
+ int pick_online_cpu(void)
+-- 
+2.7.4
