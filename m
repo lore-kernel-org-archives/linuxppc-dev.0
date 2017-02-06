@@ -1,44 +1,38 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <rui.teng@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vGs460HxmzDqCw
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Feb 2017 13:34:13 +1100 (AEDT)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vGsQm6zwpzDqDv
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Feb 2017 13:50:24 +1100 (AEDT)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v162YCRg146770
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 5 Feb 2017 21:34:12 -0500
-Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [125.16.236.2])
- by mx0a-001b2d01.pphosted.com with ESMTP id 28d8qrpeyr-1
+ v162mYCB041668
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 5 Feb 2017 21:50:21 -0500
+Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 28dbu3rhaj-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 05 Feb 2017 21:34:11 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 05 Feb 2017 21:50:21 -0500
 Received: from localhost
- by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 6 Feb 2017 08:04:06 +0530
-Received: from d28relay09.in.ibm.com (d28relay09.in.ibm.com [9.184.220.160])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 117C7E0024
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Feb 2017 08:05:28 +0530 (IST)
-Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay09.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v162Y3Yr20709474
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 6 Feb 2017 08:04:03 +0530
-Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
- by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v162Y2ol027100
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 6 Feb 2017 08:04:03 +0530
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Cc: mpe@ellerman.id.au, Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: Re: [PATCH] powerpc/mm: Fix typo in set_pte_at()
-In-Reply-To: <1486340396-24609-1-git-send-email-gwshan@linux.vnet.ibm.com>
-References: <1486340396-24609-1-git-send-email-gwshan@linux.vnet.ibm.com>
-Date: Mon, 06 Feb 2017 08:03:57 +0530
+ for <linuxppc-dev@lists.ozlabs.org> from <rui.teng@linux.vnet.ibm.com>;
+ Sun, 5 Feb 2017 21:50:20 -0500
+Subject: Re: [PATCH] powerpc/mm: fix a hardcode on memory boundary checking
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+References: <20170112090906.17864-1-rui.teng@linux.vnet.ibm.com>
+ <877f5bvbjm.fsf@concordia.ellerman.id.au>
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Boqun Feng <boqun.feng@gmail.com>, jia he <hejianet@linux.vnet.ibm.com>
+From: Rui Teng <rui.teng@linux.vnet.ibm.com>
+Date: Mon, 6 Feb 2017 10:50:21 +0800
 MIME-Version: 1.0
-Content-Type: text/plain
-Message-Id: <87tw88gi96.fsf@skywalker.in.ibm.com>
+In-Reply-To: <877f5bvbjm.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Message-Id: <a97db3cd-a756-390c-505e-819718b64904@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,36 +42,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Gavin Shan <gwshan@linux.vnet.ibm.com> writes:
-
-> This fixes the typo about the _PAGE_PTE in set_pte_at() by changing
-> "tryint" to "trying to".
+On 31/01/2017 5:11 PM, Michael Ellerman wrote:
+> Rui Teng <rui.teng@linux.vnet.ibm.com> writes:
 >
-> Fixes: 6a119eae942 ("powerpc/mm: Add a _PAGE_PTE bit")
-
-I guess this is not needed. We add that when we want to hint whether the
-patch needs backporting. 
-
-
-> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/mm/pgtable.c | 4 +---
->  1 file changed, 1 insertion(+), 3 deletions(-)
+>> The offset of hugepage block will not be 16G, if the expected
+>> page is more than one. Calculate the totol size instead of the
+>> hardcode value.
 >
-> diff --git a/arch/powerpc/mm/pgtable.c b/arch/powerpc/mm/pgtable.c
-> index cb39c8b..a03ff3d 100644
-> --- a/arch/powerpc/mm/pgtable.c
-> +++ b/arch/powerpc/mm/pgtable.c
-> @@ -193,9 +193,7 @@ void set_pte_at(struct mm_struct *mm, unsigned long addr, pte_t *ptep,
->  	 */
->  	VM_WARN_ON(pte_present(*ptep) && !pte_protnone(*ptep));
+> I assume you found this by code inspection and not by triggering an
+> actual bug?
+
+Yes, I found this problem only by code inspection. We were finding the
+ways to enable 16G huge page besides changing the device tree. For 
+example, provide a new interface to set these size and pages parameters.
+So that I think it may cause problem here.
+
 >
-> -	/*
-> -	 * Add the pte bit when tryint set a pte
-> -	 */
-> +	/* Add the pte bit when trying to set a pte */
->  	pte = __pte(pte_val(pte) | _PAGE_PTE);
+> cheers
 >
->  	/* Note: mm->context.id might not yet have been assigned as
-> -- 
-> 2.7.4
+>> diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
+>> index 8033493..b829f8e 100644
+>> --- a/arch/powerpc/mm/hash_utils_64.c
+>> +++ b/arch/powerpc/mm/hash_utils_64.c
+>> @@ -506,7 +506,7 @@ static int __init htab_dt_scan_hugepage_blocks(unsigned long node,
+>>  	printk(KERN_INFO "Huge page(16GB) memory: "
+>>  			"addr = 0x%lX size = 0x%lX pages = %d\n",
+>>  			phys_addr, block_size, expected_pages);
+>> -	if (phys_addr + (16 * GB) <= memblock_end_of_DRAM()) {
+>> +	if (phys_addr + block_size * expected_pages <= memblock_end_of_DRAM()) {
+>>  		memblock_reserve(phys_addr, block_size * expected_pages);
+>>  		add_gpage(phys_addr, block_size, expected_pages);
+>>  	}
+>> --
+>> 2.9.0
+>
