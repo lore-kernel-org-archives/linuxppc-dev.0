@@ -3,22 +3,22 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vH9s440SjzDqG9
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Feb 2017 02:10:47 +1100 (AEDT)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vH9wv65YTzDqG9
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Feb 2017 02:14:07 +1100 (AEDT)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v16F61tM011217
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 6 Feb 2017 10:10:45 -0500
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
- by mx0a-001b2d01.pphosted.com with ESMTP id 28dccdad01-1
+ v16FDutG117175
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 6 Feb 2017 10:14:05 -0500
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 28espxnfbt-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Feb 2017 10:10:45 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Feb 2017 10:14:02 -0500
 Received: from localhost
- by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <paulmck@linux.vnet.ibm.com>;
- Mon, 6 Feb 2017 08:10:44 -0700
-Date: Mon, 6 Feb 2017 07:10:48 -0800
+ Mon, 6 Feb 2017 08:14:02 -0700
+Date: Mon, 6 Feb 2017 07:14:06 -0800
 From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
 To: Sachin Sant <sachinp@linux.vnet.ibm.com>
 Cc: Peter Zijlstra <peterz@infradead.org>,
@@ -30,8 +30,7 @@ Cc: Peter Zijlstra <peterz@infradead.org>,
 Subject: Re: [tip:sched/core] sched/core: Add debugging code to catch missing
  update_rq_clock() calls
 Reply-To: paulmck@linux.vnet.ibm.com
-References: <1485863317.4498.2.camel@gmx.de>
- <CAOxpaSW_GnndoxLBPtyTrqPJ9XOWvgXOQNDf8D+6OohWeObn5Q@mail.gmail.com>
+References: <CAOxpaSW_GnndoxLBPtyTrqPJ9XOWvgXOQNDf8D+6OohWeObn5Q@mail.gmail.com>
  <20170202155506.GX6515@twins.programming.kicks-ass.net>
  <3BAB5673-2BF8-46E0-8018-6A0F3DEEC9F7@linux.vnet.ibm.com>
  <20170203085301.GA6515@twins.programming.kicks-ass.net>
@@ -40,10 +39,11 @@ References: <1485863317.4498.2.camel@gmx.de>
  <20170203154457.GJ30506@linux.vnet.ibm.com>
  <20170203155453.GA23760@linux.vnet.ibm.com>
  <45DC157B-EA1A-4E1C-9449-8DD317837FCB@linux.vnet.ibm.com>
+ <20170206151048.GK30506@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <45DC157B-EA1A-4E1C-9449-8DD317837FCB@linux.vnet.ibm.com>
-Message-Id: <20170206151048.GK30506@linux.vnet.ibm.com>
+In-Reply-To: <20170206151048.GK30506@linux.vnet.ibm.com>
+Message-Id: <20170206151406.GA2177@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -53,53 +53,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Feb 06, 2017 at 11:53:10AM +0530, Sachin Sant wrote:
-> 
-> >>> I've seen it on tip. It looks like hot unplug goes really slow when
-> >>> there's running tasks on the CPU being taken down.
-> >>> 
-> >>> What I did was something like:
-> >>> 
-> >>>  taskset -p $((1<<1)) $$
-> >>>  for ((i=0; i<20; i++)) do while :; do :; done & done
-> >>> 
-> >>>  taskset -p $((1<<0)) $$
-> >>>  echo 0 > /sys/devices/system/cpu/cpu1/online
-> >>> 
-> >>> And with those 20 tasks stuck sucking cycles on CPU1, the unplug goes
-> >>> _really_ slow and the RCU stall triggers. What I suspect happens is that
-> >>> hotplug stops participating in the RCU state machine early, but only
-> >>> tells RCU about it really late, and in between it gets suspicious it
-> >>> takes too long.
-> >>> 
-> >>> I've yet to dig through the RCU code to figure out the exact sequence of
-> >>> events, but found the above to be fairly reliable in triggering the
-> >>> issue.
+On Mon, Feb 06, 2017 at 07:10:48AM -0800, Paul E. McKenney wrote:
+> On Mon, Feb 06, 2017 at 11:53:10AM +0530, Sachin Sant wrote:
 > > 
-> >> If you send me the full splat from the dmesg and the RCU portions of
-> >> .config, I will take a look.  Is this new behavior, or a new test?
+> > >>> I've seen it on tip. It looks like hot unplug goes really slow when
+> > >>> there's running tasks on the CPU being taken down.
+> > >>> 
+> > >>> What I did was something like:
+> > >>> 
+> > >>>  taskset -p $((1<<1)) $$
+> > >>>  for ((i=0; i<20; i++)) do while :; do :; done & done
+> > >>> 
+> > >>>  taskset -p $((1<<0)) $$
+> > >>>  echo 0 > /sys/devices/system/cpu/cpu1/online
+> > >>> 
+> > >>> And with those 20 tasks stuck sucking cycles on CPU1, the unplug goes
+> > >>> _really_ slow and the RCU stall triggers. What I suspect happens is that
+> > >>> hotplug stops participating in the RCU state machine early, but only
+> > >>> tells RCU about it really late, and in between it gets suspicious it
+> > >>> takes too long.
+> > >>> 
+> > >>> I've yet to dig through the RCU code to figure out the exact sequence of
+> > >>> events, but found the above to be fairly reliable in triggering the
+> > >>> issue.
+> > > 
+> > >> If you send me the full splat from the dmesg and the RCU portions of
+> > >> .config, I will take a look.  Is this new behavior, or a new test?
+> > > 
 > > 
-> 
-> I have sent the required files to you via separate email.
-> 
-> > If new behavior, I would be most suspicious of these commits in -rcu which
-> > recently entered -tip:
+> > I have sent the required files to you via separate email.
 > > 
-> > 19e4d983cda1 rcu: Place guard on rcu_all_qs() and rcu_note_context_switch() actions
-> > 913324b1364f rcu: Eliminate flavor scan in rcu_momentary_dyntick_idle()
-> > fcdcfefafa45 rcu: Pull rcu_qs_ctr into rcu_dynticks structure
-> > 0919a0b7e7a5 rcu: Pull rcu_sched_qs_mask into rcu_dynticks structure
-> > caa7c8e34293 rcu: Make rcu_note_context_switch() do deferred NOCB wakeups
-> > 41e4b159d516 rcu: Make rcu_all_qs() do deferred NOCB wakeups
-> > b457a3356a68 rcu: Make call_rcu() do deferred NOCB wakeups
+> > > If new behavior, I would be most suspicious of these commits in -rcu which
+> > > recently entered -tip:
+> > > 
+> > > 19e4d983cda1 rcu: Place guard on rcu_all_qs() and rcu_note_context_switch() actions
+> > > 913324b1364f rcu: Eliminate flavor scan in rcu_momentary_dyntick_idle()
+> > > fcdcfefafa45 rcu: Pull rcu_qs_ctr into rcu_dynticks structure
+> > > 0919a0b7e7a5 rcu: Pull rcu_sched_qs_mask into rcu_dynticks structure
+> > > caa7c8e34293 rcu: Make rcu_note_context_switch() do deferred NOCB wakeups
+> > > 41e4b159d516 rcu: Make rcu_all_qs() do deferred NOCB wakeups
+> > > b457a3356a68 rcu: Make call_rcu() do deferred NOCB wakeups
+> > > 
+> > > Does reverting any of these help?
 > > 
-> > Does reverting any of these help?
+> > I tried reverting the above commits. That does not help. I can still recreate the issue.
 > 
-> I tried reverting the above commits. That does not help. I can still recreate the issue.
+> Thank you for testing, Sachin!
+> 
+> Could you please try building and testing with CONFIG_RCU_BOOST=y?
+> You will need to enable CONFIG_RCU_EXPERT=y to see this Kconfig option.
 
-Thank you for testing, Sachin!
+Ah, but looking ahead to your .config file, you have CONFIG_PREEMPT=n,
+which means boosting would not help and is not available in any case.
 
-Could you please try building and testing with CONFIG_RCU_BOOST=y?
-You will need to enable CONFIG_RCU_EXPERT=y to see this Kconfig option.
+So it looks like there is a very long loop within an RCU read-side
+critical section, and that this critical section needs to be broken
+up a bit -- 21 seconds in pretty much any kind of critical section is
+a bit excessive, after all.
 
 							Thanx, Paul
