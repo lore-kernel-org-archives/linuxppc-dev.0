@@ -1,18 +1,47 @@
-Return-Path: <mikey@neuling.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <gwshan@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vGsXy3qn0zDqDv
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Feb 2017 13:55:46 +1100 (AEDT)
-From: Michael Neuling <mikey@neuling.org>
-To: mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org,
-	Michael Neuling <mikey@neuling.org>
-Subject: [PATCH 2/2] powerpc/powernv: Add more BPF in defconfig
-Date: Mon,  6 Feb 2017 13:55:44 +1100
-Message-Id: <20170206025544.3292-2-mikey@neuling.org>
-In-Reply-To: <20170206025544.3292-1-mikey@neuling.org>
-References: <20170206025544.3292-1-mikey@neuling.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vGw7p2pTPzDqDy
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Feb 2017 15:52:37 +1100 (AEDT)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v164mcsP099632
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 5 Feb 2017 23:52:34 -0500
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 28e43peuuk-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 05 Feb 2017 23:52:33 -0500
+Received: from localhost
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Mon, 6 Feb 2017 14:52:31 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id B619F2BB0057
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Feb 2017 15:52:28 +1100 (EST)
+Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v164qKr728835956
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 6 Feb 2017 15:52:28 +1100
+Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
+ by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v164puqo020730
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 6 Feb 2017 15:51:56 +1100
+Date: Mon, 6 Feb 2017 15:51:31 +1100
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ mpe@ellerman.id.au
+Subject: Re: [PATCH] powerpc/mm: Fix typo in set_pte_at()
+Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+References: <1486340396-24609-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ <87tw88gi96.fsf@skywalker.in.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <87tw88gi96.fsf@skywalker.in.ibm.com>
+Message-Id: <20170206045131.GA22716@gwshan>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,37 +51,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This enables BCC (https://github.com/iovisor/bcc) on powernv.
+On Mon, Feb 06, 2017 at 08:03:57AM +0530, Aneesh Kumar K.V wrote:
+>Gavin Shan <gwshan@linux.vnet.ibm.com> writes:
+>
+>> This fixes the typo about the _PAGE_PTE in set_pte_at() by changing
+>> "tryint" to "trying to".
+>>
+>> Fixes: 6a119eae942 ("powerpc/mm: Add a _PAGE_PTE bit")
+>
+>I guess this is not needed. We add that when we want to hint whether the
+>patch needs backporting. 
+>
 
-This adds 225KB to the vmlinux size.
+Thanks for review. I used the tag to indicate the commit introducing
+the typo. For this trivial patch, we won't backport it to table or
+distro. If you want, I can drop the tag or Michael helps to drop it
+when merging it.
 
-Signed-off-by: Michael Neuling <mikey@neuling.org>
----
- arch/powerpc/configs/powernv_defconfig | 5 +++++
- 1 file changed, 5 insertions(+)
+Thanks,
+Gavin
 
-diff --git a/arch/powerpc/configs/powernv_defconfig b/arch/powerpc/configs/powernv_defconfig
-index 7028dbc753..911b43e2c7 100644
---- a/arch/powerpc/configs/powernv_defconfig
-+++ b/arch/powerpc/configs/powernv_defconfig
-@@ -29,6 +29,7 @@ CONFIG_CGROUP_CPUACCT=y
- CONFIG_CGROUP_PERF=y
- CONFIG_USER_NS=y
- CONFIG_BLK_DEV_INITRD=y
-+CONFIG_BPF_SYSCALL=y
- # CONFIG_COMPAT_BRK is not set
- CONFIG_PROFILING=y
- CONFIG_OPROFILE=y
-@@ -79,6 +80,10 @@ CONFIG_NETFILTER=y
- # CONFIG_NETFILTER_ADVANCED is not set
- CONFIG_BRIDGE=m
- CONFIG_VLAN_8021Q=m
-+CONFIG_NET_SCHED=y
-+CONFIG_NET_CLS_BPF=y
-+CONFIG_NET_CLS_ACT=y
-+CONFIG_NET_ACT_BPF=y
- CONFIG_BPF_JIT=y
- CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
- CONFIG_DEVTMPFS=y
--- 
-2.9.3
+>
+>> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+>> ---
+>>  arch/powerpc/mm/pgtable.c | 4 +---
+>>  1 file changed, 1 insertion(+), 3 deletions(-)
+>>
+>> diff --git a/arch/powerpc/mm/pgtable.c b/arch/powerpc/mm/pgtable.c
+>> index cb39c8b..a03ff3d 100644
+>> --- a/arch/powerpc/mm/pgtable.c
+>> +++ b/arch/powerpc/mm/pgtable.c
+>> @@ -193,9 +193,7 @@ void set_pte_at(struct mm_struct *mm, unsigned long addr, pte_t *ptep,
+>>  	 */
+>>  	VM_WARN_ON(pte_present(*ptep) && !pte_protnone(*ptep));
+>>
+>> -	/*
+>> -	 * Add the pte bit when tryint set a pte
+>> -	 */
+>> +	/* Add the pte bit when trying to set a pte */
+>>  	pte = __pte(pte_val(pte) | _PAGE_PTE);
+>>
+>>  	/* Note: mm->context.id might not yet have been assigned as
+>> -- 
+>> 2.7.4
