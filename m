@@ -1,31 +1,18 @@
-Return-Path: <edumazet@google.com>
-Received: from mail-it0-x231.google.com (mail-it0-x231.google.com
- [IPv6:2607:f8b0:4001:c0b::231])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vHZcP733rzDqBN
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Feb 2017 17:46:13 +1100 (AEDT)
-Received: by mail-it0-x231.google.com with SMTP id c7so73109027itd.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Feb 2017 22:46:13 -0800 (PST)
-MIME-Version: 1.0
-In-Reply-To: <4206026c-f659-d690-b6b2-31d1cedf55cb@linux.vnet.ibm.com>
-References: <1485968734.6360.154.camel@edumazet-glaptop3.roam.corp.google.com>
- <1485981445.4850.8.camel@kernel.crashing.org>
- <87y3xpb5li.fsf@concordia.ellerman.id.au>
- <CANn89iKVtGt=mL32BVryzSCHcuNR93jO+GzR+pgr-1NHast26g@mail.gmail.com>
- <4206026c-f659-d690-b6b2-31d1cedf55cb@linux.vnet.ibm.com>
-From: Eric Dumazet <edumazet@google.com>
-Date: Mon, 6 Feb 2017 22:46:10 -0800
-Message-ID: <CANn89iJKKc80MO2Ysz_c-_-XerUUk01Fe5Pn59r7zRTUMtpZfA@mail.gmail.com>
-Subject: Re: [RFC] implement QUEUED spinlocks on powerpc
-To: panxinhui <xinhui@linux.vnet.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Eric Dumazet <eric.dumazet@gmail.com>, Paul Mackerras <paulus@samba.org>,
- linuxppc-dev@lists.ozlabs.org,
- Kevin Hao <haokexin@gmail.com>, Torsten Duwe <duwe@suse.de>,
- Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=UTF-8
+Return-Path: <aik@ozlabs.ru>
+Received: from ozlabs.ru (ozlabs.ru [83.169.36.222])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3vHbJH6kWczDqBN
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Feb 2017 18:17:19 +1100 (AEDT)
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
+ Alex Williamson <alex.williamson@redhat.com>,
+ David Gibson <david@gibson.dropbear.id.au>,
+ Paul Mackerras <paulus@samba.org>, kvm-ppc@vger.kernel.org,
+ kvm@vger.kernel.org
+Subject: [PATCH kernel v4 00/10] powerpc/kvm/vfio: Enable in-kernel
+ acceleration
+Date: Tue,  7 Feb 2017 18:17:01 +1100
+Message-Id: <20170207071711.28938-1-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,46 +22,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Feb 6, 2017 at 10:21 PM, panxinhui <xinhui@linux.vnet.ibm.com> wrote:
+This is my current queue of patches to add acceleration of TCE
+updates in KVM.
 
-> hi all
->         I do some netperf tests and get some benchmark results.
-> I also attach my test script and netperf-result(Excel)
->
-> There are two machine. one runs netserver and the other runs netperf
-> benchmark. 1000Mbps network is connected with them.
->
-> #ip link infomation
-> 2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state
-> UNKNOWN mode DEFAULT group default qlen 1000
->      link/ether ba:68:9c:14:32:02 brd ff:ff:ff:ff:ff:ff
->
-> According to the results, there is not much performance gap with each other.
-> And as we are only testing the throughput, the pvqspinlock shows the
-> overhead of its pv stuff. but qspinlock shows a little improvement than
-> spinlock. My simple summary in this testcase is
-> qspinlock > spinlock > pvqspinlock.
->
-> when run 200 concurrent netperf, I paste the total throughput here.
->
->         concurrent runners| total throughput | variance
-> -------------------------------------------
-> spinlock        | 199 | 66882.8 | 89.93
-> -------------------------------------------
-> qspinlock       | 199 | 66350.4 | 72.0239
-> -------------------------------------------
-> pvqspinlock     | 199 | 64740.5 | 85.7837
->
-> You could see more data in nerperf.xlsx
->
-> thanks
-> xinhui
+This is based on 283725af0bd2 which was a Linus master tree
+6 days ago.
 
+Please comment. Thanks.
 
-Hi xinhui
+Changes:
+v4:
+* addressed comments from v3
+* updated subject lines with correct component names
+* regrouped the patchset in order:
+   - powerpc fixes;
+   - vfio_spapr_tce driver fixes;
+   - KVM/PPC fixes;
+   - KVM+PPC+VFIO;
+* everything except last 2 patches have "Reviewed-By: David"
 
-1Gbit NIC is too slow for this use case. I would try a 10Gbit NIC at least...
+v3:
+* there was no full repost, only last patch was posted
 
-Alternatively, you could use loopback interface.  (netperf -H 127.0.0.1)
+v2:
+* 11/11 reworked to use new notifiers, it is rather RFC as it still has
+a issue;
+* got 09/11, 10/11 to use notifiers in 11/11;
+* added rb: David to most of patches and added a comment in 05/11.
 
-tc qd add dev lo root pfifo limit 10000
+Alexey Kardashevskiy (10):
+  powerpc/mmu: Add real mode support for IOMMU preregistered memory
+  powerpc/powernv/iommu: Add real mode version of
+    iommu_table_ops::exchange()
+  powerpc/iommu/vfio_spapr_tce: Cleanup iommu_table disposal
+  powerpc/vfio_spapr_tce: Add reference counting to iommu_table
+  KVM: PPC: Reserve KVM_CAP_SPAPR_TCE_VFIO capability number
+  KVM: PPC: Enable IOMMU_API for KVM_BOOK3S_64 permanently
+  KVM: PPC: Pass kvm* to kvmppc_find_table()
+  KVM: PPC: Separate TCE validation from update
+  KVM: PPC: Use preregistered memory API to access TCE list
+  KVM: PPC: VFIO: Add in-kernel acceleration for VFIO
+
+ Documentation/virtual/kvm/devices/vfio.txt |  22 +-
+ arch/powerpc/include/asm/iommu.h           |  12 +-
+ arch/powerpc/include/asm/kvm_host.h        |   8 +
+ arch/powerpc/include/asm/kvm_ppc.h         |   6 +-
+ arch/powerpc/include/asm/mmu_context.h     |   4 +
+ include/uapi/linux/kvm.h                   |   9 +
+ arch/powerpc/kernel/iommu.c                |  49 ++++-
+ arch/powerpc/kvm/book3s_64_vio.c           | 334 ++++++++++++++++++++++++++++-
+ arch/powerpc/kvm/book3s_64_vio_hv.c        | 249 ++++++++++++++++++---
+ arch/powerpc/kvm/powerpc.c                 |   2 +
+ arch/powerpc/mm/mmu_context_iommu.c        |  39 ++++
+ arch/powerpc/platforms/powernv/pci-ioda.c  |  42 +++-
+ arch/powerpc/platforms/powernv/pci.c       |   1 +
+ arch/powerpc/platforms/pseries/iommu.c     |   3 +-
+ arch/powerpc/platforms/pseries/vio.c       |   2 +-
+ drivers/vfio/vfio_iommu_spapr_tce.c        |   2 +-
+ virt/kvm/vfio.c                            |  60 ++++++
+ arch/powerpc/kvm/Kconfig                   |   1 +
+ 18 files changed, 794 insertions(+), 51 deletions(-)
+
+-- 
+2.11.0
