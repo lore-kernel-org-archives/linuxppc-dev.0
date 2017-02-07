@@ -1,21 +1,42 @@
-Return-Path: <alex.williamson@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vHvhf4rMPzDqBW
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Feb 2017 06:36:02 +1100 (AEDT)
-Date: Tue, 7 Feb 2017 12:35:59 -0700
-From: Alex Williamson <alex.williamson@redhat.com>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Cc: linuxppc-dev@lists.ozlabs.org, David Gibson <david@gibson.dropbear.id.au>,
- kvm@vger.kernel.org
-Subject: Re: [PATCH kernel] vfio/spapr_tce: Set window when adding
- additional groups to container
-Message-ID: <20170207123559.2b878948@t450s.home>
-In-Reply-To: <20170207062657.21606-1-aik@ozlabs.ru>
-References: <20170207062657.21606-1-aik@ozlabs.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vHw6d2dgTzDqBW
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Feb 2017 06:55:05 +1100 (AEDT)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v17JrlrW113208
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 7 Feb 2017 14:55:02 -0500
+Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [125.16.236.6])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 28fgmt48jb-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 Feb 2017 14:55:02 -0500
+Received: from localhost
+ by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
+ Wed, 8 Feb 2017 01:24:59 +0530
+Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 84D663940033
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Feb 2017 01:24:56 +0530 (IST)
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v17JsuVM37355614
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 8 Feb 2017 01:24:56 +0530
+Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
+ by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v17JssqB021799
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 8 Feb 2017 01:24:55 +0530
+From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+To: mhiramat@kernel.org, ananth@linux.vnet.ibm.com
+Cc: mingo@kernel.org, mpe@ellerman.id.au, linux-arm-kernel@lists.infradead.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 1/3] kprobes: introduce weak variant of
+ kprobe_exceptions_notify
+Date: Wed,  8 Feb 2017 01:24:14 +0530
+Message-Id: <b0894e503195b13a5ed6319e897e673f376a748d.1486496890.git.naveen.n.rao@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,140 +46,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue,  7 Feb 2017 17:26:57 +1100
-Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
+kprobe_exceptions_notify() is not used on some of the architectures such
+as arm[64] and powerpc anymore. Introduce a weak variant for such
+architectures.
 
-> If a container already has a group attached, attaching a new group
-> should just program already created IOMMU tables to the hardware via
-> the iommu_table_group_ops::set_window() callback.
-> 
-> However 6f01cc692 "vfio/spapr: Add a helper to create default DMA window"
-> did not just simplify the code but also removed the set_window() calls
-> in the case of attaching groups to a container which already has tables
-> so it broke VFIO PCI hotplug.
-> 
-> This reverts set_window() bits in tce_iommu_take_ownership_ddw().
-> 
-> Fixes: 6f01cc692
+Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+---
+ kernel/kprobes.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-See Documentation/process/submitting-patches.rst for the expected
-format here, 12 char SHA-1 + --oneline summary.
-
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> ---
->  drivers/vfio/vfio_iommu_spapr_tce.c | 21 +++++++++++++++++++++
->  1 file changed, 21 insertions(+)
-> 
-> diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
-> index 7690e5bf3cf1..14c62a8495a2 100644
-> --- a/drivers/vfio/vfio_iommu_spapr_tce.c
-> +++ b/drivers/vfio/vfio_iommu_spapr_tce.c
-> @@ -1245,6 +1245,8 @@ static void tce_iommu_release_ownership_ddw(struct tce_container *container,
->  static long tce_iommu_take_ownership_ddw(struct tce_container *container,
->  		struct iommu_table_group *table_group)
->  {
-> +	long i, ret = 0;
-> +
->  	if (!table_group->ops->create_table || !table_group->ops->set_window ||
->  			!table_group->ops->release_ownership) {
->  		WARN_ON_ONCE(1);
-> @@ -1253,7 +1255,26 @@ static long tce_iommu_take_ownership_ddw(struct tce_container *container,
->  
->  	table_group->ops->take_ownership(table_group);
->  
-> +	/* Set all windows to the new group */
-> +	for (i = 0; i < IOMMU_TABLE_GROUP_MAX_TABLES; ++i) {
-> +		struct iommu_table *tbl = container->tables[i];
-
-checkpatch wants a blank line here.
-
-> +		if (!tbl)
-> +			continue;
-> +
-> +		ret = table_group->ops->set_window(table_group, i, tbl);
-> +		if (ret)
-> +			goto release_exit;
-> +	}
-> +
->  	return 0;
-> +
-> +release_exit:
-> +	for (i = 0; i < IOMMU_TABLE_GROUP_MAX_TABLES; ++i)
-> +		table_group->ops->unset_window(table_group, i);
-> +
-> +	table_group->ops->release_ownership(table_group);
-> +
-> +	return ret;
->  }
->  
->  static int tce_iommu_attach_group(void *iommu_data,
-
-
-I've fixed these as shown below.  David, please review/ack as well and
-I'll send a pull for v4.10.  Thanks,
-
-Alex
-
-
-commit c019167838156a2efcc60a15fa4207710bac6e82
-Author: Alexey Kardashevskiy <aik@ozlabs.ru>
-Date:   Tue Feb 7 17:26:57 2017 +1100
-
-    vfio/spapr_tce: Set window when adding additional groups to container
-    
-    If a container already has a group attached, attaching a new group
-    should just program already created IOMMU tables to the hardware via
-    the iommu_table_group_ops::set_window() callback.
-    
-    However commit 6f01cc692a16 ("vfio/spapr: Add a helper to create
-    default DMA window") did not just simplify the code but also removed
-    the set_window() calls in the case of attaching groups to a container
-    which already has tables so it broke VFIO PCI hotplug.
-    
-    This reverts set_window() bits in tce_iommu_take_ownership_ddw().
-    
-    Fixes: 6f01cc692a16 ("vfio/spapr: Add a helper to create default DMA window")
-    Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-    Signed-off-by: Alex Williamson <alex.williamson@redhat.com>
-
-diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
-index 7690e5bf3cf1..59b3f62a2d64 100644
---- a/drivers/vfio/vfio_iommu_spapr_tce.c
-+++ b/drivers/vfio/vfio_iommu_spapr_tce.c
-@@ -1245,6 +1245,8 @@ static void tce_iommu_release_ownership_ddw(struct tce_container *container,
- static long tce_iommu_take_ownership_ddw(struct tce_container *container,
- 		struct iommu_table_group *table_group)
- {
-+	long i, ret = 0;
-+
- 	if (!table_group->ops->create_table || !table_group->ops->set_window ||
- 			!table_group->ops->release_ownership) {
- 		WARN_ON_ONCE(1);
-@@ -1253,7 +1255,27 @@ static long tce_iommu_take_ownership_ddw(struct tce_container *container,
- 
- 	table_group->ops->take_ownership(table_group);
- 
-+	/* Set all windows to the new group */
-+	for (i = 0; i < IOMMU_TABLE_GROUP_MAX_TABLES; ++i) {
-+		struct iommu_table *tbl = container->tables[i];
-+
-+		if (!tbl)
-+			continue;
-+
-+		ret = table_group->ops->set_window(table_group, i, tbl);
-+		if (ret)
-+			goto release_exit;
-+	}
-+
- 	return 0;
-+
-+release_exit:
-+	for (i = 0; i < IOMMU_TABLE_GROUP_MAX_TABLES; ++i)
-+		table_group->ops->unset_window(table_group, i);
-+
-+	table_group->ops->release_ownership(table_group);
-+
-+	return ret;
+diff --git a/kernel/kprobes.c b/kernel/kprobes.c
+index 43460104f119..60a702a05684 100644
+--- a/kernel/kprobes.c
++++ b/kernel/kprobes.c
+@@ -1705,6 +1705,12 @@ void unregister_kprobes(struct kprobe **kps, int num)
  }
+ EXPORT_SYMBOL_GPL(unregister_kprobes);
  
- static int tce_iommu_attach_group(void *iommu_data,
++int __weak __kprobes kprobe_exceptions_notify(struct notifier_block *self,
++					      unsigned long val, void *data)
++{
++	return NOTIFY_DONE;
++}
++
+ static struct notifier_block kprobe_exceptions_nb = {
+ 	.notifier_call = kprobe_exceptions_notify,
+ 	.priority = 0x7fffffff /* we need to be notified first */
+-- 
+2.11.0
