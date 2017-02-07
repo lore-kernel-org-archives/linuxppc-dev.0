@@ -1,19 +1,26 @@
-Return-Path: <michael@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vHSl86LHkzDqBN
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Feb 2017 13:21:40 +1100 (AEDT)
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Hal Murray <hmurray@megapathdsl.net>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Hugh Blemings <hugh@blemings.org>, linuxppc-dev@ozlabs.org,
- devel@ntpsec.org, Paul Mackerras <paulus@ozlabs.org>
-Subject: Re: Timekeeping oddities on MacMini G4s
-In-Reply-To: <20170201075630.3E8FB406061@ip-64-139-1-69.sjc.megapath.net>
-References: <20170201075630.3E8FB406061@ip-64-139-1-69.sjc.megapath.net>
-Date: Tue, 07 Feb 2017 13:21:40 +1100
-Message-ID: <87h946g2q3.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vHStH5lBQzDqBN
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Feb 2017 13:27:51 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Bhupesh Sharma <bhsharma@redhat.com>, linuxppc-dev@lists.ozlabs.org,
+ kernel-hardening@lists.openwall.com
+Cc: dcashman@google.com, bhupesh.linux@gmail.com, keescook@chromium.org,
+ Bhupesh Sharma <bhsharma@redhat.com>, Alexander Graf <agraf@suse.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Anatolij Gustschin <agust@denx.de>,
+ Alistair Popple <alistair@popple.id.au>,
+ Matt Porter <mporter@kernel.crashing.org>,
+ Vitaly Bordug <vitb@kernel.crashing.org>, Scott Wood <oss@buserror.net>,
+ Kumar Gala <galak@kernel.crashing.org>, Daniel Cashman <dcashman@android.com>
+Subject: Re: [kernel-hardening] [PATCH v2 1/1] powerpc: mm: support
+ ARCH_MMAP_RND_BITS
+In-Reply-To: <1486098682-30395-1-git-send-email-bhsharma@redhat.com>
+References: <1486098682-30395-1-git-send-email-bhsharma@redhat.com>
+Date: Tue, 07 Feb 2017 13:27:51 +1100
+Message-ID: <87efzag2fs.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,49 +32,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hal Murray <hmurray@megapathdsl.net> writes:
+Bhupesh Sharma <bhsharma@redhat.com> writes:
 
-> benh@kernel.crashing.org said:
->> Ok, I do have one though somewhere with OS X on it. If you give me
->> instructions on how to test (I know near to nothing about ntpsec), I should
->> be able to compile and run it.
+> powerpc: arch_mmap_rnd() uses hard-coded values, (23-PAGE_SHIFT) for
+> 32-bit and (30-PAGE_SHIFT) for 64-bit, to generate the random offset
+> for the mmap base address.
 >
-> I'm assuming you are already running the normal ntpd from ntp classic, or 
-> Apple's version of it.
+> This value represents a compromise between increased
+> ASLR effectiveness and avoiding address-space fragmentation.
+> Replace it with a Kconfig option, which is sensibly bounded, so that
+> platform developers may choose where to place this compromise.
+> Keep default values as new minimums.
 >
-> ntpq -c "rv 0 frequency" <host-name, defaults to localhost>
-> will get you the fudge-factor that ntpd passes to the kernel to get
-> the clock ticking accurately.  Units are parts-per-million.
+> This patch makes sure that now powerpc mmap arch_mmap_rnd() approach
+> is similar to other ARCHs like x86, arm64 and arm.
 >
-> There is a source-address filter in ntp.conf (restrict is the keyword), so 
-> try from localhost if it doesn't work from the net.
->
-> The problem that started this is that it's off by more than 500 ppm.  If all 
-> the arithmetic and documentation is correct, it should be the crystal error.  
-> A few or few 10s of ppm is reasonable at normal temperature.  Over 50 is a 
-> bit strange, but anything under 100 is within normal.  Over 100 is getting 
-> suspicious but could easily be due to some round off someplace.
->
->
->
-> ntpsec should be the same as ntp classic.  I tried ntp classic on FreeBSD 
-> (same trouble) but haven't tried it on Debian.
->
-> If you want to try ntpsec...
->
-> git clone git@gitlab.com:NTPsec/ntpsec.git xxx
-> cd xxx
-> ./waf configure build check
->
-> I think it builds cleanly on OS-X, but I can't verify that.
->
-> ps ax | grep ntpd  # to get args
-> service ntpd stop
-> ./build/main/ntpd/ntpd <args-from-above>
->
-> Unless you are doing something unusual, it should run with your existing 
-> ntp.conf and get the same frequency correction.
+> Cc: Alexander Graf <agraf@suse.com>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Paul Mackerras <paulus@samba.org>
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> Cc: Anatolij Gustschin <agust@denx.de>
+> Cc: Alistair Popple <alistair@popple.id.au>
+> Cc: Matt Porter <mporter@kernel.crashing.org>
+> Cc: Vitaly Bordug <vitb@kernel.crashing.org>
+> Cc: Scott Wood <oss@buserror.net>
+> Cc: Kumar Gala <galak@kernel.crashing.org>
+> Cc: Daniel Cashman <dcashman@android.com>
+> Signed-off-by: Bhupesh Sharma <bhsharma@redhat.com>
+> Reviewed-by: Kees Cook <keescook at chromium.org>
+> ---
+> Changes since v1:
+> v1 can be seen here (https://lists.ozlabs.org/pipermail/linuxppc-dev/2017-February/153594.html)
+>     - No functional change in this patch.
+>     - Added R-B from Kees.
+>     - Dropped PATCH 2/2 from v1 as recommended by Kees Cook.
 
-What do I do if I don't have an existing ntp.conf ?
+Thanks for v2.
+
+But I replied to your v1 with some comments, did you see them?
 
 cheers
