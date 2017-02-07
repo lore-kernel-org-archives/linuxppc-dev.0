@@ -1,22 +1,15 @@
-Return-Path: <hmurray@megapathdsl.net>
+Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vHfrb2Y1MzDqC7
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Feb 2017 20:57:03 +1100 (AEDT)
-To: Michael Ellerman <michael@ellerman.id.au>
-cc: Hal Murray <hmurray@megapathdsl.net>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Hugh Blemings <hugh@blemings.org>, linuxppc-dev@ozlabs.org,
- devel@ntpsec.org, Paul Mackerras <paulus@ozlabs.org>
-From: Hal Murray <hmurray@megapathdsl.net>
-Subject: Re: Timekeeping oddities on MacMini G4s
-In-Reply-To: Message from Michael Ellerman <michael@ellerman.id.au>
- of "Tue, 07 Feb 2017 13:21:40 +1100." <87h946g2q3.fsf@concordia.ellerman.id.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Date: Tue, 07 Feb 2017 01:56:59 -0800
-Message-Id: <20170207095659.41AC2406076@ip-64-139-1-69.sjc.megapath.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vHfxQ45QpzDqBN
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Feb 2017 21:01:14 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: linuxppc-dev@ozlabs.org
+Cc: anton@samba.org
+Subject: [PATCH] powerpc/powernv: Fix opal_exit tracepoint opcode
+Date: Tue,  7 Feb 2017 21:01:01 +1100
+Message-Id: <1486461661-12867-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,34 +19,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> What do I do if I don't have an existing ntp.conf ?
+Currently the opal_exit tracepoint usually shows the opcode as 0:
 
-Assuming ntpsec builds...
+  <idle>-0     [047] d.h.   635.654292: opal_entry: opcode=63
+  <idle>-0     [047] d.h.   635.654296: opal_exit: opcode=0 retval=0
+  kopald-1209  [019] d...   636.420943: opal_entry: opcode=10
+  kopald-1209  [019] d...   636.420959: opal_exit: opcode=0 retval=0
 
-There are sample config files in config/
-  contrib/ntp.conf.log.sample has logging which you probably want.
-it has lots of comments.
+This is because we incorrectly load the opcode into r0 before calling
+__trace_opal_exit(), whereas it expects the opcode in r3 (first function
+parameter). In fact we are leaving the retval in r3, so opcode and
+retval will always show the same value.
 
-It is setup to use us.pool.ntp.org
-If you aren't in the us, you should probably change that to your country code.
+Instead load the opcode into r3, resulting in:
 
-If you know of any good servers near your location (by network quality, not 
-miles/km), you can add them with:
-  server <ip-address-or-name> iburst
+  <idle>-0     [040] d.h.   636.618625: opal_entry: opcode=63
+  <idle>-0     [040] d.h.   636.618627: opal_exit: opcode=63 retval=0
 
-It will write in several files:
-  /var/lib/ntp/ntp.drift
-  /var/log/ntp.log
-  /var/log/ntpstats/<various>
-So you need to make sure the directories exist.
+Fixes: c49f63530bb6 ("powernv: Add OPAL tracepoints")
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/platforms/powernv/opal-wrappers.S | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-
-Turn off whatever is currently keeping time on your system.
-
-./build/main/ntpd/ntpd -N -c ./contrib/ntp.conf.log.sample
-
-(It may need a file name starting at /)
-
-
+diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
+index f7c19c9c57ed..63fe1b2b1175 100644
+--- a/arch/powerpc/platforms/powernv/opal-wrappers.S
++++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
+@@ -146,7 +146,7 @@ opal_tracepoint_entry:
+ opal_tracepoint_return:
+ 	std	r3,STK_REG(R31)(r1)
+ 	mr	r4,r3
+-	ld	r0,STK_REG(R23)(r1)
++	ld	r3,STK_REG(R23)(r1)
+ 	bl	__trace_opal_exit
+ 	ld	r3,STK_REG(R31)(r1)
+ 	addi	r1,r1,STACKFRAMESIZE
 -- 
-These are my opinions.  I hate spam.
+2.7.4
