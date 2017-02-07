@@ -1,19 +1,22 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <hmurray@megapathdsl.net>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vHdhq2FjDzDqCh
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Feb 2017 20:05:15 +1100 (AEDT)
-Message-Id: <804a373374f8ea17d971c4b087fcbe24c0edced7.1486456900.git.christophe.leroy@c-s.fr>
-In-Reply-To: <cover.1486456900.git.christophe.leroy@c-s.fr>
-References: <cover.1486456900.git.christophe.leroy@c-s.fr>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH 2/2] soc/fsl/qe: get rid of immrbar_virt_to_phys()
-To: Li Yang <leoli@freescale.com>, Qiang Zhao <qiang.zhao@nxp.com>,
- Scott Wood <oss@buserror.net>, "David S. Miller" <davem@davemloft.net>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- netdev@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Date: Tue,  7 Feb 2017 10:05:11 +0100 (CET)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vHfrb2Y1MzDqC7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Feb 2017 20:57:03 +1100 (AEDT)
+To: Michael Ellerman <michael@ellerman.id.au>
+cc: Hal Murray <hmurray@megapathdsl.net>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Hugh Blemings <hugh@blemings.org>, linuxppc-dev@ozlabs.org,
+ devel@ntpsec.org, Paul Mackerras <paulus@ozlabs.org>
+From: Hal Murray <hmurray@megapathdsl.net>
+Subject: Re: Timekeeping oddities on MacMini G4s
+In-Reply-To: Message from Michael Ellerman <michael@ellerman.id.au>
+ of "Tue, 07 Feb 2017 13:21:40 +1100." <87h946g2q3.fsf@concordia.ellerman.id.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Date: Tue, 07 Feb 2017 01:56:59 -0800
+Message-Id: <20170207095659.41AC2406076@ip-64-139-1-69.sjc.megapath.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,65 +26,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-immrbar_virt_to_phys() is not used anymore
+> What do I do if I don't have an existing ntp.conf ?
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
- drivers/soc/fsl/qe/qe.c       |  4 +---
- include/soc/fsl/qe/immap_qe.h | 19 -------------------
- 2 files changed, 1 insertion(+), 22 deletions(-)
+Assuming ntpsec builds...
 
-diff --git a/drivers/soc/fsl/qe/qe.c b/drivers/soc/fsl/qe/qe.c
-index ade168f..d9c04f5 100644
---- a/drivers/soc/fsl/qe/qe.c
-+++ b/drivers/soc/fsl/qe/qe.c
-@@ -66,7 +66,7 @@ static unsigned int qe_num_of_snum;
- 
- static phys_addr_t qebase = -1;
- 
--phys_addr_t get_qe_base(void)
-+static phys_addr_t get_qe_base(void)
- {
- 	struct device_node *qe;
- 	int ret;
-@@ -90,8 +90,6 @@ phys_addr_t get_qe_base(void)
- 	return qebase;
- }
- 
--EXPORT_SYMBOL(get_qe_base);
--
- void qe_reset(void)
- {
- 	if (qe_immr == NULL)
-diff --git a/include/soc/fsl/qe/immap_qe.h b/include/soc/fsl/qe/immap_qe.h
-index c76ef30..7baaabd 100644
---- a/include/soc/fsl/qe/immap_qe.h
-+++ b/include/soc/fsl/qe/immap_qe.h
-@@ -464,25 +464,6 @@ struct qe_immap {
- } __attribute__ ((packed));
- 
- extern struct qe_immap __iomem *qe_immr;
--extern phys_addr_t get_qe_base(void);
--
--/*
-- * Returns the offset within the QE address space of the given pointer.
-- *
-- * Note that the QE does not support 36-bit physical addresses, so if
-- * get_qe_base() returns a number above 4GB, the caller will probably fail.
-- */
--static inline phys_addr_t immrbar_virt_to_phys(void *address)
--{
--	void *q = (void *)qe_immr;
--
--	/* Is it a MURAM address? */
--	if ((address >= q) && (address < (q + QE_IMMAP_SIZE)))
--		return get_qe_base() + (address - q);
--
--	/* It's an address returned by kmalloc */
--	return virt_to_phys(address);
--}
- 
- #endif /* __KERNEL__ */
- #endif /* _ASM_POWERPC_IMMAP_QE_H */
+There are sample config files in config/
+  contrib/ntp.conf.log.sample has logging which you probably want.
+it has lots of comments.
+
+It is setup to use us.pool.ntp.org
+If you aren't in the us, you should probably change that to your country code.
+
+If you know of any good servers near your location (by network quality, not 
+miles/km), you can add them with:
+  server <ip-address-or-name> iburst
+
+It will write in several files:
+  /var/lib/ntp/ntp.drift
+  /var/log/ntp.log
+  /var/log/ntpstats/<various>
+So you need to make sure the directories exist.
+
+
+Turn off whatever is currently keeping time on your system.
+
+./build/main/ntpd/ntpd -N -c ./contrib/ntp.conf.log.sample
+
+(It may need a file name starting at /)
+
+
 -- 
-2.10.1
+These are my opinions.  I hate spam.
