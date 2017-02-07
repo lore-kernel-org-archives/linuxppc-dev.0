@@ -3,50 +3,44 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vHc4Q1hmQzDqKf
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Feb 2017 18:52:06 +1100 (AEDT)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vHc8J0NPrzDqKl
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Feb 2017 18:55:27 +1100 (AEDT)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v177hnPi113390
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 7 Feb 2017 02:52:03 -0500
-Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [125.16.236.1])
- by mx0b-001b2d01.pphosted.com with ESMTP id 28f86uc74v-1
+ v177ra55110865
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 7 Feb 2017 02:55:25 -0500
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 28f68s06aw-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 Feb 2017 02:52:03 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 Feb 2017 02:55:24 -0500
 Received: from localhost
- by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Tue, 7 Feb 2017 13:21:59 +0530
-Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 65F7AE0024
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Feb 2017 13:23:22 +0530 (IST)
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay04.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v177puJa35979458
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 7 Feb 2017 13:21:56 +0530
-Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
- by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v177pskr011702
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 7 Feb 2017 13:21:55 +0530
-Date: Tue, 7 Feb 2017 13:21:53 +0530
+ Tue, 7 Feb 2017 17:55:22 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id C2CF02BB005B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Feb 2017 18:55:19 +1100 (EST)
+Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v177tB1q35782878
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 7 Feb 2017 18:55:19 +1100
+Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
+ by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v177slea002753
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 7 Feb 2017 18:54:47 +1100
+Date: Tue, 7 Feb 2017 13:24:20 +0530
 From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-To: Masami Hiramatsu <mhiramat@kernel.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>,
- Anju T Sudhakar <anju@linux.vnet.ibm.com>,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- ananth@in.ibm.com, mahesh@linux.vnet.ibm.com, paulus@samba.org,
- srikar@linux.vnet.ibm.com
-Subject: Re: [PATCH V3 3/4] arch/powerpc: Implement Optprobes
-References: <1482153507-17350-1-git-send-email-anju@linux.vnet.ibm.com>
- <1482153507-17350-2-git-send-email-anju@linux.vnet.ibm.com>
- <87a8a6dvwo.fsf@concordia.ellerman.id.au>
- <20170203193949.GD4090@naverao1-tp.localdomain>
- <20170207100541.7860e846f3def13a628bb05d@kernel.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 2/2] powerpc/powernv: Add more BPF in defconfig
+References: <20170206025544.3292-1-mikey@neuling.org>
+ <20170206025544.3292-2-mikey@neuling.org>
+ <87tw86g8t3.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170207100541.7860e846f3def13a628bb05d@kernel.org>
-Message-Id: <20170207075153.GI4090@naverao1-tp.localdomain>
+In-Reply-To: <87tw86g8t3.fsf@concordia.ellerman.id.au>
+Message-Id: <20170207075420.GJ4090@naverao1-tp.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -56,53 +50,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2017/02/07 10:05AM, Masami Hiramatsu wrote:
-> On Sat, 4 Feb 2017 01:09:49 +0530
-> "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
+On 2017/02/07 11:10AM, Michael Ellerman wrote:
+> Michael Neuling <mikey@neuling.org> writes:
 > 
-> > Hi Michael,
-> > Thanks for the review! I'll defer to Anju on most of the aspects, but...
-> > 
-> > On 2017/02/01 09:53PM, Michael Ellerman wrote:
-> > > Anju T Sudhakar <anju@linux.vnet.ibm.com> writes:
-> > > 
-> > > > +static void optimized_callback(struct optimized_kprobe *op,
-> > > > +			       struct pt_regs *regs)
-> > > > +{
-> > > > +	struct kprobe_ctlblk *kcb = get_kprobe_ctlblk();
-> > > > +	unsigned long flags;
-> > > > +
-> > > > +	/* This is possible if op is under delayed unoptimizing */
-> > > > +	if (kprobe_disabled(&op->kp))
-> > > > +		return;
-> > > > +
-> > > > +	local_irq_save(flags);
-> > > 
-> > > What is that protecting against? Because on powerpc it doesn't actually
-> > > disable interrupts, it just masks some of them, the perf interrupt for
-> > > example can still run.
-> > 
-> > That's an excellent catch, as always! :)
-> > 
-> > This is meant to prevent us from missing kprobe hits while processing 
-> > interrupts that arrive when this optprobe is being handled. And you are 
-> > totally right -- we would miss kprobe hits during PMI handling with the 
-> > current approach. We need a hard_irq_disable() there.
+> > This enables BCC (https://github.com/iovisor/bcc) on powernv.
+> >
+> > This adds 225KB to the vmlinux size.
+> >
+> > Signed-off-by: Michael Neuling <mikey@neuling.org>
+> > ---
+> >  arch/powerpc/configs/powernv_defconfig | 5 +++++
+> >  1 file changed, 5 insertions(+)
+> >
+> > diff --git a/arch/powerpc/configs/powernv_defconfig b/arch/powerpc/configs/powernv_defconfig
+> > index 7028dbc753..911b43e2c7 100644
+> > --- a/arch/powerpc/configs/powernv_defconfig
+> > +++ b/arch/powerpc/configs/powernv_defconfig
+> > @@ -29,6 +29,7 @@ CONFIG_CGROUP_CPUACCT=y
+> >  CONFIG_CGROUP_PERF=y
+> >  CONFIG_USER_NS=y
+> >  CONFIG_BLK_DEV_INITRD=y
+> > +CONFIG_BPF_SYSCALL=y
+> >  # CONFIG_COMPAT_BRK is not set
+> >  CONFIG_PROFILING=y
+> >  CONFIG_OPROFILE=y
+> > @@ -79,6 +80,10 @@ CONFIG_NETFILTER=y
+> >  # CONFIG_NETFILTER_ADVANCED is not set
+> >  CONFIG_BRIDGE=m
+> >  CONFIG_VLAN_8021Q=m
+> > +CONFIG_NET_SCHED=y
+> > +CONFIG_NET_CLS_BPF=y
+> > +CONFIG_NET_CLS_ACT=y
+> > +CONFIG_NET_ACT_BPF=y
 > 
-> One note: it depends on the arch implementation of kprobes, since this
-> is only for "emulating" the int3 behavior on x86 for compatibility.
-> On x86, int3 is disabling interrupt automatically, so all the kprobes
-> user handlers will be run under irq-disabled. This means that user may
-> write their code to run as such condition. They even can not know
-> that is optimized or not at programming timing, because the kprobe
-> will be optimized after a while from enabled it.
+> I'm inclined to make these =m.
 > 
-> So the important point is that you have to keep it compatible of
-> unoptimized kprobes.
+> I assume that would still work for bcc?
 
-Thanks for the pointers, Masami.
-Yes, with unoptimized kprobes on powerpc, we run with interrupts hard 
-disabled as well. So, we need to hard disable for optprobes too.
+Yes, that should work too.
+As an aside, I had sent a patch to enable BPF_SYSCALL across powernv, 
+pseries and ppc64 defconfigs:
+https://patchwork.ozlabs.org/patch/721997/
 
-Regards,
-Naveen
+It would be good to have the network related BPF configs enabled across 
+all three.
+
+- Naveen
