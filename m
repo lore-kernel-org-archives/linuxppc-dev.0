@@ -1,7 +1,7 @@
 Return-Path: <aik@ozlabs.ru>
 Received: from ozlabs.ru (ozlabs.ru [83.169.36.222])
- by lists.ozlabs.org (Postfix) with ESMTP id 3vHbKM0g8bzDqJ1
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Feb 2017 18:18:15 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id 3vHbKQ2ptkzDqH3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Feb 2017 18:18:18 +1100 (AEDT)
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
@@ -9,9 +9,10 @@ Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
  David Gibson <david@gibson.dropbear.id.au>,
  Paul Mackerras <paulus@samba.org>, kvm-ppc@vger.kernel.org,
  kvm@vger.kernel.org
-Subject: [PATCH kernel v4 08/10] KVM: PPC: Separate TCE validation from update
-Date: Tue,  7 Feb 2017 18:17:09 +1100
-Message-Id: <20170207071711.28938-9-aik@ozlabs.ru>
+Subject: [PATCH kernel v4 09/10] KVM: PPC: Use preregistered memory API to
+ access TCE list
+Date: Tue,  7 Feb 2017 18:17:10 +1100
+Message-Id: <20170207071711.28938-10-aik@ozlabs.ru>
 In-Reply-To: <20170207071711.28938-1-aik@ozlabs.ru>
 References: <20170207071711.28938-1-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -23,68 +24,121 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-For the emulated devices it does not matter much if we get a broken TCE
-half way handling a TCE list but for VFIO it will matter as it has
-more chances to fail so we try to do our best and check as much as we
-can before proceeding.
+VFIO on sPAPR already implements guest memory pre-registration
+when the entire guest RAM gets pinned. This can be used to translate
+the physical address of a guest page containing the TCE list
+from H_PUT_TCE_INDIRECT.
 
-This separates a guest view table update from validation. No change in
-behavior is expected.
+This makes use of the pre-registrered memory API to access TCE list
+pages in order to avoid unnecessary locking on the KVM memory
+reverse map as we know that all of guest memory is pinned and
+we have a flat array mapping GPA to HPA which makes it simpler and
+quicker to index into that array (even with looking up the
+kernel page tables in vmalloc_to_phys) than it is to find the memslot,
+lock the rmap entry, look up the user page tables, and unlock the rmap
+entry. Note that the rmap pointer is initialized to NULL
+where declared (not in this patch).
+
+If a requested chunk of memory has not been preregistered, this will
+fall back to non-preregistered case and lock rmap.
 
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 ---
- arch/powerpc/kvm/book3s_64_vio.c    | 8 ++++++++
- arch/powerpc/kvm/book3s_64_vio_hv.c | 8 ++++++--
- 2 files changed, 14 insertions(+), 2 deletions(-)
+Changes:
+v4:
+* removed oneline inlines
+* now falls back to locking rmap if TCE list is not in preregistered memory
 
-diff --git a/arch/powerpc/kvm/book3s_64_vio.c b/arch/powerpc/kvm/book3s_64_vio.c
-index 15df8ae627d9..9a7b7fca5e84 100644
---- a/arch/powerpc/kvm/book3s_64_vio.c
-+++ b/arch/powerpc/kvm/book3s_64_vio.c
-@@ -282,6 +282,14 @@ long kvmppc_h_put_tce_indirect(struct kvm_vcpu *vcpu,
- 		ret = kvmppc_tce_validate(stt, tce);
- 		if (ret != H_SUCCESS)
- 			goto unlock_exit;
+v2:
+* updated the commit log with David's comment
+---
+ arch/powerpc/kvm/book3s_64_vio_hv.c | 58 +++++++++++++++++++++++++++----------
+ 1 file changed, 42 insertions(+), 16 deletions(-)
+
+diff --git a/arch/powerpc/kvm/book3s_64_vio_hv.c b/arch/powerpc/kvm/book3s_64_vio_hv.c
+index f8a54b7c788e..dc1c66fda941 100644
+--- a/arch/powerpc/kvm/book3s_64_vio_hv.c
++++ b/arch/powerpc/kvm/book3s_64_vio_hv.c
+@@ -239,6 +239,7 @@ long kvmppc_rm_h_put_tce_indirect(struct kvm_vcpu *vcpu,
+ 	long i, ret = H_SUCCESS;
+ 	unsigned long tces, entry, tce, ua = 0;
+ 	unsigned long *rmap = NULL;
++	bool prereg = false;
+ 
+ 	stt = kvmppc_find_table(vcpu->kvm, liobn);
+ 	if (!stt)
+@@ -259,23 +260,47 @@ long kvmppc_rm_h_put_tce_indirect(struct kvm_vcpu *vcpu,
+ 	if (ret != H_SUCCESS)
+ 		return ret;
+ 
+-	if (kvmppc_gpa_to_ua(vcpu->kvm, tce_list, &ua, &rmap))
+-		return H_TOO_HARD;
++	if (mm_iommu_preregistered(vcpu->kvm->mm)) {
++		/*
++		 * We get here if guest memory was pre-registered which
++		 * is normally VFIO case and gpa->hpa translation does not
++		 * depend on hpt.
++		 */
++		struct mm_iommu_table_group_mem_t *mem;
+ 
+-	rmap = (void *) vmalloc_to_phys(rmap);
++		if (kvmppc_gpa_to_ua(vcpu->kvm, tce_list, &ua, NULL))
++			return H_TOO_HARD;
+ 
+-	/*
+-	 * Synchronize with the MMU notifier callbacks in
+-	 * book3s_64_mmu_hv.c (kvm_unmap_hva_hv etc.).
+-	 * While we have the rmap lock, code running on other CPUs
+-	 * cannot finish unmapping the host real page that backs
+-	 * this guest real page, so we are OK to access the host
+-	 * real page.
+-	 */
+-	lock_rmap(rmap);
+-	if (kvmppc_rm_ua_to_hpa(vcpu, ua, &tces)) {
+-		ret = H_TOO_HARD;
+-		goto unlock_exit;
++		mem = mm_iommu_lookup_rm(vcpu->kvm->mm, ua, IOMMU_PAGE_SIZE_4K);
++		if (mem)
++			prereg = mm_iommu_ua_to_hpa_rm(mem, ua, &tces) == 0;
 +	}
 +
-+	for (i = 0; i < npages; ++i) {
-+		if (get_user(tce, tces + i)) {
++	if (!prereg) {
++		/*
++		 * This is usually a case of a guest with emulated devices only
++		 * when TCE list is not in preregistered memory.
++		 * We do not require memory to be preregistered in this case
++		 * so lock rmap and do __find_linux_pte_or_hugepte().
++		 */
++		if (kvmppc_gpa_to_ua(vcpu->kvm, tce_list, &ua, &rmap))
++			return H_TOO_HARD;
++
++		rmap = (void *) vmalloc_to_phys(rmap);
++
++		/*
++		 * Synchronize with the MMU notifier callbacks in
++		 * book3s_64_mmu_hv.c (kvm_unmap_hva_hv etc.).
++		 * While we have the rmap lock, code running on other CPUs
++		 * cannot finish unmapping the host real page that backs
++		 * this guest real page, so we are OK to access the host
++		 * real page.
++		 */
++		lock_rmap(rmap);
++		if (kvmppc_rm_ua_to_hpa(vcpu, ua, &tces)) {
 +			ret = H_TOO_HARD;
 +			goto unlock_exit;
 +		}
-+		tce = be64_to_cpu(tce);
- 
- 		kvmppc_tce_put(stt, entry + i, tce);
- 	}
-diff --git a/arch/powerpc/kvm/book3s_64_vio_hv.c b/arch/powerpc/kvm/book3s_64_vio_hv.c
-index 918af76ab2b6..f8a54b7c788e 100644
---- a/arch/powerpc/kvm/book3s_64_vio_hv.c
-+++ b/arch/powerpc/kvm/book3s_64_vio_hv.c
-@@ -237,7 +237,7 @@ long kvmppc_rm_h_put_tce_indirect(struct kvm_vcpu *vcpu,
- {
- 	struct kvmppc_spapr_tce_table *stt;
- 	long i, ret = H_SUCCESS;
--	unsigned long tces, entry, ua = 0;
-+	unsigned long tces, entry, tce, ua = 0;
- 	unsigned long *rmap = NULL;
- 
- 	stt = kvmppc_find_table(vcpu->kvm, liobn);
-@@ -279,11 +279,15 @@ long kvmppc_rm_h_put_tce_indirect(struct kvm_vcpu *vcpu,
  	}
  
  	for (i = 0; i < npages; ++i) {
--		unsigned long tce = be64_to_cpu(((u64 *)tces)[i]);
-+		tce = be64_to_cpu(((u64 *)tces)[i]);
- 
- 		ret = kvmppc_tce_validate(stt, tce);
- 		if (ret != H_SUCCESS)
- 			goto unlock_exit;
-+	}
-+
-+	for (i = 0; i < npages; ++i) {
-+		tce = be64_to_cpu(((u64 *)tces)[i]);
- 
- 		kvmppc_tce_put(stt, entry + i, tce);
+@@ -293,7 +318,8 @@ long kvmppc_rm_h_put_tce_indirect(struct kvm_vcpu *vcpu,
  	}
+ 
+ unlock_exit:
+-	unlock_rmap(rmap);
++	if (rmap)
++		unlock_rmap(rmap);
+ 
+ 	return ret;
+ }
 -- 
 2.11.0
