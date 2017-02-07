@@ -1,25 +1,23 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
+ [IPv6:2607:f8b0:400e:c05::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vHSbj4VCkzDqBN
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Feb 2017 13:15:13 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Greg KH <greg@kroah.com>, Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, stable@vger.kernel.org,
- ukrishn@linux.vnet.ibm.com, vaibhav@linux.vnet.ibm.com,
- fbarrat@linux.vnet.ibm.com, imunsie@au1.ibm.com
-Subject: Re: [v2] cxl: prevent read/write to AFU config space while AFU not
- configured
-In-Reply-To: <20170206094356.GA8583@kroah.com>
-References: <3v8g1Z5Gdyz9t5m@ozlabs.org>
- <1914c3dc-7e4d-30de-88b0-7959e6249f39@au1.ibm.com>
- <f3a508e9-3c23-f929-7b81-fd803c920095@au1.ibm.com>
- <20170206094356.GA8583@kroah.com>
-Date: Tue, 07 Feb 2017 13:15:13 +1100
-Message-ID: <87lgtig30u.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vHSbn2DQczDqCB
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Feb 2017 13:15:17 +1100 (AEDT)
+Received: by mail-pg0-x244.google.com with SMTP id 194so10604357pgd.0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Feb 2017 18:15:17 -0800 (PST)
+From: Balbir Singh <bsingharora@gmail.com>
+Date: Tue, 7 Feb 2017 07:45:07 +0530
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] powerpc/mm: Add MMU_FTR_KERNEL_RO to possible feature mask
+Message-ID: <20170207021507.GA22303@localhost.localdomain>
+References: <1486406367-31126-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1486406367-31126-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,22 +27,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Greg KH <greg@kroah.com> writes:
+On Tue, Feb 07, 2017 at 12:09:27AM +0530, Aneesh Kumar K.V wrote:
+> Without this we will always find the feature disabled
+> 
+> Fixes: 984d7a1ec6 ("powerpc/mm: Fixup kernel read only mapping")
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/include/asm/mmu.h | 1 +
+>  1 file changed, 1 insertion(+)
+> 
+> diff --git a/arch/powerpc/include/asm/mmu.h b/arch/powerpc/include/asm/mmu.h
+> index a34c764ca8dd..e5616bf83623 100644
+> --- a/arch/powerpc/include/asm/mmu.h
+> +++ b/arch/powerpc/include/asm/mmu.h
+> @@ -136,6 +136,7 @@ enum {
+>  		MMU_FTR_NO_SLBIE_B | MMU_FTR_16M_PAGE | MMU_FTR_TLBIEL |
+>  		MMU_FTR_LOCKLESS_TLBIE | MMU_FTR_CI_LARGE_PAGE |
+>  		MMU_FTR_1T_SEGMENT | MMU_FTR_TLBIE_CROP_VA |
+> +		MMU_FTR_KERNEL_RO |
+>  #ifdef CONFIG_PPC_RADIX_MMU
+>  		MMU_FTR_TYPE_RADIX |
+>  #endif
 
-> On Mon, Feb 06, 2017 at 12:15:59PM +1100, Andrew Donnellan wrote:
->> On 27/01/17 11:57, Andrew Donnellan wrote:
->> > On 27/01/17 11:40, Michael Ellerman wrote:
->> > > Applied to powerpc next, thanks.
->> > > 
->> > > https://git.kernel.org/powerpc/c/14a3ae34bfd0bcb1cc12d55b06a858
->> > 
->> > Will fix the remaining locking issue in a follow up patch...
->> 
->> Stable team - please make sure this doesn't go in without
->> http://patchwork.ozlabs.org/patch/724315/ once that's merged.
->
-> Ok, hopefully they show up in Linus's tree at the same time :)
-
-Yeah they will.
-
-cheers
+Acked-by: Balbir Singh <bsingharora@gmail.com>
