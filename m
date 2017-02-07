@@ -1,28 +1,25 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <segher@gate.crashing.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vHStH5lBQzDqBN
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Feb 2017 13:27:51 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Bhupesh Sharma <bhsharma@redhat.com>, linuxppc-dev@lists.ozlabs.org,
- kernel-hardening@lists.openwall.com
-Cc: dcashman@google.com, bhupesh.linux@gmail.com, keescook@chromium.org,
- Bhupesh Sharma <bhsharma@redhat.com>, Alexander Graf <agraf@suse.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Anatolij Gustschin <agust@denx.de>,
- Alistair Popple <alistair@popple.id.au>,
- Matt Porter <mporter@kernel.crashing.org>,
- Vitaly Bordug <vitb@kernel.crashing.org>, Scott Wood <oss@buserror.net>,
- Kumar Gala <galak@kernel.crashing.org>, Daniel Cashman <dcashman@android.com>
-Subject: Re: [kernel-hardening] [PATCH v2 1/1] powerpc: mm: support
- ARCH_MMAP_RND_BITS
-In-Reply-To: <1486098682-30395-1-git-send-email-bhsharma@redhat.com>
-References: <1486098682-30395-1-git-send-email-bhsharma@redhat.com>
-Date: Tue, 07 Feb 2017 13:27:51 +1100
-Message-ID: <87efzag2fs.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vHTPx2BRmzDqBN
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Feb 2017 13:51:49 +1100 (AEDT)
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3vHTPw3qD6z9s7m
+ for <linuxppc-dev@ozlabs.org>; Tue,  7 Feb 2017 13:51:48 +1100 (AEDT)
+Date: Mon, 6 Feb 2017 20:51:06 -0600
+From: Segher Boessenkool <segher@kernel.crashing.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <pmac@au1.ibm.com>
+Subject: Re: [RFC PATCH 1/2] powerpc/powernv: Remove separate entry for OPAL
+ real mode calls
+Message-ID: <20170207025105.GG21840@gate.crashing.org>
+References: <1486433879.4850.107.camel@kernel.crashing.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1486433879.4850.107.camel@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,43 +29,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Bhupesh Sharma <bhsharma@redhat.com> writes:
+On Tue, Feb 07, 2017 at 01:17:59PM +1100, Benjamin Herrenschmidt wrote:
+> @@ -123,7 +149,6 @@ opal_tracepoint_entry:
+>  	ld	r9,STK_REG(R30)(r1)
+>  	ld	r10,STK_REG(R31)(r1)
+>  	LOAD_REG_ADDR(r11,opal_tracepoint_return)
+> -	mfcr	r12
+>  	std	r11,16(r1)
+>  	stw	r12,8(r1)
+>  	li	r11,0
 
-> powerpc: arch_mmap_rnd() uses hard-coded values, (23-PAGE_SHIFT) for
-> 32-bit and (30-PAGE_SHIFT) for 64-bit, to generate the random offset
-> for the mmap base address.
->
-> This value represents a compromise between increased
-> ASLR effectiveness and avoiding address-space fragmentation.
-> Replace it with a Kconfig option, which is sensibly bounded, so that
-> platform developers may choose where to place this compromise.
-> Keep default values as new minimums.
->
-> This patch makes sure that now powerpc mmap arch_mmap_rnd() approach
-> is similar to other ARCHs like x86, arm64 and arm.
->
-> Cc: Alexander Graf <agraf@suse.com>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Paul Mackerras <paulus@samba.org>
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Cc: Anatolij Gustschin <agust@denx.de>
-> Cc: Alistair Popple <alistair@popple.id.au>
-> Cc: Matt Porter <mporter@kernel.crashing.org>
-> Cc: Vitaly Bordug <vitb@kernel.crashing.org>
-> Cc: Scott Wood <oss@buserror.net>
-> Cc: Kumar Gala <galak@kernel.crashing.org>
-> Cc: Daniel Cashman <dcashman@android.com>
-> Signed-off-by: Bhupesh Sharma <bhsharma@redhat.com>
-> Reviewed-by: Kees Cook <keescook at chromium.org>
-> ---
-> Changes since v1:
-> v1 can be seen here (https://lists.ozlabs.org/pipermail/linuxppc-dev/2017-February/153594.html)
->     - No functional change in this patch.
->     - Added R-B from Kees.
->     - Dropped PATCH 2/2 from v1 as recommended by Kees Cook.
+I think you accidentally deleted this line?
 
-Thanks for v2.
 
-But I replied to your v1 with some comments, did you see them?
-
-cheers
+Segher
