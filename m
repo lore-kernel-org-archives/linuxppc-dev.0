@@ -2,20 +2,19 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vHSg958JmzDqLh
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Feb 2017 13:18:13 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vHSgH6S6xzDqLW
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Feb 2017 13:18:19 +1100 (AEDT)
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3vHSg84zXZz9s2Q
- for <linuxppc-dev@ozlabs.org>; Tue,  7 Feb 2017 13:18:12 +1100 (AEDT)
-Message-ID: <1486433879.4850.107.camel@kernel.crashing.org>
-Subject: [RFC PATCH 1/2] powerpc/powernv: Remove separate entry for OPAL
- real mode calls
+ by ozlabs.org (Postfix) with ESMTPS id 3vHSgG65Rtz9s2Q
+ for <linuxppc-dev@ozlabs.org>; Tue,  7 Feb 2017 13:18:18 +1100 (AEDT)
+Message-ID: <1486433887.4850.108.camel@kernel.crashing.org>
+Subject: [RFC PATCH 2/2] powerpc: Consolidate variants of real-mode MMIOs
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: linuxppc-dev@ozlabs.org
 Cc: Paul Mackerras <pmac@au1.ibm.com>
-Date: Tue, 07 Feb 2017 13:17:59 +1100
+Date: Tue, 07 Feb 2017 13:18:07 +1100
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,330 +26,316 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-All entry points already read the MSR so they can easily do
-the right thing.
+We have all sort of variants of MMIO accessors for the real mode
+instructions. This creates a clean set of accessors based on
+Linux normal naming conventions, replacing all occurrences of
+the old ones in the tree.
+
+I have purposefully removed the "out/in" variants in favor of
+only including __raw variants. Any code using these is already
+pretty much hand tuned to operate in a very specific environment.
+I've fixed up the 2 users (only one of them actually needed
+a barrier in the first place).
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
- arch/powerpc/include/asm/opal.h                |  7 ---
- arch/powerpc/kernel/idle_book3s.S              |  6 +--
- arch/powerpc/kvm/book3s_hv_builtin.c           | 13 +++--
- arch/powerpc/kvm/book3s_hv_rm_xics.c           | 14 ++---
- arch/powerpc/platforms/powernv/opal-wrappers.S | 71 +++++++++++---------------
- arch/powerpc/platforms/powernv/pci-ioda.c      |  5 --
- 6 files changed, 45 insertions(+), 71 deletions(-)
+ arch/powerpc/include/asm/io.h             | 98 ++++++++++++++++---------------
+ arch/powerpc/include/asm/kvm_book3s_asm.h |  2 +-
+ arch/powerpc/include/asm/kvm_ppc.h        |  2 +-
+ arch/powerpc/kvm/book3s_hv_builtin.c      | 21 +++----
+ arch/powerpc/kvm/book3s_hv_rm_xics.c      |  4 +-
+ arch/powerpc/platforms/powernv/rng.c      |  2 +-
+ arch/powerpc/sysdev/xics/icp-native.c     |  8 +--
+ 7 files changed, 68 insertions(+), 69 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
-index 5c7db0f..16efe74 100644
---- a/arch/powerpc/include/asm/opal.h
-+++ b/arch/powerpc/include/asm/opal.h
-@@ -67,7 +67,6 @@ int64_t opal_pci_config_write_half_word(uint64_t phb_id, uint64_t bus_dev_func,
- int64_t opal_pci_config_write_word(uint64_t phb_id, uint64_t bus_dev_func,
- 				   uint64_t offset, uint32_t data);
- int64_t opal_set_xive(uint32_t isn, uint16_t server, uint8_t priority);
--int64_t opal_rm_set_xive(uint32_t isn, uint16_t server, uint8_t priority);
- int64_t opal_get_xive(uint32_t isn, __be16 *server, uint8_t *priority);
- int64_t opal_register_exception_handler(uint64_t opal_exception,
- 					uint64_t handler_address,
-@@ -220,18 +219,12 @@ int64_t opal_pci_set_power_state(uint64_t async_token, uint64_t id,
- int64_t opal_pci_poll2(uint64_t id, uint64_t data);
+diff --git a/arch/powerpc/include/asm/io.h b/arch/powerpc/include/asm/io.h
+index 5ed2924..45c136a 100644
+--- a/arch/powerpc/include/asm/io.h
++++ b/arch/powerpc/include/asm/io.h
+@@ -192,24 +192,8 @@ DEF_MMIO_OUT_D(out_le32, 32, stw);
  
- int64_t opal_int_get_xirr(uint32_t *out_xirr, bool just_poll);
--int64_t opal_rm_int_get_xirr(__be32 *out_xirr, bool just_poll);
- int64_t opal_int_set_cppr(uint8_t cppr);
- int64_t opal_int_eoi(uint32_t xirr);
--int64_t opal_rm_int_eoi(uint32_t xirr);
- int64_t opal_int_set_mfrr(uint32_t cpu, uint8_t mfrr);
--int64_t opal_rm_int_set_mfrr(uint32_t cpu, uint8_t mfrr);
- int64_t opal_pci_tce_kill(uint64_t phb_id, uint32_t kill_type,
- 			  uint32_t pe_num, uint32_t tce_size,
- 			  uint64_t dma_addr, uint32_t npages);
--int64_t opal_rm_pci_tce_kill(uint64_t phb_id, uint32_t kill_type,
--			     uint32_t pe_num, uint32_t tce_size,
--			     uint64_t dma_addr, uint32_t npages);
+ #endif /* __BIG_ENDIAN */
  
- /* Internal functions */
- extern int early_init_dt_scan_opal(unsigned long node, const char *uname,
-diff --git a/arch/powerpc/kernel/idle_book3s.S b/arch/powerpc/kernel/idle_book3s.S
-index 72dac0b..5302e1a 100644
---- a/arch/powerpc/kernel/idle_book3s.S
-+++ b/arch/powerpc/kernel/idle_book3s.S
-@@ -250,7 +250,7 @@ fastsleep_workaround_at_entry:
- 	/* Fast sleep workaround */
- 	li	r3,1
- 	li	r4,1
--	bl	opal_rm_config_cpu_idle_state
-+	bl	opal_config_cpu_idle_state
+-/*
+- * Cache inhibitied accessors for use in real mode, you don't want to use these
+- * unless you know what you're doing.
+- *
+- * NB. These use the cpu byte ordering.
+- */
+-DEF_MMIO_OUT_X(out_rm8,   8, stbcix);
+-DEF_MMIO_OUT_X(out_rm16, 16, sthcix);
+-DEF_MMIO_OUT_X(out_rm32, 32, stwcix);
+-DEF_MMIO_IN_X(in_rm8,   8, lbzcix);
+-DEF_MMIO_IN_X(in_rm16, 16, lhzcix);
+-DEF_MMIO_IN_X(in_rm32, 32, lwzcix);
+-
+ #ifdef __powerpc64__
  
- 	/* Clear Lock bit */
- 	li	r0,0
-@@ -544,7 +544,7 @@ timebase_resync:
- 	 */
- 	ble	cr3,clear_lock
- 	/* Time base re-sync */
--	bl	opal_rm_resync_timebase;
-+	bl	opal_resync_timebase;
- 	/*
- 	 * If waking up from sleep, per core state is not lost, skip to
- 	 * clear_lock.
-@@ -633,7 +633,7 @@ hypervisor_state_restored:
- fastsleep_workaround_at_exit:
- 	li	r3,1
- 	li	r4,0
--	bl	opal_rm_config_cpu_idle_state
-+	bl	opal_config_cpu_idle_state
- 	b	timebase_resync
+-DEF_MMIO_OUT_X(out_rm64, 64, stdcix);
+-DEF_MMIO_IN_X(in_rm64, 64, ldcix);
+-
+ #ifdef __BIG_ENDIAN__
+ DEF_MMIO_OUT_D(out_be64, 64, std);
+ DEF_MMIO_IN_D(in_be64, 64, ld);
+@@ -242,35 +226,6 @@ static inline void out_be64(volatile u64 __iomem *addr, u64 val)
+ #endif
+ #endif /* __powerpc64__ */
  
+-
+-/*
+- * Simple Cache inhibited accessors
+- * Unlike the DEF_MMIO_* macros, these don't include any h/w memory
+- * barriers, callers need to manage memory barriers on their own.
+- * These can only be used in hypervisor real mode.
+- */
+-
+-static inline u32 _lwzcix(unsigned long addr)
+-{
+-	u32 ret;
+-
+-	__asm__ __volatile__("lwzcix %0,0, %1"
+-			     : "=r" (ret) : "r" (addr) : "memory");
+-	return ret;
+-}
+-
+-static inline void _stbcix(u64 addr, u8 val)
+-{
+-	__asm__ __volatile__("stbcix %0,0,%1"
+-		: : "r" (val), "r" (addr) : "memory");
+-}
+-
+-static inline void _stwcix(u64 addr, u32 val)
+-{
+-	__asm__ __volatile__("stwcix %0,0,%1"
+-		: : "r" (val), "r" (addr) : "memory");
+-}
+-
  /*
-diff --git a/arch/powerpc/kvm/book3s_hv_builtin.c b/arch/powerpc/kvm/book3s_hv_builtin.c
-index 5bb24be..d2a8268 100644
---- a/arch/powerpc/kvm/book3s_hv_builtin.c
-+++ b/arch/powerpc/kvm/book3s_hv_builtin.c
-@@ -229,8 +229,7 @@ void kvmhv_rm_send_ipi(int cpu)
- 	if (xics_phys)
- 		rm_writeb(xics_phys + XICS_MFRR, IPI_PRIORITY);
- 	else
--		opal_rm_int_set_mfrr(get_hard_smp_processor_id(cpu),
--				     IPI_PRIORITY);
-+		opal_int_set_mfrr(get_hard_smp_processor_id(cpu), IPI_PRIORITY);
+  * Low level IO stream instructions are defined out of line for now
+  */
+@@ -417,15 +372,64 @@ static inline void __raw_writeq(unsigned long v, volatile void __iomem *addr)
  }
  
  /*
-@@ -414,7 +413,7 @@ static long kvmppc_read_one_intr(bool *again)
- 	xics_phys = local_paca->kvm_hstate.xics_phys;
- 	if (!xics_phys) {
- 		/* Use OPAL to read the XIRR */
--		rc = opal_rm_int_get_xirr(&xirr, false);
-+		rc = opal_int_get_xirr(&xirr, false);
+- * Real mode version of the above. stdcix is only supposed to be used
+- * in hypervisor real mode as per the architecture spec.
++ * Real mode versions of the above. Those instructions are only supposed
++ * to be used in hypervisor real mode as per the architecture spec.
+  */
++static inline void __raw_rm_writeb(u8 val, volatile void __iomem *paddr)
++{
++	__asm__ __volatile__("stbcix %0,0,%1"
++		: : "r" (val), "r" (paddr) : "memory");
++}
++
++static inline void __raw_rm_writew(u16 val, volatile void __iomem *paddr)
++{
++	__asm__ __volatile__("sthcix %0,0,%1"
++		: : "r" (val), "r" (paddr) : "memory");
++}
++
++static inline void __raw_rm_writel(u32 val, volatile void __iomem *paddr)
++{
++	__asm__ __volatile__("stwcix %0,0,%1"
++		: : "r" (val), "r" (paddr) : "memory");
++}
++
+ static inline void __raw_rm_writeq(u64 val, volatile void __iomem *paddr)
+ {
+ 	__asm__ __volatile__("stdcix %0,0,%1"
+ 		: : "r" (val), "r" (paddr) : "memory");
+ }
+ 
++static inline u8 __raw_rm_readb(volatile void __iomem *paddr)
++{
++	u8 ret;
++	__asm__ __volatile__("lbzcix %0,0, %1"
++			     : "=r" (ret) : "r" (paddr) : "memory");
++	return ret;
++}
++
++static inline u16 __raw_rm_readw(volatile void __iomem *paddr)
++{
++	u16 ret;
++	__asm__ __volatile__("lhzcix %0,0, %1"
++			     : "=r" (ret) : "r" (paddr) : "memory");
++	return ret;
++}
++
++static inline u32 __raw_rm_readl(volatile void __iomem *paddr)
++{
++	u32 ret;
++	__asm__ __volatile__("lwzcix %0,0, %1"
++			     : "=r" (ret) : "r" (paddr) : "memory");
++	return ret;
++}
++
++static inline u64 __raw_rm_readq(volatile void __iomem *paddr)
++{
++	u64 ret;
++	__asm__ __volatile__("ldcix %0,0, %1"
++			     : "=r" (ret) : "r" (paddr) : "memory");
++	return ret;
++}
+ #endif /* __powerpc64__ */
+ 
+ /*
+diff --git a/arch/powerpc/include/asm/kvm_book3s_asm.h b/arch/powerpc/include/asm/kvm_book3s_asm.h
+index d318d43..0593d94 100644
+--- a/arch/powerpc/include/asm/kvm_book3s_asm.h
++++ b/arch/powerpc/include/asm/kvm_book3s_asm.h
+@@ -110,7 +110,7 @@ struct kvmppc_host_state {
+ 	u8 ptid;
+ 	struct kvm_vcpu *kvm_vcpu;
+ 	struct kvmppc_vcore *kvm_vcore;
+-	unsigned long xics_phys;
++	void __iomem *xics_phys;
+ 	u32 saved_xirr;
+ 	u64 dabr;
+ 	u64 host_mmcr[7];	/* MMCR 0,1,A, SIAR, SDAR, MMCR2, SIER */
+diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
+index 2da67bf..91c37c5 100644
+--- a/arch/powerpc/include/asm/kvm_ppc.h
++++ b/arch/powerpc/include/asm/kvm_ppc.h
+@@ -402,7 +402,7 @@ struct openpic;
+ extern void kvm_cma_reserve(void) __init;
+ static inline void kvmppc_set_xics_phys(int cpu, unsigned long addr)
+ {
+-	paca[cpu].kvm_hstate.xics_phys = addr;
++	paca[cpu].kvm_hstate.xics_phys = (void __iomem *)addr;
+ }
+ 
+ static inline u32 kvmppc_get_xics_latch(void)
+diff --git a/arch/powerpc/kvm/book3s_hv_builtin.c b/arch/powerpc/kvm/book3s_hv_builtin.c
+index d2a8268..960324a 100644
+--- a/arch/powerpc/kvm/book3s_hv_builtin.c
++++ b/arch/powerpc/kvm/book3s_hv_builtin.c
+@@ -192,12 +192,6 @@ long kvmppc_h_random(struct kvm_vcpu *vcpu)
+ 	return H_HARDWARE;
+ }
+ 
+-static inline void rm_writeb(unsigned long paddr, u8 val)
+-{
+-	__asm__ __volatile__("stbcix %0,0,%1"
+-		: : "r" (val), "r" (paddr) : "memory");
+-}
+-
+ /*
+  * Send an interrupt or message to another CPU.
+  * This can only be called in real mode.
+@@ -206,7 +200,7 @@ static inline void rm_writeb(unsigned long paddr, u8 val)
+  */
+ void kvmhv_rm_send_ipi(int cpu)
+ {
+-	unsigned long xics_phys;
++	void __iomem *xics_phys;
+ 	unsigned long msg = PPC_DBELL_TYPE(PPC_DBELL_SERVER);
+ 
+ 	/* On POWER9 we can use msgsnd for any destination cpu. */
+@@ -227,7 +221,7 @@ void kvmhv_rm_send_ipi(int cpu)
+ 	/* Else poke the target with an IPI */
+ 	xics_phys = paca[cpu].kvm_hstate.xics_phys;
+ 	if (xics_phys)
+-		rm_writeb(xics_phys + XICS_MFRR, IPI_PRIORITY);
++		__raw_rm_writeb(IPI_PRIORITY, xics_phys + XICS_MFRR);
+ 	else
+ 		opal_int_set_mfrr(get_hard_smp_processor_id(cpu), IPI_PRIORITY);
+ }
+@@ -397,7 +391,7 @@ long kvmppc_read_intr(void)
+ 
+ static long kvmppc_read_one_intr(bool *again)
+ {
+-	unsigned long xics_phys;
++	void __iomem *xics_phys;
+ 	u32 h_xirr;
+ 	__be32 xirr;
+ 	u32 xisr;
+@@ -417,7 +411,7 @@ static long kvmppc_read_one_intr(bool *again)
  		if (rc < 0)
  			return 1;
  	} else {
-@@ -449,8 +448,8 @@ static long kvmppc_read_one_intr(bool *again)
- 			_stbcix(xics_phys + XICS_MFRR, 0xff);
- 			_stwcix(xics_phys + XICS_XIRR, xirr);
+-		xirr = _lwzcix(xics_phys + XICS_XIRR);
++		xirr = __raw_rm_readl(xics_phys + XICS_XIRR);
+ 	}
+ 
+ 	/*
+@@ -445,8 +439,8 @@ static long kvmppc_read_one_intr(bool *again)
+ 	 */
+ 	if (xisr == XICS_IPI) {
+ 		if (xics_phys) {
+-			_stbcix(xics_phys + XICS_MFRR, 0xff);
+-			_stwcix(xics_phys + XICS_XIRR, xirr);
++			__raw_rm_writeb(0xff, xics_phys + XICS_MFRR);
++			__raw_rm_writel(xirr, xics_phys + XICS_XIRR);
  		} else {
--			opal_rm_int_set_mfrr(hard_smp_processor_id(), 0xff);
--			rc = opal_rm_int_eoi(h_xirr);
-+			opal_int_set_mfrr(hard_smp_processor_id(), 0xff);
-+			rc = opal_int_eoi(h_xirr);
- 			/* If rc > 0, there is another interrupt pending */
- 			*again = rc > 0;
- 		}
-@@ -474,8 +473,8 @@ static long kvmppc_read_one_intr(bool *again)
+ 			opal_int_set_mfrr(hard_smp_processor_id(), 0xff);
+ 			rc = opal_int_eoi(h_xirr);
+@@ -471,7 +465,8 @@ static long kvmppc_read_one_intr(bool *again)
+ 			 * we need to resend that IPI, bummer
+ 			 */
  			if (xics_phys)
- 				_stbcix(xics_phys + XICS_MFRR, IPI_PRIORITY);
+-				_stbcix(xics_phys + XICS_MFRR, IPI_PRIORITY);
++				__raw_rm_writeb(IPI_PRIORITY,
++						xics_phys + XICS_MFRR);
  			else
--				opal_rm_int_set_mfrr(hard_smp_processor_id(),
--						     IPI_PRIORITY);
-+				opal_int_set_mfrr(hard_smp_processor_id(),
-+						  IPI_PRIORITY);
- 			/* Let side effects complete */
- 			smp_mb();
- 			return 1;
+ 				opal_int_set_mfrr(hard_smp_processor_id(),
+ 						  IPI_PRIORITY);
 diff --git a/arch/powerpc/kvm/book3s_hv_rm_xics.c b/arch/powerpc/kvm/book3s_hv_rm_xics.c
-index 06edc43..de55f87 100644
+index de55f87..bae7419 100644
 --- a/arch/powerpc/kvm/book3s_hv_rm_xics.c
 +++ b/arch/powerpc/kvm/book3s_hv_rm_xics.c
-@@ -36,7 +36,7 @@ EXPORT_SYMBOL(kvm_irq_bypass);
+@@ -743,7 +743,7 @@ unsigned long eoi_rc;
  
- static void icp_rm_deliver_irq(struct kvmppc_xics *xics, struct kvmppc_icp *icp,
- 			    u32 new_irq);
--static int xics_opal_rm_set_server(unsigned int hw_irq, int server_cpu);
-+static int xics_opal_set_server(unsigned int hw_irq, int server_cpu);
- 
- /* -- ICS routines -- */
- static void ics_rm_check_resend(struct kvmppc_xics *xics,
-@@ -73,8 +73,8 @@ static inline void icp_send_hcore_msg(int hcore, struct kvm_vcpu *vcpu)
- 	if (paca[hcpu].kvm_hstate.xics_phys)
- 		icp_native_cause_ipi_rm(hcpu);
- 	else
--		opal_rm_int_set_mfrr(get_hard_smp_processor_id(hcpu),
--				     IPI_PRIORITY);
-+		opal_int_set_mfrr(get_hard_smp_processor_id(hcpu),
-+				  IPI_PRIORITY);
- }
- #else
- static inline void icp_send_hcore_msg(int hcore, struct kvm_vcpu *vcpu) { }
-@@ -730,7 +730,7 @@ int kvmppc_rm_h_eoi(struct kvm_vcpu *vcpu, unsigned long xirr)
- 			++vcpu->stat.pthru_host;
- 			if (state->intr_cpu != pcpu) {
- 				++vcpu->stat.pthru_bad_aff;
--				xics_opal_rm_set_server(state->host_irq, pcpu);
-+				xics_opal_set_server(state->host_irq, pcpu);
- 			}
- 			state->intr_cpu = -1;
- 		}
-@@ -758,16 +758,16 @@ static void icp_eoi(struct irq_chip *c, u32 hwirq, __be32 xirr, bool *again)
- 	if (xics_phys) {
- 		_stwcix(xics_phys + XICS_XIRR, xirr);
- 	} else {
--		rc = opal_rm_int_eoi(be32_to_cpu(xirr));
-+		rc = opal_int_eoi(be32_to_cpu(xirr));
- 		*again = rc > 0;
- 	}
- }
- 
--static int xics_opal_rm_set_server(unsigned int hw_irq, int server_cpu)
-+static int xics_opal_set_server(unsigned int hw_irq, int server_cpu)
+ static void icp_eoi(struct irq_chip *c, u32 hwirq, __be32 xirr, bool *again)
  {
- 	unsigned int mangle_cpu = get_hard_smp_processor_id(server_cpu) << 2;
+-	unsigned long xics_phys;
++	void __iomem *xics_phys;
+ 	int64_t rc;
  
--	return opal_rm_set_xive(hw_irq, mangle_cpu, DEFAULT_PRIORITY);
-+	return opal_set_xive(hw_irq, mangle_cpu, DEFAULT_PRIORITY);
+ 	rc = pnv_opal_pci_msi_eoi(c, hwirq);
+@@ -756,7 +756,7 @@ static void icp_eoi(struct irq_chip *c, u32 hwirq, __be32 xirr, bool *again)
+ 	/* EOI it */
+ 	xics_phys = local_paca->kvm_hstate.xics_phys;
+ 	if (xics_phys) {
+-		_stwcix(xics_phys + XICS_XIRR, xirr);
++		__raw_rm_writel(xirr, xics_phys + XICS_XIRR);
+ 	} else {
+ 		rc = opal_int_eoi(be32_to_cpu(xirr));
+ 		*again = rc > 0;
+diff --git a/arch/powerpc/platforms/powernv/rng.c b/arch/powerpc/platforms/powernv/rng.c
+index 5dcbdea..1a9d843 100644
+--- a/arch/powerpc/platforms/powernv/rng.c
++++ b/arch/powerpc/platforms/powernv/rng.c
+@@ -62,7 +62,7 @@ int powernv_get_random_real_mode(unsigned long *v)
+ 
+ 	rng = raw_cpu_read(powernv_rng);
+ 
+-	*v = rng_whiten(rng, in_rm64(rng->regs_real));
++	*v = rng_whiten(rng, __raw_rm_readq(rng->regs_real));
+ 
+ 	return 1;
  }
+diff --git a/arch/powerpc/sysdev/xics/icp-native.c b/arch/powerpc/sysdev/xics/icp-native.c
+index 8a6a043..f0f3f47 100644
+--- a/arch/powerpc/sysdev/xics/icp-native.c
++++ b/arch/powerpc/sysdev/xics/icp-native.c
+@@ -168,15 +168,15 @@ void icp_native_cause_ipi_rm(int cpu)
+ 	 * Need the physical address of the XICS to be
+ 	 * previously saved in kvm_hstate in the paca.
+ 	 */
+-	unsigned long xics_phys;
++	void __iomem *xics_phys;
  
- /*
-diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
-index 3aa40f1..a4525e2 100644
---- a/arch/powerpc/platforms/powernv/opal-wrappers.S
-+++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
-@@ -58,14 +58,16 @@ END_FTR_SECTION(0, 1);						\
- 
- #define OPAL_CALL(name, token)		\
-  _GLOBAL_TOC(name);			\
-+	mfmsr	r12;			\
- 	mflr	r0;			\
-+	andi.	r11,r12,MSR_IR;  	\
- 	std	r0,PPC_LR_STKOFF(r1);	\
- 	li	r0,token;		\
-+	beq	opal_real_call;         \
- 	OPAL_BRANCH(opal_tracepoint_entry) \
--	mfcr	r12;			\
--	stw	r12,8(r1);		\
-+	mfcr	r11;			\
-+	stw	r11,8(r1);		\
- 	li	r11,0;			\
--	mfmsr	r12;			\
- 	ori	r11,r11,MSR_EE;		\
- 	std	r12,PACASAVEDMSR(r13);	\
- 	andc	r12,r12,r11;		\
-@@ -98,6 +100,30 @@ opal_return:
- 	mtcr	r4;
- 	rfid
- 
-+opal_real_call:
-+	mfcr	r11
-+	stw	r11,8(r1)
-+	/* Set opal return address */
-+	LOAD_REG_ADDR(r11, opal_return_realmode)
-+	mtlr	r11
-+	li	r11,MSR_LE
-+	andc	r12,r12,r11
-+	mtspr	SPRN_HSRR1,r12
-+	LOAD_REG_ADDR(r11,opal)
-+	ld	r12,8(r11)
-+	ld	r2,0(r11)
-+	mtspr	SPRN_HSRR0,r12
-+	hrfid
-+
-+opal_return_realmode:
-+	FIXUP_ENDIAN
-+	ld	r2,PACATOC(r13);
-+	lwz	r11,8(r1);
-+	ld	r12,PPC_LR_STKOFF(r1)
-+	mtcr	r11;
-+	mtlr	r12
-+	blr
-+
- #ifdef CONFIG_TRACEPOINTS
- opal_tracepoint_entry:
- 	stdu	r1,-STACKFRAMESIZE(r1)
-@@ -123,7 +149,6 @@ opal_tracepoint_entry:
- 	ld	r9,STK_REG(R30)(r1)
- 	ld	r10,STK_REG(R31)(r1)
- 	LOAD_REG_ADDR(r11,opal_tracepoint_return)
--	mfcr	r12
- 	std	r11,16(r1)
- 	stw	r12,8(r1)
- 	li	r11,0
-@@ -155,36 +180,6 @@ opal_tracepoint_return:
- 	blr
+ 	/*
+ 	 * Just like the cause_ipi functions, it is required to
+-	 * include a full barrier (out8 includes a sync) before
+-	 * causing the IPI.
++	 * include a full barrier before causing the IPI.
+ 	 */
+ 	xics_phys = paca[cpu].kvm_hstate.xics_phys;
+-	out_rm8((u8 *)(xics_phys + XICS_MFRR), IPI_PRIORITY);
++	mb();
++	__raw_rm_writeb(IPI_PRIORITY, xics_phys + XICS_MFRR);
+ }
  #endif
  
--#define OPAL_CALL_REAL(name, token)			\
-- _GLOBAL_TOC(name);					\
--	mflr	r0;					\
--	std	r0,PPC_LR_STKOFF(r1);			\
--	li	r0,token;				\
--	mfcr	r12;					\
--	stw	r12,8(r1);				\
--							\
--	/* Set opal return address */			\
--	LOAD_REG_ADDR(r11, opal_return_realmode);	\
--	mtlr	r11;					\
--	mfmsr	r12;					\
--	li	r11,MSR_LE;				\
--	andc	r12,r12,r11;				\
--	mtspr	SPRN_HSRR1,r12;				\
--	LOAD_REG_ADDR(r11,opal);			\
--	ld	r12,8(r11);				\
--	ld	r2,0(r11);				\
--	mtspr	SPRN_HSRR0,r12;				\
--	hrfid
--
--opal_return_realmode:
--	FIXUP_ENDIAN
--	ld	r2,PACATOC(r13);
--	lwz	r11,8(r1);
--	ld	r12,PPC_LR_STKOFF(r1)
--	mtcr	r11;
--	mtlr	r12
--	blr
--
- 
- OPAL_CALL(opal_invalid_call,			OPAL_INVALID_CALL);
- OPAL_CALL(opal_console_write,			OPAL_CONSOLE_WRITE);
-@@ -208,7 +203,6 @@ OPAL_CALL(opal_pci_config_write_byte,		OPAL_PCI_CONFIG_WRITE_BYTE);
- OPAL_CALL(opal_pci_config_write_half_word,	OPAL_PCI_CONFIG_WRITE_HALF_WORD);
- OPAL_CALL(opal_pci_config_write_word,		OPAL_PCI_CONFIG_WRITE_WORD);
- OPAL_CALL(opal_set_xive,			OPAL_SET_XIVE);
--OPAL_CALL_REAL(opal_rm_set_xive,		OPAL_SET_XIVE);
- OPAL_CALL(opal_get_xive,			OPAL_GET_XIVE);
- OPAL_CALL(opal_register_exception_handler,	OPAL_REGISTER_OPAL_EXCEPTION_HANDLER);
- OPAL_CALL(opal_pci_eeh_freeze_status,		OPAL_PCI_EEH_FREEZE_STATUS);
-@@ -264,7 +258,6 @@ OPAL_CALL(opal_validate_flash,			OPAL_FLASH_VALIDATE);
- OPAL_CALL(opal_manage_flash,			OPAL_FLASH_MANAGE);
- OPAL_CALL(opal_update_flash,			OPAL_FLASH_UPDATE);
- OPAL_CALL(opal_resync_timebase,			OPAL_RESYNC_TIMEBASE);
--OPAL_CALL_REAL(opal_rm_resync_timebase,		OPAL_RESYNC_TIMEBASE);
- OPAL_CALL(opal_check_token,			OPAL_CHECK_TOKEN);
- OPAL_CALL(opal_dump_init,			OPAL_DUMP_INIT);
- OPAL_CALL(opal_dump_info,			OPAL_DUMP_INFO);
-@@ -280,9 +273,7 @@ OPAL_CALL(opal_sensor_read,			OPAL_SENSOR_READ);
- OPAL_CALL(opal_get_param,			OPAL_GET_PARAM);
- OPAL_CALL(opal_set_param,			OPAL_SET_PARAM);
- OPAL_CALL(opal_handle_hmi,			OPAL_HANDLE_HMI);
--OPAL_CALL_REAL(opal_rm_handle_hmi,		OPAL_HANDLE_HMI);
- OPAL_CALL(opal_config_cpu_idle_state,		OPAL_CONFIG_CPU_IDLE_STATE);
--OPAL_CALL_REAL(opal_rm_config_cpu_idle_state,	OPAL_CONFIG_CPU_IDLE_STATE);
- OPAL_CALL(opal_slw_set_reg,			OPAL_SLW_SET_REG);
- OPAL_CALL(opal_register_dump_region,		OPAL_REGISTER_DUMP_REGION);
- OPAL_CALL(opal_unregister_dump_region,		OPAL_UNREGISTER_DUMP_REGION);
-@@ -304,11 +295,7 @@ OPAL_CALL(opal_pci_get_presence_state,		OPAL_PCI_GET_PRESENCE_STATE);
- OPAL_CALL(opal_pci_get_power_state,		OPAL_PCI_GET_POWER_STATE);
- OPAL_CALL(opal_pci_set_power_state,		OPAL_PCI_SET_POWER_STATE);
- OPAL_CALL(opal_int_get_xirr,			OPAL_INT_GET_XIRR);
--OPAL_CALL_REAL(opal_rm_int_get_xirr,		OPAL_INT_GET_XIRR);
- OPAL_CALL(opal_int_set_cppr,			OPAL_INT_SET_CPPR);
- OPAL_CALL(opal_int_eoi,				OPAL_INT_EOI);
--OPAL_CALL_REAL(opal_rm_int_eoi,			OPAL_INT_EOI);
- OPAL_CALL(opal_int_set_mfrr,			OPAL_INT_SET_MFRR);
--OPAL_CALL_REAL(opal_rm_int_set_mfrr,		OPAL_INT_SET_MFRR);
- OPAL_CALL(opal_pci_tce_kill,			OPAL_PCI_TCE_KILL);
--OPAL_CALL_REAL(opal_rm_pci_tce_kill,		OPAL_PCI_TCE_KILL);
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index b07680c..a897958 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -1962,11 +1962,6 @@ static void pnv_pci_ioda2_tce_invalidate(struct iommu_table *tbl,
- 		if (phb->model == PNV_PHB_MODEL_PHB3 && phb->regs)
- 			pnv_pci_phb3_tce_invalidate(pe, rm, shift,
- 						    index, npages);
--		else if (rm)
--			opal_rm_pci_tce_kill(phb->opal_id,
--					     OPAL_PCI_TCE_KILL_PAGES,
--					     pe->pe_number, 1u << shift,
--					     index << shift, npages);
- 		else
- 			opal_pci_tce_kill(phb->opal_id,
- 					  OPAL_PCI_TCE_KILL_PAGES,
