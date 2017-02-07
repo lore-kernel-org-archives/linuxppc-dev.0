@@ -1,18 +1,23 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vHSVD29yJzDqBN
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Feb 2017 13:10:28 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vHSbj4VCkzDqBN
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Feb 2017 13:15:13 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
-Cc: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-Subject: Re: [RFC] powerpc/pseries: Increase busy loop in pseries_cpu_die
-In-Reply-To: <1486407496-12151-1-git-send-email-bauerman@linux.vnet.ibm.com>
-References: <1486407496-12151-1-git-send-email-bauerman@linux.vnet.ibm.com>
-Date: Tue, 07 Feb 2017 13:10:22 +1100
-Message-ID: <87o9yeg38x.fsf@concordia.ellerman.id.au>
+To: Greg KH <greg@kroah.com>, Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, stable@vger.kernel.org,
+ ukrishn@linux.vnet.ibm.com, vaibhav@linux.vnet.ibm.com,
+ fbarrat@linux.vnet.ibm.com, imunsie@au1.ibm.com
+Subject: Re: [v2] cxl: prevent read/write to AFU config space while AFU not
+ configured
+In-Reply-To: <20170206094356.GA8583@kroah.com>
+References: <3v8g1Z5Gdyz9t5m@ozlabs.org>
+ <1914c3dc-7e4d-30de-88b0-7959e6249f39@au1.ibm.com>
+ <f3a508e9-3c23-f929-7b81-fd803c920095@au1.ibm.com>
+ <20170206094356.GA8583@kroah.com>
+Date: Tue, 07 Feb 2017 13:15:13 +1100
+Message-ID: <87lgtig30u.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,66 +29,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com> writes:
+Greg KH <greg@kroah.com> writes:
 
-> When testing DLPAR CPU add/remove on a system under stress, pseries_cpu_die
-> doesn't wait long enough for a CPU to die and the kernel ends up crashing:
+> On Mon, Feb 06, 2017 at 12:15:59PM +1100, Andrew Donnellan wrote:
+>> On 27/01/17 11:57, Andrew Donnellan wrote:
+>> > On 27/01/17 11:40, Michael Ellerman wrote:
+>> > > Applied to powerpc next, thanks.
+>> > > 
+>> > > https://git.kernel.org/powerpc/c/14a3ae34bfd0bcb1cc12d55b06a858
+>> > 
+>> > Will fix the remaining locking issue in a follow up patch...
+>> 
+>> Stable team - please make sure this doesn't go in without
+>> http://patchwork.ozlabs.org/patch/724315/ once that's merged.
 >
-> [  446.143648] cpu 152 (hwid 152) Ready to die...
-> [  446.464057] cpu 153 (hwid 153) Ready to die...
-> [  446.473525] cpu 154 (hwid 154) Ready to die...
-> [  446.474077] cpu 155 (hwid 155) Ready to die...
-> [  446.483529] cpu 156 (hwid 156) Ready to die...
-> [  446.493532] cpu 157 (hwid 157) Ready to die...
-> [  446.494078] cpu 158 (hwid 158) Ready to die...
-> [  446.503527] cpu 159 (hwid 159) Ready to die...
-> [  446.664534] cpu 144 (hwid 144) Ready to die...
-> [  446.964113] cpu 145 (hwid 145) Ready to die...
-> [  446.973525] cpu 146 (hwid 146) Ready to die...
-> [  446.974094] cpu 147 (hwid 147) Ready to die...
-> [  446.983944] cpu 148 (hwid 148) Ready to die...
-> [  446.984062] cpu 149 (hwid 149) Ready to die...
-> [  446.993518] cpu 150 (hwid 150) Ready to die...
-> [  446.993543] Querying DEAD? cpu 150 (150) shows 2
-> [  446.994098] cpu 151 (hwid 151) Ready to die...
-> [  447.133726] cpu 136 (hwid 136) Ready to die...
-> [  447.403532] cpu 137 (hwid 137) Ready to die...
-> [  447.403772] cpu 138 (hwid 138) Ready to die...
-> [  447.403839] cpu 139 (hwid 139) Ready to die...
-> [  447.403887] cpu 140 (hwid 140) Ready to die...
-> [  447.403937] cpu 141 (hwid 141) Ready to die...
-> [  447.403979] cpu 142 (hwid 142) Ready to die...
-> [  447.404038] cpu 143 (hwid 143) Ready to die...
-> [  447.513546] cpu 128 (hwid 128) Ready to die...
-> [  447.693533] cpu 129 (hwid 129) Ready to die...
-> [  447.693999] cpu 130 (hwid 130) Ready to die...
-> [  447.703530] cpu 131 (hwid 131) Ready to die...
-> [  447.704087] Querying DEAD? cpu 132 (132) shows 2
-> [  447.704102] cpu 132 (hwid 132) Ready to die...
-> [  447.713534] cpu 133 (hwid 133) Ready to die...
-> [  447.714064] Querying DEAD? cpu 134 (134) shows 2
-> cpu 0x86: Vector: 300 (Data Access) at [c000000007b0fd40]
->     pc: 000000001ec3072c
->     lr: 000000001ec2fee0
->     sp: 1faf6bd0
->    msr: 8000000102801000
->    dar: 212d6c1a2a20c
->  dsisr: 42000000
->   current = 0xc000000474c6d600
->   paca    = 0xc000000007b6b600   softe: 0        irq_happened: 0x01
->     pid   = 0, comm = swapper/134
-> Linux version 4.8.0-34-generic (buildd@bos01-ppc64el-026) (gcc version 5.4.0 20160609 (Ubuntu/IBM 5.4.0-6ubuntu1~16.04.4) ) #36~16.04.1-Ubuntu SMP Wed Dec 21 18:53:20 UTC 2016 (Ubuntu 4.8.0-34.36~16.04.1-generic 4.8.11)
-> WARNING: exception is not recoverable, can't continue
->
-> This was reproduced in v4.10-rc6 as well, but I don't have a crash log
-> handy for that version right now. Sorry.
+> Ok, hopefully they show up in Linus's tree at the same time :)
 
-We shouldn't be crashing.
-
-So we need to fix that.
-
-We may also need to increase the timeout, though it's pretty gross TBH.
-
-But step one is make sure we don't crash.
+Yeah they will.
 
 cheers
