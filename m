@@ -1,44 +1,20 @@
-Return-Path: <andrew.donnellan@au1.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vHS4p2ggXzDqBN
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Feb 2017 12:51:54 +1100 (AEDT)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v171n2lS125424
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 6 Feb 2017 20:51:51 -0500
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
- by mx0b-001b2d01.pphosted.com with ESMTP id 28f1rm5qf7-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Feb 2017 20:51:51 -0500
-Received: from localhost
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
- Tue, 7 Feb 2017 11:51:48 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 3CE072CE8054
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Feb 2017 12:51:47 +1100 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v171pdYc8913018
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 7 Feb 2017 12:51:47 +1100
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v171pFkv001507
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 7 Feb 2017 12:51:15 +1100
-Subject: Re: [PATCH] powerpc/powernv: Remove unused variable in
- pnv_pci_sriov_disable()
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-References: <1484096945-11487-1-git-send-email-gwshan@linux.vnet.ibm.com>
-From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Date: Tue, 7 Feb 2017 12:50:50 +1100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vHSVD29yJzDqBN
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Feb 2017 13:10:28 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
+Cc: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
+Subject: Re: [RFC] powerpc/pseries: Increase busy loop in pseries_cpu_die
+In-Reply-To: <1486407496-12151-1-git-send-email-bauerman@linux.vnet.ibm.com>
+References: <1486407496-12151-1-git-send-email-bauerman@linux.vnet.ibm.com>
+Date: Tue, 07 Feb 2017 13:10:22 +1100
+Message-ID: <87o9yeg38x.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <1484096945-11487-1-git-send-email-gwshan@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Message-Id: <02e27d7b-be2c-bb07-9396-7e51b2d9783e@au1.ibm.com>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,13 +24,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/01/17 12:09, Gavin Shan wrote:
-> The local variable @iov isn't used, to remove it.
+Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com> writes:
+
+> When testing DLPAR CPU add/remove on a system under stress, pseries_cpu_die
+> doesn't wait long enough for a CPU to die and the kernel ends up crashing:
 >
-> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+> [  446.143648] cpu 152 (hwid 152) Ready to die...
+> [  446.464057] cpu 153 (hwid 153) Ready to die...
+> [  446.473525] cpu 154 (hwid 154) Ready to die...
+> [  446.474077] cpu 155 (hwid 155) Ready to die...
+> [  446.483529] cpu 156 (hwid 156) Ready to die...
+> [  446.493532] cpu 157 (hwid 157) Ready to die...
+> [  446.494078] cpu 158 (hwid 158) Ready to die...
+> [  446.503527] cpu 159 (hwid 159) Ready to die...
+> [  446.664534] cpu 144 (hwid 144) Ready to die...
+> [  446.964113] cpu 145 (hwid 145) Ready to die...
+> [  446.973525] cpu 146 (hwid 146) Ready to die...
+> [  446.974094] cpu 147 (hwid 147) Ready to die...
+> [  446.983944] cpu 148 (hwid 148) Ready to die...
+> [  446.984062] cpu 149 (hwid 149) Ready to die...
+> [  446.993518] cpu 150 (hwid 150) Ready to die...
+> [  446.993543] Querying DEAD? cpu 150 (150) shows 2
+> [  446.994098] cpu 151 (hwid 151) Ready to die...
+> [  447.133726] cpu 136 (hwid 136) Ready to die...
+> [  447.403532] cpu 137 (hwid 137) Ready to die...
+> [  447.403772] cpu 138 (hwid 138) Ready to die...
+> [  447.403839] cpu 139 (hwid 139) Ready to die...
+> [  447.403887] cpu 140 (hwid 140) Ready to die...
+> [  447.403937] cpu 141 (hwid 141) Ready to die...
+> [  447.403979] cpu 142 (hwid 142) Ready to die...
+> [  447.404038] cpu 143 (hwid 143) Ready to die...
+> [  447.513546] cpu 128 (hwid 128) Ready to die...
+> [  447.693533] cpu 129 (hwid 129) Ready to die...
+> [  447.693999] cpu 130 (hwid 130) Ready to die...
+> [  447.703530] cpu 131 (hwid 131) Ready to die...
+> [  447.704087] Querying DEAD? cpu 132 (132) shows 2
+> [  447.704102] cpu 132 (hwid 132) Ready to die...
+> [  447.713534] cpu 133 (hwid 133) Ready to die...
+> [  447.714064] Querying DEAD? cpu 134 (134) shows 2
+> cpu 0x86: Vector: 300 (Data Access) at [c000000007b0fd40]
+>     pc: 000000001ec3072c
+>     lr: 000000001ec2fee0
+>     sp: 1faf6bd0
+>    msr: 8000000102801000
+>    dar: 212d6c1a2a20c
+>  dsisr: 42000000
+>   current = 0xc000000474c6d600
+>   paca    = 0xc000000007b6b600   softe: 0        irq_happened: 0x01
+>     pid   = 0, comm = swapper/134
+> Linux version 4.8.0-34-generic (buildd@bos01-ppc64el-026) (gcc version 5.4.0 20160609 (Ubuntu/IBM 5.4.0-6ubuntu1~16.04.4) ) #36~16.04.1-Ubuntu SMP Wed Dec 21 18:53:20 UTC 2016 (Ubuntu 4.8.0-34.36~16.04.1-generic 4.8.11)
+> WARNING: exception is not recoverable, can't continue
+>
+> This was reproduced in v4.10-rc6 as well, but I don't have a crash log
+> handy for that version right now. Sorry.
 
-Reviewed-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+We shouldn't be crashing.
 
--- 
-Andrew Donnellan              OzLabs, ADL Canberra
-andrew.donnellan@au1.ibm.com  IBM Australia Limited
+So we need to fix that.
+
+We may also need to increase the timeout, though it's pretty gross TBH.
+
+But step one is make sure we don't crash.
+
+cheers
