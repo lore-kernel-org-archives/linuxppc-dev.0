@@ -1,15 +1,22 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vHfxQ45QpzDqBN
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Feb 2017 21:01:14 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vHhFJ0bV2zDqBv
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Feb 2017 22:00:04 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org
-Cc: anton@samba.org
-Subject: [PATCH] powerpc/powernv: Fix opal_exit tracepoint opcode
-Date: Tue,  7 Feb 2017 21:01:01 +1100
-Message-Id: <1486461661-12867-1-git-send-email-mpe@ellerman.id.au>
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+Cc: Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 2/2] powerpc/powernv: Add more BPF in defconfig
+In-Reply-To: <20170207075420.GJ4090@naverao1-tp.localdomain>
+References: <20170206025544.3292-1-mikey@neuling.org>
+ <20170206025544.3292-2-mikey@neuling.org>
+ <87tw86g8t3.fsf@concordia.ellerman.id.au>
+ <20170207075420.GJ4090@naverao1-tp.localdomain>
+Date: Tue, 07 Feb 2017 22:00:02 +1100
+Message-ID: <874m06b70t.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,41 +26,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently the opal_exit tracepoint usually shows the opcode as 0:
+"Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> writes:
+> On 2017/02/07 11:10AM, Michael Ellerman wrote:
+>> Michael Neuling <mikey@neuling.org> writes:
+>> > diff --git a/arch/powerpc/configs/powernv_defconfig b/arch/powerpc/configs/powernv_defconfig
+>> > index 7028dbc753..911b43e2c7 100644
+>> > --- a/arch/powerpc/configs/powernv_defconfig
+>> > +++ b/arch/powerpc/configs/powernv_defconfig
+>> > @@ -79,6 +80,10 @@ CONFIG_NETFILTER=y
+>> >  # CONFIG_NETFILTER_ADVANCED is not set
+>> >  CONFIG_BRIDGE=m
+>> >  CONFIG_VLAN_8021Q=m
+>> > +CONFIG_NET_SCHED=y
+>> > +CONFIG_NET_CLS_BPF=y
+>> > +CONFIG_NET_CLS_ACT=y
+>> > +CONFIG_NET_ACT_BPF=y
+>> 
+>> I'm inclined to make these =m.
+>> 
+>> I assume that would still work for bcc?
+>
+> Yes, that should work too.
 
-  <idle>-0     [047] d.h.   635.654292: opal_entry: opcode=63
-  <idle>-0     [047] d.h.   635.654296: opal_exit: opcode=0 retval=0
-  kopald-1209  [019] d...   636.420943: opal_entry: opcode=10
-  kopald-1209  [019] d...   636.420959: opal_exit: opcode=0 retval=0
+> As an aside, I had sent a patch to enable BPF_SYSCALL across powernv, 
+> pseries and ppc64 defconfigs:
+> https://patchwork.ozlabs.org/patch/721997/
 
-This is because we incorrectly load the opcode into r0 before calling
-__trace_opal_exit(), whereas it expects the opcode in r3 (first function
-parameter). In fact we are leaving the retval in r3, so opcode and
-retval will always show the same value.
+Thanks. That's better.
 
-Instead load the opcode into r3, resulting in:
+> It would be good to have the network related BPF configs enabled across 
+> all three.
 
-  <idle>-0     [040] d.h.   636.618625: opal_entry: opcode=63
-  <idle>-0     [040] d.h.   636.618627: opal_exit: opcode=63 retval=0
+I'll mush the patches all together and turn them all on across
+pseries/ppc64/powernv.
 
-Fixes: c49f63530bb6 ("powernv: Add OPAL tracepoints")
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/platforms/powernv/opal-wrappers.S | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
-index f7c19c9c57ed..63fe1b2b1175 100644
---- a/arch/powerpc/platforms/powernv/opal-wrappers.S
-+++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
-@@ -146,7 +146,7 @@ opal_tracepoint_entry:
- opal_tracepoint_return:
- 	std	r3,STK_REG(R31)(r1)
- 	mr	r4,r3
--	ld	r0,STK_REG(R23)(r1)
-+	ld	r3,STK_REG(R23)(r1)
- 	bl	__trace_opal_exit
- 	ld	r3,STK_REG(R31)(r1)
- 	addi	r1,r1,STACKFRAMESIZE
--- 
-2.7.4
+cheers
