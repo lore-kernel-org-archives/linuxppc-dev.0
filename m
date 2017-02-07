@@ -2,19 +2,18 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vHhFJ0bV2zDqBv
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Feb 2017 22:00:04 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vHhX135nKzDqBx
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Feb 2017 22:12:49 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-Cc: Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 2/2] powerpc/powernv: Add more BPF in defconfig
-In-Reply-To: <20170207075420.GJ4090@naverao1-tp.localdomain>
-References: <20170206025544.3292-1-mikey@neuling.org>
- <20170206025544.3292-2-mikey@neuling.org>
- <87tw86g8t3.fsf@concordia.ellerman.id.au>
- <20170207075420.GJ4090@naverao1-tp.localdomain>
-Date: Tue, 07 Feb 2017 22:00:02 +1100
-Message-ID: <874m06b70t.fsf@concordia.ellerman.id.au>
+To: Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: imunsie@au1.ibm.com
+Subject: Re: [PATCH] drivers/misc/cxl: Avoid unnecessary error message
+In-Reply-To: <43e94920-66a0-88af-81fe-5733ad7cf743@au1.ibm.com>
+References: <1485834216-25191-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ <43e94920-66a0-88af-81fe-5733ad7cf743@au1.ibm.com>
+Date: Tue, 07 Feb 2017 22:12:48 +1100
+Message-ID: <871svab6fj.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,38 +25,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-"Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> writes:
-> On 2017/02/07 11:10AM, Michael Ellerman wrote:
->> Michael Neuling <mikey@neuling.org> writes:
->> > diff --git a/arch/powerpc/configs/powernv_defconfig b/arch/powerpc/configs/powernv_defconfig
->> > index 7028dbc753..911b43e2c7 100644
->> > --- a/arch/powerpc/configs/powernv_defconfig
->> > +++ b/arch/powerpc/configs/powernv_defconfig
->> > @@ -79,6 +80,10 @@ CONFIG_NETFILTER=y
->> >  # CONFIG_NETFILTER_ADVANCED is not set
->> >  CONFIG_BRIDGE=m
->> >  CONFIG_VLAN_8021Q=m
->> > +CONFIG_NET_SCHED=y
->> > +CONFIG_NET_CLS_BPF=y
->> > +CONFIG_NET_CLS_ACT=y
->> > +CONFIG_NET_ACT_BPF=y
->> 
->> I'm inclined to make these =m.
->> 
->> I assume that would still work for bcc?
+Andrew Donnellan <andrew.donnellan@au1.ibm.com> writes:
+
+> On 31/01/17 14:43, Gavin Shan wrote:
+>> The following error message was observed. It's complaining M32
+>> memory window is missed on virtual PHB, which is a bit confusing.
+>> The problem is the memory windows are never updated from its
+>> device-tree node.
+>>
+>>    PCI: Memory resource 0 not set for host bridge \
+>>    /pciex@3fffe40000000/pci@0/device@0
+>>
+>> This avoids the unnecessary error message by updating the PHB's
+>> memory windows with pci_process_bridge_OF_ranges(). The function
+>> is exported as well.
+>>
+>> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 >
-> Yes, that should work too.
+> I talked this over with Gavin in person today.
+>
+> We don't set a memory window on the vPHB or its devices because it's not 
+> necessary.
+>
+> The effect of this patch is to copy the memory resources from the *real* 
+> PHB to the vPHB, as given through the device tree. It shouldn't have any 
+> practical effect other than squashing this message.
 
-> As an aside, I had sent a patch to enable BPF_SYSCALL across powernv, 
-> pseries and ppc64 defconfigs:
-> https://patchwork.ozlabs.org/patch/721997/
+It sounds a bit backward to me. If we don't need the resources then
+why have them?
 
-Thanks. That's better.
-
-> It would be good to have the network related BPF configs enabled across 
-> all three.
-
-I'll mush the patches all together and turn them all on across
-pseries/ppc64/powernv.
+If we have code that thinks that's an error, than maybe that's what
+needs fixing, or special casing for the vPHB?
 
 cheers
