@@ -2,18 +2,18 @@ Return-Path: <christophe.leroy@c-s.fr>
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vHdhn57gBzDqCh
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Feb 2017 20:05:13 +1100 (AEDT)
-Message-Id: <d25ee7a13b60dcd005c59169feacb18fb69a06c1.1486456900.git.christophe.leroy@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vHdhq2FjDzDqCh
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Feb 2017 20:05:15 +1100 (AEDT)
+Message-Id: <804a373374f8ea17d971c4b087fcbe24c0edced7.1486456900.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1486456900.git.christophe.leroy@c-s.fr>
 References: <cover.1486456900.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH 1/2] net: ethernet: ucc_geth: fix MEM_PART_MURAM mode
+Subject: [PATCH 2/2] soc/fsl/qe: get rid of immrbar_virt_to_phys()
 To: Li Yang <leoli@freescale.com>, Qiang Zhao <qiang.zhao@nxp.com>,
  Scott Wood <oss@buserror.net>, "David S. Miller" <davem@davemloft.net>
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  netdev@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Date: Tue,  7 Feb 2017 10:05:09 +0100 (CET)
+Date: Tue,  7 Feb 2017 10:05:11 +0100 (CET)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,56 +23,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Since commit 5093bb965a163 ("powerpc/QE: switch to the cpm_muram
-implementation"), muram area is not part of immrbar mapping anymore
-so immrbar_virt_to_phys() is not usable anymore.
+immrbar_virt_to_phys() is not used anymore
 
-Fixes: 5093bb965a163 ("powerpc/QE: switch to the cpm_muram implementation)
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- drivers/net/ethernet/freescale/ucc_geth.c | 8 +++-----
- include/soc/fsl/qe/qe.h                   | 1 +
- 2 files changed, 4 insertions(+), 5 deletions(-)
+ drivers/soc/fsl/qe/qe.c       |  4 +---
+ include/soc/fsl/qe/immap_qe.h | 19 -------------------
+ 2 files changed, 1 insertion(+), 22 deletions(-)
 
-diff --git a/drivers/net/ethernet/freescale/ucc_geth.c b/drivers/net/ethernet/freescale/ucc_geth.c
-index 3f7ae9f..f77ba9f 100644
---- a/drivers/net/ethernet/freescale/ucc_geth.c
-+++ b/drivers/net/ethernet/freescale/ucc_geth.c
-@@ -2594,11 +2594,10 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
- 		} else if (ugeth->ug_info->uf_info.bd_mem_part ==
- 			   MEM_PART_MURAM) {
- 			out_be32(&ugeth->p_send_q_mem_reg->sqqd[i].bd_ring_base,
--				 (u32) immrbar_virt_to_phys(ugeth->
--							    p_tx_bd_ring[i]));
-+				 (u32)qe_muram_dma(ugeth->p_tx_bd_ring[i]));
- 			out_be32(&ugeth->p_send_q_mem_reg->sqqd[i].
- 				 last_bd_completed_address,
--				 (u32) immrbar_virt_to_phys(endOfRing));
-+				 (u32)qe_muram_dma(endOfRing));
- 		}
- 	}
+diff --git a/drivers/soc/fsl/qe/qe.c b/drivers/soc/fsl/qe/qe.c
+index ade168f..d9c04f5 100644
+--- a/drivers/soc/fsl/qe/qe.c
++++ b/drivers/soc/fsl/qe/qe.c
+@@ -66,7 +66,7 @@ static unsigned int qe_num_of_snum;
  
-@@ -2844,8 +2843,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
- 		} else if (ugeth->ug_info->uf_info.bd_mem_part ==
- 			   MEM_PART_MURAM) {
- 			out_be32(&ugeth->p_rx_bd_qs_tbl[i].externalbdbaseptr,
--				 (u32) immrbar_virt_to_phys(ugeth->
--							    p_rx_bd_ring[i]));
-+				 (u32)qe_muram_dma(ugeth->p_rx_bd_ring[i]));
- 		}
- 		/* rest of fields handled by QE */
- 	}
-diff --git a/include/soc/fsl/qe/qe.h b/include/soc/fsl/qe/qe.h
-index 70339d7..0cd4c1147 100644
---- a/include/soc/fsl/qe/qe.h
-+++ b/include/soc/fsl/qe/qe.h
-@@ -243,6 +243,7 @@ static inline int qe_alive_during_sleep(void)
- #define qe_muram_free cpm_muram_free
- #define qe_muram_addr cpm_muram_addr
- #define qe_muram_offset cpm_muram_offset
-+#define qe_muram_dma cpm_muram_dma
+ static phys_addr_t qebase = -1;
  
- #define qe_setbits32(_addr, _v) iowrite32be(ioread32be(_addr) |  (_v), (_addr))
- #define qe_clrbits32(_addr, _v) iowrite32be(ioread32be(_addr) & ~(_v), (_addr))
+-phys_addr_t get_qe_base(void)
++static phys_addr_t get_qe_base(void)
+ {
+ 	struct device_node *qe;
+ 	int ret;
+@@ -90,8 +90,6 @@ phys_addr_t get_qe_base(void)
+ 	return qebase;
+ }
+ 
+-EXPORT_SYMBOL(get_qe_base);
+-
+ void qe_reset(void)
+ {
+ 	if (qe_immr == NULL)
+diff --git a/include/soc/fsl/qe/immap_qe.h b/include/soc/fsl/qe/immap_qe.h
+index c76ef30..7baaabd 100644
+--- a/include/soc/fsl/qe/immap_qe.h
++++ b/include/soc/fsl/qe/immap_qe.h
+@@ -464,25 +464,6 @@ struct qe_immap {
+ } __attribute__ ((packed));
+ 
+ extern struct qe_immap __iomem *qe_immr;
+-extern phys_addr_t get_qe_base(void);
+-
+-/*
+- * Returns the offset within the QE address space of the given pointer.
+- *
+- * Note that the QE does not support 36-bit physical addresses, so if
+- * get_qe_base() returns a number above 4GB, the caller will probably fail.
+- */
+-static inline phys_addr_t immrbar_virt_to_phys(void *address)
+-{
+-	void *q = (void *)qe_immr;
+-
+-	/* Is it a MURAM address? */
+-	if ((address >= q) && (address < (q + QE_IMMAP_SIZE)))
+-		return get_qe_base() + (address - q);
+-
+-	/* It's an address returned by kmalloc */
+-	return virt_to_phys(address);
+-}
+ 
+ #endif /* __KERNEL__ */
+ #endif /* _ASM_POWERPC_IMMAP_QE_H */
 -- 
 2.10.1
