@@ -1,16 +1,31 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from ozlabs.ru (ozlabs.ru [83.169.36.222])
- by lists.ozlabs.org (Postfix) with ESMTP id 3vHZBv1jNhzDqBN
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Feb 2017 17:27:35 +1100 (AEDT)
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
- David Gibson <david@gibson.dropbear.id.au>,
- Alex Williamson <alex.williamson@redhat.com>, kvm@vger.kernel.org
-Subject: [PATCH kernel] vfio/spapr_tce: Set window when adding additional
- groups to container
-Date: Tue,  7 Feb 2017 17:26:57 +1100
-Message-Id: <20170207062657.21606-1-aik@ozlabs.ru>
+Return-Path: <edumazet@google.com>
+Received: from mail-it0-x231.google.com (mail-it0-x231.google.com
+ [IPv6:2607:f8b0:4001:c0b::231])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vHZcP733rzDqBN
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Feb 2017 17:46:13 +1100 (AEDT)
+Received: by mail-it0-x231.google.com with SMTP id c7so73109027itd.1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Feb 2017 22:46:13 -0800 (PST)
+MIME-Version: 1.0
+In-Reply-To: <4206026c-f659-d690-b6b2-31d1cedf55cb@linux.vnet.ibm.com>
+References: <1485968734.6360.154.camel@edumazet-glaptop3.roam.corp.google.com>
+ <1485981445.4850.8.camel@kernel.crashing.org>
+ <87y3xpb5li.fsf@concordia.ellerman.id.au>
+ <CANn89iKVtGt=mL32BVryzSCHcuNR93jO+GzR+pgr-1NHast26g@mail.gmail.com>
+ <4206026c-f659-d690-b6b2-31d1cedf55cb@linux.vnet.ibm.com>
+From: Eric Dumazet <edumazet@google.com>
+Date: Mon, 6 Feb 2017 22:46:10 -0800
+Message-ID: <CANn89iJKKc80MO2Ysz_c-_-XerUUk01Fe5Pn59r7zRTUMtpZfA@mail.gmail.com>
+Subject: Re: [RFC] implement QUEUED spinlocks on powerpc
+To: panxinhui <xinhui@linux.vnet.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Eric Dumazet <eric.dumazet@gmail.com>, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev@lists.ozlabs.org,
+ Kevin Hao <haokexin@gmail.com>, Torsten Duwe <duwe@suse.de>,
+ Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,62 +35,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-If a container already has a group attached, attaching a new group
-should just program already created IOMMU tables to the hardware via
-the iommu_table_group_ops::set_window() callback.
+On Mon, Feb 6, 2017 at 10:21 PM, panxinhui <xinhui@linux.vnet.ibm.com> wrote:
 
-However 6f01cc692 "vfio/spapr: Add a helper to create default DMA window"
-did not just simplify the code but also removed the set_window() calls
-in the case of attaching groups to a container which already has tables
-so it broke VFIO PCI hotplug.
+> hi all
+>         I do some netperf tests and get some benchmark results.
+> I also attach my test script and netperf-result(Excel)
+>
+> There are two machine. one runs netserver and the other runs netperf
+> benchmark. 1000Mbps network is connected with them.
+>
+> #ip link infomation
+> 2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state
+> UNKNOWN mode DEFAULT group default qlen 1000
+>      link/ether ba:68:9c:14:32:02 brd ff:ff:ff:ff:ff:ff
+>
+> According to the results, there is not much performance gap with each other.
+> And as we are only testing the throughput, the pvqspinlock shows the
+> overhead of its pv stuff. but qspinlock shows a little improvement than
+> spinlock. My simple summary in this testcase is
+> qspinlock > spinlock > pvqspinlock.
+>
+> when run 200 concurrent netperf, I paste the total throughput here.
+>
+>         concurrent runners| total throughput | variance
+> -------------------------------------------
+> spinlock        | 199 | 66882.8 | 89.93
+> -------------------------------------------
+> qspinlock       | 199 | 66350.4 | 72.0239
+> -------------------------------------------
+> pvqspinlock     | 199 | 64740.5 | 85.7837
+>
+> You could see more data in nerperf.xlsx
+>
+> thanks
+> xinhui
 
-This reverts set_window() bits in tce_iommu_take_ownership_ddw().
 
-Fixes: 6f01cc692
-Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
----
- drivers/vfio/vfio_iommu_spapr_tce.c | 21 +++++++++++++++++++++
- 1 file changed, 21 insertions(+)
+Hi xinhui
 
-diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
-index 7690e5bf3cf1..14c62a8495a2 100644
---- a/drivers/vfio/vfio_iommu_spapr_tce.c
-+++ b/drivers/vfio/vfio_iommu_spapr_tce.c
-@@ -1245,6 +1245,8 @@ static void tce_iommu_release_ownership_ddw(struct tce_container *container,
- static long tce_iommu_take_ownership_ddw(struct tce_container *container,
- 		struct iommu_table_group *table_group)
- {
-+	long i, ret = 0;
-+
- 	if (!table_group->ops->create_table || !table_group->ops->set_window ||
- 			!table_group->ops->release_ownership) {
- 		WARN_ON_ONCE(1);
-@@ -1253,7 +1255,26 @@ static long tce_iommu_take_ownership_ddw(struct tce_container *container,
- 
- 	table_group->ops->take_ownership(table_group);
- 
-+	/* Set all windows to the new group */
-+	for (i = 0; i < IOMMU_TABLE_GROUP_MAX_TABLES; ++i) {
-+		struct iommu_table *tbl = container->tables[i];
-+		if (!tbl)
-+			continue;
-+
-+		ret = table_group->ops->set_window(table_group, i, tbl);
-+		if (ret)
-+			goto release_exit;
-+	}
-+
- 	return 0;
-+
-+release_exit:
-+	for (i = 0; i < IOMMU_TABLE_GROUP_MAX_TABLES; ++i)
-+		table_group->ops->unset_window(table_group, i);
-+
-+	table_group->ops->release_ownership(table_group);
-+
-+	return ret;
- }
- 
- static int tce_iommu_attach_group(void *iommu_data,
--- 
-2.11.0
+1Gbit NIC is too slow for this use case. I would try a 10Gbit NIC at least...
+
+Alternatively, you could use loopback interface.  (netperf -H 127.0.0.1)
+
+tc qd add dev lo root pfifo limit 10000
