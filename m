@@ -3,31 +3,30 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vHVhJ3JDKzDqBN
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Feb 2017 14:49:20 +1100 (AEDT)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v173mhpI088455
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 6 Feb 2017 22:49:18 -0500
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
- by mx0b-001b2d01.pphosted.com with ESMTP id 28f0efbs7w-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vHVhM5yLzzDqD2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Feb 2017 14:49:23 +1100 (AEDT)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v173mdUp140198
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 6 Feb 2017 22:49:21 -0500
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 28f3nfnfxn-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Feb 2017 22:49:17 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Feb 2017 22:49:21 -0500
 Received: from localhost
- by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 6 Feb 2017 20:49:16 -0700
+ Mon, 6 Feb 2017 20:49:20 -0700
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
 Cc: linuxppc-dev@lists.ozlabs.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [RFC PATCH 1/5] powerpc/mm/slice: Convert slice_mask high slice to a
- bitmap
-Date: Tue,  7 Feb 2017 09:18:49 +0530
+Subject: [RFC PATCH 2/5] powerpc/mm/slice: Update the function prototype
+Date: Tue,  7 Feb 2017 09:18:50 +0530
 In-Reply-To: <1486439333-22162-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1486439333-22162-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Message-Id: <1486439333-22162-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Message-Id: <1486439333-22162-3-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,302 +36,191 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In followup patch we want to increase the va range which will result
-in us requiring high_slices to have more than 64 bits. To enable this
-convert high_slices to bitmap. We keep the number bits same in this patch
-and later change that to larger value
+This avoid copying the slice_struct as function return value
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/page_64.h |  15 +++---
- arch/powerpc/mm/slice.c            | 106 ++++++++++++++++++++++++-------------
- 2 files changed, 76 insertions(+), 45 deletions(-)
+ arch/powerpc/mm/slice.c | 63 +++++++++++++++++++++++--------------------------
+ 1 file changed, 29 insertions(+), 34 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/page_64.h b/arch/powerpc/include/asm/page_64.h
-index dd5f0712afa2..7f72659b7999 100644
---- a/arch/powerpc/include/asm/page_64.h
-+++ b/arch/powerpc/include/asm/page_64.h
-@@ -98,19 +98,16 @@ extern u64 ppc64_pft_size;
- #define GET_LOW_SLICE_INDEX(addr)	((addr) >> SLICE_LOW_SHIFT)
- #define GET_HIGH_SLICE_INDEX(addr)	((addr) >> SLICE_HIGH_SHIFT)
- 
-+#ifndef __ASSEMBLY__
- /*
-- * 1 bit per slice and we have one slice per 1TB
-- * Right now we support only 64TB.
-- * IF we change this we will have to change the type
-- * of high_slices
-+ * One bit per slice. We have lower slices which cover 256MB segments
-+ * upto 4G range. That gets us 16 low slices. For the rest we track slices
-+ * in 1TB size.
-+ * 64 below is actually SLICE_NUM_HIGH to fixup complie errros
-  */
--#define SLICE_MASK_SIZE 8
--
--#ifndef __ASSEMBLY__
--
- struct slice_mask {
- 	u16 low_slices;
--	u64 high_slices;
-+	DECLARE_BITMAP(high_slices, 64);
- };
- 
- struct mm_struct;
 diff --git a/arch/powerpc/mm/slice.c b/arch/powerpc/mm/slice.c
-index 2b27458902ee..84dfb2b58870 100644
+index 84dfb2b58870..0ec750adbe7f 100644
 --- a/arch/powerpc/mm/slice.c
 +++ b/arch/powerpc/mm/slice.c
-@@ -36,11 +36,6 @@
- #include <asm/copro.h>
- #include <asm/hugetlb.h>
+@@ -75,27 +75,26 @@ static void slice_print_mask(const char *label, struct slice_mask mask) {}
  
--/* some sanity checks */
--#if (H_PGTABLE_RANGE >> 43) > SLICE_MASK_SIZE
--#error H_PGTABLE_RANGE exceeds slice_mask high_slices size
--#endif
--
- static DEFINE_SPINLOCK(slice_convert_lock);
+ #endif
  
- 
-@@ -49,7 +44,7 @@ int _slice_debug = 1;
- 
- static void slice_print_mask(const char *label, struct slice_mask mask)
- {
--	char	*p, buf[16 + 3 + 64 + 1];
-+	char	*p, buf[SLICE_NUM_LOW + 3 + SLICE_NUM_HIGH + 1];
- 	int	i;
- 
- 	if (!_slice_debug)
-@@ -60,8 +55,12 @@ static void slice_print_mask(const char *label, struct slice_mask mask)
- 	*(p++) = ' ';
- 	*(p++) = '-';
- 	*(p++) = ' ';
--	for (i = 0; i < SLICE_NUM_HIGH; i++)
--		*(p++) = (mask.high_slices & (1ul << i)) ? '1' : '0';
-+	for (i = 0; i < SLICE_NUM_HIGH; i++) {
-+		if (test_bit(i, mask.high_slices))
-+			*(p++) = '1';
-+		else
-+			*(p++) = '0';
-+	}
- 	*(p++) = 0;
- 
- 	printk(KERN_DEBUG "%s:%s\n", label, buf);
-@@ -80,7 +79,10 @@ static struct slice_mask slice_range_to_mask(unsigned long start,
- 					     unsigned long len)
+-static struct slice_mask slice_range_to_mask(unsigned long start,
+-					     unsigned long len)
++static void slice_range_to_mask(unsigned long start, unsigned long len,
++				struct slice_mask *ret)
  {
  	unsigned long end = start + len - 1;
--	struct slice_mask ret = { 0, 0 };
-+	struct slice_mask ret;
-+
-+	ret.low_slices = 0;
-+	bitmap_zero(ret.high_slices, SLICE_NUM_HIGH);
+-	struct slice_mask ret;
+ 
+-	ret.low_slices = 0;
+-	bitmap_zero(ret.high_slices, SLICE_NUM_HIGH);
++	ret->low_slices = 0;
++	bitmap_zero(ret->high_slices, SLICE_NUM_HIGH);
  
  	if (start < SLICE_LOW_TOP) {
  		unsigned long mend = min(end, SLICE_LOW_TOP);
-@@ -91,9 +93,8 @@ static struct slice_mask slice_range_to_mask(unsigned long start,
+ 		unsigned long mstart = min(start, SLICE_LOW_TOP);
+ 
+-		ret.low_slices = (1u << (GET_LOW_SLICE_INDEX(mend) + 1))
++		ret->low_slices = (1u << (GET_LOW_SLICE_INDEX(mend) + 1))
+ 			- (1u << GET_LOW_SLICE_INDEX(mstart));
  	}
  
  	if ((start + len) > SLICE_LOW_TOP)
--		ret.high_slices = (1ul << (GET_HIGH_SLICE_INDEX(end) + 1))
--			- (1ul << GET_HIGH_SLICE_INDEX(start));
--
-+		bitmap_set(ret.high_slices, GET_HIGH_SLICE_INDEX(start),
-+			   GET_HIGH_SLICE_INDEX(len));
- 	return ret;
+-		bitmap_set(ret.high_slices, GET_HIGH_SLICE_INDEX(start),
++		bitmap_set(ret->high_slices, GET_HIGH_SLICE_INDEX(start),
+ 			   GET_HIGH_SLICE_INDEX(len));
+-	return ret;
++	return;
  }
  
-@@ -130,9 +131,12 @@ static int slice_high_has_vma(struct mm_struct *mm, unsigned long slice)
+ static int slice_area_is_free(struct mm_struct *mm, unsigned long addr,
+@@ -129,53 +128,47 @@ static int slice_high_has_vma(struct mm_struct *mm, unsigned long slice)
+ 	return !slice_area_is_free(mm, start, end - start);
+ }
  
- static struct slice_mask slice_mask_for_free(struct mm_struct *mm)
+-static struct slice_mask slice_mask_for_free(struct mm_struct *mm)
++static void slice_mask_for_free(struct mm_struct *mm, struct slice_mask *ret)
  {
--	struct slice_mask ret = { 0, 0 };
-+	struct slice_mask ret;
+-	struct slice_mask ret;
  	unsigned long i;
  
-+	ret.low_slices = 0;
-+	bitmap_zero(ret.high_slices, SLICE_NUM_HIGH);
-+
+-	ret.low_slices = 0;
+-	bitmap_zero(ret.high_slices, SLICE_NUM_HIGH);
++	ret->low_slices = 0;
++	bitmap_zero(ret->high_slices, SLICE_NUM_HIGH);
+ 
  	for (i = 0; i < SLICE_NUM_LOW; i++)
  		if (!slice_low_has_vma(mm, i))
- 			ret.low_slices |= 1u << i;
-@@ -142,7 +146,7 @@ static struct slice_mask slice_mask_for_free(struct mm_struct *mm)
+-			ret.low_slices |= 1u << i;
++			ret->low_slices |= 1u << i;
+ 
+ 	if (mm->task_size <= SLICE_LOW_TOP)
+-		return ret;
++		return;
  
  	for (i = 0; i < SLICE_NUM_HIGH; i++)
  		if (!slice_high_has_vma(mm, i))
--			ret.high_slices |= 1ul << i;
-+			__set_bit(i, ret.high_slices);
- 
- 	return ret;
+-			__set_bit(i, ret.high_slices);
+-
+-	return ret;
++			__set_bit(i, ret->high_slices);
  }
-@@ -151,10 +155,13 @@ static struct slice_mask slice_mask_for_size(struct mm_struct *mm, int psize)
+ 
+-static struct slice_mask slice_mask_for_size(struct mm_struct *mm, int psize)
++static void slice_mask_for_size(struct mm_struct *mm, int psize, struct slice_mask *ret)
  {
  	unsigned char *hpsizes;
  	int index, mask_index;
--	struct slice_mask ret = { 0, 0 };
-+	struct slice_mask ret;
+-	struct slice_mask ret;
  	unsigned long i;
  	u64 lpsizes;
  
-+	ret.low_slices = 0;
-+	bitmap_zero(ret.high_slices, SLICE_NUM_HIGH);
-+
+-	ret.low_slices = 0;
+-	bitmap_zero(ret.high_slices, SLICE_NUM_HIGH);
++	ret->low_slices = 0;
++	bitmap_zero(ret->high_slices, SLICE_NUM_HIGH);
+ 
  	lpsizes = mm->context.low_slices_psize;
  	for (i = 0; i < SLICE_NUM_LOW; i++)
  		if (((lpsizes >> (i * 4)) & 0xf) == psize)
-@@ -165,7 +172,7 @@ static struct slice_mask slice_mask_for_size(struct mm_struct *mm, int psize)
- 		mask_index = i & 0x1;
- 		index = i >> 1;
- 		if (((hpsizes[index] >> (mask_index * 4)) & 0xf) == psize)
--			ret.high_slices |= 1ul << i;
-+			__set_bit(i, ret.high_slices);
- 	}
+-			ret.low_slices |= 1u << i;
++			ret->low_slices |= 1u << i;
  
- 	return ret;
-@@ -173,8 +180,13 @@ static struct slice_mask slice_mask_for_size(struct mm_struct *mm, int psize)
- 
- static int slice_check_fit(struct slice_mask mask, struct slice_mask available)
- {
-+	DECLARE_BITMAP(result, SLICE_NUM_HIGH);
-+
-+	bitmap_and(result, mask.high_slices,
-+		   available.high_slices, SLICE_NUM_HIGH);
-+
- 	return (mask.low_slices & available.low_slices) == mask.low_slices &&
--		(mask.high_slices & available.high_slices) == mask.high_slices;
-+		bitmap_equal(result, mask.high_slices, SLICE_NUM_HIGH);
- }
- 
- static void slice_flush_segments(void *parm)
-@@ -221,7 +233,7 @@ static void slice_convert(struct mm_struct *mm, struct slice_mask mask, int psiz
+ 	hpsizes = mm->context.high_slices_psize;
  	for (i = 0; i < SLICE_NUM_HIGH; i++) {
  		mask_index = i & 0x1;
  		index = i >> 1;
--		if (mask.high_slices & (1ul << i))
-+		if (test_bit(i, mask.high_slices))
- 			hpsizes[index] = (hpsizes[index] &
- 					  ~(0xf << (mask_index * 4))) |
- 				(((unsigned long)psize) << (mask_index * 4));
-@@ -257,7 +269,7 @@ static bool slice_scan_available(unsigned long addr,
- 		slice = GET_HIGH_SLICE_INDEX(addr);
- 		*boundary_addr = (slice + end) ?
- 			((slice + end) << SLICE_HIGH_SHIFT) : SLICE_LOW_TOP;
--		return !!(available.high_slices & (1ul << slice));
-+		return !!test_bit(slice, available.high_slices);
+ 		if (((hpsizes[index] >> (mask_index * 4)) & 0xf) == psize)
+-			__set_bit(i, ret.high_slices);
++			__set_bit(i, ret->high_slices);
  	}
+-
+-	return ret;
  }
  
-@@ -364,15 +376,24 @@ static unsigned long slice_find_area(struct mm_struct *mm, unsigned long len,
- 		return slice_find_area_bottomup(mm, len, mask, psize);
- }
+ static int slice_check_fit(struct slice_mask mask, struct slice_mask available)
+@@ -457,7 +450,7 @@ unsigned long slice_get_unmapped_area(unsigned long addr, unsigned long len,
+ 	/* First make up a "good" mask of slices that have the right size
+ 	 * already
+ 	 */
+-	good_mask = slice_mask_for_size(mm, psize);
++	slice_mask_for_size(mm, psize, &good_mask);
+ 	slice_print_mask(" good_mask", good_mask);
  
--#define or_mask(dst, src)	do {			\
--	(dst).low_slices |= (src).low_slices;		\
--	(dst).high_slices |= (src).high_slices;		\
--} while (0)
-+static inline void slice_or_mask(struct slice_mask *dst, struct slice_mask *src)
-+{
-+	DECLARE_BITMAP(result, SLICE_NUM_HIGH);
- 
--#define andnot_mask(dst, src)	do {			\
--	(dst).low_slices &= ~(src).low_slices;		\
--	(dst).high_slices &= ~(src).high_slices;	\
--} while (0)
-+	dst->low_slices |= src->low_slices;
-+	bitmap_or(result, dst->high_slices, src->high_slices, SLICE_NUM_HIGH);
-+	bitmap_copy(dst->high_slices, result, SLICE_NUM_HIGH);
-+}
-+
-+static inline void slice_andnot_mask(struct slice_mask *dst, struct slice_mask *src)
-+{
-+	DECLARE_BITMAP(result, SLICE_NUM_HIGH);
-+
-+	dst->low_slices &= ~src->low_slices;
-+
-+	bitmap_andnot(result, dst->high_slices, src->high_slices, SLICE_NUM_HIGH);
-+	bitmap_copy(dst->high_slices, result, SLICE_NUM_HIGH);
-+}
- 
+ 	/*
+@@ -482,7 +475,7 @@ unsigned long slice_get_unmapped_area(unsigned long addr, unsigned long len,
  #ifdef CONFIG_PPC_64K_PAGES
- #define MMU_PAGE_BASE	MMU_PAGE_64K
-@@ -384,15 +405,28 @@ unsigned long slice_get_unmapped_area(unsigned long addr, unsigned long len,
- 				      unsigned long flags, unsigned int psize,
- 				      int topdown)
- {
--	struct slice_mask mask = {0, 0};
-+	struct slice_mask mask;
- 	struct slice_mask good_mask;
--	struct slice_mask potential_mask = {0,0} /* silence stupid warning */;
--	struct slice_mask compat_mask = {0, 0};
-+	struct slice_mask potential_mask;
-+	struct slice_mask compat_mask;
- 	int fixed = (flags & MAP_FIXED);
- 	int pshift = max_t(int, mmu_psize_defs[psize].shift, PAGE_SHIFT);
- 	struct mm_struct *mm = current->mm;
- 	unsigned long newaddr;
- 
-+	/*
-+	 * init different masks
-+	 */
-+	mask.low_slices = 0;
-+	bitmap_zero(mask.high_slices, SLICE_NUM_HIGH);
-+
-+	/* silence stupid warning */;
-+	potential_mask.low_slices = 0;
-+	bitmap_zero(potential_mask.high_slices, SLICE_NUM_HIGH);
-+
-+	compat_mask.low_slices = 0;
-+	bitmap_zero(compat_mask.high_slices, SLICE_NUM_HIGH);
-+
- 	/* Sanity checks */
- 	BUG_ON(mm->task_size == 0);
- 	VM_BUG_ON(radix_enabled());
-@@ -450,7 +484,7 @@ unsigned long slice_get_unmapped_area(unsigned long addr, unsigned long len,
+ 	/* If we support combo pages, we can allow 64k pages in 4k slices */
  	if (psize == MMU_PAGE_64K) {
- 		compat_mask = slice_mask_for_size(mm, MMU_PAGE_4K);
+-		compat_mask = slice_mask_for_size(mm, MMU_PAGE_4K);
++		slice_mask_for_size(mm, MMU_PAGE_4K, &compat_mask);
  		if (fixed)
--			or_mask(good_mask, compat_mask);
-+			slice_or_mask(&good_mask, &compat_mask);
+ 			slice_or_mask(&good_mask, &compat_mask);
  	}
- #endif
+@@ -491,7 +484,7 @@ unsigned long slice_get_unmapped_area(unsigned long addr, unsigned long len,
+ 	/* First check hint if it's valid or if we have MAP_FIXED */
+ 	if (addr != 0 || fixed) {
+ 		/* Build a mask for the requested range */
+-		mask = slice_range_to_mask(addr, len);
++		slice_range_to_mask(addr, len, &mask);
+ 		slice_print_mask(" mask", mask);
  
-@@ -485,7 +519,7 @@ unsigned long slice_get_unmapped_area(unsigned long addr, unsigned long len,
+ 		/* Check if we fit in the good mask. If we do, we just return,
+@@ -518,7 +511,7 @@ unsigned long slice_get_unmapped_area(unsigned long addr, unsigned long len,
+ 	/* We don't fit in the good mask, check what other slices are
  	 * empty and thus can be converted
  	 */
- 	potential_mask = slice_mask_for_free(mm);
--	or_mask(potential_mask, good_mask);
-+	slice_or_mask(&potential_mask, &good_mask);
+-	potential_mask = slice_mask_for_free(mm);
++	slice_mask_for_free(mm, &potential_mask);
+ 	slice_or_mask(&potential_mask, &good_mask);
  	slice_print_mask(" potential", potential_mask);
  
- 	if ((addr != 0 || fixed) && slice_check_fit(mask, potential_mask)) {
-@@ -518,7 +552,7 @@ unsigned long slice_get_unmapped_area(unsigned long addr, unsigned long len,
- #ifdef CONFIG_PPC_64K_PAGES
- 	if (addr == -ENOMEM && psize == MMU_PAGE_64K) {
- 		/* retry the search with 4k-page slices included */
--		or_mask(potential_mask, compat_mask);
-+		slice_or_mask(&potential_mask, &compat_mask);
- 		addr = slice_find_area(mm, len, potential_mask, psize,
- 				       topdown);
- 	}
-@@ -532,8 +566,8 @@ unsigned long slice_get_unmapped_area(unsigned long addr, unsigned long len,
+@@ -561,7 +554,7 @@ unsigned long slice_get_unmapped_area(unsigned long addr, unsigned long len,
+ 	if (addr == -ENOMEM)
+ 		return -ENOMEM;
+ 
+-	mask = slice_range_to_mask(addr, len);
++	slice_range_to_mask(addr, len, &mask);
+ 	slice_dbg(" found potential area at 0x%lx\n", addr);
  	slice_print_mask(" mask", mask);
  
-  convert:
--	andnot_mask(mask, good_mask);
--	andnot_mask(mask, compat_mask);
-+	slice_andnot_mask(&mask, &good_mask);
-+	slice_andnot_mask(&mask, &compat_mask);
- 	if (mask.low_slices || mask.high_slices) {
- 		slice_convert(mm, mask, psize);
- 		if (psize > MMU_PAGE_BASE)
-@@ -701,7 +735,7 @@ int is_hugepage_only_range(struct mm_struct *mm, unsigned long addr,
+@@ -693,9 +686,11 @@ void slice_set_user_psize(struct mm_struct *mm, unsigned int psize)
+ void slice_set_range_psize(struct mm_struct *mm, unsigned long start,
+ 			   unsigned long len, unsigned int psize)
+ {
+-	struct slice_mask mask = slice_range_to_mask(start, len);
++	struct slice_mask mask;
+ 
+ 	VM_BUG_ON(radix_enabled());
++
++	slice_range_to_mask(start, len, &mask);
+ 	slice_convert(mm, mask, psize);
+ }
+ 
+@@ -728,13 +723,13 @@ int is_hugepage_only_range(struct mm_struct *mm, unsigned long addr,
+ 	if (radix_enabled())
+ 		return 0;
+ 
+-	mask = slice_range_to_mask(addr, len);
+-	available = slice_mask_for_size(mm, psize);
++	slice_range_to_mask(addr, len, &mask);
++	slice_mask_for_size(mm, psize, &available);
+ #ifdef CONFIG_PPC_64K_PAGES
+ 	/* We need to account for 4k slices too */
  	if (psize == MMU_PAGE_64K) {
  		struct slice_mask compat_mask;
- 		compat_mask = slice_mask_for_size(mm, MMU_PAGE_4K);
--		or_mask(available, compat_mask);
-+		slice_or_mask(&available, &compat_mask);
+-		compat_mask = slice_mask_for_size(mm, MMU_PAGE_4K);
++		slice_mask_for_size(mm, MMU_PAGE_4K, &compat_mask);
+ 		slice_or_mask(&available, &compat_mask);
  	}
  #endif
- 
 -- 
 2.7.4
