@@ -1,22 +1,26 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mhiramat@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vHQx30Jl3zDqD2
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Feb 2017 12:00:07 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Douglas Miller <dougmill@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: xmon memory dump does not handle LE
-In-Reply-To: <4efc7afd-647c-106d-ca90-5f736514f5fc@linux.vnet.ibm.com>
-References: <2a0e256f-4947-e94d-7f79-5451b3c90f9f@linux.vnet.ibm.com>
- <87a8a4avx3.fsf@concordia.ellerman.id.au>
- <d245dc28-5075-8631-4ff1-1039ad88ccd5@linux.vnet.ibm.com>
- <87vasra7lp.fsf@concordia.ellerman.id.au>
- <4efc7afd-647c-106d-ca90-5f736514f5fc@linux.vnet.ibm.com>
-Date: Tue, 07 Feb 2017 12:00:06 +1100
-Message-ID: <87r33ag6i1.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vHR3j57yRzDqBQ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Feb 2017 12:05:53 +1100 (AEDT)
+Date: Tue, 7 Feb 2017 10:05:41 +0900
+From: Masami Hiramatsu <mhiramat@kernel.org>
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, Anju T Sudhakar
+ <anju@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, ananth@in.ibm.com,
+ mahesh@linux.vnet.ibm.com, paulus@samba.org, mhiramat@kernel.org,
+ srikar@linux.vnet.ibm.com
+Subject: Re: [PATCH V3 3/4] arch/powerpc: Implement Optprobes
+Message-Id: <20170207100541.7860e846f3def13a628bb05d@kernel.org>
+In-Reply-To: <20170203193949.GD4090@naverao1-tp.localdomain>
+References: <1482153507-17350-1-git-send-email-anju@linux.vnet.ibm.com>
+ <1482153507-17350-2-git-send-email-anju@linux.vnet.ibm.com>
+ <87a8a6dvwo.fsf@concordia.ellerman.id.au>
+ <20170203193949.GD4090@naverao1-tp.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,37 +30,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Douglas Miller <dougmill@linux.vnet.ibm.com> writes:
+On Sat, 4 Feb 2017 01:09:49 +0530
+"Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
 
 > Hi Michael,
->
-> Yes, your patch seems a more complete solution. The idea of "d1", "d2", 
-> "d4", and "d8" commands is more what I needed and makes more sense to 
-> someone hitting xmon "cold". I'll work on getting your patch submitted.
->
->
-> Question on these sorts of patches (PPC only), do we submit initially to 
-> upstream, or here on this (PPC) mailing list?
+> Thanks for the review! I'll defer to Anju on most of the aspects, but...
+> 
+> On 2017/02/01 09:53PM, Michael Ellerman wrote:
+> > Anju T Sudhakar <anju@linux.vnet.ibm.com> writes:
+> > 
+> > > +static void optimized_callback(struct optimized_kprobe *op,
+> > > +			       struct pt_regs *regs)
+> > > +{
+> > > +	struct kprobe_ctlblk *kcb = get_kprobe_ctlblk();
+> > > +	unsigned long flags;
+> > > +
+> > > +	/* This is possible if op is under delayed unoptimizing */
+> > > +	if (kprobe_disabled(&op->kp))
+> > > +		return;
+> > > +
+> > > +	local_irq_save(flags);
+> > 
+> > What is that protecting against? Because on powerpc it doesn't actually
+> > disable interrupts, it just masks some of them, the perf interrupt for
+> > example can still run.
+> 
+> That's an excellent catch, as always! :)
+> 
+> This is meant to prevent us from missing kprobe hits while processing 
+> interrupts that arrive when this optprobe is being handled. And you are 
+> totally right -- we would miss kprobe hits during PMI handling with the 
+> current approach. We need a hard_irq_disable() there.
 
-Yeah send them here. Patches that are only touch powerpc should come
-here, from where I merge them and then send them to Linus.
+One note: it depends on the arch implementation of kprobes, since this
+is only for "emulating" the int3 behavior on x86 for compatibility.
+On x86, int3 is disabling interrupt automatically, so all the kprobes
+user handlers will be run under irq-disabled. This means that user may
+write their code to run as such condition. They even can not know
+that is optimized or not at programming timing, because the kprobe
+will be optimized after a while from enabled it.
 
-Anything that touches powerpc and some other code should at least be
-CC'ed here.
+So the important point is that you have to keep it compatible of
+unoptimized kprobes.
 
-If you're ever in doubt where to send a patch you can use:
+Thank you,
 
-  $ ./scripts/get_maintainer.pl --nogit-fallback --no-rolestats -f arch/powerpc/xmon/xmon.c
-  Benjamin Herrenschmidt <benh@kernel.crashing.org>
-  Paul Mackerras <paulus@samba.org>
-  Michael Ellerman <mpe@ellerman.id.au>
-  linuxppc-dev@lists.ozlabs.org
-  linux-kernel@vger.kernel.org
-
-> It would be nice to get this into the distros as soon as possible.
-
-This isn't a bug fix so the distros won't pick it up automatically.
-You'll have to ask them specifically to take a backport.
-
-
-cheers
+-- 
+Masami Hiramatsu <mhiramat@kernel.org>
