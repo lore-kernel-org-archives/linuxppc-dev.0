@@ -1,22 +1,17 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
- [IPv6:2607:f8b0:400e:c05::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vHTWn6FxlzDqBN
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Feb 2017 13:56:53 +1100 (AEDT)
-Received: by mail-pg0-x244.google.com with SMTP id 75so10696904pgf.3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Feb 2017 18:56:53 -0800 (PST)
-From: Balbir Singh <bsingharora@gmail.com>
-Date: Tue, 7 Feb 2017 08:26:45 +0530
-To: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [RFC] powerpc/pseries: Increase busy loop in pseries_cpu_die
-Message-ID: <20170207025645.GB22303@localhost.localdomain>
-References: <1486407496-12151-1-git-send-email-bauerman@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1486407496-12151-1-git-send-email-bauerman@linux.vnet.ibm.com>
+Return-Path: <liu.hailong6@zte.com.cn>
+Received: from mx5.zte.com.cn (mx5.zte.com.cn [63.217.80.70])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3vHT4y02JszDqBN
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Feb 2017 13:37:05 +1100 (AEDT)
+From: Liu Hailong <liu.hailong6@zte.com.cn>
+To: benh@kernel.crashing.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ jiang.biao2@zte.com.cn, liu.hailong6@zte.com.cn,
+ jiang.xuexin@zte.com.cn, liu.song11@zte.com.cn, huang.jian@zte.com.cn,
+ zhong.weidong@zte.com.cn
+Subject: [PATCH] Powerpc64: Fixup oops when debug programs with
+ CONFIG_RELOCATABLE=y
+Date: Tue, 7 Feb 2017 10:35:52 +0800
+Message-Id: <1486434952-2093-1-git-send-email-liu.hailong6@zte.com.cn>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,88 +21,109 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Feb 06, 2017 at 04:58:16PM -0200, Thiago Jung Bauermann wrote:
-> [  447.714064] Querying DEAD? cpu 134 (134) shows 2
-> cpu 0x86: Vector: 300 (Data Access) at [c000000007b0fd40]
->     pc: 000000001ec3072c
->     lr: 000000001ec2fee0
->     sp: 1faf6bd0
->    msr: 8000000102801000
->    dar: 212d6c1a2a20c
+From: LiuHailong <liu.hailong6@zte.com.cn>
 
-This looks like we accessed a bad address, but why?
+Debug interrupts can be taken during regular program or a standard
+interrupt, the EA of the instruction causing the interrupt will be
+kept in DSRR0.
+Kernel will check if this value is between [interrupt_base_book3e,
+__end_interrupts].
+However, when the kernel build with CONFIG_RELOCATABLE, it can't get
+EA of those lables by LOAD_REG_IMMEDIATE(r14,interrupt_base_book3e)
+and LOAD_REG_IMMEDIATE(r15,__end_interrupts),then it cases problems
+later.
+At the same time, r2(toc) are not usable here, so LOAD_REG_ADDR()
+dosen't work neither. So we use the *name@got* to get the EV of two
+lables directly.
+This patch can fix the problem and remove the oops when we gdb a
+program with single-step.
 
->  dsisr: 42000000
->   current = 0xc000000474c6d600
->   paca    = 0xc000000007b6b600   softe: 0        irq_happened: 0x01
->     pid   = 0, comm = swapper/134
-> Linux version 4.8.0-34-generic (buildd@bos01-ppc64el-026) (gcc version 5.4.0 20160609 (Ubuntu/IBM 5.4.0-6ubuntu1~16.04.4) ) #36~16.04.1-Ubuntu SMP Wed Dec 21 18:53:20 UTC 2016 (Ubuntu 4.8.0-34.36~16.04.1-generic 4.8.11)
-> WARNING: exception is not recoverable, can't continue
-> 
-> This was reproduced in v4.10-rc6 as well, but I don't have a crash log
-> handy for that version right now. Sorry.
-> 
-> This is a race between one CPU stopping and another one calling
-> pseries_cpu_die to wait for it to stop. That function does a short
-> busy loop calling RTAS query-cpu-stopped-state on the stopping CPU
-> to verify that it is stopped.
-> 
-> As can be seen in the dmesg right before or after the "Querying DEAD?"
-> messages, if pseries_cpu_die waited a little longer it would have seen
-> the CPU in the stopped state.
-> 
-> I see two cases that can be causing this race:
-> 
-> 1. It's possible that CPU 134 was inactive at the time it was unplugged.
->    In that case, dlpar_offline_cpu calls H_PROD on the CPU and immediately
->    calls pseries_cpu_die. Meanwhile, the prodded CPU activates and start
->    the process of stopping itself. It's possible that the busy loop is not
->    long enough to allow for the CPU to wake up and complete the stopping
->    process.
-> 2. If CPU 134 was online at the time it was unplugged, it would have gone
->    through the new CPU hotplug state machine in kernel/cpu.c that was
->    introduced in v4.6 to get itself stopped. It's possible that the busy
->    loop in pseries_cpu_die was long enough for the older hotplug code but
->    not for the new hotplug state machine.
-> 
-> Either way, the solution is the same: wait an adequate amount in
-> pseries_cpu_die.
-> 
-> The simple solution is to increase the number of tries in the loop.
-> This was done to solve a similar problem in
-> commit 940ce422a367 ("powerpc/pseries: Increase cpu die timeout"), so
-> it's not as lame as it sounds. :-)
-> 
-> Signed-off-by: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-> ---
-> 
-> Notes:
->     A solution that is probably better is to have pseries_cpu_die wait
->     on a per-CPU semaphore at the beginning of the function, before doing a
->     short busy loop. Then the CPU that is stopping unlocks that semaphore right
->     before stopping itself, probably at pseries_mach_cpu_die.
->     
->     What do you think? I can implement that if there is interest.
-> 
->  arch/powerpc/platforms/pseries/hotplug-cpu.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-> index a1b63e00b2f7..3d43317eec1b 100644
-> --- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
-> +++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-> @@ -206,7 +206,7 @@ static void pseries_cpu_die(unsigned int cpu)
->  		}
->  	} else if (get_preferred_offline_state(cpu) == CPU_STATE_OFFLINE) {
->  
-> -		for (tries = 0; tries < 25; tries++) {
-> +		for (tries = 0; tries < 5000; tries++) {
+Test programs test.c shows as follows:
+#include <fcntl.h>
+#include <stdio.h>
+int main(int argc, char *argv[])
+{
+	if (access("/proc/sys/kernel/perf_event_paranoid", F_OK) == -1)
+		printf("Kernel doesn't have perf_event support\n");
+}
 
-This fixes some of the asymmetry between handling of CPU_STATE_INACTIVE
-and CPU_STATE_OFFLINE, but I think we can probably move the cpu_relax()
-to msleep(1). 
+Steps to reproduce the bug, for example:
+ 1) ./gdb ./test
+ 2) (gdb) b access
+ 3) (gdb) r
+ 4) (gdb) s
 
-Please also see
-940ce42 powerpc/pseries: Increase cpu die timeout
+Then will trigger the oops, it looks like:
+(gdb) s
+Single stepping Oops: Exception in kernel mode, sig: 5 [#2]
+PREEMPT CoreNet Generic
+Modules linked in:
+CPU: 0 PID: 1135 Comm: test Tainted: G    D    Linux (none) 4.9.5 #79
+task: c000000079199580 ti: c00000007ffc4000 task.ti: c000000074064000
+NIP: c00000000001a1e4 LR: 000000001000103c CTR: 000000001000100c
+REGS: c00000007ffc7cf0 TRAP: 0d08   Tainted: G   D  (Linux (none) 4.9.5)
+MSR: 0000000080021000 <CE,ME>  CR: 24000442  XER: 00000000
+SOFTE: 1
+GPR00: 0000000010001274 00000000ffffeba0 00000000100ab4b0 00000000100764a4
+GPR04: 0000000000000000 00000000ffffee2c 00000000ffffee54 00000000100a44c8
+GPR08: 0000000000000001 0000000010070000 00000000100a0000 0000000000000001
+GPR12: 000000004347432f 00000000100aa648 0000000000000000 0000000000000000
+GPR16: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
+GPR20: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
+GPR24: 0000000000000000 0000000010001950 0000000010001850 0000000000000000
+GPR28: 0000000000000000 00000000100000f4 0000000000000000 00000000ffffeba0
+NIP [c00000000001a1e4] interrupt_base_book3e+0x1e4/0x348
+LR [000000001000103c] 0x1000103c
+Call Trace:
+Instruction dump:
+00000000 00000000 00000000 60000000 4800e600 00000000 00000000 00000000
+00000000 00000000 00000000 60000000 <4800e588> 00000000 00000000 00000000
 
-Balbir Singh.
+Signed-off-by: Liu Hailong <liu.hailong6@zte.com.cn>
+Signed-off-by: Jiang Xuexin <jiang.xuexin@zte.com.cn>
+Reviewed-by: Jiang Biao <jiang.biao2@zte.com.cn>
+Reviewed-by: Liu Song <liu.song11@zte.com.cn>
+Reviewed-by: Huang Jian <huang.jian@zte.com.cn>
+---
+ arch/powerpc/kernel/exceptions-64e.S |   12 ++++++++++++
+ 1 files changed, 12 insertions(+), 0 deletions(-)
+ mode change 100644 => 100755 arch/powerpc/kernel/exceptions-64e.S
+
+diff --git a/arch/powerpc/kernel/exceptions-64e.S b/arch/powerpc/kernel/exceptions-64e.S
+old mode 100644
+new mode 100755
+index 38a1f96..ca03eb2
+--- a/arch/powerpc/kernel/exceptions-64e.S
++++ b/arch/powerpc/kernel/exceptions-64e.S
+@@ -735,8 +735,14 @@ END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
+ 	andis.	r15,r14,(DBSR_IC|DBSR_BT)@h
+ 	beq+	1f
+
++#ifdef CONFIG_RELOCATABLE
++	ld	r15,PACATOC(r13)
++	ld	r14,interrupt_base_book3e@got(r15)
++	ld	r15,__end_interrupts@got(r15)
++#else
+ 	LOAD_REG_IMMEDIATE(r14,interrupt_base_book3e)
+ 	LOAD_REG_IMMEDIATE(r15,__end_interrupts)
++#endif
+ 	cmpld	cr0,r10,r14
+ 	cmpld	cr1,r10,r15
+ 	blt+	cr0,1f
+@@ -799,8 +805,14 @@ kernel_dbg_exc:
+ 	andis.	r15,r14,(DBSR_IC|DBSR_BT)@h
+ 	beq+	1f
+
++#ifdef CONFIG_RELOCATABLE
++	ld	r15,PACATOC(r13)
++	ld	r14,interrupt_base_book3e@got(r15)
++	ld	r15,__end_interrupts@got(r15)
++#else
+ 	LOAD_REG_IMMEDIATE(r14,interrupt_base_book3e)
+ 	LOAD_REG_IMMEDIATE(r15,__end_interrupts)
++#endif
+ 	cmpld	cr0,r10,r14
+ 	cmpld	cr1,r10,r15
+ 	blt+	cr0,1f
+--
+1.7.1
