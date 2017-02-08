@@ -1,51 +1,16 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vJ1WQ1NdMzDq8f
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Feb 2017 10:58:25 +1100 (AEDT)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v17NcxE0114743
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 7 Feb 2017 18:58:23 -0500
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
- by mx0a-001b2d01.pphosted.com with ESMTP id 28fphqkjcm-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 Feb 2017 18:58:23 -0500
-Received: from localhost
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Wed, 8 Feb 2017 09:58:20 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 5F51B2BB0045
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Feb 2017 10:58:18 +1100 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v17NwAJO16449690
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 8 Feb 2017 10:58:18 +1100
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v17NvjQ0030751
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 8 Feb 2017 10:57:46 +1100
-Date: Wed, 8 Feb 2017 10:57:20 +1100
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
- imunsie@au1.ibm.com
-Subject: Re: [PATCH] drivers/misc/cxl: Avoid unnecessary error message
-Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-References: <1485834216-25191-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <43e94920-66a0-88af-81fe-5733ad7cf743@au1.ibm.com>
- <871svab6fj.fsf@concordia.ellerman.id.au>
- <20170207232130.GB10885@gwshan>
- <784859a2-527a-17c6-dbb2-9663b6562846@au1.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <784859a2-527a-17c6-dbb2-9663b6562846@au1.ibm.com>
-Message-Id: <20170207235720.GA17605@gwshan>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vJ2FY2001zDq8f
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Feb 2017 11:31:29 +1100 (AEDT)
+In-Reply-To: <20170127042433.14259-1-npiggin@gmail.com>
+To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+From: Michael Ellerman <patch-notifications@ellerman.id.au>
+Cc: Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: powerpc/64: CONFIG_RELOCATABLE support for hmi interrupts
+Message-Id: <3vJ2FY1Ghhz9s65@ozlabs.org>
+Date: Wed,  8 Feb 2017 11:31:29 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -55,59 +20,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Feb 08, 2017 at 10:39:55AM +1100, Andrew Donnellan wrote:
->On 08/02/17 10:21, Gavin Shan wrote:
->>On Tue, Feb 07, 2017 at 10:12:48PM +1100, Michael Ellerman wrote:
->>>Andrew Donnellan <andrew.donnellan@au1.ibm.com> writes:
->>
->>.../...
->>
->>>>The effect of this patch is to copy the memory resources from the *real*
->>>>PHB to the vPHB, as given through the device tree. It shouldn't have any
->>>>practical effect other than squashing this message.
->>>
->>>It sounds a bit backward to me. If we don't need the resources then
->>>why have them?
->>>
->>>If we have code that thinks that's an error, than maybe that's what
->>>needs fixing, or special casing for the vPHB?
->>>
->>
->>Yeah, vPHB is a special case. There are basically two stages in PCI enumeration:
->>probing and then resource assignment. vPHB is different from *real* PHB as the
->>resource assignment is skipped on it. So vPHB doesn't need any resources to be
->>populated. However, there is a check in probing stage and it's where the warning
->>message comes from.
->>
->>   drivers/misc/cxl/vphb.c::cxl_pci_vphb_add()
->>   arch/powerpc/kernel/pci-common.c::pcibios_scan_phb()
->>                                     pcibios_setup_phb_resources()
->>
->>   static void pcibios_setup_phb_resources(struct pci_controller *hose,
->>                                        struct list_head *resources)
->>   {
->>       :
->>       for (i = 0; i < 3; ++i) {
->>            res = &hose->mem_resources[i];
->>            if (!res->flags) {
->>                if (i == 0)
->>                    printk(KERN_ERR "PCI: Memory resource 0 not set for "
->>                        "host bridge %s (domain %d)\n",
->>                        hose->dn->full_name, hose->global_number);
->>                continue;
->>            }
->>       :
->>   }
->>
->>Alternatively, we can replace prink(KERN_ERR) with pr_debug(). It's going to
->>affect all PHBs including the real ones. Andrew and Michael, what do you think? :-)
->
->In what other circumstances do we get this error printed on real PHBs?
->
+On Fri, 2017-01-27 at 04:24:33 UTC, Nicholas Piggin wrote:
+> The branch from hmi_exception_early to hmi_exception_realmode must use
+> a "relocatable-style" branch, because it is branching from unrelocated
+> exception code to beyond __end_interrupts.
+> 
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 
-When hose->mem_resources[0] isn't built from PHB's device-tree node. It means
-the device-tree node's "ranges" isn't populated correctly by loader and it
-should be very rare ... I never saw it before.
+Applied to topic/ppc-kvm, thanks.
 
-Thanks,
-Gavin
+https://git.kernel.org/powerpc/c/2337d207288f163e10bd8d4d7eeb0c
+
+cheers
