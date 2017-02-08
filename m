@@ -1,47 +1,14 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vJ5yJ72ywzDqJ6
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Feb 2017 14:18:32 +1100 (AEDT)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v183DvlU060634
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 7 Feb 2017 22:18:30 -0500
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
- by mx0a-001b2d01.pphosted.com with ESMTP id 28fmtf5j40-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 Feb 2017 22:18:30 -0500
-Received: from localhost
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Wed, 8 Feb 2017 13:18:28 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id C9CE33578053
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Feb 2017 14:18:25 +1100 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v183IHlM33554646
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 8 Feb 2017 14:18:25 +1100
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v183HrcH014460
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 8 Feb 2017 14:17:53 +1100
-Date: Wed, 8 Feb 2017 14:17:28 +1100
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- mpe@ellerman.id.au
-Subject: Re: [PATCH] powerpc/mm: Fix typo in set_pte_at()
-Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-References: <1486340396-24609-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <87tw88gi96.fsf@skywalker.in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <87tw88gi96.fsf@skywalker.in.ibm.com>
-Message-Id: <20170208031728.GA20879@gwshan>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vJ8yD4v32zDq5W
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Feb 2017 16:33:40 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH v2] powerpc/opal-irqchip: Use interrupt names if present
+Date: Wed,  8 Feb 2017 16:33:32 +1100
+Message-Id: <1486532012-3094-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,43 +18,118 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Feb 06, 2017 at 08:03:57AM +0530, Aneesh Kumar K.V wrote:
->Gavin Shan <gwshan@linux.vnet.ibm.com> writes:
->
->> This fixes the typo about the _PAGE_PTE in set_pte_at() by changing
->> "tryint" to "trying to".
->>
->> Fixes: 6a119eae942 ("powerpc/mm: Add a _PAGE_PTE bit")
->
->I guess this is not needed. We add that when we want to hint whether the
->patch needs backporting. 
->
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-I just sent v2 to remove the "Fixes" tag.
+Recent versions of OPAL can provide names for the various OPAL interrupts,
+so let's use them. This also modernises the code that fetches the
+interrupt array to use the helpers provided by the generic code instead
+of hand-parsing the property.
 
-Thanks,
-Gavin
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/platforms/powernv/opal-irqchip.c | 55 ++++++++++++++++++++-------
+ 1 file changed, 42 insertions(+), 13 deletions(-)
 
->
->> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
->> ---
->>  arch/powerpc/mm/pgtable.c | 4 +---
->>  1 file changed, 1 insertion(+), 3 deletions(-)
->>
->> diff --git a/arch/powerpc/mm/pgtable.c b/arch/powerpc/mm/pgtable.c
->> index cb39c8b..a03ff3d 100644
->> --- a/arch/powerpc/mm/pgtable.c
->> +++ b/arch/powerpc/mm/pgtable.c
->> @@ -193,9 +193,7 @@ void set_pte_at(struct mm_struct *mm, unsigned long addr, pte_t *ptep,
->>  	 */
->>  	VM_WARN_ON(pte_present(*ptep) && !pte_protnone(*ptep));
->>
->> -	/*
->> -	 * Add the pte bit when tryint set a pte
->> -	 */
->> +	/* Add the pte bit when trying to set a pte */
->>  	pte = __pte(pte_val(pte) | _PAGE_PTE);
->>
->>  	/* Note: mm->context.id might not yet have been assigned as
->> -- 
->> 2.7.4
+v2: Free irqs array in the error path.
+    Check the allocation of names succeeded, and consolidate that with the
+    check of irqs and opal_irqs.
+    We don't need to initialise rc.
+    Add a comment about the lack of error handling for "opal-interrupt-names".
+
+diff --git a/arch/powerpc/platforms/powernv/opal-irqchip.c b/arch/powerpc/platforms/powernv/opal-irqchip.c
+index 998316bf2dad..ecdcba9d1220 100644
+--- a/arch/powerpc/platforms/powernv/opal-irqchip.c
++++ b/arch/powerpc/platforms/powernv/opal-irqchip.c
+@@ -183,8 +183,9 @@ void opal_event_shutdown(void)
+ int __init opal_event_init(void)
+ {
+ 	struct device_node *dn, *opal_node;
+-	const __be32 *irqs;
+-	int i, irqlen, rc = 0;
++	const char **names;
++	u32 *irqs;
++	int i, rc;
+ 
+ 	opal_node = of_find_node_by_path("/ibm,opal");
+ 	if (!opal_node) {
+@@ -209,31 +210,56 @@ int __init opal_event_init(void)
+ 		goto out;
+ 	}
+ 
+-	/* Get interrupt property */
+-	irqs = of_get_property(opal_node, "opal-interrupts", &irqlen);
+-	opal_irq_count = irqs ? (irqlen / 4) : 0;
++	/* Get opal-interrupts property and names if present */
++	rc = of_property_count_u32_elems(opal_node, "opal-interrupts");
++	if (rc < 0)
++		goto out;
++
++	opal_irq_count = rc;
+ 	pr_debug("Found %d interrupts reserved for OPAL\n", opal_irq_count);
+ 
+-	/* Install interrupt handlers */
++	irqs = kcalloc(opal_irq_count, sizeof(*irqs), GFP_KERNEL);
++	names = kcalloc(opal_irq_count, sizeof(*names), GFP_KERNEL);
+ 	opal_irqs = kcalloc(opal_irq_count, sizeof(*opal_irqs), GFP_KERNEL);
+-	for (i = 0; irqs && i < opal_irq_count; i++, irqs++) {
+-		unsigned int irq, virq;
++
++	if (WARN_ON(!irqs || !names || !opal_irqs))
++		goto out_free;
++
++	rc = of_property_read_u32_array(opal_node, "opal-interrupts",
++					irqs, opal_irq_count);
++	if (rc < 0) {
++		pr_err("Error %d reading opal-interrupts array\n", rc);
++		goto out_free;
++	}
++
++	/* It's not an error for the names to be missing */
++	of_property_read_string_array(opal_node, "opal-interrupts-names",
++				      names, opal_irq_count);
++
++	/* Install interrupt handlers */
++	for (i = 0; i < opal_irq_count; i++) {
++		unsigned int virq;
++		char *name;
+ 
+ 		/* Get hardware and virtual IRQ */
+-		irq = be32_to_cpup(irqs);
+-		virq = irq_create_mapping(NULL, irq);
++		virq = irq_create_mapping(NULL, irqs[i]);
+ 		if (!virq) {
+-			pr_warn("Failed to map irq 0x%x\n", irq);
++			pr_warn("Failed to map irq 0x%x\n", irqs[i]);
+ 			continue;
+ 		}
+ 
++		if (names[i] && strlen(names[i]))
++			name = kasprintf(GFP_KERNEL, "opal-%s", names[i]);
++		else
++			name = kasprintf(GFP_KERNEL, "opal");
++
+ 		/* Install interrupt handler */
+ 		rc = request_irq(virq, opal_interrupt, IRQF_TRIGGER_LOW,
+-				 "opal", NULL);
++				 name, NULL);
+ 		if (rc) {
+ 			irq_dispose_mapping(virq);
+ 			pr_warn("Error %d requesting irq %d (0x%x)\n",
+-				 rc, virq, irq);
++				 rc, virq, irqs[i]);
+ 			continue;
+ 		}
+ 
+@@ -241,6 +267,9 @@ int __init opal_event_init(void)
+ 		opal_irqs[i] = virq;
+ 	}
+ 
++out_free:
++	kfree(irqs);
++	kfree(names);
+ out:
+ 	of_node_put(opal_node);
+ 	return rc;
+-- 
+2.7.4
