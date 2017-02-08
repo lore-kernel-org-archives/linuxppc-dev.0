@@ -1,33 +1,49 @@
-Return-Path: <bhsharma@redhat.com>
-Received: from mail-oi0-f41.google.com (mail-oi0-f41.google.com
- [209.85.218.41])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <vaibhav@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vJLjc13pWzDq60
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Feb 2017 23:53:24 +1100 (AEDT)
-Received: by mail-oi0-f41.google.com with SMTP id j15so81242687oih.2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Feb 2017 04:53:24 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vJNv54SbXzDq60
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Feb 2017 01:31:45 +1100 (AEDT)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v18EO5mK039010
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 8 Feb 2017 09:31:43 -0500
+Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [125.16.236.2])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 28g3w7uf1u-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Feb 2017 09:31:42 -0500
+Received: from localhost
+ by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <vaibhav@linux.vnet.ibm.com>;
+ Wed, 8 Feb 2017 20:01:38 +0530
+Received: from d28relay07.in.ibm.com (d28relay07.in.ibm.com [9.184.220.158])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 854B4E005E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Feb 2017 20:03:02 +0530 (IST)
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+ by d28relay07.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v18EUbrp22151244
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 8 Feb 2017 20:00:37 +0530
+Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
+ by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v18EVY8M009956
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 8 Feb 2017 20:01:35 +0530
+From: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+To: Frederic Barrat <fbarrat@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Philippe Bergheaud <philippe.bergheaud@fr.ibm.com>,
+ frederic.barrat@fr.ibm.com, stable@vger.kernel.org,
+ Ian Munsie <ianmunsi@au1.ibm.com>, Andrew Donnellan <andonnel@au1.ibm.com>,
+ Gregory Kurz <KURZGREG@fr.ibm.com>,
+ Christophe Lombard <christophe_lombard@fr.ibm.com>
+Subject: Re: [PATCH] cxl: Force context lock during EEH flow
+In-Reply-To: <d7499436-f25c-fac8-8908-c622a24d85f1@linux.vnet.ibm.com>
+References: <20170203065739.3052-1-vaibhav@linux.vnet.ibm.com>
+ <d7499436-f25c-fac8-8908-c622a24d85f1@linux.vnet.ibm.com>
+Date: Wed, 08 Feb 2017 20:01:32 +0530
 MIME-Version: 1.0
-In-Reply-To: <87mve4c2my.fsf@concordia.ellerman.id.au>
-References: <1486014168-1279-1-git-send-email-bhsharma@redhat.com>
- <1486014168-1279-2-git-send-email-bhsharma@redhat.com>
- <87mve4c2my.fsf@concordia.ellerman.id.au>
-From: Bhupesh Sharma <bhsharma@redhat.com>
-Date: Wed, 8 Feb 2017 18:23:21 +0530
-Message-ID: <CACi5LpOkkSFOJm07BGZFOmFpZpx7qsQiNywEmAjCEmcQG6kGEg@mail.gmail.com>
-Subject: Re: [PATCH 1/2] powerpc: mm: support ARCH_MMAP_RND_BITS
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org, kernel-hardening@lists.openwall.com,
- Daniel Cashman <dcashman@google.com>, Bhupesh SHARMA <bhupesh.linux@gmail.com>,
- Kees Cook <keescook@chromium.org>, Alexander Graf <agraf@suse.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Anatolij Gustschin <agust@denx.de>, Alistair Popple <alistair@popple.id.au>,
- Matt Porter <mporter@kernel.crashing.org>,
- Vitaly Bordug <vitb@kernel.crashing.org>,
- Scott Wood <oss@buserror.net>, Kumar Gala <galak@kernel.crashing.org>,
- Daniel Cashman <dcashman@android.com>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain
+Message-Id: <87zihwpxdn.fsf@vajain21.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,162 +53,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-HI Michael,
+Frederic Barrat <fbarrat@linux.vnet.ibm.com> writes:
 
-On Thu, Feb 2, 2017 at 3:53 PM, Michael Ellerman <mpe@ellerman.id.au> wrote:
-> Bhupesh Sharma <bhsharma@redhat.com> writes:
->
->> powerpc: arch_mmap_rnd() uses hard-coded values, (23-PAGE_SHIFT) for
->> 32-bit and (30-PAGE_SHIFT) for 64-bit, to generate the random offset
->> for the mmap base address.
 >>
->> This value represents a compromise between increased
->> ASLR effectiveness and avoiding address-space fragmentation.
->> Replace it with a Kconfig option, which is sensibly bounded, so that
->> platform developers may choose where to place this compromise.
->> Keep default values as new minimums.
->>
->> This patch makes sure that now powerpc mmap arch_mmap_rnd() approach
->> is similar to other ARCHs like x86, arm64 and arm.
->
-> Thanks for looking at this, it's been on my TODO for a while.
->
-> I have a half completed version locally, but never got around to testing
-> it thoroughly.
-
-Sure :)
-
->> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
->> index a8ee573fe610..b4a843f68705 100644
->> --- a/arch/powerpc/Kconfig
->> +++ b/arch/powerpc/Kconfig
->> @@ -22,6 +22,38 @@ config MMU
->>       bool
->>       default y
->>
->> +config ARCH_MMAP_RND_BITS_MIN
->> +       default 5 if PPC_256K_PAGES && 32BIT
->> +       default 12 if PPC_256K_PAGES && 64BIT
->> +       default 7 if PPC_64K_PAGES && 32BIT
->> +       default 14 if PPC_64K_PAGES && 64BIT
->> +       default 9 if PPC_16K_PAGES && 32BIT
->> +       default 16 if PPC_16K_PAGES && 64BIT
->> +       default 11 if PPC_4K_PAGES && 32BIT
->> +       default 18 if PPC_4K_PAGES && 64BIT
->> +
->> +# max bits determined by the following formula:
->> +#  VA_BITS - PAGE_SHIFT - 4
->> +#  for e.g for 64K page and 64BIT = 48 - 16 - 4 = 28
->> +config ARCH_MMAP_RND_BITS_MAX
->> +       default 10 if PPC_256K_PAGES && 32BIT
->> +       default 26 if PPC_256K_PAGES && 64BIT
->> +       default 12 if PPC_64K_PAGES && 32BIT
->> +       default 28 if PPC_64K_PAGES && 64BIT
->> +       default 14 if PPC_16K_PAGES && 32BIT
->> +       default 30 if PPC_16K_PAGES && 64BIT
->> +       default 16 if PPC_4K_PAGES && 32BIT
->> +       default 32 if PPC_4K_PAGES && 64BIT
->> +
->> +config ARCH_MMAP_RND_COMPAT_BITS_MIN
->> +       default 5 if PPC_256K_PAGES
->> +       default 7 if PPC_64K_PAGES
->> +       default 9 if PPC_16K_PAGES
->> +       default 11
->> +
->> +config ARCH_MMAP_RND_COMPAT_BITS_MAX
->> +       default 16
+>> +	/* forcibly take the context lock to prevent new context activation */
+>> +	cxl_adapter_context_force_lock(adapter);
 >> +
 >
-> This is what I have below, which is a bit neater I think because each
-> value is only there once (by defaulting to the COMPAT value).
->
-> My max values are different to yours, I don't really remember why I
-> chose those values, so we can argue about which is right.
+> I'm not a fan of the "force lock" call and I'm not convinced it's 
+> needed. When an EEH is triggered, we'll force-detach all the contexts. 
+> So that in itself should bring the counter of active contexts to 0. So 
+> why not just add a cxl_adapter_context_lock() call at the end of 
+> cxl_pci_error_detected()? The lock would be released in 
+> cxl_configure_adapter when cxl_pci_slot_reset() is called, as is already 
+> the case with the current code.
+> (as a side note, I don't believe the code is racy and that we need to 
+> add extra protection to avoid context activation while 
+> cxl_pci_error_detected() is called. We can talk about it if needed)
 
-I am not sure how you derived these values, but I am not sure there
-should be differences between 64-BIT x86/ARM64 and PPC values for the
-MAX values.
+Hi Fred,
 
->
-> +config ARCH_MMAP_RND_BITS_MIN
-> +       # On 64-bit up to 1G of address space (2^30)
-> +       default 12 if 64BIT && PPC_256K_PAGES   # 256K (2^18), = 30 - 18 = 12
-> +       default 14 if 64BIT && PPC_64K_PAGES    # 64K  (2^16), = 30 - 16 = 14
-> +       default 16 if 64BIT && PPC_16K_PAGES    # 16K  (2^14), = 30 - 14 = 16
-> +       default 18 if 64BIT                     # 4K   (2^12), = 30 - 12 = 18
-> +       default ARCH_MMAP_RND_COMPAT_BITS_MIN
-> +
-> +config ARCH_MMAP_RND_BITS_MAX
-> +       # On 64-bit up to 32T of address space (2^45)
-> +       default 27 if 64BIT && PPC_256K_PAGES   # 256K (2^18), = 45 - 18 = 27
-> +       default 29 if 64BIT && PPC_64K_PAGES    # 64K  (2^16), = 45 - 16 = 29
-> +       default 31 if 64BIT && PPC_16K_PAGES    # 16K  (2^14), = 45 - 14 = 31
-> +       default 33 if 64BIT                     # 4K   (2^12), = 45 - 12 = 33
-> +       default ARCH_MMAP_RND_COMPAT_BITS_MAX
-> +
-> +config ARCH_MMAP_RND_COMPAT_BITS_MIN
-> +       # Up to 8MB of address space (2^23)
-> +       default 5 if PPC_256K_PAGES             # 256K (2^18), = 23 - 18 = 5
-> +       default 7 if PPC_64K_PAGES              # 64K  (2^16), = 23 - 16 = 7
-> +       default 9 if PPC_16K_PAGES              # 16K  (2^14), = 23 - 14 = 9
-> +       default 11                              # 4K   (2^12), = 23 - 12 = 11
-> +
-> +config ARCH_MMAP_RND_COMPAT_BITS_MAX
-> +       # Up to 2G of address space (2^31)
-> +       default 13 if PPC_256K_PAGES            # 256K (2^18), = 31 - 18 = 13
-> +       default 15 if PPC_64K_PAGES             # 64K  (2^16), = 31 - 16 = 15
-> +       default 17 if PPC_16K_PAGES             # 16K  (2^14), = 31 - 14 = 17
-> +       default 19                              # 4K   (2^12), = 31 - 12 = 19
->
->
->
->> diff --git a/arch/powerpc/mm/mmap.c b/arch/powerpc/mm/mmap.c
->> index 2f1e44362198..babf59faab3b 100644
->> --- a/arch/powerpc/mm/mmap.c
->> +++ b/arch/powerpc/mm/mmap.c
->> @@ -60,11 +60,12 @@ unsigned long arch_mmap_rnd(void)
->>  {
->>       unsigned long rnd;
->>
->> -     /* 8MB for 32bit, 1GB for 64bit */
->> +#ifdef CONFIG_COMPAT
->>       if (is_32bit_task())
->> -             rnd = get_random_long() % (1<<(23-PAGE_SHIFT));
->> +             rnd = get_random_long() & ((1UL << mmap_rnd_compat_bits) - 1);
->>       else
->> -             rnd = get_random_long() % (1UL<<(30-PAGE_SHIFT));
->> +#endif
->> +             rnd = get_random_long() & ((1UL << mmap_rnd_bits) - 1);
->
-> I also have what I think is a better hunk for that:
->
->  unsigned long arch_mmap_rnd(void)
->  {
-> -       unsigned long rnd;
-> +       unsigned long shift, rnd;
->
-> -       /* 8MB for 32bit, 1GB for 64bit */
-> +       shift = mmap_rnd_bits;
-> +#ifdef CONFIG_COMPAT
->         if (is_32bit_task())
-> -               rnd = (unsigned long)get_random_int() % (1<<(23-PAGE_SHIFT));
-> -       else
-> -               rnd = (unsigned long)get_random_int() % (1<<(30-PAGE_SHIFT));
-> +               shift = mmap_rnd_compat_bits;
-> +#endif
-> +
-> +       rnd = (unsigned long)get_random_int() % (1 << shift);
->
-> But I'm just nit picking I guess :)
->
+Thanks for reviewing the patch.
 
-I am trying to reuse the existing hunk available for x86 MMAP randomization.
-So I am not sure if we really need the hunk mentioned above.
+Function cxl_adapter_context_force_lock is introduced to handle cases
+where in we don't want any new contexts to be activated while we go ahead
+and detach all the currently activated contexts. This usually is the
+case in error paths when we are performing cleanups of existing contexts
+(control flows with cxl_context_detach_all).
 
-I think we can get this applied to upstream unless someone sees a
-breakage on their platform (I have tested this on PPC64 and PPC64LE
-setups at my end, but there might be some aberrations on some custom
-PPC platforms)
+This is in contrast with cxl_adapter_context_lock which need to wait for
+all the active contexts to be detached and during the wait other
+contexts can be activated. The _force_lock variant provides guarantees
+against this by not letting any context to be activated and still
+letting existing contexts be cleaned up.
 
-Regards,
-Bhupesh
+This behavior though can also be achieved by having a separate flag in
+the adapter-struct and checking it before letting a context
+activate. However with cxl_adapter_context_force_lock I tried to re-use
+the existing infrastructure we have already put in place to prevent
+context activation while we are doing card reset.
+
+In retrospect this is a more generic issue that we may wish to address
+in cxl where in we want to prevent certain ops like context activation
+or reading config space and also let existing consumers of these ops to
+complete. It would be also better if other contributers can also pitch
+in and provide there feedback as to possibly solve this problem in a
+more generic manner.
+
+Thanks,
+-- 
+Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+Linux Technology Center, IBM India Pvt. Ltd.
