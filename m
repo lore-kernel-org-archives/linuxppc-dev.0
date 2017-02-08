@@ -1,42 +1,41 @@
 Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vJ5py0kxRzDqBQ
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Feb 2017 14:12:09 +1100 (AEDT)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vJ5xf4XkhzDqBQ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Feb 2017 14:17:58 +1100 (AEDT)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v1839YVk080560
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 7 Feb 2017 22:12:08 -0500
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
- by mx0a-001b2d01.pphosted.com with ESMTP id 28fr07xdqv-1
+ v183DwsS140092
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 7 Feb 2017 22:17:55 -0500
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 28fgmthm6e-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 Feb 2017 22:12:05 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 Feb 2017 22:17:55 -0500
 Received: from localhost
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Wed, 8 Feb 2017 13:12:03 +1000
-Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 3E2193578056
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Feb 2017 14:12:01 +1100 (EST)
-Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v183Br6v35586254
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 8 Feb 2017 14:12:01 +1100
-Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
- by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v183BSSt005704
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 8 Feb 2017 14:11:29 +1100
+ Wed, 8 Feb 2017 13:17:52 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id EBFF42BB0045
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Feb 2017 14:17:48 +1100 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v183HeVL17235972
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 8 Feb 2017 14:17:48 +1100
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v183HGFx013248
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 8 Feb 2017 14:17:17 +1100
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Cc: andrew.donnellan@au1.ibm.com, imunsie@au1.ibm.com, mpe@ellerman.id.au,
+Cc: mpe@ellerman.id.au, aneesh.kumar@linux.vnet.ibm.com,
  Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: [PATCH v2] powerpc/kernel: Remove error message in
- pcibios_setup_phb_resources()
-Date: Wed,  8 Feb 2017 14:11:03 +1100
-Message-Id: <1486523463-19953-1-git-send-email-gwshan@linux.vnet.ibm.com>
+Subject: [PATCH v2] powerpc/mm: Fix typo in set_pte_at()
+Date: Wed,  8 Feb 2017 14:16:50 +1100
+Message-Id: <1486523810-21112-1-git-send-email-gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,53 +45,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The CAPI driver creates virtual PHB (vPHB) from the CAPI adapter.
-The vPHB's IO and memory windows aren't built from device-tree node
-as we do for normal PHBs. A error message is thrown in below path
-when trying to probe AFUs contained in the adapter. The error message
-is confusing and unnecessary.
-
-    cxl_probe()
-    pci_init_afu()
-    cxl_pci_vphb_add()
-    pcibios_scan_phb()
-    pcibios_setup_phb_resources()
-
-This removes the error message. We might have the case where the
-first memory window on real PHB isn't populated properly because
-of error in "ranges" property in the device-tree node. We can check
-the device-tree instead for that. This also removes one unnecessary
-blank line in the function.
+This fixes the typo about the _PAGE_PTE in set_pte_at() by changing
+"tryint" to "trying to".
 
 Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 ---
-v2: Removes the error message instead of avoiding it
+v2: Removed "Fixes" tag
 ---
- arch/powerpc/kernel/pci-common.c | 10 ++--------
- 1 file changed, 2 insertions(+), 8 deletions(-)
+ arch/powerpc/mm/pgtable.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
-index 74bec54..05bfdae 100644
---- a/arch/powerpc/kernel/pci-common.c
-+++ b/arch/powerpc/kernel/pci-common.c
-@@ -1559,16 +1559,10 @@ static void pcibios_setup_phb_resources(struct pci_controller *hose,
- 	/* Hookup PHB Memory resources */
- 	for (i = 0; i < 3; ++i) {
- 		res = &hose->mem_resources[i];
--		if (!res->flags) {
--			if (i == 0)
--				printk(KERN_ERR "PCI: Memory resource 0 not set for "
--				       "host bridge %s (domain %d)\n",
--				       hose->dn->full_name, hose->global_number);
-+		if (!res->flags)
- 			continue;
--		}
--		offset = hose->mem_offset[i];
--
+diff --git a/arch/powerpc/mm/pgtable.c b/arch/powerpc/mm/pgtable.c
+index cb39c8b..a03ff3d 100644
+--- a/arch/powerpc/mm/pgtable.c
++++ b/arch/powerpc/mm/pgtable.c
+@@ -193,9 +193,7 @@ void set_pte_at(struct mm_struct *mm, unsigned long addr, pte_t *ptep,
+ 	 */
+ 	VM_WARN_ON(pte_present(*ptep) && !pte_protnone(*ptep));
  
-+		offset = hose->mem_offset[i];
- 		pr_debug("PCI: PHB MEM resource %d = %pR off 0x%08llx\n", i,
- 			 res, (unsigned long long)offset);
+-	/*
+-	 * Add the pte bit when tryint set a pte
+-	 */
++	/* Add the pte bit when trying to set a pte */
+ 	pte = __pte(pte_val(pte) | _PAGE_PTE);
  
+ 	/* Note: mm->context.id might not yet have been assigned as
 -- 
 2.7.4
