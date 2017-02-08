@@ -1,19 +1,19 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vJFxH46yzzDq60
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Feb 2017 20:18:11 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vJG205Dy4zDq60
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Feb 2017 20:22:16 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Balbir Singh <bsingharora@gmail.com>,
- Douglas Miller <dougmill@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 1/1] powerpc/xmon: Dump memory in native endian format.
-In-Reply-To: <20170208082254.GC17068@localhost.localdomain>
-References: <1486474844-9872-1-git-send-email-dougmill@linux.vnet.ibm.com>
- <20170208082254.GC17068@localhost.localdomain>
-Date: Wed, 08 Feb 2017 20:18:07 +1100
-Message-ID: <87fujp9h2o.fsf@concordia.ellerman.id.au>
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] powerpc/mm: Fix typo in set_pte_at()
+In-Reply-To: <20170208031728.GA20879@gwshan>
+References: <1486340396-24609-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ <87tw88gi96.fsf@skywalker.in.ibm.com> <20170208031728.GA20879@gwshan>
+Date: Wed, 08 Feb 2017 20:22:15 +1100
+Message-ID: <87d1et9gvs.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,48 +25,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Balbir Singh <bsingharora@gmail.com> writes:
+Gavin Shan <gwshan@linux.vnet.ibm.com> writes:
 
-> On Tue, Feb 07, 2017 at 07:40:44AM -0600, Douglas Miller wrote:
->> Extend dump command to allow display of 2, 4, and 8 byte words in native
->> endian format. Also adds dump command for "1 byte words" for the sake
->> of symmetry. New commands are:
->> 
->> 	d1	dump 8 bit values
->> 	d2	dump 16 bit values
->> 	d4	dump 32 bit values
->> 	d8	dump 64 bit values
->> 
->> Signed-off-by: Douglas Miller <dougmill@linux.vnet.ibm.com>
-
->> diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
->> index 9c0e17c..6249975 100644
->> --- a/arch/powerpc/xmon/xmon.c
->> +++ b/arch/powerpc/xmon/xmon.c
->> @@ -2334,9 +2338,49 @@ static void dump_pacas(void)
->>  }
->>  #endif
->>  
->> +static void dump_by_size(unsigned long addr, long count, int size)
->> +{
->> +	unsigned char temp[16];
->> +	int i, j;
->> +	u64 val;
->> +
->> +	/*
->> +	 * 'count' was aligned 16. If that changes, the following
->> +	 * must also change to accommodate other values for 'count'.
->> +	 */
->> +	for (i = 0; i < count; i += 16, addr += 16) {
->> +		printf(REG, addr);
->> +
->> +		if (mread(addr, temp, 16) != 16) {
->> +			printf("Faulted reading %d bytes from 0x"REG"\n", 16, addr);
+> On Mon, Feb 06, 2017 at 08:03:57AM +0530, Aneesh Kumar K.V wrote:
+>>Gavin Shan <gwshan@linux.vnet.ibm.com> writes:
+>>
+>>> This fixes the typo about the _PAGE_PTE in set_pte_at() by changing
+>>> "tryint" to "trying to".
+>>>
+>>> Fixes: 6a119eae942 ("powerpc/mm: Add a _PAGE_PTE bit")
+>>
+>>I guess this is not needed. We add that when we want to hint whether the
+>>patch needs backporting. 
+>>
 >
-> We have a method of printing a special character for faults.
-> Please see fault_chars[]
+> I just sent v2 to remove the "Fixes" tag.
 
-Yeah but it's not worth the complication IMO. In practice you usually
-fault on everything you tried to print or nothing.
+OK.
+
+I don't mind if you send a Fixes tag even for a trivial fix like this.
+
+It's not incorrect, this commit does fix that other commit.
+
+It's probably true that we wouldn't backport a trivial fix like that,
+but having the Fixes tag means we could if we wanted to. And if we don't
+want to backport it then it's harmless extra information.
 
 cheers
