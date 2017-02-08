@@ -1,15 +1,15 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vJ2FY2001zDq8f
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vJ2FY4z6GzDq8f
  for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Feb 2017 11:31:29 +1100 (AEDT)
-In-Reply-To: <20170127042433.14259-1-npiggin@gmail.com>
-To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <20170207050317.GA10303@fergus.ozlabs.ibm.com>
+To: Paul Mackerras <paulus@ozlabs.org>, linuxppc-dev@ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: powerpc/64: CONFIG_RELOCATABLE support for hmi interrupts
-Message-Id: <3vJ2FY1Ghhz9s65@ozlabs.org>
+Subject: Re: [v2] powerpc/powernv: Remove separate entry for OPAL real mode
+ calls
+Message-Id: <3vJ2FY3XKCz9s73@ozlabs.org>
 Date: Wed,  8 Feb 2017 11:31:29 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -20,15 +20,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2017-01-27 at 04:24:33 UTC, Nicholas Piggin wrote:
-> The branch from hmi_exception_early to hmi_exception_realmode must use
-> a "relocatable-style" branch, because it is branching from unrelocated
-> exception code to beyond __end_interrupts.
+On Tue, 2017-02-07 at 05:03:17 UTC, Paul Mackerras wrote:
+> From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 > 
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> All entry points already read the MSR so they can easily do
+> the right thing.
+> 
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
 
 Applied to topic/ppc-kvm, thanks.
 
-https://git.kernel.org/powerpc/c/2337d207288f163e10bd8d4d7eeb0c
+https://git.kernel.org/powerpc/c/ab9bad0ead9ab179ace09988a3f1cf
 
 cheers
