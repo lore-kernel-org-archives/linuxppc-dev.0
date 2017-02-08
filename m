@@ -1,38 +1,45 @@
-Return-Path: <anju@linux.vnet.ibm.com>
+Return-Path: <andrew.donnellan@au1.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vJ92y6WCzzDq5W
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Feb 2017 16:37:46 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vJBqz3957zDq60
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Feb 2017 17:58:23 +1100 (AEDT)
 Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v185XpBP031448
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 8 Feb 2017 00:37:44 -0500
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
- by mx0a-001b2d01.pphosted.com with ESMTP id 28faw90wd6-1
+ v186roxV043104
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 8 Feb 2017 01:58:21 -0500
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 28faw93swc-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Feb 2017 00:37:44 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Feb 2017 01:58:20 -0500
 Received: from localhost
- by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <anju@linux.vnet.ibm.com>;
- Tue, 7 Feb 2017 22:37:43 -0700
-Subject: Re: [PATCH V3 3/4] arch/powerpc: Implement Optprobes
-To: Michael Ellerman <mpe@ellerman.id.au>, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-References: <1482153507-17350-1-git-send-email-anju@linux.vnet.ibm.com>
- <1482153507-17350-2-git-send-email-anju@linux.vnet.ibm.com>
- <87a8a6dvwo.fsf@concordia.ellerman.id.au>
-Cc: ananth@in.ibm.com, naveen.n.rao@linux.vnet.ibm.com, paulus@samba.org,
- srikar@linux.vnet.ibm.com, benh@kernel.crashing.org,
- mahesh@linux.vnet.ibm.com, mhiramat@kernel.org
-From: Anju T Sudhakar <anju@linux.vnet.ibm.com>
-Date: Wed, 8 Feb 2017 11:07:29 +0530
+ for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
+ Wed, 8 Feb 2017 16:58:18 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 121AD357805C
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Feb 2017 17:58:15 +1100 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v186w6GI30474412
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 8 Feb 2017 17:58:14 +1100
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v186vg56031891
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 8 Feb 2017 17:57:43 +1100
+Subject: Re: [PATCH v2] powerpc/kernel: Remove error message in
+ pcibios_setup_phb_resources()
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+References: <1486523463-19953-1-git-send-email-gwshan@linux.vnet.ibm.com>
+Cc: imunsie@au1.ibm.com, mpe@ellerman.id.au
+From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Date: Wed, 8 Feb 2017 17:57:17 +1100
 MIME-Version: 1.0
-In-Reply-To: <87a8a6dvwo.fsf@concordia.ellerman.id.au>
+In-Reply-To: <1486523463-19953-1-git-send-email-gwshan@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=windows-1252; format=flowed
-Message-Id: <b4292adb-fdd2-d257-839a-8de5c3f1f9d5@linux.vnet.ibm.com>
+Message-Id: <5325febc-dc6b-8b71-fcc6-6074a732ade1@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,424 +49,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Michael,
-
-
-Thank you so much for the review.
-
-On Wednesday 01 February 2017 04:23 PM, Michael Ellerman wrote:
-> Anju T Sudhakar <anju@linux.vnet.ibm.com> writes:
+On 08/02/17 14:11, Gavin Shan wrote:
+> The CAPI driver creates virtual PHB (vPHB) from the CAPI adapter.
+> The vPHB's IO and memory windows aren't built from device-tree node
+> as we do for normal PHBs. A error message is thrown in below path
+> when trying to probe AFUs contained in the adapter. The error message
+> is confusing and unnecessary.
 >
->> Detour buffer contains instructions to create an in memory pt_regs.
->> After the execution of the pre-handler, a call is made for instruction emulation.
->> The NIP is determined in advanced through dummy instruction emulation and a branch
->> instruction is created to the NIP at the end of the trampoline.
-> That's good detail, but it's hard to follow for someone who isn't
-> familiar with with kprobes/optprobes etc. You don't even tell us what an
-> optprobe is :)
+>     cxl_probe()
+>     pci_init_afu()
+>     cxl_pci_vphb_add()
+>     pcibios_scan_phb()
+>     pcibios_setup_phb_resources()
 >
-> So can you provide a bit more background before diving into the specific
-> details.
-
-
-
-Sure. I will provide sufficient details here.
-
-
->> Instruction slot for detour buffer is allocated from the reserved area.
->> For the time being, 64KB is reserved in memory for this purpose.
->>
->> Instructions which can be emulated using analyse_instr() are suppliants
->                                                                 ^
->                                                                 candidates ?
-
-
-
-
-:-) yes 'candidates' will be more appropriate here.
-
-
-
->                                                                 
->> diff --git a/Documentation/features/debug/optprobes/arch-support.txt b/Documentation/features/debug/optprobes/arch-support.txt
->> index b8999d8..45bc99d 100644
->> --- a/Documentation/features/debug/optprobes/arch-support.txt
->> +++ b/Documentation/features/debug/optprobes/arch-support.txt
->> @@ -27,7 +27,7 @@
->>       |       nios2: | TODO |
->>       |    openrisc: | TODO |
->>       |      parisc: | TODO |
->> -    |     powerpc: | TODO |
->> +    |     powerpc: |  ok  |
-> We don't support them for modules yet, so maybe it's premature to flip
-> that?
-
-
-ok.
-
-
->> diff --git a/arch/powerpc/kernel/optprobes.c b/arch/powerpc/kernel/optprobes.c
->> new file mode 100644
->> index 0000000..fb5e62d
->> --- /dev/null
->> +++ b/arch/powerpc/kernel/optprobes.c
->> @@ -0,0 +1,331 @@
->> +/*
->> + * Code for Kernel probes Jump optimization.
->> + *
->> + * Copyright 2016, Anju T, IBM Corp.
->> + *
->> + * This program is free software; you can redistribute it and/or
->> + * modify it under the terms of the GNU General Public License
->> + * as published by the Free Software Foundation; either version
->> + * 2 of the License, or (at your option) any later version.
->> + */
->> +
->> +#include <linux/kprobes.h>
->> +#include <linux/jump_label.h>
->> +#include <linux/types.h>
->> +#include <linux/slab.h>
->> +#include <linux/list.h>
->> +#include <asm/kprobes.h>
->> +#include <asm/ptrace.h>
->> +#include <asm/cacheflush.h>
->> +#include <asm/code-patching.h>
->> +#include <asm/sstep.h>
->> +#include <asm/ppc-opcode.h>
->> +
->> +#define TMPL_CALL_HDLR_IDX	\
->> +	(optprobe_template_call_handler - optprobe_template_entry)
->> +#define TMPL_EMULATE_IDX	\
->> +	(optprobe_template_call_emulate - optprobe_template_entry)
->> +#define TMPL_RET_IDX		\
->> +	(optprobe_template_ret - optprobe_template_entry)
->> +#define TMPL_OP_IDX		\
->> +	(optprobe_template_op_address - optprobe_template_entry)
->> +#define TMPL_INSN_IDX		\
->> +	(optprobe_template_insn - optprobe_template_entry)
->> +#define TMPL_END_IDX		\
->> +	(optprobe_template_end - optprobe_template_entry)
->> +
->> +DEFINE_INSN_CACHE_OPS(ppc_optinsn);
->> +
->> +static bool insn_page_in_use;
->> +
->> +static void *__ppc_alloc_insn_page(void)
->> +{
->> +	if (insn_page_in_use)
->> +		return NULL;
->> +	insn_page_in_use = true;
-> This sets off my "no-locking-visible" detector. I assume there's some
-> locking somewhere else that makes this work?
-
-
-
-Actually we don't need a lock here, since this function is invoked by 
-__get_insn_slot() (in kernel/kprobes.c).
-__get_insn_slot()  already  have lock on kprobe_insn_cache.
-
-
-
-
->> +	return &optinsn_slot;
->> +}
->> +
->> +static void __ppc_free_insn_page(void *page __maybe_unused)
->> +{
->> +	insn_page_in_use = false;
->> +}
->> +
->> +struct kprobe_insn_cache kprobe_ppc_optinsn_slots = {
->> +	.mutex = __MUTEX_INITIALIZER(kprobe_ppc_optinsn_slots.mutex),
->> +	.pages = LIST_HEAD_INIT(kprobe_ppc_optinsn_slots.pages),
->> +	/* insn_size initialized later */
->> +	.alloc = __ppc_alloc_insn_page,
->> +	.free = __ppc_free_insn_page,
->> +	.nr_garbage = 0,
->> +};
->> +
->> +/*
->> + * Check if we can optimize this probe. Returns NIP post-emulation if this can
->> + * be optimized and 0 otherwise.
->> + */
->> +static unsigned long can_optimize(struct kprobe *p)
->> +{
->> +	struct pt_regs regs;
->> +	struct instruction_op op;
->> +	unsigned long nip = 0;
->> +
->> +	/*
->> +	 * kprobe placed for kretprobe during boot time
->> +	 * is not optimizing now.
->> +	 *
->> +	 * TODO: Optimize kprobe in kretprobe_trampoline
->> +	 */
->> +	if (p->addr == (kprobe_opcode_t *)&kretprobe_trampoline)
->> +		return 0;
->> +
->> +	/*
->> +	 * We only support optimizing kernel addresses, but not
->> +	 * module addresses.
-> That probably warrants a TODO or FIXME.
-
-
-
-
-sure.
-
-
-
-
->> +	 */
->> +	if (!is_kernel_addr((unsigned long)p->addr))
->> +		return 0;
->> +
->> +	regs.nip = (unsigned long)p->addr;
->> +	regs.trap = 0x0;
->> +	regs.msr = MSR_KERNEL;
-> It may not matter in practice, but leaving most of regs uninitialised
-> seems a bit fishy. I'd prefer if we zeroed it first.
-
-
-
-
-yes. Will initialize the regs to zero here.
-
-
-
->> +	/*
->> +	 * Ensure that the instruction is not a conditional branch,
-> Can you spell out why it can't be a conditional branch.
-
-
-
-  We are not optimizing conditional branches here, because we can't 
-predict the nip
-prior with dummy pt_regs and can not ensure that the return branch from 
-detour
-buffer falls in the range of address i.e 32 MB.
-
-I will add  proper comments here.
-
-
-
-
->> +	 * and that can be emulated.
->> +	 */
->> +	if (!is_conditional_branch(*p->ainsn.insn) &&
->> +			analyse_instr(&op, &regs, *p->ainsn.insn))
->> +		nip = regs.nip;
->> +
->> +	return nip;
->> +}
->> +
->> +static void optimized_callback(struct optimized_kprobe *op,
->> +			       struct pt_regs *regs)
->> +{
->> +	struct kprobe_ctlblk *kcb = get_kprobe_ctlblk();
->> +	unsigned long flags;
->> +
->> +	/* This is possible if op is under delayed unoptimizing */
->> +	if (kprobe_disabled(&op->kp))
->> +		return;
->> +
->> +	local_irq_save(flags);
-> What is that protecting against? Because on powerpc it doesn't actually
-> disable interrupts, it just masks some of them, the perf interrupt for
-> example can still run.
-
-
-
-As pointed out by Naveen, we need hard_irq_disable() here.
-Thanks for the catch.
-
-:-)
-
-
->> +
->> +	if (kprobe_running()) {
->> +		kprobes_inc_nmissed_count(&op->kp);
->> +	} else {
->> +		__this_cpu_write(current_kprobe, &op->kp);
->> +		regs->nip = (unsigned long)op->kp.addr;
->> +		kcb->kprobe_status = KPROBE_HIT_ACTIVE;
->> +		opt_pre_handler(&op->kp, regs);
->> +		__this_cpu_write(current_kprobe, NULL);
->> +	}
->> +	local_irq_restore(flags);
->> +}
->> +NOKPROBE_SYMBOL(optimized_callback);
->> +
->> +void arch_remove_optimized_kprobe(struct optimized_kprobe *op)
->> +{
->> +	if (op->optinsn.insn) {
->> +		free_ppc_optinsn_slot(op->optinsn.insn, 1);
->> +		op->optinsn.insn = NULL;
->> +	}
->> +}
->> +
->> +/*
->> + * emulate_step() requires insn to be emulated as
->> + * second parameter. Load register 'r4' with the
->> + * instruction.
->> + */
->> +void patch_imm32_load_insns(unsigned int val, kprobe_opcode_t *addr)
->> +{
->> +	/* addis r4,0,(insn)@h */
->> +	*addr++ = PPC_INST_ADDIS | ___PPC_RT(4) |
->> +		  ((val >> 16) & 0xffff);
->> +
->> +	/* ori r4,r4,(insn)@l */
->> +	*addr = PPC_INST_ORI | ___PPC_RA(4) | ___PPC_RS(4) |
->> +		(val & 0xffff);
->> +}
->> +
->> +/*
->> + * Generate instructions to load provided immediate 64-bit value
->> + * to register 'r3' and patch these instructions at 'addr'.
->> + */
->> +void patch_imm64_load_insns(unsigned long val, kprobe_opcode_t *addr)
->> +{
->> +	/* lis r3,(op)@highest */
->> +	*addr++ = PPC_INST_ADDIS | ___PPC_RT(3) |
->> +		  ((val >> 48) & 0xffff);
->> +
->> +	/* ori r3,r3,(op)@higher */
->> +	*addr++ = PPC_INST_ORI | ___PPC_RA(3) | ___PPC_RS(3) |
->> +		  ((val >> 32) & 0xffff);
->> +
->> +	/* rldicr r3,r3,32,31 */
->> +	*addr++ = PPC_INST_RLDICR | ___PPC_RA(3) | ___PPC_RS(3) |
->> +		  __PPC_SH64(32) | __PPC_ME64(31);
->> +
->> +	/* oris r3,r3,(op)@h */
->> +	*addr++ = PPC_INST_ORIS | ___PPC_RA(3) | ___PPC_RS(3) |
->> +		  ((val >> 16) & 0xffff);
->> +
->> +	/* ori r3,r3,(op)@l */
->> +	*addr = PPC_INST_ORI | ___PPC_RA(3) | ___PPC_RS(3) |
->> +		(val & 0xffff);
->> +}
-> I can't say I love those patch functions. A PC-relative load would be
-> cleaner, but I guess that's ugly/expensive on current CPUs.
+> This removes the error message. We might have the case where the
+> first memory window on real PHB isn't populated properly because
+> of error in "ranges" property in the device-tree node. We can check
+> the device-tree instead for that. This also removes one unnecessary
+> blank line in the function.
 >
->> diff --git a/arch/powerpc/kernel/optprobes_head.S b/arch/powerpc/kernel/optprobes_head.S
->> new file mode 100644
->> index 0000000..c86976b
->> --- /dev/null
->> +++ b/arch/powerpc/kernel/optprobes_head.S
->> @@ -0,0 +1,135 @@
->> +/*
->> + * Code to prepare detour buffer for optprobes in Kernel.
->> + *
->> + * Copyright 2016, Anju T, IBM Corp.
->> + *
->> + * This program is free software; you can redistribute it and/or
->> + * modify it under the terms of the GNU General Public License
->> + * as published by the Free Software Foundation; either version
->> + * 2 of the License, or (at your option) any later version.
->> + */
->> +
->> +#include <asm/ppc_asm.h>
->> +#include <asm/ptrace.h>
->> +#include <asm/asm-offsets.h>
->> +
->> +#define	OPT_SLOT_SIZE	65536
->> +
->> +	.balign	4
->> +
->> +	/*
->> +	 * Reserve an area to allocate slots for detour buffer.
->> +	 * This is part of .text section (rather than vmalloc area)
->> +	 * as this needs to be within 32MB of the probed address.
->> +	 */
->> +	.global optinsn_slot
->> +optinsn_slot:
->> +	.space	OPT_SLOT_SIZE
->> +
->> +	/*
->> +	 * Optprobe template:
->> +	 * This template gets copied into one of the slots in optinsn_slot
->> +	 * and gets fixed up with real optprobe structures et al.
->> +	 */
->> +	.global optprobe_template_entry
->> +optprobe_template_entry:
->> +	/* Create an in-memory pt_regs */
->> +	stdu	r1,-INT_FRAME_SIZE(r1)
->> +	SAVE_GPR(0,r1)
->> +	/* Save the previous SP into stack */
->> +	addi	r0,r1,INT_FRAME_SIZE
->> +	std	r0,GPR1(r1)
->> +	SAVE_10GPRS(2,r1)
->> +	SAVE_10GPRS(12,r1)
->> +	SAVE_10GPRS(22,r1)
->> +	/* Save SPRS */
->> +	mfmsr	r5
->> +	std	r5,_MSR(r1)
->> +	li	r5,0x700
->> +	std	r5,_TRAP(r1)
->> +	li	r5,0
->> +	std	r5,ORIG_GPR3(r1)
->> +	std	r5,RESULT(r1)
->> +	mfctr	r5
->> +	std	r5,_CTR(r1)
->> +	mflr	r5
->> +	std	r5,_LINK(r1)
->> +	mfspr	r5,SPRN_XER
->> +	std	r5,_XER(r1)
->> +	mfcr	r5
->> +	std	r5,_CCR(r1)
->> +	lbz     r5,PACASOFTIRQEN(r13)
->> +	std     r5,SOFTE(r1)
->> +	mfdar	r5
->> +	std	r5,_DAR(r1)
->> +	mfdsisr	r5
->> +	std	r5,_DSISR(r1)
-> So this is what made me originally reply to this patch. This
-> save/restore sequence.
+> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+
+Reviewed-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+
+> ---
+> v2: Removes the error message instead of avoiding it
+> ---
+>  arch/powerpc/kernel/pci-common.c | 10 ++--------
+>  1 file changed, 2 insertions(+), 8 deletions(-)
 >
-> I'm not clear on why this is what we need to save/restore.
+> diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
+> index 74bec54..05bfdae 100644
+> --- a/arch/powerpc/kernel/pci-common.c
+> +++ b/arch/powerpc/kernel/pci-common.c
+> @@ -1559,16 +1559,10 @@ static void pcibios_setup_phb_resources(struct pci_controller *hose,
+>  	/* Hookup PHB Memory resources */
+>  	for (i = 0; i < 3; ++i) {
+>  		res = &hose->mem_resources[i];
+> -		if (!res->flags) {
+> -			if (i == 0)
+> -				printk(KERN_ERR "PCI: Memory resource 0 not set for "
+> -				       "host bridge %s (domain %d)\n",
+> -				       hose->dn->full_name, hose->global_number);
+> +		if (!res->flags)
+>  			continue;
+> -		}
+> -		offset = hose->mem_offset[i];
+> -
 >
-> Aren't we essentially just interposing a function call? If so do we need
-> to save/restore all of these? eg. MSR/DAR/DSISR. Non-volatile GPRs? And
-> why are we pretending there was a 0x700 trap?
+> +		offset = hose->mem_offset[i];
+>  		pr_debug("PCI: PHB MEM resource %d = %pR off 0x%08llx\n", i,
+>  			 res, (unsigned long long)offset);
 >
-> Is it because we're going to end up emulating the instruction and so we
-> need everything in pt_regs ?
 >
 
-
-
-Yes.
-we need the pt_regs to be saved in the detour buffer.
-
-
->> diff --git a/arch/powerpc/lib/sstep.c b/arch/powerpc/lib/sstep.c
->> index 3362299..895dcdd 100644
->> --- a/arch/powerpc/lib/sstep.c
->> +++ b/arch/powerpc/lib/sstep.c
->> @@ -618,6 +618,27 @@ static int __kprobes trap_compare(long v1, long v2)
->>   }
->>   
->>   /*
->> + * Helper to check if a given instruction is a conditional branch
->> + * Derived from the conditional checks in analyse_instr()
->> + */
->> +bool __kprobes is_conditional_branch(unsigned int instr)
->> +{
->> +	unsigned int opcode = instr >> 26;
->> +
-> We already have some similar routines in code_patching.c/h. Can you move
-> this in there instead?
-
-sure.
-
-
-> cheers
->
-
-
-
-
-Thanks and regards,
-Anju
+-- 
+Andrew Donnellan              OzLabs, ADL Canberra
+andrew.donnellan@au1.ibm.com  IBM Australia Limited
