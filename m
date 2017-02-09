@@ -1,33 +1,28 @@
-Return-Path: <arndbergmann@gmail.com>
-Received: from mail-ot0-x244.google.com (mail-ot0-x244.google.com
- [IPv6:2607:f8b0:4003:c0f::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vK1Q41TplzDq8t
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Feb 2017 01:57:16 +1100 (AEDT)
-Received: by mail-ot0-x244.google.com with SMTP id f9so607355otd.0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 09 Feb 2017 06:57:16 -0800 (PST)
+Return-Path: <shailendras@nvidia.com>
+Received: from hqemgate16.nvidia.com (hqemgate16.nvidia.com [216.228.121.65])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vK9pM69hKzDq5x
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Feb 2017 08:15:23 +1100 (AEDT)
+From: Shailendra Singh <shailendras@nvidia.com>
+To: Michael Ellerman <mpe@ellerman.id.au>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>
+CC: "jk@ozlabs.org" <jk@ozlabs.org>, "apopple@au1.ibm.com"
+ <apopple@au1.ibm.com>, "balbirs@au1.ibm.com" <balbirs@au1.ibm.com>, "Andy
+ Ritger" <ARitger@nvidia.com>, John Hubbard <jhubbard@nvidia.com>, "Sherry
+ Cheung" <SCheung@nvidia.com>, Aruna Manjunatha <amanjunatha@nvidia.com>,
+ "John McKenna" <jmckenna@nvidia.com>, "david.daney@cavium.com"
+ <david.daney@cavium.com>, "robh@kernel.org" <robh@kernel.org>,
+ "will.deacon@arm.com" <will.deacon@arm.com>, Arnd Bergmann <arnd@arndb.de>
+Subject: RE: [PATCH] powerpc: Fix inconsistent of_node_to_nid EXPORT_SYMBOL
+ handling
+Date: Thu, 9 Feb 2017 21:15:18 +0000
+Message-ID: <8d657fc33be24d45adfd9f92fdfd51b4@HQMAIL101.nvidia.com>
+References: <1485989562-16741-1-git-send-email-shailendras@nvidia.com>
+ <87poir8slr.fsf@concordia.ellerman.id.au>
+In-Reply-To: <87poir8slr.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Sender: arndbergmann@gmail.com
-In-Reply-To: <20170208221221.GA10983@sbauer-Z170X-UD5>
-References: <20170208211546.2789607-1-arnd@arndb.de>
- <20170208215827.GA9733@sbauer-Z170X-UD5>
- <20170208221221.GA10983@sbauer-Z170X-UD5>
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Thu, 9 Feb 2017 15:57:13 +0100
-Message-ID: <CAK8P3a17jfnGGtrb=AmY2_8R2CP8sBoUCC9NQD1w2sd_SFvOBg@mail.gmail.com>
-Subject: Re: [PATCH] block: sed-opal: reduce stack size of ioctl handler
-To: Scott Bauer <scott.bauer@intel.com>
-Cc: Jens Axboe <axboe@kernel.dk>,
- Rafael Antognolli <rafael.antognolli@intel.com>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- linux-nvme@lists.infradead.org,
- linux-block@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- linuxppc-dev@lists.ozlabs.org, hch@lst.de,
- Jonathan Derrick <jonathan.derrick@intel.com>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="us-ascii"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,39 +32,94 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Feb 8, 2017 at 11:12 PM, Scott Bauer <scott.bauer@intel.com> wrote:
-> On Wed, Feb 08, 2017 at 02:58:28PM -0700, Scott Bauer wrote:
->> Thank you for the report. We want to keep the function calls agnostic to userland.
->> In the future we will have in-kernel callers and I don't want to have to do any
->> get_fs(KERNEL_DS) wizardry.
->>
->> Instead I think we can use a union to lessen the stack burden. I tested this patch just now
->> with config_ksasan and was able to build.
+Hi Michael,
+
+>>>Which was merged in May 2006. So the powerpc version has almost 10 yea=
+rs precedence.
+
+=20Agreed but keeping the licensing consistent will help drivers making s=
+eamless use of it on all architectures.
+
+>>> But I guess it's a pretty boring API. So I'll merge this unless anyon=
+e else objects.
+Thanks. Appreciate your quick response and help.
+
+Thanks,
+Shailendra
+
+-----Original Message-----
+From: Michael Ellerman [mailto:mpe@ellerman.id.au]=20
+Sent: Thursday, February 09, 2017 4:19 AM
+To: Shailendra Singh <shailendras@nvidia.com>; linuxppc-dev@lists.ozlabs.=
+org
+Cc: jk@ozlabs.org; apopple@au1.ibm.com; balbirs@au1.ibm.com; Andy Ritger =
+<ARitger@nvidia.com>; John Hubbard <jhubbard@nvidia.com>; Sherry Cheung <=
+SCheung@nvidia.com>; Aruna Manjunatha <amanjunatha@nvidia.com>; John McKe=
+nna <jmckenna@nvidia.com>; david.daney@cavium.com; robh@kernel.org; will.=
+deacon@arm.com; Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH] powerpc: Fix inconsistent of_node_to_nid EXPORT_SYMB=
+OL handling
+
+Shailendra Singh <shailendras@nvidia.com> writes:
+
+> The generic implementation of of_node_to_nid is EXPORT_SYMBOL.
+
+True. Added in 298535c00a2c, in April 2016.
+
+> The powerpc implementation added by following commit is EXPORT_SYMBOL_G=
+PL.
+> commit 953039c8df7b ("[PATCH] powerpc: Allow devices to register with=20
+> numa
+> topology")
+
+Which was merged in May 2006.
+
+So the powerpc version has almost 10 years precedence.
+[Shailendra] - Agreed. Keeping the licensing consistent will help drivers=
+=20making use of it on all architectures.
+
+> This creates an inconsistency for of_node_to_nid callers across=20
+> architectures.
 >
-> Nack on this patch, it only really masks the issue. Keith pointed out we have a call chain
-> up to this ioctl then deeper down into nvme then the block layer. If we use 25% of the stack
-> just for this function it's still too dangerous and we'll run into corruption later on and not
-> remember this fix. I'll come up with another solution.
+> Update the powerpc implementation to be exported consistently with the =
 
-I think there are two issues that cause the stack frame to explode
-with KASAN, and
-your patch addresses one but not the other:
+> generic implementation.
 
-1. checks for variables being accessed after they go out of scope.
-This is solved by the
-   union at the start of the function, as they never go out of scope now.
+But I guess it's a pretty boring API. So I'll merge this unless anyone el=
+se objects.
+[Shailendra] - Thanks. Appreciate your quick response.
 
-2. checks for array overflows when passing a local variable by
-reference to another
-   function that is not inlined.
+cheers
 
-To solve the second problem while keeping the in-kernel interface, the
-approach that
-David suggesteed would work, or you could have a wrapper around each function to
-do the copy_from_user in a more obvious but verbose way as I had in my version.
 
-With David's approach, you could actually replace the switch() with a
-lookup table
-as well.
-
-    Arnd
+> Signed-off-by: Shailendra Singh <shailendras@nvidia.com>
+> Reviewed-by: Andy Ritger <aritger@nvidia.com>
+> ---
+>  arch/powerpc/mm/numa.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c index=20
+> b1099cb2f393..8aa4ca3c84c9 100644
+> --- a/arch/powerpc/mm/numa.c
+> +++ b/arch/powerpc/mm/numa.c
+> @@ -290,7 +290,7 @@ int of_node_to_nid(struct device_node *device)
+> =20
+>  	return nid;
+>  }
+> -EXPORT_SYMBOL_GPL(of_node_to_nid);
+> +EXPORT_SYMBOL(of_node_to_nid);
+> =20
+>  static int __init find_min_common_depth(void)  {
+> --
+> 2.4.11
+-------------------------------------------------------------------------=
+----------
+This email message is for the sole use of the intended recipient(s) and m=
+ay contain
+confidential information.  Any unauthorized review, use, disclosure or di=
+stribution
+is prohibited.  If you are not the intended recipient, please contact the=
+=20sender by
+reply email and destroy all copies of the original message.
+-------------------------------------------------------------------------=
+----------
