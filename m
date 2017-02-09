@@ -1,16 +1,16 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vJzG26rbnzDqGG
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Feb 2017 00:20:10 +1100 (AEDT)
-In-Reply-To: <1486346716.4850.82.camel@kernel.crashing.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vJzG353bmzDqJX
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Feb 2017 00:20:11 +1100 (AEDT)
+In-Reply-To: <1486427731.4850.102.camel@kernel.crashing.org>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, linuxppc-dev@ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: powerpc/mm/radix: Update ERAT flushes when invalidating TLB
-Message-Id: <3vJzG21L4cz9s7n@ozlabs.org>
-Date: Fri, 10 Feb 2017 00:20:10 +1100 (AEDT)
+Cc: Paul Mackerras <pmac@au1.ibm.com>
+Subject: Re: [1/2] powerpc/powernv: Fix CPU hotplug to handle waking on HVI
+Message-Id: <3vJzG32lpZz9s7N@ozlabs.org>
+Date: Fri, 10 Feb 2017 00:20:11 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,19 +20,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2017-02-06 at 02:05:16 UTC, Benjamin Herrenschmidt wrote:
-> Three tiny changes to the ERAT flushing logic: First don't make
-> it depend on DD1. It hasn't been decided yet but we might run
-> DD2 in a mode that also requires explicit flushes for performance
-> reasons so make it unconditional. We also add a missing isync, and
-> finally remove the flush from _tlbiel_va as it is only necessary
-> for congruence-class invalidations (PID, LPID and full TLB), not
-> targetted invalidations.
+On Tue, 2017-02-07 at 00:35:31 UTC, Benjamin Herrenschmidt wrote:
+> The IPIs come in as HVI not EE, so we need to test the appropriate
+> SRR1 bits. The encoding is such that it won't have false positives
+> on P7 and P8 so we can just test it like that. We also need to handle
+> the icp-opal variant of the flush.
 > 
 > Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
 Applied to powerpc fixes, thanks.
 
-https://git.kernel.org/powerpc/c/90c1e3c2fafec57fcb55b5d69bcf29
+https://git.kernel.org/powerpc/c/9b256714979fad61ae11d90b53cf67
 
 cheers
