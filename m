@@ -2,24 +2,24 @@ Return-Path: <dgibson@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vJlpb1P8VzDqGk
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vJlpb0nGMzDqGj
  for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Feb 2017 15:44:07 +1100 (AEDT)
-Date: Thu, 9 Feb 2017 15:00:51 +1100
+Date: Thu, 9 Feb 2017 14:51:51 +1100
 From: David Gibson <david@gibson.dropbear.id.au>
 To: Alexey Kardashevskiy <aik@ozlabs.ru>
 Cc: linuxppc-dev@lists.ozlabs.org,
  Alex Williamson <alex.williamson@redhat.com>,
  Paul Mackerras <paulus@samba.org>, kvm-ppc@vger.kernel.org,
  kvm@vger.kernel.org
-Subject: Re: [PATCH kernel v4 09/10] KVM: PPC: Use preregistered memory API
- to access TCE list
-Message-ID: <20170209040051.GB14524@umbus>
+Subject: Re: [PATCH kernel v4 08/10] KVM: PPC: Separate TCE validation from
+ update
+Message-ID: <20170209035151.GA14524@umbus>
 References: <20170207071711.28938-1-aik@ozlabs.ru>
- <20170207071711.28938-10-aik@ozlabs.ru>
+ <20170207071711.28938-9-aik@ozlabs.ru>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="1UWUbFP1cBYEclgG"
-In-Reply-To: <20170207071711.28938-10-aik@ozlabs.ru>
+ protocol="application/pgp-signature"; boundary="/04w6evG8XlLl3ft"
+In-Reply-To: <20170207071711.28938-9-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,137 +30,97 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---1UWUbFP1cBYEclgG
+--/04w6evG8XlLl3ft
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Tue, Feb 07, 2017 at 06:17:10PM +1100, Alexey Kardashevskiy wrote:
-> VFIO on sPAPR already implements guest memory pre-registration
-> when the entire guest RAM gets pinned. This can be used to translate
-> the physical address of a guest page containing the TCE list
-> from H_PUT_TCE_INDIRECT.
+On Tue, Feb 07, 2017 at 06:17:09PM +1100, Alexey Kardashevskiy wrote:
+> For the emulated devices it does not matter much if we get a broken TCE
+> half way handling a TCE list but for VFIO it will matter as it has
+> more chances to fail so we try to do our best and check as much as we
+> can before proceeding.
 >=20
-> This makes use of the pre-registrered memory API to access TCE list
-> pages in order to avoid unnecessary locking on the KVM memory
-> reverse map as we know that all of guest memory is pinned and
-> we have a flat array mapping GPA to HPA which makes it simpler and
-> quicker to index into that array (even with looking up the
-> kernel page tables in vmalloc_to_phys) than it is to find the memslot,
-> lock the rmap entry, look up the user page tables, and unlock the rmap
-> entry. Note that the rmap pointer is initialized to NULL
-> where declared (not in this patch).
->=20
-> If a requested chunk of memory has not been preregistered, this will
-> fall back to non-preregistered case and lock rmap.
+> This separates a guest view table update from validation. No change in
+> behavior is expected.
 >=20
 > Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-
-Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
-
 > ---
-> Changes:
-> v4:
-> * removed oneline inlines
-> * now falls back to locking rmap if TCE list is not in preregistered memo=
-ry
+>  arch/powerpc/kvm/book3s_64_vio.c    | 8 ++++++++
+>  arch/powerpc/kvm/book3s_64_vio_hv.c | 8 ++++++--
+>  2 files changed, 14 insertions(+), 2 deletions(-)
 >=20
-> v2:
-> * updated the commit log with David's comment
-> ---
->  arch/powerpc/kvm/book3s_64_vio_hv.c | 58 +++++++++++++++++++++++++++----=
-------
->  1 file changed, 42 insertions(+), 16 deletions(-)
->=20
-> diff --git a/arch/powerpc/kvm/book3s_64_vio_hv.c b/arch/powerpc/kvm/book3=
-s_64_vio_hv.c
-> index f8a54b7c788e..dc1c66fda941 100644
-> --- a/arch/powerpc/kvm/book3s_64_vio_hv.c
-> +++ b/arch/powerpc/kvm/book3s_64_vio_hv.c
-> @@ -239,6 +239,7 @@ long kvmppc_rm_h_put_tce_indirect(struct kvm_vcpu *vc=
-pu,
->  	long i, ret =3D H_SUCCESS;
->  	unsigned long tces, entry, tce, ua =3D 0;
->  	unsigned long *rmap =3D NULL;
-> +	bool prereg =3D false;
-> =20
->  	stt =3D kvmppc_find_table(vcpu->kvm, liobn);
->  	if (!stt)
-> @@ -259,23 +260,47 @@ long kvmppc_rm_h_put_tce_indirect(struct kvm_vcpu *=
-vcpu,
->  	if (ret !=3D H_SUCCESS)
->  		return ret;
-> =20
-> -	if (kvmppc_gpa_to_ua(vcpu->kvm, tce_list, &ua, &rmap))
-> -		return H_TOO_HARD;
-> +	if (mm_iommu_preregistered(vcpu->kvm->mm)) {
-> +		/*
-> +		 * We get here if guest memory was pre-registered which
-> +		 * is normally VFIO case and gpa->hpa translation does not
-> +		 * depend on hpt.
-> +		 */
-> +		struct mm_iommu_table_group_mem_t *mem;
-> =20
-> -	rmap =3D (void *) vmalloc_to_phys(rmap);
-> +		if (kvmppc_gpa_to_ua(vcpu->kvm, tce_list, &ua, NULL))
-> +			return H_TOO_HARD;
-> =20
-> -	/*
-> -	 * Synchronize with the MMU notifier callbacks in
-> -	 * book3s_64_mmu_hv.c (kvm_unmap_hva_hv etc.).
-> -	 * While we have the rmap lock, code running on other CPUs
-> -	 * cannot finish unmapping the host real page that backs
-> -	 * this guest real page, so we are OK to access the host
-> -	 * real page.
-> -	 */
-> -	lock_rmap(rmap);
-> -	if (kvmppc_rm_ua_to_hpa(vcpu, ua, &tces)) {
-> -		ret =3D H_TOO_HARD;
-> -		goto unlock_exit;
-> +		mem =3D mm_iommu_lookup_rm(vcpu->kvm->mm, ua, IOMMU_PAGE_SIZE_4K);
-> +		if (mem)
-> +			prereg =3D mm_iommu_ua_to_hpa_rm(mem, ua, &tces) =3D=3D 0;
+> diff --git a/arch/powerpc/kvm/book3s_64_vio.c b/arch/powerpc/kvm/book3s_6=
+4_vio.c
+> index 15df8ae627d9..9a7b7fca5e84 100644
+> --- a/arch/powerpc/kvm/book3s_64_vio.c
+> +++ b/arch/powerpc/kvm/book3s_64_vio.c
+> @@ -282,6 +282,14 @@ long kvmppc_h_put_tce_indirect(struct kvm_vcpu *vcpu,
+>  		ret =3D kvmppc_tce_validate(stt, tce);
+>  		if (ret !=3D H_SUCCESS)
+>  			goto unlock_exit;
 > +	}
 > +
-> +	if (!prereg) {
-> +		/*
-> +		 * This is usually a case of a guest with emulated devices only
-> +		 * when TCE list is not in preregistered memory.
-> +		 * We do not require memory to be preregistered in this case
-> +		 * so lock rmap and do __find_linux_pte_or_hugepte().
-> +		 */
-> +		if (kvmppc_gpa_to_ua(vcpu->kvm, tce_list, &ua, &rmap))
-> +			return H_TOO_HARD;
-> +
-> +		rmap =3D (void *) vmalloc_to_phys(rmap);
-> +
-> +		/*
-> +		 * Synchronize with the MMU notifier callbacks in
-> +		 * book3s_64_mmu_hv.c (kvm_unmap_hva_hv etc.).
-> +		 * While we have the rmap lock, code running on other CPUs
-> +		 * cannot finish unmapping the host real page that backs
-> +		 * this guest real page, so we are OK to access the host
-> +		 * real page.
-> +		 */
-> +		lock_rmap(rmap);
-> +		if (kvmppc_rm_ua_to_hpa(vcpu, ua, &tces)) {
+> +	for (i =3D 0; i < npages; ++i) {
+> +		if (get_user(tce, tces + i)) {
 > +			ret =3D H_TOO_HARD;
 > +			goto unlock_exit;
 > +		}
+> +		tce =3D be64_to_cpu(tce);
+
+This doesn't look safe.  The contents of user memory could change
+between the two get_user()s, meaning that you're no longer guaranteed
+a TCE loaded into kernel has been validated at all.
+
+I think you need to either:
+
+    a) Make sure things safe against a bad TCE being loaded into a TCE
+    table and move all validation to where the TCE is used, rather
+    than loaded
+
+or
+    b) Copy the whole set of indirect entries to a temporary in-kernel
+       buffer, then validate, then load into the actual TCE table.
+
+> =20
+>  		kvmppc_tce_put(stt, entry + i, tce);
+>  	}
+> diff --git a/arch/powerpc/kvm/book3s_64_vio_hv.c b/arch/powerpc/kvm/book3=
+s_64_vio_hv.c
+> index 918af76ab2b6..f8a54b7c788e 100644
+> --- a/arch/powerpc/kvm/book3s_64_vio_hv.c
+> +++ b/arch/powerpc/kvm/book3s_64_vio_hv.c
+> @@ -237,7 +237,7 @@ long kvmppc_rm_h_put_tce_indirect(struct kvm_vcpu *vc=
+pu,
+>  {
+>  	struct kvmppc_spapr_tce_table *stt;
+>  	long i, ret =3D H_SUCCESS;
+> -	unsigned long tces, entry, ua =3D 0;
+> +	unsigned long tces, entry, tce, ua =3D 0;
+>  	unsigned long *rmap =3D NULL;
+> =20
+>  	stt =3D kvmppc_find_table(vcpu->kvm, liobn);
+> @@ -279,11 +279,15 @@ long kvmppc_rm_h_put_tce_indirect(struct kvm_vcpu *=
+vcpu,
 >  	}
 > =20
 >  	for (i =3D 0; i < npages; ++i) {
-> @@ -293,7 +318,8 @@ long kvmppc_rm_h_put_tce_indirect(struct kvm_vcpu *vc=
-pu,
+> -		unsigned long tce =3D be64_to_cpu(((u64 *)tces)[i]);
+> +		tce =3D be64_to_cpu(((u64 *)tces)[i]);
+> =20
+>  		ret =3D kvmppc_tce_validate(stt, tce);
+>  		if (ret !=3D H_SUCCESS)
+>  			goto unlock_exit;
+> +	}
+> +
+> +	for (i =3D 0; i < npages; ++i) {
+> +		tce =3D be64_to_cpu(((u64 *)tces)[i]);
+
+Same problem here.
+
+> =20
+>  		kvmppc_tce_put(stt, entry + i, tce);
 >  	}
-> =20
->  unlock_exit:
-> -	unlock_rmap(rmap);
-> +	if (rmap)
-> +		unlock_rmap(rmap);
-> =20
->  	return ret;
->  }
 
 --=20
 David Gibson			| I'll have my music baroque, and my code
@@ -168,25 +128,25 @@ david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
 				| _way_ _around_!
 http://www.ozlabs.org/~dgibson
 
---1UWUbFP1cBYEclgG
+--/04w6evG8XlLl3ft
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAEBCAAGBQJYm+lzAAoJEGw4ysog2bOSZ70QANU7nvSTjN1C8vVevtHcu5Vl
-gtS2R+yqbmpNfnXjBm/ie9vmucQsvugteKsn5em2EUEZqmN7uHikIXeA15MnQbZW
-ookYMQ9oj2KZosG4sGwBxkHgWAcqYpN8KHYlwH0nXqFaXeFs4RYtRPvnyockc+CG
-i0ckuRTeucU8YXAQAdDVW9IHGOEOxdxNwRu6JoNawRP7NKDVwAYjOfRMjCZCbwTd
-vGeqF548lrhe95e27ThRFJRrV2tPMIGJ/VRC9NnWoVuglaSzrklKl7DNKnTTPJeX
-Jy3iMb9XVfAIXuCaKYYxwyCfw3ZsNaWsbzH4c99kgaXuqTETrFfRWYrnxVHygQEk
-xkgAKoyy5kW840eIeI56OLfEJtc7vK97tplQZduPeB0H69YBi2DA2YtM37gXtAjQ
-CxltCvVhvrwubXO5yb98DN9/0Os8gwKfhK8Zq4yaWITD6tk+NHbTw2xnKvi+7Dmd
-Cq39sbd2Wm/zGmIWZnwAKZTbceufaROYKaiz+5ACnqw2GUMI137AnDGMGnhmkWbp
-n6Imi5OckyiVpmNpjI2uF2ZwQoVLcFgc4jNIPRh7/StIBpZq8WYHEA+vgT8HQ1CV
-/hBu2fd2OWNPk55Loailo+IOj15LdI4IHX8YKZ2YMtcA0zPmiLH6HymIGrgcHCJe
-Cjkr1cC7kUNZn7KK05wF
-=YIta
+iQIcBAEBCAAGBQJYm+dVAAoJEGw4ysog2bOSPNsP/j6Oi6Nz3YKy6hVS3coIh3wk
+bATGt9ficn9k4PqCaiLtVb1VurKW0A76QPDUrjSkUqITxIzz+Qjf5QPN2Az90DDk
+LzS3B5Z2IPcN6Gg5mXzAKOpvx8hmnA3TlkVNa2Xuh1fn0CrtVkECW2aWy4KxxU1S
+jSZioUrOOj38aT6vSrjxeo6q7RYslfyiSEgcLe1bU8OQeqla4sTSy9LmvcAGhQnt
+y6/Ags/F0/sEsk1GJ7DE4H0CQsA0xkfF6gmi6JejsDIvhIfMu5VpxgBW2cWXIGEC
+zdw3w13sZ9PT0X3wm8BERyEbip8tkLz+STg8QcRDwX7dZfAGww5bOZ5Ku3owBfot
+WOHSY6jgxRqjCKKhG9VR/TrvB/s0mGgntRRFQWyv5HNwOG7ikOFob6LKX3Qnhtlo
+Q6X4lA0syWSKT9+ZZX6vsjBBQyUTfgZz+d5cr7LFB+KQfPha3fZOS+ba1BBfAOUT
+RLQ6Dlg+BJiQEVvpOA3YElLMdKsLHCYgCZjVrSqjkzwGmRagTue2OnstvmFbCHvR
+yOKqa1vu437Af2dv+ruEQcTwRAgg9/x+s48+dA9lvnsI0kb5COPK2wVKWAjR6m4+
+01Rvy2g66RXMmdaJmlwyBu0TCg9YCssBuCLGM7KaRekJRCD6PIyvifcpmL0q6mTQ
+hnDgQ/Z9MPM/lSLX/TME
+=53Aq
 -----END PGP SIGNATURE-----
 
---1UWUbFP1cBYEclgG--
+--/04w6evG8XlLl3ft--
