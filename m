@@ -1,27 +1,19 @@
-Return-Path: <scott.bauer@intel.com>
-Received: from mga07.intel.com (mga07.intel.com [134.134.136.100])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vJbKP0kJZzDqBn
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Feb 2017 09:21:44 +1100 (AEDT)
-Date: Wed, 8 Feb 2017 15:12:21 -0700
-From: Scott Bauer <scott.bauer@intel.com>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Jens Axboe <axboe@kernel.dk>,
- Rafael Antognolli <rafael.antognolli@intel.com>,
- Michael Ellerman <mpe@ellerman.id.au>, linux-kernel@vger.kernel.org,
- linux-nvme@lists.infradead.org, linux-block@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- linuxppc-dev@lists.ozlabs.org, hch@lst.de,
- Jonathan Derrick <jonathan.derrick@intel.com>
-Subject: Re: [PATCH] block: sed-opal: reduce stack size of ioctl handler
-Message-ID: <20170208221221.GA10983@sbauer-Z170X-UD5>
-References: <20170208211546.2789607-1-arnd@arndb.de>
- <20170208215827.GA9733@sbauer-Z170X-UD5>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170208215827.GA9733@sbauer-Z170X-UD5>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vJfP66TvdzDqBm
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Feb 2017 11:40:10 +1100 (AEDT)
+Message-ID: <1486600803.3401.9.camel@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc/irq: Improve/fix migrate_irqs()
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
+Date: Thu, 09 Feb 2017 11:40:03 +1100
+In-Reply-To: <874m059f00.fsf@concordia.ellerman.id.au>
+References: <1486427804.4850.104.camel@kernel.crashing.org>
+ <874m059f00.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,33 +23,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Feb 08, 2017 at 02:58:28PM -0700, Scott Bauer wrote:
-> On Wed, Feb 08, 2017 at 10:15:28PM +0100, Arnd Bergmann wrote:
-> > When CONFIG_KASAN is in use, the sed_ioctl function uses unusually large stack,
-> > as each possible ioctl argument gets its own stack area plus redzone:
+On Wed, 2017-02-08 at 21:02 +1100, Michael Ellerman wrote:
+> Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+> 
+> > migrate_irqs() is used by some platforms to migrate interrupts
+> > away from a CPU about to be offlined.
 > > 
-> > block/sed-opal.c: In function 'sed_ioctl':
-> > block/sed-opal.c:2447:1: error: the frame size of 2256 bytes is larger than 2048 bytes [-Werror=frame-larger-than=]
-> > 
-> > Moving the copy_from_user() calls into the individual functions has little
-> > effect on readablility, but significantly reduces the stack size, with the
-> > largest individual function (opal_enable_disable_shadow_mbr) now at
-> > reasonable 456 bytes.
-> > 
-> > Fixes: 455a7b238cd6 ("block: Add Sed-opal library")
-> > Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> > The current implementation had various issues such as not taking
+> > the descriptor lock before manipulating it.
 > 
+> ... and not checking for a NULL chip (but presumably that's never
+> happened), and always calling irq_set_affinity() even for IRQs not on
+> the CPU.
 > 
-> Hi Arnd,
-> 
-> Thank you for the report. We want to keep the function calls agnostic to userland.
-> In the future we will have in-kernel callers and I don't want to have to do any
-> get_fs(KERNEL_DS) wizardry.
-> 
-> Instead I think we can use a union to lessen the stack burden. I tested this patch just now
-> with config_ksasan and was able to build.
+> But, any reason we can't use irq_migrate_all_off_this_cpu() ?
+> Which is in generic code.
 
-Nack on this patch, it only really masks the issue. Keith pointed out we have a call chain
-up to this ioctl then deeper down into nvme then the block layer. If we use 25% of the stack
-just for this function it's still too dangerous and we'll run into corruption later on and not
-remember this fix. I'll come up with another solution.
+Nope, I didn't notice it. I'll give that a spin.
+
+Cheers,
+Ben.
