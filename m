@@ -1,22 +1,25 @@
-Return-Path: <laurentiu.tudor@nxp.com>
-Received: from EUR02-HE1-obe.outbound.protection.outlook.com
- (mail-eopbgr10042.outbound.protection.outlook.com [40.107.1.42])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <David.Laight@ACULAB.COM>
+Received: from smtp-out4.electric.net (smtp-out4.electric.net
+ [192.162.216.183])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vK04k1MR7zDq5s
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Feb 2017 00:57:09 +1100 (AEDT)
-From: Laurentiu Tudor <laurentiu.tudor@nxp.com>
-To: Thomas De Schampheleire <patrickdepinguin@gmail.com>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vK0kK108wzDq60
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Feb 2017 01:26:16 +1100 (AEDT)
+From: David Laight <David.Laight@ACULAB.COM>
+To: 'Arnd Bergmann' <arnd@arndb.de>, Scott Bauer <scott.bauer@intel.com>,
+ Jonathan Derrick <jonathan.derrick@intel.com>, Rafael Antognolli
+ <rafael.antognolli@intel.com>
+CC: Jens Axboe <axboe@kernel.dk>, "linux-kernel@vger.kernel.org"
+ <linux-kernel@vger.kernel.org>, "linux-nvme@lists.infradead.org"
+ <linux-nvme@lists.infradead.org>, "linux-block@vger.kernel.org"
+ <linux-block@vger.kernel.org>, Paul Mackerras <paulus@samba.org>,
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-CC: Ronny Meeus <Ronny.Meeus@gmail.com>
-Subject: Re: "Unable to handle kernel paging request for instruction fetch" on
- P4080
-Date: Thu, 9 Feb 2017 13:57:02 +0000
-Message-ID: <589C752E.4070507@nxp.com>
-References: <CAAXf6LWL67Qvdv82yOREoB5Q5fVHNUU3m5a13-qSowk30Oj8AA@mail.gmail.com>
- <CAAXf6LVrPi+8dHu75Oy1UBgd8kRk=uEzWTVTJB5yN=X6kq5ixQ@mail.gmail.com>
-In-Reply-To: <CAAXf6LVrPi+8dHu75Oy1UBgd8kRk=uEzWTVTJB5yN=X6kq5ixQ@mail.gmail.com>
-Content-Type: text/plain; charset="utf-8"
+Subject: RE: [PATCH] block: sed-opal: reduce stack size of ioctl handler
+Date: Thu, 9 Feb 2017 14:26:02 +0000
+Message-ID: <063D6719AE5E284EB5DD2968C1650D6DB0281652@AcuExch.aculab.com>
+References: <20170208211546.2789607-1-arnd@arndb.de>
+In-Reply-To: <20170208211546.2789607-1-arnd@arndb.de>
+Content-Type: text/plain; charset="Windows-1252"
 MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -27,19 +30,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-SGkgVGhvbWFzLA0KDQpPbiAwMi8wMS8yMDE3IDExOjQ2IEFNLCBUaG9tYXMgRGUgU2NoYW1waGVs
-ZWlyZSB3cm90ZToNCj4gT24gV2VkLCBKYW4gMjUsIDIwMTcgYXQgMTA6NDYgQU0sIFRob21hcyBE
-ZSBTY2hhbXBoZWxlaXJlDQo+IDxwYXRyaWNrZGVwaW5ndWluQGdtYWlsLmNvbT4gd3JvdGU6DQo+
-PiBIaSwNCj4+DQo+PiBXZSBhcmUgZXhwZXJpZW5jaW5nIGtlcm5lbCBwYW5pY3Mgb2YgdGhlIHR5
-cGUgIlVuYWJsZSB0byBoYW5kbGUga2VybmVsIHBhZ2luZw0KPj4gcmVxdWVzdCBmb3IgaW5zdHJ1
-Y3Rpb24gZmV0Y2giIGJ1dCBhcmUgc3R1Y2sgaW4gb3VyIGFuYWx5c2lzLiBXZSB3b3VsZA0KPj4g
-YXBwcmVjaWF0ZSBhbnkgaGVscCB5b3UgY2FuIGdpdmUuDQo+Pg0KPj4gVGhlIHByb2JsZW0gb2Nj
-dXJzIGZyb20gdGltZSB0byB0aW1lIG9uIGRpZmZlcmVudCBpbnN0YW5jZXMgb2YgYSBwYXJ0aWN1
-bGFyDQo+PiBlbWJlZGRlZCBzeXN0ZW1zLiBUaGUga2VybmVsIGlzIHZlcnkgb2xkLCAyLjYuMzYu
-NCwgYW5kIHJ1bnMgb24gYW4gOC1jb3JlDQo+PiBGcmVlc2NhbGUgUDQwODAgUW9ySVEgcHJvY2Vz
-c29yIChlNTAwbWMtYmFzZWQpLiBVcGdyYWRpbmcgdGhlIGtlcm5lbCB0byBhIG5ld2VyDQo+PiB2
-ZXJzaW9uIGlzIG5vdCBhbiBvcHRpb24gYXQgdGhpcyBwb2ludC4NCg0KQW55IGNoYW5jZSBvZiBh
-dCBsZWFzdCB0cnlpbmcgYSBuZXdlciBrZXJuZWwganVzdCB0byBjaGVjayBpZiB0aGUgaXNzdWUN
-CndhcyBmaXhlZCBpbiB0aGUgbWVhbnRpbWUuIEFsc28sIHRyeWluZyBhIG5ld2VyIHUtYm9vdCBt
-aWdodCBoZWxwLg0KQW5vdGhlciB0aGluZzogY2FuIHlvdSB0cnkgYm9vdGluZyBvbiBvbmUgY29y
-ZSBvbmx5Pw0KDQotLS0NCkJlc3QgUmVnYXJkcywgTGF1cmVudGl1
+From: Arnd Bergmann
+> Sent: 08 February 2017 21:15
+>
+> When CONFIG_KASAN is in use, the sed_ioctl function uses unusually large =
+stack,
+> as each possible ioctl argument gets its own stack area plus redzone:
+
+Why not do a single copy_from_user() at the top of sed_ioctl() based on
+the _IOC_DIR() and __IOC_SIZE() values?
+
+Something like:
+int sed_ioctl(..., unsigned int cmd, void __user *arg)
+{
+	u64 buf[??]; /* or a union */
+	unsigned int cmd_sz =3D _IOC_SIZE(cmd);
+
+	if (_IOC_DIR(cmd) & (_IOC_WRITE | _IOC_READ) && cmd_sz > sizeof buf)
+		return -EINVAL;
+
+	if (_IOC_DIR(cmd) & _IOC_WRITE) {
+		if (copy_from_user(buf, arg, cmd_sz))
+			return -EFAULT;
+	} else {
+		if (IOC_DIR(cmd) & _IOC_READ))
+			memzero(buf, cmd_sz);
+	}
+
+	switch (cmd) {
+	...
+		rval =3D ...
+	...
+	}
+
+	if (rval >=3D 0 && (_IOC_DIR(cmd) & _IOC_READ)
+			&& copy_to_user(arg, buf, cmd_sz));
+		return -EFAULT;
+
+	return rval;
+}
+
+	David
