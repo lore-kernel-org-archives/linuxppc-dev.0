@@ -1,19 +1,16 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vJzCN3GNszDq60
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Feb 2017 00:17:52 +1100 (AEDT)
-In-Reply-To: <f0e5117608ea57a64ed60562ec29203a46234b64.1483055859.git.fthain@telegraphics.com.au>
-To: Finn Thain <fthain@telegraphics.com.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Geert Uytterhoeven <geert@linux-m68k.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vJzCP1L1NzDq8X
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Feb 2017 00:17:53 +1100 (AEDT)
+In-Reply-To: <20170207180641.31912-1-naveen.n.rao@linux.vnet.ibm.com>
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: linux-m68k@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Subject: Re: [RESEND,01/10] via-cuda: Cleanup printk calls
-Message-Id: <3vJzCN2hnJz9s7K@ozlabs.org>
-Date: Fri, 10 Feb 2017 00:17:52 +1100 (AEDT)
+Cc: mikey@neuling.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [2/2] powerpc/powernv: Add more BPF in defconfig
+Message-Id: <3vJzCP0mFPz9s7Z@ozlabs.org>
+Date: Fri, 10 Feb 2017 00:17:53 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,15 +20,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 2017-01-01 at 00:56:26 UTC, Finn Thain wrote:
-> Add missing log message severity, remove old debug messages and
-> replace printk() loop with print_hex_dump() call.
+On Tue, 2017-02-07 at 18:06:41 UTC, "Naveen N. Rao" wrote:
+> On 2017/02/07 10:00PM, Michael Ellerman wrote:
+> > 
+> > I'll mush the patches all together and turn them all on across
+> > pseries/ppc64/powernv.
 > 
-> Tested-by: Stan Johnson <userm57@yahoo.com>
-> Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
+> Here's a version that does that. I have merged all the patches
+> (including UPROBE_EVENT since that is very useful with bcc anyway). I
+> have also added CGROUP_BPF to get namespace coverage.
+> 
+> Thanks,
+> Naveen
+> ---
+> powerpc: include bpf/bcc related config options in defconfigs
+> 
+> Specifically:
+> - CONFIG_BPF_SYSCALL
+> - CONFIG_NET_SCHED
+> - CONFIG_NET_CLS_BPF
+> - CONFIG_NET_CLS_ACT
+> - CONFIG_NET_ACT_BPF
+> - CONFIG_CGROUP_BPF
+> - CONFIG_UPROBE_EVENT
+> 
+> ... in pseries, ppc64 and powernv defconfigs.
+> 
+> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
 
-Series applied to powerpc next, thanks.
+Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/523717d1496c794e8380d0e3de5ca6
+https://git.kernel.org/powerpc/c/63b2547b155de2c41d40ea75015574
 
 cheers
