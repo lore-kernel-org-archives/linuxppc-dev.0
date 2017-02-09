@@ -2,17 +2,14 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vJzCS17fXzDqGh
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Feb 2017 00:17:56 +1100 (AEDT)
-In-Reply-To: <1486406367-31126-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- benh@kernel.crashing.org, paulus@samba.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vJzCT1vNRzDqCc
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Feb 2017 00:17:57 +1100 (AEDT)
+In-Reply-To: <1486427848.4850.105.camel@kernel.crashing.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, linuxppc-dev@ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: powerpc/mm: Add MMU_FTR_KERNEL_RO to possible feature mask
-Message-Id: <3vJzCS0Dmbz9s7R@ozlabs.org>
-Date: Fri, 10 Feb 2017 00:17:55 +1100 (AEDT)
+Subject: Re: powerpc/opal-lpc: Remove unneeded include
+Message-Id: <3vJzCT0LWrz9s7d@ozlabs.org>
+Date: Fri, 10 Feb 2017 00:17:56 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,15 +19,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2017-02-06 at 18:39:27 UTC, "Aneesh Kumar K.V" wrote:
-> Without this we will always find the feature disabled
+On Tue, 2017-02-07 at 00:37:28 UTC, Benjamin Herrenschmidt wrote:
+> We don't need asm/xics.h
 > 
-> Fixes: 984d7a1ec6 ("powerpc/mm: Fixup kernel read only mapping")
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-> Acked-by: Balbir Singh <bsingharora@gmail.com>
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/a5ecdad4847897007399d7a14c9109
+https://git.kernel.org/powerpc/c/86f7ce4b4751aaf51ebcff6dc21e38
 
 cheers
