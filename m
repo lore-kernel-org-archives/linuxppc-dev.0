@@ -1,32 +1,34 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vJjTF2W8WzDqGy
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Feb 2017 13:58:57 +1100 (AEDT)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v192we8Z034352
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 8 Feb 2017 21:58:54 -0500
-Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
- by mx0b-001b2d01.pphosted.com with ESMTP id 28gekbasgd-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vJjWy73cgzDqRP
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Feb 2017 14:01:18 +1100 (AEDT)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v192wmnd109982
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 8 Feb 2017 22:01:17 -0500
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 28g0fk6fj4-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Feb 2017 21:58:54 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Feb 2017 22:01:16 -0500
 Received: from localhost
- by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Wed, 8 Feb 2017 21:58:54 -0500
+ Wed, 8 Feb 2017 20:01:16 -0700
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org,
+To: akpm@linux-foundation.org, Rik van Riel <riel@surriel.com>,
+ Mel Gorman <mgorman@techsingularity.net>, paulus@ozlabs.org,
+ benh@kernel.crashing.org
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH 3/3] powerpc/mm/radix: Skip ptesync in pte update helpers
-Date: Thu,  9 Feb 2017 08:28:21 +0530
-In-Reply-To: <1486609101-5231-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-References: <1486609101-5231-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Message-Id: <1486609101-5231-3-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH 1/2] mm/autonuma: Let architecture override how the write bit
+ should be stashed in a protnone pte.
+Date: Thu,  9 Feb 2017 08:30:58 +0530
+Message-Id: <1486609259-6796-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,39 +38,103 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We do them at the start of tlb flush, and we are sure a pte update will be
-followed by a tlbflush. Hence we can skip the ptesync in pte update helpers.
+Autonuma preserves the write permission across numa fault to avoid taking
+a writefault after a numa fault (Commit: b191f9b106ea " mm: numa: preserve PTE
+write permissions across a NUMA hinting fault"). Architecture can implement
+protnone in different ways and some may choose to implement that by clearing Read/
+Write/Exec bit of pte. Setting the write bit on such pte can result in wrong
+behaviour. Fix this up by allowing arch to override how to save the write bit
+on a protnone pte.
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/book3s/64/radix.h | 3 ---
- 1 file changed, 3 deletions(-)
+ include/asm-generic/pgtable.h | 16 ++++++++++++++++
+ mm/huge_memory.c              |  4 ++--
+ mm/memory.c                   |  2 +-
+ mm/mprotect.c                 |  4 ++--
+ 4 files changed, 21 insertions(+), 5 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/book3s/64/radix.h b/arch/powerpc/include/asm/book3s/64/radix.h
-index fcf822d6c204..77e590c77299 100644
---- a/arch/powerpc/include/asm/book3s/64/radix.h
-+++ b/arch/powerpc/include/asm/book3s/64/radix.h
-@@ -144,13 +144,11 @@ static inline unsigned long radix__pte_update(struct mm_struct *mm,
- 		 * new value of pte
- 		 */
- 		new_pte = (old_pte | set) & ~clr;
--		asm volatile("ptesync" : : : "memory");
- 		radix__flush_tlb_pte_p9_dd1(old_pte, mm, addr);
- 		if (new_pte)
- 			__radix_pte_update(ptep, 0, new_pte);
- 	} else
- 		old_pte = __radix_pte_update(ptep, clr, set);
--	asm volatile("ptesync" : : : "memory");
- 	if (!huge)
- 		assert_pte_locked(mm, addr);
+diff --git a/include/asm-generic/pgtable.h b/include/asm-generic/pgtable.h
+index 18af2bcefe6a..b6f3a8a4b738 100644
+--- a/include/asm-generic/pgtable.h
++++ b/include/asm-generic/pgtable.h
+@@ -192,6 +192,22 @@ static inline void ptep_set_wrprotect(struct mm_struct *mm, unsigned long addres
+ }
+ #endif
  
-@@ -195,7 +193,6 @@ static inline void radix__ptep_set_access_flags(struct mm_struct *mm,
- 		unsigned long old_pte, new_pte;
++#ifndef pte_savedwrite
++#define pte_savedwrite pte_write
++#endif
++
++#ifndef pte_mk_savedwrite
++#define pte_mk_savedwrite pte_mkwrite
++#endif
++
++#ifndef pmd_savedwrite
++#define pmd_savedwrite pmd_write
++#endif
++
++#ifndef pmd_mk_savedwrite
++#define pmd_mk_savedwrite pmd_mkwrite
++#endif
++
+ #ifndef __HAVE_ARCH_PMDP_SET_WRPROTECT
+ #ifdef CONFIG_TRANSPARENT_HUGEPAGE
+ static inline void pmdp_set_wrprotect(struct mm_struct *mm,
+diff --git a/mm/huge_memory.c b/mm/huge_memory.c
+index 9a6bd6c8d55a..2f0f855ec911 100644
+--- a/mm/huge_memory.c
++++ b/mm/huge_memory.c
+@@ -1300,7 +1300,7 @@ int do_huge_pmd_numa_page(struct vm_fault *vmf, pmd_t pmd)
+ 	goto out;
+ clear_pmdnuma:
+ 	BUG_ON(!PageLocked(page));
+-	was_writable = pmd_write(pmd);
++	was_writable = pmd_savedwrite(pmd);
+ 	pmd = pmd_modify(pmd, vma->vm_page_prot);
+ 	pmd = pmd_mkyoung(pmd);
+ 	if (was_writable)
+@@ -1555,7 +1555,7 @@ int change_huge_pmd(struct vm_area_struct *vma, pmd_t *pmd,
+ 			entry = pmdp_huge_get_and_clear_notify(mm, addr, pmd);
+ 			entry = pmd_modify(entry, newprot);
+ 			if (preserve_write)
+-				entry = pmd_mkwrite(entry);
++				entry = pmd_mk_savedwrite(entry);
+ 			ret = HPAGE_PMD_NR;
+ 			set_pmd_at(mm, addr, pmd, entry);
+ 			BUG_ON(vma_is_anonymous(vma) && !preserve_write &&
+diff --git a/mm/memory.c b/mm/memory.c
+index e78bf72f30dd..88c24f89d6d3 100644
+--- a/mm/memory.c
++++ b/mm/memory.c
+@@ -3388,7 +3388,7 @@ static int do_numa_page(struct vm_fault *vmf)
+ 	int target_nid;
+ 	bool migrated = false;
+ 	pte_t pte;
+-	bool was_writable = pte_write(vmf->orig_pte);
++	bool was_writable = pte_savedwrite(vmf->orig_pte);
+ 	int flags = 0;
  
- 		old_pte = __radix_pte_update(ptep, ~0, 0);
--		asm volatile("ptesync" : : : "memory");
- 		/*
- 		 * new value of pte
- 		 */
+ 	/*
+diff --git a/mm/mprotect.c b/mm/mprotect.c
+index f9c07f54dd62..15f5c174a7c1 100644
+--- a/mm/mprotect.c
++++ b/mm/mprotect.c
+@@ -113,13 +113,13 @@ static unsigned long change_pte_range(struct vm_area_struct *vma, pmd_t *pmd,
+ 			ptent = ptep_modify_prot_start(mm, addr, pte);
+ 			ptent = pte_modify(ptent, newprot);
+ 			if (preserve_write)
+-				ptent = pte_mkwrite(ptent);
++				ptent = pte_mk_savedwrite(ptent);
+ 
+ 			/* Avoid taking write faults for known dirty pages */
+ 			if (dirty_accountable && pte_dirty(ptent) &&
+ 					(pte_soft_dirty(ptent) ||
+ 					 !(vma->vm_flags & VM_SOFTDIRTY))) {
+-				ptent = pte_mkwrite(ptent);
++				ptent = pte_mk_savedwrite(ptent);
+ 			}
+ 			ptep_modify_prot_commit(mm, addr, pte, ptent);
+ 			pages++;
 -- 
 2.7.4
