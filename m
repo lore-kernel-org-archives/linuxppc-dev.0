@@ -1,19 +1,16 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vJzCQ2vCNzDqBn
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Feb 2017 00:17:54 +1100 (AEDT)
-In-Reply-To: <20170203004316.25291-1-chris.packham@alliedtelesis.co.nz>
-To: Chris Packham <chris.packham@alliedtelesis.co.nz>,
- devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vJzCR1B9jzDqGG
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Feb 2017 00:17:55 +1100 (AEDT)
+In-Reply-To: <20170206025544.3292-1-mikey@neuling.org>
+To: Michael Neuling <mikey@neuling.org>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Mark Rutland <mark.rutland@arm.com>,
- Chris Packham <chris.packham@alliedtelesis.co.nz>,
- linux-kernel@vger.kernel.org, Rob Herring <robh+dt@kernel.org>
-Subject: Re: Documentation: powerpc/fsl: Update compatible for l2cache binding
-Message-Id: <3vJzCQ1N7Cz9s7H@ozlabs.org>
-Date: Fri, 10 Feb 2017 00:17:53 +1100 (AEDT)
+Cc: Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [1/2] powerpc/powernv: Add XHCI and USB storage to defconfig
+Message-Id: <3vJzCQ6vSBz9s7N@ozlabs.org>
+Date: Fri, 10 Feb 2017 00:17:54 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,16 +20,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2017-02-03 at 00:43:16 UTC, Chris Packham wrote:
-> List all the current valid compatible strings for the l2cache binding.
-> This should stop checkpatch.pl from complaining and will hopefully save
-> someone from having to debug a typo in their dts.
+On Mon, 2017-02-06 at 02:55:43 UTC, Michael Neuling wrote:
+> These are common on bare metal machines, so put them in the defconfig.
 > 
-> Signed-off-by: Chris Packham <chris.packham@alliedtelesis.co.nz>
-> Acked-by: Rob Herring <robh@kernel.org>
+> This adds 216KB to the vmlinux size
+> 
+> Signed-off-by: Michael Neuling <mikey@neuling.org>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/de55ce0de94b5daa804f69aa6ede79
+https://git.kernel.org/powerpc/c/e623c54ec995899cf4179873070861
 
 cheers
