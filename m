@@ -1,48 +1,20 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <sfr@canb.auug.org.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vJjss3cg7zDqGX
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Feb 2017 14:16:49 +1100 (AEDT)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v1939QAP097770
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 8 Feb 2017 22:16:47 -0500
-Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [125.16.236.7])
- by mx0b-001b2d01.pphosted.com with ESMTP id 28gcrj6ufc-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Feb 2017 22:16:46 -0500
-Received: from localhost
- by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Thu, 9 Feb 2017 08:46:43 +0530
-Received: from d28relay09.in.ibm.com (d28relay09.in.ibm.com [9.184.220.160])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id EC0A1E005A
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Feb 2017 08:48:07 +0530 (IST)
-Received: from d28av08.in.ibm.com (d28av08.in.ibm.com [9.184.220.148])
- by d28relay09.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v193GeF529032506
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 9 Feb 2017 08:46:40 +0530
-Received: from d28av08.in.ibm.com (localhost [127.0.0.1])
- by d28av08.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v193GdIj021602
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 9 Feb 2017 08:46:40 +0530
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: akpm@linux-foundation.org, Rik van Riel <riel@surriel.com>,
- Mel Gorman <mgorman@techsingularity.net>, paulus@ozlabs.org,
- benh@kernel.crashing.org
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 1/2] mm/autonuma: Let architecture override how the write
- bit should be stashed in a protnone pte.
-In-Reply-To: <1486609259-6796-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-References: <1486609259-6796-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Date: Thu, 09 Feb 2017 08:46:33 +0530
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vJkK96BkSzDqGX
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Feb 2017 14:37:01 +1100 (AEDT)
+Date: Thu, 9 Feb 2017 14:37:01 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Paul Mackerras <paulus@ozlabs.org>, Michael Ellerman
+ <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ PowerPC <linuxppc-dev@lists.ozlabs.org>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org, Alistair
+ Popple <alistair@popple.id.au>
+Subject: linux-next: manual merge of the kvm-ppc tree with the powerpc tree
+Message-ID: <20170209143701.4e37c1be@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain
-Message-Id: <8737foqcj2.fsf@skywalker.in.ibm.com>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,28 +24,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> writes:
+Hi Paul,
 
-> Autonuma preserves the write permission across numa fault to avoid taking
-> a writefault after a numa fault (Commit: b191f9b106ea " mm: numa: preserve PTE
-> write permissions across a NUMA hinting fault"). Architecture can implement
-> protnone in different ways and some may choose to implement that by clearing Read/
-> Write/Exec bit of pte. Setting the write bit on such pte can result in wrong
-> behaviour. Fix this up by allowing arch to override how to save the write bit
-> on a protnone pte.
->
+Today's linux-next merge of the kvm-ppc tree got conflicts in:
 
-The problem we are trying to fix here is w.r.t autnuma related thp
-migration. migrate_misplaced_transhuge_page() cannot deal with
-concurrent modification of the page. It does a page copy without
-following the migration pte sequence. IIUC, this was done to keep the
-migration simpler and at the time of implemenation we didn't had THP
-page cache which would have required a more elaborate migration scheme.
-[1]. That means thp autonuma migration expect the protnone
-with saved write to be done such that both kernel and user cannot update
-the page content. This patch series enables archs like ppc64 to do that.
-We are good with the hash translation mode with the current code,
-because we never create a hardware page table entry for a protnone pte. 
+  arch/powerpc/include/asm/opal.h
+  arch/powerpc/platforms/powernv/opal-wrappers.S
 
+between commit:
 
--aneesh
+  1d0761d2557d ("powerpc/powernv: Initialise nest mmu")
+
+from the powerpc tree and commit:
+
+  ab9bad0ead9a ("powerpc/powernv: Remove separate entry for OPAL real mode calls")
+
+from the kvm-ppc tree.
+
+I fixed it up (see below) and can carry the fix as necessary. This
+is now fixed as far as linux-next is concerned, but any non trivial
+conflicts should be mentioned to your upstream maintainer when your tree
+is submitted for merging.  You may also want to consider cooperating
+with the maintainer of the conflicting tree to minimise any particularly
+complex conflicts.
+
+-- 
+Cheers,
+Stephen Rothwell
+
+diff --cc arch/powerpc/include/asm/opal.h
+index 08ddea966601,16efe7406776..000000000000
+--- a/arch/powerpc/include/asm/opal.h
++++ b/arch/powerpc/include/asm/opal.h
+@@@ -228,11 -225,6 +225,7 @@@ int64_t opal_int_set_mfrr(uint32_t cpu
+  int64_t opal_pci_tce_kill(uint64_t phb_id, uint32_t kill_type,
+  			  uint32_t pe_num, uint32_t tce_size,
+  			  uint64_t dma_addr, uint32_t npages);
+- int64_t opal_rm_pci_tce_kill(uint64_t phb_id, uint32_t kill_type,
+- 			     uint32_t pe_num, uint32_t tce_size,
+- 			     uint64_t dma_addr, uint32_t npages);
+ +int64_t opal_nmmu_set_ptcr(uint64_t chip_id, uint64_t ptcr);
+  
+  /* Internal functions */
+  extern int early_init_dt_scan_opal(unsigned long node, const char *uname,
+diff --cc arch/powerpc/platforms/powernv/opal-wrappers.S
+index f7c19c9c57ed,28799e557348..000000000000
+--- a/arch/powerpc/platforms/powernv/opal-wrappers.S
++++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
+@@@ -304,12 -296,7 +296,8 @@@ OPAL_CALL(opal_pci_get_presence_state
+  OPAL_CALL(opal_pci_get_power_state,		OPAL_PCI_GET_POWER_STATE);
+  OPAL_CALL(opal_pci_set_power_state,		OPAL_PCI_SET_POWER_STATE);
+  OPAL_CALL(opal_int_get_xirr,			OPAL_INT_GET_XIRR);
+- OPAL_CALL_REAL(opal_rm_int_get_xirr,		OPAL_INT_GET_XIRR);
+  OPAL_CALL(opal_int_set_cppr,			OPAL_INT_SET_CPPR);
+  OPAL_CALL(opal_int_eoi,				OPAL_INT_EOI);
+- OPAL_CALL_REAL(opal_rm_int_eoi,			OPAL_INT_EOI);
+  OPAL_CALL(opal_int_set_mfrr,			OPAL_INT_SET_MFRR);
+- OPAL_CALL_REAL(opal_rm_int_set_mfrr,		OPAL_INT_SET_MFRR);
+  OPAL_CALL(opal_pci_tce_kill,			OPAL_PCI_TCE_KILL);
+ +OPAL_CALL(opal_nmmu_set_ptcr,			OPAL_NMMU_SET_PTCR);
+- OPAL_CALL_REAL(opal_rm_pci_tce_kill,		OPAL_PCI_TCE_KILL);
