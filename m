@@ -1,23 +1,18 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vJxvP1bPSzDq5s
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Feb 2017 23:18:57 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Shailendra Singh <shailendras@nvidia.com>, linuxppc-dev@lists.ozlabs.org
-Cc: jk@ozlabs.org, apopple@au1.ibm.com, balbirs@au1.ibm.com, aritger@nvidia.com,
- jhubbard@nvidia.com, scheung@nvidia.com, amanjunatha@nvidia.com,
- jmckenna@nvidia.com, david.daney@cavium.com, robh@kernel.org,
- will.deacon@arm.com, Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH] powerpc: Fix inconsistent of_node_to_nid EXPORT_SYMBOL
- handling
-In-Reply-To: <1485989562-16741-1-git-send-email-shailendras@nvidia.com>
-References: <1485989562-16741-1-git-send-email-shailendras@nvidia.com>
-Date: Thu, 09 Feb 2017 23:18:56 +1100
-Message-ID: <87poir8slr.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vJzCK5gYrzDq60
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Feb 2017 00:17:49 +1100 (AEDT)
+In-Reply-To: <147927393883.28364.12544121254023856142.stgit@jupiter.in.ibm.com>
+To: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
+ linuxppc-dev <linuxppc-dev@ozlabs.org>
+From: Michael Ellerman <patch-notifications@ellerman.id.au>
+Cc: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>,
+ Andrew Donnellan <andonnel@au1.ibm.com>
+Subject: Re: powernv/hmi: Display the correct error info for CAPP errors.
+Message-Id: <3vJzCK4xYGz9s7H@ozlabs.org>
+Date: Fri, 10 Feb 2017 00:17:49 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,50 +22,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Shailendra Singh <shailendras@nvidia.com> writes:
+On Wed, 2016-11-16 at 05:28:02 UTC, Mahesh Salgaonkar wrote:
+> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+> 
+> On some CAPP errors we see console messages that prints unknown HMIs for
+> which CAPI recovery is in progress. This patch fixes this by printing
+> correct error info for HMI generated due to CAPP recovery.
+> 
+> Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+> Tested-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
 
-> The generic implementation of of_node_to_nid is EXPORT_SYMBOL.
+Applied to powerpc next, thanks.
 
-True. Added in 298535c00a2c, in April 2016.
-
-> The powerpc implementation added by following commit is EXPORT_SYMBOL_GPL.
-> commit 953039c8df7b ("[PATCH] powerpc: Allow devices to register with numa
-> topology")
-
-Which was merged in May 2006.
-
-So the powerpc version has almost 10 years precedence.
-
-> This creates an inconsistency for of_node_to_nid callers across
-> architectures.
->
-> Update the powerpc implementation to be exported consistently with the
-> generic implementation.
-
-But I guess it's a pretty boring API. So I'll merge this unless anyone
-else objects.
+https://git.kernel.org/powerpc/c/470a36a8c014e5cac7bb2df3829485
 
 cheers
-
-
-> Signed-off-by: Shailendra Singh <shailendras@nvidia.com>
-> Reviewed-by: Andy Ritger <aritger@nvidia.com>
-> ---
->  arch/powerpc/mm/numa.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->
-> diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-> index b1099cb2f393..8aa4ca3c84c9 100644
-> --- a/arch/powerpc/mm/numa.c
-> +++ b/arch/powerpc/mm/numa.c
-> @@ -290,7 +290,7 @@ int of_node_to_nid(struct device_node *device)
->  
->  	return nid;
->  }
-> -EXPORT_SYMBOL_GPL(of_node_to_nid);
-> +EXPORT_SYMBOL(of_node_to_nid);
->  
->  static int __init find_min_common_depth(void)
->  {
-> -- 
-> 2.4.11
