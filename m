@@ -1,20 +1,21 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vJkK96BkSzDqGX
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Feb 2017 14:37:01 +1100 (AEDT)
-Date: Thu, 9 Feb 2017 14:37:01 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Paul Mackerras <paulus@ozlabs.org>, Michael Ellerman
- <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- PowerPC <linuxppc-dev@lists.ozlabs.org>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org, Alistair
- Popple <alistair@popple.id.au>
-Subject: linux-next: manual merge of the kvm-ppc tree with the powerpc tree
-Message-ID: <20170209143701.4e37c1be@canb.auug.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vJkc96J0vzDqGZ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Feb 2017 14:50:01 +1100 (AEDT)
+Message-ID: <1486612188.3401.14.camel@kernel.crashing.org>
+Subject: Re: [PATCH 1/3] powerpc/mm/radix: Update pte update sequence for
+ pte clear case
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>, paulus@samba.org,
+ mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org
+Date: Thu, 09 Feb 2017 14:49:48 +1100
+In-Reply-To: <1486609101-5231-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+References: <1486609101-5231-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,63 +25,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Paul,
+On Thu, 2017-02-09 at 08:28 +0530, Aneesh Kumar K.V wrote:
+> In the kernel we do follow the below sequence in different code paths.
+> pte = ptep_get_clear(ptep)
+> ....
+> set_pte_at(ptep, pte)
+> 
+> We do that for mremap, autonuma protection update and softdirty clearing. This
+> implies our optimization to skip a tlb flush when clearing a pte update is
+> not valid, because for DD1 system that followup set_pte_at will be done witout
+> doing the required tlbflush. Fix that by always doing the dd1 style pte update
+> irrespective of new_pte value. In a later patch we will optimize the application
+> exit case.
 
-Today's linux-next merge of the kvm-ppc tree got conflicts in:
+What about my change to set_pte_at() ? We seem to be overwriting valid PTEs,
+shouldn't we deal with that ?
 
-  arch/powerpc/include/asm/opal.h
-  arch/powerpc/platforms/powernv/opal-wrappers.S
-
-between commit:
-
-  1d0761d2557d ("powerpc/powernv: Initialise nest mmu")
-
-from the powerpc tree and commit:
-
-  ab9bad0ead9a ("powerpc/powernv: Remove separate entry for OPAL real mode calls")
-
-from the kvm-ppc tree.
-
-I fixed it up (see below) and can carry the fix as necessary. This
-is now fixed as far as linux-next is concerned, but any non trivial
-conflicts should be mentioned to your upstream maintainer when your tree
-is submitted for merging.  You may also want to consider cooperating
-with the maintainer of the conflicting tree to minimise any particularly
-complex conflicts.
-
--- 
 Cheers,
-Stephen Rothwell
+Ben.
 
-diff --cc arch/powerpc/include/asm/opal.h
-index 08ddea966601,16efe7406776..000000000000
---- a/arch/powerpc/include/asm/opal.h
-+++ b/arch/powerpc/include/asm/opal.h
-@@@ -228,11 -225,6 +225,7 @@@ int64_t opal_int_set_mfrr(uint32_t cpu
-  int64_t opal_pci_tce_kill(uint64_t phb_id, uint32_t kill_type,
-  			  uint32_t pe_num, uint32_t tce_size,
-  			  uint64_t dma_addr, uint32_t npages);
-- int64_t opal_rm_pci_tce_kill(uint64_t phb_id, uint32_t kill_type,
-- 			     uint32_t pe_num, uint32_t tce_size,
-- 			     uint64_t dma_addr, uint32_t npages);
- +int64_t opal_nmmu_set_ptcr(uint64_t chip_id, uint64_t ptcr);
-  
-  /* Internal functions */
-  extern int early_init_dt_scan_opal(unsigned long node, const char *uname,
-diff --cc arch/powerpc/platforms/powernv/opal-wrappers.S
-index f7c19c9c57ed,28799e557348..000000000000
---- a/arch/powerpc/platforms/powernv/opal-wrappers.S
-+++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
-@@@ -304,12 -296,7 +296,8 @@@ OPAL_CALL(opal_pci_get_presence_state
-  OPAL_CALL(opal_pci_get_power_state,		OPAL_PCI_GET_POWER_STATE);
-  OPAL_CALL(opal_pci_set_power_state,		OPAL_PCI_SET_POWER_STATE);
-  OPAL_CALL(opal_int_get_xirr,			OPAL_INT_GET_XIRR);
-- OPAL_CALL_REAL(opal_rm_int_get_xirr,		OPAL_INT_GET_XIRR);
-  OPAL_CALL(opal_int_set_cppr,			OPAL_INT_SET_CPPR);
-  OPAL_CALL(opal_int_eoi,				OPAL_INT_EOI);
-- OPAL_CALL_REAL(opal_rm_int_eoi,			OPAL_INT_EOI);
-  OPAL_CALL(opal_int_set_mfrr,			OPAL_INT_SET_MFRR);
-- OPAL_CALL_REAL(opal_rm_int_set_mfrr,		OPAL_INT_SET_MFRR);
-  OPAL_CALL(opal_pci_tce_kill,			OPAL_PCI_TCE_KILL);
- +OPAL_CALL(opal_nmmu_set_ptcr,			OPAL_NMMU_SET_PTCR);
-- OPAL_CALL_REAL(opal_rm_pci_tce_kill,		OPAL_PCI_TCE_KILL);
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> > Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/include/asm/book3s/64/radix.h | 12 +++---------
+>  1 file changed, 3 insertions(+), 9 deletions(-)
+> 
+> diff --git a/arch/powerpc/include/asm/book3s/64/radix.h b/arch/powerpc/include/asm/book3s/64/radix.h
+> index b4d1302387a3..70a3cdcdbe47 100644
+> --- a/arch/powerpc/include/asm/book3s/64/radix.h
+> +++ b/arch/powerpc/include/asm/book3s/64/radix.h
+> @@ -144,16 +144,10 @@ static inline unsigned long radix__pte_update(struct mm_struct *mm,
+> >  		 * new value of pte
+> >  		 */
+> >  		new_pte = (old_pte | set) & ~clr;
+> > -		/*
+> > -		 * If we are trying to clear the pte, we can skip
+> > -		 * the below sequence and batch the tlb flush. The
+> > -		 * tlb flush batching is done by mmu gather code
+> > -		 */
+> > -		if (new_pte) {
+> > -			asm volatile("ptesync" : : : "memory");
+> > -			radix__flush_tlb_pte_p9_dd1(old_pte, mm, addr);
+> > +		asm volatile("ptesync" : : : "memory");
+> > +		radix__flush_tlb_pte_p9_dd1(old_pte, mm, addr);
+> > +		if (new_pte)
+> >  			__radix_pte_update(ptep, 0, new_pte);
+> > -		}
+> >  	} else
+> >  		old_pte = __radix_pte_update(ptep, clr, set);
+> >  	asm volatile("ptesync" : : : "memory");
