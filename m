@@ -1,23 +1,31 @@
-Return-Path: <dgibson@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vJjJp2yMJzDqBr
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Feb 2017 13:51:38 +1100 (AEDT)
-Date: Thu, 9 Feb 2017 12:05:29 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Alex Williamson <alex.williamson@redhat.com>
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org,
- kvm@vger.kernel.org
-Subject: Re: [PATCH kernel] vfio/spapr_tce: Set window when adding additional
- groups to container
-Message-ID: <20170209010529.GL17644@umbus.fritz.box>
-References: <20170207062657.21606-1-aik@ozlabs.ru>
- <20170207123559.2b878948@t450s.home>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="ai3I8gwHc37+ASRI"
-In-Reply-To: <20170207123559.2b878948@t450s.home>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vJjT91fgrzDq8X
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Feb 2017 13:58:53 +1100 (AEDT)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v192wgPC030256
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 8 Feb 2017 21:58:50 -0500
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 28g8kg05du-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Feb 2017 21:58:50 -0500
+Received: from localhost
+ by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Wed, 8 Feb 2017 19:58:49 -0700
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH 1/3] powerpc/mm/radix: Update pte update sequence for pte
+ clear case
+Date: Thu,  9 Feb 2017 08:28:19 +0530
+Message-Id: <1486609101-5231-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,190 +35,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+In the kernel we do follow the below sequence in different code paths.
+pte = ptep_get_clear(ptep)
+....
+set_pte_at(ptep, pte)
 
---ai3I8gwHc37+ASRI
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+We do that for mremap, autonuma protection update and softdirty clearing. This
+implies our optimization to skip a tlb flush when clearing a pte update is
+not valid, because for DD1 system that followup set_pte_at will be done witout
+doing the required tlbflush. Fix that by always doing the dd1 style pte update
+irrespective of new_pte value. In a later patch we will optimize the application
+exit case.
 
-On Tue, Feb 07, 2017 at 12:35:59PM -0700, Alex Williamson wrote:
-> On Tue,  7 Feb 2017 17:26:57 +1100
-> Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
->=20
-> > If a container already has a group attached, attaching a new group
-> > should just program already created IOMMU tables to the hardware via
-> > the iommu_table_group_ops::set_window() callback.
-> >=20
-> > However 6f01cc692 "vfio/spapr: Add a helper to create default DMA windo=
-w"
-> > did not just simplify the code but also removed the set_window() calls
-> > in the case of attaching groups to a container which already has tables
-> > so it broke VFIO PCI hotplug.
-> >=20
-> > This reverts set_window() bits in tce_iommu_take_ownership_ddw().
-> >=20
-> > Fixes: 6f01cc692
->=20
-> See Documentation/process/submitting-patches.rst for the expected
-> format here, 12 char SHA-1 + --oneline summary.
->=20
-> > Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> > ---
-> >  drivers/vfio/vfio_iommu_spapr_tce.c | 21 +++++++++++++++++++++
-> >  1 file changed, 21 insertions(+)
-> >=20
-> > diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_io=
-mmu_spapr_tce.c
-> > index 7690e5bf3cf1..14c62a8495a2 100644
-> > --- a/drivers/vfio/vfio_iommu_spapr_tce.c
-> > +++ b/drivers/vfio/vfio_iommu_spapr_tce.c
-> > @@ -1245,6 +1245,8 @@ static void tce_iommu_release_ownership_ddw(struc=
-t tce_container *container,
-> >  static long tce_iommu_take_ownership_ddw(struct tce_container *contain=
-er,
-> >  		struct iommu_table_group *table_group)
-> >  {
-> > +	long i, ret =3D 0;
-> > +
-> >  	if (!table_group->ops->create_table || !table_group->ops->set_window =
-||
-> >  			!table_group->ops->release_ownership) {
-> >  		WARN_ON_ONCE(1);
-> > @@ -1253,7 +1255,26 @@ static long tce_iommu_take_ownership_ddw(struct =
-tce_container *container,
-> > =20
-> >  	table_group->ops->take_ownership(table_group);
-> > =20
-> > +	/* Set all windows to the new group */
-> > +	for (i =3D 0; i < IOMMU_TABLE_GROUP_MAX_TABLES; ++i) {
-> > +		struct iommu_table *tbl =3D container->tables[i];
->=20
-> checkpatch wants a blank line here.
->=20
-> > +		if (!tbl)
-> > +			continue;
-> > +
-> > +		ret =3D table_group->ops->set_window(table_group, i, tbl);
-> > +		if (ret)
-> > +			goto release_exit;
-> > +	}
-> > +
-> >  	return 0;
-> > +
-> > +release_exit:
-> > +	for (i =3D 0; i < IOMMU_TABLE_GROUP_MAX_TABLES; ++i)
-> > +		table_group->ops->unset_window(table_group, i);
-> > +
-> > +	table_group->ops->release_ownership(table_group);
-> > +
-> > +	return ret;
-> >  }
-> > =20
-> >  static int tce_iommu_attach_group(void *iommu_data,
->=20
->=20
-> I've fixed these as shown below.  David, please review/ack as well and
-> I'll send a pull for v4.10.  Thanks,
->=20
-> Alex
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+---
+ arch/powerpc/include/asm/book3s/64/radix.h | 12 +++---------
+ 1 file changed, 3 insertions(+), 9 deletions(-)
 
-Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
-
->=20
->=20
-> commit c019167838156a2efcc60a15fa4207710bac6e82
-> Author: Alexey Kardashevskiy <aik@ozlabs.ru>
-> Date:   Tue Feb 7 17:26:57 2017 +1100
->=20
->     vfio/spapr_tce: Set window when adding additional groups to container
->    =20
->     If a container already has a group attached, attaching a new group
->     should just program already created IOMMU tables to the hardware via
->     the iommu_table_group_ops::set_window() callback.
->    =20
->     However commit 6f01cc692a16 ("vfio/spapr: Add a helper to create
->     default DMA window") did not just simplify the code but also removed
->     the set_window() calls in the case of attaching groups to a container
->     which already has tables so it broke VFIO PCI hotplug.
->    =20
->     This reverts set_window() bits in tce_iommu_take_ownership_ddw().
->    =20
->     Fixes: 6f01cc692a16 ("vfio/spapr: Add a helper to create default DMA =
-window")
->     Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
->     Signed-off-by: Alex Williamson <alex.williamson@redhat.com>
->=20
-> diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iomm=
-u_spapr_tce.c
-> index 7690e5bf3cf1..59b3f62a2d64 100644
-> --- a/drivers/vfio/vfio_iommu_spapr_tce.c
-> +++ b/drivers/vfio/vfio_iommu_spapr_tce.c
-> @@ -1245,6 +1245,8 @@ static void tce_iommu_release_ownership_ddw(struct =
-tce_container *container,
->  static long tce_iommu_take_ownership_ddw(struct tce_container *container,
->  		struct iommu_table_group *table_group)
->  {
-> +	long i, ret =3D 0;
-> +
->  	if (!table_group->ops->create_table || !table_group->ops->set_window ||
->  			!table_group->ops->release_ownership) {
->  		WARN_ON_ONCE(1);
-> @@ -1253,7 +1255,27 @@ static long tce_iommu_take_ownership_ddw(struct tc=
-e_container *container,
-> =20
->  	table_group->ops->take_ownership(table_group);
-> =20
-> +	/* Set all windows to the new group */
-> +	for (i =3D 0; i < IOMMU_TABLE_GROUP_MAX_TABLES; ++i) {
-> +		struct iommu_table *tbl =3D container->tables[i];
-> +
-> +		if (!tbl)
-> +			continue;
-> +
-> +		ret =3D table_group->ops->set_window(table_group, i, tbl);
-> +		if (ret)
-> +			goto release_exit;
-> +	}
-> +
->  	return 0;
-> +
-> +release_exit:
-> +	for (i =3D 0; i < IOMMU_TABLE_GROUP_MAX_TABLES; ++i)
-> +		table_group->ops->unset_window(table_group, i);
-> +
-> +	table_group->ops->release_ownership(table_group);
-> +
-> +	return ret;
->  }
-> =20
->  static int tce_iommu_attach_group(void *iommu_data,
->=20
-
---=20
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
-
---ai3I8gwHc37+ASRI
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBCAAGBQJYm8BZAAoJEGw4ysog2bOS8hMP/3e9OX5xR2ckwPZtdIMwiEAR
-f7G7GpdX9E+Ezg726bJKTo0UAAByiZdRiIjahOioBbCXvlao7yn1gtiCUUP/PJrY
-XflP7PYnEdDijZsfq7WHI75rLvr2jc14g6u2ZO8tCLPgyI+iYSsx1GwyYNqtjdVj
-vxBmo2n8BafpHrjE3Oydoari9mVJqVLVdGq1w0wwStMv4/HK1+hXBQugEhwvw22a
-O9KgFPi0V+cD5A0BozXgXAYcOCmkyruVhSnFeyx2tZaupukBvF9uMWLUcfJ5YLZE
-NQkjbDLtQ9oNM+NKjFJCOxUk7QPRpdP05r9rLmKPaeSxL8zaZQsld+38tDsLPCUU
-s9zl4sLa7sRNXpFHMyL7Phm2q1eYvpVeQIx4lgk4LitO+y7wO/RLt1yXSUiGX+dr
-td94rQrlXqv/0T5JIZyPnrHEi9XdWA/SJIrfADqtkfBywas/n4xRdhMUomvx4tKe
-5/cyHHPGuKo57FFSi0IuP60CH3XP1FsbfpjTuGTmvbKn8aFZriftdrIvlgtJcIEW
-2EMaqyx4KYWIphakEs00OYrKXaR6YyJRb/q34z3oBv4Jd2Gocre7pKtZBw/RJrSU
-BYnm+bk4qFxMNvV0JhL20TraADdTCkRFyDQDlvtU/rviHkwzu3sPEj4VkKjkVgf+
-kRVPHkSoVzwho2UGrJdN
-=iGzQ
------END PGP SIGNATURE-----
-
---ai3I8gwHc37+ASRI--
+diff --git a/arch/powerpc/include/asm/book3s/64/radix.h b/arch/powerpc/include/asm/book3s/64/radix.h
+index b4d1302387a3..70a3cdcdbe47 100644
+--- a/arch/powerpc/include/asm/book3s/64/radix.h
++++ b/arch/powerpc/include/asm/book3s/64/radix.h
+@@ -144,16 +144,10 @@ static inline unsigned long radix__pte_update(struct mm_struct *mm,
+ 		 * new value of pte
+ 		 */
+ 		new_pte = (old_pte | set) & ~clr;
+-		/*
+-		 * If we are trying to clear the pte, we can skip
+-		 * the below sequence and batch the tlb flush. The
+-		 * tlb flush batching is done by mmu gather code
+-		 */
+-		if (new_pte) {
+-			asm volatile("ptesync" : : : "memory");
+-			radix__flush_tlb_pte_p9_dd1(old_pte, mm, addr);
++		asm volatile("ptesync" : : : "memory");
++		radix__flush_tlb_pte_p9_dd1(old_pte, mm, addr);
++		if (new_pte)
+ 			__radix_pte_update(ptep, 0, new_pte);
+-		}
+ 	} else
+ 		old_pte = __radix_pte_update(ptep, clr, set);
+ 	asm volatile("ptesync" : : : "memory");
+-- 
+2.7.4
