@@ -1,17 +1,14 @@
-Return-Path: <anton@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vKH995hWkzDqBQ
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Feb 2017 12:17:01 +1100 (AEDT)
-From: Anton Blanchard <anton@ozlabs.org>
-To: benh@kernel.crashing.org,
-	paulus@samba.org,
-	mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc: Fix confusing help text for DISABLE_MPROFILE_KERNEL
-Date: Fri, 10 Feb 2017 12:16:59 +1100
-Message-Id: <20170210011659.5052-1-anton@ozlabs.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vKK105NG6zDq8g
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Feb 2017 13:40:04 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc: Add a prototype for mcount() so it can be versioned
+Date: Fri, 10 Feb 2017 13:40:02 +1100
+Message-Id: <1486694402-28066-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,31 +18,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Anton Blanchard <anton@samba.org>
+Currently we get a warning that _mcount() can't be versioned:
 
-The final paragraph of the help text is reversed - we want to
-enable this option by default, and disable it if the toolchain
-has a working -mprofile-kernel.
+  WARNING: EXPORT symbol "_mcount" [vmlinux] version generation failed, symbol will not be versioned.
 
-Signed-off-by: Anton Blanchard <anton@samba.org>
+Add a prototype to asm-prototypes.h to fix it.
+
+The prototype is not really correct, mcount() is not a normal function,
+it has a special ABI. But for the purpose of versioning it doesn't
+matter.
+
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/Kconfig | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ arch/powerpc/include/asm/asm-prototypes.h | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index a46d1c0..d2916ff 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -390,8 +390,8 @@ config DISABLE_MPROFILE_KERNEL
- 	  be disabled also.
+diff --git a/arch/powerpc/include/asm/asm-prototypes.h b/arch/powerpc/include/asm/asm-prototypes.h
+index ba47c70712f9..f6c5264287e5 100644
+--- a/arch/powerpc/include/asm/asm-prototypes.h
++++ b/arch/powerpc/include/asm/asm-prototypes.h
+@@ -120,4 +120,6 @@ extern s64 __ashrdi3(s64, int);
+ extern int __cmpdi2(s64, s64);
+ extern int __ucmpdi2(u64, u64);
  
- 	  If you have a toolchain which supports mprofile-kernel, then you can
--	  enable this. Otherwise leave it disabled. If you're not sure, say
--	  "N".
-+	  disable this. Otherwise leave it enabled. If you're not sure, say
-+	  "Y".
- 
- config MPROFILE_KERNEL
- 	depends on PPC64 && CPU_LITTLE_ENDIAN
++void _mcount(void);
++
+ #endif /* _ASM_POWERPC_ASM_PROTOTYPES_H */
 -- 
-2.9.3
+2.7.4
