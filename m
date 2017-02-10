@@ -1,32 +1,40 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <cyrilbur@gmail.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vKNYl0h6LzDqGW
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Feb 2017 16:20:10 +1100 (AEDT)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v1A5IoPw079076
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Feb 2017 00:20:09 -0500
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
- by mx0a-001b2d01.pphosted.com with ESMTP id 28h4cn5e7g-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vKNsN2rRjzDq8g
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Feb 2017 16:33:44 +1100 (AEDT)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v1A5Sd3u047870
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Feb 2017 00:33:41 -0500
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 28gyp6f3wn-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Feb 2017 00:20:08 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Feb 2017 00:33:41 -0500
 Received: from localhost
- by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Thu, 9 Feb 2017 22:20:08 -0700
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH 2/2] powerpc/mm/radix: rename _PAGE_LARGE to R_PAGE_LARGE
-Date: Fri, 10 Feb 2017 10:49:52 +0530
-In-Reply-To: <1486703992-12065-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-References: <1486703992-12065-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Message-Id: <1486703992-12065-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <cyrilbur@gmail.com>;
+ Fri, 10 Feb 2017 15:33:38 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id F11712BB0057
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Feb 2017 16:33:35 +1100 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v1A5XRqU39059526
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Feb 2017 16:33:35 +1100
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v1A5X39M025739
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Feb 2017 16:33:03 +1100
+From: Cyril Bur <cyrilbur@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: akshay.adiga@linux.vnet.ibm.com
+Subject: [PATCH] powerpc: Blacklist GCC 5.4 6.1 and 6.2
+Date: Fri, 10 Feb 2017 16:31:15 +1100
+Message-Id: <20170210053115.20565-1-cyrilbur@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,65 +44,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This bit is only used by radix and it is nice to follow the naming style of having
-bit name start with H_/R_ depending on which translation mode they are used.
+A bug in the -02 optimisation of GCC 5.4 6.1 and 6.2 causes
+setup_command_line() to not pass the correct first argument to strcpy
+and therefore not actually copy the command_line.
 
-No functional change in this patch.
+A workaround patch was proposed: http://patchwork.ozlabs.org/patch/673130/
+some discussion ensued.
 
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+A GCC bug was raised: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=71709
+The bug has been fixed in 7.0 and backported to GCC 5 and GCC 6.
+
+At the time of writing GCC 5.4 is the most recent and is affected. GCC
+6.3 contains the backported fix, has been tested and appears safe to
+use.
+
+Heavy-lifting-by: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
+Signed-off-by: Cyril Bur <cyrilbur@gmail.com>
 ---
- arch/powerpc/include/asm/book3s/64/hugetlb.h | 2 +-
- arch/powerpc/include/asm/book3s/64/radix.h   | 4 ++--
- arch/powerpc/mm/tlb-radix.c                  | 2 +-
- 3 files changed, 4 insertions(+), 4 deletions(-)
+ arch/powerpc/Makefile | 9 +++++++++
+ 1 file changed, 9 insertions(+)
 
-diff --git a/arch/powerpc/include/asm/book3s/64/hugetlb.h b/arch/powerpc/include/asm/book3s/64/hugetlb.h
-index c62f14d0bec1..6666cd366596 100644
---- a/arch/powerpc/include/asm/book3s/64/hugetlb.h
-+++ b/arch/powerpc/include/asm/book3s/64/hugetlb.h
-@@ -46,7 +46,7 @@ static inline pte_t arch_make_huge_pte(pte_t entry, struct vm_area_struct *vma,
- 	 */
- 	VM_WARN_ON(page_shift == mmu_psize_defs[MMU_PAGE_1G].shift);
- 	if (page_shift == mmu_psize_defs[MMU_PAGE_2M].shift)
--		return __pte(pte_val(entry) | _PAGE_LARGE);
-+		return __pte(pte_val(entry) | R_PAGE_LARGE);
- 	else
- 		return entry;
- }
-diff --git a/arch/powerpc/include/asm/book3s/64/radix.h b/arch/powerpc/include/asm/book3s/64/radix.h
-index b2971e624bb5..96b94d2b4432 100644
---- a/arch/powerpc/include/asm/book3s/64/radix.h
-+++ b/arch/powerpc/include/asm/book3s/64/radix.h
-@@ -14,7 +14,7 @@
- /*
-  * For P9 DD1 only, we need to track whether the pte's huge.
-  */
--#define _PAGE_LARGE	_RPAGE_RSV1
-+#define R_PAGE_LARGE	_RPAGE_RSV1
+diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
+index 31286fa7873c..a4b886694391 100644
+--- a/arch/powerpc/Makefile
++++ b/arch/powerpc/Makefile
+@@ -414,6 +414,15 @@ checkbin:
+ 		echo -n '*** Please use a different binutils version.' ; \
+ 		false ; \
+ 	fi
++	@if test "$(cc-version)" = "0504" \
++		|| test "$(cc-version)" = "0601" \
++		|| test "$(cc-version)" = "0602" ; then \
++		echo -n '*** GCC-5.4 6.1 6.2 have a bad -O2 optimisation ' ; \
++		echo 'which will cause lost commandline options (at least).' ; \
++		echo '*** Please use a different GCC version.' ; \
++		false ; \
++	fi
++
  
  
- #ifndef __ASSEMBLY__
-@@ -258,7 +258,7 @@ static inline int radix__pmd_trans_huge(pmd_t pmd)
- static inline pmd_t radix__pmd_mkhuge(pmd_t pmd)
- {
- 	if (cpu_has_feature(CPU_FTR_POWER9_DD1))
--		return __pmd(pmd_val(pmd) | _PAGE_PTE | _PAGE_LARGE);
-+		return __pmd(pmd_val(pmd) | _PAGE_PTE | R_PAGE_LARGE);
- 	return __pmd(pmd_val(pmd) | _PAGE_PTE);
- }
- static inline void radix__pmdp_huge_split_prepare(struct vm_area_struct *vma,
-diff --git a/arch/powerpc/mm/tlb-radix.c b/arch/powerpc/mm/tlb-radix.c
-index 61b79119065f..a22a76905437 100644
---- a/arch/powerpc/mm/tlb-radix.c
-+++ b/arch/powerpc/mm/tlb-radix.c
-@@ -441,7 +441,7 @@ void radix__flush_tlb_pte_p9_dd1(unsigned long old_pte, struct mm_struct *mm,
- 		return;
- 	}
- 
--	if (old_pte & _PAGE_LARGE)
-+	if (old_pte & R_PAGE_LARGE)
- 		radix__flush_tlb_page_psize(mm, address, MMU_PAGE_2M);
- 	else
- 		radix__flush_tlb_page_psize(mm, address, mmu_virtual_psize);
+ CLEAN_FILES += $(TOUT)
 -- 
-2.7.4
+2.11.1
