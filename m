@@ -1,40 +1,33 @@
-Return-Path: <cyrilbur@gmail.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <bhsharma@redhat.com>
+Received: from mail-oi0-f46.google.com (mail-oi0-f46.google.com
+ [209.85.218.46])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vKNsN2rRjzDq8g
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Feb 2017 16:33:44 +1100 (AEDT)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v1A5Sd3u047870
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Feb 2017 00:33:41 -0500
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
- by mx0b-001b2d01.pphosted.com with ESMTP id 28gyp6f3wn-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Feb 2017 00:33:41 -0500
-Received: from localhost
- by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <cyrilbur@gmail.com>;
- Fri, 10 Feb 2017 15:33:38 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id F11712BB0057
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Feb 2017 16:33:35 +1100 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v1A5XRqU39059526
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Feb 2017 16:33:35 +1100
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v1A5X39M025739
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Feb 2017 16:33:03 +1100
-From: Cyril Bur <cyrilbur@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: akshay.adiga@linux.vnet.ibm.com
-Subject: [PATCH] powerpc: Blacklist GCC 5.4 6.1 and 6.2
-Date: Fri, 10 Feb 2017 16:31:15 +1100
-Message-Id: <20170210053115.20565-1-cyrilbur@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vKRn84sZ5zDq8g
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Feb 2017 18:45:16 +1100 (AEDT)
+Received: by mail-oi0-f46.google.com with SMTP id w204so16537102oiw.0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 09 Feb 2017 23:45:16 -0800 (PST)
+MIME-Version: 1.0
+In-Reply-To: <87efzag2fs.fsf@concordia.ellerman.id.au>
+References: <1486098682-30395-1-git-send-email-bhsharma@redhat.com>
+ <87efzag2fs.fsf@concordia.ellerman.id.au>
+From: Bhupesh Sharma <bhsharma@redhat.com>
+Date: Fri, 10 Feb 2017 13:15:13 +0530
+Message-ID: <CACi5LpOD5VCCmn4CdTZy+MA=4w9Vw+jiB7C435OfLCJ7_mW69Q@mail.gmail.com>
+Subject: Re: [kernel-hardening] [PATCH v2 1/1] powerpc: mm: support
+ ARCH_MMAP_RND_BITS
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org, kernel-hardening@lists.openwall.com,
+ Daniel Cashman <dcashman@google.com>, Bhupesh SHARMA <bhupesh.linux@gmail.com>,
+ Kees Cook <keescook@chromium.org>, Alexander Graf <agraf@suse.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ Anatolij Gustschin <agust@denx.de>, Alistair Popple <alistair@popple.id.au>,
+ Matt Porter <mporter@kernel.crashing.org>,
+ Vitaly Bordug <vitb@kernel.crashing.org>,
+ Scott Wood <oss@buserror.net>, Kumar Gala <galak@kernel.crashing.org>,
+ Daniel Cashman <dcashman@android.com>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,45 +37,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-A bug in the -02 optimisation of GCC 5.4 6.1 and 6.2 causes
-setup_command_line() to not pass the correct first argument to strcpy
-and therefore not actually copy the command_line.
+Hi Michael,
 
-A workaround patch was proposed: http://patchwork.ozlabs.org/patch/673130/
-some discussion ensued.
+On Tue, Feb 7, 2017 at 7:57 AM, Michael Ellerman <mpe@ellerman.id.au> wrote:
+> Bhupesh Sharma <bhsharma@redhat.com> writes:
+>
+>> powerpc: arch_mmap_rnd() uses hard-coded values, (23-PAGE_SHIFT) for
+>> 32-bit and (30-PAGE_SHIFT) for 64-bit, to generate the random offset
+>> for the mmap base address.
+>>
+>> This value represents a compromise between increased
+>> ASLR effectiveness and avoiding address-space fragmentation.
+>> Replace it with a Kconfig option, which is sensibly bounded, so that
+>> platform developers may choose where to place this compromise.
+>> Keep default values as new minimums.
+>>
+>> This patch makes sure that now powerpc mmap arch_mmap_rnd() approach
+>> is similar to other ARCHs like x86, arm64 and arm.
+>>
+>> Cc: Alexander Graf <agraf@suse.com>
+>> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>> Cc: Paul Mackerras <paulus@samba.org>
+>> Cc: Michael Ellerman <mpe@ellerman.id.au>
+>> Cc: Anatolij Gustschin <agust@denx.de>
+>> Cc: Alistair Popple <alistair@popple.id.au>
+>> Cc: Matt Porter <mporter@kernel.crashing.org>
+>> Cc: Vitaly Bordug <vitb@kernel.crashing.org>
+>> Cc: Scott Wood <oss@buserror.net>
+>> Cc: Kumar Gala <galak@kernel.crashing.org>
+>> Cc: Daniel Cashman <dcashman@android.com>
+>> Signed-off-by: Bhupesh Sharma <bhsharma@redhat.com>
+>> Reviewed-by: Kees Cook <keescook at chromium.org>
+>> ---
+>> Changes since v1:
+>> v1 can be seen here (https://lists.ozlabs.org/pipermail/linuxppc-dev/2017-February/153594.html)
+>>     - No functional change in this patch.
+>>     - Added R-B from Kees.
+>>     - Dropped PATCH 2/2 from v1 as recommended by Kees Cook.
+>
+> Thanks for v2.
+>
+> But I replied to your v1 with some comments, did you see them?
+>
 
-A GCC bug was raised: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=71709
-The bug has been fixed in 7.0 and backported to GCC 5 and GCC 6.
+I have replied to your comments on the original thread.
+Please share your views and if possible share your test results on the
+PPC setups you might have at your end.
 
-At the time of writing GCC 5.4 is the most recent and is affected. GCC
-6.3 contains the backported fix, has been tested and appears safe to
-use.
-
-Heavy-lifting-by: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
-Signed-off-by: Cyril Bur <cyrilbur@gmail.com>
----
- arch/powerpc/Makefile | 9 +++++++++
- 1 file changed, 9 insertions(+)
-
-diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-index 31286fa7873c..a4b886694391 100644
---- a/arch/powerpc/Makefile
-+++ b/arch/powerpc/Makefile
-@@ -414,6 +414,15 @@ checkbin:
- 		echo -n '*** Please use a different binutils version.' ; \
- 		false ; \
- 	fi
-+	@if test "$(cc-version)" = "0504" \
-+		|| test "$(cc-version)" = "0601" \
-+		|| test "$(cc-version)" = "0602" ; then \
-+		echo -n '*** GCC-5.4 6.1 6.2 have a bad -O2 optimisation ' ; \
-+		echo 'which will cause lost commandline options (at least).' ; \
-+		echo '*** Please use a different GCC version.' ; \
-+		false ; \
-+	fi
-+
- 
- 
- CLEAN_FILES += $(TOUT)
--- 
-2.11.1
+Thanks,
+Bhupesh
