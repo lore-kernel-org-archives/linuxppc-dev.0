@@ -1,19 +1,27 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <mingo.kernel.org@gmail.com>
+Received: from mail-wr0-x243.google.com (mail-wr0-x243.google.com
+ [IPv6:2a00:1450:400c:c0c::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vKRrz2BwJzDq8g
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Feb 2017 18:48:35 +1100 (AEDT)
-Subject: Re: [PATCH] powerpc: Blacklist GCC 5.4 6.1 and 6.2
-To: Cyril Bur <cyrilbur@gmail.com>, linuxppc-dev@lists.ozlabs.org
-References: <20170210053115.20565-1-cyrilbur@gmail.com>
-Cc: akshay.adiga@linux.vnet.ibm.com
-From: Christophe LEROY <christophe.leroy@c-s.fr>
-Message-ID: <6f4d7111-6747-db55-c2c0-10aefa009f6d@c-s.fr>
-Date: Fri, 10 Feb 2017 08:48:29 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vKRvJ2D63zDq8g
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Feb 2017 18:50:36 +1100 (AEDT)
+Received: by mail-wr0-x243.google.com with SMTP id k90so14208806wrc.3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 09 Feb 2017 23:50:36 -0800 (PST)
+Sender: Ingo Molnar <mingo.kernel.org@gmail.com>
+Date: Fri, 10 Feb 2017 08:50:30 +0100
+From: Ingo Molnar <mingo@kernel.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>, mhiramat@kernel.org,
+ ananth@linux.vnet.ibm.com, linux-arm-kernel@lists.infradead.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 1/3] kprobes: introduce weak variant of
+ kprobe_exceptions_notify
+Message-ID: <20170210075030.GA24405@gmail.com>
+References: <b0894e503195b13a5ed6319e897e673f376a748d.1486496890.git.naveen.n.rao@linux.vnet.ibm.com>
+ <87vasizp8u.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <20170210053115.20565-1-cyrilbur@gmail.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <87vasizp8u.fsf@concordia.ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,47 +32,18 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
+* Michael Ellerman <mpe@ellerman.id.au> wrote:
 
-Le 10/02/2017 à 06:31, Cyril Bur a écrit :
-> A bug in the -02 optimisation of GCC 5.4 6.1 and 6.2 causes
-> setup_command_line() to not pass the correct first argument to strcpy
-> and therefore not actually copy the command_line.
->
-> A workaround patch was proposed: http://patchwork.ozlabs.org/patch/673130/
-> some discussion ensued.
->
-> A GCC bug was raised: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=71709
-> The bug has been fixed in 7.0 and backported to GCC 5 and GCC 6.
->
-> At the time of writing GCC 5.4 is the most recent and is affected. GCC
-> 6.3 contains the backported fix, has been tested and appears safe to
-> use.
->
-> Heavy-lifting-by: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
-> Signed-off-by: Cyril Bur <cyrilbur@gmail.com>
-> ---
->  arch/powerpc/Makefile | 9 +++++++++
->  1 file changed, 9 insertions(+)
->
-> diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-> index 31286fa7873c..a4b886694391 100644
-> --- a/arch/powerpc/Makefile
-> +++ b/arch/powerpc/Makefile
-> @@ -414,6 +414,15 @@ checkbin:
->  		echo -n '*** Please use a different binutils version.' ; \
->  		false ; \
->  	fi
-> +	@if test "$(cc-version)" = "0504" \
-> +		|| test "$(cc-version)" = "0601" \
-> +		|| test "$(cc-version)" = "0602" ; then \
-> +		echo -n '*** GCC-5.4 6.1 6.2 have a bad -O2 optimisation ' ; \
-> +		echo 'which will cause lost commandline options (at least).' ; \
-> +		echo '*** Please use a different GCC version.' ; \
-> +		false ; \
-> +	fi
-> +
+> "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> writes:
+> 
+> > kprobe_exceptions_notify() is not used on some of the architectures such
+> > as arm[64] and powerpc anymore. Introduce a weak variant for such
+> > architectures.
+> 
+> I'll merge patch 1 & 3 via the powerpc tree for v4.11.
 
-According to the GCC bug report, this bug applies to powerpc64le
-Why force all targets to not use those versions of GCC ?
+Acked-by: Ingo Molnar <mingo@kernel.org>
 
-Christophe
+Thanks,
+
+	Ingo
