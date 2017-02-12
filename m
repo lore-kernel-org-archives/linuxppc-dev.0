@@ -1,43 +1,41 @@
 Return-Path: <maddy@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vLw4Y27kZzDqBW
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Feb 2017 04:03:41 +1100 (AEDT)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vLz6f2HXVzDqBN
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Feb 2017 06:20:42 +1100 (AEDT)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v1CGwu0Z145048
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 Feb 2017 12:03:39 -0500
-Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [125.16.236.2])
- by mx0a-001b2d01.pphosted.com with ESMTP id 28jr42wvf1-1
+ v1CJJ6l2053558
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 Feb 2017 14:20:39 -0500
+Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [125.16.236.5])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 28hyg18erd-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 Feb 2017 12:03:39 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 Feb 2017 14:20:38 -0500
 Received: from localhost
- by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
- Sun, 12 Feb 2017 22:33:36 +0530
+ Mon, 13 Feb 2017 00:50:35 +0530
 Received: from d28relay06.in.ibm.com (d28relay06.in.ibm.com [9.184.220.150])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 43C77125804F
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 Feb 2017 22:33:34 +0530 (IST)
-Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 4E7AF394004E
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Feb 2017 00:50:33 +0530 (IST)
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
  by d28relay06.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v1CH3Xg429229260
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 Feb 2017 22:33:33 +0530
-Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
- by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v1CH3Wvx009494
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 Feb 2017 22:33:32 +0530
+ v1CJKXC27274750
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Feb 2017 00:50:33 +0530
+Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v1CJKWs7005297
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Feb 2017 00:50:32 +0530
 From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 To: mpe@ellerman.id.au
 Cc: linuxppc-dev@lists.ozlabs.org,
  Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Subject: [PATCH v2 6/6] powerpc/perf: Add restrictions to PMC5 in power9 DD1
-Date: Sun, 12 Feb 2017 22:33:15 +0530
-In-Reply-To: <1486918995-16354-1-git-send-email-maddy@linux.vnet.ibm.com>
-References: <1486918995-16354-1-git-send-email-maddy@linux.vnet.ibm.com>
-Message-Id: <1486918995-16354-6-git-send-email-maddy@linux.vnet.ibm.com>
+Subject: [PATCH v2] powerpc/perf: Add constraints for power9 l2/l3 bus events
+Date: Mon, 13 Feb 2017 00:50:23 +0530
+Message-Id: <1486927223-29590-1-git-send-email-maddy@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,46 +45,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-PMC5 on POWER9 DD1 may not provide right counts in all
-sampling scenarios, hence use PM_INST_DISP event instead
-in PMC2 or PMC3 in preference.
+In Power9, L2/L3 bus events are always available as a
+"bank" of 4 events. To obtain the counts for any of the
+l2/l3 bus events in a given bank, the user will have to
+program PMC4 with corresponding l2/l3 bus event for that
+bank. Patch add a mask and a new pass to updates the mask
+for each PMU used by L2/L3 bus events and checks the mask
+to enforce it.
 
 Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 ---
 Changelog v1:
-No changes, just a rebase
+Removed the callback and added a new pass
 
- arch/powerpc/perf/isa207-common.h | 4 ++++
- arch/powerpc/perf/power9-pmu.c    | 2 +-
- 2 files changed, 5 insertions(+), 1 deletion(-)
+ arch/powerpc/perf/isa207-common.c | 20 +++++++++++++++++++-
+ 1 file changed, 19 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/perf/isa207-common.h b/arch/powerpc/perf/isa207-common.h
-index 3e9150f6690a..cf9bd8990159 100644
---- a/arch/powerpc/perf/isa207-common.h
-+++ b/arch/powerpc/perf/isa207-common.h
-@@ -222,6 +222,10 @@
- 	CNST_PMC_VAL(1) | CNST_PMC_VAL(2) | CNST_PMC_VAL(3) | \
- 	CNST_PMC_VAL(4) | CNST_PMC_VAL(5) | CNST_PMC_VAL(6) | CNST_NC_VAL
+diff --git a/arch/powerpc/perf/isa207-common.c b/arch/powerpc/perf/isa207-common.c
+index 50e598cf644b..ce12e93dbd16 100644
+--- a/arch/powerpc/perf/isa207-common.c
++++ b/arch/powerpc/perf/isa207-common.c
+@@ -219,7 +219,7 @@ int isa207_compute_mmcr(u64 event[], int n_ev,
+ 			       struct perf_event *pevents[])
+ {
+ 	unsigned long mmcra, mmcr1, mmcr2, unit, combine, psel, cache, val;
+-	unsigned int pmc, pmc_inuse;
++	unsigned int pmc, pmc_inuse, mask=0;
+ 	int i;
+ 
+ 	pmc_inuse = 0;
+@@ -312,6 +312,24 @@ int isa207_compute_mmcr(u64 event[], int n_ev,
+ 		hwc[i] = pmc - 1;
+ 	}
  
 +/*
-+ * Lets restrict use of PMC5 for instruction counting.
++ * Pass 3: to Check for l2/l3 bus event rule. PMC4
++ * must be programmed to use L2/L3 bus events in any other PMC[1/2/3]s
 + */
-+#define P9_DD1_TEST_ADDER	(ISA207_TEST_ADDER | CNST_PMC_VAL(5))
++	if (cpu_has_feature(CPU_FTR_ARCH_300)) {
++		for (i = 0; i < n_ev; ++i) {
++			pmc     = (event[i] >> EVENT_PMC_SHIFT) & EVENT_PMC_MASK;
++			unit    = (event[i] >> EVENT_UNIT_SHIFT) & EVENT_UNIT_MASK;
++			if (unit >= 6 && unit <= 9)
++				mask |= 1 << (pmc - 1);
++		}
++
++		if ((mask) && ((mask & 0xf) < 0x8)) {
++			printk(KERN_ERR "Missing PMC4 L2/L3 Bus event\n");
++			return -1;
++		}
++	}
++
+ 	/* Return MMCRx values */
+ 	mmcr[0] = 0;
  
- /* Bits in MMCR1 for PowerISA v2.07 */
- #define MMCR1_UNIT_SHIFT(pmc)		(60 - (4 * ((pmc) - 1)))
-diff --git a/arch/powerpc/perf/power9-pmu.c b/arch/powerpc/perf/power9-pmu.c
-index 454e9f70894f..5fe9cb1dc3b6 100644
---- a/arch/powerpc/perf/power9-pmu.c
-+++ b/arch/powerpc/perf/power9-pmu.c
-@@ -423,7 +423,7 @@ static struct power_pmu power9_pmu = {
- 	.name			= "POWER9",
- 	.n_counter		= MAX_PMU_COUNTERS,
- 	.add_fields		= ISA207_ADD_FIELDS,
--	.test_adder		= ISA207_TEST_ADDER,
-+	.test_adder		= P9_DD1_TEST_ADDER,
- 	.compute_mmcr		= isa207_compute_mmcr,
- 	.config_bhrb		= power9_config_bhrb,
- 	.bhrb_filter_map	= power9_bhrb_filter_map,
 -- 
 2.7.4
