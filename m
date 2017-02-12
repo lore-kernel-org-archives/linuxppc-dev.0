@@ -3,41 +3,41 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vLw4X0RZNzDqBW
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Feb 2017 04:03:39 +1100 (AEDT)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vLw4Y27kZzDqBW
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Feb 2017 04:03:41 +1100 (AEDT)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v1CGwv4Y046196
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 Feb 2017 12:03:38 -0500
-Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [125.16.236.6])
- by mx0a-001b2d01.pphosted.com with ESMTP id 28j5xu9kc8-1
+ v1CGwu0Z145048
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 Feb 2017 12:03:39 -0500
+Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [125.16.236.2])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 28jr42wvf1-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 Feb 2017 12:03:37 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 Feb 2017 12:03:39 -0500
 Received: from localhost
- by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
- Sun, 12 Feb 2017 22:33:34 +0530
-Received: from d28relay10.in.ibm.com (d28relay10.in.ibm.com [9.184.220.161])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id C0459125804F
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 Feb 2017 22:33:32 +0530 (IST)
+ Sun, 12 Feb 2017 22:33:36 +0530
+Received: from d28relay06.in.ibm.com (d28relay06.in.ibm.com [9.184.220.150])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 43C77125804F
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 Feb 2017 22:33:34 +0530 (IST)
 Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay10.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v1CH2VPd23920876
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 Feb 2017 22:32:31 +0530
+ by d28relay06.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v1CH3Xg429229260
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 Feb 2017 22:33:33 +0530
 Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
  by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v1CH3V2F009470
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 Feb 2017 22:33:31 +0530
+ v1CH3Wvx009494
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 Feb 2017 22:33:32 +0530
 From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 To: mpe@ellerman.id.au
 Cc: linuxppc-dev@lists.ozlabs.org,
  Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Subject: [PATCH v2 5/6] powerpc/perf: Use Instruction Counter value
-Date: Sun, 12 Feb 2017 22:33:14 +0530
+Subject: [PATCH v2 6/6] powerpc/perf: Add restrictions to PMC5 in power9 DD1
+Date: Sun, 12 Feb 2017 22:33:15 +0530
 In-Reply-To: <1486918995-16354-1-git-send-email-maddy@linux.vnet.ibm.com>
 References: <1486918995-16354-1-git-send-email-maddy@linux.vnet.ibm.com>
-Message-Id: <1486918995-16354-5-git-send-email-maddy@linux.vnet.ibm.com>
+Message-Id: <1486918995-16354-6-git-send-email-maddy@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,108 +47,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Since PM_INST_DISP include speculative instruction,
-based on the workload the dispatch count could vary
-considerably. Hence as an alternative, for completed
-instruction counting, program the PM_INST_DISP event
-to the MMCR* but use Instruction Counter register value.
+PMC5 on POWER9 DD1 may not provide right counts in all
+sampling scenarios, hence use PM_INST_DISP event instead
+in PMC2 or PMC3 in preference.
 
 Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 ---
 Changelog v1:
-1)Removed the #ifdef and added changes for EBB count updates
- 
- arch/powerpc/perf/core-book3s.c | 36 ++++++++++++++++++++++++++++++++++++
- 1 file changed, 36 insertions(+)
+No changes, just a rebase
 
-diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
-index 270eb9b74e2e..87d17a1f7168 100644
---- a/arch/powerpc/perf/core-book3s.c
-+++ b/arch/powerpc/perf/core-book3s.c
-@@ -57,6 +57,7 @@ struct cpu_hw_events {
- 	void				*bhrb_context;
- 	struct	perf_branch_stack	bhrb_stack;
- 	struct	perf_branch_entry	bhrb_entries[BHRB_MAX_ENTRIES];
-+	u64				ic_init;
- };
+ arch/powerpc/perf/isa207-common.h | 4 ++++
+ arch/powerpc/perf/power9-pmu.c    | 2 +-
+ 2 files changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/perf/isa207-common.h b/arch/powerpc/perf/isa207-common.h
+index 3e9150f6690a..cf9bd8990159 100644
+--- a/arch/powerpc/perf/isa207-common.h
++++ b/arch/powerpc/perf/isa207-common.h
+@@ -222,6 +222,10 @@
+ 	CNST_PMC_VAL(1) | CNST_PMC_VAL(2) | CNST_PMC_VAL(3) | \
+ 	CNST_PMC_VAL(4) | CNST_PMC_VAL(5) | CNST_PMC_VAL(6) | CNST_NC_VAL
  
- static DEFINE_PER_CPU(struct cpu_hw_events, cpu_hw_events);
-@@ -127,6 +128,10 @@ static inline void power_pmu_bhrb_disable(struct perf_event *event) {}
- static void power_pmu_sched_task(struct perf_event_context *ctx, bool sched_in) {}
- static inline void power_pmu_bhrb_read(struct cpu_hw_events *cpuhw) {}
- static void pmao_restore_workaround(bool ebb) { }
-+static bool use_ic(u64 event)
-+{
-+	return false;
-+}
- #endif /* CONFIG_PPC32 */
++/*
++ * Lets restrict use of PMC5 for instruction counting.
++ */
++#define P9_DD1_TEST_ADDER	(ISA207_TEST_ADDER | CNST_PMC_VAL(5))
  
- static bool regs_use_siar(struct pt_regs *regs)
-@@ -688,6 +693,15 @@ static void pmao_restore_workaround(bool ebb)
- 	mtspr(SPRN_PMC5, pmcs[4]);
- 	mtspr(SPRN_PMC6, pmcs[5]);
- }
-+
-+static bool use_ic(u64 event)
-+{
-+	if (cpu_has_feature(CPU_FTR_POWER9_DD1) &&
-+			(event == 0x200f2 || event == 0x300f2))
-+		return true;
-+
-+	return false;
-+}
- #endif /* CONFIG_PPC64 */
- 
- static void perf_event_interrupt(struct pt_regs *regs);
-@@ -1007,6 +1021,7 @@ static u64 check_and_compute_delta(u64 prev, u64 val)
- static void power_pmu_read(struct perf_event *event)
- {
- 	s64 val, delta, prev;
-+	struct cpu_hw_events *cpuhw = this_cpu_ptr(&cpu_hw_events);
- 
- 	if (event->hw.state & PERF_HES_STOPPED)
- 		return;
-@@ -1016,6 +1031,13 @@ static void power_pmu_read(struct perf_event *event)
- 
- 	if (is_ebb_event(event)) {
- 		val = read_pmc(event->hw.idx);
-+		if (use_ic(event->attr.config)) {
-+			val = mfspr(SPRN_IC);
-+			if (val > cpuhw->ic_init)
-+				val = val - cpuhw->ic_init;
-+			else
-+				val = val + (0 - cpuhw->ic_init);
-+		}
- 		local64_set(&event->hw.prev_count, val);
- 		return;
- 	}
-@@ -1029,6 +1051,13 @@ static void power_pmu_read(struct perf_event *event)
- 		prev = local64_read(&event->hw.prev_count);
- 		barrier();
- 		val = read_pmc(event->hw.idx);
-+		if (use_ic(event->attr.config)) {
-+			val = mfspr(SPRN_IC);
-+			if (val > cpuhw->ic_init)
-+				val = val - cpuhw->ic_init;
-+			else
-+				val = val + (0 - cpuhw->ic_init);
-+		}
- 		delta = check_and_compute_delta(prev, val);
- 		if (!delta)
- 			return;
-@@ -1466,6 +1495,13 @@ static int power_pmu_add(struct perf_event *event, int ef_flags)
- 					event->attr.branch_sample_type);
- 	}
- 
-+	/*
-+	 * Workaround for POWER9 DD1 to use the Instruction Counter
-+	 * register value for instruction counting
-+	 */
-+	if (use_ic(event->attr.config))
-+		cpuhw->ic_init = mfspr(SPRN_IC);
-+
- 	perf_pmu_enable(event->pmu);
- 	local_irq_restore(flags);
- 	return ret;
+ /* Bits in MMCR1 for PowerISA v2.07 */
+ #define MMCR1_UNIT_SHIFT(pmc)		(60 - (4 * ((pmc) - 1)))
+diff --git a/arch/powerpc/perf/power9-pmu.c b/arch/powerpc/perf/power9-pmu.c
+index 454e9f70894f..5fe9cb1dc3b6 100644
+--- a/arch/powerpc/perf/power9-pmu.c
++++ b/arch/powerpc/perf/power9-pmu.c
+@@ -423,7 +423,7 @@ static struct power_pmu power9_pmu = {
+ 	.name			= "POWER9",
+ 	.n_counter		= MAX_PMU_COUNTERS,
+ 	.add_fields		= ISA207_ADD_FIELDS,
+-	.test_adder		= ISA207_TEST_ADDER,
++	.test_adder		= P9_DD1_TEST_ADDER,
+ 	.compute_mmcr		= isa207_compute_mmcr,
+ 	.config_bhrb		= power9_config_bhrb,
+ 	.bhrb_filter_map	= power9_bhrb_filter_map,
 -- 
 2.7.4
