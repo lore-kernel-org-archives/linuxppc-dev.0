@@ -1,42 +1,35 @@
-Return-Path: <maddy@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vMNjl67z4zDqD0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Feb 2017 22:34:03 +1100 (AEDT)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v1DBXlsQ052882
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Feb 2017 06:34:01 -0500
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
- by mx0b-001b2d01.pphosted.com with ESMTP id 28kax4jxws-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vMPF351G8zDqBn
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Feb 2017 22:57:43 +1100 (AEDT)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v1DBski0025070
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Feb 2017 06:57:41 -0500
+Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 28j5xv8cm2-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Feb 2017 06:34:00 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Feb 2017 06:57:41 -0500
 Received: from localhost
- by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
- Mon, 13 Feb 2017 21:33:57 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 3ED1C2BB0057
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Feb 2017 22:33:54 +1100 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v1DBXke836372592
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Feb 2017 22:33:54 +1100
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v1DBXLQq021500
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Feb 2017 22:33:22 +1100
-From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-To: mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org,
- Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
- Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
-Subject: [PATCH] powerpc/perf: Avoid FAB_*_MATCH checks for power9
-Date: Mon, 13 Feb 2017 17:02:54 +0530
-Message-Id: <1486985574-32608-1-git-send-email-maddy@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Mon, 13 Feb 2017 06:57:40 -0500
+Subject: Re: [PATCH] powerpc/mm/slice: Update slice mask printing to use
+ bitmap printing.
+To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ Balbir Singh <bsingharora@gmail.com>
+References: <1486984220-12213-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Date: Mon, 13 Feb 2017 17:27:28 +0530
+MIME-Version: 1.0
+In-Reply-To: <1486984220-12213-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Message-Id: <eeeea2ca-1760-eec3-dec2-edaeb5a01772@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,140 +39,91 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Since power9 does not support FAB_*_MATCH bits in MMCR1,
-avoid these checks for power9. For this, patch factor out
-code in isa207_get_constraint() to retain these checks
-only for power8.
 
-Patch also updates the comment in power9-pmu raw event
-encode layout to remove FAB_*_MATCH.
 
-Finally for power9, patch adds additional check for
-threshold events when adding the thresh mask and value in
-isa207_get_constraint().
+On Monday 13 February 2017 04:40 PM, Aneesh Kumar K.V wrote:
+> We now get output like below which is much better.
+>
+> [    0.935306]  good_mask low_slice: 4-5,9,11-13
+> [    0.935360]  good_mask high_slice: 0-511
+> [    0.935385]  mask low_slice: 3-6,8,10-12
+> [    0.935397]  mask high_slice:
+>
+> Compared to
+>
+> [    0.953414]  good_mask:1111111111111111 - 1111111111111.........
+>
+> I also fixed an error with slice_dbg printing.
+>
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> ---
+>   arch/powerpc/mm/slice.c | 30 +++++++-----------------------
+>   1 file changed, 7 insertions(+), 23 deletions(-)
+>
+> diff --git a/arch/powerpc/mm/slice.c b/arch/powerpc/mm/slice.c
+> index b3f45e413a60..0575897fdbe3 100644
+> --- a/arch/powerpc/mm/slice.c
+> +++ b/arch/powerpc/mm/slice.c
+> @@ -44,29 +44,13 @@ int _slice_debug = 1;
+>
+>   static void slice_print_mask(const char *label, struct slice_mask mask)
+>   {
+> -	char	*p, buf[SLICE_NUM_LOW + 3 + SLICE_NUM_HIGH + 1];
+> -	int	i;
+> -
+>   	if (!_slice_debug)
+>   		return;
+> -	p = buf;
+> -	for (i = 0; i < SLICE_NUM_LOW; i++)
+> -		*(p++) = (mask.low_slices & (1 << i)) ? '1' : '0';
+> -	*(p++) = ' ';
+> -	*(p++) = '-';
+> -	*(p++) = ' ';
+> -	for (i = 0; i < SLICE_NUM_HIGH; i++) {
+> -		if (test_bit(i, mask.high_slices))
+> -			*(p++) = '1';
+> -		else
+> -			*(p++) = '0';
+> -	}
+> -	*(p++) = 0;
+> -
+> -	printk(KERN_DEBUG "%s:%s\n", label, buf);
+> +	pr_devel("%s low_slice: %*pbl\n", label, (int)SLICE_NUM_LOW, &mask.low_slices);
 
-fixes: 7ffd948fae4c ('powerpc/perf: factor out power8 pmu functions')
-fixes: 18201b204286 ('powerpc/perf: power9 raw event format encoding')
-Signed-off-by: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
-Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
----
- arch/powerpc/perf/isa207-common.c | 58 ++++++++++++++++++++++++++-------------
- arch/powerpc/perf/power9-pmu.c    |  8 ++----
- 2 files changed, 42 insertions(+), 24 deletions(-)
 
-diff --git a/arch/powerpc/perf/isa207-common.c b/arch/powerpc/perf/isa207-common.c
-index 50e598cf644b..2703a1e340e7 100644
---- a/arch/powerpc/perf/isa207-common.c
-+++ b/arch/powerpc/perf/isa207-common.c
-@@ -97,6 +97,28 @@ static unsigned long combine_shift(unsigned long pmc)
- 	return MMCR1_COMBINE_SHIFT(pmc);
- }
- 
-+static inline bool event_is_threshold(u64 event)
-+{
-+	return (event >> EVENT_THR_SEL_SHIFT) & EVENT_THR_SEL_MASK;
-+}
-+
-+static bool is_thresh_cmp_valid(u64 event)
-+{
-+	unsigned int cmp, exp;
-+
-+	/*
-+	 * Check the mantissa upper two bits are not zero, unless the
-+	 * exponent is also zero. See the THRESH_CMP_MANTISSA doc.
-+	 */
-+	cmp = (event >> EVENT_THR_CMP_SHIFT) & EVENT_THR_CMP_MASK;
-+	exp = cmp >> 7;
-+
-+	if (exp && (cmp & 0x60) == 0)
-+		return false;
-+
-+	return true;
-+}
-+
- int isa207_get_constraint(u64 event, unsigned long *maskp, unsigned long *valp)
- {
- 	unsigned int unit, pmc, cache, ebb;
-@@ -163,28 +185,26 @@ int isa207_get_constraint(u64 event, unsigned long *maskp, unsigned long *valp)
- 		value |= CNST_SAMPLE_VAL(event >> EVENT_SAMPLE_SHIFT);
- 	}
- 
--	/*
--	 * Special case for PM_MRK_FAB_RSP_MATCH and PM_MRK_FAB_RSP_MATCH_CYC,
--	 * the threshold control bits are used for the match value.
--	 */
--	if (event_is_fab_match(event)) {
--		mask  |= CNST_FAB_MATCH_MASK;
--		value |= CNST_FAB_MATCH_VAL(event >> EVENT_THR_CTL_SHIFT);
-+	if (cpu_has_feature(CPU_FTR_ARCH_300))  {
-+		if (event_is_threshold(event) && is_thresh_cmp_valid(event)) {
-+			mask  |= CNST_THRESH_MASK;
-+			value |= CNST_THRESH_VAL(event >> EVENT_THRESH_SHIFT);
-+		}
- 	} else {
- 		/*
--		 * Check the mantissa upper two bits are not zero, unless the
--		 * exponent is also zero. See the THRESH_CMP_MANTISSA doc.
-+		 * Special case for PM_MRK_FAB_RSP_MATCH and PM_MRK_FAB_RSP_MATCH_CYC,
-+		 * the threshold control bits are used for the match value.
- 		 */
--		unsigned int cmp, exp;
--
--		cmp = (event >> EVENT_THR_CMP_SHIFT) & EVENT_THR_CMP_MASK;
--		exp = cmp >> 7;
--
--		if (exp && (cmp & 0x60) == 0)
--			return -1;
-+		if (event_is_fab_match(event)) {
-+			mask  |= CNST_FAB_MATCH_MASK;
-+			value |= CNST_FAB_MATCH_VAL(event >> EVENT_THR_CTL_SHIFT);
-+		} else {
-+			if (!is_thresh_cmp_valid(event))
-+				return -1;
- 
--		mask  |= CNST_THRESH_MASK;
--		value |= CNST_THRESH_VAL(event >> EVENT_THRESH_SHIFT);
-+			mask  |= CNST_THRESH_MASK;
-+			value |= CNST_THRESH_VAL(event >> EVENT_THRESH_SHIFT);
-+		}
- 	}
- 
- 	if (!pmc && ebb)
-@@ -279,7 +299,7 @@ int isa207_compute_mmcr(u64 event[], int n_ev,
- 		 * PM_MRK_FAB_RSP_MATCH and PM_MRK_FAB_RSP_MATCH_CYC,
- 		 * the threshold bits are used for the match value.
- 		 */
--		if (event_is_fab_match(event[i])) {
-+		if (!cpu_has_feature(CPU_FTR_ARCH_300) && event_is_fab_match(event[i])) {
- 			mmcr1 |= ((event[i] >> EVENT_THR_CTL_SHIFT) &
- 				  EVENT_THR_CTL_MASK) << MMCR1_FAB_SHIFT;
- 		} else {
-diff --git a/arch/powerpc/perf/power9-pmu.c b/arch/powerpc/perf/power9-pmu.c
-index 7332634e18c9..7950cee7d617 100644
---- a/arch/powerpc/perf/power9-pmu.c
-+++ b/arch/powerpc/perf/power9-pmu.c
-@@ -22,7 +22,7 @@
-  * | - - - - | - - - - | - - - - | - - - - | - - - - | - - - - | - - - - | - - - - |
-  *   | | [ ]                       [ ] [      thresh_cmp     ]   [  thresh_ctl   ]
-  *   | |  |                         |                                     |
-- *   | |  *- IFM (Linux)            |    thresh start/stop OR FAB match -*
-+ *   | |  *- IFM (Linux)            |	               thresh start/stop -*
-  *   | *- BHRB (Linux)              *sm
-  *   *- EBB (Linux)
-  *
-@@ -50,11 +50,9 @@
-  * MMCR1[31]   = pmc4combine[1]
-  *
-  * if pmc == 3 and unit == 0 and pmcxsel[0:6] == 0b0101011
-- *	# PM_MRK_FAB_RSP_MATCH
-- *	MMCR1[20:27] = thresh_ctl   (FAB_CRESP_MATCH / FAB_TYPE_MATCH)
-+ *	MMCR1[20:27] = thresh_ctl
-  * else if pmc == 4 and unit == 0xf and pmcxsel[0:6] == 0b0101001
-- *	# PM_MRK_FAB_RSP_MATCH_CYC
-- *	MMCR1[20:27] = thresh_ctl   (FAB_CRESP_MATCH / FAB_TYPE_MATCH)
-+ *	MMCR1[20:27] = thresh_ctl
-  * else
-  *	MMCRA[48:55] = thresh_ctl   (THRESH START/END)
-  *
--- 
-2.7.4
+This doesn't work as expected because low_slices is of type u16. I am 
+fixing that to be u64.
+
+
+> +	pr_devel("%s high_slice: %*pbl\n", label, (int)SLICE_NUM_HIGH, mask.high_slices);
+>   }
+>
+> -#define slice_dbg(fmt...) do { if (_slice_debug) pr_debug(fmt); } while(0)
+> +#define slice_dbg(fmt...) do { if (_slice_debug) pr_devel(fmt); } while (0)
+>
+>   #else
+>
+> @@ -233,8 +217,8 @@ static void slice_convert(struct mm_struct *mm, struct slice_mask mask, int psiz
+>   	}
+>
+>   	slice_dbg(" lsps=%lx, hsps=%lx\n",
+> -		  mm->context.low_slices_psize,
+> -		  mm->context.high_slices_psize);
+> +		  (unsigned long)mm->context.low_slices_psize,
+> +		  (unsigned long)mm->context.high_slices_psize);
+>
+>   	spin_unlock_irqrestore(&slice_convert_lock, flags);
+>
+> @@ -678,8 +662,8 @@ void slice_set_user_psize(struct mm_struct *mm, unsigned int psize)
+>
+>
+>   	slice_dbg(" lsps=%lx, hsps=%lx\n",
+> -		  mm->context.low_slices_psize,
+> -		  mm->context.high_slices_psize);
+> +		  (unsigned long)mm->context.low_slices_psize,
+> +		  (unsigned long)mm->context.high_slices_psize);
+>
+>    bail:
+>   	spin_unlock_irqrestore(&slice_convert_lock, flags);
+
+-aneesh
