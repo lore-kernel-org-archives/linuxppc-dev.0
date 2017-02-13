@@ -1,23 +1,22 @@
-Return-Path: <cyrilbur@gmail.com>
-Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
- [IPv6:2607:f8b0:400e:c00::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vM5sg61xCzDqBN
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Feb 2017 11:24:55 +1100 (AEDT)
-Received: by mail-pf0-x244.google.com with SMTP id 19so6228412pfo.3
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 Feb 2017 16:24:55 -0800 (PST)
-Message-ID: <1486945408.2733.1.camel@gmail.com>
-Subject: Re: [PATCH] powerpc: Blacklist GCC 5.4 6.1 and 6.2
-From: Cyril Bur <cyrilbur@gmail.com>
-To: Christophe LEROY <christophe.leroy@c-s.fr>, linuxppc-dev@lists.ozlabs.org
-Cc: akshay.adiga@linux.vnet.ibm.com
-Date: Mon, 13 Feb 2017 11:23:28 +1100
-In-Reply-To: <6f4d7111-6747-db55-c2c0-10aefa009f6d@c-s.fr>
-References: <20170210053115.20565-1-cyrilbur@gmail.com>
- <6f4d7111-6747-db55-c2c0-10aefa009f6d@c-s.fr>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vM6H53BFczDqBN
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Feb 2017 11:43:29 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Vipin K Parashar <vipin@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Stewart Smith  <stewart@linux.vnet.ibm.com>
+Subject: Re: [PATCH] powernv/opal: Handle OPAL_WRONG_STATE error from OPAL
+ fails
+In-Reply-To: <3539f32e-4caf-df07-7e8e-f1730da692dc@linux.vnet.ibm.com>
+References: <1482243419-23041-1-git-send-email-vipin@linux.vnet.ibm.com>
+ <87sho58ifo.fsf@concordia.ellerman.id.au>
+ <3539f32e-4caf-df07-7e8e-f1730da692dc@linux.vnet.ibm.com>
+Date: Mon, 13 Feb 2017 11:43:26 +1100
+Message-ID: <87a89qsyxd.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,56 +26,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2017-02-10 at 08:48 +0100, Christophe LEROY wrote:
-> 
-> Le 10/02/2017 à 06:31, Cyril Bur a écrit :
-> > A bug in the -02 optimisation of GCC 5.4 6.1 and 6.2 causes
-> > setup_command_line() to not pass the correct first argument to strcpy
-> > and therefore not actually copy the command_line.
-> > 
-> > A workaround patch was proposed: http://patchwork.ozlabs.org/patch/673130/
-> > some discussion ensued.
-> > 
-> > A GCC bug was raised: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=71709
-> > The bug has been fixed in 7.0 and backported to GCC 5 and GCC 6.
-> > 
-> > At the time of writing GCC 5.4 is the most recent and is affected. GCC
-> > 6.3 contains the backported fix, has been tested and appears safe to
-> > use.
-> > 
-> > Heavy-lifting-by: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
-> > Signed-off-by: Cyril Bur <cyrilbur@gmail.com>
-> > ---
-> >  arch/powerpc/Makefile | 9 +++++++++
-> >  1 file changed, 9 insertions(+)
-> > 
-> > diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-> > index 31286fa7873c..a4b886694391 100644
-> > --- a/arch/powerpc/Makefile
-> > +++ b/arch/powerpc/Makefile
-> > @@ -414,6 +414,15 @@ checkbin:
-> >  		echo -n '*** Please use a different binutils version.' ; \
-> >  		false ; \
-> >  	fi
-> > +	@if test "$(cc-version)" = "0504" \
-> > +		|| test "$(cc-version)" = "0601" \
-> > +		|| test "$(cc-version)" = "0602" ; then \
-> > +		echo -n '*** GCC-5.4 6.1 6.2 have a bad -O2 optimisation ' ; \
-> > +		echo 'which will cause lost commandline options (at least).' ; \
-> > +		echo '*** Please use a different GCC version.' ; \
-> > +		false ; \
-> > +	fi
-> > +
-> 
-> According to the GCC bug report, this bug applies to powerpc64le
-> Why force all targets to not use those versions of GCC ?
-> 
+Vipin K Parashar <vipin@linux.vnet.ibm.com> writes:
 
-True, I'll double check on BE, these days BE does suffer from, "oops I
-didn't check that". If it is only LE, I'll add another condition.
+> OPAL returns OPAL_WRONG_STATE for XSCOM operations
+>
+> done to read any core FIR which is sleeping, offline.
 
-Thanks,
+OK.
 
-Cyril
+Do we know why Linux is causing that to happen?
 
-> Christophe
+It's also returned from many of the XIVE routines if we're in the wrong
+xive mode, all of which would indicate a fairly bad Linux bug.
+
+Also the skiboot patch which added WRONG_STATE for XSCOM ops did so
+explicitly so we could differentiate from other errors:
+
+    commit 9c2d82394fd2303847cac4a665dee62556ca528a
+    Author:     Russell Currey <ruscur@russell.cc>
+    AuthorDate: Mon Mar 21 12:00:00 2016 +1100
+
+    xscom: Return OPAL_WRONG_STATE on XSCOM ops if CPU is asleep
+    
+    xscom_read and xscom_write return OPAL_SUCCESS if they worked, and
+    OPAL_HARDWARE if they didn't.  This doesn't provide information about why
+    the operation failed, such as if the CPU happens to be asleep.
+    
+    This is specifically useful in error scanning, so if every CPU is being
+    scanned for errors, sleeping CPUs likely aren't the cause of failures.
+    
+    So, return OPAL_WRONG_STATE in xscom_read and xscom_write if the CPU is
+    sleeping.
+    
+    Signed-off-by: Russell Currey <ruscur@russell.cc>
+    Reviewed-by: Alistair Popple <alistair@popple.id.au>
+    Signed-off-by: Stewart Smith <stewart@linux.vnet.ibm.com>
+
+
+
+So I'm still not convinced that quietly swallowing this error and
+mapping it to -EIO along with several of the other error codes is the
+right thing to do.
+
+cheers
