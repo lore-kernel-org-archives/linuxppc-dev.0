@@ -1,34 +1,19 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <segher@gate.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vMPqw410XzDq5W
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Feb 2017 23:24:28 +1100 (AEDT)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v1DCNoLh138106
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Feb 2017 07:24:26 -0500
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
- by mx0b-001b2d01.pphosted.com with ESMTP id 28kaf162gm-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Feb 2017 07:24:25 -0500
-Received: from localhost
- by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 13 Feb 2017 05:24:25 -0700
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- Balbir Singh <bsingharora@gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH V2 2/2] powerpc/mm/slice: Update slice mask printing to use
- bitmap printing.
-Date: Mon, 13 Feb 2017 17:54:02 +0530
-In-Reply-To: <1486988642-25000-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-References: <1486988642-25000-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Message-Id: <1486988642-25000-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vMVjm1M5kzDqBQ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2017 03:04:27 +1100 (AEDT)
+Date: Mon, 13 Feb 2017 09:44:37 -0600
+From: Segher Boessenkool <segher@kernel.crashing.org>
+To: Cyril Bur <cyrilbur@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, akshay.adiga@linux.vnet.ibm.com
+Subject: Re: [PATCH v2] powerpc: Blacklist GCC 5.4 6.1 and 6.2
+Message-ID: <20170213154437.GP21840@gate.crashing.org>
+References: <20170213033536.8908-1-cyrilbur@gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20170213033536.8908-1-cyrilbur@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,80 +23,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We now get output like below which is much better.
+Hi Cyril,
 
-[    0.935306]  good_mask low_slice: 0-15
-[    0.935360]  good_mask high_slice: 0-511
+On Mon, Feb 13, 2017 at 02:35:36PM +1100, Cyril Bur wrote:
+> A bug in the -02 optimisation of GCC 5.4 6.1 and 6.2 causes
+> setup_command_line() to not pass the correct first argument to strcpy
+> and therefore not actually copy the command_line.
 
-Compared to
+There is no such thing as an "-O2 optimisation".
 
-[    0.953414]  good_mask:1111111111111111 - 1111111111111.........
+> At the time of writing GCC 5.4 is the most recent and is affected. GCC
+> 6.3 contains the backported fix, has been tested and appears safe to
+> use.
 
-I also fixed an error with slice_dbg printing.
+6.3 is (of course) the newer release; 5.4 is a maintenance release of
+a compiler that is a year older.
 
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
----
- arch/powerpc/mm/slice.c | 30 +++++++-----------------------
- 1 file changed, 7 insertions(+), 23 deletions(-)
+> +# - gcc-5.4, 6.1, 6.2 don't copy the command_line around correctly
 
-diff --git a/arch/powerpc/mm/slice.c b/arch/powerpc/mm/slice.c
-index 08ac27eae408..d3701b0f439f 100644
---- a/arch/powerpc/mm/slice.c
-+++ b/arch/powerpc/mm/slice.c
-@@ -53,29 +53,13 @@ int _slice_debug = 1;
- 
- static void slice_print_mask(const char *label, struct slice_mask mask)
- {
--	char	*p, buf[SLICE_NUM_LOW + 3 + SLICE_NUM_HIGH + 1];
--	int	i;
--
- 	if (!_slice_debug)
- 		return;
--	p = buf;
--	for (i = 0; i < SLICE_NUM_LOW; i++)
--		*(p++) = (mask.low_slices & (1 << i)) ? '1' : '0';
--	*(p++) = ' ';
--	*(p++) = '-';
--	*(p++) = ' ';
--	for (i = 0; i < SLICE_NUM_HIGH; i++) {
--		if (test_bit(i, mask.high_slices))
--			*(p++) = '1';
--		else
--			*(p++) = '0';
--	}
--	*(p++) = 0;
--
--	printk(KERN_DEBUG "%s:%s\n", label, buf);
-+	pr_devel("%s low_slice: %*pbl\n", label, (int)SLICE_NUM_LOW, &mask.low_slices);
-+	pr_devel("%s high_slice: %*pbl\n", label, (int)SLICE_NUM_HIGH, mask.high_slices);
- }
- 
--#define slice_dbg(fmt...) do { if (_slice_debug) pr_debug(fmt); } while(0)
-+#define slice_dbg(fmt...) do { if (_slice_debug) pr_devel(fmt); } while (0)
- 
- #else
- 
-@@ -242,8 +226,8 @@ static void slice_convert(struct mm_struct *mm, struct slice_mask mask, int psiz
- 	}
- 
- 	slice_dbg(" lsps=%lx, hsps=%lx\n",
--		  mm->context.low_slices_psize,
--		  mm->context.high_slices_psize);
-+		  (unsigned long)mm->context.low_slices_psize,
-+		  (unsigned long)mm->context.high_slices_psize);
- 
- 	spin_unlock_irqrestore(&slice_convert_lock, flags);
- 
-@@ -685,8 +669,8 @@ void slice_set_user_psize(struct mm_struct *mm, unsigned int psize)
- 
- 
- 	slice_dbg(" lsps=%lx, hsps=%lx\n",
--		  mm->context.low_slices_psize,
--		  mm->context.high_slices_psize);
-+		  (unsigned long)mm->context.low_slices_psize,
-+		  (unsigned long)mm->context.high_slices_psize);
- 
-  bail:
- 	spin_unlock_irqrestore(&slice_convert_lock, flags);
--- 
-2.7.4
+> +		echo -n '*** GCC-5.4 6.1 6.2 have a bad -O2 optimisation ' ; \
+> +		echo 'which will cause lost command_line options (at least).' ; \
+
+Maybe something more like
+
+"GCC 5.4, 6.1, and 6.2 have a bug that results in a kernel that does
+not boot.  Please use GCC 6.3 or later.".
+
+Please mention the GCC PR # somewhere in the code, too?
+
+
+Segher
