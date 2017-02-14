@@ -1,21 +1,22 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-it0-x244.google.com (mail-it0-x244.google.com
- [IPv6:2607:f8b0:4001:c0b::244])
+Received: from mail-it0-x230.google.com (mail-it0-x230.google.com
+ [IPv6:2607:f8b0:4001:c0b::230])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vMmkR3NjhzDq8g
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2017 13:35:59 +1100 (AEDT)
-Received: by mail-it0-x244.google.com with SMTP id e137so2239067itc.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Feb 2017 18:35:59 -0800 (PST)
-Date: Tue, 14 Feb 2017 12:35:40 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vMmtC6HTlzDq8g
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2017 13:42:43 +1100 (AEDT)
+Received: by mail-it0-x230.google.com with SMTP id c7so15023697itd.1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Feb 2017 18:42:43 -0800 (PST)
+Date: Tue, 14 Feb 2017 12:42:31 +1000
 From: Nicholas Piggin <npiggin@gmail.com>
-To: "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, benh@kernel.crashing.org,
- paulus@samba.org, mpe@ellerman.id.au, xinhui.pan@linux.vnet.ibm.com
-Subject: Re: [PATCH] powerpc/xmon: add debugfs entry for xmon
-Message-ID: <20170214123540.38b995cb@roar.ozlabs.ibm.com>
-In-Reply-To: <1487019642-11411-1-git-send-email-gpiccoli@linux.vnet.ibm.com>
-References: <1487019642-11411-1-git-send-email-gpiccoli@linux.vnet.ibm.com>
+To: David Laight <David.Laight@ACULAB.COM>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [RFC][PATCH] powerpc/64s: optimise syscall entry with relon
+ hypercalls
+Message-ID: <20170214124231.30b3d517@roar.ozlabs.ibm.com>
+In-Reply-To: <063D6719AE5E284EB5DD2968C1650D6DB0284DFE@AcuExch.aculab.com>
+References: <20170210182304.12955-1-npiggin@gmail.com>
+ <063D6719AE5E284EB5DD2968C1650D6DB0284DFE@AcuExch.aculab.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,39 +28,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 13 Feb 2017 19:00:42 -0200
-"Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com> wrote:
+On Mon, 13 Feb 2017 11:04:06 +0000
+David Laight <David.Laight@ACULAB.COM> wrote:
 
-> Currently the xmon debugger is set only via kernel boot command-line.
-> It's disabled by default, and can be enabled with "xmon=on" on the
-> command-line. Also, xmon may be accessed via sysrq mechanism, but once
-> we enter xmon via sysrq,  it's  kept enabled until system is rebooted,
-> even if we exit the debugger. A kernel crash will then lead to xmon
-> instance, instead of triggering a kdump procedure (if configured), for
-> example.
+> From: Nicholas Piggin
+> > Sent: 10 February 2017 18:23
+> > After bc3551257a ("powerpc/64: Allow for relocation-on interrupts from
+> > guest to host"), a getppid() system call goes from 307 cycles to 358
+> > cycles (+17%). This is due significantly to the scratch SPR used by the
+> > hypercall.
+> > 
+> > It turns out there are a some volatile registers common to both system
+> > call and hypercall (in particular, r12, cr0, ctr), which can be used to
+> > avoid the SPR and some other overheads for the system call case. This
+> > brings getppid to 320 cycles (+4%).  
+> ...
+> > + * syscall register convention is in Documentation/powerpc/syscall64-abi.txt
+> > + *
+> > + * For hypercalls, the register convention is as follows:
+> > + * r0 volatile
+> > + * r1-2 nonvolatile
+> > + * r3 volatile parameter and return value for status
+> > + * r4-r10 volatile input and output value
+> > + * r11 volatile hypercall number and output value
+> > + * r12 volatile
+> > + * r13-r31 nonvolatile
+> > + * LR nonvolatile
+> > + * CTR volatile
+> > + * XER volatile
+> > + * CR0-1 CR5-7 volatile
+> > + * CR2-4 nonvolatile
+> > + * Other registers nonvolatile
+> > + *
+> > + * The intersection of volatile registers that don't contain possible
+> > + * inputs is: r12, cr0, xer, ctr. We may use these as scratch regs
+> > + * upon entry without saving.  
 > 
-> This patch introduces a debugfs entry for xmon, allowing user to query
-> its current state and change it if desired. Basically, the "xmon" file
-> to read from/write to is under the debugfs mount point, on powerpc
-> directory. Reading this file will provide the current state of the
-> debugger, one of the following: "on", "off", "early" or "nobt". Writing
-> one of these states to the file will take immediate effect on the debugger.
-> 
-> Signed-off-by: Guilherme G. Piccoli <gpiccoli@linux.vnet.ibm.com>
-> ---
-> * I had this patch partially done for some time, and after a discussion
-> at the kernel slack channel latest week, I decided to rebase and fix
-> some remaining bugs. I'd change 'x' option to always disable the debugger,
-> since with this patch we can always re-enable xmon, but today I noticed
-> Pan's patch on the mailing list, so perhaps his approach of adding a flag
-> to 'x' option is preferable. I can change this in a V2, if requested.
-> Thanks in advance!
+> Except that they must surely be set to some known value on exit in order
+> to avoid leaking information to the guest.
 
-xmon state changing after the first sysrq+x violates principle of least
-astonishment, so I think that should be fixed.
-
-Then the question is, is it worth making it runtime configurable with xmon
-command or debugfs tunables?
+True. I don't see why that's a problem for the entry code though.
 
 Thanks,
 Nick
