@@ -1,25 +1,19 @@
-Return-Path: <michael@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vNDdd6LYQzDq5x
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2017 07:33:25 +1100 (AEDT)
-Date: Wed, 15 Feb 2017 07:33:17 +1100
-In-Reply-To: <c539ac89-37f8-ebee-49ca-9d80fc1ff1f1@osg.samsung.com>
-References: <1486630590-9410-1-git-send-email-mpe@ellerman.id.au>
- <87shnhmsl1.fsf@concordia.ellerman.id.au>
- <c539ac89-37f8-ebee-49ca-9d80fc1ff1f1@osg.samsung.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
- charset=utf-8
-Subject: Re: [PATCH 1/5] selftests: Fix selftests build to just build,
- not run tests
-To: Shuah Khan <shuahkh@osg.samsung.com>, Michael Ellerman <mpe@ellerman.id.au>,
- bamvor.zhangjian@huawei.com
-CC: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
- linux-kselftest@vger.kernel.org, linux-api@vger.kernel.org
-From: Michael Ellerman <michael@ellerman.id.au>
-Message-ID: <7B55CA75-EA92-4F33-81CD-26D4A19EBE70@ellerman.id.au>
+Return-Path: <ruscur@russell.cc>
+Received: from russell.cc (russell.cc [IPv6:2404:9400:2:0:216:3eff:fee0:3370])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vNJS63FTCzDq8M
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2017 10:25:26 +1100 (AEDT)
+Message-ID: <1487114720.6496.1.camel@russell.cc>
+Subject: Re: [bug report] powerpc/powernv: Support EEH reset for VF PE
+From: Russell Currey <ruscur@russell.cc>
+To: Dan Carpenter <dan.carpenter@oracle.com>, weiyang@linux.vnet.ibm.com
+Cc: linuxppc-dev@lists.ozlabs.org
+Date: Wed, 15 Feb 2017 10:25:20 +1100
+In-Reply-To: <20170214133944.GA24595@mwanda>
+References: <20170214133944.GA24595@mwanda>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,44 +23,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Tue, 2017-02-14 at 16:39 +0300, Dan Carpenter wrote:
+> Hello Wei Yang,
+> 
+> The patch 9312bc5bab59: "powerpc/powernv: Support EEH reset for VF
+> PE" from Mar 4, 2016, leads to the following static checker warning:
+> 
+> 	arch/powerpc/platforms/powernv/eeh-powernv.c:1033 pnv_eeh_reset_vf_pe()
+> 	info: return a literal instead of 'ret'
 
+Hey Dan,
 
-On 15 February 2017 03:14:24 GMT+11:00, Shuah Khan <shuahkh@osg=2Esamsung=
-=2Ecom> wrote:
->On 02/13/2017 07:09 PM, Michael Ellerman wrote:
->> Michael Ellerman <mpe@ellerman=2Eid=2Eau> writes:
->>=20
->>> In commit 88baa78d1f31 ("selftests: remove duplicated all and clean
->>> target"), the "all" target was removed from individual Makefiles and
->>> added to lib=2Emk=2E
->>>
->>> However the "all" target was added to lib=2Emk *after* the existing
->>> "runtests" target=2E This means "runtests" becomes the first (default)
->>> target for most of our Makefiles=2E
->> =2E=2E=2E
->>>
->>> Fix it by moving the "all" target to the start of lib=2Emk, making it
->the
->>> default target=2E
->>>
->>> Fixes: 88baa78d1f31 ("selftests: remove duplicated all and clean
->target")
->>> Signed-off-by: Michael Ellerman <mpe@ellerman=2Eid=2Eau>
->>=20
->> Hi Shuah,
->>=20
->> Can you please merge this series into linux-next?
->>=20
->> The selftests are badly broken otherwise=2E
->>=20
->> cheers
->>=20
->
->Hi Michael,
->
->Thanks=2E All 5 patches are now in linux-kselftest next with Tested-by
->tag from Bamvor for 1,2,3=2E
+Out of curiosity, what static analysis tool are you using?
 
-Thanks!
---=20
-Sent from my Android phone with K-9 Mail=2E Please excuse my brevity=2E
+> 
+> arch/powerpc/platforms/powernv/eeh-powernv.c
+>   1019  static int pnv_eeh_reset_vf_pe(struct eeh_pe *pe, int option)
+>   1020  {
+>   1021          struct eeh_dev *edev;
+>   1022          struct pci_dn *pdn;
+>   1023          int ret;
+>   1024  
+>   1025          /* The VF PE should have only one child device */
+>   1026          edev = list_first_entry_or_null(&pe->edevs, struct eeh_dev,
+> list);
+>   1027          pdn = eeh_dev_to_pdn(edev);
+>   1028          if (!pdn)
+>   1029                  return -ENXIO;
+>   1030  
+>   1031          ret = pnv_eeh_do_flr(pdn, option);
+>   1032          if (!ret)
+>   1033                  return ret;
+> 
+> Presumably if pnv_eeh_do_flr() succeeds then we don't need to continue?
+> pnv_eeh_do_af_flr() is a fall back option?  Doing a:
+> 
+> 			return 0;
+> 
+> Makes this more deliberate looking.  Sometimes people get their if
+> statements reversed is the other option.
+
+I can send a patch for this.
+
+> 
+>   1034  
+>   1035          return pnv_eeh_do_af_flr(pdn, option);
+>   1036  }
+> 
+> regards,
+> dan carpenter
