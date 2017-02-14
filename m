@@ -1,36 +1,51 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Return-Path: <michaele@au1.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vMrf96vszzDqC0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2017 16:32:33 +1100 (AEDT)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vMs2c4pxgzDq8M
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2017 16:50:16 +1100 (AEDT)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v1E5SnQc028949
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2017 00:32:32 -0500
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
- by mx0b-001b2d01.pphosted.com with ESMTP id 28kkw30kqb-1
+ v1E5nQUS137770
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2017 00:50:14 -0500
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 28kthtb5nv-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2017 00:32:31 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2017 00:50:13 -0500
 Received: from localhost
- by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 13 Feb 2017 22:32:31 -0700
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: akpm@linux-foundation.org, Rik van Riel <riel@surriel.com>,
+ for <linuxppc-dev@lists.ozlabs.org> from <michaele@au1.ibm.com>;
+ Tue, 14 Feb 2017 15:50:10 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id C0DD22CE8056
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2017 16:50:05 +1100 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v1E5nvdJ24576056
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2017 16:50:05 +1100
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v1E5nXRQ016938
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2017 16:49:33 +1100
+From: Michael Ellerman <michaele@au1.ibm.com>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ akpm@linux-foundation.org, Rik van Riel <riel@surriel.com>,
  Mel Gorman <mgorman@techsingularity.net>, paulus@ozlabs.org,
  benh@kernel.crashing.org
 Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH V2 2/2] powerpc/mm/autonuma: Switch ppc64 to its own
- implementeation of saved write
-Date: Tue, 14 Feb 2017 11:01:54 +0530
-In-Reply-To: <1487050314-3892-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: Re: [PATCH V2 1/2] mm/autonuma: Let architecture override how the
+ write bit should be stashed in a protnone pte.
+In-Reply-To: <1487050314-3892-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1487050314-3892-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Message-Id: <1487050314-3892-3-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1487050314-3892-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Date: Tue, 14 Feb 2017 16:49:04 +1100
+MIME-Version: 1.0
+Content-Type: text/plain
+Message-Id: <87poilmien.fsf@concordia.ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,96 +55,112 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-With this our protnone becomes a present pte with READ/WRITE/EXEC bit cleared.
-By default we also set _PAGE_PRIVILEGED on such pte. This is now used to help
-us identify a protnone pte that as saved write bit. For such pte, we will clear
-the _PAGE_PRIVILEGED bit. The pte still remain non-accessible from both user
-and kernel.
+"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> writes:
 
-Acked-By: Michael Neuling <mikey@neuling.org>
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/book3s/64/mmu-hash.h |  3 +++
- arch/powerpc/include/asm/book3s/64/pgtable.h  | 32 +++++++++++++++++++++++++--
- 2 files changed, 33 insertions(+), 2 deletions(-)
+> Autonuma preserves the write permission across numa fault to avoid taking
+> a writefault after a numa fault (Commit: b191f9b106ea " mm: numa: preserve PTE
+> write permissions across a NUMA hinting fault"). Architecture can implement
+> protnone in different ways and some may choose to implement that by clearing Read/
+> Write/Exec bit of pte. Setting the write bit on such pte can result in wrong
+> behaviour. Fix this up by allowing arch to override how to save the write bit
+> on a protnone pte.
 
-diff --git a/arch/powerpc/include/asm/book3s/64/mmu-hash.h b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
-index 0735d5a8049f..8720a406bbbe 100644
---- a/arch/powerpc/include/asm/book3s/64/mmu-hash.h
-+++ b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
-@@ -16,6 +16,9 @@
- #include <asm/page.h>
- #include <asm/bug.h>
- 
-+#ifndef __ASSEMBLY__
-+#include <linux/mmdebug.h>
-+#endif
- /*
-  * This is necessary to get the definition of PGTABLE_RANGE which we
-  * need for various slices related matters. Note that this isn't the
-diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
-index fef738229a68..c684ef6cbd10 100644
---- a/arch/powerpc/include/asm/book3s/64/pgtable.h
-+++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
-@@ -441,8 +441,8 @@ static inline pte_t pte_clear_soft_dirty(pte_t pte)
-  */
- static inline int pte_protnone(pte_t pte)
- {
--	return (pte_raw(pte) & cpu_to_be64(_PAGE_PRESENT | _PAGE_PRIVILEGED)) ==
--		cpu_to_be64(_PAGE_PRESENT | _PAGE_PRIVILEGED);
-+	return (pte_raw(pte) & cpu_to_be64(_PAGE_PRESENT | _PAGE_RWX)) ==
-+		cpu_to_be64(_PAGE_PRESENT);
- }
- #endif /* CONFIG_NUMA_BALANCING */
- 
-@@ -512,6 +512,32 @@ static inline pte_t pte_mkhuge(pte_t pte)
- 	return pte;
- }
- 
-+#define pte_mk_savedwrite pte_mk_savedwrite
-+static inline pte_t pte_mk_savedwrite(pte_t pte)
-+{
-+	/*
-+	 * Used by Autonuma subsystem to preserve the write bit
-+	 * while marking the pte PROT_NONE. Only allow this
-+	 * on PROT_NONE pte
-+	 */
-+	VM_BUG_ON((pte_raw(pte) & cpu_to_be64(_PAGE_PRESENT | _PAGE_RWX | _PAGE_PRIVILEGED)) !=
-+		  cpu_to_be64(_PAGE_PRESENT | _PAGE_PRIVILEGED));
-+	return __pte(pte_val(pte) & ~_PAGE_PRIVILEGED);
-+}
-+
-+#define pte_savedwrite pte_savedwrite
-+static inline bool pte_savedwrite(pte_t pte)
-+{
-+	/*
-+	 * Saved write ptes are prot none ptes that doesn't have
-+	 * privileged bit sit. We mark prot none as one which has
-+	 * present and pviliged bit set and RWX cleared. To mark
-+	 * protnone which used to have _PAGE_WRITE set we clear
-+	 * the privileged bit.
-+	 */
-+	return !(pte_raw(pte) & cpu_to_be64(_PAGE_RWX | _PAGE_PRIVILEGED));
-+}
-+
- static inline pte_t pte_modify(pte_t pte, pgprot_t newprot)
- {
- 	/* FIXME!! check whether this need to be a conditional */
-@@ -873,6 +899,7 @@ static inline pte_t *pmdp_ptep(pmd_t *pmd)
- #define pmd_mkclean(pmd)	pte_pmd(pte_mkclean(pmd_pte(pmd)))
- #define pmd_mkyoung(pmd)	pte_pmd(pte_mkyoung(pmd_pte(pmd)))
- #define pmd_mkwrite(pmd)	pte_pmd(pte_mkwrite(pmd_pte(pmd)))
-+#define pmd_mk_savedwrite(pmd)	pte_pmd(pte_mk_savedwrite(pmd_pte(pmd)))
- 
- #ifdef CONFIG_HAVE_ARCH_SOFT_DIRTY
- #define pmd_soft_dirty(pmd)    pte_soft_dirty(pmd_pte(pmd))
-@@ -889,6 +916,7 @@ static inline int pmd_protnone(pmd_t pmd)
- 
- #define __HAVE_ARCH_PMD_WRITE
- #define pmd_write(pmd)		pte_write(pmd_pte(pmd))
-+#define pmd_savedwrite(pmd)	pte_savedwrite(pmd_pte(pmd))
- 
- #ifdef CONFIG_TRANSPARENT_HUGEPAGE
- extern pmd_t pfn_pmd(unsigned long pfn, pgprot_t pgprot);
--- 
-2.7.4
+This is pretty obviously a nop on arches that don't implement the new
+hooks, but it'd still be good to get an ack from someone in mm land
+before I merge it.
+
+cheers
+
+> Acked-By: Michael Neuling <mikey@neuling.org>
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> ---
+>  include/asm-generic/pgtable.h | 16 ++++++++++++++++
+>  mm/huge_memory.c              |  4 ++--
+>  mm/memory.c                   |  2 +-
+>  mm/mprotect.c                 |  4 ++--
+>  4 files changed, 21 insertions(+), 5 deletions(-)
+>
+> diff --git a/include/asm-generic/pgtable.h b/include/asm-generic/pgtable.h
+> index 18af2bcefe6a..b6f3a8a4b738 100644
+> --- a/include/asm-generic/pgtable.h
+> +++ b/include/asm-generic/pgtable.h
+> @@ -192,6 +192,22 @@ static inline void ptep_set_wrprotect(struct mm_struct *mm, unsigned long addres
+>  }
+>  #endif
+>  
+> +#ifndef pte_savedwrite
+> +#define pte_savedwrite pte_write
+> +#endif
+> +
+> +#ifndef pte_mk_savedwrite
+> +#define pte_mk_savedwrite pte_mkwrite
+> +#endif
+> +
+> +#ifndef pmd_savedwrite
+> +#define pmd_savedwrite pmd_write
+> +#endif
+> +
+> +#ifndef pmd_mk_savedwrite
+> +#define pmd_mk_savedwrite pmd_mkwrite
+> +#endif
+> +
+>  #ifndef __HAVE_ARCH_PMDP_SET_WRPROTECT
+>  #ifdef CONFIG_TRANSPARENT_HUGEPAGE
+>  static inline void pmdp_set_wrprotect(struct mm_struct *mm,
+> diff --git a/mm/huge_memory.c b/mm/huge_memory.c
+> index 9a6bd6c8d55a..2f0f855ec911 100644
+> --- a/mm/huge_memory.c
+> +++ b/mm/huge_memory.c
+> @@ -1300,7 +1300,7 @@ int do_huge_pmd_numa_page(struct vm_fault *vmf, pmd_t pmd)
+>  	goto out;
+>  clear_pmdnuma:
+>  	BUG_ON(!PageLocked(page));
+> -	was_writable = pmd_write(pmd);
+> +	was_writable = pmd_savedwrite(pmd);
+>  	pmd = pmd_modify(pmd, vma->vm_page_prot);
+>  	pmd = pmd_mkyoung(pmd);
+>  	if (was_writable)
+> @@ -1555,7 +1555,7 @@ int change_huge_pmd(struct vm_area_struct *vma, pmd_t *pmd,
+>  			entry = pmdp_huge_get_and_clear_notify(mm, addr, pmd);
+>  			entry = pmd_modify(entry, newprot);
+>  			if (preserve_write)
+> -				entry = pmd_mkwrite(entry);
+> +				entry = pmd_mk_savedwrite(entry);
+>  			ret = HPAGE_PMD_NR;
+>  			set_pmd_at(mm, addr, pmd, entry);
+>  			BUG_ON(vma_is_anonymous(vma) && !preserve_write &&
+> diff --git a/mm/memory.c b/mm/memory.c
+> index e78bf72f30dd..88c24f89d6d3 100644
+> --- a/mm/memory.c
+> +++ b/mm/memory.c
+> @@ -3388,7 +3388,7 @@ static int do_numa_page(struct vm_fault *vmf)
+>  	int target_nid;
+>  	bool migrated = false;
+>  	pte_t pte;
+> -	bool was_writable = pte_write(vmf->orig_pte);
+> +	bool was_writable = pte_savedwrite(vmf->orig_pte);
+>  	int flags = 0;
+>  
+>  	/*
+> diff --git a/mm/mprotect.c b/mm/mprotect.c
+> index f9c07f54dd62..15f5c174a7c1 100644
+> --- a/mm/mprotect.c
+> +++ b/mm/mprotect.c
+> @@ -113,13 +113,13 @@ static unsigned long change_pte_range(struct vm_area_struct *vma, pmd_t *pmd,
+>  			ptent = ptep_modify_prot_start(mm, addr, pte);
+>  			ptent = pte_modify(ptent, newprot);
+>  			if (preserve_write)
+> -				ptent = pte_mkwrite(ptent);
+> +				ptent = pte_mk_savedwrite(ptent);
+>  
+>  			/* Avoid taking write faults for known dirty pages */
+>  			if (dirty_accountable && pte_dirty(ptent) &&
+>  					(pte_soft_dirty(ptent) ||
+>  					 !(vma->vm_flags & VM_SOFTDIRTY))) {
+> -				ptent = pte_mkwrite(ptent);
+> +				ptent = pte_mk_savedwrite(ptent);
+>  			}
+>  			ptep_modify_prot_commit(mm, addr, pte, ptent);
+>  			pages++;
+> -- 
+> 2.7.4
