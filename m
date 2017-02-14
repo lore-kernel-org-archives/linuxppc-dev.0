@@ -2,17 +2,15 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vN27q344HzDqy0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2017 23:40:23 +1100 (AEDT)
-In-Reply-To: <1485989562-16741-1-git-send-email-shailendras@nvidia.com>
-To: Shailendra Singh <shailendras@nvidia.com>, <linuxppc-dev@lists.ozlabs.org>,
- <jk@ozlabs.org>, <shailendras@nvidia.com>, <apopple@au1.ibm.com>,
- <balbirs@au1.ibm.com>, <aritger@nvidia.com>, <jhubbard@nvidia.com>,
- <scheung@nvidia.com>, <amanjunatha@nvidia.com>, <jmckenna@nvidia.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vN27r5SX2zDqy5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2017 23:40:24 +1100 (AEDT)
+In-Reply-To: <1486461661-12867-1-git-send-email-mpe@ellerman.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: powerpc: Fix inconsistent of_node_to_nid EXPORT_SYMBOL handling
-Message-Id: <3vN27q2Kghz9s72@ozlabs.org>
-Date: Tue, 14 Feb 2017 23:40:23 +1100 (AEDT)
+Cc: anton@samba.org
+Subject: Re: powerpc/powernv: Fix opal_exit tracepoint opcode
+Message-Id: <3vN27r3y4xz9s7r@ozlabs.org>
+Date: Tue, 14 Feb 2017 23:40:24 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,23 +20,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2017-02-01 at 22:52:42 UTC, Shailendra Singh wrote:
-> The generic implementation of of_node_to_nid is EXPORT_SYMBOL.
+On Tue, 2017-02-07 at 10:01:01 UTC, Michael Ellerman wrote:
+> Currently the opal_exit tracepoint usually shows the opcode as 0:
 > 
-> The powerpc implementation added by following commit is EXPORT_SYMBOL_GPL.
-> commit 953039c8df7b ("[PATCH] powerpc: Allow devices to register with numa
-> topology")
+>   <idle>-0     [047] d.h.   635.654292: opal_entry: opcode=63
+>   <idle>-0     [047] d.h.   635.654296: opal_exit: opcode=0 retval=0
+>   kopald-1209  [019] d...   636.420943: opal_entry: opcode=10
+>   kopald-1209  [019] d...   636.420959: opal_exit: opcode=0 retval=0
 > 
-> This creates an inconsistency for of_node_to_nid callers across
-> architectures.
+> This is because we incorrectly load the opcode into r0 before calling
+> __trace_opal_exit(), whereas it expects the opcode in r3 (first function
+> parameter). In fact we are leaving the retval in r3, so opcode and
+> retval will always show the same value.
 > 
-> Update the powerpc implementation to be exported consistently with the
-> generic implementation.
+> Instead load the opcode into r3, resulting in:
 > 
-> Signed-off-by: Shailendra Singh <shailendras@nvidia.com>
+>   <idle>-0     [040] d.h.   636.618625: opal_entry: opcode=63
+>   <idle>-0     [040] d.h.   636.618627: opal_exit: opcode=63 retval=0
+> 
+> Fixes: c49f63530bb6 ("powernv: Add OPAL tracepoints")
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
-Applied to powerpc next, thanks.
+Applied to powerpc next.
 
-https://git.kernel.org/powerpc/c/be9ba9ff93cc3e44dc46da9ed25655
+https://git.kernel.org/powerpc/c/a7e0fb6c2029a780444d09560f739e
 
 cheers
