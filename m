@@ -1,21 +1,44 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <ravi.bangoria@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vN0kp2s73zDqpl
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2017 22:37:06 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
-Cc: benh@kernel.crashing.org, paulus@samba.org, npiggin@gmail.com,
- xinhui.pan@linux.vnet.ibm.com, gpiccoli@linux.vnet.ibm.com
-Subject: Re: [PATCH] powerpc/xmon: add debugfs entry for xmon
-In-Reply-To: <1487019642-11411-1-git-send-email-gpiccoli@linux.vnet.ibm.com>
-References: <1487019642-11411-1-git-send-email-gpiccoli@linux.vnet.ibm.com>
-Date: Tue, 14 Feb 2017 22:37:04 +1100
-Message-ID: <87vasdknq7.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vN0mS2vzJzDqsN
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2017 22:38:32 +1100 (AEDT)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v1EBXesi003374
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2017 06:38:30 -0500
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 28kfdu1dyc-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2017 06:38:29 -0500
+Received: from localhost
+ by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ravi.bangoria@linux.vnet.ibm.com>;
+ Tue, 14 Feb 2017 04:38:29 -0700
+Subject: Re: [PATCH v3 2/2] powerpc: emulate_step tests for load/store
+ instructions
+To: Michael Ellerman <mpe@ellerman.id.au>
+References: <1487063803-10848-1-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
+ <1487063803-10848-3-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
+ <877f4tm4n2.fsf@concordia.ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ benh@kernel.crashing.org, paulus@samba.org,
+ lsorense@csclub.uwaterloo.ca, oohall@gmail.com,
+ naveen.n.rao@linux.vnet.ibm.com, ast@kernel.org, chris@distroguy.com,
+ aneesh.kumar@linux.vnet.ibm.com, bsingharora@gmail.com,
+ anton@samba.org, paul.gortmaker@windriver.com,
+ bauerman@linux.vnet.ibm.com, viro@zeniv.linux.org.uk,
+ christophe.leroy@c-s.fr, duwe@lst.de, oss@buserror.net,
+ Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
+From: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
+Date: Tue, 14 Feb 2017 17:08:10 +0530
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <877f4tm4n2.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset=windows-1252
+Message-Id: <58A2EC22.8080209@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,51 +48,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-"Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com> writes:
 
-> Currently the xmon debugger is set only via kernel boot command-line.
-> It's disabled by default, and can be enabled with "xmon=on" on the
-> command-line. Also, xmon may be accessed via sysrq mechanism, but once
-> we enter xmon via sysrq,  it's  kept enabled until system is rebooted,
-> even if we exit the debugger. A kernel crash will then lead to xmon
-> instance, instead of triggering a kdump procedure (if configured), for
-> example.
+
+On Tuesday 14 February 2017 04:16 PM, Michael Ellerman wrote:
+> Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com> writes:
 >
-> This patch introduces a debugfs entry for xmon, allowing user to query
-> its current state and change it if desired. Basically, the "xmon" file
-> to read from/write to is under the debugfs mount point, on powerpc
-> directory. Reading this file will provide the current state of the
-> debugger, one of the following: "on", "off", "early" or "nobt". Writing
-> one of these states to the file will take immediate effect on the debugger.
+>> diff --git a/arch/powerpc/lib/Makefile b/arch/powerpc/lib/Makefile
+>> index 0e649d7..ddc879d 100644
+>> --- a/arch/powerpc/lib/Makefile
+>> +++ b/arch/powerpc/lib/Makefile
+>> @@ -33,3 +33,7 @@ obj-$(CONFIG_ALTIVEC)	+= xor_vmx.o
+>>  CFLAGS_xor_vmx.o += -maltivec $(call cc-option,-mabi=altivec)
+>>  
+>>  obj-$(CONFIG_PPC64) += $(obj64-y)
+>> +
+>> +ifeq ($(CONFIG_PPC64), y)
+>> +obj-$(CONFIG_KPROBES_SANITY_TEST) += test_emulate_step.o
+>> +endif
+> FYI, the right way to do that is:
+>
+>   obj64-$(CONFIG_KPROBES_SANITY_TEST) += test_emulate_step.o
+>   obj-$(CONFIG_PPC64) += $(obj64-y)
+>
+> And in this Makefile you don't need to add the second line because it's
+> already there.
 
-I like this in general.
+Thanks for this. Will change accordingly and send next version.
 
-But I think we can simplify it a bit.
+Ravi
 
-I don't think we need the nobt state anymore. As far as I can see it was
-added as a way to reinstate the old behaviour when the auto backtrace
-mode was added, but I've never heard of anyone using it.
-
-If anyone hits a crash where they really need that feature they can
-always just hack the code to disable the backtrace.
-
-So I think step 1 is a patch to drop the xmon_no_auto_backtrace stuff.
-
-Also I'm not sure EARLY needs to be a separate state. It's just a
-one-off invocation at boot, all we really need is just a single bit of
-state communicated from early_parse_xmon() to xmon_setup(), ie. a static
-bool would do.
-
-If we agree with that, then there's only two states left, on and off, in
-which case it can probably just be an int - and we can use a simple
-attribute file rather than custom parsing.
-
-> * I had this patch partially done for some time, and after a discussion
-> at the kernel slack channel latest week, I decided to rebase and fix
-> some remaining bugs. I'd change 'x' option to always disable the debugger,
-
-Not quite.
-
-'x' should exit and leave xmon in whatever state it was previously in.
-
-cheers
+>
+> cheers
+>
