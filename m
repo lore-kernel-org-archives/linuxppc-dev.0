@@ -3,32 +3,32 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vMw061tfRzDq8M
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2017 19:03:18 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vMw0949MKzDq8M
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2017 19:03:21 +1100 (AEDT)
 Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v1E7xHYW102485
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2017 03:03:15 -0500
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
- by mx0b-001b2d01.pphosted.com with ESMTP id 28kv2dmn3y-1
+ v1E7xILm102530
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2017 03:03:19 -0500
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 28kv2dmn6a-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2017 03:03:15 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2017 03:03:19 -0500
 Received: from localhost
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <ravi.bangoria@linux.vnet.ibm.com>;
- Tue, 14 Feb 2017 18:03:11 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 1CAF03578052
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2017 19:03:09 +1100 (EST)
+ Tue, 14 Feb 2017 18:03:15 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 6E1FA3578052
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2017 19:03:14 +1100 (EST)
 Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v1E8318j20774994
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2017 19:03:09 +1100
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v1E8364E30474416
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2017 19:03:14 +1100
 Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
  by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v1E82ZdC001322
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2017 19:02:36 +1100
+ v1E82ed1001506
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2017 19:02:42 +1100
 From: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
  mpe@ellerman.id.au
@@ -39,10 +39,12 @@ Cc: benh@kernel.crashing.org, paulus@samba.org, lsorense@csclub.uwaterloo.ca,
  bauerman@linux.vnet.ibm.com, viro@zeniv.linux.org.uk,
  christophe.leroy@c-s.fr, duwe@lst.de, oss@buserror.net,
  Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
-Subject: [PATCH v2 0/2] powerpc: Emulation support for load/store instructions
+Subject: [PATCH v2 1/2] powerpc: Emulation support for load/store instructions
  on LE
-Date: Tue, 14 Feb 2017 13:32:10 +0530
-Message-Id: <1487059332-6925-1-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
+Date: Tue, 14 Feb 2017 13:32:11 +0530
+In-Reply-To: <1487059332-6925-1-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
+References: <1487059332-6925-1-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
+Message-Id: <1487059332-6925-2-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,39 +54,105 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-emulate_step is the basic infrastructure which is used by number of other
-kernel infrastructures like kprobe, hw-breakpoint(data breakpoint) etc.
-In case of kprobe, enabling emulation of load/store instructions will
-speedup the execution of probed instruction. In case of kernel-space
-breakpoint, causative instruction is first get emulated before executing
-user registered handler. If emulation fails, hw-breakpoint is disabled
-with error. As emulate_step does not support load/store instructions on
-LE, kernel-space hw-breakpoint infrastructure is broken on LE.
-
 emulate_step() uses a number of underlying kernel functions that were
 initially not enabled for LE. This has been rectified since. So, fix
 emulate_step() for LE for the corresponding instructions.
 
-Also add selftest which will run at boot if CONFIG_KPROBES_SANITY_TEST
-and CONFIG_PPC64 is set.
+Reported-by: Anton Blanchard <anton@samba.org>
+Signed-off-by: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
+---
+ arch/powerpc/lib/sstep.c | 20 --------------------
+ 1 file changed, 20 deletions(-)
 
-Changes in v2:
-  - Folded 2nd and 3rd patch of v1 into one patch, as suggested by Naveen
-
-v1 link: https://www.mail-archive.com/linuxppc-dev@lists.ozlabs.org/msg110671.html
-
-Ravi Bangoria (2):
-  powerpc: Emulation support for load/store instructions on LE
-  powerpc: emulate_step tests for load/store instructions
-
- arch/powerpc/include/asm/ppc-opcode.h |   7 +
- arch/powerpc/include/asm/sstep.h      |   8 +
- arch/powerpc/kernel/kprobes.c         |   2 +
- arch/powerpc/lib/Makefile             |   4 +
- arch/powerpc/lib/sstep.c              |  20 --
- arch/powerpc/lib/test_emulate_step.c  | 439 ++++++++++++++++++++++++++++++++++
- 6 files changed, 460 insertions(+), 20 deletions(-)
- create mode 100644 arch/powerpc/lib/test_emulate_step.c
-
+diff --git a/arch/powerpc/lib/sstep.c b/arch/powerpc/lib/sstep.c
+index 06c7e9b..e14a2fb 100644
+--- a/arch/powerpc/lib/sstep.c
++++ b/arch/powerpc/lib/sstep.c
+@@ -1799,8 +1799,6 @@ int __kprobes emulate_step(struct pt_regs *regs, unsigned int instr)
+ 		goto instr_done;
+ 
+ 	case LARX:
+-		if (regs->msr & MSR_LE)
+-			return 0;
+ 		if (op.ea & (size - 1))
+ 			break;		/* can't handle misaligned */
+ 		err = -EFAULT;
+@@ -1824,8 +1822,6 @@ int __kprobes emulate_step(struct pt_regs *regs, unsigned int instr)
+ 		goto ldst_done;
+ 
+ 	case STCX:
+-		if (regs->msr & MSR_LE)
+-			return 0;
+ 		if (op.ea & (size - 1))
+ 			break;		/* can't handle misaligned */
+ 		err = -EFAULT;
+@@ -1851,8 +1847,6 @@ int __kprobes emulate_step(struct pt_regs *regs, unsigned int instr)
+ 		goto ldst_done;
+ 
+ 	case LOAD:
+-		if (regs->msr & MSR_LE)
+-			return 0;
+ 		err = read_mem(&regs->gpr[op.reg], op.ea, size, regs);
+ 		if (!err) {
+ 			if (op.type & SIGNEXT)
+@@ -1864,8 +1858,6 @@ int __kprobes emulate_step(struct pt_regs *regs, unsigned int instr)
+ 
+ #ifdef CONFIG_PPC_FPU
+ 	case LOAD_FP:
+-		if (regs->msr & MSR_LE)
+-			return 0;
+ 		if (size == 4)
+ 			err = do_fp_load(op.reg, do_lfs, op.ea, size, regs);
+ 		else
+@@ -1874,15 +1866,11 @@ int __kprobes emulate_step(struct pt_regs *regs, unsigned int instr)
+ #endif
+ #ifdef CONFIG_ALTIVEC
+ 	case LOAD_VMX:
+-		if (regs->msr & MSR_LE)
+-			return 0;
+ 		err = do_vec_load(op.reg, do_lvx, op.ea & ~0xfUL, regs);
+ 		goto ldst_done;
+ #endif
+ #ifdef CONFIG_VSX
+ 	case LOAD_VSX:
+-		if (regs->msr & MSR_LE)
+-			return 0;
+ 		err = do_vsx_load(op.reg, do_lxvd2x, op.ea, regs);
+ 		goto ldst_done;
+ #endif
+@@ -1905,8 +1893,6 @@ int __kprobes emulate_step(struct pt_regs *regs, unsigned int instr)
+ 		goto instr_done;
+ 
+ 	case STORE:
+-		if (regs->msr & MSR_LE)
+-			return 0;
+ 		if ((op.type & UPDATE) && size == sizeof(long) &&
+ 		    op.reg == 1 && op.update_reg == 1 &&
+ 		    !(regs->msr & MSR_PR) &&
+@@ -1919,8 +1905,6 @@ int __kprobes emulate_step(struct pt_regs *regs, unsigned int instr)
+ 
+ #ifdef CONFIG_PPC_FPU
+ 	case STORE_FP:
+-		if (regs->msr & MSR_LE)
+-			return 0;
+ 		if (size == 4)
+ 			err = do_fp_store(op.reg, do_stfs, op.ea, size, regs);
+ 		else
+@@ -1929,15 +1913,11 @@ int __kprobes emulate_step(struct pt_regs *regs, unsigned int instr)
+ #endif
+ #ifdef CONFIG_ALTIVEC
+ 	case STORE_VMX:
+-		if (regs->msr & MSR_LE)
+-			return 0;
+ 		err = do_vec_store(op.reg, do_stvx, op.ea & ~0xfUL, regs);
+ 		goto ldst_done;
+ #endif
+ #ifdef CONFIG_VSX
+ 	case STORE_VSX:
+-		if (regs->msr & MSR_LE)
+-			return 0;
+ 		err = do_vsx_store(op.reg, do_stxvd2x, op.ea, regs);
+ 		goto ldst_done;
+ #endif
 -- 
 1.8.3.1
