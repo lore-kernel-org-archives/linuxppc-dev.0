@@ -1,47 +1,37 @@
-Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
+Return-Path: <ananth@linux.vnet.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vMwmn4W3yzDqHZ
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2017 19:38:33 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vMwrR6twhzDqBm
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2017 19:41:43 +1100 (AEDT)
 Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v1E8UScP015455
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2017 03:38:31 -0500
-Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [125.16.236.2])
- by mx0b-001b2d01.pphosted.com with ESMTP id 28kwv49kfu-1
+ v1E8UR41015379
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2017 03:41:41 -0500
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 28kwv49q2t-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2017 03:38:30 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2017 03:41:40 -0500
 Received: from localhost
- by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Tue, 14 Feb 2017 14:08:27 +0530
-Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id D1E193940033
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2017 14:08:25 +0530 (IST)
-Received: from d28av08.in.ibm.com (d28av08.in.ibm.com [9.184.220.148])
- by d28relay04.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v1E8cPu942139808
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2017 14:08:25 +0530
-Received: from d28av08.in.ibm.com (localhost [127.0.0.1])
- by d28av08.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v1E8cO4B011298
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2017 14:08:25 +0530
-From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-To: Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>,
- Masami Hiramatsu <mhiramat@kernel.org>,
- Michael Ellerman <mpe@ellerman.id.au>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 3/3] powerpc: kprobes: emulate instructions on kprobe handler
- re-entry
-Date: Tue, 14 Feb 2017 14:08:03 +0530
-In-Reply-To: <1b7d5ea08a7e11fbf1fb08dd3536219c94b13591.1487060527.git.naveen.n.rao@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <ananth@linux.vnet.ibm.com>;
+ Tue, 14 Feb 2017 01:41:40 -0700
+Date: Tue, 14 Feb 2017 14:11:34 +0530
+From: Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+Cc: Masami Hiramatsu <mhiramat@kernel.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 1/3] powerpc: kprobes: fix handling of function offsets
+ on ABIv2
+Reply-To: ananth@linux.vnet.ibm.com
 References: <1b7d5ea08a7e11fbf1fb08dd3536219c94b13591.1487060527.git.naveen.n.rao@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 In-Reply-To: <1b7d5ea08a7e11fbf1fb08dd3536219c94b13591.1487060527.git.naveen.n.rao@linux.vnet.ibm.com>
-References: <1b7d5ea08a7e11fbf1fb08dd3536219c94b13591.1487060527.git.naveen.n.rao@linux.vnet.ibm.com>
-Message-Id: <55ae0ad405a254c9ec60d5912b2a53095185e219.1487060527.git.naveen.n.rao@linux.vnet.ibm.com>
+Message-Id: <20170214084134.GG29806@in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,39 +41,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On kprobe handler re-entry, try to emulate the instruction rather than
-single stepping always.
+On Tue, Feb 14, 2017 at 02:08:01PM +0530, Naveen N. Rao wrote:
+> commit 239aeba76409 ("perf powerpc: Fix kprobe and kretprobe handling
+> with kallsyms on ppc64le") changed how we use the offset field in struct
+> kprobe on ABIv2. perf now offsets from the GEP (Global entry point) if an
+> offset is specified and otherwise chooses the LEP (Local entry point).
+> 
+> Fix the same in kernel for kprobe API users. We do this by extending
+> kprobe_lookup_name() to accept an additional parameter to indicate the
+> offset specified with the kprobe registration. If offset is 0, we return
+> the local function entry and return the global entry point otherwise.
+> 
+> With:
+> 	# cd /sys/kernel/debug/tracing/
+> 	# echo "p _do_fork" >> kprobe_events
+> 	# echo "p _do_fork+0x10" >> kprobe_events
+> 
+> before this patch:
+> 	# cat ../kprobes/list
+> 	c0000000000d0748  k  _do_fork+0x8    [DISABLED]
+> 	c0000000000d0758  k  _do_fork+0x18    [DISABLED]
+> 	c0000000000412b0  k  kretprobe_trampoline+0x0    [OPTIMIZED]
+> 
+> and after:
+> 	# cat ../kprobes/list
+> 	c0000000000d04c8  k  _do_fork+0x8    [DISABLED]
+> 	c0000000000d04d0  k  _do_fork+0x10    [DISABLED]
+> 	c0000000000412b0  k  kretprobe_trampoline+0x0    [OPTIMIZED]
+> 
+> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
 
-As a related change, remove the duplicate saving of msr as that is
-already done in set_current_kprobe()
-
-Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
----
- arch/powerpc/kernel/kprobes.c | 9 ++++++++-
- 1 file changed, 8 insertions(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/kernel/kprobes.c b/arch/powerpc/kernel/kprobes.c
-index 9cdf2de31e9e..c213637b9d25 100644
---- a/arch/powerpc/kernel/kprobes.c
-+++ b/arch/powerpc/kernel/kprobes.c
-@@ -206,10 +206,17 @@ int __kprobes kprobe_handler(struct pt_regs *regs)
- 			 */
- 			save_previous_kprobe(kcb);
- 			set_current_kprobe(p, regs, kcb);
--			kcb->kprobe_saved_msr = regs->msr;
- 			kprobes_inc_nmissed_count(p);
- 			prepare_singlestep(p, regs);
- 			kcb->kprobe_status = KPROBE_REENTER;
-+			if (p->ainsn.boostable >= 0) {
-+				ret = try_to_emulate(p, regs);
-+
-+				if (ret > 0) {
-+					restore_previous_kprobe(kcb);
-+					return 1;
-+				}
-+			}
- 			return 1;
- 		} else {
- 			if (*addr != BREAKPOINT_INSTRUCTION) {
--- 
-2.11.0
+Acked-by: Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>
