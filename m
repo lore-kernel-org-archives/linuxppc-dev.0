@@ -1,16 +1,21 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <segher@gate.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vMmFQ4bx4zDqCc
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2017 13:14:18 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org
-Cc: aneesh.kumar@linux.vnet.ibm.com,
-	arbab@linux.vnet.ibm.com
-Subject: [PATCH] powerpc/mm: Fix build break with RADIX=y & HUGETLBFS=n
-Date: Tue, 14 Feb 2017 13:14:11 +1100
-Message-Id: <1487038451-6119-1-git-send-email-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vMmYQ0pg9zDq8g
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2017 13:28:09 +1100 (AEDT)
+Date: Mon, 13 Feb 2017 19:49:16 -0600
+From: Segher Boessenkool <segher@kernel.crashing.org>
+To: Cyril Bur <cyrilbur@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, akshay.adiga@linux.vnet.ibm.com
+Subject: Re: [PATCH v2] powerpc: Blacklist GCC 5.4 6.1 and 6.2
+Message-ID: <20170214014916.GR21840@gate.crashing.org>
+References: <20170213033536.8908-1-cyrilbur@gmail.com>
+ <20170213154437.GP21840@gate.crashing.org>
+ <1487031943.9122.1.camel@gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1487031943.9122.1.camel@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,50 +25,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-If we enable RADIX but disable HUGETLBFS, the build breaks with:
+On Tue, Feb 14, 2017 at 11:25:43AM +1100, Cyril Bur wrote:
+> > > At the time of writing GCC 5.4 is the most recent and is affected. GCC
+> > > 6.3 contains the backported fix, has been tested and appears safe to
+> > > use.
+> > 
+> > 6.3 is (of course) the newer release; 5.4 is a maintenance release of
+> > a compiler that is a year older.
+> 
+> Yes. I think the point I was trying to make is that since they
+> backported the fix to 5.x and 6.x then I expect that 5.5 will have the
+> fix but since it doesn't exist yet, I can't be sure. I'll add something
+> to that effect.
 
-  arch/powerpc/mm/pgtable-radix.c:557:7: error: implicit declaration of function 'pmd_huge'
-  arch/powerpc/mm/pgtable-radix.c:588:7: error: implicit declaration of function 'pud_huge'
+The patch has been backported to the GCC 5 branch; it will be part of
+any future GCC 5 release (5.5 and later, if any later will happen; 5.5
+will).
 
-Fix it by stubbing those functions when HUGETLBFS=n.
+Don't be so unsure about these things, we aren't *that* incompetent ;-)
 
-Fixes: 4b5d62ca17a1 ("powerpc/mm: add radix__remove_section_mapping()")
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/include/asm/book3s/64/pgtable-4k.h  | 5 +++++
- arch/powerpc/include/asm/book3s/64/pgtable-64k.h | 3 +++
- 2 files changed, 8 insertions(+)
+> > Please mention the GCC PR # somewhere in the code, too?
+> 
+> Sure.
 
-diff --git a/arch/powerpc/include/asm/book3s/64/pgtable-4k.h b/arch/powerpc/include/asm/book3s/64/pgtable-4k.h
-index 9db83b4e017d..8708a0239a56 100644
---- a/arch/powerpc/include/asm/book3s/64/pgtable-4k.h
-+++ b/arch/powerpc/include/asm/book3s/64/pgtable-4k.h
-@@ -47,7 +47,12 @@ static inline int hugepd_ok(hugepd_t hpd)
- 	return hash__hugepd_ok(hpd);
- }
- #define is_hugepd(hpd)		(hugepd_ok(hpd))
-+
-+#else /* !CONFIG_HUGETLB_PAGE */
-+static inline int pmd_huge(pmd_t pmd) { return 0; }
-+static inline int pud_huge(pud_t pud) { return 0; }
- #endif /* CONFIG_HUGETLB_PAGE */
-+
- #endif /* __ASSEMBLY__ */
- 
- #endif /*_ASM_POWERPC_BOOK3S_64_PGTABLE_4K_H */
-diff --git a/arch/powerpc/include/asm/book3s/64/pgtable-64k.h b/arch/powerpc/include/asm/book3s/64/pgtable-64k.h
-index 198aff33c380..2ce4209399ed 100644
---- a/arch/powerpc/include/asm/book3s/64/pgtable-64k.h
-+++ b/arch/powerpc/include/asm/book3s/64/pgtable-64k.h
-@@ -46,6 +46,9 @@ static inline int hugepd_ok(hugepd_t hpd)
- }
- #define is_hugepd(pdep)			0
- 
-+#else /* !CONFIG_HUGETLB_PAGE */
-+static inline int pmd_huge(pmd_t pmd) { return 0; }
-+static inline int pud_huge(pud_t pud) { return 0; }
- #endif /* CONFIG_HUGETLB_PAGE */
- 
- static inline int remap_4k_pfn(struct vm_area_struct *vma, unsigned long addr,
--- 
-2.7.4
+Thanks!
+
+
+Segher
