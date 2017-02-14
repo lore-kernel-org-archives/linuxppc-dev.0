@@ -2,8 +2,8 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vMzW74zYbzDqL1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2017 21:41:55 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vMzcP5T1KzDqL1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2017 21:46:29 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>,
  linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
@@ -18,8 +18,8 @@ Subject: Re: [PATCH v3 2/2] powerpc: emulate_step tests for load/store
 In-Reply-To: <1487063803-10848-3-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
 References: <1487063803-10848-1-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
  <1487063803-10848-3-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
-Date: Tue, 14 Feb 2017 21:41:53 +1100
-Message-ID: <87a89pm4um.fsf@concordia.ellerman.id.au>
+Date: Tue, 14 Feb 2017 21:46:25 +1100
+Message-ID: <877f4tm4n2.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -33,19 +33,25 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com> writes:
 
-> diff --git a/arch/powerpc/kernel/kprobes.c b/arch/powerpc/kernel/kprobes.c
-> index fce05a3..5c5ae66 100644
-> --- a/arch/powerpc/kernel/kprobes.c
-> +++ b/arch/powerpc/kernel/kprobes.c
-> @@ -528,6 +528,8 @@ int __kprobes longjmp_break_handler(struct kprobe *p, struct pt_regs *regs)
+> diff --git a/arch/powerpc/lib/Makefile b/arch/powerpc/lib/Makefile
+> index 0e649d7..ddc879d 100644
+> --- a/arch/powerpc/lib/Makefile
+> +++ b/arch/powerpc/lib/Makefile
+> @@ -33,3 +33,7 @@ obj-$(CONFIG_ALTIVEC)	+= xor_vmx.o
+>  CFLAGS_xor_vmx.o += -maltivec $(call cc-option,-mabi=altivec)
 >  
->  int __init arch_init_kprobes(void)
->  {
-> +	test_emulate_step();
+>  obj-$(CONFIG_PPC64) += $(obj64-y)
 > +
+> +ifeq ($(CONFIG_PPC64), y)
+> +obj-$(CONFIG_KPROBES_SANITY_TEST) += test_emulate_step.o
+> +endif
 
-I don't see any good reason why this is called from here.
+FYI, the right way to do that is:
 
-So I'm inclined to just make test_emulate_step() a regular init call.
+  obj64-$(CONFIG_KPROBES_SANITY_TEST) += test_emulate_step.o
+  obj-$(CONFIG_PPC64) += $(obj64-y)
+
+And in this Makefile you don't need to add the second line because it's
+already there.
 
 cheers
