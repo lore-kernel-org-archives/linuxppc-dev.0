@@ -3,45 +3,44 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vN8hl1JwtzDqSx
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2017 04:35:50 +1100 (AEDT)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vN8n5169pzDqRY
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2017 04:39:36 +1100 (AEDT)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v1EHXt9w009687
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2017 12:35:47 -0500
-Received: from e24smtp03.br.ibm.com (e24smtp03.br.ibm.com [32.104.18.24])
- by mx0b-001b2d01.pphosted.com with ESMTP id 28m127qdx9-1
+ v1EHcpZC044064
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2017 12:39:34 -0500
+Received: from e24smtp01.br.ibm.com (e24smtp01.br.ibm.com [32.104.18.85])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 28m2evknrb-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2017 12:35:47 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2017 12:39:34 -0500
 Received: from localhost
- by e24smtp03.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e24smtp01.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <gpiccoli@linux.vnet.ibm.com>;
- Tue, 14 Feb 2017 15:35:46 -0200
-Received: from d24relay03.br.ibm.com (d24relay03.br.ibm.com [9.18.232.225])
- by d24dlp02.br.ibm.com (Postfix) with ESMTP id 813AC1DC0070
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2017 12:35:43 -0500 (EST)
+ Tue, 14 Feb 2017 15:39:32 -0200
+Received: from d24relay01.br.ibm.com (d24relay01.br.ibm.com [9.8.31.16])
+ by d24dlp02.br.ibm.com (Postfix) with ESMTP id 668341DC006E
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2017 12:39:31 -0500 (EST)
 Received: from d24av05.br.ibm.com (d24av05.br.ibm.com [9.18.232.44])
- by d24relay03.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v1EHZgS525100390
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2017 15:35:42 -0200
+ by d24relay01.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v1EHdUIk4464708
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2017 15:39:30 -0200
 Received: from d24av05.br.ibm.com (localhost [127.0.0.1])
  by d24av05.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v1EHZg48024193
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2017 15:35:42 -0200
+ v1EHdUTm026077
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2017 15:39:30 -0200
 Subject: Re: [PATCH] powerpc/xmon: add debugfs entry for xmon
-To: Pan Xinhui <xinhui@linux.vnet.ibm.com>, Nicholas Piggin <npiggin@gmail.com>
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
 References: <1487019642-11411-1-git-send-email-gpiccoli@linux.vnet.ibm.com>
- <20170214123540.38b995cb@roar.ozlabs.ibm.com>
- <559244cc-dcc0-a477-b51b-7417a61158ed@linux.vnet.ibm.com>
-Cc: xinhui.pan@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
- paulus@samba.org
+ <87vasdknq7.fsf@concordia.ellerman.id.au>
+Cc: benh@kernel.crashing.org, paulus@samba.org, npiggin@gmail.com,
+ xinhui.pan@linux.vnet.ibm.com
 From: "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com>
-Date: Tue, 14 Feb 2017 15:35:41 -0200
+Date: Tue, 14 Feb 2017 15:39:29 -0200
 MIME-Version: 1.0
-In-Reply-To: <559244cc-dcc0-a477-b51b-7417a61158ed@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <8ddc4a78-4dd9-40df-2f00-503b4ff204b0@linux.vnet.ibm.com>
+In-Reply-To: <87vasdknq7.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset=windows-1252
+Message-Id: <d9391480-0e70-a5b9-c315-a4933753d71c@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,60 +50,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 14/02/2017 01:58, Pan Xinhui wrote:
+On 14/02/2017 09:37, Michael Ellerman wrote:
+> "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com> writes:
 > 
-> 
-> 在 2017/2/14 10:35, Nicholas Piggin 写道:
->> On Mon, 13 Feb 2017 19:00:42 -0200
+>> Currently the xmon debugger is set only via kernel boot command-line.
+>> It's disabled by default, and can be enabled with "xmon=on" on the
+>> command-line. Also, xmon may be accessed via sysrq mechanism, but once
+>> we enter xmon via sysrq,  it's  kept enabled until system is rebooted,
+>> even if we exit the debugger. A kernel crash will then lead to xmon
+>> instance, instead of triggering a kdump procedure (if configured), for
+>> example.
 >>
->> xmon state changing after the first sysrq+x violates principle of least
->> astonishment, so I think that should be fixed.
->>
-> hi, Nick
-> yes, as long as xmon is disabled during boot, it should still be disabled after existing xmon.
-> My patch does not fix that as it need people add one more char 'z' following 'x'.
-> I will provide a new patch to fix that.
+>> This patch introduces a debugfs entry for xmon, allowing user to query
+>> its current state and change it if desired. Basically, the "xmon" file
+>> to read from/write to is under the debugfs mount point, on powerpc
+>> directory. Reading this file will provide the current state of the
+>> debugger, one of the following: "on", "off", "early" or "nobt". Writing
+>> one of these states to the file will take immediate effect on the debugger.
 > 
->> Then the question is, is it worth making it runtime configurable with xmon
->> command or debugfs tunables?
->>
-> They are options for people to turn xmon features on or off. Maybe people needn't this.
-> However I am not a fan  of debugfs this time as I am used to using xmon cmds. :)
+> I like this in general.
 > 
-> Hi, Guilherme
-> So in the end, my thought is that: 1) cmd x|X will exit xmon and keep xmon in the original state(indicated by var xmon_off).
-> 2) Then add options to turn some features on/off. And debugfs maybe not fit for this. But I am also wondering at same time, are people needing this?
+> But I think we can simplify it a bit.
+> 
+> I don't think we need the nobt state anymore. As far as I can see it was
+> added as a way to reinstate the old behaviour when the auto backtrace
+> mode was added, but I've never heard of anyone using it.
+> 
+> If anyone hits a crash where they really need that feature they can
+> always just hack the code to disable the backtrace.
+> 
+> So I think step 1 is a patch to drop the xmon_no_auto_backtrace stuff.
+> 
+> Also I'm not sure EARLY needs to be a separate state. It's just a
+> one-off invocation at boot, all we really need is just a single bit of
+> state communicated from early_parse_xmon() to xmon_setup(), ie. a static
+> bool would do.
+> 
+> If we agree with that, then there's only two states left, on and off, in
+> which case it can probably just be an int - and we can use a simple
+> attribute file rather than custom parsing.
+> 
 
-Hi Nick and Xinhui, thanks very much for the feedback.
-I agree, we should keep xmon in the state it was firstly set, on boot
-time - dropping to the debugger using sysrq shouldn't change it.
-
-Now, the use case of the debugfs approach is to allow user to
-enable/disable xmon without need to drop into the debugger itself, or
-reboot the machine.
-Imagine a scenario in which we have a production machine, and:
+Thanks for the good suggestions Michael, I'll change the code and submit
+a new version.
 
 
-i) For some reason, somebody kept xmon enabled on grub.cfg and now, we
-want to let kdump work in case of crash - how to disable xmon in runtime?
+>> * I had this patch partially done for some time, and after a discussion
+>> at the kernel slack channel latest week, I decided to rebase and fix
+>> some remaining bugs. I'd change 'x' option to always disable the debugger,
+> 
+> Not quite.
+> 
+> 'x' should exit and leave xmon in whatever state it was previously in.
 
-ii) The opposite: xmon wasn't enable on boot time in production machine,
-but we have a super-rare issue and want to drop to xmon next time it
-happens, so we need to enable it. But we don't want to drop into the
-debugger to force it gets enabled, so how do we enable it?
-
-Regarding the place of the xmon state file, I believe debugfs is the
-right place - where else could we add it? procfs? configfs?
+Agreed!
 
 Thanks,
 
 
 Guilherme
+
 > 
-> thanks
-> xinhui
-> 
->> Thanks,
->> Nick
->>
+> cheers
 > 
