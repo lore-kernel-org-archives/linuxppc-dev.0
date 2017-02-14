@@ -1,26 +1,30 @@
-Return-Path: <shuahkh@osg.samsung.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <ldufour@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vN7640wLkzDq8t
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2017 03:24:12 +1100 (AEDT)
-Received: from osg.samsung.com
- (ec2-52-27-115-49.us-west-2.compute.amazonaws.com [52.27.115.49])
- by ozlabs.org (Postfix) with ESMTP id 3vN7635Jr1z9s1h
- for <linuxppc-dev@ozlabs.org>; Wed, 15 Feb 2017 03:24:10 +1100 (AEDT)
-Subject: Re: [PATCH 1/5] selftests: Fix selftests build to just build, not run
- tests
-To: Michael Ellerman <mpe@ellerman.id.au>, bamvor.zhangjian@huawei.com
-References: <1486630590-9410-1-git-send-email-mpe@ellerman.id.au>
- <87shnhmsl1.fsf@concordia.ellerman.id.au>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
- linux-kselftest@vger.kernel.org, linux-api@vger.kernel.org
-From: Shuah Khan <shuahkh@osg.samsung.com>
-Message-ID: <c539ac89-37f8-ebee-49ca-9d80fc1ff1f1@osg.samsung.com>
-Date: Tue, 14 Feb 2017 09:14:24 -0700
-MIME-Version: 1.0
-In-Reply-To: <87shnhmsl1.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset=windows-1252
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vN7ZV2MgszDqJL
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2017 03:45:21 +1100 (AEDT)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v1EGj0Mo019422
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2017 11:45:19 -0500
+Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 28m0eexy99-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2017 11:45:19 -0500
+Received: from localhost
+ by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
+ Tue, 14 Feb 2017 16:45:16 -0000
+From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+To: mpe@ellerman.id.au, benh@kernel.crashing.org, paulus@samba.org,
+ aneesh.kumar@linux.vnet.ibm.com, bsingharora@gmail.com, npiggin@gmail.com
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: [PATCH 0/3] powerpc/mm: page fault handler cleaning
+Date: Tue, 14 Feb 2017 17:45:09 +0100
+Message-Id: <cover.1487090656.git.ldufour@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,37 +34,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 02/13/2017 07:09 PM, Michael Ellerman wrote:
-> Michael Ellerman <mpe@ellerman.id.au> writes:
-> 
->> In commit 88baa78d1f31 ("selftests: remove duplicated all and clean
->> target"), the "all" target was removed from individual Makefiles and
->> added to lib.mk.
->>
->> However the "all" target was added to lib.mk *after* the existing
->> "runtests" target. This means "runtests" becomes the first (default)
->> target for most of our Makefiles.
-> ...
->>
->> Fix it by moving the "all" target to the start of lib.mk, making it the
->> default target.
->>
->> Fixes: 88baa78d1f31 ("selftests: remove duplicated all and clean target")
->> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-> 
-> Hi Shuah,
-> 
-> Can you please merge this series into linux-next?
-> 
-> The selftests are badly broken otherwise.
-> 
-> cheers
-> 
+This series attempts to clean the page fault handler in the way it has
+been done previously for the x86 architecture [1].
 
-Hi Michael,
+The goal is to manage the mmap_sem earlier and only in
+do_page_fault(). This done by handling the retry case earlier, before
+handling the error case.  This way the semaphore can be released
+earlier and the error path processed without holding it.
 
-Thanks. All 5 patches are now in linux-kselftest next with Tested-by
-tag from Bamvor for 1,2,3.
+The first patch is just moving a unlock to the caller of the service,
+which as no functional impact.
 
-thank you both,
--- Shuah
+The second patch is handling the retry case earlier in
+do_page_fault(). This is where most the change are done, but I was
+conservative here, not changing the use of mm_fault_error() in the
+case of the second retry. It may be smarter to handle that case
+separately but this may create duplicate code.
+
+The last patch is moving up semaphore releasing from mm_fault_error()
+to do_page_fault().
+
+[1] see commits from Linus Torvalds
+ 26178ec11ef3 ("x86: mm: consolidate VM_FAULT_RETRY handling")
+ 7fb08eca4527 ("x86: mm: move mmap_sem unlock from mm_fault_error() to
+caller")
+
+Laurent Dufour (3):
+  powerpc/mm: move mmap_sem unlock up from do_sigbus
+  powerpc/mm: handle VM_FAULT_RETRY earlier
+  powerpc/mm: move mmap_sem unlocking in do_page_fault()
+
+ arch/powerpc/mm/fault.c | 82 ++++++++++++++++++++++++-------------------------
+ 1 file changed, 40 insertions(+), 42 deletions(-)
+
+-- 
+2.7.4
