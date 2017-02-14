@@ -1,22 +1,19 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-it0-x230.google.com (mail-it0-x230.google.com
- [IPv6:2607:f8b0:4001:c0b::230])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <sfr@canb.auug.org.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vMmtC6HTlzDq8g
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2017 13:42:43 +1100 (AEDT)
-Received: by mail-it0-x230.google.com with SMTP id c7so15023697itd.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Feb 2017 18:42:43 -0800 (PST)
-Date: Tue, 14 Feb 2017 12:42:31 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: David Laight <David.Laight@ACULAB.COM>
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [RFC][PATCH] powerpc/64s: optimise syscall entry with relon
- hypercalls
-Message-ID: <20170214124231.30b3d517@roar.ozlabs.ibm.com>
-In-Reply-To: <063D6719AE5E284EB5DD2968C1650D6DB0284DFE@AcuExch.aculab.com>
-References: <20170210182304.12955-1-npiggin@gmail.com>
- <063D6719AE5E284EB5DD2968C1650D6DB0284DFE@AcuExch.aculab.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vMnXV68yjzDq8t
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2017 14:12:26 +1100 (AEDT)
+Date: Tue, 14 Feb 2017 14:12:26 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Marcelo Tosatti <mtosatti@redhat.com>, Gleb Natapov <gleb@kernel.org>,
+ KVM <kvm@vger.kernel.org>, Michael Ellerman <mpe@ellerman.id.au>, Benjamin
+ Herrenschmidt <benh@kernel.crashing.org>, PowerPC
+ <linuxppc-dev@lists.ozlabs.org>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org, David Gibson
+ <david@gibson.dropbear.id.au>, Paul Mackerras <paulus@ozlabs.org>
+Subject: linux-next: manual merge of the kvm tree with the powerpc tree
+Message-ID: <20170214141226.6920079a@canb.auug.org.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,46 +25,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 13 Feb 2017 11:04:06 +0000
-David Laight <David.Laight@ACULAB.COM> wrote:
+Hi all,
 
-> From: Nicholas Piggin
-> > Sent: 10 February 2017 18:23
-> > After bc3551257a ("powerpc/64: Allow for relocation-on interrupts from
-> > guest to host"), a getppid() system call goes from 307 cycles to 358
-> > cycles (+17%). This is due significantly to the scratch SPR used by the
-> > hypercall.
-> > 
-> > It turns out there are a some volatile registers common to both system
-> > call and hypercall (in particular, r12, cr0, ctr), which can be used to
-> > avoid the SPR and some other overheads for the system call case. This
-> > brings getppid to 320 cycles (+4%).  
-> ...
-> > + * syscall register convention is in Documentation/powerpc/syscall64-abi.txt
-> > + *
-> > + * For hypercalls, the register convention is as follows:
-> > + * r0 volatile
-> > + * r1-2 nonvolatile
-> > + * r3 volatile parameter and return value for status
-> > + * r4-r10 volatile input and output value
-> > + * r11 volatile hypercall number and output value
-> > + * r12 volatile
-> > + * r13-r31 nonvolatile
-> > + * LR nonvolatile
-> > + * CTR volatile
-> > + * XER volatile
-> > + * CR0-1 CR5-7 volatile
-> > + * CR2-4 nonvolatile
-> > + * Other registers nonvolatile
-> > + *
-> > + * The intersection of volatile registers that don't contain possible
-> > + * inputs is: r12, cr0, xer, ctr. We may use these as scratch regs
-> > + * upon entry without saving.  
-> 
-> Except that they must surely be set to some known value on exit in order
-> to avoid leaking information to the guest.
+Today's linux-next merge of the kvm tree got a conflict in:
 
-True. I don't see why that's a problem for the entry code though.
+  arch/powerpc/include/asm/hvcall.h
 
-Thanks,
-Nick
+between commit:
+
+  64b40ffbc830 ("powerpc/pseries: Add hypercall wrappers for hash page table resizing")
+
+from the powerpc tree and commit:
+
+  cc3d2940133d ("powerpc/64: Enable use of radix MMU under hypervisor on POWER9")
+
+from the kvm tree.
+
+I fixed it up (see below) and can carry the fix as necessary. This
+is now fixed as far as linux-next is concerned, but any non trivial
+conflicts should be mentioned to your upstream maintainer when your tree
+is submitted for merging.  You may also want to consider cooperating
+with the maintainer of the conflicting tree to minimise any particularly
+complex conflicts.
+
+-- 
+Cheers,
+Stephen Rothwell
+
+diff --cc arch/powerpc/include/asm/hvcall.h
+index 490c4b9f4e3a,54d11b3a6bf7..000000000000
+--- a/arch/powerpc/include/asm/hvcall.h
++++ b/arch/powerpc/include/asm/hvcall.h
+@@@ -276,8 -276,7 +276,9 @@@
+  #define H_GET_MPP_X		0x314
+  #define H_SET_MODE		0x31C
+  #define H_CLEAR_HPT		0x358
+ +#define H_RESIZE_HPT_PREPARE	0x36C
+ +#define H_RESIZE_HPT_COMMIT	0x370
++ #define H_REGISTER_PROC_TBL	0x37C
+  #define H_SIGNAL_SYS_RESET	0x380
+  #define MAX_HCALL_OPCODE	H_SIGNAL_SYS_RESET
+  
