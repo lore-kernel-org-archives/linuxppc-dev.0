@@ -1,18 +1,26 @@
-Return-Path: <dan.carpenter@oracle.com>
-Received: from userp1040.oracle.com (userp1040.oracle.com [156.151.31.81])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <shuahkh@osg.samsung.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vN73X4L0kzDq8t
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2017 03:22:00 +1100 (AEDT)
-Date: Tue, 14 Feb 2017 19:21:28 +0300
-From: Dan Carpenter <dan.carpenter@oracle.com>
-To: alistair@popple.id.au
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: [bug report] powernv/opal: Convert opal message events to opal irq
- domain
-Message-ID: <20170214162128.GA31029@mwanda>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vN7640wLkzDq8t
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2017 03:24:12 +1100 (AEDT)
+Received: from osg.samsung.com
+ (ec2-52-27-115-49.us-west-2.compute.amazonaws.com [52.27.115.49])
+ by ozlabs.org (Postfix) with ESMTP id 3vN7635Jr1z9s1h
+ for <linuxppc-dev@ozlabs.org>; Wed, 15 Feb 2017 03:24:10 +1100 (AEDT)
+Subject: Re: [PATCH 1/5] selftests: Fix selftests build to just build, not run
+ tests
+To: Michael Ellerman <mpe@ellerman.id.au>, bamvor.zhangjian@huawei.com
+References: <1486630590-9410-1-git-send-email-mpe@ellerman.id.au>
+ <87shnhmsl1.fsf@concordia.ellerman.id.au>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+ linux-kselftest@vger.kernel.org, linux-api@vger.kernel.org
+From: Shuah Khan <shuahkh@osg.samsung.com>
+Message-ID: <c539ac89-37f8-ebee-49ca-9d80fc1ff1f1@osg.samsung.com>
+Date: Tue, 14 Feb 2017 09:14:24 -0700
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <87shnhmsl1.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,44 +30,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello Alistair Popple,
+On 02/13/2017 07:09 PM, Michael Ellerman wrote:
+> Michael Ellerman <mpe@ellerman.id.au> writes:
+> 
+>> In commit 88baa78d1f31 ("selftests: remove duplicated all and clean
+>> target"), the "all" target was removed from individual Makefiles and
+>> added to lib.mk.
+>>
+>> However the "all" target was added to lib.mk *after* the existing
+>> "runtests" target. This means "runtests" becomes the first (default)
+>> target for most of our Makefiles.
+> ...
+>>
+>> Fix it by moving the "all" target to the start of lib.mk, making it the
+>> default target.
+>>
+>> Fixes: 88baa78d1f31 ("selftests: remove duplicated all and clean target")
+>> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> 
+> Hi Shuah,
+> 
+> Can you please merge this series into linux-next?
+> 
+> The selftests are badly broken otherwise.
+> 
+> cheers
+> 
 
-The patch a295af24d0d2: "powernv/opal: Convert opal message events to
-opal irq domain" from May 15, 2015, leads to the following static
-checker warning:
+Hi Michael,
 
-	arch/powerpc/platforms/powernv/opal.c:297 opal_message_init()
-	info: return a literal instead of 'irq'
+Thanks. All 5 patches are now in linux-kselftest next with Tested-by
+tag from Bamvor for 1,2,3.
 
-arch/powerpc/platforms/powernv/opal.c
-   286  static int __init opal_message_init(void)
-   287  {
-   288          int ret, i, irq;
-   289  
-   290          for (i = 0; i < OPAL_MSG_TYPE_MAX; i++)
-   291                  ATOMIC_INIT_NOTIFIER_HEAD(&opal_msg_notifier_head[i]);
-   292  
-   293          irq = opal_event_request(ilog2(OPAL_EVENT_MSG_PENDING));
-   294          if (!irq) {
-   295                  pr_err("%s: Can't register OPAL event irq (%d)\n",
-   296                         __func__, irq);
-   297                  return irq;
-
-This code doesn't really make sense.  I'm not really certain what it
-should be...
-
-   298          }
-   299  
-   300          ret = request_irq(irq, opal_message_notify,
-   301                          IRQ_TYPE_LEVEL_HIGH, "opal-msg", NULL);
-   302          if (ret) {
-   303                  pr_err("%s: Can't request OPAL event irq (%d)\n",
-   304                         __func__, ret);
-   305                  return ret;
-   306          }
-   307  
-   308          return 0;
-   309  }
-
-regards,
-dan carpenter
+thank you both,
+-- Shuah
