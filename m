@@ -1,44 +1,23 @@
-Return-Path: <ravi.bangoria@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vN0mS2vzJzDqsN
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2017 22:38:32 +1100 (AEDT)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v1EBXesi003374
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2017 06:38:30 -0500
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
- by mx0a-001b2d01.pphosted.com with ESMTP id 28kfdu1dyc-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2017 06:38:29 -0500
-Received: from localhost
- by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ravi.bangoria@linux.vnet.ibm.com>;
- Tue, 14 Feb 2017 04:38:29 -0700
-Subject: Re: [PATCH v3 2/2] powerpc: emulate_step tests for load/store
- instructions
-To: Michael Ellerman <mpe@ellerman.id.au>
-References: <1487063803-10848-1-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
- <1487063803-10848-3-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
- <877f4tm4n2.fsf@concordia.ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- benh@kernel.crashing.org, paulus@samba.org,
- lsorense@csclub.uwaterloo.ca, oohall@gmail.com,
- naveen.n.rao@linux.vnet.ibm.com, ast@kernel.org, chris@distroguy.com,
- aneesh.kumar@linux.vnet.ibm.com, bsingharora@gmail.com,
- anton@samba.org, paul.gortmaker@windriver.com,
- bauerman@linux.vnet.ibm.com, viro@zeniv.linux.org.uk,
- christophe.leroy@c-s.fr, duwe@lst.de, oss@buserror.net,
- Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
-From: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
-Date: Tue, 14 Feb 2017 17:08:10 +0530
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vN0qY371czDqGc
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2017 22:41:13 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Pan Xinhui <xinhui@linux.vnet.ibm.com>, Nicholas Piggin <npiggin@gmail.com>,
+ "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, benh@kernel.crashing.org, paulus@samba.org,
+ xinhui.pan@linux.vnet.ibm.com
+Subject: Re: [PATCH] powerpc/xmon: add debugfs entry for xmon
+In-Reply-To: <559244cc-dcc0-a477-b51b-7417a61158ed@linux.vnet.ibm.com>
+References: <1487019642-11411-1-git-send-email-gpiccoli@linux.vnet.ibm.com>
+ <20170214123540.38b995cb@roar.ozlabs.ibm.com>
+ <559244cc-dcc0-a477-b51b-7417a61158ed@linux.vnet.ibm.com>
+Date: Tue, 14 Feb 2017 22:41:12 +1100
+Message-ID: <87shnhknjb.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <877f4tm4n2.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset=windows-1252
-Message-Id: <58A2EC22.8080209@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,35 +27,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-
-On Tuesday 14 February 2017 04:16 PM, Michael Ellerman wrote:
-> Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com> writes:
+Pan Xinhui <xinhui@linux.vnet.ibm.com> writes:
+> =E5=9C=A8 2017/2/14 10:35, Nicholas Piggin =E5=86=99=E9=81=93:
+>> On Mon, 13 Feb 2017 19:00:42 -0200
+>> "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com> wrote:
+>>> * I had this patch partially done for some time, and after a discussion
+>>> at the kernel slack channel latest week, I decided to rebase and fix
+>>> some remaining bugs. I'd change 'x' option to always disable the debugg=
+er,
+>>> since with this patch we can always re-enable xmon, but today I noticed
+>>> Pan's patch on the mailing list, so perhaps his approach of adding a fl=
+ag
+>>> to 'x' option is preferable. I can change this in a V2, if requested.
+>>> Thanks in advance!
+>>
+>> xmon state changing after the first sysrq+x violates principle of least
+>> astonishment, so I think that should be fixed.
 >
->> diff --git a/arch/powerpc/lib/Makefile b/arch/powerpc/lib/Makefile
->> index 0e649d7..ddc879d 100644
->> --- a/arch/powerpc/lib/Makefile
->> +++ b/arch/powerpc/lib/Makefile
->> @@ -33,3 +33,7 @@ obj-$(CONFIG_ALTIVEC)	+= xor_vmx.o
->>  CFLAGS_xor_vmx.o += -maltivec $(call cc-option,-mabi=altivec)
->>  
->>  obj-$(CONFIG_PPC64) += $(obj64-y)
->> +
->> +ifeq ($(CONFIG_PPC64), y)
->> +obj-$(CONFIG_KPROBES_SANITY_TEST) += test_emulate_step.o
->> +endif
-> FYI, the right way to do that is:
->
->   obj64-$(CONFIG_KPROBES_SANITY_TEST) += test_emulate_step.o
->   obj-$(CONFIG_PPC64) += $(obj64-y)
->
-> And in this Makefile you don't need to add the second line because it's
-> already there.
+> Hi, Guilherme
+> So in the end, my thought is that:
+> 1) cmd x|X will exit xmon and keep xmon in the original state
 
-Thanks for this. Will change accordingly and send next version.
+Agreed.
 
-Ravi
+> 2) Then add options to turn some features on/off. And debugfs maybe
+> not fit for this. But I am also wondering at same time, are people
+> needing this?
 
->
-> cheers
->
+I think it's useful. Especially seeing as Guilherme has already written
+the code.
+
+And yeah I think debugfs is the right place to do it. It means you can
+query and/or set the xmon state without crashing the box - which is what
+entering xmon essentially does, even if you later recover.
+
+cheers
