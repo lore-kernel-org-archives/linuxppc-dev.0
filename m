@@ -1,16 +1,21 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vN1hw2XD4zDqqQ
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2017 23:20:32 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vN1kx3jgRzDqqR
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2017 23:22:17 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc/mm: Fix build break when CMA=n && SPAPR_TCE_IOMMU=y
-Date: Tue, 14 Feb 2017 23:20:26 +1100
-Message-Id: <1487074826-17027-1-git-send-email-mpe@ellerman.id.au>
+To: Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Cc: benh@kernel.crashing.org, paulus@samba.org, aneesh.kumar@linux.vnet.ibm.com,
+ Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>
+Subject: Re: [PATCH] powerpc/xmon: add turn off xmon option
+In-Reply-To: <1486980832-6846-1-git-send-email-xinhui.pan@linux.vnet.ibm.com>
+References: <1486980832-6846-1-git-send-email-xinhui.pan@linux.vnet.ibm.com>
+Date: Tue, 14 Feb 2017 23:22:14 +1100
+Message-ID: <87k28tklmx.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,34 +25,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently the build breaks if CMA=n and SPAPR_TCE_IOMMU=y:
+Pan Xinhui <xinhui.pan@linux.vnet.ibm.com> writes:
 
-  arch/powerpc/mm/mmu_context_iommu.c: In function ‘mm_iommu_get’:
-  arch/powerpc/mm/mmu_context_iommu.c:193:42: error: ‘MIGRATE_CMA’ undeclared (first use in this function)
-  if (get_pageblock_migratetype(page) == MIGRATE_CMA) {
-  ^~~~~~~~~~~
+> Once xmon is triggered, there is no interface to turn it off again.
+> However there exists disable/enable xmon code flows. And more important,
+> System reset interrupt on powerVM will fire an oops to make a dump. At
+> that time, xmon should not be triggered.
+>
+> So add 'z' option after current 'x|X' exit commands. Turn xmon off if 'z'
+> is following.
 
-Fix it by using the existing is_migrate_cma_page(), which evaulates to
-false when CMA=n.
+Thanks for trying to clear this up.
 
-Fixes: 2e5bbb5461f1 ("KVM: PPC: Book3S HV: Migrate pinned pages out of CMA")
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/mm/mmu_context_iommu.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+But I like the solution we discussed in the other thread better. ie.
+entering/leaving xmon via sysrq will always leave the state unchanged,
+and we'll add a debugfs to change the state.
 
-diff --git a/arch/powerpc/mm/mmu_context_iommu.c b/arch/powerpc/mm/mmu_context_iommu.c
-index 104bad029ce9..7de7124ac91b 100644
---- a/arch/powerpc/mm/mmu_context_iommu.c
-+++ b/arch/powerpc/mm/mmu_context_iommu.c
-@@ -184,7 +184,7 @@ long mm_iommu_get(struct mm_struct *mm, unsigned long ua, unsigned long entries,
- 		 * of the CMA zone if possible. NOTE: faulting in + migration
- 		 * can be expensive. Batching can be considered later
- 		 */
--		if (get_pageblock_migratetype(page) == MIGRATE_CMA) {
-+		if (is_migrate_cma_page(page)) {
- 			if (mm_iommu_move_page_from_cma(page))
- 				goto populate;
- 			if (1 != get_user_pages_fast(ua + (i << PAGE_SHIFT),
--- 
-2.7.4
+cheers
