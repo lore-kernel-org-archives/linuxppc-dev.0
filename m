@@ -1,47 +1,42 @@
 Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vNBYn60CfzDqHH
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2017 05:59:57 +1100 (AEDT)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v1EIwU67037786
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2017 13:59:55 -0500
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
- by mx0a-001b2d01.pphosted.com with ESMTP id 28kk8p9nvq-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vNBZF6q9JzDqHj
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2017 06:00:21 +1100 (AEDT)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v1EJ08tY017272
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2017 14:00:19 -0500
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 28m718hjr3-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2017 13:59:55 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2017 14:00:17 -0500
 Received: from localhost
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Wed, 15 Feb 2017 04:59:52 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 706FE2BB0045
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2017 05:59:49 +1100 (EST)
+ Wed, 15 Feb 2017 04:59:39 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 02E1F2BB0045
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2017 05:59:38 +1100 (EST)
 Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v1EIxfSa38273188
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2017 05:59:49 +1100
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v1EIxTWC24576214
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2017 05:59:37 +1100
 Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
  by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v1EIxGUB005171
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2017 05:59:17 +1100
+ v1EIx5rG005007
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2017 05:59:05 +1100
 From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
 To: Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>,
  Masami Hiramatsu <mhiramat@kernel.org>,
  Michael Ellerman <mpe@ellerman.id.au>
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 3/3] powerpc: kprobes: prefer ftrace when probing function
- entry
-Date: Wed, 15 Feb 2017 00:28:36 +0530
-In-Reply-To: <1cc8a5580ae3a642fea137b7fe9c526402d4af33.1487098440.git.naveen.n.rao@linux.vnet.ibm.com>
-References: <1cc8a5580ae3a642fea137b7fe9c526402d4af33.1487098440.git.naveen.n.rao@linux.vnet.ibm.com>
-In-Reply-To: <1cc8a5580ae3a642fea137b7fe9c526402d4af33.1487098440.git.naveen.n.rao@linux.vnet.ibm.com>
-References: <1cc8a5580ae3a642fea137b7fe9c526402d4af33.1487098440.git.naveen.n.rao@linux.vnet.ibm.com>
-Message-Id: <7163b91def07c9f3f467891070d7535ab0a63584.1487098440.git.naveen.n.rao@linux.vnet.ibm.com>
+Subject: [PATCH 1/3] powerpc: kprobes: add support for KPROBES_ON_FTRACE
+Date: Wed, 15 Feb 2017 00:28:34 +0530
+Message-Id: <1cc8a5580ae3a642fea137b7fe9c526402d4af33.1487098440.git.naveen.n.rao@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,69 +46,215 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-KPROBES_ON_FTRACE avoids much of the overhead with regular kprobes as it
-eliminates the need for a trap, as well as the need to emulate or
-single-step instructions.
+Allow kprobes to be placed on ftrace _mcount() call sites. This
+optimization avoids the use of a trap, by riding on ftrace
+infrastructure.
 
-Though OPTPROBES provides us with similar performance, we have limited
-optprobes trampoline slots. As such, when asked to probe at a function
-entry, default to using the ftrace infrastructure.
+This depends on HAVE_DYNAMIC_FTRACE_WITH_REGS which depends on
+MPROFILE_KERNEL, which is only currently enabled on powerpc64le with
+newer toolchains.
 
-With:
-	# cd /sys/kernel/debug/tracing
-	# echo 'p _do_fork' > kprobe_events
-
-before patch:
-	# cat ../kprobes/list
-	c0000000000daf08  k  _do_fork+0x8    [DISABLED]
-	c000000000044fc0  k  kretprobe_trampoline+0x0    [OPTIMIZED]
-
-and after patch:
-	# cat ../kprobes/list
-	c0000000000d074c  k  _do_fork+0xc    [DISABLED][FTRACE]
-	c0000000000412b0  k  kretprobe_trampoline+0x0    [OPTIMIZED]
+Based on the x86 code by Masami.
 
 Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/kprobes.h | 20 ++++++++++++++++++++
- 1 file changed, 20 insertions(+)
+ arch/powerpc/Kconfig                 |   1 +
+ arch/powerpc/include/asm/kprobes.h   |  10 ++++
+ arch/powerpc/kernel/Makefile         |   3 ++
+ arch/powerpc/kernel/kprobes-ftrace.c | 100 +++++++++++++++++++++++++++++++++++
+ arch/powerpc/kernel/kprobes.c        |   4 +-
+ arch/powerpc/kernel/optprobes.c      |   3 ++
+ 6 files changed, 120 insertions(+), 1 deletion(-)
+ create mode 100644 arch/powerpc/kernel/kprobes-ftrace.c
 
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 260dd6a371e0..78419919556d 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -101,6 +101,7 @@ config PPC
+ 	select HAVE_EFFICIENT_UNALIGNED_ACCESS if !(CPU_LITTLE_ENDIAN && POWER7_CPU)
+ 	select HAVE_KPROBES
+ 	select HAVE_OPTPROBES if PPC64
++	select HAVE_KPROBES_ON_FTRACE
+ 	select HAVE_ARCH_KGDB
+ 	select HAVE_KRETPROBES
+ 	select HAVE_ARCH_TRACEHOOK
 diff --git a/arch/powerpc/include/asm/kprobes.h b/arch/powerpc/include/asm/kprobes.h
-index 3305a12286fa..09e74edee625 100644
+index e7ada061aa12..3305a12286fa 100644
 --- a/arch/powerpc/include/asm/kprobes.h
 +++ b/arch/powerpc/include/asm/kprobes.h
-@@ -60,12 +60,32 @@ extern kprobe_opcode_t optprobe_template_end[];
- 
- #ifdef PPC64_ELF_ABI_v2
- /* PPC64 ABIv2 needs local entry point */
+@@ -153,6 +153,16 @@ extern int kprobe_exceptions_notify(struct notifier_block *self,
+ extern int kprobe_fault_handler(struct pt_regs *regs, int trapnr);
+ extern int kprobe_handler(struct pt_regs *regs);
+ extern int kprobe_post_handler(struct pt_regs *regs);
 +#ifdef CONFIG_KPROBES_ON_FTRACE
-+/*
-+ * Per livepatch.h, ftrace location is always within the first 16 bytes
-+ * of a function on powerpc with -mprofile-kernel.
-+ */
-+#define kprobe_lookup_name(name, addr, offset)				\
-+{									\
-+	addr = (kprobe_opcode_t *)kallsyms_lookup_name(name);		\
-+	if (addr && !(offset)) {					\
-+		unsigned long faddr;					\
-+		faddr = ftrace_location_range((unsigned long)addr,	\
-+					      (unsigned long)addr + 16);\
-+		if (faddr)						\
-+			addr = (kprobe_opcode_t *)faddr;		\
-+		else							\
-+			addr = (kprobe_opcode_t *)ppc_function_entry(addr);	\
-+	}								\
-+}
++extern int skip_singlestep(struct kprobe *p, struct pt_regs *regs,
++			   struct kprobe_ctlblk *kcb);
 +#else
- #define kprobe_lookup_name(name, addr, offset)				\
- {									\
- 	addr = (kprobe_opcode_t *)kallsyms_lookup_name(name);		\
- 	if (addr && !(offset))						\
- 		addr = (kprobe_opcode_t *)ppc_function_entry(addr);	\
- }
++static inline int skip_singlestep(struct kprobe *p, struct pt_regs *regs,
++				  struct kprobe_ctlblk *kcb)
++{
++	return 0;
++}
 +#endif
- #elif defined(PPC64_ELF_ABI_v1)
- /*
-  * 64bit powerpc ABIv1 uses function descriptors:
+ #else
+ static inline int kprobe_handler(struct pt_regs *regs) { return 0; }
+ static inline int kprobe_post_handler(struct pt_regs *regs) { return 0; }
+diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
+index a048b37b9b27..88b21427ccc7 100644
+--- a/arch/powerpc/kernel/Makefile
++++ b/arch/powerpc/kernel/Makefile
+@@ -101,6 +101,7 @@ obj-$(CONFIG_BOOTX_TEXT)	+= btext.o
+ obj-$(CONFIG_SMP)		+= smp.o
+ obj-$(CONFIG_KPROBES)		+= kprobes.o
+ obj-$(CONFIG_OPTPROBES)		+= optprobes.o optprobes_head.o
++obj-$(CONFIG_KPROBES_ON_FTRACE)	+= kprobes-ftrace.o
+ obj-$(CONFIG_UPROBES)		+= uprobes.o
+ obj-$(CONFIG_PPC_UDBG_16550)	+= legacy_serial.o udbg_16550.o
+ obj-$(CONFIG_STACKTRACE)	+= stacktrace.o
+@@ -154,6 +155,8 @@ GCOV_PROFILE_machine_kexec_32.o := n
+ UBSAN_SANITIZE_machine_kexec_32.o := n
+ GCOV_PROFILE_kprobes.o := n
+ UBSAN_SANITIZE_kprobes.o := n
++GCOV_PROFILE_kprobes-ftrace.o := n
++UBSAN_SANITIZE_kprobes-ftrace.o := n
+ UBSAN_SANITIZE_vdso.o := n
+ 
+ extra-$(CONFIG_PPC_FPU)		+= fpu.o
+diff --git a/arch/powerpc/kernel/kprobes-ftrace.c b/arch/powerpc/kernel/kprobes-ftrace.c
+new file mode 100644
+index 000000000000..0377b3013723
+--- /dev/null
++++ b/arch/powerpc/kernel/kprobes-ftrace.c
+@@ -0,0 +1,100 @@
++/*
++ * Dynamic Ftrace based Kprobes Optimization
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
++ *
++ * Copyright (C) Hitachi Ltd., 2012
++ * Copyright 2016 Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
++ *		  IBM Corporation
++ */
++#include <linux/kprobes.h>
++#include <linux/ptrace.h>
++#include <linux/hardirq.h>
++#include <linux/preempt.h>
++#include <linux/ftrace.h>
++
++static nokprobe_inline
++int __skip_singlestep(struct kprobe *p, struct pt_regs *regs,
++		      struct kprobe_ctlblk *kcb, unsigned long orig_nip)
++{
++	/*
++	 * Emulate singlestep (and also recover regs->nip)
++	 * as if there is a nop
++	 */
++	regs->nip = (unsigned long)p->addr + MCOUNT_INSN_SIZE;
++	if (unlikely(p->post_handler)) {
++		kcb->kprobe_status = KPROBE_HIT_SSDONE;
++		p->post_handler(p, regs, 0);
++	}
++	__this_cpu_write(current_kprobe, NULL);
++	if (orig_nip)
++		regs->nip = orig_nip;
++	return 1;
++}
++
++int skip_singlestep(struct kprobe *p, struct pt_regs *regs,
++		    struct kprobe_ctlblk *kcb)
++{
++	if (kprobe_ftrace(p))
++		return __skip_singlestep(p, regs, kcb, 0);
++	else
++		return 0;
++}
++NOKPROBE_SYMBOL(skip_singlestep);
++
++/* Ftrace callback handler for kprobes */
++void kprobe_ftrace_handler(unsigned long nip, unsigned long parent_nip,
++			   struct ftrace_ops *ops, struct pt_regs *regs)
++{
++	struct kprobe *p;
++	struct kprobe_ctlblk *kcb;
++	unsigned long flags;
++
++	/* Disable irq for emulating a breakpoint and avoiding preempt */
++	local_irq_save(flags);
++	hard_irq_disable();
++
++	p = get_kprobe((kprobe_opcode_t *)nip);
++	if (unlikely(!p) || kprobe_disabled(p))
++		goto end;
++
++	kcb = get_kprobe_ctlblk();
++	if (kprobe_running()) {
++		kprobes_inc_nmissed_count(p);
++	} else {
++		unsigned long orig_nip = regs->nip;
++		/* Kprobe handler expects regs->nip = nip + 1 as breakpoint hit */
++		regs->nip = nip + sizeof(kprobe_opcode_t);
++
++		__this_cpu_write(current_kprobe, p);
++		kcb->kprobe_status = KPROBE_HIT_ACTIVE;
++		if (!p->pre_handler || !p->pre_handler(p, regs))
++			__skip_singlestep(p, regs, kcb, orig_nip);
++		/*
++		 * If pre_handler returns !0, it sets regs->nip and
++		 * resets current kprobe.
++		 */
++	}
++end:
++	local_irq_restore(flags);
++}
++NOKPROBE_SYMBOL(kprobe_ftrace_handler);
++
++int arch_prepare_kprobe_ftrace(struct kprobe *p)
++{
++	p->ainsn.insn = NULL;
++	p->ainsn.boostable = -1;
++	return 0;
++}
+diff --git a/arch/powerpc/kernel/kprobes.c b/arch/powerpc/kernel/kprobes.c
+index c213637b9d25..dab5e54f949c 100644
+--- a/arch/powerpc/kernel/kprobes.c
++++ b/arch/powerpc/kernel/kprobes.c
+@@ -233,7 +233,9 @@ int __kprobes kprobe_handler(struct pt_regs *regs)
+ 			}
+ 			p = __this_cpu_read(current_kprobe);
+ 			if (p->break_handler && p->break_handler(p, regs)) {
+-				goto ss_probe;
++				if (!skip_singlestep(p, regs, kcb))
++					goto ss_probe;
++				ret = 1;
+ 			}
+ 		}
+ 		goto no_kprobe;
+diff --git a/arch/powerpc/kernel/optprobes.c b/arch/powerpc/kernel/optprobes.c
+index e51a045f3d3b..a8f414a0b141 100644
+--- a/arch/powerpc/kernel/optprobes.c
++++ b/arch/powerpc/kernel/optprobes.c
+@@ -70,6 +70,9 @@ static unsigned long can_optimize(struct kprobe *p)
+ 	struct instruction_op op;
+ 	unsigned long nip = 0;
+ 
++	if (unlikely(kprobe_ftrace(p)))
++		return 0;
++
+ 	/*
+ 	 * kprobe placed for kretprobe during boot time
+ 	 * has a 'nop' instruction, which can be emulated.
 -- 
 2.11.0
