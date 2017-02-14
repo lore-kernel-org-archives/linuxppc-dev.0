@@ -1,36 +1,48 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Return-Path: <ravi.bangoria@linux.vnet.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vMt6V1DpFzDqCr
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2017 17:38:41 +1100 (AEDT)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v1E6Xui7017035
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2017 01:38:39 -0500
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
- by mx0a-001b2d01.pphosted.com with ESMTP id 28km0cjwnb-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vMw061tfRzDq8M
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2017 19:03:18 +1100 (AEDT)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v1E7xHYW102485
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2017 03:03:15 -0500
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 28kv2dmn3y-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2017 01:38:39 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2017 03:03:15 -0500
 Received: from localhost
- by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 13 Feb 2017 23:38:38 -0700
-Subject: Re: [PATCH V2 1/2] powerpc/mm/slice: Move slice_mask struct
- definition to slice.c
-To: Michael Ellerman <mpe@ellerman.id.au>, benh@kernel.crashing.org,
- paulus@samba.org, Balbir Singh <bsingharora@gmail.com>
-References: <1486988642-25000-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <87mvdpmgpi.fsf@concordia.ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Date: Tue, 14 Feb 2017 12:08:32 +0530
-MIME-Version: 1.0
-In-Reply-To: <87mvdpmgpi.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Message-Id: <89a807a3-289c-3cca-dc52-930c6d7f4021@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <ravi.bangoria@linux.vnet.ibm.com>;
+ Tue, 14 Feb 2017 18:03:11 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 1CAF03578052
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2017 19:03:09 +1100 (EST)
+Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v1E8318j20774994
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2017 19:03:09 +1100
+Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
+ by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v1E82ZdC001322
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2017 19:02:36 +1100
+From: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ mpe@ellerman.id.au
+Cc: benh@kernel.crashing.org, paulus@samba.org, lsorense@csclub.uwaterloo.ca,
+ oohall@gmail.com, naveen.n.rao@linux.vnet.ibm.com, ast@kernel.org,
+ chris@distroguy.com, aneesh.kumar@linux.vnet.ibm.com,
+ bsingharora@gmail.com, anton@samba.org, paul.gortmaker@windriver.com,
+ bauerman@linux.vnet.ibm.com, viro@zeniv.linux.org.uk,
+ christophe.leroy@c-s.fr, duwe@lst.de, oss@buserror.net,
+ Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
+Subject: [PATCH v2 0/2] powerpc: Emulation support for load/store instructions
+ on LE
+Date: Tue, 14 Feb 2017 13:32:10 +0530
+Message-Id: <1487059332-6925-1-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,44 +52,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+emulate_step is the basic infrastructure which is used by number of other
+kernel infrastructures like kprobe, hw-breakpoint(data breakpoint) etc.
+In case of kprobe, enabling emulation of load/store instructions will
+speedup the execution of probed instruction. In case of kernel-space
+breakpoint, causative instruction is first get emulated before executing
+user registered handler. If emulation fails, hw-breakpoint is disabled
+with error. As emulate_step does not support load/store instructions on
+LE, kernel-space hw-breakpoint infrastructure is broken on LE.
 
+emulate_step() uses a number of underlying kernel functions that were
+initially not enabled for LE. This has been rectified since. So, fix
+emulate_step() for LE for the corresponding instructions.
 
-On Tuesday 14 February 2017 11:55 AM, Michael Ellerman wrote:
-> "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> writes:
->
->> diff --git a/arch/powerpc/mm/slice.c b/arch/powerpc/mm/slice.c
->> index b3f45e413a60..08ac27eae408 100644
->> --- a/arch/powerpc/mm/slice.c
->> +++ b/arch/powerpc/mm/slice.c
->> @@ -37,7 +37,16 @@
->>   #include <asm/hugetlb.h>
->>   
->>   static DEFINE_SPINLOCK(slice_convert_lock);
->> -
->> +/*
->> + * One bit per slice. We have lower slices which cover 256MB segments
->> + * upto 4G range. That gets us 16 low slices. For the rest we track slices
->> + * in 1TB size.
-> Can we tighten this comment up a bit.
->
-> What about:
->
->> + * One bit per slice. The low slices cover the range 0 - 4GB, each
->>    * slice being 256MB in size, for 16 low slices. The high slices
->>    * cover the rest of the address space at 1TB granularity, with the
->>    * exception of high slice 0 which covers the range 4GB - 1TB.
-> OK?
+Also add selftest which will run at boot if CONFIG_KPROBES_SANITY_TEST
+and CONFIG_PPC64 is set.
 
+Changes in v2:
+  - Folded 2nd and 3rd patch of v1 into one patch, as suggested by Naveen
 
-good.
+v1 link: https://www.mail-archive.com/linuxppc-dev@lists.ozlabs.org/msg110671.html
 
->
->> + * 64 below is actually SLICE_NUM_HIGH to fixup complie errros
-> That line is bogus AFAICS, it refers to the old hardcoded value (prior
-> to 512), I'll drop it.
+Ravi Bangoria (2):
+  powerpc: Emulation support for load/store instructions on LE
+  powerpc: emulate_step tests for load/store instructions
 
+ arch/powerpc/include/asm/ppc-opcode.h |   7 +
+ arch/powerpc/include/asm/sstep.h      |   8 +
+ arch/powerpc/kernel/kprobes.c         |   2 +
+ arch/powerpc/lib/Makefile             |   4 +
+ arch/powerpc/lib/sstep.c              |  20 --
+ arch/powerpc/lib/test_emulate_step.c  | 439 ++++++++++++++++++++++++++++++++++
+ 6 files changed, 460 insertions(+), 20 deletions(-)
+ create mode 100644 arch/powerpc/lib/test_emulate_step.c
 
-Thanks
-
-
--aneesh
+-- 
+1.8.3.1
