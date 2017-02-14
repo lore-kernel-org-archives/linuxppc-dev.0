@@ -1,49 +1,21 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Return-Path: <mikey@neuling.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vMpv13RR4zDqBn
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2017 15:13:33 +1100 (AEDT)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3vMpv105tvz9s6s
- for <linuxppc-dev@ozlabs.org>; Tue, 14 Feb 2017 15:13:32 +1100 (AEDT)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v1E49v9P119234
- for <linuxppc-dev@ozlabs.org>; Mon, 13 Feb 2017 23:13:31 -0500
-Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [125.16.236.5])
- by mx0a-001b2d01.pphosted.com with ESMTP id 28krc9583h-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Mon, 13 Feb 2017 23:13:31 -0500
-Received: from localhost
- by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Tue, 14 Feb 2017 09:43:28 +0530
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 4D9C2125804F
- for <linuxppc-dev@ozlabs.org>; Tue, 14 Feb 2017 09:43:28 +0530 (IST)
-Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v1E4DQDs37814332
- for <linuxppc-dev@ozlabs.org>; Tue, 14 Feb 2017 09:43:26 +0530
-Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
- by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v1E4DPN0004829
- for <linuxppc-dev@ozlabs.org>; Tue, 14 Feb 2017 09:43:26 +0530
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
-Cc: arbab@linux.vnet.ibm.com
-Subject: Re: [PATCH] powerpc/mm: Fix build break with RADIX=y & HUGETLBFS=n
-In-Reply-To: <1487038451-6119-1-git-send-email-mpe@ellerman.id.au>
-References: <1487038451-6119-1-git-send-email-mpe@ellerman.id.au>
-Date: Tue, 14 Feb 2017 09:43:20 +0530
-MIME-Version: 1.0
-Content-Type: text/plain
-Message-Id: <87inodv28v.fsf@skywalker.in.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vMpzH5TQQzDqBn
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2017 15:17:15 +1100 (AEDT)
+Message-ID: <1487045836.21048.25.camel@neuling.org>
+Subject: Re: [PATCH 1/3] powerpc/mm/radix: Update pte update sequence for
+ pte clear case
+From: Michael Neuling <mikey@neuling.org>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org
+Date: Tue, 14 Feb 2017 15:17:16 +1100
+In-Reply-To: <1486609101-5231-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+References: <1486609101-5231-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -53,55 +25,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michael Ellerman <mpe@ellerman.id.au> writes:
+On Thu, 2017-02-09 at 08:28 +0530, Aneesh Kumar K.V wrote:
+> In the kernel we do follow the below sequence in different code paths.
+> pte =3D ptep_get_clear(ptep)
+> ....
+> set_pte_at(ptep, pte)
+>=20
+> We do that for mremap, autonuma protection update and softdirty clearing.=
+ This
+> implies our optimization to skip a tlb flush when clearing a pte update i=
+s
+> not valid, because for DD1 system that followup set_pte_at will be done w=
+itout
+> doing the required tlbflush. Fix that by always doing the dd1 style pte u=
+pdate
+> irrespective of new_pte value. In a later patch we will optimize the
+> application
+> exit case.
+>=20
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 
-> If we enable RADIX but disable HUGETLBFS, the build breaks with:
->
->   arch/powerpc/mm/pgtable-radix.c:557:7: error: implicit declaration of function 'pmd_huge'
->   arch/powerpc/mm/pgtable-radix.c:588:7: error: implicit declaration of function 'pud_huge'
->
-> Fix it by stubbing those functions when HUGETLBFS=n.
->
-Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+Tested-by: Michael Neuling <mikey@neuling.org>
 
-
-> Fixes: 4b5d62ca17a1 ("powerpc/mm: add radix__remove_section_mapping()")
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 > ---
->  arch/powerpc/include/asm/book3s/64/pgtable-4k.h  | 5 +++++
->  arch/powerpc/include/asm/book3s/64/pgtable-64k.h | 3 +++
->  2 files changed, 8 insertions(+)
->
-> diff --git a/arch/powerpc/include/asm/book3s/64/pgtable-4k.h b/arch/powerpc/include/asm/book3s/64/pgtable-4k.h
-> index 9db83b4e017d..8708a0239a56 100644
-> --- a/arch/powerpc/include/asm/book3s/64/pgtable-4k.h
-> +++ b/arch/powerpc/include/asm/book3s/64/pgtable-4k.h
-> @@ -47,7 +47,12 @@ static inline int hugepd_ok(hugepd_t hpd)
->  	return hash__hugepd_ok(hpd);
->  }
->  #define is_hugepd(hpd)		(hugepd_ok(hpd))
-> +
-> +#else /* !CONFIG_HUGETLB_PAGE */
-> +static inline int pmd_huge(pmd_t pmd) { return 0; }
-> +static inline int pud_huge(pud_t pud) { return 0; }
->  #endif /* CONFIG_HUGETLB_PAGE */
-> +
->  #endif /* __ASSEMBLY__ */
->
->  #endif /*_ASM_POWERPC_BOOK3S_64_PGTABLE_4K_H */
-> diff --git a/arch/powerpc/include/asm/book3s/64/pgtable-64k.h b/arch/powerpc/include/asm/book3s/64/pgtable-64k.h
-> index 198aff33c380..2ce4209399ed 100644
-> --- a/arch/powerpc/include/asm/book3s/64/pgtable-64k.h
-> +++ b/arch/powerpc/include/asm/book3s/64/pgtable-64k.h
-> @@ -46,6 +46,9 @@ static inline int hugepd_ok(hugepd_t hpd)
->  }
->  #define is_hugepd(pdep)			0
->
-> +#else /* !CONFIG_HUGETLB_PAGE */
-> +static inline int pmd_huge(pmd_t pmd) { return 0; }
-> +static inline int pud_huge(pud_t pud) { return 0; }
->  #endif /* CONFIG_HUGETLB_PAGE */
->
->  static inline int remap_4k_pfn(struct vm_area_struct *vma, unsigned long addr,
-> -- 
-> 2.7.4
+> =C2=A0arch/powerpc/include/asm/book3s/64/radix.h | 12 +++---------
+> =C2=A01 file changed, 3 insertions(+), 9 deletions(-)
+>=20
+> diff --git a/arch/powerpc/include/asm/book3s/64/radix.h
+> b/arch/powerpc/include/asm/book3s/64/radix.h
+> index b4d1302387a3..70a3cdcdbe47 100644
+> --- a/arch/powerpc/include/asm/book3s/64/radix.h
+> +++ b/arch/powerpc/include/asm/book3s/64/radix.h
+> @@ -144,16 +144,10 @@ static inline unsigned long radix__pte_update(struc=
+t
+> mm_struct *mm,
+> =C2=A0		=C2=A0* new value of pte
+> =C2=A0		=C2=A0*/
+> =C2=A0		new_pte =3D (old_pte | set) & ~clr;
+> -		/*
+> -		=C2=A0* If we are trying to clear the pte, we can skip
+> -		=C2=A0* the below sequence and batch the tlb flush. The
+> -		=C2=A0* tlb flush batching is done by mmu gather code
+> -		=C2=A0*/
+> -		if (new_pte) {
+> -			asm volatile("ptesync" : : : "memory");
+> -			radix__flush_tlb_pte_p9_dd1(old_pte, mm, addr);
+> +		asm volatile("ptesync" : : : "memory");
+> +		radix__flush_tlb_pte_p9_dd1(old_pte, mm, addr);
+> +		if (new_pte)
+> =C2=A0			__radix_pte_update(ptep, 0, new_pte);
+> -		}
+> =C2=A0	} else
+> =C2=A0		old_pte =3D __radix_pte_update(ptep, clr, set);
+> =C2=A0	asm volatile("ptesync" : : : "memory");
