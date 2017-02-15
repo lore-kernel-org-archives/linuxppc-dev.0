@@ -1,48 +1,32 @@
-Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
+Return-Path: <nfont@linux.vnet.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vNn8964GfzDq5W
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 04:58:17 +1100 (AEDT)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vNpPn2skczDq5W
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 05:55:08 +1100 (AEDT)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v1FHnZHp145230
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2017 12:58:14 -0500
-Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [125.16.236.3])
- by mx0b-001b2d01.pphosted.com with ESMTP id 28mswswg1m-1
+ v1FIrZvD111659
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2017 13:55:05 -0500
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 28mq9fybwg-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2017 12:58:14 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2017 13:55:05 -0500
 Received: from localhost
- by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Wed, 15 Feb 2017 23:28:11 +0530
-Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id B84B5E0024
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2017 23:29:41 +0530 (IST)
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay01.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v1FHw80Z35389600
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2017 23:28:08 +0530
-Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
- by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v1FHw7Tf003118
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2017 23:28:08 +0530
-Date: Wed, 15 Feb 2017 23:28:05 +0530
-From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-To: Masami Hiramatsu <mhiramat@kernel.org>
-Cc: Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 1/3] powerpc: kprobes: fix handling of function offsets
- on ABIv2
-References: <1b7d5ea08a7e11fbf1fb08dd3536219c94b13591.1487060527.git.naveen.n.rao@linux.vnet.ibm.com>
- <20170216001733.98d247f7ee293172c238b1f2@kernel.org>
+ for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
+ Wed, 15 Feb 2017 11:55:04 -0700
+Subject: [PATCH v7 0/4] powerpc/pseries: Implement indexed-count memory hotplug
+To: linuxppc-dev@lists.ozlabs.org
+From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+Cc: jallen@linux.vnet.ibm.com, sahilmehta17@gmail.com,
+ mdroth@linux.vnet.ibm.com, david@gibson.dropbear.id.au
+Date: Wed, 15 Feb 2017 13:45:12 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170216001733.98d247f7ee293172c238b1f2@kernel.org>
-Message-Id: <20170215175805.GF3169@naverao1-tp.localdomain>
+Content-Type: text/plain; charset="utf-8"
+Message-Id: <20170215184321.11755.88199.stgit@ltcalpine2-lp14.aus.stglabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,41 +36,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2017/02/16 12:17AM, Masami Hiramatsu wrote:
-> On Tue, 14 Feb 2017 14:08:01 +0530
-> "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
-> 
-> > commit 239aeba76409 ("perf powerpc: Fix kprobe and kretprobe handling
-> > with kallsyms on ppc64le") changed how we use the offset field in struct
-> > kprobe on ABIv2. perf now offsets from the GEP (Global entry point) if an
-> > offset is specified and otherwise chooses the LEP (Local entry point).
-> > 
-> > Fix the same in kernel for kprobe API users. We do this by extending
-> > kprobe_lookup_name() to accept an additional parameter to indicate the
-> > offset specified with the kprobe registration. If offset is 0, we return
-> > the local function entry and return the global entry point otherwise.
-> > 
+Indexed-count memory hotplug allows addition and removal of contiguous
+lmb blocks with a single command. This update will help with memory
+DLPAR for Linux KVM guests and Qemu. The management of memory in Qemu
+on a per-DIMM basis currently requires that DLPAR operations are done
+in a series of DLPAR request to remove an entire range of LMBs. With
+the indexed-count capability a single request can be made to remove or
+add a contigious block of LMBs.
 
-<snip>
+This patch set also reverts a previous patch to move pseries to use the
+auto-online capabilities. This has proven problematic as the device
+struct for a memory block does not get updated to indicate the memory
+block is online when it is added, event though it is online.
 
-> > diff --git a/kernel/kprobes.c b/kernel/kprobes.c
-> > index 83ad7e440417..9bc433575d98 100644
-> > --- a/kernel/kprobes.c
-> > +++ b/kernel/kprobes.c
-> > @@ -63,7 +63,7 @@
-> >   * so this must be overridable.
-> >   */
-> >  #ifndef kprobe_lookup_name
-> > -#define kprobe_lookup_name(name, addr) \
-> > +#define kprobe_lookup_name(name, addr, offset) \
-> >  	addr = ((kprobe_opcode_t *)(kallsyms_lookup_name(name)))
-> >  #endif
-> 
-> Hmm, it smells no good coding... I would like to use __weak function
-> instead of this "#ifndef" trick.
+Additionally there is a patch to correct an error when building with
+the MEMORY_HOTREMOVE config option not set.
 
-Can't say I wasn't tempted. KPROBES_ON_FTRACE makes this worse. I will 
-clean this up.
+-Nathan
+---
 
-Thanks!
-- Naveen
+Updates from v6:
+Patch 1/4: New
+Patch 2/4: New
+Patch 3/4: Re-based to latest kernel
+Patch 4/4: Re-based to latest kernel
+---
+
+Nathan Fontenot (2):
+      powerpc/pseries: dlpar_memory_readd_by_index() when MEMORY_HOTREMOVE not defined
+      powerpc/pseries: Revert 'Auto-online hotplugged memory'
+
+Sahil Mehta (2):
+      powerpc/pseries: Implement indexed-count hotplug memory add
+      powerpc/pseries: Implement indexed-count hotplug memory remove
+
+
+ arch/powerpc/configs/pseries_defconfig          |    1 
+ arch/powerpc/include/asm/rtas.h                 |    2 
+ arch/powerpc/platforms/pseries/dlpar.c          |   38 +++
+ arch/powerpc/platforms/pseries/hotplug-memory.c |  273 +++++++++++++++++++++--
+ 4 files changed, 286 insertions(+), 28 deletions(-)
