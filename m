@@ -1,28 +1,27 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
- [140.211.169.12])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vNKgH5bPtzDq8M
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2017 11:20:11 +1100 (AEDT)
-Date: Tue, 14 Feb 2017 16:20:08 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Michael Ellerman <michaele@au1.ibm.com>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>, Rik van Riel
- <riel@surriel.com>, Mel Gorman <mgorman@techsingularity.net>,
- paulus@ozlabs.org, benh@kernel.crashing.org, linux-mm@kvack.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH V2 1/2] mm/autonuma: Let architecture override how the
- write bit should be stashed in a protnone pte.
-Message-Id: <20170214162008.bd592c747fc5e167c10ce7b8@linux-foundation.org>
-In-Reply-To: <874lzxm41g.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vNLD91bcKzDq8M
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2017 11:45:13 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ akpm@linux-foundation.org, Rik van Riel <riel@surriel.com>,
+ Mel Gorman <mgorman@techsingularity.net>, paulus@ozlabs.org,
+ benh@kernel.crashing.org
+Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Subject: Re: [PATCH V2 2/2] powerpc/mm/autonuma: Switch ppc64 to its own
+ implementeation of saved write
+In-Reply-To: <87d1elufej.fsf@skywalker.in.ibm.com>
 References: <1487050314-3892-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1487050314-3892-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <87poilmien.fsf@concordia.ellerman.id.au>
- <abd9d231-c380-95b0-0722-8df7be626968@linux.vnet.ibm.com>
- <874lzxm41g.fsf@concordia.ellerman.id.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ <1487050314-3892-3-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <87y3x9kp8e.fsf@concordia.ellerman.id.au>
+ <87d1elufej.fsf@skywalker.in.ibm.com>
+Date: Wed, 15 Feb 2017 11:45:12 +1100
+Message-ID: <87efz0l1t3.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,33 +31,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 14 Feb 2017 21:59:23 +1100 Michael Ellerman <michaele@au1.ibm.com> wrote:
+"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> writes:
 
-> "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> writes:
-> 
-> > On Tuesday 14 February 2017 11:19 AM, Michael Ellerman wrote:
-> >> "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> writes:
-> >>
-> >>> Autonuma preserves the write permission across numa fault to avoid taking
-> >>> a writefault after a numa fault (Commit: b191f9b106ea " mm: numa: preserve PTE
-> >>> write permissions across a NUMA hinting fault"). Architecture can implement
-> >>> protnone in different ways and some may choose to implement that by clearing Read/
-> >>> Write/Exec bit of pte. Setting the write bit on such pte can result in wrong
-> >>> behaviour. Fix this up by allowing arch to override how to save the write bit
-> >>> on a protnone pte.
-> >> This is pretty obviously a nop on arches that don't implement the new
-> >> hooks, but it'd still be good to get an ack from someone in mm land
-> >> before I merge it.
-> >
-> >
-> > To get it apply cleanly you may need
-> > http://ozlabs.org/~akpm/mmots/broken-out/mm-autonuma-dont-use-set_pte_at-when-updating-protnone-ptes.patch
-> > http://ozlabs.org/~akpm/mmots/broken-out/mm-autonuma-dont-use-set_pte_at-when-updating-protnone-ptes-fix.patch
-> 
-> Ah OK, I missed those.
-> 
-> In that case these two should probably go via Andrew's tree.
+> Michael Ellerman <mpe@ellerman.id.au> writes:
+>
+>> "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> writes:
+>>> diff --git a/arch/powerpc/include/asm/book3s/64/mmu-hash.h b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
+>>> index 0735d5a8049f..8720a406bbbe 100644
+>>> --- a/arch/powerpc/include/asm/book3s/64/mmu-hash.h
+>>> +++ b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
+>>> @@ -16,6 +16,9 @@
+>>>  #include <asm/page.h>
+>>>  #include <asm/bug.h>
+>>>  
+>>> +#ifndef __ASSEMBLY__
+>>> +#include <linux/mmdebug.h>
+>>> +#endif
+>>
+>> I assume that's for the VM_BUG_ON() you add below. But if so wouldn't
+>> the #include be better placed in book3s/64/pgtable.h also?
+>
+> mmu-hash.h has got a hack that is explained below
+>
+> #ifndef __ASSEMBLY__
+> #include <linux/mmdebug.h>
+> #endif
+> /*
+>  * This is necessary to get the definition of PGTABLE_RANGE which we
+>  * need for various slices related matters. Note that this isn't the
+>  * complete pgtable.h but only a portion of it.
+>  */
+> #include <asm/book3s/64/pgtable.h>
+>
+> This is the only place where we do that book3s/64/pgtable.h include this
+> way. Everybody should include asm/pgable.h which picks the righ version
+> based on different config option.
 
-Done.  But
-mm-autonuma-dont-use-set_pte_at-when-updating-protnone-ptes.patch is on
-hold because Aneesh saw a testing issue, so these two are also on hold.
+I don't understand how that is related.
+
+If you're adding a VM_BUG_ON() in book3s/64/pgtable.h, why isn't the
+include of mmdebug.h in that file also?
+
+cheers
