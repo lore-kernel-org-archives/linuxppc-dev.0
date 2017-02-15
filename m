@@ -1,21 +1,48 @@
-Return-Path: <mhiramat@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <maddy@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vNVny1nhDzDqC0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2017 18:11:34 +1100 (AEDT)
-Date: Wed, 15 Feb 2017 16:11:26 +0900
-From: Masami Hiramatsu <mhiramat@kernel.org>
-To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-Cc: Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>, Michael Ellerman
- <mpe@ellerman.id.au>, linux-kernel@vger.kernel.org,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vNZ1s4ZGGzDq60
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2017 20:37:05 +1100 (AEDT)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v1F9Xrno044628
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2017 04:37:01 -0500
+Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [125.16.236.1])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 28mh7cxxuq-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2017 04:37:00 -0500
+Received: from localhost
+ by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
+ Wed, 15 Feb 2017 15:06:51 +0530
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 6BFF4E0045
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2017 15:08:22 +0530 (IST)
+Received: from d28av08.in.ibm.com (d28av08.in.ibm.com [9.184.220.148])
+ by d28relay04.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v1F9anri25755804
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2017 15:06:49 +0530
+Received: from d28av08.in.ibm.com (localhost [127.0.0.1])
+ by d28av08.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v1F9amT8015125
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2017 15:06:49 +0530
+Subject: Re: [PATCH v6 00/12]powerpc: "paca->soft_enabled" based local atomic
+ operation implementation
+To: Michael Ellerman <mpe@ellerman.id.au>, benh@kernel.crashing.org
+References: <1483968978-16035-1-git-send-email-maddy@linux.vnet.ibm.com>
+ <43cad35a-e19b-49e0-b4d1-9372c8a2d372@linux.vnet.ibm.com>
+ <87y3xg97io.fsf@concordia.ellerman.id.au>
+Cc: anton@samba.org, paulus@samba.org, npiggin@gmail.com,
  linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 1/3] powerpc: kprobes: add support for KPROBES_ON_FTRACE
-Message-Id: <20170215161126.104c1db721182e1e75244125@kernel.org>
-In-Reply-To: <1cc8a5580ae3a642fea137b7fe9c526402d4af33.1487098440.git.naveen.n.rao@linux.vnet.ibm.com>
-References: <1cc8a5580ae3a642fea137b7fe9c526402d4af33.1487098440.git.naveen.n.rao@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+Date: Wed, 15 Feb 2017 15:06:47 +0530
+MIME-Version: 1.0
+In-Reply-To: <87y3xg97io.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Message-Id: <3666477c-64c1-2a6e-7f67-88fb3aaf1289@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,77 +52,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Naveen,
-
-On Wed, 15 Feb 2017 00:28:34 +0530
-"Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
-
-> diff --git a/arch/powerpc/kernel/optprobes.c b/arch/powerpc/kernel/optprobes.c
-> index e51a045f3d3b..a8f414a0b141 100644
-> --- a/arch/powerpc/kernel/optprobes.c
-> +++ b/arch/powerpc/kernel/optprobes.c
-> @@ -70,6 +70,9 @@ static unsigned long can_optimize(struct kprobe *p)
->  	struct instruction_op op;
->  	unsigned long nip = 0;
->  
-> +	if (unlikely(kprobe_ftrace(p)))
-> +		return 0;
-> +
-
-Hmm, this should not be checked in arch-depend code, since it may duplicate
-code in each arch. Please try below.
-
-Thanks,
-
-commit 897bb304974c1b0c19a4274fea220b175b07f353
-Author: Masami Hiramatsu <mhiramat@kernel.org>
-Date:   Wed Feb 15 15:48:14 2017 +0900
-
-    kprobes: Skip preparing optprobe if the probe is ftrace-based
-    
-    Skip preparing optprobe if the probe is ftrace-based, since
-    anyway, it must not be optimized (or already optimized by
-    ftrace).
-    
-    Signed-off-by: Masami Hiramatsu <mhiramat@kernel.org>
-
-diff --git a/kernel/kprobes.c b/kernel/kprobes.c
-index ebb4dad..546a8b1 100644
---- a/kernel/kprobes.c
-+++ b/kernel/kprobes.c
-@@ -746,13 +746,20 @@ static void kill_optimized_kprobe(struct kprobe *p)
- 	arch_remove_optimized_kprobe(op);
- }
- 
-+static inline
-+void __prepare_optimized_kprobe(struct optimized_kprobe *op, struct kprobe *p)
-+{
-+	if (!kprobe_ftrace(p))
-+		arch_prepare_optimized_kprobe(op, p);
-+}
-+
- /* Try to prepare optimized instructions */
- static void prepare_optimized_kprobe(struct kprobe *p)
- {
- 	struct optimized_kprobe *op;
- 
- 	op = container_of(p, struct optimized_kprobe, kp);
--	arch_prepare_optimized_kprobe(op, p);
-+	__prepare_optimized_kprobe(op, p);
- }
- 
- /* Allocate new optimized_kprobe and try to prepare optimized instructions */
-@@ -766,7 +773,7 @@ static struct kprobe *alloc_aggr_kprobe(struct kprobe *p)
- 
- 	INIT_LIST_HEAD(&op->list);
- 	op->kp.addr = p->addr;
--	arch_prepare_optimized_kprobe(op, p);
-+	__prepare_optimized_kprobe(op, p);
- 
- 	return &op->kp;
- }
 
 
+On Wednesday 08 February 2017 06:14 PM, Michael Ellerman wrote:
+> Madhavan Srinivasan <maddy@linux.vnet.ibm.com> writes:
+>
+>> Hi mpe,
+>>
+>> Any update on this series. Have also fixed the naming issue with patch 12
+>> and with this series applied,
+>>
+>> "paca->soft_enabled"  becomes "paca->soft_disabled_mask"
+> Yeah sorry I've been putting off dealing with it.
+>
+> Ideally we'd do the naming change earlier in the series, but maybe
+> that's not worth it.
+>
+> The one thing I wanted to make sure was that regs->softe is never
+> exposed to userspace. Because we're changing its semantics, and user
+> space has no business knowing about it.
+>
+> So I just checked the code, and we do allow userspace to see the softe
+> value. So I think we should fix that before this goes in.
+>
+> The safest option is to just hardwire it to 1, as that's the value it
+> should always have in a userspace pt_regs.
+Ok let me look at this, currently  I do see the "softe" used
+to decide on the return_irq path and does not look straight
+forward change.
 
--- 
-Masami Hiramatsu <mhiramat@kernel.org>
+Maddy
+
+
+>
+> cheers
+>
