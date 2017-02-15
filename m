@@ -1,22 +1,48 @@
-Return-Path: <mhiramat@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <hbathini@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vNjZx40yKzDq5x
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 02:17:45 +1100 (AEDT)
-Date: Thu, 16 Feb 2017 00:17:33 +0900
-From: Masami Hiramatsu <mhiramat@kernel.org>
-To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-Cc: Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>, Michael Ellerman
- <mpe@ellerman.id.au>, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 1/3] powerpc: kprobes: fix handling of function offsets
- on ABIv2
-Message-Id: <20170216001733.98d247f7ee293172c238b1f2@kernel.org>
-In-Reply-To: <1b7d5ea08a7e11fbf1fb08dd3536219c94b13591.1487060527.git.naveen.n.rao@linux.vnet.ibm.com>
-References: <1b7d5ea08a7e11fbf1fb08dd3536219c94b13591.1487060527.git.naveen.n.rao@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vNjt06kbLzDq5x
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 02:30:48 +1100 (AEDT)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3vNjsz6gsGz9ryj
+ for <linuxppc-dev@ozlabs.org>; Thu, 16 Feb 2017 02:30:47 +1100 (AEDT)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v1FFO8rx115283
+ for <linuxppc-dev@ozlabs.org>; Wed, 15 Feb 2017 10:30:46 -0500
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 28mq9sf4c6-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Wed, 15 Feb 2017 10:30:45 -0500
+Received: from localhost
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <hbathini@linux.vnet.ibm.com>;
+ Thu, 16 Feb 2017 01:30:43 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 821B12CE8054
+ for <linuxppc-dev@ozlabs.org>; Thu, 16 Feb 2017 02:30:39 +1100 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v1FFUVcv15466650
+ for <linuxppc-dev@ozlabs.org>; Thu, 16 Feb 2017 02:30:39 +1100
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v1FFTxTL011198
+ for <linuxppc-dev@ozlabs.org>; Thu, 16 Feb 2017 02:29:59 +1100
+Subject: [PATCH] powerpc/fadump: set an upper limit for boot memory size
+From: Hari Bathini <hbathini@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>,
+ linuxppc-dev <linuxppc-dev@ozlabs.org>
+Date: Wed, 15 Feb 2017 20:59:35 +0530
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Message-Id: <148717255648.1711.9357297790070400059.stgit@hbathini.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,125 +52,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 14 Feb 2017 14:08:01 +0530
-"Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
+By default, 5% of system RAM is reserved for preserving boot memory.
+Alternatively, a user can specify the amount of memory to reserve.
+See Documentation/powerpc/firmware-assisted-dump.txt for details. In
+addition to the memory reserved for preserving boot memory, some more
+memory is reserved, to save HPTE region, CPU state data and ELF core
+headers.
 
-> commit 239aeba76409 ("perf powerpc: Fix kprobe and kretprobe handling
-> with kallsyms on ppc64le") changed how we use the offset field in struct
-> kprobe on ABIv2. perf now offsets from the GEP (Global entry point) if an
-> offset is specified and otherwise chooses the LEP (Local entry point).
-> 
-> Fix the same in kernel for kprobe API users. We do this by extending
-> kprobe_lookup_name() to accept an additional parameter to indicate the
-> offset specified with the kprobe registration. If offset is 0, we return
-> the local function entry and return the global entry point otherwise.
-> 
-> With:
-> 	# cd /sys/kernel/debug/tracing/
-> 	# echo "p _do_fork" >> kprobe_events
-> 	# echo "p _do_fork+0x10" >> kprobe_events
-> 
-> before this patch:
-> 	# cat ../kprobes/list
-> 	c0000000000d0748  k  _do_fork+0x8    [DISABLED]
-> 	c0000000000d0758  k  _do_fork+0x18    [DISABLED]
-> 	c0000000000412b0  k  kretprobe_trampoline+0x0    [OPTIMIZED]
-> 
-> and after:
-> 	# cat ../kprobes/list
-> 	c0000000000d04c8  k  _do_fork+0x8    [DISABLED]
-> 	c0000000000d04d0  k  _do_fork+0x10    [DISABLED]
-> 	c0000000000412b0  k  kretprobe_trampoline+0x0    [OPTIMIZED]
-> 
-> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/include/asm/kprobes.h | 6 +++---
->  arch/powerpc/kernel/optprobes.c    | 4 ++--
->  kernel/kprobes.c                   | 6 +++---
->  3 files changed, 8 insertions(+), 8 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/kprobes.h b/arch/powerpc/include/asm/kprobes.h
-> index d821835ade86..e7ada061aa12 100644
-> --- a/arch/powerpc/include/asm/kprobes.h
-> +++ b/arch/powerpc/include/asm/kprobes.h
-> @@ -60,10 +60,10 @@ extern kprobe_opcode_t optprobe_template_end[];
->  
->  #ifdef PPC64_ELF_ABI_v2
->  /* PPC64 ABIv2 needs local entry point */
-> -#define kprobe_lookup_name(name, addr)					\
-> +#define kprobe_lookup_name(name, addr, offset)				\
->  {									\
->  	addr = (kprobe_opcode_t *)kallsyms_lookup_name(name);		\
-> -	if (addr)							\
-> +	if (addr && !(offset))						\
->  		addr = (kprobe_opcode_t *)ppc_function_entry(addr);	\
->  }
->  #elif defined(PPC64_ELF_ABI_v1)
-> @@ -75,7 +75,7 @@ extern kprobe_opcode_t optprobe_template_end[];
->   * This ensures we always get to the actual symbol and not the descriptor.
->   * Also handle <module:symbol> format.
->   */
-> -#define kprobe_lookup_name(name, addr)					\
-> +#define kprobe_lookup_name(name, addr, offset)				\
->  {									\
->  	char dot_name[MODULE_NAME_LEN + 1 + KSYM_NAME_LEN];		\
->  	const char *modsym;							\
-> diff --git a/arch/powerpc/kernel/optprobes.c b/arch/powerpc/kernel/optprobes.c
-> index 2282bf4e63cd..e51a045f3d3b 100644
-> --- a/arch/powerpc/kernel/optprobes.c
-> +++ b/arch/powerpc/kernel/optprobes.c
-> @@ -243,8 +243,8 @@ int arch_prepare_optimized_kprobe(struct optimized_kprobe *op, struct kprobe *p)
->  	/*
->  	 * 2. branch to optimized_callback() and emulate_step()
->  	 */
-> -	kprobe_lookup_name("optimized_callback", op_callback_addr);
-> -	kprobe_lookup_name("emulate_step", emulate_step_addr);
-> +	kprobe_lookup_name("optimized_callback", op_callback_addr, 0);
-> +	kprobe_lookup_name("emulate_step", emulate_step_addr, 0);
->  	if (!op_callback_addr || !emulate_step_addr) {
->  		WARN(1, "kprobe_lookup_name() failed\n");
->  		goto error;
-> diff --git a/kernel/kprobes.c b/kernel/kprobes.c
-> index 83ad7e440417..9bc433575d98 100644
-> --- a/kernel/kprobes.c
-> +++ b/kernel/kprobes.c
-> @@ -63,7 +63,7 @@
->   * so this must be overridable.
->   */
->  #ifndef kprobe_lookup_name
-> -#define kprobe_lookup_name(name, addr) \
-> +#define kprobe_lookup_name(name, addr, offset) \
->  	addr = ((kprobe_opcode_t *)(kallsyms_lookup_name(name)))
->  #endif
+Memory Reservation during first kernel looks like below:
 
-Hmm, it smells no good coding... I would like to use __weak function
-instead of this "#ifndef" trick.
+  Low memory                                        Top of memory
+  0      boot memory size                                       |
+  |           |                       |<--Reserved dump area -->|
+  V           V                       |   Permanent Reservation V
+  +-----------+----------/ /----------+---+----+-----------+----+
+  |           |                       |CPU|HPTE|  DUMP     |ELF |
+  +-----------+----------/ /----------+---+----+-----------+----+
+        |                                           ^
+        |                                           |
+        \                                           /
+         -------------------------------------------
+          Boot memory content gets transferred to
+          reserved area by firmware at the time of
+          crash
 
-Thank you,
+The implicit rule here is that the sum of the sizes of boot memory,
+CPU state data, HPTE region and ELF core headers can't be greater than
+the total memory size. But currently, a user is allowed to specify any
+value as boot memory size. So, the above rule is violated when a boot
+memory size closer to 50% of the total available memory is specified.
+As the kernel is not handling this currently, it may lead to undefined
+behavior. Fix it by setting an upper limit for boot memory size to 25%
+of the total available memory.
 
->  
-> @@ -1365,7 +1365,7 @@ static kprobe_opcode_t *kprobe_addr(struct kprobe *p)
->  		goto invalid;
->  
->  	if (p->symbol_name) {
-> -		kprobe_lookup_name(p->symbol_name, addr);
-> +		kprobe_lookup_name(p->symbol_name, addr, p->offset);
->  		if (!addr)
->  			return ERR_PTR(-ENOENT);
->  	}
-> @@ -2161,7 +2161,7 @@ static int __init init_kprobes(void)
->  		/* lookup the function address from its name */
->  		for (i = 0; kretprobe_blacklist[i].name != NULL; i++) {
->  			kprobe_lookup_name(kretprobe_blacklist[i].name,
-> -					   kretprobe_blacklist[i].addr);
-> +					   kretprobe_blacklist[i].addr, 0);
->  			if (!kretprobe_blacklist[i].addr)
->  				printk("kretprobe: lookup failed: %s\n",
->  				       kretprobe_blacklist[i].name);
-> -- 
-> 2.11.0
-> 
+Signed-off-by: Hari Bathini <hbathini@linux.vnet.ibm.com>
+---
+
+This patch is based on top of reuse-crashkernel-parameter-for-fadump patchset
+(https://lists.ozlabs.org/pipermail/linuxppc-dev/2017-January/152724.html)
 
 
--- 
-Masami Hiramatsu <mhiramat@kernel.org>
+ arch/powerpc/include/asm/fadump.h |    3 +++
+ arch/powerpc/kernel/fadump.c      |   12 ++++++++++++
+ 2 files changed, 15 insertions(+)
+
+diff --git a/arch/powerpc/include/asm/fadump.h b/arch/powerpc/include/asm/fadump.h
+index 60b9108..a3de219 100644
+--- a/arch/powerpc/include/asm/fadump.h
++++ b/arch/powerpc/include/asm/fadump.h
+@@ -43,6 +43,9 @@
+ #define MIN_BOOT_MEM	(((RMA_END < (0x1UL << 28)) ? (0x1UL << 28) : RMA_END) \
+ 			+ (0x1UL << 26))
+ 
++/* The upper limit percentage for user specified boot memory size (25%) */
++#define MAX_BOOT_MEM_RATIO			4
++
+ #define memblock_num_regions(memblock_type)	(memblock.memblock_type.cnt)
+ 
+ /* Firmware provided dump sections */
+diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
+index de7d39a..d5107f4 100644
+--- a/arch/powerpc/kernel/fadump.c
++++ b/arch/powerpc/kernel/fadump.c
+@@ -222,6 +222,18 @@ static inline unsigned long fadump_calculate_reserve_size(void)
+ 				&size, &base);
+ 	if (ret == 0 && size > 0) {
+ 		fw_dump.reserve_bootvar = (unsigned long)size;
++		/*
++		 * Adjust if the boot memory size specified is above
++		 * the upper limit.
++		 */
++		if (fw_dump.reserve_bootvar >
++		    (memblock_end_of_DRAM() / MAX_BOOT_MEM_RATIO)) {
++			fw_dump.reserve_bootvar = (memblock_end_of_DRAM() /
++						   MAX_BOOT_MEM_RATIO);
++			pr_info("Adjusted boot memory size to %luMB\n",
++				(fw_dump.reserve_bootvar >> 20));
++		}
++
+ 		return fw_dump.reserve_bootvar;
+ 	}
+ 
