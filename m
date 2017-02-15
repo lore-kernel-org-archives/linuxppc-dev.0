@@ -1,46 +1,33 @@
-Return-Path: <mukesh02@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <xyjxie@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vNTcc2mk0zDqCr
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2017 17:18:24 +1100 (AEDT)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vNVCd6jWbzDqBs
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2017 17:45:17 +1100 (AEDT)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v1F6E6Q4072499
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2017 01:18:21 -0500
-Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [125.16.236.6])
- by mx0a-001b2d01.pphosted.com with ESMTP id 28m2rsh7rd-1
+ v1F6hTIw091702
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2017 01:45:15 -0500
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 28mcwhs54y-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2017 01:18:21 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2017 01:45:15 -0500
 Received: from localhost
- by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <mukesh02@linux.vnet.ibm.com>;
- Wed, 15 Feb 2017 11:48:13 +0530
-Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 9BD2E125805E
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2017 11:48:13 +0530 (IST)
-Received: from d28av06.in.ibm.com (d28av06.in.ibm.com [9.184.220.48])
- by d28relay05.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v1F6I8b428704802
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2017 11:48:08 +0530
-Received: from d28av06.in.ibm.com (localhost [127.0.0.1])
- by d28av06.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v1F6IAiN025333
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2017 11:48:10 +0530
-Subject: Re: [PATCH 2/2] powerpc/powernv/opal-dump : Use IRQ_HANDLED instead
- of numbers in interrupt handler
-To: Stewart Smith <stewart@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-References: <1480583289-6380-1-git-send-email-mukesh02@linux.vnet.ibm.com>
- <1480583289-6380-2-git-send-email-mukesh02@linux.vnet.ibm.com>
- <874lzw9h2l.fsf@linux.vnet.ibm.com>
-From: Mukesh Ojha <mukesh02@linux.vnet.ibm.com>
-Date: Wed, 15 Feb 2017 11:48:04 +0530
-MIME-Version: 1.0
-In-Reply-To: <874lzw9h2l.fsf@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Message-Id: <ae53e4ca-9d88-9dcc-4c44-0db154428151@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <xyjxie@linux.vnet.ibm.com>;
+ Tue, 14 Feb 2017 23:45:14 -0700
+From: Yongji Xie <xyjxie@linux.vnet.ibm.com>
+To: bhelgaas@google.com
+Cc: linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ alex.williamson@redhat.com, gwshan@linux.vnet.ibm.com, aik@ozlabs.ru,
+ benh@kernel.crashing.org, mpe@ellerman.id.au, paulus@samba.org,
+ zhong@linux.vnet.ibm.com
+Subject: [PATCH v9 0/3] PCI: Introduce a way to enforce all MMIO BARs not to
+ share PAGE_SIZE
+Date: Wed, 15 Feb 2017 14:45:03 +0800
+Message-Id: <1487141106-2503-1-git-send-email-xyjxie@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,25 +37,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+This series introduces a way for PCI resource allocator to force
+MMIO BARs not to share PAGE_SIZE. This would make sense to VFIO
+driver. Because current VFIO implementation disallows to mmap
+sub-page(size < PAGE_SIZE) MMIO BARs which may share the same page
+with other BARs for security reasons. Thus, we have to handle mmio
+access to these BARs in QEMU emulation rather than in guest which
+will cause some performance loss.
 
+In our solution, we try to make use of the existing code path of
+resource_alignment kernel parameter and add a macro to set default
+alignment for it. Thus we can define this macro by default on some
+archs which may easily hit the performance issue because of their
+64K page.
 
-On Wednesday 15 February 2017 10:38 AM, Stewart Smith wrote:
-> Mukesh Ojha <mukesh02@linux.vnet.ibm.com> writes:
->
->> Converts all the return explicit number to a more proper IRQ_HANDLED,
->> which looks proper incase of interrupt handler returning case.
->>
->> Signed-off-by: Mukesh Ojha <mukesh02@linux.vnet.ibm.com>
->> Reviewed-by: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
->> ---
->>   arch/powerpc/platforms/powernv/opal-dump.c | 9 +++------
->>   1 file changed, 3 insertions(+), 6 deletions(-)
-> Should also have:
-> Fixes: 8034f715f ("powernv/opal-dump: Convert to irq domain")
->
-> ?
->
+In this series, patch 1 fixes a bug related to bridge window
+size/alignment caculating; patch 2,3 add support for setting default
+alignment of all MMIO BAR.
 
-Yeah .. i should have mentioned which patch missed these changes.
+Changelog v9:
+- Add a patch to fix for caculating bridge window's size and alignment
+- Remove an unrelated patch
+- Rework the patch that fix bug that reassign resources's alignment by
+  changing its size
 
--Mukesh
+Changelog v8:
+- Rebased against v4.10-rc4
+- Rework the patch 2
+- Change the commit log of patch 1
+
+Changelog v7:
+- Rebased against v4.9-rc2
+- Drop two merged patches
+- Rework the patch which fix a bug that resources's size is changed when
+  using resource_alignment
+- Add a patch that fix a bug for IOV BARs when using resource_alignment
+
+Changelog v6: 
+- Remove the option "noresize@" of resource_alignment
+
+Changelog v5: 
+- Rebased against v4.8-rc6
+- Drop the patch that forbidding disable memory decoding in
+  pci_reassigndev_resource_alignment()
+
+Changelog v4: 
+- Rebased against v4.8-rc1
+- Drop one irrelevant patch
+- Drop the patch that adding wildcard to resource_alignment to enforce
+  the alignment of all MMIO BARs to be at least PAGE_SIZE
+- Change the format of option "noresize" of resource_alignment
+- Code style improvements
+
+Changelog v3: 
+- Ignore enforced alignment to fixed BARs
+- Fix issue that disabling memory decoding when reassigning the alignment
+- Only enable default alignment on PowerNV platform
+
+Changelog v2:
+- Ignore enforced alignment to VF BARs on pci_reassigndev_resource_alignment()
+
+Yongji Xie (3):
+  PCI: A fix for caculating bridge window's size and alignment
+  PCI: Add a macro to set default alignment for all PCI devices
+  PCI: Don't extend device's size when using default alignment for all devices
+
+ arch/powerpc/include/asm/pci.h |    4 ++++
+ drivers/pci/pci.c              |   37 +++++++++++++++++++++++++++----------
+ drivers/pci/setup-bus.c        |    4 ++--
+ 3 files changed, 33 insertions(+), 12 deletions(-)
