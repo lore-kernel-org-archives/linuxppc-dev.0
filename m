@@ -1,45 +1,44 @@
 Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vNwMc389lzDqBm
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 10:23:40 +1100 (AEDT)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v1FNJMfA090770
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2017 18:23:38 -0500
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
- by mx0a-001b2d01.pphosted.com with ESMTP id 28my2qu784-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vNwMd4cXyzDqBV
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 10:23:41 +1100 (AEDT)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v1FNIo9D055559
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2017 18:23:39 -0500
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 28mssdh1gy-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2017 18:23:38 -0500
 Received: from localhost
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Thu, 16 Feb 2017 09:23:35 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 9768E2CE805D
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 10:23:32 +1100 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v1FNNOl427197670
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 10:23:32 +1100
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v1FNN0AD007109
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 10:23:00 +1100
+ Thu, 16 Feb 2017 09:23:36 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 745C13578053
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 10:23:33 +1100 (EST)
+Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v1FNNPv435520512
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 10:23:33 +1100
+Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
+ by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v1FNN0dc025081
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 10:23:01 +1100
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: linux-pci@vger.kernel.org, mpe@ellerman.id.au, bhelgaas@google.com,
  Gavin Shan <gwshan@linux.vnet.ibm.com>,
- "# v4 . 8+" <stable@vger.kernel.org>
-Subject: [PATCH 1/3] pci/hotplug/pnv-php: Remove WARN_ON() in
- pnv_php_put_slot()
-Date: Thu, 16 Feb 2017 10:22:32 +1100
+ "# v4 . 9+" <stable@vger.kernel.org>
+Subject: [PATCH 3/3] pci/hotplug/pnv-php: Disable MSI and PCI device properly
+Date: Thu, 16 Feb 2017 10:22:34 +1100
 In-Reply-To: <1487200954-14681-1-git-send-email-gwshan@linux.vnet.ibm.com>
 References: <1487200954-14681-1-git-send-email-gwshan@linux.vnet.ibm.com>
-Message-Id: <1487200954-14681-2-git-send-email-gwshan@linux.vnet.ibm.com>
+Message-Id: <1487200954-14681-4-git-send-email-gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,40 +48,85 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The WARN_ON() causes unnecessary backtrace when putting the parent
-slot, which is likely to be NULL.
+pnv_php_disable_irq() can be called in two paths: Bailing path in
+pnv_php_enable_irq() or releasing slot. The MSI (or MSIx) interrupts
+is disabled unconditionally in pnv_php_disable_irq(). It's wrong
+because that might be enabled by drivers other than pnv-php.
 
- WARNING: CPU: 2 PID: 1071 at drivers/pci/hotplug/pnv_php.c:85 \
-                              pnv_php_release+0xcc/0x150 [pnv_php]
-    :
- Call Trace:
- [c0000003bc007c10] [d00000000ad613c4] pnv_php_release+0x144/0x150 [pnv_php]
- [c0000003bc007c40] [c0000000006641d8] pci_hp_deregister+0x238/0x330
- [c0000003bc007cd0] [d00000000ad61440] pnv_php_unregister_one+0x70/0xa0 [pnv_php]
- [c0000003bc007d10] [d00000000ad614c0] pnv_php_unregister+0x50/0x80 [pnv_php]
- [c0000003bc007d40] [d00000000ad61e84] pnv_php_exit+0x50/0xcb4 [pnv_php]
- [c0000003bc007d70] [c00000000019499c] SyS_delete_module+0x1fc/0x2a0
- [c0000003bc007e30] [c00000000000b184] system_call+0x38/0xe0
+This disables MSI (or MSIx) interrupts and the PCI device only if
+it was enabled by pnv-php. In the error path of pnv_php_enable_irq(),
+we rely on the newly added parameter @disable_device. In the path
+of releasing slot, @pnv_php->irq is checked.
 
-Cc: <stable@vger.kernel.org> # v4.8+
-Fixes: 66725152fb9f ("PCI/hotplug: PowerPC PowerNV PCI hotplug driver")
+Cc: <stable@vger.kernel.org> # v4.9+
+Fixes: 360aebd85a4c ("drivers/pci/hotplug: Support surprise hotplug in powernv driver")
 Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 ---
- drivers/pci/hotplug/pnv_php.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/pci/hotplug/pnv_php.c | 22 ++++++++++++++--------
+ 1 file changed, 14 insertions(+), 8 deletions(-)
 
 diff --git a/drivers/pci/hotplug/pnv_php.c b/drivers/pci/hotplug/pnv_php.c
-index 63cd9f3..da1bbf3 100644
+index 6d36b76..335a556 100644
 --- a/drivers/pci/hotplug/pnv_php.c
 +++ b/drivers/pci/hotplug/pnv_php.c
-@@ -76,7 +76,7 @@ static void pnv_php_free_slot(struct kref *kref)
- static inline void pnv_php_put_slot(struct pnv_php_slot *php_slot)
+@@ -35,9 +35,11 @@ static void pnv_php_register(struct device_node *dn);
+ static void pnv_php_unregister_one(struct device_node *dn);
+ static void pnv_php_unregister(struct device_node *dn);
+ 
+-static void pnv_php_disable_irq(struct pnv_php_slot *php_slot)
++static void pnv_php_disable_irq(struct pnv_php_slot *php_slot,
++				bool disable_device)
  {
+ 	struct pci_dev *pdev = php_slot->pdev;
++	int irq = php_slot->irq;
+ 	u16 ctrl;
  
--	if (WARN_ON(!php_slot))
-+	if (!php_slot)
+ 	if (php_slot->irq > 0) {
+@@ -56,10 +58,14 @@ static void pnv_php_disable_irq(struct pnv_php_slot *php_slot)
+ 		php_slot->wq = NULL;
+ 	}
+ 
+-	if (pdev->msix_enabled)
+-		pci_disable_msix(pdev);
+-	else if (pdev->msi_enabled)
+-		pci_disable_msi(pdev);
++	if (disable_device || irq > 0) {
++		if (pdev->msix_enabled)
++			pci_disable_msix(pdev);
++		else if (pdev->msi_enabled)
++			pci_disable_msi(pdev);
++
++		pci_disable_device(pdev);
++	}
+ }
+ 
+ static void pnv_php_free_slot(struct kref *kref)
+@@ -68,7 +74,7 @@ static void pnv_php_free_slot(struct kref *kref)
+ 					struct pnv_php_slot, kref);
+ 
+ 	WARN_ON(!list_empty(&php_slot->children));
+-	pnv_php_disable_irq(php_slot);
++	pnv_php_disable_irq(php_slot, false);
+ 	kfree(php_slot->name);
+ 	kfree(php_slot);
+ }
+@@ -777,7 +783,7 @@ static void pnv_php_init_irq(struct pnv_php_slot *php_slot, int irq)
+ 	php_slot->wq = alloc_workqueue("pciehp-%s", 0, 0, php_slot->name);
+ 	if (!php_slot->wq) {
+ 		dev_warn(&pdev->dev, "Cannot alloc workqueue\n");
+-		pnv_php_disable_irq(php_slot);
++		pnv_php_disable_irq(php_slot, true);
  		return;
+ 	}
  
- 	kref_put(&php_slot->kref, pnv_php_free_slot);
+@@ -799,7 +805,7 @@ static void pnv_php_init_irq(struct pnv_php_slot *php_slot, int irq)
+ 	ret = request_irq(irq, pnv_php_interrupt, IRQF_SHARED,
+ 			  php_slot->name, php_slot);
+ 	if (ret) {
+-		pnv_php_disable_irq(php_slot);
++		pnv_php_disable_irq(php_slot, true);
+ 		dev_warn(&pdev->dev, "Error %d enabling IRQ %d\n", ret, irq);
+ 		return;
+ 	}
 -- 
 2.7.4
