@@ -1,24 +1,20 @@
-Return-Path: <scott.bauer@intel.com>
-Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
+Return-Path: <jonathan.derrick@intel.com>
+Received: from mga04.intel.com (mga04.intel.com [192.55.52.120])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vNsqw4PCDzDq5s
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 08:29:32 +1100 (AEDT)
-Date: Wed, 15 Feb 2017 14:19:52 -0700
-From: Scott Bauer <scott.bauer@intel.com>
-To: Jon Derrick <jonathan.derrick@intel.com>
-Cc: linux-block@vger.kernel.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vNtC429V1zDq5s
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 08:46:06 +1100 (AEDT)
+From: Jon Derrick <jonathan.derrick@intel.com>
+To: 
+Cc: Jon Derrick <jonathan.derrick@intel.com>, linux-block@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Scott Bauer <scott.bauer@intel.com>,
  Rafael Antognolli <rafael.antognolli@intel.com>,
  Jens Axboe <axboe@kernel.dk>, Christoph Hellwig <hch@lst.de>,
  Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: Re: [PATCHv3 2/4] block/sed: Add helper to qualify response tokens
-Message-ID: <20170215211952.GC2178@sbauer-Z170X-UD5>
-References: <1487187731-10293-1-git-send-email-jonathan.derrick@intel.com>
- <1487187731-10293-3-git-send-email-jonathan.derrick@intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1487187731-10293-3-git-send-email-jonathan.derrick@intel.com>
+Subject: [PATCHv4 0/4] OPAL patches
+Date: Wed, 15 Feb 2017 14:45:53 -0700
+Message-Id: <1487195159-12599-1-git-send-email-jonathan.derrick@intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,90 +24,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Feb 15, 2017 at 12:42:07PM -0700, Jon Derrick wrote:
-> Add helper which verifies the response token is valid and matches the
-> expected value. Merges token_type and response_get_token.
-> 
-> Signed-off-by: Jon Derrick <jonathan.derrick@intel.com>
-> ---
->  block/sed-opal.c | 61 +++++++++++++++++++++++---------------------------------
->  1 file changed, 25 insertions(+), 36 deletions(-)
-> 
-> diff --git a/block/sed-opal.c b/block/sed-opal.c
-> index 77623ad..d6dd604 100644
-> --- a/block/sed-opal.c
-> +++ b/block/sed-opal.c
-> @@ -591,48 +591,25 @@ static int cmd_finalize(struct opal_dev *cmd, u32 hsn, u32 tsn)
->  	return 0;
->  }
->  
-> -static enum opal_response_token token_type(const struct parsed_resp *resp,
-> -					   int n)
-> +static const struct opal_resp_tok *response_get_token(
-> +				const struct parsed_resp *resp,
-> +				int n)
->  {
->  	const struct opal_resp_tok *tok;
->  
->  	if (n >= resp->num) {
->  		pr_err("Token number doesn't exist: %d, resp: %d\n",
->  		       n, resp->num);
-> -		return OPAL_DTA_TOKENID_INVALID;
-> +		return ERR_PTR(-EINVAL);
->  	}
->  
->  	tok = &resp->toks[n];
->  	if (tok->len == 0) {
->  		pr_err("Token length must be non-zero\n");
-> -		return OPAL_DTA_TOKENID_INVALID;
-> +		return ERR_PTR(-EINVAL);
->  	}
->  
-> -	return tok->type;
-> -}
-> -
-> -/*
-> - * This function returns 0 in case of invalid token. One should call
-> - * token_type() first to find out if the token is valid or not.
-> - */
-> -static enum opal_token response_get_token(const struct parsed_resp *resp,
-> -					  int n)
-> -{
-> -	const struct opal_resp_tok *tok;
-> -
-> -	if (n >= resp->num) {
-> -		pr_err("Token number doesn't exist: %d, resp: %d\n",
-> -		       n, resp->num);
-> -		return 0;
-> -	}
-> -
-> -	tok = &resp->toks[n];
-> -	if (tok->len == 0) {
-> -		pr_err("Token length must be non-zero\n");
-> -		return 0;
-> -	}
-> -
-> -	return tok->pos[0];
-> +	return tok;
->  }
->  
->  static ssize_t response_parse_tiny(struct opal_resp_tok *tok,
-> @@ -851,20 +828,32 @@ static u64 response_get_u64(const struct parsed_resp *resp, int n)
->  	return resp->toks[n].stored.u;
->  }
->  
-> +static bool response_token_matches(const struct opal_resp_tok *token, u8 match)
-> +{
-> +	if (IS_ERR_OR_NULL(token) ||
-> +	    token->type != OPAL_DTA_TOKENID_TOKEN ||
-> +	    token->pos[0] != match)
-> +		return false;
-> +	return true;
-> +}
-> +
+Just a couple of fixes for sed-opal to prevent faulty firmware from
+allowing us to go off in the weeds, and a helper to remove some
+duplicate code.
 
-This is sorta pedantic but from my reading of the code token can never be null. It will
-either be a valid pointer or ERR_PTR(-EINVAL), but never null.
-So maybe change this to IS_ERR(token) etc. Other than that little nit:
+v3->v4:
+uses IS_ERR since tok is embedded in the response buffer and cannot be NULL
 
-Reviewed-by: Scott Bauer <scott.bauer@intel.com>
+v2->v3:
+corrected the bad calculation on the response parser check and changed
+it to only check the subpacket length
+
+v1->v2:
+left tok->len as a size_t
+got everyone important on the same email thread
+
+Jon Derrick (4):
+  block/sed: Use ssize_t on atom parsers to return errors
+  block/sed: Add helper to qualify response tokens
+  block/sed: Check received header lengths
+  MAINTAINERS: Remove powerpc's opal match
+
+ MAINTAINERS      |   1 -
+ block/sed-opal.c | 124 +++++++++++++++++++++++++++----------------------------
+ 2 files changed, 60 insertions(+), 65 deletions(-)
+
+-- 
+1.8.3.1
