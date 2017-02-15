@@ -1,28 +1,31 @@
-Return-Path: <pbonzini@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <mbenes@suse.cz>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vNcVk632dzDq60
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2017 22:28:46 +1100 (AEDT)
-Subject: Re: linux-next: manual merge of the kvm tree with the powerpc tree
-To: Michael Ellerman <mpe@ellerman.id.au>,
- Stephen Rothwell <sfr@canb.auug.org.au>,
- Marcelo Tosatti <mtosatti@redhat.com>, Gleb Natapov <gleb@kernel.org>,
- KVM <kvm@vger.kernel.org>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, PowerPC <linuxppc-dev@lists.ozlabs.org>
-References: <20170210145943.5bf98310@canb.auug.org.au>
- <60b17c77-fb90-20e7-8cc7-a5970d2e5691@redhat.com>
- <87k28tma8d.fsf@concordia.ellerman.id.au>
- <4a43b8ed-bd08-f8e8-e749-178bb3bac815@redhat.com>
- <8760kbln52.fsf@concordia.ellerman.id.au>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
- Paul Mackerras <paulus@ozlabs.org>, Nicholas Piggin <npiggin@gmail.com>
-From: Paolo Bonzini <pbonzini@redhat.com>
-Message-ID: <d3828e13-3ca8-db6e-0ea7-4427a1be2815@redhat.com>
-Date: Wed, 15 Feb 2017 12:28:45 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vNdcR5B0vzDq60
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2017 23:18:47 +1100 (AEDT)
+Date: Wed, 15 Feb 2017 13:18:40 +0100 (CET)
+From: Miroslav Benes <mbenes@suse.cz>
+To: Josh Poimboeuf <jpoimboe@redhat.com>
+cc: Jessica Yu <jeyu@redhat.com>, Jiri Kosina <jikos@kernel.org>,
+ Petr Mladek <pmladek@suse.com>, linux-kernel@vger.kernel.org,
+ live-patching@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, x86@kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ Vojtech Pavlik <vojtech@suse.com>, Jiri Slaby <jslaby@suse.cz>,
+ Chris J Arges <chris.j.arges@canonical.com>,
+ Andy Lutomirski <luto@kernel.org>, Ingo Molnar <mingo@kernel.org>,
+ Peter Zijlstra <peterz@infradead.org>,
+ Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+ Balbir Singh <bsingharora@gmail.com>
+Subject: Re: [PATCH v5 01/15] stacktrace/x86: add function for detecting
+ reliable stack traces
+In-Reply-To: <baca30690796f3a0d938060b5f90b81375d76c30.1487036215.git.jpoimboe@redhat.com>
+Message-ID: <alpine.LSU.2.20.1702151317480.2793@pobox.suse.cz>
+References: <cover.1487036215.git.jpoimboe@redhat.com>
+ <baca30690796f3a0d938060b5f90b81375d76c30.1487036215.git.jpoimboe@redhat.com>
 MIME-Version: 1.0
-In-Reply-To: <8760kbln52.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,36 +35,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 15/02/2017 12:16, Michael Ellerman wrote:
->> However, the reason was that this is simply not how topic branches
->> should work: topic branches should be the base for other work, they
->> shouldn't contain _all_ the work.
+On Mon, 13 Feb 2017, Josh Poimboeuf wrote:
+
+> For live patching and possibly other use cases, a stack trace is only
+> useful if it can be assured that it's completely reliable.  Add a new
+> save_stack_trace_tsk_reliable() function to achieve that.
 > 
-> I think that's an overly specific definition of what a topic branch is.
+> Note that if the target task isn't the current task, and the target task
+> is allowed to run, then it could be writing the stack while the unwinder
+> is reading it, resulting in possible corruption.  So the caller of
+> save_stack_trace_tsk_reliable() must ensure that the task is either
+> 'current' or inactive.
 > 
-> It's just a branch related to some "topic", in this case powerpc kvm,
-> where commits can go so they can be shared between two trees.
+> save_stack_trace_tsk_reliable() relies on the x86 unwinder's detection
+> of pt_regs on the stack.  If the pt_regs are not user-mode registers
+> from a syscall, then they indicate an in-kernel interrupt or exception
+> (e.g. preemption or a page fault), in which case the stack is considered
+> unreliable due to the nature of frame pointers.
+> 
+> It also relies on the x86 unwinder's detection of other issues, such as:
+> 
+> - corrupted stack data
+> - stack grows the wrong way
+> - stack walk doesn't reach the bottom
+> - user didn't provide a large enough entries array
+> 
+> Such issues are reported by checking unwind_error() and !unwind_done().
+> 
+> Also add CONFIG_HAVE_RELIABLE_STACKTRACE so arch-independent code can
+> determine at build time whether the function is implemented.
+> 
+> Signed-off-by: Josh Poimboeuf <jpoimboe@redhat.com>
 
-Right.  However, in the specific case of working across maintainers, I
-think there is an interest in minimizing the number of files that are
-updated in two trees.  That limits conflicts.
+I do not see any difference from 4.1 version, so my
 
-Typically in x86 land people send a series with generic+KVM patches,
-Thomas Gleixner picks the generic ones and places them in a topic branch
-that we both pull from.  I then apply the KVM patches independently.
-It's worth noting that x86 arch maintainers don't care that much about
-what's going on in arch/x86/kvm/, and especially they delegate all
-testing to me.  So I guess that may be the source of the disagreement.
+Reviewed-by: Miroslav Benes <mbenes@suse.cz>
 
-If you would like to unify testing of non-KVM and KVM code for
-arch/powerpc, it doesn't make much sense for Paul to send his patches to
-me at all.  Instead, _I_ should prepare topic branches for Paul whenever
-I make sweeping all-arch changes to KVM, that he can include in his pull
-requests to you.  It'd feel weird though.
+stays.
 
-Paolo
-
->> As far as I understand, there was no reason for you to get B1.
->
-> Well no reason other than it's ~1300 lines of code in my arch, which I
-> would like to go through my normal testing procedures.
+Regards,
+Miroslav
