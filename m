@@ -2,8 +2,8 @@ Return-Path: <jonathan.derrick@intel.com>
 Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vNqSB32mZzDq5x
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 06:42:16 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vNqSC2yjRzDq5W
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 06:42:19 +1100 (AEDT)
 From: Jon Derrick <jonathan.derrick@intel.com>
 To: 
 Cc: Jon Derrick <jonathan.derrick@intel.com>, linux-block@vger.kernel.org,
@@ -12,9 +12,9 @@ Cc: Jon Derrick <jonathan.derrick@intel.com>, linux-block@vger.kernel.org,
  Rafael Antognolli <rafael.antognolli@intel.com>,
  Jens Axboe <axboe@kernel.dk>, Christoph Hellwig <hch@lst.de>,
  Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: [PATCHv3 1/4] block/sed: Use ssize_t on atom parsers to return errors
-Date: Wed, 15 Feb 2017 12:42:06 -0700
-Message-Id: <1487187731-10293-2-git-send-email-jonathan.derrick@intel.com>
+Subject: [PATCHv3 3/4] block/sed: Check received header lengths
+Date: Wed, 15 Feb 2017 12:42:08 -0700
+Message-Id: <1487187731-10293-4-git-send-email-jonathan.derrick@intel.com>
 In-Reply-To: <1487187731-10293-1-git-send-email-jonathan.derrick@intel.com>
 References: <1487187731-10293-1-git-send-email-jonathan.derrick@intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,102 +26,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The short atom parser can return an errno from decoding but does not
-currently return the error as a signed value. Convert all of the parsers
-to ssize_t.
+Add a buffer size check against discovery and response header lengths
+before we loop over their buffers.
 
 Signed-off-by: Jon Derrick <jonathan.derrick@intel.com>
 ---
- block/sed-opal.c | 28 ++++++++++++++--------------
- 1 file changed, 14 insertions(+), 14 deletions(-)
+ block/sed-opal.c | 35 +++++++++++++++++++++--------------
+ 1 file changed, 21 insertions(+), 14 deletions(-)
 
 diff --git a/block/sed-opal.c b/block/sed-opal.c
-index e95b8a5..77623ad 100644
+index d6dd604..feba34b 100644
 --- a/block/sed-opal.c
 +++ b/block/sed-opal.c
-@@ -635,8 +635,8 @@ static enum opal_token response_get_token(const struct parsed_resp *resp,
- 	return tok->pos[0];
- }
+@@ -340,10 +340,17 @@ static int opal_discovery0_end(struct opal_dev *dev)
+ 	const struct d0_header *hdr = (struct d0_header *)dev->resp;
+ 	const u8 *epos = dev->resp, *cpos = dev->resp;
+ 	u16 comid = 0;
++	u32 hlen = be32_to_cpu(hdr->length);
  
--static size_t response_parse_tiny(struct opal_resp_tok *tok,
--				  const u8 *pos)
-+static ssize_t response_parse_tiny(struct opal_resp_tok *tok,
-+				   const u8 *pos)
- {
- 	tok->pos = pos;
- 	tok->len = 1;
-@@ -652,8 +652,8 @@ static size_t response_parse_tiny(struct opal_resp_tok *tok,
- 	return tok->len;
- }
+-	print_buffer(dev->resp, be32_to_cpu(hdr->length));
++	print_buffer(dev->resp, hlen);
  
--static size_t response_parse_short(struct opal_resp_tok *tok,
--				   const u8 *pos)
-+static ssize_t response_parse_short(struct opal_resp_tok *tok,
-+				    const u8 *pos)
- {
- 	tok->pos = pos;
- 	tok->len = (pos[0] & SHORT_ATOM_LEN_MASK) + 1;
-@@ -665,7 +665,7 @@ static size_t response_parse_short(struct opal_resp_tok *tok,
- 		tok->type = OPAL_DTA_TOKENID_SINT;
- 	} else {
- 		u64 u_integer = 0;
--		int i, b = 0;
-+		ssize_t i, b = 0;
+-	epos += be32_to_cpu(hdr->length); /* end of buffer */
++	if (hlen > IO_BUFFER_LENGTH - sizeof(*hdr)) {
++		pr_warn("Discovery length overflows buffer (%zu+%u)/%u\n",
++			sizeof(*hdr), hlen, IO_BUFFER_LENGTH);
++		return -EFAULT;
++	}
++
++	epos += hlen; /* end of buffer */
+ 	cpos += sizeof(*hdr); /* current position on buffer */
  
- 		tok->type = OPAL_DTA_TOKENID_UINT;
- 		if (tok->len > 9) {
-@@ -682,8 +682,8 @@ static size_t response_parse_short(struct opal_resp_tok *tok,
- 	return tok->len;
- }
- 
--static size_t response_parse_medium(struct opal_resp_tok *tok,
--				    const u8 *pos)
-+static ssize_t response_parse_medium(struct opal_resp_tok *tok,
-+				     const u8 *pos)
- {
- 	tok->pos = pos;
- 	tok->len = (((pos[0] & MEDIUM_ATOM_LEN_MASK) << 8) | pos[1]) + 2;
-@@ -699,8 +699,8 @@ static size_t response_parse_medium(struct opal_resp_tok *tok,
- 	return tok->len;
- }
- 
--static size_t response_parse_long(struct opal_resp_tok *tok,
--				  const u8 *pos)
-+static ssize_t response_parse_long(struct opal_resp_tok *tok,
-+				   const u8 *pos)
- {
- 	tok->pos = pos;
- 	tok->len = ((pos[1] << 16) | (pos[2] << 8) | pos[3]) + 4;
-@@ -716,8 +716,8 @@ static size_t response_parse_long(struct opal_resp_tok *tok,
- 	return tok->len;
- }
- 
--static size_t response_parse_token(struct opal_resp_tok *tok,
--				   const u8 *pos)
-+static ssize_t response_parse_token(struct opal_resp_tok *tok,
-+				    const u8 *pos)
- {
- 	tok->pos = pos;
- 	tok->len = 1;
-@@ -734,7 +734,7 @@ static int response_parse(const u8 *buf, size_t length,
- 	struct opal_resp_tok *iter;
- 	int num_entries = 0;
+ 	while (cpos < epos && supported) {
+@@ -713,6 +720,7 @@ static int response_parse(const u8 *buf, size_t length,
  	int total;
--	size_t token_length;
-+	ssize_t token_length;
+ 	ssize_t token_length;
  	const u8 *pos;
++	u32 clen, plen, slen;
  
  	if (!buf)
-@@ -780,8 +780,8 @@ static int response_parse(const u8 *buf, size_t length,
- 		else /* TOKEN */
- 			token_length = response_parse_token(iter, pos);
+ 		return -EFAULT;
+@@ -724,17 +732,16 @@ static int response_parse(const u8 *buf, size_t length,
+ 	pos = buf;
+ 	pos += sizeof(*hdr);
  
--		if (token_length == -EINVAL)
--			return -EINVAL;
-+		if (token_length < 0)
-+			return token_length;
+-	pr_debug("Response size: cp: %d, pkt: %d, subpkt: %d\n",
+-		 be32_to_cpu(hdr->cp.length),
+-		 be32_to_cpu(hdr->pkt.length),
+-		 be32_to_cpu(hdr->subpkt.length));
+-
+-	if (hdr->cp.length == 0 || hdr->pkt.length == 0 ||
+-	    hdr->subpkt.length == 0) {
+-		pr_err("Bad header length. cp: %d, pkt: %d, subpkt: %d\n",
+-		       be32_to_cpu(hdr->cp.length),
+-		       be32_to_cpu(hdr->pkt.length),
+-		       be32_to_cpu(hdr->subpkt.length));
++	clen = be32_to_cpu(hdr->cp.length);
++	plen = be32_to_cpu(hdr->pkt.length);
++	slen = be32_to_cpu(hdr->subpkt.length);
++	pr_debug("Response size: cp: %u, pkt: %u, subpkt: %u\n",
++		 clen, plen, slen);
++
++	if (clen == 0 || plen == 0 || slen == 0 ||
++	    slen > IO_BUFFER_LENGTH - sizeof(*hdr)) {
++		pr_err("Bad header length. cp: %u, pkt: %u, subpkt: %u\n",
++		       clen, plen, slen);
+ 		print_buffer(pos, sizeof(*hdr));
+ 		return -EINVAL;
+ 	}
+@@ -743,7 +750,7 @@ static int response_parse(const u8 *buf, size_t length,
+ 		return -EFAULT;
  
- 		pos += token_length;
- 		total -= token_length;
+ 	iter = resp->toks;
+-	total = be32_to_cpu(hdr->subpkt.length);
++	total = slen;
+ 	print_buffer(pos, total);
+ 	while (total > 0) {
+ 		if (pos[0] <= TINY_ATOM_BYTE) /* tiny atom */
 -- 
 1.8.3.1
