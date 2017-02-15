@@ -1,46 +1,24 @@
-Return-Path: <gpiccoli@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <scott.bauer@intel.com>
+Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vNsgn3my7zDq5s
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 08:22:29 +1100 (AEDT)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v1FLEQIZ122441
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2017 16:22:27 -0500
-Received: from e24smtp01.br.ibm.com (e24smtp01.br.ibm.com [32.104.18.85])
- by mx0a-001b2d01.pphosted.com with ESMTP id 28mstgdbg6-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2017 16:22:27 -0500
-Received: from localhost
- by e24smtp01.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gpiccoli@linux.vnet.ibm.com>;
- Wed, 15 Feb 2017 19:22:24 -0200
-Received: from d24relay03.br.ibm.com (d24relay03.br.ibm.com [9.18.232.225])
- by d24dlp01.br.ibm.com (Postfix) with ESMTP id 7633E352005F
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2017 16:21:48 -0500 (EST)
-Received: from d24av04.br.ibm.com (d24av04.br.ibm.com [9.8.31.97])
- by d24relay03.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v1FLMLcr34537656
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2017 19:22:21 -0200
-Received: from d24av04.br.ibm.com (localhost [127.0.0.1])
- by d24av04.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v1FLMKqd021115
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2017 19:22:21 -0200
-Subject: Re: [PATCH] powerpc/xmon: Fix an unexpected xmon onoff state change
-To: Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-References: <1487144990-5969-1-git-send-email-xinhui.pan@linux.vnet.ibm.com>
-Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- npiggin@gmail.com
-From: "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com>
-Date: Wed, 15 Feb 2017 19:22:16 -0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vNsqw4PCDzDq5s
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 08:29:32 +1100 (AEDT)
+Date: Wed, 15 Feb 2017 14:19:52 -0700
+From: Scott Bauer <scott.bauer@intel.com>
+To: Jon Derrick <jonathan.derrick@intel.com>
+Cc: linux-block@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org,
+ Rafael Antognolli <rafael.antognolli@intel.com>,
+ Jens Axboe <axboe@kernel.dk>, Christoph Hellwig <hch@lst.de>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Subject: Re: [PATCHv3 2/4] block/sed: Add helper to qualify response tokens
+Message-ID: <20170215211952.GC2178@sbauer-Z170X-UD5>
+References: <1487187731-10293-1-git-send-email-jonathan.derrick@intel.com>
+ <1487187731-10293-3-git-send-email-jonathan.derrick@intel.com>
 MIME-Version: 1.0
-In-Reply-To: <1487144990-5969-1-git-send-email-xinhui.pan@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=windows-1252
-Message-Id: <e09792c7-585f-783f-7924-19eb4c8af871@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1487187731-10293-3-git-send-email-jonathan.derrick@intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,55 +28,90 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 15/02/2017 05:49, Pan Xinhui wrote:
-> Once xmon is triggered by sysrq-x, it is enabled always afterwards even
-> if it is disabled during boot. This will cause a system reset interrut
-> fail to dump. So keep xmon in its original state after exit.
+On Wed, Feb 15, 2017 at 12:42:07PM -0700, Jon Derrick wrote:
+> Add helper which verifies the response token is valid and matches the
+> expected value. Merges token_type and response_get_token.
 > 
-> Signed-off-by: Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>
-
-Patch is fine - minor typo: interrut => interrupt
-
-Feel free to add my:
-Tested-by: Guilherme G. Piccoli <gpiccoli@linux.vnet.ibm.com>
-
-Thanks,
-
-
-Guilherme
-
+> Signed-off-by: Jon Derrick <jonathan.derrick@intel.com>
 > ---
->  arch/powerpc/xmon/xmon.c | 5 ++++-
->  1 file changed, 4 insertions(+), 1 deletion(-)
+>  block/sed-opal.c | 61 +++++++++++++++++++++++---------------------------------
+>  1 file changed, 25 insertions(+), 36 deletions(-)
 > 
-> diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
-> index 9c0e17c..721212f 100644
-> --- a/arch/powerpc/xmon/xmon.c
-> +++ b/arch/powerpc/xmon/xmon.c
-> @@ -76,6 +76,7 @@ static int xmon_gate;
->  #endif /* CONFIG_SMP */
-> 
->  static unsigned long in_xmon __read_mostly = 0;
-> +static int xmon_off = 0;
-> 
->  static unsigned long adrs;
->  static int size = 1;
-> @@ -3250,6 +3251,8 @@ static void sysrq_handle_xmon(int key)
->  	/* ensure xmon is enabled */
->  	xmon_init(1);
->  	debugger(get_irq_regs());
-> +	if (xmon_off)
-> +		xmon_init(0);
+> diff --git a/block/sed-opal.c b/block/sed-opal.c
+> index 77623ad..d6dd604 100644
+> --- a/block/sed-opal.c
+> +++ b/block/sed-opal.c
+> @@ -591,48 +591,25 @@ static int cmd_finalize(struct opal_dev *cmd, u32 hsn, u32 tsn)
+>  	return 0;
 >  }
-> 
->  static struct sysrq_key_op sysrq_xmon_op = {
-> @@ -3266,7 +3269,7 @@ static int __init setup_xmon_sysrq(void)
->  __initcall(setup_xmon_sysrq);
->  #endif /* CONFIG_MAGIC_SYSRQ */
-> 
-> -static int __initdata xmon_early, xmon_off;
-> +static int __initdata xmon_early;
-> 
->  static int __init early_parse_xmon(char *p)
+>  
+> -static enum opal_response_token token_type(const struct parsed_resp *resp,
+> -					   int n)
+> +static const struct opal_resp_tok *response_get_token(
+> +				const struct parsed_resp *resp,
+> +				int n)
 >  {
-> 
+>  	const struct opal_resp_tok *tok;
+>  
+>  	if (n >= resp->num) {
+>  		pr_err("Token number doesn't exist: %d, resp: %d\n",
+>  		       n, resp->num);
+> -		return OPAL_DTA_TOKENID_INVALID;
+> +		return ERR_PTR(-EINVAL);
+>  	}
+>  
+>  	tok = &resp->toks[n];
+>  	if (tok->len == 0) {
+>  		pr_err("Token length must be non-zero\n");
+> -		return OPAL_DTA_TOKENID_INVALID;
+> +		return ERR_PTR(-EINVAL);
+>  	}
+>  
+> -	return tok->type;
+> -}
+> -
+> -/*
+> - * This function returns 0 in case of invalid token. One should call
+> - * token_type() first to find out if the token is valid or not.
+> - */
+> -static enum opal_token response_get_token(const struct parsed_resp *resp,
+> -					  int n)
+> -{
+> -	const struct opal_resp_tok *tok;
+> -
+> -	if (n >= resp->num) {
+> -		pr_err("Token number doesn't exist: %d, resp: %d\n",
+> -		       n, resp->num);
+> -		return 0;
+> -	}
+> -
+> -	tok = &resp->toks[n];
+> -	if (tok->len == 0) {
+> -		pr_err("Token length must be non-zero\n");
+> -		return 0;
+> -	}
+> -
+> -	return tok->pos[0];
+> +	return tok;
+>  }
+>  
+>  static ssize_t response_parse_tiny(struct opal_resp_tok *tok,
+> @@ -851,20 +828,32 @@ static u64 response_get_u64(const struct parsed_resp *resp, int n)
+>  	return resp->toks[n].stored.u;
+>  }
+>  
+> +static bool response_token_matches(const struct opal_resp_tok *token, u8 match)
+> +{
+> +	if (IS_ERR_OR_NULL(token) ||
+> +	    token->type != OPAL_DTA_TOKENID_TOKEN ||
+> +	    token->pos[0] != match)
+> +		return false;
+> +	return true;
+> +}
+> +
+
+This is sorta pedantic but from my reading of the code token can never be null. It will
+either be a valid pointer or ERR_PTR(-EINVAL), but never null.
+So maybe change this to IS_ERR(token) etc. Other than that little nit:
+
+Reviewed-by: Scott Bauer <scott.bauer@intel.com>
