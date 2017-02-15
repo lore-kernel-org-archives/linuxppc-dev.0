@@ -1,36 +1,46 @@
-Return-Path: <anju@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <mukesh02@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vNSBx6zBhzDq8X
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2017 16:14:33 +1100 (AEDT)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vNTcc2mk0zDqCr
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2017 17:18:24 +1100 (AEDT)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v1F5Drej074211
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2017 00:14:32 -0500
-Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
- by mx0a-001b2d01.pphosted.com with ESMTP id 28m9wxmm7r-1
+ v1F6E6Q4072499
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2017 01:18:21 -0500
+Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [125.16.236.6])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 28m2rsh7rd-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2017 00:14:31 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2017 01:18:21 -0500
 Received: from localhost
- by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <anju@linux.vnet.ibm.com>;
- Tue, 14 Feb 2017 22:14:31 -0700
-Subject: Re: [v4,1/2] arch/powerpc: Implement Optprobes
-To: Michael Ellerman <patch-notifications@ellerman.id.au>,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-References: <3vN27w1vFGz9s74@ozlabs.org>
-Cc: ananth@in.ibm.com, mahesh@linux.vnet.ibm.com, paulus@samba.org,
- mhiramat@kernel.org, naveen.n.rao@linux.vnet.ibm.com,
- hemant@linux.vnet.ibm.com, srikar@linux.vnet.ibm.com
-From: Anju T Sudhakar <anju@linux.vnet.ibm.com>
-Date: Wed, 15 Feb 2017 10:44:18 +0530
+ for <linuxppc-dev@lists.ozlabs.org> from <mukesh02@linux.vnet.ibm.com>;
+ Wed, 15 Feb 2017 11:48:13 +0530
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 9BD2E125805E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2017 11:48:13 +0530 (IST)
+Received: from d28av06.in.ibm.com (d28av06.in.ibm.com [9.184.220.48])
+ by d28relay05.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v1F6I8b428704802
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2017 11:48:08 +0530
+Received: from d28av06.in.ibm.com (localhost [127.0.0.1])
+ by d28av06.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v1F6IAiN025333
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2017 11:48:10 +0530
+Subject: Re: [PATCH 2/2] powerpc/powernv/opal-dump : Use IRQ_HANDLED instead
+ of numbers in interrupt handler
+To: Stewart Smith <stewart@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+References: <1480583289-6380-1-git-send-email-mukesh02@linux.vnet.ibm.com>
+ <1480583289-6380-2-git-send-email-mukesh02@linux.vnet.ibm.com>
+ <874lzw9h2l.fsf@linux.vnet.ibm.com>
+From: Mukesh Ojha <mukesh02@linux.vnet.ibm.com>
+Date: Wed, 15 Feb 2017 11:48:04 +0530
 MIME-Version: 1.0
-In-Reply-To: <3vN27w1vFGz9s74@ozlabs.org>
+In-Reply-To: <874lzw9h2l.fsf@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=windows-1252; format=flowed
-Message-Id: <584d290d-e571-5ade-c239-563cb0440704@linux.vnet.ibm.com>
+Message-Id: <ae53e4ca-9d88-9dcc-4c44-0db154428151@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,36 +50,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Thank You Michael.  :)
 
 
-On Tuesday 14 February 2017 06:10 PM, Michael Ellerman wrote:
-> On Wed, 2017-02-08 at 09:50:51 UTC, Anju T wrote:
->> Current infrastructure of kprobe uses the unconditional trap instruction
->> to probe a running kernel. Optprobe allows kprobe to replace the trap with
->> a branch instruction to a detour buffer. Detour buffer contains instructions
->> to create an in memory pt_regs. Detour buffer also has a call to
->> optimized_callback() which in turn call the pre_handler().
->> After the execution of the pre-handler, a call is made for instruction
->> emulation. The NIP is determined in advanced through dummy instruction
->> emulation and a branch instruction is created to the NIP at the end of
->> the trampoline.
->>
->> To address the limitation of branch instruction in POWER architecture,
->> detour buffer slot is allocated from a reserved area. For the time being,
->> 64KB is reserved in memory for this purpose.
->>
->> Instructions which can be emulated using analyse_instr() are the candidates
->> for optimization. Before optimization ensure that the address range
->> between the detour buffer allocated and the instruction being probed
->> is within +/- 32MB.
->>
->> Signed-off-by: Anju T Sudhakar <anju@linux.vnet.ibm.com>
->> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
->> Acked-by: Masami Hiramatsu <mhiramat@kernel.org>
-> Series applied to powerpc next, thanks.
+On Wednesday 15 February 2017 10:38 AM, Stewart Smith wrote:
+> Mukesh Ojha <mukesh02@linux.vnet.ibm.com> writes:
 >
-> https://git.kernel.org/powerpc/c/51c9c0843993528bffc920c54c2121
+>> Converts all the return explicit number to a more proper IRQ_HANDLED,
+>> which looks proper incase of interrupt handler returning case.
+>>
+>> Signed-off-by: Mukesh Ojha <mukesh02@linux.vnet.ibm.com>
+>> Reviewed-by: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
+>> ---
+>>   arch/powerpc/platforms/powernv/opal-dump.c | 9 +++------
+>>   1 file changed, 3 insertions(+), 6 deletions(-)
+> Should also have:
+> Fixes: 8034f715f ("powernv/opal-dump: Convert to irq domain")
 >
-> cheers
+> ?
 >
+
+Yeah .. i should have mentioned which patch missed these changes.
+
+-Mukesh
