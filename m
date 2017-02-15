@@ -1,9 +1,9 @@
 Return-Path: <jonathan.derrick@intel.com>
-Received: from mga04.intel.com (mga04.intel.com [192.55.52.120])
+Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vNtC429V1zDq5s
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 08:46:06 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vNtC55xFzzDq5s
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 08:46:09 +1100 (AEDT)
 From: Jon Derrick <jonathan.derrick@intel.com>
 To: 
 Cc: Jon Derrick <jonathan.derrick@intel.com>, linux-block@vger.kernel.org,
@@ -12,9 +12,11 @@ Cc: Jon Derrick <jonathan.derrick@intel.com>, linux-block@vger.kernel.org,
  Rafael Antognolli <rafael.antognolli@intel.com>,
  Jens Axboe <axboe@kernel.dk>, Christoph Hellwig <hch@lst.de>,
  Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: [PATCHv4 0/4] OPAL patches
-Date: Wed, 15 Feb 2017 14:45:53 -0700
-Message-Id: <1487195159-12599-1-git-send-email-jonathan.derrick@intel.com>
+Subject: [PATCHv4 1/4] block/sed: Use ssize_t on atom parsers to return errors
+Date: Wed, 15 Feb 2017 14:45:54 -0700
+Message-Id: <1487195159-12599-2-git-send-email-jonathan.derrick@intel.com>
+In-Reply-To: <1487195159-12599-1-git-send-email-jonathan.derrick@intel.com>
+References: <1487195159-12599-1-git-send-email-jonathan.derrick@intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,30 +26,103 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Just a couple of fixes for sed-opal to prevent faulty firmware from
-allowing us to go off in the weeds, and a helper to remove some
-duplicate code.
+The short atom parser can return an errno from decoding but does not
+currently return the error as a signed value. Convert all of the parsers
+to ssize_t.
 
-v3->v4:
-uses IS_ERR since tok is embedded in the response buffer and cannot be NULL
+Signed-off-by: Jon Derrick <jonathan.derrick@intel.com>
+Reviewed-by: Scott Bauer <scott.bauer@intel.com>
+---
+ block/sed-opal.c | 28 ++++++++++++++--------------
+ 1 file changed, 14 insertions(+), 14 deletions(-)
 
-v2->v3:
-corrected the bad calculation on the response parser check and changed
-it to only check the subpacket length
-
-v1->v2:
-left tok->len as a size_t
-got everyone important on the same email thread
-
-Jon Derrick (4):
-  block/sed: Use ssize_t on atom parsers to return errors
-  block/sed: Add helper to qualify response tokens
-  block/sed: Check received header lengths
-  MAINTAINERS: Remove powerpc's opal match
-
- MAINTAINERS      |   1 -
- block/sed-opal.c | 124 +++++++++++++++++++++++++++----------------------------
- 2 files changed, 60 insertions(+), 65 deletions(-)
-
+diff --git a/block/sed-opal.c b/block/sed-opal.c
+index e95b8a5..77623ad 100644
+--- a/block/sed-opal.c
++++ b/block/sed-opal.c
+@@ -635,8 +635,8 @@ static enum opal_token response_get_token(const struct parsed_resp *resp,
+ 	return tok->pos[0];
+ }
+ 
+-static size_t response_parse_tiny(struct opal_resp_tok *tok,
+-				  const u8 *pos)
++static ssize_t response_parse_tiny(struct opal_resp_tok *tok,
++				   const u8 *pos)
+ {
+ 	tok->pos = pos;
+ 	tok->len = 1;
+@@ -652,8 +652,8 @@ static size_t response_parse_tiny(struct opal_resp_tok *tok,
+ 	return tok->len;
+ }
+ 
+-static size_t response_parse_short(struct opal_resp_tok *tok,
+-				   const u8 *pos)
++static ssize_t response_parse_short(struct opal_resp_tok *tok,
++				    const u8 *pos)
+ {
+ 	tok->pos = pos;
+ 	tok->len = (pos[0] & SHORT_ATOM_LEN_MASK) + 1;
+@@ -665,7 +665,7 @@ static size_t response_parse_short(struct opal_resp_tok *tok,
+ 		tok->type = OPAL_DTA_TOKENID_SINT;
+ 	} else {
+ 		u64 u_integer = 0;
+-		int i, b = 0;
++		ssize_t i, b = 0;
+ 
+ 		tok->type = OPAL_DTA_TOKENID_UINT;
+ 		if (tok->len > 9) {
+@@ -682,8 +682,8 @@ static size_t response_parse_short(struct opal_resp_tok *tok,
+ 	return tok->len;
+ }
+ 
+-static size_t response_parse_medium(struct opal_resp_tok *tok,
+-				    const u8 *pos)
++static ssize_t response_parse_medium(struct opal_resp_tok *tok,
++				     const u8 *pos)
+ {
+ 	tok->pos = pos;
+ 	tok->len = (((pos[0] & MEDIUM_ATOM_LEN_MASK) << 8) | pos[1]) + 2;
+@@ -699,8 +699,8 @@ static size_t response_parse_medium(struct opal_resp_tok *tok,
+ 	return tok->len;
+ }
+ 
+-static size_t response_parse_long(struct opal_resp_tok *tok,
+-				  const u8 *pos)
++static ssize_t response_parse_long(struct opal_resp_tok *tok,
++				   const u8 *pos)
+ {
+ 	tok->pos = pos;
+ 	tok->len = ((pos[1] << 16) | (pos[2] << 8) | pos[3]) + 4;
+@@ -716,8 +716,8 @@ static size_t response_parse_long(struct opal_resp_tok *tok,
+ 	return tok->len;
+ }
+ 
+-static size_t response_parse_token(struct opal_resp_tok *tok,
+-				   const u8 *pos)
++static ssize_t response_parse_token(struct opal_resp_tok *tok,
++				    const u8 *pos)
+ {
+ 	tok->pos = pos;
+ 	tok->len = 1;
+@@ -734,7 +734,7 @@ static int response_parse(const u8 *buf, size_t length,
+ 	struct opal_resp_tok *iter;
+ 	int num_entries = 0;
+ 	int total;
+-	size_t token_length;
++	ssize_t token_length;
+ 	const u8 *pos;
+ 
+ 	if (!buf)
+@@ -780,8 +780,8 @@ static int response_parse(const u8 *buf, size_t length,
+ 		else /* TOKEN */
+ 			token_length = response_parse_token(iter, pos);
+ 
+-		if (token_length == -EINVAL)
+-			return -EINVAL;
++		if (token_length < 0)
++			return token_length;
+ 
+ 		pos += token_length;
+ 		total -= token_length;
 -- 
 1.8.3.1
