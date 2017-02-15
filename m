@@ -1,35 +1,21 @@
-Return-Path: <xyjxie@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mhiramat@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vNVCk3MZ7zDqGl
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2017 17:45:22 +1100 (AEDT)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v1F6hQ9R086459
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2017 01:45:20 -0500
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
- by mx0b-001b2d01.pphosted.com with ESMTP id 28mh7csfaq-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2017 01:45:19 -0500
-Received: from localhost
- by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <xyjxie@linux.vnet.ibm.com>;
- Tue, 14 Feb 2017 23:45:19 -0700
-From: Yongji Xie <xyjxie@linux.vnet.ibm.com>
-To: bhelgaas@google.com
-Cc: linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- alex.williamson@redhat.com, gwshan@linux.vnet.ibm.com, aik@ozlabs.ru,
- benh@kernel.crashing.org, mpe@ellerman.id.au, paulus@samba.org,
- zhong@linux.vnet.ibm.com
-Subject: [PATCH v9 3/3] PCI: Don't extend device's size when using default
- alignment for all devices
-Date: Wed, 15 Feb 2017 14:45:06 +0800
-In-Reply-To: <1487141106-2503-1-git-send-email-xyjxie@linux.vnet.ibm.com>
-References: <1487141106-2503-1-git-send-email-xyjxie@linux.vnet.ibm.com>
-Message-Id: <1487141106-2503-4-git-send-email-xyjxie@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vNVny1nhDzDqC0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2017 18:11:34 +1100 (AEDT)
+Date: Wed, 15 Feb 2017 16:11:26 +0900
+From: Masami Hiramatsu <mhiramat@kernel.org>
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+Cc: Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>, Michael Ellerman
+ <mpe@ellerman.id.au>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 1/3] powerpc: kprobes: add support for KPROBES_ON_FTRACE
+Message-Id: <20170215161126.104c1db721182e1e75244125@kernel.org>
+In-Reply-To: <1cc8a5580ae3a642fea137b7fe9c526402d4af33.1487098440.git.naveen.n.rao@linux.vnet.ibm.com>
+References: <1cc8a5580ae3a642fea137b7fe9c526402d4af33.1487098440.git.naveen.n.rao@linux.vnet.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,115 +25,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently we reassign the alignment by extending resources' size in
-pci_reassigndev_resource_alignment(). This could potentially break
-some drivers when the driver uses the size to locate register
-whose length is related to the size. Some examples as below:
+Hi Naveen,
 
-- misc\Hpilo.c:
-off = pci_resource_len(pdev, bar) - 0x2000;
+On Wed, 15 Feb 2017 00:28:34 +0530
+"Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
 
-- net\ethernet\chelsio\cxgb4\cxgb4_uld.h:
-(pci_resource_len((pdev), 2) - roundup_pow_of_two((vres)->ocq.size))
+> diff --git a/arch/powerpc/kernel/optprobes.c b/arch/powerpc/kernel/optprobes.c
+> index e51a045f3d3b..a8f414a0b141 100644
+> --- a/arch/powerpc/kernel/optprobes.c
+> +++ b/arch/powerpc/kernel/optprobes.c
+> @@ -70,6 +70,9 @@ static unsigned long can_optimize(struct kprobe *p)
+>  	struct instruction_op op;
+>  	unsigned long nip = 0;
+>  
+> +	if (unlikely(kprobe_ftrace(p)))
+> +		return 0;
+> +
 
-- infiniband\hw\nes\Nes_hw.c:
-num_pds = pci_resource_len(nesdev->pcidev, BAR_1) >> PAGE_SHIFT;
+Hmm, this should not be checked in arch-depend code, since it may duplicate
+code in each arch. Please try below.
 
-This risk could be easily prevented before because we only had one way
-(kernel parameter resource_alignment) to touch those codes. And even
-some users may be happy to see the extended size.
+Thanks,
 
-But now we define a default alignment for all devices which would also
-touch those codes. It would be hard to prevent the risk in this case. So
-this patch tries to use START_ALIGNMENT to identify the resource's
-alignment without extending the size when the alignment reassigning is
-caused by the default alignment.
+commit 897bb304974c1b0c19a4274fea220b175b07f353
+Author: Masami Hiramatsu <mhiramat@kernel.org>
+Date:   Wed Feb 15 15:48:14 2017 +0900
 
-Signed-off-by: Yongji Xie <xyjxie@linux.vnet.ibm.com>
----
- drivers/pci/pci.c |   34 ++++++++++++++++++++++++----------
- 1 files changed, 24 insertions(+), 10 deletions(-)
+    kprobes: Skip preparing optprobe if the probe is ftrace-based
+    
+    Skip preparing optprobe if the probe is ftrace-based, since
+    anyway, it must not be optimized (or already optimized by
+    ftrace).
+    
+    Signed-off-by: Masami Hiramatsu <mhiramat@kernel.org>
 
-diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-index 2622e9b..0017e5e 100644
---- a/drivers/pci/pci.c
-+++ b/drivers/pci/pci.c
-@@ -4958,7 +4958,8 @@ void pci_ignore_hotplug(struct pci_dev *dev)
-  * RETURNS: Resource alignment if it is specified.
-  *          Zero if it is not specified.
-  */
--static resource_size_t pci_specified_resource_alignment(struct pci_dev *dev)
-+static resource_size_t pci_specified_resource_alignment(struct pci_dev *dev,
-+							bool *resize)
+diff --git a/kernel/kprobes.c b/kernel/kprobes.c
+index ebb4dad..546a8b1 100644
+--- a/kernel/kprobes.c
++++ b/kernel/kprobes.c
+@@ -746,13 +746,20 @@ static void kill_optimized_kprobe(struct kprobe *p)
+ 	arch_remove_optimized_kprobe(op);
+ }
+ 
++static inline
++void __prepare_optimized_kprobe(struct optimized_kprobe *op, struct kprobe *p)
++{
++	if (!kprobe_ftrace(p))
++		arch_prepare_optimized_kprobe(op, p);
++}
++
+ /* Try to prepare optimized instructions */
+ static void prepare_optimized_kprobe(struct kprobe *p)
  {
- 	int seg, bus, slot, func, align_order, count;
- 	unsigned short vendor, device, subsystem_vendor, subsystem_device;
-@@ -5002,6 +5003,7 @@ static resource_size_t pci_specified_resource_alignment(struct pci_dev *dev)
- 				(!device || (device == dev->device)) &&
- 				(!subsystem_vendor || (subsystem_vendor == dev->subsystem_vendor)) &&
- 				(!subsystem_device || (subsystem_device == dev->subsystem_device))) {
-+				*resize = true;
- 				if (align_order == -1)
- 					align = PAGE_SIZE;
- 				else
-@@ -5027,6 +5029,7 @@ static resource_size_t pci_specified_resource_alignment(struct pci_dev *dev)
- 				bus == dev->bus->number &&
- 				slot == PCI_SLOT(dev->devfn) &&
- 				func == PCI_FUNC(dev->devfn)) {
-+				*resize = true;
- 				if (align_order == -1)
- 					align = PAGE_SIZE;
- 				else
-@@ -5059,6 +5062,7 @@ void pci_reassigndev_resource_alignment(struct pci_dev *dev)
- 	struct resource *r;
- 	resource_size_t align, size;
- 	u16 command;
-+	bool resize = false;
+ 	struct optimized_kprobe *op;
  
- 	/*
- 	 * VF BARs are read-only zero according to SR-IOV spec r1.1, sec
-@@ -5070,7 +5074,7 @@ void pci_reassigndev_resource_alignment(struct pci_dev *dev)
- 		return;
+ 	op = container_of(p, struct optimized_kprobe, kp);
+-	arch_prepare_optimized_kprobe(op, p);
++	__prepare_optimized_kprobe(op, p);
+ }
  
- 	/* check if specified PCI is target device to reassign */
--	align = pci_specified_resource_alignment(dev);
-+	align = pci_specified_resource_alignment(dev, &resize);
- 	if (!align)
- 		return;
+ /* Allocate new optimized_kprobe and try to prepare optimized instructions */
+@@ -766,7 +773,7 @@ static struct kprobe *alloc_aggr_kprobe(struct kprobe *p)
  
-@@ -5098,15 +5102,25 @@ void pci_reassigndev_resource_alignment(struct pci_dev *dev)
- 		}
+ 	INIT_LIST_HEAD(&op->list);
+ 	op->kp.addr = p->addr;
+-	arch_prepare_optimized_kprobe(op, p);
++	__prepare_optimized_kprobe(op, p);
  
- 		size = resource_size(r);
--		if (size < align) {
--			size = align;
--			dev_info(&dev->dev,
--				"Rounding up size of resource #%d to %#llx.\n",
--				i, (unsigned long long)size);
-+		if (resize) {
-+			if (size < align) {
-+				size = align;
-+				dev_info(&dev->dev,
-+					"Rounding up size of resource #%d to %#llx.\n",
-+					i, (unsigned long long)size);
-+			}
-+			r->flags |= IORESOURCE_UNSET;
-+			r->end = size - 1;
-+			r->start = 0;
-+		} else {
-+			if (size < align) {
-+				r->flags &= ~IORESOURCE_SIZEALIGN;
-+				r->flags |= IORESOURCE_STARTALIGN |
-+							IORESOURCE_UNSET;
-+				r->start = align;
-+				r->end = r->start + size - 1;
-+			}
- 		}
--		r->flags |= IORESOURCE_UNSET;
--		r->end = size - 1;
--		r->start = 0;
- 	}
- 	/* Need to disable bridge's resource window,
- 	 * to enable the kernel to reassign new resource
+ 	return &op->kp;
+ }
+
+
+
 -- 
-1.7.1
+Masami Hiramatsu <mhiramat@kernel.org>
