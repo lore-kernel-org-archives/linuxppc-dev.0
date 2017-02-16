@@ -1,16 +1,22 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <kishon@ti.com>
+Received: from fllnx210.ext.ti.com (fllnx210.ext.ti.com [198.47.19.17])
+ (using TLSv1 with cipher DHE-RSA-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vPFYg1YpczDq60
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 23:18:31 +1100 (AEDT)
-In-Reply-To: <20170216024921.GB19110@fergus.ozlabs.ibm.com>
-To: Paul Mackerras <paulus@ozlabs.org>, linuxppc-dev@ozlabs.org
-From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: powerpc/64: Disable use of radix under a hypervisor
-Message-Id: <3vPFYg08d6z9s8S@ozlabs.org>
-Date: Thu, 16 Feb 2017 23:18:30 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vPH8H3rbMzDq60
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Feb 2017 00:30:06 +1100 (AEDT)
+From: Kishon Vijay Abraham I <kishon@ti.com>
+To: Bjorn Helgaas <bhelgaas@google.com>, Jingoo Han <jingoohan1@gmail.com>,
+ <linux-kernel@vger.kernel.org>, <linux-pci@vger.kernel.org>,
+ <linux-omap@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
+ <linux-samsung-soc@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
+ <linux-arm-kernel@axis.com>
+CC: Joao Pinto <Joao.Pinto@synopsys.com>, <nsekhar@ti.com>, Kishon Vijay
+ Abraham I <kishon@ti.com>
+Subject: [PATCH 0/4] PCI: dwc: cleanup designware driver
+Date: Thu, 16 Feb 2017 18:59:08 +0530
+Message-ID: <1487251752-12478-1-git-send-email-kishon@ti.com>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,27 +26,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2017-02-16 at 02:49:21 UTC, Paul Mackerras wrote:
-> Currently, if the kernel is running on a POWER9 processor under a
-> hypervisor, it may try to use the radix MMU even though it doesn't have
-> the necessary code to do so (it doesn't negotiate use of radix, and it
-> doesn't do the H_REGISTER_PROC_TBL hcall).  If the hypervisor supports
-> both radix and HPT, then it will set up the guest to use HPT (since the
-> guest doesn't request radix in the CAS call), but if the radix feature
-> bit is set in the ibm,pa-features property (which is valid, since
-> ibm,pa-features is defined to represent the capabilities of the
-> processor) the guest will try to use radix, resulting in a crash when
-> it turns the MMU on.
-> 
-> This makes the minimal fix for the current code, which is to disable
-> radix unless we are running in hypervisor mode.
-> 
-> Fixes: 2bfd65e45e87 ("powerpc/mm/radix: Add radix callbacks for early init routines")
-> Cc: stable@vger.kernel.org # v4.7+
-> Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
+This series does additional cleanup on top of [1] in preparation
+for adding endpoint mode support to designware driver.
 
-Applied to powerpc fixes, thanks.
+This series was previously sent as part of endpoint support series [2].
 
-https://git.kernel.org/powerpc/c/3f91a89d424a79f8082525db5a375e
+Once this series is merged, PCI endpoint series can be merged. I'll wait
+for this series to be merged before sending the next revision of endpoint
+series.
 
-cheers
+The entire endpoint support is pushed here:
+git://git.kernel.org/pub/scm/linux/kernel/git/kishon/pci-endpoint.git next
+
+[1] -> https://lkml.org/lkml/2017/2/15/273
+[2] -> https://lkml.org/lkml/2017/1/13/562
+
+Kishon Vijay Abraham I (4):
+  PCI: dwc: designware: Add new *ops* for cpu addr fixup
+  PCI: dwc: dra7xx: Populate cpu_addr_fixup ops
+  PCI: dwc: all: Modify dbi accessors to take dbi_base as argument
+  PCI: dwc: all: Modify dbi accessors to access data of 4/2/1     
+    bytes
+
+ drivers/pci/dwc/pci-dra7xx.c           |   21 ++++---
+ drivers/pci/dwc/pci-exynos.c           |   14 +++--
+ drivers/pci/dwc/pci-imx6.c             |   67 +++++++++++---------
+ drivers/pci/dwc/pci-keystone-dw.c      |   16 +++--
+ drivers/pci/dwc/pcie-armada8k.c        |   39 +++++++-----
+ drivers/pci/dwc/pcie-artpec6.c         |    7 ++-
+ drivers/pci/dwc/pcie-designware-host.c |   20 +++---
+ drivers/pci/dwc/pcie-designware.c      |  108 ++++++++++++++++++++------------
+ drivers/pci/dwc/pcie-designware.h      |   13 ++--
+ drivers/pci/dwc/pcie-hisi.c            |   17 ++---
+ 10 files changed, 192 insertions(+), 130 deletions(-)
+
+-- 
+1.7.9.5
