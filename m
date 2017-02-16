@@ -1,16 +1,15 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vP58g1lwMzDqBW
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vP58g5MrMzDq60
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 16:59:47 +1100 (AEDT)
-In-Reply-To: <20170202050344.6825-2-bsingharora@gmail.com>
-To: Balbir Singh <bsingharora@gmail.com>, linuxppc-dev@ozlabs.org
+In-Reply-To: <1487156077-30798-1-git-send-email-mpe@ellerman.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: Re: [1/3] powerpc/xmon Update ppc-dis/opc.c and ppc.h
-Message-Id: <3vP58g0L6lz9s9r@ozlabs.org>
-Date: Thu, 16 Feb 2017 16:59:46 +1100 (AEDT)
+Subject: Re: powerpc/mm: Fix build break with BOOK3S_64=n and MEMORY_HOTPLUG=y
+Message-Id: <3vP58g3H2nz9sD5@ozlabs.org>
+Date: Thu, 16 Feb 2017 16:59:47 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,21 +19,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2017-02-02 at 05:03:42 UTC, Balbir Singh wrote:
-> Upgrade ppc-opc.c, ppc-dis.c and ppc.h to the
-> versions belonging to the following commit
+On Wed, 2017-02-15 at 10:54:37 UTC, Michael Ellerman wrote:
+> The recently merged HPT (Hash Page Table) resize support broke the build
+> when BOOK3S_64=n (ie. 32-bit or 64-bit Book3E) and MEMORY_HOTPLUG=y:
 > 
-> 65b650b4c7463f4508bed523c24ab0031a5ae5cd
-> * ppc-dis.c (print_insn_powerpc): Don't skip all operands
->   after setting skip_optional.
+>   arch/powerpc/mm/mem.o: In function `.arch_add_memory':
+>   (.text+0x4e4): undefined reference to `.resize_hpt_for_hotplug'
 > 
-> This version will not compile, but make it easier to
-> apply newer reclicensed commits on top of
+> Fix it by adding a dummy version.
 > 
-> Signed-off-by: Balbir Singh <bsingharora@gmail.com>
+> Fixes: 438cc81a41e8 ("powerpc/pseries: Automatically resize HPT for memory hot add/remove")
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
-Series applied to powerpc next, thanks.
+Applied to powerpc next.
 
-https://git.kernel.org/powerpc/c/cc7639ce18b950086c7b06e0035065
+https://git.kernel.org/powerpc/c/36b390fd624a7f3a64bda5de54fa58
 
 cheers
