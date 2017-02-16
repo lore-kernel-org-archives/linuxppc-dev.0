@@ -3,46 +3,46 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vPChC1Np8zDqHG
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 21:54:02 +1100 (AEDT)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v1GArUZj004769
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 05:54:00 -0500
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
- by mx0a-001b2d01.pphosted.com with ESMTP id 28napkg24p-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vPChK5FMLzDqHJ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 21:54:09 +1100 (AEDT)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v1GAroxF051428
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 05:54:05 -0500
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 28n823psd1-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 05:54:00 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 05:54:05 -0500
 Received: from localhost
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Thu, 16 Feb 2017 20:53:56 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 9CD7D2CE8046
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 21:53:54 +1100 (EST)
+ Thu, 16 Feb 2017 20:54:02 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 3ECE02BB0057
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 21:53:59 +1100 (EST)
 Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v1GArkRQ38273234
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 21:53:54 +1100
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v1GArpGj7209120
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 21:53:59 +1100
 Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
  by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v1GArM3b005766
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 21:53:22 +1100
+ v1GArQS3005809
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 21:53:27 +1100
 From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
 To: Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>,
  Masami Hiramatsu <mhiramat@kernel.org>,
  Michael Ellerman <mpe@ellerman.id.au>
 Cc: Ingo Molnar <mingo@redhat.com>, linux-kernel@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 4/5] powerpc: kprobes: factor out code to emulate instruction
- into a helper
-Date: Thu, 16 Feb 2017 16:22:42 +0530
+Subject: [PATCH 5/5] powerpc: kprobes: emulate instructions on kprobe handler
+ re-entry
+Date: Thu, 16 Feb 2017 16:22:43 +0530
 In-Reply-To: <49dae0da9b7cee3f1747b116cd59854ece84bf02.1487239680.git.naveen.n.rao@linux.vnet.ibm.com>
 References: <49dae0da9b7cee3f1747b116cd59854ece84bf02.1487239680.git.naveen.n.rao@linux.vnet.ibm.com>
 In-Reply-To: <49dae0da9b7cee3f1747b116cd59854ece84bf02.1487239680.git.naveen.n.rao@linux.vnet.ibm.com>
 References: <49dae0da9b7cee3f1747b116cd59854ece84bf02.1487239680.git.naveen.n.rao@linux.vnet.ibm.com>
-Message-Id: <1def0c06fe2387edd925939b2bdc0d099ac249ae.1487239680.git.naveen.n.rao@linux.vnet.ibm.com>
+Message-Id: <8471fff08f4118b0dbec7893d86a01a2c8856f40.1487239680.git.naveen.n.rao@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,93 +52,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This helper will be used in a subsequent patch to emulate instructions
-on re-entering the kprobe handler. No functional change.
+On kprobe handler re-entry, try to emulate the instruction rather than
+single stepping always.
+
+As a related change, remove the duplicate saving of msr as that is
+already done in set_current_kprobe()
 
 Acked-by: Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>
 Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
 ---
- arch/powerpc/kernel/kprobes.c | 52 ++++++++++++++++++++++++++-----------------
- 1 file changed, 31 insertions(+), 21 deletions(-)
+ arch/powerpc/kernel/kprobes.c | 9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
 
 diff --git a/arch/powerpc/kernel/kprobes.c b/arch/powerpc/kernel/kprobes.c
-index 0732a0291ace..8b48f7d046bd 100644
+index 8b48f7d046bd..005bd4a75902 100644
 --- a/arch/powerpc/kernel/kprobes.c
 +++ b/arch/powerpc/kernel/kprobes.c
-@@ -207,6 +207,35 @@ void __kprobes arch_prepare_kretprobe(struct kretprobe_instance *ri,
- 	regs->link = (unsigned long)kretprobe_trampoline;
- }
- 
-+int __kprobes try_to_emulate(struct kprobe *p, struct pt_regs *regs)
-+{
-+	int ret;
-+	unsigned int insn = *p->ainsn.insn;
+@@ -273,10 +273,17 @@ int __kprobes kprobe_handler(struct pt_regs *regs)
+ 			 */
+ 			save_previous_kprobe(kcb);
+ 			set_current_kprobe(p, regs, kcb);
+-			kcb->kprobe_saved_msr = regs->msr;
+ 			kprobes_inc_nmissed_count(p);
+ 			prepare_singlestep(p, regs);
+ 			kcb->kprobe_status = KPROBE_REENTER;
++			if (p->ainsn.boostable >= 0) {
++				ret = try_to_emulate(p, regs);
 +
-+	/* regs->nip is also adjusted if emulate_step returns 1 */
-+	ret = emulate_step(regs, insn);
-+	if (ret > 0) {
-+		/*
-+		 * Once this instruction has been boosted
-+		 * successfully, set the boostable flag
-+		 */
-+		if (unlikely(p->ainsn.boostable == 0))
-+			p->ainsn.boostable = 1;
-+	} else if (ret < 0) {
-+		/*
-+		 * We don't allow kprobes on mtmsr(d)/rfi(d), etc.
-+		 * So, we should never get here... but, its still
-+		 * good to catch them, just in case...
-+		 */
-+		printk("Can't step on instruction %x\n", insn);
-+		BUG();
-+	} else if (ret == 0)
-+		/* This instruction can't be boosted */
-+		p->ainsn.boostable = -1;
-+
-+	return ret;
-+}
-+
- int __kprobes kprobe_handler(struct pt_regs *regs)
- {
- 	struct kprobe *p;
-@@ -302,18 +331,9 @@ int __kprobes kprobe_handler(struct pt_regs *regs)
- 
- ss_probe:
- 	if (p->ainsn.boostable >= 0) {
--		unsigned int insn = *p->ainsn.insn;
-+		ret = try_to_emulate(p, regs);
- 
--		/* regs->nip is also adjusted if emulate_step returns 1 */
--		ret = emulate_step(regs, insn);
- 		if (ret > 0) {
--			/*
--			 * Once this instruction has been boosted
--			 * successfully, set the boostable flag
--			 */
--			if (unlikely(p->ainsn.boostable == 0))
--				p->ainsn.boostable = 1;
--
- 			if (p->post_handler)
- 				p->post_handler(p, regs, 0);
- 
-@@ -321,17 +341,7 @@ int __kprobes kprobe_handler(struct pt_regs *regs)
- 			reset_current_kprobe();
- 			preempt_enable_no_resched();
++				if (ret > 0) {
++					restore_previous_kprobe(kcb);
++					return 1;
++				}
++			}
  			return 1;
--		} else if (ret < 0) {
--			/*
--			 * We don't allow kprobes on mtmsr(d)/rfi(d), etc.
--			 * So, we should never get here... but, its still
--			 * good to catch them, just in case...
--			 */
--			printk("Can't step on instruction %x\n", insn);
--			BUG();
--		} else if (ret == 0)
--			/* This instruction can't be boosted */
--			p->ainsn.boostable = -1;
-+		}
- 	}
- 	prepare_singlestep(p, regs);
- 	kcb->kprobe_status = KPROBE_HIT_SS;
+ 		} else {
+ 			if (*addr != BREAKPOINT_INSTRUCTION) {
 -- 
 2.11.0
