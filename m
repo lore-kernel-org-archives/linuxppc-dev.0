@@ -1,18 +1,19 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vP58f4jstzDq60
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 16:59:46 +1100 (AEDT)
-In-Reply-To: <20170130161259.25937-1-aneesh.kumar@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vP58g1kYDzDq60
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 16:59:47 +1100 (AEDT)
+In-Reply-To: <1486609101-5231-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
  benh@kernel.crashing.org, paulus@samba.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 Cc: linuxppc-dev@lists.ozlabs.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: powerpc/mm: Update PROTFAULT handling in the page fault path
-Message-Id: <3vP58f3KLrz9s9Z@ozlabs.org>
-Date: Thu, 16 Feb 2017 16:59:46 +1100 (AEDT)
+Subject: Re: [1/3] powerpc/mm/radix: Update pte update sequence for pte clear
+ case
+Message-Id: <3vP58g0xpqz9s9x@ozlabs.org>
+Date: Thu, 16 Feb 2017 16:59:47 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,22 +23,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2017-01-30 at 16:12:59 UTC, "Aneesh Kumar K.V" wrote:
-> With radix, we can get page fault with DSISR_PROTFAULT value set in case of
-> PROT_NONE or autonuma mapping. The PROT_NONE case in handled by the vma check
-> where we consider the access bad. For autonuma we should fall through and fixup
-> the access mask correctly.
+On Thu, 2017-02-09 at 02:58:19 UTC, "Aneesh Kumar K.V" wrote:
+> In the kernel we do follow the below sequence in different code paths.
+> pte = ptep_get_clear(ptep)
+> ....
+> set_pte_at(ptep, pte)
 > 
-> Without this patch we trigger the WARN_ON() on radix. This code moves that
-> WARN_ON() within a radix_enabled() check. I also moved the WARN_ON() outside
-> the if condition making it apply for all type of faults (exec/write/read). It
-> is also conditionalized for book3s, because BOOK3E can also get a PROTFAULT to
-> handle the D/I cache sync.
+> We do that for mremap, autonuma protection update and softdirty clearing. This
+> implies our optimization to skip a tlb flush when clearing a pte update is
+> not valid, because for DD1 system that followup set_pte_at will be done witout
+> doing the required tlbflush. Fix that by always doing the dd1 style pte update
+> irrespective of new_pte value. In a later patch we will optimize the application
+> exit case.
 > 
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 > Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> Tested-by: Michael Neuling <mikey@neuling.org>
 
-Applied to powerpc next, thanks.
+Series applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/18061c17c8ecdbdbf1e7d1695ec44e
+https://git.kernel.org/powerpc/c/ca94573b9c69d224e50e1084a27767
 
 cheers
