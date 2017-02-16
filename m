@@ -1,17 +1,16 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vP0x15jNkzDq60
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 13:49:25 +1100 (AEDT)
-Date: Thu, 16 Feb 2017 13:49:21 +1100
-From: Paul Mackerras <paulus@ozlabs.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vP1Bp4HqwzDq60
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 14:01:22 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
 To: linuxppc-dev@ozlabs.org
-Cc: Michael Ellerman <michael@ellerman.id.au>
-Subject: [PATCH] powerpc/64: Disable use of radix under a hypervisor
-Message-ID: <20170216024921.GB19110@fergus.ozlabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Cc: jallen@linux.vnet.ibm.com,
+	nfont@linux.vnet.ibm.com
+Subject: [PATCH] powerpc/pseries: Fix build break when MEMORY_HOTREMOVE=n
+Date: Thu, 16 Feb 2017 14:01:18 +1100
+Message-Id: <1487214078-3893-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,40 +20,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently, if the kernel is running on a POWER9 processor under a
-hypervisor, it may try to use the radix MMU even though it doesn't have
-the necessary code to do so (it doesn't negotiate use of radix, and it
-doesn't do the H_REGISTER_PROC_TBL hcall).  If the hypervisor supports
-both radix and HPT, then it will set up the guest to use HPT (since the
-guest doesn't request radix in the CAS call), but if the radix feature
-bit is set in the ibm,pa-features property (which is valid, since
-ibm,pa-features is defined to represent the capabilities of the
-processor) the guest will try to use radix, resulting in a crash when
-it turns the MMU on.
+We broke the build when CONFIG_MEMORY_HOTREMOVE=n:
 
-This makes the minimal fix for the current code, which is to disable
-radix unless we are running in hypervisor mode.
+  arch/powerpc/platforms/pseries/hotplug-memory.c:821:8: error: implicit
+  declaration of function 'dlpar_memory_readd_by_index'
 
-Fixes: 2bfd65e45e87 ("powerpc/mm/radix: Add radix callbacks for early init routines")
-Cc: stable@vger.kernel.org # v4.7+
-Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
+Add a dummy to fix it.
+
+Fixes: e70d59700fc3 ("powerpc/pseries: Introduce memory hotplug READD operation")
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/mm/init_64.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ arch/powerpc/platforms/pseries/hotplug-memory.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
-index 93abf8a..8e15880 100644
---- a/arch/powerpc/mm/init_64.c
-+++ b/arch/powerpc/mm/init_64.c
-@@ -347,7 +347,8 @@ early_param("disable_radix", parse_disable_radix);
- void __init mmu_early_init_devtree(void)
+diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/powerpc/platforms/pseries/hotplug-memory.c
+index 3381c20edbc0..b3b92814ce87 100644
+--- a/arch/powerpc/platforms/pseries/hotplug-memory.c
++++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
+@@ -628,7 +628,10 @@ static int dlpar_memory_remove_by_index(u32 drc_index, struct property *prop)
  {
- 	/* Disable radix mode based on kernel command line. */
--	if (disable_radix)
-+	/* We don't yet have the machinery to do radix as a guest. */
-+	if (disable_radix || !(mfmsr() & MSR_HV))
- 		cur_cpu_spec->mmu_features &= ~MMU_FTR_TYPE_RADIX;
+ 	return -EOPNOTSUPP;
+ }
+-
++static int dlpar_memory_readd_by_index(u32 drc_index, struct property *prop)
++{
++	return -EOPNOTSUPP;
++}
+ #endif /* CONFIG_MEMORY_HOTREMOVE */
  
- 	if (early_radix_enabled())
+ static int dlpar_add_lmb(struct of_drconf_cell *lmb)
 -- 
-2.10.2
+2.7.4
