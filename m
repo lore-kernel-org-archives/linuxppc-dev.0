@@ -1,18 +1,18 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
- [IPv6:2607:f8b0:400e:c05::244])
+Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
+ [IPv6:2607:f8b0:400e:c00::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vPQ1342GHzDq60
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Feb 2017 05:39:19 +1100 (AEDT)
-Received: by mail-pg0-x244.google.com with SMTP id y6so1542829pgy.2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 10:39:19 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vPQ163VBDzDqGd
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Feb 2017 05:39:22 +1100 (AEDT)
+Received: by mail-pf0-x243.google.com with SMTP id 68so2167989pfx.2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 10:39:22 -0800 (PST)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Nicholas Piggin <npiggin@gmail.com>
-Subject: [PATCH 2/5] powerpc/64: stop using bit in HSPRG0 to test winkle
-Date: Fri, 17 Feb 2017 04:38:58 +1000
-Message-Id: <20170216183901.28611-3-npiggin@gmail.com>
+Subject: [PATCH 3/5] powerpc/64s: use alternative feature patching
+Date: Fri, 17 Feb 2017 04:38:59 +1000
+Message-Id: <20170216183901.28611-4-npiggin@gmail.com>
 In-Reply-To: <20170216183901.28611-1-npiggin@gmail.com>
 References: <20170216183901.28611-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,216 +24,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The POWER8 idle code has a neat trick of programming the power on engine
-to restore a low bit into HSPRG0, so idle wakeup code can test and see
-if it has been programmed this way and therefore lost all state. Restore
-time can be reduced if winkle has not been reached.
-
-However this messes with our r13 PACA pointer, and requires HSPRG0 to
-be written to. It also optimizes the slowest and most uncommon case at
-the expense of another SPR write in the common nap state wakeup.
-
-Remove this complexity and assume winkle sleeps always require a state
-restore. This speedup could be made entirely contained within the winkle
-idle code by counting per-core winkles and setting a thread bitmap when
-all have gone to winkle.
+This reduces the number of nops for POWER8
 
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/include/asm/exception-64s.h | 18 ++----------------
- arch/powerpc/kernel/exceptions-64s.S     | 23 ++++-------------------
- arch/powerpc/kernel/idle_book3s.S        | 30 ++++++++++--------------------
- arch/powerpc/platforms/powernv/idle.c    | 13 -------------
- 4 files changed, 16 insertions(+), 68 deletions(-)
+ arch/powerpc/kernel/idle_book3s.S | 15 +++++++--------
+ 1 file changed, 7 insertions(+), 8 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/exception-64s.h b/arch/powerpc/include/asm/exception-64s.h
-index 8ad1cf5c4edf..8f7154a4234f 100644
---- a/arch/powerpc/include/asm/exception-64s.h
-+++ b/arch/powerpc/include/asm/exception-64s.h
-@@ -158,17 +158,14 @@ BEGIN_FTR_SECTION_NESTED(943)						\
- 	std	ra,offset(r13);						\
- END_FTR_SECTION_NESTED(ftr,ftr,943)
- 
--#define EXCEPTION_PROLOG_0_PACA(area)					\
-+#define EXCEPTION_PROLOG_0(area)					\
-+	GET_PACA(r13);							\
- 	std	r9,area+EX_R9(r13);	/* save r9 */			\
- 	OPT_GET_SPR(r9, SPRN_PPR, CPU_FTR_HAS_PPR);			\
- 	HMT_MEDIUM;							\
- 	std	r10,area+EX_R10(r13);	/* save r10 - r12 */		\
- 	OPT_GET_SPR(r10, SPRN_CFAR, CPU_FTR_CFAR)
- 
--#define EXCEPTION_PROLOG_0(area)					\
--	GET_PACA(r13);							\
--	EXCEPTION_PROLOG_0_PACA(area)
--
- #define __EXCEPTION_PROLOG_1(area, extra, vec)				\
- 	OPT_SAVE_REG_TO_PACA(area+EX_PPR, r9, CPU_FTR_HAS_PPR);		\
- 	OPT_SAVE_REG_TO_PACA(area+EX_CFAR, r10, CPU_FTR_CFAR);		\
-@@ -220,17 +217,6 @@ END_FTR_SECTION_NESTED(ftr,ftr,943)
- 	EXCEPTION_PROLOG_1(area, extra, vec);				\
- 	EXCEPTION_PROLOG_PSERIES_1_NORI(label, h);
- 
--/* Have the PACA in r13 already */
--#define EXCEPTION_PROLOG_PSERIES_PACA(area, label, h, extra, vec)	\
--	EXCEPTION_PROLOG_0_PACA(area);					\
--	EXCEPTION_PROLOG_1(area, extra, vec);				\
--	EXCEPTION_PROLOG_PSERIES_1(label, h);
--
--#define EXCEPTION_PROLOG_PSERIES_PACA_NORI(area, label, h, extra, vec)	\
--	EXCEPTION_PROLOG_0_PACA(area);					\
--	EXCEPTION_PROLOG_1(area, extra, vec);				\
--	EXCEPTION_PROLOG_PSERIES_1_NORI(label, h);
--
- #define __KVMTEST(h, n)							\
- 	lbz	r10,HSTATE_IN_GUEST(r13);				\
- 	cmpwi	r10,0;							\
-diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-index d0d89047befe..5f775783f744 100644
---- a/arch/powerpc/kernel/exceptions-64s.S
-+++ b/arch/powerpc/kernel/exceptions-64s.S
-@@ -116,14 +116,12 @@ EXC_VIRT_NONE(0x4000, 0x4100)
- 
- EXC_REAL_BEGIN(system_reset, 0x100, 0x200)
- 	SET_SCRATCH0(r13)
--	GET_PACA(r13)
--	clrrdi	r13,r13,1 /* Last bit of HSPRG0 is set if waking from winkle */
- 	/*
- 	 * MSR_RI is not enabled, because PACA_EXNMI and nmi stack is
- 	 * being used, so a nested NMI exception would corrupt it.
- 	 */
--	EXCEPTION_PROLOG_PSERIES_PACA_NORI(PACA_EXNMI, system_reset_common,
--						EXC_STD, IDLETEST, 0x100)
-+	EXCEPTION_PROLOG_PSERIES_NORI(PACA_EXNMI, system_reset_common,
-+					EXC_STD, IDLETEST, 0x100)
- 
- EXC_REAL_END(system_reset, 0x100, 0x200)
- EXC_VIRT_NONE(0x4100, 0x4200)
-@@ -180,14 +178,6 @@ EXC_REAL_BEGIN(machine_check, 0x200, 0x300)
- 	 * vector
- 	 */
- 	SET_SCRATCH0(r13)		/* save r13 */
--	/*
--	 * Running native on arch 2.06 or later, we may wakeup from winkle
--	 * inside machine check. If yes, then last bit of HSPRG0 would be set
--	 * to 1. Hence clear it unconditionally.
--	 */
--	GET_PACA(r13)
--	clrrdi	r13,r13,1
--	SET_PACA(r13)
- 	EXCEPTION_PROLOG_0(PACA_EXMC)
- BEGIN_FTR_SECTION
- 	b	machine_check_powernv_early
-@@ -362,7 +352,7 @@ EXC_COMMON_BEGIN(machine_check_handle_early)
- 	 * Go back to nap/sleep/winkle mode again if (b) is true.
- 	 */
- 	rlwinm.	r11,r12,47-31,30,31	/* Was it in power saving mode? */
--	beq	4f			/* No, it wasn;t */
-+	beq	4f			/* No, it wasn't */
- 	/* Thread was in power saving mode. Go back to nap again. */
- 	cmpwi	r11,2
- 	blt	3f
-@@ -392,13 +382,8 @@ EXC_COMMON_BEGIN(machine_check_handle_early)
- 	/*
- 	 * Go back to winkle. Please note that this thread was woken up in
- 	 * machine check from winkle and have not restored the per-subcore
--	 * state. Hence before going back to winkle, set last bit of HSPRG0
--	 * to 1. This will make sure that if this thread gets woken up
--	 * again at reset vector 0x100 then it will get chance to restore
--	 * the subcore state.
-+	 * state.
- 	 */
--	ori	r13,r13,1
--	SET_PACA(r13)
- 	IDLE_STATE_ENTER_SEQ(PPC_WINKLE)
- 	/* No return */
- 4:
 diff --git a/arch/powerpc/kernel/idle_book3s.S b/arch/powerpc/kernel/idle_book3s.S
-index ea3562f83c57..1271344e5523 100644
+index 1271344e5523..ab15dee371c9 100644
 --- a/arch/powerpc/kernel/idle_book3s.S
 +++ b/arch/powerpc/kernel/idle_book3s.S
-@@ -366,11 +366,12 @@ _GLOBAL(power9_idle_stop)
- 	b	pnv_powersave_common
- 	/* No return */
+@@ -417,13 +417,8 @@ BEGIN_FTR_SECTION
+ 	rldicl  r5,r5,4,60
+ 	cmpd	cr4,r5,r4
+ 	bge	cr4,pnv_wakeup_tb_loss
+-	/*
+-	 * Waking up without hypervisor state loss. Return to
+-	 * reset vector
+-	 */
+-	blr
  
-+/*
-+ * Called from reset vector for powersave wakeups.
-+ * cr3 - set to gt if waking up with partial/complete hypervisor state loss
-+ */
- .global pnv_powersave_wakeup
- pnv_powersave_wakeup:
--BEGIN_FTR_SECTION
--	GET_PACA(r13) /* Restore HSPRG0 to get the winkle bit in r13 */
--END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_300)
- 	bl	pnv_restore_hyp_resource
- 
- 	li	r0,PNV_THREAD_RUNNING
-@@ -394,16 +395,13 @@ END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_300)
- 	b	pnv_wakeup_loss
- 
- /*
-- * Called from reset vector. Check whether we have woken up with
-- * hypervisor state loss. If yes, restore hypervisor state and return
-- * back to reset vector.
-- *
-- * r13 - Contents of HSPRG0
-- * cr3 - set to gt if waking up with partial/complete hypervisor state loss
-+ * Check whether we have woken up with hypervisor state loss. If yes,
-+ * restore hypervisor state and return back to reset vector.
-  */
- pnv_restore_hyp_resource:
--BEGIN_FTR_SECTION
- 	ld	r2,PACATOC(r13);
-+
-+BEGIN_FTR_SECTION
- 	/*
- 	 * POWER ISA 3. Use PSSCR to determine if we
- 	 * are waking up from deep idle state
-@@ -429,19 +427,11 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_300)
+-END_FTR_SECTION_IFSET(CPU_FTR_ARCH_300)
++FTR_SECTION_ELSE
  
  	/*
  	 * POWER ISA 2.07 or less.
--	 * Check if last bit of HSPGR0 is set. This indicates whether we are
--	 * waking up from winkle.
-+	 * Check if we slept with winkle.
+@@ -440,9 +435,13 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_300)
+ 	 * indicates we are waking with hypervisor state loss from nap.
  	 */
--	clrldi	r5,r13,63
--	clrrdi	r13,r13,1
--
--	/* Now that we are sure r13 is corrected, load TOC */
--	ld	r2,PACATOC(r13);
--	cmpwi	cr4,r5,1
--	mtspr	SPRN_HSPRG0,r13
--
- 	lbz	r0,PACA_THREAD_IDLE_STATE(r13)
- 	cmpwi   cr2,r0,PNV_THREAD_NAP
-+	cmpwi   cr4,r0,PNV_THREAD_WINKLE
- 	bgt     cr2,pnv_wakeup_tb_loss	/* Either sleep or Winkle */
+ 	bgt	cr3,.
++ALT_FTR_SECTION_END_IFSET(CPU_FTR_ARCH_300)
  
- 	/*
-diff --git a/arch/powerpc/platforms/powernv/idle.c b/arch/powerpc/platforms/powernv/idle.c
-index 479c25601612..59dc81a58444 100644
---- a/arch/powerpc/platforms/powernv/idle.c
-+++ b/arch/powerpc/platforms/powernv/idle.c
-@@ -53,19 +53,6 @@ static int pnv_save_sprs_for_deep_states(void)
- 		uint64_t pir = get_hard_smp_processor_id(cpu);
- 		uint64_t hsprg0_val = (uint64_t)&paca[cpu];
+-	blr	/* Return back to System Reset vector from where
+-		   pnv_restore_hyp_resource was invoked */
++	/*
++	 * Waking up without hypervisor state loss. Return to
++	 * reset vector
++	 */
++	blr
  
--		if (!cpu_has_feature(CPU_FTR_ARCH_300)) {
--			/*
--			 * HSPRG0 is used to store the cpu's pointer to paca.
--			 * Hence last 3 bits are guaranteed to be 0. Program
--			 * slw to restore HSPRG0 with 63rd bit set, so that
--			 * when a thread wakes up at 0x100 we can use this bit
--			 * to distinguish between fastsleep and deep winkle.
--			 * This is not necessary with stop/psscr since PLS
--			 * field of psscr indicates which state we are waking
--			 * up from.
--			 */
--			hsprg0_val |= 1;
--		}
- 		rc = opal_slw_set_reg(pir, SPRN_HSPRG0, hsprg0_val);
- 		if (rc != 0)
- 			return rc;
+ /*
+  * Called if waking up from idle state which can cause either partial or
 -- 
 2.11.0
