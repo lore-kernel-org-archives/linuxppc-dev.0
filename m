@@ -1,23 +1,22 @@
-Return-Path: <dgibson@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Return-Path: <jk@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vP0JQ6jCWzDq60
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 13:21:10 +1100 (AEDT)
-Date: Thu, 16 Feb 2017 13:01:42 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Nathan Fontenot <nfont@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, jallen@linux.vnet.ibm.com,
- sahilmehta17@gmail.com, mdroth@linux.vnet.ibm.com
-Subject: Re: [PATCH v7 1/4] powerpc/pseries: dlpar_memory_readd_by_index()
- when MEMORY_HOTREMOVE not defined
-Message-ID: <20170216020142.GN12369@umbus.fritz.box>
-References: <20170215184321.11755.88199.stgit@ltcalpine2-lp14.aus.stglabs.ibm.com>
- <20170215184518.11755.94323.stgit@ltcalpine2-lp14.aus.stglabs.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vP0k93z4jzDq60
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 13:40:01 +1100 (AEDT)
+Subject: Re: [PATCH 2/2] powerpc/powernv/opal-dump : Use IRQ_HANDLED instead
+ of numbers in interrupt handler
+To: Mukesh Ojha <mukesh02@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+References: <1480583289-6380-1-git-send-email-mukesh02@linux.vnet.ibm.com>
+ <1480583289-6380-2-git-send-email-mukesh02@linux.vnet.ibm.com>
+ <f87a41d5-9647-67c4-735e-a7df86c4ff3a@ozlabs.org>
+ <62c1a1c3-3a9e-2a9b-b7c1-c23d8d6efcb6@linux.vnet.ibm.com>
+From: Jeremy Kerr <jk@ozlabs.org>
+Message-ID: <7bac2667-9b7f-9f05-c444-79b1fad31a6a@ozlabs.org>
+Date: Thu, 16 Feb 2017 10:40:00 +0800
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="SgT04PEqo/+yUDw3"
-In-Reply-To: <20170215184518.11755.94323.stgit@ltcalpine2-lp14.aus.stglabs.ibm.com>
+In-Reply-To: <62c1a1c3-3a9e-2a9b-b7c1-c23d8d6efcb6@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,71 +26,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hi Mukesh,
 
---SgT04PEqo/+yUDw3
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> The return value of an interrupt handler is the special type
+> irqreturn_t. An interrupt handler can return two special values,
+> IRQ_NONE or IRQ_HANDLED.
 
-On Wed, Feb 15, 2017 at 01:45:22PM -0500, Nathan Fontenot wrote:
-> Add a definition for dlpar_memory_readd_by_index() that returns
-> -EOPNOTSUPP to correct a build error when the config option
-> MEMORY_HOTREMOVE is not set.
->=20
-> Signed-off-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+Yep, you can assume that the reader knows that level of the interrupt
+handler API :) What we want to know is how that change in behaviour of
+the handler code interacts with the core irq handler code.
 
-Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
+The change you're proposing always returns IRQ_HANDLED, whereas the
+previous code had cases where it returned:
 
-> ---
->  arch/powerpc/platforms/pseries/hotplug-memory.c |    5 +++++
->  1 file changed, 5 insertions(+)
->=20
-> diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/power=
-pc/platforms/pseries/hotplug-memory.c
-> index 3381c20..f971ea0 100644
-> --- a/arch/powerpc/platforms/pseries/hotplug-memory.c
-> +++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
-> @@ -629,6 +629,11 @@ static int dlpar_memory_remove_by_index(u32 drc_inde=
-x, struct property *prop)
->  	return -EOPNOTSUPP;
->  }
-> =20
-> +static int dlpar_memory_readd_by_index(u32 drc_index, struct property *p=
-rop)
-> +{
-> +	return -EOPNOTSUPP;
-> +}
-> +
->  #endif /* CONFIG_MEMORY_HOTREMOVE */
-> =20
->  static int dlpar_add_lmb(struct of_drconf_cell *lmb)
->=20
+  - IRQ_NONE, or
+  - the (invalid) value -1.
 
---=20
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Unless I'm mistaken, there are two things I can see happening with the
+old code: if we hit the IRQ_NONE path enough, we'll report a "nobody
+cared" error (see __report_bad_irq) and disable the interrupt, or for
+the -1 case, we'll immediately log a "bogus return value" error (and, it
+looks like a "no thread function available" error too, from
+warn_no_thread).
 
---SgT04PEqo/+yUDw3
-Content-Type: application/pgp-signature; name="signature.asc"
+So, it would be nice to mention that this change will fix errors that
+result in those log messages. This means that someone debugging those
+log messages in futures can find your patch, and see that it addresses
+the issue.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+> No, this is not user visible issue..
 
-iQIcBAEBCAAGBQJYpQgEAAoJEGw4ysog2bOSGMcP/RVH+wvaNE5RKp6d4va3oYz6
-G3+897xAGaVcnDqoyQz1PY9nYjfxxp5gjDedaJg5oLt3Z8aWOVDFM4wtCdj9C3ve
-jkb5BgLZfWjvTCfBshHOa7Z82E+4gUXlQc4yq5OTJOK+dSB7uHcPQFqNKu4usu1l
-rvwmVYcOUzEOvaalXeQtMq+m0TxmWTIEL+y0MobsBeDNmo10aRQJU3zu2DsYvmQv
-dfBLczlsGgSnDIGqwAwy9SjbB/9gvYgm3TWQosUIFbOcBAORU6dBjaDRMwdWtO1S
-uprXrILK/ZjJ+zvkE1ibkH4IoWYXCfvtkSlady89D5UQ0BvKD19FxeE9bI2yir+R
-7xBGtbKTbpmRsGyz17w64khQEYTBW4Yr8KUmDx+mfHKu5/JvZQeU3iaWdM8rOUKv
-U1RxoJkJmWwnO3C2PZKYw9e1Er0q6NxyI+PFAB/kU9pwBoreF9LFRO80vkVzBj+D
-dMAHAvQZ1v0ARvbhokTIOsbsQEZMA0SJgWlKkKTl2cprWCo6G4JE2MEhBazBv4WA
-Y8XKvATtNBhEa28Jt4rmdbwr+X7owcSVc845hqzwmctaHRXj4afvV2HvvNqvb+64
-ZIQG3DrMLRY12FloId2NY4M4FXp9cwkNxiND3wScMoJuV5ekiC7rzT2nUzp472li
-z/EQLRCxcniL3p2MuunP
-=D0p8
------END PGP SIGNATURE-----
+I consider the kernel log output to be user-visible.
 
---SgT04PEqo/+yUDw3--
+> and also here it does not matter what we return from here as we
+> are not handling the return value of the handler. 
+
+*We* are not handling the return value of the handler, but the core IRQ
+code is.
+
+Regards,
+
+
+Jeremy
