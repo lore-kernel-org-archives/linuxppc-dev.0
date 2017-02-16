@@ -1,26 +1,18 @@
-Return-Path: <jonathan.derrick@intel.com>
-Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pg0-x22a.google.com (mail-pg0-x22a.google.com
+ [IPv6:2607:f8b0:400e:c05::22a])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vPLpH3HlrzDq60
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Feb 2017 03:14:46 +1100 (AEDT)
-Subject: Re: [PATCHv3 4/4] MAINTAINERS: Remove powerpc's opal match
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Jens Axboe <axboe@kernel.dk>,
- Rafael Antognolli <rafael.antognolli@intel.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- linux-kernel@vger.kernel.org, linux-block@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, Christoph Hellwig <hch@lst.de>,
- Scott Bauer <scott.bauer@intel.com>
-References: <1487187731-10293-1-git-send-email-jonathan.derrick@intel.com>
- <1487187731-10293-5-git-send-email-jonathan.derrick@intel.com>
- <87poiik8tb.fsf@concordia.ellerman.id.au>
-From: Jon Derrick <jonathan.derrick@intel.com>
-Message-ID: <64674df8-8e5e-07a0-8062-d02e588b2a32@intel.com>
-Date: Thu, 16 Feb 2017 09:14:36 -0700
-MIME-Version: 1.0
-In-Reply-To: <87poiik8tb.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset=windows-1252
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vPMrF3q4hzDq60
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Feb 2017 04:01:33 +1100 (AEDT)
+Received: by mail-pg0-x22a.google.com with SMTP id v184so7667321pgv.3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 09:01:33 -0800 (PST)
+From: Nicholas Piggin <npiggin@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Nicholas Piggin <npiggin@gmail.com>
+Subject: [RFC[PATCH 0/4] POWER9 machine check handler
+Date: Fri, 17 Feb 2017 03:01:10 +1000
+Message-Id: <20170216170114.25247-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,38 +22,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Thanks everyone. Sorry about the mess :)
+So far I've only got this tested in mambo simulator, but
+some recoverable and unrecoverable events seem to work.
 
-On 02/15/2017 10:23 PM, Michael Ellerman wrote:
-> Jon Derrick <jonathan.derrick@intel.com> writes:
-> 
->> PPC's 'opal' match pattern also matches block/sed-opal.c, where it looks
->> like the 'arch/powerpc' file pattern should be enough to match powerpc
->> opal code by itself. Remove the opal regex pattern from powerpc.
-> 
-> We thought of it first.
-> 
-> Can't you just rename your driver, Opal Storage Specification, so "oss",
-> that should be pretty unique?
-> 
-> ... :)
-> 
-> I don't like this version, but I'll merge the one from Stewart which
-> drops the pattern and adds the paths for the existing drivers.
-> 
-> cheers
-> 
->> diff --git a/MAINTAINERS b/MAINTAINERS
->> index b983b25..430dd02 100644
->> --- a/MAINTAINERS
->> +++ b/MAINTAINERS
->> @@ -7404,7 +7404,6 @@ F:	drivers/pci/hotplug/pnv_php.c
->>  F:	drivers/pci/hotplug/rpa*
->>  F:	drivers/scsi/ibmvscsi/
->>  F:	tools/testing/selftests/powerpc
->> -N:	opal
->>  N:	/pmac
->>  N:	powermac
->>  N:	powernv
->> -- 
->> 1.8.3.1
+Thanks,
+Nick
+
+Nicholas Piggin (4):
+  powerpc: machine check allow handler to set severity and initiator
+  powerpc/powernv: machine check rework recovery flushing
+  powerpc/powernv: cope with non-synchronous machine checks
+  powerpc/powernv: handle POWER9 machine checks
+
+ arch/powerpc/include/asm/bitops.h     |   4 +
+ arch/powerpc/include/asm/mce.h        | 108 +++++++++++-
+ arch/powerpc/kernel/cputable.c        |   3 +
+ arch/powerpc/kernel/mce.c             |  90 +++++++++-
+ arch/powerpc/kernel/mce_power.c       | 324 +++++++++++++++++++++++++++-------
+ arch/powerpc/platforms/powernv/opal.c |  19 +-
+ 6 files changed, 465 insertions(+), 83 deletions(-)
+
+-- 
+2.11.0
