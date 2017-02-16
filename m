@@ -1,30 +1,19 @@
-Return-Path: <jingoohan1@gmail.com>
-Received: from mail-qk0-x244.google.com (mail-qk0-x244.google.com
- [IPv6:2607:f8b0:400d:c09::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <laurentiu.tudor@nxp.com>
+Received: from NAM03-DM3-obe.outbound.protection.outlook.com
+ (mail-dm3nam03on0060.outbound.protection.outlook.com [104.47.41.60])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vPJwY13kkzDq60
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Feb 2017 01:50:04 +1100 (AEDT)
-Received: by mail-qk0-x244.google.com with SMTP id u25so2652645qki.2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 06:50:04 -0800 (PST)
-From: "Jingoo Han" <jingoohan1@gmail.com>
-To: "'Kishon Vijay Abraham I'" <kishon@ti.com>,
- "'Bjorn Helgaas'" <bhelgaas@google.com>, <linux-kernel@vger.kernel.org>,
- <linux-pci@vger.kernel.org>, <linux-omap@vger.kernel.org>,
- <linux-arm-kernel@lists.infradead.org>,
- <linux-samsung-soc@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
- <linux-arm-kernel@axis.com>
-Cc: <nsekhar@ti.com>
-References: <1487164699-30708-1-git-send-email-kishon@ti.com>
- <1487164699-30708-2-git-send-email-kishon@ti.com>
-In-Reply-To: <1487164699-30708-2-git-send-email-kishon@ti.com>
-Subject: Re: [PATCH 01/10] PCI: dwc: designware: Move the register defines to
- designware header file
-Date: Thu, 16 Feb 2017 09:49:55 -0500
-Message-ID: <000001d28863$f291ffc0$d7b5ff40$@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vPKPT3R6kzDq60
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Feb 2017 02:11:41 +1100 (AEDT)
+From: <laurentiu.tudor@nxp.com>
+To: <linuxppc-dev@lists.ozlabs.org>, <oss@buserror.net>, <mpe@ellerman.id.au>
+CC: <madalin.bucur@nxp.com>, <aneesh.kumar@linux.vnet.ibm.com>, "Laurentiu
+ Tudor" <laurentiu.tudor@nxp.com>
+Subject: [PATCH] powerpc: booke: fix boot crash due to null hugepd
+Date: Thu, 16 Feb 2017 09:11:29 -0600
+Message-ID: <20170216151129.8971-1-laurentiu.tudor@nxp.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,195 +23,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Wednesday, February 15, 2017 8:18 AM, Kishon Vijay Abraham I wrote:
-> 
-> No functional change. Move the register defines and other macros from
-> pcie-designware.c to pcie-designware.h. This is in preparation to
-> split the pcie-designware.c file into designware core file and host
-> specific file.
-> 
-> While at that also fix a checkpatch warning.
-> 
-> Reviewed-By: Joao Pinto <jpinto@synopsys.com>
-> Signed-off-by: Kishon Vijay Abraham I <kishon@ti.com>
+From: Laurentiu Tudor <laurentiu.tudor@nxp.com>
 
-Acked-by: Jingoo Han <jingoohan1@gmail.com>
+On 32-bit book-e machines, hugepd_ok() does not take
+into account null hugepd values, causing this crash at boot:
 
-Best regards,
-Jingoo Han
+Unable to handle kernel paging request for data at address 0x80000000
+Faulting instruction address: 0xc00182a8
+Oops: Kernel access of bad area, sig: 11 [#1]
+SMP NR_CPUS=24
+CoreNet Generic
+Modules linked in:
+CPU: 1 PID: 1 Comm: swapper/0 Tainted: G        W       4.10.0-rc8-00016-g69b1f87 #11
+task: e5050000 task.stack: e5058000
+NIP: c00182a8 LR: c001829c CTR: 00007ffe
+REGS: e5059c50 TRAP: 0300   Tainted: G        W        (4.10.0-rc8-00016-g69b1f87)
+MSR: 00021002 <CE,ME>
+  CR: 88428e82  XER: 00000000
+DEAR: 80000000 ESR: 00000000
+GPR00: c0107510 e5059d00 e5050000 80000000 bffffff1 e5059d0c e5059d08 00002017
+GPR08: 00000000 00000000 00000000 00000000 28428e82 00000000 c00027d0 00000000
+GPR16: 00000000 00000000 88a28e82 20000000 48422e82 00000000 88a28e84 dd004000
+GPR24: e5059e38 00000000 00000000 bffffff1 dd004000 00000001 00029002 bffffff1
+NIP [c00182a8] follow_huge_addr+0x38/0xf0
+LR [c001829c] follow_huge_addr+0x2c/0xf0
+Call Trace:
+[e5059d00] [e5059d00] 0xe5059d00 (unreliable)
+[e5059d20] [c0107510] follow_page_mask+0x40/0x3c0
+[e5059d80] [c0107958] __get_user_pages+0xc8/0x420
+[e5059de0] [c010817c] get_user_pages_remote+0x8c/0x230
+[e5059e30] [c013f170] copy_strings+0x110/0x3a0
+[e5059ea0] [c013f42c] copy_strings_kernel+0x2c/0x50
+[e5059ec0] [c0141324] do_execveat_common+0x474/0x620
+[e5059f10] [c01414fc] do_execve+0x2c/0x40
+[e5059f20] [c0001f68] try_to_run_init_process+0x18/0x60
+[e5059f30] [c000289c] kernel_init+0xcc/0x120
+[e5059f40] [c000f1e8] ret_from_kernel_thread+0x5c/0x64
+Instruction dump:
+bfc10018 7c9f2378 90010024 7fc000a6 7c000146 80630020 38a1000c 38c10008
+4bfff869 2c030000 41c20090 81210008 <81430000> 81630004 3860ffea 2f890000
+---[ end trace 4bf94e15fd9fa824 ]---
 
-> ---
->  drivers/pci/dwc/pcie-designware.c |   70 --------------------------------
-> ----
->  drivers/pci/dwc/pcie-designware.h |   71
-> +++++++++++++++++++++++++++++++++++++
->  2 files changed, 71 insertions(+), 70 deletions(-)
-> 
-> diff --git a/drivers/pci/dwc/pcie-designware.c b/drivers/pci/dwc/pcie-
-> designware.c
-> index af8f6e9..d0e4904 100644
-> --- a/drivers/pci/dwc/pcie-designware.c
-> +++ b/drivers/pci/dwc/pcie-designware.c
-> @@ -25,76 +25,6 @@
-> 
->  #include "pcie-designware.h"
-> 
-> -/* Parameters for the waiting for link up routine */
-> -#define LINK_WAIT_MAX_RETRIES		10
-> -#define LINK_WAIT_USLEEP_MIN		90000
-> -#define LINK_WAIT_USLEEP_MAX		100000
-> -
-> -/* Parameters for the waiting for iATU enabled routine */
-> -#define LINK_WAIT_MAX_IATU_RETRIES	5
-> -#define LINK_WAIT_IATU_MIN		9000
-> -#define LINK_WAIT_IATU_MAX		10000
-> -
-> -/* Synopsys-specific PCIe configuration registers */
-> -#define PCIE_PORT_LINK_CONTROL		0x710
-> -#define PORT_LINK_MODE_MASK		(0x3f << 16)
-> -#define PORT_LINK_MODE_1_LANES		(0x1 << 16)
-> -#define PORT_LINK_MODE_2_LANES		(0x3 << 16)
-> -#define PORT_LINK_MODE_4_LANES		(0x7 << 16)
-> -#define PORT_LINK_MODE_8_LANES		(0xf << 16)
-> -
-> -#define PCIE_LINK_WIDTH_SPEED_CONTROL	0x80C
-> -#define PORT_LOGIC_SPEED_CHANGE		(0x1 << 17)
-> -#define PORT_LOGIC_LINK_WIDTH_MASK	(0x1f << 8)
-> -#define PORT_LOGIC_LINK_WIDTH_1_LANES	(0x1 << 8)
-> -#define PORT_LOGIC_LINK_WIDTH_2_LANES	(0x2 << 8)
-> -#define PORT_LOGIC_LINK_WIDTH_4_LANES	(0x4 << 8)
-> -#define PORT_LOGIC_LINK_WIDTH_8_LANES	(0x8 << 8)
-> -
-> -#define PCIE_MSI_ADDR_LO		0x820
-> -#define PCIE_MSI_ADDR_HI		0x824
-> -#define PCIE_MSI_INTR0_ENABLE		0x828
-> -#define PCIE_MSI_INTR0_MASK		0x82C
-> -#define PCIE_MSI_INTR0_STATUS		0x830
-> -
-> -#define PCIE_ATU_VIEWPORT		0x900
-> -#define PCIE_ATU_REGION_INBOUND		(0x1 << 31)
-> -#define PCIE_ATU_REGION_OUTBOUND	(0x0 << 31)
-> -#define PCIE_ATU_REGION_INDEX2		(0x2 << 0)
-> -#define PCIE_ATU_REGION_INDEX1		(0x1 << 0)
-> -#define PCIE_ATU_REGION_INDEX0		(0x0 << 0)
-> -#define PCIE_ATU_CR1			0x904
-> -#define PCIE_ATU_TYPE_MEM		(0x0 << 0)
-> -#define PCIE_ATU_TYPE_IO		(0x2 << 0)
-> -#define PCIE_ATU_TYPE_CFG0		(0x4 << 0)
-> -#define PCIE_ATU_TYPE_CFG1		(0x5 << 0)
-> -#define PCIE_ATU_CR2			0x908
-> -#define PCIE_ATU_ENABLE			(0x1 << 31)
-> -#define PCIE_ATU_BAR_MODE_ENABLE	(0x1 << 30)
-> -#define PCIE_ATU_LOWER_BASE		0x90C
-> -#define PCIE_ATU_UPPER_BASE		0x910
-> -#define PCIE_ATU_LIMIT			0x914
-> -#define PCIE_ATU_LOWER_TARGET		0x918
-> -#define PCIE_ATU_BUS(x)			(((x) & 0xff) << 24)
-> -#define PCIE_ATU_DEV(x)			(((x) & 0x1f) << 19)
-> -#define PCIE_ATU_FUNC(x)		(((x) & 0x7) << 16)
-> -#define PCIE_ATU_UPPER_TARGET		0x91C
-> -
-> -/*
-> - * iATU Unroll-specific register definitions
-> - * From 4.80 core version the address translation will be made by unroll
-> - */
-> -#define PCIE_ATU_UNR_REGION_CTRL1	0x00
-> -#define PCIE_ATU_UNR_REGION_CTRL2	0x04
-> -#define PCIE_ATU_UNR_LOWER_BASE		0x08
-> -#define PCIE_ATU_UNR_UPPER_BASE		0x0C
-> -#define PCIE_ATU_UNR_LIMIT		0x10
-> -#define PCIE_ATU_UNR_LOWER_TARGET	0x14
-> -#define PCIE_ATU_UNR_UPPER_TARGET	0x18
-> -
-> -/* Register address builder */
-> -#define PCIE_GET_ATU_OUTB_UNR_REG_OFFSET(region)  ((0x3 << 20) | (region
-> << 9))
-> -
->  /* PCIe Port Logic registers */
->  #define PLR_OFFSET			0x700
->  #define PCIE_PHY_DEBUG_R1		(PLR_OFFSET + 0x2c)
-> diff --git a/drivers/pci/dwc/pcie-designware.h b/drivers/pci/dwc/pcie-
-> designware.h
-> index a567ea2..b5226d4 100644
-> --- a/drivers/pci/dwc/pcie-designware.h
-> +++ b/drivers/pci/dwc/pcie-designware.h
-> @@ -14,6 +14,77 @@
->  #ifndef _PCIE_DESIGNWARE_H
->  #define _PCIE_DESIGNWARE_H
-> 
-> +/* Parameters for the waiting for link up routine */
-> +#define LINK_WAIT_MAX_RETRIES		10
-> +#define LINK_WAIT_USLEEP_MIN		90000
-> +#define LINK_WAIT_USLEEP_MAX		100000
-> +
-> +/* Parameters for the waiting for iATU enabled routine */
-> +#define LINK_WAIT_MAX_IATU_RETRIES	5
-> +#define LINK_WAIT_IATU_MIN		9000
-> +#define LINK_WAIT_IATU_MAX		10000
-> +
-> +/* Synopsys-specific PCIe configuration registers */
-> +#define PCIE_PORT_LINK_CONTROL		0x710
-> +#define PORT_LINK_MODE_MASK		(0x3f << 16)
-> +#define PORT_LINK_MODE_1_LANES		(0x1 << 16)
-> +#define PORT_LINK_MODE_2_LANES		(0x3 << 16)
-> +#define PORT_LINK_MODE_4_LANES		(0x7 << 16)
-> +#define PORT_LINK_MODE_8_LANES		(0xf << 16)
-> +
-> +#define PCIE_LINK_WIDTH_SPEED_CONTROL	0x80C
-> +#define PORT_LOGIC_SPEED_CHANGE		(0x1 << 17)
-> +#define PORT_LOGIC_LINK_WIDTH_MASK	(0x1f << 8)
-> +#define PORT_LOGIC_LINK_WIDTH_1_LANES	(0x1 << 8)
-> +#define PORT_LOGIC_LINK_WIDTH_2_LANES	(0x2 << 8)
-> +#define PORT_LOGIC_LINK_WIDTH_4_LANES	(0x4 << 8)
-> +#define PORT_LOGIC_LINK_WIDTH_8_LANES	(0x8 << 8)
-> +
-> +#define PCIE_MSI_ADDR_LO		0x820
-> +#define PCIE_MSI_ADDR_HI		0x824
-> +#define PCIE_MSI_INTR0_ENABLE		0x828
-> +#define PCIE_MSI_INTR0_MASK		0x82C
-> +#define PCIE_MSI_INTR0_STATUS		0x830
-> +
-> +#define PCIE_ATU_VIEWPORT		0x900
-> +#define PCIE_ATU_REGION_INBOUND		(0x1 << 31)
-> +#define PCIE_ATU_REGION_OUTBOUND	(0x0 << 31)
-> +#define PCIE_ATU_REGION_INDEX2		(0x2 << 0)
-> +#define PCIE_ATU_REGION_INDEX1		(0x1 << 0)
-> +#define PCIE_ATU_REGION_INDEX0		(0x0 << 0)
-> +#define PCIE_ATU_CR1			0x904
-> +#define PCIE_ATU_TYPE_MEM		(0x0 << 0)
-> +#define PCIE_ATU_TYPE_IO		(0x2 << 0)
-> +#define PCIE_ATU_TYPE_CFG0		(0x4 << 0)
-> +#define PCIE_ATU_TYPE_CFG1		(0x5 << 0)
-> +#define PCIE_ATU_CR2			0x908
-> +#define PCIE_ATU_ENABLE			(0x1 << 31)
-> +#define PCIE_ATU_BAR_MODE_ENABLE	(0x1 << 30)
-> +#define PCIE_ATU_LOWER_BASE		0x90C
-> +#define PCIE_ATU_UPPER_BASE		0x910
-> +#define PCIE_ATU_LIMIT			0x914
-> +#define PCIE_ATU_LOWER_TARGET		0x918
-> +#define PCIE_ATU_BUS(x)			(((x) & 0xff) << 24)
-> +#define PCIE_ATU_DEV(x)			(((x) & 0x1f) << 19)
-> +#define PCIE_ATU_FUNC(x)		(((x) & 0x7) << 16)
-> +#define PCIE_ATU_UPPER_TARGET		0x91C
-> +
-> +/*
-> + * iATU Unroll-specific register definitions
-> + * From 4.80 core version the address translation will be made by unroll
-> + */
-> +#define PCIE_ATU_UNR_REGION_CTRL1	0x00
-> +#define PCIE_ATU_UNR_REGION_CTRL2	0x04
-> +#define PCIE_ATU_UNR_LOWER_BASE		0x08
-> +#define PCIE_ATU_UNR_UPPER_BASE		0x0C
-> +#define PCIE_ATU_UNR_LIMIT		0x10
-> +#define PCIE_ATU_UNR_LOWER_TARGET	0x14
-> +#define PCIE_ATU_UNR_UPPER_TARGET	0x18
-> +
-> +/* Register address builder */
-> +#define PCIE_GET_ATU_OUTB_UNR_REG_OFFSET(region)	\
-> +			((0x3 << 20) | ((region) << 9))
-> +
->  /*
->   * Maximum number of MSI IRQs can be 256 per controller. But keep
->   * it 32 as of now. Probably we will never need more than 32. If needed,
-> --
-> 1.7.9.5
+This impacts all nxp (ex-freescale) 32-bit booke platforms.
+
+Fixes: 20717e1ff526 ("powerpc/mm: Fix little-endian 4K hugetlb")
+
+Reported-by: Madalin-Cristian Bucur <madalin.bucur@nxp.com>
+Signed-off-by: Laurentiu Tudor <laurentiu.tudor@nxp.com>
+---
+ arch/powerpc/include/asm/nohash/pgtable.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/include/asm/nohash/pgtable.h b/arch/powerpc/include/asm/nohash/pgtable.h
+index 0cd8a38..e5805ad 100644
+--- a/arch/powerpc/include/asm/nohash/pgtable.h
++++ b/arch/powerpc/include/asm/nohash/pgtable.h
+@@ -230,7 +230,7 @@ static inline int hugepd_ok(hugepd_t hpd)
+ 	return ((hpd_val(hpd) & 0x4) != 0);
+ #else
+ 	/* We clear the top bit to indicate hugepd */
+-	return ((hpd_val(hpd) & PD_HUGE) ==  0);
++	return (hpd_val(hpd) && (hpd_val(hpd) & PD_HUGE) == 0);
+ #endif
+ }
+ 
+-- 
+1.8.3.1
