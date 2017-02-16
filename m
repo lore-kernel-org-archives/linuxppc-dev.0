@@ -1,48 +1,48 @@
 Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vPCh66lmpzDqGj
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 21:53:58 +1100 (AEDT)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vPChC1Np8zDqHG
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 21:54:02 +1100 (AEDT)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v1GArTu4132261
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 05:53:56 -0500
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
- by mx0a-001b2d01.pphosted.com with ESMTP id 28n7cqrhv2-1
+ v1GArUZj004769
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 05:54:00 -0500
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 28napkg24p-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 05:53:56 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 05:54:00 -0500
 Received: from localhost
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Thu, 16 Feb 2017 20:53:53 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 5ED7B3578057
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 21:53:50 +1100 (EST)
+ Thu, 16 Feb 2017 20:53:56 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 9CD7D2CE8046
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 21:53:54 +1100 (EST)
 Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v1GArgWA19857570
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 21:53:50 +1100
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v1GArkRQ38273234
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 21:53:54 +1100
 Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
  by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v1GArH0n005653
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 21:53:18 +1100
+ v1GArM3b005766
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 21:53:22 +1100
 From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
 To: Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>,
  Masami Hiramatsu <mhiramat@kernel.org>,
  Michael Ellerman <mpe@ellerman.id.au>
 Cc: Ingo Molnar <mingo@redhat.com>, linux-kernel@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 3/5] powerpc: kprobes: fix handling of function offsets on
- ABIv2
-Date: Thu, 16 Feb 2017 16:22:41 +0530
+Subject: [PATCH 4/5] powerpc: kprobes: factor out code to emulate instruction
+ into a helper
+Date: Thu, 16 Feb 2017 16:22:42 +0530
 In-Reply-To: <49dae0da9b7cee3f1747b116cd59854ece84bf02.1487239680.git.naveen.n.rao@linux.vnet.ibm.com>
 References: <49dae0da9b7cee3f1747b116cd59854ece84bf02.1487239680.git.naveen.n.rao@linux.vnet.ibm.com>
 In-Reply-To: <49dae0da9b7cee3f1747b116cd59854ece84bf02.1487239680.git.naveen.n.rao@linux.vnet.ibm.com>
 References: <49dae0da9b7cee3f1747b116cd59854ece84bf02.1487239680.git.naveen.n.rao@linux.vnet.ibm.com>
-Message-Id: <06108356dcc40d735a3d54687a39598ad83fb57e.1487239680.git.naveen.n.rao@linux.vnet.ibm.com>
+Message-Id: <1def0c06fe2387edd925939b2bdc0d099ac249ae.1487239680.git.naveen.n.rao@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,106 +52,93 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-commit 239aeba76409 ("perf powerpc: Fix kprobe and kretprobe handling
-with kallsyms on ppc64le") changed how we use the offset field in struct
-kprobe on ABIv2. perf now offsets from the GEP (Global entry point) if an
-offset is specified and otherwise chooses the LEP (Local entry point).
-
-Fix the same in kernel for kprobe API users. We do this by extending
-kprobe_lookup_name() to accept an additional parameter to indicate the
-offset specified with the kprobe registration. If offset is 0, we return
-the local function entry and return the global entry point otherwise.
-
-With:
-	# cd /sys/kernel/debug/tracing/
-	# echo "p _do_fork" >> kprobe_events
-	# echo "p _do_fork+0x10" >> kprobe_events
-
-before this patch:
-	# cat ../kprobes/list
-	c0000000000d0748  k  _do_fork+0x8    [DISABLED]
-	c0000000000d0758  k  _do_fork+0x18    [DISABLED]
-	c0000000000412b0  k  kretprobe_trampoline+0x0    [OPTIMIZED]
-
-and after:
-	# cat ../kprobes/list
-	c0000000000d04c8  k  _do_fork+0x8    [DISABLED]
-	c0000000000d04d0  k  _do_fork+0x10    [DISABLED]
-	c0000000000412b0  k  kretprobe_trampoline+0x0    [OPTIMIZED]
+This helper will be used in a subsequent patch to emulate instructions
+on re-entering the kprobe handler. No functional change.
 
 Acked-by: Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>
 Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
 ---
- arch/powerpc/kernel/kprobes.c | 4 ++--
- include/linux/kprobes.h       | 2 +-
- kernel/kprobes.c              | 7 ++++---
- 3 files changed, 7 insertions(+), 6 deletions(-)
+ arch/powerpc/kernel/kprobes.c | 52 ++++++++++++++++++++++++++-----------------
+ 1 file changed, 31 insertions(+), 21 deletions(-)
 
 diff --git a/arch/powerpc/kernel/kprobes.c b/arch/powerpc/kernel/kprobes.c
-index a7aa7394954d..0732a0291ace 100644
+index 0732a0291ace..8b48f7d046bd 100644
 --- a/arch/powerpc/kernel/kprobes.c
 +++ b/arch/powerpc/kernel/kprobes.c
-@@ -42,14 +42,14 @@ DEFINE_PER_CPU(struct kprobe_ctlblk, kprobe_ctlblk);
- 
- struct kretprobe_blackpoint kretprobe_blacklist[] = {{NULL, NULL}};
- 
--kprobe_opcode_t *kprobe_lookup_name(const char *name)
-+kprobe_opcode_t *kprobe_lookup_name(const char *name, unsigned int offset)
- {
- 	kprobe_opcode_t *addr;
- 
- #ifdef PPC64_ELF_ABI_v2
- 	/* PPC64 ABIv2 needs local entry point */
- 	addr = (kprobe_opcode_t *)kallsyms_lookup_name(name);
--	if (addr)
-+	if (addr && !offset)
- 		addr = (kprobe_opcode_t *)ppc_function_entry(addr);
- #elif defined(PPC64_ELF_ABI_v1)
- 	/*
-diff --git a/include/linux/kprobes.h b/include/linux/kprobes.h
-index 34b7d00765d2..442ecaeddebe 100644
---- a/include/linux/kprobes.h
-+++ b/include/linux/kprobes.h
-@@ -364,7 +364,7 @@ static inline struct kprobe_ctlblk *get_kprobe_ctlblk(void)
- 	return this_cpu_ptr(&kprobe_ctlblk);
+@@ -207,6 +207,35 @@ void __kprobes arch_prepare_kretprobe(struct kretprobe_instance *ri,
+ 	regs->link = (unsigned long)kretprobe_trampoline;
  }
  
--kprobe_opcode_t *kprobe_lookup_name(const char *name);
-+kprobe_opcode_t *kprobe_lookup_name(const char *name, unsigned int offset);
- int register_kprobe(struct kprobe *p);
- void unregister_kprobe(struct kprobe *p);
- int register_kprobes(struct kprobe **kps, int num);
-diff --git a/kernel/kprobes.c b/kernel/kprobes.c
-index 30f1d732dd74..fbc7a70ff33e 100644
---- a/kernel/kprobes.c
-+++ b/kernel/kprobes.c
-@@ -72,7 +72,8 @@ static struct {
- 	raw_spinlock_t lock ____cacheline_aligned_in_smp;
- } kretprobe_table_locks[KPROBE_TABLE_SIZE];
- 
--kprobe_opcode_t * __weak kprobe_lookup_name(const char *name)
-+kprobe_opcode_t * __weak kprobe_lookup_name(const char *name,
-+					unsigned int __unused)
++int __kprobes try_to_emulate(struct kprobe *p, struct pt_regs *regs)
++{
++	int ret;
++	unsigned int insn = *p->ainsn.insn;
++
++	/* regs->nip is also adjusted if emulate_step returns 1 */
++	ret = emulate_step(regs, insn);
++	if (ret > 0) {
++		/*
++		 * Once this instruction has been boosted
++		 * successfully, set the boostable flag
++		 */
++		if (unlikely(p->ainsn.boostable == 0))
++			p->ainsn.boostable = 1;
++	} else if (ret < 0) {
++		/*
++		 * We don't allow kprobes on mtmsr(d)/rfi(d), etc.
++		 * So, we should never get here... but, its still
++		 * good to catch them, just in case...
++		 */
++		printk("Can't step on instruction %x\n", insn);
++		BUG();
++	} else if (ret == 0)
++		/* This instruction can't be boosted */
++		p->ainsn.boostable = -1;
++
++	return ret;
++}
++
+ int __kprobes kprobe_handler(struct pt_regs *regs)
  {
- 	return ((kprobe_opcode_t *)(kallsyms_lookup_name(name)));
- }
-@@ -1361,7 +1362,7 @@ static kprobe_opcode_t *kprobe_addr(struct kprobe *p)
- 		goto invalid;
+ 	struct kprobe *p;
+@@ -302,18 +331,9 @@ int __kprobes kprobe_handler(struct pt_regs *regs)
  
- 	if (p->symbol_name) {
--		addr = kprobe_lookup_name(p->symbol_name);
-+		addr = kprobe_lookup_name(p->symbol_name, p->offset);
- 		if (!addr)
- 			return ERR_PTR(-ENOENT);
+ ss_probe:
+ 	if (p->ainsn.boostable >= 0) {
+-		unsigned int insn = *p->ainsn.insn;
++		ret = try_to_emulate(p, regs);
+ 
+-		/* regs->nip is also adjusted if emulate_step returns 1 */
+-		ret = emulate_step(regs, insn);
+ 		if (ret > 0) {
+-			/*
+-			 * Once this instruction has been boosted
+-			 * successfully, set the boostable flag
+-			 */
+-			if (unlikely(p->ainsn.boostable == 0))
+-				p->ainsn.boostable = 1;
+-
+ 			if (p->post_handler)
+ 				p->post_handler(p, regs, 0);
+ 
+@@ -321,17 +341,7 @@ int __kprobes kprobe_handler(struct pt_regs *regs)
+ 			reset_current_kprobe();
+ 			preempt_enable_no_resched();
+ 			return 1;
+-		} else if (ret < 0) {
+-			/*
+-			 * We don't allow kprobes on mtmsr(d)/rfi(d), etc.
+-			 * So, we should never get here... but, its still
+-			 * good to catch them, just in case...
+-			 */
+-			printk("Can't step on instruction %x\n", insn);
+-			BUG();
+-		} else if (ret == 0)
+-			/* This instruction can't be boosted */
+-			p->ainsn.boostable = -1;
++		}
  	}
-@@ -2167,7 +2168,7 @@ static int __init init_kprobes(void)
- 		/* lookup the function address from its name */
- 		for (i = 0; kretprobe_blacklist[i].name != NULL; i++) {
- 			kretprobe_blacklist[i].addr =
--				kprobe_lookup_name(kretprobe_blacklist[i].name);
-+				kprobe_lookup_name(kretprobe_blacklist[i].name, 0);
- 			if (!kretprobe_blacklist[i].addr)
- 				printk("kretprobe: lookup failed: %s\n",
- 				       kretprobe_blacklist[i].name);
+ 	prepare_singlestep(p, regs);
+ 	kcb->kprobe_status = KPROBE_HIT_SS;
 -- 
 2.11.0
