@@ -1,19 +1,47 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <gwshan@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vPVby2zHtzDq8X
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Feb 2017 09:06:22 +1100 (AEDT)
-Date: Fri, 17 Feb 2017 09:06:21 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, PowerPC <linuxppc-dev@lists.ozlabs.org>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org, Rashmica Gupta
- <rashmicy@gmail.com>
-Subject: linux-next: manual merge of the powerpc tree with Linus' tree
-Message-ID: <20170217090621.29b02a59@canb.auug.org.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vPWKt6vYMzDq8X
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Feb 2017 09:39:14 +1100 (AEDT)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v1GMcuVj093575
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 17:39:12 -0500
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 28ndpjbksy-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 17:39:11 -0500
+Received: from localhost
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Fri, 17 Feb 2017 08:39:09 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 1EE032CE8056
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Feb 2017 09:39:06 +1100 (EST)
+Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v1GMcwuj23134292
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Feb 2017 09:39:06 +1100
+Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
+ by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v1GMcXlI012089
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Feb 2017 09:38:33 +1100
+Date: Fri, 17 Feb 2017 09:38:08 +1100
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: Bjorn Helgaas <helgaas@kernel.org>
+Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-pci@vger.kernel.org, mpe@ellerman.id.au, bhelgaas@google.com
+Subject: Re: [PATCH 0/3] pci/hotplug/pnv-php: More bug fixes
+Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+References: <1487200954-14681-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ <20170216140925.GA21042@bhelgaas-glaptop.roam.corp.google.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20170216140925.GA21042@bhelgaas-glaptop.roam.corp.google.com>
+Message-Id: <20170216223808.GA7493@gwshan>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,102 +51,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi all,
+On Thu, Feb 16, 2017 at 08:09:26AM -0600, Bjorn Helgaas wrote:
+>On Thu, Feb 16, 2017 at 10:22:31AM +1100, Gavin Shan wrote:
+>> This series bases on the series: https://patchwork.ozlabs.org/patch/713513.
+>> This series fixes couple of issues:
+>> 
+>>    * Remove WARN_ON() in pnv_php_put_slot(). The parent slot's refcount
+>>      is decreased when releasing PCI slot. The parent slot can be NULL
+>>      and no need to give a warning.
+>>    * The MSI (or MSIx) could be enabled prior to load pnv-php.ko. A
+>>      backtrace is thrown when phv-php.ko attempts to enable MSI again.
+>>      PATCH[2/3] skips enabling surprise hotplug if MSI has been enabled
+>>      by other driver.
+>>    * PATCH[3/3] doesn't disable MSI that was enabled by other dirver.
+>>      Also, the upstream port of the PCI slot is disabled when it's
+>>      destroyed.
+>> 
+>> Gavin Shan (3):
+>>   pci/hotplug/pnv-php: Remove WARN_ON() in pnv_php_put_slot()
+>>   pci/hotplug/pnv-php: Disable surprise hotplug capability on conflicts
+>>   pci/hotplug/pnv-php: Disable MSI and PCI device properly
+>> 
+>>  drivers/pci/hotplug/pnv_php.c | 32 +++++++++++++++++++++++---------
+>>  1 file changed, 23 insertions(+), 9 deletions(-)
+>
+>Since this is specific to pnv_php.c and depends on a previous series
+>applied by Michael, I assume he'll handle this series as well.
+>
 
-FIXME: Add owner of second tree to To:
-       Add author(s)/SOB of conflicting commits.
+Bjorn, yes, I think Michael will take care of this series and all
+changes to pnv_php.c in future, as we all agreed previously. I was
+asked by Michael to copy linux-pci@ and you when posting patches for
+this component.
 
-Today's linux-next merge of the powerpc tree got a conflict in:
-
-  arch/powerpc/kernel/asm-offsets.c
-
-between commit:
-
-  f2574030b0e3 ("powerpc: Revert the initial stack protector support")
-
-from Linus' tree and commit:
-
-  454656155110 ("powerpc/asm: Use OFFSET macro in asm-offsets.c")
-
-from the powerpc tree.
-
-I fixed it up (see below) and can carry the fix as necessary. This
-is now fixed as far as linux-next is concerned, but any non trivial
-conflicts should be mentioned to your upstream maintainer when your tree
-is submitted for merging.  You may also want to consider cooperating
-with the maintainer of the conflicting tree to minimise any particularly
-complex conflicts.
-
--- 
-Cheers,
-Stephen Rothwell
-
-diff --cc arch/powerpc/kernel/asm-offsets.c
-index 195a9fc8f81c,b6709021fee5..000000000000
---- a/arch/powerpc/kernel/asm-offsets.c
-+++ b/arch/powerpc/kernel/asm-offsets.c
-@@@ -88,39 -91,42 +91,39 @@@ int main(void
-  #endif /* CONFIG_PPC64 */
-  
-  #ifdef CONFIG_LIVEPATCH
-- 	DEFINE(TI_livepatch_sp, offsetof(struct thread_info, livepatch_sp));
-+ 	OFFSET(TI_livepatch_sp, thread_info, livepatch_sp);
-  #endif
-  
-- 	DEFINE(KSP, offsetof(struct thread_struct, ksp));
-- 	DEFINE(PT_REGS, offsetof(struct thread_struct, regs));
- -#ifdef CONFIG_CC_STACKPROTECTOR
- -	DEFINE(TSK_STACK_CANARY, offsetof(struct task_struct, stack_canary));
- -#endif
-+ 	OFFSET(KSP, thread_struct, ksp);
-+ 	OFFSET(PT_REGS, thread_struct, regs);
-  #ifdef CONFIG_BOOKE
-- 	DEFINE(THREAD_NORMSAVES, offsetof(struct thread_struct, normsave[0]));
-+ 	OFFSET(THREAD_NORMSAVES, thread_struct, normsave[0]);
-  #endif
-- 	DEFINE(THREAD_FPEXC_MODE, offsetof(struct thread_struct, fpexc_mode));
-- 	DEFINE(THREAD_FPSTATE, offsetof(struct thread_struct, fp_state));
-- 	DEFINE(THREAD_FPSAVEAREA, offsetof(struct thread_struct, fp_save_area));
-- 	DEFINE(FPSTATE_FPSCR, offsetof(struct thread_fp_state, fpscr));
-- 	DEFINE(THREAD_LOAD_FP, offsetof(struct thread_struct, load_fp));
-+ 	OFFSET(THREAD_FPEXC_MODE, thread_struct, fpexc_mode);
-+ 	OFFSET(THREAD_FPSTATE, thread_struct, fp_state);
-+ 	OFFSET(THREAD_FPSAVEAREA, thread_struct, fp_save_area);
-+ 	OFFSET(FPSTATE_FPSCR, thread_fp_state, fpscr);
-+ 	OFFSET(THREAD_LOAD_FP, thread_struct, load_fp);
-  #ifdef CONFIG_ALTIVEC
-- 	DEFINE(THREAD_VRSTATE, offsetof(struct thread_struct, vr_state));
-- 	DEFINE(THREAD_VRSAVEAREA, offsetof(struct thread_struct, vr_save_area));
-- 	DEFINE(THREAD_VRSAVE, offsetof(struct thread_struct, vrsave));
-- 	DEFINE(THREAD_USED_VR, offsetof(struct thread_struct, used_vr));
-- 	DEFINE(VRSTATE_VSCR, offsetof(struct thread_vr_state, vscr));
-- 	DEFINE(THREAD_LOAD_VEC, offsetof(struct thread_struct, load_vec));
-+ 	OFFSET(THREAD_VRSTATE, thread_struct, vr_state);
-+ 	OFFSET(THREAD_VRSAVEAREA, thread_struct, vr_save_area);
-+ 	OFFSET(THREAD_VRSAVE, thread_struct, vrsave);
-+ 	OFFSET(THREAD_USED_VR, thread_struct, used_vr);
-+ 	OFFSET(VRSTATE_VSCR, thread_vr_state, vscr);
-+ 	OFFSET(THREAD_LOAD_VEC, thread_struct, load_vec);
-  #endif /* CONFIG_ALTIVEC */
-  #ifdef CONFIG_VSX
-- 	DEFINE(THREAD_USED_VSR, offsetof(struct thread_struct, used_vsr));
-+ 	OFFSET(THREAD_USED_VSR, thread_struct, used_vsr);
-  #endif /* CONFIG_VSX */
-  #ifdef CONFIG_PPC64
-- 	DEFINE(KSP_VSID, offsetof(struct thread_struct, ksp_vsid));
-+ 	OFFSET(KSP_VSID, thread_struct, ksp_vsid);
-  #else /* CONFIG_PPC64 */
-- 	DEFINE(PGDIR, offsetof(struct thread_struct, pgdir));
-+ 	OFFSET(PGDIR, thread_struct, pgdir);
-  #ifdef CONFIG_SPE
-- 	DEFINE(THREAD_EVR0, offsetof(struct thread_struct, evr[0]));
-- 	DEFINE(THREAD_ACC, offsetof(struct thread_struct, acc));
-- 	DEFINE(THREAD_SPEFSCR, offsetof(struct thread_struct, spefscr));
-- 	DEFINE(THREAD_USED_SPE, offsetof(struct thread_struct, used_spe));
-+ 	OFFSET(THREAD_EVR0, thread_struct, evr[0]);
-+ 	OFFSET(THREAD_ACC, thread_struct, acc);
-+ 	OFFSET(THREAD_SPEFSCR, thread_struct, spefscr);
-+ 	OFFSET(THREAD_USED_SPE, thread_struct, used_spe);
-  #endif /* CONFIG_SPE */
-  #endif /* CONFIG_PPC64 */
-  #if defined(CONFIG_4xx) || defined(CONFIG_BOOKE)
+Thanks,
+Gavin
