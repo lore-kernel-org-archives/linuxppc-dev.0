@@ -1,17 +1,50 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <gwshan@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vP4hV2pkpzDq60
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 16:38:50 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org
-Cc: naveen.n.rao@linux.vnet.ibm.com
-Subject: [PATCH 2/2] powerpc/mm: Blacklist SLB symbols from kprobe
-Date: Thu, 16 Feb 2017 16:38:45 +1100
-Message-Id: <1487223525-2665-2-git-send-email-mpe@ellerman.id.au>
-In-Reply-To: <1487223525-2665-1-git-send-email-mpe@ellerman.id.au>
-References: <1487223525-2665-1-git-send-email-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vP4z456zGzDq60
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 16:51:28 +1100 (AEDT)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v1G5nKXr003309
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 00:51:26 -0500
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 28mq9mcmpb-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 00:51:26 -0500
+Received: from localhost
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Thu, 16 Feb 2017 15:51:24 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 54AAA3578056
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 16:51:21 +1100 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v1G5pDd928442770
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 16:51:21 +1100
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v1G5omHu017869
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 16:50:49 +1100
+Date: Thu, 16 Feb 2017 16:50:24 +1100
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ bhelgaas@google.com, linux-pci@vger.kernel.org,
+ "# v4 . 9+" <stable@vger.kernel.org>
+Subject: Re: [PATCH 2/3] pci/hotplug/pnv-php: Disable surprise hotplug
+ capability on conflicts
+Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+References: <1487200954-14681-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ <1487200954-14681-3-git-send-email-gwshan@linux.vnet.ibm.com>
+ <48c227b2-756d-a5d3-227f-58ad51dd1565@au1.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <48c227b2-756d-a5d3-227f-58ad51dd1565@au1.ibm.com>
+Message-Id: <20170216055023.GA16031@gwshan>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,31 +54,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We can't sensibly take a trap at this point. So, blacklist these
-symbols.
+On Thu, Feb 16, 2017 at 03:31:48PM +1100, Andrew Donnellan wrote:
+>On 16/02/17 10:22, Gavin Shan wrote:
+>>The root port or PCIe switch downstream port might have been associated
+>>with driver other than pnv-php. The MSI or MSIx might also have been
+>>enabled by that driver (e.g. pcieport_drv). Attempt to enable MSI incurs
+>>below backtrace:
+>>
+>> PowerPC PowerNV PCI Hotplug Driver version: 0.1
+>> ------------[ cut here ]------------
+>> WARNING: CPU: 19 PID: 1004 at drivers/pci/msi.c:1071 \
+>>                              __pci_enable_msi_range+0x84/0x4e0
+>> NIP [c000000000665c34] __pci_enable_msi_range+0x84/0x4e0
+>> LR [c000000000665c24] __pci_enable_msi_range+0x74/0x4e0
+>> Call Trace:
+>> [c000000384d67600] [c000000000665c24] __pci_enable_msi_range+0x74/0x4e0
+>> [c000000384d676e0] [d00000000aa31b04] pnv_php_register+0x564/0x5a0 [pnv_php]
+>> [c000000384d677c0] [d00000000aa31658] pnv_php_register+0xb8/0x5a0 [pnv_php]
+>> [c000000384d678a0] [d00000000aa31658] pnv_php_register+0xb8/0x5a0 [pnv_php]
+>> [c000000384d67980] [d00000000aa31dfc] pnv_php_init+0x60/0x98 [pnv_php]
+>> [c000000384d679f0] [c00000000000cfdc] do_one_initcall+0x6c/0x1d0
+>> [c000000384d67ab0] [c000000000b92354] do_init_module+0x94/0x254
+>> [c000000384d67b40] [c00000000019719c] load_module+0x258c/0x2c60
+>> [c000000384d67d30] [c000000000197bb0] SyS_finit_module+0xf0/0x170
+>> [c000000384d67e30] [c00000000000b184] system_call+0x38/0xe0
+>>360aebd85a4c
+>>This fixes the issue by skipping enabling the surprise hotplug
+>>capability if the MSI or MSIx on the PCI slot's upstream port has
+>>been enabled by other driver.
+>>
+>>Cc: <stable@vger.kernel.org> # v4.9+
+>>Fixes: 360aebd85a4c ("drivers/pci/hotplug: Support surprise hotplug in powernv driver")
+>>Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+>
+>Should this print something to the kernel log to indicate that surprise
+>hotplug is unavailable?
+>
 
-Reported-by: Anton Blanchard <anton@samba.org>
-Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/mm/slb_low.S | 8 ++++++++
- 1 file changed, 8 insertions(+)
+I don't think it's necessary as the situation can be known from lspci
+and /proc/interrupts easily. Otherwise, we could add pr_warn_once()
+to print the warning message for once, not on all slots.
 
-diff --git a/arch/powerpc/mm/slb_low.S b/arch/powerpc/mm/slb_low.S
-index 9beed92c1900..a85e06ea6c20 100644
---- a/arch/powerpc/mm/slb_low.S
-+++ b/arch/powerpc/mm/slb_low.S
-@@ -272,3 +272,11 @@ slb_compare_rr_to_size:
- 	clrrdi	r3,r3,SID_SHIFT_1T	/* clear out non-ESID bits */
- 	b	7b
- 
-+
-+_ASM_NOKPROBE_SYMBOL(slb_allocate_realmode)
-+_ASM_NOKPROBE_SYMBOL(slb_miss_kernel_load_linear)
-+_ASM_NOKPROBE_SYMBOL(slb_miss_kernel_load_io)
-+_ASM_NOKPROBE_SYMBOL(slb_compare_rr_to_size)
-+#ifdef CONFIG_SPARSEMEM_VMEMMAP
-+_ASM_NOKPROBE_SYMBOL(slb_miss_kernel_load_vmemmap)
-+#endif
--- 
-2.7.4
+Thanks,
+Gavin
