@@ -1,50 +1,39 @@
-Return-Path: <andrew.donnellan@au1.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <stewart@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vNx552ZMfzDqBV
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 10:56:09 +1100 (AEDT)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vNy0n1FlqzDqBV
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 11:37:28 +1100 (AEDT)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v1FNrf0c031350
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2017 18:56:06 -0500
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
- by mx0a-001b2d01.pphosted.com with ESMTP id 28mq9gstuc-1
+ v1G0Y4xf018207
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2017 19:37:26 -0500
+Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 28mq9kjn83-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2017 18:56:06 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2017 19:37:26 -0500
 Received: from localhost
- by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
- Thu, 16 Feb 2017 09:56:04 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 0FBCB2BB0057
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 10:56:02 +1100 (EST)
-Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v1FNtsc639125152
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 10:56:02 +1100
-Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
- by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v1FNtTLL029004
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 10:55:29 +1100
-Subject: Re: [PATCHv4 4/4] MAINTAINERS: Remove powerpc's opal match
+ for <linuxppc-dev@lists.ozlabs.org> from <stewart@linux.vnet.ibm.com>;
+ Wed, 15 Feb 2017 19:37:25 -0500
+From: Stewart Smith <stewart@linux.vnet.ibm.com>
 To: Jon Derrick <jonathan.derrick@intel.com>
-References: <1487195159-12599-1-git-send-email-jonathan.derrick@intel.com>
- <1487195159-12599-5-git-send-email-jonathan.derrick@intel.com>
-Cc: Jens Axboe <axboe@kernel.dk>,
+Cc: Jon Derrick <jonathan.derrick@intel.com>, linux-block@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Scott Bauer <scott.bauer@intel.com>,
  Rafael Antognolli <rafael.antognolli@intel.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- linux-kernel@vger.kernel.org, linux-block@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, Christoph Hellwig <hch@lst.de>,
- Scott Bauer <scott.bauer@intel.com>
-From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Date: Thu, 16 Feb 2017 10:55:04 +1100
+ Jens Axboe <axboe@kernel.dk>, Christoph Hellwig <hch@lst.de>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Subject: Re: [PATCHv3 4/4] MAINTAINERS: Remove powerpc's opal match
+In-Reply-To: <1487187731-10293-5-git-send-email-jonathan.derrick@intel.com>
+References: <1487187731-10293-1-git-send-email-jonathan.derrick@intel.com>
+ <1487187731-10293-5-git-send-email-jonathan.derrick@intel.com>
+Date: Thu, 16 Feb 2017 11:37:15 +1100
 MIME-Version: 1.0
-In-Reply-To: <1487195159-12599-5-git-send-email-jonathan.derrick@intel.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Message-Id: <4e977771-2391-5cef-5571-5710693e0c1b@au1.ibm.com>
+Content-Type: text/plain
+Message-Id: <87h93v7yys.fsf@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -54,39 +43,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 16/02/17 08:45, Jon Derrick wrote:
+Jon Derrick <jonathan.derrick@intel.com> writes:
 > PPC's 'opal' match pattern also matches block/sed-opal.c, where it looks
 > like the 'arch/powerpc' file pattern should be enough to match powerpc
 > opal code by itself. Remove the opal regex pattern from powerpc.
->
-> Signed-off-by: Jon Derrick <jonathan.derrick@intel.com>
 
-It looks like this change will exclude the following PPC OPAL related files:
+This patch will end up missing some code, what about this instead:
 
-drivers/tty/hvc/hvc_opal.c - HYPERVISOR VIRTUAL CONSOLE DRIVER (which 
-lists linuxppc-dev as the mailing list, doesn't name a maintainer though)
 
-drivers/i2c/busses/i2c-opal.c - I2C SUBSYSTEM
+Remove OPAL regex in powerpc to avoid false match
 
-drivers/rtc/rtc-opal.c - REAL TIME CLOCK (RTC) SUBSYSTEM
+Signed-off-by: Stewart Smith <stewart@linux.vnet.ibm.com>
 
-Documentation/devicetree/bindings/i2c/i2c-opal.txt - I2C SUBSYSTEM, OPEN 
-FIRMWARE AND FLATTENED DEVICE TREE BINDINGS
+---
+ MAINTAINERS |    8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
 
-Documentation/devicetree/bindings/powerpc/opal - OPEN FIRMWARE AND 
-FLATTENED DEVICE TREE BINDINGS
-
-Documentation/devicetree/bindings/powerpc/opal/oppanel-opal.txt - OPEN 
-FIRMWARE AND FLATTENED DEVICE TREE BINDINGS
-
-Documentation/devicetree/bindings/rtc/rtc-opal.txt - OPEN FIRMWARE AND 
-FLATTENED DEVICE TREE BINDINGS, REAL TIME CLOCK (RTC) SUBSYSTEM
-
-Documentation/ABI/stable/sysfs-firmware-opal-elog - no other subsystem
-
-Documentation/ABI/stable/sysfs-firmware-opal-dump - no other subsystem
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 3960e7f..25ed25a 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -7393,18 +7393,24 @@ L:	linuxppc-dev@lists.ozlabs.org
+ Q:	http://patchwork.ozlabs.org/project/linuxppc-dev/list/
+ T:	git git://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git
+ S:	Supported
++F:	Documentation/ABI/stable/sysfs-firmware-opal-*
++F:	Documentation/devicetree/bindings/powerpc/opal/
++F:	Documentation/devicetree/bindings/rtc/rtc-opal.txt
++F:	Documentation/devicetree/bindings/i2c/i2c-opal.txt
+ F:	Documentation/powerpc/
+ F:	arch/powerpc/
+ F:	drivers/char/tpm/tpm_ibmvtpm*
+ F:	drivers/crypto/nx/
+ F:	drivers/crypto/vmx/
++F:	drivers/i2c/busses/ic2-opal.c
+ F:	drivers/net/ethernet/ibm/ibmveth.*
+ F:	drivers/net/ethernet/ibm/ibmvnic.*
+ F:	drivers/pci/hotplug/pnv_php.c
+ F:	drivers/pci/hotplug/rpa*
++F:	drivers/rtc/rtc-opal.c
+ F:	drivers/scsi/ibmvscsi/
++F:	drivers/tty/hvc/hvc_opal.c
+ F:	tools/testing/selftests/powerpc
+-N:	opal
+ N:	/pmac
+ N:	powermac
+ N:	powernv
 
 
 -- 
-Andrew Donnellan              OzLabs, ADL Canberra
-andrew.donnellan@au1.ibm.com  IBM Australia Limited
+Stewart Smith
+OPAL Architect, IBM.
