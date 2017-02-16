@@ -1,15 +1,14 @@
 Return-Path: <kishon@ti.com>
-Received: from lelnx194.ext.ti.com (lelnx194.ext.ti.com [198.47.27.80])
+Received: from lelnx193.ext.ti.com (lelnx193.ext.ti.com [198.47.27.77])
  (using TLSv1 with cipher DHE-RSA-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vP8bS6xJgzDq60
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 19:34:44 +1100 (AEDT)
-Subject: Re: [PATCH 30/37] dt-bindings: PCI: dra7xx: Add dt bindings to enable
- legacy mode
-To: Rob Herring <robh@kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vPBWv3m4NzDq60
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 21:01:45 +1100 (AEDT)
+Subject: Re: [PATCH 37/37] ARM: dts: DRA7: Add pcie1 dt node for EP mode
+To: Tony Lindgren <tony@atomide.com>
 References: <1484216786-17292-1-git-send-email-kishon@ti.com>
- <1484216786-17292-31-git-send-email-kishon@ti.com>
- <20170118214603.qnewy3sm6sgw7lbg@rob-hp-laptop>
+ <1484216786-17292-38-git-send-email-kishon@ti.com>
+ <20170120183000.GF7403@atomide.com>
 CC: Bjorn Helgaas <bhelgaas@google.com>, Jingoo Han <jingoohan1@gmail.com>,
  Joao Pinto <Joao.Pinto@synopsys.com>, Arnd Bergmann <arnd@arndb.de>,
  <linux-pci@vger.kernel.org>, <linux-doc@vger.kernel.org>,
@@ -19,10 +18,10 @@ CC: Bjorn Helgaas <bhelgaas@google.com>, Jingoo Han <jingoohan1@gmail.com>,
  <linux-arm-kernel@axis.com>, <linux-arm-msm@vger.kernel.org>,
  <nsekhar@ti.com>
 From: Kishon Vijay Abraham I <kishon@ti.com>
-Message-ID: <58A563F5.5040504@ti.com>
-Date: Thu, 16 Feb 2017 14:03:57 +0530
+Message-ID: <58A57859.5090308@ti.com>
+Date: Thu, 16 Feb 2017 15:30:57 +0530
 MIME-Version: 1.0
-In-Reply-To: <20170118214603.qnewy3sm6sgw7lbg@rob-hp-laptop>
+In-Reply-To: <20170120183000.GF7403@atomide.com>
 Content-Type: text/plain; charset="windows-1252"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -33,36 +32,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+Hi Tony,
 
-On Thursday 19 January 2017 03:16 AM, Rob Herring wrote:
-> On Thu, Jan 12, 2017 at 03:56:19PM +0530, Kishon Vijay Abraham I wrote:
->> Update device tree binding documentation of TI's dra7xx PCI
->> controller to include property for enabling legacy mode.
->>
->> Signed-off-by: Kishon Vijay Abraham I <kishon@ti.com>
->> ---
->>  Documentation/devicetree/bindings/pci/ti-pci.txt |    4 ++++
->>  1 file changed, 4 insertions(+)
->>
->> diff --git a/Documentation/devicetree/bindings/pci/ti-pci.txt b/Documentation/devicetree/bindings/pci/ti-pci.txt
->> index 62f5f59..ed85e8e 100644
->> --- a/Documentation/devicetree/bindings/pci/ti-pci.txt
->> +++ b/Documentation/devicetree/bindings/pci/ti-pci.txt
->> @@ -39,6 +39,10 @@ DEVICE MODE
->>   - interrupts : one interrupt entries must be specified for main interrupt.
->>   - num-ib-windows : number of inbound address translation windows
->>   - num-ob-windows : number of outbound address translation windows
->> + - syscon-legacy-mode: phandle to the syscon dt node. The 1st argument should
->> +		       contain the register offset within syscon and the 2nd
->> +		       argument should contain the bit field for setting the
->> +		       legacy mode
+On Saturday 21 January 2017 12:00 AM, Tony Lindgren wrote:
+> * Kishon Vijay Abraham I <kishon@ti.com> [170112 02:34]:
+>> Add pcie1 dt node in order for the controller to operate in
+>> endpoint mode. However since none of the dra7 based boards have
+>> slots configured to operate in endpoint mode, keep EP mode
+>> disabled.
 > 
-> What's legacy mode?
+> Can this be merged separately later on without breaking anything?
 
-It's the name of the bit-field defined in TRM used to add workaround for errata
-id i870 (See [PATCH 29/37] PCI: dwc: dra7xx: Workaround for errata id i870 of
-this series). I'm not sure what it does internally.
+yes, I'll resend this once rest of the EP support gets in.
 
 Thanks
 Kishon
