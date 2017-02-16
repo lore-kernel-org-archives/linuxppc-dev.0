@@ -1,26 +1,18 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
- [IPv6:2607:f8b0:400e:c05::241])
+Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
+ [IPv6:2607:f8b0:400e:c00::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vPNt40kqdzDq60
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Feb 2017 04:48:11 +1100 (AEDT)
-Received: by mail-pg0-x241.google.com with SMTP id 13so1606171pgd.3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 09:48:11 -0800 (PST)
-Received: from roar.ozlabs.ibm.com ([61.68.126.103])
- by smtp.gmail.com with ESMTPSA id x30sm14890315pgc.67.2017.02.16.09.48.07
- for <linuxppc-dev@lists.ozlabs.org>
- (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Thu, 16 Feb 2017 09:48:08 -0800 (PST)
-Date: Fri, 17 Feb 2017 03:47:52 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vPQ0x22rszDq60
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Feb 2017 05:39:13 +1100 (AEDT)
+Received: by mail-pf0-x241.google.com with SMTP id e4so2165573pfg.0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 10:39:13 -0800 (PST)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [RFC[PATCH 0/4] POWER9 machine check handler
-Message-ID: <20170217034752.65cf9b65@roar.ozlabs.ibm.com>
-In-Reply-To: <20170216170114.25247-1-npiggin@gmail.com>
-References: <20170216170114.25247-1-npiggin@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Cc: Nicholas Piggin <npiggin@gmail.com>
+Subject: [RFC][PATCH 0/5] power saving wakeup changes for POWER9 MCE
+Date: Fri, 17 Feb 2017 04:38:56 +1000
+Message-Id: <20170216183901.28611-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,15 +22,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 17 Feb 2017 03:01:10 +1000
-Nicholas Piggin <npiggin@gmail.com> wrote:
+Hi,
 
-> So far I've only got this tested in mambo simulator, but
-> some recoverable and unrecoverable events seem to work.
+This is not a bare minimum fix to get the MCE power saving wakeup
+working for POWER9, but I had a couple of other things it ended on
+top of which made things a bit simpler.
 
-Ugh, I forgot to update before sending sorry. It's just a
-couple of small compiler bugs so I'll resend after getting
-feedback first.
+RFC only at this stage because it needs a bit more testing. It
+seems to work in simulator though when constructing an MCE from
+power save wakeup (whereas it crashes with mainline).
 
 Thanks,
 Nick
+
+Nicholas Piggin (5):
+  powerpc/64s: move remaining system reset idle code into idle_book3s.S
+  powerpc/64: stop using bit in HSPRG0 to test winkle
+  powerpc/64s: use alternative feature patching
+  powerpc/64s: consolidate pnv_restore_hyp_resource into
+    pnv_powersave_wakeup
+  powerpc/64s: fix POWER9 machine check handler from stop state
+
+ arch/powerpc/include/asm/exception-64s.h |  18 +----
+ arch/powerpc/kernel/exceptions-64s.S     | 116 +++++++++++--------------------
+ arch/powerpc/kernel/idle_book3s.S        |  76 ++++++++++----------
+ arch/powerpc/platforms/powernv/idle.c    |  13 ----
+ 4 files changed, 81 insertions(+), 142 deletions(-)
+
+-- 
+2.11.0
