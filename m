@@ -1,49 +1,46 @@
-Return-Path: <vaibhav@linux.vnet.ibm.com>
+Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vP5Rv5XqMzDr14
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 17:12:59 +1100 (AEDT)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v1G68nCx113345
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 01:12:57 -0500
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
- by mx0b-001b2d01.pphosted.com with ESMTP id 28n1m0tc0j-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vP8F13tySzDq60
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 19:18:45 +1100 (AEDT)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v1G8Ek04098333
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 03:18:42 -0500
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 28n5qr5vn1-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 01:12:57 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 03:18:42 -0500
 Received: from localhost
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <vaibhav@linux.vnet.ibm.com>;
- Thu, 16 Feb 2017 16:12:54 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 8BBE32BB0045
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 17:12:52 +1100 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v1G6CiXE29884550
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 17:12:52 +1100
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v1G6CKsg015370
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 17:12:20 +1100
-From: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
-To: Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Cc: bhelgaas@google.com, linux-pci@vger.kernel.org,
- "# v4 . 9+" <stable@vger.kernel.org>
-Subject: Re: [PATCH 2/3] pci/hotplug/pnv-php: Disable surprise hotplug
- capability on conflicts
-In-Reply-To: <48c227b2-756d-a5d3-227f-58ad51dd1565@au1.ibm.com>
-References: <1487200954-14681-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <1487200954-14681-3-git-send-email-gwshan@linux.vnet.ibm.com>
- <48c227b2-756d-a5d3-227f-58ad51dd1565@au1.ibm.com>
-Date: Thu, 16 Feb 2017 11:41:48 +0530
-MIME-Version: 1.0
-Content-Type: text/plain
-Message-Id: <877f4qbr6j.fsf@vajain21.in.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
+ Thu, 16 Feb 2017 18:18:39 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id D63B92CE8057
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 19:18:37 +1100 (EST)
+Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v1G8ITji23134412
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 19:18:37 +1100
+Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
+ by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v1G8I5VP005626
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 19:18:05 +1100
+From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+To: Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>,
+ Masami Hiramatsu <mhiramat@kernel.org>,
+ Arnaldo Carvalho de Melo <acme@kernel.org>,
+ Michael Ellerman <mpe@ellerman.id.au>
+Cc: Ingo Molnar <mingo@redhat.com>, Namhyung Kim <namhyung@kernel.org>,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 0/2] powerpc: kretprobe updates
+Date: Thu, 16 Feb 2017 13:47:37 +0530
+In-Reply-To: <dbb93084a6bc96d44cf7436ab6d5f9c8c72b6a39.1487181941.git.naveen.n.rao@linux.vnet.ibm.com>
+References: <dbb93084a6bc96d44cf7436ab6d5f9c8c72b6a39.1487181941.git.naveen.n.rao@linux.vnet.ibm.com>
+Message-Id: <cover.1487232416.git.naveen.n.rao@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -53,15 +50,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Andrew Donnellan <andrew.donnellan@au1.ibm.com> writes:
+I am posting the powerpc bits in the same thread so as to keep these
+changes together. I am not sure how this should be taken upstream as
+there are atleast three different trees involved: one for the core
+kprobes infrastructure, one for powerpc and one for perf.
 
->>
->> Cc: <stable@vger.kernel.org> # v4.9+
->> Fixes: 360aebd85a4c ("drivers/pci/hotplug: Support surprise hotplug in powernv driver")
->> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
-> Reviewed-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Tested-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+Thanks,
+Naveen
+
+Naveen N. Rao (2):
+  powerpc: kretprobes: override default function entry offset
+  perf: powerpc: choose LEP with kretprobes
+
+ arch/powerpc/kernel/kprobes.c               | 9 +++++++++
+ tools/perf/arch/powerpc/util/sym-handling.c | 5 +----
+ 2 files changed, 10 insertions(+), 4 deletions(-)
 
 -- 
-Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
-Linux Technology Center, IBM India Pvt. Ltd.
+2.11.0
