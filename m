@@ -1,37 +1,18 @@
-Return-Path: <bhsharma@redhat.com>
-Received: from mail-oi0-f52.google.com (mail-oi0-f52.google.com
- [209.85.218.52])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <paulus@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vP3bq33MKzDqH8
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 15:49:43 +1100 (AEDT)
-Received: by mail-oi0-f52.google.com with SMTP id s203so3307352oie.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2017 20:49:43 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vP3w04R0czDq60
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 16:03:44 +1100 (AEDT)
+Date: Thu, 16 Feb 2017 16:03:39 +1100
+From: Paul Mackerras <paulus@ozlabs.org>
+To: linuxppc-dev@ozlabs.org
+Cc: Michael Ellerman <michael@ellerman.id.au>
+Subject: [PATCH] powerpc/64: Call H_REGISTER_PROC_TBL when running as a HPT
+ guest on POWER9
+Message-ID: <20170216050339.GC19110@fergus.ozlabs.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <CACi5LpOddY6WOz7S-fNEwSDLOoYFga-NKUOkCHtNLJ0puiNMOQ@mail.gmail.com>
-References: <1486014168-1279-1-git-send-email-bhsharma@redhat.com>
- <1486014168-1279-2-git-send-email-bhsharma@redhat.com>
- <87mve4c2my.fsf@concordia.ellerman.id.au>
- <CACi5LpOkkSFOJm07BGZFOmFpZpx7qsQiNywEmAjCEmcQG6kGEg@mail.gmail.com>
- <87mvduz4wi.fsf@concordia.ellerman.id.au>
- <CACi5LpOddY6WOz7S-fNEwSDLOoYFga-NKUOkCHtNLJ0puiNMOQ@mail.gmail.com>
-From: Bhupesh Sharma <bhsharma@redhat.com>
-Date: Thu, 16 Feb 2017 10:19:40 +0530
-Message-ID: <CACi5LpMdoo4xFCO4w+FAF=UQMDF_Lx95UoN-B4UrtCX_27B8wg@mail.gmail.com>
-Subject: Re: [kernel-hardening] Re: [PATCH 1/2] powerpc: mm: support
- ARCH_MMAP_RND_BITS
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org, kernel-hardening@lists.openwall.com,
- Daniel Cashman <dcashman@google.com>, Bhupesh SHARMA <bhupesh.linux@gmail.com>,
- Kees Cook <keescook@chromium.org>, Alexander Graf <agraf@suse.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Anatolij Gustschin <agust@denx.de>, Alistair Popple <alistair@popple.id.au>,
- Matt Porter <mporter@kernel.crashing.org>,
- Vitaly Bordug <vitb@kernel.crashing.org>,
- Scott Wood <oss@buserror.net>, Kumar Gala <galak@kernel.crashing.org>,
- Daniel Cashman <dcashman@android.com>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,140 +22,81 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Michael,
+On POWER9, since commit cc3d2940133d ("powerpc/64: Enable use of radix
+MMU under hypervisor on POWER9", 2017-01-30), we set both the radix and
+HPT bits in the client-architecture-support (CAS) vector, which tells
+the hypervisor that we can do either radix or HPT.  According to PAPR,
+if we use this combination we are promising to do a H_REGISTER_PROC_TBL
+hcall later on to let the hypervisor know whether we are doing radix
+or HPT.  We currently do this call if we are doing radix but not if
+we are doing HPT.  If the hypervisor is able to support both radix
+and HPT guests, it would be entitled to defer allocation of the HPT
+until the H_REGISTER_PROC_TBL call, and to fail any attempts to create
+HPTEs until the H_REGISTER_PROC_TBL call.  Thus we need to do a
+H_REGISTER_PROC_TBL call when we are doing HPT; otherwise we may
+crash at boot time.
 
-On Fri, Feb 10, 2017 at 4:41 PM, Bhupesh Sharma <bhsharma@redhat.com> wrote:
-> On Fri, Feb 10, 2017 at 4:31 PM, Michael Ellerman <mpe@ellerman.id.au> wrote:
->> Bhupesh Sharma <bhsharma@redhat.com> writes:
->>
->>> HI Michael,
->>>
->>> On Thu, Feb 2, 2017 at 3:53 PM, Michael Ellerman <mpe@ellerman.id.au> wrote:
->>>> Bhupesh Sharma <bhsharma@redhat.com> writes:
->>>>
->>>>> powerpc: arch_mmap_rnd() uses hard-coded values, (23-PAGE_SHIFT) for
->>>>> 32-bit and (30-PAGE_SHIFT) for 64-bit, to generate the random offset
->>>>> for the mmap base address.
->>>>>
->>>>> This value represents a compromise between increased
->>>>> ASLR effectiveness and avoiding address-space fragmentation.
->>>>> Replace it with a Kconfig option, which is sensibly bounded, so that
->>>>> platform developers may choose where to place this compromise.
->>>>> Keep default values as new minimums.
->>>>>
->>>>> This patch makes sure that now powerpc mmap arch_mmap_rnd() approach
->>>>> is similar to other ARCHs like x86, arm64 and arm.
->>>>
->>>> Thanks for looking at this, it's been on my TODO for a while.
->>>>
->>>> I have a half completed version locally, but never got around to testing
->>>> it thoroughly.
->>>
->>> Sure :)
->>>
->>>>> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
->>>>> index a8ee573fe610..b4a843f68705 100644
->>>>> --- a/arch/powerpc/Kconfig
->>>>> +++ b/arch/powerpc/Kconfig
->>>>> @@ -22,6 +22,38 @@ config MMU
->>>>>       bool
->>>>>       default y
->>>>>
->>>>> +config ARCH_MMAP_RND_BITS_MIN
->>>>> +       default 5 if PPC_256K_PAGES && 32BIT
->>>>> +       default 12 if PPC_256K_PAGES && 64BIT
->>>>> +       default 7 if PPC_64K_PAGES && 32BIT
->>>>> +       default 14 if PPC_64K_PAGES && 64BIT
->>>>> +       default 9 if PPC_16K_PAGES && 32BIT
->>>>> +       default 16 if PPC_16K_PAGES && 64BIT
->>>>> +       default 11 if PPC_4K_PAGES && 32BIT
->>>>> +       default 18 if PPC_4K_PAGES && 64BIT
->>>>> +
->>>>> +# max bits determined by the following formula:
->>>>> +#  VA_BITS - PAGE_SHIFT - 4
->>>>> +#  for e.g for 64K page and 64BIT = 48 - 16 - 4 = 28
->>>>> +config ARCH_MMAP_RND_BITS_MAX
->>>>> +       default 10 if PPC_256K_PAGES && 32BIT
->>>>> +       default 26 if PPC_256K_PAGES && 64BIT
->>>>> +       default 12 if PPC_64K_PAGES && 32BIT
->>>>> +       default 28 if PPC_64K_PAGES && 64BIT
->>>>> +       default 14 if PPC_16K_PAGES && 32BIT
->>>>> +       default 30 if PPC_16K_PAGES && 64BIT
->>>>> +       default 16 if PPC_4K_PAGES && 32BIT
->>>>> +       default 32 if PPC_4K_PAGES && 64BIT
->>>>> +
->>>>> +config ARCH_MMAP_RND_COMPAT_BITS_MIN
->>>>> +       default 5 if PPC_256K_PAGES
->>>>> +       default 7 if PPC_64K_PAGES
->>>>> +       default 9 if PPC_16K_PAGES
->>>>> +       default 11
->>>>> +
->>>>> +config ARCH_MMAP_RND_COMPAT_BITS_MAX
->>>>> +       default 16
->>>>> +
->>>>
->>>> This is what I have below, which is a bit neater I think because each
->>>> value is only there once (by defaulting to the COMPAT value).
->>>>
->>>> My max values are different to yours, I don't really remember why I
->>>> chose those values, so we can argue about which is right.
->>>
->>> I am not sure how you derived these values, but I am not sure there
->>> should be differences between 64-BIT x86/ARM64 and PPC values for the
->>> MAX values.
->>
->> But your values *are* different to x86 and arm64.
->>
->> And why would they be the same anyway? x86 has a 47 bit address space,
->> 64-bit powerpc is 46 bits, and arm64 is configurable from 36 to 48 bits.
->>
->> So your calculations above using VA_BITS = 48 should be using 46 bits.
->>
->> But if you fixed that, your formula basically gives 1/16th of the
->> address space as the maximum range. Why is that the right amount?
->>
->> x86 uses 1/8th, and arm64 uses a mixture of 1/8th and 1/32nd (though
->> those might be bugs).
->>
->> My values were more liberal, giving up to half the address space for 32
->> & 64-bit. Maybe that's too generous, but my rationale was it's up to the
->> sysadmin to tweak the values and they get to keep the pieces if it
->> breaks.
->
-> I am not sure why would one want to use more than the practical limits
-> of 1/8th used by x86 - this causes additional burden of address space
-> fragmentation.
->
-> So we need to balance between the randomness increase and the address
-> space fragmentation.
->
->>>> +config ARCH_MMAP_RND_BITS_MAX
->>>> +       # On 64-bit up to 32T of address space (2^45)
->>>> +       default 27 if 64BIT && PPC_256K_PAGES   # 256K (2^18), = 45 - 18 = 27
->>>> +       default 29 if 64BIT && PPC_64K_PAGES    # 64K  (2^16), = 45 - 16 = 29
->>>> +       default 31 if 64BIT && PPC_16K_PAGES    # 16K  (2^14), = 45 - 14 = 31
->>>> +       default 33 if 64BIT                     # 4K   (2^12), = 45 - 12 = 33
->>>> +       default ARCH_MMAP_RND_COMPAT_BITS_MAX
->>
->> I played with my values a bit and allowing 32T is a little bit nuts. It
->> means you can actually end up with the adjusted ET_DYN_BASE *above* 32T,
->> followed by the heap growing up, and the mmap base *below* 32T, growing
->> down. Which is kinda fun, but definitely breaks a lot of assumptions.
->>
->> So limiting it to a max of 16T is probably more sensible.
->>
->> Anyway late here, will think about it some more over the weekend.
->
-> A user is always free to tweak the maximum values via specific Kconfig
-> + defconfig combinations for their platforms, but why have such large
-> max values as default for say a embedded PPC64 board which only
-> supports say 16GB of DDR.
->
-> A default max of 33bits for such platforms might be an overkill, while
-> it might be fine for servers which might have greater DDR
-> availability.
+This adds the code to call H_REGISTER_PROC_TBL in this case, before
+we attempt to create any HPT entries using H_ENTER.
 
-Ping.
+Fixes: cc3d2940133d ("powerpc/64: Enable use of radix MMU under hypervisor on POWER9")
+Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
+---
+This needs to go in after the topic/ppc-kvm branch.
 
-Regards,
-Bhupesh
+arch/powerpc/mm/hash_utils_64.c       | 6 ++++++
+ arch/powerpc/platforms/pseries/lpar.c | 8 ++++++--
+ 2 files changed, 12 insertions(+), 2 deletions(-)
+
+diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
+index 8033493..b0ed96e 100644
+--- a/arch/powerpc/mm/hash_utils_64.c
++++ b/arch/powerpc/mm/hash_utils_64.c
+@@ -839,6 +839,12 @@ static void __init htab_initialize(void)
+ 		/* Using a hypervisor which owns the htab */
+ 		htab_address = NULL;
+ 		_SDR1 = 0; 
++		/*
++		 * On POWER9, we need to do a H_REGISTER_PROC_TBL hcall
++		 * to inform the hypervisor that we wish to use the HPT.
++		 */
++		if (cpu_has_feature(CPU_FTR_ARCH_300))
++			register_process_table(0, 0, 0);
+ #ifdef CONFIG_FA_DUMP
+ 		/*
+ 		 * If firmware assisted dump is active firmware preserves
+diff --git a/arch/powerpc/platforms/pseries/lpar.c b/arch/powerpc/platforms/pseries/lpar.c
+index 0587655..5b47026 100644
+--- a/arch/powerpc/platforms/pseries/lpar.c
++++ b/arch/powerpc/platforms/pseries/lpar.c
+@@ -609,15 +609,18 @@ static int __init disable_bulk_remove(char *str)
+ 
+ __setup("bulk_remove=", disable_bulk_remove);
+ 
+-/* Actually only used for radix, so far */
+ static int pseries_lpar_register_process_table(unsigned long base,
+ 			unsigned long page_size, unsigned long table_size)
+ {
+ 	long rc;
+-	unsigned long flags = PROC_TABLE_NEW;
++	unsigned long flags = 0;
+ 
++	if (table_size)
++		flags |= PROC_TABLE_NEW;
+ 	if (radix_enabled())
+ 		flags |= PROC_TABLE_RADIX | PROC_TABLE_GTSE;
++	else
++		flags |= PROC_TABLE_HPT_SLB;
+ 	for (;;) {
+ 		rc = plpar_hcall_norets(H_REGISTER_PROC_TBL, flags, base,
+ 					page_size, table_size);
+@@ -643,6 +646,7 @@ void __init hpte_init_pseries(void)
+ 	mmu_hash_ops.flush_hash_range	 = pSeries_lpar_flush_hash_range;
+ 	mmu_hash_ops.hpte_clear_all      = pseries_hpte_clear_all;
+ 	mmu_hash_ops.hugepage_invalidate = pSeries_lpar_hugepage_invalidate;
++	register_process_table		 = pseries_lpar_register_process_table;
+ }
+ 
+ void radix_init_pseries(void)
+-- 
+2.10.2
