@@ -1,19 +1,23 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vP42T0BwKzDqD2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 16:09:21 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vP4M4400CzDq60
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 16:23:44 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-Cc: benh@kernel.crashing.org, paulus@samba.org, npiggin@gmail.com,
- gpiccoli@linux.vnet.ibm.com, Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>
-Subject: Re: [PATCH] powerpc/xmon: Fix an unexpected xmon onoff state change
-In-Reply-To: <1487144990-5969-1-git-send-email-xinhui.pan@linux.vnet.ibm.com>
-References: <1487144990-5969-1-git-send-email-xinhui.pan@linux.vnet.ibm.com>
-Date: Thu, 16 Feb 2017 16:09:18 +1100
-Message-ID: <87shnek9hd.fsf@concordia.ellerman.id.au>
+To: Jon Derrick <jonathan.derrick@intel.com>
+Cc: Jens Axboe <axboe@kernel.dk>,
+ Rafael Antognolli <rafael.antognolli@intel.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org,
+ linux-block@vger.kernel.org, Jon Derrick <jonathan.derrick@intel.com>,
+ linuxppc-dev@lists.ozlabs.org, Christoph Hellwig <hch@lst.de>,
+ Scott Bauer <scott.bauer@intel.com>
+Subject: Re: [PATCHv3 4/4] MAINTAINERS: Remove powerpc's opal match
+In-Reply-To: <1487187731-10293-5-git-send-email-jonathan.derrick@intel.com>
+References: <1487187731-10293-1-git-send-email-jonathan.derrick@intel.com>
+ <1487187731-10293-5-git-send-email-jonathan.derrick@intel.com>
+Date: Thu, 16 Feb 2017 16:23:44 +1100
+Message-ID: <87poiik8tb.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,42 +29,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Pan Xinhui <xinhui.pan@linux.vnet.ibm.com> writes:
+Jon Derrick <jonathan.derrick@intel.com> writes:
 
-> Once xmon is triggered by sysrq-x, it is enabled always afterwards even
-> if it is disabled during boot. This will cause a system reset interrut
-> fail to dump. So keep xmon in its original state after exit.
->
-> Signed-off-by: Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/xmon/xmon.c | 5 ++++-
->  1 file changed, 4 insertions(+), 1 deletion(-)
->
-> diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
-> index 9c0e17c..721212f 100644
-> --- a/arch/powerpc/xmon/xmon.c
-> +++ b/arch/powerpc/xmon/xmon.c
-> @@ -76,6 +76,7 @@ static int xmon_gate;
->  #endif /* CONFIG_SMP */
->  
->  static unsigned long in_xmon __read_mostly = 0;
-> +static int xmon_off = 0;
->  
->  static unsigned long adrs;
->  static int size = 1;
-> @@ -3250,6 +3251,8 @@ static void sysrq_handle_xmon(int key)
->  	/* ensure xmon is enabled */
->  	xmon_init(1);
->  	debugger(get_irq_regs());
-> +	if (xmon_off)
-> +		xmon_init(0);
->  }
+> PPC's 'opal' match pattern also matches block/sed-opal.c, where it looks
+> like the 'arch/powerpc' file pattern should be enough to match powerpc
+> opal code by itself. Remove the opal regex pattern from powerpc.
 
-I don't think this is right.
+We thought of it first.
 
-xmon_off is only true if you boot with xmon=off on the command line.
+Can't you just rename your driver, Opal Storage Specification, so "oss",
+that should be pretty unique?
 
-So if you boot with CONFIG_XMON_DEFAULT=n, and nothing on the command
-line, then enter xmon via sysrq, then exit, xmon will still be enabled.
+... :)
+
+I don't like this version, but I'll merge the one from Stewart which
+drops the pattern and adds the paths for the existing drivers.
 
 cheers
+
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index b983b25..430dd02 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -7404,7 +7404,6 @@ F:	drivers/pci/hotplug/pnv_php.c
+>  F:	drivers/pci/hotplug/rpa*
+>  F:	drivers/scsi/ibmvscsi/
+>  F:	tools/testing/selftests/powerpc
+> -N:	opal
+>  N:	/pmac
+>  N:	powermac
+>  N:	powernv
+> -- 
+> 1.8.3.1
