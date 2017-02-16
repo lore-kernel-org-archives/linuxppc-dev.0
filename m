@@ -1,19 +1,18 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
- [IPv6:2607:f8b0:400e:c00::242])
+Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
+ [IPv6:2607:f8b0:400e:c05::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vPMrJ5GBxzDq60
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Feb 2017 04:01:36 +1100 (AEDT)
-Received: by mail-pf0-x242.google.com with SMTP id o64so2014068pfb.1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 09:01:36 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vPMrL4LvFzDqCg
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Feb 2017 04:01:38 +1100 (AEDT)
+Received: by mail-pg0-x242.google.com with SMTP id v184so2448799pgv.1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 09:01:38 -0800 (PST)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Nicholas Piggin <npiggin@gmail.com>
-Subject: [PATCH 1/4] powerpc: machine check allow handler to set severity and
- initiator
-Date: Fri, 17 Feb 2017 03:01:11 +1000
-Message-Id: <20170216170114.25247-2-npiggin@gmail.com>
+Subject: [PATCH 2/4] powerpc/powernv: machine check rework recovery flushing
+Date: Fri, 17 Feb 2017 03:01:12 +1000
+Message-Id: <20170216170114.25247-3-npiggin@gmail.com>
 In-Reply-To: <20170216170114.25247-1-npiggin@gmail.com>
 References: <20170216170114.25247-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,85 +24,183 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently these are hardcoded values.
-
-mce_error_info should not have to be versioned because it's only used
-for passing data from within the MCE subsystem.
+Put the ifdefs into a flush handler call, and have callers ask for
+particular type of flushes. Also add an ERAT flush.
 
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/include/asm/mce.h  | 3 ++-
- arch/powerpc/kernel/mce.c       | 7 ++++---
- arch/powerpc/kernel/mce_power.c | 6 ++++++
- 3 files changed, 12 insertions(+), 4 deletions(-)
+ arch/powerpc/kernel/mce_power.c | 124 +++++++++++++++++++---------------------
+ 1 file changed, 59 insertions(+), 65 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/mce.h b/arch/powerpc/include/asm/mce.h
-index f97d8cb6bdf6..b2a5865ccd87 100644
---- a/arch/powerpc/include/asm/mce.h
-+++ b/arch/powerpc/include/asm/mce.h
-@@ -177,7 +177,8 @@ struct mce_error_info {
- 		enum MCE_EratErrorType erat_error_type:8;
- 		enum MCE_TlbErrorType tlb_error_type:8;
- 	} u;
--	uint8_t		reserved[2];
-+	enum MCE_Severity	severity:8;
-+	enum MCE_Initiator	initiator:8;
- };
- 
- #define MAX_MC_EVT	100
-diff --git a/arch/powerpc/kernel/mce.c b/arch/powerpc/kernel/mce.c
-index c6923ff45131..d7a88dce67e8 100644
---- a/arch/powerpc/kernel/mce.c
-+++ b/arch/powerpc/kernel/mce.c
-@@ -90,13 +90,14 @@ void save_mce_event(struct pt_regs *regs, long handled,
- 	mce->gpr3 = regs->gpr[3];
- 	mce->in_use = 1;
- 
--	mce->initiator = MCE_INITIATOR_CPU;
- 	/* Mark it recovered if we have handled it and MSR(RI=1). */
- 	if (handled && (regs->msr & MSR_RI))
- 		mce->disposition = MCE_DISPOSITION_RECOVERED;
- 	else
- 		mce->disposition = MCE_DISPOSITION_NOT_RECOVERED;
--	mce->severity = MCE_SEV_ERROR_SYNC;
-+
-+	mce->initiator = mce_err->initiator;
-+	mce->severity = mce_err->severity;
- 
- 	/*
- 	 * Populate the mce error_type and type-specific error_type.
-@@ -268,7 +269,7 @@ void machine_check_print_event_info(struct machine_check_event *evt)
- 
- 	printk("%s%s Machine check interrupt [%s]\n", level, sevstr,
- 	       evt->disposition == MCE_DISPOSITION_RECOVERED ?
--	       "Recovered" : "[Not recovered");
-+	       "Recovered" : "Not recovered");
- 	printk("%s  Initiator: %s\n", level,
- 	       evt->initiator == MCE_INITIATOR_CPU ? "CPU" : "Unknown");
- 	switch (evt->error_type) {
 diff --git a/arch/powerpc/kernel/mce_power.c b/arch/powerpc/kernel/mce_power.c
-index 7353991c4ece..c37fc5fdd433 100644
+index c37fc5fdd433..79a7488593fa 100644
 --- a/arch/powerpc/kernel/mce_power.c
 +++ b/arch/powerpc/kernel/mce_power.c
-@@ -281,6 +281,9 @@ long __machine_check_early_realmode_p7(struct pt_regs *regs)
- 	long handled = 1;
- 	struct mce_error_info mce_error_info = { 0 };
+@@ -114,83 +114,74 @@ static void flush_and_reload_slb(void)
+ 		asm volatile("slbmte %0,%1" : : "r" (rs), "r" (rb));
+ 	}
+ }
+-#endif
  
-+	mce_error_info.severity = MCE_SEV_ERROR_SYNC;
-+	mce_error_info.initiator = MCE_INITIATOR_CPU;
+-static long mce_handle_derror(uint64_t dsisr, uint64_t slb_error_bits)
++static void flush_erat(void)
+ {
+-	long handled = 1;
++	asm volatile(PPC_INVALIDATE_ERAT : : :"memory");
++}
++#endif
+ 
+-	/*
+-	 * flush and reload SLBs for SLB errors and flush TLBs for TLB errors.
+-	 * reset the error bits whenever we handle them so that at the end
+-	 * we can check whether we handled all of them or not.
+-	 * */
++#define MCE_FLUSH_SLB 1
++#define MCE_FLUSH_TLB 1
++#define MCE_FLUSH_ERAT 1
 +
- 	srr1 = regs->msr;
- 	nip = regs->nip;
++static int mce_flush(int what)
++{
+ #ifdef CONFIG_PPC_STD_MMU_64
+-	if (dsisr & slb_error_bits) {
++	if (what == MCE_FLUSH_SLB) {
+ 		flush_and_reload_slb();
+-		/* reset error bits */
+-		dsisr &= ~(slb_error_bits);
++		return 1;
+ 	}
+-	if (dsisr & P7_DSISR_MC_TLB_MULTIHIT_MFTLB) {
+-		if (cur_cpu_spec && cur_cpu_spec->flush_tlb)
+-			cur_cpu_spec->flush_tlb(TLB_INVAL_SCOPE_GLOBAL);
+-		/* reset error bits */
+-		dsisr &= ~P7_DSISR_MC_TLB_MULTIHIT_MFTLB;
++	if (what == MCE_FLUSH_ERAT) {
++		flush_erat();
++		return 1;
+ 	}
+ #endif
+-	/* Any other errors we don't understand? */
+-	if (dsisr & 0xffffffffUL)
+-		handled = 0;
++	if (what == MCE_FLUSH_TLB) {
++		if (cur_cpu_spec && cur_cpu_spec->flush_tlb) {
++			cur_cpu_spec->flush_tlb(TLB_INVAL_SCOPE_GLOBAL);
++			return 1;
++		}
++	}
  
-@@ -352,6 +355,9 @@ long __machine_check_early_realmode_p8(struct pt_regs *regs)
- 	long handled = 1;
- 	struct mce_error_info mce_error_info = { 0 };
+-	return handled;
++	return 0;
+ }
  
-+	mce_error_info.severity = MCE_SEV_ERROR_SYNC;
-+	mce_error_info.initiator = MCE_INITIATOR_CPU;
+-static long mce_handle_derror_p7(uint64_t dsisr)
++static int mce_handle_flush_derrors(uint64_t dsisr, uint64_t slb, uint64_t tlb, uint64_t erat)
+ {
+-	return mce_handle_derror(dsisr, P7_DSISR_MC_SLB_ERRORS);
++	if ((dsisr & slb) && mce_flush(MCE_FLUSH_SLB))
++		dsisr &= ~slb;
++	if ((dsisr & erat) && mce_flush(MCE_FLUSH_ERAT))
++		dsisr &= ~erat;
++	if ((dsisr & tlb) && mce_flush(MCE_FLUSH_TLB))
++		dsisr &= ~tlb;
++	/* Any other errors we don't understand? */
++	if (dsisr)
++		return 0;
++	return 1;
+ }
+ 
+-static long mce_handle_common_ierror(uint64_t srr1)
++static long mce_handle_derror_p7(uint64_t dsisr)
+ {
+-	long handled = 0;
++	return mce_handle_flush_derrors(dsisr,
++			P7_DSISR_MC_SLB_ERRORS,
++			P7_DSISR_MC_TLB_MULTIHIT_MFTLB,
++			0);
++}
+ 
++static long mce_handle_ierror_p7(uint64_t srr1)
++{
+ 	switch (P7_SRR1_MC_IFETCH(srr1)) {
+-	case 0:
+-		break;
+-#ifdef CONFIG_PPC_STD_MMU_64
+ 	case P7_SRR1_MC_IFETCH_SLB_PARITY:
+ 	case P7_SRR1_MC_IFETCH_SLB_MULTIHIT:
+-		/* flush and reload SLBs for SLB errors. */
+-		flush_and_reload_slb();
+-		handled = 1;
+-		break;
++	case P7_SRR1_MC_IFETCH_SLB_BOTH:
++		return mce_flush(MCE_FLUSH_SLB);
 +
- 	srr1 = regs->msr;
- 	nip = regs->nip;
+ 	case P7_SRR1_MC_IFETCH_TLB_MULTIHIT:
+-		if (cur_cpu_spec && cur_cpu_spec->flush_tlb) {
+-			cur_cpu_spec->flush_tlb(TLB_INVAL_SCOPE_GLOBAL);
+-			handled = 1;
+-		}
+-		break;
+-#endif
++		return mce_flush(MCE_FLUSH_TLB);
+ 	default:
+-		break;
+-	}
+-
+-	return handled;
+-}
+-
+-static long mce_handle_ierror_p7(uint64_t srr1)
+-{
+-	long handled = 0;
+-
+-	handled = mce_handle_common_ierror(srr1);
+-
+-#ifdef CONFIG_PPC_STD_MMU_64
+-	if (P7_SRR1_MC_IFETCH(srr1) == P7_SRR1_MC_IFETCH_SLB_BOTH) {
+-		flush_and_reload_slb();
+-		handled = 1;
++		return 0;
+ 	}
+-#endif
+-	return handled;
+ }
  
+ static void mce_get_common_ierror(struct mce_error_info *mce_err, uint64_t srr1)
+@@ -331,22 +322,25 @@ static void mce_get_derror_p8(struct mce_error_info *mce_err, uint64_t dsisr)
+ 
+ static long mce_handle_ierror_p8(uint64_t srr1)
+ {
+-	long handled = 0;
+-
+-	handled = mce_handle_common_ierror(srr1);
++	switch (P7_SRR1_MC_IFETCH(srr1)) {
++	case P7_SRR1_MC_IFETCH_SLB_PARITY:
++	case P7_SRR1_MC_IFETCH_SLB_MULTIHIT:
++	case P8_SRR1_MC_IFETCH_ERAT_MULTIHIT:
++		return mce_flush(MCE_FLUSH_SLB);
+ 
+-#ifdef CONFIG_PPC_STD_MMU_64
+-	if (P7_SRR1_MC_IFETCH(srr1) == P8_SRR1_MC_IFETCH_ERAT_MULTIHIT) {
+-		flush_and_reload_slb();
+-		handled = 1;
++	case P7_SRR1_MC_IFETCH_TLB_MULTIHIT:
++		return mce_flush(MCE_FLUSH_TLB);
++	default:
++		return 0;
+ 	}
+-#endif
+-	return handled;
+ }
+ 
+ static long mce_handle_derror_p8(uint64_t dsisr)
+ {
+-	return mce_handle_derror(dsisr, P8_DSISR_MC_SLB_ERRORS);
++	return mce_handle_flush_derrors(dsisr,
++			P8_DSISR_MC_SLB_ERRORS,
++			P7_DSISR_MC_TLB_MULTIHIT_MFTLB,
++			0);
+ }
+ 
+ long __machine_check_early_realmode_p8(struct pt_regs *regs)
 -- 
 2.11.0
