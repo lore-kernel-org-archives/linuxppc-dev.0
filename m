@@ -1,49 +1,29 @@
-Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <kishon@ti.com>
+Received: from lelnx194.ext.ti.com (lelnx194.ext.ti.com [198.47.27.80])
+ (using TLSv1 with cipher DHE-RSA-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vP8FH10t4zDqGr
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 19:18:58 +1100 (AEDT)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v1G8It2O061048
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 03:18:56 -0500
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
- by mx0b-001b2d01.pphosted.com with ESMTP id 28n87p8k8f-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 03:18:56 -0500
-Received: from localhost
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Thu, 16 Feb 2017 18:18:48 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id B3BFA2BB0055
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 19:18:46 +1100 (EST)
-Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v1G8IcJg12582938
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 19:18:46 +1100
-Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
- by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v1G8IDFa005939
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 19:18:14 +1100
-From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-To: Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>,
- Masami Hiramatsu <mhiramat@kernel.org>,
- Arnaldo Carvalho de Melo <acme@kernel.org>,
- Michael Ellerman <mpe@ellerman.id.au>
-Cc: Ingo Molnar <mingo@redhat.com>, Namhyung Kim <namhyung@kernel.org>,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 2/2] perf: powerpc: choose LEP with kretprobes
-Date: Thu, 16 Feb 2017 13:47:39 +0530
-In-Reply-To: <cover.1487232416.git.naveen.n.rao@linux.vnet.ibm.com>
-References: <dbb93084a6bc96d44cf7436ab6d5f9c8c72b6a39.1487181941.git.naveen.n.rao@linux.vnet.ibm.com>
- <cover.1487232416.git.naveen.n.rao@linux.vnet.ibm.com>
-In-Reply-To: <cover.1487232416.git.naveen.n.rao@linux.vnet.ibm.com>
-References: <cover.1487232416.git.naveen.n.rao@linux.vnet.ibm.com>
-Message-Id: <151bc1f382d804c8f776caa891b34ffa029b98d9.1487232416.git.naveen.n.rao@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vP8bS6xJgzDq60
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 19:34:44 +1100 (AEDT)
+Subject: Re: [PATCH 30/37] dt-bindings: PCI: dra7xx: Add dt bindings to enable
+ legacy mode
+To: Rob Herring <robh@kernel.org>
+References: <1484216786-17292-1-git-send-email-kishon@ti.com>
+ <1484216786-17292-31-git-send-email-kishon@ti.com>
+ <20170118214603.qnewy3sm6sgw7lbg@rob-hp-laptop>
+CC: Bjorn Helgaas <bhelgaas@google.com>, Jingoo Han <jingoohan1@gmail.com>,
+ Joao Pinto <Joao.Pinto@synopsys.com>, Arnd Bergmann <arnd@arndb.de>,
+ <linux-pci@vger.kernel.org>, <linux-doc@vger.kernel.org>,
+ <linux-kernel@vger.kernel.org>, <devicetree@vger.kernel.org>,
+ <linux-omap@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
+ <linux-samsung-soc@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
+ <linux-arm-kernel@axis.com>, <linux-arm-msm@vger.kernel.org>,
+ <nsekhar@ti.com>
+From: Kishon Vijay Abraham I <kishon@ti.com>
+Message-ID: <58A563F5.5040504@ti.com>
+Date: Thu, 16 Feb 2017 14:03:57 +0530
+MIME-Version: 1.0
+In-Reply-To: <20170118214603.qnewy3sm6sgw7lbg@rob-hp-laptop>
+Content-Type: text/plain; charset="windows-1252"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -53,31 +33,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-perf now uses an offset from _text/_stext for kretprobes, rather than
-the actual function name. As such, let's choose the LEP for powerpc
-ABIv2 so as to ensure the probe gets hit.
+Hi,
 
-Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
----
- tools/perf/arch/powerpc/util/sym-handling.c | 5 +----
- 1 file changed, 1 insertion(+), 4 deletions(-)
+On Thursday 19 January 2017 03:16 AM, Rob Herring wrote:
+> On Thu, Jan 12, 2017 at 03:56:19PM +0530, Kishon Vijay Abraham I wrote:
+>> Update device tree binding documentation of TI's dra7xx PCI
+>> controller to include property for enabling legacy mode.
+>>
+>> Signed-off-by: Kishon Vijay Abraham I <kishon@ti.com>
+>> ---
+>>  Documentation/devicetree/bindings/pci/ti-pci.txt |    4 ++++
+>>  1 file changed, 4 insertions(+)
+>>
+>> diff --git a/Documentation/devicetree/bindings/pci/ti-pci.txt b/Documentation/devicetree/bindings/pci/ti-pci.txt
+>> index 62f5f59..ed85e8e 100644
+>> --- a/Documentation/devicetree/bindings/pci/ti-pci.txt
+>> +++ b/Documentation/devicetree/bindings/pci/ti-pci.txt
+>> @@ -39,6 +39,10 @@ DEVICE MODE
+>>   - interrupts : one interrupt entries must be specified for main interrupt.
+>>   - num-ib-windows : number of inbound address translation windows
+>>   - num-ob-windows : number of outbound address translation windows
+>> + - syscon-legacy-mode: phandle to the syscon dt node. The 1st argument should
+>> +		       contain the register offset within syscon and the 2nd
+>> +		       argument should contain the bit field for setting the
+>> +		       legacy mode
+> 
+> What's legacy mode?
 
-diff --git a/tools/perf/arch/powerpc/util/sym-handling.c b/tools/perf/arch/powerpc/util/sym-handling.c
-index 1030a6e504bb..9fe0f20aa56f 100644
---- a/tools/perf/arch/powerpc/util/sym-handling.c
-+++ b/tools/perf/arch/powerpc/util/sym-handling.c
-@@ -79,11 +79,8 @@ void arch__fix_tev_from_maps(struct perf_probe_event *pev,
- 	 * However, if the user specifies an offset, we fall back to using the
- 	 * GEP since all userspace applications (objdump/readelf) show function
- 	 * disassembly with offsets from the GEP.
--	 *
--	 * In addition, we shouldn't specify an offset for kretprobes.
- 	 */
--	if (pev->point.offset || (!pev->uprobes && pev->point.retprobe) ||
--	    !map || !sym)
-+	if (pev->point.offset || !map || !sym)
- 		return;
- 
- 	lep_offset = PPC64_LOCAL_ENTRY_OFFSET(sym->arch_sym);
--- 
-2.11.0
+It's the name of the bit-field defined in TRM used to add workaround for errata
+id i870 (See [PATCH 29/37] PCI: dwc: dra7xx: Workaround for errata id i870 of
+this series). I'm not sure what it does internally.
+
+Thanks
+Kishon
