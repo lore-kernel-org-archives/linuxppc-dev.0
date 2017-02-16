@@ -1,18 +1,17 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vP58f0l05zDqBW
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 16:59:46 +1100 (AEDT)
-In-Reply-To: <1484095808-24777-2-git-send-email-gwshan@linux.vnet.ibm.com>
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vP58d6fTpzDq60
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 16:59:45 +1100 (AEDT)
+In-Reply-To: <1479806759-5409-1-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
+To: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: #v4.9+@gwshan.ozlabs.ibm.com, williel@supermicro.com.tw,
- Gavin Shan <gwshan@linux.vnet.ibm.com>, stable@vger.kernel.org,
- hankmax0000@gmail.com
-Subject: Re: [1/3] drivers/pci/hotplug: Handle presence detection change
- properly
-Message-Id: <3vP58d6Dkhz9s8T@ozlabs.org>
+Cc: peterz@infradead.org, linux-kernel@vger.kernel.org, npiggin@gmail.com,
+ Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>, paulus@samba.org,
+ naveen.n.rao@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+Subject: Re: powerpc/xmon: Fix data-breakpoint
+Message-Id: <3vP58d4wR4z9s8x@ozlabs.org>
 Date: Thu, 16 Feb 2017 16:59:45 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -23,23 +22,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2017-01-11 at 00:50:06 UTC, Gavin Shan wrote:
-> The surprise hotplug is driven by interrupt in PowerNV PCI hotplug
-> driver. In the interrupt handler, pnv_php_interrupt(), we bail when
-> pnv_pci_get_presence_state() returns zero wrongly. It causes the
-> presence change event is always ignored incorrectly.
+On Tue, 2016-11-22 at 09:25:59 UTC, Ravi Bangoria wrote:
+> Xmon data-breakpoint feature is broken.
 > 
-> This fixes the issue by bailing on error (non-zero value) returned
-> from pnv_pci_get_presence_state().
+> Whenever there is a watchpoint match occurs, hw_breakpoint_handler will
+> be called by do_break via notifier chains mechanism. If watchpoint is
+> registered by xmon, hw_breakpoint_handler won't find any associated
+> perf_event and returns immediately with NOTIFY_STOP. Similarly, do_break
+> also returns without notifying to xmon.
 > 
-> Fixes: 360aebd85a4 ("drivers/pci/hotplug: Support surprise hotplug in powernv driver")
-> Cc: stable@vger.kernel.org #v4.9+
-> Reported-by: Hank Chang <hankmax0000@gmail.com>
-> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
-> Tested-by: Willie Liauw <williel@supermicro.com.tw>
+> Solve this by returning NOTIFY_DONE when hw_breakpoint_handler does not
+> find any perf_event associated with matched watchpoint.
+> 
+> Signed-off-by: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
 
-Series applied to powerpc next, thanks.
+Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/d7d55536c6cd1f80295b6d7483ad05
+https://git.kernel.org/powerpc/c/c21a493a2b44650707d06741601894
 
 cheers
