@@ -1,24 +1,39 @@
 Return-Path: <joe@perches.com>
-Received: from smtprelay.hostedemail.com (smtprelay0166.hostedemail.com
- [216.40.44.166])
+Received: from smtprelay.hostedemail.com (smtprelay0176.hostedemail.com
+ [216.40.44.176])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vPkrb32xqzDq5x
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Feb 2017 18:18:07 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vPks35hHPzDqGX
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Feb 2017 18:18:31 +1100 (AEDT)
 Received: from smtprelay.hostedemail.com (10.5.19.251.rfc1918.com
  [10.5.19.251])
- by smtpgrave03.hostedemail.com (Postfix) with ESMTP id 64089290DC1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Feb 2017 07:12:56 +0000 (UTC)
+ by smtpgrave03.hostedemail.com (Postfix) with ESMTP id 37AF9290DAC
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Feb 2017 07:12:21 +0000 (UTC)
 From: Joe Perches <joe@perches.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH 21/35] drivers/macintosh: Convert remaining uses of pr_warning
- to pr_warn
-Date: Thu, 16 Feb 2017 23:11:34 -0800
-Message-Id: <3b11f71725b81463e4aa4bad448b48ef9ebaa424.1487314667.git.joe@perches.com>
-In-Reply-To: <cover.1487314666.git.joe@perches.com>
-References: <cover.1487314666.git.joe@perches.com>
+To: Alexander Shishkin <alexander.shishkin@linux.intel.com>,
+ Karol Herbst <karolherbst@gmail.com>, Pekka Paalanen <ppaalanen@gmail.com>,
+ Richard Weinberger <richard@nod.at>, Fabio Estevam <fabio.estevam@nxp.com>,
+ linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linuxppc-dev@lists.ozlabs.org, tboot-devel@lists.sourceforge.net,
+ nouveau@lists.freedesktop.org, oprofile-list@lists.sf.net,
+ sfi-devel@simplefirmware.org, xen-devel@lists.xenproject.org,
+ linux-acpi@vger.kernel.org, drbd-dev@lists.linbit.com,
+ virtualization@lists.linux-foundation.org, linux-crypto@vger.kernel.org,
+ linux-ide@vger.kernel.org, gigaset307x-common@lists.sourceforge.net,
+ linux-media@vger.kernel.org, linux-omap@vger.kernel.org,
+ linux-mtd@lists.infradead.org, devicetree@vger.kernel.org,
+ acpi4asus-user@lists.sourceforge.net, platform-driver-x86@vger.kernel.org,
+ linux-scsi@vger.kernel.org, linux-fbdev@vger.kernel.org,
+ alsa-devel@alsa-project.org
+Cc: linux-alpha@vger.kernel.org, adi-buildroot-devel@lists.sourceforge.net,
+ linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
+ sparclinux@vger.kernel.org, amd-gfx@lists.freedesktop.org,
+ dri-devel@lists.freedesktop.org, linux-input@vger.kernel.org,
+ netdev@vger.kernel.org
+Subject: [PATCH 00/35] treewide trivial patches converting pr_warning to
+ pr_warn
+Date: Thu, 16 Feb 2017 23:11:13 -0800
+Message-Id: <cover.1487314666.git.joe@perches.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,139 +43,183 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-To enable eventual removal of pr_warning
+There are ~4300 uses of pr_warn and ~250 uses of the older
+pr_warning in the kernel source tree.
 
-This makes pr_warn use consistent for drivers/macintosh
+Make the use of pr_warn consistent across all kernel files.
 
-Prior to this patch, there were 10 uses of pr_warning and
-1 use of pr_warn in drivers/macintosh
+This excludes all files in tools/ as there is a separate
+define pr_warning for that directory tree and pr_warn is
+not used in tools/.
 
-Signed-off-by: Joe Perches <joe@perches.com>
----
- drivers/macintosh/windfarm_fcu_controls.c |  5 ++---
- drivers/macintosh/windfarm_lm87_sensor.c  |  4 ++--
- drivers/macintosh/windfarm_pm72.c         | 22 +++++++++++-----------
- drivers/macintosh/windfarm_rm31.c         |  6 +++---
- 4 files changed, 18 insertions(+), 19 deletions(-)
+Done with 'sed s/\bpr_warning\b/pr_warn/' and some emacsing.
 
-diff --git a/drivers/macintosh/windfarm_fcu_controls.c b/drivers/macintosh/windfarm_fcu_controls.c
-index 0226b796a21c..3d8d9eaf9b68 100644
---- a/drivers/macintosh/windfarm_fcu_controls.c
-+++ b/drivers/macintosh/windfarm_fcu_controls.c
-@@ -469,9 +469,8 @@ static void wf_fcu_lookup_fans(struct wf_fcu_priv *pv)
- 			else
- 				id = ((*reg) - 0x30) / 2;
- 			if (id > 7) {
--				pr_warning("wf_fcu: Can't parse "
--				       "fan ID in device-tree for %s\n",
--					   np->full_name);
-+				pr_warn("wf_fcu: Can't parse fan ID in device-tree for %s\n",
-+					np->full_name);
- 				break;
- 			}
- 			wf_fcu_add_fan(pv, name, type, id);
-diff --git a/drivers/macintosh/windfarm_lm87_sensor.c b/drivers/macintosh/windfarm_lm87_sensor.c
-index c071aab79dd1..93fb8660261d 100644
---- a/drivers/macintosh/windfarm_lm87_sensor.c
-+++ b/drivers/macintosh/windfarm_lm87_sensor.c
-@@ -126,8 +126,8 @@ static int wf_lm87_probe(struct i2c_client *client,
- 		}
- 	}
- 	if (!name) {
--		pr_warning("wf_lm87: Unsupported sensor %s\n",
--			   client->dev.of_node->full_name);
-+		pr_warn("wf_lm87: Unsupported sensor %s\n",
-+			client->dev.of_node->full_name);
- 		return -ENODEV;
- 	}
- 
-diff --git a/drivers/macintosh/windfarm_pm72.c b/drivers/macintosh/windfarm_pm72.c
-index e88cfb36a74d..1d3ac758a0c0 100644
---- a/drivers/macintosh/windfarm_pm72.c
-+++ b/drivers/macintosh/windfarm_pm72.c
-@@ -286,8 +286,8 @@ static void cpu_fans_tick_split(void)
- 		/* Apply result directly to exhaust fan */
- 		err = wf_control_set(cpu_rear_fans[cpu], sp->target);
- 		if (err) {
--			pr_warning("wf_pm72: Fan %s reports error %d\n",
--			       cpu_rear_fans[cpu]->name, err);
-+			pr_warn("wf_pm72: Fan %s reports error %d\n",
-+				cpu_rear_fans[cpu]->name, err);
- 			failure_state |= FAILURE_FAN;
- 			break;
- 		}
-@@ -297,8 +297,8 @@ static void cpu_fans_tick_split(void)
- 		DBG_LOTS("  CPU%d: intake = %d RPM\n", cpu, intake);
- 		err = wf_control_set(cpu_front_fans[cpu], intake);
- 		if (err) {
--			pr_warning("wf_pm72: Fan %s reports error %d\n",
--			       cpu_front_fans[cpu]->name, err);
-+			pr_warn("wf_pm72: Fan %s reports error %d\n",
-+				cpu_front_fans[cpu]->name, err);
- 			failure_state |= FAILURE_FAN;
- 			break;
- 		}
-@@ -368,22 +368,22 @@ static void cpu_fans_tick_combined(void)
- 	for (cpu = 0; cpu < nr_chips; cpu++) {
- 		err = wf_control_set(cpu_rear_fans[cpu], sp->target);
- 		if (err) {
--			pr_warning("wf_pm72: Fan %s reports error %d\n",
--				   cpu_rear_fans[cpu]->name, err);
-+			pr_warn("wf_pm72: Fan %s reports error %d\n",
-+				cpu_rear_fans[cpu]->name, err);
- 			failure_state |= FAILURE_FAN;
- 		}
- 		err = wf_control_set(cpu_front_fans[cpu], intake);
- 		if (err) {
--			pr_warning("wf_pm72: Fan %s reports error %d\n",
--				   cpu_front_fans[cpu]->name, err);
-+			pr_warn("wf_pm72: Fan %s reports error %d\n",
-+				cpu_front_fans[cpu]->name, err);
- 			failure_state |= FAILURE_FAN;
- 		}
- 		err = 0;
- 		if (cpu_pumps[cpu])
- 			err = wf_control_set(cpu_pumps[cpu], pump);
- 		if (err) {
--			pr_warning("wf_pm72: Pump %s reports error %d\n",
--				   cpu_pumps[cpu]->name, err);
-+			pr_warn("wf_pm72: Pump %s reports error %d\n",
-+				cpu_pumps[cpu]->name, err);
- 			failure_state |= FAILURE_FAN;
- 		}
- 	}
-@@ -562,7 +562,7 @@ static void drives_fan_tick(void)
- 
- 	err = wf_sensor_get(drives_temp, &temp);
- 	if (err) {
--		pr_warning("wf_pm72: drive bay temp sensor error %d\n", err);
-+		pr_warn("wf_pm72: drive bay temp sensor error %d\n", err);
- 		failure_state |= FAILURE_SENSOR;
- 		wf_control_set_max(drives_fan);
- 		return;
-diff --git a/drivers/macintosh/windfarm_rm31.c b/drivers/macintosh/windfarm_rm31.c
-index bdfcb8a8bfbb..8fb3f1aee96e 100644
---- a/drivers/macintosh/windfarm_rm31.c
-+++ b/drivers/macintosh/windfarm_rm31.c
-@@ -282,8 +282,8 @@ static void cpu_fans_tick(void)
- 		for (i = 0; i < 3; i++) {
- 			err = wf_control_set(cpu_fans[cpu][i], speed);
- 			if (err) {
--				pr_warning("wf_rm31: Fan %s reports error %d\n",
--					   cpu_fans[cpu][i]->name, err);
-+				pr_warn("wf_rm31: Fan %s reports error %d\n",
-+					cpu_fans[cpu][i]->name, err);
- 				failure_state |= FAILURE_FAN;
- 			}
- 		}
-@@ -466,7 +466,7 @@ static void slots_fan_tick(void)
- 
- 	err = wf_sensor_get(slots_temp, &temp);
- 	if (err) {
--		pr_warning("wf_rm31: slots temp sensor error %d\n", err);
-+		pr_warn("wf_rm31: slots temp sensor error %d\n", err);
- 		failure_state |= FAILURE_SENSOR;
- 		wf_control_set_max(slots_fan);
- 		return;
+Miscellanea:
+
+o Coalesce formats and realign arguments
+
+Some files not compiled - no cross-compilers
+
+Joe Perches (35):
+  alpha: Convert remaining uses of pr_warning to pr_warn
+  ARM: ep93xx: Convert remaining uses of pr_warning to pr_warn
+  arm64: Convert remaining uses of pr_warning to pr_warn
+  arch/blackfin: Convert remaining uses of pr_warning to pr_warn
+  ia64: Convert remaining use of pr_warning to pr_warn
+  powerpc: Convert remaining uses of pr_warning to pr_warn
+  sh: Convert remaining uses of pr_warning to pr_warn
+  sparc: Convert remaining use of pr_warning to pr_warn
+  x86: Convert remaining uses of pr_warning to pr_warn
+  drivers/acpi: Convert remaining uses of pr_warning to pr_warn
+  block/drbd: Convert remaining uses of pr_warning to pr_warn
+  gdrom: Convert remaining uses of pr_warning to pr_warn
+  drivers/char: Convert remaining use of pr_warning to pr_warn
+  clocksource: Convert remaining use of pr_warning to pr_warn
+  drivers/crypto: Convert remaining uses of pr_warning to pr_warn
+  fmc: Convert remaining use of pr_warning to pr_warn
+  drivers/gpu: Convert remaining uses of pr_warning to pr_warn
+  drivers/ide: Convert remaining uses of pr_warning to pr_warn
+  drivers/input: Convert remaining uses of pr_warning to pr_warn
+  drivers/isdn: Convert remaining uses of pr_warning to pr_warn
+  drivers/macintosh: Convert remaining uses of pr_warning to pr_warn
+  drivers/media: Convert remaining use of pr_warning to pr_warn
+  drivers/mfd: Convert remaining uses of pr_warning to pr_warn
+  drivers/mtd: Convert remaining uses of pr_warning to pr_warn
+  drivers/of: Convert remaining uses of pr_warning to pr_warn
+  drivers/oprofile: Convert remaining uses of pr_warning to pr_warn
+  drivers/platform: Convert remaining uses of pr_warning to pr_warn
+  drivers/rapidio: Convert remaining use of pr_warning to pr_warn
+  drivers/scsi: Convert remaining use of pr_warning to pr_warn
+  drivers/sh: Convert remaining use of pr_warning to pr_warn
+  drivers/tty: Convert remaining uses of pr_warning to pr_warn
+  drivers/video: Convert remaining uses of pr_warning to pr_warn
+  kernel/trace: Convert remaining uses of pr_warning to pr_warn
+  lib: Convert remaining uses of pr_warning to pr_warn
+  sound/soc: Convert remaining uses of pr_warning to pr_warn
+
+ arch/alpha/kernel/perf_event.c                     |  4 +-
+ arch/arm/mach-ep93xx/core.c                        |  4 +-
+ arch/arm64/include/asm/syscall.h                   |  8 ++--
+ arch/arm64/kernel/hw_breakpoint.c                  |  8 ++--
+ arch/arm64/kernel/smp.c                            |  4 +-
+ arch/blackfin/kernel/nmi.c                         |  2 +-
+ arch/blackfin/kernel/ptrace.c                      |  2 +-
+ arch/blackfin/mach-bf533/boards/stamp.c            |  2 +-
+ arch/blackfin/mach-bf537/boards/cm_bf537e.c        |  2 +-
+ arch/blackfin/mach-bf537/boards/cm_bf537u.c        |  2 +-
+ arch/blackfin/mach-bf537/boards/stamp.c            |  2 +-
+ arch/blackfin/mach-bf537/boards/tcm_bf537.c        |  2 +-
+ arch/blackfin/mach-bf561/boards/cm_bf561.c         |  2 +-
+ arch/blackfin/mach-bf561/boards/ezkit.c            |  2 +-
+ arch/blackfin/mm/isram-driver.c                    |  4 +-
+ arch/ia64/kernel/setup.c                           |  6 +--
+ arch/powerpc/kernel/pci-common.c                   |  4 +-
+ arch/powerpc/mm/init_64.c                          |  5 +--
+ arch/powerpc/mm/mem.c                              |  3 +-
+ arch/powerpc/platforms/512x/mpc512x_shared.c       |  4 +-
+ arch/powerpc/platforms/85xx/socrates_fpga_pic.c    |  7 ++--
+ arch/powerpc/platforms/86xx/mpc86xx_hpcn.c         |  2 +-
+ arch/powerpc/platforms/pasemi/dma_lib.c            |  4 +-
+ arch/powerpc/platforms/powernv/opal.c              |  8 ++--
+ arch/powerpc/platforms/powernv/pci-ioda.c          | 10 ++---
+ arch/powerpc/platforms/ps3/device-init.c           | 14 +++----
+ arch/powerpc/platforms/ps3/mm.c                    |  4 +-
+ arch/powerpc/platforms/ps3/os-area.c               |  2 +-
+ arch/powerpc/platforms/pseries/iommu.c             |  8 ++--
+ arch/powerpc/platforms/pseries/setup.c             |  4 +-
+ arch/powerpc/sysdev/fsl_pci.c                      |  9 ++---
+ arch/powerpc/sysdev/mpic.c                         | 10 ++---
+ arch/powerpc/sysdev/xics/icp-native.c              | 10 ++---
+ arch/powerpc/sysdev/xics/ics-opal.c                |  4 +-
+ arch/powerpc/sysdev/xics/ics-rtas.c                |  4 +-
+ arch/powerpc/sysdev/xics/xics-common.c             |  8 ++--
+ arch/sh/boards/mach-sdk7786/nmi.c                  |  2 +-
+ arch/sh/drivers/pci/fixups-sdk7786.c               |  2 +-
+ arch/sh/kernel/io_trapped.c                        |  2 +-
+ arch/sh/kernel/setup.c                             |  2 +-
+ arch/sh/mm/consistent.c                            |  5 +--
+ arch/sparc/kernel/smp_64.c                         |  5 +--
+ arch/x86/kernel/amd_gart_64.c                      | 12 ++----
+ arch/x86/kernel/apic/apic.c                        | 46 ++++++++++------------
+ arch/x86/kernel/apic/apic_noop.c                   |  2 +-
+ arch/x86/kernel/setup_percpu.c                     |  4 +-
+ arch/x86/kernel/tboot.c                            | 15 ++++---
+ arch/x86/kernel/tsc_sync.c                         |  8 ++--
+ arch/x86/mm/kmmio.c                                |  8 ++--
+ arch/x86/mm/mmio-mod.c                             |  5 +--
+ arch/x86/mm/numa.c                                 | 12 +++---
+ arch/x86/mm/numa_emulation.c                       |  6 +--
+ arch/x86/mm/testmmiotrace.c                        |  5 +--
+ arch/x86/oprofile/op_x86_model.h                   |  6 +--
+ arch/x86/platform/olpc/olpc-xo15-sci.c             |  2 +-
+ arch/x86/platform/sfi/sfi.c                        |  3 +-
+ arch/x86/xen/debugfs.c                             |  2 +-
+ arch/x86/xen/setup.c                               |  2 +-
+ drivers/acpi/apei/apei-base.c                      | 32 +++++++--------
+ drivers/acpi/apei/einj.c                           |  4 +-
+ drivers/acpi/apei/erst-dbg.c                       |  4 +-
+ drivers/acpi/apei/ghes.c                           | 30 +++++++-------
+ drivers/acpi/apei/hest.c                           | 10 ++---
+ drivers/acpi/resource.c                            |  4 +-
+ drivers/block/drbd/drbd_nl.c                       | 13 +++---
+ drivers/cdrom/gdrom.c                              |  4 +-
+ drivers/char/virtio_console.c                      |  2 +-
+ drivers/clocksource/samsung_pwm_timer.c            |  4 +-
+ drivers/crypto/n2_core.c                           | 12 +++---
+ drivers/fmc/fmc-fakedev.c                          |  2 +-
+ drivers/gpu/drm/amd/powerplay/hwmgr/smu7_hwmgr.c   |  2 +-
+ drivers/gpu/drm/amd/powerplay/inc/pp_debug.h       |  2 +-
+ drivers/gpu/drm/amd/powerplay/smumgr/fiji_smc.c    |  4 +-
+ drivers/gpu/drm/amd/powerplay/smumgr/iceland_smc.c | 14 +++----
+ .../gpu/drm/amd/powerplay/smumgr/polaris10_smc.c   |  4 +-
+ drivers/gpu/drm/amd/powerplay/smumgr/tonga_smc.c   |  4 +-
+ drivers/ide/tx4938ide.c                            |  2 +-
+ drivers/ide/tx4939ide.c                            |  5 +--
+ drivers/input/gameport/gameport.c                  |  4 +-
+ drivers/input/joystick/gamecon.c                   |  3 +-
+ drivers/input/misc/apanel.c                        |  3 +-
+ drivers/input/misc/xen-kbdfront.c                  |  8 ++--
+ drivers/input/serio/serio.c                        |  8 ++--
+ drivers/isdn/gigaset/interface.c                   |  2 +-
+ drivers/isdn/hardware/mISDN/avmfritz.c             | 17 ++++----
+ drivers/isdn/hardware/mISDN/hfcmulti.c             |  8 ++--
+ drivers/isdn/hardware/mISDN/hfcpci.c               |  4 +-
+ drivers/isdn/hardware/mISDN/hfcsusb.c              |  4 +-
+ drivers/isdn/hardware/mISDN/mISDNipac.c            |  4 +-
+ drivers/isdn/hardware/mISDN/mISDNisar.c            | 10 ++---
+ drivers/isdn/hardware/mISDN/netjet.c               |  8 ++--
+ drivers/isdn/hardware/mISDN/w6692.c                | 12 +++---
+ drivers/isdn/mISDN/hwchannel.c                     |  8 ++--
+ drivers/macintosh/windfarm_fcu_controls.c          |  5 +--
+ drivers/macintosh/windfarm_lm87_sensor.c           |  4 +-
+ drivers/macintosh/windfarm_pm72.c                  | 22 +++++------
+ drivers/macintosh/windfarm_rm31.c                  |  6 +--
+ drivers/media/platform/sh_vou.c                    |  4 +-
+ drivers/mfd/db8500-prcmu.c                         |  2 +-
+ drivers/mfd/sta2x11-mfd.c                          |  4 +-
+ drivers/mfd/twl4030-power.c                        |  7 +---
+ drivers/mtd/chips/cfi_cmdset_0002.c                | 12 ++++--
+ drivers/mtd/nand/cmx270_nand.c                     |  4 +-
+ drivers/mtd/ofpart.c                               |  4 +-
+ drivers/of/fdt.c                                   | 20 +++++-----
+ drivers/oprofile/oprofile_perf.c                   |  8 ++--
+ drivers/platform/x86/asus-laptop.c                 |  2 +-
+ drivers/platform/x86/eeepc-laptop.c                |  2 +-
+ drivers/platform/x86/intel_oaktrail.c              | 10 ++---
+ drivers/rapidio/rio-sysfs.c                        |  4 +-
+ drivers/scsi/a3000.c                               |  2 +-
+ drivers/sh/intc/core.c                             |  4 +-
+ drivers/tty/hvc/hvcs.c                             |  2 +-
+ drivers/tty/tty_io.c                               |  4 +-
+ drivers/video/fbdev/aty/radeon_base.c              |  4 +-
+ drivers/video/fbdev/core/fbmon.c                   |  4 +-
+ drivers/video/fbdev/pxafb.c                        |  7 ++--
+ kernel/trace/trace_benchmark.c                     |  4 +-
+ lib/cpu_rmap.c                                     |  2 +-
+ lib/dma-debug.c                                    |  2 +-
+ sound/soc/fsl/imx-audmux.c                         |  6 +--
+ sound/soc/samsung/s3c-i2s-v2.c                     |  6 +--
+ 122 files changed, 367 insertions(+), 397 deletions(-)
+
 -- 
 2.10.0.rc2.1.g053435c
