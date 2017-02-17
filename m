@@ -1,23 +1,19 @@
-Return-Path: <mhiramat@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <oss@buserror.net>
+Received: from host.buserror.net (host.buserror.net [209.198.135.123])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vPqR91MNTzDq5x
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Feb 2017 21:44:52 +1100 (AEDT)
-Date: Fri, 17 Feb 2017 19:44:33 +0900
-From: Masami Hiramatsu <mhiramat@kernel.org>
-To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-Cc: Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>, Arnaldo Carvalho
- de Melo <acme@kernel.org>, Michael Ellerman <mpe@ellerman.id.au>, Ingo
- Molnar <mingo@redhat.com>, Namhyung Kim <namhyung@kernel.org>,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 0/2] powerpc: kretprobe updates
-Message-Id: <20170217194433.0b4707bbfa1de603d13fbd30@kernel.org>
-In-Reply-To: <cover.1487232416.git.naveen.n.rao@linux.vnet.ibm.com>
-References: <dbb93084a6bc96d44cf7436ab6d5f9c8c72b6a39.1487181941.git.naveen.n.rao@linux.vnet.ibm.com>
- <cover.1487232416.git.naveen.n.rao@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vPqy96dmPzDq5x
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Feb 2017 22:08:17 +1100 (AEDT)
+Message-ID: <1487329688.2944.0.camel@buserror.net>
+From: Scott Wood <oss@buserror.net>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org
+Date: Fri, 17 Feb 2017 05:08:08 -0600
+In-Reply-To: <20170127235348.GA21260@home.buserror.net>
+References: <20170127235348.GA21260@home.buserror.net>
+Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Subject: Re: Pull request: scottwood/linux.git next
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,36 +23,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 16 Feb 2017 13:47:37 +0530
-"Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
-
-> I am posting the powerpc bits in the same thread so as to keep these
-> changes together. I am not sure how this should be taken upstream as
-> there are atleast three different trees involved: one for the core
-> kprobes infrastructure, one for powerpc and one for perf.
-
-Hmm, could you make these (and other related) patches and
-other series in one series? Or wait for the other series
-are merged correctly.
-
-Thank you,
-
+On Fri, 2017-01-27 at 17:53 -0600, Scott Wood wrote:
+> Highlights include 8xx breakpoints and perf, t1042rdb display support,
+> and board updates.
 > 
-> Thanks,
-> Naveen
+> The following changes since commit 7ce7d89f48834cefece7804d38fc5d85382edf77:
 > 
-> Naveen N. Rao (2):
->   powerpc: kretprobes: override default function entry offset
->   perf: powerpc: choose LEP with kretprobes
+>   Linux 4.10-rc1 (2016-12-25 16:13:08 -0800)
 > 
->  arch/powerpc/kernel/kprobes.c               | 9 +++++++++
->  tools/perf/arch/powerpc/util/sym-handling.c | 5 +----
->  2 files changed, 10 insertions(+), 4 deletions(-)
+> are available in the git repository at:
 > 
-> -- 
-> 2.11.0
+>   git://git.kernel.org/pub/scm/linux/kernel/git/scottwood/linux.git next
 > 
+> for you to fetch changes up to 75b824727680a9d12c34d78096a5ac642e53f5d0:
+> 
+>   powerpc/8xx: Perf events on PPC 8xx (2017-01-26 17:49:34 -0600)
+> 
+> ----------------------------------------------------------------
+> Christophe Leroy (4):
+>       powerpc/32: Enable HW_BREAKPOINT on BOOK3S
+>       powerpc/8xx: Implement hw_breakpoint
+>       powerpc/32: Remove FIX_SRR1
+>       powerpc/8xx: Perf events on PPC 8xx
+> 
+> Jason Jin (1):
+>       powerpc/85xx: Enable display support for t1042rdb
+> 
+> Valentin Longchamp (3):
+>       powerpc/corenet: explicitly disable the SDHC controller on kmcoge4
+>       powerpc/85xx: remove the kmp204x_defconfig
+>       powerpc/corenet: add support for the kmcent2 board
 
+ping?
 
--- 
-Masami Hiramatsu <mhiramat@kernel.org>
+-Scott
