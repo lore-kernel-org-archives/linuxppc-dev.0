@@ -2,16 +2,15 @@ Return-Path: <valentin.longchamp@keymile.com>
 Received: from mail-de.keymile.com (mail-de.keymile.com [195.8.104.250])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vPq660KQpzDqBn
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Feb 2017 21:30:05 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vPq7j36LqzDqKc
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Feb 2017 21:31:29 +1100 (AEDT)
 From: Valentin Longchamp <valentin.longchamp@keymile.com>
-To: linuxppc-dev@lists.ozlabs.org, qiang.zhao@nxp.com
-Cc: oss@buserror.net, Valentin Longchamp <valentin.longchamp@keymile.com>
-Subject: [PATCH 1/3] soc/fsl/qe: round brg_freq to 1kHz granularity
-Date: Fri, 17 Feb 2017 11:29:45 +0100
-Message-Id: <1487327387-26370-2-git-send-email-valentin.longchamp@keymile.com>
-In-Reply-To: <1487327387-26370-1-git-send-email-valentin.longchamp@keymile.com>
-References: <1487327387-26370-1-git-send-email-valentin.longchamp@keymile.com>
+To: qiang.zhao@nxp.com, netdev@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org,
+ Valentin Longchamp <valentin.longchamp@keymile.com>
+Subject: [PATCH] net/wan: add MODULE_LICENSE for fsl_ucc_hdlc
+Date: Fri, 17 Feb 2017 11:31:22 +0100
+Message-Id: <1487327482-26482-1-git-send-email-valentin.longchamp@keymile.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,57 +20,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Because of integer computation rounding in u-boot (that sets the QE
-brg-frequency DTS prop), the clk value is 99999999 Hz even though it is
-100 MHz.
-
-When setting brg clks that are exact divisors of 100 MHz, this small
-differnce plays a role and can result in lower clks to be output (for
-instance 20 MHz - divide by 5 - results in 16.666 MHz - divide by 6).
-
-This patch fixes that by "forcing" the brg_clk to the nearest kHz when
-the difference is below 2 integer rouding errors (i.e. 4).
+It is required to build it as a module.
 
 Signed-off-by: Valentin Longchamp <valentin.longchamp@keymile.com>
 ---
- drivers/soc/fsl/qe/qe.c | 13 +++++++++++++
- 1 file changed, 13 insertions(+)
+ drivers/net/wan/fsl_ucc_hdlc.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/soc/fsl/qe/qe.c b/drivers/soc/fsl/qe/qe.c
-index ade168f..03874df 100644
---- a/drivers/soc/fsl/qe/qe.c
-+++ b/drivers/soc/fsl/qe/qe.c
-@@ -163,11 +163,15 @@ int qe_issue_cmd(u32 cmd, u32 device, u8 mcn_protocol, u32 cmd_input)
-  */
- static unsigned int brg_clk = 0;
+diff --git a/drivers/net/wan/fsl_ucc_hdlc.c b/drivers/net/wan/fsl_ucc_hdlc.c
+index e38ce4d..1f38c06 100644
+--- a/drivers/net/wan/fsl_ucc_hdlc.c
++++ b/drivers/net/wan/fsl_ucc_hdlc.c
+@@ -1175,3 +1175,4 @@ static int ucc_hdlc_remove(struct platform_device *pdev)
+ };
  
-+#define CLK_GRAN	(1000)
-+#define CLK_GRAN_LIMIT	(5)
-+
- unsigned int qe_get_brg_clk(void)
- {
- 	struct device_node *qe;
- 	int size;
- 	const u32 *prop;
-+	unsigned int mod;
- 
- 	if (brg_clk)
- 		return brg_clk;
-@@ -185,6 +189,15 @@ unsigned int qe_get_brg_clk(void)
- 
- 	of_node_put(qe);
- 
-+	/* round this if near to a multiple of CLK_GRAN */
-+	mod = brg_clk % CLK_GRAN;
-+	if (mod) {
-+		if (mod < CLK_GRAN_LIMIT)
-+			brg_clk -= mod;
-+		else if (mod > (CLK_GRAN - CLK_GRAN_LIMIT))
-+			brg_clk += CLK_GRAN - mod;
-+	}
-+
- 	return brg_clk;
- }
- EXPORT_SYMBOL(qe_get_brg_clk);
+ module_platform_driver(ucc_hdlc_driver);
++MODULE_LICENSE("GPL");
 -- 
 1.8.3.1
