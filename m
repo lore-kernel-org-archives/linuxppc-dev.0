@@ -1,26 +1,17 @@
-Return-Path: <segher@gate.crashing.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vQ3r94zvxzDq5x
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Feb 2017 07:03:53 +1100 (AEDT)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3vQ3r8738Vz9s8J
- for <linuxppc-dev@ozlabs.org>; Sat, 18 Feb 2017 07:03:52 +1100 (AEDT)
-Date: Fri, 17 Feb 2017 14:03:45 -0600
-From: Segher Boessenkool <segher@kernel.crashing.org>
-To: Alan Modra <amodra@gmail.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org,
- anton@samba.org
-Subject: Re: [RFC PATCH] powerpc: Fix dubious r0 usage
-Message-ID: <20170217200344.GE21840@gate.crashing.org>
-References: <1487333333-17221-1-git-send-email-mpe@ellerman.id.au>
- <20170217132125.GV3731@bubble.grove.modra.org>
+Return-Path: <davem@davemloft.net>
+Received: from shards.monkeyblade.net (unknown [184.105.139.130])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3vQ4D52F7KzDq5x
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Feb 2017 07:21:07 +1100 (AEDT)
+Date: Fri, 17 Feb 2017 15:20:54 -0500 (EST)
+Message-Id: <20170217.152054.2256770780759033972.davem@davemloft.net>
+To: valentin.longchamp@keymile.com
+Cc: qiang.zhao@nxp.com, netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] net/wan: add MODULE_LICENSE for fsl_ucc_hdlc
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1487327482-26482-1-git-send-email-valentin.longchamp@keymile.com>
+References: <1487327482-26482-1-git-send-email-valentin.longchamp@keymile.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170217132125.GV3731@bubble.grove.modra.org>
+Content-Type: Text/Plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,15 +21,11 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Feb 17, 2017 at 11:51:25PM +1030, Alan Modra wrote:
-> On Fri, Feb 17, 2017 at 11:08:53PM +1100, Michael Ellerman wrote:
-> > Bleeding edge binutils no longer accepts r0 in places where the CPU
-> > interprets the value as a literal 0.
+From: Valentin Longchamp <valentin.longchamp@keymile.com>
+Date: Fri, 17 Feb 2017 11:31:22 +0100
+
+> It is required to build it as a module.
 > 
-> Wow!  That was quite some cleanup.  I think I'd better turn the error
-> into a warning..
+> Signed-off-by: Valentin Longchamp <valentin.longchamp@keymile.com>
 
-It also catches programming errors, not just syntax errors.
-
-
-Segher
+Applied to net-next.
