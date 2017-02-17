@@ -1,16 +1,45 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vPsJ90kY1zDq5x
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Feb 2017 23:08:57 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org
-Cc: anton@samba.org,
-	amodra@gmail.com
-Subject: [RFC PATCH] powerpc: Fix dubious r0 usage
-Date: Fri, 17 Feb 2017 23:08:53 +1100
-Message-Id: <1487333333-17221-1-git-send-email-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vPsXQ4SMTzDq5x
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Feb 2017 23:19:34 +1100 (AEDT)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v1HCIYv7113111
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Feb 2017 07:19:32 -0500
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 28nrgktgrf-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Feb 2017 07:19:32 -0500
+Received: from localhost
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Fri, 17 Feb 2017 22:19:29 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 7DC952CE805A
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Feb 2017 23:19:27 +1100 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v1HCJIQQ26542216
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Feb 2017 23:19:26 +1100
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v1HCIssG027117
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Feb 2017 23:18:54 +1100
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: laurentiu.tudor@nxp.com, linuxppc-dev@lists.ozlabs.org, oss@buserror.net,
+ mpe@ellerman.id.au
+Cc: madalin.bucur@nxp.com, Laurentiu Tudor <laurentiu.tudor@nxp.com>
+Subject: Re: [PATCH] powerpc: booke: fix boot crash due to null hugepd
+In-Reply-To: <20170216151129.8971-1-laurentiu.tudor@nxp.com>
+References: <20170216151129.8971-1-laurentiu.tudor@nxp.com>
+Date: Fri, 17 Feb 2017 17:48:30 +0530
+MIME-Version: 1.0
+Content-Type: text/plain
+Message-Id: <87tw7tc8o9.fsf@skywalker.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,543 +49,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Bleeding edge binutils no longer accepts r0 in places where the CPU
-interprets the value as a literal 0.
+laurentiu.tudor@nxp.com writes:
 
-This fixes the cases caught by a vanilla 64-bit and 32-bit build. There
-may be others that are hidden behind other CONFIG options.
+> From: Laurentiu Tudor <laurentiu.tudor@nxp.com>
+>
+> On 32-bit book-e machines, hugepd_ok() does not take
+> into account null hugepd values, causing this crash at boot:
+>
+> Unable to handle kernel paging request for data at address 0x80000000
+> Faulting instruction address: 0xc00182a8
+> Oops: Kernel access of bad area, sig: 11 [#1]
+> SMP NR_CPUS=24
+> CoreNet Generic
+> Modules linked in:
+> CPU: 1 PID: 1 Comm: swapper/0 Tainted: G        W       4.10.0-rc8-00016-g69b1f87 #11
+> task: e5050000 task.stack: e5058000
+> NIP: c00182a8 LR: c001829c CTR: 00007ffe
+> REGS: e5059c50 TRAP: 0300   Tainted: G        W        (4.10.0-rc8-00016-g69b1f87)
+> MSR: 00021002 <CE,ME>
+>   CR: 88428e82  XER: 00000000
+> DEAR: 80000000 ESR: 00000000
+> GPR00: c0107510 e5059d00 e5050000 80000000 bffffff1 e5059d0c e5059d08 00002017
+> GPR08: 00000000 00000000 00000000 00000000 28428e82 00000000 c00027d0 00000000
+> GPR16: 00000000 00000000 88a28e82 20000000 48422e82 00000000 88a28e84 dd004000
+> GPR24: e5059e38 00000000 00000000 bffffff1 dd004000 00000001 00029002 bffffff1
+> NIP [c00182a8] follow_huge_addr+0x38/0xf0
+> LR [c001829c] follow_huge_addr+0x2c/0xf0
+> Call Trace:
+> [e5059d00] [e5059d00] 0xe5059d00 (unreliable)
+> [e5059d20] [c0107510] follow_page_mask+0x40/0x3c0
+> [e5059d80] [c0107958] __get_user_pages+0xc8/0x420
+> [e5059de0] [c010817c] get_user_pages_remote+0x8c/0x230
+> [e5059e30] [c013f170] copy_strings+0x110/0x3a0
+> [e5059ea0] [c013f42c] copy_strings_kernel+0x2c/0x50
+> [e5059ec0] [c0141324] do_execveat_common+0x474/0x620
+> [e5059f10] [c01414fc] do_execve+0x2c/0x40
+> [e5059f20] [c0001f68] try_to_run_init_process+0x18/0x60
+> [e5059f30] [c000289c] kernel_init+0xcc/0x120
+> [e5059f40] [c000f1e8] ret_from_kernel_thread+0x5c/0x64
+> Instruction dump:
+> bfc10018 7c9f2378 90010024 7fc000a6 7c000146 80630020 38a1000c 38c10008
+> 4bfff869 2c030000 41c20090 81210008 <81430000> 81630004 3860ffea 2f890000
+> ---[ end trace 4bf94e15fd9fa824 ]---
 
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/include/asm/ppc_asm.h  |  2 +-
- arch/powerpc/kernel/l2cr_6xx.S      |  4 +--
- arch/powerpc/lib/copypage_power7.S  | 14 ++++----
- arch/powerpc/lib/copyuser_power7.S  | 66 ++++++++++++++++++-------------------
- arch/powerpc/lib/memcpy_power7.S    | 66 ++++++++++++++++++-------------------
- arch/powerpc/lib/string_64.S        |  2 +-
- arch/powerpc/purgatory/trampoline.S |  2 +-
- 7 files changed, 78 insertions(+), 78 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/ppc_asm.h b/arch/powerpc/include/asm/ppc_asm.h
-index 025833b8df9f..c98324addc08 100644
---- a/arch/powerpc/include/asm/ppc_asm.h
-+++ b/arch/powerpc/include/asm/ppc_asm.h
-@@ -439,7 +439,7 @@ END_FTR_SECTION_IFCLR(CPU_FTR_601)
- .machine push ;					\
- .machine "power4" ;				\
-        lis     scratch,0x60000000@h;		\
--       dcbt    r0,scratch,0b01010;		\
-+       dcbt    0,scratch,0b01010;		\
- .machine pop
- 
- /*
-diff --git a/arch/powerpc/kernel/l2cr_6xx.S b/arch/powerpc/kernel/l2cr_6xx.S
-index 97ec8557f974..6408f09dbbd9 100644
---- a/arch/powerpc/kernel/l2cr_6xx.S
-+++ b/arch/powerpc/kernel/l2cr_6xx.S
-@@ -181,7 +181,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_SPEC7450)
- 	mtctr	r4
- 	li	r4,0
- 1:
--	lwzx	r0,r0,r4
-+	lwzx	r0,0,r4
- 	addi	r4,r4,32		/* Go to start of next cache line */
- 	bdnz	1b
- 	isync
-@@ -328,7 +328,7 @@ END_FTR_SECTION_IFCLR(CPU_FTR_L3CR)
- 	mtctr	r4
- 	li	r4,0
- 1:
--	lwzx	r0,r0,r4
-+	lwzx	r0,0,r4
- 	dcbf	0,r4
- 	addi	r4,r4,32		/* Go to start of next cache line */
- 	bdnz	1b
-diff --git a/arch/powerpc/lib/copypage_power7.S b/arch/powerpc/lib/copypage_power7.S
-index a84d333ecb09..ca5fc8fa7efc 100644
---- a/arch/powerpc/lib/copypage_power7.S
-+++ b/arch/powerpc/lib/copypage_power7.S
-@@ -45,13 +45,13 @@ _GLOBAL(copypage_power7)
- .machine push
- .machine "power4"
- 	/* setup read stream 0  */
--	dcbt	r0,r4,0b01000  	/* addr from */
--	dcbt	r0,r7,0b01010   /* length and depth from */
-+	dcbt	0,r4,0b01000  	/* addr from */
-+	dcbt	0,r7,0b01010   /* length and depth from */
- 	/* setup write stream 1 */
--	dcbtst	r0,r9,0b01000   /* addr to */
--	dcbtst	r0,r10,0b01010  /* length and depth to */
-+	dcbtst	0,r9,0b01000   /* addr to */
-+	dcbtst	0,r10,0b01010  /* length and depth to */
- 	eieio
--	dcbt	r0,r8,0b01010	/* all streams GO */
-+	dcbt	0,r8,0b01010	/* all streams GO */
- .machine pop
- 
- #ifdef CONFIG_ALTIVEC
-@@ -83,7 +83,7 @@ _GLOBAL(copypage_power7)
- 	li	r12,112
- 
- 	.align	5
--1:	lvx	v7,r0,r4
-+1:	lvx	v7,0,r4
- 	lvx	v6,r4,r6
- 	lvx	v5,r4,r7
- 	lvx	v4,r4,r8
-@@ -92,7 +92,7 @@ _GLOBAL(copypage_power7)
- 	lvx	v1,r4,r11
- 	lvx	v0,r4,r12
- 	addi	r4,r4,128
--	stvx	v7,r0,r3
-+	stvx	v7,0,r3
- 	stvx	v6,r3,r6
- 	stvx	v5,r3,r7
- 	stvx	v4,r3,r8
-diff --git a/arch/powerpc/lib/copyuser_power7.S b/arch/powerpc/lib/copyuser_power7.S
-index a24b4039352c..a95fef3bed10 100644
---- a/arch/powerpc/lib/copyuser_power7.S
-+++ b/arch/powerpc/lib/copyuser_power7.S
-@@ -315,13 +315,13 @@ err1;	stb	r0,0(r3)
- .machine push
- .machine "power4"
- 	/* setup read stream 0 */
--	dcbt	r0,r6,0b01000   /* addr from */
--	dcbt	r0,r7,0b01010   /* length and depth from */
-+	dcbt	0,r6,0b01000   /* addr from */
-+	dcbt	0,r7,0b01010   /* length and depth from */
- 	/* setup write stream 1 */
--	dcbtst	r0,r9,0b01000   /* addr to */
--	dcbtst	r0,r10,0b01010  /* length and depth to */
-+	dcbtst	0,r9,0b01000   /* addr to */
-+	dcbtst	0,r10,0b01010  /* length and depth to */
- 	eieio
--	dcbt	r0,r8,0b01010	/* all streams GO */
-+	dcbt	0,r8,0b01010	/* all streams GO */
- .machine pop
- 
- 	beq	cr1,.Lunwind_stack_nonvmx_copy
-@@ -376,26 +376,26 @@ err3;	std	r0,0(r3)
- 	li	r11,48
- 
- 	bf	cr7*4+3,5f
--err3;	lvx	v1,r0,r4
-+err3;	lvx	v1,0,r4
- 	addi	r4,r4,16
--err3;	stvx	v1,r0,r3
-+err3;	stvx	v1,0,r3
- 	addi	r3,r3,16
- 
- 5:	bf	cr7*4+2,6f
--err3;	lvx	v1,r0,r4
-+err3;	lvx	v1,0,r4
- err3;	lvx	v0,r4,r9
- 	addi	r4,r4,32
--err3;	stvx	v1,r0,r3
-+err3;	stvx	v1,0,r3
- err3;	stvx	v0,r3,r9
- 	addi	r3,r3,32
- 
- 6:	bf	cr7*4+1,7f
--err3;	lvx	v3,r0,r4
-+err3;	lvx	v3,0,r4
- err3;	lvx	v2,r4,r9
- err3;	lvx	v1,r4,r10
- err3;	lvx	v0,r4,r11
- 	addi	r4,r4,64
--err3;	stvx	v3,r0,r3
-+err3;	stvx	v3,0,r3
- err3;	stvx	v2,r3,r9
- err3;	stvx	v1,r3,r10
- err3;	stvx	v0,r3,r11
-@@ -421,7 +421,7 @@ err3;	stvx	v0,r3,r11
- 	 */
- 	.align	5
- 8:
--err4;	lvx	v7,r0,r4
-+err4;	lvx	v7,0,r4
- err4;	lvx	v6,r4,r9
- err4;	lvx	v5,r4,r10
- err4;	lvx	v4,r4,r11
-@@ -430,7 +430,7 @@ err4;	lvx	v2,r4,r14
- err4;	lvx	v1,r4,r15
- err4;	lvx	v0,r4,r16
- 	addi	r4,r4,128
--err4;	stvx	v7,r0,r3
-+err4;	stvx	v7,0,r3
- err4;	stvx	v6,r3,r9
- err4;	stvx	v5,r3,r10
- err4;	stvx	v4,r3,r11
-@@ -451,29 +451,29 @@ err4;	stvx	v0,r3,r16
- 	mtocrf	0x01,r6
- 
- 	bf	cr7*4+1,9f
--err3;	lvx	v3,r0,r4
-+err3;	lvx	v3,0,r4
- err3;	lvx	v2,r4,r9
- err3;	lvx	v1,r4,r10
- err3;	lvx	v0,r4,r11
- 	addi	r4,r4,64
--err3;	stvx	v3,r0,r3
-+err3;	stvx	v3,0,r3
- err3;	stvx	v2,r3,r9
- err3;	stvx	v1,r3,r10
- err3;	stvx	v0,r3,r11
- 	addi	r3,r3,64
- 
- 9:	bf	cr7*4+2,10f
--err3;	lvx	v1,r0,r4
-+err3;	lvx	v1,0,r4
- err3;	lvx	v0,r4,r9
- 	addi	r4,r4,32
--err3;	stvx	v1,r0,r3
-+err3;	stvx	v1,0,r3
- err3;	stvx	v0,r3,r9
- 	addi	r3,r3,32
- 
- 10:	bf	cr7*4+3,11f
--err3;	lvx	v1,r0,r4
-+err3;	lvx	v1,0,r4
- 	addi	r4,r4,16
--err3;	stvx	v1,r0,r3
-+err3;	stvx	v1,0,r3
- 	addi	r3,r3,16
- 
- 	/* Up to 15B to go */
-@@ -553,25 +553,25 @@ err3;	lvx	v0,0,r4
- 	addi	r4,r4,16
- 
- 	bf	cr7*4+3,5f
--err3;	lvx	v1,r0,r4
-+err3;	lvx	v1,0,r4
- 	VPERM(v8,v0,v1,v16)
- 	addi	r4,r4,16
--err3;	stvx	v8,r0,r3
-+err3;	stvx	v8,0,r3
- 	addi	r3,r3,16
- 	vor	v0,v1,v1
- 
- 5:	bf	cr7*4+2,6f
--err3;	lvx	v1,r0,r4
-+err3;	lvx	v1,0,r4
- 	VPERM(v8,v0,v1,v16)
- err3;	lvx	v0,r4,r9
- 	VPERM(v9,v1,v0,v16)
- 	addi	r4,r4,32
--err3;	stvx	v8,r0,r3
-+err3;	stvx	v8,0,r3
- err3;	stvx	v9,r3,r9
- 	addi	r3,r3,32
- 
- 6:	bf	cr7*4+1,7f
--err3;	lvx	v3,r0,r4
-+err3;	lvx	v3,0,r4
- 	VPERM(v8,v0,v3,v16)
- err3;	lvx	v2,r4,r9
- 	VPERM(v9,v3,v2,v16)
-@@ -580,7 +580,7 @@ err3;	lvx	v1,r4,r10
- err3;	lvx	v0,r4,r11
- 	VPERM(v11,v1,v0,v16)
- 	addi	r4,r4,64
--err3;	stvx	v8,r0,r3
-+err3;	stvx	v8,0,r3
- err3;	stvx	v9,r3,r9
- err3;	stvx	v10,r3,r10
- err3;	stvx	v11,r3,r11
-@@ -606,7 +606,7 @@ err3;	stvx	v11,r3,r11
- 	 */
- 	.align	5
- 8:
--err4;	lvx	v7,r0,r4
-+err4;	lvx	v7,0,r4
- 	VPERM(v8,v0,v7,v16)
- err4;	lvx	v6,r4,r9
- 	VPERM(v9,v7,v6,v16)
-@@ -623,7 +623,7 @@ err4;	lvx	v1,r4,r15
- err4;	lvx	v0,r4,r16
- 	VPERM(v15,v1,v0,v16)
- 	addi	r4,r4,128
--err4;	stvx	v8,r0,r3
-+err4;	stvx	v8,0,r3
- err4;	stvx	v9,r3,r9
- err4;	stvx	v10,r3,r10
- err4;	stvx	v11,r3,r11
-@@ -644,7 +644,7 @@ err4;	stvx	v15,r3,r16
- 	mtocrf	0x01,r6
- 
- 	bf	cr7*4+1,9f
--err3;	lvx	v3,r0,r4
-+err3;	lvx	v3,0,r4
- 	VPERM(v8,v0,v3,v16)
- err3;	lvx	v2,r4,r9
- 	VPERM(v9,v3,v2,v16)
-@@ -653,27 +653,27 @@ err3;	lvx	v1,r4,r10
- err3;	lvx	v0,r4,r11
- 	VPERM(v11,v1,v0,v16)
- 	addi	r4,r4,64
--err3;	stvx	v8,r0,r3
-+err3;	stvx	v8,0,r3
- err3;	stvx	v9,r3,r9
- err3;	stvx	v10,r3,r10
- err3;	stvx	v11,r3,r11
- 	addi	r3,r3,64
- 
- 9:	bf	cr7*4+2,10f
--err3;	lvx	v1,r0,r4
-+err3;	lvx	v1,0,r4
- 	VPERM(v8,v0,v1,v16)
- err3;	lvx	v0,r4,r9
- 	VPERM(v9,v1,v0,v16)
- 	addi	r4,r4,32
--err3;	stvx	v8,r0,r3
-+err3;	stvx	v8,0,r3
- err3;	stvx	v9,r3,r9
- 	addi	r3,r3,32
- 
- 10:	bf	cr7*4+3,11f
--err3;	lvx	v1,r0,r4
-+err3;	lvx	v1,0,r4
- 	VPERM(v8,v0,v1,v16)
- 	addi	r4,r4,16
--err3;	stvx	v8,r0,r3
-+err3;	stvx	v8,0,r3
- 	addi	r3,r3,16
- 
- 	/* Up to 15B to go */
-diff --git a/arch/powerpc/lib/memcpy_power7.S b/arch/powerpc/lib/memcpy_power7.S
-index 786234fd4e91..193909abd18b 100644
---- a/arch/powerpc/lib/memcpy_power7.S
-+++ b/arch/powerpc/lib/memcpy_power7.S
-@@ -261,12 +261,12 @@ _GLOBAL(memcpy_power7)
- 
- .machine push
- .machine "power4"
--	dcbt	r0,r6,0b01000
--	dcbt	r0,r7,0b01010
--	dcbtst	r0,r9,0b01000
--	dcbtst	r0,r10,0b01010
-+	dcbt	0,r6,0b01000
-+	dcbt	0,r7,0b01010
-+	dcbtst	0,r9,0b01000
-+	dcbtst	0,r10,0b01010
- 	eieio
--	dcbt	r0,r8,0b01010	/* GO */
-+	dcbt	0,r8,0b01010	/* GO */
- .machine pop
- 
- 	beq	cr1,.Lunwind_stack_nonvmx_copy
-@@ -321,26 +321,26 @@ _GLOBAL(memcpy_power7)
- 	li	r11,48
- 
- 	bf	cr7*4+3,5f
--	lvx	v1,r0,r4
-+	lvx	v1,0,r4
- 	addi	r4,r4,16
--	stvx	v1,r0,r3
-+	stvx	v1,0,r3
- 	addi	r3,r3,16
- 
- 5:	bf	cr7*4+2,6f
--	lvx	v1,r0,r4
-+	lvx	v1,0,r4
- 	lvx	v0,r4,r9
- 	addi	r4,r4,32
--	stvx	v1,r0,r3
-+	stvx	v1,0,r3
- 	stvx	v0,r3,r9
- 	addi	r3,r3,32
- 
- 6:	bf	cr7*4+1,7f
--	lvx	v3,r0,r4
-+	lvx	v3,0,r4
- 	lvx	v2,r4,r9
- 	lvx	v1,r4,r10
- 	lvx	v0,r4,r11
- 	addi	r4,r4,64
--	stvx	v3,r0,r3
-+	stvx	v3,0,r3
- 	stvx	v2,r3,r9
- 	stvx	v1,r3,r10
- 	stvx	v0,r3,r11
-@@ -366,7 +366,7 @@ _GLOBAL(memcpy_power7)
- 	 */
- 	.align	5
- 8:
--	lvx	v7,r0,r4
-+	lvx	v7,0,r4
- 	lvx	v6,r4,r9
- 	lvx	v5,r4,r10
- 	lvx	v4,r4,r11
-@@ -375,7 +375,7 @@ _GLOBAL(memcpy_power7)
- 	lvx	v1,r4,r15
- 	lvx	v0,r4,r16
- 	addi	r4,r4,128
--	stvx	v7,r0,r3
-+	stvx	v7,0,r3
- 	stvx	v6,r3,r9
- 	stvx	v5,r3,r10
- 	stvx	v4,r3,r11
-@@ -396,29 +396,29 @@ _GLOBAL(memcpy_power7)
- 	mtocrf	0x01,r6
- 
- 	bf	cr7*4+1,9f
--	lvx	v3,r0,r4
-+	lvx	v3,0,r4
- 	lvx	v2,r4,r9
- 	lvx	v1,r4,r10
- 	lvx	v0,r4,r11
- 	addi	r4,r4,64
--	stvx	v3,r0,r3
-+	stvx	v3,0,r3
- 	stvx	v2,r3,r9
- 	stvx	v1,r3,r10
- 	stvx	v0,r3,r11
- 	addi	r3,r3,64
- 
- 9:	bf	cr7*4+2,10f
--	lvx	v1,r0,r4
-+	lvx	v1,0,r4
- 	lvx	v0,r4,r9
- 	addi	r4,r4,32
--	stvx	v1,r0,r3
-+	stvx	v1,0,r3
- 	stvx	v0,r3,r9
- 	addi	r3,r3,32
- 
- 10:	bf	cr7*4+3,11f
--	lvx	v1,r0,r4
-+	lvx	v1,0,r4
- 	addi	r4,r4,16
--	stvx	v1,r0,r3
-+	stvx	v1,0,r3
- 	addi	r3,r3,16
- 
- 	/* Up to 15B to go */
-@@ -499,25 +499,25 @@ _GLOBAL(memcpy_power7)
- 	addi	r4,r4,16
- 
- 	bf	cr7*4+3,5f
--	lvx	v1,r0,r4
-+	lvx	v1,0,r4
- 	VPERM(v8,v0,v1,v16)
- 	addi	r4,r4,16
--	stvx	v8,r0,r3
-+	stvx	v8,0,r3
- 	addi	r3,r3,16
- 	vor	v0,v1,v1
- 
- 5:	bf	cr7*4+2,6f
--	lvx	v1,r0,r4
-+	lvx	v1,0,r4
- 	VPERM(v8,v0,v1,v16)
- 	lvx	v0,r4,r9
- 	VPERM(v9,v1,v0,v16)
- 	addi	r4,r4,32
--	stvx	v8,r0,r3
-+	stvx	v8,0,r3
- 	stvx	v9,r3,r9
- 	addi	r3,r3,32
- 
- 6:	bf	cr7*4+1,7f
--	lvx	v3,r0,r4
-+	lvx	v3,0,r4
- 	VPERM(v8,v0,v3,v16)
- 	lvx	v2,r4,r9
- 	VPERM(v9,v3,v2,v16)
-@@ -526,7 +526,7 @@ _GLOBAL(memcpy_power7)
- 	lvx	v0,r4,r11
- 	VPERM(v11,v1,v0,v16)
- 	addi	r4,r4,64
--	stvx	v8,r0,r3
-+	stvx	v8,0,r3
- 	stvx	v9,r3,r9
- 	stvx	v10,r3,r10
- 	stvx	v11,r3,r11
-@@ -552,7 +552,7 @@ _GLOBAL(memcpy_power7)
- 	 */
- 	.align	5
- 8:
--	lvx	v7,r0,r4
-+	lvx	v7,0,r4
- 	VPERM(v8,v0,v7,v16)
- 	lvx	v6,r4,r9
- 	VPERM(v9,v7,v6,v16)
-@@ -569,7 +569,7 @@ _GLOBAL(memcpy_power7)
- 	lvx	v0,r4,r16
- 	VPERM(v15,v1,v0,v16)
- 	addi	r4,r4,128
--	stvx	v8,r0,r3
-+	stvx	v8,0,r3
- 	stvx	v9,r3,r9
- 	stvx	v10,r3,r10
- 	stvx	v11,r3,r11
-@@ -590,7 +590,7 @@ _GLOBAL(memcpy_power7)
- 	mtocrf	0x01,r6
- 
- 	bf	cr7*4+1,9f
--	lvx	v3,r0,r4
-+	lvx	v3,0,r4
- 	VPERM(v8,v0,v3,v16)
- 	lvx	v2,r4,r9
- 	VPERM(v9,v3,v2,v16)
-@@ -599,27 +599,27 @@ _GLOBAL(memcpy_power7)
- 	lvx	v0,r4,r11
- 	VPERM(v11,v1,v0,v16)
- 	addi	r4,r4,64
--	stvx	v8,r0,r3
-+	stvx	v8,0,r3
- 	stvx	v9,r3,r9
- 	stvx	v10,r3,r10
- 	stvx	v11,r3,r11
- 	addi	r3,r3,64
- 
- 9:	bf	cr7*4+2,10f
--	lvx	v1,r0,r4
-+	lvx	v1,0,r4
- 	VPERM(v8,v0,v1,v16)
- 	lvx	v0,r4,r9
- 	VPERM(v9,v1,v0,v16)
- 	addi	r4,r4,32
--	stvx	v8,r0,r3
-+	stvx	v8,0,r3
- 	stvx	v9,r3,r9
- 	addi	r3,r3,32
- 
- 10:	bf	cr7*4+3,11f
--	lvx	v1,r0,r4
-+	lvx	v1,0,r4
- 	VPERM(v8,v0,v1,v16)
- 	addi	r4,r4,16
--	stvx	v8,r0,r3
-+	stvx	v8,0,r3
- 	addi	r3,r3,16
- 
- 	/* Up to 15B to go */
-diff --git a/arch/powerpc/lib/string_64.S b/arch/powerpc/lib/string_64.S
-index c100f4d5d5d0..7c1402e60063 100644
---- a/arch/powerpc/lib/string_64.S
-+++ b/arch/powerpc/lib/string_64.S
-@@ -184,7 +184,7 @@ err1;	std	r0,8(r3)
- 	mtctr	r6
- 	mr	r8,r3
- 14:
--err1;	dcbz	r0,r3
-+err1;	dcbz	0,r3
- 	add	r3,r3,r9
- 	bdnz	14b
- 
-diff --git a/arch/powerpc/purgatory/trampoline.S b/arch/powerpc/purgatory/trampoline.S
-index f9760ccf4032..0017d2bf4036 100644
---- a/arch/powerpc/purgatory/trampoline.S
-+++ b/arch/powerpc/purgatory/trampoline.S
-@@ -67,7 +67,7 @@ master:
- 	mr	%r16,%r3	/* save dt address in reg16 */
- 	li	%r4,20
- 	LWZX_BE	%r6,%r3,%r4	/* fetch __be32 version number at byte 20 */
--	cmpwi	%r0,%r6,2	/* v2 or later? */
-+	cmpwi	0,%r6,2		/* v2 or later? */
- 	blt	1f
- 	li	%r4,28
- 	STWX_BE	%r17,%r3,%r4	/* Store my cpu as __be32 at byte 28 */
--- 
-2.7.4
+Which code path is that. That null should be filtered by the if
+(pmd_none(pmd)) check in find_linux_pte_or_hugepte right ?
+
+>
+> This impacts all nxp (ex-freescale) 32-bit booke platforms.
+>
+> Fixes: 20717e1ff526 ("powerpc/mm: Fix little-endian 4K hugetlb")
+>
+> Reported-by: Madalin-Cristian Bucur <madalin.bucur@nxp.com>
+> Signed-off-by: Laurentiu Tudor <laurentiu.tudor@nxp.com>
+> ---
+>  arch/powerpc/include/asm/nohash/pgtable.h | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/arch/powerpc/include/asm/nohash/pgtable.h b/arch/powerpc/include/asm/nohash/pgtable.h
+> index 0cd8a38..e5805ad 100644
+> --- a/arch/powerpc/include/asm/nohash/pgtable.h
+> +++ b/arch/powerpc/include/asm/nohash/pgtable.h
+> @@ -230,7 +230,7 @@ static inline int hugepd_ok(hugepd_t hpd)
+>  	return ((hpd_val(hpd) & 0x4) != 0);
+>  #else
+>  	/* We clear the top bit to indicate hugepd */
+> -	return ((hpd_val(hpd) & PD_HUGE) ==  0);
+> +	return (hpd_val(hpd) && (hpd_val(hpd) & PD_HUGE) == 0);
+>  #endif
+>  }
+>
+> -- 
+> 1.8.3.1
