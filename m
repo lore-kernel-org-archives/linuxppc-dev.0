@@ -2,14 +2,14 @@ Return-Path: <ruscur@russell.cc>
 Received: from russell.cc (russell.cc [IPv6:2404:9400:2:0:216:3eff:fee0:3370])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
  bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vPsDy1Tz0zDq5x
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Feb 2017 23:06:10 +1100 (AEDT)
-Message-ID: <1487333152.11368.1.camel@russell.cc>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vPsG55ZxlzDqGp
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Feb 2017 23:07:09 +1100 (AEDT)
+Message-ID: <1487333213.11368.2.camel@russell.cc>
 Subject: Re: [PATCH v2] powerpc: Add POWER9 architected mode to cputable
 From: Russell Currey <ruscur@russell.cc>
 To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
 Cc: mikey@neuling.org
-Date: Fri, 17 Feb 2017 23:05:52 +1100
+Date: Fri, 17 Feb 2017 23:06:53 +1100
 In-Reply-To: <87y3x5i04k.fsf@concordia.ellerman.id.au>
 References: <20170217020135.6361-1-ruscur@russell.cc>
  <87y3x5i04k.fsf@concordia.ellerman.id.au>
@@ -74,9 +74,9 @@ On Fri, 2017-02-17 at 21:26 +1100, Michael Ellerman wrote:
 > Possibly now that oprofile is more or less dead we can rip all that crap
 > out, and have perf just look at the PVR directly.
 
-Thanks a lot for explaining, that's interesting.  I thought it might just have
-been an accidental omission in the architected entries but I should've dug
-deeper.
+Oh and also, do you want me to respin or are you happy to drop it on your end?
+
+- Russell
 
 > 
 > cheers
