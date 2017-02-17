@@ -1,33 +1,25 @@
-Return-Path: <ukrishn@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vPf7n2gZGzDqBn
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Feb 2017 14:45:57 +1100 (AEDT)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v1H3iBft028592
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 22:45:55 -0500
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
- by mx0a-001b2d01.pphosted.com with ESMTP id 28nnyaq15k-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2017 22:45:55 -0500
-Received: from localhost
- by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ukrishn@linux.vnet.ibm.com>;
- Thu, 16 Feb 2017 20:45:54 -0700
-From: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au,
- Ian Munsie <imunsie@au1.ibm.com>,
- Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-Cc: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- Christophe Lombard <clombard@linux.vnet.ibm.com>
-Subject: [PATCH] cxl: Enable PCI device ID for future IBM CXL adapter
-Date: Thu, 16 Feb 2017 21:45:23 -0600
-Message-Id: <1487303123-7835-1-git-send-email-ukrishn@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vPjFG5j3LzDqBs
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Feb 2017 17:05:54 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Pan Xinhui <xinhui@linux.vnet.ibm.com>,
+ "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com>,
+ Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Cc: benh@kernel.crashing.org, paulus@samba.org, npiggin@gmail.com
+Subject: Re: [PATCH] powerpc/xmon: Fix an unexpected xmon onoff state change
+In-Reply-To: <8466dffc-d75c-d83a-2a4f-d567721db7d5@linux.vnet.ibm.com>
+References: <1487144990-5969-1-git-send-email-xinhui.pan@linux.vnet.ibm.com>
+ <87shnek9hd.fsf@concordia.ellerman.id.au>
+ <72cfff06-bd93-a727-0b93-31dfa3a7ac65@linux.vnet.ibm.com>
+ <8466dffc-d75c-d83a-2a4f-d567721db7d5@linux.vnet.ibm.com>
+Date: Fri, 17 Feb 2017 17:05:48 +1100
+Message-ID: <87h93tjqrn.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,28 +29,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>
+Pan Xinhui <xinhui@linux.vnet.ibm.com> writes:
+> diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
+> index 9c0e17c..f6e5c3d 100644
+> --- a/arch/powerpc/xmon/xmon.c
+> +++ b/arch/powerpc/xmon/xmon.c
+> @@ -76,6 +76,7 @@ static int xmon_gate;
+>   #endif /* CONFIG_SMP */
+>   
+>   static unsigned long in_xmon __read_mostly = 0;
+> +static int xmon_off = !IS_ENABLED(CONFIG_XMON_DEFAULT);
 
-Add support for a future IBM Coherent Accelerator (CXL) device
-with an ID of 0x0623.
+I think the logic would probably clearer if we invert this to become
+xmon_on.
 
-Signed-off-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
-Signed-off-by: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
----
- drivers/misc/cxl/pci.c | 1 +
- 1 file changed, 1 insertion(+)
+> @@ -3266,16 +3269,16 @@ static int __init setup_xmon_sysrq(void)
+>   __initcall(setup_xmon_sysrq);
+>   #endif /* CONFIG_MAGIC_SYSRQ */
+>   
+> -static int __initdata xmon_early, xmon_off;
+> +static int __initdata xmon_early;
+>   
+>   static int __init early_parse_xmon(char *p)
+>   {
+>   	if (!p || strncmp(p, "early", 5) == 0) {
+>   		/* just "xmon" is equivalent to "xmon=early" */
+> -		xmon_init(1);
+>   		xmon_early = 1;
+> +		xmon_off = 0;
+>   	} else if (strncmp(p, "on", 2) == 0)
+> -		xmon_init(1);
+> +		xmon_off = 0;
 
-diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
-index cca9388..16d858f 100644
---- a/drivers/misc/cxl/pci.c
-+++ b/drivers/misc/cxl/pci.c
-@@ -123,6 +123,7 @@ static const struct pci_device_id cxl_pci_tbl[] = {
- 	{ PCI_DEVICE(PCI_VENDOR_ID_IBM, 0x044b), },
- 	{ PCI_DEVICE(PCI_VENDOR_ID_IBM, 0x04cf), },
- 	{ PCI_DEVICE(PCI_VENDOR_ID_IBM, 0x0601), },
-+	{ PCI_DEVICE(PCI_VENDOR_ID_IBM, 0x0623), },
- 	{ PCI_DEVICE_CLASS(0x120000, ~0), },
- 
- 	{ }
--- 
-2.1.0
+You've just changed the timing of when xmon gets enabled for the above
+two cases, from here which is called very early, to xmon_setup() which
+is called much later in boot.
+
+That effectively disables xmon for most of the boot, which we do not
+want to do.
+
+cheers
