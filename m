@@ -1,20 +1,14 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vPjfN0XxMzDqBW
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Feb 2017 17:24:12 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vPjpj4MyqzDqBW
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Feb 2017 17:31:25 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Hari Bathini <hbathini@linux.vnet.ibm.com>
-Cc: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>,
- linuxppc-dev <linuxppc-dev@ozlabs.org>
-Subject: Re: [PATCH] powerpc/fadump: set an upper limit for boot memory size
-In-Reply-To: <148717255648.1711.9357297790070400059.stgit@hbathini.in.ibm.com>
-References: <148717255648.1711.9357297790070400059.stgit@hbathini.in.ibm.com>
-Date: Fri, 17 Feb 2017 17:24:11 +1100
-Message-ID: <87efyxjpx0.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc/mpc52xx: Don't select user-visible RTAS_PROC
+Date: Fri, 17 Feb 2017 17:31:22 +1100
+Message-Id: <1487313082-21316-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,27 +18,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hari Bathini <hbathini@linux.vnet.ibm.com> writes:
+Otherwise we might select it when its dependenices aren't enabled,
+leading to a build break.
 
-> diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
-> index de7d39a..d5107f4 100644
-> --- a/arch/powerpc/kernel/fadump.c
-> +++ b/arch/powerpc/kernel/fadump.c
-> @@ -222,6 +222,18 @@ static inline unsigned long fadump_calculate_reserve_size(void)
->  				&size, &base);
->  	if (ret == 0 && size > 0) {
->  		fw_dump.reserve_bootvar = (unsigned long)size;
-> +		/*
-> +		 * Adjust if the boot memory size specified is above
-> +		 * the upper limit.
-> +		 */
-> +		if (fw_dump.reserve_bootvar >
-> +		    (memblock_end_of_DRAM() / MAX_BOOT_MEM_RATIO)) {
+It's default y anyway, so will be on unless someone disables it
+manually.
 
-Using memblock_end_of_DRAM() doesn't take into account the fact that you
-might have holes in your memory layout.
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/platforms/52xx/Kconfig | 1 -
+ 1 file changed, 1 deletion(-)
 
-Possibly on PowerVM that never happens, but I don't think we should
-write the code to assume that, if possible.
-
-cheers
+diff --git a/arch/powerpc/platforms/52xx/Kconfig b/arch/powerpc/platforms/52xx/Kconfig
+index b625a2c6f4f2..e4c745981912 100644
+--- a/arch/powerpc/platforms/52xx/Kconfig
++++ b/arch/powerpc/platforms/52xx/Kconfig
+@@ -33,7 +33,6 @@ config PPC_EFIKA
+ 	bool "bPlan Efika 5k2. MPC5200B based computer"
+ 	depends on PPC_MPC52xx
+ 	select PPC_RTAS
+-	select RTAS_PROC
+ 	select PPC_NATIVE
+ 
+ config PPC_LITE5200
+-- 
+2.7.4
