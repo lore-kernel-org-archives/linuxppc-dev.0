@@ -1,22 +1,24 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <joe@perches.com>
+Received: from smtprelay.hostedemail.com (smtprelay0166.hostedemail.com
+ [216.40.44.166])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vPkQW6s2pzDq5x
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Feb 2017 17:58:59 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Nathan Fontenot <nfont@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Cc: jallen@linux.vnet.ibm.com, david@gibson.dropbear.id.au,
- mdroth@linux.vnet.ibm.com, sahilmehta17@gmail.com
-Subject: Re: [PATCH v7 3/4] powerpc/pseries: Implement indexed-count hotplug
- memory add
-In-Reply-To: <20170215184536.11755.63813.stgit@ltcalpine2-lp14.aus.stglabs.ibm.com>
-References: <20170215184321.11755.88199.stgit@ltcalpine2-lp14.aus.stglabs.ibm.com>
- <20170215184536.11755.63813.stgit@ltcalpine2-lp14.aus.stglabs.ibm.com>
-Date: Fri, 17 Feb 2017 17:58:59 +1100
-Message-ID: <878tp5job0.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vPkrb32xqzDq5x
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Feb 2017 18:18:07 +1100 (AEDT)
+Received: from smtprelay.hostedemail.com (10.5.19.251.rfc1918.com
+ [10.5.19.251])
+ by smtpgrave03.hostedemail.com (Postfix) with ESMTP id 64089290DC1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Feb 2017 07:12:56 +0000 (UTC)
+From: Joe Perches <joe@perches.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH 21/35] drivers/macintosh: Convert remaining uses of pr_warning
+ to pr_warn
+Date: Thu, 16 Feb 2017 23:11:34 -0800
+Message-Id: <3b11f71725b81463e4aa4bad448b48ef9ebaa424.1487314667.git.joe@perches.com>
+In-Reply-To: <cover.1487314666.git.joe@perches.com>
+References: <cover.1487314666.git.joe@perches.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,64 +28,139 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Nathan Fontenot <nfont@linux.vnet.ibm.com> writes:
+To enable eventual removal of pr_warning
 
-> diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/power=
-pc/platforms/pseries/hotplug-memory.c
-> index 9609a72..0d1aa77 100644
-> --- a/arch/powerpc/platforms/pseries/hotplug-memory.c
-> +++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
-> @@ -810,9 +901,6 @@ int dlpar_memory(struct pseries_hp_errorlog *hp_elog)
->  	u32 count, drc_index;
->  	int rc;
->=20=20
-> -	count =3D hp_elog->_drc_u.drc_count;
-> -	drc_index =3D hp_elog->_drc_u.drc_index;
-        ^^^
+This makes pr_warn use consistent for drivers/macintosh
 
-This fails to build for me because of the above removal, ...
+Prior to this patch, there were 10 uses of pr_warning and
+1 use of pr_warn in drivers/macintosh
 
+Signed-off-by: Joe Perches <joe@perches.com>
+---
+ drivers/macintosh/windfarm_fcu_controls.c |  5 ++---
+ drivers/macintosh/windfarm_lm87_sensor.c  |  4 ++--
+ drivers/macintosh/windfarm_pm72.c         | 22 +++++++++++-----------
+ drivers/macintosh/windfarm_rm31.c         |  6 +++---
+ 4 files changed, 18 insertions(+), 19 deletions(-)
 
-> @@ -829,20 +917,32 @@ int dlpar_memory(struct pseries_hp_errorlog *hp_elo=
-g)
->=20=20
-...
->  		break;
->  	case PSERIES_HP_ELOG_ACTION_READD:
->  		rc =3D dlpar_memory_readd_by_index(drc_index, prop);
-						 ^^^
-And the existing usage here.
-
-
-Which leads to:
-
-
-  arch/powerpc/platforms/pseries/hotplug-memory.c: In function =E2=80=98dlp=
-ar_memory=E2=80=99:
-  arch/powerpc/platforms/pseries/hotplug-memory.c:581:6: error: =E2=80=98dr=
-c_index=E2=80=99 may be used uninitialized in this function [-Werror=3Dmayb=
-e-uninitialized]
-  if (lmbs[i].drc_index =3D=3D drc_index) {
-  ^
-
-Presumably you're using an old compiler that didn't pick that up? If so
-please update to a more modern compiler.
-
-
-I did the obvious fix, hopefully it is correct:
-
-diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/powerpc=
-/platforms/pseries/hotplug-memory.c
-index bc73546587e7..e28abfa013e5 100644
---- a/arch/powerpc/platforms/pseries/hotplug-memory.c
-+++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
-@@ -1019,6 +1019,7 @@ int dlpar_memory(struct pseries_hp_errorlog *hp_elog)
-=20
- 		break;
- 	case PSERIES_HP_ELOG_ACTION_READD:
-+		drc_index =3D hp_elog->_drc_u.drc_index;
- 		rc =3D dlpar_memory_readd_by_index(drc_index, prop);
- 		break;
- 	default:
-
-cheers
+diff --git a/drivers/macintosh/windfarm_fcu_controls.c b/drivers/macintosh/windfarm_fcu_controls.c
+index 0226b796a21c..3d8d9eaf9b68 100644
+--- a/drivers/macintosh/windfarm_fcu_controls.c
++++ b/drivers/macintosh/windfarm_fcu_controls.c
+@@ -469,9 +469,8 @@ static void wf_fcu_lookup_fans(struct wf_fcu_priv *pv)
+ 			else
+ 				id = ((*reg) - 0x30) / 2;
+ 			if (id > 7) {
+-				pr_warning("wf_fcu: Can't parse "
+-				       "fan ID in device-tree for %s\n",
+-					   np->full_name);
++				pr_warn("wf_fcu: Can't parse fan ID in device-tree for %s\n",
++					np->full_name);
+ 				break;
+ 			}
+ 			wf_fcu_add_fan(pv, name, type, id);
+diff --git a/drivers/macintosh/windfarm_lm87_sensor.c b/drivers/macintosh/windfarm_lm87_sensor.c
+index c071aab79dd1..93fb8660261d 100644
+--- a/drivers/macintosh/windfarm_lm87_sensor.c
++++ b/drivers/macintosh/windfarm_lm87_sensor.c
+@@ -126,8 +126,8 @@ static int wf_lm87_probe(struct i2c_client *client,
+ 		}
+ 	}
+ 	if (!name) {
+-		pr_warning("wf_lm87: Unsupported sensor %s\n",
+-			   client->dev.of_node->full_name);
++		pr_warn("wf_lm87: Unsupported sensor %s\n",
++			client->dev.of_node->full_name);
+ 		return -ENODEV;
+ 	}
+ 
+diff --git a/drivers/macintosh/windfarm_pm72.c b/drivers/macintosh/windfarm_pm72.c
+index e88cfb36a74d..1d3ac758a0c0 100644
+--- a/drivers/macintosh/windfarm_pm72.c
++++ b/drivers/macintosh/windfarm_pm72.c
+@@ -286,8 +286,8 @@ static void cpu_fans_tick_split(void)
+ 		/* Apply result directly to exhaust fan */
+ 		err = wf_control_set(cpu_rear_fans[cpu], sp->target);
+ 		if (err) {
+-			pr_warning("wf_pm72: Fan %s reports error %d\n",
+-			       cpu_rear_fans[cpu]->name, err);
++			pr_warn("wf_pm72: Fan %s reports error %d\n",
++				cpu_rear_fans[cpu]->name, err);
+ 			failure_state |= FAILURE_FAN;
+ 			break;
+ 		}
+@@ -297,8 +297,8 @@ static void cpu_fans_tick_split(void)
+ 		DBG_LOTS("  CPU%d: intake = %d RPM\n", cpu, intake);
+ 		err = wf_control_set(cpu_front_fans[cpu], intake);
+ 		if (err) {
+-			pr_warning("wf_pm72: Fan %s reports error %d\n",
+-			       cpu_front_fans[cpu]->name, err);
++			pr_warn("wf_pm72: Fan %s reports error %d\n",
++				cpu_front_fans[cpu]->name, err);
+ 			failure_state |= FAILURE_FAN;
+ 			break;
+ 		}
+@@ -368,22 +368,22 @@ static void cpu_fans_tick_combined(void)
+ 	for (cpu = 0; cpu < nr_chips; cpu++) {
+ 		err = wf_control_set(cpu_rear_fans[cpu], sp->target);
+ 		if (err) {
+-			pr_warning("wf_pm72: Fan %s reports error %d\n",
+-				   cpu_rear_fans[cpu]->name, err);
++			pr_warn("wf_pm72: Fan %s reports error %d\n",
++				cpu_rear_fans[cpu]->name, err);
+ 			failure_state |= FAILURE_FAN;
+ 		}
+ 		err = wf_control_set(cpu_front_fans[cpu], intake);
+ 		if (err) {
+-			pr_warning("wf_pm72: Fan %s reports error %d\n",
+-				   cpu_front_fans[cpu]->name, err);
++			pr_warn("wf_pm72: Fan %s reports error %d\n",
++				cpu_front_fans[cpu]->name, err);
+ 			failure_state |= FAILURE_FAN;
+ 		}
+ 		err = 0;
+ 		if (cpu_pumps[cpu])
+ 			err = wf_control_set(cpu_pumps[cpu], pump);
+ 		if (err) {
+-			pr_warning("wf_pm72: Pump %s reports error %d\n",
+-				   cpu_pumps[cpu]->name, err);
++			pr_warn("wf_pm72: Pump %s reports error %d\n",
++				cpu_pumps[cpu]->name, err);
+ 			failure_state |= FAILURE_FAN;
+ 		}
+ 	}
+@@ -562,7 +562,7 @@ static void drives_fan_tick(void)
+ 
+ 	err = wf_sensor_get(drives_temp, &temp);
+ 	if (err) {
+-		pr_warning("wf_pm72: drive bay temp sensor error %d\n", err);
++		pr_warn("wf_pm72: drive bay temp sensor error %d\n", err);
+ 		failure_state |= FAILURE_SENSOR;
+ 		wf_control_set_max(drives_fan);
+ 		return;
+diff --git a/drivers/macintosh/windfarm_rm31.c b/drivers/macintosh/windfarm_rm31.c
+index bdfcb8a8bfbb..8fb3f1aee96e 100644
+--- a/drivers/macintosh/windfarm_rm31.c
++++ b/drivers/macintosh/windfarm_rm31.c
+@@ -282,8 +282,8 @@ static void cpu_fans_tick(void)
+ 		for (i = 0; i < 3; i++) {
+ 			err = wf_control_set(cpu_fans[cpu][i], speed);
+ 			if (err) {
+-				pr_warning("wf_rm31: Fan %s reports error %d\n",
+-					   cpu_fans[cpu][i]->name, err);
++				pr_warn("wf_rm31: Fan %s reports error %d\n",
++					cpu_fans[cpu][i]->name, err);
+ 				failure_state |= FAILURE_FAN;
+ 			}
+ 		}
+@@ -466,7 +466,7 @@ static void slots_fan_tick(void)
+ 
+ 	err = wf_sensor_get(slots_temp, &temp);
+ 	if (err) {
+-		pr_warning("wf_rm31: slots temp sensor error %d\n", err);
++		pr_warn("wf_rm31: slots temp sensor error %d\n", err);
+ 		failure_state |= FAILURE_SENSOR;
+ 		wf_control_set_max(slots_fan);
+ 		return;
+-- 
+2.10.0.rc2.1.g053435c
