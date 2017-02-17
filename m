@@ -1,23 +1,20 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vPr3f5sdQzDq5x
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Feb 2017 22:13:02 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Bjorn Helgaas <helgaas@kernel.org>, Gavin Shan <gwshan@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org,
- bhelgaas@google.com
-Subject: Re: [PATCH 0/3] pci/hotplug/pnv-php: More bug fixes
-In-Reply-To: <20170216232854.GA15742@bhelgaas-glaptop.roam.corp.google.com>
-References: <1487200954-14681-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <20170216140925.GA21042@bhelgaas-glaptop.roam.corp.google.com>
- <20170216223808.GA7493@gwshan>
- <20170216232854.GA15742@bhelgaas-glaptop.roam.corp.google.com>
-Date: Fri, 17 Feb 2017 22:13:01 +1100
-Message-ID: <87tw7thxz6.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+Return-Path: <ruscur@russell.cc>
+Received: from russell.cc (russell.cc [IPv6:2404:9400:2:0:216:3eff:fee0:3370])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vPsDy1Tz0zDq5x
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Feb 2017 23:06:10 +1100 (AEDT)
+Message-ID: <1487333152.11368.1.camel@russell.cc>
+Subject: Re: [PATCH v2] powerpc: Add POWER9 architected mode to cputable
+From: Russell Currey <ruscur@russell.cc>
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
+Cc: mikey@neuling.org
+Date: Fri, 17 Feb 2017 23:05:52 +1100
+In-Reply-To: <87y3x5i04k.fsf@concordia.ellerman.id.au>
+References: <20170217020135.6361-1-ruscur@russell.cc>
+ <87y3x5i04k.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,48 +24,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Bjorn Helgaas <helgaas@kernel.org> writes:
+On Fri, 2017-02-17 at 21:26 +1100, Michael Ellerman wrote:
+> Russell Currey <ruscur@russell.cc> writes:
+> 
+> > diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
+> > index 6a82ef039c50..d23a54b09436 100644
+> > --- a/arch/powerpc/kernel/cputable.c
+> > +++ b/arch/powerpc/kernel/cputable.c
+> > @@ -386,6 +386,25 @@ static struct cpu_spec __initdata cpu_specs[] = {
+> >  		.machine_check_early	=
+> > __machine_check_early_realmode_p8,
+> >  		.platform		= "power8",
+> >  	},
+> > +	{	/* 3.00-compliant processor, i.e. Power9 "architected"
+> > mode */
+> > +		.pvr_mask		= 0xffffffff,
+> > +		.pvr_value		= 0x0f000005,
+> > +		.cpu_name		= "POWER9 (architected)",
+> > +		.cpu_features		= CPU_FTRS_POWER9,
+> > +		.cpu_user_features	= COMMON_USER_POWER9,
+> > +		.cpu_user_features2	= COMMON_USER2_POWER9,
+> > +		.mmu_features		= MMU_FTRS_POWER9,
+> > +		.icache_bsize		= 128,
+> > +		.dcache_bsize		= 128,
+> > +		.num_pmcs		= 6,
+> 
+> It's important *not* to set num_pmcs for the architected PVRs.
+> 
+> See the comment in setup_cpu_spec():
+> 
+> 	/*
+> 	 * If we are overriding a previous value derived from the real
+> 	 * PVR with a new value obtained using a logical PVR value,
+> 	 * don't modify the performance monitor fields.
+> 	 */
+> 	if (old.num_pmcs && !s->num_pmcs) {
+> 		t->num_pmcs = old.num_pmcs;
+> 		t->pmc_type = old.pmc_type;
+> 
+> I realise that having that requirement in the code is serious foot gun
+> material on our part, but c'est la vie.
+> 
+> The reason we do that is there's no "compat mode" for the PMU. So if you
+> boot on a Power9, and then the logical PVR says "actually pretend you're
+> on a Power8", we flip most of the cpu_spec to have the Power8 values,
+> but *not* the PMU fields. That way the Power9 PMU code will still detect
+> that it's on a Power9 and work correctly.
+> 
+> Possibly now that oprofile is more or less dead we can rip all that crap
+> out, and have perf just look at the PVR directly.
 
-> On Fri, Feb 17, 2017 at 09:38:08AM +1100, Gavin Shan wrote:
->> On Thu, Feb 16, 2017 at 08:09:26AM -0600, Bjorn Helgaas wrote:
->> >On Thu, Feb 16, 2017 at 10:22:31AM +1100, Gavin Shan wrote:
->> >> This series bases on the series: https://patchwork.ozlabs.org/patch/713513.
->> >> This series fixes couple of issues:
->> >> 
->> >>    * Remove WARN_ON() in pnv_php_put_slot(). The parent slot's refcount
->> >>      is decreased when releasing PCI slot. The parent slot can be NULL
->> >>      and no need to give a warning.
->> >>    * The MSI (or MSIx) could be enabled prior to load pnv-php.ko. A
->> >>      backtrace is thrown when phv-php.ko attempts to enable MSI again.
->> >>      PATCH[2/3] skips enabling surprise hotplug if MSI has been enabled
->> >>      by other driver.
->> >>    * PATCH[3/3] doesn't disable MSI that was enabled by other dirver.
->> >>      Also, the upstream port of the PCI slot is disabled when it's
->> >>      destroyed.
->> >> 
->> >> Gavin Shan (3):
->> >>   pci/hotplug/pnv-php: Remove WARN_ON() in pnv_php_put_slot()
->> >>   pci/hotplug/pnv-php: Disable surprise hotplug capability on conflicts
->> >>   pci/hotplug/pnv-php: Disable MSI and PCI device properly
->> >
->> >Since this is specific to pnv_php.c and depends on a previous series
->> >applied by Michael, I assume he'll handle this series as well.
->> 
->> Bjorn, yes, I think Michael will take care of this series and all
->> changes to pnv_php.c in future, as we all agreed previously. I was
->> asked by Michael to copy linux-pci@ and you when posting patches for
->> this component.
->
-> Thanks, I appreciate at least seeing the changes!  If you mention in
-> the cover letter that you expect Michael to merge it, then I will
-> immediately know to ignore it unless I object for some reason.
+Thanks a lot for explaining, that's interesting.  I thought it might just have
+been an accidental omission in the architected entries but I should've dug
+deeper.
 
-Thanks Bjorn.
-
-I guess I'll plan to merge all small to medium changes to this driver,
-unless you object to them.
-
-If there's something big or that looks like it interacts more than usual
-with the PCI code I'll ping you for an ack.
-
-cheers
+> 
+> cheers
