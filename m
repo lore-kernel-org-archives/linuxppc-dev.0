@@ -2,14 +2,13 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vPjqr4bwyzDqGw
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vPjqr5qntzDqHG
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Feb 2017 17:32:24 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: linuxppc-dev@ozlabs.org
-Subject: [RFC PATCH 5/9] powerpc/4xx: Move machine_check_4xx() into
- platforms/4xx
-Date: Fri, 17 Feb 2017 17:32:15 +1100
-Message-Id: <1487313139-21959-5-git-send-email-mpe@ellerman.id.au>
+Subject: [RFC PATCH 6/9] powerpc/traps: Inline get_mc_reason()
+Date: Fri, 17 Feb 2017 17:32:16 +1100
+Message-Id: <1487313139-21959-6-git-send-email-mpe@ellerman.id.au>
 In-Reply-To: <1487313139-21959-1-git-send-email-mpe@ellerman.id.au>
 References: <1487313139-21959-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -21,88 +20,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Now that we have 4xx platform directory we can move the 4xx machine
-check handler in there. Again we drop get_mc_reason() and replace it
-with regs->dsisr directly (which is actually SPRN_ESR).
+get_mc_reason() no longer provides (if it ever really did) any
+meaningful abstraction, so remove it.
 
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/kernel/traps.c                | 18 +-----------------
- arch/powerpc/platforms/4xx/Makefile        |  2 +-
- arch/powerpc/platforms/4xx/machine_check.c | 26 ++++++++++++++++++++++++++
- 3 files changed, 28 insertions(+), 18 deletions(-)
- create mode 100644 arch/powerpc/platforms/4xx/machine_check.c
+ arch/powerpc/kernel/traps.c | 14 ++++----------
+ 1 file changed, 4 insertions(+), 10 deletions(-)
 
 diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-index 41aa472f8ab1..37cbfd7af41d 100644
+index 37cbfd7af41d..5ea1bd0ed254 100644
 --- a/arch/powerpc/kernel/traps.c
 +++ b/arch/powerpc/kernel/traps.c
-@@ -409,23 +409,7 @@ static inline int check_io_access(struct pt_regs *regs)
- #define clear_single_step(regs)	((regs)->msr &= ~MSR_SE)
- #endif
+@@ -380,11 +380,6 @@ static inline int check_io_access(struct pt_regs *regs)
+ /* On 4xx, the reason for the machine check or program exception
+    is in the ESR. */
+ #define get_reason(regs)	((regs)->dsisr)
+-#ifndef CONFIG_FSL_BOOKE
+-#define get_mc_reason(regs)	((regs)->dsisr)
+-#else
+-#define get_mc_reason(regs)	(mfspr(SPRN_MCSR))
+-#endif
+ #define REASON_FP		ESR_FP
+ #define REASON_ILLEGAL		(ESR_PIL | ESR_PUO)
+ #define REASON_PRIVILEGED	ESR_PPR
+@@ -398,7 +393,6 @@ static inline int check_io_access(struct pt_regs *regs)
+ /* On non-4xx, the reason for the machine check or program
+    exception is in the MSR. */
+ #define get_reason(regs)	((regs)->msr)
+-#define get_mc_reason(regs)	((regs)->msr)
+ #define REASON_TM		0x200000
+ #define REASON_FP		0x100000
+ #define REASON_ILLEGAL		0x80000
+@@ -511,7 +505,7 @@ int machine_check_e500mc(struct pt_regs *regs)
  
--#if defined(CONFIG_4xx)
--int machine_check_4xx(struct pt_regs *regs)
--{
--	unsigned long reason = get_mc_reason(regs);
--
--	if (reason & ESR_IMCP) {
--		printk("Instruction");
--		mtspr(SPRN_ESR, reason & ~ESR_IMCP);
--	} else
--		printk("Data");
--	printk(" machine check in kernel mode.\n");
--
--	return 0;
--}
--
--
--#elif defined(CONFIG_E500)
-+#if defined(CONFIG_E500)
- int machine_check_e500mc(struct pt_regs *regs)
+ int machine_check_e500(struct pt_regs *regs)
  {
- 	unsigned long mcsr = mfspr(SPRN_MCSR);
-diff --git a/arch/powerpc/platforms/4xx/Makefile b/arch/powerpc/platforms/4xx/Makefile
-index 0d4b65c88d66..9779c32db34e 100644
---- a/arch/powerpc/platforms/4xx/Makefile
-+++ b/arch/powerpc/platforms/4xx/Makefile
-@@ -1,4 +1,4 @@
--obj-y				+= uic.o
-+obj-y				+= uic.o machine_check.o
- obj-$(CONFIG_PPC4xx_OCM)	+= ocm.o
- obj-$(CONFIG_4xx_SOC)		+= soc.o
- obj-$(CONFIG_PCI)		+= pci.o
-diff --git a/arch/powerpc/platforms/4xx/machine_check.c b/arch/powerpc/platforms/4xx/machine_check.c
-new file mode 100644
-index 000000000000..aa039dfaf82f
---- /dev/null
-+++ b/arch/powerpc/platforms/4xx/machine_check.c
-@@ -0,0 +1,26 @@
-+/*
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/printk.h>
-+#include <linux/ptrace.h>
-+
-+#include <asm/reg.h>
-+
-+int machine_check_4xx(struct pt_regs *regs)
-+{
-+	unsigned long reason = regs->dsisr;
-+
-+	if (reason & ESR_IMCP) {
-+		printk("Instruction");
-+		mtspr(SPRN_ESR, reason & ~ESR_IMCP);
-+	} else
-+		printk("Data");
-+	printk(" machine check in kernel mode.\n");
-+
-+	return 0;
-+}
+-	unsigned long reason = get_mc_reason(regs);
++	unsigned long reason = mfspr(SPRN_MCSR);
+ 
+ 	if (reason & MCSR_BUS_RBERR) {
+ 		if (fsl_rio_mcheck_exception(regs))
+@@ -558,7 +552,7 @@ int machine_check_generic(struct pt_regs *regs)
+ #elif defined(CONFIG_E200)
+ int machine_check_e200(struct pt_regs *regs)
+ {
+-	unsigned long reason = get_mc_reason(regs);
++	unsigned long reason = mfspr(SPRN_MCSR);
+ 
+ 	printk("Machine check in kernel mode.\n");
+ 	printk("Caused by (from MCSR=%lx): ", reason);
+@@ -583,7 +577,7 @@ int machine_check_e200(struct pt_regs *regs)
+ #elif defined(CONFIG_PPC_8xx)
+ int machine_check_8xx(struct pt_regs *regs)
+ {
+-	unsigned long reason = get_mc_reason(regs);
++	unsigned long reason = regs->msr;
+ 
+ 	pr_err("Machine check in kernel mode.\n");
+ 	pr_err("Caused by (from SRR1=%lx): ", reason);
+@@ -608,7 +602,7 @@ int machine_check_8xx(struct pt_regs *regs)
+ #else
+ int machine_check_generic(struct pt_regs *regs)
+ {
+-	unsigned long reason = get_mc_reason(regs);
++	unsigned long reason = regs->msr;
+ 
+ 	printk("Machine check in kernel mode.\n");
+ 	printk("Caused by (from SRR1=%lx): ", reason);
 -- 
 2.7.4
