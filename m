@@ -1,31 +1,25 @@
-Return-Path: <nicoleotsuka@gmail.com>
-Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
- [IPv6:2607:f8b0:400e:c05::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <acme@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vQ4Nn1JVtzDq5x
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Feb 2017 07:28:41 +1100 (AEDT)
-Received: by mail-pg0-x243.google.com with SMTP id v184so5731460pgv.1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Feb 2017 12:28:41 -0800 (PST)
-Date: Fri, 17 Feb 2017 12:28:44 -0800
-From: Nicolin Chen <nicoleotsuka@gmail.com>
-To: Joe Perches <joe@perches.com>
-Cc: Timur Tabi <timur@tabi.org>, Xiubo Li <Xiubo.Lee@gmail.com>,
- Fabio Estevam <fabio.estevam@nxp.com>,
- Krzysztof Kozlowski <krzk@kernel.org>, Sangbeom Kim <sbkim73@samsung.com>,
- Sylwester Nawrocki <s.nawrocki@samsung.com>,
- Liam Girdwood <lgirdwood@gmail.com>,
- Mark Brown <broonie@kernel.org>, Jaroslav Kysela <perex@perex.cz>,
- Takashi Iwai <tiwai@suse.com>, alsa-devel@alsa-project.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 35/35] sound/soc: Convert remaining uses of pr_warning to
- pr_warn
-Message-ID: <20170217202844.GA8215@Asurada-Nvidia>
-References: <cover.1487314666.git.joe@perches.com>
- <3d93f7226ba34fede99f72ec038098a3d98a139a.1487314667.git.joe@perches.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vQ4jK68fKzDq5x
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Feb 2017 07:43:01 +1100 (AEDT)
+Date: Fri, 17 Feb 2017 17:42:54 -0300
+From: Arnaldo Carvalho de Melo <acme@kernel.org>
+To: Masami Hiramatsu <mhiramat@kernel.org>
+Cc: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
+ Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Ingo Molnar <mingo@redhat.com>, Namhyung Kim <namhyung@kernel.org>,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 0/2] powerpc: kretprobe updates
+Message-ID: <20170217204254.GH4109@kernel.org>
+References: <dbb93084a6bc96d44cf7436ab6d5f9c8c72b6a39.1487181941.git.naveen.n.rao@linux.vnet.ibm.com>
+ <cover.1487232416.git.naveen.n.rao@linux.vnet.ibm.com>
+ <20170217194433.0b4707bbfa1de603d13fbd30@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3d93f7226ba34fede99f72ec038098a3d98a139a.1487314667.git.joe@perches.com>
+In-Reply-To: <20170217194433.0b4707bbfa1de603d13fbd30@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,70 +29,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Feb 16, 2017 at 11:11:48PM -0800, Joe Perches wrote:
-> To enable eventual removal of pr_warning
+Em Fri, Feb 17, 2017 at 07:44:33PM +0900, Masami Hiramatsu escreveu:
+> On Thu, 16 Feb 2017 13:47:37 +0530
+> "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
 > 
-> This makes pr_warn use consistent for sound/soc
-> 
-> Prior to this patch, there were 5 uses of pr_warning and
-> 10 uses of pr_warn in sound/soc
-> 
-> Signed-off-by: Joe Perches <joe@perches.com>
+> > I am posting the powerpc bits in the same thread so as to keep these
+> > changes together. I am not sure how this should be taken upstream as
+> > there are atleast three different trees involved: one for the core
+> > kprobes infrastructure, one for powerpc and one for perf.
 
-For imx-audmux.c,
+> Hmm, could you make these (and other related) patches and
+> other series in one series? Or wait for the other series
+> are merged correctly.
 
-Acked-by: Nicolin Chen <nicoleotsuka@gmail.com>
+Well, patches like these should be done in a way that the tooling parts
+can deal with kernels with or without the kernel changes, so that older
+tools work with new kernels and new tools work with older kernels.
 
-> ---
->  sound/soc/fsl/imx-audmux.c     | 6 +++---
->  sound/soc/samsung/s3c-i2s-v2.c | 6 +++---
->  2 files changed, 6 insertions(+), 6 deletions(-)
+"work" as in the previous behaviour is kept when a new tool deals with
+an older kernel and an older tool would warn the user that what it needs
+is not present in that kernel.
+
+Is this the case? I just looked briefly at the patch commit logs.
+
+If it is, then I can pick the tool ones, and the others can be submitted
+to the relevant trees, at some point all will be in, kernels eventually
+gets updated everywhere, ditto for the tooling, all gets well.
+
+Regards,
+
+- Arnaldo
+
+
+ 
+> Thank you,
 > 
-> diff --git a/sound/soc/fsl/imx-audmux.c b/sound/soc/fsl/imx-audmux.c
-> index fc57da341d61..41e877d2b400 100644
-> --- a/sound/soc/fsl/imx-audmux.c
-> +++ b/sound/soc/fsl/imx-audmux.c
-> @@ -152,7 +152,7 @@ static void audmux_debugfs_init(void)
->  
->  	audmux_debugfs_root = debugfs_create_dir("audmux", NULL);
->  	if (!audmux_debugfs_root) {
-> -		pr_warning("Failed to create AUDMUX debugfs root\n");
-> +		pr_warn("Failed to create AUDMUX debugfs root\n");
->  		return;
->  	}
->  
-> @@ -160,8 +160,8 @@ static void audmux_debugfs_init(void)
->  		snprintf(buf, sizeof(buf), "ssi%lu", i);
->  		if (!debugfs_create_file(buf, 0444, audmux_debugfs_root,
->  					 (void *)i, &audmux_debugfs_fops))
-> -			pr_warning("Failed to create AUDMUX port %lu debugfs file\n",
-> -				   i);
-> +			pr_warn("Failed to create AUDMUX port %lu debugfs file\n",
-> +				i);
->  	}
->  }
->  
-> diff --git a/sound/soc/samsung/s3c-i2s-v2.c b/sound/soc/samsung/s3c-i2s-v2.c
-> index 644f186fd35c..7423e4257a1b 100644
-> --- a/sound/soc/samsung/s3c-i2s-v2.c
-> +++ b/sound/soc/samsung/s3c-i2s-v2.c
-> @@ -669,13 +669,13 @@ static int s3c2412_i2s_suspend(struct snd_soc_dai *dai)
->  		iismod = readl(i2s->regs + S3C2412_IISMOD);
->  
->  		if (iismod & S3C2412_IISCON_RXDMA_ACTIVE)
-> -			pr_warning("%s: RXDMA active?\n", __func__);
-> +			pr_warn("%s: RXDMA active?\n", __func__);
->  
->  		if (iismod & S3C2412_IISCON_TXDMA_ACTIVE)
-> -			pr_warning("%s: TXDMA active?\n", __func__);
-> +			pr_warn("%s: TXDMA active?\n", __func__);
->  
->  		if (iismod & S3C2412_IISCON_IIS_ACTIVE)
-> -			pr_warning("%s: IIS active\n", __func__);
-> +			pr_warn("%s: IIS active\n", __func__);
->  	}
->  
->  	return 0;
+> > 
+> > Thanks,
+> > Naveen
+> > 
+> > Naveen N. Rao (2):
+> >   powerpc: kretprobes: override default function entry offset
+> >   perf: powerpc: choose LEP with kretprobes
+> > 
+> >  arch/powerpc/kernel/kprobes.c               | 9 +++++++++
+> >  tools/perf/arch/powerpc/util/sym-handling.c | 5 +----
+> >  2 files changed, 10 insertions(+), 4 deletions(-)
+> > 
+> > -- 
+> > 2.11.0
+> > 
+> 
+> 
 > -- 
-> 2.10.0.rc2.1.g053435c
-> 
+> Masami Hiramatsu <mhiramat@kernel.org>
