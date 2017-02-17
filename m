@@ -1,19 +1,51 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <gpiccoli@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vPsZv0ctgzDq5x
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Feb 2017 23:21:43 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vPshT73XFzDq5x
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Feb 2017 23:26:33 +1100 (AEDT)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v1HCNoTX125960
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Feb 2017 07:26:32 -0500
+Received: from e24smtp02.br.ibm.com (e24smtp02.br.ibm.com [32.104.18.86])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 28nrgktsfg-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Feb 2017 07:26:31 -0500
+Received: from localhost
+ by e24smtp02.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gpiccoli@linux.vnet.ibm.com>;
+ Fri, 17 Feb 2017 10:26:29 -0200
+Received: from d24relay02.br.ibm.com (d24relay02.br.ibm.com [9.18.232.42])
+ by d24dlp02.br.ibm.com (Postfix) with ESMTP id 142731DC006D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Feb 2017 07:26:28 -0500 (EST)
+Received: from d24av05.br.ibm.com (d24av05.br.ibm.com [9.18.232.44])
+ by d24relay02.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v1HCQIRx36110550
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Feb 2017 10:26:26 -0200
+Received: from d24av05.br.ibm.com (localhost [127.0.0.1])
+ by d24av05.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v1HCPt3J028175
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Feb 2017 10:25:55 -0200
+Subject: Re: [PATCH] powerpc/xmon: Fix an unexpected xmon onoff state change
+To: Pan Xinhui <xinhui@linux.vnet.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>
+References: <1487144990-5969-1-git-send-email-xinhui.pan@linux.vnet.ibm.com>
+ <87shnek9hd.fsf@concordia.ellerman.id.au>
+ <72cfff06-bd93-a727-0b93-31dfa3a7ac65@linux.vnet.ibm.com>
+ <8466dffc-d75c-d83a-2a4f-d567721db7d5@linux.vnet.ibm.com>
+ <87h93tjqrn.fsf@concordia.ellerman.id.au>
+ <cecc8a28-4e2f-8e03-0b1a-8a9ac60c0c71@linux.vnet.ibm.com>
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- paulus@ozlabs.org
-Subject: [GIT PULL] Please pull powerpc/linux.git powerpc-4.10-5 tag
-Date: Fri, 17 Feb 2017 23:21:38 +1100
-Message-ID: <87r32xhust.fsf@concordia.ellerman.id.au>
+ paulus@samba.org, npiggin@gmail.com
+From: "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com>
+Date: Fri, 17 Feb 2017 10:25:34 -0200
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="=-=-=";
- micalg=pgp-sha1; protocol="application/pgp-signature"
+In-Reply-To: <cecc8a28-4e2f-8e03-0b1a-8a9ac60c0c71@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=gbk
+Message-Id: <1eca9e4a-f120-e3bf-1358-b4f18ab6262f@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,62 +55,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---=-=-=
-Content-Type: text/plain
+On 02/17/2017 07:30 AM, Pan Xinhui wrote:
+> 
+> 
+> ÔÚ 2017/2/17 14:05, Michael Ellerman Ð´µÀ:
+>> Pan Xinhui <xinhui@linux.vnet.ibm.com> writes:
+>>> diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
+>>> index 9c0e17c..f6e5c3d 100644
+>>> --- a/arch/powerpc/xmon/xmon.c
+>>> +++ b/arch/powerpc/xmon/xmon.c
+>>> @@ -76,6 +76,7 @@ static int xmon_gate;
+>>>   #endif /* CONFIG_SMP */
+>>>
+>>>   static unsigned long in_xmon __read_mostly = 0;
+>>> +static int xmon_off = !IS_ENABLED(CONFIG_XMON_DEFAULT);
+>>
+>> I think the logic would probably clearer if we invert this to become
+>> xmon_on.
+>>
+> yep, make sense.
+> 
+>>> @@ -3266,16 +3269,16 @@ static int __init setup_xmon_sysrq(void)
+>>>   __initcall(setup_xmon_sysrq);
+>>>   #endif /* CONFIG_MAGIC_SYSRQ */
+>>>
+>>> -static int __initdata xmon_early, xmon_off;
+>>> +static int __initdata xmon_early;
+>>>
+>>>   static int __init early_parse_xmon(char *p)
+>>>   {
+>>>   	if (!p || strncmp(p, "early", 5) == 0) {
+>>>   		/* just "xmon" is equivalent to "xmon=early" */
+>>> -		xmon_init(1);
+>>>   		xmon_early = 1;
+>>> +		xmon_off = 0;
+>>>   	} else if (strncmp(p, "on", 2) == 0)
+>>> -		xmon_init(1);
+>>> +		xmon_off = 0;
+>>
+>> You've just changed the timing of when xmon gets enabled for the above
+>> two cases, from here which is called very early, to xmon_setup() which
+>> is called much later in boot.
+>>
+>> That effectively disables xmon for most of the boot, which we do not
+>> want to do.
+>>
+> Although it is not often that kernel got stucked during boot. Yes, the behavior changed anyway. Will fix that in v3.
 
-Hi Linus,
+Pan/Michael, I'm working my patches on top of Pan's. So, I sent his V2
+on my series, as patch #1.
 
-Please pull one last powerpc fix for 4.10. This is actually tagged for
-stable, so it's not the end of the world if you'd rather not pull it
-this late.
+Guess the workflow is better/easier if we can work the patches on the
+series exclusively, since each time Pan's patch is changed, I need to
+refactor my patches.
 
-cheers
+Pan, if possible send your V3 to me, I'll refactor my series on top of
+it and send again on the list. Or if you or Michael have better
+suggestions of workflow, let me know.
+
+Thanks,
 
 
-The following changes since commit f83e6862047e1e371bdc5d512dd6cabe8a3965b8:
+Guilherme
 
-  powerpc/powernv: Properly set "host-ipi" on IPIs (2017-02-09 15:51:21 +1100)
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git tags/powerpc-4.10-5
-
-for you to fetch changes up to 3f91a89d424a79f8082525db5a375e438887bb3e:
-
-  powerpc/64: Disable use of radix under a hypervisor (2017-02-16 14:01:42 +1100)
-
-----------------------------------------------------------------
-powerpc fixes for 4.10 #5
-
-One fix from Paul, we can not use the radix MMU under a hypervisor for now.
-Although the current code checks if the processor supports radix, that is not
-sufficient.
-
-----------------------------------------------------------------
-Paul Mackerras (1):
-      powerpc/64: Disable use of radix under a hypervisor
-
- arch/powerpc/mm/init_64.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
---=-=-=
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJYpurSAAoJEFHr6jzI4aWAY6kP/RB2QhRNurfnFnhbeLnCYi3U
-jMXt9783Kf4WndBuWYbNWu5QxqSGblyCl1k7DzpKAFaFsEFXT51idA1AodzU67xS
-F/hemO4rPV/mW9YTU0ajG8DsHYiIbb1GmYvdJNv1R40WAeepXKhW7V7E6pde1Ui9
-pIDJZ+cTo5IM12KlXd2iet+gE4smpQkkF0qFLVSLX7q5afpZ5p4k9e8B8JS3gQUI
-NG7HjtgQPdGTtqnKh0XOr9dJU9piZlis5SCVwQMZXwFtzWx8Iie/PSgq25uipZ4S
-/zu3+l6eD4V+/izIl8udlWEfY13UOryosKWXtwnt+0wy42yLr6PNxcqX8bEzGWYQ
-821WnY4IWm2DmDf3z2h6hAlFbVrus17uLIMMZjhGbRQ+/sk6WA6XbJoiBDR/cVmO
-4POFLHIvL7srUPCuK7t7kcUqOTcWRDoWoTi4Hdv/YH4ltrOyHytAOkkmDN3aX9CK
-KBkZCvQRffkyFJIGKM0lO855nvESVa4iaSNineOvGyZjd1lCsvw01qr7zc+OeIfC
-MH4KpLxOTOVAeJTSL9ytSZysbE+5yIAulS64FVQQIvwv/GGdfxMDpdokykpWvfh0
-3W3J3FWs1WEU4+8/wV/6Ki2k3wMf6klST1kaWlxLEw2tbsS1YKtgScNiEK8245m/
-hoJNC595nnGn+Yza9iVH
-=Ssq1
------END PGP SIGNATURE-----
---=-=-=--
+> 
+>> cheers
+>>
+> 
