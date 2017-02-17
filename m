@@ -2,13 +2,14 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vPjpj4MyqzDqBW
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Feb 2017 17:31:25 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vPjqq1TJ9zDqKq
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Feb 2017 17:32:23 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc/mpc52xx: Don't select user-visible RTAS_PROC
-Date: Fri, 17 Feb 2017 17:31:22 +1100
-Message-Id: <1487313082-21316-1-git-send-email-mpe@ellerman.id.au>
+Subject: [RFC PATCH 1/9] powerpc/47x: Guard 47x cputable entries with
+ CONFIG_PPC_47x
+Date: Fri, 17 Feb 2017 17:32:11 +1100
+Message-Id: <1487313139-21959-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,28 +19,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Otherwise we might select it when its dependenices aren't enabled,
-leading to a build break.
+Currently we build the 47x cputable entries even when CONFIG_PPC_47x is
+disabled. That means a kernel built without CONFIG_PPC_47x will claim to
+support a 47x CPU and start booting, only to break somewhere later
+because it doesn't have 47x support compiled in.
 
-It's default y anyway, so will be on unless someone disables it
-manually.
+So guard the 47x cputable entries with CONFIG_PPC_47x. Note that this is
+inside the #ifdef CONFIG_44x section, because 47x depends on 44x.
 
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/platforms/52xx/Kconfig | 1 -
- 1 file changed, 1 deletion(-)
+ arch/powerpc/kernel/cputable.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/arch/powerpc/platforms/52xx/Kconfig b/arch/powerpc/platforms/52xx/Kconfig
-index b625a2c6f4f2..e4c745981912 100644
---- a/arch/powerpc/platforms/52xx/Kconfig
-+++ b/arch/powerpc/platforms/52xx/Kconfig
-@@ -33,7 +33,6 @@ config PPC_EFIKA
- 	bool "bPlan Efika 5k2. MPC5200B based computer"
- 	depends on PPC_MPC52xx
- 	select PPC_RTAS
--	select RTAS_PROC
- 	select PPC_NATIVE
- 
- config PPC_LITE5200
+diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
+index 6a82ef039c50..3b8c89a69732 100644
+--- a/arch/powerpc/kernel/cputable.c
++++ b/arch/powerpc/kernel/cputable.c
+@@ -1913,6 +1913,7 @@ static struct cpu_spec __initdata cpu_specs[] = {
+ 		.machine_check		= machine_check_440A,
+ 		.platform		= "ppc440",
+ 	},
++#ifdef CONFIG_PPC_47x
+ 	{ /* 476 DD2 core */
+ 		.pvr_mask		= 0xffffffff,
+ 		.pvr_value		= 0x11a52080,
+@@ -1969,6 +1970,7 @@ static struct cpu_spec __initdata cpu_specs[] = {
+ 		.machine_check		= machine_check_47x,
+ 		.platform		= "ppc470",
+ 	},
++#endif /* CONFIG_PPC_47x */
+ 	{	/* default match */
+ 		.pvr_mask		= 0x00000000,
+ 		.pvr_value		= 0x00000000,
 -- 
 2.7.4
