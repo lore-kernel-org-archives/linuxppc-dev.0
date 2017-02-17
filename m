@@ -1,19 +1,23 @@
-Return-Path: <oss@buserror.net>
-Received: from host.buserror.net (host.buserror.net [209.198.135.123])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vPqy96dmPzDq5x
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Feb 2017 22:08:17 +1100 (AEDT)
-Message-ID: <1487329688.2944.0.camel@buserror.net>
-From: Scott Wood <oss@buserror.net>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org
-Date: Fri, 17 Feb 2017 05:08:08 -0600
-In-Reply-To: <20170127235348.GA21260@home.buserror.net>
-References: <20170127235348.GA21260@home.buserror.net>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Subject: Re: Pull request: scottwood/linux.git next
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vPr3f5sdQzDq5x
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Feb 2017 22:13:02 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Bjorn Helgaas <helgaas@kernel.org>, Gavin Shan <gwshan@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org,
+ bhelgaas@google.com
+Subject: Re: [PATCH 0/3] pci/hotplug/pnv-php: More bug fixes
+In-Reply-To: <20170216232854.GA15742@bhelgaas-glaptop.roam.corp.google.com>
+References: <1487200954-14681-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ <20170216140925.GA21042@bhelgaas-glaptop.roam.corp.google.com>
+ <20170216223808.GA7493@gwshan>
+ <20170216232854.GA15742@bhelgaas-glaptop.roam.corp.google.com>
+Date: Fri, 17 Feb 2017 22:13:01 +1100
+Message-ID: <87tw7thxz6.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,37 +27,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2017-01-27 at 17:53 -0600, Scott Wood wrote:
-> Highlights include 8xx breakpoints and perf, t1042rdb display support,
-> and board updates.
-> 
-> The following changes since commit 7ce7d89f48834cefece7804d38fc5d85382edf77:
-> 
->   Linux 4.10-rc1 (2016-12-25 16:13:08 -0800)
-> 
-> are available in the git repository at:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/scottwood/linux.git next
-> 
-> for you to fetch changes up to 75b824727680a9d12c34d78096a5ac642e53f5d0:
-> 
->   powerpc/8xx: Perf events on PPC 8xx (2017-01-26 17:49:34 -0600)
-> 
-> ----------------------------------------------------------------
-> Christophe Leroy (4):
->       powerpc/32: Enable HW_BREAKPOINT on BOOK3S
->       powerpc/8xx: Implement hw_breakpoint
->       powerpc/32: Remove FIX_SRR1
->       powerpc/8xx: Perf events on PPC 8xx
-> 
-> Jason Jin (1):
->       powerpc/85xx: Enable display support for t1042rdb
-> 
-> Valentin Longchamp (3):
->       powerpc/corenet: explicitly disable the SDHC controller on kmcoge4
->       powerpc/85xx: remove the kmp204x_defconfig
->       powerpc/corenet: add support for the kmcent2 board
+Bjorn Helgaas <helgaas@kernel.org> writes:
 
-ping?
+> On Fri, Feb 17, 2017 at 09:38:08AM +1100, Gavin Shan wrote:
+>> On Thu, Feb 16, 2017 at 08:09:26AM -0600, Bjorn Helgaas wrote:
+>> >On Thu, Feb 16, 2017 at 10:22:31AM +1100, Gavin Shan wrote:
+>> >> This series bases on the series: https://patchwork.ozlabs.org/patch/713513.
+>> >> This series fixes couple of issues:
+>> >> 
+>> >>    * Remove WARN_ON() in pnv_php_put_slot(). The parent slot's refcount
+>> >>      is decreased when releasing PCI slot. The parent slot can be NULL
+>> >>      and no need to give a warning.
+>> >>    * The MSI (or MSIx) could be enabled prior to load pnv-php.ko. A
+>> >>      backtrace is thrown when phv-php.ko attempts to enable MSI again.
+>> >>      PATCH[2/3] skips enabling surprise hotplug if MSI has been enabled
+>> >>      by other driver.
+>> >>    * PATCH[3/3] doesn't disable MSI that was enabled by other dirver.
+>> >>      Also, the upstream port of the PCI slot is disabled when it's
+>> >>      destroyed.
+>> >> 
+>> >> Gavin Shan (3):
+>> >>   pci/hotplug/pnv-php: Remove WARN_ON() in pnv_php_put_slot()
+>> >>   pci/hotplug/pnv-php: Disable surprise hotplug capability on conflicts
+>> >>   pci/hotplug/pnv-php: Disable MSI and PCI device properly
+>> >
+>> >Since this is specific to pnv_php.c and depends on a previous series
+>> >applied by Michael, I assume he'll handle this series as well.
+>> 
+>> Bjorn, yes, I think Michael will take care of this series and all
+>> changes to pnv_php.c in future, as we all agreed previously. I was
+>> asked by Michael to copy linux-pci@ and you when posting patches for
+>> this component.
+>
+> Thanks, I appreciate at least seeing the changes!  If you mention in
+> the cover letter that you expect Michael to merge it, then I will
+> immediately know to ignore it unless I object for some reason.
 
--Scott
+Thanks Bjorn.
+
+I guess I'll plan to merge all small to medium changes to this driver,
+unless you object to them.
+
+If there's something big or that looks like it interacts more than usual
+with the PCI code I'll ping you for an ack.
+
+cheers
