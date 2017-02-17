@@ -1,51 +1,19 @@
-Return-Path: <xinhui@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <oss@buserror.net>
+Received: from host.buserror.net (host.buserror.net [209.198.135.123])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vPp2F0Lr3zDq5x
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Feb 2017 20:41:40 +1100 (AEDT)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v1H9dFwu070473
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Feb 2017 04:41:38 -0500
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
- by mx0a-001b2d01.pphosted.com with ESMTP id 28nwc7b59e-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Feb 2017 04:41:38 -0500
-Received: from localhost
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <xinhui@linux.vnet.ibm.com>;
- Fri, 17 Feb 2017 19:31:28 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id EC8212BB0059
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Feb 2017 20:31:25 +1100 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v1H9VIqx20971620
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Feb 2017 20:31:25 +1100
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v1H9Urlk005421
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Feb 2017 20:30:54 +1100
-Subject: Re: [PATCH] powerpc/xmon: Fix an unexpected xmon onoff state change
-To: Michael Ellerman <mpe@ellerman.id.au>,
- "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com>,
- Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-References: <1487144990-5969-1-git-send-email-xinhui.pan@linux.vnet.ibm.com>
- <87shnek9hd.fsf@concordia.ellerman.id.au>
- <72cfff06-bd93-a727-0b93-31dfa3a7ac65@linux.vnet.ibm.com>
- <8466dffc-d75c-d83a-2a4f-d567721db7d5@linux.vnet.ibm.com>
- <87h93tjqrn.fsf@concordia.ellerman.id.au>
-Cc: benh@kernel.crashing.org, paulus@samba.org, npiggin@gmail.com
-From: Pan Xinhui <xinhui@linux.vnet.ibm.com>
-Date: Fri, 17 Feb 2017 17:30:23 +0800
-MIME-Version: 1.0
-In-Reply-To: <87h93tjqrn.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset=gbk; format=flowed
-Message-Id: <cecc8a28-4e2f-8e03-0b1a-8a9ac60c0c71@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vPpd80WRpzDq5x
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Feb 2017 21:08:26 +1100 (AEDT)
+Message-ID: <1487326104.5636.47.camel@buserror.net>
+From: Scott Wood <oss@buserror.net>
+To: laurentiu.tudor@nxp.com, linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
+Cc: madalin.bucur@nxp.com, aneesh.kumar@linux.vnet.ibm.com
+Date: Fri, 17 Feb 2017 04:08:24 -0600
+In-Reply-To: <20170216151129.8971-1-laurentiu.tudor@nxp.com>
+References: <20170216151129.8971-1-laurentiu.tudor@nxp.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Subject: Re: [PATCH] powerpc: booke: fix boot crash due to null hugepd
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -55,51 +23,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Thu, 2017-02-16 at 09:11 -0600, laurentiu.tudor@nxp.com wrote:
+> From: Laurentiu Tudor <laurentiu.tudor@nxp.com>
+> 
+> On 32-bit book-e machines, hugepd_ok() does not take
+> into account null hugepd values, causing this crash at boot:
 
+Why only 32-bit?
 
-�� 2017/2/17 14:05, Michael Ellerman д��:
-> Pan Xinhui <xinhui@linux.vnet.ibm.com> writes:
->> diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
->> index 9c0e17c..f6e5c3d 100644
->> --- a/arch/powerpc/xmon/xmon.c
->> +++ b/arch/powerpc/xmon/xmon.c
->> @@ -76,6 +76,7 @@ static int xmon_gate;
->>   #endif /* CONFIG_SMP */
->>
->>   static unsigned long in_xmon __read_mostly = 0;
->> +static int xmon_off = !IS_ENABLED(CONFIG_XMON_DEFAULT);
->
-> I think the logic would probably clearer if we invert this to become
-> xmon_on.
->
-yep, make sense.
+> diff --git a/arch/powerpc/include/asm/nohash/pgtable.h
+> b/arch/powerpc/include/asm/nohash/pgtable.h
+> index 0cd8a38..e5805ad 100644
+> --- a/arch/powerpc/include/asm/nohash/pgtable.h
+> +++ b/arch/powerpc/include/asm/nohash/pgtable.h
+> @@ -230,7 +230,7 @@ static inline int hugepd_ok(hugepd_t hpd)
+>  	return ((hpd_val(hpd) & 0x4) != 0);
+>  #else
+>  	/* We clear the top bit to indicate hugepd */
+> -	return ((hpd_val(hpd) & PD_HUGE) ==  0);
+> +	return (hpd_val(hpd) && (hpd_val(hpd) & PD_HUGE) == 0);
+>  #endif
+>  }
+>  
 
->> @@ -3266,16 +3269,16 @@ static int __init setup_xmon_sysrq(void)
->>   __initcall(setup_xmon_sysrq);
->>   #endif /* CONFIG_MAGIC_SYSRQ */
->>
->> -static int __initdata xmon_early, xmon_off;
->> +static int __initdata xmon_early;
->>
->>   static int __init early_parse_xmon(char *p)
->>   {
->>   	if (!p || strncmp(p, "early", 5) == 0) {
->>   		/* just "xmon" is equivalent to "xmon=early" */
->> -		xmon_init(1);
->>   		xmon_early = 1;
->> +		xmon_off = 0;
->>   	} else if (strncmp(p, "on", 2) == 0)
->> -		xmon_init(1);
->> +		xmon_off = 0;
->
-> You've just changed the timing of when xmon gets enabled for the above
-> two cases, from here which is called very early, to xmon_setup() which
-> is called much later in boot.
->
-> That effectively disables xmon for most of the boot, which we do not
-> want to do.
->
-Although it is not often that kernel got stucked during boot. Yes, the behavior changed anyway. Will fix that in v3.
+Any reason why this can't go back to being "hpd_val(hpd) > 0"?  Why was nohash
+changed to begin with?  I don't expect nohash (or at least fsl-book3e) will
+ever have a pagetable that is not native-endian, and "> 0" is consistent with
+what the TLB miss code is doing.
 
-> cheers
->
+Also, the patch that broke this was tagged for stable (which again raises the
+question of why an extraneous change was made) so this patch needs to be as
+well.
+
+-Scott
