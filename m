@@ -1,20 +1,41 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <maddy@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vQMsR6S6wzDq5W
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Feb 2017 19:06:03 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Alan Modra <amodra@gmail.com>
-Cc: linuxppc-dev@ozlabs.org, anton@samba.org
-Subject: Re: [RFC PATCH] powerpc: Fix dubious r0 usage
-In-Reply-To: <20170217132125.GV3731@bubble.grove.modra.org>
-References: <1487333333-17221-1-git-send-email-mpe@ellerman.id.au>
- <20170217132125.GV3731@bubble.grove.modra.org>
-Date: Sat, 18 Feb 2017 19:06:03 +1100
-Message-ID: <87d1efj53o.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vQghr36JtzDq5W
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 19 Feb 2017 06:59:40 +1100 (AEDT)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v1IJwggW054355
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Feb 2017 14:59:37 -0500
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 28pk9nhp3e-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Feb 2017 14:59:36 -0500
+Received: from localhost
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
+ Sun, 19 Feb 2017 05:59:34 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id DFF213578052
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 19 Feb 2017 06:59:31 +1100 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v1IJxNkA36831238
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 19 Feb 2017 06:59:31 +1100
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v1IJwxlS008299
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 19 Feb 2017 06:58:59 +1100
+From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+To: mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org,
+ Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+Subject: [PATCH] powerpc/perf: Add PROBENOP macro for debug
+Date: Sun, 19 Feb 2017 01:28:34 +0530
+Message-Id: <1487447914-7094-1-git-send-email-maddy@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,36 +45,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Alan Modra <amodra@gmail.com> writes:
+>From PowerISA v2.07, architecture provides a special NOP
+instruction called "Probe-Nop" defined as "and 0,0,0".
+This form of "and" is reserved for use exclusively by the
+Performance Monitor.
 
-> On Fri, Feb 17, 2017 at 11:08:53PM +1100, Michael Ellerman wrote:
->> Bleeding edge binutils no longer accepts r0 in places where the CPU
->> interprets the value as a literal 0.
->
-> Wow!  That was quite some cleanup.  I think I'd better turn the error
-> into a warning..
+Usage example:
 
-That would be my preference :)
+Add PROBENOP() macro to __tlbie() in hash_native_64.c to
+verify the number of TLBIE. Power8 provides "PM_TLBIE_FIN"
+PMU event (r30058) to count "tlbie finished".
 
-If it remains a hard error we'll need to backport this patch to multiple
-stable versions so that people can build those older kernels with new
-binutils. Which we can do, but it's a bit of a pain.
+Power8 PMU event "PM_PROBE_NOP_DISP" (r40014) counts the
+"ProbeNops dispatched".
 
->> --- a/arch/powerpc/purgatory/trampoline.S
->> +++ b/arch/powerpc/purgatory/trampoline.S
->> @@ -67,7 +67,7 @@ master:
->>  	mr	%r16,%r3	/* save dt address in reg16 */
->>  	li	%r4,20
->>  	LWZX_BE	%r6,%r3,%r4	/* fetch __be32 version number at byte 20 */
->> -	cmpwi	%r0,%r6,2	/* v2 or later? */
->> +	cmpwi	0,%r6,2		/* v2 or later? */
->>  	blt	1f
->>  	li	%r4,28
->>  	STWX_BE	%r17,%r3,%r4	/* Store my cpu as __be32 at byte 28 */
->
-> With this one, it would probably be better to omit the zero (BF
-> field).
+With modified kernel booted, output from perf:
 
-Yeah good point, thanks for reviewing.
+# ./perf stat -e r30058,r40014 ls
+....
+ Performance counter stats for 'ls':
 
-cheers
+                 7      r30058
+                 7      r40014
+
+       0.003296959 seconds time elapsed
+
+Macro comes handy when want to count specific instructions
+which may or may not have a PMU event.
+
+Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+---
+ arch/powerpc/include/asm/ppc-opcode.h | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
+
+diff --git a/arch/powerpc/include/asm/ppc-opcode.h b/arch/powerpc/include/asm/ppc-opcode.h
+index c4ced1d01d57..61c62a1a402c 100644
+--- a/arch/powerpc/include/asm/ppc-opcode.h
++++ b/arch/powerpc/include/asm/ppc-opcode.h
+@@ -462,4 +462,14 @@
+ 				       ((IH & 0x7) << 21))
+ #define PPC_INVALIDATE_ERAT	PPC_SLBIA(7)
+ 
++/*
++ * From PowerISA v2.07, architecture provides a special NOP instruction
++ * called "Probe-Nop" defined as "and 0,0,0". This form of "and" is
++ * reserved for use exclusively by the Performance Monitor.
++ */
++#define _PROBENOP(x)	stringify_in_c(.long PPC_INST_AND	|	\
++						___PPC_RS(x)	|	\
++						___PPC_RA(x)	|	\
++						___PPC_RB(x))
++#define PROBENOP(x)	asm volatile(_PROBENOP(x))
+ #endif /* _ASM_POWERPC_PPC_OPCODE_H */
+-- 
+2.7.4
