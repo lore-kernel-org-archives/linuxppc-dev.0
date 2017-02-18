@@ -2,19 +2,19 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vQMl54xwCzDq5W
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Feb 2017 19:00:33 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vQMsR6S6wzDq5W
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Feb 2017 19:06:03 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Scott Wood <oss@buserror.net>
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: Re: Pull request: scottwood/linux.git next
-In-Reply-To: <1487329688.2944.0.camel@buserror.net>
-References: <20170127235348.GA21260@home.buserror.net>
- <1487329688.2944.0.camel@buserror.net>
-Date: Sat, 18 Feb 2017 19:00:32 +1100
-Message-ID: <87fujchqsf.fsf@concordia.ellerman.id.au>
+To: Alan Modra <amodra@gmail.com>
+Cc: linuxppc-dev@ozlabs.org, anton@samba.org
+Subject: Re: [RFC PATCH] powerpc: Fix dubious r0 usage
+In-Reply-To: <20170217132125.GV3731@bubble.grove.modra.org>
+References: <1487333333-17221-1-git-send-email-mpe@ellerman.id.au>
+ <20170217132125.GV3731@bubble.grove.modra.org>
+Date: Sat, 18 Feb 2017 19:06:03 +1100
+Message-ID: <87d1efj53o.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,50 +24,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Scott Wood <oss@buserror.net> writes:
+Alan Modra <amodra@gmail.com> writes:
 
-> On Fri, 2017-01-27 at 17:53 -0600, Scott Wood wrote:
->> Highlights include 8xx breakpoints and perf, t1042rdb display support,
->> and board updates.
->>=20
->> The following changes since commit 7ce7d89f48834cefece7804d38fc5d85382ed=
-f77:
->>=20
->> =C2=A0 Linux 4.10-rc1 (2016-12-25 16:13:08 -0800)
->>=20
->> are available in the git repository at:
->>=20
->> =C2=A0 git://git.kernel.org/pub/scm/linux/kernel/git/scottwood/linux.git=
- next
->>=20
->> for you to fetch changes up to 75b824727680a9d12c34d78096a5ac642e53f5d0:
->>=20
->> =C2=A0 powerpc/8xx: Perf events on PPC 8xx (2017-01-26 17:49:34 -0600)
->>=20
->> ----------------------------------------------------------------
->> Christophe Leroy (4):
->> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0powerpc/32: Enable HW_BREAKPOINT on =
-BOOK3S
->> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0powerpc/8xx: Implement hw_breakpoint
->> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0powerpc/32: Remove FIX_SRR1
->> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0powerpc/8xx: Perf events on PPC 8xx
->>=20
->> Jason Jin (1):
->> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0powerpc/85xx: Enable display support=
- for t1042rdb
->>=20
->> Valentin Longchamp (3):
->> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0powerpc/corenet: explicitly disable =
-the SDHC controller on kmcoge4
->> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0powerpc/85xx: remove the kmp204x_def=
-config
->> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0powerpc/corenet: add support for the=
- kmcent2 board
+> On Fri, Feb 17, 2017 at 11:08:53PM +1100, Michael Ellerman wrote:
+>> Bleeding edge binutils no longer accepts r0 in places where the CPU
+>> interprets the value as a literal 0.
 >
-> ping?
+> Wow!  That was quite some cleanup.  I think I'd better turn the error
+> into a warning..
 
-Yeah sorry, I've been very behind after being on leave.
+That would be my preference :)
 
-I did see this and will pull it.
+If it remains a hard error we'll need to backport this patch to multiple
+stable versions so that people can build those older kernels with new
+binutils. Which we can do, but it's a bit of a pain.
+
+>> --- a/arch/powerpc/purgatory/trampoline.S
+>> +++ b/arch/powerpc/purgatory/trampoline.S
+>> @@ -67,7 +67,7 @@ master:
+>>  	mr	%r16,%r3	/* save dt address in reg16 */
+>>  	li	%r4,20
+>>  	LWZX_BE	%r6,%r3,%r4	/* fetch __be32 version number at byte 20 */
+>> -	cmpwi	%r0,%r6,2	/* v2 or later? */
+>> +	cmpwi	0,%r6,2		/* v2 or later? */
+>>  	blt	1f
+>>  	li	%r4,28
+>>  	STWX_BE	%r17,%r3,%r4	/* Store my cpu as __be32 at byte 28 */
+>
+> With this one, it would probably be better to omit the zero (BF
+> field).
+
+Yeah good point, thanks for reviewing.
 
 cheers
