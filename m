@@ -1,31 +1,19 @@
-Return-Path: <joe@perches.com>
-Received: from smtprelay.hostedemail.com (smtprelay0050.hostedemail.com
- [216.40.44.50])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vQ9Xs0dYYzDq8M
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Feb 2017 11:20:58 +1100 (AEDT)
-Message-ID: <1487377247.2198.9.camel@perches.com>
-Subject: Re: [PATCH 35/35] sound/soc: Convert remaining uses of pr_warning
- to pr_warn
-From: Joe Perches <joe@perches.com>
-To: Nicolin Chen <nicoleotsuka@gmail.com>, Mark Brown <broonie@kernel.org>
-Cc: Timur Tabi <timur@tabi.org>, Xiubo Li <Xiubo.Lee@gmail.com>, Fabio
- Estevam <fabio.estevam@nxp.com>, Krzysztof Kozlowski <krzk@kernel.org>,
- Sangbeom Kim <sbkim73@samsung.com>, Sylwester Nawrocki
- <s.nawrocki@samsung.com>, Liam Girdwood <lgirdwood@gmail.com>, Jaroslav
- Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>,
- alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Date: Fri, 17 Feb 2017 16:20:47 -0800
-In-Reply-To: <20170217235751.GA4125@Asurada-Nvidia>
-References: <cover.1487314666.git.joe@perches.com>
- <3d93f7226ba34fede99f72ec038098a3d98a139a.1487314667.git.joe@perches.com>
- <20170217202844.GA8215@Asurada-Nvidia>
- <20170217234854.spi62waguwd7kpno@sirena.org.uk>
- <20170217235751.GA4125@Asurada-Nvidia>
-Content-Type: text/plain; charset="ISO-8859-1"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vQG0k2cYjzDq5W
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Feb 2017 14:41:58 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [PATCH] powerpc: implement clear_bit_unlock_is_negative_byte()
+In-Reply-To: <20170103185828.31311-1-npiggin@gmail.com>
+References: <20170103185828.31311-1-npiggin@gmail.com>
+Date: Sat, 18 Feb 2017 14:41:57 +1100
+Message-ID: <87lgt4i2re.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,50 +23,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2017-02-17 at 15:57 -0800, Nicolin Chen wrote:
-> On Fri, Feb 17, 2017 at 11:48:54PM +0000, Mark Brown wrote:
-> > On Fri, Feb 17, 2017 at 12:28:44PM -0800, Nicolin Chen wrote:
-> > > On Thu, Feb 16, 2017 at 11:11:48PM -0800, Joe Perches wrote:
-> > > > To enable eventual removal of pr_warning
-> > > > 
-> > > > This makes pr_warn use consistent for sound/soc
-> > > > 
-> > > > Prior to this patch, there were 5 uses of pr_warning and
-> > > > 10 uses of pr_warn in sound/soc
-> > > > 
-> > > > Signed-off-by: Joe Perches <joe@perches.com>
-> > > 
-> > > For imx-audmux.c,
-> > 
-> > I don't have this patch, perhaps it got caught in a spam filter or
-> > perhaps it got deleted because as ever you're not using subject lines
-> > reflecting the style for the subsystem.
-> 
-> My bad that I didn't pay attention to the subject.
-> 
-> Joe, please fix it in v2. Thanks.
-> 
-> ASoC: Convert remaining uses of pr_warning to pr_warn
+Nicholas Piggin <npiggin@gmail.com> writes:
 
-This is a treewide scripted patch which is
-basically just a sed.
+> Commit b91e1302ad9b8 ("mm: optimize PageWaiters bit use for
+> unlock_page()") added a special bitop function to speed up
+> unlock_page(). Implement this for powerpc.
 
-If or when you apply it, you should
-fix it up to suit.
+I know you wrote this to work on 32 and 64-bit, but I don't have a good
+way to test it on 32-bit at the moment as my 32-bit box is blowing
+chunks.
 
-$ git log -1000 --pretty=oneline --no-merges sound/soc | \
-  cut -f2- -d" " | cut -f1 -d":" |sort | uniq
-ALSA
-AsoC
-ASoc
-ASoC
-ASOC
-ASoC fix up SND_SOC_WM8985 dependency
-drm/i915/dp
-kthread
-lib/vsprintf.c
-scripts/spelling.txt
-sgtl5000
-SoC
-sound/soc
-treewide
+So I've taken this but made it 64-bit only for now.
+
+cheers
