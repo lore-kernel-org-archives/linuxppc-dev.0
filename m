@@ -1,17 +1,16 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vR4QP5gndzDqBV
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 19 Feb 2017 22:33:33 +1100 (AEDT)
-In-Reply-To: <1482559549-22273-1-git-send-email-maddy@linux.vnet.ibm.com>
-To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vR4QQ3hCDzDqBV
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 19 Feb 2017 22:33:34 +1100 (AEDT)
+In-Reply-To: <20170103185828.31311-1-npiggin@gmail.com>
+To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: powerpc/perf: use is_kernel_addr macro in perf_get_misc_flags()
-Message-Id: <3vR4QP4yZXz9s9Z@ozlabs.org>
-Date: Sun, 19 Feb 2017 22:33:33 +1100 (AEDT)
+Cc: Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: powerpc: implement clear_bit_unlock_is_negative_byte()
+Message-Id: <3vR4QQ3Fpdz9s9j@ozlabs.org>
+Date: Sun, 19 Feb 2017 22:33:34 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,13 +20,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 2016-12-24 at 06:05:49 UTC, Madhavan Srinivasan wrote:
-> Cleanup to use is_kernel_addr macro.
+On Tue, 2017-01-03 at 18:58:28 UTC, Nicholas Piggin wrote:
+> Commit b91e1302ad9b8 ("mm: optimize PageWaiters bit use for
+> unlock_page()") added a special bitop function to speed up
+> unlock_page(). Implement this for powerpc.
+...
 > 
-> Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/a2391b35f1d9d5b51d43a9150c7239
+https://git.kernel.org/powerpc/c/d11914b21c4c21a294fe8937d66c1a
 
 cheers
