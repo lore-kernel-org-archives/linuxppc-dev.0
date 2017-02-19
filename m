@@ -1,33 +1,33 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vR2Wz41KGzDqP5
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 19 Feb 2017 21:08:15 +1100 (AEDT)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v1JA3eZS063160
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 19 Feb 2017 05:08:13 -0500
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
- by mx0b-001b2d01.pphosted.com with ESMTP id 28pkb2v8x7-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vR2X31Gp8zDqHg
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 19 Feb 2017 21:08:19 +1100 (AEDT)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v1JA3eIp142891
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 19 Feb 2017 05:08:17 -0500
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 28pphtwfst-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 19 Feb 2017 05:08:12 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 19 Feb 2017 05:08:17 -0500
 Received: from localhost
- by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Sun, 19 Feb 2017 03:08:12 -0700
+ Sun, 19 Feb 2017 03:08:16 -0700
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
 Cc: linuxppc-dev@lists.ozlabs.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH V3 09/10] powerpc/mm/slice: Move slice_mask struct definition
- to slice.c
-Date: Sun, 19 Feb 2017 15:37:16 +0530
+Subject: [PATCH V3 10/10] powerpc/mm/slice: Update slice mask printing to use
+ bitmap printing.
+Date: Sun, 19 Feb 2017 15:37:17 +0530
 In-Reply-To: <1487498837-12017-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1487498837-12017-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Message-Id: <1487498837-12017-10-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Message-Id: <1487498837-12017-11-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,72 +37,80 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This structure definition need not be in a header since this is used only by
-slice.c file. So move it to slice.c. This also allow us to use SLICE_NUM_HIGH
-instead of 512 and also helps in getting rid of one BUILD_BUG_ON().
+We now get output like below which is much better.
 
-I also switch the low_slices type to u64 from u16. This doesn't have an impact
-on size of struct due to padding added with u16 type. This helps in using
-bitmap printing function for printing slice mask.
+[    0.935306]  good_mask low_slice: 0-15
+[    0.935360]  good_mask high_slice: 0-511
+
+Compared to
+
+[    0.953414]  good_mask:1111111111111111 - 1111111111111.........
+
+I also fixed an error with slice_dbg printing.
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/page_64.h | 11 -----------
- arch/powerpc/mm/slice.c            | 13 ++++++++++---
- 2 files changed, 10 insertions(+), 14 deletions(-)
+ arch/powerpc/mm/slice.c | 30 +++++++-----------------------
+ 1 file changed, 7 insertions(+), 23 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/page_64.h b/arch/powerpc/include/asm/page_64.h
-index 9b60e9455c6e..3ecfc2734b50 100644
---- a/arch/powerpc/include/asm/page_64.h
-+++ b/arch/powerpc/include/asm/page_64.h
-@@ -99,17 +99,6 @@ extern u64 ppc64_pft_size;
- #define GET_HIGH_SLICE_INDEX(addr)	((addr) >> SLICE_HIGH_SHIFT)
- 
- #ifndef __ASSEMBLY__
--/*
-- * One bit per slice. We have lower slices which cover 256MB segments
-- * upto 4G range. That gets us 16 low slices. For the rest we track slices
-- * in 1TB size.
-- * 64 below is actually SLICE_NUM_HIGH to fixup complie errros
-- */
--struct slice_mask {
--	u16 low_slices;
--	DECLARE_BITMAP(high_slices, 512);
--};
--
- struct mm_struct;
- 
- extern unsigned long slice_get_unmapped_area(unsigned long addr,
 diff --git a/arch/powerpc/mm/slice.c b/arch/powerpc/mm/slice.c
-index fd2c85e951bd..8eedb7382942 100644
+index 8eedb7382942..fce1734ab8a3 100644
 --- a/arch/powerpc/mm/slice.c
 +++ b/arch/powerpc/mm/slice.c
-@@ -37,7 +37,16 @@
- #include <asm/hugetlb.h>
+@@ -53,29 +53,13 @@ int _slice_debug = 1;
  
- static DEFINE_SPINLOCK(slice_convert_lock);
+ static void slice_print_mask(const char *label, struct slice_mask mask)
+ {
+-	char	*p, buf[SLICE_NUM_LOW + 3 + SLICE_NUM_HIGH + 1];
+-	int	i;
 -
-+/*
-+ * One bit per slice. We have lower slices which cover 256MB segments
-+ * upto 4G range. That gets us 16 low slices. For the rest we track slices
-+ * in 1TB size.
-+ * 64 below is actually SLICE_NUM_HIGH to fixup complie errros
-+ */
-+struct slice_mask {
-+	u64 low_slices;
-+	DECLARE_BITMAP(high_slices, SLICE_NUM_HIGH);
-+};
+ 	if (!_slice_debug)
+ 		return;
+-	p = buf;
+-	for (i = 0; i < SLICE_NUM_LOW; i++)
+-		*(p++) = (mask.low_slices & (1 << i)) ? '1' : '0';
+-	*(p++) = ' ';
+-	*(p++) = '-';
+-	*(p++) = ' ';
+-	for (i = 0; i < SLICE_NUM_HIGH; i++) {
+-		if (test_bit(i, mask.high_slices))
+-			*(p++) = '1';
+-		else
+-			*(p++) = '0';
+-	}
+-	*(p++) = 0;
+-
+-	printk(KERN_DEBUG "%s:%s\n", label, buf);
++	pr_devel("%s low_slice: %*pbl\n", label, (int)SLICE_NUM_LOW, &mask.low_slices);
++	pr_devel("%s high_slice: %*pbl\n", label, (int)SLICE_NUM_HIGH, mask.high_slices);
+ }
  
- #ifdef DEBUG
- int _slice_debug = 1;
-@@ -412,8 +421,6 @@ unsigned long slice_get_unmapped_area(unsigned long addr, unsigned long len,
- 	struct mm_struct *mm = current->mm;
- 	unsigned long newaddr;
+-#define slice_dbg(fmt...) do { if (_slice_debug) pr_debug(fmt); } while(0)
++#define slice_dbg(fmt...) do { if (_slice_debug) pr_devel(fmt); } while (0)
  
--	/* Make sure high_slices bitmap size is same as we expected */
--	BUILD_BUG_ON(512 != SLICE_NUM_HIGH);
- 	/*
- 	 * init different masks
- 	 */
+ #else
+ 
+@@ -247,8 +231,8 @@ static void slice_convert(struct mm_struct *mm, struct slice_mask mask, int psiz
+ 	}
+ 
+ 	slice_dbg(" lsps=%lx, hsps=%lx\n",
+-		  mm->context.low_slices_psize,
+-		  mm->context.high_slices_psize);
++		  (unsigned long)mm->context.low_slices_psize,
++		  (unsigned long)mm->context.high_slices_psize);
+ 
+ 	spin_unlock_irqrestore(&slice_convert_lock, flags);
+ 
+@@ -690,8 +674,8 @@ void slice_set_user_psize(struct mm_struct *mm, unsigned int psize)
+ 
+ 
+ 	slice_dbg(" lsps=%lx, hsps=%lx\n",
+-		  mm->context.low_slices_psize,
+-		  mm->context.high_slices_psize);
++		  (unsigned long)mm->context.low_slices_psize,
++		  (unsigned long)mm->context.high_slices_psize);
+ 
+  bail:
+ 	spin_unlock_irqrestore(&slice_convert_lock, flags);
 -- 
 2.7.4
