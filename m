@@ -1,16 +1,17 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vR4QT3X9SzDqD2
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 19 Feb 2017 22:33:37 +1100 (AEDT)
-In-Reply-To: <1486523810-21112-1-git-send-email-gwshan@linux.vnet.ibm.com>
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vR4QV2RTSzDqGc
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 19 Feb 2017 22:33:38 +1100 (AEDT)
+In-Reply-To: <1486918995-16354-1-git-send-email-maddy@linux.vnet.ibm.com>
+To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: aneesh.kumar@linux.vnet.ibm.com, Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: Re: [v2] powerpc/mm: Fix typo in set_pte_at()
-Message-Id: <3vR4QT26J2z9sD9@ozlabs.org>
-Date: Sun, 19 Feb 2017 22:33:37 +1100 (AEDT)
+Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [v2,1/6] powerpc/perf: Factor of event_alternative function
+Message-Id: <3vR4QV1fHnz9s9j@ozlabs.org>
+Date: Sun, 19 Feb 2017 22:33:38 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,15 +21,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2017-02-08 at 03:16:50 UTC, Gavin Shan wrote:
-> This fixes the typo about the _PAGE_PTE in set_pte_at() by changing
-> "tryint" to "trying to".
+On Sun, 2017-02-12 at 17:03:10 UTC, Madhavan Srinivasan wrote:
+> Factor out the power8 event_alternative function to share
+> the code with power9.
 > 
-> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
-> Acked-by: Balbir Singh <bsingharora@gmail.com>
+> Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 
-Applied to powerpc next, thanks.
+Series applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/c618f6b188a9170f67e4abd478d250
+https://git.kernel.org/powerpc/c/efe881afdd9996ccbcd2a09c93b724
 
 cheers
