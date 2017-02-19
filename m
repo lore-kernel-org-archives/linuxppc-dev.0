@@ -1,33 +1,30 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vR2X31Gp8zDqHg
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 19 Feb 2017 21:08:19 +1100 (AEDT)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v1JA3eIp142891
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 19 Feb 2017 05:08:17 -0500
-Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
- by mx0a-001b2d01.pphosted.com with ESMTP id 28pphtwfst-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vR2lN3CVbzDr0g
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 19 Feb 2017 21:18:08 +1100 (AEDT)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v1JA8xbH110294
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 19 Feb 2017 05:18:04 -0500
+Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 28pk9p4ds7-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 19 Feb 2017 05:08:17 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 19 Feb 2017 05:18:04 -0500
 Received: from localhost
- by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Sun, 19 Feb 2017 03:08:16 -0700
+ Sun, 19 Feb 2017 05:18:03 -0500
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
 Cc: linuxppc-dev@lists.ozlabs.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH V3 10/10] powerpc/mm/slice: Update slice mask printing to use
- bitmap printing.
-Date: Sun, 19 Feb 2017 15:37:17 +0530
-In-Reply-To: <1487498837-12017-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-References: <1487498837-12017-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Message-Id: <1487498837-12017-11-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH] powerpc/mm: Add translation mode information in /proc/cpuinfo
+Date: Sun, 19 Feb 2017 15:47:49 +0530
+Message-Id: <1487499469-15284-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,80 +34,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We now get output like below which is much better.
+With this we have on powernv and pseries /proc/cpuinfo reporting
 
-[    0.935306]  good_mask low_slice: 0-15
-[    0.935360]  good_mask high_slice: 0-511
-
-Compared to
-
-[    0.953414]  good_mask:1111111111111111 - 1111111111111.........
-
-I also fixed an error with slice_dbg printing.
+timebase        : 512000000
+platform        : PowerNV
+model           : 8247-22L
+machine         : PowerNV 8247-22L
+firmware        : OPAL
+translation     : Hash
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/mm/slice.c | 30 +++++++-----------------------
- 1 file changed, 7 insertions(+), 23 deletions(-)
+ arch/powerpc/platforms/powernv/setup.c | 4 ++++
+ arch/powerpc/platforms/pseries/setup.c | 4 ++++
+ 2 files changed, 8 insertions(+)
 
-diff --git a/arch/powerpc/mm/slice.c b/arch/powerpc/mm/slice.c
-index 8eedb7382942..fce1734ab8a3 100644
---- a/arch/powerpc/mm/slice.c
-+++ b/arch/powerpc/mm/slice.c
-@@ -53,29 +53,13 @@ int _slice_debug = 1;
- 
- static void slice_print_mask(const char *label, struct slice_mask mask)
- {
--	char	*p, buf[SLICE_NUM_LOW + 3 + SLICE_NUM_HIGH + 1];
--	int	i;
--
- 	if (!_slice_debug)
- 		return;
--	p = buf;
--	for (i = 0; i < SLICE_NUM_LOW; i++)
--		*(p++) = (mask.low_slices & (1 << i)) ? '1' : '0';
--	*(p++) = ' ';
--	*(p++) = '-';
--	*(p++) = ' ';
--	for (i = 0; i < SLICE_NUM_HIGH; i++) {
--		if (test_bit(i, mask.high_slices))
--			*(p++) = '1';
--		else
--			*(p++) = '0';
--	}
--	*(p++) = 0;
--
--	printk(KERN_DEBUG "%s:%s\n", label, buf);
-+	pr_devel("%s low_slice: %*pbl\n", label, (int)SLICE_NUM_LOW, &mask.low_slices);
-+	pr_devel("%s high_slice: %*pbl\n", label, (int)SLICE_NUM_HIGH, mask.high_slices);
+diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
+index d50c7d99baaf..d38571e289bb 100644
+--- a/arch/powerpc/platforms/powernv/setup.c
++++ b/arch/powerpc/platforms/powernv/setup.c
+@@ -95,6 +95,10 @@ static void pnv_show_cpuinfo(struct seq_file *m)
+ 	else
+ 		seq_printf(m, "firmware\t: BML\n");
+ 	of_node_put(root);
++	if (radix_enabled())
++		seq_printf(m, "translation\t: Radix\n");
++	else
++		seq_printf(m, "translation\t: Hash\n");
  }
  
--#define slice_dbg(fmt...) do { if (_slice_debug) pr_debug(fmt); } while(0)
-+#define slice_dbg(fmt...) do { if (_slice_debug) pr_devel(fmt); } while (0)
+ static void pnv_prepare_going_down(void)
+diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
+index 7736352f7279..6576fe306561 100644
+--- a/arch/powerpc/platforms/pseries/setup.c
++++ b/arch/powerpc/platforms/pseries/setup.c
+@@ -86,6 +86,10 @@ static void pSeries_show_cpuinfo(struct seq_file *m)
+ 		model = of_get_property(root, "model", NULL);
+ 	seq_printf(m, "machine\t\t: CHRP %s\n", model);
+ 	of_node_put(root);
++	if (radix_enabled())
++		seq_printf(m, "translation\t: Radix\n");
++	else
++		seq_printf(m, "translation\t: Hash\n");
+ }
  
- #else
- 
-@@ -247,8 +231,8 @@ static void slice_convert(struct mm_struct *mm, struct slice_mask mask, int psiz
- 	}
- 
- 	slice_dbg(" lsps=%lx, hsps=%lx\n",
--		  mm->context.low_slices_psize,
--		  mm->context.high_slices_psize);
-+		  (unsigned long)mm->context.low_slices_psize,
-+		  (unsigned long)mm->context.high_slices_psize);
- 
- 	spin_unlock_irqrestore(&slice_convert_lock, flags);
- 
-@@ -690,8 +674,8 @@ void slice_set_user_psize(struct mm_struct *mm, unsigned int psize)
- 
- 
- 	slice_dbg(" lsps=%lx, hsps=%lx\n",
--		  mm->context.low_slices_psize,
--		  mm->context.high_slices_psize);
-+		  (unsigned long)mm->context.low_slices_psize,
-+		  (unsigned long)mm->context.high_slices_psize);
- 
-  bail:
- 	spin_unlock_irqrestore(&slice_convert_lock, flags);
+ /* Initialize firmware assisted non-maskable interrupts if
 -- 
 2.7.4
