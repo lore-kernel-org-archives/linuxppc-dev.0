@@ -1,48 +1,21 @@
-Return-Path: <sachinp@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vR9Fh38P2zDqBV
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Feb 2017 02:11:20 +1100 (AEDT)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3vR9Fg5TFDz9s8B
- for <linuxppc-dev@ozlabs.org>; Mon, 20 Feb 2017 02:11:19 +1100 (AEDT)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v1JF6WdU033281
- for <linuxppc-dev@ozlabs.org>; Sun, 19 Feb 2017 10:11:17 -0500
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
- by mx0a-001b2d01.pphosted.com with ESMTP id 28pnxp7sws-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Sun, 19 Feb 2017 10:11:17 -0500
-Received: from localhost
- by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <sachinp@linux.vnet.ibm.com>;
- Mon, 20 Feb 2017 01:11:14 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 8E9E03578052
- for <linuxppc-dev@ozlabs.org>; Mon, 20 Feb 2017 02:11:11 +1100 (EST)
-Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v1JFB34v35979458
- for <linuxppc-dev@ozlabs.org>; Mon, 20 Feb 2017 02:11:11 +1100
-Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
- by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v1JFAdab002425
- for <linuxppc-dev@ozlabs.org>; Mon, 20 Feb 2017 02:10:39 +1100
-From: Sachin Sant <sachinp@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=us-ascii
-Mime-Version: 1.0 (Mac OS X Mail 10.2 \(3259\))
-Subject: [next-20170217] WARN @/arch/powerpc/include/asm/xics.h:124
- .icp_hv_eoi+0x40/0x140
-Date: Sun, 19 Feb 2017 20:39:34 +0530
-Cc: linuxppc-dev@ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>
-To: linux-next@vger.kernel.org
-Message-Id: <E96217CD-2ADD-430D-86BD-27FF87752D7F@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vRK745Z2fzDqBV
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Feb 2017 08:06:08 +1100 (AEDT)
+Message-ID: <1487538354.23576.158.camel@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc/mm/hugetlb: Filter out hugepage size not
+ supported by page table layout
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>, paulus@samba.org,
+ mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org
+Date: Mon, 20 Feb 2017 08:05:54 +1100
+In-Reply-To: <1487499527-16166-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+References: <1487499527-16166-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,70 +25,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-While booting next-20170217 on a POWER6 box, I ran into following
-warning. This is a full system lpar. Previous next tree was good.
-I will try a bisect tomorrow.
+On Sun, 2017-02-19 at 15:48 +0530, Aneesh Kumar K.V wrote:
+> +#ifdef CONFIG_PPC_BOOK3S_64
+> +       /*
+> +        * We need to make sure that for different page sizes reported by
+> +        * firmware we only add hugetlb support for page sizes that can be
+> +        * supported by linux page table layout.
+> +        * For now we have
+> +        * Radix: 2M
+> +        * Hash: 16M and 16G
+> +        */
+> +       if (radix_enabled()) {
+> +               if (mmu_psize != MMU_PAGE_2M)
+> +                       return -EINVAL;
+> +       } else {
+> +               if (mmu_psize != MMU_PAGE_16M && mmu_psize != MMU_PAGE_16G)
+> +                       return -EINVAL;
+> +       }
 
-ipr: IBM Power RAID SCSI Device Driver version: 2.6.3 (October 17, 2015)
-ipr 0200:00:01.0: Found IOA with IRQ: 305
-------------[ cut here ]------------
-WARNING: CPU: 12 PID: 1 at ./arch/powerpc/include/asm/xics.h:124 =
-.icp_hv_eoi+0x40/0x140
-Modules linked in:
-CPU: 12 PID: 1 Comm: swapper/14 Not tainted =
-4.10.0-rc8-next-20170217-autotest #1
-task: c0000002b2a4a580 task.stack: c0000002b2a5c000
-NIP: c0000000000731b0 LR: c0000000001389f8 CTR: c000000000073170
-REGS: c0000002b2a5f050 TRAP: 0700   Not tainted  =
-(4.10.0-rc8-next-20170217-autotest)
-MSR: 8000000000029032 <SF,EE,ME,IR,DR,RI>
-  CR: 28004082  XER: 20000004
-CFAR: c0000000001389e0 SOFTE: 0=20
-GPR00: c0000000001389f8 c0000002b2a5f2d0 c000000001025800 =
-c0000002b203f498=20
-GPR04: 0000000000000000 0000000000000000 0000000000000064 =
-0000000000000131=20
-GPR08: 0000000000000001 c0000000d3104cb8 ffffffffffffffff =
-000000000009b1f8=20
-GPR12: 0000000048004082 c00000000edc2400 c00000000000dad0 =
-0000000000000000=20
-GPR16: 0000000000000000 00003c007efc0000 c000000000a9e848 =
-0000000000000000=20
-GPR20: d000080080080000 c0000002af4d47f0 c0000000011efda8 =
-c000000000a9ea10=20
-GPR24: c000000000a9e848 0000000000000000 c0000002af4d4fb8 =
-0000000000000000=20
-GPR28: 0000000000000000 c0000002b203f498 c000000000ef8928 =
-c0000002b203f400=20
-NIP [c0000000000731b0] .icp_hv_eoi+0x40/0x140
-LR [c0000000001389f8] .handle_fasteoi_irq+0x1e8/0x270
-Call Trace:
-[c0000002b2a5f2d0] [c0000002b2a5f360] 0xc0000002b2a5f360 (unreliable)
-[c0000002b2a5f360] [c0000000001389f8] .handle_fasteoi_irq+0x1e8/0x270
-[c0000002b2a5f3e0] [c000000000136a08] .request_threaded_irq+0x298/0x370
-[c0000002b2a5f490] [c0000000005895c0] .ipr_probe_ioa+0x1110/0x1390
-[c0000002b2a5f5c0] [c00000000058d030] .ipr_probe+0x30/0x3e0
-[c0000002b2a5f670] [c000000000466860] .local_pci_probe+0x60/0x130
-[c0000002b2a5f710] [c000000000467658] .pci_device_probe+0x148/0x1e0
-[c0000002b2a5f7c0] [c000000000527524] .driver_probe_device+0x2d4/0x5b0
-[c0000002b2a5f860] [c00000000052796c] .__driver_attach+0x16c/0x190
-[c0000002b2a5f8f0] [c0000000005242c4] .bus_for_each_dev+0x84/0xf0
-[c0000002b2a5f990] [c000000000526af4] .driver_attach+0x24/0x40
-[c0000002b2a5fa00] [c000000000526318] .bus_add_driver+0x2a8/0x370
-[c0000002b2a5faa0] [c000000000528a5c] .driver_register+0x8c/0x170
-[c0000002b2a5fb20] [c000000000465a54] .__pci_register_driver+0x44/0x60
-[c0000002b2a5fb90] [c000000000b8efc8] .ipr_init+0x58/0x70
-[c0000002b2a5fc10] [c00000000000d20c] .do_one_initcall+0x5c/0x1c0
-[c0000002b2a5fce0] [c000000000b44738] .kernel_init_freeable+0x280/0x360
-[c0000002b2a5fdb0] [c00000000000daec] .kernel_init+0x1c/0x130
-[c0000002b2a5fe30] [c00000000000baa0] .ret_from_kernel_thread+0x58/0xb8
-Instruction dump:
-f8010010 f821ff71 80e3000c 7c0004ac e94d0030 3d02ffbc 3928f4b8 7d295214=20=
+Hash could support others... Same with radix and PUD level pages.
 
-81090004 3948ffff 7d484378 79080fe2 <0b080000> 2fa80000 40de0050 =
-91490004=20
----[ end trace 5e18ae409f46392c ]---
-ipr 0200:00:01.0: Initializing IOA.
+Why do we need that ? Won't FW provide separate properties for hash and
+radix page sizes anyway ?
 
-Thanks
--Sachin=
+Ben.
