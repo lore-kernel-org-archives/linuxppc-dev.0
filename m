@@ -1,26 +1,33 @@
-Return-Path: <mhiramat@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vQvJ34tkWzDqBV
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 19 Feb 2017 15:42:27 +1100 (AEDT)
-Date: Sun, 19 Feb 2017 13:42:11 +0900
-From: Masami Hiramatsu <mhiramat@kernel.org>
-To: Arnaldo Carvalho de Melo <acme@kernel.org>
-Cc: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>, Ananth N
- Mavinakayanahalli <ananth@linux.vnet.ibm.com>, Michael Ellerman
- <mpe@ellerman.id.au>, Ingo Molnar <mingo@redhat.com>, Namhyung Kim
- <namhyung@kernel.org>, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 0/2] powerpc: kretprobe updates
-Message-Id: <20170219134211.0a43dfb2534563af5b6d440d@kernel.org>
-In-Reply-To: <20170217204254.GH4109@kernel.org>
-References: <dbb93084a6bc96d44cf7436ab6d5f9c8c72b6a39.1487181941.git.naveen.n.rao@linux.vnet.ibm.com>
- <cover.1487232416.git.naveen.n.rao@linux.vnet.ibm.com>
- <20170217194433.0b4707bbfa1de603d13fbd30@kernel.org>
- <20170217204254.GH4109@kernel.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vR2RQ5pcyzDqBV
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 19 Feb 2017 21:04:18 +1100 (AEDT)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v1JA3iZH063324
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 19 Feb 2017 05:04:15 -0500
+Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 28pkb2v5bk-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 19 Feb 2017 05:04:14 -0500
+Received: from localhost
+ by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Sun, 19 Feb 2017 03:04:13 -0700
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: akpm@linux-foundation.org, Rik van Riel <riel@surriel.com>,
+ Mel Gorman <mgorman@techsingularity.net>, paulus@ozlabs.org,
+ benh@kernel.crashing.org
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH V3 0/3] Numabalancing preserve write fix
+Date: Sun, 19 Feb 2017 15:33:42 +0530
+Message-Id: <1487498625-10891-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,75 +37,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 17 Feb 2017 17:42:54 -0300
-Arnaldo Carvalho de Melo <acme@kernel.org> wrote:
+This patch series address an issue w.r.t THP migration and autonuma
+preserve write feature. migrate_misplaced_transhuge_page() cannot deal with
+concurrent modification of the page. It does a page copy without
+following the migration pte sequence. IIUC, this was done to keep the
+migration simpler and at the time of implemenation we didn't had THP
+page cache which would have required a more elaborate migration scheme.
+That means thp autonuma migration expect the protnone with saved write
+to be done such that both kernel and user cannot update
+the page content. This patch series enables archs like ppc64 to do that.
+We are good with the hash translation mode with the current code,
+because we never create a hardware page table entry for a protnone pte. 
 
-> Em Fri, Feb 17, 2017 at 07:44:33PM +0900, Masami Hiramatsu escreveu:
-> > On Thu, 16 Feb 2017 13:47:37 +0530
-> > "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
-> > 
-> > > I am posting the powerpc bits in the same thread so as to keep these
-> > > changes together. I am not sure how this should be taken upstream as
-> > > there are atleast three different trees involved: one for the core
-> > > kprobes infrastructure, one for powerpc and one for perf.
-> 
-> > Hmm, could you make these (and other related) patches and
-> > other series in one series? Or wait for the other series
-> > are merged correctly.
-> 
-> Well, patches like these should be done in a way that the tooling parts
-> can deal with kernels with or without the kernel changes, so that older
-> tools work with new kernels and new tools work with older kernels.
-> 
-> "work" as in the previous behaviour is kept when a new tool deals with
-> an older kernel and an older tool would warn the user that what it needs
-> is not present in that kernel.
-> 
-> Is this the case? I just looked briefly at the patch commit logs.
+Changes form V2:
+* Fix kvm crashes due to ksm not clearing savedwrite bit.
 
-Thanks Arnaldo,
+Changes from V1:
+* Update the patch so that it apply cleanly to upstream.
+* Add acked-by from Michael Neuling
 
-Naveen, I think this one and your previous series are incompatible
-with older kernel. So those should be merged in one series and
-at least (1) update ftrace's README special file to show explicitly
-which can accept text+offset style for kretprobes, and (2) update
-perf probe side to ensure that (and fallback to previous logic if not).
+Aneesh Kumar K.V (3):
+  mm/autonuma: Let architecture override how the write bit should be
+    stashed in a protnone pte.
+  mm/ksm: Handle protnone saved writes when making page write protect
+  powerpc/mm/autonuma: Switch ppc64 to its own implementeation of saved
+    write
 
-Thank you,
-
-> 
-> If it is, then I can pick the tool ones, and the others can be submitted
-> to the relevant trees, at some point all will be in, kernels eventually
-> gets updated everywhere, ditto for the tooling, all gets well.
-> 
-> Regards,
-> 
-> - Arnaldo
-> 
-> 
->  
-> > Thank you,
-> > 
-> > > 
-> > > Thanks,
-> > > Naveen
-> > > 
-> > > Naveen N. Rao (2):
-> > >   powerpc: kretprobes: override default function entry offset
-> > >   perf: powerpc: choose LEP with kretprobes
-> > > 
-> > >  arch/powerpc/kernel/kprobes.c               | 9 +++++++++
-> > >  tools/perf/arch/powerpc/util/sym-handling.c | 5 +----
-> > >  2 files changed, 10 insertions(+), 4 deletions(-)
-> > > 
-> > > -- 
-> > > 2.11.0
-> > > 
-> > 
-> > 
-> > -- 
-> > Masami Hiramatsu <mhiramat@kernel.org>
-
+ arch/powerpc/include/asm/book3s/64/pgtable.h | 52 ++++++++++++++++++++++++----
+ include/asm-generic/pgtable.h                | 24 +++++++++++++
+ mm/huge_memory.c                             |  6 ++--
+ mm/ksm.c                                     |  9 +++--
+ mm/memory.c                                  |  2 +-
+ mm/mprotect.c                                |  4 +--
+ 6 files changed, 82 insertions(+), 15 deletions(-)
 
 -- 
-Masami Hiramatsu <mhiramat@kernel.org>
+2.7.4
