@@ -1,49 +1,23 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vRXST0YHZzDq8X
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Feb 2017 16:36:56 +1100 (AEDT)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v1K5Xm38101431
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Feb 2017 00:36:55 -0500
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
- by mx0a-001b2d01.pphosted.com with ESMTP id 28qd5jr62e-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Feb 2017 00:36:54 -0500
-Received: from localhost
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 20 Feb 2017 15:36:52 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id CB9CD3578052
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Feb 2017 16:36:50 +1100 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v1K5ag4G26083572
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Feb 2017 16:36:50 +1100
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v1K5aH30006843
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Feb 2017 16:36:18 +1100
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, paulus@samba.org,
- mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] powerpc/mm/hugetlb: Filter out hugepage size not
- supported by page table layout
-In-Reply-To: <1487561746.23576.170.camel@kernel.crashing.org>
-References: <1487499527-16166-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1487538354.23576.158.camel@kernel.crashing.org>
- <fdc5f84d-f337-24e6-e116-e34cf6ff722b@linux.vnet.ibm.com>
- <1487561746.23576.170.camel@kernel.crashing.org>
-Date: Mon, 20 Feb 2017 11:06:00 +0530
+Return-Path: <niklas.cassel@axis.com>
+Received: from bes.se.axis.com (bes.se.axis.com [195.60.68.10])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3vRcb956bXzDq8X
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Feb 2017 19:43:01 +1100 (AEDT)
+Subject: Re: [PATCH 2/4] PCI: dwc: dra7xx: Populate cpu_addr_fixup ops
+To: Kishon Vijay Abraham I <kishon@ti.com>, Bjorn Helgaas
+ <bhelgaas@google.com>, Jingoo Han <jingoohan1@gmail.com>,
+ <linux-kernel@vger.kernel.org>, <linux-pci@vger.kernel.org>,
+ <linux-omap@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
+ <linux-samsung-soc@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
+ <linux-arm-kernel@axis.com>
+References: <1487251752-12478-1-git-send-email-kishon@ti.com>
+ <1487251752-12478-3-git-send-email-kishon@ti.com>
+CC: Joao Pinto <Joao.Pinto@synopsys.com>, <nsekhar@ti.com>
+From: Niklas Cassel <niklas.cassel@axis.com>
+Message-ID: <2636ef0f-78e1-b38a-5864-c53a645e7073@axis.com>
+Date: Mon, 20 Feb 2017 09:32:35 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Message-Id: <87o9xxtoe7.fsf@skywalker.in.ibm.com>
+In-Reply-To: <1487251752-12478-3-git-send-email-kishon@ti.com>
+Content-Type: text/plain; charset="windows-1252"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -53,20 +27,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+Hello Kishon!
 
-> On Mon, 2017-02-20 at 09:02 +0530, Aneesh Kumar K.V wrote:
->> To avoid crashes like the one reported in the commit message due to=C2=A0
->> buggy firmware ?=20
+
+It's nice to see that you are improving the dwc framework+drivers.
+
+pcie-artpec6.c has the same quirk as dra7xx,
+see define ARTPEC6_CPU_TO_BUS_ADDR.
+
+I could create a patch, but I guess it would make more sense
+if it's part of this series.
+
+Keep up the good work!
+
+
+Regards,
+Niklas
+
+
+On 02/16/2017 02:29 PM, Kishon Vijay Abraham I wrote:
+> Populate cpu_addr_fixup ops to extract the least 28 bits of the
+> corresponding cpu address.
 >
-> I don't want Linux to make those assumptions. We should fix the FW.
+> Signed-off-by: Kishon Vijay Abraham I <kishon@ti.com>
+> ---
+>  drivers/pci/dwc/pci-dra7xx.c |   11 ++++++-----
+>  1 file changed, 6 insertions(+), 5 deletions(-)
 >
-
-I was not suggesting to not fix FW. The idea was two fold.
-
-We cannot support different hugetlb page sizes. They need to
-be supported at linux page table level. So a generic check like
-is_power_of_2/4() may not be what we want. The second is to document
-clearly what are the different page sizes supported by a platform.
-
--aneesh
+> diff --git a/drivers/pci/dwc/pci-dra7xx.c b/drivers/pci/dwc/pci-dra7xx.c
+> index 0984baf..07c45ec 100644
+> --- a/drivers/pci/dwc/pci-dra7xx.c
+> +++ b/drivers/pci/dwc/pci-dra7xx.c
+> @@ -88,6 +88,11 @@ static inline void dra7xx_pcie_writel(struct dra7xx_pcie *pcie, u32 offset,
+>  	writel(value, pcie->base + offset);
+>  }
+>  
+> +static u64 dra7xx_pcie_cpu_addr_fixup(u64 pci_addr)
+> +{
+> +	return pci_addr & DRA7XX_CPU_TO_BUS_ADDR;
+> +}
+> +
+>  static int dra7xx_pcie_link_up(struct dw_pcie *pci)
+>  {
+>  	struct dra7xx_pcie *dra7xx = to_dra7xx_pcie(pci);
+> @@ -152,11 +157,6 @@ static void dra7xx_pcie_host_init(struct pcie_port *pp)
+>  	struct dw_pcie *pci = to_dw_pcie_from_pp(pp);
+>  	struct dra7xx_pcie *dra7xx = to_dra7xx_pcie(pci);
+>  
+> -	pp->io_base &= DRA7XX_CPU_TO_BUS_ADDR;
+> -	pp->mem_base &= DRA7XX_CPU_TO_BUS_ADDR;
+> -	pp->cfg0_base &= DRA7XX_CPU_TO_BUS_ADDR;
+> -	pp->cfg1_base &= DRA7XX_CPU_TO_BUS_ADDR;
+> -
+>  	dw_pcie_setup_rc(pp);
+>  
+>  	dra7xx_pcie_establish_link(dra7xx);
+> @@ -329,6 +329,7 @@ static int __init dra7xx_add_pcie_port(struct dra7xx_pcie *dra7xx,
+>  }
+>  
+>  static const struct dw_pcie_ops dw_pcie_ops = {
+> +	.cpu_addr_fixup = dra7xx_pcie_cpu_addr_fixup,
+>  	.link_up = dra7xx_pcie_link_up,
+>  };
+>  
