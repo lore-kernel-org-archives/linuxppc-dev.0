@@ -1,52 +1,23 @@
-Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vRf6F4MzSzDq8X
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Feb 2017 20:51:33 +1100 (AEDT)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v1K9mbat003775
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Feb 2017 04:51:30 -0500
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
- by mx0a-001b2d01.pphosted.com with ESMTP id 28qshc2g06-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Feb 2017 04:51:30 -0500
-Received: from localhost
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Mon, 20 Feb 2017 19:51:21 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id D6E4D2CE8046
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Feb 2017 20:51:18 +1100 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v1K9pASt16580726
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Feb 2017 20:51:18 +1100
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v1K9okuJ008393
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Feb 2017 20:50:46 +1100
-Date: Mon, 20 Feb 2017 15:20:24 +0530
-From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-To: Masami Hiramatsu <mhiramat@kernel.org>
-Cc: Arnaldo Carvalho de Melo <acme@kernel.org>,
- Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Ingo Molnar <mingo@redhat.com>,
- Namhyung Kim <namhyung@kernel.org>, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 0/2] powerpc: kretprobe updates
-References: <dbb93084a6bc96d44cf7436ab6d5f9c8c72b6a39.1487181941.git.naveen.n.rao@linux.vnet.ibm.com>
- <cover.1487232416.git.naveen.n.rao@linux.vnet.ibm.com>
- <20170217194433.0b4707bbfa1de603d13fbd30@kernel.org>
- <20170217204254.GH4109@kernel.org>
- <20170219134211.0a43dfb2534563af5b6d440d@kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vRgYL0TfkzDq8X
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Feb 2017 21:56:38 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Sachin Sant <sachinp@linux.vnet.ibm.com>, tglx@linutronix.de
+Cc: linux-next@vger.kernel.org, linuxppc-dev@ozlabs.org,
+ LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [next-20170217] WARN @/arch/powerpc/include/asm/xics.h:124
+ .icp_hv_eoi+0x40/0x140
+In-Reply-To: <15420F42-D2C6-4E29-8874-C47F4D61B098@linux.vnet.ibm.com>
+References: <E96217CD-2ADD-430D-86BD-27FF87752D7F@linux.vnet.ibm.com>
+ <87zihhh9mp.fsf@concordia.ellerman.id.au>
+ <15420F42-D2C6-4E29-8874-C47F4D61B098@linux.vnet.ibm.com>
+Date: Mon, 20 Feb 2017 21:55:36 +1100
+Message-ID: <87mvdhgmhj.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170219134211.0a43dfb2534563af5b6d440d@kernel.org>
-Message-Id: <20170220095024.GB12165@naverao1-tp.localdomain>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -56,48 +27,94 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2017/02/19 01:42PM, Masami Hiramatsu wrote:
-> On Fri, 17 Feb 2017 17:42:54 -0300
-> Arnaldo Carvalho de Melo <acme@kernel.org> wrote:
-> 
-> > Em Fri, Feb 17, 2017 at 07:44:33PM +0900, Masami Hiramatsu escreveu:
-> > > On Thu, 16 Feb 2017 13:47:37 +0530
-> > > "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
-> > > 
-> > > > I am posting the powerpc bits in the same thread so as to keep these
-> > > > changes together. I am not sure how this should be taken upstream as
-> > > > there are atleast three different trees involved: one for the core
-> > > > kprobes infrastructure, one for powerpc and one for perf.
-> > 
-> > > Hmm, could you make these (and other related) patches and
-> > > other series in one series? Or wait for the other series
-> > > are merged correctly.
-> > 
-> > Well, patches like these should be done in a way that the tooling parts
-> > can deal with kernels with or without the kernel changes, so that older
-> > tools work with new kernels and new tools work with older kernels.
-> > 
-> > "work" as in the previous behaviour is kept when a new tool deals with
-> > an older kernel and an older tool would warn the user that what it needs
-> > is not present in that kernel.
-> > 
-> > Is this the case? I just looked briefly at the patch commit logs.
-> 
-> Thanks Arnaldo,
-> 
-> Naveen, I think this one and your previous series are incompatible
-> with older kernel. So those should be merged in one series and
-> at least (1) update ftrace's README special file to show explicitly
-> which can accept text+offset style for kretprobes, and 
+Sachin Sant <sachinp@linux.vnet.ibm.com> writes:
 
-Sure - do you mean Documentation/trace/kprobetrace.txt? And, do you want 
-me to include kernel version where this changed?
+>>> While booting next-20170217 on a POWER6 box, I ran into following
+>>> warning. This is a full system lpar. Previous next tree was good.
+>>> I will try a bisect tomorrow.
+>>=20
+>> Do you have CONFIG_DEBUG_SHIRQ=3Dy ?
+>>=20
+>
+> Yes. CONFIG_DEBUG_SHIRQ is enabled.
+>
+> As suggested by you reverting following commit allows a clean boot.
+> f91f694540f3 ("genirq: Reenable shared irq debugging in request_*_irq()=
+=E2=80=9D)
 
-> (2) update
-> perf probe side to ensure that (and fallback to previous logic if not).
+OK. Or disabling CONFIG_DEBUG_SHIRQ :)
 
-Sure. I am trying out an approach and will post it as soon as it's 
-ready.
+The problem is that the xics code saves the CPPR value in get_irq(),
+called from __do_irq(), and then restores it in irq_eoi().
 
-Thanks!
-- Naveen
+But when we're called for CONFIG_DEBUG_SHIRQ get_irq() is not called,
+precisely because we're faking an interrupt.
+
+I'm not sure if there's a good way to fix it :/
+
+cheers
+
+>>> ipr: IBM Power RAID SCSI Device Driver version: 2.6.3 (October 17, 2015)
+>>> ipr 0200:00:01.0: Found IOA with IRQ: 305
+>>> ------------[ cut here ]------------
+>>> WARNING: CPU: 12 PID: 1 at ./arch/powerpc/include/asm/xics.h:124 .icp_h=
+v_eoi+0x40/0x140
+>>> Modules linked in:
+>>> CPU: 12 PID: 1 Comm: swapper/14 Not tainted 4.10.0-rc8-next-20170217-au=
+totest #1
+>>> task: c0000002b2a4a580 task.stack: c0000002b2a5c000
+>>> NIP: c0000000000731b0 LR: c0000000001389f8 CTR: c000000000073170
+>>> REGS: c0000002b2a5f050 TRAP: 0700   Not tainted  (4.10.0-rc8-next-20170=
+217-autotest)
+>>> MSR: 8000000000029032 <SF,EE,ME,IR,DR,RI>
+>>>  CR: 28004082  XER: 20000004
+>>> CFAR: c0000000001389e0 SOFTE: 0=20
+>>> GPR00: c0000000001389f8 c0000002b2a5f2d0 c000000001025800 c0000002b203f=
+498=20
+>>> GPR04: 0000000000000000 0000000000000000 0000000000000064 0000000000000=
+131=20
+>>> GPR08: 0000000000000001 c0000000d3104cb8 ffffffffffffffff 000000000009b=
+1f8=20
+>>> GPR12: 0000000048004082 c00000000edc2400 c00000000000dad0 0000000000000=
+000=20
+>>> GPR16: 0000000000000000 00003c007efc0000 c000000000a9e848 0000000000000=
+000=20
+>>> GPR20: d000080080080000 c0000002af4d47f0 c0000000011efda8 c000000000a9e=
+a10=20
+>>> GPR24: c000000000a9e848 0000000000000000 c0000002af4d4fb8 0000000000000=
+000=20
+>>> GPR28: 0000000000000000 c0000002b203f498 c000000000ef8928 c0000002b203f=
+400=20
+>>> NIP [c0000000000731b0] .icp_hv_eoi+0x40/0x140
+>>> LR [c0000000001389f8] .handle_fasteoi_irq+0x1e8/0x270
+>>> Call Trace:
+>>> [c0000002b2a5f2d0] [c0000002b2a5f360] 0xc0000002b2a5f360 (unreliable)
+>>> [c0000002b2a5f360] [c0000000001389f8] .handle_fasteoi_irq+0x1e8/0x270
+>>> [c0000002b2a5f3e0] [c000000000136a08] .request_threaded_irq+0x298/0x370
+>>> [c0000002b2a5f490] [c0000000005895c0] .ipr_probe_ioa+0x1110/0x1390
+>>> [c0000002b2a5f5c0] [c00000000058d030] .ipr_probe+0x30/0x3e0
+>>> [c0000002b2a5f670] [c000000000466860] .local_pci_probe+0x60/0x130
+>>> [c0000002b2a5f710] [c000000000467658] .pci_device_probe+0x148/0x1e0
+>>> [c0000002b2a5f7c0] [c000000000527524] .driver_probe_device+0x2d4/0x5b0
+>>> [c0000002b2a5f860] [c00000000052796c] .__driver_attach+0x16c/0x190
+>>> [c0000002b2a5f8f0] [c0000000005242c4] .bus_for_each_dev+0x84/0xf0
+>>> [c0000002b2a5f990] [c000000000526af4] .driver_attach+0x24/0x40
+>>> [c0000002b2a5fa00] [c000000000526318] .bus_add_driver+0x2a8/0x370
+>>> [c0000002b2a5faa0] [c000000000528a5c] .driver_register+0x8c/0x170
+>>> [c0000002b2a5fb20] [c000000000465a54] .__pci_register_driver+0x44/0x60
+>>> [c0000002b2a5fb90] [c000000000b8efc8] .ipr_init+0x58/0x70
+>>> [c0000002b2a5fc10] [c00000000000d20c] .do_one_initcall+0x5c/0x1c0
+>>> [c0000002b2a5fce0] [c000000000b44738] .kernel_init_freeable+0x280/0x360
+>>> [c0000002b2a5fdb0] [c00000000000daec] .kernel_init+0x1c/0x130
+>>> [c0000002b2a5fe30] [c00000000000baa0] .ret_from_kernel_thread+0x58/0xb8
+>>> Instruction dump:
+>>> f8010010 f821ff71 80e3000c 7c0004ac e94d0030 3d02ffbc 3928f4b8 7d295214=
+=20
+>>> 81090004 3948ffff 7d484378 79080fe2 <0b080000> 2fa80000 40de0050 914900=
+04=20
+>>> ---[ end trace 5e18ae409f46392c ]---
+>>> ipr 0200:00:01.0: Initializing IOA.
+>>>=20
+>>> Thanks
+>>> -Sachin
+>>=20
