@@ -1,27 +1,27 @@
-Return-Path: <joe@perches.com>
-Received: from smtprelay.hostedemail.com (smtprelay0143.hostedemail.com
- [216.40.44.143])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vRWGk5lC9zDq8X
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Feb 2017 15:43:26 +1100 (AEDT)
-Message-ID: <1487565799.2853.1.camel@perches.com>
-Subject: Re: [PATCH 06/35] powerpc: Convert remaining uses of pr_warning to
- pr_warn
-From: Joe Perches <joe@perches.com>
-To: Michael Ellerman <mpe@ellerman.id.au>, Anatolij Gustschin
- <agust@denx.de>,  Scott Wood <oss@buserror.net>, Kumar Gala
- <galak@kernel.crashing.org>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Geoff Levand
- <geoff@infradead.org>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Date: Sun, 19 Feb 2017 20:43:19 -0800
-In-Reply-To: <87wpclh3v0.fsf@concordia.ellerman.id.au>
-References: <cover.1487314666.git.joe@perches.com>
- <37c7a30a9666c203b7fce26da1c489e8e33f241e.1487314667.git.joe@perches.com>
- <87wpclh3v0.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset="ISO-8859-1"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vRWKx5mQNzDq8X
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Feb 2017 15:46:13 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Pan Xinhui <xinhui@linux.vnet.ibm.com>,
+ "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com>,
+ Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Cc: benh@kernel.crashing.org, paulus@samba.org, npiggin@gmail.com
+Subject: Re: [PATCH] powerpc/xmon: Fix an unexpected xmon onoff state change
+In-Reply-To: <cecc8a28-4e2f-8e03-0b1a-8a9ac60c0c71@linux.vnet.ibm.com>
+References: <1487144990-5969-1-git-send-email-xinhui.pan@linux.vnet.ibm.com>
+ <87shnek9hd.fsf@concordia.ellerman.id.au>
+ <72cfff06-bd93-a727-0b93-31dfa3a7ac65@linux.vnet.ibm.com>
+ <8466dffc-d75c-d83a-2a4f-d567721db7d5@linux.vnet.ibm.com>
+ <87h93tjqrn.fsf@concordia.ellerman.id.au>
+ <cecc8a28-4e2f-8e03-0b1a-8a9ac60c0c71@linux.vnet.ibm.com>
+Date: Mon, 20 Feb 2017 15:46:13 +1100
+Message-ID: <87tw7ph3l6.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,19 +31,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2017-02-20 at 15:40 +1100, Michael Ellerman wrote:
-> Joe Perches <joe@perches.com> writes:
-> 
-> > To enable eventual removal of pr_warning
-> > 
-> > This makes pr_warn use consistent for arch/powerpc
-> > 
-> > Prior to this patch, there were 36 uses of pr_warning and
-> > 217 uses of pr_warn in arch/powerpc
-> > 
-> > Signed-off-by: Joe Perches <joe@perches.com>
-> 
-> Can I take this via the powerpc tree, or do you want to merge them as a
-> series?
+Pan Xinhui <xinhui@linux.vnet.ibm.com> writes:
 
-Well, I expect it'd be better if you merge it.
+> =E5=9C=A8 2017/2/17 14:05, Michael Ellerman =E5=86=99=E9=81=93:
+>> Pan Xinhui <xinhui@linux.vnet.ibm.com> writes:
+>>> diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
+>>> index 9c0e17c..f6e5c3d 100644
+>>> --- a/arch/powerpc/xmon/xmon.c
+>>> +++ b/arch/powerpc/xmon/xmon.c
+>>> @@ -76,6 +76,7 @@ static int xmon_gate;
+>>>   #endif /* CONFIG_SMP */
+>>>
+>>>   static unsigned long in_xmon __read_mostly =3D 0;
+>>> +static int xmon_off =3D !IS_ENABLED(CONFIG_XMON_DEFAULT);
+>>
+>> I think the logic would probably clearer if we invert this to become
+>> xmon_on.
+>>
+> yep, make sense.
+>
+>>> @@ -3266,16 +3269,16 @@ static int __init setup_xmon_sysrq(void)
+>>>   __initcall(setup_xmon_sysrq);
+>>>   #endif /* CONFIG_MAGIC_SYSRQ */
+>>>
+>>> -static int __initdata xmon_early, xmon_off;
+>>> +static int __initdata xmon_early;
+>>>
+>>>   static int __init early_parse_xmon(char *p)
+>>>   {
+>>>   	if (!p || strncmp(p, "early", 5) =3D=3D 0) {
+>>>   		/* just "xmon" is equivalent to "xmon=3Dearly" */
+>>> -		xmon_init(1);
+>>>   		xmon_early =3D 1;
+>>> +		xmon_off =3D 0;
+>>>   	} else if (strncmp(p, "on", 2) =3D=3D 0)
+>>> -		xmon_init(1);
+>>> +		xmon_off =3D 0;
+>>
+>> You've just changed the timing of when xmon gets enabled for the above
+>> two cases, from here which is called very early, to xmon_setup() which
+>> is called much later in boot.
+>>
+>> That effectively disables xmon for most of the boot, which we do not
+>> want to do.
+>>
+> Although it is not often that kernel got stucked during boot.
+
+I hope you're joking! :)
+
+cheers
