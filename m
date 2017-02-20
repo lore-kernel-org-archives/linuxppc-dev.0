@@ -1,19 +1,20 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
- [IPv6:2607:f8b0:400e:c05::244])
+Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
+ [IPv6:2607:f8b0:400e:c05::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vRvGq575SzDqGw
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Feb 2017 06:44:51 +1100 (AEDT)
-Received: by mail-pg0-x244.google.com with SMTP id 5so14193304pgj.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Feb 2017 11:44:51 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vRvGv5MTgzDqGW
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Feb 2017 06:44:55 +1100 (AEDT)
+Received: by mail-pg0-x243.google.com with SMTP id s67so3636649pgb.1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Feb 2017 11:44:55 -0800 (PST)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Nicholas Piggin <npiggin@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>,
  Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
-Subject: [PATCH 1/9] powerpc/64s: machine check print NIP
-Date: Tue, 21 Feb 2017 05:44:22 +1000
-Message-Id: <20170220194430.32602-2-npiggin@gmail.com>
+Subject: [PATCH 2/9] powerpc/64s: allow machine check handler to set severity
+ and initiator
+Date: Tue, 21 Feb 2017 05:44:23 +1000
+Message-Id: <20170220194430.32602-3-npiggin@gmail.com>
 In-Reply-To: <20170220194430.32602-1-npiggin@gmail.com>
 References: <20170220194430.32602-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,30 +26,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Print the faulting address of the machine check that may help
-with debugging. The effective address reported can be a target
-memory address rather than an instruction address.
-
-Fix up a dangling bracket while here.
+Currently these just hardcoded.
 
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/kernel/mce.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ arch/powerpc/include/asm/mce.h  | 3 ++-
+ arch/powerpc/kernel/mce.c       | 5 +++--
+ arch/powerpc/kernel/mce_power.c | 6 ++++++
+ 3 files changed, 11 insertions(+), 3 deletions(-)
 
+diff --git a/arch/powerpc/include/asm/mce.h b/arch/powerpc/include/asm/mce.h
+index f97d8cb6bdf6..b2a5865ccd87 100644
+--- a/arch/powerpc/include/asm/mce.h
++++ b/arch/powerpc/include/asm/mce.h
+@@ -177,7 +177,8 @@ struct mce_error_info {
+ 		enum MCE_EratErrorType erat_error_type:8;
+ 		enum MCE_TlbErrorType tlb_error_type:8;
+ 	} u;
+-	uint8_t		reserved[2];
++	enum MCE_Severity	severity:8;
++	enum MCE_Initiator	initiator:8;
+ };
+ 
+ #define MAX_MC_EVT	100
 diff --git a/arch/powerpc/kernel/mce.c b/arch/powerpc/kernel/mce.c
-index c6923ff45131..335f8a53f154 100644
+index 335f8a53f154..ce340207ccb3 100644
 --- a/arch/powerpc/kernel/mce.c
 +++ b/arch/powerpc/kernel/mce.c
-@@ -268,7 +268,8 @@ void machine_check_print_event_info(struct machine_check_event *evt)
+@@ -90,13 +90,14 @@ void save_mce_event(struct pt_regs *regs, long handled,
+ 	mce->gpr3 = regs->gpr[3];
+ 	mce->in_use = 1;
  
- 	printk("%s%s Machine check interrupt [%s]\n", level, sevstr,
- 	       evt->disposition == MCE_DISPOSITION_RECOVERED ?
--	       "Recovered" : "[Not recovered");
-+	       "Recovered" : "Not recovered");
-+	printk("%s  NIP: %016llx\n", level, evt->srr0);
- 	printk("%s  Initiator: %s\n", level,
- 	       evt->initiator == MCE_INITIATOR_CPU ? "CPU" : "Unknown");
- 	switch (evt->error_type) {
+-	mce->initiator = MCE_INITIATOR_CPU;
+ 	/* Mark it recovered if we have handled it and MSR(RI=1). */
+ 	if (handled && (regs->msr & MSR_RI))
+ 		mce->disposition = MCE_DISPOSITION_RECOVERED;
+ 	else
+ 		mce->disposition = MCE_DISPOSITION_NOT_RECOVERED;
+-	mce->severity = MCE_SEV_ERROR_SYNC;
++
++	mce->initiator = mce_err->initiator;
++	mce->severity = mce_err->severity;
+ 
+ 	/*
+ 	 * Populate the mce error_type and type-specific error_type.
+diff --git a/arch/powerpc/kernel/mce_power.c b/arch/powerpc/kernel/mce_power.c
+index 7353991c4ece..c37fc5fdd433 100644
+--- a/arch/powerpc/kernel/mce_power.c
++++ b/arch/powerpc/kernel/mce_power.c
+@@ -281,6 +281,9 @@ long __machine_check_early_realmode_p7(struct pt_regs *regs)
+ 	long handled = 1;
+ 	struct mce_error_info mce_error_info = { 0 };
+ 
++	mce_error_info.severity = MCE_SEV_ERROR_SYNC;
++	mce_error_info.initiator = MCE_INITIATOR_CPU;
++
+ 	srr1 = regs->msr;
+ 	nip = regs->nip;
+ 
+@@ -352,6 +355,9 @@ long __machine_check_early_realmode_p8(struct pt_regs *regs)
+ 	long handled = 1;
+ 	struct mce_error_info mce_error_info = { 0 };
+ 
++	mce_error_info.severity = MCE_SEV_ERROR_SYNC;
++	mce_error_info.initiator = MCE_INITIATOR_CPU;
++
+ 	srr1 = regs->msr;
+ 	nip = regs->nip;
+ 
 -- 
 2.11.0
