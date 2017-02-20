@@ -1,23 +1,51 @@
-Return-Path: <niklas.cassel@axis.com>
-Received: from bes.se.axis.com (bes.se.axis.com [195.60.68.10])
- by lists.ozlabs.org (Postfix) with ESMTP id 3vRcb956bXzDq8X
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Feb 2017 19:43:01 +1100 (AEDT)
-Subject: Re: [PATCH 2/4] PCI: dwc: dra7xx: Populate cpu_addr_fixup ops
-To: Kishon Vijay Abraham I <kishon@ti.com>, Bjorn Helgaas
- <bhelgaas@google.com>, Jingoo Han <jingoohan1@gmail.com>,
- <linux-kernel@vger.kernel.org>, <linux-pci@vger.kernel.org>,
- <linux-omap@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
- <linux-samsung-soc@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
- <linux-arm-kernel@axis.com>
-References: <1487251752-12478-1-git-send-email-kishon@ti.com>
- <1487251752-12478-3-git-send-email-kishon@ti.com>
-CC: Joao Pinto <Joao.Pinto@synopsys.com>, <nsekhar@ti.com>
-From: Niklas Cassel <niklas.cassel@axis.com>
-Message-ID: <2636ef0f-78e1-b38a-5864-c53a645e7073@axis.com>
-Date: Mon, 20 Feb 2017 09:32:35 +0100
+Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vRf1j1hDczDq8X
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Feb 2017 20:47:36 +1100 (AEDT)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v1K9hY3x135753
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Feb 2017 04:47:33 -0500
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 28pgs4j2ky-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Feb 2017 04:47:33 -0500
+Received: from localhost
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
+ Mon, 20 Feb 2017 19:47:30 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 8B93C3578058
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Feb 2017 20:47:27 +1100 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v1K9lJCK35717360
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Feb 2017 20:47:27 +1100
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v1K9ktkc014028
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Feb 2017 20:46:55 +1100
+Date: Mon, 20 Feb 2017 15:16:26 +0530
+From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+To: Arnaldo Carvalho de Melo <acme@kernel.org>
+Cc: Masami Hiramatsu <mhiramat@kernel.org>,
+ Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Ingo Molnar <mingo@redhat.com>,
+ Namhyung Kim <namhyung@kernel.org>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 0/2] powerpc: kretprobe updates
+References: <dbb93084a6bc96d44cf7436ab6d5f9c8c72b6a39.1487181941.git.naveen.n.rao@linux.vnet.ibm.com>
+ <cover.1487232416.git.naveen.n.rao@linux.vnet.ibm.com>
+ <20170217194433.0b4707bbfa1de603d13fbd30@kernel.org>
+ <20170217204254.GH4109@kernel.org>
 MIME-Version: 1.0
-In-Reply-To: <1487251752-12478-3-git-send-email-kishon@ti.com>
-Content-Type: text/plain; charset="windows-1252"
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20170217204254.GH4109@kernel.org>
+Message-Id: <20170220094626.GA12165@naverao1-tp.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,66 +55,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello Kishon!
+On 2017/02/17 05:42PM, Arnaldo Carvalho de Melo wrote:
+> Em Fri, Feb 17, 2017 at 07:44:33PM +0900, Masami Hiramatsu escreveu:
+> > On Thu, 16 Feb 2017 13:47:37 +0530
+> > "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
+> > 
+> > > I am posting the powerpc bits in the same thread so as to keep these
+> > > changes together. I am not sure how this should be taken upstream as
+> > > there are atleast three different trees involved: one for the core
+> > > kprobes infrastructure, one for powerpc and one for perf.
+> 
+> > Hmm, could you make these (and other related) patches and
+> > other series in one series? Or wait for the other series
+> > are merged correctly.
+> 
+> Well, patches like these should be done in a way that the tooling parts
+> can deal with kernels with or without the kernel changes, so that older
+> tools work with new kernels and new tools work with older kernels.
+> 
+> "work" as in the previous behaviour is kept when a new tool deals with
+> an older kernel and an older tool would warn the user that what it needs
+> is not present in that kernel.
+> 
+> Is this the case? I just looked briefly at the patch commit logs.
 
+Thanks, that makes sense.
 
-It's nice to see that you are improving the dwc framework+drivers.
+All the kernel patches here can go in as they are about removing the 
+restrictions around use of kretprobes with kprobe_event, except for the 
+first patch which hardens use of kretprobes in general by validating 
+addresses. None of that should cause issues with the existing tools.
 
-pcie-artpec6.c has the same quirk as dra7xx,
-see define ARTPEC6_CPU_TO_BUS_ADDR.
+> 
+> If it is, then I can pick the tool ones, and the others can be submitted
+> to the relevant trees, at some point all will be in, kernels eventually
+> gets updated everywhere, ditto for the tooling, all gets well.
 
-I could create a patch, but I guess it would make more sense
-if it's part of this series.
-
-Keep up the good work!
+Older perf tools with newer kernels will be fine. However, with the 
+current perf patches, newer perf will fail with older kernels. I will 
+redo the perf patches to address this. So, please don't merge the perf 
+bits in this series.
 
 
 Regards,
-Niklas
-
-
-On 02/16/2017 02:29 PM, Kishon Vijay Abraham I wrote:
-> Populate cpu_addr_fixup ops to extract the least 28 bits of the
-> corresponding cpu address.
->
-> Signed-off-by: Kishon Vijay Abraham I <kishon@ti.com>
-> ---
->  drivers/pci/dwc/pci-dra7xx.c |   11 ++++++-----
->  1 file changed, 6 insertions(+), 5 deletions(-)
->
-> diff --git a/drivers/pci/dwc/pci-dra7xx.c b/drivers/pci/dwc/pci-dra7xx.c
-> index 0984baf..07c45ec 100644
-> --- a/drivers/pci/dwc/pci-dra7xx.c
-> +++ b/drivers/pci/dwc/pci-dra7xx.c
-> @@ -88,6 +88,11 @@ static inline void dra7xx_pcie_writel(struct dra7xx_pcie *pcie, u32 offset,
->  	writel(value, pcie->base + offset);
->  }
->  
-> +static u64 dra7xx_pcie_cpu_addr_fixup(u64 pci_addr)
-> +{
-> +	return pci_addr & DRA7XX_CPU_TO_BUS_ADDR;
-> +}
-> +
->  static int dra7xx_pcie_link_up(struct dw_pcie *pci)
->  {
->  	struct dra7xx_pcie *dra7xx = to_dra7xx_pcie(pci);
-> @@ -152,11 +157,6 @@ static void dra7xx_pcie_host_init(struct pcie_port *pp)
->  	struct dw_pcie *pci = to_dw_pcie_from_pp(pp);
->  	struct dra7xx_pcie *dra7xx = to_dra7xx_pcie(pci);
->  
-> -	pp->io_base &= DRA7XX_CPU_TO_BUS_ADDR;
-> -	pp->mem_base &= DRA7XX_CPU_TO_BUS_ADDR;
-> -	pp->cfg0_base &= DRA7XX_CPU_TO_BUS_ADDR;
-> -	pp->cfg1_base &= DRA7XX_CPU_TO_BUS_ADDR;
-> -
->  	dw_pcie_setup_rc(pp);
->  
->  	dra7xx_pcie_establish_link(dra7xx);
-> @@ -329,6 +329,7 @@ static int __init dra7xx_add_pcie_port(struct dra7xx_pcie *dra7xx,
->  }
->  
->  static const struct dw_pcie_ops dw_pcie_ops = {
-> +	.cpu_addr_fixup = dra7xx_pcie_cpu_addr_fixup,
->  	.link_up = dra7xx_pcie_link_up,
->  };
->  
+Naveen
