@@ -1,21 +1,26 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <bsingharora@gmail.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vRTnK08SqzDq8X
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Feb 2017 14:36:20 +1100 (AEDT)
-Message-ID: <1487561746.23576.170.camel@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc/mm/hugetlb: Filter out hugepage size not
- supported by page table layout
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>, paulus@samba.org,
- mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org
-Date: Mon, 20 Feb 2017 14:35:46 +1100
-In-Reply-To: <fdc5f84d-f337-24e6-e116-e34cf6ff722b@linux.vnet.ibm.com>
-References: <1487499527-16166-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1487538354.23576.158.camel@kernel.crashing.org>
- <fdc5f84d-f337-24e6-e116-e34cf6ff722b@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vRTyj67q4zDq8X
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Feb 2017 14:44:29 +1100 (AEDT)
+Received: from mail-pg0-x235.google.com (mail-pg0-x235.google.com
+ [IPv6:2607:f8b0:400e:c05::235])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3vRTyj2Jvcz9s7Z
+ for <linuxppc-dev@ozlabs.org>; Mon, 20 Feb 2017 14:44:28 +1100 (AEDT)
+Received: by mail-pg0-x235.google.com with SMTP id a123so11582622pgc.0
+ for <linuxppc-dev@ozlabs.org>; Sun, 19 Feb 2017 19:44:28 -0800 (PST)
+Message-ID: <1487562261.10535.8.camel@gmail.com>
+Subject: Re: [next-20170217] WARN @/arch/powerpc/include/asm/xics.h:124
+ .icp_hv_eoi+0x40/0x140
+From: Balbir Singh <bsingharora@gmail.com>
+To: Sachin Sant <sachinp@linux.vnet.ibm.com>, linux-next@vger.kernel.org
+Cc: linuxppc-dev@ozlabs.org
+Date: Mon, 20 Feb 2017 14:44:21 +1100
+In-Reply-To: <E96217CD-2ADD-430D-86BD-27FF87752D7F@linux.vnet.ibm.com>
+References: <E96217CD-2ADD-430D-86BD-27FF87752D7F@linux.vnet.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,20 +32,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2017-02-20 at 09:02 +0530, Aneesh Kumar K.V wrote:
-> To avoid crashes like the one reported in the commit message due to 
-> buggy firmware ? 
+On Sun, 2017-02-19 at 20:39 +0530, Sachin Sant wrote:
+> While booting next-20170217 on a POWER6 box, I ran into following
+> warning. This is a full system lpar. Previous next tree was good.
+> I will try a bisect tomorrow.
+> 
+> ipr: IBM Power RAID SCSI Device Driver version: 2.6.3 (October 17, 2015)
+> ipr 0200:00:01.0: Found IOA with IRQ: 305
+> ------------[ cut here ]------------
+> WARNING: CPU: 12 PID: 1 at ./arch/powerpc/include/asm/xics.h:124 .icp_hv_eoi+0x40/0x140
 
-I don't want Linux to make those assumptions. We should fix the FW.
 
-Think of backward compat for example.
+This indicates that the CPPR stack underflow'd (we don't know the CPPR value
+at the time of the interrupt that we are going to do an EOI for).  The problem
+could have occured elsewhere, but shows up at the first interrupt after
+the real cause. Could you past the full dmesg and config and follow Michael's
+suggestion for debugging SHIRQ's
 
-> Also
-> It can serve as an easy way to understand what hugepage sizes are 
-> supported by different platforms.
-> I am yet to figure out what the FSL_BOOK3E and PPC_8xx #ifdef above
-> that 
-> hunk is all about. Having
-> the supported hugepage size clearly verified against makes it easy ?
-> 
-> -aneesh
+Balbir
