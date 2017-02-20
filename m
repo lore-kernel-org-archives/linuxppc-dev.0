@@ -1,34 +1,19 @@
-Return-Path: <broonie@sirena.org.uk>
-Received: from mezzanine.sirena.org.uk (mezzanine.sirena.org.uk
- [IPv6:2400:8900::f03c:91ff:fedb:4f4])
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
+ [IPv6:2607:f8b0:400e:c05::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vRtRV2XNZzDqBv
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Feb 2017 06:07:18 +1100 (AEDT)
-Date: Mon, 20 Feb 2017 11:06:12 -0800
-From: Mark Brown <broonie@kernel.org>
-To: Joe Perches <joe@perches.com>
-Cc: Nicolin Chen <nicoleotsuka@gmail.com>, Timur Tabi <timur@tabi.org>,
- Xiubo Li <Xiubo.Lee@gmail.com>, Fabio Estevam <fabio.estevam@nxp.com>,
- Krzysztof Kozlowski <krzk@kernel.org>, Sangbeom Kim <sbkim73@samsung.com>,
- Sylwester Nawrocki <s.nawrocki@samsung.com>,
- Liam Girdwood <lgirdwood@gmail.com>,
- Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>,
- alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Message-ID: <20170220190612.ykyguxtclicy5dxc@sirena.org.uk>
-References: <cover.1487314666.git.joe@perches.com>
- <3d93f7226ba34fede99f72ec038098a3d98a139a.1487314667.git.joe@perches.com>
- <20170217202844.GA8215@Asurada-Nvidia>
- <20170217234854.spi62waguwd7kpno@sirena.org.uk>
- <20170217235751.GA4125@Asurada-Nvidia>
- <1487377247.2198.9.camel@perches.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="ju3l6r467ztwkroa"
-In-Reply-To: <1487377247.2198.9.camel@perches.com>
-Subject: Re: [PATCH 35/35] sound/soc: Convert remaining uses of pr_warning to
- pr_warn
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vRvGj5l5fzDqC0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Feb 2017 06:44:45 +1100 (AEDT)
+Received: by mail-pg0-x242.google.com with SMTP id 1so6988385pgz.2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Feb 2017 11:44:45 -0800 (PST)
+From: Nicholas Piggin <npiggin@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Nicholas Piggin <npiggin@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>,
+ Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+Subject: [PATCH 0/9] MCE handler for POWER9
+Date: Tue, 21 Feb 2017 05:44:21 +1000
+Message-Id: <20170220194430.32602-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,44 +23,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hi,
 
---ju3l6r467ztwkroa
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+The first part of this series up to patch 5 includes MCE handler
+definitions for POWER9. Probably the biggest concern is the new
+MCE types and how they are recorded and reported, so comments on
+that would be welcome.
 
-On Fri, Feb 17, 2017 at 04:20:47PM -0800, Joe Perches wrote:
+Patches 6 onward change the MCE parsing into a table base approach.
+Note, those later changes are not functionally identical (as noted
+in comments, e.g. effective address and ERAT flushing changes slightly).
 
-> If or when you apply it, you should
-> fix it up to suit.
+This has had some testing with a userspace harness, as well as some
+tests in mambo.
 
-To repeat, I don't have this patch so someone will need to send it to
-me.
+Thanks,
+Nick
 
-> $ git log -1000 --pretty=3Doneline --no-merges sound/soc |=A0\
->   cut -f2- -d" " | cut -f1 -d":" |sort | uniq
-> ALSA
-> AsoC
-> ASoc
-> ASoC
-> ASOC
-> ASoC fix up SND_SOC_WM8985 dependency
+Nicholas Piggin (9):
+  powerpc/64s: machine check print NIP
+  powerpc/64s: allow machine check handler to set severity and initiator
+  powerpc/64s: clean up machine check recovery flushing
+  powerpc/64s: cope with non-synchronous machine checks
+  powerpc/64s: POWER9 machine check handler
+  powerpc/64s: move POWER machine check defines into mce_power.c
+  powerpc/64s: data driven machine check evaluation
+  powerpc/64s: data driven machine check handling
+  powerpc/64s: POWER8 add missing machine check definitions
 
-*sigh*  Now try counting the frequency of each...
+ arch/powerpc/include/asm/bitops.h     |   4 +
+ arch/powerpc/include/asm/mce.h        | 101 +++---
+ arch/powerpc/kernel/cputable.c        |   3 +
+ arch/powerpc/kernel/mce.c             |  91 +++++-
+ arch/powerpc/kernel/mce_power.c       | 590 +++++++++++++++++++++++-----------
+ arch/powerpc/platforms/powernv/opal.c |  20 +-
+ 6 files changed, 564 insertions(+), 245 deletions(-)
 
---ju3l6r467ztwkroa
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCAAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAlirPiMACgkQJNaLcl1U
-h9B43Qf8CZDZfm6oqfoNeLBKZKeeclz178n92w0podzmWP1T5Nbai/1xWHPu6uBg
-/DH/XOF8d4qmKy7/BIXDg0XyreopDCqG+g8WHzol0H7Faf1pzbRaM8faAmagRPCX
-/fv0wuG4R+mAoGZw3bd6yQk0VUQWHgZqXX28KwD3OY+47zbPloE9Gq6IBNqb1TFx
-aFScg5IYULKs/4MEvanceca3py3H/9mDmXKqpeibUp5X/CKYKsYWqzhyjYKSQMnK
-Gjb9hFEPyIspnYPaUs1/Le+pCuYM4RRGwqrhCrcXdKxg8opW9WbrWvK8aGKRqY5G
-COGO5JBwn8ibCQ0oUS/zU2SxX24ojw==
-=swEe
------END PGP SIGNATURE-----
-
---ju3l6r467ztwkroa--
+-- 
+2.11.0
