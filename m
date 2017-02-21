@@ -1,22 +1,23 @@
-Return-Path: <paubert@iram.es>
-Received: from cica-lavadora-l1mail2.puc.rediris.es (arce.puc.rediris.es
- [IPv6:2001:720:418:ca02::18])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mhiramat@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vSLJ83tj6zDqBv
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Feb 2017 00:02:32 +1100 (AEDT)
-Date: Tue, 21 Feb 2017 13:51:00 +0100
-From: Gabriel Paubert <paubert@iram.es>
-To: Hamish Martin <hamish.martin@alliedtelesis.co.nz>
-Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 0/2] Allow configurable stack size (especially 32k on
- PPC64)
-Message-ID: <20170221125100.GA12237@visitor2.iram.es>
-References: <20170220202440.25796-1-hamish.martin@alliedtelesis.co.nz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170220202440.25796-1-hamish.martin@alliedtelesis.co.nz>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vSLPV6njgzDqBv
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Feb 2017 00:07:10 +1100 (AEDT)
+Date: Tue, 21 Feb 2017 22:06:55 +0900
+From: Masami Hiramatsu <mhiramat@kernel.org>
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+Cc: Arnaldo Carvalho de Melo <acme@kernel.org>, Masami Hiramatsu
+ <mhiramat@kernel.org>, linux-kernel@vger.kernel.org, Namhyung Kim
+ <namhyung@kernel.org>, linuxppc-dev@lists.ozlabs.org, Ingo Molnar
+ <mingo@redhat.com>
+Subject: Re: [PATCH 0/2] powerpc: kretprobe updates
+Message-Id: <20170221220655.19df81e829e3f5f16e82954d@kernel.org>
+In-Reply-To: <20170220114305.8998-1-naveen.n.rao@linux.vnet.ibm.com>
+References: <20170217204254.GH4109@kernel.org>
+ <20170220114305.8998-1-naveen.n.rao@linux.vnet.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,141 +27,357 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Feb 21, 2017 at 09:24:38AM +1300, Hamish Martin wrote:
-> This patch series adds the ability to configure the THREAD_SHIFT value and
-> thereby alter the stack size on powerpc systems. We are particularly interested
-> in configuring for a 32k stack on PPC64.
-> 
-> Using an NXP T2081 (e6500 PPC64 cores) we are observing stack overflows as a
-> result of applying a DTS overlay containing some I2C devices. Our scenario is
-> an ethernet switch chassis with plug-in cards. The I2C is driven from the T2081
-> through a PCA9548 mux on the main board. When we detect insertion of the plugin
-> card we schedule work for a call to of_overlay_create() to install a DTS
-> overlay for the plugin board. This DTS overlay contains a further PCA9548 mux
-> with more devices hanging off it including a PCA9539 GPIO expander. The
-> ultimate installed I2C tree is:
-> 
-> T2081 --- PCA9548 MUX --- PCA9548 MUX --- PCA9539 GPIO Expander
-> 
-> When we install the overlay the devices described in the overlay are probed and
-> we see a large number of stack frames used as a result. If this is coupled with
-> an interrupt happening that requires moderate to high stack use we observe
-> stack corruption. Here is an example long stack (from a 4.10-rc8 kernel) that
-> does not show corruption but does demonstrate the length and frame sizes
-> involved.
-> 
->         Depth    Size   Location    (72 entries)
->         -----    ----   --------
->   0)    13872     128   .__raise_softirq_irqoff+0x1c/0x130
->   1)    13744     144   .raise_softirq+0x30/0x70
->   2)    13600     112   .invoke_rcu_core+0x54/0x70
->   3)    13488     336   .rcu_check_callbacks+0x294/0xde0
->   4)    13152     128   .update_process_times+0x40/0x90
->   5)    13024     144   .tick_sched_handle.isra.16+0x40/0xb0
->   6)    12880     144   .tick_sched_timer+0x6c/0xe0
->   7)    12736     272   .__hrtimer_run_queues+0x1a0/0x4b0
->   8)    12464     208   .hrtimer_interrupt+0xe8/0x2a0
->   9)    12256     160   .__timer_interrupt+0xdc/0x330
->  10)    12096     160   .timer_interrupt+0x138/0x190
->  11)    11936     752   exc_0x900_common+0xe0/0xe4
->  12)    11184     128   .ftrace_ops_no_ops+0x11c/0x230
->  13)    11056     176   .ftrace_ops_test.isra.12+0x30/0x50
->  14)    10880     160   .ftrace_ops_no_ops+0xd4/0x230
->  15)    10720     112   ftrace_call+0x4/0x8
->  16)    10608     176   .lock_timer_base+0x3c/0xf0
->  17)    10432     144   .try_to_del_timer_sync+0x2c/0x90
->  18)    10288     128   .del_timer_sync+0x60/0x80
->  19)    10160     256   .schedule_timeout+0x1fc/0x490
->  20)     9904     208   .i2c_wait+0x238/0x290
->  21)     9696     256   .mpc_xfer+0x4e4/0x570
->  22)     9440     208   .__i2c_transfer+0x158/0x6d0
->  23)     9232     192   .pca954x_reg_write+0x70/0x110
->  24)     9040     160   .__i2c_mux_master_xfer+0xb4/0xf0
->  25)     8880     208   .__i2c_transfer+0x158/0x6d0
->  26)     8672     192   .pca954x_reg_write+0x70/0x110
->  27)     8480     144   .pca954x_select_chan+0x68/0xa0
->  28)     8336     160   .__i2c_mux_master_xfer+0x64/0xf0
->  29)     8176     208   .__i2c_transfer+0x158/0x6d0
->  30)     7968     144   .i2c_transfer+0x98/0x130
->  31)     7824     320   .i2c_smbus_xfer_emulated+0x168/0x600
->  32)     7504     208   .i2c_smbus_xfer+0x1c0/0x5d0
->  33)     7296     192   .i2c_smbus_write_byte_data+0x50/0x70
->  34)     7104     144   .pca953x_write_single+0x6c/0xe0
->  35)     6960     192   .pca953x_gpio_direction_output+0xa4/0x160
->  36)     6768     160   ._gpiod_direction_output_raw+0xec/0x460
->  37)     6608     160   .gpiod_hog+0x98/0x250
->  38)     6448     176   .of_gpiochip_add+0xdc/0x1c0
->  39)     6272     256   .gpiochip_add_data+0x4f4/0x8c0
->  40)     6016     144   .devm_gpiochip_add_data+0x64/0xf0
->  41)     5872     208   .pca953x_probe+0x2b4/0x5f0
->  42)     5664     144   .i2c_device_probe+0x224/0x2e0
->  43)     5520     160   .really_probe+0x244/0x380
->  44)     5360     160   .bus_for_each_drv+0x94/0x100
->  45)     5200     160   .__device_attach+0x118/0x160
->  46)     5040     144   .bus_probe_device+0xe8/0x100
->  47)     4896     208   .device_add+0x500/0x6c0
->  48)     4688     144   .i2c_new_device+0x1f8/0x240
->  49)     4544     256   .of_i2c_register_device+0x160/0x280
->  50)     4288     192   .i2c_register_adapter+0x238/0x630
->  51)     4096     208   .i2c_mux_add_adapter+0x3f8/0x540
->  52)     3888     192   .pca954x_probe+0x234/0x370
->  53)     3696     144   .i2c_device_probe+0x224/0x2e0
->  54)     3552     160   .really_probe+0x244/0x380
->  55)     3392     160   .bus_for_each_drv+0x94/0x100
->  56)     3232     160   .__device_attach+0x118/0x160
->  57)     3072     144   .bus_probe_device+0xe8/0x100
->  58)     2928     208   .device_add+0x500/0x6c0
->  59)     2720     144   .i2c_new_device+0x1f8/0x240
->  60)     2576     256   .of_i2c_register_device+0x160/0x280
->  61)     2320     144   .of_i2c_notify+0x12c/0x1d0
->  62)     2176     160   .notifier_call_chain+0x8c/0x100
->  63)     2016     160   .__blocking_notifier_call_chain+0x6c/0xe0
->  64)     1856     208   .__of_changeset_entry_notify+0xd8/0x140
->  65)     1648     192   .__of_changeset_apply+0x7c/0x100
->  66)     1456     272   .of_overlay_create+0x2e0/0x4b0
->  67)     1184     128   .xem2_install_overlay+0x40/0x90
->  68)     1056     176   .process_one_work+0x18c/0x540
->  69)      880     240   .worker_thread+0x98/0x550
->  70)      640     192   .kthread+0x150/0x190
->  71)      448     448   .ret_from_kernel_thread+0x58/0x64
-> 13872
-> 
-> Obviously this could be avoided by constant whack-a-mole type activity of
-> restructuring code. We have in fact reworked our code from a two overlay
-> install to a one overlay install to avoid the worst cases. However, we believe
-> there is a more fundamental issue at the heart of the problem that ought to be
-> addressed.
-> 
-> In this thread from 2008 (https://lkml.org/lkml/2008/11/17/493) discussing
-> similar issues it is observed that the minimum stack frame size for PPC64 is
-> 112 bytes compared with 16 bytes for PPC32. We consider that this fact means
-> the straight doubling of the 8k PPC32 stack to 16K for PPC64 does not lead to
-> an "equitable" situation with regard to stack headroom. The PPC64 system will
-> not have an equivalent amount of space to operate in.
+On Mon, 20 Feb 2017 17:13:05 +0530
+"Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
 
-Wouldn'it be better to try to switch to the Elf V2 ABI, which has a minimal frame
-size of 32 bytes on PPC64?
+> On 2017/02/17 05:42PM, Arnaldo Carvalho de Melo wrote:
+> > Em Fri, Feb 17, 2017 at 07:44:33PM +0900, Masami Hiramatsu escreveu:
+> > > On Thu, 16 Feb 2017 13:47:37 +0530
+> > > "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
+> > > 
+> > > > I am posting the powerpc bits in the same thread so as to keep these
+> > > > changes together. I am not sure how this should be taken upstream as
+> > > > there are atleast three different trees involved: one for the core
+> > > > kprobes infrastructure, one for powerpc and one for perf.
+> > 
+> > > Hmm, could you make these (and other related) patches and
+> > > other series in one series? Or wait for the other series
+> > > are merged correctly.
+> > 
+> > Well, patches like these should be done in a way that the tooling parts
+> > can deal with kernels with or without the kernel changes, so that older
+> > tools work with new kernels and new tools work with older kernels.
+> 
+> Does the below work?
 
-For now it has only been used for little-endian kernel and applications,
-but according to messages that I have seen on the list, switching the kernel 
-to Elf V2 should be possible.
-
-    Gabriel
-
+Sorry, no that is not what we meant. Please see my previous reply.
 
 > 
-> For instance for a 70 frame stack, the architecture overhead just for the stack
-> frames is:
->    70 * 16 bytes = 1120 bytes for PPC32, and
->    70 * 112 bytes = 7840 bytes for PPC64.
-> So a simple doubling of the PPC32 stack size leaves us with a shortfall of 5600
-> bytes (7840 - (2 * 1120)). In the example the stack frame overhead for PPC32 is
-> 1120/8192 = 13.5% of the stack space, whereas for PPC64 it is 7840/16384 =
-> 47.8% of the space.
+> The idea is to just prefer the real function names when probing 
+> functions that do not have duplicate names. Offset from _text only if we 
+> detect that a function name has multiple entries. In this manner,
+> existing perf will continue to work with newer kernels and vice-versa.
+
+Even with this, the latter will fail (instead of putting rprobe on the
+first symbol) on older kernel. Instead, we'll check the ftrace's README
+on current kernel and if it supports sym+offs style on retprobe,
+we'll use _text+offs event definition. If not, we continue to use
+older style.
+
+Thank you,
+
 > 
-> The aim of this series is to provide the ability for users to configure for
-> larger stacks without altering the defaults in a way that would impact existing
-> users. However, given the inequity between the PPC32 and PPC64 stacks when
-> taking into account the respective minimum stack frame sizes, we believe
-> consideration should be given to having a large default. We would appreciate
-> any input or opinions on this issue.
+> Before this patch:
+> 
+> naveen@ubuntu:~/linux/tools/perf$ sudo ./perf probe -D _do_fork
+> p:probe/_do_fork _text+857288
+> naveen@ubuntu:~/linux/tools/perf$ sudo ./perf probe -D _do_fork%return
+> r:probe/_do_fork _text+857288
+> naveen@ubuntu:~/linux/tools/perf$ sudo ./perf probe -D read_mem
+> p:probe/read_mem _text+10019704
+> p:probe/read_mem_1 _text+6228424
+> naveen@ubuntu:~/linux/tools/perf$ sudo ./perf probe -D read_mem%return
+> r:probe/read_mem _text+10019704
+> r:probe/read_mem_1 _text+6228424
+> 
+> 
+> With the below patch (lightly tested):
+> 
+> naveen@ubuntu:~/linux/tools/perf$ sudo ./perf probe -D _do_fork
+> p:probe/_do_fork _do_fork+8
+> naveen@ubuntu:~/linux/tools/perf$ sudo ./perf probe -D _do_fork%return
+> r:probe/_do_fork _do_fork+8
+> naveen@ubuntu:~/linux/tools/perf$ sudo ./perf probe -D read_mem
+> p:probe/read_mem _text+10019704
+> p:probe/read_mem_1 _text+6228424
+> naveen@ubuntu:~/linux/tools/perf$ sudo ./perf probe -D read_mem%return
+> r:probe/read_mem _text+10019704
+> r:probe/read_mem_1 _text+6228424
+> 
+> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+> ---
+>  tools/perf/util/machine.h     |  7 +++++
+>  tools/perf/util/map.c         | 41 +++++++++++++++++++++++++++++
+>  tools/perf/util/map.h         | 13 ++++++++++
+>  tools/perf/util/probe-event.c | 18 +++++++++++++
+>  tools/perf/util/symbol.c      | 60 +++++++++++++++++++++++++++++++++++++++++++
+>  tools/perf/util/symbol.h      |  2 ++
+>  6 files changed, 141 insertions(+)
+> 
+> diff --git a/tools/perf/util/machine.h b/tools/perf/util/machine.h
+> index 354de6e56109..277ffb1e0896 100644
+> --- a/tools/perf/util/machine.h
+> +++ b/tools/perf/util/machine.h
+> @@ -203,6 +203,13 @@ struct symbol *machine__find_kernel_function_by_name(struct machine *machine,
+>  	return map_groups__find_function_by_name(&machine->kmaps, name, mapp);
+>  }
+>  
+> +static inline
+> +unsigned int machine__find_kernel_function_count_by_name(struct machine *machine,
+> +						     const char *name)
+> +{
+> +	return map_groups__find_function_count_by_name(&machine->kmaps, name);
+> +}
+> +
+>  struct map *machine__findnew_module_map(struct machine *machine, u64 start,
+>  					const char *filename);
+>  int arch__fix_module_text_start(u64 *start, const char *name);
+> diff --git a/tools/perf/util/map.c b/tools/perf/util/map.c
+> index 4f9a71c63026..b75b35dc54ad 100644
+> --- a/tools/perf/util/map.c
+> +++ b/tools/perf/util/map.c
+> @@ -349,6 +349,17 @@ struct symbol *map__find_symbol_by_name(struct map *map, const char *name)
+>  	return dso__find_symbol_by_name(map->dso, map->type, name);
+>  }
+>  
+> +unsigned int map__find_symbol_count_by_name(struct map *map, const char *name)
+> +{
+> +	if (map__load(map) < 0)
+> +		return 0;
+> +
+> +	if (!dso__sorted_by_name(map->dso, map->type))
+> +		dso__sort_by_name(map->dso, map->type);
+> +
+> +	return dso__find_symbol_count_by_name(map->dso, map->type, name);
+> +}
+> +
+>  struct map *map__clone(struct map *from)
+>  {
+>  	struct map *map = memdup(from, sizeof(*map));
+> @@ -593,6 +604,29 @@ struct symbol *maps__find_symbol_by_name(struct maps *maps, const char *name,
+>  	return sym;
+>  }
+>  
+> +unsigned int maps__find_symbol_count_by_name(struct maps *maps, const char *name)
+> +{
+> +	struct symbol *sym;
+> +	struct rb_node *nd;
+> +	unsigned int count = 0;
+> +
+> +	pthread_rwlock_rdlock(&maps->lock);
+> +
+> +	for (nd = rb_first(&maps->entries); nd; nd = rb_next(nd)) {
+> +		struct map *pos = rb_entry(nd, struct map, rb_node);
+> +
+> +		sym = map__find_symbol_by_name(pos, name);
+> +
+> +		if (sym != NULL) {
+> +			count = map__find_symbol_count_by_name(pos, name);
+> +			break;
+> +		}
+> +	}
+> +
+> +	pthread_rwlock_unlock(&maps->lock);
+> +	return count;
+> +}
+> +
+>  struct symbol *map_groups__find_symbol_by_name(struct map_groups *mg,
+>  					       enum map_type type,
+>  					       const char *name,
+> @@ -603,6 +637,13 @@ struct symbol *map_groups__find_symbol_by_name(struct map_groups *mg,
+>  	return sym;
+>  }
+>  
+> +unsigned int map_groups__find_symbol_count_by_name(struct map_groups *mg,
+> +					       enum map_type type,
+> +					       const char *name)
+> +{
+> +	return maps__find_symbol_count_by_name(&mg->maps[type], name);
+> +}
+> +
+>  int map_groups__find_ams(struct addr_map_symbol *ams)
+>  {
+>  	if (ams->addr < ams->map->start || ams->addr >= ams->map->end) {
+> diff --git a/tools/perf/util/map.h b/tools/perf/util/map.h
+> index abdacf800c98..ecf995f033ed 100644
+> --- a/tools/perf/util/map.h
+> +++ b/tools/perf/util/map.h
+> @@ -173,6 +173,7 @@ int map__fprintf_srcline(struct map *map, u64 addr, const char *prefix,
+>  int map__load(struct map *map);
+>  struct symbol *map__find_symbol(struct map *map, u64 addr);
+>  struct symbol *map__find_symbol_by_name(struct map *map, const char *name);
+> +unsigned int map__find_symbol_count_by_name(struct map *map, const char *name);
+>  void map__fixup_start(struct map *map);
+>  void map__fixup_end(struct map *map);
+>  
+> @@ -187,6 +188,7 @@ struct map *maps__first(struct maps *maps);
+>  struct map *map__next(struct map *map);
+>  struct symbol *maps__find_symbol_by_name(struct maps *maps, const char *name,
+>                                           struct map **mapp);
+> +unsigned int maps__find_symbol_count_by_name(struct maps *maps, const char *name);
+>  void map_groups__init(struct map_groups *mg, struct machine *machine);
+>  void map_groups__exit(struct map_groups *mg);
+>  int map_groups__clone(struct thread *thread,
+> @@ -233,6 +235,10 @@ struct symbol *map_groups__find_symbol_by_name(struct map_groups *mg,
+>  					       const char *name,
+>  					       struct map **mapp);
+>  
+> +unsigned int map_groups__find_symbol_count_by_name(struct map_groups *mg,
+> +					       enum map_type type,
+> +					       const char *name);
+> +
+>  struct addr_map_symbol;
+>  
+>  int map_groups__find_ams(struct addr_map_symbol *ams);
+> @@ -244,6 +250,13 @@ struct symbol *map_groups__find_function_by_name(struct map_groups *mg,
+>  	return map_groups__find_symbol_by_name(mg, MAP__FUNCTION, name, mapp);
+>  }
+>  
+> +static inline
+> +unsigned int map_groups__find_function_count_by_name(struct map_groups *mg,
+> +						 const char *name)
+> +{
+> +	return map_groups__find_symbol_count_by_name(mg, MAP__FUNCTION, name);
+> +}
+> +
+>  int map_groups__fixup_overlappings(struct map_groups *mg, struct map *map,
+>  				   FILE *fp);
+>  
+> diff --git a/tools/perf/util/probe-event.c b/tools/perf/util/probe-event.c
+> index fa7f81af11e8..011e938a0a84 100644
+> --- a/tools/perf/util/probe-event.c
+> +++ b/tools/perf/util/probe-event.c
+> @@ -113,6 +113,11 @@ static struct symbol *__find_kernel_function_by_name(const char *name,
+>  	return machine__find_kernel_function_by_name(host_machine, name, mapp);
+>  }
+>  
+> +static unsigned int __find_kernel_function_count_by_name(const char *name)
+> +{
+> +	return machine__find_kernel_function_count_by_name(host_machine, name);
+> +}
+> +
+>  static struct symbol *__find_kernel_function(u64 addr, struct map **mapp)
+>  {
+>  	return machine__find_kernel_function(host_machine, addr, mapp);
+> @@ -155,6 +160,11 @@ static int kernel_get_symbol_address_by_name(const char *name, u64 *addr,
+>  	return 0;
+>  }
+>  
+> +static unsigned int kernel_get_symbol_count_by_name(const char *name)
+> +{
+> +	return __find_kernel_function_count_by_name(name);
+> +}
+> +
+>  static struct map *kernel_get_module_map(const char *module)
+>  {
+>  	struct map_groups *grp = &host_machine->kmaps;
+> @@ -259,6 +269,11 @@ static bool kprobe_warn_out_range(const char *symbol, unsigned long address)
+>  	return true;
+>  }
+>  
+> +static bool kprobe_is_duplicate_symbol(const char *symbol)
+> +{
+> +	return kernel_get_symbol_count_by_name(symbol) > 1;
+> +}
+> +
+>  /*
+>   * @module can be module name of module file path. In case of path,
+>   * inspect elf and find out what is actual module name.
+> @@ -759,6 +774,9 @@ post_process_kernel_probe_trace_events(struct probe_trace_event *tevs,
+>  	for (i = 0; i < ntevs; i++) {
+>  		if (!tevs[i].point.address)
+>  			continue;
+> +		if (!kprobe_is_duplicate_symbol(tevs[i].point.symbol))
+> +			continue;
+> +
+>  		/* If we found a wrong one, mark it by NULL symbol */
+>  		if (kprobe_warn_out_range(tevs[i].point.symbol,
+>  					  tevs[i].point.address)) {
+> diff --git a/tools/perf/util/symbol.c b/tools/perf/util/symbol.c
+> index dc93940de351..ca4a11a92c6f 100644
+> --- a/tools/perf/util/symbol.c
+> +++ b/tools/perf/util/symbol.c
+> @@ -438,6 +438,60 @@ static struct symbol *symbols__find_by_name(struct rb_root *symbols,
+>  	return &s->sym;
+>  }
+>  
+> +static unsigned int symbols__find_count_by_name(struct rb_root *symbols,
+> +					    const char *name)
+> +{
+> +	struct rb_node *n, *m;
+> +	struct symbol_name_rb_node *s = NULL;
+> +	unsigned int count = 0;
+> +
+> +	if (symbols == NULL)
+> +		return 0;
+> +
+> +	n = symbols->rb_node;
+> +
+> +	while (n) {
+> +		int cmp;
+> +
+> +		s = rb_entry(n, struct symbol_name_rb_node, rb_node);
+> +		cmp = arch__compare_symbol_names(name, s->sym.name);
+> +
+> +		if (cmp < 0)
+> +			n = n->rb_left;
+> +		else if (cmp > 0)
+> +			n = n->rb_right;
+> +		else
+> +			break;
+> +	}
+> +
+> +	if (n == NULL)
+> +		return 0;
+> +
+> +	count++;
+> +
+> +	for (m = rb_prev(n); m; m = rb_prev(m)) {
+> +		struct symbol_name_rb_node *tmp;
+> +
+> +		tmp = rb_entry(m, struct symbol_name_rb_node, rb_node);
+> +		if (arch__compare_symbol_names(tmp->sym.name, s->sym.name))
+> +			break;
+> +
+> +		count++;
+> +	}
+> +
+> +	for (m = rb_next(n); m; m = rb_next(m)) {
+> +		struct symbol_name_rb_node *tmp;
+> +
+> +		tmp = rb_entry(m, struct symbol_name_rb_node, rb_node);
+> +		if (arch__compare_symbol_names(tmp->sym.name, s->sym.name))
+> +			break;
+> +
+> +		count++;
+> +	}
+> +
+> +	return count;
+> +}
+> +
+>  void dso__reset_find_symbol_cache(struct dso *dso)
+>  {
+>  	enum map_type type;
+> @@ -503,6 +557,12 @@ struct symbol *dso__find_symbol_by_name(struct dso *dso, enum map_type type,
+>  	return symbols__find_by_name(&dso->symbol_names[type], name);
+>  }
+>  
+> +unsigned int dso__find_symbol_count_by_name(struct dso *dso, enum map_type type,
+> +					const char *name)
+> +{
+> +	return symbols__find_count_by_name(&dso->symbol_names[type], name);
+> +}
+> +
+>  void dso__sort_by_name(struct dso *dso, enum map_type type)
+>  {
+>  	dso__set_sorted_by_name(dso, type);
+> diff --git a/tools/perf/util/symbol.h b/tools/perf/util/symbol.h
+> index 6c358b7ed336..c4bd1b035a9b 100644
+> --- a/tools/perf/util/symbol.h
+> +++ b/tools/perf/util/symbol.h
+> @@ -260,6 +260,8 @@ struct symbol *dso__find_symbol(struct dso *dso, enum map_type type,
+>  				u64 addr);
+>  struct symbol *dso__find_symbol_by_name(struct dso *dso, enum map_type type,
+>  					const char *name);
+> +unsigned int dso__find_symbol_count_by_name(struct dso *dso, enum map_type type,
+> +					const char *name);
+>  struct symbol *symbol__next_by_name(struct symbol *sym);
+>  
+>  struct symbol *dso__first_symbol(struct dso *dso, enum map_type type);
+> -- 
+> 2.11.0
+> 
+
+
+-- 
+Masami Hiramatsu <mhiramat@kernel.org>
