@@ -1,38 +1,31 @@
-Return-Path: <ukrishn@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <arndbergmann@gmail.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vSWkW3wqPzDqGp
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Feb 2017 07:07:31 +1100 (AEDT)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v1LJxs5R008493
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Feb 2017 15:07:29 -0500
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
- by mx0b-001b2d01.pphosted.com with ESMTP id 28rshfqrnq-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Feb 2017 15:07:29 -0500
-Received: from localhost
- by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ukrishn@linux.vnet.ibm.com>;
- Tue, 21 Feb 2017 13:07:28 -0700
-Subject: Re: [PATCH] cxl: Enable PCI device ID for future IBM CXL adapter
-To: Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au,
- Ian Munsie <imunsie@au1.ibm.com>,
- Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-References: <1487303123-7835-1-git-send-email-ukrishn@linux.vnet.ibm.com>
- <63ce34b0-a712-9d31-ea51-c36daa35252b@au1.ibm.com>
-Cc: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>,
- Christophe Lombard <clombard@linux.vnet.ibm.com>
-From: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
-Date: Tue, 21 Feb 2017 14:07:18 -0600
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vSX8J5GPCzDqBV
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Feb 2017 07:26:24 +1100 (AEDT)
+Received: from mail-oi0-x242.google.com (mail-oi0-x242.google.com
+ [IPv6:2607:f8b0:4003:c06::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3vSX8J0wB8z9s74
+ for <linuxppc-dev@ozlabs.org>; Wed, 22 Feb 2017 07:26:24 +1100 (AEDT)
+Received: by mail-oi0-x242.google.com with SMTP id f204so618521oia.1
+ for <linuxppc-dev@ozlabs.org>; Tue, 21 Feb 2017 12:26:24 -0800 (PST)
 MIME-Version: 1.0
-In-Reply-To: <63ce34b0-a712-9d31-ea51-c36daa35252b@au1.ibm.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Message-Id: <525d735e-2d98-8e19-c962-50e868768fd9@linux.vnet.ibm.com>
+Sender: arndbergmann@gmail.com
+In-Reply-To: <20170220123403.41239bbc@roar.ozlabs.ibm.com>
+References: <1487313139-21959-1-git-send-email-mpe@ellerman.id.au>
+ <1487313139-21959-4-git-send-email-mpe@ellerman.id.au>
+ <20170220123403.41239bbc@roar.ozlabs.ibm.com>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Tue, 21 Feb 2017 21:26:21 +0100
+Message-ID: <CAK8P3a3v6E4V7uKxKyvr1NbumyDdMoE4wYkomePatjEF4jN1pw@mail.gmail.com>
+Subject: Re: [RFC PATCH 4/9] powerpc/4xx: Create 4xx pseudo-platform in
+ platforms/4xx
+To: Nicholas Piggin <npiggin@gmail.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,17 +35,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2/19/2017 4:54 AM, Andrew Donnellan wrote:
-> On 17/02/17 14:45, Uma Krishnan wrote:
->> From: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>
->>
->> Add support for a future IBM Coherent Accelerator (CXL) device
->> with an ID of 0x0623.
->>
->> Signed-off-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
->> Signed-off-by: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
+On Mon, Feb 20, 2017 at 3:34 AM, Nicholas Piggin <npiggin@gmail.com> wrote:
+> On Fri, 17 Feb 2017 17:32:14 +1100
+> Michael Ellerman <mpe@ellerman.id.au> wrote:
 >
-> Is this a CAIA 1 or CAIA 2 device?
+>> We have a lot of code in sysdev for supporting 4xx, ie. either 40x or
+>> 44x. Instead it would be cleaner if it was all in platforms/4xx.
+>>
+>> This is slightly odd in that we don't actually define any machines in
+>> the 4xx platform, as is usual for a platform directory. But still it
+>> seems like a better result to have all this related code in a directory
+>> by itself.
 >
+> What about the other things in sysdev that support multiple platforms?
 
-CAIA 1 device
+Some of them have subsystem specific directories in drivers these
+days, e.g. drivers/pci/host and drivers/irqchip. Some others that are
+shared with ARM or ARM64 platforms are already being moved to
+drivers/soc/
+
+> Why not just put the new 4xx subdirectory under sysdev?
+
+arch/powerpc/platforms/40x/ only has four small C files, you could also
+move everything to platforms/4xx/ instead.
+
+     Arnd
