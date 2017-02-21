@@ -1,25 +1,18 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
- [IPv6:2607:f8b0:400e:c05::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vS7Px3y7zzDq5s
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Feb 2017 15:51:49 +1100 (AEDT)
-Received: by mail-pg0-x242.google.com with SMTP id a123so13362933pgc.3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Feb 2017 20:51:49 -0800 (PST)
-From: Balbir Singh <bsingharora@gmail.com>
-Date: Tue, 21 Feb 2017 15:51:42 +1100
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH V3 03/10] powerpc/mm/hash: Move kernel context to the
- starting of context range
-Message-ID: <20170221045142.GC21059@balbir.ozlabs.ibm.com>
-References: <1487498837-12017-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1487498837-12017-4-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vS7d129SvzDq5s
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Feb 2017 16:01:25 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Douglas Miller <dougmill@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 1/1] powerpc/xmon: Dump memory in native endian format.
+In-Reply-To: <1486474844-9872-1-git-send-email-dougmill@linux.vnet.ibm.com>
+References: <1486474844-9872-1-git-send-email-dougmill@linux.vnet.ibm.com>
+Date: Tue, 21 Feb 2017 16:01:22 +1100
+Message-ID: <87shn8m925.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1487498837-12017-4-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,21 +22,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Feb 19, 2017 at 03:37:10PM +0530, Aneesh Kumar K.V wrote:
-> With current kernel, we use the top 4 context for the kernel. Kernel VSIDs are built
-> using these top context values and effective segemnt ID. In the following patches,
-> we want to increase the max effective address to 512TB. We achieve that by
-> increasing the effective segments IDs there by increasing virtual address range.
-> 
-> We will be switching to a 68bit virtual address in the following patch. But for
-> platforms like  p4 and p5, which only support a 65 bit va, we want to limit the
-> virtual addrress to a 65 bit value. We do that by limiting the context bits to 16
-> instead of 19. That means we will have different max context values on different
-> platforms.
-> 
-> To make this simpler. we move the kernel context to the starting of the range.
-> 
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-> ---
+Douglas Miller <dougmill@linux.vnet.ibm.com> writes:
 
-Acked-by: Balbir Singh <bsingharora@gmail.com>
+> diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
+> index 9c0e17c..6249975 100644
+> --- a/arch/powerpc/xmon/xmon.c
+> +++ b/arch/powerpc/xmon/xmon.c
+> @@ -2334,9 +2338,49 @@ static void dump_pacas(void)
+>  }
+>  #endif
+>  
+> +static void dump_by_size(unsigned long addr, long count, int size)
+> +{
+> +	unsigned char temp[16];
+> +	int i, j;
+> +	u64 val;
+> +
+> +	/*
+> +	 * 'count' was aligned 16. If that changes, the following
+> +	 * must also change to accommodate other values for 'count'.
+> +	 */
+> +	for (i = 0; i < count; i += 16, addr += 16) {
+> +		printf(REG, addr);
+> +
+> +		if (mread(addr, temp, 16) != 16) {
+> +			printf("Faulted reading %d bytes from 0x"REG"\n", 16, addr);
+> +			return;
+> +		}
+> +
+> +		for (j = 0; j < 16; j += size) {
+> +			putchar(' ');
+> +			switch (size) {
+> +			case 1: val = temp[j]; break;
+> +			case 2: val = *(u16 *)&temp[j]; break;
+> +			case 4: val = *(u32 *)&temp[j]; break;
+> +			case 8: val = *(u64 *)&temp[j]; break;
+> +			default: val = 0;
+> +			}
+> +
+> +			printf("%0*lx", size * 2, val);
+> +		}
+> +		printf("  |");
+> +		for (j = 0; j < 16; ++j) {
+> +			val = temp[j];
+> +			putchar(' ' <= val && val <= '~' ? val : '.');
+> +		}
+> +		printf("|\n");
+
+I know the ascii dump looks nice, but I think it's misleading. Which is
+why I omitted it from my version.
+
+eg.
+
+0:mon> d $__kstrtab_init_task
+c000000000c03ebe 696e69745f746173 6b006d6d755f6665  |init_task.mmu_fe|
+c000000000c03ece 61747572655f6b65 7973006370755f66  |ature_keys.cpu_f|
+c000000000c03ede 6561747572655f6b 657973006375725f  |eature_keys.cur_|
+c000000000c03eee 6370755f73706563 00766972715f746f  |cpu_spec.virq_to|
+
+0:mon> d8 $__kstrtab_init_task
+c000000000c03ebe 7361745f74696e69 65665f756d6d006b  |init_task.mmu_fe|
+c000000000c03ece 656b5f6572757461 665f757063007379  |ature_keys.cpu_f|
+c000000000c03ede 6b5f657275746165 5f72756300737965  |eature_keys.cur_|
+c000000000c03eee 636570735f757063 6f745f7172697600  |cpu_spec.virq_to|
+
+
+That second dump says at c000000000c03ebe there is a byte with the value
+0x73, which prints as 'i' - but that's false.
+
+
+So I've dropped the ascii printing for now because I want to sneak this
+in to v4.11.
+
+If you want to send a follow-up patch to do the ascii byte reversed that
+would be nice.
+
+cheers
