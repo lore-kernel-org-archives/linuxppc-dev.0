@@ -1,51 +1,51 @@
 Return-Path: <mahesh@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vS3Rl35XqzDqKp
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Feb 2017 12:53:07 +1100 (AEDT)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vS3Rr1gXSzDqL5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Feb 2017 12:53:12 +1100 (AEDT)
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3vS3Rl03sPz9s8G
- for <linuxppc-dev@ozlabs.org>; Tue, 21 Feb 2017 12:53:06 +1100 (AEDT)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v1L1nEqm021909
- for <linuxppc-dev@ozlabs.org>; Mon, 20 Feb 2017 20:53:05 -0500
-Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [125.16.236.5])
- by mx0a-001b2d01.pphosted.com with ESMTP id 28r3ph2vb9-1
+ by ozlabs.org (Postfix) with ESMTPS id 3vS3Rq4T5Lz9s7n
+ for <linuxppc-dev@ozlabs.org>; Tue, 21 Feb 2017 12:53:11 +1100 (AEDT)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v1L1nHQX088727
+ for <linuxppc-dev@ozlabs.org>; Mon, 20 Feb 2017 20:53:09 -0500
+Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [125.16.236.1])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 28r2pnncgt-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Mon, 20 Feb 2017 20:53:04 -0500
+ for <linuxppc-dev@ozlabs.org>; Mon, 20 Feb 2017 20:53:09 -0500
 Received: from localhost
- by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
- Tue, 21 Feb 2017 07:23:02 +0530
-Received: from d28relay06.in.ibm.com (d28relay06.in.ibm.com [9.184.220.150])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id DD017125804F
- for <linuxppc-dev@ozlabs.org>; Tue, 21 Feb 2017 07:23:04 +0530 (IST)
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay06.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v1L1qwen26542214
- for <linuxppc-dev@ozlabs.org>; Tue, 21 Feb 2017 07:22:58 +0530
-Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
- by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v1L1qui1026804
- for <linuxppc-dev@ozlabs.org>; Tue, 21 Feb 2017 07:22:57 +0530
-Subject: [RFC PATCH 5/7] powerpc/book3s: Don't turn on the MSR[ME] bit until
- opal processes the reason.
+ Tue, 21 Feb 2017 07:23:06 +0530
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id E7B69125804F
+ for <linuxppc-dev@ozlabs.org>; Tue, 21 Feb 2017 07:23:09 +0530 (IST)
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+ by d28relay05.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v1L1r0hC37879832
+ for <linuxppc-dev@ozlabs.org>; Tue, 21 Feb 2017 07:23:00 +0530
+Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
+ by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v1L1r2kC014901
+ for <linuxppc-dev@ozlabs.org>; Tue, 21 Feb 2017 07:23:03 +0530
+Subject: [RFC PATCH 6/7] powerpc/book3s: Display more info for MCE error
+ console log.
 From: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
 To: linuxppc-dev <linuxppc-dev@ozlabs.org>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: Paul Mackerras <paulus@samba.org>, Nicholas Piggin <npiggin@gmail.com>
-Date: Tue, 21 Feb 2017 07:22:56 +0530
+Date: Tue, 21 Feb 2017 07:23:02 +0530
 In-Reply-To: <148764180622.19289.14009454092692029974.stgit@jupiter.in.ibm.com>
 References: <148764180622.19289.14009454092692029974.stgit@jupiter.in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Message-Id: <148764197591.19289.17096730042146758117.stgit@jupiter.in.ibm.com>
+Message-Id: <148764198185.19289.4303686878566814766.stgit@jupiter.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -57,41 +57,33 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
 
-Delay it until we are done with machine_check_early() call. Turn on MSR[ME]
-once opal is done with processing MCE.
+For D-side errors we print data load/store address as 'Effective address'
+that caused MC. In addition to that print NIP also at which interrupt was
+taken.
+
+After this patch the MCE console log would look like:
+
+[1150485.962090] Severe Machine check interrupt [Recovered]
+[1150485.962114]   Initiator: CPU
+[1150485.962139]   NIP [c000000000018b00]: sched_clock+0x8/0x34
+[1150485.962166]   Error type: ERAT [Multihit]
+[1150485.962190]     Effective address: 00003fff8f6b0000
 
 Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
 ---
- arch/powerpc/kernel/exceptions-64s.S |   12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
+ arch/powerpc/kernel/mce.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-index d39d611..fa768a7 100644
---- a/arch/powerpc/kernel/exceptions-64s.S
-+++ b/arch/powerpc/kernel/exceptions-64s.S
-@@ -238,6 +238,12 @@ BEGIN_FTR_SECTION
- 	std	r9,_CCR(r1)		/* Save CR in stackframe */
- 	/* Save r9 through r13 from EXMC save area to stack frame. */
- 	EXCEPTION_PROLOG_COMMON_2(PACA_EXMC)
-+	std	r0,GPR0(r1)	/* Save r0 */
-+	EXCEPTION_PROLOG_COMMON_3(0x200)
-+	bl	save_nvgprs
-+	addi	r3,r1,STACK_FRAME_OVERHEAD
-+	bl	machine_check_early
-+	std	r3,RESULT(r1)	/* Save result */
- 	mfmsr	r11			/* get MSR value */
- 	ori	r11,r11,MSR_ME		/* turn on ME bit */
- 	ori	r11,r11,MSR_RI		/* turn on RI bit */
-@@ -345,12 +351,6 @@ EXC_COMMON_BEGIN(machine_check_common)
- 	 * ME=1, MMU (IR=0 and DR=0) off and using MC emergency stack.
- 	 */
- EXC_COMMON_BEGIN(machine_check_handle_early)
--	std	r0,GPR0(r1)	/* Save r0 */
--	EXCEPTION_PROLOG_COMMON_3(0x200)
--	bl	save_nvgprs
--	addi	r3,r1,STACK_FRAME_OVERHEAD
--	bl	machine_check_early
--	std	r3,RESULT(r1)	/* Save result */
- 	ld	r12,_MSR(r1)
- #ifdef	CONFIG_PPC_P7_NAP
- 	/*
+diff --git a/arch/powerpc/kernel/mce.c b/arch/powerpc/kernel/mce.c
+index da12992..035ef53 100644
+--- a/arch/powerpc/kernel/mce.c
++++ b/arch/powerpc/kernel/mce.c
+@@ -320,6 +320,8 @@ void machine_check_print_event_info(struct OpalMachineCheckEvent *evt)
+ 	       "Recovered" : "[Not recovered");
+ 	printk("%s  Initiator: %s\n", level,
+ 	       evt->initiator == MCE_INITIATOR_CPU ? "CPU" : "Unknown");
++	printk("%s  NIP [%016llx]: %pS\n", level, evt->srr0,
++							(void *)evt->srr0);
+ 	switch (evt->error_type) {
+ 	case MCE_ERROR_TYPE_UE:
+ 		subtype = evt->u.ue_error.ue_error_type <
