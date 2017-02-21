@@ -1,47 +1,42 @@
-Return-Path: <gpiccoli@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vSMP01D8LzDqBV
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Feb 2017 00:51:47 +1100 (AEDT)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v1LDnSQH003195
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Feb 2017 08:51:45 -0500
-Received: from e24smtp04.br.ibm.com (e24smtp04.br.ibm.com [32.104.18.25])
- by mx0b-001b2d01.pphosted.com with ESMTP id 28rku6g5cq-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vSNx14T3rzDqBV
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Feb 2017 02:01:09 +1100 (AEDT)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v1LExXQ9060893
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Feb 2017 10:01:07 -0500
+Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [125.16.236.2])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 28rq819tuh-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Feb 2017 08:51:45 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Feb 2017 10:01:06 -0500
 Received: from localhost
- by e24smtp04.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gpiccoli@linux.vnet.ibm.com>;
- Tue, 21 Feb 2017 10:51:43 -0300
-Received: from d24relay02.br.ibm.com (d24relay02.br.ibm.com [9.18.232.42])
- by d24dlp01.br.ibm.com (Postfix) with ESMTP id 542483520068
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Feb 2017 08:51:07 -0500 (EST)
-Received: from d24av02.br.ibm.com (d24av02.br.ibm.com [9.8.31.93])
- by d24relay02.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v1LDpZd517301704
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Feb 2017 10:51:40 -0300
-Received: from d24av02.br.ibm.com (localhost [127.0.0.1])
- by d24av02.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v1LDpKw3028109
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Feb 2017 10:51:20 -0300
-Subject: Re: [PATCH v3 3/3] powerpc/xmon: add debugfs entry for xmon
-To: Pan Xinhui <xinhui@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-References: <1487642322-28380-1-git-send-email-gpiccoli@linux.vnet.ibm.com>
- <1487642322-28380-4-git-send-email-gpiccoli@linux.vnet.ibm.com>
- <438891ca-62e7-6d76-e698-2a2c5c0480ad@linux.vnet.ibm.com>
-Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- npiggin@gmail.com, xinhui.pan@linux.vnet.ibm.com
-From: "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com>
-Date: Tue, 21 Feb 2017 10:51:04 -0300
-MIME-Version: 1.0
-In-Reply-To: <438891ca-62e7-6d76-e698-2a2c5c0480ad@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=gbk
-Message-Id: <27dbed2d-65c9-a8d0-a50c-c5dafa729d5d@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
+ Tue, 21 Feb 2017 20:31:03 +0530
+Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 2657B394004E
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Feb 2017 20:31:01 +0530 (IST)
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+ by d28relay01.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v1LF11CH39125060
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Feb 2017 20:31:01 +0530
+Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
+ by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v1LF0wvw021535
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Feb 2017 20:31:00 +0530
+From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Anju T <anju@linux.vnet.ibm.com>, Masami Hiramatsu <mhiramat@kernel.org>,
+ Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc: optprobes: fix TOC handling in optprobes trampoline
+Date: Tue, 21 Feb 2017 20:30:47 +0530
+Message-Id: <20170221150047.7460-1-naveen.n.rao@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,103 +46,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 02/21/2017 03:35 AM, Pan Xinhui wrote:
-> 
-> 
-> ÔÚ 2017/2/21 09:58, Guilherme G. Piccoli Ð´µÀ:
->> Currently the xmon debugger is set only via kernel boot command-line.
->> It's disabled by default, and can be enabled with "xmon=on" on the
->> command-line. Also, xmon may be accessed via sysrq mechanism.
->> But we cannot enable/disable xmon in runtime, it needs kernel reload.
->>
->> This patch introduces a debugfs entry for xmon, allowing user to query
->> its current state and change it if desired. Basically, the "xmon" file
->> to read from/write to is under the debugfs mount point, on powerpc
->> directory. It's a simple attribute, value 0 meaning xmon is disabled
->> and value 1 the opposite. Writing these states to the file will take
->> immediate effect in the debugger.
->>
->> Signed-off-by: Guilherme G. Piccoli <gpiccoli@linux.vnet.ibm.com>
->> ---
->> v3: logic improved based in the changes made on patch 1.
->>
->> v2: dropped the custom parser by using simple attributes [mpe suggestion].
->>
->>
->>  arch/powerpc/xmon/xmon.c | 31 +++++++++++++++++++++++++++++++
->>  1 file changed, 31 insertions(+)
->>
->> diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
->> index f1fcfa8..764ea62 100644
->> --- a/arch/powerpc/xmon/xmon.c
->> +++ b/arch/powerpc/xmon/xmon.c
->> @@ -29,6 +29,10 @@
->>  #include <linux/nmi.h>
->>  #include <linux/ctype.h>
->>
->> +#ifdef CONFIG_DEBUG_FS
->> +#include <linux/debugfs.h>
->> +#endif
->> +
->>  #include <asm/ptrace.h>
->>  #include <asm/string.h>
->>  #include <asm/prom.h>
->> @@ -3275,6 +3279,33 @@ static int __init setup_xmon_sysrq(void)
->>  device_initcall(setup_xmon_sysrq);
->>  #endif /* CONFIG_MAGIC_SYSRQ */
->>
->> +#ifdef CONFIG_DEBUG_FS
->> +static int xmon_dbgfs_set(void *data, u64 val)
->> +{
->> +	xmon_off = !val;
-> xmon_off is really 'off' :)
-> There is xmon_on
-> 
+Optprobes on powerpc is limited to kernel text area. We decided to also
+optimize kretprobe_trampoline since that is also in kernel text area.
+However,we failed to take into consideration the fact that the same
+trampoline is also used to catch function returns from kernel modules.
+As an example:
 
-OK, this is *really* odd.
-I sent the wrong version of the patch ={
+    $ sudo modprobe kobject-example
+    $ sudo bash -c "echo 'r foo_show+8' > /sys/kernel/debug/tracing/kprobe_events"
+    $ sudo bash -c "echo 1 > /sys/kernel/debug/tracing/events/kprobes/enable"
+    $ sudo cat /sys/kernel/debug/kprobes/list
+    c000000000041350  k  kretprobe_trampoline+0x0    [OPTIMIZED]
+    d000000000e00200  r  foo_show+0x8  kobject_example
+    $ cat /sys/kernel/kobject_example/foo
+    Segmentation fault
 
-I'm _sorry_, thanks for noticing Xinhui!
+With the below (trimmed) splat in dmesg:
 
-@Michael, my complete fault. I tested the real "v3" of this patch, but
-for some reason (aka my disorganization) I sent the old v2. In the v3, I
-used "xmon_on = !!val".
+    [70646.248029] Unable to handle kernel paging request for data at address 0xfec40000
+    [70646.248730] Faulting instruction address: 0xc000000000041540
+    [70646.249210] Oops: Kernel access of bad area, sig: 11 [#1]
+    [snip]
+    [70646.259635] NIP [c000000000041540] optimized_callback+0x70/0xe0
+    [70646.259962] LR [c000000000041e60] optinsn_slot+0xf8/0x10000
+    [70646.260268] Call Trace:
+    [70646.260583] [c0000000c7327850] [c000000000289af4] alloc_set_pte+0x1c4/0x860 (unreliable)
+    [70646.260910] [c0000000c7327890] [c000000000041e60] optinsn_slot+0xf8/0x10000
+    [70646.261223] --- interrupt: 700 at 0xc0000000c7327a80
+		       LR = kretprobe_trampoline+0x0/0x10
+    [70646.261849] [c0000000c7327ba0] [c0000000003a30d4] sysfs_kf_seq_show+0x104/0x1d0
+    [70646.262135] [c0000000c7327bf0] [c0000000003a0bb4] kernfs_seq_show+0x44/0x60
+    [70646.264211] [c0000000c7327c10] [c000000000330578] seq_read+0xf8/0x560
+    [70646.265142] [c0000000c7327cb0] [c0000000003a1e64] kernfs_fop_read+0x194/0x260
+    [70646.266070] [c0000000c7327d00] [c0000000002f9954] __vfs_read+0x44/0x1a0
+    [70646.266977] [c0000000c7327d90] [c0000000002fb4cc] vfs_read+0xbc/0x1b0
+    [70646.267860] [c0000000c7327de0] [c0000000002fd138] SyS_read+0x68/0x110
+    [70646.268701] [c0000000c7327e30] [c00000000000b8e0] system_call+0x38/0xfc
+    [snip]
 
-How about if I resend the whole series tomorrow, correcting this and
-changing patch 2 in order to keep the automatic show of backtrace
-always? Or do you prefer to fix it yourself?
+Fix this by loading up the kernel TOC before calling into the kernel.
+The original TOC gets restored as part of the usual pt_regs restore.
 
-Thanks, and again, I apologize for the mess.
+Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+---
+ arch/powerpc/kernel/optprobes_head.S | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
-
-Guilherme
-
-
-
->> +	xmon_init(!xmon_off);
->> +
->> +	return 0;
->> +}
->> +
->> +static int xmon_dbgfs_get(void *data, u64 *val)
->> +{
->> +	*val = !xmon_off;
->> +	return 0;
->> +}
->> +
->> +DEFINE_SIMPLE_ATTRIBUTE(xmon_dbgfs_ops, xmon_dbgfs_get,
->> +			xmon_dbgfs_set, "%llu\n");
->> +
->> +static int __init setup_xmon_dbgfs(void)
->> +{
->> +	debugfs_create_file("xmon", 0600, powerpc_debugfs_root, NULL,
->> +				&xmon_dbgfs_ops);
->> +	return 0;
->> +}
->> +device_initcall(setup_xmon_dbgfs);
->> +#endif /* CONFIG_DEBUG_FS */
->> +
->>  static int xmon_early __initdata;
->>
->>  static int __init early_parse_xmon(char *p)
->>
+diff --git a/arch/powerpc/kernel/optprobes_head.S b/arch/powerpc/kernel/optprobes_head.S
+index 53e429b5a29d..bf28188f308c 100644
+--- a/arch/powerpc/kernel/optprobes_head.S
++++ b/arch/powerpc/kernel/optprobes_head.S
+@@ -65,6 +65,13 @@ optprobe_template_entry:
+ 	mfdsisr	r5
+ 	std	r5,_DSISR(r1)
+ 
++	/*
++	 * We may get here from a module, so load the kernel TOC in r2.
++	 * The original TOC gets restored when pt_regs is restored
++	 *  further below.
++	 */
++	ld	r2,PACATOC(r13)
++
+ 	.global optprobe_template_op_address
+ optprobe_template_op_address:
+ 	/*
+-- 
+2.11.0
