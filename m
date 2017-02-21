@@ -1,32 +1,51 @@
-Return-Path: <nfont@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <hbathini@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vST9s6FJdzDqBv
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Feb 2017 05:12:33 +1100 (AEDT)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vSSHq1X0mzDqBv
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Feb 2017 04:32:37 +1100 (AEDT)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by ozlabs.org (Postfix) with ESMTPS id 3vST9s0vgvz9s7M
+ for <linuxppc-dev@ozlabs.org>; Wed, 22 Feb 2017 05:12:32 +1100 (AEDT)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v1LHNjND089908
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Feb 2017 12:32:34 -0500
-Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
- by mx0a-001b2d01.pphosted.com with ESMTP id 28rm7t951x-1
+ v1LI8dXI050756
+ for <linuxppc-dev@ozlabs.org>; Tue, 21 Feb 2017 13:12:31 -0500
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 28rt2chkg2-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Feb 2017 12:32:34 -0500
+ for <linuxppc-dev@ozlabs.org>; Tue, 21 Feb 2017 13:12:30 -0500
 Received: from localhost
- by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
- Tue, 21 Feb 2017 12:32:33 -0500
-Subject: [RFC PATCH] memory-hotplug: Use dev_online for memhp_auto_offline
-To: linux-mm@kvack.org, vkuznets@redhat.com
-From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
-Cc: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org,
- mdroth@linux.vnet.ibm.com
-Date: Tue, 21 Feb 2017 12:22:34 -0500
+ for <linuxppc-dev@ozlabs.org> from <hbathini@linux.vnet.ibm.com>;
+ Wed, 22 Feb 2017 04:12:28 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id C67202CE8046
+ for <linuxppc-dev@ozlabs.org>; Wed, 22 Feb 2017 05:12:25 +1100 (EST)
+Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v1LICHYa46923808
+ for <linuxppc-dev@ozlabs.org>; Wed, 22 Feb 2017 05:12:25 +1100
+Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
+ by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v1LIBrYH008156
+ for <linuxppc-dev@ozlabs.org>; Wed, 22 Feb 2017 05:11:53 +1100
+Subject: Re: [PATCH] powerpc/fadump: set an upper limit for boot memory size
+To: Michael Ellerman <mpe@ellerman.id.au>
+References: <148717255648.1711.9357297790070400059.stgit@hbathini.in.ibm.com>
+ <87efyxjpx0.fsf@concordia.ellerman.id.au>
+Cc: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>,
+ linuxppc-dev <linuxppc-dev@ozlabs.org>
+From: Hari Bathini <hbathini@linux.vnet.ibm.com>
+Date: Tue, 21 Feb 2017 23:41:34 +0530
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Message-Id: <20170221172234.8047.33382.stgit@ltcalpine2-lp14.aus.stglabs.ibm.com>
+In-Reply-To: <87efyxjpx0.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Message-Id: <88b69843-0c26-6821-eb8f-1dffb40ecd09@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,79 +55,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Commit 31bc3858e "add automatic onlining policy for the newly added memory"
-provides the capability to have added memory automatically onlined
-during add, but this appears to be slightly broken.
+Hi Michael,
 
-The current implementation uses walk_memory_range() to call
-online_memory_block, which uses memory_block_change_state() to online
-the memory. Instead I think we should be calling device_online()
-for the memory block in online_memory_block. This would online
-the memory (the memory bus online routine memory_subsys_online()
-called from device_online calls memory_block_change_state()) and
-properly update the device struct offline flag.
 
-As a result of the current implementation, attempting to remove
-a memory block after adding it using auto online fails. This is
-because doing a remove, for instance
-'echo offline > /sys/devices/system/memory/memoryXXX/state', uses
-device_offline() which checks the dev->offline flag.
+On Friday 17 February 2017 11:54 AM, Michael Ellerman wrote:
+> Hari Bathini <hbathini@linux.vnet.ibm.com> writes:
+>
+>> diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
+>> index de7d39a..d5107f4 100644
+>> --- a/arch/powerpc/kernel/fadump.c
+>> +++ b/arch/powerpc/kernel/fadump.c
+>> @@ -222,6 +222,18 @@ static inline unsigned long fadump_calculate_reserve_size(void)
+>>   				&size, &base);
+>>   	if (ret == 0 && size > 0) {
+>>   		fw_dump.reserve_bootvar = (unsigned long)size;
+>> +		/*
+>> +		 * Adjust if the boot memory size specified is above
+>> +		 * the upper limit.
+>> +		 */
+>> +		if (fw_dump.reserve_bootvar >
+>> +		    (memblock_end_of_DRAM() / MAX_BOOT_MEM_RATIO)) {
+> Using memblock_end_of_DRAM() doesn't take into account the fact that you
+> might have holes in your memory layout.
+>
+> Possibly on PowerVM that never happens, but I don't think we should
+> write the code to assume that, if possible.
+>
 
-There is a workaround in that a user could online the memory or have
-a udev rule to online the memory by using the sysfs interface. The
-sysfs interface to online memory goes through device_online() which
-should updated the dev->offline flag. I'm not sure that having kernel
-memory hotplug rely on userspace actions is the correct way to go.
+I think memblock_phys_mem_size() can fill in..
 
-I have tried reading through the email threads when the origianl patch
-was submitted and could not determine if this is the expected behavior.
-The problem with the current behavior was found when trying to update
-memory hotplug on powerpc to use auto online.
+In the same file, memblock_end_of_DRAM() is also used when nothing
+is specified through cmdline. Let me also change that and respin..
 
--Nathan Fontenot
----
- drivers/base/memory.c  |    2 +-
- include/linux/memory.h |    3 ---
- mm/memory_hotplug.c    |    2 +-
- 3 files changed, 2 insertions(+), 5 deletions(-)
-
-diff --git a/drivers/base/memory.c b/drivers/base/memory.c
-index 8ab8ea1..ede46f3 100644
---- a/drivers/base/memory.c
-+++ b/drivers/base/memory.c
-@@ -249,7 +249,7 @@ static bool pages_correctly_reserved(unsigned long start_pfn)
- 	return ret;
- }
- 
--int memory_block_change_state(struct memory_block *mem,
-+static int memory_block_change_state(struct memory_block *mem,
- 		unsigned long to_state, unsigned long from_state_req)
- {
- 	int ret = 0;
-diff --git a/include/linux/memory.h b/include/linux/memory.h
-index 093607f..b723a68 100644
---- a/include/linux/memory.h
-+++ b/include/linux/memory.h
-@@ -109,9 +109,6 @@ static inline int memory_isolate_notify(unsigned long val, void *v)
- extern int register_memory_isolate_notifier(struct notifier_block *nb);
- extern void unregister_memory_isolate_notifier(struct notifier_block *nb);
- extern int register_new_memory(int, struct mem_section *);
--extern int memory_block_change_state(struct memory_block *mem,
--				     unsigned long to_state,
--				     unsigned long from_state_req);
- #ifdef CONFIG_MEMORY_HOTREMOVE
- extern int unregister_memory_section(struct mem_section *);
- #endif
-diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
-index e43142c1..6f7a289 100644
---- a/mm/memory_hotplug.c
-+++ b/mm/memory_hotplug.c
-@@ -1329,7 +1329,7 @@ int zone_for_memory(int nid, u64 start, u64 size, int zone_default,
- 
- static int online_memory_block(struct memory_block *mem, void *arg)
- {
--	return memory_block_change_state(mem, MEM_ONLINE, MEM_OFFLINE);
-+	return device_online(&mem->dev);
- }
- 
- /* we are OK calling __meminit stuff here - we have CONFIG_MEMORY_HOTPLUG */
+Thanks
+Hari
