@@ -1,24 +1,31 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mdroth@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vS2Jq2SN0zDqBV
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Feb 2017 12:02:03 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Nathan Fontenot <nfont@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Cc: jallen@linux.vnet.ibm.com, sahilmehta17@gmail.com,
- mdroth@linux.vnet.ibm.com, david@gibson.dropbear.id.au
-Subject: Re: [PATCH v7 2/4] powerpc/pseries: Revert 'Auto-online hotplugged
- memory'
-In-Reply-To: <fd545562-0e8c-f98e-2620-4c34752424c2@linux.vnet.ibm.com>
-References: <20170215184321.11755.88199.stgit@ltcalpine2-lp14.aus.stglabs.ibm.com>
- <20170215184528.11755.568.stgit@ltcalpine2-lp14.aus.stglabs.ibm.com>
- <87wpcqkb3k.fsf@concordia.ellerman.id.au>
- <fd545562-0e8c-f98e-2620-4c34752424c2@linux.vnet.ibm.com>
-Date: Tue, 21 Feb 2017 12:02:00 +1100
-Message-ID: <87y3x0mk53.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vS2YF3DyczDqD0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Feb 2017 12:12:49 +1100 (AEDT)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v1L19jhK067327
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Feb 2017 20:12:46 -0500
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 28r8s85jc2-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Feb 2017 20:12:46 -0500
+Received: from localhost
+ by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <mdroth@linux.vnet.ibm.com>;
+ Mon, 20 Feb 2017 18:12:45 -0700
+From: Michael Roth <mdroth@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Michael Ellerman <mpe@ellerman.id.au>,
+ Nathan Fontenot <nfont@linux.vnet.ibm.com>,
+ David Gibson <david@gibson.dropbear.id.au>
+Subject: [PATCH] powerpc/pseries: advertise Hot Plug Event support to firmware
+Date: Mon, 20 Feb 2017 19:12:18 -0600
+Message-Id: <1487639538-25922-1-git-send-email-mdroth@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,64 +35,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Nathan Fontenot <nfont@linux.vnet.ibm.com> writes:
+With the inclusion of:
 
-> On 02/15/2017 10:34 PM, Michael Ellerman wrote:
->> Nathan Fontenot <nfont@linux.vnet.ibm.com> writes:
->> 
->>> Revert the patch patch to auto-online hotplugged memory, commit
->>> id ec999072442a. Using the auto-online acpability does online added
->>> memory but does not update the associated device struct to
->>> indicate that the memory is online. The result of this is that
->>> memoryXX/online file in sysfs still reports the memory as being offline.
->> 
->> Isn't that just a bug in the auto-online code?
->
-> After digging through the code some more and reading some of the email
-> chain when the auto-online feature was submitted I can't decide if this
-> is a bug or if this is by design. The fact that they only other users
-> of this appear to be balloon drivers (hv and xen) makes me think this
-> may be by design.
+  powerpc/pseries: Implement indexed-count hotplug memory remove
+  powerpc/pseries: Implement indexed-count hotplug memory add
 
-Have we asked the original authors? I don't see them on Cc?
+we now have complete handling of the RTAS hotplug event format
+as described by PAPR via ACR "PAPR Changes for Hotplug RTAS Events".
 
-> Changing the auto-online capability to call device_offline() instead
-> would appear to also require changes to the hv and xen balloon
-> drivers for the new behavior.
+This capability is indicated by byte 6, bit 5 of architecture
+option vector 5, and allows for greater control over cpu/memory/pci
+hot plug/unplug operations.
 
-OK, if that's the case then that's going to make life tricky.
- 
->> If I'm reading it right it's calling online_memory_block(). If that
->> doesn't cause the memory_block to be online that would puzzle me.
->
-> The memory is online and usuable when the dlpar operation completes. I
-> was mistaken in my original note though, the state file in sysfs does report
-> the memory as being online. The underlying issue is that the device struct
-> does not get updated (dev->offline) when using the auto-online capability.
-> The result is that trying to remove a LMB a second time fails when we call
-> device_offline() which checks the dev->offline flag and returns failure.
+Existing pseries kernels will utilize this capability based on the
+existence of the /event-sources/hot-plug-events DT property, so we
+only need to advertise it via CAS and do not need a corresponding
+FW_FEATURE_* value to test for.
 
-That still sounds like a bug to me. We asked the core to "auto online"
-the added memory, but the dev is still offline? But maybe there's some
-subtlety.
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+Cc: David Gibson <david@gibson.dropbear.id.au>
+Signed-off-by: Michael Roth <mdroth@linux.vnet.ibm.com>
+---
+ arch/powerpc/include/asm/prom.h | 1 +
+ arch/powerpc/kernel/prom_init.c | 2 +-
+ 2 files changed, 2 insertions(+), 1 deletion(-)
 
-> I think reverting the patch to use the auto-online capability may be the
-> way to go. This would restore the code so that we call device_online and
-> device_offline for add and remove respectively, and not rely on what the 
-> auto-online code is doing.
->
-> Thoughts?
-
-It's not great, but given we need to backport it to v4.8, yeah I think
-we'll have to go with a revert.
-
-But we should also pursue fixing the auto online logic.
-
->> Also commit ec999072442a went into v4.8, so is memory hotplug broken
->> since then? If so we need to backport this or whatever fix we come up.
->
-> Yes, we need to backport whatever fix we do.
-
-Right. I'll queue it up.
-
-cheers
+diff --git a/arch/powerpc/include/asm/prom.h b/arch/powerpc/include/asm/prom.h
+index 2c8001c..4a90634 100644
+--- a/arch/powerpc/include/asm/prom.h
++++ b/arch/powerpc/include/asm/prom.h
+@@ -153,6 +153,7 @@ struct of_drconf_cell {
+ #define OV5_XCMO		0x0440	/* Page Coalescing */
+ #define OV5_TYPE1_AFFINITY	0x0580	/* Type 1 NUMA affinity */
+ #define OV5_PRRN		0x0540	/* Platform Resource Reassignment */
++#define OV5_HP_EVT		0x0604	/* Hot Plug Event support */
+ #define OV5_RESIZE_HPT		0x0601	/* Hash Page Table resizing */
+ #define OV5_PFO_HW_RNG		0x1180	/* PFO Random Number Generator */
+ #define OV5_PFO_HW_842		0x1140	/* PFO Compression Accelerator */
+diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
+index f3c8799..1a835e7 100644
+--- a/arch/powerpc/kernel/prom_init.c
++++ b/arch/powerpc/kernel/prom_init.c
+@@ -839,7 +839,7 @@ struct ibm_arch_vec __cacheline_aligned ibm_architecture_vec = {
+ 		0,
+ #endif
+ 		.associativity = OV5_FEAT(OV5_TYPE1_AFFINITY) | OV5_FEAT(OV5_PRRN),
+-		.bin_opts = OV5_FEAT(OV5_RESIZE_HPT),
++		.bin_opts = OV5_FEAT(OV5_RESIZE_HPT) | OV5_FEAT(OV5_HP_EVT),
+ 		.micro_checkpoint = 0,
+ 		.reserved0 = 0,
+ 		.max_cpus = cpu_to_be32(NR_CPUS),	/* number of cores supported */
+-- 
+2.7.4
