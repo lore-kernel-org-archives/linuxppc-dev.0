@@ -1,47 +1,28 @@
-Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <jbaron@akamai.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vSQrY0sQCzDqGG
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Feb 2017 03:27:24 +1100 (AEDT)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v1LGO0Jn068669
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Feb 2017 11:27:22 -0500
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
- by mx0b-001b2d01.pphosted.com with ESMTP id 28rp4p95rj-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Feb 2017 11:27:22 -0500
-Received: from localhost
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Wed, 22 Feb 2017 02:27:19 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id E63C22CE8054
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Feb 2017 03:27:15 +1100 (EST)
-Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v1LGR70756229962
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Feb 2017 03:27:15 +1100
-Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
- by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v1LGQhvE012459
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Feb 2017 03:26:43 +1100
-From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>,
- Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>,
- Masami Hiramatsu <mhiramat@kernel.org>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 5/5] powerpc: kprobes: prefer ftrace when probing function
- entry
-Date: Tue, 21 Feb 2017 21:56:06 +0530
-In-Reply-To: <657c6623953f6cce52f929a93cc250b7ee76d7cc.1487692624.git.naveen.n.rao@linux.vnet.ibm.com>
-References: <657c6623953f6cce52f929a93cc250b7ee76d7cc.1487692624.git.naveen.n.rao@linux.vnet.ibm.com>
-In-Reply-To: <657c6623953f6cce52f929a93cc250b7ee76d7cc.1487692624.git.naveen.n.rao@linux.vnet.ibm.com>
-References: <657c6623953f6cce52f929a93cc250b7ee76d7cc.1487692624.git.naveen.n.rao@linux.vnet.ibm.com>
-Message-Id: <0c28885eafe70b3dc76433f33719d96fc46cbfe4.1487692624.git.naveen.n.rao@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vSR462VFnzDqBV
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Feb 2017 03:37:26 +1100 (AEDT)
+Received: from prod-mail-xrelay07.akamai.com (prod-mail-xrelay07.akamai.com
+ [23.79.238.175])
+ by ozlabs.org (Postfix) with ESMTP id 3vSR451Vt2z9s7R
+ for <linuxppc-dev@ozlabs.org>; Wed, 22 Feb 2017 03:37:24 +1100 (AEDT)
+Subject: Re: next-20170217 boot on POWER8 LPAR : WARNING
+ @kernel/jump_label.c:287
+To: Sachin Sant <sachinp@linux.vnet.ibm.com>,
+ Steven Rostedt <rostedt@goodmis.org>
+References: <E6A8A7A8-6A55-4989-BAE9-39274876CA3C@linux.vnet.ibm.com>
+ <1dffdaac-be8b-0052-52d4-a65fed39f894@akamai.com>
+ <02B52EFB-4608-47F3-A81C-B8B52DB11233@linux.vnet.ibm.com>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+ linuxppc-dev@ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>
+From: Jason Baron <jbaron@akamai.com>
+Message-ID: <20c53e88-acf5-4c4f-cea9-4dd8745814b5@akamai.com>
+Date: Tue, 21 Feb 2017 11:37:21 -0500
+MIME-Version: 1.0
+In-Reply-To: <02B52EFB-4608-47F3-A81C-B8B52DB11233@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,60 +32,138 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-KPROBES_ON_FTRACE avoids much of the overhead with regular kprobes as it
-eliminates the need for a trap, as well as the need to emulate or
-single-step instructions.
+On 02/20/2017 10:05 PM, Sachin Sant wrote:
+>
+>> On 20-Feb-2017, at 8:27 PM, Jason Baron <jbaron@akamai.com
+>> <mailto:jbaron@akamai.com>> wrote:
+>>
+>> Hi,
+>>
+>> On 02/19/2017 09:07 AM, Sachin Sant wrote:
+>>> While booting next-20170217 on a POWER8 LPAR following
+>>> warning is displayed.
+>>>
+>>> Reverting the following commit helps boot cleanly.
+>>> commit 3821fd35b5 :  jump_label: Reduce the size of struct static_key
+>>>
+>>> [   11.393008] ------------[ cut here ]------------
+>>> [   11.393031] WARNING: CPU: 5 PID: 2890 at kernel/jump_label.c:287
+>>> static_key_set_entries.isra.10+0x3c/0x50
+>>
+>> Thanks for the report. So this is saying that the jump_entry table is
+>> not at least 4-byte aligned. I wonder if this fixes it up?
+>>
+>
+> Yes. With this patch the warning is gone.
+>
 
-Though OPTPROBES provides us with similar performance, we have limited
-optprobes trampoline slots. As such, when asked to probe at a function
-entry, default to using the ftrace infrastructure.
+Hi,
 
-With:
-	# cd /sys/kernel/debug/tracing
-	# echo 'p _do_fork' > kprobe_events
+Thanks for testing. We probably need something like the following to 
+make sure we don't hit this on other arches. Steve - I will send 4 
+separate patches for this to get arch maintainers' acks for this?
 
-before patch:
-	# cat ../kprobes/list
-	c0000000000daf08  k  _do_fork+0x8    [DISABLED]
-	c000000000044fc0  k  kretprobe_trampoline+0x0    [OPTIMIZED]
+Thanks,
 
-and after patch:
-	# cat ../kprobes/list
-	c0000000000d074c  k  _do_fork+0xc    [DISABLED][FTRACE]
-	c0000000000412b0  k  kretprobe_trampoline+0x0    [OPTIMIZED]
+-Jason
 
-Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
----
- arch/powerpc/kernel/kprobes.c | 17 +++++++++++++++--
- 1 file changed, 15 insertions(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/kernel/kprobes.c b/arch/powerpc/kernel/kprobes.c
-index b78b274e1d6e..23d19678a56f 100644
---- a/arch/powerpc/kernel/kprobes.c
-+++ b/arch/powerpc/kernel/kprobes.c
-@@ -49,8 +49,21 @@ kprobe_opcode_t *kprobe_lookup_name(const char *name, unsigned int offset)
- #ifdef PPC64_ELF_ABI_v2
- 	/* PPC64 ABIv2 needs local entry point */
- 	addr = (kprobe_opcode_t *)kallsyms_lookup_name(name);
--	if (addr && !offset)
--		addr = (kprobe_opcode_t *)ppc_function_entry(addr);
-+	if (addr && !offset) {
-+#ifdef CONFIG_KPROBES_ON_FTRACE
-+		unsigned long faddr;
-+		/*
-+		 * Per livepatch.h, ftrace location is always within the first
-+		 * 16 bytes of a function on powerpc with -mprofile-kernel.
-+		 */
-+		faddr = ftrace_location_range((unsigned long)addr,
-+					      (unsigned long)addr + 16);
-+		if (faddr)
-+			addr = (kprobe_opcode_t *)faddr;
-+		else
-+#endif
-+			addr = (kprobe_opcode_t *)ppc_function_entry(addr);
-+	}
- #elif defined(PPC64_ELF_ABI_v1)
- 	/*
- 	 * 64bit powerpc ABIv1 uses function descriptors:
--- 
-2.11.0
+diff --git a/arch/arm/include/asm/jump_label.h 
+b/arch/arm/include/asm/jump_label.h
+index 34f7b6980d21..9720c2f1850b 100644
+--- a/arch/arm/include/asm/jump_label.h
++++ b/arch/arm/include/asm/jump_label.h
+@@ -13,6 +13,7 @@ static __always_inline bool arch_static_branch(struct 
+static_key *key, bool bran
+         asm_volatile_goto("1:\n\t"
+                  WASM(nop) "\n\t"
+                  ".pushsection __jump_table,  \"aw\"\n\t"
++                ".balign 4 \n\t"
+                  ".word 1b, %l[l_yes], %c0\n\t"
+                  ".popsection\n\t"
+                  : :  "i" (&((char *)key)[branch]) :  : l_yes);
+@@ -27,6 +28,7 @@ static __always_inline bool 
+arch_static_branch_jump(struct static_key *key, bool
+         asm_volatile_goto("1:\n\t"
+                  WASM(b) " %l[l_yes]\n\t"
+                  ".pushsection __jump_table,  \"aw\"\n\t"
++                ".balign 4 \n\t"
+                  ".word 1b, %l[l_yes], %c0\n\t"
+                  ".popsection\n\t"
+                  : :  "i" (&((char *)key)[branch]) :  : l_yes);
+diff --git a/arch/mips/include/asm/jump_label.h 
+b/arch/mips/include/asm/jump_label.h
+index e77672539e8e..51ce97dda3cc 100644
+--- a/arch/mips/include/asm/jump_label.h
++++ b/arch/mips/include/asm/jump_label.h
+@@ -31,6 +31,7 @@ static __always_inline bool arch_static_branch(struct 
+static_key *key, bool bran
+         asm_volatile_goto("1:\t" NOP_INSN "\n\t"
+                 "nop\n\t"
+                 ".pushsection __jump_table,  \"aw\"\n\t"
++               ".balign 4 \n\t"
+                 WORD_INSN " 1b, %l[l_yes], %0\n\t"
+                 ".popsection\n\t"
+                 : :  "i" (&((char *)key)[branch]) : : l_yes);
+@@ -45,6 +46,7 @@ static __always_inline bool 
+arch_static_branch_jump(struct static_key *key, bool
+         asm_volatile_goto("1:\tj %l[l_yes]\n\t"
+                 "nop\n\t"
+                 ".pushsection __jump_table,  \"aw\"\n\t"
++               ".balign 4 \n\t"
+                 WORD_INSN " 1b, %l[l_yes], %0\n\t"
+                 ".popsection\n\t"
+                 : :  "i" (&((char *)key)[branch]) : : l_yes);
+diff --git a/arch/powerpc/include/asm/jump_label.h 
+b/arch/powerpc/include/asm/jump_label.h
+index 9a287e0ac8b1..f870a85bac46 100644
+--- a/arch/powerpc/include/asm/jump_label.h
++++ b/arch/powerpc/include/asm/jump_label.h
+@@ -24,6 +24,7 @@ static __always_inline bool arch_static_branch(struct 
+static_key *key, bool bran
+         asm_volatile_goto("1:\n\t"
+                  "nop # arch_static_branch\n\t"
+                  ".pushsection __jump_table,  \"aw\"\n\t"
++                ".balign 4 \n\t"
+                  JUMP_ENTRY_TYPE "1b, %l[l_yes], %c0\n\t"
+                  ".popsection \n\t"
+                  : :  "i" (&((char *)key)[branch]) : : l_yes);
+@@ -38,6 +39,7 @@ static __always_inline bool 
+arch_static_branch_jump(struct static_key *key, bool
+         asm_volatile_goto("1:\n\t"
+                  "b %l[l_yes] # arch_static_branch_jump\n\t"
+                  ".pushsection __jump_table,  \"aw\"\n\t"
++                ".balign 4 \n\t"
+                  JUMP_ENTRY_TYPE "1b, %l[l_yes], %c0\n\t"
+                  ".popsection \n\t"
+                  : :  "i" (&((char *)key)[branch]) : : l_yes);
+@@ -63,6 +65,7 @@ struct jump_entry {
+  #define ARCH_STATIC_BRANCH(LABEL, KEY)         \
+  1098:  nop;                                    \
+         .pushsection __jump_table, "aw";        \
++       .balign 4;                              \
+         FTR_ENTRY_LONG 1098b, LABEL, KEY;       \
+         .popsection
+  #endif
+diff --git a/arch/tile/include/asm/jump_label.h 
+b/arch/tile/include/asm/jump_label.h
+index cde7573f397b..c9f6125c41ef 100644
+--- a/arch/tile/include/asm/jump_label.h
++++ b/arch/tile/include/asm/jump_label.h
+@@ -25,6 +25,7 @@ static __always_inline bool arch_static_branch(struct 
+static_key *key,
+         asm_volatile_goto("1:\n\t"
+                 "nop" "\n\t"
+                 ".pushsection __jump_table,  \"aw\"\n\t"
++               ".balign 4 \n\t"
+                 ".quad 1b, %l[l_yes], %0 + %1 \n\t"
+                 ".popsection\n\t"
+                 : :  "i" (key), "i" (branch) : : l_yes);
+@@ -39,6 +40,7 @@ static __always_inline bool 
+arch_static_branch_jump(struct static_key *key,
+         asm_volatile_goto("1:\n\t"
+                 "j %l[l_yes]" "\n\t"
+                 ".pushsection __jump_table,  \"aw\"\n\t"
++               ".balign 4 \n\t"
+                 ".quad 1b, %l[l_yes], %0 + %1 \n\t"
+                 ".popsection\n\t"
+                 : :  "i" (key), "i" (branch) : : l_yes);
