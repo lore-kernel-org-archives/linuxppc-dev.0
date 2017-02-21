@@ -3,44 +3,45 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vSQrN4X0bzDqCc
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Feb 2017 03:27:16 +1100 (AEDT)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vSQrR5BRZzDqGw
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Feb 2017 03:27:19 +1100 (AEDT)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v1LGO1BK049428
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Feb 2017 11:27:14 -0500
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
- by mx0a-001b2d01.pphosted.com with ESMTP id 28rpx1y6b3-1
+ v1LGNx8H034750
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Feb 2017 11:27:17 -0500
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 28rq81dy9g-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Feb 2017 11:27:14 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Feb 2017 11:27:17 -0500
 Received: from localhost
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Wed, 22 Feb 2017 02:27:12 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 7224E2CE8057
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Feb 2017 03:27:09 +1100 (EST)
+ Wed, 22 Feb 2017 02:27:15 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 93AF32CE8056
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Feb 2017 03:27:11 +1100 (EST)
 Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v1LGR19M53018830
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Feb 2017 03:27:09 +1100
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v1LGR3M547710370
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Feb 2017 03:27:11 +1100
 Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
  by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v1LGQafA012281
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Feb 2017 03:26:37 +1100
+ v1LGQcHj012363
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Feb 2017 03:26:39 +1100
 From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>,
  Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>,
  Masami Hiramatsu <mhiramat@kernel.org>
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 2/5] powerpc: ftrace: restore LR from pt_regs
-Date: Tue, 21 Feb 2017 21:56:03 +0530
+Subject: [PATCH v2 3/5] kprobes: Skip preparing optprobe if the probe is
+ ftrace-based
+Date: Tue, 21 Feb 2017 21:56:04 +0530
 In-Reply-To: <657c6623953f6cce52f929a93cc250b7ee76d7cc.1487692624.git.naveen.n.rao@linux.vnet.ibm.com>
 References: <657c6623953f6cce52f929a93cc250b7ee76d7cc.1487692624.git.naveen.n.rao@linux.vnet.ibm.com>
 In-Reply-To: <657c6623953f6cce52f929a93cc250b7ee76d7cc.1487692624.git.naveen.n.rao@linux.vnet.ibm.com>
 References: <657c6623953f6cce52f929a93cc250b7ee76d7cc.1487692624.git.naveen.n.rao@linux.vnet.ibm.com>
-Message-Id: <dc6a909433e2fac491237bbd7525eb9bdd2ad1a6.1487692624.git.naveen.n.rao@linux.vnet.ibm.com>
+Message-Id: <a37815e7dc703a6d58b113bfefb23caa60016d3d.1487692624.git.naveen.n.rao@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,57 +51,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Pass the real LR to the ftrace handler. This is needed for
-KPROBES_ON_FTRACE for the pre handlers.
+From: Masami Hiramatsu <mhiramat@kernel.org>
 
-Also, with KPROBES_ON_FTRACE, the link register may be updated by the
-pre handlers or by a registed kretprobe. Honor updated LR by restoring
-it from pt_regs, rather than from the stack save area.
+Skip preparing optprobe if the probe is ftrace-based, since anyway, it
+must not be optimized (or already optimized by ftrace).
 
-Live patch and function graph continue to work fine with this change.
-
-Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+Tested-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+Signed-off-by: Masami Hiramatsu <mhiramat@kernel.org>
 ---
- arch/powerpc/kernel/entry_64.S | 13 +++++++------
- 1 file changed, 7 insertions(+), 6 deletions(-)
+ kernel/kprobes.c | 11 +++++++++--
+ 1 file changed, 9 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-index 8fd8718722a1..744b2f91444a 100644
---- a/arch/powerpc/kernel/entry_64.S
-+++ b/arch/powerpc/kernel/entry_64.S
-@@ -1248,9 +1248,10 @@ _GLOBAL(ftrace_caller)
+diff --git a/kernel/kprobes.c b/kernel/kprobes.c
+index fbc7a70ff33e..7e93500dede7 100644
+--- a/kernel/kprobes.c
++++ b/kernel/kprobes.c
+@@ -708,13 +708,20 @@ static void kill_optimized_kprobe(struct kprobe *p)
+ 	arch_remove_optimized_kprobe(op);
+ }
  
- 	/* Get the _mcount() call site out of LR */
- 	mflr	r7
--	/* Save it as pt_regs->nip & pt_regs->link */
-+	/* Save it as pt_regs->nip */
- 	std     r7, _NIP(r1)
--	std     r7, _LINK(r1)
-+	/* Save the read LR in pt_regs->link */
-+	std     r0, _LINK(r1)
- 
- 	/* Save callee's TOC in the ABI compliant location */
- 	std	r2, 24(r1)
-@@ -1297,16 +1298,16 @@ ftrace_call:
- 	REST_8GPRS(16,r1)
- 	REST_8GPRS(24,r1)
- 
-+	/* Restore possibly modified LR */
-+	ld	r0, _LINK(r1)
-+	mtlr	r0
++static inline
++void __prepare_optimized_kprobe(struct optimized_kprobe *op, struct kprobe *p)
++{
++	if (!kprobe_ftrace(p))
++		arch_prepare_optimized_kprobe(op, p);
++}
 +
- 	/* Restore callee's TOC */
- 	ld	r2, 24(r1)
+ /* Try to prepare optimized instructions */
+ static void prepare_optimized_kprobe(struct kprobe *p)
+ {
+ 	struct optimized_kprobe *op;
  
- 	/* Pop our stack frame */
- 	addi r1, r1, SWITCH_FRAME_SIZE
+ 	op = container_of(p, struct optimized_kprobe, kp);
+-	arch_prepare_optimized_kprobe(op, p);
++	__prepare_optimized_kprobe(op, p);
+ }
  
--	/* Restore original LR for return to B */
--	ld	r0, LRSAVE(r1)
--	mtlr	r0
--
- #ifdef CONFIG_LIVEPATCH
-         /* Based on the cmpd above, if the NIP was altered handle livepatch */
- 	bne-	livepatch_handler
+ /* Allocate new optimized_kprobe and try to prepare optimized instructions */
+@@ -728,7 +735,7 @@ static struct kprobe *alloc_aggr_kprobe(struct kprobe *p)
+ 
+ 	INIT_LIST_HEAD(&op->list);
+ 	op->kp.addr = p->addr;
+-	arch_prepare_optimized_kprobe(op, p);
++	__prepare_optimized_kprobe(op, p);
+ 
+ 	return &op->kp;
+ }
 -- 
 2.11.0
