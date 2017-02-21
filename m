@@ -1,39 +1,32 @@
 Return-Path: <nfont@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vSR9M42dGzDqBV
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Feb 2017 03:41:59 +1100 (AEDT)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vSSHq1X0mzDqBv
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Feb 2017 04:32:37 +1100 (AEDT)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v1LGfmvZ058936
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Feb 2017 11:41:56 -0500
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
- by mx0a-001b2d01.pphosted.com with ESMTP id 28rq6y6qek-1
+ v1LHNjND089908
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Feb 2017 12:32:34 -0500
+Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 28rm7t951x-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Feb 2017 11:41:56 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Feb 2017 12:32:34 -0500
 Received: from localhost
- by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
- Tue, 21 Feb 2017 09:41:56 -0700
-Subject: Re: [PATCH v7 2/4] powerpc/pseries: Revert 'Auto-online hotplugged
- memory'
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
-References: <20170215184321.11755.88199.stgit@ltcalpine2-lp14.aus.stglabs.ibm.com>
- <20170215184528.11755.568.stgit@ltcalpine2-lp14.aus.stglabs.ibm.com>
- <87wpcqkb3k.fsf@concordia.ellerman.id.au>
- <fd545562-0e8c-f98e-2620-4c34752424c2@linux.vnet.ibm.com>
- <87y3x0mk53.fsf@concordia.ellerman.id.au>
-Cc: jallen@linux.vnet.ibm.com, david@gibson.dropbear.id.au,
- mdroth@linux.vnet.ibm.com, sahilmehta17@gmail.com
+ Tue, 21 Feb 2017 12:32:33 -0500
+Subject: [RFC PATCH] memory-hotplug: Use dev_online for memhp_auto_offline
+To: linux-mm@kvack.org, vkuznets@redhat.com
 From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
-Date: Tue, 21 Feb 2017 10:41:51 -0600
+Cc: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org,
+ mdroth@linux.vnet.ibm.com
+Date: Tue, 21 Feb 2017 12:22:34 -0500
 MIME-Version: 1.0
-In-Reply-To: <87y3x0mk53.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset=windows-1252
-Message-Id: <7b1af5aa-506f-a6e5-37ea-4fb8784bd64a@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="utf-8"
+Message-Id: <20170221172234.8047.33382.stgit@ltcalpine2-lp14.aus.stglabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,76 +36,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 02/20/2017 07:02 PM, Michael Ellerman wrote:
-> Nathan Fontenot <nfont@linux.vnet.ibm.com> writes:
-> 
->> On 02/15/2017 10:34 PM, Michael Ellerman wrote:
->>> Nathan Fontenot <nfont@linux.vnet.ibm.com> writes:
->>>
->>>> Revert the patch patch to auto-online hotplugged memory, commit
->>>> id ec999072442a. Using the auto-online acpability does online added
->>>> memory but does not update the associated device struct to
->>>> indicate that the memory is online. The result of this is that
->>>> memoryXX/online file in sysfs still reports the memory as being offline.
->>>
->>> Isn't that just a bug in the auto-online code?
->>
->> After digging through the code some more and reading some of the email
->> chain when the auto-online feature was submitted I can't decide if this
->> is a bug or if this is by design. The fact that they only other users
->> of this appear to be balloon drivers (hv and xen) makes me think this
->> may be by design.
-> 
-> Have we asked the original authors? I don't see them on Cc?
+Commit 31bc3858e "add automatic onlining policy for the newly added memory"
+provides the capability to have added memory automatically onlined
+during add, but this appears to be slightly broken.
 
-Not yet. I'm working on a patch to use device_online() for doing
-auto online of memory. I will send this out as an RFC with an explanation
-of what I'm seeing and ask why it was done the way it was.
+The current implementation uses walk_memory_range() to call
+online_memory_block, which uses memory_block_change_state() to online
+the memory. Instead I think we should be calling device_online()
+for the memory block in online_memory_block. This would online
+the memory (the memory bus online routine memory_subsys_online()
+called from device_online calls memory_block_change_state()) and
+properly update the device struct offline flag.
 
-> 
->> Changing the auto-online capability to call device_offline() instead
->> would appear to also require changes to the hv and xen balloon
->> drivers for the new behavior.
-> 
-> OK, if that's the case then that's going to make life tricky.
+As a result of the current implementation, attempting to remove
+a memory block after adding it using auto online fails. This is
+because doing a remove, for instance
+'echo offline > /sys/devices/system/memory/memoryXXX/state', uses
+device_offline() which checks the dev->offline flag.
 
-Yep. I'll ask about this with the RFC I send out.
+There is a workaround in that a user could online the memory or have
+a udev rule to online the memory by using the sysfs interface. The
+sysfs interface to online memory goes through device_online() which
+should updated the dev->offline flag. I'm not sure that having kernel
+memory hotplug rely on userspace actions is the correct way to go.
 
--Nathan
+I have tried reading through the email threads when the origianl patch
+was submitted and could not determine if this is the expected behavior.
+The problem with the current behavior was found when trying to update
+memory hotplug on powerpc to use auto online.
 
-> 
->>> If I'm reading it right it's calling online_memory_block(). If that
->>> doesn't cause the memory_block to be online that would puzzle me.
->>
->> The memory is online and usuable when the dlpar operation completes. I
->> was mistaken in my original note though, the state file in sysfs does report
->> the memory as being online. The underlying issue is that the device struct
->> does not get updated (dev->offline) when using the auto-online capability.
->> The result is that trying to remove a LMB a second time fails when we call
->> device_offline() which checks the dev->offline flag and returns failure.
-> 
-> That still sounds like a bug to me. We asked the core to "auto online"
-> the added memory, but the dev is still offline? But maybe there's some
-> subtlety.
-> 
->> I think reverting the patch to use the auto-online capability may be the
->> way to go. This would restore the code so that we call device_online and
->> device_offline for add and remove respectively, and not rely on what the 
->> auto-online code is doing.
->>
->> Thoughts?
-> 
-> It's not great, but given we need to backport it to v4.8, yeah I think
-> we'll have to go with a revert.
-> 
-> But we should also pursue fixing the auto online logic.
-> 
->>> Also commit ec999072442a went into v4.8, so is memory hotplug broken
->>> since then? If so we need to backport this or whatever fix we come up.
->>
->> Yes, we need to backport whatever fix we do.
-> 
-> Right. I'll queue it up.
-> 
-> cheers
-> 
+-Nathan Fontenot
+---
+ drivers/base/memory.c  |    2 +-
+ include/linux/memory.h |    3 ---
+ mm/memory_hotplug.c    |    2 +-
+ 3 files changed, 2 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/base/memory.c b/drivers/base/memory.c
+index 8ab8ea1..ede46f3 100644
+--- a/drivers/base/memory.c
++++ b/drivers/base/memory.c
+@@ -249,7 +249,7 @@ static bool pages_correctly_reserved(unsigned long start_pfn)
+ 	return ret;
+ }
+ 
+-int memory_block_change_state(struct memory_block *mem,
++static int memory_block_change_state(struct memory_block *mem,
+ 		unsigned long to_state, unsigned long from_state_req)
+ {
+ 	int ret = 0;
+diff --git a/include/linux/memory.h b/include/linux/memory.h
+index 093607f..b723a68 100644
+--- a/include/linux/memory.h
++++ b/include/linux/memory.h
+@@ -109,9 +109,6 @@ static inline int memory_isolate_notify(unsigned long val, void *v)
+ extern int register_memory_isolate_notifier(struct notifier_block *nb);
+ extern void unregister_memory_isolate_notifier(struct notifier_block *nb);
+ extern int register_new_memory(int, struct mem_section *);
+-extern int memory_block_change_state(struct memory_block *mem,
+-				     unsigned long to_state,
+-				     unsigned long from_state_req);
+ #ifdef CONFIG_MEMORY_HOTREMOVE
+ extern int unregister_memory_section(struct mem_section *);
+ #endif
+diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
+index e43142c1..6f7a289 100644
+--- a/mm/memory_hotplug.c
++++ b/mm/memory_hotplug.c
+@@ -1329,7 +1329,7 @@ int zone_for_memory(int nid, u64 start, u64 size, int zone_default,
+ 
+ static int online_memory_block(struct memory_block *mem, void *arg)
+ {
+-	return memory_block_change_state(mem, MEM_ONLINE, MEM_OFFLINE);
++	return device_online(&mem->dev);
+ }
+ 
+ /* we are OK calling __meminit stuff here - we have CONFIG_MEMORY_HOTPLUG */
