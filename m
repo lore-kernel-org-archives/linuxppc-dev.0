@@ -1,15 +1,15 @@
 Return-Path: <aik@ozlabs.ru>
 Received: from ozlabs.ru (unknown [107.173.13.209])
- by lists.ozlabs.org (Postfix) with ESMTP id 3vS4fD4PGJzDqBv
+ by lists.ozlabs.org (Postfix) with ESMTP id 3vS4fD4H5bzDqBV
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Feb 2017 13:47:16 +1100 (AEDT)
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
- David Gibson <david@gibson.dropbear.id.au>
-Subject: [PATCH kernel] powerpc/powernv: Fix it_ops::get() callback to return
- in cpu endian
-Date: Tue, 21 Feb 2017 13:38:54 +1100
-Message-Id: <20170221023854.47493-1-aik@ozlabs.ru>
+ David Gibson <david@gibson.dropbear.id.au>,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>, Russell Currey <ruscur@russell.cc>
+Subject: [PATCH kernel] powerpc/powernv/npu: Remove dead iommu code
+Date: Tue, 21 Feb 2017 13:40:20 +1100
+Message-Id: <20170221024020.47631-1-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,32 +19,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The iommu_table_ops callbacks are declared CPU endian as they take and
-return "unsigned long"; underlying hardware tables are big-endian.
+PNV_IODA_PE_DEV is only used for NPU devices (emulated PCI bridges
+representing NVLink). These are added to IOMMU groups with corresponding
+NVIDIA devices after all non-NPU PEs are setup; a special helper -
+pnv_pci_ioda_setup_iommu_api() - handles this in pnv_pci_ioda_fixup().
 
-However get() was missing be64_to_cpu(), this adds the missing conversion.
+The pnv_pci_ioda2_setup_dma_pe() helper sets up DMA for a PE. It is called
+for VFs (so it does not handle NPU case) and PCI bridges but only
+IODA1 and IODA2 types. An NPU bridge has its own type id (PNV_PHB_NPU)
+so pnv_pci_ioda2_setup_dma_pe() cannot be called on NPU and therefore
+(pe->flags & PNV_IODA_PE_DEV) is always "false".
 
-The only caller of this is crash dump at arch/powerpc/kernel/iommu.c,
-iommu_table_clear() which only compares TCE to zero so this change
-should not cause behavioral change.
+This removes not used iommu_add_device(). This should not cause any
+behavioral change.
 
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 ---
- arch/powerpc/platforms/powernv/pci.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/platforms/powernv/pci-ioda.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
-index c6d554fe585c..3f7f267a3d04 100644
---- a/arch/powerpc/platforms/powernv/pci.c
-+++ b/arch/powerpc/platforms/powernv/pci.c
-@@ -758,7 +758,7 @@ void pnv_tce_free(struct iommu_table *tbl, long index, long npages)
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index 5fcae29107e1..51ec0dc1dfde 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -2724,9 +2724,7 @@ static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
+ 	if (rc)
+ 		return;
  
- unsigned long pnv_tce_get(struct iommu_table *tbl, long index)
- {
--	return *(pnv_tce(tbl, index - tbl->it_offset));
-+	return be64_to_cpu(*(pnv_tce(tbl, index - tbl->it_offset)));
+-	if (pe->flags & PNV_IODA_PE_DEV)
+-		iommu_add_device(&pe->pdev->dev);
+-	else if (pe->flags & (PNV_IODA_PE_BUS | PNV_IODA_PE_BUS_ALL))
++	if (pe->flags & (PNV_IODA_PE_BUS | PNV_IODA_PE_BUS_ALL))
+ 		pnv_ioda_setup_bus_dma(pe, pe->pbus);
  }
  
- struct iommu_table *pnv_pci_table_alloc(int nid)
 -- 
 2.11.0
