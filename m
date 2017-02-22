@@ -1,7 +1,7 @@
 Return-Path: <aik@ozlabs.ru>
 Received: from ozlabs.ru (ozlabs.ru [107.173.13.209])
- by lists.ozlabs.org (Postfix) with ESMTP id 3vSr1j0BMczDqD2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Feb 2017 19:21:44 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id 3vSr1m6KSBzDq5g
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Feb 2017 19:21:48 +1100 (AEDT)
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
@@ -9,10 +9,10 @@ Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
  David Gibson <david@gibson.dropbear.id.au>,
  Paul Mackerras <paulus@samba.org>, kvm-ppc@vger.kernel.org,
  kvm@vger.kernel.org
-Subject: [PATCH kernel v5 03/10] powerpc/iommu/vfio_spapr_tce: Cleanup
- iommu_table disposal
-Date: Wed, 22 Feb 2017 19:21:26 +1100
-Message-Id: <20170222082133.10277-4-aik@ozlabs.ru>
+Subject: [PATCH kernel v5 05/10] KVM: PPC: Reserve KVM_CAP_SPAPR_TCE_VFIO
+ capability number
+Date: Wed, 22 Feb 2017 19:21:28 +1100
+Message-Id: <20170222082133.10277-6-aik@ozlabs.ru>
 In-Reply-To: <20170222082133.10277-1-aik@ozlabs.ru>
 References: <20170222082133.10277-1-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,126 +24,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-At the moment iommu_table can be disposed by either calling
-iommu_table_free() directly or it_ops::free(); the only implementation
-of free() is in IODA2 - pnv_ioda2_table_free() - and it calls
-iommu_table_free() anyway.
+This adds a capability number for in-kernel support for VFIO on
+SPAPR platform.
 
-As we are going to have reference counting on tables, we need an unified
-way of disposing tables.
-
-This moves it_ops::free() call into iommu_free_table() and makes use
-of the latter. The free() callback now handles only platform-specific
-data.
-
-As from now on the iommu_free_table() calls it_ops->free(), we need
-to have it_ops initialized before calling iommu_free_table() so this
-moves this initialization in pnv_pci_ioda2_create_table().
-
-This should cause no behavioral change.
+The capability will tell the user space whether in-kernel handlers of
+H_PUT_TCE can handle VFIO-targeted requests or not. If not, the user space
+must not attempt allocating a TCE table in the host kernel via
+the KVM_CREATE_SPAPR_TCE KVM ioctl because in that case TCE requests
+will not be passed to the user space which is desired action in
+the situation like that.
 
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 ---
-Changes:
-v5:
-* moved "tbl->it_ops = &pnv_ioda2_iommu_ops" earlier and updated
-the commit log
----
- arch/powerpc/kernel/iommu.c               |  4 ++++
- arch/powerpc/platforms/powernv/pci-ioda.c | 10 ++++------
- drivers/vfio/vfio_iommu_spapr_tce.c       |  2 +-
- 3 files changed, 9 insertions(+), 7 deletions(-)
+ include/uapi/linux/kvm.h | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
-index 9bace5df05d5..bc142d87130f 100644
---- a/arch/powerpc/kernel/iommu.c
-+++ b/arch/powerpc/kernel/iommu.c
-@@ -719,6 +719,9 @@ void iommu_free_table(struct iommu_table *tbl, const char *node_name)
- 	if (!tbl)
- 		return;
+diff --git a/include/uapi/linux/kvm.h b/include/uapi/linux/kvm.h
+index cac48eda1075..a2c9bb5a0ead 100644
+--- a/include/uapi/linux/kvm.h
++++ b/include/uapi/linux/kvm.h
+@@ -871,6 +871,7 @@ struct kvm_ppc_smmu_info {
+ #define KVM_CAP_S390_USER_INSTR0 130
+ #define KVM_CAP_MSI_DEVID 131
+ #define KVM_CAP_PPC_HTM 132
++#define KVM_CAP_SPAPR_TCE_VFIO 133
  
-+	if (tbl->it_ops->free)
-+		tbl->it_ops->free(tbl);
-+
- 	if (!tbl->it_map) {
- 		kfree(tbl);
- 		return;
-@@ -745,6 +748,7 @@ void iommu_free_table(struct iommu_table *tbl, const char *node_name)
- 	/* free table */
- 	kfree(tbl);
- }
-+EXPORT_SYMBOL_GPL(iommu_free_table);
- 
- /* Creates TCEs for a user provided buffer.  The user buffer must be
-  * contiguous real kernel storage (not vmalloc).  The address passed here
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index 133c7f300c12..27801c61ebdb 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -1423,7 +1423,6 @@ static void pnv_pci_ioda2_release_dma_pe(struct pci_dev *dev, struct pnv_ioda_pe
- 		iommu_group_put(pe->table_group.group);
- 		BUG_ON(pe->table_group.group);
- 	}
--	pnv_pci_ioda2_table_free_pages(tbl);
- 	iommu_free_table(tbl, of_node_full_name(dev->dev.of_node));
- }
- 
-@@ -2040,7 +2039,6 @@ static void pnv_ioda2_tce_free(struct iommu_table *tbl, long index,
- static void pnv_ioda2_table_free(struct iommu_table *tbl)
- {
- 	pnv_pci_ioda2_table_free_pages(tbl);
--	iommu_free_table(tbl, "pnv");
- }
- 
- static struct iommu_table_ops pnv_ioda2_iommu_ops = {
-@@ -2317,6 +2315,8 @@ static long pnv_pci_ioda2_create_table(struct iommu_table_group *table_group,
- 	if (!tbl)
- 		return -ENOMEM;
- 
-+	tbl->it_ops = &pnv_ioda2_iommu_ops;
-+
- 	ret = pnv_pci_ioda2_table_alloc_pages(nid,
- 			bus_offset, page_shift, window_size,
- 			levels, tbl);
-@@ -2325,8 +2325,6 @@ static long pnv_pci_ioda2_create_table(struct iommu_table_group *table_group,
- 		return ret;
- 	}
- 
--	tbl->it_ops = &pnv_ioda2_iommu_ops;
--
- 	*ptbl = tbl;
- 
- 	return 0;
-@@ -2367,7 +2365,7 @@ static long pnv_pci_ioda2_setup_default_config(struct pnv_ioda_pe *pe)
- 	if (rc) {
- 		pe_err(pe, "Failed to configure 32-bit TCE table, err %ld\n",
- 				rc);
--		pnv_ioda2_table_free(tbl);
-+		iommu_free_table(tbl, "");
- 		return rc;
- 	}
- 
-@@ -2455,7 +2453,7 @@ static void pnv_ioda2_take_ownership(struct iommu_table_group *table_group)
- 	pnv_pci_ioda2_unset_window(&pe->table_group, 0);
- 	if (pe->pbus)
- 		pnv_ioda_setup_bus_dma(pe, pe->pbus, false);
--	pnv_ioda2_table_free(tbl);
-+	iommu_free_table(tbl, "pnv");
- }
- 
- static void pnv_ioda2_release_ownership(struct iommu_table_group *table_group)
-diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
-index 59b3f62a2d64..ffab01874a22 100644
---- a/drivers/vfio/vfio_iommu_spapr_tce.c
-+++ b/drivers/vfio/vfio_iommu_spapr_tce.c
-@@ -677,7 +677,7 @@ static void tce_iommu_free_table(struct tce_container *container,
- 	unsigned long pages = tbl->it_allocated_size >> PAGE_SHIFT;
- 
- 	tce_iommu_userspace_view_free(tbl, container->mm);
--	tbl->it_ops->free(tbl);
-+	iommu_free_table(tbl, "");
- 	decrement_locked_vm(container->mm, pages);
- }
+ #ifdef KVM_CAP_IRQ_ROUTING
  
 -- 
 2.11.0
