@@ -1,18 +1,25 @@
-Return-Path: <fgao@ikuai8.com>
-Received: from smtpbg342.qq.com (smtpbg342.qq.com [14.17.44.37])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <tomas.winkler@intel.com>
+Received: from mga07.intel.com (mga07.intel.com [134.134.136.100])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vSrZt0pzJzDqRB
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Feb 2017 19:47:01 +1100 (AEDT)
-From: fgao@ikuai8.com
-To: jk@ozlabs.org, arnd@arndb.de, benh@kernel.crashing.org, paulus@samba.org,
- linuxppc-dev@lists.ozlabs.org, cbe-oss-dev@lists.ozlabs.org,
- gfree.wind@gmail.com
-Cc: Gao Feng <fgao@ikuai8.com>
-Subject: [PATCH kernel 1/1] powerpc/platforms/spufs: Use corresponding
- finish_wait for DEFINE_WAIT in spu_prio_wait
-Date: Wed, 22 Feb 2017 16:37:30 +0800
-Message-Id: <1487752650-29318-1-git-send-email-fgao@ikuai8.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vSs4x6WjJzDqK6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Feb 2017 20:09:37 +1100 (AEDT)
+From: "Winkler, Tomas" <tomas.winkler@intel.com>
+To: Feng Gao <gfree.wind@gmail.com>
+CC: "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "rob@landley.net" <rob@landley.net>, "linux-doc@vger.kernel.org"
+ <linux-doc@vger.kernel.org>
+Subject: RE: [PATCH kernel 1/1] powerpc/Documentation/misc-devices/: Fix one
+ compile error
+Date: Wed, 22 Feb 2017 09:09:29 +0000
+Message-ID: <5B8DA87D05A7694D9FA63FD143655C1B5439AD21@hasmsx108.ger.corp.intel.com>
+References: <1487748144-13685-1-git-send-email-fgao@ikuai8.com>
+ <1487751232.13163.24.camel@intel.com>
+ <CA+6hz4rXi3XNu6xVeq_RkFT4yZwNFRaAD3Cuyb7yCFxA4U9UHw@mail.gmail.com>
+In-Reply-To: <CA+6hz4rXi3XNu6xVeq_RkFT4yZwNFRaAD3Cuyb7yCFxA4U9UHw@mail.gmail.com>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,29 +29,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Gao Feng <fgao@ikuai8.com>
-
-It should use finish_wait instead of remove_wait_queue when define
-the waitqueue by DEFINE_WAIT.
-
-Signed-off-by: Gao Feng <fgao@ikuai8.com>
----
- arch/powerpc/platforms/cell/spufs/sched.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/platforms/cell/spufs/sched.c b/arch/powerpc/platforms/cell/spufs/sched.c
-index 25db92a..76cbcc5 100644
---- a/arch/powerpc/platforms/cell/spufs/sched.c
-+++ b/arch/powerpc/platforms/cell/spufs/sched.c
-@@ -564,8 +564,7 @@ static void spu_prio_wait(struct spu_context *ctx)
- 		__spu_del_from_rq(ctx);
- 	}
- 	spin_unlock(&spu_prio->runq_lock);
--	__set_current_state(TASK_RUNNING);
--	remove_wait_queue(&ctx->stop_wq, &wait);
-+	finish_wait(&ctx->stop_wq, &wait);
- }
- 
- static struct spu *spu_get_idle(struct spu_context *ctx)
--- 
-1.9.1
+DQo+IA0KPiBPbiBXZWQsIEZlYiAyMiwgMjAxNyBhdCA0OjE0IFBNLCBXaW5rbGVyLCBUb21hcyA8
+dG9tYXMud2lua2xlckBpbnRlbC5jb20+DQo+IHdyb3RlOg0KPiA+IE9uIFdlZCwgMjAxNy0wMi0y
+MiBhdCAxNToyMiArMDgwMCwgZmdhb0Bpa3VhaTguY29tIHdyb3RlOg0KPiA+PiBGcm9tOiBHYW8g
+RmVuZyA8Zmdhb0Bpa3VhaTguY29tPg0KPiA+Pg0KPiA+PiBXaGVuIG1ha2UgYWxseWVzY29uZmln
+LCB0aGVyZSBpcyBvbmUgY29tcGlsZSBlcnJvciBvbiBteSBwbGF0Zm9ybQ0KPiA+PiAiZ2NjIChV
+YnVudHUgNC44LjQtMnVidW50dTF+MTQuMDQuMykgNC44LjQiLg0KPiA+PiBUaGUgZm9sbG93aW5n
+IGlzIHRoZSBvdXRwdXQuDQo+ID4+DQo+ID4+IERvY3VtZW50YXRpb24vbWlzYy1kZXZpY2VzL21l
+aS9tZWktYW10LXZlcnNpb24uYzogSW4gZnVuY3Rpb24g4oCYbWFpbuKAmToNCj4gPj4gRG9jdW1l
+bnRhdGlvbi9taXNjLWRldmljZXMvbWVpL21laS1hbXQtdmVyc2lvbi5jOjEwMzo1OiB3YXJuaW5n
+Og0KPiA+PiDigJhhY21kLmZk4oCZDQo+ID4+IGlzIHVzZWQgdW5pbml0aWFsaXplZCBpbiB0aGlz
+IGZ1bmN0aW9uIFstV3VuaW5pdGlhbGl6ZWRdDQo+ID4+ICAgaWYgKGNsLT5mZCAhPSAtMSkNCj4g
+Pj4gICAgICBeDQo+ID4+IERvY3VtZW50YXRpb24vbWlzYy1kZXZpY2VzL21laS9tZWktYW10LXZl
+cnNpb24uYzo0NDM6MjE6IG5vdGU6DQo+ID4+IOKAmGFjbWQuZmTigJkNCj4gPj4gd2FzIGRlY2xh
+cmVkIGhlcmUNCj4gPj4gICBzdHJ1Y3QgYW10X2hvc3RfaWYgYWNtZDsNCj4gPj4gICAgICAgICAg
+ICAgICAgICAgICAgXg0KPiA+PiBUaGlzIGNvbW1pdCBmaXhlcyB0aGlzIGNvbXBpbGUgZXJyb3Iu
+DQo+ID4+DQo+ID4+IFNpZ25lZC1vZmYtYnk6IEdhbyBGZW5nIDxmZ2FvQGlrdWFpOC5jb20+DQo+
+ID4NCj4gPiBUaGlzIGlzIGZhbHNlIHBvc2l0aXZlLCBhcyB0aGUgdmFyaWFibGUgaXMgYXNzaW5l
+ZCBpbiBtZWlfaW5pdCgpLCBpbg0KPiA+IGFueSBjYXNlLCB0aGUgY29kZSBoYXMgbW92ZWQgdW5k
+ZXIgc2FtcGxlcyBkaXJldG9yeSBpbiB0aGUgY3VycmVudA0KPiA+IGtlcm5lbC4gQW55dGhpbmcg
+bmVlZCB0byBiZSBmaXhlZCB0aGVyZSBmaXJzdA0KPiA+DQo+ID4gVGhhbmtzDQo+ID4gVG9tYXMN
+Cj4gDQo+IEkgdGhpbmsgaXQgaXMgbm90IGZhbHNlIHBvc2l0aXZlLg0KPiBUaGUgZnVuY3Rpb24g
+c3RhY2sgaXMgbWFpbi0+YW10X2hvc3RfaWZfaW5pdC0+bWVpX2luaXQtPm1laV9kZWluaXQuDQo+
+IFRoZXJlIGlzIG9uZSBjaGVjayAiaWYgKGNsLT5mZCAhPSAtMSkiLg0KDQpJc24ndCAgdGhlIGZp
+cnN0IGxpbmUgaW4gbWVpX2luaXQgbWUtPmZkID0gb3BlbigiL2Rldi9tZWkiLCBPX1JEV1IpOyA/
+IA0KSSBkb24ndCBzZWUgbWVpX2RlaW5pdCBjYWxsZWQgdy9vIG1laV9pbml0IGNhbGxlZCBmaXJz
+dC4gDQogDQo+IEJlY2F1c2UgdGhpcyBmZCBpcyBub3QgaW5pdGlhbGl6ZWQgdG8gLTEsIHNvIGl0
+IG1heSBoaXQgdGhlIGNvbmRpdGlvbiwgYW5kIGV4ZWN1dGUNCj4gY2xvc2UuDQo+IA0KPiBTbyBp
+dCBzaG91bGQgYmUgZml4ZWQsIGFsdGhvdWdoIHRoZXNlIGNvZGVzIHdvdWxkIGJlIG1vdmVkIHRv
+IHNhbXBsZQ0KPiBkaXJlY3Rvci4NCg0KUGxlYXNlIHRyeSB3aXRoIHRoZSBtYXN0ZXIgYnJhbmNo
+IGZpcnN0IGluIGNhc2UgIEknbSBzdGlsbCB3cm9uZy4NClRoYW5rcw0KIA0KPiBSZWdhcmRzDQo+
+IEZlbmcNCj4gDQo+ID4NCj4gPj4gLS0tDQo+ID4+ICBEb2N1bWVudGF0aW9uL21pc2MtZGV2aWNl
+cy9tZWkvbWVpLWFtdC12ZXJzaW9uLmMgfCAxICsNCj4gPj4gIDEgZmlsZSBjaGFuZ2VkLCAxIGlu
+c2VydGlvbigrKQ0KPiA+Pg0KPiA+PiBkaWZmIC0tZ2l0IGEvRG9jdW1lbnRhdGlvbi9taXNjLWRl
+dmljZXMvbWVpL21laS1hbXQtdmVyc2lvbi5jDQo+ID4+IGIvRG9jdW1lbnRhdGlvbi9taXNjLWRl
+dmljZXMvbWVpL21laS1hbXQtdmVyc2lvbi5jDQo+ID4+IGluZGV4IDQ5ZTRmNzcuLmNhMDM1Y2Ig
+MTAwNjQ0DQo+ID4+IC0tLSBhL0RvY3VtZW50YXRpb24vbWlzYy1kZXZpY2VzL21laS9tZWktYW10
+LXZlcnNpb24uYw0KPiA+PiArKysgYi9Eb2N1bWVudGF0aW9uL21pc2MtZGV2aWNlcy9tZWkvbWVp
+LWFtdC12ZXJzaW9uLmMNCj4gPj4gQEAgLTI5Nyw2ICsyOTcsNyBAQCBzdGF0aWMgYm9vbCBhbXRf
+aG9zdF9pZl9pbml0KHN0cnVjdCBhbXRfaG9zdF9pZg0KPiA+PiAqYWNtZCwNCj4gPj4gICAgICAg
+ICAgICAgICAgICAgICB1bnNpZ25lZCBsb25nIHNlbmRfdGltZW91dCwgYm9vbCB2ZXJib3NlKSAg
+ew0KPiA+PiAgICAgICBhY21kLT5zZW5kX3RpbWVvdXQgPSAoc2VuZF90aW1lb3V0KSA/IHNlbmRf
+dGltZW91dCA6IDIwMDAwOw0KPiA+PiArICAgICBhY21kLT5tZWlfY2wuZmQgPSAtMTsNCj4gPj4g
+ICAgICAgYWNtZC0+aW5pdGlhbGl6ZWQgPSBtZWlfaW5pdCgmYWNtZC0+bWVpX2NsLCAmTUVJX0lB
+TVRISUYsIDAsDQo+ID4+IHZlcmJvc2UpOw0KPiA+PiAgICAgICByZXR1cm4gYWNtZC0+aW5pdGlh
+bGl6ZWQ7DQo+ID4+ICB9DQo=
