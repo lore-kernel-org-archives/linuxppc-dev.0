@@ -1,36 +1,34 @@
-Return-Path: <kernellwp@gmail.com>
-Received: from mail-wr0-x242.google.com (mail-wr0-x242.google.com
- [IPv6:2a00:1450:400c:c0c::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mbenes@suse.cz>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vSrxT2m8bzDqRp
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Feb 2017 20:03:09 +1100 (AEDT)
-Received: by mail-wr0-x242.google.com with SMTP id z61so616221wrc.3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Feb 2017 01:03:08 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vSrxn355XzDqSn
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Feb 2017 20:03:23 +1100 (AEDT)
+Date: Wed, 22 Feb 2017 10:03:15 +0100 (CET)
+From: Miroslav Benes <mbenes@suse.cz>
+To: Josh Poimboeuf <jpoimboe@redhat.com>
+cc: Jessica Yu <jeyu@redhat.com>, Jiri Kosina <jikos@kernel.org>,
+ Petr Mladek <pmladek@suse.com>, linux-kernel@vger.kernel.org,
+ live-patching@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, x86@kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ Vojtech Pavlik <vojtech@suse.com>, Jiri Slaby <jslaby@suse.cz>,
+ Chris J Arges <chris.j.arges@canonical.com>,
+ Andy Lutomirski <luto@kernel.org>, Ingo Molnar <mingo@kernel.org>,
+ Peter Zijlstra <peterz@infradead.org>,
+ Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+ Balbir Singh <bsingharora@gmail.com>
+Subject: Re: [PATCH v5 13/15] livepatch: change to a per-task consistency model
+In-Reply-To: <20170221212110.y2pstgeluwrmxjie@treble>
+Message-ID: <alpine.LSU.2.20.1702221002280.11859@pobox.suse.cz>
+References: <cover.1487036215.git.jpoimboe@redhat.com>
+ <a999d965d598b23564355c24db0ed6799f105fa6.1487036215.git.jpoimboe@redhat.com>
+ <alpine.LSU.2.20.1702161504020.16310@pobox.suse.cz>
+ <20170216203156.igvctdmyt6b6zcgg@treble>
+ <alpine.LSU.2.20.1702170940420.4107@pobox.suse.cz>
+ <20170221212110.y2pstgeluwrmxjie@treble>
 MIME-Version: 1.0
-In-Reply-To: <20170202155506.GX6515@twins.programming.kicks-ass.net>
-References: <20160921133813.31976-8-matt@codeblueprint.co.uk>
- <tip-cb42c9a3ebbbb23448c3f9a25417fae6309b1a92@git.kernel.org>
- <87tw8gutp6.fsf@concordia.ellerman.id.au>
- <20170130213435.GM31613@codeblueprint.co.uk>
- <33118425-8548-475A-8DED-9A2424C0BCCC@linux.vnet.ibm.com>
- <1485863317.4498.2.camel@gmx.de>
- <CAOxpaSW_GnndoxLBPtyTrqPJ9XOWvgXOQNDf8D+6OohWeObn5Q@mail.gmail.com>
- <20170202155506.GX6515@twins.programming.kicks-ass.net>
-From: Wanpeng Li <kernellwp@gmail.com>
-Date: Wed, 22 Feb 2017 17:03:05 +0800
-Message-ID: <CANRm+CzSpr0psdn-ZoMV+S-Bq9s+JRADnnzT81ofwzNnkTqFVQ@mail.gmail.com>
-Subject: Re: [tip:sched/core] sched/core: Add debugging code to catch missing
- update_rq_clock() calls
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Ross Zwisler <zwisler@gmail.com>, Mike Galbraith <efault@gmx.de>,
- Sachin Sant <sachinp@linux.vnet.ibm.com>,
- Matt Fleming <matt@codeblueprint.co.uk>,
- Michael Ellerman <mpe@ellerman.id.au>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
- LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,70 +38,108 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-2017-02-02 23:55 GMT+08:00 Peter Zijlstra <peterz@infradead.org>:
-> On Tue, Jan 31, 2017 at 10:22:47AM -0700, Ross Zwisler wrote:
->> On Tue, Jan 31, 2017 at 4:48 AM, Mike Galbraith <efault@gmx.de> wrote:
->> > On Tue, 2017-01-31 at 16:30 +0530, Sachin Sant wrote:
->
->
-> Could some of you test this? It seems to cure things in my (very)
-> limited testing.
->
+On Tue, 21 Feb 2017, Josh Poimboeuf wrote:
 
-Tested-by: Wanpeng Li <wanpeng.li@hotmail.com>
-
-> ---
-> diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-> index 96e4ccc..b773821 100644
-> --- a/kernel/sched/core.c
-> +++ b/kernel/sched/core.c
-> @@ -5609,7 +5609,7 @@ static void migrate_tasks(struct rq *dead_rq)
+> On Fri, Feb 17, 2017 at 09:51:29AM +0100, Miroslav Benes wrote:
+> > On Thu, 16 Feb 2017, Josh Poimboeuf wrote:
+> > > What do you think about the following?  I tried to put the logic in
+> > > klp_complete_transition(), so the module_put()'s would be in one place.
+> > > But it was too messy, so I put it in klp_cancel_transition() instead.
+> > >
+> > > diff --git a/kernel/livepatch/transition.c b/kernel/livepatch/transition.c
+> > > index e96346e..bd1c1fd 100644
+> > > --- a/kernel/livepatch/transition.c
+> > > +++ b/kernel/livepatch/transition.c
+> > > @@ -121,8 +121,28 @@ static void klp_complete_transition(void)
+> > >   */
+> > >  void klp_cancel_transition(void)
+> > >  {
+> > > +	bool immediate_func = false;
+> > > +
+> > >  	klp_target_state = !klp_target_state;
+> > >  	klp_complete_transition();
+> > > +
+> > > +	if (klp_target_state == KLP_PATCHED)
+> > > +		return;
+> > 
+> > This is not needed, I think. We call klp_cancel_transition() in 
+> > __klp_enable_patch() only. klp_target_state is set to KLP_PATCHED there 
+> > (through klp_init_transition()) and negated here. We know it must be 
+> > KLP_UNPATCHED.
+> 
+> Yeah, I was trying to hedge against the possibility of future code
+> calling this function in the disable path.  But that probably won't
+> happen and it would probably be cleaner to just add a warning if
+> klp_target_state isn't KLP_PATCHED.
+> 
+> > Moreover, due to klp_complete_transition() klp_target_state is always 
+> > KLP_UNDEFINED after it.
+> > 
+> > > +
+> > > +	/*
+> > > +	 * In the enable error path, even immediate patches can be safely
+> > > +	 * removed because the transition hasn't been started yet.
+> > > +	 *
+> > > +	 * klp_complete_transition() doesn't have a module_put() for immediate
+> > > +	 * patches, so do it here.
+> > > +	 */
+> > > +	klp_for_each_object(klp_transition_patch, obj)
+> > > +		klp_for_each_func(obj, func)
+> > > +			if (func->immediate)
+> > > +				immediate_func = true;
+> > > +
+> > > +	if (klp_transition_patch->immediate || immediate_func)
+> > > +		module_put(klp_transition_patch->mod);
+> > 
+> > Almost correct. The only problem is that klp_transition_patch is NULL at 
+> > this point. klp_complete_transition() does that and it should stay there 
+> > in my opinion to keep it simple.
+> > 
+> > So we could either move all this to __klp_enable_patch(), where patch 
+> > variable is defined, or we could store klp_transition_patch to a local 
+> > variable here in klp_cancel_transition() before klp_complete_transition() 
+> > is called. That should be safe. I like the latter more, because it keeps 
+> > the code in klp_cancel_transition() where it belongs.
+> 
+> Good points.  Here's another try:
+> 
+> diff --git a/kernel/livepatch/transition.c b/kernel/livepatch/transition.c
+> index e96346e..a23c63c 100644
+> --- a/kernel/livepatch/transition.c
+> +++ b/kernel/livepatch/transition.c
+> @@ -121,8 +121,31 @@ static void klp_complete_transition(void)
+>   */
+>  void klp_cancel_transition(void)
 >  {
->         struct rq *rq = dead_rq;
->         struct task_struct *next, *stop = rq->stop;
-> -       struct rq_flags rf, old_rf;
-> +       struct rq_flags rf;
->         int dest_cpu;
->
->         /*
-> @@ -5628,7 +5628,9 @@ static void migrate_tasks(struct rq *dead_rq)
->          * class method both need to have an up-to-date
->          * value of rq->clock[_task]
->          */
-> +       rq_pin_lock(rq, &rf);
->         update_rq_clock(rq);
-> +       rq_unpin_lock(rq, &rf);
->
->         for (;;) {
->                 /*
-> @@ -5641,7 +5643,7 @@ static void migrate_tasks(struct rq *dead_rq)
->                 /*
->                  * pick_next_task assumes pinned rq->lock.
->                  */
-> -               rq_pin_lock(rq, &rf);
-> +               rq_repin_lock(rq, &rf);
->                 next = pick_next_task(rq, &fake_task, &rf);
->                 BUG_ON(!next);
->                 next->sched_class->put_prev_task(rq, next);
-> @@ -5670,13 +5672,6 @@ static void migrate_tasks(struct rq *dead_rq)
->                         continue;
->                 }
->
-> -               /*
-> -                * __migrate_task() may return with a different
-> -                * rq->lock held and a new cookie in 'rf', but we need
-> -                * to preserve rf::clock_update_flags for 'dead_rq'.
-> -                */
-> -               old_rf = rf;
-> -
->                 /* Find suitable destination for @next, with force if needed. */
->                 dest_cpu = select_fallback_rq(dead_rq->cpu, next);
->
-> @@ -5685,7 +5680,6 @@ static void migrate_tasks(struct rq *dead_rq)
->                         raw_spin_unlock(&rq->lock);
->                         rq = dead_rq;
->                         raw_spin_lock(&rq->lock);
-> -                       rf = old_rf;
->                 }
->                 raw_spin_unlock(&next->pi_lock);
->         }
+> -	klp_target_state = !klp_target_state;
+> +	struct klp_patch *patch = klp_transition_patch;
+> +	struct klp_object *obj;
+> +	struct klp_func *func;
+> +	bool immediate_func = false;
+> +
+> +	if (WARN_ON_ONCE(klp_target_state != KLP_PATCHED))
+> +		return;
+> +
+> +	klp_target_state = KLP_UNPATCHED;
+>  	klp_complete_transition();
+> +
+> +	/*
+> +	 * In the enable error path, even immediate patches can be safely
+> +	 * removed because the transition hasn't been started yet.
+> +	 *
+> +	 * klp_complete_transition() doesn't have a module_put() for immediate
+> +	 * patches, so do it here.
+> +	 */
+> +	klp_for_each_object(patch, obj)
+> +		klp_for_each_func(obj, func)
+> +			if (func->immediate)
+> +				immediate_func = true;
+> +
+> +	if (patch->immediate || immediate_func)
+> +		module_put(patch->mod);
+>  }
+
+Looks ok.
+
+Thanks,
+Miroslav
