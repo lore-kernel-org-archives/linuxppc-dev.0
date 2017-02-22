@@ -1,21 +1,45 @@
-Return-Path: <vkuznets@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <vaibhav@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vSsbT6txbzDqJM
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Feb 2017 20:32:37 +1100 (AEDT)
-From: Vitaly Kuznetsov <vkuznets@redhat.com>
-To: Nathan Fontenot <nfont@linux.vnet.ibm.com>
-Cc: linux-mm@kvack.org, mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org,
- mdroth@linux.vnet.ibm.com
-Subject: Re: [RFC PATCH] memory-hotplug: Use dev_online for memhp_auto_offline
-References: <20170221172234.8047.33382.stgit@ltcalpine2-lp14.aus.stglabs.ibm.com>
-Date: Wed, 22 Feb 2017 10:32:34 +0100
-In-Reply-To: <20170221172234.8047.33382.stgit@ltcalpine2-lp14.aus.stglabs.ibm.com>
- (Nathan Fontenot's message of "Tue, 21 Feb 2017 12:22:34 -0500")
-Message-ID: <878toy1sgd.fsf@vitty.brq.redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vSvMg70BmzDqD2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Feb 2017 21:52:31 +1100 (AEDT)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v1MAmjMO086338
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Feb 2017 05:52:28 -0500
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 28s6y0wsuj-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Feb 2017 05:52:27 -0500
+Received: from localhost
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <vaibhav@linux.vnet.ibm.com>;
+ Wed, 22 Feb 2017 20:52:25 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 0FA113578052
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Feb 2017 21:52:23 +1100 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v1MAqE0i17301702
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Feb 2017 21:52:22 +1100
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v1MApnpP007492
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Feb 2017 21:51:50 +1100
+From: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>, frederic.barrat@fr.ibm.com,
+ Andrew Donnellan <andonnel@au1.ibm.com>, Ian Munsie <ianmunsi@au1.ibm.com>,
+ Christophe Lombard <christophe_lombard@fr.ibm.com>,
+ Philippe Bergheaud <philippe.bergheaud@fr.ibm.com>,
+ Gregory Kurz <KURZGREG@fr.ibm.com>
+Subject: [PATCH] cxl: Route eeh events to all slices for
+ pci_channel_io_perm_failure state
+Date: Wed, 22 Feb 2017 16:21:05 +0530
+Message-Id: <20170222105105.11676-1-vaibhav@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,107 +49,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+Fix a boundary condition where in some cases an eeh event with
+state == pci_channel_io_perm_failure wont be passed on to a driver
+attached to the virtual pci device associated with a slice. This will
+happen in case the slice just before (n-1) doesn't have any vph bus
+associated with it, that results in an early return from
+cxl_pci_error_detected callback.
 
-s,memhp_auto_offline,memhp_auto_online, in the subject please :-)
+This also simplifies branch that handles this eeh state by returning
+PCI_ERS_RESULT_DISCONNECTED in all cases as the adapter is will be
+removed irrespective of the return value of cxl_pci_error_detected
+callback.
 
-Nathan Fontenot <nfont@linux.vnet.ibm.com> writes:
+Fixes: e4f5fc001a6("cxl: Do not create vPHB if there are no AFU configuration records")
+Signed-off-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+---
+ drivers/misc/cxl/pci.c | 12 +++++-------
+ 1 file changed, 5 insertions(+), 7 deletions(-)
 
-> Commit 31bc3858e "add automatic onlining policy for the newly added memory"
-> provides the capability to have added memory automatically onlined
-> during add, but this appears to be slightly broken.
->
-> The current implementation uses walk_memory_range() to call
-> online_memory_block, which uses memory_block_change_state() to online
-> the memory. Instead I think we should be calling device_online()
-> for the memory block in online_memory_block. This would online
-> the memory (the memory bus online routine memory_subsys_online()
-> called from device_online calls memory_block_change_state()) and
-> properly update the device struct offline flag.
->
-> As a result of the current implementation, attempting to remove
-> a memory block after adding it using auto online fails.
-> This is
-> because doing a remove, for instance
-> 'echo offline > /sys/devices/system/memory/memoryXXX/state', uses
-> device_offline() which checks the dev->offline flag.
-
-I see the issue.
-
->
-> There is a workaround in that a user could online the memory or have
-> a udev rule to online the memory by using the sysfs interface. The
-> sysfs interface to online memory goes through device_online() which
-> should updated the dev->offline flag. I'm not sure that having kernel
-> memory hotplug rely on userspace actions is the correct way to go.
-
-Using udev rule for memory onlining is possible when you disable
-memhp_auto_online but in some cases it doesn't work well, e.g. when we
-use memory hotplug to address memory pressure the loop through userspace
-is really slow and memory consuming, we may hit OOM before we manage to
-online newly added memory. In addition to that, systemd/udev folks
-continuosly refused to add this udev rule to udev calling it stupid as
-it actually is an unconditional and redundant ping-pong between kernel
-and udev.
-
->
-> I have tried reading through the email threads when the origianl patch
-> was submitted and could not determine if this is the expected behavior.
-> The problem with the current behavior was found when trying to update
-> memory hotplug on powerpc to use auto online.
->
-> -Nathan Fontenot
-> ---
->  drivers/base/memory.c  |    2 +-
->  include/linux/memory.h |    3 ---
->  mm/memory_hotplug.c    |    2 +-
->  3 files changed, 2 insertions(+), 5 deletions(-)
->
-> diff --git a/drivers/base/memory.c b/drivers/base/memory.c
-> index 8ab8ea1..ede46f3 100644
-> --- a/drivers/base/memory.c
-> +++ b/drivers/base/memory.c
-> @@ -249,7 +249,7 @@ static bool pages_correctly_reserved(unsigned long start_pfn)
->  	return ret;
->  }
->
-> -int memory_block_change_state(struct memory_block *mem,
-> +static int memory_block_change_state(struct memory_block *mem,
->  		unsigned long to_state, unsigned long from_state_req)
->  {
->  	int ret = 0;
-> diff --git a/include/linux/memory.h b/include/linux/memory.h
-> index 093607f..b723a68 100644
-> --- a/include/linux/memory.h
-> +++ b/include/linux/memory.h
-> @@ -109,9 +109,6 @@ static inline int memory_isolate_notify(unsigned long val, void *v)
->  extern int register_memory_isolate_notifier(struct notifier_block *nb);
->  extern void unregister_memory_isolate_notifier(struct notifier_block *nb);
->  extern int register_new_memory(int, struct mem_section *);
-> -extern int memory_block_change_state(struct memory_block *mem,
-> -				     unsigned long to_state,
-> -				     unsigned long from_state_req);
->  #ifdef CONFIG_MEMORY_HOTREMOVE
->  extern int unregister_memory_section(struct mem_section *);
->  #endif
-> diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
-> index e43142c1..6f7a289 100644
-> --- a/mm/memory_hotplug.c
-> +++ b/mm/memory_hotplug.c
-> @@ -1329,7 +1329,7 @@ int zone_for_memory(int nid, u64 start, u64 size, int zone_default,
->
->  static int online_memory_block(struct memory_block *mem, void *arg)
->  {
-> -	return memory_block_change_state(mem, MEM_ONLINE, MEM_OFFLINE);
-> +	return device_online(&mem->dev);
->  }
->
->  /* we are OK calling __meminit stuff here - we have CONFIG_MEMORY_HOTPLUG */
-
-Your patch looks good to me, I tested it on x86 (Hyper-V) and it seems
-to work.
-
-Thanks!
-
+diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
+index 80a87ab..679afc9 100644
+--- a/drivers/misc/cxl/pci.c
++++ b/drivers/misc/cxl/pci.c
+@@ -1780,15 +1780,13 @@ static pci_ers_result_t cxl_pci_error_detected(struct pci_dev *pdev,
+ 
+ 	/* If we're permanently dead, give up. */
+ 	if (state == pci_channel_io_perm_failure) {
+-		/* Tell the AFU drivers; but we don't care what they
+-		 * say, we're going away.
+-		 */
+ 		for (i = 0; i < adapter->slices; i++) {
+ 			afu = adapter->afu[i];
+-			/* Only participate in EEH if we are on a virtual PHB */
+-			if (afu->phb == NULL)
+-				return PCI_ERS_RESULT_NONE;
+-			cxl_vphb_error_detected(afu, state);
++			/* Tell the AFU drivers; but we don't care what they
++			 * say, we're going away.
++			 */
++			if (afu->phb != NULL)
++				cxl_vphb_error_detected(afu, state);
+ 		}
+ 		return PCI_ERS_RESULT_DISCONNECT;
+ 	}
 -- 
-  Vitaly
+2.9.3
