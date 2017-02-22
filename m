@@ -1,26 +1,22 @@
-Return-Path: <marcelo.cerri@canonical.com>
-Received: from mail-qk0-x22f.google.com (mail-qk0-x22f.google.com
- [IPv6:2607:f8b0:400d:c09::22f])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vT6dT3GKnzDqD2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Feb 2017 06:20:13 +1100 (AEDT)
-Received: by mail-qk0-x22f.google.com with SMTP id s186so12285416qkb.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Feb 2017 11:20:13 -0800 (PST)
-Date: Wed, 22 Feb 2017 16:20:04 -0300
-From: Marcelo Cerri <marcelo.cerri@canonical.com>
-To: Paulo Flabiano Smorigo <pfsmorigo@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, benh@kernel.crashing.org,
- paulus@samba.org, mpe@ellerman.id.au, herbert@gondor.apana.org.au,
- davem@davemloft.net, linux-crypto@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 2/2] crypto: vmx - Use skcipher for xts fallback
-Message-ID: <20170222192004.GC20626@gallifrey>
-References: <20170222180045.28341-1-pfsmorigo@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vT9TQ3Df7zDqGc
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Feb 2017 08:28:26 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ benh@kernel.crashing.org, paulus@samba.org
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: Re: [PATCH] powerpc/mm/hash: Always clear UPRT and Host Radix bits
+ when setting up CPU
+In-Reply-To: <1487740322-17755-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+References: <1487740322-17755-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Date: Thu, 23 Feb 2017 08:28:25 +1100
+Message-ID: <87ino1zzie.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="oTHb8nViIGeoXxdp"
-In-Reply-To: <20170222180045.28341-1-pfsmorigo@linux.vnet.ibm.com>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,145 +26,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> writes:
 
---oTHb8nViIGeoXxdp
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> We will set LPCR with correct value for radix during int. This make sure we
+> start with a sanitized value of LPCR. In case of kexec, cpus can have LPCR
+> value based on the previous translation mode we were running.
+>
+> Fixes: fe036a0605d60 ("powerpc/64/kexec: Fix MMU cleanup on radix")
+> Cc: stable@vger.kernel.org # v4.9+
+> Acked-by: Michael Neuling <mikey@neuling.org>
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 
-In addition to cbc comments:
+I can merge this, but the proper fix is to set a sensible value on the
+kexec down path.
 
-On Wed, Feb 22, 2017 at 03:00:45PM -0300, Paulo Flabiano Smorigo wrote:
-> Signed-off-by: Paulo Flabiano Smorigo <pfsmorigo@linux.vnet.ibm.com>
-> ---
->  drivers/crypto/vmx/aes_xts.c | 32 ++++++++++++++++++--------------
->  1 file changed, 18 insertions(+), 14 deletions(-)
->=20
-> diff --git a/drivers/crypto/vmx/aes_xts.c b/drivers/crypto/vmx/aes_xts.c
-> index 24353ec3..a8245e1 100644
-> --- a/drivers/crypto/vmx/aes_xts.c
-> +++ b/drivers/crypto/vmx/aes_xts.c
-> @@ -28,11 +28,12 @@
->  #include <crypto/aes.h>
->  #include <crypto/scatterwalk.h>
->  #include <crypto/xts.h>
-> +#include <crypto/internal/skcipher.h>
-> =20
->  #include "aesp8-ppc.h"
-> =20
->  struct p8_aes_xts_ctx {
-> -	struct crypto_blkcipher *fallback;
-> +	struct crypto_skcipher *fallback;
->  	struct aes_key enc_key;
->  	struct aes_key dec_key;
->  	struct aes_key tweak_key;
-> @@ -41,7 +42,7 @@ struct p8_aes_xts_ctx {
->  static int p8_aes_xts_init(struct crypto_tfm *tfm)
->  {
->  	const char *alg;
-> -	struct crypto_blkcipher *fallback;
-> +	struct crypto_skcipher *fallback;
->  	struct p8_aes_xts_ctx *ctx =3D crypto_tfm_ctx(tfm);
-> =20
->  	if (!(alg =3D crypto_tfm_alg_name(tfm))) {
-> @@ -50,7 +51,7 @@ static int p8_aes_xts_init(struct crypto_tfm *tfm)
->  	}
-> =20
->  	fallback =3D
-> -		crypto_alloc_blkcipher(alg, 0, CRYPTO_ALG_NEED_FALLBACK);
-> +		crypto_alloc_skcipher(alg, 0, CRYPTO_ALG_NEED_FALLBACK);
->  	if (IS_ERR(fallback)) {
->  		printk(KERN_ERR
->  			"Failed to allocate transformation for '%s': %ld\n",
-> @@ -60,9 +61,9 @@ static int p8_aes_xts_init(struct crypto_tfm *tfm)
->  	printk(KERN_INFO "Using '%s' as fallback implementation.\n",
->  		crypto_tfm_alg_driver_name((struct crypto_tfm *) fallback));
-> =20
-> -	crypto_blkcipher_set_flags(
-> +	crypto_skcipher_set_flags(
->  		fallback,
-> -		crypto_blkcipher_get_flags((struct crypto_blkcipher *)tfm));
-> +		crypto_skcipher_get_flags((struct crypto_skcipher *)tfm));
->  	ctx->fallback =3D fallback;
-> =20
->  	return 0;
-> @@ -73,7 +74,7 @@ static void p8_aes_xts_exit(struct crypto_tfm *tfm)
->  	struct p8_aes_xts_ctx *ctx =3D crypto_tfm_ctx(tfm);
-> =20
->  	if (ctx->fallback) {
-> -		crypto_free_blkcipher(ctx->fallback);
-> +		crypto_free_skcipher(ctx->fallback);
->  		ctx->fallback =3D NULL;
->  	}
->  }
-> @@ -98,7 +99,7 @@ static int p8_aes_xts_setkey(struct crypto_tfm *tfm, co=
-nst u8 *key,
->  	pagefault_enable();
->  	preempt_enable();
-> =20
-> -	ret +=3D crypto_blkcipher_setkey(ctx->fallback, key, keylen);
-> +	ret +=3D crypto_skcipher_setkey(ctx->fallback, key, keylen);
->  	return ret;
->  }
-> =20
-> @@ -113,15 +114,18 @@ static int p8_aes_xts_crypt(struct blkcipher_desc *=
-desc,
->  	struct blkcipher_walk walk;
->  	struct p8_aes_xts_ctx *ctx =3D
->  		crypto_tfm_ctx(crypto_blkcipher_tfm(desc->tfm));
-> -	struct blkcipher_desc fallback_desc =3D {
-> -		.tfm =3D ctx->fallback,
-> -		.info =3D desc->info,
-> -		.flags =3D desc->flags
-> -	};
-> =20
->  	if (in_interrupt()) {
-> -		ret =3D enc ? crypto_blkcipher_encrypt(&fallback_desc, dst, src, nbyte=
-s) :
-> -                            crypto_blkcipher_decrypt(&fallback_desc, dst=
-, src, nbytes);
-> +		SKCIPHER_REQUEST_ON_STACK(req, ctx->fallback);
-> +		skcipher_request_set_tfm(req, ctx->fallback);
-> +		skcipher_request_set_callback(req, desc->flags, NULL, NULL);
-> +		skcipher_request_set_crypt(req, src, dst, nbytes, desc->info);
-> +		ret =3D crypto_skcipher_encrypt(req);
+That way you can kexec into an older kernel, which doesn't have this
+fix. For this specific case maybe that's not really an issue, because
+this is Power9 only and there aren't any old kernels that are expected
+to work.
 
-You probably don't want this crypto_skcipher_encrypt call.
-
-
-> +		if (enc)
-> +			crypto_skcipher_encrypt(req);
-> +		else
-> +			crypto_skcipher_decrypt(req);
-
-And you should check the return values here.
-
-> +		skcipher_request_zero(req);
->  	} else {
->  		preempt_disable();
->  		pagefault_disable();
-> --=20
-> 2.9.3
->=20
-
---=20
-Regards,
-Marcelo
-
-
---oTHb8nViIGeoXxdp
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAABCAAGBQJYreRkAAoJEM8aS8c01e1Ha0QH/0nc46uFTDCvAu+YVPqOK5hB
-xZzL6MMXLOzaV30iB0L3vndShjvQW09SWeL67kfTjtMs4k3aQ71ZNbL0V2sIgoXw
-bkh3WQG3RglJ1DRtLJXdab0NLkudrExvUbXO59w9LeXgY7k7igNrpZdLMxQi0myP
-kZAGgTxXmJUPUN8Xkj6q5pIeoprKMYbFqHID/KuE4TQ/b1AeEqBwvTo5UuX2bI0h
-qhQpJREvSzXYVh6POyyyRhyhXeFjgGAeYjG14xqQvSFn8osUMkAaMEHRUReWje4z
-WcJrukq9u9dJLmHnVG+DH8+MXNZKf+UpHCknNH98Sge+lsfwgHBU9EzFdjp0HxQ=
-=YE9i
------END PGP SIGNATURE-----
-
---oTHb8nViIGeoXxdp--
+cheers
