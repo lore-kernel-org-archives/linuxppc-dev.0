@@ -1,22 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vSqhW0rlszDq5g
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Feb 2017 19:06:50 +1100 (AEDT)
-Message-ID: <1487750793.23576.219.camel@kernel.crashing.org>
-Subject: Re: [PATCH 0/2] Allow configurable stack size (especially 32k on
- PPC64)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Michael Ellerman <mpe@ellerman.id.au>, Hamish Martin
- <hamish.martin@alliedtelesis.co.nz>, paulus@samba.org
-Cc: linuxppc-dev@lists.ozlabs.org
-Date: Wed, 22 Feb 2017 19:06:33 +1100
-In-Reply-To: <871suqn3m7.fsf@concordia.ellerman.id.au>
-References: <20170220202440.25796-1-hamish.martin@alliedtelesis.co.nz>
- <871suqn3m7.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+Return-Path: <aik@ozlabs.ru>
+Received: from ozlabs.ru (ozlabs.ru [107.173.13.209])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3vSr1j08dVzDqD0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Feb 2017 19:21:44 +1100 (AEDT)
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
+ Alex Williamson <alex.williamson@redhat.com>,
+ David Gibson <david@gibson.dropbear.id.au>,
+ Paul Mackerras <paulus@samba.org>, kvm-ppc@vger.kernel.org,
+ kvm@vger.kernel.org
+Subject: [PATCH kernel v5 01/10] powerpc/mmu: Add real mode support for IOMMU
+ preregistered memory
+Date: Wed, 22 Feb 2017 19:21:24 +1100
+Message-Id: <20170222082133.10277-2-aik@ozlabs.ru>
+In-Reply-To: <20170222082133.10277-1-aik@ozlabs.ru>
+References: <20170222082133.10277-1-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,27 +24,103 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2017-02-22 at 17:25 +1100, Michael Ellerman wrote:
-> 
-> Thanks for the detailed explanation.
-> 
-> The patches look fine, so I don't see any reason why we wouldn't merge
-> this. I might make the config option depend on EXPERT, but that's just
-> cosmetic.
-> 
-> 
-> You're right about the difference in stack overhead between 32 & 64-bit.
-> But I guess on the other hand we've been using 16K stacks on 64-bit for
-> over 15 years, and although we have had some reports of stack overflow
-> they're not a common problem.
+This makes mm_iommu_lookup() able to work in realmode by replacing
+list_for_each_entry_rcu() (which can do debug stuff which can fail in
+real mode) with list_for_each_entry_lockless().
 
-Right and in fact I wonder if we could generally help this for cases
-like this one (lots of stacked devices) by having the generic driver
-core break those chains by deferring new device registration to a work
-queue or kthread.
+This adds realmode version of mm_iommu_ua_to_hpa() which adds
+explicit vmalloc'd-to-linear address conversion.
+Unlike mm_iommu_ua_to_hpa(), mm_iommu_ua_to_hpa_rm() can fail.
 
-That would help in a lot of cases. We do get some stupid deep chains
-in cases of many bus encapsulation.
+This changes mm_iommu_preregistered() to receive @mm as in real mode
+@current does not always have a correct pointer.
 
-Cheers,
-Ben.
+This adds realmode version of mm_iommu_lookup() which receives @mm
+(for the same reason as for mm_iommu_preregistered()) and uses
+lockless version of list_for_each_entry_rcu().
+
+Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
+---
+ arch/powerpc/include/asm/mmu_context.h |  4 ++++
+ arch/powerpc/mm/mmu_context_iommu.c    | 39 ++++++++++++++++++++++++++++++++++
+ 2 files changed, 43 insertions(+)
+
+diff --git a/arch/powerpc/include/asm/mmu_context.h b/arch/powerpc/include/asm/mmu_context.h
+index b9e3f0aca261..c70c8272523d 100644
+--- a/arch/powerpc/include/asm/mmu_context.h
++++ b/arch/powerpc/include/asm/mmu_context.h
+@@ -29,10 +29,14 @@ extern void mm_iommu_init(struct mm_struct *mm);
+ extern void mm_iommu_cleanup(struct mm_struct *mm);
+ extern struct mm_iommu_table_group_mem_t *mm_iommu_lookup(struct mm_struct *mm,
+ 		unsigned long ua, unsigned long size);
++extern struct mm_iommu_table_group_mem_t *mm_iommu_lookup_rm(
++		struct mm_struct *mm, unsigned long ua, unsigned long size);
+ extern struct mm_iommu_table_group_mem_t *mm_iommu_find(struct mm_struct *mm,
+ 		unsigned long ua, unsigned long entries);
+ extern long mm_iommu_ua_to_hpa(struct mm_iommu_table_group_mem_t *mem,
+ 		unsigned long ua, unsigned long *hpa);
++extern long mm_iommu_ua_to_hpa_rm(struct mm_iommu_table_group_mem_t *mem,
++		unsigned long ua, unsigned long *hpa);
+ extern long mm_iommu_mapped_inc(struct mm_iommu_table_group_mem_t *mem);
+ extern void mm_iommu_mapped_dec(struct mm_iommu_table_group_mem_t *mem);
+ #endif
+diff --git a/arch/powerpc/mm/mmu_context_iommu.c b/arch/powerpc/mm/mmu_context_iommu.c
+index 104bad029ce9..631d32f5937b 100644
+--- a/arch/powerpc/mm/mmu_context_iommu.c
++++ b/arch/powerpc/mm/mmu_context_iommu.c
+@@ -314,6 +314,25 @@ struct mm_iommu_table_group_mem_t *mm_iommu_lookup(struct mm_struct *mm,
+ }
+ EXPORT_SYMBOL_GPL(mm_iommu_lookup);
+ 
++struct mm_iommu_table_group_mem_t *mm_iommu_lookup_rm(struct mm_struct *mm,
++		unsigned long ua, unsigned long size)
++{
++	struct mm_iommu_table_group_mem_t *mem, *ret = NULL;
++
++	list_for_each_entry_lockless(mem, &mm->context.iommu_group_mem_list,
++			next) {
++		if ((mem->ua <= ua) &&
++				(ua + size <= mem->ua +
++				 (mem->entries << PAGE_SHIFT))) {
++			ret = mem;
++			break;
++		}
++	}
++
++	return ret;
++}
++EXPORT_SYMBOL_GPL(mm_iommu_lookup_rm);
++
+ struct mm_iommu_table_group_mem_t *mm_iommu_find(struct mm_struct *mm,
+ 		unsigned long ua, unsigned long entries)
+ {
+@@ -345,6 +364,26 @@ long mm_iommu_ua_to_hpa(struct mm_iommu_table_group_mem_t *mem,
+ }
+ EXPORT_SYMBOL_GPL(mm_iommu_ua_to_hpa);
+ 
++long mm_iommu_ua_to_hpa_rm(struct mm_iommu_table_group_mem_t *mem,
++		unsigned long ua, unsigned long *hpa)
++{
++	const long entry = (ua - mem->ua) >> PAGE_SHIFT;
++	void *va = &mem->hpas[entry];
++	unsigned long *pa;
++
++	if (entry >= mem->entries)
++		return -EFAULT;
++
++	pa = (void *) vmalloc_to_phys(va);
++	if (!pa)
++		return -EFAULT;
++
++	*hpa = *pa | (ua & ~PAGE_MASK);
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(mm_iommu_ua_to_hpa_rm);
++
+ long mm_iommu_mapped_inc(struct mm_iommu_table_group_mem_t *mem)
+ {
+ 	if (atomic64_inc_not_zero(&mem->mapped))
+-- 
+2.11.0
