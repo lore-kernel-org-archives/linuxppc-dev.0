@@ -1,19 +1,24 @@
-Return-Path: <me@tobin.cc>
-Received: from out4-smtp.messagingengine.com (out4-smtp.messagingengine.com
- [66.111.4.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vSfkV3J1KzDq5g
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Feb 2017 12:22:58 +1100 (AEDT)
-Date: Wed, 22 Feb 2017 12:22:52 +1100
-From: "Tobin C. Harding" <me@tobin.cc>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Subject: PowerPC build fail
-Message-ID: <20170222012252.GD6131@eros>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vShY72FWCzDq60
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Feb 2017 13:44:59 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Kees Cook <keescook@chromium.org>
+Cc: "kernel-hardening\@lists.openwall.com"
+ <kernel-hardening@lists.openwall.com>, LKML <linux-kernel@vger.kernel.org>,
+ Geert Uytterhoeven <geert@linux-m68k.org>,
+ linuxppc-dev@lists.ozlabs.org <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [PATCH] usercopy: Don't test 64-bit get/put_user() on 32-bit
+ powerpc
+In-Reply-To: <CAGXu5jLTTcyGyY2KtuCX3tCThvGH0mCnFWyLaznyng=nTss6Dw@mail.gmail.com>
+References: <1487410400-28313-1-git-send-email-mpe@ellerman.id.au>
+ <CAGXu5jLTTcyGyY2KtuCX3tCThvGH0mCnFWyLaznyng=nTss6Dw@mail.gmail.com>
+Date: Wed, 22 Feb 2017 13:44:55 +1100
+Message-ID: <87d1eblza0.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,72 +28,103 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The current (2bfe01e) torvalds git tree fails to build on powerpc64. Build machine
-is virtualized.
+Kees Cook <keescook@chromium.org> writes:
 
-- Build error
-arch/powerpc/kernel/time.c: In function ‘running_clock’:
-arch/powerpc/kernel/time.c:712:25: error: implicit declaration of function ‘cputime_to_nsecs’
-   return local_clock() - cputime_to_nsecs(kcpustat_this_cpu->cpustat[CPUTIME_STEAL]);
-                          ^
-                          
-$ cat .config | grep CONFIG_VIRT_CPU
-# CONFIG_VIRT_CPU_ACCOUNTING_NATIVE is not set
-# CONFIG_VIRT_CPU_ACCOUNTING_GEN is not set
+> On Sat, Feb 18, 2017 at 1:33 AM, Michael Ellerman <mpe@ellerman.id.au> wrote:
+>> Add PPC32 to the opt-out list, otherwise it breaks the build.
+>>
+>> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+>> ---
+>>  lib/test_user_copy.c | 1 +
+>>  1 file changed, 1 insertion(+)
+>>
+>> diff --git a/lib/test_user_copy.c b/lib/test_user_copy.c
+>> index 4a79f2c1cd6e..6f335a3d4ae2 100644
+>> --- a/lib/test_user_copy.c
+>> +++ b/lib/test_user_copy.c
+>> @@ -37,6 +37,7 @@
+>>                             !defined(CONFIG_MICROBLAZE) &&      \
+>>                             !defined(CONFIG_MN10300) &&         \
+>>                             !defined(CONFIG_NIOS2) &&           \
+>> +                           !defined(CONFIG_PPC32) &&           \
+>>                             !defined(CONFIG_SUPERH))
+>>  # define TEST_U64
+>>  #endif
+>
+> I'm fine to add this, but I'm curious why it fails? ppc uaccess.h has:
+>
+> #define get_user(x, ptr) \
+>         __get_user_check((x), (ptr), sizeof(*(ptr)))
+>
+> #define __get_user_check(x, ptr, size)                                  \
+> ({                                                                      \
+> ...
+>                 __get_user_size(__gu_val, __gu_addr, (size), __gu_err); \
+>
+> #define __get_user_size(x, ptr, size, retval)                   \
+> do {                                                            \
+> ...
+>         case 8: __get_user_asm2(x, ptr, retval);  break;        \
+>
+> #ifdef __powerpc64__
+> #define __get_user_asm2(x, addr, err)                   \
+>         __get_user_asm(x, addr, err, "ld")
+> #else /* __powerpc64__ */
+> #define __get_user_asm2(x, addr, err)                   \
+>         __asm__ __volatile__(                           \
+> ...
+>
+> It looks like __get_user_asm2() was explicitly designed for handling
+> 64-bit get_user()?
 
-$ cat .config | grep CONFIG_PPC_PSERIES
-CONFIG_PPC_PSERIES=y
+Hmm, quite.
 
-Looking into it I found there are compile time guards on CONFIG_VIRT_CPU_ACCOUNTING_NATIVE
-preventing cputime_to_nsecs being defined.
+It's definitely failing:
 
-Removing the compile time guard allows the build to proceed, surely
-this is not the correct solution though.
-
-diff --git a/arch/powerpc/include/asm/cputime.h b/arch/powerpc/include/asm/cputime.h
-index 99b5418..15482cb 100644
---- a/arch/powerpc/include/asm/cputime.h
-+++ b/arch/powerpc/include/asm/cputime.h
-@@ -16,7 +16,7 @@
- #ifndef __POWERPC_CPUTIME_H
- #define __POWERPC_CPUTIME_H
-
--#ifdef CONFIG_VIRT_CPU_ACCOUNTING_NATIVE
-+
-
- #include <linux/types.h>
- #include <linux/time.h>
-@@ -53,5 +53,5 @@ void arch_vtime_task_switch(struct task_struct *tsk);
- #endif
-
- #endif /* __KERNEL__ */
--#endif /* CONFIG_VIRT_CPU_ACCOUNTING_NATIVE */
- #endif /* __POWERPC_CPUTIME_H */
-diff --git a/include/linux/cputime.h b/include/linux/cputime.h
-index a691dc4..f730c14 100644
---- a/include/linux/cputime.h
-+++ b/include/linux/cputime.h
-@@ -1,13 +1,13 @@
- #ifndef __LINUX_CPUTIME_H
- #define __LINUX_CPUTIME_H
-
--#ifdef CONFIG_VIRT_CPU_ACCOUNTING_NATIVE
-+
- #include <asm/cputime.h>
-
- #ifndef cputime_to_nsecs
--# define cputime_to_nsecs(__ct)        \
-+#define cputime_to_nsecs(__ct) \
-        (cputime_to_usecs(__ct) * NSEC_PER_USEC)
- #endif
-
--#endif /* CONFIG_VIRT_CPU_ACCOUNTING_NATIVE */
-+
- #endif /* __LINUX_CPUTIME_H */
+  ERROR: "__get_user_bad" [lib/test_user_copy.ko] undefined!
 
 
-If you think this can be fixed with the *little* kernel dev knowledge
-I have please point me at a starting place and I will dig into it.
+I suspect it's because get_user() goes via __get_user_check(), which
+uses an unsigned long as a temporary:
 
-thanks,
-Tobin.
+  #define __get_user_check(x, ptr, size)					\
+  ({									\
+  	long __gu_err = -EFAULT;					\
+  	unsigned long  __gu_val = 0;					\
+  	const __typeof__(*(ptr)) __user *__gu_addr = (ptr);		\
+  	might_fault();							\
+  	if (access_ok(VERIFY_READ, __gu_addr, (size)))			\
+  		__get_user_size(__gu_val, __gu_addr, (size), __gu_err);	\
+  	(x) = (__force __typeof__(*(ptr)))__gu_val;				\
+  	__gu_err;							\
+  })
+
+
+And that trips the check in __get_user_size():
+
+  #define __get_user_size(x, ptr, size, retval)			\
+  do {								\
+  	retval = 0;						\
+  	__chk_user_ptr(ptr);					\
+  	if (size > sizeof(x))					\
+  		(x) = __get_user_bad();				\
+
+
+
+Which I can confirm just by changing that case to call
+__get_user_bad_target() instead of __get_user_bad_size():
+
+  ERROR: "__get_user_bad_target" [lib/test_user_copy.ko] undefined!
+
+
+So despite having __get_user_asm2() defined for 32-bit it doesn't
+actually work unless you call __get_user_size() directly.
+
+
+For now if you don't mind merging this that would be good, so the build
+stops breaking.
+
+Then we can think about whether we fix it for ppc32 or just rip it out
+entirely.
+
+cheers
