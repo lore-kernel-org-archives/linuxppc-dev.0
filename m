@@ -1,31 +1,43 @@
-Return-Path: <jbaron@akamai.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mrochs@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vT16M0M7DzDq5g
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Feb 2017 02:11:23 +1100 (AEDT)
-Received: from prod-mail-xrelay07.akamai.com (prod-mail-xrelay07.akamai.com
- [23.79.238.175])
- by ozlabs.org (Postfix) with ESMTP id 3vT16L08l4z9s7d
- for <linuxppc-dev@ozlabs.org>; Thu, 23 Feb 2017 02:11:21 +1100 (AEDT)
-Subject: Re: next-20170217 boot on POWER8 LPAR : WARNING
- @kernel/jump_label.c:287
-To: Michael Ellerman <mpe@ellerman.id.au>,
- Sachin Sant <sachinp@linux.vnet.ibm.com>,
- Steven Rostedt <rostedt@goodmis.org>
-References: <E6A8A7A8-6A55-4989-BAE9-39274876CA3C@linux.vnet.ibm.com>
- <1dffdaac-be8b-0052-52d4-a65fed39f894@akamai.com>
- <02B52EFB-4608-47F3-A81C-B8B52DB11233@linux.vnet.ibm.com>
- <20c53e88-acf5-4c4f-cea9-4dd8745814b5@akamai.com>
- <877f4in5tn.fsf@concordia.ellerman.id.au>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
- linuxppc-dev@ozlabs.org
-From: Jason Baron <jbaron@akamai.com>
-Message-ID: <44116d94-20f8-29e1-5046-1f8c49fb67ed@akamai.com>
-Date: Wed, 22 Feb 2017 10:11:18 -0500
-MIME-Version: 1.0
-In-Reply-To: <877f4in5tn.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset=windows-1252
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vT2NW5ZryzDq60
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Feb 2017 03:08:43 +1100 (AEDT)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v1MFwfPn062763
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Feb 2017 11:08:40 -0500
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 28s9r45471-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Feb 2017 11:08:40 -0500
+Received: from localhost
+ by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <mrochs@linux.vnet.ibm.com>;
+ Wed, 22 Feb 2017 09:08:37 -0700
+Received: from b03cxnp08025.gho.boulder.ibm.com
+ (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id A058619D8052
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Feb 2017 09:07:46 -0700 (MST)
+Content-Type: text/plain; charset=us-ascii
+Mime-Version: 1.0 (Mac OS X Mail 10.2 \(3259\))
+Subject: Re: [PATCH] cxl: Route eeh events to all slices for
+ pci_channel_io_perm_failure state
+From: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>
+In-Reply-To: <20170222105105.11676-1-vaibhav@linux.vnet.ibm.com>
+Date: Wed, 22 Feb 2017 10:08:20 -0600
+Cc: linuxppc-dev@lists.ozlabs.org,
+ Philippe Bergheaud <philippe.bergheaud@fr.ibm.com>,
+ frederic.barrat@fr.ibm.com, Ian Munsie <ianmunsi@au1.ibm.com>,
+ Andrew Donnellan <andonnel@au1.ibm.com>,
+ Gregory Kurz <KURZGREG@fr.ibm.com>,
+ Christophe Lombard <christophe_lombard@fr.ibm.com>
+References: <20170222105105.11676-1-vaibhav@linux.vnet.ibm.com>
+To: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+Message-Id: <D20E1975-4902-43BF-9A8A-2F5DE3E47E4C@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,104 +47,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 02/22/2017 12:38 AM, Michael Ellerman wrote:
-> Jason Baron <jbaron@akamai.com> writes:
-> 
->> On 02/20/2017 10:05 PM, Sachin Sant wrote:
->>>
->>>> On 20-Feb-2017, at 8:27 PM, Jason Baron <jbaron@akamai.com
->>>> <mailto:jbaron@akamai.com>> wrote:
->>>>
->>>> Hi,
->>>>
->>>> On 02/19/2017 09:07 AM, Sachin Sant wrote:
->>>>> While booting next-20170217 on a POWER8 LPAR following
->>>>> warning is displayed.
->>>>>
->>>>> Reverting the following commit helps boot cleanly.
->>>>> commit 3821fd35b5 :  jump_label: Reduce the size of struct static_key
->>>>>
->>>>> [   11.393008] ------------[ cut here ]------------
->>>>> [   11.393031] WARNING: CPU: 5 PID: 2890 at kernel/jump_label.c:287
->>>>> static_key_set_entries.isra.10+0x3c/0x50
->>>>
->>>> Thanks for the report. So this is saying that the jump_entry table is
->>>> not at least 4-byte aligned. I wonder if this fixes it up?
->>>>
->>>
->>> Yes. With this patch the warning is gone.
->>
->> Hi,
->>
->> Thanks for testing. We probably need something like the following to 
->> make sure we don't hit this on other arches. Steve - I will send 4 
->> separate patches for this to get arch maintainers' acks for this?
-> 
-> What's the 4 byte alignment requirement from?
->
+> On Feb 22, 2017, at 4:51 AM, Vaibhav Jain <vaibhav@linux.vnet.ibm.com> =
+wrote:
+>=20
+> Fix a boundary condition where in some cases an eeh event with
+> state =3D=3D pci_channel_io_perm_failure wont be passed on to a driver
+> attached to the virtual pci device associated with a slice. This will
+> happen in case the slice just before (n-1) doesn't have any vph bus
+> associated with it, that results in an early return from
+> cxl_pci_error_detected callback.
+>=20
+> This also simplifies branch that handles this eeh state by returning
+> PCI_ERS_RESULT_DISCONNECTED in all cases as the adapter is will be
+> removed irrespective of the return value of cxl_pci_error_detected
+> callback.
 
-The 4 byte alignment is coming from this patch in linux-next:
+This sentence could be cleaned up a bit.
 
-https://lkml.org/lkml/2017/2/3/558
+>=20
+> Fixes: e4f5fc001a6("cxl: Do not create vPHB if there are no AFU =
+configuration records")
+> Signed-off-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
 
-It reduces the size of 'struct static_key' by making use of the two
-least significant bits of the static_key::entry pointer. Thus, the
-jump_entry table needs to be 4 byte aligned to make it work. I added a
-WARN_ON() to make sure the jump_entry table is in fact 4 byte aligned,
-and that is what we hit here.
+Fix looks good!
 
-> On 64-bit our JUMP_ENTRY_TYPE is 8 bytes, should we be aligning to 8
-> bytes?
-> 
-
-4 bytes should be sufficient and apparently fixes the WARN_ON() that was
-hit.
-
->> diff --git a/arch/powerpc/include/asm/jump_label.h 
->> b/arch/powerpc/include/asm/jump_label.h
->> index 9a287e0ac8b1..f870a85bac46 100644
->> --- a/arch/powerpc/include/asm/jump_label.h
->> +++ b/arch/powerpc/include/asm/jump_label.h
->> @@ -24,6 +24,7 @@ static __always_inline bool arch_static_branch(struct 
->> static_key *key, bool bran
->>          asm_volatile_goto("1:\n\t"
->>                   "nop # arch_static_branch\n\t"
->>                   ".pushsection __jump_table,  \"aw\"\n\t"
->> +                ".balign 4 \n\t"
-> 
-> Can you line those up vertically?
-> 
-> (That may just be an email artifact)
-
-sure will fix.
-
-Thanks,
-
--Jason
-
-> 
->>                   JUMP_ENTRY_TYPE "1b, %l[l_yes], %c0\n\t"
->>                   ".popsection \n\t"
->>                   : :  "i" (&((char *)key)[branch]) : : l_yes);
->> @@ -38,6 +39,7 @@ static __always_inline bool 
->> arch_static_branch_jump(struct static_key *key, bool
->>          asm_volatile_goto("1:\n\t"
->>                   "b %l[l_yes] # arch_static_branch_jump\n\t"
->>                   ".pushsection __jump_table,  \"aw\"\n\t"
->> +                ".balign 4 \n\t"
->>                   JUMP_ENTRY_TYPE "1b, %l[l_yes], %c0\n\t"
->>                   ".popsection \n\t"
->>                   : :  "i" (&((char *)key)[branch]) : : l_yes);
->> @@ -63,6 +65,7 @@ struct jump_entry {
->>   #define ARCH_STATIC_BRANCH(LABEL, KEY)         \
->>   1098:  nop;                                    \
->>          .pushsection __jump_table, "aw";        \
->> +       .balign 4;                              \
->>          FTR_ENTRY_LONG 1098b, LABEL, KEY;       \
->>          .popsection
->>   #endif
-> 
-> Otherwise that looks fine assuming 4 bytes is the correct alignment.
-> 
-> cheers
-> 
+Reviewed-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
