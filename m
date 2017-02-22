@@ -1,22 +1,50 @@
-Return-Path: <dgibson@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <gwshan@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vSj704dYYzDqGV
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Feb 2017 14:10:52 +1100 (AEDT)
-Date: Wed, 22 Feb 2017 13:23:28 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vSkdg577xzDq5g
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Feb 2017 15:19:03 +1100 (AEDT)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v1M4IYDw048707
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Feb 2017 23:19:01 -0500
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 28rp4q0t2u-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Feb 2017 23:19:00 -0500
+Received: from localhost
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Wed, 22 Feb 2017 14:18:57 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 4615B2BB0057
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Feb 2017 15:18:54 +1100 (EST)
+Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v1M4Ik737012510
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Feb 2017 15:18:54 +1100
+Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
+ by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v1M4ILp2022082
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Feb 2017 15:18:21 +1100
+Date: Wed, 22 Feb 2017 15:17:56 +1100
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Cc: linuxppc-dev@lists.ozlabs.org, Gavin Shan <gwshan@linux.vnet.ibm.com>,
+Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ David Gibson <david@gibson.dropbear.id.au>,
  Russell Currey <ruscur@russell.cc>
 Subject: Re: [PATCH kernel] powerpc/powernv/ioda2: Update iommu table base on
  ownership change
-Message-ID: <20170222022328.GG12577@umbus.fritz.box>
+Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
 References: <20170221024131.47753-1-aik@ozlabs.ru>
+ <20170221232844.GA8704@gwshan>
+ <766ce18c-e155-75df-7afe-f5a37cbb69a4@ozlabs.ru>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="vJguvTgX93MxBIIe"
-In-Reply-To: <20170221024131.47753-1-aik@ozlabs.ru>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <766ce18c-e155-75df-7afe-f5a37cbb69a4@ozlabs.ru>
+Message-Id: <20170222041756.GA8826@gwshan>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,159 +54,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Wed, Feb 22, 2017 at 02:05:15PM +1100, Alexey Kardashevskiy wrote:
+>On 22/02/17 10:28, Gavin Shan wrote:
+>> On Tue, Feb 21, 2017 at 01:41:31PM +1100, Alexey Kardashevskiy wrote:
 
---vJguvTgX93MxBIIe
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+[The subsequent discussion isn't related to the patch itself anymore]
 
-On Tue, Feb 21, 2017 at 01:41:31PM +1100, Alexey Kardashevskiy wrote:
-> On POWERNV platform, in order to do DMA via IOMMU (i.e. 32bit DMA in
-> our case), a device needs an iommu_table pointer set via
-> set_iommu_table_base().
->=20
-> The codeflow is:
-> - pnv_pci_ioda2_setup_dma_pe()
-> 	- pnv_pci_ioda2_setup_default_config()
-> 	- pnv_ioda_setup_bus_dma() [1]
->=20
-> pnv_pci_ioda2_setup_dma_pe() creates IOMMU groups,
-> pnv_pci_ioda2_setup_default_config() does default DMA setup,
-> pnv_ioda_setup_bus_dma() takes a bus PE (on IODA2, all physical function
-> PEs as bus PEs except NPU), walks through all underlying buses and
-> devices, adds all devices to an IOMMU group and sets iommu_table.
->=20
-> On IODA2, when VFIO is used, it takes ownership over a PE which means it
-> removes all tables and creates new ones (with a possibility of sharing
-> them among PEs). So when the ownership is returned from VFIO to
-> the kernel, the iommu_table pointer written to a device at [1] is
-> stale and needs an update.
->=20
-> This adds an "add_to_group" parameter to pnv_ioda_setup_bus_dma()
-> (in fact re-adds as it used to be there a while ago for different
-> reasons) to tell the helper if a device needs to be added to
-> an IOMMU group with an iommu_table update or just the latter.
->=20
-> This calls pnv_ioda_setup_bus_dma(..., false) from
-> pnv_ioda2_release_ownership() so when the ownership is restored,
-> 32bit DMA can work again for a device. This does the same thing
-> on obtaining ownership as the iommu_table point is stale at this point
-> anyway and it is safer to have NULL there.
->=20
-> We did not hit this earlier as all tested devices in recent years were
-> only using 64bit DMA; the rare exception for this is MPT3 SAS adapter
-> which uses both 32bit and 64bit DMA access and it has not been tested
-> with VFIO much.
->=20
-> Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+>> One thing would be improved in future, which isn't relevant to
+>> this patch if my understanding is correct enough: The TCE table for
+>> DMA32 space created during system boot is destroyed when VFIO takes
+>> the ownership. The same TCE table (same level, page size, window size
+>> etc) is created and associated to the PE again. Some CPU cycles would
+>> be saved if the original table is picked up without creating a new one.
+>
+>It is not necessary same levels or window size, could be something
+>different. Also carrying a table will just make code bit more complicated
+>and it is complicated enough already - we need to consider very possible
+>case of IOMMU tables sharing.
+>
 
-Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
+Right after host boots up and VFIO isn't involved yet, each PE is associated
+with a DMA32 space (0 - 2G) and the IO page size is 4KB. If the whole (window)
+size, IO page size or levels are changed after the PE is released from guest
+to host, it's not so much reasonable as the device (including its TCE table)
+needs to be restored to previous state. Or we are talking about different
+DMA space (TCE tables)?
 
-> ---
->=20
-> If this is applied before "powerpc/powernv/npu: Remove dead iommu code",
-> there will be a minor conflict.
-> ---
->  arch/powerpc/platforms/powernv/pci-ioda.c | 17 ++++++++++++-----
->  1 file changed, 12 insertions(+), 5 deletions(-)
->=20
-> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/pla=
-tforms/powernv/pci-ioda.c
-> index 51ec0dc1dfde..f5a2421bf164 100644
-> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
-> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-> @@ -1774,17 +1774,20 @@ static u64 pnv_pci_ioda_dma_get_required_mask(str=
-uct pci_dev *pdev)
->  }
-> =20
->  static void pnv_ioda_setup_bus_dma(struct pnv_ioda_pe *pe,
-> -				   struct pci_bus *bus)
-> +				   struct pci_bus *bus,
-> +				   bool add_to_group)
->  {
->  	struct pci_dev *dev;
-> =20
->  	list_for_each_entry(dev, &bus->devices, bus_list) {
->  		set_iommu_table_base(&dev->dev, pe->table_group.tables[0]);
->  		set_dma_offset(&dev->dev, pe->tce_bypass_base);
-> -		iommu_add_device(&dev->dev);
-> +		if (add_to_group)
-> +			iommu_add_device(&dev->dev);
-> =20
->  		if ((pe->flags & PNV_IODA_PE_BUS_ALL) && dev->subordinate)
-> -			pnv_ioda_setup_bus_dma(pe, dev->subordinate);
-> +			pnv_ioda_setup_bus_dma(pe, dev->subordinate,
-> +					add_to_group);
->  	}
->  }
-> =20
-> @@ -2190,7 +2193,7 @@ static void pnv_pci_ioda1_setup_dma_pe(struct pnv_p=
-hb *phb,
->  		set_iommu_table_base(&pe->pdev->dev, tbl);
->  		iommu_add_device(&pe->pdev->dev);
->  	} else if (pe->flags & (PNV_IODA_PE_BUS | PNV_IODA_PE_BUS_ALL))
-> -		pnv_ioda_setup_bus_dma(pe, pe->pbus);
-> +		pnv_ioda_setup_bus_dma(pe, pe->pbus, true);
-> =20
->  	return;
->   fail:
-> @@ -2425,6 +2428,8 @@ static void pnv_ioda2_take_ownership(struct iommu_t=
-able_group *table_group)
-> =20
->  	pnv_pci_ioda2_set_bypass(pe, false);
->  	pnv_pci_ioda2_unset_window(&pe->table_group, 0);
-> +	if (pe->pbus)
-> +		pnv_ioda_setup_bus_dma(pe, pe->pbus, false);
->  	pnv_ioda2_table_free(tbl);
->  }
-> =20
-> @@ -2434,6 +2439,8 @@ static void pnv_ioda2_release_ownership(struct iomm=
-u_table_group *table_group)
->  						table_group);
-> =20
->  	pnv_pci_ioda2_setup_default_config(pe);
-> +	if (pe->pbus)
-> +		pnv_ioda_setup_bus_dma(pe, pe->pbus, false);
->  }
-> =20
->  static struct iommu_table_group_ops pnv_pci_ioda2_ops =3D {
-> @@ -2725,7 +2732,7 @@ static void pnv_pci_ioda2_setup_dma_pe(struct pnv_p=
-hb *phb,
->  		return;
-> =20
->  	if (pe->flags & (PNV_IODA_PE_BUS | PNV_IODA_PE_BUS_ALL))
-> -		pnv_ioda_setup_bus_dma(pe, pe->pbus);
-> +		pnv_ioda_setup_bus_dma(pe, pe->pbus, true);
->  }
-> =20
->  #ifdef CONFIG_PCI_MSI
+Regarding the possiblity of sharing IOMMU tables, I don't quite understand.
+Do you mean the situation of multiple functions adapter, some of them are
+passed to guest and the left owned by host? I don't see how it works from
+the DMA path. Would you please explain a bit?
 
---=20
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+>
+>> The involved function is pnv_pci_ioda2_create_table(). Its primary work
+>> is to allocate pages from buddy.
+>
+>It allocates pages via alloc_pages_node(), not buddy.
+>
 
---vJguvTgX93MxBIIe
-Content-Type: application/pgp-signature; name="signature.asc"
+page allocator maybe? It's fetching page from PCP (PerCPU Pages) or buddy's
+freelist depending on the requested size.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+>> It's usually fast if there are enough
+>> free pages. Otherwise, it would be relatively slow. It also has the risk
+>> to fail the allocation. I guess it's not bad to save CPU cycles in this
+>> critical (maybe hot?) path.
+>
+>It is not a critical path - it happens on a guest (re)boot only.
+>
 
-iQIcBAEBCAAGBQJYrPYdAAoJEGw4ysog2bOSm40P/2TapgSiTnEp+QrWcZ1zPQsi
-eA8yBpRZ1HP2c+d1qXFg9ATgAZJ7nx45XKnUPNqVwFmk+3GvoA27XWCIbd4q1jKY
-BcDFMyL08D2T/u2jS3Rw9f4RA2Afdz6eWxMS468+Sb4GkfkPa4T6Qwd6C+HevS5S
-o4OBSIDQnmkucnu177BVbyXo8QjO7+gb/RSNzcV07JiYpVKgO6qvHCwBWP1EA9Jy
-Fcyp1fODCxQWuzIjYcAaNhKrLuP1WgdnobeqQJ4m0v5UMjlLYBzkiLVNdCyCKn2P
-/4BBatsRKEy4nuYmtUBr36xjfdYFbOUNjLJJG9hwQvXR186tHCX508iIBPabColX
-vQ7E71bxdT5dsdo39pC31p0QfIJiEdHufhoUFXGQd8BQn8Fa5Es+SLdmo1G5Vgz/
-FR62WFuHtDiqPigqjimZvkSI9Q4fbzHKZG4qN/OumZYWzpEAj5pICWJMrvSk9yP5
-qhmN/NBSymxgcYLHvMLtT83YmUg5ryWaXirFhgGUz+bQ4RFib5Sdw3Qf0Bfawmxk
-hPsPxrLnf6gLcnO1pgbvDKnInff1UaNQJxWqLfnj/cAxUoU+yIYYGv4SZrPuIz65
-4OLvATlklcqsoeFifrHsezbYgDFo9yBbE2GX24P97LSZUObRygE2aenHmLvLeOuZ
-yCw3N3y5QVvekPyHr3LD
-=C5E9
------END PGP SIGNATURE-----
+My point is: it sounds nice if less time needs for guest to (re)boot. I
+don't know how much time could be saved though.
 
---vJguvTgX93MxBIIe--
+Thanks,
+Gavin
