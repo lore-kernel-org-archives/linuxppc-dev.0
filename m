@@ -1,43 +1,44 @@
-Return-Path: <mrochs@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <pfsmorigo@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vT2NW5ZryzDq60
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Feb 2017 03:08:43 +1100 (AEDT)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v1MFwfPn062763
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Feb 2017 11:08:40 -0500
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
- by mx0b-001b2d01.pphosted.com with ESMTP id 28s9r45471-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vT4r63vG1zDqD0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Feb 2017 04:59:18 +1100 (AEDT)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v1MHs5d4142275
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Feb 2017 12:59:16 -0500
+Received: from e24smtp01.br.ibm.com (e24smtp01.br.ibm.com [32.104.18.85])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 28sb1nxh1k-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Feb 2017 11:08:40 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Feb 2017 12:59:15 -0500
 Received: from localhost
- by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e24smtp01.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <mrochs@linux.vnet.ibm.com>;
- Wed, 22 Feb 2017 09:08:37 -0700
-Received: from b03cxnp08025.gho.boulder.ibm.com
- (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id A058619D8052
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Feb 2017 09:07:46 -0700 (MST)
-Content-Type: text/plain; charset=us-ascii
-Mime-Version: 1.0 (Mac OS X Mail 10.2 \(3259\))
-Subject: Re: [PATCH] cxl: Route eeh events to all slices for
- pci_channel_io_perm_failure state
-From: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>
-In-Reply-To: <20170222105105.11676-1-vaibhav@linux.vnet.ibm.com>
-Date: Wed, 22 Feb 2017 10:08:20 -0600
-Cc: linuxppc-dev@lists.ozlabs.org,
- Philippe Bergheaud <philippe.bergheaud@fr.ibm.com>,
- frederic.barrat@fr.ibm.com, Ian Munsie <ianmunsi@au1.ibm.com>,
- Andrew Donnellan <andonnel@au1.ibm.com>,
- Gregory Kurz <KURZGREG@fr.ibm.com>,
- Christophe Lombard <christophe_lombard@fr.ibm.com>
-References: <20170222105105.11676-1-vaibhav@linux.vnet.ibm.com>
-To: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
-Message-Id: <D20E1975-4902-43BF-9A8A-2F5DE3E47E4C@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <pfsmorigo@linux.vnet.ibm.com>;
+ Wed, 22 Feb 2017 14:59:13 -0300
+Received: from d24relay04.br.ibm.com (d24relay04.br.ibm.com [9.18.232.146])
+ by d24dlp02.br.ibm.com (Postfix) with ESMTP id 7A63A1DC007E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Feb 2017 12:59:12 -0500 (EST)
+Received: from d24av01.br.ibm.com (d24av01.br.ibm.com [9.8.31.91])
+ by d24relay04.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v1MHxBEj36044812
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Feb 2017 14:59:11 -0300
+Received: from d24av01.br.ibm.com (localhost [127.0.0.1])
+ by d24av01.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v1MHx95s011761
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Feb 2017 14:59:10 -0300
+From: Paulo Flabiano Smorigo <pfsmorigo@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org
+Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ herbert@gondor.apana.org.au, davem@davemloft.net,
+ linux-crypto@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Paulo Flabiano Smorigo <pfsmorigo@linux.vnet.ibm.com>
+Subject: [PATCH 0/2] crypto: vmx - fix vmx failures by changing fallback to
+ skcipher
+Date: Wed, 22 Feb 2017 14:58:20 -0300
+Message-Id: <20170222175822.24040-1-pfsmorigo@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,28 +48,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> On Feb 22, 2017, at 4:51 AM, Vaibhav Jain <vaibhav@linux.vnet.ibm.com> =
-wrote:
->=20
-> Fix a boundary condition where in some cases an eeh event with
-> state =3D=3D pci_channel_io_perm_failure wont be passed on to a driver
-> attached to the virtual pci device associated with a slice. This will
-> happen in case the slice just before (n-1) doesn't have any vph bus
-> associated with it, that results in an early return from
-> cxl_pci_error_detected callback.
->=20
-> This also simplifies branch that handles this eeh state by returning
-> PCI_ERS_RESULT_DISCONNECTED in all cases as the adapter is will be
-> removed irrespective of the return value of cxl_pci_error_detected
-> callback.
+Currently, neither cbc or xts are working with upstream kernel due to a failure
+in the fallback allocation. This can be fixed by changing the fallback to
+skcipher.
 
-This sentence could be cleaned up a bit.
+Paulo Flabiano Smorigo (2):
+  crypto: vmx - Use skcipher for cbc fallback
+  crypto: vmx - Use skcipher for xts fallback
 
->=20
-> Fixes: e4f5fc001a6("cxl: Do not create vPHB if there are no AFU =
-configuration records")
-> Signed-off-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+ drivers/crypto/vmx/aes_cbc.c | 41 ++++++++++++++++++++---------------------
+ drivers/crypto/vmx/aes_xts.c | 32 ++++++++++++++++++--------------
+ 2 files changed, 38 insertions(+), 35 deletions(-)
 
-Fix looks good!
-
-Reviewed-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
+-- 
+2.9.3
