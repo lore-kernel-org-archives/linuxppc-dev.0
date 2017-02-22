@@ -1,24 +1,22 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
- [IPv6:2607:f8b0:400e:c05::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vSnQ62s7hzDqL1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Feb 2017 17:24:14 +1100 (AEDT)
-Received: by mail-pg0-x242.google.com with SMTP id 1so591925pgz.2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Feb 2017 22:24:14 -0800 (PST)
-From: Balbir Singh <bsingharora@gmail.com>
-Date: Wed, 22 Feb 2017 17:24:06 +1100
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] powerpc/mm/hash: Always clear UPRT and Host Radix bits
- when setting up CPU
-Message-ID: <20170222062406.GD9967@balbir.ozlabs.ibm.com>
-References: <1487740322-17755-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vSnS1232LzDqKY
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Feb 2017 17:25:53 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Hamish Martin <hamish.martin@alliedtelesis.co.nz>, benh@kernel.crashing.org,
+ paulus@samba.org
+Cc: linuxppc-dev@lists.ozlabs.org,
+ Hamish Martin <hamish.martin@alliedtelesis.co.nz>
+Subject: Re: [PATCH 0/2] Allow configurable stack size (especially 32k on
+ PPC64)
+In-Reply-To: <20170220202440.25796-1-hamish.martin@alliedtelesis.co.nz>
+References: <20170220202440.25796-1-hamish.martin@alliedtelesis.co.nz>
+Date: Wed, 22 Feb 2017 17:25:52 +1100
+Message-ID: <871suqn3m7.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1487740322-17755-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,43 +26,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Feb 22, 2017 at 10:42:02AM +0530, Aneesh Kumar K.V wrote:
-> We will set LPCR with correct value for radix during int. This make sure we
-> start with a sanitized value of LPCR. In case of kexec, cpus can have LPCR
-> value based on the previous translation mode we were running.
-> 
-> Fixes: fe036a0605d60 ("powerpc/64/kexec: Fix MMU cleanup on radix")
-> Cc: stable@vger.kernel.org # v4.9+
-> Acked-by: Michael Neuling <mikey@neuling.org>
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/kernel/cpu_setup_power.S | 4 ++++
->  1 file changed, 4 insertions(+)
-> 
-> diff --git a/arch/powerpc/kernel/cpu_setup_power.S b/arch/powerpc/kernel/cpu_setup_power.S
-> index 917188615bf5..7fe8c79e6937 100644
-> --- a/arch/powerpc/kernel/cpu_setup_power.S
-> +++ b/arch/powerpc/kernel/cpu_setup_power.S
-> @@ -101,6 +101,8 @@ _GLOBAL(__setup_cpu_power9)
->  	mfspr	r3,SPRN_LPCR
->  	LOAD_REG_IMMEDIATE(r4, LPCR_PECEDH | LPCR_PECE_HVEE | LPCR_HVICE)
->  	or	r3, r3, r4
-> +	LOAD_REG_IMMEDIATE(r4, LPCR_UPRT | LPCR_HR)
-> +	andc	r3, r3, r4
->  	bl	__init_LPCR
->  	bl	__init_HFSCR
->  	bl	__init_tlb_power9
-> @@ -122,6 +124,8 @@ _GLOBAL(__restore_cpu_power9)
->  	mfspr   r3,SPRN_LPCR
->  	LOAD_REG_IMMEDIATE(r4, LPCR_PECEDH | LPCR_PECE_HVEE | LPCR_HVICE)
->  	or	r3, r3, r4
-> +	LOAD_REG_IMMEDIATE(r4, LPCR_UPRT | LPCR_HR)
-> +	andc	r3, r3, r4
->  	bl	__init_LPCR
->  	bl	__init_HFSCR
->  	bl	__init_tlb_power9
+Hamish Martin <hamish.martin@alliedtelesis.co.nz> writes:
+> This patch series adds the ability to configure the THREAD_SHIFT value and
+> thereby alter the stack size on powerpc systems. We are particularly interested
+> in configuring for a 32k stack on PPC64.
+...
+>
+> For instance for a 70 frame stack, the architecture overhead just for the stack
+> frames is:
+>    70 * 16 bytes = 1120 bytes for PPC32, and
+>    70 * 112 bytes = 7840 bytes for PPC64.
+> So a simple doubling of the PPC32 stack size leaves us with a shortfall of 5600
+> bytes (7840 - (2 * 1120)). In the example the stack frame overhead for PPC32 is
+> 1120/8192 = 13.5% of the stack space, whereas for PPC64 it is 7840/16384 =
+> 47.8% of the space.
+>
+> The aim of this series is to provide the ability for users to configure for
+> larger stacks without altering the defaults in a way that would impact existing
+> users. However, given the inequity between the PPC32 and PPC64 stacks when
+> taking into account the respective minimum stack frame sizes, we believe
+> consideration should be given to having a large default. We would appreciate
+> any input or opinions on this issue.
 
-My previous comment mentions GTSE, but really we should be clearing
-LPCR to 0 and setting it to sane values in __init_LPCR
+Thanks for the detailed explanation.
 
-Balbir
+The patches look fine, so I don't see any reason why we wouldn't merge
+this. I might make the config option depend on EXPERT, but that's just
+cosmetic.
+
+
+You're right about the difference in stack overhead between 32 & 64-bit.
+But I guess on the other hand we've been using 16K stacks on 64-bit for
+over 15 years, and although we have had some reports of stack overflow
+they're not a common problem.
+
+cheers
