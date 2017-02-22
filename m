@@ -1,34 +1,20 @@
-Return-Path: <mbenes@suse.cz>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
+Return-Path: <fgao@ikuai8.com>
+Received: from smtpbg327.qq.com (smtpbg327.qq.com [14.17.43.158])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vSrxn355XzDqSn
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Feb 2017 20:03:23 +1100 (AEDT)
-Date: Wed, 22 Feb 2017 10:03:15 +0100 (CET)
-From: Miroslav Benes <mbenes@suse.cz>
-To: Josh Poimboeuf <jpoimboe@redhat.com>
-cc: Jessica Yu <jeyu@redhat.com>, Jiri Kosina <jikos@kernel.org>,
- Petr Mladek <pmladek@suse.com>, linux-kernel@vger.kernel.org,
- live-patching@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, x86@kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- Vojtech Pavlik <vojtech@suse.com>, Jiri Slaby <jslaby@suse.cz>,
- Chris J Arges <chris.j.arges@canonical.com>,
- Andy Lutomirski <luto@kernel.org>, Ingo Molnar <mingo@kernel.org>,
- Peter Zijlstra <peterz@infradead.org>,
- Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
- Balbir Singh <bsingharora@gmail.com>
-Subject: Re: [PATCH v5 13/15] livepatch: change to a per-task consistency model
-In-Reply-To: <20170221212110.y2pstgeluwrmxjie@treble>
-Message-ID: <alpine.LSU.2.20.1702221002280.11859@pobox.suse.cz>
-References: <cover.1487036215.git.jpoimboe@redhat.com>
- <a999d965d598b23564355c24db0ed6799f105fa6.1487036215.git.jpoimboe@redhat.com>
- <alpine.LSU.2.20.1702161504020.16310@pobox.suse.cz>
- <20170216203156.igvctdmyt6b6zcgg@treble>
- <alpine.LSU.2.20.1702170940420.4107@pobox.suse.cz>
- <20170221212110.y2pstgeluwrmxjie@treble>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vSpwL6BjmzDq5g
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Feb 2017 18:32:02 +1100 (AEDT)
+From: fgao@ikuai8.com
+To: tomas.winkler@intel.com, rob@landley.net, linux-doc@vger.kernel.org,
+ kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ gfree.wind@gmail.com
+Cc: Gao Feng <fgao@ikuai8.com>
+Subject: [PATCH kernel 1/1] powerpc/Documentation/misc-devices/: Fix one
+ compile error
+Date: Wed, 22 Feb 2017 15:22:24 +0800
+Message-Id: <1487748144-13685-1-git-send-email-fgao@ikuai8.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,108 +24,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 21 Feb 2017, Josh Poimboeuf wrote:
+From: Gao Feng <fgao@ikuai8.com>
 
-> On Fri, Feb 17, 2017 at 09:51:29AM +0100, Miroslav Benes wrote:
-> > On Thu, 16 Feb 2017, Josh Poimboeuf wrote:
-> > > What do you think about the following?  I tried to put the logic in
-> > > klp_complete_transition(), so the module_put()'s would be in one place.
-> > > But it was too messy, so I put it in klp_cancel_transition() instead.
-> > >
-> > > diff --git a/kernel/livepatch/transition.c b/kernel/livepatch/transition.c
-> > > index e96346e..bd1c1fd 100644
-> > > --- a/kernel/livepatch/transition.c
-> > > +++ b/kernel/livepatch/transition.c
-> > > @@ -121,8 +121,28 @@ static void klp_complete_transition(void)
-> > >   */
-> > >  void klp_cancel_transition(void)
-> > >  {
-> > > +	bool immediate_func = false;
-> > > +
-> > >  	klp_target_state = !klp_target_state;
-> > >  	klp_complete_transition();
-> > > +
-> > > +	if (klp_target_state == KLP_PATCHED)
-> > > +		return;
-> > 
-> > This is not needed, I think. We call klp_cancel_transition() in 
-> > __klp_enable_patch() only. klp_target_state is set to KLP_PATCHED there 
-> > (through klp_init_transition()) and negated here. We know it must be 
-> > KLP_UNPATCHED.
-> 
-> Yeah, I was trying to hedge against the possibility of future code
-> calling this function in the disable path.  But that probably won't
-> happen and it would probably be cleaner to just add a warning if
-> klp_target_state isn't KLP_PATCHED.
-> 
-> > Moreover, due to klp_complete_transition() klp_target_state is always 
-> > KLP_UNDEFINED after it.
-> > 
-> > > +
-> > > +	/*
-> > > +	 * In the enable error path, even immediate patches can be safely
-> > > +	 * removed because the transition hasn't been started yet.
-> > > +	 *
-> > > +	 * klp_complete_transition() doesn't have a module_put() for immediate
-> > > +	 * patches, so do it here.
-> > > +	 */
-> > > +	klp_for_each_object(klp_transition_patch, obj)
-> > > +		klp_for_each_func(obj, func)
-> > > +			if (func->immediate)
-> > > +				immediate_func = true;
-> > > +
-> > > +	if (klp_transition_patch->immediate || immediate_func)
-> > > +		module_put(klp_transition_patch->mod);
-> > 
-> > Almost correct. The only problem is that klp_transition_patch is NULL at 
-> > this point. klp_complete_transition() does that and it should stay there 
-> > in my opinion to keep it simple.
-> > 
-> > So we could either move all this to __klp_enable_patch(), where patch 
-> > variable is defined, or we could store klp_transition_patch to a local 
-> > variable here in klp_cancel_transition() before klp_complete_transition() 
-> > is called. That should be safe. I like the latter more, because it keeps 
-> > the code in klp_cancel_transition() where it belongs.
-> 
-> Good points.  Here's another try:
-> 
-> diff --git a/kernel/livepatch/transition.c b/kernel/livepatch/transition.c
-> index e96346e..a23c63c 100644
-> --- a/kernel/livepatch/transition.c
-> +++ b/kernel/livepatch/transition.c
-> @@ -121,8 +121,31 @@ static void klp_complete_transition(void)
->   */
->  void klp_cancel_transition(void)
->  {
-> -	klp_target_state = !klp_target_state;
-> +	struct klp_patch *patch = klp_transition_patch;
-> +	struct klp_object *obj;
-> +	struct klp_func *func;
-> +	bool immediate_func = false;
-> +
-> +	if (WARN_ON_ONCE(klp_target_state != KLP_PATCHED))
-> +		return;
-> +
-> +	klp_target_state = KLP_UNPATCHED;
->  	klp_complete_transition();
-> +
-> +	/*
-> +	 * In the enable error path, even immediate patches can be safely
-> +	 * removed because the transition hasn't been started yet.
-> +	 *
-> +	 * klp_complete_transition() doesn't have a module_put() for immediate
-> +	 * patches, so do it here.
-> +	 */
-> +	klp_for_each_object(patch, obj)
-> +		klp_for_each_func(obj, func)
-> +			if (func->immediate)
-> +				immediate_func = true;
-> +
-> +	if (patch->immediate || immediate_func)
-> +		module_put(patch->mod);
->  }
+When make allyesconfig, there is one compile error on my platform
+"gcc (Ubuntu 4.8.4-2ubuntu1~14.04.3) 4.8.4".
+The following is the output.
 
-Looks ok.
+Documentation/misc-devices/mei/mei-amt-version.c: In function ‘main’:
+Documentation/misc-devices/mei/mei-amt-version.c:103:5: warning: ‘acmd.fd’
+is used uninitialized in this function [-Wuninitialized]
+  if (cl->fd != -1)
+     ^
+Documentation/misc-devices/mei/mei-amt-version.c:443:21: note: ‘acmd.fd’
+was declared here
+  struct amt_host_if acmd;
+                     ^
+This commit fixes this compile error.
 
-Thanks,
-Miroslav
+Signed-off-by: Gao Feng <fgao@ikuai8.com>
+---
+ Documentation/misc-devices/mei/mei-amt-version.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/Documentation/misc-devices/mei/mei-amt-version.c b/Documentation/misc-devices/mei/mei-amt-version.c
+index 49e4f77..ca035cb 100644
+--- a/Documentation/misc-devices/mei/mei-amt-version.c
++++ b/Documentation/misc-devices/mei/mei-amt-version.c
+@@ -297,6 +297,7 @@ static bool amt_host_if_init(struct amt_host_if *acmd,
+ 		      unsigned long send_timeout, bool verbose)
+ {
+ 	acmd->send_timeout = (send_timeout) ? send_timeout : 20000;
++	acmd->mei_cl.fd = -1;
+ 	acmd->initialized = mei_init(&acmd->mei_cl, &MEI_IAMTHIF, 0, verbose);
+ 	return acmd->initialized;
+ }
+-- 
+1.9.1
