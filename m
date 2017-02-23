@@ -1,50 +1,30 @@
-Return-Path: <joe@perches.com>
-Received: from smtprelay.hostedemail.com (smtprelay0052.hostedemail.com
- [216.40.44.52])
+Return-Path: <vkuznets@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vThgP6pVkzDqGh
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Feb 2017 04:53:53 +1100 (AEDT)
-Message-ID: <1487872421.14159.38.camel@perches.com>
-Subject: Re: [PATCH 00/35] treewide trivial patches converting pr_warning to
- pr_warn
-From: Joe Perches <joe@perches.com>
-To: Emil Velikov <emil.l.velikov@gmail.com>
-Cc: Rob Herring <robh@kernel.org>, "linux-fbdev@vger.kernel.org"
- <linux-fbdev@vger.kernel.org>, linux-ia64@vger.kernel.org, SH-Linux
- <linux-sh@vger.kernel.org>, Alexander Shishkin
- <alexander.shishkin@linux.intel.com>, ML nouveau
- <nouveau@lists.freedesktop.org>,  Linux-ALSA <alsa-devel@alsa-project.org>,
- dri-devel <dri-devel@lists.freedesktop.org>, "open list:VIRTIO GPU DRIVER"
- <virtualization@lists.linux-foundation.org>, "linux-ide@vger.kernel.org"
- <linux-ide@vger.kernel.org>,  "linux-mtd@lists.infradead.org"
- <linux-mtd@lists.infradead.org>, sparclinux@vger.kernel.org,
- drbd-dev@lists.linbit.com, linux-scsi@vger.kernel.org, Richard Weinberger
- <richard@nod.at>, sfi-devel@simplefirmware.org, amd-gfx mailing list
- <amd-gfx@lists.freedesktop.org>, "linux-acpi@vger.kernel.org"
- <linux-acpi@vger.kernel.org>, tboot-devel@lists.sourceforge.net,
- oprofile-list@lists.sf.net, "linux-input@vger.kernel.org"
- <linux-input@vger.kernel.org>, xen-devel@lists.xenproject.org,
- "linux-media@vger.kernel.org" <linux-media@vger.kernel.org>,
- platform-driver-x86@vger.kernel.org,  "devicetree@vger.kernel.org"
- <devicetree@vger.kernel.org>, gigaset307x-common@lists.sourceforge.net,
- acpi4asus-user@lists.sourceforge.net,
- adi-buildroot-devel@lists.sourceforge.net, Pekka Paalanen
- <ppaalanen@gmail.com>,  linux-omap <linux-omap@vger.kernel.org>,
- "linux-arm-kernel@lists.infradead.org"
- <linux-arm-kernel@lists.infradead.org>, netdev <netdev@vger.kernel.org>,
- Karol Herbst <karolherbst@gmail.com>, "linux-kernel@vger.kernel.org"
- <linux-kernel@vger.kernel.org>,  linux-crypto@vger.kernel.org,
- linux-alpha@vger.kernel.org, Fabio Estevam <fabio.estevam@nxp.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Date: Thu, 23 Feb 2017 09:53:41 -0800
-In-Reply-To: <CACvgo50LUm5VSn_F=Dh8kL5zCPpCQDoCyUEL=Z+=1+6hJpfTaw@mail.gmail.com>
-References: <cover.1487314666.git.joe@perches.com>
- <CAL_JsqLTaq-QLTqfyDO8EVJYpgeUx1e4J0Fo2NvfFWqVoiVedQ@mail.gmail.com>
- <1487870304.14159.29.camel@perches.com>
- <CACvgo50LUm5VSn_F=Dh8kL5zCPpCQDoCyUEL=Z+=1+6hJpfTaw@mail.gmail.com>
-Content-Type: text/plain; charset="ISO-8859-1"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vTj7D39PGzDqGk
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Feb 2017 05:14:32 +1100 (AEDT)
+From: Vitaly Kuznetsov <vkuznets@redhat.com>
+To: Michal Hocko <mhocko@kernel.org>
+Cc: Nathan Fontenot <nfont@linux.vnet.ibm.com>, linux-mm@kvack.org,
+ mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org,
+ mdroth@linux.vnet.ibm.com, kys@microsoft.com
+Subject: Re: [RFC PATCH] memory-hotplug: Use dev_online for memhp_auto_offline
+References: <20170221172234.8047.33382.stgit@ltcalpine2-lp14.aus.stglabs.ibm.com>
+ <878toy1sgd.fsf@vitty.brq.redhat.com>
+ <20170223125643.GA29064@dhcp22.suse.cz>
+ <87bmttyqxf.fsf@vitty.brq.redhat.com>
+ <20170223150920.GB29056@dhcp22.suse.cz>
+ <877f4gzz4d.fsf@vitty.brq.redhat.com>
+ <20170223161241.GG29056@dhcp22.suse.cz>
+ <8737f4zwx5.fsf@vitty.brq.redhat.com>
+ <20170223174106.GB13822@dhcp22.suse.cz>
+Date: Thu, 23 Feb 2017 19:14:27 +0100
+In-Reply-To: <20170223174106.GB13822@dhcp22.suse.cz> (Michal Hocko's message
+ of "Thu, 23 Feb 2017 18:41:07 +0100")
+Message-ID: <87tw7kydto.fsf@vitty.brq.redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -54,37 +34,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2017-02-23 at 17:41 +0000, Emil Velikov wrote:
-> On 23 February 2017 at 17:18, Joe Perches <joe@perches.com> wrote:
-> > On Thu, 2017-02-23 at 09:28 -0600, Rob Herring wrote:
-> > > On Fri, Feb 17, 2017 at 1:11 AM, Joe Perches <joe@perches.com> wrote:
-> > > > There are ~4300 uses of pr_warn and ~250 uses of the older
-> > > > pr_warning in the kernel source tree.
-> > > > 
-> > > > Make the use of pr_warn consistent across all kernel files.
-> > > > 
-> > > > This excludes all files in tools/ as there is a separate
-> > > > define pr_warning for that directory tree and pr_warn is
-> > > > not used in tools/.
-> > > > 
-> > > > Done with 'sed s/\bpr_warning\b/pr_warn/' and some emacsing.
-> > 
-> > []
-> > > Where's the removal of pr_warning so we don't have more sneak in?
-> > 
-> > After all of these actually get applied,
-> > and maybe a cycle or two later, one would
-> > get sent.
-> > 
-> 
-> By which point you'll get a few reincarnation of it. So you'll have to
-> do the same exercise again :-(
+Michal Hocko <mhocko@kernel.org> writes:
 
-Maybe to one or two files.  Not a big deal.
+> On Thu 23-02-17 17:36:38, Vitaly Kuznetsov wrote:
+>> Michal Hocko <mhocko@kernel.org> writes:
+> [...]
+>> > Is a grow from 256M -> 128GB really something that happens in real life?
+>> > Don't get me wrong but to me this sounds quite exaggerated. Hotmem add
+>> > which is an operation which has to allocate memory has to scale with the
+>> > currently available memory IMHO.
+>> 
+>> With virtual machines this is very real and not exaggerated at
+>> all. E.g. Hyper-V host can be tuned to automatically add new memory when
+>> guest is running out of it. Even 100 blocks can represent an issue.
+>
+> Do you have any reference to a bug report. I am really curious because
+> something really smells wrong and it is not clear that the chosen
+> solution is really the best one.
 
-> I guess the question is - are you expecting to get the series merged
-> all together/via one tree ?
+Unfortunately I'm not aware of any publicly posted bug reports (CC:
+K. Y. - he may have a reference) but I think I still remember everything
+correctly. Not sure how deep you want me to go into details though...
 
-No.  The only person that could do that effectively is Linus.
+Virtual guests under stress were getting into OOM easily and the OOM
+killer was even killing the udev process trying to online the
+memory. There was a workaround for the issue added to the hyper-v driver
+doing memory add:
 
-> If not, your plan is perfectly reasonable.
+hv_mem_hot_add(...) {
+...
+ add_memory(....);
+ wait_for_completion_timeout(..., 5*HZ);
+ ...
+}
+
+the completion was done by observing for the MEM_ONLINE event. This, of
+course, was slowing things down significantly and waiting for a
+userspace action in kernel is not a nice thing to have (not speaking
+about all other memory adding methods which had the same issue). Just
+removing this wait was leading us to the same OOM as the hypervisor was
+adding more and more memory and eventually even add_memory() was
+failing, udev and other processes were killed,...
+
+With the feature in place we have new memory available right after we do
+add_memory(), everything is serialized.
+
+> [...]
+>> > Because the udev will run a code which can cope with that - retry if the
+>> > error is recoverable or simply report with all the details. Compare that
+>> > to crawling the system log to see that something has broken...
+>> 
+>> I don't know much about udev, but the most common rule to online memory
+>> I've met is:
+>> 
+>> SUBSYSTEM=="memory", ACTION=="add", ATTR{state}=="offline",  ATTR{state}="online"
+>> 
+>> doesn't do anything smart.
+>
+> So what? Is there anything that prevents doing something smarter?
+
+Yes, the asynchronous nature of all this stuff. There is no way you can
+stop other blocks from being added to the system while you're processing
+something in userspace.
+
+-- 
+  Vitaly
