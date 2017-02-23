@@ -1,24 +1,50 @@
-Return-Path: <mhiramat@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <vipin@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vTT3b22przDq5x
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Feb 2017 20:10:34 +1100 (AEDT)
-Date: Thu, 23 Feb 2017 18:10:22 +0900
-From: Masami Hiramatsu <mhiramat@kernel.org>
-To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-Cc: Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>, Ingo Molnar
- <mingo@redhat.com>, Michael Ellerman <mpe@ellerman.id.au>, Arnaldo Carvalho
- de Melo <acme@kernel.org>, Steven Rostedt <rostedt@goodmis.org>,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v2 4/5] perf: kretprobes: offset from reloc_sym if
- kernel supports it
-Message-Id: <20170223181022.7d4427714cabbb7ccd6d6673@kernel.org>
-In-Reply-To: <75bafc91e9d381636f68ab9923ce3d52f9157a09.1487770934.git.naveen.n.rao@linux.vnet.ibm.com>
-References: <cover.1487770934.git.naveen.n.rao@linux.vnet.ibm.com>
- <75bafc91e9d381636f68ab9923ce3d52f9157a09.1487770934.git.naveen.n.rao@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vTT5F4Kc4zDq5x
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Feb 2017 20:12:01 +1100 (AEDT)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v1N98ww9000800
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Feb 2017 04:11:59 -0500
+Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [125.16.236.6])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 28sf6kxam9-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Feb 2017 04:11:57 -0500
+Received: from localhost
+ by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <vipin@linux.vnet.ibm.com>;
+ Thu, 23 Feb 2017 14:41:54 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id E96C0E005A
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Feb 2017 14:43:31 +0530 (IST)
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+ by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v1N9Bq4K10813598
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Feb 2017 14:41:52 +0530
+Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
+ by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v1N9BqUY032459
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Feb 2017 14:41:52 +0530
+Received: from [9.124.35.48] (workstation.in.ibm.com [9.124.35.48] (may be
+ forged))
+ by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVin) with ESMTP id
+ v1N9BpiW032455
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Feb 2017 14:41:51 +0530
+Subject: Re: [PATCH] KVM: PPC: Book3S: Ratelimit copy data failure error
+ messages
+To: linuxppc-dev@lists.ozlabs.org
+References: <1487012190-19830-1-git-send-email-vipin@linux.vnet.ibm.com>
+ <ec2651f4-da09-972d-5a91-b2a69b05b40a@linux.vnet.ibm.com>
+From: Vipin K Parashar <vipin@linux.vnet.ibm.com>
+Date: Thu, 23 Feb 2017 14:41:51 +0530
+MIME-Version: 1.0
+In-Reply-To: <ec2651f4-da09-972d-5a91-b2a69b05b40a@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Message-Id: <b45173c5-1e02-80e0-6de0-94df93dfc873@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,123 +54,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 22 Feb 2017 19:23:40 +0530
-"Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
+v2 for this patch with 'printk_ratelimit' replaced with
 
-> We indicate support for accepting sym+offset with kretprobes through a
-> line in ftrace README. Parse the same to identify support and choose the
-> appropriate format for kprobe_events.
-> 
-> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
-> ---
->  tools/perf/util/probe-event.c | 47 ++++++++++++++++++++++++++++++++++++-------
->  tools/perf/util/probe-event.h |  2 ++
->  2 files changed, 42 insertions(+), 7 deletions(-)
-> 
-> diff --git a/tools/perf/util/probe-event.c b/tools/perf/util/probe-event.c
-> index 35f5b7b7715c..f6bc61c47271 100644
-> --- a/tools/perf/util/probe-event.c
-> +++ b/tools/perf/util/probe-event.c
-> @@ -737,6 +737,41 @@ post_process_module_probe_trace_events(struct probe_trace_event *tevs,
->  	return ret;
->  }
->  
-> +bool is_kretprobe_offset_supported(void)
-> +{
-> +	FILE *fp;
-> +	char *buf = NULL;
-> +	size_t len = 0;
-> +	bool target_line = false;
-> +	static int supported = -1;
-> +
-> +	if (supported >= 0)
-> +		return !!supported;
-> +
-> +	if (asprintf(&buf, "%s/README", tracing_path) < 0)
-> +		return false;
-> +
-> +	fp = fopen(buf, "r");
-> +	if (!fp)
-> +		goto end;
-> +
-> +	zfree(&buf);
-> +	while (getline(&buf, &len, fp) > 0) {
-> +		target_line = !!strstr(buf, "place (kretprobe): ");
-> +		if (!target_line)
-> +			continue;
-> +		supported = 1;
-> +	}
-> +	if (supported == -1)
-> +		supported = 0;
-> +
-> +	fclose(fp);
-> +end:
-> +	free(buf);
-> +
-> +	return !!supported;
-> +}
-
-Could you reuse (refactoring) probe_type_is_available() in probe-file.c to share
-opening README file?
-
-Others looks good to me :)
-
-Thank you,
-
-> +
->  static int
->  post_process_kernel_probe_trace_events(struct probe_trace_event *tevs,
->  				       int ntevs)
-> @@ -757,7 +792,9 @@ post_process_kernel_probe_trace_events(struct probe_trace_event *tevs,
->  	}
->  
->  	for (i = 0; i < ntevs; i++) {
-> -		if (!tevs[i].point.address || tevs[i].point.retprobe)
-> +		if (!tevs[i].point.address)
-> +			continue;
-> +		if (tevs[i].point.retprobe && !is_kretprobe_offset_supported())
->  			continue;
->  		/* If we found a wrong one, mark it by NULL symbol */
->  		if (kprobe_warn_out_range(tevs[i].point.symbol,
-> @@ -1528,11 +1565,6 @@ static int parse_perf_probe_point(char *arg, struct perf_probe_event *pev)
->  		return -EINVAL;
->  	}
->  
-> -	if (pp->retprobe && !pp->function) {
-> -		semantic_error("Return probe requires an entry function.\n");
-> -		return -EINVAL;
-> -	}
-> -
->  	if ((pp->offset || pp->line || pp->lazy_line) && pp->retprobe) {
->  		semantic_error("Offset/Line/Lazy pattern can't be used with "
->  			       "return probe.\n");
-> @@ -2841,7 +2873,8 @@ static int find_probe_trace_events_from_map(struct perf_probe_event *pev,
->  	}
->  
->  	/* Note that the symbols in the kmodule are not relocated */
-> -	if (!pev->uprobes && !pp->retprobe && !pev->target) {
-> +	if (!pev->uprobes && !pev->target &&
-> +			(!pp->retprobe || is_kretprobe_offset_supported())) {
->  		reloc_sym = kernel_get_ref_reloc_sym();
->  		if (!reloc_sym) {
->  			pr_warning("Relocated base symbol is not found!\n");
-> diff --git a/tools/perf/util/probe-event.h b/tools/perf/util/probe-event.h
-> index 5d4e94061402..449d4f311355 100644
-> --- a/tools/perf/util/probe-event.h
-> +++ b/tools/perf/util/probe-event.h
-> @@ -135,6 +135,8 @@ bool perf_probe_with_var(struct perf_probe_event *pev);
->  /* Check the perf_probe_event needs debuginfo */
->  bool perf_probe_event_need_dwarf(struct perf_probe_event *pev);
->  
-> +bool is_kretprobe_offset_supported(void);
-> +
->  /* Release event contents */
->  void clear_perf_probe_event(struct perf_probe_event *pev);
->  void clear_probe_trace_event(struct probe_trace_event *tev);
-> -- 
-> 2.11.0
-> 
+'printk_ratelimited' is available at mailing list.
 
 
--- 
-Masami Hiramatsu <mhiramat@kernel.org>
+https://patchwork.ozlabs.org/patch/728831/
+
+
+
+On Tuesday 14 February 2017 11:50 AM, Vipin K Parashar wrote:
+> Forwarded same patch to kvm@vger.kernel.org
+>
+> and kvm-ppc@vger.kernel.org too.
+>
+>
+> On Tuesday 14 February 2017 12:26 AM, Vipin K Parashar wrote:
+>> kvm_ppc_mmu_book3s_32/64 xlat() log "KVM can't copy data" error
+>> upon failing to copy user data to kernel space. This floods kernel
+>> log once such fails occur in short time period. Ratelimit this
+>> error to avoid flooding kernel logs upon copy data failures.
+>>
+>> Signed-off-by: Vipin K Parashar <vipin@linux.vnet.ibm.com>
+>> ---
+>>   arch/powerpc/kvm/book3s_32_mmu.c | 3 ++-
+>>   arch/powerpc/kvm/book3s_64_mmu.c | 3 ++-
+>>   2 files changed, 4 insertions(+), 2 deletions(-)
+>>
+>> diff --git a/arch/powerpc/kvm/book3s_32_mmu.c 
+>> b/arch/powerpc/kvm/book3s_32_mmu.c
+>> index a2eb6d3..ca8f960 100644
+>> --- a/arch/powerpc/kvm/book3s_32_mmu.c
+>> +++ b/arch/powerpc/kvm/book3s_32_mmu.c
+>> @@ -224,7 +224,8 @@ static int kvmppc_mmu_book3s_32_xlate_pte(struct 
+>> kvm_vcpu *vcpu, gva_t eaddr,
+>>       ptem = kvmppc_mmu_book3s_32_get_ptem(sre, eaddr, primary);
+>>
+>>       if(copy_from_user(pteg, (void __user *)ptegp, sizeof(pteg))) {
+>> -        printk(KERN_ERR "KVM: Can't copy data from 0x%lx!\n", ptegp);
+>> +        if (printk_ratelimit())
+>> +            printk(KERN_ERR "KVM: Can't copy data from 0x%lx!\n", 
+>> ptegp);
+>>           goto no_page_found;
+>>       }
+>>
+>> diff --git a/arch/powerpc/kvm/book3s_64_mmu.c 
+>> b/arch/powerpc/kvm/book3s_64_mmu.c
+>> index b9131aa..b420aca 100644
+>> --- a/arch/powerpc/kvm/book3s_64_mmu.c
+>> +++ b/arch/powerpc/kvm/book3s_64_mmu.c
+>> @@ -265,7 +265,8 @@ static int kvmppc_mmu_book3s_64_xlate(struct 
+>> kvm_vcpu *vcpu, gva_t eaddr,
+>>           goto no_page_found;
+>>
+>>       if(copy_from_user(pteg, (void __user *)ptegp, sizeof(pteg))) {
+>> -        printk(KERN_ERR "KVM can't copy data from 0x%lx!\n", ptegp);
+>> +        if (printk_ratelimit())
+>> +            printk(KERN_ERR "KVM can't copy data from 0x%lx!\n", 
+>> ptegp);
+>>           goto no_page_found;
+>>       }
+>>
+>
