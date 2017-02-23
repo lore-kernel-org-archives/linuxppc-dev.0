@@ -1,24 +1,57 @@
-Return-Path: <mhocko@kernel.org>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
+Return-Path: <robh@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vTd1f6LfRzDq5x
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Feb 2017 02:09:26 +1100 (AEDT)
-Date: Thu, 23 Feb 2017 16:09:20 +0100
-From: Michal Hocko <mhocko@kernel.org>
-To: Vitaly Kuznetsov <vkuznets@redhat.com>
-Cc: Nathan Fontenot <nfont@linux.vnet.ibm.com>, linux-mm@kvack.org,
- mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org,
- mdroth@linux.vnet.ibm.com
-Subject: Re: [RFC PATCH] memory-hotplug: Use dev_online for memhp_auto_offline
-Message-ID: <20170223150920.GB29056@dhcp22.suse.cz>
-References: <20170221172234.8047.33382.stgit@ltcalpine2-lp14.aus.stglabs.ibm.com>
- <878toy1sgd.fsf@vitty.brq.redhat.com>
- <20170223125643.GA29064@dhcp22.suse.cz>
- <87bmttyqxf.fsf@vitty.brq.redhat.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vTdS46XBtzDq8M
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Feb 2017 02:28:52 +1100 (AEDT)
+Received: from mail.kernel.org (localhost [127.0.0.1])
+ by mail.kernel.org (Postfix) with ESMTP id B011620263
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Feb 2017 15:28:48 +0000 (UTC)
+Received: from mail-yw0-f180.google.com (mail-yw0-f180.google.com
+ [209.85.161.180])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id BBE2D201B9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Feb 2017 15:28:44 +0000 (UTC)
+Received: by mail-yw0-f180.google.com with SMTP id v200so18121605ywc.3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Feb 2017 07:28:44 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <87bmttyqxf.fsf@vitty.brq.redhat.com>
+In-Reply-To: <cover.1487314666.git.joe@perches.com>
+References: <cover.1487314666.git.joe@perches.com>
+From: Rob Herring <robh@kernel.org>
+Date: Thu, 23 Feb 2017 09:28:23 -0600
+Message-ID: <CAL_JsqLTaq-QLTqfyDO8EVJYpgeUx1e4J0Fo2NvfFWqVoiVedQ@mail.gmail.com>
+Subject: Re: [PATCH 00/35] treewide trivial patches converting pr_warning to
+ pr_warn
+To: Joe Perches <joe@perches.com>
+Cc: Alexander Shishkin <alexander.shishkin@linux.intel.com>,
+ Karol Herbst <karolherbst@gmail.com>, Pekka Paalanen <ppaalanen@gmail.com>,
+ Richard Weinberger <richard@nod.at>, Fabio Estevam <fabio.estevam@nxp.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, tboot-devel@lists.sourceforge.net,
+ nouveau@lists.freedesktop.org, oprofile-list@lists.sf.net,
+ sfi-devel@simplefirmware.org, xen-devel@lists.xenproject.org,
+ "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
+ drbd-dev@lists.linbit.com,
+ virtualization@lists.linux-foundation.org, linux-crypto@vger.kernel.org,
+ "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
+ gigaset307x-common@lists.sourceforge.net,
+ "linux-media@vger.kernel.org" <linux-media@vger.kernel.org>,
+ linux-omap <linux-omap@vger.kernel.org>,
+ "linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ acpi4asus-user@lists.sourceforge.net,
+ platform-driver-x86@vger.kernel.org, linux-scsi@vger.kernel.org,
+ "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
+ Linux-ALSA <alsa-devel@alsa-project.org>,
+ linux-alpha@vger.kernel.org, adi-buildroot-devel@lists.sourceforge.net,
+ linux-ia64@vger.kernel.org, SH-Linux <linux-sh@vger.kernel.org>,
+ sparclinux@vger.kernel.org, amd-gfx@lists.freedesktop.org,
+ dri-devel <dri-devel@lists.freedesktop.org>,
+ "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>,
+ netdev <netdev@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,85 +61,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu 23-02-17 14:31:24, Vitaly Kuznetsov wrote:
-> Michal Hocko <mhocko@kernel.org> writes:
-> 
-> > On Wed 22-02-17 10:32:34, Vitaly Kuznetsov wrote:
-> > [...]
-> >> > There is a workaround in that a user could online the memory or have
-> >> > a udev rule to online the memory by using the sysfs interface. The
-> >> > sysfs interface to online memory goes through device_online() which
-> >> > should updated the dev->offline flag. I'm not sure that having kernel
-> >> > memory hotplug rely on userspace actions is the correct way to go.
-> >> 
-> >> Using udev rule for memory onlining is possible when you disable
-> >> memhp_auto_online but in some cases it doesn't work well, e.g. when we
-> >> use memory hotplug to address memory pressure the loop through userspace
-> >> is really slow and memory consuming, we may hit OOM before we manage to
-> >> online newly added memory.
-> >
-> > How does the in-kernel implementation prevents from that?
-> >
-> 
-> Onlining memory on hot-plug is much more reliable, e.g. if we were able
-> to add it in add_memory_resource() we'll also manage to online it.
+On Fri, Feb 17, 2017 at 1:11 AM, Joe Perches <joe@perches.com> wrote:
+> There are ~4300 uses of pr_warn and ~250 uses of the older
+> pr_warning in the kernel source tree.
+>
+> Make the use of pr_warn consistent across all kernel files.
+>
+> This excludes all files in tools/ as there is a separate
+> define pr_warning for that directory tree and pr_warn is
+> not used in tools/.
+>
+> Done with 'sed s/\bpr_warning\b/pr_warn/' and some emacsing.
+>
+> Miscellanea:
+>
+> o Coalesce formats and realign arguments
+>
+> Some files not compiled - no cross-compilers
+>
+> Joe Perches (35):
+>   alpha: Convert remaining uses of pr_warning to pr_warn
+>   ARM: ep93xx: Convert remaining uses of pr_warning to pr_warn
+>   arm64: Convert remaining uses of pr_warning to pr_warn
+>   arch/blackfin: Convert remaining uses of pr_warning to pr_warn
+>   ia64: Convert remaining use of pr_warning to pr_warn
+>   powerpc: Convert remaining uses of pr_warning to pr_warn
+>   sh: Convert remaining uses of pr_warning to pr_warn
+>   sparc: Convert remaining use of pr_warning to pr_warn
+>   x86: Convert remaining uses of pr_warning to pr_warn
+>   drivers/acpi: Convert remaining uses of pr_warning to pr_warn
+>   block/drbd: Convert remaining uses of pr_warning to pr_warn
+>   gdrom: Convert remaining uses of pr_warning to pr_warn
+>   drivers/char: Convert remaining use of pr_warning to pr_warn
+>   clocksource: Convert remaining use of pr_warning to pr_warn
+>   drivers/crypto: Convert remaining uses of pr_warning to pr_warn
+>   fmc: Convert remaining use of pr_warning to pr_warn
+>   drivers/gpu: Convert remaining uses of pr_warning to pr_warn
+>   drivers/ide: Convert remaining uses of pr_warning to pr_warn
+>   drivers/input: Convert remaining uses of pr_warning to pr_warn
+>   drivers/isdn: Convert remaining uses of pr_warning to pr_warn
+>   drivers/macintosh: Convert remaining uses of pr_warning to pr_warn
+>   drivers/media: Convert remaining use of pr_warning to pr_warn
+>   drivers/mfd: Convert remaining uses of pr_warning to pr_warn
+>   drivers/mtd: Convert remaining uses of pr_warning to pr_warn
+>   drivers/of: Convert remaining uses of pr_warning to pr_warn
+>   drivers/oprofile: Convert remaining uses of pr_warning to pr_warn
+>   drivers/platform: Convert remaining uses of pr_warning to pr_warn
+>   drivers/rapidio: Convert remaining use of pr_warning to pr_warn
+>   drivers/scsi: Convert remaining use of pr_warning to pr_warn
+>   drivers/sh: Convert remaining use of pr_warning to pr_warn
+>   drivers/tty: Convert remaining uses of pr_warning to pr_warn
+>   drivers/video: Convert remaining uses of pr_warning to pr_warn
+>   kernel/trace: Convert remaining uses of pr_warning to pr_warn
+>   lib: Convert remaining uses of pr_warning to pr_warn
+>   sound/soc: Convert remaining uses of pr_warning to pr_warn
 
-How does that differ from initiating online from the users?
+Where's the removal of pr_warning so we don't have more sneak in?
 
-> With
-> udev rule we may end up adding many blocks and then (as udev is
-> asynchronous) failing to online any of them.
-
-Why would it fail?
-
-> In-kernel operation is synchronous.
-
-which doesn't mean anything as the context is preemptible AFAICS.
-
-> >> In addition to that, systemd/udev folks
-> >> continuosly refused to add this udev rule to udev calling it stupid as
-> >> it actually is an unconditional and redundant ping-pong between kernel
-> >> and udev.
-> >
-> > This is a policy and as such it doesn't belong to the kernel. The whole
-> > auto-enable in the kernel is just plain wrong IMHO and we shouldn't have
-> > merged it.
-> 
-> I disagree.
-> 
-> First of all it's not a policy, it is a default. We have many other
-> defaults in kernel. When I add a network card or a storage, for example,
-> I don't need to go anywhere and 'enable' it before I'm able to use
-> it from userspace. An for memory (and CPUs) we, for some unknown reason
-> opted for something completely different. If someone is plugging new
-> memory into a box he probably wants to use it, I don't see much value in
-> waiting for a special confirmation from him. 
-
-This was not my decision so I can only guess but to me it makes sense.
-Both memory and cpus can be physically present and offline which is a
-perfectly reasonable state. So having a two phase physicall hotadd is
-just built on top of physical vs. logical distinction. I completely
-understand that some usecases will really like to online the whole node
-as soon as it appears present. But an automatic in-kernel implementation
-has its down sites - e.g. if this operation fails in the middle you will
-not know about that unless you check all the memblocks in sysfs. This is
-really a poor interface.
-
-> Second, this feature is optional. If you want to keep old behavior just
-> don't enable it.
-
-It just adds unnecessary configuration noise as well
-
-> Third, this solves real world issues. With Hyper-V it is very easy to
-> show udev failing on stress. 
-
-What is the reason for this failures. Do you have any link handy?
-
-> No other solution to the issue was ever suggested.
-
-you mean like using ballooning for the memory overcommit like other more
-reasonable virtualization solutions?
-
--- 
-Michal Hocko
-SUSE Labs
+Rob
