@@ -1,30 +1,51 @@
-Return-Path: <vkuznets@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vTj7D39PGzDqGk
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Feb 2017 05:14:32 +1100 (AEDT)
-From: Vitaly Kuznetsov <vkuznets@redhat.com>
-To: Michal Hocko <mhocko@kernel.org>
-Cc: Nathan Fontenot <nfont@linux.vnet.ibm.com>, linux-mm@kvack.org,
- mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org,
- mdroth@linux.vnet.ibm.com, kys@microsoft.com
-Subject: Re: [RFC PATCH] memory-hotplug: Use dev_online for memhp_auto_offline
-References: <20170221172234.8047.33382.stgit@ltcalpine2-lp14.aus.stglabs.ibm.com>
- <878toy1sgd.fsf@vitty.brq.redhat.com>
- <20170223125643.GA29064@dhcp22.suse.cz>
- <87bmttyqxf.fsf@vitty.brq.redhat.com>
- <20170223150920.GB29056@dhcp22.suse.cz>
- <877f4gzz4d.fsf@vitty.brq.redhat.com>
- <20170223161241.GG29056@dhcp22.suse.cz>
- <8737f4zwx5.fsf@vitty.brq.redhat.com>
- <20170223174106.GB13822@dhcp22.suse.cz>
-Date: Thu, 23 Feb 2017 19:14:27 +0100
-In-Reply-To: <20170223174106.GB13822@dhcp22.suse.cz> (Michal Hocko's message
- of "Thu, 23 Feb 2017 18:41:07 +0100")
-Message-ID: <87tw7kydto.fsf@vitty.brq.redhat.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vTkWQ2VsJzDqGk
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Feb 2017 06:17:05 +1100 (AEDT)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v1NJ9OEY116178
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Feb 2017 14:17:03 -0500
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 28t39sxtd5-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Feb 2017 14:17:02 -0500
+Received: from localhost
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
+ Fri, 24 Feb 2017 05:17:00 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 8BE173578053
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Feb 2017 06:16:58 +1100 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v1NJGoOh48824518
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Feb 2017 06:16:58 +1100
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v1NJGPAN026544
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Feb 2017 06:16:26 +1100
+Date: Fri, 24 Feb 2017 00:46:08 +0530
+From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+To: Masami Hiramatsu <mhiramat@kernel.org>
+Cc: Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>,
+ Ingo Molnar <mingo@redhat.com>, Michael Ellerman <mpe@ellerman.id.au>,
+ Arnaldo Carvalho de Melo <acme@kernel.org>,
+ Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v2 4/5] perf: kretprobes: offset from reloc_sym if kernel
+ supports it
+References: <cover.1487770934.git.naveen.n.rao@linux.vnet.ibm.com>
+ <75bafc91e9d381636f68ab9923ce3d52f9157a09.1487770934.git.naveen.n.rao@linux.vnet.ibm.com>
+ <20170223181022.7d4427714cabbb7ccd6d6673@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20170223181022.7d4427714cabbb7ccd6d6673@kernel.org>
+Message-Id: <20170223191608.GC4212@naverao1-tp.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,68 +55,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michal Hocko <mhocko@kernel.org> writes:
+On 2017/02/23 06:10PM, Masami Hiramatsu wrote:
+> On Wed, 22 Feb 2017 19:23:40 +0530
+> "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
+> 
+> > We indicate support for accepting sym+offset with kretprobes through a
+> > line in ftrace README. Parse the same to identify support and choose the
+> > appropriate format for kprobe_events.
+> > 
+> > Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+> > ---
+> >  tools/perf/util/probe-event.c | 47 ++++++++++++++++++++++++++++++++++++-------
+> >  tools/perf/util/probe-event.h |  2 ++
+> >  2 files changed, 42 insertions(+), 7 deletions(-)
+> > 
 
-> On Thu 23-02-17 17:36:38, Vitaly Kuznetsov wrote:
->> Michal Hocko <mhocko@kernel.org> writes:
-> [...]
->> > Is a grow from 256M -> 128GB really something that happens in real life?
->> > Don't get me wrong but to me this sounds quite exaggerated. Hotmem add
->> > which is an operation which has to allocate memory has to scale with the
->> > currently available memory IMHO.
->> 
->> With virtual machines this is very real and not exaggerated at
->> all. E.g. Hyper-V host can be tuned to automatically add new memory when
->> guest is running out of it. Even 100 blocks can represent an issue.
->
-> Do you have any reference to a bug report. I am really curious because
-> something really smells wrong and it is not clear that the chosen
-> solution is really the best one.
+[snip]
 
-Unfortunately I'm not aware of any publicly posted bug reports (CC:
-K. Y. - he may have a reference) but I think I still remember everything
-correctly. Not sure how deep you want me to go into details though...
+> 
+> Could you reuse (refactoring) probe_type_is_available() in probe-file.c to share
+> opening README file?
 
-Virtual guests under stress were getting into OOM easily and the OOM
-killer was even killing the udev process trying to online the
-memory. There was a workaround for the issue added to the hyper-v driver
-doing memory add:
+Done. I've sent patches to do that, please review.
 
-hv_mem_hot_add(...) {
-...
- add_memory(....);
- wait_for_completion_timeout(..., 5*HZ);
- ...
-}
+> 
+> Others looks good to me :)
 
-the completion was done by observing for the MEM_ONLINE event. This, of
-course, was slowing things down significantly and waiting for a
-userspace action in kernel is not a nice thing to have (not speaking
-about all other memory adding methods which had the same issue). Just
-removing this wait was leading us to the same OOM as the hypervisor was
-adding more and more memory and eventually even add_memory() was
-failing, udev and other processes were killed,...
+Thanks. I hope that's an Ack for this patchset?
 
-With the feature in place we have new memory available right after we do
-add_memory(), everything is serialized.
+If so, and if Ingo/Michael agree, would it be ok to take the kernel bits 
+through the powerpc tree like we did for kprobe_exceptions_notify() 
+cleanup?
 
-> [...]
->> > Because the udev will run a code which can cope with that - retry if the
->> > error is recoverable or simply report with all the details. Compare that
->> > to crawling the system log to see that something has broken...
->> 
->> I don't know much about udev, but the most common rule to online memory
->> I've met is:
->> 
->> SUBSYSTEM=="memory", ACTION=="add", ATTR{state}=="offline",  ATTR{state}="online"
->> 
->> doesn't do anything smart.
->
-> So what? Is there anything that prevents doing something smarter?
 
-Yes, the asynchronous nature of all this stuff. There is no way you can
-stop other blocks from being added to the system while you're processing
-something in userspace.
-
--- 
-  Vitaly
+Regards,
+Naveen
