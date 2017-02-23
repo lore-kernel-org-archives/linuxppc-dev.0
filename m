@@ -3,48 +3,43 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vTT5F4Kc4zDq5x
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Feb 2017 20:12:01 +1100 (AEDT)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vTT8K2z52zDq5x
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Feb 2017 20:14:41 +1100 (AEDT)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v1N98ww9000800
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Feb 2017 04:11:59 -0500
-Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [125.16.236.6])
- by mx0a-001b2d01.pphosted.com with ESMTP id 28sf6kxam9-1
+ v1N9Dlob069391
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Feb 2017 04:14:39 -0500
+Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [125.16.236.2])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 28svjugy2a-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Feb 2017 04:11:57 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Feb 2017 04:14:39 -0500
 Received: from localhost
- by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <vipin@linux.vnet.ibm.com>;
- Thu, 23 Feb 2017 14:41:54 +0530
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id E96C0E005A
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Feb 2017 14:43:31 +0530 (IST)
-Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v1N9Bq4K10813598
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Feb 2017 14:41:52 +0530
-Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
- by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v1N9BqUY032459
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Feb 2017 14:41:52 +0530
-Received: from [9.124.35.48] (workstation.in.ibm.com [9.124.35.48] (may be
- forged))
- by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVin) with ESMTP id
- v1N9BpiW032455
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Feb 2017 14:41:51 +0530
-Subject: Re: [PATCH] KVM: PPC: Book3S: Ratelimit copy data failure error
+ Thu, 23 Feb 2017 14:44:36 +0530
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 58966125804F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Feb 2017 14:44:40 +0530 (IST)
+Received: from d28av08.in.ibm.com (d28av08.in.ibm.com [9.184.220.148])
+ by d28relay04.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v1N9EWHd9830580
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Feb 2017 14:44:32 +0530
+Received: from d28av08.in.ibm.com (localhost [127.0.0.1])
+ by d28av08.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v1N9EVHM025388
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Feb 2017 14:44:32 +0530
+Subject: Re: [PATCH v2] KVM: PPC: Book3S: Ratelimit copy data failure error
  messages
-To: linuxppc-dev@lists.ozlabs.org
-References: <1487012190-19830-1-git-send-email-vipin@linux.vnet.ibm.com>
- <ec2651f4-da09-972d-5a91-b2a69b05b40a@linux.vnet.ibm.com>
+To: kvm-ppc@vger.kernel.org
+References: <1487265026-25473-1-git-send-email-vipin@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org
 From: Vipin K Parashar <vipin@linux.vnet.ibm.com>
-Date: Thu, 23 Feb 2017 14:41:51 +0530
+Date: Thu, 23 Feb 2017 14:44:31 +0530
 MIME-Version: 1.0
-In-Reply-To: <ec2651f4-da09-972d-5a91-b2a69b05b40a@linux.vnet.ibm.com>
+In-Reply-To: <1487265026-25473-1-git-send-email-vipin@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=windows-1252; format=flowed
-Message-Id: <b45173c5-1e02-80e0-6de0-94df93dfc873@linux.vnet.ibm.com>
+Message-Id: <c5892d92-0a4d-626e-9191-fb4ff3b8f3f6@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -54,65 +49,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-v2 for this patch with 'printk_ratelimit' replaced with
-
-'printk_ratelimited' is available at mailing list.
-
-
-https://patchwork.ozlabs.org/patch/728831/
+This patch uses "printk_ratelimited" in place of
+"printk_ratelimit" used in v1
 
 
-
-On Tuesday 14 February 2017 11:50 AM, Vipin K Parashar wrote:
-> Forwarded same patch to kvm@vger.kernel.org
+On Thursday 16 February 2017 10:40 PM, Vipin K Parashar wrote:
+> kvm_ppc_mmu_book3s_32/64 xlat() logs "KVM can't copy data" error
+> upon failing to copy user data to kernel space. This floods kernel
+> log once such fails occur in short time period. Ratelimit this
+> error to avoid flooding kernel logs upon copy data failures.
 >
-> and kvm-ppc@vger.kernel.org too.
+> Signed-off-by: Vipin K Parashar <vipin@linux.vnet.ibm.com>
+> ---
+>   arch/powerpc/kvm/book3s_32_mmu.c | 3 ++-
+>   arch/powerpc/kvm/book3s_64_mmu.c | 3 ++-
+>   2 files changed, 4 insertions(+), 2 deletions(-)
 >
+> diff --git a/arch/powerpc/kvm/book3s_32_mmu.c b/arch/powerpc/kvm/book3s_32_mmu.c
+> index a2eb6d3..1992676 100644
+> --- a/arch/powerpc/kvm/book3s_32_mmu.c
+> +++ b/arch/powerpc/kvm/book3s_32_mmu.c
+> @@ -224,7 +224,8 @@ static int kvmppc_mmu_book3s_32_xlate_pte(struct kvm_vcpu *vcpu, gva_t eaddr,
+>   	ptem = kvmppc_mmu_book3s_32_get_ptem(sre, eaddr, primary);
 >
-> On Tuesday 14 February 2017 12:26 AM, Vipin K Parashar wrote:
->> kvm_ppc_mmu_book3s_32/64 xlat() log "KVM can't copy data" error
->> upon failing to copy user data to kernel space. This floods kernel
->> log once such fails occur in short time period. Ratelimit this
->> error to avoid flooding kernel logs upon copy data failures.
->>
->> Signed-off-by: Vipin K Parashar <vipin@linux.vnet.ibm.com>
->> ---
->>   arch/powerpc/kvm/book3s_32_mmu.c | 3 ++-
->>   arch/powerpc/kvm/book3s_64_mmu.c | 3 ++-
->>   2 files changed, 4 insertions(+), 2 deletions(-)
->>
->> diff --git a/arch/powerpc/kvm/book3s_32_mmu.c 
->> b/arch/powerpc/kvm/book3s_32_mmu.c
->> index a2eb6d3..ca8f960 100644
->> --- a/arch/powerpc/kvm/book3s_32_mmu.c
->> +++ b/arch/powerpc/kvm/book3s_32_mmu.c
->> @@ -224,7 +224,8 @@ static int kvmppc_mmu_book3s_32_xlate_pte(struct 
->> kvm_vcpu *vcpu, gva_t eaddr,
->>       ptem = kvmppc_mmu_book3s_32_get_ptem(sre, eaddr, primary);
->>
->>       if(copy_from_user(pteg, (void __user *)ptegp, sizeof(pteg))) {
->> -        printk(KERN_ERR "KVM: Can't copy data from 0x%lx!\n", ptegp);
->> +        if (printk_ratelimit())
->> +            printk(KERN_ERR "KVM: Can't copy data from 0x%lx!\n", 
->> ptegp);
->>           goto no_page_found;
->>       }
->>
->> diff --git a/arch/powerpc/kvm/book3s_64_mmu.c 
->> b/arch/powerpc/kvm/book3s_64_mmu.c
->> index b9131aa..b420aca 100644
->> --- a/arch/powerpc/kvm/book3s_64_mmu.c
->> +++ b/arch/powerpc/kvm/book3s_64_mmu.c
->> @@ -265,7 +265,8 @@ static int kvmppc_mmu_book3s_64_xlate(struct 
->> kvm_vcpu *vcpu, gva_t eaddr,
->>           goto no_page_found;
->>
->>       if(copy_from_user(pteg, (void __user *)ptegp, sizeof(pteg))) {
->> -        printk(KERN_ERR "KVM can't copy data from 0x%lx!\n", ptegp);
->> +        if (printk_ratelimit())
->> +            printk(KERN_ERR "KVM can't copy data from 0x%lx!\n", 
->> ptegp);
->>           goto no_page_found;
->>       }
->>
+>   	if(copy_from_user(pteg, (void __user *)ptegp, sizeof(pteg))) {
+> -		printk(KERN_ERR "KVM: Can't copy data from 0x%lx!\n", ptegp);
+> +		printk_ratelimited(KERN_ERR
+> +			"KVM: Can't copy data from 0x%lx!\n", ptegp);
+>   		goto no_page_found;
+>   	}
+>
+> diff --git a/arch/powerpc/kvm/book3s_64_mmu.c b/arch/powerpc/kvm/book3s_64_mmu.c
+> index b9131aa..7015357 100644
+> --- a/arch/powerpc/kvm/book3s_64_mmu.c
+> +++ b/arch/powerpc/kvm/book3s_64_mmu.c
+> @@ -265,7 +265,8 @@ static int kvmppc_mmu_book3s_64_xlate(struct kvm_vcpu *vcpu, gva_t eaddr,
+>   		goto no_page_found;
+>
+>   	if(copy_from_user(pteg, (void __user *)ptegp, sizeof(pteg))) {
+> -		printk(KERN_ERR "KVM can't copy data from 0x%lx!\n", ptegp);
+> +		printk_ratelimited(KERN_ERR
+> +			"KVM: Can't copy data from 0x%lx!\n", ptegp);
+>   		goto no_page_found;
+>   	}
 >
