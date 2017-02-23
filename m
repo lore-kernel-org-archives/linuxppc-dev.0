@@ -1,24 +1,42 @@
-Return-Path: <rashmica.g@gmail.com>
-Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
- [IPv6:2607:f8b0:400e:c05::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <sachinp@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vTPG74gNTzDq8M
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Feb 2017 17:19:27 +1100 (AEDT)
-Received: by mail-pg0-x244.google.com with SMTP id z128so3451906pgb.3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Feb 2017 22:19:27 -0800 (PST)
-Subject: Re: [RFC] Remove memory from nodes for memtrace.
-To: Nicholas Piggin <npiggin@gmail.com>, bsingharora@gmail.com
-References: <20170222213910.5628-1-rashmica.g@gmail.com>
- <20170223135635.5321dcc5@roar.ozlabs.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, bsingharora@gmail.com, dllehr@us.ibm.com,
- mpe@ellerman.id.au
-From: RashmicaGupta <rashmica.g@gmail.com>
-Message-ID: <086a2e02-5f8b-5752-7f4d-34e9f3d12feb@gmail.com>
-Date: Thu, 23 Feb 2017 17:19:20 +1100
-MIME-Version: 1.0
-In-Reply-To: <20170223135635.5321dcc5@roar.ozlabs.ibm.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vTPpN5r3tzDq8M
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Feb 2017 17:43:56 +1100 (AEDT)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v1N6hYZO146776
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Feb 2017 01:43:53 -0500
+Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [125.16.236.9])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 28sdf5xe2f-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Feb 2017 01:43:53 -0500
+Received: from localhost
+ by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <sachinp@linux.vnet.ibm.com>;
+ Thu, 23 Feb 2017 12:13:50 +0530
+Received: from d28relay09.in.ibm.com (d28relay09.in.ibm.com [9.184.220.160])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 82526E005B
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Feb 2017 12:15:27 +0530 (IST)
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+ by d28relay09.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v1N6hlCo26083374
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Feb 2017 12:13:47 +0530
+Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
+ by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v1N6hlcB023604
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Feb 2017 12:13:47 +0530
+From: Sachin Sant <sachinp@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: michael@ellerman.id.au, Sachin Sant <sachinp@linux.vnet.ibm.com>,
+ linux-kselftest@vger.kernel.org
+Date: Thu, 23 Feb 2017 12:13:46 +0530
+Subject: [PATCH] selftest/powerpc/alignment: Fix false failures for skipped
+ tests
+Message-Id: <20170223064346.69668.83215.sendpatchset@sachins-mbp.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,59 +46,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Tests under alignment subdirectory are skipped when executed on previous
+generation hardware, but harness still marks them as failed.
 
+test: test_copy_unaligned
+tags: git_version:unknown
+[SKIP] Test skipped on line 26
+skip: test_copy_unaligned
+selftests: copy_unaligned [FAIL]
 
-On 23/02/17 14:56, Nicholas Piggin wrote:
->
->> +
->> +static bool memtrace_offline_pages(u32 nid, u64 start_pfn, u64 nr_pages)
->> +{
->> +	u64 end_pfn = start_pfn + nr_pages - 1;
->> +
->> +	if (walk_memory_range(start_pfn, end_pfn, NULL,
->> +	    check_memblock_online))
->> +		return false;
->> +
->> +	walk_memory_range(start_pfn, end_pfn, (void *)MEM_GOING_OFFLINE,
->> +			  change_memblock_state);
->> +
->> +	if (offline_pages(start_pfn, nr_pages)) {
->> +		walk_memory_range(start_pfn, end_pfn, (void *)MEM_ONLINE,
->> +				  change_memblock_state);
->> +		return false;
->> +	}
->> +
->> +	walk_memory_range(start_pfn, end_pfn, (void *)MEM_OFFLINE,
->> +			  change_memblock_state);
->> +
->> +	/* RCU grace period? */
->> +	flush_memory_region((u64)__va(start_pfn << PAGE_SHIFT), nr_pages << PAGE_SHIFT);
->> +
->> +	remove_memory(nid, start_pfn << PAGE_SHIFT, nr_pages << PAGE_SHIFT);
->> +
->> +	return true;
->> +}
-> This is the tricky part. Memory hotplug APIs don't seem well suited for
-> what we're trying to do... Anyway, do a bit of grepping around for
-> definitions of some of these calls, and how other code uses them. For
-> example, remove_memory comment says caller must hold
-> lock_device_hotplug() first, so we're missing that at least. I think
-> that's also needed over the memblock state changes.
->
-> We don't need an RCU grace period there AFAICT, because offline_pages
-> should have us covered.
->
->
-> I haven't looked at memory hotplug enough to know why we're open-coding
-> the memblock stuff there. It would be nice to just be able to call
-> memblock_remove() like the pseries hotplug code does.
-remove_memory() calls memblock_remove() after confirming that
-the memory is offlined. That seems sensible to me.
->
-> I *think* it is because hot remove mostly comes from when we know about
-> an online region of memory and we want to take it down. In this case we
-> also are trying to discover if those addresses are covered by online
-> memory. Still, I wonder if there are better memblock APIs to do this
-> with? Balbir may have a better idea of that?
->
->
+The MAGIC_SKIP_RETURN_VALUE value assigned to rc variable is retained till
+the program exit which causes the test to be marked as failed.
+
+This patch resets the value before returning to the main() routine.
+With this patch the test o/p is as follows:
+
+test: test_copy_unaligned
+tags: git_version:unknown
+[SKIP] Test skipped on line 26
+skip: test_copy_unaligned
+selftests: copy_unaligned [PASS]
+
+Signed-off-by: Sachin Sant <sachinp@linux.vnet.ibm.com>
+---
+
+diff -Naurp a/tools/testing/selftests/powerpc/harness.c b/tools/testing/selftests/powerpc/harness.c
+--- a/tools/testing/selftests/powerpc/harness.c	2017-02-19 16:34:00.000000000 -0600
++++ b/tools/testing/selftests/powerpc/harness.c	2017-02-22 23:53:44.347242893 -0600
+@@ -114,9 +114,11 @@ int test_harness(int (test_function)(voi
+ 
+ 	rc = run_test(test_function, name);
+ 
+-	if (rc == MAGIC_SKIP_RETURN_VALUE)
++	if (rc == MAGIC_SKIP_RETURN_VALUE) {
+ 		test_skip(name);
+-	else
++		/* so that skipped test is not marked as failed */
++		rc = 0;
++	} else
+ 		test_finish(name, rc);
+ 
+ 	return rc;
