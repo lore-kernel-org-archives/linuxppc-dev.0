@@ -1,24 +1,23 @@
 Return-Path: <rashmicy@gmail.com>
-Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
- [IPv6:2607:f8b0:400e:c00::241])
+Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
+ [IPv6:2607:f8b0:400e:c05::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vTLhB1HwQzDq8M
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Feb 2017 15:23:22 +1100 (AEDT)
-Received: by mail-pf0-x241.google.com with SMTP id 68so794137pfx.2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Feb 2017 20:23:22 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vTLq72r9GzDq8M
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Feb 2017 15:29:23 +1100 (AEDT)
+Received: by mail-pg0-x242.google.com with SMTP id 1so3108183pgz.2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Feb 2017 20:29:23 -0800 (PST)
 Subject: Re: [RFC] Remove memory from nodes for memtrace.
-To: Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- Nicholas Piggin <npiggin@gmail.com>, Rashmica Gupta <rashmica.g@gmail.com>
+To: Nicholas Piggin <npiggin@gmail.com>, Rashmica Gupta <rashmica.g@gmail.com>
 References: <20170222213910.5628-1-rashmica.g@gmail.com>
  <20170223135635.5321dcc5@roar.ozlabs.ibm.com>
- <1be421cf-71f2-6e89-90be-fd701b3865da@au1.ibm.com>
-Cc: dllehr@us.ibm.com, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, bsingharora@gmail.com, dllehr@us.ibm.com,
+ mpe@ellerman.id.au
 From: RashmicaGupta <rashmicy@gmail.com>
-Message-ID: <7125d3ad-2c6e-e1bc-b88d-f8df322af9b2@gmail.com>
-Date: Thu, 23 Feb 2017 15:23:15 +1100
+Message-ID: <159fc026-77a1-49a6-4648-3c4e8de1c1d4@gmail.com>
+Date: Thu, 23 Feb 2017 15:29:17 +1100
 MIME-Version: 1.0
-In-Reply-To: <1be421cf-71f2-6e89-90be-fd701b3865da@au1.ibm.com>
+In-Reply-To: <20170223135635.5321dcc5@roar.ozlabs.ibm.com>
 Content-Type: text/plain; charset=windows-1252; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -31,13 +30,210 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 
 
-On 23/02/17 15:01, Andrew Donnellan wrote:
-> On 23/02/17 14:56, Nicholas Piggin wrote:
->>> Written by Douglas Lehr <dllehr@us.ibm.com>.
->>
->> You could mention original author in the changelog. I thought Anton
->> wrote some of it too?
+On 23/02/17 14:56, Nicholas Piggin wrote:
+> On Thu, 23 Feb 2017 08:39:10 +1100
+> Rashmica Gupta <rashmica.g@gmail.com> wrote:
 >
-> You'll want to include the Signed-off-by of all authors involved
+>>   Some powerpc hardware features may want to gain access to a
+>>   chunk of undisturbed real memory.  This update provides a means to unplug
+>>   said memory from the kernel with a set of sysfs calls.  By writing an integer
+>>   containing  the size of memory to be unplugged into
+>>   /sys/kernel/debug/powerpc/memtrace/enable, the code will remove that much
+>>   memory from the end of each available chip's memory space. In addition, the
+>>   means to read out the contents of the unplugged memory is also provided by
+>>   reading out the /sys/kernel/debug/powerpc/memtrace/<chip-id>/dump file.
+>>
+>> Signed-off-by: Rashmica Gupta <rashmica.g@gmail.com>
+> Thanks for picking this up. A few suggestions.
+>
+>> ---
+>> Written by Douglas Lehr <dllehr@us.ibm.com>.
+> You could mention original author in the changelog. I thought Anton
+> wrote some of it too?
+Yup he did. Will do that.
+>
+>>   arch/powerpc/mm/hash_native_64.c          |  39 +++-
+>>   arch/powerpc/platforms/powernv/Makefile   |   1 +
+>>   arch/powerpc/platforms/powernv/memtrace.c | 285 ++++++++++++++++++++++++++++++
+>>   3 files changed, 321 insertions(+), 4 deletions(-)
+>>   create mode 100644 arch/powerpc/platforms/powernv/memtrace.c
+>>
+>> diff --git a/arch/powerpc/mm/hash_native_64.c b/arch/powerpc/mm/hash_native_64.c
+>> index cc33260..44cc6ce 100644
+>> --- a/arch/powerpc/mm/hash_native_64.c
+>> +++ b/arch/powerpc/mm/hash_native_64.c
+>> @@ -3,7 +3,7 @@
+>>    *
+>>    * SMP scalability work:
+>>    *    Copyright (C) 2001 Anton Blanchard <anton@au.ibm.com>, IBM
+>> - *
+>> + *
+>>    * This program is free software; you can redistribute it and/or
+>>    * modify it under the terms of the GNU General Public License
+>>    * as published by the Free Software Foundation; either version
+>> @@ -181,7 +181,7 @@ static inline void native_lock_hpte(struct hash_pte *hptep)
+>>   	while (1) {
+>>   		if (!test_and_set_bit_lock(HPTE_LOCK_BIT, word))
+>>   			break;
+>> -		while(test_bit(HPTE_LOCK_BIT, word))
+>> +		while (test_bit(HPTE_LOCK_BIT, word))
+>>   			cpu_relax();
+>>   	}
+>>   }
+>> @@ -208,10 +208,10 @@ static long native_hpte_insert(unsigned long hpte_group, unsigned long vpn,
+>>   	}
+>>   
+>>   	for (i = 0; i < HPTES_PER_GROUP; i++) {
+>> -		if (! (be64_to_cpu(hptep->v) & HPTE_V_VALID)) {
+>> +		if (!(be64_to_cpu(hptep->v) & HPTE_V_VALID)) {
+>>   			/* retry with lock held */
+>>   			native_lock_hpte(hptep);
+>> -			if (! (be64_to_cpu(hptep->v) & HPTE_V_VALID))
+>> +			if (!(be64_to_cpu(hptep->v) & HPTE_V_VALID))
+>>   				break;
+>>   			native_unlock_hpte(hptep);
+> Suggest dropping the whitespace cleanups.
+>
+>
+>>   		}
+>> @@ -407,6 +407,36 @@ static void native_hpte_updateboltedpp(unsigned long newpp, unsigned long ea,
+>>   	tlbie(vpn, psize, psize, ssize, 0);
+>>   }
+>>   
+>> +/*
+>> + * Remove a bolted kernel entry. Memory hotplug uses this.
+>> + *
+>> + * No need to lock here because we should be the only user.
+>> + */
+>> +static int native_hpte_removebolted(unsigned long ea, int psize, int ssize)
+>> +{
+>> +	unsigned long vpn;
+>> +	unsigned long vsid;
+>> +	long slot;
+>> +	struct hash_pte *hptep;
+>> +
+>> +	vsid = get_kernel_vsid(ea, ssize);
+>> +	vpn = hpt_vpn(ea, vsid, ssize);
+>> +
+>> +	slot = native_hpte_find(vpn, psize, ssize);
+>> +	if (slot == -1)
+>> +		return -ENOENT;
+>> +
+>> +	hptep = htab_address + slot;
+>> +
+>> +	/* Invalidate the hpte */
+>> +	hptep->v = 0;
+>> +
+>> +	/* Invalidate the TLB */
+>> +	tlbie(vpn, psize, psize, ssize, 0);
+>> +	return 0;
+>> +}
+>> +
+>> +
+>>   static void native_hpte_invalidate(unsigned long slot, unsigned long vpn,
+>>   				   int bpsize, int apsize, int ssize, int local)
+>>   {
+>> @@ -722,6 +752,7 @@ void __init hpte_init_native(void)
+>>   	mmu_hash_ops.hpte_invalidate	= native_hpte_invalidate;
+>>   	mmu_hash_ops.hpte_updatepp	= native_hpte_updatepp;
+>>   	mmu_hash_ops.hpte_updateboltedpp = native_hpte_updateboltedpp;
+>> +	mmu_hash_ops.hpte_removebolted = native_hpte_removebolted;
+> I would submit this as a separate patch. Consider if it should be made
+> dependent on any CONFIG options (e.g., MEMORY_HOTREMOVE), and Aneesh had
+> been looking at this too so he could help review it.
+>
+>>   	mmu_hash_ops.hpte_insert	= native_hpte_insert;
+>>   	mmu_hash_ops.hpte_remove	= native_hpte_remove;
+>>   	mmu_hash_ops.hpte_clear_all	= native_hpte_clear;
+>> diff --git a/arch/powerpc/platforms/powernv/Makefile b/arch/powerpc/platforms/powernv/Makefile
+>> index b5d98cb..2026661 100644
+>> --- a/arch/powerpc/platforms/powernv/Makefile
+>> +++ b/arch/powerpc/platforms/powernv/Makefile
+>> @@ -11,4 +11,5 @@ obj-$(CONFIG_EEH)	+= eeh-powernv.o
+>>   obj-$(CONFIG_PPC_SCOM)	+= opal-xscom.o
+>>   obj-$(CONFIG_MEMORY_FAILURE)	+= opal-memory-errors.o
+>>   obj-$(CONFIG_TRACEPOINTS)	+= opal-tracepoints.o
+>> +obj-$(CONFIG_MEMORY_HOTREMOVE)         += memtrace.o
+>>   obj-$(CONFIG_OPAL_PRD)	+= opal-prd.o
+> I would make a new Kconfig option for it, for the time being.
+>
+>
+>> +static int check_memblock_online(struct memory_block *mem, void *arg)
+>> +{
+>> +	if (mem->state != MEM_ONLINE)
+>> +		return -1;
+>> +
+>> +	return 0;
+>> +}
+>> +
+>> +static int change_memblock_state(struct memory_block *mem, void *arg)
+>> +{
+>> +	unsigned long state = (unsigned long)arg;
+>> +
+>> +	mem->state = state;
+>> +	return 0;
+>> +}
+>> +
+>> +static bool memtrace_offline_pages(u32 nid, u64 start_pfn, u64 nr_pages)
+>> +{
+>> +	u64 end_pfn = start_pfn + nr_pages - 1;
+>> +
+>> +	if (walk_memory_range(start_pfn, end_pfn, NULL,
+>> +	    check_memblock_online))
+>> +		return false;
+>> +
+>> +	walk_memory_range(start_pfn, end_pfn, (void *)MEM_GOING_OFFLINE,
+>> +			  change_memblock_state);
+>> +
+>> +	if (offline_pages(start_pfn, nr_pages)) {
+>> +		walk_memory_range(start_pfn, end_pfn, (void *)MEM_ONLINE,
+>> +				  change_memblock_state);
+>> +		return false;
+>> +	}
+>> +
+>> +	walk_memory_range(start_pfn, end_pfn, (void *)MEM_OFFLINE,
+>> +			  change_memblock_state);
+>> +
+>> +	/* RCU grace period? */
+>> +	flush_memory_region((u64)__va(start_pfn << PAGE_SHIFT), nr_pages << PAGE_SHIFT);
+>> +
+>> +	remove_memory(nid, start_pfn << PAGE_SHIFT, nr_pages << PAGE_SHIFT);
+>> +
+>> +	return true;
+>> +}
+> This is the tricky part. Memory hotplug APIs don't seem well suited for
+> what we're trying to do... Anyway, do a bit of grepping around for
+> definitions of some of these calls, and how other code uses them. For
+> example, remove_memory comment says caller must hold
+> lock_device_hotplug() first, so we're missing that at least. I think
+> that's also needed over the memblock state changes.
 
-Even without them seeing any changes first?
+Yup, realised I missed the lock_device_hotplug()
+that right after I sent the email...
+
+>
+> We don't need an RCU grace period there AFAICT, because offline_pages
+> should have us covered.
+>
+>
+> I haven't looked at memory hotplug enough to know why we're open-coding
+> the memblock stuff there. It would be nice to just be able to call
+> memblock_remove() like the pseries hotplug code does.
+>
+> I *think* it is because hot remove mostly comes from when we know about
+> an online region of memory and we want to take it down. In this case we
+> also are trying to discover if those addresses are covered by online
+> memory. Still, I wonder if there are better memblock APIs to do this
+> with? Balbir may have a better idea of that?
+>
+
+Gotcha. Will look into that and other ways to do this.
+
+  
+
+>> +/* XXX FIXME DEBUG CRAP */
+>> +machine_device_initcall(pseries, memtrace_init);
+> Can remove that, I think.
+>
+> Thanks,
+> Nick
