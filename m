@@ -1,38 +1,28 @@
-Return-Path: <ego@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <vkuznets@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vTfbK5qsJzDq8M
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Feb 2017 03:20:13 +1100 (AEDT)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v1NGJTHI079778
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Feb 2017 11:20:11 -0500
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
- by mx0a-001b2d01.pphosted.com with ESMTP id 28syh4jxa4-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Feb 2017 11:20:11 -0500
-Received: from localhost
- by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ego@linux.vnet.ibm.com>;
- Thu, 23 Feb 2017 09:20:10 -0700
-From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- "Rafael J. Wysocki" <rjw@rjwysocki.net>,
- Daniel Lezcano <daniel.lezcano@linaro.org>,
- Michael Neuling <mikey@neuling.org>,
- Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
- "Shreyas B. Prabhu" <shreyasbp@gmail.com>,
- Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
- Balbir Singh <bsingharora@gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- linux-pm@vger.kernel.org, "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-Subject: [PATCH] powernv-cpuidle: Validate DT property arrays are of same size
-Date: Thu, 23 Feb 2017 21:49:44 +0530
-Message-Id: <1487866784-13410-1-git-send-email-ego@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vTfyK5wNqzDqD2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Feb 2017 03:36:41 +1100 (AEDT)
+From: Vitaly Kuznetsov <vkuznets@redhat.com>
+To: Michal Hocko <mhocko@kernel.org>
+Cc: Nathan Fontenot <nfont@linux.vnet.ibm.com>, linux-mm@kvack.org,
+ mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org,
+ mdroth@linux.vnet.ibm.com
+Subject: Re: [RFC PATCH] memory-hotplug: Use dev_online for memhp_auto_offline
+References: <20170221172234.8047.33382.stgit@ltcalpine2-lp14.aus.stglabs.ibm.com>
+ <878toy1sgd.fsf@vitty.brq.redhat.com>
+ <20170223125643.GA29064@dhcp22.suse.cz>
+ <87bmttyqxf.fsf@vitty.brq.redhat.com>
+ <20170223150920.GB29056@dhcp22.suse.cz>
+ <877f4gzz4d.fsf@vitty.brq.redhat.com>
+ <20170223161241.GG29056@dhcp22.suse.cz>
+Date: Thu, 23 Feb 2017 17:36:38 +0100
+In-Reply-To: <20170223161241.GG29056@dhcp22.suse.cz> (Michal Hocko's message
+ of "Thu, 23 Feb 2017 17:12:41 +0100")
+Message-ID: <8737f4zwx5.fsf@vitty.brq.redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,113 +32,127 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+Michal Hocko <mhocko@kernel.org> writes:
 
-The various properties associated with powernv idle states such as
-names, flags, residency-ns, latencies-ns, psscr, psscr-mask are exposed
-in the device-tree as property arrays such the pointwise entries in each
-of these arrays correspond to the properties of the same idle state.
+> On Thu 23-02-17 16:49:06, Vitaly Kuznetsov wrote:
+>> Michal Hocko <mhocko@kernel.org> writes:
+>> 
+>> > On Thu 23-02-17 14:31:24, Vitaly Kuznetsov wrote:
+>> >> Michal Hocko <mhocko@kernel.org> writes:
+>> >> 
+>> >> > On Wed 22-02-17 10:32:34, Vitaly Kuznetsov wrote:
+>> >> > [...]
+>> >> >> > There is a workaround in that a user could online the memory or have
+>> >> >> > a udev rule to online the memory by using the sysfs interface. The
+>> >> >> > sysfs interface to online memory goes through device_online() which
+>> >> >> > should updated the dev->offline flag. I'm not sure that having kernel
+>> >> >> > memory hotplug rely on userspace actions is the correct way to go.
+>> >> >> 
+>> >> >> Using udev rule for memory onlining is possible when you disable
+>> >> >> memhp_auto_online but in some cases it doesn't work well, e.g. when we
+>> >> >> use memory hotplug to address memory pressure the loop through userspace
+>> >> >> is really slow and memory consuming, we may hit OOM before we manage to
+>> >> >> online newly added memory.
+>> >> >
+>> >> > How does the in-kernel implementation prevents from that?
+>> >> >
+>> >> 
+>> >> Onlining memory on hot-plug is much more reliable, e.g. if we were able
+>> >> to add it in add_memory_resource() we'll also manage to online it.
+>> >
+>> > How does that differ from initiating online from the users?
+>> >
+>> >> With
+>> >> udev rule we may end up adding many blocks and then (as udev is
+>> >> asynchronous) failing to online any of them.
+>> >
+>> > Why would it fail?
+>> >
+>> >> In-kernel operation is synchronous.
+>> >
+>> > which doesn't mean anything as the context is preemptible AFAICS.
+>> >
+>> 
+>> It actually does,
+>> 
+>> imagine the following example: you run a small guest (256M of memory)
+>> and now there is a request to add 1000 128mb blocks to it. 
+>
+> Is a grow from 256M -> 128GB really something that happens in real life?
+> Don't get me wrong but to me this sounds quite exaggerated. Hotmem add
+> which is an operation which has to allocate memory has to scale with the
+> currently available memory IMHO.
 
-This patch validates that the lengths of the property arrays are the
-same. If there is a mismatch, the patch will ensure that we bail out and
-not expose the platform idle states via cpuidle.
+With virtual machines this is very real and not exaggerated at
+all. E.g. Hyper-V host can be tuned to automatically add new memory when
+guest is running out of it. Even 100 blocks can represent an issue.
 
-Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
----
- drivers/cpuidle/cpuidle-powernv.c | 56 ++++++++++++++++++++++++++++++++++++---
- 1 file changed, 53 insertions(+), 3 deletions(-)
+>
+>> In case you
+>> do it the old way you're very likely to get OOM somewhere in the middle
+>> as you keep adding blocks which requere kernel memory and nobody is
+>> onlining it (or, at least you're racing with the onliner). With
+>> in-kernel implementation we're going to online the first block when it's
+>> added and only then go to the second.
+>
+> Yes, adding a memory will cost you some memory and that is why I am
+> really skeptical when memory hotplug is used under a strong memory
+> pressure. This can lead to OOMs even when you online one block at the
+> time.
 
-diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
-index 3705930..c30b9fd 100644
---- a/drivers/cpuidle/cpuidle-powernv.c
-+++ b/drivers/cpuidle/cpuidle-powernv.c
-@@ -197,11 +197,25 @@ static inline void add_powernv_state(int index, const char *name,
- 	stop_psscr_table[index].mask = psscr_mask;
- }
- 
-+/*
-+ * Returns 0 if prop1_len == prop2_len. Else returns -1
-+ */
-+static inline int validate_dt_prop_sizes(const char *prop1, int prop1_len,
-+					 const char *prop2, int prop2_len)
-+{
-+	if (prop1_len == prop2_len)
-+		return 0;
-+
-+	pr_warn("cpuidle-powernv: array sizes don't match for %s and %s\n",
-+		prop1, prop2);
-+	return -1;
-+}
-+
- static int powernv_add_idle_states(void)
- {
- 	struct device_node *power_mgt;
- 	int nr_idle_states = 1; /* Snooze */
--	int dt_idle_states;
-+	int dt_idle_states, count;
- 	u32 latency_ns[CPUIDLE_STATE_MAX];
- 	u32 residency_ns[CPUIDLE_STATE_MAX];
- 	u32 flags[CPUIDLE_STATE_MAX];
-@@ -226,6 +240,19 @@ static int powernv_add_idle_states(void)
- 		goto out;
- 	}
- 
-+	count = of_property_count_u32_elems(power_mgt,
-+					    "ibm,cpu-idle-state-latencies-ns");
-+
-+	if (validate_dt_prop_sizes("flags", dt_idle_states,
-+				   "latencies-ns", count) != 0)
-+		goto out;
-+
-+	count = of_property_count_strings(power_mgt,
-+					  "ibm,cpu-idle-state-names");
-+	if (validate_dt_prop_sizes("flags", dt_idle_states,
-+				   "names", count) != 0)
-+		goto out;
-+
- 	/*
- 	 * Since snooze is used as first idle state, max idle states allowed is
- 	 * CPUIDLE_STATE_MAX -1
-@@ -260,6 +287,18 @@ static int powernv_add_idle_states(void)
- 	has_stop_states = (flags[0] &
- 			   (OPAL_PM_STOP_INST_FAST | OPAL_PM_STOP_INST_DEEP));
- 	if (has_stop_states) {
-+		count = of_property_count_u64_elems(power_mgt,
-+						    "ibm,cpu-idle-state-psscr");
-+		if (validate_dt_prop_sizes("flags", dt_idle_states,
-+					   "psscr", count) != 0)
-+			goto out;
-+
-+		count = of_property_count_u64_elems(power_mgt,
-+						    "ibm,cpu-idle-state-psscr-mask");
-+		if (validate_dt_prop_sizes("flags", dt_idle_states,
-+					   "psscr-mask", count) != 0)
-+			goto out;
-+
- 		if (of_property_read_u64_array(power_mgt,
- 		    "ibm,cpu-idle-state-psscr", psscr_val, dt_idle_states)) {
- 			pr_warn("cpuidle-powernv: missing ibm,cpu-idle-state-psscr in DT\n");
-@@ -274,8 +313,19 @@ static int powernv_add_idle_states(void)
- 		}
- 	}
- 
--	rc = of_property_read_u32_array(power_mgt,
--		"ibm,cpu-idle-state-residency-ns", residency_ns, dt_idle_states);
-+	count = of_property_count_u32_elems(power_mgt,
-+					    "ibm,cpu-idle-state-residency-ns");
-+
-+	if (count < 0) {
-+		rc = count;
-+	} else if (validate_dt_prop_sizes("flags", dt_idle_states,
-+					  "psscr-mask", count) != 0) {
-+		goto out;
-+	} else {
-+		rc = of_property_read_u32_array(power_mgt,
-+						"ibm,cpu-idle-state-residency-ns",
-+						residency_ns, dt_idle_states);
-+	}
- 
- 	for (i = 0; i < dt_idle_states; i++) {
- 		unsigned int exit_latency, target_residency;
+If you can't allocate anything then yes, of course it will fail. But if
+you try to add many blocks without onlining at the same time the
+probability of failure is orders of magniture higher.
+
+(a bit unrelated) I was actually thinking about the possible failure and
+had the following idea in my head: we always keep everything allocated
+for one additional memory block so when hotplug happens we use this
+reserved space to add the block, online it and immediately reserve space
+for the next one. I didn't do any coding yet.
+
+>
+> [...]
+>> > This was not my decision so I can only guess but to me it makes sense.
+>> > Both memory and cpus can be physically present and offline which is a
+>> > perfectly reasonable state. So having a two phase physicall hotadd is
+>> > just built on top of physical vs. logical distinction. I completely
+>> > understand that some usecases will really like to online the whole node
+>> > as soon as it appears present. But an automatic in-kernel implementation
+>> > has its down sites - e.g. if this operation fails in the middle you will
+>> > not know about that unless you check all the memblocks in sysfs. This is
+>> > really a poor interface.
+>> 
+>> And how do you know that some blocks failed to online with udev?
+>
+> Because the udev will run a code which can cope with that - retry if the
+> error is recoverable or simply report with all the details. Compare that
+> to crawling the system log to see that something has broken...
+
+I don't know much about udev, but the most common rule to online memory
+I've met is:
+
+SUBSYSTEM=="memory", ACTION=="add", ATTR{state}=="offline",  ATTR{state}="online"
+
+doesn't do anything smart.
+
+In current RHEL7 it is even worse:
+
+SUBSYSTEM=="memory", ACTION=="add", PROGRAM="/bin/uname -p", RESULT!="s390*", ATTR{state}=="offline", ATTR{state}="online"
+
+so to online new memory block we actually need to run a process.
+
+>
+>> Who
+>> handles these failures and how? And, the last but not least, why do
+>> these failures happen?
+>
+> I haven't heard reports about the failures and from looking into the
+> code those are possible but very unlikely.
+
+My point is - failures are possible, yes, but in the most common
+use-case if we hot-plugged some memory we most probably want to use it
+and the feature does that. I'd be glad to hear about possible
+improvemets to it of course.
+
 -- 
-1.9.4
+  Vitaly
