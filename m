@@ -1,21 +1,22 @@
-Return-Path: <herbert@gondor.apana.org.au>
-Received: from helcar.apana.org.au (helcar.hengli.com.au [209.40.204.226])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mhocko@kernel.org>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vTXmQ3DkYzDq8M
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Feb 2017 22:57:42 +1100 (AEDT)
-Date: Thu, 23 Feb 2017 19:20:53 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Paulo Flabiano Smorigo <pfsmorigo@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, benh@kernel.crashing.org,
- paulus@samba.org, mpe@ellerman.id.au, davem@davemloft.net,
- linux-crypto@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- pfsmorigo@linux.vnet.ibm.com
-Subject: Re: [PATCH 1/2] crypto: vmx - Use skcipher for cbc fallback
-Message-ID: <20170223112052.GA14019@gondor.apana.org.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vTZ4c3tH8zDq5x
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Feb 2017 23:56:48 +1100 (AEDT)
+Date: Thu, 23 Feb 2017 13:56:43 +0100
+From: Michal Hocko <mhocko@kernel.org>
+To: Vitaly Kuznetsov <vkuznets@redhat.com>
+Cc: Nathan Fontenot <nfont@linux.vnet.ibm.com>, linux-mm@kvack.org,
+ mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org,
+ mdroth@linux.vnet.ibm.com
+Subject: Re: [RFC PATCH] memory-hotplug: Use dev_online for memhp_auto_offline
+Message-ID: <20170223125643.GA29064@dhcp22.suse.cz>
+References: <20170221172234.8047.33382.stgit@ltcalpine2-lp14.aus.stglabs.ibm.com>
+ <878toy1sgd.fsf@vitty.brq.redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170222180015.27573-1-pfsmorigo@linux.vnet.ibm.com>
+In-Reply-To: <878toy1sgd.fsf@vitty.brq.redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,17 +26,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Paulo Flabiano Smorigo <pfsmorigo@linux.vnet.ibm.com> wrote:
->
->        fallback =
-> -           crypto_alloc_blkcipher(alg, 0, CRYPTO_ALG_NEED_FALLBACK);
-> +           crypto_alloc_skcipher(alg, 0, CRYPTO_ALG_NEED_FALLBACK);
+On Wed 22-02-17 10:32:34, Vitaly Kuznetsov wrote:
+[...]
+> > There is a workaround in that a user could online the memory or have
+> > a udev rule to online the memory by using the sysfs interface. The
+> > sysfs interface to online memory goes through device_online() which
+> > should updated the dev->offline flag. I'm not sure that having kernel
+> > memory hotplug rely on userspace actions is the correct way to go.
+> 
+> Using udev rule for memory onlining is possible when you disable
+> memhp_auto_online but in some cases it doesn't work well, e.g. when we
+> use memory hotplug to address memory pressure the loop through userspace
+> is really slow and memory consuming, we may hit OOM before we manage to
+> online newly added memory.
 
-You need to add CRYPTO_ALG_ASYNC to the mask in order to ensure
-that you get a sync algorithm.
+How does the in-kernel implementation prevents from that?
 
-Thanks,
+> In addition to that, systemd/udev folks
+> continuosly refused to add this udev rule to udev calling it stupid as
+> it actually is an unconditional and redundant ping-pong between kernel
+> and udev.
+
+This is a policy and as such it doesn't belong to the kernel. The whole
+auto-enable in the kernel is just plain wrong IMHO and we shouldn't have
+merged it.
 -- 
-Email: Herbert Xu <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+Michal Hocko
+SUSE Labs
