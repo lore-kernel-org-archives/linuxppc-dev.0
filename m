@@ -1,22 +1,23 @@
 Return-Path: <benh@kernel.crashing.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vTqLR59j3zDqC0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Feb 2017 09:54:39 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vTqLT5tf8zDqC0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Feb 2017 09:54:41 +1100 (AEDT)
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3vTqLQ0zynz9s7D
- for <linuxppc-dev@ozlabs.org>; Fri, 24 Feb 2017 09:54:37 +1100 (AEDT)
+ by ozlabs.org (Postfix) with ESMTPS id 3vTqLR6Gg5z9s7D
+ for <linuxppc-dev@ozlabs.org>; Fri, 24 Feb 2017 09:54:39 +1100 (AEDT)
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: dri-devel@lists.freedesktop.org
 Cc: "Y . C . Chen" <yc_chen@aspeedtech.com>, airlied@redhat.com,
  eich@suse.come, linuxppc-dev@ozlabs.org
-Subject: [PATCH 01/12] drm/ast: Fix AST2400 POST failure without BMC FW or
- VBIOS
-Date: Fri, 24 Feb 2017 09:53:46 +1100
-Message-Id: <20170223225357.9572-1-benh@kernel.crashing.org>
+Subject: [PATCH 02/12] drm/ast: Handle configuration without P2A bridge
+Date: Fri, 24 Feb 2017 09:53:47 +1100
+Message-Id: <20170223225357.9572-2-benh@kernel.crashing.org>
+In-Reply-To: <20170223225357.9572-1-benh@kernel.crashing.org>
+References: <20170223225357.9572-1-benh@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,69 +27,426 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: "Y.C. Chen" <yc_chen@aspeedtech.com>
+From: Russell Currey <ruscur@russell.cc>
 
-The current POST code for the AST2300/2400 family doesn't work properly
-if the chip hasn't been initialized previously by either the BMC own FW
-or the VBIOS. This fixes it.
+The ast driver configures a window to enable access into BMC
+memory space in order to read some configuration registers.
 
-Signed-off-by: Y.C. Chen <yc_chen@aspeedtech.com>
+If this window is disabled, which it can be from the BMC side,
+the ast driver can't function.
+
+Closing this window is a necessity for security if a machine's
+host side and BMC side are controlled by different parties;
+i.e. a cloud provider offering machines "bare metal".
+
+A recent patch went in to try to check if that window is open
+but it does so by trying to access the registers in question
+and testing if the result is 0xffffffff.
+
+This method will trigger a PCIe error when the window is closed
+which on some systems will be fatal (it will trigger an EEH
+for example on POWER which will take out the device).
+
+This patch improves this in two ways:
+
+ - First, if the firmware has put properties in the device-tree
+containing the relevant configuration information, we use these.
+
+ - Otherwise, a bit in one of the SCU scratch registers (which
+are readable via the VGA register space and writeable by the BMC)
+will indicate if the BMC has closed the window. This bit has been
+defined by Y.C Chen from Aspeed.
+
+If the window is closed and the configuration isn't available from
+the device-tree, some sane defaults are used. Those defaults are
+hopefully sufficient for standard video modes used on a server.
+
+Signed-off-by: Russell Currey <ruscur@russell.cc>
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
- drivers/gpu/drm/ast/ast_post.c | 38 +++++++++++++++++++++++++++++++++++---
- 1 file changed, 35 insertions(+), 3 deletions(-)
+--
 
+v2. [BenH]
+    - Reworked on top of Aspeed P2A patch
+    - Cleanup overall detection via a "config_mode" and log the
+      selected mode for diagnostics purposes
+    - Add a property for the SCU straps
+
+v3. [BenH]
+    - Moved the config mode detection to a separate functionn
+    - Add reading of SCU 0x40 D[12] to detect the window is
+      closed as to not trigger a bus error by just "trying".
+      (change provided by Y.C. Chen)
+v4. [BenH]
+    - Only devices with the AST2000 PCI ID have a P2A bridge
+    - Update the P2A presence test to account for VGA only
+      mode as provided by Y.C. Chen.
+---
+ drivers/gpu/drm/ast/ast_drv.h  |   6 +-
+ drivers/gpu/drm/ast/ast_main.c | 262 +++++++++++++++++++++++++----------------
+ drivers/gpu/drm/ast/ast_post.c |   7 +-
+ 3 files changed, 166 insertions(+), 109 deletions(-)
+
+diff --git a/drivers/gpu/drm/ast/ast_drv.h b/drivers/gpu/drm/ast/ast_drv.h
+index 7abda94..3bedcf7 100644
+--- a/drivers/gpu/drm/ast/ast_drv.h
++++ b/drivers/gpu/drm/ast/ast_drv.h
+@@ -113,7 +113,11 @@ struct ast_private {
+ 	struct ttm_bo_kmap_obj cache_kmap;
+ 	int next_cursor;
+ 	bool support_wide_screen;
+-	bool DisableP2A;
++	enum {
++		ast_use_p2a,
++		ast_use_dt,
++		ast_use_defaults
++	} config_mode;
+ 
+ 	enum ast_tx_chip tx_chip_type;
+ 	u8 dp501_maxclk;
+diff --git a/drivers/gpu/drm/ast/ast_main.c b/drivers/gpu/drm/ast/ast_main.c
+index 533e762..36932a3 100644
+--- a/drivers/gpu/drm/ast/ast_main.c
++++ b/drivers/gpu/drm/ast/ast_main.c
+@@ -62,13 +62,83 @@ uint8_t ast_get_index_reg_mask(struct ast_private *ast,
+ 	return ret;
+ }
+ 
++static void ast_detect_config_mode(struct drm_device *dev, u32 *scu_rev)
++{
++	struct device_node *np = dev->pdev->dev.of_node;
++	struct ast_private *ast = dev->dev_private;
++	uint32_t data, jregd0, jregd1;
++
++	/* Defaults */
++	ast->config_mode = ast_use_defaults;
++	*scu_rev = 0xffffffff;
++
++	/* Check if we have device-tree properties */
++	if (np && !of_property_read_u32(np, "ast,scu-revision-id", scu_rev)) {
++		/* We do, disable P2A access */
++		ast->config_mode = ast_use_dt;
++		DRM_INFO("Using device-tree for configuration\n");
++		return;
++	}
++
++	/* Not all families have a P2A bridge */
++	if (dev->pdev->device != PCI_CHIP_AST2000)
++		return;
++
++	/*
++	 * The BMC will set SCU 0x40 D[12] to 1 if the P2 bridge
++	 * is disabled. We force using P2A if VGA only mode bit
++	 * is set D[7]
++	 */
++	jregd0 = ast_get_index_reg_mask(ast, AST_IO_CRTC_PORT, 0xd0, 0xff);
++	jregd1 = ast_get_index_reg_mask(ast, AST_IO_CRTC_PORT, 0xd1, 0xff);
++	if (!(jregd0 & 0x80) || !(jregd1 & 0x10)) {
++		/* Double check it's actually working */
++		data = ast_read32(ast, 0xf004);
++		if (data != 0xFFFFFFFF) {
++			/* P2A works, grab silicon revision */
++			ast->config_mode = ast_use_p2a;
++
++			DRM_INFO("Using P2A bridge for configuration\n");
++
++			/* Read SCU7c (silicon revision register) */
++			ast_write32(ast, 0xf004, 0x1e6e0000);
++			ast_write32(ast, 0xf000, 0x1);
++			*scu_rev = ast_read32(ast, 0x1207c);
++			return;
++		}
++	}
++
++	/* We have a P2A bridge but it's disabled */
++	DRM_INFO("P2A bridge disabled, using default configuration\n");
++}
+ 
+ static int ast_detect_chip(struct drm_device *dev, bool *need_post)
+ {
+ 	struct ast_private *ast = dev->dev_private;
+-	uint32_t data, jreg;
++	uint32_t jreg, scu_rev;
++
++	/*
++	 * If VGA isn't enabled, we need to enable now or subsequent
++	 * access to the scratch registers will fail. We also inform
++	 * our caller that it needs to POST the chip
++	 * (Assumption: VGA not enabled -> need to POST)
++	 */
++	if (!ast_is_vga_enabled(dev)) {
++		ast_enable_vga(dev);
++		DRM_INFO("VGA not enabled on entry, requesting chip POST\n");
++		*need_post = true;
++	} else
++		*need_post = false;
++
++
++	/* Enable extended register access */
++	ast_enable_mmio(dev);
+ 	ast_open_key(ast);
+ 
++	/* Find out whether P2A works or whether to use device-tree */
++	ast_detect_config_mode(dev, &scu_rev);
++
++	/* Identify chipset */
+ 	if (dev->pdev->device == PCI_CHIP_AST1180) {
+ 		ast->chip = AST1100;
+ 		DRM_INFO("AST 1180 detected\n");
+@@ -80,12 +150,7 @@ static int ast_detect_chip(struct drm_device *dev, bool *need_post)
+ 			ast->chip = AST2300;
+ 			DRM_INFO("AST 2300 detected\n");
+ 		} else if (dev->pdev->revision >= 0x10) {
+-			uint32_t data;
+-			ast_write32(ast, 0xf004, 0x1e6e0000);
+-			ast_write32(ast, 0xf000, 0x1);
+-
+-			data = ast_read32(ast, 0x1207c);
+-			switch (data & 0x0300) {
++			switch (scu_rev & 0x0300) {
+ 			case 0x0200:
+ 				ast->chip = AST1100;
+ 				DRM_INFO("AST 1100 detected\n");
+@@ -110,26 +175,6 @@ static int ast_detect_chip(struct drm_device *dev, bool *need_post)
+ 		}
+ 	}
+ 
+-	/*
+-	 * If VGA isn't enabled, we need to enable now or subsequent
+-	 * access to the scratch registers will fail. We also inform
+-	 * our caller that it needs to POST the chip
+-	 * (Assumption: VGA not enabled -> need to POST)
+-	 */
+-	if (!ast_is_vga_enabled(dev)) {
+-		ast_enable_vga(dev);
+-		ast_enable_mmio(dev);
+-		DRM_INFO("VGA not enabled on entry, requesting chip POST\n");
+-		*need_post = true;
+-	} else
+-		*need_post = false;
+-
+-	/* Check P2A Access */
+-	ast->DisableP2A = true;
+-	data = ast_read32(ast, 0xf004);
+-	if (data != 0xFFFFFFFF)
+-		ast->DisableP2A = false;
+-
+ 	/* Check if we support wide screen */
+ 	switch (ast->chip) {
+ 	case AST1180:
+@@ -146,17 +191,12 @@ static int ast_detect_chip(struct drm_device *dev, bool *need_post)
+ 			ast->support_wide_screen = true;
+ 		else {
+ 			ast->support_wide_screen = false;
+-			if (ast->DisableP2A == false) {
+-				/* Read SCU7c (silicon revision register) */
+-				ast_write32(ast, 0xf004, 0x1e6e0000);
+-				ast_write32(ast, 0xf000, 0x1);
+-				data = ast_read32(ast, 0x1207c);
+-				data &= 0x300;
+-				if (ast->chip == AST2300 && data == 0x0) /* ast1300 */
+-					ast->support_wide_screen = true;
+-				if (ast->chip == AST2400 && data == 0x100) /* ast1400 */
+-					ast->support_wide_screen = true;
+-			}
++			if (ast->chip == AST2300 &&
++			    (scu_rev & 0x300) == 0x0) /* ast1300 */
++				ast->support_wide_screen = true;
++			if (ast->chip == AST2400 &&
++			    (scu_rev & 0x300) == 0x100) /* ast1400 */
++				ast->support_wide_screen = true;
+ 		}
+ 		break;
+ 	}
+@@ -220,85 +260,101 @@ static int ast_detect_chip(struct drm_device *dev, bool *need_post)
+ 
+ static int ast_get_dram_info(struct drm_device *dev)
+ {
++	struct device_node *np = dev->pdev->dev.of_node;
+ 	struct ast_private *ast = dev->dev_private;
+-	uint32_t data, data2;
+-	uint32_t denum, num, div, ref_pll;
++	uint32_t mcr_cfg, mcr_scu_mpll, mcr_scu_strap;
++	uint32_t denum, num, div, ref_pll, dsel;
+ 
+-	if (ast->DisableP2A)
+-	{
++	switch (ast->config_mode) {
++	case ast_use_dt:
++		/*
++		 * If some properties are missing, use reasonable
++		 * defaults for AST2400
++		 */
++		if (of_property_read_u32(np, "ast,mcr-configuration", &mcr_cfg))
++			mcr_cfg = 0x00000577;
++		if (of_property_read_u32(np, "ast,ast,mcr-scu-mpll",
++					 &mcr_scu_mpll))
++			mcr_scu_mpll = 0x000050C0;
++		if (of_property_read_u32(np, "ast,ast,mcr-scu-strap",
++					 &mcr_scu_strap))
++			mcr_scu_strap = 0;
++		break;
++	case ast_use_p2a:
++		ast_write32(ast, 0xf004, 0x1e6e0000);
++		ast_write32(ast, 0xf000, 0x1);
++		mcr_cfg = ast_read32(ast, 0x10004);
++		mcr_scu_mpll = ast_read32(ast, 0x10120);
++		mcr_scu_strap = ast_read32(ast, 0x10170);
++		break;
++	case ast_use_defaults:
++	default:
+ 		ast->dram_bus_width = 16;
+ 		ast->dram_type = AST_DRAM_1Gx16;
+ 		ast->mclk = 396;
++		return 0;
+ 	}
+-	else
+-	{
+-		ast_write32(ast, 0xf004, 0x1e6e0000);
+-		ast_write32(ast, 0xf000, 0x1);
+-		data = ast_read32(ast, 0x10004);
+ 
+-		if (data & 0x40)
+-			ast->dram_bus_width = 16;
+-		else
+-			ast->dram_bus_width = 32;
+-
+-		if (ast->chip == AST2300 || ast->chip == AST2400) {
+-			switch (data & 0x03) {
+-			case 0:
+-				ast->dram_type = AST_DRAM_512Mx16;
+-				break;
+-			default:
+-			case 1:
+-				ast->dram_type = AST_DRAM_1Gx16;
+-				break;
+-			case 2:
+-				ast->dram_type = AST_DRAM_2Gx16;
+-				break;
+-			case 3:
+-				ast->dram_type = AST_DRAM_4Gx16;
+-				break;
+-			}
+-		} else {
+-			switch (data & 0x0c) {
+-			case 0:
+-			case 4:
+-				ast->dram_type = AST_DRAM_512Mx16;
+-				break;
+-			case 8:
+-				if (data & 0x40)
+-					ast->dram_type = AST_DRAM_1Gx16;
+-				else
+-					ast->dram_type = AST_DRAM_512Mx32;
+-				break;
+-			case 0xc:
+-				ast->dram_type = AST_DRAM_1Gx32;
+-				break;
+-			}
+-		}
++	if (mcr_cfg & 0x40)
++		ast->dram_bus_width = 16;
++	else
++		ast->dram_bus_width = 32;
+ 
+-		data = ast_read32(ast, 0x10120);
+-		data2 = ast_read32(ast, 0x10170);
+-		if (data2 & 0x2000)
+-			ref_pll = 14318;
+-		else
+-			ref_pll = 12000;
+-
+-		denum = data & 0x1f;
+-		num = (data & 0x3fe0) >> 5;
+-		data = (data & 0xc000) >> 14;
+-		switch (data) {
+-		case 3:
+-			div = 0x4;
++	if (ast->chip == AST2300 || ast->chip == AST2400) {
++		switch (mcr_cfg & 0x03) {
++		case 0:
++			ast->dram_type = AST_DRAM_512Mx16;
+ 			break;
+-		case 2:
++		default:
+ 		case 1:
+-			div = 0x2;
++			ast->dram_type = AST_DRAM_1Gx16;
+ 			break;
+-		default:
+-			div = 0x1;
++		case 2:
++			ast->dram_type = AST_DRAM_2Gx16;
++			break;
++		case 3:
++			ast->dram_type = AST_DRAM_4Gx16;
+ 			break;
+ 		}
+-		ast->mclk = ref_pll * (num + 2) / (denum + 2) * (div * 1000);
++	} else {
++		switch (mcr_cfg & 0x0c) {
++		case 0:
++		case 4:
++			ast->dram_type = AST_DRAM_512Mx16;
++			break;
++		case 8:
++			if (mcr_cfg & 0x40)
++				ast->dram_type = AST_DRAM_1Gx16;
++			else
++				ast->dram_type = AST_DRAM_512Mx32;
++			break;
++		case 0xc:
++			ast->dram_type = AST_DRAM_1Gx32;
++			break;
++		}
++	}
++
++	if (mcr_scu_strap & 0x2000)
++		ref_pll = 14318;
++	else
++		ref_pll = 12000;
++
++	denum = mcr_scu_mpll & 0x1f;
++	num = (mcr_scu_mpll & 0x3fe0) >> 5;
++	dsel = (mcr_scu_mpll & 0xc000) >> 14;
++	switch (dsel) {
++	case 3:
++		div = 0x4;
++		break;
++	case 2:
++	case 1:
++		div = 0x2;
++		break;
++	default:
++		div = 0x1;
++		break;
+ 	}
++	ast->mclk = ref_pll * (num + 2) / (denum + 2) * (div * 1000);
+ 	return 0;
+ }
+ 
 diff --git a/drivers/gpu/drm/ast/ast_post.c b/drivers/gpu/drm/ast/ast_post.c
-index 5331ee1..6c5391c 100644
+index 6c5391c..64549ce 100644
 --- a/drivers/gpu/drm/ast/ast_post.c
 +++ b/drivers/gpu/drm/ast/ast_post.c
-@@ -1638,12 +1638,44 @@ static void ast_init_dram_2300(struct drm_device *dev)
- 		temp |= 0x73;
- 		ast_write32(ast, 0x12008, temp);
+@@ -379,17 +379,14 @@ void ast_post_gpu(struct drm_device *dev)
+ 	ast_open_key(ast);
+ 	ast_set_def_ext_reg(dev);
  
-+		param.dram_freq = 396;
- 		param.dram_type = AST_DDR3;
-+		temp = ast_mindwm(ast, 0x1e6e2070);
- 		if (temp & 0x01000000)
- 			param.dram_type = AST_DDR2;
--		param.dram_chipid = ast->dram_type;
--		param.dram_freq = ast->mclk;
--		param.vram_size = ast->vram_size;
-+                switch (temp & 0x18000000) {
-+		case 0:
-+			param.dram_chipid = AST_DRAM_512Mx16;
-+			break;
-+		default:
-+		case 0x08000000:
-+			param.dram_chipid = AST_DRAM_1Gx16;
-+			break;
-+		case 0x10000000:
-+			param.dram_chipid = AST_DRAM_2Gx16;
-+			break;
-+		case 0x18000000:
-+			param.dram_chipid = AST_DRAM_4Gx16;
-+			break;
-+		}
-+                switch (temp & 0x0c) {
-+                default:
-+		case 0x00:
-+			param.vram_size = AST_VIDMEM_SIZE_8M;
-+			break;
-+
-+		case 0x04:
-+			param.vram_size = AST_VIDMEM_SIZE_16M;
-+			break;
-+
-+		case 0x08:
-+			param.vram_size = AST_VIDMEM_SIZE_32M;
-+			break;
-+
-+		case 0x0c:
-+			param.vram_size = AST_VIDMEM_SIZE_64M;
-+			break;
-+		}
+-	if (ast->DisableP2A == false)
+-	{
++	if (ast->config_mode == ast_use_p2a) {
+ 		if (ast->chip == AST2300 || ast->chip == AST2400)
+ 			ast_init_dram_2300(dev);
+ 		else
+ 			ast_init_dram_reg(dev);
  
- 		if (param.dram_type == AST_DDR3) {
- 			get_ddr3_info(ast, &param);
+ 		ast_init_3rdtx(dev);
+-	}
+-	else
+-	{
++	} else {
+ 		if (ast->tx_chip_type != AST_TX_NONE)
+ 			ast_set_index_reg_mask(ast, AST_IO_CRTC_PORT, 0xa3, 0xcf, 0x80);	/* Enable DVO */
+ 	}
 -- 
 2.9.3
