@@ -1,23 +1,25 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
- [IPv6:2607:f8b0:400e:c05::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <dgibson@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vTL5g5yl1zDq5x
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Feb 2017 14:56:55 +1100 (AEDT)
-Received: by mail-pg0-x243.google.com with SMTP id 5so3022588pgj.0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Feb 2017 19:56:55 -0800 (PST)
-Date: Thu, 23 Feb 2017 13:56:35 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Rashmica Gupta <rashmica.g@gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org, bsingharora@gmail.com, dllehr@us.ibm.com,
- mpe@ellerman.id.au
-Subject: Re: [RFC] Remove memory from nodes for memtrace.
-Message-ID: <20170223135635.5321dcc5@roar.ozlabs.ibm.com>
-In-Reply-To: <20170222213910.5628-1-rashmica.g@gmail.com>
-References: <20170222213910.5628-1-rashmica.g@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vTL6v19LmzDq5x
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Feb 2017 14:57:59 +1100 (AEDT)
+Date: Thu, 23 Feb 2017 14:31:38 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ Alex Williamson <alex.williamson@redhat.com>,
+ Paul Mackerras <paulus@samba.org>, kvm-ppc@vger.kernel.org,
+ kvm@vger.kernel.org
+Subject: Re: [PATCH kernel v5 03/10] powerpc/iommu/vfio_spapr_tce: Cleanup
+ iommu_table disposal
+Message-ID: <20170223033138.GF12577@umbus.fritz.box>
+References: <20170222082133.10277-1-aik@ozlabs.ru>
+ <20170222082133.10277-4-aik@ozlabs.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="UBYeLQbK9sqbzZRV"
+In-Reply-To: <20170222082133.10277-4-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,208 +29,175 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 23 Feb 2017 08:39:10 +1100
-Rashmica Gupta <rashmica.g@gmail.com> wrote:
 
->  Some powerpc hardware features may want to gain access to a
->  chunk of undisturbed real memory.  This update provides a means to unplug
->  said memory from the kernel with a set of sysfs calls.  By writing an integer
->  containing  the size of memory to be unplugged into
->  /sys/kernel/debug/powerpc/memtrace/enable, the code will remove that much
->  memory from the end of each available chip's memory space. In addition, the
->  means to read out the contents of the unplugged memory is also provided by
->  reading out the /sys/kernel/debug/powerpc/memtrace/<chip-id>/dump file.
-> 
-> Signed-off-by: Rashmica Gupta <rashmica.g@gmail.com>
+--UBYeLQbK9sqbzZRV
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Thanks for picking this up. A few suggestions.
+On Wed, Feb 22, 2017 at 07:21:26PM +1100, Alexey Kardashevskiy wrote:
+> At the moment iommu_table can be disposed by either calling
+> iommu_table_free() directly or it_ops::free(); the only implementation
+> of free() is in IODA2 - pnv_ioda2_table_free() - and it calls
+> iommu_table_free() anyway.
+>=20
+> As we are going to have reference counting on tables, we need an unified
+> way of disposing tables.
+>=20
+> This moves it_ops::free() call into iommu_free_table() and makes use
+> of the latter. The free() callback now handles only platform-specific
+> data.
+>=20
+> As from now on the iommu_free_table() calls it_ops->free(), we need
+> to have it_ops initialized before calling iommu_free_table() so this
+> moves this initialization in pnv_pci_ioda2_create_table().
+>=20
+> This should cause no behavioral change.
+>=20
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+
+Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 
 > ---
-> Written by Douglas Lehr <dllehr@us.ibm.com>.
-
-You could mention original author in the changelog. I thought Anton
-wrote some of it too?
-
-
->  arch/powerpc/mm/hash_native_64.c          |  39 +++-
->  arch/powerpc/platforms/powernv/Makefile   |   1 +
->  arch/powerpc/platforms/powernv/memtrace.c | 285 ++++++++++++++++++++++++++++++
->  3 files changed, 321 insertions(+), 4 deletions(-)
->  create mode 100644 arch/powerpc/platforms/powernv/memtrace.c
-> 
-> diff --git a/arch/powerpc/mm/hash_native_64.c b/arch/powerpc/mm/hash_native_64.c
-> index cc33260..44cc6ce 100644
-> --- a/arch/powerpc/mm/hash_native_64.c
-> +++ b/arch/powerpc/mm/hash_native_64.c
-> @@ -3,7 +3,7 @@
->   *
->   * SMP scalability work:
->   *    Copyright (C) 2001 Anton Blanchard <anton@au.ibm.com>, IBM
-> - * 
-> + *
->   * This program is free software; you can redistribute it and/or
->   * modify it under the terms of the GNU General Public License
->   * as published by the Free Software Foundation; either version
-> @@ -181,7 +181,7 @@ static inline void native_lock_hpte(struct hash_pte *hptep)
->  	while (1) {
->  		if (!test_and_set_bit_lock(HPTE_LOCK_BIT, word))
->  			break;
-> -		while(test_bit(HPTE_LOCK_BIT, word))
-> +		while (test_bit(HPTE_LOCK_BIT, word))
->  			cpu_relax();
->  	}
+> Changes:
+> v5:
+> * moved "tbl->it_ops =3D &pnv_ioda2_iommu_ops" earlier and updated
+> the commit log
+> ---
+>  arch/powerpc/kernel/iommu.c               |  4 ++++
+>  arch/powerpc/platforms/powernv/pci-ioda.c | 10 ++++------
+>  drivers/vfio/vfio_iommu_spapr_tce.c       |  2 +-
+>  3 files changed, 9 insertions(+), 7 deletions(-)
+>=20
+> diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
+> index 9bace5df05d5..bc142d87130f 100644
+> --- a/arch/powerpc/kernel/iommu.c
+> +++ b/arch/powerpc/kernel/iommu.c
+> @@ -719,6 +719,9 @@ void iommu_free_table(struct iommu_table *tbl, const =
+char *node_name)
+>  	if (!tbl)
+>  		return;
+> =20
+> +	if (tbl->it_ops->free)
+> +		tbl->it_ops->free(tbl);
+> +
+>  	if (!tbl->it_map) {
+>  		kfree(tbl);
+>  		return;
+> @@ -745,6 +748,7 @@ void iommu_free_table(struct iommu_table *tbl, const =
+char *node_name)
+>  	/* free table */
+>  	kfree(tbl);
 >  }
-> @@ -208,10 +208,10 @@ static long native_hpte_insert(unsigned long hpte_group, unsigned long vpn,
+> +EXPORT_SYMBOL_GPL(iommu_free_table);
+> =20
+>  /* Creates TCEs for a user provided buffer.  The user buffer must be
+>   * contiguous real kernel storage (not vmalloc).  The address passed here
+> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/pla=
+tforms/powernv/pci-ioda.c
+> index 133c7f300c12..27801c61ebdb 100644
+> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
+> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+> @@ -1423,7 +1423,6 @@ static void pnv_pci_ioda2_release_dma_pe(struct pci=
+_dev *dev, struct pnv_ioda_pe
+>  		iommu_group_put(pe->table_group.group);
+>  		BUG_ON(pe->table_group.group);
 >  	}
->  
->  	for (i = 0; i < HPTES_PER_GROUP; i++) {
-> -		if (! (be64_to_cpu(hptep->v) & HPTE_V_VALID)) {
-> +		if (!(be64_to_cpu(hptep->v) & HPTE_V_VALID)) {
->  			/* retry with lock held */
->  			native_lock_hpte(hptep);
-> -			if (! (be64_to_cpu(hptep->v) & HPTE_V_VALID))
-> +			if (!(be64_to_cpu(hptep->v) & HPTE_V_VALID))
->  				break;
->  			native_unlock_hpte(hptep);
-
-Suggest dropping the whitespace cleanups.
-
-
->  		}
-> @@ -407,6 +407,36 @@ static void native_hpte_updateboltedpp(unsigned long newpp, unsigned long ea,
->  	tlbie(vpn, psize, psize, ssize, 0);
+> -	pnv_pci_ioda2_table_free_pages(tbl);
+>  	iommu_free_table(tbl, of_node_full_name(dev->dev.of_node));
 >  }
->  
-> +/*
-> + * Remove a bolted kernel entry. Memory hotplug uses this.
-> + *
-> + * No need to lock here because we should be the only user.
-> + */
-> +static int native_hpte_removebolted(unsigned long ea, int psize, int ssize)
-> +{
-> +	unsigned long vpn;
-> +	unsigned long vsid;
-> +	long slot;
-> +	struct hash_pte *hptep;
-> +
-> +	vsid = get_kernel_vsid(ea, ssize);
-> +	vpn = hpt_vpn(ea, vsid, ssize);
-> +
-> +	slot = native_hpte_find(vpn, psize, ssize);
-> +	if (slot == -1)
-> +		return -ENOENT;
-> +
-> +	hptep = htab_address + slot;
-> +
-> +	/* Invalidate the hpte */
-> +	hptep->v = 0;
-> +
-> +	/* Invalidate the TLB */
-> +	tlbie(vpn, psize, psize, ssize, 0);
-> +	return 0;
-> +}
-> +
-> +
->  static void native_hpte_invalidate(unsigned long slot, unsigned long vpn,
->  				   int bpsize, int apsize, int ssize, int local)
+> =20
+> @@ -2040,7 +2039,6 @@ static void pnv_ioda2_tce_free(struct iommu_table *=
+tbl, long index,
+>  static void pnv_ioda2_table_free(struct iommu_table *tbl)
 >  {
-> @@ -722,6 +752,7 @@ void __init hpte_init_native(void)
->  	mmu_hash_ops.hpte_invalidate	= native_hpte_invalidate;
->  	mmu_hash_ops.hpte_updatepp	= native_hpte_updatepp;
->  	mmu_hash_ops.hpte_updateboltedpp = native_hpte_updateboltedpp;
-> +	mmu_hash_ops.hpte_removebolted = native_hpte_removebolted;
-
-I would submit this as a separate patch. Consider if it should be made
-dependent on any CONFIG options (e.g., MEMORY_HOTREMOVE), and Aneesh had
-been looking at this too so he could help review it.
-
->  	mmu_hash_ops.hpte_insert	= native_hpte_insert;
->  	mmu_hash_ops.hpte_remove	= native_hpte_remove;
->  	mmu_hash_ops.hpte_clear_all	= native_hpte_clear;
-> diff --git a/arch/powerpc/platforms/powernv/Makefile b/arch/powerpc/platforms/powernv/Makefile
-> index b5d98cb..2026661 100644
-> --- a/arch/powerpc/platforms/powernv/Makefile
-> +++ b/arch/powerpc/platforms/powernv/Makefile
-> @@ -11,4 +11,5 @@ obj-$(CONFIG_EEH)	+= eeh-powernv.o
->  obj-$(CONFIG_PPC_SCOM)	+= opal-xscom.o
->  obj-$(CONFIG_MEMORY_FAILURE)	+= opal-memory-errors.o
->  obj-$(CONFIG_TRACEPOINTS)	+= opal-tracepoints.o
-> +obj-$(CONFIG_MEMORY_HOTREMOVE)         += memtrace.o
->  obj-$(CONFIG_OPAL_PRD)	+= opal-prd.o
-
-I would make a new Kconfig option for it, for the time being.
-
-
-> +static int check_memblock_online(struct memory_block *mem, void *arg)
-> +{
-> +	if (mem->state != MEM_ONLINE)
-> +		return -1;
+>  	pnv_pci_ioda2_table_free_pages(tbl);
+> -	iommu_free_table(tbl, "pnv");
+>  }
+> =20
+>  static struct iommu_table_ops pnv_ioda2_iommu_ops =3D {
+> @@ -2317,6 +2315,8 @@ static long pnv_pci_ioda2_create_table(struct iommu=
+_table_group *table_group,
+>  	if (!tbl)
+>  		return -ENOMEM;
+> =20
+> +	tbl->it_ops =3D &pnv_ioda2_iommu_ops;
 > +
-> +	return 0;
-> +}
-> +
-> +static int change_memblock_state(struct memory_block *mem, void *arg)
-> +{
-> +	unsigned long state = (unsigned long)arg;
-> +
-> +	mem->state = state;
-> +	return 0;
-> +}
-> +
-> +static bool memtrace_offline_pages(u32 nid, u64 start_pfn, u64 nr_pages)
-> +{
-> +	u64 end_pfn = start_pfn + nr_pages - 1;
-> +
-> +	if (walk_memory_range(start_pfn, end_pfn, NULL,
-> +	    check_memblock_online))
-> +		return false;
-> +
-> +	walk_memory_range(start_pfn, end_pfn, (void *)MEM_GOING_OFFLINE,
-> +			  change_memblock_state);
-> +
-> +	if (offline_pages(start_pfn, nr_pages)) {
-> +		walk_memory_range(start_pfn, end_pfn, (void *)MEM_ONLINE,
-> +				  change_memblock_state);
-> +		return false;
-> +	}
-> +
-> +	walk_memory_range(start_pfn, end_pfn, (void *)MEM_OFFLINE,
-> +			  change_memblock_state);
-> +
-> +	/* RCU grace period? */
-> +	flush_memory_region((u64)__va(start_pfn << PAGE_SHIFT), nr_pages << PAGE_SHIFT);
-> +
-> +	remove_memory(nid, start_pfn << PAGE_SHIFT, nr_pages << PAGE_SHIFT);
-> +
-> +	return true;
-> +}
+>  	ret =3D pnv_pci_ioda2_table_alloc_pages(nid,
+>  			bus_offset, page_shift, window_size,
+>  			levels, tbl);
+> @@ -2325,8 +2325,6 @@ static long pnv_pci_ioda2_create_table(struct iommu=
+_table_group *table_group,
+>  		return ret;
+>  	}
+> =20
+> -	tbl->it_ops =3D &pnv_ioda2_iommu_ops;
+> -
+>  	*ptbl =3D tbl;
+> =20
+>  	return 0;
+> @@ -2367,7 +2365,7 @@ static long pnv_pci_ioda2_setup_default_config(stru=
+ct pnv_ioda_pe *pe)
+>  	if (rc) {
+>  		pe_err(pe, "Failed to configure 32-bit TCE table, err %ld\n",
+>  				rc);
+> -		pnv_ioda2_table_free(tbl);
+> +		iommu_free_table(tbl, "");
+>  		return rc;
+>  	}
+> =20
+> @@ -2455,7 +2453,7 @@ static void pnv_ioda2_take_ownership(struct iommu_t=
+able_group *table_group)
+>  	pnv_pci_ioda2_unset_window(&pe->table_group, 0);
+>  	if (pe->pbus)
+>  		pnv_ioda_setup_bus_dma(pe, pe->pbus, false);
+> -	pnv_ioda2_table_free(tbl);
+> +	iommu_free_table(tbl, "pnv");
+>  }
+> =20
+>  static void pnv_ioda2_release_ownership(struct iommu_table_group *table_=
+group)
+> diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iomm=
+u_spapr_tce.c
+> index 59b3f62a2d64..ffab01874a22 100644
+> --- a/drivers/vfio/vfio_iommu_spapr_tce.c
+> +++ b/drivers/vfio/vfio_iommu_spapr_tce.c
+> @@ -677,7 +677,7 @@ static void tce_iommu_free_table(struct tce_container=
+ *container,
+>  	unsigned long pages =3D tbl->it_allocated_size >> PAGE_SHIFT;
+> =20
+>  	tce_iommu_userspace_view_free(tbl, container->mm);
+> -	tbl->it_ops->free(tbl);
+> +	iommu_free_table(tbl, "");
+>  	decrement_locked_vm(container->mm, pages);
+>  }
+> =20
 
-This is the tricky part. Memory hotplug APIs don't seem well suited for
-what we're trying to do... Anyway, do a bit of grepping around for
-definitions of some of these calls, and how other code uses them. For
-example, remove_memory comment says caller must hold 
-lock_device_hotplug() first, so we're missing that at least. I think
-that's also needed over the memblock state changes.
+--=20
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
 
-We don't need an RCU grace period there AFAICT, because offline_pages
-should have us covered.
+--UBYeLQbK9sqbzZRV
+Content-Type: application/pgp-signature; name="signature.asc"
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
 
-I haven't looked at memory hotplug enough to know why we're open-coding
-the memblock stuff there. It would be nice to just be able to call
-memblock_remove() like the pseries hotplug code does.
+iQIcBAEBCAAGBQJYrleaAAoJEGw4ysog2bOS1U0QAMzCq9ygH6NblVxRJ6hQSVcg
+6Po4iRORaWHKSSkMXr3B64Zzv3GAUy3GXjCzdt2RXXcXlSbPBesAXIcD+nkCIrnA
+C2S940+aMOnIVqBmMsOnZRHjAKqytSSCAkvOJTB20tGWaTbdeP28OtL7Bi+hlcCU
+OY8WE7sVSBuvrSjUZk+1Va0Aop+328SzZvdLgMumVxw6MWtrQqTI+tOzfjUqCQgM
+UQszT8FV94I96Wj+1urCkYmCrUPRswfImn8/m7rokGPfe/57AdnxOVMXkg8pT3pY
+MiYajRRTIICrXUxJCwtgWGoiONj+gHXvUp85eg80/+TroGWeOnSItKcMV7lNKehq
+eoLZJdyGhARrehp0G1PSWtKKE4ezUHRKKj8NzavQdjB5dpvfGJTYcYsgdjL9Owp4
+V/mrh6hhFXLhOrNrT6d74bUxljavEhFaieA/jVOl4DENd0vX1sCbwpKKI42lBmiV
+RtOXgYxl4bnU+8wTj06sVpnk9rF7Cnu5nQENcmLWs3p3sNHJ9GfEWLZgnJeyZP2Z
+mJorN9vyygYwAtfot6Fv7d5NoLQJfWEBfoSpz/+kSJ+inFVc8or30AoLdYv9b1mo
+bY/d1hXVD7/abYovLpIVTEwG8wrOiVFv1TIkNRP/1u8JbYtH0InZ4jOaSKQJDH28
+eYs+7uMaXLrwqoOJaZML
+=3g+D
+-----END PGP SIGNATURE-----
 
-I *think* it is because hot remove mostly comes from when we know about
-an online region of memory and we want to take it down. In this case we
-also are trying to discover if those addresses are covered by online
-memory. Still, I wonder if there are better memblock APIs to do this
-with? Balbir may have a better idea of that?
-
-
-> +/* XXX FIXME DEBUG CRAP */
-> +machine_device_initcall(pseries, memtrace_init);
-
-Can remove that, I think.
-
-Thanks,
-Nick
+--UBYeLQbK9sqbzZRV--
