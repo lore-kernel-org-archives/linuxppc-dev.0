@@ -1,24 +1,22 @@
-Return-Path: <rashmicy@gmail.com>
-Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
- [IPv6:2607:f8b0:400e:c05::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <paulus@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vTLq72r9GzDq8M
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Feb 2017 15:29:23 +1100 (AEDT)
-Received: by mail-pg0-x242.google.com with SMTP id 1so3108183pgz.2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Feb 2017 20:29:23 -0800 (PST)
-Subject: Re: [RFC] Remove memory from nodes for memtrace.
-To: Nicholas Piggin <npiggin@gmail.com>, Rashmica Gupta <rashmica.g@gmail.com>
-References: <20170222213910.5628-1-rashmica.g@gmail.com>
- <20170223135635.5321dcc5@roar.ozlabs.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, bsingharora@gmail.com, dllehr@us.ibm.com,
- mpe@ellerman.id.au
-From: RashmicaGupta <rashmicy@gmail.com>
-Message-ID: <159fc026-77a1-49a6-4648-3c4e8de1c1d4@gmail.com>
-Date: Thu, 23 Feb 2017 15:29:17 +1100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vTM865PRYzDq8M
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Feb 2017 15:44:06 +1100 (AEDT)
+Date: Thu, 23 Feb 2017 15:44:02 +1100
+From: Paul Mackerras <paulus@ozlabs.org>
+To: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
+Cc: linuxppc-dev@ozlabs.org, benh@kernel.crashing.org, mpe@ellerman.id.au,
+ ruscur@russell.cc, sam.bobroff@au1.ibm.com
+Subject: Re: [RFC NO-MERGE 2/2] arch/powerpc/CAS: Update to new
+ option-vector-5 format for CAS
+Message-ID: <20170223044402.GB6330@fergus.ozlabs.ibm.com>
+References: <1487657171-17260-1-git-send-email-sjitindarsingh@gmail.com>
+ <1487657171-17260-2-git-send-email-sjitindarsingh@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <20170223135635.5321dcc5@roar.ozlabs.ibm.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1487657171-17260-2-git-send-email-sjitindarsingh@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,212 +26,310 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Tue, Feb 21, 2017 at 05:06:11PM +1100, Suraj Jitindar Singh wrote:
+> The CAS process has been updated to change how the host to guest
 
+Once again, explain CAS; perhaps "The ibm,client-architecture-support
+(CAS) negotiation process has been updated for POWER9 to ..."
 
-On 23/02/17 14:56, Nicholas Piggin wrote:
-> On Thu, 23 Feb 2017 08:39:10 +1100
-> Rashmica Gupta <rashmica.g@gmail.com> wrote:
->
->>   Some powerpc hardware features may want to gain access to a
->>   chunk of undisturbed real memory.  This update provides a means to unplug
->>   said memory from the kernel with a set of sysfs calls.  By writing an integer
->>   containing  the size of memory to be unplugged into
->>   /sys/kernel/debug/powerpc/memtrace/enable, the code will remove that much
->>   memory from the end of each available chip's memory space. In addition, the
->>   means to read out the contents of the unplugged memory is also provided by
->>   reading out the /sys/kernel/debug/powerpc/memtrace/<chip-id>/dump file.
->>
->> Signed-off-by: Rashmica Gupta <rashmica.g@gmail.com>
-> Thanks for picking this up. A few suggestions.
->
->> ---
->> Written by Douglas Lehr <dllehr@us.ibm.com>.
-> You could mention original author in the changelog. I thought Anton
-> wrote some of it too?
-Yup he did. Will do that.
->
->>   arch/powerpc/mm/hash_native_64.c          |  39 +++-
->>   arch/powerpc/platforms/powernv/Makefile   |   1 +
->>   arch/powerpc/platforms/powernv/memtrace.c | 285 ++++++++++++++++++++++++++++++
->>   3 files changed, 321 insertions(+), 4 deletions(-)
->>   create mode 100644 arch/powerpc/platforms/powernv/memtrace.c
->>
->> diff --git a/arch/powerpc/mm/hash_native_64.c b/arch/powerpc/mm/hash_native_64.c
->> index cc33260..44cc6ce 100644
->> --- a/arch/powerpc/mm/hash_native_64.c
->> +++ b/arch/powerpc/mm/hash_native_64.c
->> @@ -3,7 +3,7 @@
->>    *
->>    * SMP scalability work:
->>    *    Copyright (C) 2001 Anton Blanchard <anton@au.ibm.com>, IBM
->> - *
->> + *
->>    * This program is free software; you can redistribute it and/or
->>    * modify it under the terms of the GNU General Public License
->>    * as published by the Free Software Foundation; either version
->> @@ -181,7 +181,7 @@ static inline void native_lock_hpte(struct hash_pte *hptep)
->>   	while (1) {
->>   		if (!test_and_set_bit_lock(HPTE_LOCK_BIT, word))
->>   			break;
->> -		while(test_bit(HPTE_LOCK_BIT, word))
->> +		while (test_bit(HPTE_LOCK_BIT, word))
->>   			cpu_relax();
->>   	}
->>   }
->> @@ -208,10 +208,10 @@ static long native_hpte_insert(unsigned long hpte_group, unsigned long vpn,
->>   	}
->>   
->>   	for (i = 0; i < HPTES_PER_GROUP; i++) {
->> -		if (! (be64_to_cpu(hptep->v) & HPTE_V_VALID)) {
->> +		if (!(be64_to_cpu(hptep->v) & HPTE_V_VALID)) {
->>   			/* retry with lock held */
->>   			native_lock_hpte(hptep);
->> -			if (! (be64_to_cpu(hptep->v) & HPTE_V_VALID))
->> +			if (!(be64_to_cpu(hptep->v) & HPTE_V_VALID))
->>   				break;
->>   			native_unlock_hpte(hptep);
-> Suggest dropping the whitespace cleanups.
->
->
->>   		}
->> @@ -407,6 +407,36 @@ static void native_hpte_updateboltedpp(unsigned long newpp, unsigned long ea,
->>   	tlbie(vpn, psize, psize, ssize, 0);
->>   }
->>   
->> +/*
->> + * Remove a bolted kernel entry. Memory hotplug uses this.
->> + *
->> + * No need to lock here because we should be the only user.
->> + */
->> +static int native_hpte_removebolted(unsigned long ea, int psize, int ssize)
->> +{
->> +	unsigned long vpn;
->> +	unsigned long vsid;
->> +	long slot;
->> +	struct hash_pte *hptep;
->> +
->> +	vsid = get_kernel_vsid(ea, ssize);
->> +	vpn = hpt_vpn(ea, vsid, ssize);
->> +
->> +	slot = native_hpte_find(vpn, psize, ssize);
->> +	if (slot == -1)
->> +		return -ENOENT;
->> +
->> +	hptep = htab_address + slot;
->> +
->> +	/* Invalidate the hpte */
->> +	hptep->v = 0;
->> +
->> +	/* Invalidate the TLB */
->> +	tlbie(vpn, psize, psize, ssize, 0);
->> +	return 0;
->> +}
->> +
->> +
->>   static void native_hpte_invalidate(unsigned long slot, unsigned long vpn,
->>   				   int bpsize, int apsize, int ssize, int local)
->>   {
->> @@ -722,6 +752,7 @@ void __init hpte_init_native(void)
->>   	mmu_hash_ops.hpte_invalidate	= native_hpte_invalidate;
->>   	mmu_hash_ops.hpte_updatepp	= native_hpte_updatepp;
->>   	mmu_hash_ops.hpte_updateboltedpp = native_hpte_updateboltedpp;
->> +	mmu_hash_ops.hpte_removebolted = native_hpte_removebolted;
-> I would submit this as a separate patch. Consider if it should be made
-> dependent on any CONFIG options (e.g., MEMORY_HOTREMOVE), and Aneesh had
-> been looking at this too so he could help review it.
->
->>   	mmu_hash_ops.hpte_insert	= native_hpte_insert;
->>   	mmu_hash_ops.hpte_remove	= native_hpte_remove;
->>   	mmu_hash_ops.hpte_clear_all	= native_hpte_clear;
->> diff --git a/arch/powerpc/platforms/powernv/Makefile b/arch/powerpc/platforms/powernv/Makefile
->> index b5d98cb..2026661 100644
->> --- a/arch/powerpc/platforms/powernv/Makefile
->> +++ b/arch/powerpc/platforms/powernv/Makefile
->> @@ -11,4 +11,5 @@ obj-$(CONFIG_EEH)	+= eeh-powernv.o
->>   obj-$(CONFIG_PPC_SCOM)	+= opal-xscom.o
->>   obj-$(CONFIG_MEMORY_FAILURE)	+= opal-memory-errors.o
->>   obj-$(CONFIG_TRACEPOINTS)	+= opal-tracepoints.o
->> +obj-$(CONFIG_MEMORY_HOTREMOVE)         += memtrace.o
->>   obj-$(CONFIG_OPAL_PRD)	+= opal-prd.o
-> I would make a new Kconfig option for it, for the time being.
->
->
->> +static int check_memblock_online(struct memory_block *mem, void *arg)
->> +{
->> +	if (mem->state != MEM_ONLINE)
->> +		return -1;
->> +
->> +	return 0;
->> +}
->> +
->> +static int change_memblock_state(struct memory_block *mem, void *arg)
->> +{
->> +	unsigned long state = (unsigned long)arg;
->> +
->> +	mem->state = state;
->> +	return 0;
->> +}
->> +
->> +static bool memtrace_offline_pages(u32 nid, u64 start_pfn, u64 nr_pages)
->> +{
->> +	u64 end_pfn = start_pfn + nr_pages - 1;
->> +
->> +	if (walk_memory_range(start_pfn, end_pfn, NULL,
->> +	    check_memblock_online))
->> +		return false;
->> +
->> +	walk_memory_range(start_pfn, end_pfn, (void *)MEM_GOING_OFFLINE,
->> +			  change_memblock_state);
->> +
->> +	if (offline_pages(start_pfn, nr_pages)) {
->> +		walk_memory_range(start_pfn, end_pfn, (void *)MEM_ONLINE,
->> +				  change_memblock_state);
->> +		return false;
->> +	}
->> +
->> +	walk_memory_range(start_pfn, end_pfn, (void *)MEM_OFFLINE,
->> +			  change_memblock_state);
->> +
->> +	/* RCU grace period? */
->> +	flush_memory_region((u64)__va(start_pfn << PAGE_SHIFT), nr_pages << PAGE_SHIFT);
->> +
->> +	remove_memory(nid, start_pfn << PAGE_SHIFT, nr_pages << PAGE_SHIFT);
->> +
->> +	return true;
->> +}
-> This is the tricky part. Memory hotplug APIs don't seem well suited for
-> what we're trying to do... Anyway, do a bit of grepping around for
-> definitions of some of these calls, and how other code uses them. For
-> example, remove_memory comment says caller must hold
-> lock_device_hotplug() first, so we're missing that at least. I think
-> that's also needed over the memblock state changes.
+> negotiation is done for the new hash/radix mmu as well as the nest mmu,
+> process tables and guest translation shootdown (GTSE).
+> 
+> The host tells the guest which options it supports in
+> ibm,arch-vec-5-platform-support. The guest then chooses a subset of these
+> to request in the CAS call and these are agreed to in the
+> ibm,architecture-vec-5 property of the chosen node.
+> 
+> Thus we read ibm,arch-vec-5-platform-support and make our selection before
+> calling CAS. We then parse the ibm,architecture-vec-5 property of the
+> chosen node to check whether we should run as hash or radix.
+> 
+> Signed-off-by: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
+> ---
+>  arch/powerpc/include/asm/prom.h | 16 ++++---
+>  arch/powerpc/kernel/prom_init.c | 99 +++++++++++++++++++++++++++++++++++++++--
+>  arch/powerpc/mm/init_64.c       | 31 ++++++++++---
+>  3 files changed, 130 insertions(+), 16 deletions(-)
+> 
+> diff --git a/arch/powerpc/include/asm/prom.h b/arch/powerpc/include/asm/prom.h
+> index 8af2546..19d2e84 100644
+> --- a/arch/powerpc/include/asm/prom.h
+> +++ b/arch/powerpc/include/asm/prom.h
+> @@ -158,12 +158,16 @@ struct of_drconf_cell {
+>  #define OV5_PFO_HW_ENCR		0x1120	/* PFO Encryption Accelerator */
+>  #define OV5_SUB_PROCESSORS	0x1501	/* 1,2,or 4 Sub-Processors supported */
+>  #define OV5_XIVE_EXPLOIT	0x1701	/* XIVE exploitation supported */
+> -#define OV5_MMU_RADIX_300	0x1880	/* ISA v3.00 radix MMU supported */
+> -#define OV5_MMU_HASH_300	0x1840	/* ISA v3.00 hash MMU supported */
+> -#define OV5_MMU_SEGM_RADIX	0x1820	/* radix mode (no segmentation) */
+> -#define OV5_MMU_PROC_TBL	0x1810	/* hcall selects SLB or proc table */
+> -#define OV5_MMU_SLB		0x1800	/* always use SLB */
+> -#define OV5_MMU_GTSE		0x1808	/* Guest translation shootdown */
+> +/* MMU Base Architecture */
+> +#define OV5_MMU_HASH_300	0x1800	/* ISA v3.00 Hash MMU Only */
 
-Yup, realised I missed the lock_device_hotplug()
-that right after I sent the email...
+This is actually legacy HPT as well as ISA v3.00 HPT.
 
->
-> We don't need an RCU grace period there AFAICT, because offline_pages
-> should have us covered.
->
->
-> I haven't looked at memory hotplug enough to know why we're open-coding
-> the memblock stuff there. It would be nice to just be able to call
-> memblock_remove() like the pseries hotplug code does.
->
-> I *think* it is because hot remove mostly comes from when we know about
-> an online region of memory and we want to take it down. In this case we
-> also are trying to discover if those addresses are covered by online
-> memory. Still, I wonder if there are better memblock APIs to do this
-> with? Balbir may have a better idea of that?
->
+> +#define OV5_MMU_RADIX_300	0x1840	/* ISA v3.00 Radix MMU Only */
+> +#define OV5_MMU_EITHER_300	0x1880	/* ISA v3.00 Hash or Radix Supported */
 
-Gotcha. Will look into that and other ways to do this.
+I wonder if it would work better to have a define for the 2-bit field
+with subsidiary definitions for the field values.  Something like
 
-  
+#define OV5_MMU_SELECTION	0x18c0
+#define  OV5_MMU_HPT			0x00
+#define  OV5_MMU_RADIX			0x40
+#define  OV5_MMU_EITHER			0x80
 
->> +/* XXX FIXME DEBUG CRAP */
->> +machine_device_initcall(pseries, memtrace_init);
-> Can remove that, I think.
->
-> Thanks,
-> Nick
+> +#define OV5_NMMU		0x1820	/* Nest MMU Available */
+> +/* Hash Table Extensions */
+> +#define OV5_HASH_SEG_TBL	0x1980	/* In Memory Segment Tables Available */
+> +#define OV5_HASH_GTSE		0x1940	/* Guest Translation Shoot Down Avail */
+> +/* Radix Table Extensions */
+> +#define OV5_RADIX_GTSE		0x1A40	/* Guest Translation Shoot Down Avail */
+>  
+>  /* Option Vector 6: IBM PAPR hints */
+>  #define OV6_LINUX		0x02	/* Linux is our OS */
+> diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
+> index 37b5a29..8272104 100644
+> --- a/arch/powerpc/kernel/prom_init.c
+> +++ b/arch/powerpc/kernel/prom_init.c
+> @@ -168,6 +168,8 @@ static unsigned long __initdata prom_tce_alloc_start;
+>  static unsigned long __initdata prom_tce_alloc_end;
+>  #endif
+>  
+> +static bool __initdata prom_radix_disable;
+> +
+>  /* Platforms codes are now obsolete in the kernel. Now only used within this
+>   * file and ultimately gone too. Feel free to change them if you need, they
+>   * are not shared with anything outside of this file anymore
+> @@ -626,6 +628,12 @@ static void __init early_cmdline_parse(void)
+>  		prom_memory_limit = ALIGN(prom_memory_limit, 0x1000000);
+>  #endif
+>  	}
+> +
+> +	opt = strstr(prom_cmd_line, "disable_radix");
+> +	if (opt) {
+> +		prom_debug("Radix disabled from cmdline\n");
+> +		prom_radix_disable = true;
+> +	}
+>  }
+>  
+>  #if defined(CONFIG_PPC_PSERIES) || defined(CONFIG_PPC_POWERNV)
+> @@ -693,8 +701,10 @@ struct option_vector5 {
+>  	__be16 reserved3;
+>  	u8 subprocessors;
+>  	u8 byte22;
+> -	u8 intarch;
+> +	u8 xive;
+>  	u8 mmu;
+> +	u8 hash_ext;
+> +	u8 radix_ext;
+>  } __packed;
+>  
+>  struct option_vector6 {
+> @@ -849,9 +859,10 @@ struct ibm_arch_vec __cacheline_aligned ibm_architecture_vec = {
+>  		.reserved2 = 0,
+>  		.reserved3 = 0,
+>  		.subprocessors = 1,
+> -		.intarch = 0,
+> -		.mmu = OV5_FEAT(OV5_MMU_RADIX_300) | OV5_FEAT(OV5_MMU_HASH_300) |
+> -			OV5_FEAT(OV5_MMU_PROC_TBL) | OV5_FEAT(OV5_MMU_GTSE),
+> +		.xive = 0,
+> +		.mmu = 0,
+> +		.hash_ext = 0,
+> +		.radix_ext = 0,
+>  	},
+>  
+>  	/* option vector 6: IBM PAPR hints */
+> @@ -990,6 +1001,83 @@ static int __init prom_count_smt_threads(void)
+>  
+>  }
+>  
+> +static void __init prom_check_platform_support(void)
+
+This function gets quite deeply nested.  Can you split out some of it
+into a subroutine to make it look cleaner?
+
+> +{
+> +	int prop_len, i;
+> +	bool radix_gtse = false, radix_mmu = false, hash_mmu = false;
+> +
+> +	prop_len = prom_getproplen(prom.chosen,
+> +				   "ibm,arch-vec-5-platform-support");
+> +	if (prop_len > 1) {
+> +		u8 val[prop_len];
+> +		prom_debug("Found ibm,arch-vec-5-platform-support, len: %d\n",
+> +			   prop_len);
+> +		prom_getprop(prom.chosen, "ibm,arch-vec-5-platform-support",
+> +			     &val, sizeof(val));
+> +		for (i = 0; i < prop_len; i += 2) {
+> +			u8 b1 = val[i], b2 = val[i+1];
+> +			prom_debug("%d: nbyte = %x, val = %x\n", i/2, b1, b2);
+> +			switch (b1) {
+> +			case OV5_INDX(OV5_XIVE_EXPLOIT):
+> +				/* Unimplemented - Ignore */
+> +				break;
+> +			case OV5_INDX(OV5_MMU_EITHER_300):
+> +				if (b2 == OV5_FEAT(OV5_MMU_EITHER_300)) {
+
+Here you're trying to check what's in the top 2 bits, so you should
+mask b2 before doing the comparisons, in case other bits (such as the
+nest MMU bit) are set.  Future versions of PAPR might define meanings
+for some of other bits, and you don't want all these comparisons to
+stop working then.
+
+> +					/* Either Available */
+> +					prom_debug("MMU - either supported\n");
+> +					radix_mmu = !prom_radix_disable;
+> +					hash_mmu = true;
+> +				} else if (b2 == OV5_FEAT(OV5_MMU_RADIX_300)) {
+> +					/* Radix Only */
+> +					prom_debug("MMU - radix only\n");
+> +					if (prom_radix_disable) {
+> +						prom_printf("WARNING: Ignoring "
+> +							    "cmdline option \""
+> +							    "disable_radix\"\n"
+
+You're allowed to have long lines for string constants; that's better
+than splitting them up like this, because splitting them makes it much
+harder to grep for the string.
+
+> +							    );
+> +					}
+> +					radix_mmu = true;
+> +				} else if (b2 == OV5_FEAT(OV5_MMU_HASH_300)) {
+> +					/* Hash Only */
+> +					prom_debug("MMU - hash only\n");
+> +					hash_mmu = true;
+> +				}
+> +				break;
+> +			case OV5_INDX(OV5_HASH_SEG_TBL):
+> +				/* Unimplemented - Ignore */
+> +				break;
+> +			case OV5_INDX(OV5_RADIX_GTSE):
+> +				if (val[i+1] & OV5_FEAT(OV5_RADIX_GTSE)) {
+
+Why val[i+1] not b2?
+
+> +					prom_debug("GTSE supported\n");
+> +					radix_gtse = true;
+> +				}
+> +				break;
+> +			default:
+> +				prom_printf("WARNING: Invalid byte index <%d>"
+> +					    " in ibm,arch-vec-5-platform-"
+> +					    "support\n", val[i]);
+
+I don't think a warning here is appropriate; there could legitimately
+be other values here in future.
+
+> +				break;
+> +			}
+> +		}
+> +	} else {
+> +		prom_printf("WARNING: Invalid len <%d> of ibm,arch-vec-5"
+> +			    "-platform-support\n", prop_len);
+
+This will be printed on all current machines, won't it?  I don't think
+a warning is appropriate if the property just doesn't exist.
+
+> +	}
+> +
+> +	if (radix_mmu && radix_gtse) {
+> +		/* Radix preferred - but we require GTSE for now */
+> +		prom_debug("Asking for radix with GTSE\n");
+> +		ibm_architecture_vec.vec5.mmu = OV5_FEAT(OV5_MMU_RADIX_300);
+> +		ibm_architecture_vec.vec5.radix_ext = OV5_FEAT(OV5_RADIX_GTSE);
+> +	} else if (hash_mmu) {
+> +		/* Default to hash mmu (if we can) */
+> +		prom_debug("Asking for hash\n");
+> +		ibm_architecture_vec.vec5.mmu = OV5_FEAT(OV5_MMU_HASH_300);
+> +	} else {
+> +		/* Unsupported Configuration */
+> +		prom_printf("WARNING: unsupported host platform MMU config\n");
+
+Won't we get this on all current machines, i.e. if the property
+doesn't exist?  We shouldn't print warnings just because we're running
+on an old machine (think about a POWER6 partition under PowerVM).
+
+> +	}
+> +}
+>  
+>  static void __init prom_send_capabilities(void)
+>  {
+> @@ -997,6 +1085,9 @@ static void __init prom_send_capabilities(void)
+>  	prom_arg_t ret;
+>  	u32 cores;
+>  
+> +	/* Check ibm,arch-vec-5-platform-support and fixup vec5 if required */
+> +	prom_check_platform_support();
+> +
+>  	root = call_prom("open", 1, 1, ADDR("/"));
+>  	if (root != 0) {
+>  		/* We need to tell the FW about the number of cores we support.
+> diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
+> index 6aa3b76..17262da 100644
+> --- a/arch/powerpc/mm/init_64.c
+> +++ b/arch/powerpc/mm/init_64.c
+> @@ -359,15 +359,34 @@ static void early_check_vec5(void)
+>  
+>  	root = of_get_flat_dt_root();
+>  	chosen = of_get_flat_dt_subnode_by_name(root, "chosen");
+> -	if (chosen == -FDT_ERR_NOTFOUND)
+> +	if (chosen == -FDT_ERR_NOTFOUND) {
+> +		cur_cpu_spec->mmu_features &= ~MMU_FTR_TYPE_RADIX;
+>  		return;
+> +	}
+>  	vec5 = of_get_flat_dt_prop(chosen, "ibm,architecture-vec-5", &size);
+> -	if (!vec5)
+> +	if (!vec5) {
+> +		cur_cpu_spec->mmu_features &= ~MMU_FTR_TYPE_RADIX;
+>  		return;
+> -	if (size <= OV5_INDX(OV5_MMU_RADIX_300) ||
+> -	    !(vec5[OV5_INDX(OV5_MMU_RADIX_300)] & OV5_FEAT(OV5_MMU_RADIX_300)))
+> -		/* Hypervisor doesn't support radix */
+> +	}
+> +	if (size <= OV5_INDX(OV5_MMU_RADIX_300)) {
+>  		cur_cpu_spec->mmu_features &= ~MMU_FTR_TYPE_RADIX;
+> +		return;
+> +	}
+> +
+> +	/* Check for supported configuration */
+> +	if (vec5[OV5_INDX(OV5_MMU_EITHER_300)] == OV5_FEAT(OV5_MMU_RADIX_300)) {
+
+Once again you need to look at just the top 2 bits, not the whole byte.
+
+> +		/* Hypervisor only supports radix - check enabled && GTSE */
+> +		WARN(!early_radix_enabled() ||
+
+I would not be at all surprised if a WARN at this early stage won't be
+handled properly and will just lead to a silent boot hang with no
+output.  Just do a printk or pr_warn.
+
+> +		     !(vec5[OV5_INDX(OV5_RADIX_GTSE)] &
+> +		       OV5_FEAT(OV5_RADIX_GTSE)),
+> +		     "WARNING: Unsupported MMU configuration in vec5\n");
+> +		/* Do radix anyway - the hypervisor said we had to */
+> +		cur_cpu_spec->mmu_features |= MMU_FTR_TYPE_RADIX;
+> +	} else if (vec5[OV5_INDX(OV5_MMU_EITHER_300)] ==
+> +		   OV5_FEAT(OV5_MMU_HASH_300)) {
+> +		/* Hypervisor only supports hash - disable radix */
+> +		cur_cpu_spec->mmu_features &= ~MMU_FTR_TYPE_RADIX;
+> +	}
+>  }
+>  
+>  void __init mmu_early_init_devtree(void)
+> @@ -383,7 +402,7 @@ void __init mmu_early_init_devtree(void)
+>  	 * even though the ibm,architecture-vec-5 property created by
+>  	 * skiboot doesn't have the necessary bits set.
+>  	 */
+> -	if (early_radix_enabled() && !(mfmsr() & MSR_HV))
+> +	if (!(mfmsr() & MSR_HV))
+>  		early_check_vec5();
+>  
+>  	if (early_radix_enabled())
+> -- 
+> 2.5.5
+
+Paul.
