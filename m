@@ -1,23 +1,52 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Return-Path: <benh@au1.ibm.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vTqrp5pFfzDqKy
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Feb 2017 10:17:30 +1100 (AEDT)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vTr1s5SjLzDqC0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Feb 2017 10:25:21 +1100 (AEDT)
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3vTqrn4516z9s7N
- for <linuxppc-dev@ozlabs.org>; Fri, 24 Feb 2017 10:17:29 +1100 (AEDT)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+ by ozlabs.org (Postfix) with ESMTPS id 3vTr1s1FJyz9rvt
+ for <linuxppc-dev@ozlabs.org>; Fri, 24 Feb 2017 10:25:20 +1100 (AEDT)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v1NNORmm121028
+ for <linuxppc-dev@ozlabs.org>; Thu, 23 Feb 2017 18:25:18 -0500
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 28t39t7bxj-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Thu, 23 Feb 2017 18:25:18 -0500
+Received: from localhost
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <benh@au1.ibm.com>;
+ Fri, 24 Feb 2017 09:25:15 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id E4AA52BB0055
+ for <linuxppc-dev@ozlabs.org>; Fri, 24 Feb 2017 10:25:13 +1100 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v1NNP5qY48627872
+ for <linuxppc-dev@ozlabs.org>; Fri, 24 Feb 2017 10:25:13 +1100
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v1NNOfMH003921
+ for <linuxppc-dev@ozlabs.org>; Fri, 24 Feb 2017 10:24:41 +1100
+Subject: Re: [PATCH 11/12] drm/ast: Fix test for VGA enabled
+From: Benjamin Herrenschmidt <benh@au1.ibm.com>
+Reply-To: benh@au1.ibm.com
 To: dri-devel@lists.freedesktop.org
-Cc: "Y . C . Chen" <yc_chen@aspeedtech.com>, airlied@redhat.com,
- eich@suse.come, linuxppc-dev@ozlabs.org
-Subject: [PATCH 06/12] drm/ast: Base support for AST2500
-Date: Fri, 24 Feb 2017 09:53:51 +1100
-Message-Id: <20170223225357.9572-6-benh@kernel.crashing.org>
-In-Reply-To: <20170223225357.9572-1-benh@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, airlied@redhat.com, "Y . C . Chen"
+ <yc_chen@aspeedtech.com>
+Date: Fri, 24 Feb 2017 10:24:02 +1100
+In-Reply-To: <20170223225357.9572-11-benh@kernel.crashing.org>
 References: <20170223225357.9572-1-benh@kernel.crashing.org>
+ <20170223225357.9572-11-benh@kernel.crashing.org>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Message-Id: <1487892242.23576.248.camel@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,322 +56,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: "Y.C. Chen" <yc_chen@aspeedtech.com>
+On Fri, 2017-02-24 at 09:53 +1100, Benjamin Herrenschmidt wrote:
+> From: "Y.C. Chen" <yc_chen@aspeedtech.com>
+> 
+> (Get better description from Aspeed)
 
-Add detection and mode setting updates for AST2500 generation chip,
-code originally from Aspeed and slightly reworked for coding style
-mostly by Ben. This doesn't contain the BMC DRAM POST code which
-is in a separate patch.
+And this should have been:
 
-Signed-off-by: Y.C. Chen <yc_chen@aspeedtech.com>
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
+<<
+The test to see if VGA was already enabled is doing an unnecessary
+second test from a register that may or may not have been initialized
+to a valid value. Remove it.
+>>
 
-v2. Add 800Mhz default mclk for AST2500
----
- drivers/gpu/drm/ast/ast_drv.h    |  2 ++
- drivers/gpu/drm/ast/ast_main.c   | 32 +++++++++++++++++++---
- drivers/gpu/drm/ast/ast_mode.c   | 30 ++++++++++++++++-----
- drivers/gpu/drm/ast/ast_tables.h | 58 +++++++++++++++++++++++++++++++++-------
- 4 files changed, 103 insertions(+), 19 deletions(-)
+If you prefer you can find the whole thing (already fixed up)
+at git@github.com:ozbenh/linux-ast.git
 
-diff --git a/drivers/gpu/drm/ast/ast_drv.h b/drivers/gpu/drm/ast/ast_drv.h
-index 3fd9d6e..d1c1d53 100644
---- a/drivers/gpu/drm/ast/ast_drv.h
-+++ b/drivers/gpu/drm/ast/ast_drv.h
-@@ -64,6 +64,7 @@ enum ast_chip {
- 	AST2150,
- 	AST2300,
- 	AST2400,
-+	AST2500,
- 	AST1180,
- };
- 
-@@ -80,6 +81,7 @@ enum ast_tx_chip {
- #define AST_DRAM_1Gx32   3
- #define AST_DRAM_2Gx16   6
- #define AST_DRAM_4Gx16   7
-+#define AST_DRAM_8Gx16   8
- 
- struct ast_fbdev;
- 
-diff --git a/drivers/gpu/drm/ast/ast_main.c b/drivers/gpu/drm/ast/ast_main.c
-index d194af3..f19669f 100644
---- a/drivers/gpu/drm/ast/ast_main.c
-+++ b/drivers/gpu/drm/ast/ast_main.c
-@@ -141,7 +141,10 @@ static int ast_detect_chip(struct drm_device *dev, bool *need_post)
- 		ast->chip = AST1100;
- 		DRM_INFO("AST 1180 detected\n");
- 	} else {
--		if (dev->pdev->revision >= 0x30) {
-+		if (dev->pdev->revision >= 0x40) {
-+			ast->chip = AST2500;
-+			DRM_INFO("AST 2500 detected\n");
-+		} else if (dev->pdev->revision >= 0x30) {
- 			ast->chip = AST2400;
- 			DRM_INFO("AST 2400 detected\n");
- 		} else if (dev->pdev->revision >= 0x20) {
-@@ -195,6 +198,9 @@ static int ast_detect_chip(struct drm_device *dev, bool *need_post)
- 			if (ast->chip == AST2400 &&
- 			    (scu_rev & 0x300) == 0x100) /* ast1400 */
- 				ast->support_wide_screen = true;
-+			if (ast->chip == AST2500 &&
-+			    scu_rev == 0x100)           /* ast2510 */
-+				ast->support_wide_screen = true;
- 		}
- 		break;
- 	}
-@@ -289,7 +295,10 @@ static int ast_get_dram_info(struct drm_device *dev)
- 	default:
- 		ast->dram_bus_width = 16;
- 		ast->dram_type = AST_DRAM_1Gx16;
--		ast->mclk = 396;
-+		if (ast->chip == AST2500)
-+			ast->mclk = 800;
-+		else
-+			ast->mclk = 396;
- 		return 0;
- 	}
- 
-@@ -298,7 +307,23 @@ static int ast_get_dram_info(struct drm_device *dev)
- 	else
- 		ast->dram_bus_width = 32;
- 
--	if (ast->chip == AST2300 || ast->chip == AST2400) {
-+	if (ast->chip == AST2500) {
-+		switch (mcr_cfg & 0x03) {
-+		case 0:
-+			ast->dram_type = AST_DRAM_1Gx16;
-+			break;
-+		default:
-+		case 1:
-+			ast->dram_type = AST_DRAM_2Gx16;
-+			break;
-+		case 2:
-+			ast->dram_type = AST_DRAM_4Gx16;
-+			break;
-+		case 3:
-+			ast->dram_type = AST_DRAM_8Gx16;
-+			break;
-+		}
-+	} else if (ast->chip == AST2300 || ast->chip == AST2400) {
- 		switch (mcr_cfg & 0x03) {
- 		case 0:
- 			ast->dram_type = AST_DRAM_512Mx16;
-@@ -521,6 +546,7 @@ int ast_driver_load(struct drm_device *dev, unsigned long flags)
- 	    ast->chip == AST2200 ||
- 	    ast->chip == AST2300 ||
- 	    ast->chip == AST2400 ||
-+	    ast->chip == AST2500 ||
- 	    ast->chip == AST1180) {
- 		dev->mode_config.max_width = 1920;
- 		dev->mode_config.max_height = 2048;
-diff --git a/drivers/gpu/drm/ast/ast_mode.c b/drivers/gpu/drm/ast/ast_mode.c
-index 1ff596e..e4db1c72 100644
---- a/drivers/gpu/drm/ast/ast_mode.c
-+++ b/drivers/gpu/drm/ast/ast_mode.c
-@@ -271,7 +271,11 @@ static void ast_set_crtc_reg(struct drm_crtc *crtc, struct drm_display_mode *mod
- {
- 	struct ast_private *ast = crtc->dev->dev_private;
- 	u8 jreg05 = 0, jreg07 = 0, jreg09 = 0, jregAC = 0, jregAD = 0, jregAE = 0;
--	u16 temp;
-+	u16 temp, precache = 0;
-+
-+	if ((ast->chip == AST2500) &&
-+	    (vbios_mode->enh_table->flags & AST2500PreCatchCRT))
-+		precache = 40;
- 
- 	ast_set_index_reg_mask(ast, AST_IO_CRTC_PORT, 0x11, 0x7f, 0x00);
- 
-@@ -297,12 +301,12 @@ static void ast_set_crtc_reg(struct drm_crtc *crtc, struct drm_display_mode *mod
- 		jregAD |= 0x01;  /* HBE D[5] */
- 	ast_set_index_reg_mask(ast, AST_IO_CRTC_PORT, 0x03, 0xE0, (temp & 0x1f));
- 
--	temp = (mode->crtc_hsync_start >> 3) - 1;
-+	temp = ((mode->crtc_hsync_start-precache) >> 3) - 1;
- 	if (temp & 0x100)
- 		jregAC |= 0x40; /* HRS D[5] */
- 	ast_set_index_reg_mask(ast, AST_IO_CRTC_PORT, 0x04, 0x00, temp);
- 
--	temp = ((mode->crtc_hsync_end >> 3) - 1) & 0x3f;
-+	temp = (((mode->crtc_hsync_end-precache) >> 3) - 1) & 0x3f;
- 	if (temp & 0x20)
- 		jregAD |= 0x04; /* HRE D[5] */
- 	ast_set_index_reg_mask(ast, AST_IO_CRTC_PORT, 0x05, 0x60, (u8)((temp & 0x1f) | jreg05));
-@@ -363,6 +367,11 @@ static void ast_set_crtc_reg(struct drm_crtc *crtc, struct drm_display_mode *mod
- 	ast_set_index_reg_mask(ast, AST_IO_CRTC_PORT, 0x09, 0xdf, jreg09);
- 	ast_set_index_reg_mask(ast, AST_IO_CRTC_PORT, 0xAE, 0x00, (jregAE | 0x80));
- 
-+	if (precache)
-+		ast_set_index_reg_mask(ast, AST_IO_CRTC_PORT, 0xb6, 0x3f, 0x80);
-+	else
-+		ast_set_index_reg_mask(ast, AST_IO_CRTC_PORT, 0xb6, 0x3f, 0x00);
-+
- 	ast_set_index_reg_mask(ast, AST_IO_CRTC_PORT, 0x11, 0x7f, 0x80);
- }
- 
-@@ -383,12 +392,16 @@ static void ast_set_dclk_reg(struct drm_device *dev, struct drm_display_mode *mo
- 	struct ast_private *ast = dev->dev_private;
- 	const struct ast_vbios_dclk_info *clk_info;
- 
--	clk_info = &dclk_table[vbios_mode->enh_table->dclk_index];
-+	if (ast->chip == AST2500)
-+		clk_info = &dclk_table_ast2500[vbios_mode->enh_table->dclk_index];
-+	else
-+		clk_info = &dclk_table[vbios_mode->enh_table->dclk_index];
- 
- 	ast_set_index_reg_mask(ast, AST_IO_CRTC_PORT, 0xc0, 0x00, clk_info->param1);
- 	ast_set_index_reg_mask(ast, AST_IO_CRTC_PORT, 0xc1, 0x00, clk_info->param2);
- 	ast_set_index_reg_mask(ast, AST_IO_CRTC_PORT, 0xbb, 0x0f,
--			       (clk_info->param3 & 0x80) | ((clk_info->param3 & 0x3) << 4));
-+			       (clk_info->param3 & 0xc0) |
-+			       ((clk_info->param3 & 0x3) << 4));
- }
- 
- static void ast_set_ext_reg(struct drm_crtc *crtc, struct drm_display_mode *mode,
-@@ -421,7 +434,8 @@ static void ast_set_ext_reg(struct drm_crtc *crtc, struct drm_display_mode *mode
- 	ast_set_index_reg_mask(ast, AST_IO_CRTC_PORT, 0xa8, 0xfd, jregA8);
- 
- 	/* Set Threshold */
--	if (ast->chip == AST2300 || ast->chip == AST2400) {
-+	if (ast->chip == AST2300 || ast->chip == AST2400 ||
-+	    ast->chip == AST2500) {
- 		ast_set_index_reg(ast, AST_IO_CRTC_PORT, 0xa7, 0x78);
- 		ast_set_index_reg(ast, AST_IO_CRTC_PORT, 0xa6, 0x60);
- 	} else if (ast->chip == AST2100 ||
-@@ -794,7 +808,9 @@ static int ast_mode_valid(struct drm_connector *connector,
- 		if ((mode->hdisplay == 1600) && (mode->vdisplay == 900))
- 			return MODE_OK;
- 
--		if ((ast->chip == AST2100) || (ast->chip == AST2200) || (ast->chip == AST2300) || (ast->chip == AST2400) || (ast->chip == AST1180)) {
-+		if ((ast->chip == AST2100) || (ast->chip == AST2200) ||
-+		    (ast->chip == AST2300) || (ast->chip == AST2400) ||
-+		    (ast->chip == AST2500) || (ast->chip == AST1180)) {
- 			if ((mode->hdisplay == 1920) && (mode->vdisplay == 1080))
- 				return MODE_OK;
- 
-diff --git a/drivers/gpu/drm/ast/ast_tables.h b/drivers/gpu/drm/ast/ast_tables.h
-index a4ddf90..5f4c2e8 100644
---- a/drivers/gpu/drm/ast/ast_tables.h
-+++ b/drivers/gpu/drm/ast/ast_tables.h
-@@ -47,6 +47,7 @@
- #define SyncPN			(PVSync | NHSync)
- #define SyncNP			(NVSync | PHSync)
- #define SyncNN			(NVSync | NHSync)
-+#define AST2500PreCatchCRT		0x00004000
- 
- /* DCLK Index */
- #define VCLK25_175     		0x00
-@@ -108,6 +109,36 @@ static const struct ast_vbios_dclk_info dclk_table[] = {
- 	{0x3b, 0x2c, 0x81},			/* 1A: VCLK118_25	*/
- };
- 
-+static const struct ast_vbios_dclk_info dclk_table_ast2500[] = {
-+	{0x2C, 0xE7, 0x03},			/* 00: VCLK25_175	*/
-+	{0x95, 0x62, 0x03},			/* 01: VCLK28_322	*/
-+	{0x67, 0x63, 0x01},			/* 02: VCLK31_5		*/
-+	{0x76, 0x63, 0x01},			/* 03: VCLK36		*/
-+	{0xEE, 0x67, 0x01},			/* 04: VCLK40		*/
-+	{0x82, 0x62, 0x01},			/* 05: VCLK49_5		*/
-+	{0xC6, 0x64, 0x01},			/* 06: VCLK50		*/
-+	{0x94, 0x62, 0x01},			/* 07: VCLK56_25	*/
-+	{0x80, 0x64, 0x00},			/* 08: VCLK65		*/
-+	{0x7B, 0x63, 0x00},			/* 09: VCLK75		*/
-+	{0x67, 0x62, 0x00},			/* 0A: VCLK78_75	*/
-+	{0x7C, 0x62, 0x00},			/* 0B: VCLK94_5		*/
-+	{0x8E, 0x62, 0x00},			/* 0C: VCLK108		*/
-+	{0x85, 0x24, 0x00},			/* 0D: VCLK135		*/
-+	{0x67, 0x22, 0x00},			/* 0E: VCLK157_5	*/
-+	{0x6A, 0x22, 0x00},			/* 0F: VCLK162		*/
-+	{0x4d, 0x4c, 0x80},			/* 10: VCLK154		*/
-+	{0xa7, 0x78, 0x80},			/* 11: VCLK83.5		*/
-+	{0x28, 0x49, 0x80},			/* 12: VCLK106.5	*/
-+	{0x37, 0x49, 0x80},			/* 13: VCLK146.25	*/
-+	{0x1f, 0x45, 0x80},			/* 14: VCLK148.5	*/
-+	{0x47, 0x6c, 0x80},			/* 15: VCLK71		*/
-+	{0x25, 0x65, 0x80},			/* 16: VCLK88.75	*/
-+	{0x58, 0x01, 0x42},			/* 17: VCLK119		*/
-+	{0x32, 0x67, 0x80},			/* 18: VCLK85_5		*/
-+	{0x6a, 0x6d, 0x80},			/* 19: VCLK97_75	*/
-+	{0x44, 0x20, 0x43},			/* 1A: VCLK118_25	*/
-+};
-+
- static const struct ast_vbios_stdtable vbios_stdtable[] = {
- 	/* MD_2_3_400 */
- 	{
-@@ -246,12 +277,14 @@ static const struct ast_vbios_enhtable res_1360x768[] = {
- 	{1792, 1360, 64, 112, 795, 768, 3, 6, VCLK85_5,		/* 60Hz */
- 	 (SyncPP | Charx8Dot | LineCompareOff | WideScreenMode | NewModeInfo), 60, 1, 0x39 },
- 	{1792, 1360, 64, 112, 795, 768, 3, 6, VCLK85_5,	         /* end */
--	 (SyncPP | Charx8Dot | LineCompareOff | WideScreenMode | NewModeInfo), 0xFF, 1, 0x39 },
-+	 (SyncPP | Charx8Dot | LineCompareOff | WideScreenMode | NewModeInfo |
-+	  AST2500PreCatchCRT), 0xFF, 1, 0x39 },
- };
- 
- static const struct ast_vbios_enhtable res_1600x900[] = {
- 	{1760, 1600, 48, 32, 926, 900, 3, 5, VCLK97_75,		/* 60Hz CVT RB */
--	 (SyncNP | Charx8Dot | LineCompareOff | WideScreenMode | NewModeInfo), 60, 1, 0x3A },
-+	 (SyncNP | Charx8Dot | LineCompareOff | WideScreenMode | NewModeInfo |
-+	  AST2500PreCatchCRT), 60, 1, 0x3A },
- 	{2112, 1600, 88, 168, 934, 900, 3, 5, VCLK118_25,	/* 60Hz CVT */
- 	 (SyncPN | Charx8Dot | LineCompareOff | WideScreenMode | NewModeInfo), 60, 2, 0x3A },
- 	{2112, 1600, 88, 168, 934, 900, 3, 5, VCLK118_25,	/* 60Hz CVT */
-@@ -260,16 +293,19 @@ static const struct ast_vbios_enhtable res_1600x900[] = {
- 
- static const struct ast_vbios_enhtable res_1920x1080[] = {
- 	{2200, 1920, 88, 44, 1125, 1080, 4, 5, VCLK148_5,	/* 60Hz */
--	 (SyncNP | Charx8Dot | LineCompareOff | WideScreenMode | NewModeInfo), 60, 1, 0x38 },
-+	 (SyncNP | Charx8Dot | LineCompareOff | WideScreenMode | NewModeInfo |
-+	  AST2500PreCatchCRT), 60, 1, 0x38 },
- 	{2200, 1920, 88, 44, 1125, 1080, 4, 5, VCLK148_5,	/* 60Hz */
--	 (SyncNP | Charx8Dot | LineCompareOff | WideScreenMode | NewModeInfo), 0xFF, 1, 0x38 },
-+	 (SyncNP | Charx8Dot | LineCompareOff | WideScreenMode | NewModeInfo |
-+	  AST2500PreCatchCRT), 0xFF, 1, 0x38 },
- };
- 
- 
- /* 16:10 */
- static const struct ast_vbios_enhtable res_1280x800[] = {
- 	{1440, 1280, 48, 32,  823,  800, 3, 6, VCLK71,		/* 60Hz RB */
--	 (SyncNP | Charx8Dot | LineCompareOff | WideScreenMode | NewModeInfo), 60, 1, 0x35 },
-+	 (SyncNP | Charx8Dot | LineCompareOff | WideScreenMode | NewModeInfo |
-+	  AST2500PreCatchCRT), 60, 1, 0x35 },
- 	{1680, 1280, 72,128,  831,  800, 3, 6, VCLK83_5,	/* 60Hz */
- 	 (SyncPN | Charx8Dot | LineCompareOff | WideScreenMode | NewModeInfo), 60, 2, 0x35 },
- 	{1680, 1280, 72,128,  831,  800, 3, 6, VCLK83_5,	/* 60Hz */
-@@ -279,7 +315,8 @@ static const struct ast_vbios_enhtable res_1280x800[] = {
- 
- static const struct ast_vbios_enhtable res_1440x900[] = {
- 	{1600, 1440, 48, 32,  926,  900, 3, 6, VCLK88_75,	/* 60Hz RB */
--	 (SyncNP | Charx8Dot | LineCompareOff | WideScreenMode | NewModeInfo), 60, 1, 0x36 },
-+	 (SyncNP | Charx8Dot | LineCompareOff | WideScreenMode | NewModeInfo |
-+	  AST2500PreCatchCRT), 60, 1, 0x36 },
- 	{1904, 1440, 80,152,  934,  900, 3, 6, VCLK106_5,	/* 60Hz */
- 	 (SyncPN | Charx8Dot | LineCompareOff | WideScreenMode | NewModeInfo), 60, 2, 0x36 },
- 	{1904, 1440, 80,152,  934,  900, 3, 6, VCLK106_5,	/* 60Hz */
-@@ -288,7 +325,8 @@ static const struct ast_vbios_enhtable res_1440x900[] = {
- 
- static const struct ast_vbios_enhtable res_1680x1050[] = {
- 	{1840, 1680, 48, 32, 1080, 1050, 3, 6, VCLK119,		/* 60Hz RB */
--	 (SyncNP | Charx8Dot | LineCompareOff | WideScreenMode | NewModeInfo), 60, 1, 0x37 },
-+	 (SyncNP | Charx8Dot | LineCompareOff | WideScreenMode | NewModeInfo |
-+	  AST2500PreCatchCRT), 60, 1, 0x37 },
- 	{2240, 1680,104,176, 1089, 1050, 3, 6, VCLK146_25,	/* 60Hz */
- 	 (SyncPN | Charx8Dot | LineCompareOff | WideScreenMode | NewModeInfo), 60, 2, 0x37 },
- 	{2240, 1680,104,176, 1089, 1050, 3, 6, VCLK146_25,	/* 60Hz */
-@@ -297,9 +335,11 @@ static const struct ast_vbios_enhtable res_1680x1050[] = {
- 
- static const struct ast_vbios_enhtable res_1920x1200[] = {
- 	{2080, 1920, 48, 32, 1235, 1200, 3, 6, VCLK154,		/* 60Hz RB*/
--	 (SyncNP | Charx8Dot | LineCompareOff | WideScreenMode | NewModeInfo), 60, 1, 0x34 },
-+	 (SyncNP | Charx8Dot | LineCompareOff | WideScreenMode | NewModeInfo |
-+	  AST2500PreCatchCRT), 60, 1, 0x34 },
- 	{2080, 1920, 48, 32, 1235, 1200, 3, 6, VCLK154,		/* 60Hz RB */
--	 (SyncNP | Charx8Dot | LineCompareOff | WideScreenMode | NewModeInfo), 0xFF, 1, 0x34 },
-+	 (SyncNP | Charx8Dot | LineCompareOff | WideScreenMode | NewModeInfo |
-+	  AST2500PreCatchCRT), 0xFF, 1, 0x34 },
- };
- 
- #endif
--- 
-2.9.3
+Cheers,
+Ben.
+
+> Signed-off-by: Y.C. Chen <yc_chen@aspeedtech.com>
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> ---
+>  drivers/gpu/drm/ast/ast_post.c | 8 ++------
+>  1 file changed, 2 insertions(+), 6 deletions(-)
+> 
+> diff --git a/drivers/gpu/drm/ast/ast_post.c
+> b/drivers/gpu/drm/ast/ast_post.c
+> index c15f643..a5a7809 100644
+> --- a/drivers/gpu/drm/ast/ast_post.c
+> +++ b/drivers/gpu/drm/ast/ast_post.c
+> @@ -59,13 +59,9 @@ bool ast_is_vga_enabled(struct drm_device *dev)
+>  		/* TODO 1180 */
+>  	} else {
+>  		ch = ast_io_read8(ast, AST_IO_VGA_ENABLE_PORT);
+> -		if (ch) {
+> -			ast_open_key(ast);
+> -			ch = ast_get_index_reg_mask(ast,
+> AST_IO_CRTC_PORT, 0xb6, 0xff);
+> -			return ch & 0x04;
+> -		}
+> +		return !!(ch & 0x01);
+>  	}
+> -	return 0;
+> +	return false;
+>  }
+>  
+>  static const u8 extreginfo[] = { 0x0f, 0x04, 0x1c, 0xff };
