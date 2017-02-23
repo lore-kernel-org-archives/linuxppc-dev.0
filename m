@@ -2,20 +2,20 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vTqLT5tf8zDqC0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Feb 2017 09:54:41 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vTqLb1L6nzDqHR
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Feb 2017 09:54:47 +1100 (AEDT)
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3vTqLR6Gg5z9s7D
- for <linuxppc-dev@ozlabs.org>; Fri, 24 Feb 2017 09:54:39 +1100 (AEDT)
+ by ozlabs.org (Postfix) with ESMTPS id 3vTqLY2fR1z9s7D
+ for <linuxppc-dev@ozlabs.org>; Fri, 24 Feb 2017 09:54:44 +1100 (AEDT)
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: dri-devel@lists.freedesktop.org
 Cc: "Y . C . Chen" <yc_chen@aspeedtech.com>, airlied@redhat.com,
  eich@suse.come, linuxppc-dev@ozlabs.org
-Subject: [PATCH 02/12] drm/ast: Handle configuration without P2A bridge
-Date: Fri, 24 Feb 2017 09:53:47 +1100
-Message-Id: <20170223225357.9572-2-benh@kernel.crashing.org>
+Subject: [PATCH 03/12] drm/ast: const'ify mode setting tables
+Date: Fri, 24 Feb 2017 09:53:48 +1100
+Message-Id: <20170223225357.9572-3-benh@kernel.crashing.org>
 In-Reply-To: <20170223225357.9572-1-benh@kernel.crashing.org>
 References: <20170223225357.9572-1-benh@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,426 +27,273 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Russell Currey <ruscur@russell.cc>
+And fix some comment alignment & space/tabs while at it
 
-The ast driver configures a window to enable access into BMC
-memory space in order to read some configuration registers.
-
-If this window is disabled, which it can be from the BMC side,
-the ast driver can't function.
-
-Closing this window is a necessity for security if a machine's
-host side and BMC side are controlled by different parties;
-i.e. a cloud provider offering machines "bare metal".
-
-A recent patch went in to try to check if that window is open
-but it does so by trying to access the registers in question
-and testing if the result is 0xffffffff.
-
-This method will trigger a PCIe error when the window is closed
-which on some systems will be fatal (it will trigger an EEH
-for example on POWER which will take out the device).
-
-This patch improves this in two ways:
-
- - First, if the firmware has put properties in the device-tree
-containing the relevant configuration information, we use these.
-
- - Otherwise, a bit in one of the SCU scratch registers (which
-are readable via the VGA register space and writeable by the BMC)
-will indicate if the BMC has closed the window. This bit has been
-defined by Y.C Chen from Aspeed.
-
-If the window is closed and the configuration isn't available from
-the device-tree, some sane defaults are used. Those defaults are
-hopefully sufficient for standard video modes used on a server.
-
-Signed-off-by: Russell Currey <ruscur@russell.cc>
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
---
-
-v2. [BenH]
-    - Reworked on top of Aspeed P2A patch
-    - Cleanup overall detection via a "config_mode" and log the
-      selected mode for diagnostics purposes
-    - Add a property for the SCU straps
-
-v3. [BenH]
-    - Moved the config mode detection to a separate functionn
-    - Add reading of SCU 0x40 D[12] to detect the window is
-      closed as to not trigger a bus error by just "trying".
-      (change provided by Y.C. Chen)
-v4. [BenH]
-    - Only devices with the AST2000 PCI ID have a P2A bridge
-    - Update the P2A presence test to account for VGA only
-      mode as provided by Y.C. Chen.
 ---
- drivers/gpu/drm/ast/ast_drv.h  |   6 +-
- drivers/gpu/drm/ast/ast_main.c | 262 +++++++++++++++++++++++++----------------
- drivers/gpu/drm/ast/ast_post.c |   7 +-
- 3 files changed, 166 insertions(+), 109 deletions(-)
+ drivers/gpu/drm/ast/ast_drv.h    |   4 +-
+ drivers/gpu/drm/ast/ast_mode.c   |   8 +--
+ drivers/gpu/drm/ast/ast_tables.h | 106 +++++++++++++++++++--------------------
+ 3 files changed, 59 insertions(+), 59 deletions(-)
 
 diff --git a/drivers/gpu/drm/ast/ast_drv.h b/drivers/gpu/drm/ast/ast_drv.h
-index 7abda94..3bedcf7 100644
+index 3bedcf7..3fd9d6e 100644
 --- a/drivers/gpu/drm/ast/ast_drv.h
 +++ b/drivers/gpu/drm/ast/ast_drv.h
-@@ -113,7 +113,11 @@ struct ast_private {
- 	struct ttm_bo_kmap_obj cache_kmap;
- 	int next_cursor;
- 	bool support_wide_screen;
--	bool DisableP2A;
-+	enum {
-+		ast_use_p2a,
-+		ast_use_dt,
-+		ast_use_defaults
-+	} config_mode;
+@@ -304,8 +304,8 @@ struct ast_vbios_dclk_info {
+ };
  
- 	enum ast_tx_chip tx_chip_type;
- 	u8 dp501_maxclk;
-diff --git a/drivers/gpu/drm/ast/ast_main.c b/drivers/gpu/drm/ast/ast_main.c
-index 533e762..36932a3 100644
---- a/drivers/gpu/drm/ast/ast_main.c
-+++ b/drivers/gpu/drm/ast/ast_main.c
-@@ -62,13 +62,83 @@ uint8_t ast_get_index_reg_mask(struct ast_private *ast,
- 	return ret;
- }
+ struct ast_vbios_mode_info {
+-	struct ast_vbios_stdtable *std_table;
+-	struct ast_vbios_enhtable *enh_table;
++	const struct ast_vbios_stdtable *std_table;
++	const struct ast_vbios_enhtable *enh_table;
+ };
  
-+static void ast_detect_config_mode(struct drm_device *dev, u32 *scu_rev)
-+{
-+	struct device_node *np = dev->pdev->dev.of_node;
-+	struct ast_private *ast = dev->dev_private;
-+	uint32_t data, jregd0, jregd1;
-+
-+	/* Defaults */
-+	ast->config_mode = ast_use_defaults;
-+	*scu_rev = 0xffffffff;
-+
-+	/* Check if we have device-tree properties */
-+	if (np && !of_property_read_u32(np, "ast,scu-revision-id", scu_rev)) {
-+		/* We do, disable P2A access */
-+		ast->config_mode = ast_use_dt;
-+		DRM_INFO("Using device-tree for configuration\n");
-+		return;
-+	}
-+
-+	/* Not all families have a P2A bridge */
-+	if (dev->pdev->device != PCI_CHIP_AST2000)
-+		return;
-+
-+	/*
-+	 * The BMC will set SCU 0x40 D[12] to 1 if the P2 bridge
-+	 * is disabled. We force using P2A if VGA only mode bit
-+	 * is set D[7]
-+	 */
-+	jregd0 = ast_get_index_reg_mask(ast, AST_IO_CRTC_PORT, 0xd0, 0xff);
-+	jregd1 = ast_get_index_reg_mask(ast, AST_IO_CRTC_PORT, 0xd1, 0xff);
-+	if (!(jregd0 & 0x80) || !(jregd1 & 0x10)) {
-+		/* Double check it's actually working */
-+		data = ast_read32(ast, 0xf004);
-+		if (data != 0xFFFFFFFF) {
-+			/* P2A works, grab silicon revision */
-+			ast->config_mode = ast_use_p2a;
-+
-+			DRM_INFO("Using P2A bridge for configuration\n");
-+
-+			/* Read SCU7c (silicon revision register) */
-+			ast_write32(ast, 0xf004, 0x1e6e0000);
-+			ast_write32(ast, 0xf000, 0x1);
-+			*scu_rev = ast_read32(ast, 0x1207c);
-+			return;
-+		}
-+	}
-+
-+	/* We have a P2A bridge but it's disabled */
-+	DRM_INFO("P2A bridge disabled, using default configuration\n");
-+}
+ extern int ast_mode_init(struct drm_device *dev);
+diff --git a/drivers/gpu/drm/ast/ast_mode.c b/drivers/gpu/drm/ast/ast_mode.c
+index e26c98f..1ff596e 100644
+--- a/drivers/gpu/drm/ast/ast_mode.c
++++ b/drivers/gpu/drm/ast/ast_mode.c
+@@ -80,9 +80,9 @@ static bool ast_get_vbios_mode_info(struct drm_crtc *crtc, struct drm_display_mo
+ {
+ 	struct ast_private *ast = crtc->dev->dev_private;
+ 	u32 refresh_rate_index = 0, mode_id, color_index, refresh_rate;
++	const struct ast_vbios_enhtable *best = NULL;
+ 	u32 hborder, vborder;
+ 	bool check_sync;
+-	struct ast_vbios_enhtable *best = NULL;
  
- static int ast_detect_chip(struct drm_device *dev, bool *need_post)
+ 	switch (crtc->primary->fb->bits_per_pixel) {
+ 	case 8:
+@@ -146,7 +146,7 @@ static bool ast_get_vbios_mode_info(struct drm_crtc *crtc, struct drm_display_mo
+ 	refresh_rate = drm_mode_vrefresh(mode);
+ 	check_sync = vbios_mode->enh_table->flags & WideScreenMode;
+ 	do {
+-		struct ast_vbios_enhtable *loop = vbios_mode->enh_table;
++		const struct ast_vbios_enhtable *loop = vbios_mode->enh_table;
+ 
+ 		while (loop->refresh_rate != 0xff) {
+ 			if ((check_sync) &&
+@@ -225,7 +225,7 @@ static void ast_set_std_reg(struct drm_crtc *crtc, struct drm_display_mode *mode
+ 			    struct ast_vbios_mode_info *vbios_mode)
+ {
+ 	struct ast_private *ast = crtc->dev->dev_private;
+-	struct ast_vbios_stdtable *stdtable;
++	const struct ast_vbios_stdtable *stdtable;
+ 	u32 i;
+ 	u8 jreg;
+ 
+@@ -381,7 +381,7 @@ static void ast_set_dclk_reg(struct drm_device *dev, struct drm_display_mode *mo
+ 			     struct ast_vbios_mode_info *vbios_mode)
  {
  	struct ast_private *ast = dev->dev_private;
--	uint32_t data, jreg;
-+	uint32_t jreg, scu_rev;
-+
-+	/*
-+	 * If VGA isn't enabled, we need to enable now or subsequent
-+	 * access to the scratch registers will fail. We also inform
-+	 * our caller that it needs to POST the chip
-+	 * (Assumption: VGA not enabled -> need to POST)
-+	 */
-+	if (!ast_is_vga_enabled(dev)) {
-+		ast_enable_vga(dev);
-+		DRM_INFO("VGA not enabled on entry, requesting chip POST\n");
-+		*need_post = true;
-+	} else
-+		*need_post = false;
-+
-+
-+	/* Enable extended register access */
-+	ast_enable_mmio(dev);
- 	ast_open_key(ast);
+-	struct ast_vbios_dclk_info *clk_info;
++	const struct ast_vbios_dclk_info *clk_info;
  
-+	/* Find out whether P2A works or whether to use device-tree */
-+	ast_detect_config_mode(dev, &scu_rev);
-+
-+	/* Identify chipset */
- 	if (dev->pdev->device == PCI_CHIP_AST1180) {
- 		ast->chip = AST1100;
- 		DRM_INFO("AST 1180 detected\n");
-@@ -80,12 +150,7 @@ static int ast_detect_chip(struct drm_device *dev, bool *need_post)
- 			ast->chip = AST2300;
- 			DRM_INFO("AST 2300 detected\n");
- 		} else if (dev->pdev->revision >= 0x10) {
--			uint32_t data;
--			ast_write32(ast, 0xf004, 0x1e6e0000);
--			ast_write32(ast, 0xf000, 0x1);
--
--			data = ast_read32(ast, 0x1207c);
--			switch (data & 0x0300) {
-+			switch (scu_rev & 0x0300) {
- 			case 0x0200:
- 				ast->chip = AST1100;
- 				DRM_INFO("AST 1100 detected\n");
-@@ -110,26 +175,6 @@ static int ast_detect_chip(struct drm_device *dev, bool *need_post)
- 		}
- 	}
+ 	clk_info = &dclk_table[vbios_mode->enh_table->dclk_index];
  
--	/*
--	 * If VGA isn't enabled, we need to enable now or subsequent
--	 * access to the scratch registers will fail. We also inform
--	 * our caller that it needs to POST the chip
--	 * (Assumption: VGA not enabled -> need to POST)
--	 */
--	if (!ast_is_vga_enabled(dev)) {
--		ast_enable_vga(dev);
--		ast_enable_mmio(dev);
--		DRM_INFO("VGA not enabled on entry, requesting chip POST\n");
--		*need_post = true;
--	} else
--		*need_post = false;
--
--	/* Check P2A Access */
--	ast->DisableP2A = true;
--	data = ast_read32(ast, 0xf004);
--	if (data != 0xFFFFFFFF)
--		ast->DisableP2A = false;
--
- 	/* Check if we support wide screen */
- 	switch (ast->chip) {
- 	case AST1180:
-@@ -146,17 +191,12 @@ static int ast_detect_chip(struct drm_device *dev, bool *need_post)
- 			ast->support_wide_screen = true;
- 		else {
- 			ast->support_wide_screen = false;
--			if (ast->DisableP2A == false) {
--				/* Read SCU7c (silicon revision register) */
--				ast_write32(ast, 0xf004, 0x1e6e0000);
--				ast_write32(ast, 0xf000, 0x1);
--				data = ast_read32(ast, 0x1207c);
--				data &= 0x300;
--				if (ast->chip == AST2300 && data == 0x0) /* ast1300 */
--					ast->support_wide_screen = true;
--				if (ast->chip == AST2400 && data == 0x100) /* ast1400 */
--					ast->support_wide_screen = true;
--			}
-+			if (ast->chip == AST2300 &&
-+			    (scu_rev & 0x300) == 0x0) /* ast1300 */
-+				ast->support_wide_screen = true;
-+			if (ast->chip == AST2400 &&
-+			    (scu_rev & 0x300) == 0x100) /* ast1400 */
-+				ast->support_wide_screen = true;
- 		}
- 		break;
- 	}
-@@ -220,85 +260,101 @@ static int ast_detect_chip(struct drm_device *dev, bool *need_post)
+diff --git a/drivers/gpu/drm/ast/ast_tables.h b/drivers/gpu/drm/ast/ast_tables.h
+index 3608d5a..a4ddf90 100644
+--- a/drivers/gpu/drm/ast/ast_tables.h
++++ b/drivers/gpu/drm/ast/ast_tables.h
+@@ -78,37 +78,37 @@
+ #define VCLK97_75     		0x19
+ #define VCLK118_25			0x1A
  
- static int ast_get_dram_info(struct drm_device *dev)
- {
-+	struct device_node *np = dev->pdev->dev.of_node;
- 	struct ast_private *ast = dev->dev_private;
--	uint32_t data, data2;
--	uint32_t denum, num, div, ref_pll;
-+	uint32_t mcr_cfg, mcr_scu_mpll, mcr_scu_strap;
-+	uint32_t denum, num, div, ref_pll, dsel;
+-static struct ast_vbios_dclk_info dclk_table[] = {
+-	{0x2C, 0xE7, 0x03},					/* 00: VCLK25_175	*/
+-	{0x95, 0x62, 0x03},				        /* 01: VCLK28_322	*/
+-	{0x67, 0x63, 0x01},				        /* 02: VCLK31_5         */
+-	{0x76, 0x63, 0x01},				        /* 03: VCLK36         	*/
+-	{0xEE, 0x67, 0x01},				        /* 04: VCLK40          	*/
+-	{0x82, 0x62, 0x01}, 			        /* 05: VCLK49_5        	*/
+-	{0xC6, 0x64, 0x01},                        	        /* 06: VCLK50          	*/
+-	{0x94, 0x62, 0x01},                        	        /* 07: VCLK56_25       	*/
+-	{0x80, 0x64, 0x00},                        	        /* 08: VCLK65		*/
+-	{0x7B, 0x63, 0x00},                        	        /* 09: VCLK75	        */
+-	{0x67, 0x62, 0x00},				        /* 0A: VCLK78_75       	*/
+-	{0x7C, 0x62, 0x00},                        	        /* 0B: VCLK94_5        	*/
+-	{0x8E, 0x62, 0x00},                        	        /* 0C: VCLK108         	*/
+-	{0x85, 0x24, 0x00},                        	        /* 0D: VCLK135         	*/
+-	{0x67, 0x22, 0x00},                        	        /* 0E: VCLK157_5       	*/
+-	{0x6A, 0x22, 0x00},				        /* 0F: VCLK162         	*/
+-	{0x4d, 0x4c, 0x80},				        /* 10: VCLK154      	*/
+-	{0xa7, 0x78, 0x80},					/* 11: VCLK83.5         */
+-	{0x28, 0x49, 0x80},					/* 12: VCLK106.5        */
+-	{0x37, 0x49, 0x80},					/* 13: VCLK146.25       */
+-	{0x1f, 0x45, 0x80},					/* 14: VCLK148.5        */
+-	{0x47, 0x6c, 0x80},					/* 15: VCLK71       */
+-	{0x25, 0x65, 0x80},					/* 16: VCLK88.75    */
+-	{0x77, 0x58, 0x80},					/* 17: VCLK119      */
+-	{0x32, 0x67, 0x80},				    /* 18: VCLK85_5     */
+-	{0x6a, 0x6d, 0x80},					/* 19: VCLK97_75	*/
+-	{0x3b, 0x2c, 0x81},					/* 1A: VCLK118_25	*/
++static const struct ast_vbios_dclk_info dclk_table[] = {
++	{0x2C, 0xE7, 0x03},			/* 00: VCLK25_175	*/
++	{0x95, 0x62, 0x03},			/* 01: VCLK28_322	*/
++	{0x67, 0x63, 0x01},			/* 02: VCLK31_5		*/
++	{0x76, 0x63, 0x01},			/* 03: VCLK36		*/
++	{0xEE, 0x67, 0x01},			/* 04: VCLK40		*/
++	{0x82, 0x62, 0x01},			/* 05: VCLK49_5		*/
++	{0xC6, 0x64, 0x01},			/* 06: VCLK50		*/
++	{0x94, 0x62, 0x01},			/* 07: VCLK56_25	*/
++	{0x80, 0x64, 0x00},			/* 08: VCLK65		*/
++	{0x7B, 0x63, 0x00},			/* 09: VCLK75		*/
++	{0x67, 0x62, 0x00},			/* 0A: VCLK78_75	*/
++	{0x7C, 0x62, 0x00},			/* 0B: VCLK94_5		*/
++	{0x8E, 0x62, 0x00},			/* 0C: VCLK108		*/
++	{0x85, 0x24, 0x00},			/* 0D: VCLK135		*/
++	{0x67, 0x22, 0x00},			/* 0E: VCLK157_5	*/
++	{0x6A, 0x22, 0x00},			/* 0F: VCLK162		*/
++	{0x4d, 0x4c, 0x80},			/* 10: VCLK154		*/
++	{0xa7, 0x78, 0x80},			/* 11: VCLK83.5		*/
++	{0x28, 0x49, 0x80},			/* 12: VCLK106.5	*/
++	{0x37, 0x49, 0x80},			/* 13: VCLK146.25	*/
++	{0x1f, 0x45, 0x80},			/* 14: VCLK148.5	*/
++	{0x47, 0x6c, 0x80},			/* 15: VCLK71		*/
++	{0x25, 0x65, 0x80},			/* 16: VCLK88.75	*/
++	{0x77, 0x58, 0x80},			/* 17: VCLK119		*/
++	{0x32, 0x67, 0x80},			/* 18: VCLK85_5		*/
++	{0x6a, 0x6d, 0x80},			/* 19: VCLK97_75	*/
++	{0x3b, 0x2c, 0x81},			/* 1A: VCLK118_25	*/
+ };
  
--	if (ast->DisableP2A)
--	{
-+	switch (ast->config_mode) {
-+	case ast_use_dt:
-+		/*
-+		 * If some properties are missing, use reasonable
-+		 * defaults for AST2400
-+		 */
-+		if (of_property_read_u32(np, "ast,mcr-configuration", &mcr_cfg))
-+			mcr_cfg = 0x00000577;
-+		if (of_property_read_u32(np, "ast,ast,mcr-scu-mpll",
-+					 &mcr_scu_mpll))
-+			mcr_scu_mpll = 0x000050C0;
-+		if (of_property_read_u32(np, "ast,ast,mcr-scu-strap",
-+					 &mcr_scu_strap))
-+			mcr_scu_strap = 0;
-+		break;
-+	case ast_use_p2a:
-+		ast_write32(ast, 0xf004, 0x1e6e0000);
-+		ast_write32(ast, 0xf000, 0x1);
-+		mcr_cfg = ast_read32(ast, 0x10004);
-+		mcr_scu_mpll = ast_read32(ast, 0x10120);
-+		mcr_scu_strap = ast_read32(ast, 0x10170);
-+		break;
-+	case ast_use_defaults:
-+	default:
- 		ast->dram_bus_width = 16;
- 		ast->dram_type = AST_DRAM_1Gx16;
- 		ast->mclk = 396;
-+		return 0;
- 	}
--	else
--	{
--		ast_write32(ast, 0xf004, 0x1e6e0000);
--		ast_write32(ast, 0xf000, 0x1);
--		data = ast_read32(ast, 0x10004);
+-static struct ast_vbios_stdtable vbios_stdtable[] = {
++static const struct ast_vbios_stdtable vbios_stdtable[] = {
+ 	/* MD_2_3_400 */
+ 	{
+ 		0x67,
+@@ -181,21 +181,21 @@ static struct ast_vbios_stdtable vbios_stdtable[] = {
+ 	},
+ };
  
--		if (data & 0x40)
--			ast->dram_bus_width = 16;
--		else
--			ast->dram_bus_width = 32;
--
--		if (ast->chip == AST2300 || ast->chip == AST2400) {
--			switch (data & 0x03) {
--			case 0:
--				ast->dram_type = AST_DRAM_512Mx16;
--				break;
--			default:
--			case 1:
--				ast->dram_type = AST_DRAM_1Gx16;
--				break;
--			case 2:
--				ast->dram_type = AST_DRAM_2Gx16;
--				break;
--			case 3:
--				ast->dram_type = AST_DRAM_4Gx16;
--				break;
--			}
--		} else {
--			switch (data & 0x0c) {
--			case 0:
--			case 4:
--				ast->dram_type = AST_DRAM_512Mx16;
--				break;
--			case 8:
--				if (data & 0x40)
--					ast->dram_type = AST_DRAM_1Gx16;
--				else
--					ast->dram_type = AST_DRAM_512Mx32;
--				break;
--			case 0xc:
--				ast->dram_type = AST_DRAM_1Gx32;
--				break;
--			}
--		}
-+	if (mcr_cfg & 0x40)
-+		ast->dram_bus_width = 16;
-+	else
-+		ast->dram_bus_width = 32;
+-static struct ast_vbios_enhtable res_640x480[] = {
++static const struct ast_vbios_enhtable res_640x480[] = {
+ 	{ 800, 640, 8, 96, 525, 480, 2, 2, VCLK25_175,	/* 60Hz */
+ 	  (SyncNN | HBorder | VBorder | Charx8Dot), 60, 1, 0x2E },
+ 	{ 832, 640, 16, 40, 520, 480, 1, 3, VCLK31_5,	/* 72Hz */
+ 	  (SyncNN | HBorder | VBorder | Charx8Dot), 72, 2, 0x2E  },
+ 	{ 840, 640, 16, 64, 500, 480, 1, 3, VCLK31_5,	/* 75Hz */
+ 	  (SyncNN | Charx8Dot) , 75, 3, 0x2E },
+-	{ 832, 640, 56, 56, 509, 480, 1, 3, VCLK36,		/* 85Hz */
++	{ 832, 640, 56, 56, 509, 480, 1, 3, VCLK36,	/* 85Hz */
+ 	  (SyncNN | Charx8Dot) , 85, 4, 0x2E },
+-	{ 832, 640, 56, 56, 509, 480, 1, 3, VCLK36,		/* end */
++	{ 832, 640, 56, 56, 509, 480, 1, 3, VCLK36,	/* end */
+ 	  (SyncNN | Charx8Dot) , 0xFF, 4, 0x2E },
+ };
  
--		data = ast_read32(ast, 0x10120);
--		data2 = ast_read32(ast, 0x10170);
--		if (data2 & 0x2000)
--			ref_pll = 14318;
--		else
--			ref_pll = 12000;
--
--		denum = data & 0x1f;
--		num = (data & 0x3fe0) >> 5;
--		data = (data & 0xc000) >> 14;
--		switch (data) {
--		case 3:
--			div = 0x4;
-+	if (ast->chip == AST2300 || ast->chip == AST2400) {
-+		switch (mcr_cfg & 0x03) {
-+		case 0:
-+			ast->dram_type = AST_DRAM_512Mx16;
- 			break;
--		case 2:
-+		default:
- 		case 1:
--			div = 0x2;
-+			ast->dram_type = AST_DRAM_1Gx16;
- 			break;
--		default:
--			div = 0x1;
-+		case 2:
-+			ast->dram_type = AST_DRAM_2Gx16;
-+			break;
-+		case 3:
-+			ast->dram_type = AST_DRAM_4Gx16;
- 			break;
- 		}
--		ast->mclk = ref_pll * (num + 2) / (denum + 2) * (div * 1000);
-+	} else {
-+		switch (mcr_cfg & 0x0c) {
-+		case 0:
-+		case 4:
-+			ast->dram_type = AST_DRAM_512Mx16;
-+			break;
-+		case 8:
-+			if (mcr_cfg & 0x40)
-+				ast->dram_type = AST_DRAM_1Gx16;
-+			else
-+				ast->dram_type = AST_DRAM_512Mx32;
-+			break;
-+		case 0xc:
-+			ast->dram_type = AST_DRAM_1Gx32;
-+			break;
-+		}
-+	}
-+
-+	if (mcr_scu_strap & 0x2000)
-+		ref_pll = 14318;
-+	else
-+		ref_pll = 12000;
-+
-+	denum = mcr_scu_mpll & 0x1f;
-+	num = (mcr_scu_mpll & 0x3fe0) >> 5;
-+	dsel = (mcr_scu_mpll & 0xc000) >> 14;
-+	switch (dsel) {
-+	case 3:
-+		div = 0x4;
-+		break;
-+	case 2:
-+	case 1:
-+		div = 0x2;
-+		break;
-+	default:
-+		div = 0x1;
-+		break;
- 	}
-+	ast->mclk = ref_pll * (num + 2) / (denum + 2) * (div * 1000);
- 	return 0;
- }
+-static struct ast_vbios_enhtable res_800x600[] = {
+-	{1024, 800, 24, 72, 625, 600, 1, 2, VCLK36,		/* 56Hz */
++static const struct ast_vbios_enhtable res_800x600[] = {
++	{1024, 800, 24, 72, 625, 600, 1, 2, VCLK36,	/* 56Hz */
+ 	 (SyncPP | Charx8Dot), 56, 1, 0x30 },
+ 	{1056, 800, 40, 128, 628, 600, 1, 4, VCLK40,	/* 60Hz */
+ 	 (SyncPP | Charx8Dot), 60, 2, 0x30 },
+@@ -210,7 +210,7 @@ static struct ast_vbios_enhtable res_800x600[] = {
+ };
  
-diff --git a/drivers/gpu/drm/ast/ast_post.c b/drivers/gpu/drm/ast/ast_post.c
-index 6c5391c..64549ce 100644
---- a/drivers/gpu/drm/ast/ast_post.c
-+++ b/drivers/gpu/drm/ast/ast_post.c
-@@ -379,17 +379,14 @@ void ast_post_gpu(struct drm_device *dev)
- 	ast_open_key(ast);
- 	ast_set_def_ext_reg(dev);
  
--	if (ast->DisableP2A == false)
--	{
-+	if (ast->config_mode == ast_use_p2a) {
- 		if (ast->chip == AST2300 || ast->chip == AST2400)
- 			ast_init_dram_2300(dev);
- 		else
- 			ast_init_dram_reg(dev);
+-static struct ast_vbios_enhtable res_1024x768[] = {
++static const struct ast_vbios_enhtable res_1024x768[] = {
+ 	{1344, 1024, 24, 136, 806, 768, 3, 6, VCLK65,	/* 60Hz */
+ 	 (SyncNN | Charx8Dot), 60, 1, 0x31 },
+ 	{1328, 1024, 24, 136, 806, 768, 3, 6, VCLK75,	/* 70Hz */
+@@ -223,7 +223,7 @@ static struct ast_vbios_enhtable res_1024x768[] = {
+ 	 (SyncPP | Charx8Dot), 0xFF, 4, 0x31 },
+ };
  
- 		ast_init_3rdtx(dev);
--	}
--	else
--	{
-+	} else {
- 		if (ast->tx_chip_type != AST_TX_NONE)
- 			ast_set_index_reg_mask(ast, AST_IO_CRTC_PORT, 0xa3, 0xcf, 0x80);	/* Enable DVO */
- 	}
+-static struct ast_vbios_enhtable res_1280x1024[] = {
++static const struct ast_vbios_enhtable res_1280x1024[] = {
+ 	{1688, 1280, 48, 112, 1066, 1024, 1, 3, VCLK108,	/* 60Hz */
+ 	 (SyncPP | Charx8Dot), 60, 1, 0x32 },
+ 	{1688, 1280, 16, 144, 1066, 1024, 1, 3, VCLK135,	/* 75Hz */
+@@ -234,7 +234,7 @@ static struct ast_vbios_enhtable res_1280x1024[] = {
+ 	 (SyncPP | Charx8Dot), 0xFF, 3, 0x32 },
+ };
+ 
+-static struct ast_vbios_enhtable res_1600x1200[] = {
++static const struct ast_vbios_enhtable res_1600x1200[] = {
+ 	{2160, 1600, 64, 192, 1250, 1200, 1, 3, VCLK162,	/* 60Hz */
+ 	 (SyncPP | Charx8Dot), 60, 1, 0x33 },
+ 	{2160, 1600, 64, 192, 1250, 1200, 1, 3, VCLK162,	/* end */
+@@ -242,23 +242,23 @@ static struct ast_vbios_enhtable res_1600x1200[] = {
+ };
+ 
+ /* 16:9 */
+-static struct ast_vbios_enhtable res_1360x768[] = {
+-	{1792, 1360, 64,112, 795,  768, 3, 6, VCLK85_5,	         /* 60Hz */
++static const struct ast_vbios_enhtable res_1360x768[] = {
++	{1792, 1360, 64, 112, 795, 768, 3, 6, VCLK85_5,		/* 60Hz */
+ 	 (SyncPP | Charx8Dot | LineCompareOff | WideScreenMode | NewModeInfo), 60, 1, 0x39 },
+-	{1792, 1360, 64,112, 795,  768, 3, 6, VCLK85_5,	         /* end */
++	{1792, 1360, 64, 112, 795, 768, 3, 6, VCLK85_5,	         /* end */
+ 	 (SyncPP | Charx8Dot | LineCompareOff | WideScreenMode | NewModeInfo), 0xFF, 1, 0x39 },
+ };
+ 
+-static struct ast_vbios_enhtable res_1600x900[] = {
+-	{1760, 1600, 48, 32, 926,  900, 3, 5, VCLK97_75,	/* 60Hz CVT RB */
++static const struct ast_vbios_enhtable res_1600x900[] = {
++	{1760, 1600, 48, 32, 926, 900, 3, 5, VCLK97_75,		/* 60Hz CVT RB */
+ 	 (SyncNP | Charx8Dot | LineCompareOff | WideScreenMode | NewModeInfo), 60, 1, 0x3A },
+-	{2112, 1600, 88,168, 934,  900, 3, 5, VCLK118_25,	/* 60Hz CVT */
++	{2112, 1600, 88, 168, 934, 900, 3, 5, VCLK118_25,	/* 60Hz CVT */
+ 	 (SyncPN | Charx8Dot | LineCompareOff | WideScreenMode | NewModeInfo), 60, 2, 0x3A },
+-	{2112, 1600, 88,168, 934,  900, 3, 5, VCLK118_25,	/* 60Hz CVT */
++	{2112, 1600, 88, 168, 934, 900, 3, 5, VCLK118_25,	/* 60Hz CVT */
+ 	 (SyncPN | Charx8Dot | LineCompareOff | WideScreenMode | NewModeInfo), 0xFF, 2, 0x3A },
+ };
+ 
+-static struct ast_vbios_enhtable res_1920x1080[] = {
++static const struct ast_vbios_enhtable res_1920x1080[] = {
+ 	{2200, 1920, 88, 44, 1125, 1080, 4, 5, VCLK148_5,	/* 60Hz */
+ 	 (SyncNP | Charx8Dot | LineCompareOff | WideScreenMode | NewModeInfo), 60, 1, 0x38 },
+ 	{2200, 1920, 88, 44, 1125, 1080, 4, 5, VCLK148_5,	/* 60Hz */
+@@ -267,8 +267,8 @@ static struct ast_vbios_enhtable res_1920x1080[] = {
+ 
+ 
+ /* 16:10 */
+-static struct ast_vbios_enhtable res_1280x800[] = {
+-	{1440, 1280, 48, 32,  823,  800, 3, 6, VCLK71,	/* 60Hz RB */
++static const struct ast_vbios_enhtable res_1280x800[] = {
++	{1440, 1280, 48, 32,  823,  800, 3, 6, VCLK71,		/* 60Hz RB */
+ 	 (SyncNP | Charx8Dot | LineCompareOff | WideScreenMode | NewModeInfo), 60, 1, 0x35 },
+ 	{1680, 1280, 72,128,  831,  800, 3, 6, VCLK83_5,	/* 60Hz */
+ 	 (SyncPN | Charx8Dot | LineCompareOff | WideScreenMode | NewModeInfo), 60, 2, 0x35 },
+@@ -277,7 +277,7 @@ static struct ast_vbios_enhtable res_1280x800[] = {
+ 
+ };
+ 
+-static struct ast_vbios_enhtable res_1440x900[] = {
++static const struct ast_vbios_enhtable res_1440x900[] = {
+ 	{1600, 1440, 48, 32,  926,  900, 3, 6, VCLK88_75,	/* 60Hz RB */
+ 	 (SyncNP | Charx8Dot | LineCompareOff | WideScreenMode | NewModeInfo), 60, 1, 0x36 },
+ 	{1904, 1440, 80,152,  934,  900, 3, 6, VCLK106_5,	/* 60Hz */
+@@ -286,8 +286,8 @@ static struct ast_vbios_enhtable res_1440x900[] = {
+ 	 (SyncPN | Charx8Dot | LineCompareOff | WideScreenMode | NewModeInfo), 0xFF, 2, 0x36 },
+ };
+ 
+-static struct ast_vbios_enhtable res_1680x1050[] = {
+-	{1840, 1680, 48, 32, 1080, 1050, 3, 6, VCLK119,	/* 60Hz RB */
++static const struct ast_vbios_enhtable res_1680x1050[] = {
++	{1840, 1680, 48, 32, 1080, 1050, 3, 6, VCLK119,		/* 60Hz RB */
+ 	 (SyncNP | Charx8Dot | LineCompareOff | WideScreenMode | NewModeInfo), 60, 1, 0x37 },
+ 	{2240, 1680,104,176, 1089, 1050, 3, 6, VCLK146_25,	/* 60Hz */
+ 	 (SyncPN | Charx8Dot | LineCompareOff | WideScreenMode | NewModeInfo), 60, 2, 0x37 },
+@@ -295,10 +295,10 @@ static struct ast_vbios_enhtable res_1680x1050[] = {
+ 	 (SyncPN | Charx8Dot | LineCompareOff | WideScreenMode | NewModeInfo), 0xFF, 2, 0x37 },
+ };
+ 
+-static struct ast_vbios_enhtable res_1920x1200[] = {
+-	{2080, 1920, 48, 32, 1235, 1200, 3, 6, VCLK154,	/* 60Hz RB*/
++static const struct ast_vbios_enhtable res_1920x1200[] = {
++	{2080, 1920, 48, 32, 1235, 1200, 3, 6, VCLK154,		/* 60Hz RB*/
+ 	 (SyncNP | Charx8Dot | LineCompareOff | WideScreenMode | NewModeInfo), 60, 1, 0x34 },
+-	{2080, 1920, 48, 32, 1235, 1200, 3, 6, VCLK154,	/* 60Hz RB */
++	{2080, 1920, 48, 32, 1235, 1200, 3, 6, VCLK154,		/* 60Hz RB */
+ 	 (SyncNP | Charx8Dot | LineCompareOff | WideScreenMode | NewModeInfo), 0xFF, 1, 0x34 },
+ };
+ 
 -- 
 2.9.3
