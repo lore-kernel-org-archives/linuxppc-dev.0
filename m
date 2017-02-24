@@ -1,22 +1,23 @@
 Return-Path: <Hamish.Martin@alliedtelesis.co.nz>
 Received: from gate2.alliedtelesis.co.nz (gate2.alliedtelesis.co.nz
- [202.36.163.20])
+ [IPv6:2001:df5:b000:5::4])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vTsk22g3yzDqC0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Feb 2017 11:41:46 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vTsqp3lHfzDqGG
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Feb 2017 11:46:46 +1100 (AEDT)
 From: Hamish Martin <Hamish.Martin@alliedtelesis.co.nz>
-To: Michael Ellerman <mpe@ellerman.id.au>, "benh@kernel.crashing.org"
- <benh@kernel.crashing.org>, "paulus@samba.org" <paulus@samba.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Michael Ellerman
+ <mpe@ellerman.id.au>, "paulus@samba.org" <paulus@samba.org>
 CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 Subject: Re: [PATCH 0/2] Allow configurable stack size (especially 32k on
  PPC64)
-Date: Fri, 24 Feb 2017 00:35:10 +0000
-Message-ID: <81a2fd09-d646-7dd1-1567-02a0d2044221@alliedtelesis.co.nz>
+Date: Fri, 24 Feb 2017 00:40:00 +0000
+Message-ID: <95856692-8547-5bb4-9a7e-993c39adccfd@alliedtelesis.co.nz>
 References: <20170220202440.25796-1-hamish.martin@alliedtelesis.co.nz>
  <871suqn3m7.fsf@concordia.ellerman.id.au>
-In-Reply-To: <871suqn3m7.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset="Windows-1252"
+ <1487750793.23576.219.camel@kernel.crashing.org>
+In-Reply-To: <1487750793.23576.219.camel@kernel.crashing.org>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -27,58 +28,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 02/22/2017 07:25 PM, Michael Ellerman wrote:
-> Hamish Martin <hamish.martin@alliedtelesis.co.nz> writes:
->> This patch series adds the ability to configure the THREAD_SHIFT value a=
-nd
->> thereby alter the stack size on powerpc systems. We are particularly int=
-erested
->> in configuring for a 32k stack on PPC64.
-> ...
->>
->> For instance for a 70 frame stack, the architecture overhead just for th=
-e stack
->> frames is:
->>    70 * 16 bytes =3D 1120 bytes for PPC32, and
->>    70 * 112 bytes =3D 7840 bytes for PPC64.
->> So a simple doubling of the PPC32 stack size leaves us with a shortfall =
-of 5600
->> bytes (7840 - (2 * 1120)). In the example the stack frame overhead for P=
-PC32 is
->> 1120/8192 =3D 13.5% of the stack space, whereas for PPC64 it is 7840/163=
-84 =3D
->> 47.8% of the space.
->>
->> The aim of this series is to provide the ability for users to configure =
-for
->> larger stacks without altering the defaults in a way that would impact e=
-xisting
->> users. However, given the inequity between the PPC32 and PPC64 stacks wh=
-en
->> taking into account the respective minimum stack frame sizes, we believe
->> consideration should be given to having a large default. We would apprec=
-iate
->> any input or opinions on this issue.
->
-> Thanks for the detailed explanation.
->
-> The patches look fine, so I don't see any reason why we wouldn't merge
-> this. I might make the config option depend on EXPERT, but that's just
-> cosmetic.
->
->
-> You're right about the difference in stack overhead between 32 & 64-bit.
-> But I guess on the other hand we've been using 16K stacks on 64-bit for
-> over 15 years, and although we have had some reports of stack overflow
-> they're not a common problem.
->
-> cheers
->
-Yes, 15 years testing is hard to argue against, but in our case we feel=20
-we have a stack that is reasonable and would cause no problems on PPC32.=20
-This seems like a good compromise.
-I think I was most keen to hear from you guys about whether it was a=20
-flat out crazy idea, or if it would open up a huge can of hidden worms.=20
- From your response that seems not to be the case.
-
-Thanks for the input, Michael. I'll add the EXPERT dependency and resubmit.
+T24gMDIvMjIvMjAxNyAwOTowNiBQTSwgQmVuamFtaW4gSGVycmVuc2NobWlkdCB3cm90ZToNCj4g
+T24gV2VkLCAyMDE3LTAyLTIyIGF0IDE3OjI1ICsxMTAwLCBNaWNoYWVsIEVsbGVybWFuIHdyb3Rl
+Og0KPj4NCj4+IFRoYW5rcyBmb3IgdGhlIGRldGFpbGVkIGV4cGxhbmF0aW9uLg0KPj4NCj4+IFRo
+ZSBwYXRjaGVzIGxvb2sgZmluZSwgc28gSSBkb24ndCBzZWUgYW55IHJlYXNvbiB3aHkgd2Ugd291
+bGRuJ3QgbWVyZ2UNCj4+IHRoaXMuIEkgbWlnaHQgbWFrZSB0aGUgY29uZmlnIG9wdGlvbiBkZXBl
+bmQgb24gRVhQRVJULCBidXQgdGhhdCdzIGp1c3QNCj4+IGNvc21ldGljLg0KPj4NCj4+DQo+PiBZ
+b3UncmUgcmlnaHQgYWJvdXQgdGhlIGRpZmZlcmVuY2UgaW4gc3RhY2sgb3ZlcmhlYWQgYmV0d2Vl
+biAzMiAmIDY0LWJpdC4NCj4+IEJ1dCBJIGd1ZXNzIG9uIHRoZSBvdGhlciBoYW5kIHdlJ3ZlIGJl
+ZW4gdXNpbmcgMTZLIHN0YWNrcyBvbiA2NC1iaXQgZm9yDQo+PiBvdmVyIDE1IHllYXJzLCBhbmQg
+YWx0aG91Z2ggd2UgaGF2ZSBoYWQgc29tZSByZXBvcnRzIG9mIHN0YWNrIG92ZXJmbG93DQo+PiB0
+aGV5J3JlIG5vdCBhIGNvbW1vbiBwcm9ibGVtLg0KPg0KPiBSaWdodCBhbmQgaW4gZmFjdCBJIHdv
+bmRlciBpZiB3ZSBjb3VsZCBnZW5lcmFsbHkgaGVscCB0aGlzIGZvciBjYXNlcw0KPiBsaWtlIHRo
+aXMgb25lIChsb3RzIG9mIHN0YWNrZWQgZGV2aWNlcykgYnkgaGF2aW5nIHRoZSBnZW5lcmljIGRy
+aXZlcg0KPiBjb3JlIGJyZWFrIHRob3NlIGNoYWlucyBieSBkZWZlcnJpbmcgbmV3IGRldmljZSBy
+ZWdpc3RyYXRpb24gdG8gYSB3b3JrDQo+IHF1ZXVlIG9yIGt0aHJlYWQuDQo+DQo+IFRoYXQgd291
+bGQgaGVscCBpbiBhIGxvdCBvZiBjYXNlcy4gV2UgZG8gZ2V0IHNvbWUgc3R1cGlkIGRlZXAgY2hh
+aW5zDQo+IGluIGNhc2VzIG9mIG1hbnkgYnVzIGVuY2Fwc3VsYXRpb24uDQo+DQo+IENoZWVycywN
+Cj4gQmVuLg0KPg0KPg0KQWdyZWVkLiBJbiBmYWN0IHlvdSBzdWdnZXN0ZWQgaXQgYmFjayBpbiAy
+MDA4IHNvbWV3aGVyZSBpbiB0aGUgdGhyZWFkIEkgDQpsaW5rZWQgdG8gaW4gbXkgY292ZXIgbGV0
+dGVyIGZvciB0aGUgc2VyaWVzLiBUaGF0J3Mgb2J2aW91c2x5IGdvaW5nIHRvIA0KdGFrZSBhIGxv
+bmcgdGltZSB0byBoYXBwZW4sIHNvIGZvciBub3cgSSBob3BlIHRoaXMgc2VyaWVzIHdpbGwgYWxs
+b3cgDQpzb21lIHJlc3BpdGUgZm9yIHVzZXJzIGFmZmVjdGVkLg0KDQpUaGFua3MgZm9yIHlvdXIg
+aW5wdXQu
