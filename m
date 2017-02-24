@@ -1,17 +1,17 @@
 Return-Path: <yc_chen@aspeedtech.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vV2jj1j8WzDqGv
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Feb 2017 18:27:05 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vV2k13CV7zDqGv
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Feb 2017 18:27:21 +1100 (AEDT)
 Received: from twspam01.aspeedtech.com (twspam01.aspeedtech.com
  [211.20.114.71]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3vV2jh4FKdz9s7R
- for <linuxppc-dev@ozlabs.org>; Fri, 24 Feb 2017 18:27:04 +1100 (AEDT)
+ by ozlabs.org (Postfix) with ESMTPS id 3vV2k05dR1z9s7R
+ for <linuxppc-dev@ozlabs.org>; Fri, 24 Feb 2017 18:27:20 +1100 (AEDT)
 Received: from twspam01.aspeedtech.com (localhost [127.0.0.2])
- by twspam01.aspeedtech.com with ESMTP id v1O7KRZM057211
- for <linuxppc-dev@ozlabs.org>; Fri, 24 Feb 2017 15:20:27 +0800 (CST)
+ by twspam01.aspeedtech.com with ESMTP id v1O7L7Yp057248
+ for <linuxppc-dev@ozlabs.org>; Fri, 24 Feb 2017 15:21:07 +0800 (CST)
  (envelope-from yc_chen@aspeedtech.com)
 From: YC Chen <yc_chen@aspeedtech.com>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
@@ -19,12 +19,13 @@ To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
 CC: "airlied@redhat.com" <airlied@redhat.com>, "eich@suse.come"
  <eich@suse.come>, "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>, "YC
  Chen" <yc_chen@aspeedtech.com>
-Subject: RE: [PATCH 08/12] drm/ast: Factor mmc_test code in POST code
-Date: Fri, 24 Feb 2017 07:07:51 +0000
-Message-ID: <5763f91f99f14025aa05601557a23891@TWMBX01.aspeed.com>
+Subject: RE: [PATCH 09/12] drm/ast: Rename ast_init_dram_2300 to
+ ast_post_chip_2300
+Date: Fri, 24 Feb 2017 07:08:32 +0000
+Message-ID: <314b8d5a339042e799d2684dcc019e37@TWMBX01.aspeed.com>
 References: <20170223225357.9572-1-benh@kernel.crashing.org>
- <20170223225357.9572-8-benh@kernel.crashing.org>
-In-Reply-To: <20170223225357.9572-8-benh@kernel.crashing.org>
+ <20170223225357.9572-9-benh@kernel.crashing.org>
+In-Reply-To: <20170223225357.9572-9-benh@kernel.crashing.org>
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -44,11 +45,11 @@ Sent: Friday, February 24, 2017 6:54 AM
 To: dri-devel@lists.freedesktop.org
 Cc: YC Chen <yc_chen@aspeedtech.com>; airlied@redhat.com; eich@suse.come; l=
 inuxppc-dev@ozlabs.org
-Subject: [PATCH 08/12] drm/ast: Factor mmc_test code in POST code
+Subject: [PATCH 09/12] drm/ast: Rename ast_init_dram_2300 to ast_post_chip_=
+2300
 
-There's a some duplication for what's essentially copies of two loops, so f=
-actor it. The upcoming AST2500 POST code adds more of them. Also cleanup re=
-turn types for the test functions, most of them return a boolean, some retu=
-rn a u32.
+The function does more than initializing the DRAM and in turns calls other =
+functions to do the actual init. This will keeping things more consistent w=
+ith the upcoming AST2500 POST code.
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
