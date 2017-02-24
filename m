@@ -2,25 +2,25 @@ Return-Path: <acme@kernel.org>
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vVMMY55PgzDqH4
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Feb 2017 06:57:29 +1100 (AEDT)
-Date: Fri, 24 Feb 2017 16:57:22 -0300
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vVMbQ689jzDqH4
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Feb 2017 07:07:46 +1100 (AEDT)
+Date: Fri, 24 Feb 2017 17:07:38 -0300
 From: Arnaldo Carvalho de Melo <acme@kernel.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
+To: Masami Hiramatsu <mhiramat@kernel.org>
 Cc: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
- Masami Hiramatsu <mhiramat@kernel.org>,
  Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>,
- Ingo Molnar <mingo@redhat.com>,
+ Ingo Molnar <mingo@redhat.com>, Michael Ellerman <mpe@ellerman.id.au>,
  Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v2 2/5] powerpc: kretprobes: override default function
- entry offset
-Message-ID: <20170224195722.GM3595@kernel.org>
-References: <cover.1487770934.git.naveen.n.rao@linux.vnet.ibm.com>
- <e27a624a724f1b00d09e769cbce24abdb27d8688.1487770934.git.naveen.n.rao@linux.vnet.ibm.com>
+Subject: Re: [PATCH v3 1/2] perf: probe: generalize probe event file open
+ routine
+Message-ID: <20170224200738.GN3595@kernel.org>
+References: <20170223181022.7d4427714cabbb7ccd6d6673@kernel.org>
+ <b580465c7a4dcd5d3b40fdf8568e6be45d0a6333.1487849577.git.naveen.n.rao@linux.vnet.ibm.com>
+ <20170225014601.eb2cec0b4ea94790a2f11181@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <e27a624a724f1b00d09e769cbce24abdb27d8688.1487770934.git.naveen.n.rao@linux.vnet.ibm.com>
+In-Reply-To: <20170225014601.eb2cec0b4ea94790a2f11181@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,47 +30,111 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Em Wed, Feb 22, 2017 at 07:23:38PM +0530, Naveen N. Rao escreveu:
-> With ABIv2, we offset 8 bytes into a function to get at the local entry
-> point.
-
-So, I think I can carry the first one via Ingo, etc, what about this
-one?
-
-Is it ok for me to process it?
-
-Seems simple enough, has been thru a lot of discussion, but would be
-better if it was Reviewed-by the PPC maintainers or else just processed
-by them.
-
-Please advise,
-
-- Arnaldo
- 
-> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/kernel/kprobes.c | 9 +++++++++
->  1 file changed, 9 insertions(+)
+Em Sat, Feb 25, 2017 at 01:46:01AM +0900, Masami Hiramatsu escreveu:
+> On Thu, 23 Feb 2017 17:07:23 +0530
+> "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
 > 
-> diff --git a/arch/powerpc/kernel/kprobes.c b/arch/powerpc/kernel/kprobes.c
-> index 735ff3d3f77d..e37b76b8b6b2 100644
-> --- a/arch/powerpc/kernel/kprobes.c
-> +++ b/arch/powerpc/kernel/kprobes.c
-> @@ -131,6 +131,15 @@ static void __kprobes set_current_kprobe(struct kprobe *p, struct pt_regs *regs,
->  	kcb->kprobe_saved_msr = regs->msr;
->  }
->  
-> +bool arch_function_offset_within_entry(unsigned long offset)
-> +{
-> +#ifdef PPC64_ELF_ABI_v2
-> +	return offset <= 8;
-> +#else
-> +	return !offset;
-> +#endif
-> +}
-> +
->  void __kprobes arch_prepare_kretprobe(struct kretprobe_instance *ri,
->  				      struct pt_regs *regs)
->  {
+> > ...into a generic function for opening trace files.
+> 
+> Even if it repeats subject, please write complete description...
+> 
+> Patch itself is OK to me.
+
+Did it and added your Acked-by as per your OK above.
+
+- arnaldo
+ 
+> Thanks,
+> 
+> > 
+> > Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+> > ---
+> >  tools/perf/util/probe-file.c | 20 +++++++++++---------
+> >  tools/perf/util/probe-file.h |  1 +
+> >  2 files changed, 12 insertions(+), 9 deletions(-)
+> > 
+> > diff --git a/tools/perf/util/probe-file.c b/tools/perf/util/probe-file.c
+> > index 436b64731f65..1a62daceb028 100644
+> > --- a/tools/perf/util/probe-file.c
+> > +++ b/tools/perf/util/probe-file.c
+> > @@ -70,7 +70,7 @@ static void print_both_open_warning(int kerr, int uerr)
+> >  	}
+> >  }
+> >  
+> > -static int open_probe_events(const char *trace_file, bool readwrite)
+> > +int open_trace_file(const char *trace_file, bool readwrite)
+> >  {
+> >  	char buf[PATH_MAX];
+> >  	int ret;
+> > @@ -92,12 +92,12 @@ static int open_probe_events(const char *trace_file, bool readwrite)
+> >  
+> >  static int open_kprobe_events(bool readwrite)
+> >  {
+> > -	return open_probe_events("kprobe_events", readwrite);
+> > +	return open_trace_file("kprobe_events", readwrite);
+> >  }
+> >  
+> >  static int open_uprobe_events(bool readwrite)
+> >  {
+> > -	return open_probe_events("uprobe_events", readwrite);
+> > +	return open_trace_file("uprobe_events", readwrite);
+> >  }
+> >  
+> >  int probe_file__open(int flag)
+> > @@ -899,6 +899,7 @@ bool probe_type_is_available(enum probe_type type)
+> >  	size_t len = 0;
+> >  	bool target_line = false;
+> >  	bool ret = probe_type_table[type].avail;
+> > +	int fd;
+> >  
+> >  	if (type >= PROBE_TYPE_END)
+> >  		return false;
+> > @@ -906,14 +907,16 @@ bool probe_type_is_available(enum probe_type type)
+> >  	if (ret || probe_type_table[type].checked)
+> >  		return ret;
+> >  
+> > -	if (asprintf(&buf, "%s/README", tracing_path) < 0)
+> > +	fd = open_trace_file("README", false);
+> > +	if (fd < 0)
+> >  		return ret;
+> >  
+> > -	fp = fopen(buf, "r");
+> > -	if (!fp)
+> > -		goto end;
+> > +	fp = fdopen(fd, "r");
+> > +	if (!fp) {
+> > +		close(fd);
+> > +		return ret;
+> > +	}
+> >  
+> > -	zfree(&buf);
+> >  	while (getline(&buf, &len, fp) > 0 && !ret) {
+> >  		if (!target_line) {
+> >  			target_line = !!strstr(buf, " type: ");
+> > @@ -928,7 +931,6 @@ bool probe_type_is_available(enum probe_type type)
+> >  	probe_type_table[type].avail = ret;
+> >  
+> >  	fclose(fp);
+> > -end:
+> >  	free(buf);
+> >  
+> >  	return ret;
+> > diff --git a/tools/perf/util/probe-file.h b/tools/perf/util/probe-file.h
+> > index eba44c3e9dca..a17a82eff8a0 100644
+> > --- a/tools/perf/util/probe-file.h
+> > +++ b/tools/perf/util/probe-file.h
+> > @@ -35,6 +35,7 @@ enum probe_type {
+> >  
+> >  /* probe-file.c depends on libelf */
+> >  #ifdef HAVE_LIBELF_SUPPORT
+> > +int open_trace_file(const char *trace_file, bool readwrite);
+> >  int probe_file__open(int flag);
+> >  int probe_file__open_both(int *kfd, int *ufd, int flag);
+> >  struct strlist *probe_file__get_namelist(int fd);
+> > -- 
+> > 2.11.1
+> > 
+> 
+> 
 > -- 
-> 2.11.0
+> Masami Hiramatsu <mhiramat@kernel.org>
