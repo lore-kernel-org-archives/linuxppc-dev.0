@@ -1,48 +1,30 @@
-Return-Path: <hbathini@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mhocko@kernel.org>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vV9Kb1VYVzDqH1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Feb 2017 23:25:07 +1100 (AEDT)
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3vV9KZ4Q5lz9s7t
- for <linuxppc-dev@ozlabs.org>; Fri, 24 Feb 2017 23:25:06 +1100 (AEDT)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v1OCOTtk145979
- for <linuxppc-dev@ozlabs.org>; Fri, 24 Feb 2017 07:25:04 -0500
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
- by mx0b-001b2d01.pphosted.com with ESMTP id 28tm1vhw9w-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Fri, 24 Feb 2017 07:25:04 -0500
-Received: from localhost
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <hbathini@linux.vnet.ibm.com>;
- Fri, 24 Feb 2017 22:25:01 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 13C743578053
- for <linuxppc-dev@ozlabs.org>; Fri, 24 Feb 2017 23:24:58 +1100 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v1OCOoYS55640204
- for <linuxppc-dev@ozlabs.org>; Fri, 24 Feb 2017 23:24:58 +1100
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v1OCOO3U025290
- for <linuxppc-dev@ozlabs.org>; Fri, 24 Feb 2017 23:24:25 +1100
-Subject: [PATCH v2] powerpc/fadump: set an upper limit for boot memory size
-From: Hari Bathini <hbathini@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
- Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
-Date: Fri, 24 Feb 2017 17:54:02 +0530
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vVBwy2pZ0zDqH1
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Feb 2017 00:37:21 +1100 (AEDT)
+Date: Fri, 24 Feb 2017 14:37:14 +0100
+From: Michal Hocko <mhocko@kernel.org>
+To: Vitaly Kuznetsov <vkuznets@redhat.com>
+Cc: Nathan Fontenot <nfont@linux.vnet.ibm.com>, linux-mm@kvack.org,
+ mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org,
+ mdroth@linux.vnet.ibm.com, kys@microsoft.com
+Subject: Re: [RFC PATCH] memory-hotplug: Use dev_online for memhp_auto_offline
+Message-ID: <20170224133714.GH19161@dhcp22.suse.cz>
+References: <20170221172234.8047.33382.stgit@ltcalpine2-lp14.aus.stglabs.ibm.com>
+ <878toy1sgd.fsf@vitty.brq.redhat.com>
+ <20170223125643.GA29064@dhcp22.suse.cz>
+ <87bmttyqxf.fsf@vitty.brq.redhat.com>
+ <20170223150920.GB29056@dhcp22.suse.cz>
+ <877f4gzz4d.fsf@vitty.brq.redhat.com>
+ <20170223161241.GG29056@dhcp22.suse.cz>
+ <8737f4zwx5.fsf@vitty.brq.redhat.com>
+ <20170223174106.GB13822@dhcp22.suse.cz>
+ <87tw7kydto.fsf@vitty.brq.redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Message-Id: <148793853573.16182.16113694193326906522.stgit@hbathini.in.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <87tw7kydto.fsf@vitty.brq.redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,100 +34,83 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-By default, 5% of system RAM is reserved for preserving boot memory.
-Alternatively, a user can specify the amount of memory to reserve.
-See Documentation/powerpc/firmware-assisted-dump.txt for details. In
-addition to the memory reserved for preserving boot memory, some more
-memory is reserved, to save HPTE region, CPU state data and ELF core
-headers.
+On Thu 23-02-17 19:14:27, Vitaly Kuznetsov wrote:
+> Michal Hocko <mhocko@kernel.org> writes:
+> 
+> > On Thu 23-02-17 17:36:38, Vitaly Kuznetsov wrote:
+> >> Michal Hocko <mhocko@kernel.org> writes:
+> > [...]
+> >> > Is a grow from 256M -> 128GB really something that happens in real life?
+> >> > Don't get me wrong but to me this sounds quite exaggerated. Hotmem add
+> >> > which is an operation which has to allocate memory has to scale with the
+> >> > currently available memory IMHO.
+> >> 
+> >> With virtual machines this is very real and not exaggerated at
+> >> all. E.g. Hyper-V host can be tuned to automatically add new memory when
+> >> guest is running out of it. Even 100 blocks can represent an issue.
+> >
+> > Do you have any reference to a bug report. I am really curious because
+> > something really smells wrong and it is not clear that the chosen
+> > solution is really the best one.
+> 
+> Unfortunately I'm not aware of any publicly posted bug reports (CC:
+> K. Y. - he may have a reference) but I think I still remember everything
+> correctly. Not sure how deep you want me to go into details though...
 
-Memory Reservation during first kernel looks like below:
+As much as possible to understand what was really going on...
 
-  Low memory                                        Top of memory
-  0      boot memory size                                       |
-  |           |                       |<--Reserved dump area -->|
-  V           V                       |   Permanent Reservation V
-  +-----------+----------/ /----------+---+----+-----------+----+
-  |           |                       |CPU|HPTE|  DUMP     |ELF |
-  +-----------+----------/ /----------+---+----+-----------+----+
-        |                                           ^
-        |                                           |
-        \                                           /
-         -------------------------------------------
-          Boot memory content gets transferred to
-          reserved area by firmware at the time of
-          crash
+> Virtual guests under stress were getting into OOM easily and the OOM
+> killer was even killing the udev process trying to online the
+> memory.
 
-This implicitly means that the sum of the sizes of boot memory, CPU
-state data, HPTE region, DUMP preserving area and ELF core headers
-can't be greater than the total memory size. But currently, a user is
-allowed to specify any value as boot memory size. So, the above rule
-is violated when a boot memory size around 50% of the total available
-memory is specified. As the kernel is not handling this currently, it
-may lead to undefined behavior. Fix it by setting an upper limit for
-boot memory size to 25% of the total available memory. Also, instead
-of using memblock_end_of_DRAM(), which doesn't take the holes, if any,
-in the memory layout into account, use memblock_phys_mem_size() to
-calculate the percentage of total available memory.
+Do you happen to have any OOM report? I am really surprised that udev
+would be an oom victim because that process is really small. Who is
+consuming all the memory then?
 
-Signed-off-by: Hari Bathini <hbathini@linux.vnet.ibm.com>
----
+Have you measured how much memory do we need to allocate to add one
+memblock?
 
-This patch is based on top of the patchset to reuse-crashkernel-parameter-
-for-fadump (http://patchwork.ozlabs.org/patch/711522).
+> There was a workaround for the issue added to the hyper-v driver
+> doing memory add:
+> 
+> hv_mem_hot_add(...) {
+> ...
+>  add_memory(....);
+>  wait_for_completion_timeout(..., 5*HZ);
+>  ...
+> }
 
-Changes from v1:
-* Using memblock_phys_mem_size() instead of memblock_end_of_DRAM() to
-  get system RAM size.
-
-
- arch/powerpc/include/asm/fadump.h |    3 +++
- arch/powerpc/kernel/fadump.c      |   16 +++++++++++++++-
- 2 files changed, 18 insertions(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/include/asm/fadump.h b/arch/powerpc/include/asm/fadump.h
-index 60b9108..a3de219 100644
---- a/arch/powerpc/include/asm/fadump.h
-+++ b/arch/powerpc/include/asm/fadump.h
-@@ -43,6 +43,9 @@
- #define MIN_BOOT_MEM	(((RMA_END < (0x1UL << 28)) ? (0x1UL << 28) : RMA_END) \
- 			+ (0x1UL << 26))
+I can still see 
+		/*
+		 * Wait for the memory block to be onlined when memory onlining
+		 * is done outside of kernel (memhp_auto_online). Since the hot
+		 * add has succeeded, it is ok to proceed even if the pages in
+		 * the hot added region have not been "onlined" within the
+		 * allowed time.
+		 */
+		if (dm_device.ha_waiting)
+			wait_for_completion_timeout(&dm_device.ol_waitevent,
+						    5*HZ);
  
-+/* The upper limit percentage for user specified boot memory size (25%) */
-+#define MAX_BOOT_MEM_RATIO			4
-+
- #define memblock_num_regions(memblock_type)	(memblock.memblock_type.cnt)
+> the completion was done by observing for the MEM_ONLINE event. This, of
+> course, was slowing things down significantly and waiting for a
+> userspace action in kernel is not a nice thing to have (not speaking
+> about all other memory adding methods which had the same issue). Just
+> removing this wait was leading us to the same OOM as the hypervisor was
+> adding more and more memory and eventually even add_memory() was
+> failing, udev and other processes were killed,...
+
+Yes, I agree that waiting on a user action from the kernel is very far
+from ideal.
  
- /* Firmware provided dump sections */
-diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
-index e013f8f..21d5404 100644
---- a/arch/powerpc/kernel/fadump.c
-+++ b/arch/powerpc/kernel/fadump.c
-@@ -221,12 +221,26 @@ static inline unsigned long fadump_calculate_reserve_size(void)
- 	ret = parse_crashkernel(boot_command_line, memblock_phys_mem_size(),
- 				&size, &base);
- 	if (ret == 0 && size > 0) {
-+		unsigned long max_size;
-+
- 		fw_dump.reserve_bootvar = (unsigned long)size;
-+
-+		/*
-+		 * Adjust if the boot memory size specified is above
-+		 * the upper limit.
-+		 */
-+		max_size = memblock_phys_mem_size() / MAX_BOOT_MEM_RATIO;
-+		if (fw_dump.reserve_bootvar > max_size) {
-+			fw_dump.reserve_bootvar = max_size;
-+			pr_info("Adjusted boot memory size to %luMB\n",
-+				(fw_dump.reserve_bootvar >> 20));
-+		}
-+
- 		return fw_dump.reserve_bootvar;
- 	}
+> With the feature in place we have new memory available right after we do
+> add_memory(), everything is serialized.
+
+What prevented you from onlining the memory explicitly from
+hv_mem_hot_add path? Why do you need a user visible policy for that at
+all? You could also add a parameter to add_memory that would do the same
+thing. Or am I missing something?
  
- 	/* divide by 20 to get 5% of value */
--	size = memblock_end_of_DRAM() / 20;
-+	size = memblock_phys_mem_size() / 20;
- 
- 	/* round it down in multiples of 256 */
- 	size = size & ~0x0FFFFFFFUL;
+-- 
+Michal Hocko
+SUSE Labs
