@@ -1,32 +1,24 @@
-Return-Path: <vkuznets@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+Return-Path: <mhiramat@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vVHZJ449RzDqH1
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Feb 2017 04:06:32 +1100 (AEDT)
-From: Vitaly Kuznetsov <vkuznets@redhat.com>
-To: Michal Hocko <mhocko@kernel.org>
-Cc: Nathan Fontenot <nfont@linux.vnet.ibm.com>, linux-mm@kvack.org,
- mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org,
- mdroth@linux.vnet.ibm.com, kys@microsoft.com
-Subject: Re: [RFC PATCH] memory-hotplug: Use dev_online for memhp_auto_offline
-References: <20170223174106.GB13822@dhcp22.suse.cz>
- <87tw7kydto.fsf@vitty.brq.redhat.com>
- <20170224133714.GH19161@dhcp22.suse.cz>
- <87efyny90q.fsf@vitty.brq.redhat.com>
- <20170224144147.GJ19161@dhcp22.suse.cz>
- <87a89by6hd.fsf@vitty.brq.redhat.com>
- <20170224153227.GL19161@dhcp22.suse.cz>
- <8760jzy3iu.fsf@vitty.brq.redhat.com>
- <20170224162317.GN19161@dhcp22.suse.cz>
- <871suny22u.fsf@vitty.brq.redhat.com>
- <20170224165224.GA9363@dhcp22.suse.cz>
-Date: Fri, 24 Feb 2017 18:06:28 +0100
-In-Reply-To: <20170224165224.GA9363@dhcp22.suse.cz> (Michal Hocko's message of
- "Fri, 24 Feb 2017 17:52:25 +0100")
-Message-ID: <87poi7wmaz.fsf@vitty.brq.redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vVHj103y3zDqH1
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Feb 2017 04:12:20 +1100 (AEDT)
+Date: Sat, 25 Feb 2017 02:12:08 +0900
+From: Masami Hiramatsu <mhiramat@kernel.org>
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+Cc: Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>, Ingo Molnar
+ <mingo@redhat.com>, Michael Ellerman <mpe@ellerman.id.au>, Arnaldo Carvalho
+ de Melo <acme@kernel.org>, Steven Rostedt <rostedt@goodmis.org>,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v3 2/2] perf: kretprobes: offset from reloc_sym if
+ kernel supports it
+Message-Id: <20170225021208.3bb8f7810ae1c5644df3ae6a@kernel.org>
+In-Reply-To: <2f4181ecccf794d05065cb10648badc290aa4c28.1487849577.git.naveen.n.rao@linux.vnet.ibm.com>
+References: <b580465c7a4dcd5d3b40fdf8568e6be45d0a6333.1487849577.git.naveen.n.rao@linux.vnet.ibm.com>
+ <2f4181ecccf794d05065cb10648badc290aa4c28.1487849577.git.naveen.n.rao@linux.vnet.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,40 +28,130 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michal Hocko <mhocko@kernel.org> writes:
+On Thu, 23 Feb 2017 17:07:24 +0530
+"Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
 
-> On Fri 24-02-17 17:40:25, Vitaly Kuznetsov wrote:
->> Michal Hocko <mhocko@kernel.org> writes:
->> 
->> > On Fri 24-02-17 17:09:13, Vitaly Kuznetsov wrote:
-> [...]
->> >> While this will most probably work for me I still disagree with the
->> >> concept of 'one size fits all' here and the default 'false' for ACPI,
->> >> we're taking away the feature from KVM/Vmware folks so they'll again
->> >> come up with the udev rule which has known issues.
->> >
->> > Well, AFAIU acpi_memory_device_add is a standard way how to announce
->> > physical memory added to the system. Where does the KVM/VMware depend on
->> > this to do memory ballooning?
->> 
->> As far as I understand memory hotplug in KVM/VMware is pure ACPI memory
->> hotplug, there is no specific code for it.
->
-> VMware has its ballooning driver AFAIK and I have no idea what KVM
-> uses.
+> We indicate support for accepting sym+offset with kretprobes through a
+> line in ftrace README. Parse the same to identify support and choose the
+> appropriate format for kprobe_events.
+> 
+> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+> ---
+>  tools/perf/util/probe-event.c | 49 ++++++++++++++++++++++++++++++++++++-------
+>  tools/perf/util/probe-event.h |  2 ++
+>  2 files changed, 44 insertions(+), 7 deletions(-)
+> 
+> diff --git a/tools/perf/util/probe-event.c b/tools/perf/util/probe-event.c
+> index 35f5b7b7715c..dd6b9ce0eef3 100644
+> --- a/tools/perf/util/probe-event.c
+> +++ b/tools/perf/util/probe-event.c
+> @@ -737,6 +737,43 @@ post_process_module_probe_trace_events(struct probe_trace_event *tevs,
+>  	return ret;
+>  }
+>  
+> +bool is_kretprobe_offset_supported(void)
+> +{
+> +	FILE *fp;
+> +	char *buf = NULL;
+> +	size_t len = 0;
+> +	bool target_line = false;
+> +	static int supported = -1;
+> +	int fd;
+> +
+> +	if (supported >= 0)
+> +		return !!supported;
+> +
+> +	fd = open_trace_file("README", false);
+> +	if (fd < 0)
+> +		return false;
+> +
+> +	fp = fdopen(fd, "r");
+> +	if (!fp) {
+> +		close(fd);
+> +		return false;
+> +	}
+> +
+> +	while (getline(&buf, &len, fp) > 0) {
+> +		target_line = !!strstr(buf, "place (kretprobe): ");
+> +		if (!target_line)
+> +			continue;
+> +		supported = 1;
+> +	}
+> +	if (supported == -1)
+> +		supported = 0;
+> +
+> +	fclose(fp);
+> +	free(buf);
+> +
+> +	return !!supported;
+> +}
 
-They both have ballooning drivers but ballooning is a different
-thing. BTW, both Xen and Hyper-V have ballooning too but it is a
-different thing, we're not discussing it here.
+Hmm, I think you can do more than that. 
+Can you reuse probe_type_is_available() to scan README?
+I think we can have something like scan_ftrace_readme() in probe-file.c
+to scan all the options and cache the results. 
 
-> Anyway, acpi_memory_device_add is no different from doing a physical
-> memory hotplug IIUC so there shouldn't be any difference to how it is
-> handled.
+probe_type_is_available() and kreprobe_offset_is_available()
+just returns cached result or scan it in first call.(I would like to
+ask you to do it in probe-file.c too)
 
-With the patch you suggest we'll have different memory hotplug defaults
-for different virtualization technologies. If you suggest to have
-unconditional default online it should probably be the save for all
-hypervisors we support (IMO).
+Thank you,
+
+
+> +
+>  static int
+>  post_process_kernel_probe_trace_events(struct probe_trace_event *tevs,
+>  				       int ntevs)
+> @@ -757,7 +794,9 @@ post_process_kernel_probe_trace_events(struct probe_trace_event *tevs,
+>  	}
+>  
+>  	for (i = 0; i < ntevs; i++) {
+> -		if (!tevs[i].point.address || tevs[i].point.retprobe)
+> +		if (!tevs[i].point.address)
+> +			continue;
+> +		if (tevs[i].point.retprobe && !is_kretprobe_offset_supported())
+>  			continue;
+>  		/* If we found a wrong one, mark it by NULL symbol */
+>  		if (kprobe_warn_out_range(tevs[i].point.symbol,
+> @@ -1528,11 +1567,6 @@ static int parse_perf_probe_point(char *arg, struct perf_probe_event *pev)
+>  		return -EINVAL;
+>  	}
+>  
+> -	if (pp->retprobe && !pp->function) {
+> -		semantic_error("Return probe requires an entry function.\n");
+> -		return -EINVAL;
+> -	}
+> -
+>  	if ((pp->offset || pp->line || pp->lazy_line) && pp->retprobe) {
+>  		semantic_error("Offset/Line/Lazy pattern can't be used with "
+>  			       "return probe.\n");
+> @@ -2841,7 +2875,8 @@ static int find_probe_trace_events_from_map(struct perf_probe_event *pev,
+>  	}
+>  
+>  	/* Note that the symbols in the kmodule are not relocated */
+> -	if (!pev->uprobes && !pp->retprobe && !pev->target) {
+> +	if (!pev->uprobes && !pev->target &&
+> +			(!pp->retprobe || is_kretprobe_offset_supported())) {
+>  		reloc_sym = kernel_get_ref_reloc_sym();
+>  		if (!reloc_sym) {
+>  			pr_warning("Relocated base symbol is not found!\n");
+> diff --git a/tools/perf/util/probe-event.h b/tools/perf/util/probe-event.h
+> index 5d4e94061402..449d4f311355 100644
+> --- a/tools/perf/util/probe-event.h
+> +++ b/tools/perf/util/probe-event.h
+> @@ -135,6 +135,8 @@ bool perf_probe_with_var(struct perf_probe_event *pev);
+>  /* Check the perf_probe_event needs debuginfo */
+>  bool perf_probe_event_need_dwarf(struct perf_probe_event *pev);
+>  
+> +bool is_kretprobe_offset_supported(void);
+> +
+>  /* Release event contents */
+>  void clear_perf_probe_event(struct perf_probe_event *pev);
+>  void clear_probe_trace_event(struct probe_trace_event *tev);
+> -- 
+> 2.11.1
+> 
+
 
 -- 
-  Vitaly
+Masami Hiramatsu <mhiramat@kernel.org>
