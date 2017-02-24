@@ -1,32 +1,24 @@
-Return-Path: <vkuznets@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+Return-Path: <mhiramat@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vVH0F3717zDqGv
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Feb 2017 03:40:29 +1100 (AEDT)
-From: Vitaly Kuznetsov <vkuznets@redhat.com>
-To: Michal Hocko <mhocko@kernel.org>
-Cc: Nathan Fontenot <nfont@linux.vnet.ibm.com>, linux-mm@kvack.org,
- mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org, mdroth@linux.vnet.ibm.com,
- kys@microsoft.com
-Subject: Re: [RFC PATCH] memory-hotplug: Use dev_online for memhp_auto_offline
-References: <20170223161241.GG29056@dhcp22.suse.cz>
- <8737f4zwx5.fsf@vitty.brq.redhat.com>
- <20170223174106.GB13822@dhcp22.suse.cz>
- <87tw7kydto.fsf@vitty.brq.redhat.com>
- <20170224133714.GH19161@dhcp22.suse.cz>
- <87efyny90q.fsf@vitty.brq.redhat.com>
- <20170224144147.GJ19161@dhcp22.suse.cz>
- <87a89by6hd.fsf@vitty.brq.redhat.com>
- <20170224153227.GL19161@dhcp22.suse.cz>
- <8760jzy3iu.fsf@vitty.brq.redhat.com>
- <20170224162317.GN19161@dhcp22.suse.cz>
-Date: Fri, 24 Feb 2017 17:40:25 +0100
-In-Reply-To: <20170224162317.GN19161@dhcp22.suse.cz> (Michal Hocko's message
- of "Fri, 24 Feb 2017 17:23:17 +0100")
-Message-ID: <871suny22u.fsf@vitty.brq.redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vVH6s6LD6zDqGv
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Feb 2017 03:46:13 +1100 (AEDT)
+Date: Sat, 25 Feb 2017 01:46:01 +0900
+From: Masami Hiramatsu <mhiramat@kernel.org>
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+Cc: Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>, Ingo Molnar
+ <mingo@redhat.com>, Michael Ellerman <mpe@ellerman.id.au>, Arnaldo Carvalho
+ de Melo <acme@kernel.org>, Steven Rostedt <rostedt@goodmis.org>,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v3 1/2] perf: probe: generalize probe event file open
+ routine
+Message-Id: <20170225014601.eb2cec0b4ea94790a2f11181@kernel.org>
+In-Reply-To: <b580465c7a4dcd5d3b40fdf8568e6be45d0a6333.1487849577.git.naveen.n.rao@linux.vnet.ibm.com>
+References: <20170223181022.7d4427714cabbb7ccd6d6673@kernel.org>
+ <b580465c7a4dcd5d3b40fdf8568e6be45d0a6333.1487849577.git.naveen.n.rao@linux.vnet.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,32 +28,106 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michal Hocko <mhocko@kernel.org> writes:
+On Thu, 23 Feb 2017 17:07:23 +0530
+"Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
 
-> On Fri 24-02-17 17:09:13, Vitaly Kuznetsov wrote:
+> ...into a generic function for opening trace files.
 
->> I have a smal  guest and I want to add more memory to it and the
->> result is ... OOM. Not something I expected.
->
-> Which is not all that unexpected if you use a technology which has to
-> allocated in order to add more memory.
->
+Even if it repeats subject, please write complete description...
 
-My point is: why should users care about this? It's our problem that we
-can't always hotplug memory. And I think this problem is solvable.
+Patch itself is OK to me.
 
->> 
->> While this will most probably work for me I still disagree with the
->> concept of 'one size fits all' here and the default 'false' for ACPI,
->> we're taking away the feature from KVM/Vmware folks so they'll again
->> come up with the udev rule which has known issues.
->
-> Well, AFAIU acpi_memory_device_add is a standard way how to announce
-> physical memory added to the system. Where does the KVM/VMware depend on
-> this to do memory ballooning?
+Thanks,
 
-As far as I understand memory hotplug in KVM/VMware is pure ACPI memory
-hotplug, there is no specific code for it.
+> 
+> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+> ---
+>  tools/perf/util/probe-file.c | 20 +++++++++++---------
+>  tools/perf/util/probe-file.h |  1 +
+>  2 files changed, 12 insertions(+), 9 deletions(-)
+> 
+> diff --git a/tools/perf/util/probe-file.c b/tools/perf/util/probe-file.c
+> index 436b64731f65..1a62daceb028 100644
+> --- a/tools/perf/util/probe-file.c
+> +++ b/tools/perf/util/probe-file.c
+> @@ -70,7 +70,7 @@ static void print_both_open_warning(int kerr, int uerr)
+>  	}
+>  }
+>  
+> -static int open_probe_events(const char *trace_file, bool readwrite)
+> +int open_trace_file(const char *trace_file, bool readwrite)
+>  {
+>  	char buf[PATH_MAX];
+>  	int ret;
+> @@ -92,12 +92,12 @@ static int open_probe_events(const char *trace_file, bool readwrite)
+>  
+>  static int open_kprobe_events(bool readwrite)
+>  {
+> -	return open_probe_events("kprobe_events", readwrite);
+> +	return open_trace_file("kprobe_events", readwrite);
+>  }
+>  
+>  static int open_uprobe_events(bool readwrite)
+>  {
+> -	return open_probe_events("uprobe_events", readwrite);
+> +	return open_trace_file("uprobe_events", readwrite);
+>  }
+>  
+>  int probe_file__open(int flag)
+> @@ -899,6 +899,7 @@ bool probe_type_is_available(enum probe_type type)
+>  	size_t len = 0;
+>  	bool target_line = false;
+>  	bool ret = probe_type_table[type].avail;
+> +	int fd;
+>  
+>  	if (type >= PROBE_TYPE_END)
+>  		return false;
+> @@ -906,14 +907,16 @@ bool probe_type_is_available(enum probe_type type)
+>  	if (ret || probe_type_table[type].checked)
+>  		return ret;
+>  
+> -	if (asprintf(&buf, "%s/README", tracing_path) < 0)
+> +	fd = open_trace_file("README", false);
+> +	if (fd < 0)
+>  		return ret;
+>  
+> -	fp = fopen(buf, "r");
+> -	if (!fp)
+> -		goto end;
+> +	fp = fdopen(fd, "r");
+> +	if (!fp) {
+> +		close(fd);
+> +		return ret;
+> +	}
+>  
+> -	zfree(&buf);
+>  	while (getline(&buf, &len, fp) > 0 && !ret) {
+>  		if (!target_line) {
+>  			target_line = !!strstr(buf, " type: ");
+> @@ -928,7 +931,6 @@ bool probe_type_is_available(enum probe_type type)
+>  	probe_type_table[type].avail = ret;
+>  
+>  	fclose(fp);
+> -end:
+>  	free(buf);
+>  
+>  	return ret;
+> diff --git a/tools/perf/util/probe-file.h b/tools/perf/util/probe-file.h
+> index eba44c3e9dca..a17a82eff8a0 100644
+> --- a/tools/perf/util/probe-file.h
+> +++ b/tools/perf/util/probe-file.h
+> @@ -35,6 +35,7 @@ enum probe_type {
+>  
+>  /* probe-file.c depends on libelf */
+>  #ifdef HAVE_LIBELF_SUPPORT
+> +int open_trace_file(const char *trace_file, bool readwrite);
+>  int probe_file__open(int flag);
+>  int probe_file__open_both(int *kfd, int *ufd, int flag);
+>  struct strlist *probe_file__get_namelist(int fd);
+> -- 
+> 2.11.1
+> 
+
 
 -- 
-  Vitaly
+Masami Hiramatsu <mhiramat@kernel.org>
