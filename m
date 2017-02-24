@@ -1,30 +1,27 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
- [IPv6:2607:f8b0:400e:c05::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <dgibson@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vTxRQ3R07zDqCc
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Feb 2017 14:29:22 +1100 (AEDT)
-Received: by mail-pg0-x244.google.com with SMTP id 1so1376453pgz.2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Feb 2017 19:29:22 -0800 (PST)
-Subject: Re: [PATCH kernel v5 10/10] KVM: PPC: VFIO: Add in-kernel
- acceleration for VFIO
-To: David Gibson <david@gibson.dropbear.id.au>
-References: <20170222082133.10277-1-aik@ozlabs.ru>
- <20170222082133.10277-11-aik@ozlabs.ru>
- <20170224021432.GH17615@umbus.fritz.box>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vTxbN4JmKzDqCc
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Feb 2017 14:36:16 +1100 (AEDT)
+Date: Fri, 24 Feb 2017 14:36:07 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
 Cc: linuxppc-dev@lists.ozlabs.org,
  Alex Williamson <alex.williamson@redhat.com>,
  Paul Mackerras <paulus@samba.org>, kvm-ppc@vger.kernel.org,
  kvm@vger.kernel.org
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-Message-ID: <7b2d6cba-73e7-e846-a520-fc2837694c11@ozlabs.ru>
-Date: Fri, 24 Feb 2017 14:29:14 +1100
+Subject: Re: [PATCH kernel v5 10/10] KVM: PPC: VFIO: Add in-kernel
+ acceleration for VFIO
+Message-ID: <20170224033607.GQ17615@umbus.fritz.box>
+References: <20170222082133.10277-1-aik@ozlabs.ru>
+ <20170222082133.10277-11-aik@ozlabs.ru>
+ <20170224021432.GH17615@umbus.fritz.box>
+ <7b2d6cba-73e7-e846-a520-fc2837694c11@ozlabs.ru>
 MIME-Version: 1.0
-In-Reply-To: <20170224021432.GH17615@umbus.fritz.box>
 Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="C9fteH9GmXPL3qvIlb2Xblo0x1tcSHssJ"
+ protocol="application/pgp-signature"; boundary="R4+lwT0Y15rLnKR0"
+In-Reply-To: <7b2d6cba-73e7-e846-a520-fc2837694c11@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,1090 +31,1077 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---C9fteH9GmXPL3qvIlb2Xblo0x1tcSHssJ
-Content-Type: multipart/mixed; boundary="H1teD9l6lkVDtfWJ2kPCXGGSxkJHq9tMX";
- protected-headers="v1"
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-To: David Gibson <david@gibson.dropbear.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org,
- Alex Williamson <alex.williamson@redhat.com>,
- Paul Mackerras <paulus@samba.org>, kvm-ppc@vger.kernel.org,
- kvm@vger.kernel.org
-Message-ID: <7b2d6cba-73e7-e846-a520-fc2837694c11@ozlabs.ru>
-Subject: Re: [PATCH kernel v5 10/10] KVM: PPC: VFIO: Add in-kernel
- acceleration for VFIO
-References: <20170222082133.10277-1-aik@ozlabs.ru>
- <20170222082133.10277-11-aik@ozlabs.ru>
- <20170224021432.GH17615@umbus.fritz.box>
-In-Reply-To: <20170224021432.GH17615@umbus.fritz.box>
 
---H1teD9l6lkVDtfWJ2kPCXGGSxkJHq9tMX
-Content-Type: text/plain; charset=koi8-r
+--R4+lwT0Y15rLnKR0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On 24/02/17 13:14, David Gibson wrote:
-> On Wed, Feb 22, 2017 at 07:21:33PM +1100, Alexey Kardashevskiy wrote:
->> This allows the host kernel to handle H_PUT_TCE, H_PUT_TCE_INDIRECT
->> and H_STUFF_TCE requests targeted an IOMMU TCE table used for VFIO
->> without passing them to user space which saves time on switching
->> to user space and back.
->>
->> This adds H_PUT_TCE/H_PUT_TCE_INDIRECT/H_STUFF_TCE handlers to KVM.
->> KVM tries to handle a TCE request in the real mode, if failed
->> it passes the request to the virtual mode to complete the operation.
->> If it a virtual mode handler fails, the request is passed to
->> the user space; this is not expected to happen though.
->>
->> To avoid dealing with page use counters (which is tricky in real mode)=
-,
->> this only accelerates SPAPR TCE IOMMU v2 clients which are required
->> to pre-register the userspace memory. The very first TCE request will
->> be handled in the VFIO SPAPR TCE driver anyway as the userspace view
->> of the TCE table (iommu_table::it_userspace) is not allocated till
->> the very first mapping happens and we cannot call vmalloc in real mode=
-=2E
->>
->> If we fail to update a hardware IOMMU table unexpected reason, we just=
-
->> clear it and move on as there is nothing really we can do about it -
->> for example, if we hot plug a VFIO device to a guest, existing TCE tab=
+On Fri, Feb 24, 2017 at 02:29:14PM +1100, Alexey Kardashevskiy wrote:
+> On 24/02/17 13:14, David Gibson wrote:
+> > On Wed, Feb 22, 2017 at 07:21:33PM +1100, Alexey Kardashevskiy wrote:
+> >> This allows the host kernel to handle H_PUT_TCE, H_PUT_TCE_INDIRECT
+> >> and H_STUFF_TCE requests targeted an IOMMU TCE table used for VFIO
+> >> without passing them to user space which saves time on switching
+> >> to user space and back.
+> >>
+> >> This adds H_PUT_TCE/H_PUT_TCE_INDIRECT/H_STUFF_TCE handlers to KVM.
+> >> KVM tries to handle a TCE request in the real mode, if failed
+> >> it passes the request to the virtual mode to complete the operation.
+> >> If it a virtual mode handler fails, the request is passed to
+> >> the user space; this is not expected to happen though.
+> >>
+> >> To avoid dealing with page use counters (which is tricky in real mode),
+> >> this only accelerates SPAPR TCE IOMMU v2 clients which are required
+> >> to pre-register the userspace memory. The very first TCE request will
+> >> be handled in the VFIO SPAPR TCE driver anyway as the userspace view
+> >> of the TCE table (iommu_table::it_userspace) is not allocated till
+> >> the very first mapping happens and we cannot call vmalloc in real mode.
+> >>
+> >> If we fail to update a hardware IOMMU table unexpected reason, we just
+> >> clear it and move on as there is nothing really we can do about it -
+> >> for example, if we hot plug a VFIO device to a guest, existing TCE tab=
 les
->> will be mirrored automatically to the hardware and there is no interfa=
+> >> will be mirrored automatically to the hardware and there is no interfa=
 ce
->> to report to the guest about possible failures.
->>
->> This adds new attribute - KVM_DEV_VFIO_GROUP_SET_SPAPR_TCE - to
->> the VFIO KVM device. It takes a VFIO group fd and SPAPR TCE table fd
->> and associates a physical IOMMU table with the SPAPR TCE table (which
->> is a guest view of the hardware IOMMU table). The iommu_table object
->> is cached and referenced so we do not have to look up for it in real m=
+> >> to report to the guest about possible failures.
+> >>
+> >> This adds new attribute - KVM_DEV_VFIO_GROUP_SET_SPAPR_TCE - to
+> >> the VFIO KVM device. It takes a VFIO group fd and SPAPR TCE table fd
+> >> and associates a physical IOMMU table with the SPAPR TCE table (which
+> >> is a guest view of the hardware IOMMU table). The iommu_table object
+> >> is cached and referenced so we do not have to look up for it in real m=
 ode.
->>
->> This does not implement the UNSET counterpart as there is no use for i=
+> >>
+> >> This does not implement the UNSET counterpart as there is no use for i=
 t -
->> once the acceleration is enabled, the existing userspace won't
->> disable it unless a VFIO container is destroyed; this adds necessary
->> cleanup to the KVM_DEV_VFIO_GROUP_DEL handler.
->>
->> As this creates a descriptor per IOMMU table-LIOBN couple (called
->> kvmppc_spapr_tce_iommu_table), it is possible to have several
->> descriptors with the same iommu_table (hardware IOMMU table) attached
->> to the same LIOBN; we do not remove duplicates though as
->> iommu_table_ops::exchange not just update a TCE entry (which is
->> shared among IOMMU groups) but also invalidates the TCE cache
->> (one per IOMMU group).
->>
->> This advertises the new KVM_CAP_SPAPR_TCE_VFIO capability to the user
->> space.
->>
->> This finally makes use of vfio_external_user_iommu_id() which was
->> introduced quite some time ago and was considered for removal.
->>
->> Tests show that this patch increases transmission speed from 220MB/s
->> to 750..1020MB/s on 10Gb network (Chelsea CXGB3 10Gb ethernet card).
->>
->> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
->=20
-> I have some comments on this patch, but all the definite ones are
-> pretty minor and could be done as later cleanups.
->=20
-> I have some more serious queries, but they are just queries and
-> requests for clarification.  If there are satisfactory answers to
-> them, I'll add my R-b.
->=20
->=20
-> ---
->> Changes:
->> v5:
->> * changed error codes in multiple places
->> * added bunch of WARN_ON() in places which should not really happen
->> * adde a check that an iommu table is not attached already to LIOBN
->> * dropped explicit calls to iommu_tce_clear_param_check/
->> iommu_tce_put_param_check as kvmppc_tce_validate/kvmppc_ioba_validate
->> call them anyway (since the previous patch)
->> * if we fail to update a hardware IOMMU table for unexpected reason,
->> this just clears the entry
->>
->> v4:
->> * added note to the commit log about allowing multiple updates of
->> the same IOMMU table;
->> * instead of checking for if any memory was preregistered, this
->> returns H_TOO_HARD if a specific page was not;
->> * fixed comments from v3 about error handling in many places;
->> * simplified TCE handlers and merged IOMMU parts inline - for example,=
-
->> there used to be kvmppc_h_put_tce_iommu(), now it is merged into
->> kvmppc_h_put_tce(); this allows to check IOBA boundaries against
->> the first attached table only (makes the code simpler);
->>
->> v3:
->> * simplified not to use VFIO group notifiers
->> * reworked cleanup, should be cleaner/simpler now
->>
->> v2:
->> * reworked to use new VFIO notifiers
->> * now same iommu_table may appear in the list several times, to be fix=
+> >> once the acceleration is enabled, the existing userspace won't
+> >> disable it unless a VFIO container is destroyed; this adds necessary
+> >> cleanup to the KVM_DEV_VFIO_GROUP_DEL handler.
+> >>
+> >> As this creates a descriptor per IOMMU table-LIOBN couple (called
+> >> kvmppc_spapr_tce_iommu_table), it is possible to have several
+> >> descriptors with the same iommu_table (hardware IOMMU table) attached
+> >> to the same LIOBN; we do not remove duplicates though as
+> >> iommu_table_ops::exchange not just update a TCE entry (which is
+> >> shared among IOMMU groups) but also invalidates the TCE cache
+> >> (one per IOMMU group).
+> >>
+> >> This advertises the new KVM_CAP_SPAPR_TCE_VFIO capability to the user
+> >> space.
+> >>
+> >> This finally makes use of vfio_external_user_iommu_id() which was
+> >> introduced quite some time ago and was considered for removal.
+> >>
+> >> Tests show that this patch increases transmission speed from 220MB/s
+> >> to 750..1020MB/s on 10Gb network (Chelsea CXGB3 10Gb ethernet card).
+> >>
+> >> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> >=20
+> > I have some comments on this patch, but all the definite ones are
+> > pretty minor and could be done as later cleanups.
+> >=20
+> > I have some more serious queries, but they are just queries and
+> > requests for clarification.  If there are satisfactory answers to
+> > them, I'll add my R-b.
+> >=20
+> >=20
+> > ---
+> >> Changes:
+> >> v5:
+> >> * changed error codes in multiple places
+> >> * added bunch of WARN_ON() in places which should not really happen
+> >> * adde a check that an iommu table is not attached already to LIOBN
+> >> * dropped explicit calls to iommu_tce_clear_param_check/
+> >> iommu_tce_put_param_check as kvmppc_tce_validate/kvmppc_ioba_validate
+> >> call them anyway (since the previous patch)
+> >> * if we fail to update a hardware IOMMU table for unexpected reason,
+> >> this just clears the entry
+> >>
+> >> v4:
+> >> * added note to the commit log about allowing multiple updates of
+> >> the same IOMMU table;
+> >> * instead of checking for if any memory was preregistered, this
+> >> returns H_TOO_HARD if a specific page was not;
+> >> * fixed comments from v3 about error handling in many places;
+> >> * simplified TCE handlers and merged IOMMU parts inline - for example,
+> >> there used to be kvmppc_h_put_tce_iommu(), now it is merged into
+> >> kvmppc_h_put_tce(); this allows to check IOBA boundaries against
+> >> the first attached table only (makes the code simpler);
+> >>
+> >> v3:
+> >> * simplified not to use VFIO group notifiers
+> >> * reworked cleanup, should be cleaner/simpler now
+> >>
+> >> v2:
+> >> * reworked to use new VFIO notifiers
+> >> * now same iommu_table may appear in the list several times, to be fix=
 ed later
->> ---
->>  Documentation/virtual/kvm/devices/vfio.txt |  22 ++-
->>  arch/powerpc/include/asm/kvm_host.h        |   8 +
->>  arch/powerpc/include/asm/kvm_ppc.h         |   4 +
->>  include/uapi/linux/kvm.h                   |   8 +
->>  arch/powerpc/kvm/book3s_64_vio.c           | 307 ++++++++++++++++++++=
+> >> ---
+> >>  Documentation/virtual/kvm/devices/vfio.txt |  22 ++-
+> >>  arch/powerpc/include/asm/kvm_host.h        |   8 +
+> >>  arch/powerpc/include/asm/kvm_ppc.h         |   4 +
+> >>  include/uapi/linux/kvm.h                   |   8 +
+> >>  arch/powerpc/kvm/book3s_64_vio.c           | 307 ++++++++++++++++++++=
 ++++++++-
->>  arch/powerpc/kvm/book3s_64_vio_hv.c        | 152 +++++++++++++-
->>  arch/powerpc/kvm/powerpc.c                 |   2 +
->>  virt/kvm/vfio.c                            |  60 ++++++
->>  8 files changed, 555 insertions(+), 8 deletions(-)
->>
->> diff --git a/Documentation/virtual/kvm/devices/vfio.txt b/Documentatio=
+> >>  arch/powerpc/kvm/book3s_64_vio_hv.c        | 152 +++++++++++++-
+> >>  arch/powerpc/kvm/powerpc.c                 |   2 +
+> >>  virt/kvm/vfio.c                            |  60 ++++++
+> >>  8 files changed, 555 insertions(+), 8 deletions(-)
+> >>
+> >> diff --git a/Documentation/virtual/kvm/devices/vfio.txt b/Documentatio=
 n/virtual/kvm/devices/vfio.txt
->> index ef51740c67ca..f95d867168ea 100644
->> --- a/Documentation/virtual/kvm/devices/vfio.txt
->> +++ b/Documentation/virtual/kvm/devices/vfio.txt
->> @@ -16,7 +16,25 @@ Groups:
->> =20
->>  KVM_DEV_VFIO_GROUP attributes:
->>    KVM_DEV_VFIO_GROUP_ADD: Add a VFIO group to VFIO-KVM device trackin=
-g
->> +	kvm_device_attr.addr points to an int32_t file descriptor
->> +	for the VFIO group.
->>    KVM_DEV_VFIO_GROUP_DEL: Remove a VFIO group from VFIO-KVM device tr=
+> >> index ef51740c67ca..f95d867168ea 100644
+> >> --- a/Documentation/virtual/kvm/devices/vfio.txt
+> >> +++ b/Documentation/virtual/kvm/devices/vfio.txt
+> >> @@ -16,7 +16,25 @@ Groups:
+> >> =20
+> >>  KVM_DEV_VFIO_GROUP attributes:
+> >>    KVM_DEV_VFIO_GROUP_ADD: Add a VFIO group to VFIO-KVM device tracking
+> >> +	kvm_device_attr.addr points to an int32_t file descriptor
+> >> +	for the VFIO group.
+> >>    KVM_DEV_VFIO_GROUP_DEL: Remove a VFIO group from VFIO-KVM device tr=
 acking
->> +	kvm_device_attr.addr points to an int32_t file descriptor
->> +	for the VFIO group.
->> +  KVM_DEV_VFIO_GROUP_SET_SPAPR_TCE: attaches a guest visible TCE tabl=
-e
->> +	allocated by sPAPR KVM.
->> +	kvm_device_attr.addr points to a struct:
->> =20
->> -For each, kvm_device_attr.addr points to an int32_t file descriptor
->> -for the VFIO group.
->> +	struct kvm_vfio_spapr_tce {
->> +		__u32	argsz;
->> +		__u32	flags;
->> +		__s32	groupfd;
->> +		__s32	tablefd;
->> +	};
->> +
->> +	where
->> +	@argsz is the size of kvm_vfio_spapr_tce_liobn;
->> +	@flags are not supported now, must be zero;
->> +	@groupfd is a file descriptor for a VFIO group;
->> +	@tablefd is a file descriptor for a TCE table allocated via
->> +		KVM_CREATE_SPAPR_TCE.
->> diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/includ=
+> >> +	kvm_device_attr.addr points to an int32_t file descriptor
+> >> +	for the VFIO group.
+> >> +  KVM_DEV_VFIO_GROUP_SET_SPAPR_TCE: attaches a guest visible TCE table
+> >> +	allocated by sPAPR KVM.
+> >> +	kvm_device_attr.addr points to a struct:
+> >> =20
+> >> -For each, kvm_device_attr.addr points to an int32_t file descriptor
+> >> -for the VFIO group.
+> >> +	struct kvm_vfio_spapr_tce {
+> >> +		__u32	argsz;
+> >> +		__u32	flags;
+> >> +		__s32	groupfd;
+> >> +		__s32	tablefd;
+> >> +	};
+> >> +
+> >> +	where
+> >> +	@argsz is the size of kvm_vfio_spapr_tce_liobn;
+> >> +	@flags are not supported now, must be zero;
+> >> +	@groupfd is a file descriptor for a VFIO group;
+> >> +	@tablefd is a file descriptor for a TCE table allocated via
+> >> +		KVM_CREATE_SPAPR_TCE.
+> >> diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/includ=
 e/asm/kvm_host.h
->> index e59b172666cd..a827006941f8 100644
->> --- a/arch/powerpc/include/asm/kvm_host.h
->> +++ b/arch/powerpc/include/asm/kvm_host.h
->> @@ -191,6 +191,13 @@ struct kvmppc_pginfo {
->>  	atomic_t refcnt;
->>  };
->> =20
->> +struct kvmppc_spapr_tce_iommu_table {
->> +	struct rcu_head rcu;
->> +	struct list_head next;
->> +	struct vfio_group *group;
->> +	struct iommu_table *tbl;
->> +};
->> +
->>  struct kvmppc_spapr_tce_table {
->>  	struct list_head list;
->>  	struct kvm *kvm;
->> @@ -199,6 +206,7 @@ struct kvmppc_spapr_tce_table {
->>  	u32 page_shift;
->>  	u64 offset;		/* in pages */
->>  	u64 size;		/* window size in pages */
->> +	struct list_head iommu_tables;
->>  	struct page *pages[0];
->>  };
->> =20
->> diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include=
+> >> index e59b172666cd..a827006941f8 100644
+> >> --- a/arch/powerpc/include/asm/kvm_host.h
+> >> +++ b/arch/powerpc/include/asm/kvm_host.h
+> >> @@ -191,6 +191,13 @@ struct kvmppc_pginfo {
+> >>  	atomic_t refcnt;
+> >>  };
+> >> =20
+> >> +struct kvmppc_spapr_tce_iommu_table {
+> >> +	struct rcu_head rcu;
+> >> +	struct list_head next;
+> >> +	struct vfio_group *group;
+> >> +	struct iommu_table *tbl;
+> >> +};
+> >> +
+> >>  struct kvmppc_spapr_tce_table {
+> >>  	struct list_head list;
+> >>  	struct kvm *kvm;
+> >> @@ -199,6 +206,7 @@ struct kvmppc_spapr_tce_table {
+> >>  	u32 page_shift;
+> >>  	u64 offset;		/* in pages */
+> >>  	u64 size;		/* window size in pages */
+> >> +	struct list_head iommu_tables;
+> >>  	struct page *pages[0];
+> >>  };
+> >> =20
+> >> diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include=
 /asm/kvm_ppc.h
->> index e04b7fb8ccaa..b8a39dec92cf 100644
->> --- a/arch/powerpc/include/asm/kvm_ppc.h
->> +++ b/arch/powerpc/include/asm/kvm_ppc.h
->> @@ -163,6 +163,10 @@ extern long kvmppc_prepare_vrma(struct kvm *kvm,
->>  extern void kvmppc_map_vrma(struct kvm_vcpu *vcpu,
->>  			struct kvm_memory_slot *memslot, unsigned long porder);
->>  extern int kvmppc_pseries_do_hcall(struct kvm_vcpu *vcpu);
->> +extern long kvm_spapr_tce_attach_iommu_group(struct kvm *kvm, int tab=
+> >> index e04b7fb8ccaa..b8a39dec92cf 100644
+> >> --- a/arch/powerpc/include/asm/kvm_ppc.h
+> >> +++ b/arch/powerpc/include/asm/kvm_ppc.h
+> >> @@ -163,6 +163,10 @@ extern long kvmppc_prepare_vrma(struct kvm *kvm,
+> >>  extern void kvmppc_map_vrma(struct kvm_vcpu *vcpu,
+> >>  			struct kvm_memory_slot *memslot, unsigned long porder);
+> >>  extern int kvmppc_pseries_do_hcall(struct kvm_vcpu *vcpu);
+> >> +extern long kvm_spapr_tce_attach_iommu_group(struct kvm *kvm, int tab=
 lefd,
->> +		struct vfio_group *group);
->> +extern void kvm_spapr_tce_release_iommu_group(struct kvm *kvm,
->> +		struct vfio_group *group);
->> =20
->>  extern long kvm_vm_ioctl_create_spapr_tce(struct kvm *kvm,
->>  				struct kvm_create_spapr_tce_64 *args);
->> diff --git a/include/uapi/linux/kvm.h b/include/uapi/linux/kvm.h
->> index a2c9bb5a0ead..cdfa01169bd2 100644
->> --- a/include/uapi/linux/kvm.h
->> +++ b/include/uapi/linux/kvm.h
->> @@ -1076,6 +1076,7 @@ struct kvm_device_attr {
->>  #define  KVM_DEV_VFIO_GROUP			1
->>  #define   KVM_DEV_VFIO_GROUP_ADD			1
->>  #define   KVM_DEV_VFIO_GROUP_DEL			2
->> +#define   KVM_DEV_VFIO_GROUP_SET_SPAPR_TCE		3
->> =20
->>  enum kvm_device_type {
->>  	KVM_DEV_TYPE_FSL_MPIC_20	=3D 1,
->> @@ -1097,6 +1098,13 @@ enum kvm_device_type {
->>  	KVM_DEV_TYPE_MAX,
->>  };
->> =20
->> +struct kvm_vfio_spapr_tce {
->> +	__u32	argsz;
->> +	__u32	flags;
->> +	__s32	groupfd;
->> +	__s32	tablefd;
->> +};
->> +
->>  /*
->>   * ioctls for VM fds
->>   */
->> diff --git a/arch/powerpc/kvm/book3s_64_vio.c b/arch/powerpc/kvm/book3=
+> >> +		struct vfio_group *group);
+> >> +extern void kvm_spapr_tce_release_iommu_group(struct kvm *kvm,
+> >> +		struct vfio_group *group);
+> >> =20
+> >>  extern long kvm_vm_ioctl_create_spapr_tce(struct kvm *kvm,
+> >>  				struct kvm_create_spapr_tce_64 *args);
+> >> diff --git a/include/uapi/linux/kvm.h b/include/uapi/linux/kvm.h
+> >> index a2c9bb5a0ead..cdfa01169bd2 100644
+> >> --- a/include/uapi/linux/kvm.h
+> >> +++ b/include/uapi/linux/kvm.h
+> >> @@ -1076,6 +1076,7 @@ struct kvm_device_attr {
+> >>  #define  KVM_DEV_VFIO_GROUP			1
+> >>  #define   KVM_DEV_VFIO_GROUP_ADD			1
+> >>  #define   KVM_DEV_VFIO_GROUP_DEL			2
+> >> +#define   KVM_DEV_VFIO_GROUP_SET_SPAPR_TCE		3
+> >> =20
+> >>  enum kvm_device_type {
+> >>  	KVM_DEV_TYPE_FSL_MPIC_20	=3D 1,
+> >> @@ -1097,6 +1098,13 @@ enum kvm_device_type {
+> >>  	KVM_DEV_TYPE_MAX,
+> >>  };
+> >> =20
+> >> +struct kvm_vfio_spapr_tce {
+> >> +	__u32	argsz;
+> >> +	__u32	flags;
+> >> +	__s32	groupfd;
+> >> +	__s32	tablefd;
+> >> +};
+> >> +
+> >>  /*
+> >>   * ioctls for VM fds
+> >>   */
+> >> diff --git a/arch/powerpc/kvm/book3s_64_vio.c b/arch/powerpc/kvm/book3=
 s_64_vio.c
->> index 15df8ae627d9..062407af09ee 100644
->> --- a/arch/powerpc/kvm/book3s_64_vio.c
->> +++ b/arch/powerpc/kvm/book3s_64_vio.c
->> @@ -27,6 +27,10 @@
->>  #include <linux/hugetlb.h>
->>  #include <linux/list.h>
->>  #include <linux/anon_inodes.h>
->> +#include <linux/iommu.h>
->> +#include <linux/file.h>
->> +#include <linux/vfio.h>
->> +#include <linux/module.h>
->> =20
->>  #include <asm/tlbflush.h>
->>  #include <asm/kvm_ppc.h>
->> @@ -39,6 +43,36 @@
->>  #include <asm/udbg.h>
->>  #include <asm/iommu.h>
->>  #include <asm/tce.h>
->> +#include <asm/mmu_context.h>
->> +
->> +static void kvm_vfio_group_put_external_user(struct vfio_group *vfio_=
+> >> index 15df8ae627d9..062407af09ee 100644
+> >> --- a/arch/powerpc/kvm/book3s_64_vio.c
+> >> +++ b/arch/powerpc/kvm/book3s_64_vio.c
+> >> @@ -27,6 +27,10 @@
+> >>  #include <linux/hugetlb.h>
+> >>  #include <linux/list.h>
+> >>  #include <linux/anon_inodes.h>
+> >> +#include <linux/iommu.h>
+> >> +#include <linux/file.h>
+> >> +#include <linux/vfio.h>
+> >> +#include <linux/module.h>
+> >> =20
+> >>  #include <asm/tlbflush.h>
+> >>  #include <asm/kvm_ppc.h>
+> >> @@ -39,6 +43,36 @@
+> >>  #include <asm/udbg.h>
+> >>  #include <asm/iommu.h>
+> >>  #include <asm/tce.h>
+> >> +#include <asm/mmu_context.h>
+> >> +
+> >> +static void kvm_vfio_group_put_external_user(struct vfio_group *vfio_=
 group)
->> +{
->> +	void (*fn)(struct vfio_group *);
->> +
->> +	fn =3D symbol_get(vfio_group_put_external_user);
->> +	if (WARN_ON(!fn))
->> +		return;
->> +
->> +	fn(vfio_group);
->> +
->> +	symbol_put(vfio_group_put_external_user);
->> +}
->> +
->> +static int kvm_vfio_external_user_iommu_id(struct vfio_group *vfio_gr=
+> >> +{
+> >> +	void (*fn)(struct vfio_group *);
+> >> +
+> >> +	fn =3D symbol_get(vfio_group_put_external_user);
+> >> +	if (WARN_ON(!fn))
+> >> +		return;
+> >> +
+> >> +	fn(vfio_group);
+> >> +
+> >> +	symbol_put(vfio_group_put_external_user);
+> >> +}
+> >> +
+> >> +static int kvm_vfio_external_user_iommu_id(struct vfio_group *vfio_gr=
 oup)
->> +{
->> +	int (*fn)(struct vfio_group *);
->> +	int ret =3D -1;
->> +
->> +	fn =3D symbol_get(vfio_external_user_iommu_id);
->> +	if (!fn)
->> +		return ret;
->> +
->> +	ret =3D fn(vfio_group);
->> +
->> +	symbol_put(vfio_external_user_iommu_id);
->> +
->> +	return ret;
->> +}
->> =20
->>  static unsigned long kvmppc_tce_pages(unsigned long iommu_pages)
->>  {
->> @@ -90,6 +124,130 @@ static long kvmppc_account_memlimit(unsigned long=
+> >> +{
+> >> +	int (*fn)(struct vfio_group *);
+> >> +	int ret =3D -1;
+> >> +
+> >> +	fn =3D symbol_get(vfio_external_user_iommu_id);
+> >> +	if (!fn)
+> >> +		return ret;
+> >> +
+> >> +	ret =3D fn(vfio_group);
+> >> +
+> >> +	symbol_put(vfio_external_user_iommu_id);
+> >> +
+> >> +	return ret;
+> >> +}
+> >> =20
+> >>  static unsigned long kvmppc_tce_pages(unsigned long iommu_pages)
+> >>  {
+> >> @@ -90,6 +124,130 @@ static long kvmppc_account_memlimit(unsigned long=
  stt_pages, bool inc)
->>  	return ret;
->>  }
->> =20
->> +static void kvm_spapr_tce_iommu_table_free(struct rcu_head *head)
->> +{
->> +	struct kvmppc_spapr_tce_iommu_table *stit =3D container_of(head,
->> +			struct kvmppc_spapr_tce_iommu_table, rcu);
->> +
->> +	iommu_table_put(stit->tbl);
->> +	kvm_vfio_group_put_external_user(stit->group);
->> +
->> +	kfree(stit);
->> +}
->> +
->> +static void kvm_spapr_tce_liobn_release_iommu_group(
->> +		struct kvmppc_spapr_tce_table *stt,
->> +		struct vfio_group *group)
->> +{
->> +	struct kvmppc_spapr_tce_iommu_table *stit, *tmp;
->> +
->> +	list_for_each_entry_safe(stit, tmp, &stt->iommu_tables, next) {
->> +		if (group && (stit->group !=3D group))
->> +			continue;
->> +
->> +		list_del_rcu(&stit->next);
->> +
->> +		call_rcu(&stit->rcu, kvm_spapr_tce_iommu_table_free);
->> +	}
->> +}
->> +
->> +extern void kvm_spapr_tce_release_iommu_group(struct kvm *kvm,
->> +		struct vfio_group *group)
->> +{
->> +	struct kvmppc_spapr_tce_table *stt;
->> +
->> +	list_for_each_entry_rcu(stt, &kvm->arch.spapr_tce_tables, list)
->> +		kvm_spapr_tce_liobn_release_iommu_group(stt, group);
->> +}
->> +
->> +extern long kvm_spapr_tce_attach_iommu_group(struct kvm *kvm, int tab=
+> >>  	return ret;
+> >>  }
+> >> =20
+> >> +static void kvm_spapr_tce_iommu_table_free(struct rcu_head *head)
+> >> +{
+> >> +	struct kvmppc_spapr_tce_iommu_table *stit =3D container_of(head,
+> >> +			struct kvmppc_spapr_tce_iommu_table, rcu);
+> >> +
+> >> +	iommu_table_put(stit->tbl);
+> >> +	kvm_vfio_group_put_external_user(stit->group);
+> >> +
+> >> +	kfree(stit);
+> >> +}
+> >> +
+> >> +static void kvm_spapr_tce_liobn_release_iommu_group(
+> >> +		struct kvmppc_spapr_tce_table *stt,
+> >> +		struct vfio_group *group)
+> >> +{
+> >> +	struct kvmppc_spapr_tce_iommu_table *stit, *tmp;
+> >> +
+> >> +	list_for_each_entry_safe(stit, tmp, &stt->iommu_tables, next) {
+> >> +		if (group && (stit->group !=3D group))
+> >> +			continue;
+> >> +
+> >> +		list_del_rcu(&stit->next);
+> >> +
+> >> +		call_rcu(&stit->rcu, kvm_spapr_tce_iommu_table_free);
+> >> +	}
+> >> +}
+> >> +
+> >> +extern void kvm_spapr_tce_release_iommu_group(struct kvm *kvm,
+> >> +		struct vfio_group *group)
+> >> +{
+> >> +	struct kvmppc_spapr_tce_table *stt;
+> >> +
+> >> +	list_for_each_entry_rcu(stt, &kvm->arch.spapr_tce_tables, list)
+> >> +		kvm_spapr_tce_liobn_release_iommu_group(stt, group);
+> >> +}
+> >> +
+> >> +extern long kvm_spapr_tce_attach_iommu_group(struct kvm *kvm, int tab=
 lefd,
->> +		struct vfio_group *group)
->> +{
->> +	struct kvmppc_spapr_tce_table *stt =3D NULL;
->> +	bool found =3D false;
->> +	struct iommu_table *tbl =3D NULL;
->> +	struct iommu_table_group *table_group;
->> +	long i, ret =3D 0;
->> +	struct kvmppc_spapr_tce_iommu_table *stit;
->> +	struct fd f;
->> +	int group_id;
->> +	struct iommu_group *grp;
->> +
->> +	group_id =3D kvm_vfio_external_user_iommu_id(group);
->> +	grp =3D iommu_group_get_by_id(group_id);
->> +	if (WARN_ON(!grp))
->> +		return -EIO;
->=20
-> I think it would be nicer to have a function that goes directly from
-> vfio_group to iommu_group rather than going via id.  That can be a
-> later cleanup, though.
->=20
->> +
->> +	f =3D fdget(tablefd);
->> +	if (!f.file) {
->> +		ret =3D -EBADF;
->> +		goto put_exit;
->> +	}
->> +
->> +	list_for_each_entry_rcu(stt, &kvm->arch.spapr_tce_tables, list) {
->> +		if (stt =3D=3D f.file->private_data) {
->> +			found =3D true;
->> +			break;
->> +		}
->> +	}
->> +
->> +	fdput(f);
->> +
->> +	if (!found) {
->> +		ret =3D -EINVAL;
->> +		goto put_exit;
->> +	}
->> +
->> +	table_group =3D iommu_group_get_iommudata(grp);
->> +	if (WARN_ON(!table_group)) {
->> +		ret =3D -EFAULT;
->> +		goto put_exit;
->> +	}
->> +
->> +	for (i =3D 0; i < IOMMU_TABLE_GROUP_MAX_TABLES; ++i) {
->> +		struct iommu_table *tbltmp =3D table_group->tables[i];
->> +
->> +		if (!tbltmp)
->> +			continue;
->> +
->> +		/*
->> +		 * Make sure hardware table parameters are exactly the same;
->> +		 * this is used in the TCE handlers where boundary checks
->> +		 * use only the first attached table.
->> +		 */
->> +		if ((tbltmp->it_page_shift =3D=3D stt->page_shift) &&
->> +				(tbltmp->it_offset =3D=3D stt->offset) &&
->> +				(tbltmp->it_size =3D=3D stt->size)) {
->> +			tbl =3D tbltmp;
->> +			break;
->> +		}
->> +	}
->> +	if (!tbl) {
->> +		ret =3D -EINVAL;
->> +		goto put_exit;
->> +	}
->> +
->> +	list_for_each_entry_rcu(stit, &stt->iommu_tables, next) {
->> +		if ((stit->tbl =3D=3D tbl) && (stit->group =3D=3D group)) {
->> +			ret =3D -EBUSY;
->> +			goto put_exit;
->> +		}
->> +	}
->> +
->> +	iommu_table_get(tbl);
->> +
->> +	stit =3D kzalloc(sizeof(*stit), GFP_KERNEL);
->> +	stit->tbl =3D tbl;
->> +	stit->group =3D group;
->> +
->> +	list_add_rcu(&stit->next, &stt->iommu_tables);
->> +
->> +put_exit:
->> +	iommu_group_put(grp);
->> +
->> +	return ret;
->> +}
->> +
->>  static void release_spapr_tce_table(struct rcu_head *head)
->>  {
->>  	struct kvmppc_spapr_tce_table *stt =3D container_of(head,
->> @@ -132,6 +290,8 @@ static int kvm_spapr_tce_release(struct inode *ino=
+> >> +		struct vfio_group *group)
+> >> +{
+> >> +	struct kvmppc_spapr_tce_table *stt =3D NULL;
+> >> +	bool found =3D false;
+> >> +	struct iommu_table *tbl =3D NULL;
+> >> +	struct iommu_table_group *table_group;
+> >> +	long i, ret =3D 0;
+> >> +	struct kvmppc_spapr_tce_iommu_table *stit;
+> >> +	struct fd f;
+> >> +	int group_id;
+> >> +	struct iommu_group *grp;
+> >> +
+> >> +	group_id =3D kvm_vfio_external_user_iommu_id(group);
+> >> +	grp =3D iommu_group_get_by_id(group_id);
+> >> +	if (WARN_ON(!grp))
+> >> +		return -EIO;
+> >=20
+> > I think it would be nicer to have a function that goes directly from
+> > vfio_group to iommu_group rather than going via id.  That can be a
+> > later cleanup, though.
+> >=20
+> >> +
+> >> +	f =3D fdget(tablefd);
+> >> +	if (!f.file) {
+> >> +		ret =3D -EBADF;
+> >> +		goto put_exit;
+> >> +	}
+> >> +
+> >> +	list_for_each_entry_rcu(stt, &kvm->arch.spapr_tce_tables, list) {
+> >> +		if (stt =3D=3D f.file->private_data) {
+> >> +			found =3D true;
+> >> +			break;
+> >> +		}
+> >> +	}
+> >> +
+> >> +	fdput(f);
+> >> +
+> >> +	if (!found) {
+> >> +		ret =3D -EINVAL;
+> >> +		goto put_exit;
+> >> +	}
+> >> +
+> >> +	table_group =3D iommu_group_get_iommudata(grp);
+> >> +	if (WARN_ON(!table_group)) {
+> >> +		ret =3D -EFAULT;
+> >> +		goto put_exit;
+> >> +	}
+> >> +
+> >> +	for (i =3D 0; i < IOMMU_TABLE_GROUP_MAX_TABLES; ++i) {
+> >> +		struct iommu_table *tbltmp =3D table_group->tables[i];
+> >> +
+> >> +		if (!tbltmp)
+> >> +			continue;
+> >> +
+> >> +		/*
+> >> +		 * Make sure hardware table parameters are exactly the same;
+> >> +		 * this is used in the TCE handlers where boundary checks
+> >> +		 * use only the first attached table.
+> >> +		 */
+> >> +		if ((tbltmp->it_page_shift =3D=3D stt->page_shift) &&
+> >> +				(tbltmp->it_offset =3D=3D stt->offset) &&
+> >> +				(tbltmp->it_size =3D=3D stt->size)) {
+> >> +			tbl =3D tbltmp;
+> >> +			break;
+> >> +		}
+> >> +	}
+> >> +	if (!tbl) {
+> >> +		ret =3D -EINVAL;
+> >> +		goto put_exit;
+> >> +	}
+> >> +
+> >> +	list_for_each_entry_rcu(stit, &stt->iommu_tables, next) {
+> >> +		if ((stit->tbl =3D=3D tbl) && (stit->group =3D=3D group)) {
+> >> +			ret =3D -EBUSY;
+> >> +			goto put_exit;
+> >> +		}
+> >> +	}
+> >> +
+> >> +	iommu_table_get(tbl);
+> >> +
+> >> +	stit =3D kzalloc(sizeof(*stit), GFP_KERNEL);
+> >> +	stit->tbl =3D tbl;
+> >> +	stit->group =3D group;
+> >> +
+> >> +	list_add_rcu(&stit->next, &stt->iommu_tables);
+> >> +
+> >> +put_exit:
+> >> +	iommu_group_put(grp);
+> >> +
+> >> +	return ret;
+> >> +}
+> >> +
+> >>  static void release_spapr_tce_table(struct rcu_head *head)
+> >>  {
+> >>  	struct kvmppc_spapr_tce_table *stt =3D container_of(head,
+> >> @@ -132,6 +290,8 @@ static int kvm_spapr_tce_release(struct inode *ino=
 de, struct file *filp)
->> =20
->>  	list_del_rcu(&stt->list);
->> =20
->> +	kvm_spapr_tce_liobn_release_iommu_group(stt, NULL /* release all */)=
-;
->> +
->>  	kvm_put_kvm(stt->kvm);
->> =20
->>  	kvmppc_account_memlimit(
->> @@ -181,6 +341,7 @@ long kvm_vm_ioctl_create_spapr_tce(struct kvm *kvm=
-,
->>  	stt->offset =3D args->offset;
->>  	stt->size =3D size;
->>  	stt->kvm =3D kvm;
->> +	INIT_LIST_HEAD_RCU(&stt->iommu_tables);
->> =20
->>  	for (i =3D 0; i < npages; i++) {
->>  		stt->pages[i] =3D alloc_page(GFP_KERNEL | __GFP_ZERO);
->> @@ -209,11 +370,102 @@ long kvm_vm_ioctl_create_spapr_tce(struct kvm *=
+> >> =20
+> >>  	list_del_rcu(&stt->list);
+> >> =20
+> >> +	kvm_spapr_tce_liobn_release_iommu_group(stt, NULL /* release all */);
+> >> +
+> >>  	kvm_put_kvm(stt->kvm);
+> >> =20
+> >>  	kvmppc_account_memlimit(
+> >> @@ -181,6 +341,7 @@ long kvm_vm_ioctl_create_spapr_tce(struct kvm *kvm,
+> >>  	stt->offset =3D args->offset;
+> >>  	stt->size =3D size;
+> >>  	stt->kvm =3D kvm;
+> >> +	INIT_LIST_HEAD_RCU(&stt->iommu_tables);
+> >> =20
+> >>  	for (i =3D 0; i < npages; i++) {
+> >>  		stt->pages[i] =3D alloc_page(GFP_KERNEL | __GFP_ZERO);
+> >> @@ -209,11 +370,102 @@ long kvm_vm_ioctl_create_spapr_tce(struct kvm *=
 kvm,
->>  	return ret;
->>  }
->> =20
->> +static void kvmppc_clear_tce(struct iommu_table *tbl, unsigned long e=
+> >>  	return ret;
+> >>  }
+> >> =20
+> >> +static void kvmppc_clear_tce(struct iommu_table *tbl, unsigned long e=
 ntry)
->> +{
->> +	unsigned long hpa =3D 0;
->> +	enum dma_data_direction dir =3D DMA_NONE;
->> +
->> +	iommu_tce_xchg(tbl, entry, &hpa, &dir);
->> +}
->> +
->> +static long kvmppc_tce_iommu_mapped_dec(struct kvm *kvm,
->> +		struct iommu_table *tbl, unsigned long entry)
->> +{
->> +	struct mm_iommu_table_group_mem_t *mem =3D NULL;
->=20
-> Initialization is unnecessary for the variable above.
->=20
->> +	const unsigned long pgsize =3D 1ULL << tbl->it_page_shift;
->> +	unsigned long *pua =3D IOMMU_TABLE_USERSPACE_ENTRY(tbl, entry);
->> +
->> +	if (WARN_ON(!pua))
->> +		return H_HARDWARE;
->> +
->> +	mem =3D mm_iommu_lookup(kvm->mm, *pua, pgsize);
->> +	if (!mem)
->> +		return H_TOO_HARD;
->> +
->> +	mm_iommu_mapped_dec(mem);
->> +
->> +	*pua =3D 0;
->> +
->> +	return H_SUCCESS;
->> +}
->> +
->> +static long kvmppc_tce_iommu_unmap(struct kvm *kvm,
->> +		struct iommu_table *tbl, unsigned long entry)
->> +{
->> +	enum dma_data_direction dir =3D DMA_NONE;
->> +	unsigned long hpa =3D 0;
->> +	long ret;
->> +
->> +	if (iommu_tce_xchg(tbl, entry, &hpa, &dir))
->> +		return H_HARDWARE;
->> +
->> +	if (dir =3D=3D DMA_NONE)
->> +		return H_SUCCESS;
->> +
->> +	ret =3D kvmppc_tce_iommu_mapped_dec(kvm, tbl, entry);
->> +	if (ret !=3D H_SUCCESS)
->> +		iommu_tce_xchg(tbl, entry, &hpa, &dir);
->> +
->> +	return ret;
->> +}
->> +
->> +long kvmppc_tce_iommu_map(struct kvm *kvm, struct iommu_table *tbl,
->> +		unsigned long entry, unsigned long gpa,
->> +		enum dma_data_direction dir)
->> +{
->> +	long ret;
->> +	unsigned long hpa, ua, *pua =3D IOMMU_TABLE_USERSPACE_ENTRY(tbl, ent=
+> >> +{
+> >> +	unsigned long hpa =3D 0;
+> >> +	enum dma_data_direction dir =3D DMA_NONE;
+> >> +
+> >> +	iommu_tce_xchg(tbl, entry, &hpa, &dir);
+> >> +}
+> >> +
+> >> +static long kvmppc_tce_iommu_mapped_dec(struct kvm *kvm,
+> >> +		struct iommu_table *tbl, unsigned long entry)
+> >> +{
+> >> +	struct mm_iommu_table_group_mem_t *mem =3D NULL;
+> >=20
+> > Initialization is unnecessary for the variable above.
+> >=20
+> >> +	const unsigned long pgsize =3D 1ULL << tbl->it_page_shift;
+> >> +	unsigned long *pua =3D IOMMU_TABLE_USERSPACE_ENTRY(tbl, entry);
+> >> +
+> >> +	if (WARN_ON(!pua))
+> >> +		return H_HARDWARE;
+> >> +
+> >> +	mem =3D mm_iommu_lookup(kvm->mm, *pua, pgsize);
+> >> +	if (!mem)
+> >> +		return H_TOO_HARD;
+> >> +
+> >> +	mm_iommu_mapped_dec(mem);
+> >> +
+> >> +	*pua =3D 0;
+> >> +
+> >> +	return H_SUCCESS;
+> >> +}
+> >> +
+> >> +static long kvmppc_tce_iommu_unmap(struct kvm *kvm,
+> >> +		struct iommu_table *tbl, unsigned long entry)
+> >> +{
+> >> +	enum dma_data_direction dir =3D DMA_NONE;
+> >> +	unsigned long hpa =3D 0;
+> >> +	long ret;
+> >> +
+> >> +	if (iommu_tce_xchg(tbl, entry, &hpa, &dir))
+> >> +		return H_HARDWARE;
+> >> +
+> >> +	if (dir =3D=3D DMA_NONE)
+> >> +		return H_SUCCESS;
+> >> +
+> >> +	ret =3D kvmppc_tce_iommu_mapped_dec(kvm, tbl, entry);
+> >> +	if (ret !=3D H_SUCCESS)
+> >> +		iommu_tce_xchg(tbl, entry, &hpa, &dir);
+> >> +
+> >> +	return ret;
+> >> +}
+> >> +
+> >> +long kvmppc_tce_iommu_map(struct kvm *kvm, struct iommu_table *tbl,
+> >> +		unsigned long entry, unsigned long gpa,
+> >> +		enum dma_data_direction dir)
+> >> +{
+> >> +	long ret;
+> >> +	unsigned long hpa, ua, *pua =3D IOMMU_TABLE_USERSPACE_ENTRY(tbl, ent=
 ry);
->> +	struct mm_iommu_table_group_mem_t *mem;
->> +
->> +	if (!pua)
->> +		/* it_userspace allocation might be delayed */
->> +		return H_TOO_HARD;
->> +
->> +	if (kvmppc_gpa_to_ua(kvm, gpa, &ua, NULL))
->> +		return H_PARAMETER;
->> +
->> +	mem =3D mm_iommu_lookup(kvm->mm, ua, 1ULL << tbl->it_page_shift);
->> +	if (!mem)
->> +		return H_TOO_HARD;
->> +
->> +	if (WARN_ON(mm_iommu_ua_to_hpa(mem, ua, &hpa)))
->> +		return H_HARDWARE;
+> >> +	struct mm_iommu_table_group_mem_t *mem;
+> >> +
+> >> +	if (!pua)
+> >> +		/* it_userspace allocation might be delayed */
+> >> +		return H_TOO_HARD;
+> >> +
+> >> +	if (kvmppc_gpa_to_ua(kvm, gpa, &ua, NULL))
+> >> +		return H_PARAMETER;
+> >> +
+> >> +	mem =3D mm_iommu_lookup(kvm->mm, ua, 1ULL << tbl->it_page_shift);
+> >> +	if (!mem)
+> >> +		return H_TOO_HARD;
+> >> +
+> >> +	if (WARN_ON(mm_iommu_ua_to_hpa(mem, ua, &hpa)))
+> >> +		return H_HARDWARE;
+> >=20
+> > Remind me - could a failure here be triggered by userspace failing to
+> > preregister all the memory it should?
 >=20
-> Remind me - could a failure here be triggered by userspace failing to
-> preregister all the memory it should?
-
-
-mm_iommu_lookup() should fail first as the only reason for
-mm_iommu_ua_to_hpa() to fail is (entry >=3D mem->entries) but this is che=
+>=20
+> mm_iommu_lookup() should fail first as the only reason for
+> mm_iommu_ua_to_hpa() to fail is (entry >=3D mem->entries) but this is che=
 cked
-in mm_iommu_lookup().
+> in mm_iommu_lookup().
 
->=20
->> +	if (mm_iommu_mapped_inc(mem))
->> +		return H_CLOSED;
->> +
->> +	ret =3D iommu_tce_xchg(tbl, entry, &hpa, &dir);
->> +	if (ret) {
->> +		mm_iommu_mapped_dec(mem);
->> +		return H_TOO_HARD;
->> +	}
->> +
->> +	if (dir !=3D DMA_NONE)
->> +		kvmppc_tce_iommu_mapped_dec(kvm, tbl, entry);
->> +
->> +	*pua =3D ua;
->> +
->> +	return 0;
->> +}
->> +
->>  long kvmppc_h_put_tce(struct kvm_vcpu *vcpu, unsigned long liobn,
->>  		      unsigned long ioba, unsigned long tce)
->>  {
->>  	struct kvmppc_spapr_tce_table *stt;
->> -	long ret;
->> +	long ret, idx;
->> +	struct kvmppc_spapr_tce_iommu_table *stit;
->> +	unsigned long entry, gpa;
->> +	enum dma_data_direction dir;
->> =20
->>  	/* udbg_printf("H_PUT_TCE(): liobn=3D0x%lx ioba=3D0x%lx, tce=3D0x%lx=
+Ah, yes of course, I forgot.  Ok, that should be fine.
+
+
+> >=20
+> >> +	if (mm_iommu_mapped_inc(mem))
+> >> +		return H_CLOSED;
+> >> +
+> >> +	ret =3D iommu_tce_xchg(tbl, entry, &hpa, &dir);
+> >> +	if (ret) {
+> >> +		mm_iommu_mapped_dec(mem);
+> >> +		return H_TOO_HARD;
+> >> +	}
+> >> +
+> >> +	if (dir !=3D DMA_NONE)
+> >> +		kvmppc_tce_iommu_mapped_dec(kvm, tbl, entry);
+> >> +
+> >> +	*pua =3D ua;
+> >> +
+> >> +	return 0;
+> >> +}
+> >> +
+> >>  long kvmppc_h_put_tce(struct kvm_vcpu *vcpu, unsigned long liobn,
+> >>  		      unsigned long ioba, unsigned long tce)
+> >>  {
+> >>  	struct kvmppc_spapr_tce_table *stt;
+> >> -	long ret;
+> >> +	long ret, idx;
+> >> +	struct kvmppc_spapr_tce_iommu_table *stit;
+> >> +	unsigned long entry, gpa;
+> >> +	enum dma_data_direction dir;
+> >> =20
+> >>  	/* udbg_printf("H_PUT_TCE(): liobn=3D0x%lx ioba=3D0x%lx, tce=3D0x%lx=
 \n", */
->>  	/* 	    liobn, ioba, tce); */
->> @@ -230,7 +482,28 @@ long kvmppc_h_put_tce(struct kvm_vcpu *vcpu, unsi=
+> >>  	/* 	    liobn, ioba, tce); */
+> >> @@ -230,7 +482,28 @@ long kvmppc_h_put_tce(struct kvm_vcpu *vcpu, unsi=
 gned long liobn,
->>  	if (ret !=3D H_SUCCESS)
->>  		return ret;
->> =20
->> -	kvmppc_tce_put(stt, ioba >> stt->page_shift, tce);
->> +	entry =3D ioba >> stt->page_shift;
->> +	gpa =3D tce & ~(TCE_PCI_READ | TCE_PCI_WRITE);
->> +	dir =3D iommu_tce_direction(tce);
->> +
->> +	list_for_each_entry_lockless(stit, &stt->iommu_tables, next) {
->> +		if (dir =3D=3D DMA_NONE) {
->> +			ret =3D kvmppc_tce_iommu_unmap(vcpu->kvm,
->> +					stit->tbl, entry);
->> +		} else {
->> +			idx =3D srcu_read_lock(&vcpu->kvm->srcu);
->> +			ret =3D kvmppc_tce_iommu_map(vcpu->kvm, stit->tbl,
->> +					entry, gpa, dir);
->> +			srcu_read_unlock(&vcpu->kvm->srcu, idx);
->> +		}
->> +
->> +		if (WARN_ON_ONCE(ret =3D=3D H_HARDWARE))
->> +			kvmppc_clear_tce(stit->tbl, entry);
->> +		else if (ret !=3D H_SUCCESS)
->> +			return ret;
->> +	}
->> +
->> +	kvmppc_tce_put(stt, entry, tce);
->> =20
->>  	return H_SUCCESS;
->>  }
->> @@ -242,9 +515,10 @@ long kvmppc_h_put_tce_indirect(struct kvm_vcpu *v=
+> >>  	if (ret !=3D H_SUCCESS)
+> >>  		return ret;
+> >> =20
+> >> -	kvmppc_tce_put(stt, ioba >> stt->page_shift, tce);
+> >> +	entry =3D ioba >> stt->page_shift;
+> >> +	gpa =3D tce & ~(TCE_PCI_READ | TCE_PCI_WRITE);
+> >> +	dir =3D iommu_tce_direction(tce);
+> >> +
+> >> +	list_for_each_entry_lockless(stit, &stt->iommu_tables, next) {
+> >> +		if (dir =3D=3D DMA_NONE) {
+> >> +			ret =3D kvmppc_tce_iommu_unmap(vcpu->kvm,
+> >> +					stit->tbl, entry);
+> >> +		} else {
+> >> +			idx =3D srcu_read_lock(&vcpu->kvm->srcu);
+> >> +			ret =3D kvmppc_tce_iommu_map(vcpu->kvm, stit->tbl,
+> >> +					entry, gpa, dir);
+> >> +			srcu_read_unlock(&vcpu->kvm->srcu, idx);
+> >> +		}
+> >> +
+> >> +		if (WARN_ON_ONCE(ret =3D=3D H_HARDWARE))
+> >> +			kvmppc_clear_tce(stit->tbl, entry);
+> >> +		else if (ret !=3D H_SUCCESS)
+> >> +			return ret;
+> >> +	}
+> >> +
+> >> +	kvmppc_tce_put(stt, entry, tce);
+> >> =20
+> >>  	return H_SUCCESS;
+> >>  }
+> >> @@ -242,9 +515,10 @@ long kvmppc_h_put_tce_indirect(struct kvm_vcpu *v=
 cpu,
->>  {
->>  	struct kvmppc_spapr_tce_table *stt;
->>  	long i, ret =3D H_SUCCESS, idx;
->> -	unsigned long entry, ua =3D 0;
->> +	unsigned long entry, ua =3D 0, gpa;
->>  	u64 __user *tces;
->>  	u64 tce;
->> +	struct kvmppc_spapr_tce_iommu_table *stit;
->> =20
->>  	stt =3D kvmppc_find_table(vcpu->kvm, liobn);
->>  	if (!stt)
->> @@ -283,6 +557,18 @@ long kvmppc_h_put_tce_indirect(struct kvm_vcpu *v=
+> >>  {
+> >>  	struct kvmppc_spapr_tce_table *stt;
+> >>  	long i, ret =3D H_SUCCESS, idx;
+> >> -	unsigned long entry, ua =3D 0;
+> >> +	unsigned long entry, ua =3D 0, gpa;
+> >>  	u64 __user *tces;
+> >>  	u64 tce;
+> >> +	struct kvmppc_spapr_tce_iommu_table *stit;
+> >> =20
+> >>  	stt =3D kvmppc_find_table(vcpu->kvm, liobn);
+> >>  	if (!stt)
+> >> @@ -283,6 +557,18 @@ long kvmppc_h_put_tce_indirect(struct kvm_vcpu *v=
 cpu,
->>  		if (ret !=3D H_SUCCESS)
->>  			goto unlock_exit;
->> =20
->> +		gpa =3D tce & ~(TCE_PCI_READ | TCE_PCI_WRITE);
->> +
->> +		list_for_each_entry_lockless(stit, &stt->iommu_tables, next) {
->> +			ret =3D kvmppc_tce_iommu_map(vcpu->kvm,
->> +					stit->tbl, entry + i, gpa,
->> +					iommu_tce_direction(tce));
->> +			if (WARN_ON_ONCE(ret =3D=3D H_HARDWARE))
->> +				kvmppc_clear_tce(stit->tbl, entry);
->> +			else if (ret !=3D H_SUCCESS)
->> +				goto unlock_exit;
->> +		}
->> +
->>  		kvmppc_tce_put(stt, entry + i, tce);
->>  	}
->> =20
->> @@ -299,6 +585,7 @@ long kvmppc_h_stuff_tce(struct kvm_vcpu *vcpu,
->>  {
->>  	struct kvmppc_spapr_tce_table *stt;
->>  	long i, ret;
->> +	struct kvmppc_spapr_tce_iommu_table *stit;
->> =20
->>  	stt =3D kvmppc_find_table(vcpu->kvm, liobn);
->>  	if (!stt)
->> @@ -312,6 +599,20 @@ long kvmppc_h_stuff_tce(struct kvm_vcpu *vcpu,
->>  	if (tce_value & (TCE_PCI_WRITE | TCE_PCI_READ))
->>  		return H_PARAMETER;
->> =20
->> +	list_for_each_entry_lockless(stit, &stt->iommu_tables, next) {
->> +		unsigned long entry =3D ioba >> stit->tbl->it_page_shift;
->> +
->> +		for (i =3D 0; i < npages; ++i) {
->> +			ret =3D kvmppc_tce_iommu_unmap(vcpu->kvm,
->> +					stit->tbl, entry + i);
->> +
->> +			if (WARN_ON_ONCE(ret =3D=3D H_HARDWARE))
->> +				kvmppc_clear_tce(stit->tbl, entry);
->> +			else if (ret !=3D H_SUCCESS)
->> +				return ret;
->> +		}
->> +	}
->> +
->>  	for (i =3D 0; i < npages; ++i, ioba +=3D (1ULL << stt->page_shift))
->>  		kvmppc_tce_put(stt, ioba >> stt->page_shift, tce_value);
->> =20
->> diff --git a/arch/powerpc/kvm/book3s_64_vio_hv.c b/arch/powerpc/kvm/bo=
+> >>  		if (ret !=3D H_SUCCESS)
+> >>  			goto unlock_exit;
+> >> =20
+> >> +		gpa =3D tce & ~(TCE_PCI_READ | TCE_PCI_WRITE);
+> >> +
+> >> +		list_for_each_entry_lockless(stit, &stt->iommu_tables, next) {
+> >> +			ret =3D kvmppc_tce_iommu_map(vcpu->kvm,
+> >> +					stit->tbl, entry + i, gpa,
+> >> +					iommu_tce_direction(tce));
+> >> +			if (WARN_ON_ONCE(ret =3D=3D H_HARDWARE))
+> >> +				kvmppc_clear_tce(stit->tbl, entry);
+> >> +			else if (ret !=3D H_SUCCESS)
+> >> +				goto unlock_exit;
+> >> +		}
+> >> +
+> >>  		kvmppc_tce_put(stt, entry + i, tce);
+> >>  	}
+> >> =20
+> >> @@ -299,6 +585,7 @@ long kvmppc_h_stuff_tce(struct kvm_vcpu *vcpu,
+> >>  {
+> >>  	struct kvmppc_spapr_tce_table *stt;
+> >>  	long i, ret;
+> >> +	struct kvmppc_spapr_tce_iommu_table *stit;
+> >> =20
+> >>  	stt =3D kvmppc_find_table(vcpu->kvm, liobn);
+> >>  	if (!stt)
+> >> @@ -312,6 +599,20 @@ long kvmppc_h_stuff_tce(struct kvm_vcpu *vcpu,
+> >>  	if (tce_value & (TCE_PCI_WRITE | TCE_PCI_READ))
+> >>  		return H_PARAMETER;
+> >> =20
+> >> +	list_for_each_entry_lockless(stit, &stt->iommu_tables, next) {
+> >> +		unsigned long entry =3D ioba >> stit->tbl->it_page_shift;
+> >> +
+> >> +		for (i =3D 0; i < npages; ++i) {
+> >> +			ret =3D kvmppc_tce_iommu_unmap(vcpu->kvm,
+> >> +					stit->tbl, entry + i);
+> >> +
+> >> +			if (WARN_ON_ONCE(ret =3D=3D H_HARDWARE))
+> >> +				kvmppc_clear_tce(stit->tbl, entry);
+> >> +			else if (ret !=3D H_SUCCESS)
+> >> +				return ret;
+> >> +		}
+> >> +	}
+> >> +
+> >>  	for (i =3D 0; i < npages; ++i, ioba +=3D (1ULL << stt->page_shift))
+> >>  		kvmppc_tce_put(stt, ioba >> stt->page_shift, tce_value);
+> >> =20
+> >> diff --git a/arch/powerpc/kvm/book3s_64_vio_hv.c b/arch/powerpc/kvm/bo=
 ok3s_64_vio_hv.c
->> index 92d769f4eaea..4a1d978ebd98 100644
->> --- a/arch/powerpc/kvm/book3s_64_vio_hv.c
->> +++ b/arch/powerpc/kvm/book3s_64_vio_hv.c
->> @@ -161,11 +161,111 @@ long kvmppc_gpa_to_ua(struct kvm *kvm, unsigned=
+> >> index 92d769f4eaea..4a1d978ebd98 100644
+> >> --- a/arch/powerpc/kvm/book3s_64_vio_hv.c
+> >> +++ b/arch/powerpc/kvm/book3s_64_vio_hv.c
+> >> @@ -161,11 +161,111 @@ long kvmppc_gpa_to_ua(struct kvm *kvm, unsigned=
  long gpa,
->>  EXPORT_SYMBOL_GPL(kvmppc_gpa_to_ua);
->> =20
->>  #ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
->> +static void kvmppc_rm_clear_tce(struct iommu_table *tbl, unsigned lon=
+> >>  EXPORT_SYMBOL_GPL(kvmppc_gpa_to_ua);
+> >> =20
+> >>  #ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
+> >> +static void kvmppc_rm_clear_tce(struct iommu_table *tbl, unsigned lon=
 g entry)
->> +{
->> +	unsigned long hpa =3D 0;
->> +	enum dma_data_direction dir =3D DMA_NONE;
->> +
->> +	iommu_tce_xchg_rm(tbl, entry, &hpa, &dir);
->> +}
->> +
->> +static long kvmppc_rm_tce_iommu_mapped_dec(struct kvm *kvm,
->> +		struct iommu_table *tbl, unsigned long entry)
->> +{
->> +	struct mm_iommu_table_group_mem_t *mem =3D NULL;
->> +	const unsigned long pgsize =3D 1ULL << tbl->it_page_shift;
->> +	unsigned long *pua =3D IOMMU_TABLE_USERSPACE_ENTRY(tbl, entry);
->> +
->> +	if (WARN_ON(!pua))
->> +		return H_HARDWARE;
->> +
->> +	pua =3D (void *) vmalloc_to_phys(pua);
->> +	if (!pua)
->> +		return H_TOO_HARD;
->> +
->> +	mem =3D mm_iommu_lookup_rm(kvm->mm, *pua, pgsize);
->> +	if (!mem)
->> +		return H_TOO_HARD;
->> +
->> +	mm_iommu_mapped_dec(mem);
->> +
->> +	*pua =3D 0;
->> +
->> +	return H_SUCCESS;
->> +}
->> +
->> +static long kvmppc_rm_tce_iommu_unmap(struct kvm *kvm,
->> +		struct iommu_table *tbl, unsigned long entry)
->> +{
->> +	enum dma_data_direction dir =3D DMA_NONE;
->> +	unsigned long hpa =3D 0;
->> +	long ret;
->> +
->> +	if (iommu_tce_xchg_rm(tbl, entry, &hpa, &dir))
->> +		return H_HARDWARE;
+> >> +{
+> >> +	unsigned long hpa =3D 0;
+> >> +	enum dma_data_direction dir =3D DMA_NONE;
+> >> +
+> >> +	iommu_tce_xchg_rm(tbl, entry, &hpa, &dir);
+> >> +}
+> >> +
+> >> +static long kvmppc_rm_tce_iommu_mapped_dec(struct kvm *kvm,
+> >> +		struct iommu_table *tbl, unsigned long entry)
+> >> +{
+> >> +	struct mm_iommu_table_group_mem_t *mem =3D NULL;
+> >> +	const unsigned long pgsize =3D 1ULL << tbl->it_page_shift;
+> >> +	unsigned long *pua =3D IOMMU_TABLE_USERSPACE_ENTRY(tbl, entry);
+> >> +
+> >> +	if (WARN_ON(!pua))
+> >> +		return H_HARDWARE;
+> >> +
+> >> +	pua =3D (void *) vmalloc_to_phys(pua);
+> >> +	if (!pua)
+> >> +		return H_TOO_HARD;
+> >> +
+> >> +	mem =3D mm_iommu_lookup_rm(kvm->mm, *pua, pgsize);
+> >> +	if (!mem)
+> >> +		return H_TOO_HARD;
+> >> +
+> >> +	mm_iommu_mapped_dec(mem);
+> >> +
+> >> +	*pua =3D 0;
+> >> +
+> >> +	return H_SUCCESS;
+> >> +}
+> >> +
+> >> +static long kvmppc_rm_tce_iommu_unmap(struct kvm *kvm,
+> >> +		struct iommu_table *tbl, unsigned long entry)
+> >> +{
+> >> +	enum dma_data_direction dir =3D DMA_NONE;
+> >> +	unsigned long hpa =3D 0;
+> >> +	long ret;
+> >> +
+> >> +	if (iommu_tce_xchg_rm(tbl, entry, &hpa, &dir))
+> >> +		return H_HARDWARE;
+> >=20
+> > To avoid a double WARN() (and to make the warnings easier to
+> > understand) I'd suggest putting a WARN_ON() here, rather than in the
+> > callers when they receieve an H_HARDWARE.  IIUC this really shouldn't
+> > ever happen, and it certainly can't be the guest's fault?
 >=20
-> To avoid a double WARN() (and to make the warnings easier to
-> understand) I'd suggest putting a WARN_ON() here, rather than in the
-> callers when they receieve an H_HARDWARE.  IIUC this really shouldn't
-> ever happen, and it certainly can't be the guest's fault?
+>=20
+> Makes sense.
 
+I guess it might want WARN_ON_ONCE() to avoid spamming the user with
+errors for every TCE, though.
 
-Makes sense.
-
-
->> +
->> +	if (dir =3D=3D DMA_NONE)
->> +		return H_SUCCESS;
->> +
->> +	ret =3D kvmppc_rm_tce_iommu_mapped_dec(kvm, tbl, entry);
->> +	if (ret)
->> +		iommu_tce_xchg_rm(tbl, entry, &hpa, &dir);
->> +
->> +	return ret;
->> +}
->> +
->> +static long kvmppc_rm_tce_iommu_map(struct kvm *kvm, struct iommu_tab=
+> >> +
+> >> +	if (dir =3D=3D DMA_NONE)
+> >> +		return H_SUCCESS;
+> >> +
+> >> +	ret =3D kvmppc_rm_tce_iommu_mapped_dec(kvm, tbl, entry);
+> >> +	if (ret)
+> >> +		iommu_tce_xchg_rm(tbl, entry, &hpa, &dir);
+> >> +
+> >> +	return ret;
+> >> +}
+> >> +
+> >> +static long kvmppc_rm_tce_iommu_map(struct kvm *kvm, struct iommu_tab=
 le *tbl,
->> +		unsigned long entry, unsigned long gpa,
->> +		enum dma_data_direction dir)
->> +{
->> +	long ret;
->> +	unsigned long hpa =3D 0, ua;
->> +	unsigned long *pua =3D IOMMU_TABLE_USERSPACE_ENTRY(tbl, entry);
->> +	struct mm_iommu_table_group_mem_t *mem;
->> +
->> +	if (!pua)
->> +		/* it_userspace allocation might be delayed */
->> +		return H_TOO_HARD;
->> +
->> +	if (kvmppc_gpa_to_ua(kvm, gpa, &ua, NULL))
->> +		return H_PARAMETER;
-
-
-Referred below as [1]
-
-
->> +
->> +	mem =3D mm_iommu_lookup_rm(kvm->mm, ua, 1ULL << tbl->it_page_shift);=
-
->> +	if (!mem)
->> +		return H_TOO_HARD;
->> +
->> +	if (WARN_ON(mm_iommu_ua_to_hpa_rm(mem, ua, &hpa)))
->> +		return H_HARDWARE;
->> +
->> +	pua =3D (void *) vmalloc_to_phys(pua);
->> +	if (WARN_ON(!pua))
->> +		return H_HARDWARE;
->> +
->> +	if (WARN_ON(mm_iommu_mapped_inc(mem)))
->> +		return H_CLOSED;
->> +
->> +	ret =3D iommu_tce_xchg_rm(tbl, entry, &hpa, &dir);
->> +	if (ret) {
->> +		mm_iommu_mapped_dec(mem);
->> +		return H_TOO_HARD;
->> +	}
->> +
->> +	if (dir !=3D DMA_NONE)
->> +		kvmppc_rm_tce_iommu_mapped_dec(kvm, tbl, entry);
->> +
->> +	*pua =3D ua;
->> +
->> +	return 0;
->> +}
->> +
->>  long kvmppc_rm_h_put_tce(struct kvm_vcpu *vcpu, unsigned long liobn,
->>  		unsigned long ioba, unsigned long tce)
->>  {
->>  	struct kvmppc_spapr_tce_table *stt;
->>  	long ret;
->> +	struct kvmppc_spapr_tce_iommu_table *stit;
->> +	unsigned long entry, gpa;
->> +	enum dma_data_direction dir;
->> =20
->>  	/* udbg_printf("H_PUT_TCE(): liobn=3D0x%lx ioba=3D0x%lx, tce=3D0x%lx=
+> >> +		unsigned long entry, unsigned long gpa,
+> >> +		enum dma_data_direction dir)
+> >> +{
+> >> +	long ret;
+> >> +	unsigned long hpa =3D 0, ua;
+> >> +	unsigned long *pua =3D IOMMU_TABLE_USERSPACE_ENTRY(tbl, entry);
+> >> +	struct mm_iommu_table_group_mem_t *mem;
+> >> +
+> >> +	if (!pua)
+> >> +		/* it_userspace allocation might be delayed */
+> >> +		return H_TOO_HARD;
+> >> +
+> >> +	if (kvmppc_gpa_to_ua(kvm, gpa, &ua, NULL))
+> >> +		return H_PARAMETER;
+>=20
+>=20
+> Referred below as [1]
+>=20
+>=20
+> >> +
+> >> +	mem =3D mm_iommu_lookup_rm(kvm->mm, ua, 1ULL << tbl->it_page_shift);
+> >> +	if (!mem)
+> >> +		return H_TOO_HARD;
+> >> +
+> >> +	if (WARN_ON(mm_iommu_ua_to_hpa_rm(mem, ua, &hpa)))
+> >> +		return H_HARDWARE;
+> >> +
+> >> +	pua =3D (void *) vmalloc_to_phys(pua);
+> >> +	if (WARN_ON(!pua))
+> >> +		return H_HARDWARE;
+> >> +
+> >> +	if (WARN_ON(mm_iommu_mapped_inc(mem)))
+> >> +		return H_CLOSED;
+> >> +
+> >> +	ret =3D iommu_tce_xchg_rm(tbl, entry, &hpa, &dir);
+> >> +	if (ret) {
+> >> +		mm_iommu_mapped_dec(mem);
+> >> +		return H_TOO_HARD;
+> >> +	}
+> >> +
+> >> +	if (dir !=3D DMA_NONE)
+> >> +		kvmppc_rm_tce_iommu_mapped_dec(kvm, tbl, entry);
+> >> +
+> >> +	*pua =3D ua;
+> >> +
+> >> +	return 0;
+> >> +}
+> >> +
+> >>  long kvmppc_rm_h_put_tce(struct kvm_vcpu *vcpu, unsigned long liobn,
+> >>  		unsigned long ioba, unsigned long tce)
+> >>  {
+> >>  	struct kvmppc_spapr_tce_table *stt;
+> >>  	long ret;
+> >> +	struct kvmppc_spapr_tce_iommu_table *stit;
+> >> +	unsigned long entry, gpa;
+> >> +	enum dma_data_direction dir;
+> >> =20
+> >>  	/* udbg_printf("H_PUT_TCE(): liobn=3D0x%lx ioba=3D0x%lx, tce=3D0x%lx=
 \n", */
->>  	/* 	    liobn, ioba, tce); */
->> @@ -182,7 +282,25 @@ long kvmppc_rm_h_put_tce(struct kvm_vcpu *vcpu, u=
+> >>  	/* 	    liobn, ioba, tce); */
+> >> @@ -182,7 +282,25 @@ long kvmppc_rm_h_put_tce(struct kvm_vcpu *vcpu, u=
 nsigned long liobn,
->>  	if (ret !=3D H_SUCCESS)
->>  		return ret;
->> =20
->> -	kvmppc_tce_put(stt, ioba >> stt->page_shift, tce);
->> +	entry =3D ioba >> stt->page_shift;
->> +	gpa =3D tce & ~(TCE_PCI_READ | TCE_PCI_WRITE);
->> +	dir =3D iommu_tce_direction(tce);
->> +
->> +	list_for_each_entry_lockless(stit, &stt->iommu_tables, next) {
->> +		if (dir =3D=3D DMA_NONE)
->> +			ret =3D kvmppc_rm_tce_iommu_unmap(vcpu->kvm,
->> +					stit->tbl, entry);
->> +		else
->> +			ret =3D kvmppc_rm_tce_iommu_map(vcpu->kvm,
->> +					stit->tbl, entry, gpa, dir);
->> +
->> +		if (WARN_ON_ONCE(ret =3D=3D H_HARDWARE))
->> +			kvmppc_rm_clear_tce(stit->tbl, entry);
->> +		else if (ret !=3D H_SUCCESS)
->> +			return ret;
->> +	}
->> +
->> +	kvmppc_tce_put(stt, entry, tce);
->> =20
->>  	return H_SUCCESS;
->>  }
->> @@ -220,9 +338,10 @@ long kvmppc_rm_h_put_tce_indirect(struct kvm_vcpu=
+> >>  	if (ret !=3D H_SUCCESS)
+> >>  		return ret;
+> >> =20
+> >> -	kvmppc_tce_put(stt, ioba >> stt->page_shift, tce);
+> >> +	entry =3D ioba >> stt->page_shift;
+> >> +	gpa =3D tce & ~(TCE_PCI_READ | TCE_PCI_WRITE);
+> >> +	dir =3D iommu_tce_direction(tce);
+> >> +
+> >> +	list_for_each_entry_lockless(stit, &stt->iommu_tables, next) {
+> >> +		if (dir =3D=3D DMA_NONE)
+> >> +			ret =3D kvmppc_rm_tce_iommu_unmap(vcpu->kvm,
+> >> +					stit->tbl, entry);
+> >> +		else
+> >> +			ret =3D kvmppc_rm_tce_iommu_map(vcpu->kvm,
+> >> +					stit->tbl, entry, gpa, dir);
+> >> +
+> >> +		if (WARN_ON_ONCE(ret =3D=3D H_HARDWARE))
+> >> +			kvmppc_rm_clear_tce(stit->tbl, entry);
+> >> +		else if (ret !=3D H_SUCCESS)
+> >> +			return ret;
+> >> +	}
+> >> +
+> >> +	kvmppc_tce_put(stt, entry, tce);
+> >> =20
+> >>  	return H_SUCCESS;
+> >>  }
+> >> @@ -220,9 +338,10 @@ long kvmppc_rm_h_put_tce_indirect(struct kvm_vcpu=
  *vcpu,
->>  {
->>  	struct kvmppc_spapr_tce_table *stt;
->>  	long i, ret =3D H_SUCCESS;
->> -	unsigned long tces, entry, ua =3D 0;
->> +	unsigned long tces, entry, ua =3D 0, tce, gpa;
->>  	unsigned long *rmap =3D NULL;
->>  	bool prereg =3D false;
->> +	struct kvmppc_spapr_tce_iommu_table *stit;
->> =20
->>  	stt =3D kvmppc_find_table(vcpu->kvm, liobn);
->>  	if (!stt)
->> @@ -287,12 +406,24 @@ long kvmppc_rm_h_put_tce_indirect(struct kvm_vcp=
+> >>  {
+> >>  	struct kvmppc_spapr_tce_table *stt;
+> >>  	long i, ret =3D H_SUCCESS;
+> >> -	unsigned long tces, entry, ua =3D 0;
+> >> +	unsigned long tces, entry, ua =3D 0, tce, gpa;
+> >>  	unsigned long *rmap =3D NULL;
+> >>  	bool prereg =3D false;
+> >> +	struct kvmppc_spapr_tce_iommu_table *stit;
+> >> =20
+> >>  	stt =3D kvmppc_find_table(vcpu->kvm, liobn);
+> >>  	if (!stt)
+> >> @@ -287,12 +406,24 @@ long kvmppc_rm_h_put_tce_indirect(struct kvm_vcp=
 u *vcpu,
->>  	}
->> =20
->>  	for (i =3D 0; i < npages; ++i) {
->> -		unsigned long tce =3D be64_to_cpu(((u64 *)tces)[i]);
->> +		tce =3D be64_to_cpu(((u64 *)tces)[i]);
->> =20
->>  		ret =3D kvmppc_tce_validate(stt, tce);
->>  		if (ret !=3D H_SUCCESS)
->>  			goto unlock_exit;
->> =20
->> +		gpa =3D tce & ~(TCE_PCI_READ | TCE_PCI_WRITE);
->> +
->> +		list_for_each_entry_lockless(stit, &stt->iommu_tables, next) {
->> +			ret =3D kvmppc_rm_tce_iommu_map(vcpu->kvm,
->> +					stit->tbl, entry + i, gpa,
->> +					iommu_tce_direction(tce));
->> +			if (WARN_ON_ONCE(ret =3D=3D H_HARDWARE))
+> >>  	}
+> >> =20
+> >>  	for (i =3D 0; i < npages; ++i) {
+> >> -		unsigned long tce =3D be64_to_cpu(((u64 *)tces)[i]);
+> >> +		tce =3D be64_to_cpu(((u64 *)tces)[i]);
+> >> =20
+> >>  		ret =3D kvmppc_tce_validate(stt, tce);
+> >>  		if (ret !=3D H_SUCCESS)
+> >>  			goto unlock_exit;
+> >> =20
+> >> +		gpa =3D tce & ~(TCE_PCI_READ | TCE_PCI_WRITE);
+> >> +
+> >> +		list_for_each_entry_lockless(stit, &stt->iommu_tables, next) {
+> >> +			ret =3D kvmppc_rm_tce_iommu_map(vcpu->kvm,
+> >> +					stit->tbl, entry + i, gpa,
+> >> +					iommu_tce_direction(tce));
+> >> +			if (WARN_ON_ONCE(ret =3D=3D H_HARDWARE))
+> >=20
+> > I don't think you need the WARN() here - the only H_HARDWARE failure
+> > path in iommu_map() already includes a WARN().
 >=20
-> I don't think you need the WARN() here - the only H_HARDWARE failure
-> path in iommu_map() already includes a WARN().
-
-
-True, I can drop it here.
-
-
 >=20
->> +				kvmppc_rm_clear_tce(stit->tbl, entry);
->> +			else if (ret !=3D H_SUCCESS)
->> +				goto unlock_exit;
+> True, I can drop it here.
 >=20
-> It's also not clear to me why the H_HARDWARE error path clears the
-> entry, but the other failure paths don't.  Or why an H_HARDWARE will
-> result in continuing to set the rest of the TCEs, but other failures
-> won't.
+>=20
+> >=20
+> >> +				kvmppc_rm_clear_tce(stit->tbl, entry);
+> >> +			else if (ret !=3D H_SUCCESS)
+> >> +				goto unlock_exit;
+> >=20
+> > It's also not clear to me why the H_HARDWARE error path clears the
+> > entry, but the other failure paths don't.  Or why an H_HARDWARE will
+> > result in continuing to set the rest of the TCEs, but other failures
+> > won't.
+>=20
+>=20
+> The idea was that other failures still have some chance that handling may
+> succeed in virtual mode or via QEMU, H_HARDWARE is fatal.
 
+Um... yes.. but the logic seems to be backwards for that: on
+H_HARDWARE you warn and keep going, on other errors you bail out
+entirely.
 
-The idea was that other failures still have some chance that handling may=
-
-succeed in virtual mode or via QEMU, H_HARDWARE is fatal.
-
-I am just not sure if H_PARAMETER is what I want to return at [1], to mak=
-e
-the calling code simplier, I could return H_HARDWARE there as well (inste=
+> I am just not sure if H_PARAMETER is what I want to return at [1], to make
+> the calling code simplier, I could return H_HARDWARE there as well (inste=
 ad
-of H_PARAMETER).
+> of H_PARAMETER).
 
+That sounds right, IIUC the gpa to ua translation shouldn't ever
+fail because of something the guest did.  So I'd expect either
+H_HARDWARE, or H_TOO_HARD (if there's some hope that virtual mode can
+make the translation when real mode couldn't).
 
->=20
->> +		}
->> +
->>  		kvmppc_tce_put(stt, entry + i, tce);
->>  	}
->> =20
->> @@ -309,6 +440,7 @@ long kvmppc_rm_h_stuff_tce(struct kvm_vcpu *vcpu,
->>  {
->>  	struct kvmppc_spapr_tce_table *stt;
->>  	long i, ret;
->> +	struct kvmppc_spapr_tce_iommu_table *stit;
->> =20
->>  	stt =3D kvmppc_find_table(vcpu->kvm, liobn);
->>  	if (!stt)
->> @@ -322,6 +454,20 @@ long kvmppc_rm_h_stuff_tce(struct kvm_vcpu *vcpu,=
-
->>  	if (tce_value & (TCE_PCI_WRITE | TCE_PCI_READ))
->>  		return H_PARAMETER;
->> =20
->> +	list_for_each_entry_lockless(stit, &stt->iommu_tables, next) {
->> +		unsigned long entry =3D ioba >> stit->tbl->it_page_shift;
->> +
->> +		for (i =3D 0; i < npages; ++i) {
->> +			ret =3D kvmppc_rm_tce_iommu_unmap(vcpu->kvm,
->> +					stit->tbl, entry + i);
->> +
->> +			if (WARN_ON_ONCE(ret =3D=3D H_HARDWARE))
->> +				kvmppc_rm_clear_tce(stit->tbl, entry);
->=20
-> As noted earlier, I think this WARN belongs within iommu_unmap()
-> rather than out here.
->=20
->> +			else if (ret !=3D H_SUCCESS)
->> +				return ret;
->> +		}
->> +	}
->> +
->>  	for (i =3D 0; i < npages; ++i, ioba +=3D (1ULL << stt->page_shift))
->>  		kvmppc_tce_put(stt, ioba >> stt->page_shift, tce_value);
->> =20
->> diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
->> index cd892dec7cb6..f3127dc87912 100644
->> --- a/arch/powerpc/kvm/powerpc.c
->> +++ b/arch/powerpc/kvm/powerpc.c
->> @@ -536,6 +536,8 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, =
+> >> +		}
+> >> +
+> >>  		kvmppc_tce_put(stt, entry + i, tce);
+> >>  	}
+> >> =20
+> >> @@ -309,6 +440,7 @@ long kvmppc_rm_h_stuff_tce(struct kvm_vcpu *vcpu,
+> >>  {
+> >>  	struct kvmppc_spapr_tce_table *stt;
+> >>  	long i, ret;
+> >> +	struct kvmppc_spapr_tce_iommu_table *stit;
+> >> =20
+> >>  	stt =3D kvmppc_find_table(vcpu->kvm, liobn);
+> >>  	if (!stt)
+> >> @@ -322,6 +454,20 @@ long kvmppc_rm_h_stuff_tce(struct kvm_vcpu *vcpu,
+> >>  	if (tce_value & (TCE_PCI_WRITE | TCE_PCI_READ))
+> >>  		return H_PARAMETER;
+> >> =20
+> >> +	list_for_each_entry_lockless(stit, &stt->iommu_tables, next) {
+> >> +		unsigned long entry =3D ioba >> stit->tbl->it_page_shift;
+> >> +
+> >> +		for (i =3D 0; i < npages; ++i) {
+> >> +			ret =3D kvmppc_rm_tce_iommu_unmap(vcpu->kvm,
+> >> +					stit->tbl, entry + i);
+> >> +
+> >> +			if (WARN_ON_ONCE(ret =3D=3D H_HARDWARE))
+> >> +				kvmppc_rm_clear_tce(stit->tbl, entry);
+> >=20
+> > As noted earlier, I think this WARN belongs within iommu_unmap()
+> > rather than out here.
+> >=20
+> >> +			else if (ret !=3D H_SUCCESS)
+> >> +				return ret;
+> >> +		}
+> >> +	}
+> >> +
+> >>  	for (i =3D 0; i < npages; ++i, ioba +=3D (1ULL << stt->page_shift))
+> >>  		kvmppc_tce_put(stt, ioba >> stt->page_shift, tce_value);
+> >> =20
+> >> diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
+> >> index cd892dec7cb6..f3127dc87912 100644
+> >> --- a/arch/powerpc/kvm/powerpc.c
+> >> +++ b/arch/powerpc/kvm/powerpc.c
+> >> @@ -536,6 +536,8 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, =
 long ext)
->>  #ifdef CONFIG_PPC_BOOK3S_64
->>  	case KVM_CAP_SPAPR_TCE:
->>  	case KVM_CAP_SPAPR_TCE_64:
->> +		/* fallthrough */
->> +	case KVM_CAP_SPAPR_TCE_VFIO:
->>  	case KVM_CAP_PPC_RTAS:
->>  	case KVM_CAP_PPC_FIXUP_HCALL:
->>  	case KVM_CAP_PPC_ENABLE_HCALL:
->> diff --git a/virt/kvm/vfio.c b/virt/kvm/vfio.c
->> index d32f239eb471..2b7dc22265fe 100644
->> --- a/virt/kvm/vfio.c
->> +++ b/virt/kvm/vfio.c
->> @@ -20,6 +20,10 @@
->>  #include <linux/vfio.h>
->>  #include "vfio.h"
->> =20
->> +#ifdef CONFIG_SPAPR_TCE_IOMMU
->> +#include <asm/kvm_ppc.h>
->> +#endif
->> +
->>  struct kvm_vfio_group {
->>  	struct list_head node;
->>  	struct vfio_group *vfio_group;
->> @@ -211,6 +215,9 @@ static int kvm_vfio_set_group(struct kvm_device *d=
+> >>  #ifdef CONFIG_PPC_BOOK3S_64
+> >>  	case KVM_CAP_SPAPR_TCE:
+> >>  	case KVM_CAP_SPAPR_TCE_64:
+> >> +		/* fallthrough */
+> >> +	case KVM_CAP_SPAPR_TCE_VFIO:
+> >>  	case KVM_CAP_PPC_RTAS:
+> >>  	case KVM_CAP_PPC_FIXUP_HCALL:
+> >>  	case KVM_CAP_PPC_ENABLE_HCALL:
+> >> diff --git a/virt/kvm/vfio.c b/virt/kvm/vfio.c
+> >> index d32f239eb471..2b7dc22265fe 100644
+> >> --- a/virt/kvm/vfio.c
+> >> +++ b/virt/kvm/vfio.c
+> >> @@ -20,6 +20,10 @@
+> >>  #include <linux/vfio.h>
+> >>  #include "vfio.h"
+> >> =20
+> >> +#ifdef CONFIG_SPAPR_TCE_IOMMU
+> >> +#include <asm/kvm_ppc.h>
+> >> +#endif
+> >> +
+> >>  struct kvm_vfio_group {
+> >>  	struct list_head node;
+> >>  	struct vfio_group *vfio_group;
+> >> @@ -211,6 +215,9 @@ static int kvm_vfio_set_group(struct kvm_device *d=
 ev, long attr, u64 arg)
->> =20
->>  		mutex_unlock(&kv->lock);
->> =20
->> +#ifdef CONFIG_SPAPR_TCE_IOMMU
->> +		kvm_spapr_tce_release_iommu_group(dev->kvm, vfio_group);
->> +#endif
->>  		kvm_vfio_group_set_kvm(vfio_group, NULL);
->> =20
->>  		kvm_vfio_group_put_external_user(vfio_group);
->> @@ -218,6 +225,53 @@ static int kvm_vfio_set_group(struct kvm_device *=
+> >> =20
+> >>  		mutex_unlock(&kv->lock);
+> >> =20
+> >> +#ifdef CONFIG_SPAPR_TCE_IOMMU
+> >> +		kvm_spapr_tce_release_iommu_group(dev->kvm, vfio_group);
+> >> +#endif
+> >>  		kvm_vfio_group_set_kvm(vfio_group, NULL);
+> >> =20
+> >>  		kvm_vfio_group_put_external_user(vfio_group);
+> >> @@ -218,6 +225,53 @@ static int kvm_vfio_set_group(struct kvm_device *=
 dev, long attr, u64 arg)
->>  		kvm_vfio_update_coherency(dev);
->> =20
->>  		return ret;
->> +
->> +#ifdef CONFIG_SPAPR_TCE_IOMMU
->> +	case KVM_DEV_VFIO_GROUP_SET_SPAPR_TCE: {
->> +		struct kvm_vfio_spapr_tce param;
->> +		unsigned long minsz;
->> +		struct kvm_vfio *kv =3D dev->private;
->> +		struct vfio_group *vfio_group;
->> +		struct kvm_vfio_group *kvg;
->> +		struct fd f;
->> +
->> +		minsz =3D offsetofend(struct kvm_vfio_spapr_tce, tablefd);
->> +
->> +		if (copy_from_user(&param, (void __user *)arg, minsz))
->> +			return -EFAULT;
->> +
->> +		if (param.argsz < minsz || param.flags)
->> +			return -EINVAL;
->> +
->> +		f =3D fdget(param.groupfd);
->> +		if (!f.file)
->> +			return -EBADF;
->> +
->> +		vfio_group =3D kvm_vfio_group_get_external_user(f.file);
->> +		fdput(f);
->> +
->> +		if (IS_ERR(vfio_group))
->> +			return PTR_ERR(vfio_group);
->> +
->> +		ret =3D -ENOENT;
->> +
->> +		mutex_lock(&kv->lock);
->> +
->> +		list_for_each_entry(kvg, &kv->group_list, node) {
->> +			if (kvg->vfio_group !=3D vfio_group)
->> +				continue;
->> +
->> +			ret =3D kvm_spapr_tce_attach_iommu_group(dev->kvm,
->> +					param.tablefd, vfio_group);
->> +
->> +			break;
->> +		}
->> +
->> +		mutex_unlock(&kv->lock);
->> +
->> +		return ret;
->> +	}
->> +#endif /* CONFIG_SPAPR_TCE_IOMMU */
->>  	}
->> =20
->>  	return -ENXIO;
->> @@ -242,6 +296,9 @@ static int kvm_vfio_has_attr(struct kvm_device *de=
+> >>  		kvm_vfio_update_coherency(dev);
+> >> =20
+> >>  		return ret;
+> >> +
+> >> +#ifdef CONFIG_SPAPR_TCE_IOMMU
+> >> +	case KVM_DEV_VFIO_GROUP_SET_SPAPR_TCE: {
+> >> +		struct kvm_vfio_spapr_tce param;
+> >> +		unsigned long minsz;
+> >> +		struct kvm_vfio *kv =3D dev->private;
+> >> +		struct vfio_group *vfio_group;
+> >> +		struct kvm_vfio_group *kvg;
+> >> +		struct fd f;
+> >> +
+> >> +		minsz =3D offsetofend(struct kvm_vfio_spapr_tce, tablefd);
+> >> +
+> >> +		if (copy_from_user(&param, (void __user *)arg, minsz))
+> >> +			return -EFAULT;
+> >> +
+> >> +		if (param.argsz < minsz || param.flags)
+> >> +			return -EINVAL;
+> >> +
+> >> +		f =3D fdget(param.groupfd);
+> >> +		if (!f.file)
+> >> +			return -EBADF;
+> >> +
+> >> +		vfio_group =3D kvm_vfio_group_get_external_user(f.file);
+> >> +		fdput(f);
+> >> +
+> >> +		if (IS_ERR(vfio_group))
+> >> +			return PTR_ERR(vfio_group);
+> >> +
+> >> +		ret =3D -ENOENT;
+> >> +
+> >> +		mutex_lock(&kv->lock);
+> >> +
+> >> +		list_for_each_entry(kvg, &kv->group_list, node) {
+> >> +			if (kvg->vfio_group !=3D vfio_group)
+> >> +				continue;
+> >> +
+> >> +			ret =3D kvm_spapr_tce_attach_iommu_group(dev->kvm,
+> >> +					param.tablefd, vfio_group);
+> >> +
+> >> +			break;
+> >> +		}
+> >> +
+> >> +		mutex_unlock(&kv->lock);
+> >> +
+> >> +		return ret;
+> >> +	}
+> >> +#endif /* CONFIG_SPAPR_TCE_IOMMU */
+> >>  	}
+> >> =20
+> >>  	return -ENXIO;
+> >> @@ -242,6 +296,9 @@ static int kvm_vfio_has_attr(struct kvm_device *de=
 v,
->>  		switch (attr->attr) {
->>  		case KVM_DEV_VFIO_GROUP_ADD:
->>  		case KVM_DEV_VFIO_GROUP_DEL:
->> +#ifdef CONFIG_SPAPR_TCE_IOMMU
->> +		case KVM_DEV_VFIO_GROUP_SET_SPAPR_TCE:
->> +#endif
->>  			return 0;
->>  		}
->> =20
->> @@ -257,6 +314,9 @@ static void kvm_vfio_destroy(struct kvm_device *de=
+> >>  		switch (attr->attr) {
+> >>  		case KVM_DEV_VFIO_GROUP_ADD:
+> >>  		case KVM_DEV_VFIO_GROUP_DEL:
+> >> +#ifdef CONFIG_SPAPR_TCE_IOMMU
+> >> +		case KVM_DEV_VFIO_GROUP_SET_SPAPR_TCE:
+> >> +#endif
+> >>  			return 0;
+> >>  		}
+> >> =20
+> >> @@ -257,6 +314,9 @@ static void kvm_vfio_destroy(struct kvm_device *de=
 v)
->>  	struct kvm_vfio_group *kvg, *tmp;
->> =20
->>  	list_for_each_entry_safe(kvg, tmp, &kv->group_list, node) {
->> +#ifdef CONFIG_SPAPR_TCE_IOMMU
->> +		kvm_spapr_tce_release_iommu_group(dev->kvm, kvg->vfio_group);
->> +#endif
->>  		kvm_vfio_group_set_kvm(kvg->vfio_group, NULL);
->>  		kvm_vfio_group_put_external_user(kvg->vfio_group);
->>  		list_del(&kvg->node);
+> >>  	struct kvm_vfio_group *kvg, *tmp;
+> >> =20
+> >>  	list_for_each_entry_safe(kvg, tmp, &kv->group_list, node) {
+> >> +#ifdef CONFIG_SPAPR_TCE_IOMMU
+> >> +		kvm_spapr_tce_release_iommu_group(dev->kvm, kvg->vfio_group);
+> >> +#endif
+> >>  		kvm_vfio_group_set_kvm(kvg->vfio_group, NULL);
+> >>  		kvm_vfio_group_put_external_user(kvg->vfio_group);
+> >>  		list_del(&kvg->node);
+> >=20
 >=20
+>=20
+
+
 
 
 --=20
-Alexey
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
 
-
---H1teD9l6lkVDtfWJ2kPCXGGSxkJHq9tMX--
-
---C9fteH9GmXPL3qvIlb2Xblo0x1tcSHssJ
+--R4+lwT0Y15rLnKR0
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIrBAEBCAAVBQJYr6iKDhxhaWtAb3psYWJzLnJ1AAoJEIYTPdgrwSC5HeIP/Ai4
-5s38vpZVHLqyWjXu8Aa5+90KauXWWIHVrXO/v4Uh0SGWk+Bn0NXglinVj4NTxcuT
-4yxoP1H1hyqB6GgKp/oHVIjWlHnFs0x8fH9WTqM12rPuIwMgeOMlvcTiXDQFdtoG
-wiOaR+Oxs7Gz85p/Oi/0GUdZRccirfSh/XkSub3D8FvRhya2bhxpwm3uu7p3pZ1W
-fyVpozK7bGKiSI1EKRrj8yGhwNEFk9eeAmZd5XCI0ZSyIU0Td9ipurTM0P7MCwdG
-7wfaDMwuR1olaR8/qqvktQiA3A3n9hy3AhagUyxT8LJmSs9Fe1ZvrwrHA9XbHFv9
-uhcuqO4I8qNuzLT8KWCU3jZWdaHg2vrxfuW061kP8ZnHd2fP2rtLxBLGtff68tKN
-ML0pstGF2Girvn4J3E4bXRKDAy6d5levc80m942CuBcQ5PIw7mx8k/Ezlr/2AvTz
-VvlmD5FSF3uoOFYm7FQyJX+PTLTEO9R6L4IoTOgOZUIS4XNr6aX9aoOacsbnERg7
-INQDvoBVvEpatUpHg0HguaxVpRgpBUpx00nvSb8Oj9mHWC9K1q91QHUcdL6ech6T
-Ypn+fHQf7kWQLWli02mPlzABLSfPqKyegAkEk9cazeyDX8wbrLggRqH2/Fndj3az
-A9BgGVWsTd/NewjwKJWAodvBMRmiM2Ni/iOsJTMa
-=NF0H
+iQIcBAEBCAAGBQJYr6onAAoJEGw4ysog2bOS/GgP/RjGP+lBkF9IWWjmhUyGaVLX
+N51Sv4RdMRa71z2QvYry4hbyKcNuUbZJe9nNttFE+zR063t5Gm/0graWwVjcNIZ5
+BHaefcFZK0/nIrqX/PyJ9fckNr/minppC7jHOe87zZYBpS3YDMf2fTX5W45T8FAt
+8alhlD3jFIMhYtttAOoldVXH5cpOMSUZ6oOwFg7KyqNlCqk6QvAH1UHPiXwSySZA
+CQPqSksF/yl14oZIHEIuGQKdTx8o4eWzQ+TspUnaUtXWOP+0sF37HJd1vc6ndQ17
+/YSMDQMbY/jLQ/8EhC+I/PDzq+CuvGvC2QSYq7cosun1u8/Y0fTTZbK/NgB0r764
+yM/P0Qachiae6wwV/ML43u5MHaUBAwzPdJPBBQY3iXTgUF+VB4rPFUo+OuT3wg5l
+UfTO3fUa2Q4USM5Vbqhgd2TgFYsmZCI9mszSrXPHztraYpIlpcIuCBmA+yapjJet
+h1L6u3AaROegb+dyGckj0tNYn5b10fs4MWqEtmY2FAFxdSRD/ARUgpaOg/1AowfT
+Dwu5rdLoz1NqtzV97G5yYMyQHCfeHkbMPRBUMFP/WH4mMjHnZdcY0kDklA2+X3xg
+l1h1S/dLg38poH0rs3pUG+mEpY/Dd1E6qhZ3mcNUnTWF9pr0rQkxP7JxCn1ibY0B
+bdvxPMD7nISWn1Mp2tIM
+=9T+N
 -----END PGP SIGNATURE-----
 
---C9fteH9GmXPL3qvIlb2Xblo0x1tcSHssJ--
+--R4+lwT0Y15rLnKR0--
