@@ -1,36 +1,24 @@
-Return-Path: <michael@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <David.Laight@ACULAB.COM>
+Received: from smtp-out4.electric.net (smtp-out4.electric.net
+ [192.162.216.187])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vV5yn2Th3zDqH1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Feb 2017 20:53:37 +1100 (AEDT)
-Date: Fri, 24 Feb 2017 20:53:30 +1100
-In-Reply-To: <CACi5LpM1ZjLgPUFaYy5xnC+Or-ENNzGSMaAqMo9rE3zVEy0PkA@mail.gmail.com>
-References: <1486014168-1279-1-git-send-email-bhsharma@redhat.com>
- <1486014168-1279-2-git-send-email-bhsharma@redhat.com>
- <87mve4c2my.fsf@concordia.ellerman.id.au>
- <CACi5LpOkkSFOJm07BGZFOmFpZpx7qsQiNywEmAjCEmcQG6kGEg@mail.gmail.com>
- <87mvduz4wi.fsf@concordia.ellerman.id.au>
- <CACi5LpOddY6WOz7S-fNEwSDLOoYFga-NKUOkCHtNLJ0puiNMOQ@mail.gmail.com>
- <CACi5LpMdoo4xFCO4w+FAF=UQMDF_Lx95UoN-B4UrtCX_27B8wg@mail.gmail.com>
- <CACi5LpM1ZjLgPUFaYy5xnC+Or-ENNzGSMaAqMo9rE3zVEy0PkA@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vV60V1mghzDqH1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Feb 2017 20:55:06 +1100 (AEDT)
+From: David Laight <David.Laight@ACULAB.COM>
+To: 'Hamish Martin' <hamish.martin@alliedtelesis.co.nz>,
+ "benh@kernel.crashing.org" <benh@kernel.crashing.org>, "paulus@samba.org"
+ <paulus@samba.org>, "mpe@ellerman.id.au" <mpe@ellerman.id.au>
+CC: "chris.packham@alliedtelesis.co.nz" <chris.packham@alliedtelesis.co.nz>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Subject: RE: [PATCH v2 0/2] Allow configurable stack size (especially 32k on
+ PPC64)
+Date: Fri, 24 Feb 2017 09:54:56 +0000
+Message-ID: <063D6719AE5E284EB5DD2968C1650D6DCFE6EDAD@AcuExch.aculab.com>
+References: <20170224005210.1318-1-hamish.martin@alliedtelesis.co.nz>
+In-Reply-To: <20170224005210.1318-1-hamish.martin@alliedtelesis.co.nz>
+Content-Type: text/plain; charset="Windows-1252"
 MIME-Version: 1.0
-Content-Type: text/plain;
- charset=utf-8
-Subject: Re: [kernel-hardening] Re: [PATCH 1/2] powerpc: mm: support
- ARCH_MMAP_RND_BITS
-To: Bhupesh Sharma <bhsharma@redhat.com>, Michael Ellerman <mpe@ellerman.id.au>
-CC: linuxppc-dev@lists.ozlabs.org, kernel-hardening@lists.openwall.com,
- Daniel Cashman <dcashman@google.com>, Bhupesh SHARMA <bhupesh.linux@gmail.com>,
- Kees Cook <keescook@chromium.org>, Alexander Graf <agraf@suse.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Anatolij Gustschin <agust@denx.de>,
- Alistair Popple <alistair@popple.id.au>,
- Matt Porter <mporter@kernel.crashing.org>,
- Vitaly Bordug <vitb@kernel.crashing.org>, Scott Wood <oss@buserror.net>,
- Kumar Gala <galak@kernel.crashing.org>, Daniel Cashman <dcashman@android.com>
-From: Michael Ellerman <michael@ellerman.id.au>
-Message-ID: <2FB3FE28-C762-4EC4-AFCE-FAD77CB7B9A5@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,186 +28,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+From: Hamish Martin
+> Sent: 24 February 2017 00:52
+> This patch series adds the ability to configure the THREAD_SHIFT value an=
+d
+> thereby alter the stack size on powerpc systems. We are particularly inte=
+rested
+> in configuring for a 32k stack on PPC64.
+>=20
+> Using an NXP T2081 (e6500 PPC64 cores) we are observing stack overflows a=
+s a
+> result of applying a DTS overlay containing some I2C devices. Our scenari=
+o is
+> an ethernet switch chassis with plug-in cards. The I2C is driven from the=
+ T2081
+> through a PCA9548 mux on the main board. When we detect insertion of the =
+plugin
+> card we schedule work for a call to of_overlay_create() to install a DTS
+> overlay for the plugin board. This DTS overlay contains a further PCA9548=
+ mux
+> with more devices hanging off it including a PCA9539 GPIO expander. The
+> ultimate installed I2C tree is:
+>=20
+> T2081 --- PCA9548 MUX --- PCA9548 MUX --- PCA9539 GPIO Expander
+>=20
+> When we install the overlay the devices described in the overlay are prob=
+ed and
+> we see a large number of stack frames used as a result. If this is couple=
+d with
+> an interrupt happening that requires moderate to high stack use we observ=
+e
+> stack corruption. Here is an example long stack (from a 4.10-rc8 kernel) =
+that
+> does not show corruption but does demonstrate the length and frame sizes
+> involved.
+...
 
+ISTM that the device probe needs to be iterative rather than recursive so
+that deeply nested buses don't require deep stacks.
 
-On 24 February 2017 6:32:13 pm AEDT, Bhupesh Sharma <bhsharma@redhat=2Ecom=
-> wrote:
->Hi Michael,
->
->On Thu, Feb 16, 2017 at 10:19 AM, Bhupesh Sharma <bhsharma@redhat=2Ecom>
->wrote:
->> Hi Michael,
->>
->> On Fri, Feb 10, 2017 at 4:41 PM, Bhupesh Sharma <bhsharma@redhat=2Ecom>
->wrote:
->>> On Fri, Feb 10, 2017 at 4:31 PM, Michael Ellerman
-><mpe@ellerman=2Eid=2Eau> wrote:
->>>> Bhupesh Sharma <bhsharma@redhat=2Ecom> writes:
->>>>
->>>>> HI Michael,
->>>>>
->>>>> On Thu, Feb 2, 2017 at 3:53 PM, Michael Ellerman
-><mpe@ellerman=2Eid=2Eau> wrote:
->>>>>> Bhupesh Sharma <bhsharma@redhat=2Ecom> writes:
->>>>>>
->>>>>>> powerpc: arch_mmap_rnd() uses hard-coded values, (23-PAGE_SHIFT)
->for
->>>>>>> 32-bit and (30-PAGE_SHIFT) for 64-bit, to generate the random
->offset
->>>>>>> for the mmap base address=2E
->>>>>>>
->>>>>>> This value represents a compromise between increased
->>>>>>> ASLR effectiveness and avoiding address-space fragmentation=2E
->>>>>>> Replace it with a Kconfig option, which is sensibly bounded, so
->that
->>>>>>> platform developers may choose where to place this compromise=2E
->>>>>>> Keep default values as new minimums=2E
->>>>>>>
->>>>>>> This patch makes sure that now powerpc mmap arch_mmap_rnd()
->approach
->>>>>>> is similar to other ARCHs like x86, arm64 and arm=2E
->>>>>>
->>>>>> Thanks for looking at this, it's been on my TODO for a while=2E
->>>>>>
->>>>>> I have a half completed version locally, but never got around to
->testing
->>>>>> it thoroughly=2E
->>>>>
->>>>> Sure :)
->>>>>
->>>>>>> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
->>>>>>> index a8ee573fe610=2E=2Eb4a843f68705 100644
->>>>>>> --- a/arch/powerpc/Kconfig
->>>>>>> +++ b/arch/powerpc/Kconfig
->>>>>>> @@ -22,6 +22,38 @@ config MMU
->>>>>>>       bool
->>>>>>>       default y
->>>>>>>
->>>>>>> +config ARCH_MMAP_RND_BITS_MIN
->>>>>>> +       default 5 if PPC_256K_PAGES && 32BIT
->>>>>>> +       default 12 if PPC_256K_PAGES && 64BIT
->>>>>>> +       default 7 if PPC_64K_PAGES && 32BIT
->>>>>>> +       default 14 if PPC_64K_PAGES && 64BIT
->>>>>>> +       default 9 if PPC_16K_PAGES && 32BIT
->>>>>>> +       default 16 if PPC_16K_PAGES && 64BIT
->>>>>>> +       default 11 if PPC_4K_PAGES && 32BIT
->>>>>>> +       default 18 if PPC_4K_PAGES && 64BIT
->>>>>>> +
->>>>>>> +# max bits determined by the following formula:
->>>>>>> +#  VA_BITS - PAGE_SHIFT - 4
->>>>>>> +#  for e=2Eg for 64K page and 64BIT =3D 48 - 16 - 4 =3D 28
->>>>>>> +config ARCH_MMAP_RND_BITS_MAX
->>>>>>> +       default 10 if PPC_256K_PAGES && 32BIT
->>>>>>> +       default 26 if PPC_256K_PAGES && 64BIT
->>>>>>> +       default 12 if PPC_64K_PAGES && 32BIT
->>>>>>> +       default 28 if PPC_64K_PAGES && 64BIT
->>>>>>> +       default 14 if PPC_16K_PAGES && 32BIT
->>>>>>> +       default 30 if PPC_16K_PAGES && 64BIT
->>>>>>> +       default 16 if PPC_4K_PAGES && 32BIT
->>>>>>> +       default 32 if PPC_4K_PAGES && 64BIT
->>>>>>> +
->>>>>>> +config ARCH_MMAP_RND_COMPAT_BITS_MIN
->>>>>>> +       default 5 if PPC_256K_PAGES
->>>>>>> +       default 7 if PPC_64K_PAGES
->>>>>>> +       default 9 if PPC_16K_PAGES
->>>>>>> +       default 11
->>>>>>> +
->>>>>>> +config ARCH_MMAP_RND_COMPAT_BITS_MAX
->>>>>>> +       default 16
->>>>>>> +
->>>>>>
->>>>>> This is what I have below, which is a bit neater I think because
->each
->>>>>> value is only there once (by defaulting to the COMPAT value)=2E
->>>>>>
->>>>>> My max values are different to yours, I don't really remember why
->I
->>>>>> chose those values, so we can argue about which is right=2E
->>>>>
->>>>> I am not sure how you derived these values, but I am not sure
->there
->>>>> should be differences between 64-BIT x86/ARM64 and PPC values for
->the
->>>>> MAX values=2E
->>>>
->>>> But your values *are* different to x86 and arm64=2E
->>>>
->>>> And why would they be the same anyway? x86 has a 47 bit address
->space,
->>>> 64-bit powerpc is 46 bits, and arm64 is configurable from 36 to 48
->bits=2E
->>>>
->>>> So your calculations above using VA_BITS =3D 48 should be using 46
->bits=2E
->>>>
->>>> But if you fixed that, your formula basically gives 1/16th of the
->>>> address space as the maximum range=2E Why is that the right amount?
->>>>
->>>> x86 uses 1/8th, and arm64 uses a mixture of 1/8th and 1/32nd
->(though
->>>> those might be bugs)=2E
->>>>
->>>> My values were more liberal, giving up to half the address space
->for 32
->>>> & 64-bit=2E Maybe that's too generous, but my rationale was it's up
->to the
->>>> sysadmin to tweak the values and they get to keep the pieces if it
->>>> breaks=2E
->>>
->>> I am not sure why would one want to use more than the practical
->limits
->>> of 1/8th used by x86 - this causes additional burden of address
->space
->>> fragmentation=2E
->>>
->>> So we need to balance between the randomness increase and the
->address
->>> space fragmentation=2E
->>>
->>>>>> +config ARCH_MMAP_RND_BITS_MAX
->>>>>> +       # On 64-bit up to 32T of address space (2^45)
->>>>>> +       default 27 if 64BIT && PPC_256K_PAGES   # 256K (2^18), =3D
->45 - 18 =3D 27
->>>>>> +       default 29 if 64BIT && PPC_64K_PAGES    # 64K  (2^16), =3D
->45 - 16 =3D 29
->>>>>> +       default 31 if 64BIT && PPC_16K_PAGES    # 16K  (2^14), =3D
->45 - 14 =3D 31
->>>>>> +       default 33 if 64BIT                     # 4K   (2^12), =3D
->45 - 12 =3D 33
->>>>>> +       default ARCH_MMAP_RND_COMPAT_BITS_MAX
->>>>
->>>> I played with my values a bit and allowing 32T is a little bit
->nuts=2E It
->>>> means you can actually end up with the adjusted ET_DYN_BASE *above*
->32T,
->>>> followed by the heap growing up, and the mmap base *below* 32T,
->growing
->>>> down=2E Which is kinda fun, but definitely breaks a lot of
->assumptions=2E
->>>>
->>>> So limiting it to a max of 16T is probably more sensible=2E
->>>>
->>>> Anyway late here, will think about it some more over the weekend=2E
->>>
->>> A user is always free to tweak the maximum values via specific
->Kconfig
->>> + defconfig combinations for their platforms, but why have such
->large
->>> max values as default for say a embedded PPC64 board which only
->>> supports say 16GB of DDR=2E
->>>
->>> A default max of 33bits for such platforms might be an overkill,
->while
->>> it might be fine for servers which might have greater DDR
->>> availability=2E
->>
->> Ping=2E
->>
->
->Any updates on this?
+Switching stacks on interrupt entry would also make it much less likely tha=
+t
+you'll get an unexpected stack corruption.
 
-It missed 4=2E11, we'll get something in for 4=2E12=2E
+The problem with just doubling the stack size is that code will just eat
+it all up and, in a few years, something will hit the limit again.
 
-Cheers
---=20
-Sent from my Android phone with K-9 Mail=2E Please excuse my brevity=2E
+	David
