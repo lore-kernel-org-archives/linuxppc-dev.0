@@ -1,26 +1,26 @@
 Return-Path: <joel.stan@gmail.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vTvy746lnzDqHX
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Feb 2017 13:22:23 +1100 (AEDT)
-Received: from mail-yw0-x243.google.com (mail-yw0-x243.google.com
- [IPv6:2607:f8b0:4002:c05::243])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vTw0910GmzDqJC
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Feb 2017 13:24:09 +1100 (AEDT)
+Received: from mail-yw0-x241.google.com (mail-yw0-x241.google.com
+ [IPv6:2607:f8b0:4002:c05::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3vTvy701n2z9s7M
- for <linuxppc-dev@ozlabs.org>; Fri, 24 Feb 2017 13:22:23 +1100 (AEDT)
-Received: by mail-yw0-x243.google.com with SMTP id 203so680927ywz.1
- for <linuxppc-dev@ozlabs.org>; Thu, 23 Feb 2017 18:22:22 -0800 (PST)
+ by ozlabs.org (Postfix) with ESMTPS id 3vTw083t3wz9s7M
+ for <linuxppc-dev@ozlabs.org>; Fri, 24 Feb 2017 13:24:08 +1100 (AEDT)
+Received: by mail-yw0-x241.google.com with SMTP id 2so672810ywn.3
+ for <linuxppc-dev@ozlabs.org>; Thu, 23 Feb 2017 18:24:08 -0800 (PST)
 MIME-Version: 1.0
 Sender: joel.stan@gmail.com
-In-Reply-To: <20170223225357.9572-6-benh@kernel.crashing.org>
+In-Reply-To: <20170223225357.9572-1-benh@kernel.crashing.org>
 References: <20170223225357.9572-1-benh@kernel.crashing.org>
- <20170223225357.9572-6-benh@kernel.crashing.org>
 From: Joel Stanley <joel@jms.id.au>
-Date: Fri, 24 Feb 2017 12:52:00 +1030
-Message-ID: <CACPK8Xf2hL7yvQZ6Ewz1-YiQeOB-XU8v=8bM8oLH=f2D8WOrmg@mail.gmail.com>
-Subject: Re: [PATCH 06/12] drm/ast: Base support for AST2500
+Date: Fri, 24 Feb 2017 12:53:46 +1030
+Message-ID: <CACPK8Xf10buN=sjdcvD+WwXK_YvSFDY1U_sg0M2gtBDa9Wz52A@mail.gmail.com>
+Subject: Re: [PATCH 01/12] drm/ast: Fix AST2400 POST failure without BMC FW or
+ VBIOS
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: dri-devel@lists.freedesktop.org, linuxppc-dev@ozlabs.org,
  airlied@redhat.com, "Y . C . Chen" <yc_chen@aspeedtech.com>, eich@suse.come
@@ -38,10 +38,9 @@ On Fri, Feb 24, 2017 at 9:23 AM, Benjamin Herrenschmidt
 <benh@kernel.crashing.org> wrote:
 > From: "Y.C. Chen" <yc_chen@aspeedtech.com>
 >
-> Add detection and mode setting updates for AST2500 generation chip,
-> code originally from Aspeed and slightly reworked for coding style
-> mostly by Ben. This doesn't contain the BMC DRAM POST code which
-> is in a separate patch.
+> The current POST code for the AST2300/2400 family doesn't work properly
+> if the chip hasn't been initialized previously by either the BMC own FW
+> or the VBIOS. This fixes it.
 >
 > Signed-off-by: Y.C. Chen <yc_chen@aspeedtech.com>
 > Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
@@ -49,12 +48,6 @@ On Fri, Feb 24, 2017 at 9:23 AM, Benjamin Herrenschmidt
 Acked-by: Joel Stanley <joel@jms.id.au>
 
 > ---
->
-> v2. Add 800Mhz default mclk for AST2500
-> ---
->  drivers/gpu/drm/ast/ast_drv.h    |  2 ++
->  drivers/gpu/drm/ast/ast_main.c   | 32 +++++++++++++++++++---
->  drivers/gpu/drm/ast/ast_mode.c   | 30 ++++++++++++++++-----
->  drivers/gpu/drm/ast/ast_tables.h | 58 +++++++++++++++++++++++++++++++++-------
->  4 files changed, 103 insertions(+), 19 deletions(-)
+>  drivers/gpu/drm/ast/ast_post.c | 38 +++++++++++++++++++++++++++++++++++---
+>  1 file changed, 35 insertions(+), 3 deletions(-)
 >
