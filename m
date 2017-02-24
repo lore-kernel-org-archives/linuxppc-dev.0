@@ -1,45 +1,30 @@
-Return-Path: <pfsmorigo@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mhocko@kernel.org>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vVD3v6l7vzDqGv
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Feb 2017 01:28:27 +1100 (AEDT)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v1OEOk5D119121
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Feb 2017 09:28:26 -0500
-Received: from e24smtp03.br.ibm.com (e24smtp03.br.ibm.com [32.104.18.24])
- by mx0a-001b2d01.pphosted.com with ESMTP id 28t61s6bgm-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Feb 2017 09:28:25 -0500
-Received: from localhost
- by e24smtp03.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <pfsmorigo@linux.vnet.ibm.com>;
- Fri, 24 Feb 2017 11:28:22 -0300
-Received: from d24relay02.br.ibm.com (d24relay02.br.ibm.com [9.18.232.42])
- by d24dlp01.br.ibm.com (Postfix) with ESMTP id 206233520076
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Feb 2017 09:27:45 -0500 (EST)
-Received: from d24av01.br.ibm.com (d24av01.br.ibm.com [9.8.31.91])
- by d24relay02.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v1OESI0m38928436
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Feb 2017 11:28:18 -0300
-Received: from d24av01.br.ibm.com (localhost [127.0.0.1])
- by d24av01.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v1OESHjv027797
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Feb 2017 11:28:18 -0300
-From: Paulo Flabiano Smorigo <pfsmorigo@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org
-Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- herbert@gondor.apana.org.au, davem@davemloft.net,
- linux-crypto@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Paulo Flabiano Smorigo <pfsmorigo@linux.vnet.ibm.com>
-Subject: [PATCH v2 2/2] crypto: vmx - Use skcipher for xts fallback
-Date: Fri, 24 Feb 2017 11:27:34 -0300
-In-Reply-To: <20170222192004.GC20626@gallifrey>
-References: <20170222192004.GC20626@gallifrey>
-Message-Id: <20170224142734.16188-1-pfsmorigo@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vVDMP3t2kzDqGv
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Feb 2017 01:41:52 +1100 (AEDT)
+Date: Fri, 24 Feb 2017 15:41:47 +0100
+From: Michal Hocko <mhocko@kernel.org>
+To: Vitaly Kuznetsov <vkuznets@redhat.com>
+Cc: Nathan Fontenot <nfont@linux.vnet.ibm.com>, linux-mm@kvack.org,
+ mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org,
+ mdroth@linux.vnet.ibm.com, kys@microsoft.com
+Subject: Re: [RFC PATCH] memory-hotplug: Use dev_online for memhp_auto_offline
+Message-ID: <20170224144147.GJ19161@dhcp22.suse.cz>
+References: <20170223125643.GA29064@dhcp22.suse.cz>
+ <87bmttyqxf.fsf@vitty.brq.redhat.com>
+ <20170223150920.GB29056@dhcp22.suse.cz>
+ <877f4gzz4d.fsf@vitty.brq.redhat.com>
+ <20170223161241.GG29056@dhcp22.suse.cz>
+ <8737f4zwx5.fsf@vitty.brq.redhat.com>
+ <20170223174106.GB13822@dhcp22.suse.cz>
+ <87tw7kydto.fsf@vitty.brq.redhat.com>
+ <20170224133714.GH19161@dhcp22.suse.cz>
+ <87efyny90q.fsf@vitty.brq.redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <87efyny90q.fsf@vitty.brq.redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,100 +34,81 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Signed-off-by: Paulo Flabiano Smorigo <pfsmorigo@linux.vnet.ibm.com>
----
- drivers/crypto/vmx/aes_xts.c | 30 +++++++++++++++---------------
- 1 file changed, 15 insertions(+), 15 deletions(-)
+On Fri 24-02-17 15:10:29, Vitaly Kuznetsov wrote:
+> Michal Hocko <mhocko@kernel.org> writes:
+> 
+> > On Thu 23-02-17 19:14:27, Vitaly Kuznetsov wrote:
+[...]
+> >> Virtual guests under stress were getting into OOM easily and the OOM
+> >> killer was even killing the udev process trying to online the
+> >> memory.
+> >
+> > Do you happen to have any OOM report? I am really surprised that udev
+> > would be an oom victim because that process is really small. Who is
+> > consuming all the memory then?
+> 
+> It's been a while since I worked on this and unfortunatelly I don't have
+> a log. From what I remember, the kernel itself was consuming all memory
+> so *all* processes were victims.
 
-diff --git a/drivers/crypto/vmx/aes_xts.c b/drivers/crypto/vmx/aes_xts.c
-index 24353ec3..a1e653a 100644
---- a/drivers/crypto/vmx/aes_xts.c
-+++ b/drivers/crypto/vmx/aes_xts.c
-@@ -28,11 +28,12 @@
- #include <crypto/aes.h>
- #include <crypto/scatterwalk.h>
- #include <crypto/xts.h>
-+#include <crypto/skcipher.h>
+This suggests that something is terminally broken!
  
- #include "aesp8-ppc.h"
+> > Have you measured how much memory do we need to allocate to add one
+> > memblock?
+> 
+> No, it's actually a good idea if we decide to do some sort of pre-allocation.
+> 
+> Just did a quick (and probably dirty) test, increasing guest memory from
+> 4G to 8G (32 x 128mb blocks) require 68Mb of memory, so it's roughly 2Mb
+> per block. It's really easy to trigger OOM for small guests.
+
+So we need ~1.5% of the added memory. That doesn't sound like something
+to trigger OOM killer too easily. Assuming that increase is not way too
+large. Going from 256M (your earlier example) to 8G looks will eat half
+the memory which is still quite far away from the OOM. I would call such
+an increase a bad memory balancing, though, to be honest. A more
+reasonable memory balancing would go and double the available memory
+IMHO. Anway, I still think that hotplug is a terrible way to do memory
+ballooning.
+
+[...]
+> >> the completion was done by observing for the MEM_ONLINE event. This, of
+> >> course, was slowing things down significantly and waiting for a
+> >> userspace action in kernel is not a nice thing to have (not speaking
+> >> about all other memory adding methods which had the same issue). Just
+> >> removing this wait was leading us to the same OOM as the hypervisor was
+> >> adding more and more memory and eventually even add_memory() was
+> >> failing, udev and other processes were killed,...
+> >
+> > Yes, I agree that waiting on a user action from the kernel is very far
+> > from ideal.
+> >
+> >> With the feature in place we have new memory available right after we do
+> >> add_memory(), everything is serialized.
+> >
+> > What prevented you from onlining the memory explicitly from
+> > hv_mem_hot_add path? Why do you need a user visible policy for that at
+> > all? You could also add a parameter to add_memory that would do the same
+> > thing. Or am I missing something?
+> 
+> We have different mechanisms for adding memory, I'm aware of at least 3:
+> ACPI, Xen, Hyper-V. The issue I'm addressing is general enough, I'm
+> pretty sure I can reproduce the issue on Xen, for example - just boot a
+> small guest and try adding tons of memory. Why should we have different
+> defaults for different technologies? 
+
+Just make them all online the memory explicitly. I really do not see why
+this should be decided by poor user. Put it differently, when should I
+disable auto online when using hyperV or other of the mentioned
+technologies? CONFIG_MEMORY_HOTPLUG_DEFAULT_ONLINE should simply die and
+I would even be for killing the whole memhp_auto_online thing along the
+way. This simply doesn't make any sense to me.
  
- struct p8_aes_xts_ctx {
--	struct crypto_blkcipher *fallback;
-+	struct crypto_skcipher *fallback;
- 	struct aes_key enc_key;
- 	struct aes_key dec_key;
- 	struct aes_key tweak_key;
-@@ -41,7 +42,7 @@ struct p8_aes_xts_ctx {
- static int p8_aes_xts_init(struct crypto_tfm *tfm)
- {
- 	const char *alg;
--	struct crypto_blkcipher *fallback;
-+	struct crypto_skcipher *fallback;
- 	struct p8_aes_xts_ctx *ctx = crypto_tfm_ctx(tfm);
- 
- 	if (!(alg = crypto_tfm_alg_name(tfm))) {
-@@ -49,8 +50,8 @@ static int p8_aes_xts_init(struct crypto_tfm *tfm)
- 		return -ENOENT;
- 	}
- 
--	fallback =
--		crypto_alloc_blkcipher(alg, 0, CRYPTO_ALG_NEED_FALLBACK);
-+	fallback = crypto_alloc_skcipher(alg, 0,
-+			CRYPTO_ALG_ASYNC | CRYPTO_ALG_NEED_FALLBACK);
- 	if (IS_ERR(fallback)) {
- 		printk(KERN_ERR
- 			"Failed to allocate transformation for '%s': %ld\n",
-@@ -60,9 +61,9 @@ static int p8_aes_xts_init(struct crypto_tfm *tfm)
- 	printk(KERN_INFO "Using '%s' as fallback implementation.\n",
- 		crypto_tfm_alg_driver_name((struct crypto_tfm *) fallback));
- 
--	crypto_blkcipher_set_flags(
-+	crypto_skcipher_set_flags(
- 		fallback,
--		crypto_blkcipher_get_flags((struct crypto_blkcipher *)tfm));
-+		crypto_skcipher_get_flags((struct crypto_skcipher *)tfm));
- 	ctx->fallback = fallback;
- 
- 	return 0;
-@@ -73,7 +74,7 @@ static void p8_aes_xts_exit(struct crypto_tfm *tfm)
- 	struct p8_aes_xts_ctx *ctx = crypto_tfm_ctx(tfm);
- 
- 	if (ctx->fallback) {
--		crypto_free_blkcipher(ctx->fallback);
-+		crypto_free_skcipher(ctx->fallback);
- 		ctx->fallback = NULL;
- 	}
- }
-@@ -98,7 +99,7 @@ static int p8_aes_xts_setkey(struct crypto_tfm *tfm, const u8 *key,
- 	pagefault_enable();
- 	preempt_enable();
- 
--	ret += crypto_blkcipher_setkey(ctx->fallback, key, keylen);
-+	ret += crypto_skcipher_setkey(ctx->fallback, key, keylen);
- 	return ret;
- }
- 
-@@ -113,15 +114,14 @@ static int p8_aes_xts_crypt(struct blkcipher_desc *desc,
- 	struct blkcipher_walk walk;
- 	struct p8_aes_xts_ctx *ctx =
- 		crypto_tfm_ctx(crypto_blkcipher_tfm(desc->tfm));
--	struct blkcipher_desc fallback_desc = {
--		.tfm = ctx->fallback,
--		.info = desc->info,
--		.flags = desc->flags
--	};
- 
- 	if (in_interrupt()) {
--		ret = enc ? crypto_blkcipher_encrypt(&fallback_desc, dst, src, nbytes) :
--                            crypto_blkcipher_decrypt(&fallback_desc, dst, src, nbytes);
-+		SKCIPHER_REQUEST_ON_STACK(req, ctx->fallback);
-+		skcipher_request_set_tfm(req, ctx->fallback);
-+		skcipher_request_set_callback(req, desc->flags, NULL, NULL);
-+		skcipher_request_set_crypt(req, src, dst, nbytes, desc->info);
-+		ret = enc? crypto_skcipher_encrypt(req) : crypto_skcipher_decrypt(req);
-+		skcipher_request_zero(req);
- 	} else {
- 		preempt_disable();
- 		pagefault_disable();
+> And, BTW, the link to the previous discussion:
+> https://groups.google.com/forum/#!msg/linux.kernel/AxvyuQjr4GY/TLC-K0sL_NEJ
+
+I remember this discussion and objected to the approach back then as
+well.
 -- 
-2.7.4
+Michal Hocko
+SUSE Labs
