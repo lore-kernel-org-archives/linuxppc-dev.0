@@ -1,29 +1,40 @@
-Return-Path: <mhiramat@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <ananth@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vVSfX3dlSzDqH7
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Feb 2017 10:55:48 +1100 (AEDT)
-Date: Sat, 25 Feb 2017 08:55:35 +0900
-From: Masami Hiramatsu <mhiramat@kernel.org>
-To: Arnaldo Carvalho de Melo <acme@kernel.org>
-Cc: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>, Ananth N
- Mavinakayanahalli <ananth@linux.vnet.ibm.com>, Ingo Molnar
- <mingo@redhat.com>, Michael Ellerman <mpe@ellerman.id.au>, Steven Rostedt
- <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vVXQL2zrkzDqH3
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Feb 2017 13:45:29 +1100 (AEDT)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v1P2hdNr095610
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Feb 2017 21:45:27 -0500
+Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 28ty6kuf0c-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Feb 2017 21:45:27 -0500
+Received: from localhost
+ by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ananth@linux.vnet.ibm.com>;
+ Fri, 24 Feb 2017 19:45:26 -0700
+Date: Sat, 25 Feb 2017 08:15:19 +0530
+From: Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+Cc: Masami Hiramatsu <mhiramat@kernel.org>, Ingo Molnar <mingo@redhat.com>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Arnaldo Carvalho de Melo <acme@kernel.org>,
+ Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v2 4/5] perf: kretprobes: offset from reloc_sym if
- kernel supports it
-Message-Id: <20170225085535.765ed62f30a7408fd0ddc043@kernel.org>
-In-Reply-To: <20170224201103.GO3595@kernel.org>
+Subject: Re: [PATCH v2 2/5] powerpc: kretprobes: override default function
+ entry offset
+Reply-To: ananth@linux.vnet.ibm.com
 References: <cover.1487770934.git.naveen.n.rao@linux.vnet.ibm.com>
- <75bafc91e9d381636f68ab9923ce3d52f9157a09.1487770934.git.naveen.n.rao@linux.vnet.ibm.com>
- <20170223181022.7d4427714cabbb7ccd6d6673@kernel.org>
- <20170223191608.GC4212@naverao1-tp.localdomain>
- <20170225022917.cfb45d0ea41c22fcb5d61ebb@kernel.org>
- <20170224201103.GO3595@kernel.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ <e27a624a724f1b00d09e769cbce24abdb27d8688.1487770934.git.naveen.n.rao@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <e27a624a724f1b00d09e769cbce24abdb27d8688.1487770934.git.naveen.n.rao@linux.vnet.ibm.com>
+Message-Id: <20170225024519.GE24324@in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,36 +44,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 24 Feb 2017 17:11:03 -0300
-Arnaldo Carvalho de Melo <acme@kernel.org> wrote:
-
-> Em Sat, Feb 25, 2017 at 02:29:17AM +0900, Masami Hiramatsu escreveu:
-> > On Fri, 24 Feb 2017 00:46:08 +0530
-> > "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
-> > > Thanks. I hope that's an Ack for this patchset?
-> > 
-> > OK, for 1/5, 2/5, 3/5, and 5/5;
-> > 
-> > Acked-by: Masami Hiramatsu <mhiramat@kernel.org>
-> > 
-> > And could you make v4 series including all patches? (Not only updates)
+On Wed, Feb 22, 2017 at 07:23:38PM +0530, Naveen N. Rao wrote:
+> With ABIv2, we offset 8 bytes into a function to get at the local entry
+> point.
 > 
-> So, to make progress I processed these:
-> 
-> [acme@jouet linux]$ git log --oneline -3
-> eb55608340b7 perf probe: Generalize probe event file open routine
-> 859d718fac06 trace/kprobes: Allow return probes with offsets and absolute addresses
-> a10489121c81 kretprobes: Ensure probe location is at function entry
-> [acme@jouet linux]$
-> 
-> Waiting for Naveen to react to these last minute considerations from
-> Masami and for the Ack from the PPC guys about "[PATCH v2 2/5] powerpc:
-> kretprobes: override default function entry offset".
 
-Thanks Arnaldo!!
+Looks good.
 
-Naveen, please update your ppc and perf patches and send it to Arnaldo.
-I'm happy to review it.
+> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
 
--- 
-Masami Hiramatsu <mhiramat@kernel.org>
+Acked-by: Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>
