@@ -1,25 +1,38 @@
-Return-Path: <Hamish.Martin@alliedtelesis.co.nz>
-Received: from gate2.alliedtelesis.co.nz (gate2.alliedtelesis.co.nz
- [202.36.163.20])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <ego@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vWbk33P5szDqGg
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Feb 2017 07:17:47 +1100 (AEDT)
-From: Hamish Martin <Hamish.Martin@alliedtelesis.co.nz>
-To: David Laight <David.Laight@ACULAB.COM>, "benh@kernel.crashing.org"
- <benh@kernel.crashing.org>, "paulus@samba.org" <paulus@samba.org>,
- "mpe@ellerman.id.au" <mpe@ellerman.id.au>
-CC: Chris Packham <Chris.Packham@alliedtelesis.co.nz>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [PATCH v2 0/2] Allow configurable stack size (especially 32k on
- PPC64)
-Date: Sun, 26 Feb 2017 20:17:40 +0000
-Message-ID: <c054d826-814c-48e7-6975-afb01c613a84@alliedtelesis.co.nz>
-References: <20170224005210.1318-1-hamish.martin@alliedtelesis.co.nz>
- <063D6719AE5E284EB5DD2968C1650D6DCFE6EDAD@AcuExch.aculab.com>
-In-Reply-To: <063D6719AE5E284EB5DD2968C1650D6DCFE6EDAD@AcuExch.aculab.com>
-Content-Type: text/plain; charset="Windows-1252"
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vWdPY1X89zDqGg
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Feb 2017 08:33:36 +1100 (AEDT)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v1QLXXtj139421
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Feb 2017 16:33:33 -0500
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 28u862ryjq-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Feb 2017 16:33:33 -0500
+Received: from localhost
+ by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ego@linux.vnet.ibm.com>;
+ Sun, 26 Feb 2017 14:33:31 -0700
+From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Neuling <mikey@neuling.org>,
+ Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+ "Shreyas B. Prabhu" <shreyasbp@gmail.com>,
+ Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
+ Balbir Singh <bsingharora@gmail.com>,
+ Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+Subject: [PATCH] powernv:idle: Fix bug due to labeling ambiguity in
+ power_enter_stop
+Date: Mon, 27 Feb 2017 03:03:07 +0530
+Message-Id: <1488144787-26010-1-git-send-email-ego@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,72 +42,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 02/24/2017 10:54 PM, David Laight wrote:
-> From: Hamish Martin
->> Sent: 24 February 2017 00:52
->> This patch series adds the ability to configure the THREAD_SHIFT value a=
-nd
->> thereby alter the stack size on powerpc systems. We are particularly int=
-erested
->> in configuring for a 32k stack on PPC64.
->>
->> Using an NXP T2081 (e6500 PPC64 cores) we are observing stack overflows =
-as a
->> result of applying a DTS overlay containing some I2C devices. Our scenar=
-io is
->> an ethernet switch chassis with plug-in cards. The I2C is driven from th=
-e T2081
->> through a PCA9548 mux on the main board. When we detect insertion of the=
- plugin
->> card we schedule work for a call to of_overlay_create() to install a DTS
->> overlay for the plugin board. This DTS overlay contains a further PCA954=
-8 mux
->> with more devices hanging off it including a PCA9539 GPIO expander. The
->> ultimate installed I2C tree is:
->>
->> T2081 --- PCA9548 MUX --- PCA9548 MUX --- PCA9539 GPIO Expander
->>
->> When we install the overlay the devices described in the overlay are pro=
-bed and
->> we see a large number of stack frames used as a result. If this is coupl=
-ed with
->> an interrupt happening that requires moderate to high stack use we obser=
-ve
->> stack corruption. Here is an example long stack (from a 4.10-rc8 kernel)=
- that
->> does not show corruption but does demonstrate the length and frame sizes
->> involved.
-> ...
->
-> ISTM that the device probe needs to be iterative rather than recursive so
-> that deeply nested buses don't require deep stacks.
->
-> Switching stacks on interrupt entry would also make it much less likely t=
-hat
-> you'll get an unexpected stack corruption.
->
-> The problem with just doubling the stack size is that code will just eat
-> it all up and, in a few years, something will hit the limit again.
->
-> 	David
->
->
-Thanks for your comments David.
+From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 
-Yes, restructuring bus/device probing would be a better solution in the=20
-longer term. It's what Ben H was alluding to in his reply to v1 of this=20
-patch series. I do suspect that would be a fairly large undertaking=20
-across the kernel drivers that may expose numerous bugs.
+Commit 09206b600c76 ("powernv: Pass PSSCR value and mask to
+power9_idle_stop") added additional code in power_enter_stop() to
+distinguish between stop requests whose PSSCR had ESL=EC=1 from those
+which did not. When ESL=EC=1, we do a forward-jump to a location
+labelled by "1", which had the code to handle the ESL=EC=1 case.
 
-However, I still feel this series has validity given the inequity=20
-between PPC64 and PPC32 minimum stack frame overhead.
-Flipping it on its head, would anyone even consider a patch that sought=20
-to make things more equivalent between PPC32 and PPC64 where the patch=20
-involved reducing the PPC32 stack from 8k to something like 6k? I think not=
-.
+Unforunately just a couple of instructions before this label, is the
+macro IDLE_STATE_ENTER_SEQ() which also has a label "1" in its
+expansion.
 
-And of course, finally, this is user selectable and we don't seek to=20
-modify the current default behaviour.
+As a result, the current code can result in directly executing stop
+instruction for deep stop requests with PSSCR ESL=EC=1, without saving
+the hypervisor state.
 
-Cheers,
-Hamish M.=
+Fix this BUG by labeling the location that handles ESL=EC=1 case with
+a more descriptive label.
+
+For a good measure, change the label in IDLE_STATE_ENTER_SEQ() macro
+to an not-so commonly used value.
+
+Fixes: 09206b600c76 ("powernv: Pass PSSCR value and mask to
+power9_idle_stop")
+
+Cc: Michael Neuling <mikey@neuling.org>
+Cc: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+---
+ arch/powerpc/include/asm/cpuidle.h | 4 ++--
+ arch/powerpc/kernel/idle_book3s.S  | 6 ++++--
+ 2 files changed, 6 insertions(+), 4 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/cpuidle.h b/arch/powerpc/include/asm/cpuidle.h
+index 31192d8..3989d94 100644
+--- a/arch/powerpc/include/asm/cpuidle.h
++++ b/arch/powerpc/include/asm/cpuidle.h
+@@ -85,8 +85,8 @@ static inline void report_invalid_psscr_val(u64 psscr_val, int err)
+ 	std	r0,0(r1);					\
+ 	ptesync;						\
+ 	ld	r0,0(r1);					\
+-1:	cmpd	cr0,r0,r0;					\
+-	bne	1b;						\
++236:	cmpd	cr0,r0,r0;					\
++	bne	236b;						\
+ 	IDLE_INST;						\
+ 
+ #define	IDLE_STATE_ENTER_SEQ_NORET(IDLE_INST)			\
+diff --git a/arch/powerpc/kernel/idle_book3s.S b/arch/powerpc/kernel/idle_book3s.S
+index 9f6bce5..95889af 100644
+--- a/arch/powerpc/kernel/idle_book3s.S
++++ b/arch/powerpc/kernel/idle_book3s.S
+@@ -276,14 +276,16 @@ power_enter_stop:
+  */
+ 	andis.   r4,r3,PSSCR_EC_ESL_MASK_SHIFTED
+ 	clrldi   r3,r3,60 /* r3 = Bits[60:63] = Requested Level (RL) */
+-	bne	 1f
++	bne	 handle_esl_ec_set
+ 	IDLE_STATE_ENTER_SEQ(PPC_STOP)
+ 	li	r3,0  /* Since we didn't lose state, return 0 */
+ 	b 	pnv_wakeup_noloss
++
++handle_esl_ec_set:
+ /*
+  * Check if the requested state is a deep idle state.
+  */
+-1:	LOAD_REG_ADDRBASE(r5,pnv_first_deep_stop_state)
++	LOAD_REG_ADDRBASE(r5,pnv_first_deep_stop_state)
+ 	ld	r4,ADDROFF(pnv_first_deep_stop_state)(r5)
+ 	cmpd	r3,r4
+ 	bge	2f
+-- 
+1.8.3.1
