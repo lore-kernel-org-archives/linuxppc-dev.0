@@ -1,38 +1,18 @@
-Return-Path: <ego@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <darren@stevens-zone.net>
+Received: from mout.kundenserver.de (mout.kundenserver.de [217.72.192.74])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vWdPY1X89zDqGg
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Feb 2017 08:33:36 +1100 (AEDT)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v1QLXXtj139421
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Feb 2017 16:33:33 -0500
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
- by mx0a-001b2d01.pphosted.com with ESMTP id 28u862ryjq-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Feb 2017 16:33:33 -0500
-Received: from localhost
- by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ego@linux.vnet.ibm.com>;
- Sun, 26 Feb 2017 14:33:31 -0700
-From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Neuling <mikey@neuling.org>,
- Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
- "Shreyas B. Prabhu" <shreyasbp@gmail.com>,
- Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
- Balbir Singh <bsingharora@gmail.com>,
- Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-Subject: [PATCH] powernv:idle: Fix bug due to labeling ambiguity in
- power_enter_stop
-Date: Mon, 27 Feb 2017 03:03:07 +0530
-Message-Id: <1488144787-26010-1-git-send-email-ego@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vWdnd2n5KzDqGg
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Feb 2017 08:51:00 +1100 (AEDT)
+From: Darren Stevens <darren@stevens-zone.net>
+To: wsa@the-dreams.de, linux-i2c@vger.kernel.org, linux-kernel@vger.kernel.org
+CC: linuxppc-dev@lists.ozlabs.org
+Date: Sun, 26 Feb 2017 21:49:47 +0000 (GMT)
+Message-ID: <49a70e4c93e.69f983e3@auth.smtp.1and1.co.uk>
+Subject: [RESEND PATCH] i2c/busses/pasemi: Remove hardcoded bus numbers on
+ smbus
+MIME-Version: 1.0
+Content-type: multipart/mixed; boundary="--=_BOUNDARY.6f0aa3906112474f.a6"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,77 +22,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+Warning: This is a message in MIME format. Your mail reader does
+not support MIME. Some parts of this message will be readable as
+plain text. To see the rest, you will need to upgrade your mail
+reader. Following are some URLs where you can find MIME-capable
+mail programs for common platforms:
 
-Commit 09206b600c76 ("powernv: Pass PSSCR value and mask to
-power9_idle_stop") added additional code in power_enter_stop() to
-distinguish between stop requests whose PSSCR had ESL=EC=1 from those
-which did not. When ESL=EC=1, we do a forward-jump to a location
-labelled by "1", which had the code to handle the ESL=EC=1 case.
+  AmigaOS...........: http://yam.ch/
+  Unix/MacOS/Windows: http://www.mozilla.com/thunderbird/
 
-Unforunately just a couple of instructions before this label, is the
-macro IDLE_STATE_ENTER_SEQ() which also has a label "1" in its
-expansion.
+General information about MIME can be found at:
+http://en.wikipedia.org/wiki/MIME
 
-As a result, the current code can result in directly executing stop
-instruction for deep stop requests with PSSCR ESL=EC=1, without saving
-the hypervisor state.
+----=_BOUNDARY.6f0aa3906112474f.a6
+Content-Type: text/plain
 
-Fix this BUG by labeling the location that handles ESL=EC=1 case with
-a more descriptive label.
+The pasemi smbus controller uses PCI_FUNC(dev->devfn) to define which
+number bus to attach to, however this fails when something else is 
+probed first, for example an ATI Radeon graphics card will claim 9 or
+10 busses, including the ones the pasemi wants.
+Patch the driver to call i2c_add_adapter rather than
+i2c_add_numbered_adapter.
 
-For a good measure, change the label in IDLE_STATE_ENTER_SEQ() macro
-to an not-so commonly used value.
+Signed-off-by: Darren Stevens <darren@stevens-zone.net>
 
-Fixes: 09206b600c76 ("powernv: Pass PSSCR value and mask to
-power9_idle_stop")
-
-Cc: Michael Neuling <mikey@neuling.org>
-Cc: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/cpuidle.h | 4 ++--
- arch/powerpc/kernel/idle_book3s.S  | 6 ++++--
- 2 files changed, 6 insertions(+), 4 deletions(-)
+Resent as it doesn't seem to have reached linux-i2c mailing list.
 
-diff --git a/arch/powerpc/include/asm/cpuidle.h b/arch/powerpc/include/asm/cpuidle.h
-index 31192d8..3989d94 100644
---- a/arch/powerpc/include/asm/cpuidle.h
-+++ b/arch/powerpc/include/asm/cpuidle.h
-@@ -85,8 +85,8 @@ static inline void report_invalid_psscr_val(u64 psscr_val, int err)
- 	std	r0,0(r1);					\
- 	ptesync;						\
- 	ld	r0,0(r1);					\
--1:	cmpd	cr0,r0,r0;					\
--	bne	1b;						\
-+236:	cmpd	cr0,r0,r0;					\
-+	bne	236b;						\
- 	IDLE_INST;						\
+----=_BOUNDARY.6f0aa3906112474f.a6
+Content-Type: text/plain;
+	name="i2c.patch"
+Content-Disposition: attachment;
+	filename="i2c.patch";
+	size=826
+
+diff --git a/drivers/i2c/busses/i2c-pasemi.c b/drivers/i2c/busses/i2c-pasemi.c
+index df1dbc9..05847fd 100644
+--- a/drivers/i2c/busses/i2c-pasemi.c
++++ b/drivers/i2c/busses/i2c-pasemi.c
+@@ -365,7 +365,6 @@ static int pasemi_smb_probe(struct pci_dev *dev,
+ 	smbus->adapter.class = I2C_CLASS_HWMON | I2C_CLASS_SPD;
+ 	smbus->adapter.algo = &smbus_algorithm;
+ 	smbus->adapter.algo_data = smbus;
+-	smbus->adapter.nr = PCI_FUNC(dev->devfn);
  
- #define	IDLE_STATE_ENTER_SEQ_NORET(IDLE_INST)			\
-diff --git a/arch/powerpc/kernel/idle_book3s.S b/arch/powerpc/kernel/idle_book3s.S
-index 9f6bce5..95889af 100644
---- a/arch/powerpc/kernel/idle_book3s.S
-+++ b/arch/powerpc/kernel/idle_book3s.S
-@@ -276,14 +276,16 @@ power_enter_stop:
-  */
- 	andis.   r4,r3,PSSCR_EC_ESL_MASK_SHIFTED
- 	clrldi   r3,r3,60 /* r3 = Bits[60:63] = Requested Level (RL) */
--	bne	 1f
-+	bne	 handle_esl_ec_set
- 	IDLE_STATE_ENTER_SEQ(PPC_STOP)
- 	li	r3,0  /* Since we didn't lose state, return 0 */
- 	b 	pnv_wakeup_noloss
-+
-+handle_esl_ec_set:
- /*
-  * Check if the requested state is a deep idle state.
-  */
--1:	LOAD_REG_ADDRBASE(r5,pnv_first_deep_stop_state)
-+	LOAD_REG_ADDRBASE(r5,pnv_first_deep_stop_state)
- 	ld	r4,ADDROFF(pnv_first_deep_stop_state)(r5)
- 	cmpd	r3,r4
- 	bge	2f
--- 
-1.8.3.1
+ 	/* set up the sysfs linkage to our parent device */
+ 	smbus->adapter.dev.parent = &dev->dev;
+@@ -373,7 +372,7 @@ static int pasemi_smb_probe(struct pci_dev *dev,
+ 	reg_write(smbus, REG_CTL, (CTL_MTR | CTL_MRR |
+ 		  (CLK_100K_DIV & CTL_CLK_M)));
+ 
+-	error = i2c_add_numbered_adapter(&smbus->adapter);
++	error = i2c_add_adapter(&smbus->adapter);
+ 	if (error)
+ 		goto out_release_region;
+ 
+
+----=_BOUNDARY.6f0aa3906112474f.a6--
