@@ -1,27 +1,25 @@
-Return-Path: <marcelo.cerri@canonical.com>
-Received: from mail-qk0-x22d.google.com (mail-qk0-x22d.google.com
- [IPv6:2607:f8b0:400d:c09::22d])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <Hamish.Martin@alliedtelesis.co.nz>
+Received: from gate2.alliedtelesis.co.nz (gate2.alliedtelesis.co.nz
+ [202.36.163.20])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vWZSy3np4zDqGg
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Feb 2017 06:21:22 +1100 (AEDT)
-Received: by mail-qk0-x22d.google.com with SMTP id u188so69824095qkc.2
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Feb 2017 11:21:22 -0800 (PST)
-Date: Sun, 26 Feb 2017 16:21:07 -0300
-From: Marcelo Cerri <marcelo.cerri@canonical.com>
-To: Paulo Flabiano Smorigo <pfsmorigo@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, benh@kernel.crashing.org,
- paulus@samba.org, mpe@ellerman.id.au, herbert@gondor.apana.org.au,
- davem@davemloft.net, linux-crypto@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v2 1/2] crypto: vmx - Use skcipher for cbc fallback
-Message-ID: <20170226192107.GA7129@gallifrey>
-References: <20170223112052.GA14019@gondor.apana.org.au>
- <20170224142354.10231-1-pfsmorigo@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vWbk33P5szDqGg
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Feb 2017 07:17:47 +1100 (AEDT)
+From: Hamish Martin <Hamish.Martin@alliedtelesis.co.nz>
+To: David Laight <David.Laight@ACULAB.COM>, "benh@kernel.crashing.org"
+ <benh@kernel.crashing.org>, "paulus@samba.org" <paulus@samba.org>,
+ "mpe@ellerman.id.au" <mpe@ellerman.id.au>
+CC: Chris Packham <Chris.Packham@alliedtelesis.co.nz>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [PATCH v2 0/2] Allow configurable stack size (especially 32k on
+ PPC64)
+Date: Sun, 26 Feb 2017 20:17:40 +0000
+Message-ID: <c054d826-814c-48e7-6975-afb01c613a84@alliedtelesis.co.nz>
+References: <20170224005210.1318-1-hamish.martin@alliedtelesis.co.nz>
+ <063D6719AE5E284EB5DD2968C1650D6DCFE6EDAD@AcuExch.aculab.com>
+In-Reply-To: <063D6719AE5E284EB5DD2968C1650D6DCFE6EDAD@AcuExch.aculab.com>
+Content-Type: text/plain; charset="Windows-1252"
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="vtzGhvizbBRQ85DL"
-In-Reply-To: <20170224142354.10231-1-pfsmorigo@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,161 +29,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 02/24/2017 10:54 PM, David Laight wrote:
+> From: Hamish Martin
+>> Sent: 24 February 2017 00:52
+>> This patch series adds the ability to configure the THREAD_SHIFT value a=
+nd
+>> thereby alter the stack size on powerpc systems. We are particularly int=
+erested
+>> in configuring for a 32k stack on PPC64.
+>>
+>> Using an NXP T2081 (e6500 PPC64 cores) we are observing stack overflows =
+as a
+>> result of applying a DTS overlay containing some I2C devices. Our scenar=
+io is
+>> an ethernet switch chassis with plug-in cards. The I2C is driven from th=
+e T2081
+>> through a PCA9548 mux on the main board. When we detect insertion of the=
+ plugin
+>> card we schedule work for a call to of_overlay_create() to install a DTS
+>> overlay for the plugin board. This DTS overlay contains a further PCA954=
+8 mux
+>> with more devices hanging off it including a PCA9539 GPIO expander. The
+>> ultimate installed I2C tree is:
+>>
+>> T2081 --- PCA9548 MUX --- PCA9548 MUX --- PCA9539 GPIO Expander
+>>
+>> When we install the overlay the devices described in the overlay are pro=
+bed and
+>> we see a large number of stack frames used as a result. If this is coupl=
+ed with
+>> an interrupt happening that requires moderate to high stack use we obser=
+ve
+>> stack corruption. Here is an example long stack (from a 4.10-rc8 kernel)=
+ that
+>> does not show corruption but does demonstrate the length and frame sizes
+>> involved.
+> ...
+>
+> ISTM that the device probe needs to be iterative rather than recursive so
+> that deeply nested buses don't require deep stacks.
+>
+> Switching stacks on interrupt entry would also make it much less likely t=
+hat
+> you'll get an unexpected stack corruption.
+>
+> The problem with just doubling the stack size is that code will just eat
+> it all up and, in a few years, something will hit the limit again.
+>
+> 	David
+>
+>
+Thanks for your comments David.
 
---vtzGhvizbBRQ85DL
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Yes, restructuring bus/device probing would be a better solution in the=20
+longer term. It's what Ben H was alluding to in his reply to v1 of this=20
+patch series. I do suspect that would be a fairly large undertaking=20
+across the kernel drivers that may expose numerous bugs.
 
-On Fri, Feb 24, 2017 at 11:23:54AM -0300, Paulo Flabiano Smorigo wrote:
-> Signed-off-by: Paulo Flabiano Smorigo <pfsmorigo@linux.vnet.ibm.com>
-> ---
->  drivers/crypto/vmx/aes_cbc.c | 44 ++++++++++++++++++++++----------------=
-------
->  1 file changed, 22 insertions(+), 22 deletions(-)
->=20
-> diff --git a/drivers/crypto/vmx/aes_cbc.c b/drivers/crypto/vmx/aes_cbc.c
-> index 94ad5c0..2bb5910 100644
-> --- a/drivers/crypto/vmx/aes_cbc.c
-> +++ b/drivers/crypto/vmx/aes_cbc.c
-> @@ -27,11 +27,12 @@
->  #include <asm/switch_to.h>
->  #include <crypto/aes.h>
->  #include <crypto/scatterwalk.h>
-> +#include <crypto/skcipher.h>
-> =20
->  #include "aesp8-ppc.h"
-> =20
->  struct p8_aes_cbc_ctx {
-> -	struct crypto_blkcipher *fallback;
-> +	struct crypto_skcipher *fallback;
->  	struct aes_key enc_key;
->  	struct aes_key dec_key;
->  };
-> @@ -39,7 +40,7 @@ struct p8_aes_cbc_ctx {
->  static int p8_aes_cbc_init(struct crypto_tfm *tfm)
->  {
->  	const char *alg;
-> -	struct crypto_blkcipher *fallback;
-> +	struct crypto_skcipher *fallback;
->  	struct p8_aes_cbc_ctx *ctx =3D crypto_tfm_ctx(tfm);
-> =20
->  	if (!(alg =3D crypto_tfm_alg_name(tfm))) {
-> @@ -47,8 +48,9 @@ static int p8_aes_cbc_init(struct crypto_tfm *tfm)
->  		return -ENOENT;
->  	}
-> =20
-> -	fallback =3D
-> -	    crypto_alloc_blkcipher(alg, 0, CRYPTO_ALG_NEED_FALLBACK);
-> +	fallback =3D crypto_alloc_skcipher(alg, 0,
-> +			CRYPTO_ALG_ASYNC | CRYPTO_ALG_NEED_FALLBACK);
-> +
->  	if (IS_ERR(fallback)) {
->  		printk(KERN_ERR
->  		       "Failed to allocate transformation for '%s': %ld\n",
-> @@ -58,9 +60,9 @@ static int p8_aes_cbc_init(struct crypto_tfm *tfm)
->  	printk(KERN_INFO "Using '%s' as fallback implementation.\n",
->  	       crypto_tfm_alg_driver_name((struct crypto_tfm *) fallback));
+However, I still feel this series has validity given the inequity=20
+between PPC64 and PPC32 minimum stack frame overhead.
+Flipping it on its head, would anyone even consider a patch that sought=20
+to make things more equivalent between PPC32 and PPC64 where the patch=20
+involved reducing the PPC32 stack from 8k to something like 6k? I think not=
+.
 
-You need to update that to use crypto_skcipher_tfm(). The same is valid
-for the xts patch.
+And of course, finally, this is user selectable and we don't seek to=20
+modify the current default behaviour.
 
-> =20
-> -	crypto_blkcipher_set_flags(
-> +	crypto_skcipher_set_flags(
->  		fallback,
-> -		crypto_blkcipher_get_flags((struct crypto_blkcipher *)tfm));
-> +		crypto_skcipher_get_flags((struct crypto_skcipher *)tfm));
->  	ctx->fallback =3D fallback;
-> =20
->  	return 0;
-> @@ -71,7 +73,7 @@ static void p8_aes_cbc_exit(struct crypto_tfm *tfm)
->  	struct p8_aes_cbc_ctx *ctx =3D crypto_tfm_ctx(tfm);
-> =20
->  	if (ctx->fallback) {
-> -		crypto_free_blkcipher(ctx->fallback);
-> +		crypto_free_skcipher(ctx->fallback);
->  		ctx->fallback =3D NULL;
->  	}
->  }
-> @@ -91,7 +93,7 @@ static int p8_aes_cbc_setkey(struct crypto_tfm *tfm, co=
-nst u8 *key,
->  	pagefault_enable();
->  	preempt_enable();
-> =20
-> -	ret +=3D crypto_blkcipher_setkey(ctx->fallback, key, keylen);
-> +	ret +=3D crypto_skcipher_setkey(ctx->fallback, key, keylen);
->  	return ret;
->  }
-> =20
-> @@ -103,15 +105,14 @@ static int p8_aes_cbc_encrypt(struct blkcipher_desc=
- *desc,
->  	struct blkcipher_walk walk;
->  	struct p8_aes_cbc_ctx *ctx =3D
->  		crypto_tfm_ctx(crypto_blkcipher_tfm(desc->tfm));
-> -	struct blkcipher_desc fallback_desc =3D {
-> -		.tfm =3D ctx->fallback,
-> -		.info =3D desc->info,
-> -		.flags =3D desc->flags
-> -	};
-> =20
->  	if (in_interrupt()) {
-> -		ret =3D crypto_blkcipher_encrypt(&fallback_desc, dst, src,
-> -					       nbytes);
-> +		SKCIPHER_REQUEST_ON_STACK(req, ctx->fallback);
-> +		skcipher_request_set_tfm(req, ctx->fallback);
-> +		skcipher_request_set_callback(req, desc->flags, NULL, NULL);
-> +		skcipher_request_set_crypt(req, src, dst, nbytes, desc->info);
-> +		ret =3D crypto_skcipher_encrypt(req);
-> +		skcipher_request_zero(req);
->  	} else {
->  		preempt_disable();
->  		pagefault_disable();
-> @@ -144,15 +145,14 @@ static int p8_aes_cbc_decrypt(struct blkcipher_desc=
- *desc,
->  	struct blkcipher_walk walk;
->  	struct p8_aes_cbc_ctx *ctx =3D
->  		crypto_tfm_ctx(crypto_blkcipher_tfm(desc->tfm));
-> -	struct blkcipher_desc fallback_desc =3D {
-> -		.tfm =3D ctx->fallback,
-> -		.info =3D desc->info,
-> -		.flags =3D desc->flags
-> -	};
-> =20
->  	if (in_interrupt()) {
-> -		ret =3D crypto_blkcipher_decrypt(&fallback_desc, dst, src,
-> -					       nbytes);
-> +		SKCIPHER_REQUEST_ON_STACK(req, ctx->fallback);
-> +		skcipher_request_set_tfm(req, ctx->fallback);
-> +		skcipher_request_set_callback(req, desc->flags, NULL, NULL);
-> +		skcipher_request_set_crypt(req, src, dst, nbytes, desc->info);
-> +		ret =3D crypto_skcipher_decrypt(req);
-> +		skcipher_request_zero(req);
->  	} else {
->  		preempt_disable();
->  		pagefault_disable();
-> --=20
-> 2.7.4
->=20
-
---=20
-Regards,
-Marcelo
-
-
---vtzGhvizbBRQ85DL
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAABCAAGBQJYsyqjAAoJEM8aS8c01e1HwU8IALrwS33SfOHTXNC9bjihapjf
-k+ZVwd17vLe0wTAw1qYqvjwWvOTEqjzElm8A911ltu0uKy0ZFL30Kq80+zIJir6k
-DxTTWx5b/99+98gc9xr2beBEH4fXeK475cdWmRerYBMsU5qY0zV1DMP4DTgD8s2u
-CcScieeAkHPH17dOq1J1xydg3HMyeoJApzGkH33dOcTJLaZRiNTc/yYVLWEtOeDr
-YsuqcENZgPvOu2dhMREmYWFO02aG00u6FNDMC3zrIDB7pPP08OCfs0CzhIKY6r7r
-DNDwePfTTZXvyVNC8Kkwxq7ILLEfNsTJfpT9l4ggfzBAP+hpAgY9vA47ReGRBTU=
-=h4n3
------END PGP SIGNATURE-----
-
---vtzGhvizbBRQ85DL--
+Cheers,
+Hamish M.=
