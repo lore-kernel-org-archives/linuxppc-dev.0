@@ -1,24 +1,19 @@
-Return-Path: <jk@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
+ [IPv6:2607:f8b0:400e:c05::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vWj1V0vT0zDq5x
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Feb 2017 11:16:30 +1100 (AEDT)
-Subject: Re: [PATCH 2/2] powerpc/powernv/opal-dump : Use IRQ_HANDLED instead
- of numbers in interrupt handler
-To: Mukesh Ojha <mukesh02@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-References: <1480583289-6380-1-git-send-email-mukesh02@linux.vnet.ibm.com>
- <1480583289-6380-2-git-send-email-mukesh02@linux.vnet.ibm.com>
- <f87a41d5-9647-67c4-735e-a7df86c4ff3a@ozlabs.org>
- <62c1a1c3-3a9e-2a9b-b7c1-c23d8d6efcb6@linux.vnet.ibm.com>
- <7bac2667-9b7f-9f05-c444-79b1fad31a6a@ozlabs.org>
- <1164f7e0-3a0e-69f4-e501-0bc59554a8a4@linux.vnet.ibm.com>
-From: Jeremy Kerr <jk@ozlabs.org>
-Message-ID: <b46c8d11-66ec-7d6b-0b28-80cabac3d2e4@ozlabs.org>
-Date: Mon, 27 Feb 2017 08:16:28 +0800
-MIME-Version: 1.0
-In-Reply-To: <1164f7e0-3a0e-69f4-e501-0bc59554a8a4@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=windows-1252
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vWjTH5bp8zDq5x
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Feb 2017 11:37:07 +1100 (AEDT)
+Received: by mail-pg0-x244.google.com with SMTP id 5so10866597pgj.0
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Feb 2017 16:37:07 -0800 (PST)
+From: Balbir Singh <bsingharora@gmail.com>
+To: mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc/xics: Fix migrate_irqs_away - set CPPR to lowest
+ priority
+Date: Mon, 27 Feb 2017 11:36:55 +1100
+Message-Id: <20170227003655.18459-1-bsingharora@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,37 +23,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Mukesh,
+With XICS emulation, setting the CPPR to DEFAULT_PRIORITY
+masks all interrupts including IPI's which map to a single
+underlying priority. The fix does two things
 
->> Unless I'm mistaken, there are two things I can see happening with the
->> old code: if we hit the IRQ_NONE path enough, we'll report a "nobody
->> cared" error (see __report_bad_irq) and disable the interrupt, or for
->> the -1 case, we'll immediately log a "bogus return value" error (and, it
->> looks like a "no thread function available" error too, from
->> warn_no_thread).
-> 
-> bogus return value" error will not come as
-> 
-> action_ret <= (IRQ_HANDLED | IRQ_WAKE_THREAD)
-> i.e
->         0/-1 <= 3 (true)
+1. It moves the setting of CPPR to after all IRQ migration
+   is complete
+2. It sets the CPPR to LOWEST_PRIORITY, so that interrupts
+   and IPI's are effectively enabled. The expectation is that
+   we'll see just IPI's after migration
 
-Well, no. irqreturn_t is an enum, and is being treated as an unsigned
-value (the signed/unsigned behaviour of an enum is
-implementation-defined), and:
+The fix is quite generic in that it will work when we move
+DEFAULT and IPI priorities to the same value in the kernel
+later.
 
-          0xffffffff > 3
+Cc: mikey@neuling.org
+Cc: benh@kernel.crashing.org
 
-so we will *probably* see the bogus return value warning here (based on
-some brief experimentation with gcc), but that does depend on the
-compiler.
+Fixes: d74361881f0d ("powerpc/xics: Add ICP OPAL backend")
+Cc: stable@vger.kernel.org # v4.8+
 
-I've submitted a patch to make that comparison more obvious and
-explicit:
+Reported-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Tested-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Signed-off-by: Balbir Singh <bsingharora@gmail.com>
+---
+ arch/powerpc/sysdev/xics/xics-common.c | 17 ++++++++++++++---
+ 1 file changed, 14 insertions(+), 3 deletions(-)
 
-  https://marc.info/?l=linux-kernel&m=148721917302673
-
-Cheers,
-
-
-Jeremy
+diff --git a/arch/powerpc/sysdev/xics/xics-common.c b/arch/powerpc/sysdev/xics/xics-common.c
+index c674a9d..31774e0 100644
+--- a/arch/powerpc/sysdev/xics/xics-common.c
++++ b/arch/powerpc/sysdev/xics/xics-common.c
+@@ -20,6 +20,7 @@
+ #include <linux/of.h>
+ #include <linux/slab.h>
+ #include <linux/spinlock.h>
++#include <linux/delay.h>
+ 
+ #include <asm/prom.h>
+ #include <asm/io.h>
+@@ -198,9 +199,6 @@ void xics_migrate_irqs_away(void)
+ 	/* Remove ourselves from the global interrupt queue */
+ 	xics_set_cpu_giq(xics_default_distrib_server, 0);
+ 
+-	/* Allow IPIs again... */
+-	icp_ops->set_priority(LOWEST_PRIORITY);
+-
+ 	for_each_irq_desc(virq, desc) {
+ 		struct irq_chip *chip;
+ 		long server;
+@@ -255,6 +253,19 @@ void xics_migrate_irqs_away(void)
+ unlock:
+ 		raw_spin_unlock_irqrestore(&desc->lock, flags);
+ 	}
++
++	/*
++	 * Allow sufficient time to drop any inflight IRQ's
++	 */
++	mdelay(1);
++
++	/*
++	 * Allow IPIs again. This is done at the very end, after
++	 * migrating all interrupts, the expectation is that we'll
++	 * only get woken up by an IPI interrupt beyond this point
++	 */
++	icp_ops->set_priority(LOWEST_PRIORITY);
++
+ }
+ #endif /* CONFIG_HOTPLUG_CPU */
+ 
+-- 
+2.9.3
