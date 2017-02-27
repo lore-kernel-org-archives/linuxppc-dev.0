@@ -1,25 +1,29 @@
-Return-Path: <oohall@gmail.com>
-Received: from mail-qk0-x243.google.com (mail-qk0-x243.google.com
- [IPv6:2607:f8b0:400d:c09::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <dgibson@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vWlcw3JR2zDqC0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Feb 2017 13:13:51 +1100 (AEDT)
-Received: by mail-qk0-x243.google.com with SMTP id r90so13951520qki.3
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Feb 2017 18:13:51 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vWlx918JYzDqC0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Feb 2017 13:27:57 +1100 (AEDT)
+Date: Mon, 27 Feb 2017 12:53:52 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ Alex Williamson <alex.williamson@redhat.com>,
+ Paul Mackerras <paulus@samba.org>, kvm-ppc@vger.kernel.org,
+ kvm@vger.kernel.org
+Subject: Re: [PATCH kernel v5 10/10] KVM: PPC: VFIO: Add in-kernel
+ acceleration for VFIO
+Message-ID: <20170227015352.GP17615@umbus.fritz.box>
+References: <20170222082133.10277-1-aik@ozlabs.ru>
+ <20170222082133.10277-11-aik@ozlabs.ru>
+ <20170224021432.GH17615@umbus.fritz.box>
+ <7b2d6cba-73e7-e846-a520-fc2837694c11@ozlabs.ru>
+ <20170224033607.GQ17615@umbus.fritz.box>
+ <784555a2-2c4e-5a49-7b7e-68b0417ef5e1@ozlabs.ru>
 MIME-Version: 1.0
-In-Reply-To: <ec7f0ed8-58b5-cdfb-63a9-d91a7cb8022e@au1.ibm.com>
-References: <20170224062054.31408-1-matthew.brown.dev@gmail.com>
- <ec7f0ed8-58b5-cdfb-63a9-d91a7cb8022e@au1.ibm.com>
-From: "Oliver O'Halloran" <oohall@gmail.com>
-Date: Mon, 27 Feb 2017 13:13:49 +1100
-Message-ID: <CAOSf1CHB5tGhJzY_+wgZFcsVsyZg+qn_fr5LuisNe3Z2cR0TuQ@mail.gmail.com>
-Subject: Re: [PATCH v3] powerpc/powernv: add hdat attribute to sysfs
-To: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Cc: Matt Brown <matthew.brown.dev@gmail.com>, linuxppc-dev@lists.ozlabs.org,
- Suraj Jitindar Singh <sjitindarsingh@gmail.com>,
- Stewart Smith <stewart@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="o6HUWsywbRjTg5uW"
+In-Reply-To: <784555a2-2c4e-5a49-7b7e-68b0417ef5e1@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,120 +33,165 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Feb 27, 2017 at 12:59 PM, Andrew Donnellan
-<andrew.donnellan@au1.ibm.com> wrote:
-> On 24/02/17 17:20, Matt Brown wrote:
->>
->> The HDAT data area is consumed by skiboot and turned into a device-tree.
->> In some cases we would like to look directly at the HDAT, so this patch
->> adds a sysfs node to allow it to be viewed.  This is not possible through
->> /dev/mem as it is reserved memory which is stopped by the /dev/mem filter.
->>
->> Signed-off-by: Matt Brown <matthew.brown.dev@gmail.com>
->
->
-> Changes look good, thanks for addressing the comments! Still a couple of
-> minor points below, otherwise:
->
-> Reviewed-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
->
-> Stewart: this might need your ACK?
->
->
->> ---
->>
->> Changes between v2 to v3:
->>         - fixed header comments
->>         - simplified if statement
->>
->> ---
->>  arch/powerpc/include/asm/opal.h            |  1 +
->>  arch/powerpc/platforms/powernv/Makefile    |  1 +
->>  arch/powerpc/platforms/powernv/opal-hdat.c | 65
->> ++++++++++++++++++++++++++++++
->>  arch/powerpc/platforms/powernv/opal.c      |  2 +
->>  4 files changed, 69 insertions(+)
->>  create mode 100644 arch/powerpc/platforms/powernv/opal-hdat.c
->>
->> diff --git a/arch/powerpc/include/asm/opal.h
->> b/arch/powerpc/include/asm/opal.h
->> index 5c7db0f..b26944e 100644
->> --- a/arch/powerpc/include/asm/opal.h
->> +++ b/arch/powerpc/include/asm/opal.h
->> @@ -277,6 +277,7 @@ extern int opal_async_comp_init(void);
->>  extern int opal_sensor_init(void);
->>  extern int opal_hmi_handler_init(void);
->>  extern int opal_event_init(void);
->> +extern void opal_hdat_sysfs_init(void);
->>
->>  extern int opal_machine_check(struct pt_regs *regs);
->>  extern bool opal_mce_check_early_recovery(struct pt_regs *regs);
->> diff --git a/arch/powerpc/platforms/powernv/Makefile
->> b/arch/powerpc/platforms/powernv/Makefile
->> index b5d98cb..9a0c9d6 100644
->> --- a/arch/powerpc/platforms/powernv/Makefile
->> +++ b/arch/powerpc/platforms/powernv/Makefile
->> @@ -3,6 +3,7 @@ obj-y                   += opal-rtc.o opal-nvram.o
->> opal-lpc.o opal-flash.o
->>  obj-y                  += rng.o opal-elog.o opal-dump.o opal-sysparam.o
->> opal-sensor.o
->>  obj-y                  += opal-msglog.o opal-hmi.o opal-power.o
->> opal-irqchip.o
->>  obj-y                  += opal-kmsg.o
->> +obj-y                  += opal-hdat.o
->
->
-> Normally we keep putting new object files on the same line until it gets
-> long enough that we have to break it. This is very minor though :)
->
->
->>
->>  obj-$(CONFIG_SMP)      += smp.o subcore.o subcore-asm.o
->>  obj-$(CONFIG_PCI)      += pci.o pci-ioda.o npu-dma.o
->> diff --git a/arch/powerpc/platforms/powernv/opal-hdat.c
->> b/arch/powerpc/platforms/powernv/opal-hdat.c
->> new file mode 100644
->> index 0000000..3315dd3
->> --- /dev/null
->> +++ b/arch/powerpc/platforms/powernv/opal-hdat.c
->> @@ -0,0 +1,65 @@
->> +/*
->> + * PowerNV OPAL HDAT interface
->> + *
->> + * Author: Matt Brown <matthew.brown.dev@gmail.com>
->> + *
->> + * Copyright 2017 IBM Corp.
->> + *
->> + * This program is free software; you can redistribute it and/or
->> + * modify it under the terms of the GNU General Public License
->> + * as published by the Free Software Foundation; either version
->> + * 2 of the License, or (at your option) any later version.
->> + */
->> +
->> +#include <asm/io.h>
->> +#include <asm/opal.h>
->> +#include <linux/of.h>
->> +#include <linux/types.h>
->> +
->> +struct hdat_info {
->> +       char *base;
->> +       u64 size;
->> +};
->> +
->> +static struct hdat_info hdat_inf;
->
->
-> As Oliver pointed out, we could do with a better name than hdat_inf - it's
-> only one character away from the name of the struct type. Hmm, perhaps
-> "hdat_location", or maybe Oliver has a better suggestion.
 
-I'm not that bothered by it.
+--o6HUWsywbRjTg5uW
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Reviewed-by: Oliver O'Halloran <oohall@gmail.com>
+On Fri, Feb 24, 2017 at 02:43:05PM +1100, Alexey Kardashevskiy wrote:
+> On 24/02/17 14:36, David Gibson wrote:
+> > On Fri, Feb 24, 2017 at 02:29:14PM +1100, Alexey Kardashevskiy wrote:
+> >> On 24/02/17 13:14, David Gibson wrote:
+> >>> On Wed, Feb 22, 2017 at 07:21:33PM +1100, Alexey Kardashevskiy
+> wrote:
+[snip]
+> >>>> +static long kvmppc_rm_tce_iommu_unmap(struct kvm *kvm,
+> >>>> +		struct iommu_table *tbl, unsigned long entry)
+> >>>> +{
+> >>>> +	enum dma_data_direction dir =3D DMA_NONE;
+> >>>> +	unsigned long hpa =3D 0;
+> >>>> +	long ret;
+> >>>> +
+> >>>> +	if (iommu_tce_xchg_rm(tbl, entry, &hpa, &dir))
+> >>>> +		return H_HARDWARE;
+> >>>
+> >>> To avoid a double WARN() (and to make the warnings easier to
+> >>> understand) I'd suggest putting a WARN_ON() here, rather than in the
+> >>> callers when they receieve an H_HARDWARE.  IIUC this really shouldn't
+> >>> ever happen, and it certainly can't be the guest's fault?
+> >>
+> >>
+> >> Makes sense.
+> >=20
+> > I guess it might want WARN_ON_ONCE() to avoid spamming the user with
+> > errors for every TCE, though.
+>=20
+>=20
+> We do not expect this to happen at all :) I can convert all of them to
+> _ONCE really as the purpose of WARN_ON is mostly to document what we do n=
+ot
+> expect.
 
->
->
-> --
-> Andrew Donnellan              OzLabs, ADL Canberra
-> andrew.donnellan@au1.ibm.com  IBM Australia Limited
->
+Sure, seems reasonable.
+
+[snip]
+> >>>> @@ -220,9 +338,10 @@ long kvmppc_rm_h_put_tce_indirect(struct kvm_vc=
+pu *vcpu,
+> >>>>  {
+> >>>>  	struct kvmppc_spapr_tce_table *stt;
+> >>>>  	long i, ret =3D H_SUCCESS;
+> >>>> -	unsigned long tces, entry, ua =3D 0;
+> >>>> +	unsigned long tces, entry, ua =3D 0, tce, gpa;
+> >>>>  	unsigned long *rmap =3D NULL;
+> >>>>  	bool prereg =3D false;
+> >>>> +	struct kvmppc_spapr_tce_iommu_table *stit;
+> >>>> =20
+> >>>>  	stt =3D kvmppc_find_table(vcpu->kvm, liobn);
+> >>>>  	if (!stt)
+> >>>> @@ -287,12 +406,24 @@ long kvmppc_rm_h_put_tce_indirect(struct kvm_v=
+cpu *vcpu,
+> >>>>  	}
+> >>>> =20
+> >>>>  	for (i =3D 0; i < npages; ++i) {
+> >>>> -		unsigned long tce =3D be64_to_cpu(((u64 *)tces)[i]);
+> >>>> +		tce =3D be64_to_cpu(((u64 *)tces)[i]);
+> >>>> =20
+> >>>>  		ret =3D kvmppc_tce_validate(stt, tce);
+> >>>>  		if (ret !=3D H_SUCCESS)
+> >>>>  			goto unlock_exit;
+> >>>> =20
+> >>>> +		gpa =3D tce & ~(TCE_PCI_READ | TCE_PCI_WRITE);
+> >>>> +
+> >>>> +		list_for_each_entry_lockless(stit, &stt->iommu_tables, next) {
+> >>>> +			ret =3D kvmppc_rm_tce_iommu_map(vcpu->kvm,
+> >>>> +					stit->tbl, entry + i, gpa,
+> >>>> +					iommu_tce_direction(tce));
+> >>>> +			if (WARN_ON_ONCE(ret =3D=3D H_HARDWARE))
+> >>>
+> >>> I don't think you need the WARN() here - the only H_HARDWARE failure
+> >>> path in iommu_map() already includes a WARN().
+> >>
+> >>
+> >> True, I can drop it here.
+> >>
+> >>
+> >>>
+> >>>> +				kvmppc_rm_clear_tce(stit->tbl, entry);
+> >>>> +			else if (ret !=3D H_SUCCESS)
+> >>>> +				goto unlock_exit;
+> >>>
+> >>> It's also not clear to me why the H_HARDWARE error path clears the
+> >>> entry, but the other failure paths don't.  Or why an H_HARDWARE will
+> >>> result in continuing to set the rest of the TCEs, but other failures
+> >>> won't.
+> >>
+> >>
+> >> The idea was that other failures still have some chance that handling =
+may
+> >> succeed in virtual mode or via QEMU, H_HARDWARE is fatal.
+> >=20
+> > Um... yes.. but the logic seems to be backwards for that: on
+> > H_HARDWARE you warn and keep going, on other errors you bail out
+> > entirely.
+>=20
+> By "fatal" I means fatal for this particular hardware TCE(s), no hope in
+> trying this particular TCE in virtual mode.
+
+Ok... still not following why that means the "fatal" error results in
+continuing to attempt for the rest of the updated TCEs, whereas the
+"non fatal" one bails out.  Especially since the bail out will only go
+to virtual mode if ret =3D=3D H_TOO_HARD, which it isn't clear is the only
+possibility.
+
+> >> I am just not sure if H_PARAMETER is what I want to return at [1], to =
+make
+> >> the calling code simplier, I could return H_HARDWARE there as well (in=
+stead
+> >> of H_PARAMETER).
+> >=20
+> > That sounds right, IIUC the gpa to ua translation shouldn't ever
+> > fail because of something the guest did.=20
+>=20
+>=20
+> The guest can easily pass bad TCE/GPA which is not in any registered slot.
+> So it is rather H_PARAMETER.
+
+Ah, yes.
+
+> > So I'd expect either
+> > H_HARDWARE, or H_TOO_HARD (if there's some hope that virtual mode can
+> > make the translation when real mode couldn't).
+>=20
+> No, virtual mode uses the exact same helper.
+
+Ok.
+
+--=20
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
+
+--o6HUWsywbRjTg5uW
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAEBCAAGBQJYs4auAAoJEGw4ysog2bOShiUP/jQqTTyCp7mZdcXTDINdH3en
+AH1azx3WEBnJJSNkKPNANm26LIIhP4yRA6YqKAWikbwOoFj1Pnd0glR+Deu8gcB5
+309jS/KJzSFgKnDmIbuQ0tKJbpw/rDUZSNUy4RWY+zl5FQpyGeA4jCmUvwfMSigJ
+VBQ4z0JhLB+pG0ngWBjtIUdt8fR2Y59aWI/CUMr6hlTneQWOpfXxBsQFt8dOp3UW
+6OlQPOpzTpVJxJMXwgj22YJbiQwhjn/kpeYAzyxjFQCWHUjmaVIC+28FYFvigns7
+yjfIuErQj0V9YyKVuh7ROhAJiobv5+Xxv9Gc56cKkrm3XhiotsBB/uFBxf7eb82E
+rWwqH7cR8SlUoO+u5PSjJfAhNfOupYybI9TVgcNjgWJwyiNUuZABJvsK8T4cDJZm
+HI+/ttyxH7gozpzCxrroduBTjKbdB2V7U/PgxFboYdW6chvuN4zaz13QQidOKWoa
+hAOBd4sU0/Bcg7hR6bv0o8GVAAT2/rmmsre2nFTaoGEH+y/NFr46SdtBIlWY+MbG
+kMJLp8xkcBGW9yZYDaWOrrRtd3VQssSgVTd9Viiwh+7+rYCXK7yn4GRrGi8fXb5a
+WkvdyPJZyBa6FYXUL+/KdXVoxjNM4TWNxB+iEsYrR5o6jvrPKCqqw/PZ9i2jeWxF
+QeFFGQqKwX+6p2ievKwp
+=Tfdb
+-----END PGP SIGNATURE-----
+
+--o6HUWsywbRjTg5uW--
