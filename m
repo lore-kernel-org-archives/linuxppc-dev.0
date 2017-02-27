@@ -2,16 +2,14 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vWyCX2SyTzDqC0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vWyCX6yk1zDqC0
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Feb 2017 21:11:04 +1100 (AEDT)
-In-Reply-To: <20170215184528.11755.568.stgit@ltcalpine2-lp14.aus.stglabs.ibm.com>
-To: Nathan Fontenot <nfont@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <1487313253-22846-1-git-send-email-mpe@ellerman.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: jallen@linux.vnet.ibm.com, david@gibson.dropbear.id.au,
- mdroth@linux.vnet.ibm.com, sahilmehta17@gmail.com
-Subject: Re: [v7,2/4] powerpc/pseries: Revert 'Auto-online hotplugged memory'
-Message-Id: <3vWyCX0NzRz9sN8@ozlabs.org>
-Date: Mon, 27 Feb 2017 21:11:03 +1100 (AEDT)
+Subject: Re: powerpc/powernv: Make PCI non-optional
+Message-Id: <3vWyCX6Cf1z9sN9@ozlabs.org>
+Date: Mon, 27 Feb 2017 21:11:04 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,30 +19,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2017-02-15 at 18:45:30 UTC, Nathan Fontenot wrote:
-> Revert the patch patch to auto-online hotplugged memory, commit
-> id ec999072442a. Using the auto-online acpability does online added
-> memory but does not update the associated device struct to
-> indicate that the memory is online. The result of this is that
-> memoryXX/online file in sysfs still reports the memory as being offline.
+On Fri, 2017-02-17 at 06:34:13 UTC, Michael Ellerman wrote:
+> Bare metal systems without PCI don't exist, so there's no real point in
+> making PCI optional, it just breaks the build from time to time. In fact
+> the build is broken now if you turn off PCI_MSI but enable KVM.
 > 
-> Additionally, not updating the device struct to indicate the memory
-> is online will cause the pseries memory DLPAR code to fail when trying
-> to remove a LMB that was previously removed and added back. This happens
-> when validating that the LMB is removable.
+> Using select for PCI is OK because we (powerpc) define config PCI, and it
+> has no dependencies. Selecting PCI_MSI is slightly fishy, because it's
+> in drivers/pci and it is user-visible, but its only dependency is PCI,
+> so selecting it can't actually lead to breakage.
 > 
-> Looking further into the auto-online memory, it seems that this
-> capability is meant more for something like a balloon driver rather than
-> general memory hotplug.
-> 
-> This patch reverts to the previous behavior of calling device_online()
-> to online the LMB when it is DLPAR added and moves the lmb_to_memblock()
-> routine out of CONFIG_MEMORY_HOTREMOVE now that we call it for add.
-> 
-> Signed-off-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> Acked-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 
-Applied to powerpc next, thanks.
+Applied to powerpc next.
 
-https://git.kernel.org/powerpc/c/943db62c316c578f8e2cc6fb81a5f6
+https://git.kernel.org/powerpc/c/a311e738b6d81febae21f0447c5b31
 
 cheers
