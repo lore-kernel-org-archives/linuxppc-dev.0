@@ -1,22 +1,24 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <oohall@gmail.com>
+Received: from mail-qk0-x242.google.com (mail-qk0-x242.google.com
+ [IPv6:2607:f8b0:400d:c09::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vWzJC378pzDqC0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Feb 2017 22:00:11 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
- David Gibson <david@gibson.dropbear.id.au>,
- Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: Re: [PATCH kernel] powerpc/powernv/ioda2: Gracefully fail if too many
- TCE levels requested
-In-Reply-To: <20170222044359.3663-1-aik@ozlabs.ru>
-References: <20170222044359.3663-1-aik@ozlabs.ru>
-Date: Mon, 27 Feb 2017 22:00:10 +1100
-Message-ID: <87innvrj9h.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vX0Cl0HwDzDqC0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Feb 2017 22:41:22 +1100 (AEDT)
+Received: by mail-qk0-x242.google.com with SMTP id n127so16294272qkf.2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Feb 2017 03:41:22 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <87lgsrrjfb.fsf@concordia.ellerman.id.au>
+References: <20170224062054.31408-1-matthew.brown.dev@gmail.com>
+ <87lgsrrjfb.fsf@concordia.ellerman.id.au>
+From: "Oliver O'Halloran" <oohall@gmail.com>
+Date: Mon, 27 Feb 2017 22:41:20 +1100
+Message-ID: <CAOSf1CF2-E6eV5bf95qr-uYxcxEdhpLevWbmHW97virJhNxS4g@mail.gmail.com>
+Subject: Re: [PATCH v3] powerpc/powernv: add hdat attribute to sysfs
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ Matt Brown <matthew.brown.dev@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,32 +28,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Alexey Kardashevskiy <aik@ozlabs.ru> writes:
+On Mon, Feb 27, 2017 at 9:56 PM, Michael Ellerman <mpe@ellerman.id.au> wrote:
+> Matt Brown <matthew.brown.dev@gmail.com> writes:
+>> diff --git a/arch/powerpc/platforms/powernv/opal-hdat.c b/arch/powerpc/platforms/powernv/opal-hdat.c
+>> new file mode 100644
+>> index 0000000..3315dd3
+>> --- /dev/null
+>> +++ b/arch/powerpc/platforms/powernv/opal-hdat.c
+>> @@ -0,0 +1,65 @@
+> ...
+>> +
+>> +
+>> +/* HDAT attribute for sysfs */
+>> +static struct bin_attribute hdat_attr = {
+>> +     .attr = {.name = "hdat", .mode = 0444},
+>                                          ^^^^
+> ajd and oohal report to my office.
 
-> The IODA2 specification says that a 64 DMA address cannot use top 4 bits
-> (3 are reserved and one is a "TVE select"); bottom page_shift bits
-> cannot be used for multilevel table addressing either.
->
-> The existing IODA2 table allocation code aligns the minimum TCE table
-> size to PAGE_SIZE so in the case of 64K system pages and 4K IOMMU pages,
-> we have 64-4-12=48 bits. Since 64K page stores 8192 TCEs, i.e. needs
-> 13 bits, the maximum number of levels is 48/13 = 3 so we physically
-> cannot address more and EEH happens on DMA accesses.
->
-> This adds a check that too many levels were requested.
->
-> It is still possible to have 5 levels in the case of 4K system page size.
->
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> ---
->
-> The alternative would be allocating TCE tables as big as PAGE_SIZE but
-> only using parts of it but this would complicate a bit bits of code
-> responsible for overall amount of memory used for TCE table.
->
-> Or kmem_cache_create() could be used to allocate as big TCE table levels
-> as we really need but that API does not seem to support NUMA nodes.
+I don't think there's anything in the HDAT that's sensitive. That
+said, this might not be true in the future so making it only readable
+by root might be a good idea.
 
-kmem_cache_alloc_node() ?
-
-cheers
+Oliver
