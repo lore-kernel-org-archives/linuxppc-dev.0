@@ -1,43 +1,35 @@
-Return-Path: <dougmill@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <ben@decadent.org.uk>
+Received: from shadbolt.e.decadent.org.uk (shadbolt.e.decadent.org.uk
+ [88.96.1.126])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vX3wQ5P8HzDqC0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Feb 2017 01:28:22 +1100 (AEDT)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v1REKgQt035350
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Feb 2017 09:28:20 -0500
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
- by mx0b-001b2d01.pphosted.com with ESMTP id 28vm1qwykd-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Feb 2017 09:28:19 -0500
-Received: from localhost
- by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <dougmill@linux.vnet.ibm.com>;
- Mon, 27 Feb 2017 07:28:18 -0700
-Received: from b03cxnp08027.gho.boulder.ibm.com
- (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 8FE4719D8026
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Feb 2017 07:27:26 -0700 (MST)
-Received: from b03ledav003.gho.boulder.ibm.com
- (b03ledav003.gho.boulder.ibm.com [9.17.130.234])
- by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v1RESFlM7864684
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Feb 2017 07:28:15 -0700
-Received: from b03ledav003.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id F0BAF6A041
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Feb 2017 07:28:14 -0700 (MST)
-Received: from oc5780617838.ibm.com.rchland.ibm.com (unknown [9.10.86.187])
- by b03ledav003.gho.boulder.ibm.com (Postfix) with ESMTP id C38E16A03C
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Feb 2017 07:28:14 -0700 (MST)
-From: Douglas Miller <dougmill@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 1/1] Add ASCII dump to d1,d2,d4,d8 commands.
-Date: Mon, 27 Feb 2017 08:28:14 -0600
-Message-Id: <1488205694-13337-1-git-send-email-dougmill@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vX49H02TpzDqC0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Feb 2017 01:39:30 +1100 (AEDT)
+Message-ID: <1488204416.2819.9.camel@decadent.org.uk>
+Subject: Re: [PATCH] kbuild: avoid unrecognized option error for external DTC
+From: Ben Hutchings <ben@decadent.org.uk>
+To: Masahiro Yamada <yamada.masahiro@socionext.com>,
+ linux-kbuild@vger.kernel.org
+Cc: Alessio Igor Bogani <alessio.bogani@elettra.eu>, Arnd Bergmann
+ <arnd@arndb.de>, Rob Herring <robh+dt@kernel.org>,
+ linux-c6x-dev@linux-c6x.org,  Michal Simek <monstr@monstr.eu>, Nicolas
+ Pitre <nicolas.pitre@linaro.org>, Marcin Nowakowski
+ <marcin.nowakowski@imgtec.com>, devicetree@vger.kernel.org, Stefan
+ Kristiansson <stefan.kristiansson@saunalahti.fi>, Michal Marek
+ <mmarek@suse.com>, Scott Wood <oss@buserror.net>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>,  linuxppc-dev@lists.ozlabs.org, Paul Mackerras
+ <paulus@samba.org>,  openrisc@lists.librecores.org, Mark Salter
+ <msalter@redhat.com>, Stafford Horne <shorne@gmail.com>, Aurelien Jacquiot
+ <a-jacquiot@ti.com>, Jonas Bonn <jonas@southpole.se>, Michael Ellerman
+ <mpe@ellerman.id.au>,  linux-kernel@vger.kernel.org, Oliver O'Halloran
+ <oohall@gmail.com>, Mark Rutland <mark.rutland@arm.com>, Emese Revfy
+ <re.emese@gmail.com>
+Date: Mon, 27 Feb 2017 14:06:56 +0000
+In-Reply-To: <1488174052-2530-1-git-send-email-yamada.masahiro@socionext.com>
+References: <1488174052-2530-1-git-send-email-yamada.masahiro@socionext.com>
+Content-Type: multipart/signed; micalg="pgp-sha512";
+ protocol="application/pgp-signature"; boundary="=-34dSXzycV0LBKz+SA5yC"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,43 +39,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The reason debuggers add an ASCII dump to other types of memory dumps
-is to give the user visual reference points in the case that ASCII
-strings are adjacent to other structures or element.  For example,
-when examining the task_struct structure one can look for the comm[]
-string and use it to locate other important elements.
 
-ASCII strings do not have endianess, they exist in memory in the same
-order regardless of CPU endianess. ASCII strings are, by definition,
-human readable and so should be presented in a human readable format.
+--=-34dSXzycV0LBKz+SA5yC
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-For these reasons, the supplemental ASCII dump does not re-order
-the strings from memory to match the endianess of the corresponding
-16, 32, or 64 bit words. That would make the ASCII dump much less
-useful.
+On Mon, 2017-02-27 at 14:40 +0900, Masahiro Yamada wrote:
+> Since commit 6b22b3d1614a ("kbuild: Allow using host dtc instead of
+> kernel's copy"), it is possible to use an external dtc.=C2=A0=C2=A0In thi=
+s
+> case, we do not know which options are supported on it.
+>=20
+> Commit bc553986a2f7 ("dtc: turn off dtc unit address warnings by
+> default") gives -Wno-unit_address_vs_reg, but this options is only
+> recognized by v1.4.2 or later.
+>=20
+> If an older version is specified, the build fails:
 
-Signed-off-by: Douglas Miller <dougmill@linux.vnet.ibm.com>
----
- arch/powerpc/xmon/xmon.c |    7 ++++++-
- 1 files changed, 6 insertions(+), 1 deletions(-)
+But the option to use an external dtc was intended to allow testing of
+newer versions.  If there's no reason to use this option to run an
+older version, why bother trying to support that?
 
-diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
-index 57503cd..f8f0f35 100644
---- a/arch/powerpc/xmon/xmon.c
-+++ b/arch/powerpc/xmon/xmon.c
-@@ -2366,7 +2366,12 @@ static void dump_by_size(unsigned long addr, long count, int size)
- 
- 			printf("%0*lx", size * 2, val);
- 		}
--		printf("\n");
-+		printf("  |");
-+		for (j = 0; j < 16; ++j) {
-+			val = temp[j];
-+			putchar(' ' <= val && val <= '~' ? val : '.');
-+		}
-+		printf("|\n");
- 	}
- }
- 
--- 
-1.7.1
+[...]
+> --- a/scripts/Kbuild.include
+> +++ b/scripts/Kbuild.include
+> @@ -171,6 +171,20 @@ ld-version =3D $(shell $(LD) --version | $(srctree)/=
+scripts/ld-version.sh)
+> =C2=A0# Usage:=C2=A0=C2=A0$(call ld-ifversion, -ge, 22252, y)
+> =C2=A0ld-ifversion =3D $(shell [ $(ld-version) $(1) $(2) ] && echo $(3) |=
+| echo $(4))
+> =C2=A0
+> +# dtc-option
+> +# Usage:=C2=A0=C2=A0DTC_FLAGS +=3D $(call dtc-option,-Wno-unit_address_v=
+s_reg)
+> +#
+> +# When we use the external dtc, check if the desired options are support=
+ed.
+> +# When we use the kernel's copy (scripts/dtc/dtc), just use the fixed op=
+tion.
+> +# Until Kbuild descends into the scripts/dtc/ directory, scripts/dtc/dtc=
+ may
+> +# not exist, i.e. $(call try-run,...) may not work.
+> +ifeq ("$(origin DTC)", "command line")
+[...]
+
+It could also be specified as an environment variable (assignment with
+"?=3D" doesn't override them, but "=3D" does).
+
+Ben.
+
+--=20
+Ben Hutchings
+This sentence contradicts itself - no actually it doesn't.
+
+
+--=-34dSXzycV0LBKz+SA5yC
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEErCspvTSmr92z9o8157/I7JWGEQkFAli0MoAACgkQ57/I7JWG
+EQnf9xAAsrFofDAMb/8Y7FdR1SB9TyigTo5kslryzW1w9ge3wdkEst3DCrXIuAJg
+rYlVL4Rlu+kvW8tQExD345wZKNbVZ1vkaviJfr7mqHP+EHRlyJR3qVlpZMsnSuZm
+ZwhaB+J3Nl6jMo7G9nj4+YGa8smPWANwj3svFuuZv+VHSXipsIzYDKjWsjE9F2xs
+cX3T2ESaUV7yGKGiMiGyQN7LOMyPawNuKYGxq3g9B8rfS/twEd3CD/uA+99rftsZ
+ycwwSIzlulBUKbie9bv/5tZ/Jkt9x8/iF3iun87AJYUSaiwv9S+iUbhQJDx2cpm4
+LAC4DXBsQllfEjKQCFaZZ8NnkRM5VYGinNvVy69gv/Q/iXQWaqVFqcrnFw+pW5u9
+EUzdz2H4ebhXJM0pi+pUowJKH6e8ySrLAbkY1CqcCJno5IvpUR2YhLJp3Gq/CElZ
+D8rlWNaY7NTPddckwLNh1AYZpVF31AIkFDFxSG9A5xTudyPmP1j8gA/MS1DLiH7b
+xe5i7qdYeR5noHgc5CqM7SPCqUHSv2rbaCDbdC8oAfSxVK2mGPMcurOcz6rhrf07
+Mot8XYtGglXs+VnQFxSX0I+brqw5TDEHPAaa89VuwoFbxaABpGWkRwOpED1mTCSM
+sWEe1LEReCMYKF/oQygec5jhf2QhWKMKgXZjo7CVDV+ljYzHm1o=
+=UfrQ
+-----END PGP SIGNATURE-----
+
+--=-34dSXzycV0LBKz+SA5yC--
