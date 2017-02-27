@@ -1,25 +1,27 @@
-Return-Path: <nicoleotsuka@gmail.com>
-Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
- [IPv6:2607:f8b0:400e:c05::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <David.Daney@cavium.com>
+Received: from NAM01-BY2-obe.outbound.protection.outlook.com
+ (mail-by2nam01on0065.outbound.protection.outlook.com [104.47.34.65])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vX9YQ6ByjzDqC0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Feb 2017 05:42:18 +1100 (AEDT)
-Received: by mail-pg0-x244.google.com with SMTP id 1so1847276pgz.2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Feb 2017 10:42:18 -0800 (PST)
-Date: Mon, 27 Feb 2017 10:42:33 -0800
-From: Nicolin Chen <nicoleotsuka@gmail.com>
-To: Alin Grigorean <alin.grig93@gmail.com>
-Cc: timur@tabi.org, Xiubo.Lee@gmail.com, perex@perex.cz, tiwai@suse.com,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- alsa-devel@alsa-project.org, fabio.estevam@nxp.com,
- lgirdwood@gmail.com, broonie@kernel.org
-Subject: Re: [PATCH] ASoC: fsl: Remove unneeded init of static variable
-Message-ID: <20170227184233.GA22071@Asurada-Nvidia>
-References: <20170225104726.15936-1-alin.grig93@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vX9td58SYzDqC0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Feb 2017 05:57:13 +1100 (AEDT)
+Subject: Re: [PATCH] jump_label: align jump_entry table to at least 4-bytes
+To: Jason Baron <jbaron@akamai.com>, rostedt@goodmis.org
+References: <1488221364-13905-1-git-send-email-jbaron@akamai.com>
+Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+ linux-mips@linux-mips.org, linuxppc-dev@lists.ozlabs.org,
+ Ingo Molnar <mingo@kernel.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Anton Blanchard <anton@samba.org>, Rabin Vincent <rabin@rab.in>,
+ Russell King <linux@armlinux.org.uk>, Ralf Baechle <ralf@linux-mips.org>,
+ Chris Metcalf <cmetcalf@mellanox.com>, Zhigang Lu <zlu@ezchip.com>
+From: David Daney <ddaney@caviumnetworks.com>
+Message-ID: <f7532548-7007-1a32-f669-4520792805b3@caviumnetworks.com>
+Date: Mon, 27 Feb 2017 10:57:03 -0800
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170225104726.15936-1-alin.grig93@gmail.com>
+In-Reply-To: <1488221364-13905-1-git-send-email-jbaron@akamai.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,30 +31,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, Feb 25, 2017 at 12:47:26PM +0200, Alin Grigorean wrote:
-> This was reported by checkpatch.pl
-> 
-> Signed-off-by: Alin Grigorean <alin.grig93@gmail.com>
+On 02/27/2017 10:49 AM, Jason Baron wrote:
+> The core jump_label code makes use of the 2 lower bits of the
+> static_key::[type|entries|next] field. Thus, ensure that the jump_entry
+> table is at least 4-byte aligned.
+>
+[...]
+> diff --git a/arch/mips/include/asm/jump_label.h b/arch/mips/include/asm/jump_label.h
+> index e77672539e8e..243791f3ae71 100644
+> --- a/arch/mips/include/asm/jump_label.h
+> +++ b/arch/mips/include/asm/jump_label.h
+> @@ -31,6 +31,7 @@ static __always_inline bool arch_static_branch(struct static_key *key, bool bran
+>  	asm_volatile_goto("1:\t" NOP_INSN "\n\t"
+>  		"nop\n\t"
+>  		".pushsection __jump_table,  \"aw\"\n\t"
+> +		".balign 4\n\t"
+>  		WORD_INSN " 1b, %l[l_yes], %0\n\t"
+>  		".popsection\n\t"
+>  		: :  "i" (&((char *)key)[branch]) : : l_yes);
+> @@ -45,6 +46,7 @@ static __always_inline bool arch_static_branch_jump(struct static_key *key, bool
+>  	asm_volatile_goto("1:\tj %l[l_yes]\n\t"
+>  		"nop\n\t"
+>  		".pushsection __jump_table,  \"aw\"\n\t"
+> +		".balign 4\n\t"
+>  		WORD_INSN " 1b, %l[l_yes], %0\n\t"
+>  		".popsection\n\t"
+>  		: :  "i" (&((char *)key)[branch]) : : l_yes);
 
-Acked-by: Nicolin Chen <nicoleotsuka@gmail.com>
 
-> ---
->  sound/soc/fsl/imx-pcm-fiq.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/sound/soc/fsl/imx-pcm-fiq.c b/sound/soc/fsl/imx-pcm-fiq.c
-> index dac6688540dc..92410f7ca1fa 100644
-> --- a/sound/soc/fsl/imx-pcm-fiq.c
-> +++ b/sound/soc/fsl/imx-pcm-fiq.c
-> @@ -282,7 +282,7 @@ static int imx_pcm_new(struct snd_soc_pcm_runtime *rtd)
->  	return 0;
->  }
->  
-> -static int ssi_irq = 0;
-> +static int ssi_irq;
->  
->  static int imx_pcm_fiq_new(struct snd_soc_pcm_runtime *rtd)
->  {
-> -- 
-> 2.11.1
-> 
+I will speak only for the MIPS part.
+
+If the section is not already properly aligned, this change will add 
+padding, which is probably not what we want.
+
+Have you ever seen a problem with misalignment in the real world?
+
+If so, I think a better approach might be to set properties on the 
+__jump_table section to force the proper alignment, or do something in 
+the linker script.
+
+David Daney
