@@ -1,23 +1,19 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vWxtm6GY2zDqC0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Feb 2017 20:56:32 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- benh@kernel.crashing.org, paulus@samba.org
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] powerpc/mm: Add translation mode information in
- /proc/cpuinfo
-In-Reply-To: <8ec533a5-daf6-4644-ffea-e940fe3e77f9@linux.vnet.ibm.com>
-References: <1487499469-15284-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <874lzmn5h1.fsf@concordia.ellerman.id.au>
- <8ec533a5-daf6-4644-ffea-e940fe3e77f9@linux.vnet.ibm.com>
-Date: Mon, 27 Feb 2017 20:56:28 +1100
-Message-ID: <87tw7gq7n7.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vWyCV6CWCzDqC0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Feb 2017 21:11:02 +1100 (AEDT)
+In-Reply-To: <20170206010717.3460-1-andrew.donnellan@au1.ibm.com>
+To: Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
+From: Michael Ellerman <patch-notifications@ellerman.id.au>
+Cc: vaibhav@linux.vnet.ibm.com, stable@vger.kernel.org,
+ ukrishn@linux.vnet.ibm.com, fbarrat@linux.vnet.ibm.com, pradghos@in.ibm.com,
+ imunsie@au1.ibm.com
+Subject: Re: cxl: fix nested locking hang during EEH hotplug
+Message-Id: <3vWyCV0F0qz9sN4@ozlabs.org>
+Date: Mon, 27 Feb 2017 21:11:01 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,29 +23,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> writes:
+On Mon, 2017-02-06 at 01:07:17 UTC, Andrew Donnellan wrote:
+> Commit 14a3ae34bfd0 ("cxl: Prevent read/write to AFU config space while AFU
+> not configured") introduced a rwsem to fix an invalid memory access that
+> occurred when someone attempts to access the config space of an AFU on a
+> vPHB whilst the AFU is deconfigured, such as during EEH recovery.
+> 
+> It turns out that it's possible to run into a nested locking issue when EEH
+> recovery fails and a full device hotplug is required.
+> cxl_pci_error_detected() deconfigures the AFU, taking a writer lock on
+> configured_rwsem. When EEH recovery fails, the EEH code calls
+> pci_hp_remove_devices() to remove the device, which in turn calls
+> cxl_remove() -> cxl_pci_remove_afu() -> pci_deconfigure_afu(), which tries
+> to grab the writer lock that's already held.
+> 
+> Standard rwsem semantics don't express what we really want to do here and
+> don't allow for nested locking. Fix this by replacing the rwsem with an
+> atomic_t which we can control more finely. Allow the AFU to be locked
+> multiple times so long as there are no readers.
+> 
+> Fixes: 14a3ae34bfd0 ("cxl: Prevent read/write to AFU config space while AFU not configured")
+> Cc: stable@vger.kernel.org # v4.9+
+> Signed-off-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+> Acked-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
 
-> On Wednesday 22 February 2017 11:15 AM, Michael Ellerman wrote:
->> "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> writes:
->>> diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
->>> index d50c7d99baaf..d38571e289bb 100644
->>> --- a/arch/powerpc/platforms/powernv/setup.c
->>> +++ b/arch/powerpc/platforms/powernv/setup.c
->>> @@ -95,6 +95,10 @@ static void pnv_show_cpuinfo(struct seq_file *m)
->>>   	else
->>>   		seq_printf(m, "firmware\t: BML\n");
->>>   	of_node_put(root);
->>> +	if (radix_enabled())
->>> +		seq_printf(m, "translation\t: Radix\n");
->>> +	else
->>> +		seq_printf(m, "translation\t: Hash\n");
->>>   }
->> Can we just call it "MMU" ?
-...
->
-> Do you want me to send an updated patch ? or you can update it when you 
-> apply it to your tree ?
+Applied to powerpc next, thanks.
 
-I'll fix it up.
+https://git.kernel.org/powerpc/c/171ed0fcd8966d82c45376f1434678
 
 cheers
