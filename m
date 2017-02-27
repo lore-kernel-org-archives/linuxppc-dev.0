@@ -1,18 +1,20 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vWzD937sNzDqC0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Feb 2017 21:56:41 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vWzJC378pzDqC0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Feb 2017 22:00:11 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Andrew Donnellan  <andrew.donnellan@au1.ibm.com>,
- Oliver O'Halloran  <oohall@gmail.com>
-Cc: Matt Brown <matthew.brown.dev@gmail.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v3] powerpc/powernv: add hdat attribute to sysfs
-In-Reply-To: <20170224062054.31408-1-matthew.brown.dev@gmail.com>
-References: <20170224062054.31408-1-matthew.brown.dev@gmail.com>
-Date: Mon, 27 Feb 2017 21:56:40 +1100
-Message-ID: <87lgsrrjfb.fsf@concordia.ellerman.id.au>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
+ David Gibson <david@gibson.dropbear.id.au>,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>
+Subject: Re: [PATCH kernel] powerpc/powernv/ioda2: Gracefully fail if too many
+ TCE levels requested
+In-Reply-To: <20170222044359.3663-1-aik@ozlabs.ru>
+References: <20170222044359.3663-1-aik@ozlabs.ru>
+Date: Mon, 27 Feb 2017 22:00:10 +1100
+Message-ID: <87innvrj9h.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,20 +26,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Matt Brown <matthew.brown.dev@gmail.com> writes:
-> diff --git a/arch/powerpc/platforms/powernv/opal-hdat.c b/arch/powerpc/platforms/powernv/opal-hdat.c
-> new file mode 100644
-> index 0000000..3315dd3
-> --- /dev/null
-> +++ b/arch/powerpc/platforms/powernv/opal-hdat.c
-> @@ -0,0 +1,65 @@
-...
-> +
-> +
-> +/* HDAT attribute for sysfs */
-> +static struct bin_attribute hdat_attr = {
-> +	.attr = {.name = "hdat", .mode = 0444},
-                                         ^^^^
-ajd and oohal report to my office.
+Alexey Kardashevskiy <aik@ozlabs.ru> writes:
+
+> The IODA2 specification says that a 64 DMA address cannot use top 4 bits
+> (3 are reserved and one is a "TVE select"); bottom page_shift bits
+> cannot be used for multilevel table addressing either.
+>
+> The existing IODA2 table allocation code aligns the minimum TCE table
+> size to PAGE_SIZE so in the case of 64K system pages and 4K IOMMU pages,
+> we have 64-4-12=48 bits. Since 64K page stores 8192 TCEs, i.e. needs
+> 13 bits, the maximum number of levels is 48/13 = 3 so we physically
+> cannot address more and EEH happens on DMA accesses.
+>
+> This adds a check that too many levels were requested.
+>
+> It is still possible to have 5 levels in the case of 4K system page size.
+>
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> ---
+>
+> The alternative would be allocating TCE tables as big as PAGE_SIZE but
+> only using parts of it but this would complicate a bit bits of code
+> responsible for overall amount of memory used for TCE table.
+>
+> Or kmem_cache_create() could be used to allocate as big TCE table levels
+> as we really need but that API does not seem to support NUMA nodes.
+
+kmem_cache_alloc_node() ?
 
 cheers
