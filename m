@@ -1,22 +1,29 @@
-Return-Path: <arnd@arndb.de>
-Received: from mout.kundenserver.de (mout.kundenserver.de [217.72.192.73])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <SRS0=7aBp=2I=goodmis.org=rostedt@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vXDQm36dVzDqC0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Feb 2017 07:51:43 +1100 (AEDT)
-From: Arnd Bergmann <arnd@arndb.de>
-To: Stuart Yoder <stuyoder@gmail.com>,
- Laurentiu Tudor <laurentiu.tudor@nxp.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: devicetree@vger.kernel.org, Rob Herring <robh+dt@kernel.org>,
- Frank Rowand <frowand.list@gmail.com>, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org, Arnd Bergmann <arnd@arndb.de>,
- German Rivera <german.rivera@nxp.com>, Itai Katz <itai.katz@nxp.com>,
- Ramiro Oliveira <Ramiro.Oliveira@synopsys.com>,
- linux-kernel@vger.kernel.org, devel@driverdev.osuosl.org
-Subject: [PATCH] staging: fsl-mc: fix warning in DT ranges parser
-Date: Mon, 27 Feb 2017 21:42:16 +0100
-Message-Id: <20170227204235.3547639-1-arnd@arndb.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vXDlQ73v2zDqC0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Feb 2017 08:06:09 +1100 (AEDT)
+Date: Mon, 27 Feb 2017 16:06:01 -0500
+From: Steven Rostedt <rostedt@goodmis.org>
+To: David Daney <ddaney@caviumnetworks.com>
+Cc: Jason Baron <jbaron@akamai.com>, linux-arm-kernel@lists.infradead.org,
+ linux-kernel@vger.kernel.org, linux-mips@linux-mips.org,
+ linuxppc-dev@lists.ozlabs.org, Ingo Molnar <mingo@kernel.org>, Benjamin
+ Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
+ <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, Anton Blanchard
+ <anton@samba.org>, Rabin Vincent <rabin@rab.in>, Russell King
+ <linux@armlinux.org.uk>, Ralf Baechle <ralf@linux-mips.org>, Chris Metcalf
+ <cmetcalf@mellanox.com>, Zhigang Lu <zlu@ezchip.com>
+Subject: Re: [PATCH] jump_label: align jump_entry table to at least 4-bytes
+Message-ID: <20170227160601.5b79a1fe@gandalf.local.home>
+In-Reply-To: <aa139c18-1b04-2c20-2e22-89d74503b3cf@caviumnetworks.com>
+References: <1488221364-13905-1-git-send-email-jbaron@akamai.com>
+ <f7532548-7007-1a32-f669-4520792805b3@caviumnetworks.com>
+ <93219edf-0f6d-5cc7-309c-c998f16fe7ac@akamai.com>
+ <aa139c18-1b04-2c20-2e22-89d74503b3cf@caviumnetworks.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,92 +33,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The fsl-mc-bus driver in staging contains a copy of the standard
-'ranges' property parsing algorithm with a hack to treat a missing
-property the same way as an empty one. This code produces false-positive
-warnings for me in an allmodconfig build:
+On Mon, 27 Feb 2017 11:59:50 -0800
+David Daney <ddaney@caviumnetworks.com> wrote:
 
-drivers/staging/fsl-mc/bus/fsl-mc-bus.c: In function 'fsl_mc_bus_probe':
-drivers/staging/fsl-mc/bus/fsl-mc-bus.c:645:6: error: 'mc_size_cells' may be used uninitialized in this function [-Werror=maybe-uninitialized]
-drivers/staging/fsl-mc/bus/fsl-mc-bus.c:682:8: error: 'mc_addr_cells' may be used uninitialized in this function [-Werror=maybe-uninitialized]
-drivers/staging/fsl-mc/bus/fsl-mc-bus.c:644:6: note: 'mc_addr_cells' was declared here
-drivers/staging/fsl-mc/bus/fsl-mc-bus.c:684:8: error: 'paddr_cells' may be used uninitialized in this function [-Werror=maybe-uninitialized]
-drivers/staging/fsl-mc/bus/fsl-mc-bus.c:643:6: note: 'paddr_cells' was declared here
+> For me the size is not the important issue, it is the alignment of the 
+> struct jump_entry entries in the table.  I don't understand how your 
+> patch helps, and I cannot Acked-by unless I understand what is being 
+> done and can see that it is both correct and necessary.
 
-To avoid the warnings, I'm simplifying the argument handling to pass
-the number of valid ranges in the property as the function return code
-rather than passing it by reference. With this change, gcc can see that
-we don't evaluate the cell numbers for an missing ranges property.
+You brought up a very good point and I'm glad that I had Jason Cc all
+the arch maintainers in one patch.
 
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
----
- drivers/staging/fsl-mc/bus/fsl-mc-bus.c | 22 +++++++++-------------
- 1 file changed, 9 insertions(+), 13 deletions(-)
+I think jump_labels may be much more broken than we think, and Jason's
+fix doesn't fix anything. We had this same issues with tracepoints.
 
-diff --git a/drivers/staging/fsl-mc/bus/fsl-mc-bus.c b/drivers/staging/fsl-mc/bus/fsl-mc-bus.c
-index 47acb0a29842..3be5f25ff113 100644
---- a/drivers/staging/fsl-mc/bus/fsl-mc-bus.c
-+++ b/drivers/staging/fsl-mc/bus/fsl-mc-bus.c
-@@ -588,8 +588,7 @@ static int parse_mc_ranges(struct device *dev,
- 			   int *paddr_cells,
- 			   int *mc_addr_cells,
- 			   int *mc_size_cells,
--			   const __be32 **ranges_start,
--			   u8 *num_ranges)
-+			   const __be32 **ranges_start)
- {
- 	const __be32 *prop;
- 	int range_tuple_cell_count;
-@@ -602,8 +601,6 @@ static int parse_mc_ranges(struct device *dev,
- 		dev_warn(dev,
- 			 "missing or empty ranges property for device tree node '%s'\n",
- 			 mc_node->name);
--
--		*num_ranges = 0;
- 		return 0;
- 	}
- 
-@@ -630,8 +627,7 @@ static int parse_mc_ranges(struct device *dev,
- 		return -EINVAL;
- 	}
- 
--	*num_ranges = ranges_len / tuple_len;
--	return 0;
-+	return ranges_len / tuple_len;
- }
- 
- static int get_mc_addr_translation_ranges(struct device *dev,
-@@ -639,7 +635,7 @@ static int get_mc_addr_translation_ranges(struct device *dev,
- 						**ranges,
- 					  u8 *num_ranges)
- {
--	int error;
-+	int ret;
- 	int paddr_cells;
- 	int mc_addr_cells;
- 	int mc_size_cells;
-@@ -647,16 +643,16 @@ static int get_mc_addr_translation_ranges(struct device *dev,
- 	const __be32 *ranges_start;
- 	const __be32 *cell;
- 
--	error = parse_mc_ranges(dev,
-+	ret = parse_mc_ranges(dev,
- 				&paddr_cells,
- 				&mc_addr_cells,
- 				&mc_size_cells,
--				&ranges_start,
--				num_ranges);
--	if (error < 0)
--		return error;
-+				&ranges_start);
-+	if (ret < 0)
-+		return ret;
- 
--	if (!(*num_ranges)) {
-+	*num_ranges = ret;
-+	if (!ret) {
- 		/*
- 		 * Missing or empty ranges property ("ranges;") for the
- 		 * 'fsl,qoriq-mc' node. In this case, identity mapping
--- 
-2.9.0
+I'm looking at jump_label_init, and how we iterate over an array of
+struct jump_entry's that was put together by the linker. The problem is
+that jump_entry is not a power of 2 in size.
+
+struct jump_entry {
+	jump_label_t code;
+	jump_label_t target;
+	jump_label_t key;
+};
+
+When putting together arrays of this kind, the linker is in its right
+to add padding for alignment, in the middle of the array! It has no
+idea that this is an array, and there's nothing stopping the linker
+from messing it up.
+
+For those structs that are a power of 2 in size, there's no reason for
+the linker to do anything else, and it "just works". There's plenty of
+instances in the kernel that depend on this.
+
+I'm thinking that the sort algorithm either hid the problem or fixed it
+somehow (I'm guessing it hid the problem).
+
+I hit the same issue with trace event structures. The solution was to
+create the array of pointers to each structure, and dereference the
+structures from the array.
+
+See commit e4a9ea5ee ("tracing: Replace trace_event struct array with
+pointer array")
+
+-- Steve
