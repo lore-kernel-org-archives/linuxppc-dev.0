@@ -1,20 +1,19 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vWyCb6bQszDqH7
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Feb 2017 21:11:07 +1100 (AEDT)
-In-Reply-To: <1487690321-21553-1-git-send-email-fweisbec@gmail.com>
-To: =?utf-8?b?RnLDqWTDqXJpYyBXZWlzYmVja2Vy?= <fweisbec@gmail.com>,
- LKML <linux-kernel@vger.kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vWyCd00HczDqHG
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Feb 2017 21:11:09 +1100 (AEDT)
+In-Reply-To: <1487740322-17755-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ benh@kernel.crashing.org, paulus@samba.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>,
- Abdul Haleem <abdhalee@linux.vnet.ibm.com>,
- Oliver O'Halloran <oohall@gmail.com>, Paul Mackerras <paulus@samba.org>,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: powerpc: Remove leftover cputime_to_nsecs call causing build error
-Message-Id: <3vWyCb5hbdz9sNF@ozlabs.org>
-Date: Mon, 27 Feb 2017 21:11:07 +1100 (AEDT)
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: Re: powerpc/mm/hash: Always clear UPRT and Host Radix bits when
+ setting up CPU
+Message-Id: <3vWyCc5NYdz9sNC@ozlabs.org>
+Date: Mon, 27 Feb 2017 21:11:08 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,27 +23,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2017-02-21 at 15:18:41 UTC, =?utf-8?b?RnLDqWTDqXJpYyBXZWlzYmVja2Vy?= wrote:
-> This type conversion is a leftover that got ignored during the kcpustat
-> conversion to nanosecs, resulting in build breakage with config having
-> CONFIG_NO_HZ_FULL=y.
+On Wed, 2017-02-22 at 05:12:02 UTC, "Aneesh Kumar K.V" wrote:
+> We will set LPCR with correct value for radix during int. This make sure we
+> start with a sanitized value of LPCR. In case of kexec, cpus can have LPCR
+> value based on the previous translation mode we were running.
 > 
-> 	arch/powerpc/kernel/time.c: In function 'running_clock':
-> 	arch/powerpc/kernel/time.c:712:2: error: implicit declaration of function 'cputime_to_nsecs' [-Werror=implicit-function-declaration]
-> 	  return local_clock() - cputime_to_nsecs(kcpustat_this_cpu->cpustat[CPUTIME_STEAL]);
-> 
-> All we need is to remove it.
-> 
-> Reported-by: Abdul Haleem <abdhalee@linux.vnet.ibm.com>
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Paul Mackerras <paulus@samba.org>
-> Cc: Oliver O'Halloran <oohall@gmail.com>
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+> Fixes: fe036a0605d60 ("powerpc/64/kexec: Fix MMU cleanup on radix")
+> Cc: stable@vger.kernel.org # v4.9+
+> Acked-by: Michael Neuling <mikey@neuling.org>
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/9f3768e02335ddd6ebe1d85d5cb3a6
+https://git.kernel.org/powerpc/c/fda2d27db6eae5c2468f9e4657539b
 
 cheers
