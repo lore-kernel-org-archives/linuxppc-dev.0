@@ -3,32 +3,32 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vXV046DBJzDqH7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Feb 2017 18:03:00 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vXV0B26GjzDqJk
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Feb 2017 18:03:06 +1100 (AEDT)
 Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v1S6sTeT076707
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Feb 2017 02:02:58 -0500
-Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [125.16.236.3])
- by mx0a-001b2d01.pphosted.com with ESMTP id 28w2hc4gpc-1
+ v1S6sCQs075919
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Feb 2017 02:03:04 -0500
+Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [125.16.236.4])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 28w2hc4gss-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Feb 2017 02:02:58 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Feb 2017 02:03:04 -0500
 Received: from localhost
- by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <vaibhav@linux.vnet.ibm.com>;
- Tue, 28 Feb 2017 12:32:55 +0530
-Received: from d28relay10.in.ibm.com (d28relay10.in.ibm.com [9.184.220.161])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 444EAE005A
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Feb 2017 12:34:37 +0530 (IST)
+ Tue, 28 Feb 2017 12:33:00 +0530
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id A7D5DE0045
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Feb 2017 12:34:41 +0530 (IST)
 Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay10.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v1S71loU17039486
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Feb 2017 12:31:47 +0530
+ by d28relay05.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v1S72stF15466728
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Feb 2017 12:32:54 +0530
 Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
  by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v1S72qU2020651
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Feb 2017 12:32:53 +0530
+ v1S72t1S020800
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Feb 2017 12:32:57 +0530
 From: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org, Russell Currey <ruscur@russell.cc>,
  frederic.barrat@fr.ibm.com
@@ -37,9 +37,12 @@ Cc: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>,
  Christophe Lombard <christophe_lombard@fr.ibm.com>,
  Philippe Bergheaud <philippe.bergheaud@fr.ibm.com>,
  Gregory Kurz <KURZGREG@fr.ibm.com>, Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: [RFC 0/3] cxl: Reset freeze counter for the adapter before PERST
-Date: Tue, 28 Feb 2017 12:32:19 +0530
-Message-Id: <20170228070222.21126-1-vaibhav@linux.vnet.ibm.com>
+Subject: [RFC 1/3] powerpc/eeh: Refactor eeh_pe_update_time_stamp to update
+ freeze_count
+Date: Tue, 28 Feb 2017 12:32:20 +0530
+In-Reply-To: <20170228070222.21126-1-vaibhav@linux.vnet.ibm.com>
+References: <20170228070222.21126-1-vaibhav@linux.vnet.ibm.com>
+Message-Id: <20170228070222.21126-2-vaibhav@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,95 +52,141 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Presently to flash a cxl adapter with a new FPGA image a warm pcie reset is
-requested on the adapter, once the bitstream is loaded to card flash memory.
-This issues a pci-fundamental reset to the card slot signaling the card
-controller to reconfigure the fpga with the new bitstream. However
-pci-fundamental reset of the slot also results in a fenced PHB that raises an
-eeh event triggering the core eeh flow.
+This patch introduces a new function named
+eeh_pe_update_freeze_counter replacing existing function
+eeh_pe_update_time_stamp. The new function also manages the value of
+freeze_count along with tstamp to track the number of times the PE
+froze in last one hour and if the freeze_count > eeh_max_freezes then
+reports an error(-ENOTRECOVERABLE) to indicate that the PE should be
+permanently disabled.
 
-The core eeh also maintains a counter named freeze_count for each PE inside
-struct eeh_pe. The counter is incremented every time an eeh error is reported on
-the PE domain and if the counter reaches the threshold limit, the device is
-permanently disabled. The threshold limit is enforced by the variable
-eeh_max_freeze variable that can be manipulated via debugfs.
+This patch should not introduce any behavioral change.
 
-This creates problem for cxl adapters as:
-
-* This puts a limit on number of times a fpga image can be re-flashed which is
-  by default 5-time/Hour.
-
-* Since after each reset the adapter can potentially acquire a new personality,
-  the freeze_count of older fpga image shouldn't be carried over to newer image.
-
-To fix these problems the proposed patch-set introduces a new function named
-eeh_pe_reset_freeze_counter that resets freeze counter for the eeh_pe struct.
-This function can then be called by the cxl module the cxl module before issuing
-pci-fundamental reset to the card slot for loading the new fpga image.
-
-Test Runs
-==========
-* Without the patchset:
-
-# for i in $(seq 0 6); do echo 1 > /sys/class/cxl/card0/reset; sleep 20; done
-bash: /sys/class/cxl/card0/reset: No such file or directory
-# dmesg
-...
-EEH: Fenced PHB#22 detected, location: N/A
-EEH: PHB#22-PE#0 has failed 1 times in the last hour
-...
-EEH: PHB#22-PE#0 has failed 2 times in the last hour
-...
-EEH: PHB#22-PE#0 has failed 3 times in the last hour
-...
-EEH: PHB#22-PE#0 has failed 4 times in the last hour
-...
-EEH: PHB#22-PE#0 has failed 5 times in the last hour
-...
-EEH: PHB#22-PE#0 has failed 6 times in the last hour
-and has been permanently disabled.
-
-
-* With the patchset:
-
-# for i in $(seq 0 6); do echo 1 > /sys/class/cxl/card0/reset; sleep 20; done
-# dmesg
-...
-cxl-pci 0022:01:00.0: Resetting freeze counters for the PHB
-EEH: Fenced PHB#22 detected, location: N/A
-EEH: PHB#22-PE#0 has failed 1 times in the last hour
-...
-cxl-pci 0022:01:00.0: Resetting freeze counters for the PHB
-EEH: Fenced PHB#22 detected, location: N/A
-EEH: PHB#22-PE#0 has failed 1 times in the last hour
-...
-cxl-pci 0022:01:00.0: Resetting freeze counters for the PHB
-EEH: Fenced PHB#22 detected, location: N/A
-EEH: PHB#22-PE#0 has failed 1 times in the last hour
-...
-cxl-pci 0022:01:00.0: Resetting freeze counters for the PHB
-EEH: Fenced PHB#22 detected, location: N/A
-EEH: PHB#22-PE#0 has failed 1 times in the last hour
-...
-cxl-pci 0022:01:00.0: Resetting freeze counters for the PHB
-EEH: Fenced PHB#22 detected, location: N/A
-EEH: PHB#22-PE#0 has failed 1 times in the last hour
-...
-cxl-pci 0022:01:00.0: Resetting freeze counters for the PHB
-EEH: Fenced PHB#22 detected, location: N/A
-EEH: PHB#22-PE#0 has failed 1 times in the last hour
-
+Signed-off-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
 ---
-Vaibhav Jain (3):
-  powerpc/eeh: Refactor eeh_pe_update_time_stamp to update freeze_count
-  powerpc/eeh: Introduce function eeh_pe_reset_freeze_counter
-  cxl: Reset freeze counters before adapter PERST for flashing new image
-
- arch/powerpc/include/asm/eeh.h   | 11 ++++++++-
+ arch/powerpc/include/asm/eeh.h   |  2 +-
  arch/powerpc/kernel/eeh_driver.c | 20 +++-------------
  arch/powerpc/kernel/eeh_pe.c     | 50 ++++++++++++++++++++++++++--------------
- drivers/misc/cxl/pci.c           | 15 ++++++++++++
- 4 files changed, 61 insertions(+), 35 deletions(-)
+ 3 files changed, 37 insertions(+), 35 deletions(-)
 
+diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
+index 8e37b71..68806be 100644
+--- a/arch/powerpc/include/asm/eeh.h
++++ b/arch/powerpc/include/asm/eeh.h
+@@ -265,7 +265,7 @@ struct eeh_pe *eeh_phb_pe_get(struct pci_controller *phb);
+ struct eeh_pe *eeh_pe_get(struct eeh_dev *edev);
+ int eeh_add_to_parent_pe(struct eeh_dev *edev);
+ int eeh_rmv_from_parent_pe(struct eeh_dev *edev);
+-void eeh_pe_update_time_stamp(struct eeh_pe *pe);
++int eeh_pe_update_freeze_counter(struct eeh_pe *pe);
+ void *eeh_pe_traverse(struct eeh_pe *root,
+ 		eeh_traverse_func fn, void *flag);
+ void *eeh_pe_dev_traverse(struct eeh_pe *root,
+diff --git a/arch/powerpc/kernel/eeh_driver.c b/arch/powerpc/kernel/eeh_driver.c
+index b948871..326b4e4 100644
+--- a/arch/powerpc/kernel/eeh_driver.c
++++ b/arch/powerpc/kernel/eeh_driver.c
+@@ -739,10 +739,9 @@ static void eeh_handle_normal_event(struct eeh_pe *pe)
+ 		return;
+ 	}
+ 
+-	eeh_pe_update_time_stamp(pe);
+-	pe->freeze_count++;
+-	if (pe->freeze_count > eeh_max_freezes)
+-		goto excess_failures;
++	/* Update freeze counters and see if we have tripped max-freeze limit */
++	if (eeh_pe_update_freeze_counter(pe) < 0)
++		goto perm_error;
+ 	pr_warn("EEH: This PCI device has failed %d times in the last hour\n",
+ 		pe->freeze_count);
+ 
+@@ -872,19 +871,6 @@ static void eeh_handle_normal_event(struct eeh_pe *pe)
+ 
+ 	return;
+ 
+-excess_failures:
+-	/*
+-	 * About 90% of all real-life EEH failures in the field
+-	 * are due to poorly seated PCI cards. Only 10% or so are
+-	 * due to actual, failed cards.
+-	 */
+-	pr_err("EEH: PHB#%x-PE#%x has failed %d times in the\n"
+-	       "last hour and has been permanently disabled.\n"
+-	       "Please try reseating or replacing it.\n",
+-		pe->phb->global_number, pe->addr,
+-		pe->freeze_count);
+-	goto perm_error;
+-
+ hard_fail:
+ 	pr_err("EEH: Unable to recover from failure from PHB#%x-PE#%x.\n"
+ 	       "Please try reseating or replacing it\n",
+diff --git a/arch/powerpc/kernel/eeh_pe.c b/arch/powerpc/kernel/eeh_pe.c
+index cc4b206..cf70a8b 100644
+--- a/arch/powerpc/kernel/eeh_pe.c
++++ b/arch/powerpc/kernel/eeh_pe.c
+@@ -504,30 +504,46 @@ int eeh_rmv_from_parent_pe(struct eeh_dev *edev)
+ }
+ 
+ /**
+- * eeh_pe_update_time_stamp - Update PE's frozen time stamp
++ * eeh_pe_update_freeze_counter - Update PE's frozen time stamp
++ * and freeze counter
+  * @pe: EEH PE
+  *
+- * We have time stamp for each PE to trace its time of getting
+- * frozen in last hour. The function should be called to update
+- * the time stamp on first error of the specific PE. On the other
+- * handle, we needn't account for errors happened in last hour.
++ * We have a freeze-counter and time stamp for each PE to trace
++ * number of times the PE was frozen in last one hour. This function
++ * updates the PE's freeze counter and if its > eeh_max_freezes then
++ * returns an error. The function should be called to once every-time
++ * a specific PE freezes.
+  */
+-void eeh_pe_update_time_stamp(struct eeh_pe *pe)
++int eeh_pe_update_freeze_counter(struct eeh_pe *pe)
+ {
+ 	struct timeval tstamp;
+ 
+-	if (!pe) return;
++	if (!pe)
++		return -EINVAL;
+ 
+-	if (pe->freeze_count <= 0) {
+-		pe->freeze_count = 0;
+-		do_gettimeofday(&pe->tstamp);
+-	} else {
+-		do_gettimeofday(&tstamp);
+-		if (tstamp.tv_sec - pe->tstamp.tv_sec > 3600) {
+-			pe->tstamp = tstamp;
+-			pe->freeze_count = 0;
+-		}
+-	}
++	do_gettimeofday(&tstamp);
++	if (pe->freeze_count <= 0 || tstamp.tv_sec - pe->tstamp.tv_sec > 3600) {
++		pe->tstamp = tstamp;
++		pe->freeze_count = 1;
++
++	} else if (pe->freeze_count >= eeh_max_freezes) {
++		pe->freeze_count++;
++		/*
++		 * About 90% of all real-life EEH failures in the field
++		 * are due to poorly seated PCI cards. Only 10% or so are
++		 * due to actual, failed cards.
++		 */
++		pr_err("EEH: PHB#%x-PE#%x has failed %d times in the\n"
++		       "last hour and has been permanently disabled.\n"
++		       "Please try reseating or replacing it.\n",
++		       pe->phb->global_number, pe->addr,
++		       pe->freeze_count);
++		return -ENOTRECOVERABLE;
++
++	} else
++		pe->freeze_count++;
++
++	return 0;
+ }
+ 
+ /**
 -- 
 2.9.3
