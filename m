@@ -1,22 +1,46 @@
-Return-Path: <oss@buserror.net>
-Received: from host.buserror.net (host.buserror.net [209.198.135.123])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <andrew.donnellan@au1.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vXtxF1FvbzDqJx
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Mar 2017 09:46:57 +1100 (AEDT)
-Message-ID: <1488322005.2944.12.camel@buserror.net>
-From: Scott Wood <oss@buserror.net>
-To: Laurentiu Tudor <laurentiu.tudor@nxp.com>, "Aneesh Kumar K.V"
- <aneesh.kumar@linux.vnet.ibm.com>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>, "mpe@ellerman.id.au" <mpe@ellerman.id.au>
-Cc: Madalin-Cristian Bucur <madalin.bucur@nxp.com>
-Date: Tue, 28 Feb 2017 16:46:45 -0600
-In-Reply-To: <58B58F4B.1040807@nxp.com>
-References: <20170216151129.8971-1-laurentiu.tudor@nxp.com>
- <87tw7tc8o9.fsf@skywalker.in.ibm.com> <58B58F4B.1040807@nxp.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Subject: Re: [PATCH] powerpc: booke: fix boot crash due to null hugepd
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vXvgP4d05zDqJt
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Mar 2017 10:20:01 +1100 (AEDT)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v1SNJDJ6026874
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Feb 2017 18:19:59 -0500
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 28wjr5r3j8-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Feb 2017 18:19:59 -0500
+Received: from localhost
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
+ Wed, 1 Mar 2017 09:19:56 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 939082CE8046
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Mar 2017 10:19:53 +1100 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v1SNJjdV45154408
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 Mar 2017 10:19:53 +1100
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v1SNJKV4002793
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 Mar 2017 10:19:20 +1100
+Subject: Re: [PATCH v3] powerpc/powernv: add hdat attribute to sysfs
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ "Oliver O'Halloran" <oohall@gmail.com>
+References: <20170224062054.31408-1-matthew.brown.dev@gmail.com>
+ <87lgsrrjfb.fsf@concordia.ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org, Matt Brown <matthew.brown.dev@gmail.com>
+From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Date: Wed, 1 Mar 2017 10:18:54 +1100
+MIME-Version: 1.0
+In-Reply-To: <87lgsrrjfb.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Message-Id: <0c2f06b3-ac9f-0021-df70-bdfa850055d2@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,75 +50,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2017-02-28 at 14:55 +0000, Laurentiu Tudor wrote:
-> Hi,
-> 
-> Some more information on the crash, inline.
-> 
-> On 02/17/2017 02:18 PM, Aneesh Kumar K.V wrote:
-> > 
-> > laurentiu.tudor@nxp.com writes:
-> > 
-> > > 
-> > > From: Laurentiu Tudor <laurentiu.tudor@nxp.com>
-> > > 
-> > > On 32-bit book-e machines, hugepd_ok() does not take
-> > > into account null hugepd values, causing this crash at boot:
-> > > 
-> > > Unable to handle kernel paging request for data at address 0x80000000
-> > > Faulting instruction address: 0xc00182a8
-> > > Oops: Kernel access of bad area, sig: 11 [#1]
-> > > SMP NR_CPUS=24
-> > > CoreNet Generic
-> > > Modules linked in:
-> > > CPU: 1 PID: 1 Comm: swapper/0 Tainted: G        W       4.10.0-rc8-
-> > > 00016-g69b1f87 #11
-> > > task: e5050000 task.stack: e5058000
-> > > NIP: c00182a8 LR: c001829c CTR: 00007ffe
-> > > REGS: e5059c50 TRAP: 0300   Tainted: G        W        (4.10.0-rc8-
-> > > 00016-g69b1f87)
-> > > MSR: 00021002 <CE,ME>
-> > >    CR: 88428e82  XER: 00000000
-> > > DEAR: 80000000 ESR: 00000000
-> > > GPR00: c0107510 e5059d00 e5050000 80000000 bffffff1 e5059d0c e5059d08
-> > > 00002017
-> > > GPR08: 00000000 00000000 00000000 00000000 28428e82 00000000 c00027d0
-> > > 00000000
-> > > GPR16: 00000000 00000000 88a28e82 20000000 48422e82 00000000 88a28e84
-> > > dd004000
-> > > GPR24: e5059e38 00000000 00000000 bffffff1 dd004000 00000001 00029002
-> > > bffffff1
-> > > NIP [c00182a8] follow_huge_addr+0x38/0xf0
-> > > LR [c001829c] follow_huge_addr+0x2c/0xf0
-> > > Call Trace:
-> > > [e5059d00] [e5059d00] 0xe5059d00 (unreliable)
-> > > [e5059d20] [c0107510] follow_page_mask+0x40/0x3c0
-> > > [e5059d80] [c0107958] __get_user_pages+0xc8/0x420
-> > > [e5059de0] [c010817c] get_user_pages_remote+0x8c/0x230
-> > > [e5059e30] [c013f170] copy_strings+0x110/0x3a0
-> > > [e5059ea0] [c013f42c] copy_strings_kernel+0x2c/0x50
-> > > [e5059ec0] [c0141324] do_execveat_common+0x474/0x620
-> > > [e5059f10] [c01414fc] do_execve+0x2c/0x40
-> > > [e5059f20] [c0001f68] try_to_run_init_process+0x18/0x60
-> > > [e5059f30] [c000289c] kernel_init+0xcc/0x120
-> > > [e5059f40] [c000f1e8] ret_from_kernel_thread+0x5c/0x64
-> > > Instruction dump:
-> > > bfc10018 7c9f2378 90010024 7fc000a6 7c000146 80630020 38a1000c 38c10008
-> > > 4bfff869 2c030000 41c20090 81210008 <81430000> 81630004 3860ffea
-> > > 2f890000
-> > > ---[ end trace 4bf94e15fd9fa824 ]---
-> > 
-> > Which code path is that. That null should be filtered by the if
-> > (pmd_none(pmd)) check in find_linux_pte_or_hugepte right ?
-> The crash happens when __find_linux_pte_or_hugepte() calls hugepd_ok(),
-> on this line [1]. It's triggered when __find_linux_pte_or_hugepte() is
-> first called, when the kernel tries to spawn the init process. The input
-> effective address (ea arg) is bffffff1. This is the call stack:
+On 27/02/17 21:56, Michael Ellerman wrote:
+>> +/* HDAT attribute for sysfs */
+>> +static struct bin_attribute hdat_attr = {
+>> +	.attr = {.name = "hdat", .mode = 0444},
+>                                          ^^^^
+> ajd and oohal report to my office.
 
-What is the pmd value?  There's a pmd_none() check before that line.
+...ACK... :/
 
-That said, regardless of what's going wrong here, it would be simpler and more
-robust if is_hugepd() returned false for empty ptes rather than assuming the
-caller explicitly checked pmd_none().
-
--Scott
+-- 
+Andrew Donnellan              OzLabs, ADL Canberra
+andrew.donnellan@au1.ibm.com  IBM Australia Limited
