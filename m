@@ -1,24 +1,25 @@
-Return-Path: <laurentiu.tudor@nxp.com>
-Received: from EUR01-HE1-obe.outbound.protection.outlook.com
- (mail-he1eur01on0068.outbound.protection.outlook.com [104.47.0.68])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <ego.lkml@gmail.com>
+Received: from mail-it0-x22a.google.com (mail-it0-x22a.google.com
+ [IPv6:2607:f8b0:4001:c0b::22a])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vXhT06pG8zDqM1
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Mar 2017 01:55:16 +1100 (AEDT)
-From: Laurentiu Tudor <laurentiu.tudor@nxp.com>
-To: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "oss@buserror.net" <oss@buserror.net>, "mpe@ellerman.id.au"
- <mpe@ellerman.id.au>
-CC: Madalin-Cristian Bucur <madalin.bucur@nxp.com>
-Subject: Re: [PATCH] powerpc: booke: fix boot crash due to null hugepd
-Date: Tue, 28 Feb 2017 14:55:08 +0000
-Message-ID: <58B58F4B.1040807@nxp.com>
-References: <20170216151129.8971-1-laurentiu.tudor@nxp.com>
- <87tw7tc8o9.fsf@skywalker.in.ibm.com>
-In-Reply-To: <87tw7tc8o9.fsf@skywalker.in.ibm.com>
-Content-Type: text/plain; charset="Windows-1252"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vXhm56bXTzDqHJ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Mar 2017 02:08:21 +1100 (AEDT)
+Received: by mail-it0-x22a.google.com with SMTP id 68so2274220itg.0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Feb 2017 07:08:21 -0800 (PST)
 MIME-Version: 1.0
+Reply-To: ego@linux.vnet.ibm.com
+In-Reply-To: <20170216183901.28611-3-npiggin@gmail.com>
+References: <20170216183901.28611-1-npiggin@gmail.com>
+ <20170216183901.28611-3-npiggin@gmail.com>
+From: Gautham R Shenoy <ego.lkml@gmail.com>
+Date: Tue, 28 Feb 2017 20:38:19 +0530
+Message-ID: <CAHZ_5WyA7hUu53vzCZY2WSUzm+q_-2=6cwkdutmGN5SsdkNgrw@mail.gmail.com>
+Subject: Re: [PATCH 2/5] powerpc/64: stop using bit in HSPRG0 to test winkle
+To: Nicholas Piggin <npiggin@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, ego@linux.vnet.ibm.com,
+ Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,88 +29,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+Hi Nick,
 
-Some more information on the crash, inline.
-
-On 02/17/2017 02:18 PM, Aneesh Kumar K.V wrote:
-> laurentiu.tudor@nxp.com writes:
+On Fri, Feb 17, 2017 at 12:08 AM, Nicholas Piggin <npiggin@gmail.com> wrote:
+> The POWER8 idle code has a neat trick of programming the power on engine
+> to restore a low bit into HSPRG0, so idle wakeup code can test and see
+> if it has been programmed this way and therefore lost all state. Restore
+> time can be reduced if winkle has not been reached.
 >
->> From: Laurentiu Tudor <laurentiu.tudor@nxp.com>
->>
->> On 32-bit book-e machines, hugepd_ok() does not take
->> into account null hugepd values, causing this crash at boot:
->>
->> Unable to handle kernel paging request for data at address 0x80000000
->> Faulting instruction address: 0xc00182a8
->> Oops: Kernel access of bad area, sig: 11 [#1]
->> SMP NR_CPUS=3D24
->> CoreNet Generic
->> Modules linked in:
->> CPU: 1 PID: 1 Comm: swapper/0 Tainted: G        W       4.10.0-rc8-00016=
--g69b1f87 #11
->> task: e5050000 task.stack: e5058000
->> NIP: c00182a8 LR: c001829c CTR: 00007ffe
->> REGS: e5059c50 TRAP: 0300   Tainted: G        W        (4.10.0-rc8-00016=
--g69b1f87)
->> MSR: 00021002 <CE,ME>
->>    CR: 88428e82  XER: 00000000
->> DEAR: 80000000 ESR: 00000000
->> GPR00: c0107510 e5059d00 e5050000 80000000 bffffff1 e5059d0c e5059d08 00=
-002017
->> GPR08: 00000000 00000000 00000000 00000000 28428e82 00000000 c00027d0 00=
-000000
->> GPR16: 00000000 00000000 88a28e82 20000000 48422e82 00000000 88a28e84 dd=
-004000
->> GPR24: e5059e38 00000000 00000000 bffffff1 dd004000 00000001 00029002 bf=
-fffff1
->> NIP [c00182a8] follow_huge_addr+0x38/0xf0
->> LR [c001829c] follow_huge_addr+0x2c/0xf0
->> Call Trace:
->> [e5059d00] [e5059d00] 0xe5059d00 (unreliable)
->> [e5059d20] [c0107510] follow_page_mask+0x40/0x3c0
->> [e5059d80] [c0107958] __get_user_pages+0xc8/0x420
->> [e5059de0] [c010817c] get_user_pages_remote+0x8c/0x230
->> [e5059e30] [c013f170] copy_strings+0x110/0x3a0
->> [e5059ea0] [c013f42c] copy_strings_kernel+0x2c/0x50
->> [e5059ec0] [c0141324] do_execveat_common+0x474/0x620
->> [e5059f10] [c01414fc] do_execve+0x2c/0x40
->> [e5059f20] [c0001f68] try_to_run_init_process+0x18/0x60
->> [e5059f30] [c000289c] kernel_init+0xcc/0x120
->> [e5059f40] [c000f1e8] ret_from_kernel_thread+0x5c/0x64
->> Instruction dump:
->> bfc10018 7c9f2378 90010024 7fc000a6 7c000146 80630020 38a1000c 38c10008
->> 4bfff869 2c030000 41c20090 81210008 <81430000> 81630004 3860ffea 2f89000=
-0
->> ---[ end trace 4bf94e15fd9fa824 ]---
+
+> However this messes with our r13 PACA pointer, and requires HSPRG0 to
+> be written to. It also optimizes the slowest and most uncommon case at
+> the expense of another SPR write in the common nap state wakeup.
+
+Actually, this optimization was needed to reduce the guest entry time
+for a KVM guest vcore.
+
+While running KVM on POWER8, the host is in SMT=1 mode with the
+secondary threads
+being hotplugged out and supposed to have entered the winkle state.
+Since the primary thread is still running, the core would still be in Nap.
+
+However, each time a guest vcore is scheduled on the core, the
+secondary threads are sent an IPI to wake them up from the idle state.
+
+On waking up, they use the last bit of HSPRG0 and conclude that they
+don't need to restore resources before executing the guest entry code.
+
+Thus, the HSPRG0 trick help the secondary threads avoid spending
+extra cycles restoring the SLBs and per-thread SPRs.
+
+
+
 >
+> Remove this complexity and assume winkle sleeps always require a state
+> restore. This speedup could be made entirely contained within the winkle
+> idle code by counting per-core winkles and setting a thread bitmap when
+> all have gone to winkle.
+
+This is a good idea! We are anyway taking the lock in pnv_wakeup_tb_loss()
+to check if we are the first thread in the core waking up from a deep-state.
+
+We can check another bitmap if we are the first thread waking up from winkle
+and set cr4 to the result of that comparison while holding the lock.
+
+That shouldn't cost us much, at least for the fake-wakeup-from-winkle
+for KVM case alluded to above.
+
+Otherwise, the patch looks good to me.
+
+
 >
-> Which code path is that. That null should be filtered by the if
-> (pmd_none(pmd)) check in find_linux_pte_or_hugepte right ?
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 
-The crash happens when __find_linux_pte_or_hugepte() calls hugepd_ok(),
-on this line [1]. It's triggered when __find_linux_pte_or_hugepte() is
-first called, when the kernel tries to spawn the init process. The input
-effective address (ea arg) is bffffff1. This is the call stack:
-
-[e5059cd0] [c0017b60] __find_linux_pte_or_hugepte+0x60/0x120 (unreliable)
-[e5059d00] [c001832c] follow_huge_addr+0x2c/0xf0
-[e5059d20] [c0107590] follow_page_mask+0x40/0x3c0
-[e5059d80] [c01079d8] __get_user_pages+0xc8/0x420
-[e5059de0] [c01081fc] get_user_pages_remote+0x8c/0x230
-[e5059e30] [c013f210] copy_strings+0x110/0x3a0
-[e5059ea0] [c013f4cc] copy_strings_kernel+0x2c/0x50
-[e5059ec0] [c01413c4] do_execveat_common+0x474/0x620
-[e5059f10] [c014159c] do_execve+0x2c/0x40
-[e5059f20] [c0001f68] try_to_run_init_process+0x18/0x60
-[e5059f30] [c000289c] kernel_init+0xcc/0x120
-[e5059f40] [c000f1e8] ret_from_kernel_thread+0x5c/0x64
-
-Thanks in advance for any pointers.
-
-[1]=20
-http://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/tree/arch/po=
-werpc/mm/hugetlbpage.c#n918
-
----
-Best Regards, Laurentiu=
+--
+Thanks and Regards
+gautham.
