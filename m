@@ -1,34 +1,30 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <laurentiu.tudor@nxp.com>
+Received: from EUR01-DB5-obe.outbound.protection.outlook.com
+ (mail-db5eur01on062b.outbound.protection.outlook.com
+ [IPv6:2a01:111:f400:fe02::62b])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vXZNf3qxszDqH6
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Feb 2017 21:21:06 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Ben Hutchings <ben@decadent.org.uk>,
- Masahiro Yamada <yamada.masahiro@socionext.com>, linux-kbuild@vger.kernel.org
-Cc: Alessio Igor Bogani <alessio.bogani@elettra.eu>,
- Arnd Bergmann <arnd@arndb.de>, Rob Herring <robh+dt@kernel.org>,
- linux-c6x-dev@linux-c6x.org, Michal Simek <monstr@monstr.eu>,
- Nicolas Pitre <nicolas.pitre@linaro.org>,
- Marcin Nowakowski <marcin.nowakowski@imgtec.com>, devicetree@vger.kernel.org,
- Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
- Michal Marek <mmarek@suse.com>, Scott Wood <oss@buserror.net>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
- openrisc@lists.librecores.org, Mark Salter <msalter@redhat.com>,
- Stafford Horne <shorne@gmail.com>, Aurelien Jacquiot <a-jacquiot@ti.com>,
- Jonas Bonn <jonas@southpole.se>, linux-kernel@vger.kernel.org,
- Oliver O'Halloran <oohall@gmail.com>, Mark Rutland <mark.rutland@arm.com>,
- Emese Revfy <re.emese@gmail.com>
-Subject: Re: [PATCH] kbuild: avoid unrecognized option error for external DTC
-In-Reply-To: <1488204416.2819.9.camel@decadent.org.uk>
-References: <1488174052-2530-1-git-send-email-yamada.masahiro@socionext.com>
- <1488204416.2819.9.camel@decadent.org.uk>
-Date: Tue, 28 Feb 2017 21:21:02 +1100
-Message-ID: <87tw7epqep.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vXZgq4lyJzDqH7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Feb 2017 21:34:15 +1100 (AEDT)
+From: Laurentiu Tudor <laurentiu.tudor@nxp.com>
+To: Arnd Bergmann <arnd@arndb.de>, Stuart Yoder <stuyoder@gmail.com>, "Greg
+ Kroah-Hartman" <gregkh@linuxfoundation.org>
+CC: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Rob Herring
+ <robh+dt@kernel.org>, Frank Rowand <frowand.list@gmail.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-arm-kernel@lists.infradead.org"
+ <linux-arm-kernel@lists.infradead.org>, German Rivera
+ <german.rivera@nxp.com>, Itai Katz <itai.katz@nxp.com>, Ramiro Oliveira
+ <Ramiro.Oliveira@synopsys.com>, "linux-kernel@vger.kernel.org"
+ <linux-kernel@vger.kernel.org>, "devel@driverdev.osuosl.org"
+ <devel@driverdev.osuosl.org>
+Subject: Re: [PATCH] staging: fsl-mc: fix warning in DT ranges parser
+Date: Tue, 28 Feb 2017 10:34:02 +0000
+Message-ID: <58B55219.4070509@nxp.com>
+References: <20170227204235.3547639-1-arnd@arndb.de>
+In-Reply-To: <20170227204235.3547639-1-arnd@arndb.de>
+Content-Type: text/plain; charset="Windows-1252"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,28 +34,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Ben Hutchings <ben@decadent.org.uk> writes:
+Hi Arnd,
 
-> [ Unknown signature status ]
-> On Mon, 2017-02-27 at 14:40 +0900, Masahiro Yamada wrote:
->> Since commit 6b22b3d1614a ("kbuild: Allow using host dtc instead of
->> kernel's copy"), it is possible to use an external dtc.=C2=A0=C2=A0In th=
-is
->> case, we do not know which options are supported on it.
->>=20
->> Commit bc553986a2f7 ("dtc: turn off dtc unit address warnings by
->> default") gives -Wno-unit_address_vs_reg, but this options is only
->> recognized by v1.4.2 or later.
->>=20
->> If an older version is specified, the build fails:
+On 02/27/2017 10:42 PM, Arnd Bergmann wrote:
+> The fsl-mc-bus driver in staging contains a copy of the standard
+> 'ranges' property parsing algorithm with a hack to treat a missing
+> property the same way as an empty one. This code produces false-positive
+> warnings for me in an allmodconfig build:
 >
-> But the option to use an external dtc was intended to allow testing of
-> newer versions.  If there's no reason to use this option to run an
-> older version, why bother trying to support that?
+> drivers/staging/fsl-mc/bus/fsl-mc-bus.c: In function 'fsl_mc_bus_probe':
+> drivers/staging/fsl-mc/bus/fsl-mc-bus.c:645:6: error: 'mc_size_cells' may=
+ be used uninitialized in this function [-Werror=3Dmaybe-uninitialized]
+> drivers/staging/fsl-mc/bus/fsl-mc-bus.c:682:8: error: 'mc_addr_cells' may=
+ be used uninitialized in this function [-Werror=3Dmaybe-uninitialized]
+> drivers/staging/fsl-mc/bus/fsl-mc-bus.c:644:6: note: 'mc_addr_cells' was =
+declared here
+> drivers/staging/fsl-mc/bus/fsl-mc-bus.c:684:8: error: 'paddr_cells' may b=
+e used uninitialized in this function [-Werror=3Dmaybe-uninitialized]
+> drivers/staging/fsl-mc/bus/fsl-mc-bus.c:643:6: note: 'paddr_cells' was de=
+clared here
+>
+> To avoid the warnings, I'm simplifying the argument handling to pass
+> the number of valid ranges in the property as the function return code
+> rather than passing it by reference. With this change, gcc can see that
+> we don't evaluate the cell numbers for an missing ranges property.
+>
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 
-+1
+Looks good to me, i've tested it and did not see any issues, so here's an:
 
-That's a lot of added complexity, when the answer could just be "use the
-kernel dtc".
+Acked-by: Laurentiu Tudor <laurentiu.tudor@nxp.com>
 
-cheers
+---
+Thanks & Best Regards, Laurentiu=
