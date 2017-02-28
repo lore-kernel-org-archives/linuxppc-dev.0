@@ -1,26 +1,25 @@
-Return-Path: <ego.lkml@gmail.com>
-Received: from mail-ua0-x22d.google.com (mail-ua0-x22d.google.com
- [IPv6:2607:f8b0:400c:c08::22d])
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
+ [IPv6:2607:f8b0:400e:c05::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vXj8k4ymfzDqHV
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Mar 2017 02:26:14 +1100 (AEDT)
-Received: by mail-ua0-x22d.google.com with SMTP id 72so16930800uaf.3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Feb 2017 07:26:14 -0800 (PST)
-MIME-Version: 1.0
-Reply-To: ego@linux.vnet.ibm.com
-In-Reply-To: <20170216183901.28611-5-npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vXjNV5GhJzDqHW
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Mar 2017 02:36:26 +1100 (AEDT)
+Received: by mail-pg0-x241.google.com with SMTP id 25so1965843pgy.3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Feb 2017 07:36:26 -0800 (PST)
+Date: Wed, 1 Mar 2017 01:36:07 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Gautham R Shenoy <ego.lkml@gmail.com>
+Cc: ego@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org, Vaidyanathan
+ Srinivasan <svaidy@linux.vnet.ibm.com>
+Subject: Re: [PATCH 2/5] powerpc/64: stop using bit in HSPRG0 to test winkle
+Message-ID: <20170301013607.66162e79@roar.ozlabs.ibm.com>
+In-Reply-To: <CAHZ_5WyA7hUu53vzCZY2WSUzm+q_-2=6cwkdutmGN5SsdkNgrw@mail.gmail.com>
 References: <20170216183901.28611-1-npiggin@gmail.com>
- <20170216183901.28611-5-npiggin@gmail.com>
-From: Gautham R Shenoy <ego.lkml@gmail.com>
-Date: Tue, 28 Feb 2017 20:56:11 +0530
-Message-ID: <CAHZ_5WyGWuTPSHAsQJjvGxqMeEjFEa+m47py6OmBe4L2yDSRGw@mail.gmail.com>
-Subject: Re: [PATCH 4/5] powerpc/64s: consolidate pnv_restore_hyp_resource
- into pnv_powersave_wakeup
-To: Nicholas Piggin <npiggin@gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org, ego@linux.vnet.ibm.com,
- Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=UTF-8
+ <20170216183901.28611-3-npiggin@gmail.com>
+ <CAHZ_5WyA7hUu53vzCZY2WSUzm+q_-2=6cwkdutmGN5SsdkNgrw@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,18 +29,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Nick,
+On Tue, 28 Feb 2017 20:38:19 +0530
+Gautham R Shenoy <ego.lkml@gmail.com> wrote:
 
-On Fri, Feb 17, 2017 at 12:09 AM, Nicholas Piggin <npiggin@gmail.com> wrote:
-> There is only one caller, so this reduces spaghetti of subsequent
-> callees returning into the caller.
->
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> Hi Nick,
+> 
+> On Fri, Feb 17, 2017 at 12:08 AM, Nicholas Piggin <npiggin@gmail.com> wrote:
+> > The POWER8 idle code has a neat trick of programming the power on engine
+> > to restore a low bit into HSPRG0, so idle wakeup code can test and see
+> > if it has been programmed this way and therefore lost all state. Restore
+> > time can be reduced if winkle has not been reached.
+> >  
+> 
+> > However this messes with our r13 PACA pointer, and requires HSPRG0 to
+> > be written to. It also optimizes the slowest and most uncommon case at
+> > the expense of another SPR write in the common nap state wakeup.  
+> 
+> Actually, this optimization was needed to reduce the guest entry time
+> for a KVM guest vcore.
+> 
+> While running KVM on POWER8, the host is in SMT=1 mode with the
+> secondary threads
+> being hotplugged out and supposed to have entered the winkle state.
+> Since the primary thread is still running, the core would still be in Nap.
+> 
+> However, each time a guest vcore is scheduled on the core, the
+> secondary threads are sent an IPI to wake them up from the idle state.
+> 
+> On waking up, they use the last bit of HSPRG0 and conclude that they
+> don't need to restore resources before executing the guest entry code.
+> 
+> Thus, the HSPRG0 trick help the secondary threads avoid spending
+> extra cycles restoring the SLBs and per-thread SPRs.
 
-This patch is good!
+Ah, thanks. Until now I didn't really understand why that case was
+optimimized. My mistake and apologies for assuming it was not a good
+reason :)
 
-Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
 
---
-Thanks and Regards
-gautham.
+> > Remove this complexity and assume winkle sleeps always require a state
+> > restore. This speedup could be made entirely contained within the winkle
+> > idle code by counting per-core winkles and setting a thread bitmap when
+> > all have gone to winkle.  
+> 
+> This is a good idea! We are anyway taking the lock in pnv_wakeup_tb_loss()
+> to check if we are the first thread in the core waking up from a deep-state.
+> 
+> We can check another bitmap if we are the first thread waking up from winkle
+> and set cr4 to the result of that comparison while holding the lock.
+> 
+> That shouldn't cost us much, at least for the fake-wakeup-from-winkle
+> for KVM case alluded to above.
+> 
+> Otherwise, the patch looks good to me.
+
+Okay, I had a half-done patch for this. I'll finish it and send it
+out for review.
+
+Thanks,
+Nick
