@@ -2,21 +2,21 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vXNwZ1DYTzDqGG
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Feb 2017 14:14:38 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vXPXp3lSyzDqGG
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Feb 2017 14:42:34 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Oliver O'Halloran <oohall@gmail.com>
-Cc: Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- Matt Brown <matthew.brown.dev@gmail.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v3] powerpc/powernv: add hdat attribute to sysfs
-In-Reply-To: <CAOSf1CF2-E6eV5bf95qr-uYxcxEdhpLevWbmHW97virJhNxS4g@mail.gmail.com>
-References: <20170224062054.31408-1-matthew.brown.dev@gmail.com>
- <87lgsrrjfb.fsf@concordia.ellerman.id.au>
- <CAOSf1CF2-E6eV5bf95qr-uYxcxEdhpLevWbmHW97virJhNxS4g@mail.gmail.com>
-Date: Tue, 28 Feb 2017 14:14:37 +1100
-Message-ID: <8760jvqa5e.fsf@concordia.ellerman.id.au>
+To: "Tobin C. Harding" <me@tobin.cc>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>
+Subject: Re: PowerPC build fail
+In-Reply-To: <20170227200453.GB3215@eros>
+References: <20170222012252.GD6131@eros>
+ <87r32jrka2.fsf@concordia.ellerman.id.au> <20170227200453.GB3215@eros>
+Date: Tue, 28 Feb 2017 14:42:30 +1100
+Message-ID: <8737ezq8ux.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,35 +26,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Oliver O'Halloran <oohall@gmail.com> writes:
+"Tobin C. Harding" <me@tobin.cc> writes:
 
-> On Mon, Feb 27, 2017 at 9:56 PM, Michael Ellerman <mpe@ellerman.id.au> wrote:
->> Matt Brown <matthew.brown.dev@gmail.com> writes:
->>> diff --git a/arch/powerpc/platforms/powernv/opal-hdat.c b/arch/powerpc/platforms/powernv/opal-hdat.c
->>> new file mode 100644
->>> index 0000000..3315dd3
->>> --- /dev/null
->>> +++ b/arch/powerpc/platforms/powernv/opal-hdat.c
->>> @@ -0,0 +1,65 @@
+> On Mon, Feb 27, 2017 at 09:38:13PM +1100, Michael Ellerman wrote:
+>> Hi Tobin,
+>>=20
+>> "Tobin C. Harding" <me@tobin.cc> writes:
+>> > The current (2bfe01e) torvalds git tree fails to build on powerpc64. B=
+uild machine
+>> > is virtualized.
+>> >
+>> > - Build error
+>> > arch/powerpc/kernel/time.c: In function =E2=80=98running_clock=E2=80=
+=99:
+>> > arch/powerpc/kernel/time.c:712:25: error: implicit declaration of func=
+tion =E2=80=98cputime_to_nsecs=E2=80=99
+>> >    return local_clock() - cputime_to_nsecs(kcpustat_this_cpu->cpustat[=
+CPUTIME_STEAL]);
+>> >                           ^
 >> ...
->>> +
->>> +
->>> +/* HDAT attribute for sysfs */
->>> +static struct bin_attribute hdat_attr = {
->>> +     .attr = {.name = "hdat", .mode = 0444},
->>                                          ^^^^
->> ajd and oohal report to my office.
+>> >
+>> > If you think this can be fixed with the *little* kernel dev knowledge
+>> > I have please point me at a starting place and I will dig into it.
+>>=20
+>> Thanks for trying to fix it.
+>>=20
+>> You got unlucky and pulled Linus' tree just after a cleanup series was
+>> merged, but before all the bugs had been shaken out.
 >
-> I don't think there's anything in the HDAT that's sensitive. That
-> said, this might not be true in the future so making it only readable
-> by root might be a good idea.
+> Au contraire, I felt lucky to have bumped into a bug. I would like to
+> find more :)
 
-Right. What's sensitive can also change over time, in addition to the
-actual content changing without our knowledge.
+Hah, well, we have *plenty* :)
 
-This is also firmly a debugging thing, so unless there's a compelling
-reason why it should be world readable then it shouldn't be.
+I keep a rough list of TODO/FIXME type things on github:
 
-So 0400 please.
+  https://github.com/linuxppc/linux/issues/
+
+
+If there's anything there that you want to have a go at please feel
+free. If you have questions you can either comment on the issues or mail
+me and/or this list.
 
 cheers
