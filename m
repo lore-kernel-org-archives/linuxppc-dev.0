@@ -1,38 +1,27 @@
-Return-Path: <stewart@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <bsingharora@gmail.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vXrlg6cb5zDqJl
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Mar 2017 08:08:31 +1100 (AEDT)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v1SL3pA2037835
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Feb 2017 16:08:29 -0500
-Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
- by mx0a-001b2d01.pphosted.com with ESMTP id 28wgrtg8r0-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Feb 2017 16:08:29 -0500
-Received: from localhost
- by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <stewart@linux.vnet.ibm.com>;
- Tue, 28 Feb 2017 16:08:28 -0500
-Received: from b01cxnp22035.gho.pok.ibm.com (b01cxnp22035.gho.pok.ibm.com
- [9.57.198.25])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 955CA38C804F
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Feb 2017 16:08:26 -0500 (EST)
-From: Stewart Smith <stewart@linux.vnet.ibm.com>
-To: Vipin K Parashar <vipin@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Cc: Vipin K Parashar <vipin@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2] powernv/opal: Handle OPAL_WRONG_STATE error from OPAL
- fails
-In-Reply-To: <1488276702-14646-1-git-send-email-vipin@linux.vnet.ibm.com>
-References: <1488276702-14646-1-git-send-email-vipin@linux.vnet.ibm.com>
-Date: Wed, 01 Mar 2017 08:08:19 +1100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vXsjN0pk4zDqJw
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Mar 2017 08:51:36 +1100 (AEDT)
+Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
+ [IPv6:2607:f8b0:400e:c05::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3vXsjM40Rqz9s8N
+ for <linuxppc-dev@ozlabs.org>; Wed,  1 Mar 2017 08:51:35 +1100 (AEDT)
+Received: by mail-pg0-x242.google.com with SMTP id 25so3107677pgy.3
+ for <linuxppc-dev@ozlabs.org>; Tue, 28 Feb 2017 13:51:35 -0800 (PST)
+Subject: Re: [PATCH V3 1/2] powerpc: Parse the command line before calling CAS
+To: Suraj Jitindar Singh <sjitindarsingh@gmail.com>, linuxppc-dev@ozlabs.org
+References: <1488261828-19696-1-git-send-email-sjitindarsingh@gmail.com>
+Cc: mikey@neuling.org, paulus@samba.org, sam.bobroff@au1.ibm.com
+From: Balbir Singh <bsingharora@gmail.com>
+Message-ID: <e70bfa33-6001-9135-5d78-ba98e7742d23@gmail.com>
+Date: Wed, 1 Mar 2017 08:51:13 +1100
 MIME-Version: 1.0
-Content-Type: text/plain
-Message-Id: <87h93ec9bw.fsf@linux.vnet.ibm.com>
+In-Reply-To: <1488261828-19696-1-git-send-email-sjitindarsingh@gmail.com>
+Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,52 +31,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Vipin K Parashar <vipin@linux.vnet.ibm.com> writes:
-> Added check for OPAL_WRONG_STATE error code returned from OPAL.
-> Currently Linux flashes "unexpected error" over console for this
-> error. This will avoid throwing such message and return I/O error
-> for such OPAL failures.
->
-> Signed-off-by: Vipin K Parashar <vipin@linux.vnet.ibm.com>
+
+
+On 28/02/17 17:03, Suraj Jitindar Singh wrote:
+> On POWER9 the hypervisor requires the guest to decide whether it would
+> like to use a hash or radix mmu model at the time it calls
+> ibm,client-architecture-support (CAS) based on what the hypervisor has
+> said it's allowed to do. It is possible to disable radix by passing
+> "disable_radix" on the command line. The next patch will add support for
+> the new CAS format, thus we need to parse the command line before calling
+> CAS so we can correctly select which mmu we would like to use.
+> 
+> Signed-off-by: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
+> Reviewed-by: Paul Mackerras <paulus@ozlabs.org>
+> 
 > ---
-> Changes in v2:
->  - Added log message indicating sleeping/offline core
->    for OPAL_WRONG_STATE
->
->  arch/powerpc/platforms/powernv/opal.c | 5 ++++-
->  1 file changed, 4 insertions(+), 1 deletion(-)
->
-> diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
-> index 86d9fde..8af230e 100644
-> --- a/arch/powerpc/platforms/powernv/opal.c
-> +++ b/arch/powerpc/platforms/powernv/opal.c
-> @@ -869,8 +869,11 @@ int opal_error_code(int rc)
->  	case OPAL_UNSUPPORTED:		return -EIO;
->  	case OPAL_HARDWARE:		return -EIO;
->  	case OPAL_INTERNAL_ERROR:	return -EIO;
-> +	case OPAL_WRONG_STATE:
-> +		pr_notice("%s: Core sleeping/offline\n", __func__);
-> +		return -EIO;
+> 
+> V1 -> V3:
+>  - Reword commit message for clarity. No functional change
+> ---
 
-Since this is part of opal_error_code() though, this will be printed for
-any OPAL call that returns that.
-
-Why not have the sensor code do this:
-
-rc = opal_sensor_read(foo)
-if (rc == OPAL_WRONG_STATE)
-   return -EIO;
-else
-   return oal_error_code(rc);
-
-?
-
->  	default:
-> -		pr_err("%s: unexpected OPAL error %d\n", __func__, rc);
-> +		pr_err("%s: Unexpected OPAL error %d\n", __func__, rc);
-
-Do we need this?
-
--- 
-Stewart Smith
-OPAL Architect, IBM.
+Acked-by: Balbir Singh <bsingharora@gmail.com>
