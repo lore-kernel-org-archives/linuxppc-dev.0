@@ -1,21 +1,21 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vXPvR1cmNzDqGG
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Feb 2017 14:58:43 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vXQ1q5sFSzDqGG
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Feb 2017 15:04:15 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: Steven Rostedt <rostedt@goodmis.org>,
  "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v3 2/2] powerpc: ftrace_64: split further based on
- -mprofile-kernel
-In-Reply-To: <20170227104014.7b7dee0e@gandalf.local.home>
+Cc: linuxppc-dev@lists.ozlabs.org, Ingo Molnar <mingo@kernel.org>,
+ Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH v3 1/2] powerpc: split ftrace bits into a separate file
+In-Reply-To: <20170227103650.0955c5eb@gandalf.local.home>
 References: <cover.1487702678.git.naveen.n.rao@linux.vnet.ibm.com>
- <378311b965ca33fe69b159f7609ff2eedfe3bc2f.1487702678.git.naveen.n.rao@linux.vnet.ibm.com>
- <20170227104014.7b7dee0e@gandalf.local.home>
-Date: Tue, 28 Feb 2017 14:58:42 +1100
-Message-ID: <87zih7otjh.fsf@concordia.ellerman.id.au>
+ <d2058affbf317d0f72e2df970f97b7b53ade47cb.1487702678.git.naveen.n.rao@linux.vnet.ibm.com>
+ <20170227103650.0955c5eb@gandalf.local.home>
+Date: Tue, 28 Feb 2017 15:04:15 +1100
+Message-ID: <87wpcbota8.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -29,45 +29,32 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Steven Rostedt <rostedt@goodmis.org> writes:
 
-> On Wed, 22 Feb 2017 00:31:02 +0530
+> On Wed, 22 Feb 2017 00:31:01 +0530
 > "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
 >
->> Split ftrace_64.S further retaining the core ftrace 64-bit aspects
->> in ftrace_64.S and moving ftrace_caller() and ftrace_graph_caller() into
->> separate files based on -mprofile-kernel. The livepatch routines are all
->> now contained within the mprofile file.
+>> entry_*.S now includes a lot more than just kernel entry/exit code. As a
+>> first step at cleaning this up, let's split out the ftrace bits into
+>> separate files. Also move all related tracing code into a new trace/
+>> subdirectory.
+>> 
+>> No functional changes.
 >
-> Why?
+> I wonder if we should stay consistent among archs, and call these files
+> "mcount_*.S". Or perhaps we should change x86 from mcount_64.S to
+> ftrace_64.S?
 
-Because we have two ABIs that are basically entirely different.
+I prefer ftrace_64.S, there's a lot more in those files than just the
+mcount() implementation, and it also makes the link to
+kernel/trace/ftrace.c more obvious.
 
-Splitting them into separate files makes it easier to work on one or the
-other without getting muddled.
+I don't know if it's really worth keeping the names the same across
+arches, especially as we already have:
 
-It also makes it clearer that the livepatch code only relates to the
-mprofile ABI for example.
+  arch/arm64/kernel/entry-ftrace.S
+  arch/arm/kernel/entry-ftrace.S
+  arch/blackfin/kernel/ftrace-entry.S
+  arch/metag/kernel/ftrace_stub.S
 
-> I would think that it may be possible to share code if they stay
-> in the same file.
-
-We can share code even if they're in separate files. But I don't think
-there's much that can be shared TBH.
-
-> I haven't had the chance to look deeply into the
-> current code, but there may be ways to make macros and consolidate
-> duplicate code like we did in x86.
-
-I'd obviously be happy to remove duplicate code, but as I said above
-there's not much that is obviously shared.
-
-There's a few shared lines such as:
-
-  .globl ftrace_graph_call
-  ftrace_graph_call:
-  	b	ftrace_graph_stub
-
-
-Which could go in a macro I guess, but it's almost not worth the
-trouble.
+But we can rename it if you feel strongly about it.
 
 cheers
