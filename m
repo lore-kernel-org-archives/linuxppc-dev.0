@@ -2,21 +2,22 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vXPXp3lSyzDqGG
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Feb 2017 14:42:34 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vXPvR1cmNzDqGG
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Feb 2017 14:58:43 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: "Tobin C. Harding" <me@tobin.cc>
-Cc: linuxppc-dev@lists.ozlabs.org,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>
-Subject: Re: PowerPC build fail
-In-Reply-To: <20170227200453.GB3215@eros>
-References: <20170222012252.GD6131@eros>
- <87r32jrka2.fsf@concordia.ellerman.id.au> <20170227200453.GB3215@eros>
-Date: Tue, 28 Feb 2017 14:42:30 +1100
-Message-ID: <8737ezq8ux.fsf@concordia.ellerman.id.au>
+To: Steven Rostedt <rostedt@goodmis.org>,
+ "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v3 2/2] powerpc: ftrace_64: split further based on
+ -mprofile-kernel
+In-Reply-To: <20170227104014.7b7dee0e@gandalf.local.home>
+References: <cover.1487702678.git.naveen.n.rao@linux.vnet.ibm.com>
+ <378311b965ca33fe69b159f7609ff2eedfe3bc2f.1487702678.git.naveen.n.rao@linux.vnet.ibm.com>
+ <20170227104014.7b7dee0e@gandalf.local.home>
+Date: Tue, 28 Feb 2017 14:58:42 +1100
+Message-ID: <87zih7otjh.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,46 +27,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-"Tobin C. Harding" <me@tobin.cc> writes:
+Steven Rostedt <rostedt@goodmis.org> writes:
 
-> On Mon, Feb 27, 2017 at 09:38:13PM +1100, Michael Ellerman wrote:
->> Hi Tobin,
->>=20
->> "Tobin C. Harding" <me@tobin.cc> writes:
->> > The current (2bfe01e) torvalds git tree fails to build on powerpc64. B=
-uild machine
->> > is virtualized.
->> >
->> > - Build error
->> > arch/powerpc/kernel/time.c: In function =E2=80=98running_clock=E2=80=
-=99:
->> > arch/powerpc/kernel/time.c:712:25: error: implicit declaration of func=
-tion =E2=80=98cputime_to_nsecs=E2=80=99
->> >    return local_clock() - cputime_to_nsecs(kcpustat_this_cpu->cpustat[=
-CPUTIME_STEAL]);
->> >                           ^
->> ...
->> >
->> > If you think this can be fixed with the *little* kernel dev knowledge
->> > I have please point me at a starting place and I will dig into it.
->>=20
->> Thanks for trying to fix it.
->>=20
->> You got unlucky and pulled Linus' tree just after a cleanup series was
->> merged, but before all the bugs had been shaken out.
+> On Wed, 22 Feb 2017 00:31:02 +0530
+> "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
 >
-> Au contraire, I felt lucky to have bumped into a bug. I would like to
-> find more :)
+>> Split ftrace_64.S further retaining the core ftrace 64-bit aspects
+>> in ftrace_64.S and moving ftrace_caller() and ftrace_graph_caller() into
+>> separate files based on -mprofile-kernel. The livepatch routines are all
+>> now contained within the mprofile file.
+>
+> Why?
 
-Hah, well, we have *plenty* :)
+Because we have two ABIs that are basically entirely different.
 
-I keep a rough list of TODO/FIXME type things on github:
+Splitting them into separate files makes it easier to work on one or the
+other without getting muddled.
 
-  https://github.com/linuxppc/linux/issues/
+It also makes it clearer that the livepatch code only relates to the
+mprofile ABI for example.
+
+> I would think that it may be possible to share code if they stay
+> in the same file.
+
+We can share code even if they're in separate files. But I don't think
+there's much that can be shared TBH.
+
+> I haven't had the chance to look deeply into the
+> current code, but there may be ways to make macros and consolidate
+> duplicate code like we did in x86.
+
+I'd obviously be happy to remove duplicate code, but as I said above
+there's not much that is obviously shared.
+
+There's a few shared lines such as:
+
+  .globl ftrace_graph_call
+  ftrace_graph_call:
+  	b	ftrace_graph_stub
 
 
-If there's anything there that you want to have a go at please feel
-free. If you have questions you can either comment on the issues or mail
-me and/or this list.
+Which could go in a macro I guess, but it's almost not worth the
+trouble.
 
 cheers
