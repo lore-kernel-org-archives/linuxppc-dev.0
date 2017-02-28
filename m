@@ -1,23 +1,35 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
- [IPv6:2607:f8b0:400e:c05::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <SRS0=Vz7S=2J=goodmis.org=rostedt@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vXjNV5GhJzDqHW
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Mar 2017 02:36:26 +1100 (AEDT)
-Received: by mail-pg0-x241.google.com with SMTP id 25so1965843pgy.3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Feb 2017 07:36:26 -0800 (PST)
-Date: Wed, 1 Mar 2017 01:36:07 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Gautham R Shenoy <ego.lkml@gmail.com>
-Cc: ego@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org, Vaidyanathan
- Srinivasan <svaidy@linux.vnet.ibm.com>
-Subject: Re: [PATCH 2/5] powerpc/64: stop using bit in HSPRG0 to test winkle
-Message-ID: <20170301013607.66162e79@roar.ozlabs.ibm.com>
-In-Reply-To: <CAHZ_5WyA7hUu53vzCZY2WSUzm+q_-2=6cwkdutmGN5SsdkNgrw@mail.gmail.com>
-References: <20170216183901.28611-1-npiggin@gmail.com>
- <20170216183901.28611-3-npiggin@gmail.com>
- <CAHZ_5WyA7hUu53vzCZY2WSUzm+q_-2=6cwkdutmGN5SsdkNgrw@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vXkNw00XxzDqHl
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Mar 2017 03:21:51 +1100 (AEDT)
+Date: Tue, 28 Feb 2017 11:21:44 -0500
+From: Steven Rostedt <rostedt@goodmis.org>
+To: Sachin Sant <sachinp@linux.vnet.ibm.com>
+Cc: Jason Baron <jbaron@akamai.com>, David Daney
+ <ddaney@caviumnetworks.com>, linux-mips@linux-mips.org, Chris Metcalf
+ <cmetcalf@mellanox.com>, LKML <linux-kernel@vger.kernel.org>, Ralf Baechle
+ <ralf@linux-mips.org>, Russell King <linux@armlinux.org.uk>, Rabin Vincent
+ <rabin@rab.in>, Paul Mackerras <paulus@samba.org>, Anton Blanchard
+ <anton@samba.org>, linuxppc-dev@lists.ozlabs.org, Ingo Molnar
+ <mingo@kernel.org>, linux-arm-kernel@lists.infradead.org, Zhigang Lu
+ <zlu@ezchip.com>, Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH] jump_label: align jump_entry table to at least 4-bytes
+Message-ID: <20170228112144.65455de5@gandalf.local.home>
+In-Reply-To: <510FF566-011D-4199-86F7-2BB4DBF36434@linux.vnet.ibm.com>
+References: <1488221364-13905-1-git-send-email-jbaron@akamai.com>
+ <f7532548-7007-1a32-f669-4520792805b3@caviumnetworks.com>
+ <93219edf-0f6d-5cc7-309c-c998f16fe7ac@akamai.com>
+ <aa139c18-1b04-2c20-2e22-89d74503b3cf@caviumnetworks.com>
+ <20170227160601.5b79a1fe@gandalf.local.home>
+ <6db89a8d-6053-51d1-5fd4-bae0179a5ebd@caviumnetworks.com>
+ <20170227170911.2280ca3e@gandalf.local.home>
+ <7fa95eea-20be-611c-2b63-fca600779465@caviumnetworks.com>
+ <20170227173630.57fff459@gandalf.local.home>
+ <7bd72716-feea-073f-741c-04212ebd0802@caviumnetworks.com>
+ <68fe24ea-7795-24d8-211b-9d8a50affe9f@akamai.com>
+ <510FF566-011D-4199-86F7-2BB4DBF36434@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -29,62 +41,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 28 Feb 2017 20:38:19 +0530
-Gautham R Shenoy <ego.lkml@gmail.com> wrote:
+On Tue, 28 Feb 2017 10:25:46 +0530
+Sachin Sant <sachinp@linux.vnet.ibm.com> wrote:
 
-> Hi Nick,
-> 
-> On Fri, Feb 17, 2017 at 12:08 AM, Nicholas Piggin <npiggin@gmail.com> wrote:
-> > The POWER8 idle code has a neat trick of programming the power on engine
-> > to restore a low bit into HSPRG0, so idle wakeup code can test and see
-> > if it has been programmed this way and therefore lost all state. Restore
-> > time can be reduced if winkle has not been reached.
-> >  
-> 
-> > However this messes with our r13 PACA pointer, and requires HSPRG0 to
-> > be written to. It also optimizes the slowest and most uncommon case at
-> > the expense of another SPR write in the common nap state wakeup.  
-> 
-> Actually, this optimization was needed to reduce the guest entry time
-> for a KVM guest vcore.
-> 
-> While running KVM on POWER8, the host is in SMT=1 mode with the
-> secondary threads
-> being hotplugged out and supposed to have entered the winkle state.
-> Since the primary thread is still running, the core would still be in Nap.
-> 
-> However, each time a guest vcore is scheduled on the core, the
-> secondary threads are sent an IPI to wake them up from the idle state.
-> 
-> On waking up, they use the last bit of HSPRG0 and conclude that they
-> don't need to restore resources before executing the guest entry code.
-> 
-> Thus, the HSPRG0 trick help the secondary threads avoid spending
-> extra cycles restoring the SLBs and per-thread SPRs.
+> File: ./net/ipv4/xfrm4_input.o
+>   [12] __jump_table      PROGBITS        0000000000000000 000639 000018 18 WAM  0   0  1
+> File: ./net/ipv4/udplite.o
+> File: ./net/ipv4/xfrm4_output.o
+>   [ 9] __jump_table      PROGBITS        0000000000000000 000481 000018 18 WAM  0   0  1
 
-Ah, thanks. Until now I didn't really understand why that case was
-optimimized. My mistake and apologies for assuming it was not a good
-reason :)
+Looks like there's some issues right there.
 
-
-> > Remove this complexity and assume winkle sleeps always require a state
-> > restore. This speedup could be made entirely contained within the winkle
-> > idle code by counting per-core winkles and setting a thread bitmap when
-> > all have gone to winkle.  
-> 
-> This is a good idea! We are anyway taking the lock in pnv_wakeup_tb_loss()
-> to check if we are the first thread in the core waking up from a deep-state.
-> 
-> We can check another bitmap if we are the first thread waking up from winkle
-> and set cr4 to the result of that comparison while holding the lock.
-> 
-> That shouldn't cost us much, at least for the fake-wakeup-from-winkle
-> for KVM case alluded to above.
-> 
-> Otherwise, the patch looks good to me.
-
-Okay, I had a half-done patch for this. I'll finish it and send it
-out for review.
-
-Thanks,
-Nick
+-- Steve
