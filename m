@@ -1,48 +1,46 @@
-Return-Path: <vaibhav@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <andrew.donnellan@au1.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vXVQl5YmpzDqHJ
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Feb 2017 18:22:39 +1100 (AEDT)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v1S7E1uv071703
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Feb 2017 02:22:37 -0500
-Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [125.16.236.9])
- by mx0b-001b2d01.pphosted.com with ESMTP id 28vqj18jpm-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vXVy1618kzDqGw
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Feb 2017 18:46:17 +1100 (AEDT)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v1S7dGoK000551
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Feb 2017 02:46:15 -0500
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 28w1xnqf88-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Feb 2017 02:22:36 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Feb 2017 02:46:13 -0500
 Received: from localhost
- by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <vaibhav@linux.vnet.ibm.com>;
- Tue, 28 Feb 2017 12:52:33 +0530
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 04588E0024
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Feb 2017 12:54:15 +0530 (IST)
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v1S7MVmc14942396
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Feb 2017 12:52:31 +0530
-Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v1S7MUFG024582
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Feb 2017 12:52:31 +0530
-From: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, frederic.barrat@fr.ibm.com
-Cc: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>,
- Andrew Donnellan <andonnel@au1.ibm.com>, Ian Munsie <ianmunsi@au1.ibm.com>,
- Christophe Lombard <christophe_lombard@fr.ibm.com>,
- Philippe Bergheaud <philippe.bergheaud@fr.ibm.com>,
- Gregory Kurz <KURZGREG@fr.ibm.com>, Gavin Shan <gwshan@linux.vnet.ibm.com>,
- Russell Currey <ruscur@russell.cc>
-Subject: [RFC 3/3] cxl: Reset freeze counters before adapter PERST for
- flashing new image
-Date: Tue, 28 Feb 2017 12:52:19 +0530
-In-Reply-To: <20170228070222.21126-1-vaibhav@linux.vnet.ibm.com>
-References: <20170228070222.21126-1-vaibhav@linux.vnet.ibm.com>
-Message-Id: <20170228072219.24868-1-vaibhav@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
+ Tue, 28 Feb 2017 17:45:56 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id CFBF13578053
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Feb 2017 18:45:53 +1100 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v1S7jjKS56557604
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Feb 2017 18:45:53 +1100
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v1S7jKTE001151
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Feb 2017 18:45:20 +1100
+From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Subject: Re: [PATCH 3/7] cxl: Keep track of mm struct associated with a context
+To: Christophe Lombard <clombard@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, fbarrat@linux.vnet.ibm.com,
+ imunsie@au1.ibm.com
+References: <1485970213-25532-1-git-send-email-clombard@linux.vnet.ibm.com>
+ <1485970213-25532-4-git-send-email-clombard@linux.vnet.ibm.com>
+Date: Tue, 28 Feb 2017 18:44:56 +1100
+MIME-Version: 1.0
+In-Reply-To: <1485970213-25532-4-git-send-email-clombard@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Message-Id: <d90a3fca-9bc9-82ce-c0e8-1632ba409b31@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,54 +50,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The patch resets the freeze counter on eeh_pe struct for PHB
-associated with the cxl pci adapter. This would enable re-flashing of
-the cxl-adapter beyond the default limit of 5.
+On 02/02/17 04:30, Christophe Lombard wrote:
+> The mm_struct corresponding to the current task is acquired each time
+> an interrupt is raised. So to simplify the code, we only get the
+> mm_struct when attaching an AFU context to the process.
+> The mm_count reference is increased to ensure that the mm_struct can't
+> be freed. The mm_struct will be released when the context is detached.
+> The reference (use count) on the struct mm is not kept to avoid a
+> circular dependency if the process mmaps its cxl mmio and forget to
+> unmap before exiting.
+>
+> Signed-off-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
 
-Signed-off-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
----
- drivers/misc/cxl/pci.c | 15 +++++++++++++++
- 1 file changed, 15 insertions(+)
+One question below, otherwise this all looks good to me.
 
-diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
-index 679afc9..3b14688 100644
---- a/drivers/misc/cxl/pci.c
-+++ b/drivers/misc/cxl/pci.c
-@@ -22,6 +22,7 @@
- #include <asm/pnv-pci.h>
- #include <asm/io.h>
- #include <asm/reg.h>
-+#include <asm/eeh.h>
- 
- #include "cxl.h"
- #include <misc/cxl.h>
-@@ -1229,6 +1230,8 @@ static void cxl_pci_remove_afu(struct cxl_afu *afu)
- int cxl_pci_reset(struct cxl *adapter)
- {
- 	struct pci_dev *dev = to_pci_dev(adapter->dev.parent);
-+	struct eeh_dev *eehdev = pci_dev_to_eeh_dev(dev);
-+	struct eeh_pe *devpe = eeh_dev_to_pe(eehdev);
- 	int rc;
- 
- 	if (adapter->perst_same_image) {
-@@ -1242,6 +1245,18 @@ int cxl_pci_reset(struct cxl *adapter)
- 	/* the adapter is about to be reset, so ignore errors */
- 	cxl_data_cache_flush(adapter);
- 
-+	/* If loading a new image, reset freeze counters for the PHB
-+	 * associated with the adapter.
-+	 */
-+	if (devpe && adapter->perst_loads_image) {
-+		/* Find the pe associated with the device PHB */
-+		while (devpe->parent != NULL && (devpe->type & EEH_PE_PHB) == 0)
-+			devpe = devpe->parent;
-+
-+		dev_info(&dev->dev, "Resetting freeze counters for the PHB\n");
-+		eeh_pe_reset_freeze_counter(devpe);
-+	}
-+
- 	/* pcie_warm_reset requests a fundamental pci reset which includes a
- 	 * PERST assert/deassert.  PERST triggers a loading of the image
- 	 * if "user" or "factory" is selected in sysfs */
+Reviewed-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+
+> @@ -281,7 +212,6 @@ void cxl_handle_fault(struct work_struct *fault_work)
+>  	if (!ctx->kernel) {
+>
+>  		mm = get_mem_context(ctx);
+> -		/* indicates all the thread in task group have exited */
+>  		if (mm == NULL) {
+>  			pr_devel("%s: unable to get mm for pe=%d pid=%i\n",
+>  				 __func__, ctx->pe, pid_nr(ctx->pid));
+
+Is there still a case where mm can equal NULL?
+
+> diff --git a/drivers/misc/cxl/file.c b/drivers/misc/cxl/file.c
+> index 859959f..af6bd0e 100644
+> --- a/drivers/misc/cxl/file.c
+> +++ b/drivers/misc/cxl/file.c
+> @@ -216,8 +216,16 @@ static long afu_ioctl_start_work(struct cxl_context *ctx,
+>  	 * process is still accessible.
+>  	 */
+>  	ctx->pid = get_task_pid(current, PIDTYPE_PID);
+> -	ctx->glpid = get_task_pid(current->group_leader, PIDTYPE_PID);
+>
+> +	/* acquire a reference to the task's mm */
+> +	ctx->mm = get_task_mm(current);
+> +
+> +	/* ensure this mm_struct can't be freed */
+> +	cxl_context_mm_count_get(ctx);
+> +
+> +	/* decrement the use count */
+> +	if (ctx->mm)
+> +		mmput(ctx->mm);
+
+It took me a while to work out the difference between mm_users and 
+mm_count... this looks fine.
+
 -- 
-2.9.3
+Andrew Donnellan              OzLabs, ADL Canberra
+andrew.donnellan@au1.ibm.com  IBM Australia Limited
