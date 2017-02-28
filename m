@@ -1,22 +1,24 @@
-Return-Path: <laurentiu.tudor@nxp.com>
-Received: from EUR03-DB5-obe.outbound.protection.outlook.com
- (mail-eopbgr40069.outbound.protection.outlook.com [40.107.4.69])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <SRS0=Vz7S=2J=goodmis.org=rostedt@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vXdMd719VzDqHH
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Feb 2017 23:35:25 +1100 (AEDT)
-From: Laurentiu Tudor <laurentiu.tudor@nxp.com>
-To: Wolfgang Ocker <weo@reccoware.de>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [bug report] v4.10.1 Oops on P1010 - huge tlb - there's already a
- fix ...
-Date: Tue, 28 Feb 2017 12:35:19 +0000
-Message-ID: <58B56E85.2020208@nxp.com>
-References: <1488275851.2358.4.camel@reccoware.de>
- <1488282451.2358.9.camel@reccoware.de>
-In-Reply-To: <1488282451.2358.9.camel@reccoware.de>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vXgVx1fSXzDqHH
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Mar 2017 01:11:52 +1100 (AEDT)
+Date: Tue, 28 Feb 2017 09:11:47 -0500
+From: Steven Rostedt <rostedt@goodmis.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, Ingo Molnar <mingo@kernel.org>, Thomas
+ Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH v3 1/2] powerpc: split ftrace bits into a separate file
+Message-ID: <20170228091147.69b836a8@gandalf.local.home>
+In-Reply-To: <87wpcbota8.fsf@concordia.ellerman.id.au>
+References: <cover.1487702678.git.naveen.n.rao@linux.vnet.ibm.com>
+ <d2058affbf317d0f72e2df970f97b7b53ade47cb.1487702678.git.naveen.n.rao@linux.vnet.ibm.com>
+ <20170227103650.0955c5eb@gandalf.local.home>
+ <87wpcbota8.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,13 +28,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-SGkgV29sZmdhbmcsDQoNClRoYW5rcyBmb3IgcmVwb3J0aW5nIQ0KDQpPbiAwMi8yOC8yMDE3IDAx
-OjQ3IFBNLCBXb2xmZ2FuZyBPY2tlciB3cm90ZTo+IE9uIFR1ZSwgMjAxNy0wMi0yOCBhdCANCjEw
-OjU3ICswMTAwLCBXb2xmZ2FuZyBPY2tlciB3cm90ZToNCiA+PiBXaXRoIGtlcm5lbCB2NC4xMC4x
-IGFuZCBodWdlIHRsYiBlbmFibGVkIChDT05GSUdfSFVHRVRMQkZTPXkpIEkgc2VlDQogPj4gdGhl
-DQogPj4gICBmb2xsb3dpbmcgb29wcyBvbiBhIFAxMDEwOg0KID4NCiA+IEp1c3Qgc2F3IHRoYXQg
-dGhlcmUgaXMgYWxyZWFkeSBhIGZpeDoNCiA+DQoNClRoZSBmaXggaXMgbm90IGFjY2VwdGVkIGJ1
-dCB5b3UgY2FuIHVzZSBpdCB1bnRpbCB3ZSBjb21lIHVwIHdpdGggYSANCmJldHRlciBvbmUuIFBs
-ZWFzZSBub3RlIHRoYXQgNC43ICYgNC45IHN0YWJsZSBrZXJuZWxzIGFyZSBhbHNvIGltcGFjdGVk
-DQpzbyBpZiB5b3UgcGxhbiB0byB1c2UgdGhlbSB5b3UnbGwgbmVlZCB0aGUgZml4Lg0KDQotLS0N
-CkJlc3QgUmVnYXJkcywgTGF1cmVudGl1
+On Tue, 28 Feb 2017 15:04:15 +1100
+Michael Ellerman <mpe@ellerman.id.au> wrote:
+
+kernel/trace/ftrace.c more obvious.
+> 
+> I don't know if it's really worth keeping the names the same across
+> arches, especially as we already have:
+> 
+>   arch/arm64/kernel/entry-ftrace.S
+>   arch/arm/kernel/entry-ftrace.S
+>   arch/blackfin/kernel/ftrace-entry.S
+>   arch/metag/kernel/ftrace_stub.S
+> 
+> But we can rename it if you feel strongly about it.
+
+Hmm, perhaps "entry-ftrace.S" would be the better name. I never liked
+the "mcount.S" name.
+
+-- Steve
