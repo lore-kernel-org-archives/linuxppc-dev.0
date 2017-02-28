@@ -1,24 +1,24 @@
-Return-Path: <SRS0=Vz7S=2J=goodmis.org=rostedt@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <laurentiu.tudor@nxp.com>
+Received: from EUR01-HE1-obe.outbound.protection.outlook.com
+ (mail-he1eur01on0068.outbound.protection.outlook.com [104.47.0.68])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vXgVx1fSXzDqHH
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Mar 2017 01:11:52 +1100 (AEDT)
-Date: Tue, 28 Feb 2017 09:11:47 -0500
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, Ingo Molnar <mingo@kernel.org>, Thomas
- Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH v3 1/2] powerpc: split ftrace bits into a separate file
-Message-ID: <20170228091147.69b836a8@gandalf.local.home>
-In-Reply-To: <87wpcbota8.fsf@concordia.ellerman.id.au>
-References: <cover.1487702678.git.naveen.n.rao@linux.vnet.ibm.com>
- <d2058affbf317d0f72e2df970f97b7b53ade47cb.1487702678.git.naveen.n.rao@linux.vnet.ibm.com>
- <20170227103650.0955c5eb@gandalf.local.home>
- <87wpcbota8.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vXhT06pG8zDqM1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Mar 2017 01:55:16 +1100 (AEDT)
+From: Laurentiu Tudor <laurentiu.tudor@nxp.com>
+To: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "oss@buserror.net" <oss@buserror.net>, "mpe@ellerman.id.au"
+ <mpe@ellerman.id.au>
+CC: Madalin-Cristian Bucur <madalin.bucur@nxp.com>
+Subject: Re: [PATCH] powerpc: booke: fix boot crash due to null hugepd
+Date: Tue, 28 Feb 2017 14:55:08 +0000
+Message-ID: <58B58F4B.1040807@nxp.com>
+References: <20170216151129.8971-1-laurentiu.tudor@nxp.com>
+ <87tw7tc8o9.fsf@skywalker.in.ibm.com>
+In-Reply-To: <87tw7tc8o9.fsf@skywalker.in.ibm.com>
+Content-Type: text/plain; charset="Windows-1252"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,22 +28,88 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 28 Feb 2017 15:04:15 +1100
-Michael Ellerman <mpe@ellerman.id.au> wrote:
+Hi,
 
-kernel/trace/ftrace.c more obvious.
-> 
-> I don't know if it's really worth keeping the names the same across
-> arches, especially as we already have:
-> 
->   arch/arm64/kernel/entry-ftrace.S
->   arch/arm/kernel/entry-ftrace.S
->   arch/blackfin/kernel/ftrace-entry.S
->   arch/metag/kernel/ftrace_stub.S
-> 
-> But we can rename it if you feel strongly about it.
+Some more information on the crash, inline.
 
-Hmm, perhaps "entry-ftrace.S" would be the better name. I never liked
-the "mcount.S" name.
+On 02/17/2017 02:18 PM, Aneesh Kumar K.V wrote:
+> laurentiu.tudor@nxp.com writes:
+>
+>> From: Laurentiu Tudor <laurentiu.tudor@nxp.com>
+>>
+>> On 32-bit book-e machines, hugepd_ok() does not take
+>> into account null hugepd values, causing this crash at boot:
+>>
+>> Unable to handle kernel paging request for data at address 0x80000000
+>> Faulting instruction address: 0xc00182a8
+>> Oops: Kernel access of bad area, sig: 11 [#1]
+>> SMP NR_CPUS=3D24
+>> CoreNet Generic
+>> Modules linked in:
+>> CPU: 1 PID: 1 Comm: swapper/0 Tainted: G        W       4.10.0-rc8-00016=
+-g69b1f87 #11
+>> task: e5050000 task.stack: e5058000
+>> NIP: c00182a8 LR: c001829c CTR: 00007ffe
+>> REGS: e5059c50 TRAP: 0300   Tainted: G        W        (4.10.0-rc8-00016=
+-g69b1f87)
+>> MSR: 00021002 <CE,ME>
+>>    CR: 88428e82  XER: 00000000
+>> DEAR: 80000000 ESR: 00000000
+>> GPR00: c0107510 e5059d00 e5050000 80000000 bffffff1 e5059d0c e5059d08 00=
+002017
+>> GPR08: 00000000 00000000 00000000 00000000 28428e82 00000000 c00027d0 00=
+000000
+>> GPR16: 00000000 00000000 88a28e82 20000000 48422e82 00000000 88a28e84 dd=
+004000
+>> GPR24: e5059e38 00000000 00000000 bffffff1 dd004000 00000001 00029002 bf=
+fffff1
+>> NIP [c00182a8] follow_huge_addr+0x38/0xf0
+>> LR [c001829c] follow_huge_addr+0x2c/0xf0
+>> Call Trace:
+>> [e5059d00] [e5059d00] 0xe5059d00 (unreliable)
+>> [e5059d20] [c0107510] follow_page_mask+0x40/0x3c0
+>> [e5059d80] [c0107958] __get_user_pages+0xc8/0x420
+>> [e5059de0] [c010817c] get_user_pages_remote+0x8c/0x230
+>> [e5059e30] [c013f170] copy_strings+0x110/0x3a0
+>> [e5059ea0] [c013f42c] copy_strings_kernel+0x2c/0x50
+>> [e5059ec0] [c0141324] do_execveat_common+0x474/0x620
+>> [e5059f10] [c01414fc] do_execve+0x2c/0x40
+>> [e5059f20] [c0001f68] try_to_run_init_process+0x18/0x60
+>> [e5059f30] [c000289c] kernel_init+0xcc/0x120
+>> [e5059f40] [c000f1e8] ret_from_kernel_thread+0x5c/0x64
+>> Instruction dump:
+>> bfc10018 7c9f2378 90010024 7fc000a6 7c000146 80630020 38a1000c 38c10008
+>> 4bfff869 2c030000 41c20090 81210008 <81430000> 81630004 3860ffea 2f89000=
+0
+>> ---[ end trace 4bf94e15fd9fa824 ]---
+>
+>
+> Which code path is that. That null should be filtered by the if
+> (pmd_none(pmd)) check in find_linux_pte_or_hugepte right ?
 
--- Steve
+The crash happens when __find_linux_pte_or_hugepte() calls hugepd_ok(),
+on this line [1]. It's triggered when __find_linux_pte_or_hugepte() is
+first called, when the kernel tries to spawn the init process. The input
+effective address (ea arg) is bffffff1. This is the call stack:
+
+[e5059cd0] [c0017b60] __find_linux_pte_or_hugepte+0x60/0x120 (unreliable)
+[e5059d00] [c001832c] follow_huge_addr+0x2c/0xf0
+[e5059d20] [c0107590] follow_page_mask+0x40/0x3c0
+[e5059d80] [c01079d8] __get_user_pages+0xc8/0x420
+[e5059de0] [c01081fc] get_user_pages_remote+0x8c/0x230
+[e5059e30] [c013f210] copy_strings+0x110/0x3a0
+[e5059ea0] [c013f4cc] copy_strings_kernel+0x2c/0x50
+[e5059ec0] [c01413c4] do_execveat_common+0x474/0x620
+[e5059f10] [c014159c] do_execve+0x2c/0x40
+[e5059f20] [c0001f68] try_to_run_init_process+0x18/0x60
+[e5059f30] [c000289c] kernel_init+0xcc/0x120
+[e5059f40] [c000f1e8] ret_from_kernel_thread+0x5c/0x64
+
+Thanks in advance for any pointers.
+
+[1]=20
+http://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/tree/arch/po=
+werpc/mm/hugetlbpage.c#n918
+
+---
+Best Regards, Laurentiu=
