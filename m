@@ -1,43 +1,22 @@
-Return-Path: <jbaron@akamai.com>
-Received: from prod-mail-xrelay06.akamai.com (prod-mail-xrelay06.akamai.com
- [96.6.114.98])
- by lists.ozlabs.org (Postfix) with ESMTP id 3vXtq701NHzDqJt
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Mar 2017 09:41:37 +1100 (AEDT)
-Subject: Re: [PATCH] jump_label: align jump_entry table to at least 4-bytes
-To: David Daney <ddaney@caviumnetworks.com>,
- Steven Rostedt <rostedt@goodmis.org>,
- Sachin Sant <sachinp@linux.vnet.ibm.com>
-References: <1488221364-13905-1-git-send-email-jbaron@akamai.com>
- <93219edf-0f6d-5cc7-309c-c998f16fe7ac@akamai.com>
- <aa139c18-1b04-2c20-2e22-89d74503b3cf@caviumnetworks.com>
- <20170227160601.5b79a1fe@gandalf.local.home>
- <6db89a8d-6053-51d1-5fd4-bae0179a5ebd@caviumnetworks.com>
- <20170227170911.2280ca3e@gandalf.local.home>
- <7fa95eea-20be-611c-2b63-fca600779465@caviumnetworks.com>
- <20170227173630.57fff459@gandalf.local.home>
- <7bd72716-feea-073f-741c-04212ebd0802@caviumnetworks.com>
- <68fe24ea-7795-24d8-211b-9d8a50affe9f@akamai.com>
- <510FF566-011D-4199-86F7-2BB4DBF36434@linux.vnet.ibm.com>
- <20170228112144.65455de5@gandalf.local.home>
- <cdf98840-8d43-2c58-e2f9-75ae8fb8a600@caviumnetworks.com>
- <1de00727-de97-f887-78bd-dd49131cdf61@akamai.com>
- <999e2c3f-698c-703c-67a9-26aea3c97dc0@caviumnetworks.com>
- <d10e986c-7f6a-3935-88e2-ba39708f79ad@caviumnetworks.com>
- <542488db-5c59-afa5-6d1d-a437c87bc613@akamai.com>
- <912fa97a-aa1d-c0e4-dc83-fc5c745db1c1@caviumnetworks.com>
-Cc: linux-mips@linux-mips.org, Chris Metcalf <cmetcalf@mellanox.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Russell King <linux@armlinux.org.uk>,
- Ralf Baechle <ralf@linux-mips.org>, LKML <linux-kernel@vger.kernel.org>,
- Rabin Vincent <rabin@rab.in>, Paul Mackerras <paulus@samba.org>,
- Anton Blanchard <anton@samba.org>, linuxppc-dev@lists.ozlabs.org,
- Ingo Molnar <mingo@kernel.org>, linux-arm-kernel@lists.infradead.org,
- Zhigang Lu <zlu@ezchip.com>
-From: Jason Baron <jbaron@akamai.com>
-Message-ID: <23989c10-7b47-3fda-f790-25b539704bec@akamai.com>
-Date: Tue, 28 Feb 2017 17:41:33 -0500
-MIME-Version: 1.0
-In-Reply-To: <912fa97a-aa1d-c0e4-dc83-fc5c745db1c1@caviumnetworks.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
+Return-Path: <oss@buserror.net>
+Received: from host.buserror.net (host.buserror.net [209.198.135.123])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vXtxF1FvbzDqJx
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Mar 2017 09:46:57 +1100 (AEDT)
+Message-ID: <1488322005.2944.12.camel@buserror.net>
+From: Scott Wood <oss@buserror.net>
+To: Laurentiu Tudor <laurentiu.tudor@nxp.com>, "Aneesh Kumar K.V"
+ <aneesh.kumar@linux.vnet.ibm.com>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>, "mpe@ellerman.id.au" <mpe@ellerman.id.au>
+Cc: Madalin-Cristian Bucur <madalin.bucur@nxp.com>
+Date: Tue, 28 Feb 2017 16:46:45 -0600
+In-Reply-To: <58B58F4B.1040807@nxp.com>
+References: <20170216151129.8971-1-laurentiu.tudor@nxp.com>
+ <87tw7tc8o9.fsf@skywalker.in.ibm.com> <58B58F4B.1040807@nxp.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Subject: Re: [PATCH] powerpc: booke: fix boot crash due to null hugepd
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,125 +26,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 02/28/2017 03:15 PM, David Daney wrote:
-> On 02/28/2017 11:34 AM, Jason Baron wrote:
->>
->>
->> On 02/28/2017 02:22 PM, David Daney wrote:
->>> On 02/28/2017 11:05 AM, David Daney wrote:
->>>> On 02/28/2017 10:39 AM, Jason Baron wrote:
->>>>>
->>> [...]
->>>>>> I suspect that the alignment of the __jump_table section in the .ko
->>>>>> files is not correct, and you are seeing some sort of problem due to
->>>>>> that.
->>>>>>
->>>>>>
->>>>>
->>>>> Hi,
->>>>>
->>>>> Yes, if you look at the trace that Sachin sent the module being loaded
->>>>> that does the WARN_ON() is nfsd.ko.
->>>>>
->>>>> That module from Sachin's trace has:
->>>>>
->>>>>   [31] __jump_table      PROGBITS        0000000000000000 03fd77
->>>>> 0000c0
->>>>> 18 WAM  0   0  1
->>>>
->>>> The problem is then the section alignment (last column) for power.
->>>>
->>>> On mips with no patches applied, we get:
->>>>
->>>>   [17] __jump_table      PROGBITS        0000000000000000 00d2c0 000048
->>>> 00  WA  0   0  8
->>>>
->>>> Look, proper alignment!
->>>>
->>>> The question I have is why do the power ".llong" and ".long" assembler
->>>> directives not force section alignment?  Is there an alternative that
->>>> could be used that would result in the proper alignment?  Would ".word"
->>>> work?
->>>>
->>>> If not, then I would say patch only power with your balign thing.
->>>> 8-byte
->>>> alignment for 64-bit kernel, 4-byte alignment for 32-bit kernel
->>>>
->>>
->>> I think the proper fix is either:
->>>
->>> A) Modify scripts/module-common.lds to force __jump_table alignment for
->>> all architectures.
->>>
->>> B) Add arch/powerpc/kernel/module.lds to force __jump_table alignment
->>> for powerpc only.
->>>
->>> David.
->>>
->>>
->>
->> Ok, I can try adding it to the linger script.
->>
->> FWIW, here is my before and after with the .balign thing for the nfsd.ko
->> module on powperc (using a cross-compiler):
->>
->> before:
->>
->>   [31] __jump_table      PROGBITS        0000000000000000 03ee3e 0000f0
->> 00  WA  0   0  1
->>
->> after:
->>
->>  [31] __jump_table      PROGBITS        0000000000000000 03ee40 0000f0
->> 00  WA  0   0  4
->>
->
-> Try the (lightly tested) attached.
->
-> If it works and Steven likes it, perhaps someone can merge it.
->
-> David.
->
->
->
+On Tue, 2017-02-28 at 14:55 +0000, Laurentiu Tudor wrote:
+> Hi,
+> 
+> Some more information on the crash, inline.
+> 
+> On 02/17/2017 02:18 PM, Aneesh Kumar K.V wrote:
+> > 
+> > laurentiu.tudor@nxp.com writes:
+> > 
+> > > 
+> > > From: Laurentiu Tudor <laurentiu.tudor@nxp.com>
+> > > 
+> > > On 32-bit book-e machines, hugepd_ok() does not take
+> > > into account null hugepd values, causing this crash at boot:
+> > > 
+> > > Unable to handle kernel paging request for data at address 0x80000000
+> > > Faulting instruction address: 0xc00182a8
+> > > Oops: Kernel access of bad area, sig: 11 [#1]
+> > > SMP NR_CPUS=24
+> > > CoreNet Generic
+> > > Modules linked in:
+> > > CPU: 1 PID: 1 Comm: swapper/0 Tainted: G        W       4.10.0-rc8-
+> > > 00016-g69b1f87 #11
+> > > task: e5050000 task.stack: e5058000
+> > > NIP: c00182a8 LR: c001829c CTR: 00007ffe
+> > > REGS: e5059c50 TRAP: 0300   Tainted: G        W        (4.10.0-rc8-
+> > > 00016-g69b1f87)
+> > > MSR: 00021002 <CE,ME>
+> > >    CR: 88428e82  XER: 00000000
+> > > DEAR: 80000000 ESR: 00000000
+> > > GPR00: c0107510 e5059d00 e5050000 80000000 bffffff1 e5059d0c e5059d08
+> > > 00002017
+> > > GPR08: 00000000 00000000 00000000 00000000 28428e82 00000000 c00027d0
+> > > 00000000
+> > > GPR16: 00000000 00000000 88a28e82 20000000 48422e82 00000000 88a28e84
+> > > dd004000
+> > > GPR24: e5059e38 00000000 00000000 bffffff1 dd004000 00000001 00029002
+> > > bffffff1
+> > > NIP [c00182a8] follow_huge_addr+0x38/0xf0
+> > > LR [c001829c] follow_huge_addr+0x2c/0xf0
+> > > Call Trace:
+> > > [e5059d00] [e5059d00] 0xe5059d00 (unreliable)
+> > > [e5059d20] [c0107510] follow_page_mask+0x40/0x3c0
+> > > [e5059d80] [c0107958] __get_user_pages+0xc8/0x420
+> > > [e5059de0] [c010817c] get_user_pages_remote+0x8c/0x230
+> > > [e5059e30] [c013f170] copy_strings+0x110/0x3a0
+> > > [e5059ea0] [c013f42c] copy_strings_kernel+0x2c/0x50
+> > > [e5059ec0] [c0141324] do_execveat_common+0x474/0x620
+> > > [e5059f10] [c01414fc] do_execve+0x2c/0x40
+> > > [e5059f20] [c0001f68] try_to_run_init_process+0x18/0x60
+> > > [e5059f30] [c000289c] kernel_init+0xcc/0x120
+> > > [e5059f40] [c000f1e8] ret_from_kernel_thread+0x5c/0x64
+> > > Instruction dump:
+> > > bfc10018 7c9f2378 90010024 7fc000a6 7c000146 80630020 38a1000c 38c10008
+> > > 4bfff869 2c030000 41c20090 81210008 <81430000> 81630004 3860ffea
+> > > 2f890000
+> > > ---[ end trace 4bf94e15fd9fa824 ]---
+> > 
+> > Which code path is that. That null should be filtered by the if
+> > (pmd_none(pmd)) check in find_linux_pte_or_hugepte right ?
+> The crash happens when __find_linux_pte_or_hugepte() calls hugepd_ok(),
+> on this line [1]. It's triggered when __find_linux_pte_or_hugepte() is
+> first called, when the kernel tries to spawn the init process. The input
+> effective address (ea arg) is bffffff1. This is the call stack:
 
-So before your module.lds script:
+What is the pmd value?  There's a pmd_none() check before that line.
 
-# powerpc64-linux-readelf -eW fs/nfsd/nfsd.o | grep jump 
+That said, regardless of what's going wrong here, it would be simpler and more
+robust if is_hugepd() returned false for empty ptes rather than assuming the
+caller explicitly checked pmd_none().
 
-   [31] __jump_table      PROGBITS        0000000000000000 03edfe 0000f0 
-00  WA  0   0  1
- 
-
-# powerpc64-linux-readelf -eW fs/nfsd/nfsd.ko | grep jump 
-
-   [32] __jump_table      PROGBITS        0000000000000000 044046 0000f0 
-00  WA  0   0  1
-
-With your patch:
- 
- 
- 
-
-# powerpc64-linux-readelf -eW fs/nfsd/nfsd.o | grep jump 
-
-   [31] __jump_table      PROGBITS        0000000000000000 03edfe 0000f0 
-00  WA  0   0  1
- 
-
-# powerpc64-linux-readelf -eW fs/nfsd/nfsd.ko | grep jump 
-
-   [18] __jump_table      PROGBITS        0000000000000000 03e358 0000f0 
-00  WA  0   0  8
-
-
-I also checked all the other .ko files and they were properly aligned. 
-So I think this should hopefully work, and I like that its not a 
-per-arch fix.
-
-Sachin, sorry to bother you again, but I'm hoping you can try David's 
-latest patch to scripts/module-common.lds, just to test in your setup.
-
-Thanks,
-
--Jason
+-Scott
