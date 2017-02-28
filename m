@@ -1,21 +1,21 @@
 Return-Path: <ego.lkml@gmail.com>
-Received: from mail-it0-x22a.google.com (mail-it0-x22a.google.com
- [IPv6:2607:f8b0:4001:c0b::22a])
+Received: from mail-it0-x243.google.com (mail-it0-x243.google.com
+ [IPv6:2607:f8b0:4001:c0b::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vXhm56bXTzDqHJ
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Mar 2017 02:08:21 +1100 (AEDT)
-Received: by mail-it0-x22a.google.com with SMTP id 68so2274220itg.0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Feb 2017 07:08:21 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vXhsL6jQ0zDqHJ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Mar 2017 02:12:54 +1100 (AEDT)
+Received: by mail-it0-x243.google.com with SMTP id w185so1765827ita.3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Feb 2017 07:12:54 -0800 (PST)
 MIME-Version: 1.0
 Reply-To: ego@linux.vnet.ibm.com
-In-Reply-To: <20170216183901.28611-3-npiggin@gmail.com>
+In-Reply-To: <20170216183901.28611-4-npiggin@gmail.com>
 References: <20170216183901.28611-1-npiggin@gmail.com>
- <20170216183901.28611-3-npiggin@gmail.com>
+ <20170216183901.28611-4-npiggin@gmail.com>
 From: Gautham R Shenoy <ego.lkml@gmail.com>
-Date: Tue, 28 Feb 2017 20:38:19 +0530
-Message-ID: <CAHZ_5WyA7hUu53vzCZY2WSUzm+q_-2=6cwkdutmGN5SsdkNgrw@mail.gmail.com>
-Subject: Re: [PATCH 2/5] powerpc/64: stop using bit in HSPRG0 to test winkle
+Date: Tue, 28 Feb 2017 20:42:52 +0530
+Message-ID: <CAHZ_5WzdE_e+-XCgX5hmLx0P7G9cOvtGLSRK-8mPWpkEtzTPnA@mail.gmail.com>
+Subject: Re: [PATCH 3/5] powerpc/64s: use alternative feature patching
 To: Nicholas Piggin <npiggin@gmail.com>
 Cc: linuxppc-dev@lists.ozlabs.org, ego@linux.vnet.ibm.com,
  Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
@@ -32,56 +32,59 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 Hi Nick,
 
 On Fri, Feb 17, 2017 at 12:08 AM, Nicholas Piggin <npiggin@gmail.com> wrote:
-> The POWER8 idle code has a neat trick of programming the power on engine
-> to restore a low bit into HSPRG0, so idle wakeup code can test and see
-> if it has been programmed this way and therefore lost all state. Restore
-> time can be reduced if winkle has not been reached.
->
-
-> However this messes with our r13 PACA pointer, and requires HSPRG0 to
-> be written to. It also optimizes the slowest and most uncommon case at
-> the expense of another SPR write in the common nap state wakeup.
-
-Actually, this optimization was needed to reduce the guest entry time
-for a KVM guest vcore.
-
-While running KVM on POWER8, the host is in SMT=1 mode with the
-secondary threads
-being hotplugged out and supposed to have entered the winkle state.
-Since the primary thread is still running, the core would still be in Nap.
-
-However, each time a guest vcore is scheduled on the core, the
-secondary threads are sent an IPI to wake them up from the idle state.
-
-On waking up, they use the last bit of HSPRG0 and conclude that they
-don't need to restore resources before executing the guest entry code.
-
-Thus, the HSPRG0 trick help the secondary threads avoid spending
-extra cycles restoring the SLBs and per-thread SPRs.
-
-
-
->
-> Remove this complexity and assume winkle sleeps always require a state
-> restore. This speedup could be made entirely contained within the winkle
-> idle code by counting per-core winkles and setting a thread bitmap when
-> all have gone to winkle.
-
-This is a good idea! We are anyway taking the lock in pnv_wakeup_tb_loss()
-to check if we are the first thread in the core waking up from a deep-state.
-
-We can check another bitmap if we are the first thread waking up from winkle
-and set cr4 to the result of that comparison while holding the lock.
-
-That shouldn't cost us much, at least for the fake-wakeup-from-winkle
-for KVM case alluded to above.
-
-Otherwise, the patch looks good to me.
-
-
+> This reduces the number of nops for POWER8
 >
 > Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 
---
+This change looks ok to me.
+
+Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+
+> ---
+>  arch/powerpc/kernel/idle_book3s.S | 15 +++++++--------
+>  1 file changed, 7 insertions(+), 8 deletions(-)
+>
+> diff --git a/arch/powerpc/kernel/idle_book3s.S b/arch/powerpc/kernel/idle_book3s.S
+> index 1271344e5523..ab15dee371c9 100644
+> --- a/arch/powerpc/kernel/idle_book3s.S
+> +++ b/arch/powerpc/kernel/idle_book3s.S
+> @@ -417,13 +417,8 @@ BEGIN_FTR_SECTION
+>         rldicl  r5,r5,4,60
+>         cmpd    cr4,r5,r4
+>         bge     cr4,pnv_wakeup_tb_loss
+> -       /*
+> -        * Waking up without hypervisor state loss. Return to
+> -        * reset vector
+> -        */
+> -       blr
+>
+> -END_FTR_SECTION_IFSET(CPU_FTR_ARCH_300)
+> +FTR_SECTION_ELSE
+>
+>         /*
+>          * POWER ISA 2.07 or less.
+> @@ -440,9 +435,13 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_300)
+>          * indicates we are waking with hypervisor state loss from nap.
+>          */
+>         bgt     cr3,.
+> +ALT_FTR_SECTION_END_IFSET(CPU_FTR_ARCH_300)
+>
+> -       blr     /* Return back to System Reset vector from where
+> -                  pnv_restore_hyp_resource was invoked */
+> +       /*
+> +        * Waking up without hypervisor state loss. Return to
+> +        * reset vector
+> +        */
+> +       blr
+>
+>  /*
+>   * Called if waking up from idle state which can cause either partial or
+> --
+> 2.11.0
+>
+
+
+
+-- 
 Thanks and Regards
 gautham.
