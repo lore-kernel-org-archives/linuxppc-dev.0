@@ -1,53 +1,45 @@
-Return-Path: <vaibhav@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <David.Daney@cavium.com>
+Received: from NAM03-CO1-obe.outbound.protection.outlook.com
+ (mail-co1nam03on0601.outbound.protection.outlook.com
+ [IPv6:2a01:111:f400:fe48::601])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vYLTX6Vf8zDqLD
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Mar 2017 03:28:00 +1100 (AEDT)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v21GNv77103154
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 Mar 2017 11:27:58 -0500
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
- by mx0a-001b2d01.pphosted.com with ESMTP id 28x140aj7s-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Mar 2017 11:27:58 -0500
-Received: from localhost
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <vaibhav@linux.vnet.ibm.com>;
- Thu, 2 Mar 2017 02:27:56 +1000
-Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id A6F913578052
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Mar 2017 03:27:53 +1100 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v21GRjIf50921712
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 2 Mar 2017 03:27:53 +1100
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v21GRL7X003858
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 2 Mar 2017 03:27:21 +1100
-From: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
-To: "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, Russell Currey <ruscur@russell.cc>
-Cc: Philippe Bergheaud <philippe.bergheaud@fr.ibm.com>,
- Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
- Gavin Shan <gwshan@linux.vnet.ibm.com>, Ian Munsie <imunsie@au1.ibm.com>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- Christophe Lombard <christophe_lombard@fr.ibm.com>,
- Greg Kurz <gkurz@linux.vnet.ibm.com>
-Subject: Re: [RESEND-RFC v2 1/3] powerpc/eeh: Refactor
- eeh_pe_update_time_stamp() to update freeze_count
-In-Reply-To: <e288dd57-df0d-44c1-2867-ce1d1386ad1f@linux.vnet.ibm.com>
-References: <20170301112452.15798-1-vaibhav@linux.vnet.ibm.com>
- <20170301112452.15798-2-vaibhav@linux.vnet.ibm.com>
- <e288dd57-df0d-44c1-2867-ce1d1386ad1f@linux.vnet.ibm.com>
-Date: Wed, 01 Mar 2017 21:56:54 +0530
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vYLld6sVdzDqLM
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Mar 2017 03:40:13 +1100 (AEDT)
+Subject: Re: [PATCH] jump_label: align jump_entry table to at least 4-bytes
+To: Michael Ellerman <mpe@ellerman.id.au>, Jason Baron <jbaron@akamai.com>,
+ David Daney <ddaney@caviumnetworks.com>, Steven Rostedt
+ <rostedt@goodmis.org>, Sachin Sant <sachinp@linux.vnet.ibm.com>
+References: <1488221364-13905-1-git-send-email-jbaron@akamai.com>
+ <20170227160601.5b79a1fe@gandalf.local.home>
+ <6db89a8d-6053-51d1-5fd4-bae0179a5ebd@caviumnetworks.com>
+ <20170227170911.2280ca3e@gandalf.local.home>
+ <7fa95eea-20be-611c-2b63-fca600779465@caviumnetworks.com>
+ <20170227173630.57fff459@gandalf.local.home>
+ <7bd72716-feea-073f-741c-04212ebd0802@caviumnetworks.com>
+ <68fe24ea-7795-24d8-211b-9d8a50affe9f@akamai.com>
+ <510FF566-011D-4199-86F7-2BB4DBF36434@linux.vnet.ibm.com>
+ <20170228112144.65455de5@gandalf.local.home>
+ <cdf98840-8d43-2c58-e2f9-75ae8fb8a600@caviumnetworks.com>
+ <1de00727-de97-f887-78bd-dd49131cdf61@akamai.com>
+ <999e2c3f-698c-703c-67a9-26aea3c97dc0@caviumnetworks.com>
+ <d10e986c-7f6a-3935-88e2-ba39708f79ad@caviumnetworks.com>
+ <542488db-5c59-afa5-6d1d-a437c87bc613@akamai.com>
+ <912fa97a-aa1d-c0e4-dc83-fc5c745db1c1@caviumnetworks.com>
+ <23989c10-7b47-3fda-f790-25b53 9704bec@akamai.com>
+ <871suh5wtw.fsf@concordia.ellerman.id.au>
+Cc: linux-mips@linux-mips.org, Chris Metcalf <cmetcalf@mellanox.com>,
+ LKML <linux-kernel@vger.kernel.org>, Ralf Baechle <ralf@linux-mips.org>,
+ Russell King <linux@armlinux.org.uk>, Rabin Vincent <rabin@rab.in>,
+ Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
+ linuxppc-dev@lists.ozlabs.org, Ingo Molnar <mingo@kernel.org>,
+ linux-arm-kernel@lists.infradead.org, Zhigang Lu <zlu@ezchip.com>
+From: David Daney <ddaney@caviumnetworks.com>
+Message-ID: <7e05bd3d-08da-00ba-1b79-c9be8c659524@caviumnetworks.com>
+Date: Wed, 1 Mar 2017 08:40:03 -0800
 MIME-Version: 1.0
-Content-Type: text/plain
-Message-Id: <87lgsp0xpt.fsf@vajain21.in.ibm.com>
+In-Reply-To: <871suh5wtw.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset=windows-1252; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -57,31 +49,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-Thanks for reviewing the patch !!
-
-"Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com> writes:
+On 02/28/2017 10:34 PM, Michael Ellerman wrote:
+> Jason Baron <jbaron@akamai.com> writes:
+> ...
+>> I also checked all the other .ko files and they were properly aligned.
+>> So I think this should hopefully work, and I like that its not a
+>> per-arch fix.
+>>
+>> Sachin, sorry to bother you again, but I'm hoping you can try David's
+>> latest patch to scripts/module-common.lds, just to test in your setup.
 >
-> Not sure why, but many of the words in commit message are missing their
-> first letter. See, for example:
-> reeze_count,  roze,  eports,  ermanently
-Thanks for pointing this out. Will fix this in the subsequent patch
-revision.
-
->>  /**
->> - * eeh_pe_update_time_stamp - Update PE's frozen time stamp
->> + * eeh_pe_update_freeze_counter - Update PE's frozen time stamp
->> + * and freeze counter
->>   * @pe: EEH PE
->>   *
->> - * We have time stamp for each PE to trace its time of getting
->> - * frozen in last hour. The function should be called to update
->> - * the time stamp on first error of the specific PE. On the other
->> - * handle, we needn't account for errors happened in last hour.
+> It does fix the problem.
 >
-> s/handle/hand? "On the other hand..."
-Thats part of original comment which this patch is replacing.
+> I was reproducing with crc_t10dif:
+>
+> [  695.890552] ------------[ cut here ]------------
+> [  695.890709] WARNING: CPU: 15 PID: 3019 at ../kernel/jump_label.c:287 static_key_set_entries+0x74/0xa0
+> [  695.890710] Modules linked in: crc_t10dif(+) crct10dif_generic crct10dif_common ipt_MASQUERADE nf_nat_masquerade_ipv4 iptable_nat nf_conntrack_ipv4 nf_defrag_ipv4 nf_nat_ipv4 xt_addrtype iptable_filter ip_tables xt_conntrack x_tables nf_nat nf_conntrack bridge stp llc dm_thin_pool dm_persistent_data dm_bio_prison dm_bufio libcrc32c kvm virtio_balloon binfmt_misc autofs4 virtio_net virtio_pci virtio_ring virtio
+>
+> Which had:
+>
+>   [21] __jump_table      PROGBITS        0000000000000000 0004e8 000018 00  WA  0   0  1
+>
+>
+> And now has:
+>
+>   [18] __jump_table      PROGBITS        0000000000000000 0004d0 000018 00  WA  0   0  8
+>
+> And all other modules have an alignment of 8 on __jump_table, as expected.
+>
+> I'm inclined to merge a version of the balign patch for powerpc anyway,
+> just to be on the safe side. I guess the old code was coping fine with
+> the unaligned keys, but it still makes me nervous.
 
--- 
-Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
-Linux Technology Center, IBM India Pvt. Ltd.
+
+The original "balign patch" has a couple of problems:
+
+1) 4-byte alignment is not sufficient for 64-bit kernels
+
+2) It is redundant if the linker script patch is accepted.
+
+
+>
+> cheers
+>
+> _______________________________________________
+> linux-arm-kernel mailing list
+> linux-arm-kernel@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+>
