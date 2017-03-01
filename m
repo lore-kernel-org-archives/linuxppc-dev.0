@@ -2,11 +2,11 @@ Return-Path: <ruscur@russell.cc>
 Received: from russell.cc (russell.cc [IPv6:2404:9400:2:0:216:3eff:fee0:3370])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
  bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vXwRd34dyzDqJt
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Mar 2017 10:54:53 +1100 (AEDT)
-Message-ID: <1488326091.15238.1.camel@russell.cc>
-Subject: Re: [RFC 2/3] powerpc/eeh: Introduce function
- eeh_pe_reset_freeze_counter
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vXwjF6VKVzDqJp
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Mar 2017 11:06:41 +1100 (AEDT)
+Message-ID: <1488326797.15238.6.camel@russell.cc>
+Subject: Re: [RFC 3/3] cxl: Reset freeze counters before adapter PERST for
+ flashing new image
 From: Russell Currey <ruscur@russell.cc>
 To: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>,
  linuxppc-dev@lists.ozlabs.org,  frederic.barrat@fr.ibm.com
@@ -15,10 +15,10 @@ Cc: Andrew Donnellan <andonnel@au1.ibm.com>, Ian Munsie
  <christophe_lombard@fr.ibm.com>, Philippe Bergheaud
  <philippe.bergheaud@fr.ibm.com>, Gregory Kurz <KURZGREG@fr.ibm.com>, Gavin
  Shan <gwshan@linux.vnet.ibm.com>
-Date: Wed, 01 Mar 2017 10:54:51 +1100
-In-Reply-To: <20170228070222.21126-3-vaibhav@linux.vnet.ibm.com>
+Date: Wed, 01 Mar 2017 11:06:37 +1100
+In-Reply-To: <20170228072219.24868-1-vaibhav@linux.vnet.ibm.com>
 References: <20170228070222.21126-1-vaibhav@linux.vnet.ibm.com>
- <20170228070222.21126-3-vaibhav@linux.vnet.ibm.com>
+ <20170228072219.24868-1-vaibhav@linux.vnet.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -30,55 +30,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2017-02-28 at 12:32 +0530, Vaibhav Jain wrote:
-> This patch introduces function eeh_pe_reset_freeze_counter which can
-> be used to reset the PE's freeze count variable outside eeh code. This
-> is useful for devices that can acquire a different personality after
-> a PERST event (e.g FPGA Adapters). Presently an existing freeze
-> count for an adapter with personality N will be taken into account
-> when the adapter acquired personality N+1.
-> 
-> By calling eeh_pe_reset_freeze_counter drivers can reset the freeze
-> counter for an adapter once it has acquired a new personality and
-> ideally wont be plagued by the failures similar to the one before.
+[resending this since it didn't get delivered to the list]
 
-Same comment as before about adding () to the end of function names
-
+On Tue, 2017-02-28 at 12:52 +0530, Vaibhav Jain wrote:
+> The patch resets the freeze counter on eeh_pe struct for PHB
+> associated with the cxl pci adapter. This would enable re-flashing of
+> the cxl-adapter beyond the default limit of 5.
 > 
 > Signed-off-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
 > ---
->  arch/powerpc/include/asm/eeh.h | 9 +++++++++
->  1 file changed, 9 insertions(+)
+>  drivers/misc/cxl/pci.c | 15 +++++++++++++++
+>  1 file changed, 15 insertions(+)
 > 
-> diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
-> index 68806be..19ac6d0 100644
-> --- a/arch/powerpc/include/asm/eeh.h
-> +++ b/arch/powerpc/include/asm/eeh.h
-> @@ -266,6 +266,13 @@ struct eeh_pe *eeh_pe_get(struct eeh_dev *edev);
->  int eeh_add_to_parent_pe(struct eeh_dev *edev);
->  int eeh_rmv_from_parent_pe(struct eeh_dev *edev);
->  int eeh_pe_update_freeze_counter(struct eeh_pe *pe);
-> +
-> +/* Reset the PE freeze counter */
-
-I would like to see a comment here noting that doing this is in general a bad
-idea, and this shouldn't be called for regular PCI devices.
-
-> +static inline void eeh_pe_reset_freeze_counter(struct eeh_pe *pe)
-> +{
-> +	pe->freeze_count = 0;
-> +}
-> +
->  void *eeh_pe_traverse(struct eeh_pe *root,
->  		eeh_traverse_func fn, void *flag);
->  void *eeh_pe_dev_traverse(struct eeh_pe *root,
-> @@ -339,6 +346,8 @@ static inline int eeh_check_failure(const volatile void
-> __iomem *token)
->  	return 0;
->  }
+> diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
+> index 679afc9..3b14688 100644
+> --- a/drivers/misc/cxl/pci.c
+> +++ b/drivers/misc/cxl/pci.c
+> @@ -22,6 +22,7 @@
+>  #include <asm/pnv-pci.h>
+>  #include <asm/io.h>
+>  #include <asm/reg.h>
+> +#include <asm/eeh.h>
 >  
-> +static inline void eeh_pe_reset_freeze_counter(struct eeh_pe *pe) { }
-> +
->  #define eeh_dev_check_failure(x) (0)
+>  #include "cxl.h"
+>  #include <misc/cxl.h>
+> @@ -1229,6 +1230,8 @@ static void cxl_pci_remove_afu(struct cxl_afu *afu)
+>  int cxl_pci_reset(struct cxl *adapter)
+>  {
+>  	struct pci_dev *dev = to_pci_dev(adapter->dev.parent);
+> +	struct eeh_dev *eehdev = pci_dev_to_eeh_dev(dev);
+> +	struct eeh_pe *devpe = eeh_dev_to_pe(eehdev);
+
+EEH code typically uses "edev" and "pe" for these variable names
+
+>  	int rc;
 >  
->  static inline void eeh_addr_cache_build(void) { }
+>  	if (adapter->perst_same_image) {
+> @@ -1242,6 +1245,18 @@ int cxl_pci_reset(struct cxl *adapter)
+>  	/* the adapter is about to be reset, so ignore errors */
+>  	cxl_data_cache_flush(adapter);
+>  
+> +	/* If loading a new image, reset freeze counters for the PHB
+> +	 * associated with the adapter.
+> +	 */
+> +	if (devpe && adapter->perst_loads_image) {
+> +		/* Find the pe associated with the device PHB */
+> +		while (devpe->parent != NULL && (devpe->type & EEH_PE_PHB) ==
+> 0)
+> +			devpe = devpe->parent;
+> +
+> +		dev_info(&dev->dev, "Resetting freeze counters for the
+> PHB\n");
+
+Would be good to mention "EEH" here to help with grepping, alternatively a
+similar message could be printed in eeh_pe_reset_freeze_counter() displaying the
+PHB information.
+
+> +		eeh_pe_reset_freeze_counter(devpe);
+> +	}
+> +
+>  	/* pcie_warm_reset requests a fundamental pci reset which includes a
+>  	 * PERST assert/deassert.  PERST triggers a loading of the image
+>  	 * if "user" or "factory" is selected in sysfs */
