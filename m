@@ -1,28 +1,41 @@
-Return-Path: <shuahkh@osg.samsung.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vYPs53ff5zDqLQ
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Mar 2017 06:00:09 +1100 (AEDT)
-Received: from osg.samsung.com
- (ec2-52-27-115-49.us-west-2.compute.amazonaws.com [52.27.115.49])
- by ozlabs.org (Postfix) with ESMTP id 3vYPs45CX9z9s7v
- for <linuxppc-dev@ozlabs.org>; Thu,  2 Mar 2017 06:00:07 +1100 (AEDT)
-Subject: Re: [PATCH 1/5] selftests: Fix selftests build to just build, not run
- tests
-To: Michael Ellerman <mpe@ellerman.id.au>, bamvor.zhangjian@huawei.com
-References: <1486630590-9410-1-git-send-email-mpe@ellerman.id.au>
- <87shnhmsl1.fsf@concordia.ellerman.id.au>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
- linux-kselftest@vger.kernel.org, linux-api@vger.kernel.org,
- Ingo Molnar <mingo@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
- hpa@zytor.com, LKML <linux-kernel@vger.kernel.org>,
- linux-kselftest@vger.kernel.org
-From: Shuah Khan <shuahkh@osg.samsung.com>
-Message-ID: <93f8e25b-8ea6-9dc0-66c4-acb6644724de@osg.samsung.com>
-Date: Wed, 1 Mar 2017 12:00:03 -0700
+Return-Path: <jbaron@akamai.com>
+Received: from prod-mail-xrelay07.akamai.com (prod-mail-xrelay07.akamai.com
+ [23.79.238.175])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3vYRFX0LYtzDqLF
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Mar 2017 07:02:55 +1100 (AEDT)
+Subject: Re: [PATCH] jump_label: align jump_entry table to at least 4-bytes
+To: David Daney <ddaney@caviumnetworks.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Steven Rostedt <rostedt@goodmis.org>,
+ Sachin Sant <sachinp@linux.vnet.ibm.com>
+References: <1488221364-13905-1-git-send-email-jbaron@akamai.com>
+ <6db89a8d-6053-51d1-5fd4-bae0179a5ebd@caviumnetworks.com>
+ <20170227170911.2280ca3e@gandalf.local.home>
+ <7fa95eea-20be-611c-2b63-fca600779465@caviumnetworks.com>
+ <20170227173630.57fff459@gandalf.local.home>
+ <7bd72716-feea-073f-741c-04212ebd0802@caviumnetworks.com>
+ <68fe24ea-7795-24d8-211b-9d8a50affe9f@akamai.com>
+ <510FF566-011D-4199-86F7-2BB4DBF36434@linux.vnet.ibm.com>
+ <20170228112144.65455de5@gandalf.local.home>
+ <cdf98840-8d43-2c58-e2f9-75ae8fb8a600@caviumnetworks.com>
+ <1de00727-de97-f887-78bd-dd49131cdf61@akamai.com>
+ <999e2c3f-698c-703c-67a9-26aea3c97dc0@caviumnetworks.com>
+ <d10e986c-7f6a-3935-88e2-ba39708f79ad@caviumnetworks.com>
+ <542488db-5c59-afa5-6d1d-a437c87bc613@akamai.com>
+ <912fa97a-aa1d-c0e4-dc83-fc5c745db1c1@caviumnetworks.com>
+ <23989c10-7b47-3fda-f790-25b53 9704bec@akamai.com>
+ <871suh5wtw.fsf@concordia.ellerman.id.au>
+ <7e05bd3d-08da-00ba-1b79-c9be8c659524@caviumnetworks.com>
+Cc: linux-mips@linux-mips.org, Chris Metcalf <cmetcalf@mellanox.com>,
+ LKML <linux-kernel@vger.kernel.org>, Ralf Baechle <ralf@linux-mips.org>,
+ Russell King <linux@armlinux.org.uk>, Rabin Vincent <rabin@rab.in>,
+ Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
+ linuxppc-dev@lists.ozlabs.org, Ingo Molnar <mingo@kernel.org>,
+ linux-arm-kernel@lists.infradead.org, Zhigang Lu <zlu@ezchip.com>
+From: Jason Baron <jbaron@akamai.com>
+Message-ID: <cd989fed-a136-5110-f22e-d334d923ca8b@akamai.com>
+Date: Wed, 1 Mar 2017 15:02:52 -0500
 MIME-Version: 1.0
-In-Reply-To: <87shnhmsl1.fsf@concordia.ellerman.id.au>
+In-Reply-To: <7e05bd3d-08da-00ba-1b79-c9be8c659524@caviumnetworks.com>
 Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -33,72 +46,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 02/13/2017 07:09 PM, Michael Ellerman wrote:
-> Michael Ellerman <mpe@ellerman.id.au> writes:
-> 
->> In commit 88baa78d1f31 ("selftests: remove duplicated all and clean
->> target"), the "all" target was removed from individual Makefiles and
->> added to lib.mk.
+
+
+On 03/01/2017 11:40 AM, David Daney wrote:
+> On 02/28/2017 10:34 PM, Michael Ellerman wrote:
+>> Jason Baron <jbaron@akamai.com> writes:
+>> ...
+>>> I also checked all the other .ko files and they were properly aligned.
+>>> So I think this should hopefully work, and I like that its not a
+>>> per-arch fix.
+>>>
+>>> Sachin, sorry to bother you again, but I'm hoping you can try David's
+>>> latest patch to scripts/module-common.lds, just to test in your setup.
 >>
->> However the "all" target was added to lib.mk *after* the existing
->> "runtests" target. This means "runtests" becomes the first (default)
->> target for most of our Makefiles.
-> ...
+>> It does fix the problem.
 >>
->> Fix it by moving the "all" target to the start of lib.mk, making it the
->> default target.
+>> I was reproducing with crc_t10dif:
 >>
->> Fixes: 88baa78d1f31 ("selftests: remove duplicated all and clean target")
->> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+>> [  695.890552] ------------[ cut here ]------------
+>> [  695.890709] WARNING: CPU: 15 PID: 3019 at
+>> ../kernel/jump_label.c:287 static_key_set_entries+0x74/0xa0
+>> [  695.890710] Modules linked in: crc_t10dif(+) crct10dif_generic
+>> crct10dif_common ipt_MASQUERADE nf_nat_masquerade_ipv4 iptable_nat
+>> nf_conntrack_ipv4 nf_defrag_ipv4 nf_nat_ipv4 xt_addrtype
+>> iptable_filter ip_tables xt_conntrack x_tables nf_nat nf_conntrack
+>> bridge stp llc dm_thin_pool dm_persistent_data dm_bio_prison dm_bufio
+>> libcrc32c kvm virtio_balloon binfmt_misc autofs4 virtio_net virtio_pci
+>> virtio_ring virtio
+>>
+>> Which had:
+>>
+>>   [21] __jump_table      PROGBITS        0000000000000000 0004e8
+>> 000018 00  WA  0   0  1
+>>
+>>
+>> And now has:
+>>
+>>   [18] __jump_table      PROGBITS        0000000000000000 0004d0
+>> 000018 00  WA  0   0  8
+>>
+>> And all other modules have an alignment of 8 on __jump_table, as
+>> expected.
+>>
+>> I'm inclined to merge a version of the balign patch for powerpc anyway,
+>> just to be on the safe side. I guess the old code was coping fine with
+>> the unaligned keys, but it still makes me nervous.
 > 
-> Hi Shuah,
 > 
-> Can you please merge this series into linux-next?
+> The original "balign patch" has a couple of problems:
 > 
-> The selftests are badly broken otherwise.
+> 1) 4-byte alignment is not sufficient for 64-bit kernels
 > 
-> cheers
+> 2) It is redundant if the linker script patch is accepted.
+> 
 > 
 
-Hi Bamovar,
+The linker script patch seems reasonable to me.
 
-Your original series badly broke the selftest build. I can no longer
-build individual tests. For example:
+Maybe its worth adding a comment that the alignment is necessary because
+the core jump_label makes use of the 2 lsb bits of its __jump_table
+pointer due to commit:
 
-cd breakpoints/
-shuah@shuah-XPS-13-9350:/lkml/linux_4.11/tools/testing/selftests/breakpoints$ make
-gcc     breakpoint_test.c  -o /breakpoint_test
-/usr/bin/ld: cannot open output file /breakpoint_test: Permission denied
-collect2: error: ld returned 1 exit status
-../lib.mk:54: recipe for target '/breakpoint_test' failed
-make: *** [/breakpoint_test] Error 1
+3821fd3 jump_label: Reduce the size of struct static_key
 
-commit a8ba798bc8ec663cf02e80b0dd770324de9bafd9
-Author: bamvor.zhangjian@huawei.com <bamvor.zhangjian@huawei.com>
-Date:   Tue Nov 29 19:55:52 2016 +0800
+Also, in the comment it says that it fixes an oops. We hit a WARN_ON()
+not an oops, although bad things are likely to happen when the branch is
+updated.
 
-    selftests: enable O and KBUILD_OUTPUT
+Thanks,
 
-I believe the above patch is one of the suspects. Michael fixed
-some of the problems in this patch and others he sent.
-
-At the moment individual tests will not build.
-tools/testing/selftests/x86$ make
-Makefile:44: warning: overriding recipe for target 'clean'
-../lib.mk:51: warning: ignoring old recipe for target 'clean'
-gcc -m64 -o /single_step_syscall_64 -O2 -g -std=gnu99 -pthread -Wall  single_step_syscall.c -lrt -ldl
-/usr/bin/ld: cannot open output file /single_step_syscall_64: Permission denied
-collect2: error: ld returned 1 exit status
-Makefile:50: recipe for target '/single_step_syscall_64' failed
-make: *** [/single_step_syscall_64] Error 1
-
-
-My guess is OUTPUT doesn't resolve in individual builds from the test directory.
-We have to get this fixed for 4.11-rc1
-
-Simply Reverting a8ba798bc8ec663cf02e80b0dd770324de9bafd9 doesn't work.
-Michael's patches depend on this. So anyway, please let me know if you
-can fix this quickly. I am going to be trying a few things today as well.
-
-thanks,
--- Shuah
+-Jason
