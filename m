@@ -1,48 +1,44 @@
-Return-Path: <pc@us.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <David.Daney@cavium.com>
+Received: from NAM02-BL2-obe.outbound.protection.outlook.com
+ (mail-bl2nam02on0063.outbound.protection.outlook.com [104.47.38.63])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vYSNk4lWjzDqLS
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Mar 2017 07:54:14 +1100 (AEDT)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v21KsB28013675
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 Mar 2017 15:54:11 -0500
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
- by mx0a-001b2d01.pphosted.com with ESMTP id 28wxr8n6qg-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Mar 2017 15:54:11 -0500
-Received: from localhost
- by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <pc@us.ibm.com>;
- Wed, 1 Mar 2017 13:54:03 -0700
-Received: from b03cxnp08028.gho.boulder.ibm.com
- (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 3FC6419D8041
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Mar 2017 13:53:11 -0700 (MST)
-Received: from b03ledav001.gho.boulder.ibm.com
- (b03ledav001.gho.boulder.ibm.com [9.17.130.232])
- by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v21Ks0V811272696
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 Mar 2017 13:54:00 -0700
-Received: from b03ledav001.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 05FDD6E03F
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Mar 2017 13:54:00 -0700 (MST)
-Received: from oc1087654862.ibm.com (unknown [9.85.163.123])
- by b03ledav001.gho.boulder.ibm.com (Postfix) with ESMTP id B26986E038
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Mar 2017 13:53:59 -0700 (MST)
-Reply-To: pc@us.ibm.com
-Subject: Re: [PATCH v2] powerpc: A new cache geometry aux vectors
-References: <1486016558.4850.30.camel@kernel.crashing.org>
-To: linuxppc-dev@lists.ozlabs.org
-From: Paul Clarke <pc@us.ibm.com>
-Date: Wed, 1 Mar 2017 14:53:58 -0600
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vYSnq5QsJzDqLD
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Mar 2017 08:12:31 +1100 (AEDT)
+Subject: Re: [PATCH] jump_label: align jump_entry table to at least 4-bytes
+To: Jason Baron <jbaron@akamai.com>, David Daney <ddaney@caviumnetworks.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Steven Rostedt <rostedt@goodmis.org>,
+ Sachin Sant <sachinp@linux.vnet.ibm.com>
+References: <1488221364-13905-1-git-send-email-jbaron@akamai.com>
+ <20170227170911.2280ca3e@gandalf.local.home>
+ <7fa95eea-20be-611c-2b63-fca600779465@caviumnetworks.com>
+ <20170227173630.57fff459@gandalf.local.home>
+ <7bd72716-feea-073f-741c-04212ebd0802@caviumnetworks.com>
+ <68fe24ea-7795-24d8-211b-9d8a50affe9f@akamai.com>
+ <510FF566-011D-4199-86F7-2BB4DBF36434@linux.vnet.ibm.com>
+ <20170228112144.65455de5@gandalf.local.home>
+ <cdf98840-8d43-2c58-e2f9-75ae8fb8a600@caviumnetworks.com>
+ <1de00727-de97-f887-78bd-dd49131cdf61@akamai.com>
+ <999e2c3f-698c-703c-67a9-26aea3c97dc0@caviumnetworks.com>
+ <d10e986c-7f6a-3935-88e2-ba39708f79ad@caviumnetworks.com>
+ <542488db-5c59-afa5-6d1d-a437c87bc613@akamai.com>
+ <912fa97a-aa1d-c0e4-dc83-fc5c745db1c1@caviumnetworks.com>
+ <23989c10-7b47-3fda-f790-25b53 9704bec@akamai.com>
+ <871suh5wtw.fsf@concordia.ellerman.id.au>
+ <7e05bd3d-08da-00ba-1b79-c9be8c659524@caviumnetworks.com>
+ <cd989fed-a136-5110-f22e-d334d923ca8b@akamai.com>
+Cc: linux-mips@linux-mips.org, Chris Metcalf <cmetcalf@mellanox.com>,
+ LKML <linux-kernel@vger.kernel.org>, Ralf Baechle <ralf@linux-mips.org>,
+ Russell King <linux@armlinux.org.uk>, Rabin Vincent <rabin@rab.in>,
+ Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
+ linuxppc-dev@lists.ozlabs.org, Ingo Molnar <mingo@kernel.org>,
+ linux-arm-kernel@lists.infradead.org, Zhigang Lu <zlu@ezchip.com>
+From: David Daney <ddaney@caviumnetworks.com>
+Message-ID: <d6e62866-4e7b-53cf-8198-35cadc1c8c2f@caviumnetworks.com>
+Date: Wed, 1 Mar 2017 13:12:22 -0800
 MIME-Version: 1.0
-In-Reply-To: <1486016558.4850.30.camel@kernel.crashing.org>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <67e56596-05a7-5f3d-8125-a4e0194f1b7c@us.ibm.com>
+In-Reply-To: <cd989fed-a136-5110-f22e-d334d923ca8b@akamai.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,42 +48,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 02/02/2017 12:22 AM, Benjamin Herrenschmidt wrote:
-> This adds AUX vectors for the L1I,D, L2 and L3 cache levels
-> providing for each cache level the size of the cache in bytes
-> and the geometry (line size and number of ways).
+On 03/01/2017 12:02 PM, Jason Baron wrote:
 >
-> We chose to not use the existing alpha/sh definition which
-> packs all the information in a single entry per cache level as
-> it is too restricted to represent some of the geometries used
-> on POWER.
 >
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> ---
+> On 03/01/2017 11:40 AM, David Daney wrote:
+>> On 02/28/2017 10:34 PM, Michael Ellerman wrote:
+>>> Jason Baron <jbaron@akamai.com> writes:
+>>> ...
+>>>> I also checked all the other .ko files and they were properly aligned.
+>>>> So I think this should hopefully work, and I like that its not a
+>>>> per-arch fix.
+>>>>
+>>>> Sachin, sorry to bother you again, but I'm hoping you can try David's
+>>>> latest patch to scripts/module-common.lds, just to test in your setup.
+>>>
+>>> It does fix the problem.
+>>>
+>>> I was reproducing with crc_t10dif:
+>>>
+>>> [  695.890552] ------------[ cut here ]------------
+>>> [  695.890709] WARNING: CPU: 15 PID: 3019 at
+>>> ../kernel/jump_label.c:287 static_key_set_entries+0x74/0xa0
+>>> [  695.890710] Modules linked in: crc_t10dif(+) crct10dif_generic
+>>> crct10dif_common ipt_MASQUERADE nf_nat_masquerade_ipv4 iptable_nat
+>>> nf_conntrack_ipv4 nf_defrag_ipv4 nf_nat_ipv4 xt_addrtype
+>>> iptable_filter ip_tables xt_conntrack x_tables nf_nat nf_conntrack
+>>> bridge stp llc dm_thin_pool dm_persistent_data dm_bio_prison dm_bufio
+>>> libcrc32c kvm virtio_balloon binfmt_misc autofs4 virtio_net virtio_pci
+>>> virtio_ring virtio
+>>>
+>>> Which had:
+>>>
+>>>   [21] __jump_table      PROGBITS        0000000000000000 0004e8
+>>> 000018 00  WA  0   0  1
+>>>
+>>>
+>>> And now has:
+>>>
+>>>   [18] __jump_table      PROGBITS        0000000000000000 0004d0
+>>> 000018 00  WA  0   0  8
+>>>
+>>> And all other modules have an alignment of 8 on __jump_table, as
+>>> expected.
+>>>
+>>> I'm inclined to merge a version of the balign patch for powerpc anyway,
+>>> just to be on the safe side. I guess the old code was coping fine with
+>>> the unaligned keys, but it still makes me nervous.
+>>
+>>
+>> The original "balign patch" has a couple of problems:
+>>
+>> 1) 4-byte alignment is not sufficient for 64-bit kernels
+>>
+>> 2) It is redundant if the linker script patch is accepted.
+>>
+>>
 >
-> v2. Remove some leftovers and fix 32-bit build
+> The linker script patch seems reasonable to me.
 >
-> Paul, can you test & ack this please ? It replaces the last patch of
-> my previous series (the rest is identical).
+> Maybe its worth adding a comment that the alignment is necessary because
+> the core jump_label makes use of the 2 lsb bits of its __jump_table
+> pointer due to commit:
+>
+> 3821fd3 jump_label: Reduce the size of struct static_key
+>
+> Also, in the comment it says that it fixes an oops. We hit a WARN_ON()
+> not an oops, although bad things are likely to happen when the branch is
+> updated.
+>
 
-Sorry for the delay on this, I totally missed this e-mail until this week.
+OK, I guess I will send a proper patch e-mail with an updated changelog 
+with the improvements you suggest.
 
-I tested this with the Power Functional Simulator (a.k.a. Mambo), with a fairly recent 4.9 kernel from the powerpc git tree.
-
-Using Mambo-P8, I see what I expect for cache line size, but associativity is 0:
-AT_L1I_CACHESIZE: 32768 (0x8000)
-AT_L1I_CACHEGEOMETRY: associativity 0; line size 128
-AT_L1D_CACHESIZE: 32768 (0x8000)
-AT_L1D_CACHEGEOMETRY: associativity 0; line size 128
-AT_L2_CACHESIZE: 524288 (0x80000)
-AT_L2_CACHEGEOMETRY: associativity 0; line size 128
-AT_L3_CACHESIZE: 8388608 (0x800000)
-AT_L3_CACHEGEOMETRY: associativity 0; line size 128
-
-...shouldn't associativity be 8 for all levels?
-
-Using Mambo-P9, I don't get any cache sizes, and only L1 geometries, and no associativity:
-AT_L1I_CACHEGEOMETRY: associativity 0; line size 128
-AT_L1D_CACHEGEOMETRY: associativity 0; line size 128
-
-PC
+Thanks,
+David.
