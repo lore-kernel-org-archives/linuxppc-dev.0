@@ -1,68 +1,23 @@
-Return-Path: <sachinp@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vY6M40gXvzDqK8
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Mar 2017 18:21:35 +1100 (AEDT)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v217KH6Q075848
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 Mar 2017 02:21:34 -0500
-Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [125.16.236.2])
- by mx0a-001b2d01.pphosted.com with ESMTP id 28wsq70q47-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Mar 2017 02:21:22 -0500
-Received: from localhost
- by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <sachinp@linux.vnet.ibm.com>;
- Wed, 1 Mar 2017 12:42:27 +0530
-Received: from d28relay10.in.ibm.com (d28relay10.in.ibm.com [9.184.220.161])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 0EC5A125805C
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Mar 2017 12:42:33 +0530 (IST)
-Received: from d28av08.in.ibm.com (d28av08.in.ibm.com [9.184.220.148])
- by d28relay10.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v217BFXx20381938
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 Mar 2017 12:41:15 +0530
-Received: from d28av08.in.ibm.com (localhost [127.0.0.1])
- by d28av08.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v217CIgs028934
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 Mar 2017 12:42:21 +0530
-Content-Type: text/plain; charset=us-ascii
-Mime-Version: 1.0 (Mac OS X Mail 10.2 \(3259\))
-Subject: Re: [PATCH] jump_label: align jump_entry table to at least 4-bytes
-From: Sachin Sant <sachinp@linux.vnet.ibm.com>
-In-Reply-To: <23989c10-7b47-3fda-f790-25b539704bec@akamai.com>
-Date: Wed, 1 Mar 2017 12:42:18 +0530
-Cc: Steven Rostedt <rostedt@goodmis.org>, linux-mips@linux-mips.org,
- Chris Metcalf <cmetcalf@mellanox.com>,
- Russell King <linux@armlinux.org.uk>, Ralf Baechle <ralf@linux-mips.org>,
- LKML <linux-kernel@vger.kernel.org>, Rabin Vincent <rabin@rab.in>,
- Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
- linuxppc-dev@lists.ozlabs.org, Ingo Molnar <mingo@kernel.org>,
- Zhigang Lu <zlu@ezchip.com>, Michael Ellerman <mpe@ellerman.id.au>
-References: <1488221364-13905-1-git-send-email-jbaron@akamai.com>
- <93219edf-0f6d-5cc7-309c-c998f16fe7ac@akamai.com>
- <aa139c18-1b04-2c20-2e22-89d74503b3cf@caviumnetworks.com>
- <20170227160601.5b79a1fe@gandalf.local.home>
- <6db89a8d-6053-51d1-5fd4-bae0179a5ebd@caviumnetworks.com>
- <20170227170911.2280ca3e@gandalf.local.home>
- <7fa95eea-20be-611c-2b63-fca600779465@caviumnetworks.com>
- <20170227173630.57fff459@gandalf.local.home>
- <7bd72716-feea-073f-741c-04212ebd0802@caviumnetworks.com>
- <68fe24ea-7795-24d8-211b-9d8a50affe9f@akamai.com>
- <510FF566-011D-4199-86F7-2BB4DBF36434@linux.vnet.ibm.com>
- <20170228112144.65455de5@gandalf.local.home>
- <cdf98840-8d43-2c58-e2f9-75ae8fb8a600@caviumnetworks.com>
- <1de00727-de97-f887-78bd-dd49131cdf61@akamai.com>
- <999e2c3f-698c-703c-67a9-26aea3c97dc0@caviumnetworks.com>
- <d10e986c-7f6a-3935-88e2-ba39708f79ad@caviumnetworks.com>
- <542488db-5c59-afa5-6d1d-a437c87bc613@akamai.com>
- <912fa97a-aa1d-c0e4-dc83-fc5c745db1c1@caviumnetworks.com>
- <23989c10-7b47-3fda-f790-25b539704bec@akamai.com>
-To: Jason Baron <jbaron@akamai.com>, David Daney <ddaney@caviumnetworks.com>
-Message-Id: <B9D0B041-6C5A-42D7-AF8C-FA618003AEF8@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vYCPx4G37zDqKg
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Mar 2017 22:09:25 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Scott Wood <oss@buserror.net>, Laurentiu Tudor <laurentiu.tudor@nxp.com>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ "linuxppc-dev\@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Cc: Madalin-Cristian Bucur <madalin.bucur@nxp.com>
+Subject: Re: [PATCH] powerpc: booke: fix boot crash due to null hugepd
+In-Reply-To: <1488322005.2944.12.camel@buserror.net>
+References: <20170216151129.8971-1-laurentiu.tudor@nxp.com>
+ <87tw7tc8o9.fsf@skywalker.in.ibm.com> <58B58F4B.1040807@nxp.com>
+ <1488322005.2944.12.camel@buserror.net>
+Date: Wed, 01 Mar 2017 22:09:20 +1100
+Message-ID: <87mvd5l0db.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -72,21 +27,87 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Scott Wood <oss@buserror.net> writes:
 
-> I also checked all the other .ko files and they were properly aligned. =
-So I think this should hopefully work, and I like that its not a =
-per-arch fix.
->=20
-> Sachin, sorry to bother you again, but I'm hoping you can try David's =
-latest patch to scripts/module-common.lds, just to test in your setup.
+> On Tue, 2017-02-28 at 14:55 +0000, Laurentiu Tudor wrote:
+>> On 02/17/2017 02:18 PM, Aneesh Kumar K.V wrote:
+>> > laurentiu.tudor@nxp.com writes:
+>> > > From: Laurentiu Tudor <laurentiu.tudor@nxp.com>
+>> > >=20
+>> > > On 32-bit book-e machines, hugepd_ok() does not take
+>> > > into account null hugepd values, causing this crash at boot:
+>> > >=20
+>> > > Unable to handle kernel paging request for data at address 0x80000000
+>> > > Faulting instruction address: 0xc00182a8
+>> > > Oops: Kernel access of bad area, sig: 11 [#1]
+>> > > SMP NR_CPUS=3D24
+>> > > CoreNet Generic
+>> > > Modules linked in:
+>> > > CPU: 1 PID: 1 Comm: swapper/0 Tainted: G=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0W=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A04.10.0-rc8-
+>> > > 00016-g69b1f87 #11
+>> > > task: e5050000 task.stack: e5058000
+>> > > NIP: c00182a8 LR: c001829c CTR: 00007ffe
+>> > > REGS: e5059c50 TRAP: 0300=C2=A0=C2=A0=C2=A0Tainted: G=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0W=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0(4.10.0-rc8-
+>> > > 00016-g69b1f87)
+>> > > MSR: 00021002 <CE,ME>
+>> > > =C2=A0=C2=A0=C2=A0CR: 88428e82=C2=A0=C2=A0XER: 00000000
+>> > > DEAR: 80000000 ESR: 00000000
+>> > > GPR00: c0107510 e5059d00 e5050000 80000000 bffffff1 e5059d0c e5059d08
+>> > > 00002017
+>> > > GPR08: 00000000 00000000 00000000 00000000 28428e82 00000000 c00027d0
+>> > > 00000000
+>> > > GPR16: 00000000 00000000 88a28e82 20000000 48422e82 00000000 88a28e84
+>> > > dd004000
+>> > > GPR24: e5059e38 00000000 00000000 bffffff1 dd004000 00000001 00029002
+>> > > bffffff1
+>> > > NIP [c00182a8] follow_huge_addr+0x38/0xf0
+>> > > LR [c001829c] follow_huge_addr+0x2c/0xf0
+>> > > Call Trace:
+>> > > [e5059d00] [e5059d00] 0xe5059d00 (unreliable)
+>> > > [e5059d20] [c0107510] follow_page_mask+0x40/0x3c0
+>> > > [e5059d80] [c0107958] __get_user_pages+0xc8/0x420
+>> > > [e5059de0] [c010817c] get_user_pages_remote+0x8c/0x230
+>> > > [e5059e30] [c013f170] copy_strings+0x110/0x3a0
+>> > > [e5059ea0] [c013f42c] copy_strings_kernel+0x2c/0x50
+>> > > [e5059ec0] [c0141324] do_execveat_common+0x474/0x620
+>> > > [e5059f10] [c01414fc] do_execve+0x2c/0x40
+>> > > [e5059f20] [c0001f68] try_to_run_init_process+0x18/0x60
+>> > > [e5059f30] [c000289c] kernel_init+0xcc/0x120
+>> > > [e5059f40] [c000f1e8] ret_from_kernel_thread+0x5c/0x64
+>> > > Instruction dump:
+>> > > bfc10018 7c9f2378 90010024 7fc000a6 7c000146 80630020 38a1000c 38c10=
+008
+>> > > 4bfff869 2c030000 41c20090 81210008 <81430000> 81630004 3860ffea
+>> > > 2f890000
+>> > > ---[ end trace 4bf94e15fd9fa824 ]---
+>> >=20
+>> > Which code path is that. That null should be filtered by the if
+>> > (pmd_none(pmd)) check in find_linux_pte_or_hugepte right ?
+>> The crash happens when __find_linux_pte_or_hugepte() calls hugepd_ok(),
+>> on this line [1]. It's triggered when __find_linux_pte_or_hugepte() is
+>> first called, when the kernel tries to spawn the init process. The input
+>> effective address (ea arg) is bffffff1. This is the call stack:
+>
+> What is the pmd value? =C2=A0There's a pmd_none() check before that line.
 
-I tested the patch on 2 different systems where I ran into this problem. =
-In both cases
-the system boots without any warning. A quick module load/unload test =
-also worked
-correctly.
+It's a pgd, so a pgd_none() check.
 
-Tested-by: Sachin Sant <sachinp@linux.vnet.ibm.com>
+But that does nothing because this is 32-bit, 4K PAGE_SIZE, which uses
+pgtable-nopmd.h and pgtable-nopud.h, so pgd_none() is just:
 
-Thanks
--Sachin
+  int pgd_none(pgd_t pgd) { return 0; }
+
+> That said, regardless of what's going wrong here, it would be simpler and=
+ more
+> robust if is_hugepd() returned false for empty ptes rather than assuming =
+the
+> caller explicitly checked pmd_none().
+
+Yeah, in fact it has to, because of the above.
+
+So Laurentiu's patch is pretty much the correct fix.
+
+cheers
