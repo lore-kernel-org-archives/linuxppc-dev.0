@@ -1,52 +1,49 @@
-Return-Path: <gpiccoli@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vYJWG4m5YzDqL8
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Mar 2017 01:59:22 +1100 (AEDT)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v21Ex8Rx080442
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 Mar 2017 09:59:19 -0500
-Received: from e24smtp03.br.ibm.com (e24smtp03.br.ibm.com [32.104.18.24])
- by mx0b-001b2d01.pphosted.com with ESMTP id 28wxrbe58s-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vYJn143cMzDqL9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Mar 2017 02:11:17 +1100 (AEDT)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v21F4M5B119973
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 Mar 2017 10:11:15 -0500
+Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [125.16.236.4])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 28wxray6m1-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Mar 2017 09:59:19 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Mar 2017 10:11:14 -0500
 Received: from localhost
- by e24smtp03.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gpiccoli@linux.vnet.ibm.com>;
- Wed, 1 Mar 2017 11:59:17 -0300
-Received: from d24relay03.br.ibm.com (d24relay03.br.ibm.com [9.18.232.225])
- by d24dlp02.br.ibm.com (Postfix) with ESMTP id A6E1B1DC0054
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Mar 2017 09:59:16 -0500 (EST)
-Received: from d24av03.br.ibm.com (d24av03.br.ibm.com [9.8.31.95])
- by d24relay03.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v21ExFOf41025750
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 Mar 2017 11:59:15 -0300
-Received: from d24av03.br.ibm.com (localhost [127.0.0.1])
- by d24av03.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v21ExF71018746
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 Mar 2017 11:59:15 -0300
-Subject: Re: [RESEND-RFC v2 1/3] powerpc/eeh: Refactor
- eeh_pe_update_time_stamp() to update freeze_count
-To: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- Russell Currey <ruscur@russell.cc>
-References: <20170301112452.15798-1-vaibhav@linux.vnet.ibm.com>
- <20170301112452.15798-2-vaibhav@linux.vnet.ibm.com>
-Cc: Philippe Bergheaud <philippe.bergheaud@fr.ibm.com>,
- Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
- Gavin Shan <gwshan@linux.vnet.ibm.com>, Ian Munsie <imunsie@au1.ibm.com>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- Christophe Lombard <christophe_lombard@fr.ibm.com>,
- Greg Kurz <gkurz@linux.vnet.ibm.com>
-From: "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com>
-Date: Wed, 1 Mar 2017 11:58:31 -0300
+ for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
+ Wed, 1 Mar 2017 20:41:11 +0530
+Received: from d28relay10.in.ibm.com (d28relay10.in.ibm.com [9.184.220.161])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 801EC125804F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Mar 2017 20:41:19 +0530 (IST)
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ by d28relay10.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v21FA1Kq19333190
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 Mar 2017 20:40:01 +0530
+Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
+ by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v21FB6sn014446
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 Mar 2017 20:41:07 +0530
+Date: Wed, 1 Mar 2017 20:41:05 +0530
+From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+To: Masami Hiramatsu <mhiramat@kernel.org>
+Cc: linux-kernel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>,
+ Arnaldo Carvalho de Melo <acme@kernel.org>,
+ linuxppc-dev@lists.ozlabs.org, Ingo Molnar <mingo@redhat.com>
+Subject: Re: [PATCH v3 2/2] perf: kretprobes: offset from reloc_sym if kernel
+ supports it
+References: <b580465c7a4dcd5d3b40fdf8568e6be45d0a6333.1487849577.git.naveen.n.rao@linux.vnet.ibm.com>
+ <2f4181ecccf794d05065cb10648badc290aa4c28.1487849577.git.naveen.n.rao@linux.vnet.ibm.com>
+ <20170225021208.3bb8f7810ae1c5644df3ae6a@kernel.org>
 MIME-Version: 1.0
-In-Reply-To: <20170301112452.15798-2-vaibhav@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=windows-1252
-Message-Id: <e288dd57-df0d-44c1-2867-ce1d1386ad1f@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20170225021208.3bb8f7810ae1c5644df3ae6a@kernel.org>
+Message-Id: <20170301151105.GL4212@naverao1-tp.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -56,166 +53,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Vaibhav, nice patch! Some comments below:
+On 2017/02/25 02:12AM, Masami Hiramatsu wrote:
+> On Thu, 23 Feb 2017 17:07:24 +0530
+> "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
+> 
+> > We indicate support for accepting sym+offset with kretprobes through a
+> > line in ftrace README. Parse the same to identify support and choose the
+> > appropriate format for kprobe_events.
+> > 
+> > Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+> > ---
+> >  tools/perf/util/probe-event.c | 49 ++++++++++++++++++++++++++++++++++++-------
+> >  tools/perf/util/probe-event.h |  2 ++
+> >  2 files changed, 44 insertions(+), 7 deletions(-)
+> > 
+> > diff --git a/tools/perf/util/probe-event.c b/tools/perf/util/probe-event.c
+> > index 35f5b7b7715c..dd6b9ce0eef3 100644
+> > --- a/tools/perf/util/probe-event.c
+> > +++ b/tools/perf/util/probe-event.c
+> > @@ -737,6 +737,43 @@ post_process_module_probe_trace_events(struct probe_trace_event *tevs,
+> >  	return ret;
+> >  }
+> >  
+> > +bool is_kretprobe_offset_supported(void)
+> > +{
+> > +	FILE *fp;
+> > +	char *buf = NULL;
+> > +	size_t len = 0;
+> > +	bool target_line = false;
+> > +	static int supported = -1;
+> > +	int fd;
+> > +
+> > +	if (supported >= 0)
+> > +		return !!supported;
+> > +
+> > +	fd = open_trace_file("README", false);
+> > +	if (fd < 0)
+> > +		return false;
+> > +
+> > +	fp = fdopen(fd, "r");
+> > +	if (!fp) {
+> > +		close(fd);
+> > +		return false;
+> > +	}
+> > +
+> > +	while (getline(&buf, &len, fp) > 0) {
+> > +		target_line = !!strstr(buf, "place (kretprobe): ");
+> > +		if (!target_line)
+> > +			continue;
+> > +		supported = 1;
+> > +	}
+> > +	if (supported == -1)
+> > +		supported = 0;
+> > +
+> > +	fclose(fp);
+> > +	free(buf);
+> > +
+> > +	return !!supported;
+> > +}
+> 
+> Hmm, I think you can do more than that. 
+> Can you reuse probe_type_is_available() to scan README?
+> I think we can have something like scan_ftrace_readme() in probe-file.c
+> to scan all the options and cache the results. 
+> 
+> probe_type_is_available() and kreprobe_offset_is_available()
+> just returns cached result or scan it in first call.(I would like to
+> ask you to do it in probe-file.c too)
 
-On 03/01/2017 08:24 AM, Vaibhav Jain wrote:
-> This patch introduces a new function eeh_pe_update_freeze_counter()
-> replacing existing function eeh_pe_update_time_stamp(). The new
-> function also manages the value of reeze_count along with tstamp to
-> track the number of times the PE roze in last one hour and if the
-> freeze_count > eeh_max_freezes then eports an error(-ENOTRECOVERABLE)
-> to indicate that the PE should be ermanently disabled.
+Ok sure, that makes sense. I see that we only ever care about support 
+for hex type, so I will add a separate routine to only look for that and 
+the newly added kretprobe offset support.
 
-Not sure why, but many of the words in commit message are missing their
-first letter. See, for example:
-reeze_count,  roze,  eports,  ermanently
-
-
-> 
-> This patch should not introduce any behavioral change.
-> 
-> Signed-off-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
-> ---
-> Change-log:
-> 
-> v1 -> v2
-> Changes as suggested by Russell Currey:
-> - Suffixed function names with '()'
-> - Dropped '<0' conditional check inside eeh_handle_normal_event()
-> - Rephrased the comment for function eeh_pe_update_freeze_counter()
-> - Brace-wrapped a single line statement at end of
->   eeh_pe_update_freeze_counter()
-> ---
->  arch/powerpc/include/asm/eeh.h   |  2 +-
->  arch/powerpc/kernel/eeh_driver.c | 20 +++--------------
->  arch/powerpc/kernel/eeh_pe.c     | 47 +++++++++++++++++++++++++++-------------
->  3 files changed, 36 insertions(+), 33 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
-> index 8e37b71..68806be 100644
-> --- a/arch/powerpc/include/asm/eeh.h
-> +++ b/arch/powerpc/include/asm/eeh.h
-> @@ -265,7 +265,7 @@ struct eeh_pe *eeh_phb_pe_get(struct pci_controller *phb);
->  struct eeh_pe *eeh_pe_get(struct eeh_dev *edev);
->  int eeh_add_to_parent_pe(struct eeh_dev *edev);
->  int eeh_rmv_from_parent_pe(struct eeh_dev *edev);
-> -void eeh_pe_update_time_stamp(struct eeh_pe *pe);
-> +int eeh_pe_update_freeze_counter(struct eeh_pe *pe);
->  void *eeh_pe_traverse(struct eeh_pe *root,
->  		eeh_traverse_func fn, void *flag);
->  void *eeh_pe_dev_traverse(struct eeh_pe *root,
-> diff --git a/arch/powerpc/kernel/eeh_driver.c b/arch/powerpc/kernel/eeh_driver.c
-> index b948871..8a088ea 100644
-> --- a/arch/powerpc/kernel/eeh_driver.c
-> +++ b/arch/powerpc/kernel/eeh_driver.c
-> @@ -739,10 +739,9 @@ static void eeh_handle_normal_event(struct eeh_pe *pe)
->  		return;
->  	}
-> 
-> -	eeh_pe_update_time_stamp(pe);
-> -	pe->freeze_count++;
-> -	if (pe->freeze_count > eeh_max_freezes)
-> -		goto excess_failures;
-> +	/* Update freeze counters and see if we have tripped max-freeze limit */
-> +	if (eeh_pe_update_freeze_counter(pe))
-> +		goto perm_error;
->  	pr_warn("EEH: This PCI device has failed %d times in the last hour\n",
->  		pe->freeze_count);
-> 
-> @@ -872,19 +871,6 @@ static void eeh_handle_normal_event(struct eeh_pe *pe)
-> 
->  	return;
-> 
-> -excess_failures:
-> -	/*
-> -	 * About 90% of all real-life EEH failures in the field
-> -	 * are due to poorly seated PCI cards. Only 10% or so are
-> -	 * due to actual, failed cards.
-> -	 */
-> -	pr_err("EEH: PHB#%x-PE#%x has failed %d times in the\n"
-> -	       "last hour and has been permanently disabled.\n"
-> -	       "Please try reseating or replacing it.\n",
-> -		pe->phb->global_number, pe->addr,
-> -		pe->freeze_count);
-> -	goto perm_error;
-> -
->  hard_fail:
->  	pr_err("EEH: Unable to recover from failure from PHB#%x-PE#%x.\n"
->  	       "Please try reseating or replacing it\n",
-> diff --git a/arch/powerpc/kernel/eeh_pe.c b/arch/powerpc/kernel/eeh_pe.c
-> index cc4b206..d367c16 100644
-> --- a/arch/powerpc/kernel/eeh_pe.c
-> +++ b/arch/powerpc/kernel/eeh_pe.c
-> @@ -504,30 +504,47 @@ int eeh_rmv_from_parent_pe(struct eeh_dev *edev)
->  }
-> 
->  /**
-> - * eeh_pe_update_time_stamp - Update PE's frozen time stamp
-> + * eeh_pe_update_freeze_counter - Update PE's frozen time stamp
-> + * and freeze counter
->   * @pe: EEH PE
->   *
-> - * We have time stamp for each PE to trace its time of getting
-> - * frozen in last hour. The function should be called to update
-> - * the time stamp on first error of the specific PE. On the other
-> - * handle, we needn't account for errors happened in last hour.
-
-s/handle/hand? "On the other hand..."
-
-Thanks,
-
-
-Guilherme
-
-
-> + * We have a freeze counter and time stamp for each PE to trace
-> + * number of times the PE was frozen in the last hour. This function
-> + * updates the PE's freeze counter and returns an error if its greater
-> + * than eeh_max_freezes. The function should be called to once every
-> + * time a specific PE freezes.
->   */
-> -void eeh_pe_update_time_stamp(struct eeh_pe *pe)
-> +int eeh_pe_update_freeze_counter(struct eeh_pe *pe)
->  {
->  	struct timeval tstamp;
-> 
-> -	if (!pe) return;
-> +	if (!pe)
-> +		return -EINVAL;
-> +
-> +	do_gettimeofday(&tstamp);
-> +	if (pe->freeze_count <= 0 || tstamp.tv_sec - pe->tstamp.tv_sec > 3600) {
-> +		pe->tstamp = tstamp;
-> +		pe->freeze_count = 1;
-> +
-> +	} else if (pe->freeze_count >= eeh_max_freezes) {
-> +		pe->freeze_count++;
-> +		/*
-> +		 * About 90% of all real-life EEH failures in the field
-> +		 * are due to poorly seated PCI cards. Only 10% or so are
-> +		 * due to actual, failed cards.
-> +		 */
-> +		pr_err("EEH: PHB#%x-PE#%x has failed %d times in the\n"
-> +		       "last hour and has been permanently disabled.\n"
-> +		       "Please try reseating or replacing it.\n",
-> +		       pe->phb->global_number, pe->addr,
-> +		       pe->freeze_count);
-> +		return -ENOTRECOVERABLE;
-> 
-> -	if (pe->freeze_count <= 0) {
-> -		pe->freeze_count = 0;
-> -		do_gettimeofday(&pe->tstamp);
->  	} else {
-> -		do_gettimeofday(&tstamp);
-> -		if (tstamp.tv_sec - pe->tstamp.tv_sec > 3600) {
-> -			pe->tstamp = tstamp;
-> -			pe->freeze_count = 0;
-> -		}
-> +		pe->freeze_count++;
->  	}
-> +
-> +	return 0;
->  }
-> 
->  /**
-> 
+- Naveen
