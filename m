@@ -1,54 +1,29 @@
-Return-Path: <gpiccoli@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <shuahkh@osg.samsung.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vYN5M6wy1zDqLM
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Mar 2017 04:40:39 +1100 (AEDT)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v21HYeZK042509
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 Mar 2017 12:40:37 -0500
-Received: from e24smtp02.br.ibm.com (e24smtp02.br.ibm.com [32.104.18.86])
- by mx0a-001b2d01.pphosted.com with ESMTP id 28wxrb6320-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Mar 2017 12:40:36 -0500
-Received: from localhost
- by e24smtp02.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gpiccoli@linux.vnet.ibm.com>;
- Wed, 1 Mar 2017 14:40:32 -0300
-Received: from d24relay04.br.ibm.com (d24relay04.br.ibm.com [9.18.232.146])
- by d24dlp02.br.ibm.com (Postfix) with ESMTP id 2683D1DC006D
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Mar 2017 12:40:30 -0500 (EST)
-Received: from d24av02.br.ibm.com (d24av02.br.ibm.com [9.8.31.93])
- by d24relay04.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v21HeNLp35782808
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 Mar 2017 14:40:28 -0300
-Received: from d24av02.br.ibm.com (localhost [127.0.0.1])
- by d24av02.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v21He8ll024791
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 Mar 2017 14:40:08 -0300
-Subject: Re: [RESEND-RFC v2 1/3] powerpc/eeh: Refactor
- eeh_pe_update_time_stamp() to update freeze_count
-To: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- Russell Currey <ruscur@russell.cc>
-References: <20170301112452.15798-1-vaibhav@linux.vnet.ibm.com>
- <20170301112452.15798-2-vaibhav@linux.vnet.ibm.com>
- <e288dd57-df0d-44c1-2867-ce1d1386ad1f@linux.vnet.ibm.com>
- <87lgsp0xpt.fsf@vajain21.in.ibm.com>
-Cc: Philippe Bergheaud <philippe.bergheaud@fr.ibm.com>,
- Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
- Gavin Shan <gwshan@linux.vnet.ibm.com>, Ian Munsie <imunsie@au1.ibm.com>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- Christophe Lombard <christophe_lombard@fr.ibm.com>,
- Greg Kurz <gkurz@linux.vnet.ibm.com>
-From: "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com>
-Date: Wed, 1 Mar 2017 14:39:53 -0300
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vYPs53ff5zDqLQ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Mar 2017 06:00:09 +1100 (AEDT)
+Received: from osg.samsung.com
+ (ec2-52-27-115-49.us-west-2.compute.amazonaws.com [52.27.115.49])
+ by ozlabs.org (Postfix) with ESMTP id 3vYPs45CX9z9s7v
+ for <linuxppc-dev@ozlabs.org>; Thu,  2 Mar 2017 06:00:07 +1100 (AEDT)
+Subject: Re: [PATCH 1/5] selftests: Fix selftests build to just build, not run
+ tests
+To: Michael Ellerman <mpe@ellerman.id.au>, bamvor.zhangjian@huawei.com
+References: <1486630590-9410-1-git-send-email-mpe@ellerman.id.au>
+ <87shnhmsl1.fsf@concordia.ellerman.id.au>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+ linux-kselftest@vger.kernel.org, linux-api@vger.kernel.org,
+ Ingo Molnar <mingo@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+ hpa@zytor.com, LKML <linux-kernel@vger.kernel.org>,
+ linux-kselftest@vger.kernel.org
+From: Shuah Khan <shuahkh@osg.samsung.com>
+Message-ID: <93f8e25b-8ea6-9dc0-66c4-acb6644724de@osg.samsung.com>
+Date: Wed, 1 Mar 2017 12:00:03 -0700
 MIME-Version: 1.0
-In-Reply-To: <87lgsp0xpt.fsf@vajain21.in.ibm.com>
+In-Reply-To: <87shnhmsl1.fsf@concordia.ellerman.id.au>
 Content-Type: text/plain; charset=windows-1252
-Message-Id: <cffa9e2f-0a8f-f076-bff9-0d1f6efd2f8b@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -58,36 +33,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 03/01/2017 01:26 PM, Vaibhav Jain wrote:
+On 02/13/2017 07:09 PM, Michael Ellerman wrote:
+> Michael Ellerman <mpe@ellerman.id.au> writes:
 > 
-> Thanks for reviewing the patch !!
-
-Yw =)
-
-
-> 
-> "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com> writes:
+>> In commit 88baa78d1f31 ("selftests: remove duplicated all and clean
+>> target"), the "all" target was removed from individual Makefiles and
+>> added to lib.mk.
 >>
->> Not sure why, but many of the words in commit message are missing their
->> first letter. See, for example:
->> reeze_count,  roze,  eports,  ermanently
-> Thanks for pointing this out. Will fix this in the subsequent patch
-> revision.
-> 
->>>  /**
->>> - * eeh_pe_update_time_stamp - Update PE's frozen time stamp
->>> + * eeh_pe_update_freeze_counter - Update PE's frozen time stamp
->>> + * and freeze counter
->>>   * @pe: EEH PE
->>>   *
->>> - * We have time stamp for each PE to trace its time of getting
->>> - * frozen in last hour. The function should be called to update
->>> - * the time stamp on first error of the specific PE. On the other
->>> - * handle, we needn't account for errors happened in last hour.
+>> However the "all" target was added to lib.mk *after* the existing
+>> "runtests" target. This means "runtests" becomes the first (default)
+>> target for most of our Makefiles.
+> ...
 >>
->> s/handle/hand? "On the other hand..."
-> Thats part of original comment which this patch is replacing.
+>> Fix it by moving the "all" target to the start of lib.mk, making it the
+>> default target.
+>>
+>> Fixes: 88baa78d1f31 ("selftests: remove duplicated all and clean target")
+>> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> 
+> Hi Shuah,
+> 
+> Can you please merge this series into linux-next?
+> 
+> The selftests are badly broken otherwise.
+> 
+> cheers
+> 
 
-.....hehehe
-How didn't I notice?
-Sorry, my bad!
+Hi Bamovar,
+
+Your original series badly broke the selftest build. I can no longer
+build individual tests. For example:
+
+cd breakpoints/
+shuah@shuah-XPS-13-9350:/lkml/linux_4.11/tools/testing/selftests/breakpoints$ make
+gcc     breakpoint_test.c  -o /breakpoint_test
+/usr/bin/ld: cannot open output file /breakpoint_test: Permission denied
+collect2: error: ld returned 1 exit status
+../lib.mk:54: recipe for target '/breakpoint_test' failed
+make: *** [/breakpoint_test] Error 1
+
+commit a8ba798bc8ec663cf02e80b0dd770324de9bafd9
+Author: bamvor.zhangjian@huawei.com <bamvor.zhangjian@huawei.com>
+Date:   Tue Nov 29 19:55:52 2016 +0800
+
+    selftests: enable O and KBUILD_OUTPUT
+
+I believe the above patch is one of the suspects. Michael fixed
+some of the problems in this patch and others he sent.
+
+At the moment individual tests will not build.
+tools/testing/selftests/x86$ make
+Makefile:44: warning: overriding recipe for target 'clean'
+../lib.mk:51: warning: ignoring old recipe for target 'clean'
+gcc -m64 -o /single_step_syscall_64 -O2 -g -std=gnu99 -pthread -Wall  single_step_syscall.c -lrt -ldl
+/usr/bin/ld: cannot open output file /single_step_syscall_64: Permission denied
+collect2: error: ld returned 1 exit status
+Makefile:50: recipe for target '/single_step_syscall_64' failed
+make: *** [/single_step_syscall_64] Error 1
+
+
+My guess is OUTPUT doesn't resolve in individual builds from the test directory.
+We have to get this fixed for 4.11-rc1
+
+Simply Reverting a8ba798bc8ec663cf02e80b0dd770324de9bafd9 doesn't work.
+Michael's patches depend on this. So anyway, please let me know if you
+can fix this quickly. I am going to be trying a few things today as well.
+
+thanks,
+-- Shuah
