@@ -1,50 +1,45 @@
-Return-Path: <vaibhav@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <pfsmorigo@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vYGSQ44LszDqK8
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Mar 2017 00:26:46 +1100 (AEDT)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vYH9c7434zDqKn
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Mar 2017 00:59:00 +1100 (AEDT)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v21DO4u5143009
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 Mar 2017 08:26:44 -0500
-Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [125.16.236.4])
- by mx0a-001b2d01.pphosted.com with ESMTP id 28wxrahrk6-1
+ v21DwfAr057613
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 Mar 2017 08:58:58 -0500
+Received: from e24smtp03.br.ibm.com (e24smtp03.br.ibm.com [32.104.18.24])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 28wxrakbg9-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Mar 2017 08:26:43 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Mar 2017 08:58:58 -0500
 Received: from localhost
- by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e24smtp03.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <vaibhav@linux.vnet.ibm.com>;
- Wed, 1 Mar 2017 17:38:39 +0530
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id C5313E0080
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Mar 2017 16:59:17 +0530 (IST)
-Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v21BRWNi14221514
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 Mar 2017 16:57:32 +0530
-Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
- by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v21BQqJm023413
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 Mar 2017 16:57:32 +0530
-From: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, Russell Currey <ruscur@russell.cc>
-Cc: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>,
- Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- Ian Munsie <imunsie@au1.ibm.com>,
- Christophe Lombard <christophe_lombard@fr.ibm.com>,
- Philippe Bergheaud <philippe.bergheaud@fr.ibm.com>,
- Greg Kurz <gkurz@linux.vnet.ibm.com>,
- Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: [RESEND-RFC v2 2/3] powerpc/eeh: Introduce function
- eeh_pe_reset_freeze_counter()
-Date: Wed,  1 Mar 2017 16:54:51 +0530
-In-Reply-To: <20170301112452.15798-1-vaibhav@linux.vnet.ibm.com>
-References: <20170301112452.15798-1-vaibhav@linux.vnet.ibm.com>
-Message-Id: <20170301112452.15798-3-vaibhav@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <pfsmorigo@linux.vnet.ibm.com>;
+ Wed, 1 Mar 2017 10:58:55 -0300
+Received: from d24relay02.br.ibm.com (d24relay02.br.ibm.com [9.18.232.42])
+ by d24dlp01.br.ibm.com (Postfix) with ESMTP id 922953520077
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Mar 2017 08:58:18 -0500 (EST)
+Received: from d24av04.br.ibm.com (d24av04.br.ibm.com [9.8.31.97])
+ by d24relay02.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v21Dwqiv32702534
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 Mar 2017 10:58:52 -0300
+Received: from d24av04.br.ibm.com (localhost [127.0.0.1])
+ by d24av04.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v21DwpZj004707
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 Mar 2017 10:58:52 -0300
+From: Paulo Flabiano Smorigo <pfsmorigo@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org
+Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ herbert@gondor.apana.org.au, davem@davemloft.net,
+ linux-crypto@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Paulo Flabiano Smorigo <pfsmorigo@linux.vnet.ibm.com>
+Subject: [PATCH v3 1/2] crypto: vmx - Use skcipher for cbc fallback
+Date: Wed,  1 Mar 2017 10:58:20 -0300
+In-Reply-To: <20170226192107.GA7129@gallifrey>
+References: <20170226192107.GA7129@gallifrey>
+Message-Id: <20170301135820.20670-1-pfsmorigo@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -54,85 +49,127 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch introduces function eeh_pe_reset_freeze_counter() which can
-be used to reset the PE's freeze count variable outside eeh code. This
-is useful for devices that can acquire a different personality after
-a PERST event (e.g FPGA Adapters). Presently an existing freeze
-count for an adapter with personality N will be taken into account
-when the adapter acquired personality N+1.
-
-By calling eeh_pe_reset_freeze_counter() drivers can reset the freeze
-counter for an adapter once it has acquired a new personality and
-ideally wont be plagued by the failures similar to the one before.
-
-Signed-off-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+Signed-off-by: Paulo Flabiano Smorigo <pfsmorigo@linux.vnet.ibm.com>
 ---
-Change-log:
+ drivers/crypto/vmx/aes_cbc.c | 47 ++++++++++++++++++++++----------------------
+ 1 file changed, 24 insertions(+), 23 deletions(-)
 
-v1 -> v2
-* Changes as suggested by Russell Currey:
-- Suffixed function names with '()'
-- Rephrased the description comment for functon eeh_pe_reset_freeze_counter()
-- Inserted logging for PHB and PE number inside eeh_pe_reset_freeze_counter()
-
-* Moved definition of eeh_pe_reset_freeze_counter() from eeh.h to eeh_pe.c to
-  avoid adding a header dependency to 'pci-bridge.h'. The function is
-  now marked as an exported gpl symbol.
----
- arch/powerpc/include/asm/eeh.h |  5 +++++
- arch/powerpc/kernel/eeh_pe.c   | 17 +++++++++++++++++
- 2 files changed, 22 insertions(+)
-
-diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
-index 68806be..8dcfb88 100644
---- a/arch/powerpc/include/asm/eeh.h
-+++ b/arch/powerpc/include/asm/eeh.h
-@@ -266,6 +266,9 @@ struct eeh_pe *eeh_pe_get(struct eeh_dev *edev);
- int eeh_add_to_parent_pe(struct eeh_dev *edev);
- int eeh_rmv_from_parent_pe(struct eeh_dev *edev);
- int eeh_pe_update_freeze_counter(struct eeh_pe *pe);
+diff --git a/drivers/crypto/vmx/aes_cbc.c b/drivers/crypto/vmx/aes_cbc.c
+index 94ad5c0..72a26eb 100644
+--- a/drivers/crypto/vmx/aes_cbc.c
++++ b/drivers/crypto/vmx/aes_cbc.c
+@@ -27,11 +27,12 @@
+ #include <asm/switch_to.h>
+ #include <crypto/aes.h>
+ #include <crypto/scatterwalk.h>
++#include <crypto/skcipher.h>
+ 
+ #include "aesp8-ppc.h"
+ 
+ struct p8_aes_cbc_ctx {
+-	struct crypto_blkcipher *fallback;
++	struct crypto_skcipher *fallback;
+ 	struct aes_key enc_key;
+ 	struct aes_key dec_key;
+ };
+@@ -39,7 +40,7 @@ struct p8_aes_cbc_ctx {
+ static int p8_aes_cbc_init(struct crypto_tfm *tfm)
+ {
+ 	const char *alg;
+-	struct crypto_blkcipher *fallback;
++	struct crypto_skcipher *fallback;
+ 	struct p8_aes_cbc_ctx *ctx = crypto_tfm_ctx(tfm);
+ 
+ 	if (!(alg = crypto_tfm_alg_name(tfm))) {
+@@ -47,8 +48,9 @@ static int p8_aes_cbc_init(struct crypto_tfm *tfm)
+ 		return -ENOENT;
+ 	}
+ 
+-	fallback =
+-	    crypto_alloc_blkcipher(alg, 0, CRYPTO_ALG_NEED_FALLBACK);
++	fallback = crypto_alloc_skcipher(alg, 0,
++			CRYPTO_ALG_ASYNC | CRYPTO_ALG_NEED_FALLBACK);
 +
-+void eeh_pe_reset_freeze_counter(struct eeh_pe *pe);
+ 	if (IS_ERR(fallback)) {
+ 		printk(KERN_ERR
+ 		       "Failed to allocate transformation for '%s': %ld\n",
+@@ -56,11 +58,12 @@ static int p8_aes_cbc_init(struct crypto_tfm *tfm)
+ 		return PTR_ERR(fallback);
+ 	}
+ 	printk(KERN_INFO "Using '%s' as fallback implementation.\n",
+-	       crypto_tfm_alg_driver_name((struct crypto_tfm *) fallback));
++		crypto_skcipher_driver_name(fallback));
 +
- void *eeh_pe_traverse(struct eeh_pe *root,
- 		eeh_traverse_func fn, void *flag);
- void *eeh_pe_dev_traverse(struct eeh_pe *root,
-@@ -339,6 +342,8 @@ static inline int eeh_check_failure(const volatile void __iomem *token)
+ 
+-	crypto_blkcipher_set_flags(
++	crypto_skcipher_set_flags(
+ 		fallback,
+-		crypto_blkcipher_get_flags((struct crypto_blkcipher *)tfm));
++		crypto_skcipher_get_flags((struct crypto_skcipher *)tfm));
+ 	ctx->fallback = fallback;
+ 
  	return 0;
+@@ -71,7 +74,7 @@ static void p8_aes_cbc_exit(struct crypto_tfm *tfm)
+ 	struct p8_aes_cbc_ctx *ctx = crypto_tfm_ctx(tfm);
+ 
+ 	if (ctx->fallback) {
+-		crypto_free_blkcipher(ctx->fallback);
++		crypto_free_skcipher(ctx->fallback);
+ 		ctx->fallback = NULL;
+ 	}
+ }
+@@ -91,7 +94,7 @@ static int p8_aes_cbc_setkey(struct crypto_tfm *tfm, const u8 *key,
+ 	pagefault_enable();
+ 	preempt_enable();
+ 
+-	ret += crypto_blkcipher_setkey(ctx->fallback, key, keylen);
++	ret += crypto_skcipher_setkey(ctx->fallback, key, keylen);
+ 	return ret;
  }
  
-+static inline void eeh_pe_reset_freeze_counter(struct eeh_pe *pe) { }
-+
- #define eeh_dev_check_failure(x) (0)
+@@ -103,15 +106,14 @@ static int p8_aes_cbc_encrypt(struct blkcipher_desc *desc,
+ 	struct blkcipher_walk walk;
+ 	struct p8_aes_cbc_ctx *ctx =
+ 		crypto_tfm_ctx(crypto_blkcipher_tfm(desc->tfm));
+-	struct blkcipher_desc fallback_desc = {
+-		.tfm = ctx->fallback,
+-		.info = desc->info,
+-		.flags = desc->flags
+-	};
  
- static inline void eeh_addr_cache_build(void) { }
-diff --git a/arch/powerpc/kernel/eeh_pe.c b/arch/powerpc/kernel/eeh_pe.c
-index d367c16..75c781f 100644
---- a/arch/powerpc/kernel/eeh_pe.c
-+++ b/arch/powerpc/kernel/eeh_pe.c
-@@ -504,6 +504,23 @@ int eeh_rmv_from_parent_pe(struct eeh_dev *edev)
- }
+ 	if (in_interrupt()) {
+-		ret = crypto_blkcipher_encrypt(&fallback_desc, dst, src,
+-					       nbytes);
++		SKCIPHER_REQUEST_ON_STACK(req, ctx->fallback);
++		skcipher_request_set_tfm(req, ctx->fallback);
++		skcipher_request_set_callback(req, desc->flags, NULL, NULL);
++		skcipher_request_set_crypt(req, src, dst, nbytes, desc->info);
++		ret = crypto_skcipher_encrypt(req);
++		skcipher_request_zero(req);
+ 	} else {
+ 		preempt_disable();
+ 		pagefault_disable();
+@@ -144,15 +146,14 @@ static int p8_aes_cbc_decrypt(struct blkcipher_desc *desc,
+ 	struct blkcipher_walk walk;
+ 	struct p8_aes_cbc_ctx *ctx =
+ 		crypto_tfm_ctx(crypto_blkcipher_tfm(desc->tfm));
+-	struct blkcipher_desc fallback_desc = {
+-		.tfm = ctx->fallback,
+-		.info = desc->info,
+-		.flags = desc->flags
+-	};
  
- /**
-+ * eeh_pe_reset_freeze_counter - Resets the PE freeze counter
-+ * @pe: EEH PE
-+ *
-+ * This function is useful while re-configuring an FPGA adapter
-+ * as its about to acquire new a personality and you don't want
-+ * freeze count to be carry forwarded. As such calling this function
-+ * for regular pci devices might be a bad idea.
-+ */
-+void eeh_pe_reset_freeze_counter(struct eeh_pe *pe)
-+{
-+	pr_info("Resetting freeze count for PHB#%x-PE#%x\n",
-+		pe->phb->global_number, pe->addr);
-+	pe->freeze_count = 0;
-+}
-+EXPORT_SYMBOL_GPL(eeh_pe_reset_freeze_counter);
-+
-+/**
-  * eeh_pe_update_freeze_counter - Update PE's frozen time stamp
-  * and freeze counter
-  * @pe: EEH PE
+ 	if (in_interrupt()) {
+-		ret = crypto_blkcipher_decrypt(&fallback_desc, dst, src,
+-					       nbytes);
++		SKCIPHER_REQUEST_ON_STACK(req, ctx->fallback);
++		skcipher_request_set_tfm(req, ctx->fallback);
++		skcipher_request_set_callback(req, desc->flags, NULL, NULL);
++		skcipher_request_set_crypt(req, src, dst, nbytes, desc->info);
++		ret = crypto_skcipher_decrypt(req);
++		skcipher_request_zero(req);
+ 	} else {
+ 		preempt_disable();
+ 		pagefault_disable();
 -- 
 2.9.3
