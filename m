@@ -1,20 +1,25 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from ozlabs.ru (ozlabs.ru [107.173.13.209])
- by lists.ozlabs.org (Postfix) with ESMTP id 3vYmRL5c30zDqGl
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Mar 2017 19:57:34 +1100 (AEDT)
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
- Alex Williamson <alex.williamson@redhat.com>,
- David Gibson <david@gibson.dropbear.id.au>,
- Paul Mackerras <paulus@samba.org>, kvm-ppc@vger.kernel.org,
- kvm@vger.kernel.org
-Subject: [PATCH kernel v6 08/10] KVM: PPC: Use preregistered memory API to
- access TCE list
-Date: Thu,  2 Mar 2017 19:56:42 +1100
-Message-Id: <20170302085644.41828-9-aik@ozlabs.ru>
-In-Reply-To: <20170302085644.41828-1-aik@ozlabs.ru>
-References: <20170302085644.41828-1-aik@ozlabs.ru>
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vYnM74NxJzDqGv
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Mar 2017 20:38:59 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, Ingo Molnar <mingo@kernel.org>,
+ Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH v3 1/2] powerpc: split ftrace bits into a separate file
+In-Reply-To: <20170228091147.69b836a8@gandalf.local.home>
+References: <cover.1487702678.git.naveen.n.rao@linux.vnet.ibm.com>
+ <d2058affbf317d0f72e2df970f97b7b53ade47cb.1487702678.git.naveen.n.rao@linux.vnet.ibm.com>
+ <20170227103650.0955c5eb@gandalf.local.home>
+ <87wpcbota8.fsf@concordia.ellerman.id.au>
+ <20170228091147.69b836a8@gandalf.local.home>
+Date: Thu, 02 Mar 2017 20:38:53 +1100
+Message-ID: <871sugkogi.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,122 +29,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-VFIO on sPAPR already implements guest memory pre-registration
-when the entire guest RAM gets pinned. This can be used to translate
-the physical address of a guest page containing the TCE list
-from H_PUT_TCE_INDIRECT.
+Steven Rostedt <rostedt@goodmis.org> writes:
 
-This makes use of the pre-registrered memory API to access TCE list
-pages in order to avoid unnecessary locking on the KVM memory
-reverse map as we know that all of guest memory is pinned and
-we have a flat array mapping GPA to HPA which makes it simpler and
-quicker to index into that array (even with looking up the
-kernel page tables in vmalloc_to_phys) than it is to find the memslot,
-lock the rmap entry, look up the user page tables, and unlock the rmap
-entry. Note that the rmap pointer is initialized to NULL
-where declared (not in this patch).
+> On Tue, 28 Feb 2017 15:04:15 +1100
+> Michael Ellerman <mpe@ellerman.id.au> wrote:
+>
+> kernel/trace/ftrace.c more obvious.
+>> 
+>> I don't know if it's really worth keeping the names the same across
+>> arches, especially as we already have:
+>> 
+>>   arch/arm64/kernel/entry-ftrace.S
+>>   arch/arm/kernel/entry-ftrace.S
+>>   arch/blackfin/kernel/ftrace-entry.S
+>>   arch/metag/kernel/ftrace_stub.S
+>> 
+>> But we can rename it if you feel strongly about it.
+>
+> Hmm, perhaps "entry-ftrace.S" would be the better name. I never liked
+> the "mcount.S" name.
 
-If a requested chunk of memory has not been preregistered, this will
-fall back to non-preregistered case and lock rmap.
+Except what does the "entry" part mean?
 
-Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
----
-Changes:
-v4:
-* removed oneline inlines
-* now falls back to locking rmap if TCE list is not in preregistered memory
+Traditionally entry.S has been for the code that "enters" the kernel,
+ie. from userspace or elsewhere. But that's not the case with any of the
+ftrace code, it's kernel code called from the kernel. So using "entry"
+is a bit wrong IMHO.
 
-v2:
-* updated the commit log with David's comment
----
- arch/powerpc/kvm/book3s_64_vio_hv.c | 58 +++++++++++++++++++++++++++----------
- 1 file changed, 42 insertions(+), 16 deletions(-)
+So if we drop that we're left with ftrace.S - which seems perfect to me.
 
-diff --git a/arch/powerpc/kvm/book3s_64_vio_hv.c b/arch/powerpc/kvm/book3s_64_vio_hv.c
-index 918af76ab2b6..0f145fc7a3a5 100644
---- a/arch/powerpc/kvm/book3s_64_vio_hv.c
-+++ b/arch/powerpc/kvm/book3s_64_vio_hv.c
-@@ -239,6 +239,7 @@ long kvmppc_rm_h_put_tce_indirect(struct kvm_vcpu *vcpu,
- 	long i, ret = H_SUCCESS;
- 	unsigned long tces, entry, ua = 0;
- 	unsigned long *rmap = NULL;
-+	bool prereg = false;
- 
- 	stt = kvmppc_find_table(vcpu->kvm, liobn);
- 	if (!stt)
-@@ -259,23 +260,47 @@ long kvmppc_rm_h_put_tce_indirect(struct kvm_vcpu *vcpu,
- 	if (ret != H_SUCCESS)
- 		return ret;
- 
--	if (kvmppc_gpa_to_ua(vcpu->kvm, tce_list, &ua, &rmap))
--		return H_TOO_HARD;
-+	if (mm_iommu_preregistered(vcpu->kvm->mm)) {
-+		/*
-+		 * We get here if guest memory was pre-registered which
-+		 * is normally VFIO case and gpa->hpa translation does not
-+		 * depend on hpt.
-+		 */
-+		struct mm_iommu_table_group_mem_t *mem;
- 
--	rmap = (void *) vmalloc_to_phys(rmap);
-+		if (kvmppc_gpa_to_ua(vcpu->kvm, tce_list, &ua, NULL))
-+			return H_TOO_HARD;
- 
--	/*
--	 * Synchronize with the MMU notifier callbacks in
--	 * book3s_64_mmu_hv.c (kvm_unmap_hva_hv etc.).
--	 * While we have the rmap lock, code running on other CPUs
--	 * cannot finish unmapping the host real page that backs
--	 * this guest real page, so we are OK to access the host
--	 * real page.
--	 */
--	lock_rmap(rmap);
--	if (kvmppc_rm_ua_to_hpa(vcpu, ua, &tces)) {
--		ret = H_TOO_HARD;
--		goto unlock_exit;
-+		mem = mm_iommu_lookup_rm(vcpu->kvm->mm, ua, IOMMU_PAGE_SIZE_4K);
-+		if (mem)
-+			prereg = mm_iommu_ua_to_hpa_rm(mem, ua, &tces) == 0;
-+	}
-+
-+	if (!prereg) {
-+		/*
-+		 * This is usually a case of a guest with emulated devices only
-+		 * when TCE list is not in preregistered memory.
-+		 * We do not require memory to be preregistered in this case
-+		 * so lock rmap and do __find_linux_pte_or_hugepte().
-+		 */
-+		if (kvmppc_gpa_to_ua(vcpu->kvm, tce_list, &ua, &rmap))
-+			return H_TOO_HARD;
-+
-+		rmap = (void *) vmalloc_to_phys(rmap);
-+
-+		/*
-+		 * Synchronize with the MMU notifier callbacks in
-+		 * book3s_64_mmu_hv.c (kvm_unmap_hva_hv etc.).
-+		 * While we have the rmap lock, code running on other CPUs
-+		 * cannot finish unmapping the host real page that backs
-+		 * this guest real page, so we are OK to access the host
-+		 * real page.
-+		 */
-+		lock_rmap(rmap);
-+		if (kvmppc_rm_ua_to_hpa(vcpu, ua, &tces)) {
-+			ret = H_TOO_HARD;
-+			goto unlock_exit;
-+		}
- 	}
- 
- 	for (i = 0; i < npages; ++i) {
-@@ -289,7 +314,8 @@ long kvmppc_rm_h_put_tce_indirect(struct kvm_vcpu *vcpu,
- 	}
- 
- unlock_exit:
--	unlock_rmap(rmap);
-+	if (rmap)
-+		unlock_rmap(rmap);
- 
- 	return ret;
- }
--- 
-2.11.0
+cheers
