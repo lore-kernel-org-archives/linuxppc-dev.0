@@ -1,25 +1,22 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-pf0-x22f.google.com (mail-pf0-x22f.google.com
+ [IPv6:2607:f8b0:400e:c00::22f])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vYnM74NxJzDqGv
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Mar 2017 20:38:59 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, Ingo Molnar <mingo@kernel.org>,
- Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH v3 1/2] powerpc: split ftrace bits into a separate file
-In-Reply-To: <20170228091147.69b836a8@gandalf.local.home>
-References: <cover.1487702678.git.naveen.n.rao@linux.vnet.ibm.com>
- <d2058affbf317d0f72e2df970f97b7b53ade47cb.1487702678.git.naveen.n.rao@linux.vnet.ibm.com>
- <20170227103650.0955c5eb@gandalf.local.home>
- <87wpcbota8.fsf@concordia.ellerman.id.au>
- <20170228091147.69b836a8@gandalf.local.home>
-Date: Thu, 02 Mar 2017 20:38:53 +1100
-Message-ID: <871sugkogi.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vYpQ16WjLzDq66
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Mar 2017 21:26:33 +1100 (AEDT)
+Received: by mail-pf0-x22f.google.com with SMTP id w189so20907017pfb.0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Mar 2017 02:26:33 -0800 (PST)
+Subject: Re: [PATCH 5/5] powerpc/smp: Add Power9 scheduler topology
+To: Oliver O'Halloran <oohall@gmail.com>, linuxppc-dev@lists.ozlabs.org
+References: <20170302004920.21948-1-oohall@gmail.com>
+ <20170302004920.21948-5-oohall@gmail.com>
+From: Balbir Singh <bsingharora@gmail.com>
+Message-ID: <3ef222c7-15f7-e981-394d-61cf4b26a1cc@gmail.com>
+Date: Thu, 2 Mar 2017 21:25:59 +1100
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <20170302004920.21948-5-oohall@gmail.com>
+Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,33 +26,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Steven Rostedt <rostedt@goodmis.org> writes:
 
-> On Tue, 28 Feb 2017 15:04:15 +1100
-> Michael Ellerman <mpe@ellerman.id.au> wrote:
->
-> kernel/trace/ftrace.c more obvious.
->> 
->> I don't know if it's really worth keeping the names the same across
->> arches, especially as we already have:
->> 
->>   arch/arm64/kernel/entry-ftrace.S
->>   arch/arm/kernel/entry-ftrace.S
->>   arch/blackfin/kernel/ftrace-entry.S
->>   arch/metag/kernel/ftrace_stub.S
->> 
->> But we can rename it if you feel strongly about it.
->
-> Hmm, perhaps "entry-ftrace.S" would be the better name. I never liked
-> the "mcount.S" name.
 
-Except what does the "entry" part mean?
+On 02/03/17 11:49, Oliver O'Halloran wrote:
+> In previous generations of Power processors each core had a private L2
+> cache. The Power9 processor has a slightly different architecture where
+> the L2 cache is shared among pairs of cores rather than being completely
+> private.
+> 
+> Making the scheduler aware of this cache sharing allows the scheduler to
+> make more intelligent migration decisions. When one core in the pair is
+> overloaded tasks can be migrated to its paired core to improve throughput
+> without cache-refilling penality typically associated with task
+> migration.
 
-Traditionally entry.S has been for the code that "enters" the kernel,
-ie. from userspace or elsewhere. But that's not the case with any of the
-ftrace code, it's kernel code called from the kernel. So using "entry"
-is a bit wrong IMHO.
+Could you please describe the changes to sched_domains w.r.t before and
+after for P9.
 
-So if we drop that we're left with ftrace.S - which seems perfect to me.
+I think most of the changes make sense, but some data to back them up
+including any results you have to show that these patches help would be
+nice
 
-cheers
+Balbir Singh.
