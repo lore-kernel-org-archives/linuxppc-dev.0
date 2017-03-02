@@ -1,40 +1,30 @@
-Return-Path: <arndbergmann@gmail.com>
-Received: from mail-oi0-x241.google.com (mail-oi0-x241.google.com
- [IPv6:2607:f8b0:4003:c06::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <shuahkh@osg.samsung.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vYt8Q1zKMzDq66
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Mar 2017 00:15:01 +1100 (AEDT)
-Received: by mail-oi0-x241.google.com with SMTP id m124so5312956oig.1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Mar 2017 05:15:01 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vYw4V74wLzDq66
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Mar 2017 01:41:46 +1100 (AEDT)
+Received: from osg.samsung.com
+ (ec2-52-27-115-49.us-west-2.compute.amazonaws.com [52.27.115.49])
+ by ozlabs.org (Postfix) with ESMTP id 3vYw4V3DQyz9s7l
+ for <linuxppc-dev@ozlabs.org>; Fri,  3 Mar 2017 01:41:45 +1100 (AEDT)
+Subject: Re: [PATCH 1/5] selftests: Fix selftests build to just build, not run
+ tests
+To: Michael Ellerman <mpe@ellerman.id.au>, bamvor.zhangjian@huawei.com
+References: <1486630590-9410-1-git-send-email-mpe@ellerman.id.au>
+ <87shnhmsl1.fsf@concordia.ellerman.id.au>
+ <93f8e25b-8ea6-9dc0-66c4-acb6644724de@osg.samsung.com>
+ <874lzckwl4.fsf@concordia.ellerman.id.au>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+ linux-kselftest@vger.kernel.org, linux-api@vger.kernel.org,
+ Ingo Molnar <mingo@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+ hpa@zytor.com, Shuah Khan <shuahkh@osg.samsung.com>
+From: Shuah Khan <shuahkh@osg.samsung.com>
+Message-ID: <f17b4da1-7590-4f28-922f-0b8722d03034@osg.samsung.com>
+Date: Thu, 2 Mar 2017 07:41:34 -0700
 MIME-Version: 1.0
-Sender: arndbergmann@gmail.com
-In-Reply-To: <20170302002253.GC27132@altlinux.org>
-References: <CAK8P3a3Ptm68i43BT5+kWptDw1koPwexpuFwH3-1naj_xi+arQ@mail.gmail.com>
- <20170302002253.GC27132@altlinux.org>
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Thu, 2 Mar 2017 14:14:59 +0100
-Message-ID: <CAK8P3a1_QLguZ6XEGC9TdGUmF0R3bKaU2EiJ6m+Gf=KpYnmqqw@mail.gmail.com>
-Subject: Re: [PATCH 3/3] uapi: fix asm/shmbuf.h userspace compilation errors
-To: "Dmitry V. Levin" <ldv@altlinux.org>
-Cc: Haavard Skinnemoen <hskinnemoen@gmail.com>,
- Hans-Christian Egtvedt <egtvedt@samfundet.no>,
- Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
- Ralf Baechle <ralf@linux-mips.org>, David Howells <dhowells@redhat.com>,
- "James E.J. Bottomley" <jejb@parisc-linux.org>, Helge Deller <deller@gmx.de>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- "David S. Miller" <davem@davemloft.net>,
- Chris Zankel <chris@zankel.net>, Max Filippov <jcmvbkbc@gmail.com>,
- linux-arch <linux-arch@vger.kernel.org>, linux-alpha@vger.kernel.org,
- linux-ia64@vger.kernel.org, linux-mips@linux-mips.org,
- linux-am33-list@redhat.com, linux-parisc@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- sparclinux@vger.kernel.org, linux-xtensa@linux-xtensa.org,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
+In-Reply-To: <874lzckwl4.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,48 +34,89 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Mar 2, 2017 at 1:22 AM, Dmitry V. Levin <ldv@altlinux.org> wrote:
-> Include <asm/ipcbuf.h> to fix asm/shmbuf.h userspace compilation errors
-> like this:
->
-> /usr/include/asm-generic/shmbuf.h:26:20: error: field 'shm_perm' has incomplete type
->   struct ipc64_perm shm_perm; /* operation perms */
-> /usr/include/asm-generic/shmbuf.h:28:2: error: unknown type name '__kernel_time_t'
->   __kernel_time_t  shm_atime; /* last attach time */
-> /usr/include/asm-generic/shmbuf.h:32:2: error: unknown type name '__kernel_time_t'
->   __kernel_time_t  shm_dtime; /* last detach time */
-> /usr/include/asm-generic/shmbuf.h:36:2: error: unknown type name '__kernel_time_t'
->   __kernel_time_t  shm_ctime; /* last change time */
-> /usr/include/asm-generic/shmbuf.h:40:2: error: unknown type name '__kernel_pid_t'
->   __kernel_pid_t  shm_cpid; /* pid of creator */
-> /usr/include/asm-generic/shmbuf.h:41:2: error: unknown type name '__kernel_pid_t'
->   __kernel_pid_t  shm_lpid; /* pid of last operator */
-> /usr/include/asm-generic/shmbuf.h:42:2: error: unknown type name '__kernel_ulong_t'
->   __kernel_ulong_t shm_nattch; /* no. of current attaches */
-> /usr/include/asm-generic/shmbuf.h:43:2: error: unknown type name '__kernel_ulong_t'
->   __kernel_ulong_t __unused4;
-> /usr/include/asm-generic/shmbuf.h:44:2: error: unknown type name '__kernel_ulong_t'
->   __kernel_ulong_t __unused5;
-> /usr/include/asm-generic/shmbuf.h:48:2: error: unknown type name '__kernel_ulong_t'
->   __kernel_ulong_t shmmax;
-> /usr/include/asm-generic/shmbuf.h:49:2: error: unknown type name '__kernel_ulong_t'
->   __kernel_ulong_t shmmin;
-> /usr/include/asm-generic/shmbuf.h:50:2: error: unknown type name '__kernel_ulong_t'
->   __kernel_ulong_t shmmni;
-> /usr/include/asm-generic/shmbuf.h:51:2: error: unknown type name '__kernel_ulong_t'
->   __kernel_ulong_t shmseg;
-> /usr/include/asm-generic/shmbuf.h:52:2: error: unknown type name '__kernel_ulong_t'
->   __kernel_ulong_t shmall;
-> /usr/include/asm-generic/shmbuf.h:53:2: error: unknown type name '__kernel_ulong_t'
->   __kernel_ulong_t __unused1;
-> /usr/include/asm-generic/shmbuf.h:54:2: error: unknown type name '__kernel_ulong_t'
->   __kernel_ulong_t __unused2;
-> /usr/include/asm-generic/shmbuf.h:55:2: error: unknown type name '__kernel_ulong_t'
->   __kernel_ulong_t __unused3;
-> /usr/include/asm-generic/shmbuf.h:56:2: error: unknown type name '__kernel_ulong_t'
->   __kernel_ulong_t __unused4;
->
-> Signed-off-by: Dmitry V. Levin <ldv@altlinux.org>
-> ---
+Hi Michael and Bamovar,
 
-Acked-by: Arnd Bergmann <arnd@arndb.de>
+On 03/01/2017 11:43 PM, Michael Ellerman wrote:
+> Shuah Khan <shuahkh@osg.samsung.com> writes:
+>> Hi Bamovar,
+>>
+>> Your original series badly broke the selftest build. I can no longer
+>> build individual tests. For example:
+>>
+>> cd breakpoints/
+>> shuah@shuah-XPS-13-9350:/lkml/linux_4.11/tools/testing/selftests/breakpoints$ make
+>> gcc     breakpoint_test.c  -o /breakpoint_test
+>> /usr/bin/ld: cannot open output file /breakpoint_test: Permission denied
+>> collect2: error: ld returned 1 exit status
+>> ../lib.mk:54: recipe for target '/breakpoint_test' failed
+>> make: *** [/breakpoint_test] Error 1
+> 
+> I also got a report of that just yesterday.
+> 
+> You can do:
+> 
+> $ cd tools/testing/selftests ; make TARGETS=breakpoints
+> 
+> But it's not ideal.
+> 
+>> commit a8ba798bc8ec663cf02e80b0dd770324de9bafd9
+>> Author: bamvor.zhangjian@huawei.com <bamvor.zhangjian@huawei.com>
+>> Date:   Tue Nov 29 19:55:52 2016 +0800
+>>
+>>     selftests: enable O and KBUILD_OUTPUT
+>>
+>> I believe the above patch is one of the suspects. Michael fixed
+>> some of the problems in this patch and others he sent.
+> 
+> It is that patch which caused it yes.
+> 
+>> At the moment individual tests will not build.
+>> tools/testing/selftests/x86$ make
+>> Makefile:44: warning: overriding recipe for target 'clean'
+>> ../lib.mk:51: warning: ignoring old recipe for target 'clean'
+>> gcc -m64 -o /single_step_syscall_64 -O2 -g -std=gnu99 -pthread -Wall  single_step_syscall.c -lrt -ldl
+>> /usr/bin/ld: cannot open output file /single_step_syscall_64: Permission denied
+>> collect2: error: ld returned 1 exit status
+>> Makefile:50: recipe for target '/single_step_syscall_64' failed
+>> make: *** [/single_step_syscall_64] Error 1
+>>
+>>
+>> My guess is OUTPUT doesn't resolve in individual builds from the test directory.
+>> We have to get this fixed for 4.11-rc1
+> 
+> Yeah, OUTPUT is passed down from the top-level Makefile.
+> 
+>> Simply Reverting a8ba798bc8ec663cf02e80b0dd770324de9bafd9 doesn't work.
+>> Michael's patches depend on this. So anyway, please let me know if you
+>> can fix this quickly. I am going to be trying a few things today as well.
+> 
+> This seems to work, but needs some testing with and without OUTPUT set.
+> 
+> Basically if OUTPUT is not set, assume the current directory. It should
+> only take effect when someone builds from an individual directory,
+> because if you build from the top level OUTPUT is already set.
+> 
+> 
+> diff --git a/tools/testing/selftests/lib.mk b/tools/testing/selftests/lib.mk
+> index ce96d80ad64f..9087fa949e82 100644
+> --- a/tools/testing/selftests/lib.mk
+> +++ b/tools/testing/selftests/lib.mk
+> @@ -2,6 +2,8 @@
+>  # Makefile can operate with or without the kbuild infrastructure.
+>  CC := $(CROSS_COMPILE)gcc
+>  
+> +OUTPUT ?= $(PWD)
+> +
+>  TEST_GEN_PROGS := $(patsubst %,$(OUTPUT)/%,$(TEST_GEN_PROGS))
+>  TEST_GEN_FILES := $(patsubst %,$(OUTPUT)/%,$(TEST_GEN_FILES))
+>  
+> 
+> 
+> cheers
+> 
+
+I sent a fix to lib.mk to set the OUTPUT. Please review. I can request
+Linus to merge it in before 4.11-rc1 comes out.
+
+thanks,
+-- Shuah
