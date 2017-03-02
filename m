@@ -1,46 +1,20 @@
-Return-Path: <andrew.donnellan@au1.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vYjlv4RjfzDqLv
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Mar 2017 17:56:43 +1100 (AEDT)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v226sbiR143587
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 2 Mar 2017 01:56:41 -0500
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
- by mx0a-001b2d01.pphosted.com with ESMTP id 28xcv3uvp3-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Mar 2017 01:56:41 -0500
-Received: from localhost
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
- Thu, 2 Mar 2017 16:56:39 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 6BF142CE8046
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Mar 2017 17:56:36 +1100 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v226uSp635324116
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 2 Mar 2017 17:56:36 +1100
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v226u4tl014557
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 2 Mar 2017 17:56:04 +1100
-Subject: Re: [PATCH 7/7] cxl: Add psl9 specific code
-To: Christophe Lombard <clombard@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, fbarrat@linux.vnet.ibm.com,
- imunsie@au1.ibm.com
-References: <1485970213-25532-1-git-send-email-clombard@linux.vnet.ibm.com>
- <1485970213-25532-8-git-send-email-clombard@linux.vnet.ibm.com>
-From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Date: Thu, 2 Mar 2017 17:55:39 +1100
-MIME-Version: 1.0
-In-Reply-To: <1485970213-25532-8-git-send-email-clombard@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <318497cd-8548-d5b5-2485-6bf00c56e280@au1.ibm.com>
+Return-Path: <aik@ozlabs.ru>
+Received: from ozlabs.ru (ozlabs.ru [107.173.13.209])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3vYmQb3sbfzDq66
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Mar 2017 19:56:54 +1100 (AEDT)
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
+ Alex Williamson <alex.williamson@redhat.com>,
+ David Gibson <david@gibson.dropbear.id.au>,
+ Paul Mackerras <paulus@samba.org>, kvm-ppc@vger.kernel.org,
+ kvm@vger.kernel.org
+Subject: [PATCH kernel v6 01/10] powerpc/mmu: Add real mode support for IOMMU
+ preregistered memory
+Date: Thu,  2 Mar 2017 19:56:35 +1100
+Message-Id: <20170302085644.41828-2-aik@ozlabs.ru>
+In-Reply-To: <20170302085644.41828-1-aik@ozlabs.ru>
+References: <20170302085644.41828-1-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,28 +24,103 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 02/02/17 04:30, Christophe Lombard wrote:
-> The new Coherent Accelerator Interface Architecture, level 2, for the
-> IBM POWER9 brings new content and features:
-> - POWER9 Service Layer
-> - Registers
-> - Radix mode
-> - Process element entry
-> - Dedicated-Shared Process Programming Model
-> - Translation Fault Handling
-> - CAPP
-> - Memory Context ID
->     If a valid mm_struct is found the memory context id is used for each
->     transaction associated with the process handle. The PSL uses the
->     context ID to find the corresponding process element.
->
-> Signed-off-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
+This makes mm_iommu_lookup() able to work in realmode by replacing
+list_for_each_entry_rcu() (which can do debug stuff which can fail in
+real mode) with list_for_each_entry_lockless().
 
-Patch needs rebasing, see:
+This adds realmode version of mm_iommu_ua_to_hpa() which adds
+explicit vmalloc'd-to-linear address conversion.
+Unlike mm_iommu_ua_to_hpa(), mm_iommu_ua_to_hpa_rm() can fail.
 
-https://github.com/ajdlinux/linux/commit/642ec862c7074c19765a2dd385dc5fd1751104b4
+This changes mm_iommu_preregistered() to receive @mm as in real mode
+@current does not always have a correct pointer.
 
+This adds realmode version of mm_iommu_lookup() which receives @mm
+(for the same reason as for mm_iommu_preregistered()) and uses
+lockless version of list_for_each_entry_rcu().
 
+Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
+---
+ arch/powerpc/include/asm/mmu_context.h |  4 ++++
+ arch/powerpc/mm/mmu_context_iommu.c    | 39 ++++++++++++++++++++++++++++++++++
+ 2 files changed, 43 insertions(+)
+
+diff --git a/arch/powerpc/include/asm/mmu_context.h b/arch/powerpc/include/asm/mmu_context.h
+index b9e3f0aca261..c70c8272523d 100644
+--- a/arch/powerpc/include/asm/mmu_context.h
++++ b/arch/powerpc/include/asm/mmu_context.h
+@@ -29,10 +29,14 @@ extern void mm_iommu_init(struct mm_struct *mm);
+ extern void mm_iommu_cleanup(struct mm_struct *mm);
+ extern struct mm_iommu_table_group_mem_t *mm_iommu_lookup(struct mm_struct *mm,
+ 		unsigned long ua, unsigned long size);
++extern struct mm_iommu_table_group_mem_t *mm_iommu_lookup_rm(
++		struct mm_struct *mm, unsigned long ua, unsigned long size);
+ extern struct mm_iommu_table_group_mem_t *mm_iommu_find(struct mm_struct *mm,
+ 		unsigned long ua, unsigned long entries);
+ extern long mm_iommu_ua_to_hpa(struct mm_iommu_table_group_mem_t *mem,
+ 		unsigned long ua, unsigned long *hpa);
++extern long mm_iommu_ua_to_hpa_rm(struct mm_iommu_table_group_mem_t *mem,
++		unsigned long ua, unsigned long *hpa);
+ extern long mm_iommu_mapped_inc(struct mm_iommu_table_group_mem_t *mem);
+ extern void mm_iommu_mapped_dec(struct mm_iommu_table_group_mem_t *mem);
+ #endif
+diff --git a/arch/powerpc/mm/mmu_context_iommu.c b/arch/powerpc/mm/mmu_context_iommu.c
+index 7de7124ac91b..8ca097ad1c71 100644
+--- a/arch/powerpc/mm/mmu_context_iommu.c
++++ b/arch/powerpc/mm/mmu_context_iommu.c
+@@ -314,6 +314,25 @@ struct mm_iommu_table_group_mem_t *mm_iommu_lookup(struct mm_struct *mm,
+ }
+ EXPORT_SYMBOL_GPL(mm_iommu_lookup);
+ 
++struct mm_iommu_table_group_mem_t *mm_iommu_lookup_rm(struct mm_struct *mm,
++		unsigned long ua, unsigned long size)
++{
++	struct mm_iommu_table_group_mem_t *mem, *ret = NULL;
++
++	list_for_each_entry_lockless(mem, &mm->context.iommu_group_mem_list,
++			next) {
++		if ((mem->ua <= ua) &&
++				(ua + size <= mem->ua +
++				 (mem->entries << PAGE_SHIFT))) {
++			ret = mem;
++			break;
++		}
++	}
++
++	return ret;
++}
++EXPORT_SYMBOL_GPL(mm_iommu_lookup_rm);
++
+ struct mm_iommu_table_group_mem_t *mm_iommu_find(struct mm_struct *mm,
+ 		unsigned long ua, unsigned long entries)
+ {
+@@ -345,6 +364,26 @@ long mm_iommu_ua_to_hpa(struct mm_iommu_table_group_mem_t *mem,
+ }
+ EXPORT_SYMBOL_GPL(mm_iommu_ua_to_hpa);
+ 
++long mm_iommu_ua_to_hpa_rm(struct mm_iommu_table_group_mem_t *mem,
++		unsigned long ua, unsigned long *hpa)
++{
++	const long entry = (ua - mem->ua) >> PAGE_SHIFT;
++	void *va = &mem->hpas[entry];
++	unsigned long *pa;
++
++	if (entry >= mem->entries)
++		return -EFAULT;
++
++	pa = (void *) vmalloc_to_phys(va);
++	if (!pa)
++		return -EFAULT;
++
++	*hpa = *pa | (ua & ~PAGE_MASK);
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(mm_iommu_ua_to_hpa_rm);
++
+ long mm_iommu_mapped_inc(struct mm_iommu_table_group_mem_t *mem)
+ {
+ 	if (atomic64_inc_not_zero(&mem->mapped))
 -- 
-Andrew Donnellan              OzLabs, ADL Canberra
-andrew.donnellan@au1.ibm.com  IBM Australia Limited
+2.11.0
