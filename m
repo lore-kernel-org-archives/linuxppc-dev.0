@@ -1,31 +1,18 @@
-Return-Path: <ldv@altlinux.org>
-Received: from vmicros1.altlinux.org (vmicros1.altlinux.org [194.107.17.57])
- by lists.ozlabs.org (Postfix) with ESMTP id 3vYYXK2dTczDqLh
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Mar 2017 11:46:09 +1100 (AEDT)
-Date: Thu, 2 Mar 2017 03:46:07 +0300
-From: "Dmitry V. Levin" <ldv@altlinux.org>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
- "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org,
- Haavard Skinnemoen <hskinnemoen@gmail.com>,
- Hans-Christian Egtvedt <egtvedt@samfundet.no>,
- Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
- Ralf Baechle <ralf@linux-mips.org>, David Howells <dhowells@redhat.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- "David S. Miller" <davem@davemloft.net>,
- Chris Zankel <chris@zankel.net>, Max Filippov <jcmvbkbc@gmail.com>,
- linux-arch@vger.kernel.org, linux-alpha@vger.kernel.org,
- linux-ia64@vger.kernel.org, linux-mips@linux-mips.org,
- linux-am33-list@redhat.com, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, sparclinux@vger.kernel.org,
- linux-xtensa@linux-xtensa.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] uapi: fix another asm/shmbuf.h userspace compilation error
-Message-ID: <20170302004607.GE27132@altlinux.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Return-Path: <oohall@gmail.com>
+Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
+ [IPv6:2607:f8b0:400e:c00::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vYYcK3281zDqLh
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Mar 2017 11:49:37 +1100 (AEDT)
+Received: by mail-pf0-x241.google.com with SMTP id j5so4985190pfb.3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Mar 2017 16:49:37 -0800 (PST)
+From: Oliver O'Halloran <oohall@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Oliver O'Halloran <oohall@gmail.com>
+Subject: [PATCH 1/5] powerpc/smp: use cpu_to_chip_id() to find siblings
+Date: Thu,  2 Mar 2017 11:49:16 +1100
+Message-Id: <20170302004920.21948-1-oohall@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,199 +22,85 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Replace size_t with __kernel_size_t to fix asm/shmbuf.h userspace
-compilation errors like this:
+To determine which logical CPUs are on the same core the kernel uses the
+ibm,chipid property from the device tree node associated with that cpu.
+The lookup for this this information is currently open coded in both
+traverse_siblings() and traverse_siblings_chip_id(). This patch replaces
+these manual lookups with the existing cpu_to_chip_id() function.
 
-/usr/include/asm-generic/shmbuf.h:28:2: error: unknown type name 'size_t'
-  size_t   shm_segsz; /* size of segment (bytes) */
-
-x32 is the only architecture where sizeof(size_t) is less than
-sizeof(__kernel_size_t), but as the kernel treats shm_segsz field as
-__kernel_size_t anyway, UAPI should follow.  Thanks to little-endiannes
-of x32 and 64-bit alignment of the field following shm_segsz, this
-change doesn't break ABI, and the difference doesn't manifest itself
-easily.
-
-Signed-off-by: Dmitry V. Levin <ldv@altlinux.org>
+Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
 ---
- include/uapi/asm-generic/shmbuf.h      | 2 +-
- arch/alpha/include/uapi/asm/shmbuf.h   | 2 +-
- arch/avr32/include/uapi/asm/shmbuf.h   | 2 +-
- arch/frv/include/uapi/asm/shmbuf.h     | 2 +-
- arch/ia64/include/uapi/asm/shmbuf.h    | 2 +-
- arch/m32r/include/uapi/asm/shmbuf.h    | 2 +-
- arch/mips/include/uapi/asm/shmbuf.h    | 2 +-
- arch/mn10300/include/uapi/asm/shmbuf.h | 2 +-
- arch/powerpc/include/uapi/asm/shmbuf.h | 2 +-
- arch/s390/include/uapi/asm/shmbuf.h    | 2 +-
- arch/sparc/include/uapi/asm/shmbuf.h   | 2 +-
- arch/xtensa/include/uapi/asm/shmbuf.h  | 4 ++--
- 12 files changed, 13 insertions(+), 13 deletions(-)
+ arch/powerpc/kernel/smp.c | 39 +++++++++++++--------------------------
+ 1 file changed, 13 insertions(+), 26 deletions(-)
 
-diff --git a/include/uapi/asm-generic/shmbuf.h b/include/uapi/asm-generic/shmbuf.h
-index 2a6d508..0756934 100644
---- a/include/uapi/asm-generic/shmbuf.h
-+++ b/include/uapi/asm-generic/shmbuf.h
-@@ -25,7 +25,7 @@
+diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+index 893bd7f79be6..dfe0e1d9cd06 100644
+--- a/arch/powerpc/kernel/smp.c
++++ b/arch/powerpc/kernel/smp.c
+@@ -613,19 +613,11 @@ EXPORT_SYMBOL_GPL(cpu_first_thread_of_core);
  
- struct shmid64_ds {
- 	struct ipc64_perm	shm_perm;	/* operation perms */
--	size_t			shm_segsz;	/* size of segment (bytes) */
-+	__kernel_size_t		shm_segsz;	/* size of segment (bytes) */
- 	__kernel_time_t		shm_atime;	/* last attach time */
- #if __BITS_PER_LONG != 64
- 	unsigned long		__unused1;
-diff --git a/arch/alpha/include/uapi/asm/shmbuf.h b/arch/alpha/include/uapi/asm/shmbuf.h
-index 6156099..e32ed1f 100644
---- a/arch/alpha/include/uapi/asm/shmbuf.h
-+++ b/arch/alpha/include/uapi/asm/shmbuf.h
-@@ -14,7 +14,7 @@
+ static void traverse_siblings_chip_id(int cpu, bool add, int chipid)
+ {
+-	const struct cpumask *mask;
+-	struct device_node *np;
+-	int i, plen;
+-	const __be32 *prop;
++	const struct cpumask *mask = add ? cpu_online_mask : cpu_present_mask;
++	int i;
  
- struct shmid64_ds {
- 	struct ipc64_perm	shm_perm;	/* operation perms */
--	size_t			shm_segsz;	/* size of segment (bytes) */
-+	__kernel_size_t		shm_segsz;	/* size of segment (bytes) */
- 	__kernel_time_t		shm_atime;	/* last attach time */
- 	__kernel_time_t		shm_dtime;	/* last detach time */
- 	__kernel_time_t		shm_ctime;	/* last change time */
-diff --git a/arch/avr32/include/uapi/asm/shmbuf.h b/arch/avr32/include/uapi/asm/shmbuf.h
-index c8e5234..2804f25 100644
---- a/arch/avr32/include/uapi/asm/shmbuf.h
-+++ b/arch/avr32/include/uapi/asm/shmbuf.h
-@@ -15,7 +15,7 @@
+-	mask = add ? cpu_online_mask : cpu_present_mask;
+ 	for_each_cpu(i, mask) {
+-		np = of_get_cpu_node(i, NULL);
+-		if (!np)
+-			continue;
+-		prop = of_get_property(np, "ibm,chip-id", &plen);
+-		if (prop && plen == sizeof(int) &&
+-		    of_read_number(prop, 1) == chipid) {
++		if (cpu_to_chip_id(i) == chipid) {
+ 			if (add) {
+ 				cpumask_set_cpu(cpu, cpu_core_mask(i));
+ 				cpumask_set_cpu(i, cpu_core_mask(cpu));
+@@ -634,7 +626,6 @@ static void traverse_siblings_chip_id(int cpu, bool add, int chipid)
+ 				cpumask_clear_cpu(i, cpu_core_mask(cpu));
+ 			}
+ 		}
+-		of_node_put(np);
+ 	}
+ }
  
- struct shmid64_ds {
- 	struct ipc64_perm	shm_perm;	/* operation perms */
--	size_t			shm_segsz;	/* size of segment (bytes) */
-+	__kernel_size_t		shm_segsz;	/* size of segment (bytes) */
- 	__kernel_time_t		shm_atime;	/* last attach time */
- 	unsigned long		__unused1;
- 	__kernel_time_t		shm_dtime;	/* last detach time */
-diff --git a/arch/frv/include/uapi/asm/shmbuf.h b/arch/frv/include/uapi/asm/shmbuf.h
-index 943746c..2af199f 100644
---- a/arch/frv/include/uapi/asm/shmbuf.h
-+++ b/arch/frv/include/uapi/asm/shmbuf.h
-@@ -15,7 +15,7 @@
+@@ -664,23 +655,19 @@ static void traverse_core_siblings(int cpu, bool add)
+ {
+ 	struct device_node *l2_cache, *np;
+ 	const struct cpumask *mask;
+-	int i, chip, plen;
+-	const __be32 *prop;
++	int chip_id;
++	int i;
  
- struct shmid64_ds {
- 	struct ipc64_perm	shm_perm;	/* operation perms */
--	size_t			shm_segsz;	/* size of segment (bytes) */
-+	__kernel_size_t		shm_segsz;	/* size of segment (bytes) */
- 	__kernel_time_t		shm_atime;	/* last attach time */
- 	unsigned long		__unused1;
- 	__kernel_time_t		shm_dtime;	/* last detach time */
-diff --git a/arch/ia64/include/uapi/asm/shmbuf.h b/arch/ia64/include/uapi/asm/shmbuf.h
-index ca81d77e..8e35495 100644
---- a/arch/ia64/include/uapi/asm/shmbuf.h
-+++ b/arch/ia64/include/uapi/asm/shmbuf.h
-@@ -14,7 +14,7 @@
+-	/* First see if we have ibm,chip-id properties in cpu nodes */
+-	np = of_get_cpu_node(cpu, NULL);
+-	if (np) {
+-		chip = -1;
+-		prop = of_get_property(np, "ibm,chip-id", &plen);
+-		if (prop && plen == sizeof(int))
+-			chip = of_read_number(prop, 1);
+-		of_node_put(np);
+-		if (chip >= 0) {
+-			traverse_siblings_chip_id(cpu, add, chip);
+-			return;
+-		}
++	/* threads that share a chip-id are considered siblings (same die) */
++	chip_id = cpu_to_chip_id(cpu);
++
++	if (chip_id >= 0) {
++		traverse_siblings_chip_id(cpu, add, chip_id);
++		return;
+ 	}
  
- struct shmid64_ds {
- 	struct ipc64_perm	shm_perm;	/* operation perms */
--	size_t			shm_segsz;	/* size of segment (bytes) */
-+	__kernel_size_t		shm_segsz;	/* size of segment (bytes) */
- 	__kernel_time_t		shm_atime;	/* last attach time */
- 	__kernel_time_t		shm_dtime;	/* last detach time */
- 	__kernel_time_t		shm_ctime;	/* last change time */
-diff --git a/arch/m32r/include/uapi/asm/shmbuf.h b/arch/m32r/include/uapi/asm/shmbuf.h
-index 714de6e..fa36b9e 100644
---- a/arch/m32r/include/uapi/asm/shmbuf.h
-+++ b/arch/m32r/include/uapi/asm/shmbuf.h
-@@ -15,7 +15,7 @@
- 
- struct shmid64_ds {
- 	struct ipc64_perm	shm_perm;	/* operation perms */
--	size_t			shm_segsz;	/* size of segment (bytes) */
-+	__kernel_size_t		shm_segsz;	/* size of segment (bytes) */
- 	__kernel_time_t		shm_atime;	/* last attach time */
- 	unsigned long		__unused1;
- 	__kernel_time_t		shm_dtime;	/* last detach time */
-diff --git a/arch/mips/include/uapi/asm/shmbuf.h b/arch/mips/include/uapi/asm/shmbuf.h
-index f47d193..95c53ff 100644
---- a/arch/mips/include/uapi/asm/shmbuf.h
-+++ b/arch/mips/include/uapi/asm/shmbuf.h
-@@ -14,7 +14,7 @@
- 
- struct shmid64_ds {
- 	struct ipc64_perm	shm_perm;	/* operation perms */
--	size_t			shm_segsz;	/* size of segment (bytes) */
-+	__kernel_size_t		shm_segsz;	/* size of segment (bytes) */
- 	__kernel_time_t		shm_atime;	/* last attach time */
- 	__kernel_time_t		shm_dtime;	/* last detach time */
- 	__kernel_time_t		shm_ctime;	/* last change time */
-diff --git a/arch/mn10300/include/uapi/asm/shmbuf.h b/arch/mn10300/include/uapi/asm/shmbuf.h
-index 71df684..e156878 100644
---- a/arch/mn10300/include/uapi/asm/shmbuf.h
-+++ b/arch/mn10300/include/uapi/asm/shmbuf.h
-@@ -15,7 +15,7 @@
- 
- struct shmid64_ds {
- 	struct ipc64_perm	shm_perm;	/* operation perms */
--	size_t			shm_segsz;	/* size of segment (bytes) */
-+	__kernel_size_t		shm_segsz;	/* size of segment (bytes) */
- 	__kernel_time_t		shm_atime;	/* last attach time */
- 	unsigned long		__unused1;
- 	__kernel_time_t		shm_dtime;	/* last detach time */
-diff --git a/arch/powerpc/include/uapi/asm/shmbuf.h b/arch/powerpc/include/uapi/asm/shmbuf.h
-index 7937289..a2425e5 100644
---- a/arch/powerpc/include/uapi/asm/shmbuf.h
-+++ b/arch/powerpc/include/uapi/asm/shmbuf.h
-@@ -38,7 +38,7 @@ struct shmid64_ds {
- #ifndef __powerpc64__
- 	unsigned long		__unused4;
- #endif
--	size_t			shm_segsz;	/* size of segment (bytes) */
-+	__kernel_size_t		shm_segsz;	/* size of segment (bytes) */
- 	__kernel_pid_t		shm_cpid;	/* pid of creator */
- 	__kernel_pid_t		shm_lpid;	/* pid of last operator */
- 	unsigned long		shm_nattch;	/* no. of current attaches */
-diff --git a/arch/s390/include/uapi/asm/shmbuf.h b/arch/s390/include/uapi/asm/shmbuf.h
-index 9ce1d9f..9ddf9e0 100644
---- a/arch/s390/include/uapi/asm/shmbuf.h
-+++ b/arch/s390/include/uapi/asm/shmbuf.h
-@@ -15,7 +15,7 @@
- 
- struct shmid64_ds {
- 	struct ipc64_perm	shm_perm;	/* operation perms */
--	size_t			shm_segsz;	/* size of segment (bytes) */
-+	__kernel_size_t		shm_segsz;	/* size of segment (bytes) */
- 	__kernel_time_t		shm_atime;	/* last attach time */
- #ifndef __s390x__
- 	unsigned long		__unused1;
-diff --git a/arch/sparc/include/uapi/asm/shmbuf.h b/arch/sparc/include/uapi/asm/shmbuf.h
-index f651952..ed72656 100644
---- a/arch/sparc/include/uapi/asm/shmbuf.h
-+++ b/arch/sparc/include/uapi/asm/shmbuf.h
-@@ -27,7 +27,7 @@ struct shmid64_ds {
- 	__kernel_time_t		shm_dtime;	/* last detach time */
- 	PADDING(__pad3)
- 	__kernel_time_t		shm_ctime;	/* last change time */
--	size_t			shm_segsz;	/* size of segment (bytes) */
-+	__kernel_size_t		shm_segsz;	/* size of segment (bytes) */
- 	__kernel_pid_t		shm_cpid;	/* pid of creator */
- 	__kernel_pid_t		shm_lpid;	/* pid of last operator */
- 	unsigned long		shm_nattch;	/* no. of current attaches */
-diff --git a/arch/xtensa/include/uapi/asm/shmbuf.h b/arch/xtensa/include/uapi/asm/shmbuf.h
-index ad90d05..8d9206e 100644
---- a/arch/xtensa/include/uapi/asm/shmbuf.h
-+++ b/arch/xtensa/include/uapi/asm/shmbuf.h
-@@ -24,7 +24,7 @@
- #if defined (__XTENSA_EL__)
- struct shmid64_ds {
- 	struct ipc64_perm	shm_perm;	/* operation perms */
--	size_t			shm_segsz;	/* size of segment (bytes) */
-+	__kernel_size_t		shm_segsz;	/* size of segment (bytes) */
- 	__kernel_time_t		shm_atime;	/* last attach time */
- 	unsigned long		__unused1;
- 	__kernel_time_t		shm_dtime;	/* last detach time */
-@@ -40,7 +40,7 @@ struct shmid64_ds {
- #elif defined (__XTENSA_EB__)
- struct shmid64_ds {
- 	struct ipc64_perm	shm_perm;	/* operation perms */
--	size_t			shm_segsz;	/* size of segment (bytes) */
-+	__kernel_size_t		shm_segsz;	/* size of segment (bytes) */
- 	__kernel_time_t		shm_atime;	/* last attach time */
- 	unsigned long		__unused1;
- 	__kernel_time_t		shm_dtime;	/* last detach time */
++	/* if the chip-id fails then threads which share L2 cache are */
++
+ 	l2_cache = cpu_to_l2cache(cpu);
+ 	mask = add ? cpu_online_mask : cpu_present_mask;
+ 	for_each_cpu(i, mask) {
 -- 
-ldv
+2.9.3
