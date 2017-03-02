@@ -1,49 +1,19 @@
-Return-Path: <carlos@systemhalted.org>
-Received: from mail-qk0-x241.google.com (mail-qk0-x241.google.com
- [IPv6:2607:f8b0:400d:c09::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vYwzL3njjzDq66
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Mar 2017 02:22:22 +1100 (AEDT)
-Received: by mail-qk0-x241.google.com with SMTP id m67so2186805qkf.3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Mar 2017 07:22:22 -0800 (PST)
-MIME-Version: 1.0
-In-Reply-To: <CAK8P3a0YX3RGAqWN0mwUJtBsqUX0C+QRtJLrT_UA=wX6Z+q0DA@mail.gmail.com>
-References: <20170226010156.GA28831@altlinux.org>
- <CAK8P3a0YX3RGAqWN0mwUJtBsqUX0C+QRtJLrT_UA=wX6Z+q0DA@mail.gmail.com>
-From: "Carlos O'Donell" <carlos@systemhalted.org>
-Date: Thu, 2 Mar 2017 10:22:18 -0500
-Message-ID: <CAE2sS1h9QNV+31GMSv8aahJYOb9hFtFp5Aj-yVOfg7cjBHr_kg@mail.gmail.com>
-Subject: Re: [PATCH] uapi: fix asm/signal.h userspace compilation errors
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: "Dmitry V. Levin" <ldv@altlinux.org>, Russell King <linux@armlinux.org.uk>,
- Haavard Skinnemoen <hskinnemoen@gmail.com>,
- Hans-Christian Egtvedt <egtvedt@samfundet.no>,
- Mikael Starvik <starvik@axis.com>, Jesper Nilsson <jesper.nilsson@axis.com>,
- Yoshinori Sato <ysato@users.sourceforge.jp>, Tony Luck <tony.luck@intel.com>,
- Fenghua Yu <fenghua.yu@intel.com>, Geert Uytterhoeven <geert@linux-m68k.org>,
- Ralf Baechle <ralf@linux-mips.org>, David Howells <dhowells@redhat.com>,
- "James E.J. Bottomley" <jejb@parisc-linux.org>, Helge Deller <deller@gmx.de>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- "David S. Miller" <davem@davemloft.net>,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
- "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org,
- Chris Zankel <chris@zankel.net>, Max Filippov <jcmvbkbc@gmail.com>,
- linux-arch <linux-arch@vger.kernel.org>,
- "linux-alpha@vger.kernel.org" <linux-alpha@vger.kernel.org>,
- Linux ARM <linux-arm-kernel@lists.infradead.org>, linux-cris-kernel@axis.com,
- uclinux-h8-devel@lists.sourceforge.jp, linux-ia64@vger.kernel.org,
- linux-m68k@lists.linux-m68k.org,
- "linux-mips@linux-mips.org" <linux-mips@linux-mips.org>,
- linux-am33-list@redhat.com,
- linux-parisc <linux-parisc@vger.kernel.org>, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, sparclinux@vger.kernel.org,
- "linux-xtensa@linux-xtensa.org" <linux-xtensa@linux-xtensa.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vZ5Jk4qBRzDqC0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Mar 2017 08:37:58 +1100 (AEDT)
+Message-ID: <1488490657.2870.74.camel@kernel.crashing.org>
+Subject: Re: [PATCH kernel] powerpc/powernv: Fix clobbered MSR
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org
+Cc: Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>
+Date: Fri, 03 Mar 2017 08:37:37 +1100
+In-Reply-To: <20170302064124.26342-1-aik@ozlabs.ru>
+References: <20170302064124.26342-1-aik@ozlabs.ru>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -53,56 +23,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Mar 1, 2017 at 11:20 AM, Arnd Bergmann <arnd@arndb.de> wrote:
-> On Sun, Feb 26, 2017 at 2:01 AM, Dmitry V. Levin <ldv@altlinux.org> wrote:
->> Include <stddef.h> (guarded by #ifndef __KERNEL__) to fix asm/signal.h
->> userspace compilation errors like this:
->>
->> /usr/include/asm/signal.h:126:2: error: unknown type name 'size_t'
->>   size_t ss_size;
->>
->> As no uapi header provides a definition of size_t, inclusion
->> of <stddef.h> seems to be the most conservative fix available.
->>
->> On the kernel side size_t is typedef'ed to __kernel_size_t, so
->> an alternative fix would be to change the type of sigaltstack.ss_size
->> from size_t to __kernel_size_t for all architectures except those where
->> sizeof(size_t) < sizeof(__kernel_size_t), namely, x32 and mips n32.
->>
->> On x32 and mips n32, however, #include <stddef.h> seems to be the most
->> straightforward way to obtain the definition for sigaltstack.ss_size's
->> type.
->>
->> Signed-off-by: Dmitry V. Levin <ldv@altlinux.org>
->
-> I'm not sure if this is the best fix. We generally should not include one
-> standard header from another standard header. Would it be possible
-> to use __kernel_size_t instead of size_t?
+On Thu, 2017-03-02 at 17:41 +1100, Alexey Kardashevskiy wrote:
+> With CONFIG_DEBUG_INFO_SPLIT=y, the makefile adds "-gsplit-dwarf" which
+> somehow makes the scripts/gcc-goto.sh test fail and not have
+> CC_HAVE_ASM_GOTO defined so the alternative OPAL_BRANCH() is used
 
-In glibc we handle this with special use of __need_size_t with GCC's
-provided stddef.h.
-
-For example glibc's signal.h does this:
-
-# define __need_size_t
-# include <stddef.h>
-
-And...
-
-/* Any one of these symbols __need_* means that GNU libc
-   wants us just to define one data type.  So don't define
-   the symbols that indicate this file's entire job has been done.  */
-#if (!defined(__need_wchar_t) && !defined(__need_size_t)        \
-     && !defined(__need_ptrdiff_t) && !defined(__need_NULL)     \
-     && !defined(__need_wint_t))
-
-The idea being that the type you want is really defined by stddef.h,
-but you just one the one type.
-
-Changing the fundamental type causes the issues you see in patch v2
-where sizeof(size_t) < sizeof(__kernel_size_t).
-
-It will only lead to problem substituting the wrong type.
+This needs to be fixed too though. That alternative path has much more
+overhead accross the board. Losing "asm goto" because of a broken test
+is nasty.
 
 Cheers,
-Carlos.
+Ben.
