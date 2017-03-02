@@ -1,26 +1,31 @@
-Return-Path: <acme@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <David.Daney@cavium.com>
+Received: from NAM02-SN1-obe.outbound.protection.outlook.com
+ (mail-sn1nam02on0089.outbound.protection.outlook.com [104.47.36.89])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vZ1y14MjBzDqGr
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Mar 2017 06:06:32 +1100 (AEDT)
-Date: Thu, 2 Mar 2017 16:06:25 -0300
-From: Arnaldo Carvalho de Melo <acme@kernel.org>
-To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-Cc: Masami Hiramatsu <mhiramat@kernel.org>,
- Steven Rostedt <rostedt@goodmis.org>,
- Ingo Molnar <mingo@redhat.com>, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org,
- Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH v2 4/5] perf: kretprobes: offset from reloc_sym if kernel
- supports it
-Message-ID: <20170302190625.GB12788@kernel.org>
-References: <20170224201103.GO3595@kernel.org>
- <cover.1488475783.git.naveen.n.rao@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vZ2Lm6RmLzDqGj
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Mar 2017 06:24:32 +1100 (AEDT)
+Subject: Re: [PATCH] module: set __jump_table alignment to 8
+To: Jessica Yu <jeyu@redhat.com>, Steven Rostedt <rostedt@goodmis.org>
+References: <20170301220453.4756-1-david.daney@cavium.com>
+ <20170302131119.6f52203f@gandalf.local.home>
+ <20170302182625.GB13268@packer-debian-8-amd64.digitalocean.com>
+Cc: Rusty Russell <rusty@rustcorp.com.au>,
+ David Daney <david.daney@cavium.com>, Jason Baron <jbaron@akamai.com>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Sachin Sant <sachinp@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+ linux-mips@linux-mips.org, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org, Chris Metcalf <cmetcalf@mellanox.com>,
+ Ralf Baechle <ralf@linux-mips.org>, Russell King <linux@armlinux.org.uk>,
+ Rabin Vincent <rabin@rab.in>, Paul Mackerras <paulus@samba.org>,
+ Anton Blanchard <anton@samba.org>, Ingo Molnar <mingo@kernel.org>,
+ Zhigang Lu <zlu@ezchip.com>
+From: David Daney <ddaney@caviumnetworks.com>
+Message-ID: <f38431ab-ad33-ac14-03b5-7cb4a172be64@caviumnetworks.com>
+Date: Thu, 2 Mar 2017 11:24:23 -0800
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <cover.1488475783.git.naveen.n.rao@linux.vnet.ibm.com>
+In-Reply-To: <20170302182625.GB13268@packer-debian-8-amd64.digitalocean.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,41 +35,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Em Thu, Mar 02, 2017 at 11:25:04PM +0530, Naveen N. Rao escreveu:
-> On 2017/02/24 05:11PM, Arnaldo Carvalho de Melo wrote:
-> > Em Sat, Feb 25, 2017 at 02:29:17AM +0900, Masami Hiramatsu escreveu:
-> > > On Fri, 24 Feb 2017 00:46:08 +0530
-> > > "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
-> > > > Thanks. I hope that's an Ack for this patchset?
-> > > 
-> > > OK, for 1/5, 2/5, 3/5, and 5/5;
-> > > 
-> > > Acked-by: Masami Hiramatsu <mhiramat@kernel.org>
-> > > 
-> > > And could you make v4 series including all patches? (Not only updates)
-> > 
-> > So, to make progress I processed these:
-> > 
-> > [acme@jouet linux]$ git log --oneline -3
-> > eb55608340b7 perf probe: Generalize probe event file open routine
-> > 859d718fac06 trace/kprobes: Allow return probes with offsets and absolute addresses
-> > a10489121c81 kretprobes: Ensure probe location is at function entry
-> > [acme@jouet linux]$
-> > 
-> > Waiting for Naveen to react to these last minute considerations from
-> > Masami and for the Ack from the PPC guys about "[PATCH v2 2/5] powerpc:
-> > kretprobes: override default function entry offset".
-> 
-> Arnaldo,
-> I am posting the remaining three patches in this series. These three
-> patches are on top of the above 3 patches you have processed and the
-> other powerpc kretprobes patch (v2 2/5).
-> 
-> Masami,
-> Kindly review and let me know if this is fine.
+On 03/02/2017 10:26 AM, Jessica Yu wrote:
+> +++ Steven Rostedt [02/03/17 13:11 -0500]:
+>>
+>> Can I get an Ack from a module maintainer?
+>
+> Acked-by: Jessica Yu <jeyu@redhat.com>
+>
+> Thanks!
+>
+> Jessica
 
-Will process after Masami-san has time to review it,
+Thanks Jessica,
 
-Thanks,
+Can you also add scripts/module-common.lds to MAINTAINERS so that 
+get_maintainers.pl will indicate that Jessica Yu and Rusty Russell be 
+CCed on things like this in the future?
 
-- Arnaldo
+
+>
+>> On Wed,  1 Mar 2017 14:04:53 -0800
+>> David Daney <david.daney@cavium.com> wrote:
+>>
+>>> For powerpc the __jump_table section in modules is not aligned, this
+>>> causes a WARN_ON() splat when loading a module containing a
+>>> __jump_table.
+>>>
+>>> Strict alignment became necessary with commit 3821fd35b58d
+>>> ("jump_label: Reduce the size of struct static_key"), currently in
+>>> linux-next, which uses the two least significant bits of pointers to
+>>> __jump_table elements.
+>>>
+>>> Fix by forcing __jump_table to 8, which is the same alignment used for
+>>> this section in the kernel proper.
+>>>
+>>> Signed-off-by: David Daney <david.daney@cavium.com>
+>>> Tested-by: Sachin Sant <sachinp@linux.vnet.ibm.com>
+>>> ---
+>>>  scripts/module-common.lds | 2 ++
+>>>  1 file changed, 2 insertions(+)
+>>>
+>>> diff --git a/scripts/module-common.lds b/scripts/module-common.lds
+>>> index 73a2c7d..53234e8 100644
+>>> --- a/scripts/module-common.lds
+>>> +++ b/scripts/module-common.lds
+>>> @@ -19,4 +19,6 @@ SECTIONS {
+>>>
+>>>      . = ALIGN(8);
+>>>      .init_array        0 : { *(SORT(.init_array.*)) *(.init_array) }
+>>> +
+>>> +    __jump_table        0 : ALIGN(8) { KEEP(*(__jump_table)) }
+>>>  }
+>>
