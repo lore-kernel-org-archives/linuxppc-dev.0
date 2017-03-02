@@ -1,28 +1,43 @@
-Return-Path: <ruscur@russell.cc>
-Received: from russell.cc (russell.cc [IPv6:2404:9400:2:0:216:3eff:fee0:3370])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vYXL36GDlzDqLd
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Mar 2017 10:52:11 +1100 (AEDT)
-Message-ID: <1488412325.16871.1.camel@russell.cc>
-Subject: Re: [RESEND-RFC v2 1/3] powerpc/eeh: Refactor
- eeh_pe_update_time_stamp() to update freeze_count
-From: Russell Currey <ruscur@russell.cc>
-To: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>, "Guilherme G. Piccoli"
- <gpiccoli@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Cc: Philippe Bergheaud <philippe.bergheaud@fr.ibm.com>, Frederic Barrat
- <fbarrat@linux.vnet.ibm.com>, Gavin Shan <gwshan@linux.vnet.ibm.com>, Ian
- Munsie <imunsie@au1.ibm.com>, Andrew Donnellan
- <andrew.donnellan@au1.ibm.com>, Christophe Lombard
- <christophe_lombard@fr.ibm.com>, Greg Kurz <gkurz@linux.vnet.ibm.com>
-Date: Thu, 02 Mar 2017 10:52:05 +1100
-In-Reply-To: <87lgsp0xpt.fsf@vajain21.in.ibm.com>
-References: <20170301112452.15798-1-vaibhav@linux.vnet.ibm.com>
- <20170301112452.15798-2-vaibhav@linux.vnet.ibm.com>
- <e288dd57-df0d-44c1-2867-ce1d1386ad1f@linux.vnet.ibm.com>
- <87lgsp0xpt.fsf@vajain21.in.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
+Return-Path: <ldv@altlinux.org>
+Received: from vmicros1.altlinux.org (vmicros1.altlinux.org [194.107.17.57])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3vYXyg0fL5zDqLf
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Mar 2017 11:20:26 +1100 (AEDT)
+Date: Thu, 2 Mar 2017 03:20:22 +0300
+From: "Dmitry V. Levin" <ldv@altlinux.org>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Russell King <linux@armlinux.org.uk>,
+ Haavard Skinnemoen <hskinnemoen@gmail.com>,
+ Hans-Christian Egtvedt <egtvedt@samfundet.no>,
+ Mikael Starvik <starvik@axis.com>,
+ Jesper Nilsson <jesper.nilsson@axis.com>,
+ Yoshinori Sato <ysato@users.sourceforge.jp>,
+ Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
+ Geert Uytterhoeven <geert@linux-m68k.org>,
+ Ralf Baechle <ralf@linux-mips.org>, David Howells <dhowells@redhat.com>,
+ "James E.J. Bottomley" <jejb@parisc-linux.org>,
+ Helge Deller <deller@gmx.de>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ "David S. Miller" <davem@davemloft.net>,
+ Chris Zankel <chris@zankel.net>, Max Filippov <jcmvbkbc@gmail.com>,
+ linux-arch <linux-arch@vger.kernel.org>, linux-alpha@vger.kernel.org,
+ Linux ARM <linux-arm-kernel@lists.infradead.org>,
+ linux-cris-kernel@axis.com, uclinux-h8-devel@lists.sourceforge.jp,
+ linux-ia64@vger.kernel.org, linux-m68k@lists.linux-m68k.org,
+ linux-mips@linux-mips.org, linux-am33-list@redhat.com,
+ linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, sparclinux@vger.kernel.org,
+ linux-xtensa@linux-xtensa.org,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH v2] uapi: fix asm/signal.h userspace compilation errors
+Message-ID: <20170302002022.GB27097@altlinux.org>
+References: <20170226010156.GA28831@altlinux.org>
+ <CAK8P3a0YX3RGAqWN0mwUJtBsqUX0C+QRtJLrT_UA=wX6Z+q0DA@mail.gmail.com>
 Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <CAK8P3a0YX3RGAqWN0mwUJtBsqUX0C+QRtJLrT_UA=wX6Z+q0DA@mail.gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,34 +47,245 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2017-03-01 at 21:56 +0530, Vaibhav Jain wrote:
-> Thanks for reviewing the patch !!
-> 
-> "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com> writes:
-> > 
-> > Not sure why, but many of the words in commit message are missing their
-> > first letter. See, for example:
-> > reeze_count,  roze,  eports,  ermanently
-> 
-> Thanks for pointing this out. Will fix this in the subsequent patch
-> revision.
-> 
-> > >  /**
-> > > - * eeh_pe_update_time_stamp - Update PE's frozen time stamp
-> > > + * eeh_pe_update_freeze_counter - Update PE's frozen time stamp
-> > > + * and freeze counter
-> > >   * @pe: EEH PE
-> > >   *
-> > > - * We have time stamp for each PE to trace its time of getting
-> > > - * frozen in last hour. The function should be called to update
-> > > - * the time stamp on first error of the specific PE. On the other
-> > > - * handle, we needn't account for errors happened in last hour.
-> > 
-> > s/handle/hand? "On the other hand..."
-> 
-> Thats part of original comment which this patch is replacing.
+Replace size_t with __kernel_size_t to fix asm/signal.h userspace
+compilation errors like this:
 
-It's still worth fixing. Maybe "On the other hand, we don't need to account for
-errors that happened in the last hour."
+/usr/include/asm-generic/signal.h:116:2: error: unknown type name 'size_t'
+  size_t ss_size;
 
-I really need to get around to fixing up a lot of these old comments...
+This change is not applicable to x86 port because x32 is the only
+architecture where sizeof(size_t) < sizeof(__kernel_size_t).
+
+Signed-off-by: Dmitry V. Levin <ldv@altlinux.org>
+---
+v2: create a separate patch for x86,
+    replace size_t with __kernel_size_t instead of including <stddef.h>.
+
+ include/uapi/asm-generic/signal.h      | 2 +-
+ arch/alpha/include/uapi/asm/signal.h   | 2 +-
+ arch/arm/include/uapi/asm/signal.h     | 2 +-
+ arch/avr32/include/uapi/asm/signal.h   | 2 +-
+ arch/cris/include/uapi/asm/signal.h    | 2 +-
+ arch/h8300/include/uapi/asm/signal.h   | 2 +-
+ arch/ia64/include/uapi/asm/signal.h    | 2 +-
+ arch/m32r/include/uapi/asm/signal.h    | 2 +-
+ arch/m68k/include/uapi/asm/signal.h    | 2 +-
+ arch/mips/include/uapi/asm/signal.h    | 2 +-
+ arch/mn10300/include/uapi/asm/signal.h | 2 +-
+ arch/parisc/include/uapi/asm/signal.h  | 2 +-
+ arch/powerpc/include/uapi/asm/signal.h | 2 +-
+ arch/s390/include/uapi/asm/signal.h    | 2 +-
+ arch/sparc/include/uapi/asm/signal.h   | 2 +-
+ arch/xtensa/include/uapi/asm/signal.h  | 2 +-
+ 16 files changed, 16 insertions(+), 16 deletions(-)
+
+diff --git a/include/uapi/asm-generic/signal.h b/include/uapi/asm-generic/signal.h
+index 3094618..6bbcdfa 100644
+--- a/include/uapi/asm-generic/signal.h
++++ b/include/uapi/asm-generic/signal.h
+@@ -113,7 +113,7 @@ struct sigaction {
+ typedef struct sigaltstack {
+ 	void __user *ss_sp;
+ 	int ss_flags;
+-	size_t ss_size;
++	__kernel_size_t ss_size;
+ } stack_t;
+ 
+ #endif /* __ASSEMBLY__ */
+diff --git a/arch/alpha/include/uapi/asm/signal.h b/arch/alpha/include/uapi/asm/signal.h
+index dd4ca4bc..16a2217 100644
+--- a/arch/alpha/include/uapi/asm/signal.h
++++ b/arch/alpha/include/uapi/asm/signal.h
+@@ -113,7 +113,7 @@ struct sigaction {
+ typedef struct sigaltstack {
+ 	void __user *ss_sp;
+ 	int ss_flags;
+-	size_t ss_size;
++	__kernel_size_t ss_size;
+ } stack_t;
+ 
+ /* sigstack(2) is deprecated, and will be withdrawn in a future version
+diff --git a/arch/arm/include/uapi/asm/signal.h b/arch/arm/include/uapi/asm/signal.h
+index 33073bd..859f2de 100644
+--- a/arch/arm/include/uapi/asm/signal.h
++++ b/arch/arm/include/uapi/asm/signal.h
+@@ -113,7 +113,7 @@ struct sigaction {
+ typedef struct sigaltstack {
+ 	void __user *ss_sp;
+ 	int ss_flags;
+-	size_t ss_size;
++	__kernel_size_t ss_size;
+ } stack_t;
+ 
+ 
+diff --git a/arch/avr32/include/uapi/asm/signal.h b/arch/avr32/include/uapi/asm/signal.h
+index ffe8c77..46af348 100644
+--- a/arch/avr32/include/uapi/asm/signal.h
++++ b/arch/avr32/include/uapi/asm/signal.h
+@@ -115,7 +115,7 @@ struct sigaction {
+ typedef struct sigaltstack {
+ 	void __user *ss_sp;
+ 	int ss_flags;
+-	size_t ss_size;
++	__kernel_size_t ss_size;
+ } stack_t;
+ 
+ #endif /* _UAPI__ASM_AVR32_SIGNAL_H */
+diff --git a/arch/cris/include/uapi/asm/signal.h b/arch/cris/include/uapi/asm/signal.h
+index ce42fa7..02149d2 100644
+--- a/arch/cris/include/uapi/asm/signal.h
++++ b/arch/cris/include/uapi/asm/signal.h
+@@ -109,7 +109,7 @@ struct sigaction {
+ typedef struct sigaltstack {
+ 	void *ss_sp;
+ 	int ss_flags;
+-	size_t ss_size;
++	__kernel_size_t ss_size;
+ } stack_t;
+ 
+ 
+diff --git a/arch/h8300/include/uapi/asm/signal.h b/arch/h8300/include/uapi/asm/signal.h
+index af3a6c3..0b1825d 100644
+--- a/arch/h8300/include/uapi/asm/signal.h
++++ b/arch/h8300/include/uapi/asm/signal.h
+@@ -108,7 +108,7 @@ struct sigaction {
+ typedef struct sigaltstack {
+ 	void *ss_sp;
+ 	int ss_flags;
+-	size_t ss_size;
++	__kernel_size_t ss_size;
+ } stack_t;
+ 
+ 
+diff --git a/arch/ia64/include/uapi/asm/signal.h b/arch/ia64/include/uapi/asm/signal.h
+index c0ea285..04604da 100644
+--- a/arch/ia64/include/uapi/asm/signal.h
++++ b/arch/ia64/include/uapi/asm/signal.h
+@@ -113,7 +113,7 @@ struct siginfo;
+ typedef struct sigaltstack {
+ 	void __user *ss_sp;
+ 	int ss_flags;
+-	size_t ss_size;
++	__kernel_size_t ss_size;
+ } stack_t;
+ 
+ 
+diff --git a/arch/m32r/include/uapi/asm/signal.h b/arch/m32r/include/uapi/asm/signal.h
+index 54acacb..a7f5c0b 100644
+--- a/arch/m32r/include/uapi/asm/signal.h
++++ b/arch/m32r/include/uapi/asm/signal.h
+@@ -110,7 +110,7 @@ struct sigaction {
+ typedef struct sigaltstack {
+ 	void __user *ss_sp;
+ 	int ss_flags;
+-	size_t ss_size;
++	__kernel_size_t ss_size;
+ } stack_t;
+ 
+ 
+diff --git a/arch/m68k/include/uapi/asm/signal.h b/arch/m68k/include/uapi/asm/signal.h
+index cba6f85..387fddc 100644
+--- a/arch/m68k/include/uapi/asm/signal.h
++++ b/arch/m68k/include/uapi/asm/signal.h
+@@ -106,7 +106,7 @@ struct sigaction {
+ typedef struct sigaltstack {
+ 	void __user *ss_sp;
+ 	int ss_flags;
+-	size_t ss_size;
++	__kernel_size_t ss_size;
+ } stack_t;
+ 
+ #endif /* _UAPI_M68K_SIGNAL_H */
+diff --git a/arch/mips/include/uapi/asm/signal.h b/arch/mips/include/uapi/asm/signal.h
+index addb9f5..6ec6885 100644
+--- a/arch/mips/include/uapi/asm/signal.h
++++ b/arch/mips/include/uapi/asm/signal.h
+@@ -111,7 +111,7 @@ struct sigaction {
+ /* IRIX compatible stack_t  */
+ typedef struct sigaltstack {
+ 	void __user *ss_sp;
+-	size_t ss_size;
++	__kernel_size_t ss_size;
+ 	int ss_flags;
+ } stack_t;
+ 
+diff --git a/arch/mn10300/include/uapi/asm/signal.h b/arch/mn10300/include/uapi/asm/signal.h
+index f423a08..c17d363 100644
+--- a/arch/mn10300/include/uapi/asm/signal.h
++++ b/arch/mn10300/include/uapi/asm/signal.h
+@@ -118,7 +118,7 @@ struct sigaction {
+ typedef struct sigaltstack {
+ 	void __user	*ss_sp;
+ 	int		ss_flags;
+-	size_t		ss_size;
++	__kernel_size_t		ss_size;
+ } stack_t;
+ 
+ 
+diff --git a/arch/parisc/include/uapi/asm/signal.h b/arch/parisc/include/uapi/asm/signal.h
+index e26043b..403e2d8 100644
+--- a/arch/parisc/include/uapi/asm/signal.h
++++ b/arch/parisc/include/uapi/asm/signal.h
+@@ -99,7 +99,7 @@ typedef __signalfn_t __user *__sighandler_t;
+ typedef struct sigaltstack {
+ 	void __user *ss_sp;
+ 	int ss_flags;
+-	size_t ss_size;
++	__kernel_size_t ss_size;
+ } stack_t;
+ 
+ #endif /* !__ASSEMBLY */
+diff --git a/arch/powerpc/include/uapi/asm/signal.h b/arch/powerpc/include/uapi/asm/signal.h
+index 6c69ee9..c1c2a0b 100644
+--- a/arch/powerpc/include/uapi/asm/signal.h
++++ b/arch/powerpc/include/uapi/asm/signal.h
+@@ -109,7 +109,7 @@ struct sigaction {
+ typedef struct sigaltstack {
+ 	void __user *ss_sp;
+ 	int ss_flags;
+-	size_t ss_size;
++	__kernel_size_t ss_size;
+ } stack_t;
+ 
+ 
+diff --git a/arch/s390/include/uapi/asm/signal.h b/arch/s390/include/uapi/asm/signal.h
+index 2f43cfb..b8c2db6 100644
+--- a/arch/s390/include/uapi/asm/signal.h
++++ b/arch/s390/include/uapi/asm/signal.h
+@@ -122,7 +122,7 @@ struct sigaction {
+ typedef struct sigaltstack {
+         void __user *ss_sp;
+         int ss_flags;
+-        size_t ss_size;
++        __kernel_size_t ss_size;
+ } stack_t;
+ 
+ 
+diff --git a/arch/sparc/include/uapi/asm/signal.h b/arch/sparc/include/uapi/asm/signal.h
+index f387400..cd6c036 100644
+--- a/arch/sparc/include/uapi/asm/signal.h
++++ b/arch/sparc/include/uapi/asm/signal.h
+@@ -172,7 +172,7 @@ struct __old_sigaction {
+ typedef struct sigaltstack {
+ 	void			__user *ss_sp;
+ 	int			ss_flags;
+-	size_t			ss_size;
++	__kernel_size_t			ss_size;
+ } stack_t;
+ 
+ 
+diff --git a/arch/xtensa/include/uapi/asm/signal.h b/arch/xtensa/include/uapi/asm/signal.h
+index 586756e..d835627 100644
+--- a/arch/xtensa/include/uapi/asm/signal.h
++++ b/arch/xtensa/include/uapi/asm/signal.h
+@@ -126,7 +126,7 @@ struct sigaction {
+ typedef struct sigaltstack {
+ 	void *ss_sp;
+ 	int ss_flags;
+-	size_t ss_size;
++	__kernel_size_t ss_size;
+ } stack_t;
+ 
+ #endif	/* __ASSEMBLY__ */
+-- 
+ldv
