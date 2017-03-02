@@ -1,7 +1,7 @@
 Return-Path: <aik@ozlabs.ru>
 Received: from ozlabs.ru (ozlabs.ru [107.173.13.209])
- by lists.ozlabs.org (Postfix) with ESMTP id 3vYmQh5K5CzDqGw
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Mar 2017 19:57:00 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id 3vYmQp6Xw3zDqC0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Mar 2017 19:57:06 +1100 (AEDT)
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
@@ -9,10 +9,9 @@ Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
  David Gibson <david@gibson.dropbear.id.au>,
  Paul Mackerras <paulus@samba.org>, kvm-ppc@vger.kernel.org,
  kvm@vger.kernel.org
-Subject: [PATCH kernel v6 06/10] KVM: PPC: Enable IOMMU_API for KVM_BOOK3S_64
- permanently
-Date: Thu,  2 Mar 2017 19:56:40 +1100
-Message-Id: <20170302085644.41828-7-aik@ozlabs.ru>
+Subject: [PATCH kernel v6 09/10] KVM: PPC: iommu: Unify TCE checking
+Date: Thu,  2 Mar 2017 19:56:43 +1100
+Message-Id: <20170302085644.41828-10-aik@ozlabs.ru>
 In-Reply-To: <20170302085644.41828-1-aik@ozlabs.ru>
 References: <20170302085644.41828-1-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,32 +23,186 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-It does not make much sense to have KVM in book3s-64 and
-not to have IOMMU bits for PCI pass through support as it costs little
-and allows VFIO to function on book3s KVM.
+This reworks helpers for checking TCE update parameters in way they
+can be used in KVM.
 
-Having IOMMU_API always enabled makes it unnecessary to have a lot of
-"#ifdef IOMMU_API" in arch/powerpc/kvm/book3s_64_vio*. With those
-ifdef's we could have only user space emulated devices accelerated
-(but not VFIO) which do not seem to be very useful.
+This should cause no behavioral change.
 
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 ---
- arch/powerpc/kvm/Kconfig | 1 +
- 1 file changed, 1 insertion(+)
+Changes:
+v6:
+* s/tce/gpa/ as TCE without permission bits is a GPA and this is what is
+passed everywhere
+---
+ arch/powerpc/include/asm/iommu.h    | 20 +++++++++++++++-----
+ arch/powerpc/include/asm/kvm_ppc.h  |  6 ++++--
+ arch/powerpc/kernel/iommu.c         | 37 +++++++++++++------------------------
+ arch/powerpc/kvm/book3s_64_vio_hv.c | 31 +++++++------------------------
+ 4 files changed, 39 insertions(+), 55 deletions(-)
 
-diff --git a/arch/powerpc/kvm/Kconfig b/arch/powerpc/kvm/Kconfig
-index 029be26b5a17..65a471de96de 100644
---- a/arch/powerpc/kvm/Kconfig
-+++ b/arch/powerpc/kvm/Kconfig
-@@ -67,6 +67,7 @@ config KVM_BOOK3S_64
- 	select KVM_BOOK3S_64_HANDLER
- 	select KVM
- 	select KVM_BOOK3S_PR_POSSIBLE if !KVM_BOOK3S_HV_POSSIBLE
-+	select SPAPR_TCE_IOMMU if IOMMU_SUPPORT
- 	---help---
- 	  Support running unmodified book3s_64 and book3s_32 guest kernels
- 	  in virtual machines on book3s_64 host processors.
+diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/asm/iommu.h
+index 82e77ebf85f4..1e6b03339a68 100644
+--- a/arch/powerpc/include/asm/iommu.h
++++ b/arch/powerpc/include/asm/iommu.h
+@@ -296,11 +296,21 @@ static inline void iommu_restore(void)
+ #endif
+ 
+ /* The API to support IOMMU operations for VFIO */
+-extern int iommu_tce_clear_param_check(struct iommu_table *tbl,
+-		unsigned long ioba, unsigned long tce_value,
+-		unsigned long npages);
+-extern int iommu_tce_put_param_check(struct iommu_table *tbl,
+-		unsigned long ioba, unsigned long tce);
++extern int iommu_tce_check_ioba(unsigned long page_shift,
++		unsigned long offset, unsigned long size,
++		unsigned long ioba, unsigned long npages);
++extern int iommu_tce_check_gpa(unsigned long page_shift,
++		unsigned long gpa);
++
++#define iommu_tce_clear_param_check(tbl, ioba, tce_value, npages) \
++		(iommu_tce_check_ioba((tbl)->it_page_shift,       \
++				(tbl)->it_offset, (tbl)->it_size, \
++				(ioba), (npages)) || (tce_value))
++#define iommu_tce_put_param_check(tbl, ioba, gpa)                 \
++		(iommu_tce_check_ioba((tbl)->it_page_shift,       \
++				(tbl)->it_offset, (tbl)->it_size, \
++				(ioba), 1) ||                     \
++		iommu_tce_check_gpa((tbl)->it_page_shift, (gpa)))
+ 
+ extern void iommu_flush_tce(struct iommu_table *tbl);
+ extern int iommu_take_ownership(struct iommu_table *tbl);
+diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
+index eba8988d8443..72c2a155641f 100644
+--- a/arch/powerpc/include/asm/kvm_ppc.h
++++ b/arch/powerpc/include/asm/kvm_ppc.h
+@@ -169,8 +169,10 @@ extern long kvm_vm_ioctl_create_spapr_tce(struct kvm *kvm,
+ 				struct kvm_create_spapr_tce_64 *args);
+ extern struct kvmppc_spapr_tce_table *kvmppc_find_table(
+ 		struct kvm *kvm, unsigned long liobn);
+-extern long kvmppc_ioba_validate(struct kvmppc_spapr_tce_table *stt,
+-		unsigned long ioba, unsigned long npages);
++#define kvmppc_ioba_validate(stt, ioba, npages)                         \
++		(iommu_tce_check_ioba((stt)->page_shift, (stt)->offset, \
++				(stt)->size, (ioba), (npages)) ?        \
++				H_PARAMETER : H_SUCCESS)
+ extern long kvmppc_tce_validate(struct kvmppc_spapr_tce_table *tt,
+ 		unsigned long tce);
+ extern long kvmppc_gpa_to_ua(struct kvm *kvm, unsigned long gpa,
+diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
+index d02b8d22fb50..4269f9f1623b 100644
+--- a/arch/powerpc/kernel/iommu.c
++++ b/arch/powerpc/kernel/iommu.c
+@@ -960,47 +960,36 @@ void iommu_flush_tce(struct iommu_table *tbl)
+ }
+ EXPORT_SYMBOL_GPL(iommu_flush_tce);
+ 
+-int iommu_tce_clear_param_check(struct iommu_table *tbl,
+-		unsigned long ioba, unsigned long tce_value,
+-		unsigned long npages)
++int iommu_tce_check_ioba(unsigned long page_shift,
++		unsigned long offset, unsigned long size,
++		unsigned long ioba, unsigned long npages)
+ {
+-	/* tbl->it_ops->clear() does not support any value but 0 */
+-	if (tce_value)
+-		return -EINVAL;
++	unsigned long mask = (1UL << page_shift) - 1;
+ 
+-	if (ioba & ~IOMMU_PAGE_MASK(tbl))
++	if (ioba & mask)
+ 		return -EINVAL;
+ 
+-	ioba >>= tbl->it_page_shift;
+-	if (ioba < tbl->it_offset)
++	ioba >>= page_shift;
++	if (ioba < offset)
+ 		return -EINVAL;
+ 
+-	if ((ioba + npages) > (tbl->it_offset + tbl->it_size))
++	if ((ioba + 1) > (offset + size))
+ 		return -EINVAL;
+ 
+ 	return 0;
+ }
+-EXPORT_SYMBOL_GPL(iommu_tce_clear_param_check);
++EXPORT_SYMBOL_GPL(iommu_tce_check_ioba);
+ 
+-int iommu_tce_put_param_check(struct iommu_table *tbl,
+-		unsigned long ioba, unsigned long tce)
++int iommu_tce_check_gpa(unsigned long page_shift, unsigned long gpa)
+ {
+-	if (tce & ~IOMMU_PAGE_MASK(tbl))
+-		return -EINVAL;
+-
+-	if (ioba & ~IOMMU_PAGE_MASK(tbl))
+-		return -EINVAL;
+-
+-	ioba >>= tbl->it_page_shift;
+-	if (ioba < tbl->it_offset)
+-		return -EINVAL;
++	unsigned long mask = (1UL << page_shift) - 1;
+ 
+-	if ((ioba + 1) > (tbl->it_offset + tbl->it_size))
++	if (gpa & mask)
+ 		return -EINVAL;
+ 
+ 	return 0;
+ }
+-EXPORT_SYMBOL_GPL(iommu_tce_put_param_check);
++EXPORT_SYMBOL_GPL(iommu_tce_check_gpa);
+ 
+ long iommu_tce_xchg(struct iommu_table *tbl, unsigned long entry,
+ 		unsigned long *hpa, enum dma_data_direction *direction)
+diff --git a/arch/powerpc/kvm/book3s_64_vio_hv.c b/arch/powerpc/kvm/book3s_64_vio_hv.c
+index 0f145fc7a3a5..440d3ab5dc32 100644
+--- a/arch/powerpc/kvm/book3s_64_vio_hv.c
++++ b/arch/powerpc/kvm/book3s_64_vio_hv.c
+@@ -62,27 +62,6 @@ struct kvmppc_spapr_tce_table *kvmppc_find_table(struct kvm *kvm,
+ EXPORT_SYMBOL_GPL(kvmppc_find_table);
+ 
+ /*
+- * Validates IO address.
+- *
+- * WARNING: This will be called in real-mode on HV KVM and virtual
+- *          mode on PR KVM
+- */
+-long kvmppc_ioba_validate(struct kvmppc_spapr_tce_table *stt,
+-		unsigned long ioba, unsigned long npages)
+-{
+-	unsigned long mask = (1ULL << stt->page_shift) - 1;
+-	unsigned long idx = ioba >> stt->page_shift;
+-
+-	if ((ioba & mask) || (idx < stt->offset) ||
+-			(idx - stt->offset + npages > stt->size) ||
+-			(idx + npages < idx))
+-		return H_PARAMETER;
+-
+-	return H_SUCCESS;
+-}
+-EXPORT_SYMBOL_GPL(kvmppc_ioba_validate);
+-
+-/*
+  * Validates TCE address.
+  * At the moment flags and page mask are validated.
+  * As the host kernel does not access those addresses (just puts them
+@@ -95,10 +74,14 @@ EXPORT_SYMBOL_GPL(kvmppc_ioba_validate);
+  */
+ long kvmppc_tce_validate(struct kvmppc_spapr_tce_table *stt, unsigned long tce)
+ {
+-	unsigned long page_mask = ~((1ULL << stt->page_shift) - 1);
+-	unsigned long mask = ~(page_mask | TCE_PCI_WRITE | TCE_PCI_READ);
++	unsigned long gpa = tce & ~(TCE_PCI_READ | TCE_PCI_WRITE);
++	enum dma_data_direction dir = iommu_tce_direction(tce);
+ 
+-	if (tce & mask)
++	/* Allow userspace to poison TCE table */
++	if (dir == DMA_NONE)
++		return H_SUCCESS;
++
++	if (iommu_tce_check_gpa(stt->page_shift, gpa))
+ 		return H_PARAMETER;
+ 
+ 	return H_SUCCESS;
 -- 
 2.11.0
