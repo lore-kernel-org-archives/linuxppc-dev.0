@@ -1,18 +1,13 @@
 Return-Path: <ldv@altlinux.org>
 Received: from vmicros1.altlinux.org (vmicros1.altlinux.org [194.107.17.57])
- by lists.ozlabs.org (Postfix) with ESMTP id 3vYXyg0fL5zDqLf
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Mar 2017 11:20:26 +1100 (AEDT)
-Date: Thu, 2 Mar 2017 03:20:22 +0300
+ by lists.ozlabs.org (Postfix) with ESMTP id 3vYY0Y05ypzDqLf
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Mar 2017 11:22:04 +1100 (AEDT)
+Date: Thu, 2 Mar 2017 03:22:03 +0300
 From: "Dmitry V. Levin" <ldv@altlinux.org>
 To: Arnd Bergmann <arnd@arndb.de>
-Cc: Russell King <linux@armlinux.org.uk>,
- Haavard Skinnemoen <hskinnemoen@gmail.com>,
+Cc: Haavard Skinnemoen <hskinnemoen@gmail.com>,
  Hans-Christian Egtvedt <egtvedt@samfundet.no>,
- Mikael Starvik <starvik@axis.com>,
- Jesper Nilsson <jesper.nilsson@axis.com>,
- Yoshinori Sato <ysato@users.sourceforge.jp>,
  Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
- Geert Uytterhoeven <geert@linux-m68k.org>,
  Ralf Baechle <ralf@linux-mips.org>, David Howells <dhowells@redhat.com>,
  "James E.J. Bottomley" <jejb@parisc-linux.org>,
  Helge Deller <deller@gmx.de>,
@@ -22,22 +17,17 @@ Cc: Russell King <linux@armlinux.org.uk>,
  Heiko Carstens <heiko.carstens@de.ibm.com>,
  "David S. Miller" <davem@davemloft.net>,
  Chris Zankel <chris@zankel.net>, Max Filippov <jcmvbkbc@gmail.com>,
- linux-arch <linux-arch@vger.kernel.org>, linux-alpha@vger.kernel.org,
- Linux ARM <linux-arm-kernel@lists.infradead.org>,
- linux-cris-kernel@axis.com, uclinux-h8-devel@lists.sourceforge.jp,
- linux-ia64@vger.kernel.org, linux-m68k@lists.linux-m68k.org,
- linux-mips@linux-mips.org, linux-am33-list@redhat.com,
- linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, sparclinux@vger.kernel.org,
- linux-xtensa@linux-xtensa.org,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH v2] uapi: fix asm/signal.h userspace compilation errors
-Message-ID: <20170302002022.GB27097@altlinux.org>
-References: <20170226010156.GA28831@altlinux.org>
- <CAK8P3a0YX3RGAqWN0mwUJtBsqUX0C+QRtJLrT_UA=wX6Z+q0DA@mail.gmail.com>
+ linux-arch@vger.kernel.org, linux-alpha@vger.kernel.org,
+ linux-ia64@vger.kernel.org, linux-mips@linux-mips.org,
+ linux-am33-list@redhat.com, linux-parisc@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ sparclinux@vger.kernel.org, linux-xtensa@linux-xtensa.org,
+ linux-kernel@vger.kernel.org
+Subject: [PATCH 1/3] uapi: fix asm/msgbuf.h userspace compilation errors
+Message-ID: <20170302002202.GA27132@altlinux.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CAK8P3a0YX3RGAqWN0mwUJtBsqUX0C+QRtJLrT_UA=wX6Z+q0DA@mail.gmail.com>
+In-Reply-To: <CAK8P3a3Ptm68i43BT5+kWptDw1koPwexpuFwH3-1naj_xi+arQ@mail.gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,245 +37,214 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Replace size_t with __kernel_size_t to fix asm/signal.h userspace
-compilation errors like this:
+Include <asm/ipcbuf.h> to fix asm/msgbuf.h userspace compilation errors
+like this:
 
-/usr/include/asm-generic/signal.h:116:2: error: unknown type name 'size_t'
-  size_t ss_size;
-
-This change is not applicable to x86 port because x32 is the only
-architecture where sizeof(size_t) < sizeof(__kernel_size_t).
+/usr/include/asm-generic/msgbuf.h:25:20: error: field 'msg_perm' has incomplete type
+  struct ipc64_perm msg_perm;
+/usr/include/asm-generic/msgbuf.h:26:2: error: unknown type name '__kernel_time_t'
+  __kernel_time_t msg_stime; /* last msgsnd time */
+/usr/include/asm-generic/msgbuf.h:30:2: error: unknown type name '__kernel_time_t'
+  __kernel_time_t msg_rtime; /* last msgrcv time */
+/usr/include/asm-generic/msgbuf.h:34:2: error: unknown type name '__kernel_time_t'
+  __kernel_time_t msg_ctime; /* last change time */
+/usr/include/asm-generic/msgbuf.h:38:2: error: unknown type name '__kernel_ulong_t'
+  __kernel_ulong_t msg_cbytes; /* current number of bytes on queue */
+/usr/include/asm-generic/msgbuf.h:39:2: error: unknown type name '__kernel_ulong_t'
+  __kernel_ulong_t msg_qnum; /* number of messages in queue */
+/usr/include/asm-generic/msgbuf.h:40:2: error: unknown type name '__kernel_ulong_t'
+  __kernel_ulong_t msg_qbytes; /* max number of bytes on queue */
+/usr/include/asm-generic/msgbuf.h:41:2: error: unknown type name '__kernel_pid_t'
+  __kernel_pid_t msg_lspid; /* pid of last msgsnd */
+/usr/include/asm-generic/msgbuf.h:42:2: error: unknown type name '__kernel_pid_t'
+  __kernel_pid_t msg_lrpid; /* last receive pid */
+/usr/include/asm-generic/msgbuf.h:43:2: error: unknown type name '__kernel_ulong_t'
+  __kernel_ulong_t __unused4;
+/usr/include/asm-generic/msgbuf.h:44:2: error: unknown type name '__kernel_ulong_t'
+  __kernel_ulong_t __unused5;
 
 Signed-off-by: Dmitry V. Levin <ldv@altlinux.org>
 ---
-v2: create a separate patch for x86,
-    replace size_t with __kernel_size_t instead of including <stddef.h>.
+ include/uapi/asm-generic/msgbuf.h      | 1 +
+ arch/alpha/include/uapi/asm/msgbuf.h   | 2 ++
+ arch/avr32/include/uapi/asm/msgbuf.h   | 2 ++
+ arch/frv/include/uapi/asm/msgbuf.h     | 2 ++
+ arch/ia64/include/uapi/asm/msgbuf.h    | 2 ++
+ arch/m32r/include/uapi/asm/msgbuf.h    | 2 ++
+ arch/mips/include/uapi/asm/msgbuf.h    | 1 +
+ arch/mn10300/include/uapi/asm/msgbuf.h | 2 ++
+ arch/parisc/include/uapi/asm/msgbuf.h  | 1 +
+ arch/powerpc/include/uapi/asm/msgbuf.h | 2 ++
+ arch/s390/include/uapi/asm/msgbuf.h    | 2 ++
+ arch/sparc/include/uapi/asm/msgbuf.h   | 2 ++
+ arch/xtensa/include/uapi/asm/msgbuf.h  | 2 ++
+ 13 files changed, 23 insertions(+)
 
- include/uapi/asm-generic/signal.h      | 2 +-
- arch/alpha/include/uapi/asm/signal.h   | 2 +-
- arch/arm/include/uapi/asm/signal.h     | 2 +-
- arch/avr32/include/uapi/asm/signal.h   | 2 +-
- arch/cris/include/uapi/asm/signal.h    | 2 +-
- arch/h8300/include/uapi/asm/signal.h   | 2 +-
- arch/ia64/include/uapi/asm/signal.h    | 2 +-
- arch/m32r/include/uapi/asm/signal.h    | 2 +-
- arch/m68k/include/uapi/asm/signal.h    | 2 +-
- arch/mips/include/uapi/asm/signal.h    | 2 +-
- arch/mn10300/include/uapi/asm/signal.h | 2 +-
- arch/parisc/include/uapi/asm/signal.h  | 2 +-
- arch/powerpc/include/uapi/asm/signal.h | 2 +-
- arch/s390/include/uapi/asm/signal.h    | 2 +-
- arch/sparc/include/uapi/asm/signal.h   | 2 +-
- arch/xtensa/include/uapi/asm/signal.h  | 2 +-
- 16 files changed, 16 insertions(+), 16 deletions(-)
-
-diff --git a/include/uapi/asm-generic/signal.h b/include/uapi/asm-generic/signal.h
-index 3094618..6bbcdfa 100644
---- a/include/uapi/asm-generic/signal.h
-+++ b/include/uapi/asm-generic/signal.h
-@@ -113,7 +113,7 @@ struct sigaction {
- typedef struct sigaltstack {
- 	void __user *ss_sp;
- 	int ss_flags;
--	size_t ss_size;
-+	__kernel_size_t ss_size;
- } stack_t;
+diff --git a/include/uapi/asm-generic/msgbuf.h b/include/uapi/asm-generic/msgbuf.h
+index f55ecc4..f3c3b43 100644
+--- a/include/uapi/asm-generic/msgbuf.h
++++ b/include/uapi/asm-generic/msgbuf.h
+@@ -1,6 +1,7 @@
+ #ifndef __ASM_GENERIC_MSGBUF_H
+ #define __ASM_GENERIC_MSGBUF_H
  
- #endif /* __ASSEMBLY__ */
-diff --git a/arch/alpha/include/uapi/asm/signal.h b/arch/alpha/include/uapi/asm/signal.h
-index dd4ca4bc..16a2217 100644
---- a/arch/alpha/include/uapi/asm/signal.h
-+++ b/arch/alpha/include/uapi/asm/signal.h
-@@ -113,7 +113,7 @@ struct sigaction {
- typedef struct sigaltstack {
- 	void __user *ss_sp;
- 	int ss_flags;
--	size_t ss_size;
-+	__kernel_size_t ss_size;
- } stack_t;
++#include <asm/ipcbuf.h>
+ #include <asm/bitsperlong.h>
+ /*
+  * generic msqid64_ds structure.
+diff --git a/arch/alpha/include/uapi/asm/msgbuf.h b/arch/alpha/include/uapi/asm/msgbuf.h
+index 9849650..8de899a 100644
+--- a/arch/alpha/include/uapi/asm/msgbuf.h
++++ b/arch/alpha/include/uapi/asm/msgbuf.h
+@@ -1,6 +1,8 @@
+ #ifndef _ALPHA_MSGBUF_H
+ #define _ALPHA_MSGBUF_H
  
- /* sigstack(2) is deprecated, and will be withdrawn in a future version
-diff --git a/arch/arm/include/uapi/asm/signal.h b/arch/arm/include/uapi/asm/signal.h
-index 33073bd..859f2de 100644
---- a/arch/arm/include/uapi/asm/signal.h
-+++ b/arch/arm/include/uapi/asm/signal.h
-@@ -113,7 +113,7 @@ struct sigaction {
- typedef struct sigaltstack {
- 	void __user *ss_sp;
- 	int ss_flags;
--	size_t ss_size;
-+	__kernel_size_t ss_size;
- } stack_t;
++#include <asm/ipcbuf.h>
++
+ /* 
+  * The msqid64_ds structure for alpha architecture.
+  * Note extra padding because this structure is passed back and forth
+diff --git a/arch/avr32/include/uapi/asm/msgbuf.h b/arch/avr32/include/uapi/asm/msgbuf.h
+index 9eae6ef..45cdffb 100644
+--- a/arch/avr32/include/uapi/asm/msgbuf.h
++++ b/arch/avr32/include/uapi/asm/msgbuf.h
+@@ -1,6 +1,8 @@
+ #ifndef _UAPI__ASM_AVR32_MSGBUF_H
+ #define _UAPI__ASM_AVR32_MSGBUF_H
  
++#include <asm/ipcbuf.h>
++
+ /*
+  * The msqid64_ds structure for i386 architecture.
+  * Note extra padding because this structure is passed back and forth
+diff --git a/arch/frv/include/uapi/asm/msgbuf.h b/arch/frv/include/uapi/asm/msgbuf.h
+index 97ceb55..92d6656 100644
+--- a/arch/frv/include/uapi/asm/msgbuf.h
++++ b/arch/frv/include/uapi/asm/msgbuf.h
+@@ -1,6 +1,8 @@
+ #ifndef _ASM_MSGBUF_H
+ #define _ASM_MSGBUF_H
  
-diff --git a/arch/avr32/include/uapi/asm/signal.h b/arch/avr32/include/uapi/asm/signal.h
-index ffe8c77..46af348 100644
---- a/arch/avr32/include/uapi/asm/signal.h
-+++ b/arch/avr32/include/uapi/asm/signal.h
-@@ -115,7 +115,7 @@ struct sigaction {
- typedef struct sigaltstack {
- 	void __user *ss_sp;
- 	int ss_flags;
--	size_t ss_size;
-+	__kernel_size_t ss_size;
- } stack_t;
++#include <asm/ipcbuf.h>
++
+ /*
+  * The msqid64_ds structure for FR-V architecture.
+  * Note extra padding because this structure is passed back and forth
+diff --git a/arch/ia64/include/uapi/asm/msgbuf.h b/arch/ia64/include/uapi/asm/msgbuf.h
+index 6c64c0d..9a31b60 100644
+--- a/arch/ia64/include/uapi/asm/msgbuf.h
++++ b/arch/ia64/include/uapi/asm/msgbuf.h
+@@ -1,6 +1,8 @@
+ #ifndef _ASM_IA64_MSGBUF_H
+ #define _ASM_IA64_MSGBUF_H
  
- #endif /* _UAPI__ASM_AVR32_SIGNAL_H */
-diff --git a/arch/cris/include/uapi/asm/signal.h b/arch/cris/include/uapi/asm/signal.h
-index ce42fa7..02149d2 100644
---- a/arch/cris/include/uapi/asm/signal.h
-+++ b/arch/cris/include/uapi/asm/signal.h
-@@ -109,7 +109,7 @@ struct sigaction {
- typedef struct sigaltstack {
- 	void *ss_sp;
- 	int ss_flags;
--	size_t ss_size;
-+	__kernel_size_t ss_size;
- } stack_t;
++#include <asm/ipcbuf.h>
++
+ /*
+  * The msqid64_ds structure for IA-64 architecture.
+  * Note extra padding because this structure is passed back and forth
+diff --git a/arch/m32r/include/uapi/asm/msgbuf.h b/arch/m32r/include/uapi/asm/msgbuf.h
+index 0d5a877..4786c0c 100644
+--- a/arch/m32r/include/uapi/asm/msgbuf.h
++++ b/arch/m32r/include/uapi/asm/msgbuf.h
+@@ -1,6 +1,8 @@
+ #ifndef _ASM_M32R_MSGBUF_H
+ #define _ASM_M32R_MSGBUF_H
  
++#include <asm/ipcbuf.h>
++
+ /*
+  * The msqid64_ds structure for m32r architecture.
+  * Note extra padding because this structure is passed back and forth
+diff --git a/arch/mips/include/uapi/asm/msgbuf.h b/arch/mips/include/uapi/asm/msgbuf.h
+index df849e8..c84a388 100644
+--- a/arch/mips/include/uapi/asm/msgbuf.h
++++ b/arch/mips/include/uapi/asm/msgbuf.h
+@@ -1,6 +1,7 @@
+ #ifndef _ASM_MSGBUF_H
+ #define _ASM_MSGBUF_H
  
-diff --git a/arch/h8300/include/uapi/asm/signal.h b/arch/h8300/include/uapi/asm/signal.h
-index af3a6c3..0b1825d 100644
---- a/arch/h8300/include/uapi/asm/signal.h
-+++ b/arch/h8300/include/uapi/asm/signal.h
-@@ -108,7 +108,7 @@ struct sigaction {
- typedef struct sigaltstack {
- 	void *ss_sp;
- 	int ss_flags;
--	size_t ss_size;
-+	__kernel_size_t ss_size;
- } stack_t;
++#include <asm/ipcbuf.h>
  
+ /*
+  * The msqid64_ds structure for the MIPS architecture.
+diff --git a/arch/mn10300/include/uapi/asm/msgbuf.h b/arch/mn10300/include/uapi/asm/msgbuf.h
+index 8b60245..f1c5dd5 100644
+--- a/arch/mn10300/include/uapi/asm/msgbuf.h
++++ b/arch/mn10300/include/uapi/asm/msgbuf.h
+@@ -1,6 +1,8 @@
+ #ifndef _ASM_MSGBUF_H
+ #define _ASM_MSGBUF_H
  
-diff --git a/arch/ia64/include/uapi/asm/signal.h b/arch/ia64/include/uapi/asm/signal.h
-index c0ea285..04604da 100644
---- a/arch/ia64/include/uapi/asm/signal.h
-+++ b/arch/ia64/include/uapi/asm/signal.h
-@@ -113,7 +113,7 @@ struct siginfo;
- typedef struct sigaltstack {
- 	void __user *ss_sp;
- 	int ss_flags;
--	size_t ss_size;
-+	__kernel_size_t ss_size;
- } stack_t;
++#include <asm/ipcbuf.h>
++
+ /*
+  * The msqid64_ds structure for MN10300 architecture.
+  * Note extra padding because this structure is passed back and forth
+diff --git a/arch/parisc/include/uapi/asm/msgbuf.h b/arch/parisc/include/uapi/asm/msgbuf.h
+index 2e83ac7..c70f1d3 100644
+--- a/arch/parisc/include/uapi/asm/msgbuf.h
++++ b/arch/parisc/include/uapi/asm/msgbuf.h
+@@ -1,6 +1,7 @@
+ #ifndef _PARISC_MSGBUF_H
+ #define _PARISC_MSGBUF_H
  
++#include <asm/ipcbuf.h>
+ #include <asm/bitsperlong.h>
  
-diff --git a/arch/m32r/include/uapi/asm/signal.h b/arch/m32r/include/uapi/asm/signal.h
-index 54acacb..a7f5c0b 100644
---- a/arch/m32r/include/uapi/asm/signal.h
-+++ b/arch/m32r/include/uapi/asm/signal.h
-@@ -110,7 +110,7 @@ struct sigaction {
- typedef struct sigaltstack {
- 	void __user *ss_sp;
- 	int ss_flags;
--	size_t ss_size;
-+	__kernel_size_t ss_size;
- } stack_t;
+ /* 
+diff --git a/arch/powerpc/include/uapi/asm/msgbuf.h b/arch/powerpc/include/uapi/asm/msgbuf.h
+index dd76743..3b87d25 100644
+--- a/arch/powerpc/include/uapi/asm/msgbuf.h
++++ b/arch/powerpc/include/uapi/asm/msgbuf.h
+@@ -1,6 +1,8 @@
+ #ifndef _ASM_POWERPC_MSGBUF_H
+ #define _ASM_POWERPC_MSGBUF_H
  
++#include <asm/ipcbuf.h>
++
+ /*
+  * The msqid64_ds structure for the PowerPC architecture.
+  * Note extra padding because this structure is passed back and forth
+diff --git a/arch/s390/include/uapi/asm/msgbuf.h b/arch/s390/include/uapi/asm/msgbuf.h
+index 1bbdee9..ab04112 100644
+--- a/arch/s390/include/uapi/asm/msgbuf.h
++++ b/arch/s390/include/uapi/asm/msgbuf.h
+@@ -1,6 +1,8 @@
+ #ifndef _S390_MSGBUF_H
+ #define _S390_MSGBUF_H
  
-diff --git a/arch/m68k/include/uapi/asm/signal.h b/arch/m68k/include/uapi/asm/signal.h
-index cba6f85..387fddc 100644
---- a/arch/m68k/include/uapi/asm/signal.h
-+++ b/arch/m68k/include/uapi/asm/signal.h
-@@ -106,7 +106,7 @@ struct sigaction {
- typedef struct sigaltstack {
- 	void __user *ss_sp;
- 	int ss_flags;
--	size_t ss_size;
-+	__kernel_size_t ss_size;
- } stack_t;
++#include <asm/ipcbuf.h>
++
+ /* 
+  * The msqid64_ds structure for S/390 architecture.
+  * Note extra padding because this structure is passed back and forth
+diff --git a/arch/sparc/include/uapi/asm/msgbuf.h b/arch/sparc/include/uapi/asm/msgbuf.h
+index efc7cbe9..699f631 100644
+--- a/arch/sparc/include/uapi/asm/msgbuf.h
++++ b/arch/sparc/include/uapi/asm/msgbuf.h
+@@ -1,6 +1,8 @@
+ #ifndef _SPARC_MSGBUF_H
+ #define _SPARC_MSGBUF_H
  
- #endif /* _UAPI_M68K_SIGNAL_H */
-diff --git a/arch/mips/include/uapi/asm/signal.h b/arch/mips/include/uapi/asm/signal.h
-index addb9f5..6ec6885 100644
---- a/arch/mips/include/uapi/asm/signal.h
-+++ b/arch/mips/include/uapi/asm/signal.h
-@@ -111,7 +111,7 @@ struct sigaction {
- /* IRIX compatible stack_t  */
- typedef struct sigaltstack {
- 	void __user *ss_sp;
--	size_t ss_size;
-+	__kernel_size_t ss_size;
- 	int ss_flags;
- } stack_t;
++#include <asm/ipcbuf.h>
++
+ /*
+  * The msqid64_ds structure for sparc64 architecture.
+  * Note extra padding because this structure is passed back and forth
+diff --git a/arch/xtensa/include/uapi/asm/msgbuf.h b/arch/xtensa/include/uapi/asm/msgbuf.h
+index 693c967..b75458b 100644
+--- a/arch/xtensa/include/uapi/asm/msgbuf.h
++++ b/arch/xtensa/include/uapi/asm/msgbuf.h
+@@ -17,6 +17,8 @@
+ #ifndef _XTENSA_MSGBUF_H
+ #define _XTENSA_MSGBUF_H
  
-diff --git a/arch/mn10300/include/uapi/asm/signal.h b/arch/mn10300/include/uapi/asm/signal.h
-index f423a08..c17d363 100644
---- a/arch/mn10300/include/uapi/asm/signal.h
-+++ b/arch/mn10300/include/uapi/asm/signal.h
-@@ -118,7 +118,7 @@ struct sigaction {
- typedef struct sigaltstack {
- 	void __user	*ss_sp;
- 	int		ss_flags;
--	size_t		ss_size;
-+	__kernel_size_t		ss_size;
- } stack_t;
- 
- 
-diff --git a/arch/parisc/include/uapi/asm/signal.h b/arch/parisc/include/uapi/asm/signal.h
-index e26043b..403e2d8 100644
---- a/arch/parisc/include/uapi/asm/signal.h
-+++ b/arch/parisc/include/uapi/asm/signal.h
-@@ -99,7 +99,7 @@ typedef __signalfn_t __user *__sighandler_t;
- typedef struct sigaltstack {
- 	void __user *ss_sp;
- 	int ss_flags;
--	size_t ss_size;
-+	__kernel_size_t ss_size;
- } stack_t;
- 
- #endif /* !__ASSEMBLY */
-diff --git a/arch/powerpc/include/uapi/asm/signal.h b/arch/powerpc/include/uapi/asm/signal.h
-index 6c69ee9..c1c2a0b 100644
---- a/arch/powerpc/include/uapi/asm/signal.h
-+++ b/arch/powerpc/include/uapi/asm/signal.h
-@@ -109,7 +109,7 @@ struct sigaction {
- typedef struct sigaltstack {
- 	void __user *ss_sp;
- 	int ss_flags;
--	size_t ss_size;
-+	__kernel_size_t ss_size;
- } stack_t;
- 
- 
-diff --git a/arch/s390/include/uapi/asm/signal.h b/arch/s390/include/uapi/asm/signal.h
-index 2f43cfb..b8c2db6 100644
---- a/arch/s390/include/uapi/asm/signal.h
-+++ b/arch/s390/include/uapi/asm/signal.h
-@@ -122,7 +122,7 @@ struct sigaction {
- typedef struct sigaltstack {
-         void __user *ss_sp;
-         int ss_flags;
--        size_t ss_size;
-+        __kernel_size_t ss_size;
- } stack_t;
- 
- 
-diff --git a/arch/sparc/include/uapi/asm/signal.h b/arch/sparc/include/uapi/asm/signal.h
-index f387400..cd6c036 100644
---- a/arch/sparc/include/uapi/asm/signal.h
-+++ b/arch/sparc/include/uapi/asm/signal.h
-@@ -172,7 +172,7 @@ struct __old_sigaction {
- typedef struct sigaltstack {
- 	void			__user *ss_sp;
- 	int			ss_flags;
--	size_t			ss_size;
-+	__kernel_size_t			ss_size;
- } stack_t;
- 
- 
-diff --git a/arch/xtensa/include/uapi/asm/signal.h b/arch/xtensa/include/uapi/asm/signal.h
-index 586756e..d835627 100644
---- a/arch/xtensa/include/uapi/asm/signal.h
-+++ b/arch/xtensa/include/uapi/asm/signal.h
-@@ -126,7 +126,7 @@ struct sigaction {
- typedef struct sigaltstack {
- 	void *ss_sp;
- 	int ss_flags;
--	size_t ss_size;
-+	__kernel_size_t ss_size;
- } stack_t;
- 
- #endif	/* __ASSEMBLY__ */
++#include <asm/ipcbuf.h>
++
+ struct msqid64_ds {
+ 	struct ipc64_perm msg_perm;
+ #ifdef __XTENSA_EB__
 -- 
 ldv
