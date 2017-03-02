@@ -1,7 +1,7 @@
 Return-Path: <aik@ozlabs.ru>
 Received: from ozlabs.ru (ozlabs.ru [107.173.13.209])
- by lists.ozlabs.org (Postfix) with ESMTP id 3vYmRC4qmnzDqJl
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Mar 2017 19:57:27 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id 3vYmRK1P3GzDqK9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Mar 2017 19:57:33 +1100 (AEDT)
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
@@ -9,10 +9,9 @@ Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
  David Gibson <david@gibson.dropbear.id.au>,
  Paul Mackerras <paulus@samba.org>, kvm-ppc@vger.kernel.org,
  kvm@vger.kernel.org
-Subject: [PATCH kernel v6 04/10] powerpc/vfio_spapr_tce: Add reference
- counting to iommu_table
-Date: Thu,  2 Mar 2017 19:56:38 +1100
-Message-Id: <20170302085644.41828-5-aik@ozlabs.ru>
+Subject: [PATCH kernel v6 07/10] KVM: PPC: Pass kvm* to kvmppc_find_table()
+Date: Thu,  2 Mar 2017 19:56:41 +1100
+Message-Id: <20170302085644.41828-8-aik@ozlabs.ru>
 In-Reply-To: <20170302085644.41828-1-aik@ozlabs.ru>
 References: <20170302085644.41828-1-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,236 +23,132 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-So far iommu_table obejcts were only used in virtual mode and had
-a single owner. We are going to change this by implementing in-kernel
-acceleration of DMA mapping requests. The proposed acceleration
-will handle requests in real mode and KVM will keep references to tables.
-
-This adds a kref to iommu_table and defines new helpers to update it.
-This replaces iommu_free_table() with iommu_table_put() and makes
-iommu_free_table() static. iommu_table_get() is not used in this patch
-but it will be in the following patch.
-
-Since this touches prototypes, this also removes @node_name parameter as
-it has never been really useful on powernv and carrying it for
-the pseries platform code to iommu_free_table() seems to be quite
-useless as well.
-
-This should cause no behavioral change.
+The guest view TCE tables are per KVM anyway (not per VCPU) so pass kvm*
+there. This will be used in the following patches where we will be
+attaching VFIO containers to LIOBNs via ioctl() to KVM (rather than
+to VCPU).
 
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 ---
- arch/powerpc/include/asm/iommu.h          |  5 +++--
- arch/powerpc/kernel/iommu.c               | 24 +++++++++++++++++++-----
- arch/powerpc/platforms/powernv/pci-ioda.c | 14 +++++++-------
- arch/powerpc/platforms/powernv/pci.c      |  1 +
- arch/powerpc/platforms/pseries/iommu.c    |  3 ++-
- arch/powerpc/platforms/pseries/vio.c      |  2 +-
- drivers/vfio/vfio_iommu_spapr_tce.c       |  2 +-
- 7 files changed, 34 insertions(+), 17 deletions(-)
+ arch/powerpc/include/asm/kvm_ppc.h  |  2 +-
+ arch/powerpc/kvm/book3s_64_vio.c    |  7 ++++---
+ arch/powerpc/kvm/book3s_64_vio_hv.c | 13 +++++++------
+ 3 files changed, 12 insertions(+), 10 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/asm/iommu.h
-index 4554699aec02..82e77ebf85f4 100644
---- a/arch/powerpc/include/asm/iommu.h
-+++ b/arch/powerpc/include/asm/iommu.h
-@@ -119,6 +119,7 @@ struct iommu_table {
- 	struct list_head it_group_list;/* List of iommu_table_group_link */
- 	unsigned long *it_userspace; /* userspace view of the table */
- 	struct iommu_table_ops *it_ops;
-+	struct kref    it_kref;
- };
- 
- #define IOMMU_TABLE_USERSPACE_ENTRY(tbl, entry) \
-@@ -151,8 +152,8 @@ static inline void *get_iommu_table_base(struct device *dev)
- 
- extern int dma_iommu_dma_supported(struct device *dev, u64 mask);
- 
--/* Frees table for an individual device node */
--extern void iommu_free_table(struct iommu_table *tbl, const char *node_name);
-+extern void iommu_table_get(struct iommu_table *tbl);
-+extern void iommu_table_put(struct iommu_table *tbl);
- 
- /* Initializes an iommu_table based in values set in the passed-in
-  * structure
-diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
-index bc142d87130f..d02b8d22fb50 100644
---- a/arch/powerpc/kernel/iommu.c
-+++ b/arch/powerpc/kernel/iommu.c
-@@ -711,13 +711,13 @@ struct iommu_table *iommu_init_table(struct iommu_table *tbl, int nid)
- 	return tbl;
- }
- 
--void iommu_free_table(struct iommu_table *tbl, const char *node_name)
-+static void iommu_table_free(struct kref *kref)
+diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
+index dd11c4c8c56a..eba8988d8443 100644
+--- a/arch/powerpc/include/asm/kvm_ppc.h
++++ b/arch/powerpc/include/asm/kvm_ppc.h
+@@ -168,7 +168,7 @@ extern int kvmppc_pseries_do_hcall(struct kvm_vcpu *vcpu);
+ extern long kvm_vm_ioctl_create_spapr_tce(struct kvm *kvm,
+ 				struct kvm_create_spapr_tce_64 *args);
+ extern struct kvmppc_spapr_tce_table *kvmppc_find_table(
+-		struct kvm_vcpu *vcpu, unsigned long liobn);
++		struct kvm *kvm, unsigned long liobn);
+ extern long kvmppc_ioba_validate(struct kvmppc_spapr_tce_table *stt,
+ 		unsigned long ioba, unsigned long npages);
+ extern long kvmppc_tce_validate(struct kvmppc_spapr_tce_table *tt,
+diff --git a/arch/powerpc/kvm/book3s_64_vio.c b/arch/powerpc/kvm/book3s_64_vio.c
+index ab9d14c0e460..57dd036bd998 100644
+--- a/arch/powerpc/kvm/book3s_64_vio.c
++++ b/arch/powerpc/kvm/book3s_64_vio.c
+@@ -213,12 +213,13 @@ long kvm_vm_ioctl_create_spapr_tce(struct kvm *kvm,
+ long kvmppc_h_put_tce(struct kvm_vcpu *vcpu, unsigned long liobn,
+ 		      unsigned long ioba, unsigned long tce)
  {
- 	unsigned long bitmap_sz;
- 	unsigned int order;
-+	struct iommu_table *tbl;
+-	struct kvmppc_spapr_tce_table *stt = kvmppc_find_table(vcpu, liobn);
++	struct kvmppc_spapr_tce_table *stt;
+ 	long ret;
  
--	if (!tbl)
--		return;
-+	tbl = container_of(kref, struct iommu_table, it_kref);
+ 	/* udbg_printf("H_PUT_TCE(): liobn=0x%lx ioba=0x%lx, tce=0x%lx\n", */
+ 	/* 	    liobn, ioba, tce); */
  
- 	if (tbl->it_ops->free)
- 		tbl->it_ops->free(tbl);
-@@ -736,7 +736,7 @@ void iommu_free_table(struct iommu_table *tbl, const char *node_name)
++	stt = kvmppc_find_table(vcpu->kvm, liobn);
+ 	if (!stt)
+ 		return H_TOO_HARD;
  
- 	/* verify that table contains no entries */
- 	if (!bitmap_empty(tbl->it_map, tbl->it_size))
--		pr_warn("%s: Unexpected TCEs for %s\n", __func__, node_name);
-+		pr_warn("%s: Unexpected TCEs\n", __func__);
+@@ -246,7 +247,7 @@ long kvmppc_h_put_tce_indirect(struct kvm_vcpu *vcpu,
+ 	u64 __user *tces;
+ 	u64 tce;
  
- 	/* calculate bitmap size in bytes */
- 	bitmap_sz = BITS_TO_LONGS(tbl->it_size) * sizeof(unsigned long);
-@@ -748,7 +748,21 @@ void iommu_free_table(struct iommu_table *tbl, const char *node_name)
- 	/* free table */
- 	kfree(tbl);
- }
--EXPORT_SYMBOL_GPL(iommu_free_table);
-+
-+void iommu_table_get(struct iommu_table *tbl)
-+{
-+	kref_get(&tbl->it_kref);
-+}
-+EXPORT_SYMBOL_GPL(iommu_table_get);
-+
-+void iommu_table_put(struct iommu_table *tbl)
-+{
-+	if (!tbl)
-+		return;
-+
-+	kref_put(&tbl->it_kref, iommu_table_free);
-+}
-+EXPORT_SYMBOL_GPL(iommu_table_put);
+-	stt = kvmppc_find_table(vcpu, liobn);
++	stt = kvmppc_find_table(vcpu->kvm, liobn);
+ 	if (!stt)
+ 		return H_TOO_HARD;
  
- /* Creates TCEs for a user provided buffer.  The user buffer must be
-  * contiguous real kernel storage (not vmalloc).  The address passed here
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index 7916d0cb05fe..ec3e565de511 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -1425,7 +1425,7 @@ static void pnv_pci_ioda2_release_dma_pe(struct pci_dev *dev, struct pnv_ioda_pe
- 		iommu_group_put(pe->table_group.group);
- 		BUG_ON(pe->table_group.group);
- 	}
--	iommu_free_table(tbl, of_node_full_name(dev->dev.of_node));
-+	iommu_table_put(tbl);
- }
+@@ -300,7 +301,7 @@ long kvmppc_h_stuff_tce(struct kvm_vcpu *vcpu,
+ 	struct kvmppc_spapr_tce_table *stt;
+ 	long i, ret;
  
- static void pnv_ioda_release_vf_PE(struct pci_dev *pdev)
-@@ -2226,7 +2226,7 @@ static void pnv_pci_ioda1_setup_dma_pe(struct pnv_phb *phb,
- 		__free_pages(tce_mem, get_order(tce32_segsz * segs));
- 	if (tbl) {
- 		pnv_pci_unlink_table_and_group(tbl, &pe->table_group);
--		iommu_free_table(tbl, "pnv");
-+		iommu_table_put(tbl);
- 	}
- }
+-	stt = kvmppc_find_table(vcpu, liobn);
++	stt = kvmppc_find_table(vcpu->kvm, liobn);
+ 	if (!stt)
+ 		return H_TOO_HARD;
  
-@@ -2322,7 +2322,7 @@ static long pnv_pci_ioda2_create_table(struct iommu_table_group *table_group,
- 			bus_offset, page_shift, window_size,
- 			levels, tbl);
- 	if (ret) {
--		iommu_free_table(tbl, "pnv");
-+		iommu_table_put(tbl);
- 		return ret;
- 	}
+diff --git a/arch/powerpc/kvm/book3s_64_vio_hv.c b/arch/powerpc/kvm/book3s_64_vio_hv.c
+index e4c4ea973e57..918af76ab2b6 100644
+--- a/arch/powerpc/kvm/book3s_64_vio_hv.c
++++ b/arch/powerpc/kvm/book3s_64_vio_hv.c
+@@ -48,10 +48,9 @@
+  * WARNING: This will be called in real or virtual mode on HV KVM and virtual
+  *          mode on PR KVM
+  */
+-struct kvmppc_spapr_tce_table *kvmppc_find_table(struct kvm_vcpu *vcpu,
++struct kvmppc_spapr_tce_table *kvmppc_find_table(struct kvm *kvm,
+ 		unsigned long liobn)
+ {
+-	struct kvm *kvm = vcpu->kvm;
+ 	struct kvmppc_spapr_tce_table *stt;
  
-@@ -2366,7 +2366,7 @@ static long pnv_pci_ioda2_setup_default_config(struct pnv_ioda_pe *pe)
- 	if (rc) {
- 		pe_err(pe, "Failed to configure 32-bit TCE table, err %ld\n",
- 				rc);
--		iommu_free_table(tbl, "");
-+		iommu_table_put(tbl);
- 		return rc;
- 	}
+ 	list_for_each_entry_lockless(stt, &kvm->arch.spapr_tce_tables, list)
+@@ -182,12 +181,13 @@ EXPORT_SYMBOL_GPL(kvmppc_gpa_to_ua);
+ long kvmppc_rm_h_put_tce(struct kvm_vcpu *vcpu, unsigned long liobn,
+ 		unsigned long ioba, unsigned long tce)
+ {
+-	struct kvmppc_spapr_tce_table *stt = kvmppc_find_table(vcpu, liobn);
++	struct kvmppc_spapr_tce_table *stt;
+ 	long ret;
  
-@@ -2454,7 +2454,7 @@ static void pnv_ioda2_take_ownership(struct iommu_table_group *table_group)
- 	pnv_pci_ioda2_unset_window(&pe->table_group, 0);
- 	if (pe->pbus)
- 		pnv_ioda_setup_bus_dma(pe, pe->pbus, false);
--	iommu_free_table(tbl, "pnv");
-+	iommu_table_put(tbl);
- }
+ 	/* udbg_printf("H_PUT_TCE(): liobn=0x%lx ioba=0x%lx, tce=0x%lx\n", */
+ 	/* 	    liobn, ioba, tce); */
  
- static void pnv_ioda2_release_ownership(struct iommu_table_group *table_group)
-@@ -3427,7 +3427,7 @@ static void pnv_pci_ioda1_release_pe_dma(struct pnv_ioda_pe *pe)
- 	}
++	stt = kvmppc_find_table(vcpu->kvm, liobn);
+ 	if (!stt)
+ 		return H_TOO_HARD;
  
- 	free_pages(tbl->it_base, get_order(tbl->it_size << 3));
--	iommu_free_table(tbl, "pnv");
-+	iommu_table_put(tbl);
- }
+@@ -240,7 +240,7 @@ long kvmppc_rm_h_put_tce_indirect(struct kvm_vcpu *vcpu,
+ 	unsigned long tces, entry, ua = 0;
+ 	unsigned long *rmap = NULL;
  
- static void pnv_pci_ioda2_release_pe_dma(struct pnv_ioda_pe *pe)
-@@ -3454,7 +3454,7 @@ static void pnv_pci_ioda2_release_pe_dma(struct pnv_ioda_pe *pe)
- 	}
+-	stt = kvmppc_find_table(vcpu, liobn);
++	stt = kvmppc_find_table(vcpu->kvm, liobn);
+ 	if (!stt)
+ 		return H_TOO_HARD;
  
- 	pnv_pci_ioda2_table_free_pages(tbl);
--	iommu_free_table(tbl, "pnv");
-+	iommu_table_put(tbl);
- }
+@@ -301,7 +301,7 @@ long kvmppc_rm_h_stuff_tce(struct kvm_vcpu *vcpu,
+ 	struct kvmppc_spapr_tce_table *stt;
+ 	long i, ret;
  
- static void pnv_ioda_free_pe_seg(struct pnv_ioda_pe *pe,
-diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
-index a43f22dc069e..9b2bdcad51ba 100644
---- a/arch/powerpc/platforms/powernv/pci.c
-+++ b/arch/powerpc/platforms/powernv/pci.c
-@@ -767,6 +767,7 @@ struct iommu_table *pnv_pci_table_alloc(int nid)
+-	stt = kvmppc_find_table(vcpu, liobn);
++	stt = kvmppc_find_table(vcpu->kvm, liobn);
+ 	if (!stt)
+ 		return H_TOO_HARD;
  
- 	tbl = kzalloc_node(sizeof(struct iommu_table), GFP_KERNEL, nid);
- 	INIT_LIST_HEAD_RCU(&tbl->it_group_list);
-+	kref_init(&tbl->it_kref);
+@@ -322,12 +322,13 @@ long kvmppc_rm_h_stuff_tce(struct kvm_vcpu *vcpu,
+ long kvmppc_h_get_tce(struct kvm_vcpu *vcpu, unsigned long liobn,
+ 		      unsigned long ioba)
+ {
+-	struct kvmppc_spapr_tce_table *stt = kvmppc_find_table(vcpu, liobn);
++	struct kvmppc_spapr_tce_table *stt;
+ 	long ret;
+ 	unsigned long idx;
+ 	struct page *page;
+ 	u64 *tbl;
  
- 	return tbl;
- }
-diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
-index 0a733ddae926..a713e20311b8 100644
---- a/arch/powerpc/platforms/pseries/iommu.c
-+++ b/arch/powerpc/platforms/pseries/iommu.c
-@@ -74,6 +74,7 @@ static struct iommu_table_group *iommu_pseries_alloc_group(int node)
- 		goto fail_exit;
- 
- 	INIT_LIST_HEAD_RCU(&tbl->it_group_list);
-+	kref_init(&tbl->it_kref);
- 	tgl->table_group = table_group;
- 	list_add_rcu(&tgl->next, &tbl->it_group_list);
- 
-@@ -115,7 +116,7 @@ static void iommu_pseries_free_group(struct iommu_table_group *table_group,
- 		BUG_ON(table_group->group);
- 	}
- #endif
--	iommu_free_table(tbl, node_name);
-+	iommu_table_put(tbl);
- 
- 	kfree(table_group);
- }
-diff --git a/arch/powerpc/platforms/pseries/vio.c b/arch/powerpc/platforms/pseries/vio.c
-index 720493932486..744d639da92c 100644
---- a/arch/powerpc/platforms/pseries/vio.c
-+++ b/arch/powerpc/platforms/pseries/vio.c
-@@ -1318,7 +1318,7 @@ static void vio_dev_release(struct device *dev)
- 	struct iommu_table *tbl = get_iommu_table_base(dev);
- 
- 	if (tbl)
--		iommu_free_table(tbl, of_node_full_name(dev->of_node));
-+		iommu_table_put(tbl);
- 	of_node_put(dev->of_node);
- 	kfree(to_vio_dev(dev));
- }
-diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
-index ffab01874a22..b0d455cc7776 100644
---- a/drivers/vfio/vfio_iommu_spapr_tce.c
-+++ b/drivers/vfio/vfio_iommu_spapr_tce.c
-@@ -677,7 +677,7 @@ static void tce_iommu_free_table(struct tce_container *container,
- 	unsigned long pages = tbl->it_allocated_size >> PAGE_SHIFT;
- 
- 	tce_iommu_userspace_view_free(tbl, container->mm);
--	iommu_free_table(tbl, "");
-+	iommu_table_put(tbl);
- 	decrement_locked_vm(container->mm, pages);
- }
++	stt = kvmppc_find_table(vcpu->kvm, liobn);
+ 	if (!stt)
+ 		return H_TOO_HARD;
  
 -- 
 2.11.0
