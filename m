@@ -1,30 +1,46 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
- [IPv6:2607:f8b0:400e:c00::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <andrew.donnellan@au1.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vZL0F2lNnzDq5x
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Mar 2017 18:09:33 +1100 (AEDT)
-Received: by mail-pf0-x243.google.com with SMTP id j5so9102020pfb.3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Mar 2017 23:09:33 -0800 (PST)
-Subject: Re: [PATCH kernel v6 10/10] KVM: PPC: VFIO: Add in-kernel
- acceleration for VFIO
-To: David Gibson <david@gibson.dropbear.id.au>
-References: <20170302085644.41828-1-aik@ozlabs.ru>
- <20170302085644.41828-11-aik@ozlabs.ru>
- <20170303055927.GJ667@umbus.fritz.box>
-Cc: linuxppc-dev@lists.ozlabs.org,
- Alex Williamson <alex.williamson@redhat.com>,
- Paul Mackerras <paulus@samba.org>, kvm-ppc@vger.kernel.org,
- kvm@vger.kernel.org
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-Message-ID: <56d7983d-50ff-36e8-c55b-4a6316fc26b6@ozlabs.ru>
-Date: Fri, 3 Mar 2017 18:09:25 +1100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vZL2S6rVGzDqKq
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Mar 2017 18:11:28 +1100 (AEDT)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v2378c9Z061186
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 3 Mar 2017 02:11:27 -0500
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 28xs8drn6u-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Mar 2017 02:11:26 -0500
+Received: from localhost
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
+ Fri, 3 Mar 2017 17:11:23 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id AE93A2BB0045
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Mar 2017 18:11:21 +1100 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v237BDV350200736
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 3 Mar 2017 18:11:21 +1100
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v237AnK7022864
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 3 Mar 2017 18:10:49 +1100
+From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Subject: Re: [PATCH 7/7] cxl: Add psl9 specific code
+To: Christophe Lombard <clombard@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, fbarrat@linux.vnet.ibm.com,
+ imunsie@au1.ibm.com
+References: <1485970213-25532-1-git-send-email-clombard@linux.vnet.ibm.com>
+ <1485970213-25532-8-git-send-email-clombard@linux.vnet.ibm.com>
+Date: Fri, 3 Mar 2017 18:10:24 +1100
 MIME-Version: 1.0
-In-Reply-To: <20170303055927.GJ667@umbus.fritz.box>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="DqQoqXgfwjqrld66dstSTeAEbUFKmuQ0i"
+In-Reply-To: <1485970213-25532-8-git-send-email-clombard@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <1c871df2-5112-eca1-a13d-5bd1ef2d5339@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,1086 +50,1275 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---DqQoqXgfwjqrld66dstSTeAEbUFKmuQ0i
-Content-Type: multipart/mixed; boundary="8A0rcQ3HmnACceT1QKRujM0BIfpGuCQdW";
- protected-headers="v1"
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-To: David Gibson <david@gibson.dropbear.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org,
- Alex Williamson <alex.williamson@redhat.com>,
- Paul Mackerras <paulus@samba.org>, kvm-ppc@vger.kernel.org,
- kvm@vger.kernel.org
-Message-ID: <56d7983d-50ff-36e8-c55b-4a6316fc26b6@ozlabs.ru>
-Subject: Re: [PATCH kernel v6 10/10] KVM: PPC: VFIO: Add in-kernel
- acceleration for VFIO
-References: <20170302085644.41828-1-aik@ozlabs.ru>
- <20170302085644.41828-11-aik@ozlabs.ru>
- <20170303055927.GJ667@umbus.fritz.box>
-In-Reply-To: <20170303055927.GJ667@umbus.fritz.box>
+On 02/02/17 04:30, Christophe Lombard wrote:
+> The new Coherent Accelerator Interface Architecture, level 2, for the
+> IBM POWER9 brings new content and features:
+> - POWER9 Service Layer
+> - Registers
+> - Radix mode
+> - Process element entry
+> - Dedicated-Shared Process Programming Model
+> - Translation Fault Handling
+> - CAPP
+> - Memory Context ID
+>     If a valid mm_struct is found the memory context id is used for each
+>     transaction associated with the process handle. The PSL uses the
+>     context ID to find the corresponding process element.
+>
+> Signed-off-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
 
---8A0rcQ3HmnACceT1QKRujM0BIfpGuCQdW
-Content-Type: text/plain; charset=koi8-r
-Content-Transfer-Encoding: quoted-printable
-
-On 03/03/17 16:59, David Gibson wrote:
-> On Thu, Mar 02, 2017 at 07:56:44PM +1100, Alexey Kardashevskiy wrote:
->> This allows the host kernel to handle H_PUT_TCE, H_PUT_TCE_INDIRECT
->> and H_STUFF_TCE requests targeted an IOMMU TCE table used for VFIO
->> without passing them to user space which saves time on switching
->> to user space and back.
->>
->> This adds H_PUT_TCE/H_PUT_TCE_INDIRECT/H_STUFF_TCE handlers to KVM.
->> KVM tries to handle a TCE request in the real mode, if failed
->> it passes the request to the virtual mode to complete the operation.
->> If it a virtual mode handler fails, the request is passed to
->> the user space; this is not expected to happen though.
->>
->> To avoid dealing with page use counters (which is tricky in real mode)=
-,
->> this only accelerates SPAPR TCE IOMMU v2 clients which are required
->> to pre-register the userspace memory. The very first TCE request will
->> be handled in the VFIO SPAPR TCE driver anyway as the userspace view
->> of the TCE table (iommu_table::it_userspace) is not allocated till
->> the very first mapping happens and we cannot call vmalloc in real mode=
-=2E
->>
->> If we fail to update a hardware IOMMU table unexpected reason, we just=
-
->> clear it and move on as there is nothing really we can do about it -
->> for example, if we hot plug a VFIO device to a guest, existing TCE tab=
-les
->> will be mirrored automatically to the hardware and there is no interfa=
-ce
->> to report to the guest about possible failures.
->>
->> This adds new attribute - KVM_DEV_VFIO_GROUP_SET_SPAPR_TCE - to
->> the VFIO KVM device. It takes a VFIO group fd and SPAPR TCE table fd
->> and associates a physical IOMMU table with the SPAPR TCE table (which
->> is a guest view of the hardware IOMMU table). The iommu_table object
->> is cached and referenced so we do not have to look up for it in real m=
-ode.
->>
->> This does not implement the UNSET counterpart as there is no use for i=
-t -
->> once the acceleration is enabled, the existing userspace won't
->> disable it unless a VFIO container is destroyed; this adds necessary
->> cleanup to the KVM_DEV_VFIO_GROUP_DEL handler.
->>
->> As this creates a descriptor per IOMMU table-LIOBN couple (called
->> kvmppc_spapr_tce_iommu_table), it is possible to have several
->> descriptors with the same iommu_table (hardware IOMMU table) attached
->> to the same LIOBN; we do not remove duplicates though as
->> iommu_table_ops::exchange not just update a TCE entry (which is
->> shared among IOMMU groups) but also invalidates the TCE cache
->> (one per IOMMU group).
->>
->> This advertises the new KVM_CAP_SPAPR_TCE_VFIO capability to the user
->> space.
->>
->> This finally makes use of vfio_external_user_iommu_id() which was
->> introduced quite some time ago and was considered for removal.
->>
->> Tests show that this patch increases transmission speed from 220MB/s
->> to 750..1020MB/s on 10Gb network (Chelsea CXGB3 10Gb ethernet card).
->>
->> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
->> ---
->> Changes:
->> v6:
->> * changed handling of errors returned by kvmppc_(rm_)tce_iommu_(un)map=
-()
->> * moved kvmppc_gpa_to_ua() to TCE validation
->>
->> v5:
->> * changed error codes in multiple places
->> * added bunch of WARN_ON() in places which should not really happen
->> * adde a check that an iommu table is not attached already to LIOBN
->> * dropped explicit calls to iommu_tce_clear_param_check/
->> iommu_tce_put_param_check as kvmppc_tce_validate/kvmppc_ioba_validate
->> call them anyway (since the previous patch)
->> * if we fail to update a hardware IOMMU table for unexpected reason,
->> this just clears the entry
->>
->> v4:
->> * added note to the commit log about allowing multiple updates of
->> the same IOMMU table;
->> * instead of checking for if any memory was preregistered, this
->> returns H_TOO_HARD if a specific page was not;
->> * fixed comments from v3 about error handling in many places;
->> * simplified TCE handlers and merged IOMMU parts inline - for example,=
-
->> there used to be kvmppc_h_put_tce_iommu(), now it is merged into
->> kvmppc_h_put_tce(); this allows to check IOBA boundaries against
->> the first attached table only (makes the code simpler);
->>
->> v3:
->> * simplified not to use VFIO group notifiers
->> * reworked cleanup, should be cleaner/simpler now
->>
->> v2:
->> * reworked to use new VFIO notifiers
->> * now same iommu_table may appear in the list several times, to be fix=
-ed later
->> ---
->>  Documentation/virtual/kvm/devices/vfio.txt |  22 +-
->>  arch/powerpc/include/asm/kvm_host.h        |   8 +
->>  arch/powerpc/include/asm/kvm_ppc.h         |   4 +
->>  include/uapi/linux/kvm.h                   |   8 +
->>  arch/powerpc/kvm/book3s_64_vio.c           | 321 ++++++++++++++++++++=
-++++++++-
->>  arch/powerpc/kvm/book3s_64_vio_hv.c        | 165 ++++++++++++++-
->>  arch/powerpc/kvm/powerpc.c                 |   2 +
->>  virt/kvm/vfio.c                            |  60 ++++++
->>  8 files changed, 585 insertions(+), 5 deletions(-)
->>
->> diff --git a/Documentation/virtual/kvm/devices/vfio.txt b/Documentatio=
-n/virtual/kvm/devices/vfio.txt
->> index ef51740c67ca..f95d867168ea 100644
->> --- a/Documentation/virtual/kvm/devices/vfio.txt
->> +++ b/Documentation/virtual/kvm/devices/vfio.txt
->> @@ -16,7 +16,25 @@ Groups:
->> =20
->>  KVM_DEV_VFIO_GROUP attributes:
->>    KVM_DEV_VFIO_GROUP_ADD: Add a VFIO group to VFIO-KVM device trackin=
-g
->> +	kvm_device_attr.addr points to an int32_t file descriptor
->> +	for the VFIO group.
->>    KVM_DEV_VFIO_GROUP_DEL: Remove a VFIO group from VFIO-KVM device tr=
-acking
->> +	kvm_device_attr.addr points to an int32_t file descriptor
->> +	for the VFIO group.
->> +  KVM_DEV_VFIO_GROUP_SET_SPAPR_TCE: attaches a guest visible TCE tabl=
-e
->> +	allocated by sPAPR KVM.
->> +	kvm_device_attr.addr points to a struct:
->> =20
->> -For each, kvm_device_attr.addr points to an int32_t file descriptor
->> -for the VFIO group.
->> +	struct kvm_vfio_spapr_tce {
->> +		__u32	argsz;
->> +		__u32	flags;
->> +		__s32	groupfd;
->> +		__s32	tablefd;
->> +	};
->> +
->> +	where
->> +	@argsz is the size of kvm_vfio_spapr_tce_liobn;
->> +	@flags are not supported now, must be zero;
->> +	@groupfd is a file descriptor for a VFIO group;
->> +	@tablefd is a file descriptor for a TCE table allocated via
->> +		KVM_CREATE_SPAPR_TCE.
->> diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/includ=
-e/asm/kvm_host.h
->> index 7bba8f415627..857ae2c6aa39 100644
->> --- a/arch/powerpc/include/asm/kvm_host.h
->> +++ b/arch/powerpc/include/asm/kvm_host.h
->> @@ -191,6 +191,13 @@ struct kvmppc_pginfo {
->>  	atomic_t refcnt;
->>  };
->> =20
->> +struct kvmppc_spapr_tce_iommu_table {
->> +	struct rcu_head rcu;
->> +	struct list_head next;
->> +	struct vfio_group *group;
->> +	struct iommu_table *tbl;
->> +};
->> +
->>  struct kvmppc_spapr_tce_table {
->>  	struct list_head list;
->>  	struct kvm *kvm;
->> @@ -199,6 +206,7 @@ struct kvmppc_spapr_tce_table {
->>  	u32 page_shift;
->>  	u64 offset;		/* in pages */
->>  	u64 size;		/* window size in pages */
->> +	struct list_head iommu_tables;
->>  	struct page *pages[0];
->>  };
->> =20
->> diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include=
-/asm/kvm_ppc.h
->> index 72c2a155641f..66de7e73b3d3 100644
->> --- a/arch/powerpc/include/asm/kvm_ppc.h
->> +++ b/arch/powerpc/include/asm/kvm_ppc.h
->> @@ -164,6 +164,10 @@ extern long kvmppc_prepare_vrma(struct kvm *kvm,
->>  extern void kvmppc_map_vrma(struct kvm_vcpu *vcpu,
->>  			struct kvm_memory_slot *memslot, unsigned long porder);
->>  extern int kvmppc_pseries_do_hcall(struct kvm_vcpu *vcpu);
->> +extern long kvm_spapr_tce_attach_iommu_group(struct kvm *kvm, int tab=
-lefd,
->> +		struct vfio_group *group);
->> +extern void kvm_spapr_tce_release_iommu_group(struct kvm *kvm,
->> +		struct vfio_group *group);
->> =20
->>  extern long kvm_vm_ioctl_create_spapr_tce(struct kvm *kvm,
->>  				struct kvm_create_spapr_tce_64 *args);
->> diff --git a/include/uapi/linux/kvm.h b/include/uapi/linux/kvm.h
->> index f5a52ffb6b58..e743cb0d176e 100644
->> --- a/include/uapi/linux/kvm.h
->> +++ b/include/uapi/linux/kvm.h
->> @@ -1088,6 +1088,7 @@ struct kvm_device_attr {
->>  #define  KVM_DEV_VFIO_GROUP			1
->>  #define   KVM_DEV_VFIO_GROUP_ADD			1
->>  #define   KVM_DEV_VFIO_GROUP_DEL			2
->> +#define   KVM_DEV_VFIO_GROUP_SET_SPAPR_TCE		3
->> =20
->>  enum kvm_device_type {
->>  	KVM_DEV_TYPE_FSL_MPIC_20	=3D 1,
->> @@ -1109,6 +1110,13 @@ enum kvm_device_type {
->>  	KVM_DEV_TYPE_MAX,
->>  };
->> =20
->> +struct kvm_vfio_spapr_tce {
->> +	__u32	argsz;
->> +	__u32	flags;
->> +	__s32	groupfd;
->> +	__s32	tablefd;
->> +};
->> +
->>  /*
->>   * ioctls for VM fds
->>   */
->> diff --git a/arch/powerpc/kvm/book3s_64_vio.c b/arch/powerpc/kvm/book3=
-s_64_vio.c
->> index 57dd036bd998..85927f467811 100644
->> --- a/arch/powerpc/kvm/book3s_64_vio.c
->> +++ b/arch/powerpc/kvm/book3s_64_vio.c
->> @@ -27,6 +27,10 @@
->>  #include <linux/hugetlb.h>
->>  #include <linux/list.h>
->>  #include <linux/anon_inodes.h>
->> +#include <linux/iommu.h>
->> +#include <linux/file.h>
->> +#include <linux/vfio.h>
->> +#include <linux/module.h>
->> =20
->>  #include <asm/tlbflush.h>
->>  #include <asm/kvm_ppc.h>
->> @@ -39,6 +43,36 @@
->>  #include <asm/udbg.h>
->>  #include <asm/iommu.h>
->>  #include <asm/tce.h>
->> +#include <asm/mmu_context.h>
->> +
->> +static void kvm_vfio_group_put_external_user(struct vfio_group *vfio_=
-group)
->> +{
->> +	void (*fn)(struct vfio_group *);
->> +
->> +	fn =3D symbol_get(vfio_group_put_external_user);
->> +	if (WARN_ON(!fn))
->> +		return;
->> +
->> +	fn(vfio_group);
->> +
->> +	symbol_put(vfio_group_put_external_user);
->> +}
->> +
->> +static int kvm_vfio_external_user_iommu_id(struct vfio_group *vfio_gr=
-oup)
->> +{
->> +	int (*fn)(struct vfio_group *);
->> +	int ret =3D -1;
->> +
->> +	fn =3D symbol_get(vfio_external_user_iommu_id);
->> +	if (!fn)
->> +		return ret;
->> +
->> +	ret =3D fn(vfio_group);
->> +
->> +	symbol_put(vfio_external_user_iommu_id);
->> +
->> +	return ret;
->> +}
->> =20
->>  static unsigned long kvmppc_tce_pages(unsigned long iommu_pages)
->>  {
->> @@ -90,6 +124,130 @@ static long kvmppc_account_memlimit(unsigned long=
- stt_pages, bool inc)
->>  	return ret;
->>  }
->> =20
->> +static void kvm_spapr_tce_iommu_table_free(struct rcu_head *head)
->> +{
->> +	struct kvmppc_spapr_tce_iommu_table *stit =3D container_of(head,
->> +			struct kvmppc_spapr_tce_iommu_table, rcu);
->> +
->> +	iommu_table_put(stit->tbl);
->> +	kvm_vfio_group_put_external_user(stit->group);
->> +
->> +	kfree(stit);
->> +}
->> +
->> +static void kvm_spapr_tce_liobn_release_iommu_group(
->> +		struct kvmppc_spapr_tce_table *stt,
->> +		struct vfio_group *group)
->> +{
->> +	struct kvmppc_spapr_tce_iommu_table *stit, *tmp;
->> +
->> +	list_for_each_entry_safe(stit, tmp, &stt->iommu_tables, next) {
->> +		if (group && (stit->group !=3D group))
->> +			continue;
->> +
->> +		list_del_rcu(&stit->next);
->> +
->> +		call_rcu(&stit->rcu, kvm_spapr_tce_iommu_table_free);
->> +	}
->> +}
->> +
->> +extern void kvm_spapr_tce_release_iommu_group(struct kvm *kvm,
->> +		struct vfio_group *group)
->> +{
->> +	struct kvmppc_spapr_tce_table *stt;
->> +
->> +	list_for_each_entry_rcu(stt, &kvm->arch.spapr_tce_tables, list)
->> +		kvm_spapr_tce_liobn_release_iommu_group(stt, group);
->> +}
->> +
->> +extern long kvm_spapr_tce_attach_iommu_group(struct kvm *kvm, int tab=
-lefd,
->> +		struct vfio_group *group)
->> +{
->> +	struct kvmppc_spapr_tce_table *stt =3D NULL;
->> +	bool found =3D false;
->> +	struct iommu_table *tbl =3D NULL;
->> +	struct iommu_table_group *table_group;
->> +	long i, ret =3D 0;
->> +	struct kvmppc_spapr_tce_iommu_table *stit;
->> +	struct fd f;
->> +	int group_id;
->> +	struct iommu_group *grp;
->> +
->> +	group_id =3D kvm_vfio_external_user_iommu_id(group);
->> +	grp =3D iommu_group_get_by_id(group_id);
->> +	if (WARN_ON(!grp))
->> +		return -EIO;
->> +
->> +	f =3D fdget(tablefd);
->> +	if (!f.file) {
->> +		ret =3D -EBADF;
->> +		goto put_exit;
->> +	}
->> +
->> +	list_for_each_entry_rcu(stt, &kvm->arch.spapr_tce_tables, list) {
->> +		if (stt =3D=3D f.file->private_data) {
->> +			found =3D true;
->> +			break;
->> +		}
->> +	}
->> +
->> +	fdput(f);
->> +
->> +	if (!found) {
->> +		ret =3D -EINVAL;
->> +		goto put_exit;
->> +	}
->> +
->> +	table_group =3D iommu_group_get_iommudata(grp);
->> +	if (WARN_ON(!table_group)) {
->> +		ret =3D -EFAULT;
->> +		goto put_exit;
->> +	}
->> +
->> +	for (i =3D 0; i < IOMMU_TABLE_GROUP_MAX_TABLES; ++i) {
->> +		struct iommu_table *tbltmp =3D table_group->tables[i];
->> +
->> +		if (!tbltmp)
->> +			continue;
->> +
->> +		/*
->> +		 * Make sure hardware table parameters are exactly the same;
->> +		 * this is used in the TCE handlers where boundary checks
->> +		 * use only the first attached table.
->> +		 */
->> +		if ((tbltmp->it_page_shift =3D=3D stt->page_shift) &&
->> +				(tbltmp->it_offset =3D=3D stt->offset) &&
->> +				(tbltmp->it_size =3D=3D stt->size)) {
->> +			tbl =3D tbltmp;
->> +			break;
->> +		}
->> +	}
->> +	if (!tbl) {
->> +		ret =3D -EINVAL;
->> +		goto put_exit;
->> +	}
->> +
->> +	list_for_each_entry_rcu(stit, &stt->iommu_tables, next) {
->> +		if ((stit->tbl =3D=3D tbl) && (stit->group =3D=3D group)) {
->> +			ret =3D -EBUSY;
->> +			goto put_exit;
->> +		}
->> +	}
->> +
->> +	iommu_table_get(tbl);
->> +
->> +	stit =3D kzalloc(sizeof(*stit), GFP_KERNEL);
->> +	stit->tbl =3D tbl;
->> +	stit->group =3D group;
->> +
->> +	list_add_rcu(&stit->next, &stt->iommu_tables);
->> +
->> +put_exit:
->> +	iommu_group_put(grp);
->> +
->> +	return ret;
->> +}
->> +
->>  static void release_spapr_tce_table(struct rcu_head *head)
->>  {
->>  	struct kvmppc_spapr_tce_table *stt =3D container_of(head,
->> @@ -132,6 +290,8 @@ static int kvm_spapr_tce_release(struct inode *ino=
-de, struct file *filp)
->> =20
->>  	list_del_rcu(&stt->list);
->> =20
->> +	kvm_spapr_tce_liobn_release_iommu_group(stt, NULL /* release all */)=
-;
->> +
->>  	kvm_put_kvm(stt->kvm);
->> =20
->>  	kvmppc_account_memlimit(
->> @@ -182,6 +342,7 @@ long kvm_vm_ioctl_create_spapr_tce(struct kvm *kvm=
-,
->>  	stt->offset =3D args->offset;
->>  	stt->size =3D size;
->>  	stt->kvm =3D kvm;
->> +	INIT_LIST_HEAD_RCU(&stt->iommu_tables);
->> =20
->>  	for (i =3D 0; i < npages; i++) {
->>  		stt->pages[i] =3D alloc_page(GFP_KERNEL | __GFP_ZERO);
->> @@ -210,11 +371,99 @@ long kvm_vm_ioctl_create_spapr_tce(struct kvm *k=
-vm,
->>  	return ret;
->>  }
->> =20
->> +static void kvmppc_clear_tce(struct iommu_table *tbl, unsigned long e=
-ntry)
->> +{
->> +	unsigned long hpa =3D 0;
->> +	enum dma_data_direction dir =3D DMA_NONE;
->> +
->> +	iommu_tce_xchg(tbl, entry, &hpa, &dir);
->> +}
->> +
->> +static long kvmppc_tce_iommu_mapped_dec(struct kvm *kvm,
->> +		struct iommu_table *tbl, unsigned long entry)
->> +{
->> +	struct mm_iommu_table_group_mem_t *mem =3D NULL;
->> +	const unsigned long pgsize =3D 1ULL << tbl->it_page_shift;
->> +	unsigned long *pua =3D IOMMU_TABLE_USERSPACE_ENTRY(tbl, entry);
->> +
->> +	if (WARN_ON_ONCE(!pua))
->> +		return H_HARDWARE;
->> +
->> +	mem =3D mm_iommu_lookup(kvm->mm, *pua, pgsize);
->> +	if (!mem)
->> +		return H_TOO_HARD;
->> +
->> +	mm_iommu_mapped_dec(mem);
->> +
->> +	*pua =3D 0;
->> +
->> +	return H_SUCCESS;
->> +}
->> +
->> +static long kvmppc_tce_iommu_unmap(struct kvm *kvm,
->> +		struct iommu_table *tbl, unsigned long entry)
->> +{
->> +	enum dma_data_direction dir =3D DMA_NONE;
->> +	unsigned long hpa =3D 0;
->> +	long ret;
->> +
->> +	if (iommu_tce_xchg(tbl, entry, &hpa, &dir))
->> +		return H_HARDWARE;
->> +
->> +	if (dir =3D=3D DMA_NONE)
->> +		return H_SUCCESS;
->> +
->> +	ret =3D kvmppc_tce_iommu_mapped_dec(kvm, tbl, entry);
->> +	if (ret !=3D H_SUCCESS)
->> +		iommu_tce_xchg(tbl, entry, &hpa, &dir);
->> +
->> +	return ret;
->> +}
->> +
->> +long kvmppc_tce_iommu_map(struct kvm *kvm, struct iommu_table *tbl,
->> +		unsigned long entry, unsigned long ua,
->> +		enum dma_data_direction dir)
->> +{
->> +	long ret;
->> +	unsigned long hpa, *pua =3D IOMMU_TABLE_USERSPACE_ENTRY(tbl, entry);=
-
->> +	struct mm_iommu_table_group_mem_t *mem;
->> +
->> +	if (!pua)
->> +		/* it_userspace allocation might be delayed */
->> +		return H_TOO_HARD;
->> +
->> +	mem =3D mm_iommu_lookup(kvm->mm, ua, 1ULL << tbl->it_page_shift);
->> +	if (!mem)
->> +		return H_TOO_HARD;
->=20
-> IIUC this is the virtual mode path, not the real mode patch.  Under
-> what circumstances could qemu succeed that KVM virtual mode couldn't,
-> for either of the above failures?
-
-The (!pua) failure is handled in tce_iommu_build_v2() from
-drivers/vfio/vfio_iommu_spapr_tce.c as:
+I'm going on leave tomorrow, I haven't had time to properly review this, 
+but a few minor style comments below.
 
 
-if (!tbl->it_userspace) {
-       ret =3D tce_iommu_userspace_view_alloc(tbl, container->mm);
-       if (ret)
-              return ret;
-}
+> ---
+>  drivers/misc/cxl/context.c |  13 +++
+>  drivers/misc/cxl/cxl.h     | 125 ++++++++++++++++++++++----
+>  drivers/misc/cxl/debugfs.c |  19 ++++
+>  drivers/misc/cxl/fault.c   |  48 ++++++----
+>  drivers/misc/cxl/guest.c   |   8 +-
+>  drivers/misc/cxl/irq.c     |  52 +++++++++++
+>  drivers/misc/cxl/native.c  | 213 +++++++++++++++++++++++++++++++++++++++++--
+>  drivers/misc/cxl/pci.c     | 219 +++++++++++++++++++++++++++++++++++++++++++--
+>  drivers/misc/cxl/trace.h   |  43 +++++++++
+>  9 files changed, 685 insertions(+), 55 deletions(-)
+>
+> diff --git a/drivers/misc/cxl/context.c b/drivers/misc/cxl/context.c
+> index 1835067..c224d15 100644
+> --- a/drivers/misc/cxl/context.c
+> +++ b/drivers/misc/cxl/context.c
+> @@ -203,6 +203,19 @@ int cxl_context_iomap(struct cxl_context *ctx, struct vm_area_struct *vma)
+>  			return -EBUSY;
+>  	}
+>
+> +	if ((ctx->afu->current_mode == CXL_MODE_DEDICATED) &&
+> +	      (cxl_is_psl9(ctx->afu))) {
+> +		/* make sure there is a valid problem state area space for this AFU */
+> +		if (ctx->master && !ctx->afu->psa) {
+> +			pr_devel("AFU doesn't support mmio space\n");
+> +			return -EINVAL;
+> +		}
+> +
+> +		/* Can't mmap until the AFU is enabled */
+> +		if (!ctx->afu->enabled)
+> +			return -EBUSY;
+> +	}
+> +
+>  	pr_devel("%s: mmio physical: %llx pe: %i master:%i\n", __func__,
+>  		 ctx->psn_phys, ctx->pe , ctx->master);
+>
+> diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
+> index ddc787e..554ae22 100644
+> --- a/drivers/misc/cxl/cxl.h
+> +++ b/drivers/misc/cxl/cxl.h
+> @@ -63,7 +63,7 @@ typedef struct {
+>  /* Memory maps. Ref CXL Appendix A */
+>
+>  /* PSL Privilege 1 Memory Map */
+> -/* Configuration and Control area */
+> +/* Configuration and Control area - CAIA 1&2 */
+>  static const cxl_p1_reg_t CXL_PSL_CtxTime = {0x0000};
+>  static const cxl_p1_reg_t CXL_PSL_ErrIVTE = {0x0008};
+>  static const cxl_p1_reg_t CXL_PSL_KEY1    = {0x0010};
+> @@ -98,11 +98,28 @@ static const cxl_p1_reg_t CXL_XSL_Timebase  = {0x0100};
+>  static const cxl_p1_reg_t CXL_XSL_TB_CTLSTAT = {0x0108};
+>  static const cxl_p1_reg_t CXL_XSL_FEC       = {0x0158};
+>  static const cxl_p1_reg_t CXL_XSL_DSNCTL    = {0x0168};
+> +/* PSL registers - CAIA 2 */
+> +static const cxl_p1_reg_t CXL_PSL9_CONTROL  = {0x0020};
+> +static const cxl_p1_reg_t CXL_XSL9_DSNCTL   = {0x0168};
+> +static const cxl_p1_reg_t CXL_PSL9_FIR1     = {0x0300};
+> +static const cxl_p1_reg_t CXL_PSL9_FIR2     = {0x0308}; /* TBD NML CAIA 2 */
 
+"TBD NML CAIA 2"???
 
-The (!mem) can succeed if the container is in VFIO_SPAPR_TCE_IOMMU mode
-(not VFIO_SPAPR_TCE_v2_IOMMU). Remember that the userspace can call
-ioctl(vfio_kvm_device, KVM_DEV_VFIO_GROUP_SET_SPAPR_TCE) without having
-memory preregistered so tables will appear in the
-kvmppc_spapr_tce_iommu_table list in KVM.
+> +static const cxl_p1_reg_t CXL_PSL9_Timebase = {0x0310};
+> +static const cxl_p1_reg_t CXL_PSL9_DEBUG    = {0x0320};
+> +static const cxl_p1_reg_t CXL_PSL9_FIR_CNTL = {0x0348};
+> +static const cxl_p1_reg_t CXL_PSL9_DSNDCTL  = {0x0350};
+> +static const cxl_p1_reg_t CXL_PSL9_TB_CTLSTAT = {0x0340};
+> +static const cxl_p1_reg_t CXL_PSL9_TRACECFG = {0x0368};
+> +static const cxl_p1_reg_t CXL_PSL9_APCDEDALLOC = {0x0378};
+> +static const cxl_p1_reg_t CXL_PSL9_APCDEDTYPE = {0x0380};
+> +static const cxl_p1_reg_t CXL_PSL9_TNR_ADDR = {0x0388};
+> +static const cxl_p1_reg_t CXL_XSL9_IERAT = {0x0588};
+> +static const cxl_p1_reg_t CXL_XSL9_ILPP  = {0x0590};
+> +
+>  /* 0x7F00:7FFF Reserved PCIe MSI-X Pending Bit Array area */
+>  /* 0x8000:FFFF Reserved PCIe MSI-X Table Area */
+>
+>  /* PSL Slice Privilege 1 Memory Map */
+> -/* Configuration Area */
+> +/* Configuration Area - CAIA 1&2 */
+>  static const cxl_p1n_reg_t CXL_PSL_SR_An          = {0x00};
+>  static const cxl_p1n_reg_t CXL_PSL_LPID_An        = {0x08};
+>  static const cxl_p1n_reg_t CXL_PSL_AMBAR_An       = {0x10};
+> @@ -111,17 +128,18 @@ static const cxl_p1n_reg_t CXL_PSL_ID_An          = {0x20};
+>  static const cxl_p1n_reg_t CXL_PSL_SERR_An        = {0x28};
+>  /* Memory Management and Lookaside Buffer Management - CAIA 1*/
+>  static const cxl_p1n_reg_t CXL_PSL_SDR_An         = {0x30};
+> +/* Memory Management and Lookaside Buffer Management - CAIA 1&2 */
+>  static const cxl_p1n_reg_t CXL_PSL_AMOR_An        = {0x38};
+> -/* Pointer Area */
+> +/* Pointer Area - CAIA 1&2 */
+>  static const cxl_p1n_reg_t CXL_HAURP_An           = {0x80};
+>  static const cxl_p1n_reg_t CXL_PSL_SPAP_An        = {0x88};
+>  static const cxl_p1n_reg_t CXL_PSL_LLCMD_An       = {0x90};
+> -/* Control Area */
+> +/* Control Area - CAIA 1&2 */
+>  static const cxl_p1n_reg_t CXL_PSL_SCNTL_An       = {0xA0};
+>  static const cxl_p1n_reg_t CXL_PSL_CtxTime_An     = {0xA8};
+>  static const cxl_p1n_reg_t CXL_PSL_IVTE_Offset_An = {0xB0};
+>  static const cxl_p1n_reg_t CXL_PSL_IVTE_Limit_An  = {0xB8};
+> -/* 0xC0:FF Implementation Dependent Area */
+> +/* 0xC0:FF Implementation Dependent Area - CAIA 1&2 */
+>  static const cxl_p1n_reg_t CXL_PSL_FIR_SLICE_An   = {0xC0};
+>  static const cxl_p1n_reg_t CXL_AFU_DEBUG_An       = {0xC8};
+>  /* 0xC0:FF Implementation Dependent Area - CAIA 1 */
+> @@ -131,7 +149,7 @@ static const cxl_p1n_reg_t CXL_PSL_RXCTL_A        = {0xE0};
+>  static const cxl_p1n_reg_t CXL_PSL_SLICE_TRACE    = {0xE8};
+>
+>  /* PSL Slice Privilege 2 Memory Map */
+> -/* Configuration and Control Area */
+> +/* Configuration and Control Area - CAIA 1&2 */
+>  static const cxl_p2n_reg_t CXL_PSL_PID_TID_An = {0x000};
+>  static const cxl_p2n_reg_t CXL_CSRP_An        = {0x008};
+>  /* Configuration and Control Area - CAIA 1 */
+> @@ -145,17 +163,17 @@ static const cxl_p2n_reg_t CXL_PSL_AMR_An     = {0x030};
+>  static const cxl_p2n_reg_t CXL_SLBIE_An       = {0x040};
+>  static const cxl_p2n_reg_t CXL_SLBIA_An       = {0x048};
+>  static const cxl_p2n_reg_t CXL_SLBI_Select_An = {0x050};
+> -/* Interrupt Registers */
+> +/* Interrupt Registers - CAIA 1&2 */
+>  static const cxl_p2n_reg_t CXL_PSL_DSISR_An   = {0x060};
+>  static const cxl_p2n_reg_t CXL_PSL_DAR_An     = {0x068};
+>  static const cxl_p2n_reg_t CXL_PSL_DSR_An     = {0x070};
+>  static const cxl_p2n_reg_t CXL_PSL_TFC_An     = {0x078};
+>  static const cxl_p2n_reg_t CXL_PSL_PEHandle_An = {0x080};
+> -static const cxl_p2n_reg_t CXL_PSL_ErrStat_An = {0x088};
+> -/* AFU Registers */
+> +static const cxl_p2n_reg_t CXL_PSL_ErrStat_An = {0x088};  /* TBD NML CAIA 2 */
+> +/* AFU Registers - CAIA 1&2 */
+>  static const cxl_p2n_reg_t CXL_AFU_Cntl_An    = {0x090};
+>  static const cxl_p2n_reg_t CXL_AFU_ERR_An     = {0x098};
+> -/* Work Element Descriptor */
+> +/* Work Element Descriptor - CAIA 1&2 */
+>  static const cxl_p2n_reg_t CXL_PSL_WED_An     = {0x0A0};
+>  /* 0x0C0:FFF Implementation Dependent Area */
+>
+> @@ -182,6 +200,10 @@ static const cxl_p2n_reg_t CXL_PSL_WED_An     = {0x0A0};
+>  #define CXL_PSL_SR_An_SF  MSR_SF            /* 64bit */
+>  #define CXL_PSL_SR_An_TA  (1ull << (63-1))  /* Tags active,   GA1: 0 */
+>  #define CXL_PSL_SR_An_HV  MSR_HV            /* Hypervisor,    GA1: 0 */
+> +#define CXL_PSL_SR_An_XLAT_hpt (0ull << (63-6))/* Hashed page table (HPT) mode */
+> +#define CXL_PSL_SR_An_XLAT_roh (2ull << (63-6))/* Radix on HPT mode */
+> +#define CXL_PSL_SR_An_XLAT_ror (3ull << (63-6))/* Radix on Radix mode */
+> +#define CXL_PSL_SR_An_BOT (1ull << (63-10)) /* Use the in-memory segment table */
+>  #define CXL_PSL_SR_An_PR  MSR_PR            /* Problem state, GA1: 1 */
+>  #define CXL_PSL_SR_An_ISL (1ull << (63-53)) /* Ignore Segment Large Page */
+>  #define CXL_PSL_SR_An_TC  (1ull << (63-54)) /* Page Table secondary hash */
+> @@ -298,12 +320,38 @@ static const cxl_p2n_reg_t CXL_PSL_WED_An     = {0x0A0};
+>  #define CXL_PSL_DSISR_An_S  DSISR_ISSTORE     /* Access was afu_wr or afu_zero */
+>  #define CXL_PSL_DSISR_An_K  DSISR_KEYFAULT    /* Access not permitted by virtual page class key protection */
+>
+> +/****** CXL_PSL_DSISR_An - CAIA 2 ****************************************************/
+> +#define CXL_PSL9_DSISR_An_TF (1ull << (63-3))  /* Translation fault */
+> +#define CXL_PSL9_DSISR_An_PE (1ull << (63-4))  /* PSL Error (implementation specific) */
+> +#define CXL_PSL9_DSISR_An_AE (1ull << (63-5))  /* AFU Error */
+> +#define CXL_PSL9_DSISR_An_OC (1ull << (63-6))  /* OS Context Warning */
+> +#define CXL_PSL9_DSISR_An_S (1ull << (63-38))  /* TF for a write operation */
+> +#define CXL_PSL9_DSISR_PENDING (CXL_PSL9_DSISR_An_TF | CXL_PSL9_DSISR_An_PE | CXL_PSL9_DSISR_An_AE | CXL_PSL9_DSISR_An_OC)
+> +/* NOTE: Bits 56:63 (Checkout Response Status) are valid when DSISR_An[TF] = 1
+> + * Status (0:7) Encoding
+> + */
+> +#define CXL_PSL9_DSISR_An_CO_MASK 0x00000000000000ffULL
+> +#define CXL_PSL9_DSISR_An_SF      0x0000000000000080ULL  /* Segment Fault                        0b10000000 */
+> +#define CXL_PSL9_DSISR_An_PF_SLR  0x0000000000000088ULL  /* PTE not found (Single Level Radix)   0b10001000 */
+> +#define CXL_PSL9_DSISR_An_PF_RGC  0x000000000000008CULL  /* PTE not found (Radix Guest (child))  0b10001100 */
+> +#define CXL_PSL9_DSISR_An_PF_RGP  0x0000000000000090ULL  /* PTE not found (Radix Guest (parent)) 0b10010000 */
+> +#define CXL_PSL9_DSISR_An_PF_HRH  0x0000000000000094ULL  /* PTE not found (HPT/Radix Host)       0b10010100 */
+> +#define CXL_PSL9_DSISR_An_PF_STEG 0x000000000000009CULL  /* PTE not found (STEG VA)              0b10011100 */
+> +
+>  /****** CXL_PSL_TFC_An ******************************************************/
+>  #define CXL_PSL_TFC_An_A  (1ull << (63-28)) /* Acknowledge non-translation fault */
+>  #define CXL_PSL_TFC_An_C  (1ull << (63-29)) /* Continue (abort transaction) */
+>  #define CXL_PSL_TFC_An_AE (1ull << (63-30)) /* Restart PSL with address error */
+>  #define CXL_PSL_TFC_An_R  (1ull << (63-31)) /* Restart PSL transaction */
+>
+> +/****** CXL_XSL9_INV_ERAT - CAIA 2 **********************************/
+> +#define CXL_XSL9_IERAT_MLPID    (1ull << (63-0))  /* Match LPID */
 
+"INV" in the comment doesn't match "IERAT" in the macros
 
->> +
->> +	if (WARN_ON_ONCE(mm_iommu_ua_to_hpa(mem, ua, &hpa)))
->> +		return H_HARDWARE;
->> +
->> +	if (mm_iommu_mapped_inc(mem))
->> +		return H_CLOSED;
->> +
->> +	ret =3D iommu_tce_xchg(tbl, entry, &hpa, &dir);
->> +	if (ret) {
->=20
-> It thought the xchg could basically never fail, so this should be
-> another WARN_ON().
+> +#define CXL_XSL9_IERAT_MPID     (1ull << (63-1))  /* Match PID */
+> +#define CXL_XSL9_IERAT_PRS      (1ull << (63-4))  /* PRS bit for Radix invalidations */
+> +#define CXL_XSL9_IERAT_INVR     (1ull << (63-3))  /* Invalidate Radix */
+> +#define CXL_XSL9_IERAT_IALL     (1ull << (63-8))  /* Invalidate All */
+> +#define CXL_XSL9_IERAT_IINPROG  (1ull << (63-63)) /* Invalidate in progress */
+> +
+>  /* cxl_process_element->software_status */
+>  #define CXL_PE_SOFTWARE_STATE_V (1ul << (31 -  0)) /* Valid */
+>  #define CXL_PE_SOFTWARE_STATE_C (1ul << (31 - 29)) /* Complete */
+> @@ -651,25 +699,38 @@ int cxl_pci_reset(struct cxl *adapter);
+>  void cxl_pci_release_afu(struct device *dev);
+>  ssize_t cxl_pci_read_adapter_vpd(struct cxl *adapter, void *buf, size_t len);
+>
+> -/* common == phyp + powernv */
+> +/* common == phyp + powernv - CAIA 1&2 */
+>  struct cxl_process_element_common {
+>  	__be32 tid;
+>  	__be32 pid;
+>  	__be64 csrp;
+> -	__be64 aurp0;
+> -	__be64 aurp1;
+> -	__be64 sstp0;
+> -	__be64 sstp1;
+> +	union {
+> +		struct {
+> +			__be64 aurp0;
+> +			__be64 aurp1;
+> +			__be64 sstp0;
+> +			__be64 sstp1;
+> +		} psl8;  /* CAIA 1 */
+> +		struct {
+> +			u8     reserved2[8];
+> +			u8     reserved3[8];
+> +			u8     reserved4[8];
+> +			u8     reserved5[8];
+> +		} psl9;  /* CAIA 2 */
+> +	} u;
+>  	__be64 amr;
+> -	u8     reserved3[4];
+> +	u8     reserved6[4];
+>  	__be64 wed;
+>  } __packed;
+>
+> -/* just powernv */
+> +/* just powernv - CAIA 1&2 */
+>  struct cxl_process_element {
+>  	__be64 sr;
+>  	__be64 SPOffset;
+> -	__be64 sdr;
+> +	union {
+> +		__be64 sdr;          /* CAIA 1 */
+> +		u8     reserved1[8]; /* CAIA 2 */
+> +	} u;
+>  	__be64 haurp;
+>  	__be32 ctxtime;
+>  	__be16 ivte_offsets[4];
+> @@ -758,6 +819,16 @@ static inline bool cxl_is_power8(void)
+>  	return false;
+>  }
+>
+> +static inline bool cxl_is_power9(void)
+> +{
+> +	/* intermediate solution */
+> +	if (!cxl_is_power8() &&
+> +	   (cpu_has_feature(CPU_FTRS_POWER9) ||
+> +	    cpu_has_feature(CPU_FTR_POWER9_DD1)))
+> +		return true;
+> +	return false;
+> +}
+> +
+>  static inline bool cxl_is_psl8(struct cxl_afu *afu)
+>  {
+>  	if (afu->adapter->caia_major == 1)
+> @@ -765,6 +836,13 @@ static inline bool cxl_is_psl8(struct cxl_afu *afu)
+>  	return false;
+>  }
+>
+> +static inline bool cxl_is_psl9(struct cxl_afu *afu)
+> +{
+> +	if (afu->adapter->caia_major == 2)
+> +		return true;
+> +	return false;
+> +}
+> +
+>  ssize_t cxl_pci_afu_read_err_buffer(struct cxl_afu *afu, char *buf,
+>  				loff_t off, size_t count);
+>
+> @@ -829,9 +907,13 @@ int afu_register_irqs(struct cxl_context *ctx, u32 count);
+>  void afu_release_irqs(struct cxl_context *ctx, void *cookie);
+>  void afu_irq_name_free(struct cxl_context *ctx);
+>
+> +int cxl_attach_afu_directed_psl9(struct cxl_context *ctx, u64 wed, u64 amr);
+>  int cxl_attach_afu_directed_psl8(struct cxl_context *ctx, u64 wed, u64 amr);
+> +int cxl_activate_dedicated_process_psl9(struct cxl_afu *afu);
+>  int cxl_activate_dedicated_process_psl8(struct cxl_afu *afu);
+> +int cxl_attach_dedicated_process_psl9(struct cxl_context *ctx, u64 wed, u64 amr);
+>  int cxl_attach_dedicated_process_psl8(struct cxl_context *ctx, u64 wed, u64 amr);
+> +void cxl_update_dedicated_ivtes_psl9(struct cxl_context *ctx);
+>  void cxl_update_dedicated_ivtes_psl8(struct cxl_context *ctx);
+>
+>  int cxl_debugfs_init(void);
+> @@ -892,8 +974,11 @@ struct cxl_irq_info {
+>  };
+>
+>  void cxl_assign_psn_space(struct cxl_context *ctx);
+> +int cxl_invalidate_all_psl9(struct cxl *adapter);
+>  int cxl_invalidate_all_psl8(struct cxl *adapter);
+> +irqreturn_t cxl_irq_psl9(int irq, struct cxl_context *ctx, struct cxl_irq_info *irq_info);
+>  irqreturn_t cxl_irq_psl8(int irq, struct cxl_context *ctx, struct cxl_irq_info *irq_info);
+> +irqreturn_t cxl_fail_irq_psl9(struct cxl_afu *afu, struct cxl_irq_info *irq_info);
+>  irqreturn_t cxl_fail_irq_psl8(struct cxl_afu *afu, struct cxl_irq_info *irq_info);
+>  int cxl_register_one_irq(struct cxl *adapter, irq_handler_t handler,
+>  			void *cookie, irq_hw_number_t *dest_hwirq,
+> @@ -905,11 +990,15 @@ int cxl_data_cache_flush(struct cxl *adapter);
+>  int cxl_afu_disable(struct cxl_afu *afu);
+>  int cxl_psl_purge(struct cxl_afu *afu);
+>
+> +void cxl_debugfs_add_adapter_regs_psl9(struct cxl *adapter, struct dentry *dir);
+>  void cxl_debugfs_add_adapter_regs_psl8(struct cxl *adapter, struct dentry *dir);
+>  void cxl_debugfs_add_adapter_regs_xsl(struct cxl *adapter, struct dentry *dir);
+> +void cxl_debugfs_add_afu_regs_psl9(struct cxl_afu *afu, struct dentry *dir);
+>  void cxl_debugfs_add_afu_regs_psl8(struct cxl_afu *afu, struct dentry *dir);
+> +void cxl_native_irq_dump_regs_psl9(struct cxl_context *ctx);
+>  void cxl_native_irq_dump_regs_psl8(struct cxl_context *ctx);
+>  void cxl_native_err_irq_dump_regs(struct cxl *adapter);
+> +void cxl_stop_trace_psl9(struct cxl *cxl);
+>  void cxl_stop_trace_psl8(struct cxl *cxl);
+>  int cxl_pci_vphb_add(struct cxl_afu *afu);
+>  void cxl_pci_vphb_remove(struct cxl_afu *afu);
+> diff --git a/drivers/misc/cxl/debugfs.c b/drivers/misc/cxl/debugfs.c
+> index 43a1a27..eae9d74 100644
+> --- a/drivers/misc/cxl/debugfs.c
+> +++ b/drivers/misc/cxl/debugfs.c
+> @@ -15,6 +15,12 @@
+>
+>  static struct dentry *cxl_debugfs;
+>
+> +void cxl_stop_trace_psl9(struct cxl *adapter)
+> +{
+> +	/* Stop the trace */
+> +	cxl_p1_write(adapter, CXL_PSL9_TRACECFG, 0x4480000000000000ULL);
+> +}
+> +
+>  void cxl_stop_trace_psl8(struct cxl *adapter)
+>  {
+>  	int slice;
+> @@ -53,6 +59,14 @@ static struct dentry *debugfs_create_io_x64(const char *name, umode_t mode,
+>  					  (void __force *)value, &fops_io_x64);
+>  }
+>
+> +void cxl_debugfs_add_adapter_regs_psl9(struct cxl *adapter, struct dentry *dir)
+> +{
+> +	debugfs_create_io_x64("fir1", S_IRUSR, dir, _cxl_p1_addr(adapter, CXL_PSL9_FIR1));
+> +	debugfs_create_io_x64("fir2", S_IRUSR, dir, _cxl_p1_addr(adapter, CXL_PSL9_FIR2));
+> +	debugfs_create_io_x64("fir_cntl", S_IRUSR, dir, _cxl_p1_addr(adapter, CXL_PSL9_FIR_CNTL));
+> +	debugfs_create_io_x64("trace", S_IRUSR | S_IWUSR, dir, _cxl_p1_addr(adapter, CXL_PSL9_TRACECFG));
+> +}
+> +
+>  void cxl_debugfs_add_adapter_regs_psl8(struct cxl *adapter, struct dentry *dir)
+>  {
+>  	debugfs_create_io_x64("fir1", S_IRUSR, dir, _cxl_p1_addr(adapter, CXL_PSL_FIR1));
+> @@ -92,6 +106,11 @@ void cxl_debugfs_adapter_remove(struct cxl *adapter)
+>  	debugfs_remove_recursive(adapter->debugfs);
+>  }
+>
+> +void cxl_debugfs_add_afu_regs_psl9(struct cxl_afu *afu, struct dentry *dir)
+> +{
+> +	debugfs_create_io_x64("serr", S_IRUSR, dir, _cxl_p1n_addr(afu, CXL_PSL_SERR_An));
+> +}
+> +
+>  void cxl_debugfs_add_afu_regs_psl8(struct cxl_afu *afu, struct dentry *dir)
+>  {
+>  	debugfs_create_io_x64("sstp0", S_IRUSR, dir, _cxl_p2n_addr(afu, CXL_SSTP0_An));
+> diff --git a/drivers/misc/cxl/fault.c b/drivers/misc/cxl/fault.c
+> index acf8b7a..d615f89 100644
+> --- a/drivers/misc/cxl/fault.c
+> +++ b/drivers/misc/cxl/fault.c
+> @@ -145,25 +145,26 @@ static void cxl_handle_page_fault(struct cxl_context *ctx,
+>  		return cxl_ack_ae(ctx);
+>  	}
+>
+> -	/*
+> -	 * update_mmu_cache() will not have loaded the hash since current->trap
+> -	 * is not a 0x400 or 0x300, so just call hash_page_mm() here.
+> -	 */
+> -	access = _PAGE_PRESENT | _PAGE_READ;
+> -	if (dsisr & CXL_PSL_DSISR_An_S)
+> -		access |= _PAGE_WRITE;
+> -
+> -	access |= _PAGE_PRIVILEGED;
+> -	if ((!ctx->kernel) || (REGION_ID(dar) == USER_REGION_ID))
+> -		access &= ~_PAGE_PRIVILEGED;
+> -
+> -	if (dsisr & DSISR_NOHPTE)
+> -		inv_flags |= HPTE_NOHPTE_UPDATE;
+> -
+> -	local_irq_save(flags);
+> -	hash_page_mm(mm, dar, access, 0x300, inv_flags);
+> -	local_irq_restore(flags);
+> -
+> +	if (!radix_enabled()) {
+> +		/*
+> +		 * update_mmu_cache() will not have loaded the hash since current->trap
+> +		 * is not a 0x400 or 0x300, so just call hash_page_mm() here.
+> +		 */
+> +		access = _PAGE_PRESENT | _PAGE_READ;
+> +		if (dsisr & CXL_PSL_DSISR_An_S)
+> +			access |= _PAGE_WRITE;
+> +
+> +		access |= _PAGE_PRIVILEGED;
+> +		if ((!ctx->kernel) || (REGION_ID(dar) == USER_REGION_ID))
+> +			access &= ~_PAGE_PRIVILEGED;
+> +
+> +		if (dsisr & DSISR_NOHPTE)
+> +			inv_flags |= HPTE_NOHPTE_UPDATE;
+> +
+> +		local_irq_save(flags);
+> +		hash_page_mm(mm, dar, access, 0x300, inv_flags);
+> +		local_irq_restore(flags);
+> +	}
+>  	pr_devel("Page fault successfully handled for pe: %i!\n", ctx->pe);
+>  	cxl_ops->ack_irq(ctx, CXL_PSL_TFC_An_R, 0);
+>  }
+> @@ -231,6 +232,15 @@ void cxl_handle_fault(struct work_struct *fault_work)
+>  		else
+>  			WARN(1, "cxl_handle_fault has nothing to handle\n");
+>  	}
+> +	if (cxl_is_psl9(ctx->afu)) {
+> +		if ((dsisr & CXL_PSL9_DSISR_An_CO_MASK) &
+> +			(CXL_PSL9_DSISR_An_PF_SLR | CXL_PSL9_DSISR_An_PF_RGC |
+> +			 CXL_PSL9_DSISR_An_PF_RGP | CXL_PSL9_DSISR_An_PF_HRH |
+> +			 CXL_PSL9_DSISR_An_PF_STEG))
+> +			cxl_handle_page_fault(ctx, mm, dsisr, dar);
+> +		else
+> +			WARN(1, "cxl_handle_fault has nothing to handle\n");
+> +	}
+>
+>  	if (mm)
+>  		mmput(mm);
+> diff --git a/drivers/misc/cxl/guest.c b/drivers/misc/cxl/guest.c
+> index 3ad7381..f58b4b6c 100644
+> --- a/drivers/misc/cxl/guest.c
+> +++ b/drivers/misc/cxl/guest.c
+> @@ -551,13 +551,13 @@ static int attach_afu_directed(struct cxl_context *ctx, u64 wed, u64 amr)
+>  	elem->common.tid    = cpu_to_be32(0); /* Unused */
+>  	elem->common.pid    = cpu_to_be32(pid);
+>  	elem->common.csrp   = cpu_to_be64(0); /* disable */
+> -	elem->common.aurp0  = cpu_to_be64(0); /* disable */
+> -	elem->common.aurp1  = cpu_to_be64(0); /* disable */
+> +	elem->common.u.psl8.aurp0  = cpu_to_be64(0); /* disable */
+> +	elem->common.u.psl8.aurp1  = cpu_to_be64(0); /* disable */
+>
+>  	cxl_prefault(ctx, wed);
+>
+> -	elem->common.sstp0  = cpu_to_be64(ctx->sstp0);
+> -	elem->common.sstp1  = cpu_to_be64(ctx->sstp1);
+> +	elem->common.u.psl8.sstp0  = cpu_to_be64(ctx->sstp0);
+> +	elem->common.u.psl8.sstp1  = cpu_to_be64(ctx->sstp1);
+>
+>  	/*
+>  	 * Ensure we have at least one interrupt allocated to take faults for
+> diff --git a/drivers/misc/cxl/irq.c b/drivers/misc/cxl/irq.c
+> index fa9f8a2..7074e7d 100644
+> --- a/drivers/misc/cxl/irq.c
+> +++ b/drivers/misc/cxl/irq.c
+> @@ -34,6 +34,58 @@ static irqreturn_t schedule_cxl_fault(struct cxl_context *ctx, u64 dsisr, u64 da
+>  	return IRQ_HANDLED;
+>  }
+>
+> +irqreturn_t cxl_irq_psl9(int irq, struct cxl_context *ctx, struct cxl_irq_info *irq_info)
+> +{
+> +	u64 dsisr, dar;
+> +
+> +	dsisr = irq_info->dsisr;
+> +	dar = irq_info->dar;
+> +
+> +	trace_cxl_psl9_irq(ctx, irq, dsisr, dar);
+> +
+> +	pr_devel("CXL interrupt %i for afu pe: %i DSISR: %#llx DAR: %#llx\n", irq, ctx->pe, dsisr, dar);
+> +
+> +	if (dsisr & CXL_PSL9_DSISR_An_TF) {
+> +		pr_devel("Scheduling translation fault handling for later pe: %i\n", ctx->pe);
 
+Can we have all lines printed with pr_*() prefixed with "cxl: "?
 
-Correct.
+Also wrap the "pe: %i" in parentheses.
 
+> +		return schedule_cxl_fault(ctx, dsisr, dar);
+> +	}
+> +
+> +	if (dsisr & CXL_PSL9_DSISR_An_PE)
+> +		return cxl_ops->handle_psl_slice_error(ctx, dsisr,
+> +						irq_info->errstat);
+> +	if (dsisr & CXL_PSL9_DSISR_An_AE) {
+> +		pr_devel("CXL interrupt: AFU Error 0x%016llx\n", irq_info->afu_err);
+> +
+> +		if (ctx->pending_afu_err) {
+> +			/*
+> +			 * This shouldn't happen - the PSL treats these errors
+> +			 * as fatal and will have reset the AFU, so there's not
+> +			 * much point buffering multiple AFU errors.
+> +			 * OTOH if we DO ever see a storm of these come in it's
+> +			 * probably best that we log them somewhere:
+> +			 */
+> +			dev_err_ratelimited(&ctx->afu->dev, "CXL AFU Error "
+> +					    "undelivered to pe %i: 0x%016llx\n",
+> +					    ctx->pe, irq_info->afu_err);
+> +		} else {
+> +			spin_lock(&ctx->lock);
+> +			ctx->afu_err = irq_info->afu_err;
+> +			ctx->pending_afu_err = 1;
 
->> +		mm_iommu_mapped_dec(mem);
->> +		return H_TOO_HARD;
->> +	}
->> +
->> +	if (dir !=3D DMA_NONE)
->> +		kvmppc_tce_iommu_mapped_dec(kvm, tbl, entry);
->> +
->> +	*pua =3D ua;
->> +
->> +	return 0;
->> +}
->> +
->>  long kvmppc_h_put_tce(struct kvm_vcpu *vcpu, unsigned long liobn,
->>  		      unsigned long ioba, unsigned long tce)
->>  {
->>  	struct kvmppc_spapr_tce_table *stt;
->> -	long ret;
->> +	long ret, idx;
->> +	struct kvmppc_spapr_tce_iommu_table *stit;
->> +	unsigned long entry, ua =3D 0;
->> +	enum dma_data_direction dir;
->> =20
->>  	/* udbg_printf("H_PUT_TCE(): liobn=3D0x%lx ioba=3D0x%lx, tce=3D0x%lx=
-\n", */
->>  	/* 	    liobn, ioba, tce); */
->> @@ -231,7 +480,35 @@ long kvmppc_h_put_tce(struct kvm_vcpu *vcpu, unsi=
-gned long liobn,
->>  	if (ret !=3D H_SUCCESS)
->>  		return ret;
->> =20
->> -	kvmppc_tce_put(stt, ioba >> stt->page_shift, tce);
->> +	dir =3D iommu_tce_direction(tce);
->> +	if ((dir !=3D DMA_NONE) && kvmppc_gpa_to_ua(vcpu->kvm,
->> +			tce & ~(TCE_PCI_READ | TCE_PCI_WRITE), &ua, NULL))
->> +		return H_PARAMETER;
->> +
->> +	entry =3D ioba >> stt->page_shift;
->> +
->> +	list_for_each_entry_lockless(stit, &stt->iommu_tables, next) {
->> +		if (dir =3D=3D DMA_NONE) {
->> +			ret =3D kvmppc_tce_iommu_unmap(vcpu->kvm,
->> +					stit->tbl, entry);
->> +		} else {
->> +			idx =3D srcu_read_lock(&vcpu->kvm->srcu);
->> +			ret =3D kvmppc_tce_iommu_map(vcpu->kvm, stit->tbl,
->> +					entry, ua, dir);
->> +			srcu_read_unlock(&vcpu->kvm->srcu, idx);
->> +		}
->> +
->> +		if (ret =3D=3D H_SUCCESS)
->> +			continue;
->> +
->> +		if (ret =3D=3D H_TOO_HARD)
->> +			return ret;
->> +
->> +		WARN_ON_ONCE(1);
->> +		kvmppc_clear_tce(stit->tbl, entry);
->> +	}
->> +
->> +	kvmppc_tce_put(stt, entry, tce);
->> =20
->>  	return H_SUCCESS;
->>  }
->> @@ -246,6 +523,7 @@ long kvmppc_h_put_tce_indirect(struct kvm_vcpu *vc=
-pu,
->>  	unsigned long entry, ua =3D 0;
->>  	u64 __user *tces;
->>  	u64 tce;
->> +	struct kvmppc_spapr_tce_iommu_table *stit;
->> =20
->>  	stt =3D kvmppc_find_table(vcpu->kvm, liobn);
->>  	if (!stt)
->> @@ -284,6 +562,26 @@ long kvmppc_h_put_tce_indirect(struct kvm_vcpu *v=
-cpu,
->>  		if (ret !=3D H_SUCCESS)
->>  			goto unlock_exit;
->> =20
->> +		if (kvmppc_gpa_to_ua(vcpu->kvm,
->> +				tce & ~(TCE_PCI_READ | TCE_PCI_WRITE),
->> +				&ua, NULL))
->> +			return H_PARAMETER;
->> +
->> +		list_for_each_entry_lockless(stit, &stt->iommu_tables, next) {
->> +			ret =3D kvmppc_tce_iommu_map(vcpu->kvm,
->> +					stit->tbl, entry + i, ua,
->> +					iommu_tce_direction(tce));
->> +
->> +			if (ret =3D=3D H_SUCCESS)
->> +				continue;
->> +
->> +			if (ret =3D=3D H_TOO_HARD)
->> +				goto unlock_exit;
->> +
->> +			WARN_ON_ONCE(1);
->> +			kvmppc_clear_tce(stit->tbl, entry);
->> +		}
->> +
->>  		kvmppc_tce_put(stt, entry + i, tce);
->>  	}
->> =20
->> @@ -300,6 +598,7 @@ long kvmppc_h_stuff_tce(struct kvm_vcpu *vcpu,
->>  {
->>  	struct kvmppc_spapr_tce_table *stt;
->>  	long i, ret;
->> +	struct kvmppc_spapr_tce_iommu_table *stit;
->> =20
->>  	stt =3D kvmppc_find_table(vcpu->kvm, liobn);
->>  	if (!stt)
->> @@ -313,6 +612,24 @@ long kvmppc_h_stuff_tce(struct kvm_vcpu *vcpu,
->>  	if (tce_value & (TCE_PCI_WRITE | TCE_PCI_READ))
->>  		return H_PARAMETER;
->> =20
->> +	list_for_each_entry_lockless(stit, &stt->iommu_tables, next) {
->> +		unsigned long entry =3D ioba >> stit->tbl->it_page_shift;
->> +
->> +		for (i =3D 0; i < npages; ++i) {
->> +			ret =3D kvmppc_tce_iommu_unmap(vcpu->kvm,
->> +					stit->tbl, entry + i);
->> +
->> +			if (ret =3D=3D H_SUCCESS)
->> +				continue;
->> +
->> +			if (ret =3D=3D H_TOO_HARD)
->> +				return ret;
->> +
->> +			WARN_ON_ONCE(1);
->> +			kvmppc_clear_tce(stit->tbl, entry);
->> +		}
->> +	}
->> +
->>  	for (i =3D 0; i < npages; ++i, ioba +=3D (1ULL << stt->page_shift))
->>  		kvmppc_tce_put(stt, ioba >> stt->page_shift, tce_value);
->> =20
->> diff --git a/arch/powerpc/kvm/book3s_64_vio_hv.c b/arch/powerpc/kvm/bo=
-ok3s_64_vio_hv.c
->> index 440d3ab5dc32..3ad06badc552 100644
->> --- a/arch/powerpc/kvm/book3s_64_vio_hv.c
->> +++ b/arch/powerpc/kvm/book3s_64_vio_hv.c
->> @@ -161,11 +161,108 @@ long kvmppc_gpa_to_ua(struct kvm *kvm, unsigned=
- long gpa,
->>  EXPORT_SYMBOL_GPL(kvmppc_gpa_to_ua);
->> =20
->>  #ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
->> +static void kvmppc_rm_clear_tce(struct iommu_table *tbl, unsigned lon=
-g entry)
->> +{
->> +	unsigned long hpa =3D 0;
->> +	enum dma_data_direction dir =3D DMA_NONE;
->> +
->> +	iommu_tce_xchg_rm(tbl, entry, &hpa, &dir);
->> +}
->> +
->> +static long kvmppc_rm_tce_iommu_mapped_dec(struct kvm *kvm,
->> +		struct iommu_table *tbl, unsigned long entry)
->> +{
->> +	struct mm_iommu_table_group_mem_t *mem =3D NULL;
->> +	const unsigned long pgsize =3D 1ULL << tbl->it_page_shift;
->> +	unsigned long *pua =3D IOMMU_TABLE_USERSPACE_ENTRY(tbl, entry);
->> +
->> +	if (WARN_ON_ONCE(!pua))
->> +		return H_HARDWARE;
->=20
-> So.. I know I encouraged WARN_ON()s, but is it safe to call WARN_ON()
-> from real mode?
+./drivers/misc/cxl/irq.c:73:3-23: WARNING: Assignment of bool to 0/1
 
-Ouch. Tried WARN_ON_ONCE(1) in kvmppc_rm_h_stuff_tce() and got "rcu_sched=
+> +			spin_unlock(&ctx->lock);
+> +
+> +			wake_up_all(&ctx->wq);
+> +		}
+> +
+> +		cxl_ops->ack_irq(ctx, CXL_PSL_TFC_An_A, 0);
+> +		return IRQ_HANDLED;
+> +	}
+> +	if (dsisr & CXL_PSL9_DSISR_An_OC)
+> +		pr_devel("CXL interrupt: OS Context Warning\n");
+> +
+> +	WARN(1, "Unhandled CXL PSL IRQ\n");
+> +	return IRQ_HANDLED;
+> +}
+> +
+>  irqreturn_t cxl_irq_psl8(int irq, struct cxl_context *ctx, struct cxl_irq_info *irq_info)
+>  {
+>  	u64 dsisr, dar;
+> diff --git a/drivers/misc/cxl/native.c b/drivers/misc/cxl/native.c
+> index a58a6a2..ed116d1 100644
+> --- a/drivers/misc/cxl/native.c
+> +++ b/drivers/misc/cxl/native.c
+> @@ -167,6 +167,18 @@ int cxl_psl_purge(struct cxl_afu *afu)
+>  				cpu_relax();
+>  			}
+>  		}
+> +		if (cxl_is_psl9(afu)) {
+> +			if (dsisr & CXL_PSL9_DSISR_An_TF) {
+> +				dar = cxl_p2n_read(afu, CXL_PSL_DAR_An);
+> +				dev_notice(&afu->dev, "PSL purge terminating pending translation, DSISR: 0x%016llx, DAR: 0x%016llx\n", dsisr, dar);
+> +				cxl_p2n_write(afu, CXL_PSL_TFC_An, CXL_PSL_TFC_An_AE);
+> +			} else if (dsisr) {
+> +				dev_notice(&afu->dev, "PSL purge acknowledging pending non-translation fault, DSISR: 0x%016llx\n", dsisr);
+> +				cxl_p2n_write(afu, CXL_PSL_TFC_An, CXL_PSL_TFC_An_A);
+> +			} else {
+> +				cpu_relax();
+> +			}
+> +		}
+>  		PSL_CNTL = cxl_p1n_read(afu, CXL_PSL_SCNTL_An);
+>  	}
+>  	end = local_clock();
+> @@ -259,6 +271,36 @@ void cxl_release_spa(struct cxl_afu *afu)
+>  	}
+>  }
+>
+> +int cxl_invalidate_all_psl9(struct cxl *adapter)
+> +{
+> +	unsigned long timeout = jiffies + (HZ * CXL_TIMEOUT);
+> +	u64 ierat;
+> +
+> +	/* do not invalidate ERAT entries when not reloading on PERST */
+> +	if (adapter->perst_loads_image)
+> +		return 0;
+> +
+> +	pr_devel("CXL adapter - invalidation of all ERAT entries\n");
+> +
+> +	/* Invalidates all ERAT entries for Radix or HPT */
+> +	ierat = CXL_XSL9_IERAT_IALL;
+> +	if (radix_enabled())
+> +		ierat |= CXL_XSL9_IERAT_INVR;
+> +	cxl_p1_write(adapter, CXL_XSL9_IERAT, ierat);
+> +
+> +	while (cxl_p1_read(adapter, CXL_XSL9_IERAT) & CXL_XSL9_IERAT_IINPROG) {
+> +		if (time_after_eq(jiffies, timeout)) {
+> +			dev_warn(&adapter->dev,
+> +			"WARNING: CXL adapter invalidation of all ERAT entries timed out!\n");
+> +			return -EBUSY;
+> +		}
+> +		if (!cxl_ops->link_ok(adapter, NULL))
+> +			return -EIO;
+> +		cpu_relax();
+> +	}
+> +	return 0;
+> +}
+> +
+>  int cxl_invalidate_all_psl8(struct cxl *adapter)
+>  {
+>  	unsigned long timeout = jiffies + (HZ * CXL_TIMEOUT);
+> @@ -545,10 +587,19 @@ static u64 calculate_sr(struct cxl_context *ctx)
+>  		sr |= (mfmsr() & MSR_SF) | CXL_PSL_SR_An_HV;
+>  	} else {
+>  		sr |= CXL_PSL_SR_An_PR | CXL_PSL_SR_An_R;
+> -		sr &= ~(CXL_PSL_SR_An_HV);
+> +		if (radix_enabled())
+> +			sr |= CXL_PSL_SR_An_HV;
+> +		else
+> +			sr &= ~(CXL_PSL_SR_An_HV);
+>  		if (!test_tsk_thread_flag(current, TIF_32BIT))
+>  			sr |= CXL_PSL_SR_An_SF;
+>  	}
+> +	if (cxl_is_psl9(ctx->afu)) {
+> +		if (radix_enabled())
+> +			sr |= CXL_PSL_SR_An_XLAT_ror;
+> +		else
+> +			sr |= CXL_PSL_SR_An_XLAT_hpt;
+> +	}
+>  	return sr;
+>  }
+>
+> @@ -581,6 +632,70 @@ static void update_ivtes_directed(struct cxl_context *ctx)
+>  		WARN_ON(add_process_element(ctx));
+>  }
+>
+> +static int process_element_entry(struct cxl_context *ctx, u64 wed, u64 amr)
+> +{
+> +	u32 pid;
+> +
+> +	cxl_assign_psn_space(ctx);
+> +
+> +	ctx->elem->ctxtime = 0; /* disable */
+> +	ctx->elem->lpid = cpu_to_be32(mfspr(SPRN_LPID));
+> +	ctx->elem->haurp = 0; /* disable */
+> +
+> +	if (ctx->kernel)
+> +		pid = 0;
+> +	else {
+> +		if (ctx->mm == NULL) {
+> +			pr_devel("%s: unable to get mm for pe=%d pid=%i\n",
+> +				__func__, ctx->pe, pid_nr(ctx->pid));
+> +			return -EINVAL;
+> +		}
+> +		pid = ctx->mm->context.id;
+> +	}
+> +
+> +	ctx->elem->common.tid = 0;
+> +	ctx->elem->common.pid = cpu_to_be32(pid);
+> +
+> +	ctx->elem->sr = cpu_to_be64(calculate_sr(ctx));
+> +
+> +	ctx->elem->common.csrp = 0; /* disable */
+> +
+> +	cxl_prefault(ctx, wed);
+> +
+> +	/*
+> +	 * Ensure we have the multiplexed PSL interrupt set up to take faults
+> +	 * for kernel contexts that may not have allocated any AFU IRQs at all:
+> +	 */
+> +	if (ctx->irqs.range[0] == 0) {
+> +		ctx->irqs.offset[0] = ctx->afu->native->psl_hwirq;
+> +		ctx->irqs.range[0] = 1;
+> +	}
+> +
+> +	ctx->elem->common.amr = cpu_to_be64(amr);
+> +	ctx->elem->common.wed = cpu_to_be64(wed);
+> +
+> +	return 0;
+> +}
+> +
+> +int cxl_attach_afu_directed_psl9(struct cxl_context *ctx, u64 wed, u64 amr)
+> +{
+> +	int result;
+> +
+> +	/* fill the process element entry */
+> +	result = process_element_entry(ctx, wed, amr);
+> +	if (result)
+> +		return result;
+> +
+> +	update_ivtes_directed(ctx);
+> +
+> +	/* first guy needs to enable */
+> +	result = cxl_ops->afu_check_and_enable(ctx->afu);
+> +	if (result)
+> +		return result;
+> +
+> +	return add_process_element(ctx);
+> +}
+> +
+>  int cxl_attach_afu_directed_psl8(struct cxl_context *ctx, u64 wed, u64 amr)
+>  {
+>  	u32 pid;
+> @@ -591,7 +706,7 @@ int cxl_attach_afu_directed_psl8(struct cxl_context *ctx, u64 wed, u64 amr)
+>  	ctx->elem->ctxtime = 0; /* disable */
+>  	ctx->elem->lpid = cpu_to_be32(mfspr(SPRN_LPID));
+>  	ctx->elem->haurp = 0; /* disable */
+> -	ctx->elem->sdr = cpu_to_be64(mfspr(SPRN_SDR1));
+> +	ctx->elem->u.sdr = cpu_to_be64(mfspr(SPRN_SDR1));
+>
+>  	pid = current->pid;
+>  	if (ctx->kernel)
+> @@ -602,13 +717,13 @@ int cxl_attach_afu_directed_psl8(struct cxl_context *ctx, u64 wed, u64 amr)
+>  	ctx->elem->sr = cpu_to_be64(calculate_sr(ctx));
+>
+>  	ctx->elem->common.csrp = 0; /* disable */
+> -	ctx->elem->common.aurp0 = 0; /* disable */
+> -	ctx->elem->common.aurp1 = 0; /* disable */
+> +	ctx->elem->common.u.psl8.aurp0 = 0; /* disable */
+> +	ctx->elem->common.u.psl8.aurp1 = 0; /* disable */
+>
+>  	cxl_prefault(ctx, wed);
+>
+> -	ctx->elem->common.sstp0 = cpu_to_be64(ctx->sstp0);
+> -	ctx->elem->common.sstp1 = cpu_to_be64(ctx->sstp1);
+> +	ctx->elem->common.u.psl8.sstp0 = cpu_to_be64(ctx->sstp0);
+> +	ctx->elem->common.u.psl8.sstp1 = cpu_to_be64(ctx->sstp1);
+>
+>  	/*
+>  	 * Ensure we have the multiplexed PSL interrupt set up to take faults
+> @@ -674,6 +789,32 @@ static int deactivate_afu_directed(struct cxl_afu *afu)
+>  	return 0;
+>  }
+>
+> +int cxl_activate_dedicated_process_psl9(struct cxl_afu *afu)
+> +{
+> +	dev_info(&afu->dev, "Activating dedicated process mode\n");
+> +
+> +	/* If XSL is set to dedicated mode (Set in PSL_SCNTL reg), the
+> +	 * XSL and AFU are programmed to work with a single context.
+> +	 * The context information should be configured in the SPA area
+> +	 * index 0 (so PSL_SPAP must be configured before enabling the
+> +	 * AFU).
+> +	 */
+> +	afu->num_procs = 1;
+> +	if (afu->native->spa == NULL) {
+> +		if (cxl_alloc_spa(afu))
+> +			return -ENOMEM;
+> +	}
+> +	attach_spa(afu);
+> +
+> +	cxl_p1n_write(afu, CXL_PSL_SCNTL_An, CXL_PSL_SCNTL_An_PM_Process);
+> +	cxl_p1n_write(afu, CXL_PSL_ID_An, CXL_PSL_ID_An_F | CXL_PSL_ID_An_L);
+> +
+> +	afu->current_mode = CXL_MODE_DEDICATED;
+> +	afu->num_procs = 1;
+> +
+> +	return cxl_chardev_d_afu_add(afu);
+> +}
+> +
+>  int cxl_activate_dedicated_process_psl8(struct cxl_afu *afu)
+>  {
+>  	dev_info(&afu->dev, "Activating dedicated process mode\n");
+> @@ -697,6 +838,16 @@ int cxl_activate_dedicated_process_psl8(struct cxl_afu *afu)
+>  	return cxl_chardev_d_afu_add(afu);
+>  }
+>
+> +void cxl_update_dedicated_ivtes_psl9(struct cxl_context *ctx)
+> +{
+> +	int r;
+> +
+> +	for (r = 0; r < CXL_IRQ_RANGES; r++) {
+> +		ctx->elem->ivte_offsets[r] = cpu_to_be16(ctx->irqs.offset[r]);
+> +		ctx->elem->ivte_ranges[r] = cpu_to_be16(ctx->irqs.range[r]);
+> +	}
+> +}
+> +
+>  void cxl_update_dedicated_ivtes_psl8(struct cxl_context *ctx)
+>  {
+>  	struct cxl_afu *afu = ctx->afu;
+> @@ -713,6 +864,26 @@ void cxl_update_dedicated_ivtes_psl8(struct cxl_context *ctx)
+>  			((u64)ctx->irqs.range[3] & 0xffff));
+>  }
+>
+> +int cxl_attach_dedicated_process_psl9(struct cxl_context *ctx, u64 wed, u64 amr)
+> +{
+> +	struct cxl_afu *afu = ctx->afu;
+> +	int result;
+> +
+> +	/* fill the process element entry */
+> +	result = process_element_entry(ctx, wed, amr);
+> +	if (result)
+> +		return result;
+> +
+> +	if (ctx->afu->adapter->native->sl_ops->update_dedicated_ivtes)
+> +		afu->adapter->native->sl_ops->update_dedicated_ivtes(ctx);
+> +
+> +	result = cxl_ops->afu_reset(afu);
+> +	if (result)
+> +		return result;
+> +
+> +	return afu_enable(afu);
+> +}
+> +
+>  int cxl_attach_dedicated_process_psl8(struct cxl_context *ctx, u64 wed, u64 amr)
+>  {
+>  	struct cxl_afu *afu = ctx->afu;
+> @@ -884,6 +1055,21 @@ static int native_get_irq_info(struct cxl_afu *afu, struct cxl_irq_info *info)
+>  	return 0;
+>  }
+>
+> +void cxl_native_irq_dump_regs_psl9(struct cxl_context *ctx)
+> +{
+> +	u64 fir1, fir2, serr;
+> +
+> +	fir1 = cxl_p1_read(ctx->afu->adapter, CXL_PSL9_FIR1);
+> +	fir2 = cxl_p1_read(ctx->afu->adapter, CXL_PSL9_FIR2);
+> +
+> +	dev_crit(&ctx->afu->dev, "PSL_FIR1: 0x%016llx\n", fir1);
+> +	dev_crit(&ctx->afu->dev, "PSL_FIR2: 0x%016llx\n", fir2);
+> +	if (ctx->afu->adapter->native->sl_ops->register_serr_irq) {
+> +		serr = cxl_p1n_read(ctx->afu, CXL_PSL_SERR_An);
+> +		cxl_afu_decode_psl_serr(ctx->afu, serr);
+> +	}
+> +}
+> +
+>  void cxl_native_irq_dump_regs_psl8(struct cxl_context *ctx)
+>  {
+>  	u64 fir1, fir2, fir_slice, serr, afu_debug;
+> @@ -920,6 +1106,16 @@ static irqreturn_t native_handle_psl_slice_error(struct cxl_context *ctx,
+>  	return cxl_ops->ack_irq(ctx, 0, errstat);
+>  }
+>
+> +irqreturn_t cxl_fail_irq_psl9(struct cxl_afu *afu, struct cxl_irq_info *irq_info)
+> +{
+> +	if (irq_info->dsisr & CXL_PSL9_DSISR_An_TF)
+> +		cxl_p2n_write(afu, CXL_PSL_TFC_An, CXL_PSL_TFC_An_AE);
+> +	else
+> +		cxl_p2n_write(afu, CXL_PSL_TFC_An, CXL_PSL_TFC_An_A);
+> +
+> +	return IRQ_HANDLED;
+> +}
+> +
+>  irqreturn_t cxl_fail_irq_psl8(struct cxl_afu *afu, struct cxl_irq_info *irq_info)
+>  {
+>  	if (irq_info->dsisr & CXL_PSL_DSISR_TRANS)
+> @@ -991,6 +1187,9 @@ static void native_irq_wait(struct cxl_context *ctx)
+>  		if (cxl_is_psl8(ctx->afu) &&
+>  		   ((dsisr & CXL_PSL_DSISR_PENDING) == 0))
+>  			return;
+> +		if (cxl_is_psl9(ctx->afu) &&
+> +		   ((dsisr & CXL_PSL9_DSISR_PENDING) == 0))
+> +			return;
+>  		/*
+>  		 * We are waiting for the workqueue to process our
+>  		 * irq, so need to let that run here.
+> @@ -1120,6 +1319,8 @@ int cxl_native_register_serr_irq(struct cxl_afu *afu)
+>  	serr = cxl_p1n_read(afu, CXL_PSL_SERR_An);
+>  	if (cxl_is_power8())
+>  		serr = (serr & 0x00ffffffffff0000ULL) | (afu->serr_hwirq & 0xffff);
+> +	if (cxl_is_power9())
+> +		serr = (serr & ~0x0000000075010000ULL) | (afu->serr_hwirq & 0xffff);
+>  	cxl_p1n_write(afu, CXL_PSL_SERR_An, serr);
+>
+>  	return 0;
+> diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
+> index 4913142..5e7f2db 100644
+> --- a/drivers/misc/cxl/pci.c
+> +++ b/drivers/misc/cxl/pci.c
+> @@ -60,7 +60,7 @@
+>  #define CXL_VSEC_PROTOCOL_MASK   0xe0
+>  #define CXL_VSEC_PROTOCOL_1024TB 0x80
+>  #define CXL_VSEC_PROTOCOL_512TB  0x40
+> -#define CXL_VSEC_PROTOCOL_256TB  0x20 /* Power 8 uses this */
+> +#define CXL_VSEC_PROTOCOL_256TB  0x20 /* Power 8/9 uses this */
+>  #define CXL_VSEC_PROTOCOL_ENABLE 0x01
+>
+>  #define CXL_READ_VSEC_PSL_REVISION(dev, vsec, dest) \
+> @@ -326,14 +326,20 @@ static void dump_afu_descriptor(struct cxl_afu *afu)
+>
+>  #define P8_CAPP_UNIT0_ID 0xBA
+>  #define P8_CAPP_UNIT1_ID 0XBE
+> +#define P9_CAPP_UNIT0_ID 0xC0
+> +#define P9_CAPP_UNIT1_ID 0xE0
+>
+> -static u64 get_capp_unit_id(struct device_node *np)
+> +static u32 get_phb_index(struct device_node *np)
+>  {
+>  	u32 phb_index;
+>
+>  	if (of_property_read_u32(np, "ibm,phb-index", &phb_index))
+> -		return 0;
+> +		return -ENODEV;
+> +	return phb_index;
+> +}
+>
+> +static u64 get_capp_unit_id(struct device_node *np, u32 phb_index)
+> +{
+>  	/*
+>  	 * POWER 8:
+>  	 *  - For chips other than POWER8NVL, we only have CAPP 0,
+> @@ -352,10 +358,25 @@ static u64 get_capp_unit_id(struct device_node *np)
+>  			return P8_CAPP_UNIT1_ID;
+>  	}
+>
+> +	/*
+> +	 * POWER 9:
+> +	 *   PEC0 (PHB0). Capp ID = CAPP0 (0b1100_0000)
+> +	 *   PEC1 (PHB1 - PHB2). No capi mode
+> +	 *   PEC2 (PHB3 - PHB4 - PHB5): Capi mode on PHB3 only. Capp ID = CAPP1 (0b1110_0000)
+> +	 */
+> +	if (cxl_is_power9()) {
+> +		if (phb_index == 0)
+> +			return P9_CAPP_UNIT0_ID;
+> +
+> +		if (phb_index == 3)
+> +			return P9_CAPP_UNIT1_ID;
+> +	}
+> +
+>  	return 0;
+>  }
+>
+> -static int calc_capp_routing(struct pci_dev *dev, u64 *chipid, u64 *capp_unit_id)
+> +static int calc_capp_routing(struct pci_dev *dev, u64 *chipid,
+> +			     u32 *phb_index, u64 *capp_unit_id)
+>  {
+>  	struct device_node *np;
+>  	const __be32 *prop;
+> @@ -367,8 +388,16 @@ static int calc_capp_routing(struct pci_dev *dev, u64 *chipid, u64 *capp_unit_id
+>  		np = of_get_next_parent(np);
+>  	if (!np)
+>  		return -ENODEV;
+> +
+>  	*chipid = be32_to_cpup(prop);
+> -	*capp_unit_id = get_capp_unit_id(np);
+> +
+> +	*phb_index = get_phb_index(np);
+> +	if (*phb_index == -ENODEV) {
+> +		pr_err("cxl: invalid phb index\n");
+> +		return -ENODEV;
+> +	}
+> +
+> +	*capp_unit_id = get_capp_unit_id(np, *phb_index);
+>  	of_node_put(np);
+>  	if (!*capp_unit_id) {
+>  		pr_err("cxl: invalid capp unit id\n");
+> @@ -378,14 +407,90 @@ static int calc_capp_routing(struct pci_dev *dev, u64 *chipid, u64 *capp_unit_id
+>  	return 0;
+>  }
+>
+> +static int init_implementation_adapter_regs_psl9(struct cxl *adapter, struct pci_dev *dev)
+> +{
+> +	u64 xsl_dsnctl, psl_fircntl;
+> +	u64 chipid;
+> +	u32 phb_index;
+> +	u64 capp_unit_id;
+> +	int rc;
+> +
+> +	rc = calc_capp_routing(dev, &chipid, &phb_index, &capp_unit_id);
+> +	if (rc)
+> +		return rc;
+> +
+> +	/* CAPI Identifier bits [0:7]
+> +	 * bit 61:60 MSI bits --> 0
+> +	 * bit 59 TVT selector --> 0
+> +	 */
+> +	/* Tell XSL where to route data to.
+> +	 * The field chipid should match the PHB CAPI_CMPM register
+> +	 */
+> +	xsl_dsnctl = ((u64)0x2 << (63-7)); /* Bit 57 */
+> +	xsl_dsnctl |= (capp_unit_id << (63-15));
+> +
+> +	/* nMMU_ID=0x0B0 */
+> +	xsl_dsnctl |= ((u64)0x0B0 << (63-28));
+> +
+> +	/* Used to identify CAPI packets which should be sorted into
+> +	 * the Non-Blocking queues by the PHB. This field should match
+> +	 * the PHB PBL_NBW_CMPM register
+> +	 */
+> +	/* nbwind=0x03, bits [57:58], must include capi indicator */
+> +	xsl_dsnctl |= ((u64)0x03 << (63-47));
+> +
+> +	/* Upper 16b address bits of ASB_Notify messages sent to the
+> +	 * system. Need to match the PHB’s ASN Compare/Mask Register.
+> +	 */
+> +	xsl_dsnctl |= ((u64)0x04 << (63-55));
+> +
+> +	cxl_p1_write(adapter, CXL_XSL9_DSNCTL, xsl_dsnctl);
+> +
+> +	/* set fir_cntl to recommended value for production env */
+> +	psl_fircntl = (0x2ULL << (63-3)); /* ce_report */
+> +	psl_fircntl |= (0x1ULL << (63-6)); /* FIR_report */
+> +	psl_fircntl |= 0x1ULL; /* ce_thresh */
+> +	cxl_p1_write(adapter, CXL_PSL9_FIR_CNTL, psl_fircntl);
+> +
+> +	/* vccredits=0x1  pcklat=0x4 */
+> +	cxl_p1_write(adapter, CXL_PSL9_DSNDCTL, 0x0000000000001810);
+> +
+> +	/* for debugging with trace arrays.
+> +	 * Configure RX trace 0 to use global trigger. Rising edge
+> +	 * trigger located at start of data. Use data bus 2.
+> +	 */
+> +	cxl_p1_write(adapter, CXL_PSL9_TRACECFG, 0xC480000000000000ULL);
+> +
+> +	/* A response to an ASB_Notify request is returned by the
+> +	 * system as an MMIO write to the address defined in
+> +	 * the PSL_TNR_ADDR register
+> +	 */
+> +	/* PSL_TNR_ADDR */
+> +
+> +	/* NORST */
+> +	cxl_p1_write(adapter, CXL_PSL9_DEBUG, 0x4000000000000000);
 
-detected stalls" straight away.
+drivers/misc/cxl/pci.c:471:47: warning: constant 0x4000000000000000 is 
+so big it is long
 
-What do I replace it with, in documenting purposes?
+> +
+> +	/* allocate the apc machines. For PHB0, let us keep the APC
+> +	 * allocation setup as it is. For PHB3, we need to disable Rd
+> +	 * machines
+> +	 */
+> +	if (phb_index == 3) {
+> +		cxl_p1_write(adapter, CXL_PSL9_APCDEDALLOC, 0x8000808200000000);
 
--	if (WARN_ON_ONCE(!pua))
-+       if (!pua) /* Not expected to fail */
+drivers/misc/cxl/pci.c:478:61: warning: constant 0x8000808200000000 is 
+so big it is unsigned long
 
+> +		cxl_p1_write(adapter, CXL_PSL9_APCDEDTYPE, 0x7F7FFFFFFFFF0000);
 
+drivers/misc/cxl/pci.c:479:60: warning: constant 0x7F7FFFFFFFFF0000 is 
+so big it is long
 
->=20
->> +
->> +	pua =3D (void *) vmalloc_to_phys(pua);
->> +	if (!pua)
->> +		return H_TOO_HARD;
->> +
->> +	mem =3D mm_iommu_lookup_rm(kvm->mm, *pua, pgsize);
->> +	if (!mem)
->> +		return H_TOO_HARD;
->> +
->> +	mm_iommu_mapped_dec(mem);
->> +
->> +	*pua =3D 0;
->> +
->> +	return H_SUCCESS;
->> +}
->> +
->> +static long kvmppc_rm_tce_iommu_unmap(struct kvm *kvm,
->> +		struct iommu_table *tbl, unsigned long entry)
->> +{
->> +	enum dma_data_direction dir =3D DMA_NONE;
->> +	unsigned long hpa =3D 0;
->> +	long ret;
->> +
->> +	if (iommu_tce_xchg_rm(tbl, entry, &hpa, &dir))
->> +		return H_HARDWARE;
->> +
->> +	if (dir =3D=3D DMA_NONE)
->> +		return H_SUCCESS;
->> +
->> +	ret =3D kvmppc_rm_tce_iommu_mapped_dec(kvm, tbl, entry);
->> +	if (ret)
->> +		iommu_tce_xchg_rm(tbl, entry, &hpa, &dir);
->> +
->> +	return ret;
->> +}
->> +
->> +static long kvmppc_rm_tce_iommu_map(struct kvm *kvm, struct iommu_tab=
-le *tbl,
->> +		unsigned long entry, unsigned long ua,
->> +		enum dma_data_direction dir)
->> +{
->> +	long ret;
->> +	unsigned long hpa =3D 0;
->> +	unsigned long *pua =3D IOMMU_TABLE_USERSPACE_ENTRY(tbl, entry);
->> +	struct mm_iommu_table_group_mem_t *mem;
->> +
->> +	if (!pua)
->> +		/* it_userspace allocation might be delayed */
->> +		return H_TOO_HARD;
->> +
->> +	mem =3D mm_iommu_lookup_rm(kvm->mm, ua, 1ULL << tbl->it_page_shift);=
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+>  static int init_implementation_adapter_regs_psl8(struct cxl *adapter, struct pci_dev *dev)
+>  {
+>  	u64 psl_dsnctl, psl_fircntl;
+>  	u64 chipid;
+> +	u32 phb_index;
+>  	u64 capp_unit_id;
+>  	int rc;
+>
+> -	rc = calc_capp_routing(dev, &chipid, &capp_unit_id);
+> +	rc = calc_capp_routing(dev, &chipid, &phb_index, &capp_unit_id);
+>  	if (rc)
+>  		return rc;
+>
+> @@ -414,10 +519,11 @@ static int init_implementation_adapter_regs_xsl(struct cxl *adapter, struct pci_
+>  {
+>  	u64 xsl_dsnctl;
+>  	u64 chipid;
+> +	u32 phb_index;
+>  	u64 capp_unit_id;
+>  	int rc;
+>
+> -	rc = calc_capp_routing(dev, &chipid, &capp_unit_id);
+> +	rc = calc_capp_routing(dev, &chipid, &phb_index, &capp_unit_id);
+>  	if (rc)
+>  		return rc;
+>
+> @@ -435,6 +541,12 @@ static int init_implementation_adapter_regs_xsl(struct cxl *adapter, struct pci_
+>  /* For the PSL this is a multiple for 0 < n <= 7: */
+>  #define PSL_2048_250MHZ_CYCLES 1
+>
+> +static void write_timebase_ctrl_psl9(struct cxl *adapter)
+> +{
+> +	cxl_p1_write(adapter, CXL_PSL9_TB_CTLSTAT,
+> +		     TBSYNC_CNT(2 * PSL_2048_250MHZ_CYCLES));
+> +}
+> +
+>  static void write_timebase_ctrl_psl8(struct cxl *adapter)
+>  {
+>  	cxl_p1_write(adapter, CXL_PSL_TB_CTLSTAT,
+> @@ -456,6 +568,11 @@ static void write_timebase_ctrl_xsl(struct cxl *adapter)
+>  		     TBSYNC_CNT(XSL_4000_CLOCKS));
+>  }
+>
+> +static u64 timebase_read_psl9(struct cxl *adapter)
+> +{
+> +	return cxl_p1_read(adapter, CXL_PSL9_Timebase);
+> +}
+> +
+>  static u64 timebase_read_psl8(struct cxl *adapter)
+>  {
+>  	return cxl_p1_read(adapter, CXL_PSL_Timebase);
+> @@ -514,6 +631,11 @@ static void cxl_setup_psl_timebase(struct cxl *adapter, struct pci_dev *dev)
+>  	return;
+>  }
+>
+> +static int init_implementation_afu_regs_psl9(struct cxl_afu *afu)
+> +{
+> +	return 0;
+> +}
+> +
+>  static int init_implementation_afu_regs_psl8(struct cxl_afu *afu)
+>  {
+>  	/* read/write masks for this slice */
+> @@ -612,7 +734,7 @@ static int setup_cxl_bars(struct pci_dev *dev)
+>  	/*
+>  	 * BAR 4/5 has a special meaning for CXL and must be programmed with a
+>  	 * special value corresponding to the CXL protocol address range.
+> -	 * For POWER 8 that means bits 48:49 must be set to 10
+> +	 * For POWER 8/9 that means bits 48:49 must be set to 10
+>  	 */
+>  	pci_write_config_dword(dev, PCI_BASE_ADDRESS_4, 0x00000000);
+>  	pci_write_config_dword(dev, PCI_BASE_ADDRESS_5, 0x00020000);
+> @@ -997,6 +1119,52 @@ static int cxl_afu_descriptor_looks_ok(struct cxl_afu *afu)
+>  	return 0;
+>  }
+>
+> +static int sanitise_afu_regs_psl9(struct cxl_afu *afu)
+> +{
+> +	u64 reg;
+> +
+> +	/*
+> +	 * Clear out any regs that contain either an IVTE or address or may be
+> +	 * waiting on an acknowledgment to try to be a bit safer as we bring
+> +	 * it online
+> +	 */
+> +	reg = cxl_p2n_read(afu, CXL_AFU_Cntl_An);
+> +	if ((reg & CXL_AFU_Cntl_An_ES_MASK) != CXL_AFU_Cntl_An_ES_Disabled) {
+> +		dev_warn(&afu->dev, "WARNING: AFU was not disabled: %#016llx\n", reg);
+> +		if (cxl_ops->afu_reset(afu))
+> +			return -EIO;
+> +		if (cxl_afu_disable(afu))
+> +			return -EIO;
+> +		if (cxl_psl_purge(afu))
+> +			return -EIO;
+> +	}
+> +	cxl_p1n_write(afu, CXL_PSL_SPAP_An, 0x0000000000000000);
+> +	cxl_p1n_write(afu, CXL_PSL_AMBAR_An, 0x0000000000000000);
+> +	reg = cxl_p2n_read(afu, CXL_PSL_DSISR_An);
+> +	if (reg) {
+> +		dev_warn(&afu->dev, "AFU had pending DSISR: %#016llx\n", reg);
+> +		if (reg & CXL_PSL9_DSISR_An_TF)
+> +			cxl_p2n_write(afu, CXL_PSL_TFC_An, CXL_PSL_TFC_An_AE);
+> +		else
+> +			cxl_p2n_write(afu, CXL_PSL_TFC_An, CXL_PSL_TFC_An_A);
+> +	}
+> +	if (afu->adapter->native->sl_ops->register_serr_irq) {
+> +		reg = cxl_p1n_read(afu, CXL_PSL_SERR_An);
+> +		if (reg) {
+> +			if (reg & ~0x000000007501ffff)
+> +				dev_warn(&afu->dev, "AFU had pending SERR: %#016llx\n", reg);
+> +			cxl_p1n_write(afu, CXL_PSL_SERR_An, reg & ~0xffff);
+> +		}
+> +	}
+> +	reg = cxl_p2n_read(afu, CXL_PSL_ErrStat_An);
+> +	if (reg) {
+> +		dev_warn(&afu->dev, "AFU had pending error status: %#016llx\n", reg);
+> +		cxl_p2n_write(afu, CXL_PSL_ErrStat_An, reg);
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+>  static int sanitise_afu_regs_psl8(struct cxl_afu *afu)
+>  {
+>  	u64 reg;
+> @@ -1384,6 +1552,9 @@ static bool cxl_compatible_caia_version(struct cxl *adapter)
+>  	if (cxl_is_power8() && (adapter->caia_major == 1))
+>  		return true;
+>
+> +	if (cxl_is_power9() && (adapter->caia_major == 2))
+> +		return true;
+> +
+>  	return false;
+>  }
+>
+> @@ -1537,6 +1708,30 @@ static void cxl_deconfigure_adapter(struct cxl *adapter)
+>  	pci_disable_device(pdev);
+>  }
+>
+> +static const struct cxl_service_layer_ops psl9_ops = {
+> +	.adapter_regs_init = init_implementation_adapter_regs_psl9,
+> +	.invalidate_all = cxl_invalidate_all_psl9,
+> +	.afu_regs_init = init_implementation_afu_regs_psl9,
+> +	.sanitise_afu_regs = sanitise_afu_regs_psl9,
+> +	.register_serr_irq = cxl_native_register_serr_irq,
+> +	.release_serr_irq = cxl_native_release_serr_irq,
+> +	.handle_interrupt = cxl_irq_psl9,
+> +	.fail_irq = cxl_fail_irq_psl9,
+> +	.activate_dedicated_process = cxl_activate_dedicated_process_psl9,
+> +	.attach_afu_directed = cxl_attach_afu_directed_psl9,
+> +	.attach_dedicated_process = cxl_attach_dedicated_process_psl9,
+> +	.update_dedicated_ivtes = cxl_update_dedicated_ivtes_psl9,
+> +	.debugfs_add_adapter_regs = cxl_debugfs_add_adapter_regs_psl9,
+> +	.debugfs_add_afu_regs = cxl_debugfs_add_afu_regs_psl9,
+> +	.psl_irq_dump_registers = cxl_native_irq_dump_regs_psl9,
+> +	.err_irq_dump_registers = cxl_native_err_irq_dump_regs,
+> +	.debugfs_stop_trace = cxl_stop_trace_psl9,
+> +	.write_timebase_ctrl = write_timebase_ctrl_psl9,
+> +	.timebase_read = timebase_read_psl9,
+> +	.capi_mode = OPAL_PHB_CAPI_MODE_CAPI,
+> +	.needs_reset_before_disable = true,
+> +};
+> +
+>  static const struct cxl_service_layer_ops psl8_ops = {
+>  	.adapter_regs_init = init_implementation_adapter_regs_psl8,
+>  	.invalidate_all = cxl_invalidate_all_psl8,
+> @@ -1580,6 +1775,9 @@ static void set_sl_ops(struct cxl *adapter, struct pci_dev *dev)
+>  		if (cxl_is_power8()) {
+>  			dev_info(&dev->dev, "Device uses a PSL8\n");
+>  			adapter->native->sl_ops = &psl8_ops;
+> +		} else {
+> +			dev_info(&dev->dev, "Device uses a PSL9\n");
+> +			adapter->native->sl_ops = &psl9_ops;
+>  		}
+>  	}
+>  }
+> @@ -1732,6 +1930,11 @@ static int cxl_probe(struct pci_dev *dev, const struct pci_device_id *id)
+>  		return -ENODEV;
+>  	}
+>
+> +	if (cxl_is_power9() && !radix_enabled()) {
+> +		dev_info(&dev->dev, "Only Radix mode supported\n");
+> +		return -ENODEV;
+> +	}
+> +
+>  	if (cxl_verbose)
+>  		dump_cxl_config_space(dev);
+>
+> diff --git a/drivers/misc/cxl/trace.h b/drivers/misc/cxl/trace.h
+> index 751d611..b8e300a 100644
+> --- a/drivers/misc/cxl/trace.h
+> +++ b/drivers/misc/cxl/trace.h
+> @@ -17,6 +17,15 @@
+>
+>  #include "cxl.h"
+>
+> +#define dsisr_psl9_flags(flags) \
+> +	__print_flags(flags, "|", \
+> +		{ CXL_PSL9_DSISR_An_CO_MASK,	"FR" }, \
+> +		{ CXL_PSL9_DSISR_An_TF,		"TF" }, \
+> +		{ CXL_PSL9_DSISR_An_PE,		"PE" }, \
+> +		{ CXL_PSL9_DSISR_An_AE,		"AE" }, \
+> +		{ CXL_PSL9_DSISR_An_OC,		"OC" }, \
+> +		{ CXL_PSL9_DSISR_An_S,		"S" })
+> +
+>  #define DSISR_FLAGS \
+>  	{ CXL_PSL_DSISR_An_DS,	"DS" }, \
+>  	{ CXL_PSL_DSISR_An_DM,	"DM" }, \
+> @@ -154,6 +163,40 @@ TRACE_EVENT(cxl_afu_irq,
+>  	)
+>  );
+>
+> +TRACE_EVENT(cxl_psl9_irq,
+> +	TP_PROTO(struct cxl_context *ctx, int irq, u64 dsisr, u64 dar),
+> +
+> +	TP_ARGS(ctx, irq, dsisr, dar),
+> +
+> +	TP_STRUCT__entry(
+> +		__field(u8, card)
+> +		__field(u8, afu)
+> +		__field(u16, pe)
+> +		__field(int, irq)
+> +		__field(u64, dsisr)
+> +		__field(u64, dar)
+> +	),
+> +
+> +	TP_fast_assign(
+> +		__entry->card = ctx->afu->adapter->adapter_num;
+> +		__entry->afu = ctx->afu->slice;
+> +		__entry->pe = ctx->pe;
+> +		__entry->irq = irq;
+> +		__entry->dsisr = dsisr;
+> +		__entry->dar = dar;
+> +	),
+> +
+> +	TP_printk("afu%i.%i pe=%i irq=%i dsisr=0x%016llx dsisr=%s dar=0x%016llx",
+> +		__entry->card,
+> +		__entry->afu,
+> +		__entry->pe,
+> +		__entry->irq,
+> +		__entry->dsisr,
+> +		dsisr_psl9_flags(__entry->dsisr),
+> +		__entry->dar
+> +	)
+> +);
+> +
+>  TRACE_EVENT(cxl_psl_irq,
+>  	TP_PROTO(struct cxl_context *ctx, int irq, u64 dsisr, u64 dar),
+>
+>
 
->> +	if (!mem)
->> +		return H_TOO_HARD;
->> +
->> +	if (WARN_ON_ONCE(mm_iommu_ua_to_hpa_rm(mem, ua, &hpa)))
->> +		return H_HARDWARE;
->> +
->> +	pua =3D (void *) vmalloc_to_phys(pua);
->> +	if (WARN_ON_ONCE(!pua))
->> +		return H_HARDWARE;
->> +
->> +	if (WARN_ON_ONCE(mm_iommu_mapped_inc(mem)))
->> +		return H_CLOSED;
->> +
->> +	ret =3D iommu_tce_xchg_rm(tbl, entry, &hpa, &dir);
->> +	if (ret) {
->> +		mm_iommu_mapped_dec(mem);
->> +		return H_TOO_HARD;
->> +	}
->> +
->> +	if (dir !=3D DMA_NONE)
->> +		kvmppc_rm_tce_iommu_mapped_dec(kvm, tbl, entry);
->> +
->> +	*pua =3D ua;
->> +
->> +	return 0;
->> +}
->> +
->>  long kvmppc_rm_h_put_tce(struct kvm_vcpu *vcpu, unsigned long liobn,
->>  		unsigned long ioba, unsigned long tce)
->>  {
->>  	struct kvmppc_spapr_tce_table *stt;
->>  	long ret;
->> +	struct kvmppc_spapr_tce_iommu_table *stit;
->> +	unsigned long entry, ua =3D 0;
->> +	enum dma_data_direction dir;
->> =20
->>  	/* udbg_printf("H_PUT_TCE(): liobn=3D0x%lx ioba=3D0x%lx, tce=3D0x%lx=
-\n", */
->>  	/* 	    liobn, ioba, tce); */
->> @@ -182,7 +279,32 @@ long kvmppc_rm_h_put_tce(struct kvm_vcpu *vcpu, u=
-nsigned long liobn,
->>  	if (ret !=3D H_SUCCESS)
->>  		return ret;
->> =20
->> -	kvmppc_tce_put(stt, ioba >> stt->page_shift, tce);
->> +	dir =3D iommu_tce_direction(tce);
->> +	if ((dir !=3D DMA_NONE) && kvmppc_gpa_to_ua(vcpu->kvm,
->> +			tce & ~(TCE_PCI_READ | TCE_PCI_WRITE), &ua, NULL))
->> +		return H_PARAMETER;
->> +
->> +	entry =3D ioba >> stt->page_shift;
->> +
->> +	list_for_each_entry_lockless(stit, &stt->iommu_tables, next) {
->> +		if (dir =3D=3D DMA_NONE)
->> +			ret =3D kvmppc_rm_tce_iommu_unmap(vcpu->kvm,
->> +					stit->tbl, entry);
->> +		else
->> +			ret =3D kvmppc_rm_tce_iommu_map(vcpu->kvm,
->> +					stit->tbl, entry, ua, dir);
->> +
->> +		if (ret =3D=3D H_SUCCESS)
->> +			continue;
->> +
->> +		if (ret =3D=3D H_TOO_HARD)
->> +			return ret;
->> +
->> +		WARN_ON_ONCE(1);
->> +		kvmppc_rm_clear_tce(stit->tbl, entry);
->> +	}
->> +
->> +	kvmppc_tce_put(stt, entry, tce);
->> =20
->>  	return H_SUCCESS;
->>  }
->> @@ -223,6 +345,7 @@ long kvmppc_rm_h_put_tce_indirect(struct kvm_vcpu =
-*vcpu,
->>  	unsigned long tces, entry, ua =3D 0;
->>  	unsigned long *rmap =3D NULL;
->>  	bool prereg =3D false;
->> +	struct kvmppc_spapr_tce_iommu_table *stit;
->> =20
->>  	stt =3D kvmppc_find_table(vcpu->kvm, liobn);
->>  	if (!stt)
->> @@ -293,6 +416,27 @@ long kvmppc_rm_h_put_tce_indirect(struct kvm_vcpu=
- *vcpu,
->>  		if (ret !=3D H_SUCCESS)
->>  			goto unlock_exit;
->> =20
->> +		ua =3D 0;
->> +		if (kvmppc_gpa_to_ua(vcpu->kvm,
->> +				tce & ~(TCE_PCI_READ | TCE_PCI_WRITE),
->> +				&ua, NULL))
->> +			return H_PARAMETER;
->> +
->> +		list_for_each_entry_lockless(stit, &stt->iommu_tables, next) {
->> +			ret =3D kvmppc_rm_tce_iommu_map(vcpu->kvm,
->> +					stit->tbl, entry + i, ua,
->> +					iommu_tce_direction(tce));
->> +
->> +			if (ret =3D=3D H_SUCCESS)
->> +				continue;
->> +
->> +			if (ret =3D=3D H_TOO_HARD)
->> +				goto unlock_exit;
->> +
->> +			WARN_ON_ONCE(1);
->> +			kvmppc_rm_clear_tce(stit->tbl, entry);
->> +		}
->> +
->>  		kvmppc_tce_put(stt, entry + i, tce);
->>  	}
->> =20
->> @@ -309,6 +453,7 @@ long kvmppc_rm_h_stuff_tce(struct kvm_vcpu *vcpu,
->>  {
->>  	struct kvmppc_spapr_tce_table *stt;
->>  	long i, ret;
->> +	struct kvmppc_spapr_tce_iommu_table *stit;
->> =20
->>  	stt =3D kvmppc_find_table(vcpu->kvm, liobn);
->>  	if (!stt)
->> @@ -322,6 +467,24 @@ long kvmppc_rm_h_stuff_tce(struct kvm_vcpu *vcpu,=
-
->>  	if (tce_value & (TCE_PCI_WRITE | TCE_PCI_READ))
->>  		return H_PARAMETER;
->> =20
->> +	list_for_each_entry_lockless(stit, &stt->iommu_tables, next) {
->> +		unsigned long entry =3D ioba >> stit->tbl->it_page_shift;
->> +
->> +		for (i =3D 0; i < npages; ++i) {
->> +			ret =3D kvmppc_rm_tce_iommu_unmap(vcpu->kvm,
->> +					stit->tbl, entry + i);
->> +
->> +			if (ret =3D=3D H_SUCCESS)
->> +				continue;
->> +
->> +			if (ret =3D=3D H_TOO_HARD)
->> +				return ret;
->> +
->> +			WARN_ON_ONCE(1);
->> +			kvmppc_rm_clear_tce(stit->tbl, entry);
->> +		}
->> +	}
->> +
->>  	for (i =3D 0; i < npages; ++i, ioba +=3D (1ULL << stt->page_shift))
->>  		kvmppc_tce_put(stt, ioba >> stt->page_shift, tce_value);
->> =20
->> diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
->> index 2b38d824e9e5..2bb01c8236fa 100644
->> --- a/arch/powerpc/kvm/powerpc.c
->> +++ b/arch/powerpc/kvm/powerpc.c
->> @@ -537,6 +537,8 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, =
-long ext)
->>  #ifdef CONFIG_PPC_BOOK3S_64
->>  	case KVM_CAP_SPAPR_TCE:
->>  	case KVM_CAP_SPAPR_TCE_64:
->> +		/* fallthrough */
->> +	case KVM_CAP_SPAPR_TCE_VFIO:
->>  	case KVM_CAP_PPC_RTAS:
->>  	case KVM_CAP_PPC_FIXUP_HCALL:
->>  	case KVM_CAP_PPC_ENABLE_HCALL:
->> diff --git a/virt/kvm/vfio.c b/virt/kvm/vfio.c
->> index d32f239eb471..2b7dc22265fe 100644
->> --- a/virt/kvm/vfio.c
->> +++ b/virt/kvm/vfio.c
->> @@ -20,6 +20,10 @@
->>  #include <linux/vfio.h>
->>  #include "vfio.h"
->> =20
->> +#ifdef CONFIG_SPAPR_TCE_IOMMU
->> +#include <asm/kvm_ppc.h>
->> +#endif
->> +
->>  struct kvm_vfio_group {
->>  	struct list_head node;
->>  	struct vfio_group *vfio_group;
->> @@ -211,6 +215,9 @@ static int kvm_vfio_set_group(struct kvm_device *d=
-ev, long attr, u64 arg)
->> =20
->>  		mutex_unlock(&kv->lock);
->> =20
->> +#ifdef CONFIG_SPAPR_TCE_IOMMU
->> +		kvm_spapr_tce_release_iommu_group(dev->kvm, vfio_group);
->> +#endif
->>  		kvm_vfio_group_set_kvm(vfio_group, NULL);
->> =20
->>  		kvm_vfio_group_put_external_user(vfio_group);
->> @@ -218,6 +225,53 @@ static int kvm_vfio_set_group(struct kvm_device *=
-dev, long attr, u64 arg)
->>  		kvm_vfio_update_coherency(dev);
->> =20
->>  		return ret;
->> +
->> +#ifdef CONFIG_SPAPR_TCE_IOMMU
->> +	case KVM_DEV_VFIO_GROUP_SET_SPAPR_TCE: {
->> +		struct kvm_vfio_spapr_tce param;
->> +		unsigned long minsz;
->> +		struct kvm_vfio *kv =3D dev->private;
->> +		struct vfio_group *vfio_group;
->> +		struct kvm_vfio_group *kvg;
->> +		struct fd f;
->> +
->> +		minsz =3D offsetofend(struct kvm_vfio_spapr_tce, tablefd);
->> +
->> +		if (copy_from_user(&param, (void __user *)arg, minsz))
->> +			return -EFAULT;
->> +
->> +		if (param.argsz < minsz || param.flags)
->> +			return -EINVAL;
->> +
->> +		f =3D fdget(param.groupfd);
->> +		if (!f.file)
->> +			return -EBADF;
->> +
->> +		vfio_group =3D kvm_vfio_group_get_external_user(f.file);
->> +		fdput(f);
->> +
->> +		if (IS_ERR(vfio_group))
->> +			return PTR_ERR(vfio_group);
->> +
->> +		ret =3D -ENOENT;
->> +
->> +		mutex_lock(&kv->lock);
->> +
->> +		list_for_each_entry(kvg, &kv->group_list, node) {
->> +			if (kvg->vfio_group !=3D vfio_group)
->> +				continue;
->> +
->> +			ret =3D kvm_spapr_tce_attach_iommu_group(dev->kvm,
->> +					param.tablefd, vfio_group);
->> +
->> +			break;
->> +		}
->> +
->> +		mutex_unlock(&kv->lock);
->> +
->> +		return ret;
->> +	}
->> +#endif /* CONFIG_SPAPR_TCE_IOMMU */
->>  	}
->> =20
->>  	return -ENXIO;
->> @@ -242,6 +296,9 @@ static int kvm_vfio_has_attr(struct kvm_device *de=
-v,
->>  		switch (attr->attr) {
->>  		case KVM_DEV_VFIO_GROUP_ADD:
->>  		case KVM_DEV_VFIO_GROUP_DEL:
->> +#ifdef CONFIG_SPAPR_TCE_IOMMU
->> +		case KVM_DEV_VFIO_GROUP_SET_SPAPR_TCE:
->> +#endif
->>  			return 0;
->>  		}
->> =20
->> @@ -257,6 +314,9 @@ static void kvm_vfio_destroy(struct kvm_device *de=
-v)
->>  	struct kvm_vfio_group *kvg, *tmp;
->> =20
->>  	list_for_each_entry_safe(kvg, tmp, &kv->group_list, node) {
->> +#ifdef CONFIG_SPAPR_TCE_IOMMU
->> +		kvm_spapr_tce_release_iommu_group(dev->kvm, kvg->vfio_group);
->> +#endif
->>  		kvm_vfio_group_set_kvm(kvg->vfio_group, NULL);
->>  		kvm_vfio_group_put_external_user(kvg->vfio_group);
->>  		list_del(&kvg->node);
->=20
-
-
---=20
-Alexey
-
-
---8A0rcQ3HmnACceT1QKRujM0BIfpGuCQdW--
-
---DqQoqXgfwjqrld66dstSTeAEbUFKmuQ0i
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIrBAEBCAAVBQJYuRalDhxhaWtAb3psYWJzLnJ1AAoJEIYTPdgrwSC53WkP/25m
-B5QQMLC+sojxoHDQ9cH3LLrw3+4FT1VLqtfaEVacrBQfdMx9IZ6DD/H/8DpcK/Mt
-6pZngX/llUFDm4dGOYa7QlggV79iqFNdRGBkGKkXFOHFw2fKH0OF1ldzviBpUGZH
-NmdYlkf8yioKts5yzPUyGbH8wOUcXkJjDKIXWzPHsKKQ5lVto7/lajye+B10JjfM
-zkNIcCCnEayGSkDUtG5fJLwltJRkNm38MferKSP4z8/sUvT1rC9A1m8ghVAmSw11
-TWx89murjLKLJswEjtGdL+TgqGBf3PyPpvgykUVCdswEGwBZ34ZmjFwWrmImoWGj
-u17qImogeP33p27U/eO2cUFozZT7ZJ+mzRBM1Inm5d7tGkINXIWITCofOQmUKuRR
-LofzbLYtOc7M/y+mPqEUL+TCc5QPoibtEtAeiczLLADIoKwBuVEivnkiKfp3PlgO
-0Dd4PTQmQZleUDb14xVV6mkybwiqquZLQJ2drz4OcuOdZfPfk6AaV3cbgXukgAtN
-S7NRbtvR1kxHb4pNgQvem9AflWlUJhG2NnzDFgdj6OqaRmzTHoiG2F3NKewxVEKm
-mqDrFgKzL8IGaeMhX5n21PWrE4xISI6qhuOfP/lJUAdu8xGMvRLF8di5SEnItm30
-1Oj1ewlEoC/VtzGaL05f9WwhsiAqHGpiFTd+6QdF
-=7+RU
------END PGP SIGNATURE-----
-
---DqQoqXgfwjqrld66dstSTeAEbUFKmuQ0i--
+-- 
+Andrew Donnellan              OzLabs, ADL Canberra
+andrew.donnellan@au1.ibm.com  IBM Australia Limited
