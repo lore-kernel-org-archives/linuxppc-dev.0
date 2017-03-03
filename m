@@ -3,54 +3,44 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vZJ8C19B8zDq5x
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Mar 2017 16:46:18 +1100 (AEDT)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vZJNZ4Wr7zDq5x
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Mar 2017 16:57:02 +1100 (AEDT)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v235iunx063217
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 3 Mar 2017 00:46:16 -0500
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
- by mx0a-001b2d01.pphosted.com with ESMTP id 28xs8dp9ey-1
+ v235reSL057835
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 3 Mar 2017 00:57:00 -0500
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 28xs8dxf22-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Mar 2017 00:46:16 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Mar 2017 00:56:59 -0500
 Received: from localhost
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Fri, 3 Mar 2017 15:46:13 +1000
+ Fri, 3 Mar 2017 15:56:57 +1000
 Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 026EF2BB0045
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Mar 2017 16:46:12 +1100 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 686F52BB0054
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Mar 2017 16:56:54 +1100 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
  by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v235k35R24051738
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 3 Mar 2017 16:46:11 +1100
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v235jd2m027129
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 3 Mar 2017 16:45:39 +1100
-Date: Fri, 3 Mar 2017 16:45:14 +1100
+ v235uk1i53674004
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 3 Mar 2017 16:56:54 +1100
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v235uMrN022460
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 3 Mar 2017 16:56:22 +1100
+Date: Fri, 3 Mar 2017 16:55:57 +1100
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: Russell Currey <ruscur@russell.cc>
-Cc: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- Ian Munsie <imunsie@au1.ibm.com>,
- Christophe Lombard <christophe_lombard@fr.ibm.com>,
- Philippe Bergheaud <philippe.bergheaud@fr.ibm.com>,
- Greg Kurz <gkurz@linux.vnet.ibm.com>,
- Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: Re: [RESEND-RFC v2 2/3] powerpc/eeh: Introduce function
- eeh_pe_reset_freeze_counter()
+Cc: linuxppc-dev@lists.ozlabs.org, aik@ozlabs.ru
+Subject: Re: [PATCH] powerpc/eeh: Avoid use after free in
+ eeh_handle_special_event()
 Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-References: <20170301112452.15798-1-vaibhav@linux.vnet.ibm.com>
- <20170301112452.15798-3-vaibhav@linux.vnet.ibm.com>
- <87r32f6ldy.fsf@vajain21.in.ibm.com>
- <1488515705.6003.1.camel@russell.cc>
+References: <20170303044718.19253-1-ruscur@russell.cc>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <1488515705.6003.1.camel@russell.cc>
-Message-Id: <20170303054514.GA29434@gwshan>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20170303044718.19253-1-ruscur@russell.cc>
+Message-Id: <20170303055557.GA32465@gwshan>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -60,60 +50,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Mar 03, 2017 at 03:35:05PM +1100, Russell Currey wrote:
->On Fri, 2017-03-03 at 09:51 +0530, Vaibhav Jain wrote:
->> Hi Russell,
->> 
->> Vaibhav Jain <vaibhav@linux.vnet.ibm.com> writes:
->> 
->> > This patch introduces function eeh_pe_reset_freeze_counter() which can
->> > be used to reset the PE's freeze count variable outside eeh code. This
->> > is useful for devices that can acquire a different personality after
->> > a PERST event (e.g FPGA Adapters). Presently an existing freeze
->> > count for an adapter with personality N will be taken into account
->> > when the adapter acquired personality N+1.
->> > 
->> > By calling eeh_pe_reset_freeze_counter() drivers can reset the freeze
->> > counter for an adapter once it has acquired a new personality and
->> > ideally wont be plagued by the failures similar to the one before.
->> > 
->> > Signed-off-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
->> > ---
->> 
->> Had a short chat discussion with Gavin Shan on this patchset and he
->> preffers restoring the freeze_count on the eeh_pe once FRESET is done.
->> He expects a the flow to be similar to one below
->> 
->> 1. module caches the value of freeze_count and resets it
->> 2. Issue warm reset
->> 3. During eeh error-detected callback module restores the freeze_count
->> from the cached value.
->> 
->> Russell, what do you think? 
->> 
->I thought about this but figured it didn't really make sense from a CAPI
->perspective.  If you're flashing the device, it is going to have different
->behaviour to before it was flashed, and that it should be treated differently as
->a result (and thus restoring the freeze_count doesn't make much sense).
+On Fri, Mar 03, 2017 at 03:47:18PM +1100, Russell Currey wrote:
+>eeh_handle_special_event() is called when an EEH event is detected but
+>can't be narrowed down to a specific PE.  This function looks through
+>every PE to find one in an erroneous state, then calls the regular event
+>handler eeh_handle_normal_event() once it knows which PE has an error.
+>
+>However, if eeh_handle_normal_event() found that the PE cannot possibly
+>be recovered, it will remove the PE and associated devices.  This leads
+>to a use after free in eeh_handle_special_event() as it attempts to clear
+>the "recovering" state on the PE after eeh_handle_normal_event() returns.
+>
+>Thus, make sure the PE is valid when attempting to clear state in
+>eeh_handle_special_event().
 >
 
-There are nothing changed on the PHB. This patch is clearing the error count
-of PHB PE, not the PE for the CAPI device. We shouldn't clear the error count
-of the PHB PE. Otherwise, it's not consistent.
+>From the changelog, I don't see how the PE is free'd. Could you explain
+a bit about it?
 
->Consider a case where there's a buggy FPGA image on an adapter that's failed 4
->times in the past hour, and generally has frequent errors.  You decide to update
->it to something that's less buggy, so you flash the adapter.  The freeze_count
->gets cached and thus is restored to 4 after the flash.  Now even if the new
->image is less buggy and may only fail once an hour instead of multiple times, if
->it happens to fail within an hour of the earlier failures the device is now
->fenced and you need to reboot.
+>Cc: <stable@vger.kernel.org> #3.10+
+>Reported-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+>Signed-off-by: Russell Currey <ruscur@russell.cc>
+>---
+> arch/powerpc/kernel/eeh_driver.c | 13 +++++++++++++
+> 1 file changed, 13 insertions(+)
 >
->I don't mind either way - I just don't get the logic of restoring the count.
->
+>diff --git a/arch/powerpc/kernel/eeh_driver.c b/arch/powerpc/kernel/eeh_driver.c
+>index b94887165a10..492397298a2a 100644
+>--- a/arch/powerpc/kernel/eeh_driver.c
+>+++ b/arch/powerpc/kernel/eeh_driver.c
+>@@ -983,6 +983,19 @@ static void eeh_handle_special_event(void)
+> 		if (rc == EEH_NEXT_ERR_FROZEN_PE ||
+> 		    rc == EEH_NEXT_ERR_FENCED_PHB) {
+> 			eeh_handle_normal_event(pe);
+>+
+>+			/*
+>+			 * eeh_handle_normal_event() can free the PE if it
+>+			 * determines that the PE cannot possibly be recovered.
+>+			 * Make sure the PE still exists before changing its
+>+			 * state.
+>+			 */
+>+			if (!pe || (pe->type & EEH_PE_INVALID)
+>+			    || (pe->state & EEH_PE_REMOVED)) {
+>+				pr_warn("EEH: not clearing state on bad PE\n");
+>+				continue;
+>+			}
+>+
 
-I don't get your point. FPGA image isn't the only source of EEH error. Also,
-it's not related the PHB PE's error count, which the patch is to clear.
+It seems not correct. @pe has set to the valid PE in advance, the !pe is
+always false? If the PE has been free'd, how can we access @pe->type here
+and how can we make sure PE_INVALID and PE_REMOVED flag wasn't overwritten
+by somebody else?
+
+> 			eeh_pe_state_clear(pe, EEH_PE_RECOVERING);
+> 		} else {
+> 			pci_lock_rescan_remove();
 
 Cheers,
 Gavin
