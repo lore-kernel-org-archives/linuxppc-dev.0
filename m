@@ -1,29 +1,20 @@
-Return-Path: <mpe@ellerman.id.au>
+Return-Path: <paulus@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vZFDj4ctmzDq5x
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Mar 2017 14:35:01 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: David Daney <david.daney@cavium.com>, Jason Baron <jbaron@akamai.com>,
- Sachin Sant <sachinp@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
- linux-mips@linux-mips.org, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org, Chris Metcalf <cmetcalf@mellanox.com>,
- Ralf Baechle <ralf@linux-mips.org>, Russell King <linux@armlinux.org.uk>,
- Rabin Vincent <rabin@rab.in>, Paul Mackerras <paulus@samba.org>,
- Anton Blanchard <anton@samba.org>, Ingo Molnar <mingo@kernel.org>,
- Zhigang Lu <zlu@ezchip.com>
-Subject: Re: [PATCH] module: set __jump_table alignment to 8
-In-Reply-To: <20170302124441.0e2634e0@gandalf.local.home>
-References: <20170301220453.4756-1-david.daney@cavium.com>
- <87varsj6qc.fsf@concordia.ellerman.id.au>
- <8737ewexkp.fsf@concordia.ellerman.id.au>
- <20170302124441.0e2634e0@gandalf.local.home>
-Date: Fri, 03 Mar 2017 14:34:58 +1100
-Message-ID: <87innrhw2l.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vZFZp0nx9zDq5x
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Mar 2017 14:50:42 +1100 (AEDT)
+Date: Fri, 3 Mar 2017 14:50:37 +1100
+From: Paul Mackerras <paulus@ozlabs.org>
+To: Shile Zhang <shile.zhang@nokia.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] powerpc/64: Fix checksum folding in csum_add
+Message-ID: <20170303035037.GA17042@fergus.ozlabs.ibm.com>
+References: <1486199020-59977-1-git-send-email-shile.zhang@nokia.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1486199020-59977-1-git-send-email-shile.zhang@nokia.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,33 +24,11 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Steven Rostedt <rostedt@goodmis.org> writes:
-> On Thu, 02 Mar 2017 22:18:30 +1100
-> Michael Ellerman <mpe@ellerman.id.au> wrote:
->> Michael Ellerman <mpe@ellerman.id.au> writes:
->> > David Daney <david.daney@cavium.com> writes:  
->> >> Strict alignment became necessary with commit 3821fd35b58d
->> >> ("jump_label: Reduce the size of struct static_key"), currently in
->> >> linux-next, which uses the two least significant bits of pointers to
->> >> __jump_table elements.  
->> >
->> > It would obviously be nice if this could go in before the commit that
->> > exposes the breakage, but I guess that's problematic because Steve
->> > doesn't want to rebase the tracing tree.
->> >
->> > Steve I think you've already sent your pull request for this cycle? So I
->> > guess if this can go in your first batch of fixes?  
->> 
->> Ugh. Was looking at the wrong tree - Linus has already merged the commit
->> in question, so the above is all moot.
->
-> No problem. I've got some other "fixes" to push to Linus. That's what
-> the -rc releases are for. To fix up breakage from the merge window ;-)
+On Sat, Feb 04, 2017 at 05:03:40PM +0800, Shile Zhang wrote:
+> fix the missed point in Paul's patch:
+> "powerpc/64: Fix checksum folding in csum_tcpudp_nofold and
+> ip_fast_csum_nofold"
+> 
+> Signed-off-by: Shile Zhang <shile.zhang@nokia.com>
 
-Yep, no drama.
-
-> I'll pull this into my tree.
-
-Thanks.
-
-cheers
+Acked-by: Paul Mackerras <paulus@ozlabs.org>
