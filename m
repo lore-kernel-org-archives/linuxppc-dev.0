@@ -1,18 +1,29 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
- [IPv6:2607:f8b0:400e:c00::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vZ9mc3Qg2zDq5W
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Mar 2017 11:58:56 +1100 (AEDT)
-Received: by mail-pf0-x244.google.com with SMTP id e66so2553202pfe.0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Mar 2017 16:58:56 -0800 (PST)
-From: Balbir Singh <bsingharora@gmail.com>
-To: mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2] powerpc/xics,icp-opal: Fix CPPR setting for icp-opal
-Date: Fri,  3 Mar 2017 11:58:44 +1100
-Message-Id: <20170303005844.21050-1-bsingharora@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vZFDj4ctmzDq5x
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Mar 2017 14:35:01 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: David Daney <david.daney@cavium.com>, Jason Baron <jbaron@akamai.com>,
+ Sachin Sant <sachinp@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+ linux-mips@linux-mips.org, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org, Chris Metcalf <cmetcalf@mellanox.com>,
+ Ralf Baechle <ralf@linux-mips.org>, Russell King <linux@armlinux.org.uk>,
+ Rabin Vincent <rabin@rab.in>, Paul Mackerras <paulus@samba.org>,
+ Anton Blanchard <anton@samba.org>, Ingo Molnar <mingo@kernel.org>,
+ Zhigang Lu <zlu@ezchip.com>
+Subject: Re: [PATCH] module: set __jump_table alignment to 8
+In-Reply-To: <20170302124441.0e2634e0@gandalf.local.home>
+References: <20170301220453.4756-1-david.daney@cavium.com>
+ <87varsj6qc.fsf@concordia.ellerman.id.au>
+ <8737ewexkp.fsf@concordia.ellerman.id.au>
+ <20170302124441.0e2634e0@gandalf.local.home>
+Date: Fri, 03 Mar 2017 14:34:58 +1100
+Message-ID: <87innrhw2l.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,110 +33,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-CPPR (Current Processor Priority Register) emulation on icp-opal
-uses a single priority in the backend and that can cause CPU
-hotplug to be affected when we try to send an IPI to it.
+Steven Rostedt <rostedt@goodmis.org> writes:
+> On Thu, 02 Mar 2017 22:18:30 +1100
+> Michael Ellerman <mpe@ellerman.id.au> wrote:
+>> Michael Ellerman <mpe@ellerman.id.au> writes:
+>> > David Daney <david.daney@cavium.com> writes:  
+>> >> Strict alignment became necessary with commit 3821fd35b58d
+>> >> ("jump_label: Reduce the size of struct static_key"), currently in
+>> >> linux-next, which uses the two least significant bits of pointers to
+>> >> __jump_table elements.  
+>> >
+>> > It would obviously be nice if this could go in before the commit that
+>> > exposes the breakage, but I guess that's problematic because Steve
+>> > doesn't want to rebase the tracing tree.
+>> >
+>> > Steve I think you've already sent your pull request for this cycle? So I
+>> > guess if this can go in your first batch of fixes?  
+>> 
+>> Ugh. Was looking at the wrong tree - Linus has already merged the commit
+>> in question, so the above is all moot.
+>
+> No problem. I've got some other "fixes" to push to Linus. That's what
+> the -rc releases are for. To fix up breakage from the merge window ;-)
 
-The fix is in migrate_irqs_away, the fix does the following:
+Yep, no drama.
 
-1. It moves the setting of CPPR to after all IRQ migration
-   is complete
-2. In icp-opal, we ignore masking the CPPR when the CPPR
-is set to default priority, anything else we just pass
-through
+> I'll pull this into my tree.
 
-Right now this fix is designed with backporting to stable
-in mind
+Thanks.
 
-We'll need a newer version of this later when we merge the
-DEFAULT and IPI priorities to the same value in the kernel.
-
-Fixes: d74361881f0d ("powerpc/xics: Add ICP OPAL backend")
-Cc: stable@vger.kernel.org (v4.8+)
-
-Testing
-
-1. I've tested this fix on a virtual partition running under
-   kvm
-2. Gautham and Vaidy have done some testing on an system that
-   uses the OPAL backend
-3. I've also tested this on a system with a native XICS controller
-
-Suggested-by: Michael Ellerman <mpe@ellerman.id.au>
-Reported-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Tested-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Signed-off-by: Balbir Singh <bsingharora@gmail.com>
----
- arch/powerpc/sysdev/xics/icp-opal.c    | 12 ++++++++++++
- arch/powerpc/sysdev/xics/xics-common.c | 19 ++++++++++++++++---
- 2 files changed, 28 insertions(+), 3 deletions(-)
-
-diff --git a/arch/powerpc/sysdev/xics/icp-opal.c b/arch/powerpc/sysdev/xics/icp-opal.c
-index f9670ea..77cdb36 100644
---- a/arch/powerpc/sysdev/xics/icp-opal.c
-+++ b/arch/powerpc/sysdev/xics/icp-opal.c
-@@ -91,6 +91,18 @@ static unsigned int icp_opal_get_irq(void)
- 
- static void icp_opal_set_cpu_priority(unsigned char cppr)
- {
-+	/*
-+	 * Mask only IPI's and not external interrupts
-+	 * XIVE emulation of XICS exposed as an OPAL
-+	 * interface uses just one priority level for
-+	 * both external and IPI's. By dropping default
-+	 * priority to lowest, we leave all interrupts
-+	 * on, assuming the only caller is migrate_irqs_away
-+	 * at the time of CPU hotplug
-+	 */
-+	if (cppr == DEFAULT_PRIORITY)
-+		cppr = LOWEST_PRIORITY;
-+
- 	xics_set_base_cppr(cppr);
- 	opal_int_set_cppr(cppr);
- 	iosync();
-diff --git a/arch/powerpc/sysdev/xics/xics-common.c b/arch/powerpc/sysdev/xics/xics-common.c
-index 69d858e..f025320 100644
---- a/arch/powerpc/sysdev/xics/xics-common.c
-+++ b/arch/powerpc/sysdev/xics/xics-common.c
-@@ -20,6 +20,7 @@
- #include <linux/of.h>
- #include <linux/slab.h>
- #include <linux/spinlock.h>
-+#include <linux/delay.h>
- 
- #include <asm/prom.h>
- #include <asm/io.h>
-@@ -198,9 +199,6 @@ void xics_migrate_irqs_away(void)
- 	/* Remove ourselves from the global interrupt queue */
- 	xics_set_cpu_giq(xics_default_distrib_server, 0);
- 
--	/* Allow IPIs again... */
--	icp_ops->set_priority(DEFAULT_PRIORITY);
--
- 	for_each_irq_desc(virq, desc) {
- 		struct irq_chip *chip;
- 		long server;
-@@ -255,6 +253,21 @@ void xics_migrate_irqs_away(void)
- unlock:
- 		raw_spin_unlock_irqrestore(&desc->lock, flags);
- 	}
-+
-+	/*
-+	 * Allow sufficient time to drop any inflight IRQ's
-+	 */
-+	mdelay(1);
-+
-+	/*
-+	 * Allow IPIs again. This is done at the very end, after
-+	 * migrating all interrupts, the expectation is that we'll
-+	 * only get woken up by an IPI interrupt beyond this point.
-+	 * For this to work, we have a hack when icp_ops are OPAL
-+	 * ops.
-+	 */
-+	icp_ops->set_priority(DEFAULT_PRIORITY);
-+
- }
- #endif /* CONFIG_HOTPLUG_CPU */
- 
--- 
-2.9.3
+cheers
