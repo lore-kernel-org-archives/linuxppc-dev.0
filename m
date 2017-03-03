@@ -1,21 +1,52 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <vaibhav@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vZFqJ5CBpzDq5x
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Mar 2017 15:01:32 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: pc@us.ibm.com, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v2] powerpc: A new cache geometry aux vectors
-In-Reply-To: <3d15baac-1705-a1a6-d0b0-1d7f378509d6@us.ibm.com>
-References: <1486016558.4850.30.camel@kernel.crashing.org>
- <67e56596-05a7-5f3d-8125-a4e0194f1b7c@us.ibm.com>
- <877f48kx0q.fsf@concordia.ellerman.id.au>
- <3d15baac-1705-a1a6-d0b0-1d7f378509d6@us.ibm.com>
-Date: Fri, 03 Mar 2017 15:01:32 +1100
-Message-ID: <87fuivhuub.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vZGGH0VKFzDq5x
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Mar 2017 15:21:26 +1100 (AEDT)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v234Ir6s012515
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 2 Mar 2017 23:21:24 -0500
+Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [125.16.236.6])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 28xs8ckbkm-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Mar 2017 23:21:23 -0500
+Received: from localhost
+ by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <vaibhav@linux.vnet.ibm.com>;
+ Fri, 3 Mar 2017 09:51:20 +0530
+Received: from d28relay10.in.ibm.com (d28relay10.in.ibm.com [9.184.220.161])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 9DC5C125804F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Mar 2017 09:51:29 +0530 (IST)
+Received: from d28av06.in.ibm.com (d28av06.in.ibm.com [9.184.220.48])
+ by d28relay10.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v234KAx020316210
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 3 Mar 2017 09:50:10 +0530
+Received: from d28av06.in.ibm.com (localhost [127.0.0.1])
+ by d28av06.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v234LFFS026808
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 3 Mar 2017 09:51:16 +0530
+From: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, Russell Currey <ruscur@russell.cc>
+Cc: Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ Ian Munsie <imunsie@au1.ibm.com>,
+ Christophe Lombard <christophe_lombard@fr.ibm.com>,
+ Philippe Bergheaud <philippe.bergheaud@fr.ibm.com>,
+ Greg Kurz <gkurz@linux.vnet.ibm.com>,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>
+Subject: Re: [RESEND-RFC v2 2/3] powerpc/eeh: Introduce function
+ eeh_pe_reset_freeze_counter()
+In-Reply-To: <20170301112452.15798-3-vaibhav@linux.vnet.ibm.com>
+References: <20170301112452.15798-1-vaibhav@linux.vnet.ibm.com>
+ <20170301112452.15798-3-vaibhav@linux.vnet.ibm.com>
+Date: Fri, 03 Mar 2017 09:51:13 +0530
 MIME-Version: 1.0
 Content-Type: text/plain
+Message-Id: <87r32f6ldy.fsf@vajain21.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,106 +56,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Paul Clarke <pc@us.ibm.com> writes:
+Hi Russell,
 
-> On 03/02/2017 12:33 AM, Michael Ellerman wrote:
->> Paul Clarke <pc@us.ibm.com> writes:
->>> On 02/02/2017 12:22 AM, Benjamin Herrenschmidt wrote:
->>>> This adds AUX vectors for the L1I,D, L2 and L3 cache levels
->>>> providing for each cache level the size of the cache in bytes
->>>> and the geometry (line size and number of ways).
->>>>
->>>> We chose to not use the existing alpha/sh definition which
->>>> packs all the information in a single entry per cache level as
->>>> it is too restricted to represent some of the geometries used
->>>> on POWER.
->>>>
->>>> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
->>>> ---
->>>>
->>>> v2. Remove some leftovers and fix 32-bit build
->>>>
->>>> Paul, can you test & ack this please ? It replaces the last patch of
->>>> my previous series (the rest is identical).
->>>
->>> Sorry for the delay on this, I totally missed this e-mail until this week.
->>>
->>> I tested this with the Power Functional Simulator (a.k.a. Mambo), with
->>> a fairly recent 4.9 kernel from the powerpc git tree.
->>
->> You mean 4.9 plus this patch?
->>
->>> Using Mambo-P8, I see what I expect for cache line size, but associativity is 0:
->>> AT_L1I_CACHESIZE: 32768 (0x8000)
->>> AT_L1I_CACHEGEOMETRY: associativity 0; line size 128
->>> AT_L1D_CACHESIZE: 32768 (0x8000)
->>> AT_L1D_CACHEGEOMETRY: associativity 0; line size 128
->>> AT_L2_CACHESIZE: 524288 (0x80000)
->>> AT_L2_CACHEGEOMETRY: associativity 0; line size 128
->>> AT_L3_CACHESIZE: 8388608 (0x800000)
->>> AT_L3_CACHEGEOMETRY: associativity 0; line size 128
->>>
->>> ...shouldn't associativity be 8 for all levels?
->>
->> Yes.
->>
->> I fixed it in v3: http://patchwork.ozlabs.org/patch/723576/
->>
->> Which is now merged in Linus tree, so please test that.
+Vaibhav Jain <vaibhav@linux.vnet.ibm.com> writes:
+
+> This patch introduces function eeh_pe_reset_freeze_counter() which can
+> be used to reset the PE's freeze count variable outside eeh code. This
+> is useful for devices that can acquire a different personality after
+> a PERST event (e.g FPGA Adapters). Presently an existing freeze
+> count for an adapter with personality N will be taken into account
+> when the adapter acquired personality N+1.
 >
-> It's not working for me, but it's also very likely that I could be
-> doing something stupid. Just pulling from
-> git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git, it
-> built (without the "systemsim" patches"), but wouldn't boot in Mambo
-> (not because it couldn't find root...something else not fully
-> explored).
-
-Hmm OK, it's booting for me, but might depend on your config/toolchain
-etc. Linus' tree just before rc1 is a bit of a dangerous place to be.
-
-> I checked out tag "v4.10", and that built (with the
-> "systemsim" patches, Ben's 1-8 and your 9v3) and booted.
-
-I think you need my entire v3, ignore Ben's series.
-
-> On Mambo-P8,
-> the device tree looks correct (to me), but the associativity is still
-> 0.
-
-OK, I think if you use the full v3 the associativity will be fixed.
-
-Though it might still be wrong, because the kernel code hard codes the
-values on P8 bare metal, because on real machines (running skiboot) the
-values provided in the device tree are wrong.
-
-Hopefully those hard coded values are also correct on p8 mambo, but we
-should probably check.
-
-See: https://git.kernel.org/torvalds/c/608b42140e96
-
-> On P9, the device tree isn't correct, so I'm not sure what to expect.
-
-Junk :)
-
-On P9 it all comes from the device tree so if that's wrong the AUX
-vectors will definitely be wrong.
-
->> Can you try the test program I wrote (which may also have bugs):
->>
->>   http://patchwork.ozlabs.org/patch/724418/
+> By calling eeh_pe_reset_freeze_counter() drivers can reset the freeze
+> counter for an adapter once it has acquired a new personality and
+> ideally wont be plagued by the failures similar to the one before.
 >
-> I couldn't get this working, either, so I'm probably doing something stupid.
+> Signed-off-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+> ---
+Had a short chat discussion with Gavin Shan on this patchset and he
+preffers restoring the freeze_count on the eeh_pe once FRESET is done.
+He expects a the flow to be similar to one below
 
-Did you apply the first patch of the series also?
+1. module caches the value of freeze_count and resets it
+2. Issue warm reset
+3. During eeh error-detected callback module restores the freeze_count
+from the cached value.
 
-If you apply those on top of v4.10 and then do:
+Russell, what do you think? 
 
-$ make TARGETS=powerpc ARCH=powerpc CROSS_COMPILE=ppc64le- -C tools/testing/selftests
-
-You should end up with:
-
-$ file tools/testing/selftests/powerpc/cache_shape/cache_shape
-tools/testing/selftests/powerpc/cache_shape/cache_shape: ELF 64-bit LSB executable, 64-bit PowerPC or cisco 7500, version 1 (SYSV), dynamically linked, interpreter /lib64/ld64.so.2, for GNU/Linux 3.2.0, BuildID[sha1]=3535b7ab6ec854eceaa7ad23456a087111b51583, not stripped
-
-
-cheers
+-- 
+Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+Linux Technology Center, IBM India Pvt. Ltd.
