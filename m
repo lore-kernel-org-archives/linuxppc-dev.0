@@ -1,52 +1,63 @@
-Return-Path: <pc@us.ibm.com>
+Return-Path: <heiko.carstens@de.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vZVvp26GhzDq5x
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Mar 2017 00:51:17 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vZWJD4GkSzDq5x
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Mar 2017 01:09:00 +1100 (AEDT)
 Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v23DoC1C140935
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 3 Mar 2017 08:51:15 -0500
-Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
- by mx0a-001b2d01.pphosted.com with ESMTP id 28xs8eh9eb-1
+ v23E4CNg032970
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 3 Mar 2017 09:08:58 -0500
+Received: from e06smtp09.uk.ibm.com (e06smtp09.uk.ibm.com [195.75.94.105])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 28xs8ej4vt-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Mar 2017 08:51:14 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Mar 2017 09:08:58 -0500
 Received: from localhost
- by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp09.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <pc@us.ibm.com>;
- Fri, 3 Mar 2017 06:51:13 -0700
-Received: from b01cxnp22033.gho.pok.ibm.com (b01cxnp22033.gho.pok.ibm.com
- [9.57.198.23])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 2A2193E40048
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Mar 2017 06:51:12 -0700 (MST)
-Received: from b01ledav004.gho.pok.ibm.com (b01ledav004.gho.pok.ibm.com
- [9.57.199.109])
- by b01cxnp22033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v23DpBtq44302554
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 3 Mar 2017 13:51:11 GMT
-Received: from b01ledav004.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id E1C82112047
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Mar 2017 08:51:10 -0500 (EST)
-Received: from oc1087654862.ibm.com (unknown [9.80.221.158])
- by b01ledav004.gho.pok.ibm.com (Postfix) with ESMTP id B7481112040
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Mar 2017 08:51:10 -0500 (EST)
-Reply-To: pc@us.ibm.com
-Subject: Re: [PATCH v2] powerpc: A new cache geometry aux vectors
-References: <1486016558.4850.30.camel@kernel.crashing.org>
- <67e56596-05a7-5f3d-8125-a4e0194f1b7c@us.ibm.com>
- <877f48kx0q.fsf@concordia.ellerman.id.au>
- <3d15baac-1705-a1a6-d0b0-1d7f378509d6@us.ibm.com>
- <87fuivhuub.fsf@concordia.ellerman.id.au>
-To: linuxppc-dev@lists.ozlabs.org
-From: Paul Clarke <pc@us.ibm.com>
-Date: Fri, 3 Mar 2017 07:51:11 -0600
+ for <linuxppc-dev@lists.ozlabs.org> from <heiko.carstens@de.ibm.com>;
+ Fri, 3 Mar 2017 14:08:52 -0000
+Date: Fri, 3 Mar 2017 15:08:37 +0100
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Jiri Slaby <jslaby@suse.cz>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+ Richard Henderson <rth@twiddle.net>,
+ Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+ Matt Turner <mattst88@gmail.com>, Vineet Gupta <vgupta@synopsys.com>,
+ Russell King <linux@armlinux.org.uk>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Will Deacon <will.deacon@arm.com>, Richard Kuo <rkuo@codeaurora.org>,
+ Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
+ Michal Simek <monstr@monstr.eu>, Ralf Baechle <ralf@linux-mips.org>,
+ Jonas Bonn <jonas@southpole.se>,
+ Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
+ Stafford Horne <shorne@gmail.com>,
+ "James E.J. Bottomley" <jejb@parisc-linux.org>,
+ Helge Deller <deller@gmx.de>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Yoshinori Sato <ysato@users.sourceforge.jp>,
+ Rich Felker <dalias@libc.org>, "David S. Miller" <davem@davemloft.net>,
+ Chris Metcalf <cmetcalf@mellanox.com>,
+ Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+ "H. Peter Anvin" <hpa@zytor.com>, Chris Zankel <chris@zankel.net>,
+ Max Filippov <jcmvbkbc@gmail.com>, Arnd Bergmann <arnd@arndb.de>,
+ x86@kernel.org, linux-alpha@vger.kernel.org,
+ linux-snps-arc@lists.infradead.org,
+ linux-arm-kernel@lists.infradead.org, linux-hexagon@vger.kernel.org,
+ linux-ia64@vger.kernel.org, linux-mips@linux-mips.org,
+ openrisc@lists.librecores.org, linux-parisc@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
+ linux-xtensa@linux-xtensa.org, linux-arch@vger.kernel.org
+Subject: Re: [PATCH 1/3] futex: remove duplicated code
+References: <20170303122712.13353-1-jslaby@suse.cz>
 MIME-Version: 1.0
-In-Reply-To: <87fuivhuub.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Message-Id: <288deec2-a821-316b-5e53-e186deda96f9@us.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20170303122712.13353-1-jslaby@suse.cz>
+Message-Id: <20170303140837.GF5319@osiris>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -56,157 +67,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 03/02/2017 10:01 PM, Michael Ellerman wrote:
-> Paul Clarke <pc@us.ibm.com> writes:
->> On 03/02/2017 12:33 AM, Michael Ellerman wrote:
->>> Paul Clarke <pc@us.ibm.com> writes:
->>>> On 02/02/2017 12:22 AM, Benjamin Herrenschmidt wrote:
->>>>> This adds AUX vectors for the L1I,D, L2 and L3 cache levels
->>>>> providing for each cache level the size of the cache in bytes
->>>>> and the geometry (line size and number of ways).
->>>>>
->>>>> We chose to not use the existing alpha/sh definition which
->>>>> packs all the information in a single entry per cache level as
->>>>> it is too restricted to represent some of the geometries used
->>>>> on POWER.
->>>>>
->>>>> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
->>>>> ---
->>>>>
->>>>> v2. Remove some leftovers and fix 32-bit build
->>>>>
->>>>> Paul, can you test & ack this please ? It replaces the last patch of
->>>>> my previous series (the rest is identical).
->>>>
->>>> Sorry for the delay on this, I totally missed this e-mail until this week.
->>>>
->>>> I tested this with the Power Functional Simulator (a.k.a. Mambo), with
->>>> a fairly recent 4.9 kernel from the powerpc git tree.
->>>
->>> You mean 4.9 plus this patch?
->>>
->>>> Using Mambo-P8, I see what I expect for cache line size, but associativity is 0:
->>>> AT_L1I_CACHESIZE: 32768 (0x8000)
->>>> AT_L1I_CACHEGEOMETRY: associativity 0; line size 128
->>>> AT_L1D_CACHESIZE: 32768 (0x8000)
->>>> AT_L1D_CACHEGEOMETRY: associativity 0; line size 128
->>>> AT_L2_CACHESIZE: 524288 (0x80000)
->>>> AT_L2_CACHEGEOMETRY: associativity 0; line size 128
->>>> AT_L3_CACHESIZE: 8388608 (0x800000)
->>>> AT_L3_CACHEGEOMETRY: associativity 0; line size 128
->>>>
->>>> ...shouldn't associativity be 8 for all levels?
->>>
->>> Yes.
->>>
->>> I fixed it in v3: http://patchwork.ozlabs.org/patch/723576/
->>>
->>> Which is now merged in Linus tree, so please test that.
->>
->> It's not working for me, but it's also very likely that I could be
->> doing something stupid. Just pulling from
->> git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git, it
->> built (without the "systemsim" patches"), but wouldn't boot in Mambo
->> (not because it couldn't find root...something else not fully
->> explored).
->
-> Hmm OK, it's booting for me, but might depend on your config/toolchain
-> etc. Linus' tree just before rc1 is a bit of a dangerous place to be.
->
->> I checked out tag "v4.10", and that built (with the
->> "systemsim" patches, Ben's 1-8 and your 9v3) and booted.
->
-> I think you need my entire v3, ignore Ben's series.
->
->> On Mambo-P8,
->> the device tree looks correct (to me), but the associativity is still
->> 0.
->
-> OK, I think if you use the full v3 the associativity will be fixed.
->
-> Though it might still be wrong, because the kernel code hard codes the
-> values on P8 bare metal, because on real machines (running skiboot) the
-> values provided in the device tree are wrong.
->
-> Hopefully those hard coded values are also correct on p8 mambo, but we
-> should probably check.
->
-> See: https://git.kernel.org/torvalds/c/608b42140e96
+On Fri, Mar 03, 2017 at 01:27:10PM +0100, Jiri Slaby wrote:
+> There is code duplicated over all architecture's headers for
+> futex_atomic_op_inuser. Namely op decoding, access_ok check for uaddr,
+> and comparison of the result.
+> 
+> Remove this duplication and leave up to the arches only the needed
+> assembly which is now in arch_futex_atomic_op_inuser.
+> 
+> Note that s390 removed access_ok check in d12a29703 ("s390/uaccess:
+> remove pointless access_ok() checks") as access_ok there returns true.
+> We introduce it back to the helper for the sake of simplicity (it gets
+> optimized away anyway).
+> 
+> Signed-off-by: Jiri Slaby <jslaby@suse.cz>
+> ---
+>  arch/s390/include/asm/futex.h       | 23 ++++-------------
+>  include/asm-generic/futex.h         | 50 +++++++------------------------------
+>  kernel/futex.c                      | 36 ++++++++++++++++++++++++++
 
-OK, thanks for your help.  All is working as expected now.  mambo-p8 looks fine:
---
-AT_L1I_CACHESIZE: 32768 (0x8000)
-getauxval(AT_L1I_CACHEGEOMETRY) = 0x0000000000080080
-AT_L1I_CACHEGEOMETRY: associativity 8; line size 128
-AT_L1D_CACHESIZE: 32768 (0x8000)
-getauxval(AT_L1D_CACHEGEOMETRY) = 0x0000000000080080
-AT_L1D_CACHEGEOMETRY: associativity 8; line size 128
-AT_L2_CACHESIZE: 524288 (0x80000)
-getauxval(AT_L2_CACHEGEOMETRY) = 0x0000000000080080
-AT_L2_CACHEGEOMETRY: associativity 8; line size 128
-AT_L3_CACHESIZE: 8388608 (0x800000)
-getauxval(AT_L2_CACHEGEOMETRY) = 0x0000000000080080
-AT_L3_CACHEGEOMETRY: associativity 8; line size 128
---
+Looks good to me and still boots on s390. Therefore for the s390 bits:
+Acked-by: Heiko Carstens <heiko.carstens@de.ibm.com>
 
->> On P9, the device tree isn't correct, so I'm not sure what to expect.
->
-> Junk :)
->
-> On P9 it all comes from the device tree so if that's wrong the AUX
-> vectors will definitely be wrong.
-
-mambo-p9 is still falling victim to the device-tree, but "working":
---
-getauxval(AT_L1I_CACHEGEOMETRY) = 0x0000000000000080
-AT_L1I_CACHEGEOMETRY: associativity 0; line size 128
-getauxval(AT_L1D_CACHEGEOMETRY) = 0x0000000000000080
-AT_L1D_CACHEGEOMETRY: associativity 0; line size 128
-getauxval(AT_L2_CACHEGEOMETRY) = 0x0000000000000000
-getauxval(AT_L2_CACHEGEOMETRY) = 0x0000000000000000
---
-
->>> Can you try the test program I wrote (which may also have bugs):
->>>
->>>   http://patchwork.ozlabs.org/patch/724418/
->>
->> I couldn't get this working, either, so I'm probably doing something stupid.
->
-> Did you apply the first patch of the series also?
-
-I did now, and it works, with expected results:
-P8:
---
-# ./cache_shape
-test: cache_shape
-tags: git_version:v4.10-0-gc470abd-dirty
-L1I  cache size:     0x8000      32768B         32K
-L1I  line size:        0x80       8-way associative
-L1D  cache size:     0x8000      32768B         32K
-L1D  line size:        0x80       8-way associative
-L2   cache size:    0x80000     524288B        512K
-L2   line size:        0x80       8-way associative
-L3   cache size:   0x800000    8388608B       8192K
-L3   line size:        0x80       8-way associative
-success: cache_shape
---
-
-P9 (with bad device-tree):
---
-# ./cache_shape
-test: cache_shape
-tags: git_version:v4.10-0-gc470abd-dirty
-L1I  cache size:          0          0B          0K
-L1I  line size:        0x80       fully associative
-L1D  cache size:          0          0B          0K
-L1D  line size:        0x80       fully associative
-L2   cache size:          0          0B          0K
-L2   line size:           0       fully associative
-L3   cache size:          0          0B          0K
-L3   line size:           0       fully associative
-success: cache_shape
---
-
-Do you want me to Ack your v3 patch set in that thread?
-
-PC
+Thanks!
