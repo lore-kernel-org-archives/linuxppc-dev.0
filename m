@@ -2,11 +2,11 @@ Return-Path: <hpa@zytor.com>
 Received: from mail.zytor.com (unknown [IPv6:2001:1868:a000:17::138])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vbMDd1zw0zDq5W
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  5 Mar 2017 10:08:48 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vbMKY6D1gzDq5W
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  5 Mar 2017 10:13:05 +1100 (AEDT)
 From: "H. Peter Anvin" <hpa@zytor.com>
-Message-Id: <201703042304.v24N4Afu010968@mail.zytor.com>
-Date: Sat, 04 Mar 2017 15:03:50 -0800
+Message-Id: <201703042308.v24N8wvh012716@mail.zytor.com>
+Date: Sat, 04 Mar 2017 15:08:50 -0800
 In-Reply-To: <20170304213805.GA2449@lianli.shorne-pla.net>
 References: <20170303122712.13353-1-jslaby@suse.cz>
  <20170304130550.GT21222@n2100.armlinux.org.uk>
@@ -47,7 +47,7 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 <davem@davemloft.net>,Chris Metcalf <cmetcalf@mellanox.com>,Thomas Gleixner <tglx@linutronix.de>,Ingo Molnar <mingo@redhat.com>,Chris Zankel <chris@zankel.net>,Max Filippov <jcmvbkbc@gmail.com>,Arnd Bergmann <arnd@arndb.de>,x86@kernel.org,linux-alpha@vger.kernel.org,linux-snps-arc@lists.infradead.org,linux-arm-kernel@lists.infradead.org,linux-hexagon@vger.kernel.org,linux-ia64@vger.kernel.org,linux-mips@linux-mips.org,openrisc@lists.librecores.org,linux-parisc@vger.kernel.org,linuxppc-dev@lists.ozlabs.org,linux-s390@vger.kernel.org,linux-sh@vger.kernel.org,sparclinux@vger.kernel.org,linux-xtensa@linux-xtensa.org,linux-arch@vger.kernel.org
 From: hpa@zytor.com
-Message-ID: <9B46AFA6-C422-41FD-8E8A-356E44A6DCD2@zytor.com>
+Message-ID: <CF18535E-39E7-44D3-88D0-80B9961E6681@zytor.com>
 
 On March 4, 2017 1:38:05 PM PST, Stafford Horne <shorne@gmail=2Ecom> wrote:
 >On Sat, Mar 04, 2017 at 11:15:17AM -0800, H=2E Peter Anvin wrote:
@@ -123,6 +123,7 @@ On March 4, 2017 1:38:05 PM PST, Stafford Horne <shorne@gmail=2Ecom> wrote:
 >> 	  ? zex32((x),(y)) : zex64((x),(y))))
 >>=20
 
-Signed versus unsigned=2E=2E=2E
+Also, i strongly believe that making it syntactically cumbersome encodes p=
+eople to open-code it which is bad=2E=2E=2E
 --=20
 Sent from my Android device with K-9 Mail=2E Please excuse my brevity=2E
