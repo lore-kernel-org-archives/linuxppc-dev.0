@@ -1,20 +1,23 @@
-Return-Path: <msuchanek@suse.de>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
+Return-Path: <mhiramat@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vZYmd4RNgzDq5x
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Mar 2017 03:00:17 +1100 (AEDT)
-Date: Fri, 3 Mar 2017 17:00:13 +0100
-From: Michal =?UTF-8?B?U3VjaMOhbmVr?= <msuchanek@suse.de>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au, "Aneesh
- Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: [PATCH V3 08/10] powerpc/mm/hash: Increase VA range to 128TB
-Message-ID: <20170303170013.3f5bfd12@kitsune.suse.cz>
-In-Reply-To: <1487498837-12017-9-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-References: <1487498837-12017-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1487498837-12017-9-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vZmdb6h87zDqBV
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Mar 2017 11:09:55 +1100 (AEDT)
+Date: Sat, 4 Mar 2017 09:09:41 +0900
+From: Masami Hiramatsu <mhiramat@kernel.org>
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+Cc: Arnaldo Carvalho de Melo <acme@kernel.org>, Steven Rostedt
+ <rostedt@goodmis.org>, Ingo Molnar <mingo@redhat.com>,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Ananth N
+ Mavinakayanahalli <ananth@linux.vnet.ibm.com>, Michael Ellerman
+ <mpe@ellerman.id.au>
+Subject: Re: [PATCH v4 1/3] perf: probe: factor out the ftrace README scanning
+Message-Id: <20170304090941.7ae300ff7db9c96a081d0935@kernel.org>
+In-Reply-To: <e4ea4dcc09ac167cc47026e6db73ac67ca001772.1488475783.git.naveen.n.rao@linux.vnet.ibm.com>
+References: <cover.1488475783.git.naveen.n.rao@linux.vnet.ibm.com>
+ <e4ea4dcc09ac167cc47026e6db73ac67ca001772.1488475783.git.naveen.n.rao@linux.vnet.ibm.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -25,163 +28,133 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello,
+On Thu,  2 Mar 2017 23:25:05 +0530
+"Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
 
-On Sun, 19 Feb 2017 15:37:15 +0530
-"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> wrote:
+> Simplify and separate out the ftrace README scanning logic into a
+> separate helper. This is used subsequently to scan for all patterns of
+> interest and to cache the result.
+> 
+> Since we are only interested in availability of probe argument type x,
+> we will only scan for that.
 
-> We update the hash linux page table layout such that we can support
-> 512TB. But we limit the TASK_SIZE to 128TB. We can switch to 128TB by
-> default without conditional because that is the max virtual address
-> supported by other architectures. We will later add a mechanism to
-> on-demand increase the application's effective address range to 512TB.
+Ah, OK, this can simplify and shorten the actual scanning time.
+If there are any needs for checking those in the future, we can
+add it again at that moment.
+
+Acked-by: Masami Hiramatsu <mhiramat@kernel.org>
+
+Thank you!
+
 > 
-> Having the page table layout changed to accommodate 512TB  makes
-> testing large memory configuration easier with less code changes to
-> kernel
-> 
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
 > ---
->  arch/powerpc/include/asm/book3s/64/hash-4k.h  |  2 +-
->  arch/powerpc/include/asm/book3s/64/hash-64k.h |  2 +-
->  arch/powerpc/include/asm/page_64.h            |  2 +-
->  arch/powerpc/include/asm/processor.h          | 22
-> ++++++++++++++++++---- arch/powerpc/kernel/paca.c
-> |  9 ++++++++- arch/powerpc/mm/slice.c                       |  2 ++
->  6 files changed, 31 insertions(+), 8 deletions(-)
+>  tools/perf/util/probe-file.c | 70 +++++++++++++++++++++++---------------------
+>  1 file changed, 37 insertions(+), 33 deletions(-)
 > 
-> diff --git a/arch/powerpc/include/asm/book3s/64/hash-4k.h
-> b/arch/powerpc/include/asm/book3s/64/hash-4k.h index
-> 0c4e470571ca..b4b5e6b671ca 100644 ---
-> a/arch/powerpc/include/asm/book3s/64/hash-4k.h +++
-> b/arch/powerpc/include/asm/book3s/64/hash-4k.h @@ -8,7 +8,7 @@
->  #define H_PTE_INDEX_SIZE  9
->  #define H_PMD_INDEX_SIZE  7
->  #define H_PUD_INDEX_SIZE  9
-> -#define H_PGD_INDEX_SIZE  9
-> +#define H_PGD_INDEX_SIZE  12
+> diff --git a/tools/perf/util/probe-file.c b/tools/perf/util/probe-file.c
+> index 1a62daceb028..8a219cd831b7 100644
+> --- a/tools/perf/util/probe-file.c
+> +++ b/tools/perf/util/probe-file.c
+> @@ -877,35 +877,31 @@ int probe_cache__show_all_caches(struct strfilter *filter)
+>  	return 0;
+>  }
 >  
->  #ifndef __ASSEMBLY__
->  #define H_PTE_TABLE_SIZE	(sizeof(pte_t) << H_PTE_INDEX_SIZE)
-> diff --git a/arch/powerpc/include/asm/book3s/64/hash-64k.h
-> b/arch/powerpc/include/asm/book3s/64/hash-64k.h index
-> b39f0b86405e..682c4eb28fa4 100644 ---
-> a/arch/powerpc/include/asm/book3s/64/hash-64k.h +++
-> b/arch/powerpc/include/asm/book3s/64/hash-64k.h @@ -4,7 +4,7 @@
->  #define H_PTE_INDEX_SIZE  8
->  #define H_PMD_INDEX_SIZE  5
->  #define H_PUD_INDEX_SIZE  5
-> -#define H_PGD_INDEX_SIZE  12
-> +#define H_PGD_INDEX_SIZE  15
->  
->  /*
->   * 64k aligned address free up few of the lower bits of RPN for us
-> diff --git a/arch/powerpc/include/asm/page_64.h
-> b/arch/powerpc/include/asm/page_64.h index 7f72659b7999..9b60e9455c6e
-> 100644 --- a/arch/powerpc/include/asm/page_64.h
-> +++ b/arch/powerpc/include/asm/page_64.h
-> @@ -107,7 +107,7 @@ extern u64 ppc64_pft_size;
->   */
->  struct slice_mask {
->  	u16 low_slices;
-> -	DECLARE_BITMAP(high_slices, 64);
-> +	DECLARE_BITMAP(high_slices, 512);
+> +enum ftrace_readme {
+> +	FTRACE_README_PROBE_TYPE_X = 0,
+> +	FTRACE_README_END,
+> +};
+> +
+>  static struct {
+>  	const char *pattern;
+> -	bool	avail;
+> -	bool	checked;
+> -} probe_type_table[] = {
+> -#define DEFINE_TYPE(idx, pat, def_avail)	\
+> -	[idx] = {.pattern = pat, .avail = (def_avail)}
+> -	DEFINE_TYPE(PROBE_TYPE_U, "* u8/16/32/64,*", true),
+> -	DEFINE_TYPE(PROBE_TYPE_S, "* s8/16/32/64,*", true),
+> -	DEFINE_TYPE(PROBE_TYPE_X, "* x8/16/32/64,*", false),
+> -	DEFINE_TYPE(PROBE_TYPE_STRING, "* string,*", true),
+> -	DEFINE_TYPE(PROBE_TYPE_BITFIELD,
+> -		    "* b<bit-width>@<bit-offset>/<container-size>", true),
+> +	bool avail;
+> +} ftrace_readme_table[] = {
+> +#define DEFINE_TYPE(idx, pat)			\
+> +	[idx] = {.pattern = pat, .avail = false}
+> +	DEFINE_TYPE(FTRACE_README_PROBE_TYPE_X, "*type: * x8/16/32/64,*"),
 >  };
 >  
->  struct mm_struct;
-> diff --git a/arch/powerpc/include/asm/processor.h
-> b/arch/powerpc/include/asm/processor.h index
-> 1ba814436c73..1d4e34f9004d 100644 ---
-> a/arch/powerpc/include/asm/processor.h +++
-> b/arch/powerpc/include/asm/processor.h @@ -102,11 +102,25 @@ void
-> release_thread(struct task_struct *); #endif
+> -bool probe_type_is_available(enum probe_type type)
+> +static bool scan_ftrace_readme(enum ftrace_readme type)
+>  {
+> +	int fd;
+>  	FILE *fp;
+>  	char *buf = NULL;
+>  	size_t len = 0;
+> -	bool target_line = false;
+> -	bool ret = probe_type_table[type].avail;
+> -	int fd;
+> +	bool ret = false;
+> +	static bool scanned = false;
 >  
->  #ifdef CONFIG_PPC64
-> -/* 64-bit user address space is 46-bits (64TB user VM) */
-> -#define TASK_SIZE_USER64 (0x0000400000000000UL)
-> +/*
-> + * 64-bit user address space can have multiple limits
-> + * For now supported values are:
-> + */
-> +#define TASK_SIZE_64TB  (0x0000400000000000UL)
-> +#define TASK_SIZE_128TB (0x0000800000000000UL)
-> +#define TASK_SIZE_512TB (0x0002000000000000UL)
+> -	if (type >= PROBE_TYPE_END)
+> -		return false;
+> -	/* We don't have to check the type which supported by default */
+> -	if (ret || probe_type_table[type].checked)
+> -		return ret;
+> +	if (scanned)
+> +		goto result;
 >  
-> -/* 
-> - * 32-bit user address space is 4GB - 1 page 
-> +#ifdef CONFIG_PPC_BOOK3S_64
-> +/*
-> + * MAx value currently used:
-> + */
-> +#define TASK_SIZE_USER64 TASK_SIZE_128TB
-> +#else
-> +#define TASK_SIZE_USER64 TASK_SIZE_64TB
-> +#endif
+>  	fd = open_trace_file("README", false);
+>  	if (fd < 0)
+> @@ -917,21 +913,29 @@ bool probe_type_is_available(enum probe_type type)
+>  		return ret;
+>  	}
+>  
+> -	while (getline(&buf, &len, fp) > 0 && !ret) {
+> -		if (!target_line) {
+> -			target_line = !!strstr(buf, " type: ");
+> -			if (!target_line)
+> -				continue;
+> -		} else if (strstr(buf, "\t          ") != buf)
+> -			break;
+> -		ret = strglobmatch(buf, probe_type_table[type].pattern);
+> -	}
+> -	/* Cache the result */
+> -	probe_type_table[type].checked = true;
+> -	probe_type_table[type].avail = ret;
+> +	while (getline(&buf, &len, fp) > 0)
+> +		for (enum ftrace_readme i = 0; i < FTRACE_README_END; i++)
+> +			if (!ftrace_readme_table[i].avail)
+> +				ftrace_readme_table[i].avail =
+> +					strglobmatch(buf, ftrace_readme_table[i].pattern);
+> +	scanned = true;
+>  
+>  	fclose(fp);
+>  	free(buf);
+>  
+> -	return ret;
+> +result:
+> +	if (type >= FTRACE_README_END)
+> +		return false;
 > +
-> +/*
-> + * 32-bit user address space is 4GB - 1 page
->   * (this 1 page is needed so referencing of 0xFFFFFFFF generates
-> EFAULT */
->  #define TASK_SIZE_USER32 (0x0000000100000000UL - (1*PAGE_SIZE))
-> diff --git a/arch/powerpc/kernel/paca.c b/arch/powerpc/kernel/paca.c
-> index b64daf124fee..c7ca70dc3ba5 100644
-> --- a/arch/powerpc/kernel/paca.c
-> +++ b/arch/powerpc/kernel/paca.c
-> @@ -253,8 +253,15 @@ void copy_mm_to_paca(struct mm_struct *mm)
->  	get_paca()->mm_ctx_id = context->id;
->  #ifdef CONFIG_PPC_MM_SLICES
->  	get_paca()->mm_ctx_low_slices_psize =
-> context->low_slices_psize;
-> +	/*
-> +	 * We support upto 128TB for now. Hence copy only 128/2
-> bytes.
-> +	 * Later when we support tasks with different max effective
-> +	 * address, we can optimize this based on mm->task_size.
-> +	 */
-> +	BUILD_BUG_ON(TASK_SIZE_USER64 != TASK_SIZE_128TB);
-
-Can this be handled by KConfig?
-Above I see 
-> +#ifdef CONFIG_PPC_BOOK3S_64
-> +#define TASK_SIZE_USER64 TASK_SIZE_128TB
-> +#else
-> +#define TASK_SIZE_USER64 TASK_SIZE_64TB
-> +#endif
-and 
-> #ifdef CONFIG_PPC_MM_SLICES
-> ILD_BUG_ON(TASK_SIZE_USER64 != TASK_SIZE_128TB)
-
-which boils down to
-#ifndef CONFIG_PPC_BOOK3S_64
-#ifdef CONFIG_PPC_MM_SLICES
-#error TASK_SIZE_USER64 != TASK_SIZE_128TB
-
-
->  	memcpy(&get_paca()->mm_ctx_high_slices_psize,
-> -	       &context->high_slices_psize, SLICE_ARRAY_SIZE);
-> +	       &context->high_slices_psize, TASK_SIZE_128TB >> 41);
-
-Can we avoid magic numbers, please?
-
-Thanks
-
-Michal
-
+> +	return ftrace_readme_table[type].avail;
+> +}
 > +
->  #else /* CONFIG_PPC_MM_SLICES */
->  	get_paca()->mm_ctx_user_psize = context->user_psize;
->  	get_paca()->mm_ctx_sllp = context->sllp;
-> diff --git a/arch/powerpc/mm/slice.c b/arch/powerpc/mm/slice.c
-> index f286b7839a12..fd2c85e951bd 100644
-> --- a/arch/powerpc/mm/slice.c
-> +++ b/arch/powerpc/mm/slice.c
-> @@ -412,6 +412,8 @@ unsigned long slice_get_unmapped_area(unsigned
-> long addr, unsigned long len, struct mm_struct *mm = current->mm;
->  	unsigned long newaddr;
->  
-> +	/* Make sure high_slices bitmap size is same as we expected
-> */
-> +	BUILD_BUG_ON(512 != SLICE_NUM_HIGH);
->  	/*
->  	 * init different masks
->  	 */
+> +bool probe_type_is_available(enum probe_type type)
+> +{
+> +	if (type >= PROBE_TYPE_END)
+> +		return false;
+> +	else if (type == PROBE_TYPE_X)
+> +		return scan_ftrace_readme(FTRACE_README_PROBE_TYPE_X);
+> +
+> +	return true;
+>  }
+> -- 
+> 2.11.1
+> 
+
+
+-- 
+Masami Hiramatsu <mhiramat@kernel.org>
