@@ -1,16 +1,45 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vb4T31BpPzDqFj
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Mar 2017 23:03:35 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vb5VQ4TCwzDqGb
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Mar 2017 23:49:50 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: bsingharora@gmail.com
-Cc: linuxppc-dev@ozlabs.org
-Subject: [PATCH v3] powerpc/xics: Work around limitations of OPAL XICS
- priority handling
-Date: Sat,  4 Mar 2017 23:03:26 +1100
-Message-Id: <1488629006-17180-1-git-send-email-mpe@ellerman.id.au>
+To: Jiri Slaby <jslaby@suse.cz>, akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, Jiri Slaby <jslaby@suse.cz>,
+ Richard Henderson <rth@twiddle.net>,
+ Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Matt Turner <mattst88@gmail.com>,
+ Vineet Gupta <vgupta@synopsys.com>, Russell King <linux@armlinux.org.uk>,
+ Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>,
+ Richard Kuo <rkuo@codeaurora.org>, Tony Luck <tony.luck@intel.com>,
+ Fenghua Yu <fenghua.yu@intel.com>, Michal Simek <monstr@monstr.eu>,
+ Ralf Baechle <ralf@linux-mips.org>, Jonas Bonn <jonas@southpole.se>,
+ Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
+ Stafford Horne <shorne@gmail.com>,
+ "James E.J. Bottomley" <jejb@parisc-linux.org>, Helge Deller <deller@gmx.de>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>,
+ "David S. Miller" <davem@davemloft.net>, C
+ hris Metcalf <cmetcalf@mellanox.com>, Thomas Gleixner <tglx@linutronix.de>,
+ Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+ Chris Zankel <chris@zankel.net>, Max Filippov <jcmvbkbc@gmail.com>,
+ Arnd Bergmann <arnd@arndb.de>, x86@kernel.org, linux-alpha@vger.kernel.org,
+ linux-snps-arc@lists.infradead.org, linux-arm-kernel@lists.infradead.org,
+ linux-hexagon@vger.kernel.org, linux-ia64@vger.kernel.org,
+ linux-mips@linux-mips.org, openrisc@lists.librecores.org,
+ linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
+ sparclinux@vger.kernel.org, linux-xtensa@linux-xtensa.org,
+ linux-arch@vger.kernel.org
+Subject: Re: [PATCH 1/3] futex: remove duplicated code
+In-Reply-To: <20170303122712.13353-1-jslaby@suse.cz>
+References: <20170303122712.13353-1-jslaby@suse.cz>
+Date: Sat, 04 Mar 2017 23:49:44 +1100
+Message-ID: <877f45cil2.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,126 +49,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Balbir Singh <bsingharora@gmail.com>
+Jiri Slaby <jslaby@suse.cz> writes:
 
-The CPPR (Current Processor Priority Register) of a XICS interrupt
-presentation controller contains a value N, such that only interrupts
-with a priority "more favoured" than N will be received by the CPU,
-where "more favoured" means "less than". So if the CPPR has the value 5
-then only interrupts with a priority of 0-4 inclusive will be received.
+> There is code duplicated over all architecture's headers for
+> futex_atomic_op_inuser. Namely op decoding, access_ok check for uaddr,
+> and comparison of the result.
+>
+> Remove this duplication and leave up to the arches only the needed
+> assembly which is now in arch_futex_atomic_op_inuser.
 
-In theory the CPPR can support a value of 0 to 255 inclusive.
-In practice Linux only uses values of 0, 4, 5 and 0xff. Setting the CPPR
-to 0 rejects all interrupts, setting it to 0xff allows all interrupts.
-The values 4 and 5 are used to differentiate IPIs from external
-interrupts. Setting the CPPR to 5 allows IPIs to be received but not
-external interrupts.
+Looks OK and boots on powerpc. But I don't think anything's actually
+calling those futex ops. Is there a test suite I should run?
 
-The CPPR emulation in the OPAL XICS implementation only directly
-supports priorities 0 and 0xff. All other priorities are considered
-equivalent, and mapped to a single priority value internally. This means
-when using icp-opal we can not allow IPIs but not externals.
+Acked-by: Michael Ellerman <mpe@ellerman.id.au> (powerpc)
 
-This breaks Linux's use of priority values when a CPU is hot unplugged.
-After migrating IRQs away from the CPU that is being offlined, we set
-the priority to 5, meaning we still want the offline CPU to receive
-IPIs. But the effect of the OPAL XICS emulation's use of a single
-priority value is that all interrupts are rejected by the CPU. With the
-CPU offline, and not receiving IPIs, we may not be able to wake it up to
-bring it back online.
-
-The first part of the fix is in icp_opal_set_cpu_priority(). CPPR values
-of 0 to 4 inclusive will correctly cause all interrupts to be rejected,
-so we pass those CPPR values through to OPAL. However if we are called
-with a CPPR of 5 or greater, the caller is expecting to be able to allow
-IPIs but not external interrupts. We know this doesn't work, so instead
-of rejecting all interrupts we choose the opposite which is to allow all
-interrupts. This is still not correct behaviour, but we know for the
-only existing caller (xics_migrate_irqs_away()), that it is the better
-option.
-
-The other part of the fix is in xics_migrate_irqs_away(). Instead of
-setting priority (CPPR) to 0, and then back to 5 before migrating IRQs,
-we migrate the IRQs before setting the priority back to 5. This should
-have no effect on an ICP backend with a working set_priority(), and on
-icp-opal it means we will keep all interrupts blocked until after we've
-finished doing the IRQ migration.
-
-Fixes: d74361881f0d ("powerpc/xics: Add ICP OPAL backend")
-Cc: stable@vger.kernel.org # v4.8+
-Suggested-by: Michael Ellerman <mpe@ellerman.id.au>
-Reported-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Tested-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Signed-off-by: Balbir Singh <bsingharora@gmail.com>
-[mpe: Rewrote comments and change log]
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/sysdev/xics/icp-opal.c    | 10 ++++++++++
- arch/powerpc/sysdev/xics/xics-common.c | 17 ++++++++++++++---
- 2 files changed, 24 insertions(+), 3 deletions(-)
-
-diff --git a/arch/powerpc/sysdev/xics/icp-opal.c b/arch/powerpc/sysdev/xics/icp-opal.c
-index f9670eabfcfa..b53f80f0b4d8 100644
---- a/arch/powerpc/sysdev/xics/icp-opal.c
-+++ b/arch/powerpc/sysdev/xics/icp-opal.c
-@@ -91,6 +91,16 @@ static unsigned int icp_opal_get_irq(void)
- 
- static void icp_opal_set_cpu_priority(unsigned char cppr)
- {
-+	/*
-+	 * Here be dragons. The caller has asked to allow only IPI's and not
-+	 * external interrupts. But OPAL XIVE doesn't support that. So instead
-+	 * of allowing no interrupts allow all. That's still not right, but
-+	 * currently the only caller who does this is xics_migrate_irqs_away()
-+	 * and it works in that case.
-+	 */
-+	if (cppr >= DEFAULT_PRIORITY)
-+		cppr = LOWEST_PRIORITY;
-+
- 	xics_set_base_cppr(cppr);
- 	opal_int_set_cppr(cppr);
- 	iosync();
-diff --git a/arch/powerpc/sysdev/xics/xics-common.c b/arch/powerpc/sysdev/xics/xics-common.c
-index 69d858e51ac7..ae26edc03424 100644
---- a/arch/powerpc/sysdev/xics/xics-common.c
-+++ b/arch/powerpc/sysdev/xics/xics-common.c
-@@ -20,6 +20,7 @@
- #include <linux/of.h>
- #include <linux/slab.h>
- #include <linux/spinlock.h>
-+#include <linux/delay.h>
- 
- #include <asm/prom.h>
- #include <asm/io.h>
-@@ -198,9 +199,6 @@ void xics_migrate_irqs_away(void)
- 	/* Remove ourselves from the global interrupt queue */
- 	xics_set_cpu_giq(xics_default_distrib_server, 0);
- 
--	/* Allow IPIs again... */
--	icp_ops->set_priority(DEFAULT_PRIORITY);
--
- 	for_each_irq_desc(virq, desc) {
- 		struct irq_chip *chip;
- 		long server;
-@@ -255,6 +253,19 @@ void xics_migrate_irqs_away(void)
- unlock:
- 		raw_spin_unlock_irqrestore(&desc->lock, flags);
- 	}
-+
-+	/* Allow "sufficient" time to drop any inflight IRQ's */
-+	mdelay(1);
-+
-+	/*
-+	 * Allow IPIs again. This is done at the very end, after migrating all
-+	 * interrupts, the expectation is that we'll only get woken up by an IPI
-+	 * interrupt beyond this point, but leave externals masked just to be
-+	 * safe. If we're using icp-opal this may actually allow all
-+	 * interrupts anyway, but that should be OK.
-+	 */
-+	icp_ops->set_priority(DEFAULT_PRIORITY);
-+
- }
- #endif /* CONFIG_HOTPLUG_CPU */
- 
--- 
-2.7.4
+cheers
