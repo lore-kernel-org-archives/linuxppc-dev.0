@@ -1,49 +1,48 @@
-Return-Path: <benh@au1.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <gwshan@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vbzH05YC5zDqGn
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Mar 2017 10:13:00 +1100 (AEDT)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v25N8VPF004895
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 5 Mar 2017 18:12:44 -0500
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
- by mx0a-001b2d01.pphosted.com with ESMTP id 28yuy15whr-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vbzWV6QPWzDq5x
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Mar 2017 10:23:50 +1100 (AEDT)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v25NNb7G126849
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 5 Mar 2017 18:23:47 -0500
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 28ys1rjfwf-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 05 Mar 2017 18:12:44 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 05 Mar 2017 18:23:47 -0500
 Received: from localhost
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <benh@au1.ibm.com>;
- Mon, 6 Mar 2017 09:12:42 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 2FAA22CE8057
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Mar 2017 10:12:41 +1100 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v25NCXgC53280850
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 6 Mar 2017 10:12:41 +1100
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v25NC7Yj027716
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 6 Mar 2017 10:12:08 +1100
-Subject: Re: [PATCH v2] powerpc: A new cache geometry aux vectors
-From: Benjamin Herrenschmidt <benh@au1.ibm.com>
-Reply-To: benh@au1.ibm.com
-To: pc@us.ibm.com, linuxppc-dev@lists.ozlabs.org
-Date: Mon, 06 Mar 2017 10:11:41 +1100
-In-Reply-To: <288deec2-a821-316b-5e53-e186deda96f9@us.ibm.com>
-References: <1486016558.4850.30.camel@kernel.crashing.org>
- <67e56596-05a7-5f3d-8125-a4e0194f1b7c@us.ibm.com>
- <877f48kx0q.fsf@concordia.ellerman.id.au>
- <3d15baac-1705-a1a6-d0b0-1d7f378509d6@us.ibm.com>
- <87fuivhuub.fsf@concordia.ellerman.id.au>
- <288deec2-a821-316b-5e53-e186deda96f9@us.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Message-Id: <1488755501.2870.119.camel@au1.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Mon, 6 Mar 2017 09:23:44 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 1C52F2CE8046
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Mar 2017 10:23:43 +1100 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v25NNZFA48038050
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 6 Mar 2017 10:23:43 +1100
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v25NN99e026513
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 6 Mar 2017 10:23:09 +1100
+Date: Mon, 6 Mar 2017 10:22:46 +1100
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Cc: Russell Currey <ruscur@russell.cc>, linuxppc-dev@lists.ozlabs.org,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>
+Subject: Re: [PATCH] powerpc/eeh: Avoid use after free in
+ eeh_handle_special_event()
+Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+References: <20170303044718.19253-1-ruscur@russell.cc>
+ <2ac7b7d0-c04f-1c33-4661-d2e4f9a0e054@ozlabs.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <2ac7b7d0-c04f-1c33-4661-d2e4f9a0e054@ozlabs.ru>
+Message-Id: <20170305232246.GA14744@gwshan>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -53,24 +52,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2017-03-03 at 07:51 -0600, Paul Clarke wrote:
-> > On P9 it all comes from the device tree so if that's wrong the AUX
-> > vectors will definitely be wrong.
-> 
-> mambo-p9 is still falling victim to the device-tree, but "working":
-> --
-> getauxval(AT_L1I_CACHEGEOMETRY) = 0x0000000000000080
-> AT_L1I_CACHEGEOMETRY: associativity 0; line size 128
-> getauxval(AT_L1D_CACHEGEOMETRY) = 0x0000000000000080
-> AT_L1D_CACHEGEOMETRY: associativity 0; line size 128
-> getauxval(AT_L2_CACHEGEOMETRY) = 0x0000000000000000
-> getauxval(AT_L2_CACHEGEOMETRY) = 0x0000000000000000
-> --
+On Fri, Mar 03, 2017 at 04:59:11PM +1100, Alexey Kardashevskiy wrote:
+>On 03/03/17 15:47, Russell Currey wrote:
+>> eeh_handle_special_event() is called when an EEH event is detected but
+>> can't be narrowed down to a specific PE.  This function looks through
+>> every PE to find one in an erroneous state, then calls the regular event
+>> handler eeh_handle_normal_event() once it knows which PE has an error.
+>> 
+>> However, if eeh_handle_normal_event() found that the PE cannot possibly
+>> be recovered, it will remove the PE and associated devices.  This leads
+>> to a use after free in eeh_handle_special_event() as it attempts to clear
+>> the "recovering" state on the PE after eeh_handle_normal_event() returns.
+>> 
+>> Thus, make sure the PE is valid when attempting to clear state in
+>> eeh_handle_special_event().
+>> 
+>> Cc: <stable@vger.kernel.org> #3.10+
+>> Reported-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+>> Signed-off-by: Russell Currey <ruscur@russell.cc>
+>> ---
+>>  arch/powerpc/kernel/eeh_driver.c | 13 +++++++++++++
+>>  1 file changed, 13 insertions(+)
+>> 
+>> diff --git a/arch/powerpc/kernel/eeh_driver.c b/arch/powerpc/kernel/eeh_driver.c
+>> index b94887165a10..492397298a2a 100644
+>> --- a/arch/powerpc/kernel/eeh_driver.c
+>> +++ b/arch/powerpc/kernel/eeh_driver.c
+>> @@ -983,6 +983,19 @@ static void eeh_handle_special_event(void)
+>>  		if (rc == EEH_NEXT_ERR_FROZEN_PE ||
+>>  		    rc == EEH_NEXT_ERR_FENCED_PHB) {
+>>  			eeh_handle_normal_event(pe);
+>> +
+>> +			/*
+>> +			 * eeh_handle_normal_event() can free the PE if it
+>> +			 * determines that the PE cannot possibly be recovered.
+>> +			 * Make sure the PE still exists before changing its
+>> +			 * state.
+>> +			 */
+>> +			if (!pe || (pe->type & EEH_PE_INVALID)
+>> +			    || (pe->state & EEH_PE_REMOVED)) {
+>
+>
+>The bug is that pe becomes stale after eeh_handle_normal_event() returned
+>and dereferencing it afterwards is broken.
+>
 
-The mambo device-tree comes from the mambo own internals afaik.
+Correct, it won't cause a kernel crash as @pe is deferencing linear mapped
+area whose address is always valid. I think the proper fix would be to use
+eeh_handle_normal_event() to indicate the @pe has been released and don't
+access it any more.
 
-On real HW, the values come from HDAT. If they are wrong we need
-the HostBoot guys to fix them.
+>
+>
+>> +				pr_warn("EEH: not clearing state on bad PE\n");
 
-Cheers,
-Ben.
+The message like this isn't meaningful, no need to have it. The messages that
+have prefix "EEH:" is informative messages. We definitely needn't this here.
+However, the message might be not needed in next revision.
+
+>> +				continue;
+>> +			}
+>> +
+>>  			eeh_pe_state_clear(pe, EEH_PE_RECOVERING);
+>>  		} else {
+>>  			pci_lock_rescan_remove();
+>> 
+
+Thanks,
+Gavin
