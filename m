@@ -3,49 +3,48 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vbdH033xNzDqMx
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  5 Mar 2017 20:41:48 +1100 (AEDT)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vbdH22QZXzDqXl
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  5 Mar 2017 20:41:50 +1100 (AEDT)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v259ca5x111636
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 5 Mar 2017 04:41:40 -0500
-Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [125.16.236.2])
- by mx0a-001b2d01.pphosted.com with ESMTP id 28ytm3d4s3-1
+ v259cWpT137026
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 5 Mar 2017 04:41:39 -0500
+Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [125.16.236.9])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 28ytkg56rr-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 05 Mar 2017 04:41:40 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 05 Mar 2017 04:41:38 -0500
 Received: from localhost
- by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
- Sun, 5 Mar 2017 15:11:37 +0530
-Received: from d28relay09.in.ibm.com (d28relay09.in.ibm.com [9.184.220.160])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 86F39125804F
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  5 Mar 2017 15:11:49 +0530 (IST)
+ Sun, 5 Mar 2017 15:11:36 +0530
+Received: from d28relay10.in.ibm.com (d28relay10.in.ibm.com [9.184.220.161])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id A73D5125805C
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  5 Mar 2017 15:11:46 +0530 (IST)
 Received: from d28av06.in.ibm.com (d28av06.in.ibm.com [9.184.220.48])
- by d28relay09.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v259fZbn10354712
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 5 Mar 2017 15:11:35 +0530
+ by d28relay10.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v259eOt06029508
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 5 Mar 2017 15:10:24 +0530
 Received: from d28av06.in.ibm.com (localhost [127.0.0.1])
  by d28av06.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v259fXlW014604
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 5 Mar 2017 15:11:34 +0530
+ v259fTwp014543
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 5 Mar 2017 15:11:31 +0530
 From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 To: mpe@ellerman.id.au
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
- Thomas Gleixner <tglx@linutronix.de>,
- Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
- Anna-Maria Gleixner <anna-maria@linutronix.de>,
- Daniel Axtens <dja@axtens.net>
-Subject: [PATCH 3/6] powerpc/perf: Support to export MMCRA[TEC*] field to
- userspace
-Date: Sun,  5 Mar 2017 15:11:14 +0530
+ Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>,
+ Arnaldo Carvalho de Melo <acme@kernel.org>,
+ Alexander Shishkin <alexander.shishkin@linux.intel.com>,
+ Wang Nan <wangnan0@huawei.com>, Alexei Starovoitov <ast@kernel.org>,
+ Stephane Eranian <eranian@google.com>,
+ Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Subject: [PATCH 1/6] powerpc/perf: Define big-endian version of
+ perf_mem_data_src
+Date: Sun,  5 Mar 2017 15:11:12 +0530
 In-Reply-To: <1488706877-28604-1-git-send-email-maddy@linux.vnet.ibm.com>
 References: <1488706877-28604-1-git-send-email-maddy@linux.vnet.ibm.com>
-Message-Id: <1488706877-28604-4-git-send-email-maddy@linux.vnet.ibm.com>
+Message-Id: <1488706877-28604-2-git-send-email-maddy@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -55,100 +54,91 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Threshold feature when used with MMCRA [Threshold Event Counter Event],
-MMCRA[Threshold Start event] and MMCRA[Threshold End event] will update
-MMCRA[Threashold Event Counter Exponent] and MMCRA[Threshold Event
-Counter Multiplier] with the corresponding threshold event count values.
-Patch to export MMCRA[TECX/TECM] to userspace in 'weight' field of
-struct perf_sample_data.
+perf_mem_data_src is an union that is initialized via the ->val field
+and accessed via the bitmap fields. For this to work on big endian
+platforms, we also need a big-endian represenation of perf_mem_data_src.
 
 Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: Arnaldo Carvalho de Melo <acme@kernel.org>
+Cc: Alexander Shishkin <alexander.shishkin@linux.intel.com>
+Cc: Wang Nan <wangnan0@huawei.com>
+Cc: Alexei Starovoitov <ast@kernel.org>
+Cc: Stephane Eranian <eranian@google.com>
 Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-Cc: Anna-Maria Gleixner <anna-maria@linutronix.de>
-Cc: Daniel Axtens <dja@axtens.net>
 ---
- arch/powerpc/include/asm/perf_event_server.h |  1 +
- arch/powerpc/perf/core-book3s.c              |  4 ++++
- arch/powerpc/perf/isa207-common.c            |  8 ++++++++
- arch/powerpc/perf/isa207-common.h            | 10 ++++++++++
- 4 files changed, 23 insertions(+)
+ include/uapi/linux/perf_event.h       | 16 ++++++++++++++++
+ tools/include/uapi/linux/perf_event.h | 16 ++++++++++++++++
+ 2 files changed, 32 insertions(+)
 
-diff --git a/arch/powerpc/include/asm/perf_event_server.h b/arch/powerpc/include/asm/perf_event_server.h
-index 446cdcd9b7f5..723bf48e7494 100644
---- a/arch/powerpc/include/asm/perf_event_server.h
-+++ b/arch/powerpc/include/asm/perf_event_server.h
-@@ -40,6 +40,7 @@ struct power_pmu {
- 				u64 alt[]);
- 	void		(*get_mem_data_src)(union perf_mem_data_src *dsrc,
- 				u32 flags, struct pt_regs *regs);
-+	void		(*get_mem_weight)(u64 *weight);
- 	u64             (*bhrb_filter_map)(u64 branch_sample_type);
- 	void            (*config_bhrb)(u64 pmu_bhrb_filter);
- 	void		(*disable_pmc)(unsigned int pmc, unsigned long mmcr[]);
-diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
-index d644c5ab4d2f..a6b265e31663 100644
---- a/arch/powerpc/perf/core-book3s.c
-+++ b/arch/powerpc/perf/core-book3s.c
-@@ -2051,6 +2051,10 @@ static void record_and_restart(struct perf_event *event, unsigned long val,
- 						ppmu->get_mem_data_src)
- 			ppmu->get_mem_data_src(&data.data_src, ppmu->flags, regs);
+diff --git a/include/uapi/linux/perf_event.h b/include/uapi/linux/perf_event.h
+index c66a485a24ac..c4af1159a200 100644
+--- a/include/uapi/linux/perf_event.h
++++ b/include/uapi/linux/perf_event.h
+@@ -891,6 +891,7 @@ enum perf_callchain_context {
+ #define PERF_FLAG_PID_CGROUP		(1UL << 2) /* pid=cgroup id, per-cpu mode only */
+ #define PERF_FLAG_FD_CLOEXEC		(1UL << 3) /* O_CLOEXEC */
  
-+		if (event->attr.sample_type & PERF_SAMPLE_WEIGHT &&
-+						ppmu->get_mem_weight)
-+			ppmu->get_mem_weight(&data.weight);
-+
- 		if (perf_event_overflow(event, &data, regs))
- 			power_pmu_stop(event, 0);
- 	}
-diff --git a/arch/powerpc/perf/isa207-common.c b/arch/powerpc/perf/isa207-common.c
-index 08bb62454a2e..42e999da934e 100644
---- a/arch/powerpc/perf/isa207-common.c
-+++ b/arch/powerpc/perf/isa207-common.c
-@@ -196,6 +196,14 @@ void isa207_get_mem_data_src(union perf_mem_data_src *dsrc, u32 flags,
- 	}
- }
++#if defined(__LITTLE_ENDIAN_BITFIELD)
+ union perf_mem_data_src {
+ 	__u64 val;
+ 	struct {
+@@ -902,6 +903,21 @@ union perf_mem_data_src {
+ 			mem_rsvd:31;
+ 	};
+ };
++#elif defined(__BIG_ENDIAN_BITFIELD)
++union perf_mem_data_src {
++	__u64 val;
++	struct {
++		__u64	mem_rsvd:31,
++			mem_dtlb:7,	/* tlb access */
++			mem_lock:2,	/* lock instr */
++			mem_snoop:5,	/* snoop mode */
++			mem_lvl:14,	/* memory hierarchy level */
++			mem_op:5;	/* type of opcode */
++	};
++};
++#else
++#error "Unknown endianness"
++#endif
  
-+void isa207_get_mem_weight(u64 *weight)
-+{
-+	u64 mmcra = mfspr(SPRN_MMCRA);
-+	u64 exp = MMCRA_THR_CTR_EXP(mmcra);
-+	u64 mantissa = MMCRA_THR_CTR_MANT(mmcra);
-+
-+	*weight = mantissa << (2 * exp);
-+}
+ /* type of opcode (load/store/prefetch,code) */
+ #define PERF_MEM_OP_NA		0x01 /* not available */
+diff --git a/tools/include/uapi/linux/perf_event.h b/tools/include/uapi/linux/perf_event.h
+index c66a485a24ac..c4af1159a200 100644
+--- a/tools/include/uapi/linux/perf_event.h
++++ b/tools/include/uapi/linux/perf_event.h
+@@ -891,6 +891,7 @@ enum perf_callchain_context {
+ #define PERF_FLAG_PID_CGROUP		(1UL << 2) /* pid=cgroup id, per-cpu mode only */
+ #define PERF_FLAG_FD_CLOEXEC		(1UL << 3) /* O_CLOEXEC */
  
- int isa207_get_constraint(u64 event, unsigned long *maskp, unsigned long *valp)
- {
-diff --git a/arch/powerpc/perf/isa207-common.h b/arch/powerpc/perf/isa207-common.h
-index 982542cce991..b4d02ae3a6e0 100644
---- a/arch/powerpc/perf/isa207-common.h
-+++ b/arch/powerpc/perf/isa207-common.h
-@@ -247,6 +247,15 @@
- #define MMCRA_SDAR_MODE_SHIFT		42
- #define MMCRA_SDAR_MODE_TLB		(1ull << MMCRA_SDAR_MODE_SHIFT)
- #define MMCRA_IFM_SHIFT			30
-+#define MMCRA_THR_CTR_MANT_SHIFT	19
-+#define MMCRA_THR_CTR_MANT_MASK		0x7Ful
-+#define MMCRA_THR_CTR_MANT(v)		(((v) >> MMCRA_THR_CTR_MANT_SHIFT) &\
-+						MMCRA_THR_CTR_MANT_MASK)
-+
-+#define MMCRA_THR_CTR_EXP_SHIFT		27
-+#define MMCRA_THR_CTR_EXP_MASK		0x7ul
-+#define MMCRA_THR_CTR_EXP(v)		(((v) >> MMCRA_THR_CTR_EXP_SHIFT) &\
-+						MMCRA_THR_CTR_EXP_MASK)
++#if defined(__LITTLE_ENDIAN_BITFIELD)
+ union perf_mem_data_src {
+ 	__u64 val;
+ 	struct {
+@@ -902,6 +903,21 @@ union perf_mem_data_src {
+ 			mem_rsvd:31;
+ 	};
+ };
++#elif defined(__BIG_ENDIAN_BITFIELD)
++union perf_mem_data_src {
++	__u64 val;
++	struct {
++		__u64	mem_rsvd:31,
++			mem_dtlb:7,	/* tlb access */
++			mem_lock:2,	/* lock instr */
++			mem_snoop:5,	/* snoop mode */
++			mem_lvl:14,	/* memory hierarchy level */
++			mem_op:5;	/* type of opcode */
++	};
++};
++#else
++#error "Unknown endianness"
++#endif
  
- /* MMCR1 Threshold Compare bit constant for power9 */
- #define p9_MMCRA_THR_CMP_SHIFT	45
-@@ -281,5 +290,6 @@ int isa207_get_alternatives(u64 event, u64 alt[],
- 				const unsigned int ev_alt[][MAX_ALT], int size);
- void isa207_get_mem_data_src(union perf_mem_data_src *dsrc, u32 flags,
- 							struct pt_regs *regs);
-+void isa207_get_mem_weight(u64 *weight);
- 
- #endif
+ /* type of opcode (load/store/prefetch,code) */
+ #define PERF_MEM_OP_NA		0x01 /* not available */
 -- 
 2.7.4
