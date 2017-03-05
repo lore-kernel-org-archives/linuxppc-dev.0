@@ -1,47 +1,40 @@
 Return-Path: <vipin@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vbdQp2kBmzDqlJ
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  5 Mar 2017 20:48:34 +1100 (AEDT)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v259d0Gi098294
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 5 Mar 2017 04:48:23 -0500
-Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [125.16.236.6])
- by mx0b-001b2d01.pphosted.com with ESMTP id 28ytn1vr50-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vbdV900y2zDqWC
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  5 Mar 2017 20:51:28 +1100 (AEDT)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v259mbmN006349
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 5 Mar 2017 04:51:27 -0500
+Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [125.16.236.7])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 28ytkg5d60-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 05 Mar 2017 04:48:22 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 05 Mar 2017 04:51:26 -0500
 Received: from localhost
- by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <vipin@linux.vnet.ibm.com>;
- Sun, 5 Mar 2017 15:18:19 +0530
-Received: from d28relay08.in.ibm.com (d28relay08.in.ibm.com [9.184.220.159])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id D6FE6125804F
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  5 Mar 2017 15:18:30 +0530 (IST)
-Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay08.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v259l9Q65111908
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 5 Mar 2017 15:17:09 +0530
-Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
- by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v259mFq4032244
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 5 Mar 2017 15:18:16 +0530
-Subject: Re: [PATCH v2] powernv/opal: Handle OPAL_WRONG_STATE error from OPAL
- fails
-To: Stewart Smith <stewart@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- Michael Ellerman <mpe@ellerman.id.au>
-References: <1488276702-14646-1-git-send-email-vipin@linux.vnet.ibm.com>
- <87h93ec9bw.fsf@linux.vnet.ibm.com>
- <06aa944f-84c8-7254-265b-53d56a888fd1@linux.vnet.ibm.com>
+ Sun, 5 Mar 2017 15:21:24 +0530
+Received: from d28relay07.in.ibm.com (d28relay07.in.ibm.com [9.184.220.158])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id F40983940033
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  5 Mar 2017 15:21:20 +0530 (IST)
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ by d28relay07.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v259oD7R10027136
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 5 Mar 2017 15:20:13 +0530
+Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
+ by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v259pK40003949
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 5 Mar 2017 15:21:20 +0530
 From: Vipin K Parashar <vipin@linux.vnet.ibm.com>
-Date: Sun, 5 Mar 2017 15:18:09 +0530
-MIME-Version: 1.0
-In-Reply-To: <06aa944f-84c8-7254-265b-53d56a888fd1@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Message-Id: <bccf554d-706f-1a42-daea-47be1c9940d8@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: stewart@linux.vnet.ibm.com, Vipin K Parashar <vipin@linux.vnet.ibm.com>
+Subject: [PATCH v3] powernv/sensor: Handle OPAL_WRONG_STATE error return
+Date: Sun,  5 Mar 2017 15:21:08 +0530
+Message-Id: <1488707468-16643-1-git-send-email-vipin@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,86 +44,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+OPAL returns OPAL_WRONG_STATE upon failing to provide
+sensor data due to core sleeping/offline. Added check
+for OPAL_WRONG_STATE rerurn code with sensor read failure.
+Also added a log message indicating sensor data being
+queried for sleeping/offline core.
 
+Signed-off-by: Vipin K Parashar <vipin@linux.vnet.ibm.com>
+---
+Changes in v3:
+ - Added a new case for OPAL_WRONG_STATE in sensor read
+   along with a log message indicating sleeping/offline core
+   causing read fail.
 
-On Thursday 02 March 2017 06:00 PM, Vipin K Parashar wrote:
-> Hi Stewart/Michael,
->
-> Thanks!! for review.
->
-> Responses as below:
->
->
-> On Wednesday 01 March 2017 02:38 AM, Stewart Smith wrote:
->> Vipin K Parashar <vipin@linux.vnet.ibm.com> writes:
->>> Added check for OPAL_WRONG_STATE error code returned from OPAL.
->>> Currently Linux flashes "unexpected error" over console for this
->>> error. This will avoid throwing such message and return I/O error
->>> for such OPAL failures.
->>>
->>> Signed-off-by: Vipin K Parashar <vipin@linux.vnet.ibm.com>
->>> ---
->>> Changes in v2:
->>>   - Added log message indicating sleeping/offline core
->>>     for OPAL_WRONG_STATE
->>>
->>>   arch/powerpc/platforms/powernv/opal.c | 5 ++++-
->>>   1 file changed, 4 insertions(+), 1 deletion(-)
->>>
->>> diff --git a/arch/powerpc/platforms/powernv/opal.c 
->>> b/arch/powerpc/platforms/powernv/opal.c
->>> index 86d9fde..8af230e 100644
->>> --- a/arch/powerpc/platforms/powernv/opal.c
->>> +++ b/arch/powerpc/platforms/powernv/opal.c
->>> @@ -869,8 +869,11 @@ int opal_error_code(int rc)
->>>       case OPAL_UNSUPPORTED:        return -EIO;
->>>       case OPAL_HARDWARE:        return -EIO;
->>>       case OPAL_INTERNAL_ERROR:    return -EIO;
->>> +    case OPAL_WRONG_STATE:
->>> +        pr_notice("%s: Core sleeping/offline\n", __func__);
->>> +        return -EIO;
->> Since this is part of opal_error_code() though, this will be printed for
->> any OPAL call that returns that.
->
-> opal_error_coder is used by functions to handle OPAL error codes
-> and return Linux error codes. Apart from opal_get_sensor_data ()
-> in opal-sensor.c, opal_error_code  is also getting invoked from
-> opal_get_sys_param( ) in opal-sysparam.c.
->
-> Handling OPAL_WRONG_STATE in opal_error_code itself, seems
-> modular  and avoids extra checks for OPAL_WRONG_STATE after
-> opal_error_code usage in multiple functions.
->
-> opal_error_code is already adding a message upon OPAL_WRONG_STATE
-> return, so its already leaving trace about Sleeping core causing XSCOM
-> failure. By returning OPAL_WRONG_CODE from opal_error_code are we
-> planning some action like on-lining back the sleeping or off-lined core ?
->
->>
->> Why not have the sensor code do this:
->>
->> rc = opal_sensor_read(foo)
->> if (rc == OPAL_WRONG_STATE)
->>     return -EIO;
->> else
->>     return oal_error_code(rc);
->>
->> ?
->>
+ arch/powerpc/platforms/powernv/opal-sensor.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-Avoided adding OPAL_WRONG_STATE check in opal_error_code
-and instead added a new case for OPAL_WRONG_STATE in
-opal_get_sensor_data itself. Sending out v3 with the changes.
-
->>>       default:
->>> -        pr_err("%s: unexpected OPAL error %d\n", __func__, rc);
->>> +        pr_err("%s: Unexpected OPAL error %d\n", __func__, rc);
->> Do we need this?
->>
->
-> This print helps in alerting about OPAL return codes that aren't 
-> supported in
-> running Linux version. Helpful in catching OPAL return code that missed
-> out detection check in Linux.
-> Shall we consider reducing message severity from pr_err to pr_warn ?
->
+diff --git a/arch/powerpc/platforms/powernv/opal-sensor.c b/arch/powerpc/platforms/powernv/opal-sensor.c
+index 308efd1..fb6d6bb 100644
+--- a/arch/powerpc/platforms/powernv/opal-sensor.c
++++ b/arch/powerpc/platforms/powernv/opal-sensor.c
+@@ -64,6 +64,12 @@ int opal_get_sensor_data(u32 sensor_hndl, u32 *sensor_data)
+ 		*sensor_data = be32_to_cpu(data);
+ 		break;
+ 
++	case OPAL_WRONG_STATE:
++		pr_notice("%s: Sensor data read failure due to "
++				"core sleeping/offline\n", __func__);
++		ret = -EIO;
++		break;
++
+ 	default:
+ 		ret = opal_error_code(ret);
+ 		break;
+-- 
+2.7.4
