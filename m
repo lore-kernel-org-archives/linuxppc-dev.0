@@ -1,41 +1,41 @@
-Return-Path: <hpa@zytor.com>
-Received: from mail.zytor.com (unknown [IPv6:2001:1868:a000:17::138])
+Return-Path: <maddy@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vbMKY6D1gzDq5W
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  5 Mar 2017 10:13:05 +1100 (AEDT)
-From: "H. Peter Anvin" <hpa@zytor.com>
-Message-Id: <201703042308.v24N8wvh012716@mail.zytor.com>
-Date: Sat, 04 Mar 2017 15:08:50 -0800
-In-Reply-To: <20170304213805.GA2449@lianli.shorne-pla.net>
-References: <20170303122712.13353-1-jslaby@suse.cz>
- <20170304130550.GT21222@n2100.armlinux.org.uk>
- <3994975e-89a5-d2b5-60be-a8633ddc3733@zytor.com>
- <20170304213805.GA2449@lianli.shorne-pla.net>
-MIME-Version: 1.0
-Content-Type: text/plain;
- charset=utf-8
-Subject: Re: [PATCH 1/3] futex: remove duplicated code
-To: Stafford Horne <shorne@gmail.com>
-CC: Russell King - ARM Linux <linux@armlinux.org.uk>,
- Jiri Slaby <jslaby@suse.cz>, akpm@linux-foundation.org,
- linux-kernel@vger.kernel.org, Richard Henderson <rth@twiddle.net>,
- Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
- Matt Turner <mattst88@gmail.com>, Vineet Gupta <vgupta@synopsys.com>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Will Deacon <will.deacon@arm.com>, Richard Kuo <rkuo@codeaurora.org>,
- Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
- Michal Simek <monstr@monstr.eu>, Ralf Baechle <ralf@linux-mips.org>,
- Jonas Bonn <jonas@southpole.se>,
- Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
- "James E.J. Bottomley" <jejb@parisc-linux.org>,
- Helge Deller <deller@gmx.de>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- Yoshinori Sato <ysato@users.sourceforge.jp>,
- Rich Felker <dalias@libc.org>, "David S. Miller"@zytor.com
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vbdGw4Bv7zDqBV
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  5 Mar 2017 20:41:44 +1100 (AEDT)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v259cUtG144729
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 5 Mar 2017 04:41:33 -0500
+Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [125.16.236.6])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 290bhkpxdu-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 05 Mar 2017 04:41:32 -0500
+Received: from localhost
+ by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
+ Sun, 5 Mar 2017 15:11:30 +0530
+Received: from d28relay09.in.ibm.com (d28relay09.in.ibm.com [9.184.220.160])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id B4AC8E0040
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  5 Mar 2017 15:13:15 +0530 (IST)
+Received: from d28av06.in.ibm.com (d28av06.in.ibm.com [9.184.220.48])
+ by d28relay09.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v259fRgO7929864
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 5 Mar 2017 15:11:27 +0530
+Received: from d28av06.in.ibm.com (localhost [127.0.0.1])
+ by d28av06.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v259fQZv014527
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 5 Mar 2017 15:11:27 +0530
+From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+To: mpe@ellerman.id.au
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+Subject: [PATCH 0/6] powerpc/perf: Export memory hierarchy level
+Date: Sun,  5 Mar 2017 15:11:11 +0530
+Message-Id: <1488706877-28604-1-git-send-email-maddy@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,85 +45,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-<davem@davemloft.net>,Chris Metcalf <cmetcalf@mellanox.com>,Thomas Gleixner <tglx@linutronix.de>,Ingo Molnar <mingo@redhat.com>,Chris Zankel <chris@zankel.net>,Max Filippov <jcmvbkbc@gmail.com>,Arnd Bergmann <arnd@arndb.de>,x86@kernel.org,linux-alpha@vger.kernel.org,linux-snps-arc@lists.infradead.org,linux-arm-kernel@lists.infradead.org,linux-hexagon@vger.kernel.org,linux-ia64@vger.kernel.org,linux-mips@linux-mips.org,openrisc@lists.librecores.org,linux-parisc@vger.kernel.org,linuxppc-dev@lists.ozlabs.org,linux-s390@vger.kernel.org,linux-sh@vger.kernel.org,sparclinux@vger.kernel.org,linux-xtensa@linux-xtensa.org,linux-arch@vger.kernel.org
-From: hpa@zytor.com
-Message-ID: <CF18535E-39E7-44D3-88D0-80B9961E6681@zytor.com>
+Power8/Power9 Perforence Monitoring Unit (PMU) supports
+different sampling modes (SM) such as Random Instruction
+Sampling (RIS), Random Load/Store Facility Sampling (RLS)
+and Random Branch Sampling (RBS). Sample mode RLS updates
+Sampled Instruction Event Register [SIER] bits with memory
+hierarchy information for a cache reload. Patchset exports
+the hierarchy information to the user via the perf_mem_data_src
+object from SIER.
 
-On March 4, 2017 1:38:05 PM PST, Stafford Horne <shorne@gmail=2Ecom> wrote:
->On Sat, Mar 04, 2017 at 11:15:17AM -0800, H=2E Peter Anvin wrote:
->> On 03/04/17 05:05, Russell King - ARM Linux wrote:
->> >> =20
->> >> +static int futex_atomic_op_inuser(int encoded_op, u32 __user
->*uaddr)
->> >> +{
->> >> +	int op =3D (encoded_op >> 28) & 7;
->> >> +	int cmp =3D (encoded_op >> 24) & 15;
->> >> +	int oparg =3D (encoded_op << 8) >> 20;
->> >> +	int cmparg =3D (encoded_op << 20) >> 20;
->> >=20
->> > Hmm=2E  oparg and cmparg look like they're doing these shifts to get
->sign
->> > extension of the 12-bit values by assuming that "int" is 32-bit -
->> > probably worth a comment, or for safety, they should be "s32" so
->it's
->> > not dependent on the bit-width of "int"=2E
->> >=20
->>=20
->> For readability, perhaps we should make sign- and zero-extension an
->> explicit facility?
->
->There is some of this in already here, 32 and 64 bit versions:
->
->  include/linux/bitops=2Eh
->
->Do we really need zero extension? It seems the same=2E
->
->Example implementation from bitops=2Eh
->
->static inline __s32 sign_extend32(__u32 value, int index)
->{
->        __u8 shift =3D 31 - index;
->        return (__s32)(value << shift) >> shift;
->}
->
->> /*
->>  * Truncate an integer x to n bits, using sign- or
->>  * zero-extension, respectively=2E
->>  */
->> static inline __const_func__ s32 sex32(s32 x, int n)
->> {
->>   return (x << (32-n)) >> (32-n);
->> }
->>=20
->> static inline __const_func__ s64 sex64(s64 x, int n)
->> {
->>   return (x << (64-n)) >> (64-n);
->> }
->>=20
->> #define sex(x,y)						\
->> 	((__typeof__(x))					\
->> 	 (((__builtin_constant_p(y) && ((y) <=3D 32)) ||		\
->> 	   (sizeof(x) <=3D sizeof(s32)))				\
->> 	  ? sex32((x),(y)) : sex64((x),(y))))
->>=20
->> static inline __const_func__ u32 zex32(u32 x, int n)
->> {
->>   return (x << (32-n)) >> (32-n);
->> }
->>=20
->> static inline __const_func__ u64 zex64(u64 x, int n)
->> {
->>   return (x << (64-n)) >> (64-n);
->> }
->>=20
->> #define zex(x,y)						\
->> 	((__typeof__(x))					\
->> 	 (((__builtin_constant_p(y) && ((y) <=3D 32)) ||		\
->> 	   (sizeof(x) <=3D sizeof(u32)))				\
->> 	  ? zex32((x),(y)) : zex64((x),(y))))
->>=20
+Patchset is a rebase of the work posted previously with minor
+updates to it.
 
-Also, i strongly believe that making it syntactically cumbersome encodes p=
-eople to open-code it which is bad=2E=2E=2E
---=20
-Sent from my Android device with K-9 Mail=2E Please excuse my brevity=2E
+https://lkml.org/lkml/2015/6/11/92
+
+Madhavan Srinivasan (6):
+  powerpc/perf: Define big-endian version of perf_mem_data_src
+  powerpc/perf: Export memory hierarchy info to user space
+  powerpc/perf: Support to export MMCRA[TEC*] field to userspace
+  powerpc/perf: Support to export SIERs bit in Power8
+  powerpc/perf: Support to export SIERs bit in Power9
+  powerpc/perf: Add Power8 mem_access event to sysfs
+
+ arch/powerpc/include/asm/perf_event_server.h |  3 +
+ arch/powerpc/perf/core-book3s.c              |  8 +++
+ arch/powerpc/perf/isa207-common.c            | 86 ++++++++++++++++++++++++++++
+ arch/powerpc/perf/isa207-common.h            | 26 ++++++++-
+ arch/powerpc/perf/power8-events-list.h       |  6 ++
+ arch/powerpc/perf/power8-pmu.c               |  4 ++
+ arch/powerpc/perf/power9-pmu.c               |  2 +
+ include/uapi/linux/perf_event.h              | 16 ++++++
+ tools/include/uapi/linux/perf_event.h        | 16 ++++++
+ 9 files changed, 166 insertions(+), 1 deletion(-)
+
+-- 
+2.7.4
