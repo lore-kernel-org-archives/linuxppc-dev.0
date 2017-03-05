@@ -1,21 +1,27 @@
-Return-Path: <tremyfr@gmail.com>
-Received: from mail-wm0-x241.google.com (mail-wm0-x241.google.com
- [IPv6:2a00:1450:400c:c09::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <srs0=r6wc=2o=kernel.crashing.org=benh@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vby7K2S8HzDqBV
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Mar 2017 09:21:17 +1100 (AEDT)
-Received: by mail-wm0-x241.google.com with SMTP id v190so11087819wme.3
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 05 Mar 2017 14:21:17 -0800 (PST)
-From: Philippe Reynes <tremyfr@gmail.com>
-To: geoff@infradead.org, benh@kernel.crashing.org, paulus@samba.org,
- mpe@ellerman.id.au, davem@davemloft.net
-Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Philippe Reynes <tremyfr@gmail.com>
-Subject: [PATCH] net: toshiba: ps3_genic_net: use new api
- ethtool_{get|set}_link_ksettings
-Date: Sun,  5 Mar 2017 23:21:06 +0100
-Message-Id: <1488752466-27232-1-git-send-email-tremyfr@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vbz0805SwzDqBV
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Mar 2017 10:00:08 +1100 (AEDT)
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3vbz0768k3z8tBy
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Mar 2017 10:00:07 +1100 (AEDT)
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3vbz065qwVz9s78
+ for <linuxppc-dev@ozlabs.org>; Mon,  6 Mar 2017 10:00:06 +1100 (AEDT)
+Received: from localhost.localdomain (localhost.localdomain [127.0.0.1])
+ by gate.crashing.org (8.14.1/8.13.8) with ESMTP id v25MxwHF017843
+ for <linuxppc-dev@ozlabs.org>; Sun, 5 Mar 2017 17:00:00 -0600
+Message-ID: <1488754796.2870.112.camel@kernel.crashing.org>
+Subject: [PATCH] powerpc: sparsemem should be the default on powernv
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linuxppc-dev@ozlabs.org
+Date: Mon, 06 Mar 2017 09:59:56 +1100
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,133 +31,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The ethtool api {get|set}_settings is deprecated.
-We move this driver to new api {get|set}_link_ksettings.
+This is especially true of POWER9 where memory between chips is
+discontiguous.
 
-As I don't have the hardware, I'd be very pleased if
-someone may test this patch.
-
-Signed-off-by: Philippe Reynes <tremyfr@gmail.com>
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
- drivers/net/ethernet/toshiba/ps3_gelic_net.c |   51 +++++++++++++++-----------
- 1 files changed, 29 insertions(+), 22 deletions(-)
 
-diff --git a/drivers/net/ethernet/toshiba/ps3_gelic_net.c b/drivers/net/ethernet/toshiba/ps3_gelic_net.c
-index 7201331..fa6a065 100644
---- a/drivers/net/ethernet/toshiba/ps3_gelic_net.c
-+++ b/drivers/net/ethernet/toshiba/ps3_gelic_net.c
-@@ -1206,61 +1206,68 @@ void gelic_net_get_drvinfo(struct net_device *netdev,
- 	strlcpy(info->version, DRV_VERSION, sizeof(info->version));
- }
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 4940917..c4b4c55 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -580,7 +580,7 @@ config ARCH_SPARSEMEM_ENABLE
  
--static int gelic_ether_get_settings(struct net_device *netdev,
--				    struct ethtool_cmd *cmd)
-+static int gelic_ether_get_link_ksettings(struct net_device *netdev,
-+					  struct ethtool_link_ksettings *cmd)
- {
- 	struct gelic_card *card = netdev_card(netdev);
-+	u32 supported, advertising;
+ config ARCH_SPARSEMEM_DEFAULT
+ 	def_bool y
+-	depends on (SMP && PPC_PSERIES) || PPC_PS3
++	depends on (SMP && PPC_PSERIES) || PPC_PS3 || PPC_POWERNV
  
- 	gelic_card_get_ether_port_status(card, 0);
- 
- 	if (card->ether_port_status & GELIC_LV1_ETHER_FULL_DUPLEX)
--		cmd->duplex = DUPLEX_FULL;
-+		cmd->base.duplex = DUPLEX_FULL;
- 	else
--		cmd->duplex = DUPLEX_HALF;
-+		cmd->base.duplex = DUPLEX_HALF;
- 
- 	switch (card->ether_port_status & GELIC_LV1_ETHER_SPEED_MASK) {
- 	case GELIC_LV1_ETHER_SPEED_10:
--		ethtool_cmd_speed_set(cmd, SPEED_10);
-+		cmd->base.speed = SPEED_10;
- 		break;
- 	case GELIC_LV1_ETHER_SPEED_100:
--		ethtool_cmd_speed_set(cmd, SPEED_100);
-+		cmd->base.speed = SPEED_100;
- 		break;
- 	case GELIC_LV1_ETHER_SPEED_1000:
--		ethtool_cmd_speed_set(cmd, SPEED_1000);
-+		cmd->base.speed = SPEED_1000;
- 		break;
- 	default:
- 		pr_info("%s: speed unknown\n", __func__);
--		ethtool_cmd_speed_set(cmd, SPEED_10);
-+		cmd->base.speed = SPEED_10;
- 		break;
- 	}
- 
--	cmd->supported = SUPPORTED_TP | SUPPORTED_Autoneg |
-+	supported = SUPPORTED_TP | SUPPORTED_Autoneg |
- 			SUPPORTED_10baseT_Half | SUPPORTED_10baseT_Full |
- 			SUPPORTED_100baseT_Half | SUPPORTED_100baseT_Full |
- 			SUPPORTED_1000baseT_Full;
--	cmd->advertising = cmd->supported;
-+	advertising = supported;
- 	if (card->link_mode & GELIC_LV1_ETHER_AUTO_NEG) {
--		cmd->autoneg = AUTONEG_ENABLE;
-+		cmd->base.autoneg = AUTONEG_ENABLE;
- 	} else {
--		cmd->autoneg = AUTONEG_DISABLE;
--		cmd->advertising &= ~ADVERTISED_Autoneg;
-+		cmd->base.autoneg = AUTONEG_DISABLE;
-+		advertising &= ~ADVERTISED_Autoneg;
- 	}
--	cmd->port = PORT_TP;
-+	cmd->base.port = PORT_TP;
-+
-+	ethtool_convert_legacy_u32_to_link_mode(cmd->link_modes.supported,
-+						supported);
-+	ethtool_convert_legacy_u32_to_link_mode(cmd->link_modes.advertising,
-+						advertising);
- 
- 	return 0;
- }
- 
--static int gelic_ether_set_settings(struct net_device *netdev,
--				    struct ethtool_cmd *cmd)
-+static int
-+gelic_ether_set_link_ksettings(struct net_device *netdev,
-+			       const struct ethtool_link_ksettings *cmd)
- {
- 	struct gelic_card *card = netdev_card(netdev);
- 	u64 mode;
- 	int ret;
- 
--	if (cmd->autoneg == AUTONEG_ENABLE) {
-+	if (cmd->base.autoneg == AUTONEG_ENABLE) {
- 		mode = GELIC_LV1_ETHER_AUTO_NEG;
- 	} else {
--		switch (cmd->speed) {
-+		switch (cmd->base.speed) {
- 		case SPEED_10:
- 			mode = GELIC_LV1_ETHER_SPEED_10;
- 			break;
-@@ -1273,9 +1280,9 @@ static int gelic_ether_set_settings(struct net_device *netdev,
- 		default:
- 			return -EINVAL;
- 		}
--		if (cmd->duplex == DUPLEX_FULL)
-+		if (cmd->base.duplex == DUPLEX_FULL) {
- 			mode |= GELIC_LV1_ETHER_FULL_DUPLEX;
--		else if (cmd->speed == SPEED_1000) {
-+		} else if (cmd->base.speed == SPEED_1000) {
- 			pr_info("1000 half duplex is not supported.\n");
- 			return -EINVAL;
- 		}
-@@ -1370,11 +1377,11 @@ static int gelic_net_set_wol(struct net_device *netdev,
- 
- static const struct ethtool_ops gelic_ether_ethtool_ops = {
- 	.get_drvinfo	= gelic_net_get_drvinfo,
--	.get_settings	= gelic_ether_get_settings,
--	.set_settings	= gelic_ether_set_settings,
- 	.get_link	= ethtool_op_get_link,
- 	.get_wol	= gelic_net_get_wol,
- 	.set_wol	= gelic_net_set_wol,
-+	.get_link_ksettings = gelic_ether_get_link_ksettings,
-+	.set_link_ksettings = gelic_ether_set_link_ksettings,
- };
- 
- /**
--- 
-1.7.4.4
+ config SYS_SUPPORTS_HUGETLBFS
+ 	bool
