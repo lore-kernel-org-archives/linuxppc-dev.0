@@ -1,27 +1,49 @@
-Return-Path: <srs0=r6wc=2o=kernel.crashing.org=benh@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <benh@au1.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vbz0805SwzDqBV
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Mar 2017 10:00:08 +1100 (AEDT)
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3vbz0768k3z8tBy
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Mar 2017 10:00:07 +1100 (AEDT)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3vbz065qwVz9s78
- for <linuxppc-dev@ozlabs.org>; Mon,  6 Mar 2017 10:00:06 +1100 (AEDT)
-Received: from localhost.localdomain (localhost.localdomain [127.0.0.1])
- by gate.crashing.org (8.14.1/8.13.8) with ESMTP id v25MxwHF017843
- for <linuxppc-dev@ozlabs.org>; Sun, 5 Mar 2017 17:00:00 -0600
-Message-ID: <1488754796.2870.112.camel@kernel.crashing.org>
-Subject: [PATCH] powerpc: sparsemem should be the default on powernv
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: linuxppc-dev@ozlabs.org
-Date: Mon, 06 Mar 2017 09:59:56 +1100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vbz6020vTzDqBV
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Mar 2017 10:05:12 +1100 (AEDT)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v25MwtIP127239
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 5 Mar 2017 18:05:01 -0500
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 28yu0nxs55-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 05 Mar 2017 18:05:01 -0500
+Received: from localhost
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <benh@au1.ibm.com>;
+ Mon, 6 Mar 2017 09:04:58 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id C27B43578052
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Mar 2017 10:04:54 +1100 (EST)
+Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v25N4k5050004004
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 6 Mar 2017 10:04:54 +1100
+Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
+ by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v25N4MqA004191
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 6 Mar 2017 10:04:22 +1100
+Subject: Re: [PATCH kernel] powerpc/powernv/ioda2: Gracefully fail if too
+ many TCE levels requested
+From: Benjamin Herrenschmidt <benh@au1.ibm.com>
+Reply-To: benh@au1.ibm.com
+To: Michael Ellerman <mpe@ellerman.id.au>, Alexey Kardashevskiy
+ <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org
+Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>, David Gibson
+ <david@gibson.dropbear.id.au>
+Date: Mon, 06 Mar 2017 10:03:54 +1100
+In-Reply-To: <87innvrj9h.fsf@concordia.ellerman.id.au>
+References: <20170222044359.3663-1-aik@ozlabs.ru>
+ <87innvrj9h.fsf@concordia.ellerman.id.au>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
+Message-Id: <1488755034.2870.114.camel@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,22 +53,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is especially true of POWER9 where memory between chips is
-discontiguous.
+On Mon, 2017-02-27 at 22:00 +1100, Michael Ellerman wrote:
+> > The alternative would be allocating TCE tables as big as PAGE_SIZE
+> > but
+> > only using parts of it but this would complicate a bit bits of code
+> > responsible for overall amount of memory used for TCE table.
+> > 
+> > Or kmem_cache_create() could be used to allocate as big TCE table
+> > levels
+> > as we really need but that API does not seem to support NUMA nodes.
+> 
+> kmem_cache_alloc_node() ?
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
+Is that 55 bits of address space (ie, 3 indirect levels + 64k pages) ?
+Or only 39 (2 indirect level + 64k pages) ?
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 4940917..c4b4c55 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -580,7 +580,7 @@ config ARCH_SPARSEMEM_ENABLE
- 
- config ARCH_SPARSEMEM_DEFAULT
- 	def_bool y
--	depends on (SMP && PPC_PSERIES) || PPC_PS3
-+	depends on (SMP && PPC_PSERIES) || PPC_PS3 || PPC_POWERNV
- 
- config SYS_SUPPORTS_HUGETLBFS
- 	bool
+In the former case, I'm happy to limit the levels to 3 for 64K pages,
+55 bits of TCE space is more than enough. 39 isn't however.
+
+Cheers,
+Ben.
