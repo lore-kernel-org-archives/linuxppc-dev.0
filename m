@@ -1,53 +1,27 @@
-Return-Path: <benh@au1.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
+ [IPv6:2607:f8b0:400e:c05::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vc0pH5J1ZzDqBV
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Mar 2017 11:21:43 +1100 (AEDT)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v260JJ1v039339
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 5 Mar 2017 19:21:29 -0500
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
- by mx0a-001b2d01.pphosted.com with ESMTP id 290byktqsm-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 05 Mar 2017 19:21:29 -0500
-Received: from localhost
- by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <benh@au1.ibm.com>;
- Mon, 6 Mar 2017 10:21:26 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 3513D2CE8056
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Mar 2017 11:21:24 +1100 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v260LGoT45220020
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 6 Mar 2017 11:21:24 +1100
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v260KpwD012155
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 6 Mar 2017 11:20:51 +1100
-Subject: Re: [PATCH] powerpc: Avoid panic during boot due to divide by zero
- in init_cache_info()
-From: Benjamin Herrenschmidt <benh@au1.ibm.com>
-Reply-To: benh@au1.ibm.com
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Cc: Gabriel Paubert <paubert@iram.es>, paulus@samba.org,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vc2HH5zfwzDqFh
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Mar 2017 12:28:26 +1100 (AEDT)
+Received: by mail-pg0-x242.google.com with SMTP id 77so5434795pgc.0
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 05 Mar 2017 17:28:26 -0800 (PST)
+Subject: Re: [PATCH kernel] powerpc/powernv/ioda2: Gracefully fail if too many
+ TCE levels requested
+To: benh@au1.ibm.com, Michael Ellerman <mpe@ellerman.id.au>,
  linuxppc-dev@lists.ozlabs.org
-Date: Mon, 06 Mar 2017 11:20:26 +1100
-In-Reply-To: <20170306001047.GO31469@gate.crashing.org>
-References: <1488671674-20833-1-git-send-email-anton@ozlabs.org>
- <87pohw3tp4.fsf@concordia.ellerman.id.au>
- <20170305123737.GM31469@gate.crashing.org>
- <20170305165837.GA2019@visitor2.iram.es>
- <20170305172456.GN31469@gate.crashing.org>
- <1488755341.2870.117.camel@au1.ibm.com>
- <20170306001047.GO31469@gate.crashing.org>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Message-Id: <1488759626.2870.120.camel@au1.ibm.com>
+References: <20170222044359.3663-1-aik@ozlabs.ru>
+ <87innvrj9h.fsf@concordia.ellerman.id.au>
+ <1488755034.2870.114.camel@au1.ibm.com>
+Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>,
+ David Gibson <david@gibson.dropbear.id.au>
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+Message-ID: <cd84399e-73d6-72dd-8509-f45db5e47d31@ozlabs.ru>
+Date: Mon, 6 Mar 2017 12:28:19 +1100
+MIME-Version: 1.0
+In-Reply-To: <1488755034.2870.114.camel@au1.ibm.com>
+Content-Type: text/plain; charset=koi8-r
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -57,16 +31,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 2017-03-05 at 18:10 -0600, Segher Boessenkool wrote:
-> You cannot really have something at address 0, the way NULL pointers
-> are represented in GCC.  0 in firmware, so *fun*, especially before
-> the
-> CFAR was invented.  "Something jumped to 0, CTR is 0 so it's probably
-> a BCTR, but which one of the 6000?"
+On 06/03/17 10:03, Benjamin Herrenschmidt wrote:
+> On Mon, 2017-02-27 at 22:00 +1100, Michael Ellerman wrote:
+>>> The alternative would be allocating TCE tables as big as PAGE_SIZE
+>>> but
+>>> only using parts of it but this would complicate a bit bits of code
+>>> responsible for overall amount of memory used for TCE table.
+>>>
+>>> Or kmem_cache_create() could be used to allocate as big TCE table
+>>> levels
+>>> as we really need but that API does not seem to support NUMA nodes.
+>>
+>> kmem_cache_alloc_node() ?
 > 
-> What do you have at 0?  Not anything you need often I hope?
+> Is that 55 bits of address space (ie, 3 indirect levels + 64k pages) ?
+> Or only 39 (2 indirect level + 64k pages) ?
 
-I think it was some kind of boot flag. I've had cases also of
-copying the 0..0x100 region over with the kexec gunk etc...
+39, yes.
 
-Ben.
+> In the former case, I'm happy to limit the levels to 3 for 64K pages,
+> 55 bits of TCE space is more than enough. 39 isn't however.
+
+8192*8192*8192*65536>>40 = 32768TB of addressable memory (but there is no
+good reason not to use huge pages);
+8192*8192*8192*4096>>40 = 2048TB or addressable memory (even with 2
+indirect levels but we can have all 5 levels with 4K IOMMU pages).
+
+Looks enough to me...
+
+And in this particular patch I am not limiting anything, I just replace
+already existing EEH condition with -EINVAL. If it is this important to
+have all 5 levels, then we can switch from alloc_pages_node() to
+kmem_cache_alloc_node(), in a separate patch.
+
+
+-- 
+Alexey
