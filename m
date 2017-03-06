@@ -1,16 +1,27 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vcHJm2lLZzDq5W
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Mar 2017 22:15:36 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org
-Cc: benh@kernel.crashing.org,
-	pc@us.ibm.com
-Subject: [PATCH] powerpc/64: Fix L1D cache shape vector reporting L1I values
-Date: Mon,  6 Mar 2017 22:15:29 +1100
-Message-Id: <1488798929-4546-1-git-send-email-mpe@ellerman.id.au>
+Return-Path: <peterz@infradead.org>
+Received: from bombadil.infradead.org (bombadil.infradead.org [65.50.211.133])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vcHSp0XyqzDq5W
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Mar 2017 22:22:34 +1100 (AEDT)
+Date: Mon, 6 Mar 2017 12:22:28 +0100
+From: Peter Zijlstra <peterz@infradead.org>
+To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+Cc: mpe@ellerman.id.au, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org,
+ Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+ Ingo Molnar <mingo@redhat.com>, Arnaldo Carvalho de Melo <acme@kernel.org>,
+ Alexander Shishkin <alexander.shishkin@linux.intel.com>,
+ Wang Nan <wangnan0@huawei.com>, Alexei Starovoitov <ast@kernel.org>,
+ Stephane Eranian <eranian@google.com>
+Subject: Re: [PATCH v2 1/6] powerpc/perf: Define big-endian version of
+ perf_mem_data_src
+Message-ID: <20170306112228.GZ6515@twins.programming.kicks-ass.net>
+References: <1488796993-25495-1-git-send-email-maddy@linux.vnet.ibm.com>
+ <1488796993-25495-2-git-send-email-maddy@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1488796993-25495-2-git-send-email-maddy@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,37 +31,11 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-It seems we didn't pay quite enough attention when testing the new cache
-shape vectors, which means we didn't notice the bug where the vector for
-the L1D was using the L1I values. Fix it, resulting in eg:
+On Mon, Mar 06, 2017 at 04:13:08PM +0530, Madhavan Srinivasan wrote:
+> From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+> 
+> perf_mem_data_src is an union that is initialized via the ->val field
+> and accessed via the bitmap fields. For this to work on big endian
+> platforms, we also need a big-endian represenation of perf_mem_data_src.
 
-  L1I  cache size:     0x8000      32768B         32K
-  L1I  line size:        0x80       8-way associative
-  L1D  cache size:    0x10000      65536B         64K
-  L1D  line size:        0x80       8-way associative
-
-Fixes: 98a5f361b862 ("powerpc: Add new cache geometry aux vectors")
-Cut-and-paste-bug-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Badly-reviewed-by: Michael Ellerman <mpe@ellerman.id.au>
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/include/asm/elf.h | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/elf.h b/arch/powerpc/include/asm/elf.h
-index 93b9b84568e8..09bde6e34f5d 100644
---- a/arch/powerpc/include/asm/elf.h
-+++ b/arch/powerpc/include/asm/elf.h
-@@ -144,8 +144,8 @@ extern int arch_setup_additional_pages(struct linux_binprm *bprm,
- #define ARCH_DLINFO_CACHE_GEOMETRY					\
- 	NEW_AUX_ENT(AT_L1I_CACHESIZE, ppc64_caches.l1i.size);		\
- 	NEW_AUX_ENT(AT_L1I_CACHEGEOMETRY, get_cache_geometry(l1i));	\
--	NEW_AUX_ENT(AT_L1D_CACHESIZE, ppc64_caches.l1i.size);		\
--	NEW_AUX_ENT(AT_L1D_CACHEGEOMETRY, get_cache_geometry(l1i));	\
-+	NEW_AUX_ENT(AT_L1D_CACHESIZE, ppc64_caches.l1d.size);		\
-+	NEW_AUX_ENT(AT_L1D_CACHEGEOMETRY, get_cache_geometry(l1d));	\
- 	NEW_AUX_ENT(AT_L2_CACHESIZE, ppc64_caches.l2.size);		\
- 	NEW_AUX_ENT(AT_L2_CACHEGEOMETRY, get_cache_geometry(l2));	\
- 	NEW_AUX_ENT(AT_L3_CACHESIZE, ppc64_caches.l3.size);		\
--- 
-2.7.4
+Doesn't this break interpreting the data on a different endian machine?
