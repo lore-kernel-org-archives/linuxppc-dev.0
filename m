@@ -1,18 +1,18 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <me@tobin.cc>
+Received: from out4-smtp.messagingengine.com (out4-smtp.messagingengine.com
+ [66.111.4.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vcFDm2Nv1zDqFh
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Mar 2017 20:42:00 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] powerpc: sparsemem should be the default on powernv
-In-Reply-To: <1488754796.2870.112.camel@kernel.crashing.org>
-References: <1488754796.2870.112.camel@kernel.crashing.org>
-Date: Mon, 06 Mar 2017 20:41:59 +1100
-Message-ID: <87fuiqpwrc.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vcFTC3973zDqFh
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Mar 2017 20:52:47 +1100 (AEDT)
+From: "Tobin C. Harding" <me@tobin.cc>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Paul Mackerras <paulus@samba.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ linuxppc-dev@lists.ozlabs.org, "Tobin C. Harding" <me@tobin.cc>
+Subject: [PATCH] powerpc/pseries: move struct hcall_stats to c file
+Date: Mon,  6 Mar 2017 20:52:36 +1100
+Message-Id: <1488793956-13188-1-git-send-email-me@tobin.cc>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,27 +22,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+struct hcall_stats is only used in hvCall_inst.c.
 
-> This is especially true of POWER9 where memory between chips is
-> discontiguous.
->
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> ---
->
-> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-> index 4940917..c4b4c55 100644
-> --- a/arch/powerpc/Kconfig
-> +++ b/arch/powerpc/Kconfig
-> @@ -580,7 +580,7 @@ config ARCH_SPARSEMEM_ENABLE
->  
->  config ARCH_SPARSEMEM_DEFAULT
->  	def_bool y
-> -	depends on (SMP && PPC_PSERIES) || PPC_PS3
-> +	depends on (SMP && PPC_PSERIES) || PPC_PS3 || PPC_POWERNV
+Move struct hcall_stats to hvCall_inst.c
 
-Why don't we just make it default y for BOOK3S_64?
+Resolves: #54
+Signed-off-by: Tobin C. Harding <me@tobin.cc>
+---
 
-It's just the default after all, it can still be changed.
+Is this correct, adding 'Resolves: #XX' when fixing
+github.com/linuxppc/linux issues?
 
-cheers
+ arch/powerpc/include/asm/hvcall.h            | 10 ----------
+ arch/powerpc/platforms/pseries/hvCall_inst.c | 10 ++++++++++
+ 2 files changed, 10 insertions(+), 10 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/hvcall.h b/arch/powerpc/include/asm/hvcall.h
+index 77ff1ba..74599bd 100644
+--- a/arch/powerpc/include/asm/hvcall.h
++++ b/arch/powerpc/include/asm/hvcall.h
+@@ -364,16 +364,6 @@ long plpar_hcall_raw(unsigned long opcode, unsigned long *retbuf, ...);
+ long plpar_hcall9(unsigned long opcode, unsigned long *retbuf, ...);
+ long plpar_hcall9_raw(unsigned long opcode, unsigned long *retbuf, ...);
+ 
+-/* For hcall instrumentation.  One structure per-hcall, per-CPU */
+-struct hcall_stats {
+-	unsigned long	num_calls;	/* number of calls (on this CPU) */
+-	unsigned long	tb_total;	/* total wall time (mftb) of calls. */
+-	unsigned long	purr_total;	/* total cpu time (PURR) of calls. */
+-	unsigned long	tb_start;
+-	unsigned long	purr_start;
+-};
+-#define HCALL_STAT_ARRAY_SIZE	((MAX_HCALL_OPCODE >> 2) + 1)
+-
+ struct hvcall_mpp_data {
+ 	unsigned long entitled_mem;
+ 	unsigned long mapped_mem;
+diff --git a/arch/powerpc/platforms/pseries/hvCall_inst.c b/arch/powerpc/platforms/pseries/hvCall_inst.c
+index f02ec3a..892db4f 100644
+--- a/arch/powerpc/platforms/pseries/hvCall_inst.c
++++ b/arch/powerpc/platforms/pseries/hvCall_inst.c
+@@ -29,6 +29,16 @@
+ #include <asm/trace.h>
+ #include <asm/machdep.h>
+ 
++/* For hcall instrumentation.  One structure per-hcall, per-CPU */
++struct hcall_stats {
++	unsigned long	num_calls;	/* number of calls (on this CPU) */
++	unsigned long	tb_total;	/* total wall time (mftb) of calls. */
++	unsigned long	purr_total;	/* total cpu time (PURR) of calls. */
++	unsigned long	tb_start;
++	unsigned long	purr_start;
++};
++#define HCALL_STAT_ARRAY_SIZE	((MAX_HCALL_OPCODE >> 2) + 1)
++
+ DEFINE_PER_CPU(struct hcall_stats[HCALL_STAT_ARRAY_SIZE], hcall_stats);
+ 
+ /*
+-- 
+2.7.4
