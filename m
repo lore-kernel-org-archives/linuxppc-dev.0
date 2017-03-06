@@ -1,27 +1,26 @@
-Return-Path: <peterz@infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org [65.50.211.133])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vcHSp0XyqzDq5W
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Mar 2017 22:22:34 +1100 (AEDT)
-Date: Mon, 6 Mar 2017 12:22:28 +0100
-From: Peter Zijlstra <peterz@infradead.org>
-To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Cc: mpe@ellerman.id.au, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org,
- Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
- Ingo Molnar <mingo@redhat.com>, Arnaldo Carvalho de Melo <acme@kernel.org>,
- Alexander Shishkin <alexander.shishkin@linux.intel.com>,
- Wang Nan <wangnan0@huawei.com>, Alexei Starovoitov <ast@kernel.org>,
- Stephane Eranian <eranian@google.com>
-Subject: Re: [PATCH v2 1/6] powerpc/perf: Define big-endian version of
- perf_mem_data_src
-Message-ID: <20170306112228.GZ6515@twins.programming.kicks-ass.net>
-References: <1488796993-25495-1-git-send-email-maddy@linux.vnet.ibm.com>
- <1488796993-25495-2-git-send-email-maddy@linux.vnet.ibm.com>
+Return-Path: <paubert@iram.es>
+Received: from cica-lavadora-l1mail2.puc.rediris.es (arce.puc.rediris.es
+ [IPv6:2001:720:418:ca02::18])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vcJNk6mMnzDqFh
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Mar 2017 23:04:06 +1100 (AEDT)
+Date: Mon, 6 Mar 2017 13:03:19 +0100
+From: Gabriel Paubert <paubert@iram.es>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, paulus@samba.org,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] powerpc: Avoid panic during boot due to divide by zero
+ in init_cache_info()
+Message-ID: <20170306120319.GA17443@visitor2.iram.es>
+References: <1488671674-20833-1-git-send-email-anton@ozlabs.org>
+ <87pohw3tp4.fsf@concordia.ellerman.id.au>
+ <20170305123737.GM31469@gate.crashing.org>
+ <20170305165837.GA2019@visitor2.iram.es>
+ <20170305172456.GN31469@gate.crashing.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1488796993-25495-2-git-send-email-maddy@linux.vnet.ibm.com>
+In-Reply-To: <20170305172456.GN31469@gate.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,11 +30,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Mar 06, 2017 at 04:13:08PM +0530, Madhavan Srinivasan wrote:
-> From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+On Sun, Mar 05, 2017 at 11:24:56AM -0600, Segher Boessenkool wrote:
+> On Sun, Mar 05, 2017 at 05:58:37PM +0100, Gabriel Paubert wrote:
+> > > > Erk sorry. One of the static checkers spotted it, but I hadn't got
+> > > > around to fixing it because it seemed to not actually blow up, guess
+> > > > not.
+> > > 
+> > > The PowerPC divw etc. instructions do not trap by themselves, but recent
+> > > GCC inserts trap instructions on code paths that are always undefined
+> > > behaviour (like, dividing by zero).
+> > 
+> > Is it systematic or does it depend from, e.g., optimization levels?
 > 
-> perf_mem_data_src is an union that is initialized via the ->val field
-> and accessed via the bitmap fields. For this to work on big endian
-> platforms, we also need a big-endian represenation of perf_mem_data_src.
+> In this case it needs -fisolate-erroneous-paths-dereference which is
+> default at -O2 and higher.
 
-Doesn't this break interpreting the data on a different endian machine?
+Great, another optimization-dependent behaviour. :-(
+
+But this is not the most serious issue: on PPC, when you #include
+<limits>, the numeric_limits<any_integer_type>::traps is false on PPC,
+and on no other architecture that I know of (in practice this trap
+reflects the hardware behaviour on division by zero).
+
+By generating a trap in this case, I believe that the compiler violates
+a contract given by <limits>, and the standard.
+
+I'd certainly prefer a compile time warning, easily convertible to an
+error.
+
+> 
+> > Is there anything in the standards about this feature?
+> 
+> The compiler can do whatever it likes with code that has undefined
+> behaviour.  With this optimisation it a) can compile the conforming
+> code to something better; and b) undefined behaviour will trap instead
+> of doing something random (which often is exploitable).
+
+It may be undefined, but I believe that the numeric_limits<>::traps
+value clearly prohibits generating a trap in this case.
+
+    Gabriel
