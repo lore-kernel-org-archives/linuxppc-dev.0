@@ -1,30 +1,47 @@
-Return-Path: <jpoimboe@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vcRPt6Z7JzDqGn
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Mar 2017 04:20:34 +1100 (AEDT)
-Date: Mon, 6 Mar 2017 11:20:29 -0600
-From: Josh Poimboeuf <jpoimboe@redhat.com>
-To: Jessica Yu <jeyu@redhat.com>, Jiri Kosina <jikos@kernel.org>,
- Miroslav Benes <mbenes@suse.cz>, Petr Mladek <pmladek@suse.com>
-Cc: linux-kernel@vger.kernel.org, live-patching@vger.kernel.org,
- Michael Ellerman <mpe@ellerman.id.au>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, x86@kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- Vojtech Pavlik <vojtech@suse.com>, Jiri Slaby <jslaby@suse.cz>,
- Chris J Arges <chris.j.arges@canonical.com>,
- Andy Lutomirski <luto@kernel.org>, Ingo Molnar <mingo@kernel.org>,
- Peter Zijlstra <peterz@infradead.org>,
- Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
- Balbir Singh <bsingharora@gmail.com>
-Subject: [PATCH v5.1 15/15] livepatch: allow removal of a disabled patch
-Message-ID: <20170306172029.vk4fk7kzlrh2ty4m@treble>
-References: <cover.1487036215.git.jpoimboe@redhat.com>
- <95fe68239fc91360093f84aea97418ae88cfc634.1487036215.git.jpoimboe@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <95fe68239fc91360093f84aea97418ae88cfc634.1487036215.git.jpoimboe@redhat.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vcS4S0LP4zDqXc
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Mar 2017 04:50:31 +1100 (AEDT)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v26Hi9wU098971
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 6 Mar 2017 12:50:17 -0500
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2917gn7qr2-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Mar 2017 12:50:16 -0500
+Received: from localhost
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
+ Tue, 7 Mar 2017 03:50:14 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 39F4D2BB0045
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Mar 2017 04:50:11 +1100 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v26Ho38F43843608
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 7 Mar 2017 04:50:11 +1100
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v26Hnb1R008141
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 7 Mar 2017 04:49:37 +1100
+From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+To: Masami Hiramatsu <mhiramat@kernel.org>
+Cc: Arnaldo Carvalho de Melo <acme@kernel.org>,
+ Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@redhat.com>,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH v4 2/3] perf: kretprobes: offset from reloc_sym if kernel
+ supports it
+Date: Mon,  6 Mar 2017 23:19:09 +0530
+In-Reply-To: <20170304133405.176da43d40cec7cb00e757e1@kernel.org>
+References: <20170304133405.176da43d40cec7cb00e757e1@kernel.org>
+Message-Id: <20170306174909.12395-1-naveen.n.rao@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,390 +51,199 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Masami,
+Your patch works, thanks! However, I felt we could refactor and reuse
+some of the code across kprobes.c for this purpose. Can you please see
+if the below patch is fine?
 
-Currently we do not allow patch module to unload since there is no
-method to determine if a task is still running in the patched code.
+Thanks,
+Naveen
 
-The consistency model gives us the way because when the unpatching
-finishes we know that all tasks were marked as safe to call an original
-function. Thus every new call to the function calls the original code
-and at the same time no task can be somewhere in the patched code,
-because it had to leave that code to be marked as safe.
+--
+trace/kprobes: fix check for kretprobe offset within function entry
 
-We can safely let the patch module go after that.
+perf specifies an offset from _text and since this offset is fed
+directly into the arch-specific helper, kprobes tracer rejects
+installation of kretprobes through perf. Fix this by looking up the
+actual offset from a function for the specified sym+offset.
 
-Completion is used for synchronization between module removal and sysfs
-infrastructure in a similar way to commit 942e443127e9 ("module: Fix
-mod->mkobj.kobj potentially freed too early").
+Refactor and reuse existing routines to limit code duplication -- we
+repurpose kprobe_addr() for determining final kprobe address and we
+split out the function entry offset determination into a separate
+generic helper.
 
-Note that we still do not allow the removal for immediate model, that is
-no consistency model. The module refcount may increase in this case if
-somebody disables and enables the patch several times. This should not
-cause any harm.
+Before patch:
 
-With this change a call to try_module_get() is moved to
-__klp_enable_patch from klp_register_patch to make module reference
-counting symmetric (module_put() is in a patch disable path) and to
-allow to take a new reference to a disabled module when being enabled.
+  naveen@ubuntu:~/linux/tools/perf$ sudo ./perf probe -v do_open%return
+  probe-definition(0): do_open%return
+  symbol:do_open file:(null) line:0 offset:0 return:1 lazy:(null)
+  0 arguments
+  Looking at the vmlinux_path (8 entries long)
+  Using /boot/vmlinux for symbols
+  Open Debuginfo file: /boot/vmlinux
+  Try to find probe point from debuginfo.
+  Matched function: do_open [2d0c7ff]
+  Probe point found: do_open+0
+  Matched function: do_open [35d76dc]
+  found inline addr: 0xc0000000004ba9c4
+  Failed to find "do_open%return",
+   because do_open is an inlined function and has no return point.
+  An error occurred in debuginfo analysis (-22).
+  Trying to use symbols.
+  Opening /sys/kernel/debug/tracing//README write=0
+  Opening /sys/kernel/debug/tracing//kprobe_events write=1
+  Writing event: r:probe/do_open _text+4469776
+  Failed to write event: Invalid argument
+    Error: Failed to add events. Reason: Invalid argument (Code: -22)
+  naveen@ubuntu:~/linux/tools/perf$ dmesg | tail
+  <snip>
+  [   33.568656] Given offset is not valid for return probe.
 
-Finally, we need to be very careful about possible races between
-klp_unregister_patch(), kobject_put() functions and operations
-on the related sysfs files.
+After patch:
 
-kobject_put(&patch->kobj) must be called without klp_mutex. Otherwise,
-it might be blocked by enabled_store() that needs the mutex as well.
-In addition, enabled_store() must check if the patch was not
-unregisted in the meantime.
+  naveen@ubuntu:~/linux/tools/perf$ sudo ./perf probe -v do_open%return
+  probe-definition(0): do_open%return
+  symbol:do_open file:(null) line:0 offset:0 return:1 lazy:(null)
+  0 arguments
+  Looking at the vmlinux_path (8 entries long)
+  Using /boot/vmlinux for symbols
+  Open Debuginfo file: /boot/vmlinux
+  Try to find probe point from debuginfo.
+  Matched function: do_open [2d0c7d6]
+  Probe point found: do_open+0
+  Matched function: do_open [35d76b3]
+  found inline addr: 0xc0000000004ba9e4
+  Failed to find "do_open%return",
+   because do_open is an inlined function and has no return point.
+  An error occurred in debuginfo analysis (-22).
+  Trying to use symbols.
+  Opening /sys/kernel/debug/tracing//README write=0
+  Opening /sys/kernel/debug/tracing//kprobe_events write=1
+  Writing event: r:probe/do_open _text+4469808
+  Writing event: r:probe/do_open_1 _text+4956344
+  Added new events:
+    probe:do_open        (on do_open%return)
+    probe:do_open_1      (on do_open%return)
 
-There is no need to do the same for other kobject_put() callsites
-at the moment. Their sysfs operations neither take the lock nor
-they access any data that might be freed in the meantime.
+  You can now use it in all perf tools, such as:
 
-There was an attempt to use kobjects the right way and prevent these
-races by design. But it made the patch definition more complicated
-and opened another can of worms. See
-https://lkml.kernel.org/r/1464018848-4303-1-git-send-email-pmladek@suse.com
+	  perf record -e probe:do_open_1 -aR sleep 1
 
-[Thanks to Petr Mladek for improving the commit message.]
+  naveen@ubuntu:~/linux/tools/perf$ sudo cat /sys/kernel/debug/kprobes/list
+  c000000000041370  k  kretprobe_trampoline+0x0    [OPTIMIZED]
+  c0000000004ba0b8  r  do_open+0x8    [DISABLED]
+  c000000000443430  r  do_open+0x0    [DISABLED]
 
-Signed-off-by: Miroslav Benes <mbenes@suse.cz>
-Signed-off-by: Josh Poimboeuf <jpoimboe@redhat.com>
-Reviewed-by: Petr Mladek <pmladek@suse.com>
+Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
 ---
-v5.1: improve error handling in enable path -- call module_put() in
-      klp_cancel_transition()
+ include/linux/kprobes.h     |  1 +
+ kernel/kprobes.c            | 40 ++++++++++++++++++++++++++--------------
+ kernel/trace/trace_kprobe.c |  2 +-
+ 3 files changed, 28 insertions(+), 15 deletions(-)
 
- Documentation/livepatch/livepatch.txt | 28 ++++--------
- include/linux/livepatch.h             |  3 ++
- kernel/livepatch/core.c               | 80 ++++++++++++++++++++++-------------
- kernel/livepatch/transition.c         | 37 ++++++++++++++--
- samples/livepatch/livepatch-sample.c  |  1 -
- 5 files changed, 96 insertions(+), 53 deletions(-)
-
-diff --git a/Documentation/livepatch/livepatch.txt b/Documentation/livepatch/livepatch.txt
-index 4f2aec8..ecdb181 100644
---- a/Documentation/livepatch/livepatch.txt
-+++ b/Documentation/livepatch/livepatch.txt
-@@ -316,8 +316,15 @@ section "Livepatch life-cycle" below for more details about these
- two operations.
+diff --git a/include/linux/kprobes.h b/include/linux/kprobes.h
+index 862f87adcbb4..6888c9f29cb6 100644
+--- a/include/linux/kprobes.h
++++ b/include/linux/kprobes.h
+@@ -267,6 +267,7 @@ extern void show_registers(struct pt_regs *regs);
+ extern void kprobes_inc_nmissed_count(struct kprobe *p);
+ extern bool arch_within_kprobe_blacklist(unsigned long addr);
+ extern bool arch_function_offset_within_entry(unsigned long offset);
++extern bool function_offset_within_entry(kprobe_opcode_t *addr, const char *sym, unsigned long offset);
  
- Module removal is only safe when there are no users of the underlying
--functions.  The immediate consistency model is not able to detect this;
--therefore livepatch modules cannot be removed. See "Limitations" below.
-+functions. The immediate consistency model is not able to detect this. The
-+code just redirects the functions at the very beginning and it does not
-+check if the functions are in use. In other words, it knows when the
-+functions get called but it does not know when the functions return.
-+Therefore it cannot be decided when the livepatch module can be safely
-+removed. This is solved by a hybrid consistency model. When the system is
-+transitioned to a new patch state (patched/unpatched) it is guaranteed that
-+no task sleeps or runs in the old code.
-+
+ extern bool within_kprobe_blacklist(unsigned long addr);
  
- 5. Livepatch life-cycle
- =======================
-@@ -469,23 +476,6 @@ The current Livepatch implementation has several limitations:
-     by "notrace".
- 
- 
--  + Livepatch modules can not be removed.
--
--    The current implementation just redirects the functions at the very
--    beginning. It does not check if the functions are in use. In other
--    words, it knows when the functions get called but it does not
--    know when the functions return. Therefore it can not decide when
--    the livepatch module can be safely removed.
--
--    This will get most likely solved once a more complex consistency model
--    is supported. The idea is that a safe state for patching should also
--    mean a safe state for removing the patch.
--
--    Note that the patch itself might get disabled by writing zero
--    to /sys/kernel/livepatch/<patch>/enabled. It causes that the new
--    code will not longer get called. But it does not guarantee
--    that anyone is not sleeping anywhere in the new code.
--
- 
-   + Livepatch works reliably only when the dynamic ftrace is located at
-     the very beginning of the function.
-diff --git a/include/linux/livepatch.h b/include/linux/livepatch.h
-index ed90ad1..194991e 100644
---- a/include/linux/livepatch.h
-+++ b/include/linux/livepatch.h
-@@ -23,6 +23,7 @@
- 
- #include <linux/module.h>
- #include <linux/ftrace.h>
-+#include <linux/completion.h>
- 
- #if IS_ENABLED(CONFIG_LIVEPATCH)
- 
-@@ -114,6 +115,7 @@ struct klp_object {
-  * @list:	list node for global list of registered patches
-  * @kobj:	kobject for sysfs resources
-  * @enabled:	the patch is enabled (but operation may be incomplete)
-+ * @finish:	for waiting till it is safe to remove the patch module
+diff --git a/kernel/kprobes.c b/kernel/kprobes.c
+index 524766563896..49f870ea4070 100644
+--- a/kernel/kprobes.c
++++ b/kernel/kprobes.c
+@@ -1391,21 +1391,19 @@ bool within_kprobe_blacklist(unsigned long addr)
+  * This returns encoded errors if it fails to look up symbol or invalid
+  * combination of parameters.
   */
- struct klp_patch {
- 	/* external */
-@@ -125,6 +127,7 @@ struct klp_patch {
- 	struct list_head list;
- 	struct kobject kobj;
- 	bool enabled;
-+	struct completion finish;
- };
- 
- #define klp_for_each_object(patch, obj) \
-diff --git a/kernel/livepatch/core.c b/kernel/livepatch/core.c
-index 3dc3c90..6844c12 100644
---- a/kernel/livepatch/core.c
-+++ b/kernel/livepatch/core.c
-@@ -29,6 +29,7 @@
- #include <linux/livepatch.h>
- #include <linux/elf.h>
- #include <linux/moduleloader.h>
-+#include <linux/completion.h>
- #include <asm/cacheflush.h>
- #include "patch.h"
- #include "transition.h"
-@@ -354,6 +355,18 @@ static int __klp_enable_patch(struct klp_patch *patch)
- 	    !list_prev_entry(patch, list)->enabled)
- 		return -EBUSY;
- 
-+	/*
-+	 * A reference is taken on the patch module to prevent it from being
-+	 * unloaded.
-+	 *
-+	 * Note: For immediate (no consistency model) patches we don't allow
-+	 * patch modules to unload since there is no safe/sane method to
-+	 * determine if a thread is still running in the patched code contained
-+	 * in the patch module once the ftrace registration is successful.
-+	 */
-+	if (!try_module_get(patch->mod))
-+		return -ENODEV;
-+
- 	pr_notice("enabling patch '%s'\n", patch->mod->name);
- 
- 	klp_init_transition(patch, KLP_PATCHED);
-@@ -442,6 +455,15 @@ static ssize_t enabled_store(struct kobject *kobj, struct kobj_attribute *attr,
- 
- 	mutex_lock(&klp_mutex);
- 
-+	if (!klp_is_patch_registered(patch)) {
-+		/*
-+		 * Module with the patch could either disappear meanwhile or is
-+		 * not properly initialized yet.
-+		 */
-+		ret = -EINVAL;
-+		goto err;
-+	}
-+
- 	if (patch->enabled == enabled) {
- 		/* already in requested state */
- 		ret = -EINVAL;
-@@ -498,10 +520,10 @@ static struct attribute *klp_patch_attrs[] = {
- 
- static void klp_kobj_release_patch(struct kobject *kobj)
+-static kprobe_opcode_t *kprobe_addr(struct kprobe *p)
++static kprobe_opcode_t *_kprobe_addr(kprobe_opcode_t *addr,
++			const char *symbol_name, unsigned int offset)
  {
--	/*
--	 * Once we have a consistency model we'll need to module_put() the
--	 * patch module here.  See klp_register_patch() for more details.
--	 */
-+	struct klp_patch *patch;
-+
-+	patch = container_of(kobj, struct klp_patch, kobj);
-+	complete(&patch->finish);
- }
+-	kprobe_opcode_t *addr = p->addr;
+-
+-	if ((p->symbol_name && p->addr) ||
+-	    (!p->symbol_name && !p->addr))
++	if ((symbol_name && addr) || (!symbol_name && !addr))
+ 		goto invalid;
  
- static struct kobj_type klp_ktype_patch = {
-@@ -572,7 +594,6 @@ static void klp_free_patch(struct klp_patch *patch)
- 	klp_free_objects_limited(patch, NULL);
- 	if (!list_empty(&patch->list))
- 		list_del(&patch->list);
--	kobject_put(&patch->kobj);
- }
- 
- static int klp_init_func(struct klp_object *obj, struct klp_func *func)
-@@ -695,11 +716,14 @@ static int klp_init_patch(struct klp_patch *patch)
- 	mutex_lock(&klp_mutex);
- 
- 	patch->enabled = false;
-+	init_completion(&patch->finish);
- 
- 	ret = kobject_init_and_add(&patch->kobj, &klp_ktype_patch,
- 				   klp_root_kobj, "%s", patch->mod->name);
--	if (ret)
--		goto unlock;
-+	if (ret) {
-+		mutex_unlock(&klp_mutex);
-+		return ret;
-+	}
- 
- 	klp_for_each_object(patch, obj) {
- 		ret = klp_init_object(patch, obj);
-@@ -715,9 +739,12 @@ static int klp_init_patch(struct klp_patch *patch)
- 
- free:
- 	klp_free_objects_limited(patch, obj);
--	kobject_put(&patch->kobj);
--unlock:
-+
- 	mutex_unlock(&klp_mutex);
-+
-+	kobject_put(&patch->kobj);
-+	wait_for_completion(&patch->finish);
-+
- 	return ret;
- }
- 
-@@ -731,23 +758,29 @@ static int klp_init_patch(struct klp_patch *patch)
-  */
- int klp_unregister_patch(struct klp_patch *patch)
- {
--	int ret = 0;
-+	int ret;
- 
- 	mutex_lock(&klp_mutex);
- 
- 	if (!klp_is_patch_registered(patch)) {
- 		ret = -EINVAL;
--		goto out;
-+		goto err;
+-	if (p->symbol_name) {
+-		kprobe_lookup_name(p->symbol_name, addr);
++	if (symbol_name) {
++		kprobe_lookup_name(symbol_name, addr);
+ 		if (!addr)
+ 			return ERR_PTR(-ENOENT);
  	}
  
- 	if (patch->enabled) {
- 		ret = -EBUSY;
--		goto out;
-+		goto err;
- 	}
+-	addr = (kprobe_opcode_t *)(((char *)addr) + p->offset);
++	addr = (kprobe_opcode_t *)(((char *)addr) + offset);
+ 	if (addr)
+ 		return addr;
  
- 	klp_free_patch(patch);
- 
--out:
-+	mutex_unlock(&klp_mutex);
-+
-+	kobject_put(&patch->kobj);
-+	wait_for_completion(&patch->finish);
-+
-+	return 0;
-+err:
- 	mutex_unlock(&klp_mutex);
- 	return ret;
+@@ -1413,6 +1411,11 @@ static kprobe_opcode_t *kprobe_addr(struct kprobe *p)
+ 	return ERR_PTR(-EINVAL);
  }
-@@ -760,12 +793,13 @@ EXPORT_SYMBOL_GPL(klp_unregister_patch);
-  * Initializes the data structure associated with the patch and
-  * creates the sysfs interface.
-  *
-+ * There is no need to take the reference on the patch module here. It is done
-+ * later when the patch is enabled.
-+ *
-  * Return: 0 on success, otherwise error
-  */
- int klp_register_patch(struct klp_patch *patch)
+ 
++static kprobe_opcode_t *kprobe_addr(struct kprobe *p)
++{
++	return _kprobe_addr(p->addr, p->symbol_name, p->offset);
++}
++
+ /* Check passed kprobe is valid and return kprobe in kprobe_table. */
+ static struct kprobe *__get_valid_kprobe(struct kprobe *p)
  {
--	int ret;
+@@ -1874,19 +1877,28 @@ bool __weak arch_function_offset_within_entry(unsigned long offset)
+     return !offset;
+ }
+ 
++bool function_offset_within_entry(kprobe_opcode_t *addr, const char *sym, unsigned long offset)
++{
++	kprobe_opcode_t *kp_addr = _kprobe_addr(addr, sym, offset);
++
++	if (IS_ERR(kp_addr))
++		return false;
++
++	if (!kallsyms_lookup_size_offset((unsigned long)kp_addr, NULL, &offset) ||
++						!arch_function_offset_within_entry(offset))
++		return false;
++
++	return true;
++}
++
+ int register_kretprobe(struct kretprobe *rp)
+ {
+ 	int ret = 0;
+ 	struct kretprobe_instance *inst;
+ 	int i;
+ 	void *addr;
+-	unsigned long offset;
 -
- 	if (!patch || !patch->mod)
+-	addr = kprobe_addr(&rp->kp);
+-	if (!kallsyms_lookup_size_offset((unsigned long)addr, NULL, &offset))
+-		return -EINVAL;
+ 
+-	if (!arch_function_offset_within_entry(offset))
++	if (!function_offset_within_entry(rp->kp.addr, rp->kp.symbol_name, rp->kp.offset))
  		return -EINVAL;
  
-@@ -788,21 +822,7 @@ int klp_register_patch(struct klp_patch *patch)
- 		return -ENOSYS;
- 	}
- 
--	/*
--	 * A reference is taken on the patch module to prevent it from being
--	 * unloaded.  Right now, we don't allow patch modules to unload since
--	 * there is currently no method to determine if a thread is still
--	 * running in the patched code contained in the patch module once
--	 * the ftrace registration is successful.
--	 */
--	if (!try_module_get(patch->mod))
--		return -ENODEV;
--
--	ret = klp_init_patch(patch);
--	if (ret)
--		module_put(patch->mod);
--
--	return ret;
-+	return klp_init_patch(patch);
- }
- EXPORT_SYMBOL_GPL(klp_register_patch);
- 
-diff --git a/kernel/livepatch/transition.c b/kernel/livepatch/transition.c
-index 428533e..0ab7abd 100644
---- a/kernel/livepatch/transition.c
-+++ b/kernel/livepatch/transition.c
-@@ -59,6 +59,7 @@ static void klp_complete_transition(void)
- 	struct klp_func *func;
- 	struct task_struct *g, *task;
- 	unsigned int cpu;
-+	bool immediate_func = false;
- 
- 	if (klp_target_state == KLP_UNPATCHED) {
- 		/*
-@@ -79,9 +80,16 @@ static void klp_complete_transition(void)
- 	if (klp_transition_patch->immediate)
- 		goto done;
- 
--	klp_for_each_object(klp_transition_patch, obj)
--		klp_for_each_func(obj, func)
-+	klp_for_each_object(klp_transition_patch, obj) {
-+		klp_for_each_func(obj, func) {
- 			func->transition = false;
-+			if (func->immediate)
-+				immediate_func = true;
-+		}
-+	}
-+
-+	if (klp_target_state == KLP_UNPATCHED && !immediate_func)
-+		module_put(klp_transition_patch->mod);
- 
- 	/* Prevent klp_ftrace_handler() from seeing KLP_UNDEFINED state */
- 	if (klp_target_state == KLP_PATCHED)
-@@ -113,8 +121,31 @@ static void klp_complete_transition(void)
-  */
- void klp_cancel_transition(void)
- {
--	klp_target_state = !klp_target_state;
-+	struct klp_patch *patch = klp_transition_patch;
-+	struct klp_object *obj;
-+	struct klp_func *func;
-+	bool immediate_func = false;
-+
-+	if (WARN_ON_ONCE(klp_target_state != KLP_PATCHED))
-+		return;
-+
-+	klp_target_state = KLP_UNPATCHED;
- 	klp_complete_transition();
-+
-+	/*
-+	 * In the enable error path, even immediate patches can be safely
-+	 * removed because the transition hasn't been started yet.
-+	 *
-+	 * klp_complete_transition() doesn't have a module_put() for immediate
-+	 * patches, so do it here.
-+	 */
-+	klp_for_each_object(patch, obj)
-+		klp_for_each_func(obj, func)
-+			if (func->immediate)
-+				immediate_func = true;
-+
-+	if (patch->immediate || immediate_func)
-+		module_put(patch->mod);
- }
- 
- /*
-diff --git a/samples/livepatch/livepatch-sample.c b/samples/livepatch/livepatch-sample.c
-index 629e0dc..84795223f 100644
---- a/samples/livepatch/livepatch-sample.c
-+++ b/samples/livepatch/livepatch-sample.c
-@@ -99,7 +99,6 @@ static int livepatch_init(void)
- 
- static void livepatch_exit(void)
- {
--	WARN_ON(klp_disable_patch(&patch));
- 	WARN_ON(klp_unregister_patch(&patch));
- }
- 
+ 	if (kretprobe_blacklist_size) {
+diff --git a/kernel/trace/trace_kprobe.c b/kernel/trace/trace_kprobe.c
+index c60f9dc4610e..828ef31a1c27 100644
+--- a/kernel/trace/trace_kprobe.c
++++ b/kernel/trace/trace_kprobe.c
+@@ -695,7 +695,7 @@ static int create_trace_kprobe(int argc, char **argv)
+ 			return ret;
+ 		}
+ 		if (offset && is_return &&
+-		    !arch_function_offset_within_entry(offset)) {
++		    !function_offset_within_entry(NULL, symbol, offset)) {
+ 			pr_info("Given offset is not valid for return probe.\n");
+ 			return -EINVAL;
+ 		}
 -- 
-2.7.4
+2.11.1
