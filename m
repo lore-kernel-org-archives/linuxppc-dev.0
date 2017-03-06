@@ -1,11 +1,11 @@
 Return-Path: <keescook@chromium.org>
-Received: from mail-pg0-x235.google.com (mail-pg0-x235.google.com
- [IPv6:2607:f8b0:400e:c05::235])
+Received: from mail-pg0-x233.google.com (mail-pg0-x233.google.com
+ [IPv6:2607:f8b0:400e:c05::233])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vcYWN3QJnzDqXc
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vcYWN5xcWzDqXw
  for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Mar 2017 08:55:44 +1100 (AEDT)
-Received: by mail-pg0-x235.google.com with SMTP id 25so70847371pgy.0
+Received: by mail-pg0-x233.google.com with SMTP id 25so70847429pgy.0
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Mar 2017 13:55:44 -0800 (PST)
 From: Kees Cook <keescook@chromium.org>
 To: linux-kernel@vger.kernel.org
@@ -25,9 +25,9 @@ Cc: Kees Cook <keescook@chromium.org>,
  Geliang Tang <geliangtang@163.com>, linuxppc-dev@lists.ozlabs.org,
  linux-acpi@vger.kernel.org, linux-efi@vger.kernel.org,
  linux-doc@vger.kernel.org
-Subject: [PATCH 16/18] pstore: Replace arguments for write_buf() API
-Date: Mon,  6 Mar 2017 13:55:30 -0800
-Message-Id: <1488837332-71582-17-git-send-email-keescook@chromium.org>
+Subject: [PATCH 15/18] pstore: Replace arguments for erase() API
+Date: Mon,  6 Mar 2017 13:55:29 -0800
+Message-Id: <1488837332-71582-16-git-send-email-keescook@chromium.org>
 In-Reply-To: <1488837332-71582-1-git-send-email-keescook@chromium.org>
 References: <1488837332-71582-1-git-send-email-keescook@chromium.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -39,248 +39,202 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-As with the other API updates, this removes the long argument list in favor
-of passing a single pstore recaord.
+This removes the argument list for the erase() callback and replaces it
+with a pointer to the backend record details to be removed.
 
 Signed-off-by: Kees Cook <keescook@chromium.org>
 ---
- fs/pstore/ftrace.c     |  9 +++++++--
- fs/pstore/platform.c   | 30 +++++++++++++++++++++---------
- fs/pstore/ram.c        | 44 ++++++++++++++++++++++----------------------
- include/linux/pstore.h | 21 +++++----------------
- 4 files changed, 55 insertions(+), 49 deletions(-)
+ drivers/acpi/apei/erst.c          |  8 +++-----
+ drivers/firmware/efi/efi-pstore.c | 26 +++++++++++---------------
+ fs/pstore/inode.c                 | 12 +++++-------
+ fs/pstore/ram.c                   | 15 +++++++--------
+ include/linux/pstore.h            | 16 +++++-----------
+ 5 files changed, 31 insertions(+), 46 deletions(-)
 
-diff --git a/fs/pstore/ftrace.c b/fs/pstore/ftrace.c
-index 899d0ba0bd6c..a5506ec6995e 100644
---- a/fs/pstore/ftrace.c
-+++ b/fs/pstore/ftrace.c
-@@ -37,6 +37,12 @@ static void notrace pstore_ftrace_call(unsigned long ip,
- {
- 	unsigned long flags;
- 	struct pstore_ftrace_record rec = {};
-+	struct pstore_record record = {
-+		.type = PSTORE_TYPE_FTRACE,
-+		.buf = (char *)&rec,
-+		.size = sizeof(rec),
-+		.psi = psinfo,
-+	};
+diff --git a/drivers/acpi/apei/erst.c b/drivers/acpi/apei/erst.c
+index 440588d189e7..7207e5fc9d3d 100644
+--- a/drivers/acpi/apei/erst.c
++++ b/drivers/acpi/apei/erst.c
+@@ -927,8 +927,7 @@ static int erst_open_pstore(struct pstore_info *psi);
+ static int erst_close_pstore(struct pstore_info *psi);
+ static ssize_t erst_reader(struct pstore_record *record);
+ static int erst_writer(struct pstore_record *record);
+-static int erst_clearer(enum pstore_type_id type, u64 id, int count,
+-			struct timespec time, struct pstore_info *psi);
++static int erst_clearer(struct pstore_record *record);
  
- 	if (unlikely(oops_in_progress))
- 		return;
-@@ -47,8 +53,7 @@ static void notrace pstore_ftrace_call(unsigned long ip,
- 	rec.parent_ip = parent_ip;
- 	pstore_ftrace_write_timestamp(&rec, pstore_ftrace_stamp++);
- 	pstore_ftrace_encode_cpu(&rec, raw_smp_processor_id());
--	psinfo->write_buf(PSTORE_TYPE_FTRACE, 0, NULL, 0, (void *)&rec,
--			  0, sizeof(rec), psinfo);
-+	psinfo->write_buf(&record);
- 
- 	local_irq_restore(flags);
+ static struct pstore_info erst_info = {
+ 	.owner		= THIS_MODULE,
+@@ -1100,10 +1099,9 @@ static int erst_writer(struct pstore_record *record)
+ 	return ret;
  }
-diff --git a/fs/pstore/platform.c b/fs/pstore/platform.c
-index aa3d6e572ede..5eecf9012459 100644
---- a/fs/pstore/platform.c
-+++ b/fs/pstore/platform.c
-@@ -587,8 +587,11 @@ static void pstore_console_write(struct console *con, const char *s, unsigned c)
- 	const char *e = s + c;
  
- 	while (s < e) {
-+		struct pstore_record record = {
-+			.type = PSTORE_TYPE_CONSOLE,
-+			.psi = psinfo,
-+		};
- 		unsigned long flags;
--		u64 id;
- 
- 		if (c > psinfo->bufsize)
- 			c = psinfo->bufsize;
-@@ -599,8 +602,9 @@ static void pstore_console_write(struct console *con, const char *s, unsigned c)
- 		} else {
- 			spin_lock_irqsave(&psinfo->buf_lock, flags);
- 		}
--		psinfo->write_buf(PSTORE_TYPE_CONSOLE, 0, &id, 0,
--				  s, 0, c, psinfo);
-+		record.buf = (char *)s;
-+		record.size = c;
-+		psinfo->write_buf(&record);
- 		spin_unlock_irqrestore(&psinfo->buf_lock, flags);
- 		s += c;
- 		c = e - s;
-@@ -630,10 +634,9 @@ static void pstore_unregister_console(void) {}
- 
- static int pstore_write_compat(struct pstore_record *record)
+-static int erst_clearer(enum pstore_type_id type, u64 id, int count,
+-			struct timespec time, struct pstore_info *psi)
++static int erst_clearer(struct pstore_record *record)
  {
--	return record->psi->write_buf(record->type, record->reason,
--				      &record->id, record->part,
--				      psinfo->buf, record->compressed,
--				      record->size, record->psi);
-+	record->buf = psinfo->buf;
+-	return erst_clear(id);
++	return erst_clear(record->id);
+ }
+ 
+ static int __init erst_init(void)
+diff --git a/drivers/firmware/efi/efi-pstore.c b/drivers/firmware/efi/efi-pstore.c
+index f81e3ec6f1c0..93d8cdbe7ef4 100644
+--- a/drivers/firmware/efi/efi-pstore.c
++++ b/drivers/firmware/efi/efi-pstore.c
+@@ -266,10 +266,7 @@ static int efi_pstore_write(struct pstore_record *record)
+ };
+ 
+ struct pstore_erase_data {
+-	u64 id;
+-	enum pstore_type_id type;
+-	int count;
+-	struct timespec time;
++	struct pstore_record *record;
+ 	efi_char16_t *name;
+ };
+ 
+@@ -295,8 +292,9 @@ static int efi_pstore_erase_func(struct efivar_entry *entry, void *data)
+ 		 * Check if an old format, which doesn't support
+ 		 * holding multiple logs, remains.
+ 		 */
+-		sprintf(name_old, "dump-type%u-%u-%lu", ed->type,
+-			(unsigned int)ed->id, ed->time.tv_sec);
++		snprintf(name_old, sizeof(name_old), "dump-type%u-%u-%lu",
++			ed->record->type, (unsigned int)ed->record->id,
++			ed->record->time.tv_sec);
+ 
+ 		for (i = 0; i < DUMP_NAME_LEN; i++)
+ 			efi_name_old[i] = name_old[i];
+@@ -321,8 +319,7 @@ static int efi_pstore_erase_func(struct efivar_entry *entry, void *data)
+ 	return 1;
+ }
+ 
+-static int efi_pstore_erase(enum pstore_type_id type, u64 id, int count,
+-			    struct timespec time, struct pstore_info *psi)
++static int efi_pstore_erase(struct pstore_record *record)
+ {
+ 	struct pstore_erase_data edata;
+ 	struct efivar_entry *entry = NULL;
+@@ -331,17 +328,16 @@ static int efi_pstore_erase(enum pstore_type_id type, u64 id, int count,
+ 	int found, i;
+ 	unsigned int part;
+ 
+-	do_div(id, 1000);
+-	part = do_div(id, 100);
+-	sprintf(name, "dump-type%u-%u-%d-%lu", type, part, count, time.tv_sec);
++	do_div(record->id, 1000);
++	part = do_div(record->id, 100);
++	snprintf(name, sizeof(name), "dump-type%u-%u-%d-%lu",
++		 record->type, record->part, record->count,
++		 record->time.tv_sec);
+ 
+ 	for (i = 0; i < DUMP_NAME_LEN; i++)
+ 		efi_name[i] = name[i];
+ 
+-	edata.id = part;
+-	edata.type = type;
+-	edata.count = count;
+-	edata.time = time;
++	edata.record = record;
+ 	edata.name = efi_name;
+ 
+ 	if (efivar_entry_iter_begin())
+diff --git a/fs/pstore/inode.c b/fs/pstore/inode.c
+index 0ea281b457fa..06504b69575b 100644
+--- a/fs/pstore/inode.c
++++ b/fs/pstore/inode.c
+@@ -210,14 +210,12 @@ static int pstore_unlink(struct inode *dir, struct dentry *dentry)
+ 	if (err)
+ 		return err;
+ 
+-	if (record->psi->erase) {
+-		mutex_lock(&record->psi->read_mutex);
+-		record->psi->erase(record->type, record->id, record->count,
+-			      d_inode(dentry)->i_ctime, record->psi);
+-		mutex_unlock(&record->psi->read_mutex);
+-	} else {
++	if (!record->psi->erase)
+ 		return -EPERM;
+-	}
 +
-+	return record->psi->write_buf(record);
++	mutex_lock(&record->psi->read_mutex);
++	record->psi->erase(record);
++	mutex_unlock(&record->psi->read_mutex);
+ 
+ 	return simple_unlink(dir, dentry);
  }
- 
- static int pstore_write_buf_user_compat(enum pstore_type_id type,
-@@ -653,6 +656,15 @@ static int pstore_write_buf_user_compat(enum pstore_type_id type,
- 		bufsize = psinfo->bufsize;
- 	spin_lock_irqsave(&psinfo->buf_lock, flags);
- 	for (i = 0; i < size; ) {
-+		struct pstore_record record = {
-+			.type = type,
-+			.reason = reason,
-+			.id = id,
-+			.part = part,
-+			.buf = psinfo->buf,
-+			.compressed = compressed,
-+			.psi = psi,
-+		};
- 		size_t c = min(size - i, bufsize);
- 
- 		ret = __copy_from_user(psinfo->buf, buf + i, c);
-@@ -660,8 +672,8 @@ static int pstore_write_buf_user_compat(enum pstore_type_id type,
- 			ret = -EFAULT;
- 			break;
- 		}
--		ret = psi->write_buf(type, reason, id, part, psinfo->buf,
--				     compressed, c, psi);
-+		record.size = c;
-+		ret = psi->write_buf(&record);
- 		if (unlikely(ret < 0))
- 			break;
- 		i += c;
 diff --git a/fs/pstore/ram.c b/fs/pstore/ram.c
-index a18575fe32e9..a7cdde60b1f9 100644
+index ca6e2a814e37..a18575fe32e9 100644
 --- a/fs/pstore/ram.c
 +++ b/fs/pstore/ram.c
-@@ -378,23 +378,18 @@ static size_t ramoops_write_kmsg_hdr(struct persistent_ram_zone *prz,
- 	return len;
+@@ -469,25 +469,24 @@ static int notrace ramoops_pstore_write_buf_user(enum pstore_type_id type,
+ 	return -EINVAL;
  }
  
--static int notrace ramoops_pstore_write_buf(enum pstore_type_id type,
--					    enum kmsg_dump_reason reason,
--					    u64 *id, unsigned int part,
--					    const char *buf,
--					    bool compressed, size_t size,
--					    struct pstore_info *psi)
-+static int notrace ramoops_pstore_write_buf(struct pstore_record *record)
+-static int ramoops_pstore_erase(enum pstore_type_id type, u64 id, int count,
+-				struct timespec time, struct pstore_info *psi)
++static int ramoops_pstore_erase(struct pstore_record *record)
  {
 -	struct ramoops_context *cxt = psi->data;
 +	struct ramoops_context *cxt = record->psi->data;
  	struct persistent_ram_zone *prz;
--	size_t hlen;
-+	size_t size, hlen;
  
--	if (type == PSTORE_TYPE_CONSOLE) {
-+	if (record->type == PSTORE_TYPE_CONSOLE) {
- 		if (!cxt->cprz)
- 			return -ENOMEM;
--		persistent_ram_write(cxt->cprz, buf, size);
-+		persistent_ram_write(cxt->cprz, record->buf, record->size);
- 		return 0;
--	} else if (type == PSTORE_TYPE_FTRACE) {
-+	} else if (record->type == PSTORE_TYPE_FTRACE) {
- 		int zonenum;
- 
- 		if (!cxt->fprzs)
-@@ -407,33 +402,36 @@ static int notrace ramoops_pstore_write_buf(enum pstore_type_id type,
- 		else
- 			zonenum = 0;
- 
--		persistent_ram_write(cxt->fprzs[zonenum], buf, size);
-+		persistent_ram_write(cxt->fprzs[zonenum], record->buf,
-+				     record->size);
- 		return 0;
--	} else if (type == PSTORE_TYPE_PMSG) {
-+	} else if (record->type == PSTORE_TYPE_PMSG) {
- 		pr_warn_ratelimited("PMSG shouldn't call %s\n", __func__);
- 		return -EINVAL;
- 	}
- 
--	if (type != PSTORE_TYPE_DMESG)
-+	if (record->type != PSTORE_TYPE_DMESG)
- 		return -EINVAL;
- 
--	/* Out of the various dmesg dump types, ramoops is currently designed
-+	/*
-+	 * Out of the various dmesg dump types, ramoops is currently designed
- 	 * to only store crash logs, rather than storing general kernel logs.
- 	 */
--	if (reason != KMSG_DUMP_OOPS &&
--	    reason != KMSG_DUMP_PANIC)
-+	if (record->reason != KMSG_DUMP_OOPS &&
-+	    record->reason != KMSG_DUMP_PANIC)
- 		return -EINVAL;
- 
- 	/* Skip Oopes when configured to do so. */
--	if (reason == KMSG_DUMP_OOPS && !cxt->dump_oops)
-+	if (record->reason == KMSG_DUMP_OOPS && !cxt->dump_oops)
- 		return -EINVAL;
- 
--	/* Explicitly only take the first part of any new crash.
-+	/*
-+	 * Explicitly only take the first part of any new crash.
- 	 * If our buffer is larger than kmsg_bytes, this can never happen,
- 	 * and if our buffer is smaller than kmsg_bytes, we don't want the
- 	 * report split across multiple records.
- 	 */
--	if (part != 1)
-+	if (record->part != 1)
- 		return -ENOSPC;
- 
- 	if (!cxt->dprzs)
-@@ -441,10 +439,12 @@ static int notrace ramoops_pstore_write_buf(enum pstore_type_id type,
- 
- 	prz = cxt->dprzs[cxt->dump_write_cnt];
- 
--	hlen = ramoops_write_kmsg_hdr(prz, compressed);
-+	/* Build header and append record contents. */
-+	hlen = ramoops_write_kmsg_hdr(prz, record->compressed);
-+	size = record->size;
- 	if (size + hlen > prz->buffer_size)
- 		size = prz->buffer_size - hlen;
--	persistent_ram_write(prz, buf, size);
-+	persistent_ram_write(prz, record->buf, size);
- 
- 	cxt->dump_write_cnt = (cxt->dump_write_cnt + 1) % cxt->max_dump_cnt;
- 
+-	switch (type) {
++	switch (record->type) {
+ 	case PSTORE_TYPE_DMESG:
+-		if (id >= cxt->max_dump_cnt)
++		if (record->id >= cxt->max_dump_cnt)
+ 			return -EINVAL;
+-		prz = cxt->dprzs[id];
++		prz = cxt->dprzs[record->id];
+ 		break;
+ 	case PSTORE_TYPE_CONSOLE:
+ 		prz = cxt->cprz;
+ 		break;
+ 	case PSTORE_TYPE_FTRACE:
+-		if (id >= cxt->max_ftrace_cnt)
++		if (record->id >= cxt->max_ftrace_cnt)
+ 			return -EINVAL;
+-		prz = cxt->fprzs[id];
++		prz = cxt->fprzs[record->id];
+ 		break;
+ 	case PSTORE_TYPE_PMSG:
+ 		prz = cxt->mprz;
 diff --git a/include/linux/pstore.h b/include/linux/pstore.h
-index a4b2c21a512e..351a22242518 100644
+index c672de41e9b5..a4b2c21a512e 100644
 --- a/include/linux/pstore.h
 +++ b/include/linux/pstore.h
-@@ -142,19 +142,11 @@ struct pstore_record {
-  *	Returns 0 on success, and non-zero on error.
+@@ -177,15 +177,11 @@ struct pstore_record {
   *
-  * @write_buf:
-- *	Perform a frontend write to a backend record, using a specified
-- *	buffer. Unlike @write, this does not use the @psi @buf.
-+ *	Perform a frontend write to a backend record. The record contains
-+ *	all metadata and the buffer to write to backend storage. (Unlike
-+ *	@write, this does not use the @psi @buf.)
+  * @erase:
+  *	Delete a record from backend storage.  Different backends
+- *	identify records differently, so all possible methods of
+- *	identification are included to help the backend locate the
+- *	record to remove.
++ *	identify records differently, so entire original record is
++ *	passed back to assist in identification of what the backend
++ *	should remove from storage.
   *
 - *	@type:	in: pstore record type to write
-- *	@reason:
-- *		in: pstore write reason
-- *	@id:	out: unique identifier for the record
-- *	@part:	in: position in a multipart write
-- *	@buf:	in: pointer to contents to write to backend record
-- *	@compressed:
-- *		in: if the record is compressed
-- *	@size:	in: size of the write
+- *	@id:	in: per-type unique identifier for the record
+- *	@count:	in: Oops count
+- *	@time:	in: timestamp for the record
 - *	@psi:	in: pointer to the struct pstore_info for the backend
 + *	@record:	pointer to record metadata.
   *
   *	Returns 0 on success, and non-zero on error.
   *
-@@ -203,10 +195,7 @@ struct pstore_info {
- 	int		(*close)(struct pstore_info *psi);
- 	ssize_t		(*read)(struct pstore_record *record);
- 	int		(*write)(struct pstore_record *record);
--	int		(*write_buf)(enum pstore_type_id type,
--			enum kmsg_dump_reason reason, u64 *id,
--			unsigned int part, const char *buf, bool compressed,
--			size_t size, struct pstore_info *psi);
-+	int		(*write_buf)(struct pstore_record *record);
- 	int		(*write_buf_user)(enum pstore_type_id type,
+@@ -215,9 +211,7 @@ struct pstore_info {
  			enum kmsg_dump_reason reason, u64 *id,
  			unsigned int part, const char __user *buf,
+ 			bool compressed, size_t size, struct pstore_info *psi);
+-	int		(*erase)(enum pstore_type_id type, u64 id,
+-			int count, struct timespec time,
+-			struct pstore_info *psi);
++	int		(*erase)(struct pstore_record *record);
+ };
+ 
+ /* Supported frontends */
 -- 
 2.7.4
