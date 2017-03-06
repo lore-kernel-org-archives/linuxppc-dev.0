@@ -1,18 +1,19 @@
-Return-Path: <me@tobin.cc>
-Received: from out4-smtp.messagingengine.com (out4-smtp.messagingengine.com
- [66.111.4.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vcD4v4bK3zDqFh
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Mar 2017 19:50:07 +1100 (AEDT)
-From: "Tobin C. Harding" <me@tobin.cc>
-To: Ingo Molnar <mingo@redhat.com>,
-	Steven Rostedt <rostedt@goodmis.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
- "Tobin C. Harding" <me@tobin.cc>
-Subject: [PATCH] powerpc/ftrace: add ftrace.h, fix sparse warning
-Date: Mon,  6 Mar 2017 19:49:46 +1100
-Message-Id: <1488790186-4828-1-git-send-email-me@tobin.cc>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vcDxF1JGgzDqFh
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Mar 2017 20:28:33 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: "Robert E. Cochran" <ppc@mindchasers.com>, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] powerpc/mm: Fix page table dump build on non-Book3S
+In-Reply-To: <e0d44bac-65ff-fca4-437c-42872eff8842@mindchasers.com>
+References: <1480582800-28597-1-git-send-email-mpe@ellerman.id.au>
+ <e0d44bac-65ff-fca4-437c-42872eff8842@mindchasers.com>
+Date: Mon, 06 Mar 2017 20:28:29 +1100
+Message-ID: <87o9xepxdu.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,87 +23,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Sparse emits warning: symbol 'prepare_ftrace_return' was not
-declared. Should it be static? prepare_ftrace_return() is called
-from assembler and should not be static. Adding a header file
-declaring the function will fix the sparse warning while adding
-documentation to the call.
+"Robert E. Cochran" <ppc@mindchasers.com> writes:
 
-Add header file ftrace.h with single function declaration. Protect
-declaration with preprocessor guard so it may be included in
-assembly. Include new header in all files that call
-prepare_ftrace_return() and in ftrace.c where function is defined.
+> On 12/01/2016 04:00 AM, Michael Ellerman wrote:
+>> In the recent commit 1515ab932156 ("powerpc/mm: Dump hash table") we
+>> added code to dump the hage page table. Currently this can be selected
+>> to build on any platform. However it breaks the build if we're building
+>> for a non-Book3S platform, because none of the hash page table related
+>> defines and so on exist. So restrict it to building only on Book3S.
+>>
+>> Similarly in commit 8eb07b187000 ("powerpc/mm: Dump linux pagetables")
+>> we added code to dump the Linux page tables, which uses some constants
+>> which are only defined on Book3S - so guard those with an #ifdef.
+>
+>
+> Hello,
+>
+> I was just building the mainline 4.11-rc1 tonight on an NXP P1010 / 
+> e500v2 with CONFIG_PPC_PTDUMP set.
+>
+> I received a bunch of errors from dump_linuxpagetables.c  (as you can 
+> see below).
+>
+> I realize now that CONFIG_PPC_PTDUMP  isn't for the e500, but I thought 
+> someone might want to know that enabling it causes the build of an 
+> e500v2 to fail.
 
-Signed-off-by: Tobin C. Harding <me@tobin.cc>
----
+Thanks. It actually should work on that config, it's just dumping the
+Linux page tables.
 
-Github issue: #37 Fix sparse warnings
+It looks like it's just that some of the "well known" address ranges
+don't exist, or don't have the same names. So it should be fixable with
+some #ifdefs.
 
-Tested by building on Power8.
+I'll fix it at some point if no one beats me to it.
 
-There are a bunch of these in arch/powerpc/kernel/. Do we want to add
-a header for each one, cluttering up the directory to fix the sparse
-warnings? 
-
- arch/powerpc/kernel/entry_32.S | 2 ++
- arch/powerpc/kernel/entry_64.S | 2 ++
- arch/powerpc/kernel/ftrace.c   | 1 +
- arch/powerpc/kernel/ftrace.h   | 9 +++++++++
- 4 files changed, 14 insertions(+)
- create mode 100644 arch/powerpc/kernel/ftrace.h
-
-diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
-index 3841d74..bb7284c 100644
---- a/arch/powerpc/kernel/entry_32.S
-+++ b/arch/powerpc/kernel/entry_32.S
-@@ -35,6 +35,8 @@
- #include <asm/ptrace.h>
- #include <asm/export.h>
- 
-+#include "ftrace.h"
-+
- /*
-  * MSR_KERNEL is > 0x10000 on 4xx/Book-E since it include MSR_CE.
-  */
-diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-index 6432d4b..8591026 100644
---- a/arch/powerpc/kernel/entry_64.S
-+++ b/arch/powerpc/kernel/entry_64.S
-@@ -40,6 +40,8 @@
- #include <asm/ppc-opcode.h>
- #include <asm/export.h>
- 
-+#include "ftrace.h"
-+
- /*
-  * System calls.
-  */
-diff --git a/arch/powerpc/kernel/ftrace.c b/arch/powerpc/kernel/ftrace.c
-index 5c9f50c..d4d3bb1 100644
---- a/arch/powerpc/kernel/ftrace.c
-+++ b/arch/powerpc/kernel/ftrace.c
-@@ -26,6 +26,7 @@
- #include <asm/ftrace.h>
- #include <asm/syscall.h>
- 
-+#include "ftrace.h"
- 
- #ifdef CONFIG_DYNAMIC_FTRACE
- static unsigned int
-diff --git a/arch/powerpc/kernel/ftrace.h b/arch/powerpc/kernel/ftrace.h
-new file mode 100644
-index 0000000..dc27dd7
---- /dev/null
-+++ b/arch/powerpc/kernel/ftrace.h
-@@ -0,0 +1,9 @@
-+#ifndef _FTRACE_H
-+#define _FTRACE_H
-+
-+#ifndef __ASSEMBLER__
-+
-+unsigned long prepare_ftrace_return(unsigned long parent, unsigned long ip);
-+
-+#endif	/* __ASSEMBLER__ */
-+#endif	/* _FTRACE_H */
--- 
-2.7.4
+cheers
