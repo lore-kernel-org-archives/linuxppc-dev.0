@@ -1,25 +1,50 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
- [IPv6:2607:f8b0:400e:c05::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vc2sL3klGzDqFh
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Mar 2017 12:54:30 +1100 (AEDT)
-Received: by mail-pg0-x241.google.com with SMTP id b5so1386260pgg.1
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 05 Mar 2017 17:54:30 -0800 (PST)
-Subject: Re: [PATCH] powerpc/eeh: Avoid use after free in
- eeh_handle_special_event()
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-References: <20170303044718.19253-1-ruscur@russell.cc>
- <2ac7b7d0-c04f-1c33-4661-d2e4f9a0e054@ozlabs.ru>
- <20170305232246.GA14744@gwshan>
-Cc: Russell Currey <ruscur@russell.cc>, linuxppc-dev@lists.ozlabs.org
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-Message-ID: <12caa751-ed78-d3b9-b5d7-6d18f63f691a@ozlabs.ru>
-Date: Mon, 6 Mar 2017 12:54:23 +1100
+Return-Path: <dalias@aerifal.cx>
+Received: from brightrain.aerifal.cx (216-197-64-233.tingfiber.com
+ [216.197.64.233])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3vc31G0SC1zDqFh
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Mar 2017 13:01:21 +1100 (AEDT)
+Date: Sun, 5 Mar 2017 20:52:07 -0500
+From: Rich Felker <dalias@libc.org>
+To: Jiri Slaby <jslaby@suse.cz>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+ Richard Henderson <rth@twiddle.net>,
+ Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+ Matt Turner <mattst88@gmail.com>, Vineet Gupta <vgupta@synopsys.com>,
+ Russell King <linux@armlinux.org.uk>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Will Deacon <will.deacon@arm.com>,
+ Richard Kuo <rkuo@codeaurora.org>, Tony Luck <tony.luck@intel.com>,
+ Fenghua Yu <fenghua.yu@intel.com>, Michal Simek <monstr@monstr.eu>,
+ Ralf Baechle <ralf@linux-mips.org>, Jonas Bonn <jonas@southpole.se>,
+ Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
+ Stafford Horne <shorne@gmail.com>,
+ "James E.J. Bottomley" <jejb@parisc-linux.org>,
+ Helge Deller <deller@gmx.de>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ Yoshinori Sato <ysato@users.sourceforge.jp>,
+ "David S. Miller" <davem@davemloft.net>,
+ Chris Metcalf <cmetcalf@mellanox.com>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+ Chris Zankel <chris@zankel.net>, Max Filippov <jcmvbkbc@gmail.com>,
+ Arnd Bergmann <arnd@arndb.de>, x86@kernel.org,
+ linux-alpha@vger.kernel.org, linux-snps-arc@lists.infradead.org,
+ linux-arm-kernel@lists.infradead.org, linux-hexagon@vger.kernel.org,
+ linux-ia64@vger.kernel.org, linux-mips@linux-mips.org,
+ openrisc@lists.librecores.org, linux-parisc@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
+ linux-xtensa@linux-xtensa.org, linux-arch@vger.kernel.org
+Subject: Re: [PATCH 1/3] futex: remove duplicated code
+Message-ID: <20170306015207.GN1520@brightrain.aerifal.cx>
+References: <20170303122712.13353-1-jslaby@suse.cz>
 MIME-Version: 1.0
-In-Reply-To: <20170305232246.GA14744@gwshan>
-Content-Type: text/plain; charset=koi8-r
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20170303122712.13353-1-jslaby@suse.cz>
+Sender: Rich Felker <dalias@aerifal.cx>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,88 +54,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/03/17 10:22, Gavin Shan wrote:
-> On Fri, Mar 03, 2017 at 04:59:11PM +1100, Alexey Kardashevskiy wrote:
->> On 03/03/17 15:47, Russell Currey wrote:
->>> eeh_handle_special_event() is called when an EEH event is detected but
->>> can't be narrowed down to a specific PE.  This function looks through
->>> every PE to find one in an erroneous state, then calls the regular event
->>> handler eeh_handle_normal_event() once it knows which PE has an error.
->>>
->>> However, if eeh_handle_normal_event() found that the PE cannot possibly
->>> be recovered, it will remove the PE and associated devices.  This leads
->>> to a use after free in eeh_handle_special_event() as it attempts to clear
->>> the "recovering" state on the PE after eeh_handle_normal_event() returns.
->>>
->>> Thus, make sure the PE is valid when attempting to clear state in
->>> eeh_handle_special_event().
->>>
->>> Cc: <stable@vger.kernel.org> #3.10+
->>> Reported-by: Alexey Kardashevskiy <aik@ozlabs.ru>
->>> Signed-off-by: Russell Currey <ruscur@russell.cc>
->>> ---
->>>  arch/powerpc/kernel/eeh_driver.c | 13 +++++++++++++
->>>  1 file changed, 13 insertions(+)
->>>
->>> diff --git a/arch/powerpc/kernel/eeh_driver.c b/arch/powerpc/kernel/eeh_driver.c
->>> index b94887165a10..492397298a2a 100644
->>> --- a/arch/powerpc/kernel/eeh_driver.c
->>> +++ b/arch/powerpc/kernel/eeh_driver.c
->>> @@ -983,6 +983,19 @@ static void eeh_handle_special_event(void)
->>>  		if (rc == EEH_NEXT_ERR_FROZEN_PE ||
->>>  		    rc == EEH_NEXT_ERR_FENCED_PHB) {
->>>  			eeh_handle_normal_event(pe);
->>> +
->>> +			/*
->>> +			 * eeh_handle_normal_event() can free the PE if it
->>> +			 * determines that the PE cannot possibly be recovered.
->>> +			 * Make sure the PE still exists before changing its
->>> +			 * state.
->>> +			 */
->>> +			if (!pe || (pe->type & EEH_PE_INVALID)
->>> +			    || (pe->state & EEH_PE_REMOVED)) {
->>
->>
->> The bug is that pe becomes stale after eeh_handle_normal_event() returned
->> and dereferencing it afterwards is broken.
->>
+On Fri, Mar 03, 2017 at 01:27:10PM +0100, Jiri Slaby wrote:
+> There is code duplicated over all architecture's headers for
+> futex_atomic_op_inuser. Namely op decoding, access_ok check for uaddr,
+> and comparison of the result.
 > 
-> Correct, it won't cause a kernel crash as @pe is deferencing linear mapped
-> area whose address is always valid.
-
-Dereferencing pe would not crash but dereferencing any pointer from the
-pnv_ioda_pe struct would (as it would random stuff or a poison).
-
-
-> I think the proper fix would be to use
-> eeh_handle_normal_event() to indicate the @pe has been released and don't
-> access it any more.
-
-Correct. The problem is that the callstack from my other reply is a bit too
-long to make an trivial patch :)
-
-
-
->>
->>
->>> +				pr_warn("EEH: not clearing state on bad PE\n");
+> Remove this duplication and leave up to the arches only the needed
+> assembly which is now in arch_futex_atomic_op_inuser.
 > 
-> The message like this isn't meaningful, no need to have it. The messages that
-> have prefix "EEH:" is informative messages. We definitely needn't this here.
-> However, the message might be not needed in next revision.
-> 
->>> +				continue;
->>> +			}
->>> +
->>>  			eeh_pe_state_clear(pe, EEH_PE_RECOVERING);
->>>  		} else {
->>>  			pci_lock_rescan_remove();
->>>
-> 
-> Thanks,
-> Gavin
-> 
+> Note that s390 removed access_ok check in d12a29703 ("s390/uaccess:
+> remove pointless access_ok() checks") as access_ok there returns true.
+> We introduce it back to the helper for the sake of simplicity (it gets
+> optimized away anyway).
 
+Overall I'm in favor of this patch, and it's close to what I had in
+mind in the commit message for
+00b73d8d1b7131da03aec73011a7286f566fe87f. But I'd actually like to see
+it go further. These ops are mainly (only?) used for the (almost never
+used) FUTEX_WAKE_OP operation, and there's very little sense in trying
+to optimize them with dedicated arch-specific forms like "lock xadd".
+Instead the entire logic should be in an arch-generic file, and all
+the arch should need to provide is a cmpxchg-on-user-memory primitive
+for it to use. On most archs, the same cmpxchg used in kernelspace
+should also work for user addresses, meaning a huge amount of
+unmaintained, largely untested, junk code can be removed.
 
--- 
-Alexey
+Rich
