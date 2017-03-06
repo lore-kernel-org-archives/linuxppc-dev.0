@@ -1,12 +1,12 @@
 Return-Path: <keescook@chromium.org>
-Received: from mail-pg0-x231.google.com (mail-pg0-x231.google.com
- [IPv6:2607:f8b0:400e:c05::231])
+Received: from mail-pg0-x22a.google.com (mail-pg0-x22a.google.com
+ [IPv6:2607:f8b0:400e:c05::22a])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vcYWL65lwzDqXl
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Mar 2017 08:55:42 +1100 (AEDT)
-Received: by mail-pg0-x231.google.com with SMTP id 25so70847146pgy.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Mar 2017 13:55:42 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vcYWM1WpFzDqXp
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Mar 2017 08:55:43 +1100 (AEDT)
+Received: by mail-pg0-x22a.google.com with SMTP id 187so16867893pgb.3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Mar 2017 13:55:43 -0800 (PST)
 From: Kees Cook <keescook@chromium.org>
 To: linux-kernel@vger.kernel.org
 Cc: Kees Cook <keescook@chromium.org>,
@@ -25,9 +25,9 @@ Cc: Kees Cook <keescook@chromium.org>,
  Geliang Tang <geliangtang@163.com>, linuxppc-dev@lists.ozlabs.org,
  linux-acpi@vger.kernel.org, linux-efi@vger.kernel.org,
  linux-doc@vger.kernel.org
-Subject: [PATCH 11/18] pstore: Always allocate buffer for decompression
-Date: Mon,  6 Mar 2017 13:55:25 -0800
-Message-Id: <1488837332-71582-12-git-send-email-keescook@chromium.org>
+Subject: [PATCH 12/18] pstore: Pass record contents instead of copying
+Date: Mon,  6 Mar 2017 13:55:26 -0800
+Message-Id: <1488837332-71582-13-git-send-email-keescook@chromium.org>
 In-Reply-To: <1488837332-71582-1-git-send-email-keescook@chromium.org>
 References: <1488837332-71582-1-git-send-email-keescook@chromium.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -39,80 +39,127 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently, pstore_mkfile() performs a memcpy() of the record contents,
-so it can live anywhere. However, this is needlessly wasteful. In
-preparation of pstore_mkfile() keeping the record contents, always
-allocate a buffer for the contents.
+pstore_mkfile() shouldn't have to memcpy the record contents. It can use
+the existing copy instead. This adjusts the allocation lifetime management
+and renames the contents variable from "data" to "buf" to assist moving to
+struct pstore_record in the future.
 
 Signed-off-by: Kees Cook <keescook@chromium.org>
 ---
- fs/pstore/platform.c | 38 ++++++++++++++++++++++++--------------
- 1 file changed, 24 insertions(+), 14 deletions(-)
+ fs/pstore/inode.c    | 22 +++++++++++++++-------
+ fs/pstore/platform.c | 16 ++++++++++++----
+ 2 files changed, 27 insertions(+), 11 deletions(-)
 
-diff --git a/fs/pstore/platform.c b/fs/pstore/platform.c
-index 879658b4c679..c0d401e732e6 100644
---- a/fs/pstore/platform.c
-+++ b/fs/pstore/platform.c
-@@ -768,6 +768,7 @@ EXPORT_SYMBOL_GPL(pstore_unregister);
- static void decompress_record(struct pstore_record *record)
+diff --git a/fs/pstore/inode.c b/fs/pstore/inode.c
+index a98787bab3e6..3d1f047e4f41 100644
+--- a/fs/pstore/inode.c
++++ b/fs/pstore/inode.c
+@@ -52,7 +52,7 @@ struct pstore_private {
+ 	u64	id;
+ 	int	count;
+ 	ssize_t	size;
+-	char	data[];
++	char    *buf;
+ };
+ 
+ struct pstore_ftrace_seq_data {
+@@ -63,6 +63,14 @@ struct pstore_ftrace_seq_data {
+ 
+ #define REC_SIZE sizeof(struct pstore_ftrace_record)
+ 
++static void free_pstore_private(struct pstore_private *private)
++{
++	if (!private)
++		return;
++	kfree(private->buf);
++	kfree(private);
++}
++
+ static void *pstore_ftrace_seq_start(struct seq_file *s, loff_t *pos)
  {
- 	int unzipped_len;
-+	char *decompressed;
+ 	struct pstore_private *ps = s->private;
+@@ -105,7 +113,7 @@ static int pstore_ftrace_seq_show(struct seq_file *s, void *v)
+ {
+ 	struct pstore_private *ps = s->private;
+ 	struct pstore_ftrace_seq_data *data = v;
+-	struct pstore_ftrace_record *rec = (void *)(ps->data + data->off);
++	struct pstore_ftrace_record *rec = (void *)(ps->buf + data->off);
  
- 	/* Only PSTORE_TYPE_DMESG support compression. */
- 	if (!record->compressed || record->type != PSTORE_TYPE_DMESG) {
-@@ -783,17 +784,29 @@ static void decompress_record(struct pstore_record *record)
+ 	seq_printf(s, "CPU:%d ts:%llu %08lx  %08lx  %pf <- %pF\n",
+ 		   pstore_ftrace_decode_cpu(rec),
+@@ -143,7 +151,7 @@ static ssize_t pstore_file_read(struct file *file, char __user *userbuf,
  
- 	unzipped_len = pstore_decompress(record->buf, big_oops_buf,
- 					 record->size, big_oops_buf_sz);
--	if (unzipped_len > 0) {
--		if (record->ecc_notice_size)
--			memcpy(big_oops_buf + unzipped_len,
--			       record->buf + record->size,
--			       record->ecc_notice_size);
--		kfree(record->buf);
--		record->buf = big_oops_buf;
--		record->size = unzipped_len;
--		record->compressed = false;
--	} else
-+	if (unzipped_len <= 0) {
- 		pr_err("decompression failed: %d\n", unzipped_len);
-+		return;
-+	}
-+
-+	/* Build new buffer for decompressed contents. */
-+	decompressed = kmalloc(unzipped_len + record->ecc_notice_size,
-+			       GFP_KERNEL);
-+	if (!decompressed) {
-+		pr_err("decompression ran out of memory\n");
-+		return;
-+	}
-+	memcpy(decompressed, big_oops_buf, unzipped_len);
-+
-+	/* Append ECC notice to decompressed buffer. */
-+	memcpy(decompressed + unzipped_len, record->buf + record->size,
-+	       record->ecc_notice_size);
-+
-+	/* Swap out compresed contents with decompressed contents. */
-+	kfree(record->buf);
-+	record->buf = decompressed;
-+	record->size = unzipped_len;
-+	record->compressed = false;
+ 	if (ps->type == PSTORE_TYPE_FTRACE)
+ 		return seq_read(file, userbuf, count, ppos);
+-	return simple_read_from_buffer(userbuf, count, ppos, ps->data, ps->size);
++	return simple_read_from_buffer(userbuf, count, ppos, ps->buf, ps->size);
  }
  
- /*
-@@ -819,13 +832,10 @@ void pstore_get_records(int quiet)
+ static int pstore_file_open(struct inode *inode, struct file *file)
+@@ -221,7 +229,7 @@ static void pstore_evict_inode(struct inode *inode)
+ 		spin_lock_irqsave(&allpstore_lock, flags);
+ 		list_del(&p->list);
+ 		spin_unlock_irqrestore(&allpstore_lock, flags);
+-		kfree(p);
++		free_pstore_private(p);
+ 	}
+ }
+ 
+@@ -332,7 +340,7 @@ int pstore_mkfile(struct pstore_record *record)
+ 		goto fail;
+ 	inode->i_mode = S_IFREG | 0444;
+ 	inode->i_fop = &pstore_file_operations;
+-	private = kmalloc(sizeof *private + size, GFP_KERNEL);
++	private = kzalloc(sizeof(*private), GFP_KERNEL);
+ 	if (!private)
+ 		goto fail_alloc;
+ 	private->type = record->type;
+@@ -394,7 +402,7 @@ int pstore_mkfile(struct pstore_record *record)
+ 	if (!dentry)
+ 		goto fail_lockedalloc;
+ 
+-	memcpy(private->data, record->buf, size);
++	private->buf = record->buf;
+ 	inode->i_size = private->size = size;
+ 
+ 	inode->i_private = private;
+@@ -414,7 +422,7 @@ int pstore_mkfile(struct pstore_record *record)
+ 
+ fail_lockedalloc:
+ 	inode_unlock(d_inode(root));
+-	kfree(private);
++	free_pstore_private(private);
+ fail_alloc:
+ 	iput(inode);
+ 
+diff --git a/fs/pstore/platform.c b/fs/pstore/platform.c
+index c0d401e732e6..d897e2f11b6a 100644
+--- a/fs/pstore/platform.c
++++ b/fs/pstore/platform.c
+@@ -828,14 +828,22 @@ void pstore_get_records(int quiet)
+ 	if (psi->open && psi->open(psi))
+ 		goto out;
+ 
++	/*
++	 * Backend callback read() allocates record.buf. decompress_record()
++	 * may reallocate record.buf. On success, pstore_mkfile() will keep
++	 * the record.buf, so free it only on failure.
++	 */
+ 	while ((record.size = psi->read(&record)) > 0) {
  		decompress_record(&record);
  		rc = pstore_mkfile(&record);
++		if (rc) {
++			/* pstore_mkfile() did not take buf, so free it. */
++			kfree(record.buf);
++			if (rc != -EEXIST || !quiet)
++				failed++;
++		}
  
--		/* Free buffer other than big oops */
--		if (record.buf != big_oops_buf)
--			kfree(record.buf);
+-		if (rc && (rc != -EEXIST || !quiet))
+-			failed++;
 -
- 		if (rc && (rc != -EEXIST || !quiet))
- 			failed++;
- 
-+		kfree(record.buf);
+-		kfree(record.buf);
++		/* Reset for next record. */
  		memset(&record, 0, sizeof(record));
  		record.psi = psi;
  	}
