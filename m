@@ -1,32 +1,41 @@
-Return-Path: <jpoimboe@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <keescook@google.com>
+Received: from mail-io0-x22b.google.com (mail-io0-x22b.google.com
+ [IPv6:2607:f8b0:4001:c06::22b])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vd1s53nJrzDq8g
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Mar 2017 03:12:41 +1100 (AEDT)
-Date: Tue, 7 Mar 2017 10:12:30 -0600
-From: Josh Poimboeuf <jpoimboe@redhat.com>
-To: Balbir Singh <bsingharora@gmail.com>
-Cc: Jessica Yu <jeyu@redhat.com>, Jiri Kosina <jikos@kernel.org>,
- Miroslav Benes <mbenes@suse.cz>, Petr Mladek <pmladek@suse.com>,
- linux-kernel@vger.kernel.org, live-patching@vger.kernel.org,
- Michael Ellerman <mpe@ellerman.id.au>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, x86@kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- Vojtech Pavlik <vojtech@suse.com>, Jiri Slaby <jslaby@suse.cz>,
- Chris J Arges <chris.j.arges@canonical.com>,
- Andy Lutomirski <luto@kernel.org>, Ingo Molnar <mingo@kernel.org>,
- Peter Zijlstra <peterz@infradead.org>,
- Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Subject: Re: [PATCH v5 01/15] stacktrace/x86: add function for detecting
- reliable stack traces
-Message-ID: <20170307161230.44rvjm7ed7azgu6x@treble>
-References: <cover.1487036215.git.jpoimboe@redhat.com>
- <baca30690796f3a0d938060b5f90b81375d76c30.1487036215.git.jpoimboe@redhat.com>
- <1488869455.4285.10.camel@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vd2035NN4zDq8g
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Mar 2017 03:18:43 +1100 (AEDT)
+Received: by mail-io0-x22b.google.com with SMTP id g6so8258890ioj.1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 Mar 2017 08:18:43 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <1488869455.4285.10.camel@gmail.com>
+Sender: keescook@google.com
+In-Reply-To: <CADWwUUZAxwUqHU9eRrtP5Hk7KO9KkyvdBy7Z5Xehwhv43fvZVQ@mail.gmail.com>
+References: <1488837332-71582-1-git-send-email-keescook@chromium.org>
+ <1488837332-71582-4-git-send-email-keescook@chromium.org>
+ <CADWwUUZAxwUqHU9eRrtP5Hk7KO9KkyvdBy7Z5Xehwhv43fvZVQ@mail.gmail.com>
+From: Kees Cook <keescook@chromium.org>
+Date: Tue, 7 Mar 2017 08:18:40 -0800
+Message-ID: <CAGXu5jLWBFVH92PK+vPAsv5sDyLCX6=85NWFXNetC0JDBNUUqQ@mail.gmail.com>
+Subject: Re: [PATCH 03/18] pstore: Avoid race in module unloading
+To: Namhyung Kim <namhyung@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+ Nobuhiro Iwamatsu <nobuhiro.iwamatsu.kw@hitachi.com>,
+ Qiuxu Zhuo <qiuxu.zhuo@intel.com>,
+ Ard Biesheuvel <ard.biesheuvel@linaro.org>, Anton Vorontsov <anton@enomsg.org>,
+ Colin Cross <ccross@android.com>, Tony Luck <tony.luck@intel.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+ Len Brown <lenb@kernel.org>, Matt Fleming <matt@codeblueprint.co.uk>,
+ Nathan Fontenot <nfont@linux.vnet.ibm.com>,
+ Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>, Daniel Axtens <dja@axtens.net>,
+ Paul Gortmaker <paul.gortmaker@windriver.com>,
+ Geliang Tang <geliangtang@163.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+ "linux-efi@vger.kernel.org" <linux-efi@vger.kernel.org>,
+ "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,44 +45,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Mar 07, 2017 at 05:50:55PM +1100, Balbir Singh wrote:
-> On Mon, 2017-02-13 at 19:42 -0600, Josh Poimboeuf wrote:
-> > For live patching and possibly other use cases, a stack trace is only
-> > useful if it can be assured that it's completely reliable.  Add a new
-> > save_stack_trace_tsk_reliable() function to achieve that.
-> > 
-> > Note that if the target task isn't the current task, and the target task
-> > is allowed to run, then it could be writing the stack while the unwinder
-> > is reading it, resulting in possible corruption.  So the caller of
-> > save_stack_trace_tsk_reliable() must ensure that the task is either
-> > 'current' or inactive.
-> > 
-> > save_stack_trace_tsk_reliable() relies on the x86 unwinder's detection
-> > of pt_regs on the stack.  If the pt_regs are not user-mode registers
-> > from a syscall, then they indicate an in-kernel interrupt or exception
-> > (e.g. preemption or a page fault), in which case the stack is considered
-> > unreliable due to the nature of frame pointers.
-> > 
-> > It also relies on the x86 unwinder's detection of other issues, such as:
-> > 
-> > - corrupted stack data
-> > - stack grows the wrong way
-> > - stack walk doesn't reach the bottom
-> > - user didn't provide a large enough entries array
-> > 
-> > Such issues are reported by checking unwind_error() and !unwind_done().
-> > 
-> > Also add CONFIG_HAVE_RELIABLE_STACKTRACE so arch-independent code can
-> > determine at build time whether the function is implemented.
-> > 
-> > Signed-off-by: Josh Poimboeuf <jpoimboe@redhat.com>
-> > ---
-> 
-> Could you comment on why we need a reliable trace for live-patching? Are
-> we in any way reliant on the stack trace to patch something broken?
+On Tue, Mar 7, 2017 at 8:16 AM, Namhyung Kim <namhyung@gmail.com> wrote:
+> Hi Kees,
+>
+> On Tue, Mar 7, 2017 at 6:55 AM, Kees Cook <keescook@chromium.org> wrote:
+>> Technically, it might be possible for struct pstore_info to go out of
+>> scope after the module_put(), so report the backend name first.
+>
+> But in that case, using pstore will crash the kernel anyway, right?
+> If so, why pstore doesn't keep a reference until unregister?
+> Do I miss something?
 
-I tried to cover this comprehensively in patch 13/15 in
-Documentation/livepatch/livepatch.txt.  Does that answer your questions?
+I could be wrong with this, since the backend can't call unregister
+until register has finished... I'll drop this patch.
+
+-Kees
+
+>
+> Thanks,
+> Namhyung
+>
+>
+>>
+>> Signed-off-by: Kees Cook <keescook@chromium.org>
+>> ---
+>>  fs/pstore/platform.c | 4 ++--
+>>  1 file changed, 2 insertions(+), 2 deletions(-)
+>>
+>> diff --git a/fs/pstore/platform.c b/fs/pstore/platform.c
+>> index 074fe85a2078..d69ef8a840b9 100644
+>> --- a/fs/pstore/platform.c
+>> +++ b/fs/pstore/platform.c
+>> @@ -722,10 +722,10 @@ int pstore_register(struct pstore_info *psi)
+>>          */
+>>         backend = psi->name;
+>>
+>> -       module_put(owner);
+>> -
+>>         pr_info("Registered %s as persistent store backend\n", psi->name);
+>>
+>> +       module_put(owner);
+>> +
+>>         return 0;
+>>  }
+>>  EXPORT_SYMBOL_GPL(pstore_register);
+>> --
+>> 2.7.4
+>>
+
+
 
 -- 
-Josh
+Kees Cook
+Pixel Security
