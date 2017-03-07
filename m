@@ -1,49 +1,20 @@
-Return-Path: <cyrilbur@gmail.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vcdDG4kzczDq8g
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Mar 2017 11:42:54 +1100 (AEDT)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v270cgIX040402
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 6 Mar 2017 19:42:47 -0500
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
- by mx0b-001b2d01.pphosted.com with ESMTP id 291baa32fq-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Mar 2017 19:42:47 -0500
-Received: from localhost
- by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <cyrilbur@gmail.com>;
- Tue, 7 Mar 2017 10:42:44 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id B7CAC2BB0054
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Mar 2017 11:42:41 +1100 (EST)
-Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v270gX2V53018724
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 7 Mar 2017 11:42:41 +1100
-Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
- by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v270g9cY023138
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 7 Mar 2017 11:42:09 +1100
-Received: from ozlabs.au.ibm.com (ozlabs.au.ibm.com [9.192.253.14])
- by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVin) with ESMTP id
- v270g9bM022812
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 7 Mar 2017 11:42:09 +1100
-Received: from camb691.ozlabs.ibm.com (haven.au.ibm.com [9.192.254.114])
- (using TLSv1.2 with cipher DHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.au.ibm.com (Postfix) with ESMTPSA id C14CCA01A5
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Mar 2017 11:41:44 +1100 (AEDT)
-From: Cyril Bur <cyrilbur@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] selftests/powerpc: Replace stxvx and lxvx with their
- equivalent instruction
-Date: Tue,  7 Mar 2017 11:39:31 +1100
-Message-Id: <20170307003931.20568-1-cyrilbur@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vcjZc5fjHzDq8g
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Mar 2017 14:59:04 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linuxppc-dev@ozlabs.org, andrew.donnellan@au1.ibm.com
+Subject: Re: [PATCH] powerpc: Sort the selects under CONFIG_PPC
+In-Reply-To: <20170307074214.63ac935c@canb.auug.org.au>
+References: <1488801917-17782-1-git-send-email-mpe@ellerman.id.au>
+ <20170307074214.63ac935c@canb.auug.org.au>
+Date: Tue, 07 Mar 2017 14:59:02 +1100
+Message-ID: <87r32968l5.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -53,109 +24,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On POWER8 (ISA 2.07) lxvx and stxvx are defined to be extended mnemonics
-of lxvd2x and stxvd2x. For POWER9 (ISA 3.0) the HW architects in their
-infinite wisdom made lxvx and stxvx instructions in their own right.
+Stephen Rothwell <sfr@canb.auug.org.au> writes:
+> On Mon,  6 Mar 2017 23:05:17 +1100 Michael Ellerman <mpe@ellerman.id.au> wrote:
+>>
+>> We have a big list of selects under CONFIG_PPC, and currently they're
+>> completely unsorted. This means people tend to add new selects at the
+>> bottom of the list, and so two commits which both add a new select will
+>> often conflict.
+>> 
+>> Instead sort it alphabetically. This is nicer in and of itself, but also
+>> means two commits that add a new select will have a greater chance of
+>> not conflicting.
+>> 
+>> Add a note at the top and bottom asking people to keep it sorted.
+>> 
+>> And while we're here pad out the 'if' expressions to make them stand
+>> out.
+>> 
+>> Suggested-by: Stephen Rothwell <sfr@canb.auug.org.au>
+>> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+>
+> Looks good.
+>
+>> +	select ARCH_USE_CMPXCHG_LOCKREF		if PPC64
+>
+> Why not just move these "if PPC64" selects to "config PPC64" in
+> arch/powerpc/platforms/Kconfig.cputype?
 
-POWER9 aware GCC will use the POWER9 instruction for lxvx and stxvx
-causing these selftests to fail on POWER8. Further compounding the
-issue, because of the way -mvsx works it will cause the power9
-instructions to be used regardless of -mcpu=power8 to GCC or -mpower8 to
-AS.
+I'd rather they were all in one place.
 
-The safest way to address the problem for now is to not use the extended
-mnemonic. These tests only perform register comparisons the big endian
-only byte ordering for stxvd2x and lxvd2x does not impact the test.
+> Secondary question: why not move "config PPC64" to this file?
 
-Signed-off-by: Cyril Bur <cyrilbur@gmail.com>
----
- tools/testing/selftests/powerpc/include/vsx_asm.h | 48 +++++++++++------------
- 1 file changed, 24 insertions(+), 24 deletions(-)
+Fine by me.
 
-diff --git a/tools/testing/selftests/powerpc/include/vsx_asm.h b/tools/testing/selftests/powerpc/include/vsx_asm.h
-index d828bfb6ef2d..54064ced9e95 100644
---- a/tools/testing/selftests/powerpc/include/vsx_asm.h
-+++ b/tools/testing/selftests/powerpc/include/vsx_asm.h
-@@ -16,56 +16,56 @@
-  */
- FUNC_START(load_vsx)
- 	li	r5,0
--	lxvx	vs20,r5,r3
-+	lxvd2x	vs20,r5,r3
- 	addi	r5,r5,16
--	lxvx	vs21,r5,r3
-+	lxvd2x	vs21,r5,r3
- 	addi	r5,r5,16
--	lxvx	vs22,r5,r3
-+	lxvd2x	vs22,r5,r3
- 	addi	r5,r5,16
--	lxvx	vs23,r5,r3
-+	lxvd2x	vs23,r5,r3
- 	addi	r5,r5,16
--	lxvx	vs24,r5,r3
-+	lxvd2x	vs24,r5,r3
- 	addi	r5,r5,16
--	lxvx	vs25,r5,r3
-+	lxvd2x	vs25,r5,r3
- 	addi	r5,r5,16
--	lxvx	vs26,r5,r3
-+	lxvd2x	vs26,r5,r3
- 	addi	r5,r5,16
--	lxvx	vs27,r5,r3
-+	lxvd2x	vs27,r5,r3
- 	addi	r5,r5,16
--	lxvx	vs28,r5,r3
-+	lxvd2x	vs28,r5,r3
- 	addi	r5,r5,16
--	lxvx	vs29,r5,r3
-+	lxvd2x	vs29,r5,r3
- 	addi	r5,r5,16
--	lxvx	vs30,r5,r3
-+	lxvd2x	vs30,r5,r3
- 	addi	r5,r5,16
--	lxvx	vs31,r5,r3
-+	lxvd2x	vs31,r5,r3
- 	blr
- FUNC_END(load_vsx)
- 
- FUNC_START(store_vsx)
- 	li	r5,0
--	stxvx	vs20,r5,r3
-+	stxvd2x	vs20,r5,r3
- 	addi	r5,r5,16
--	stxvx	vs21,r5,r3
-+	stxvd2x	vs21,r5,r3
- 	addi	r5,r5,16
--	stxvx	vs22,r5,r3
-+	stxvd2x	vs22,r5,r3
- 	addi	r5,r5,16
--	stxvx	vs23,r5,r3
-+	stxvd2x	vs23,r5,r3
- 	addi	r5,r5,16
--	stxvx	vs24,r5,r3
-+	stxvd2x	vs24,r5,r3
- 	addi	r5,r5,16
--	stxvx	vs25,r5,r3
-+	stxvd2x	vs25,r5,r3
- 	addi	r5,r5,16
--	stxvx	vs26,r5,r3
-+	stxvd2x	vs26,r5,r3
- 	addi	r5,r5,16
--	stxvx	vs27,r5,r3
-+	stxvd2x	vs27,r5,r3
- 	addi	r5,r5,16
--	stxvx	vs28,r5,r3
-+	stxvd2x	vs28,r5,r3
- 	addi	r5,r5,16
--	stxvx	vs29,r5,r3
-+	stxvd2x	vs29,r5,r3
- 	addi	r5,r5,16
--	stxvx	vs30,r5,r3
-+	stxvd2x	vs30,r5,r3
- 	addi	r5,r5,16
--	stxvx	vs31,r5,r3
-+	stxvd2x	vs31,r5,r3
- 	blr
- FUNC_END(store_vsx)
--- 
-2.12.0
+cheers
