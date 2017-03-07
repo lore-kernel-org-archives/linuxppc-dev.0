@@ -1,20 +1,32 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
+ [IPv6:2607:f8b0:400e:c00::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vcjZc5fjHzDq8g
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Mar 2017 14:59:04 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linuxppc-dev@ozlabs.org, andrew.donnellan@au1.ibm.com
-Subject: Re: [PATCH] powerpc: Sort the selects under CONFIG_PPC
-In-Reply-To: <20170307074214.63ac935c@canb.auug.org.au>
-References: <1488801917-17782-1-git-send-email-mpe@ellerman.id.au>
- <20170307074214.63ac935c@canb.auug.org.au>
-Date: Tue, 07 Mar 2017 14:59:02 +1100
-Message-ID: <87r32968l5.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vcnHT27GBzDq5W
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Mar 2017 17:46:12 +1100 (AEDT)
+Received: by mail-pf0-x244.google.com with SMTP id j5so20102391pfb.3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Mar 2017 22:46:12 -0800 (PST)
+Message-ID: <1488869161.4285.8.camel@gmail.com>
+Subject: Re: [PATCH v5 05/15] livepatch/powerpc: add TIF_PATCH_PENDING
+ thread flag
+From: Balbir Singh <bsingharora@gmail.com>
+To: Josh Poimboeuf <jpoimboe@redhat.com>, Jessica Yu <jeyu@redhat.com>, Jiri
+ Kosina <jikos@kernel.org>, Miroslav Benes <mbenes@suse.cz>, Petr Mladek
+ <pmladek@suse.com>
+Cc: linux-kernel@vger.kernel.org, live-patching@vger.kernel.org, Michael
+ Ellerman <mpe@ellerman.id.au>, Heiko Carstens <heiko.carstens@de.ibm.com>,
+ x86@kernel.org,  linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ Vojtech Pavlik <vojtech@suse.com>, Jiri Slaby <jslaby@suse.cz>, Chris J
+ Arges <chris.j.arges@canonical.com>, Andy Lutomirski <luto@kernel.org>,
+ Ingo Molnar <mingo@kernel.org>, Peter Zijlstra <peterz@infradead.org>,
+ Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Date: Tue, 07 Mar 2017 17:46:01 +1100
+In-Reply-To: <69e7b24fd0bcf912aa1ea6071d0a345901b3c741.1487036215.git.jpoimboe@redhat.com>
+References: <cover.1487036215.git.jpoimboe@redhat.com>
+ <69e7b24fd0bcf912aa1ea6071d0a345901b3c741.1487036215.git.jpoimboe@redhat.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,37 +36,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Stephen Rothwell <sfr@canb.auug.org.au> writes:
-> On Mon,  6 Mar 2017 23:05:17 +1100 Michael Ellerman <mpe@ellerman.id.au> wrote:
->>
->> We have a big list of selects under CONFIG_PPC, and currently they're
->> completely unsorted. This means people tend to add new selects at the
->> bottom of the list, and so two commits which both add a new select will
->> often conflict.
->> 
->> Instead sort it alphabetically. This is nicer in and of itself, but also
->> means two commits that add a new select will have a greater chance of
->> not conflicting.
->> 
->> Add a note at the top and bottom asking people to keep it sorted.
->> 
->> And while we're here pad out the 'if' expressions to make them stand
->> out.
->> 
->> Suggested-by: Stephen Rothwell <sfr@canb.auug.org.au>
->> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
->
-> Looks good.
->
->> +	select ARCH_USE_CMPXCHG_LOCKREF		if PPC64
->
-> Why not just move these "if PPC64" selects to "config PPC64" in
-> arch/powerpc/platforms/Kconfig.cputype?
+On Mon, 2017-02-13 at 19:42 -0600, Josh Poimboeuf wrote:
+> Add the TIF_PATCH_PENDING thread flag to enable the new livepatch
+> per-task consistency model for powerpc.  The bit getting set indicates
+> the thread has a pending patch which needs to be applied when the thread
+> exits the kernel.
+> 
+> The bit is included in the _TIF_USER_WORK_MASK macro so that
+> do_notify_resume() and klp_update_patch_state() get called when the bit
+> is set.
+> 
+> Signed-off-by: Josh Poimboeuf <jpoimboe@redhat.com>
+> Reviewed-by: Petr Mladek <pmladek@suse.com>
+> Reviewed-by: Miroslav Benes <mbenes@suse.cz>
+> Reviewed-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+> ---
 
-I'd rather they were all in one place.
-
-> Secondary question: why not move "config PPC64" to this file?
-
-Fine by me.
-
-cheers
+Reviewed-by: Balbir Singh <bsingharora@gmail.com>
