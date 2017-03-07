@@ -1,41 +1,22 @@
-Return-Path: <keescook@google.com>
-Received: from mail-io0-x231.google.com (mail-io0-x231.google.com
- [IPv6:2607:f8b0:4001:c06::231])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vd6GC516MzDqLW
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Mar 2017 06:31:15 +1100 (AEDT)
-Received: by mail-io0-x231.google.com with SMTP id f84so11626368ioj.0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 Mar 2017 11:31:15 -0800 (PST)
+Return-Path: <geoff@infradead.org>
+Received: from bombadil.infradead.org (bombadil.infradead.org [65.50.211.133])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vd6Sl1cBfzDqLW
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Mar 2017 06:40:23 +1100 (AEDT)
+Subject: Re: [PATCH] net: toshiba: ps3_genic_net: use new api
+ ethtool_{get|set}_link_ksettings
+To: Philippe Reynes <tremyfr@gmail.com>, benh@kernel.crashing.org,
+ paulus@samba.org, mpe@ellerman.id.au, davem@davemloft.net
+References: <1488752466-27232-1-git-send-email-tremyfr@gmail.com>
+Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+From: Geoff Levand <geoff@infradead.org>
+Message-ID: <59884351-386f-f904-790b-186fc1bf58e2@infradead.org>
+Date: Tue, 7 Mar 2017 11:40:17 -0800
 MIME-Version: 1.0
-Sender: keescook@google.com
-In-Reply-To: <CADWwUUZ3+ZwZaijPxAtacegjtp_0uPVpKZyH8jE045+n1Bp-zQ@mail.gmail.com>
-References: <1488837332-71582-1-git-send-email-keescook@chromium.org>
- <1488837332-71582-7-git-send-email-keescook@chromium.org>
- <CADWwUUZ3+ZwZaijPxAtacegjtp_0uPVpKZyH8jE045+n1Bp-zQ@mail.gmail.com>
-From: Kees Cook <keescook@chromium.org>
-Date: Tue, 7 Mar 2017 11:31:12 -0800
-Message-ID: <CAGXu5j+WmpMcZhqkdaVULnRt5wWheE=QeE+Hv7gfS2R2ET8APg@mail.gmail.com>
-Subject: Re: [PATCH 06/18] pstore: Extract common arguments into structure
-To: Namhyung Kim <namhyung@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
- Nobuhiro Iwamatsu <nobuhiro.iwamatsu.kw@hitachi.com>,
- Qiuxu Zhuo <qiuxu.zhuo@intel.com>,
- Ard Biesheuvel <ard.biesheuvel@linaro.org>, Anton Vorontsov <anton@enomsg.org>,
- Colin Cross <ccross@android.com>, Tony Luck <tony.luck@intel.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Michael Ellerman <mpe@ellerman.id.au>, "Rafael J. Wysocki" <rjw@rjwysocki.net>,
- Len Brown <lenb@kernel.org>, Matt Fleming <matt@codeblueprint.co.uk>,
- Nathan Fontenot <nfont@linux.vnet.ibm.com>,
- Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>, Daniel Axtens <dja@axtens.net>,
- Paul Gortmaker <paul.gortmaker@windriver.com>,
- Geliang Tang <geliangtang@163.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
- "linux-efi@vger.kernel.org" <linux-efi@vger.kernel.org>,
- "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
+In-Reply-To: <1488752466-27232-1-git-send-email-tremyfr@gmail.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,80 +26,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Mar 7, 2017 at 8:22 AM, Namhyung Kim <namhyung@gmail.com> wrote:
-> On Tue, Mar 7, 2017 at 6:55 AM, Kees Cook <keescook@chromium.org> wrote:
->> The read/mkfile pair pass the same arguments and should be cleared
->> between calls. Move to a structure and wipe it after every loop.
->>
->> Signed-off-by: Kees Cook <keescook@chromium.org>
->> ---
->>  fs/pstore/platform.c   | 55 +++++++++++++++++++++++++++-----------------------
->>  include/linux/pstore.h | 28 ++++++++++++++++++++++++-
->>  2 files changed, 57 insertions(+), 26 deletions(-)
->>
->> diff --git a/fs/pstore/platform.c b/fs/pstore/platform.c
->> index 320a673ecb5b..3fa1575a6e36 100644
->> --- a/fs/pstore/platform.c
->> +++ b/fs/pstore/platform.c
->> @@ -766,16 +766,9 @@ EXPORT_SYMBOL_GPL(pstore_unregister);
->>  void pstore_get_records(int quiet)
->>  {
->>         struct pstore_info *psi = psinfo;
->> -       char                    *buf = NULL;
->> -       ssize_t                 size;
->> -       u64                     id;
->> -       int                     count;
->> -       enum pstore_type_id     type;
->> -       struct timespec         time;
->> +       struct pstore_record    record = { .psi = psi, };
->>         int                     failed = 0, rc;
->> -       bool                    compressed;
->>         int                     unzipped_len = -1;
->> -       ssize_t                 ecc_notice_size = 0;
->>
->>         if (!psi)
->>                 return;
->> @@ -784,39 +777,51 @@ void pstore_get_records(int quiet)
->>         if (psi->open && psi->open(psi))
->>                 goto out;
->>
->> -       while ((size = psi->read(&id, &type, &count, &time, &buf, &compressed,
->> -                                &ecc_notice_size, psi)) > 0) {
->> -               if (compressed && (type == PSTORE_TYPE_DMESG)) {
->> +       while ((record.size = psi->read(&record.id, &record.type,
->> +                                &record.count, &record.time,
->> +                                &record.buf, &record.compressed,
->> +                                &record.ecc_notice_size,
->> +                                record.psi)) > 0) {
->> +               if (record.compressed &&
->> +                   record.type == PSTORE_TYPE_DMESG) {
->>                         if (big_oops_buf)
->> -                               unzipped_len = pstore_decompress(buf,
->> -                                                       big_oops_buf, size,
->> +                               unzipped_len = pstore_decompress(
->> +                                                       record.buf,
->> +                                                       big_oops_buf,
->> +                                                       record.size,
->>                                                         big_oops_buf_sz);
->>
->>                         if (unzipped_len > 0) {
->> -                               if (ecc_notice_size)
->> +                               if (record.ecc_notice_size)
->>                                         memcpy(big_oops_buf + unzipped_len,
->> -                                              buf + size, ecc_notice_size);
->> -                               kfree(buf);
->> -                               buf = big_oops_buf;
->> -                               size = unzipped_len;
->> -                               compressed = false;
->> +                                              record.buf + recorrecord.size,
+On 03/05/2017 02:21 PM, Philippe Reynes wrote:
+> The ethtool api {get|set}_settings is deprecated.
+> We move this driver to new api {get|set}_link_ksettings.
 >
-> A typo on record.size.
+> As I don't have the hardware, I'd be very pleased if
+> someone may test this patch.
 
-Thanks! Yeah, 0-day noticed this too. I've refreshed the patches in my
-tree with the correction now.
+I tested this applied to v4.11-rc1 and it seems to work OK.
+Thanks for your contribution.
 
--Kees
-
--- 
-Kees Cook
-Pixel Security
+Tested-by: Geoff Levand <geoff@infradead.org>
