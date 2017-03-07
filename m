@@ -1,30 +1,49 @@
-Return-Path: <mbenes@suse.cz>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
+Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vczHL5kZ4zDq8g
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Mar 2017 01:16:46 +1100 (AEDT)
-Date: Tue, 7 Mar 2017 15:16:41 +0100 (CET)
-From: Miroslav Benes <mbenes@suse.cz>
-To: Josh Poimboeuf <jpoimboe@redhat.com>
-cc: Jessica Yu <jeyu@redhat.com>, Jiri Kosina <jikos@kernel.org>,
- Petr Mladek <pmladek@suse.com>, linux-kernel@vger.kernel.org,
- live-patching@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, x86@kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- Vojtech Pavlik <vojtech@suse.com>, Jiri Slaby <jslaby@suse.cz>,
- Chris J Arges <chris.j.arges@canonical.com>,
- Andy Lutomirski <luto@kernel.org>, Ingo Molnar <mingo@kernel.org>,
- Peter Zijlstra <peterz@infradead.org>,
- Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
- Balbir Singh <bsingharora@gmail.com>
-Subject: Re: [PATCH v5 13/15] livepatch: change to a per-task consistency model
-In-Reply-To: <a999d965d598b23564355c24db0ed6799f105fa6.1487036215.git.jpoimboe@redhat.com>
-Message-ID: <alpine.LSU.2.20.1703071510240.29377@pobox.suse.cz>
-References: <cover.1487036215.git.jpoimboe@redhat.com>
- <a999d965d598b23564355c24db0ed6799f105fa6.1487036215.git.jpoimboe@redhat.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vczZl5vJBzDq8g
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Mar 2017 01:30:07 +1100 (AEDT)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v27ESm1P097713
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 7 Mar 2017 09:30:05 -0500
+Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [125.16.236.5])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 291xb2sam2-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 Mar 2017 09:30:05 -0500
+Received: from localhost
+ by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
+ Tue, 7 Mar 2017 20:00:01 +0530
+Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id A74453940067
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Mar 2017 19:59:57 +0530 (IST)
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+ by d28relay01.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v27ETvHJ43778120
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 7 Mar 2017 19:59:57 +0530
+Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
+ by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v27ETtEL031587
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 7 Mar 2017 19:59:56 +0530
+Date: Tue, 7 Mar 2017 19:59:53 +0530
+From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+To: Masami Hiramatsu <mhiramat@kernel.org>
+Cc: linux-kernel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>,
+ Arnaldo Carvalho de Melo <acme@kernel.org>,
+ linuxppc-dev@lists.ozlabs.org, Ingo Molnar <mingo@redhat.com>
+Subject: Re: [PATCH 5/6] perf: probes: move ftrace README parsing logic into
+ trace-event-parse.c
+References: <cover.1488881988.git.naveen.n.rao@linux.vnet.ibm.com>
+ <b5e4defdba760ea9a48681e3c3075b3517037008.1488881988.git.naveen.n.rao@linux.vnet.ibm.com>
+ <20170307150332.5ecac6a63a6c1d27247cbcb4@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20170307150332.5ecac6a63a6c1d27247cbcb4@kernel.org>
+Message-Id: <20170307142953.GB11046@naverao1-tp.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,104 +53,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 13 Feb 2017, Josh Poimboeuf wrote:
+On 2017/03/07 03:03PM, Masami Hiramatsu wrote:
+> On Tue,  7 Mar 2017 16:17:40 +0530
+> "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
+> 
+> > probe-file.c needs libelf, but scanning ftrace README does not require
+> > that. As such, move the ftrace README scanning logic out of probe-file.c
+> > and into trace-event-parse.c.
+> 
+> Hmm, it seems probe-file.c doesn't require libelf at all...
+> I would like to keep ftrace related things in probe-file.c.
 
-> Change livepatch to use a basic per-task consistency model.  This is the
-> foundation which will eventually enable us to patch those ~10% of
-> security patches which change function or data semantics.  This is the
-> biggest remaining piece needed to make livepatch more generally useful.
-> 
-> This code stems from the design proposal made by Vojtech [1] in November
-> 2014.  It's a hybrid of kGraft and kpatch: it uses kGraft's per-task
-> consistency and syscall barrier switching combined with kpatch's stack
-> trace switching.  There are also a number of fallback options which make
-> it quite flexible.
-> 
-> Patches are applied on a per-task basis, when the task is deemed safe to
-> switch over.  When a patch is enabled, livepatch enters into a
-> transition state where tasks are converging to the patched state.
-> Usually this transition state can complete in a few seconds.  The same
-> sequence occurs when a patch is disabled, except the tasks converge from
-> the patched state to the unpatched state.
-> 
-> An interrupt handler inherits the patched state of the task it
-> interrupts.  The same is true for forked tasks: the child inherits the
-> patched state of the parent.
-> 
-> Livepatch uses several complementary approaches to determine when it's
-> safe to patch tasks:
-> 
-> 1. The first and most effective approach is stack checking of sleeping
->    tasks.  If no affected functions are on the stack of a given task,
->    the task is patched.  In most cases this will patch most or all of
->    the tasks on the first try.  Otherwise it'll keep trying
->    periodically.  This option is only available if the architecture has
->    reliable stacks (HAVE_RELIABLE_STACKTRACE).
-> 
-> 2. The second approach, if needed, is kernel exit switching.  A
->    task is switched when it returns to user space from a system call, a
->    user space IRQ, or a signal.  It's useful in the following cases:
-> 
->    a) Patching I/O-bound user tasks which are sleeping on an affected
->       function.  In this case you have to send SIGSTOP and SIGCONT to
->       force it to exit the kernel and be patched.
->    b) Patching CPU-bound user tasks.  If the task is highly CPU-bound
->       then it will get patched the next time it gets interrupted by an
->       IRQ.
->    c) In the future it could be useful for applying patches for
->       architectures which don't yet have HAVE_RELIABLE_STACKTRACE.  In
->       this case you would have to signal most of the tasks on the
->       system.  However this isn't supported yet because there's
->       currently no way to patch kthreads without
->       HAVE_RELIABLE_STACKTRACE.
-> 
-> 3. For idle "swapper" tasks, since they don't ever exit the kernel, they
->    instead have a klp_update_patch_state() call in the idle loop which
->    allows them to be patched before the CPU enters the idle state.
-> 
->    (Note there's not yet such an approach for kthreads.)
-> 
-> All the above approaches may be skipped by setting the 'immediate' flag
-> in the 'klp_patch' struct, which will disable per-task consistency and
-> patch all tasks immediately.  This can be useful if the patch doesn't
-> change any function or data semantics.  Note that, even with this flag
-> set, it's possible that some tasks may still be running with an old
-> version of the function, until that function returns.
-> 
-> There's also an 'immediate' flag in the 'klp_func' struct which allows
-> you to specify that certain functions in the patch can be applied
-> without per-task consistency.  This might be useful if you want to patch
-> a common function like schedule(), and the function change doesn't need
-> consistency but the rest of the patch does.
-> 
-> For architectures which don't have HAVE_RELIABLE_STACKTRACE, the user
-> must set patch->immediate which causes all tasks to be patched
-> immediately.  This option should be used with care, only when the patch
-> doesn't change any function or data semantics.
-> 
-> In the future, architectures which don't have HAVE_RELIABLE_STACKTRACE
-> may be allowed to use per-task consistency if we can come up with
-> another way to patch kthreads.
-> 
-> The /sys/kernel/livepatch/<patch>/transition file shows whether a patch
-> is in transition.  Only a single patch (the topmost patch on the stack)
-> can be in transition at a given time.  A patch can remain in transition
-> indefinitely, if any of the tasks are stuck in the initial patch state.
-> 
-> A transition can be reversed and effectively canceled by writing the
-> opposite value to the /sys/kernel/livepatch/<patch>/enabled file while
-> the transition is in progress.  Then all the tasks will attempt to
-> converge back to the original patch state.
-> 
-> [1] https://lkml.kernel.org/r/20141107140458.GA21774@suse.cz
-> 
-> Signed-off-by: Josh Poimboeuf <jpoimboe@redhat.com>
+Not sure I understand. probe-file.h explicitly calls out a need for 
+libelf due to the probe cache and related routines - commit 
+40218daea1db1 ("perf list: Show SDT and pre-cached events").
 
-I looked at the patch again and could not see any problem with it. I 
-tested it with a couple of live patches too and it worked as expected. 
-Good job.
-
-Acked-by: Miroslav Benes <mbenes@suse.cz>
+However, if you prefer to retain the ftrace README scanning here, we can 
+drop this patch and I can update patch 6 to check for libelf.
 
 Thanks,
-Miroslav
+Naveen
