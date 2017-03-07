@@ -1,24 +1,29 @@
-Return-Path: <mhiramat@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <mbenes@suse.cz>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vcz0L6v9nzDq8g
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Mar 2017 01:03:45 +1100 (AEDT)
-Date: Tue, 7 Mar 2017 15:03:32 +0100
-From: Masami Hiramatsu <mhiramat@kernel.org>
-To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-Cc: Arnaldo Carvalho de Melo <acme@kernel.org>, Steven Rostedt
- <rostedt@goodmis.org>, Ingo Molnar <mingo@redhat.com>,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Ananth N
- Mavinakayanahalli <ananth@linux.vnet.ibm.com>, Michael Ellerman
- <mpe@ellerman.id.au>
-Subject: Re: [PATCH 5/6] perf: probes: move ftrace README parsing logic into
- trace-event-parse.c
-Message-Id: <20170307150332.5ecac6a63a6c1d27247cbcb4@kernel.org>
-In-Reply-To: <b5e4defdba760ea9a48681e3c3075b3517037008.1488881988.git.naveen.n.rao@linux.vnet.ibm.com>
-References: <cover.1488881988.git.naveen.n.rao@linux.vnet.ibm.com>
- <b5e4defdba760ea9a48681e3c3075b3517037008.1488881988.git.naveen.n.rao@linux.vnet.ibm.com>
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vczHL5kZ4zDq8g
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Mar 2017 01:16:46 +1100 (AEDT)
+Date: Tue, 7 Mar 2017 15:16:41 +0100 (CET)
+From: Miroslav Benes <mbenes@suse.cz>
+To: Josh Poimboeuf <jpoimboe@redhat.com>
+cc: Jessica Yu <jeyu@redhat.com>, Jiri Kosina <jikos@kernel.org>,
+ Petr Mladek <pmladek@suse.com>, linux-kernel@vger.kernel.org,
+ live-patching@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, x86@kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ Vojtech Pavlik <vojtech@suse.com>, Jiri Slaby <jslaby@suse.cz>,
+ Chris J Arges <chris.j.arges@canonical.com>,
+ Andy Lutomirski <luto@kernel.org>, Ingo Molnar <mingo@kernel.org>,
+ Peter Zijlstra <peterz@infradead.org>,
+ Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+ Balbir Singh <bsingharora@gmail.com>
+Subject: Re: [PATCH v5 13/15] livepatch: change to a per-task consistency model
+In-Reply-To: <a999d965d598b23564355c24db0ed6799f105fa6.1487036215.git.jpoimboe@redhat.com>
+Message-ID: <alpine.LSU.2.20.1703071510240.29377@pobox.suse.cz>
+References: <cover.1487036215.git.jpoimboe@redhat.com>
+ <a999d965d598b23564355c24db0ed6799f105fa6.1487036215.git.jpoimboe@redhat.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -29,298 +34,104 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue,  7 Mar 2017 16:17:40 +0530
-"Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
+On Mon, 13 Feb 2017, Josh Poimboeuf wrote:
 
-> probe-file.c needs libelf, but scanning ftrace README does not require
-> that. As such, move the ftrace README scanning logic out of probe-file.c
-> and into trace-event-parse.c.
+> Change livepatch to use a basic per-task consistency model.  This is the
+> foundation which will eventually enable us to patch those ~10% of
+> security patches which change function or data semantics.  This is the
+> biggest remaining piece needed to make livepatch more generally useful.
+> 
+> This code stems from the design proposal made by Vojtech [1] in November
+> 2014.  It's a hybrid of kGraft and kpatch: it uses kGraft's per-task
+> consistency and syscall barrier switching combined with kpatch's stack
+> trace switching.  There are also a number of fallback options which make
+> it quite flexible.
+> 
+> Patches are applied on a per-task basis, when the task is deemed safe to
+> switch over.  When a patch is enabled, livepatch enters into a
+> transition state where tasks are converging to the patched state.
+> Usually this transition state can complete in a few seconds.  The same
+> sequence occurs when a patch is disabled, except the tasks converge from
+> the patched state to the unpatched state.
+> 
+> An interrupt handler inherits the patched state of the task it
+> interrupts.  The same is true for forked tasks: the child inherits the
+> patched state of the parent.
+> 
+> Livepatch uses several complementary approaches to determine when it's
+> safe to patch tasks:
+> 
+> 1. The first and most effective approach is stack checking of sleeping
+>    tasks.  If no affected functions are on the stack of a given task,
+>    the task is patched.  In most cases this will patch most or all of
+>    the tasks on the first try.  Otherwise it'll keep trying
+>    periodically.  This option is only available if the architecture has
+>    reliable stacks (HAVE_RELIABLE_STACKTRACE).
+> 
+> 2. The second approach, if needed, is kernel exit switching.  A
+>    task is switched when it returns to user space from a system call, a
+>    user space IRQ, or a signal.  It's useful in the following cases:
+> 
+>    a) Patching I/O-bound user tasks which are sleeping on an affected
+>       function.  In this case you have to send SIGSTOP and SIGCONT to
+>       force it to exit the kernel and be patched.
+>    b) Patching CPU-bound user tasks.  If the task is highly CPU-bound
+>       then it will get patched the next time it gets interrupted by an
+>       IRQ.
+>    c) In the future it could be useful for applying patches for
+>       architectures which don't yet have HAVE_RELIABLE_STACKTRACE.  In
+>       this case you would have to signal most of the tasks on the
+>       system.  However this isn't supported yet because there's
+>       currently no way to patch kthreads without
+>       HAVE_RELIABLE_STACKTRACE.
+> 
+> 3. For idle "swapper" tasks, since they don't ever exit the kernel, they
+>    instead have a klp_update_patch_state() call in the idle loop which
+>    allows them to be patched before the CPU enters the idle state.
+> 
+>    (Note there's not yet such an approach for kthreads.)
+> 
+> All the above approaches may be skipped by setting the 'immediate' flag
+> in the 'klp_patch' struct, which will disable per-task consistency and
+> patch all tasks immediately.  This can be useful if the patch doesn't
+> change any function or data semantics.  Note that, even with this flag
+> set, it's possible that some tasks may still be running with an old
+> version of the function, until that function returns.
+> 
+> There's also an 'immediate' flag in the 'klp_func' struct which allows
+> you to specify that certain functions in the patch can be applied
+> without per-task consistency.  This might be useful if you want to patch
+> a common function like schedule(), and the function change doesn't need
+> consistency but the rest of the patch does.
+> 
+> For architectures which don't have HAVE_RELIABLE_STACKTRACE, the user
+> must set patch->immediate which causes all tasks to be patched
+> immediately.  This option should be used with care, only when the patch
+> doesn't change any function or data semantics.
+> 
+> In the future, architectures which don't have HAVE_RELIABLE_STACKTRACE
+> may be allowed to use per-task consistency if we can come up with
+> another way to patch kthreads.
+> 
+> The /sys/kernel/livepatch/<patch>/transition file shows whether a patch
+> is in transition.  Only a single patch (the topmost patch on the stack)
+> can be in transition at a given time.  A patch can remain in transition
+> indefinitely, if any of the tasks are stuck in the initial patch state.
+> 
+> A transition can be reversed and effectively canceled by writing the
+> opposite value to the /sys/kernel/livepatch/<patch>/enabled file while
+> the transition is in progress.  Then all the tasks will attempt to
+> converge back to the original patch state.
+> 
+> [1] https://lkml.kernel.org/r/20141107140458.GA21774@suse.cz
+> 
+> Signed-off-by: Josh Poimboeuf <jpoimboe@redhat.com>
 
-Hmm, it seems probe-file.c doesn't require libelf at all...
-I would like to keep ftrace related things in probe-file.c.
+I looked at the patch again and could not see any problem with it. I 
+tested it with a couple of live patches too and it worked as expected. 
+Good job.
+
+Acked-by: Miroslav Benes <mbenes@suse.cz>
 
 Thanks,
-
-> 
-> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
-> ---
->  tools/perf/util/probe-file.c        | 87 +++---------------------------------
->  tools/perf/util/probe-file.h        |  2 -
->  tools/perf/util/trace-event-parse.c | 89 +++++++++++++++++++++++++++++++++++++
->  tools/perf/util/trace-event.h       |  4 ++
->  4 files changed, 99 insertions(+), 83 deletions(-)
-> 
-> diff --git a/tools/perf/util/probe-file.c b/tools/perf/util/probe-file.c
-> index 1542cd0d6799..ff872fa30cdb 100644
-> --- a/tools/perf/util/probe-file.c
-> +++ b/tools/perf/util/probe-file.c
-> @@ -26,6 +26,7 @@
->  #include <api/fs/tracing_path.h>
->  #include "probe-event.h"
->  #include "probe-file.h"
-> +#include "trace-event.h"
->  #include "session.h"
->  
->  #define MAX_CMDLEN 256
-> @@ -70,33 +71,17 @@ static void print_both_open_warning(int kerr, int uerr)
->  	}
->  }
->  
-> -int open_trace_file(const char *trace_file, bool readwrite)
-> -{
-> -	char buf[PATH_MAX];
-> -	int ret;
-> -
-> -	ret = e_snprintf(buf, PATH_MAX, "%s/%s",
-> -			 tracing_path, trace_file);
-> -	if (ret >= 0) {
-> -		pr_debug("Opening %s write=%d\n", buf, readwrite);
-> -		if (readwrite && !probe_event_dry_run)
-> -			ret = open(buf, O_RDWR | O_APPEND, 0);
-> -		else
-> -			ret = open(buf, O_RDONLY, 0);
-> -
-> -		if (ret < 0)
-> -			ret = -errno;
-> -	}
-> -	return ret;
-> -}
-> -
->  static int open_kprobe_events(bool readwrite)
->  {
-> +	if (probe_event_dry_run)
-> +		readwrite = false;
->  	return open_trace_file("kprobe_events", readwrite);
->  }
->  
->  static int open_uprobe_events(bool readwrite)
->  {
-> +	if (probe_event_dry_run)
-> +		readwrite = false;
->  	return open_trace_file("uprobe_events", readwrite);
->  }
->  
-> @@ -877,72 +862,12 @@ int probe_cache__show_all_caches(struct strfilter *filter)
->  	return 0;
->  }
->  
-> -enum ftrace_readme {
-> -	FTRACE_README_PROBE_TYPE_X = 0,
-> -	FTRACE_README_KRETPROBE_OFFSET,
-> -	FTRACE_README_END,
-> -};
-> -
-> -static struct {
-> -	const char *pattern;
-> -	bool avail;
-> -} ftrace_readme_table[] = {
-> -#define DEFINE_TYPE(idx, pat)			\
-> -	[idx] = {.pattern = pat, .avail = false}
-> -	DEFINE_TYPE(FTRACE_README_PROBE_TYPE_X, "*type: * x8/16/32/64,*"),
-> -	DEFINE_TYPE(FTRACE_README_KRETPROBE_OFFSET, "*place (kretprobe): *"),
-> -};
-> -
-> -static bool scan_ftrace_readme(enum ftrace_readme type)
-> -{
-> -	int fd;
-> -	FILE *fp;
-> -	char *buf = NULL;
-> -	size_t len = 0;
-> -	bool ret = false;
-> -	static bool scanned = false;
-> -
-> -	if (scanned)
-> -		goto result;
-> -
-> -	fd = open_trace_file("README", false);
-> -	if (fd < 0)
-> -		return ret;
-> -
-> -	fp = fdopen(fd, "r");
-> -	if (!fp) {
-> -		close(fd);
-> -		return ret;
-> -	}
-> -
-> -	while (getline(&buf, &len, fp) > 0)
-> -		for (enum ftrace_readme i = 0; i < FTRACE_README_END; i++)
-> -			if (!ftrace_readme_table[i].avail)
-> -				ftrace_readme_table[i].avail =
-> -					strglobmatch(buf, ftrace_readme_table[i].pattern);
-> -	scanned = true;
-> -
-> -	fclose(fp);
-> -	free(buf);
-> -
-> -result:
-> -	if (type >= FTRACE_README_END)
-> -		return false;
-> -
-> -	return ftrace_readme_table[type].avail;
-> -}
-> -
->  bool probe_type_is_available(enum probe_type type)
->  {
->  	if (type >= PROBE_TYPE_END)
->  		return false;
->  	else if (type == PROBE_TYPE_X)
-> -		return scan_ftrace_readme(FTRACE_README_PROBE_TYPE_X);
-> +		return probe_type_x_is_supported();
->  
->  	return true;
->  }
-> -
-> -bool kretprobe_offset_is_supported(void)
-> -{
-> -	return scan_ftrace_readme(FTRACE_README_KRETPROBE_OFFSET);
-> -}
-> diff --git a/tools/perf/util/probe-file.h b/tools/perf/util/probe-file.h
-> index dbf95a00864a..eba44c3e9dca 100644
-> --- a/tools/perf/util/probe-file.h
-> +++ b/tools/perf/util/probe-file.h
-> @@ -35,7 +35,6 @@ enum probe_type {
->  
->  /* probe-file.c depends on libelf */
->  #ifdef HAVE_LIBELF_SUPPORT
-> -int open_trace_file(const char *trace_file, bool readwrite);
->  int probe_file__open(int flag);
->  int probe_file__open_both(int *kfd, int *ufd, int flag);
->  struct strlist *probe_file__get_namelist(int fd);
-> @@ -65,7 +64,6 @@ struct probe_cache_entry *probe_cache__find_by_name(struct probe_cache *pcache,
->  					const char *group, const char *event);
->  int probe_cache__show_all_caches(struct strfilter *filter);
->  bool probe_type_is_available(enum probe_type type);
-> -bool kretprobe_offset_is_supported(void);
->  #else	/* ! HAVE_LIBELF_SUPPORT */
->  static inline struct probe_cache *probe_cache__new(const char *tgt __maybe_unused)
->  {
-> diff --git a/tools/perf/util/trace-event-parse.c b/tools/perf/util/trace-event-parse.c
-> index de0078e21408..77697c446cbd 100644
-> --- a/tools/perf/util/trace-event-parse.c
-> +++ b/tools/perf/util/trace-event-parse.c
-> @@ -23,10 +23,12 @@
->  #include <string.h>
->  #include <ctype.h>
->  #include <errno.h>
-> +#include <api/fs/tracing_path.h>
->  
->  #include "../perf.h"
->  #include "util.h"
->  #include "trace-event.h"
-> +#include "debug.h"
->  
->  static int get_common_field(struct scripting_context *context,
->  			    int *offset, int *size, const char *type)
-> @@ -254,3 +256,90 @@ unsigned long long eval_flag(const char *flag)
->  
->  	return 0;
->  }
-> +
-> +int open_trace_file(const char *trace_file, bool readwrite)
-> +{
-> +	char buf[PATH_MAX];
-> +	int ret;
-> +
-> +	ret = snprintf(buf, PATH_MAX, "%s/%s",
-> +			 tracing_path, trace_file);
-> +	if (ret >= PATH_MAX)
-> +		ret = -E2BIG;
-> +	if (ret >= 0) {
-> +		pr_debug("Opening %s write=%d\n", buf, readwrite);
-> +		if (readwrite)
-> +			ret = open(buf, O_RDWR | O_APPEND, 0);
-> +		else
-> +			ret = open(buf, O_RDONLY, 0);
-> +
-> +		if (ret < 0)
-> +			ret = -errno;
-> +	}
-> +	return ret;
-> +}
-> +
-> +enum ftrace_readme {
-> +	FTRACE_README_PROBE_TYPE_X = 0,
-> +	FTRACE_README_KRETPROBE_OFFSET,
-> +	FTRACE_README_END,
-> +};
-> +
-> +static struct {
-> +	const char *pattern;
-> +	bool avail;
-> +} ftrace_readme_table[] = {
-> +#define DEFINE_TYPE(idx, pat)			\
-> +	[idx] = {.pattern = pat, .avail = false}
-> +	DEFINE_TYPE(FTRACE_README_PROBE_TYPE_X, "*type: * x8/16/32/64,*"),
-> +	DEFINE_TYPE(FTRACE_README_KRETPROBE_OFFSET, "*place (kretprobe): *"),
-> +};
-> +
-> +static bool scan_ftrace_readme(enum ftrace_readme type)
-> +{
-> +	int fd;
-> +	FILE *fp;
-> +	char *buf = NULL;
-> +	size_t len = 0;
-> +	bool ret = false;
-> +	static bool scanned = false;
-> +
-> +	if (scanned)
-> +		goto result;
-> +
-> +	fd = open_trace_file("README", false);
-> +	if (fd < 0)
-> +		return ret;
-> +
-> +	fp = fdopen(fd, "r");
-> +	if (!fp) {
-> +		close(fd);
-> +		return ret;
-> +	}
-> +
-> +	while (getline(&buf, &len, fp) > 0)
-> +		for (enum ftrace_readme i = 0; i < FTRACE_README_END; i++)
-> +			if (!ftrace_readme_table[i].avail)
-> +				ftrace_readme_table[i].avail =
-> +					strglobmatch(buf, ftrace_readme_table[i].pattern);
-> +	scanned = true;
-> +
-> +	fclose(fp);
-> +	free(buf);
-> +
-> +result:
-> +	if (type >= FTRACE_README_END)
-> +		return false;
-> +
-> +	return ftrace_readme_table[type].avail;
-> +}
-> +
-> +bool kretprobe_offset_is_supported(void)
-> +{
-> +	return scan_ftrace_readme(FTRACE_README_KRETPROBE_OFFSET);
-> +}
-> +
-> +bool probe_type_x_is_supported(void)
-> +{
-> +	return scan_ftrace_readme(FTRACE_README_PROBE_TYPE_X);
-> +}
-> diff --git a/tools/perf/util/trace-event.h b/tools/perf/util/trace-event.h
-> index 1fbc044f9eb0..ecda2d822daf 100644
-> --- a/tools/perf/util/trace-event.h
-> +++ b/tools/perf/util/trace-event.h
-> @@ -37,6 +37,10 @@ int parse_ftrace_file(struct pevent *pevent, char *buf, unsigned long size);
->  int parse_event_file(struct pevent *pevent,
->  		     char *buf, unsigned long size, char *sys);
->  
-> +int open_trace_file(const char *trace_file, bool readwrite);
-> +bool kretprobe_offset_is_supported(void);
-> +bool probe_type_x_is_supported(void);
-> +
->  unsigned long long
->  raw_field_value(struct event_format *event, const char *name, void *data);
->  
-> -- 
-> 2.11.1
-> 
-
-
--- 
-Masami Hiramatsu <mhiramat@kernel.org>
+Miroslav
