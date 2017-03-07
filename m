@@ -3,19 +3,19 @@ Received: from mail-ua0-x244.google.com (mail-ua0-x244.google.com
  [IPv6:2607:f8b0:400c:c08::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vd1xp11VYzDq8g
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Mar 2017 03:16:46 +1100 (AEDT)
-Received: by mail-ua0-x244.google.com with SMTP id f54so1340441uaa.0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 Mar 2017 08:16:46 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vd23w23KdzDq8g
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Mar 2017 03:22:04 +1100 (AEDT)
+Received: by mail-ua0-x244.google.com with SMTP id f54so1374728uaa.0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 Mar 2017 08:22:04 -0800 (PST)
 MIME-Version: 1.0
 Sender: namhyung.with.foss@gmail.com
-In-Reply-To: <1488837332-71582-4-git-send-email-keescook@chromium.org>
+In-Reply-To: <1488837332-71582-7-git-send-email-keescook@chromium.org>
 References: <1488837332-71582-1-git-send-email-keescook@chromium.org>
- <1488837332-71582-4-git-send-email-keescook@chromium.org>
+ <1488837332-71582-7-git-send-email-keescook@chromium.org>
 From: Namhyung Kim <namhyung@gmail.com>
-Date: Wed, 8 Mar 2017 01:16:43 +0900
-Message-ID: <CADWwUUZAxwUqHU9eRrtP5Hk7KO9KkyvdBy7Z5Xehwhv43fvZVQ@mail.gmail.com>
-Subject: Re: [PATCH 03/18] pstore: Avoid race in module unloading
+Date: Wed, 8 Mar 2017 01:22:01 +0900
+Message-ID: <CADWwUUZ3+ZwZaijPxAtacegjtp_0uPVpKZyH8jE045+n1Bp-zQ@mail.gmail.com>
+Subject: Re: [PATCH 06/18] pstore: Extract common arguments into structure
 To: Kees Cook <keescook@chromium.org>
 Cc: LKML <linux-kernel@vger.kernel.org>,
  Nobuhiro Iwamatsu <nobuhiro.iwamatsu.kw@hitachi.com>,
@@ -42,43 +42,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Kees,
-
 On Tue, Mar 7, 2017 at 6:55 AM, Kees Cook <keescook@chromium.org> wrote:
-> Technically, it might be possible for struct pstore_info to go out of
-> scope after the module_put(), so report the backend name first.
-
-But in that case, using pstore will crash the kernel anyway, right?
-If so, why pstore doesn't keep a reference until unregister?
-Do I miss something?
-
-Thanks,
-Namhyung
-
-
+> The read/mkfile pair pass the same arguments and should be cleared
+> between calls. Move to a structure and wipe it after every loop.
 >
 > Signed-off-by: Kees Cook <keescook@chromium.org>
 > ---
->  fs/pstore/platform.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
+>  fs/pstore/platform.c   | 55 +++++++++++++++++++++++++++-----------------------
+>  include/linux/pstore.h | 28 ++++++++++++++++++++++++-
+>  2 files changed, 57 insertions(+), 26 deletions(-)
 >
 > diff --git a/fs/pstore/platform.c b/fs/pstore/platform.c
-> index 074fe85a2078..d69ef8a840b9 100644
+> index 320a673ecb5b..3fa1575a6e36 100644
 > --- a/fs/pstore/platform.c
 > +++ b/fs/pstore/platform.c
-> @@ -722,10 +722,10 @@ int pstore_register(struct pstore_info *psi)
->          */
->         backend = psi->name;
+> @@ -766,16 +766,9 @@ EXPORT_SYMBOL_GPL(pstore_unregister);
+>  void pstore_get_records(int quiet)
+>  {
+>         struct pstore_info *psi = psinfo;
+> -       char                    *buf = NULL;
+> -       ssize_t                 size;
+> -       u64                     id;
+> -       int                     count;
+> -       enum pstore_type_id     type;
+> -       struct timespec         time;
+> +       struct pstore_record    record = { .psi = psi, };
+>         int                     failed = 0, rc;
+> -       bool                    compressed;
+>         int                     unzipped_len = -1;
+> -       ssize_t                 ecc_notice_size = 0;
 >
-> -       module_put(owner);
-> -
->         pr_info("Registered %s as persistent store backend\n", psi->name);
+>         if (!psi)
+>                 return;
+> @@ -784,39 +777,51 @@ void pstore_get_records(int quiet)
+>         if (psi->open && psi->open(psi))
+>                 goto out;
 >
-> +       module_put(owner);
-> +
->         return 0;
->  }
->  EXPORT_SYMBOL_GPL(pstore_register);
-> --
-> 2.7.4
+> -       while ((size = psi->read(&id, &type, &count, &time, &buf, &compressed,
+> -                                &ecc_notice_size, psi)) > 0) {
+> -               if (compressed && (type == PSTORE_TYPE_DMESG)) {
+> +       while ((record.size = psi->read(&record.id, &record.type,
+> +                                &record.count, &record.time,
+> +                                &record.buf, &record.compressed,
+> +                                &record.ecc_notice_size,
+> +                                record.psi)) > 0) {
+> +               if (record.compressed &&
+> +                   record.type == PSTORE_TYPE_DMESG) {
+>                         if (big_oops_buf)
+> -                               unzipped_len = pstore_decompress(buf,
+> -                                                       big_oops_buf, size,
+> +                               unzipped_len = pstore_decompress(
+> +                                                       record.buf,
+> +                                                       big_oops_buf,
+> +                                                       record.size,
+>                                                         big_oops_buf_sz);
 >
+>                         if (unzipped_len > 0) {
+> -                               if (ecc_notice_size)
+> +                               if (record.ecc_notice_size)
+>                                         memcpy(big_oops_buf + unzipped_len,
+> -                                              buf + size, ecc_notice_size);
+> -                               kfree(buf);
+> -                               buf = big_oops_buf;
+> -                               size = unzipped_len;
+> -                               compressed = false;
+> +                                              record.buf + recorrecord.size,
+
+A typo on record.size.
+
+Thanks,
+Namhyung
