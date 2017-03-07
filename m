@@ -1,15 +1,15 @@
 Return-Path: <bsingharora@gmail.com>
-Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
- [IPv6:2607:f8b0:400e:c00::244])
+Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
+ [IPv6:2607:f8b0:400e:c00::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vcnHT27GBzDq5W
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Mar 2017 17:46:12 +1100 (AEDT)
-Received: by mail-pf0-x244.google.com with SMTP id j5so20102391pfb.3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Mar 2017 22:46:12 -0800 (PST)
-Message-ID: <1488869161.4285.8.camel@gmail.com>
-Subject: Re: [PATCH v5 05/15] livepatch/powerpc: add TIF_PATCH_PENDING
- thread flag
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vcnP55rWwzDq8g
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Mar 2017 17:51:05 +1100 (AEDT)
+Received: by mail-pf0-x243.google.com with SMTP id j5so20116669pfb.3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Mar 2017 22:51:05 -0800 (PST)
+Message-ID: <1488869455.4285.10.camel@gmail.com>
+Subject: Re: [PATCH v5 01/15] stacktrace/x86: add function for detecting
+ reliable stack traces
 From: Balbir Singh <bsingharora@gmail.com>
 To: Josh Poimboeuf <jpoimboe@redhat.com>, Jessica Yu <jeyu@redhat.com>, Jiri
  Kosina <jikos@kernel.org>, Miroslav Benes <mbenes@suse.cz>, Petr Mladek
@@ -21,10 +21,10 @@ Cc: linux-kernel@vger.kernel.org, live-patching@vger.kernel.org, Michael
  Arges <chris.j.arges@canonical.com>, Andy Lutomirski <luto@kernel.org>,
  Ingo Molnar <mingo@kernel.org>, Peter Zijlstra <peterz@infradead.org>,
  Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Date: Tue, 07 Mar 2017 17:46:01 +1100
-In-Reply-To: <69e7b24fd0bcf912aa1ea6071d0a345901b3c741.1487036215.git.jpoimboe@redhat.com>
+Date: Tue, 07 Mar 2017 17:50:55 +1100
+In-Reply-To: <baca30690796f3a0d938060b5f90b81375d76c30.1487036215.git.jpoimboe@redhat.com>
 References: <cover.1487036215.git.jpoimboe@redhat.com>
- <69e7b24fd0bcf912aa1ea6071d0a345901b3c741.1487036215.git.jpoimboe@redhat.com>
+ <baca30690796f3a0d938060b5f90b81375d76c30.1487036215.git.jpoimboe@redhat.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -37,19 +37,39 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On Mon, 2017-02-13 at 19:42 -0600, Josh Poimboeuf wrote:
-> Add the TIF_PATCH_PENDING thread flag to enable the new livepatch
-> per-task consistency model for powerpc.  The bit getting set indicates
-> the thread has a pending patch which needs to be applied when the thread
-> exits the kernel.
+> For live patching and possibly other use cases, a stack trace is only
+> useful if it can be assured that it's completely reliable.  Add a new
+> save_stack_trace_tsk_reliable() function to achieve that.
 > 
-> The bit is included in the _TIF_USER_WORK_MASK macro so that
-> do_notify_resume() and klp_update_patch_state() get called when the bit
-> is set.
+> Note that if the target task isn't the current task, and the target task
+> is allowed to run, then it could be writing the stack while the unwinder
+> is reading it, resulting in possible corruption.  So the caller of
+> save_stack_trace_tsk_reliable() must ensure that the task is either
+> 'current' or inactive.
+> 
+> save_stack_trace_tsk_reliable() relies on the x86 unwinder's detection
+> of pt_regs on the stack.  If the pt_regs are not user-mode registers
+> from a syscall, then they indicate an in-kernel interrupt or exception
+> (e.g. preemption or a page fault), in which case the stack is considered
+> unreliable due to the nature of frame pointers.
+> 
+> It also relies on the x86 unwinder's detection of other issues, such as:
+> 
+> - corrupted stack data
+> - stack grows the wrong way
+> - stack walk doesn't reach the bottom
+> - user didn't provide a large enough entries array
+> 
+> Such issues are reported by checking unwind_error() and !unwind_done().
+> 
+> Also add CONFIG_HAVE_RELIABLE_STACKTRACE so arch-independent code can
+> determine at build time whether the function is implemented.
 > 
 > Signed-off-by: Josh Poimboeuf <jpoimboe@redhat.com>
-> Reviewed-by: Petr Mladek <pmladek@suse.com>
-> Reviewed-by: Miroslav Benes <mbenes@suse.cz>
-> Reviewed-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
 > ---
 
-Reviewed-by: Balbir Singh <bsingharora@gmail.com>
+Could you comment on why we need a reliable trace for live-patching? Are
+we in any way reliant on the stack trace to patch something broken?
+
+Thanks,
+Balbir Singh.
