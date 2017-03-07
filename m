@@ -1,31 +1,24 @@
-Return-Path: <mbenes@suse.cz>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
+Return-Path: <mhiramat@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vd02021kSzDq8g
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Mar 2017 01:50:16 +1100 (AEDT)
-Date: Tue, 7 Mar 2017 15:50:11 +0100 (CET)
-From: Miroslav Benes <mbenes@suse.cz>
-To: Josh Poimboeuf <jpoimboe@redhat.com>
-cc: Jessica Yu <jeyu@redhat.com>, Jiri Kosina <jikos@kernel.org>,
- Petr Mladek <pmladek@suse.com>, linux-kernel@vger.kernel.org,
- live-patching@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, x86@kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- Vojtech Pavlik <vojtech@suse.com>, Jiri Slaby <jslaby@suse.cz>,
- Chris J Arges <chris.j.arges@canonical.com>,
- Andy Lutomirski <luto@kernel.org>, Ingo Molnar <mingo@kernel.org>,
- Peter Zijlstra <peterz@infradead.org>,
- Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
- Balbir Singh <bsingharora@gmail.com>
-Subject: Re: [PATCH v5.1 15/15] livepatch: allow removal of a disabled
- patch
-In-Reply-To: <20170306172029.vk4fk7kzlrh2ty4m@treble>
-Message-ID: <alpine.LSU.2.20.1703071549030.29377@pobox.suse.cz>
-References: <cover.1487036215.git.jpoimboe@redhat.com>
- <95fe68239fc91360093f84aea97418ae88cfc634.1487036215.git.jpoimboe@redhat.com>
- <20170306172029.vk4fk7kzlrh2ty4m@treble>
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vd1Nd4ZXmzDq8g
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Mar 2017 02:51:29 +1100 (AEDT)
+Date: Tue, 7 Mar 2017 16:51:20 +0100
+From: Masami Hiramatsu <mhiramat@kernel.org>
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+Cc: Arnaldo Carvalho de Melo <acme@kernel.org>, Steven Rostedt
+ <rostedt@goodmis.org>, Ingo Molnar <mingo@redhat.com>,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Ananth N
+ Mavinakayanahalli <ananth@linux.vnet.ibm.com>, Michael Ellerman
+ <mpe@ellerman.id.au>
+Subject: Re: [PATCH 5/6] perf: probes: move ftrace README parsing logic into
+ trace-event-parse.c
+Message-Id: <20170307165120.4e52fe447bd231d5e08a996f@kernel.org>
+In-Reply-To: <b5e4defdba760ea9a48681e3c3075b3517037008.1488881988.git.naveen.n.rao@linux.vnet.ibm.com>
+References: <cover.1488881988.git.naveen.n.rao@linux.vnet.ibm.com>
+ <b5e4defdba760ea9a48681e3c3075b3517037008.1488881988.git.naveen.n.rao@linux.vnet.ibm.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -36,66 +29,299 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 6 Mar 2017, Josh Poimboeuf wrote:
+On Tue,  7 Mar 2017 16:17:40 +0530
+"Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
+
+> probe-file.c needs libelf, but scanning ftrace README does not require
+> that. As such, move the ftrace README scanning logic out of probe-file.c
+> and into trace-event-parse.c.
+
+As far as I can see, there is no reason to push this out from probe-file.c
+because anyway this API using code requires libelf. Without this, I can
+still build perf with NO_LIBELF=1. So I wouldn't like to pick this.
+(I think we can drop this from this series)
+Thank you,
 
 > 
-> Currently we do not allow patch module to unload since there is no
-> method to determine if a task is still running in the patched code.
-> 
-> The consistency model gives us the way because when the unpatching
-> finishes we know that all tasks were marked as safe to call an original
-> function. Thus every new call to the function calls the original code
-> and at the same time no task can be somewhere in the patched code,
-> because it had to leave that code to be marked as safe.
-> 
-> We can safely let the patch module go after that.
-> 
-> Completion is used for synchronization between module removal and sysfs
-> infrastructure in a similar way to commit 942e443127e9 ("module: Fix
-> mod->mkobj.kobj potentially freed too early").
-> 
-> Note that we still do not allow the removal for immediate model, that is
-> no consistency model. The module refcount may increase in this case if
-> somebody disables and enables the patch several times. This should not
-> cause any harm.
-> 
-> With this change a call to try_module_get() is moved to
-> __klp_enable_patch from klp_register_patch to make module reference
-> counting symmetric (module_put() is in a patch disable path) and to
-> allow to take a new reference to a disabled module when being enabled.
-> 
-> Finally, we need to be very careful about possible races between
-> klp_unregister_patch(), kobject_put() functions and operations
-> on the related sysfs files.
-> 
-> kobject_put(&patch->kobj) must be called without klp_mutex. Otherwise,
-> it might be blocked by enabled_store() that needs the mutex as well.
-> In addition, enabled_store() must check if the patch was not
-> unregisted in the meantime.
-> 
-> There is no need to do the same for other kobject_put() callsites
-> at the moment. Their sysfs operations neither take the lock nor
-> they access any data that might be freed in the meantime.
-> 
-> There was an attempt to use kobjects the right way and prevent these
-> races by design. But it made the patch definition more complicated
-> and opened another can of worms. See
-> https://lkml.kernel.org/r/1464018848-4303-1-git-send-email-pmladek@suse.com
-> 
-> [Thanks to Petr Mladek for improving the commit message.]
-> 
-> Signed-off-by: Miroslav Benes <mbenes@suse.cz>
-> Signed-off-by: Josh Poimboeuf <jpoimboe@redhat.com>
-> Reviewed-by: Petr Mladek <pmladek@suse.com>
+> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
 > ---
-> v5.1: improve error handling in enable path -- call module_put() in
->       klp_cancel_transition()
+>  tools/perf/util/probe-file.c        | 87 +++---------------------------------
+>  tools/perf/util/probe-file.h        |  2 -
+>  tools/perf/util/trace-event-parse.c | 89 +++++++++++++++++++++++++++++++++++++
+>  tools/perf/util/trace-event.h       |  4 ++
+>  4 files changed, 99 insertions(+), 83 deletions(-)
+> 
+> diff --git a/tools/perf/util/probe-file.c b/tools/perf/util/probe-file.c
+> index 1542cd0d6799..ff872fa30cdb 100644
+> --- a/tools/perf/util/probe-file.c
+> +++ b/tools/perf/util/probe-file.c
+> @@ -26,6 +26,7 @@
+>  #include <api/fs/tracing_path.h>
+>  #include "probe-event.h"
+>  #include "probe-file.h"
+> +#include "trace-event.h"
+>  #include "session.h"
+>  
+>  #define MAX_CMDLEN 256
+> @@ -70,33 +71,17 @@ static void print_both_open_warning(int kerr, int uerr)
+>  	}
+>  }
+>  
+> -int open_trace_file(const char *trace_file, bool readwrite)
+> -{
+> -	char buf[PATH_MAX];
+> -	int ret;
+> -
+> -	ret = e_snprintf(buf, PATH_MAX, "%s/%s",
+> -			 tracing_path, trace_file);
+> -	if (ret >= 0) {
+> -		pr_debug("Opening %s write=%d\n", buf, readwrite);
+> -		if (readwrite && !probe_event_dry_run)
+> -			ret = open(buf, O_RDWR | O_APPEND, 0);
+> -		else
+> -			ret = open(buf, O_RDONLY, 0);
+> -
+> -		if (ret < 0)
+> -			ret = -errno;
+> -	}
+> -	return ret;
+> -}
+> -
+>  static int open_kprobe_events(bool readwrite)
+>  {
+> +	if (probe_event_dry_run)
+> +		readwrite = false;
+>  	return open_trace_file("kprobe_events", readwrite);
+>  }
+>  
+>  static int open_uprobe_events(bool readwrite)
+>  {
+> +	if (probe_event_dry_run)
+> +		readwrite = false;
+>  	return open_trace_file("uprobe_events", readwrite);
+>  }
+>  
+> @@ -877,72 +862,12 @@ int probe_cache__show_all_caches(struct strfilter *filter)
+>  	return 0;
+>  }
+>  
+> -enum ftrace_readme {
+> -	FTRACE_README_PROBE_TYPE_X = 0,
+> -	FTRACE_README_KRETPROBE_OFFSET,
+> -	FTRACE_README_END,
+> -};
+> -
+> -static struct {
+> -	const char *pattern;
+> -	bool avail;
+> -} ftrace_readme_table[] = {
+> -#define DEFINE_TYPE(idx, pat)			\
+> -	[idx] = {.pattern = pat, .avail = false}
+> -	DEFINE_TYPE(FTRACE_README_PROBE_TYPE_X, "*type: * x8/16/32/64,*"),
+> -	DEFINE_TYPE(FTRACE_README_KRETPROBE_OFFSET, "*place (kretprobe): *"),
+> -};
+> -
+> -static bool scan_ftrace_readme(enum ftrace_readme type)
+> -{
+> -	int fd;
+> -	FILE *fp;
+> -	char *buf = NULL;
+> -	size_t len = 0;
+> -	bool ret = false;
+> -	static bool scanned = false;
+> -
+> -	if (scanned)
+> -		goto result;
+> -
+> -	fd = open_trace_file("README", false);
+> -	if (fd < 0)
+> -		return ret;
+> -
+> -	fp = fdopen(fd, "r");
+> -	if (!fp) {
+> -		close(fd);
+> -		return ret;
+> -	}
+> -
+> -	while (getline(&buf, &len, fp) > 0)
+> -		for (enum ftrace_readme i = 0; i < FTRACE_README_END; i++)
+> -			if (!ftrace_readme_table[i].avail)
+> -				ftrace_readme_table[i].avail =
+> -					strglobmatch(buf, ftrace_readme_table[i].pattern);
+> -	scanned = true;
+> -
+> -	fclose(fp);
+> -	free(buf);
+> -
+> -result:
+> -	if (type >= FTRACE_README_END)
+> -		return false;
+> -
+> -	return ftrace_readme_table[type].avail;
+> -}
+> -
+>  bool probe_type_is_available(enum probe_type type)
+>  {
+>  	if (type >= PROBE_TYPE_END)
+>  		return false;
+>  	else if (type == PROBE_TYPE_X)
+> -		return scan_ftrace_readme(FTRACE_README_PROBE_TYPE_X);
+> +		return probe_type_x_is_supported();
+>  
+>  	return true;
+>  }
+> -
+> -bool kretprobe_offset_is_supported(void)
+> -{
+> -	return scan_ftrace_readme(FTRACE_README_KRETPROBE_OFFSET);
+> -}
+> diff --git a/tools/perf/util/probe-file.h b/tools/perf/util/probe-file.h
+> index dbf95a00864a..eba44c3e9dca 100644
+> --- a/tools/perf/util/probe-file.h
+> +++ b/tools/perf/util/probe-file.h
+> @@ -35,7 +35,6 @@ enum probe_type {
+>  
+>  /* probe-file.c depends on libelf */
+>  #ifdef HAVE_LIBELF_SUPPORT
+> -int open_trace_file(const char *trace_file, bool readwrite);
+>  int probe_file__open(int flag);
+>  int probe_file__open_both(int *kfd, int *ufd, int flag);
+>  struct strlist *probe_file__get_namelist(int fd);
+> @@ -65,7 +64,6 @@ struct probe_cache_entry *probe_cache__find_by_name(struct probe_cache *pcache,
+>  					const char *group, const char *event);
+>  int probe_cache__show_all_caches(struct strfilter *filter);
+>  bool probe_type_is_available(enum probe_type type);
+> -bool kretprobe_offset_is_supported(void);
+>  #else	/* ! HAVE_LIBELF_SUPPORT */
+>  static inline struct probe_cache *probe_cache__new(const char *tgt __maybe_unused)
+>  {
+> diff --git a/tools/perf/util/trace-event-parse.c b/tools/perf/util/trace-event-parse.c
+> index de0078e21408..77697c446cbd 100644
+> --- a/tools/perf/util/trace-event-parse.c
+> +++ b/tools/perf/util/trace-event-parse.c
+> @@ -23,10 +23,12 @@
+>  #include <string.h>
+>  #include <ctype.h>
+>  #include <errno.h>
+> +#include <api/fs/tracing_path.h>
+>  
+>  #include "../perf.h"
+>  #include "util.h"
+>  #include "trace-event.h"
+> +#include "debug.h"
+>  
+>  static int get_common_field(struct scripting_context *context,
+>  			    int *offset, int *size, const char *type)
+> @@ -254,3 +256,90 @@ unsigned long long eval_flag(const char *flag)
+>  
+>  	return 0;
+>  }
+> +
+> +int open_trace_file(const char *trace_file, bool readwrite)
+> +{
+> +	char buf[PATH_MAX];
+> +	int ret;
+> +
+> +	ret = snprintf(buf, PATH_MAX, "%s/%s",
+> +			 tracing_path, trace_file);
+> +	if (ret >= PATH_MAX)
+> +		ret = -E2BIG;
+> +	if (ret >= 0) {
+> +		pr_debug("Opening %s write=%d\n", buf, readwrite);
+> +		if (readwrite)
+> +			ret = open(buf, O_RDWR | O_APPEND, 0);
+> +		else
+> +			ret = open(buf, O_RDONLY, 0);
+> +
+> +		if (ret < 0)
+> +			ret = -errno;
+> +	}
+> +	return ret;
+> +}
+> +
+> +enum ftrace_readme {
+> +	FTRACE_README_PROBE_TYPE_X = 0,
+> +	FTRACE_README_KRETPROBE_OFFSET,
+> +	FTRACE_README_END,
+> +};
+> +
+> +static struct {
+> +	const char *pattern;
+> +	bool avail;
+> +} ftrace_readme_table[] = {
+> +#define DEFINE_TYPE(idx, pat)			\
+> +	[idx] = {.pattern = pat, .avail = false}
+> +	DEFINE_TYPE(FTRACE_README_PROBE_TYPE_X, "*type: * x8/16/32/64,*"),
+> +	DEFINE_TYPE(FTRACE_README_KRETPROBE_OFFSET, "*place (kretprobe): *"),
+> +};
+> +
+> +static bool scan_ftrace_readme(enum ftrace_readme type)
+> +{
+> +	int fd;
+> +	FILE *fp;
+> +	char *buf = NULL;
+> +	size_t len = 0;
+> +	bool ret = false;
+> +	static bool scanned = false;
+> +
+> +	if (scanned)
+> +		goto result;
+> +
+> +	fd = open_trace_file("README", false);
+> +	if (fd < 0)
+> +		return ret;
+> +
+> +	fp = fdopen(fd, "r");
+> +	if (!fp) {
+> +		close(fd);
+> +		return ret;
+> +	}
+> +
+> +	while (getline(&buf, &len, fp) > 0)
+> +		for (enum ftrace_readme i = 0; i < FTRACE_README_END; i++)
+> +			if (!ftrace_readme_table[i].avail)
+> +				ftrace_readme_table[i].avail =
+> +					strglobmatch(buf, ftrace_readme_table[i].pattern);
+> +	scanned = true;
+> +
+> +	fclose(fp);
+> +	free(buf);
+> +
+> +result:
+> +	if (type >= FTRACE_README_END)
+> +		return false;
+> +
+> +	return ftrace_readme_table[type].avail;
+> +}
+> +
+> +bool kretprobe_offset_is_supported(void)
+> +{
+> +	return scan_ftrace_readme(FTRACE_README_KRETPROBE_OFFSET);
+> +}
+> +
+> +bool probe_type_x_is_supported(void)
+> +{
+> +	return scan_ftrace_readme(FTRACE_README_PROBE_TYPE_X);
+> +}
+> diff --git a/tools/perf/util/trace-event.h b/tools/perf/util/trace-event.h
+> index 1fbc044f9eb0..ecda2d822daf 100644
+> --- a/tools/perf/util/trace-event.h
+> +++ b/tools/perf/util/trace-event.h
+> @@ -37,6 +37,10 @@ int parse_ftrace_file(struct pevent *pevent, char *buf, unsigned long size);
+>  int parse_event_file(struct pevent *pevent,
+>  		     char *buf, unsigned long size, char *sys);
+>  
+> +int open_trace_file(const char *trace_file, bool readwrite);
+> +bool kretprobe_offset_is_supported(void);
+> +bool probe_type_x_is_supported(void);
+> +
+>  unsigned long long
+>  raw_field_value(struct event_format *event, const char *name, void *data);
+>  
+> -- 
+> 2.11.1
+> 
 
-Looks good.
 
-Acked-by: Miroslav Benes <mbenes@suse.cz>
-
-if it is needed for Josh's code.
-
-Regards,
-Miroslav
+-- 
+Masami Hiramatsu <mhiramat@kernel.org>
