@@ -1,46 +1,26 @@
-Return-Path: <srs0=msm2=2r=linux.vnet.ibm.com=bharata@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
+ [IPv6:2607:f8b0:400e:c05::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vdWyz0VrMzDqYV
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Mar 2017 22:49:31 +1100 (AEDT)
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3vdWyy74G7z8sX0
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Mar 2017 22:49:30 +1100 (AEDT)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3vdWyy2JRhz9sCZ
- for <linuxppc-dev@ozlabs.org>; Wed,  8 Mar 2017 22:49:30 +1100 (AEDT)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v28Bn16A039531
- for <linuxppc-dev@ozlabs.org>; Wed, 8 Mar 2017 06:49:27 -0500
-Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [125.16.236.6])
- by mx0a-001b2d01.pphosted.com with ESMTP id 292ec88232-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Wed, 08 Mar 2017 06:49:27 -0500
-Received: from localhost
- by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <bharata@linux.vnet.ibm.com>;
- Wed, 8 Mar 2017 17:19:24 +0530
-Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay08.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v28BmCRV15532114
- for <linuxppc-dev@ozlabs.org>; Wed, 8 Mar 2017 17:18:12 +0530
-Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
- by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v28BnKjv012597
- for <linuxppc-dev@ozlabs.org>; Wed, 8 Mar 2017 17:19:21 +0530
-From: Bharata B Rao <bharata@linux.vnet.ibm.com>
-To: linuxppc-dev@ozlabs.org
-Cc: nfont@linux.vnet.ibm.com, Bharata B Rao <bharata@linux.vnet.ibm.com>
-Subject: [FIX PATCH] powerpc/pseries: Fix reference count leak during CPU
- unplug
-Date: Wed,  8 Mar 2017 17:19:15 +0530
-Message-Id: <1488973755-30269-1-git-send-email-bharata@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vdXdj4Vr2zDqYx
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Mar 2017 23:19:37 +1100 (AEDT)
+Received: by mail-pg0-x244.google.com with SMTP id b5so3325080pgg.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Mar 2017 04:19:37 -0800 (PST)
+Date: Wed, 8 Mar 2017 22:19:19 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Gautham R Shenoy <ego.lkml@gmail.com>
+Cc: ego@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org, Vaidyanathan
+ Srinivasan <svaidy@linux.vnet.ibm.com>
+Subject: Re: [PATCH 5/5] powerpc/64s: fix POWER9 machine check handler from
+ stop state
+Message-ID: <20170308221919.732986fd@roar.ozlabs.ibm.com>
+In-Reply-To: <CAHZ_5WxicD=W6wqVdtEVRrewCgszO-S5mmdsiGWPm4wvUCOE-A@mail.gmail.com>
+References: <20170216183901.28611-1-npiggin@gmail.com>
+ <20170216183901.28611-6-npiggin@gmail.com>
+ <CAHZ_5WxicD=W6wqVdtEVRrewCgszO-S5mmdsiGWPm4wvUCOE-A@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,67 +30,88 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The following warning is seen when a CPU is hot unplugged on a PowerKVM
-guest:
+Hi Gautham,
 
-refcount_t: underflow; use-after-free.
-------------[ cut here ]------------
-WARNING: CPU: 0 PID: 53 at lib/refcount.c:128 refcount_sub_and_test+0xd8/0xf0
-Modules linked in:
-CPU: 0 PID: 53 Comm: kworker/u510:1 Not tainted 4.11.0-rc1 #3
-Workqueue: pseries hotplug workque pseries_hp_work_fn
-task: c0000000fb475000 task.stack: c0000000fb81c000
-NIP: c0000000006f0808 LR: c0000000006f0804 CTR: c0000000007b98c0
-REGS: c0000000fb81f710 TRAP: 0700   Not tainted  (4.11.0-rc1)
-MSR: 800000000282b033 <SF,VEC,VSX,EE,FP,ME,IR,DR,RI,LE>
-  CR: 48002222  XER: 20000000
-CFAR: c000000000c438e0 SOFTE: 1
-GPR00: c0000000006f0804 c0000000fb81f990 c000000001573b00 0000000000000026
-GPR04: 0000000000000000 000000000000016c 667265652e0d0a73 652d61667465722d
-GPR08: 0000000000000007 0000000000000007 0000000000000001 0000000000000006
-GPR12: 0000000000002200 c00000000ff40000 c00000000010c578 c0000001f11b9f40
-GPR16: c0000001fe0312a8 c0000001fe031078 c0000001fe031020 0000000000000001
-GPR20: 0000000000000000 0000000000000000 c000000001454808 fffffffffffffef7
-GPR24: 0000000000000000 c0000001f1677648 0000000000000000 0000000000000000
-GPR28: 0000000010000008 c000000000e4d3d8 0000000000000000 c0000001eaae07d8
-NIP [c0000000006f0808] refcount_sub_and_test+0xd8/0xf0
-LR [c0000000006f0804] refcount_sub_and_test+0xd4/0xf0
-Call Trace:
-[c0000000fb81f990] [c0000000006f0804] refcount_sub_and_test+0xd4/0xf0 (unreliable)
-[c0000000fb81f9f0] [c0000000006d04b4] kobject_put+0x44/0x2a0
-[c0000000fb81fa70] [c0000000009d5284] of_node_put+0x34/0x50
-[c0000000fb81faa0] [c0000000000aceb8] dlpar_cpu_remove_by_index+0x108/0x130
-[c0000000fb81fb30] [c0000000000ae128] dlpar_cpu+0x78/0x550
-[c0000000fb81fbe0] [c0000000000a7b40] handle_dlpar_errorlog+0xc0/0x160
-[c0000000fb81fc50] [c0000000000a7c74] pseries_hp_work_fn+0x94/0xa0
-[c0000000fb81fc80] [c000000000102cec] process_one_work+0x23c/0x540
-[c0000000fb81fd20] [c00000000010309c] worker_thread+0xac/0x620
-[c0000000fb81fdc0] [c00000000010c6c4] kthread+0x154/0x1a0
-[c0000000fb81fe30] [c00000000000bbe0] ret_from_kernel_thread+0x5c/0x7c
+I'm just getting back to this. Sorry for the late reply, and
+thanks for the reviews.
 
-Fix this by ensuring that of_node_put() is called only from the
-error path in dlpar_cpu_remove_by_index(). In the normal path,
-of_node_put() happens as part of dlpar_detach_node().
+On Tue, 28 Feb 2017 22:45:46 +0530
+Gautham R Shenoy <ego.lkml@gmail.com> wrote:
 
-Signed-off-by: Bharata B Rao <bharata@linux.vnet.ibm.com>
-Cc: Nathan Fontenot <nfont@linux.vnet.ibm.com>
----
- arch/powerpc/platforms/pseries/hotplug-cpu.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+> Hi Nick,
+> 
+> On Fri, Feb 17, 2017 at 12:09 AM, Nicholas Piggin <npiggin@gmail.com> wrote:
+> > The ISA specifies power save wakeup can cause a machine check interrupt.
+> > The machine check handler currently has code to handle that for POWER8,
+> > but POWER9 crashes when trying to execute the P8 style sleep
+> > instructions.
+> >
+> > So queue up the machine check, then call into the idle code to wake up
+> > as the system reset interrupt does, rather than attempting to sleep
+> > again without going through the main idle path.
+> >
+> > Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> > ---
+> >  arch/powerpc/kernel/exceptions-64s.S | 71 ++++++++++++++++++------------------
+> >  1 file changed, 36 insertions(+), 35 deletions(-)
+> >
+> > diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+> > index 5f775783f744..0388843c8d12 100644
+> > --- a/arch/powerpc/kernel/exceptions-64s.S
+> > +++ b/arch/powerpc/kernel/exceptions-64s.S
+> > @@ -329,6 +329,35 @@ EXC_COMMON_BEGIN(machine_check_common)
+> >         /* restore original r1. */                      \
+> >         ld      r1,GPR1(r1)
+> >
+> > +#ifdef CONFIG_PPC_P7_NAP
+> > +EXC_COMMON_BEGIN(machine_check_idle_common)
+> > +       bl      machine_check_queue_event
+> > +       /*
+> > +        * Queue the machine check, then reload SRR1 and use it to set
+> > +        * CR3 according to pnv_powersave_wakeup convention.
+> > +        */
+> > +       ld      r12,_MSR(r1)
+> > +       rlwinm  r11,r12,47-31,30,31
+> > +       cmpwi   cr3,r11,2
+> > +
+> > +       /*
+> > +        * Now have to make SRR1 wake up reason look like a system reset
+> > +        * interrupt. Put 0xf in there, which is reserved (and does not
+> > +        * match HMI).  
+> 
+> The only places where the wakeup reason is presently checked on the way out
+> of idle-exit are in KVM guest entry path in kvmppc_check_wake_reason()
+>  and on the CPU-Hotplug exit path pnv_smp_cpu_kill_self(). In both places
+> we do a positive check for EE, Doorbell, HVEE . The kvm case is also
+> interested in
+> HMI. We ignore all the other reasons at the moment.
+> 
+> So this should be fine.
 
-diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-index 7bc0e91..b5eff35 100644
---- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
-+++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-@@ -619,7 +619,8 @@ static int dlpar_cpu_remove_by_index(u32 drc_index)
- 	}
- 
- 	rc = dlpar_cpu_remove(dn, drc_index);
--	of_node_put(dn);
-+	if (rc)
-+		of_node_put(dn);
- 	return rc;
- }
- 
--- 
-2.7.4
+Okay, thanks for confirming. We will have to be careful about this I
+suppose if the wakeup reasons are expanded. I'll make a note of it
+in asm/reg.h with the WAKEMASK definitions.
+
+> > +        */
+> > +       li      r11,0xf
+> > +       insrdi  r12,r11,4,45  
+> 
+> 
+> Shouldn't this be insrdi r12,r11,4,42? The exception bits are 42:45.
+> I always have trouble wrapping my head around these nifty
+> rotate-shift-mask-insert instructions. So I might as well be wrong!
+
+Ah I think you're right, good catch. Maybe oris r12,r12,0x3c is a better
+choice than that insrdi?
+
+
+> 
+> Otherwise, the patch looks correct to me.
+> Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+
+Very much appreciate the reviews. I'm just getting some time to work on
+the winkle count patch, so I'll repost with your suggestions when that's
+done.
+
+Thanks,
+Nick
