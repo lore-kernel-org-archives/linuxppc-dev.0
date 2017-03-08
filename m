@@ -1,16 +1,18 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vdQ6f5R5LzDqY3
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Mar 2017 18:25:46 +1100 (AEDT)
-In-Reply-To: <20161127134620.74007843@roar.ozlabs.ibm.com>
-To: Nicholas Piggin <npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vdQ6g4V5VzDqY3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Mar 2017 18:25:47 +1100 (AEDT)
+In-Reply-To: <1486199020-59977-1-git-send-email-shile.zhang@nokia.com>
+To: Shile Zhang <shile.zhang@nokia.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org, Alan Modra <amodra@gmail.com>
-Subject: Re: [2/3] powerpc: allow compilation on cross-endian toolchain
-Message-Id: <3vdQ6f4vgvz9sN5@ozlabs.org>
-Date: Wed,  8 Mar 2017 18:25:46 +1100 (AEDT)
+Cc: Shile Zhang <shile.zhang@nokia.com>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: powerpc/64: Fix checksum folding in csum_add
+Message-Id: <3vdQ6g3pbYz9sN6@ozlabs.org>
+Date: Wed,  8 Mar 2017 18:25:47 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,24 +22,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 2016-11-27 at 02:46:20 UTC, Nicholas Piggin wrote:
-> Subject: [PATCH] powerpc: allow compilation on cross-endian toolchain
+On Sat, 2017-02-04 at 09:03:40 UTC, Shile Zhang wrote:
+> fix the missed point in Paul's patch:
+> "powerpc/64: Fix checksum folding in csum_tcpudp_nofold and
+> ip_fast_csum_nofold"
 > 
-> GCC can compile with either endian, but the ABI version always
-> defaults to the default endian. Alan Modra says:
-> 
->   you need both -mbig and -mabi=elfv1 to make a powerpc64le gcc
->   generate powerpc64 code
-> 
-> The opposite is true for powerpc64 when generating -mlittle it
-> requires -mabi=elfv2 to generate v2 ABI. This change adds ABI
-> annotations together with endianness. The kernel with ELFv2 ABI
-> also uses -mcall-aixdesc, but boot/ does not.
-> 
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> Signed-off-by: Shile Zhang <shile.zhang@nokia.com>
+> Acked-by: Paul Mackerras <paulus@ozlabs.org>
 
 Applied to powerpc fixes, thanks.
 
-https://git.kernel.org/powerpc/c/4dc831aa88132f835cefe876aa0206
+https://git.kernel.org/powerpc/c/6ad966d7303b70165228dba1ee8da1
 
 cheers
