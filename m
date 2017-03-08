@@ -1,50 +1,23 @@
-Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <axboe@kernel.dk>
+Received: from mail-it0-x230.google.com (mail-it0-x230.google.com
+ [IPv6:2607:f8b0:4001:c0b::230])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vdfZF1M2LzDqZF
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Mar 2017 03:47:00 +1100 (AEDT)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v28Gf5r7017580
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 8 Mar 2017 11:46:53 -0500
-Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [125.16.236.2])
- by mx0a-001b2d01.pphosted.com with ESMTP id 292gteqs9u-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Mar 2017 11:46:53 -0500
-Received: from localhost
- by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Wed, 8 Mar 2017 22:16:50 +0530
-Received: from d28av06.in.ibm.com (d28av06.in.ibm.com [9.184.220.48])
- by d28relay10.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v28Gjd9s19595514
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 8 Mar 2017 22:15:39 +0530
-Received: from d28av06.in.ibm.com (localhost [127.0.0.1])
- by d28av06.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v28GkkLU017653
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 8 Mar 2017 22:16:47 +0530
-Date: Wed, 8 Mar 2017 22:16:44 +0530
-From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-To: Arnaldo Carvalho de Melo <acme@kernel.org>,
- Michael Ellerman <mpe@ellerman.id.au>
-Cc: Masami Hiramatsu <mhiramat@kernel.org>,
- Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@redhat.com>,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>
-Subject: Re: [PATCH v5 2/5] powerpc: kretprobes: override default function
- entry offset
-References: <cover.1488961018.git.naveen.n.rao@linux.vnet.ibm.com>
- <53bcae5a711eab803c9c3210110e8a464df34202.1488961018.git.naveen.n.rao@linux.vnet.ibm.com>
- <87o9xcujzi.fsf@concordia.ellerman.id.au>
- <20170308142412.GI11046@naverao1-tp.localdomain>
- <20170308142916.GA3035@kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vdh5x4106zDqXg
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Mar 2017 04:56:05 +1100 (AEDT)
+Received: by mail-it0-x230.google.com with SMTP id w124so16104935itb.0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Mar 2017 09:56:05 -0800 (PST)
+Subject: Re: [PATCH] axonram: Fix gendisk handling
+To: Jan Kara <jack@suse.cz>, Michael Ellerman <mpe@ellerman.id.au>
+References: <20170308135605.4250-1-jack@suse.cz>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-block@vger.kernel.org,
+ Dan Carpenter <dan.carpenter@oracle.com>
+From: Jens Axboe <axboe@kernel.dk>
+Message-ID: <3e7da115-32c8-7b80-3530-b4cf74edfa0d@kernel.dk>
+Date: Wed, 8 Mar 2017 10:55:56 -0700
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170308142916.GA3035@kernel.org>
-Message-Id: <20170308164644.GK11046@naverao1-tp.localdomain>
+In-Reply-To: <20170308135605.4250-1-jack@suse.cz>
+Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -54,76 +27,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2017/03/08 11:29AM, Arnaldo Carvalho de Melo wrote:
-> Em Wed, Mar 08, 2017 at 07:54:12PM +0530, Naveen N. Rao escreveu:
-> > Hi Michael,
-> > 
-> > On 2017/03/08 09:43PM, Michael Ellerman wrote:
-> > > "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> writes:
-> > > 
-> > > > With ABIv2, we offset 8 bytes into a function to get at the local entry
-> > > > point.
-> > > >
-> > > > Acked-by: Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>
-> > > > Acked-by: Michael Ellerman <mpe@ellerman.id.au>
-> > > > Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
-> > > > ---
-> > > >  arch/powerpc/kernel/kprobes.c | 9 +++++++++
-> > > >  1 file changed, 9 insertions(+)
-> > > 
-> > > I'm OK with this change, and I'm happy for it to go with the rest of the
-> > > series via acme's tree:
-> > > 
-> > > Acked-by: Michael Ellerman <mpe@ellerman.id.au>
-> > > 
-> > > 
-> > > But, you've also sent a series to do KPROBES_ON_FTRACE, and that also
-> > > touches this function, see the 2nd to last hunk at:
-> > > 
-> > >   https://patchwork.ozlabs.org/patch/730675/
-> > > 
-> > > 
-> > > If this goes via acme's tree it will be awkward for me to merge the
-> > > series above via the powerpc tree.
-> > 
-> > Ah yes, indeed.
-> > 
-> > > 
-> > > So we could do topic branches and so on, or we could just drop this
-> > > patch from this series, and I'll merge it as part of the other series.
-> > > It won't do anything useful until it's merged with a tree that also has
-> > > the rest of this series. Or something else I haven't thought of.
-> > 
-> > The arch-independent change that this depends on has been picked up by 
-> > Arnaldo and pushed to Ingo:
-> > https://www.mail-archive.com/linuxppc-dev@lists.ozlabs.org/msg115211.html
-> > 
-> > I'm guessing this will go into v4.11? In which case, this powerpc patch 
-> > should also go in. Otherwise kretprobes will be broken on powerpc64le.
+On 03/08/2017 06:56 AM, Jan Kara wrote:
+> It is invalid to call del_gendisk() when disk->queue is NULL. Fix error
+> handling in axon_ram_probe() to avoid doing that.
 > 
-> I don't think so, I've put it in a perf/core branch, meaning its not
-> strictly fixes, could be processed in the next merge window if Ingo
-> thinks we've passed the current merge window threshold for such kind of
-> changes, and he merged it into perf/core, meaning, at this time, that it
-> is aimed for 4.12.
+> Also del_gendisk() does not drop a reference to gendisk allocated by
+> alloc_disk(). That has to be done by put_disk(). Add that call where
+> needed.
 
-Ah, thanks for clarifying.
+Applied, thanks.
 
-> 
-> > I wasn't sure if you were planning on picking up KPROBES_ON_FTRACE for 
-> > v4.11. If so, it would be good to take this patch through the powerpc 
-> > tree. Otherwise, this can go via Ingo's tree.
-> 
-> If you guys convince Ingo that this should go _now_, then just cherry
-> pick what was merged into tip/perf/core that is needed for the arch
-> specific stuff and go from there.
-
-Ok, in hindsight, I think Michael's concern was actually for v4.12 
-itself, in which case this particular patch can go via powerpc tree, 
-while the rest of the patches in this series can go via your tree.
-
-Michael?
-
-
-Thanks,
-Naveen
+-- 
+Jens Axboe
