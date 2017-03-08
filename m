@@ -1,20 +1,48 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vdWQ65mjKzDqYv
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Mar 2017 22:24:30 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: "Tobin C. Harding" <me@tobin.cc>, Ingo Molnar <mingo@redhat.com>,
- Steven Rostedt <rostedt@goodmis.org>
-Cc: linuxppc-dev@lists.ozlabs.org, "Tobin C. Harding" <me@tobin.cc>
-Subject: Re: [PATCH] powerpc/ftrace: add ftrace.h, fix sparse warning
-In-Reply-To: <1488790186-4828-1-git-send-email-me@tobin.cc>
-References: <1488790186-4828-1-git-send-email-me@tobin.cc>
-Date: Wed, 08 Mar 2017 22:24:28 +1100
-Message-ID: <87innkui37.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vdWmK3KGhzDqYw
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Mar 2017 22:40:17 +1100 (AEDT)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v28BT4SL043214
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 8 Mar 2017 06:40:02 -0500
+Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [125.16.236.5])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 292g4kb4ee-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Mar 2017 06:40:01 -0500
+Received: from localhost
+ by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
+ Wed, 8 Mar 2017 17:09:58 +0530
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+ by d28relay08.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v28Bckd14915306
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 8 Mar 2017 17:08:46 +0530
+Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
+ by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v28BdspU013124
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 8 Mar 2017 17:09:55 +0530
+Date: Wed, 8 Mar 2017 17:09:52 +0530
+From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+To: Masami Hiramatsu <mhiramat@kernel.org>
+Cc: Arnaldo Carvalho de Melo <acme@kernel.org>,
+ Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@redhat.com>,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH v5 5/5] perf: powerpc: choose local entry point with
+ kretprobes
+References: <cover.1488961018.git.naveen.n.rao@linux.vnet.ibm.com>
+ <7445b5334673ef5404ac1d12609bad4d73d2b567.1488961018.git.naveen.n.rao@linux.vnet.ibm.com>
+ <20170308113156.05692fd7a012ca3f647ed594@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20170308113156.05692fd7a012ca3f647ed594@kernel.org>
+Message-Id: <20170308113952.GH11046@naverao1-tp.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,63 +52,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-"Tobin C. Harding" <me@tobin.cc> writes:
+On 2017/03/08 11:31AM, Masami Hiramatsu wrote:
+> On Wed,  8 Mar 2017 13:56:10 +0530
+> "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
+> 
+> > perf now uses an offset from _text/_stext for kretprobes if the kernel
+> > supports it, rather than the actual function name. As such, let's choose
+> > the LEP for powerpc ABIv2 so as to ensure the probe gets hit. Do it only
+> > if the kernel supports specifying offsets with kretprobes.
+> 
+> Acked-by: Masami Hiramatsu <mhiramat@kernel.org>
+> 
+> This patch is OK. And I found that most of functions in sym-handling.c
+> are used only when libelf is supported. (e.g. probe-event.c itself
+> is not built when we have no libelf)
+> So, for the next cleanup, this file should not be compiled without
+> libelf.
 
-> Sparse emits warning: symbol 'prepare_ftrace_return' was not
-> declared. Should it be static? prepare_ftrace_return() is called
-> from assembler and should not be static. Adding a header file
-> declaring the function will fix the sparse warning while adding
-> documentation to the call.
->
-> Add header file ftrace.h with single function declaration. Protect
-> declaration with preprocessor guard so it may be included in
-> assembly. Include new header in all files that call
-> prepare_ftrace_return() and in ftrace.c where function is defined.
->
-> Signed-off-by: Tobin C. Harding <me@tobin.cc>
-> ---
->
-> Github issue: #37 Fix sparse warnings
->
-> Tested by building on Power8.
->
-> There are a bunch of these in arch/powerpc/kernel/. Do we want to add
-> a header for each one, cluttering up the directory to fix the sparse
-> warnings? 
+There are still a few functions there which work without libelf. But, I 
+agree that the file has far too many #ifdefs between ABIv2 and libelf. I 
+will see if I can simplify this file.
 
-No we don't.
-
-In fact we already have a header for this, ie. functions defined in asm
-but called from C, it's arch/powerpc/include/asm/asm-prototypes.h.
-
-So I've reworked it to:
-
-diff --git a/arch/powerpc/include/asm/asm-prototypes.h b/arch/powerpc/include/asm/asm-prototypes.h
-index f6c5264287e5..e02db66a77e3 100644
---- a/arch/powerpc/include/asm/asm-prototypes.h
-+++ b/arch/powerpc/include/asm/asm-prototypes.h
-@@ -120,6 +120,8 @@ extern s64 __ashrdi3(s64, int);
- extern int __cmpdi2(s64, s64);
- extern int __ucmpdi2(u64, u64);
- 
-+/* tracing */
- void _mcount(void);
-+unsigned long prepare_ftrace_return(unsigned long parent, unsigned long ip);
- 
- #endif /* _ASM_POWERPC_ASM_PROTOTYPES_H */
-diff --git a/arch/powerpc/kernel/ftrace.c b/arch/powerpc/kernel/ftrace.c
-index 5c9f50c1aa99..32509de6ce4c 100644
---- a/arch/powerpc/kernel/ftrace.c
-+++ b/arch/powerpc/kernel/ftrace.c
-@@ -21,6 +21,7 @@
- #include <linux/init.h>
- #include <linux/list.h>
- 
-+#include <asm/asm-prototypes.h>
- #include <asm/cacheflush.h>
- #include <asm/code-patching.h>
- #include <asm/ftrace.h>
-
-
-
-cheers
+Thanks,
+Naveen
