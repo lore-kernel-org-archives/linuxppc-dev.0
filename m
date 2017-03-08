@@ -1,25 +1,25 @@
-Return-Path: <mhiramat@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vdVFd1tkgzDqYs
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Mar 2017 21:32:04 +1100 (AEDT)
-Date: Wed, 8 Mar 2017 11:31:56 +0100
-From: Masami Hiramatsu <mhiramat@kernel.org>
-To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-Cc: Arnaldo Carvalho de Melo <acme@kernel.org>, Masami Hiramatsu
- <mhiramat@kernel.org>, Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar
- <mingo@redhat.com>, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, Ananth N Mavinakayanahalli
- <ananth@linux.vnet.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH v5 5/5] perf: powerpc: choose local entry point with
- kretprobes
-Message-Id: <20170308113156.05692fd7a012ca3f647ed594@kernel.org>
-In-Reply-To: <7445b5334673ef5404ac1d12609bad4d73d2b567.1488961018.git.naveen.n.rao@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vdVVr6D02zDqYt
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Mar 2017 21:43:32 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
+ Arnaldo Carvalho de Melo <acme@kernel.org>
+Cc: Masami Hiramatsu <mhiramat@kernel.org>,
+ Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@redhat.com>,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>
+Subject: Re: [PATCH v5 2/5] powerpc: kretprobes: override default function
+ entry offset
+In-Reply-To: <53bcae5a711eab803c9c3210110e8a464df34202.1488961018.git.naveen.n.rao@linux.vnet.ibm.com>
 References: <cover.1488961018.git.naveen.n.rao@linux.vnet.ibm.com>
- <7445b5334673ef5404ac1d12609bad4d73d2b567.1488961018.git.naveen.n.rao@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ <53bcae5a711eab803c9c3210110e8a464df34202.1488961018.git.naveen.n.rao@linux.vnet.ibm.com>
+Date: Wed, 08 Mar 2017 21:43:29 +1100
+Message-ID: <87o9xcujzi.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,69 +29,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed,  8 Mar 2017 13:56:10 +0530
-"Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
+"Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> writes:
 
-> perf now uses an offset from _text/_stext for kretprobes if the kernel
-> supports it, rather than the actual function name. As such, let's choose
-> the LEP for powerpc ABIv2 so as to ensure the probe gets hit. Do it only
-> if the kernel supports specifying offsets with kretprobes.
-
-Acked-by: Masami Hiramatsu <mhiramat@kernel.org>
-
-This patch is OK. And I found that most of functions in sym-handling.c
-are used only when libelf is supported. (e.g. probe-event.c itself
-is not built when we have no libelf)
-So, for the next cleanup, this file should not be compiled without
-libelf.
-
-Thanks!
-
-> 
+> With ABIv2, we offset 8 bytes into a function to get at the local entry
+> point.
+>
+> Acked-by: Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>
+> Acked-by: Michael Ellerman <mpe@ellerman.id.au>
 > Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
 > ---
->  tools/perf/arch/powerpc/util/sym-handling.c | 14 ++++++++++----
->  1 file changed, 10 insertions(+), 4 deletions(-)
-> 
-> diff --git a/tools/perf/arch/powerpc/util/sym-handling.c b/tools/perf/arch/powerpc/util/sym-handling.c
-> index 1030a6e504bb..39dbe512b9fc 100644
-> --- a/tools/perf/arch/powerpc/util/sym-handling.c
-> +++ b/tools/perf/arch/powerpc/util/sym-handling.c
-> @@ -10,6 +10,7 @@
->  #include "symbol.h"
->  #include "map.h"
->  #include "probe-event.h"
-> +#include "probe-file.h"
+>  arch/powerpc/kernel/kprobes.c | 9 +++++++++
+>  1 file changed, 9 insertions(+)
+
+I'm OK with this change, and I'm happy for it to go with the rest of the
+series via acme's tree:
+
+Acked-by: Michael Ellerman <mpe@ellerman.id.au>
+
+
+But, you've also sent a series to do KPROBES_ON_FTRACE, and that also
+touches this function, see the 2nd to last hunk at:
+
+  https://patchwork.ozlabs.org/patch/730675/
+
+
+If this goes via acme's tree it will be awkward for me to merge the
+series above via the powerpc tree.
+
+So we could do topic branches and so on, or we could just drop this
+patch from this series, and I'll merge it as part of the other series.
+It won't do anything useful until it's merged with a tree that also has
+the rest of this series. Or something else I haven't thought of.
+
+cheers
+
+> diff --git a/arch/powerpc/kernel/kprobes.c b/arch/powerpc/kernel/kprobes.c
+> index fce05a38851c..331751701fed 100644
+> --- a/arch/powerpc/kernel/kprobes.c
+> +++ b/arch/powerpc/kernel/kprobes.c
+> @@ -131,6 +131,15 @@ static void __kprobes set_current_kprobe(struct kprobe *p, struct pt_regs *regs,
+>  	kcb->kprobe_saved_msr = regs->msr;
+>  }
 >  
->  #ifdef HAVE_LIBELF_SUPPORT
->  bool elf__needs_adjust_symbols(GElf_Ehdr ehdr)
-> @@ -79,13 +80,18 @@ void arch__fix_tev_from_maps(struct perf_probe_event *pev,
->  	 * However, if the user specifies an offset, we fall back to using the
->  	 * GEP since all userspace applications (objdump/readelf) show function
->  	 * disassembly with offsets from the GEP.
-> -	 *
-> -	 * In addition, we shouldn't specify an offset for kretprobes.
->  	 */
-> -	if (pev->point.offset || (!pev->uprobes && pev->point.retprobe) ||
-> -	    !map || !sym)
-> +	if (pev->point.offset || !map || !sym)
->  		return;
->  
-> +	/* For kretprobes, add an offset only if the kernel supports it */
-> +	if (!pev->uprobes && pev->point.retprobe) {
-> +#ifdef HAVE_LIBELF_SUPPORT
-> +		if (!kretprobe_offset_is_supported())
+> +bool arch_function_offset_within_entry(unsigned long offset)
+> +{
+> +#ifdef PPC64_ELF_ABI_v2
+> +	return offset <= 8;
+> +#else
+> +	return !offset;
 > +#endif
-> +			return;
-> +	}
+> +}
 > +
->  	lep_offset = PPC64_LOCAL_ENTRY_OFFSET(sym->arch_sym);
->  
->  	if (map->dso->symtab_type == DSO_BINARY_TYPE__KALLSYMS)
+>  void __kprobes arch_prepare_kretprobe(struct kretprobe_instance *ri,
+>  				      struct pt_regs *regs)
+>  {
 > -- 
 > 2.11.1
-> 
-
-
--- 
-Masami Hiramatsu <mhiramat@kernel.org>
