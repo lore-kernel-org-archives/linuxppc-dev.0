@@ -1,26 +1,22 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
- [IPv6:2607:f8b0:400e:c05::244])
+Return-Path: <broonie@sirena.org.uk>
+Received: from mezzanine.sirena.org.uk (mezzanine.sirena.org.uk
+ [IPv6:2400:8900::f03c:91ff:fedb:4f4])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vdXdj4Vr2zDqYx
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Mar 2017 23:19:37 +1100 (AEDT)
-Received: by mail-pg0-x244.google.com with SMTP id b5so3325080pgg.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Mar 2017 04:19:37 -0800 (PST)
-Date: Wed, 8 Mar 2017 22:19:19 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Gautham R Shenoy <ego.lkml@gmail.com>
-Cc: ego@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org, Vaidyanathan
- Srinivasan <svaidy@linux.vnet.ibm.com>
-Subject: Re: [PATCH 5/5] powerpc/64s: fix POWER9 machine check handler from
- stop state
-Message-ID: <20170308221919.732986fd@roar.ozlabs.ibm.com>
-In-Reply-To: <CAHZ_5WxicD=W6wqVdtEVRrewCgszO-S5mmdsiGWPm4wvUCOE-A@mail.gmail.com>
-References: <20170216183901.28611-1-npiggin@gmail.com>
- <20170216183901.28611-6-npiggin@gmail.com>
- <CAHZ_5WxicD=W6wqVdtEVRrewCgszO-S5mmdsiGWPm4wvUCOE-A@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vdZ443dqLzDqYw
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Mar 2017 00:24:04 +1100 (AEDT)
+From: Mark Brown <broonie@kernel.org>
+To: Alin Grigorean <alin.grig93@gmail.com>
+Cc: Nicolin Chen <nicoleotsuka@gmail.com>, Mark Brown <broonie@kernel.org>,
+ timur@tabi.org, nicoleotsuka@gmail.com, Xiubo.Lee@gmail.com, perex@perex.cz,
+ tiwai@suse.com, alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org,
+ lgirdwood@gmail.com, broonie@kernel.org, fabio.estevam@nxp.com,
+ linuxppc-dev@lists.ozlabs.org, alsa-devel@alsa-project.org
+In-Reply-To: <20170225104726.15936-1-alin.grig93@gmail.com>
+Message-Id: <E1clbYs-0000O9-K4@finisterre>
+Date: Wed, 08 Mar 2017 14:23:26 +0100
+Subject: Applied "ASoC: fsl: Remove unneeded init of static variable" to the
+ asoc tree
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,88 +26,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Gautham,
+The patch
 
-I'm just getting back to this. Sorry for the late reply, and
-thanks for the reviews.
+   ASoC: fsl: Remove unneeded init of static variable
 
-On Tue, 28 Feb 2017 22:45:46 +0530
-Gautham R Shenoy <ego.lkml@gmail.com> wrote:
+has been applied to the asoc tree at
 
-> Hi Nick,
-> 
-> On Fri, Feb 17, 2017 at 12:09 AM, Nicholas Piggin <npiggin@gmail.com> wrote:
-> > The ISA specifies power save wakeup can cause a machine check interrupt.
-> > The machine check handler currently has code to handle that for POWER8,
-> > but POWER9 crashes when trying to execute the P8 style sleep
-> > instructions.
-> >
-> > So queue up the machine check, then call into the idle code to wake up
-> > as the system reset interrupt does, rather than attempting to sleep
-> > again without going through the main idle path.
-> >
-> > Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-> > ---
-> >  arch/powerpc/kernel/exceptions-64s.S | 71 ++++++++++++++++++------------------
-> >  1 file changed, 36 insertions(+), 35 deletions(-)
-> >
-> > diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-> > index 5f775783f744..0388843c8d12 100644
-> > --- a/arch/powerpc/kernel/exceptions-64s.S
-> > +++ b/arch/powerpc/kernel/exceptions-64s.S
-> > @@ -329,6 +329,35 @@ EXC_COMMON_BEGIN(machine_check_common)
-> >         /* restore original r1. */                      \
-> >         ld      r1,GPR1(r1)
-> >
-> > +#ifdef CONFIG_PPC_P7_NAP
-> > +EXC_COMMON_BEGIN(machine_check_idle_common)
-> > +       bl      machine_check_queue_event
-> > +       /*
-> > +        * Queue the machine check, then reload SRR1 and use it to set
-> > +        * CR3 according to pnv_powersave_wakeup convention.
-> > +        */
-> > +       ld      r12,_MSR(r1)
-> > +       rlwinm  r11,r12,47-31,30,31
-> > +       cmpwi   cr3,r11,2
-> > +
-> > +       /*
-> > +        * Now have to make SRR1 wake up reason look like a system reset
-> > +        * interrupt. Put 0xf in there, which is reserved (and does not
-> > +        * match HMI).  
-> 
-> The only places where the wakeup reason is presently checked on the way out
-> of idle-exit are in KVM guest entry path in kvmppc_check_wake_reason()
->  and on the CPU-Hotplug exit path pnv_smp_cpu_kill_self(). In both places
-> we do a positive check for EE, Doorbell, HVEE . The kvm case is also
-> interested in
-> HMI. We ignore all the other reasons at the moment.
-> 
-> So this should be fine.
+   git://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git 
 
-Okay, thanks for confirming. We will have to be careful about this I
-suppose if the wakeup reasons are expanded. I'll make a note of it
-in asm/reg.h with the WAKEMASK definitions.
+All being well this means that it will be integrated into the linux-next
+tree (usually sometime in the next 24 hours) and sent to Linus during
+the next merge window (or sooner if it is a bug fix), however if
+problems are discovered then the patch may be dropped or reverted.  
 
-> > +        */
-> > +       li      r11,0xf
-> > +       insrdi  r12,r11,4,45  
-> 
-> 
-> Shouldn't this be insrdi r12,r11,4,42? The exception bits are 42:45.
-> I always have trouble wrapping my head around these nifty
-> rotate-shift-mask-insert instructions. So I might as well be wrong!
+You may get further e-mails resulting from automated or manual testing
+and review of the tree, please engage with people reporting problems and
+send followup patches addressing any issues that are reported if needed.
 
-Ah I think you're right, good catch. Maybe oris r12,r12,0x3c is a better
-choice than that insrdi?
+If any updates are required or you are submitting further changes they
+should be sent as incremental updates against current git, existing
+patches will not be replaced.
 
-
-> 
-> Otherwise, the patch looks correct to me.
-> Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
-
-Very much appreciate the reviews. I'm just getting some time to work on
-the winkle count patch, so I'll repost with your suggestions when that's
-done.
+Please add any relevant lists and maintainers to the CCs when replying
+to this mail.
 
 Thanks,
-Nick
+Mark
+
+>From cb7d53b499f95febd4b5bc80a473706c717d5d2c Mon Sep 17 00:00:00 2001
+From: Alin Grigorean <alin.grig93@gmail.com>
+Date: Sat, 25 Feb 2017 12:47:26 +0200
+Subject: [PATCH] ASoC: fsl: Remove unneeded init of static variable
+
+This was reported by checkpatch.pl
+
+Signed-off-by: Alin Grigorean <alin.grig93@gmail.com>
+Acked-by: Nicolin Chen <nicoleotsuka@gmail.com>
+Signed-off-by: Mark Brown <broonie@kernel.org>
+---
+ sound/soc/fsl/imx-pcm-fiq.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/sound/soc/fsl/imx-pcm-fiq.c b/sound/soc/fsl/imx-pcm-fiq.c
+index dac6688540dc..92410f7ca1fa 100644
+--- a/sound/soc/fsl/imx-pcm-fiq.c
++++ b/sound/soc/fsl/imx-pcm-fiq.c
+@@ -282,7 +282,7 @@ static int imx_pcm_new(struct snd_soc_pcm_runtime *rtd)
+ 	return 0;
+ }
+ 
+-static int ssi_irq = 0;
++static int ssi_irq;
+ 
+ static int imx_pcm_fiq_new(struct snd_soc_pcm_runtime *rtd)
+ {
+-- 
+2.11.0
