@@ -1,18 +1,16 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vdQ6t2wkPzDqY6
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Mar 2017 18:25:58 +1100 (AEDT)
-In-Reply-To: <1488671674-20833-1-git-send-email-anton@ozlabs.org>
-To: Anton Blanchard <anton@ozlabs.org>, benh@kernel.crashing.org,
- paulus@samba.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vdQ6w2KZ3zDqYZ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Mar 2017 18:26:00 +1100 (AEDT)
+In-Reply-To: <1488798929-4546-1-git-send-email-mpe@ellerman.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: Re: powerpc: Avoid panic during boot due to divide by zero in
- init_cache_info()
-Message-Id: <3vdQ6t1n1Fz9sNX@ozlabs.org>
-Date: Wed,  8 Mar 2017 18:25:58 +1100 (AEDT)
+Cc: pc@us.ibm.com
+Subject: Re: powerpc/64: Fix L1D cache shape vector reporting L1I values
+Message-Id: <3vdQ6w15bkz9sNH@ozlabs.org>
+Date: Wed,  8 Mar 2017 18:26:00 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,34 +20,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 2017-03-04 at 23:54:34 UTC, Anton Blanchard wrote:
-> From: Anton Blanchard <anton@samba.org>
+On Mon, 2017-03-06 at 11:15:29 UTC, Michael Ellerman wrote:
+> It seems we didn't pay quite enough attention when testing the new cache
+> shape vectors, which means we didn't notice the bug where the vector for
+> the L1D was using the L1I values. Fix it, resulting in eg:
 > 
-> I see a panic in early boot when building with a recent gcc toolchain.
-> The issue is a divide by zero, which is undefined. Older toolchains
-> let us get away with it:
+>   L1I  cache size:     0x8000      32768B         32K
+>   L1I  line size:        0x80       8-way associative
+>   L1D  cache size:    0x10000      65536B         64K
+>   L1D  line size:        0x80       8-way associative
 > 
-> int foo(int a) { return a / 0; }
-> 
-> foo:
-> 	li 9,0
-> 	divw 3,3,9
-> 	extsw 3,3
-> 	blr
-> 
-> But newer ones catch it:
-> 
-> foo:
-> 	trap
-> 
-> Add a check to avoid the divide by zero.
-> 
-> Fixes: bd067f83b084 ("powerpc/64: Fix naming of cache block vs. cache line")
-> Signed-off-by: Anton Blanchard <anton@samba.org>
-> Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Fixes: 98a5f361b862 ("powerpc: Add new cache geometry aux vectors")
+> Cut-and-paste-bug-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Badly-reviewed-by: Michael Ellerman <mpe@ellerman.id.au>
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
-Applied to powerpc fixes, thanks.
+Applied to powerpc fixes.
 
-https://git.kernel.org/powerpc/c/6ba422c75facb1b1e0e206c464ee12
+https://git.kernel.org/powerpc/c/9c7a00868c3a77c86ab07a2c51f3bb
 
 cheers
