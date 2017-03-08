@@ -1,26 +1,17 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vdQ6p5lmfzDqYt
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Mar 2017 18:25:54 +1100 (AEDT)
-In-Reply-To: <1488174007-8732-1-git-send-email-ego@linux.vnet.ibm.com>
-To: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Neuling <mikey@neuling.org>,
- Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
- "Shreyas B. Prabhu" <shreyasbp@gmail.com>,
- Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
- Balbir Singh <bsingharora@gmail.com>,
- Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>,
- Anton Blanchard <anton@samba.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vdQ6r0H6LzDqYB
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Mar 2017 18:25:56 +1100 (AEDT)
+In-Reply-To: <1488261828-19696-1-git-send-email-sjitindarsingh@gmail.com>
+To: Suraj Jitindar Singh <sjitindarsingh@gmail.com>, linuxppc-dev@ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Subject: Re: [v2] powernv:idle: Fix bug due to labeling ambiguity in
- power_enter_stop
-Message-Id: <3vdQ6p4LMRz9sNG@ozlabs.org>
-Date: Wed,  8 Mar 2017 18:25:54 +1100 (AEDT)
+Cc: mikey@neuling.org, paulus@samba.org,
+ Suraj Jitindar Singh <sjitindarsingh@gmail.com>, sam.bobroff@au1.ibm.com
+Subject: Re: [V3,1/2] powerpc: Parse the command line before calling CAS
+Message-Id: <3vdQ6q3wvNz9sN9@ozlabs.org>
+Date: Wed,  8 Mar 2017 18:25:55 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,44 +21,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2017-02-27 at 05:40:07 UTC, "Gautham R. Shenoy" wrote:
-> From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+On Tue, 2017-02-28 at 06:03:47 UTC, Suraj Jitindar Singh wrote:
+> On POWER9 the hypervisor requires the guest to decide whether it would
+> like to use a hash or radix mmu model at the time it calls
+> ibm,client-architecture-support (CAS) based on what the hypervisor has
+> said it's allowed to do. It is possible to disable radix by passing
+> "disable_radix" on the command line. The next patch will add support for
+> the new CAS format, thus we need to parse the command line before calling
+> CAS so we can correctly select which mmu we would like to use.
 > 
-> Commit 09206b600c76 ("powernv: Pass PSSCR value and mask to
-> power9_idle_stop") added additional code in power_enter_stop() to
-> distinguish between stop requests whose PSSCR had ESL=EC=1 from those
-> which did not. When ESL=EC=1, we do a forward-jump to a location
-> labelled by "1", which had the code to handle the ESL=EC=1 case.
-> 
-> Unforunately just a couple of instructions before this label, is the
-> macro IDLE_STATE_ENTER_SEQ() which also has a label "1" in its
-> expansion.
-> 
-> As a result, the current code can result in directly executing stop
-> instruction for deep stop requests with PSSCR ESL=EC=1, without saving
-> the hypervisor state.
-> 
-> Fix this BUG by labeling the location that handles ESL=EC=1 case with
-> a more descriptive label ".Lhandle_esl_ec_set" (local label suggestion
-> a la .Lxx from Anton Blanchard).
-> 
-> While at it, rename the label "2" labelling the location of the code
-> handling entry into deep stop states with ".Lhandle_deep_stop".
-> 
-> For a good measure, change the label in IDLE_STATE_ENTER_SEQ() macro
-> to an not-so commonly used value in order to avoid similar mishaps in
-> the future.
-> 
-> Fixes: 09206b600c76 ("powernv: Pass PSSCR value and mask to
-> power9_idle_stop")
-> 
-> Cc: Michael Neuling <mikey@neuling.org>
-> Cc: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+> Signed-off-by: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
+> Reviewed-by: Paul Mackerras <paulus@ozlabs.org>
+> Acked-by: Balbir Singh <bsingharora@gmail.com>
 
-Applied to powerpc fixes, thanks.
+Series applied to powerpc fixes, thanks.
 
-https://git.kernel.org/powerpc/c/424f8acd328a111319ae30bf384e5d
+https://git.kernel.org/powerpc/c/12cc9fd6b2d8ee307a735b3b9faed0
 
 cheers
