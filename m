@@ -1,16 +1,16 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vdQ6r5FxdzDqYB
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Mar 2017 18:25:56 +1100 (AEDT)
-In-Reply-To: <20170302064124.26342-1-aik@ozlabs.ru>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vdQ6s4lHkzDqYh
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Mar 2017 18:25:57 +1100 (AEDT)
+In-Reply-To: <20170303005844.21050-1-bsingharora@gmail.com>
+To: Balbir Singh <bsingharora@gmail.com>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, Paul Mackerras <paulus@samba.org>
-Subject: Re: [kernel] powerpc/powernv: Fix clobbered MSR
-Message-Id: <3vdQ6r3q57z9sN6@ozlabs.org>
-Date: Wed,  8 Mar 2017 18:25:56 +1100 (AEDT)
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [v2] powerpc/xics,icp-opal: Fix CPPR setting for icp-opal
+Message-Id: <3vdQ6s3LwLz9sNW@ozlabs.org>
+Date: Wed,  8 Mar 2017 18:25:57 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,31 +20,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2017-03-02 at 06:41:24 UTC, Alexey Kardashevskiy wrote:
-> If CONFIG_DEBUG_INFO_SPLIT is not set but CONFIG_DEBUG_INFO is,
-> the kernel makefile just adds "-g" and the scripts/gcc-goto.sh test for
-> the "asm goto ("" :::: entry)" support succedes and adds
-> -DCC_HAVE_ASM_GOTO to KBUILD_CFLAGS/KBUILD_AFLAGS. This effectively
-> makes OPAL_BRANCH() a noop (or something similar).
+On Fri, 2017-03-03 at 00:58:44 UTC, Balbir Singh wrote:
+> CPPR (Current Processor Priority Register) emulation on icp-opal
+> uses a single priority in the backend and that can cause CPU
+> hotplug to be affected when we try to send an IPI to it.
 > 
-> With CONFIG_DEBUG_INFO_SPLIT=y, the makefile adds "-gsplit-dwarf" which
-> somehow makes the scripts/gcc-goto.sh test fail and not have
-> CC_HAVE_ASM_GOTO defined so the alternative OPAL_BRANCH() is used
-> and this particular chunk clobbers r12 where the parenting code -
-> OPAL_CALL() - stores MSR; as the result, the kernel oops'es right after
-> early_setup() because of broken MSR.
+> The fix is in migrate_irqs_away, the fix does the following:
 > 
-> This replaces r12 with r11 which is overwritten right after
-> OPAL_BRANCH(opal_tracepoint_entry) anyway.
+> 1. It moves the setting of CPPR to after all IRQ migration
+>    is complete
+> 2. In icp-opal, we ignore masking the CPPR when the CPPR
+> is set to default priority, anything else we just pass
+> through
 > 
-> I used gcc 5.4.1 20161205 built from sha1 ffadbf3ae29.
+> Right now this fix is designed with backporting to stable
+> in mind
 > 
-> Fixes: ab9bad0ead9a ("powerpc/powernv: Remove separate entry for OPAL real mode calls")
-> Suggested-by: Paul Mackerras <paulus@samba.org>
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> We'll need a newer version of this later when we merge the
+> DEFAULT and IPI priorities to the same value in the kernel.
+> 
+> Fixes: d74361881f0d ("powerpc/xics: Add ICP OPAL backend")
+> Cc: stable@vger.kernel.org (v4.8+)
+> 
+> Testing
+> 
+> 1. I've tested this fix on a virtual partition running under
+>    kvm
+> 2. Gautham and Vaidy have done some testing on an system that
+>    uses the OPAL backend
+> 3. I've also tested this on a system with a native XICS controller
+> 
+> Suggested-by: Michael Ellerman <mpe@ellerman.id.au>
+> Reported-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+> Tested-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+> Signed-off-by: Balbir Singh <bsingharora@gmail.com>
 
 Applied to powerpc fixes, thanks.
 
-https://git.kernel.org/powerpc/c/2a9c4f40ab2c281f95d41577ff0f7f
+https://git.kernel.org/powerpc/c/a69e2fb70350a66f91175cd2625f1e
 
 cheers
