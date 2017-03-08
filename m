@@ -1,34 +1,44 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
- [IPv6:2607:f8b0:400e:c00::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vdTGj3B0QzDqYl
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Mar 2017 20:47:57 +1100 (AEDT)
-Received: by mail-pf0-x244.google.com with SMTP id j5so3241506pfb.3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Mar 2017 01:47:57 -0800 (PST)
-Message-ID: <1488966437.13674.2.camel@gmail.com>
-Subject: Re: [PATCH v5 01/15] stacktrace/x86: add function for detecting
- reliable stack traces
-From: Balbir Singh <bsingharora@gmail.com>
-To: Josh Poimboeuf <jpoimboe@redhat.com>
-Cc: Jessica Yu <jeyu@redhat.com>, Jiri Kosina <jikos@kernel.org>, Miroslav
- Benes <mbenes@suse.cz>, Petr Mladek <pmladek@suse.com>,
- linux-kernel@vger.kernel.org,  live-patching@vger.kernel.org, Michael
- Ellerman <mpe@ellerman.id.au>, Heiko Carstens <heiko.carstens@de.ibm.com>,
- x86@kernel.org, linuxppc-dev@lists.ozlabs.org,  linux-s390@vger.kernel.org,
- Vojtech Pavlik <vojtech@suse.com>, Jiri Slaby <jslaby@suse.cz>, Chris J
- Arges <chris.j.arges@canonical.com>, Andy Lutomirski <luto@kernel.org>,
- Ingo Molnar <mingo@kernel.org>, Peter Zijlstra <peterz@infradead.org>,
- Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Date: Wed, 08 Mar 2017 20:47:17 +1100
-In-Reply-To: <20170307161230.44rvjm7ed7azgu6x@treble>
-References: <cover.1487036215.git.jpoimboe@redhat.com>
- <baca30690796f3a0d938060b5f90b81375d76c30.1487036215.git.jpoimboe@redhat.com>
- <1488869455.4285.10.camel@gmail.com>
- <20170307161230.44rvjm7ed7azgu6x@treble>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vdTkj1cH6zDqYr
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Mar 2017 21:08:44 +1100 (AEDT)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v28A4Nn3006922
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 8 Mar 2017 05:08:26 -0500
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 292f82ht4g-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Mar 2017 05:08:26 -0500
+Received: from localhost
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
+ Wed, 8 Mar 2017 20:08:23 +1000
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v28A8DNO54395050
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 8 Mar 2017 21:08:21 +1100
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v28A7mPC006568
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 8 Mar 2017 21:07:48 +1100
+Date: Wed, 8 Mar 2017 15:37:29 +0530
+From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+To: Masami Hiramatsu <mhiramat@kernel.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>,
+ Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>,
+ Anton Blanchard <anton@samba.org>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] powerpc: kprobes: convert __kprobes to NOKPROBE_SYMBOL()
+References: <20170307203929.5807-1-naveen.n.rao@linux.vnet.ibm.com>
+ <20170308094245.ace4eeff69b79d1956a277ee@kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20170308094245.ace4eeff69b79d1956a277ee@kernel.org>
+Message-Id: <20170308100729.GG11046@naverao1-tp.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,48 +48,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2017-03-07 at 10:12 -0600, Josh Poimboeuf wrote:
-> On Tue, Mar 07, 2017 at 05:50:55PM +1100, Balbir Singh wrote:
-> > On Mon, 2017-02-13 at 19:42 -0600, Josh Poimboeuf wrote:
-> > > For live patching and possibly other use cases, a stack trace is only
-> > > useful if it can be assured that it's completely reliable.  Add a new
-> > > save_stack_trace_tsk_reliable() function to achieve that.
-> > > 
-> > > Note that if the target task isn't the current task, and the target task
-> > > is allowed to run, then it could be writing the stack while the unwinder
-> > > is reading it, resulting in possible corruption.  So the caller of
-> > > save_stack_trace_tsk_reliable() must ensure that the task is either
-> > > 'current' or inactive.
-> > > 
-> > > save_stack_trace_tsk_reliable() relies on the x86 unwinder's detection
-> > > of pt_regs on the stack.  If the pt_regs are not user-mode registers
-> > > from a syscall, then they indicate an in-kernel interrupt or exception
-> > > (e.g. preemption or a page fault), in which case the stack is considered
-> > > unreliable due to the nature of frame pointers.
-> > > 
-> > > It also relies on the x86 unwinder's detection of other issues, such as:
-> > > 
-> > > - corrupted stack data
-> > > - stack grows the wrong way
-> > > - stack walk doesn't reach the bottom
-> > > - user didn't provide a large enough entries array
-> > > 
-> > > Such issues are reported by checking unwind_error() and !unwind_done().
-> > > 
-> > > Also add CONFIG_HAVE_RELIABLE_STACKTRACE so arch-independent code can
-> > > determine at build time whether the function is implemented.
-> > > 
-> > > Signed-off-by: Josh Poimboeuf <jpoimboe@redhat.com>
-> > > ---
-> > 
-> > Could you comment on why we need a reliable trace for live-patching? Are
-> > we in any way reliant on the stack trace to patch something broken?
-> 
-> I tried to cover this comprehensively in patch 13/15 in
-> Documentation/livepatch/livepatch.txt.  Does that answer your questions?
->
+On 2017/03/08 09:42AM, Masami Hiramatsu wrote:
+> On Wed,  8 Mar 2017 02:09:29 +0530
+> "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
+> 
+> > Along similar lines as commit 9326638cbee2 ("kprobes, x86: Use
+> > NOKPROBE_SYMBOL() instead of __kprobes annotation"), convert __kprobes
+> > annotation to either NOKPROBE_SYMBOL() or nokprobe_inline. The latter
+> > forces inlining, in which case the caller needs to be added to
+> > NOKPROBE_SYMBOL().
+> 
+> Acked-by: Masami Hiramatsu <mhiramat@kernel.org>
+> 
+> OK, this is a good starting point so far. please consider that those
+> functions really have to be protected by kprobes. As you can see on x86,
 
-Yes, it answers my questions
+Yes, I've only converted static functions to nokprobe_inline and 
+confirmed that their callers are protected. I also verified that none of 
+these show up in kallsyms.
 
-Thanks,
-Balbir Singh.
+> I allowed some functions to be kprobed by commit 7ec8a97a990d ("kprobes/x86:
+> Allow probe on some kprobe preparation functions").
+> Maybe on powerpc, those arch_* functions also be probed safely, since
+> those are not kicked in the context of breakpoint interruption.
+
+Nice, thanks for the pointer. I will consider that as part of the kprobe 
+blacklisting updates I have for powerpc.
+
+Regards,
+Naveen
