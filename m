@@ -1,7 +1,7 @@
 Return-Path: <aik@ozlabs.ru>
 Received: from ozlabs.ru (ozlabs.ru [107.173.13.209])
- by lists.ozlabs.org (Postfix) with ESMTP id 3vdJDc2sQqzDqY0
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Mar 2017 14:00:32 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id 3vdJDf2LcFzDqXt
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Mar 2017 14:00:34 +1100 (AEDT)
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
@@ -9,10 +9,9 @@ Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
  David Gibson <david@gibson.dropbear.id.au>,
  Paul Mackerras <paulus@samba.org>, kvm-ppc@vger.kernel.org,
  kvm@vger.kernel.org
-Subject: [PATCH kernel v7 08/10] KVM: PPC: Use preregistered memory API to
- access TCE list
-Date: Wed,  8 Mar 2017 14:00:09 +1100
-Message-Id: <20170308030011.26780-9-aik@ozlabs.ru>
+Subject: [PATCH kernel v7 09/10] KVM: PPC: iommu: Unify TCE checking
+Date: Wed,  8 Mar 2017 14:00:10 +1100
+Message-Id: <20170308030011.26780-10-aik@ozlabs.ru>
 In-Reply-To: <20170308030011.26780-1-aik@ozlabs.ru>
 References: <20170308030011.26780-1-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,122 +23,186 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-VFIO on sPAPR already implements guest memory pre-registration
-when the entire guest RAM gets pinned. This can be used to translate
-the physical address of a guest page containing the TCE list
-from H_PUT_TCE_INDIRECT.
+This reworks helpers for checking TCE update parameters in way they
+can be used in KVM.
 
-This makes use of the pre-registrered memory API to access TCE list
-pages in order to avoid unnecessary locking on the KVM memory
-reverse map as we know that all of guest memory is pinned and
-we have a flat array mapping GPA to HPA which makes it simpler and
-quicker to index into that array (even with looking up the
-kernel page tables in vmalloc_to_phys) than it is to find the memslot,
-lock the rmap entry, look up the user page tables, and unlock the rmap
-entry. Note that the rmap pointer is initialized to NULL
-where declared (not in this patch).
-
-If a requested chunk of memory has not been preregistered, this will
-fall back to non-preregistered case and lock rmap.
+This should cause no behavioral change.
 
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 ---
 Changes:
-v4:
-* removed oneline inlines
-* now falls back to locking rmap if TCE list is not in preregistered memory
-
-v2:
-* updated the commit log with David's comment
+v6:
+* s/tce/gpa/ as TCE without permission bits is a GPA and this is what is
+passed everywhere
 ---
- arch/powerpc/kvm/book3s_64_vio_hv.c | 58 +++++++++++++++++++++++++++----------
- 1 file changed, 42 insertions(+), 16 deletions(-)
+ arch/powerpc/include/asm/iommu.h    | 20 +++++++++++++++-----
+ arch/powerpc/include/asm/kvm_ppc.h  |  6 ++++--
+ arch/powerpc/kernel/iommu.c         | 37 +++++++++++++------------------------
+ arch/powerpc/kvm/book3s_64_vio_hv.c | 31 +++++++------------------------
+ 4 files changed, 39 insertions(+), 55 deletions(-)
 
+diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/asm/iommu.h
+index 82e77ebf85f4..1e6b03339a68 100644
+--- a/arch/powerpc/include/asm/iommu.h
++++ b/arch/powerpc/include/asm/iommu.h
+@@ -296,11 +296,21 @@ static inline void iommu_restore(void)
+ #endif
+ 
+ /* The API to support IOMMU operations for VFIO */
+-extern int iommu_tce_clear_param_check(struct iommu_table *tbl,
+-		unsigned long ioba, unsigned long tce_value,
+-		unsigned long npages);
+-extern int iommu_tce_put_param_check(struct iommu_table *tbl,
+-		unsigned long ioba, unsigned long tce);
++extern int iommu_tce_check_ioba(unsigned long page_shift,
++		unsigned long offset, unsigned long size,
++		unsigned long ioba, unsigned long npages);
++extern int iommu_tce_check_gpa(unsigned long page_shift,
++		unsigned long gpa);
++
++#define iommu_tce_clear_param_check(tbl, ioba, tce_value, npages) \
++		(iommu_tce_check_ioba((tbl)->it_page_shift,       \
++				(tbl)->it_offset, (tbl)->it_size, \
++				(ioba), (npages)) || (tce_value))
++#define iommu_tce_put_param_check(tbl, ioba, gpa)                 \
++		(iommu_tce_check_ioba((tbl)->it_page_shift,       \
++				(tbl)->it_offset, (tbl)->it_size, \
++				(ioba), 1) ||                     \
++		iommu_tce_check_gpa((tbl)->it_page_shift, (gpa)))
+ 
+ extern void iommu_flush_tce(struct iommu_table *tbl);
+ extern int iommu_take_ownership(struct iommu_table *tbl);
+diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
+index eba8988d8443..72c2a155641f 100644
+--- a/arch/powerpc/include/asm/kvm_ppc.h
++++ b/arch/powerpc/include/asm/kvm_ppc.h
+@@ -169,8 +169,10 @@ extern long kvm_vm_ioctl_create_spapr_tce(struct kvm *kvm,
+ 				struct kvm_create_spapr_tce_64 *args);
+ extern struct kvmppc_spapr_tce_table *kvmppc_find_table(
+ 		struct kvm *kvm, unsigned long liobn);
+-extern long kvmppc_ioba_validate(struct kvmppc_spapr_tce_table *stt,
+-		unsigned long ioba, unsigned long npages);
++#define kvmppc_ioba_validate(stt, ioba, npages)                         \
++		(iommu_tce_check_ioba((stt)->page_shift, (stt)->offset, \
++				(stt)->size, (ioba), (npages)) ?        \
++				H_PARAMETER : H_SUCCESS)
+ extern long kvmppc_tce_validate(struct kvmppc_spapr_tce_table *tt,
+ 		unsigned long tce);
+ extern long kvmppc_gpa_to_ua(struct kvm *kvm, unsigned long gpa,
+diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
+index d02b8d22fb50..4269f9f1623b 100644
+--- a/arch/powerpc/kernel/iommu.c
++++ b/arch/powerpc/kernel/iommu.c
+@@ -960,47 +960,36 @@ void iommu_flush_tce(struct iommu_table *tbl)
+ }
+ EXPORT_SYMBOL_GPL(iommu_flush_tce);
+ 
+-int iommu_tce_clear_param_check(struct iommu_table *tbl,
+-		unsigned long ioba, unsigned long tce_value,
+-		unsigned long npages)
++int iommu_tce_check_ioba(unsigned long page_shift,
++		unsigned long offset, unsigned long size,
++		unsigned long ioba, unsigned long npages)
+ {
+-	/* tbl->it_ops->clear() does not support any value but 0 */
+-	if (tce_value)
+-		return -EINVAL;
++	unsigned long mask = (1UL << page_shift) - 1;
+ 
+-	if (ioba & ~IOMMU_PAGE_MASK(tbl))
++	if (ioba & mask)
+ 		return -EINVAL;
+ 
+-	ioba >>= tbl->it_page_shift;
+-	if (ioba < tbl->it_offset)
++	ioba >>= page_shift;
++	if (ioba < offset)
+ 		return -EINVAL;
+ 
+-	if ((ioba + npages) > (tbl->it_offset + tbl->it_size))
++	if ((ioba + 1) > (offset + size))
+ 		return -EINVAL;
+ 
+ 	return 0;
+ }
+-EXPORT_SYMBOL_GPL(iommu_tce_clear_param_check);
++EXPORT_SYMBOL_GPL(iommu_tce_check_ioba);
+ 
+-int iommu_tce_put_param_check(struct iommu_table *tbl,
+-		unsigned long ioba, unsigned long tce)
++int iommu_tce_check_gpa(unsigned long page_shift, unsigned long gpa)
+ {
+-	if (tce & ~IOMMU_PAGE_MASK(tbl))
+-		return -EINVAL;
+-
+-	if (ioba & ~IOMMU_PAGE_MASK(tbl))
+-		return -EINVAL;
+-
+-	ioba >>= tbl->it_page_shift;
+-	if (ioba < tbl->it_offset)
+-		return -EINVAL;
++	unsigned long mask = (1UL << page_shift) - 1;
+ 
+-	if ((ioba + 1) > (tbl->it_offset + tbl->it_size))
++	if (gpa & mask)
+ 		return -EINVAL;
+ 
+ 	return 0;
+ }
+-EXPORT_SYMBOL_GPL(iommu_tce_put_param_check);
++EXPORT_SYMBOL_GPL(iommu_tce_check_gpa);
+ 
+ long iommu_tce_xchg(struct iommu_table *tbl, unsigned long entry,
+ 		unsigned long *hpa, enum dma_data_direction *direction)
 diff --git a/arch/powerpc/kvm/book3s_64_vio_hv.c b/arch/powerpc/kvm/book3s_64_vio_hv.c
-index 918af76ab2b6..0f145fc7a3a5 100644
+index 0f145fc7a3a5..440d3ab5dc32 100644
 --- a/arch/powerpc/kvm/book3s_64_vio_hv.c
 +++ b/arch/powerpc/kvm/book3s_64_vio_hv.c
-@@ -239,6 +239,7 @@ long kvmppc_rm_h_put_tce_indirect(struct kvm_vcpu *vcpu,
- 	long i, ret = H_SUCCESS;
- 	unsigned long tces, entry, ua = 0;
- 	unsigned long *rmap = NULL;
-+	bool prereg = false;
+@@ -62,27 +62,6 @@ struct kvmppc_spapr_tce_table *kvmppc_find_table(struct kvm *kvm,
+ EXPORT_SYMBOL_GPL(kvmppc_find_table);
  
- 	stt = kvmppc_find_table(vcpu->kvm, liobn);
- 	if (!stt)
-@@ -259,23 +260,47 @@ long kvmppc_rm_h_put_tce_indirect(struct kvm_vcpu *vcpu,
- 	if (ret != H_SUCCESS)
- 		return ret;
+ /*
+- * Validates IO address.
+- *
+- * WARNING: This will be called in real-mode on HV KVM and virtual
+- *          mode on PR KVM
+- */
+-long kvmppc_ioba_validate(struct kvmppc_spapr_tce_table *stt,
+-		unsigned long ioba, unsigned long npages)
+-{
+-	unsigned long mask = (1ULL << stt->page_shift) - 1;
+-	unsigned long idx = ioba >> stt->page_shift;
+-
+-	if ((ioba & mask) || (idx < stt->offset) ||
+-			(idx - stt->offset + npages > stt->size) ||
+-			(idx + npages < idx))
+-		return H_PARAMETER;
+-
+-	return H_SUCCESS;
+-}
+-EXPORT_SYMBOL_GPL(kvmppc_ioba_validate);
+-
+-/*
+  * Validates TCE address.
+  * At the moment flags and page mask are validated.
+  * As the host kernel does not access those addresses (just puts them
+@@ -95,10 +74,14 @@ EXPORT_SYMBOL_GPL(kvmppc_ioba_validate);
+  */
+ long kvmppc_tce_validate(struct kvmppc_spapr_tce_table *stt, unsigned long tce)
+ {
+-	unsigned long page_mask = ~((1ULL << stt->page_shift) - 1);
+-	unsigned long mask = ~(page_mask | TCE_PCI_WRITE | TCE_PCI_READ);
++	unsigned long gpa = tce & ~(TCE_PCI_READ | TCE_PCI_WRITE);
++	enum dma_data_direction dir = iommu_tce_direction(tce);
  
--	if (kvmppc_gpa_to_ua(vcpu->kvm, tce_list, &ua, &rmap))
--		return H_TOO_HARD;
-+	if (mm_iommu_preregistered(vcpu->kvm->mm)) {
-+		/*
-+		 * We get here if guest memory was pre-registered which
-+		 * is normally VFIO case and gpa->hpa translation does not
-+		 * depend on hpt.
-+		 */
-+		struct mm_iommu_table_group_mem_t *mem;
- 
--	rmap = (void *) vmalloc_to_phys(rmap);
-+		if (kvmppc_gpa_to_ua(vcpu->kvm, tce_list, &ua, NULL))
-+			return H_TOO_HARD;
- 
--	/*
--	 * Synchronize with the MMU notifier callbacks in
--	 * book3s_64_mmu_hv.c (kvm_unmap_hva_hv etc.).
--	 * While we have the rmap lock, code running on other CPUs
--	 * cannot finish unmapping the host real page that backs
--	 * this guest real page, so we are OK to access the host
--	 * real page.
--	 */
--	lock_rmap(rmap);
--	if (kvmppc_rm_ua_to_hpa(vcpu, ua, &tces)) {
--		ret = H_TOO_HARD;
--		goto unlock_exit;
-+		mem = mm_iommu_lookup_rm(vcpu->kvm->mm, ua, IOMMU_PAGE_SIZE_4K);
-+		if (mem)
-+			prereg = mm_iommu_ua_to_hpa_rm(mem, ua, &tces) == 0;
-+	}
+-	if (tce & mask)
++	/* Allow userspace to poison TCE table */
++	if (dir == DMA_NONE)
++		return H_SUCCESS;
 +
-+	if (!prereg) {
-+		/*
-+		 * This is usually a case of a guest with emulated devices only
-+		 * when TCE list is not in preregistered memory.
-+		 * We do not require memory to be preregistered in this case
-+		 * so lock rmap and do __find_linux_pte_or_hugepte().
-+		 */
-+		if (kvmppc_gpa_to_ua(vcpu->kvm, tce_list, &ua, &rmap))
-+			return H_TOO_HARD;
-+
-+		rmap = (void *) vmalloc_to_phys(rmap);
-+
-+		/*
-+		 * Synchronize with the MMU notifier callbacks in
-+		 * book3s_64_mmu_hv.c (kvm_unmap_hva_hv etc.).
-+		 * While we have the rmap lock, code running on other CPUs
-+		 * cannot finish unmapping the host real page that backs
-+		 * this guest real page, so we are OK to access the host
-+		 * real page.
-+		 */
-+		lock_rmap(rmap);
-+		if (kvmppc_rm_ua_to_hpa(vcpu, ua, &tces)) {
-+			ret = H_TOO_HARD;
-+			goto unlock_exit;
-+		}
- 	}
++	if (iommu_tce_check_gpa(stt->page_shift, gpa))
+ 		return H_PARAMETER;
  
- 	for (i = 0; i < npages; ++i) {
-@@ -289,7 +314,8 @@ long kvmppc_rm_h_put_tce_indirect(struct kvm_vcpu *vcpu,
- 	}
- 
- unlock_exit:
--	unlock_rmap(rmap);
-+	if (rmap)
-+		unlock_rmap(rmap);
- 
- 	return ret;
- }
+ 	return H_SUCCESS;
 -- 
 2.11.0
