@@ -1,15 +1,15 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vdQ6w2KZ3zDqYZ
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Mar 2017 18:26:00 +1100 (AEDT)
-In-Reply-To: <1488798929-4546-1-git-send-email-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vdQ6x2lnlzDqYj
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Mar 2017 18:26:01 +1100 (AEDT)
+In-Reply-To: <1488801917-17782-1-git-send-email-mpe@ellerman.id.au>
 To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: pc@us.ibm.com
-Subject: Re: powerpc/64: Fix L1D cache shape vector reporting L1I values
-Message-Id: <3vdQ6w15bkz9sNH@ozlabs.org>
+Cc: sfr@canb.auug.org.au, andrew.donnellan@au1.ibm.com
+Subject: Re: powerpc: Sort the selects under CONFIG_PPC
+Message-Id: <3vdQ6x0PHWz9sNJ@ozlabs.org>
 Date: Wed,  8 Mar 2017 18:26:00 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -20,23 +20,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2017-03-06 at 11:15:29 UTC, Michael Ellerman wrote:
-> It seems we didn't pay quite enough attention when testing the new cache
-> shape vectors, which means we didn't notice the bug where the vector for
-> the L1D was using the L1I values. Fix it, resulting in eg:
+On Mon, 2017-03-06 at 12:05:17 UTC, Michael Ellerman wrote:
+> We have a big list of selects under CONFIG_PPC, and currently they're
+> completely unsorted. This means people tend to add new selects at the
+> bottom of the list, and so two commits which both add a new select will
+> often conflict.
 > 
->   L1I  cache size:     0x8000      32768B         32K
->   L1I  line size:        0x80       8-way associative
->   L1D  cache size:    0x10000      65536B         64K
->   L1D  line size:        0x80       8-way associative
+> Instead sort it alphabetically. This is nicer in and of itself, but also
+> means two commits that add a new select will have a greater chance of
+> not conflicting.
 > 
-> Fixes: 98a5f361b862 ("powerpc: Add new cache geometry aux vectors")
-> Cut-and-paste-bug-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Badly-reviewed-by: Michael Ellerman <mpe@ellerman.id.au>
+> Add a note at the top and bottom asking people to keep it sorted.
+> 
+> And while we're here pad out the 'if' expressions to make them stand
+> out.
+> 
+> Suggested-by: Stephen Rothwell <sfr@canb.auug.org.au>
 > Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
 Applied to powerpc fixes.
 
-https://git.kernel.org/powerpc/c/9c7a00868c3a77c86ab07a2c51f3bb
+https://git.kernel.org/powerpc/c/a7d2475af7aedcb9b5c6343989a8bf
 
 cheers
