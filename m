@@ -2,16 +2,15 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vdQ6r0H6LzDqYB
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vdQ6r5FxdzDqYB
  for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Mar 2017 18:25:56 +1100 (AEDT)
-In-Reply-To: <1488261828-19696-1-git-send-email-sjitindarsingh@gmail.com>
-To: Suraj Jitindar Singh <sjitindarsingh@gmail.com>, linuxppc-dev@ozlabs.org
+In-Reply-To: <20170302064124.26342-1-aik@ozlabs.ru>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: mikey@neuling.org, paulus@samba.org,
- Suraj Jitindar Singh <sjitindarsingh@gmail.com>, sam.bobroff@au1.ibm.com
-Subject: Re: [V3,1/2] powerpc: Parse the command line before calling CAS
-Message-Id: <3vdQ6q3wvNz9sN9@ozlabs.org>
-Date: Wed,  8 Mar 2017 18:25:55 +1100 (AEDT)
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, Paul Mackerras <paulus@samba.org>
+Subject: Re: [kernel] powerpc/powernv: Fix clobbered MSR
+Message-Id: <3vdQ6r3q57z9sN6@ozlabs.org>
+Date: Wed,  8 Mar 2017 18:25:56 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,21 +20,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2017-02-28 at 06:03:47 UTC, Suraj Jitindar Singh wrote:
-> On POWER9 the hypervisor requires the guest to decide whether it would
-> like to use a hash or radix mmu model at the time it calls
-> ibm,client-architecture-support (CAS) based on what the hypervisor has
-> said it's allowed to do. It is possible to disable radix by passing
-> "disable_radix" on the command line. The next patch will add support for
-> the new CAS format, thus we need to parse the command line before calling
-> CAS so we can correctly select which mmu we would like to use.
+On Thu, 2017-03-02 at 06:41:24 UTC, Alexey Kardashevskiy wrote:
+> If CONFIG_DEBUG_INFO_SPLIT is not set but CONFIG_DEBUG_INFO is,
+> the kernel makefile just adds "-g" and the scripts/gcc-goto.sh test for
+> the "asm goto ("" :::: entry)" support succedes and adds
+> -DCC_HAVE_ASM_GOTO to KBUILD_CFLAGS/KBUILD_AFLAGS. This effectively
+> makes OPAL_BRANCH() a noop (or something similar).
 > 
-> Signed-off-by: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
-> Reviewed-by: Paul Mackerras <paulus@ozlabs.org>
-> Acked-by: Balbir Singh <bsingharora@gmail.com>
+> With CONFIG_DEBUG_INFO_SPLIT=y, the makefile adds "-gsplit-dwarf" which
+> somehow makes the scripts/gcc-goto.sh test fail and not have
+> CC_HAVE_ASM_GOTO defined so the alternative OPAL_BRANCH() is used
+> and this particular chunk clobbers r12 where the parenting code -
+> OPAL_CALL() - stores MSR; as the result, the kernel oops'es right after
+> early_setup() because of broken MSR.
+> 
+> This replaces r12 with r11 which is overwritten right after
+> OPAL_BRANCH(opal_tracepoint_entry) anyway.
+> 
+> I used gcc 5.4.1 20161205 built from sha1 ffadbf3ae29.
+> 
+> Fixes: ab9bad0ead9a ("powerpc/powernv: Remove separate entry for OPAL real mode calls")
+> Suggested-by: Paul Mackerras <paulus@samba.org>
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 
-Series applied to powerpc fixes, thanks.
+Applied to powerpc fixes, thanks.
 
-https://git.kernel.org/powerpc/c/12cc9fd6b2d8ee307a735b3b9faed0
+https://git.kernel.org/powerpc/c/2a9c4f40ab2c281f95d41577ff0f7f
 
 cheers
