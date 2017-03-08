@@ -1,29 +1,34 @@
-Return-Path: <jikos@kernel.org>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
+ [IPv6:2607:f8b0:400e:c00::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vdSLz38qkzDqYj
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Mar 2017 20:06:35 +1100 (AEDT)
-Date: Wed, 8 Mar 2017 10:06:30 +0100 (CET)
-From: Jiri Kosina <jikos@kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vdTGj3B0QzDqYl
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Mar 2017 20:47:57 +1100 (AEDT)
+Received: by mail-pf0-x244.google.com with SMTP id j5so3241506pfb.3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Mar 2017 01:47:57 -0800 (PST)
+Message-ID: <1488966437.13674.2.camel@gmail.com>
+Subject: Re: [PATCH v5 01/15] stacktrace/x86: add function for detecting
+ reliable stack traces
+From: Balbir Singh <bsingharora@gmail.com>
 To: Josh Poimboeuf <jpoimboe@redhat.com>
-cc: Jessica Yu <jeyu@redhat.com>, Miroslav Benes <mbenes@suse.cz>,
- Petr Mladek <pmladek@suse.com>, linux-kernel@vger.kernel.org,
- live-patching@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, x86@kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- Vojtech Pavlik <vojtech@suse.com>, Jiri Slaby <jslaby@suse.cz>,
- Chris J Arges <chris.j.arges@canonical.com>,
- Andy Lutomirski <luto@kernel.org>, Ingo Molnar <mingo@kernel.org>,
- Peter Zijlstra <peterz@infradead.org>,
- Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
- Balbir Singh <bsingharora@gmail.com>
-Subject: Re: [PATCH v5 00/15] livepatch: hybrid consistency model
-In-Reply-To: <cover.1487036215.git.jpoimboe@redhat.com>
-Message-ID: <alpine.LSU.2.20.1703081005130.31814@cbobk.fhfr.pm>
+Cc: Jessica Yu <jeyu@redhat.com>, Jiri Kosina <jikos@kernel.org>, Miroslav
+ Benes <mbenes@suse.cz>, Petr Mladek <pmladek@suse.com>,
+ linux-kernel@vger.kernel.org,  live-patching@vger.kernel.org, Michael
+ Ellerman <mpe@ellerman.id.au>, Heiko Carstens <heiko.carstens@de.ibm.com>,
+ x86@kernel.org, linuxppc-dev@lists.ozlabs.org,  linux-s390@vger.kernel.org,
+ Vojtech Pavlik <vojtech@suse.com>, Jiri Slaby <jslaby@suse.cz>, Chris J
+ Arges <chris.j.arges@canonical.com>, Andy Lutomirski <luto@kernel.org>,
+ Ingo Molnar <mingo@kernel.org>, Peter Zijlstra <peterz@infradead.org>,
+ Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Date: Wed, 08 Mar 2017 20:47:17 +1100
+In-Reply-To: <20170307161230.44rvjm7ed7azgu6x@treble>
 References: <cover.1487036215.git.jpoimboe@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ <baca30690796f3a0d938060b5f90b81375d76c30.1487036215.git.jpoimboe@redhat.com>
+ <1488869455.4285.10.camel@gmail.com>
+ <20170307161230.44rvjm7ed7azgu6x@treble>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,15 +38,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 13 Feb 2017, Josh Poimboeuf wrote:
+On Tue, 2017-03-07 at 10:12 -0600, Josh Poimboeuf wrote:
+> On Tue, Mar 07, 2017 at 05:50:55PM +1100, Balbir Singh wrote:
+> > On Mon, 2017-02-13 at 19:42 -0600, Josh Poimboeuf wrote:
+> > > For live patching and possibly other use cases, a stack trace is only
+> > > useful if it can be assured that it's completely reliable.  Add a new
+> > > save_stack_trace_tsk_reliable() function to achieve that.
+> > > 
+> > > Note that if the target task isn't the current task, and the target task
+> > > is allowed to run, then it could be writing the stack while the unwinder
+> > > is reading it, resulting in possible corruption.  So the caller of
+> > > save_stack_trace_tsk_reliable() must ensure that the task is either
+> > > 'current' or inactive.
+> > > 
+> > > save_stack_trace_tsk_reliable() relies on the x86 unwinder's detection
+> > > of pt_regs on the stack.  If the pt_regs are not user-mode registers
+> > > from a syscall, then they indicate an in-kernel interrupt or exception
+> > > (e.g. preemption or a page fault), in which case the stack is considered
+> > > unreliable due to the nature of frame pointers.
+> > > 
+> > > It also relies on the x86 unwinder's detection of other issues, such as:
+> > > 
+> > > - corrupted stack data
+> > > - stack grows the wrong way
+> > > - stack walk doesn't reach the bottom
+> > > - user didn't provide a large enough entries array
+> > > 
+> > > Such issues are reported by checking unwind_error() and !unwind_done().
+> > > 
+> > > Also add CONFIG_HAVE_RELIABLE_STACKTRACE so arch-independent code can
+> > > determine at build time whether the function is implemented.
+> > > 
+> > > Signed-off-by: Josh Poimboeuf <jpoimboe@redhat.com>
+> > > ---
+> > 
+> > Could you comment on why we need a reliable trace for live-patching? Are
+> > we in any way reliant on the stack trace to patch something broken?
+> 
+> I tried to cover this comprehensively in patch 13/15 in
+> Documentation/livepatch/livepatch.txt.  Does that answer your questions?
+>
 
-> Here's v5 of the consistency model
-
-I have ammended the patches with all the received ACKs and applied to 
-'for-4.12/klp-hybrid-consistency-model' branch of livepatching.git.
+Yes, it answers my questions
 
 Thanks,
-
--- 
-Jiri Kosina
-SUSE Labs
+Balbir Singh.
