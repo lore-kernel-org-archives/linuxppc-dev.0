@@ -2,22 +2,17 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vdVVr6D02zDqYt
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Mar 2017 21:43:32 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vdWQ65mjKzDqYv
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Mar 2017 22:24:30 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
- Arnaldo Carvalho de Melo <acme@kernel.org>
-Cc: Masami Hiramatsu <mhiramat@kernel.org>,
- Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@redhat.com>,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>
-Subject: Re: [PATCH v5 2/5] powerpc: kretprobes: override default function
- entry offset
-In-Reply-To: <53bcae5a711eab803c9c3210110e8a464df34202.1488961018.git.naveen.n.rao@linux.vnet.ibm.com>
-References: <cover.1488961018.git.naveen.n.rao@linux.vnet.ibm.com>
- <53bcae5a711eab803c9c3210110e8a464df34202.1488961018.git.naveen.n.rao@linux.vnet.ibm.com>
-Date: Wed, 08 Mar 2017 21:43:29 +1100
-Message-ID: <87o9xcujzi.fsf@concordia.ellerman.id.au>
+To: "Tobin C. Harding" <me@tobin.cc>, Ingo Molnar <mingo@redhat.com>,
+ Steven Rostedt <rostedt@goodmis.org>
+Cc: linuxppc-dev@lists.ozlabs.org, "Tobin C. Harding" <me@tobin.cc>
+Subject: Re: [PATCH] powerpc/ftrace: add ftrace.h, fix sparse warning
+In-Reply-To: <1488790186-4828-1-git-send-email-me@tobin.cc>
+References: <1488790186-4828-1-git-send-email-me@tobin.cc>
+Date: Wed, 08 Mar 2017 22:24:28 +1100
+Message-ID: <87innkui37.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -29,59 +24,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-"Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> writes:
+"Tobin C. Harding" <me@tobin.cc> writes:
 
-> With ABIv2, we offset 8 bytes into a function to get at the local entry
-> point.
+> Sparse emits warning: symbol 'prepare_ftrace_return' was not
+> declared. Should it be static? prepare_ftrace_return() is called
+> from assembler and should not be static. Adding a header file
+> declaring the function will fix the sparse warning while adding
+> documentation to the call.
 >
-> Acked-by: Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>
-> Acked-by: Michael Ellerman <mpe@ellerman.id.au>
-> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+> Add header file ftrace.h with single function declaration. Protect
+> declaration with preprocessor guard so it may be included in
+> assembly. Include new header in all files that call
+> prepare_ftrace_return() and in ftrace.c where function is defined.
+>
+> Signed-off-by: Tobin C. Harding <me@tobin.cc>
 > ---
->  arch/powerpc/kernel/kprobes.c | 9 +++++++++
->  1 file changed, 9 insertions(+)
+>
+> Github issue: #37 Fix sparse warnings
+>
+> Tested by building on Power8.
+>
+> There are a bunch of these in arch/powerpc/kernel/. Do we want to add
+> a header for each one, cluttering up the directory to fix the sparse
+> warnings? 
 
-I'm OK with this change, and I'm happy for it to go with the rest of the
-series via acme's tree:
+No we don't.
 
-Acked-by: Michael Ellerman <mpe@ellerman.id.au>
+In fact we already have a header for this, ie. functions defined in asm
+but called from C, it's arch/powerpc/include/asm/asm-prototypes.h.
+
+So I've reworked it to:
+
+diff --git a/arch/powerpc/include/asm/asm-prototypes.h b/arch/powerpc/include/asm/asm-prototypes.h
+index f6c5264287e5..e02db66a77e3 100644
+--- a/arch/powerpc/include/asm/asm-prototypes.h
++++ b/arch/powerpc/include/asm/asm-prototypes.h
+@@ -120,6 +120,8 @@ extern s64 __ashrdi3(s64, int);
+ extern int __cmpdi2(s64, s64);
+ extern int __ucmpdi2(u64, u64);
+ 
++/* tracing */
+ void _mcount(void);
++unsigned long prepare_ftrace_return(unsigned long parent, unsigned long ip);
+ 
+ #endif /* _ASM_POWERPC_ASM_PROTOTYPES_H */
+diff --git a/arch/powerpc/kernel/ftrace.c b/arch/powerpc/kernel/ftrace.c
+index 5c9f50c1aa99..32509de6ce4c 100644
+--- a/arch/powerpc/kernel/ftrace.c
++++ b/arch/powerpc/kernel/ftrace.c
+@@ -21,6 +21,7 @@
+ #include <linux/init.h>
+ #include <linux/list.h>
+ 
++#include <asm/asm-prototypes.h>
+ #include <asm/cacheflush.h>
+ #include <asm/code-patching.h>
+ #include <asm/ftrace.h>
 
 
-But, you've also sent a series to do KPROBES_ON_FTRACE, and that also
-touches this function, see the 2nd to last hunk at:
-
-  https://patchwork.ozlabs.org/patch/730675/
-
-
-If this goes via acme's tree it will be awkward for me to merge the
-series above via the powerpc tree.
-
-So we could do topic branches and so on, or we could just drop this
-patch from this series, and I'll merge it as part of the other series.
-It won't do anything useful until it's merged with a tree that also has
-the rest of this series. Or something else I haven't thought of.
 
 cheers
-
-> diff --git a/arch/powerpc/kernel/kprobes.c b/arch/powerpc/kernel/kprobes.c
-> index fce05a38851c..331751701fed 100644
-> --- a/arch/powerpc/kernel/kprobes.c
-> +++ b/arch/powerpc/kernel/kprobes.c
-> @@ -131,6 +131,15 @@ static void __kprobes set_current_kprobe(struct kprobe *p, struct pt_regs *regs,
->  	kcb->kprobe_saved_msr = regs->msr;
->  }
->  
-> +bool arch_function_offset_within_entry(unsigned long offset)
-> +{
-> +#ifdef PPC64_ELF_ABI_v2
-> +	return offset <= 8;
-> +#else
-> +	return !offset;
-> +#endif
-> +}
-> +
->  void __kprobes arch_prepare_kretprobe(struct kretprobe_instance *ri,
->  				      struct pt_regs *regs)
->  {
-> -- 
-> 2.11.1
