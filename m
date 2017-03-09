@@ -1,25 +1,47 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
- [IPv6:2607:f8b0:400e:c05::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <srs0=9myp=2s=linux.vnet.ibm.com=bharata@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vdy401pglzDqXh
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Mar 2017 15:25:20 +1100 (AEDT)
-Received: by mail-pg0-x244.google.com with SMTP id b5so5453895pgg.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Mar 2017 20:25:20 -0800 (PST)
-Subject: Re: [PATCH kernel v7 09/10] KVM: PPC: iommu: Unify TCE checking
-To: linuxppc-dev@lists.ozlabs.org
-References: <20170308030011.26780-1-aik@ozlabs.ru>
- <20170308030011.26780-10-aik@ozlabs.ru>
-Cc: Alex Williamson <alex.williamson@redhat.com>,
- David Gibson <david@gibson.dropbear.id.au>, Paul Mackerras
- <paulus@samba.org>, kvm-ppc@vger.kernel.org, kvm@vger.kernel.org
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-Message-ID: <eed51f31-6732-2836-af1a-1056aa828d26@ozlabs.ru>
-Date: Thu, 9 Mar 2017 15:25:13 +1100
-MIME-Version: 1.0
-In-Reply-To: <20170308030011.26780-10-aik@ozlabs.ru>
-Content-Type: text/plain; charset=koi8-r
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vdyMd5Bn3zDqXh
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Mar 2017 15:38:53 +1100 (AEDT)
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3vdyMd4Fl7z8t7b
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Mar 2017 15:38:53 +1100 (AEDT)
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3vdyMd0PM3z9sNg
+ for <linuxppc-dev@ozlabs.org>; Thu,  9 Mar 2017 15:38:52 +1100 (AEDT)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v294YFZH060688
+ for <linuxppc-dev@ozlabs.org>; Wed, 8 Mar 2017 23:38:49 -0500
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 292fxpvt35-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Wed, 08 Mar 2017 23:38:48 -0500
+Received: from localhost
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <bharata@linux.vnet.ibm.com>;
+ Thu, 9 Mar 2017 14:38:46 +1000
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v294cZQD53477386
+ for <linuxppc-dev@ozlabs.org>; Thu, 9 Mar 2017 15:38:43 +1100
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v294c90w007775
+ for <linuxppc-dev@ozlabs.org>; Thu, 9 Mar 2017 15:38:09 +1100
+From: Bharata B Rao <bharata@linux.vnet.ibm.com>
+To: linuxppc-dev@ozlabs.org
+Cc: nfont@linux.vnet.ibm.com, sachinp@linux.vnet.ibm.com,
+ Bharata B Rao <bharata@linux.vnet.ibm.com>
+Subject: [FIX PATCH v1] powerpc/pseries: Fix reference count leak during CPU
+ unplug
+Date: Thu,  9 Mar 2017 10:07:48 +0530
+Message-Id: <1489034268-24888-1-git-send-email-bharata@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,197 +51,89 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/03/17 14:00, Alexey Kardashevskiy wrote:
-> This reworks helpers for checking TCE update parameters in way they
-> can be used in KVM.
-> 
-> This should cause no behavioral change.
-> 
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+The following warning is seen when a CPU is hot unplugged on a PowerKVM
+guest:
 
-(for patchwork) Forgot this from v6:
+refcount_t: underflow; use-after-free.
+------------[ cut here ]------------
+WARNING: CPU: 0 PID: 53 at lib/refcount.c:128 refcount_sub_and_test+0xd8/0xf0
+Modules linked in:
+CPU: 0 PID: 53 Comm: kworker/u510:1 Not tainted 4.11.0-rc1 #3
+Workqueue: pseries hotplug workque pseries_hp_work_fn
+task: c0000000fb475000 task.stack: c0000000fb81c000
+NIP: c0000000006f0808 LR: c0000000006f0804 CTR: c0000000007b98c0
+REGS: c0000000fb81f710 TRAP: 0700   Not tainted  (4.11.0-rc1)
+MSR: 800000000282b033 <SF,VEC,VSX,EE,FP,ME,IR,DR,RI,LE>
+  CR: 48002222  XER: 20000000
+CFAR: c000000000c438e0 SOFTE: 1
+GPR00: c0000000006f0804 c0000000fb81f990 c000000001573b00 0000000000000026
+GPR04: 0000000000000000 000000000000016c 667265652e0d0a73 652d61667465722d
+GPR08: 0000000000000007 0000000000000007 0000000000000001 0000000000000006
+GPR12: 0000000000002200 c00000000ff40000 c00000000010c578 c0000001f11b9f40
+GPR16: c0000001fe0312a8 c0000001fe031078 c0000001fe031020 0000000000000001
+GPR20: 0000000000000000 0000000000000000 c000000001454808 fffffffffffffef7
+GPR24: 0000000000000000 c0000001f1677648 0000000000000000 0000000000000000
+GPR28: 0000000010000008 c000000000e4d3d8 0000000000000000 c0000001eaae07d8
+NIP [c0000000006f0808] refcount_sub_and_test+0xd8/0xf0
+LR [c0000000006f0804] refcount_sub_and_test+0xd4/0xf0
+Call Trace:
+[c0000000fb81f990] [c0000000006f0804] refcount_sub_and_test+0xd4/0xf0 (unreliable)
+[c0000000fb81f9f0] [c0000000006d04b4] kobject_put+0x44/0x2a0
+[c0000000fb81fa70] [c0000000009d5284] of_node_put+0x34/0x50
+[c0000000fb81faa0] [c0000000000aceb8] dlpar_cpu_remove_by_index+0x108/0x130
+[c0000000fb81fb30] [c0000000000ae128] dlpar_cpu+0x78/0x550
+[c0000000fb81fbe0] [c0000000000a7b40] handle_dlpar_errorlog+0xc0/0x160
+[c0000000fb81fc50] [c0000000000a7c74] pseries_hp_work_fn+0x94/0xa0
+[c0000000fb81fc80] [c000000000102cec] process_one_work+0x23c/0x540
+[c0000000fb81fd20] [c00000000010309c] worker_thread+0xac/0x620
+[c0000000fb81fdc0] [c00000000010c6c4] kthread+0x154/0x1a0
+[c0000000fb81fe30] [c00000000000bbe0] ret_from_kernel_thread+0x5c/0x7c
 
-Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
+Fix this by ensuring that of_node_put() is called only from the
+error path in dlpar_cpu_remove_by_index(). In the normal path,
+of_node_put() happens as part of dlpar_detach_node().
 
+Signed-off-by: Bharata B Rao <bharata@linux.vnet.ibm.com>
+Cc: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+---
+Changes in v1:
+- Fixed the refcount problem in the userspace driven unplug path
+  in addition to in-kernel unplug path. (Sachin Sant)
 
+v0: https://patchwork.ozlabs.org/patch/736547/
 
-> ---
-> Changes:
-> v6:
-> * s/tce/gpa/ as TCE without permission bits is a GPA and this is what is
-> passed everywhere
-> ---
->  arch/powerpc/include/asm/iommu.h    | 20 +++++++++++++++-----
->  arch/powerpc/include/asm/kvm_ppc.h  |  6 ++++--
->  arch/powerpc/kernel/iommu.c         | 37 +++++++++++++------------------------
->  arch/powerpc/kvm/book3s_64_vio_hv.c | 31 +++++++------------------------
->  4 files changed, 39 insertions(+), 55 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/asm/iommu.h
-> index 82e77ebf85f4..1e6b03339a68 100644
-> --- a/arch/powerpc/include/asm/iommu.h
-> +++ b/arch/powerpc/include/asm/iommu.h
-> @@ -296,11 +296,21 @@ static inline void iommu_restore(void)
->  #endif
->  
->  /* The API to support IOMMU operations for VFIO */
-> -extern int iommu_tce_clear_param_check(struct iommu_table *tbl,
-> -		unsigned long ioba, unsigned long tce_value,
-> -		unsigned long npages);
-> -extern int iommu_tce_put_param_check(struct iommu_table *tbl,
-> -		unsigned long ioba, unsigned long tce);
-> +extern int iommu_tce_check_ioba(unsigned long page_shift,
-> +		unsigned long offset, unsigned long size,
-> +		unsigned long ioba, unsigned long npages);
-> +extern int iommu_tce_check_gpa(unsigned long page_shift,
-> +		unsigned long gpa);
-> +
-> +#define iommu_tce_clear_param_check(tbl, ioba, tce_value, npages) \
-> +		(iommu_tce_check_ioba((tbl)->it_page_shift,       \
-> +				(tbl)->it_offset, (tbl)->it_size, \
-> +				(ioba), (npages)) || (tce_value))
-> +#define iommu_tce_put_param_check(tbl, ioba, gpa)                 \
-> +		(iommu_tce_check_ioba((tbl)->it_page_shift,       \
-> +				(tbl)->it_offset, (tbl)->it_size, \
-> +				(ioba), 1) ||                     \
-> +		iommu_tce_check_gpa((tbl)->it_page_shift, (gpa)))
->  
->  extern void iommu_flush_tce(struct iommu_table *tbl);
->  extern int iommu_take_ownership(struct iommu_table *tbl);
-> diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
-> index eba8988d8443..72c2a155641f 100644
-> --- a/arch/powerpc/include/asm/kvm_ppc.h
-> +++ b/arch/powerpc/include/asm/kvm_ppc.h
-> @@ -169,8 +169,10 @@ extern long kvm_vm_ioctl_create_spapr_tce(struct kvm *kvm,
->  				struct kvm_create_spapr_tce_64 *args);
->  extern struct kvmppc_spapr_tce_table *kvmppc_find_table(
->  		struct kvm *kvm, unsigned long liobn);
-> -extern long kvmppc_ioba_validate(struct kvmppc_spapr_tce_table *stt,
-> -		unsigned long ioba, unsigned long npages);
-> +#define kvmppc_ioba_validate(stt, ioba, npages)                         \
-> +		(iommu_tce_check_ioba((stt)->page_shift, (stt)->offset, \
-> +				(stt)->size, (ioba), (npages)) ?        \
-> +				H_PARAMETER : H_SUCCESS)
->  extern long kvmppc_tce_validate(struct kvmppc_spapr_tce_table *tt,
->  		unsigned long tce);
->  extern long kvmppc_gpa_to_ua(struct kvm *kvm, unsigned long gpa,
-> diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
-> index d02b8d22fb50..4269f9f1623b 100644
-> --- a/arch/powerpc/kernel/iommu.c
-> +++ b/arch/powerpc/kernel/iommu.c
-> @@ -960,47 +960,36 @@ void iommu_flush_tce(struct iommu_table *tbl)
->  }
->  EXPORT_SYMBOL_GPL(iommu_flush_tce);
->  
-> -int iommu_tce_clear_param_check(struct iommu_table *tbl,
-> -		unsigned long ioba, unsigned long tce_value,
-> -		unsigned long npages)
-> +int iommu_tce_check_ioba(unsigned long page_shift,
-> +		unsigned long offset, unsigned long size,
-> +		unsigned long ioba, unsigned long npages)
->  {
-> -	/* tbl->it_ops->clear() does not support any value but 0 */
-> -	if (tce_value)
-> -		return -EINVAL;
-> +	unsigned long mask = (1UL << page_shift) - 1;
->  
-> -	if (ioba & ~IOMMU_PAGE_MASK(tbl))
-> +	if (ioba & mask)
->  		return -EINVAL;
->  
-> -	ioba >>= tbl->it_page_shift;
-> -	if (ioba < tbl->it_offset)
-> +	ioba >>= page_shift;
-> +	if (ioba < offset)
->  		return -EINVAL;
->  
-> -	if ((ioba + npages) > (tbl->it_offset + tbl->it_size))
-> +	if ((ioba + 1) > (offset + size))
->  		return -EINVAL;
->  
->  	return 0;
->  }
-> -EXPORT_SYMBOL_GPL(iommu_tce_clear_param_check);
-> +EXPORT_SYMBOL_GPL(iommu_tce_check_ioba);
->  
-> -int iommu_tce_put_param_check(struct iommu_table *tbl,
-> -		unsigned long ioba, unsigned long tce)
-> +int iommu_tce_check_gpa(unsigned long page_shift, unsigned long gpa)
->  {
-> -	if (tce & ~IOMMU_PAGE_MASK(tbl))
-> -		return -EINVAL;
-> -
-> -	if (ioba & ~IOMMU_PAGE_MASK(tbl))
-> -		return -EINVAL;
-> -
-> -	ioba >>= tbl->it_page_shift;
-> -	if (ioba < tbl->it_offset)
-> -		return -EINVAL;
-> +	unsigned long mask = (1UL << page_shift) - 1;
->  
-> -	if ((ioba + 1) > (tbl->it_offset + tbl->it_size))
-> +	if (gpa & mask)
->  		return -EINVAL;
->  
->  	return 0;
->  }
-> -EXPORT_SYMBOL_GPL(iommu_tce_put_param_check);
-> +EXPORT_SYMBOL_GPL(iommu_tce_check_gpa);
->  
->  long iommu_tce_xchg(struct iommu_table *tbl, unsigned long entry,
->  		unsigned long *hpa, enum dma_data_direction *direction)
-> diff --git a/arch/powerpc/kvm/book3s_64_vio_hv.c b/arch/powerpc/kvm/book3s_64_vio_hv.c
-> index 0f145fc7a3a5..440d3ab5dc32 100644
-> --- a/arch/powerpc/kvm/book3s_64_vio_hv.c
-> +++ b/arch/powerpc/kvm/book3s_64_vio_hv.c
-> @@ -62,27 +62,6 @@ struct kvmppc_spapr_tce_table *kvmppc_find_table(struct kvm *kvm,
->  EXPORT_SYMBOL_GPL(kvmppc_find_table);
->  
->  /*
-> - * Validates IO address.
-> - *
-> - * WARNING: This will be called in real-mode on HV KVM and virtual
-> - *          mode on PR KVM
-> - */
-> -long kvmppc_ioba_validate(struct kvmppc_spapr_tce_table *stt,
-> -		unsigned long ioba, unsigned long npages)
-> -{
-> -	unsigned long mask = (1ULL << stt->page_shift) - 1;
-> -	unsigned long idx = ioba >> stt->page_shift;
-> -
-> -	if ((ioba & mask) || (idx < stt->offset) ||
-> -			(idx - stt->offset + npages > stt->size) ||
-> -			(idx + npages < idx))
-> -		return H_PARAMETER;
-> -
-> -	return H_SUCCESS;
-> -}
-> -EXPORT_SYMBOL_GPL(kvmppc_ioba_validate);
-> -
-> -/*
->   * Validates TCE address.
->   * At the moment flags and page mask are validated.
->   * As the host kernel does not access those addresses (just puts them
-> @@ -95,10 +74,14 @@ EXPORT_SYMBOL_GPL(kvmppc_ioba_validate);
->   */
->  long kvmppc_tce_validate(struct kvmppc_spapr_tce_table *stt, unsigned long tce)
->  {
-> -	unsigned long page_mask = ~((1ULL << stt->page_shift) - 1);
-> -	unsigned long mask = ~(page_mask | TCE_PCI_WRITE | TCE_PCI_READ);
-> +	unsigned long gpa = tce & ~(TCE_PCI_READ | TCE_PCI_WRITE);
-> +	enum dma_data_direction dir = iommu_tce_direction(tce);
->  
-> -	if (tce & mask)
-> +	/* Allow userspace to poison TCE table */
-> +	if (dir == DMA_NONE)
-> +		return H_SUCCESS;
-> +
-> +	if (iommu_tce_check_gpa(stt->page_shift, gpa))
->  		return H_PARAMETER;
->  
->  	return H_SUCCESS;
-> 
+ arch/powerpc/platforms/pseries/hotplug-cpu.c | 12 ++++++++----
+ 1 file changed, 8 insertions(+), 4 deletions(-)
 
-
+diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/platforms/pseries/hotplug-cpu.c
+index 7bc0e91..c5ed510 100644
+--- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
++++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
+@@ -619,7 +619,8 @@ static int dlpar_cpu_remove_by_index(u32 drc_index)
+ 	}
+ 
+ 	rc = dlpar_cpu_remove(dn, drc_index);
+-	of_node_put(dn);
++	if (rc)
++		of_node_put(dn);
+ 	return rc;
+ }
+ 
+@@ -856,9 +857,12 @@ static ssize_t dlpar_cpu_release(const char *buf, size_t count)
+ 	}
+ 
+ 	rc = dlpar_cpu_remove(dn, drc_index);
+-	of_node_put(dn);
+-
+-	return rc ? rc : count;
++	if (rc) {
++		of_node_put(dn);
++		return rc;
++	} else {
++		return count;
++	}
+ }
+ 
+ #endif /* CONFIG_ARCH_CPU_PROBE_RELEASE */
 -- 
-Alexey
+2.7.4
