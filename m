@@ -1,17 +1,41 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <abdhalee@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vf55c5f9bzDq5W
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Mar 2017 20:42:12 +1100 (AEDT)
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH] powerpc: sysdev: cpm1: Optimise gpio bit calculation
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Scott Wood <oss@buserror.net>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Message-Id: <20170309094206.A832167992@localhost.localdomain>
-Date: Thu,  9 Mar 2017 10:42:06 +0100 (CET)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vf5Zh6VMCzDq5W
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Mar 2017 21:03:56 +1100 (AEDT)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v29A3iqT020553
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 9 Mar 2017 05:03:49 -0500
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 292j70935n-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 09 Mar 2017 05:03:49 -0500
+Received: from localhost
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <abdhalee@linux.vnet.ibm.com>;
+ Thu, 9 Mar 2017 20:03:46 +1000
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v29A3aKi50855966
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 9 Mar 2017 21:03:44 +1100
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v29A3AxI029277
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 9 Mar 2017 21:03:10 +1100
+Subject: [libhugetlbfs] linkhuge_rw fails with gcc 6.2.0 on 4.11.0-rc1 ppc64le
+From: Abdul Haleem <abdhalee@linux.vnet.ibm.com>
+To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, mpe <mpe@ellerman.id>,
+ "aneesh.kumar" <aneesh.kumar@linux.vnet.ibm.com>, sachinp
+ <sachinp@linux.vnet.ibm.com>
+Date: Thu, 09 Mar 2017 15:32:52 +0530
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Message-Id: <1489053772.3961.26.camel@abdul-ThinkPad-T450>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,133 +45,103 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Help a bit the compiler to provide better code:
+Hi,
 
-unsigned int f(int i)
-{
-	return 1 << (31 - i);
-}
+linkhuge_rw test case fails on 4.11.0-rc1 kernel.
 
-unsigned int g(int i)
-{
-	return 0x80000000 >> i;
-}
 
-Disassembly of section .text:
+# HUGETLB_VERBOSE=99 HUGETLB_DEBUG=yes HUGETLB_SHARE=0
+LD_LIBRARY_PATH=./obj64 HUGETLB_ELFMAP=R ./tests/obj64/linkhuge_rw 
+libhugetlbfs [pkvmhab012:8026]: INFO: Found pagesize 16384 kB
+libhugetlbfs [pkvmhab012:8026]: INFO: Detected page sizes:
+libhugetlbfs [pkvmhab012:8026]: INFO:    Size: 16384 kB (default)
+Mount: /dev/hugepages
+libhugetlbfs [pkvmhab012:8026]: INFO: Parsed kernel version: [4] . [9] .
+[0]  [pre-release: 6]
+libhugetlbfs [pkvmhab012:8026]: INFO: Feature private_reservations is
+present in this kernel
+libhugetlbfs [pkvmhab012:8026]: INFO: Feature noreserve_safe is present
+in this kernel
+libhugetlbfs [pkvmhab012:8026]: INFO: Feature map_hugetlb is present in
+this kernel
+libhugetlbfs [pkvmhab012:8026]: INFO: Kernel has MAP_PRIVATE
+reservations.  Disabling heap prefaulting.
+libhugetlbfs [pkvmhab012:8026]: INFO: Kernel supports MAP_HUGETLB
+libhugetlbfs [pkvmhab012:8026]: INFO: HUGETLB_SHARE=0, sharing disabled
+libhugetlbfs [pkvmhab012:8026]: INFO: HUGETLB_NO_RESERVE=no,
+reservations enabled
+libhugetlbfs [pkvmhab012:8026]: INFO: Segment 0 (phdr 2): 0-0x133d4
+(filesz=0x133d4) (prot = 0x5)
+libhugetlbfs [pkvmhab012:8026]: DEBUG: Total memsz = 0x133d4, memsz of
+largest segment = 0x133d4
+libhugetlbfs [pkvmhab012:8026]: INFO: libhugetlbfs version: 2.20
+(modified)
+libhugetlbfs [pkvmhab012:8027]: INFO: Mapped hugeseg at 0x3effff000000.
+Copying 0x133d4 bytes and 0 extra bytes from (nil)...libhugetlbfs
+[pkvmhab012:8026]: INFO: Prepare succeeded
+Starting testcase "./tests/obj64/linkhuge_rw", pid 8026
+HUGETLB_ELFMAP=R
+entry: small_data, data: 0x60d20010, writable: 1
+entry: small_data, data: 0x60d20010, is_huge: 0
+entry: big_data, data: 0x60d10010, writable: 1
+entry: big_data, data: 0x60d10010, is_huge: 0
+entry: small_bss, data: 0x60d30124, writable: 1
+entry: small_bss, data: 0x60d30124, is_huge: 0
+entry: big_bss, data: 0x60d20124, writable: 1
+entry: big_bss, data: 0x60d20124, is_huge: 0
+entry: small_const, data: 0x40d22e2c, writable: 0
+entry: small_const, data: 0x40d22e2c, is_huge: 0
+entry: big_const, data: 0x40d12e2c, writable: 0
+entry: big_const, data: 0x40d12e2c, is_huge: 0
+entry: static_func, data: 0x40d11cb0, writable: 0
+entry: static_func, data: 0x40d11834, is_huge: 0
+entry: global_func, data: 0x40d11c90, writable: 0
+entry: global_func, data: 0x40d11834, is_huge: 0
+Hugepages used for:
+FAIL	small_const is not hugepage
 
-00000000 <f>:
-   0:	20 63 00 1f 	subfic  r3,r3,31
-   4:	39 20 00 01 	li      r9,1
-   8:	7d 23 18 30 	slw     r3,r9,r3
-   c:	4e 80 00 20 	blr
+# objdump  -p linkhuge_rw 
 
-00000010 <g>:
-  10:	3d 20 80 00 	lis     r9,-32768
-  14:	7d 23 1c 30 	srw     r3,r9,r3
-  18:	4e 80 00 20 	blr
+linkhuge_rw:     file format elf64-powerpcle
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
- arch/powerpc/sysdev/cpm1.c | 24 ++++++++++--------------
- 1 file changed, 10 insertions(+), 14 deletions(-)
+Program Header:
+    PHDR off    0x0000000000000040 vaddr 0x0000000000000040 paddr 0x0000000000000040 align 2**3
+         filesz 0x00000000000001c0 memsz 0x00000000000001c0 flags r-x
+  INTERP off    0x0000000000000200 vaddr 0x0000000000000200 paddr 0x0000000000000200 align 2**0
+         filesz 0x0000000000000011 memsz 0x0000000000000011 flags r--
+    LOAD off    0x0000000000000000 vaddr 0x0000000000000000 paddr 0x0000000000000000 align 2**28
+         filesz 0x00000000000133d4 memsz 0x00000000000133d4 flags r-x
+    LOAD off    0x000000000ffffb50 vaddr 0x000000001ffffb50 paddr 0x000000001ffffb50 align 2**28
+         filesz 0x00000000000105cc memsz 0x00000000000205e0 flags rw-
+ DYNAMIC off    0x000000000ffffb68 vaddr 0x000000001ffffb68 paddr 0x000000001ffffb68 align 2**3
+         filesz 0x0000000000000260 memsz 0x0000000000000260 flags rw-
+    NOTE off    0x0000000000000214 vaddr 0x0000000000000214 paddr 0x0000000000000214 align 2**2
+         filesz 0x0000000000000044 memsz 0x0000000000000044 flags r--
+   STACK off    0x0000000000000000 vaddr 0x0000000000000000 paddr 0x0000000000000000 align 2**4
+         filesz 0x0000000000000000 memsz 0x0000000000000000 flags rw-
+   RELRO off    0x000000000ffffb50 vaddr 0x000000001ffffb50 paddr 0x000000001ffffb50 align 2**0
+         filesz 0x00000000000004b0 memsz 0x00000000000004b0 flags r--
 
-diff --git a/arch/powerpc/sysdev/cpm1.c b/arch/powerpc/sysdev/cpm1.c
-index dc3653da6dd1..2b0bb55612d2 100644
---- a/arch/powerpc/sysdev/cpm1.c
-+++ b/arch/powerpc/sysdev/cpm1.c
-@@ -307,7 +307,7 @@ struct cpm_ioport32e {
- static void cpm1_set_pin32(int port, int pin, int flags)
- {
- 	struct cpm_ioport32e __iomem *iop;
--	pin = 1 << (31 - pin);
-+	pin = 0x80000000 >> pin;
- 
- 	if (port == CPM_PORTB)
- 		iop = (struct cpm_ioport32e __iomem *)
-@@ -351,7 +351,7 @@ static void cpm1_set_pin16(int port, int pin, int flags)
- 	struct cpm_ioport16 __iomem *iop =
- 		(struct cpm_ioport16 __iomem *)&mpc8xx_immr->im_ioport;
- 
--	pin = 1 << (15 - pin);
-+	pin = 0x8000 >> pin;
- 
- 	if (port != 0)
- 		iop += port - 1;
-@@ -550,9 +550,7 @@ static int cpm1_gpio16_get(struct gpio_chip *gc, unsigned int gpio)
- {
- 	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
- 	struct cpm_ioport16 __iomem *iop = mm_gc->regs;
--	u16 pin_mask;
--
--	pin_mask = 1 << (15 - gpio);
-+	u16 pin_mask = pin_mask = 0x8000 >> gpio;
- 
- 	return !!(in_be16(&iop->dat) & pin_mask);
- }
-@@ -576,7 +574,7 @@ static void cpm1_gpio16_set(struct gpio_chip *gc, unsigned int gpio, int value)
- 	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
- 	struct cpm1_gpio16_chip *cpm1_gc = gpiochip_get_data(&mm_gc->gc);
- 	unsigned long flags;
--	u16 pin_mask = 1 << (15 - gpio);
-+	u16 pin_mask = 0x8000 >> gpio;
- 
- 	spin_lock_irqsave(&cpm1_gc->lock, flags);
- 
-@@ -599,7 +597,7 @@ static int cpm1_gpio16_dir_out(struct gpio_chip *gc, unsigned int gpio, int val)
- 	struct cpm1_gpio16_chip *cpm1_gc = gpiochip_get_data(&mm_gc->gc);
- 	struct cpm_ioport16 __iomem *iop = mm_gc->regs;
- 	unsigned long flags;
--	u16 pin_mask = 1 << (15 - gpio);
-+	u16 pin_mask = 0x8000 >> gpio;
- 
- 	spin_lock_irqsave(&cpm1_gc->lock, flags);
- 
-@@ -617,7 +615,7 @@ static int cpm1_gpio16_dir_in(struct gpio_chip *gc, unsigned int gpio)
- 	struct cpm1_gpio16_chip *cpm1_gc = gpiochip_get_data(&mm_gc->gc);
- 	struct cpm_ioport16 __iomem *iop = mm_gc->regs;
- 	unsigned long flags;
--	u16 pin_mask = 1 << (15 - gpio);
-+	u16 pin_mask = 0x8000 >> gpio;
- 
- 	spin_lock_irqsave(&cpm1_gc->lock, flags);
- 
-@@ -684,9 +682,7 @@ static int cpm1_gpio32_get(struct gpio_chip *gc, unsigned int gpio)
- {
- 	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
- 	struct cpm_ioport32b __iomem *iop = mm_gc->regs;
--	u32 pin_mask;
--
--	pin_mask = 1 << (31 - gpio);
-+	u32 pin_mask = 0x80000000 >> gpio;
- 
- 	return !!(in_be32(&iop->dat) & pin_mask);
- }
-@@ -710,7 +706,7 @@ static void cpm1_gpio32_set(struct gpio_chip *gc, unsigned int gpio, int value)
- 	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
- 	struct cpm1_gpio32_chip *cpm1_gc = gpiochip_get_data(&mm_gc->gc);
- 	unsigned long flags;
--	u32 pin_mask = 1 << (31 - gpio);
-+	u32 pin_mask = 0x80000000 >> gpio;
- 
- 	spin_lock_irqsave(&cpm1_gc->lock, flags);
- 
-@@ -725,7 +721,7 @@ static int cpm1_gpio32_dir_out(struct gpio_chip *gc, unsigned int gpio, int val)
- 	struct cpm1_gpio32_chip *cpm1_gc = gpiochip_get_data(&mm_gc->gc);
- 	struct cpm_ioport32b __iomem *iop = mm_gc->regs;
- 	unsigned long flags;
--	u32 pin_mask = 1 << (31 - gpio);
-+	u32 pin_mask = 0x80000000 >> gpio;
- 
- 	spin_lock_irqsave(&cpm1_gc->lock, flags);
- 
-@@ -743,7 +739,7 @@ static int cpm1_gpio32_dir_in(struct gpio_chip *gc, unsigned int gpio)
- 	struct cpm1_gpio32_chip *cpm1_gc = gpiochip_get_data(&mm_gc->gc);
- 	struct cpm_ioport32b __iomem *iop = mm_gc->regs;
- 	unsigned long flags;
--	u32 pin_mask = 1 << (31 - gpio);
-+	u32 pin_mask = 0x80000000 >> gpio;
- 
- 	spin_lock_irqsave(&cpm1_gc->lock, flags);
- 
+
+# cat /proc/self/maps
+10000000-10020000 r-xp 00000000 08:02 87687259                           /bin/cat
+10020000-10030000 r--p 00010000 08:02 87687259                           /bin/cat
+10030000-10040000 rw-p 00020000 08:02 87687259                           /bin/cat
+10020490000-100204c0000 rw-p 00000000 00:00 0                            [heap]
+3fffb1fd0000-3fffb2010000 rw-p 00000000 00:00 0 
+3fffb2010000-3fffb2340000 r--p 00000000 08:02 154664970                  /usr/lib/locale/locale-archive
+3fffb2340000-3fffb2500000 r-xp 00000000 08:02 4325397                    /lib/powerpc64le-linux-gnu/libc-2.24.so
+3fffb2500000-3fffb2510000 r--p 001b0000 08:02 4325397                    /lib/powerpc64le-linux-gnu/libc-2.24.so
+3fffb2510000-3fffb2520000 rw-p 001c0000 08:02 4325397                    /lib/powerpc64le-linux-gnu/libc-2.24.so
+3fffb2530000-3fffb2550000 r-xp 00000000 00:00 0                          [vdso]
+3fffb2550000-3fffb2590000 r-xp 00000000 08:02 4325389                    /lib/powerpc64le-linux-gnu/ld-2.24.so
+3fffb2590000-3fffb25a0000 r--p 00030000 08:02 4325389                    /lib/powerpc64le-linux-gnu/ld-2.24.so
+3fffb25a0000-3fffb25b0000 rw-p 00040000 08:02 4325389                    /lib/powerpc64le-linux-gnu/ld-2.24.so
+3fffe31c0000-3fffe31f0000 rw-p 00000000 00:00 0                          [stack]
+
+
 -- 
-2.12.0
+Regard's
+
+Abdul Haleem
+IBM Linux Technology Centre
