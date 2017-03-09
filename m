@@ -1,52 +1,25 @@
-Return-Path: <rob@landley.net>
-Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
- [IPv6:2607:f8b0:400e:c05::242])
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
+ [IPv6:2607:f8b0:400e:c05::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vdxtX5y1gzDqXh
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Mar 2017 15:17:08 +1100 (AEDT)
-Received: by mail-pg0-x242.google.com with SMTP id 77so5409677pgc.0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Mar 2017 20:17:08 -0800 (PST)
-Subject: Re: [PATCH 1/3] futex: remove duplicated code
-To: Russell King - ARM Linux <linux@armlinux.org.uk>,
- Jiri Slaby <jslaby@suse.cz>
-References: <20170303122712.13353-1-jslaby@suse.cz>
- <20170304130550.GT21222@n2100.armlinux.org.uk>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
- Richard Henderson <rth@twiddle.net>,
- Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Matt Turner
- <mattst88@gmail.com>, Vineet Gupta <vgupta@synopsys.com>,
- Catalin Marinas <catalin.marinas@arm.com>, Will Deacon
- <will.deacon@arm.com>, Richard Kuo <rkuo@codeaurora.org>,
- Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
- Michal Simek <monstr@monstr.eu>, Ralf Baechle <ralf@linux-mips.org>,
- Jonas Bonn <jonas@southpole.se>,
- Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
- Stafford Horne <shorne@gmail.com>,
- "James E.J. Bottomley" <jejb@parisc-linux.org>, Helge Deller
- <deller@gmx.de>, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>,
- "David S. Miller" <davem@davemloft.net>,
- Chris Metcalf <cmetcalf@mellanox.com>, Thomas Gleixner <tglx@linutronix.de>,
- Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
- Chris Zankel <chris@zankel.net>, Max Filippov <jcmvbkbc@gmail.com>,
- Arnd Bergmann <arnd@arndb.de>, x86@kernel.org, linux-alpha@vger.kernel.org,
- linux-snps-arc@lists.infradead.org, linux-arm-kernel@lists.infradead.org,
- linux-hexagon@vger.kernel.org, linux-ia64@vger.kernel.org,
- linux-mips@linux-mips.org, openrisc@lists.librecores.org,
- linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
- sparclinux@vger.kernel.org, linux-xtensa@linux-xtensa.org,
- linux-arch@vger.kernel.org
-From: Rob Landley <rob@landley.net>
-Message-ID: <23e5808b-2a20-518d-b49a-4d95dd23cfde@landley.net>
-Date: Wed, 8 Mar 2017 22:16:49 -0600
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vdy401pglzDqXh
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Mar 2017 15:25:20 +1100 (AEDT)
+Received: by mail-pg0-x244.google.com with SMTP id b5so5453895pgg.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Mar 2017 20:25:20 -0800 (PST)
+Subject: Re: [PATCH kernel v7 09/10] KVM: PPC: iommu: Unify TCE checking
+To: linuxppc-dev@lists.ozlabs.org
+References: <20170308030011.26780-1-aik@ozlabs.ru>
+ <20170308030011.26780-10-aik@ozlabs.ru>
+Cc: Alex Williamson <alex.williamson@redhat.com>,
+ David Gibson <david@gibson.dropbear.id.au>, Paul Mackerras
+ <paulus@samba.org>, kvm-ppc@vger.kernel.org, kvm@vger.kernel.org
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+Message-ID: <eed51f31-6732-2836-af1a-1056aa828d26@ozlabs.ru>
+Date: Thu, 9 Mar 2017 15:25:13 +1100
 MIME-Version: 1.0
-In-Reply-To: <20170304130550.GT21222@n2100.armlinux.org.uk>
-Content-Type: text/plain; charset=windows-1252
+In-Reply-To: <20170308030011.26780-10-aik@ozlabs.ru>
+Content-Type: text/plain; charset=koi8-r
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -56,33 +29,197 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 03/04/2017 07:05 AM, Russell King - ARM Linux wrote:
-> On Fri, Mar 03, 2017 at 01:27:10PM +0100, Jiri Slaby wrote:
->> diff --git a/kernel/futex.c b/kernel/futex.c
->> index b687cb22301c..c5ff9850952f 100644
->> --- a/kernel/futex.c
->> +++ b/kernel/futex.c
->> @@ -1457,6 +1457,42 @@ futex_wake(u32 __user *uaddr, unsigned int flags, int nr_wake, u32 bitset)
->>  	return ret;
->>  }
->>  
->> +static int futex_atomic_op_inuser(int encoded_op, u32 __user *uaddr)
->> +{
->> +	int op = (encoded_op >> 28) & 7;
->> +	int cmp = (encoded_op >> 24) & 15;
->> +	int oparg = (encoded_op << 8) >> 20;
->> +	int cmparg = (encoded_op << 20) >> 20;
+On 08/03/17 14:00, Alexey Kardashevskiy wrote:
+> This reworks helpers for checking TCE update parameters in way they
+> can be used in KVM.
 > 
-> Hmm.  oparg and cmparg look like they're doing these shifts to get sign
-> extension of the 12-bit values by assuming that "int" is 32-bit -
-> probably worth a comment, or for safety, they should be "s32" so it's
-> not dependent on the bit-width of "int".
+> This should cause no behavioral change.
+> 
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 
-I thought Linux depended on the LP64 standard for all architectures?
+(for patchwork) Forgot this from v6:
 
-Standard: http://www.unix.org/whitepapers/64bit.html
-Rationale: http://www.unix.org/version2/whatsnew/lp64_wp.html
+Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 
-So int has a defined bit width (32) on linux?
 
-Rob
+
+> ---
+> Changes:
+> v6:
+> * s/tce/gpa/ as TCE without permission bits is a GPA and this is what is
+> passed everywhere
+> ---
+>  arch/powerpc/include/asm/iommu.h    | 20 +++++++++++++++-----
+>  arch/powerpc/include/asm/kvm_ppc.h  |  6 ++++--
+>  arch/powerpc/kernel/iommu.c         | 37 +++++++++++++------------------------
+>  arch/powerpc/kvm/book3s_64_vio_hv.c | 31 +++++++------------------------
+>  4 files changed, 39 insertions(+), 55 deletions(-)
+> 
+> diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/asm/iommu.h
+> index 82e77ebf85f4..1e6b03339a68 100644
+> --- a/arch/powerpc/include/asm/iommu.h
+> +++ b/arch/powerpc/include/asm/iommu.h
+> @@ -296,11 +296,21 @@ static inline void iommu_restore(void)
+>  #endif
+>  
+>  /* The API to support IOMMU operations for VFIO */
+> -extern int iommu_tce_clear_param_check(struct iommu_table *tbl,
+> -		unsigned long ioba, unsigned long tce_value,
+> -		unsigned long npages);
+> -extern int iommu_tce_put_param_check(struct iommu_table *tbl,
+> -		unsigned long ioba, unsigned long tce);
+> +extern int iommu_tce_check_ioba(unsigned long page_shift,
+> +		unsigned long offset, unsigned long size,
+> +		unsigned long ioba, unsigned long npages);
+> +extern int iommu_tce_check_gpa(unsigned long page_shift,
+> +		unsigned long gpa);
+> +
+> +#define iommu_tce_clear_param_check(tbl, ioba, tce_value, npages) \
+> +		(iommu_tce_check_ioba((tbl)->it_page_shift,       \
+> +				(tbl)->it_offset, (tbl)->it_size, \
+> +				(ioba), (npages)) || (tce_value))
+> +#define iommu_tce_put_param_check(tbl, ioba, gpa)                 \
+> +		(iommu_tce_check_ioba((tbl)->it_page_shift,       \
+> +				(tbl)->it_offset, (tbl)->it_size, \
+> +				(ioba), 1) ||                     \
+> +		iommu_tce_check_gpa((tbl)->it_page_shift, (gpa)))
+>  
+>  extern void iommu_flush_tce(struct iommu_table *tbl);
+>  extern int iommu_take_ownership(struct iommu_table *tbl);
+> diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
+> index eba8988d8443..72c2a155641f 100644
+> --- a/arch/powerpc/include/asm/kvm_ppc.h
+> +++ b/arch/powerpc/include/asm/kvm_ppc.h
+> @@ -169,8 +169,10 @@ extern long kvm_vm_ioctl_create_spapr_tce(struct kvm *kvm,
+>  				struct kvm_create_spapr_tce_64 *args);
+>  extern struct kvmppc_spapr_tce_table *kvmppc_find_table(
+>  		struct kvm *kvm, unsigned long liobn);
+> -extern long kvmppc_ioba_validate(struct kvmppc_spapr_tce_table *stt,
+> -		unsigned long ioba, unsigned long npages);
+> +#define kvmppc_ioba_validate(stt, ioba, npages)                         \
+> +		(iommu_tce_check_ioba((stt)->page_shift, (stt)->offset, \
+> +				(stt)->size, (ioba), (npages)) ?        \
+> +				H_PARAMETER : H_SUCCESS)
+>  extern long kvmppc_tce_validate(struct kvmppc_spapr_tce_table *tt,
+>  		unsigned long tce);
+>  extern long kvmppc_gpa_to_ua(struct kvm *kvm, unsigned long gpa,
+> diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
+> index d02b8d22fb50..4269f9f1623b 100644
+> --- a/arch/powerpc/kernel/iommu.c
+> +++ b/arch/powerpc/kernel/iommu.c
+> @@ -960,47 +960,36 @@ void iommu_flush_tce(struct iommu_table *tbl)
+>  }
+>  EXPORT_SYMBOL_GPL(iommu_flush_tce);
+>  
+> -int iommu_tce_clear_param_check(struct iommu_table *tbl,
+> -		unsigned long ioba, unsigned long tce_value,
+> -		unsigned long npages)
+> +int iommu_tce_check_ioba(unsigned long page_shift,
+> +		unsigned long offset, unsigned long size,
+> +		unsigned long ioba, unsigned long npages)
+>  {
+> -	/* tbl->it_ops->clear() does not support any value but 0 */
+> -	if (tce_value)
+> -		return -EINVAL;
+> +	unsigned long mask = (1UL << page_shift) - 1;
+>  
+> -	if (ioba & ~IOMMU_PAGE_MASK(tbl))
+> +	if (ioba & mask)
+>  		return -EINVAL;
+>  
+> -	ioba >>= tbl->it_page_shift;
+> -	if (ioba < tbl->it_offset)
+> +	ioba >>= page_shift;
+> +	if (ioba < offset)
+>  		return -EINVAL;
+>  
+> -	if ((ioba + npages) > (tbl->it_offset + tbl->it_size))
+> +	if ((ioba + 1) > (offset + size))
+>  		return -EINVAL;
+>  
+>  	return 0;
+>  }
+> -EXPORT_SYMBOL_GPL(iommu_tce_clear_param_check);
+> +EXPORT_SYMBOL_GPL(iommu_tce_check_ioba);
+>  
+> -int iommu_tce_put_param_check(struct iommu_table *tbl,
+> -		unsigned long ioba, unsigned long tce)
+> +int iommu_tce_check_gpa(unsigned long page_shift, unsigned long gpa)
+>  {
+> -	if (tce & ~IOMMU_PAGE_MASK(tbl))
+> -		return -EINVAL;
+> -
+> -	if (ioba & ~IOMMU_PAGE_MASK(tbl))
+> -		return -EINVAL;
+> -
+> -	ioba >>= tbl->it_page_shift;
+> -	if (ioba < tbl->it_offset)
+> -		return -EINVAL;
+> +	unsigned long mask = (1UL << page_shift) - 1;
+>  
+> -	if ((ioba + 1) > (tbl->it_offset + tbl->it_size))
+> +	if (gpa & mask)
+>  		return -EINVAL;
+>  
+>  	return 0;
+>  }
+> -EXPORT_SYMBOL_GPL(iommu_tce_put_param_check);
+> +EXPORT_SYMBOL_GPL(iommu_tce_check_gpa);
+>  
+>  long iommu_tce_xchg(struct iommu_table *tbl, unsigned long entry,
+>  		unsigned long *hpa, enum dma_data_direction *direction)
+> diff --git a/arch/powerpc/kvm/book3s_64_vio_hv.c b/arch/powerpc/kvm/book3s_64_vio_hv.c
+> index 0f145fc7a3a5..440d3ab5dc32 100644
+> --- a/arch/powerpc/kvm/book3s_64_vio_hv.c
+> +++ b/arch/powerpc/kvm/book3s_64_vio_hv.c
+> @@ -62,27 +62,6 @@ struct kvmppc_spapr_tce_table *kvmppc_find_table(struct kvm *kvm,
+>  EXPORT_SYMBOL_GPL(kvmppc_find_table);
+>  
+>  /*
+> - * Validates IO address.
+> - *
+> - * WARNING: This will be called in real-mode on HV KVM and virtual
+> - *          mode on PR KVM
+> - */
+> -long kvmppc_ioba_validate(struct kvmppc_spapr_tce_table *stt,
+> -		unsigned long ioba, unsigned long npages)
+> -{
+> -	unsigned long mask = (1ULL << stt->page_shift) - 1;
+> -	unsigned long idx = ioba >> stt->page_shift;
+> -
+> -	if ((ioba & mask) || (idx < stt->offset) ||
+> -			(idx - stt->offset + npages > stt->size) ||
+> -			(idx + npages < idx))
+> -		return H_PARAMETER;
+> -
+> -	return H_SUCCESS;
+> -}
+> -EXPORT_SYMBOL_GPL(kvmppc_ioba_validate);
+> -
+> -/*
+>   * Validates TCE address.
+>   * At the moment flags and page mask are validated.
+>   * As the host kernel does not access those addresses (just puts them
+> @@ -95,10 +74,14 @@ EXPORT_SYMBOL_GPL(kvmppc_ioba_validate);
+>   */
+>  long kvmppc_tce_validate(struct kvmppc_spapr_tce_table *stt, unsigned long tce)
+>  {
+> -	unsigned long page_mask = ~((1ULL << stt->page_shift) - 1);
+> -	unsigned long mask = ~(page_mask | TCE_PCI_WRITE | TCE_PCI_READ);
+> +	unsigned long gpa = tce & ~(TCE_PCI_READ | TCE_PCI_WRITE);
+> +	enum dma_data_direction dir = iommu_tce_direction(tce);
+>  
+> -	if (tce & mask)
+> +	/* Allow userspace to poison TCE table */
+> +	if (dir == DMA_NONE)
+> +		return H_SUCCESS;
+> +
+> +	if (iommu_tce_check_gpa(stt->page_shift, gpa))
+>  		return H_PARAMETER;
+>  
+>  	return H_SUCCESS;
+> 
+
+
+-- 
+Alexey
