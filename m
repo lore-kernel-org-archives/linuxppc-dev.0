@@ -1,43 +1,24 @@
-Return-Path: <hpa@zytor.com>
-Received: from mail.zytor.com (unknown [IPv6:2001:1868:a000:17::138])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
+ [IPv6:2607:f8b0:400e:c05::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vdyst2xb1zDqXh
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Mar 2017 16:01:33 +1100 (AEDT)
-From: "H. Peter Anvin" <hpa@zytor.com>
-Message-Id: <201703090437.v294b0RE021699@mail.zytor.com>
-Date: Wed, 08 Mar 2017 20:36:30 -0800
-In-Reply-To: <23e5808b-2a20-518d-b49a-4d95dd23cfde@landley.net>
-References: <20170303122712.13353-1-jslaby@suse.cz>
- <20170304130550.GT21222@n2100.armlinux.org.uk>
- <23e5808b-2a20-518d-b49a-4d95dd23cfde@landley.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vdzcv6PjXzDq5W
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Mar 2017 16:35:27 +1100 (AEDT)
+Received: by mail-pg0-x244.google.com with SMTP id g2so1153054pge.2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Mar 2017 21:35:27 -0800 (PST)
+Date: Thu, 9 Mar 2017 15:35:15 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH 3/3] powerpc/64s: POWER9 machine check handler
+Message-ID: <20170309153515.07f3b255@roar.ozlabs.ibm.com>
+In-Reply-To: <b9166ee8-faa3-41be-78ec-4968e0ee18b4@linux.vnet.ibm.com>
+References: <20170228020048.8862-1-npiggin@gmail.com>
+ <20170228020048.8862-4-npiggin@gmail.com>
+ <b9166ee8-faa3-41be-78ec-4968e0ee18b4@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
- charset=utf-8
-Subject: Re: [PATCH 1/3] futex: remove duplicated code
-To: Rob Landley <rob@landley.net>,
- Russell King - ARM Linux <linux@armlinux.org.uk>,
- Jiri Slaby <jslaby@suse.cz>
-CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
- Richard Henderson <rth@twiddle.net>,
- Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
- Matt Turner <mattst88@gmail.com>, Vineet Gupta <vgupta@synopsys.com>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Will Deacon <will.deacon@arm.com>, Richard Kuo <rkuo@codeaurora.org>,
- Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
- Michal Simek <monstr@monstr.eu>, Ralf Baechle <ralf@linux-mips.org>,
- Jonas Bonn <jonas@southpole.se>,
- Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
- Stafford Horne <shorne@gmail.com>,
- "James E.J. Bottomley" <jejb@parisc-linux.org>,
- Helge Deller <deller@gmx.de>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- Yoshinori Sato <ysato@users.sourceforge.jp>,
- Rich Felker <dalias@libc.org>, "David S. Miller" <davem@davemloft.net>,
- Chris.Metcalf@zytor.com
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,46 +28,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-<cmetcalf@mellanox.com>,Thomas Gleixner <tglx@linutronix.de>,Ingo Molnar <mingo@redhat.com>,Chris Zankel <chris@zankel.net>,Max Filippov <jcmvbkbc@gmail.com>,Arnd Bergmann <arnd@arndb.de>,x86@kernel.org,linux-alpha@vger.kernel.org,linux-snps-arc@lists.infradead.org,linux-arm-kernel@lists.infradead.org,linux-hexagon@vger.kernel.org,linux-ia64@vger.kernel.org,linux-mips@linux-mips.org,openrisc@lists.librecores.org,linux-parisc@vger.kernel.org,linuxppc-dev@lists.ozlabs.org,linux-s390@vger.kernel.org,linux-sh@vger.kernel.org,sparclinux@vger.kernel.org,linux-xtensa@linux-xtensa.org,linux-arch@vger.kernel.org
-From: hpa@zytor.com
-Message-ID: <83324528-AAA1-4BED-B0C7-48426ECBA261@zytor.com>
+On Tue, 28 Feb 2017 12:37:23 +0530
+Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com> wrote:
 
-On March 8, 2017 8:16:49 PM PST, Rob Landley <rob@landley=2Enet> wrote:
->On 03/04/2017 07:05 AM, Russell King - ARM Linux wrote:
->> On Fri, Mar 03, 2017 at 01:27:10PM +0100, Jiri Slaby wrote:
->>> diff --git a/kernel/futex=2Ec b/kernel/futex=2Ec
->>> index b687cb22301c=2E=2Ec5ff9850952f 100644
->>> --- a/kernel/futex=2Ec
->>> +++ b/kernel/futex=2Ec
->>> @@ -1457,6 +1457,42 @@ futex_wake(u32 __user *uaddr, unsigned int
->flags, int nr_wake, u32 bitset)
->>>  	return ret;
->>>  }
->>> =20
->>> +static int futex_atomic_op_inuser(int encoded_op, u32 __user
->*uaddr)
->>> +{
->>> +	int op =3D (encoded_op >> 28) & 7;
->>> +	int cmp =3D (encoded_op >> 24) & 15;
->>> +	int oparg =3D (encoded_op << 8) >> 20;
->>> +	int cmparg =3D (encoded_op << 20) >> 20;
->>=20
->> Hmm=2E  oparg and cmparg look like they're doing these shifts to get
->sign
->> extension of the 12-bit values by assuming that "int" is 32-bit -
->> probably worth a comment, or for safety, they should be "s32" so it's
->> not dependent on the bit-width of "int"=2E
->
->I thought Linux depended on the LP64 standard for all architectures?
->
->Standard: http://www=2Eunix=2Eorg/whitepapers/64bit=2Ehtml
->Rationale: http://www=2Eunix=2Eorg/version2/whatsnew/lp64_wp=2Ehtml
->
->So int has a defined bit width (32) on linux?
->
->Rob
+> On 02/28/2017 07:30 AM, Nicholas Piggin wrote:
 
-Linux is ILP32 on 32-bit architectures and LP64 on 64-bit architectures, b=
-ut that doesn't inherently make this stuff clear=2E
---=20
-Sent from my Android device with K-9 Mail=2E Please excuse my brevity=2E
+> > +long __machine_check_early_realmode_p9(struct pt_regs *regs)
+> > +{
+> > +	uint64_t nip, addr;
+> > +	long handled;
+> > +	struct mce_error_info mce_error_info = { 0 };
+> > +
+> > +	nip = regs->nip;
+> > +
+> > +	if (P9_SRR1_MC_LOADSTORE(regs->msr)) {  
+> 
+> Asynch store errors are reported in the srr1 with codes srr1 42=1, 36=1,
+> 43=1 and 44:45 = 01 or 10. Since srr1 42=1, you may end up in
+> mce_handle_derror_p9() for asynch errors and look for error bits in
+> DSISR instead in SRR1. We will miss detecting asynch errors completely.
+
+After clarification from hardware, Asynch MCEs are reported with
+SRR1 bit 42 = 0, so I think this is okay.
+
+Thanks,
+Nick
