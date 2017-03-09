@@ -2,16 +2,16 @@ Return-Path: <christophe.leroy@c-s.fr>
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vf55b2LS3zDq5W
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Mar 2017 20:42:09 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vf55c5f9bzDq5W
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Mar 2017 20:42:12 +1100 (AEDT)
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH] powerpc/8xx: Adding support of IRQ in MPC8xx GPIO
+Subject: [PATCH] powerpc: sysdev: cpm1: Optimise gpio bit calculation
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  Scott Wood <oss@buserror.net>
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Message-Id: <20170309094204.ACF5567992@localhost.localdomain>
-Date: Thu,  9 Mar 2017 10:42:04 +0100 (CET)
+Message-Id: <20170309094206.A832167992@localhost.localdomain>
+Date: Thu,  9 Mar 2017 10:42:06 +0100 (CET)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,113 +21,133 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch allows the use of IRQ to notify the change of GPIO status
-on MPC8xx CPM IO ports. This then allows to associate IRQs to GPIOs
-in the Device Tree.
+Help a bit the compiler to provide better code:
 
-Ex:
-	CPM1_PIO_C: gpio-controller@960 {
-		#gpio-cells = <2>;
-		compatible = "fsl,cpm1-pario-bank-c";
-		reg = <0x960 0x10>;
-		interrupts = <1 2 6 9 10 11 14 15 23 24 26 31>;
-		interrupts-mask = <0x0fff>;
-		interrupt-parent = <&CPM_PIC>;
-		gpio-controller;
-	};
+unsigned int f(int i)
+{
+	return 1 << (31 - i);
+}
 
-The property 'interrupts-mask' defines which of the 16 GPIOs have
-the associated interrupts defined in the 'interrupts' property.
+unsigned int g(int i)
+{
+	return 0x80000000 >> i;
+}
+
+Disassembly of section .text:
+
+00000000 <f>:
+   0:	20 63 00 1f 	subfic  r3,r3,31
+   4:	39 20 00 01 	li      r9,1
+   8:	7d 23 18 30 	slw     r3,r9,r3
+   c:	4e 80 00 20 	blr
+
+00000010 <g>:
+  10:	3d 20 80 00 	lis     r9,-32768
+  14:	7d 23 1c 30 	srw     r3,r9,r3
+  18:	4e 80 00 20 	blr
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/include/asm/cpm1.h |  2 ++
- arch/powerpc/sysdev/cpm1.c      | 25 +++++++++++++++++++++++++
- 2 files changed, 27 insertions(+)
+ arch/powerpc/sysdev/cpm1.c | 24 ++++++++++--------------
+ 1 file changed, 10 insertions(+), 14 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/cpm1.h b/arch/powerpc/include/asm/cpm1.h
-index 8ee4211ca0c6..14ad37865000 100644
---- a/arch/powerpc/include/asm/cpm1.h
-+++ b/arch/powerpc/include/asm/cpm1.h
-@@ -560,6 +560,8 @@ typedef struct risc_timer_pram {
- #define CPM_PIN_SECONDARY 2
- #define CPM_PIN_GPIO      4
- #define CPM_PIN_OPENDRAIN 8
-+#define CPM_PIN_FALLEDGE  16
-+#define CPM_PIN_ANYEDGE   0
- 
- enum cpm_port {
- 	CPM_PORTA,
 diff --git a/arch/powerpc/sysdev/cpm1.c b/arch/powerpc/sysdev/cpm1.c
-index 986cd111d4df..dc3653da6dd1 100644
+index dc3653da6dd1..2b0bb55612d2 100644
 --- a/arch/powerpc/sysdev/cpm1.c
 +++ b/arch/powerpc/sysdev/cpm1.c
-@@ -377,6 +377,10 @@ static void cpm1_set_pin16(int port, int pin, int flags)
- 			setbits16(&iop->odr_sor, pin);
- 		else
- 			clrbits16(&iop->odr_sor, pin);
-+		if (flags & CPM_PIN_FALLEDGE)
-+			setbits16(&iop->intr, pin);
-+		else
-+			clrbits16(&iop->intr, pin);
- 	}
- }
+@@ -307,7 +307,7 @@ struct cpm_ioport32e {
+ static void cpm1_set_pin32(int port, int pin, int flags)
+ {
+ 	struct cpm_ioport32e __iomem *iop;
+-	pin = 1 << (31 - pin);
++	pin = 0x80000000 >> pin;
  
-@@ -528,6 +532,9 @@ struct cpm1_gpio16_chip {
+ 	if (port == CPM_PORTB)
+ 		iop = (struct cpm_ioport32e __iomem *)
+@@ -351,7 +351,7 @@ static void cpm1_set_pin16(int port, int pin, int flags)
+ 	struct cpm_ioport16 __iomem *iop =
+ 		(struct cpm_ioport16 __iomem *)&mpc8xx_immr->im_ioport;
  
- 	/* shadowed data register to clear/set bits safely */
- 	u16 cpdata;
-+
-+	/* IRQ associated with Pins when relevant */
-+	int irq[16];
- };
+-	pin = 1 << (15 - pin);
++	pin = 0x8000 >> pin;
  
- static void cpm1_gpio16_save_regs(struct of_mm_gpio_chip *mm_gc)
-@@ -578,6 +585,14 @@ static void cpm1_gpio16_set(struct gpio_chip *gc, unsigned int gpio, int value)
- 	spin_unlock_irqrestore(&cpm1_gc->lock, flags);
- }
- 
-+static int cpm1_gpio16_to_irq(struct gpio_chip *gc, unsigned int gpio)
-+{
-+	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
-+	struct cpm1_gpio16_chip *cpm1_gc = gpiochip_get_data(&mm_gc->gc);
-+
-+	return cpm1_gc->irq[gpio] ? : -ENXIO;
-+}
-+
- static int cpm1_gpio16_dir_out(struct gpio_chip *gc, unsigned int gpio, int val)
+ 	if (port != 0)
+ 		iop += port - 1;
+@@ -550,9 +550,7 @@ static int cpm1_gpio16_get(struct gpio_chip *gc, unsigned int gpio)
  {
  	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
-@@ -618,6 +633,7 @@ int cpm1_gpiochip_add16(struct device_node *np)
- 	struct cpm1_gpio16_chip *cpm1_gc;
- 	struct of_mm_gpio_chip *mm_gc;
- 	struct gpio_chip *gc;
-+	u16 mask;
+ 	struct cpm_ioport16 __iomem *iop = mm_gc->regs;
+-	u16 pin_mask;
+-
+-	pin_mask = 1 << (15 - gpio);
++	u16 pin_mask = pin_mask = 0x8000 >> gpio;
  
- 	cpm1_gc = kzalloc(sizeof(*cpm1_gc), GFP_KERNEL);
- 	if (!cpm1_gc)
-@@ -625,6 +641,14 @@ int cpm1_gpiochip_add16(struct device_node *np)
- 
- 	spin_lock_init(&cpm1_gc->lock);
- 
-+	if (!of_property_read_u16(np, "interrupts-mask", &mask)) {
-+		int i, j;
-+
-+		for (i = 0, j = 0; i < 16; i++)
-+			if (mask & (1 << (15 - i)))
-+				cpm1_gc->irq[i] = irq_of_parse_and_map(np, j++);
-+	}
-+
- 	mm_gc = &cpm1_gc->mm_gc;
- 	gc = &mm_gc->gc;
- 
-@@ -634,6 +658,7 @@ int cpm1_gpiochip_add16(struct device_node *np)
- 	gc->direction_output = cpm1_gpio16_dir_out;
- 	gc->get = cpm1_gpio16_get;
- 	gc->set = cpm1_gpio16_set;
-+	gc->to_irq = cpm1_gpio16_to_irq;
- 
- 	return of_mm_gpiochip_add_data(np, mm_gc, cpm1_gc);
+ 	return !!(in_be16(&iop->dat) & pin_mask);
  }
+@@ -576,7 +574,7 @@ static void cpm1_gpio16_set(struct gpio_chip *gc, unsigned int gpio, int value)
+ 	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
+ 	struct cpm1_gpio16_chip *cpm1_gc = gpiochip_get_data(&mm_gc->gc);
+ 	unsigned long flags;
+-	u16 pin_mask = 1 << (15 - gpio);
++	u16 pin_mask = 0x8000 >> gpio;
+ 
+ 	spin_lock_irqsave(&cpm1_gc->lock, flags);
+ 
+@@ -599,7 +597,7 @@ static int cpm1_gpio16_dir_out(struct gpio_chip *gc, unsigned int gpio, int val)
+ 	struct cpm1_gpio16_chip *cpm1_gc = gpiochip_get_data(&mm_gc->gc);
+ 	struct cpm_ioport16 __iomem *iop = mm_gc->regs;
+ 	unsigned long flags;
+-	u16 pin_mask = 1 << (15 - gpio);
++	u16 pin_mask = 0x8000 >> gpio;
+ 
+ 	spin_lock_irqsave(&cpm1_gc->lock, flags);
+ 
+@@ -617,7 +615,7 @@ static int cpm1_gpio16_dir_in(struct gpio_chip *gc, unsigned int gpio)
+ 	struct cpm1_gpio16_chip *cpm1_gc = gpiochip_get_data(&mm_gc->gc);
+ 	struct cpm_ioport16 __iomem *iop = mm_gc->regs;
+ 	unsigned long flags;
+-	u16 pin_mask = 1 << (15 - gpio);
++	u16 pin_mask = 0x8000 >> gpio;
+ 
+ 	spin_lock_irqsave(&cpm1_gc->lock, flags);
+ 
+@@ -684,9 +682,7 @@ static int cpm1_gpio32_get(struct gpio_chip *gc, unsigned int gpio)
+ {
+ 	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
+ 	struct cpm_ioport32b __iomem *iop = mm_gc->regs;
+-	u32 pin_mask;
+-
+-	pin_mask = 1 << (31 - gpio);
++	u32 pin_mask = 0x80000000 >> gpio;
+ 
+ 	return !!(in_be32(&iop->dat) & pin_mask);
+ }
+@@ -710,7 +706,7 @@ static void cpm1_gpio32_set(struct gpio_chip *gc, unsigned int gpio, int value)
+ 	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
+ 	struct cpm1_gpio32_chip *cpm1_gc = gpiochip_get_data(&mm_gc->gc);
+ 	unsigned long flags;
+-	u32 pin_mask = 1 << (31 - gpio);
++	u32 pin_mask = 0x80000000 >> gpio;
+ 
+ 	spin_lock_irqsave(&cpm1_gc->lock, flags);
+ 
+@@ -725,7 +721,7 @@ static int cpm1_gpio32_dir_out(struct gpio_chip *gc, unsigned int gpio, int val)
+ 	struct cpm1_gpio32_chip *cpm1_gc = gpiochip_get_data(&mm_gc->gc);
+ 	struct cpm_ioport32b __iomem *iop = mm_gc->regs;
+ 	unsigned long flags;
+-	u32 pin_mask = 1 << (31 - gpio);
++	u32 pin_mask = 0x80000000 >> gpio;
+ 
+ 	spin_lock_irqsave(&cpm1_gc->lock, flags);
+ 
+@@ -743,7 +739,7 @@ static int cpm1_gpio32_dir_in(struct gpio_chip *gc, unsigned int gpio)
+ 	struct cpm1_gpio32_chip *cpm1_gc = gpiochip_get_data(&mm_gc->gc);
+ 	struct cpm_ioport32b __iomem *iop = mm_gc->regs;
+ 	unsigned long flags;
+-	u32 pin_mask = 1 << (31 - gpio);
++	u32 pin_mask = 0x80000000 >> gpio;
+ 
+ 	spin_lock_irqsave(&cpm1_gc->lock, flags);
+ 
 -- 
 2.12.0
