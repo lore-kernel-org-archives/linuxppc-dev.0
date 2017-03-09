@@ -1,48 +1,30 @@
-Return-Path: <shilpa.bhat@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
+ [IPv6:2607:f8b0:400e:c05::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vf7xl0SXrzDqXs
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Mar 2017 22:50:34 +1100 (AEDT)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v29BkjPT096225
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 9 Mar 2017 06:50:33 -0500
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
- by mx0a-001b2d01.pphosted.com with ESMTP id 292gtg1xbv-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 09 Mar 2017 06:50:32 -0500
-Received: from localhost
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <shilpa.bhat@linux.vnet.ibm.com>;
- Thu, 9 Mar 2017 21:50:30 +1000
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v29BoJCb23789568
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 9 Mar 2017 22:50:27 +1100
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v29BnrPE012133
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 9 Mar 2017 22:49:54 +1100
-From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Cc: benh@kernel.crashing.org, mpe@ellerman.id.au, paulus@samba.org,
- svaidy@linux.vnet.ibm.com, ego@linux.vnet.ibm.com,
- akshay.adiga@linux.vnet.ibm.com, andrew@aj.id.au, clg@kaod.org,
- maddy@linux.vnet.ibm.com,
- Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
- Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>,
- Jean Delvare <jdelvare@suse.com>, Guenter Roeck <linux@roeck-us.net>,
- Jonathan Corbet <corbet@lwn.net>, devicetree@vger.kernel.org,
- linux-hwmon@vger.kernel.org, linux-doc@vger.kernel.org
-Subject: [RFC 2/2] hwmon: powernv: Hwmon driver for OCC inband power and
- temperature sensors
-Date: Thu,  9 Mar 2017 17:19:15 +0530
-In-Reply-To: <1489060155-22086-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
-References: <1489060155-22086-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
-Message-Id: <1489060155-22086-3-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vf83x6RpRzDqXj
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Mar 2017 22:55:56 +1100 (AEDT)
+Received: by mail-pg0-x244.google.com with SMTP id g2so2144553pge.2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 09 Mar 2017 03:55:56 -0800 (PST)
+Subject: Re: [PATCH kernel v7 10/10] KVM: PPC: VFIO: Add in-kernel
+ acceleration for VFIO
+To: David Gibson <david@gibson.dropbear.id.au>
+References: <20170308030011.26780-1-aik@ozlabs.ru>
+ <20170308030011.26780-11-aik@ozlabs.ru>
+ <20170309064737.GO19967@umbus.fritz.box>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ Alex Williamson <alex.williamson@redhat.com>,
+ Paul Mackerras <paulus@samba.org>, kvm-ppc@vger.kernel.org,
+ kvm@vger.kernel.org
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+Message-ID: <0113dbb0-9e78-89e5-f276-756fc7f5a9b7@ozlabs.ru>
+Date: Thu, 9 Mar 2017 22:55:48 +1100
+MIME-Version: 1.0
+In-Reply-To: <20170309064737.GO19967@umbus.fritz.box>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="W8Eqwe7eArujlFpngBt050w5HW8jnq0KA"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,410 +34,508 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add support to read power and temperature sensors from OCC inband
-sensors which are copied to main memory by OCC.
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--W8Eqwe7eArujlFpngBt050w5HW8jnq0KA
+Content-Type: multipart/mixed; boundary="I9bhBTQVuLGhl56AAC4BjxbWRSKUfBT9C";
+ protected-headers="v1"
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+To: David Gibson <david@gibson.dropbear.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ Alex Williamson <alex.williamson@redhat.com>,
+ Paul Mackerras <paulus@samba.org>, kvm-ppc@vger.kernel.org,
+ kvm@vger.kernel.org
+Message-ID: <0113dbb0-9e78-89e5-f276-756fc7f5a9b7@ozlabs.ru>
+Subject: Re: [PATCH kernel v7 10/10] KVM: PPC: VFIO: Add in-kernel
+ acceleration for VFIO
+References: <20170308030011.26780-1-aik@ozlabs.ru>
+ <20170308030011.26780-11-aik@ozlabs.ru>
+ <20170309064737.GO19967@umbus.fritz.box>
+In-Reply-To: <20170309064737.GO19967@umbus.fritz.box>
 
-Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-CC: Rob Herring <robh+dt@kernel.org>
-CC: Mark Rutland <mark.rutland@arm.com>
-CC: Jean Delvare <jdelvare@suse.com>
-CC: Guenter Roeck <linux@roeck-us.net>
-CC: Jonathan Corbet <corbet@lwn.net>
-CC: devicetree@vger.kernel.org
-CC: linux-hwmon@vger.kernel.org
-CC: linux-doc@vger.kernel.org
----
- .../devicetree/bindings/hwmon/ibmpowernv-occ.txt   |   4 +
- Documentation/hwmon/ibmpowernv-occ                 |  24 ++
- drivers/hwmon/Kconfig                              |  11 +
- drivers/hwmon/Makefile                             |   1 +
- drivers/hwmon/ibmpowernv-occ.c                     | 302 +++++++++++++++++++++
- 5 files changed, 342 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/hwmon/ibmpowernv-occ.txt
- create mode 100644 Documentation/hwmon/ibmpowernv-occ
- create mode 100644 drivers/hwmon/ibmpowernv-occ.c
+--I9bhBTQVuLGhl56AAC4BjxbWRSKUfBT9C
+Content-Type: text/plain; charset=koi8-r
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/Documentation/devicetree/bindings/hwmon/ibmpowernv-occ.txt b/Documentation/devicetree/bindings/hwmon/ibmpowernv-occ.txt
-new file mode 100644
-index 0000000..d03f744
---- /dev/null
-+++ b/Documentation/devicetree/bindings/hwmon/ibmpowernv-occ.txt
-@@ -0,0 +1,4 @@
-+IBM POWERNV OCC inband platform sensors
-+
-+Required device-tree property:
-+- compatible: "ibm,p9-occ-inband-sensor"
-diff --git a/Documentation/hwmon/ibmpowernv-occ b/Documentation/hwmon/ibmpowernv-occ
-new file mode 100644
-index 0000000..151028b
---- /dev/null
-+++ b/Documentation/hwmon/ibmpowernv-occ
-@@ -0,0 +1,24 @@
-+Kernel driver ibmpowernv-occ
-+=============================
-+
-+Supported systems:
-+ * P9 server based on POWERNV platform
-+
-+Description
-+------------
-+
-+This driver exports the power and temperature sensors from OCC inband
-+sensors on P9 POWERNV platforms.
-+
-+Sysfs attributes
-+----------------
-+
-+powerX_input		Latest power reading
-+powerX_input_highest	Minimum power
-+powerX_input_lowest	Maximum power
-+powerX_label		Sensor name
-+
-+tempX_input		Latest temperature reading
-+tempX_max		Minimum temperature
-+tempX_min		Maximum temperature
-+tempX_label		Sensor name
-diff --git a/drivers/hwmon/Kconfig b/drivers/hwmon/Kconfig
-index 0649d53f3..3b1dbb9 100644
---- a/drivers/hwmon/Kconfig
-+++ b/drivers/hwmon/Kconfig
-@@ -598,6 +598,17 @@ config SENSORS_IBMPOWERNV
- 	  This driver can also be built as a module. If so, the module
- 	  will be called ibmpowernv.
- 
-+config SENSORS_IBMPOWERNV_OCC
-+	tristate "IBM POWERNV OCC Inband platform sensors"
-+	depends on PPC_POWERNV
-+	default y
-+	help
-+	  If you say yes here you get support for the temperature/power
-+	  OCC inband sensors on your PowerNV platform.
-+
-+	  This driver can also be built as a module. If so, the module
-+	  will be called ibmpowernv-occ.
-+
- config SENSORS_IIO_HWMON
- 	tristate "Hwmon driver that uses channels specified via iio maps"
- 	depends on IIO
-diff --git a/drivers/hwmon/Makefile b/drivers/hwmon/Makefile
-index 5509edf..0da2207 100644
---- a/drivers/hwmon/Makefile
-+++ b/drivers/hwmon/Makefile
-@@ -75,6 +75,7 @@ obj-$(CONFIG_SENSORS_I5K_AMB)	+= i5k_amb.o
- obj-$(CONFIG_SENSORS_IBMAEM)	+= ibmaem.o
- obj-$(CONFIG_SENSORS_IBMPEX)	+= ibmpex.o
- obj-$(CONFIG_SENSORS_IBMPOWERNV)+= ibmpowernv.o
-+obj-$(CONFIG_SENSORS_IBMPOWERNV_OCC)+= ibmpowernv-occ.o
- obj-$(CONFIG_SENSORS_IIO_HWMON) += iio_hwmon.o
- obj-$(CONFIG_SENSORS_INA209)	+= ina209.o
- obj-$(CONFIG_SENSORS_INA2XX)	+= ina2xx.o
-diff --git a/drivers/hwmon/ibmpowernv-occ.c b/drivers/hwmon/ibmpowernv-occ.c
-new file mode 100644
-index 0000000..97b1bbe
---- /dev/null
-+++ b/drivers/hwmon/ibmpowernv-occ.c
-@@ -0,0 +1,302 @@
-+/*
-+ * IBM PowerNV platform OCC inband sensors for temperature/power
-+ * Copyright (C) 2017 IBM
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program.
-+ */
-+
-+#define DRVNAME		"ibmpowernv_occ"
-+#define pr_fmt(fmt)	DRVNAME ": " fmt
-+
-+#include <linux/module.h>
-+#include <linux/hwmon.h>
-+#include <linux/slab.h>
-+#include <linux/platform_device.h>
-+
-+#include <asm/opal.h>
-+
-+#define MAX_HWMON_ATTR_LEN	32
-+#define MAX_HWMON_LABEL_LEN	(MAX_OCC_SENSOR_NAME_LEN * 2)
-+#define HWMON_ATTRS_PER_SENSOR	16
-+#define TO_MILLI_UNITS(x)	((x) * 1000)
-+#define TO_MICRO_UNITS(x)	((x) * 1000000)
-+
-+enum sensors {
-+	TEMP,
-+	POWER,
-+	MAX_SENSOR_TYPE,
-+};
-+
-+static struct sensor_type {
-+	const char *name;
-+	int hwmon_id;
-+} sensor_types[] = {
-+	{ "temp"},
-+	{ "power"},
-+};
-+
-+static struct sensor_data {
-+	u32 occ_id;
-+	u64 offset;  /* Offset to ping/pong reading buffer */
-+	enum sensors type;
-+	char label[MAX_HWMON_LABEL_LEN];
-+	char name[MAX_HWMON_ATTR_LEN];
-+	struct device_attribute attr;
-+} *sdata;
-+
-+static struct attribute_group sensor_attrs_group;
-+__ATTRIBUTE_GROUPS(sensor_attrs);
-+
-+#define show(file_name)							\
-+static ssize_t ibmpowernv_occ_show_##file_name				\
-+(struct device *dev, struct device_attribute *dattr, char *buf)		\
-+{									\
-+	struct sensor_data *sdata = container_of(dattr,			\
-+						 struct sensor_data,	\
-+						 attr);			\
-+	u64 val;							\
-+	int ret;							\
-+	ret = opal_occ_sensor_get_##file_name(sdata->occ_id,		\
-+					      sdata->offset,		\
-+					      &val);			\
-+	if (ret)							\
-+		return ret;						\
-+	if (sdata->type == TEMP)					\
-+		val = TO_MILLI_UNITS(val);				\
-+	else if (sdata->type == POWER)					\
-+		val = TO_MICRO_UNITS(val);				\
-+	return sprintf(buf, "%llu\n", val);				\
-+}
-+
-+show(sample);
-+show(max);
-+show(min);
-+show(js_min);
-+show(js_max);
-+show(csm_min);
-+show(csm_max);
-+show(prof_min);
-+show(prof_max);
-+
-+static struct sensor_view_groups {
-+	const char *name;
-+	ssize_t (*show_sample)(struct device *dev,
-+			       struct device_attribute *attr,
-+			       char *buf);
-+	ssize_t (*show_min)(struct device *dev,
-+			    struct device_attribute *attr,
-+			    char *buf);
-+	ssize_t (*show_max)(struct device *dev,
-+			    struct device_attribute *attr,
-+			    char *buf);
-+} sensor_views[] = {
-+	{
-+		.name		= "",
-+		.show_sample	= ibmpowernv_occ_show_sample,
-+		.show_min	= ibmpowernv_occ_show_min,
-+		.show_max	= ibmpowernv_occ_show_max
-+	},
-+	{
-+		.name		= "_JS",
-+		.show_sample	= ibmpowernv_occ_show_sample,
-+		.show_min	= ibmpowernv_occ_show_js_min,
-+		.show_max	= ibmpowernv_occ_show_js_max
-+	},
-+	{	.name		= "_CSM",
-+		.show_sample	= ibmpowernv_occ_show_sample,
-+		.show_min	= ibmpowernv_occ_show_csm_min,
-+		.show_max	= ibmpowernv_occ_show_csm_max
-+	},
-+	{	.name		= "_Prof",
-+		.show_sample	= ibmpowernv_occ_show_sample,
-+		.show_min	= ibmpowernv_occ_show_prof_min,
-+		.show_max	= ibmpowernv_occ_show_prof_max
-+	},
-+};
-+
-+static ssize_t ibmpowernv_occ_show_label(struct device *dev,
-+					 struct device_attribute *dattr,
-+					 char *buf)
-+{
-+	struct sensor_data *sdata = container_of(dattr, struct sensor_data,
-+						 attr);
-+
-+	return sprintf(buf, "%s\n", sdata->label);
-+}
-+
-+static int ibmpowernv_occ_get_sensor_type(enum occ_sensor_type type)
-+{
-+	switch (type) {
-+	case OCC_SENSOR_TYPE_POWER:
-+		return POWER;
-+	case OCC_SENSOR_TYPE_TEMPERATURE:
-+		return TEMP;
-+	default:
-+		return MAX_SENSOR_TYPE;
-+	}
-+
-+	return MAX_SENSOR_TYPE;
-+}
-+
-+static void ibmpowernv_occ_add_sdata(struct occ_hwmon_sensor sensor,
-+				     struct sensor_data *sdata, char *name,
-+				     int hwmon_id, enum sensors type,
-+				     ssize_t (*show)(struct device *dev,
-+						struct device_attribute *attr,
-+						char *buf))
-+{
-+	sdata->type = type;
-+	sdata->occ_id = sensor.occ_id;
-+	sdata->offset = sensor.offset;
-+	snprintf(sdata->name, MAX_HWMON_ATTR_LEN, "%s%d_%s",
-+		 sensor_types[type].name, hwmon_id, name);
-+	sysfs_attr_init(&sdata->attr.attr);
-+	sdata->attr.attr.name = sdata->name;
-+	sdata->attr.attr.mode = 0444;
-+	sdata->attr.show = show;
-+}
-+
-+static void ibmpowernv_occ_add_sensor_attrs(struct occ_hwmon_sensor sensor,
-+					    int index)
-+{
-+	struct attribute **attrs = sensor_attrs_group.attrs;
-+	char attr_str[MAX_HWMON_ATTR_LEN];
-+	enum sensors type = ibmpowernv_occ_get_sensor_type(sensor.type);
-+	int i;
-+
-+	index *= HWMON_ATTRS_PER_SENSOR;
-+	for (i = 0; i < ARRAY_SIZE(sensor_views); i++) {
-+		int hid = ++sensor_types[type].hwmon_id;
-+
-+		/* input */
-+		ibmpowernv_occ_add_sdata(sensor, &sdata[index], "input", hid,
-+					 type, sensor_views[i].show_sample);
-+		attrs[index] = &sdata[index].attr.attr;
-+		index++;
-+
-+		/* min */
-+		if (type == POWER)
-+			snprintf(attr_str, MAX_HWMON_ATTR_LEN, "%s",
-+				 "input_lowest");
-+		else
-+			snprintf(attr_str, MAX_HWMON_ATTR_LEN, "%s", "min");
-+
-+		ibmpowernv_occ_add_sdata(sensor, &sdata[index], attr_str, hid,
-+					 type, sensor_views[i].show_min);
-+		attrs[index] = &sdata[index].attr.attr;
-+		index++;
-+
-+		/* max */
-+		if (type == POWER)
-+			snprintf(attr_str, MAX_HWMON_ATTR_LEN, "%s",
-+				 "input_highest");
-+		else
-+			snprintf(attr_str, MAX_HWMON_ATTR_LEN, "%s", "max");
-+
-+		ibmpowernv_occ_add_sdata(sensor, &sdata[index], attr_str, hid,
-+					 type, sensor_views[i].show_max);
-+		attrs[index] = &sdata[index].attr.attr;
-+		index++;
-+
-+		/* label */
-+		snprintf(sdata[index].label, MAX_HWMON_LABEL_LEN, "%s%s",
-+			 sensor.name, sensor_views[i].name);
-+		ibmpowernv_occ_add_sdata(sensor, &sdata[index], "label", hid,
-+					 type, ibmpowernv_occ_show_label);
-+		attrs[index] = &sdata[index].attr.attr;
-+		index++;
-+	}
-+}
-+
-+static int ibmpowernv_occ_add_device_attrs(struct platform_device *pdev)
-+{
-+	struct attribute **attrs;
-+	struct occ_hwmon_sensor *slist = NULL;
-+	int nr_sensors = 0, i;
-+	int ret = -ENOMEM;
-+
-+	slist = opal_occ_sensor_get_hwmon_list(&nr_sensors);
-+	if (!nr_sensors)
-+		return -ENODEV;
-+
-+	if (!slist)
-+		return ret;
-+
-+	sdata = devm_kzalloc(&pdev->dev, nr_sensors * sizeof(*sdata) *
-+			     HWMON_ATTRS_PER_SENSOR, GFP_KERNEL);
-+	if (!sdata)
-+		goto out;
-+
-+	attrs = devm_kzalloc(&pdev->dev, nr_sensors * sizeof(*attrs) *
-+			     HWMON_ATTRS_PER_SENSOR, GFP_KERNEL);
-+	if (!attrs)
-+		goto out;
-+
-+	sensor_attrs_group.attrs = attrs;
-+	for (i = 0; i < nr_sensors; i++)
-+		ibmpowernv_occ_add_sensor_attrs(slist[i], i);
-+
-+	ret = 0;
-+out:
-+	kfree(slist);
-+	return ret;
-+}
-+
-+static int ibmpowernv_occ_probe(struct platform_device *pdev)
-+{
-+	struct device *hwmon_dev;
-+	int err;
-+
-+	err = ibmpowernv_occ_add_device_attrs(pdev);
-+	if (err)
-+		goto out;
-+
-+	hwmon_dev = devm_hwmon_device_register_with_groups(&pdev->dev, DRVNAME,
-+							   NULL,
-+							   sensor_attrs_groups);
-+
-+	err = PTR_ERR_OR_ZERO(hwmon_dev);
-+out:
-+	if (err)
-+		pr_warn("Failed to initialize Hwmon OCC inband sensors\n");
-+
-+	return err;
-+}
-+
-+static const struct platform_device_id occ_sensor_ids[] = {
-+	{ .name = "occ-inband-sensor" },
-+	{ }
-+};
-+MODULE_DEVICE_TABLE(platform, occ_sensor_ids);
-+
-+static const struct of_device_id occ_sensor_of_ids[] = {
-+	{ .compatible	= "ibm,p9-occ-inband-sensor" },
-+	{ }
-+};
-+MODULE_DEVICE_TABLE(of, occ_sensor_of_ids);
-+
-+static struct platform_driver ibmpowernv_occ_driver = {
-+	.probe		= ibmpowernv_occ_probe,
-+	.id_table	= occ_sensor_ids,
-+	.driver		= {
-+		.name	= DRVNAME,
-+		.of_match_table	= occ_sensor_of_ids,
-+	},
-+};
-+
-+module_platform_driver(ibmpowernv_occ_driver);
-+
-+MODULE_AUTHOR("Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>");
-+MODULE_DESCRIPTION("IBM POWERNV platform OCC inband sensors");
-+MODULE_LICENSE("GPL");
--- 
-1.8.3.1
+On 09/03/17 17:47, David Gibson wrote:
+> On Wed, Mar 08, 2017 at 02:00:11PM +1100, Alexey Kardashevskiy wrote:
+>> This allows the host kernel to handle H_PUT_TCE, H_PUT_TCE_INDIRECT
+>> and H_STUFF_TCE requests targeted an IOMMU TCE table used for VFIO
+>> without passing them to user space which saves time on switching
+>> to user space and back.
+>>
+>> This adds H_PUT_TCE/H_PUT_TCE_INDIRECT/H_STUFF_TCE handlers to KVM.
+>> KVM tries to handle a TCE request in the real mode, if failed
+>> it passes the request to the virtual mode to complete the operation.
+>> If it a virtual mode handler fails, the request is passed to
+>> the user space; this is not expected to happen though.
+>>
+>> To avoid dealing with page use counters (which is tricky in real mode)=
+,
+>> this only accelerates SPAPR TCE IOMMU v2 clients which are required
+>> to pre-register the userspace memory. The very first TCE request will
+>> be handled in the VFIO SPAPR TCE driver anyway as the userspace view
+>> of the TCE table (iommu_table::it_userspace) is not allocated till
+>> the very first mapping happens and we cannot call vmalloc in real mode=
+=2E
+>>
+>> If we fail to update a hardware IOMMU table unexpected reason, we just=
+
+>> clear it and move on as there is nothing really we can do about it -
+>> for example, if we hot plug a VFIO device to a guest, existing TCE tab=
+les
+>> will be mirrored automatically to the hardware and there is no interfa=
+ce
+>> to report to the guest about possible failures.
+>>
+>> This adds new attribute - KVM_DEV_VFIO_GROUP_SET_SPAPR_TCE - to
+>> the VFIO KVM device. It takes a VFIO group fd and SPAPR TCE table fd
+>> and associates a physical IOMMU table with the SPAPR TCE table (which
+>> is a guest view of the hardware IOMMU table). The iommu_table object
+>> is cached and referenced so we do not have to look up for it in real m=
+ode.
+>>
+>> This does not implement the UNSET counterpart as there is no use for i=
+t -
+>> once the acceleration is enabled, the existing userspace won't
+>> disable it unless a VFIO container is destroyed; this adds necessary
+>> cleanup to the KVM_DEV_VFIO_GROUP_DEL handler.
+>>
+>> As this creates a descriptor per IOMMU table-LIOBN couple (called
+>> kvmppc_spapr_tce_iommu_table), it is possible to have several
+>> descriptors with the same iommu_table (hardware IOMMU table) attached
+>> to the same LIOBN; we do not remove duplicates though as
+>> iommu_table_ops::exchange not just update a TCE entry (which is
+>> shared among IOMMU groups) but also invalidates the TCE cache
+>> (one per IOMMU group).
+>>
+>> This advertises the new KVM_CAP_SPAPR_TCE_VFIO capability to the user
+>> space.
+>>
+>> This finally makes use of vfio_external_user_iommu_id() which was
+>> introduced quite some time ago and was considered for removal.
+>>
+>> Tests show that this patch increases transmission speed from 220MB/s
+>> to 750..1020MB/s on 10Gb network (Chelsea CXGB3 10Gb ethernet card).
+>>
+>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+>=20
+> There are still a few oddities in the error paths.
+>=20
+> [snip]
+>> +static long kvmppc_tce_iommu_unmap(struct kvm *kvm,
+>> +		struct iommu_table *tbl, unsigned long entry)
+>> +{
+>> +	enum dma_data_direction dir =3D DMA_NONE;
+>> +	unsigned long hpa =3D 0;
+>> +	long ret;
+>> +
+>> +	if (iommu_tce_xchg(tbl, entry, &hpa, &dir))
+>> +		return H_HARDWARE;
+>=20
+> IIR previous discussions properly, an xchg() failure should be a
+> WARN_ON().
+
+Well, it could, I'll add. It just feels sometime that having both WARN_ON=
+
+and H_HARDWARE is kind of redundant.
+
+
+> [snip]
+>> +static long kvmppc_rm_tce_iommu_mapped_dec(struct kvm *kvm,
+>> +		struct iommu_table *tbl, unsigned long entry)
+>> +{
+>> +	struct mm_iommu_table_group_mem_t *mem =3D NULL;
+>> +	const unsigned long pgsize =3D 1ULL << tbl->it_page_shift;
+>> +	unsigned long *pua =3D IOMMU_TABLE_USERSPACE_ENTRY(tbl, entry);
+>> +
+>> +	if (WARN_ON_ONCE_RM(!pua))
+>> +		return H_HARDWARE;
+>> +
+>> +	pua =3D (void *) vmalloc_to_phys(pua);
+>> +	if (!pua)
+>> +		return H_TOO_HARD;
+>=20
+> Here a vmalloc translation failure is treated as an H_TOO_HARD..
+
+Ah, here is an oddity, here should be WARN_ON + H_HARDWARE and the if(!pu=
+a)
+check should not do WARN_ON and return H_TOO_HARD, I did not hit this
+because the hardware is empty when VFIO starts using it so there is nothi=
+ng
+to unmap initial H_STUFF_TCE happens.
+
+>=20
+>> +
+>> +	mem =3D mm_iommu_lookup_rm(kvm->mm, *pua, pgsize);
+>> +	if (!mem)
+>> +		return H_TOO_HARD;
+>> +
+>> +	mm_iommu_mapped_dec(mem);
+>> +
+>> +	*pua =3D 0;
+>> +
+>> +	return H_SUCCESS;
+>> +}
+>> +
+>> +static long kvmppc_rm_tce_iommu_unmap(struct kvm *kvm,
+>> +		struct iommu_table *tbl, unsigned long entry)
+>> +{
+>> +	enum dma_data_direction dir =3D DMA_NONE;
+>> +	unsigned long hpa =3D 0;
+>> +	long ret;
+>> +
+>> +	if (iommu_tce_xchg_rm(tbl, entry, &hpa, &dir))
+>> +		return H_HARDWARE;
+>=20
+> Another xchg failure where I'd expect a WARN.
+
+
+The realmode's iommu_tce_xchg_rm() does SetPageDirty() if
+realmode_pfn_to_page() succeeded but realmode_pfn_to_page() may fail if t=
+he
+requested page struct is split between 2 system pages in real addressspac=
+e
+but not in virtual address space where page structs are mapped to
+0xfxxx.xxxx.xxxx.xxxx.
+
+
+>=20
+>> +
+>> +	if (dir =3D=3D DMA_NONE)
+>> +		return H_SUCCESS;
+>> +
+>> +	ret =3D kvmppc_rm_tce_iommu_mapped_dec(kvm, tbl, entry);
+>> +	if (ret)
+>> +		iommu_tce_xchg_rm(tbl, entry, &hpa, &dir);
+>> +
+>> +	return ret;
+>> +}
+>> +
+>> +static long kvmppc_rm_tce_iommu_map(struct kvm *kvm, struct iommu_tab=
+le *tbl,
+>> +		unsigned long entry, unsigned long ua,
+>> +		enum dma_data_direction dir)
+>> +{
+>> +	long ret;
+>> +	unsigned long hpa =3D 0;
+>> +	unsigned long *pua =3D IOMMU_TABLE_USERSPACE_ENTRY(tbl, entry);
+>> +	struct mm_iommu_table_group_mem_t *mem;
+>> +
+>> +	if (!pua)
+>> +		/* it_userspace allocation might be delayed */
+>> +		return H_TOO_HARD;
+>> +
+>> +	mem =3D mm_iommu_lookup_rm(kvm->mm, ua, 1ULL << tbl->it_page_shift);=
+
+>> +	if (!mem)
+>> +		return H_TOO_HARD;
+>> +
+>> +	if (WARN_ON_ONCE_RM(mm_iommu_ua_to_hpa_rm(mem, ua, &hpa)))
+>> +		return H_HARDWARE;
+>> +
+>> +	pua =3D (void *) vmalloc_to_phys(pua);
+>> +	if (WARN_ON_ONCE_RM(!pua))
+>=20
+> .. but here a more or less identical vmalloc translation failure is
+> treated as a WARN.  Is it TOO_HARD, or WARN?
+
+This one is correct.
+
+
+>=20
+>> +		return H_HARDWARE;
+>> +
+>> +	if (WARN_ON_ONCE_RM(mm_iommu_mapped_inc(mem)))
+>> +		return H_CLOSED;
+>> +
+>> +	ret =3D iommu_tce_xchg_rm(tbl, entry, &hpa, &dir);
+>> +	if (ret) {
+>> +		mm_iommu_mapped_dec(mem);
+>> +		return H_TOO_HARD;
+>=20
+> And another xchg failure that I'd expect to be a warn
+
+
+Here it is the realmode's iommu_tce_xchg again.
+
+
+>=20
+>> +	}
+>> +
+>> +	if (dir !=3D DMA_NONE)
+>> +		kvmppc_rm_tce_iommu_mapped_dec(kvm, tbl, entry);
+>> +
+>> +	*pua =3D ua;
+>> +
+>> +	return 0;
+>> +}
+>> +
+>>  long kvmppc_rm_h_put_tce(struct kvm_vcpu *vcpu, unsigned long liobn,
+>>  		unsigned long ioba, unsigned long tce)
+>>  {
+>>  	struct kvmppc_spapr_tce_table *stt;
+>>  	long ret;
+>> +	struct kvmppc_spapr_tce_iommu_table *stit;
+>> +	unsigned long entry, ua =3D 0;
+>> +	enum dma_data_direction dir;
+>> =20
+>>  	/* udbg_printf("H_PUT_TCE(): liobn=3D0x%lx ioba=3D0x%lx, tce=3D0x%lx=
+\n", */
+>>  	/* 	    liobn, ioba, tce); */
+>> @@ -182,7 +304,32 @@ long kvmppc_rm_h_put_tce(struct kvm_vcpu *vcpu, u=
+nsigned long liobn,
+>>  	if (ret !=3D H_SUCCESS)
+>>  		return ret;
+>> =20
+>> -	kvmppc_tce_put(stt, ioba >> stt->page_shift, tce);
+>> +	dir =3D iommu_tce_direction(tce);
+>> +	if ((dir !=3D DMA_NONE) && kvmppc_gpa_to_ua(vcpu->kvm,
+>> +			tce & ~(TCE_PCI_READ | TCE_PCI_WRITE), &ua, NULL))
+>> +		return H_PARAMETER;
+>> +
+>> +	entry =3D ioba >> stt->page_shift;
+>> +
+>> +	list_for_each_entry_lockless(stit, &stt->iommu_tables, next) {
+>> +		if (dir =3D=3D DMA_NONE)
+>> +			ret =3D kvmppc_rm_tce_iommu_unmap(vcpu->kvm,
+>> +					stit->tbl, entry);
+>> +		else
+>> +			ret =3D kvmppc_rm_tce_iommu_map(vcpu->kvm,
+>> +					stit->tbl, entry, ua, dir);
+>> +
+>> +		if (ret =3D=3D H_SUCCESS)
+>> +			continue;
+>> +
+>> +		if (ret =3D=3D H_TOO_HARD)
+>> +			return ret;
+>> +
+>> +		WARN_ON_ONCE_RM(1);
+>> +		kvmppc_rm_clear_tce(stit->tbl, entry);
+>> +	}
+>> +
+>> +	kvmppc_tce_put(stt, entry, tce);
+>> =20
+>>  	return H_SUCCESS;
+>>  }
+>> @@ -223,6 +370,7 @@ long kvmppc_rm_h_put_tce_indirect(struct kvm_vcpu =
+*vcpu,
+>>  	unsigned long tces, entry, ua =3D 0;
+>>  	unsigned long *rmap =3D NULL;
+>>  	bool prereg =3D false;
+>> +	struct kvmppc_spapr_tce_iommu_table *stit;
+>> =20
+>>  	stt =3D kvmppc_find_table(vcpu->kvm, liobn);
+>>  	if (!stt)
+>> @@ -293,6 +441,27 @@ long kvmppc_rm_h_put_tce_indirect(struct kvm_vcpu=
+ *vcpu,
+>>  		if (ret !=3D H_SUCCESS)
+>>  			goto unlock_exit;
+>> =20
+>> +		ua =3D 0;
+>> +		if (kvmppc_gpa_to_ua(vcpu->kvm,
+>> +				tce & ~(TCE_PCI_READ | TCE_PCI_WRITE),
+>> +				&ua, NULL))
+>> +			return H_PARAMETER;
+>> +
+>> +		list_for_each_entry_lockless(stit, &stt->iommu_tables, next) {
+>> +			ret =3D kvmppc_rm_tce_iommu_map(vcpu->kvm,
+>> +					stit->tbl, entry + i, ua,
+>> +					iommu_tce_direction(tce));
+>> +
+>> +			if (ret =3D=3D H_SUCCESS)
+>> +				continue;
+>> +
+>> +			if (ret =3D=3D H_TOO_HARD)
+>> +				goto unlock_exit;
+>> +
+>> +			WARN_ON_ONCE_RM(1);
+>> +			kvmppc_rm_clear_tce(stit->tbl, entry);
+>> +		}
+>> +
+>>  		kvmppc_tce_put(stt, entry + i, tce);
+>>  	}
+>> =20
+>> @@ -309,6 +478,7 @@ long kvmppc_rm_h_stuff_tce(struct kvm_vcpu *vcpu,
+>>  {
+>>  	struct kvmppc_spapr_tce_table *stt;
+>>  	long i, ret;
+>> +	struct kvmppc_spapr_tce_iommu_table *stit;
+>> =20
+>>  	stt =3D kvmppc_find_table(vcpu->kvm, liobn);
+>>  	if (!stt)
+>> @@ -322,6 +492,24 @@ long kvmppc_rm_h_stuff_tce(struct kvm_vcpu *vcpu,=
+
+>>  	if (tce_value & (TCE_PCI_WRITE | TCE_PCI_READ))
+>>  		return H_PARAMETER;
+>> =20
+>> +	list_for_each_entry_lockless(stit, &stt->iommu_tables, next) {
+>> +		unsigned long entry =3D ioba >> stit->tbl->it_page_shift;
+>> +
+>> +		for (i =3D 0; i < npages; ++i) {
+>> +			ret =3D kvmppc_rm_tce_iommu_unmap(vcpu->kvm,
+>> +					stit->tbl, entry + i);
+>> +
+>> +			if (ret =3D=3D H_SUCCESS)
+>> +				continue;
+>> +
+>> +			if (ret =3D=3D H_TOO_HARD)
+>> +				return ret;
+>> +
+>> +			WARN_ON_ONCE_RM(1);
+>> +			kvmppc_rm_clear_tce(stit->tbl, entry);
+>> +		}
+>> +	}
+>> +
+>>  	for (i =3D 0; i < npages; ++i, ioba +=3D (1ULL << stt->page_shift))
+>>  		kvmppc_tce_put(stt, ioba >> stt->page_shift, tce_value);
+>> =20
+>> diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
+>> index 95c91a9de351..62bdd6c48107 100644
+>> --- a/arch/powerpc/kvm/powerpc.c
+>> +++ b/arch/powerpc/kvm/powerpc.c
+>> @@ -538,6 +538,8 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, =
+long ext)
+>>  #ifdef CONFIG_PPC_BOOK3S_64
+>>  	case KVM_CAP_SPAPR_TCE:
+>>  	case KVM_CAP_SPAPR_TCE_64:
+>> +		/* fallthrough */
+>> +	case KVM_CAP_SPAPR_TCE_VFIO:
+>>  	case KVM_CAP_PPC_RTAS:
+>>  	case KVM_CAP_PPC_FIXUP_HCALL:
+>>  	case KVM_CAP_PPC_ENABLE_HCALL:
+>> diff --git a/virt/kvm/vfio.c b/virt/kvm/vfio.c
+>> index d32f239eb471..2b7dc22265fe 100644
+>> --- a/virt/kvm/vfio.c
+>> +++ b/virt/kvm/vfio.c
+>> @@ -20,6 +20,10 @@
+>>  #include <linux/vfio.h>
+>>  #include "vfio.h"
+>> =20
+>> +#ifdef CONFIG_SPAPR_TCE_IOMMU
+>> +#include <asm/kvm_ppc.h>
+>> +#endif
+>> +
+>>  struct kvm_vfio_group {
+>>  	struct list_head node;
+>>  	struct vfio_group *vfio_group;
+>> @@ -211,6 +215,9 @@ static int kvm_vfio_set_group(struct kvm_device *d=
+ev, long attr, u64 arg)
+>> =20
+>>  		mutex_unlock(&kv->lock);
+>> =20
+>> +#ifdef CONFIG_SPAPR_TCE_IOMMU
+>> +		kvm_spapr_tce_release_iommu_group(dev->kvm, vfio_group);
+>> +#endif
+>>  		kvm_vfio_group_set_kvm(vfio_group, NULL);
+>> =20
+>>  		kvm_vfio_group_put_external_user(vfio_group);
+>> @@ -218,6 +225,53 @@ static int kvm_vfio_set_group(struct kvm_device *=
+dev, long attr, u64 arg)
+>>  		kvm_vfio_update_coherency(dev);
+>> =20
+>>  		return ret;
+>> +
+>> +#ifdef CONFIG_SPAPR_TCE_IOMMU
+>> +	case KVM_DEV_VFIO_GROUP_SET_SPAPR_TCE: {
+>> +		struct kvm_vfio_spapr_tce param;
+>> +		unsigned long minsz;
+>> +		struct kvm_vfio *kv =3D dev->private;
+>> +		struct vfio_group *vfio_group;
+>> +		struct kvm_vfio_group *kvg;
+>> +		struct fd f;
+>> +
+>> +		minsz =3D offsetofend(struct kvm_vfio_spapr_tce, tablefd);
+>> +
+>> +		if (copy_from_user(&param, (void __user *)arg, minsz))
+>> +			return -EFAULT;
+>> +
+>> +		if (param.argsz < minsz || param.flags)
+>> +			return -EINVAL;
+>> +
+>> +		f =3D fdget(param.groupfd);
+>> +		if (!f.file)
+>> +			return -EBADF;
+>> +
+>> +		vfio_group =3D kvm_vfio_group_get_external_user(f.file);
+>> +		fdput(f);
+>> +
+>> +		if (IS_ERR(vfio_group))
+>> +			return PTR_ERR(vfio_group);
+>> +
+>> +		ret =3D -ENOENT;
+>> +
+>> +		mutex_lock(&kv->lock);
+>> +
+>> +		list_for_each_entry(kvg, &kv->group_list, node) {
+>> +			if (kvg->vfio_group !=3D vfio_group)
+>> +				continue;
+>> +
+>> +			ret =3D kvm_spapr_tce_attach_iommu_group(dev->kvm,
+>> +					param.tablefd, vfio_group);
+>> +
+>> +			break;
+>> +		}
+>> +
+>> +		mutex_unlock(&kv->lock);
+>> +
+>> +		return ret;
+>> +	}
+>> +#endif /* CONFIG_SPAPR_TCE_IOMMU */
+>>  	}
+>> =20
+>>  	return -ENXIO;
+>> @@ -242,6 +296,9 @@ static int kvm_vfio_has_attr(struct kvm_device *de=
+v,
+>>  		switch (attr->attr) {
+>>  		case KVM_DEV_VFIO_GROUP_ADD:
+>>  		case KVM_DEV_VFIO_GROUP_DEL:
+>> +#ifdef CONFIG_SPAPR_TCE_IOMMU
+>> +		case KVM_DEV_VFIO_GROUP_SET_SPAPR_TCE:
+>> +#endif
+>>  			return 0;
+>>  		}
+>> =20
+>> @@ -257,6 +314,9 @@ static void kvm_vfio_destroy(struct kvm_device *de=
+v)
+>>  	struct kvm_vfio_group *kvg, *tmp;
+>> =20
+>>  	list_for_each_entry_safe(kvg, tmp, &kv->group_list, node) {
+>> +#ifdef CONFIG_SPAPR_TCE_IOMMU
+>> +		kvm_spapr_tce_release_iommu_group(dev->kvm, kvg->vfio_group);
+>> +#endif
+>>  		kvm_vfio_group_set_kvm(kvg->vfio_group, NULL);
+>>  		kvm_vfio_group_put_external_user(kvg->vfio_group);
+>>  		list_del(&kvg->node);
+>=20
+
+
+--=20
+Alexey
+
+
+--I9bhBTQVuLGhl56AAC4BjxbWRSKUfBT9C--
+
+--W8Eqwe7eArujlFpngBt050w5HW8jnq0KA
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIrBAEBCAAVBQJYwULEDhxhaWtAb3psYWJzLnJ1AAoJEIYTPdgrwSC5OgIP/3V1
+DqddkQjGY8pfegw7pLbiajIu/CK8Tyh8HrsfFBDNY1nt57/85sGt25PclP9mMNI2
+LXk002VTctjCpqEjKkorTyitKhr+pdDocSnx7PtBksC171l0wswLayDWAexNcc0p
+gAr6qkWBU5MdoCPHa8Vv1eABZqp6Oj6/UDSgdrlDHPI206qdYW6Fd7gfmKioK33B
+X93yQ21a6oWKgirbPNuuAnStgVWnljGvTNQ4L1lewR38S2dVoSbYtDfP64uwLY5O
+t8E+dR17SGW3orpuRkviYPdbHyORQFnkUovSCeQGYcIWhQiNiBqmAPJuvzaa6yx4
+8mmOJNng0LK9Cj0reWKRyFFRGOl4U+dlLAJyx+AgTVqud34kzvFYGXHAI96XH5P+
+9ccd/h2yu5xHb5EHXc1R4TWOAyXzaoBLBs1LyTRR+Y3emO1mpdUrrbBLlDEtCOV6
+K77+Uys+isU2HXKKVOluRYtntE5klNK4qlGohdelmjf3ar2jJ5SKNU7put8RnA6V
+5xvxUul43+yREmZ/iSQaHYifCKYYKNOjaqa/8H1sUeEqcrqGvQLeR0fJ62bpMgXU
+jEcUtHe7zJERTRyFsdgNXoKXGcclTK1bCdLY+078Bqqn1+WynhECbCf1eq5Ms/XS
+3LtLIA0RPPc2AKZW2SMPUVQkxnQE3nHq4CZa90Ze
+=eo6B
+-----END PGP SIGNATURE-----
+
+--W8Eqwe7eArujlFpngBt050w5HW8jnq0KA--
