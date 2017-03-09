@@ -1,50 +1,44 @@
-Return-Path: <srs0=epap=2s=linux.vnet.ibm.com=hbathini@ozlabs.org>
+Return-Path: <srs0=y8v2=2s=linux.vnet.ibm.com=tyreld@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vfCts3ZgvzDqnQ
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Mar 2017 01:48:21 +1100 (AEDT)
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3vfCts1y08z8tJ9
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Mar 2017 01:48:21 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vfNv63wnNzDqGb
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Mar 2017 08:34:10 +1100 (AEDT)
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3vfNv63Y0Pz8sxj
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Mar 2017 08:34:10 +1100 (AEDT)
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3vfCtr5wSPz9s7n
- for <linuxppc-dev@ozlabs.org>; Fri, 10 Mar 2017 01:48:20 +1100 (AEDT)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by ozlabs.org (Postfix) with ESMTPS id 3vfNv60BXKz9s7k
+ for <linuxppc-dev@ozlabs.org>; Fri, 10 Mar 2017 08:34:09 +1100 (AEDT)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v29Ehmn9135744
- for <linuxppc-dev@ozlabs.org>; Thu, 9 Mar 2017 09:48:12 -0500
-Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [125.16.236.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 292y9c970h-1
+ v29LXRr9080289
+ for <linuxppc-dev@ozlabs.org>; Thu, 9 Mar 2017 16:34:06 -0500
+Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 292yceubtu-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Thu, 09 Mar 2017 09:48:12 -0500
+ for <linuxppc-dev@ozlabs.org>; Thu, 09 Mar 2017 16:34:06 -0500
 Received: from localhost
- by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <hbathini@linux.vnet.ibm.com>;
- Thu, 9 Mar 2017 20:18:09 +0530
-Received: from d28av06.in.ibm.com (d28av06.in.ibm.com [9.184.220.48])
- by d28relay01.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v29Em6tu37486696
- for <linuxppc-dev@ozlabs.org>; Thu, 9 Mar 2017 20:18:06 +0530
-Received: from d28av06.in.ibm.com (localhost [127.0.0.1])
- by d28av06.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v29Em6UA005837
- for <linuxppc-dev@ozlabs.org>; Thu, 9 Mar 2017 20:18:06 +0530
-Subject: [PATCH 2/2] powerpc/fadump: update fadump documentation
-From: Hari Bathini <hbathini@linux.vnet.ibm.com>
-To: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>,
- linuxppc-dev <linuxppc-dev@ozlabs.org>,
- Michael Ellerman <mpe@ellerman.id.au>
-Date: Thu, 09 Mar 2017 20:18:04 +0530
-In-Reply-To: <148907087368.3574.8071537539290192784.stgit@hbathini.in.ibm.com>
-References: <148907087368.3574.8071537539290192784.stgit@hbathini.in.ibm.com>
+ for <linuxppc-dev@ozlabs.org> from <tyreld@linux.vnet.ibm.com>;
+ Thu, 9 Mar 2017 16:34:05 -0500
+Subject: Re: [FIX PATCH v1] powerpc/pseries: Fix reference count leak during
+ CPU unplug
+To: Bharata B Rao <bharata@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org
+References: <1489034268-24888-1-git-send-email-bharata@linux.vnet.ibm.com>
+Cc: sachinp@linux.vnet.ibm.com, nfont@linux.vnet.ibm.com,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Grant Likely <grant.likely@linaro.org>
+From: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+Date: Thu, 9 Mar 2017 13:34:00 -0800
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Message-Id: <148907088422.3574.8594937665167145469.stgit@hbathini.in.ibm.com>
+In-Reply-To: <1489034268-24888-1-git-send-email-bharata@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=windows-1252
+Message-Id: <cd939dd8-c04a-54df-2b4f-e1b90e3c6cc7@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -54,67 +48,133 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-With the unnecessary restriction to reserve memory for fadump at the
-top of RAM forgone, update the documentation accordingly.
+On 03/08/2017 08:37 PM, Bharata B Rao wrote:
+> The following warning is seen when a CPU is hot unplugged on a PowerKVM
+> guest:
 
-Signed-off-by: Hari Bathini <hbathini@linux.vnet.ibm.com>
----
- Documentation/powerpc/firmware-assisted-dump.txt |   34 +++++++++++-----------
- 1 file changed, 17 insertions(+), 17 deletions(-)
+Is this the case with cpus present at boot? What about cpus hotplugged
+after boot?
 
-diff --git a/Documentation/powerpc/firmware-assisted-dump.txt b/Documentation/powerpc/firmware-assisted-dump.txt
-index 3007bc9..19b1e3d 100644
---- a/Documentation/powerpc/firmware-assisted-dump.txt
-+++ b/Documentation/powerpc/firmware-assisted-dump.txt
-@@ -105,21 +105,21 @@ memory is held.
- 
- If there is no waiting dump data, then only the memory required
- to hold CPU state, HPTE region, boot memory dump and elfcore
--header, is reserved at the top of memory (see Fig. 1). This area
--is *not* released: this region will be kept permanently reserved,
--so that it can act as a receptacle for a copy of the boot memory
--content in addition to CPU state and HPTE region, in the case a
--crash does occur.
-+header, is usually reserved at an offset greater than boot memory
-+size (see Fig. 1). This area is *not* released: this region will
-+be kept permanently reserved, so that it can act as a receptacle
-+for a copy of the boot memory content in addition to CPU state
-+and HPTE region, in the case a crash does occur.
- 
-   o Memory Reservation during first kernel
- 
--  Low memory                                        Top of memory
-+  Low memory                                         Top of memory
-   0      boot memory size                                       |
--  |           |                       |<--Reserved dump area -->|
--  V           V                       |   Permanent Reservation V
--  +-----------+----------/ /----------+---+----+-----------+----+
--  |           |                       |CPU|HPTE|  DUMP     |ELF |
--  +-----------+----------/ /----------+---+----+-----------+----+
-+  |           |                |<--Reserved dump area -->|      |
-+  V           V                |   Permanent Reservation |      V
-+  +-----------+----------/ /---+---+----+-----------+----+------+
-+  |           |                |CPU|HPTE|  DUMP     |ELF |      |
-+  +-----------+----------/ /---+---+----+-----------+----+------+
-         |                                           ^
-         |                                           |
-         \                                           /
-@@ -135,12 +135,12 @@ crash does occur.
-   0      boot memory size                                       |
-   |           |<------------- Reserved dump area ----------- -->|
-   V           V                                                 V
--  +-----------+----------/ /----------+---+----+-----------+----+
--  |           |                       |CPU|HPTE|  DUMP     |ELF |
--  +-----------+----------/ /----------+---+----+-----------+----+
--        |                                                    |
--        V                                                    V
--   Used by second                                    /proc/vmcore
-+  +-----------+----------/ /---+---+----+-----------+----+------+
-+  |           |                |CPU|HPTE|  DUMP     |ELF |      |
-+  +-----------+----------/ /---+---+----+-----------+----+------+
-+        |                                              |
-+        V                                              V
-+   Used by second                                /proc/vmcore
-    kernel to boot
-                    Fig. 2
- 
+My suspicion is that the refcount was wrong to begin with. See my
+comments below. The use of the of_node_put() calls is correct as in each
+case we incremented the ref count earlier in the same function.
+
+> 
+> refcount_t: underflow; use-after-free.
+> ------------[ cut here ]------------
+> WARNING: CPU: 0 PID: 53 at lib/refcount.c:128 refcount_sub_and_test+0xd8/0xf0
+> Modules linked in:
+> CPU: 0 PID: 53 Comm: kworker/u510:1 Not tainted 4.11.0-rc1 #3
+> Workqueue: pseries hotplug workque pseries_hp_work_fn
+> task: c0000000fb475000 task.stack: c0000000fb81c000
+> NIP: c0000000006f0808 LR: c0000000006f0804 CTR: c0000000007b98c0
+> REGS: c0000000fb81f710 TRAP: 0700   Not tainted  (4.11.0-rc1)
+> MSR: 800000000282b033 <SF,VEC,VSX,EE,FP,ME,IR,DR,RI,LE>
+>   CR: 48002222  XER: 20000000
+> CFAR: c000000000c438e0 SOFTE: 1
+> GPR00: c0000000006f0804 c0000000fb81f990 c000000001573b00 0000000000000026
+> GPR04: 0000000000000000 000000000000016c 667265652e0d0a73 652d61667465722d
+> GPR08: 0000000000000007 0000000000000007 0000000000000001 0000000000000006
+> GPR12: 0000000000002200 c00000000ff40000 c00000000010c578 c0000001f11b9f40
+> GPR16: c0000001fe0312a8 c0000001fe031078 c0000001fe031020 0000000000000001
+> GPR20: 0000000000000000 0000000000000000 c000000001454808 fffffffffffffef7
+> GPR24: 0000000000000000 c0000001f1677648 0000000000000000 0000000000000000
+> GPR28: 0000000010000008 c000000000e4d3d8 0000000000000000 c0000001eaae07d8
+> NIP [c0000000006f0808] refcount_sub_and_test+0xd8/0xf0
+> LR [c0000000006f0804] refcount_sub_and_test+0xd4/0xf0
+> Call Trace:
+> [c0000000fb81f990] [c0000000006f0804] refcount_sub_and_test+0xd4/0xf0 (unreliable)
+> [c0000000fb81f9f0] [c0000000006d04b4] kobject_put+0x44/0x2a0
+> [c0000000fb81fa70] [c0000000009d5284] of_node_put+0x34/0x50
+> [c0000000fb81faa0] [c0000000000aceb8] dlpar_cpu_remove_by_index+0x108/0x130
+> [c0000000fb81fb30] [c0000000000ae128] dlpar_cpu+0x78/0x550
+> [c0000000fb81fbe0] [c0000000000a7b40] handle_dlpar_errorlog+0xc0/0x160
+> [c0000000fb81fc50] [c0000000000a7c74] pseries_hp_work_fn+0x94/0xa0
+> [c0000000fb81fc80] [c000000000102cec] process_one_work+0x23c/0x540
+> [c0000000fb81fd20] [c00000000010309c] worker_thread+0xac/0x620
+> [c0000000fb81fdc0] [c00000000010c6c4] kthread+0x154/0x1a0
+> [c0000000fb81fe30] [c00000000000bbe0] ret_from_kernel_thread+0x5c/0x7c
+> 
+> Fix this by ensuring that of_node_put() is called only from the
+> error path in dlpar_cpu_remove_by_index(). In the normal path,
+> of_node_put() happens as part of dlpar_detach_node().
+> 
+> Signed-off-by: Bharata B Rao <bharata@linux.vnet.ibm.com>
+> Cc: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+> ---
+> Changes in v1:
+> - Fixed the refcount problem in the userspace driven unplug path
+>   in addition to in-kernel unplug path. (Sachin Sant)
+> 
+> v0: https://patchwork.ozlabs.org/patch/736547/
+> 
+>  arch/powerpc/platforms/pseries/hotplug-cpu.c | 12 ++++++++----
+>  1 file changed, 8 insertions(+), 4 deletions(-)
+> 
+> diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/platforms/pseries/hotplug-cpu.c
+> index 7bc0e91..c5ed510 100644
+> --- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
+> +++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
+> @@ -619,7 +619,8 @@ static int dlpar_cpu_remove_by_index(u32 drc_index)
+>  	}
+> 
+>  	rc = dlpar_cpu_remove(dn, drc_index);
+> -	of_node_put(dn);
+> +	if (rc)
+> +		of_node_put(dn);
+
+I think there is another issue at play here because this is wrong.
+Regardless of whether the dlpar_cpu_remove() succeeds or fails we still
+need of_node_put() for both cases because we incremented the ref count
+earlier in this function with a call to cpu_drc_index_to_dn() call. That
+call doesn't, but shoul, document that it returns a device_node with
+incremented refcount.
+
+>  	return rc;
+>  }
+> 
+> @@ -856,9 +857,12 @@ static ssize_t dlpar_cpu_release(const char *buf, size_t count)
+>  	}
+> 
+>  	rc = dlpar_cpu_remove(dn, drc_index);
+> -	of_node_put(dn);
+> -
+> -	return rc ? rc : count;
+> +	if (rc) {
+> +		of_node_put(dn);
+> +		return rc;
+> +	} else {
+> +		return count;
+> +	}
+
+Same comment as above. The call earlier in the function to
+of_find_node_by_path() returned a device_node struct with its ref count
+incremented. So, regardless of whether dlpar_cpu_remove() succeeds or
+fails we need decrement the ref count with of_node_put().
+
+Looking closer at the call paths for attach and detach one will notice
+that __of_attach_node_sysfs() does not take a device_node reference with
+of_node_get(), but __of_detach_node_sysfs() does a of_node_put(). In the
+old days we use to keep the device tree in /proc. Now it lives in sysfs
+and is symlinked to /proc for userspace ABI reasons. Further, pseries
+was the only platform in those days that did any sort of dynamic OF
+operations. So, in those dark days we were responsible for calling
+of_node_put in dlpar_detach_node() to decrement the of_node_init()
+reference. Looking at the comments in __of_detach_node_sysfs() it seems
+that they expect to decrement that reference there now.
+
+void __of_detach_node_sysfs(struct device_node *np)
+{
+
+...snip...
+
+        /* finally remove the kobj_init ref */
+        of_node_put(np);
+}
+
+-Tyrel
+
+>  }
+> 
+>  #endif /* CONFIG_ARCH_CPU_PROBE_RELEASE */
+> 
