@@ -1,47 +1,43 @@
-Return-Path: <srs0=9myp=2s=linux.vnet.ibm.com=bharata@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vdyMd5Bn3zDqXh
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Mar 2017 15:38:53 +1100 (AEDT)
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3vdyMd4Fl7z8t7b
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Mar 2017 15:38:53 +1100 (AEDT)
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <hpa@zytor.com>
+Received: from mail.zytor.com (unknown [IPv6:2001:1868:a000:17::138])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3vdyMd0PM3z9sNg
- for <linuxppc-dev@ozlabs.org>; Thu,  9 Mar 2017 15:38:52 +1100 (AEDT)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v294YFZH060688
- for <linuxppc-dev@ozlabs.org>; Wed, 8 Mar 2017 23:38:49 -0500
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
- by mx0b-001b2d01.pphosted.com with ESMTP id 292fxpvt35-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Wed, 08 Mar 2017 23:38:48 -0500
-Received: from localhost
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <bharata@linux.vnet.ibm.com>;
- Thu, 9 Mar 2017 14:38:46 +1000
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v294cZQD53477386
- for <linuxppc-dev@ozlabs.org>; Thu, 9 Mar 2017 15:38:43 +1100
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v294c90w007775
- for <linuxppc-dev@ozlabs.org>; Thu, 9 Mar 2017 15:38:09 +1100
-From: Bharata B Rao <bharata@linux.vnet.ibm.com>
-To: linuxppc-dev@ozlabs.org
-Cc: nfont@linux.vnet.ibm.com, sachinp@linux.vnet.ibm.com,
- Bharata B Rao <bharata@linux.vnet.ibm.com>
-Subject: [FIX PATCH v1] powerpc/pseries: Fix reference count leak during CPU
- unplug
-Date: Thu,  9 Mar 2017 10:07:48 +0530
-Message-Id: <1489034268-24888-1-git-send-email-bharata@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vdyst2xb1zDqXh
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Mar 2017 16:01:33 +1100 (AEDT)
+From: "H. Peter Anvin" <hpa@zytor.com>
+Message-Id: <201703090437.v294b0RE021699@mail.zytor.com>
+Date: Wed, 08 Mar 2017 20:36:30 -0800
+In-Reply-To: <23e5808b-2a20-518d-b49a-4d95dd23cfde@landley.net>
+References: <20170303122712.13353-1-jslaby@suse.cz>
+ <20170304130550.GT21222@n2100.armlinux.org.uk>
+ <23e5808b-2a20-518d-b49a-4d95dd23cfde@landley.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+ charset=utf-8
+Subject: Re: [PATCH 1/3] futex: remove duplicated code
+To: Rob Landley <rob@landley.net>,
+ Russell King - ARM Linux <linux@armlinux.org.uk>,
+ Jiri Slaby <jslaby@suse.cz>
+CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+ Richard Henderson <rth@twiddle.net>,
+ Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+ Matt Turner <mattst88@gmail.com>, Vineet Gupta <vgupta@synopsys.com>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Will Deacon <will.deacon@arm.com>, Richard Kuo <rkuo@codeaurora.org>,
+ Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
+ Michal Simek <monstr@monstr.eu>, Ralf Baechle <ralf@linux-mips.org>,
+ Jonas Bonn <jonas@southpole.se>,
+ Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
+ Stafford Horne <shorne@gmail.com>,
+ "James E.J. Bottomley" <jejb@parisc-linux.org>,
+ Helge Deller <deller@gmx.de>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ Yoshinori Sato <ysato@users.sourceforge.jp>,
+ Rich Felker <dalias@libc.org>, "David S. Miller" <davem@davemloft.net>,
+ Chris.Metcalf@zytor.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,89 +47,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The following warning is seen when a CPU is hot unplugged on a PowerKVM
-guest:
+<cmetcalf@mellanox.com>,Thomas Gleixner <tglx@linutronix.de>,Ingo Molnar <mingo@redhat.com>,Chris Zankel <chris@zankel.net>,Max Filippov <jcmvbkbc@gmail.com>,Arnd Bergmann <arnd@arndb.de>,x86@kernel.org,linux-alpha@vger.kernel.org,linux-snps-arc@lists.infradead.org,linux-arm-kernel@lists.infradead.org,linux-hexagon@vger.kernel.org,linux-ia64@vger.kernel.org,linux-mips@linux-mips.org,openrisc@lists.librecores.org,linux-parisc@vger.kernel.org,linuxppc-dev@lists.ozlabs.org,linux-s390@vger.kernel.org,linux-sh@vger.kernel.org,sparclinux@vger.kernel.org,linux-xtensa@linux-xtensa.org,linux-arch@vger.kernel.org
+From: hpa@zytor.com
+Message-ID: <83324528-AAA1-4BED-B0C7-48426ECBA261@zytor.com>
 
-refcount_t: underflow; use-after-free.
-------------[ cut here ]------------
-WARNING: CPU: 0 PID: 53 at lib/refcount.c:128 refcount_sub_and_test+0xd8/0xf0
-Modules linked in:
-CPU: 0 PID: 53 Comm: kworker/u510:1 Not tainted 4.11.0-rc1 #3
-Workqueue: pseries hotplug workque pseries_hp_work_fn
-task: c0000000fb475000 task.stack: c0000000fb81c000
-NIP: c0000000006f0808 LR: c0000000006f0804 CTR: c0000000007b98c0
-REGS: c0000000fb81f710 TRAP: 0700   Not tainted  (4.11.0-rc1)
-MSR: 800000000282b033 <SF,VEC,VSX,EE,FP,ME,IR,DR,RI,LE>
-  CR: 48002222  XER: 20000000
-CFAR: c000000000c438e0 SOFTE: 1
-GPR00: c0000000006f0804 c0000000fb81f990 c000000001573b00 0000000000000026
-GPR04: 0000000000000000 000000000000016c 667265652e0d0a73 652d61667465722d
-GPR08: 0000000000000007 0000000000000007 0000000000000001 0000000000000006
-GPR12: 0000000000002200 c00000000ff40000 c00000000010c578 c0000001f11b9f40
-GPR16: c0000001fe0312a8 c0000001fe031078 c0000001fe031020 0000000000000001
-GPR20: 0000000000000000 0000000000000000 c000000001454808 fffffffffffffef7
-GPR24: 0000000000000000 c0000001f1677648 0000000000000000 0000000000000000
-GPR28: 0000000010000008 c000000000e4d3d8 0000000000000000 c0000001eaae07d8
-NIP [c0000000006f0808] refcount_sub_and_test+0xd8/0xf0
-LR [c0000000006f0804] refcount_sub_and_test+0xd4/0xf0
-Call Trace:
-[c0000000fb81f990] [c0000000006f0804] refcount_sub_and_test+0xd4/0xf0 (unreliable)
-[c0000000fb81f9f0] [c0000000006d04b4] kobject_put+0x44/0x2a0
-[c0000000fb81fa70] [c0000000009d5284] of_node_put+0x34/0x50
-[c0000000fb81faa0] [c0000000000aceb8] dlpar_cpu_remove_by_index+0x108/0x130
-[c0000000fb81fb30] [c0000000000ae128] dlpar_cpu+0x78/0x550
-[c0000000fb81fbe0] [c0000000000a7b40] handle_dlpar_errorlog+0xc0/0x160
-[c0000000fb81fc50] [c0000000000a7c74] pseries_hp_work_fn+0x94/0xa0
-[c0000000fb81fc80] [c000000000102cec] process_one_work+0x23c/0x540
-[c0000000fb81fd20] [c00000000010309c] worker_thread+0xac/0x620
-[c0000000fb81fdc0] [c00000000010c6c4] kthread+0x154/0x1a0
-[c0000000fb81fe30] [c00000000000bbe0] ret_from_kernel_thread+0x5c/0x7c
+On March 8, 2017 8:16:49 PM PST, Rob Landley <rob@landley=2Enet> wrote:
+>On 03/04/2017 07:05 AM, Russell King - ARM Linux wrote:
+>> On Fri, Mar 03, 2017 at 01:27:10PM +0100, Jiri Slaby wrote:
+>>> diff --git a/kernel/futex=2Ec b/kernel/futex=2Ec
+>>> index b687cb22301c=2E=2Ec5ff9850952f 100644
+>>> --- a/kernel/futex=2Ec
+>>> +++ b/kernel/futex=2Ec
+>>> @@ -1457,6 +1457,42 @@ futex_wake(u32 __user *uaddr, unsigned int
+>flags, int nr_wake, u32 bitset)
+>>>  	return ret;
+>>>  }
+>>> =20
+>>> +static int futex_atomic_op_inuser(int encoded_op, u32 __user
+>*uaddr)
+>>> +{
+>>> +	int op =3D (encoded_op >> 28) & 7;
+>>> +	int cmp =3D (encoded_op >> 24) & 15;
+>>> +	int oparg =3D (encoded_op << 8) >> 20;
+>>> +	int cmparg =3D (encoded_op << 20) >> 20;
+>>=20
+>> Hmm=2E  oparg and cmparg look like they're doing these shifts to get
+>sign
+>> extension of the 12-bit values by assuming that "int" is 32-bit -
+>> probably worth a comment, or for safety, they should be "s32" so it's
+>> not dependent on the bit-width of "int"=2E
+>
+>I thought Linux depended on the LP64 standard for all architectures?
+>
+>Standard: http://www=2Eunix=2Eorg/whitepapers/64bit=2Ehtml
+>Rationale: http://www=2Eunix=2Eorg/version2/whatsnew/lp64_wp=2Ehtml
+>
+>So int has a defined bit width (32) on linux?
+>
+>Rob
 
-Fix this by ensuring that of_node_put() is called only from the
-error path in dlpar_cpu_remove_by_index(). In the normal path,
-of_node_put() happens as part of dlpar_detach_node().
-
-Signed-off-by: Bharata B Rao <bharata@linux.vnet.ibm.com>
-Cc: Nathan Fontenot <nfont@linux.vnet.ibm.com>
----
-Changes in v1:
-- Fixed the refcount problem in the userspace driven unplug path
-  in addition to in-kernel unplug path. (Sachin Sant)
-
-v0: https://patchwork.ozlabs.org/patch/736547/
-
- arch/powerpc/platforms/pseries/hotplug-cpu.c | 12 ++++++++----
- 1 file changed, 8 insertions(+), 4 deletions(-)
-
-diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-index 7bc0e91..c5ed510 100644
---- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
-+++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-@@ -619,7 +619,8 @@ static int dlpar_cpu_remove_by_index(u32 drc_index)
- 	}
- 
- 	rc = dlpar_cpu_remove(dn, drc_index);
--	of_node_put(dn);
-+	if (rc)
-+		of_node_put(dn);
- 	return rc;
- }
- 
-@@ -856,9 +857,12 @@ static ssize_t dlpar_cpu_release(const char *buf, size_t count)
- 	}
- 
- 	rc = dlpar_cpu_remove(dn, drc_index);
--	of_node_put(dn);
--
--	return rc ? rc : count;
-+	if (rc) {
-+		of_node_put(dn);
-+		return rc;
-+	} else {
-+		return count;
-+	}
- }
- 
- #endif /* CONFIG_ARCH_CPU_PROBE_RELEASE */
--- 
-2.7.4
+Linux is ILP32 on 32-bit architectures and LP64 on 64-bit architectures, b=
+ut that doesn't inherently make this stuff clear=2E
+--=20
+Sent from my Android device with K-9 Mail=2E Please excuse my brevity=2E
