@@ -1,27 +1,48 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vfqhW3WffzDqY0
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Mar 2017 01:41:31 +1100 (AEDT)
-Subject: Re: [PATCH] powerpc: sysdev: cpm1: Optimise gpio bit calculation
-To: Segher Boessenkool <segher@kernel.crashing.org>
-References: <20170309094206.A832167992@localhost.localdomain>
- <87a88tle0y.fsf@concordia.ellerman.id.au>
- <534d8795-ce21-9af6-498d-22597213a3a2@c-s.fr>
- <20170310130630.GH31469@gate.crashing.org>
- <906c025b-47d0-f906-2613-291f350bd48d@c-s.fr>
- <20170310143241.GJ31469@gate.crashing.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Scott Wood <oss@buserror.net>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-From: Christophe LEROY <christophe.leroy@c-s.fr>
-Message-ID: <777e903f-b816-5efa-2ece-e4e16fab27c6@c-s.fr>
-Date: Fri, 10 Mar 2017 15:41:23 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vfrJ42R76zDqXx
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Mar 2017 02:08:52 +1100 (AEDT)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v2AEwjU8042082
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Mar 2017 10:08:45 -0500
+Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [125.16.236.3])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 293f4uvtny-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Mar 2017 10:08:44 -0500
+Received: from localhost
+ by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
+ Fri, 10 Mar 2017 20:38:41 +0530
+Received: from d28av08.in.ibm.com (d28av08.in.ibm.com [9.184.220.148])
+ by d28relay09.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v2AF8cfJ14090320
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Mar 2017 20:38:38 +0530
+Received: from d28av08.in.ibm.com (localhost [127.0.0.1])
+ by d28av08.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v2AF8aEi016399
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Mar 2017 20:38:38 +0530
+Date: Fri, 10 Mar 2017 20:38:35 +0530
+From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linuxppc-dev@lists.ozlabs.org, Ingo Molnar <mingo@kernel.org>,
+ Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+ Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH v3 1/2] powerpc: split ftrace bits into a separate file
+References: <cover.1487702678.git.naveen.n.rao@linux.vnet.ibm.com>
+ <d2058affbf317d0f72e2df970f97b7b53ade47cb.1487702678.git.naveen.n.rao@linux.vnet.ibm.com>
+ <20170227103650.0955c5eb@gandalf.local.home>
+ <87wpcbota8.fsf@concordia.ellerman.id.au>
+ <20170228091147.69b836a8@gandalf.local.home>
+ <871sugkogi.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <20170310143241.GJ31469@gate.crashing.org>
-Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <871sugkogi.fsf@concordia.ellerman.id.au>
+Message-Id: <20170310150835.GB20400@naverao1-tp.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,60 +52,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 2017/03/02 08:38PM, Michael Ellerman wrote:
+> Steven Rostedt <rostedt@goodmis.org> writes:
+> 
+> > On Tue, 28 Feb 2017 15:04:15 +1100
+> > Michael Ellerman <mpe@ellerman.id.au> wrote:
+> >
+> > kernel/trace/ftrace.c more obvious.
+> >> 
+> >> I don't know if it's really worth keeping the names the same across
+> >> arches, especially as we already have:
+> >> 
+> >>   arch/arm64/kernel/entry-ftrace.S
+> >>   arch/arm/kernel/entry-ftrace.S
+> >>   arch/blackfin/kernel/ftrace-entry.S
+> >>   arch/metag/kernel/ftrace_stub.S
+> >> 
+> >> But we can rename it if you feel strongly about it.
+> >
+> > Hmm, perhaps "entry-ftrace.S" would be the better name. I never liked
+> > the "mcount.S" name.
+> 
+> Except what does the "entry" part mean?
+> 
+> Traditionally entry.S has been for the code that "enters" the kernel,
+> ie. from userspace or elsewhere. But that's not the case with any of the
+> ftrace code, it's kernel code called from the kernel. So using "entry"
+> is a bit wrong IMHO.
+> 
+> So if we drop that we're left with ftrace.S - which seems perfect to me.
 
+Hi Steve,
+Are you ok with this? I'd prefer to not add the 'entry-' prefix too, 
+seeing as it will make the file names quite long without necessarily 
+adding much.
 
-Le 10/03/2017 à 15:32, Segher Boessenkool a écrit :
-> On Fri, Mar 10, 2017 at 03:04:48PM +0100, Christophe LEROY wrote:
->> Le 10/03/2017 à 14:06, Segher Boessenkool a écrit :
->>> On Fri, Mar 10, 2017 at 11:54:19AM +0100, Christophe LEROY wrote:
->>>> gpio_get() and gpio_set() are used extensively by some GPIO based
->>>> drivers like SPI, NAND, so it may be worth it as it doesn't impair
->>>> readability (if anyone prefers, we could write  (1 << 31) >> i  instead
->>>> of  0x80000000 >> i )
->>>
->>> 1 << 31 is undefined behaviour, of course.
->>>
->>
->> Shall it be 1U << 31 ?
->
-> Sure, that works.  "1 << (31 - i)" is most readable (but it doesn't yet
-> generate the code you want).
->
->
-
-Euh .... I'm a bit lost. Do you mean the form we have today is the 
-driver is wrong ?
-
-
-@@ -684,9 +682,7 @@ static int cpm1_gpio32_get(struct gpio_chip *gc, 
-unsigned int gpio)
-  {
-  	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
-  	struct cpm_ioport32b __iomem *iop = mm_gc->regs;
--	u32 pin_mask;
--
--	pin_mask = 1 << (31 - gpio);
-+	u32 pin_mask = 0x80000000 >> gpio;
-
-  	return !!(in_be32(&iop->dat) & pin_mask);
-  }
-
-
-Which I thought could also become
-
-
-@@ -684,9 +682,7 @@ static int cpm1_gpio32_get(struct gpio_chip *gc, 
-unsigned int gpio)
-  {
-  	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
-  	struct cpm_ioport32b __iomem *iop = mm_gc->regs;
--	u32 pin_mask;
--
--	pin_mask = 1 << (31 - gpio);
-+	u32 pin_mask = (1 << 31) >> gpio;
-
-  	return !!(in_be32(&iop->dat) & pin_mask);
-  }
-
-
-Christophe
+Thanks,
+Naveen
