@@ -1,17 +1,24 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <ben@decadent.org.uk>
+Received: from shadbolt.e.decadent.org.uk (shadbolt.e.decadent.org.uk
+ [88.96.1.126])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vfl2h1K4lzDqY1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Mar 2017 22:11:56 +1100 (AEDT)
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [RFC] powerpc: handle simultanneous interrupts at once
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Scott Wood <oss@buserror.net>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Message-Id: <20170310111152.1B3BF679C4@localhost.localdomain>
-Date: Fri, 10 Mar 2017 12:11:51 +0100 (CET)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vflwR3GK0zDqY3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Mar 2017 22:51:35 +1100 (AEDT)
+Content-Type: text/plain; charset="UTF-8"
+MIME-Version: 1.0
+From: Ben Hutchings <ben@decadent.org.uk>
+To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
+CC: akpm@linux-foundation.org, "Michael Ellerman" <mpe@ellerman.id.au>,
+ "Paul Mackerras" <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ "Larry Finger" <Larry.Finger@lwfinger.net>,
+ "Linus Torvalds" <torvalds@linux-foundation.org>,
+ "Benjamin Herrenschmidt" <benh@kernel.crashing.org>,
+ "Nicholas Piggin" <npiggin@gmail.com>
+Date: Fri, 10 Mar 2017 11:46:22 +0000
+Message-ID: <lsq.1489146382.724297421@decadent.org.uk>
+Subject: [PATCH 3.16 122/370] powerpc: Fix build warning on 32-bit PPC
+In-Reply-To: <lsq.1489146380.780052105@decadent.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,77 +28,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-It often happens to have simultanneous interrupts, for instance
-when having double Ethernet attachment. With the current
-implementation, we suffer the cost of kernel entry/exit for each
-interrupt.
+3.16.42-rc1 review patch.  If anyone has any objections, please let me know.
 
-This patch introduces a loop in __do_irq() to handle all interrupts
-at once before returning.
+------------------
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+From: Larry Finger <Larry.Finger@lwfinger.net>
+
+commit 8ae679c4bc2ea2d16d92620da8e3e9332fa4039f upstream.
+
+I am getting the following warning when I build kernel 4.9-git on my
+PowerBook G4 with a 32-bit PPC processor:
+
+    AS      arch/powerpc/kernel/misc_32.o
+  arch/powerpc/kernel/misc_32.S:299:7: warning: "CONFIG_FSL_BOOKE" is not defined [-Wundef]
+
+This problem is evident after commit 989cea5c14be ("kbuild: prevent
+lib-ksyms.o rebuilds"); however, this change in kbuild only exposes an
+error that has been in the code since 2005 when this source file was
+created.  That was with commit 9994a33865f4 ("powerpc: Introduce
+entry_{32,64}.S, misc_{32,64}.S, systbl.S").
+
+The offending line does not make a lot of sense.  This error does not
+seem to cause any errors in the executable, thus I am not recommending
+that it be applied to any stable versions.
+
+Thanks to Nicholas Piggin for suggesting this solution.
+
+Fixes: 9994a33865f4 ("powerpc: Introduce entry_{32,64}.S, misc_{32,64}.S, systbl.S")
+Signed-off-by: Larry Finger <Larry.Finger@lwfinger.net>
+Cc: Nicholas Piggin <npiggin@gmail.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Ben Hutchings <ben@decadent.org.uk>
 ---
- arch/powerpc/include/asm/hw_irq.h |  6 ++++++
- arch/powerpc/kernel/irq.c         | 22 +++++++++++++++-------
- 2 files changed, 21 insertions(+), 7 deletions(-)
+ arch/powerpc/kernel/misc_32.S | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/include/asm/hw_irq.h b/arch/powerpc/include/asm/hw_irq.h
-index eba60416536e..d69ae5846955 100644
---- a/arch/powerpc/include/asm/hw_irq.h
-+++ b/arch/powerpc/include/asm/hw_irq.h
-@@ -123,6 +123,11 @@ static inline void may_hard_irq_enable(void)
- 		__hard_irq_enable();
- }
- 
-+static inline void may_hard_irq_disable(void)
-+{
-+	__hard_irq_disable();
-+}
-+
- static inline bool arch_irq_disabled_regs(struct pt_regs *regs)
- {
- 	return !regs->softe;
-@@ -204,6 +209,7 @@ static inline bool arch_irq_disabled_regs(struct pt_regs *regs)
- }
- 
- static inline void may_hard_irq_enable(void) { }
-+static inline void may_hard_irq_disable(void) { }
- 
- #endif /* CONFIG_PPC64 */
- 
-diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-index a018f5cae899..28aca510c166 100644
---- a/arch/powerpc/kernel/irq.c
-+++ b/arch/powerpc/kernel/irq.c
-@@ -515,14 +515,22 @@ void __do_irq(struct pt_regs *regs)
- 	 */
- 	irq = ppc_md.get_irq();
- 
--	/* We can hard enable interrupts now to allow perf interrupts */
--	may_hard_irq_enable();
-+	do {
-+		/* We can hard enable interrupts now to allow perf interrupts */
-+		may_hard_irq_enable();
-+
-+		/* And finally process it */
-+		if (unlikely(!irq))
-+			__this_cpu_inc(irq_stat.spurious_irqs);
-+		else
-+			generic_handle_irq(irq);
-+
-+		may_hard_irq_disable();
- 
--	/* And finally process it */
--	if (unlikely(!irq))
--		__this_cpu_inc(irq_stat.spurious_irqs);
--	else
--		generic_handle_irq(irq);
-+		irq = ppc_md.get_irq();
-+	} while (irq);
-+
-+	may_hard_irq_enable();
- 
- 	trace_irq_exit(regs);
- 
--- 
-2.12.0
+--- a/arch/powerpc/kernel/misc_32.S
++++ b/arch/powerpc/kernel/misc_32.S
+@@ -313,7 +313,7 @@ _GLOBAL(flush_instruction_cache)
+ 	lis	r3, KERNELBASE@h
+ 	iccci	0,r3
+ #endif
+-#elif CONFIG_FSL_BOOKE
++#elif defined(CONFIG_FSL_BOOKE)
+ BEGIN_FTR_SECTION
+ 	mfspr   r3,SPRN_L1CSR0
+ 	ori     r3,r3,L1CSR0_CFI|L1CSR0_CLFC
