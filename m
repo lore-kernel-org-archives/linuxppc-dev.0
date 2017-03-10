@@ -1,7 +1,7 @@
 Return-Path: <aik@ozlabs.ru>
 Received: from ozlabs.ru (ozlabs.ru [107.173.13.209])
- by lists.ozlabs.org (Postfix) with ESMTP id 3vfYKc41BqzDqYd
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Mar 2017 14:54:12 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id 3vfYKf5TqgzDqXj
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Mar 2017 14:54:14 +1100 (AEDT)
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
@@ -9,10 +9,12 @@ Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
  David Gibson <david@gibson.dropbear.id.au>,
  Paul Mackerras <paulus@samba.org>, kvm-ppc@vger.kernel.org,
  kvm@vger.kernel.org
-Subject: [PATCH kernel v8 00/10] powerpc/kvm/vfio: Enable in-kernel
- acceleration
-Date: Fri, 10 Mar 2017 14:53:27 +1100
-Message-Id: <20170310035337.22091-1-aik@ozlabs.ru>
+Subject: [PATCH kernel v8 01/10] powerpc/mmu: Add real mode support for IOMMU
+ preregistered memory
+Date: Fri, 10 Mar 2017 14:53:28 +1100
+Message-Id: <20170310035337.22091-2-aik@ozlabs.ru>
+In-Reply-To: <20170310035337.22091-1-aik@ozlabs.ru>
+References: <20170310035337.22091-1-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,81 +24,103 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is my current queue of patches to add acceleration of TCE
-updates in KVM.
+This makes mm_iommu_lookup() able to work in realmode by replacing
+list_for_each_entry_rcu() (which can do debug stuff which can fail in
+real mode) with list_for_each_entry_lockless().
 
-This is based on Linus'es tree sha1 c1aa905a304e.
+This adds realmode version of mm_iommu_ua_to_hpa() which adds
+explicit vmalloc'd-to-linear address conversion.
+Unlike mm_iommu_ua_to_hpa(), mm_iommu_ua_to_hpa_rm() can fail.
 
-Please comment. Thanks.
+This changes mm_iommu_preregistered() to receive @mm as in real mode
+@current does not always have a correct pointer.
 
-Changes:
-v8:
-* kept fixing oddities with error handling in 10/10
+This adds realmode version of mm_iommu_lookup() which receives @mm
+(for the same reason as for mm_iommu_preregistered()) and uses
+lockless version of list_for_each_entry_rcu().
 
-v7:
-* added realmode's WARN_ON_ONCE_RM in arch/powerpc/kvm/book3s_64_vio_hv.c
+Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
+---
+ arch/powerpc/include/asm/mmu_context.h |  4 ++++
+ arch/powerpc/mm/mmu_context_iommu.c    | 39 ++++++++++++++++++++++++++++++++++
+ 2 files changed, 43 insertions(+)
 
-v6:
-* reworked the last patch in terms of error handling and parameters checking
-
-v5:
-* replaced "KVM: PPC: Separate TCE validation from update" with
-"KVM: PPC: iommu: Unify TCE checking"
-* changed already reviewed "powerpc/iommu/vfio_spapr_tce: Cleanup iommu_table disposal"
-* reworked "KVM: PPC: VFIO: Add in-kernel acceleration for VFIO"
-* more details in individual commit logs
-
-v4:
-* addressed comments from v3
-* updated subject lines with correct component names
-* regrouped the patchset in order:
-	- powerpc fixes;
-	- vfio_spapr_tce driver fixes;
-	- KVM/PPC fixes;
-	- KVM+PPC+VFIO;
-* everything except last 2 patches have "Reviewed-By: David"
-
-v3:
-* there was no full repost, only last patch was posted
-
-v2:
-* 11/11 reworked to use new notifiers, it is rather RFC as it still has
-a issue;
-* got 09/11, 10/11 to use notifiers in 11/11;
-* added rb: David to most of patches and added a comment in 05/11.
-
-Alexey Kardashevskiy (10):
-  powerpc/mmu: Add real mode support for IOMMU preregistered memory
-  powerpc/powernv/iommu: Add real mode version of
-    iommu_table_ops::exchange()
-  powerpc/iommu/vfio_spapr_tce: Cleanup iommu_table disposal
-  powerpc/vfio_spapr_tce: Add reference counting to iommu_table
-  KVM: PPC: Reserve KVM_CAP_SPAPR_TCE_VFIO capability number
-  KVM: PPC: Enable IOMMU_API for KVM_BOOK3S_64 permanently
-  KVM: PPC: Pass kvm* to kvmppc_find_table()
-  KVM: PPC: Use preregistered memory API to access TCE list
-  KVM: PPC: iommu: Unify TCE checking
-  KVM: PPC: VFIO: Add in-kernel acceleration for VFIO
-
- Documentation/virtual/kvm/devices/vfio.txt |  22 +-
- arch/powerpc/include/asm/iommu.h           |  32 ++-
- arch/powerpc/include/asm/kvm_host.h        |   8 +
- arch/powerpc/include/asm/kvm_ppc.h         |  12 +-
- arch/powerpc/include/asm/mmu_context.h     |   4 +
- include/uapi/linux/kvm.h                   |   9 +
- arch/powerpc/kernel/iommu.c                |  86 +++++---
- arch/powerpc/kvm/book3s_64_vio.c           | 330 ++++++++++++++++++++++++++++-
- arch/powerpc/kvm/book3s_64_vio_hv.c        | 303 ++++++++++++++++++++++----
- arch/powerpc/kvm/powerpc.c                 |   2 +
- arch/powerpc/mm/mmu_context_iommu.c        |  39 ++++
- arch/powerpc/platforms/powernv/pci-ioda.c  |  46 ++--
- arch/powerpc/platforms/powernv/pci.c       |   1 +
- arch/powerpc/platforms/pseries/iommu.c     |   3 +-
- arch/powerpc/platforms/pseries/vio.c       |   2 +-
- drivers/vfio/vfio_iommu_spapr_tce.c        |   2 +-
- virt/kvm/vfio.c                            |  60 ++++++
- arch/powerpc/kvm/Kconfig                   |   1 +
- 18 files changed, 855 insertions(+), 107 deletions(-)
-
+diff --git a/arch/powerpc/include/asm/mmu_context.h b/arch/powerpc/include/asm/mmu_context.h
+index b9e3f0aca261..c70c8272523d 100644
+--- a/arch/powerpc/include/asm/mmu_context.h
++++ b/arch/powerpc/include/asm/mmu_context.h
+@@ -29,10 +29,14 @@ extern void mm_iommu_init(struct mm_struct *mm);
+ extern void mm_iommu_cleanup(struct mm_struct *mm);
+ extern struct mm_iommu_table_group_mem_t *mm_iommu_lookup(struct mm_struct *mm,
+ 		unsigned long ua, unsigned long size);
++extern struct mm_iommu_table_group_mem_t *mm_iommu_lookup_rm(
++		struct mm_struct *mm, unsigned long ua, unsigned long size);
+ extern struct mm_iommu_table_group_mem_t *mm_iommu_find(struct mm_struct *mm,
+ 		unsigned long ua, unsigned long entries);
+ extern long mm_iommu_ua_to_hpa(struct mm_iommu_table_group_mem_t *mem,
+ 		unsigned long ua, unsigned long *hpa);
++extern long mm_iommu_ua_to_hpa_rm(struct mm_iommu_table_group_mem_t *mem,
++		unsigned long ua, unsigned long *hpa);
+ extern long mm_iommu_mapped_inc(struct mm_iommu_table_group_mem_t *mem);
+ extern void mm_iommu_mapped_dec(struct mm_iommu_table_group_mem_t *mem);
+ #endif
+diff --git a/arch/powerpc/mm/mmu_context_iommu.c b/arch/powerpc/mm/mmu_context_iommu.c
+index 497130c5c742..fc67bd766eaf 100644
+--- a/arch/powerpc/mm/mmu_context_iommu.c
++++ b/arch/powerpc/mm/mmu_context_iommu.c
+@@ -314,6 +314,25 @@ struct mm_iommu_table_group_mem_t *mm_iommu_lookup(struct mm_struct *mm,
+ }
+ EXPORT_SYMBOL_GPL(mm_iommu_lookup);
+ 
++struct mm_iommu_table_group_mem_t *mm_iommu_lookup_rm(struct mm_struct *mm,
++		unsigned long ua, unsigned long size)
++{
++	struct mm_iommu_table_group_mem_t *mem, *ret = NULL;
++
++	list_for_each_entry_lockless(mem, &mm->context.iommu_group_mem_list,
++			next) {
++		if ((mem->ua <= ua) &&
++				(ua + size <= mem->ua +
++				 (mem->entries << PAGE_SHIFT))) {
++			ret = mem;
++			break;
++		}
++	}
++
++	return ret;
++}
++EXPORT_SYMBOL_GPL(mm_iommu_lookup_rm);
++
+ struct mm_iommu_table_group_mem_t *mm_iommu_find(struct mm_struct *mm,
+ 		unsigned long ua, unsigned long entries)
+ {
+@@ -345,6 +364,26 @@ long mm_iommu_ua_to_hpa(struct mm_iommu_table_group_mem_t *mem,
+ }
+ EXPORT_SYMBOL_GPL(mm_iommu_ua_to_hpa);
+ 
++long mm_iommu_ua_to_hpa_rm(struct mm_iommu_table_group_mem_t *mem,
++		unsigned long ua, unsigned long *hpa)
++{
++	const long entry = (ua - mem->ua) >> PAGE_SHIFT;
++	void *va = &mem->hpas[entry];
++	unsigned long *pa;
++
++	if (entry >= mem->entries)
++		return -EFAULT;
++
++	pa = (void *) vmalloc_to_phys(va);
++	if (!pa)
++		return -EFAULT;
++
++	*hpa = *pa | (ua & ~PAGE_MASK);
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(mm_iommu_ua_to_hpa_rm);
++
+ long mm_iommu_mapped_inc(struct mm_iommu_table_group_mem_t *mem)
+ {
+ 	if (atomic64_inc_not_zero(&mem->mapped))
 -- 
 2.11.0
