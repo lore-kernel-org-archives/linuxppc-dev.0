@@ -1,20 +1,26 @@
-Return-Path: <roy.pledge@nxp.com>
-Received: from NAM01-SN1-obe.outbound.protection.outlook.com
- (mail-sn1nam01on0068.outbound.protection.outlook.com [104.47.32.68])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <linus971@gmail.com>
+Received: from mail-io0-x236.google.com (mail-io0-x236.google.com
+ [IPv6:2607:f8b0:4001:c06::236])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vfz5Z0sdWzDqGk
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Mar 2017 07:15:12 +1100 (AEDT)
-From: Roy Pledge <roy.pledge@nxp.com>
-To: <linux-arm-kernel@lists.infradead.org>, <oss@buserror.net>,
- <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>
-CC: <madalin.bucur@nxp.com>, <roy.pledge@nxp.com>, <claudiu.manoil@nxp.com>
-Subject: [RESEND PATCH] soc/qbman: Disable IRQs for deferred QBMan work
-Date: Fri, 10 Mar 2017 15:15:04 -0500
-Message-ID: <1489176904-16297-1-git-send-email-roy.pledge@nxp.com>
-Reply-To: <roy.pledge@nxp.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vgVtR5sPQzDqXc
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 Mar 2017 04:07:27 +1100 (AEDT)
+Received: by mail-io0-x236.google.com with SMTP id z13so64970721iof.2
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Mar 2017 09:07:27 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain
+Sender: linus971@gmail.com
+In-Reply-To: <20170310023351.973-1-Larry.Finger@lwfinger.net>
+References: <20170310023351.973-1-Larry.Finger@lwfinger.net>
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Sat, 11 Mar 2017 09:07:24 -0800
+Message-ID: <CA+55aFzHpFA5GmCD0BB1jKwrpaze7g4qwEbZPF55bnQozCE81Q@mail.gmail.com>
+Subject: Re: [PATCH] powerpc: Fix crash introduced with commit 5657933dbb6e
+To: Larry Finger <Larry.Finger@lwfinger.net>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ ppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ "regressions @ leemhuis . info" <regressions@leemhuis.info>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,59 +30,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Work for Congestion State Notifications (CSCN) and Message Ring (MR)
-handling is handled via the workqueue mechanism. This requires the
-driver to disable those IRQs before scheduling the work and re-enabling
-it once the work is completed so that the interrupt doesn't continually
-fire.
+On Thu, Mar 9, 2017 at 6:33 PM, Larry Finger <Larry.Finger@lwfinger.net> wrote:
+>
+> The problem was bisected to commit 5657933dbb6e ("treewide: Move dma_ops
+> from struct dev_archdata into struct device"). The problem was a missing
+> copy of critical information from struct dev_archdata into struct device,
+> leading to the dereference of a null pointer.
+>
+> This fix was suggested by Benjamin Herrenschmidt.
 
-Signed-off-by: Roy Pledge <roy.pledge@nxp.com>
----
- drivers/soc/fsl/qbman/qman.c |    5 +++++
- 1 file changed, 5 insertions(+)
+I'm assuming I'll be getting this through the powerpc tree. Holler if
+that isn't the case.
 
-diff --git a/drivers/soc/fsl/qbman/qman.c b/drivers/soc/fsl/qbman/qman.c
-index d67b8e1..f1a242a 100644
---- a/drivers/soc/fsl/qbman/qman.c
-+++ b/drivers/soc/fsl/qbman/qman.c
-@@ -1382,6 +1382,7 @@ static void qm_congestion_task(struct work_struct *work)
- 	if (!qm_mc_result_timeout(&p->p, &mcr)) {
- 		spin_unlock(&p->cgr_lock);
- 		dev_crit(p->config->dev, "QUERYCONGESTION timeout\n");
-+		qman_p_irqsource_add(p, QM_PIRQ_CSCI);
- 		return;
- 	}
- 	/* mask out the ones I'm not interested in */
-@@ -1396,6 +1397,7 @@ static void qm_congestion_task(struct work_struct *work)
- 		if (cgr->cb && qman_cgrs_get(&c, cgr->cgrid))
- 			cgr->cb(p, cgr, qman_cgrs_get(&rr, cgr->cgrid));
- 	spin_unlock(&p->cgr_lock);
-+	qman_p_irqsource_add(p, QM_PIRQ_CSCI);
- }
- 
- static void qm_mr_process_task(struct work_struct *work)
-@@ -1455,12 +1457,14 @@ static void qm_mr_process_task(struct work_struct *work)
- 	}
- 
- 	qm_mr_cci_consume(&p->p, num);
-+	qman_p_irqsource_add(p, QM_PIRQ_MRI);
- 	preempt_enable();
- }
- 
- static u32 __poll_portal_slow(struct qman_portal *p, u32 is)
- {
- 	if (is & QM_PIRQ_CSCI) {
-+		qman_p_irqsource_remove(p, QM_PIRQ_CSCI);
- 		queue_work_on(smp_processor_id(), qm_portal_wq,
- 			      &p->congestion_work);
- 	}
-@@ -1472,6 +1476,7 @@ static u32 __poll_portal_slow(struct qman_portal *p, u32 is)
- 	}
- 
- 	if (is & QM_PIRQ_MRI) {
-+		qman_p_irqsource_remove(p, QM_PIRQ_MRI);
- 		queue_work_on(smp_processor_id(), qm_portal_wq,
- 			      &p->mr_work);
- 	}
--- 
-1.7.9.5
+                Linus
