@@ -1,26 +1,22 @@
-Return-Path: <linus971@gmail.com>
-Received: from mail-io0-x236.google.com (mail-io0-x236.google.com
- [IPv6:2607:f8b0:4001:c06::236])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <me@tobin.cc>
+Received: from out1-smtp.messagingengine.com (out1-smtp.messagingengine.com
+ [66.111.4.25])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vgVtR5sPQzDqXc
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 Mar 2017 04:07:27 +1100 (AEDT)
-Received: by mail-io0-x236.google.com with SMTP id z13so64970721iof.2
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Mar 2017 09:07:27 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vgdpx68g9zDqBV
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 Mar 2017 09:19:52 +1100 (AEDT)
+Date: Sun, 12 Mar 2017 09:19:45 +1100
+From: "Tobin C. Harding" <me@tobin.cc>
+To: Daniel Axtens <dja@axtens.net>
+Cc: Michael Ellerman <mpe@ellerman.id.au>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] powerpc: fix sparse warning, include kernel header
+Message-ID: <20170311221945.GB14736@eros>
+References: <1488788731-2537-1-git-send-email-me@tobin.cc>
+ <87k27y3qx4.fsf@possimpible.ozlabs.ibm.com>
 MIME-Version: 1.0
-Sender: linus971@gmail.com
-In-Reply-To: <20170310023351.973-1-Larry.Finger@lwfinger.net>
-References: <20170310023351.973-1-Larry.Finger@lwfinger.net>
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Sat, 11 Mar 2017 09:07:24 -0800
-Message-ID: <CA+55aFzHpFA5GmCD0BB1jKwrpaze7g4qwEbZPF55bnQozCE81Q@mail.gmail.com>
-Subject: Re: [PATCH] powerpc: Fix crash introduced with commit 5657933dbb6e
-To: Larry Finger <Larry.Finger@lwfinger.net>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- ppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- "regressions @ leemhuis . info" <regressions@leemhuis.info>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <87k27y3qx4.fsf@possimpible.ozlabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,16 +26,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Mar 9, 2017 at 6:33 PM, Larry Finger <Larry.Finger@lwfinger.net> wrote:
->
-> The problem was bisected to commit 5657933dbb6e ("treewide: Move dma_ops
-> from struct dev_archdata into struct device"). The problem was a missing
-> copy of critical information from struct dev_archdata into struct device,
-> leading to the dereference of a null pointer.
->
-> This fix was suggested by Benjamin Herrenschmidt.
+On Fri, Mar 10, 2017 at 11:40:23AM +1100, Daniel Axtens wrote:
+> Hi Tobin,
+> 
+> I have built the kernel with the ppc6xx_defconfig with and without your
+> patch.
+> 
+> Using my smart-sparse-diff tool[1], I have confirmed the warning
+> disappears:
+> 
+> -/scratch/dja/linux/arch/powerpc/kernel/swsusp.c:17:6: warning: symbol 'save_processor_state' was not declared. Should it be static?
+> -/scratch/dja/linux/arch/powerpc/kernel/swsusp.c:31:6: warning: symbol 'restore_processor_state' was not declared. Should it be static?
+> 
+> As such, this patch is:
+> 
+> Reviewed-by: Daniel Axtens <dja@axtens.net>
 
-I'm assuming I'll be getting this through the powerpc tree. Holler if
-that isn't the case.
+Awesome, thanks Daniel
 
-                Linus
+> 
+> Thanks for fixing this!
+> 
+> Regards,
+> Daniel
+> 
+> [1] https://github.com/daxtens/smart-sparse-diff
+> 
+> "Tobin C. Harding" <me@tobin.cc> writes:
+> 
+> > Spares emits two symbol not declared warnings. The two functions in
+> > question are declared already in a kernel header.
+> >
+> > Add include directive to include kernel header.
+> >
+> > Signed-off-by: Tobin C. Harding <me@tobin.cc>
+> > ---
+> >
+> > github issue: #37 Fix sparse errors
+> >
+> >  arch/powerpc/kernel/swsusp.c | 1 +
+> >  1 file changed, 1 insertion(+)
+> >
+> > diff --git a/arch/powerpc/kernel/swsusp.c b/arch/powerpc/kernel/swsusp.c
+> > index 6ae9bd5..0050b2d 100644
+> > --- a/arch/powerpc/kernel/swsusp.c
+> > +++ b/arch/powerpc/kernel/swsusp.c
+> > @@ -10,6 +10,7 @@
+> >   */
+> >  
+> >  #include <linux/sched.h>
+> > +#include <linux/suspend.h>
+> >  #include <asm/current.h>
+> >  #include <asm/mmu_context.h>
+> >  #include <asm/switch_to.h>
+> > -- 
+> > 2.7.4
+
+-- 
+Tobin Harding
+http://tobin.cc
