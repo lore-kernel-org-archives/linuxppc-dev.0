@@ -1,13 +1,17 @@
-Return-Path: <willy@infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org [65.50.211.133])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vhsz76d7hzDqGk
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Mar 2017 09:31:15 +1100 (AEDT)
-Date: Mon, 13 Mar 2017 15:27:58 -0700
-From: Matthew Wilcox <willy@infradead.org>
-To: Till Smejkal <till.smejkal@googlemail.com>
-Cc: Richard Henderson <rth@twiddle.net>,
+Return-Path: <till.smejkal@googlemail.com>
+Received: from mail-wr0-x241.google.com (mail-wr0-x241.google.com
+ [IPv6:2a00:1450:400c:c0c::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vhtHq5D0pzDqGk
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Mar 2017 09:45:43 +1100 (AEDT)
+Received: by mail-wr0-x241.google.com with SMTP id l37so21791686wrc.3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Mar 2017 15:45:43 -0700 (PDT)
+From: Till Smejkal <till.smejkal@googlemail.com>
+Date: Mon, 13 Mar 2017 15:45:36 -0700
+To: Matthew Wilcox <willy@infradead.org>
+Cc: Till Smejkal <till.smejkal@googlemail.com>,
+ Richard Henderson <rth@twiddle.net>,
  Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
  Matt Turner <mattst88@gmail.com>, Vineet Gupta <vgupta@synopsys.com>,
  Russell King <linux@armlinux.org.uk>,
@@ -64,12 +68,10 @@ Cc: Richard Henderson <rth@twiddle.net>,
  linux-arch@vger.kernel.org, alsa-devel@alsa-project.org
 Subject: Re: [RFC PATCH 11/13] mm/vas: Introduce VAS segments - shareable
  address space regions
-Message-ID: <20170313222758.GB4033@bombadil.infradead.org>
-References: <20170313221415.9375-1-till.smejkal@gmail.com>
- <20170313221415.9375-12-till.smejkal@gmail.com>
+Message-ID: <20170313224536.saqdijtdayxwmlpz@arch-dev>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170313221415.9375-12-till.smejkal@gmail.com>
+In-Reply-To: <20170313222758.GB4033@bombadil.infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -79,32 +81,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Mar 13, 2017 at 03:14:13PM -0700, Till Smejkal wrote:
-> +/**
-> + * Create a new VAS segment.
-> + *
-> + * @param[in] name:		The name of the new VAS segment.
-> + * @param[in] start:		The address where the VAS segment begins.
-> + * @param[in] end:		The address where the VAS segment ends.
-> + * @param[in] mode:		The access rights for the VAS segment.
-> + *
-> + * @returns:			The VAS segment ID on success, -ERRNO otherwise.
-> + **/
+Hi Matthew,
 
-Please follow the kernel-doc conventions, as described in
-Documentation/doc-guide/kernel-doc.rst.  Also, function documentation
-goes with the implementation, not the declaration.
+On Mon, 13 Mar 2017, Matthew Wilcox wrote:
+> On Mon, Mar 13, 2017 at 03:14:13PM -0700, Till Smejkal wrote:
+> > +/**
+> > + * Create a new VAS segment.
+> > + *
+> > + * @param[in] name:		The name of the new VAS segment.
+> > + * @param[in] start:		The address where the VAS segment begins.
+> > + * @param[in] end:		The address where the VAS segment ends.
+> > + * @param[in] mode:		The access rights for the VAS segment.
+> > + *
+> > + * @returns:			The VAS segment ID on success, -ERRNO otherwise.
+> > + **/
+> 
+> Please follow the kernel-doc conventions, as described in
+> Documentation/doc-guide/kernel-doc.rst.  Also, function documentation
+> goes with the implementation, not the declaration.
 
-> +/**
-> + * Get ID of the VAS segment belonging to a given name.
-> + *
-> + * @param[in] name:		The name of the VAS segment for which the ID
-> + *				should be returned.
-> + *
-> + * @returns:			The VAS segment ID on success, -ERRNO
-> + *				otherwise.
-> + **/
-> +extern int vas_seg_find(const char *name);
+Thank you for this pointer. I wasn't aware of this convention. I will change the
+patches accordingly.
 
-So ... segments have names, and IDs ... and access permissions ...
-Why isn't this a special purpose filesystem?
+> > +/**
+> > + * Get ID of the VAS segment belonging to a given name.
+> > + *
+> > + * @param[in] name:		The name of the VAS segment for which the ID
+> > + *				should be returned.
+> > + *
+> > + * @returns:			The VAS segment ID on success, -ERRNO
+> > + *				otherwise.
+> > + **/
+> > +extern int vas_seg_find(const char *name);
+> 
+> So ... segments have names, and IDs ... and access permissions ...
+> Why isn't this a special purpose filesystem?
+
+We also thought about this. However, we decided against implementing them as a
+special purpose filesystem, mainly because we could not think of a good way to
+represent a VAS/VAS segment in this file system (should they be represented rather as
+file or directory) and we weren't sure what a hierarchy in the filesystem would mean
+for the underlying address spaces. Hence we decided against it and rather used a
+combination of IDR and sysfs. However, I don't have any strong feelings and would
+also reimplement them as a special purpose filesystem if people rather like them to
+be one.
+
+Till
