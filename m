@@ -1,77 +1,19 @@
-Return-Path: <till.smejkal@googlemail.com>
-Received: from mail-wr0-x241.google.com (mail-wr0-x241.google.com
- [IPv6:2a00:1450:400c:c0c::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vhtHq5D0pzDqGk
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Mar 2017 09:45:43 +1100 (AEDT)
-Received: by mail-wr0-x241.google.com with SMTP id l37so21791686wrc.3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Mar 2017 15:45:43 -0700 (PDT)
-From: Till Smejkal <till.smejkal@googlemail.com>
-Date: Mon, 13 Mar 2017 15:45:36 -0700
-To: Matthew Wilcox <willy@infradead.org>
-Cc: Till Smejkal <till.smejkal@googlemail.com>,
- Richard Henderson <rth@twiddle.net>,
- Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
- Matt Turner <mattst88@gmail.com>, Vineet Gupta <vgupta@synopsys.com>,
- Russell King <linux@armlinux.org.uk>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Will Deacon <will.deacon@arm.com>, Steven Miao <realmz6@gmail.com>,
- Richard Kuo <rkuo@codeaurora.org>, Tony Luck <tony.luck@intel.com>,
- Fenghua Yu <fenghua.yu@intel.com>, James Hogan <james.hogan@imgtec.com>,
- Ralf Baechle <ralf@linux-mips.org>,
- "James E.J. Bottomley" <jejb@parisc-linux.org>,
- Helge Deller <deller@gmx.de>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>,
- "David S. Miller" <davem@davemloft.net>,
- Chris Metcalf <cmetcalf@mellanox.com>,
- Thomas Gleixner <tglx@linutronix.de>,
- Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
- x86@kernel.org, Andy Lutomirski <luto@amacapital.net>,
- Chris Zankel <chris@zankel.net>, Max Filippov <jcmvbkbc@gmail.com>,
- Arnd Bergmann <arnd@arndb.de>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
- Mauro Carvalho Chehab <mchehab@kernel.org>,
- Pawel Osciak <pawel@osciak.com>,
- Marek Szyprowski <m.szyprowski@samsung.com>,
- Kyungmin Park <kyungmin.park@samsung.com>,
- David Woodhouse <dwmw2@infradead.org>,
- Brian Norris <computersforpeace@gmail.com>,
- Boris Brezillon <boris.brezillon@free-electrons.com>,
- Marek Vasut <marek.vasut@gmail.com>, Richard Weinberger <richard@nod.at>,
- Cyrille Pitchen <cyrille.pitchen@atmel.com>,
- Felipe Balbi <balbi@kernel.org>, Alexander Viro <viro@zeniv.linux.org.uk>,
- Benjamin LaHaise <bcrl@kvack.org>,
- Nadia Yvette Chambers <nyc@holomorphy.com>,
- Jeff Layton <jlayton@poochiereds.net>,
- "J. Bruce Fields" <bfields@fieldses.org>,
- Peter Zijlstra <peterz@infradead.org>, Hugh Dickins <hughd@google.com>,
- Arnaldo Carvalho de Melo <acme@kernel.org>,
- Alexander Shishkin <alexander.shishkin@linux.intel.com>,
- Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>,
- linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org,
- linux-snps-arc@lists.infradead.org, linux-arm-kernel@lists.infradead.org,
- adi-buildroot-devel@lists.sourceforge.net,
- linux-hexagon@vger.kernel.org, linux-ia64@vger.kernel.org,
- linux-metag@vger.kernel.org, linux-mips@linux-mips.org,
- linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
- sparclinux@vger.kernel.org, linux-xtensa@linux-xtensa.org,
- linux-media@vger.kernel.org, linux-mtd@lists.infradead.org,
- linux-usb@vger.kernel.org, linux-fsdevel@vger.kernel.org,
- linux-aio@kvack.org, linux-mm@kvack.org, linux-api@vger.kernel.org,
- linux-arch@vger.kernel.org, alsa-devel@alsa-project.org
-Subject: Re: [RFC PATCH 11/13] mm/vas: Introduce VAS segments - shareable
- address space regions
-Message-ID: <20170313224536.saqdijtdayxwmlpz@arch-dev>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170313222758.GB4033@bombadil.infradead.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vhwvv3c2PzDq5x
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Mar 2017 11:43:39 +1100 (AEDT)
+Message-ID: <1489447868.2174.16.camel@kernel.crashing.org>
+Subject: Re: [RFC][PATCH 0/2] reworking cause_ipi and adding global doorbell
+ support
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Date: Tue, 14 Mar 2017 10:31:08 +1100
+In-Reply-To: <20170312171327.21088-1-npiggin@gmail.com>
+References: <20170312171327.21088-1-npiggin@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -81,49 +23,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Matthew,
-
-On Mon, 13 Mar 2017, Matthew Wilcox wrote:
-> On Mon, Mar 13, 2017 at 03:14:13PM -0700, Till Smejkal wrote:
-> > +/**
-> > + * Create a new VAS segment.
-> > + *
-> > + * @param[in] name:		The name of the new VAS segment.
-> > + * @param[in] start:		The address where the VAS segment begins.
-> > + * @param[in] end:		The address where the VAS segment ends.
-> > + * @param[in] mode:		The access rights for the VAS segment.
-> > + *
-> > + * @returns:			The VAS segment ID on success, -ERRNO otherwise.
-> > + **/
+On Mon, 2017-03-13 at 03:13 +1000, Nicholas Piggin wrote:
+> Hi,
 > 
-> Please follow the kernel-doc conventions, as described in
-> Documentation/doc-guide/kernel-doc.rst.  Also, function documentation
-> goes with the implementation, not the declaration.
-
-Thank you for this pointer. I wasn't aware of this convention. I will change the
-patches accordingly.
-
-> > +/**
-> > + * Get ID of the VAS segment belonging to a given name.
-> > + *
-> > + * @param[in] name:		The name of the VAS segment for which the ID
-> > + *				should be returned.
-> > + *
-> > + * @returns:			The VAS segment ID on success, -ERRNO
-> > + *				otherwise.
-> > + **/
-> > +extern int vas_seg_find(const char *name);
+> Just after the previous two fixes, I would like to propose changing
+> the way we do doorbell vs interrupt controller IPIs, and add support
+> for global doorbells supported by POWER9 in HV mode.
 > 
-> So ... segments have names, and IDs ... and access permissions ...
-> Why isn't this a special purpose filesystem?
+> After this, the platform code knows about doorbells and interrupt
+> controller IPIs, rather than they know about each other.
 
-We also thought about this. However, we decided against implementing them as a
-special purpose filesystem, mainly because we could not think of a good way to
-represent a VAS/VAS segment in this file system (should they be represented rather as
-file or directory) and we weren't sure what a hierarchy in the filesystem would mean
-for the underlying address spaces. Hence we decided against it and rather used a
-combination of IDR and sysfs. However, I don't have any strong feelings and would
-also reimplement them as a special purpose filesystem if people rather like them to
-be one.
+A few things come to mind:
 
-Till
+ - We don't want to use doorbells under KVM. They are going to turn
+into traps and be emulated, slower than using H_IPI, at least on P9.
+Even for core only doorbells. I'm not sure how to convey that to the
+guest.
+
+ - On PP9 DD1 we need a CI load instead of msgsync (a DARN instruction
+would do too if it works)
+
+ - Can we get rid of the atomic ops for manipulating the IPI mux ? What
+about a cache line per message and just set/clear ? If we clear in the
+doorbell handler before we call the respective targets, we shouldn't
+"lose" messages no ? As long as the actual handlers "loop" as necessary
+of course.
+
+Cheers,
+Ben.
+
+> Thanks,
+> Nick
+> 
+> Nicholas Piggin (2):
+>   powerpc/64s: change the doorbell IPI calling convention
+>   powerpc/64s: use global doorbell on POWER9 in HV mode
+> 
+>  arch/powerpc/include/asm/dbell.h       | 38 ++++++++++++++++++++++
+> -----
+>  arch/powerpc/include/asm/smp.h         |  4 +--
+>  arch/powerpc/include/asm/xics.h        |  2 +-
+>  arch/powerpc/kernel/dbell.c            | 47 ++++++++++++++++++++++
+> ------------
+>  arch/powerpc/kernel/smp.c              | 27 ++++++++++---------
+>  arch/powerpc/platforms/85xx/smp.c      |  9 +------
+>  arch/powerpc/platforms/powermac/smp.c  |  2 +-
+>  arch/powerpc/platforms/powernv/smp.c   | 32 +++++++++++++++++------
+>  arch/powerpc/platforms/pseries/smp.c   | 28 ++++++++------------
+>  arch/powerpc/sysdev/xics/icp-hv.c      |  2 +-
+>  arch/powerpc/sysdev/xics/icp-native.c  | 12 +--------
+>  arch/powerpc/sysdev/xics/icp-opal.c    |  2 +-
+>  arch/powerpc/sysdev/xics/xics-common.c |  3 ---
+>  13 files changed, 118 insertions(+), 90 deletions(-)
+> 
