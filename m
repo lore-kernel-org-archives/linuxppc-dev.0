@@ -1,14 +1,14 @@
-Return-Path: <gregkh@linuxfoundation.org>
-Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
- [140.211.169.12])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <till.smejkal@googlemail.com>
+Received: from mail-wm0-x242.google.com (mail-wm0-x242.google.com
+ [IPv6:2a00:1450:400c:c09::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vhvn533f5zDqGk
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Mar 2017 10:52:41 +1100 (AEDT)
-Date: Tue, 14 Mar 2017 07:52:25 +0800
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To: Till Smejkal <till.smejkal@googlemail.com>
-Cc: Richard Henderson <rth@twiddle.net>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vhsbj1xG8zDqGk
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Mar 2017 09:14:25 +1100 (AEDT)
+Received: by mail-wm0-x242.google.com with SMTP id n11so12116757wma.0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Mar 2017 15:14:25 -0700 (PDT)
+From: Till Smejkal <till.smejkal@googlemail.com>
+To: Richard Henderson <rth@twiddle.net>,
  Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
  Matt Turner <mattst88@gmail.com>, Vineet Gupta <vgupta@synopsys.com>,
  Russell King <linux@armlinux.org.uk>,
@@ -26,11 +26,11 @@ Cc: Richard Henderson <rth@twiddle.net>,
  Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>,
  "David S. Miller" <davem@davemloft.net>,
  Chris Metcalf <cmetcalf@mellanox.com>,
- Thomas Gleixner <tglx@linutronix.de>,
- Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
- x86@kernel.org, Andy Lutomirski <luto@amacapital.net>,
- Chris Zankel <chris@zankel.net>, Max Filippov <jcmvbkbc@gmail.com>,
- Arnd Bergmann <arnd@arndb.de>,
+ Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+ "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org,
+ Andy Lutomirski <luto@amacapital.net>, Chris Zankel <chris@zankel.net>,
+ Max Filippov <jcmvbkbc@gmail.com>, Arnd Bergmann <arnd@arndb.de>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
  Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
  Mauro Carvalho Chehab <mchehab@kernel.org>,
  Pawel Osciak <pawel@osciak.com>,
@@ -49,26 +49,24 @@ Cc: Richard Henderson <rth@twiddle.net>,
  Peter Zijlstra <peterz@infradead.org>, Hugh Dickins <hughd@google.com>,
  Arnaldo Carvalho de Melo <acme@kernel.org>,
  Alexander Shishkin <alexander.shishkin@linux.intel.com>,
- Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>,
- linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org,
+ Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>
+Cc: linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org,
  linux-snps-arc@lists.infradead.org, linux-arm-kernel@lists.infradead.org,
- adi-buildroot-devel@lists.sourceforge.net,
- linux-hexagon@vger.kernel.org, linux-ia64@vger.kernel.org,
- linux-metag@vger.kernel.org, linux-mips@linux-mips.org,
- linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
- sparclinux@vger.kernel.org, linux-xtensa@linux-xtensa.org,
- linux-media@vger.kernel.org, linux-mtd@lists.infradead.org,
- linux-usb@vger.kernel.org, linux-fsdevel@vger.kernel.org,
- linux-aio@kvack.org, linux-mm@kvack.org, linux-api@vger.kernel.org,
- linux-arch@vger.kernel.org, alsa-devel@alsa-project.org
-Subject: Re: [RFC PATCH 10/13] mm: Introduce first class virtual address spaces
-Message-ID: <20170313235225.GA15359@kroah.com>
+ adi-buildroot-devel@lists.sourceforge.net, linux-hexagon@vger.kernel.org,
+ linux-ia64@vger.kernel.org, linux-metag@vger.kernel.org,
+ linux-mips@linux-mips.org, linux-parisc@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
+ linux-xtensa@linux-xtensa.org, linux-media@vger.kernel.org,
+ linux-mtd@lists.infradead.org, linux-usb@vger.kernel.org,
+ linux-fsdevel@vger.kernel.org, linux-aio@kvack.org, linux-mm@kvack.org,
+ linux-api@vger.kernel.org, linux-arch@vger.kernel.org,
+ alsa-devel@alsa-project.org
+Subject: [RFC PATCH 01/13] mm: Add mm_struct argument to 'mmap_region'
+Date: Mon, 13 Mar 2017 15:14:03 -0700
+Message-Id: <20170313221415.9375-2-till.smejkal@gmail.com>
+In-Reply-To: <20170313221415.9375-1-till.smejkal@gmail.com>
 References: <20170313221415.9375-1-till.smejkal@gmail.com>
- <20170313221415.9375-11-till.smejkal@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170313221415.9375-11-till.smejkal@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -78,106 +76,98 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Mar 13, 2017 at 03:14:12PM -0700, Till Smejkal wrote:
+Add to the 'mmap_region' function the mm_struct that it should operate on
+as additional argument. Before, the function simply used the memory map of
+the current task. However, with the introduction of first class virtual
+address spaces, mmap_region needs also be able to operate on other memory
+maps than only the current task ones. By adding it as argument we can now
+explicitly define which memory map to use.
 
-There's no way with that many cc: lists and people that this is really
-making it through very many people's filters and actually on a mailing
-list.  Please trim them down.
+Signed-off-by: Till Smejkal <till.smejkal@gmail.com>
+---
+ arch/mips/kernel/vdso.c |  2 +-
+ arch/tile/mm/elf.c      |  2 +-
+ include/linux/mm.h      |  5 +++--
+ mm/mmap.c               | 10 +++++-----
+ 4 files changed, 10 insertions(+), 9 deletions(-)
 
-Minor sysfs questions/issues:
-
-> +struct vas {
-> +	struct kobject kobj;		/* < the internal kobject that we use *
-> +					 *   for reference counting and sysfs *
-> +					 *   handling.                        */
-> +
-> +	int id;				/* < ID                               */
-> +	char name[VAS_MAX_NAME_LENGTH];	/* < name                             */
-
-The kobject has a name, why not use that?
-
-> +
-> +	struct mutex mtx;		/* < lock for parallel access.        */
-> +
-> +	struct mm_struct *mm;		/* < a partial memory map containing  *
-> +					 *   all mappings of this VAS.        */
-> +
-> +	struct list_head link;		/* < the link in the global VAS list. */
-> +	struct rcu_head rcu;		/* < the RCU helper used for          *
-> +					 *   asynchronous VAS deletion.       */
-> +
-> +	u16 refcount;			/* < how often is the VAS attached.   */
-
-The kobject has a refcount, use that?  Don't have 2 refcounts in the
-same structure, that way lies madness.  And bugs, lots of bugs...
-
-And if this really is a refcount (hint, I don't think it is), you should
-use the refcount_t type.
-
-> +/**
-> + * The sysfs structure we need to handle attributes of a VAS.
-> + **/
-> +struct vas_sysfs_attr {
-> +	struct attribute attr;
-> +	ssize_t (*show)(struct vas *vas, struct vas_sysfs_attr *vsattr,
-> +			char *buf);
-> +	ssize_t (*store)(struct vas *vas, struct vas_sysfs_attr *vsattr,
-> +			 const char *buf, size_t count);
-> +};
-> +
-> +#define VAS_SYSFS_ATTR(NAME, MODE, SHOW, STORE)				\
-> +static struct vas_sysfs_attr vas_sysfs_attr_##NAME =			\
-> +	__ATTR(NAME, MODE, SHOW, STORE)
-
-__ATTR_RO and __ATTR_RW should work better for you.  If you really need
-this.
-
-Oh, and where is the Documentation/ABI/ updates to try to describe the
-sysfs structure and files?  Did I miss that in the series?
-
-> +static ssize_t __show_vas_name(struct vas *vas, struct vas_sysfs_attr *vsattr,
-> +			       char *buf)
-> +{
-> +	return scnprintf(buf, PAGE_SIZE, "%s", vas->name);
-
-It's a page size, just use sprintf() and be done with it.  No need to
-ever check, you "know" it will be correct.
-
-Also, what about a trailing '\n' for these attributes?
-
-Oh wait, why have a name when the kobject name is already there in the
-directory itself?  Do you really need this?
-
-> +/**
-> + * The ktype data structure representing a VAS.
-> + **/
-> +static struct kobj_type vas_ktype = {
-> +	.sysfs_ops = &vas_sysfs_ops,
-> +	.release = __vas_release,
-
-Why the odd __vas* naming?  What's wrong with vas_release?
-
-
-> +	.default_attrs = vas_default_attr,
-> +};
-> +
-> +
-> +/***
-> + * Internally visible functions
-> + ***/
-> +
-> +/**
-> + * Working with the global VAS list.
-> + **/
-> +static inline void vas_remove(struct vas *vas)
-
-<snip>
-
-You have a ton of inline functions, for no good reason.  Make them all
-"real" functions please.  Unless you can measure the size/speed
-differences?  If so, please say so.
-
-
-thanks,
-
-greg k-h
+diff --git a/arch/mips/kernel/vdso.c b/arch/mips/kernel/vdso.c
+index f9dbfb14af33..9631b42908f3 100644
+--- a/arch/mips/kernel/vdso.c
++++ b/arch/mips/kernel/vdso.c
+@@ -108,7 +108,7 @@ int arch_setup_additional_pages(struct linux_binprm *bprm, int uses_interp)
+ 		return -EINTR;
+ 
+ 	/* Map delay slot emulation page */
+-	base = mmap_region(NULL, STACK_TOP, PAGE_SIZE,
++	base = mmap_region(mm, NULL, STACK_TOP, PAGE_SIZE,
+ 			   VM_READ|VM_WRITE|VM_EXEC|
+ 			   VM_MAYREAD|VM_MAYWRITE|VM_MAYEXEC,
+ 			   0);
+diff --git a/arch/tile/mm/elf.c b/arch/tile/mm/elf.c
+index 6225cc998db1..a22768059b7a 100644
+--- a/arch/tile/mm/elf.c
++++ b/arch/tile/mm/elf.c
+@@ -141,7 +141,7 @@ int arch_setup_additional_pages(struct linux_binprm *bprm,
+ 	 */
+ 	if (!retval) {
+ 		unsigned long addr = MEM_USER_INTRPT;
+-		addr = mmap_region(NULL, addr, INTRPT_SIZE,
++		addr = mmap_region(mm, NULL, addr, INTRPT_SIZE,
+ 				   VM_READ|VM_EXEC|
+ 				   VM_MAYREAD|VM_MAYWRITE|VM_MAYEXEC, 0);
+ 		if (addr > (unsigned long) -PAGE_SIZE)
+diff --git a/include/linux/mm.h b/include/linux/mm.h
+index b84615b0f64c..fa483d2ff3eb 100644
+--- a/include/linux/mm.h
++++ b/include/linux/mm.h
+@@ -2016,8 +2016,9 @@ extern int install_special_mapping(struct mm_struct *mm,
+ 
+ extern unsigned long get_unmapped_area(struct file *, unsigned long, unsigned long, unsigned long, unsigned long);
+ 
+-extern unsigned long mmap_region(struct file *file, unsigned long addr,
+-	unsigned long len, vm_flags_t vm_flags, unsigned long pgoff);
++extern unsigned long mmap_region(struct mm_struct *mm, struct file *file,
++				 unsigned long addr, unsigned long len,
++				 vm_flags_t vm_flags, unsigned long pgoff);
+ extern unsigned long do_mmap(struct file *file, unsigned long addr,
+ 	unsigned long len, unsigned long prot, unsigned long flags,
+ 	vm_flags_t vm_flags, unsigned long pgoff, unsigned long *populate);
+diff --git a/mm/mmap.c b/mm/mmap.c
+index dc4291dcc99b..5ac276ac9807 100644
+--- a/mm/mmap.c
++++ b/mm/mmap.c
+@@ -1447,7 +1447,7 @@ unsigned long do_mmap(struct file *file, unsigned long addr,
+ 			vm_flags |= VM_NORESERVE;
+ 	}
+ 
+-	addr = mmap_region(file, addr, len, vm_flags, pgoff);
++	addr = mmap_region(mm, file, addr, len, vm_flags, pgoff);
+ 	if (!IS_ERR_VALUE(addr) &&
+ 	    ((vm_flags & VM_LOCKED) ||
+ 	     (flags & (MAP_POPULATE | MAP_NONBLOCK)) == MAP_POPULATE))
+@@ -1582,10 +1582,10 @@ static inline int accountable_mapping(struct file *file, vm_flags_t vm_flags)
+ 	return (vm_flags & (VM_NORESERVE | VM_SHARED | VM_WRITE)) == VM_WRITE;
+ }
+ 
+-unsigned long mmap_region(struct file *file, unsigned long addr,
+-		unsigned long len, vm_flags_t vm_flags, unsigned long pgoff)
++unsigned long mmap_region(struct mm_struct *mm, struct file *file,
++		unsigned long addr, unsigned long len, vm_flags_t vm_flags,
++		unsigned long pgoff)
+ {
+-	struct mm_struct *mm = current->mm;
+ 	struct vm_area_struct *vma, *prev;
+ 	int error;
+ 	struct rb_node **rb_link, *rb_parent;
+@@ -1704,7 +1704,7 @@ unsigned long mmap_region(struct file *file, unsigned long addr,
+ 	vm_stat_account(mm, vm_flags, len >> PAGE_SHIFT);
+ 	if (vm_flags & VM_LOCKED) {
+ 		if (!((vm_flags & VM_SPECIAL) || is_vm_hugetlb_page(vma) ||
+-					vma == get_gate_vma(current->mm)))
++					vma == get_gate_vma(mm)))
+ 			mm->locked_vm += (len >> PAGE_SHIFT);
+ 		else
+ 			vma->vm_flags &= VM_LOCKED_CLEAR_MASK;
+-- 
+2.12.0
