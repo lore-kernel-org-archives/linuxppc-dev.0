@@ -1,21 +1,41 @@
-Return-Path: <bhumirks@gmail.com>
-Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
- [IPv6:2607:f8b0:400e:c05::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <sukadev@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vhnYv24L3zDqY4
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Mar 2017 06:12:35 +1100 (AEDT)
-Received: by mail-pg0-x243.google.com with SMTP id g2so14638134pge.2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Mar 2017 12:12:35 -0700 (PDT)
-From: Bhumika Goyal <bhumirks@gmail.com>
-To: julia.lawall@lip6.fr, lgirdwood@gmail.com, broonie@kernel.org,
- perex@perex.cz, tiwai@suse.com, timur@tabi.org, nicoleotsuka@gmail.com,
- Xiubo.Lee@gmail.com, fabio.estevam@nxp.com, alsa-devel@alsa-project.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Cc: Bhumika Goyal <bhumirks@gmail.com>
-Subject: [PATCH] ASoC: fsl: constify snd_soc_ops structures
-Date: Tue, 14 Mar 2017 00:42:22 +0530
-Message-Id: <1489432342-4328-1-git-send-email-bhumirks@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vhnmw6QYyzDqY4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Mar 2017 06:22:08 +1100 (AEDT)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v2DJIWfA142749
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Mar 2017 15:21:57 -0400
+Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 295xm2rqg4-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Mar 2017 15:21:57 -0400
+Received: from localhost
+ by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
+ Mon, 13 Mar 2017 15:21:57 -0400
+Date: Mon, 13 Mar 2017 12:21:51 -0700
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+Cc: peterz@infradead.org, mpe@ellerman.id.au, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Thomas Gleixner <tglx@linutronix.de>,
+ Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
+ Anna-Maria Gleixner <anna-maria@linutronix.de>,
+ Daniel Axtens <dja@axtens.net>
+Subject: Re: [PATCH v2 2/6] powerpc/perf: Export memory hierarchy info to
+ user space
+References: <1488796993-25495-1-git-send-email-maddy@linux.vnet.ibm.com>
+ <1488796993-25495-3-git-send-email-maddy@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1488796993-25495-3-git-send-email-maddy@linux.vnet.ibm.com>
+Message-Id: <20170313192151.GA3420@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,129 +45,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Declare snd_soc_ops structures as const as they are only stored
-in the ops field of a snd_soc_dai_link structure. This field is
-of type const, so snd_soc_ops structures having this property
-can be made const too.
+Madhavan Srinivasan [maddy@linux.vnet.ibm.com] wrote:
+> The LDST field and DATA_SRC in SIER identifies the memory hierarchy level
+> (eg: L1, L2 etc), from which a data-cache miss for a marked instruction
+> was satisfied. Use the 'perf_mem_data_src' object to export this
+> hierarchy level to user space.
+> 
+<snip>
 
-The following .o files did not compile:
-sound/soc/fsl/{p1022_rdk.c/p1022_ds.c/mpc8610_hpcd.c}
+> diff --git a/arch/powerpc/include/asm/perf_event_server.h b/arch/powerpc/include/asm/perf_event_server.h
+>  int isa207_get_constraint(u64 event, unsigned long *maskp, unsigned long *valp)
+>  {
+>  	unsigned int unit, pmc, cache, ebb;
+> diff --git a/arch/powerpc/perf/isa207-common.h b/arch/powerpc/perf/isa207-common.h
+> index cf9bd8990159..982542cce991 100644
+> --- a/arch/powerpc/perf/isa207-common.h
+> +++ b/arch/powerpc/perf/isa207-common.h
+> @@ -259,6 +259,19 @@
+>  #define MAX_ALT				2
+>  #define MAX_PMU_COUNTERS		6
+> 
+> +#define ISA207_SIER_TYPE_SHIFT		15
+> +#define ISA207_SIER_TYPE_MASK		(0x7ull << ISA207_SIER_TYPE_SHIFT)
+> +
+> +#define ISA207_SIER_LDST_SHIFT		1
+> +#define ISA207_SIER_LDST_MASK		(0x7ull << ISA207_SIER_LDST_SHIFT)
+> +
+> +#define ISA207_SIER_DATA_SRC_SHIFT	53
+> +#define ISA207_SIER_DATA_SRC_MASK	(0x7ull << ISA207_SIER_DATA_SRC_SHIFT)
+> +
+> +#define P(a, b)				PERF_MEM_S(a, b)
 
-Signed-off-by: Bhumika Goyal <bhumirks@gmail.com>
----
- sound/soc/fsl/eukrea-tlv320.c   | 2 +-
- sound/soc/fsl/imx-mc13783.c     | 2 +-
- sound/soc/fsl/mpc8610_hpcd.c    | 2 +-
- sound/soc/fsl/mx27vis-aic32x4.c | 2 +-
- sound/soc/fsl/p1022_ds.c        | 2 +-
- sound/soc/fsl/p1022_rdk.c       | 2 +-
- sound/soc/fsl/phycore-ac97.c    | 2 +-
- sound/soc/fsl/wm1133-ev1.c      | 2 +-
- 8 files changed, 8 insertions(+), 8 deletions(-)
+Madhavan, Peter,
 
-diff --git a/sound/soc/fsl/eukrea-tlv320.c b/sound/soc/fsl/eukrea-tlv320.c
-index 883087f..84ef638 100644
---- a/sound/soc/fsl/eukrea-tlv320.c
-+++ b/sound/soc/fsl/eukrea-tlv320.c
-@@ -64,7 +64,7 @@ static int eukrea_tlv320_hw_params(struct snd_pcm_substream *substream,
- 	return 0;
- }
- 
--static struct snd_soc_ops eukrea_tlv320_snd_ops = {
-+static const struct snd_soc_ops eukrea_tlv320_snd_ops = {
- 	.hw_params	= eukrea_tlv320_hw_params,
- };
- 
-diff --git a/sound/soc/fsl/imx-mc13783.c b/sound/soc/fsl/imx-mc13783.c
-index bb04590..9d19b80 100644
---- a/sound/soc/fsl/imx-mc13783.c
-+++ b/sound/soc/fsl/imx-mc13783.c
-@@ -48,7 +48,7 @@ static int imx_mc13783_hifi_hw_params(struct snd_pcm_substream *substream,
- 	return snd_soc_dai_set_tdm_slot(cpu_dai, 0x3, 0x3, 2, 16);
- }
- 
--static struct snd_soc_ops imx_mc13783_hifi_ops = {
-+static const struct snd_soc_ops imx_mc13783_hifi_ops = {
- 	.hw_params = imx_mc13783_hifi_hw_params,
- };
- 
-diff --git a/sound/soc/fsl/mpc8610_hpcd.c b/sound/soc/fsl/mpc8610_hpcd.c
-index ddf49f3..a639b52 100644
---- a/sound/soc/fsl/mpc8610_hpcd.c
-+++ b/sound/soc/fsl/mpc8610_hpcd.c
-@@ -174,7 +174,7 @@ static int mpc8610_hpcd_machine_remove(struct snd_soc_card *card)
- /**
-  * mpc8610_hpcd_ops: ASoC machine driver operations
-  */
--static struct snd_soc_ops mpc8610_hpcd_ops = {
-+static const struct snd_soc_ops mpc8610_hpcd_ops = {
- 	.startup = mpc8610_hpcd_startup,
- };
- 
-diff --git a/sound/soc/fsl/mx27vis-aic32x4.c b/sound/soc/fsl/mx27vis-aic32x4.c
-index 198eeb3..d7ec3d2 100644
---- a/sound/soc/fsl/mx27vis-aic32x4.c
-+++ b/sound/soc/fsl/mx27vis-aic32x4.c
-@@ -73,7 +73,7 @@ static int mx27vis_aic32x4_hw_params(struct snd_pcm_substream *substream,
- 	return 0;
- }
- 
--static struct snd_soc_ops mx27vis_aic32x4_snd_ops = {
-+static const struct snd_soc_ops mx27vis_aic32x4_snd_ops = {
- 	.hw_params	= mx27vis_aic32x4_hw_params,
- };
- 
-diff --git a/sound/soc/fsl/p1022_ds.c b/sound/soc/fsl/p1022_ds.c
-index a1f780e..41c623c 100644
---- a/sound/soc/fsl/p1022_ds.c
-+++ b/sound/soc/fsl/p1022_ds.c
-@@ -184,7 +184,7 @@ static int p1022_ds_machine_remove(struct snd_soc_card *card)
- /**
-  * p1022_ds_ops: ASoC machine driver operations
-  */
--static struct snd_soc_ops p1022_ds_ops = {
-+static const struct snd_soc_ops p1022_ds_ops = {
- 	.startup = p1022_ds_startup,
- };
- 
-diff --git a/sound/soc/fsl/p1022_rdk.c b/sound/soc/fsl/p1022_rdk.c
-index d4d88a8..4afbdd6 100644
---- a/sound/soc/fsl/p1022_rdk.c
-+++ b/sound/soc/fsl/p1022_rdk.c
-@@ -188,7 +188,7 @@ static int p1022_rdk_machine_remove(struct snd_soc_card *card)
- /**
-  * p1022_rdk_ops: ASoC machine driver operations
-  */
--static struct snd_soc_ops p1022_rdk_ops = {
-+static const struct snd_soc_ops p1022_rdk_ops = {
- 	.startup = p1022_rdk_startup,
- };
- 
-diff --git a/sound/soc/fsl/phycore-ac97.c b/sound/soc/fsl/phycore-ac97.c
-index ae403c2..66fb6c4 100644
---- a/sound/soc/fsl/phycore-ac97.c
-+++ b/sound/soc/fsl/phycore-ac97.c
-@@ -23,7 +23,7 @@
- 
- static struct snd_soc_card imx_phycore;
- 
--static struct snd_soc_ops imx_phycore_hifi_ops = {
-+static const struct snd_soc_ops imx_phycore_hifi_ops = {
- };
- 
- static struct snd_soc_dai_link imx_phycore_dai_ac97[] = {
-diff --git a/sound/soc/fsl/wm1133-ev1.c b/sound/soc/fsl/wm1133-ev1.c
-index b454972..cdaf163 100644
---- a/sound/soc/fsl/wm1133-ev1.c
-+++ b/sound/soc/fsl/wm1133-ev1.c
-@@ -139,7 +139,7 @@ static int wm1133_ev1_hw_params(struct snd_pcm_substream *substream,
- 	return 0;
- }
- 
--static struct snd_soc_ops wm1133_ev1_ops = {
-+static const struct snd_soc_ops wm1133_ev1_ops = {
- 	.hw_params = wm1133_ev1_hw_params,
- };
- 
--- 
-2.7.4
+Can we see if we can get the kernel to set 'perf_mem_data_src.val' in
+endian-nuetral format?
+
+With something like  (untested) in include/uapi/linux/perf_event.h
+
+#define PERF_MEM_OP_NBITS	PERF_MEM_LVL_SHIFT
+#define PERF_MEM_LVL_NBITS	PERF_MEM_SNOOP_SHIFT
+#define PERF_MEM_SNOOP_NBITS	PERF_MEM_LOCK_SHIFT
+#define PERF_MEM_TLB_NBITS	PERF_MEM_TLB_SHIFT
+
+and here in arch/powerpc/perf/isa207-common.h
+
+#define PERF_MEM_S_BE_SHIFT(a)	\
+	(63 - PERF_MEM_##a##_NBITS - PERF_MEM_##a##_SHIFT)
+
+#define PERF_MEM_S_BE(a, s)	\
+		(((__u64)PERF_MEM_##a##_##s) << PERF_MEM_S_BE_SHIFT(a))
+
+#define P(a, b)		PERF_MEM_S_BE(a, b)
+
+Basically, have PERF_MEM_OP_NA be the right most bit and PERF_MEM_TLB_OS
+the left most bit in perf_mem_data_src.val regardless of the endianness?
+
+Sukadev
