@@ -1,49 +1,21 @@
-Return-Path: <abdhalee@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <bhumirks@gmail.com>
+Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
+ [IPv6:2607:f8b0:400e:c05::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vhlKw4JS2zDqXy
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Mar 2017 04:32:04 +1100 (AEDT)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v2DHIqDW065099
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Mar 2017 13:31:53 -0400
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
- by mx0a-001b2d01.pphosted.com with ESMTP id 294e97q05q-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Mar 2017 13:31:53 -0400
-Received: from localhost
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <abdhalee@linux.vnet.ibm.com>;
- Tue, 14 Mar 2017 03:31:50 +1000
-Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v2DHVd1E50528278
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Mar 2017 04:31:47 +1100
-Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
- by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v2DHVE45004160
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Mar 2017 04:31:14 +1100
-Subject: Re: 4.11.0-rc1 boot resulted in WARNING: CPU: 14 PID: 1722 at
- fs/sysfs/dir.c:31 .sysfs_warn_dup+0x78/0xb0
-From: Abdul Haleem <abdhalee@linux.vnet.ibm.com>
-To: Jens Axboe <axboe@kernel.dk>
-Cc: Brian Foster <bfoster@redhat.com>, linux-xfs@vger.kernel.org,
- linux-block@vger.kernel.org, mpe@ellerman.id, linuxppc-dev
- <linuxppc-dev@lists.ozlabs.org>,
- linux-kernel <linux-kernel@vger.kernel.org>
-Date: Mon, 13 Mar 2017 23:00:27 +0530
-In-Reply-To: <158127ce-d71d-56a5-3dd3-f676b106c65d@kernel.dk>
-References: <1488904264.3961.17.camel@abdul-ThinkPad-T450>
- <20170308131705.GB23404@bfoster.bfoster>
- <1489056606.3961.41.camel@abdul-ThinkPad-T450>
- <20170309125919.GA16713@bfoster.bfoster>
- <158127ce-d71d-56a5-3dd3-f676b106c65d@kernel.dk>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Message-Id: <1489426227.19698.36.camel@abdul>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vhnYv24L3zDqY4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Mar 2017 06:12:35 +1100 (AEDT)
+Received: by mail-pg0-x243.google.com with SMTP id g2so14638134pge.2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Mar 2017 12:12:35 -0700 (PDT)
+From: Bhumika Goyal <bhumirks@gmail.com>
+To: julia.lawall@lip6.fr, lgirdwood@gmail.com, broonie@kernel.org,
+ perex@perex.cz, tiwai@suse.com, timur@tabi.org, nicoleotsuka@gmail.com,
+ Xiubo.Lee@gmail.com, fabio.estevam@nxp.com, alsa-devel@alsa-project.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: Bhumika Goyal <bhumirks@gmail.com>
+Subject: [PATCH] ASoC: fsl: constify snd_soc_ops structures
+Date: Tue, 14 Mar 2017 00:42:22 +0530
+Message-Id: <1489432342-4328-1-git-send-email-bhumirks@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -53,44 +25,129 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 2017-03-11 at 15:46 -0700, Jens Axboe wrote:
-> On 03/09/2017 05:59 AM, Brian Foster wrote:
-> > cc linux-block
-> > 
-> > On Thu, Mar 09, 2017 at 04:20:06PM +0530, Abdul Haleem wrote:
-> >> On Wed, 2017-03-08 at 08:17 -0500, Brian Foster wrote:
-> >>> On Tue, Mar 07, 2017 at 10:01:04PM +0530, Abdul Haleem wrote:
-> >>>>
-> >>>> Hi,
-> >>>>
-> >>>> Today's mainline (4.11.0-rc1) booted with warnings on Power7 LPAR.
-> >>>>
-> >>>> Issue is not reproducible all the time.
-> 
-> Is that still the case with -git as of yesterday? Check that you
-> have this merge:
-> 
-> 34bbce9e344b47e8871273409632f525973afad4
-> 
-> in your tree.
-> 
+Declare snd_soc_ops structures as const as they are only stored
+in the ops field of a snd_soc_dai_link structure. This field is
+of type const, so snd_soc_ops structures having this property
+can be made const too.
 
-Thanks for pointing out, with the below merge commit warnings disappear.
+The following .o files did not compile:
+sound/soc/fsl/{p1022_rdk.c/p1022_ds.c/mpc8610_hpcd.c}
 
-commit 34bbce9e344b47e8871273409632f525973afad4
-Merge: bb61ce5 672a2c8
-Author: Linus Torvalds <torvalds@linux-foundation.org>
-Date:   Thu Mar 9 15:53:25 2017 -0800
+Signed-off-by: Bhumika Goyal <bhumirks@gmail.com>
+---
+ sound/soc/fsl/eukrea-tlv320.c   | 2 +-
+ sound/soc/fsl/imx-mc13783.c     | 2 +-
+ sound/soc/fsl/mpc8610_hpcd.c    | 2 +-
+ sound/soc/fsl/mx27vis-aic32x4.c | 2 +-
+ sound/soc/fsl/p1022_ds.c        | 2 +-
+ sound/soc/fsl/p1022_rdk.c       | 2 +-
+ sound/soc/fsl/phycore-ac97.c    | 2 +-
+ sound/soc/fsl/wm1133-ev1.c      | 2 +-
+ 8 files changed, 8 insertions(+), 8 deletions(-)
 
-    Merge branch 'for-linus' of git://git.kernel.dk/linux-block
-
-
-Thanks for the fix !
-
-Reported-by & Tested-by : Abdul Haleem <abdhalee@linux.vnet.ibm.com>
-
+diff --git a/sound/soc/fsl/eukrea-tlv320.c b/sound/soc/fsl/eukrea-tlv320.c
+index 883087f..84ef638 100644
+--- a/sound/soc/fsl/eukrea-tlv320.c
++++ b/sound/soc/fsl/eukrea-tlv320.c
+@@ -64,7 +64,7 @@ static int eukrea_tlv320_hw_params(struct snd_pcm_substream *substream,
+ 	return 0;
+ }
+ 
+-static struct snd_soc_ops eukrea_tlv320_snd_ops = {
++static const struct snd_soc_ops eukrea_tlv320_snd_ops = {
+ 	.hw_params	= eukrea_tlv320_hw_params,
+ };
+ 
+diff --git a/sound/soc/fsl/imx-mc13783.c b/sound/soc/fsl/imx-mc13783.c
+index bb04590..9d19b80 100644
+--- a/sound/soc/fsl/imx-mc13783.c
++++ b/sound/soc/fsl/imx-mc13783.c
+@@ -48,7 +48,7 @@ static int imx_mc13783_hifi_hw_params(struct snd_pcm_substream *substream,
+ 	return snd_soc_dai_set_tdm_slot(cpu_dai, 0x3, 0x3, 2, 16);
+ }
+ 
+-static struct snd_soc_ops imx_mc13783_hifi_ops = {
++static const struct snd_soc_ops imx_mc13783_hifi_ops = {
+ 	.hw_params = imx_mc13783_hifi_hw_params,
+ };
+ 
+diff --git a/sound/soc/fsl/mpc8610_hpcd.c b/sound/soc/fsl/mpc8610_hpcd.c
+index ddf49f3..a639b52 100644
+--- a/sound/soc/fsl/mpc8610_hpcd.c
++++ b/sound/soc/fsl/mpc8610_hpcd.c
+@@ -174,7 +174,7 @@ static int mpc8610_hpcd_machine_remove(struct snd_soc_card *card)
+ /**
+  * mpc8610_hpcd_ops: ASoC machine driver operations
+  */
+-static struct snd_soc_ops mpc8610_hpcd_ops = {
++static const struct snd_soc_ops mpc8610_hpcd_ops = {
+ 	.startup = mpc8610_hpcd_startup,
+ };
+ 
+diff --git a/sound/soc/fsl/mx27vis-aic32x4.c b/sound/soc/fsl/mx27vis-aic32x4.c
+index 198eeb3..d7ec3d2 100644
+--- a/sound/soc/fsl/mx27vis-aic32x4.c
++++ b/sound/soc/fsl/mx27vis-aic32x4.c
+@@ -73,7 +73,7 @@ static int mx27vis_aic32x4_hw_params(struct snd_pcm_substream *substream,
+ 	return 0;
+ }
+ 
+-static struct snd_soc_ops mx27vis_aic32x4_snd_ops = {
++static const struct snd_soc_ops mx27vis_aic32x4_snd_ops = {
+ 	.hw_params	= mx27vis_aic32x4_hw_params,
+ };
+ 
+diff --git a/sound/soc/fsl/p1022_ds.c b/sound/soc/fsl/p1022_ds.c
+index a1f780e..41c623c 100644
+--- a/sound/soc/fsl/p1022_ds.c
++++ b/sound/soc/fsl/p1022_ds.c
+@@ -184,7 +184,7 @@ static int p1022_ds_machine_remove(struct snd_soc_card *card)
+ /**
+  * p1022_ds_ops: ASoC machine driver operations
+  */
+-static struct snd_soc_ops p1022_ds_ops = {
++static const struct snd_soc_ops p1022_ds_ops = {
+ 	.startup = p1022_ds_startup,
+ };
+ 
+diff --git a/sound/soc/fsl/p1022_rdk.c b/sound/soc/fsl/p1022_rdk.c
+index d4d88a8..4afbdd6 100644
+--- a/sound/soc/fsl/p1022_rdk.c
++++ b/sound/soc/fsl/p1022_rdk.c
+@@ -188,7 +188,7 @@ static int p1022_rdk_machine_remove(struct snd_soc_card *card)
+ /**
+  * p1022_rdk_ops: ASoC machine driver operations
+  */
+-static struct snd_soc_ops p1022_rdk_ops = {
++static const struct snd_soc_ops p1022_rdk_ops = {
+ 	.startup = p1022_rdk_startup,
+ };
+ 
+diff --git a/sound/soc/fsl/phycore-ac97.c b/sound/soc/fsl/phycore-ac97.c
+index ae403c2..66fb6c4 100644
+--- a/sound/soc/fsl/phycore-ac97.c
++++ b/sound/soc/fsl/phycore-ac97.c
+@@ -23,7 +23,7 @@
+ 
+ static struct snd_soc_card imx_phycore;
+ 
+-static struct snd_soc_ops imx_phycore_hifi_ops = {
++static const struct snd_soc_ops imx_phycore_hifi_ops = {
+ };
+ 
+ static struct snd_soc_dai_link imx_phycore_dai_ac97[] = {
+diff --git a/sound/soc/fsl/wm1133-ev1.c b/sound/soc/fsl/wm1133-ev1.c
+index b454972..cdaf163 100644
+--- a/sound/soc/fsl/wm1133-ev1.c
++++ b/sound/soc/fsl/wm1133-ev1.c
+@@ -139,7 +139,7 @@ static int wm1133_ev1_hw_params(struct snd_pcm_substream *substream,
+ 	return 0;
+ }
+ 
+-static struct snd_soc_ops wm1133_ev1_ops = {
++static const struct snd_soc_ops wm1133_ev1_ops = {
+ 	.hw_params = wm1133_ev1_hw_params,
+ };
+ 
 -- 
-Regard's
-
-Abdul Haleem
-IBM Linux Technology Centre
+2.7.4
