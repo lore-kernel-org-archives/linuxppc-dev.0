@@ -1,9 +1,10 @@
-Return-Path: <BATV+964c741336aa85246944+4951+infradead.org+acme@bombadil.srs.infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org [65.50.211.133])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vjP270lFdzDqZG
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Mar 2017 05:50:39 +1100 (AEDT)
+Return-Path: <BATV+1d99f8073f34f075460d+4951+infradead.org+acme@merlin.srs.infradead.org>
+Received: from merlin.infradead.org (merlin.infradead.org
+ [IPv6:2001:4978:20e::2])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vjP2B0m6xzDqZG
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Mar 2017 05:50:42 +1100 (AEDT)
 From: Arnaldo Carvalho de Melo <acme@kernel.org>
 To: Ingo Molnar <mingo@kernel.org>
 Cc: linux-kernel@vger.kernel.org,
@@ -12,9 +13,9 @@ Cc: linux-kernel@vger.kernel.org,
  Michael Ellerman <mpe@ellerman.id.au>,
  Steven Rostedt <rostedt@goodmis.org>, linuxppc-dev@lists.ozlabs.org,
  Arnaldo Carvalho de Melo <acme@redhat.com>
-Subject: [PATCH 17/19] perf powerpc: Choose local entry point with kretprobes
-Date: Tue, 14 Mar 2017 15:50:21 -0300
-Message-Id: <20170314185023.31303-18-acme@kernel.org>
+Subject: [PATCH 15/19] perf probe: Factor out the ftrace README scanning
+Date: Tue, 14 Mar 2017 15:50:19 -0300
+Message-Id: <20170314185023.31303-16-acme@kernel.org>
 In-Reply-To: <20170314185023.31303-1-acme@kernel.org>
 References: <20170314185023.31303-1-acme@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,10 +29,12 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
 
-perf now uses an offset from _text/_stext for kretprobes if the kernel
-supports it, rather than the actual function name. As such, let's choose
-the LEP for powerpc ABIv2 so as to ensure the probe gets hit. Do it only
-if the kernel supports specifying offsets with kretprobes.
+Simplify and separate out the ftrace README scanning logic into a
+separate helper. This is used subsequently to scan for all patterns of
+interest and to cache the result.
+
+Since we are only interested in availability of probe argument type x,
+we will only scan for that.
 
 Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
 Acked-by: Masami Hiramatsu <mhiramat@kernel.org>
@@ -39,46 +42,110 @@ Cc: Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>
 Cc: Michael Ellerman <mpe@ellerman.id.au>
 Cc: Steven Rostedt <rostedt@goodmis.org>
 Cc: linuxppc-dev@lists.ozlabs.org
-Link: http://lkml.kernel.org/r/7445b5334673ef5404ac1d12609bad4d73d2b567.1488961018.git.naveen.n.rao@linux.vnet.ibm.com
+Link: http://lkml.kernel.org/r/6dc30edc747ba82a236593be6cf3a046fa9453b5.1488961018.git.naveen.n.rao@linux.vnet.ibm.com
 Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
 ---
- tools/perf/arch/powerpc/util/sym-handling.c | 14 ++++++++++----
- 1 file changed, 10 insertions(+), 4 deletions(-)
+ tools/perf/util/probe-file.c | 70 +++++++++++++++++++++++---------------------
+ 1 file changed, 37 insertions(+), 33 deletions(-)
 
-diff --git a/tools/perf/arch/powerpc/util/sym-handling.c b/tools/perf/arch/powerpc/util/sym-handling.c
-index 1030a6e504bb..39dbe512b9fc 100644
---- a/tools/perf/arch/powerpc/util/sym-handling.c
-+++ b/tools/perf/arch/powerpc/util/sym-handling.c
-@@ -10,6 +10,7 @@
- #include "symbol.h"
- #include "map.h"
- #include "probe-event.h"
-+#include "probe-file.h"
+diff --git a/tools/perf/util/probe-file.c b/tools/perf/util/probe-file.c
+index 1a62daceb028..8a219cd831b7 100644
+--- a/tools/perf/util/probe-file.c
++++ b/tools/perf/util/probe-file.c
+@@ -877,35 +877,31 @@ int probe_cache__show_all_caches(struct strfilter *filter)
+ 	return 0;
+ }
  
- #ifdef HAVE_LIBELF_SUPPORT
- bool elf__needs_adjust_symbols(GElf_Ehdr ehdr)
-@@ -79,13 +80,18 @@ void arch__fix_tev_from_maps(struct perf_probe_event *pev,
- 	 * However, if the user specifies an offset, we fall back to using the
- 	 * GEP since all userspace applications (objdump/readelf) show function
- 	 * disassembly with offsets from the GEP.
--	 *
--	 * In addition, we shouldn't specify an offset for kretprobes.
- 	 */
--	if (pev->point.offset || (!pev->uprobes && pev->point.retprobe) ||
--	    !map || !sym)
-+	if (pev->point.offset || !map || !sym)
- 		return;
- 
-+	/* For kretprobes, add an offset only if the kernel supports it */
-+	if (!pev->uprobes && pev->point.retprobe) {
-+#ifdef HAVE_LIBELF_SUPPORT
-+		if (!kretprobe_offset_is_supported())
-+#endif
-+			return;
-+	}
++enum ftrace_readme {
++	FTRACE_README_PROBE_TYPE_X = 0,
++	FTRACE_README_END,
++};
 +
- 	lep_offset = PPC64_LOCAL_ENTRY_OFFSET(sym->arch_sym);
+ static struct {
+ 	const char *pattern;
+-	bool	avail;
+-	bool	checked;
+-} probe_type_table[] = {
+-#define DEFINE_TYPE(idx, pat, def_avail)	\
+-	[idx] = {.pattern = pat, .avail = (def_avail)}
+-	DEFINE_TYPE(PROBE_TYPE_U, "* u8/16/32/64,*", true),
+-	DEFINE_TYPE(PROBE_TYPE_S, "* s8/16/32/64,*", true),
+-	DEFINE_TYPE(PROBE_TYPE_X, "* x8/16/32/64,*", false),
+-	DEFINE_TYPE(PROBE_TYPE_STRING, "* string,*", true),
+-	DEFINE_TYPE(PROBE_TYPE_BITFIELD,
+-		    "* b<bit-width>@<bit-offset>/<container-size>", true),
++	bool avail;
++} ftrace_readme_table[] = {
++#define DEFINE_TYPE(idx, pat)			\
++	[idx] = {.pattern = pat, .avail = false}
++	DEFINE_TYPE(FTRACE_README_PROBE_TYPE_X, "*type: * x8/16/32/64,*"),
+ };
  
- 	if (map->dso->symtab_type == DSO_BINARY_TYPE__KALLSYMS)
+-bool probe_type_is_available(enum probe_type type)
++static bool scan_ftrace_readme(enum ftrace_readme type)
+ {
++	int fd;
+ 	FILE *fp;
+ 	char *buf = NULL;
+ 	size_t len = 0;
+-	bool target_line = false;
+-	bool ret = probe_type_table[type].avail;
+-	int fd;
++	bool ret = false;
++	static bool scanned = false;
+ 
+-	if (type >= PROBE_TYPE_END)
+-		return false;
+-	/* We don't have to check the type which supported by default */
+-	if (ret || probe_type_table[type].checked)
+-		return ret;
++	if (scanned)
++		goto result;
+ 
+ 	fd = open_trace_file("README", false);
+ 	if (fd < 0)
+@@ -917,21 +913,29 @@ bool probe_type_is_available(enum probe_type type)
+ 		return ret;
+ 	}
+ 
+-	while (getline(&buf, &len, fp) > 0 && !ret) {
+-		if (!target_line) {
+-			target_line = !!strstr(buf, " type: ");
+-			if (!target_line)
+-				continue;
+-		} else if (strstr(buf, "\t          ") != buf)
+-			break;
+-		ret = strglobmatch(buf, probe_type_table[type].pattern);
+-	}
+-	/* Cache the result */
+-	probe_type_table[type].checked = true;
+-	probe_type_table[type].avail = ret;
++	while (getline(&buf, &len, fp) > 0)
++		for (enum ftrace_readme i = 0; i < FTRACE_README_END; i++)
++			if (!ftrace_readme_table[i].avail)
++				ftrace_readme_table[i].avail =
++					strglobmatch(buf, ftrace_readme_table[i].pattern);
++	scanned = true;
+ 
+ 	fclose(fp);
+ 	free(buf);
+ 
+-	return ret;
++result:
++	if (type >= FTRACE_README_END)
++		return false;
++
++	return ftrace_readme_table[type].avail;
++}
++
++bool probe_type_is_available(enum probe_type type)
++{
++	if (type >= PROBE_TYPE_END)
++		return false;
++	else if (type == PROBE_TYPE_X)
++		return scan_ftrace_readme(FTRACE_README_PROBE_TYPE_X);
++
++	return true;
+ }
 -- 
 2.9.3
