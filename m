@@ -1,48 +1,24 @@
-Return-Path: <Vineet.Gupta1@synopsys.com>
-Received: from smtprelay.synopsys.com (smtprelay4.synopsys.com [198.182.47.9])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
+ [IPv6:2607:f8b0:400e:c05::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vhyCH1mxMzDqMd
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Mar 2017 12:42:02 +1100 (AEDT)
-Subject: Re: [RFC PATCH 10/13] mm: Introduce first class virtual address spaces
-To: Till Smejkal <till.smejkal@googlemail.com>,
- Richard Henderson <rth@twiddle.net>,
- Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
- Matt Turner <mattst88@gmail.com>, Russell King <linux@armlinux.org.uk>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Will Deacon <will.deacon@arm.com>, Steven Miao <realmz6@gmail.com>,
- Richard Kuo <rkuo@codeaurora.org>, Tony Luck <tony.luck@intel.com>,
- Fenghua Yu <fenghua.yu@intel.com>, James Hogan <james.hogan@imgtec.com>,
- Ralf Baechle <ralf@linux-mips.org>,
- "James E.J.  Bottomley" <jejb@parisc-linux.org>,
- Helge Deller <deller@gmx.de>,
- "Benjamin  Herrenschmidt" <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- Yoshinori Sato <ysato@users.sourceforge.jp>,
- Rich Felker <dalias@libc.org>, "David S. Miller" <davem@synopsys.COM>
-References: <20170313221415.9375-1-till.smejkal@gmail.com>
- <20170313221415.9375-11-till.smejkal@gmail.com>
-CC: <linux-kernel@vger.kernel.org>, <linux-alpha@vger.kernel.org>,
- <linux-snps-arc@lists.infradead.org>, <linux-arm-kernel@lists.infradead.org>,
- <adi-buildroot-devel@lists.sourceforge.net>, <linux-hexagon@vger.kernel.org>,
- <linux-ia64@vger.kernel.org>, <linux-metag@vger.kernel.org>,
- <linux-mips@linux-mips.org>, <linux-parisc@vger.kernel.org>,
- <linuxppc-dev@lists.ozlabs.org>, <linux-s390@vger.kernel.org>,
- <linux-sh@vger.kernel.org>, <sparclinux@vger.kernel.org>,
- <linux-xtensa@linux-xtensa.org>, <linux-media@vger.kernel.org>,
- <linux-mtd@lists.infradead.org>, <linux-usb@vger.kernel.org>,
- <linux-fsdevel@vger.kernel.org>, <linux-aio@kvack.org>, <linux-mm@kvack.org>,
- <linux-api@vger.kernel.org>, <linux-arch@vger.kernel.org>,
- <alsa-devel@alsa-project.org>, Ingo Molnar <mingo@kernel.org>, "Thomas
- Gleixner" <tglx@linutronix.de>, Andy Lutomirski <luto@amacapital.net>
-From: Vineet Gupta <Vineet.Gupta1@synopsys.com>
-Message-ID: <cd1adda8-bf6a-47ad-bff3-5bc6626ac100@synopsys.com>
-Date: Mon, 13 Mar 2017 18:35:27 -0700
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vhyNh1vcHzDqMd
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Mar 2017 12:50:11 +1100 (AEDT)
+Received: by mail-pg0-x243.google.com with SMTP id b5so20865317pgg.1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Mar 2017 18:50:11 -0700 (PDT)
+Date: Tue, 14 Mar 2017 11:49:50 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [RFC][PATCH 0/2] reworking cause_ipi and adding global doorbell
+ support
+Message-ID: <20170314114950.6d197c80@roar.ozlabs.ibm.com>
+In-Reply-To: <1489447868.2174.16.camel@kernel.crashing.org>
+References: <20170312171327.21088-1-npiggin@gmail.com>
+ <1489447868.2174.16.camel@kernel.crashing.org>
 MIME-Version: 1.0
-In-Reply-To: <20170313221415.9375-11-till.smejkal@gmail.com>
-Content-Type: text/plain; charset="windows-1252"
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,64 +28,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-+CC Ingo, tglx
+On Tue, 14 Mar 2017 10:31:08 +1100
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-Hi Till,
-
-On 03/13/2017 03:14 PM, Till Smejkal wrote:
-> Introduce a different type of address spaces which are first class citizens
-> in the OS. That means that the kernel now handles two types of AS, those
-> which are closely coupled with a process and those which aren't. While the
-> former ones are created and destroyed together with the process by the
-> kernel and are the default type of AS in the Linux kernel, the latter ones
-> have to be managed explicitly by the user and are the newly introduced
-> type.
+> On Mon, 2017-03-13 at 03:13 +1000, Nicholas Piggin wrote:
+> > Hi,
+> > 
+> > Just after the previous two fixes, I would like to propose changing
+> > the way we do doorbell vs interrupt controller IPIs, and add support
+> > for global doorbells supported by POWER9 in HV mode.
+> > 
+> > After this, the platform code knows about doorbells and interrupt
+> > controller IPIs, rather than they know about each other.  
 > 
-> Accordingly, a first class AS (also called VAS == virtual address space)
-> can exist in the OS independently from any process. A user has to
-> explicitly create and destroy them in the system. Processes and VAS can be
-> combined by attaching a previously created VAS to a process which basically
-> adds an additional AS to the process that the process' threads are able to
-> execute in. Hence, VAS allow a process to have different views onto the
-> main memory of the system (its original AS and the attached VAS) between
-> which its threads can switch arbitrarily during their lifetime.
+> A few things come to mind:
 > 
-> The functionality made available through first class virtual address spaces
-> can be used in various different ways. One possible way to utilize VAS is
-> to compartmentalize a process for security reasons. Another possible usage
-> is to improve the performance of data-centric applications by being able to
-> manage different sets of data in memory without the need to map or unmap
-> them.
+>  - We don't want to use doorbells under KVM. They are going to turn
+> into traps and be emulated, slower than using H_IPI, at least on P9.
+> Even for core only doorbells. I'm not sure how to convey that to the
+> guest.
+
+msgsndp will be okay, won't it? Guest just chooses that based on
+HVMODE (which pseries platform knows is core only).
+
+>  - On PP9 DD1 we need a CI load instead of msgsync (a DARN instruction
+> would do too if it works)
+
+Yes, Paul pointed this out too. I'll add an alt patch for it. Apparently
+also msgsync needs lwsync afterwards for DD2.
+
 > 
-> Furthermore, first class virtual address spaces can be attached to
-> different processes at the same time if the underlying memory is only
-> readable. This mechanism allows sharing of whole address spaces between
-> multiple processes that can both execute in them using the contained
-> memory.
+>  - Can we get rid of the atomic ops for manipulating the IPI mux ? What
+> about a cache line per message and just set/clear ? If we clear in the
+> doorbell handler before we call the respective targets, we shouldn't
+> "lose" messages no ? As long as the actual handlers "loop" as necessary
+> of course.
 
-I've not looked at the patches closely (or read the references paper fully yet),
-but at first glance it seems on ARC architecture, we can can potentially
-use/leverage this mechanism to implement the shared TLB entries. Before anyone
-shouts these are not same as the IA64/x86 protection keys which allow TLB entries
-with different protection bits across processes etc. These TLB entries are
-actually *shared* by processes.
+Yes I think that would work. Good idea. A single cacheline with messages
+being independently stored bytes within it might work better, so the
+receiver CPU does not have to go through and load multiple cachelines
+to check for messages. It could load up to 8 message types with one load.
 
-Conceptually there's shared address spaces, independent of processes. e.g. ldso
-code is shared address space #1, libc (code) #2 .... System can support a limited
-number of shared addr spaces (say 64, enough for typical embedded sys).
-
-While Normal TLB entries are tagged with ASID (Addr space ID) to keep them unique
-across processes, Shared TLB entries are tagged with Shared address space ID.
-
-A process MMU context consists of ASID (a single number) and a SASID bitmap (to
-allow "subscription" to multiple Shared spaces. The subscriptions are set up bu
-userspace ld.so which knows about the libs process wants to map.
-
-The restriction ofcourse is that the spaces are mapped at *same* vaddr is all
-participating processes. I know this goes against whole security, address space
-randomization - but it gives much better real time performance. Why does each
-process need to take a MMU exception for libc code...
-
-So long story short - it seems there can be multiple uses of this infrastructure !
-
--Vineet
+Thanks,
+Nick
