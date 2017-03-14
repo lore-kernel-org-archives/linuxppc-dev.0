@@ -1,16 +1,17 @@
 Return-Path: <till.smejkal@googlemail.com>
-Received: from mail-wm0-x241.google.com (mail-wm0-x241.google.com
- [IPv6:2a00:1450:400c:c09::241])
+Received: from mail-wr0-x242.google.com (mail-wr0-x242.google.com
+ [IPv6:2a00:1450:400c:c0c::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vhxyw2ShqzDqGk
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Mar 2017 12:31:20 +1100 (AEDT)
-Received: by mail-wm0-x241.google.com with SMTP id u132so12536712wmg.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Mar 2017 18:31:20 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vhymM5prczDqMd
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Mar 2017 13:07:15 +1100 (AEDT)
+Received: by mail-wr0-x242.google.com with SMTP id u108so22185607wrb.2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Mar 2017 19:07:15 -0700 (PDT)
 From: Till Smejkal <till.smejkal@googlemail.com>
-Date: Mon, 13 Mar 2017 18:31:12 -0700
-To: Richard Henderson <rth@twiddle.net>
+Date: Mon, 13 Mar 2017 19:07:09 -0700
+To: Andy Lutomirski <luto@kernel.org>
 Cc: Till Smejkal <till.smejkal@googlemail.com>,
+ Richard Henderson <rth@twiddle.net>,
  Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
  Matt Turner <mattst88@gmail.com>, Vineet Gupta <vgupta@synopsys.com>,
  Russell King <linux@armlinux.org.uk>,
@@ -30,9 +31,8 @@ Cc: Till Smejkal <till.smejkal@googlemail.com>,
  Chris Metcalf <cmetcalf@mellanox.com>,
  Thomas Gleixner <tglx@linutronix.de>,
  Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
- x86@kernel.org, Andy Lutomirski <luto@amacapital.net>,
- Chris Zankel <chris@zankel.net>, Max Filippov <jcmvbkbc@gmail.com>,
- Arnd Bergmann <arnd@arndb.de>,
+ X86 ML <x86@kernel.org>, Chris Zankel <chris@zankel.net>,
+ Max Filippov <jcmvbkbc@gmail.com>, Arnd Bergmann <arnd@arndb.de>,
  Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
  Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
  Mauro Carvalho Chehab <mchehab@kernel.org>,
@@ -53,23 +53,29 @@ Cc: Till Smejkal <till.smejkal@googlemail.com>,
  Arnaldo Carvalho de Melo <acme@kernel.org>,
  Alexander Shishkin <alexander.shishkin@linux.intel.com>,
  Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>,
- linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org,
- linux-snps-arc@lists.infradead.org, linux-arm-kernel@lists.infradead.org,
- adi-buildroot-devel@lists.sourceforge.net,
- linux-hexagon@vger.kernel.org, linux-ia64@vger.kernel.org,
- linux-metag@vger.kernel.org, linux-mips@linux-mips.org,
- linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ linux-alpha@vger.kernel.org, arcml <linux-snps-arc@lists.infradead.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ adi-buildroot-devel@lists.sourceforge.net, linux-hexagon@vger.kernel.org,
+ "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
+ linux-metag@vger.kernel.org,
+ Linux MIPS Mailing List <linux-mips@linux-mips.org>,
+ linux-parisc@vger.kernel.org, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
+ "linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>,
  sparclinux@vger.kernel.org, linux-xtensa@linux-xtensa.org,
- linux-media@vger.kernel.org, linux-mtd@lists.infradead.org,
- linux-usb@vger.kernel.org, linux-fsdevel@vger.kernel.org,
- linux-aio@kvack.org, linux-mm@kvack.org, linux-api@vger.kernel.org,
- linux-arch@vger.kernel.org, alsa-devel@alsa-project.org
+ Linux Media Mailing List <linux-media@vger.kernel.org>,
+ linux-mtd@lists.infradead.org, USB list <linux-usb@vger.kernel.org>,
+ Linux FS Devel <linux-fsdevel@vger.kernel.org>, linux-aio@kvack.org,
+ "linux-mm@kvack.org" <linux-mm@kvack.org>,
+ Linux API <linux-api@vger.kernel.org>,
+ linux-arch <linux-arch@vger.kernel.org>,
+ ALSA development <alsa-devel@alsa-project.org>
 Subject: Re: [RFC PATCH 00/13] Introduce first class virtual address spaces
-Message-ID: <20170314013112.ofhcgg2stzoft5mw@arch-dev>
+Message-ID: <20170314020709.vxeglus54k76i7rn@arch-dev>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <fa60d132-0eef-4350-3c88-1558f447a48f@twiddle.net>
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <CALCETrWe8uOi3m8qXUbMA4017+rxbi1C8hzZ0bwjVHmfdE4FnQ@mail.gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -79,34 +85,81 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 14 Mar 2017, Richard Henderson wrote:
-> On 03/14/2017 10:39 AM, Till Smejkal wrote:
-> > > Is this an indication that full virtual address spaces are useless?  It
-> > > would seem like if you only use virtual address segments then you avoid all
-> > > of the problems with executing code, active stacks, and brk.
-> > 
-> > What do you mean with *virtual address segments*? The nice part of first class
-> > virtual address spaces is that one can share/reuse collections of address space
-> > segments easily.
+On Mon, 13 Mar 2017, Andy Lutomirski wrote:
+> On Mon, Mar 13, 2017 at 3:14 PM, Till Smejkal
+> <till.smejkal@googlemail.com> wrote:
+> > This patchset extends the kernel memory management subsystem with a new
+> > type of address spaces (called VAS) which can be created and destroyed
+> > independently of processes by a user in the system. During its lifetime
+> > such a VAS can be attached to processes by the user which allows a process
+> > to have multiple address spaces and thereby multiple, potentially
+> > different, views on the system's main memory. During its execution the
+> > threads belonging to the process are able to switch freely between the
+> > different attached VAS and the process' original AS enabling them to
+> > utilize the different available views on the memory.
 > 
-> What do *I* mean?  You introduced the term, didn't you?
-> Rereading your original I see you called them "VAS segments".
+> Sounds like the old SKAS feature for UML.
 
-Oh, I am sorry. I thought that you were referring to some other feature that I don't
-know.
+I haven't heard of this feature before, but after shortly looking at the description
+on the UML website it actually has some similarities with what I am proposing. But as
+far as I can see this was not merged into the mainline kernel, was it? In addition, I
+think that first class virtual address spaces goes even one step further by allowing
+AS to live independently of processes.
 
-> Anyway, whatever they are called, it would seem that these segments do not
-> require any of the syncing mechanisms that are causing you problems.
+> > In addition to the concept of first class virtual address spaces, this
+> > patchset introduces yet another feature called VAS segments. VAS segments
+> > are memory regions which have a fixed size and position in the virtual
+> > address space and can be shared between multiple first class virtual
+> > address spaces. Such shareable memory regions are especially useful for
+> > in-memory pointer-based data structures or other pure in-memory data.
+> 
+> This sounds rather complicated.  Getting TLB flushing right seems
+> tricky.  Why not just map the same thing into multiple mms?
 
-Yes, VAS segments provide a possibility to share memory regions between multiple
-address spaces without the need to synchronize heap, stack, etc. Unfortunately, the
-VAS segment feature itself without the whole concept of first class virtual address
-spaces is not as powerful. With some additional work it can probably be represented
-with the existing shmem functionality.
+This is exactly what happens at the end. The memory region that is described by the
+VAS segment will be mapped in the ASes that use the segment.
 
-The first class virtual address space feature on the other side provides a real
-benefit for applications in our opinion namely that an application can switch between
-different views on its memory which enables various interesting programming paradigms
-as mentioned in the cover letter.
+> >
+> >             |     VAS     |  processes  |
+> >     -------------------------------------
+> >     switch  |       468ns |      1944ns |
+> 
+> The solution here is IMO to fix the scheduler.
+
+IMHO it will be very difficult for the scheduler code to reach the same switching
+time as the pure VAS switch because switching between VAS does not involve saving any
+registers or FPU state and does not require selecting the next runnable task. VAS
+switch is basically a system call that just changes the AS of the current thread
+which makes it a very lightweight operation.
+
+> Also, FWIW, I have patches (that need a little work) that will make
+> switch_mm() waaaay faster on x86.
+
+These patches will also improve the speed of the VAS switch operation. We are also
+using the switch_mm function in the background to perform the actual hardware switch
+between the two ASes. The main reason why the VAS switch is faster than the task
+switch is that it just has to do fewer things.
+
+> > At the current state of the development, first class virtual address spaces
+> > have one limitation, that we haven't been able to solve so far. The feature
+> > allows, that different threads of the same process can execute in different
+> > AS at the same time. This is possible, because the VAS-switch operation
+> > only changes the active mm_struct for the task_struct of the calling
+> > thread. However, when a thread switches into a first class virtual address
+> > space, some parts of its original AS are duplicated into the new one to
+> > allow the thread to continue its execution at its current state.
+> 
+> Ick.  Please don't do this.  Can we please keep an mm as just an mm
+> and not make it look magically different depending on which process
+> maps it?  If you need a trampoline (which you do, of course), just
+> write a trampoline in regular user code and map it manually.
+
+Did I understand you correctly that you are proposing that the switching thread
+should make sure by itself that its code, stack, … memory regions are properly setup
+in the new AS before/after switching into it? I think, this would make using first
+class virtual address spaces much more difficult for user applications to the extend
+that I am not even sure if they can be used at all. At the moment, switching into a
+VAS is a very simple operation for an application because the kernel will just simply
+do the right thing.
 
 Till
