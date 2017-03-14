@@ -1,17 +1,19 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vjCc12FBLzDqpw
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Mar 2017 22:45:53 +1100 (AEDT)
-In-Reply-To: <1487599143-28749-1-git-send-email-maddy@linux.vnet.ibm.com>
-To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vjCc222pyzDqpy
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Mar 2017 22:45:54 +1100 (AEDT)
+In-Reply-To: <20170221024131.47753-1-aik@ozlabs.ru>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: powerpc/perf: Handle sdar_mode for marked event in power9
-Message-Id: <3vjCc11ZPJz9s3s@ozlabs.org>
-Date: Tue, 14 Mar 2017 22:45:53 +1100 (AEDT)
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>,
+ David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: [kernel] powerpc/powernv/ioda2: Update iommu table base on
+ ownership change
+Message-Id: <3vjCc20kKWz9s3w@ozlabs.org>
+Date: Tue, 14 Mar 2017 22:45:54 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,16 +23,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2017-02-20 at 13:59:03 UTC, Madhavan Srinivasan wrote:
-> MMCRA[SDAR_MODE] specifices how the SDAR should be updated in
-> continous sampling mode. On P9 it must be set to 0b00 when
-> MMCRA[63] is set.
+On Tue, 2017-02-21 at 02:41:31 UTC, Alexey Kardashevskiy wrote:
+> On POWERNV platform, in order to do DMA via IOMMU (i.e. 32bit DMA in
+> our case), a device needs an iommu_table pointer set via
+> set_iommu_table_base().
 > 
-> Fixes: c7c3f568beff2 ('powerpc/perf: macros for power9 format encoding')
-> Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+> The codeflow is:
+> - pnv_pci_ioda2_setup_dma_pe()
+> 	- pnv_pci_ioda2_setup_default_config()
+> 	- pnv_ioda_setup_bus_dma() [1]
+> 
+> pnv_pci_ioda2_setup_dma_pe() creates IOMMU groups,
+> pnv_pci_ioda2_setup_default_config() does default DMA setup,
+> pnv_ioda_setup_bus_dma() takes a bus PE (on IODA2, all physical function
+> PEs as bus PEs except NPU), walks through all underlying buses and
+> devices, adds all devices to an IOMMU group and sets iommu_table.
+> 
+> On IODA2, when VFIO is used, it takes ownership over a PE which means it
+> removes all tables and creates new ones (with a possibility of sharing
+> them among PEs). So when the ownership is returned from VFIO to
+> the kernel, the iommu_table pointer written to a device at [1] is
+> stale and needs an update.
+> 
+> This adds an "add_to_group" parameter to pnv_ioda_setup_bus_dma()
+> (in fact re-adds as it used to be there a while ago for different
+> reasons) to tell the helper if a device needs to be added to
+> an IOMMU group with an iommu_table update or just the latter.
+> 
+> This calls pnv_ioda_setup_bus_dma(..., false) from
+> pnv_ioda2_release_ownership() so when the ownership is restored,
+> 32bit DMA can work again for a device. This does the same thing
+> on obtaining ownership as the iommu_table point is stale at this point
+> anyway and it is safer to have NULL there.
+> 
+> We did not hit this earlier as all tested devices in recent years were
+> only using 64bit DMA; the rare exception for this is MPT3 SAS adapter
+> which uses both 32bit and 64bit DMA access and it has not been tested
+> with VFIO much.
+> 
+> Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> Acked-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+> Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 
 Applied to powerpc fixes, thanks.
 
-https://git.kernel.org/powerpc/c/78b4416aa249365dd3c1b64da4d3a2
+https://git.kernel.org/powerpc/c/db08e1d53034a54fe177ced70476fd
 
 cheers
