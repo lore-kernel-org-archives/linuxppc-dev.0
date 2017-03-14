@@ -1,23 +1,45 @@
-Return-Path: <alex.williamson@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <srs0=joov=2x=linux.vnet.ibm.com=tyreld@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vjQXp3m9czDqmw
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Mar 2017 06:58:50 +1100 (AEDT)
-Date: Tue, 14 Mar 2017 13:58:45 -0600
-From: Alex Williamson <alex.williamson@redhat.com>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Cc: linuxppc-dev@lists.ozlabs.org, David Gibson <david@gibson.dropbear.id.au>,
- Paul Mackerras <paulus@samba.org>, kvm-ppc@vger.kernel.org,
- kvm@vger.kernel.org
-Subject: Re: [PATCH kernel v8 04/10] powerpc/vfio_spapr_tce: Add reference
- counting to iommu_table
-Message-ID: <20170314135845.13628dc3@t450s.home>
-In-Reply-To: <20170310035337.22091-5-aik@ozlabs.ru>
-References: <20170310035337.22091-1-aik@ozlabs.ru>
- <20170310035337.22091-5-aik@ozlabs.ru>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vjRVz5npMzDq5W
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Mar 2017 07:42:19 +1100 (AEDT)
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3vjRVz4x3zz8tCp
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Mar 2017 07:42:19 +1100 (AEDT)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3vjRVz26lMz9s06
+ for <linuxppc-dev@ozlabs.org>; Wed, 15 Mar 2017 07:42:18 +1100 (AEDT)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v2EKY5pw037381
+ for <linuxppc-dev@ozlabs.org>; Tue, 14 Mar 2017 16:42:13 -0400
+Received: from e11.ny.us.ibm.com (e11.ny.us.ibm.com [129.33.205.201])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 296nfvxa4q-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Tue, 14 Mar 2017 16:42:12 -0400
+Received: from localhost
+ by e11.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <tyreld@linux.vnet.ibm.com>;
+ Tue, 14 Mar 2017 16:42:11 -0400
+Subject: Re: [FIX PATCH v1] powerpc/pseries: Fix reference count leak during
+ CPU unplug
+To: bharata@linux.vnet.ibm.com, Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+References: <1489034268-24888-1-git-send-email-bharata@linux.vnet.ibm.com>
+ <cd939dd8-c04a-54df-2b4f-e1b90e3c6cc7@linux.vnet.ibm.com>
+ <20170313102910.GA21558@in.ibm.com>
+Cc: sachinp@linux.vnet.ibm.com, linuxppc-dev@ozlabs.org,
+ Grant Likely <grant.likely@linaro.org>, nfont@linux.vnet.ibm.com
+From: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+Date: Tue, 14 Mar 2017 13:42:05 -0700
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+In-Reply-To: <20170313102910.GA21558@in.ibm.com>
+Content-Type: text/plain; charset=windows-1252
+Message-Id: <c135c292-d88f-d209-bd96-21c8aa7b2c68@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,245 +49,152 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 10 Mar 2017 14:53:31 +1100
-Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
-
-> So far iommu_table obejcts were only used in virtual mode and had
-> a single owner. We are going to change this by implementing in-kernel
-> acceleration of DMA mapping requests. The proposed acceleration
-> will handle requests in real mode and KVM will keep references to tables.
+On 03/13/2017 03:29 AM, Bharata B Rao wrote:
+> On Thu, Mar 09, 2017 at 01:34:00PM -0800, Tyrel Datwyler wrote:
+>> On 03/08/2017 08:37 PM, Bharata B Rao wrote:
+>>> The following warning is seen when a CPU is hot unplugged on a PowerKVM
+>>> guest:
+>>
+>> Is this the case with cpus present at boot? What about cpus hotplugged
+>> after boot?
 > 
-> This adds a kref to iommu_table and defines new helpers to update it.
-> This replaces iommu_free_table() with iommu_table_put() and makes
-> iommu_free_table() static. iommu_table_get() is not used in this patch
-> but it will be in the following patch.
+> I have observed this for CPUs that are hotplugged.
+
+If removing a cpu present at boot works, but removing one that has been
+hotplugged after boot reproduces the problem it is more likely the case
+that we failed to take a reference during hotplug or released a
+reference we shouldn't have. I'd have to go look at the hot add path.
+
 > 
-> Since this touches prototypes, this also removes @node_name parameter as
-> it has never been really useful on powernv and carrying it for
-> the pseries platform code to iommu_free_table() seems to be quite
-> useless as well.
+>>
+>> My suspicion is that the refcount was wrong to begin with. See my
+>> comments below. The use of the of_node_put() calls is correct as in each
+>> case we incremented the ref count earlier in the same function.
+>>
+>>>
+>>> refcount_t: underflow; use-after-free.
+>>> ------------[ cut here ]------------
+>>> WARNING: CPU: 0 PID: 53 at lib/refcount.c:128 refcount_sub_and_test+0xd8/0xf0
+>>> Modules linked in:
+>>> CPU: 0 PID: 53 Comm: kworker/u510:1 Not tainted 4.11.0-rc1 #3
+>>> Workqueue: pseries hotplug workque pseries_hp_work_fn
+>>> task: c0000000fb475000 task.stack: c0000000fb81c000
+>>> NIP: c0000000006f0808 LR: c0000000006f0804 CTR: c0000000007b98c0
+>>> REGS: c0000000fb81f710 TRAP: 0700   Not tainted  (4.11.0-rc1)
+>>> MSR: 800000000282b033 <SF,VEC,VSX,EE,FP,ME,IR,DR,RI,LE>
+>>>   CR: 48002222  XER: 20000000
+>>> CFAR: c000000000c438e0 SOFTE: 1
+>>> GPR00: c0000000006f0804 c0000000fb81f990 c000000001573b00 0000000000000026
+>>> GPR04: 0000000000000000 000000000000016c 667265652e0d0a73 652d61667465722d
+>>> GPR08: 0000000000000007 0000000000000007 0000000000000001 0000000000000006
+>>> GPR12: 0000000000002200 c00000000ff40000 c00000000010c578 c0000001f11b9f40
+>>> GPR16: c0000001fe0312a8 c0000001fe031078 c0000001fe031020 0000000000000001
+>>> GPR20: 0000000000000000 0000000000000000 c000000001454808 fffffffffffffef7
+>>> GPR24: 0000000000000000 c0000001f1677648 0000000000000000 0000000000000000
+>>> GPR28: 0000000010000008 c000000000e4d3d8 0000000000000000 c0000001eaae07d8
+>>> NIP [c0000000006f0808] refcount_sub_and_test+0xd8/0xf0
+>>> LR [c0000000006f0804] refcount_sub_and_test+0xd4/0xf0
+>>> Call Trace:
+>>> [c0000000fb81f990] [c0000000006f0804] refcount_sub_and_test+0xd4/0xf0 (unreliable)
+>>> [c0000000fb81f9f0] [c0000000006d04b4] kobject_put+0x44/0x2a0
+>>> [c0000000fb81fa70] [c0000000009d5284] of_node_put+0x34/0x50
+>>> [c0000000fb81faa0] [c0000000000aceb8] dlpar_cpu_remove_by_index+0x108/0x130
+>>> [c0000000fb81fb30] [c0000000000ae128] dlpar_cpu+0x78/0x550
+>>> [c0000000fb81fbe0] [c0000000000a7b40] handle_dlpar_errorlog+0xc0/0x160
+>>> [c0000000fb81fc50] [c0000000000a7c74] pseries_hp_work_fn+0x94/0xa0
+>>> [c0000000fb81fc80] [c000000000102cec] process_one_work+0x23c/0x540
+>>> [c0000000fb81fd20] [c00000000010309c] worker_thread+0xac/0x620
+>>> [c0000000fb81fdc0] [c00000000010c6c4] kthread+0x154/0x1a0
+>>> [c0000000fb81fe30] [c00000000000bbe0] ret_from_kernel_thread+0x5c/0x7c
+>>>
+>>> Fix this by ensuring that of_node_put() is called only from the
+>>> error path in dlpar_cpu_remove_by_index(). In the normal path,
+>>> of_node_put() happens as part of dlpar_detach_node().
+>>>
+>>> Signed-off-by: Bharata B Rao <bharata@linux.vnet.ibm.com>
+>>> Cc: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+>>> ---
+>>> Changes in v1:
+>>> - Fixed the refcount problem in the userspace driven unplug path
+>>>   in addition to in-kernel unplug path. (Sachin Sant)
+>>>
+>>> v0: https://patchwork.ozlabs.org/patch/736547/
+>>>
+>>>  arch/powerpc/platforms/pseries/hotplug-cpu.c | 12 ++++++++----
+>>>  1 file changed, 8 insertions(+), 4 deletions(-)
+>>>
+>>> diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/platforms/pseries/hotplug-cpu.c
+>>> index 7bc0e91..c5ed510 100644
+>>> --- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
+>>> +++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
+>>> @@ -619,7 +619,8 @@ static int dlpar_cpu_remove_by_index(u32 drc_index)
+>>>  	}
+>>>
+>>>  	rc = dlpar_cpu_remove(dn, drc_index);
+>>> -	of_node_put(dn);
+>>> +	if (rc)
+>>> +		of_node_put(dn);
+>>
+>> I think there is another issue at play here because this is wrong.
+>> Regardless of whether the dlpar_cpu_remove() succeeds or fails we still
+>> need of_node_put() for both cases because we incremented the ref count
+>> earlier in this function with a call to cpu_drc_index_to_dn() call. That
+>> call doesn't, but shoul, document that it returns a device_node with
+>> incremented refcount.
+>>
+>>>  	return rc;
+>>>  }
+>>>
+>>> @@ -856,9 +857,12 @@ static ssize_t dlpar_cpu_release(const char *buf, size_t count)
+>>>  	}
+>>>
+>>>  	rc = dlpar_cpu_remove(dn, drc_index);
+>>> -	of_node_put(dn);
+>>> -
+>>> -	return rc ? rc : count;
+>>> +	if (rc) {
+>>> +		of_node_put(dn);
+>>> +		return rc;
+>>> +	} else {
+>>> +		return count;
+>>> +	}
+>>
+>> Same comment as above. The call earlier in the function to
+>> of_find_node_by_path() returned a device_node struct with its ref count
+>> incremented. So, regardless of whether dlpar_cpu_remove() succeeds or
+>> fails we need decrement the ref count with of_node_put().
+>>
+>> Looking closer at the call paths for attach and detach one will notice
+>> that __of_attach_node_sysfs() does not take a device_node reference with
+>> of_node_get(), but __of_detach_node_sysfs() does a of_node_put(). In the
+>> old days we use to keep the device tree in /proc. Now it lives in sysfs
+>> and is symlinked to /proc for userspace ABI reasons. Further, pseries
+>> was the only platform in those days that did any sort of dynamic OF
+>> operations. So, in those dark days we were responsible for calling
+>> of_node_put in dlpar_detach_node() to decrement the of_node_init()
+>> reference. Looking at the comments in __of_detach_node_sysfs() it seems
+>> that they expect to decrement that reference there now.
+>>
+>> void __of_detach_node_sysfs(struct device_node *np)
+>> {
+>>
+>> ...snip...
+>>
+>>         /* finally remove the kobj_init ref */
+>>         of_node_put(np);
+>> }
+>>
 > 
-> This should cause no behavioral change.
+> So you suggest that adding of_node_get() to __of_attach_node_sysfs()
+> is the right fix ?
+
+If I understand that this only creates for hot-added cpus then no. Also
+for this to be the correct fix I would expect to see this recreate for
+all hot-remove operations such as memory and pci devices as well.
+
+-Tyrel
+
 > 
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
-> ---
->  arch/powerpc/include/asm/iommu.h          |  5 +++--
->  arch/powerpc/kernel/iommu.c               | 24 +++++++++++++++++++-----
->  arch/powerpc/platforms/powernv/pci-ioda.c | 14 +++++++-------
->  arch/powerpc/platforms/powernv/pci.c      |  1 +
->  arch/powerpc/platforms/pseries/iommu.c    |  3 ++-
->  arch/powerpc/platforms/pseries/vio.c      |  2 +-
->  drivers/vfio/vfio_iommu_spapr_tce.c       |  2 +-
->  7 files changed, 34 insertions(+), 17 deletions(-)
+> Regards,
+> Bharata.
 > 
-> diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/asm/iommu.h
-> index 4554699aec02..82e77ebf85f4 100644
-> --- a/arch/powerpc/include/asm/iommu.h
-> +++ b/arch/powerpc/include/asm/iommu.h
-> @@ -119,6 +119,7 @@ struct iommu_table {
->  	struct list_head it_group_list;/* List of iommu_table_group_link */
->  	unsigned long *it_userspace; /* userspace view of the table */
->  	struct iommu_table_ops *it_ops;
-> +	struct kref    it_kref;
->  };
->  
->  #define IOMMU_TABLE_USERSPACE_ENTRY(tbl, entry) \
-> @@ -151,8 +152,8 @@ static inline void *get_iommu_table_base(struct device *dev)
->  
->  extern int dma_iommu_dma_supported(struct device *dev, u64 mask);
->  
-> -/* Frees table for an individual device node */
-> -extern void iommu_free_table(struct iommu_table *tbl, const char *node_name);
-> +extern void iommu_table_get(struct iommu_table *tbl);
-> +extern void iommu_table_put(struct iommu_table *tbl);
->  
->  /* Initializes an iommu_table based in values set in the passed-in
->   * structure
-> diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
-> index bc142d87130f..d02b8d22fb50 100644
-> --- a/arch/powerpc/kernel/iommu.c
-> +++ b/arch/powerpc/kernel/iommu.c
-> @@ -711,13 +711,13 @@ struct iommu_table *iommu_init_table(struct iommu_table *tbl, int nid)
->  	return tbl;
->  }
->  
-> -void iommu_free_table(struct iommu_table *tbl, const char *node_name)
-> +static void iommu_table_free(struct kref *kref)
->  {
->  	unsigned long bitmap_sz;
->  	unsigned int order;
-> +	struct iommu_table *tbl;
->  
-> -	if (!tbl)
-> -		return;
-> +	tbl = container_of(kref, struct iommu_table, it_kref);
->  
->  	if (tbl->it_ops->free)
->  		tbl->it_ops->free(tbl);
-> @@ -736,7 +736,7 @@ void iommu_free_table(struct iommu_table *tbl, const char *node_name)
->  
->  	/* verify that table contains no entries */
->  	if (!bitmap_empty(tbl->it_map, tbl->it_size))
-> -		pr_warn("%s: Unexpected TCEs for %s\n", __func__, node_name);
-> +		pr_warn("%s: Unexpected TCEs\n", __func__);
->  
->  	/* calculate bitmap size in bytes */
->  	bitmap_sz = BITS_TO_LONGS(tbl->it_size) * sizeof(unsigned long);
-> @@ -748,7 +748,21 @@ void iommu_free_table(struct iommu_table *tbl, const char *node_name)
->  	/* free table */
->  	kfree(tbl);
->  }
-> -EXPORT_SYMBOL_GPL(iommu_free_table);
-> +
-> +void iommu_table_get(struct iommu_table *tbl)
-> +{
-> +	kref_get(&tbl->it_kref);
-> +}
-> +EXPORT_SYMBOL_GPL(iommu_table_get);
-> +
-> +void iommu_table_put(struct iommu_table *tbl)
-> +{
-> +	if (!tbl)
-> +		return;
-> +
-> +	kref_put(&tbl->it_kref, iommu_table_free);
-> +}
-> +EXPORT_SYMBOL_GPL(iommu_table_put);
->  
-
-
-Maybe an opportunity for less cringe worthy generic names exported from
-arch code.  iommu_tce_table_get/put perhaps?
-
-
->  /* Creates TCEs for a user provided buffer.  The user buffer must be
->   * contiguous real kernel storage (not vmalloc).  The address passed here
-> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-> index 7916d0cb05fe..ec3e565de511 100644
-> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
-> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-> @@ -1425,7 +1425,7 @@ static void pnv_pci_ioda2_release_dma_pe(struct pci_dev *dev, struct pnv_ioda_pe
->  		iommu_group_put(pe->table_group.group);
->  		BUG_ON(pe->table_group.group);
->  	}
-> -	iommu_free_table(tbl, of_node_full_name(dev->dev.of_node));
-> +	iommu_table_put(tbl);
->  }
->  
->  static void pnv_ioda_release_vf_PE(struct pci_dev *pdev)
-> @@ -2226,7 +2226,7 @@ static void pnv_pci_ioda1_setup_dma_pe(struct pnv_phb *phb,
->  		__free_pages(tce_mem, get_order(tce32_segsz * segs));
->  	if (tbl) {
->  		pnv_pci_unlink_table_and_group(tbl, &pe->table_group);
-> -		iommu_free_table(tbl, "pnv");
-> +		iommu_table_put(tbl);
->  	}
->  }
->  
-> @@ -2322,7 +2322,7 @@ static long pnv_pci_ioda2_create_table(struct iommu_table_group *table_group,
->  			bus_offset, page_shift, window_size,
->  			levels, tbl);
->  	if (ret) {
-> -		iommu_free_table(tbl, "pnv");
-> +		iommu_table_put(tbl);
->  		return ret;
->  	}
->  
-> @@ -2366,7 +2366,7 @@ static long pnv_pci_ioda2_setup_default_config(struct pnv_ioda_pe *pe)
->  	if (rc) {
->  		pe_err(pe, "Failed to configure 32-bit TCE table, err %ld\n",
->  				rc);
-> -		iommu_free_table(tbl, "");
-> +		iommu_table_put(tbl);
->  		return rc;
->  	}
->  
-> @@ -2454,7 +2454,7 @@ static void pnv_ioda2_take_ownership(struct iommu_table_group *table_group)
->  	pnv_pci_ioda2_unset_window(&pe->table_group, 0);
->  	if (pe->pbus)
->  		pnv_ioda_setup_bus_dma(pe, pe->pbus, false);
-> -	iommu_free_table(tbl, "pnv");
-> +	iommu_table_put(tbl);
->  }
->  
->  static void pnv_ioda2_release_ownership(struct iommu_table_group *table_group)
-> @@ -3427,7 +3427,7 @@ static void pnv_pci_ioda1_release_pe_dma(struct pnv_ioda_pe *pe)
->  	}
->  
->  	free_pages(tbl->it_base, get_order(tbl->it_size << 3));
-> -	iommu_free_table(tbl, "pnv");
-> +	iommu_table_put(tbl);
->  }
->  
->  static void pnv_pci_ioda2_release_pe_dma(struct pnv_ioda_pe *pe)
-> @@ -3454,7 +3454,7 @@ static void pnv_pci_ioda2_release_pe_dma(struct pnv_ioda_pe *pe)
->  	}
->  
->  	pnv_pci_ioda2_table_free_pages(tbl);
-> -	iommu_free_table(tbl, "pnv");
-> +	iommu_table_put(tbl);
->  }
->  
->  static void pnv_ioda_free_pe_seg(struct pnv_ioda_pe *pe,
-> diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
-> index a43f22dc069e..9b2bdcad51ba 100644
-> --- a/arch/powerpc/platforms/powernv/pci.c
-> +++ b/arch/powerpc/platforms/powernv/pci.c
-> @@ -767,6 +767,7 @@ struct iommu_table *pnv_pci_table_alloc(int nid)
->  
->  	tbl = kzalloc_node(sizeof(struct iommu_table), GFP_KERNEL, nid);
->  	INIT_LIST_HEAD_RCU(&tbl->it_group_list);
-> +	kref_init(&tbl->it_kref);
->  
->  	return tbl;
->  }
-> diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
-> index 0a733ddae926..a713e20311b8 100644
-> --- a/arch/powerpc/platforms/pseries/iommu.c
-> +++ b/arch/powerpc/platforms/pseries/iommu.c
-> @@ -74,6 +74,7 @@ static struct iommu_table_group *iommu_pseries_alloc_group(int node)
->  		goto fail_exit;
->  
->  	INIT_LIST_HEAD_RCU(&tbl->it_group_list);
-> +	kref_init(&tbl->it_kref);
->  	tgl->table_group = table_group;
->  	list_add_rcu(&tgl->next, &tbl->it_group_list);
->  
-> @@ -115,7 +116,7 @@ static void iommu_pseries_free_group(struct iommu_table_group *table_group,
->  		BUG_ON(table_group->group);
->  	}
->  #endif
-> -	iommu_free_table(tbl, node_name);
-> +	iommu_table_put(tbl);
->  
->  	kfree(table_group);
->  }
-> diff --git a/arch/powerpc/platforms/pseries/vio.c b/arch/powerpc/platforms/pseries/vio.c
-> index 720493932486..744d639da92c 100644
-> --- a/arch/powerpc/platforms/pseries/vio.c
-> +++ b/arch/powerpc/platforms/pseries/vio.c
-> @@ -1318,7 +1318,7 @@ static void vio_dev_release(struct device *dev)
->  	struct iommu_table *tbl = get_iommu_table_base(dev);
->  
->  	if (tbl)
-> -		iommu_free_table(tbl, of_node_full_name(dev->of_node));
-> +		iommu_table_put(tbl);
->  	of_node_put(dev->of_node);
->  	kfree(to_vio_dev(dev));
->  }
-> diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
-> index fbec7348a7e5..4f6ca9d80ead 100644
-> --- a/drivers/vfio/vfio_iommu_spapr_tce.c
-> +++ b/drivers/vfio/vfio_iommu_spapr_tce.c
-> @@ -680,7 +680,7 @@ static void tce_iommu_free_table(struct tce_container *container,
->  	unsigned long pages = tbl->it_allocated_size >> PAGE_SHIFT;
->  
->  	tce_iommu_userspace_view_free(tbl, container->mm);
-> -	iommu_free_table(tbl, "");
-> +	iommu_table_put(tbl);
->  	decrement_locked_vm(container->mm, pages);
->  }
->  
-
-Acked-by: Alex Williamson <alex.williamson@redhat.com>
