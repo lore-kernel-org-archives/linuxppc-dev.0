@@ -1,20 +1,48 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <Vineet.Gupta1@synopsys.com>
+Received: from smtprelay.synopsys.com (smtprelay4.synopsys.com [198.182.47.9])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vhxcN4Z8vzDqGb
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Mar 2017 12:15:16 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Larry.Finger@lwfinger.net, aik@ozlabs.ru, bsingharora@gmail.com,
- cyrilbur@gmail.com, gwshan@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, maddy@linux.vnet.ibm.com, npiggin@gmail.com
-Subject: [GIT PULL] Please pull powerpc/linux.git powerpc-4.11-4 tag
-Date: Tue, 14 Mar 2017 12:15:10 +1100
-Message-ID: <87tw6wirq9.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vhyCH1mxMzDqMd
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Mar 2017 12:42:02 +1100 (AEDT)
+Subject: Re: [RFC PATCH 10/13] mm: Introduce first class virtual address spaces
+To: Till Smejkal <till.smejkal@googlemail.com>,
+ Richard Henderson <rth@twiddle.net>,
+ Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+ Matt Turner <mattst88@gmail.com>, Russell King <linux@armlinux.org.uk>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Will Deacon <will.deacon@arm.com>, Steven Miao <realmz6@gmail.com>,
+ Richard Kuo <rkuo@codeaurora.org>, Tony Luck <tony.luck@intel.com>,
+ Fenghua Yu <fenghua.yu@intel.com>, James Hogan <james.hogan@imgtec.com>,
+ Ralf Baechle <ralf@linux-mips.org>,
+ "James E.J.  Bottomley" <jejb@parisc-linux.org>,
+ Helge Deller <deller@gmx.de>,
+ "Benjamin  Herrenschmidt" <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ Yoshinori Sato <ysato@users.sourceforge.jp>,
+ Rich Felker <dalias@libc.org>, "David S. Miller" <davem@synopsys.COM>
+References: <20170313221415.9375-1-till.smejkal@gmail.com>
+ <20170313221415.9375-11-till.smejkal@gmail.com>
+CC: <linux-kernel@vger.kernel.org>, <linux-alpha@vger.kernel.org>,
+ <linux-snps-arc@lists.infradead.org>, <linux-arm-kernel@lists.infradead.org>,
+ <adi-buildroot-devel@lists.sourceforge.net>, <linux-hexagon@vger.kernel.org>,
+ <linux-ia64@vger.kernel.org>, <linux-metag@vger.kernel.org>,
+ <linux-mips@linux-mips.org>, <linux-parisc@vger.kernel.org>,
+ <linuxppc-dev@lists.ozlabs.org>, <linux-s390@vger.kernel.org>,
+ <linux-sh@vger.kernel.org>, <sparclinux@vger.kernel.org>,
+ <linux-xtensa@linux-xtensa.org>, <linux-media@vger.kernel.org>,
+ <linux-mtd@lists.infradead.org>, <linux-usb@vger.kernel.org>,
+ <linux-fsdevel@vger.kernel.org>, <linux-aio@kvack.org>, <linux-mm@kvack.org>,
+ <linux-api@vger.kernel.org>, <linux-arch@vger.kernel.org>,
+ <alsa-devel@alsa-project.org>, Ingo Molnar <mingo@kernel.org>, "Thomas
+ Gleixner" <tglx@linutronix.de>, Andy Lutomirski <luto@amacapital.net>
+From: Vineet Gupta <Vineet.Gupta1@synopsys.com>
+Message-ID: <cd1adda8-bf6a-47ad-bff3-5bc6626ac100@synopsys.com>
+Date: Mon, 13 Mar 2017 18:35:27 -0700
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="=-=-=";
- micalg=pgp-sha1; protocol="application/pgp-signature"
+In-Reply-To: <20170313221415.9375-11-till.smejkal@gmail.com>
+Content-Type: text/plain; charset="windows-1252"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,105 +52,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---=-=-=
-Content-Type: text/plain
++CC Ingo, tglx
 
-Hi Linus,
+Hi Till,
 
-Please pull some more powerpc fixes for 4.11.
+On 03/13/2017 03:14 PM, Till Smejkal wrote:
+> Introduce a different type of address spaces which are first class citizens
+> in the OS. That means that the kernel now handles two types of AS, those
+> which are closely coupled with a process and those which aren't. While the
+> former ones are created and destroyed together with the process by the
+> kernel and are the default type of AS in the Linux kernel, the latter ones
+> have to be managed explicitly by the user and are the newly introduced
+> type.
+> 
+> Accordingly, a first class AS (also called VAS == virtual address space)
+> can exist in the OS independently from any process. A user has to
+> explicitly create and destroy them in the system. Processes and VAS can be
+> combined by attaching a previously created VAS to a process which basically
+> adds an additional AS to the process that the process' threads are able to
+> execute in. Hence, VAS allow a process to have different views onto the
+> main memory of the system (its original AS and the attached VAS) between
+> which its threads can switch arbitrarily during their lifetime.
+> 
+> The functionality made available through first class virtual address spaces
+> can be used in various different ways. One possible way to utilize VAS is
+> to compartmentalize a process for security reasons. Another possible usage
+> is to improve the performance of data-centric applications by being able to
+> manage different sets of data in memory without the need to map or unmap
+> them.
+> 
+> Furthermore, first class virtual address spaces can be attached to
+> different processes at the same time if the underlying memory is only
+> readable. This mechanism allows sharing of whole address spaces between
+> multiple processes that can both execute in them using the contained
+> memory.
 
-The bulk of the diffstat is the Power9 Machine Check handler. It's bigger than
-I'd usually send after rc2, but apparently folks are hitting them in the field,
-and it's from Nick.
+I've not looked at the patches closely (or read the references paper fully yet),
+but at first glance it seems on ARC architecture, we can can potentially
+use/leverage this mechanism to implement the shared TLB entries. Before anyone
+shouts these are not same as the IA64/x86 protection keys which allow TLB entries
+with different protection bits across processes etc. These TLB entries are
+actually *shared* by processes.
 
-This also includes the fix for macio devices that was sent directly to you by
-Larry Finger.
+Conceptually there's shared address spaces, independent of processes. e.g. ldso
+code is shared address space #1, libc (code) #2 .... System can support a limited
+number of shared addr spaces (say 64, enough for typical embedded sys).
 
-cheers
+While Normal TLB entries are tagged with ASID (Addr space ID) to keep them unique
+across processes, Shared TLB entries are tagged with Shared address space ID.
 
+A process MMU context consists of ASID (a single number) and a SASID bitmap (to
+allow "subscription" to multiple Shared spaces. The subscriptions are set up bu
+userspace ld.so which knows about the libs process wants to map.
 
-The following changes since commit f7d6a7283aa1de430c6323a9714d1a787bc2d1ea:
+The restriction ofcourse is that the spaces are mapped at *same* vaddr is all
+participating processes. I know this goes against whole security, address space
+randomization - but it gives much better real time performance. Why does each
+process need to take a MMU exception for libc code...
 
-  Merge tag 'powerpc-4.11-3' of git://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux (2017-03-07 10:46:10 -0800)
+So long story short - it seems there can be multiple uses of this infrastructure !
 
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git tags/powerpc-4.11-4
-
-for you to fetch changes up to 7b9f71f974a12740e79e918cfd58c2fce0b5b580:
-
-  powerpc/64s: POWER9 machine check handler (2017-03-10 16:32:08 +1100)
-
-----------------------------------------------------------------
-powerpc fixes for 4.11 #4
-
-The main item is the addition of the Power9 Machine Check handler. This was
-delayed to make sure some details were correct, and is as minimal as possible.
-
-The rest is small fixes, two for the Power9 PMU, two dealing with obscure
-toolchain problems, two for the PowerNV IOMMU code (used by VFIO), and one to
-fix a crash on 32-bit machines with macio devices due to missing dma_ops.
-
-Thanks to:
-  Alexey Kardashevskiy, Cyril Bur, Larry Finger, Madhavan Srinivasan, Nicholas
-  Piggin.
-
-----------------------------------------------------------------
-Alexey Kardashevskiy (2):
-      powerpc/powernv/ioda2: Gracefully fail if too many TCE levels requested
-      powerpc/powernv/ioda2: Update iommu table base on ownership change
-
-Cyril Bur (1):
-      selftests/powerpc: Replace stxvx and lxvx with stxvd2x/lxvd2x
-
-Larry Finger (1):
-      powerpc/pmac: Fix crash in dma-mapping.h with NULL dma_ops
-
-Madhavan Srinivasan (2):
-      powerpc/perf: Fix perf_get_data_addr() for power9 DD1
-      powerpc/perf: Handle sdar_mode for marked event in power9
-
-Michael Ellerman (1):
-      powerpc/boot: Fix zImage TOC alignment
-
-Nicholas Piggin (3):
-      powerpc/64s: fix handling of non-synchronous machine checks
-      powerpc/64s: allow machine check handler to set severity and initiator
-      powerpc/64s: POWER9 machine check handler
-
- arch/powerpc/boot/zImage.lds.S                    |   1 +
- arch/powerpc/include/asm/bitops.h                 |   4 +
- arch/powerpc/include/asm/mce.h                    | 108 +++++++++-
- arch/powerpc/kernel/cputable.c                    |   3 +
- arch/powerpc/kernel/mce.c                         |  88 +++++++-
- arch/powerpc/kernel/mce_power.c                   | 237 ++++++++++++++++++++++
- arch/powerpc/perf/core-book3s.c                   |   2 +
- arch/powerpc/perf/isa207-common.c                 |  43 +++-
- arch/powerpc/perf/isa207-common.h                 |   1 +
- arch/powerpc/platforms/powernv/opal.c             |  21 +-
- arch/powerpc/platforms/powernv/pci-ioda.c         |  20 +-
- drivers/macintosh/macio_asic.c                    |   1 +
- tools/testing/selftests/powerpc/include/vsx_asm.h |  48 ++---
- 13 files changed, 523 insertions(+), 54 deletions(-)
-
---=-=-=
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJYx0QgAAoJEFHr6jzI4aWALnwP/2p4G2RLD8Fg1WceteQK484X
-c7aQJankfkYxY1HSjJIDBZwVCnjJ3ioH7nfHlVQbiw75/D/gpX09LmBApppCjUKa
-7sm0k+1bzIXUQkz7MNissfyPCmRBd2iJap40/V9GTrUJcW9zSGKqLN7/1zrNhKrQ
-YyCgKlo513KypfKraxb1Ioe/5x6CwTgT2Uuo+VWcykoPyoSHY/Ij3uwD5+NNkBdO
-Y2H5vElQCWGEgMpIsikr+OWYB88ykPpEU0x5qam7PoYokAX3td//LCuIEQdXEoWu
-im/14RcZLF5l20gIETEBoCaqIIEVboZmCpJNPytZ1OsedYGzXZ2TS7I8Uvq0qzx9
-QiFVPrtNV/koO1nkmWKF4fHDi7Xq2/0w0HuJKcfCKb/5OeVEMZ56eZH2AZ3MISvz
-KEgHUSBxDY7gIYuX2yhtmL6jJAVOUt9A52fQyidY76q/tskSoRzgyfVX8yHlyHfE
-X9QS4LnZaOAecIRJ79bTbQhKap3d34a6Nz4XpvKDFNkDXOSwYnz6AP3kA49KFo89
-55mz8AKfrBWifix6+Fu0JRRBOULR4qt9faXn4PrJJ7KYmmtQeJRyK9Jd9qy7ZkOW
-PoDHqrR77E7r+yNFBwzA3qlovOxIy+f0D70GNDLLs6ExdxLmOqKkvTEHuHWQ7JCh
-qE9xNHq2lfhjP+GvY0vZ
-=N3fw
------END PGP SIGNATURE-----
---=-=-=--
+-Vineet
