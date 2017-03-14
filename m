@@ -2,22 +2,20 @@ Return-Path: <alex.williamson@redhat.com>
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vjMv96GzdzDqXc
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Mar 2017 04:59:33 +1100 (AEDT)
-Date: Tue, 14 Mar 2017 11:59:29 -0600
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vjNN96d64zDqYs
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Mar 2017 05:21:13 +1100 (AEDT)
+Date: Tue, 14 Mar 2017 12:21:10 -0600
 From: Alex Williamson <alex.williamson@redhat.com>
-To: David Gibson <david@gibson.dropbear.id.au>
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org,
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Cc: linuxppc-dev@lists.ozlabs.org, David Gibson <david@gibson.dropbear.id.au>,
  Paul Mackerras <paulus@samba.org>, kvm-ppc@vger.kernel.org,
  kvm@vger.kernel.org
-Subject: Re: [PATCH kernel v8 00/10] powerpc/kvm/vfio: Enable in-kernel
- acceleration
-Message-ID: <20170314115922.6f1fbdb8@t450s.home>
-In-Reply-To: <20170314005533.GC12564@umbus.fritz.box>
+Subject: Re: [PATCH kernel v8 03/10] powerpc/iommu/vfio_spapr_tce: Cleanup
+ iommu_table disposal
+Message-ID: <20170314122110.46cc5f52@t450s.home>
+In-Reply-To: <20170310035337.22091-4-aik@ozlabs.ru>
 References: <20170310035337.22091-1-aik@ozlabs.ru>
- <20170310044813.GB3167@umbus.fritz.box>
- <0c355414-253f-2ceb-b45e-90d8c01fafdf@ozlabs.ru>
- <20170314005533.GC12564@umbus.fritz.box>
+ <20170310035337.22091-4-aik@ozlabs.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -29,110 +27,133 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 14 Mar 2017 11:55:33 +1100
-David Gibson <david@gibson.dropbear.id.au> wrote:
+On Fri, 10 Mar 2017 14:53:30 +1100
+Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
 
-> On Tue, Mar 14, 2017 at 11:54:03AM +1100, Alexey Kardashevskiy wrote:
-> > On 10/03/17 15:48, David Gibson wrote:  
-> > > On Fri, Mar 10, 2017 at 02:53:27PM +1100, Alexey Kardashevskiy wrote:  
-> > >> This is my current queue of patches to add acceleration of TCE
-> > >> updates in KVM.
-> > >>
-> > >> This is based on Linus'es tree sha1 c1aa905a304e.  
-
-Hmm, sure about that?  03/10 doesn't apply.
-
-> > > 
-> > > I think we're finally there - I've now sent an R-b for all patches.  
-> > 
-> > Thanks for the patience.
-> > 
-> > 
-> > I supposed in order to proceed now I need an ack from Alex, correct?  
+> At the moment iommu_table can be disposed by either calling
+> iommu_table_free() directly or it_ops::free(); the only implementation
+> of free() is in IODA2 - pnv_ioda2_table_free() - and it calls
+> iommu_table_free() anyway.
 > 
-> That, or simply for him to merge it.
+> As we are going to have reference counting on tables, we need an unified
+> way of disposing tables.
+> 
+> This moves it_ops::free() call into iommu_free_table() and makes use
+> of the latter. The free() callback now handles only platform-specific
+> data.
+> 
+> As from now on the iommu_free_table() calls it_ops->free(), we need
+> to have it_ops initialized before calling iommu_free_table() so this
+> moves this initialization in pnv_pci_ioda2_create_table().
+> 
+> This should cause no behavioral change.
+> 
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
+> ---
+> Changes:
+> v5:
+> * moved "tbl->it_ops = &pnv_ioda2_iommu_ops" earlier and updated
+> the commit log
+> ---
+>  arch/powerpc/kernel/iommu.c               |  4 ++++
+>  arch/powerpc/platforms/powernv/pci-ioda.c | 10 ++++------
+>  drivers/vfio/vfio_iommu_spapr_tce.c       |  2 +-
+>  3 files changed, 9 insertions(+), 7 deletions(-)
+> 
+> diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
+> index 9bace5df05d5..bc142d87130f 100644
+> --- a/arch/powerpc/kernel/iommu.c
+> +++ b/arch/powerpc/kernel/iommu.c
+> @@ -719,6 +719,9 @@ void iommu_free_table(struct iommu_table *tbl, const char *node_name)
+>  	if (!tbl)
+>  		return;
+>  
+> +	if (tbl->it_ops->free)
+> +		tbl->it_ops->free(tbl);
+> +
+>  	if (!tbl->it_map) {
+>  		kfree(tbl);
+>  		return;
+> @@ -745,6 +748,7 @@ void iommu_free_table(struct iommu_table *tbl, const char *node_name)
+>  	/* free table */
+>  	kfree(tbl);
+>  }
+> +EXPORT_SYMBOL_GPL(iommu_free_table);
 
-Given the diffstat, I'd guess you're looking for acks from me and maybe
-Paolo, but it looks like it should be merged through ppc trees.  Thanks,
+A slightly cringe worthy generically named export in arch code.
 
-Alex
+>  
+>  /* Creates TCEs for a user provided buffer.  The user buffer must be
+>   * contiguous real kernel storage (not vmalloc).  The address passed here
+> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+> index 69c40b43daa3..7916d0cb05fe 100644
+> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
+> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+> @@ -1425,7 +1425,6 @@ static void pnv_pci_ioda2_release_dma_pe(struct pci_dev *dev, struct pnv_ioda_pe
+>  		iommu_group_put(pe->table_group.group);
+>  		BUG_ON(pe->table_group.group);
+>  	}
+> -	pnv_pci_ioda2_table_free_pages(tbl);
+>  	iommu_free_table(tbl, of_node_full_name(dev->dev.of_node));
+>  }
+>  
+> @@ -2041,7 +2040,6 @@ static void pnv_ioda2_tce_free(struct iommu_table *tbl, long index,
+>  static void pnv_ioda2_table_free(struct iommu_table *tbl)
+>  {
+>  	pnv_pci_ioda2_table_free_pages(tbl);
+> -	iommu_free_table(tbl, "pnv");
+>  }
+>  
+>  static struct iommu_table_ops pnv_ioda2_iommu_ops = {
+> @@ -2318,6 +2316,8 @@ static long pnv_pci_ioda2_create_table(struct iommu_table_group *table_group,
+>  	if (!tbl)
+>  		return -ENOMEM;
+>  
+> +	tbl->it_ops = &pnv_ioda2_iommu_ops;
+> +
+>  	ret = pnv_pci_ioda2_table_alloc_pages(nid,
+>  			bus_offset, page_shift, window_size,
+>  			levels, tbl);
+> @@ -2326,8 +2326,6 @@ static long pnv_pci_ioda2_create_table(struct iommu_table_group *table_group,
+>  		return ret;
+>  	}
+>  
+> -	tbl->it_ops = &pnv_ioda2_iommu_ops;
+> -
+>  	*ptbl = tbl;
+>  
+>  	return 0;
+> @@ -2368,7 +2366,7 @@ static long pnv_pci_ioda2_setup_default_config(struct pnv_ioda_pe *pe)
+>  	if (rc) {
+>  		pe_err(pe, "Failed to configure 32-bit TCE table, err %ld\n",
+>  				rc);
+> -		pnv_ioda2_table_free(tbl);
+> +		iommu_free_table(tbl, "");
+>  		return rc;
+>  	}
+>  
+> @@ -2456,7 +2454,7 @@ static void pnv_ioda2_take_ownership(struct iommu_table_group *table_group)
+>  	pnv_pci_ioda2_unset_window(&pe->table_group, 0);
+>  	if (pe->pbus)
+>  		pnv_ioda_setup_bus_dma(pe, pe->pbus, false);
+> -	pnv_ioda2_table_free(tbl);
+> +	iommu_free_table(tbl, "pnv");
+>  }
+>  
+>  static void pnv_ioda2_release_ownership(struct iommu_table_group *table_group)
+> diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
+> index cf3de91fbfe7..fbec7348a7e5 100644
+> --- a/drivers/vfio/vfio_iommu_spapr_tce.c
+> +++ b/drivers/vfio/vfio_iommu_spapr_tce.c
+> @@ -680,7 +680,7 @@ static void tce_iommu_free_table(struct tce_container *container,
+>  	unsigned long pages = tbl->it_allocated_size >> PAGE_SHIFT;
+>  
+>  	tce_iommu_userspace_view_free(tbl, container->mm);
+> -	tbl->it_ops->free(tbl);
+> +	iommu_free_table(tbl, "");
+>  	decrement_locked_vm(container->mm, pages);
+>  }
+>  
 
-> > >>
-> > >> Please comment. Thanks.
-> > >>
-> > >> Changes:
-> > >> v8:
-> > >> * kept fixing oddities with error handling in 10/10
-> > >>
-> > >> v7:
-> > >> * added realmode's WARN_ON_ONCE_RM in arch/powerpc/kvm/book3s_64_vio_hv.c
-> > >>
-> > >> v6:
-> > >> * reworked the last patch in terms of error handling and parameters checking
-> > >>
-> > >> v5:
-> > >> * replaced "KVM: PPC: Separate TCE validation from update" with
-> > >> "KVM: PPC: iommu: Unify TCE checking"
-> > >> * changed already reviewed "powerpc/iommu/vfio_spapr_tce: Cleanup iommu_table disposal"
-> > >> * reworked "KVM: PPC: VFIO: Add in-kernel acceleration for VFIO"
-> > >> * more details in individual commit logs
-> > >>
-> > >> v4:
-> > >> * addressed comments from v3
-> > >> * updated subject lines with correct component names
-> > >> * regrouped the patchset in order:
-> > >> 	- powerpc fixes;
-> > >> 	- vfio_spapr_tce driver fixes;
-> > >> 	- KVM/PPC fixes;
-> > >> 	- KVM+PPC+VFIO;
-> > >> * everything except last 2 patches have "Reviewed-By: David"
-> > >>
-> > >> v3:
-> > >> * there was no full repost, only last patch was posted
-> > >>
-> > >> v2:
-> > >> * 11/11 reworked to use new notifiers, it is rather RFC as it still has
-> > >> a issue;
-> > >> * got 09/11, 10/11 to use notifiers in 11/11;
-> > >> * added rb: David to most of patches and added a comment in 05/11.
-> > >>
-> > >> Alexey Kardashevskiy (10):
-> > >>   powerpc/mmu: Add real mode support for IOMMU preregistered memory
-> > >>   powerpc/powernv/iommu: Add real mode version of
-> > >>     iommu_table_ops::exchange()
-> > >>   powerpc/iommu/vfio_spapr_tce: Cleanup iommu_table disposal
-> > >>   powerpc/vfio_spapr_tce: Add reference counting to iommu_table
-> > >>   KVM: PPC: Reserve KVM_CAP_SPAPR_TCE_VFIO capability number
-> > >>   KVM: PPC: Enable IOMMU_API for KVM_BOOK3S_64 permanently
-> > >>   KVM: PPC: Pass kvm* to kvmppc_find_table()
-> > >>   KVM: PPC: Use preregistered memory API to access TCE list
-> > >>   KVM: PPC: iommu: Unify TCE checking
-> > >>   KVM: PPC: VFIO: Add in-kernel acceleration for VFIO
-> > >>
-> > >>  Documentation/virtual/kvm/devices/vfio.txt |  22 +-
-> > >>  arch/powerpc/include/asm/iommu.h           |  32 ++-
-> > >>  arch/powerpc/include/asm/kvm_host.h        |   8 +
-> > >>  arch/powerpc/include/asm/kvm_ppc.h         |  12 +-
-> > >>  arch/powerpc/include/asm/mmu_context.h     |   4 +
-> > >>  include/uapi/linux/kvm.h                   |   9 +
-> > >>  arch/powerpc/kernel/iommu.c                |  86 +++++---
-> > >>  arch/powerpc/kvm/book3s_64_vio.c           | 330 ++++++++++++++++++++++++++++-
-> > >>  arch/powerpc/kvm/book3s_64_vio_hv.c        | 303 ++++++++++++++++++++++----
-> > >>  arch/powerpc/kvm/powerpc.c                 |   2 +
-> > >>  arch/powerpc/mm/mmu_context_iommu.c        |  39 ++++
-> > >>  arch/powerpc/platforms/powernv/pci-ioda.c  |  46 ++--
-> > >>  arch/powerpc/platforms/powernv/pci.c       |   1 +
-> > >>  arch/powerpc/platforms/pseries/iommu.c     |   3 +-
-> > >>  arch/powerpc/platforms/pseries/vio.c       |   2 +-
-> > >>  drivers/vfio/vfio_iommu_spapr_tce.c        |   2 +-
-> > >>  virt/kvm/vfio.c                            |  60 ++++++
-> > >>  arch/powerpc/kvm/Kconfig                   |   1 +
-> > >>  18 files changed, 855 insertions(+), 107 deletions(-)
-> > >>  
-> > >   
-> > 
-> >   
-> 
-> 
-> 
-> 
+Acked-by: Alex Williamson <alex.williamson@redhat.com>
