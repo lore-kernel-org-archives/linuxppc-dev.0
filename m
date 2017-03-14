@@ -1,43 +1,31 @@
-Return-Path: <elena.reshetova@intel.com>
-Received: from mga07.intel.com (mga07.intel.com [134.134.136.100])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
+ [IPv6:2607:f8b0:400e:c05::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vjDZP1wB1zDr5T
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Mar 2017 23:29:33 +1100 (AEDT)
-From: "Reshetova, Elena" <elena.reshetova@intel.com>
-To: Michael Ellerman <mpe@ellerman.id.au>, "gregkh@linuxfoundation.org"
- <gregkh@linuxfoundation.org>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "xen-devel@lists.xenproject.org" <xen-devel@lists.xenproject.org>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- "linux1394-devel@lists.sourceforge.net"
- <linux1394-devel@lists.sourceforge.net>, "linux-bcache@vger.kernel.org"
- <linux-bcache@vger.kernel.org>, "linux-raid@vger.kernel.org"
- <linux-raid@vger.kernel.org>, "linux-media@vger.kernel.org"
- <linux-media@vger.kernel.org>, "devel@linuxdriverproject.org"
- <devel@linuxdriverproject.org>, "linux-pci@vger.kernel.org"
- <linux-pci@vger.kernel.org>, "linux-s390@vger.kernel.org"
- <linux-s390@vger.kernel.org>, "fcoe-devel@open-fcoe.org"
- <fcoe-devel@open-fcoe.org>, "linux-scsi@vger.kernel.org"
- <linux-scsi@vger.kernel.org>, "open-iscsi@googlegroups.com"
- <open-iscsi@googlegroups.com>, "devel@driverdev.osuosl.org"
- <devel@driverdev.osuosl.org>, "target-devel@vger.kernel.org"
- <target-devel@vger.kernel.org>, "linux-serial@vger.kernel.org"
- <linux-serial@vger.kernel.org>, "linux-usb@vger.kernel.org"
- <linux-usb@vger.kernel.org>, "peterz@infradead.org" <peterz@infradead.org>,
- Hans Liljestrand <ishkamiel@gmail.com>, Kees Cook <keescook@chromium.org>,
- David Windsor <dwindsor@gmail.com>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>
-Subject: RE: [PATCH 08/29] drivers, md: convert mddev.active from atomic_t
- to refcount_t
-Date: Tue, 14 Mar 2017 12:29:21 +0000
-Message-ID: <2236FBA76BA1254E88B949DDB74E612B41C588E8@IRSMSX102.ger.corp.intel.com>
-References: <1488810076-3754-1-git-send-email-elena.reshetova@intel.com>
- <1488810076-3754-9-git-send-email-elena.reshetova@intel.com>
- <87lgs8ukfq.fsf@concordia.ellerman.id.au>
-In-Reply-To: <87lgs8ukfq.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset="us-ascii"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vjGjj0rd8zDqYX
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Mar 2017 01:06:00 +1100 (AEDT)
+Received: by mail-pg0-x241.google.com with SMTP id g2so20242812pge.2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Mar 2017 07:06:00 -0700 (PDT)
+Date: Wed, 15 Mar 2017 00:05:43 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, Michael Neuling
+ <mikey@neuling.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ "Shreyas B. Prabhu" <shreyasbp@gmail.com>, Shilpasri G Bhat
+ <shilpa.bhat@linux.vnet.ibm.com>, Vaidyanathan Srinivasan
+ <svaidy@linux.vnet.ibm.com>, Anton Blanchard <anton@samba.org>, Balbir
+ Singh <bsingharora@gmail.com>, Akshay Adiga
+ <akshay.adiga@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/3] powernv:idle: Don't override default/deepest
+ directly in kernel
+Message-ID: <20170315000543.599ac505@roar.ozlabs.ibm.com>
+In-Reply-To: <d8ca81ac95beaa82feae91a9028b98be3334c589.1489383815.git.ego@linux.vnet.ibm.com>
+References: <cover.1489383815.git.ego@linux.vnet.ibm.com>
+ <d8ca81ac95beaa82feae91a9028b98be3334c589.1489383815.git.ego@linux.vnet.ibm.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,196 +35,207 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> Elena Reshetova <elena.reshetova@intel.com> writes:
->=20
-> > refcount_t type and corresponding API should be
-> > used instead of atomic_t when the variable is used as
-> > a reference counter. This allows to avoid accidental
-> > refcounter overflows that might lead to use-after-free
-> > situations.
-> >
-> > Signed-off-by: Elena Reshetova <elena.reshetova@intel.com>
-> > Signed-off-by: Hans Liljestrand <ishkamiel@gmail.com>
-> > Signed-off-by: Kees Cook <keescook@chromium.org>
-> > Signed-off-by: David Windsor <dwindsor@gmail.com>
-> > ---
-> >  drivers/md/md.c | 6 +++---
-> >  drivers/md/md.h | 3 ++-
-> >  2 files changed, 5 insertions(+), 4 deletions(-)
->=20
-> When booting linux-next (specifically 5be4921c9958ec) I'm seeing the
-> backtrace below. I suspect this patch is just exposing an existing
-> issue?
+On Mon, 13 Mar 2017 11:31:27 +0530
+"Gautham R. Shenoy" <ego@linux.vnet.ibm.com> wrote:
 
-Yes, we have actually been following this issue in the another thread.=20
-It looks like the object is re-used somehow, but I can't quite understand h=
-ow just by reading the code.=20
-This was what I put into the previous thread:
+> From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+> 
+> Currently during idle-init on power9, if we don't find suitable stop
+> states in the device tree that can be used as the
+> default_stop/deepest_stop, we set stop0 (ESL=1,EC=1) as the default
+> stop state psscr to be used by power9_idle and deepest stop state
+> which is used by CPU-Hotplug.
+> 
+> However, if the platform firmware has not configured or enabled a stop
+> state, the kernel should not make any assumptions and fallback to a
+> default choice.
+> 
+> If the kernel uses a stop state that is not configured by the platform
+> firmware, it may lead to further failures which should be avoided.
+> 
+> In this patch, we modify the init code to ensure that the kernel uses
+> only the stop states exposed by the firmware through the device
+> tree. When a suitable default stop state isn't found, we disable
+> ppc_md.power_save for power9. Similarly, when a suitable
+> deepest_stop_state is not found in the device tree exported by the
+> firmware, fall back to the default busy-wait loop in the CPU-Hotplug
+> code.
 
-"The log below indicates that you are using your refcounter in a bit weird =
-way in mddev_find().=20
-However, I can't find the place (just by reading the code) where you would =
-increment refcounter from zero (vs. setting it to one).
-It looks like you either iterate over existing nodes (and increment their c=
-ounters, which should be >=3D 1 at the time of increment) or create a new n=
-ode, but then mddev_init() sets the counter to 1. "
+Seems reasonable. I have a few comments that you may consider. Nothing
+too major.
 
-If you can help to understand what is going on with the object creation/des=
-truction, would be appreciated!
+Btw., it would be nice to move this hotplug idling selection code to
+idle.c. Have the hotplug just ask to enter the best available idle mode
+and that's it. I'm not asking you to do that for this series, but perhaps
+consider it for the future.
 
-Also Shaohua Li stopped this patch coming from his tree since the issue was=
- caught at that time, so we are not going to merge this until we figure it =
-out.=20
 
-Best Regards,
-Elena.
+> diff --git a/arch/powerpc/platforms/powernv/idle.c b/arch/powerpc/platforms/powernv/idle.c
+> index 4ee837e..9fde6e4 100644
+> --- a/arch/powerpc/platforms/powernv/idle.c
+> +++ b/arch/powerpc/platforms/powernv/idle.c
+> @@ -147,7 +147,6 @@ u32 pnv_get_supported_cpuidle_states(void)
+>  }
+>  EXPORT_SYMBOL_GPL(pnv_get_supported_cpuidle_states);
+>  
+> -
+>  static void pnv_fastsleep_workaround_apply(void *info)
+>  
+>  {
+> @@ -243,6 +242,7 @@ static DEVICE_ATTR(fastsleep_workaround_applyonce, 0600,
+>   */
+>  u64 pnv_default_stop_val;
+>  u64 pnv_default_stop_mask;
+> +bool default_stop_found;
+>  
+>  /*
+>   * Used for ppc_md.power_save which needs a function with no parameters
+> @@ -264,6 +264,7 @@ static void power9_idle(void)
+>   */
+>  u64 pnv_deepest_stop_psscr_val;
+>  u64 pnv_deepest_stop_psscr_mask;
+> +bool deepest_stop_found;
+>  
+>  /*
+>   * Power ISA 3.0 idle initialization.
 
->=20
-> cheers
->=20
->=20
-> [    0.230738] md: Waiting for all devices to be available before autodet=
-ect
-> [    0.230742] md: If you don't use raid, use raid=3Dnoautodetect
-> [    0.230962] refcount_t: increment on 0; use-after-free.
-> [    0.230988] ------------[ cut here ]------------
-> [    0.230996] WARNING: CPU: 0 PID: 1 at lib/refcount.c:114
-> .refcount_inc+0x5c/0x70
-> [    0.231001] Modules linked in:
-> [    0.231006] CPU: 0 PID: 1 Comm: swapper/0 Not tainted 4.11.0-rc1-gccN-=
-next-
-> 20170310-g5be4921 #1
-> [    0.231012] task: c000000049400000 task.stack: c000000049440000
-> [    0.231016] NIP: c0000000005ac6bc LR: c0000000005ac6b8 CTR:
-> c000000000743390
-> [    0.231021] REGS: c000000049443160 TRAP: 0700   Not tainted  (4.11.0-r=
-c1-
-> gccN-next-20170310-g5be4921)
-> [    0.231026] MSR: 8000000000029032 <SF,EE,ME,IR,DR,RI>
-> [    0.231033]   CR: 24024422  XER: 0000000c
-> [    0.231038] CFAR: c000000000a5356c SOFTE: 1
-> [    0.231038] GPR00: c0000000005ac6b8 c0000000494433e0 c000000001079d00
-> 000000000000002b
-> [    0.231038] GPR04: 0000000000000000 00000000000000ef 0000000000000000
-> c0000000010418a0
-> [    0.231038] GPR08: 000000004af80000 c000000000ecc9a8 c000000000ecc9a8
-> 0000000000000000
-> [    0.231038] GPR12: 0000000028024824 c000000006bb0000 0000000000000000
-> c000000049443a00
-> [    0.231038] GPR16: 0000000000000000 c000000049443a10 0000000000000000
-> 0000000000000000
-> [    0.231038] GPR20: 0000000000000000 0000000000000000 c000000000f7dd20
-> 0000000000000000
-> [    0.231038] GPR24: 00000000014080c0 c0000000012060b8 c000000001206080
-> 0000000000000009
-> [    0.231038] GPR28: c000000000f7dde0 0000000000900000 0000000000000000
-> c0000000461ae800
-> [    0.231100] NIP [c0000000005ac6bc] .refcount_inc+0x5c/0x70
-> [    0.231104] LR [c0000000005ac6b8] .refcount_inc+0x58/0x70
-> [    0.231108] Call Trace:
-> [    0.231112] [c0000000494433e0] [c0000000005ac6b8] .refcount_inc+0x58/0=
-x70
-> (unreliable)
-> [    0.231120] [c000000049443450] [c00000000086c008]
-> .mddev_find+0x1e8/0x430
-> [    0.231125] [c000000049443530] [c000000000872b6c] .md_open+0x2c/0x140
-> [    0.231132] [c0000000494435c0] [c0000000003962a4]
-> .__blkdev_get+0xd4/0x520
-> [    0.231138] [c000000049443690] [c000000000396cc0] .blkdev_get+0x1c0/0x=
-4f0
-> [    0.231145] [c000000049443790] [c000000000336d64]
-> .do_dentry_open.isra.1+0x2a4/0x410
-> [    0.231152] [c000000049443830] [c0000000003523f4]
-> .path_openat+0x624/0x1580
-> [    0.231157] [c000000049443990] [c000000000354ce4]
-> .do_filp_open+0x84/0x120
-> [    0.231163] [c000000049443b10] [c000000000338d74]
-> .do_sys_open+0x214/0x300
-> [    0.231170] [c000000049443be0] [c000000000da69ac]
-> .md_run_setup+0xa0/0xec
-> [    0.231176] [c000000049443c60] [c000000000da4fbc]
-> .prepare_namespace+0x60/0x240
-> [    0.231182] [c000000049443ce0] [c000000000da47a8]
-> .kernel_init_freeable+0x330/0x36c
-> [    0.231190] [c000000049443db0] [c00000000000dc44] .kernel_init+0x24/0x=
-160
-> [    0.231197] [c000000049443e30] [c00000000000badc]
-> .ret_from_kernel_thread+0x58/0x7c
-> [    0.231202] Instruction dump:
-> [    0.231206] 60000000 3d22ffee 89296bfb 2f890000 409effdc 3c62ffc6 3920=
-0001
-> 3d42ffee
-> [    0.231216] 38630928 992a6bfb 484a6e79 60000000 <0fe00000> 4bffffb8
-> 60000000 60000000
-> [    0.231226] ---[ end trace 8c51f269ad91ffc2 ]---
-> [    0.231233] md: Autodetecting RAID arrays.
-> [    0.231236] md: autorun ...
-> [    0.231239] md: ... autorun DONE.
-> [    0.234188] EXT4-fs (sda4): mounting ext3 file system using the ext4 s=
-ubsystem
-> [    0.250506] refcount_t: underflow; use-after-free.
-> [    0.250531] ------------[ cut here ]------------
-> [    0.250537] WARNING: CPU: 0 PID: 3 at lib/refcount.c:207
-> .refcount_dec_not_one+0x104/0x120
-> [    0.250542] Modules linked in:
-> [    0.250546] CPU: 0 PID: 3 Comm: kworker/0:0 Tainted: G        W       =
-4.11.0-rc1-
-> gccN-next-20170310-g5be4921 #1
-> [    0.250553] Workqueue: events .delayed_fput
-> [    0.250557] task: c000000049404900 task.stack: c000000049448000
-> [    0.250562] NIP: c0000000005ac964 LR: c0000000005ac960 CTR:
-> c000000000743390
-> [    0.250567] REGS: c00000004944b530 TRAP: 0700   Tainted: G        W   =
-     (4.11.0-
-> rc1-gccN-next-20170310-g5be4921)
-> [    0.250572] MSR: 8000000000029032 <SF,EE,ME,IR,DR,RI>
-> [    0.250578]   CR: 24002422  XER: 00000007
-> [    0.250584] CFAR: c000000000a5356c SOFTE: 1
-> [    0.250584] GPR00: c0000000005ac960 c00000004944b7b0 c000000001079d00
-> 0000000000000026
-> [    0.250584] GPR04: 0000000000000000 0000000000000113 0000000000000000
-> c0000000010418a0
-> [    0.250584] GPR08: 000000004af80000 c000000000ecc9a8 c000000000ecc9a8
-> 0000000000000000
-> [    0.250584] GPR12: 0000000022002824 c000000006bb0000 c0000000001116d0
-> c000000049050200
-> [    0.250584] GPR16: 0000000000000000 0000000000000000 0000000000000000
-> 0000000000000000
-> [    0.250584] GPR20: 0000000000000001 0000000000000000 c000000048030a98
-> 0000000000000001
-> [    0.250584] GPR24: 000000000002001d 0000000000000000 0000000000000000
-> c0000000461af000
-> [    0.250584] GPR28: 0000000000000000 c000000048030bd8 c0000000461aea08
-> c0000000012060b8
-> [    0.250645] NIP [c0000000005ac964] .refcount_dec_not_one+0x104/0x120
-> [    0.250650] LR [c0000000005ac960] .refcount_dec_not_one+0x100/0x120
-> [    0.250654] Call Trace:
-> [    0.250658] [c00000004944b7b0] [c0000000005ac960]
-> .refcount_dec_not_one+0x100/0x120 (unreliable)
-> [    0.250665] [c00000004944b820] [c0000000005ac9a0]
-> .refcount_dec_and_lock+0x20/0xc0
-> [    0.250671] [c00000004944b8a0] [c000000000870fa4] .mddev_put+0x34/0x18=
-0
-> [    0.250677] [c00000004944b930] [c000000000396108]
-> .__blkdev_put+0x288/0x350
-> [    0.250683] [c00000004944ba30] [c0000000003968f0] .blkdev_close+0x30/0=
-x50
-> [    0.250689] [c00000004944bab0] [c00000000033e7d8] .__fput+0xc8/0x2a0
-> [    0.250695] [c00000004944bb60] [c00000000033ea08]
-> .delayed_fput+0x58/0x80
-> [    0.250701] [c00000004944bbe0] [c000000000107ea0]
-> .process_one_work+0x2a0/0x630
-> [    0.250707] [c00000004944bc80] [c0000000001082c8]
-> .worker_thread+0x98/0x6a0
-> [    0.250713] [c00000004944bd70] [c000000000111868] .kthread+0x198/0x1a0
-> [    0.250719] [c00000004944be30] [c00000000000badc]
-> .ret_from_kernel_thread+0x58/0x7c
-> [    0.250724] Instruction dump:
-> [    0.250728] 419e000c 38210070 4e800020 7c0802a6 3c62ffc6 39200001
-> 3d42ffee 38630958
-> [    0.250738] 992a6bfe f8010080 484a6bd1 60000000 <0fe00000> e8010080
-> 38600001 7c0803a6
-> [    0.250748] ---[ end trace 8c51f269ad91ffc3 ]---
-> [    0.262454] EXT4-fs (sda4): mounted filesystem with ordered data mode.=
- Opts:
-> (null)
+If the hotplug idle code was in idle.c, then all this deepest/default stop
+logic and register settings would be static to idle.c, which would be nice.
+
+If you have a function to check if deepest stop is found, then you don't need
+a non-static variable here (or for default_stop_found AFAIKS).
+
+
+> @@ -352,7 +353,6 @@ static int __init pnv_power9_idle_init(struct device_node *np, u32 *flags,
+>  	u32 *residency_ns = NULL;
+>  	u64 max_residency_ns = 0;
+>  	int rc = 0, i;
+> -	bool default_stop_found = false, deepest_stop_found = false;
+>  
+>  	psscr_val = kcalloc(dt_idle_states, sizeof(*psscr_val), GFP_KERNEL);
+>  	psscr_mask = kcalloc(dt_idle_states, sizeof(*psscr_mask), GFP_KERNEL);
+> @@ -433,20 +433,22 @@ static int __init pnv_power9_idle_init(struct device_node *np, u32 *flags,
+>  	}
+>  
+>  	if (!default_stop_found) {
+> -		pnv_default_stop_val = PSSCR_HV_DEFAULT_VAL;
+> -		pnv_default_stop_mask = PSSCR_HV_DEFAULT_MASK;
+> -		pr_warn("Setting default stop psscr val=0x%016llx,mask=0x%016llx\n",
+> +		pr_warn("powernv:idle: Default stop not found. Disabling ppcmd.powersave\n");
+> +	} else {
+> +		pr_info("powernv:idle: Default stop: psscr = 0x%016llx,mask=0x%016llx\n",
+>  			pnv_default_stop_val, pnv_default_stop_mask);
+>  	}
+>  
+>  	if (!deepest_stop_found) {
+> -		pnv_deepest_stop_psscr_val = PSSCR_HV_DEFAULT_VAL;
+> -		pnv_deepest_stop_psscr_mask = PSSCR_HV_DEFAULT_MASK;
+> -		pr_warn("Setting default stop psscr val=0x%016llx,mask=0x%016llx\n",
+> +		pr_warn("powernv:idle: Deepest stop not found. CPU-Hotplug is affected\n");
+
+I guess these warnings are meant for developers, but it might be nice
+to make them slightly more meaningful? Prefix of choice seems to be
+"cpuidle-powernv:"
+
+Then you could have "no suitable stop state provided by firmware. Disabling
+idle power saving" and "no suitable stop state provided by firmware. Offlined
+CPUs will busy-wait", perhaps?
+
+Just a suggestion.
+
+> +	} else {
+> +		pr_info("powernv:idle: Deepest stop: psscr = 0x%016llx,mask=0x%016llx\n",
+>  			pnv_deepest_stop_psscr_val,
+>  			pnv_deepest_stop_psscr_mask);
+>  	}
+>  
+> +	pr_info("powernv:idle: RL value of first deep stop = 0x%llx\n",
+> +		pnv_first_deep_stop_state);
+
+cpuidle-powernv: prefix for these too?
+
+>  out:
+>  	kfree(psscr_val);
+>  	kfree(psscr_mask);
+> @@ -454,6 +456,12 @@ static int __init pnv_power9_idle_init(struct device_node *np, u32 *flags,
+>  	return rc;
+>  }
+>  
+> +bool pnv_check_deepest_stop(void)
+> +{
+> +	return deepest_stop_found;
+> +}
+> +EXPORT_SYMBOL_GPL(pnv_check_deepest_stop);
+
+Does this need to be exported? AFAIKS it's not used in a module.
+
+> +
+>  /*
+>   * Probe device tree for supported idle states
+>   */
+> @@ -526,7 +534,8 @@ static int __init pnv_init_idle_states(void)
+>  
+>  	if (supported_cpuidle_states & OPAL_PM_NAP_ENABLED)
+>  		ppc_md.power_save = power7_idle;
+> -	else if (supported_cpuidle_states & OPAL_PM_STOP_INST_FAST)
+> +	else if ((supported_cpuidle_states & OPAL_PM_STOP_INST_FAST) &&
+> +		 default_stop_found)
+>  		ppc_md.power_save = power9_idle;
+>  
+>  out:
+
+Is this the only use of default_stop_found? & OPAL_PM_STOP_INST_FAST
+should always be the same as default_stop_found value, no? In that case
+can you just remove the OPAL_PM_STOP_INST_FAST test here? (I like the
+boolean and prefer the default idle state selection logic to stay in the
+idle init above where you have it commented).
+
+
+> diff --git a/arch/powerpc/platforms/powernv/powernv.h b/arch/powerpc/platforms/powernv/powernv.h
+> index 6130522..9acd5eb 100644
+> --- a/arch/powerpc/platforms/powernv/powernv.h
+> +++ b/arch/powerpc/platforms/powernv/powernv.h
+> @@ -18,6 +18,7 @@ static inline void pnv_pci_shutdown(void) { }
+>  #endif
+>  
+>  extern u32 pnv_get_supported_cpuidle_states(void);
+> +bool pnv_check_deepest_stop(void);
+>  extern u64 pnv_deepest_stop_psscr_val;
+>  extern u64 pnv_deepest_stop_psscr_mask;
+>  
+> diff --git a/arch/powerpc/platforms/powernv/smp.c b/arch/powerpc/platforms/powernv/smp.c
+> index 8d5b99e..3f66e6f 100644
+> --- a/arch/powerpc/platforms/powernv/smp.c
+> +++ b/arch/powerpc/platforms/powernv/smp.c
+> @@ -140,6 +140,7 @@ static void pnv_smp_cpu_kill_self(void)
+>  	unsigned int cpu;
+>  	unsigned long srr1, wmask;
+>  	u32 idle_states;
+> +	bool deepest_stop_found;
+>  
+>  	/* Standard hot unplug procedure */
+>  	local_irq_disable();
+> @@ -155,6 +156,7 @@ static void pnv_smp_cpu_kill_self(void)
+>  		wmask = SRR1_WAKEMASK_P8;
+>  
+>  	idle_states = pnv_get_supported_cpuidle_states();
+> +	deepest_stop_found = pnv_check_deepest_stop();
+>  
+>  	/* We don't want to take decrementer interrupts while we are offline,
+>  	 * so clear LPCR:PECE1. We keep PECE2 (and LPCR_PECE_HVEE on P9)
+> @@ -184,7 +186,11 @@ static void pnv_smp_cpu_kill_self(void)
+>  
+>  		ppc64_runlatch_off();
+>  
+> -		if (cpu_has_feature(CPU_FTR_ARCH_300)) {
+> +		if (cpu_has_feature(CPU_FTR_ARCH_300) && deepest_stop_found) {
+> +			pr_info("CPU %u offlining with psscr = 0x%016llx\n",
+> +				cpu, pnv_deepest_stop_psscr_val);
+> +			pr_info("CPU%d down paca pir %016x pir %lx\n",
+> +				cpu, hard_smp_processor_id(), mfspr(SPRN_PIR));
+
+How much log info is appropriate here?
+
+>  			srr1 = power9_idle_stop(pnv_deepest_stop_psscr_val,
+>  						pnv_deepest_stop_psscr_mask);
+>  		} else if (idle_states & OPAL_PM_WINKLE_ENABLED) {
