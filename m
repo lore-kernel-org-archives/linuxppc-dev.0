@@ -1,20 +1,41 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
- [IPv6:2607:f8b0:400e:c05::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mauricfo@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vjDlN6X5vzDr8h
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Mar 2017 23:37:20 +1100 (AEDT)
-Received: by mail-pg0-x241.google.com with SMTP id g2so19791569pge.2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Mar 2017 05:37:20 -0700 (PDT)
-From: Nicholas Piggin <npiggin@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Nicholas Piggin <npiggin@gmail.com>
-Subject: [PATCH 6/6] powerpc/64s: POWER8 add missing machine check definitions
-Date: Tue, 14 Mar 2017 22:36:48 +1000
-Message-Id: <20170314123648.26068-7-npiggin@gmail.com>
-In-Reply-To: <20170314123648.26068-1-npiggin@gmail.com>
-References: <20170314123648.26068-1-npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vjDnl05DrzDrDD
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Mar 2017 23:39:22 +1100 (AEDT)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v2ECckG8092209
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Mar 2017 08:39:12 -0400
+Received: from e24smtp01.br.ibm.com (e24smtp01.br.ibm.com [32.104.18.85])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 296f3vn9nq-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Mar 2017 08:39:12 -0400
+Received: from localhost
+ by e24smtp01.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <mauricfo@linux.vnet.ibm.com>;
+ Tue, 14 Mar 2017 09:39:09 -0300
+Received: from d24av01.br.ibm.com (d24av01.br.ibm.com [9.8.31.91])
+ by d24relay03.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v2ECd6rw38797466
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Mar 2017 09:39:07 -0300
+Received: from d24av01.br.ibm.com (localhost [127.0.0.1])
+ by d24av01.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v2ECd6Q3006361
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Mar 2017 09:39:06 -0300
+Subject: Re: [PATCH kernel] powerpc/powernv/ioda2: Update iommu table base on
+ ownership change
+To: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org
+References: <20170221024131.47753-1-aik@ozlabs.ru>
+From: Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>
+Date: Tue, 14 Mar 2017 09:39:05 -0300
+MIME-Version: 1.0
+In-Reply-To: <20170221024131.47753-1-aik@ozlabs.ru>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Message-Id: <3f5d0a44-0520-3e87-dbfd-6888ddc35902@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,72 +45,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-POWER8 uses bit 36 in SRR1 like POWER9 for i-side machine checks, and
-contains several conditions for link timeouts that are not currently
-handled.
+On 02/20/2017 11:41 PM, Alexey Kardashevskiy wrote:
+> Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
----
- arch/powerpc/kernel/mce_power.c | 26 +++++++++++++++++++-------
- 1 file changed, 19 insertions(+), 7 deletions(-)
+Tested-by: Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>
 
-diff --git a/arch/powerpc/kernel/mce_power.c b/arch/powerpc/kernel/mce_power.c
-index 95ed9d85ebcf..736530219bc3 100644
---- a/arch/powerpc/kernel/mce_power.c
-+++ b/arch/powerpc/kernel/mce_power.c
-@@ -184,27 +184,33 @@ static const struct mce_ierror_table mce_p7_ierror_table[] = {
- { 0, 0, 0, 0, 0, 0 } };
- 
- static const struct mce_ierror_table mce_p8_ierror_table[] = {
--{ 0x00000000001c0000, 0x0000000000040000, true,
-+{ 0x00000000081c0000, 0x0000000000040000, true,
-   MCE_ERROR_TYPE_UE,  MCE_UE_ERROR_IFETCH,
-   MCE_INITIATOR_CPU,  MCE_SEV_ERROR_SYNC, },
--{ 0x00000000001c0000, 0x0000000000080000, true,
-+{ 0x00000000081c0000, 0x0000000000080000, true,
-   MCE_ERROR_TYPE_SLB, MCE_SLB_ERROR_PARITY,
-   MCE_INITIATOR_CPU,  MCE_SEV_ERROR_SYNC, },
--{ 0x00000000001c0000, 0x00000000000c0000, true,
-+{ 0x00000000081c0000, 0x00000000000c0000, true,
-   MCE_ERROR_TYPE_SLB, MCE_SLB_ERROR_MULTIHIT,
-   MCE_INITIATOR_CPU,  MCE_SEV_ERROR_SYNC, },
--{ 0x00000000001c0000, 0x0000000000100000, true,
-+{ 0x00000000081c0000, 0x0000000000100000, true,
-   MCE_ERROR_TYPE_ERAT,MCE_ERAT_ERROR_MULTIHIT,
-   MCE_INITIATOR_CPU,  MCE_SEV_ERROR_SYNC, },
--{ 0x00000000001c0000, 0x0000000000140000, true,
-+{ 0x00000000081c0000, 0x0000000000140000, true,
-   MCE_ERROR_TYPE_TLB, MCE_TLB_ERROR_MULTIHIT,
-   MCE_INITIATOR_CPU,  MCE_SEV_ERROR_SYNC, },
--{ 0x00000000001c0000, 0x0000000000180000, true,
-+{ 0x00000000081c0000, 0x0000000000180000, true,
-   MCE_ERROR_TYPE_UE,  MCE_UE_ERROR_PAGE_TABLE_WALK_IFETCH,
-   MCE_INITIATOR_CPU,  MCE_SEV_ERROR_SYNC, },
--{ 0x00000000001c0000, 0x00000000001c0000, true,
-+{ 0x00000000081c0000, 0x00000000001c0000, true,
-   MCE_ERROR_TYPE_UE,  MCE_UE_ERROR_IFETCH,
-   MCE_INITIATOR_CPU,  MCE_SEV_ERROR_SYNC, },
-+{ 0x00000000081c0000, 0x0000000008000000, true,
-+  MCE_ERROR_TYPE_LINK,MCE_LINK_ERROR_IFETCH_TIMEOUT,
-+  MCE_INITIATOR_CPU,  MCE_SEV_ERROR_SYNC, },
-+{ 0x00000000081c0000, 0x0000000008040000, true,
-+  MCE_ERROR_TYPE_LINK,MCE_LINK_ERROR_PAGE_TABLE_WALK_IFETCH_TIMEOUT,
-+  MCE_INITIATOR_CPU,  MCE_SEV_ERROR_SYNC, },
- { 0, 0, 0, 0, 0, 0 } };
- 
- static const struct mce_ierror_table mce_p9_ierror_table[] = {
-@@ -289,6 +295,12 @@ static const struct mce_derror_table mce_p8_derror_table[] = {
- { 0x00004000, true,
-   MCE_ERROR_TYPE_UE,   MCE_UE_ERROR_PAGE_TABLE_WALK_LOAD_STORE,
-   MCE_INITIATOR_CPU,   MCE_SEV_ERROR_SYNC, },
-+{ 0x00002000, true,
-+  MCE_ERROR_TYPE_LINK, MCE_LINK_ERROR_LOAD_TIMEOUT,
-+  MCE_INITIATOR_CPU,   MCE_SEV_ERROR_SYNC, },
-+{ 0x00001000, true,
-+  MCE_ERROR_TYPE_LINK, MCE_LINK_ERROR_PAGE_TABLE_WALK_LOAD_STORE_TIMEOUT,
-+  MCE_INITIATOR_CPU,   MCE_SEV_ERROR_SYNC, },
- { 0x00000800, true,
-   MCE_ERROR_TYPE_ERAT, MCE_ERAT_ERROR_MULTIHIT,
-   MCE_INITIATOR_CPU,   MCE_SEV_ERROR_SYNC, },
+P.S.: sorry, late, but for the record.
+
+
 -- 
-2.11.0
+Mauricio Faria de Oliveira
+IBM Linux Technology Center
