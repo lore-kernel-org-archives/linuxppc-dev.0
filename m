@@ -1,54 +1,20 @@
-Return-Path: <maddy@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
+ [IPv6:2607:f8b0:400e:c05::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vj80D2FDmzDqXc
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Mar 2017 20:03:08 +1100 (AEDT)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v2E8rXa6073066
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Mar 2017 05:02:58 -0400
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
- by mx0a-001b2d01.pphosted.com with ESMTP id 295we0trs1-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Mar 2017 05:02:58 -0400
-Received: from localhost
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
- Tue, 14 Mar 2017 19:02:56 +1000
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v2E92irW26869762
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Mar 2017 20:02:52 +1100
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v2E92JME021820
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Mar 2017 20:02:20 +1100
-Subject: Re: [PATCH v2 1/6] powerpc/perf: Define big-endian version of
- perf_mem_data_src
-To: Peter Zijlstra <peterz@infradead.org>
-References: <1488796993-25495-1-git-send-email-maddy@linux.vnet.ibm.com>
- <1488796993-25495-2-git-send-email-maddy@linux.vnet.ibm.com>
- <20170306112228.GZ6515@twins.programming.kicks-ass.net>
- <2fc7e466-1675-ef27-b820-ef33ed0be7da@linux.vnet.ibm.com>
- <20170307102359.GE6515@twins.programming.kicks-ass.net>
- <78c1b95d-2e82-f998-74ba-ebb1fdf5bb45@linux.vnet.ibm.com>
- <20170313125041.GB3328@twins.programming.kicks-ass.net>
-Cc: mpe@ellerman.id.au, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org,
- Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
- Ingo Molnar <mingo@redhat.com>, Arnaldo Carvalho de Melo <acme@kernel.org>,
- Alexander Shishkin <alexander.shishkin@linux.intel.com>,
- Wang Nan <wangnan0@huawei.com>, Alexei Starovoitov <ast@kernel.org>,
- Stephane Eranian <eranian@google.com>
-From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Date: Tue, 14 Mar 2017 14:31:51 +0530
-MIME-Version: 1.0
-In-Reply-To: <20170313125041.GB3328@twins.programming.kicks-ass.net>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Message-Id: <f73bc62f-d1cf-2599-95f9-69bd8e27da4e@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vj8SM2ZBdzDqXk
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Mar 2017 20:24:03 +1100 (AEDT)
+Received: by mail-pg0-x244.google.com with SMTP id 77so23196292pgc.0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Mar 2017 02:24:03 -0700 (PDT)
+From: Nicholas Piggin <npiggin@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Nicholas Piggin <npiggin@gmail.com>,
+ Gautham R Shenoy <ego@linux.vnet.ibm.com>,
+ Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Subject: [PATCH 0/8] idle fixes and changes for POWER8 and POWER9
+Date: Tue, 14 Mar 2017 19:23:41 +1000
+Message-Id: <20170314092349.10981-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -58,20 +24,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hi,
 
+This is a resend of the previous idle series, with the addition that
+I accounted for Gautham's feedback, and also re-introduced the feature
+to avoid full state restore by counting winkles rather than special
+HSPRG0 bit.
 
-On Monday 13 March 2017 06:20 PM, Peter Zijlstra wrote:
-> On Mon, Mar 13, 2017 at 04:45:51PM +0530, Madhavan Srinivasan wrote:
->>>   - should you not have fixed this in the tool only? This patch
->>>     effectively breaks ABI on big-endian architectures.
->> IIUC, we are the first BE user for this feature
->> (Kindly correct me if I am wrong), so technically we
->> are not breaking ABI here :) .  But let me also look  at
->> the dynamic conversion part.
-> Huh? PPC hasn't yet implemented this? Then why are you fixing it?
+The two big things we get from this, is no longer messing with HSPRG0
+in the idle wakeup path on POWER8, and not crashing on POWER9 machine
+check from power saving mode (tested in mambo according to ISA specs,
+but have not triggered it on real hardware).
 
-yes, PPC hasn't implemented this (until now).
-And did not understand "Then why are you fixing it?"
+I only added the reviewed-by for patches which were not significantly
+chaged since last time.
 
-Maddy
->
+Thanks,
+Nick
+
+Nicholas Piggin (8):
+  powerpc/64s: move remaining system reset idle code into idle_book3s.S
+  powerpc/64s: stop using bit in HSPRG0 to test winkle
+  powerpc/64s: use alternative feature patching
+  powerpc/64s: fix POWER9 machine check handler from stop state
+  powerpc/64s: use PACA_THREAD_IDLE_STATE only in POWER8
+  powerpc/64s: idle expand usable core idle state bits
+  powerpc/64s: idle do not hold reservation longer than required
+  powerpc/64s: idle POWER8 avoid full state loss recovery when possible
+
+ arch/powerpc/include/asm/cpuidle.h       |  32 +++++-
+ arch/powerpc/include/asm/exception-64s.h |  13 +--
+ arch/powerpc/include/asm/paca.h          |  12 +-
+ arch/powerpc/include/asm/reg.h           |   1 +
+ arch/powerpc/kernel/exceptions-64s.S     | 112 ++++++------------
+ arch/powerpc/kernel/idle_book3s.S        | 189 ++++++++++++++++++++-----------
+ arch/powerpc/platforms/powernv/idle.c    |  13 ---
+ 7 files changed, 202 insertions(+), 170 deletions(-)
+
+-- 
+2.11.0
