@@ -1,25 +1,20 @@
-Return-Path: <dgibson@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vhx9j2vJTzDqXy
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Mar 2017 11:55:37 +1100 (AEDT)
-Date: Tue, 14 Mar 2017 11:55:33 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Cc: Alex Williamson <alex.williamson@redhat.com>,
- linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
- kvm-ppc@vger.kernel.org, kvm@vger.kernel.org
-Subject: Re: [PATCH kernel v8 00/10] powerpc/kvm/vfio: Enable in-kernel
- acceleration
-Message-ID: <20170314005533.GC12564@umbus.fritz.box>
-References: <20170310035337.22091-1-aik@ozlabs.ru>
- <20170310044813.GB3167@umbus.fritz.box>
- <0c355414-253f-2ceb-b45e-90d8c01fafdf@ozlabs.ru>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vhxcN4Z8vzDqGb
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Mar 2017 12:15:16 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Larry.Finger@lwfinger.net, aik@ozlabs.ru, bsingharora@gmail.com,
+ cyrilbur@gmail.com, gwshan@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, maddy@linux.vnet.ibm.com, npiggin@gmail.com
+Subject: [GIT PULL] Please pull powerpc/linux.git powerpc-4.11-4 tag
+Date: Tue, 14 Mar 2017 12:15:10 +1100
+Message-ID: <87tw6wirq9.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="sHrvAb52M6C8blB9"
-In-Reply-To: <0c355414-253f-2ceb-b45e-90d8c01fafdf@ozlabs.ru>
+Content-Type: multipart/signed; boundary="=-=-=";
+ micalg=pgp-sha1; protocol="application/pgp-signature"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,142 +24,105 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+--=-=-=
+Content-Type: text/plain
 
---sHrvAb52M6C8blB9
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hi Linus,
 
-On Tue, Mar 14, 2017 at 11:54:03AM +1100, Alexey Kardashevskiy wrote:
-> On 10/03/17 15:48, David Gibson wrote:
-> > On Fri, Mar 10, 2017 at 02:53:27PM +1100, Alexey Kardashevskiy wrote:
-> >> This is my current queue of patches to add acceleration of TCE
-> >> updates in KVM.
-> >>
-> >> This is based on Linus'es tree sha1 c1aa905a304e.
-> >=20
-> > I think we're finally there - I've now sent an R-b for all patches.
->=20
-> Thanks for the patience.
->=20
->=20
-> I supposed in order to proceed now I need an ack from Alex, correct?
+Please pull some more powerpc fixes for 4.11.
 
-That, or simply for him to merge it.
+The bulk of the diffstat is the Power9 Machine Check handler. It's bigger than
+I'd usually send after rc2, but apparently folks are hitting them in the field,
+and it's from Nick.
 
->=20
->=20
-> >=20
-> >=20
-> >>
-> >> Please comment. Thanks.
-> >>
-> >> Changes:
-> >> v8:
-> >> * kept fixing oddities with error handling in 10/10
-> >>
-> >> v7:
-> >> * added realmode's WARN_ON_ONCE_RM in arch/powerpc/kvm/book3s_64_vio_h=
-v.c
-> >>
-> >> v6:
-> >> * reworked the last patch in terms of error handling and parameters ch=
-ecking
-> >>
-> >> v5:
-> >> * replaced "KVM: PPC: Separate TCE validation from update" with
-> >> "KVM: PPC: iommu: Unify TCE checking"
-> >> * changed already reviewed "powerpc/iommu/vfio_spapr_tce: Cleanup iomm=
-u_table disposal"
-> >> * reworked "KVM: PPC: VFIO: Add in-kernel acceleration for VFIO"
-> >> * more details in individual commit logs
-> >>
-> >> v4:
-> >> * addressed comments from v3
-> >> * updated subject lines with correct component names
-> >> * regrouped the patchset in order:
-> >> 	- powerpc fixes;
-> >> 	- vfio_spapr_tce driver fixes;
-> >> 	- KVM/PPC fixes;
-> >> 	- KVM+PPC+VFIO;
-> >> * everything except last 2 patches have "Reviewed-By: David"
-> >>
-> >> v3:
-> >> * there was no full repost, only last patch was posted
-> >>
-> >> v2:
-> >> * 11/11 reworked to use new notifiers, it is rather RFC as it still has
-> >> a issue;
-> >> * got 09/11, 10/11 to use notifiers in 11/11;
-> >> * added rb: David to most of patches and added a comment in 05/11.
-> >>
-> >> Alexey Kardashevskiy (10):
-> >>   powerpc/mmu: Add real mode support for IOMMU preregistered memory
-> >>   powerpc/powernv/iommu: Add real mode version of
-> >>     iommu_table_ops::exchange()
-> >>   powerpc/iommu/vfio_spapr_tce: Cleanup iommu_table disposal
-> >>   powerpc/vfio_spapr_tce: Add reference counting to iommu_table
-> >>   KVM: PPC: Reserve KVM_CAP_SPAPR_TCE_VFIO capability number
-> >>   KVM: PPC: Enable IOMMU_API for KVM_BOOK3S_64 permanently
-> >>   KVM: PPC: Pass kvm* to kvmppc_find_table()
-> >>   KVM: PPC: Use preregistered memory API to access TCE list
-> >>   KVM: PPC: iommu: Unify TCE checking
-> >>   KVM: PPC: VFIO: Add in-kernel acceleration for VFIO
-> >>
-> >>  Documentation/virtual/kvm/devices/vfio.txt |  22 +-
-> >>  arch/powerpc/include/asm/iommu.h           |  32 ++-
-> >>  arch/powerpc/include/asm/kvm_host.h        |   8 +
-> >>  arch/powerpc/include/asm/kvm_ppc.h         |  12 +-
-> >>  arch/powerpc/include/asm/mmu_context.h     |   4 +
-> >>  include/uapi/linux/kvm.h                   |   9 +
-> >>  arch/powerpc/kernel/iommu.c                |  86 +++++---
-> >>  arch/powerpc/kvm/book3s_64_vio.c           | 330 ++++++++++++++++++++=
-++++++++-
-> >>  arch/powerpc/kvm/book3s_64_vio_hv.c        | 303 ++++++++++++++++++++=
-++----
-> >>  arch/powerpc/kvm/powerpc.c                 |   2 +
-> >>  arch/powerpc/mm/mmu_context_iommu.c        |  39 ++++
-> >>  arch/powerpc/platforms/powernv/pci-ioda.c  |  46 ++--
-> >>  arch/powerpc/platforms/powernv/pci.c       |   1 +
-> >>  arch/powerpc/platforms/pseries/iommu.c     |   3 +-
-> >>  arch/powerpc/platforms/pseries/vio.c       |   2 +-
-> >>  drivers/vfio/vfio_iommu_spapr_tce.c        |   2 +-
-> >>  virt/kvm/vfio.c                            |  60 ++++++
-> >>  arch/powerpc/kvm/Kconfig                   |   1 +
-> >>  18 files changed, 855 insertions(+), 107 deletions(-)
-> >>
-> >=20
->=20
->=20
+This also includes the fix for macio devices that was sent directly to you by
+Larry Finger.
+
+cheers
 
 
+The following changes since commit f7d6a7283aa1de430c6323a9714d1a787bc2d1ea:
 
+  Merge tag 'powerpc-4.11-3' of git://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux (2017-03-07 10:46:10 -0800)
 
---=20
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+are available in the git repository at:
 
---sHrvAb52M6C8blB9
+  git://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git tags/powerpc-4.11-4
+
+for you to fetch changes up to 7b9f71f974a12740e79e918cfd58c2fce0b5b580:
+
+  powerpc/64s: POWER9 machine check handler (2017-03-10 16:32:08 +1100)
+
+----------------------------------------------------------------
+powerpc fixes for 4.11 #4
+
+The main item is the addition of the Power9 Machine Check handler. This was
+delayed to make sure some details were correct, and is as minimal as possible.
+
+The rest is small fixes, two for the Power9 PMU, two dealing with obscure
+toolchain problems, two for the PowerNV IOMMU code (used by VFIO), and one to
+fix a crash on 32-bit machines with macio devices due to missing dma_ops.
+
+Thanks to:
+  Alexey Kardashevskiy, Cyril Bur, Larry Finger, Madhavan Srinivasan, Nicholas
+  Piggin.
+
+----------------------------------------------------------------
+Alexey Kardashevskiy (2):
+      powerpc/powernv/ioda2: Gracefully fail if too many TCE levels requested
+      powerpc/powernv/ioda2: Update iommu table base on ownership change
+
+Cyril Bur (1):
+      selftests/powerpc: Replace stxvx and lxvx with stxvd2x/lxvd2x
+
+Larry Finger (1):
+      powerpc/pmac: Fix crash in dma-mapping.h with NULL dma_ops
+
+Madhavan Srinivasan (2):
+      powerpc/perf: Fix perf_get_data_addr() for power9 DD1
+      powerpc/perf: Handle sdar_mode for marked event in power9
+
+Michael Ellerman (1):
+      powerpc/boot: Fix zImage TOC alignment
+
+Nicholas Piggin (3):
+      powerpc/64s: fix handling of non-synchronous machine checks
+      powerpc/64s: allow machine check handler to set severity and initiator
+      powerpc/64s: POWER9 machine check handler
+
+ arch/powerpc/boot/zImage.lds.S                    |   1 +
+ arch/powerpc/include/asm/bitops.h                 |   4 +
+ arch/powerpc/include/asm/mce.h                    | 108 +++++++++-
+ arch/powerpc/kernel/cputable.c                    |   3 +
+ arch/powerpc/kernel/mce.c                         |  88 +++++++-
+ arch/powerpc/kernel/mce_power.c                   | 237 ++++++++++++++++++++++
+ arch/powerpc/perf/core-book3s.c                   |   2 +
+ arch/powerpc/perf/isa207-common.c                 |  43 +++-
+ arch/powerpc/perf/isa207-common.h                 |   1 +
+ arch/powerpc/platforms/powernv/opal.c             |  21 +-
+ arch/powerpc/platforms/powernv/pci-ioda.c         |  20 +-
+ drivers/macintosh/macio_asic.c                    |   1 +
+ tools/testing/selftests/powerpc/include/vsx_asm.h |  48 ++---
+ 13 files changed, 523 insertions(+), 54 deletions(-)
+
+--=-=-=
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+Version: GnuPG v1
 
-iQIcBAEBCAAGBQJYxz+CAAoJEGw4ysog2bOSYdgP/jbbzoN9HZ5htC1m4xm+FS+n
-jafNMS2xIHAQw7JwdpoHXHgG36hv7/EpOxAKH1SEhwVrQpBbPhka4Np1cCYZXi8n
-FpkJxN8Lf4/TM3yZiOQJtP8j/p0Y0Aqhe5nwPE9LtNUIgXzDUz2a1KJN+kMKD7ib
-STiMhSdvLCMTpznZKS8tunMTFxBNhLU9NOwPgqQa+C3LGWGDIEdxV8uaAvJUlCSD
-miWsjXmjtQ+ZUK0HZk5TdJBr2M3ZRcwTIpKsbqm1uROeyWPJUQTY1N1wJHkhnNAt
-noW/lMht5sC4hV7XMTQmxurGuiYPmALnn+BMbA+xuOwFZmAgNaJtub5BysTWQOd9
-e3zTC9mjcG2SmYhB4goRppCyk7ay5rbQLtPBtGDOzz/Iia3r5w964mlYo/QT7iMz
-q3K3JshvxyAgAOEiItk0zdGz4uCd1lCcuYLFUuEr5uWvpoLcByR3cxbjW/konbep
-ClvncNHlVcovtX7EKwBokDavWy2DdPJrzS/xiSzZeGbXQXruYSjDn7daHoB315xl
-XDXucyRhY+yPW5VvrvYtSCkvHBQTTWFd/ccXeq/OL6x1Z41pWjP5qHtbKtUXQFJX
-RD6o/8IqgM3fTmRiewLcj/+yQ3NerY5SO1/kG5KxtTT+AKS0PJKL69UdaSSg2UMc
-mqV6OndMWU0xMEqJKn4T
-=y8EA
+iQIcBAEBAgAGBQJYx0QgAAoJEFHr6jzI4aWALnwP/2p4G2RLD8Fg1WceteQK484X
+c7aQJankfkYxY1HSjJIDBZwVCnjJ3ioH7nfHlVQbiw75/D/gpX09LmBApppCjUKa
+7sm0k+1bzIXUQkz7MNissfyPCmRBd2iJap40/V9GTrUJcW9zSGKqLN7/1zrNhKrQ
+YyCgKlo513KypfKraxb1Ioe/5x6CwTgT2Uuo+VWcykoPyoSHY/Ij3uwD5+NNkBdO
+Y2H5vElQCWGEgMpIsikr+OWYB88ykPpEU0x5qam7PoYokAX3td//LCuIEQdXEoWu
+im/14RcZLF5l20gIETEBoCaqIIEVboZmCpJNPytZ1OsedYGzXZ2TS7I8Uvq0qzx9
+QiFVPrtNV/koO1nkmWKF4fHDi7Xq2/0w0HuJKcfCKb/5OeVEMZ56eZH2AZ3MISvz
+KEgHUSBxDY7gIYuX2yhtmL6jJAVOUt9A52fQyidY76q/tskSoRzgyfVX8yHlyHfE
+X9QS4LnZaOAecIRJ79bTbQhKap3d34a6Nz4XpvKDFNkDXOSwYnz6AP3kA49KFo89
+55mz8AKfrBWifix6+Fu0JRRBOULR4qt9faXn4PrJJ7KYmmtQeJRyK9Jd9qy7ZkOW
+PoDHqrR77E7r+yNFBwzA3qlovOxIy+f0D70GNDLLs6ExdxLmOqKkvTEHuHWQ7JCh
+qE9xNHq2lfhjP+GvY0vZ
+=N3fw
 -----END PGP SIGNATURE-----
-
---sHrvAb52M6C8blB9--
+--=-=-=--
