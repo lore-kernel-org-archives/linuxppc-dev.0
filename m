@@ -1,34 +1,31 @@
-Return-Path: <peterz@infradead.org>
-Received: from merlin.infradead.org (merlin.infradead.org
- [IPv6:2001:4978:20e::2])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <acme@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vjF9n57RPzDskJ
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Mar 2017 23:56:45 +1100 (AEDT)
-Date: Tue, 14 Mar 2017 13:56:26 +0100
-From: Peter Zijlstra <peterz@infradead.org>
-To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Cc: mpe@ellerman.id.au, linux-kernel@vger.kernel.org,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vjFg96y8MzDvTs
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Mar 2017 00:18:45 +1100 (AEDT)
+Date: Tue, 14 Mar 2017 10:18:39 -0300
+From: Arnaldo Carvalho de Melo <acme@kernel.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
+ Masami Hiramatsu <mhiramat@kernel.org>,
+ Steven Rostedt <rostedt@goodmis.org>,
+ Ingo Molnar <mingo@redhat.com>, linux-kernel@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org,
- Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
- Ingo Molnar <mingo@redhat.com>, Arnaldo Carvalho de Melo <acme@kernel.org>,
- Alexander Shishkin <alexander.shishkin@linux.intel.com>,
- Wang Nan <wangnan0@huawei.com>, Alexei Starovoitov <ast@kernel.org>,
- Stephane Eranian <eranian@google.com>
-Subject: Re: [PATCH v2 1/6] powerpc/perf: Define big-endian version of
- perf_mem_data_src
-Message-ID: <20170314125626.GE3328@twins.programming.kicks-ass.net>
-References: <1488796993-25495-1-git-send-email-maddy@linux.vnet.ibm.com>
- <1488796993-25495-2-git-send-email-maddy@linux.vnet.ibm.com>
- <20170306112228.GZ6515@twins.programming.kicks-ass.net>
- <2fc7e466-1675-ef27-b820-ef33ed0be7da@linux.vnet.ibm.com>
- <20170307102359.GE6515@twins.programming.kicks-ass.net>
- <78c1b95d-2e82-f998-74ba-ebb1fdf5bb45@linux.vnet.ibm.com>
- <20170313125041.GB3328@twins.programming.kicks-ass.net>
- <f73bc62f-d1cf-2599-95f9-69bd8e27da4e@linux.vnet.ibm.com>
+ Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>
+Subject: Re: [PATCH v5 2/5] powerpc: kretprobes: override default function
+ entry offset
+Message-ID: <20170314131839.GD3089@kernel.org>
+References: <cover.1488961018.git.naveen.n.rao@linux.vnet.ibm.com>
+ <53bcae5a711eab803c9c3210110e8a464df34202.1488961018.git.naveen.n.rao@linux.vnet.ibm.com>
+ <87o9xcujzi.fsf@concordia.ellerman.id.au>
+ <20170308142412.GI11046@naverao1-tp.localdomain>
+ <20170308142916.GA3035@kernel.org>
+ <20170308164644.GK11046@naverao1-tp.localdomain>
+ <87a88vuf9p.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <f73bc62f-d1cf-2599-95f9-69bd8e27da4e@linux.vnet.ibm.com>
+In-Reply-To: <87a88vuf9p.fsf@concordia.ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,14 +35,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Mar 14, 2017 at 02:31:51PM +0530, Madhavan Srinivasan wrote:
-
-> >Huh? PPC hasn't yet implemented this? Then why are you fixing it?
+Em Thu, Mar 09, 2017 at 05:37:38PM +1100, Michael Ellerman escreveu:
+> "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> writes:
+> > On 2017/03/08 11:29AM, Arnaldo Carvalho de Melo wrote:
+> >> > I wasn't sure if you were planning on picking up KPROBES_ON_FTRACE for 
+> >> > v4.11. If so, it would be good to take this patch through the powerpc 
+> >> > tree. Otherwise, this can go via Ingo's tree.
+> >> 
+> >> If you guys convince Ingo that this should go _now_, then just cherry
+> >> pick what was merged into tip/perf/core that is needed for the arch
+> >> specific stuff and go from there.
+> >
+> > Ok, in hindsight, I think Michael's concern was actually for v4.12 
 > 
-> yes, PPC hasn't implemented this (until now).
+> Yes I was talking about 4.12, sorry I thought that was implied :)
+> 
+> > itself, in which case this particular patch can go via powerpc tree, 
+> > while the rest of the patches in this series can go via your tree.
+> >
+> > Michael?
+> 
+> Yeah I think that's the easiest option. The function will be temporarily
+> unused until the two trees are merged, but I think that's fine.
 
-until now where?
+Ok, done that, now compile testing building it in my
+multi-distro/x-build containers.
 
-> And did not understand "Then why are you fixing it?"
-
-I see no implementation; so why are you poking at it.
+- Arnaldo
