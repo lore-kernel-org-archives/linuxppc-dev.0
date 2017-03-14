@@ -1,31 +1,75 @@
-Return-Path: <clombard@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <David.Laight@ACULAB.COM>
+Received: from smtp-out4.electric.net (smtp-out4.electric.net
+ [192.162.216.193])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vjBp76RcKzDqZ7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Mar 2017 22:09:35 +1100 (AEDT)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v2EB8d3A063394
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Mar 2017 07:09:20 -0400
-Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2960gyxuwv-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Mar 2017 07:09:20 -0400
-Received: from localhost
- by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <clombard@linux.vnet.ibm.com>;
- Tue, 14 Mar 2017 11:09:17 -0000
-From: Christophe Lombard <clombard@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, fbarrat@linux.vnet.ibm.com,
- imunsie@au1.ibm.com, andrew.donnellan@au1.ibm.com
-Subject: [PATCH V2 2/6] cxl: Keep track of mm struct associated with a context
-Date: Tue, 14 Mar 2017 12:08:38 +0100
-In-Reply-To: <1489489722-935-1-git-send-email-clombard@linux.vnet.ibm.com>
-References: <1489489722-935-1-git-send-email-clombard@linux.vnet.ibm.com>
-Message-Id: <1489489722-935-3-git-send-email-clombard@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vj9g75L3HzDqGb
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Mar 2017 21:18:26 +1100 (AEDT)
+From: David Laight <David.Laight@ACULAB.COM>
+To: 'Till Smejkal' <till.smejkal@googlemail.com>, Richard Henderson
+ <rth@twiddle.net>, Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Matt Turner
+ <mattst88@gmail.com>, Vineet Gupta <vgupta@synopsys.com>, Russell King
+ <linux@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, "Will
+ Deacon" <will.deacon@arm.com>, Steven Miao <realmz6@gmail.com>, Richard Kuo
+ <rkuo@codeaurora.org>, Tony Luck <tony.luck@intel.com>, Fenghua Yu
+ <fenghua.yu@intel.com>, James Hogan <james.hogan@imgtec.com>, Ralf Baechle
+ <ralf@linux-mips.org>, "James E.J. Bottomley" <jejb@parisc-linux.org>, Helge
+ Deller <deller@gmx.de>, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, "Michael Ellerman" <mpe@ellerman.id.au>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>, Heiko Carstens
+ <heiko.carstens@de.ibm.com>, Yoshinori Sato <ysato@users.sourceforge.jp>,
+ Rich Felker <dalias@libc.org>, "David S. Miller" <davem@davemloft.net>, Chris
+ Metcalf <cmetcalf@mellanox.com>, Thomas Gleixner <tglx@linutronix.de>, Ingo
+ Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, "x86@kernel.org"
+ <x86@kernel.org>, "Andy Lutomirski" <luto@amacapital.net>, Chris Zankel
+ <chris@zankel.net>, "Max Filippov" <jcmvbkbc@gmail.com>, Arnd Bergmann
+ <arnd@arndb.de>, "Greg Kroah-Hartman" <gregkh@linuxfoundation.org>, Laurent
+ Pinchart <laurent.pinchart@ideasonboard.com>, Mauro Carvalho Chehab
+ <mchehab@kernel.org>, Pawel Osciak <pawel@osciak.com>, Marek Szyprowski
+ <m.szyprowski@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, David
+ Woodhouse <dwmw2@infradead.org>, Brian Norris <computersforpeace@gmail.com>,
+ Boris Brezillon <boris.brezillon@free-electrons.com>, Marek Vasut
+ <marek.vasut@gmail.com>, Richard Weinberger <richard@nod.at>, Cyrille Pitchen
+ <cyrille.pitchen@atmel.com>, Felipe Balbi <balbi@kernel.org>, Alexander Viro
+ <viro@zeniv.linux.org.uk>, Benjamin LaHaise <bcrl@kvack.org>, "Nadia Yvette
+ Chambers" <nyc@holomorphy.com>, Jeff Layton <jlayton@poochiereds.net>, "J.
+ Bruce Fields" <bfields@fieldses.org>, Peter Zijlstra <peterz@infradead.org>,
+ Hugh Dickins <hughd@google.com>, Arnaldo Carvalho de Melo <acme@kernel.org>,
+ Alexander Shishkin <alexander.shishkin@linux.intel.com>, Jaroslav Kysela
+ <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>
+CC: "linux-mips@linux-mips.org" <linux-mips@linux-mips.org>,
+ "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
+ "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
+ "linux-aio@kvack.org" <linux-aio@kvack.org>, "linux-mm@kvack.org"
+ <linux-mm@kvack.org>, "linux-mtd@lists.infradead.org"
+ <linux-mtd@lists.infradead.org>, "sparclinux@vger.kernel.org"
+ <sparclinux@vger.kernel.org>, "linux-arch@vger.kernel.org"
+ <linux-arch@vger.kernel.org>, "linux-s390@vger.kernel.org"
+ <linux-s390@vger.kernel.org>, "linux-hexagon@vger.kernel.org"
+ <linux-hexagon@vger.kernel.org>, "linux-sh@vger.kernel.org"
+ <linux-sh@vger.kernel.org>, "linux-snps-arc@lists.infradead.org"
+ <linux-snps-arc@lists.infradead.org>, "linux-media@vger.kernel.org"
+ <linux-media@vger.kernel.org>, "linux-xtensa@linux-xtensa.org"
+ <linux-xtensa@linux-xtensa.org>, "adi-buildroot-devel@lists.sourceforge.net"
+ <adi-buildroot-devel@lists.sourceforge.net>, "linux-metag@vger.kernel.org"
+ <linux-metag@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org"
+ <linux-arm-kernel@lists.infradead.org>, "linux-parisc@vger.kernel.org"
+ <linux-parisc@vger.kernel.org>, "linux-api@vger.kernel.org"
+ <linux-api@vger.kernel.org>, "linux-usb@vger.kernel.org"
+ <linux-usb@vger.kernel.org>, "linux-kernel@vger.kernel.org"
+ <linux-kernel@vger.kernel.org>, "linux-alpha@vger.kernel.org"
+ <linux-alpha@vger.kernel.org>, "linux-fsdevel@vger.kernel.org"
+ <linux-fsdevel@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>
+Subject: RE: [RFC PATCH 07/13] kernel/fork: Split and export 'mm_alloc' and
+ 'mm_init'
+Date: Tue, 14 Mar 2017 10:18:03 +0000
+Message-ID: <063D6719AE5E284EB5DD2968C1650D6DCFFB03F4@AcuExch.aculab.com>
+References: <20170313221415.9375-1-till.smejkal@gmail.com>
+ <20170313221415.9375-8-till.smejkal@gmail.com>
+In-Reply-To: <20170313221415.9375-8-till.smejkal@gmail.com>
+Content-Type: text/plain; charset="Windows-1252"
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,307 +79,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The mm_struct corresponding to the current task is acquired each time
-an interrupt is raised. So to simplify the code, we only get the
-mm_struct when attaching an AFU context to the process.
-The mm_count reference is increased to ensure that the mm_struct can't
-be freed. The mm_struct will be released when the context is detached.
-The reference (use count) on the struct mm is not kept to avoid a
-circular dependency if the process mmaps its cxl mmio and forget to
-unmap before exiting.
+From: Linuxppc-dev Till Smejkal
+> Sent: 13 March 2017 22:14
+> The only way until now to create a new memory map was via the exported
+> function 'mm_alloc'. Unfortunately, this function not only allocates a ne=
+w
+> memory map, but also completely initializes it. However, with the
+> introduction of first class virtual address spaces, some initialization
+> steps done in 'mm_alloc' are not applicable to the memory maps needed for
+> this feature and hence would lead to errors in the kernel code.
+>=20
+> Instead of introducing a new function that can allocate and initialize
+> memory maps for first class virtual address spaces and potentially
+> duplicate some code, I decided to split the mm_alloc function as well as
+> the 'mm_init' function that it uses.
+>=20
+> Now there are four functions exported instead of only one. The new
+> 'mm_alloc' function only allocates a new mm_struct and zeros it out. If o=
+ne
+> want to have the old behavior of mm_alloc one can use the newly introduce=
+d
+> function 'mm_alloc_and_setup' which not only allocates a new mm_struct bu=
+t
+> also fully initializes it.
+...
 
-Signed-off-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
----
- drivers/misc/cxl/api.c     | 17 ++++++++--
- drivers/misc/cxl/context.c | 26 ++++++++++++++--
- drivers/misc/cxl/cxl.h     | 13 ++++++--
- drivers/misc/cxl/fault.c   | 77 +++++-----------------------------------------
- drivers/misc/cxl/file.c    | 15 +++++++--
- 5 files changed, 68 insertions(+), 80 deletions(-)
+That looks like bugs waiting to happen.
+You need unchanged code to fail to compile.
 
-diff --git a/drivers/misc/cxl/api.c b/drivers/misc/cxl/api.c
-index bcc030e..1a138c8 100644
---- a/drivers/misc/cxl/api.c
-+++ b/drivers/misc/cxl/api.c
-@@ -14,6 +14,7 @@
- #include <linux/msi.h>
- #include <linux/module.h>
- #include <linux/mount.h>
-+#include <linux/sched/mm.h>
- 
- #include "cxl.h"
- 
-@@ -321,19 +322,29 @@ int cxl_start_context(struct cxl_context *ctx, u64 wed,
- 
- 	if (task) {
- 		ctx->pid = get_task_pid(task, PIDTYPE_PID);
--		ctx->glpid = get_task_pid(task->group_leader, PIDTYPE_PID);
- 		kernel = false;
- 		ctx->real_mode = false;
-+
-+		/* acquire a reference to the task's mm */
-+		ctx->mm = get_task_mm(current);
-+
-+		/* ensure this mm_struct can't be freed */
-+		cxl_context_mm_count_get(ctx);
-+
-+		/* decrement the use count */
-+		if (ctx->mm)
-+			mmput(ctx->mm);
- 	}
- 
- 	cxl_ctx_get();
- 
- 	if ((rc = cxl_ops->attach_process(ctx, kernel, wed, 0))) {
--		put_pid(ctx->glpid);
- 		put_pid(ctx->pid);
--		ctx->glpid = ctx->pid = NULL;
-+		ctx->pid = NULL;
- 		cxl_adapter_context_put(ctx->afu->adapter);
- 		cxl_ctx_put();
-+		if (task)
-+			cxl_context_mm_count_put(ctx);
- 		goto out;
- 	}
- 
-diff --git a/drivers/misc/cxl/context.c b/drivers/misc/cxl/context.c
-index 062bf6c..ed0a447 100644
---- a/drivers/misc/cxl/context.c
-+++ b/drivers/misc/cxl/context.c
-@@ -17,6 +17,7 @@
- #include <linux/debugfs.h>
- #include <linux/slab.h>
- #include <linux/idr.h>
-+#include <linux/sched/mm.h>
- #include <asm/cputable.h>
- #include <asm/current.h>
- #include <asm/copro.h>
-@@ -41,7 +42,7 @@ int cxl_context_init(struct cxl_context *ctx, struct cxl_afu *afu, bool master)
- 	spin_lock_init(&ctx->sste_lock);
- 	ctx->afu = afu;
- 	ctx->master = master;
--	ctx->pid = ctx->glpid = NULL; /* Set in start work ioctl */
-+	ctx->pid = NULL; /* Set in start work ioctl */
- 	mutex_init(&ctx->mapping_lock);
- 	ctx->mapping = NULL;
- 
-@@ -242,12 +243,15 @@ int __detach_context(struct cxl_context *ctx)
- 
- 	/* release the reference to the group leader and mm handling pid */
- 	put_pid(ctx->pid);
--	put_pid(ctx->glpid);
- 
- 	cxl_ctx_put();
- 
- 	/* Decrease the attached context count on the adapter */
- 	cxl_adapter_context_put(ctx->afu->adapter);
-+
-+	/* Decrease the mm count on the context */
-+	cxl_context_mm_count_put(ctx);
-+
- 	return 0;
- }
- 
-@@ -325,3 +329,21 @@ void cxl_context_free(struct cxl_context *ctx)
- 	mutex_unlock(&ctx->afu->contexts_lock);
- 	call_rcu(&ctx->rcu, reclaim_ctx);
- }
-+
-+void cxl_context_mm_count_get(struct cxl_context *ctx)
-+{
-+	if (ctx->mm)
-+		atomic_inc(&ctx->mm->mm_count);
-+}
-+
-+void cxl_context_mm_count_put(struct cxl_context *ctx)
-+{
-+	if (ctx->mm)
-+		mmdrop(ctx->mm);
-+}
-+
-+void cxl_context_mm_users_get(struct cxl_context *ctx)
-+{
-+	if (ctx->mm)
-+		atomic_inc(&ctx->mm->mm_users);
-+}
-diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
-index 79e60ec..4d1b704 100644
---- a/drivers/misc/cxl/cxl.h
-+++ b/drivers/misc/cxl/cxl.h
-@@ -482,8 +482,6 @@ struct cxl_context {
- 	unsigned int sst_size, sst_lru;
- 
- 	wait_queue_head_t wq;
--	/* pid of the group leader associated with the pid */
--	struct pid *glpid;
- 	/* use mm context associated with this pid for ds faults */
- 	struct pid *pid;
- 	spinlock_t lock; /* Protects pending_irq_mask, pending_fault and fault_addr */
-@@ -551,6 +549,8 @@ struct cxl_context {
- 	 * CX4 only:
- 	 */
- 	struct list_head extra_irq_contexts;
-+
-+	struct mm_struct *mm;
- };
- 
- struct cxl_service_layer_ops {
-@@ -1024,4 +1024,13 @@ int cxl_adapter_context_lock(struct cxl *adapter);
- /* Unlock the contexts-lock if taken. Warn and force unlock otherwise */
- void cxl_adapter_context_unlock(struct cxl *adapter);
- 
-+/* Increases the reference count to "struct mm_struct" */
-+void cxl_context_mm_count_get(struct cxl_context *ctx);
-+
-+/* Decrements the reference count to "struct mm_struct" */
-+void cxl_context_mm_count_put(struct cxl_context *ctx);
-+
-+/* Increases the reference users to "struct mm_struct" */
-+void cxl_context_mm_users_get(struct cxl_context *ctx);
-+
- #endif
-diff --git a/drivers/misc/cxl/fault.c b/drivers/misc/cxl/fault.c
-index 2fa015c..14a5bfa 100644
---- a/drivers/misc/cxl/fault.c
-+++ b/drivers/misc/cxl/fault.c
-@@ -170,81 +170,19 @@ static void cxl_handle_page_fault(struct cxl_context *ctx,
- }
- 
- /*
-- * Returns the mm_struct corresponding to the context ctx via ctx->pid
-- * In case the task has exited we use the task group leader accessible
-- * via ctx->glpid to find the next task in the thread group that has a
-- * valid  mm_struct associated with it. If a task with valid mm_struct
-- * is found the ctx->pid is updated to use the task struct for subsequent
-- * translations. In case no valid mm_struct is found in the task group to
-- * service the fault a NULL is returned.
-+ * Returns the mm_struct corresponding to the context ctx.
-+ * mm_users == 0, the context may be in the process of being closed.
-  */
- static struct mm_struct *get_mem_context(struct cxl_context *ctx)
- {
--	struct task_struct *task = NULL;
--	struct mm_struct *mm = NULL;
--	struct pid *old_pid = ctx->pid;
--
--	if (old_pid == NULL) {
--		pr_warn("%s: Invalid context for pe=%d\n",
--			 __func__, ctx->pe);
-+	if (ctx->mm == NULL)
- 		return NULL;
--	}
--
--	task = get_pid_task(old_pid, PIDTYPE_PID);
--
--	/*
--	 * pid_alive may look racy but this saves us from costly
--	 * get_task_mm when the task is a zombie. In worst case
--	 * we may think a task is alive, which is about to die
--	 * but get_task_mm will return NULL.
--	 */
--	if (task != NULL && pid_alive(task))
--		mm = get_task_mm(task);
- 
--	/* release the task struct that was taken earlier */
--	if (task)
--		put_task_struct(task);
--	else
--		pr_devel("%s: Context owning pid=%i for pe=%i dead\n",
--			__func__, pid_nr(old_pid), ctx->pe);
--
--	/*
--	 * If we couldn't find the mm context then use the group
--	 * leader to iterate over the task group and find a task
--	 * that gives us mm_struct.
--	 */
--	if (unlikely(mm == NULL && ctx->glpid != NULL)) {
--
--		rcu_read_lock();
--		task = pid_task(ctx->glpid, PIDTYPE_PID);
--		if (task)
--			do {
--				mm = get_task_mm(task);
--				if (mm) {
--					ctx->pid = get_task_pid(task,
--								PIDTYPE_PID);
--					break;
--				}
--				task = next_thread(task);
--			} while (task && !thread_group_leader(task));
--		rcu_read_unlock();
--
--		/* check if we switched pid */
--		if (ctx->pid != old_pid) {
--			if (mm)
--				pr_devel("%s:pe=%i switch pid %i->%i\n",
--					 __func__, ctx->pe, pid_nr(old_pid),
--					 pid_nr(ctx->pid));
--			else
--				pr_devel("%s:Cannot find mm for pid=%i\n",
--					 __func__, pid_nr(old_pid));
--
--			/* drop the reference to older pid */
--			put_pid(old_pid);
--		}
--	}
-+	if (atomic_read(&ctx->mm->mm_users) == 0)
-+		return NULL;
- 
--	return mm;
-+	cxl_context_mm_users_get(ctx);
-+	return ctx->mm;
- }
- 
- 
-@@ -282,7 +220,6 @@ void cxl_handle_fault(struct work_struct *fault_work)
- 	if (!ctx->kernel) {
- 
- 		mm = get_mem_context(ctx);
--		/* indicates all the thread in task group have exited */
- 		if (mm == NULL) {
- 			pr_devel("%s: unable to get mm for pe=%d pid=%i\n",
- 				 __func__, ctx->pe, pid_nr(ctx->pid));
-diff --git a/drivers/misc/cxl/file.c b/drivers/misc/cxl/file.c
-index e7139c7..17b433f 100644
---- a/drivers/misc/cxl/file.c
-+++ b/drivers/misc/cxl/file.c
-@@ -18,6 +18,7 @@
- #include <linux/fs.h>
- #include <linux/mm.h>
- #include <linux/slab.h>
-+#include <linux/sched/mm.h>
- #include <asm/cputable.h>
- #include <asm/current.h>
- #include <asm/copro.h>
-@@ -216,8 +217,16 @@ static long afu_ioctl_start_work(struct cxl_context *ctx,
- 	 * process is still accessible.
- 	 */
- 	ctx->pid = get_task_pid(current, PIDTYPE_PID);
--	ctx->glpid = get_task_pid(current->group_leader, PIDTYPE_PID);
- 
-+	/* acquire a reference to the task's mm */
-+	ctx->mm = get_task_mm(current);
-+
-+	/* ensure this mm_struct can't be freed */
-+	cxl_context_mm_count_get(ctx);
-+
-+	/* decrement the use count */
-+	if (ctx->mm)
-+		mmput(ctx->mm);
- 
- 	trace_cxl_attach(ctx, work.work_element_descriptor, work.num_interrupts, amr);
- 
-@@ -225,9 +234,9 @@ static long afu_ioctl_start_work(struct cxl_context *ctx,
- 							amr))) {
- 		afu_release_irqs(ctx, ctx);
- 		cxl_adapter_context_put(ctx->afu->adapter);
--		put_pid(ctx->glpid);
- 		put_pid(ctx->pid);
--		ctx->glpid = ctx->pid = NULL;
-+		ctx->pid = NULL;
-+		cxl_context_mm_count_put(ctx);
- 		goto out;
- 	}
- 
--- 
-2.7.4
+	David
