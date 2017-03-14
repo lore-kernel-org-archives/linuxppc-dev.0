@@ -1,19 +1,23 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vjCc84PN1zDqq0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Mar 2017 22:46:00 +1100 (AEDT)
-In-Reply-To: <20170310023351.973-1-Larry.Finger@lwfinger.net>
-To: Larry Finger <Larry.Finger@lwfinger.net>,
- Linus Torvalds <torvalds@linux-foundation.org>
-From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: "regressions @ leemhuis . info" <regressions@leemhuis.info>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Larry Finger <Larry.Finger@lwfinger.net>
-Subject: Re: powerpc: Fix crash introduced with commit 5657933dbb6e
-Message-Id: <3vjCc82PtWz9s2G@ozlabs.org>
-Date: Tue, 14 Mar 2017 22:46:00 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vjCsc73DCzDqw2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Mar 2017 22:57:40 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Chris Packham <Chris.Packham@alliedtelesis.co.nz>,
+ Chandan Rajendra <chandan@linux.vnet.ibm.com>,
+ "linuxppc-dev\@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Subject: Re: syscall statx not implemented on powerpc
+In-Reply-To: <6226603a58ba485391854ba231193741@svr-chch-ex1.atlnz.lc>
+References: <7dba3a5469d34ac3890a5eaa16822a75@svr-chch-ex1.atlnz.lc>
+ <4396749.JbYdqAFZXV@localhost.localdomain>
+ <6226603a58ba485391854ba231193741@svr-chch-ex1.atlnz.lc>
+Date: Tue, 14 Mar 2017 22:57:39 +1100
+Message-ID: <87o9x4ul3g.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,27 +27,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2017-03-10 at 02:33:51 UTC, Larry Finger wrote:
-> Code inserted during the code merged between kernels 4.10 and 4.11-rc1
-> caused an early panic quickly followed by a complete shutdown for
-> PowerPC. The traceback was not displayed long enough to read or
-> photograph, thus it is not reproduced here.
-> 
-> The problem was bisected to commit 5657933dbb6e ("treewide: Move dma_ops
-> from struct dev_archdata into struct device"). The problem was a missing
-> copy of critical information from struct dev_archdata into struct device,
-> leading to the dereference of a null pointer.
-> 
-> This fix was suggested by Benjamin Herrenschmidt.
-> 
-> Fixes: commit 5657933dbb6e ("treewide: Move dma_ops from struct dev_archdata into struct device")
-> Signed-off-by: Larry Finger <Larry.Finger@lwfinger.net>
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: regressions@leemhuis.info <regressions@leemhuis.info>
+Chris Packham <Chris.Packham@alliedtelesis.co.nz> writes:
 
-Applied to powerpc fixes, thanks.
+> On 13/03/17 21:52, Chandan Rajendra wrote:
+>> On Monday, March 13, 2017 03:33:07 AM Chris Packham wrote:
+>>> Hi,
+>>>
+>>> I've just attempted to build a powerpc kernel from 4.11-rc2 using a
+>>> custom defconfig (available on request) and I'm hitting the following
+>>> error in the early stages of compilation.
+>>>
+>>> <stdin>:1325:2: error: #warning syscall statx not implemented [-Werror=cpp]
+>>>
+>>> Same thing seems to happen with mpc85xx_basic_defconfig.
+>>>
+>>> I don't actually need this syscall so I'd be happy to turn something off
+>>> to get things building. I did a quick search and couldn't see anything
+>>> on linuxppc-dev but google keeps correcting "statx" to "stats" so I
+>>> could have missed it.
+>>>
+>>
+>> The upstream commit
+>> (https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=a528d35e8bfcc521d7cb70aaf03e1bd296c8493f)
+>> that introduces the statx syscall provides a test program. I will wire-up the
+>> syscall on ppc64, run that test program and post the patch if the test program
+>> works well.
+>>
+>
+> Thanks, I'd be happy to test a patch here.
+>
+> In the meantime I worked around the build issue by adding __INGORE_statx 
+> to checksyscalls.sh.
 
-https://git.kernel.org/powerpc/c/46f401c4297a2232a037ad8801b6c8
+Is it actually breaking the build? It's meant to be a warning, and
+that's all I get.
 
 cheers
