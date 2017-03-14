@@ -3,18 +3,18 @@ Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
  [IPv6:2607:f8b0:400e:c05::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vj8Sm0ds2zDqYy
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Mar 2017 20:24:24 +1100 (AEDT)
-Received: by mail-pg0-x242.google.com with SMTP id b5so23281441pgg.1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Mar 2017 02:24:23 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vj8Sq2nXpzDqZD
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Mar 2017 20:24:27 +1100 (AEDT)
+Received: by mail-pg0-x242.google.com with SMTP id b5so23281733pgg.1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Mar 2017 02:24:27 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Nicholas Piggin <npiggin@gmail.com>,
  Gautham R Shenoy <ego@linux.vnet.ibm.com>,
  Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Subject: [PATCH 5/8] powerpc/64s: use PACA_THREAD_IDLE_STATE only in POWER8
-Date: Tue, 14 Mar 2017 19:23:46 +1000
-Message-Id: <20170314092349.10981-6-npiggin@gmail.com>
+Subject: [PATCH 6/8] powerpc/64s: idle expand usable core idle state bits
+Date: Tue, 14 Mar 2017 19:23:47 +1000
+Message-Id: <20170314092349.10981-7-npiggin@gmail.com>
 In-Reply-To: <20170314092349.10981-1-npiggin@gmail.com>
 References: <20170314092349.10981-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,71 +26,137 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-POWER9 does not use this field, so it should be moved into the POWER8
-code. Update the documentation in the paca struct too.
+In preparation for adding more bits to the core idle state word,
+move the lock bit up, and unlock by flipping the lock bit rather
+than masking off all but the thread bits.
+
+Add branch hints for atomic operations while we're here.
 
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/include/asm/paca.h   | 12 ++++++++++--
- arch/powerpc/kernel/idle_book3s.S | 13 +++++++------
- 2 files changed, 17 insertions(+), 8 deletions(-)
+ arch/powerpc/include/asm/cpuidle.h |  4 ++--
+ arch/powerpc/kernel/idle_book3s.S  | 33 +++++++++++++++++----------------
+ 2 files changed, 19 insertions(+), 18 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/paca.h b/arch/powerpc/include/asm/paca.h
-index 708c3e592eeb..bbb59e226a9f 100644
---- a/arch/powerpc/include/asm/paca.h
-+++ b/arch/powerpc/include/asm/paca.h
-@@ -165,11 +165,19 @@ struct paca_struct {
- #endif
+diff --git a/arch/powerpc/include/asm/cpuidle.h b/arch/powerpc/include/asm/cpuidle.h
+index 155731557c9b..b9d9f960dffd 100644
+--- a/arch/powerpc/include/asm/cpuidle.h
++++ b/arch/powerpc/include/asm/cpuidle.h
+@@ -7,8 +7,8 @@
+ #define PNV_THREAD_NAP                  1
+ #define PNV_THREAD_SLEEP                2
+ #define PNV_THREAD_WINKLE               3
+-#define PNV_CORE_IDLE_LOCK_BIT          0x100
+-#define PNV_CORE_IDLE_THREAD_BITS       0x0FF
++#define PNV_CORE_IDLE_LOCK_BIT          0x10000000
++#define PNV_CORE_IDLE_THREAD_BITS       0x000000FF
  
- #ifdef CONFIG_PPC_POWERNV
--	/* Per-core mask tracking idle threads and a lock bit-[L][TTTTTTTT] */
-+	/* CPU idle fields */
-+
-+	/*
-+	 * Per-core word used to synchronize between threads. See
-+	 * asm/cpuidle.h, PNV_CORE_IDLE_*
-+	 */
- 	u32 *core_idle_state_ptr;
--	u8 thread_idle_state;		/* PNV_THREAD_RUNNING/NAP/SLEEP	*/
- 	/* Mask to indicate thread id in core */
- 	u8 thread_mask;
-+
-+	/* POWER8 specific fields */
-+	/* PNV_THREAD_RUNNING/NAP/SLEEP	*/
-+	u8 thread_idle_state;
- 	/* Mask to denote subcore sibling threads */
- 	u8 subcore_sibling_mask;
- #endif
+ /*
+  * ============================ NOTE =================================
 diff --git a/arch/powerpc/kernel/idle_book3s.S b/arch/powerpc/kernel/idle_book3s.S
-index 9284ea0762b1..9bdfba75a5e7 100644
+index 9bdfba75a5e7..1c91dc35c559 100644
 --- a/arch/powerpc/kernel/idle_book3s.S
 +++ b/arch/powerpc/kernel/idle_book3s.S
-@@ -389,9 +389,6 @@ FTR_SECTION_ELSE
- 	bl	pnv_restore_hyp_resource_arch207
- ALT_FTR_SECTION_END_IFSET(CPU_FTR_ARCH_300)
+@@ -95,12 +95,12 @@ ALT_FTR_SECTION_END_IFSET(CPU_FTR_ARCH_300)
+ core_idle_lock_held:
+ 	HMT_LOW
+ 3:	lwz	r15,0(r14)
+-	andi.   r15,r15,PNV_CORE_IDLE_LOCK_BIT
++	andis.	r15,r15,PNV_CORE_IDLE_LOCK_BIT@h
+ 	bne	3b
+ 	HMT_MEDIUM
+ 	lwarx	r15,0,r14
+-	andi.	r9,r15,PNV_CORE_IDLE_LOCK_BIT
+-	bne	core_idle_lock_held
++	andis.	r9,r15,PNV_CORE_IDLE_LOCK_BIT@h
++	bne-	core_idle_lock_held
+ 	blr
  
--	li	r0,PNV_THREAD_RUNNING
--	stb	r0,PACA_THREAD_IDLE_STATE(r13)	/* Clear thread state */
--
- #ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
- 	li	r0,KVM_HWTHREAD_IN_KERNEL
- 	stb	r0,HSTATE_HWTHREAD_STATE(r13)
-@@ -445,9 +442,13 @@ pnv_restore_hyp_resource_arch207:
- 	ld	r2,PACATOC(r13);
+ /*
+@@ -213,8 +213,8 @@ pnv_enter_arch207_idle_mode:
+ lwarx_loop1:
+ 	lwarx	r15,0,r14
  
- 	lbz	r0,PACA_THREAD_IDLE_STATE(r13)
--	cmpwi   cr2,r0,PNV_THREAD_NAP
--	cmpwi   cr4,r0,PNV_THREAD_WINKLE
--	bgt     cr2,pnv_wakeup_tb_loss	/* Either sleep or Winkle */
-+	cmpwi	cr2,r0,PNV_THREAD_NAP
-+	cmpwi	cr4,r0,PNV_THREAD_WINKLE
-+	li	r0,PNV_THREAD_RUNNING
-+	stb	r0,PACA_THREAD_IDLE_STATE(r13)	/* Clear thread state */
-+
-+	bgt	cr2,pnv_wakeup_tb_loss	/* Either sleep or Winkle */
-+
+-	andi.   r9,r15,PNV_CORE_IDLE_LOCK_BIT
+-	bnel	core_idle_lock_held
++	andis.	r9,r15,PNV_CORE_IDLE_LOCK_BIT@h
++	bnel-	core_idle_lock_held
+ 
+ 	andc	r15,r15,r7			/* Clear thread bit */
+ 
+@@ -241,7 +241,7 @@ common_enter: /* common code for all the threads entering sleep or winkle */
+ 	IDLE_STATE_ENTER_SEQ_NORET(PPC_SLEEP)
+ 
+ fastsleep_workaround_at_entry:
+-	ori	r15,r15,PNV_CORE_IDLE_LOCK_BIT
++	oris	r15,r15,PNV_CORE_IDLE_LOCK_BIT@h
+ 	stwcx.	r15,0,r14
+ 	bne-	lwarx_loop1
+ 	isync
+@@ -251,10 +251,10 @@ fastsleep_workaround_at_entry:
+ 	li	r4,1
+ 	bl	opal_config_cpu_idle_state
+ 
+-	/* Clear Lock bit */
+-	li	r0,0
++	/* Unlock */
++	xoris	r15,r15,PNV_CORE_IDLE_LOCK_BIT@h
+ 	lwsync
+-	stw	r0,0(r14)
++	stw	r15,0(r14)
+ 	b	common_enter
+ 
+ enter_winkle:
+@@ -302,8 +302,8 @@ power_enter_stop:
+ 
+ lwarx_loop_stop:
+ 	lwarx   r15,0,r14
+-	andi.   r9,r15,PNV_CORE_IDLE_LOCK_BIT
+-	bnel    core_idle_lock_held
++	andis.	r9,r15,PNV_CORE_IDLE_LOCK_BIT@h
++	bnel-	core_idle_lock_held
+ 	andc    r15,r15,r7                      /* Clear thread bit */
+ 
+ 	stwcx.  r15,0,r14
+@@ -492,7 +492,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_HVMODE)
+ 	ld	r14,PACA_CORE_IDLE_STATE_PTR(r13)
+ lwarx_loop2:
+ 	lwarx	r15,0,r14
+-	andi.	r9,r15,PNV_CORE_IDLE_LOCK_BIT
++	andis.	r9,r15,PNV_CORE_IDLE_LOCK_BIT@h
+ 	/*
+ 	 * Lock bit is set in one of the 2 cases-
+ 	 * a. In the sleep/winkle enter path, the last thread is executing
+@@ -501,9 +501,10 @@ lwarx_loop2:
+ 	 * workaround undo code or resyncing timebase or restoring context
+ 	 * In either case loop until the lock bit is cleared.
+ 	 */
+-	bnel	core_idle_lock_held
++	bnel-	core_idle_lock_held
+ 
+-	cmpwi	cr2,r15,0
++	andi.	r9,r15,PNV_CORE_IDLE_THREAD_BITS
++	cmpwi	cr2,r9,0
  
  	/*
- 	 * We fall through here if PACA_THREAD_IDLE_STATE shows we are waking
+ 	 * At this stage
+@@ -512,7 +513,7 @@ lwarx_loop2:
+ 	 * cr4 - gt or eq if waking up from complete hypervisor state loss.
+ 	 */
+ 
+-	ori	r15,r15,PNV_CORE_IDLE_LOCK_BIT
++	oris	r15,r15,PNV_CORE_IDLE_LOCK_BIT@h
+ 	stwcx.	r15,0,r14
+ 	bne-	lwarx_loop2
+ 	isync
+@@ -602,7 +603,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_300)
+ 	mtspr	SPRN_WORC,r4
+ 
+ clear_lock:
+-	andi.	r15,r15,PNV_CORE_IDLE_THREAD_BITS
++	xoris	r15,r15,PNV_CORE_IDLE_LOCK_BIT@h
+ 	lwsync
+ 	stw	r15,0(r14)
+ 
 -- 
 2.11.0
