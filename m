@@ -1,19 +1,17 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vjCc40rTTzDqq5
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vjCc46L78zDqqP
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Mar 2017 22:45:56 +1100 (AEDT)
-In-Reply-To: <20170222044359.3663-1-aik@ozlabs.ru>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <20170228020048.8862-2-npiggin@gmail.com>
+To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
- David Gibson <david@gibson.dropbear.id.au>,
- Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: Re: [kernel] powerpc/powernv/ioda2: Gracefully fail if too many TCE
- levels requested
-Message-Id: <3vjCc35p6Qz9s5g@ozlabs.org>
-Date: Tue, 14 Mar 2017 22:45:54 +1100 (AEDT)
+Cc: Nicholas Piggin <npiggin@gmail.com>,
+ Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+Subject: Re: [1/3] powerpc/64s: fix handling of non-synchronous machine checks
+Message-Id: <3vjCc45Fp9z9s3l@ozlabs.org>
+Date: Tue, 14 Mar 2017 22:45:56 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,26 +21,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2017-02-22 at 04:43:59 UTC, Alexey Kardashevskiy wrote:
-> The IODA2 specification says that a 64 DMA address cannot use top 4 bits
-> (3 are reserved and one is a "TVE select"); bottom page_shift bits
-> cannot be used for multilevel table addressing either.
+On Tue, 2017-02-28 at 02:00:46 UTC, Nicholas Piggin wrote:
+> A synchronous machine check is an exception raised by the attempt to
+> execute the current instruction. If the error can't be corrected, it
+> can make sense to SIGBUS the currently running process.
 > 
-> The existing IODA2 table allocation code aligns the minimum TCE table
-> size to PAGE_SIZE so in the case of 64K system pages and 4K IOMMU pages,
-> we have 64-4-12=48 bits. Since 64K page stores 8192 TCEs, i.e. needs
-> 13 bits, the maximum number of levels is 48/13 = 3 so we physically
-> cannot address more and EEH happens on DMA accesses.
+> In other cases, the error condition is not related to the current
+> instruction, so killing the current process is not the right thing to
+> do.
 > 
-> This adds a check that too many levels were requested.
+> Today, all machine checks are MCE_SEV_ERROR_SYNC, so this has no
+> practical change. It will be used to handle POWER9 asynchronous
+> machine checks.
 > 
-> It is still possible to have 5 levels in the case of 4K system page size.
-> 
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> Acked-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 
-Applied to powerpc fixes, thanks.
+Series applied to powerpc fixes, thanks.
 
-https://git.kernel.org/powerpc/c/7aafac11e308d37ed3c509829bb43d
+https://git.kernel.org/powerpc/c/1363875bdb6317a2d0798284d7aaf3
 
 cheers
