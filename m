@@ -2,16 +2,15 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vjCc46L78zDqqP
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Mar 2017 22:45:56 +1100 (AEDT)
-In-Reply-To: <20170228020048.8862-2-npiggin@gmail.com>
-To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vjCc66HBZzDqqT
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Mar 2017 22:45:58 +1100 (AEDT)
+In-Reply-To: <20170307003931.20568-1-cyrilbur@gmail.com>
+To: Cyril Bur <cyrilbur@gmail.com>, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Nicholas Piggin <npiggin@gmail.com>,
- Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
-Subject: Re: [1/3] powerpc/64s: fix handling of non-synchronous machine checks
-Message-Id: <3vjCc45Fp9z9s3l@ozlabs.org>
-Date: Tue, 14 Mar 2017 22:45:56 +1100 (AEDT)
+Subject: Re: selftests/powerpc: Replace stxvx and lxvx with their equivalent
+ instruction
+Message-Id: <3vjCc614RJz9s4s@ozlabs.org>
+Date: Tue, 14 Mar 2017 22:45:57 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,23 +20,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2017-02-28 at 02:00:46 UTC, Nicholas Piggin wrote:
-> A synchronous machine check is an exception raised by the attempt to
-> execute the current instruction. If the error can't be corrected, it
-> can make sense to SIGBUS the currently running process.
+On Tue, 2017-03-07 at 00:39:31 UTC, Cyril Bur wrote:
+> On POWER8 (ISA 2.07) lxvx and stxvx are defined to be extended mnemonics
+> of lxvd2x and stxvd2x. For POWER9 (ISA 3.0) the HW architects in their
+> infinite wisdom made lxvx and stxvx instructions in their own right.
 > 
-> In other cases, the error condition is not related to the current
-> instruction, so killing the current process is not the right thing to
-> do.
+> POWER9 aware GCC will use the POWER9 instruction for lxvx and stxvx
+> causing these selftests to fail on POWER8. Further compounding the
+> issue, because of the way -mvsx works it will cause the power9
+> instructions to be used regardless of -mcpu=power8 to GCC or -mpower8 to
+> AS.
 > 
-> Today, all machine checks are MCE_SEV_ERROR_SYNC, so this has no
-> practical change. It will be used to handle POWER9 asynchronous
-> machine checks.
+> The safest way to address the problem for now is to not use the extended
+> mnemonic. These tests only perform register comparisons the big endian
+> only byte ordering for stxvd2x and lxvd2x does not impact the test.
 > 
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> Signed-off-by: Cyril Bur <cyrilbur@gmail.com>
+> Signed-off-by: Cyril Bur <cyrilbur@gmail.com>
+> Acked-by: Balbir Singh<bsingharora@gmail.com>
 
-Series applied to powerpc fixes, thanks.
+Applied to powerpc fixes, thanks.
 
-https://git.kernel.org/powerpc/c/1363875bdb6317a2d0798284d7aaf3
+https://git.kernel.org/powerpc/c/605df8d674ac65e044a0bf4998b28c
 
 cheers
