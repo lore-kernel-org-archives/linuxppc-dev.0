@@ -1,22 +1,72 @@
-Return-Path: <gregkh@linuxfoundation.org>
-Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
- [140.211.169.12])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <rth7680@gmail.com>
+Received: from mail-qk0-x243.google.com (mail-qk0-x243.google.com
+ [IPv6:2607:f8b0:400d:c09::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vj07H6c1czDqMd
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Mar 2017 14:08:43 +1100 (AEDT)
-Date: Tue, 14 Mar 2017 11:08:29 +0800
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
-Cc: Tejun Heo <tj@kernel.org>, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-Subject: Re: [PATCH] kernfs: Check KERNFS_HAS_RELEASE before calling
- kernfs_release_file()
-Message-ID: <20170314030829.GA26049@kroah.com>
-References: <20170314024700.6167-1-vaibhav@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vhwNS6S2wzDqc9
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Mar 2017 11:19:52 +1100 (AEDT)
+Received: by mail-qk0-x243.google.com with SMTP id n141so39321602qke.3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Mar 2017 17:19:52 -0700 (PDT)
+Sender: Richard Henderson <rth7680@gmail.com>
+Subject: Re: [RFC PATCH 00/13] Introduce first class virtual address spaces
+To: Till Smejkal <till.smejkal@googlemail.com>,
+ Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Matt Turner
+ <mattst88@gmail.com>, Vineet Gupta <vgupta@synopsys.com>,
+ Russell King <linux@armlinux.org.uk>,
+ Catalin Marinas <catalin.marinas@arm.com>, Will Deacon
+ <will.deacon@arm.com>, Steven Miao <realmz6@gmail.com>,
+ Richard Kuo <rkuo@codeaurora.org>, Tony Luck <tony.luck@intel.com>,
+ Fenghua Yu <fenghua.yu@intel.com>, James Hogan <james.hogan@imgtec.com>,
+ Ralf Baechle <ralf@linux-mips.org>,
+ "James E.J. Bottomley" <jejb@parisc-linux.org>, Helge Deller
+ <deller@gmx.de>, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>,
+ "David S. Miller" <davem@davemloft.net>,
+ Chris Metcalf <cmetcalf@mellanox.com>, Thomas Gleixner <tglx@linutronix.de>,
+ Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+ x86@kernel.org, Andy Lutomirski <luto@amacapital.net>,
+ Chris Zankel <chris@zankel.net>, Max Filippov <jcmvbkbc@gmail.com>,
+ Arnd Bergmann <arnd@arndb.de>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
+ Mauro Carvalho Chehab <mchehab@kernel.org>, Pawel Osciak <pawel@osciak.com>,
+ Marek Szyprowski <m.szyprowski@samsung.com>,
+ Kyungmin Park <kyungmin.park@samsung.com>,
+ David Woodhouse <dwmw2@infradead.org>,
+ Brian Norris <computersforpeace@gmail.com>,
+ Boris Brezillon <boris.brezillon@free-electrons.com>,
+ Marek Vasut <marek.vasut@gmail.com>, Richard Weinberger <richard@nod.at>,
+ Cyrille Pitchen <cyrille.pitchen@atmel.com>, Felipe Balbi
+ <balbi@kernel.org>, Alexander Viro <viro@zeniv.linux.org.uk>,
+ Benjamin LaHaise <bcrl@kvack.org>, Nadia Yvette Chambers
+ <nyc@holomorphy.com>, Jeff Layton <jlayton@poochiereds.net>,
+ "J. Bruce Fields" <bfields@fieldses.org>,
+ Peter Zijlstra <peterz@infradead.org>, Hugh Dickins <hughd@google.com>,
+ Arnaldo Carvalho de Melo <acme@kernel.org>,
+ Alexander Shishkin <alexander.shishkin@linux.intel.com>,
+ Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>
+References: <20170313221415.9375-1-till.smejkal@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org,
+ linux-snps-arc@lists.infradead.org, linux-arm-kernel@lists.infradead.org,
+ adi-buildroot-devel@lists.sourceforge.net, linux-hexagon@vger.kernel.org,
+ linux-ia64@vger.kernel.org, linux-metag@vger.kernel.org,
+ linux-mips@linux-mips.org, linux-parisc@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
+ linux-xtensa@linux-xtensa.org, linux-media@vger.kernel.org,
+ linux-mtd@lists.infradead.org, linux-usb@vger.kernel.org,
+ linux-fsdevel@vger.kernel.org, linux-aio@kvack.org, linux-mm@kvack.org,
+ linux-api@vger.kernel.org, linux-arch@vger.kernel.org,
+ alsa-devel@alsa-project.org
+From: Richard Henderson <rth@twiddle.net>
+Message-ID: <73f62aca-d442-9e4b-3e2c-6269e2632e68@twiddle.net>
+Date: Tue, 14 Mar 2017 10:18:56 +1000
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170314024700.6167-1-vaibhav@linux.vnet.ibm.com>
+In-Reply-To: <20170313221415.9375-1-till.smejkal@gmail.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,75 +76,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Mar 14, 2017 at 08:17:00AM +0530, Vaibhav Jain wrote:
-> Recently started seeing a kernel oops when a module tries removing a
-> memory mapped sysfs bin_attribute. On closer investigation the root
-> cause seems to be kernfs_release_file() trying to call
-> kernfs_op.release() callback that's NULL for such sysfs
-> bin_attributes. The oops occurs when kernfs_release_file() is called from
-> kernfs_drain_open_files() to cleanup any open handles with active
-> memory mappings.
-> 
-> The patch fixes this by checking for flag KERNFS_HAS_RELEASE before
-> calling kernfs_release_file() in function kernfs_drain_open_files().
-> 
-> On ppc64-le arch with cxl module the oops back-trace is of the
-> form below:
-> [  861.381126] Unable to handle kernel paging request for instruction fetch
-> [  861.381360] Faulting instruction address: 0x00000000
-> [  861.381428] Oops: Kernel access of bad area, sig: 11 [#1]
-> ....
-> [  861.382481] NIP: 0000000000000000 LR: c000000000362c60 CTR:
-> 0000000000000000
-> ....
-> Call Trace:
-> [c000000f1680b750] [c000000000362c34] kernfs_drain_open_files+0x104/0x1d0 (unreliable)
-> [c000000f1680b790] [c00000000035fa00] __kernfs_remove+0x260/0x2c0
-> [c000000f1680b820] [c000000000360da0] kernfs_remove_by_name_ns+0x60/0xe0
-> [c000000f1680b8b0] [c0000000003638f4] sysfs_remove_bin_file+0x24/0x40
-> [c000000f1680b8d0] [c00000000062a164] device_remove_bin_file+0x24/0x40
-> [c000000f1680b8f0] [d000000009b7b22c] cxl_sysfs_afu_remove+0x144/0x170 [cxl]
-> [c000000f1680b940] [d000000009b7c7e4] cxl_remove+0x6c/0x1a0 [cxl]
-> [c000000f1680b990] [c00000000052f694] pci_device_remove+0x64/0x110
-> [c000000f1680b9d0] [c0000000006321d4] device_release_driver_internal+0x1f4/0x2b0
-> [c000000f1680ba20] [c000000000525cb0] pci_stop_bus_device+0xa0/0xd0
-> [c000000f1680ba60] [c000000000525e80] pci_stop_and_remove_bus_device+0x20/0x40
-> [c000000f1680ba90] [c00000000004a6c4] pci_hp_remove_devices+0x84/0xc0
-> [c000000f1680bad0] [c00000000004a688] pci_hp_remove_devices+0x48/0xc0
-> [c000000f1680bb10] [c0000000009dfda4] eeh_reset_device+0xb0/0x290
-> [c000000f1680bbb0] [c000000000032b4c] eeh_handle_normal_event+0x47c/0x530
-> [c000000f1680bc60] [c000000000032e64] eeh_handle_event+0x174/0x350
-> [c000000f1680bd10] [c000000000033228] eeh_event_handler+0x1e8/0x1f0
-> [c000000f1680bdc0] [c0000000000d384c] kthread+0x14c/0x190
-> [c000000f1680be30] [c00000000000b5a0] ret_from_kernel_thread+0x5c/0xbc
-> 
-> Fixes: f83f3c515654("kernfs: fix locking around kernfs_ops->release()
-> callback")
-> Signed-off-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
-> ---
->  fs/kernfs/file.c | 3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
-> 
-> diff --git a/fs/kernfs/file.c b/fs/kernfs/file.c
-> index 8e4dc7a..ac2dfe0 100644
-> --- a/fs/kernfs/file.c
-> +++ b/fs/kernfs/file.c
-> @@ -809,7 +809,8 @@ void kernfs_drain_open_files(struct kernfs_node *kn)
->  		if (kn->flags & KERNFS_HAS_MMAP)
->  			unmap_mapping_range(inode->i_mapping, 0, 0, 1);
->  
-> -		kernfs_release_file(kn, of);
-> +		if (kn->flags & KERNFS_HAS_RELEASE)
-> +			kernfs_release_file(kn, of);
->  	}
->  
->  	mutex_unlock(&kernfs_open_file_mutex);
-> -- 
-> 2.9.3
+On 03/14/2017 08:14 AM, Till Smejkal wrote:
+> At the current state of the development, first class virtual address spaces
+> have one limitation, that we haven't been able to solve so far. The feature
+> allows, that different threads of the same process can execute in different
+> AS at the same time. This is possible, because the VAS-switch operation
+> only changes the active mm_struct for the task_struct of the calling
+> thread. However, when a thread switches into a first class virtual address
+> space, some parts of its original AS are duplicated into the new one to
+> allow the thread to continue its execution at its current state.
+> Accordingly, parts of the processes AS (e.g. the code section, data
+> section, heap section and stack sections) exist in multiple AS if the
+> process has a VAS attached to it. Changes to these shared memory regions
+> are synchronized between the address spaces whenever a thread switches
+> between two of them. Unfortunately, in some scenarios the kernel is not
+> able to properly synchronize all these shared memory regions because of
+> conflicting changes. One such example happens if there are two threads, one
+> executing in an attached first class virtual address space, the other in
+> the tasks original address space. If both threads make changes to the heap
+> section that cause expansion of the underlying vm_area_struct, the kernel
+> cannot correctly synchronize these changes, because that would cause parts
+> of the virtual address space to be overwritten with unrelated data. In the
+> current implementation such conflicts are only detected but not resolved
+> and result in an error code being returned by the kernel during the VAS
+> switch operation. Unfortunately, that means for the particular thread that
+> tried to make the switch, that it cannot do this anymore in the future and
+> accordingly has to be killed.
 
-Tejun, want to take this through your tree, or at the least, give me an
-ack for this?
+This sounds like a fairly fundamental problem to me.
 
-thanks,
+Is this an indication that full virtual address spaces are useless?  It would 
+seem like if you only use virtual address segments then you avoid all of the 
+problems with executing code, active stacks, and brk.
 
-greg k-h
+
+r~
