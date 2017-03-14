@@ -1,19 +1,31 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <clombard@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vjBPq4PFrzDq5W
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Mar 2017 21:51:59 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: linux-pcmcia@lists.infradead.org
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org, arnd@arndb.de
-Subject: Re: [PATCH] drivers/pcmcia: NO_IRQ removal for electra_cf.c
-In-Reply-To: <1473501690-11987-1-git-send-email-mpe@ellerman.id.au>
-References: <1473501690-11987-1-git-send-email-mpe@ellerman.id.au>
-Date: Tue, 14 Mar 2017 21:51:58 +1100
-Message-ID: <87wpbsuo4x.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vjBns74ZXzDqC0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Mar 2017 22:09:21 +1100 (AEDT)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v2EB8tM1000862
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Mar 2017 07:09:18 -0400
+Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 296c831nmu-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Mar 2017 07:09:18 -0400
+Received: from localhost
+ by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <clombard@linux.vnet.ibm.com>;
+ Tue, 14 Mar 2017 11:09:16 -0000
+From: Christophe Lombard <clombard@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, fbarrat@linux.vnet.ibm.com,
+ imunsie@au1.ibm.com, andrew.donnellan@au1.ibm.com
+Subject: [PATCH V2 1/6] cxl: Remove unused values in bare-metal environment.
+Date: Tue, 14 Mar 2017 12:08:37 +0100
+In-Reply-To: <1489489722-935-1-git-send-email-clombard@linux.vnet.ibm.com>
+References: <1489489722-935-1-git-send-email-clombard@linux.vnet.ibm.com>
+Message-Id: <1489489722-935-2-git-send-email-clombard@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,43 +35,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michael Ellerman <mpe@ellerman.id.au> writes:
+The two fields pid and tid of the structure cxl_irq_info are only used
+in the guest environment. To avoid confusion, it's not necessary
+to fill the fields in the bare-metal environment.
+The PSL Process and Thread Identification Register is only used when
+attaching a dedicated process for PSL8 only.
 
-> We'd like to eventually remove NO_IRQ on powerpc, so remove usages of it
-> from electra_cf.c which is a powerpc-only driver.
->
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-> ---
->  drivers/pcmcia/electra_cf.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
+Signed-off-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
+---
+ drivers/misc/cxl/native.c | 5 -----
+ 1 file changed, 5 deletions(-)
 
-Ping anyone?
-
-Or should I merge this via the powerpc tree?
-
-cheers
-
-> diff --git a/drivers/pcmcia/electra_cf.c b/drivers/pcmcia/electra_cf.c
-> index 4d7bc3f4124a..c6fe2a4a7a6a 100644
-> --- a/drivers/pcmcia/electra_cf.c
-> +++ b/drivers/pcmcia/electra_cf.c
-> @@ -207,7 +207,7 @@ static int electra_cf_probe(struct platform_device *ofdev)
->  		return -ENOMEM;
->  
->  	setup_timer(&cf->timer, electra_cf_timer, (unsigned long)cf);
-> -	cf->irq = NO_IRQ;
-> +	cf->irq = 0;
->  
->  	cf->ofdev = ofdev;
->  	cf->mem_phys = mem.start;
-> @@ -313,7 +313,7 @@ fail3:
->  fail2:
->  	release_mem_region(cf->mem_phys, cf->mem_size);
->  fail1:
-> -	if (cf->irq != NO_IRQ)
-> +	if (cf->irq)
->  		free_irq(cf->irq, cf);
->  
->  	if (cf->io_virt)
-> -- 
-> 2.7.4
+diff --git a/drivers/misc/cxl/native.c b/drivers/misc/cxl/native.c
+index 7ae7105..7257e8b 100644
+--- a/drivers/misc/cxl/native.c
++++ b/drivers/misc/cxl/native.c
+@@ -859,8 +859,6 @@ static int native_detach_process(struct cxl_context *ctx)
+ 
+ static int native_get_irq_info(struct cxl_afu *afu, struct cxl_irq_info *info)
+ {
+-	u64 pidtid;
+-
+ 	/* If the adapter has gone away, we can't get any meaningful
+ 	 * information.
+ 	 */
+@@ -870,9 +868,6 @@ static int native_get_irq_info(struct cxl_afu *afu, struct cxl_irq_info *info)
+ 	info->dsisr = cxl_p2n_read(afu, CXL_PSL_DSISR_An);
+ 	info->dar = cxl_p2n_read(afu, CXL_PSL_DAR_An);
+ 	info->dsr = cxl_p2n_read(afu, CXL_PSL_DSR_An);
+-	pidtid = cxl_p2n_read(afu, CXL_PSL_PID_TID_An);
+-	info->pid = pidtid >> 32;
+-	info->tid = pidtid & 0xffffffff;
+ 	info->afu_err = cxl_p2n_read(afu, CXL_AFU_ERR_An);
+ 	info->errstat = cxl_p2n_read(afu, CXL_PSL_ErrStat_An);
+ 	info->proc_handle = 0;
+-- 
+2.7.4
