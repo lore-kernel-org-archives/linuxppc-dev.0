@@ -1,46 +1,25 @@
-Return-Path: <James.Bottomley@HansenPartnership.com>
-Received: from bedivere.hansenpartnership.com (bedivere.hansenpartnership.com
- [66.63.167.143])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <alex.williamson@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vjJ2c1ZgFzDqGk
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Mar 2017 02:05:43 +1100 (AEDT)
-Message-ID: <1489503539.3214.17.camel@HansenPartnership.com>
-Subject: Re: [PATCH 08/29] drivers, md: convert mddev.active from atomic_t
- to refcount_t
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: "Reshetova, Elena" <elena.reshetova@intel.com>, Michael Ellerman
- <mpe@ellerman.id.au>, "gregkh@linuxfoundation.org"
- <gregkh@linuxfoundation.org>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "xen-devel@lists.xenproject.org" <xen-devel@lists.xenproject.org>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- "linux1394-devel@lists.sourceforge.net"
- <linux1394-devel@lists.sourceforge.net>, "linux-bcache@vger.kernel.org"
- <linux-bcache@vger.kernel.org>, "linux-raid@vger.kernel.org"
- <linux-raid@vger.kernel.org>, "linux-media@vger.kernel.org"
- <linux-media@vger.kernel.org>, "devel@linuxdriverproject.org"
- <devel@linuxdriverproject.org>, "linux-pci@vger.kernel.org"
- <linux-pci@vger.kernel.org>, "linux-s390@vger.kernel.org"
- <linux-s390@vger.kernel.org>, "fcoe-devel@open-fcoe.org"
- <fcoe-devel@open-fcoe.org>, "linux-scsi@vger.kernel.org"
- <linux-scsi@vger.kernel.org>, "open-iscsi@googlegroups.com"
- <open-iscsi@googlegroups.com>, "devel@driverdev.osuosl.org"
- <devel@driverdev.osuosl.org>, "target-devel@vger.kernel.org"
- <target-devel@vger.kernel.org>, "linux-serial@vger.kernel.org"
- <linux-serial@vger.kernel.org>, "linux-usb@vger.kernel.org"
- <linux-usb@vger.kernel.org>, "peterz@infradead.org" <peterz@infradead.org>,
- Hans Liljestrand <ishkamiel@gmail.com>, Kees Cook <keescook@chromium.org>,
- David Windsor <dwindsor@gmail.com>,  "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>
-Date: Tue, 14 Mar 2017 07:58:59 -0700
-In-Reply-To: <2236FBA76BA1254E88B949DDB74E612B41C588E8@IRSMSX102.ger.corp.intel.com>
-References: <1488810076-3754-1-git-send-email-elena.reshetova@intel.com>
- <1488810076-3754-9-git-send-email-elena.reshetova@intel.com>
- <87lgs8ukfq.fsf@concordia.ellerman.id.au>
- <2236FBA76BA1254E88B949DDB74E612B41C588E8@IRSMSX102.ger.corp.intel.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vjMv96GzdzDqXc
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Mar 2017 04:59:33 +1100 (AEDT)
+Date: Tue, 14 Mar 2017 11:59:29 -0600
+From: Alex Williamson <alex.williamson@redhat.com>
+To: David Gibson <david@gibson.dropbear.id.au>
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org,
+ Paul Mackerras <paulus@samba.org>, kvm-ppc@vger.kernel.org,
+ kvm@vger.kernel.org
+Subject: Re: [PATCH kernel v8 00/10] powerpc/kvm/vfio: Enable in-kernel
+ acceleration
+Message-ID: <20170314115922.6f1fbdb8@t450s.home>
+In-Reply-To: <20170314005533.GC12564@umbus.fritz.box>
+References: <20170310035337.22091-1-aik@ozlabs.ru>
+ <20170310044813.GB3167@umbus.fritz.box>
+ <0c355414-253f-2ceb-b45e-90d8c01fafdf@ozlabs.ru>
+ <20170314005533.GC12564@umbus.fritz.box>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,59 +29,110 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2017-03-14 at 12:29 +0000, Reshetova, Elena wrote:
-> > Elena Reshetova <elena.reshetova@intel.com> writes:
-> > 
-> > > refcount_t type and corresponding API should be
-> > > used instead of atomic_t when the variable is used as
-> > > a reference counter. This allows to avoid accidental
-> > > refcounter overflows that might lead to use-after-free
-> > > situations.
+On Tue, 14 Mar 2017 11:55:33 +1100
+David Gibson <david@gibson.dropbear.id.au> wrote:
+
+> On Tue, Mar 14, 2017 at 11:54:03AM +1100, Alexey Kardashevskiy wrote:
+> > On 10/03/17 15:48, David Gibson wrote:  
+> > > On Fri, Mar 10, 2017 at 02:53:27PM +1100, Alexey Kardashevskiy wrote:  
+> > >> This is my current queue of patches to add acceleration of TCE
+> > >> updates in KVM.
+> > >>
+> > >> This is based on Linus'es tree sha1 c1aa905a304e.  
+
+Hmm, sure about that?  03/10 doesn't apply.
+
 > > > 
-> > > Signed-off-by: Elena Reshetova <elena.reshetova@intel.com>
-> > > Signed-off-by: Hans Liljestrand <ishkamiel@gmail.com>
-> > > Signed-off-by: Kees Cook <keescook@chromium.org>
-> > > Signed-off-by: David Windsor <dwindsor@gmail.com>
-> > > ---
-> > >  drivers/md/md.c | 6 +++---
-> > >  drivers/md/md.h | 3 ++-
-> > >  2 files changed, 5 insertions(+), 4 deletions(-)
+> > > I think we're finally there - I've now sent an R-b for all patches.  
 > > 
-> > When booting linux-next (specifically 5be4921c9958ec) I'm seeing
-> > the
-> > backtrace below. I suspect this patch is just exposing an existing
-> > issue?
+> > Thanks for the patience.
+> > 
+> > 
+> > I supposed in order to proceed now I need an ack from Alex, correct?  
 > 
-> Yes, we have actually been following this issue in the another
-> thread. 
-> It looks like the object is re-used somehow, but I can't quite
-> understand how just by reading the code. 
-> This was what I put into the previous thread:
-> 
-> "The log below indicates that you are using your refcounter in a bit
-> weird way in mddev_find(). 
-> However, I can't find the place (just by reading the code) where you
-> would increment refcounter from zero (vs. setting it to one).
-> It looks like you either iterate over existing nodes (and increment
-> their counters, which should be >= 1 at the time of increment) or
-> create a new node, but then mddev_init() sets the counter to 1. "
-> 
-> If you can help to understand what is going on with the object
-> creation/destruction, would be appreciated!
-> 
-> Also Shaohua Li stopped this patch coming from his tree since the 
-> issue was caught at that time, so we are not going to merge this 
-> until we figure it out. 
+> That, or simply for him to merge it.
 
-Asking on the correct list (dm-devel) would have got you the easy
-answer:  The refcount behind mddev->active is a genuine atomic.  It has
-refcount properties but only if the array fails to initialise (in that
-case, final put kills it).  Once it's added to the system as a gendisk,
-it cannot be freed until md_free().  Thus its ->active count can go to
-zero (when it becomes inactive; usually because of an unmount). On a
-simple allocation regardless of outcome, the last executed statement in
-md_alloc is mddev_put(): that destroys the device if we didn't manage
-to create it or returns 0 and adds an inactive device to the system
-which the user can get with mddev_find().
+Given the diffstat, I'd guess you're looking for acks from me and maybe
+Paolo, but it looks like it should be merged through ppc trees.  Thanks,
 
-James
+Alex
+
+> > >>
+> > >> Please comment. Thanks.
+> > >>
+> > >> Changes:
+> > >> v8:
+> > >> * kept fixing oddities with error handling in 10/10
+> > >>
+> > >> v7:
+> > >> * added realmode's WARN_ON_ONCE_RM in arch/powerpc/kvm/book3s_64_vio_hv.c
+> > >>
+> > >> v6:
+> > >> * reworked the last patch in terms of error handling and parameters checking
+> > >>
+> > >> v5:
+> > >> * replaced "KVM: PPC: Separate TCE validation from update" with
+> > >> "KVM: PPC: iommu: Unify TCE checking"
+> > >> * changed already reviewed "powerpc/iommu/vfio_spapr_tce: Cleanup iommu_table disposal"
+> > >> * reworked "KVM: PPC: VFIO: Add in-kernel acceleration for VFIO"
+> > >> * more details in individual commit logs
+> > >>
+> > >> v4:
+> > >> * addressed comments from v3
+> > >> * updated subject lines with correct component names
+> > >> * regrouped the patchset in order:
+> > >> 	- powerpc fixes;
+> > >> 	- vfio_spapr_tce driver fixes;
+> > >> 	- KVM/PPC fixes;
+> > >> 	- KVM+PPC+VFIO;
+> > >> * everything except last 2 patches have "Reviewed-By: David"
+> > >>
+> > >> v3:
+> > >> * there was no full repost, only last patch was posted
+> > >>
+> > >> v2:
+> > >> * 11/11 reworked to use new notifiers, it is rather RFC as it still has
+> > >> a issue;
+> > >> * got 09/11, 10/11 to use notifiers in 11/11;
+> > >> * added rb: David to most of patches and added a comment in 05/11.
+> > >>
+> > >> Alexey Kardashevskiy (10):
+> > >>   powerpc/mmu: Add real mode support for IOMMU preregistered memory
+> > >>   powerpc/powernv/iommu: Add real mode version of
+> > >>     iommu_table_ops::exchange()
+> > >>   powerpc/iommu/vfio_spapr_tce: Cleanup iommu_table disposal
+> > >>   powerpc/vfio_spapr_tce: Add reference counting to iommu_table
+> > >>   KVM: PPC: Reserve KVM_CAP_SPAPR_TCE_VFIO capability number
+> > >>   KVM: PPC: Enable IOMMU_API for KVM_BOOK3S_64 permanently
+> > >>   KVM: PPC: Pass kvm* to kvmppc_find_table()
+> > >>   KVM: PPC: Use preregistered memory API to access TCE list
+> > >>   KVM: PPC: iommu: Unify TCE checking
+> > >>   KVM: PPC: VFIO: Add in-kernel acceleration for VFIO
+> > >>
+> > >>  Documentation/virtual/kvm/devices/vfio.txt |  22 +-
+> > >>  arch/powerpc/include/asm/iommu.h           |  32 ++-
+> > >>  arch/powerpc/include/asm/kvm_host.h        |   8 +
+> > >>  arch/powerpc/include/asm/kvm_ppc.h         |  12 +-
+> > >>  arch/powerpc/include/asm/mmu_context.h     |   4 +
+> > >>  include/uapi/linux/kvm.h                   |   9 +
+> > >>  arch/powerpc/kernel/iommu.c                |  86 +++++---
+> > >>  arch/powerpc/kvm/book3s_64_vio.c           | 330 ++++++++++++++++++++++++++++-
+> > >>  arch/powerpc/kvm/book3s_64_vio_hv.c        | 303 ++++++++++++++++++++++----
+> > >>  arch/powerpc/kvm/powerpc.c                 |   2 +
+> > >>  arch/powerpc/mm/mmu_context_iommu.c        |  39 ++++
+> > >>  arch/powerpc/platforms/powernv/pci-ioda.c  |  46 ++--
+> > >>  arch/powerpc/platforms/powernv/pci.c       |   1 +
+> > >>  arch/powerpc/platforms/pseries/iommu.c     |   3 +-
+> > >>  arch/powerpc/platforms/pseries/vio.c       |   2 +-
+> > >>  drivers/vfio/vfio_iommu_spapr_tce.c        |   2 +-
+> > >>  virt/kvm/vfio.c                            |  60 ++++++
+> > >>  arch/powerpc/kvm/Kconfig                   |   1 +
+> > >>  18 files changed, 855 insertions(+), 107 deletions(-)
+> > >>  
+> > >   
+> > 
+> >   
+> 
+> 
+> 
+> 
