@@ -1,34 +1,39 @@
-Return-Path: <geert.uytterhoeven@gmail.com>
-Received: from mail-it0-x242.google.com (mail-it0-x242.google.com
- [IPv6:2607:f8b0:4001:c0b::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <ego@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vjkck0xxMzDqMd
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Mar 2017 19:03:18 +1100 (AEDT)
-Received: by mail-it0-x242.google.com with SMTP id 14so2367625itw.2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Mar 2017 01:03:18 -0700 (PDT)
-MIME-Version: 1.0
-Sender: geert.uytterhoeven@gmail.com
-In-Reply-To: <87a88nv1b2.fsf@concordia.ellerman.id.au>
-References: <1489324627-19126-1-git-send-email-geert@linux-m68k.org>
- <1489324627-19126-17-git-send-email-geert@linux-m68k.org>
- <87a88nv1b2.fsf@concordia.ellerman.id.au>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Wed, 15 Mar 2017 09:03:13 +0100
-Message-ID: <CAMuHMdX95zwQUe8XyPpKvv6zsHG+c1Ke=eFBZCt+fNUxgP5O2g@mail.gmail.com>
-Subject: Re: [PATCH v2 16/23] MAINTAINERS: Add file patterns for powerpc
- device tree bindings
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vjkvj5D6nzDqMd
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Mar 2017 19:16:17 +1100 (AEDT)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v2F88oun021788
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Mar 2017 04:16:09 -0400
+Received: from e12.ny.us.ibm.com (e12.ny.us.ibm.com [129.33.205.202])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 296nfw09j9-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Mar 2017 04:16:09 -0400
+Received: from localhost
+ by e12.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ego@linux.vnet.ibm.com>;
+ Wed, 15 Mar 2017 04:16:08 -0400
+From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Scott Wood <oss@buserror.net>,
- Qiang Zhao <qiang.zhao@nxp.com>, Yangbo Lu <yangbo.lu@nxp.com>,
- york.sun@nxp.com
-Content-Type: text/plain; charset=UTF-8
+ "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+ Daniel Lezcano <daniel.lezcano@linaro.org>,
+ Michael Neuling <mikey@neuling.org>,
+ Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+ "Shreyas B. Prabhu" <shreyasbp@gmail.com>,
+ Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
+ Balbir Singh <bsingharora@gmail.com>,
+ Stewart Smith <stewart@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ linux-pm@vger.kernel.org, "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+Subject: [v2 PATCH] powernv-cpuidle: Validate DT property array size
+Date: Wed, 15 Mar 2017 13:45:53 +0530
+Message-Id: <1489565753-2693-1-git-send-email-ego@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,89 +43,125 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Michael,
+From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 
-On Wed, Mar 15, 2017 at 1:19 AM, Michael Ellerman <mpe@ellerman.id.au> wrot=
-e:
-> Geert Uytterhoeven <geert@linux-m68k.org> writes:
->> Submitters of device tree binding documentation may forget to CC
->> the subsystem maintainer if this is missing.
->>
->> Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
->> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
->> Cc: Paul Mackerras <paulus@samba.org>
->> Cc: Michael Ellerman <mpe@ellerman.id.au>
->> Cc: linuxppc-dev@lists.ozlabs.org
->> ---
->> Please apply this patch directly if you want to be involved in device
->> tree binding documentation for your subsystem.
->>
->> v2:
->>   - Rebased on top of commit a42715830d552d7c ("MAINTAINERS: Remove
->>     powerpc's "opal" pattern match), which just added "powerpc/opal",
->>     while obviously the whole "powerpc" hierarchy is of interest.
->>
->> Impact on next-20170310:
->
-> Actual diff ignoring ordering etc:
->
->  +Benjamin Herrenschmidt <benh@kernel.crashing.org> (supporter:LINUX FOR =
-POWERPC (32-BIT AND 64-BIT))
->  +Paul Mackerras <paulus@samba.org> (supporter:LINUX FOR POWERPC (32-BIT =
-AND 64-BIT))
->  +linuxppc-dev@lists.ozlabs.org (open list:LINUX FOR POWERPC (32-BIT AND =
-64-BIT))
->  -Scott Wood <oss@buserror.net> (commit_signer:5/11=3D45%)
->  -Zhao Qiang <qiang.zhao@nxp.com> (commit_signer:4/11=3D36%,authored:4/11=
-=3D36%)
->  -Christian Lamparter <chunkeey@googlemail.com> (commit_signer:1/11=3D9%)
->  -yangbo lu <yangbo.lu@nxp.com> (authored:1/11=3D9%)
->  -"Otto Kek=C3=A4l=C3=A4inen" <otto@seravo.fi> (authored:1/11=3D9%)
->  -Chris Packham <chris.packham@alliedtelesis.co.nz> (authored:1/11=3D9%)
->  -York Sun <york.sun@nxp.com> (authored:1/11=3D9%)
->
-> Which looks bad as all the NXP folks get dropped, but they should be
-> reading linuxppc-dev. So I think I'll merge this, unless anyone
-> disagrees.
+The various properties associated with powernv idle states such as
+names, flags, residency-ns, latencies-ns, psscr, psscr-mask are
+exposed in the device-tree as property arrays such the pointwise
+entries in each of these arrays correspond to the properties of the
+same idle state.
 
-They got dropped because in the absence of a maintainer entry, the
-last committers are listed. If they need to be listed, I can send patches t=
-o add
-more specific entries for 4xx and fsl DT bindings, like:
+This patch validates that the lengths of the property arrays are the
+same. If there is a mismatch, the patch will ensure that we bail out
+and not expose the platform idle states via cpuidle.
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 0f1c2f96c99aa936..40b392a4f399adbe 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -5266,6 +5266,7 @@ M:        Scott Wood <oss@buserror.net>
- L:     linuxppc-dev@lists.ozlabs.org
- L:     linux-arm-kernel@lists.infradead.org
- S:     Maintained
-+F:     Documentation/devicetree/bindings/powerpc/fsl/
- F:     drivers/soc/fsl/
- F:     include/linux/fsl/
+Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+---
+v1: https://lkml.org/lkml/2017/2/23/349
+Changes from v1: Print the full property array name in warning message.
 
-@@ -7540,6 +7541,7 @@ M:        Matt Porter <mporter@kernel.crashing.org>
- W:     http://www.penguinppc.org/
- L:     linuxppc-dev@lists.ozlabs.org
- S:     Maintained
-+F:     Documentation/devicetree/bindings/powerpc/4xx/
- F:     arch/powerpc/platforms/40x/
- F:     arch/powerpc/platforms/44x/
+ drivers/cpuidle/cpuidle-powernv.c | 64 +++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 61 insertions(+), 3 deletions(-)
 
-
-OK?
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
-.org
-
-In personal conversations with technical people, I call myself a hacker. Bu=
-t
-when I'm talking to journalists I just say "programmer" or something like t=
-hat.
-                                -- Linus Torvalds
+diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
+index 3705930..a06df51 100644
+--- a/drivers/cpuidle/cpuidle-powernv.c
++++ b/drivers/cpuidle/cpuidle-powernv.c
+@@ -197,11 +197,25 @@ static inline void add_powernv_state(int index, const char *name,
+ 	stop_psscr_table[index].mask = psscr_mask;
+ }
+ 
++/*
++ * Returns 0 if prop1_len == prop2_len. Else returns -1
++ */
++static inline int validate_dt_prop_sizes(const char *prop1, int prop1_len,
++					 const char *prop2, int prop2_len)
++{
++	if (prop1_len == prop2_len)
++		return 0;
++
++	pr_warn("cpuidle-powernv: array sizes don't match for %s and %s\n",
++		prop1, prop2);
++	return -1;
++}
++
+ static int powernv_add_idle_states(void)
+ {
+ 	struct device_node *power_mgt;
+ 	int nr_idle_states = 1; /* Snooze */
+-	int dt_idle_states;
++	int dt_idle_states, count;
+ 	u32 latency_ns[CPUIDLE_STATE_MAX];
+ 	u32 residency_ns[CPUIDLE_STATE_MAX];
+ 	u32 flags[CPUIDLE_STATE_MAX];
+@@ -226,6 +240,21 @@ static int powernv_add_idle_states(void)
+ 		goto out;
+ 	}
+ 
++	count = of_property_count_u32_elems(power_mgt,
++					    "ibm,cpu-idle-state-latencies-ns");
++
++	if (validate_dt_prop_sizes("ibm,cpu-idle-state-flags", dt_idle_states,
++				   "ibm,cpu-idle-state-latencies-ns",
++				   count) != 0)
++		goto out;
++
++	count = of_property_count_strings(power_mgt,
++					  "ibm,cpu-idle-state-names");
++	if (validate_dt_prop_sizes("ibm,cpu-idle-state-flags", dt_idle_states,
++				   "ibm,cpu-idle-state-names",
++				   count) != 0)
++		goto out;
++
+ 	/*
+ 	 * Since snooze is used as first idle state, max idle states allowed is
+ 	 * CPUIDLE_STATE_MAX -1
+@@ -260,6 +289,22 @@ static int powernv_add_idle_states(void)
+ 	has_stop_states = (flags[0] &
+ 			   (OPAL_PM_STOP_INST_FAST | OPAL_PM_STOP_INST_DEEP));
+ 	if (has_stop_states) {
++		count = of_property_count_u64_elems(power_mgt,
++						    "ibm,cpu-idle-state-psscr");
++		if (validate_dt_prop_sizes("ibm,cpu-idle-state-flags",
++					   dt_idle_states,
++					   "ibm,cpu-idle-state-psscr",
++					   count) != 0)
++			goto out;
++
++		count = of_property_count_u64_elems(power_mgt,
++						    "ibm,cpu-idle-state-psscr-mask");
++		if (validate_dt_prop_sizes("ibm,cpu-idle-state-flags",
++					   dt_idle_states,
++					   "ibm,cpu-idle-state-psscr-mask",
++					   count) != 0)
++			goto out;
++
+ 		if (of_property_read_u64_array(power_mgt,
+ 		    "ibm,cpu-idle-state-psscr", psscr_val, dt_idle_states)) {
+ 			pr_warn("cpuidle-powernv: missing ibm,cpu-idle-state-psscr in DT\n");
+@@ -274,8 +319,21 @@ static int powernv_add_idle_states(void)
+ 		}
+ 	}
+ 
+-	rc = of_property_read_u32_array(power_mgt,
+-		"ibm,cpu-idle-state-residency-ns", residency_ns, dt_idle_states);
++	count = of_property_count_u32_elems(power_mgt,
++					    "ibm,cpu-idle-state-residency-ns");
++
++	if (count < 0) {
++		rc = count;
++	} else if (validate_dt_prop_sizes("ibm,cpu-idle-state-flags",
++					  dt_idle_states,
++					  "ibm,cpu-idle-state-residency-ns",
++					  count) != 0) {
++		goto out;
++	} else {
++		rc = of_property_read_u32_array(power_mgt,
++						"ibm,cpu-idle-state-residency-ns",
++						residency_ns, dt_idle_states);
++	}
+ 
+ 	for (i = 0; i < dt_idle_states; i++) {
+ 		unsigned int exit_latency, target_residency;
+-- 
+1.9.4
