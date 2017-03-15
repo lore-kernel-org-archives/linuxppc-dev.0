@@ -2,16 +2,17 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vjpxt0SclzDqXk
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Mar 2017 22:18:26 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vjpxz6DJ7zDqXk
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Mar 2017 22:18:31 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: Oliver O'Halloran <oohall@gmail.com>, linuxppc-dev@lists.ozlabs.org
 Cc: Oliver O'Halloran <oohall@gmail.com>
-Subject: Re: [PATCH 1/5] powerpc/smp: use cpu_to_chip_id() to find siblings
-In-Reply-To: <20170302004920.21948-1-oohall@gmail.com>
+Subject: Re: [PATCH 2/5] powerpc/smp: add set_cpus_related()
+In-Reply-To: <20170302004920.21948-2-oohall@gmail.com>
 References: <20170302004920.21948-1-oohall@gmail.com>
-Date: Wed, 15 Mar 2017 22:18:22 +1100
-Message-ID: <877f3qlrep.fsf@concordia.ellerman.id.au>
+ <20170302004920.21948-2-oohall@gmail.com>
+Date: Wed, 15 Mar 2017 22:18:31 +1100
+Message-ID: <8760jalreg.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,52 +25,79 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 Oliver O'Halloran <oohall@gmail.com> writes:
-
-> To determine which logical CPUs are on the same core the kernel uses the
-> ibm,chipid property from the device tree node associated with that cpu.
-> The lookup for this this information is currently open coded in both
-> traverse_siblings() and traverse_siblings_chip_id(). This patch replaces
-> these manual lookups with the existing cpu_to_chip_id() function.
-
-Some minor nits.
-
-cpu_to_chip_id() actually searches recursively up the parents until it
-finds a ibm,chip-id, so it's not a 1:1 replacement for the existing
-logic, but it's probably still an OK conversion. It's still worth
-mentioning in the change log thought.
-
 > diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
-> index 893bd7f79be6..dfe0e1d9cd06 100644
+> index dfe0e1d9cd06..1c531887ca51 100644
 > --- a/arch/powerpc/kernel/smp.c
 > +++ b/arch/powerpc/kernel/smp.c
-> @@ -664,23 +655,19 @@ static void traverse_core_siblings(int cpu, bool add)
->  {
->  	struct device_node *l2_cache, *np;
->  	const struct cpumask *mask;
-> -	int i, chip, plen;
-> -	const __be32 *prop;
-> +	int chip_id;
-> +	int i;
+> @@ -377,6 +377,25 @@ static void smp_store_cpu_info(int id)
+>  #endif
+>  }
 >  
-> -	/* First see if we have ibm,chip-id properties in cpu nodes */
-> -	np = of_get_cpu_node(cpu, NULL);
-> -	if (np) {
-> -		chip = -1;
-> -		prop = of_get_property(np, "ibm,chip-id", &plen);
-> -		if (prop && plen == sizeof(int))
-> -			chip = of_read_number(prop, 1);
-> -		of_node_put(np);
-> -		if (chip >= 0) {
-> -			traverse_siblings_chip_id(cpu, add, chip);
-> -			return;
-> -		}
-> +	/* threads that share a chip-id are considered siblings (same die) */
+> +/*
+> + * Relationships between CPUs are maintained in a set of per-cpu cpumasks. We
+> + * need to ensure that they are kept consistant between CPUs when they are
+> + * changed.
+> + *
+> + * This is slightly tricky since the core mask must be a strict superset of
+> + * the sibling mask.
+> + */
+> +static void set_cpus_related(int i, int j, bool related, struct cpumask *(*relation_fn)(int))
+> +{
+> +	if (related) {
+> +		cpumask_set_cpu(i, relation_fn(j));
+> +		cpumask_set_cpu(j, relation_fn(i));
+> +	} else {
+> +		cpumask_clear_cpu(i, relation_fn(j));
+> +		cpumask_clear_cpu(j, relation_fn(i));
+> +	}
+> +}
 
-You might know it means the "same die", but AFAIK there's no actual
-definition for what the chip-id means, so let's not write comments that
-might be wrong in future. Just saying they're considered siblings is
-sufficient.
+I think you pushed the abstraction one notch too far on this one, or
+perhaps not far enough.
 
-Also "Threads" :)
+We end up with a function called "set" that might clear, depending on a
+bool you pass. Which is hard to parse, eg:
+
+	set_cpus_related(cpu, base + i, false, cpu_sibling_mask);
+
+And I know there's two places where we pass an existing bool "add", but
+there's four where we pass true or false.
+
+If we want to push it in that direction I think we should just pass the
+set/clear routine instead of the flag, so:
+
+	do_cpus_related(cpu, base + i, cpumask_clear_cpu, cpu_sibling_mask);
+
+But that might be overdoing it.
+
+So I think we should just do:
+
+static void set_cpus_related(int i, int j, struct cpumask *(*mask_func)(int))
+{
+        cpumask_set_cpu(i, mask_func(j));
+        cpumask_set_cpu(j, mask_func(i));
+}
+
+static void clear_cpus_related(int i, int j, struct cpumask *(*mask_func)(int))
+{
+        cpumask_clear_cpu(i, mask_func(j));
+        cpumask_clear_cpu(j, mask_func(i));
+}
+
+
+So the cases with add become:
+
+	if (add)
+		set_cpus_related(cpu, i, cpu_core_mask(i));
+	else
+		clear_cpus_related(cpu, i, cpu_core_mask(i));
+
+Which is not as pretty but more explicit.
+
+And the other cases look much better, eg:
+
+	clear_cpus_related(cpu, base + i, cpu_sibling_mask);
+
+??
 
 cheers
