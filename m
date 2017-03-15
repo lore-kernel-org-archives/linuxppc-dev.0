@@ -1,35 +1,76 @@
-Return-Path: <arndbergmann@gmail.com>
-Received: from mail-ot0-x241.google.com (mail-ot0-x241.google.com
- [IPv6:2607:f8b0:4003:c0f::241])
+Return-Path: <luto@amacapital.net>
+Received: from mail-vk0-x232.google.com (mail-vk0-x232.google.com
+ [IPv6:2607:f8b0:400c:c05::232])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vk4dJ6wZdzDqYK
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Mar 2017 08:35:00 +1100 (AEDT)
-Received: by mail-ot0-x241.google.com with SMTP id x37so4753919ota.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Mar 2017 14:35:00 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vjyLg5lXdzDqGk
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Mar 2017 03:51:54 +1100 (AEDT)
+Received: by mail-vk0-x232.google.com with SMTP id t8so11817808vke.3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Mar 2017 09:51:54 -0700 (PDT)
 MIME-Version: 1.0
-Sender: arndbergmann@gmail.com
-In-Reply-To: <59d8c3d4-1fdf-7f30-f78c-92ddc9028d36@ti.com>
-References: <20170315163730.17055-1-afd@ti.com>
- <CAK8P3a1XBUUtJHrzfTa3GRqh+beU+1MteQ0evB8Vvy5zABRbmw@mail.gmail.com>
- <59d8c3d4-1fdf-7f30-f78c-92ddc9028d36@ti.com>
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Wed, 15 Mar 2017 22:34:57 +0100
-Message-ID: <CAK8P3a3JxkbEyJig3M=Df=W8KDbwZURmfs7YdMWHx_K+2LsEfQ@mail.gmail.com>
-Subject: Re: [PATCH v3 0/7] Remove unneeded build directory traversals
-To: "Andrew F. Davis" <afd@ti.com>
-Cc: Miguel Ojeda Sandonis <miguel.ojeda.sandonis@gmail.com>,
- Wolfram Sang <wsa@the-dreams.de>, Richard Purdie <rpurdie@rpsys.net>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Mauro Carvalho Chehab <mchehab@osg.samsung.com>,
- Ulf Hansson <ulf.hansson@linaro.org>,
- Lauro Ramos Venancio <lauro.venancio@openbossa.org>,
- Aloisio Almeida Jr <aloisio.almeida@openbossa.org>,
- Samuel Ortiz <sameo@linux.intel.com>,
- kernel-janitors@vger.kernel.org, linux-pwm@vger.kernel.org,
- linux-wireless <linux-wireless@vger.kernel.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- linuxppc-dev@lists.ozlabs.org, linux-media@vger.kernel.org
+In-Reply-To: <20170314161229.tl6hsmian2gdep47@arch-dev>
+References: <CALCETrXKvNWv1OtoSo_HWf5ZHSvyGS1NsuQod6Zt+tEg3MT5Sg@mail.gmail.com>
+ <20170314161229.tl6hsmian2gdep47@arch-dev>
+From: Andy Lutomirski <luto@amacapital.net>
+Date: Wed, 15 Mar 2017 09:51:31 -0700
+Message-ID: <CALCETrX5gv+zdhOYro4-u3wGWjVCab28DFHPSm5=BVG_hKxy3A@mail.gmail.com>
+Subject: Re: [RFC PATCH 00/13] Introduce first class virtual address spaces
+To: Andy Lutomirski <luto@amacapital.net>, Andy Lutomirski <luto@kernel.org>,
+ Till Smejkal <till.smejkal@googlemail.com>,
+ Richard Henderson <rth@twiddle.net>,
+ Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Matt Turner <mattst88@gmail.com>,
+ Vineet Gupta <vgupta@synopsys.com>, Russell King <linux@armlinux.org.uk>,
+ Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>,
+ Steven Miao <realmz6@gmail.com>, Richard Kuo <rkuo@codeaurora.org>,
+ Tony Luck <tony.luck@intel.com>,
+ Fenghua Yu <fenghua.yu@intel.com>, James Hogan <james.hogan@imgtec.com>,
+ Ralf Baechle <ralf@linux-mips.org>,
+ "James E.J. Bottomley" <jejb@parisc-linux.org>,
+ Helge Deller <deller@gmx.de>, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>,
+ "David S. Miller" <davem@davemloft.net>, Chris Metcalf <cmetcalf@mellanox.com>,
+ Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+ "H. Peter Anvin" <hpa@zytor.com>,
+ X86 ML <x86@kernel.org>, Chris Zankel <chris@zankel.net>,
+ Max Filippov <jcmvbkbc@gmail.com>,
+ Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
+ Mauro Carvalho Chehab <mchehab@kernel.org>, Pawel Osciak <pawel@osciak.com>,
+ Marek Szyprowski <m.szyprowski@samsung.com>,
+ Kyungmin Park <kyungmin.park@samsung.com>,
+ David Woodhouse <dwmw2@infradead.org>,
+ Brian Norris <computersforpeace@gmail.com>,
+ Boris Brezillon <boris.brezillon@free-electrons.com>,
+ Marek Vasut <marek.vasut@gmail.com>, Richard Weinberger <richard@nod.at>,
+ Cyrille Pitchen <cyrille.pitchen@atmel.com>,
+ Felipe Balbi <balbi@kernel.org>, Alexander Viro <viro@zeniv.linux.org.uk>,
+ Benjamin LaHaise <bcrl@kvack.org>, Nadia Yvette Chambers <nyc@holomorphy.com>,
+ Jeff Layton <jlayton@poochiereds.net>, "J. Bruce Fields" <bfields@fieldses.org>,
+ Peter Zijlstra <peterz@infradead.org>, Hugh Dickins <hughd@google.com>,
+ Arnaldo Carvalho de Melo <acme@kernel.org>,
+ Alexander Shishkin <alexander.shishkin@linux.intel.com>,
+ Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ linux-alpha@vger.kernel.org, arcml <linux-snps-arc@lists.infradead.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ adi-buildroot-devel@lists.sourceforge.net, linux-hexagon@vger.kernel.org,
+ "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
+ linux-metag@vger.kernel.org,
+ Linux MIPS Mailing List <linux-mips@linux-mips.org>,
+ linux-parisc@vger.kernel.org,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
+ "linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>,
+ sparclinux@vger.kernel.org, linux-xtensa@linux-xtensa.org,
+ Linux Media Mailing List <linux-media@vger.kernel.org>,
+ linux-mtd@lists.infradead.org, USB list <linux-usb@vger.kernel.org>,
+ Linux FS Devel <linux-fsdevel@vger.kernel.org>,
+ linux-aio@kvack.org, "linux-mm@kvack.org" <linux-mm@kvack.org>,
+ Linux API <linux-api@vger.kernel.org>, linux-arch <linux-arch@vger.kernel.org>,
+ ALSA development <alsa-devel@alsa-project.org>
 Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -40,46 +81,106 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Mar 15, 2017 at 10:15 PM, Andrew F. Davis <afd@ti.com> wrote:
-> On 03/15/2017 04:03 PM, Arnd Bergmann wrote:
->> On Wed, Mar 15, 2017 at 5:37 PM, Andrew F. Davis <afd@ti.com> wrote:
->>> Hello all,
->>>
->>> I was building a kernel for x86 and noticed Make still descended into
->>> directories like drivers/gpu/drm/hisilicon, this seems kind of odd given
->>> nothing will be built here. It looks to be due to some directories being
->>> included in obj-y unconditionally instead of only when the relevant
->>> CONFIG_ is set.
->>>
->>> These patches are split by subsystem in-case, for some reason, a file in
->>> a directory does need to be built, I believe I have checked for all
->>> instances of this, but a quick review from some maintainers would be nice.
+On Tue, Mar 14, 2017 at 9:12 AM, Till Smejkal
+<till.smejkal@googlemail.com> wrote:
+> On Mon, 13 Mar 2017, Andy Lutomirski wrote:
+>> On Mon, Mar 13, 2017 at 7:07 PM, Till Smejkal
+>> <till.smejkal@googlemail.com> wrote:
+>> > On Mon, 13 Mar 2017, Andy Lutomirski wrote:
+>> >> This sounds rather complicated.  Getting TLB flushing right seems
+>> >> tricky.  Why not just map the same thing into multiple mms?
+>> >
+>> > This is exactly what happens at the end. The memory region that is des=
+cribed by the
+>> > VAS segment will be mapped in the ASes that use the segment.
 >>
->> I didn't see anything wrong with the patches, and made sure that there
->> are no tristate symbols controlling the subdirectory for anything that
->> requires a built-in driver (which would cause a link failure).
+>> So why is this kernel feature better than just doing MAP_SHARED
+>> manually in userspace?
+>
+> One advantage of VAS segments is that they can be globally queried by use=
+r programs
+> which means that VAS segments can be shared by applications that not nece=
+ssarily have
+> to be related. If I am not mistaken, MAP_SHARED of pure in memory data wi=
+ll only work
+> if the tasks that share the memory region are related (aka. have a common=
+ parent that
+> initialized the shared mapping). Otherwise, the shared mapping have to be=
+ backed by a
+> file.
+
+What's wrong with memfd_create()?
+
+> VAS segments on the other side allow sharing of pure in memory data by
+> arbitrary related tasks without the need of a file. This becomes especial=
+ly
+> interesting if one combines VAS segments with non-volatile memory since o=
+ne can keep
+> data structures in the NVM and still be able to share them between multip=
+le tasks.
+
+What's wrong with regular mmap?
+
+>
+>> >> Ick.  Please don't do this.  Can we please keep an mm as just an mm
+>> >> and not make it look magically different depending on which process
+>> >> maps it?  If you need a trampoline (which you do, of course), just
+>> >> write a trampoline in regular user code and map it manually.
+>> >
+>> > Did I understand you correctly that you are proposing that the switchi=
+ng thread
+>> > should make sure by itself that its code, stack, =E2=80=A6 memory regi=
+ons are properly setup
+>> > in the new AS before/after switching into it? I think, this would make=
+ using first
+>> > class virtual address spaces much more difficult for user applications=
+ to the extend
+>> > that I am not even sure if they can be used at all. At the moment, swi=
+tching into a
+>> > VAS is a very simple operation for an application because the kernel w=
+ill just simply
+>> > do the right thing.
 >>
->> I'm not sure about drivers/lguest, which has some special magic
->> in its Makefile, it's possible that this now fails with CONFIG_LGUEST=m.
->>
+>> Yes.  I think that having the same mm_struct look different from
+>> different tasks is problematic.  Getting it right in the arch code is
+>> going to be nasty.  The heuristics of what to share are also tough --
+>> why would text + data + stack or whatever you're doing be adequate?
+>> What if you're in a thread?  What if two tasks have their stacks in
+>> the same place?
 >
-> lguest and mmc are the strange ones, so I put them last in the series in
-> case they did need to be dropped.
+> The different ASes that a task now can have when it uses first class virt=
+ual address
+> spaces are not realized in the kernel by using only one mm_struct per tas=
+k that just
+> looks differently but by using multiple mm_structs - one for each AS that=
+ the task
+> can execute in. When a task attaches a first class virtual address space =
+to itself to
+> be able to use another AS, the kernel adds a temporary mm_struct to this =
+task that
+> contains the mappings of the first class virtual address space and the on=
+e shared
+> with the task's original AS. If a thread now wants to switch into this at=
+tached first
+> class virtual address space the kernel only changes the 'mm' and 'active_=
+mm' pointers
+> in the task_struct of the thread to the temporary mm_struct and performs =
+the
+> corresponding mm_switch operation. The original mm_struct of the thread w=
+ill not be
+> changed.
 >
-> lguest was supposed to have been taken from v1:
-> https://lkml.org/lkml/2016/6/20/1086
-> but it looks like it didn't so I re-introduced it for v3.
->
-> mmc caught some 0-day build warnings but I never got to the bottom of them.
+> Accordingly, I do not magically make mm_structs look differently dependin=
+g on the
+> task that uses it, but create temporary mm_structs that only contain mapp=
+ings to the
+> same memory regions.
 
-Ah, I see now what happened to mmc:
+This sounds complicated and fragile.  What happens if a heuristically
+shared region coincides with a region in the "first class address
+space" being selected?
 
-obj-$(subst m,y,$(CONFIG_MMC))  += host/
-tmio_mmc_core-$(subst m,y,$(CONFIG_MMC_SDHI))   += tmio_mmc_dma.o
-obj-$(subst m,y,$(CONFIG_MMC_SDHCI_PCI))        += sdhci-pci-data.o
+I think the right solution is "you're a user program playing virtual
+address games -- make sure you do it right".
 
-with CONFIG_MMC=m, this will fail to build the built-in files in
-drivers/mmc/host. I suppose this could be expressed in a different
-way these days, but dropping the patch would be easier.
-
-     Arnd
+--Andy
