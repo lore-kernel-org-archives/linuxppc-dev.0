@@ -2,17 +2,18 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vjqCm3RXBzDqMd
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Mar 2017 22:30:28 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vjqHT4NHlzDqBV
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Mar 2017 22:33:41 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Oliver O'Halloran <oohall@gmail.com>, linuxppc-dev@lists.ozlabs.org
-Cc: Oliver O'Halloran <oohall@gmail.com>
+To: Balbir Singh <bsingharora@gmail.com>, Oliver O'Halloran <oohall@gmail.com>,
+ linuxppc-dev@lists.ozlabs.org
 Subject: Re: [PATCH 5/5] powerpc/smp: Add Power9 scheduler topology
-In-Reply-To: <20170302004920.21948-5-oohall@gmail.com>
+In-Reply-To: <3ef222c7-15f7-e981-394d-61cf4b26a1cc@gmail.com>
 References: <20170302004920.21948-1-oohall@gmail.com>
  <20170302004920.21948-5-oohall@gmail.com>
-Date: Wed, 15 Mar 2017 22:30:26 +1100
-Message-ID: <87y3w6kca5.fsf@concordia.ellerman.id.au>
+ <3ef222c7-15f7-e981-394d-61cf4b26a1cc@gmail.com>
+Date: Wed, 15 Mar 2017 22:33:40 +1100
+Message-ID: <87varakc4r.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,37 +25,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Oliver O'Halloran <oohall@gmail.com> writes:
+Balbir Singh <bsingharora@gmail.com> writes:
 
-> diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
-> index 5571f30ff72d..5e1811b24415 100644
-> --- a/arch/powerpc/kernel/smp.c
-> +++ b/arch/powerpc/kernel/smp.c
-> @@ -724,10 +724,17 @@ static void update_cpu_masks(int cpu, bool onlining)
->  
->  	update_thread_mask(cpu, onlining);
->  
-> +	/* we need the l2 cache mask for the power9 scheduler topology */
-> +	if (cpu_has_feature(CPU_FTR_ARCH_300))
-> +		update_mask_by_l2(cpu, onlining, cpu_cache_mask);
+> On 02/03/17 11:49, Oliver O'Halloran wrote:
+>> In previous generations of Power processors each core had a private L2
+>> cache. The Power9 processor has a slightly different architecture where
+>> the L2 cache is shared among pairs of cores rather than being completely
+>> private.
+>> 
+>> Making the scheduler aware of this cache sharing allows the scheduler to
+>> make more intelligent migration decisions. When one core in the pair is
+>> overloaded tasks can be migrated to its paired core to improve throughput
+>> without cache-refilling penality typically associated with task
+>> migration.
+>
+> Could you please describe the changes to sched_domains w.r.t before and
+> after for P9.
 
-I guess I missed something somewhere, why do we need to check the CPU
-feature?
-
-...
-> @@ -829,7 +862,10 @@ void __init smp_cpus_done(unsigned int max_cpus)
->  
->  	dump_numa_cpu_topology();
->  
-> -	set_sched_topology(powerpc_topology);
-> +	if (cpu_has_feature(CPU_FTR_ARCH_300))
-> +		set_sched_topology(power9_topology);
-> +	else
-> +		set_sched_topology(powerpc_topology);
-  
-Ideally this would just all come from the device tree. If we detect that
-the L2 is shared then we tell the scheduler that, we shouldn't need to
-know that P9 is special. It certainly doesn't say anywhere in ISA 3.00
-that the L2 is shared.
+Yes please.
 
 cheers
