@@ -1,34 +1,34 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <geert.uytterhoeven@gmail.com>
+Received: from mail-it0-x242.google.com (mail-it0-x242.google.com
+ [IPv6:2607:f8b0:4001:c0b::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vjhKr1v5XzDqMd
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Mar 2017 17:20:16 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Peter Zijlstra <peterz@infradead.org>,
- Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
- Ingo Molnar <mingo@redhat.com>, Arnaldo Carvalho de Melo <acme@kernel.org>,
- Alexander Shishkin <alexander.shishkin@linux.intel.com>,
- Wang Nan <wangnan0@huawei.com>, Alexei Starovoitov <ast@kernel.org>,
- Stephane Eranian <eranian@google.com>
-Subject: Re: [PATCH v2 1/6] powerpc/perf: Define big-endian version of
- perf_mem_data_src
-In-Reply-To: <20170314125626.GE3328@twins.programming.kicks-ass.net>
-References: <1488796993-25495-1-git-send-email-maddy@linux.vnet.ibm.com>
- <1488796993-25495-2-git-send-email-maddy@linux.vnet.ibm.com>
- <20170306112228.GZ6515@twins.programming.kicks-ass.net>
- <2fc7e466-1675-ef27-b820-ef33ed0be7da@linux.vnet.ibm.com>
- <20170307102359.GE6515@twins.programming.kicks-ass.net>
- <78c1b95d-2e82-f998-74ba-ebb1fdf5bb45@linux.vnet.ibm.com>
- <20170313125041.GB3328@twins.programming.kicks-ass.net>
- <f73bc62f-d1cf-2599-95f9-69bd8e27da4e@linux.vnet.ibm.com>
- <20170314125626.GE3328@twins.programming.kicks-ass.net>
-Date: Wed, 15 Mar 2017 17:20:15 +1100
-Message-ID: <8737efukm8.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vjkck0xxMzDqMd
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Mar 2017 19:03:18 +1100 (AEDT)
+Received: by mail-it0-x242.google.com with SMTP id 14so2367625itw.2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Mar 2017 01:03:18 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain
+Sender: geert.uytterhoeven@gmail.com
+In-Reply-To: <87a88nv1b2.fsf@concordia.ellerman.id.au>
+References: <1489324627-19126-1-git-send-email-geert@linux-m68k.org>
+ <1489324627-19126-17-git-send-email-geert@linux-m68k.org>
+ <87a88nv1b2.fsf@concordia.ellerman.id.au>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Wed, 15 Mar 2017 09:03:13 +0100
+Message-ID: <CAMuHMdX95zwQUe8XyPpKvv6zsHG+c1Ke=eFBZCt+fNUxgP5O2g@mail.gmail.com>
+Subject: Re: [PATCH v2 16/23] MAINTAINERS: Add file patterns for powerpc
+ device tree bindings
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Scott Wood <oss@buserror.net>,
+ Qiang Zhao <qiang.zhao@nxp.com>, Yangbo Lu <yangbo.lu@nxp.com>,
+ york.sun@nxp.com
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,79 +38,89 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Peter,
+Hi Michael,
 
-Peter Zijlstra <peterz@infradead.org> writes:
-> On Tue, Mar 14, 2017 at 02:31:51PM +0530, Madhavan Srinivasan wrote:
+On Wed, Mar 15, 2017 at 1:19 AM, Michael Ellerman <mpe@ellerman.id.au> wrot=
+e:
+> Geert Uytterhoeven <geert@linux-m68k.org> writes:
+>> Submitters of device tree binding documentation may forget to CC
+>> the subsystem maintainer if this is missing.
+>>
+>> Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+>> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>> Cc: Paul Mackerras <paulus@samba.org>
+>> Cc: Michael Ellerman <mpe@ellerman.id.au>
+>> Cc: linuxppc-dev@lists.ozlabs.org
+>> ---
+>> Please apply this patch directly if you want to be involved in device
+>> tree binding documentation for your subsystem.
+>>
+>> v2:
+>>   - Rebased on top of commit a42715830d552d7c ("MAINTAINERS: Remove
+>>     powerpc's "opal" pattern match), which just added "powerpc/opal",
+>>     while obviously the whole "powerpc" hierarchy is of interest.
+>>
+>> Impact on next-20170310:
 >
->> >Huh? PPC hasn't yet implemented this? Then why are you fixing it?
->> 
->> yes, PPC hasn't implemented this (until now).
+> Actual diff ignoring ordering etc:
 >
-> until now where?
-
-On powerpc there is currently no kernel support for filling the data_src
-value with anything meaningful.
-
-A user can still request PERF_SAMPLE_DATA_SRC (perf report -d), but they
-just get the default value from perf_sample_data_init(), which is
-PERF_MEM_NA.
-
-Though even that is currently broken with a big endian perf tool.
-
->> And did not understand "Then why are you fixing it?"
+>  +Benjamin Herrenschmidt <benh@kernel.crashing.org> (supporter:LINUX FOR =
+POWERPC (32-BIT AND 64-BIT))
+>  +Paul Mackerras <paulus@samba.org> (supporter:LINUX FOR POWERPC (32-BIT =
+AND 64-BIT))
+>  +linuxppc-dev@lists.ozlabs.org (open list:LINUX FOR POWERPC (32-BIT AND =
+64-BIT))
+>  -Scott Wood <oss@buserror.net> (commit_signer:5/11=3D45%)
+>  -Zhao Qiang <qiang.zhao@nxp.com> (commit_signer:4/11=3D36%,authored:4/11=
+=3D36%)
+>  -Christian Lamparter <chunkeey@googlemail.com> (commit_signer:1/11=3D9%)
+>  -yangbo lu <yangbo.lu@nxp.com> (authored:1/11=3D9%)
+>  -"Otto Kek=C3=A4l=C3=A4inen" <otto@seravo.fi> (authored:1/11=3D9%)
+>  -Chris Packham <chris.packham@alliedtelesis.co.nz> (authored:1/11=3D9%)
+>  -York Sun <york.sun@nxp.com> (authored:1/11=3D9%)
 >
-> I see no implementation; so why are you poking at it.
+> Which looks bad as all the NXP folks get dropped, but they should be
+> reading linuxppc-dev. So I think I'll merge this, unless anyone
+> disagrees.
 
-Maddy has posted an implementation of the kernel part for powerpc in
-patch 2 of this series, but maybe you're not on Cc?
+They got dropped because in the absence of a maintainer entry, the
+last committers are listed. If they need to be listed, I can send patches t=
+o add
+more specific entries for 4xx and fsl DT bindings, like:
 
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 0f1c2f96c99aa936..40b392a4f399adbe 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -5266,6 +5266,7 @@ M:        Scott Wood <oss@buserror.net>
+ L:     linuxppc-dev@lists.ozlabs.org
+ L:     linux-arm-kernel@lists.infradead.org
+ S:     Maintained
++F:     Documentation/devicetree/bindings/powerpc/fsl/
+ F:     drivers/soc/fsl/
+ F:     include/linux/fsl/
 
-Regardless of us wanting to do the kernel side on powerpc, the current
-API is broken on big endian.
-
-That's because in the kernel the PERF_MEM_NA value is constructed using
-shifts:
-
-  /* TLB access */
-  #define PERF_MEM_TLB_NA		0x01 /* not available */
-  ...
-  #define PERF_MEM_TLB_SHIFT	26
-  
-  #define PERF_MEM_S(a, s) \
-  	(((__u64)PERF_MEM_##a##_##s) << PERF_MEM_##a##_SHIFT)
-  
-  #define PERF_MEM_NA (PERF_MEM_S(OP, NA)   |\
-  		    PERF_MEM_S(LVL, NA)   |\
-  		    PERF_MEM_S(SNOOP, NA) |\
-  		    PERF_MEM_S(LOCK, NA)  |\
-  		    PERF_MEM_S(TLB, NA))
-
-Which works out as:
-
-  ((0x01 << 0) | (0x01 << 5) | (0x01 << 19) | (0x01 << 24) | (0x01 << 26))
-
-
-Which means the PERF_MEM_NA value comes out of the kernel as 0x5080021
-in CPU endian.
-
-But then in the perf tool, the code uses the bitfields to inspect the
-value, and currently the bitfields are defined using little endian
-ordering.
-
-So eg. in perf_mem__tlb_scnprintf() we see:
-  data_src->val = 0x5080021
-             op = 0x0
-            lvl = 0x0
-          snoop = 0x0
-           lock = 0x0
-           dtlb = 0x0
-           rsvd = 0x5080021
+@@ -7540,6 +7541,7 @@ M:        Matt Porter <mporter@kernel.crashing.org>
+ W:     http://www.penguinppc.org/
+ L:     linuxppc-dev@lists.ozlabs.org
+ S:     Maintained
++F:     Documentation/devicetree/bindings/powerpc/4xx/
+ F:     arch/powerpc/platforms/40x/
+ F:     arch/powerpc/platforms/44x/
 
 
-So this patch does what I think is the minimal fix, of changing the
-definition of the bitfields to match the values that are already
-exported by the kernel on big endian. And it makes no change on little
-endian.
+OK?
 
-cheers
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
+.org
+
+In personal conversations with technical people, I call myself a hacker. Bu=
+t
+when I'm talking to journalists I just say "programmer" or something like t=
+hat.
+                                -- Linus Torvalds
