@@ -1,52 +1,23 @@
-Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <arndbergmann@gmail.com>
+Received: from mail-ot0-x244.google.com (mail-ot0-x244.google.com
+ [IPv6:2607:f8b0:4003:c0f::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vjtVG6xTczDqGk
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Mar 2017 00:58:14 +1100 (AEDT)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v2FDsNlw030926
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Mar 2017 09:58:06 -0400
-Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [125.16.236.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2971ktgax4-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Mar 2017 09:58:05 -0400
-Received: from localhost
- by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Wed, 15 Mar 2017 19:28:03 +0530
-Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay06.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v2FDvxJH16449586
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Mar 2017 19:27:59 +0530
-Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
- by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v2FDvwbp028506
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Mar 2017 19:27:59 +0530
-Date: Wed, 15 Mar 2017 19:27:55 +0530
-From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
- Ingo Molnar <mingo@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
- "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH v3 1/2] powerpc: split ftrace bits into a separate file
-References: <d2058affbf317d0f72e2df970f97b7b53ade47cb.1487702678.git.naveen.n.rao@linux.vnet.ibm.com>
- <20170227103650.0955c5eb@gandalf.local.home>
- <87wpcbota8.fsf@concordia.ellerman.id.au>
- <20170228091147.69b836a8@gandalf.local.home>
- <871sugkogi.fsf@concordia.ellerman.id.au>
- <20170310104530.357213c1@gandalf.local.home>
- <20170310160853.GD20400@naverao1-tp.localdomain>
- <20170310115445.4f7e4a2b@gandalf.local.home>
- <20170315090516.GE20400@naverao1-tp.localdomain>
- <20170315091116.2a59c39f@gandalf.local.home>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vjwCn4Lj8zDqGk
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Mar 2017 02:15:49 +1100 (AEDT)
+Received: by mail-ot0-x244.google.com with SMTP id a12so3146537ota.2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Mar 2017 08:15:49 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170315091116.2a59c39f@gandalf.local.home>
-Message-Id: <20170315135755.GG20400@naverao1-tp.localdomain>
+Sender: arndbergmann@gmail.com
+In-Reply-To: <OF8A8205F0.34AB5FF3-ON002580E3.00393B30-002580E3.003A62F5@notes.na.collabserv.com>
+References: <OF8A8205F0.34AB5FF3-ON002580E3.00393B30-002580E3.003A62F5@notes.na.collabserv.com>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Wed, 15 Mar 2017 16:15:46 +0100
+Message-ID: <CAK8P3a1+LtWf-VdJeA-0TycrEDkiPztMOnNN5wCfjrxYPtsVvg@mail.gmail.com>
+Subject: Re: ioctl structs differ from x86_64?
+To: Harshal Patil <harshal.patil@in.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Sudipto Ghosh <sudiptoghosh@in.ibm.com>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -56,25 +27,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2017/03/15 09:11AM, Steven Rostedt wrote:
-> On Wed, 15 Mar 2017 14:35:16 +0530
-> "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
-> 
-> > I don't have a strong opinion about this, but I feel that x86 can simply 
-> > use ftrace_64.S, seeing as the current name is mcount_64.S.
-> > 
-> > Other architectures could do something similar too, or fall back to 
-> > ftrace_hook.S. That way, all ftrace low-level code can simply be 
-> > referred to as arch/*/ftrace_*.S
-> 
-> Just to clarify, I'm currently working on patches to clean up the
-> ftrace.S code in x86, and I renamed mcount_64.S to ftrace_64.S. I'm
-> also moving the ftrace code out of entry_32.S into a ftrace_32.S file
-> as well. Patches will hopefully be posted soon.
+On Tue, Mar 14, 2017 at 11:37 AM, Harshal Patil
+<harshal.patil@in.ibm.com> wrote:
+> Hello,
+>
+> I am looking into a bug,
+> https://bugzilla.linux.ibm.com/show_bug.cgi?id=152493 ( external mirror is
+> at, https://github.com/opencontainers/runc/issues/1364)
+>
+> Recently in runc code, they added this code
+> https://github.com/opencontainers/runc/commit/eea28f480db435dbef4a275de9776b9934818b8c#diff-5f5c07d0cab3ce2086437d3d43c0d25fR155.
+> As you can see they set -onlcr to get rid of \r (line no. 164). Golang, in
+> which runc is written, doesn't have any bindings for ioctls.  This means you
+> have to invoke C code directly (that's what they are doing there).
+>
+> Our guess is the ioctls in ppc64le differ than x86_64, and thats why the
+> code which is clearing onclr bit
+> (https://github.com/opencontainers/runc/commit/eea28f480db435dbef4a275de9776b9934818b8c#diff-5f5c07d0cab3ce2086437d3d43c0d25fR164)
+> is failing on ppc64le but works fine on x86_64.
+>
+> Any pointers on the possible solution would be really helpful.
 
-Good to know, thanks for clarifying.
+There are a couple of reasons for ioctl numbers to differ:
 
-In light of that, I hope that you're ok with the changes proposed to the 
-ftrace bits under arch/powerpc in this patchset?
+- like this one, the command number may be defined in asm/ioctls.h.
+Most architectures
+  in the kernel are the same, some (arm, blackfin, frv, m68k, and
+s390) only differ
+  in FIOQSIZE, others (alpha, mips, parisc, powerpc, sh, sparc, and
+xtensa) redefine
+  all the traditional file (FIO*) and tty (TC*, TIO*) commands
 
-- Naveen
+- command numbers that are defined in terms of structure sizes depend on the
+  architectures type definitions (e.g. long, off_t, uid_t, ...) that
+can differ in both
+  size and alignment
+
+- alpha, mips, powerpc and sparc use _IOC_SIZEBITS==13, everything else uses
+  _IOC_SIZEBITS==14, and that in turn means that the majority of ioctl commands
+  are different between those four and the rest.
+
+      Arnd
