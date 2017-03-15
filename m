@@ -2,8 +2,8 @@ Return-Path: <>
 Received: from fllnx210.ext.ti.com (fllnx210.ext.ti.com [198.47.19.17])
  (using TLSv1 with cipher DHE-RSA-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vjyWB5xHPzDqXk
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Mar 2017 03:59:18 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vjyWD2NTkzDqGk
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Mar 2017 03:59:19 +1100 (AEDT)
 From: "Andrew F. Davis" <afd@ti.com>
 To: Miguel Ojeda Sandonis <miguel.ojeda.sandonis@gmail.com>, Wolfram Sang
  <wsa@the-dreams.de>, Richard Purdie <rpurdie@rpsys.net>, Benjamin
@@ -15,10 +15,10 @@ To: Miguel Ojeda Sandonis <miguel.ojeda.sandonis@gmail.com>, Wolfram Sang
 CC: <linuxppc-dev@lists.ozlabs.org>, <linux-media@vger.kernel.org>,
  <linux-wireless@vger.kernel.org>, <linux-pwm@vger.kernel.org>,
  <linux-kernel@vger.kernel.org>, "Andrew F . Davis" <afd@ti.com>
-Subject: [PATCH v3 1/7] pwm: Only descend into pwm directory when CONFIG_PWM
- is set
-Date: Wed, 15 Mar 2017 11:37:24 -0500
-Message-ID: <20170315163730.17055-2-afd@ti.com>
+Subject: [PATCH v3 2/7] amba: Only descend into amba directory when
+ CONFIG_ARM_AMBA is set
+Date: Wed, 15 Mar 2017 11:37:25 -0500
+Message-ID: <20170315163730.17055-3-afd@ti.com>
 In-Reply-To: <20170315163730.17055-1-afd@ti.com>
 References: <20170315163730.17055-1-afd@ti.com>
 MIME-Version: 1.0
@@ -32,7 +32,7 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When CONFIG_PWM is not set make will still descend into the pwm
+When CONFIG_ARM_AMBA is not set make will still descend into the amba
 directory but nothing will be built. This produces unneeded build
 artifacts and messages in addition to slowing the build. Fix this here.
 
@@ -42,17 +42,17 @@ Signed-off-by: Andrew F. Davis <afd@ti.com>
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/Makefile b/drivers/Makefile
-index 2eced9afba53..00d86749a843 100644
+index 00d86749a843..23712a92a89a 100644
 --- a/drivers/Makefile
 +++ b/drivers/Makefile
-@@ -13,7 +13,7 @@ obj-$(CONFIG_GENERIC_PHY)	+= phy/
- # GPIO must come after pinctrl as gpios may need to mux pins etc
- obj-$(CONFIG_PINCTRL)		+= pinctrl/
- obj-$(CONFIG_GPIOLIB)		+= gpio/
--obj-y				+= pwm/
-+obj-$(CONFIG_PWM)		+= pwm/
- obj-$(CONFIG_PCI)		+= pci/
- # PCI dwc controller drivers
- obj-y				+= pci/dwc/
+@@ -31,7 +31,7 @@ obj-$(CONFIG_SFI)		+= sfi/
+ # PnP must come after ACPI since it will eventually need to check if acpi
+ # was used and do nothing if so
+ obj-$(CONFIG_PNP)		+= pnp/
+-obj-y				+= amba/
++obj-$(CONFIG_ARM_AMBA)		+= amba/
+ 
+ obj-y				+= clk/
+ # Many drivers will want to use DMA so this has to be made available
 -- 
 2.11.0
