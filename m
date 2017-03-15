@@ -1,26 +1,29 @@
-Return-Path: <dja@axtens.net>
-Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
- [IPv6:2607:f8b0:400e:c05::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <afd@ti.com>
+Received: from lelnx194.ext.ti.com (lelnx194.ext.ti.com [198.47.27.80])
+ (using TLSv1 with cipher DHE-RSA-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vk5sD6c9ZzDqYP
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Mar 2017 09:30:23 +1100 (AEDT)
-Received: by mail-pg0-x242.google.com with SMTP id y17so3676542pgh.0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Mar 2017 15:30:23 -0700 (PDT)
-From: Daniel Axtens <dja@axtens.net>
-To: David Laight <David.Laight@ACULAB.COM>,
- "linuxppc-dev\@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-crypto\@vger.kernel.org" <linux-crypto@vger.kernel.org>
-Cc: "anton\@samba.org" <anton@samba.org>
-Subject: RE: [PATCH 1/4] crypto: powerpc - Factor out the core CRC vpmsum
- algorithm
-In-Reply-To: <063D6719AE5E284EB5DD2968C1650D6DCFFB1A81@AcuExch.aculab.com>
-References: <20170315123737.20234-1-dja@axtens.net>
- <063D6719AE5E284EB5DD2968C1650D6DCFFB1A81@AcuExch.aculab.com>
-Date: Thu, 16 Mar 2017 09:30:17 +1100
-Message-ID: <87efxy41hi.fsf@possimpible.ozlabs.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vk7D76S7jzDqYX
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Mar 2017 10:31:49 +1100 (AEDT)
+Subject: Re: [PATCH v3 0/7] Remove unneeded build directory traversals
+To: Arnd Bergmann <arnd@arndb.de>
+References: <20170315163730.17055-1-afd@ti.com>
+ <CAK8P3a1XBUUtJHrzfTa3GRqh+beU+1MteQ0evB8Vvy5zABRbmw@mail.gmail.com>
+CC: Miguel Ojeda Sandonis <miguel.ojeda.sandonis@gmail.com>, Wolfram Sang
+ <wsa@the-dreams.de>, Richard Purdie <rpurdie@rpsys.net>, Benjamin
+ Herrenschmidt <benh@kernel.crashing.org>, Mauro Carvalho Chehab
+ <mchehab@osg.samsung.com>, Ulf Hansson <ulf.hansson@linaro.org>,
+ Lauro Ramos Venancio <lauro.venancio@openbossa.org>, Aloisio Almeida Jr
+ <aloisio.almeida@openbossa.org>, Samuel Ortiz <sameo@linux.intel.com>,
+ <kernel-janitors@vger.kernel.org>, <linux-pwm@vger.kernel.org>,
+ linux-wireless <linux-wireless@vger.kernel.org>, Linux Kernel Mailing List
+ <linux-kernel@vger.kernel.org>,
+ <linuxppc-dev@lists.ozlabs.org>, <linux-media@vger.kernel.org>
+From: "Andrew F. Davis" <afd@ti.com>
+Message-ID: <59d8c3d4-1fdf-7f30-f78c-92ddc9028d36@ti.com>
+Date: Wed, 15 Mar 2017 16:15:49 -0500
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <CAK8P3a1XBUUtJHrzfTa3GRqh+beU+1MteQ0evB8Vvy5zABRbmw@mail.gmail.com>
+Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,32 +33,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi David,
+On 03/15/2017 04:03 PM, Arnd Bergmann wrote:
+> On Wed, Mar 15, 2017 at 5:37 PM, Andrew F. Davis <afd@ti.com> wrote:
+>> Hello all,
+>>
+>> I was building a kernel for x86 and noticed Make still descended into
+>> directories like drivers/gpu/drm/hisilicon, this seems kind of odd given
+>> nothing will be built here. It looks to be due to some directories being
+>> included in obj-y unconditionally instead of only when the relevant
+>> CONFIG_ is set.
+>>
+>> These patches are split by subsystem in-case, for some reason, a file in
+>> a directory does need to be built, I believe I have checked for all
+>> instances of this, but a quick review from some maintainers would be nice.
+> 
+> I didn't see anything wrong with the patches, and made sure that there
+> are no tristate symbols controlling the subdirectory for anything that
+> requires a built-in driver (which would cause a link failure).
+> 
+> I'm not sure about drivers/lguest, which has some special magic
+> in its Makefile, it's possible that this now fails with CONFIG_LGUEST=m.
+> 
 
-> While not part of this change, the unrolled loops look as though
-> they just destroy the cpu cache.
-> I'd like be convinced that anything does CRC over long enough buffers
-> to make it a gain at all.
->
-> With modern (not that modern now) superscalar cpus you can often
-> get the loop instructions 'for free'.
-> Sometimes pipelining the loop is needed to get full throughput.
-> Unlike the IP checksum, you don't even have to 'loop carry' the
-> cpu carry flag.
+lguest and mmc are the strange ones, so I put them last in the series in
+case they did need to be dropped.
 
-Internal testing on a NVMe device with T10DIF enabled on 4k blocks
-shows a 20x - 30x improvement. Without these patches, crc_t10dif_generic
-uses over 60% of CPU time - with these patches CRC drops to single
-digits.
+lguest was supposed to have been taken from v1:
+https://lkml.org/lkml/2016/6/20/1086
+but it looks like it didn't so I re-introduced it for v3.
 
-I should probably have lead with that, sorry.
+mmc caught some 0-day build warnings but I never got to the bottom of them.
 
-FWIW, the original patch showed a 3.7x gain on btrfs as well -
-6dd7a82cc54e ("crypto: powerpc - Add POWER8 optimised crc32c")
+Anyway, I have no problem with these two being held back until the magic
+in their Makefile is sorted out.
 
-When Anton wrote the original code he had access to IBM's internal
-tooling for looking at how instructions flow through the various stages
-of the CPU, so I trust it's pretty much optimal from that point of view.
+Thanks,
+Andrew
 
-Regards,
-Daniel
+>       Arnd
+> 
