@@ -1,23 +1,20 @@
-Return-Path: <arndbergmann@gmail.com>
-Received: from mail-ot0-x244.google.com (mail-ot0-x244.google.com
- [IPv6:2607:f8b0:4003:c0f::244])
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
+ [IPv6:2607:f8b0:400e:c00::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vjwCn4Lj8zDqGk
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Mar 2017 02:15:49 +1100 (AEDT)
-Received: by mail-ot0-x244.google.com with SMTP id a12so3146537ota.2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Mar 2017 08:15:49 -0700 (PDT)
-MIME-Version: 1.0
-Sender: arndbergmann@gmail.com
-In-Reply-To: <OF8A8205F0.34AB5FF3-ON002580E3.00393B30-002580E3.003A62F5@notes.na.collabserv.com>
-References: <OF8A8205F0.34AB5FF3-ON002580E3.00393B30-002580E3.003A62F5@notes.na.collabserv.com>
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Wed, 15 Mar 2017 16:15:46 +0100
-Message-ID: <CAK8P3a1+LtWf-VdJeA-0TycrEDkiPztMOnNN5wCfjrxYPtsVvg@mail.gmail.com>
-Subject: Re: ioctl structs differ from x86_64?
-To: Harshal Patil <harshal.patil@in.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, Sudipto Ghosh <sudiptoghosh@in.ibm.com>
-Content-Type: text/plain; charset=UTF-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vjwrN2Fs3zDqXy
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Mar 2017 02:44:03 +1100 (AEDT)
+Received: by mail-pf0-x242.google.com with SMTP id o126so2575756pfb.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Mar 2017 08:44:03 -0700 (PDT)
+From: Nicholas Piggin <npiggin@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Nicholas Piggin <npiggin@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>,
+ Arnd Bergmann <arnd@arndb.de>
+Subject: [PATCH] powerpc/pasemi,
+ cbe: Do not process decremeter or external wakeup from powersave
+Date: Thu, 16 Mar 2017 01:43:50 +1000
+Message-Id: <20170315154350.6256-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,44 +24,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Mar 14, 2017 at 11:37 AM, Harshal Patil
-<harshal.patil@in.ibm.com> wrote:
-> Hello,
->
-> I am looking into a bug,
-> https://bugzilla.linux.ibm.com/show_bug.cgi?id=152493 ( external mirror is
-> at, https://github.com/opencontainers/runc/issues/1364)
->
-> Recently in runc code, they added this code
-> https://github.com/opencontainers/runc/commit/eea28f480db435dbef4a275de9776b9934818b8c#diff-5f5c07d0cab3ce2086437d3d43c0d25fR155.
-> As you can see they set -onlcr to get rid of \r (line no. 164). Golang, in
-> which runc is written, doesn't have any bindings for ioctls.  This means you
-> have to invoke C code directly (that's what they are doing there).
->
-> Our guess is the ioctls in ppc64le differ than x86_64, and thats why the
-> code which is clearing onclr bit
-> (https://github.com/opencontainers/runc/commit/eea28f480db435dbef4a275de9776b9934818b8c#diff-5f5c07d0cab3ce2086437d3d43c0d25fR164)
-> is failing on ppc64le but works fine on x86_64.
->
-> Any pointers on the possible solution would be really helpful.
+Hi,
 
-There are a couple of reasons for ioctl numbers to differ:
+I would like to start using a dedicated stack for system reset interrupt
+and treat it as a Linux nmi, which makes it tricky to call complex
+interrupt handlers directly from the system reset trap handler.
 
-- like this one, the command number may be defined in asm/ioctls.h.
-Most architectures
-  in the kernel are the same, some (arm, blackfin, frv, m68k, and
-s390) only differ
-  in FIOQSIZE, others (alpha, mips, parisc, powerpc, sh, sparc, and
-xtensa) redefine
-  all the traditional file (FIO*) and tty (TC*, TIO*) commands
+So I would like to remove the decrementer and external handler calls from
+Cell and Pasemi platforms' system reset handler. I think we can just
+remove them if they can be handled when they re-fire as normal interrupts?
+At the moment I don't have environments set up to test if this works.
 
-- command numbers that are defined in terms of structure sizes depend on the
-  architectures type definitions (e.g. long, off_t, uid_t, ...) that
-can differ in both
-  size and alignment
+This will make the powersave wakeup a bit slower. We could add alternate
+code to IDLETEST here to branch out to powersave wakeup handler like
+powernv does. I haven't got a patch for that yet but I could help write
+one if it is important and it can be tested.
 
-- alpha, mips, powerpc and sparc use _IOC_SIZEBITS==13, everything else uses
-  _IOC_SIZEBITS==14, and that in turn means that the majority of ioctl commands
-  are different between those four and the rest.
+Thanks,
+Nick
+---
+ arch/powerpc/platforms/cell/pervasive.c | 11 +++++++----
+ arch/powerpc/platforms/pasemi/idle.c    | 11 +++++++----
+ 2 files changed, 14 insertions(+), 8 deletions(-)
 
-      Arnd
+diff --git a/arch/powerpc/platforms/cell/pervasive.c b/arch/powerpc/platforms/cell/pervasive.c
+index e7d075077cb0..a88944db9fc3 100644
+--- a/arch/powerpc/platforms/cell/pervasive.c
++++ b/arch/powerpc/platforms/cell/pervasive.c
+@@ -88,11 +88,14 @@ static void cbe_power_save(void)
+ static int cbe_system_reset_exception(struct pt_regs *regs)
+ {
+ 	switch (regs->msr & SRR1_WAKEMASK) {
+-	case SRR1_WAKEEE:
+-		do_IRQ(regs);
+-		break;
+ 	case SRR1_WAKEDEC:
+-		timer_interrupt(regs);
++		set_dec(1);
++	case SRR1_WAKEEE:
++		/*
++		 * Handle these when interrupts get re-enabled and we take
++		 * them as regular exceptions. We are in an NMI context
++		 * and can't handle these here.
++		 */
+ 		break;
+ 	case SRR1_WAKEMT:
+ 		return cbe_sysreset_hack();
+diff --git a/arch/powerpc/platforms/pasemi/idle.c b/arch/powerpc/platforms/pasemi/idle.c
+index 75b296bc51af..44e0d9226f0a 100644
+--- a/arch/powerpc/platforms/pasemi/idle.c
++++ b/arch/powerpc/platforms/pasemi/idle.c
+@@ -53,11 +53,14 @@ static int pasemi_system_reset_exception(struct pt_regs *regs)
+ 		regs->nip = regs->link;
+ 
+ 	switch (regs->msr & SRR1_WAKEMASK) {
+-	case SRR1_WAKEEE:
+-		do_IRQ(regs);
+-		break;
+ 	case SRR1_WAKEDEC:
+-		timer_interrupt(regs);
++		set_dec(1);
++	case SRR1_WAKEEE:
++		/*
++		 * Handle these when interrupts get re-enabled and we take
++		 * them as regular exceptions. We are in an NMI context
++		 * and can't handle these here.
++		 */
+ 		break;
+ 	default:
+ 		/* do system reset */
+-- 
+2.11.0
