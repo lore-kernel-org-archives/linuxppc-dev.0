@@ -2,22 +2,22 @@ Return-Path: <alex.williamson@redhat.com>
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vjxbx29pMzDqGk
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Mar 2017 03:18:21 +1100 (AEDT)
-Date: Wed, 15 Mar 2017 10:18:18 -0600
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vjy3v1TCczDqGk
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Mar 2017 03:39:07 +1100 (AEDT)
+Date: Wed, 15 Mar 2017 10:39:04 -0600
 From: Alex Williamson <alex.williamson@redhat.com>
-To: David Gibson <david@gibson.dropbear.id.au>
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org,
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Cc: linuxppc-dev@lists.ozlabs.org, David Gibson <david@gibson.dropbear.id.au>,
  Paul Mackerras <paulus@samba.org>, kvm-ppc@vger.kernel.org,
  kvm@vger.kernel.org
 Subject: Re: [PATCH kernel v8 10/10] KVM: PPC: VFIO: Add in-kernel
  acceleration for VFIO
-Message-ID: <20170315101812.38946ca9@t450s.home>
-In-Reply-To: <20170315044014.GA12603@umbus.fritz.box>
+Message-ID: <20170315103904.4f38c021@t450s.home>
+In-Reply-To: <5afcdeee-96f7-f1fd-5f4f-20071f4395a6@ozlabs.ru>
 References: <20170310035337.22091-1-aik@ozlabs.ru>
  <20170310035337.22091-11-aik@ozlabs.ru>
  <20170314150527.1c46c3c8@t450s.home>
- <20170315044014.GA12603@umbus.fritz.box>
+ <5afcdeee-96f7-f1fd-5f4f-20071f4395a6@ozlabs.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -29,82 +29,182 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 15 Mar 2017 15:40:14 +1100
-David Gibson <david@gibson.dropbear.id.au> wrote:
-> > > diff --git a/arch/powerpc/kvm/book3s_64_vio.c b/arch/powerpc/kvm/book3s_64_vio.c
-> > > index e96a4590464c..be18cda01e1b 100644
-> > > --- a/arch/powerpc/kvm/book3s_64_vio.c
-> > > +++ b/arch/powerpc/kvm/book3s_64_vio.c
-> > > @@ -28,6 +28,10 @@
-> > >  #include <linux/hugetlb.h>
-> > >  #include <linux/list.h>
-> > >  #include <linux/anon_inodes.h>
-> > > +#include <linux/iommu.h>
-> > > +#include <linux/file.h>
-> > > +#include <linux/vfio.h>
-> > > +#include <linux/module.h>
-> > >  
-> > >  #include <asm/tlbflush.h>
-> > >  #include <asm/kvm_ppc.h>
-> > > @@ -40,6 +44,36 @@
-> > >  #include <asm/udbg.h>
-> > >  #include <asm/iommu.h>
-> > >  #include <asm/tce.h>
-> > > +#include <asm/mmu_context.h>
-> > > +
-> > > +static void kvm_vfio_group_put_external_user(struct vfio_group *vfio_group)
-> > > +{
-> > > +	void (*fn)(struct vfio_group *);
-> > > +
-> > > +	fn = symbol_get(vfio_group_put_external_user);
-> > > +	if (WARN_ON(!fn))
-> > > +		return;
-> > > +
-> > > +	fn(vfio_group);
-> > > +
-> > > +	symbol_put(vfio_group_put_external_user);
-> > > +}
-> > > +
-> > > +static int kvm_vfio_external_user_iommu_id(struct vfio_group *vfio_group)
-> > > +{
-> > > +	int (*fn)(struct vfio_group *);
-> > > +	int ret = -1;
-> > > +
-> > > +	fn = symbol_get(vfio_external_user_iommu_id);
-> > > +	if (!fn)
-> > > +		return ret;
-> > > +
-> > > +	ret = fn(vfio_group);
-> > > +
-> > > +	symbol_put(vfio_external_user_iommu_id);
-> > > +
-> > > +	return ret;
-> > > +}  
+On Thu, 16 Mar 2017 00:21:07 +1100
+Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
+
+> On 15/03/17 08:05, Alex Williamson wrote:
+> > On Fri, 10 Mar 2017 14:53:37 +1100
+> > Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
+> >   
+> >> This allows the host kernel to handle H_PUT_TCE, H_PUT_TCE_INDIRECT
+> >> and H_STUFF_TCE requests targeted an IOMMU TCE table used for VFIO
+> >> without passing them to user space which saves time on switching
+> >> to user space and back.
+> >>
+> >> This adds H_PUT_TCE/H_PUT_TCE_INDIRECT/H_STUFF_TCE handlers to KVM.
+> >> KVM tries to handle a TCE request in the real mode, if failed
+> >> it passes the request to the virtual mode to complete the operation.
+> >> If it a virtual mode handler fails, the request is passed to
+> >> the user space; this is not expected to happen though.
+> >>
+> >> To avoid dealing with page use counters (which is tricky in real mode),
+> >> this only accelerates SPAPR TCE IOMMU v2 clients which are required
+> >> to pre-register the userspace memory. The very first TCE request will
+> >> be handled in the VFIO SPAPR TCE driver anyway as the userspace view
+> >> of the TCE table (iommu_table::it_userspace) is not allocated till
+> >> the very first mapping happens and we cannot call vmalloc in real mode.
+> >>
+> >> If we fail to update a hardware IOMMU table unexpected reason, we just
+> >> clear it and move on as there is nothing really we can do about it -
+> >> for example, if we hot plug a VFIO device to a guest, existing TCE tables
+> >> will be mirrored automatically to the hardware and there is no interface
+> >> to report to the guest about possible failures.
+> >>
+> >> This adds new attribute - KVM_DEV_VFIO_GROUP_SET_SPAPR_TCE - to
+> >> the VFIO KVM device. It takes a VFIO group fd and SPAPR TCE table fd
+> >> and associates a physical IOMMU table with the SPAPR TCE table (which
+> >> is a guest view of the hardware IOMMU table). The iommu_table object
+> >> is cached and referenced so we do not have to look up for it in real mode.
+> >>
+> >> This does not implement the UNSET counterpart as there is no use for it -
+> >> once the acceleration is enabled, the existing userspace won't
+> >> disable it unless a VFIO container is destroyed; this adds necessary
+> >> cleanup to the KVM_DEV_VFIO_GROUP_DEL handler.
+> >>
+> >> As this creates a descriptor per IOMMU table-LIOBN couple (called
+> >> kvmppc_spapr_tce_iommu_table), it is possible to have several
+> >> descriptors with the same iommu_table (hardware IOMMU table) attached
+> >> to the same LIOBN; we do not remove duplicates though as
+> >> iommu_table_ops::exchange not just update a TCE entry (which is
+> >> shared among IOMMU groups) but also invalidates the TCE cache
+> >> (one per IOMMU group).
+> >>
+> >> This advertises the new KVM_CAP_SPAPR_TCE_VFIO capability to the user
+> >> space.
+> >>
+> >> This adds real mode version of WARN_ON_ONCE() as the generic version
+> >> causes problems with rcu_sched. Since we testing what vmalloc_to_phys()
+> >> returns in the code, this also adds a check for already existing
+> >> vmalloc_to_phys() call in kvmppc_rm_h_put_tce_indirect().
+> >>
+> >> This finally makes use of vfio_external_user_iommu_id() which was
+> >> introduced quite some time ago and was considered for removal.
+> >>
+> >> Tests show that this patch increases transmission speed from 220MB/s
+> >> to 750..1020MB/s on 10Gb network (Chelsea CXGB3 10Gb ethernet card).
+> >>
+> >> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> >> ---
+> >> Changes:
+> >> v8:
+> >> * changed all (!pua) checks to return H_TOO_HARD as ioctl() is supposed
+> >> to handle them
+> >> * changed vmalloc_to_phys() callers to return H_HARDWARE
+> >> * changed real mode iommu_tce_xchg_rm() callers to return H_TOO_HARD
+> >> and added a comment about this in the code
+> >> * changed virtual mode iommu_tce_xchg() callers to return H_HARDWARE
+> >> and do WARN_ON
+> >> * added WARN_ON_ONCE_RM(!rmap) in kvmppc_rm_h_put_tce_indirect() to
+> >> have all vmalloc_to_phys() callsites covered
+> >>
+> >> v7:
+> >> * added realmode-friendly WARN_ON_ONCE_RM
+> >>
+> >> v6:
+> >> * changed handling of errors returned by kvmppc_(rm_)tce_iommu_(un)map()
+> >> * moved kvmppc_gpa_to_ua() to TCE validation
+> >>
+> >> v5:
+> >> * changed error codes in multiple places
+> >> * added bunch of WARN_ON() in places which should not really happen
+> >> * adde a check that an iommu table is not attached already to LIOBN
+> >> * dropped explicit calls to iommu_tce_clear_param_check/
+> >> iommu_tce_put_param_check as kvmppc_tce_validate/kvmppc_ioba_validate
+> >> call them anyway (since the previous patch)
+> >> * if we fail to update a hardware IOMMU table for unexpected reason,
+> >> this just clears the entry
+> >>
+> >> v4:
+> >> * added note to the commit log about allowing multiple updates of
+> >> the same IOMMU table;
+> >> * instead of checking for if any memory was preregistered, this
+> >> returns H_TOO_HARD if a specific page was not;
+> >> * fixed comments from v3 about error handling in many places;
+> >> * simplified TCE handlers and merged IOMMU parts inline - for example,
+> >> there used to be kvmppc_h_put_tce_iommu(), now it is merged into
+> >> kvmppc_h_put_tce(); this allows to check IOBA boundaries against
+> >> the first attached table only (makes the code simpler);
+> >>
+> >> v3:
+> >> * simplified not to use VFIO group notifiers
+> >> * reworked cleanup, should be cleaner/simpler now
+> >>
+> >> v2:
+> >> * reworked to use new VFIO notifiers
+> >> * now same iommu_table may appear in the list several times, to be fixed later
+> >> ---
+> >>  Documentation/virtual/kvm/devices/vfio.txt |  22 +-
+> >>  arch/powerpc/include/asm/kvm_host.h        |   8 +
+> >>  arch/powerpc/include/asm/kvm_ppc.h         |   4 +
+> >>  include/uapi/linux/kvm.h                   |   8 +
+> >>  arch/powerpc/kvm/book3s_64_vio.c           | 323 ++++++++++++++++++++++++++++-
+> >>  arch/powerpc/kvm/book3s_64_vio_hv.c        | 201 +++++++++++++++++-
+> >>  arch/powerpc/kvm/powerpc.c                 |   2 +
+> >>  virt/kvm/vfio.c                            |  60 ++++++
+> >>  8 files changed, 623 insertions(+), 5 deletions(-)
+> >>
+> >> diff --git a/Documentation/virtual/kvm/devices/vfio.txt b/Documentation/virtual/kvm/devices/vfio.txt
+> >> index ef51740c67ca..f95d867168ea 100644
+> >> --- a/Documentation/virtual/kvm/devices/vfio.txt
+> >> +++ b/Documentation/virtual/kvm/devices/vfio.txt
+> >> @@ -16,7 +16,25 @@ Groups:
+> >>  
+> >>  KVM_DEV_VFIO_GROUP attributes:
+> >>    KVM_DEV_VFIO_GROUP_ADD: Add a VFIO group to VFIO-KVM device tracking
+> >> +	kvm_device_attr.addr points to an int32_t file descriptor
+> >> +	for the VFIO group.
+> >>    KVM_DEV_VFIO_GROUP_DEL: Remove a VFIO group from VFIO-KVM device tracking
+> >> +	kvm_device_attr.addr points to an int32_t file descriptor
+> >> +	for the VFIO group.
+> >> +  KVM_DEV_VFIO_GROUP_SET_SPAPR_TCE: attaches a guest visible TCE table
+> >> +	allocated by sPAPR KVM.
+> >> +	kvm_device_attr.addr points to a struct:
+> >>  
+> >> -For each, kvm_device_attr.addr points to an int32_t file descriptor
+> >> -for the VFIO group.
+> >> +	struct kvm_vfio_spapr_tce {
+> >> +		__u32	argsz;
+> >> +		__u32	flags;
+> >> +		__s32	groupfd;
+> >> +		__s32	tablefd;
+> >> +	};
+> >> +
+> >> +	where
+> >> +	@argsz is the size of kvm_vfio_spapr_tce_liobn;  
 > > 
-> > 
-> > Ugh.  This feels so wrong.  Why can't you have kvm-vfio pass the
-> > iommu_group?  Why do you need to hold this additional vfio_group
-> > reference?  
+> > kvm_vfio_spapr_tce_liobn does not exist.  s/_liobn//?  
 > 
-> Keeping the vfio_group reference makes sense to me, since we don't
-> want the vfio context for the group to go away while it's attached to
-> the LIOBN.
+> Correct.
+> 
+> 
+> >   
+> >> +	@flags are not supported now, must be zero;  
+> > 
+> > We do this argsz/flags thing on vfio ioctls because ioctls are a bit
+> > more of a restricted resource.  We don't want to burn through them so
+> > we make them expandable.  I don't know that we have that restriction
+> > here and the ADD/DEL support certainly doesn't include it.  Maybe this
+> > isn't necessary?  
+> 
+> 
+> It is not but since I am going to have padding there, I thought I give it a
+> name. Totally pointless and "u8 padding[4]" is better?
 
-But there's already a reference for that, it's taken by
-KVM_DEV_VFIO_GROUP_ADD and held until KVM_DEV_VFIO_GROUP_DEL.  Both the
-DEL path and the cleanup path call kvm_spapr_tce_release_iommu_group()
-before releasing that reference, so it seems entirely redundant.
-
-> However, going via the iommu_id rather than just having an interface
-> to directly grab the iommu group from the vfio_group seems bizarre to
-> me.  I'm ok with cleaning that up later, however.
-
-We have kvm_spapr_tce_attach_iommu_group() and
-kvm_spapr_tce_release_iommu_group(), but both take a vfio_group, not an
-iommu_group as a parameter.  I don't particularly have a problem with
-the vfio_group -> iommu ID -> iommu_group, but if we drop the extra
-vfio_group reference and pass the iommu_group itself to these functions
-then we can keep all the symbol reference stuff in the kvm-vfio glue
-layer.  Thanks,
+Or since these are not ioctls, we simply consider them to have a very
+specific and limited purpose.  If we have a need to expand on that,
+define a new one that either builds on the existing ones, as
+GROUP_SET_SPAPR_TCE builds on GROUP_ADD, or supersedes them.  For
+ioctls, it's more costly if we abandon one, here it doesn't seem like a
+big deal.  Thanks,
 
 Alex
