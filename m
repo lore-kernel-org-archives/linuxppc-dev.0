@@ -1,23 +1,19 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vjX554f4lzDqXc
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Mar 2017 11:08:41 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vjX7R6TgszDqXc
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Mar 2017 11:10:43 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Chris Packham <Chris.Packham@alliedtelesis.co.nz>,
- Chandan Rajendra <chandan@linux.vnet.ibm.com>,
- "linuxppc-dev\@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Subject: Re: syscall statx not implemented on powerpc
-In-Reply-To: <67f921484d2e42a8975361e821a4b2a7@svr-chch-ex1.atlnz.lc>
-References: <7dba3a5469d34ac3890a5eaa16822a75@svr-chch-ex1.atlnz.lc>
- <4396749.JbYdqAFZXV@localhost.localdomain>
- <6226603a58ba485391854ba231193741@svr-chch-ex1.atlnz.lc>
- <87o9x4ul3g.fsf@concordia.ellerman.id.au>
- <67f921484d2e42a8975361e821a4b2a7@svr-chch-ex1.atlnz.lc>
-Date: Wed, 15 Mar 2017 11:08:38 +1100
-Message-ID: <87fuifv1tl.fsf@concordia.ellerman.id.au>
+To: Thorsten Leemhuis <regressions@leemhuis.info>,
+ Linus Torvalds <torvalds@linux-foundation.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: linuxppc-dev@lists.ozlabs.org, Jonathan Corbet <corbet@lwn.net>
+Subject: Re: Linux 4.11: Reported regressions as of Tuesday, 20176-03-14
+In-Reply-To: <5d399102-c648-7a87-1dff-f8b74c12ceaa@leemhuis.info>
+References: <5d399102-c648-7a87-1dff-f8b74c12ceaa@leemhuis.info>
+Date: Wed, 15 Mar 2017 11:10:43 +1100
+Message-ID: <87d1djv1q4.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -29,47 +25,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Chris Packham <Chris.Packham@alliedtelesis.co.nz> writes:
+Thorsten Leemhuis <regressions@leemhuis.info> writes:
 
-> On 15/03/17 00:57, Michael Ellerman wrote:
->> Chris Packham <Chris.Packham@alliedtelesis.co.nz> writes:
->>> On 13/03/17 21:52, Chandan Rajendra wrote:
->>>> On Monday, March 13, 2017 03:33:07 AM Chris Packham wrote:
->>>>> I've just attempted to build a powerpc kernel from 4.11-rc2 using a
->>>>> custom defconfig (available on request) and I'm hitting the following
->>>>> error in the early stages of compilation.
->>>>>
->>>>> <stdin>:1325:2: error: #warning syscall statx not implemented [-Werror=cpp]
->>>>>
->>>>> Same thing seems to happen with mpc85xx_basic_defconfig.
->>>>>
->>>>> I don't actually need this syscall so I'd be happy to turn something off
->>>>> to get things building. I did a quick search and couldn't see anything
->>>>> on linuxppc-dev but google keeps correcting "statx" to "stats" so I
->>>>> could have missed it.
->>>>
->>>> The upstream commit
->>>> (https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=a528d35e8bfcc521d7cb70aaf03e1bd296c8493f)
->>>> that introduces the statx syscall provides a test program. I will wire-up the
->>>> syscall on ppc64, run that test program and post the patch if the test program
->>>> works well.
->>>
->>> Thanks, I'd be happy to test a patch here.
->>>
->>> In the meantime I worked around the build issue by adding __INGORE_statx
->>> to checksyscalls.sh.
->>
->> Is it actually breaking the build? It's meant to be a warning, and
->> that's all I get.
+> Hi! Find below my first regression report for Linux 4.11. It lists 9
+> regressions I'm currently aware of.
 >
-> It breaks my builds for ppc and arm. We do have KCFLAGS=-Werror in our 
-> environment but KCPPFLAGS= is not set so I'm not sure why it's stopping 
-> compilation.
+> As always: Are you aware of any other regressions? Then please let me
+> know (simply CC regressions@leemhuis.info). And please tell me if there
+> is anything in the report that shouldn't be there.
+>
+> Ciao, Thorsten
+>
+> P.S.: Sorry, I didn't compile any regression reports for 4.10: I 
+> didn't find time due to various reasons (vacation, a cold, regular 
+> work, and attending two conferences). Reminder: compiling these reports
+> has nothing to do with my paid job and I'm doing it in my spare time
+> just because I think someone should do it.
+>
+> P.P.S: Dear Gmane mainling list archive webinterface, please come
+> back soon. I really really miss you. It hurts ever single day.
+> Don't you miss me, too? ;-)
+>
+> == Current regressions ==
+>
+> Desc: PowerPC crashes on boot, bisected to commit 5657933dbb6e
+> Repo: 2017-03-02 https://www.mail-archive.com/linux-kernel@vger.kernel.org/msg1343553.html
+> Stat: 2017-03-09 https://www.mail-archive.com/linux-kernel@vger.kernel.org/msg1349568.html
+> Note: patch hopefully heading mainline
 
-OK, I guess that must be it.
-
-We turn on -Werror for all of arch/powerpc by default (unless
-CONFIG_PPC_DISABLE_WERROR=y), but the syscall checking script is not
-under arch/powerpc so shouldn't be affected by that.
+Now fixed in Linus' tree by commit 46f401c4297a.
 
 cheers
