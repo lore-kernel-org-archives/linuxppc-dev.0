@@ -2,8 +2,8 @@ Return-Path: <>
 Received: from fllnx210.ext.ti.com (fllnx210.ext.ti.com [198.47.19.17])
  (using TLSv1 with cipher DHE-RSA-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vjyWD2NTkzDqGk
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Mar 2017 03:59:19 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vjyWF4WfvzDqGk
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Mar 2017 03:59:21 +1100 (AEDT)
 From: "Andrew F. Davis" <afd@ti.com>
 To: Miguel Ojeda Sandonis <miguel.ojeda.sandonis@gmail.com>, Wolfram Sang
  <wsa@the-dreams.de>, Richard Purdie <rpurdie@rpsys.net>, Benjamin
@@ -15,10 +15,10 @@ To: Miguel Ojeda Sandonis <miguel.ojeda.sandonis@gmail.com>, Wolfram Sang
 CC: <linuxppc-dev@lists.ozlabs.org>, <linux-media@vger.kernel.org>,
  <linux-wireless@vger.kernel.org>, <linux-pwm@vger.kernel.org>,
  <linux-kernel@vger.kernel.org>, "Andrew F . Davis" <afd@ti.com>
-Subject: [PATCH v3 2/7] amba: Only descend into amba directory when
- CONFIG_ARM_AMBA is set
-Date: Wed, 15 Mar 2017 11:37:25 -0500
-Message-ID: <20170315163730.17055-3-afd@ti.com>
+Subject: [PATCH v3 3/7] NFC: Only descend into nfc directory when CONFIG_NFC
+ is set
+Date: Wed, 15 Mar 2017 11:37:26 -0500
+Message-ID: <20170315163730.17055-4-afd@ti.com>
 In-Reply-To: <20170315163730.17055-1-afd@ti.com>
 References: <20170315163730.17055-1-afd@ti.com>
 MIME-Version: 1.0
@@ -32,27 +32,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When CONFIG_ARM_AMBA is not set make will still descend into the amba
+When CONFIG_NFC is not set make will still descend into the nfc
 directory but nothing will be built. This produces unneeded build
 artifacts and messages in addition to slowing the build. Fix this here.
 
 Signed-off-by: Andrew F. Davis <afd@ti.com>
 ---
- drivers/Makefile | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/Makefile | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/Makefile b/drivers/Makefile
-index 00d86749a843..23712a92a89a 100644
+index 23712a92a89a..9cf52524ecab 100644
 --- a/drivers/Makefile
 +++ b/drivers/Makefile
-@@ -31,7 +31,7 @@ obj-$(CONFIG_SFI)		+= sfi/
- # PnP must come after ACPI since it will eventually need to check if acpi
- # was used and do nothing if so
- obj-$(CONFIG_PNP)		+= pnp/
--obj-y				+= amba/
-+obj-$(CONFIG_ARM_AMBA)		+= amba/
+@@ -69,7 +69,11 @@ obj-$(CONFIG_FB_INTEL)          += video/fbdev/intelfb/
  
- obj-y				+= clk/
- # Many drivers will want to use DMA so this has to be made available
+ obj-$(CONFIG_PARPORT)		+= parport/
+ obj-$(CONFIG_NVM)		+= lightnvm/
+-obj-y				+= base/ block/ misc/ mfd/ nfc/
++obj-y				+= base/
++obj-y				+= block/
++obj-y				+= misc/
++obj-y				+= mfd/
++obj-$(CONFIG_NFC)		+= nfc/
+ obj-$(CONFIG_LIBNVDIMM)		+= nvdimm/
+ obj-$(CONFIG_DEV_DAX)		+= dax/
+ obj-$(CONFIG_DMA_SHARED_BUFFER) += dma-buf/
 -- 
 2.11.0
