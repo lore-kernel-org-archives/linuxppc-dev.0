@@ -1,53 +1,30 @@
-Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vjmFt73lyzDqMd
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Mar 2017 20:17:06 +1100 (AEDT)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v2F9G3xl117111
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Mar 2017 05:16:57 -0400
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
- by mx0a-001b2d01.pphosted.com with ESMTP id 296ng6tsyv-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Mar 2017 05:16:56 -0400
-Received: from localhost
- by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Wed, 15 Mar 2017 19:16:52 +1000
-Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v2F9Gf6N43909228
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Mar 2017 20:16:49 +1100
-Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
- by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v2F9GGZI002990
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Mar 2017 20:16:17 +1100
-Date: Wed, 15 Mar 2017 14:45:59 +0530
-From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-To: Arnaldo Carvalho de Melo <acme@kernel.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>,
- Masami Hiramatsu <mhiramat@kernel.org>,
- Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@redhat.com>,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>
-Subject: Re: [PATCH v5 2/5] powerpc: kretprobes: override default function
- entry offset
-References: <cover.1488961018.git.naveen.n.rao@linux.vnet.ibm.com>
- <53bcae5a711eab803c9c3210110e8a464df34202.1488961018.git.naveen.n.rao@linux.vnet.ibm.com>
- <87o9xcujzi.fsf@concordia.ellerman.id.au>
- <20170308142412.GI11046@naverao1-tp.localdomain>
- <20170308142916.GA3035@kernel.org>
- <20170308164644.GK11046@naverao1-tp.localdomain>
- <87a88vuf9p.fsf@concordia.ellerman.id.au>
- <20170314131839.GD3089@kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vjmYp5mrXzDqMd
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Mar 2017 20:30:54 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: "devicetree\@vger.kernel.org" <devicetree@vger.kernel.org>,
+ Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>,
+ "linux-kernel\@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ "linuxppc-dev\@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Scott Wood <oss@buserror.net>, Qiang Zhao <qiang.zhao@nxp.com>,
+ Yangbo Lu <yangbo.lu@nxp.com>, york.sun@nxp.com
+Subject: Re: [PATCH v2 16/23] MAINTAINERS: Add file patterns for powerpc
+ device tree bindings
+In-Reply-To: <CAMuHMdX95zwQUe8XyPpKvv6zsHG+c1Ke=eFBZCt+fNUxgP5O2g@mail.gmail.com>
+References: <1489324627-19126-1-git-send-email-geert@linux-m68k.org>
+ <1489324627-19126-17-git-send-email-geert@linux-m68k.org>
+ <87a88nv1b2.fsf@concordia.ellerman.id.au>
+ <CAMuHMdX95zwQUe8XyPpKvv6zsHG+c1Ke=eFBZCt+fNUxgP5O2g@mail.gmail.com>
+Date: Wed, 15 Mar 2017 20:30:53 +1100
+Message-ID: <87d1dilwdu.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170314131839.GD3089@kernel.org>
-Message-Id: <20170315091559.GF20400@naverao1-tp.localdomain>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -57,41 +34,80 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2017/03/14 10:18AM, Arnaldo Carvalho de Melo wrote:
-> Em Thu, Mar 09, 2017 at 05:37:38PM +1100, Michael Ellerman escreveu:
-> > "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> writes:
-> > > On 2017/03/08 11:29AM, Arnaldo Carvalho de Melo wrote:
-> > >> > I wasn't sure if you were planning on picking up KPROBES_ON_FTRACE for 
-> > >> > v4.11. If so, it would be good to take this patch through the powerpc 
-> > >> > tree. Otherwise, this can go via Ingo's tree.
-> > >> 
-> > >> If you guys convince Ingo that this should go _now_, then just cherry
-> > >> pick what was merged into tip/perf/core that is needed for the arch
-> > >> specific stuff and go from there.
-> > >
-> > > Ok, in hindsight, I think Michael's concern was actually for v4.12 
-> > 
-> > Yes I was talking about 4.12, sorry I thought that was implied :)
-> > 
-> > > itself, in which case this particular patch can go via powerpc tree, 
-> > > while the rest of the patches in this series can go via your tree.
-> > >
-> > > Michael?
-> > 
-> > Yeah I think that's the easiest option. The function will be temporarily
-> > unused until the two trees are merged, but I think that's fine.
-> 
-> Ok, done that, now compile testing building it in my
-> multi-distro/x-build containers.
+Geert Uytterhoeven <geert@linux-m68k.org> writes:
+> On Wed, Mar 15, 2017 at 1:19 AM, Michael Ellerman <mpe@ellerman.id.au> wr=
+ote:
+>> Geert Uytterhoeven <geert@linux-m68k.org> writes:
+>>> Submitters of device tree binding documentation may forget to CC
+>>> the subsystem maintainer if this is missing.
+>>>
+>>> Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+>>> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>>> Cc: Paul Mackerras <paulus@samba.org>
+>>> Cc: Michael Ellerman <mpe@ellerman.id.au>
+>>> Cc: linuxppc-dev@lists.ozlabs.org
+>>> ---
+>>> Please apply this patch directly if you want to be involved in device
+>>> tree binding documentation for your subsystem.
+>>>
+>>> v2:
+>>>   - Rebased on top of commit a42715830d552d7c ("MAINTAINERS: Remove
+>>>     powerpc's "opal" pattern match), which just added "powerpc/opal",
+>>>     while obviously the whole "powerpc" hierarchy is of interest.
+>>>
+>>> Impact on next-20170310:
+>>
+>> Actual diff ignoring ordering etc:
+>>
+>>  +Benjamin Herrenschmidt <benh@kernel.crashing.org> (supporter:LINUX FOR=
+ POWERPC (32-BIT AND 64-BIT))
+>>  +Paul Mackerras <paulus@samba.org> (supporter:LINUX FOR POWERPC (32-BIT=
+ AND 64-BIT))
+>>  +linuxppc-dev@lists.ozlabs.org (open list:LINUX FOR POWERPC (32-BIT AND=
+ 64-BIT))
+>>  -Scott Wood <oss@buserror.net> (commit_signer:5/11=3D45%)
+>>  -Zhao Qiang <qiang.zhao@nxp.com> (commit_signer:4/11=3D36%,authored:4/1=
+1=3D36%)
+>>  -Christian Lamparter <chunkeey@googlemail.com> (commit_signer:1/11=3D9%)
+>>  -yangbo lu <yangbo.lu@nxp.com> (authored:1/11=3D9%)
+>>  -"Otto Kek=C3=A4l=C3=A4inen" <otto@seravo.fi> (authored:1/11=3D9%)
+>>  -Chris Packham <chris.packham@alliedtelesis.co.nz> (authored:1/11=3D9%)
+>>  -York Sun <york.sun@nxp.com> (authored:1/11=3D9%)
+>>
+>> Which looks bad as all the NXP folks get dropped, but they should be
+>> reading linuxppc-dev. So I think I'll merge this, unless anyone
+>> disagrees.
+>
+> They got dropped because in the absence of a maintainer entry, the
+> last committers are listed. If they need to be listed, I can send patches=
+ to add
+> more specific entries for 4xx and fsl DT bindings, like:
 
-Thanks, Arnaldo!
+This is one is probably worth doing:
 
-I did however notice that you don't seem to have applied Patch 1/5 from 
-this series:
-https://www.mail-archive.com/linux-kernel@vger.kernel.org/msg1347858.html
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index 0f1c2f96c99aa936..40b392a4f399adbe 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -5266,6 +5266,7 @@ M:        Scott Wood <oss@buserror.net>
+>  L:     linuxppc-dev@lists.ozlabs.org
+>  L:     linux-arm-kernel@lists.infradead.org
+>  S:     Maintained
+> +F:     Documentation/devicetree/bindings/powerpc/fsl/
+>  F:     drivers/soc/fsl/
+>  F:     include/linux/fsl/
 
-That patch is needed to ensure perf continues to work when ftrace README 
-advertises support for ref_reloc_sym+offset for kretprobes. Can you 
-please apply that as well?
+I'll fold it in before applying?
 
-- Naveen
+But I wouldn't bother with 4xx, just falling back to linuxppc-dev is
+fine for that.
+
+> @@ -7540,6 +7541,7 @@ M:        Matt Porter <mporter@kernel.crashing.org>
+>  W:     http://www.penguinppc.org/
+>  L:     linuxppc-dev@lists.ozlabs.org
+>  S:     Maintained
+> +F:     Documentation/devicetree/bindings/powerpc/4xx/
+>  F:     arch/powerpc/platforms/40x/
+>  F:     arch/powerpc/platforms/44x/
+
+cheers
