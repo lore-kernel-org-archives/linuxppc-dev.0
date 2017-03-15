@@ -1,16 +1,12 @@
-Return-Path: <till.smejkal@googlemail.com>
-Received: from mail-wr0-x243.google.com (mail-wr0-x243.google.com
- [IPv6:2a00:1450:400c:c0c::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <tony.luck@intel.com>
+Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vk5FD2tlBzDqYK
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Mar 2017 09:02:40 +1100 (AEDT)
-Received: by mail-wr0-x243.google.com with SMTP id u108so3672111wrb.2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Mar 2017 15:02:40 -0700 (PDT)
-From: Till Smejkal <till.smejkal@googlemail.com>
-Date: Wed, 15 Mar 2017 15:02:34 -0700
-To: Andy Lutomirski <luto@amacapital.net>
-Cc: Andy Lutomirski <luto@kernel.org>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vk5Pf2bHZzDqGb
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Mar 2017 09:09:57 +1100 (AEDT)
+Date: Wed, 15 Mar 2017 15:09:53 -0700
+From: "Luck, Tony" <tony.luck@intel.com>
+To: Andy Lutomirski <luto@amacapital.net>, Andy Lutomirski <luto@kernel.org>,
  Till Smejkal <till.smejkal@googlemail.com>,
  Richard Henderson <rth@twiddle.net>,
  Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
@@ -18,9 +14,8 @@ Cc: Andy Lutomirski <luto@kernel.org>,
  Russell King <linux@armlinux.org.uk>,
  Catalin Marinas <catalin.marinas@arm.com>,
  Will Deacon <will.deacon@arm.com>, Steven Miao <realmz6@gmail.com>,
- Richard Kuo <rkuo@codeaurora.org>, Tony Luck <tony.luck@intel.com>,
- Fenghua Yu <fenghua.yu@intel.com>, James Hogan <james.hogan@imgtec.com>,
- Ralf Baechle <ralf@linux-mips.org>,
+ Richard Kuo <rkuo@codeaurora.org>, Fenghua Yu <fenghua.yu@intel.com>,
+ James Hogan <james.hogan@imgtec.com>, Ralf Baechle <ralf@linux-mips.org>,
  "James E.J. Bottomley" <jejb@parisc-linux.org>,
  Helge Deller <deller@gmx.de>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
@@ -73,10 +68,12 @@ Cc: Andy Lutomirski <luto@kernel.org>,
  linux-arch <linux-arch@vger.kernel.org>,
  ALSA development <alsa-devel@alsa-project.org>
 Subject: Re: [RFC PATCH 00/13] Introduce first class virtual address spaces
-Message-ID: <20170315220234.mooiyrzqdsglo4lp@arch-dev>
+Message-ID: <20170315220952.GA1435@intel.com>
+References: <CALCETrXfGgxaLivhci0VL=wUaWAnBiUXC47P7TUaEuOYV_-X_g@mail.gmail.com>
+ <20170315220234.mooiyrzqdsglo4lp@arch-dev>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CALCETrXfGgxaLivhci0VL=wUaWAnBiUXC47P7TUaEuOYV_-X_g@mail.gmail.com>
+In-Reply-To: <20170315220234.mooiyrzqdsglo4lp@arch-dev>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -86,72 +83,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 15 Mar 2017, Andy Lutomirski wrote:
-> On Wed, Mar 15, 2017 at 12:44 PM, Till Smejkal
-> <till.smejkal@googlemail.com> wrote:
-> > On Wed, 15 Mar 2017, Andy Lutomirski wrote:
-> >> > One advantage of VAS segments is that they can be globally queried by user programs
-> >> > which means that VAS segments can be shared by applications that not necessarily have
-> >> > to be related. If I am not mistaken, MAP_SHARED of pure in memory data will only work
-> >> > if the tasks that share the memory region are related (aka. have a common parent that
-> >> > initialized the shared mapping). Otherwise, the shared mapping have to be backed by a
-> >> > file.
-> >>
-> >> What's wrong with memfd_create()?
-> >>
-> >> > VAS segments on the other side allow sharing of pure in memory data by
-> >> > arbitrary related tasks without the need of a file. This becomes especially
-> >> > interesting if one combines VAS segments with non-volatile memory since one can keep
-> >> > data structures in the NVM and still be able to share them between multiple tasks.
-> >>
-> >> What's wrong with regular mmap?
-> >
-> > I never wanted to say that there is something wrong with regular mmap. We just
-> > figured that with VAS segments you could remove the need to mmap your shared data but
-> > instead can keep everything purely in memory.
-> 
-> memfd does that.
+On Wed, Mar 15, 2017 at 03:02:34PM -0700, Till Smejkal wrote:
+> I don't agree here. VAS segments are basically in-memory files that are handled by
+> the kernel directly without using a file system. Hence, if an application uses a VAS
+> segment to store data the same rules apply as if it uses a file. Everything that it
+> saves in the VAS segment might be accessible by other applications. An application
+> using VAS segments should be aware of this fact. In addition, the resources that are
+> represented by a VAS segment are not leaked. As I said, VAS segments are much like
+> files. Hence, if you don't want to use them any more, delete them. But as with files,
+> the kernel will not delete them for you (although something like this can be added).
 
-Yes, that's right. Thanks for giving me the pointer to this. I should have researched
-more carefully before starting to work at VAS segments.
+So how do they differ from shmget(2), shmat(2), shmdt(2), shmctl(2)?
 
-> > VAS segments on the other side would provide a functionality to
-> > achieve the same without the need of any mounted filesystem. However, I agree, that
-> > this is just a small advantage compared to what can already be achieved with the
-> > existing functionality provided by the Linux kernel.
-> 
-> I see this "small advantage" as "resource leak and security problem".
+Apart from VAS having better names, instead of silly "key_t key" ones.
 
-I don't agree here. VAS segments are basically in-memory files that are handled by
-the kernel directly without using a file system. Hence, if an application uses a VAS
-segment to store data the same rules apply as if it uses a file. Everything that it
-saves in the VAS segment might be accessible by other applications. An application
-using VAS segments should be aware of this fact. In addition, the resources that are
-represented by a VAS segment are not leaked. As I said, VAS segments are much like
-files. Hence, if you don't want to use them any more, delete them. But as with files,
-the kernel will not delete them for you (although something like this can be added).
-
-> >> This sounds complicated and fragile.  What happens if a heuristically
-> >> shared region coincides with a region in the "first class address
-> >> space" being selected?
-> >
-> > If such a conflict happens, the task cannot use the first class address space and the
-> > corresponding system call will return an error. However, with the current available
-> > virtual address space size that programs can use, such conflicts are probably rare.
-> 
-> A bug that hits 1% of the time is often worse than one that hits 100%
-> of the time because debugging it is miserable.
-
-I don't agree that this is a bug at all. If there is a conflict in the memory layout
-of the ASes the application simply cannot use this first class virtual address space.
-Every application that wants to use first class virtual address spaces should check
-for error return values and handle them.
-
-This situation is similar to mapping a file at some special address in memory because
-the file contains pointer based data structures and the application wants to use
-them, but the kernel cannot map the file at this particular position in the
-application's AS because there is already a different conflicting mapping. If an
-application wants to do such things, it should also handle all the errors that can
-occur.
-
-Till
+-Tony
