@@ -1,30 +1,16 @@
-Return-Path: <chandan@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vkN0M5x5rzDq5g
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Mar 2017 20:07:31 +1100 (AEDT)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v2G94T1n052525
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Mar 2017 05:07:26 -0400
-Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
- by mx0b-001b2d01.pphosted.com with ESMTP id 297c4b3sxm-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Mar 2017 05:07:26 -0400
-Received: from localhost
- by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <chandan@linux.vnet.ibm.com>;
- Thu, 16 Mar 2017 05:07:25 -0400
-From: Chandan Rajendra <chandan@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Chandan Rajendra <chandan@linux.vnet.ibm.com>,
- Chris.Packham@alliedtelesis.co.nz, mpe@ellerman.id.au
-Subject: [PATCH] powerpc: Wire up statx() syscall
-Date: Thu, 16 Mar 2017 14:37:11 +0530
-Message-Id: <1489655231-10582-1-git-send-email-chandan@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vkNDc24NKzDq8f
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Mar 2017 20:18:08 +1100 (AEDT)
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH] isdn: hardware: mISDN: Remove reference to CONFIG_8xx
+To: Karsten Keil <isdn@linux-pingi.de>, davem@davemloft.net
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ netdev@vger.kernel.org
+Message-Id: <20170316091802.E463D68481@localhost.localdomain>
+Date: Thu, 16 Mar 2017 10:18:02 +0100 (CET)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,57 +20,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Test runs on a ppc64 BE guest succeeded. linux/samples/statx/test-statx
-program was executed on the following file types,
+CONFIG_8xx is deprecated and should soon be removed in favor
+of CONFIG_PPC_8xx.
+Anyway, hfc_multi_8xx.h only uses 8xx I/O ports which are
+linked to the CPM1 communication processor included in the 8xx
+rather than the 8xx itself.
 
-1. Regular file
-2. Directory
-3. device file
-4. symlink
-5. Named pipe
+This patch therefore makes it dependent on CONFIG_CPM1 instead,
+like several other drivers.
 
-The test run also included invoking test-statx with the runtime options
-provided in the main() function of test-statx.c
-
-Signed-off-by: Chandan Rajendra <chandan@linux.vnet.ibm.com>
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/include/asm/systbl.h      | 1 +
- arch/powerpc/include/asm/unistd.h      | 2 +-
- arch/powerpc/include/uapi/asm/unistd.h | 1 +
- 3 files changed, 3 insertions(+), 1 deletion(-)
+ drivers/isdn/hardware/mISDN/Kconfig         | 6 +++---
+ drivers/isdn/hardware/mISDN/hfc_multi_8xx.h | 2 +-
+ 2 files changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/systbl.h b/arch/powerpc/include/asm/systbl.h
-index 4b369d8..1c94708 100644
---- a/arch/powerpc/include/asm/systbl.h
-+++ b/arch/powerpc/include/asm/systbl.h
-@@ -387,3 +387,4 @@ SYSCALL(copy_file_range)
- COMPAT_SYS_SPU(preadv2)
- COMPAT_SYS_SPU(pwritev2)
- SYSCALL(kexec_file_load)
-+SYSCALL(statx)
-diff --git a/arch/powerpc/include/asm/unistd.h b/arch/powerpc/include/asm/unistd.h
-index eb1acee..9ba11db 100644
---- a/arch/powerpc/include/asm/unistd.h
-+++ b/arch/powerpc/include/asm/unistd.h
-@@ -12,7 +12,7 @@
- #include <uapi/asm/unistd.h>
+diff --git a/drivers/isdn/hardware/mISDN/Kconfig b/drivers/isdn/hardware/mISDN/Kconfig
+index 09df54fc1fef..fda912b0833f 100644
+--- a/drivers/isdn/hardware/mISDN/Kconfig
++++ b/drivers/isdn/hardware/mISDN/Kconfig
+@@ -13,7 +13,7 @@ config MISDN_HFCPCI
  
+ config MISDN_HFCMULTI
+ 	tristate "Support for HFC multiport cards (HFC-4S/8S/E1)"
+-	depends on PCI || 8xx
++	depends on PCI || CPM1
+ 	depends on MISDN
+ 	help
+ 	  Enable support for cards with Cologne Chip AG's HFC multiport
+@@ -27,8 +27,8 @@ config MISDN_HFCMULTI_8xx
+ 	bool "Support for XHFC embedded board in HFC multiport driver"
+ 	depends on MISDN
+ 	depends on MISDN_HFCMULTI
+-	depends on 8xx
+-	default 8xx
++	depends on CPM1
++	default CPM1
+ 	help
+ 	  Enable support for the XHFC embedded solution from Speech Design.
  
--#define NR_syscalls		383
-+#define NR_syscalls		384
+diff --git a/drivers/isdn/hardware/mISDN/hfc_multi_8xx.h b/drivers/isdn/hardware/mISDN/hfc_multi_8xx.h
+index 0eafe9f04fca..8a254747768e 100644
+--- a/drivers/isdn/hardware/mISDN/hfc_multi_8xx.h
++++ b/drivers/isdn/hardware/mISDN/hfc_multi_8xx.h
+@@ -6,7 +6,7 @@
+  *
+  */
  
- #define __NR__exit __NR_exit
+-#include <asm/8xx_immap.h>
++#include <asm/cpm1.h>
  
-diff --git a/arch/powerpc/include/uapi/asm/unistd.h b/arch/powerpc/include/uapi/asm/unistd.h
-index 2f26335..b85f142 100644
---- a/arch/powerpc/include/uapi/asm/unistd.h
-+++ b/arch/powerpc/include/uapi/asm/unistd.h
-@@ -393,5 +393,6 @@
- #define __NR_preadv2		380
- #define __NR_pwritev2		381
- #define __NR_kexec_file_load	382
-+#define __NR_statx		383
- 
- #endif /* _UAPI_ASM_POWERPC_UNISTD_H_ */
+ /* Change this to the value used by your board */
+ #ifndef IMAP_ADDR
 -- 
-2.5.5
+2.12.0
