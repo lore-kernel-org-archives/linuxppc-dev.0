@@ -1,23 +1,36 @@
-Return-Path: <anton@samba.org>
-Received: from hr2.samba.org (hr2.samba.org [IPv6:2a01:4f8:192:486::147:1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <ego@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vkQng4PBVzDqYK
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Mar 2017 22:13:27 +1100 (AEDT)
-Date: Thu, 16 Mar 2017 22:13:07 +1100
-From: Anton Blanchard <anton@samba.org>
-To: David Laight <David.Laight@ACULAB.COM>
-Cc: 'Daniel Axtens' <dja@axtens.net>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>, "linux-crypto@vger.kernel.org"
- <linux-crypto@vger.kernel.org>
-Subject: Re: [PATCH 1/4] crypto: powerpc - Factor out the core CRC vpmsum
- algorithm
-Message-ID: <20170316221307.52d14611@kryten>
-In-Reply-To: <063D6719AE5E284EB5DD2968C1650D6DCFFB1A81@AcuExch.aculab.com>
-References: <20170315123737.20234-1-dja@axtens.net>
- <063D6719AE5E284EB5DD2968C1650D6DCFFB1A81@AcuExch.aculab.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vkQqC106LzDrMd
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Mar 2017 22:14:46 +1100 (AEDT)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v2GBDVbd094835
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Mar 2017 07:14:44 -0400
+Received: from e16.ny.us.ibm.com (e16.ny.us.ibm.com [129.33.205.206])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 297r0cwj1t-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Mar 2017 07:14:43 -0400
+Received: from localhost
+ by e16.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ego@linux.vnet.ibm.com>;
+ Thu, 16 Mar 2017 07:14:43 -0400
+Date: Thu, 16 Mar 2017 16:44:38 +0530
+From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+To: Nicholas Piggin <npiggin@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Gautham R Shenoy <ego@linux.vnet.ibm.com>,
+ Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Subject: Re: [PATCH 2/8] powerpc/64s: stop using bit in HSPRG0 to test winkle
+Reply-To: ego@linux.vnet.ibm.com
+References: <20170314092349.10981-1-npiggin@gmail.com>
+ <20170314092349.10981-3-npiggin@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20170314092349.10981-3-npiggin@gmail.com>
+Message-Id: <20170316111438.GA16462@in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,30 +40,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi David,
+Hi Nick,
 
-> While not part of this change, the unrolled loops look as though
-> they just destroy the cpu cache.
-> I'd like be convinced that anything does CRC over long enough buffers
-> to make it a gain at all.
+On Tue, Mar 14, 2017 at 07:23:43PM +1000, Nicholas Piggin wrote:
+> The POWER8 idle code has a neat trick of programming the power on engine
+> to restore a low bit into HSPRG0, so idle wakeup code can test and see
+> if it has been programmed this way and therefore lost all state, and
+> avoiding the expensive full restore if not.
+> 
+> However this messes with our r13 PACA pointer, and requires HSPRG0 to
+> be written to throughout the exception handlers and idle wakeup, rather
+> than just once on kernel entry.
+> 
+> Remove this complexity and assume winkle sleeps always require a state
+> restore. This speedup is later re-introduced by counting per-core winkles
+> and setting a bitmap of threads with state loss when all are in winkle.
+>
 
-btrfs data checksumming is one area.
+Looks good to me.
 
-> With modern (not that modern now) superscalar cpus you can often
-> get the loop instructions 'for free'.
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 
-A branch on POWER8 is a three cycle redirect. The vpmsum instructions
-are 6 cycles.
+Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
 
-> Sometimes pipelining the loop is needed to get full throughput.
-> Unlike the IP checksum, you don't even have to 'loop carry' the
-> cpu carry flag.
 
-It went through quite a lot of simulation to reach peak performance.
-The loop is quite delicate, we have to pace it just right to avoid
-some pipeline reject conditions.
-
-Note also that we already modulo schedule the loop across three
-iterations, required to hide the latency of the vpmsum instructions.
-
-Anton
+--
+Thanks and Regards
+gautham.
