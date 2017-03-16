@@ -1,50 +1,26 @@
-Return-Path: <srs0=tmo9=2z=linux.vnet.ibm.com=hbathini@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <htejun@gmail.com>
+Received: from mail-yw0-x242.google.com (mail-yw0-x242.google.com
+ [IPv6:2607:f8b0:4002:c05::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vkgyK5JCtzDqbk
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Mar 2017 08:06:49 +1100 (AEDT)
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3vkgyK44b0z8t4P
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Mar 2017 08:06:49 +1100 (AEDT)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3vkgyK10Lnz9ryQ
- for <linuxppc-dev@ozlabs.org>; Fri, 17 Mar 2017 08:06:48 +1100 (AEDT)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v2GL47wI039088
- for <linuxppc-dev@ozlabs.org>; Thu, 16 Mar 2017 17:06:38 -0400
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2980w6bnvd-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Thu, 16 Mar 2017 17:06:37 -0400
-Received: from localhost
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <hbathini@linux.vnet.ibm.com>;
- Fri, 17 Mar 2017 07:06:34 +1000
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v2GL6Pbp54853652
- for <linuxppc-dev@ozlabs.org>; Fri, 17 Mar 2017 08:06:33 +1100
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v2GL5xID020001
- for <linuxppc-dev@ozlabs.org>; Fri, 17 Mar 2017 08:05:59 +1100
-Subject: [PATCH v2 2/2] powerpc/fadump: update fadump documentation
-From: Hari Bathini <hbathini@linux.vnet.ibm.com>
-To: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>,
- linuxppc-dev <linuxppc-dev@ozlabs.org>,
- Michael Ellerman <mpe@ellerman.id.au>
-Date: Fri, 17 Mar 2017 02:35:42 +0530
-In-Reply-To: <148969794004.4130.14805754334064000704.stgit@hbathini.in.ibm.com>
-References: <148969794004.4130.14805754334064000704.stgit@hbathini.in.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vkh661ZwHzDq5g
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Mar 2017 08:13:33 +1100 (AEDT)
+Received: by mail-yw0-x242.google.com with SMTP id p77so5771658ywg.0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Mar 2017 14:13:33 -0700 (PDT)
+Sender: Tejun Heo <htejun@gmail.com>
+Date: Thu, 16 Mar 2017 17:13:29 -0400
+From: Tejun Heo <tj@kernel.org>
+To: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+Subject: Re: [PATCH] kernfs: Check KERNFS_HAS_RELEASE before calling
+ kernfs_release_file()
+Message-ID: <20170316211329.GB1480@htj.duckdns.org>
+References: <20170314024700.6167-1-vaibhav@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Message-Id: <148969833262.4130.15644962872616343895.stgit@hbathini.in.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20170314024700.6167-1-vaibhav@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -54,67 +30,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-With the unnecessary restriction to reserve memory for fadump at the
-top of RAM forgone, update the documentation accordingly.
+On Tue, Mar 14, 2017 at 08:17:00AM +0530, Vaibhav Jain wrote:
+> Recently started seeing a kernel oops when a module tries removing a
+> memory mapped sysfs bin_attribute. On closer investigation the root
+> cause seems to be kernfs_release_file() trying to call
+> kernfs_op.release() callback that's NULL for such sysfs
+> bin_attributes. The oops occurs when kernfs_release_file() is called from
+> kernfs_drain_open_files() to cleanup any open handles with active
+> memory mappings.
+> 
+> The patch fixes this by checking for flag KERNFS_HAS_RELEASE before
+> calling kernfs_release_file() in function kernfs_drain_open_files().
+> 
+> On ppc64-le arch with cxl module the oops back-trace is of the
+> form below:
+> [  861.381126] Unable to handle kernel paging request for instruction fetch
+> [  861.381360] Faulting instruction address: 0x00000000
+> [  861.381428] Oops: Kernel access of bad area, sig: 11 [#1]
+> ....
+> [  861.382481] NIP: 0000000000000000 LR: c000000000362c60 CTR:
+> 0000000000000000
+> ....
+> Call Trace:
+> [c000000f1680b750] [c000000000362c34] kernfs_drain_open_files+0x104/0x1d0 (unreliable)
+> [c000000f1680b790] [c00000000035fa00] __kernfs_remove+0x260/0x2c0
+> [c000000f1680b820] [c000000000360da0] kernfs_remove_by_name_ns+0x60/0xe0
+> [c000000f1680b8b0] [c0000000003638f4] sysfs_remove_bin_file+0x24/0x40
+> [c000000f1680b8d0] [c00000000062a164] device_remove_bin_file+0x24/0x40
+> [c000000f1680b8f0] [d000000009b7b22c] cxl_sysfs_afu_remove+0x144/0x170 [cxl]
+> [c000000f1680b940] [d000000009b7c7e4] cxl_remove+0x6c/0x1a0 [cxl]
+> [c000000f1680b990] [c00000000052f694] pci_device_remove+0x64/0x110
+> [c000000f1680b9d0] [c0000000006321d4] device_release_driver_internal+0x1f4/0x2b0
+> [c000000f1680ba20] [c000000000525cb0] pci_stop_bus_device+0xa0/0xd0
+> [c000000f1680ba60] [c000000000525e80] pci_stop_and_remove_bus_device+0x20/0x40
+> [c000000f1680ba90] [c00000000004a6c4] pci_hp_remove_devices+0x84/0xc0
+> [c000000f1680bad0] [c00000000004a688] pci_hp_remove_devices+0x48/0xc0
+> [c000000f1680bb10] [c0000000009dfda4] eeh_reset_device+0xb0/0x290
+> [c000000f1680bbb0] [c000000000032b4c] eeh_handle_normal_event+0x47c/0x530
+> [c000000f1680bc60] [c000000000032e64] eeh_handle_event+0x174/0x350
+> [c000000f1680bd10] [c000000000033228] eeh_event_handler+0x1e8/0x1f0
+> [c000000f1680bdc0] [c0000000000d384c] kthread+0x14c/0x190
+> [c000000f1680be30] [c00000000000b5a0] ret_from_kernel_thread+0x5c/0xbc
+> 
+> Fixes: f83f3c515654("kernfs: fix locking around kernfs_ops->release()
+> callback")
+> Signed-off-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
 
-Signed-off-by: Hari Bathini <hbathini@linux.vnet.ibm.com>
----
- Documentation/powerpc/firmware-assisted-dump.txt |   34 +++++++++++-----------
- 1 file changed, 17 insertions(+), 17 deletions(-)
+Acked-by: Tejun Heo <tj@kernel.org>
 
-diff --git a/Documentation/powerpc/firmware-assisted-dump.txt b/Documentation/powerpc/firmware-assisted-dump.txt
-index 3007bc9..19b1e3d 100644
---- a/Documentation/powerpc/firmware-assisted-dump.txt
-+++ b/Documentation/powerpc/firmware-assisted-dump.txt
-@@ -105,21 +105,21 @@ memory is held.
- 
- If there is no waiting dump data, then only the memory required
- to hold CPU state, HPTE region, boot memory dump and elfcore
--header, is reserved at the top of memory (see Fig. 1). This area
--is *not* released: this region will be kept permanently reserved,
--so that it can act as a receptacle for a copy of the boot memory
--content in addition to CPU state and HPTE region, in the case a
--crash does occur.
-+header, is usually reserved at an offset greater than boot memory
-+size (see Fig. 1). This area is *not* released: this region will
-+be kept permanently reserved, so that it can act as a receptacle
-+for a copy of the boot memory content in addition to CPU state
-+and HPTE region, in the case a crash does occur.
- 
-   o Memory Reservation during first kernel
- 
--  Low memory                                        Top of memory
-+  Low memory                                         Top of memory
-   0      boot memory size                                       |
--  |           |                       |<--Reserved dump area -->|
--  V           V                       |   Permanent Reservation V
--  +-----------+----------/ /----------+---+----+-----------+----+
--  |           |                       |CPU|HPTE|  DUMP     |ELF |
--  +-----------+----------/ /----------+---+----+-----------+----+
-+  |           |                |<--Reserved dump area -->|      |
-+  V           V                |   Permanent Reservation |      V
-+  +-----------+----------/ /---+---+----+-----------+----+------+
-+  |           |                |CPU|HPTE|  DUMP     |ELF |      |
-+  +-----------+----------/ /---+---+----+-----------+----+------+
-         |                                           ^
-         |                                           |
-         \                                           /
-@@ -135,12 +135,12 @@ crash does occur.
-   0      boot memory size                                       |
-   |           |<------------- Reserved dump area ----------- -->|
-   V           V                                                 V
--  +-----------+----------/ /----------+---+----+-----------+----+
--  |           |                       |CPU|HPTE|  DUMP     |ELF |
--  +-----------+----------/ /----------+---+----+-----------+----+
--        |                                                    |
--        V                                                    V
--   Used by second                                    /proc/vmcore
-+  +-----------+----------/ /---+---+----+-----------+----+------+
-+  |           |                |CPU|HPTE|  DUMP     |ELF |      |
-+  +-----------+----------/ /---+---+----+-----------+----+------+
-+        |                                              |
-+        V                                              V
-+   Used by second                                /proc/vmcore
-    kernel to boot
-                    Fig. 2
- 
+Thanks.
+
+-- 
+tejun
