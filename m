@@ -1,17 +1,25 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <David.Laight@ACULAB.COM>
+Received: from smtp-out6.electric.net (smtp-out6.electric.net
+ [192.162.217.193])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vkNDd6NLRzDq8f
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Mar 2017 20:18:09 +1100 (AEDT)
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH] net: ethernet: fs_enet: Remove useless includes
-To: Pantelis Antoniou <pantelis.antoniou@gmail.com>,
- Vitaly Bordug <vbordug@ru.mvista.com>, davem@davemloft.net
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- netdev@vger.kernel.org
-Message-Id: <20170316091804.DCA4168481@localhost.localdomain>
-Date: Thu, 16 Mar 2017 10:18:04 +0100 (CET)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vkNxr318rzDq8f
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Mar 2017 20:50:23 +1100 (AEDT)
+From: David Laight <David.Laight@ACULAB.COM>
+To: 'Daniel Axtens' <dja@axtens.net>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>, "linux-crypto@vger.kernel.org"
+ <linux-crypto@vger.kernel.org>
+CC: "anton@samba.org" <anton@samba.org>
+Subject: RE: [PATCH 1/4] crypto: powerpc - Factor out the core CRC vpmsum
+ algorithm
+Date: Thu, 16 Mar 2017 09:50:13 +0000
+Message-ID: <063D6719AE5E284EB5DD2968C1650D6DCFFB2524@AcuExch.aculab.com>
+References: <20170315123737.20234-1-dja@axtens.net>
+ <063D6719AE5E284EB5DD2968C1650D6DCFFB1A81@AcuExch.aculab.com>
+ <87efxy41hi.fsf@possimpible.ozlabs.ibm.com>
+In-Reply-To: <87efxy41hi.fsf@possimpible.ozlabs.ibm.com>
+Content-Type: text/plain; charset="Windows-1252"
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,48 +29,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-CONFIG_8xx is being deprecated. Since the includes dependent on
-CONFIG_8xx are useless, just drop them.
+From: Daniel Axtens
+> Sent: 15 March 2017 22:30
+> Hi David,
+>=20
+> > While not part of this change, the unrolled loops look as though
+> > they just destroy the cpu cache.
+> > I'd like be convinced that anything does CRC over long enough buffers
+> > to make it a gain at all.
+> >
+> > With modern (not that modern now) superscalar cpus you can often
+> > get the loop instructions 'for free'.
+> > Sometimes pipelining the loop is needed to get full throughput.
+> > Unlike the IP checksum, you don't even have to 'loop carry' the
+> > cpu carry flag.
+>=20
+> Internal testing on a NVMe device with T10DIF enabled on 4k blocks
+> shows a 20x - 30x improvement. Without these patches, crc_t10dif_generic
+> uses over 60% of CPU time - with these patches CRC drops to single
+> digits.
+>=20
+> I should probably have lead with that, sorry.
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
- drivers/net/ethernet/freescale/fs_enet/mac-fec.c | 6 ------
- drivers/net/ethernet/freescale/fs_enet/mac-scc.c | 6 ------
- 2 files changed, 12 deletions(-)
+I'm not doubting that using the cpu instruction for crcs gives a
+massive performance boost.
 
-diff --git a/drivers/net/ethernet/freescale/fs_enet/mac-fec.c b/drivers/net/ethernet/freescale/fs_enet/mac-fec.c
-index db9c0bcf54cd..1fc27c97e3b2 100644
---- a/drivers/net/ethernet/freescale/fs_enet/mac-fec.c
-+++ b/drivers/net/ethernet/freescale/fs_enet/mac-fec.c
-@@ -38,12 +38,6 @@
- #include <asm/irq.h>
- #include <linux/uaccess.h>
- 
--#ifdef CONFIG_8xx
--#include <asm/8xx_immap.h>
--#include <asm/pgtable.h>
--#include <asm/cpm1.h>
--#endif
--
- #include "fs_enet.h"
- #include "fec.h"
- 
-diff --git a/drivers/net/ethernet/freescale/fs_enet/mac-scc.c b/drivers/net/ethernet/freescale/fs_enet/mac-scc.c
-index 96d44cf44fe0..64300ac13e02 100644
---- a/drivers/net/ethernet/freescale/fs_enet/mac-scc.c
-+++ b/drivers/net/ethernet/freescale/fs_enet/mac-scc.c
-@@ -37,12 +37,6 @@
- #include <asm/irq.h>
- #include <linux/uaccess.h>
- 
--#ifdef CONFIG_8xx
--#include <asm/8xx_immap.h>
--#include <asm/pgtable.h>
--#include <asm/cpm1.h>
--#endif
--
- #include "fs_enet.h"
- 
- /*************************************************/
--- 
-2.12.0
+Just that the heavily unrolled loop is unlikely to help overall.
+Some 'cold cache' tests on shorter buffers might be illuminating.
+=20
+> FWIW, the original patch showed a 3.7x gain on btrfs as well -
+> 6dd7a82cc54e ("crypto: powerpc - Add POWER8 optimised crc32c")
+>=20
+> When Anton wrote the original code he had access to IBM's internal
+> tooling for looking at how instructions flow through the various stages
+> of the CPU, so I trust it's pretty much optimal from that point of view.
+
+Doesn't mean he used it :-)
+
+	David
