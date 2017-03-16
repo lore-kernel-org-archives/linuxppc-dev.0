@@ -1,25 +1,25 @@
-Return-Path: <David.Laight@ACULAB.COM>
-Received: from smtp-out6.electric.net (smtp-out6.electric.net
- [192.162.217.193])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vkNxr318rzDq8f
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Mar 2017 20:50:23 +1100 (AEDT)
-From: David Laight <David.Laight@ACULAB.COM>
-To: 'Daniel Axtens' <dja@axtens.net>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>, "linux-crypto@vger.kernel.org"
- <linux-crypto@vger.kernel.org>
-CC: "anton@samba.org" <anton@samba.org>
-Subject: RE: [PATCH 1/4] crypto: powerpc - Factor out the core CRC vpmsum
- algorithm
-Date: Thu, 16 Mar 2017 09:50:13 +0000
-Message-ID: <063D6719AE5E284EB5DD2968C1650D6DCFFB2524@AcuExch.aculab.com>
-References: <20170315123737.20234-1-dja@axtens.net>
- <063D6719AE5E284EB5DD2968C1650D6DCFFB1A81@AcuExch.aculab.com>
- <87efxy41hi.fsf@possimpible.ozlabs.ibm.com>
-In-Reply-To: <87efxy41hi.fsf@possimpible.ozlabs.ibm.com>
-Content-Type: text/plain; charset="Windows-1252"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vkP1w4jstzDq8f
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Mar 2017 20:53:56 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Scott Wood <oss@buserror.net>, Arnd Bergmann <arnd@arndb.de>
+Cc: linux-pcmcia@lists.infradead.org, linuxppc-dev@ozlabs.org,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, qiang.zhao@nxp.com,
+ claudiu.manoil@nxp.com
+Subject: Re: [PATCH] drivers/pcmcia: NO_IRQ removal for electra_cf.c
+In-Reply-To: <1489600245.2944.19.camel@buserror.net>
+References: <1473501690-11987-1-git-send-email-mpe@ellerman.id.au>
+ <87wpbsuo4x.fsf@concordia.ellerman.id.au>
+ <CAK8P3a0wfXrj3gJAffHLhqQjqcZWy2=WEVUordLxH-jOKAe0qw@mail.gmail.com>
+ <8760jbump6.fsf@concordia.ellerman.id.au>
+ <1489600245.2944.19.camel@buserror.net>
+Date: Thu, 16 Mar 2017 20:53:49 +1100
+Message-ID: <87a88llf82.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,41 +29,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Daniel Axtens
-> Sent: 15 March 2017 22:30
-> Hi David,
->=20
-> > While not part of this change, the unrolled loops look as though
-> > they just destroy the cpu cache.
-> > I'd like be convinced that anything does CRC over long enough buffers
-> > to make it a gain at all.
-> >
-> > With modern (not that modern now) superscalar cpus you can often
-> > get the loop instructions 'for free'.
-> > Sometimes pipelining the loop is needed to get full throughput.
-> > Unlike the IP checksum, you don't even have to 'loop carry' the
-> > cpu carry flag.
->=20
-> Internal testing on a NVMe device with T10DIF enabled on 4k blocks
-> shows a 20x - 30x improvement. Without these patches, crc_t10dif_generic
-> uses over 60% of CPU time - with these patches CRC drops to single
-> digits.
->=20
-> I should probably have lead with that, sorry.
+Scott Wood <oss@buserror.net> writes:
+> On Wed, 2017-03-15 at 16:35 +1100, Michael Ellerman wrote:
+>> I'll do patches for everything above that's not drivers/soc or
+>> include/soc and hopefully we can hear from someone at NXP on the plans
+>> for getting the soc parts enabled on arm.
+>
+> qe_ic is handled by=C2=A0https://lkml.org/lkml/2017/3/13/1234
 
-I'm not doubting that using the cpu instruction for crcs gives a
-massive performance boost.
+Thanks.
 
-Just that the heavily unrolled loop is unlikely to help overall.
-Some 'cold cache' tests on shorter buffers might be illuminating.
-=20
-> FWIW, the original patch showed a 3.7x gain on btrfs as well -
-> 6dd7a82cc54e ("crypto: powerpc - Add POWER8 optimised crc32c")
->=20
-> When Anton wrote the original code he had access to IBM's internal
-> tooling for looking at how instructions flow through the various stages
-> of the CPU, so I trust it's pretty much optimal from that point of view.
-
-Doesn't mean he used it :-)
-
-	David
+cheers
