@@ -1,26 +1,26 @@
 Return-Path: <htejun@gmail.com>
-Received: from mail-yw0-x242.google.com (mail-yw0-x242.google.com
- [IPv6:2607:f8b0:4002:c05::242])
+Received: from mail-yw0-x234.google.com (mail-yw0-x234.google.com
+ [IPv6:2607:f8b0:4002:c05::234])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vkh661ZwHzDq5g
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Mar 2017 08:13:33 +1100 (AEDT)
-Received: by mail-yw0-x242.google.com with SMTP id p77so5771658ywg.0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Mar 2017 14:13:33 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vkh7G0Cf9zDqYt
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Mar 2017 08:14:34 +1100 (AEDT)
+Received: by mail-yw0-x234.google.com with SMTP id p77so41666234ywg.1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Mar 2017 14:14:33 -0700 (PDT)
 Sender: Tejun Heo <htejun@gmail.com>
-Date: Thu, 16 Mar 2017 17:13:29 -0400
+Date: Thu, 16 Mar 2017 17:14:30 -0400
 From: Tejun Heo <tj@kernel.org>
-To: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, Frederic Barrat <fbarrat@linux.vnet.ibm.com>
 Subject: Re: [PATCH] kernfs: Check KERNFS_HAS_RELEASE before calling
  kernfs_release_file()
-Message-ID: <20170316211329.GB1480@htj.duckdns.org>
+Message-ID: <20170316211430.GC1480@htj.duckdns.org>
 References: <20170314024700.6167-1-vaibhav@linux.vnet.ibm.com>
+ <20170314030829.GA26049@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170314024700.6167-1-vaibhav@linux.vnet.ibm.com>
+In-Reply-To: <20170314030829.GA26049@kroah.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,55 +30,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Mar 14, 2017 at 08:17:00AM +0530, Vaibhav Jain wrote:
-> Recently started seeing a kernel oops when a module tries removing a
-> memory mapped sysfs bin_attribute. On closer investigation the root
-> cause seems to be kernfs_release_file() trying to call
-> kernfs_op.release() callback that's NULL for such sysfs
-> bin_attributes. The oops occurs when kernfs_release_file() is called from
-> kernfs_drain_open_files() to cleanup any open handles with active
-> memory mappings.
-> 
-> The patch fixes this by checking for flag KERNFS_HAS_RELEASE before
-> calling kernfs_release_file() in function kernfs_drain_open_files().
-> 
-> On ppc64-le arch with cxl module the oops back-trace is of the
-> form below:
-> [  861.381126] Unable to handle kernel paging request for instruction fetch
-> [  861.381360] Faulting instruction address: 0x00000000
-> [  861.381428] Oops: Kernel access of bad area, sig: 11 [#1]
-> ....
-> [  861.382481] NIP: 0000000000000000 LR: c000000000362c60 CTR:
-> 0000000000000000
-> ....
-> Call Trace:
-> [c000000f1680b750] [c000000000362c34] kernfs_drain_open_files+0x104/0x1d0 (unreliable)
-> [c000000f1680b790] [c00000000035fa00] __kernfs_remove+0x260/0x2c0
-> [c000000f1680b820] [c000000000360da0] kernfs_remove_by_name_ns+0x60/0xe0
-> [c000000f1680b8b0] [c0000000003638f4] sysfs_remove_bin_file+0x24/0x40
-> [c000000f1680b8d0] [c00000000062a164] device_remove_bin_file+0x24/0x40
-> [c000000f1680b8f0] [d000000009b7b22c] cxl_sysfs_afu_remove+0x144/0x170 [cxl]
-> [c000000f1680b940] [d000000009b7c7e4] cxl_remove+0x6c/0x1a0 [cxl]
-> [c000000f1680b990] [c00000000052f694] pci_device_remove+0x64/0x110
-> [c000000f1680b9d0] [c0000000006321d4] device_release_driver_internal+0x1f4/0x2b0
-> [c000000f1680ba20] [c000000000525cb0] pci_stop_bus_device+0xa0/0xd0
-> [c000000f1680ba60] [c000000000525e80] pci_stop_and_remove_bus_device+0x20/0x40
-> [c000000f1680ba90] [c00000000004a6c4] pci_hp_remove_devices+0x84/0xc0
-> [c000000f1680bad0] [c00000000004a688] pci_hp_remove_devices+0x48/0xc0
-> [c000000f1680bb10] [c0000000009dfda4] eeh_reset_device+0xb0/0x290
-> [c000000f1680bbb0] [c000000000032b4c] eeh_handle_normal_event+0x47c/0x530
-> [c000000f1680bc60] [c000000000032e64] eeh_handle_event+0x174/0x350
-> [c000000f1680bd10] [c000000000033228] eeh_event_handler+0x1e8/0x1f0
-> [c000000f1680bdc0] [c0000000000d384c] kthread+0x14c/0x190
-> [c000000f1680be30] [c00000000000b5a0] ret_from_kernel_thread+0x5c/0xbc
-> 
-> Fixes: f83f3c515654("kernfs: fix locking around kernfs_ops->release()
-> callback")
-> Signed-off-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+Hello, Greg.
 
-Acked-by: Tejun Heo <tj@kernel.org>
+On Tue, Mar 14, 2017 at 11:08:29AM +0800, Greg Kroah-Hartman wrote:
+> Tejun, want to take this through your tree, or at the least, give me an
+> ack for this?
 
-Thanks.
+Just acked.  I think going through your tree is better for this one.
+
+Thanks!
 
 -- 
 tejun
