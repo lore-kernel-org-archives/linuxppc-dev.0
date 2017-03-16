@@ -2,15 +2,16 @@ Return-Path: <christophe.leroy@c-s.fr>
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vkNDc24NKzDq8f
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Mar 2017 20:18:08 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vkNDd6NLRzDq8f
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Mar 2017 20:18:09 +1100 (AEDT)
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH] isdn: hardware: mISDN: Remove reference to CONFIG_8xx
-To: Karsten Keil <isdn@linux-pingi.de>, davem@davemloft.net
+Subject: [PATCH] net: ethernet: fs_enet: Remove useless includes
+To: Pantelis Antoniou <pantelis.antoniou@gmail.com>,
+ Vitaly Bordug <vbordug@ru.mvista.com>, davem@davemloft.net
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  netdev@vger.kernel.org
-Message-Id: <20170316091802.E463D68481@localhost.localdomain>
-Date: Thu, 16 Mar 2017 10:18:02 +0100 (CET)
+Message-Id: <20170316091804.DCA4168481@localhost.localdomain>
+Date: Thu, 16 Mar 2017 10:18:04 +0100 (CET)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,57 +21,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-CONFIG_8xx is deprecated and should soon be removed in favor
-of CONFIG_PPC_8xx.
-Anyway, hfc_multi_8xx.h only uses 8xx I/O ports which are
-linked to the CPM1 communication processor included in the 8xx
-rather than the 8xx itself.
-
-This patch therefore makes it dependent on CONFIG_CPM1 instead,
-like several other drivers.
+CONFIG_8xx is being deprecated. Since the includes dependent on
+CONFIG_8xx are useless, just drop them.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- drivers/isdn/hardware/mISDN/Kconfig         | 6 +++---
- drivers/isdn/hardware/mISDN/hfc_multi_8xx.h | 2 +-
- 2 files changed, 4 insertions(+), 4 deletions(-)
+ drivers/net/ethernet/freescale/fs_enet/mac-fec.c | 6 ------
+ drivers/net/ethernet/freescale/fs_enet/mac-scc.c | 6 ------
+ 2 files changed, 12 deletions(-)
 
-diff --git a/drivers/isdn/hardware/mISDN/Kconfig b/drivers/isdn/hardware/mISDN/Kconfig
-index 09df54fc1fef..fda912b0833f 100644
---- a/drivers/isdn/hardware/mISDN/Kconfig
-+++ b/drivers/isdn/hardware/mISDN/Kconfig
-@@ -13,7 +13,7 @@ config MISDN_HFCPCI
+diff --git a/drivers/net/ethernet/freescale/fs_enet/mac-fec.c b/drivers/net/ethernet/freescale/fs_enet/mac-fec.c
+index db9c0bcf54cd..1fc27c97e3b2 100644
+--- a/drivers/net/ethernet/freescale/fs_enet/mac-fec.c
++++ b/drivers/net/ethernet/freescale/fs_enet/mac-fec.c
+@@ -38,12 +38,6 @@
+ #include <asm/irq.h>
+ #include <linux/uaccess.h>
  
- config MISDN_HFCMULTI
- 	tristate "Support for HFC multiport cards (HFC-4S/8S/E1)"
--	depends on PCI || 8xx
-+	depends on PCI || CPM1
- 	depends on MISDN
- 	help
- 	  Enable support for cards with Cologne Chip AG's HFC multiport
-@@ -27,8 +27,8 @@ config MISDN_HFCMULTI_8xx
- 	bool "Support for XHFC embedded board in HFC multiport driver"
- 	depends on MISDN
- 	depends on MISDN_HFCMULTI
--	depends on 8xx
--	default 8xx
-+	depends on CPM1
-+	default CPM1
- 	help
- 	  Enable support for the XHFC embedded solution from Speech Design.
- 
-diff --git a/drivers/isdn/hardware/mISDN/hfc_multi_8xx.h b/drivers/isdn/hardware/mISDN/hfc_multi_8xx.h
-index 0eafe9f04fca..8a254747768e 100644
---- a/drivers/isdn/hardware/mISDN/hfc_multi_8xx.h
-+++ b/drivers/isdn/hardware/mISDN/hfc_multi_8xx.h
-@@ -6,7 +6,7 @@
-  *
-  */
- 
+-#ifdef CONFIG_8xx
 -#include <asm/8xx_immap.h>
-+#include <asm/cpm1.h>
+-#include <asm/pgtable.h>
+-#include <asm/cpm1.h>
+-#endif
+-
+ #include "fs_enet.h"
+ #include "fec.h"
  
- /* Change this to the value used by your board */
- #ifndef IMAP_ADDR
+diff --git a/drivers/net/ethernet/freescale/fs_enet/mac-scc.c b/drivers/net/ethernet/freescale/fs_enet/mac-scc.c
+index 96d44cf44fe0..64300ac13e02 100644
+--- a/drivers/net/ethernet/freescale/fs_enet/mac-scc.c
++++ b/drivers/net/ethernet/freescale/fs_enet/mac-scc.c
+@@ -37,12 +37,6 @@
+ #include <asm/irq.h>
+ #include <linux/uaccess.h>
+ 
+-#ifdef CONFIG_8xx
+-#include <asm/8xx_immap.h>
+-#include <asm/pgtable.h>
+-#include <asm/cpm1.h>
+-#endif
+-
+ #include "fs_enet.h"
+ 
+ /*************************************************/
 -- 
 2.12.0
