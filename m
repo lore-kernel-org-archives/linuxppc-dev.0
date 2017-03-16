@@ -1,33 +1,32 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vkQ0g0cTPzDqks
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Mar 2017 21:37:54 +1100 (AEDT)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v2GAYboe087991
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Mar 2017 06:37:52 -0400
-Received: from e15.ny.us.ibm.com (e15.ny.us.ibm.com [129.33.205.205])
- by mx0b-001b2d01.pphosted.com with ESMTP id 297s1y068x-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vkQ0j6fm6zDqlB
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Mar 2017 21:37:57 +1100 (AEDT)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v2GAXoOq106048
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Mar 2017 06:37:45 -0400
+Received: from e13.ny.us.ibm.com (e13.ny.us.ibm.com [129.33.205.203])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 297kqkfe2s-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Mar 2017 06:37:51 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Mar 2017 06:37:45 -0400
 Received: from localhost
- by e15.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e13.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Thu, 16 Mar 2017 06:37:50 -0400
+ Thu, 16 Mar 2017 06:37:44 -0400
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
 Cc: linuxppc-dev@lists.ozlabs.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH V4 14/14] powerpc/mm/hash: Skip using reserved virtual address
- range
-Date: Thu, 16 Mar 2017 16:07:13 +0530
+Subject: [PATCH V4 11/14] powerpc/mm/hash: Increase VA range to 128TB
+Date: Thu, 16 Mar 2017 16:07:10 +0530
 In-Reply-To: <1489660633-24125-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1489660633-24125-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Message-Id: <1489660633-24125-15-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Message-Id: <1489660633-24125-12-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,172 +36,81 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Now that we use all the available virtual address range, we need to make sure
-we don't generate VSID such that it overlaps with the reserved vsid range.
-Reserved vsid range include the virtual address range used by the adjunct
-partition and also the VRMA virtual segment. We find the context value that
-can result in generating such a VSID and reserve it early in boot.
+We update the hash linux page table layout such that we can support 512TB. But
+we limit the TASK_SIZE to 128TB. We can switch to 128TB by default without
+conditional because that is the max virtual address supported by other
+architectures. We will later add a mechanism to on-demand increase the
+application's effective address range to 512TB.
 
-We don't look at the adjunct range, because for now we disable the adjunct usage
-in a Linux LPAR via CAS interface.
+Having the page table layout changed to accommodate 512TB  makes testing large
+memory configuration easier with less code changes to kernel
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/book3s/64/mmu-hash.h |  7 ++++
- arch/powerpc/include/asm/kvm_book3s_64.h      |  2 -
- arch/powerpc/include/asm/mmu_context.h        |  1 +
- arch/powerpc/mm/hash_utils_64.c               | 58 +++++++++++++++++++++++++++
- arch/powerpc/mm/mmu_context_book3s64.c        | 23 +++++++++++
- 5 files changed, 89 insertions(+), 2 deletions(-)
+ arch/powerpc/include/asm/book3s/64/hash-4k.h  |  2 +-
+ arch/powerpc/include/asm/book3s/64/hash-64k.h |  2 +-
+ arch/powerpc/include/asm/processor.h          | 22 ++++++++++++++++++----
+ 3 files changed, 20 insertions(+), 6 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/book3s/64/mmu-hash.h b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
-index c99ea6bbd82c..ac987e08ce63 100644
---- a/arch/powerpc/include/asm/book3s/64/mmu-hash.h
-+++ b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
-@@ -578,11 +578,18 @@ extern void slb_set_size(u16 size);
- #define VSID_MULTIPLIER_256M	ASM_CONST(12538073)	/* 24-bit prime */
- #define VSID_BITS_256M		(VA_BITS - SID_SHIFT)
- #define VSID_BITS_65_256M	(65 - SID_SHIFT)
-+/*
-+ * Modular multiplicative inverse of VSID_MULTIPLIER under modulo VSID_MODULUS
-+ */
-+#define VSID_MULINV_256M	ASM_CONST(665548017062)
+diff --git a/arch/powerpc/include/asm/book3s/64/hash-4k.h b/arch/powerpc/include/asm/book3s/64/hash-4k.h
+index 0c4e470571ca..b4b5e6b671ca 100644
+--- a/arch/powerpc/include/asm/book3s/64/hash-4k.h
++++ b/arch/powerpc/include/asm/book3s/64/hash-4k.h
+@@ -8,7 +8,7 @@
+ #define H_PTE_INDEX_SIZE  9
+ #define H_PMD_INDEX_SIZE  7
+ #define H_PUD_INDEX_SIZE  9
+-#define H_PGD_INDEX_SIZE  9
++#define H_PGD_INDEX_SIZE  12
  
- #define VSID_MULTIPLIER_1T	ASM_CONST(12538073)	/* 24-bit prime */
- #define VSID_BITS_1T		(VA_BITS - SID_SHIFT_1T)
- #define VSID_BITS_65_1T		(65 - SID_SHIFT_1T)
-+#define VSID_MULINV_1T		ASM_CONST(209034062)
+ #ifndef __ASSEMBLY__
+ #define H_PTE_TABLE_SIZE	(sizeof(pte_t) << H_PTE_INDEX_SIZE)
+diff --git a/arch/powerpc/include/asm/book3s/64/hash-64k.h b/arch/powerpc/include/asm/book3s/64/hash-64k.h
+index 7be54f9590a3..214219dff87c 100644
+--- a/arch/powerpc/include/asm/book3s/64/hash-64k.h
++++ b/arch/powerpc/include/asm/book3s/64/hash-64k.h
+@@ -4,7 +4,7 @@
+ #define H_PTE_INDEX_SIZE  8
+ #define H_PMD_INDEX_SIZE  5
+ #define H_PUD_INDEX_SIZE  5
+-#define H_PGD_INDEX_SIZE  12
++#define H_PGD_INDEX_SIZE  15
  
-+/* 1TB VSID reserved for VRMA */
-+#define VRMA_VSID	0x1ffffffUL
- #define USER_VSID_RANGE	(1UL << (ESID_BITS + SID_SHIFT))
- 
- /* 4 bits per slice and we have one slice per 1TB */
-diff --git a/arch/powerpc/include/asm/kvm_book3s_64.h b/arch/powerpc/include/asm/kvm_book3s_64.h
-index d9b48f5bb606..d55c7f881ce7 100644
---- a/arch/powerpc/include/asm/kvm_book3s_64.h
-+++ b/arch/powerpc/include/asm/kvm_book3s_64.h
-@@ -49,8 +49,6 @@ static inline bool kvm_is_radix(struct kvm *kvm)
- #define KVM_DEFAULT_HPT_ORDER	24	/* 16MB HPT by default */
+ /*
+  * 64k aligned address free up few of the lower bits of RPN for us
+diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
+index e0fecbcea2a2..146c3a91d89f 100644
+--- a/arch/powerpc/include/asm/processor.h
++++ b/arch/powerpc/include/asm/processor.h
+@@ -102,11 +102,25 @@ void release_thread(struct task_struct *);
  #endif
  
--#define VRMA_VSID	0x1ffffffUL	/* 1TB VSID reserved for VRMA */
--
- /*
-  * We use a lock bit in HPTE dword 0 to synchronize updates and
-  * accesses to each HPTE, and another bit to indicate non-present
-diff --git a/arch/powerpc/include/asm/mmu_context.h b/arch/powerpc/include/asm/mmu_context.h
-index 8fe1ba1808d3..757d4a9e1a1c 100644
---- a/arch/powerpc/include/asm/mmu_context.h
-+++ b/arch/powerpc/include/asm/mmu_context.h
-@@ -51,6 +51,7 @@ static inline void switch_mmu_context(struct mm_struct *prev,
- 	return switch_slb(tsk, next);
- }
- 
-+extern void hash__resv_context(int context_id);
- extern int hash__get_new_context(void);
- extern void __destroy_context(int context_id);
- static inline void mmu_context_init(void) { }
-diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
-index d96ba04d8844..80ae6f42854a 100644
---- a/arch/powerpc/mm/hash_utils_64.c
-+++ b/arch/powerpc/mm/hash_utils_64.c
-@@ -1847,4 +1847,62 @@ static int __init hash64_debugfs(void)
- }
- machine_device_initcall(pseries, hash64_debugfs);
- 
+ #ifdef CONFIG_PPC64
+-/* 64-bit user address space is 46-bits (64TB user VM) */
+-#define TASK_SIZE_USER64 (0x0000400000000000UL)
 +/*
-+ * if modinv is the modular multiplicate inverse of (x % vsid_modulus) and
-+ * vsid = (protovsid * x) % vsid_modulus, then we say
-+ *
-+ * provosid = (vsid * modinv) % vsid_modulus
++ * 64-bit user address space can have multiple limits
++ * For now supported values are:
 + */
-+static unsigned long vsid_unscramble(unsigned long vsid, int ssize)
-+{
-+	unsigned long protovsid;
-+	unsigned long va_bits = VA_BITS;
-+	unsigned long modinv, vsid_modulus;
-+	unsigned long max_mod_inv, tmp_modinv;
-+
-+
-+	if (!mmu_has_feature(MMU_FTR_68_BIT_VA))
-+		va_bits = 65;
-+
-+	if (ssize == MMU_SEGSIZE_256M) {
-+		modinv = VSID_MULINV_256M;
-+		vsid_modulus = ((1UL << (va_bits - SID_SHIFT)) - 1);
-+	} else {
-+		modinv = VSID_MULINV_1T;
-+		vsid_modulus = ((1UL << (va_bits - SID_SHIFT_1T)) - 1);
-+	}
-+	/*
-+	 * vsid outside our range.
-+	 */
-+	if (vsid >= vsid_modulus)
-+		return 0;
-+
-+	/* Check if (vsid * modinv) overflow (63 bits) */
-+	max_mod_inv = 0x7fffffffffffffffull / vsid;
-+	if (modinv < max_mod_inv)
-+		return (vsid * modinv) % vsid_modulus;
-+
-+	tmp_modinv = modinv/max_mod_inv;
-+	modinv %= max_mod_inv;
-+
-+	protovsid = (((vsid * max_mod_inv) % vsid_modulus) * tmp_modinv) % vsid_modulus;
-+	protovsid = (protovsid + vsid * modinv) % vsid_modulus;
-+	return protovsid;
-+}
-+
-+static int __init hash_init_reserved_context(void)
-+{
-+	unsigned long protovsid;
-+
-+	/*
-+	 * VRMA_VSID to skip list. We don't bother about
-+	 * ibm,adjunct-virtual-addresses because we disable
-+	 * via ibm,client-architecture-support interface.
-+	 */
-+	protovsid = vsid_unscramble(VRMA_VSID, MMU_SEGSIZE_1T);
-+	hash__resv_context(protovsid >> ESID_BITS_1T);
-+	return 0;
-+}
-+machine_device_initcall(pseries, hash_init_reserved_context);
-+
- #endif /* CONFIG_DEBUG_FS */
-diff --git a/arch/powerpc/mm/mmu_context_book3s64.c b/arch/powerpc/mm/mmu_context_book3s64.c
-index 9ab6cd2923be..84e5d9618aee 100644
---- a/arch/powerpc/mm/mmu_context_book3s64.c
-+++ b/arch/powerpc/mm/mmu_context_book3s64.c
-@@ -30,6 +30,29 @@
- static DEFINE_SPINLOCK(mmu_context_lock);
- static DEFINE_IDA(mmu_context_ida);
++#define TASK_SIZE_64TB  (0x0000400000000000UL)
++#define TASK_SIZE_128TB (0x0000800000000000UL)
++#define TASK_SIZE_512TB (0x0002000000000000UL)
  
-+void hash__resv_context(int context)
-+{
-+	int index = 0, err;
+-/* 
+- * 32-bit user address space is 4GB - 1 page 
++#ifdef CONFIG_PPC_BOOK3S_64
++/*
++ * MAx value currently used:
++ */
++#define TASK_SIZE_USER64 TASK_SIZE_128TB
++#else
++#define TASK_SIZE_USER64 TASK_SIZE_64TB
++#endif
 +
-+again:
-+	if (!ida_pre_get(&mmu_context_ida, GFP_KERNEL))
-+		goto error_out;
-+
-+	spin_lock(&mmu_context_lock);
-+	err = ida_get_new_above(&mmu_context_ida, context, &index);
-+	spin_unlock(&mmu_context_lock);
-+
-+	if (err == -EAGAIN)
-+		goto again;
-+error_out:
-+	if (index != context)
-+		WARN(1, "Failed to resv context %d (got %d)\n", context, index);
-+	else
-+		pr_info("Reserving context %d\n", context);
-+
-+	return ;
-+}
-+
- int hash__get_new_context(void)
- {
- 	int index, err;
++/*
++ * 32-bit user address space is 4GB - 1 page
+  * (this 1 page is needed so referencing of 0xFFFFFFFF generates EFAULT
+  */
+ #define TASK_SIZE_USER32 (0x0000000100000000UL - (1*PAGE_SIZE))
 -- 
 2.7.4
