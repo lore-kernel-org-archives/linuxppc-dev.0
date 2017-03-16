@@ -1,14 +1,17 @@
-Return-Path: <tglx@linutronix.de>
-Received: from Galois.linutronix.de (Galois.linutronix.de
- [IPv6:2a01:7a0:2:106d:700::1])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <till.smejkal@googlemail.com>
+Received: from mail-wr0-x244.google.com (mail-wr0-x244.google.com
+ [IPv6:2a00:1450:400c:c0c::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vkbVH3CtzzDqY3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Mar 2017 04:45:43 +1100 (AEDT)
-Date: Thu, 16 Mar 2017 18:42:39 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Till Smejkal <till.smejkal@googlemail.com>
-cc: Andy Lutomirski <luto@amacapital.net>, Andy Lutomirski <luto@kernel.org>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vkbc06qvvzDqY3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Mar 2017 04:50:40 +1100 (AEDT)
+Received: by mail-wr0-x244.google.com with SMTP id g10so6826793wrg.0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Mar 2017 10:50:40 -0700 (PDT)
+From: Till Smejkal <till.smejkal@googlemail.com>
+Date: Thu, 16 Mar 2017 10:50:33 -0700
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Till Smejkal <till.smejkal@googlemail.com>,
+ Andy Lutomirski <luto@amacapital.net>, Andy Lutomirski <luto@kernel.org>,
  Richard Henderson <rth@twiddle.net>,
  Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
  Matt Turner <mattst88@gmail.com>, Vineet Gupta <vgupta@synopsys.com>,
@@ -26,10 +29,10 @@ cc: Andy Lutomirski <luto@amacapital.net>, Andy Lutomirski <luto@kernel.org>,
  Heiko Carstens <heiko.carstens@de.ibm.com>,
  Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>,
  "David S. Miller" <davem@davemloft.net>,
- Chris Metcalf <cmetcalf@mellanox.com>, Ingo Molnar <mingo@redhat.com>,
- "H. Peter Anvin" <hpa@zytor.com>, X86 ML <x86@kernel.org>,
- Chris Zankel <chris@zankel.net>, Max Filippov <jcmvbkbc@gmail.com>,
- Arnd Bergmann <arnd@arndb.de>,
+ Chris Metcalf <cmetcalf@mellanox.com>,
+ Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+ X86 ML <x86@kernel.org>, Chris Zankel <chris@zankel.net>,
+ Max Filippov <jcmvbkbc@gmail.com>, Arnd Bergmann <arnd@arndb.de>,
  Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
  Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
  Mauro Carvalho Chehab <mchehab@kernel.org>,
@@ -69,11 +72,10 @@ cc: Andy Lutomirski <luto@amacapital.net>, Andy Lutomirski <luto@kernel.org>,
  linux-arch <linux-arch@vger.kernel.org>,
  ALSA development <alsa-devel@alsa-project.org>
 Subject: Re: [RFC PATCH 00/13] Introduce first class virtual address spaces
-In-Reply-To: <20170316172909.ux4u7dbspwlynsce@arch-dev>
-Message-ID: <alpine.DEB.2.20.1703161841220.3586@nanos>
-References: <20170316172909.ux4u7dbspwlynsce@arch-dev>
+Message-ID: <20170316175033.pgkep75iszqy3csb@arch-dev>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <alpine.DEB.2.20.1703161841220.3586@nanos>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -83,21 +85,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 16 Mar 2017, Till Smejkal wrote:
-> On Thu, 16 Mar 2017, Thomas Gleixner wrote:
-> > Why do we need yet another mechanism to represent something which looks
-> > like a file instead of simply using existing mechanisms and extend them?
+On Thu, 16 Mar 2017, Thomas Gleixner wrote:
+> On Thu, 16 Mar 2017, Till Smejkal wrote:
+> > On Thu, 16 Mar 2017, Thomas Gleixner wrote:
+> > > Why do we need yet another mechanism to represent something which looks
+> > > like a file instead of simply using existing mechanisms and extend them?
+> > 
+> > You are right. I also recognized during the discussion with Andy, Chris,
+> > Matthew, Luck, Rich and the others that there are already other
+> > techniques in the Linux kernel that can achieve the same functionality
+> > when combined. As I said also to the others, I will drop the VAS segments
+> > for future versions. The first class virtual address space feature was
+> > the more interesting part of the patchset anyways.
 > 
-> You are right. I also recognized during the discussion with Andy, Chris,
-> Matthew, Luck, Rich and the others that there are already other
-> techniques in the Linux kernel that can achieve the same functionality
-> when combined. As I said also to the others, I will drop the VAS segments
-> for future versions. The first class virtual address space feature was
-> the more interesting part of the patchset anyways.
+> While you are at it, could you please drop this 'first class' marketing as
+> well? It has zero technical value, really.
 
-While you are at it, could you please drop this 'first class' marketing as
-well? It has zero technical value, really.
+Yes of course. I am sorry for the trouble that I caused already.
 
-Thanks,
-
-	tglx
+Thanks
+Till
