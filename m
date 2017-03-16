@@ -2,18 +2,18 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vkQ7p1bWpzDqr6
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Mar 2017 21:44:06 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vkQ9s5ZTnzDrH4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Mar 2017 21:45:53 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: Daniel Axtens <dja@axtens.net>, linuxppc-dev@lists.ozlabs.org,
  linux-crypto@vger.kernel.org
 Cc: anton@samba.org, Daniel Axtens <dja@axtens.net>
-Subject: Re: [PATCH 2/4] crypto: powerpc - Re-enable non-REFLECTed CRCs
-In-Reply-To: <20170315123737.20234-2-dja@axtens.net>
+Subject: Re: [PATCH 1/4] crypto: powerpc - Factor out the core CRC vpmsum
+ algorithm
+In-Reply-To: <20170315123737.20234-1-dja@axtens.net>
 References: <20170315123737.20234-1-dja@axtens.net>
- <20170315123737.20234-2-dja@axtens.net>
-Date: Thu, 16 Mar 2017 21:44:03 +1100
-Message-ID: <871stxlcwc.fsf@concordia.ellerman.id.au>
+Date: Thu, 16 Mar 2017 21:45:49 +1100
+Message-ID: <87y3w5jy8y.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,21 +27,34 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Daniel Axtens <dja@axtens.net> writes:
 
-> When CRC32c was included in the kernel, Anton ripped out
-> the #ifdefs around reflected polynomials, because CRC32c
-> is always reflected. However, not all CRCs use reflection
-> so we'd like to make it optional.
+> The core nuts and bolts of the crc32c vpmsum algorithm will
+> also work for a number of other CRC algorithms with different
+> polynomials. Factor out the function into a new asm file.
 >
-> Restore the REFLECT parts from Anton's original CRC32
-> implementation (https://github.com/antonblanchard/crc32-vpmsum)
+> To handle multiple users of the function, a user simply
+> provides constants, defines the name of their CRC function,
+> and then #includes the core algorithm file.
 >
-> That implementation is available under GPLv2+, so we're OK
-> from a licensing point of view:
-> https://github.com/antonblanchard/crc32-vpmsum/blob/master/LICENSE.TXT
+> Cc: Anton Blanchard <anton@samba.org>
+> Signed-off-by: Daniel Axtens <dja@axtens.net>
+>
+> --
+>
+> It's possible at this point to argue that the address
+> of the constant tables should be passed in to the function,
+> rather than doing this somewhat unconventional #include.
+>
+> However, we're about to add further #ifdef's back into the core
+> that will be provided by the encapsulaing code, and which couldn't
+> be done as a variable without performance loss.
+> ---
+>  arch/powerpc/crypto/crc32-vpmsum_core.S | 726 ++++++++++++++++++++++++++++++++
+>  arch/powerpc/crypto/crc32c-vpmsum_asm.S | 714 +------------------------------
+>  2 files changed, 729 insertions(+), 711 deletions(-)
+>  create mode 100644 arch/powerpc/crypto/crc32-vpmsum_core.S
 
-It's also written by Anton and copyright IBM, so you (we (IBM)) could
-always just relicense it anyway.
-
-So doubly OK IMO.
+So although this sits in arch/powerpc, it's heavy on the crypto which is
+not my area of expertise (to say the least!), so I think it should
+probably go via Herbert and the crypto tree?
 
 cheers
