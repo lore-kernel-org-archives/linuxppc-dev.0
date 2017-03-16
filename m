@@ -1,39 +1,23 @@
-Return-Path: <ego@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vkTZw3XXrzDq5x
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Mar 2017 00:19:20 +1100 (AEDT)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v2GDIrbr127609
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Mar 2017 09:19:15 -0400
-Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
- by mx0a-001b2d01.pphosted.com with ESMTP id 297cf6xvqt-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Mar 2017 09:19:14 -0400
-Received: from localhost
- by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ego@linux.vnet.ibm.com>;
- Thu, 16 Mar 2017 09:19:13 -0400
-Date: Thu, 16 Mar 2017 18:49:07 +0530
-From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
-To: Nicholas Piggin <npiggin@gmail.com>
-Cc: Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, Gautham R Shenoy <ego@linux.vnet.ibm.com>
-Subject: Re: [PATCH 4/8] powerpc/64s: fix POWER9 machine check handler from
- stop state
-Reply-To: ego@linux.vnet.ibm.com
-References: <20170314092349.10981-1-npiggin@gmail.com>
- <20170314092349.10981-5-npiggin@gmail.com>
- <67bd0a9f-ebaa-acdb-cfbf-8a4acba256a3@linux.vnet.ibm.com>
- <20170316230520.5ba5528e@roar.ozlabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170316230520.5ba5528e@roar.ozlabs.ibm.com>
-Message-Id: <20170316131907.GF16462@in.ibm.com>
+Return-Path: <BATV+b78c826e793104f7805f+4953+infradead.org+acme@bombadil.srs.infradead.org>
+Received: from bombadil.infradead.org (bombadil.infradead.org [65.50.211.133])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vkYN76m3vzDq8f
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Mar 2017 03:10:15 +1100 (AEDT)
+From: Arnaldo Carvalho de Melo <acme@kernel.org>
+To: Ingo Molnar <mingo@kernel.org>
+Cc: linux-kernel@vger.kernel.org,
+ "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
+ Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Steven Rostedt <rostedt@goodmis.org>, linuxppc-dev@lists.ozlabs.org,
+ Arnaldo Carvalho de Melo <acme@redhat.com>
+Subject: [PATCH 2/6] trace/kprobes: Fix check for kretprobe offset within
+ function entry
+Date: Thu, 16 Mar 2017 13:09:58 -0300
+Message-Id: <20170316161002.15445-3-acme@kernel.org>
+In-Reply-To: <20170316161002.15445-1-acme@kernel.org>
+References: <20170316161002.15445-1-acme@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,99 +27,197 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
 
-On Thu, Mar 16, 2017 at 11:05:20PM +1000, Nicholas Piggin wrote:
-> On Thu, 16 Mar 2017 18:10:48 +0530
-> Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com> wrote:
-> 
-> > On 03/14/2017 02:53 PM, Nicholas Piggin wrote:
-> > > The ISA specifies power save wakeup can cause a machine check interrupt.
-> > > The machine check handler currently has code to handle that for POWER8,
-> > > but POWER9 crashes when trying to execute the P8 style sleep
-> > > instructions.
-> > > 
-> > > So queue up the machine check, then call into the idle code to wake up
-> > > as the system reset interrupt does, rather than attempting to sleep
-> > > again without going through the main idle path.
-> > > 
-> > > Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
-> > > Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-> > > ---
-> > >  arch/powerpc/include/asm/reg.h       |  1 +
-> > >  arch/powerpc/kernel/exceptions-64s.S | 69 ++++++++++++++++++------------------
-> > >  2 files changed, 35 insertions(+), 35 deletions(-)
-> > > 
-> > > diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
-> > > index fc879fd6bdae..8bbdfacce970 100644
-> > > --- a/arch/powerpc/include/asm/reg.h
-> > > +++ b/arch/powerpc/include/asm/reg.h
-> > > @@ -656,6 +656,7 @@
-> > >  #define   SRR1_ISI_PROT		0x08000000 /* ISI: Other protection fault */
-> > >  #define   SRR1_WAKEMASK		0x00380000 /* reason for wakeup */
-> > >  #define   SRR1_WAKEMASK_P8	0x003c0000 /* reason for wakeup on POWER8 and 9 */
-> > > +#define   SRR1_WAKEMCE_RESVD	0x003c0000 /* Unused/reserved value used by MCE wakeup to indicate cause to idle wakeup handler */
-> > >  #define   SRR1_WAKESYSERR	0x00300000 /* System error */
-> > >  #define   SRR1_WAKEEE		0x00200000 /* External interrupt */
-> > >  #define   SRR1_WAKEHVI		0x00240000 /* Hypervisor Virtualization Interrupt (P9) */
-> > > diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-> > > index e390fcd04bcb..5779d2d6a192 100644
-> > > --- a/arch/powerpc/kernel/exceptions-64s.S
-> > > +++ b/arch/powerpc/kernel/exceptions-64s.S
-> > > @@ -306,6 +306,33 @@ EXC_COMMON_BEGIN(machine_check_common)
-> > >  	/* restore original r1. */			\
-> > >  	ld	r1,GPR1(r1)
-> > > 
-> > > +#ifdef CONFIG_PPC_P7_NAP
-> > > +EXC_COMMON_BEGIN(machine_check_idle_common)
-> > > +	bl	machine_check_queue_event
-> > > +	/*
-> > > +	 * Queue the machine check, then reload SRR1 and use it to set
-> > > +	 * CR3 according to pnv_powersave_wakeup convention.
-> > > +	 */
-> > > +	ld	r12,_MSR(r1)
-> > > +	rlwinm	r11,r12,47-31,30,31
-> > > +	cmpwi	cr3,r11,2
-> > > +
-> > > +	/*
-> > > +	 * Now put SRR1_WAKEMCE_RESVD into SRR1, allows it to follow the
-> > > +	 * system reset wakeup code.
-> > > +	 */
-> > > +	oris	r12,r12,SRR1_WAKEMCE_RESVD@h
-> > > +	mtspr	SPRN_SRR1,r12
-> > > +	std	r12,_MSR(r1)
-> > > +
-> > > +	/*
-> > > +	 * Decrement MCE nesting after finishing with the stack.
-> > > +	 */
-> > > +	lhz	r11,PACA_IN_MCE(r13)
-> > > +	subi	r11,r11,1
-> > > +	sth	r11,PACA_IN_MCE(r13)  
-> > 
-> > Looks like we are not winding up.. Shouldn't we ? What if we may end up
-> > in pnv_wakeup_noloss() which assumes that no GPRs are lost. Am I missing
-> > anything ?
+perf specifies an offset from _text and since this offset is fed
+directly into the arch-specific helper, kprobes tracer rejects
+installation of kretprobes through perf. Fix this by looking up the
+actual offset from a function for the specified sym+offset.
 
-Nice catch! This can occur if SRR1[46:47] == 0b01.
+Refactor and reuse existing routines to limit code duplication -- we
+repurpose kprobe_addr() for determining final kprobe address and we
+split out the function entry offset determination into a separate
+generic helper.
 
->
-> Hmm, no I think you're right. Thanks, good catch. But can we do it with
-> just setting PACA_NAPSTATELOST?
+Before patch:
 
-Unconditionally setting PACA_NAPSTATELOST should be sufficient.
+  naveen@ubuntu:~/linux/tools/perf$ sudo ./perf probe -v do_open%return
+  probe-definition(0): do_open%return
+  symbol:do_open file:(null) line:0 offset:0 return:1 lazy:(null)
+  0 arguments
+  Looking at the vmlinux_path (8 entries long)
+  Using /boot/vmlinux for symbols
+  Open Debuginfo file: /boot/vmlinux
+  Try to find probe point from debuginfo.
+  Matched function: do_open [2d0c7ff]
+  Probe point found: do_open+0
+  Matched function: do_open [35d76dc]
+  found inline addr: 0xc0000000004ba9c4
+  Failed to find "do_open%return",
+   because do_open is an inlined function and has no return point.
+  An error occurred in debuginfo analysis (-22).
+  Trying to use symbols.
+  Opening /sys/kernel/debug/tracing//README write=0
+  Opening /sys/kernel/debug/tracing//kprobe_events write=1
+  Writing event: r:probe/do_open _text+4469776
+  Failed to write event: Invalid argument
+    Error: Failed to add events. Reason: Invalid argument (Code: -22)
+  naveen@ubuntu:~/linux/tools/perf$ dmesg | tail
+  <snip>
+  [   33.568656] Given offset is not valid for return probe.
 
-> 
-> > 
-> > > +	b	pnv_powersave_wakeup
-> > > +#endif
-> > >  	/*  
-> > 
-> > [...]
-> > 
-> > Rest looks good to me.
-> > 
-> > Reviewed-by: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
-> 
-> Thanks,
-> Nick
-> 
+After patch:
+
+  naveen@ubuntu:~/linux/tools/perf$ sudo ./perf probe -v do_open%return
+  probe-definition(0): do_open%return
+  symbol:do_open file:(null) line:0 offset:0 return:1 lazy:(null)
+  0 arguments
+  Looking at the vmlinux_path (8 entries long)
+  Using /boot/vmlinux for symbols
+  Open Debuginfo file: /boot/vmlinux
+  Try to find probe point from debuginfo.
+  Matched function: do_open [2d0c7d6]
+  Probe point found: do_open+0
+  Matched function: do_open [35d76b3]
+  found inline addr: 0xc0000000004ba9e4
+  Failed to find "do_open%return",
+   because do_open is an inlined function and has no return point.
+  An error occurred in debuginfo analysis (-22).
+  Trying to use symbols.
+  Opening /sys/kernel/debug/tracing//README write=0
+  Opening /sys/kernel/debug/tracing//kprobe_events write=1
+  Writing event: r:probe/do_open _text+4469808
+  Writing event: r:probe/do_open_1 _text+4956344
+  Added new events:
+    probe:do_open        (on do_open%return)
+    probe:do_open_1      (on do_open%return)
+
+  You can now use it in all perf tools, such as:
+
+	  perf record -e probe:do_open_1 -aR sleep 1
+
+  naveen@ubuntu:~/linux/tools/perf$ sudo cat /sys/kernel/debug/kprobes/list
+  c000000000041370  k  kretprobe_trampoline+0x0    [OPTIMIZED]
+  c0000000004ba0b8  r  do_open+0x8    [DISABLED]
+  c000000000443430  r  do_open+0x0    [DISABLED]
+
+Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+Acked-by: Masami Hiramatsu <mhiramat@kernel.org>
+Cc: Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+Cc: linuxppc-dev@lists.ozlabs.org
+Link: http://lkml.kernel.org/r/d8cd1ef420ec22e3643ac332fdabcffc77319a42.1488961018.git.naveen.n.rao@linux.vnet.ibm.com
+Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+---
+ include/linux/kprobes.h     |  1 +
+ kernel/kprobes.c            | 40 ++++++++++++++++++++++++++--------------
+ kernel/trace/trace_kprobe.c |  2 +-
+ 3 files changed, 28 insertions(+), 15 deletions(-)
+
+diff --git a/include/linux/kprobes.h b/include/linux/kprobes.h
+index 177bdf6c6aeb..47e4da5b4fa2 100644
+--- a/include/linux/kprobes.h
++++ b/include/linux/kprobes.h
+@@ -268,6 +268,7 @@ extern void show_registers(struct pt_regs *regs);
+ extern void kprobes_inc_nmissed_count(struct kprobe *p);
+ extern bool arch_within_kprobe_blacklist(unsigned long addr);
+ extern bool arch_function_offset_within_entry(unsigned long offset);
++extern bool function_offset_within_entry(kprobe_opcode_t *addr, const char *sym, unsigned long offset);
+ 
+ extern bool within_kprobe_blacklist(unsigned long addr);
+ 
+diff --git a/kernel/kprobes.c b/kernel/kprobes.c
+index 4780ec236035..d733479a10ee 100644
+--- a/kernel/kprobes.c
++++ b/kernel/kprobes.c
+@@ -1391,21 +1391,19 @@ bool within_kprobe_blacklist(unsigned long addr)
+  * This returns encoded errors if it fails to look up symbol or invalid
+  * combination of parameters.
+  */
+-static kprobe_opcode_t *kprobe_addr(struct kprobe *p)
++static kprobe_opcode_t *_kprobe_addr(kprobe_opcode_t *addr,
++			const char *symbol_name, unsigned int offset)
+ {
+-	kprobe_opcode_t *addr = p->addr;
+-
+-	if ((p->symbol_name && p->addr) ||
+-	    (!p->symbol_name && !p->addr))
++	if ((symbol_name && addr) || (!symbol_name && !addr))
+ 		goto invalid;
+ 
+-	if (p->symbol_name) {
+-		kprobe_lookup_name(p->symbol_name, addr);
++	if (symbol_name) {
++		kprobe_lookup_name(symbol_name, addr);
+ 		if (!addr)
+ 			return ERR_PTR(-ENOENT);
+ 	}
+ 
+-	addr = (kprobe_opcode_t *)(((char *)addr) + p->offset);
++	addr = (kprobe_opcode_t *)(((char *)addr) + offset);
+ 	if (addr)
+ 		return addr;
+ 
+@@ -1413,6 +1411,11 @@ static kprobe_opcode_t *kprobe_addr(struct kprobe *p)
+ 	return ERR_PTR(-EINVAL);
+ }
+ 
++static kprobe_opcode_t *kprobe_addr(struct kprobe *p)
++{
++	return _kprobe_addr(p->addr, p->symbol_name, p->offset);
++}
++
+ /* Check passed kprobe is valid and return kprobe in kprobe_table. */
+ static struct kprobe *__get_valid_kprobe(struct kprobe *p)
+ {
+@@ -1881,19 +1884,28 @@ bool __weak arch_function_offset_within_entry(unsigned long offset)
+ 	return !offset;
+ }
+ 
++bool function_offset_within_entry(kprobe_opcode_t *addr, const char *sym, unsigned long offset)
++{
++	kprobe_opcode_t *kp_addr = _kprobe_addr(addr, sym, offset);
++
++	if (IS_ERR(kp_addr))
++		return false;
++
++	if (!kallsyms_lookup_size_offset((unsigned long)kp_addr, NULL, &offset) ||
++						!arch_function_offset_within_entry(offset))
++		return false;
++
++	return true;
++}
++
+ int register_kretprobe(struct kretprobe *rp)
+ {
+ 	int ret = 0;
+ 	struct kretprobe_instance *inst;
+ 	int i;
+ 	void *addr;
+-	unsigned long offset;
+-
+-	addr = kprobe_addr(&rp->kp);
+-	if (!kallsyms_lookup_size_offset((unsigned long)addr, NULL, &offset))
+-		return -EINVAL;
+ 
+-	if (!arch_function_offset_within_entry(offset))
++	if (!function_offset_within_entry(rp->kp.addr, rp->kp.symbol_name, rp->kp.offset))
+ 		return -EINVAL;
+ 
+ 	if (kretprobe_blacklist_size) {
+diff --git a/kernel/trace/trace_kprobe.c b/kernel/trace/trace_kprobe.c
+index 12fb540da0e5..013f4e7146d4 100644
+--- a/kernel/trace/trace_kprobe.c
++++ b/kernel/trace/trace_kprobe.c
+@@ -697,7 +697,7 @@ static int create_trace_kprobe(int argc, char **argv)
+ 			return ret;
+ 		}
+ 		if (offset && is_return &&
+-		    !arch_function_offset_within_entry(offset)) {
++		    !function_offset_within_entry(NULL, symbol, offset)) {
+ 			pr_info("Given offset is not valid for return probe.\n");
+ 			return -EINVAL;
+ 		}
+-- 
+2.9.3
