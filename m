@@ -2,18 +2,16 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vkQ9s5ZTnzDrH4
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Mar 2017 21:45:53 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vkQFn4dmXzDrRm
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Mar 2017 21:49:17 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Daniel Axtens <dja@axtens.net>, linuxppc-dev@lists.ozlabs.org,
- linux-crypto@vger.kernel.org
-Cc: anton@samba.org, Daniel Axtens <dja@axtens.net>
-Subject: Re: [PATCH 1/4] crypto: powerpc - Factor out the core CRC vpmsum
- algorithm
-In-Reply-To: <20170315123737.20234-1-dja@axtens.net>
-References: <20170315123737.20234-1-dja@axtens.net>
-Date: Thu, 16 Mar 2017 21:45:49 +1100
-Message-ID: <87y3w5jy8y.fsf@concordia.ellerman.id.au>
+To: Harshal Patil <harshal.patil@in.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Sudipto Ghosh <sudiptoghosh@in.ibm.com>
+Subject: Re: ioctl structs differ from x86_64?
+In-Reply-To: <OF8A8205F0.34AB5FF3-ON002580E3.00393B30-002580E3.003A62F5@notes.na.collabserv.com>
+References: <OF8A8205F0.34AB5FF3-ON002580E3.00393B30-002580E3.003A62F5@notes.na.collabserv.com>
+Date: Thu, 16 Mar 2017 21:49:12 +1100
+Message-ID: <87var9jy3b.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,36 +23,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Daniel Axtens <dja@axtens.net> writes:
+Harshal Patil <harshal.patil@in.ibm.com> writes:
 
-> The core nuts and bolts of the crc32c vpmsum algorithm will
-> also work for a number of other CRC algorithms with different
-> polynomials. Factor out the function into a new asm file.
->
-> To handle multiple users of the function, a user simply
-> provides constants, defines the name of their CRC function,
-> and then #includes the core algorithm file.
->
-> Cc: Anton Blanchard <anton@samba.org>
-> Signed-off-by: Daniel Axtens <dja@axtens.net>
->
-> --
->
-> It's possible at this point to argue that the address
-> of the constant tables should be passed in to the function,
-> rather than doing this somewhat unconventional #include.
->
-> However, we're about to add further #ifdef's back into the core
-> that will be provided by the encapsulaing code, and which couldn't
-> be done as a variable without performance loss.
-> ---
->  arch/powerpc/crypto/crc32-vpmsum_core.S | 726 ++++++++++++++++++++++++++++++++
->  arch/powerpc/crypto/crc32c-vpmsum_asm.S | 714 +------------------------------
->  2 files changed, 729 insertions(+), 711 deletions(-)
->  create mode 100644 arch/powerpc/crypto/crc32-vpmsum_core.S
+> Hello,
+> I am looking into a bug, https://bugzilla.linux.ibm.com/show_bug.cgi?id=152493
+> ( external mirror is at, https://github.com/opencontainers/runc/issues/1364) 
+> Recently in runc code, they added this code
+> https://github.com/opencontainers/runc/commit/eea28f480db435dbef4a275de9776b9934818b8c#diff-5f5c07d0cab3ce2086437d3d43c0d25fR155.
+> As you can see they set -onlcr to get rid of \r (line no. 164). Golang, in which
+> runc is written, doesn't have any bindings for ioctls. This means you have to
+> invoke C code directly (that's what they are doing there).
+> Our guess is the ioctls in ppc64le differ than x86_64, and thats why the code
+> which is clearing onclr bit
+> (https://github.com/opencontainers/runc/commit/eea28f480db435dbef4a275de9776b9934818b8c#diff-5f5c07d0cab3ce2086437d3d43c0d25fR164)
+> is failing on ppc64le but works fine on x86_64. 
 
-So although this sits in arch/powerpc, it's heavy on the crypto which is
-not my area of expertise (to say the least!), so I think it should
-probably go via Herbert and the crypto tree?
+I think you've probably got enough replies, but the short answer is
+"yes", IOCTL numbers do differ across architectures - including
+potentially between 32-bit and 64-bit.
 
 cheers
