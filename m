@@ -1,33 +1,32 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vkQ0K298mzDqlK
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Mar 2017 21:37:37 +1100 (AEDT)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vkQ0P0GllzDqlN
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Mar 2017 21:37:40 +1100 (AEDT)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v2GAXlq7037250
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Mar 2017 06:37:35 -0400
-Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2978fjay7e-1
+ v2GAXn8p127765
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Mar 2017 06:37:38 -0400
+Received: from e12.ny.us.ibm.com (e12.ny.us.ibm.com [129.33.205.202])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 297r0cupq2-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Mar 2017 06:37:35 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Mar 2017 06:37:37 -0400
 Received: from localhost
- by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e12.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Thu, 16 Mar 2017 06:37:34 -0400
+ Thu, 16 Mar 2017 06:37:37 -0400
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
 Cc: linuxppc-dev@lists.ozlabs.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH V4 06/14] powerpc/mm/slice: Update slice mask printing to use
- bitmap printing.
-Date: Thu, 16 Mar 2017 16:07:05 +0530
+Subject: [PATCH V4 08/14] powerpc/mm/hash: Support 68 bit VA
+Date: Thu, 16 Mar 2017 16:07:07 +0530
 In-Reply-To: <1489660633-24125-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1489660633-24125-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Message-Id: <1489660633-24125-7-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Message-Id: <1489660633-24125-9-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,80 +36,404 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We now get output like below which is much better.
+Inorder to support large effective address range (512TB), we want to increase
+the virtual address bits to 68. But we do have platforms like p4 and p5 that can
+only do 65 bit VA. We support those platforms by limiting context bits on them
+to 16.
 
-[    0.935306]  good_mask low_slice: 0-15
-[    0.935360]  good_mask high_slice: 0-511
-
-Compared to
-
-[    0.953414]  good_mask:1111111111111111 - 1111111111111.........
-
-I also fixed an error with slice_dbg printing.
+The protovsid -> vsid conversion is verified to work with both 65 and 68 bit
+va values. I also documented the restrictions in a table format as part of code
+comments.
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/mm/slice.c | 30 +++++++-----------------------
- 1 file changed, 7 insertions(+), 23 deletions(-)
+ arch/powerpc/include/asm/book3s/64/mmu-hash.h | 125 ++++++++++++++++----------
+ arch/powerpc/include/asm/mmu.h                |  19 ++--
+ arch/powerpc/kvm/book3s_64_mmu_host.c         |   8 +-
+ arch/powerpc/mm/mmu_context_book3s64.c        |   8 +-
+ arch/powerpc/mm/slb_low.S                     |  54 +++++++++--
+ 5 files changed, 150 insertions(+), 64 deletions(-)
 
-diff --git a/arch/powerpc/mm/slice.c b/arch/powerpc/mm/slice.c
-index 14e9fb525172..29154cc6a90a 100644
---- a/arch/powerpc/mm/slice.c
-+++ b/arch/powerpc/mm/slice.c
-@@ -52,29 +52,13 @@ int _slice_debug = 1;
+diff --git a/arch/powerpc/include/asm/book3s/64/mmu-hash.h b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
+index 37dbc9becaba..3897d30820b0 100644
+--- a/arch/powerpc/include/asm/book3s/64/mmu-hash.h
++++ b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
+@@ -39,6 +39,7 @@
  
- static void slice_print_mask(const char *label, struct slice_mask mask)
+ /* Bits in the SLB VSID word */
+ #define SLB_VSID_SHIFT		12
++#define SLB_VSID_SHIFT_256M	SLB_VSID_SHIFT
+ #define SLB_VSID_SHIFT_1T	24
+ #define SLB_VSID_SSIZE_SHIFT	62
+ #define SLB_VSID_B		ASM_CONST(0xc000000000000000)
+@@ -516,9 +517,19 @@ extern void slb_set_size(u16 size);
+  * because of the modulo operation in vsid scramble.
+  */
+ 
++/*
++ * Max Va bits we support as of now is 68 bits. We want 19 bit
++ * context ID.
++ * Restrictions:
++ * GPU has restrictions of not able to access beyond 128TB
++ * (47 bit effective address). We also cannot do more than 20bit PID.
++ * For p4 and p5 which can only do 65 bit VA, we restrict our CONTEXT_BITS
++ * to 16 bits (ie, we can only have 2^16 pids at the same time).
++ */
++#define VA_BITS			68
+ #define CONTEXT_BITS		19
+-#define ESID_BITS		18
+-#define ESID_BITS_1T		6
++#define ESID_BITS		(VA_BITS - (SID_SHIFT + CONTEXT_BITS))
++#define ESID_BITS_1T		(VA_BITS - (SID_SHIFT_1T + CONTEXT_BITS))
+ 
+ #define ESID_BITS_MASK		((1 << ESID_BITS) - 1)
+ #define ESID_BITS_1T_MASK	((1 << ESID_BITS_1T) - 1)
+@@ -528,62 +539,52 @@ extern void slb_set_size(u16 size);
+  * The proto-VSID space has 2^(CONTEX_BITS + ESID_BITS) - 1 segments
+  * available for user + kernel mapping. The bottom 4 contexts are used for
+  * kernel mapping. Each segment contains 2^28 bytes. Each
+- * context maps 2^46 bytes (64TB).
++ * context maps 2^49 bytes (512TB).
+  *
+  * We also need to avoid the last segment of the last context, because that
+  * would give a protovsid of 0x1fffffffff. That will result in a VSID 0
+  * because of the modulo operation in vsid scramble.
+  */
+ #define MAX_USER_CONTEXT	((ASM_CONST(1) << CONTEXT_BITS) - 2)
++/*
++ * For platforms that support on 65bit VA we limit the context bits
++ */
++#define MAX_USER_CONTEXT_65BIT_VA ((ASM_CONST(1) << (65 - (SID_SHIFT + ESID_BITS))) - 2)
+ 
+ /*
+  * This should be computed such that protovosid * vsid_mulitplier
+  * doesn't overflow 64 bits. It should also be co-prime to vsid_modulus
++ * We also need to make sure that number of bits in divisor is less
++ * than twice the number of protovsid bits for our modulus optmization to work.
++ * The below table shows the current values used.
++ *
++ * |-------+------------+----------------+------------+--------------|
++ * |       | Prime Bits | VSID_BITS_65VA | Total Bits | 2* VSID_BITS |
++ * |-------+------------+----------------+------------+--------------|
++ * | 1T    |         24 |             25 |         49 |           50 |
++ * |-------+------------+----------------+------------+--------------|
++ * | 256MB |         24 |             37 |         61 |           74 |
++ * |-------+------------+----------------+------------+--------------|
++ *
++ * |-------+------------+----------------+------------+--------------|
++ * |       | Prime Bits | VSID_BITS_68VA | Total Bits | 2* VSID_BITS |
++ * |-------+------------+----------------+------------+--------------|
++ * | 1T    |         24 |             28 |         52 |           56 |
++ * |-------+------------+----------------+------------+--------------|
++ * | 256MB |         24 |             40 |         64 |           80 |
++ * |-------+------------+----------------+------------+--------------|
++ *
+  */
+ #define VSID_MULTIPLIER_256M	ASM_CONST(12538073)	/* 24-bit prime */
+-#define VSID_BITS_256M		(CONTEXT_BITS + ESID_BITS)
+-#define VSID_MODULUS_256M	((1UL<<VSID_BITS_256M)-1)
++#define VSID_BITS_256M		(VA_BITS - SID_SHIFT)
++#define VSID_BITS_65_256M	(65 - SID_SHIFT)
+ 
+ #define VSID_MULTIPLIER_1T	ASM_CONST(12538073)	/* 24-bit prime */
+-#define VSID_BITS_1T		(CONTEXT_BITS + ESID_BITS_1T)
+-#define VSID_MODULUS_1T		((1UL<<VSID_BITS_1T)-1)
+-
++#define VSID_BITS_1T		(VA_BITS - SID_SHIFT_1T)
++#define VSID_BITS_65_1T		(65 - SID_SHIFT_1T)
+ 
+ #define USER_VSID_RANGE	(1UL << (ESID_BITS + SID_SHIFT))
+ 
+-/*
+- * This macro generates asm code to compute the VSID scramble
+- * function.  Used in slb_allocate() and do_stab_bolted.  The function
+- * computed is: (protovsid*VSID_MULTIPLIER) % VSID_MODULUS
+- *
+- *	rt = register containing the proto-VSID and into which the
+- *		VSID will be stored
+- *	rx = scratch register (clobbered)
+- *
+- * 	- rt and rx must be different registers
+- * 	- The answer will end up in the low VSID_BITS bits of rt.  The higher
+- * 	  bits may contain other garbage, so you may need to mask the
+- * 	  result.
+- */
+-#define ASM_VSID_SCRAMBLE(rt, rx, size)					\
+-	lis	rx,VSID_MULTIPLIER_##size@h;				\
+-	ori	rx,rx,VSID_MULTIPLIER_##size@l;				\
+-	mulld	rt,rt,rx;		/* rt = rt * MULTIPLIER */	\
+-									\
+-	srdi	rx,rt,VSID_BITS_##size;					\
+-	clrldi	rt,rt,(64-VSID_BITS_##size);				\
+-	add	rt,rt,rx;		/* add high and low bits */	\
+-	/* NOTE: explanation based on VSID_BITS_##size = 36		\
+-	 * Now, r3 == VSID (mod 2^36-1), and lies between 0 and		\
+-	 * 2^36-1+2^28-1.  That in particular means that if r3 >=	\
+-	 * 2^36-1, then r3+1 has the 2^36 bit set.  So, if r3+1 has	\
+-	 * the bit clear, r3 already has the answer we want, if it	\
+-	 * doesn't, the answer is the low 36 bits of r3+1.  So in all	\
+-	 * cases the answer is the low 36 bits of (r3 + ((r3+1) >> 36))*/\
+-	addi	rx,rt,1;						\
+-	srdi	rx,rx,VSID_BITS_##size;	/* extract 2^VSID_BITS bit */	\
+-	add	rt,rt,rx
+-
+ /* 4 bits per slice and we have one slice per 1TB */
+ #define SLICE_ARRAY_SIZE  (H_PGTABLE_RANGE >> 41)
+ 
+@@ -631,7 +632,7 @@ static inline void subpage_prot_init_new_context(struct mm_struct *mm) { }
+ #define vsid_scramble(protovsid, size) \
+ 	((((protovsid) * VSID_MULTIPLIER_##size) % VSID_MODULUS_##size))
+ 
+-#else /* 1 */
++/* simplified form avoiding mod operation */
+ #define vsid_scramble(protovsid, size) \
+ 	({								 \
+ 		unsigned long x;					 \
+@@ -639,6 +640,21 @@ static inline void subpage_prot_init_new_context(struct mm_struct *mm) { }
+ 		x = (x >> VSID_BITS_##size) + (x & VSID_MODULUS_##size); \
+ 		(x + ((x+1) >> VSID_BITS_##size)) & VSID_MODULUS_##size; \
+ 	})
++
++#else /* 1 */
++static inline unsigned long vsid_scramble(unsigned long protovsid,
++				  unsigned long vsid_multiplier, int vsid_bits)
++{
++	unsigned long vsid;
++	unsigned long vsid_modulus = ((1UL << vsid_bits) - 1);
++	/*
++	 * We have same multipler for both 256 and 1T segements now
++	 */
++	vsid = protovsid * vsid_multiplier;
++	vsid = (vsid >> vsid_bits) + (vsid & vsid_modulus);
++	return (vsid + ((vsid + 1) >> vsid_bits)) & vsid_modulus;
++}
++
+ #endif /* 1 */
+ 
+ /* Returns the segment size indicator for a user address */
+@@ -653,17 +669,32 @@ static inline int user_segment_size(unsigned long addr)
+ static inline unsigned long get_vsid(unsigned long context, unsigned long ea,
+ 				     int ssize)
  {
--	char	*p, buf[SLICE_NUM_LOW + 3 + SLICE_NUM_HIGH + 1];
--	int	i;
--
- 	if (!_slice_debug)
- 		return;
--	p = buf;
--	for (i = 0; i < SLICE_NUM_LOW; i++)
--		*(p++) = (mask.low_slices & (1 << i)) ? '1' : '0';
--	*(p++) = ' ';
--	*(p++) = '-';
--	*(p++) = ' ';
--	for (i = 0; i < SLICE_NUM_HIGH; i++) {
--		if (test_bit(i, mask.high_slices))
--			*(p++) = '1';
--		else
--			*(p++) = '0';
--	}
--	*(p++) = 0;
--
--	printk(KERN_DEBUG "%s:%s\n", label, buf);
-+	pr_devel("%s low_slice: %*pbl\n", label, (int)SLICE_NUM_LOW, &mask.low_slices);
-+	pr_devel("%s high_slice: %*pbl\n", label, (int)SLICE_NUM_HIGH, mask.high_slices);
++	unsigned long va_bits = VA_BITS;
++	unsigned long vsid_bits;
++	unsigned long protovsid;
++
+ 	/*
+ 	 * Bad address. We return VSID 0 for that
+ 	 */
+ 	if ((ea & ~REGION_MASK) >= H_PGTABLE_RANGE)
+ 		return 0;
+ 
+-	if (ssize == MMU_SEGSIZE_256M)
+-		return vsid_scramble((context << ESID_BITS)
+-				     | ((ea >> SID_SHIFT) & ESID_BITS_MASK), 256M);
+-	return vsid_scramble((context << ESID_BITS_1T)
+-			     | ((ea >> SID_SHIFT_1T) & ESID_BITS_1T_MASK), 1T);
++	if (!mmu_has_feature(MMU_FTR_68_BIT_VA))
++		va_bits = 65;
++
++	if (ssize == MMU_SEGSIZE_256M) {
++		vsid_bits = va_bits - SID_SHIFT;
++		protovsid = (context << ESID_BITS) |
++			((ea >> SID_SHIFT) & ESID_BITS_MASK);
++		return vsid_scramble(protovsid,
++				     VSID_MULTIPLIER_256M, vsid_bits);
++	}
++	/* 1T segment */
++	vsid_bits = va_bits - SID_SHIFT_1T;
++	protovsid = (context << ESID_BITS_1T) |
++		((ea >> SID_SHIFT_1T) & ESID_BITS_1T_MASK);
++	return vsid_scramble(protovsid,
++			     VSID_MULTIPLIER_1T, vsid_bits);
  }
  
--#define slice_dbg(fmt...) do { if (_slice_debug) pr_debug(fmt); } while(0)
-+#define slice_dbg(fmt...) do { if (_slice_debug) pr_devel(fmt); } while (0)
+ /*
+diff --git a/arch/powerpc/include/asm/mmu.h b/arch/powerpc/include/asm/mmu.h
+index 065e762fae85..78260409dc9c 100644
+--- a/arch/powerpc/include/asm/mmu.h
++++ b/arch/powerpc/include/asm/mmu.h
+@@ -29,6 +29,10 @@
+  */
  
- #else
+ /*
++ * Support for 68 bit VA space. We added that from ISA 2.05
++ */
++#define MMU_FTR_68_BIT_VA		ASM_CONST(0x00002000)
++/*
+  * Kernel read only support.
+  * We added the ppp value 0b110 in ISA 2.04.
+  */
+@@ -109,10 +113,10 @@
+ #define MMU_FTRS_POWER4		MMU_FTRS_DEFAULT_HPTE_ARCH_V2
+ #define MMU_FTRS_PPC970		MMU_FTRS_POWER4 | MMU_FTR_TLBIE_CROP_VA
+ #define MMU_FTRS_POWER5		MMU_FTRS_POWER4 | MMU_FTR_LOCKLESS_TLBIE
+-#define MMU_FTRS_POWER6		MMU_FTRS_POWER4 | MMU_FTR_LOCKLESS_TLBIE | MMU_FTR_KERNEL_RO
+-#define MMU_FTRS_POWER7		MMU_FTRS_POWER4 | MMU_FTR_LOCKLESS_TLBIE | MMU_FTR_KERNEL_RO
+-#define MMU_FTRS_POWER8		MMU_FTRS_POWER4 | MMU_FTR_LOCKLESS_TLBIE | MMU_FTR_KERNEL_RO
+-#define MMU_FTRS_POWER9		MMU_FTRS_POWER4 | MMU_FTR_LOCKLESS_TLBIE | MMU_FTR_KERNEL_RO
++#define MMU_FTRS_POWER6		MMU_FTRS_POWER5 | MMU_FTR_KERNEL_RO | MMU_FTR_68_BIT_VA
++#define MMU_FTRS_POWER7		MMU_FTRS_POWER6
++#define MMU_FTRS_POWER8		MMU_FTRS_POWER6
++#define MMU_FTRS_POWER9		MMU_FTRS_POWER6
+ #define MMU_FTRS_CELL		MMU_FTRS_DEFAULT_HPTE_ARCH_V2 | \
+ 				MMU_FTR_CI_LARGE_PAGE
+ #define MMU_FTRS_PA6T		MMU_FTRS_DEFAULT_HPTE_ARCH_V2 | \
+@@ -136,7 +140,7 @@ enum {
+ 		MMU_FTR_NO_SLBIE_B | MMU_FTR_16M_PAGE | MMU_FTR_TLBIEL |
+ 		MMU_FTR_LOCKLESS_TLBIE | MMU_FTR_CI_LARGE_PAGE |
+ 		MMU_FTR_1T_SEGMENT | MMU_FTR_TLBIE_CROP_VA |
+-		MMU_FTR_KERNEL_RO |
++		MMU_FTR_KERNEL_RO | MMU_FTR_68_BIT_VA |
+ #ifdef CONFIG_PPC_RADIX_MMU
+ 		MMU_FTR_TYPE_RADIX |
+ #endif
+@@ -290,7 +294,10 @@ static inline bool early_radix_enabled(void)
+ #define MMU_PAGE_16G	14
+ #define MMU_PAGE_64G	15
  
-@@ -243,8 +227,8 @@ static void slice_convert(struct mm_struct *mm, struct slice_mask mask, int psiz
+-/* N.B. we need to change the type of hpte_page_sizes if this gets to be > 16 */
++/*
++ * N.B. we need to change the type of hpte_page_sizes if this gets to be > 16
++ * Also we need to change he type of mm_context.low/high_slices_psize.
++ */
+ #define MMU_PAGE_COUNT	16
+ 
+ #ifdef CONFIG_PPC_BOOK3S_64
+diff --git a/arch/powerpc/kvm/book3s_64_mmu_host.c b/arch/powerpc/kvm/book3s_64_mmu_host.c
+index d6041101a5e2..bed699ab7654 100644
+--- a/arch/powerpc/kvm/book3s_64_mmu_host.c
++++ b/arch/powerpc/kvm/book3s_64_mmu_host.c
+@@ -229,6 +229,7 @@ void kvmppc_mmu_unmap_page(struct kvm_vcpu *vcpu, struct kvmppc_pte *pte)
+ 
+ static struct kvmppc_sid_map *create_sid_map(struct kvm_vcpu *vcpu, u64 gvsid)
+ {
++	unsigned long vsid_bits = VSID_BITS_65_256M;
+ 	struct kvmppc_sid_map *map;
+ 	struct kvmppc_vcpu_book3s *vcpu_book3s = to_book3s(vcpu);
+ 	u16 sid_map_mask;
+@@ -257,7 +258,12 @@ static struct kvmppc_sid_map *create_sid_map(struct kvm_vcpu *vcpu, u64 gvsid)
+ 		kvmppc_mmu_pte_flush(vcpu, 0, 0);
+ 		kvmppc_mmu_flush_segments(vcpu);
  	}
+-	map->host_vsid = vsid_scramble(vcpu_book3s->proto_vsid_next++, 256M);
++
++	if (mmu_has_feature(MMU_FTR_68_BIT_VA))
++		vsid_bits = VSID_BITS_256M;
++
++	map->host_vsid = vsid_scramble(vcpu_book3s->proto_vsid_next++,
++				       VSID_MULTIPLIER_256M, vsid_bits);
  
- 	slice_dbg(" lsps=%lx, hsps=%lx\n",
--		  mm->context.low_slices_psize,
--		  mm->context.high_slices_psize);
-+		  (unsigned long)mm->context.low_slices_psize,
-+		  (unsigned long)mm->context.high_slices_psize);
+ 	map->guest_vsid = gvsid;
+ 	map->valid = true;
+diff --git a/arch/powerpc/mm/mmu_context_book3s64.c b/arch/powerpc/mm/mmu_context_book3s64.c
+index a6450c7f9cf3..e6a5bcbf8abe 100644
+--- a/arch/powerpc/mm/mmu_context_book3s64.c
++++ b/arch/powerpc/mm/mmu_context_book3s64.c
+@@ -33,6 +33,12 @@ static DEFINE_IDA(mmu_context_ida);
+ int hash__get_new_context(void)
+ {
+ 	int index, err;
++	unsigned long max_user_context;
++
++	if (mmu_has_feature(MMU_FTR_68_BIT_VA))
++		max_user_context = MAX_USER_CONTEXT;
++	else
++		max_user_context = MAX_USER_CONTEXT_65BIT_VA;
  
- 	spin_unlock_irqrestore(&slice_convert_lock, flags);
+ again:
+ 	if (!ida_pre_get(&mmu_context_ida, GFP_KERNEL))
+@@ -50,7 +56,7 @@ int hash__get_new_context(void)
+ 	else if (err)
+ 		return err;
  
-@@ -686,8 +670,8 @@ void slice_set_user_psize(struct mm_struct *mm, unsigned int psize)
+-	if (index > MAX_USER_CONTEXT) {
++	if (index > max_user_context) {
+ 		spin_lock(&mmu_context_lock);
+ 		ida_remove(&mmu_context_ida, index);
+ 		spin_unlock(&mmu_context_lock);
+diff --git a/arch/powerpc/mm/slb_low.S b/arch/powerpc/mm/slb_low.S
+index 90154a4e5b9a..35e91e89640f 100644
+--- a/arch/powerpc/mm/slb_low.S
++++ b/arch/powerpc/mm/slb_low.S
+@@ -23,6 +23,48 @@
+ #include <asm/pgtable.h>
+ #include <asm/firmware.h>
  
++/*
++ * This macro generates asm code to compute the VSID scramble
++ * function.  Used in slb_allocate() and do_stab_bolted.  The function
++ * computed is: (protovsid*VSID_MULTIPLIER) % VSID_MODULUS
++ *
++ *	rt = register containing the proto-VSID and into which the
++ *		VSID will be stored
++ *	rx = scratch register (clobbered)
++ *	rf = flags
++ *
++ *	- rt and rx must be different registers
++ *	- The answer will end up in the low VSID_BITS bits of rt.  The higher
++ *	  bits may contain other garbage, so you may need to mask the
++ *	  result.
++ */
++#define ASM_VSID_SCRAMBLE(rt, rx, rf, size)				\
++	lis	rx,VSID_MULTIPLIER_##size@h;				\
++	ori	rx,rx,VSID_MULTIPLIER_##size@l;				\
++	mulld	rt,rt,rx;		/* rt = rt * MULTIPLIER */	\
++/*									\
++ * powermac get slb fault before feature fixup, so make 65 bit part     \
++ * the default part of feature fixup					\
++ */									\
++BEGIN_MMU_FTR_SECTION							\
++	srdi	rx,rt,VSID_BITS_65_##size;				\
++	clrldi	rt,rt,(64-VSID_BITS_65_##size);				\
++	add	rt,rt,rx;						\
++	addi	rx,rt,1;						\
++	srdi	rx,rx,VSID_BITS_65_##size;				\
++	add	rt,rt,rx;						\
++	rldimi	rf,rt,SLB_VSID_SHIFT_##size,(64 - (SLB_VSID_SHIFT_##size + VSID_BITS_65_##size)); \
++MMU_FTR_SECTION_ELSE							\
++	srdi	rx,rt,VSID_BITS_##size;					\
++	clrldi	rt,rt,(64-VSID_BITS_##size);				\
++	add	rt,rt,rx;		/* add high and low bits */	\
++	addi	rx,rt,1;						\
++	srdi	rx,rx,VSID_BITS_##size;	/* extract 2^VSID_BITS bit */	\
++	add	rt,rt,rx;						\
++	rldimi	rf,rt,SLB_VSID_SHIFT_##size,(64 - (SLB_VSID_SHIFT_##size + VSID_BITS_##size)); \
++ALT_MMU_FTR_SECTION_END_IFCLR(MMU_FTR_68_BIT_VA)
++
++
+ /* void slb_allocate_realmode(unsigned long ea);
+  *
+  * Create an SLB entry for the given EA (user or kernel).
+@@ -179,13 +221,7 @@ END_MMU_FTR_SECTION_IFSET(MMU_FTR_1T_SEGMENT)
+  */
+ .Lslb_finish_load:
+ 	rldimi  r10,r9,ESID_BITS,0
+-	ASM_VSID_SCRAMBLE(r10,r9,256M)
+-	/*
+-	 * bits above VSID_BITS_256M need to be ignored from r10
+-	 * also combine VSID and flags
+-	 */
+-	rldimi	r11,r10,SLB_VSID_SHIFT,(64 - (SLB_VSID_SHIFT + VSID_BITS_256M))
+-
++	ASM_VSID_SCRAMBLE(r10,r9,r11,256M)
+ 	/* r3 = EA, r11 = VSID data */
+ 	/*
+ 	 * Find a slot, round robin. Previously we tried to find a
+@@ -249,12 +285,12 @@ slb_compare_rr_to_size:
+ .Lslb_finish_load_1T:
+ 	srdi	r10,r10,(SID_SHIFT_1T - SID_SHIFT)	/* get 1T ESID */
+ 	rldimi  r10,r9,ESID_BITS_1T,0
+-	ASM_VSID_SCRAMBLE(r10,r9,1T)
++	ASM_VSID_SCRAMBLE(r10,r9,r11,1T)
+ 	/*
+ 	 * bits above VSID_BITS_1T need to be ignored from r10
+ 	 * also combine VSID and flags
+ 	 */
+-	rldimi	r11,r10,SLB_VSID_SHIFT_1T,(64 - (SLB_VSID_SHIFT_1T + VSID_BITS_1T))
++
+ 	li	r10,MMU_SEGSIZE_1T
+ 	rldimi	r11,r10,SLB_VSID_SSIZE_SHIFT,0	/* insert segment size */
  
- 	slice_dbg(" lsps=%lx, hsps=%lx\n",
--		  mm->context.low_slices_psize,
--		  mm->context.high_slices_psize);
-+		  (unsigned long)mm->context.low_slices_psize,
-+		  (unsigned long)mm->context.high_slices_psize);
- 
-  bail:
- 	spin_unlock_irqrestore(&slice_convert_lock, flags);
 -- 
 2.7.4
