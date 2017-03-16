@@ -1,21 +1,21 @@
 Return-Path: <paulus@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vkjvZ6ybPzDqYY
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Mar 2017 09:34:34 +1100 (AEDT)
-Date: Fri, 17 Mar 2017 09:24:48 +1100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vkjvb06Q1zDqYb
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Mar 2017 09:34:35 +1100 (AEDT)
+Date: Fri, 17 Mar 2017 09:16:51 +1100
 From: Paul Mackerras <paulus@ozlabs.org>
 To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 Cc: benh@kernel.crashing.org, mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH V2 08/11] powerpc/mm: Express everything based on Radix
- page table defines
-Message-ID: <20170316222448.GH10100@fergus.ozlabs.ibm.com>
+Subject: Re: [PATCH V2 04/11] powerpc/mm/radix: rename _PAGE_LARGE to
+ R_PAGE_LARGE
+Message-ID: <20170316221651.GD10100@fergus.ozlabs.ibm.com>
 References: <1489660329-22501-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1489660329-22501-9-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1489660329-22501-5-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1489660329-22501-9-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+In-Reply-To: <1489660329-22501-5-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,15 +25,12 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Mar 16, 2017 at 04:02:06PM +0530, Aneesh Kumar K.V wrote:
+On Thu, Mar 16, 2017 at 04:02:02PM +0530, Aneesh Kumar K.V wrote:
+> This bit is only used by radix and it is nice to follow the naming style of having
+> bit name start with H_/R_ depending on which translation mode they are used.
+> 
+> No functional change in this patch.
+> 
 > Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-
-This change seems correct, but of minimal benefit.
-
-The subject could be better expressed.  How about "Define all PTE bits
-based on radix definitions" or something like that?  "Everything" is a
-bit too broad.
-
-For the code change:
 
 Reviewed-by: Paul Mackerras <paulus@ozlabs.org>
