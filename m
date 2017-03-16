@@ -3,30 +3,31 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vkQ0g0WGgzDqkr
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vkQ0g0cTPzDqks
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Mar 2017 21:37:54 +1100 (AEDT)
 Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v2GAYcgp088090
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Mar 2017 06:37:50 -0400
-Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
- by mx0b-001b2d01.pphosted.com with ESMTP id 297s1y067w-1
+ v2GAYboe087991
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Mar 2017 06:37:52 -0400
+Received: from e15.ny.us.ibm.com (e15.ny.us.ibm.com [129.33.205.205])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 297s1y068x-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Mar 2017 06:37:50 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Mar 2017 06:37:51 -0400
 Received: from localhost
- by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e15.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Thu, 16 Mar 2017 06:37:49 -0400
+ Thu, 16 Mar 2017 06:37:50 -0400
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
 Cc: linuxppc-dev@lists.ozlabs.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH V4 13/14] powerpc/mm/hash64: Store task size in PACA
-Date: Thu, 16 Mar 2017 16:07:12 +0530
+Subject: [PATCH V4 14/14] powerpc/mm/hash: Skip using reserved virtual address
+ range
+Date: Thu, 16 Mar 2017 16:07:13 +0530
 In-Reply-To: <1489660633-24125-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1489660633-24125-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Message-Id: <1489660633-24125-14-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Message-Id: <1489660633-24125-15-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,84 +37,172 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We can optmize the slice page size array copy to paca by copying only the
-range based on task size. This will require us to not look at page size
-array beyond task size in PACA on slb fault. To enable that copy task size
-to paca which will be used during slb fault.
+Now that we use all the available virtual address range, we need to make sure
+we don't generate VSID such that it overlaps with the reserved vsid range.
+Reserved vsid range include the virtual address range used by the adjunct
+partition and also the VRMA virtual segment. We find the context value that
+can result in generating such a VSID and reserve it early in boot.
 
-We can take slb fault on an mm even before we set the task_size in
-setup_new_exec. To make sure our paca have the details of default page
-size, init the mm->task_size with max value early. Later we will adjust this
-based on task personality.
+We don't look at the adjunct range, because for now we disable the adjunct usage
+in a Linux LPAR via CAS interface.
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/paca.h   | 4 +++-
- arch/powerpc/kernel/asm-offsets.c | 4 ++++
- arch/powerpc/kernel/paca.c        | 1 +
- arch/powerpc/mm/slb_low.S         | 8 +++++++-
- 4 files changed, 15 insertions(+), 2 deletions(-)
+ arch/powerpc/include/asm/book3s/64/mmu-hash.h |  7 ++++
+ arch/powerpc/include/asm/kvm_book3s_64.h      |  2 -
+ arch/powerpc/include/asm/mmu_context.h        |  1 +
+ arch/powerpc/mm/hash_utils_64.c               | 58 +++++++++++++++++++++++++++
+ arch/powerpc/mm/mmu_context_book3s64.c        | 23 +++++++++++
+ 5 files changed, 89 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/paca.h b/arch/powerpc/include/asm/paca.h
-index f48c250339fd..25f4a1c14759 100644
---- a/arch/powerpc/include/asm/paca.h
-+++ b/arch/powerpc/include/asm/paca.h
-@@ -144,7 +144,9 @@ struct paca_struct {
- 	u16 mm_ctx_sllp;
+diff --git a/arch/powerpc/include/asm/book3s/64/mmu-hash.h b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
+index c99ea6bbd82c..ac987e08ce63 100644
+--- a/arch/powerpc/include/asm/book3s/64/mmu-hash.h
++++ b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
+@@ -578,11 +578,18 @@ extern void slb_set_size(u16 size);
+ #define VSID_MULTIPLIER_256M	ASM_CONST(12538073)	/* 24-bit prime */
+ #define VSID_BITS_256M		(VA_BITS - SID_SHIFT)
+ #define VSID_BITS_65_256M	(65 - SID_SHIFT)
++/*
++ * Modular multiplicative inverse of VSID_MULTIPLIER under modulo VSID_MODULUS
++ */
++#define VSID_MULINV_256M	ASM_CONST(665548017062)
+ 
+ #define VSID_MULTIPLIER_1T	ASM_CONST(12538073)	/* 24-bit prime */
+ #define VSID_BITS_1T		(VA_BITS - SID_SHIFT_1T)
+ #define VSID_BITS_65_1T		(65 - SID_SHIFT_1T)
++#define VSID_MULINV_1T		ASM_CONST(209034062)
+ 
++/* 1TB VSID reserved for VRMA */
++#define VRMA_VSID	0x1ffffffUL
+ #define USER_VSID_RANGE	(1UL << (ESID_BITS + SID_SHIFT))
+ 
+ /* 4 bits per slice and we have one slice per 1TB */
+diff --git a/arch/powerpc/include/asm/kvm_book3s_64.h b/arch/powerpc/include/asm/kvm_book3s_64.h
+index d9b48f5bb606..d55c7f881ce7 100644
+--- a/arch/powerpc/include/asm/kvm_book3s_64.h
++++ b/arch/powerpc/include/asm/kvm_book3s_64.h
+@@ -49,8 +49,6 @@ static inline bool kvm_is_radix(struct kvm *kvm)
+ #define KVM_DEFAULT_HPT_ORDER	24	/* 16MB HPT by default */
  #endif
- #endif
+ 
+-#define VRMA_VSID	0x1ffffffUL	/* 1TB VSID reserved for VRMA */
 -
-+#ifdef CONFIG_PPC_STD_MMU_64
-+	u64 task_size;
-+#endif
- 	/*
- 	 * then miscellaneous read-write fields
- 	 */
-diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
-index 4367e7df51a1..a60ef1d976ab 100644
---- a/arch/powerpc/kernel/asm-offsets.c
-+++ b/arch/powerpc/kernel/asm-offsets.c
-@@ -189,6 +189,10 @@ int main(void)
- #endif /* CONFIG_PPC_MM_SLICES */
- #endif
+ /*
+  * We use a lock bit in HPTE dword 0 to synchronize updates and
+  * accesses to each HPTE, and another bit to indicate non-present
+diff --git a/arch/powerpc/include/asm/mmu_context.h b/arch/powerpc/include/asm/mmu_context.h
+index 8fe1ba1808d3..757d4a9e1a1c 100644
+--- a/arch/powerpc/include/asm/mmu_context.h
++++ b/arch/powerpc/include/asm/mmu_context.h
+@@ -51,6 +51,7 @@ static inline void switch_mmu_context(struct mm_struct *prev,
+ 	return switch_slb(tsk, next);
+ }
  
-+#ifdef CONFIG_PPC_STD_MMU_64
-+	DEFINE(PACATASKSIZE, offsetof(struct paca_struct, task_size));
-+#endif
++extern void hash__resv_context(int context_id);
+ extern int hash__get_new_context(void);
+ extern void __destroy_context(int context_id);
+ static inline void mmu_context_init(void) { }
+diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
+index d96ba04d8844..80ae6f42854a 100644
+--- a/arch/powerpc/mm/hash_utils_64.c
++++ b/arch/powerpc/mm/hash_utils_64.c
+@@ -1847,4 +1847,62 @@ static int __init hash64_debugfs(void)
+ }
+ machine_device_initcall(pseries, hash64_debugfs);
+ 
++/*
++ * if modinv is the modular multiplicate inverse of (x % vsid_modulus) and
++ * vsid = (protovsid * x) % vsid_modulus, then we say
++ *
++ * provosid = (vsid * modinv) % vsid_modulus
++ */
++static unsigned long vsid_unscramble(unsigned long vsid, int ssize)
++{
++	unsigned long protovsid;
++	unsigned long va_bits = VA_BITS;
++	unsigned long modinv, vsid_modulus;
++	unsigned long max_mod_inv, tmp_modinv;
 +
- #ifdef CONFIG_PPC_BOOK3E
- 	OFFSET(PACAPGD, paca_struct, pgd);
- 	OFFSET(PACA_KERNELPGD, paca_struct, kernel_pgd);
-diff --git a/arch/powerpc/kernel/paca.c b/arch/powerpc/kernel/paca.c
-index bffdbd6d6774..50b60e23d07f 100644
---- a/arch/powerpc/kernel/paca.c
-+++ b/arch/powerpc/kernel/paca.c
-@@ -254,6 +254,7 @@ void copy_mm_to_paca(struct mm_struct *mm)
- 	get_paca()->mm_ctx_id = context->id;
- #ifdef CONFIG_PPC_MM_SLICES
- 	VM_BUG_ON(!mm->task_size);
-+	get_paca()->task_size = mm->task_size;
- 	get_paca()->mm_ctx_low_slices_psize = context->low_slices_psize;
- 	memcpy(&get_paca()->mm_ctx_high_slices_psize,
- 	       &context->high_slices_psize, TASK_SLICE_ARRAY_SZ(mm));
-diff --git a/arch/powerpc/mm/slb_low.S b/arch/powerpc/mm/slb_low.S
-index 35e91e89640f..b09e7748856f 100644
---- a/arch/powerpc/mm/slb_low.S
-+++ b/arch/powerpc/mm/slb_low.S
-@@ -149,7 +149,13 @@ END_MMU_FTR_SECTION_IFCLR(MMU_FTR_1T_SEGMENT)
- 	 * For userspace addresses, make sure this is region 0.
- 	 */
- 	cmpdi	r9, 0
--	bne	8f
-+	bne-	8f
-+        /*
-+         * user space make sure we are within the allowed limit
++
++	if (!mmu_has_feature(MMU_FTR_68_BIT_VA))
++		va_bits = 65;
++
++	if (ssize == MMU_SEGSIZE_256M) {
++		modinv = VSID_MULINV_256M;
++		vsid_modulus = ((1UL << (va_bits - SID_SHIFT)) - 1);
++	} else {
++		modinv = VSID_MULINV_1T;
++		vsid_modulus = ((1UL << (va_bits - SID_SHIFT_1T)) - 1);
++	}
++	/*
++	 * vsid outside our range.
 +	 */
-+	ld	r11,PACATASKSIZE(r13)
-+	cmpld	r3,r11
-+	bge-	8f
++	if (vsid >= vsid_modulus)
++		return 0;
++
++	/* Check if (vsid * modinv) overflow (63 bits) */
++	max_mod_inv = 0x7fffffffffffffffull / vsid;
++	if (modinv < max_mod_inv)
++		return (vsid * modinv) % vsid_modulus;
++
++	tmp_modinv = modinv/max_mod_inv;
++	modinv %= max_mod_inv;
++
++	protovsid = (((vsid * max_mod_inv) % vsid_modulus) * tmp_modinv) % vsid_modulus;
++	protovsid = (protovsid + vsid * modinv) % vsid_modulus;
++	return protovsid;
++}
++
++static int __init hash_init_reserved_context(void)
++{
++	unsigned long protovsid;
++
++	/*
++	 * VRMA_VSID to skip list. We don't bother about
++	 * ibm,adjunct-virtual-addresses because we disable
++	 * via ibm,client-architecture-support interface.
++	 */
++	protovsid = vsid_unscramble(VRMA_VSID, MMU_SEGSIZE_1T);
++	hash__resv_context(protovsid >> ESID_BITS_1T);
++	return 0;
++}
++machine_device_initcall(pseries, hash_init_reserved_context);
++
+ #endif /* CONFIG_DEBUG_FS */
+diff --git a/arch/powerpc/mm/mmu_context_book3s64.c b/arch/powerpc/mm/mmu_context_book3s64.c
+index 9ab6cd2923be..84e5d9618aee 100644
+--- a/arch/powerpc/mm/mmu_context_book3s64.c
++++ b/arch/powerpc/mm/mmu_context_book3s64.c
+@@ -30,6 +30,29 @@
+ static DEFINE_SPINLOCK(mmu_context_lock);
+ static DEFINE_IDA(mmu_context_ida);
  
- 	/* when using slices, we extract the psize off the slice bitmaps
- 	 * and then we need to get the sllp encoding off the mmu_psize_defs
++void hash__resv_context(int context)
++{
++	int index = 0, err;
++
++again:
++	if (!ida_pre_get(&mmu_context_ida, GFP_KERNEL))
++		goto error_out;
++
++	spin_lock(&mmu_context_lock);
++	err = ida_get_new_above(&mmu_context_ida, context, &index);
++	spin_unlock(&mmu_context_lock);
++
++	if (err == -EAGAIN)
++		goto again;
++error_out:
++	if (index != context)
++		WARN(1, "Failed to resv context %d (got %d)\n", context, index);
++	else
++		pr_info("Reserving context %d\n", context);
++
++	return ;
++}
++
+ int hash__get_new_context(void)
+ {
+ 	int index, err;
 -- 
 2.7.4
