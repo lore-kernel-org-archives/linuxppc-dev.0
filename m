@@ -1,31 +1,31 @@
 Return-Path: <maddy@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vkKzX73TMzDqZc
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Mar 2017 18:36:40 +1100 (AEDT)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vkKzb2XzRzDqZ1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Mar 2017 18:36:43 +1100 (AEDT)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v2G7SiTS130218
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Mar 2017 03:36:29 -0400
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2978e6au2r-1
+ v2G7Wijl117634
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Mar 2017 03:36:35 -0400
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2971kuqd80-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Mar 2017 03:36:29 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Mar 2017 03:36:35 -0400
 Received: from localhost
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
- Thu, 16 Mar 2017 17:36:26 +1000
+ Thu, 16 Mar 2017 17:36:32 +1000
 Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v2G7aE3I28049530
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Mar 2017 18:36:22 +1100
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v2G7aLuf45744228
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Mar 2017 18:36:29 +1100
 Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
  by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v2G7ZnGF009427
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Mar 2017 18:35:50 +1100
+ v2G7Zthv009607
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Mar 2017 18:35:56 +1100
 From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 To: mpe@ellerman.id.au
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
@@ -40,11 +40,12 @@ Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
  Daniel Axtens <dja@axtens.net>, Stephane Eranian <eranian@google.com>,
  Anju T Sudhakar <anju@linux.vnet.ibm.com>,
  Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Subject: [PATCH v5 02/13] powerpc/powernv: Autoload IMC device driver module
-Date: Thu, 16 Mar 2017 13:04:56 +0530
+Subject: [PATCH v5 03/13] powerpc/powernv: Detect supported IMC units and its
+ events
+Date: Thu, 16 Mar 2017 13:04:57 +0530
 In-Reply-To: <1489649707-8021-1-git-send-email-maddy@linux.vnet.ibm.com>
 References: <1489649707-8021-1-git-send-email-maddy@linux.vnet.ibm.com>
-Message-Id: <1489649707-8021-3-git-send-email-maddy@linux.vnet.ibm.com>
+Message-Id: <1489649707-8021-4-git-send-email-maddy@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -56,21 +57,40 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Hemant Kumar <hemant@linux.vnet.ibm.com>
 
-This patch does three things :
- - Enables "opal.c" to create a platform device for the IMC interface
-   according to the appropriate compatibility string.
- - Find the reserved-memory region details from the system device tree
-   and get the base address of HOMER (Reserved memory) region address for each chip.
- - We also get the Nest PMU counter data offsets (in the HOMER region)
-   and their sizes. The offsets for the counters' data are fixed and
-   won't change from chip to chip.
+Parse device tree to detect IMC units. Traverse through each IMC unit
+node to find supported events and corresponding unit/scale files (if any).
 
-The device tree parsing logic is separated from the PMU creation
-functions (which is done in subsequent patches).
+Here is the DTS file for reference:
+
+	https://github.com/open-power/ima-catalog/blob/master/81E00612.4E0100.dts
+
+The device tree for IMC counters starts at the node "imc-counters".
+This node contains all the IMC PMU nodes and event nodes
+for these IMC PMUs. The PMU nodes have an "events" property which has a
+phandle value for the actual events node. The events are separated from
+the PMU nodes to abstract out the common events. For example, PMU node
+"mcs0", "mcs1" etc. will contain a pointer to "nest-mcs-events" since,
+the events are common between these PMUs. These events have a different
+prefix based on their relation to different PMUs, and hence, the PMU
+nodes themselves contain an "events-prefix" property. The value for this
+property concatenated to the event name, forms the actual event
+name. Also, the PMU have a "reg" field as the base offset for the events
+which belong to this PMU. This "reg" field is added to an event in the
+"events" node, which gives us the location of the counter data. Kernel
+code uses this offset as event configuration value.
+
+Device tree parser code also looks for scale/unit property in the event
+node and passes on the value as an event attr for perf interface to use
+in the post processing by the perf tool. Some PMUs may have common scale
+and unit properties which implies that all events supported by this PMU
+inherit the scale and unit properties of the PMU itself. For those
+events, we need to set the common unit and scale values.
+
+For failure to initialize any unit or any event, disable that unit and
+continue setting up the rest of them.
 
 Cc: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
 Cc: Balbir Singh <bsingharora@gmail.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: Paul Mackerras <paulus@samba.org>
 Cc: Anton Blanchard <anton@samba.org>
@@ -79,189 +99,413 @@ Cc: Michael Neuling <mikey@neuling.org>
 Cc: Stewart Smith <stewart@linux.vnet.ibm.com>
 Cc: Daniel Axtens <dja@axtens.net>
 Cc: Stephane Eranian <eranian@google.com>
-Cc: Anju T Sudhakar <anju@linux.vnet.ibm.com>
 Signed-off-by: Hemant Kumar <hemant@linux.vnet.ibm.com>
+Signed-off-by: Anju T Sudhakar <anju@linux.vnet.ibm.com>
 Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 ---
- arch/powerpc/platforms/powernv/Makefile   |   2 +-
- arch/powerpc/platforms/powernv/opal-imc.c | 117 ++++++++++++++++++++++++++++++
- arch/powerpc/platforms/powernv/opal.c     |  13 ++++
- 3 files changed, 131 insertions(+), 1 deletion(-)
- create mode 100644 arch/powerpc/platforms/powernv/opal-imc.c
+ arch/powerpc/platforms/powernv/opal-imc.c | 383 ++++++++++++++++++++++++++++++
+ 1 file changed, 383 insertions(+)
 
-diff --git a/arch/powerpc/platforms/powernv/Makefile b/arch/powerpc/platforms/powernv/Makefile
-index b5d98cb3f482..44909fec1121 100644
---- a/arch/powerpc/platforms/powernv/Makefile
-+++ b/arch/powerpc/platforms/powernv/Makefile
-@@ -2,7 +2,7 @@ obj-y			+= setup.o opal-wrappers.o opal.o opal-async.o idle.o
- obj-y			+= opal-rtc.o opal-nvram.o opal-lpc.o opal-flash.o
- obj-y			+= rng.o opal-elog.o opal-dump.o opal-sysparam.o opal-sensor.o
- obj-y			+= opal-msglog.o opal-hmi.o opal-power.o opal-irqchip.o
--obj-y			+= opal-kmsg.o
-+obj-y			+= opal-kmsg.o opal-imc.o
- 
- obj-$(CONFIG_SMP)	+= smp.o subcore.o subcore-asm.o
- obj-$(CONFIG_PCI)	+= pci.o pci-ioda.o npu-dma.o
 diff --git a/arch/powerpc/platforms/powernv/opal-imc.c b/arch/powerpc/platforms/powernv/opal-imc.c
-new file mode 100644
-index 000000000000..1b99c4e2f3f8
---- /dev/null
+index 1b99c4e2f3f8..0c076aca87e6 100644
+--- a/arch/powerpc/platforms/powernv/opal-imc.c
 +++ b/arch/powerpc/platforms/powernv/opal-imc.c
-@@ -0,0 +1,117 @@
-+/*
-+ * OPAL IMC interface detection driver
-+ * Supported on POWERNV platform
-+ *
-+ * Copyright	(C) 2016 Madhavan Srinivasan, IBM Corporation.
-+ *		(C) 2016 Hemant K Shaw, IBM Corporation.
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ */
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/platform_device.h>
-+#include <linux/miscdevice.h>
-+#include <linux/fs.h>
-+#include <linux/of.h>
-+#include <linux/of_address.h>
-+#include <linux/of_platform.h>
-+#include <linux/poll.h>
-+#include <linux/mm.h>
-+#include <linux/slab.h>
-+#include <asm/opal.h>
-+#include <asm/io.h>
-+#include <asm/uaccess.h>
-+#include <asm/cputable.h>
-+#include <asm/imc-pmu.h>
+@@ -32,6 +32,388 @@
+ #include <asm/imc-pmu.h>
+ 
+ struct perchip_nest_info nest_perchip_info[IMC_MAX_CHIPS];
++struct imc_pmu *per_nest_pmu_arr[IMC_MAX_PMUS];
 +
-+struct perchip_nest_info nest_perchip_info[IMC_MAX_CHIPS];
-+
-+static int opal_imc_counters_probe(struct platform_device *pdev)
++static int imc_event_info(char *name, struct imc_events *events)
 +{
-+	struct device_node *child, *imc_dev, *rm_node = NULL;
-+	struct perchip_nest_info *pcni;
-+	u32 reg[4], pages, nest_offset, nest_size, idx;
-+	int i = 0;
-+	const char *node_name;
++	char *buf;
 +
-+	if (!pdev || !pdev->dev.of_node)
-+		return -ENODEV;
++	/* memory for content */
++	buf = kzalloc(IMC_MAX_PMU_NAME_LEN, GFP_KERNEL);
++	if (!buf)
++		return -ENOMEM;
 +
-+	imc_dev = pdev->dev.of_node;
++	events->ev_name = name;
++	events->ev_value = buf;
++	return 0;
++}
++
++static int imc_event_info_str(struct property *pp, char *name,
++			       struct imc_events *events)
++{
++	int ret;
++
++	ret = imc_event_info(name, events);
++	if (ret)
++		return ret;
++
++	if (!pp->value || (strnlen(pp->value, pp->length) == pp->length) ||
++	   (pp->length > IMC_MAX_PMU_NAME_LEN))
++		return -EINVAL;
++	strncpy(events->ev_value, (const char *)pp->value, pp->length);
++
++	return 0;
++}
++
++static int imc_event_info_val(char *name, u32 val,
++			      struct imc_events *events)
++{
++	int ret;
++
++	ret = imc_event_info(name, events);
++	if (ret)
++		return ret;
++	sprintf(events->ev_value, "event=0x%x", val);
++
++	return 0;
++}
++
++static int set_event_property(struct property *pp, char *event_prop,
++			      struct imc_events *events, char *ev_name)
++{
++	char *buf;
++	int ret;
++
++	buf = kzalloc(IMC_MAX_PMU_NAME_LEN, GFP_KERNEL);
++	if (!buf)
++		return -ENOMEM;
++
++	sprintf(buf, "%s.%s", ev_name, event_prop);
++	ret = imc_event_info_str(pp, buf, events);
++	if (ret) {
++		kfree(events->ev_name);
++		kfree(events->ev_value);
++	}
++
++	return ret;
++}
++
++/*
++ * imc_events_node_parser: Parse the event node "dev" and assign the parsed
++ *                         information to event "events".
++ *
++ * Parses the "reg" property of this event. "reg" gives us the event offset.
++ * Also, parse the "scale" and "unit" properties, if any.
++ */
++static int imc_events_node_parser(struct device_node *dev,
++				  struct imc_events *events,
++				  struct property *event_scale,
++				  struct property *event_unit,
++				  struct property *name_prefix,
++				  u32 reg)
++{
++	struct property *name, *pp;
++	char *ev_name;
++	u32 val;
++	int idx = 0, ret;
++
++	if (!dev)
++		return -EINVAL;
 +
 +	/*
-+	 * nest_offset : where the nest-counters' data start.
-+	 * size : size of the entire nest-counters region
++	 * Loop through each property of an event node
 +	 */
-+	if (of_property_read_u32(imc_dev, "imc-nest-offset", &nest_offset))
-+		goto err;
-+	if (of_property_read_u32(imc_dev, "imc-nest-size", &nest_size))
-+		goto err;
++	name = of_find_property(dev, "event-name", NULL);
++	if (!name)
++		return -ENODEV;
 +
-+	/* Find the "homer region" for each chip */
-+	rm_node = of_find_node_by_path("/reserved-memory");
-+	if (!rm_node)
-+		goto err;
++	if (!name->value ||
++	  (strnlen(name->value, name->length) == name->length) ||
++	  (name->length > IMC_MAX_PMU_NAME_LEN))
++		return -EINVAL;
 +
-+	for_each_child_of_node(rm_node, child) {
-+		if (of_property_read_string_index(child, "name", 0,
-+						  &node_name))
++	ev_name = kzalloc(IMC_MAX_PMU_NAME_LEN, GFP_KERNEL);
++	if (!ev_name)
++		return -ENOMEM;
++
++	snprintf(ev_name, IMC_MAX_PMU_NAME_LEN, "%s%s",
++		 (char *)name_prefix->value,
++		 (char *)name->value);
++
++	/*
++	 * Parse each property of this event node "dev". Property "reg" has
++	 * the offset which is assigned to the event name. Other properties
++	 * like "scale" and "unit" are assigned to event.scale and event.unit
++	 * accordingly.
++	 */
++	for_each_property_of_node(dev, pp) {
++		/*
++		 * If there is an issue in parsing a single property of
++		 * this event, we just clean up the buffers, but we still
++		 * continue to parse.
++		 */
++		if (strncmp(pp->name, "reg", 3) == 0) {
++			of_property_read_u32(dev, pp->name, &val);
++			val += reg;
++			ret = imc_event_info_val(ev_name, val, &events[idx]);
++			if (ret) {
++				kfree(events[idx].ev_name);
++				kfree(events[idx].ev_value);
++				continue;
++			}
++			/*
++			 * If the common scale and unit properties available,
++			 * then, assign them to this event
++			 */
++			if (event_scale) {
++				idx++;
++				ret = set_event_property(event_scale, "scale",
++							 &events[idx],
++							 ev_name);
++				if (ret)
++					continue;
++				idx++;
++			}
++			if (event_unit) {
++				ret = set_event_property(event_unit, "unit",
++							 &events[idx],
++							 ev_name);
++				if (ret)
++					continue;
++			}
++			idx++;
++		} else if (strncmp(pp->name, "unit", 4) == 0) {
++			ret = set_event_property(pp, "unit", &events[idx],
++						 ev_name);
++			if (ret)
++				continue;
++			idx++;
++		} else if (strncmp(pp->name, "scale", 5) == 0) {
++			ret = set_event_property(pp, "scale", &events[idx],
++						 ev_name);
++			if (ret)
++				continue;
++			idx++;
++		}
++	}
++
++	return idx;
++}
++
++/*
++ * imc_get_domain : Returns the domain for pmu "pmu_dev".
++ */
++int imc_get_domain(struct device_node *pmu_dev)
++{
++	if (of_device_is_compatible(pmu_dev, IMC_DTB_NEST_COMPAT))
++		return IMC_DOMAIN_NEST;
++	else
++		return UNKNOWN_DOMAIN;
++}
++
++/*
++ * get_nr_children : Returns the number of children for a pmu device node.
++ */
++static int get_nr_children(struct device_node *pmu_node)
++{
++	struct device_node *child;
++	int i = 0;
++
++	for_each_child_of_node(pmu_node, child)
++		i++;
++	return i;
++}
++
++/*
++ * imc_free_events : Cleanup the "events" list having "nr_entries" entries.
++ */
++static void imc_free_events(struct imc_events *events, int nr_entries)
++{
++	int i;
++
++	/* Nothing to clean, return */
++	if (!events)
++		return;
++	for (i = 0; i < nr_entries; i++) {
++		kfree(events[i].ev_name);
++		kfree(events[i].ev_value);
++	}
++
++	kfree(events);
++}
++
++/*
++ * imc_pmu_create : Takes the parent device which is the pmu unit and a
++ *                  pmu_index as the inputs.
++ * Allocates memory for the pmu, sets up its domain (NEST or CORE), and
++ * allocates memory for the events supported by this pmu. Assigns a name for
++ * the pmu. Calls imc_events_node_parser() to setup the individual events.
++ * If everything goes fine, it calls, init_imc_pmu() to setup the pmu device
++ * and register it.
++ */
++static int imc_pmu_create(struct device_node *parent, int pmu_index)
++{
++	struct device_node *ev_node = NULL, *dir = NULL;
++	struct imc_events *events;
++	struct imc_pmu *pmu_ptr;
++	u32 prop, reg;
++	struct property *pp, *scale_pp, *unit_pp, *name_prefix;
++	char *buf;
++	int idx = 0, ret = 0, nr_children = 0;
++
++	if (!parent)
++		return -EINVAL;
++
++	/* memory for pmu */
++	pmu_ptr = kzalloc(sizeof(struct imc_pmu), GFP_KERNEL);
++	if (!pmu_ptr)
++		return -ENOMEM;
++
++	pmu_ptr->domain = imc_get_domain(parent);
++	if (pmu_ptr->domain == UNKNOWN_DOMAIN)
++		goto free_pmu;
++
++	/* Needed for hotplug/migration */
++	per_nest_pmu_arr[pmu_index] = pmu_ptr;
++
++	/*
++	 * "events" property inside a PMU node contains the phandle value
++	 * for the actual events node. The "events" node for the IMC PMU
++	 * is not in this node, rather inside "imc-counters" node, since,
++	 * we want to factor out the common events (thereby, reducing the
++	 * size of the device tree)
++	 */
++	of_property_read_u32(parent, "events", &prop);
++	if (!prop)
++		return -EINVAL;
++
++	/*
++	 * Fetch the actual node where the events for this PMU exist.
++	 */
++	dir = of_find_node_by_phandle(prop);
++	if (!dir)
++		return -EINVAL;
++
++	/*
++	 * Get the maximum no. of events in this node.
++	 * Multiply by 3 to account for .scale and .unit properties
++	 * This number suggests the amount of memory needed to setup the
++	 * events for this pmu.
++	 */
++	nr_children = get_nr_children(dir) * 3;
++
++	/* memory for pmu events */
++	events = kzalloc((sizeof(struct imc_events) * nr_children),
++			 GFP_KERNEL);
++	if (!events) {
++		ret = -ENOMEM;
++		goto free_pmu;
++	}
++
++	pp = of_find_property(parent, "name", NULL);
++	if (!pp) {
++		ret = -ENODEV;
++		goto free_events;
++	}
++
++	if (!pp->value ||
++	  (strnlen(pp->value, pp->length) == pp->length) ||
++	    (pp->length > IMC_MAX_PMU_NAME_LEN)) {
++		ret = -EINVAL;
++		goto free_events;
++	}
++
++	buf = kzalloc(IMC_MAX_PMU_NAME_LEN, GFP_KERNEL);
++	if (!buf) {
++		ret = -ENOMEM;
++		goto free_events;
++	}
++
++	/* Save the name to register it later */
++	sprintf(buf, "nest_%s", (char *)pp->value);
++	pmu_ptr->pmu.name = (char *)buf;
++
++	/*
++	 * Check if there is a common "scale" and "unit" properties inside
++	 * the PMU node for all the events supported by this PMU.
++	 */
++	scale_pp = of_find_property(parent, "scale", NULL);
++	unit_pp = of_find_property(parent, "unit", NULL);
++
++	/*
++	 * Get the event-prefix property from the PMU node
++	 * which needs to be attached with the event names.
++	 */
++	name_prefix = of_find_property(parent, "events-prefix", NULL);
++	if (!name_prefix)
++		return -ENODEV;
++
++	/*
++	 * "reg" property gives out the base offset of the counters data
++	 * for this PMU.
++	 */
++	of_property_read_u32(parent, "reg", &reg);
++
++	if (!name_prefix->value ||
++	   (strnlen(name_prefix->value, name_prefix->length) == name_prefix->length) ||
++	   (name_prefix->length > IMC_MAX_PMU_NAME_LEN))
++		return -EINVAL;
++
++	/* Loop through event nodes */
++	for_each_child_of_node(dir, ev_node) {
++		ret = imc_events_node_parser(ev_node, &events[idx], scale_pp,
++					     unit_pp, name_prefix, reg);
++		if (ret < 0) {
++			/* Unable to parse this event */
++			if (ret == -ENOMEM)
++				goto free_events;
 +			continue;
-+		if (strncmp("ibm,homer-image", node_name,
-+			    strlen("ibm,homer-image")))
-+			continue;
++		}
 +
-+		/* Get the chip id to which the above homer region belongs to */
-+		if (of_property_read_u32(child, "ibm,chip-id", &idx))
-+			goto err;
-+
-+		/* reg property will have four u32 cells. */
-+		if (of_property_read_u32_array(child, "reg", reg, 4))
-+			goto err;
-+
-+		pcni = &nest_perchip_info[idx];
-+
-+		/* Fetch the homer region base address */
-+		pcni->pbase = reg[0];
-+		pcni->pbase = pcni->pbase << 32 | reg[1];
-+		/* Add the nest IMC Base offset */
-+		pcni->pbase = pcni->pbase + nest_offset;
-+		/* Fetch the size of the homer region */
-+		pcni->size = nest_size;
-+
-+		do {
-+			pages = PAGE_SIZE * i;
-+			pcni->vbase[i++] = (u64)phys_to_virt(pcni->pbase +
-+							     pages);
-+		} while (i < (pcni->size / PAGE_SIZE));
++		/*
++		 * imc_event_node_parser will return number of
++		 * event entries created for this. This could include
++		 * event scale and unit files also.
++		 */
++		idx += ret;
 +	}
 +
 +	return 0;
-+err:
-+	return -ENODEV;
++
++free_events:
++	imc_free_events(events, idx);
++free_pmu:
++	kfree(pmu_ptr);
++	return ret;
 +}
 +
-+static const struct of_device_id opal_imc_match[] = {
-+	{ .compatible = IMC_DTB_COMPAT },
-+	{},
-+};
-+
-+static struct platform_driver opal_imc_driver = {
-+	.driver = {
-+		.name = "opal-imc-counters",
-+		.of_match_table = opal_imc_match,
-+	},
-+	.probe = opal_imc_counters_probe,
-+};
-+
-+MODULE_DEVICE_TABLE(of, opal_imc_match);
-+module_platform_driver(opal_imc_driver);
-+MODULE_DESCRIPTION("PowerNV OPAL IMC driver");
-+MODULE_LICENSE("GPL");
-diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
-index e0f856bfbfe8..2c90c570953d 100644
---- a/arch/powerpc/platforms/powernv/opal.c
-+++ b/arch/powerpc/platforms/powernv/opal.c
-@@ -30,6 +30,7 @@
- #include <asm/opal.h>
- #include <asm/firmware.h>
- #include <asm/mce.h>
-+#include <asm/imc-pmu.h>
- 
- #include "powernv.h"
- 
-@@ -631,6 +632,15 @@ static void opal_pdev_init(const char *compatible)
- 		of_platform_device_create(np, NULL, NULL);
- }
- 
-+static void opal_imc_init_dev(void)
++/*
++ * imc_pmu_setup : Setup the IMC PMUs (children of "parent").
++ */
++static void imc_pmu_setup(struct device_node *parent)
 +{
-+	struct device_node *np;
++	struct device_node *child;
++	int pmu_count = 0, rc = 0;
++	const struct property *pp;
 +
-+	np = of_find_compatible_node(NULL, NULL, IMC_DTB_COMPAT);
-+	if (np)
-+		of_platform_device_create(np, NULL, NULL);
++	if (!parent)
++		return;
++
++	/* Setup all the IMC pmus */
++	for_each_child_of_node(parent, child) {
++		pp = of_get_property(child, "compatible", NULL);
++		if (pp) {
++			/*
++			 * If there is a node with a "compatible" field,
++			 * that's a PMU node
++			 */
++			rc = imc_pmu_create(child, pmu_count);
++			if (rc)
++				return;
++			pmu_count++;
++		}
++	}
 +}
-+
- static int kopald(void *unused)
- {
- 	unsigned long timeout = msecs_to_jiffies(opal_heartbeat) + 1;
-@@ -704,6 +714,9 @@ static int __init opal_init(void)
- 	/* Setup a heatbeat thread if requested by OPAL */
- 	opal_init_heartbeat();
  
-+	/* Detect IMC pmu counters support and create PMUs */
-+	opal_imc_init_dev();
-+
- 	/* Create leds platform devices */
- 	leds = of_find_node_by_path("/ibm,opal/leds");
- 	if (leds) {
+ static int opal_imc_counters_probe(struct platform_device *pdev)
+ {
+@@ -93,6 +475,7 @@ static int opal_imc_counters_probe(struct platform_device *pdev)
+ 		} while (i < (pcni->size / PAGE_SIZE));
+ 	}
+ 
++	imc_pmu_setup(imc_dev);
+ 	return 0;
+ err:
+ 	return -ENODEV;
 -- 
 2.7.4
