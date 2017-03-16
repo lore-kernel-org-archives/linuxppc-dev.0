@@ -1,38 +1,37 @@
-Return-Path: <BATV+c415928f1c07afbf9bf8+4953+infradead.org+acme@merlin.srs.infradead.org>
-Received: from merlin.infradead.org (merlin.infradead.org
- [IPv6:2001:4978:20e::2])
+Return-Path: <ego@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vkYNb0pXJzDqLW
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Mar 2017 03:10:39 +1100 (AEDT)
-From: Arnaldo Carvalho de Melo <acme@kernel.org>
-To: Ingo Molnar <mingo@kernel.org>
-Cc: linux-kernel@vger.kernel.org, Arnaldo Carvalho de Melo <acme@kernel.org>,
- Adrian Hunter <adrian.hunter@intel.com>,
- Alexander Shishkin <alexander.shishkin@linux.intel.com>,
- Alexei Starovoitov <alexei.starovoitov@gmail.com>,
- Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>,
- Andi Kleen <ak@linux.intel.com>, Andy Lutomirski <luto@kernel.org>,
- Anton Blanchard <anton@ozlabs.org>, Borislav Petkov <bp@suse.de>,
- Brendan Gregg <brendan.d.gregg@gmail.com>, David Ahern <dsahern@gmail.com>,
- David Miller <davem@davemloft.net>, He Kuang <hekuang@huawei.com>,
- Hemant Kumar <hemant@linux.vnet.ibm.com>, Jiri Olsa <jolsa@redhat.com>,
- linuxppc-dev@lists.ozlabs.org, Masami Hiramatsu <mhiramat@kernel.org>,
- Mathieu Poirier <mathieu.poirier@linaro.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Namhyung Kim <namhyung@kernel.org>,
- "Naveen N . Rao" <naveen.n.rao@linux.vnet.ibm.com>,
- Peter Zijlstra <peterz@infradead.org>,
- Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>,
- Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
- Stephane Eranian <eranian@google.com>,
- Steven Rostedt <rostedt@goodmis.org>,
- Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
- Taeung Song <treeze.taeung@gmail.com>,
- Thomas Gleixner <tglx@linutronix.de>, Wang Nan <wangnan0@huawei.com>,
- Arnaldo Carvalho de Melo <acme@redhat.com>
-Subject: [GIT PULL 0/6] perf/core improvements and fixes
-Date: Thu, 16 Mar 2017 13:09:56 -0300
-Message-Id: <20170316161002.15445-1-acme@kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vkYQW674zzDq8f
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Mar 2017 03:12:19 +1100 (AEDT)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v2GG8RHL087862
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Mar 2017 12:12:09 -0400
+Received: from e16.ny.us.ibm.com (e16.ny.us.ibm.com [129.33.205.206])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 297kqkykau-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Mar 2017 12:12:08 -0400
+Received: from localhost
+ by e16.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ego@linux.vnet.ibm.com>;
+ Thu, 16 Mar 2017 12:12:07 -0400
+Date: Thu, 16 Mar 2017 21:42:01 +0530
+From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+To: Nicholas Piggin <npiggin@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Gautham R Shenoy <ego@linux.vnet.ibm.com>,
+ Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Subject: Re: [PATCH 8/8] powerpc/64s: idle POWER8 avoid full state loss
+ recovery when possible
+Reply-To: ego@linux.vnet.ibm.com
+References: <20170314092349.10981-1-npiggin@gmail.com>
+ <20170314092349.10981-9-npiggin@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20170314092349.10981-9-npiggin@gmail.com>
+Message-Id: <20170316161201.GG16462@in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,254 +41,271 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Ingo,
+Hi Nick,
 
-	Please consider pulling,
+On Tue, Mar 14, 2017 at 07:23:49PM +1000, Nicholas Piggin wrote:
+> If not all threads were in winkle, full state loss recovery is not
+> necessary and can be avoided. A previous patch removed this optimisation
+> due to some complexity with the implementation. Re-implement it by
+> counting the number of threads in winkle with the per-core idle state.
+> Only restore full state loss if all threads were in winkle.
+> 
+> This has a small window of false positives right before threads execute
+> winkle and just after they wake up, when the winkle count does not
+> reflect the true number of threads in winkle. This is not a significant
+> problem in comparison with even the minimum winkle duration. For
+> correctness, a false positive is not a problem (only false negatives
+> would be).
 
-- Arnaldo
+I like the technique.. Some comments below.
 
-Test results at the end of this message, as usual.
+> 
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> ---
+>  arch/powerpc/include/asm/cpuidle.h | 32 ++++++++++++++++++++++++---
+>  arch/powerpc/kernel/idle_book3s.S  | 45 +++++++++++++++++++++++++++++++++-----
+>  2 files changed, 68 insertions(+), 9 deletions(-)
+> 
+> diff --git a/arch/powerpc/include/asm/cpuidle.h b/arch/powerpc/include/asm/cpuidle.h
+> index b9d9f960dffd..b68a5cd75ae8 100644
+> --- a/arch/powerpc/include/asm/cpuidle.h
+> +++ b/arch/powerpc/include/asm/cpuidle.h
+> @@ -2,13 +2,39 @@
+>  #define _ASM_POWERPC_CPUIDLE_H
+> 
+>  #ifdef CONFIG_PPC_POWERNV
+> -/* Used in powernv idle state management */
+> +/* Thread state used in powernv idle state management */
+>  #define PNV_THREAD_RUNNING              0
+>  #define PNV_THREAD_NAP                  1
+>  #define PNV_THREAD_SLEEP                2
+>  #define PNV_THREAD_WINKLE               3
+> -#define PNV_CORE_IDLE_LOCK_BIT          0x10000000
+> -#define PNV_CORE_IDLE_THREAD_BITS       0x000000FF
+> +
+> +/*
+> + * Core state used in powernv idle for POWER8.
+> + *
+> + * The lock bit synchronizes updates to the state, as well as parts of the
+> + * sleep/wake code (see kernel/idle_book3s.S).
+> + *
+> + * Bottom 8 bits track the idle state of each thread. Bit is cleared before
+> + * the thread executes an idle instruction (nap/sleep/winkle).
+> + *
+> + * Then there is winkle tracking. A core does not lose complete state
+> + * until every thread is in winkle. So the winkle count field counts the
+> + * number of threads in winkle (small window of false positives is okay
+> + * around the sleep/wake, so long as there are no false negatives).
+> + *
+> + * When the winkle count reaches 8 (the COUNT_ALL_BIT becomes set), then
+> + * the THREAD_WINKLE_BITS are set, which indicate which threads have not
+> + * yet woken from the winkle state.
+> + */
+> +#define PNV_CORE_IDLE_LOCK_BIT			0x10000000
+> +
+> +#define PNV_CORE_IDLE_WINKLE_COUNT		0x00010000
+> +#define PNV_CORE_IDLE_WINKLE_COUNT_ALL_BIT	0x00080000
+> +#define PNV_CORE_IDLE_WINKLE_COUNT_BITS		0x000F0000
+> +#define PNV_CORE_IDLE_THREAD_WINKLE_BITS_SHIFT	8
+> +#define PNV_CORE_IDLE_THREAD_WINKLE_BITS	0x0000FF00
+> +
+> +#define PNV_CORE_IDLE_THREAD_BITS       	0x000000FF
+> 
+>  /*
+>   * ============================ NOTE =================================
+> diff --git a/arch/powerpc/kernel/idle_book3s.S b/arch/powerpc/kernel/idle_book3s.S
+> index 3cb75907c5c5..87518a1dca50 100644
+> --- a/arch/powerpc/kernel/idle_book3s.S
+> +++ b/arch/powerpc/kernel/idle_book3s.S
+> @@ -210,15 +210,20 @@ pnv_enter_arch207_idle_mode:
+>  	/* Sleep or winkle */
+>  	lbz	r7,PACA_THREAD_MASK(r13)
+>  	ld	r14,PACA_CORE_IDLE_STATE_PTR(r13)
+> +	li	r5,0
+> +	beq	cr3,3f
+> +	lis	r5,PNV_CORE_IDLE_WINKLE_COUNT@h
+> +3:
+>  lwarx_loop1:
+>  	lwarx	r15,0,r14
+> 
+>  	andis.	r9,r15,PNV_CORE_IDLE_LOCK_BIT@h
+>  	bnel-	core_idle_lock_held
+> 
+> +	add	r15,r15,r5			/* Add if winkle */
+>  	andc	r15,r15,r7			/* Clear thread bit */
+> 
+> -	andi.	r15,r15,PNV_CORE_IDLE_THREAD_BITS
+> +	andi.	r9,r15,PNV_CORE_IDLE_THREAD_BITS
+> 
+>  /*
+>   * If cr0 = 0, then current thread is the last thread of the core entering
+> @@ -437,16 +442,14 @@ pnv_restore_hyp_resource_arch300:
+>  pnv_restore_hyp_resource_arch207:
+>  	/*
+>  	 * POWER ISA 2.07 or less.
+> -	 * Check if we slept with winkle.
+> +	 * Check if we slept with sleep or winkle.
+>  	 */
+>  	ld	r2,PACATOC(r13);
+> 
+> -	lbz	r0,PACA_THREAD_IDLE_STATE(r13)
+> -	cmpwi	cr2,r0,PNV_THREAD_NAP
+> -	cmpwi	cr4,r0,PNV_THREAD_WINKLE
+> +	lbz	r4,PACA_THREAD_IDLE_STATE(r13)
+>  	li	r0,PNV_THREAD_RUNNING
+>  	stb	r0,PACA_THREAD_IDLE_STATE(r13)	/* Clear thread state */
+> -
+> +	cmpwi	cr2,r4,PNV_THREAD_NAP
+>  	bgt	cr2,pnv_wakeup_tb_loss	/* Either sleep or Winkle */
+> 
+> 
+> @@ -467,7 +470,12 @@ pnv_restore_hyp_resource_arch207:
+>   *
+>   * r13 - PACA
+>   * cr3 - gt if waking up with partial/complete hypervisor state loss
+> + *
+> + * If ISA300:
+>   * cr4 - gt or eq if waking up from complete hypervisor state loss.
+> + *
+> + * If ISA207:
+> + * r4 - PACA_THREAD_IDLE_STATE
+>   */
+>  pnv_wakeup_tb_loss:
+>  	ld	r1,PACAR1(r13)
+> @@ -482,6 +490,7 @@ pnv_wakeup_tb_loss:
+>  	 * required to return back to caller after hypervisor state restore is
+>  	 * complete.
+>  	 */
+> +	mr	r18,r4
+>  	mflr	r17
+>  	mfspr	r16,SPRN_SRR1
+>  BEGIN_FTR_SECTION
+> @@ -517,10 +526,34 @@ END_FTR_SECTION_IFSET(CPU_FTR_HVMODE)
+>  	 * At this stage
+>  	 * cr2 - eq if first thread to wakeup in core
+>  	 * cr3-  gt if waking up with partial/complete hypervisor state loss
+> +	 * ISA300:
+>  	 * cr4 - gt or eq if waking up from complete hypervisor state loss.
 
-The following changes since commit ffa86c2f1a8862cf58c873f6f14d4b2c3250fb48:
+For ISA 300, we need to restore hypervisor thread resources if we are
+waking up a state that is as deep or deeper than
+pnv_first_deep_stop_state. In that case, we expect either the "gt" bit
+or the "eq" bit of cr4 to be set.
 
-  Merge tag 'perf-core-for-mingo-4.12-20170314' of git://git.kernel.org/pub/scm/linux/kernel/git/acme/linux into perf/core (2017-03-15 19:27:27 +0100)
+Before this patch, on ISA 207, cr4 would be "eq" if we are waking up
+from winkle.
 
-are available in the git repository at:
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/acme/linux.git tags/perf-core-for-mingo-4.12-20170316
+>  	 */
+> 
+>  BEGIN_FTR_SECTION
+> +	/*
+> +	 * Were we in winkle?
+> +	 * If yes, check if all threads were in winkle, decrement our
+> +	 * winkle count, set all thread winkle bits if all were in winkle.
+> +	 * Check if our thread has a winkle bit set, and set cr4 accordingly
+> +	 * (to match ISA300, above).
+> +	 */
+> +	cmpwi	r18,PNV_THREAD_WINKLE
+> +	bne	2f
+> +	andis.	r9,r15,PNV_CORE_IDLE_WINKLE_COUNT_ALL_BIT@h
+> +	subis	r15,r15,PNV_CORE_IDLE_WINKLE_COUNT@h
+> +	beq	2f
+> +	ori	r15,r15,PNV_CORE_IDLE_THREAD_WINKLE_BITS /* all were winkle */
 
-for you to fetch changes up to 61f35d750683b21e9e3836e309195c79c1daed74:
+So PNV_CORE_IDLE_THREAD_WINKLE_BITS will be set by the first waking
+thread in a winkle'd core. Subsequent waking thread(s) can only clear
+their respective bits from the winkle bits.
 
-  uprobes: Default UPROBES_EVENTS to Y (2017-03-16 12:42:02 -0300)
+> +2:
+> +	/* Shift thread bit to winkle mask, then test if this thread is set,
+> +	 * and remove it from the winkle bits */
+> +	slwi	r8,r7,8
+> +	and	r8,r8,r15
+> +	andc	r15,r15,r8
+> +	cmpwi	cr4,r8,1 /* cr4 will be gt if our bit is set, lt if not */
 
-----------------------------------------------------------------
-perf/core improvements and fixes:
+Very clever indeed! So we seem to be doing the following:
 
-New features:
+winkle_entry(thread_bit)
+{
+	atomic_inc(core_winkle_count);
+}
 
-- Add 'brstackinsn' field in 'perf script' to reuse the x86 instruction
-  decoder used in the Intel PT code to study hot paths to samples (Andi Kleen)
+winkle_exit(thread_bit)
+{
+	atomic {
+	       if (core_winkle_count == 8)
+	       	  set all thread bits in core_winkle_mask;
 
-Kernel:
+	       if (thread_bit set in core_winkle_mask) {
+	       	  cr4 will be "gt".
+	       }
 
-- Default UPROBES_EVENTS to Y (Alexei Starovoitov)
+	       clear thread_bit from core_winkle_mask;
+	}
+}
 
-- Fix check for kretprobe offset within function entry (Naveen N. Rao)
+I would suggest documenting this a bit more documentation given the
+subtlety.
 
-Infrastructure:
+> +
+> +	cmpwi	cr4,r18,PNV_THREAD_WINKLE
 
-- Introduce util func is_sdt_event() (Ravi Bangoria)
+This second comparision seems to be undoing the benefit of the
+optimization by setting "eq" in cr4 for every thread that wakes up
+from winkle irrespective of whether the core has winkled or not.
 
-- Make perf_event__synthesize_mmap_events() scale on older kernels where
-  reading /proc/pid/maps is way slower than reading /proc/pid/task/pid/maps (Stephane Eranian)
+However, this is quite subtle, so good chances that my addled brain
+has gotten it wrong.
 
-Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+Case 1: If a thread were waking up from winkle. We have 2
+        possibilities
 
-----------------------------------------------------------------
-Andi Kleen (1):
-      perf script: Add 'brstackinsn' for branch stacks
+      a) The entire core winkled at least once ever since this thread
+      went to winkle. In this case we want cr4 to be "eq" or "gt" so
+      that we restore the hypervisor resources.
+      Now, for this case the first thread in the core that wakes up would find
+      count == PNV_CORE_IDLE_WINKLE_COUNT_ALL_BIT and hence would have
+      set PNV_CORE_IDLE_THREAD_WINKLE_BITS which includes this
+      thread's bit as well. Hence, this thread
+      would find its bit set in r8, thereby cr4 would be "gt". Which
+      is good for us!
 
-Arnaldo Carvalho de Melo (2):
-      tools headers: Sync {tools/,}arch/x86/include/asm/cpufeatures.h
-      uprobes: Default UPROBES_EVENTS to Y
+      b) The entire core has not entered winkle. In which case we
+      haven't lost any hypervisor resources, so no need to restore
+      these. We would like cr4 to have neither "eq" nor "gt" set here.
+      In this case, no thread that has woken up prior to this thread
+      would find count == PNV_CORE_IDLE_WINKLE_COUNT_ALL_BIT. Hence
+      none of those earlier threads would set
+      PNV_CORE_IDLE_THREAD_WINKLE_BITS. Thus, for this thread, r8
+      would be 0, and hence cr4 would be "lt". Which is what we want.
+      
 
-Naveen N. Rao (1):
-      trace/kprobes: Fix check for kretprobe offset within function entry
+Case 2: If the thread is waking up from fast-sleep. In which case we
+      haven't lost any hypervisor resources, so no need to restore
+      these. We would like cr4 to have neither "eq" nor "gt" set here.
 
-Ravi Bangoria (1):
-      perf probe: Introduce util func is_sdt_event()
+      While entering fastsleep, this thread wouldn't have contributed
+      to the winkle count. Thus any thread that would have woken up
+      before this thread would not find
+      winkle count == PNV_CORE_IDLE_WINKLE_COUNT_ALL_BIT
+      and hence wouldn't have set the bits in
+      PNV_CORE_IDLE_THREAD_WINKLE_BITS. Thus, r8 would
+      be 0, and hence cr4 would be "lt".
 
-Stephane Eranian (1):
-      perf tools: Make perf_event__synthesize_mmap_events() scale
 
- include/linux/kprobes.h                            |   1 +
- kernel/kprobes.c                                   |  40 ++--
- kernel/trace/Kconfig                               |   2 +-
- kernel/trace/trace_kprobe.c                        |   2 +-
- tools/arch/x86/include/asm/cpufeatures.h           |   5 +-
- tools/perf/Documentation/perf-script.txt           |  13 +-
- tools/perf/builtin-script.c                        | 264 ++++++++++++++++++++-
- tools/perf/util/Build                              |   1 +
- tools/perf/util/dump-insn.c                        |  14 ++
- tools/perf/util/dump-insn.h                        |  22 ++
- tools/perf/util/event.c                            |   4 +-
- .../util/intel-pt-decoder/intel-pt-insn-decoder.c  |  24 ++
- tools/perf/util/parse-events.h                     |  20 ++
- tools/perf/util/probe-event.c                      |   9 +-
- 14 files changed, 381 insertions(+), 40 deletions(-)
- create mode 100644 tools/perf/util/dump-insn.c
- create mode 100644 tools/perf/util/dump-insn.h
+So it seems to be the case that the first comparison suffices. What am
+I missing here ?
 
-Test results:
+> +
+>  	lbz	r4,PACA_SUBCORE_SIBLING_MASK(r13)
+>  	and	r4,r4,r15
+>  	cmpwi	r4,0	/* Check if first in subcore */
+> -- 
+> 2.11.0
+> 
 
-The first ones are container (docker) based builds of tools/perf with and
-without libelf support, objtool where it is supported and samples/bpf/, ditto.
-Where clang is available, it is also used to build perf with/without libelf.
-
-Several are cross builds, the ones with -x-ARCH, and the android one, and those
-may not have all the features built, due to lack of multi-arch devel packages,
-available and being used so far on just a few, like
-debian:experimental-x-{arm64,mipsel}.
-
-The 'perf test' one will perform a variety of tests exercising
-tools/perf/util/, tools/lib/{bpf,traceevent,etc}, as well as run perf commands
-with a variety of command line event specifications to then intercept the
-sys_perf_event syscall to check that the perf_event_attr fields are set up as
-expected, among a variety of other unit tests.
-
-Then there is the 'make -C tools/perf build-test' ones, that build tools/perf/
-with a variety of feature sets, exercising the build with an incomplete set of
-features as well as with a complete one. It is planned to have it run on each
-of the containers mentioned above, using some container orchestration
-infrastructure. Get in contact if interested in helping having this in place.
-
-  # dm
-   1 alpine:3.4: Ok
-   2 alpine:3.5: Ok
-   3 alpine:edge: Ok
-   4 android-ndk:r12b-arm: Ok
-   5 archlinux:latest: Ok
-   6 centos:5: Ok
-   7 centos:6: Ok
-   8 centos:7: Ok
-   9 debian:7: Ok
-  10 debian:8: Ok
-  11 debian:experimental: Ok
-  12 debian:experimental-x-arm64: Ok
-  13 debian:experimental-x-mips: Ok
-  14 debian:experimental-x-mips64: Ok
-  15 debian:experimental-x-mipsel: Ok
-  16 fedora:20: Ok
-  17 fedora:21: Ok
-  18 fedora:22: Ok
-  19 fedora:23: Ok
-  20 fedora:24: Ok
-  21 fedora:24-x-ARC-uClibc: Ok
-  22 fedora:25: Ok
-  23 fedora:rawhide: Ok
-  24 mageia:5: Ok
-  25 opensuse:13.2: Ok
-  26 opensuse:42.1: Ok
-  27 opensuse:tumbleweed: Ok
-  28 ubuntu:12.04.5: Ok
-  29 ubuntu:14.04.4: Ok
-  30 ubuntu:14.04.4-x-linaro-arm64: Ok
-  31 ubuntu:15.10: Ok
-  32 ubuntu:16.04: Ok
-  33 ubuntu:16.04-x-arm: Ok
-  34 ubuntu:16.04-x-arm64: Ok
-  35 ubuntu:16.04-x-powerpc: Ok
-  36 ubuntu:16.04-x-powerpc64: Ok
-  37 ubuntu:16.04-x-s390: Ok
-  38 ubuntu:16.10: Ok
-  39 ubuntu:17.04: Ok
-
-  # uname -a
-  Linux zoo 4.9.13-100.fc24.x86_64 #1 SMP Mon Feb 27 16:57:22 UTC 2017 x86_64 x86_64 x86_64 GNU/Linux
-  # perf test
-   1: vmlinux symtab matches kallsyms            : Ok
-   2: Detect openat syscall event                : Ok
-   3: Detect openat syscall event on all cpus    : Ok
-   4: Read samples using the mmap interface      : Ok
-   5: Parse event definition strings             : Ok
-   6: PERF_RECORD_* events & perf_sample fields  : Ok
-   7: Parse perf pmu format                      : Ok
-   8: DSO data read                              : Ok
-   9: DSO data cache                             : Ok
-  10: DSO data reopen                            : Ok
-  11: Roundtrip evsel->name                      : Ok
-  12: Parse sched tracepoints fields             : Ok
-  13: syscalls:sys_enter_openat event fields     : Ok
-  14: Setup struct perf_event_attr               : Ok
-  15: Match and link multiple hists              : Ok
-  16: 'import perf' in python                    : Ok
-  17: Breakpoint overflow signal handler         : Ok
-  18: Breakpoint overflow sampling               : Ok
-  19: Number of exit events of a simple workload : Ok
-  20: Software clock events period values        : Ok
-  21: Object code reading                        : Ok
-  22: Sample parsing                             : Ok
-  23: Use a dummy software event to keep tracking: Ok
-  24: Parse with no sample_id_all bit set        : Ok
-  25: Filter hist entries                        : Ok
-  26: Lookup mmap thread                         : Ok
-  27: Share thread mg                            : Ok
-  28: Sort output of hist entries                : Ok
-  29: Cumulate child hist entries                : Ok
-  30: Track with sched_switch                    : Ok
-  31: Filter fds with revents mask in a fdarray  : Ok
-  32: Add fd to a fdarray, making it autogrow    : Ok
-  33: kmod_path__parse                           : Ok
-  34: Thread map                                 : Ok
-  35: LLVM search and compile                    :
-  35.1: Basic BPF llvm compile                    : Ok
-  35.2: kbuild searching                          : Ok
-  35.3: Compile source for BPF prologue generation: Ok
-  35.4: Compile source for BPF relocation         : Ok
-  36: Session topology                           : Ok
-  37: BPF filter                                 :
-  37.1: Basic BPF filtering                      : Ok
-  37.2: BPF pinning                              : Ok
-  37.3: BPF prologue generation                  : Ok
-  37.4: BPF relocation checker                   : Ok
-  38: Synthesize thread map                      : Ok
-  39: Remove thread map                          : Ok
-  40: Synthesize cpu map                         : Ok
-  41: Synthesize stat config                     : Ok
-  42: Synthesize stat                            : Ok
-  43: Synthesize stat round                      : Ok
-  44: Synthesize attr update                     : Ok
-  45: Event times                                : Ok
-  46: Read backward ring buffer                  : Ok
-  47: Print cpu map                              : Ok
-  48: Probe SDT events                           : Ok
-  49: is_printable_array                         : Ok
-  50: Print bitmap                               : Ok
-  51: perf hooks                                 : Ok
-  52: builtin clang support                      : Skip (not compiled in)
-  53: unit_number__scnprintf                     : Ok
-  54: x86 rdpmc                                  : Ok
-  55: Convert perf time to TSC                   : Ok
-  56: DWARF unwind                               : Ok
-  57: x86 instruction decoder - new instructions : Ok
-  58: Intel cqm nmi context read                 : Skip
-  # 
-  $ make -C tools/perf build-test
-  make: Entering directory '/home/acme/git/linux/tools/perf'
-  - tarpkg: ./tests/perf-targz-src-pkg .
-              make_no_libelf_O: make NO_LIBELF=1
-             make_no_libperl_O: make NO_LIBPERL=1
-             make_no_scripts_O: make NO_LIBPYTHON=1 NO_LIBPERL=1
-             make_no_libnuma_O: make NO_LIBNUMA=1
-                   make_pure_O: make
-                 make_perf_o_O: make perf.o
-                make_no_newt_O: make NO_NEWT=1
-                   make_help_O: make help
-            make_no_libaudit_O: make NO_LIBAUDIT=1
-                 make_static_O: make LDFLAGS=-static
-                    make_doc_O: make doc
-              make_clean_all_O: make clean all
-                  make_debug_O: make DEBUG=1
-                make_minimal_O: make NO_LIBPERL=1 NO_LIBPYTHON=1 NO_NEWT=1 NO_GTK2=1 NO_DEMANGLE=1 NO_LIBELF=1 NO_LIBUNWIND=1 NO_BACKTRACE=1 NO_LIBNUMA=1 NO_LIBAUDIT=1 NO_LIBBIONIC=1 NO_LIBDW_DWARF_UNWIND=1 NO_AUXTRACE=1 NO_LIBBPF=1 NO_LIBCRYPTO=1 NO_SDT=1 NO_JVMTI=1
-           make_no_libunwind_O: make NO_LIBUNWIND=1
-           make_no_libbionic_O: make NO_LIBBIONIC=1
-           make_no_libpython_O: make NO_LIBPYTHON=1
-               make_no_slang_O: make NO_SLANG=1
-        make_with_babeltrace_O: make LIBBABELTRACE=1
-         make_install_prefix_O: make install prefix=/tmp/krava
-                  make_no_ui_O: make NO_NEWT=1 NO_SLANG=1 NO_GTK2=1
-       make_util_pmu_bison_o_O: make util/pmu-bison.o
-            make_no_demangle_O: make NO_DEMANGLE=1
-   make_install_prefix_slash_O: make install prefix=/tmp/krava/
-  make_no_libdw_dwarf_unwind_O: make NO_LIBDW_DWARF_UNWIND=1
-            make_no_auxtrace_O: make NO_AUXTRACE=1
-            make_install_bin_O: make install-bin
-             make_util_map_o_O: make util/map.o
-                   make_tags_O: make tags
-              make_no_libbpf_O: make NO_LIBBPF=1
-                make_install_O: make install
-                make_no_gtk2_O: make NO_GTK2=1
-           make_no_backtrace_O: make NO_BACKTRACE=1
-         make_with_clangllvm_O: make LIBCLANGLLVM=1
-  OK
-  make: Leaving directory '/home/acme/git/linux/tools/perf'
+--
+Thanks and Regards
+gautham.
