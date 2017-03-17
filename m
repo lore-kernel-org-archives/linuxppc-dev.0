@@ -1,40 +1,42 @@
 Return-Path: <srs0=ey7g=22=linux.vnet.ibm.com=sukadev@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vkrYZ6gC0zDqb3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Mar 2017 14:34:26 +1100 (AEDT)
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3vkrYZ64dXz8xX3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Mar 2017 14:34:26 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vkrYj2K11zDqby
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Mar 2017 14:34:33 +1100 (AEDT)
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3vkrYj1fVcz8swR
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Mar 2017 14:34:33 +1100 (AEDT)
 Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3vkrYZ2THpz9ryQ
- for <linuxppc-dev@ozlabs.org>; Fri, 17 Mar 2017 14:34:26 +1100 (AEDT)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by ozlabs.org (Postfix) with ESMTPS id 3vkrYh534nz9ryT
+ for <linuxppc-dev@ozlabs.org>; Fri, 17 Mar 2017 14:34:32 +1100 (AEDT)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v2H3TZNM023493
- for <linuxppc-dev@ozlabs.org>; Thu, 16 Mar 2017 23:34:24 -0400
-Received: from e13.ny.us.ibm.com (e13.ny.us.ibm.com [129.33.205.203])
- by mx0b-001b2d01.pphosted.com with ESMTP id 297wd0heub-1
+ v2H3TcO2077761
+ for <linuxppc-dev@ozlabs.org>; Thu, 16 Mar 2017 23:34:26 -0400
+Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 297pv3pstf-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Thu, 16 Mar 2017 23:34:23 -0400
+ for <linuxppc-dev@ozlabs.org>; Thu, 16 Mar 2017 23:34:26 -0400
 Received: from localhost
- by e13.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Thu, 16 Mar 2017 23:34:23 -0400
+ Thu, 16 Mar 2017 23:34:25 -0400
 From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  michael.neuling@au1.ibm.com, stewart@linux.vnet.ibm.com,
  apopple@au1.ibm.com, hbabu@us.ibm.com, oohall@gmail.com,
  bsingharora@gmail.com, linuxppc-dev@ozlabs.org
-Subject: [PATCH v3 00/10] Enable VAS
-Date: Thu, 16 Mar 2017 20:33:52 -0700
-Message-Id: <1489721642-5657-1-git-send-email-sukadev@linux.vnet.ibm.com>
+Subject: [PATCH v3 02/10] Move GET_FIELD/SET_FIELD to vas.h
+Date: Thu, 16 Mar 2017 20:33:54 -0700
+In-Reply-To: <1489721642-5657-1-git-send-email-sukadev@linux.vnet.ibm.com>
+References: <1489721642-5657-1-git-send-email-sukadev@linux.vnet.ibm.com>
+Message-Id: <1489721642-5657-3-git-send-email-sukadev@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,96 +46,83 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Power9 introduces a hardware subsystem referred to as the Virtual
-Accelerator Switchboard (VAS). VAS allows kernel subsystems and user
-space processes to directly access the Nest Accelerator (NX) engines
-which implement compression and encryption algorithms in the hardware.
+Move the GET_FIELD and SET_FIELD macros to vas.h as VAS and other
+users of VAS, including NX-842 can use those macros.
 
-NX has been in Power processors since Power7+, but access to the NX
-engines was through the 'icswx' instruction which is only available
-to the kernel/hypervisor. Starting with Power9, access to the NX
-engines is provided to both kernel and user space processes through
-VAS.
+There is a lot of related code between the VAS/NX kernel drivers
+and skiboot. For consistency switch the order of parameters in
+SET_FIELD to match the order in skiboot.
 
-The switchboard (i.e VAS) multiplexes accesses between "receivers" and
-"senders", where the "receivers" are typically the NX engines and
-"senders" are the kernel subsystems and user processors that wish to
-access the receivers (NX engines).  Once a sender is "connected" to
-a receiver through the switchboard, the senders can submit compression/
-encryption requests to the hardware using the new (PowerISA 3.0)
-"copy" and "paste" instructions.
-
-In the initial OPAL and PowerNV kernel patchsets, the "senders" can
-only be kernel subsystems (eg NX-842 driver). A follow-on patch set 
-will allow senders to be user-space processes.
-
-This kernel patch set configures the VAS subsystems and provides
-kernel interfaces to drivers like NX-842 to open receive and send
-windows in VAS and to submit requests to the NX engine.
-
-This patch set that has been tested in a Simics Power9 environment using
-a modified NX-842 kernel driver and a compression self-test module from
-Power8. The corresponding OPAL patchset for VAS support was posted to
-skiboot mailing list:
-
-	https://lists.ozlabs.org/pipermail/skiboot/2017-January/006193.html
-	
-OPAL and kernel patchsets for NX-842 driver will be posted separately.
-All four patchsets are needed to effectively use VAS/NX in Power9.
-
-Thanks to input from Ben Herrenschmidt, Michael Neuling, Michael Ellerman
-and Haren Myneni.
+Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+---
 
 Changelog[v3]
-	- Rebase to v4.11-rc1
-	- Add interfaces to initialize send/receive window attributes to
-	  defaults that drivers can use (see arch/powerpc/include/asm/vas.h)
-	- Modify interface vas_paste() to return 0 or error code
-	- Fix a bug in setting Translation Control Mode (0b11 not 0x11)
-	- Enable send-window-credit checking 
-	- Reorg code  in vas_win_close()
-	- Minor reorgs and tweaks to register field settings to make it
-	  easier to add support for user space windows.
-	- Skip writing to read-only registers
-	- Start window indexing from 0 rather than 1
+	- Fix order of parameters in nx-842 driver.
+---
+ arch/powerpc/include/asm/vas.h     | 8 +++++++-
+ drivers/crypto/nx/nx-842-powernv.c | 7 ++++---
+ drivers/crypto/nx/nx-842.h         | 5 -----
+ 3 files changed, 11 insertions(+), 9 deletions(-)
 
-Changelog[v2]
-	- Use vas-id, HVWC, UWC and paste address, entries from device tree
-	  rather than defining/computing them in kernel and reorg code.
-
-Sukadev Bhattiprolu (10):
-  VAS: Define macros, register fields and structures
-  Move GET_FIELD/SET_FIELD to vas.h
-  VAS: Define vas_init() and vas_exit()
-  VAS: Define helpers for access MMIO regions
-  VAS: Define helpers to init window context
-  VAS: Define helpers to alloc/free windows
-  VAS: Define vas_rx_win_open() interface
-  VAS: Define vas_win_close() interface
-  VAS: Define vas_tx_win_open()
-  VAS: Define copy/paste interfaces
-
- MAINTAINERS                        |   14 +-
- arch/powerpc/include/asm/reg.h     |    1 +
- arch/powerpc/include/asm/vas.h     |  157 ++++++
- drivers/crypto/nx/nx-842-powernv.c |    7 +-
- drivers/crypto/nx/nx-842.h         |    5 -
- drivers/misc/Kconfig               |    1 +
- drivers/misc/Makefile              |    1 +
- drivers/misc/vas/Kconfig           |   21 +
- drivers/misc/vas/Makefile          |    3 +
- drivers/misc/vas/copy-paste.h      |   74 +++
- drivers/misc/vas/vas-internal.h    |  473 ++++++++++++++++
- drivers/misc/vas/vas-window.c      | 1076 ++++++++++++++++++++++++++++++++++++
- drivers/misc/vas/vas.c             |  155 ++++++
- 13 files changed, 1978 insertions(+), 10 deletions(-)
- create mode 100644 arch/powerpc/include/asm/vas.h
- create mode 100644 drivers/misc/vas/Kconfig
- create mode 100644 drivers/misc/vas/Makefile
- create mode 100644 drivers/misc/vas/copy-paste.h
- create mode 100644 drivers/misc/vas/vas-internal.h
- create mode 100644 drivers/misc/vas/vas-window.c
- create mode 100644 drivers/misc/vas/vas.c
-
+diff --git a/arch/powerpc/include/asm/vas.h b/arch/powerpc/include/asm/vas.h
+index 6d35ce6..184eeb2 100644
+--- a/arch/powerpc/include/asm/vas.h
++++ b/arch/powerpc/include/asm/vas.h
+@@ -37,7 +37,13 @@ enum vas_cop_type {
+ 	VAS_COP_TYPE_MAX,
+ };
+ 
++/*
++ * Get/Set bit fields
++ */
++#define GET_FIELD(m, v)		(((v) & (m)) >> MASK_LSH(m))
++#define MASK_LSH(m)		(__builtin_ffsl(m) - 1)
++#define SET_FIELD(m, v, val)	\
++		(((v) & ~(m)) | ((((typeof(v))(val)) << MASK_LSH(m)) & (m)))
+ 
+ #endif	/* __KERNEL__ */
+-
+ #endif
+diff --git a/drivers/crypto/nx/nx-842-powernv.c b/drivers/crypto/nx/nx-842-powernv.c
+index 1710f80..3abb045 100644
+--- a/drivers/crypto/nx/nx-842-powernv.c
++++ b/drivers/crypto/nx/nx-842-powernv.c
+@@ -22,6 +22,7 @@
+ 
+ #include <asm/prom.h>
+ #include <asm/icswx.h>
++#include <asm/vas.h>
+ 
+ MODULE_LICENSE("GPL");
+ MODULE_AUTHOR("Dan Streetman <ddstreet@ieee.org>");
+@@ -424,9 +425,9 @@ static int nx842_powernv_function(const unsigned char *in, unsigned int inlen,
+ 
+ 	/* set up CCW */
+ 	ccw = 0;
+-	ccw = SET_FIELD(ccw, CCW_CT, nx842_ct);
+-	ccw = SET_FIELD(ccw, CCW_CI_842, 0); /* use 0 for hw auto-selection */
+-	ccw = SET_FIELD(ccw, CCW_FC_842, fc);
++	ccw = SET_FIELD(CCW_CT, ccw, nx842_ct);
++	ccw = SET_FIELD(CCW_CI_842, ccw, 0); /* use 0 for hw auto-selection */
++	ccw = SET_FIELD(CCW_FC_842, ccw, fc);
+ 
+ 	/* set up CRB's CSB addr */
+ 	csb_addr = nx842_get_pa(csb) & CRB_CSB_ADDRESS;
+diff --git a/drivers/crypto/nx/nx-842.h b/drivers/crypto/nx/nx-842.h
+index a4eee3b..30929bd 100644
+--- a/drivers/crypto/nx/nx-842.h
++++ b/drivers/crypto/nx/nx-842.h
+@@ -100,11 +100,6 @@ static inline unsigned long nx842_get_pa(void *addr)
+ 	return page_to_phys(vmalloc_to_page(addr)) + offset_in_page(addr);
+ }
+ 
+-/* Get/Set bit fields */
+-#define MASK_LSH(m)		(__builtin_ffsl(m) - 1)
+-#define GET_FIELD(v, m)		(((v) & (m)) >> MASK_LSH(m))
+-#define SET_FIELD(v, m, val)	(((v) & ~(m)) | (((val) << MASK_LSH(m)) & (m)))
+-
+ /**
+  * This provides the driver's constraints.  Different nx842 implementations
+  * may have varying requirements.  The constraints are:
 -- 
 2.7.4
