@@ -1,81 +1,17 @@
-Return-Path: <till.smejkal@googlemail.com>
-Received: from mail-wr0-x244.google.com (mail-wr0-x244.google.com
- [IPv6:2a00:1450:400c:c0c::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <dgibson@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vkbc06qvvzDqY3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Mar 2017 04:50:40 +1100 (AEDT)
-Received: by mail-wr0-x244.google.com with SMTP id g10so6826793wrg.0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Mar 2017 10:50:40 -0700 (PDT)
-From: Till Smejkal <till.smejkal@googlemail.com>
-Date: Thu, 16 Mar 2017 10:50:33 -0700
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Till Smejkal <till.smejkal@googlemail.com>,
- Andy Lutomirski <luto@amacapital.net>, Andy Lutomirski <luto@kernel.org>,
- Richard Henderson <rth@twiddle.net>,
- Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
- Matt Turner <mattst88@gmail.com>, Vineet Gupta <vgupta@synopsys.com>,
- Russell King <linux@armlinux.org.uk>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Will Deacon <will.deacon@arm.com>, Steven Miao <realmz6@gmail.com>,
- Richard Kuo <rkuo@codeaurora.org>, Tony Luck <tony.luck@intel.com>,
- Fenghua Yu <fenghua.yu@intel.com>, James Hogan <james.hogan@imgtec.com>,
- Ralf Baechle <ralf@linux-mips.org>,
- "James E.J. Bottomley" <jejb@parisc-linux.org>,
- Helge Deller <deller@gmx.de>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>,
- "David S. Miller" <davem@davemloft.net>,
- Chris Metcalf <cmetcalf@mellanox.com>,
- Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
- X86 ML <x86@kernel.org>, Chris Zankel <chris@zankel.net>,
- Max Filippov <jcmvbkbc@gmail.com>, Arnd Bergmann <arnd@arndb.de>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
- Mauro Carvalho Chehab <mchehab@kernel.org>,
- Pawel Osciak <pawel@osciak.com>,
- Marek Szyprowski <m.szyprowski@samsung.com>,
- Kyungmin Park <kyungmin.park@samsung.com>,
- David Woodhouse <dwmw2@infradead.org>,
- Brian Norris <computersforpeace@gmail.com>,
- Boris Brezillon <boris.brezillon@free-electrons.com>,
- Marek Vasut <marek.vasut@gmail.com>, Richard Weinberger <richard@nod.at>,
- Cyrille Pitchen <cyrille.pitchen@atmel.com>,
- Felipe Balbi <balbi@kernel.org>, Alexander Viro <viro@zeniv.linux.org.uk>,
- Benjamin LaHaise <bcrl@kvack.org>,
- Nadia Yvette Chambers <nyc@holomorphy.com>,
- Jeff Layton <jlayton@poochiereds.net>,
- "J. Bruce Fields" <bfields@fieldses.org>,
- Peter Zijlstra <peterz@infradead.org>, Hugh Dickins <hughd@google.com>,
- Arnaldo Carvalho de Melo <acme@kernel.org>,
- Alexander Shishkin <alexander.shishkin@linux.intel.com>,
- Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- linux-alpha@vger.kernel.org, arcml <linux-snps-arc@lists.infradead.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- adi-buildroot-devel@lists.sourceforge.net, linux-hexagon@vger.kernel.org,
- "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
- linux-metag@vger.kernel.org,
- Linux MIPS Mailing List <linux-mips@linux-mips.org>,
- linux-parisc@vger.kernel.org, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
- "linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>,
- sparclinux@vger.kernel.org, linux-xtensa@linux-xtensa.org,
- Linux Media Mailing List <linux-media@vger.kernel.org>,
- linux-mtd@lists.infradead.org, USB list <linux-usb@vger.kernel.org>,
- Linux FS Devel <linux-fsdevel@vger.kernel.org>, linux-aio@kvack.org,
- "linux-mm@kvack.org" <linux-mm@kvack.org>,
- Linux API <linux-api@vger.kernel.org>,
- linux-arch <linux-arch@vger.kernel.org>,
- ALSA development <alsa-devel@alsa-project.org>
-Subject: Re: [RFC PATCH 00/13] Introduce first class virtual address spaces
-Message-ID: <20170316175033.pgkep75iszqy3csb@arch-dev>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <alpine.DEB.2.20.1703161841220.3586@nanos>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vknNW1KX2zDqZf
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Mar 2017 12:11:23 +1100 (AEDT)
+From: David Gibson <david@gibson.dropbear.id.au>
+To: michael@ellerman.id.au
+Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, David Gibson <david@gibson.dropbear.id.au>
+Subject: [PATCH] powerpc/pseries: Don't give a warning when HPT resizing isn't
+ available
+Date: Fri, 17 Mar 2017 12:11:19 +1100
+Message-Id: <20170317011119.31091-1-david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -85,23 +21,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 16 Mar 2017, Thomas Gleixner wrote:
-> On Thu, 16 Mar 2017, Till Smejkal wrote:
-> > On Thu, 16 Mar 2017, Thomas Gleixner wrote:
-> > > Why do we need yet another mechanism to represent something which looks
-> > > like a file instead of simply using existing mechanisms and extend them?
-> > 
-> > You are right. I also recognized during the discussion with Andy, Chris,
-> > Matthew, Luck, Rich and the others that there are already other
-> > techniques in the Linux kernel that can achieve the same functionality
-> > when combined. As I said also to the others, I will drop the VAS segments
-> > for future versions. The first class virtual address space feature was
-> > the more interesting part of the patchset anyways.
-> 
-> While you are at it, could you please drop this 'first class' marketing as
-> well? It has zero technical value, really.
+As of 438cc81a41 "powerpc/pseries: Automatically resize HPT for memory hot
+add/remove" when running on the pseries platform, we always attempt to
+use the PAPR extension to resize the hashed page table (HPT) when we add
+or remove memory.
 
-Yes of course. I am sorry for the trouble that I caused already.
+This is fine, but when the extension is available we'll give a harmless,
+but scary warning.  This patch suppresses the warning in this case.  It
+will still warn if the feature is supposed to be available, but didn't
+work.
 
-Thanks
-Till
+Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+---
+ arch/powerpc/mm/hash_utils_64.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+Kind of cosmetic, but getting an error message on every memory hot
+plug/unplug attempt if your host doesn't support HPT resizing is
+pretty ugly.  So I think this is a candidate for quick inclusion.
+
+diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
+index c554768..cc16e4f 100644
+--- a/arch/powerpc/mm/hash_utils_64.c
++++ b/arch/powerpc/mm/hash_utils_64.c
+@@ -771,7 +771,7 @@ void resize_hpt_for_hotplug(unsigned long new_mem_size)
+ 		int rc;
+ 
+ 		rc = mmu_hash_ops.resize_hpt(target_hpt_shift);
+-		if (rc)
++		if (rc && (rc != -ENODEV))
+ 			printk(KERN_WARNING
+ 			       "Unable to resize hash page table to target order %d: %d\n",
+ 			       target_hpt_shift, rc);
+-- 
+2.9.3
