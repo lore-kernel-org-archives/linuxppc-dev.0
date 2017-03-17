@@ -1,36 +1,38 @@
-Return-Path: <srs0=mrlv=22=gmail.com=ddstreet@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <svaidy@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vl9bt26TVzDqZD
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Mar 2017 03:22:34 +1100 (AEDT)
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3vl9bt18FVz8syH
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Mar 2017 03:22:34 +1100 (AEDT)
-Received: from mail-lf0-x242.google.com (mail-lf0-x242.google.com
- [IPv6:2a00:1450:4010:c07::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3vl9bs153Mz9s2s
- for <linuxppc-dev@ozlabs.org>; Sat, 18 Mar 2017 03:22:33 +1100 (AEDT)
-Received: by mail-lf0-x242.google.com with SMTP id r36so5879241lfi.0
- for <linuxppc-dev@ozlabs.org>; Fri, 17 Mar 2017 09:22:32 -0700 (PDT)
-MIME-Version: 1.0
-Sender: ddstreet@gmail.com
-In-Reply-To: <1489721642-5657-3-git-send-email-sukadev@linux.vnet.ibm.com>
-References: <1489721642-5657-1-git-send-email-sukadev@linux.vnet.ibm.com>
- <1489721642-5657-3-git-send-email-sukadev@linux.vnet.ibm.com>
-From: Dan Streetman <ddstreet@ieee.org>
-Date: Fri, 17 Mar 2017 12:21:47 -0400
-Message-ID: <CALZtONDYTvFdUxw-CsZaGOQ0d9fk94UPNZxOe3WVdBdSHReZ6A@mail.gmail.com>
-Subject: Re: [PATCH v3 02/10] Move GET_FIELD/SET_FIELD to vas.h
-To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>,
- Stewart Smith <stewart@linux.vnet.ibm.com>,
- linuxppc-dev@ozlabs.org, apopple@au1.ibm.com,
- "Oliver O'Halloran" <oohall@gmail.com>,
- Michael Neuling <michael.neuling@au1.ibm.com>
-Content-Type: text/plain; charset=UTF-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vlCwM244NzDq5g
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Mar 2017 05:06:59 +1100 (AEDT)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v2HHwXst018744
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Mar 2017 14:06:51 -0400
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 298me10yce-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Mar 2017 14:06:50 -0400
+Received: from localhost
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <svaidy@linux.vnet.ibm.com>;
+ Sat, 18 Mar 2017 04:06:48 +1000
+Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v2HI6bac43385006
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Mar 2017 05:06:45 +1100
+Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
+ by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v2HI6CSi021130
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Mar 2017 05:06:13 +1100
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+To: Michael Neuling <mikey@neuling.org>, Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc/powernv/cpuidle: Pass correct drv->cpumask for
+ registration
+Date: Fri, 17 Mar 2017 23:35:50 +0530
+Message-Id: <20170317180550.9931-1-svaidy@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,94 +42,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Mar 16, 2017 at 11:33 PM, Sukadev Bhattiprolu
-<sukadev@linux.vnet.ibm.com> wrote:
-> Move the GET_FIELD and SET_FIELD macros to vas.h as VAS and other
-> users of VAS, including NX-842 can use those macros.
->
-> There is a lot of related code between the VAS/NX kernel drivers
-> and skiboot. For consistency switch the order of parameters in
-> SET_FIELD to match the order in skiboot.
->
-> Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+drv->cpumask defaults to cpu_possible_mask in __cpuidle_driver_init().
+This breaks cpuidle on powernv where sysfs files are not created for
+cpus in cpu_possible_mask that cannot be hot-added.
 
-Reviewed-by: Dan Streetman <ddstreet@ieee.org>
+Trying cpuidle_register_device() on cpu without sysfs node will
+cause crash like:
 
-also, can you change the MAINTAINERS file owner of the IBM Power 842
-accelerator to yourself, or someone else at IBM?  I no longer have
-access to any of the ppc hardware, so it hardly makes sense for me to
-remain the maintainer of it.
+cpu 0xf: Vector: 380 (Data SLB Access) at [c000000ff1503490]
+    pc: c00000000022c8bc: string+0x34/0x60
+    lr: c00000000022ed78: vsnprintf+0x284/0x42c
+    sp: c000000ff1503710
+   msr: 9000000000009033
+   dar: 6000000060000000
+  current = 0xc000000ff1480000
+  paca    = 0xc00000000fe82d00   softe: 0        irq_happened: 0x01
+    pid   = 1, comm = swapper/8
+Linux version 4.11.0-rc2 (sv@sagarika) (gcc version 4.9.4 (Buildroot 2017.02-00004-gc28573e) ) #15 SMP Fri Mar 17 19:32:02 IST 2017
+enter ? for help
+[link register   ] c00000000022ed78 vsnprintf+0x284/0x42c
+[c000000ff1503710] c00000000022ebb8 vsnprintf+0xc4/0x42c (unreliable)
+[c000000ff1503800] c00000000022ef40 vscnprintf+0x20/0x44
+[c000000ff1503830] c0000000000ab61c vprintk_emit+0x94/0x2cc
+[c000000ff15038a0] c0000000000acc9c vprintk_func+0x60/0x74
+[c000000ff15038c0] c000000000619694 printk+0x38/0x4c
+[c000000ff15038e0] c000000000224950 kobject_get+0x40/0x60
+[c000000ff1503950] c00000000022507c kobject_add_internal+0x60/0x2c4
+[c000000ff15039e0] c000000000225350 kobject_init_and_add+0x70/0x78
+[c000000ff1503a60] c00000000053c288 cpuidle_add_sysfs+0x9c/0xe0
+[c000000ff1503ae0] c00000000053aeac cpuidle_register_device+0xd4/0x12c
+[c000000ff1503b30] c00000000053b108 cpuidle_register+0x98/0xcc
+[c000000ff1503bc0] c00000000085eaf0 powernv_processor_idle_init+0x140/0x1e0
+[c000000ff1503c60] c00000000000cd60 do_one_initcall+0xc0/0x15c
+[c000000ff1503d20] c000000000833e84 kernel_init_freeable+0x1a0/0x25c
+[c000000ff1503dc0] c00000000000d478 kernel_init+0x24/0x12c
+[c000000ff1503e30] c00000000000b564 ret_from_kernel_thread+0x5c/0x78
 
-> ---
->
-> Changelog[v3]
->         - Fix order of parameters in nx-842 driver.
-> ---
->  arch/powerpc/include/asm/vas.h     | 8 +++++++-
->  drivers/crypto/nx/nx-842-powernv.c | 7 ++++---
->  drivers/crypto/nx/nx-842.h         | 5 -----
->  3 files changed, 11 insertions(+), 9 deletions(-)
->
-> diff --git a/arch/powerpc/include/asm/vas.h b/arch/powerpc/include/asm/vas.h
-> index 6d35ce6..184eeb2 100644
-> --- a/arch/powerpc/include/asm/vas.h
-> +++ b/arch/powerpc/include/asm/vas.h
-> @@ -37,7 +37,13 @@ enum vas_cop_type {
->         VAS_COP_TYPE_MAX,
->  };
->
-> +/*
-> + * Get/Set bit fields
-> + */
-> +#define GET_FIELD(m, v)                (((v) & (m)) >> MASK_LSH(m))
-> +#define MASK_LSH(m)            (__builtin_ffsl(m) - 1)
-> +#define SET_FIELD(m, v, val)   \
-> +               (((v) & ~(m)) | ((((typeof(v))(val)) << MASK_LSH(m)) & (m)))
->
->  #endif /* __KERNEL__ */
-> -
->  #endif
-> diff --git a/drivers/crypto/nx/nx-842-powernv.c b/drivers/crypto/nx/nx-842-powernv.c
-> index 1710f80..3abb045 100644
-> --- a/drivers/crypto/nx/nx-842-powernv.c
-> +++ b/drivers/crypto/nx/nx-842-powernv.c
-> @@ -22,6 +22,7 @@
->
->  #include <asm/prom.h>
->  #include <asm/icswx.h>
-> +#include <asm/vas.h>
->
->  MODULE_LICENSE("GPL");
->  MODULE_AUTHOR("Dan Streetman <ddstreet@ieee.org>");
-> @@ -424,9 +425,9 @@ static int nx842_powernv_function(const unsigned char *in, unsigned int inlen,
->
->         /* set up CCW */
->         ccw = 0;
-> -       ccw = SET_FIELD(ccw, CCW_CT, nx842_ct);
-> -       ccw = SET_FIELD(ccw, CCW_CI_842, 0); /* use 0 for hw auto-selection */
-> -       ccw = SET_FIELD(ccw, CCW_FC_842, fc);
-> +       ccw = SET_FIELD(CCW_CT, ccw, nx842_ct);
-> +       ccw = SET_FIELD(CCW_CI_842, ccw, 0); /* use 0 for hw auto-selection */
-> +       ccw = SET_FIELD(CCW_FC_842, ccw, fc);
->
->         /* set up CRB's CSB addr */
->         csb_addr = nx842_get_pa(csb) & CRB_CSB_ADDRESS;
-> diff --git a/drivers/crypto/nx/nx-842.h b/drivers/crypto/nx/nx-842.h
-> index a4eee3b..30929bd 100644
-> --- a/drivers/crypto/nx/nx-842.h
-> +++ b/drivers/crypto/nx/nx-842.h
-> @@ -100,11 +100,6 @@ static inline unsigned long nx842_get_pa(void *addr)
->         return page_to_phys(vmalloc_to_page(addr)) + offset_in_page(addr);
->  }
->
-> -/* Get/Set bit fields */
-> -#define MASK_LSH(m)            (__builtin_ffsl(m) - 1)
-> -#define GET_FIELD(v, m)                (((v) & (m)) >> MASK_LSH(m))
-> -#define SET_FIELD(v, m, val)   (((v) & ~(m)) | (((val) << MASK_LSH(m)) & (m)))
-> -
->  /**
->   * This provides the driver's constraints.  Different nx842 implementations
->   * may have varying requirements.  The constraints are:
-> --
-> 2.7.4
->
+This patch fixes the issue by passing correct cpumask from
+powernv-cpuidle driver.
+
+Signed-off-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+---
+ drivers/cpuidle/cpuidle-powernv.c | 22 ++++++++++++++++++++++
+ 1 file changed, 22 insertions(+)
+
+diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
+index 3705930..e7a8c2a 100644
+--- a/drivers/cpuidle/cpuidle-powernv.c
++++ b/drivers/cpuidle/cpuidle-powernv.c
+@@ -175,6 +175,28 @@ static int powernv_cpuidle_driver_init(void)
+ 		drv->state_count += 1;
+ 	}
+ 
++	/*
++	 * On PowerNV platform cpu_present may be less that cpu_possible
++	 * in cases where firmware detects the cpu, but it is not available
++	 * for OS.  Such CPUs are not hotplugable at runtime on PowerNV
++	 * platform and hence sysfs files are not created for those.
++	 * Generic topology_init() would skip creating sysfs directories
++	 * for cpus that are not present and not hotplugable later at
++	 * runtime.
++	 *
++	 * drv->cpumask defaults to cpu_possible_mask in __cpuidle_driver_init().
++	 * This breaks cpuidle on powernv where sysfs files are not created for
++	 * cpus in cpu_possible_mask that cannot be hot-added.
++	 *
++	 * Hence at runtime sysfs nodes are present for cpus only in
++	 * cpu_present_mask. Trying cpuidle_register_device() on cpu without
++	 * sysfs node is incorrect.
++	 *
++	 * Hence pass correct cpu mask to generic cpuidle driver.
++	 */
++
++	drv->cpumask = (struct cpumask *)cpu_present_mask;
++
+ 	return 0;
+ }
+ 
+-- 
+2.9.3
