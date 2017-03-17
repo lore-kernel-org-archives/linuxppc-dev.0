@@ -1,7 +1,7 @@
 Return-Path: <aik@ozlabs.ru>
 Received: from ozlabs.ru (ozlabs.ru [107.173.13.209])
- by lists.ozlabs.org (Postfix) with ESMTP id 3vkth54d09zDqcS
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Mar 2017 16:10:13 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id 3vkth75kw4zDqcZ
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Mar 2017 16:10:15 +1100 (AEDT)
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
@@ -9,10 +9,10 @@ Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
  David Gibson <david@gibson.dropbear.id.au>,
  Paul Mackerras <paulus@samba.org>, kvm-ppc@vger.kernel.org,
  kvm@vger.kernel.org
-Subject: [PATCH kernel v10 05/10] KVM: PPC: Reserve KVM_CAP_SPAPR_TCE_VFIO
- capability number
-Date: Fri, 17 Mar 2017 16:09:54 +1100
-Message-Id: <20170317050959.37312-6-aik@ozlabs.ru>
+Subject: [PATCH kernel v10 06/10] KVM: PPC: Enable IOMMU_API for KVM_BOOK3S_64
+ permanently
+Date: Fri, 17 Mar 2017 16:09:55 +1100
+Message-Id: <20170317050959.37312-7-aik@ozlabs.ru>
 In-Reply-To: <20170317050959.37312-1-aik@ozlabs.ru>
 References: <20170317050959.37312-1-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,33 +24,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This adds a capability number for in-kernel support for VFIO on
-SPAPR platform.
+It does not make much sense to have KVM in book3s-64 and
+not to have IOMMU bits for PCI pass through support as it costs little
+and allows VFIO to function on book3s KVM.
 
-The capability will tell the user space whether in-kernel handlers of
-H_PUT_TCE can handle VFIO-targeted requests or not. If not, the user space
-must not attempt allocating a TCE table in the host kernel via
-the KVM_CREATE_SPAPR_TCE KVM ioctl because in that case TCE requests
-will not be passed to the user space which is desired action in
-the situation like that.
+Having IOMMU_API always enabled makes it unnecessary to have a lot of
+"#ifdef IOMMU_API" in arch/powerpc/kvm/book3s_64_vio*. With those
+ifdef's we could have only user space emulated devices accelerated
+(but not VFIO) which do not seem to be very useful.
 
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 ---
- include/uapi/linux/kvm.h | 1 +
+ arch/powerpc/kvm/Kconfig | 1 +
  1 file changed, 1 insertion(+)
 
-diff --git a/include/uapi/linux/kvm.h b/include/uapi/linux/kvm.h
-index f51d5082a377..f5a52ffb6b58 100644
---- a/include/uapi/linux/kvm.h
-+++ b/include/uapi/linux/kvm.h
-@@ -883,6 +883,7 @@ struct kvm_ppc_resize_hpt {
- #define KVM_CAP_PPC_MMU_RADIX 134
- #define KVM_CAP_PPC_MMU_HASH_V3 135
- #define KVM_CAP_IMMEDIATE_EXIT 136
-+#define KVM_CAP_SPAPR_TCE_VFIO 137
- 
- #ifdef KVM_CAP_IRQ_ROUTING
- 
+diff --git a/arch/powerpc/kvm/Kconfig b/arch/powerpc/kvm/Kconfig
+index 029be26b5a17..65a471de96de 100644
+--- a/arch/powerpc/kvm/Kconfig
++++ b/arch/powerpc/kvm/Kconfig
+@@ -67,6 +67,7 @@ config KVM_BOOK3S_64
+ 	select KVM_BOOK3S_64_HANDLER
+ 	select KVM
+ 	select KVM_BOOK3S_PR_POSSIBLE if !KVM_BOOK3S_HV_POSSIBLE
++	select SPAPR_TCE_IOMMU if IOMMU_SUPPORT
+ 	---help---
+ 	  Support running unmodified book3s_64 and book3s_32 guest kernels
+ 	  in virtual machines on book3s_64 host processors.
 -- 
 2.11.0
