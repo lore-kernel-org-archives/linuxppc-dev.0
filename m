@@ -1,25 +1,40 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
- [IPv6:2607:f8b0:400e:c00::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <srs0=ey7g=22=linux.vnet.ibm.com=sukadev@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vkqZ13DFbzDqZf
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Mar 2017 13:49:44 +1100 (AEDT)
-Received: by mail-pf0-x242.google.com with SMTP id o126so7657787pfb.1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Mar 2017 19:49:44 -0700 (PDT)
-Date: Fri, 17 Mar 2017 12:49:27 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, Gautham R Shenoy <ego@linux.vnet.ibm.com>
-Subject: Re: [PATCH 4/8] powerpc/64s: fix POWER9 machine check handler from
- stop state
-Message-ID: <20170317124927.2a628998@roar.ozlabs.ibm.com>
-In-Reply-To: <67bd0a9f-ebaa-acdb-cfbf-8a4acba256a3@linux.vnet.ibm.com>
-References: <20170314092349.10981-1-npiggin@gmail.com>
- <20170314092349.10981-5-npiggin@gmail.com>
- <67bd0a9f-ebaa-acdb-cfbf-8a4acba256a3@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vkrYZ6gC0zDqb3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Mar 2017 14:34:26 +1100 (AEDT)
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3vkrYZ64dXz8xX3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Mar 2017 14:34:26 +1100 (AEDT)
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3vkrYZ2THpz9ryQ
+ for <linuxppc-dev@ozlabs.org>; Fri, 17 Mar 2017 14:34:26 +1100 (AEDT)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v2H3TZNM023493
+ for <linuxppc-dev@ozlabs.org>; Thu, 16 Mar 2017 23:34:24 -0400
+Received: from e13.ny.us.ibm.com (e13.ny.us.ibm.com [129.33.205.203])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 297wd0heub-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Thu, 16 Mar 2017 23:34:23 -0400
+Received: from localhost
+ by e13.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
+ Thu, 16 Mar 2017 23:34:23 -0400
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ michael.neuling@au1.ibm.com, stewart@linux.vnet.ibm.com,
+ apopple@au1.ibm.com, hbabu@us.ibm.com, oohall@gmail.com,
+ bsingharora@gmail.com, linuxppc-dev@ozlabs.org
+Subject: [PATCH v3 00/10] Enable VAS
+Date: Thu, 16 Mar 2017 20:33:52 -0700
+Message-Id: <1489721642-5657-1-git-send-email-sukadev@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,80 +44,96 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 16 Mar 2017 18:10:48 +0530
-Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com> wrote:
+Power9 introduces a hardware subsystem referred to as the Virtual
+Accelerator Switchboard (VAS). VAS allows kernel subsystems and user
+space processes to directly access the Nest Accelerator (NX) engines
+which implement compression and encryption algorithms in the hardware.
 
-> On 03/14/2017 02:53 PM, Nicholas Piggin wrote:
-> > The ISA specifies power save wakeup can cause a machine check interrupt.
-> > The machine check handler currently has code to handle that for POWER8,
-> > but POWER9 crashes when trying to execute the P8 style sleep
-> > instructions.
-> > 
-> > So queue up the machine check, then call into the idle code to wake up
-> > as the system reset interrupt does, rather than attempting to sleep
-> > again without going through the main idle path.
-> > 
-> > Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
-> > Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-> > ---
-> >  arch/powerpc/include/asm/reg.h       |  1 +
-> >  arch/powerpc/kernel/exceptions-64s.S | 69 ++++++++++++++++++------------------
-> >  2 files changed, 35 insertions(+), 35 deletions(-)
-> > 
-> > diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
-> > index fc879fd6bdae..8bbdfacce970 100644
-> > --- a/arch/powerpc/include/asm/reg.h
-> > +++ b/arch/powerpc/include/asm/reg.h
-> > @@ -656,6 +656,7 @@
-> >  #define   SRR1_ISI_PROT		0x08000000 /* ISI: Other protection fault */
-> >  #define   SRR1_WAKEMASK		0x00380000 /* reason for wakeup */
-> >  #define   SRR1_WAKEMASK_P8	0x003c0000 /* reason for wakeup on POWER8 and 9 */
-> > +#define   SRR1_WAKEMCE_RESVD	0x003c0000 /* Unused/reserved value used by MCE wakeup to indicate cause to idle wakeup handler */
-> >  #define   SRR1_WAKESYSERR	0x00300000 /* System error */
-> >  #define   SRR1_WAKEEE		0x00200000 /* External interrupt */
-> >  #define   SRR1_WAKEHVI		0x00240000 /* Hypervisor Virtualization Interrupt (P9) */
-> > diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-> > index e390fcd04bcb..5779d2d6a192 100644
-> > --- a/arch/powerpc/kernel/exceptions-64s.S
-> > +++ b/arch/powerpc/kernel/exceptions-64s.S
-> > @@ -306,6 +306,33 @@ EXC_COMMON_BEGIN(machine_check_common)
-> >  	/* restore original r1. */			\
-> >  	ld	r1,GPR1(r1)
-> > 
-> > +#ifdef CONFIG_PPC_P7_NAP
-> > +EXC_COMMON_BEGIN(machine_check_idle_common)
-> > +	bl	machine_check_queue_event
-> > +	/*
-> > +	 * Queue the machine check, then reload SRR1 and use it to set
-> > +	 * CR3 according to pnv_powersave_wakeup convention.
-> > +	 */
-> > +	ld	r12,_MSR(r1)
-> > +	rlwinm	r11,r12,47-31,30,31
-> > +	cmpwi	cr3,r11,2
-> > +
-> > +	/*
-> > +	 * Now put SRR1_WAKEMCE_RESVD into SRR1, allows it to follow the
-> > +	 * system reset wakeup code.
-> > +	 */
-> > +	oris	r12,r12,SRR1_WAKEMCE_RESVD@h
-> > +	mtspr	SPRN_SRR1,r12
-> > +	std	r12,_MSR(r1)
-> > +
-> > +	/*
-> > +	 * Decrement MCE nesting after finishing with the stack.
-> > +	 */
-> > +	lhz	r11,PACA_IN_MCE(r13)
-> > +	subi	r11,r11,1
-> > +	sth	r11,PACA_IN_MCE(r13)  
-> 
-> Looks like we are not winding up.. Shouldn't we ? What if we may end up
-> in pnv_wakeup_noloss() which assumes that no GPRs are lost. Am I missing
-> anything ?
+NX has been in Power processors since Power7+, but access to the NX
+engines was through the 'icswx' instruction which is only available
+to the kernel/hypervisor. Starting with Power9, access to the NX
+engines is provided to both kernel and user space processes through
+VAS.
 
-Hmm, on second look, I don't think any non-volatile GPRs are overwritten
-in this path. But this MCE is a slow path, and it is a much longer path
-than the system reset idle wakeup... So I'll add the napstatelost with
-a comment.
+The switchboard (i.e VAS) multiplexes accesses between "receivers" and
+"senders", where the "receivers" are typically the NX engines and
+"senders" are the kernel subsystems and user processors that wish to
+access the receivers (NX engines).  Once a sender is "connected" to
+a receiver through the switchboard, the senders can submit compression/
+encryption requests to the hardware using the new (PowerISA 3.0)
+"copy" and "paste" instructions.
 
-Thanks,
-Nick
+In the initial OPAL and PowerNV kernel patchsets, the "senders" can
+only be kernel subsystems (eg NX-842 driver). A follow-on patch set 
+will allow senders to be user-space processes.
+
+This kernel patch set configures the VAS subsystems and provides
+kernel interfaces to drivers like NX-842 to open receive and send
+windows in VAS and to submit requests to the NX engine.
+
+This patch set that has been tested in a Simics Power9 environment using
+a modified NX-842 kernel driver and a compression self-test module from
+Power8. The corresponding OPAL patchset for VAS support was posted to
+skiboot mailing list:
+
+	https://lists.ozlabs.org/pipermail/skiboot/2017-January/006193.html
+	
+OPAL and kernel patchsets for NX-842 driver will be posted separately.
+All four patchsets are needed to effectively use VAS/NX in Power9.
+
+Thanks to input from Ben Herrenschmidt, Michael Neuling, Michael Ellerman
+and Haren Myneni.
+
+Changelog[v3]
+	- Rebase to v4.11-rc1
+	- Add interfaces to initialize send/receive window attributes to
+	  defaults that drivers can use (see arch/powerpc/include/asm/vas.h)
+	- Modify interface vas_paste() to return 0 or error code
+	- Fix a bug in setting Translation Control Mode (0b11 not 0x11)
+	- Enable send-window-credit checking 
+	- Reorg code  in vas_win_close()
+	- Minor reorgs and tweaks to register field settings to make it
+	  easier to add support for user space windows.
+	- Skip writing to read-only registers
+	- Start window indexing from 0 rather than 1
+
+Changelog[v2]
+	- Use vas-id, HVWC, UWC and paste address, entries from device tree
+	  rather than defining/computing them in kernel and reorg code.
+
+Sukadev Bhattiprolu (10):
+  VAS: Define macros, register fields and structures
+  Move GET_FIELD/SET_FIELD to vas.h
+  VAS: Define vas_init() and vas_exit()
+  VAS: Define helpers for access MMIO regions
+  VAS: Define helpers to init window context
+  VAS: Define helpers to alloc/free windows
+  VAS: Define vas_rx_win_open() interface
+  VAS: Define vas_win_close() interface
+  VAS: Define vas_tx_win_open()
+  VAS: Define copy/paste interfaces
+
+ MAINTAINERS                        |   14 +-
+ arch/powerpc/include/asm/reg.h     |    1 +
+ arch/powerpc/include/asm/vas.h     |  157 ++++++
+ drivers/crypto/nx/nx-842-powernv.c |    7 +-
+ drivers/crypto/nx/nx-842.h         |    5 -
+ drivers/misc/Kconfig               |    1 +
+ drivers/misc/Makefile              |    1 +
+ drivers/misc/vas/Kconfig           |   21 +
+ drivers/misc/vas/Makefile          |    3 +
+ drivers/misc/vas/copy-paste.h      |   74 +++
+ drivers/misc/vas/vas-internal.h    |  473 ++++++++++++++++
+ drivers/misc/vas/vas-window.c      | 1076 ++++++++++++++++++++++++++++++++++++
+ drivers/misc/vas/vas.c             |  155 ++++++
+ 13 files changed, 1978 insertions(+), 10 deletions(-)
+ create mode 100644 arch/powerpc/include/asm/vas.h
+ create mode 100644 drivers/misc/vas/Kconfig
+ create mode 100644 drivers/misc/vas/Makefile
+ create mode 100644 drivers/misc/vas/copy-paste.h
+ create mode 100644 drivers/misc/vas/vas-internal.h
+ create mode 100644 drivers/misc/vas/vas-window.c
+ create mode 100644 drivers/misc/vas/vas.c
+
+-- 
+2.7.4
