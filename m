@@ -1,7 +1,7 @@
 Return-Path: <aik@ozlabs.ru>
 Received: from ozlabs.ru (ozlabs.ru [107.173.13.209])
- by lists.ozlabs.org (Postfix) with ESMTP id 3vkth75kw4zDqcZ
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Mar 2017 16:10:15 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id 3vkth94qppzDqc6
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Mar 2017 16:10:17 +1100 (AEDT)
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
@@ -9,10 +9,9 @@ Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
  David Gibson <david@gibson.dropbear.id.au>,
  Paul Mackerras <paulus@samba.org>, kvm-ppc@vger.kernel.org,
  kvm@vger.kernel.org
-Subject: [PATCH kernel v10 06/10] KVM: PPC: Enable IOMMU_API for KVM_BOOK3S_64
- permanently
-Date: Fri, 17 Mar 2017 16:09:55 +1100
-Message-Id: <20170317050959.37312-7-aik@ozlabs.ru>
+Subject: [PATCH kernel v10 07/10] KVM: PPC: Pass kvm* to kvmppc_find_table()
+Date: Fri, 17 Mar 2017 16:09:56 +1100
+Message-Id: <20170317050959.37312-8-aik@ozlabs.ru>
 In-Reply-To: <20170317050959.37312-1-aik@ozlabs.ru>
 References: <20170317050959.37312-1-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,32 +23,132 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-It does not make much sense to have KVM in book3s-64 and
-not to have IOMMU bits for PCI pass through support as it costs little
-and allows VFIO to function on book3s KVM.
-
-Having IOMMU_API always enabled makes it unnecessary to have a lot of
-"#ifdef IOMMU_API" in arch/powerpc/kvm/book3s_64_vio*. With those
-ifdef's we could have only user space emulated devices accelerated
-(but not VFIO) which do not seem to be very useful.
+The guest view TCE tables are per KVM anyway (not per VCPU) so pass kvm*
+there. This will be used in the following patches where we will be
+attaching VFIO containers to LIOBNs via ioctl() to KVM (rather than
+to VCPU).
 
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 ---
- arch/powerpc/kvm/Kconfig | 1 +
- 1 file changed, 1 insertion(+)
+ arch/powerpc/include/asm/kvm_ppc.h  |  2 +-
+ arch/powerpc/kvm/book3s_64_vio.c    |  7 ++++---
+ arch/powerpc/kvm/book3s_64_vio_hv.c | 13 +++++++------
+ 3 files changed, 12 insertions(+), 10 deletions(-)
 
-diff --git a/arch/powerpc/kvm/Kconfig b/arch/powerpc/kvm/Kconfig
-index 029be26b5a17..65a471de96de 100644
---- a/arch/powerpc/kvm/Kconfig
-+++ b/arch/powerpc/kvm/Kconfig
-@@ -67,6 +67,7 @@ config KVM_BOOK3S_64
- 	select KVM_BOOK3S_64_HANDLER
- 	select KVM
- 	select KVM_BOOK3S_PR_POSSIBLE if !KVM_BOOK3S_HV_POSSIBLE
-+	select SPAPR_TCE_IOMMU if IOMMU_SUPPORT
- 	---help---
- 	  Support running unmodified book3s_64 and book3s_32 guest kernels
- 	  in virtual machines on book3s_64 host processors.
+diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
+index dd11c4c8c56a..eba8988d8443 100644
+--- a/arch/powerpc/include/asm/kvm_ppc.h
++++ b/arch/powerpc/include/asm/kvm_ppc.h
+@@ -168,7 +168,7 @@ extern int kvmppc_pseries_do_hcall(struct kvm_vcpu *vcpu);
+ extern long kvm_vm_ioctl_create_spapr_tce(struct kvm *kvm,
+ 				struct kvm_create_spapr_tce_64 *args);
+ extern struct kvmppc_spapr_tce_table *kvmppc_find_table(
+-		struct kvm_vcpu *vcpu, unsigned long liobn);
++		struct kvm *kvm, unsigned long liobn);
+ extern long kvmppc_ioba_validate(struct kvmppc_spapr_tce_table *stt,
+ 		unsigned long ioba, unsigned long npages);
+ extern long kvmppc_tce_validate(struct kvmppc_spapr_tce_table *tt,
+diff --git a/arch/powerpc/kvm/book3s_64_vio.c b/arch/powerpc/kvm/book3s_64_vio.c
+index 3e26cd4979f9..e96a4590464c 100644
+--- a/arch/powerpc/kvm/book3s_64_vio.c
++++ b/arch/powerpc/kvm/book3s_64_vio.c
+@@ -214,12 +214,13 @@ long kvm_vm_ioctl_create_spapr_tce(struct kvm *kvm,
+ long kvmppc_h_put_tce(struct kvm_vcpu *vcpu, unsigned long liobn,
+ 		      unsigned long ioba, unsigned long tce)
+ {
+-	struct kvmppc_spapr_tce_table *stt = kvmppc_find_table(vcpu, liobn);
++	struct kvmppc_spapr_tce_table *stt;
+ 	long ret;
+ 
+ 	/* udbg_printf("H_PUT_TCE(): liobn=0x%lx ioba=0x%lx, tce=0x%lx\n", */
+ 	/* 	    liobn, ioba, tce); */
+ 
++	stt = kvmppc_find_table(vcpu->kvm, liobn);
+ 	if (!stt)
+ 		return H_TOO_HARD;
+ 
+@@ -247,7 +248,7 @@ long kvmppc_h_put_tce_indirect(struct kvm_vcpu *vcpu,
+ 	u64 __user *tces;
+ 	u64 tce;
+ 
+-	stt = kvmppc_find_table(vcpu, liobn);
++	stt = kvmppc_find_table(vcpu->kvm, liobn);
+ 	if (!stt)
+ 		return H_TOO_HARD;
+ 
+@@ -301,7 +302,7 @@ long kvmppc_h_stuff_tce(struct kvm_vcpu *vcpu,
+ 	struct kvmppc_spapr_tce_table *stt;
+ 	long i, ret;
+ 
+-	stt = kvmppc_find_table(vcpu, liobn);
++	stt = kvmppc_find_table(vcpu->kvm, liobn);
+ 	if (!stt)
+ 		return H_TOO_HARD;
+ 
+diff --git a/arch/powerpc/kvm/book3s_64_vio_hv.c b/arch/powerpc/kvm/book3s_64_vio_hv.c
+index e4c4ea973e57..918af76ab2b6 100644
+--- a/arch/powerpc/kvm/book3s_64_vio_hv.c
++++ b/arch/powerpc/kvm/book3s_64_vio_hv.c
+@@ -48,10 +48,9 @@
+  * WARNING: This will be called in real or virtual mode on HV KVM and virtual
+  *          mode on PR KVM
+  */
+-struct kvmppc_spapr_tce_table *kvmppc_find_table(struct kvm_vcpu *vcpu,
++struct kvmppc_spapr_tce_table *kvmppc_find_table(struct kvm *kvm,
+ 		unsigned long liobn)
+ {
+-	struct kvm *kvm = vcpu->kvm;
+ 	struct kvmppc_spapr_tce_table *stt;
+ 
+ 	list_for_each_entry_lockless(stt, &kvm->arch.spapr_tce_tables, list)
+@@ -182,12 +181,13 @@ EXPORT_SYMBOL_GPL(kvmppc_gpa_to_ua);
+ long kvmppc_rm_h_put_tce(struct kvm_vcpu *vcpu, unsigned long liobn,
+ 		unsigned long ioba, unsigned long tce)
+ {
+-	struct kvmppc_spapr_tce_table *stt = kvmppc_find_table(vcpu, liobn);
++	struct kvmppc_spapr_tce_table *stt;
+ 	long ret;
+ 
+ 	/* udbg_printf("H_PUT_TCE(): liobn=0x%lx ioba=0x%lx, tce=0x%lx\n", */
+ 	/* 	    liobn, ioba, tce); */
+ 
++	stt = kvmppc_find_table(vcpu->kvm, liobn);
+ 	if (!stt)
+ 		return H_TOO_HARD;
+ 
+@@ -240,7 +240,7 @@ long kvmppc_rm_h_put_tce_indirect(struct kvm_vcpu *vcpu,
+ 	unsigned long tces, entry, ua = 0;
+ 	unsigned long *rmap = NULL;
+ 
+-	stt = kvmppc_find_table(vcpu, liobn);
++	stt = kvmppc_find_table(vcpu->kvm, liobn);
+ 	if (!stt)
+ 		return H_TOO_HARD;
+ 
+@@ -301,7 +301,7 @@ long kvmppc_rm_h_stuff_tce(struct kvm_vcpu *vcpu,
+ 	struct kvmppc_spapr_tce_table *stt;
+ 	long i, ret;
+ 
+-	stt = kvmppc_find_table(vcpu, liobn);
++	stt = kvmppc_find_table(vcpu->kvm, liobn);
+ 	if (!stt)
+ 		return H_TOO_HARD;
+ 
+@@ -322,12 +322,13 @@ long kvmppc_rm_h_stuff_tce(struct kvm_vcpu *vcpu,
+ long kvmppc_h_get_tce(struct kvm_vcpu *vcpu, unsigned long liobn,
+ 		      unsigned long ioba)
+ {
+-	struct kvmppc_spapr_tce_table *stt = kvmppc_find_table(vcpu, liobn);
++	struct kvmppc_spapr_tce_table *stt;
+ 	long ret;
+ 	unsigned long idx;
+ 	struct page *page;
+ 	u64 *tbl;
+ 
++	stt = kvmppc_find_table(vcpu->kvm, liobn);
+ 	if (!stt)
+ 		return H_TOO_HARD;
+ 
 -- 
 2.11.0
