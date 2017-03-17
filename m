@@ -1,21 +1,44 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vkw3b43ktzDqcl
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Mar 2017 17:12:11 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
-Cc: Arnd Bergmann <arnd@arndb.de>, Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [PATCH] powerpc/pasemi,
- cbe: Do not process decremeter or external wakeup from powersave
-In-Reply-To: <874lytldgw.fsf@concordia.ellerman.id.au>
-References: <20170315154350.6256-1-npiggin@gmail.com>
- <874lytldgw.fsf@concordia.ellerman.id.au>
-Date: Fri, 17 Mar 2017 17:12:11 +1100
-Message-ID: <87r31wbfes.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vkx1z4g26zDqdV
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Mar 2017 17:55:51 +1100 (AEDT)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v2H6rlgX128075
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Mar 2017 02:55:44 -0400
+Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [125.16.236.4])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 297nkp800v-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Mar 2017 02:55:44 -0400
+Received: from localhost
+ by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Fri, 17 Mar 2017 12:25:41 +0530
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+ by d28relay05.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v2H6tZsh17563768
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Mar 2017 12:25:35 +0530
+Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
+ by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v2H6tcER023025
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Mar 2017 12:25:39 +0530
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Paul Mackerras <paulus@ozlabs.org>
+Cc: benh@kernel.crashing.org, mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH V2 02/11] powerpc/mm/slice: when computing slice mask
+ limit lowe slice max addr correctly
+In-Reply-To: <20170316220304.GB10100@fergus.ozlabs.ibm.com>
+References: <1489660329-22501-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1489660329-22501-3-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <20170316220304.GB10100@fergus.ozlabs.ibm.com>
+Date: Fri, 17 Mar 2017 12:25:37 +0530
 MIME-Version: 1.0
 Content-Type: text/plain
+Message-Id: <87fuicfl3q.fsf@skywalker.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,124 +48,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michael Ellerman <mpe@ellerman.id.au> writes:
+Paul Mackerras <paulus@ozlabs.org> writes:
 
-> Nicholas Piggin <npiggin@gmail.com> writes:
+> On Thu, Mar 16, 2017 at 04:02:00PM +0530, Aneesh Kumar K.V wrote:
+>> For low slice max addr should be less that 4G
+>                                         ^^^^ than
 >
->> Hi,
->>
->> I would like to start using a dedicated stack for system reset interrupt
->> and treat it as a Linux nmi, which makes it tricky to call complex
->> interrupt handlers directly from the system reset trap handler.
->>
->> So I would like to remove the decrementer and external handler calls from
->> Cell and Pasemi platforms' system reset handler. I think we can just
->> remove them if they can be handled when they re-fire as normal interrupts?
->> At the moment I don't have environments set up to test if this works.
+> A more verbose explanation of the off-by-1 error that you are fixing
+> is needed here.  Tell us what goes wrong with the current code and why
+> your fix is the correct one.
+
+How about
+
+powerpc/mm/slice: when computing slice mask limit low slice max addr correctly
+
+For low slice, max addr should be less that 4G. Without limiting this correctly
+we will end up with a low slice mask which has 17th bit set. This is not
+a problem with the current code because our low slice mask is of type u16. But
+in later patch I am switching low slice mask to u64 type and having the 17bit
+set result in wrong slice mask which in turn results in mmap failures.
+
+
 >
-> My QS22 has booted OK with it applied, so it seems OK.
+>> 
+>> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 >
-> I'll test it a bit more tomorrow.
-
-OK, seems fine, and I have a trace that shows it's definitely going
-through that path:
-
-
- 1)               |    .default_idle_call() {
- 1)               |      .arch_cpu_idle() {
- 1)               |        .cbe_power_save() {
- 1)   0.128 us    |          .prep_irq_for_idle();
- 1)               |          .system_reset_exception() {
- 1)   0.512 us    |            .cbe_system_reset_exception();
- 1)   6.016 us    |          }
- 1)               |          .do_IRQ() {
- 1)               |            .__do_irq() {
- 1)               |              .irq_enter() {
- 1)   0.704 us    |                .rcu_irq_enter();
- 1)               |                .tick_irq_enter() {
- 1)   0.448 us    |                  .tick_check_oneshot_broadcast_this_cpu();
- 1)   0.768 us    |                  .ktime_get();
- 1)               |                  .update_ts_time_stats() {
- 1)   0.256 us    |                    .nr_iowait_cpu();
- 1)   5.632 us    |                  }
- 1)   0.192 us    |                  .touch_softlockup_watchdog_sched();
- 1) + 27.904 us   |                }
- 1)               |                ._local_bh_enable() {
- 1)   0.320 us    |                  .__local_bh_enable();
- 1)   5.760 us    |                }
- 1)   1.024 us    |                .vtime_account_irq_enter();
- 1) + 55.744 us   |              }
- 1)   1.024 us    |              .iic_get_irq();
- 1)               |              .generic_handle_irq() {
- 1)               |                .handle_percpu_irq() {
- 1)               |                  .handle_irq_event_percpu() {
- 1)               |                    .__handle_irq_event_percpu() {
- 1)               |                      .reschedule_action() {
- 1)               |                        .scheduler_ipi() {
- 1)               |                          .irq_enter() {
- 1)   0.640 us    |                            .rcu_irq_enter();
- 1)   0.384 us    |                            .vtime_account_irq_enter();
- 1) + 11.776 us   |                          }
- 1)               |                          .sched_ttwu_pending() {
- 1)   0.448 us    |                            ._raw_spin_lock_irqsave();
- 1)               |                            .ttwu_do_activate() {
- 1)               |                              .activate_task() {
- 1)   0.256 us    |                                .update_rq_clock();
- 1)               |                                .enqueue_task_fair() {
- 1)   0.320 us    |                                  .update_curr();
- 1)   0.256 us    |                                  .__compute_runnable_contrib();
- 1)   0.384 us    |                                  .attach_entity_load_avg();
- 1)   0.256 us    |                                  .__enqueue_entity();
- 1)   0.192 us    |                                  .hrtick_update();
- 1) + 30.592 us   |                                }
- 1) + 41.216 us   |                              }
- 1)               |                              .wq_worker_waking_up() {
- 1)   0.576 us    |                                .kthread_data();
- 1)   6.464 us    |                              }
- 1)               |                              .ttwu_do_wakeup() {
- 1)               |                                .check_preempt_curr() {
- 1)   0.576 us    |                                  .resched_curr();
- 1)   6.272 us    |                                }
- 1) + 12.224 us   |                              }
- 1) + 75.904 us   |                            }
- 1)   0.320 us    |                            ._raw_spin_unlock_irqrestore();
- 1) + 92.736 us   |                          }
- 1)               |                          .irq_exit() {
- 1)   0.192 us    |                            .idle_cpu();
- 1)   0.256 us    |                            .rcu_irq_exit();
- 1) + 11.520 us   |                          }
- 1) ! 132.032 us  |                        }
- 1) ! 137.280 us  |                      }
- 1) ! 142.784 us  |                    }
- 1)               |                    .add_interrupt_randomness() {
- 1)   0.704 us    |                      ._raw_spin_trylock();
- 1)               |                      .__mix_pool_bytes() {
- 1)   1.152 us    |                        ._mix_pool_bytes();
- 1)   6.464 us    |                      }
- 1)               |                      .credit_entropy_bits() {
- 1)               |                        .__wake_up() {
- 1)   0.384 us    |                          ._raw_spin_lock_irqsave();
- 1)   0.256 us    |                          .__wake_up_common();
- 1)   0.256 us    |                          ._raw_spin_unlock_irqrestore();
- 1) + 16.384 us   |                        }
- 1)   0.256 us    |                        .kill_fasync();
- 1) + 27.584 us   |                      }
- 1) + 49.856 us   |                    }
- 1)   0.256 us    |                    .note_interrupt();
- 1) ! 208.768 us  |                  }
- 1)   0.448 us    |                  .iic_eoi();
- 1) ! 220.352 us  |                }
- 1) ! 227.200 us  |              }
- 1)               |              .irq_exit() {
- 1)   0.128 us    |                .idle_cpu();
- 1)               |                .rcu_irq_exit() {
- 1)   0.576 us    |                  .rcu_eqs_enter_common.isra.46();
- 1)   3.840 us    |                }
- 1) + 10.688 us   |              }
- 1) ! 313.024 us  |            }
- 1) ! 318.400 us  |          }
- 1) @ 960000.6 us |        }
- 1) @ 960004.3 us |      }
- 1) @ 960007.8 us |    }
-
-cheers
+> For the code change:
+>
+> Reviewed-by: Paul Mackerras <paulus@ozlabs.org>
