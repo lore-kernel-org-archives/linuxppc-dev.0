@@ -1,23 +1,25 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
- [IPv6:2607:f8b0:400e:c05::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <chzigotzky@xenosoft.de>
+Received: from mo6-p00-ob.smtp.rzone.de (mo6-p00-ob.smtp.rzone.de
+ [IPv6:2a01:238:20a:202:5300::11])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vl42L5nzVzDqZD
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Mar 2017 23:11:38 +1100 (AEDT)
-Received: by mail-pg0-x244.google.com with SMTP id 79so859023pgf.0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Mar 2017 05:11:38 -0700 (PDT)
-Subject: Re: [PATCH kernel] KVM: PPC: Add MMIO emulation for stdx (store
- doubleword indexed)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vl7Xb22qvzDqZD
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Mar 2017 01:49:34 +1100 (AEDT)
+Received: from [192.168.1.106] (ppp-83-171-150-87.dynamic.mnet-online.de
+ [83.171.150.87]) by smtp.strato.de (RZmta 40.3 DYNA|AUTH)
+ with ESMTPSA id v0ab8bt2HEhM2CZ
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA (curve secp521r1 with 521 ECDH
+ bits, eq. 15360 bits RSA)) (Client did not present a certificate)
+ for <linuxppc-dev@lists.ozlabs.org>;
+ Fri, 17 Mar 2017 15:43:22 +0100 (CET)
 To: linuxppc-dev@lists.ozlabs.org
-References: <20170317083138.36527-1-aik@ozlabs.ru>
-Cc: Paul Mackerras <paulus@samba.org>, kvm-ppc@vger.kernel.org
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-Message-ID: <0aa18ddc-4715-8b2c-9d7f-44566aaf5d20@ozlabs.ru>
-Date: Fri, 17 Mar 2017 23:11:30 +1100
+From: Christian Zigotzky <chzigotzky@xenosoft.de>
+Subject: [PATCH] powerpc/pasemi, cbe: Do not process decremeter or external
+ wakeup from powersave
+Message-ID: <b17775f4-a2c5-ede6-33e3-6f6722a31d6e@xenosoft.de>
+Date: Fri, 17 Mar 2017 15:43:22 +0100
 MIME-Version: 1.0
-In-Reply-To: <20170317083138.36527-1-aik@ozlabs.ru>
-Content-Type: text/plain; charset=koi8-r
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,52 +29,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 17/03/17 19:31, Alexey Kardashevskiy wrote:
-> This adds missing stdx emulation which allow Mellanox driver from
-> recent kernels work when MMIO emulation is enforced in the userspace.
+Nicholas Piggin <npiggin at gmail.com> writes:
+
+ > Hi,
+ >
+ > I would like to start using a dedicated stack for system reset interrupt
+ > and treat it as a Linux nmi, which makes it tricky to call complex
+ > interrupt handlers directly from the system reset trap handler.
+ >
+ > So I would like to remove the decrementer and external handler calls from
+ > Cell and Pasemi platforms' system reset handler. I think we can just
+ > remove them if they can be handled when they re-fire as normal 
+interrupts?
+ > At the moment I don't have environments set up to test if this works.
 
 
-btw what would its load counterpart? Load Doubleword Indexed - ldx RT,RA,RB?
+It works fine with my AmigaOne X1000. (Nemo board with a P.A. Semi  
+PA6T-1682M CPU)
 
-
-> 
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> ---
->  arch/powerpc/include/asm/ppc-opcode.h | 1 +
->  arch/powerpc/kvm/emulate_loadstore.c  | 6 ++++++
->  2 files changed, 7 insertions(+)
-> 
-> diff --git a/arch/powerpc/include/asm/ppc-opcode.h b/arch/powerpc/include/asm/ppc-opcode.h
-> index e7d6d86563ee..ca1bbe49590b 100644
-> --- a/arch/powerpc/include/asm/ppc-opcode.h
-> +++ b/arch/powerpc/include/asm/ppc-opcode.h
-> @@ -92,6 +92,7 @@
->  #define OP_31_XOP_TRAP_64   68
->  #define OP_31_XOP_DCBF      86
->  #define OP_31_XOP_LBZX      87
-> +#define OP_31_XOP_STDX      149
->  #define OP_31_XOP_STWX      151
->  #define OP_31_XOP_STBX      215
->  #define OP_31_XOP_LBZUX     119
-> diff --git a/arch/powerpc/kvm/emulate_loadstore.c b/arch/powerpc/kvm/emulate_loadstore.c
-> index 6d3c0ee1d744..9fdbeb8ea86c 100644
-> --- a/arch/powerpc/kvm/emulate_loadstore.c
-> +++ b/arch/powerpc/kvm/emulate_loadstore.c
-> @@ -82,6 +82,12 @@ int kvmppc_emulate_loadstore(struct kvm_vcpu *vcpu)
->  			kvmppc_set_gpr(vcpu, ra, vcpu->arch.vaddr_accessed);
->  			break;
->  
-> +		case OP_31_XOP_STDX:
-> +			emulated = kvmppc_handle_store(run, vcpu,
-> +						       kvmppc_get_gpr(vcpu, rs),
-> +							8, 1);
-> +			break;
-> +
->  		case OP_31_XOP_STWX:
->  			emulated = kvmppc_handle_store(run, vcpu,
->  						       kvmppc_get_gpr(vcpu, rs),
-> 
-
-
--- 
-Alexey
+-- Christian
