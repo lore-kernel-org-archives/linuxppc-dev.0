@@ -1,20 +1,26 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
- [IPv6:2607:f8b0:400e:c00::242])
+Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
+ [IPv6:2607:f8b0:400e:c05::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vktly2Wx3zDqp4
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Mar 2017 16:13:34 +1100 (AEDT)
-Received: by mail-pf0-x242.google.com with SMTP id r137so4184828pfr.3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Mar 2017 22:13:34 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vktp94CZzzDqkp
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Mar 2017 16:15:29 +1100 (AEDT)
+Received: by mail-pg0-x241.google.com with SMTP id b5so8467967pgg.1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Mar 2017 22:15:29 -0700 (PDT)
+Date: Fri, 17 Mar 2017 15:15:13 +1000
 From: Nicholas Piggin <npiggin@gmail.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Nicholas Piggin <npiggin@gmail.com>,
- "Gautham R . Shenoy" <ego@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc/64s: fix idle wakeup potential to clobber registers
-Date: Fri, 17 Mar 2017 15:13:20 +1000
-Message-Id: <20170317051320.7069-1-npiggin@gmail.com>
+To: Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Gautham R Shenoy <ego@linux.vnet.ibm.com>
+Subject: Re: [PATCH 4/8] powerpc/64s: fix POWER9 machine check handler from
+ stop state
+Message-ID: <20170317151513.00efd8de@roar.ozlabs.ibm.com>
+In-Reply-To: <20170317124927.2a628998@roar.ozlabs.ibm.com>
+References: <20170314092349.10981-1-npiggin@gmail.com>
+ <20170314092349.10981-5-npiggin@gmail.com>
+ <67bd0a9f-ebaa-acdb-cfbf-8a4acba256a3@linux.vnet.ibm.com>
+ <20170317124927.2a628998@roar.ozlabs.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,51 +30,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We concluded there may be a window where the idle wakeup code could
-get to pnv_wakeup_tb_loss (which clobbers non-volatile GPRs), but the
-hardware may set SRR1[46:47] to 01b (no state loss) which would
-result in the wakeup code failing to restore non-volatile GPRs.
+On Fri, 17 Mar 2017 12:49:27 +1000
+Nicholas Piggin <npiggin@gmail.com> wrote:
 
-I was not able to trigger this condition with trivial tests on
-real hardware or simulator, but the ISA (at least 2.07) seems to
-allow for it, and Gautham says that it can happen if there is an
-exception pending when the sleep/winkle instruction is executed.
+> On Thu, 16 Mar 2017 18:10:48 +0530
+> Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com> wrote:
+> 
+> > On 03/14/2017 02:53 PM, Nicholas Piggin wrote:  
 
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
----
- arch/powerpc/kernel/idle_book3s.S | 20 +++++++++++++++++---
- 1 file changed, 17 insertions(+), 3 deletions(-)
+> > Looks like we are not winding up.. Shouldn't we ? What if we may end up
+> > in pnv_wakeup_noloss() which assumes that no GPRs are lost. Am I missing
+> > anything ?  
+> 
+> Hmm, on second look, I don't think any non-volatile GPRs are overwritten
+> in this path. But this MCE is a slow path, and it is a much longer path
+> than the system reset idle wakeup... So I'll add the napstatelost with
+> a comment.
 
-diff --git a/arch/powerpc/kernel/idle_book3s.S b/arch/powerpc/kernel/idle_book3s.S
-index 995728736677..6fd08219248d 100644
---- a/arch/powerpc/kernel/idle_book3s.S
-+++ b/arch/powerpc/kernel/idle_book3s.S
-@@ -449,9 +449,23 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_300)
- _GLOBAL(pnv_wakeup_tb_loss)
- 	ld	r1,PACAR1(r13)
- 	/*
--	 * Before entering any idle state, the NVGPRs are saved in the stack
--	 * and they are restored before switching to the process context. Hence
--	 * until they are restored, they are free to be used.
-+	 * Before entering any idle state, the NVGPRs are saved in the stack.
-+	 * If there was a state loss, or PACA_NAPSTATELOST was set, then the
-+	 * NVGPRs are restored. If we are here, it is likely that state is lost,
-+	 * but not guaranteed -- neither ISA207 nor ISA300 tests to reach
-+	 * here are the same as the test to restore NVGPRS:
-+	 * PACA_THREAD_IDLE_STATE test for ISA207, PSSCR test for ISA300,
-+	 * and SRR1 test for restoring NVGPRs.
-+	 *
-+	 * We are about to clobber NVGPRs now, so set NAPSTATELOST to
-+	 * guarantee they will always be restored. This might be tightened
-+	 * with careful reading of specs (particularly for ISA300) but this
-+	 * is already a slow wakeup path and it's simpler to be safe.
-+	 */
-+	li	r0,1
-+	stb	r0,PACA_NAPSTATELOST(r13)
-+
-+	/*
- 	 *
- 	 * Save SRR1 and LR in NVGPRs as they might be clobbered in
- 	 * opal_call() (called in CHECK_HMI_INTERRUPT). SRR1 is required
--- 
-2.11.0
+On third look, I'll just add the comment. The windup does not restore
+non-volatile GPRs either, and in general we're careful not to use them
+in exception handlers. So I think it's okay.
+
+Thanks,
+Nick
