@@ -1,21 +1,25 @@
-Return-Path: <michael@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <gregkh@linuxfoundation.org>
+Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
+ [140.211.169.12])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vktWN4dPBzDqc3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Mar 2017 16:02:40 +1100 (AEDT)
-From: Michael Ellerman <michael@ellerman.id.au>
-To: David Gibson <david@gibson.dropbear.id.au>
-Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: [PATCH] powerpc/pseries: Don't give a warning when HPT resizing
- isn't available
-In-Reply-To: <20170317011119.31091-1-david@gibson.dropbear.id.au>
-References: <20170317011119.31091-1-david@gibson.dropbear.id.au>
-Date: Fri, 17 Mar 2017 16:02:35 +1100
-Message-ID: <87tw6sbims.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vktgb0yRHzDqc4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Mar 2017 16:09:46 +1100 (AEDT)
+Date: Fri, 17 Mar 2017 14:09:30 +0900
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: Jan Dakinevich <jan.dakinevich@gmail.com>
+Cc: Jiri Slaby <jslaby@suse.com>, Peter Hurley <peter@hurleysoftware.com>,
+ Dan Carpenter <dan.carpenter@oracle.com>,
+ Arnd Bergmann <arnd@arndb.de>, Amit Shah <amit@kernel.org>,
+ virtualization@lists.linux-foundation.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] tty: hvc: don't allocate a buffer for console print on
+ stack
+Message-ID: <20170317050930.GB28075@kroah.com>
+References: <1487364165-21882-1-git-send-email-jan.dakinevich@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1487364165-21882-1-git-send-email-jan.dakinevich@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,46 +29,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-David Gibson <david@gibson.dropbear.id.au> writes:
+On Fri, Feb 17, 2017 at 11:42:45PM +0300, Jan Dakinevich wrote:
+> The buffer is used by virtio console driver as DMA buffer. Since v4.9
+> (if VMAP_STACK is enabled) we shouldn't use the stack for DMA.
 
-> As of 438cc81a41 "powerpc/pseries: Automatically resize HPT for memory hot
-> add/remove" when running on the pseries platform, we always attempt to
-> use the PAPR extension to resize the hashed page table (HPT) when we add
-> or remove memory.
->
-> This is fine, but when the extension is available we'll give a harmless,
-> but scary warning.  This patch suppresses the warning in this case.  It
-> will still warn if the feature is supposed to be available, but didn't
-> work.
->
-> Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+You shouldn't use 'static' data either, that's not always guaranteed to
+be DMA-able, right?
+
+> 
+> Signed-off-by: Jan Dakinevich <jan.dakinevich@gmail.com>
 > ---
->  arch/powerpc/mm/hash_utils_64.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->
-> Kind of cosmetic, but getting an error message on every memory hot
-> plug/unplug attempt if your host doesn't support HPT resizing is
-> pretty ugly.  So I think this is a candidate for quick inclusion.
+>  drivers/tty/hvc/hvc_console.c | 7 ++++++-
+>  1 file changed, 6 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/tty/hvc/hvc_console.c b/drivers/tty/hvc/hvc_console.c
+> index 9b5c0fb..1ce6aaf 100644
+> --- a/drivers/tty/hvc/hvc_console.c
+> +++ b/drivers/tty/hvc/hvc_console.c
+> @@ -143,10 +143,15 @@ static struct hvc_struct *hvc_get_by_index(int index)
+>  static void hvc_console_print(struct console *co, const char *b,
+>  			      unsigned count)
+>  {
+> -	char c[N_OUTBUF] __ALIGNED__;
+>  	unsigned i = 0, n = 0;
+>  	int r, donecr = 0, index = co->index;
+>  
+> +	/*
+> +	 * Access to the buffer is serialized by console_sem in caller code from
+> +	 * kernel/printk/printk.c
+> +	 */
+> +	static char c[N_OUTBUF] __ALIGNED__;
 
-Yeah thanks, I forgot I was going to send a patch for it.
+What about allocating it dynamically?  That's the correct thing to do.
 
-I was thinking of doing the following instead, or maybe we can do both?
+thanks,
 
-diff --git a/arch/powerpc/platforms/pseries/lpar.c b/arch/powerpc/platforms/pseries/lpar.c
-index 251060cf1713..8b1fe895daa3 100644
---- a/arch/powerpc/platforms/pseries/lpar.c
-+++ b/arch/powerpc/platforms/pseries/lpar.c
-@@ -751,7 +751,9 @@ void __init hpte_init_pseries(void)
- 	mmu_hash_ops.flush_hash_range	 = pSeries_lpar_flush_hash_range;
- 	mmu_hash_ops.hpte_clear_all      = pseries_hpte_clear_all;
- 	mmu_hash_ops.hugepage_invalidate = pSeries_lpar_hugepage_invalidate;
--	mmu_hash_ops.resize_hpt		 = pseries_lpar_resize_hpt;
-+
-+	if (firmware_has_feature(FW_FEATURE_HPT_RESIZE))
-+		mmu_hash_ops.resize_hpt = pseries_lpar_resize_hpt;
- }
- 
- void radix_init_pseries(void)
-
-
-cheers
+greg k-h
