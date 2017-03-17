@@ -1,7 +1,7 @@
 Return-Path: <aik@ozlabs.ru>
 Received: from ozlabs.ru (ozlabs.ru [107.173.13.209])
- by lists.ozlabs.org (Postfix) with ESMTP id 3vktgy2W5qzDqcj
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Mar 2017 16:10:06 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id 3vkth027mTzDqd7
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Mar 2017 16:10:08 +1100 (AEDT)
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
@@ -9,10 +9,10 @@ Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
  David Gibson <david@gibson.dropbear.id.au>,
  Paul Mackerras <paulus@samba.org>, kvm-ppc@vger.kernel.org,
  kvm@vger.kernel.org
-Subject: [PATCH kernel v10 01/10] powerpc/mmu: Add real mode support for IOMMU
- preregistered memory
-Date: Fri, 17 Mar 2017 16:09:50 +1100
-Message-Id: <20170317050959.37312-2-aik@ozlabs.ru>
+Subject: [PATCH kernel v10 02/10] powerpc/powernv/iommu: Add real mode version
+ of iommu_table_ops::exchange()
+Date: Fri, 17 Mar 2017 16:09:51 +1100
+Message-Id: <20170317050959.37312-3-aik@ozlabs.ru>
 In-Reply-To: <20170317050959.37312-1-aik@ozlabs.ru>
 References: <20170317050959.37312-1-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,103 +24,151 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This makes mm_iommu_lookup() able to work in realmode by replacing
-list_for_each_entry_rcu() (which can do debug stuff which can fail in
-real mode) with list_for_each_entry_lockless().
+In real mode, TCE tables are invalidated using special
+cache-inhibited store instructions which are not available in
+virtual mode
 
-This adds realmode version of mm_iommu_ua_to_hpa() which adds
-explicit vmalloc'd-to-linear address conversion.
-Unlike mm_iommu_ua_to_hpa(), mm_iommu_ua_to_hpa_rm() can fail.
+This defines and implements exchange_rm() callback. This does not
+define set_rm/clear_rm/flush_rm callbacks as there is no user for those -
+exchange/exchange_rm are only to be used by KVM for VFIO.
 
-This changes mm_iommu_preregistered() to receive @mm as in real mode
-@current does not always have a correct pointer.
+The exchange_rm callback is defined for IODA1/IODA2 powernv platforms.
 
-This adds realmode version of mm_iommu_lookup() which receives @mm
-(for the same reason as for mm_iommu_preregistered()) and uses
-lockless version of list_for_each_entry_rcu().
+This replaces list_for_each_entry_rcu with its lockless version as
+from now on pnv_pci_ioda2_tce_invalidate() can be called in
+the real mode too.
 
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 ---
- arch/powerpc/include/asm/mmu_context.h |  4 ++++
- arch/powerpc/mm/mmu_context_iommu.c    | 39 ++++++++++++++++++++++++++++++++++
- 2 files changed, 43 insertions(+)
+ arch/powerpc/include/asm/iommu.h          |  7 +++++++
+ arch/powerpc/kernel/iommu.c               | 23 +++++++++++++++++++++++
+ arch/powerpc/platforms/powernv/pci-ioda.c | 26 +++++++++++++++++++++++++-
+ 3 files changed, 55 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/include/asm/mmu_context.h b/arch/powerpc/include/asm/mmu_context.h
-index b9e3f0aca261..c70c8272523d 100644
---- a/arch/powerpc/include/asm/mmu_context.h
-+++ b/arch/powerpc/include/asm/mmu_context.h
-@@ -29,10 +29,14 @@ extern void mm_iommu_init(struct mm_struct *mm);
- extern void mm_iommu_cleanup(struct mm_struct *mm);
- extern struct mm_iommu_table_group_mem_t *mm_iommu_lookup(struct mm_struct *mm,
- 		unsigned long ua, unsigned long size);
-+extern struct mm_iommu_table_group_mem_t *mm_iommu_lookup_rm(
-+		struct mm_struct *mm, unsigned long ua, unsigned long size);
- extern struct mm_iommu_table_group_mem_t *mm_iommu_find(struct mm_struct *mm,
- 		unsigned long ua, unsigned long entries);
- extern long mm_iommu_ua_to_hpa(struct mm_iommu_table_group_mem_t *mem,
- 		unsigned long ua, unsigned long *hpa);
-+extern long mm_iommu_ua_to_hpa_rm(struct mm_iommu_table_group_mem_t *mem,
-+		unsigned long ua, unsigned long *hpa);
- extern long mm_iommu_mapped_inc(struct mm_iommu_table_group_mem_t *mem);
- extern void mm_iommu_mapped_dec(struct mm_iommu_table_group_mem_t *mem);
+diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/asm/iommu.h
+index 2c1d50792944..4554699aec02 100644
+--- a/arch/powerpc/include/asm/iommu.h
++++ b/arch/powerpc/include/asm/iommu.h
+@@ -64,6 +64,11 @@ struct iommu_table_ops {
+ 			long index,
+ 			unsigned long *hpa,
+ 			enum dma_data_direction *direction);
++	/* Real mode */
++	int (*exchange_rm)(struct iommu_table *tbl,
++			long index,
++			unsigned long *hpa,
++			enum dma_data_direction *direction);
  #endif
-diff --git a/arch/powerpc/mm/mmu_context_iommu.c b/arch/powerpc/mm/mmu_context_iommu.c
-index 497130c5c742..fc67bd766eaf 100644
---- a/arch/powerpc/mm/mmu_context_iommu.c
-+++ b/arch/powerpc/mm/mmu_context_iommu.c
-@@ -314,6 +314,25 @@ struct mm_iommu_table_group_mem_t *mm_iommu_lookup(struct mm_struct *mm,
+ 	void (*clear)(struct iommu_table *tbl,
+ 			long index, long npages);
+@@ -208,6 +213,8 @@ extern void iommu_del_device(struct device *dev);
+ extern int __init tce_iommu_bus_notifier_init(void);
+ extern long iommu_tce_xchg(struct iommu_table *tbl, unsigned long entry,
+ 		unsigned long *hpa, enum dma_data_direction *direction);
++extern long iommu_tce_xchg_rm(struct iommu_table *tbl, unsigned long entry,
++		unsigned long *hpa, enum dma_data_direction *direction);
+ #else
+ static inline void iommu_register_group(struct iommu_table_group *table_group,
+ 					int pci_domain_number,
+diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
+index 5f202a566ec5..9bace5df05d5 100644
+--- a/arch/powerpc/kernel/iommu.c
++++ b/arch/powerpc/kernel/iommu.c
+@@ -1004,6 +1004,29 @@ long iommu_tce_xchg(struct iommu_table *tbl, unsigned long entry,
  }
- EXPORT_SYMBOL_GPL(mm_iommu_lookup);
+ EXPORT_SYMBOL_GPL(iommu_tce_xchg);
  
-+struct mm_iommu_table_group_mem_t *mm_iommu_lookup_rm(struct mm_struct *mm,
-+		unsigned long ua, unsigned long size)
++long iommu_tce_xchg_rm(struct iommu_table *tbl, unsigned long entry,
++		unsigned long *hpa, enum dma_data_direction *direction)
 +{
-+	struct mm_iommu_table_group_mem_t *mem, *ret = NULL;
++	long ret;
 +
-+	list_for_each_entry_lockless(mem, &mm->context.iommu_group_mem_list,
-+			next) {
-+		if ((mem->ua <= ua) &&
-+				(ua + size <= mem->ua +
-+				 (mem->entries << PAGE_SHIFT))) {
-+			ret = mem;
-+			break;
++	ret = tbl->it_ops->exchange_rm(tbl, entry, hpa, direction);
++
++	if (!ret && ((*direction == DMA_FROM_DEVICE) ||
++			(*direction == DMA_BIDIRECTIONAL))) {
++		struct page *pg = realmode_pfn_to_page(*hpa >> PAGE_SHIFT);
++
++		if (likely(pg)) {
++			SetPageDirty(pg);
++		} else {
++			tbl->it_ops->exchange_rm(tbl, entry, hpa, direction);
++			ret = -EFAULT;
 +		}
 +	}
 +
 +	return ret;
 +}
-+EXPORT_SYMBOL_GPL(mm_iommu_lookup_rm);
++EXPORT_SYMBOL_GPL(iommu_tce_xchg_rm);
 +
- struct mm_iommu_table_group_mem_t *mm_iommu_find(struct mm_struct *mm,
- 		unsigned long ua, unsigned long entries)
+ int iommu_take_ownership(struct iommu_table *tbl)
  {
-@@ -345,6 +364,26 @@ long mm_iommu_ua_to_hpa(struct mm_iommu_table_group_mem_t *mem,
- }
- EXPORT_SYMBOL_GPL(mm_iommu_ua_to_hpa);
+ 	unsigned long flags, i, sz = (tbl->it_size + 7) >> 3;
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index e36738291c32..572e9c9f1ea0 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -1860,6 +1860,17 @@ static int pnv_ioda1_tce_xchg(struct iommu_table *tbl, long index,
  
-+long mm_iommu_ua_to_hpa_rm(struct mm_iommu_table_group_mem_t *mem,
-+		unsigned long ua, unsigned long *hpa)
+ 	return ret;
+ }
++
++static int pnv_ioda1_tce_xchg_rm(struct iommu_table *tbl, long index,
++		unsigned long *hpa, enum dma_data_direction *direction)
 +{
-+	const long entry = (ua - mem->ua) >> PAGE_SHIFT;
-+	void *va = &mem->hpas[entry];
-+	unsigned long *pa;
++	long ret = pnv_tce_xchg(tbl, index, hpa, direction);
 +
-+	if (entry >= mem->entries)
-+		return -EFAULT;
++	if (!ret)
++		pnv_pci_p7ioc_tce_invalidate(tbl, index, 1, true);
 +
-+	pa = (void *) vmalloc_to_phys(va);
-+	if (!pa)
-+		return -EFAULT;
-+
-+	*hpa = *pa | (ua & ~PAGE_MASK);
-+
-+	return 0;
++	return ret;
 +}
-+EXPORT_SYMBOL_GPL(mm_iommu_ua_to_hpa_rm);
-+
- long mm_iommu_mapped_inc(struct mm_iommu_table_group_mem_t *mem)
+ #endif
+ 
+ static void pnv_ioda1_tce_free(struct iommu_table *tbl, long index,
+@@ -1874,6 +1885,7 @@ static struct iommu_table_ops pnv_ioda1_iommu_ops = {
+ 	.set = pnv_ioda1_tce_build,
+ #ifdef CONFIG_IOMMU_API
+ 	.exchange = pnv_ioda1_tce_xchg,
++	.exchange_rm = pnv_ioda1_tce_xchg_rm,
+ #endif
+ 	.clear = pnv_ioda1_tce_free,
+ 	.get = pnv_tce_get,
+@@ -1948,7 +1960,7 @@ static void pnv_pci_ioda2_tce_invalidate(struct iommu_table *tbl,
  {
- 	if (atomic64_inc_not_zero(&mem->mapped))
+ 	struct iommu_table_group_link *tgl;
+ 
+-	list_for_each_entry_rcu(tgl, &tbl->it_group_list, next) {
++	list_for_each_entry_lockless(tgl, &tbl->it_group_list, next) {
+ 		struct pnv_ioda_pe *pe = container_of(tgl->table_group,
+ 				struct pnv_ioda_pe, table_group);
+ 		struct pnv_phb *phb = pe->phb;
+@@ -2004,6 +2016,17 @@ static int pnv_ioda2_tce_xchg(struct iommu_table *tbl, long index,
+ 
+ 	return ret;
+ }
++
++static int pnv_ioda2_tce_xchg_rm(struct iommu_table *tbl, long index,
++		unsigned long *hpa, enum dma_data_direction *direction)
++{
++	long ret = pnv_tce_xchg(tbl, index, hpa, direction);
++
++	if (!ret)
++		pnv_pci_ioda2_tce_invalidate(tbl, index, 1, true);
++
++	return ret;
++}
+ #endif
+ 
+ static void pnv_ioda2_tce_free(struct iommu_table *tbl, long index,
+@@ -2024,6 +2047,7 @@ static struct iommu_table_ops pnv_ioda2_iommu_ops = {
+ 	.set = pnv_ioda2_tce_build,
+ #ifdef CONFIG_IOMMU_API
+ 	.exchange = pnv_ioda2_tce_xchg,
++	.exchange_rm = pnv_ioda2_tce_xchg_rm,
+ #endif
+ 	.clear = pnv_ioda2_tce_free,
+ 	.get = pnv_tce_get,
 -- 
 2.11.0
