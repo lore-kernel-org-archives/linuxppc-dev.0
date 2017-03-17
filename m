@@ -1,44 +1,25 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
+ [IPv6:2607:f8b0:400e:c00::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vkx1z4g26zDqdV
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Mar 2017 17:55:51 +1100 (AEDT)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v2H6rlgX128075
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Mar 2017 02:55:44 -0400
-Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [125.16.236.4])
- by mx0b-001b2d01.pphosted.com with ESMTP id 297nkp800v-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Mar 2017 02:55:44 -0400
-Received: from localhost
- by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Fri, 17 Mar 2017 12:25:41 +0530
-Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay05.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v2H6tZsh17563768
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Mar 2017 12:25:35 +0530
-Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
- by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v2H6tcER023025
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Mar 2017 12:25:39 +0530
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Paul Mackerras <paulus@ozlabs.org>
-Cc: benh@kernel.crashing.org, mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH V2 02/11] powerpc/mm/slice: when computing slice mask
- limit lowe slice max addr correctly
-In-Reply-To: <20170316220304.GB10100@fergus.ozlabs.ibm.com>
-References: <1489660329-22501-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1489660329-22501-3-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <20170316220304.GB10100@fergus.ozlabs.ibm.com>
-Date: Fri, 17 Mar 2017 12:25:37 +0530
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vkyBh6h7ZzDqc8
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Mar 2017 18:48:28 +1100 (AEDT)
+Received: by mail-pf0-x243.google.com with SMTP id p189so2882201pfp.0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Mar 2017 00:48:28 -0700 (PDT)
+Date: Fri, 17 Mar 2017 17:48:15 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org, Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH] powerpc/pasemi,cbe: Do not process decremeter or
+ external wakeup from powersave
+Message-ID: <20170317174815.3e9686e2@roar.ozlabs.ibm.com>
+In-Reply-To: <87r31wbfes.fsf@concordia.ellerman.id.au>
+References: <20170315154350.6256-1-npiggin@gmail.com>
+ <874lytldgw.fsf@concordia.ellerman.id.au>
+ <87r31wbfes.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain
-Message-Id: <87fuicfl3q.fsf@skywalker.in.ibm.com>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,31 +29,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Paul Mackerras <paulus@ozlabs.org> writes:
+On Fri, 17 Mar 2017 17:12:11 +1100
+Michael Ellerman <mpe@ellerman.id.au> wrote:
 
-> On Thu, Mar 16, 2017 at 04:02:00PM +0530, Aneesh Kumar K.V wrote:
->> For low slice max addr should be less that 4G
->                                         ^^^^ than
->
-> A more verbose explanation of the off-by-1 error that you are fixing
-> is needed here.  Tell us what goes wrong with the current code and why
-> your fix is the correct one.
+> Michael Ellerman <mpe@ellerman.id.au> writes:
+> 
+> > Nicholas Piggin <npiggin@gmail.com> writes:
+> >  
+> >> Hi,
+> >>
+> >> I would like to start using a dedicated stack for system reset interrupt
+> >> and treat it as a Linux nmi, which makes it tricky to call complex
+> >> interrupt handlers directly from the system reset trap handler.
+> >>
+> >> So I would like to remove the decrementer and external handler calls from
+> >> Cell and Pasemi platforms' system reset handler. I think we can just
+> >> remove them if they can be handled when they re-fire as normal interrupts?
+> >> At the moment I don't have environments set up to test if this works.  
+> >
+> > My QS22 has booted OK with it applied, so it seems OK.
+> >
+> > I'll test it a bit more tomorrow.  
+> 
+> OK, seems fine, and I have a trace that shows it's definitely going
+> through that path:
 
-How about
+Thanks for testing it.
 
-powerpc/mm/slice: when computing slice mask limit low slice max addr correctly
+>  1)               |    .default_idle_call() {
+>  1)               |      .arch_cpu_idle() {
+>  1)               |        .cbe_power_save() {
+>  1)   0.128 us    |          .prep_irq_for_idle();
+>  1)               |          .system_reset_exception() {
+>  1)   0.512 us    |            .cbe_system_reset_exception();
+>  1)   6.016 us    |          }
+>  1)               |          .do_IRQ() {
 
-For low slice, max addr should be less that 4G. Without limiting this correctly
-we will end up with a low slice mask which has 17th bit set. This is not
-a problem with the current code because our low slice mask is of type u16. But
-in later patch I am switching low slice mask to u64 type and having the 17bit
-set result in wrong slice mask which in turn results in mmap failures.
+It seems to do the right thing. I think decrementer should be working
+proprely by setting it to 1 to get another exception?
 
+In that case I will add a changelog and submit the patch.
 
->
->> 
->> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
->
-> For the code change:
->
-> Reviewed-by: Paul Mackerras <paulus@ozlabs.org>
+Thanks,
+Nick
