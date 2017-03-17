@@ -1,25 +1,20 @@
-Return-Path: <gregkh@linuxfoundation.org>
-Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
- [140.211.169.12])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vktgb0yRHzDqc4
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Mar 2017 16:09:46 +1100 (AEDT)
-Date: Fri, 17 Mar 2017 14:09:30 +0900
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To: Jan Dakinevich <jan.dakinevich@gmail.com>
-Cc: Jiri Slaby <jslaby@suse.com>, Peter Hurley <peter@hurleysoftware.com>,
- Dan Carpenter <dan.carpenter@oracle.com>,
- Arnd Bergmann <arnd@arndb.de>, Amit Shah <amit@kernel.org>,
- virtualization@lists.linux-foundation.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] tty: hvc: don't allocate a buffer for console print on
- stack
-Message-ID: <20170317050930.GB28075@kroah.com>
-References: <1487364165-21882-1-git-send-email-jan.dakinevich@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1487364165-21882-1-git-send-email-jan.dakinevich@gmail.com>
+Return-Path: <aik@ozlabs.ru>
+Received: from ozlabs.ru (ozlabs.ru [107.173.13.209])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3vktgy2W5qzDqcj
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Mar 2017 16:10:06 +1100 (AEDT)
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
+ Alex Williamson <alex.williamson@redhat.com>,
+ David Gibson <david@gibson.dropbear.id.au>,
+ Paul Mackerras <paulus@samba.org>, kvm-ppc@vger.kernel.org,
+ kvm@vger.kernel.org
+Subject: [PATCH kernel v10 01/10] powerpc/mmu: Add real mode support for IOMMU
+ preregistered memory
+Date: Fri, 17 Mar 2017 16:09:50 +1100
+Message-Id: <20170317050959.37312-2-aik@ozlabs.ru>
+In-Reply-To: <20170317050959.37312-1-aik@ozlabs.ru>
+References: <20170317050959.37312-1-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,39 +24,103 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Feb 17, 2017 at 11:42:45PM +0300, Jan Dakinevich wrote:
-> The buffer is used by virtio console driver as DMA buffer. Since v4.9
-> (if VMAP_STACK is enabled) we shouldn't use the stack for DMA.
+This makes mm_iommu_lookup() able to work in realmode by replacing
+list_for_each_entry_rcu() (which can do debug stuff which can fail in
+real mode) with list_for_each_entry_lockless().
 
-You shouldn't use 'static' data either, that's not always guaranteed to
-be DMA-able, right?
+This adds realmode version of mm_iommu_ua_to_hpa() which adds
+explicit vmalloc'd-to-linear address conversion.
+Unlike mm_iommu_ua_to_hpa(), mm_iommu_ua_to_hpa_rm() can fail.
 
-> 
-> Signed-off-by: Jan Dakinevich <jan.dakinevich@gmail.com>
-> ---
->  drivers/tty/hvc/hvc_console.c | 7 ++++++-
->  1 file changed, 6 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/tty/hvc/hvc_console.c b/drivers/tty/hvc/hvc_console.c
-> index 9b5c0fb..1ce6aaf 100644
-> --- a/drivers/tty/hvc/hvc_console.c
-> +++ b/drivers/tty/hvc/hvc_console.c
-> @@ -143,10 +143,15 @@ static struct hvc_struct *hvc_get_by_index(int index)
->  static void hvc_console_print(struct console *co, const char *b,
->  			      unsigned count)
->  {
-> -	char c[N_OUTBUF] __ALIGNED__;
->  	unsigned i = 0, n = 0;
->  	int r, donecr = 0, index = co->index;
->  
-> +	/*
-> +	 * Access to the buffer is serialized by console_sem in caller code from
-> +	 * kernel/printk/printk.c
-> +	 */
-> +	static char c[N_OUTBUF] __ALIGNED__;
+This changes mm_iommu_preregistered() to receive @mm as in real mode
+@current does not always have a correct pointer.
 
-What about allocating it dynamically?  That's the correct thing to do.
+This adds realmode version of mm_iommu_lookup() which receives @mm
+(for the same reason as for mm_iommu_preregistered()) and uses
+lockless version of list_for_each_entry_rcu().
 
-thanks,
+Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
+---
+ arch/powerpc/include/asm/mmu_context.h |  4 ++++
+ arch/powerpc/mm/mmu_context_iommu.c    | 39 ++++++++++++++++++++++++++++++++++
+ 2 files changed, 43 insertions(+)
 
-greg k-h
+diff --git a/arch/powerpc/include/asm/mmu_context.h b/arch/powerpc/include/asm/mmu_context.h
+index b9e3f0aca261..c70c8272523d 100644
+--- a/arch/powerpc/include/asm/mmu_context.h
++++ b/arch/powerpc/include/asm/mmu_context.h
+@@ -29,10 +29,14 @@ extern void mm_iommu_init(struct mm_struct *mm);
+ extern void mm_iommu_cleanup(struct mm_struct *mm);
+ extern struct mm_iommu_table_group_mem_t *mm_iommu_lookup(struct mm_struct *mm,
+ 		unsigned long ua, unsigned long size);
++extern struct mm_iommu_table_group_mem_t *mm_iommu_lookup_rm(
++		struct mm_struct *mm, unsigned long ua, unsigned long size);
+ extern struct mm_iommu_table_group_mem_t *mm_iommu_find(struct mm_struct *mm,
+ 		unsigned long ua, unsigned long entries);
+ extern long mm_iommu_ua_to_hpa(struct mm_iommu_table_group_mem_t *mem,
+ 		unsigned long ua, unsigned long *hpa);
++extern long mm_iommu_ua_to_hpa_rm(struct mm_iommu_table_group_mem_t *mem,
++		unsigned long ua, unsigned long *hpa);
+ extern long mm_iommu_mapped_inc(struct mm_iommu_table_group_mem_t *mem);
+ extern void mm_iommu_mapped_dec(struct mm_iommu_table_group_mem_t *mem);
+ #endif
+diff --git a/arch/powerpc/mm/mmu_context_iommu.c b/arch/powerpc/mm/mmu_context_iommu.c
+index 497130c5c742..fc67bd766eaf 100644
+--- a/arch/powerpc/mm/mmu_context_iommu.c
++++ b/arch/powerpc/mm/mmu_context_iommu.c
+@@ -314,6 +314,25 @@ struct mm_iommu_table_group_mem_t *mm_iommu_lookup(struct mm_struct *mm,
+ }
+ EXPORT_SYMBOL_GPL(mm_iommu_lookup);
+ 
++struct mm_iommu_table_group_mem_t *mm_iommu_lookup_rm(struct mm_struct *mm,
++		unsigned long ua, unsigned long size)
++{
++	struct mm_iommu_table_group_mem_t *mem, *ret = NULL;
++
++	list_for_each_entry_lockless(mem, &mm->context.iommu_group_mem_list,
++			next) {
++		if ((mem->ua <= ua) &&
++				(ua + size <= mem->ua +
++				 (mem->entries << PAGE_SHIFT))) {
++			ret = mem;
++			break;
++		}
++	}
++
++	return ret;
++}
++EXPORT_SYMBOL_GPL(mm_iommu_lookup_rm);
++
+ struct mm_iommu_table_group_mem_t *mm_iommu_find(struct mm_struct *mm,
+ 		unsigned long ua, unsigned long entries)
+ {
+@@ -345,6 +364,26 @@ long mm_iommu_ua_to_hpa(struct mm_iommu_table_group_mem_t *mem,
+ }
+ EXPORT_SYMBOL_GPL(mm_iommu_ua_to_hpa);
+ 
++long mm_iommu_ua_to_hpa_rm(struct mm_iommu_table_group_mem_t *mem,
++		unsigned long ua, unsigned long *hpa)
++{
++	const long entry = (ua - mem->ua) >> PAGE_SHIFT;
++	void *va = &mem->hpas[entry];
++	unsigned long *pa;
++
++	if (entry >= mem->entries)
++		return -EFAULT;
++
++	pa = (void *) vmalloc_to_phys(va);
++	if (!pa)
++		return -EFAULT;
++
++	*hpa = *pa | (ua & ~PAGE_MASK);
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(mm_iommu_ua_to_hpa_rm);
++
+ long mm_iommu_mapped_inc(struct mm_iommu_table_group_mem_t *mem)
+ {
+ 	if (atomic64_inc_not_zero(&mem->mapped))
+-- 
+2.11.0
