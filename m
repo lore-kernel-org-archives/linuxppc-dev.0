@@ -1,38 +1,44 @@
-Return-Path: <svaidy@linux.vnet.ibm.com>
+Return-Path: <benh@au1.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vlsYZ726CzDqY6
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 19 Mar 2017 06:22:58 +1100 (AEDT)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vm7Hb2cyLzDqY7
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 19 Mar 2017 16:41:46 +1100 (AEDT)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v2IJJJ7P124449
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Mar 2017 15:22:56 -0400
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
- by mx0b-001b2d01.pphosted.com with ESMTP id 29912xxvcm-1
+ v2J5cZ8Q025557
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 19 Mar 2017 01:41:39 -0400
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 298wtw97uc-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Mar 2017 15:22:55 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 19 Mar 2017 01:41:39 -0400
 Received: from localhost
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <svaidy@linux.vnet.ibm.com>;
- Sun, 19 Mar 2017 05:22:53 +1000
-Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v2IJMgBP39649324
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 19 Mar 2017 06:22:50 +1100
-Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
- by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v2IJMH28018917
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 19 Mar 2017 06:22:17 +1100
-From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-To: Michael Neuling <mikey@neuling.org>, Michael Ellerman <mpe@ellerman.id.au>,
- "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-pm@vger.kernel.org
-Subject: [PATCH] cpuidle: Validate cpu_dev in cpuidle_add_sysfs
-Date: Sun, 19 Mar 2017 00:51:59 +0530
-Message-Id: <20170318192159.20819-1-svaidy@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <benh@au1.ibm.com>;
+ Sun, 19 Mar 2017 15:41:36 +1000
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v2J5fQYn55246884
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 19 Mar 2017 16:41:34 +1100
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v2J5exL6027092
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 19 Mar 2017 16:40:59 +1100
+Subject: Re: [PATCH kernel] KVM: PPC: Add MMIO emulation for stdx (store
+ doubleword indexed)
+From: Benjamin Herrenschmidt <benh@au1.ibm.com>
+Reply-To: benh@au1.ibm.com
+To: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org
+Cc: Paul Mackerras <paulus@samba.org>, kvm-ppc@vger.kernel.org
+Date: Sun, 19 Mar 2017 16:40:38 +1100
+In-Reply-To: <0aa18ddc-4715-8b2c-9d7f-44566aaf5d20@ozlabs.ru>
+References: <20170317083138.36527-1-aik@ozlabs.ru>
+ <0aa18ddc-4715-8b2c-9d7f-44566aaf5d20@ozlabs.ru>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Message-Id: <1489902038.2504.20.camel@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,71 +48,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-If a given cpu is not in cpu_present and cpu hotplug
-is disabled, arch can skip setting up the cpu_dev.
+On Fri, 2017-03-17 at 23:11 +1100, Alexey Kardashevskiy wrote:
+> On 17/03/17 19:31, Alexey Kardashevskiy wrote:
+> > This adds missing stdx emulation which allow Mellanox driver from
+> > recent kernels work when MMIO emulation is enforced in the
+> > userspace.
+> 
+> 
+> btw what would its load counterpart? Load Doubleword Indexed - ldx
+> RT,RA,RB?
 
-Arch cpuidle driver should pass correct cpu mask
-for registration, but failing to do so by the driver
-causes error to propagate and crash like this:
+Yes.
 
-[   30.076045] Unable to handle kernel paging request for data at address 0x00000048
-[   30.076100] Faulting instruction address: 0xc0000000007b2f30
-cpu 0x4d: Vector: 300 (Data Access) at [c000003feb18b670]
-    pc: c0000000007b2f30: kobject_get+0x20/0x70
-    lr: c0000000007b3c94: kobject_add_internal+0x54/0x3f0
-    sp: c000003feb18b8f0
-   msr: 9000000000009033
-   dar: 48
- dsisr: 40000000
-  current = 0xc000003fd2ed8300
-  paca    = 0xc00000000fbab500   softe: 0        irq_happened: 0x01
-    pid   = 1, comm = swapper/0
-Linux version 4.11.0-rc2-svaidy+ (sv@sagarika) (gcc version 6.2.0
-20161005 (Ubuntu 6.2.0-5ubuntu12) ) #10 SMP Sun Mar 19 00:08:09 IST 2017
-enter ? for help
-[c000003feb18b960] c0000000007b3c94 kobject_add_internal+0x54/0x3f0
-[c000003feb18b9f0] c0000000007b43a4 kobject_init_and_add+0x64/0xa0
-[c000003feb18ba70] c000000000e284f4 cpuidle_add_sysfs+0xb4/0x130
-[c000003feb18baf0] c000000000e26038 cpuidle_register_device+0x118/0x1c0
-[c000003feb18bb30] c000000000e26c48 cpuidle_register+0x78/0x120
-[c000003feb18bbc0] c00000000168fd9c powernv_processor_idle_init+0x110/0x1c4
-[c000003feb18bc40] c00000000000cff8 do_one_initcall+0x68/0x1d0
-[c000003feb18bd00] c0000000016242f4 kernel_init_freeable+0x280/0x360
-[c000003feb18bdc0] c00000000000d864 kernel_init+0x24/0x160
-[c000003feb18be30] c00000000000b4e8 ret_from_kernel_thread+0x5c/0x74
+Do we also do the more "classic" ld/std ?
 
-Validating cpu_dev fixes the crash and reports correct error message like:
+Cheers,
+Ben.
 
-[   30.163506] Failed to register cpuidle device for cpu136
-[   30.173329] Registration of powernv driver failed.
-
-Signed-off-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
----
- drivers/cpuidle/sysfs.c | 12 ++++++++++++
- 1 file changed, 12 insertions(+)
-
-diff --git a/drivers/cpuidle/sysfs.c b/drivers/cpuidle/sysfs.c
-index c5adc8c..19dcf32 100644
---- a/drivers/cpuidle/sysfs.c
-+++ b/drivers/cpuidle/sysfs.c
-@@ -615,6 +615,18 @@ int cpuidle_add_sysfs(struct cpuidle_device *dev)
- 	struct device *cpu_dev = get_cpu_device((unsigned long)dev->cpu);
- 	int error;
- 
-+	/*
-+	 * Return if cpu_device is not setup for this cpu.
-+	 * This could happen if arch did not setup cpu_device
-+	 * since this cpu is not in cpu_present mask and
-+	 * driver did not send correct cpu mask at registration.
-+	 * Without this check we would end up passing bogus
-+	 * value for &cpu_dev->kobj in kobject_init_and_add()
-+	 */
-+
-+	if (!cpu_dev)
-+		return -ENODEV;
-+
- 	kdev = kzalloc(sizeof(*kdev), GFP_KERNEL);
- 	if (!kdev)
- 		return -ENOMEM;
--- 
-2.9.3
+> 
+> > 
+> > Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> > ---
+> >  arch/powerpc/include/asm/ppc-opcode.h | 1 +
+> >  arch/powerpc/kvm/emulate_loadstore.c  | 6 ++++++
+> >  2 files changed, 7 insertions(+)
+> > 
+> > diff --git a/arch/powerpc/include/asm/ppc-opcode.h
+> > b/arch/powerpc/include/asm/ppc-opcode.h
+> > index e7d6d86563ee..ca1bbe49590b 100644
+> > --- a/arch/powerpc/include/asm/ppc-opcode.h
+> > +++ b/arch/powerpc/include/asm/ppc-opcode.h
+> > @@ -92,6 +92,7 @@
+> >  #define OP_31_XOP_TRAP_64   68
+> >  #define OP_31_XOP_DCBF      86
+> >  #define OP_31_XOP_LBZX      87
+> > +#define OP_31_XOP_STDX      149
+> >  #define OP_31_XOP_STWX      151
+> >  #define OP_31_XOP_STBX      215
+> >  #define OP_31_XOP_LBZUX     119
+> > diff --git a/arch/powerpc/kvm/emulate_loadstore.c
+> > b/arch/powerpc/kvm/emulate_loadstore.c
+> > index 6d3c0ee1d744..9fdbeb8ea86c 100644
+> > --- a/arch/powerpc/kvm/emulate_loadstore.c
+> > +++ b/arch/powerpc/kvm/emulate_loadstore.c
+> > @@ -82,6 +82,12 @@ int kvmppc_emulate_loadstore(struct kvm_vcpu
+> > *vcpu)
+> >  			kvmppc_set_gpr(vcpu, ra, vcpu-
+> > >arch.vaddr_accessed);
+> >  			break;
+> >  
+> > +		case OP_31_XOP_STDX:
+> > +			emulated = kvmppc_handle_store(run, vcpu,
+> > +						       kvmppc_get_
+> > gpr(vcpu, rs),
+> > +							8, 1);
+> > +			break;
+> > +
+> >  		case OP_31_XOP_STWX:
+> >  			emulated = kvmppc_handle_store(run, vcpu,
+> >  						       kvmppc_get_
+> > gpr(vcpu, rs),
+> > 
+> 
+> 
