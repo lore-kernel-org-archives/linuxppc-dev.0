@@ -1,22 +1,22 @@
 Return-Path: <srs0=i+vg=25=kernel.crashing.org=benh@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vmmlj3WmDzDqYB
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Mar 2017 17:49:53 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vmmlq4PYKzDqbB
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Mar 2017 17:49:59 +1100 (AEDT)
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3vmmlj31gcz8t4P
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Mar 2017 17:49:53 +1100 (AEDT)
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3vmmlq3PLTz8t4P
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Mar 2017 17:49:59 +1100 (AEDT)
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3vmmlh5gwlz9s2s
- for <linuxppc-dev@ozlabs.org>; Mon, 20 Mar 2017 17:49:52 +1100 (AEDT)
+ by ozlabs.org (Postfix) with ESMTPS id 3vmmlp5XYtz9s2x
+ for <linuxppc-dev@ozlabs.org>; Mon, 20 Mar 2017 17:49:58 +1100 (AEDT)
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: linuxppc-dev@ozlabs.org, kvm-ppc@vger.kernel.org
-Subject: [PATCH 08/12] powerpc/kvm: Make kvmppc_xics_create_icp static
-Date: Mon, 20 Mar 2017 17:49:10 +1100
-Message-Id: <20170320064914.4437-8-benh@kernel.crashing.org>
+Subject: [PATCH 07/12] powerpc/kvm: Massage order of #include
+Date: Mon, 20 Mar 2017 17:49:09 +1100
+Message-Id: <20170320064914.4437-7-benh@kernel.crashing.org>
 In-Reply-To: <20170320064914.4437-1-benh@kernel.crashing.org>
 References: <20170320064914.4437-1-benh@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,48 +28,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-It's only used within the same file it's defined
+We traditionally have linux/ before asm/
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
- arch/powerpc/include/asm/kvm_ppc.h | 4 ----
- arch/powerpc/kvm/book3s_xics.c     | 2 +-
- 2 files changed, 1 insertion(+), 5 deletions(-)
+ arch/powerpc/kvm/book3s.c    |  8 ++++----
+ arch/powerpc/kvm/book3s_hv.c | 18 +++++++++---------
+ 2 files changed, 13 insertions(+), 13 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
-index dd11c4c..bfef1ae 100644
---- a/arch/powerpc/include/asm/kvm_ppc.h
-+++ b/arch/powerpc/include/asm/kvm_ppc.h
-@@ -478,7 +478,6 @@ extern void kvmppc_free_host_rm_ops(void);
- extern void kvmppc_free_pimap(struct kvm *kvm);
- extern int kvmppc_xics_rm_complete(struct kvm_vcpu *vcpu, u32 hcall);
- extern void kvmppc_xics_free_icp(struct kvm_vcpu *vcpu);
--extern int kvmppc_xics_create_icp(struct kvm_vcpu *vcpu, unsigned long server);
- extern int kvm_vm_ioctl_xics_irq(struct kvm *kvm, struct kvm_irq_level *args);
- extern int kvmppc_xics_hcall(struct kvm_vcpu *vcpu, u32 cmd);
- extern u64 kvmppc_xics_get_icp(struct kvm_vcpu *vcpu);
-@@ -507,9 +506,6 @@ static inline int kvmppc_xics_rm_complete(struct kvm_vcpu *vcpu, u32 hcall)
- static inline int kvmppc_xics_enabled(struct kvm_vcpu *vcpu)
- 	{ return 0; }
- static inline void kvmppc_xics_free_icp(struct kvm_vcpu *vcpu) { }
--static inline int kvmppc_xics_create_icp(struct kvm_vcpu *vcpu,
--					 unsigned long server)
--	{ return -EINVAL; }
- static inline int kvm_vm_ioctl_xics_irq(struct kvm *kvm,
- 					struct kvm_irq_level *args)
- 	{ return -ENOTTY; }
-diff --git a/arch/powerpc/kvm/book3s_xics.c b/arch/powerpc/kvm/book3s_xics.c
-index e48803e..ef4fd52 100644
---- a/arch/powerpc/kvm/book3s_xics.c
-+++ b/arch/powerpc/kvm/book3s_xics.c
-@@ -1084,7 +1084,7 @@ static struct kvmppc_ics *kvmppc_xics_create_ics(struct kvm *kvm,
- 	return xics->ics[icsid];
- }
+diff --git a/arch/powerpc/kvm/book3s.c b/arch/powerpc/kvm/book3s.c
+index b6b5c18..aedacef 100644
+--- a/arch/powerpc/kvm/book3s.c
++++ b/arch/powerpc/kvm/book3s.c
+@@ -20,6 +20,10 @@
+ #include <linux/slab.h>
+ #include <linux/module.h>
+ #include <linux/miscdevice.h>
++#include <linux/gfp.h>
++#include <linux/sched.h>
++#include <linux/vmalloc.h>
++#include <linux/highmem.h>
  
--int kvmppc_xics_create_icp(struct kvm_vcpu *vcpu, unsigned long server_num)
-+static int kvmppc_xics_create_icp(struct kvm_vcpu *vcpu, unsigned long server_num)
- {
- 	struct kvmppc_icp *icp;
+ #include <asm/reg.h>
+ #include <asm/cputable.h>
+@@ -31,10 +35,6 @@
+ #include <asm/kvm_book3s.h>
+ #include <asm/mmu_context.h>
+ #include <asm/page.h>
+-#include <linux/gfp.h>
+-#include <linux/sched.h>
+-#include <linux/vmalloc.h>
+-#include <linux/highmem.h>
+ 
+ #include "book3s.h"
+ #include "trace.h"
+diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+index 1ec86d9..fadb75a 100644
+--- a/arch/powerpc/kvm/book3s_hv.c
++++ b/arch/powerpc/kvm/book3s_hv.c
+@@ -35,6 +35,15 @@
+ #include <linux/srcu.h>
+ #include <linux/miscdevice.h>
+ #include <linux/debugfs.h>
++#include <linux/gfp.h>
++#include <linux/vmalloc.h>
++#include <linux/highmem.h>
++#include <linux/hugetlb.h>
++#include <linux/kvm_irqfd.h>
++#include <linux/irqbypass.h>
++#include <linux/module.h>
++#include <linux/compiler.h>
++#include <linux/of.h>
+ 
+ #include <asm/reg.h>
+ #include <asm/cputable.h>
+@@ -58,15 +67,6 @@
+ #include <asm/mmu.h>
+ #include <asm/opal.h>
+ #include <asm/xics.h>
+-#include <linux/gfp.h>
+-#include <linux/vmalloc.h>
+-#include <linux/highmem.h>
+-#include <linux/hugetlb.h>
+-#include <linux/kvm_irqfd.h>
+-#include <linux/irqbypass.h>
+-#include <linux/module.h>
+-#include <linux/compiler.h>
+-#include <linux/of.h>
+ 
+ #include "book3s.h"
  
 -- 
 2.9.3
