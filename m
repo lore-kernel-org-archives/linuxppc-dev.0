@@ -1,46 +1,27 @@
-Return-Path: <mahesh@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <dgibson@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vmkqj6VMfzDq5g
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Mar 2017 16:23:13 +1100 (AEDT)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v2K5IgDB045387
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Mar 2017 01:23:11 -0400
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2990scrqrf-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Mar 2017 01:23:10 -0400
-Received: from localhost
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
- Mon, 20 Mar 2017 15:23:06 +1000
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v2K5MvW952428954
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Mar 2017 16:23:05 +1100
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v2K5MWDG017565
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Mar 2017 16:22:32 +1100
-Subject: Re: [PATCH 4/8] powerpc/64s: fix POWER9 machine check handler from
- stop state
-To: ego@linux.vnet.ibm.com, Nicholas Piggin <npiggin@gmail.com>
-References: <20170314092349.10981-1-npiggin@gmail.com>
- <20170314092349.10981-5-npiggin@gmail.com>
- <67bd0a9f-ebaa-acdb-cfbf-8a4acba256a3@linux.vnet.ibm.com>
- <20170316230520.5ba5528e@roar.ozlabs.ibm.com>
- <20170316131907.GF16462@in.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-From: Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com>
-Date: Mon, 20 Mar 2017 10:52:14 +0530
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vmlMb4y70zDq5g
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Mar 2017 16:47:23 +1100 (AEDT)
+Date: Mon, 20 Mar 2017 15:20:47 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Dan Carpenter <dan.carpenter@oracle.com>
+Cc: Paolo Bonzini <pbonzini@redhat.com>,
+ Radim =?utf-8?B?S3LEjW3DocWZ?= <rkrcmar@redhat.com>,
+ Alexander Graf <agraf@suse.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, kvm@vger.kernel.org,
+ kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ kernel-janitors@vger.kernel.org
+Subject: Re: [patch] KVM: PPC: Book3S HV: check for kmalloc errors in ioctl
+Message-ID: <20170320042047.GA29814@umbus.fritz.box>
+References: <20170317204113.GA16505@mwanda>
 MIME-Version: 1.0
-In-Reply-To: <20170316131907.GF16462@in.ibm.com>
-Content-Type: text/plain; charset=windows-1252
-Message-Id: <f3d093a0-298e-6292-fe53-4d17dfe8eeec@linux.vnet.ibm.com>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="PNTmBPCT7hxwcZjr"
+In-Reply-To: <20170317204113.GA16505@mwanda>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,103 +31,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 03/16/2017 06:49 PM, Gautham R Shenoy wrote:
-> Hi,
-> 
-> On Thu, Mar 16, 2017 at 11:05:20PM +1000, Nicholas Piggin wrote:
->> On Thu, 16 Mar 2017 18:10:48 +0530
->> Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com> wrote:
->>
->>> On 03/14/2017 02:53 PM, Nicholas Piggin wrote:
->>>> The ISA specifies power save wakeup can cause a machine check interrupt.
->>>> The machine check handler currently has code to handle that for POWER8,
->>>> but POWER9 crashes when trying to execute the P8 style sleep
->>>> instructions.
->>>>
->>>> So queue up the machine check, then call into the idle code to wake up
->>>> as the system reset interrupt does, rather than attempting to sleep
->>>> again without going through the main idle path.
->>>>
->>>> Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
->>>> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
->>>> ---
->>>>  arch/powerpc/include/asm/reg.h       |  1 +
->>>>  arch/powerpc/kernel/exceptions-64s.S | 69 ++++++++++++++++++------------------
->>>>  2 files changed, 35 insertions(+), 35 deletions(-)
->>>>
->>>> diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
->>>> index fc879fd6bdae..8bbdfacce970 100644
->>>> --- a/arch/powerpc/include/asm/reg.h
->>>> +++ b/arch/powerpc/include/asm/reg.h
->>>> @@ -656,6 +656,7 @@
->>>>  #define   SRR1_ISI_PROT		0x08000000 /* ISI: Other protection fault */
->>>>  #define   SRR1_WAKEMASK		0x00380000 /* reason for wakeup */
->>>>  #define   SRR1_WAKEMASK_P8	0x003c0000 /* reason for wakeup on POWER8 and 9 */
->>>> +#define   SRR1_WAKEMCE_RESVD	0x003c0000 /* Unused/reserved value used by MCE wakeup to indicate cause to idle wakeup handler */
->>>>  #define   SRR1_WAKESYSERR	0x00300000 /* System error */
->>>>  #define   SRR1_WAKEEE		0x00200000 /* External interrupt */
->>>>  #define   SRR1_WAKEHVI		0x00240000 /* Hypervisor Virtualization Interrupt (P9) */
->>>> diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
->>>> index e390fcd04bcb..5779d2d6a192 100644
->>>> --- a/arch/powerpc/kernel/exceptions-64s.S
->>>> +++ b/arch/powerpc/kernel/exceptions-64s.S
->>>> @@ -306,6 +306,33 @@ EXC_COMMON_BEGIN(machine_check_common)
->>>>  	/* restore original r1. */			\
->>>>  	ld	r1,GPR1(r1)
->>>>
->>>> +#ifdef CONFIG_PPC_P7_NAP
->>>> +EXC_COMMON_BEGIN(machine_check_idle_common)
->>>> +	bl	machine_check_queue_event
->>>> +	/*
->>>> +	 * Queue the machine check, then reload SRR1 and use it to set
->>>> +	 * CR3 according to pnv_powersave_wakeup convention.
->>>> +	 */
->>>> +	ld	r12,_MSR(r1)
->>>> +	rlwinm	r11,r12,47-31,30,31
->>>> +	cmpwi	cr3,r11,2
->>>> +
->>>> +	/*
->>>> +	 * Now put SRR1_WAKEMCE_RESVD into SRR1, allows it to follow the
->>>> +	 * system reset wakeup code.
->>>> +	 */
->>>> +	oris	r12,r12,SRR1_WAKEMCE_RESVD@h
->>>> +	mtspr	SPRN_SRR1,r12
->>>> +	std	r12,_MSR(r1)
->>>> +
->>>> +	/*
->>>> +	 * Decrement MCE nesting after finishing with the stack.
->>>> +	 */
->>>> +	lhz	r11,PACA_IN_MCE(r13)
->>>> +	subi	r11,r11,1
->>>> +	sth	r11,PACA_IN_MCE(r13)  
->>>
->>> Looks like we are not winding up.. Shouldn't we ? What if we may end up
->>> in pnv_wakeup_noloss() which assumes that no GPRs are lost. Am I missing
->>> anything ?
-> 
-> Nice catch! This can occur if SRR1[46:47] == 0b01.
-> 
->>
->> Hmm, no I think you're right. Thanks, good catch. But can we do it with
->> just setting PACA_NAPSTATELOST?
-> 
-> Unconditionally setting PACA_NAPSTATELOST should be sufficient.
 
-Agree, that should take care.
+--PNTmBPCT7hxwcZjr
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> 
->>
->>>
->>>> +	b	pnv_powersave_wakeup
->>>> +#endif
->>>>  	/*  
->>>
->>> [...]
->>>
->>> Rest looks good to me.
->>>
->>> Reviewed-by: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
->>
->> Thanks,
->> Nick
->>
+On Fri, Mar 17, 2017 at 11:41:14PM +0300, Dan Carpenter wrote:
+> kzalloc() won't actually fail because sizeof(*resize) is small, but
+> static checkers complain.
+>=20
+> Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
+
+Oops, that's an embarrassing mistake.
+
+Acked-by: David Gibson <david@gibson.dropbear.id.au>
+
+>=20
+> diff --git a/arch/powerpc/kvm/book3s_64_mmu_hv.c b/arch/powerpc/kvm/book3=
+s_64_mmu_hv.c
+> index 8c68145ba1bd..710e491206ed 100644
+> --- a/arch/powerpc/kvm/book3s_64_mmu_hv.c
+> +++ b/arch/powerpc/kvm/book3s_64_mmu_hv.c
+> @@ -1487,6 +1487,10 @@ long kvm_vm_ioctl_resize_hpt_prepare(struct kvm *k=
+vm,
+>  	/* start new resize */
+> =20
+>  	resize =3D kzalloc(sizeof(*resize), GFP_KERNEL);
+> +	if (!resize) {
+> +		ret =3D -ENOMEM;
+> +		goto out;
+> +	}
+>  	resize->order =3D shift;
+>  	resize->kvm =3D kvm;
+>  	INIT_WORK(&resize->work, resize_hpt_prepare_work);
+>=20
+
+--=20
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
+
+--PNTmBPCT7hxwcZjr
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAEBCAAGBQJYz1ifAAoJEGw4ysog2bOSOK4P/0zlK94qbq9Gv7yTILBz1WJ8
+kstXaRRN1Es1UoJrfoNqT8eTO5L6/l5nAepFs8T4TL5FdrdcGA3YNEvs2jyxHFQA
+Ehqe1dS6yJiABrjdJnv+aqjJSzKUAhGSlncv/Bywi5TJuo5va2GcTj1+sMgjHz4T
+ZUA59A6CAx5OLprilsEQR+/RHFt6ChcZoZAA8eSt7MQtuWm8L1GvtRYuoA00Wzzf
+CYrn8e3Tm/qwQSLeLMc+7YJvAh74k9EY5mFrLTOC9YpPePZT6Z9vipdaOwaKki1+
+V3c7jZ74GM7wFMh5wRxMThz4UcYpQZ7ShR/GUEZ89wVXSqkAPKsIzXSw3Izsmmu0
+YaldZoyvRyAOz+RDWth3r6TVbblfXnq1m5StsK4vF6CFsQ6P/yC5LYrfmOX04zXn
+VtDiBRnMAhkM2zfH0llba0gpTJVnsL6GbHNzEfhfWMzeZCzIYfcYfq/eLhKF4SIJ
+hHU09X/2uWd5o7lELP6oBc+aKDXHhhRlyx9TCAvaSOl+pQa91q9ABPxP35uHVstY
+t+O4XDvwbjiysYEcI50u2Qj5qaGOHGBdjSzprw7fApAeL6j2L0r3VNFQrKoa3vjx
+9rvVYyZR+59HGs53v1SVJJ817N8bUYUeZRa+lDw+IaKM1pQxK4Cv+QsXupgzZvKB
+rBtMakb+vnjLOBVQpncH
+=1Kzi
+-----END PGP SIGNATURE-----
+
+--PNTmBPCT7hxwcZjr--
