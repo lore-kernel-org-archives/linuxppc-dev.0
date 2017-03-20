@@ -3,21 +3,21 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vn0rQ6hRszDqYC
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Mar 2017 02:54:46 +1100 (AEDT)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v2KFs3bm014660
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Mar 2017 11:54:40 -0400
-Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
- by mx0b-001b2d01.pphosted.com with ESMTP id 29af6eb0yj-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vn0rY2B8gzDqZP
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Mar 2017 02:54:53 +1100 (AEDT)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v2KFrxgp115597
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Mar 2017 11:54:41 -0400
+Received: from e16.ny.us.ibm.com (e16.ny.us.ibm.com [129.33.205.206])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 29aeabdyqb-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Mar 2017 11:54:39 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Mar 2017 11:54:41 -0400
 Received: from localhost
- by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e16.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <ego@linux.vnet.ibm.com>;
- Mon, 20 Mar 2017 11:54:38 -0400
+ Mon, 20 Mar 2017 11:54:40 -0400
 From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>, Michael Neuling <mikey@neuling.org>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
@@ -29,9 +29,14 @@ To: Michael Ellerman <mpe@ellerman.id.au>, Michael Neuling <mikey@neuling.org>,
  Nicholas Piggin <npiggin@gmail.com>
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
  "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-Subject: [v2 PATCH 0/4] powernv:idle: Fixes for CPU-Hotplug on POWER DD1.0
-Date: Mon, 20 Mar 2017 21:24:14 +0530
-Message-Id: <cover.1490024477.git.ego@linux.vnet.ibm.com>
+Subject: [v2 PATCH 2/4] powernv:smp: Add busy-wait loop as fall back for
+ CPU-Hotplug
+Date: Mon, 20 Mar 2017 21:24:16 +0530
+In-Reply-To: <cover.1490024477.git.ego@linux.vnet.ibm.com>
+References: <cover.1490024477.git.ego@linux.vnet.ibm.com>
+In-Reply-To: <cover.1490024477.git.ego@linux.vnet.ibm.com>
+References: <cover.1490024477.git.ego@linux.vnet.ibm.com>
+Message-Id: <722d864e912cb0af6534b1ddef52ad3969ee9728.1490024477.git.ego@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,67 +48,65 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 
-Hi,
+Currently, the powernv cpu-offline function assumes that platform idle
+states such as stop on POWER9, winkle/sleep/nap on POWER8 are always
+available. On POWER8, it picks nap as the default state if other deep
+idle states like sleep/winkle are not available and enabled in the
+platform.
 
-This is the second version of the patchset containing the fixes to
-make CPU-Hotplug working on correctly on POWER9 DD1 systems.
+On POWER9, nap is not available and all idle states are managed by
+STOP instruction.  The parameters to the idle state are passed through
+processor stop status control register (PSSCR).  Hence as such
+executing STOP would take parameters from current PSSCR. We do not
+want to make any assumptions in kernel on what STOP states and PSSCR
+features are configured by the platform.
 
-The earlier version of this patchset can be found here:
-https://lkml.org/lkml/2017/3/13/46
+Ideally platform will configure a good set of stop states that can be
+used in the kernel.  We would like to start with a clean slate, if the
+platform choose to not configure any state or there is an error in
+platform firmware that lead to no stop states being configured or
+allowed to be requested.
 
-This patch addresses the feedback provided by Nicholas Piggin. The key
-changes from the earlier version are:
+This patch adds a fallback method for CPU-Hotplug that is similar to
+snooze loop at idle where the threads are left to spin at low priority
+and hence reduce the cycles consumed.
 
-- Move the piece of code in powernv/smp.c::pnv_smp_cpu_kill_self() which
-  transitions the CPU to the deepest available platform idle state to a
-  new function named pnv_cpu_offline() in powernv/idle.c. The rationale
-  behind this code movement is that the data required to determine the
-  deepest available platform state resides in powernv/idle.c.
+This is a safe fallback mechanism in the case when no stop state would
+be requested if the platform firmware did not configure them most
+likely due to an error condition.
 
-- Adds a more descriptive warning describing the consequences of no
-  suitable default/deepest stop states being available.
+Requesting a stop state when the platform has not configured them or
+enabled them would lead to further error conditions which could be
+difficult to debug.
 
-- Update the commit log for "powernv:Recover correct PACA on wakeup
-  from a stop on P9 DD1" describing the problem that it is trying to
-  solve.  Also ensure that on P9 DD1, NVGPRs are restored from the
-  stack on the way out by setting the NAPSTATELOST in paca.
+[Changelog written with inputs from svaidy@linux.vnet.ibm.com]
+Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
+Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+---
+ arch/powerpc/platforms/powernv/idle.c | 10 +++++++++-
+ 1 file changed, 9 insertions(+), 1 deletion(-)
 
-I have retained Nicholas Piggin's Reviewed-by tag for the second patch
-in this series (was first patch in the previous series) even though
-the file containing the code is different.
-
-There are four patches in the series.
-
-- The first patch moves the platform-idle code invoked when a CPU offlined from powernv/smp.c to powernv/idle.c
-
-- The second adds a fallback mechanism for CPU-Hotplug when no
-  platform idle state is available.
-
-- The third patch ensures that the kernel doesn't use any stop state
-  that is not exposed by the firmware.
-
-- The fourth patch adds a recovery framework for correctly recovering
-  paca pointer of the thread waking up from a stop.
-
-These patches are based on v4.11-rc3.
-
-The patches have been tested with stop1 (ESL=EC=1) as the
-deepest-state entered into during CPU-Hotplug.
-
-Gautham R. Shenoy (4):
-  powernv: Move CPU-Offline idle state invocation from smp.c to idle.c
-  powernv:smp: Add busy-wait loop as fall back for CPU-Hotplug
-  powernv:idle: Don't override default/deepest directly in kernel
-  powernv: Recover correct PACA on wakeup from a stop on P9 DD1
-
- arch/powerpc/include/asm/cpuidle.h       |  1 +
- arch/powerpc/include/asm/paca.h          |  5 ++
- arch/powerpc/kernel/asm-offsets.c        |  1 +
- arch/powerpc/kernel/idle_book3s.S        | 49 +++++++++++++++++-
- arch/powerpc/platforms/powernv/idle.c    | 88 ++++++++++++++++++++++++++------
- arch/powerpc/platforms/powernv/powernv.h |  2 -
- arch/powerpc/platforms/powernv/smp.c     | 18 +------
- 7 files changed, 129 insertions(+), 35 deletions(-)
-
+diff --git a/arch/powerpc/platforms/powernv/idle.c b/arch/powerpc/platforms/powernv/idle.c
+index 419edff..f335e0f 100644
+--- a/arch/powerpc/platforms/powernv/idle.c
++++ b/arch/powerpc/platforms/powernv/idle.c
+@@ -283,8 +283,16 @@ unsigned long pnv_cpu_offline(unsigned int cpu)
+ 	} else if ((idle_states & OPAL_PM_SLEEP_ENABLED) ||
+ 		   (idle_states & OPAL_PM_SLEEP_ENABLED_ER1)) {
+ 		srr1 = power7_sleep();
+-	} else {
++	} else if (idle_states & OPAL_PM_NAP_ENABLED) {
+ 		srr1 = power7_nap(1);
++	} else {
++		/* This is the fallback method. We emulate snooze */
++		while (!generic_check_cpu_restart(cpu)) {
++			HMT_low();
++			HMT_very_low();
++		}
++		srr1 = 0;
++		HMT_medium();
+ 	}
+ 
+ 	return srr1;
 -- 
 1.9.4
