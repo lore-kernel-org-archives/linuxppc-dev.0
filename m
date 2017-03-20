@@ -1,26 +1,42 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
- [IPv6:2607:f8b0:400e:c00::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <ego@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vmzS85xZxzDq5g
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Mar 2017 01:52:08 +1100 (AEDT)
-Received: by mail-pf0-x242.google.com with SMTP id o126so17708181pfb.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Mar 2017 07:52:08 -0700 (PDT)
-Date: Tue, 21 Mar 2017 00:51:54 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Michael Ellerman <mpe@ellerman.id.au>, "Gautham R . Shenoy"
- <ego@linux.vnet.ibm.com>, Mahesh Jagannath Salgaonkar
- <mahesh@linux.vnet.ibm.com>
-Subject: Re: [PATCH 4/7] powerpc/64s: fix POWER9 machine check handler from
- stop state
-Message-ID: <20170321005154.1fa18ef1@roar.ozlabs.ibm.com>
-In-Reply-To: <20170320060152.1016-5-npiggin@gmail.com>
-References: <20170320060152.1016-1-npiggin@gmail.com>
- <20170320060152.1016-5-npiggin@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vn0rN1L74zDq5g
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Mar 2017 02:54:43 +1100 (AEDT)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v2KFs2CY135239
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Mar 2017 11:54:41 -0400
+Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 29906vnxcc-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Mar 2017 11:54:40 -0400
+Received: from localhost
+ by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ego@linux.vnet.ibm.com>;
+ Mon, 20 Mar 2017 11:54:39 -0400
+From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>, Michael Neuling <mikey@neuling.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ "Shreyas B. Prabhu" <shreyasbp@gmail.com>,
+ Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
+ Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+ Anton Blanchard <anton@samba.org>, Balbir Singh <bsingharora@gmail.com>,
+ Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>,
+ Nicholas Piggin <npiggin@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+Subject: [v2 PATCH 1/4] powernv: Move CPU-Offline idle state invocation from
+ smp.c to idle.c
+Date: Mon, 20 Mar 2017 21:24:15 +0530
+In-Reply-To: <cover.1490024477.git.ego@linux.vnet.ibm.com>
+References: <cover.1490024477.git.ego@linux.vnet.ibm.com>
+In-Reply-To: <cover.1490024477.git.ego@linux.vnet.ibm.com>
+References: <cover.1490024477.git.ego@linux.vnet.ibm.com>
+Message-Id: <358fc68275a4986d2e112418aea447f49f644f7e.1490024477.git.ego@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,203 +46,132 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 20 Mar 2017 16:01:49 +1000
-Nicholas Piggin <npiggin@gmail.com> wrote:
+From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 
-> The ISA specifies power save wakeup can cause a machine check interrupt.
-> The machine check handler currently has code to handle that for POWER8,
-> but POWER9 crashes when trying to execute the P8 style sleep
-> instructions.
-> 
-> So queue up the machine check, then call into the idle code to wake up
-> as the system reset interrupt does, rather than attempting to sleep
-> again without going through the main idle path.
-> 
-> Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
-> Reviewed-by: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+Move the piece of code in powernv/smp.c::pnv_smp_cpu_kill_self() which
+transitions the CPU to the deepest available platform idle state to a
+new function named pnv_cpu_offline() in powernv/idle.c. The rationale
+behind this code movement is that the data required to determine the
+deepest available platform state resides in powernv/idle.c.
 
-Hmm, I sent the wrong patch here. Not having a good day. Sorry to waste
-your time :( (It works fine, but it was setting NAPSTATELOST, which I
-since decided we don't need, and had an incomplete comment change.)
-
-Here's a patch with the comment explaining why nap state is not lost,
-and a bit more code moved into idle_book3s.S -- now exception-64s.S does
-not know anything about idle wakeups except SRR1[46:47].
-
-BTW, I've tested this in mambo including nested non-idle MCEs inside the
-idle-wakeup MCE at various points. I will tidy up and submit the mambo
-script I've been using for MCE injection to skiboot tomorrow.
-
-Thanks,
-Nick
-
-
-The ISA specifies power save wakeup can cause a machine check interrupt.
-The machine check handler currently has code to handle that for POWER8,
-but POWER9 crashes when trying to execute the P8 style sleep
-instructions.
-
-So queue up the machine check, then call into the idle code to wake up
-as the system reset interrupt does, rather than attempting to sleep
-again without going through the main idle path.
-
-Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
-Reviewed-by: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/reg.h       |  1 +
- arch/powerpc/kernel/exceptions-64s.S | 73 +++++++++++++++++++-----------------
- arch/powerpc/kernel/idle_book3s.S    | 25 ++++++++++++
- 3 files changed, 64 insertions(+), 35 deletions(-)
+ arch/powerpc/include/asm/cpuidle.h       |  1 +
+ arch/powerpc/platforms/powernv/idle.c    | 25 +++++++++++++++++++++++++
+ arch/powerpc/platforms/powernv/powernv.h |  2 --
+ arch/powerpc/platforms/powernv/smp.c     | 18 ++----------------
+ 4 files changed, 28 insertions(+), 18 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
-index fc879fd6bdae..8bbdfacce970 100644
---- a/arch/powerpc/include/asm/reg.h
-+++ b/arch/powerpc/include/asm/reg.h
-@@ -656,6 +656,7 @@
- #define   SRR1_ISI_PROT		0x08000000 /* ISI: Other protection fault */
- #define   SRR1_WAKEMASK		0x00380000 /* reason for wakeup */
- #define   SRR1_WAKEMASK_P8	0x003c0000 /* reason for wakeup on POWER8 and 9 */
-+#define   SRR1_WAKEMCE_RESVD	0x003c0000 /* Unused/reserved value used by MCE wakeup to indicate cause to idle wakeup handler */
- #define   SRR1_WAKESYSERR	0x00300000 /* System error */
- #define   SRR1_WAKEEE		0x00200000 /* External interrupt */
- #define   SRR1_WAKEHVI		0x00240000 /* Hypervisor Virtualization Interrupt (P9) */
-diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-index bef9b04a3b2d..e9d4be08813a 100644
---- a/arch/powerpc/kernel/exceptions-64s.S
-+++ b/arch/powerpc/kernel/exceptions-64s.S
-@@ -306,6 +306,37 @@ EXC_COMMON_BEGIN(machine_check_common)
- 	/* restore original r1. */			\
- 	ld	r1,GPR1(r1)
+diff --git a/arch/powerpc/include/asm/cpuidle.h b/arch/powerpc/include/asm/cpuidle.h
+index 1557315..4649ca0 100644
+--- a/arch/powerpc/include/asm/cpuidle.h
++++ b/arch/powerpc/include/asm/cpuidle.h
+@@ -46,6 +46,7 @@
  
-+#ifdef CONFIG_PPC_P7_NAP
-+/*
-+ * This is an idle wakeup. Low level machine check has already been
-+ * done. Queue the event then call the idle code to do the wake up.
-+ */
-+EXC_COMMON_BEGIN(machine_check_idle_common)
-+	bl	machine_check_queue_event
-+
-+	/*
-+	 * We have not used any non-volatile GPRs here, and as a rule
-+	 * most exception code including machine check does not.
-+	 * Therefore PACA_NAPSTATELOST does not need to be set. Idle
-+	 * wakeup will restore volatile registers.
-+	 *
-+	 * Load the original SRR1 into r3 for pnv_powersave_wakeup_mce.
-+	 *
-+	 * Then decrement MCE nesting after finishing with the stack.
-+	 */
-+	ld	r3,_MSR(r1)
-+
-+	lhz	r11,PACA_IN_MCE(r13)
-+	subi	r11,r11,1
-+	sth	r11,PACA_IN_MCE(r13)
-+
-+	/* Turn off the RI bit because SRR1 is used by idle wakeup code. */
-+	/* Recoverability could be improved by reducing the use of SRR1. */
-+	li	r11,0
-+	mtmsrd	r11,1
-+
-+	b	pnv_powersave_wakeup_mce
-+#endif
- 	/*
- 	 * Handle machine check early in real mode. We come here with
- 	 * ME=1, MMU (IR=0 and DR=0) off and using MC emergency stack.
-@@ -318,6 +349,7 @@ EXC_COMMON_BEGIN(machine_check_handle_early)
- 	bl	machine_check_early
- 	std	r3,RESULT(r1)	/* Save result */
- 	ld	r12,_MSR(r1)
-+
- #ifdef	CONFIG_PPC_P7_NAP
- 	/*
- 	 * Check if thread was in power saving mode. We come here when any
-@@ -328,43 +360,14 @@ EXC_COMMON_BEGIN(machine_check_handle_early)
- 	 *
- 	 * Go back to nap/sleep/winkle mode again if (b) is true.
- 	 */
--	rlwinm.	r11,r12,47-31,30,31	/* Was it in power saving mode? */
--	beq	4f			/* No, it wasn't */
--	/* Thread was in power saving mode. Go back to nap again. */
--	cmpwi	r11,2
--	blt	3f
--	/* Supervisor/Hypervisor state loss */
--	li	r0,1
--	stb	r0,PACA_NAPSTATELOST(r13)
--3:	bl	machine_check_queue_event
--	MACHINE_CHECK_HANDLER_WINDUP
--	GET_PACA(r13)
--	ld	r1,PACAR1(r13)
--	/*
--	 * Check what idle state this CPU was in and go back to same mode
--	 * again.
--	 */
--	lbz	r3,PACA_THREAD_IDLE_STATE(r13)
--	cmpwi	r3,PNV_THREAD_NAP
--	bgt	10f
--	IDLE_STATE_ENTER_SEQ_NORET(PPC_NAP)
--	/* No return */
--10:
--	cmpwi	r3,PNV_THREAD_SLEEP
--	bgt	2f
--	IDLE_STATE_ENTER_SEQ_NORET(PPC_SLEEP)
--	/* No return */
--
--2:
--	/*
--	 * Go back to winkle. Please note that this thread was woken up in
--	 * machine check from winkle and have not restored the per-subcore
--	 * state.
--	 */
--	IDLE_STATE_ENTER_SEQ_NORET(PPC_WINKLE)
--	/* No return */
-+	BEGIN_FTR_SECTION
-+	rlwinm.	r11,r12,47-31,30,31
-+	beq-	4f
-+	BRANCH_TO_COMMON(r10, machine_check_idle_common)
- 4:
-+	END_FTR_SECTION_IFSET(CPU_FTR_HVMODE | CPU_FTR_ARCH_206)
- #endif
-+
- 	/*
- 	 * Check if we are coming from hypervisor userspace. If yes then we
- 	 * continue in host kernel in V mode to deliver the MC event.
-diff --git a/arch/powerpc/kernel/idle_book3s.S b/arch/powerpc/kernel/idle_book3s.S
-index 819e64104469..02ec876423cd 100644
---- a/arch/powerpc/kernel/idle_book3s.S
-+++ b/arch/powerpc/kernel/idle_book3s.S
-@@ -378,6 +378,31 @@ _GLOBAL(power9_idle_stop)
- 	/* No return */
+ extern u64 pnv_first_deep_stop_state;
+ 
++unsigned long pnv_cpu_offline(unsigned int cpu);
+ int validate_psscr_val_mask(u64 *psscr_val, u64 *psscr_mask, u32 flags);
+ static inline void report_invalid_psscr_val(u64 psscr_val, int err)
+ {
+diff --git a/arch/powerpc/platforms/powernv/idle.c b/arch/powerpc/platforms/powernv/idle.c
+index 4ee837e..419edff 100644
+--- a/arch/powerpc/platforms/powernv/idle.c
++++ b/arch/powerpc/platforms/powernv/idle.c
+@@ -266,6 +266,31 @@ static void power9_idle(void)
+ u64 pnv_deepest_stop_psscr_mask;
  
  /*
-+ * Called from machine check handler for powersave wakeups.
-+ * Low level machine check processing has already been done. Now just
-+ * go through the wake up path to get everything in order.
-+ *
-+ * r3 - The original SRR1 value.
-+ * Original SRR[01] have been clobbered.
-+ * MSR_RI is clear.
++ * pnv_cpu_offline: A function that puts the CPU into the deepest
++ * available platform idle state on a CPU-Offline.
 + */
-+.global pnv_powersave_wakeup_mce
-+pnv_powersave_wakeup_mce:
-+	/* Set cr3 for pnv_powersave_wakeup */
-+	rlwinm	r11,r3,47-31,30,31
-+	cmpwi	cr3,r11,2
++unsigned long pnv_cpu_offline(unsigned int cpu)
++{
++	unsigned long srr1;
 +
-+	/*
-+	 * Now put the original SRR1 with SRR1_WAKEMCE_RESVD as the wake
-+	 * reason into SRR1, which allows reuse of the system reset wakeup
-+	 * code without being mistaken for another type of wakeup.
-+	 */
-+	oris	r3,r3,SRR1_WAKEMCE_RESVD@h
-+	mtspr	SPRN_SRR1,r3
++	u32 idle_states = pnv_get_supported_cpuidle_states();
 +
-+	b	pnv_powersave_wakeup
++	if (cpu_has_feature(CPU_FTR_ARCH_300)) {
++		srr1 = power9_idle_stop(pnv_deepest_stop_psscr_val,
++					pnv_deepest_stop_psscr_mask);
++	} else if (idle_states & OPAL_PM_WINKLE_ENABLED) {
++		srr1 = power7_winkle();
++	} else if ((idle_states & OPAL_PM_SLEEP_ENABLED) ||
++		   (idle_states & OPAL_PM_SLEEP_ENABLED_ER1)) {
++		srr1 = power7_sleep();
++	} else {
++		srr1 = power7_nap(1);
++	}
++
++	return srr1;
++}
 +
 +/*
-  * Called from reset vector for powersave wakeups.
-  * cr3 - set to gt if waking up with partial/complete hypervisor state loss
-  */
+  * Power ISA 3.0 idle initialization.
+  *
+  * POWER ISA 3.0 defines a new SPR Processor stop Status and Control
+diff --git a/arch/powerpc/platforms/powernv/powernv.h b/arch/powerpc/platforms/powernv/powernv.h
+index 6130522..6dbc0a1 100644
+--- a/arch/powerpc/platforms/powernv/powernv.h
++++ b/arch/powerpc/platforms/powernv/powernv.h
+@@ -18,8 +18,6 @@ static inline void pnv_pci_shutdown(void) { }
+ #endif
+ 
+ extern u32 pnv_get_supported_cpuidle_states(void);
+-extern u64 pnv_deepest_stop_psscr_val;
+-extern u64 pnv_deepest_stop_psscr_mask;
+ 
+ extern void pnv_lpc_init(void);
+ 
+diff --git a/arch/powerpc/platforms/powernv/smp.c b/arch/powerpc/platforms/powernv/smp.c
+index 8b67e1e..914b456 100644
+--- a/arch/powerpc/platforms/powernv/smp.c
++++ b/arch/powerpc/platforms/powernv/smp.c
+@@ -35,6 +35,7 @@
+ #include <asm/dbell.h>
+ #include <asm/kvm_ppc.h>
+ #include <asm/ppc-opcode.h>
++#include <asm/cpuidle.h>
+ 
+ #include "powernv.h"
+ 
+@@ -140,7 +141,6 @@ static void pnv_smp_cpu_kill_self(void)
+ {
+ 	unsigned int cpu;
+ 	unsigned long srr1, wmask;
+-	u32 idle_states;
+ 
+ 	/* Standard hot unplug procedure */
+ 	local_irq_disable();
+@@ -155,8 +155,6 @@ static void pnv_smp_cpu_kill_self(void)
+ 	if (cpu_has_feature(CPU_FTR_ARCH_207S))
+ 		wmask = SRR1_WAKEMASK_P8;
+ 
+-	idle_states = pnv_get_supported_cpuidle_states();
+-
+ 	/* We don't want to take decrementer interrupts while we are offline,
+ 	 * so clear LPCR:PECE1. We keep PECE2 (and LPCR_PECE_HVEE on P9)
+ 	 * enabled as to let IPIs in.
+@@ -184,19 +182,7 @@ static void pnv_smp_cpu_kill_self(void)
+ 		kvmppc_set_host_ipi(cpu, 0);
+ 
+ 		ppc64_runlatch_off();
+-
+-		if (cpu_has_feature(CPU_FTR_ARCH_300)) {
+-			srr1 = power9_idle_stop(pnv_deepest_stop_psscr_val,
+-						pnv_deepest_stop_psscr_mask);
+-		} else if (idle_states & OPAL_PM_WINKLE_ENABLED) {
+-			srr1 = power7_winkle();
+-		} else if ((idle_states & OPAL_PM_SLEEP_ENABLED) ||
+-			   (idle_states & OPAL_PM_SLEEP_ENABLED_ER1)) {
+-			srr1 = power7_sleep();
+-		} else {
+-			srr1 = power7_nap(1);
+-		}
+-
++		srr1 = pnv_cpu_offline(cpu);
+ 		ppc64_runlatch_on();
+ 
+ 		/*
 -- 
-2.11.0
+1.9.4
