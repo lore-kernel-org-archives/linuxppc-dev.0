@@ -1,18 +1,22 @@
-Return-Path: <michael@ozlabs.org>
+Return-Path: <michael@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vmrnt2F3kzDqYB
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Mar 2017 20:52:02 +1100 (AEDT)
-In-Reply-To: <1489655231-10582-1-git-send-email-chandan@linux.vnet.ibm.com>
-To: Chandan Rajendra <chandan@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
-From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Chandan Rajendra <chandan@linux.vnet.ibm.com>,
- Chris.Packham@alliedtelesis.co.nz
-Subject: Re: powerpc: Wire up statx() syscall
-Message-Id: <3vmrnt1gXtz9s3w@ozlabs.org>
-Date: Mon, 20 Mar 2017 20:52:02 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vmrvG2FKNzDq5g
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Mar 2017 20:56:42 +1100 (AEDT)
+From: Michael Ellerman <michael@ellerman.id.au>
+To: David Gibson <david@gibson.dropbear.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org, paulus@samba.org,
+ linux-kernel@vger.kernel.org, David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: [PATCH] powerpc/pseries: Don't give a warning when HPT resizing
+ isn't available
+In-Reply-To: <87tw6sbims.fsf@concordia.ellerman.id.au>
+References: <20170317011119.31091-1-david@gibson.dropbear.id.au>
+ <87tw6sbims.fsf@concordia.ellerman.id.au>
+Date: Mon, 20 Mar 2017 20:56:39 +1100
+Message-ID: <87fui846g8.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,23 +26,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2017-03-16 at 09:07:11 UTC, Chandan Rajendra wrote:
-> Test runs on a ppc64 BE guest succeeded. linux/samples/statx/test-statx
-> program was executed on the following file types,
-> 
-> 1. Regular file
-> 2. Directory
-> 3. device file
-> 4. symlink
-> 5. Named pipe
-> 
-> The test run also included invoking test-statx with the runtime options
-> provided in the main() function of test-statx.c
-> 
-> Signed-off-by: Chandan Rajendra <chandan@linux.vnet.ibm.com>
+Michael Ellerman <michael@ellerman.id.au> writes:
 
-Applied to powerpc fixes, thanks.
+> David Gibson <david@gibson.dropbear.id.au> writes:
+>
+>> As of 438cc81a41 "powerpc/pseries: Automatically resize HPT for memory hot
+>> add/remove" when running on the pseries platform, we always attempt to
+>> use the PAPR extension to resize the hashed page table (HPT) when we add
+>> or remove memory.
+>>
+>> This is fine, but when the extension is available we'll give a harmless,
+>> but scary warning.  This patch suppresses the warning in this case.  It
+>> will still warn if the feature is supposed to be available, but didn't
+>> work.
+>>
+>> Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+>> ---
+>>  arch/powerpc/mm/hash_utils_64.c | 2 +-
+>>  1 file changed, 1 insertion(+), 1 deletion(-)
+>>
+>> Kind of cosmetic, but getting an error message on every memory hot
+>> plug/unplug attempt if your host doesn't support HPT resizing is
+>> pretty ugly.  So I think this is a candidate for quick inclusion.
+>
+> Yeah thanks, I forgot I was going to send a patch for it.
+>
+> I was thinking of doing the following instead, or maybe we can do both?
+>
+> diff --git a/arch/powerpc/platforms/pseries/lpar.c b/arch/powerpc/platforms/pseries/lpar.c
+> index 251060cf1713..8b1fe895daa3 100644
+> --- a/arch/powerpc/platforms/pseries/lpar.c
+> +++ b/arch/powerpc/platforms/pseries/lpar.c
+> @@ -751,7 +751,9 @@ void __init hpte_init_pseries(void)
+>  	mmu_hash_ops.flush_hash_range	 = pSeries_lpar_flush_hash_range;
+>  	mmu_hash_ops.hpte_clear_all      = pseries_hpte_clear_all;
+>  	mmu_hash_ops.hugepage_invalidate = pSeries_lpar_hugepage_invalidate;
+> -	mmu_hash_ops.resize_hpt		 = pseries_lpar_resize_hpt;
+> +
+> +	if (firmware_has_feature(FW_FEATURE_HPT_RESIZE))
+> +		mmu_hash_ops.resize_hpt = pseries_lpar_resize_hpt;
+>  }
+>  
+>  void radix_init_pseries(void)
 
-https://git.kernel.org/powerpc/c/f717629c7f834ab2efa05c7dbf0826
+Applied to powerpc fixes.
+
+https://git.kernel.org/powerpc/c/8971e1c79d3f6c9a5e6f7a65c50c41
 
 cheers
