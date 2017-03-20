@@ -1,22 +1,22 @@
 Return-Path: <giu.lippolis@gmail.com>
-Received: from mail-wm0-x234.google.com (mail-wm0-x234.google.com
- [IPv6:2a00:1450:400c:c09::234])
+Received: from mail-wm0-x230.google.com (mail-wm0-x230.google.com
+ [IPv6:2a00:1450:400c:c09::230])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vn7bf39JjzDqZR
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Mar 2017 07:59:10 +1100 (AEDT)
-Received: by mail-wm0-x234.google.com with SMTP id t189so74572921wmt.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Mar 2017 13:59:10 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vn89x6YV1zDqbg
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Mar 2017 08:25:25 +1100 (AEDT)
+Received: by mail-wm0-x230.google.com with SMTP id n11so74882371wma.0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Mar 2017 14:25:25 -0700 (PDT)
 Received: from Schopenhauer (p5499496B.dip0.t-ipconnect.de. [84.153.73.107])
- by smtp.gmail.com with ESMTPSA id y6sm22115227wrc.40.2017.03.20.13.59.04
+ by smtp.gmail.com with ESMTPSA id b17sm14931183wma.33.2017.03.20.14.25.21
  for <linuxppc-dev@lists.ozlabs.org>
  (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Mon, 20 Mar 2017 13:59:04 -0700 (PDT)
+ Mon, 20 Mar 2017 14:25:21 -0700 (PDT)
 From: "Giuseppe Lippolis" <giu.lippolis@gmail.com>
 To: <linuxppc-dev@lists.ozlabs.org>
-Subject: Problem with cuImage on 83x 
-Date: Mon, 20 Mar 2017 21:59:00 +0100
-Message-ID: <000301d2a1bc$cd5d67e0$681837a0$@gmail.com>
+Subject: Problem with cuImage on 83x
+Date: Mon, 20 Mar 2017 22:25:17 +0100
+Message-ID: <000001d2a1c0$7938bd00$6baa3700$@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="us-ascii"
@@ -52,19 +52,19 @@ kernel.
    Uncompressing Kernel Image ... OK
 Memory <- <0x0 0x20000000> (512MB)
 ethernet0: local-mac-address <- 00:d0:b8:01:d1:9f
-ethernet1: local-mac-address <- 4b:ff:ff:60:72:6f
-CPU clock-frequency <- 0x179a7b00 (396MHz)
-CPU timebase-frequency <- 0x3ef1480 (66MHz)
+ethernet1: local-mac-address <- 4b:ff:ff:60:72:6f 
+CPU clock-frequency <- 0x179a7b00 (396MHz) 
+CPU timebase-frequency <- 0x3ef1480 (66MHz) 
 CPU bus-frequency <- 0xfbc5200 (264MHz)
 
-zImage starting: loaded at 0x00600000 (sp: 0x1ffb2cf8)
-Decompression error: 'Not a gzip file'
-No valid compressed data found, assume uncompressed data
-Allocating 0x5f9250 bytes for kernel...
+zImage starting: loaded at 0x00600000 (sp: 0x1ffb2cf8) Decompression error:
+'Not a gzip file'
+No valid compressed data found, assume uncompressed data Allocating 0x5f9250
+bytes for kernel...
 0x5bd520 bytes of uncompressed data copied
 
 Linux/PowerPC load: root=/dev/mtdblock1 ro rootfstype=cramfs devfs=mount
-console=ttySc
+console=ttySc 
 Finalizing device tree... flat tree at 0xbdb960
 
 
