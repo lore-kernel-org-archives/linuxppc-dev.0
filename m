@@ -1,36 +1,26 @@
-Return-Path: <fbarrat@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
+ [IPv6:2607:f8b0:400e:c00::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vmywb0HywzDq5g
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Mar 2017 01:28:14 +1100 (AEDT)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v2KENws3104326
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Mar 2017 10:28:06 -0400
-Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2992tf56ta-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Mar 2017 10:28:06 -0400
-Received: from localhost
- by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
- Mon, 20 Mar 2017 14:28:04 -0000
-Subject: Re: [PATCH V2 2/6] cxl: Keep track of mm struct associated with a
- context
-To: Christophe Lombard <clombard@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, imunsie@au1.ibm.com,
- andrew.donnellan@au1.ibm.com
-References: <1489489722-935-1-git-send-email-clombard@linux.vnet.ibm.com>
- <1489489722-935-3-git-send-email-clombard@linux.vnet.ibm.com>
-From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-Date: Mon, 20 Mar 2017 15:27:33 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vmzS85xZxzDq5g
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Mar 2017 01:52:08 +1100 (AEDT)
+Received: by mail-pf0-x242.google.com with SMTP id o126so17708181pfb.1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Mar 2017 07:52:08 -0700 (PDT)
+Date: Tue, 21 Mar 2017 00:51:54 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Michael Ellerman <mpe@ellerman.id.au>, "Gautham R . Shenoy"
+ <ego@linux.vnet.ibm.com>, Mahesh Jagannath Salgaonkar
+ <mahesh@linux.vnet.ibm.com>
+Subject: Re: [PATCH 4/7] powerpc/64s: fix POWER9 machine check handler from
+ stop state
+Message-ID: <20170321005154.1fa18ef1@roar.ozlabs.ibm.com>
+In-Reply-To: <20170320060152.1016-5-npiggin@gmail.com>
+References: <20170320060152.1016-1-npiggin@gmail.com>
+ <20170320060152.1016-5-npiggin@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <1489489722-935-3-git-send-email-clombard@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Message-Id: <78dc3dd2-1295-3bac-b3bb-575fc2f7501a@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,327 +30,203 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Mon, 20 Mar 2017 16:01:49 +1000
+Nicholas Piggin <npiggin@gmail.com> wrote:
+
+> The ISA specifies power save wakeup can cause a machine check interrupt.
+> The machine check handler currently has code to handle that for POWER8,
+> but POWER9 crashes when trying to execute the P8 style sleep
+> instructions.
+> 
+> So queue up the machine check, then call into the idle code to wake up
+> as the system reset interrupt does, rather than attempting to sleep
+> again without going through the main idle path.
+> 
+> Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+> Reviewed-by: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+
+Hmm, I sent the wrong patch here. Not having a good day. Sorry to waste
+your time :( (It works fine, but it was setting NAPSTATELOST, which I
+since decided we don't need, and had an incomplete comment change.)
+
+Here's a patch with the comment explaining why nap state is not lost,
+and a bit more code moved into idle_book3s.S -- now exception-64s.S does
+not know anything about idle wakeups except SRR1[46:47].
+
+BTW, I've tested this in mambo including nested non-idle MCEs inside the
+idle-wakeup MCE at various points. I will tidy up and submit the mambo
+script I've been using for MCE injection to skiboot tomorrow.
+
+Thanks,
+Nick
 
 
-Le 14/03/2017 à 12:08, Christophe Lombard a écrit :
-> The mm_struct corresponding to the current task is acquired each time
-> an interrupt is raised. So to simplify the code, we only get the
-> mm_struct when attaching an AFU context to the process.
-> The mm_count reference is increased to ensure that the mm_struct can't
-> be freed. The mm_struct will be released when the context is detached.
-> The reference (use count) on the struct mm is not kept to avoid a
-> circular dependency if the process mmaps its cxl mmio and forget to
-> unmap before exiting.
+The ISA specifies power save wakeup can cause a machine check interrupt.
+The machine check handler currently has code to handle that for POWER8,
+but POWER9 crashes when trying to execute the P8 style sleep
+instructions.
 
-I think it should be:
-A reference on mm_users is not kept to avoid...
+So queue up the machine check, then call into the idle code to wake up
+as the system reset interrupt does, rather than attempting to sleep
+again without going through the main idle path.
 
+Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+Reviewed-by: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+---
+ arch/powerpc/include/asm/reg.h       |  1 +
+ arch/powerpc/kernel/exceptions-64s.S | 73 +++++++++++++++++++-----------------
+ arch/powerpc/kernel/idle_book3s.S    | 25 ++++++++++++
+ 3 files changed, 64 insertions(+), 35 deletions(-)
 
->
-> Signed-off-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
-> ---
->  drivers/misc/cxl/api.c     | 17 ++++++++--
->  drivers/misc/cxl/context.c | 26 ++++++++++++++--
->  drivers/misc/cxl/cxl.h     | 13 ++++++--
->  drivers/misc/cxl/fault.c   | 77 +++++-----------------------------------------
->  drivers/misc/cxl/file.c    | 15 +++++++--
->  5 files changed, 68 insertions(+), 80 deletions(-)
->
-> diff --git a/drivers/misc/cxl/api.c b/drivers/misc/cxl/api.c
-> index bcc030e..1a138c8 100644
-> --- a/drivers/misc/cxl/api.c
-> +++ b/drivers/misc/cxl/api.c
-> @@ -14,6 +14,7 @@
->  #include <linux/msi.h>
->  #include <linux/module.h>
->  #include <linux/mount.h>
-> +#include <linux/sched/mm.h>
->
->  #include "cxl.h"
->
-> @@ -321,19 +322,29 @@ int cxl_start_context(struct cxl_context *ctx, u64 wed,
->
->  	if (task) {
->  		ctx->pid = get_task_pid(task, PIDTYPE_PID);
-> -		ctx->glpid = get_task_pid(task->group_leader, PIDTYPE_PID);
->  		kernel = false;
->  		ctx->real_mode = false;
-> +
-> +		/* acquire a reference to the task's mm */
-> +		ctx->mm = get_task_mm(current);
-> +
-> +		/* ensure this mm_struct can't be freed */
-> +		cxl_context_mm_count_get(ctx);
-> +
-> +		/* decrement the use count */
-> +		if (ctx->mm)
-> +			mmput(ctx->mm);
->  	}
->
->  	cxl_ctx_get();
->
->  	if ((rc = cxl_ops->attach_process(ctx, kernel, wed, 0))) {
-> -		put_pid(ctx->glpid);
->  		put_pid(ctx->pid);
-> -		ctx->glpid = ctx->pid = NULL;
-> +		ctx->pid = NULL;
->  		cxl_adapter_context_put(ctx->afu->adapter);
->  		cxl_ctx_put();
-> +		if (task)
-> +			cxl_context_mm_count_put(ctx);
->  		goto out;
->  	}
->
-> diff --git a/drivers/misc/cxl/context.c b/drivers/misc/cxl/context.c
-> index 062bf6c..ed0a447 100644
-> --- a/drivers/misc/cxl/context.c
-> +++ b/drivers/misc/cxl/context.c
-> @@ -17,6 +17,7 @@
->  #include <linux/debugfs.h>
->  #include <linux/slab.h>
->  #include <linux/idr.h>
-> +#include <linux/sched/mm.h>
->  #include <asm/cputable.h>
->  #include <asm/current.h>
->  #include <asm/copro.h>
-> @@ -41,7 +42,7 @@ int cxl_context_init(struct cxl_context *ctx, struct cxl_afu *afu, bool master)
->  	spin_lock_init(&ctx->sste_lock);
->  	ctx->afu = afu;
->  	ctx->master = master;
-> -	ctx->pid = ctx->glpid = NULL; /* Set in start work ioctl */
-> +	ctx->pid = NULL; /* Set in start work ioctl */
->  	mutex_init(&ctx->mapping_lock);
->  	ctx->mapping = NULL;
->
-> @@ -242,12 +243,15 @@ int __detach_context(struct cxl_context *ctx)
->
->  	/* release the reference to the group leader and mm handling pid */
->  	put_pid(ctx->pid);
-> -	put_pid(ctx->glpid);
->
->  	cxl_ctx_put();
->
->  	/* Decrease the attached context count on the adapter */
->  	cxl_adapter_context_put(ctx->afu->adapter);
-> +
-> +	/* Decrease the mm count on the context */
-> +	cxl_context_mm_count_put(ctx);
-> +
->  	return 0;
->  }
->
-> @@ -325,3 +329,21 @@ void cxl_context_free(struct cxl_context *ctx)
->  	mutex_unlock(&ctx->afu->contexts_lock);
->  	call_rcu(&ctx->rcu, reclaim_ctx);
->  }
-> +
-> +void cxl_context_mm_count_get(struct cxl_context *ctx)
-> +{
-> +	if (ctx->mm)
-> +		atomic_inc(&ctx->mm->mm_count);
-> +}
-> +
-> +void cxl_context_mm_count_put(struct cxl_context *ctx)
-> +{
-> +	if (ctx->mm)
-> +		mmdrop(ctx->mm);
-> +}
-> +
-> +void cxl_context_mm_users_get(struct cxl_context *ctx)
-> +{
-> +	if (ctx->mm)
-> +		atomic_inc(&ctx->mm->mm_users);
-> +}
-> diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
-> index 79e60ec..4d1b704 100644
-> --- a/drivers/misc/cxl/cxl.h
-> +++ b/drivers/misc/cxl/cxl.h
-> @@ -482,8 +482,6 @@ struct cxl_context {
->  	unsigned int sst_size, sst_lru;
->
->  	wait_queue_head_t wq;
-> -	/* pid of the group leader associated with the pid */
-> -	struct pid *glpid;
->  	/* use mm context associated with this pid for ds faults */
->  	struct pid *pid;
->  	spinlock_t lock; /* Protects pending_irq_mask, pending_fault and fault_addr */
-> @@ -551,6 +549,8 @@ struct cxl_context {
->  	 * CX4 only:
->  	 */
->  	struct list_head extra_irq_contexts;
-> +
-> +	struct mm_struct *mm;
->  };
->
->  struct cxl_service_layer_ops {
-> @@ -1024,4 +1024,13 @@ int cxl_adapter_context_lock(struct cxl *adapter);
->  /* Unlock the contexts-lock if taken. Warn and force unlock otherwise */
->  void cxl_adapter_context_unlock(struct cxl *adapter);
->
-> +/* Increases the reference count to "struct mm_struct" */
-> +void cxl_context_mm_count_get(struct cxl_context *ctx);
-> +
-> +/* Decrements the reference count to "struct mm_struct" */
-> +void cxl_context_mm_count_put(struct cxl_context *ctx);
-> +
-> +/* Increases the reference users to "struct mm_struct" */
-> +void cxl_context_mm_users_get(struct cxl_context *ctx);
-> +
->  #endif
-> diff --git a/drivers/misc/cxl/fault.c b/drivers/misc/cxl/fault.c
-> index 2fa015c..14a5bfa 100644
-> --- a/drivers/misc/cxl/fault.c
-> +++ b/drivers/misc/cxl/fault.c
-> @@ -170,81 +170,19 @@ static void cxl_handle_page_fault(struct cxl_context *ctx,
->  }
->
->  /*
-> - * Returns the mm_struct corresponding to the context ctx via ctx->pid
-> - * In case the task has exited we use the task group leader accessible
-> - * via ctx->glpid to find the next task in the thread group that has a
-> - * valid  mm_struct associated with it. If a task with valid mm_struct
-> - * is found the ctx->pid is updated to use the task struct for subsequent
-> - * translations. In case no valid mm_struct is found in the task group to
-> - * service the fault a NULL is returned.
-> + * Returns the mm_struct corresponding to the context ctx.
-> + * mm_users == 0, the context may be in the process of being closed.
->   */
->  static struct mm_struct *get_mem_context(struct cxl_context *ctx)
->  {
-> -	struct task_struct *task = NULL;
-> -	struct mm_struct *mm = NULL;
-> -	struct pid *old_pid = ctx->pid;
-> -
-> -	if (old_pid == NULL) {
-> -		pr_warn("%s: Invalid context for pe=%d\n",
-> -			 __func__, ctx->pe);
-> +	if (ctx->mm == NULL)
->  		return NULL;
-> -	}
-> -
-> -	task = get_pid_task(old_pid, PIDTYPE_PID);
-> -
-> -	/*
-> -	 * pid_alive may look racy but this saves us from costly
-> -	 * get_task_mm when the task is a zombie. In worst case
-> -	 * we may think a task is alive, which is about to die
-> -	 * but get_task_mm will return NULL.
-> -	 */
-> -	if (task != NULL && pid_alive(task))
-> -		mm = get_task_mm(task);
->
-> -	/* release the task struct that was taken earlier */
-> -	if (task)
-> -		put_task_struct(task);
-> -	else
-> -		pr_devel("%s: Context owning pid=%i for pe=%i dead\n",
-> -			__func__, pid_nr(old_pid), ctx->pe);
-> -
-> -	/*
-> -	 * If we couldn't find the mm context then use the group
-> -	 * leader to iterate over the task group and find a task
-> -	 * that gives us mm_struct.
-> -	 */
-> -	if (unlikely(mm == NULL && ctx->glpid != NULL)) {
-> -
-> -		rcu_read_lock();
-> -		task = pid_task(ctx->glpid, PIDTYPE_PID);
-> -		if (task)
-> -			do {
-> -				mm = get_task_mm(task);
-> -				if (mm) {
-> -					ctx->pid = get_task_pid(task,
-> -								PIDTYPE_PID);
-> -					break;
-> -				}
-> -				task = next_thread(task);
-> -			} while (task && !thread_group_leader(task));
-> -		rcu_read_unlock();
-> -
-> -		/* check if we switched pid */
-> -		if (ctx->pid != old_pid) {
-> -			if (mm)
-> -				pr_devel("%s:pe=%i switch pid %i->%i\n",
-> -					 __func__, ctx->pe, pid_nr(old_pid),
-> -					 pid_nr(ctx->pid));
-> -			else
-> -				pr_devel("%s:Cannot find mm for pid=%i\n",
-> -					 __func__, pid_nr(old_pid));
-> -
-> -			/* drop the reference to older pid */
-> -			put_pid(old_pid);
-> -		}
-> -	}
-> +	if (atomic_read(&ctx->mm->mm_users) == 0)
-> +		return NULL;
->
-> -	return mm;
-> +	cxl_context_mm_users_get(ctx);
-> +	return ctx->mm;
-
-It should be done atomically:
-
-	if (!atomic_inc_not_zero(&ctx->mm->mm_users))
-		return ctx->mm;
-
-	return NULL;
-
-in which case, we don't need cxl_context_mm_users_get() any more.
-
-
-   Fred
-
-
->  }
->
->
-> @@ -282,7 +220,6 @@ void cxl_handle_fault(struct work_struct *fault_work)
->  	if (!ctx->kernel) {
->
->  		mm = get_mem_context(ctx);
-> -		/* indicates all the thread in task group have exited */
->  		if (mm == NULL) {
->  			pr_devel("%s: unable to get mm for pe=%d pid=%i\n",
->  				 __func__, ctx->pe, pid_nr(ctx->pid));
-> diff --git a/drivers/misc/cxl/file.c b/drivers/misc/cxl/file.c
-> index e7139c7..17b433f 100644
-> --- a/drivers/misc/cxl/file.c
-> +++ b/drivers/misc/cxl/file.c
-> @@ -18,6 +18,7 @@
->  #include <linux/fs.h>
->  #include <linux/mm.h>
->  #include <linux/slab.h>
-> +#include <linux/sched/mm.h>
->  #include <asm/cputable.h>
->  #include <asm/current.h>
->  #include <asm/copro.h>
-> @@ -216,8 +217,16 @@ static long afu_ioctl_start_work(struct cxl_context *ctx,
->  	 * process is still accessible.
->  	 */
->  	ctx->pid = get_task_pid(current, PIDTYPE_PID);
-> -	ctx->glpid = get_task_pid(current->group_leader, PIDTYPE_PID);
->
-> +	/* acquire a reference to the task's mm */
-> +	ctx->mm = get_task_mm(current);
-> +
-> +	/* ensure this mm_struct can't be freed */
-> +	cxl_context_mm_count_get(ctx);
-> +
-> +	/* decrement the use count */
-> +	if (ctx->mm)
-> +		mmput(ctx->mm);
->
->  	trace_cxl_attach(ctx, work.work_element_descriptor, work.num_interrupts, amr);
->
-> @@ -225,9 +234,9 @@ static long afu_ioctl_start_work(struct cxl_context *ctx,
->  							amr))) {
->  		afu_release_irqs(ctx, ctx);
->  		cxl_adapter_context_put(ctx->afu->adapter);
-> -		put_pid(ctx->glpid);
->  		put_pid(ctx->pid);
-> -		ctx->glpid = ctx->pid = NULL;
-> +		ctx->pid = NULL;
-> +		cxl_context_mm_count_put(ctx);
->  		goto out;
->  	}
->
+diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
+index fc879fd6bdae..8bbdfacce970 100644
+--- a/arch/powerpc/include/asm/reg.h
++++ b/arch/powerpc/include/asm/reg.h
+@@ -656,6 +656,7 @@
+ #define   SRR1_ISI_PROT		0x08000000 /* ISI: Other protection fault */
+ #define   SRR1_WAKEMASK		0x00380000 /* reason for wakeup */
+ #define   SRR1_WAKEMASK_P8	0x003c0000 /* reason for wakeup on POWER8 and 9 */
++#define   SRR1_WAKEMCE_RESVD	0x003c0000 /* Unused/reserved value used by MCE wakeup to indicate cause to idle wakeup handler */
+ #define   SRR1_WAKESYSERR	0x00300000 /* System error */
+ #define   SRR1_WAKEEE		0x00200000 /* External interrupt */
+ #define   SRR1_WAKEHVI		0x00240000 /* Hypervisor Virtualization Interrupt (P9) */
+diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+index bef9b04a3b2d..e9d4be08813a 100644
+--- a/arch/powerpc/kernel/exceptions-64s.S
++++ b/arch/powerpc/kernel/exceptions-64s.S
+@@ -306,6 +306,37 @@ EXC_COMMON_BEGIN(machine_check_common)
+ 	/* restore original r1. */			\
+ 	ld	r1,GPR1(r1)
+ 
++#ifdef CONFIG_PPC_P7_NAP
++/*
++ * This is an idle wakeup. Low level machine check has already been
++ * done. Queue the event then call the idle code to do the wake up.
++ */
++EXC_COMMON_BEGIN(machine_check_idle_common)
++	bl	machine_check_queue_event
++
++	/*
++	 * We have not used any non-volatile GPRs here, and as a rule
++	 * most exception code including machine check does not.
++	 * Therefore PACA_NAPSTATELOST does not need to be set. Idle
++	 * wakeup will restore volatile registers.
++	 *
++	 * Load the original SRR1 into r3 for pnv_powersave_wakeup_mce.
++	 *
++	 * Then decrement MCE nesting after finishing with the stack.
++	 */
++	ld	r3,_MSR(r1)
++
++	lhz	r11,PACA_IN_MCE(r13)
++	subi	r11,r11,1
++	sth	r11,PACA_IN_MCE(r13)
++
++	/* Turn off the RI bit because SRR1 is used by idle wakeup code. */
++	/* Recoverability could be improved by reducing the use of SRR1. */
++	li	r11,0
++	mtmsrd	r11,1
++
++	b	pnv_powersave_wakeup_mce
++#endif
+ 	/*
+ 	 * Handle machine check early in real mode. We come here with
+ 	 * ME=1, MMU (IR=0 and DR=0) off and using MC emergency stack.
+@@ -318,6 +349,7 @@ EXC_COMMON_BEGIN(machine_check_handle_early)
+ 	bl	machine_check_early
+ 	std	r3,RESULT(r1)	/* Save result */
+ 	ld	r12,_MSR(r1)
++
+ #ifdef	CONFIG_PPC_P7_NAP
+ 	/*
+ 	 * Check if thread was in power saving mode. We come here when any
+@@ -328,43 +360,14 @@ EXC_COMMON_BEGIN(machine_check_handle_early)
+ 	 *
+ 	 * Go back to nap/sleep/winkle mode again if (b) is true.
+ 	 */
+-	rlwinm.	r11,r12,47-31,30,31	/* Was it in power saving mode? */
+-	beq	4f			/* No, it wasn't */
+-	/* Thread was in power saving mode. Go back to nap again. */
+-	cmpwi	r11,2
+-	blt	3f
+-	/* Supervisor/Hypervisor state loss */
+-	li	r0,1
+-	stb	r0,PACA_NAPSTATELOST(r13)
+-3:	bl	machine_check_queue_event
+-	MACHINE_CHECK_HANDLER_WINDUP
+-	GET_PACA(r13)
+-	ld	r1,PACAR1(r13)
+-	/*
+-	 * Check what idle state this CPU was in and go back to same mode
+-	 * again.
+-	 */
+-	lbz	r3,PACA_THREAD_IDLE_STATE(r13)
+-	cmpwi	r3,PNV_THREAD_NAP
+-	bgt	10f
+-	IDLE_STATE_ENTER_SEQ_NORET(PPC_NAP)
+-	/* No return */
+-10:
+-	cmpwi	r3,PNV_THREAD_SLEEP
+-	bgt	2f
+-	IDLE_STATE_ENTER_SEQ_NORET(PPC_SLEEP)
+-	/* No return */
+-
+-2:
+-	/*
+-	 * Go back to winkle. Please note that this thread was woken up in
+-	 * machine check from winkle and have not restored the per-subcore
+-	 * state.
+-	 */
+-	IDLE_STATE_ENTER_SEQ_NORET(PPC_WINKLE)
+-	/* No return */
++	BEGIN_FTR_SECTION
++	rlwinm.	r11,r12,47-31,30,31
++	beq-	4f
++	BRANCH_TO_COMMON(r10, machine_check_idle_common)
+ 4:
++	END_FTR_SECTION_IFSET(CPU_FTR_HVMODE | CPU_FTR_ARCH_206)
+ #endif
++
+ 	/*
+ 	 * Check if we are coming from hypervisor userspace. If yes then we
+ 	 * continue in host kernel in V mode to deliver the MC event.
+diff --git a/arch/powerpc/kernel/idle_book3s.S b/arch/powerpc/kernel/idle_book3s.S
+index 819e64104469..02ec876423cd 100644
+--- a/arch/powerpc/kernel/idle_book3s.S
++++ b/arch/powerpc/kernel/idle_book3s.S
+@@ -378,6 +378,31 @@ _GLOBAL(power9_idle_stop)
+ 	/* No return */
+ 
+ /*
++ * Called from machine check handler for powersave wakeups.
++ * Low level machine check processing has already been done. Now just
++ * go through the wake up path to get everything in order.
++ *
++ * r3 - The original SRR1 value.
++ * Original SRR[01] have been clobbered.
++ * MSR_RI is clear.
++ */
++.global pnv_powersave_wakeup_mce
++pnv_powersave_wakeup_mce:
++	/* Set cr3 for pnv_powersave_wakeup */
++	rlwinm	r11,r3,47-31,30,31
++	cmpwi	cr3,r11,2
++
++	/*
++	 * Now put the original SRR1 with SRR1_WAKEMCE_RESVD as the wake
++	 * reason into SRR1, which allows reuse of the system reset wakeup
++	 * code without being mistaken for another type of wakeup.
++	 */
++	oris	r3,r3,SRR1_WAKEMCE_RESVD@h
++	mtspr	SPRN_SRR1,r3
++
++	b	pnv_powersave_wakeup
++
++/*
+  * Called from reset vector for powersave wakeups.
+  * cr3 - set to gt if waking up with partial/complete hypervisor state loss
+  */
+-- 
+2.11.0
