@@ -1,46 +1,46 @@
-Return-Path: <svaidy@linux.vnet.ibm.com>
+Return-Path: <mahesh@linux.vnet.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vmjhz4j9czDq5g
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Mar 2017 15:32:19 +1100 (AEDT)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vmkqj6VMfzDq5g
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Mar 2017 16:23:13 +1100 (AEDT)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v2K4T5AL050384
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Mar 2017 00:32:10 -0400
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2990vvxp13-1
+ v2K5IgDB045387
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Mar 2017 01:23:11 -0400
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2990scrqrf-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Mar 2017 00:32:10 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Mar 2017 01:23:10 -0400
 Received: from localhost
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <svaidy@linux.vnet.ibm.com>;
- Mon, 20 Mar 2017 14:32:07 +1000
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v2K4Vuxd49217678
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Mar 2017 15:32:04 +1100
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v2K4VUmF006216
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Mar 2017 15:31:30 +1100
-Date: Mon, 20 Mar 2017 10:01:12 +0530
-From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] powerpc/powernv/cpuidle: Pass correct drv->cpumask for
- registration
-Reply-To: svaidy@linux.vnet.ibm.com
-References: <20170317180550.9931-1-svaidy@linux.vnet.ibm.com>
- <1489814882.5616.11.camel@neuling.org>
- <20170318064425.GC4225@drishya.in.ibm.com>
- <87k27kzlz0.fsf@concordia.ellerman.id.au>
+ for <linuxppc-dev@lists.ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
+ Mon, 20 Mar 2017 15:23:06 +1000
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v2K5MvW952428954
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Mar 2017 16:23:05 +1100
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v2K5MWDG017565
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Mar 2017 16:22:32 +1100
+Subject: Re: [PATCH 4/8] powerpc/64s: fix POWER9 machine check handler from
+ stop state
+To: ego@linux.vnet.ibm.com, Nicholas Piggin <npiggin@gmail.com>
+References: <20170314092349.10981-1-npiggin@gmail.com>
+ <20170314092349.10981-5-npiggin@gmail.com>
+ <67bd0a9f-ebaa-acdb-cfbf-8a4acba256a3@linux.vnet.ibm.com>
+ <20170316230520.5ba5528e@roar.ozlabs.ibm.com>
+ <20170316131907.GF16462@in.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+From: Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com>
+Date: Mon, 20 Mar 2017 10:52:14 +0530
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <87k27kzlz0.fsf@concordia.ellerman.id.au>
-Message-Id: <20170320043112.GA4123@drishya.in.ibm.com>
+In-Reply-To: <20170316131907.GF16462@in.ibm.com>
+Content-Type: text/plain; charset=windows-1252
+Message-Id: <f3d093a0-298e-6292-fe53-4d17dfe8eeec@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,106 +50,103 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-* Michael Ellerman <mpe@ellerman.id.au> [2017-03-20 14:05:39]:
-
-> Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com> writes:
+On 03/16/2017 06:49 PM, Gautham R Shenoy wrote:
+> Hi,
 > 
-> > * Michael Neuling <mikey@neuling.org> [2017-03-18 16:28:02]:
-> >
-> >> Vaidy,
-> >> 
-> >> Thanks for fixing this.
-> >> 
-> >> > drv->cpumask defaults to cpu_possible_mask in __cpuidle_driver_init().
-> >> > This breaks cpuidle on powernv where sysfs files are not created for
-> >> > cpus in cpu_possible_mask that cannot be hot-added.
-> >> 
-> >> I think I prefer the longer description below than this.
-> >
-> > [PATCH] powerpc/powernv/cpuidle: Pass correct drv->cpumask for
-> >
-> > drv->cpumask defaults to cpu_possible_mask in __cpuidle_driver_init().
-> > This breaks cpuidle on powernv where sysfs files are not created for
-> > cpus in cpu_possible_mask that cannot be hot-added.
+> On Thu, Mar 16, 2017 at 11:05:20PM +1000, Nicholas Piggin wrote:
+>> On Thu, 16 Mar 2017 18:10:48 +0530
+>> Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com> wrote:
+>>
+>>> On 03/14/2017 02:53 PM, Nicholas Piggin wrote:
+>>>> The ISA specifies power save wakeup can cause a machine check interrupt.
+>>>> The machine check handler currently has code to handle that for POWER8,
+>>>> but POWER9 crashes when trying to execute the P8 style sleep
+>>>> instructions.
+>>>>
+>>>> So queue up the machine check, then call into the idle code to wake up
+>>>> as the system reset interrupt does, rather than attempting to sleep
+>>>> again without going through the main idle path.
+>>>>
+>>>> Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+>>>> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+>>>> ---
+>>>>  arch/powerpc/include/asm/reg.h       |  1 +
+>>>>  arch/powerpc/kernel/exceptions-64s.S | 69 ++++++++++++++++++------------------
+>>>>  2 files changed, 35 insertions(+), 35 deletions(-)
+>>>>
+>>>> diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
+>>>> index fc879fd6bdae..8bbdfacce970 100644
+>>>> --- a/arch/powerpc/include/asm/reg.h
+>>>> +++ b/arch/powerpc/include/asm/reg.h
+>>>> @@ -656,6 +656,7 @@
+>>>>  #define   SRR1_ISI_PROT		0x08000000 /* ISI: Other protection fault */
+>>>>  #define   SRR1_WAKEMASK		0x00380000 /* reason for wakeup */
+>>>>  #define   SRR1_WAKEMASK_P8	0x003c0000 /* reason for wakeup on POWER8 and 9 */
+>>>> +#define   SRR1_WAKEMCE_RESVD	0x003c0000 /* Unused/reserved value used by MCE wakeup to indicate cause to idle wakeup handler */
+>>>>  #define   SRR1_WAKESYSERR	0x00300000 /* System error */
+>>>>  #define   SRR1_WAKEEE		0x00200000 /* External interrupt */
+>>>>  #define   SRR1_WAKEHVI		0x00240000 /* Hypervisor Virtualization Interrupt (P9) */
+>>>> diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+>>>> index e390fcd04bcb..5779d2d6a192 100644
+>>>> --- a/arch/powerpc/kernel/exceptions-64s.S
+>>>> +++ b/arch/powerpc/kernel/exceptions-64s.S
+>>>> @@ -306,6 +306,33 @@ EXC_COMMON_BEGIN(machine_check_common)
+>>>>  	/* restore original r1. */			\
+>>>>  	ld	r1,GPR1(r1)
+>>>>
+>>>> +#ifdef CONFIG_PPC_P7_NAP
+>>>> +EXC_COMMON_BEGIN(machine_check_idle_common)
+>>>> +	bl	machine_check_queue_event
+>>>> +	/*
+>>>> +	 * Queue the machine check, then reload SRR1 and use it to set
+>>>> +	 * CR3 according to pnv_powersave_wakeup convention.
+>>>> +	 */
+>>>> +	ld	r12,_MSR(r1)
+>>>> +	rlwinm	r11,r12,47-31,30,31
+>>>> +	cmpwi	cr3,r11,2
+>>>> +
+>>>> +	/*
+>>>> +	 * Now put SRR1_WAKEMCE_RESVD into SRR1, allows it to follow the
+>>>> +	 * system reset wakeup code.
+>>>> +	 */
+>>>> +	oris	r12,r12,SRR1_WAKEMCE_RESVD@h
+>>>> +	mtspr	SPRN_SRR1,r12
+>>>> +	std	r12,_MSR(r1)
+>>>> +
+>>>> +	/*
+>>>> +	 * Decrement MCE nesting after finishing with the stack.
+>>>> +	 */
+>>>> +	lhz	r11,PACA_IN_MCE(r13)
+>>>> +	subi	r11,r11,1
+>>>> +	sth	r11,PACA_IN_MCE(r13)  
+>>>
+>>> Looks like we are not winding up.. Shouldn't we ? What if we may end up
+>>> in pnv_wakeup_noloss() which assumes that no GPRs are lost. Am I missing
+>>> anything ?
 > 
-> I'm confused.
-
-It depends on CONFIG_HOTPLUG_CPU now, but we have the following
-combinations to handle:
-(a) CONFIG_HOTPLUG_CPU=y/n
-(b) pseries vs powernv
- 
-> > On powernv platform cpu_present could be less than cpu_possible
-> > in cases where firmware detects the cpu, but it is not available
-> > for OS.
+> Nice catch! This can occur if SRR1[46:47] == 0b01.
 > 
-> It's entirely normal for present < possible, on my laptop for example,
-> so I don't see how that causes the bug.
-
-Yes, present < possible in itself not a problem.  It is whether
-cpu_device exist for that cpu or not.
-
-> > Such cpus are not hotplugable at runtime on powernv and
-> > hence we skip creating sysfs files for these cpus.
+>>
+>> Hmm, no I think you're right. Thanks, good catch. But can we do it with
+>> just setting PACA_NAPSTATELOST?
 > 
-> Why are they not hotpluggable? Looking at topology_init() they should be
-> hotpluggable as long as ppc_md.cpu_die is populated, which it is on
-> PowerNV AFAICS.
+> Unconditionally setting PACA_NAPSTATELOST should be sufficient.
 
-Currently it depends on CONFIG_HOTPLUG_CPU=y.
- 
-> Is it really "creating sysfs files" that's important, or is that we
-> don't call register_cpu() for those CPUs?
+Agree, that should take care.
 
-Currently if CONFIG_HOTPLUG_CPU=n, then we skip calling register_cpu()
-and that causes the problem.
-
-The fix in cpuidle-powernv.c could be based on CONFIG_HOTPLUG_CPU, but
-since we can choose to set cpu->hotpluggable based on other factors
-even when CONFIG_HOTPLUG_CPU=y, I choose to use cpu_possible.  We will
-need to change  cpuidle-powernv to register for additional cpus when
-we really support hot-add of cpus that did not exist at boot.
-
-> > Trying cpuidle_register_device() on cpu without sysfs node will
-> > cause crash like:
-> >
-> > cpu 0xf: Vector: 380 (Data SLB Access) at [c000000ff1503490]
-> >     pc: c00000000022c8bc: string+0x34/0x60
-> >     lr: c00000000022ed78: vsnprintf+0x284/0x42c
-> >     sp: c000000ff1503710
-> >    msr: 9000000000009033
-> >    dar: 6000000060000000
-> >   current = 0xc000000ff1480000
-> >   paca    = 0xc00000000fe82d00   softe: 0        irq_happened: 0x01
-> >     pid   = 1, comm = swapper/8
-> > Linux version 4.11.0-rc2 (sv@sagarika) (gcc version 4.9.4 (Buildroot 2017.02-00004-gc28573e) ) #15 SMP Fri Mar 17 19:32:02 IST 2017
-> > enter ? for help
-> > [link register   ] c00000000022ed78 vsnprintf+0x284/0x42c
-> > [c000000ff1503710] c00000000022ebb8 vsnprintf+0xc4/0x42c (unreliable)
-> > [c000000ff1503800] c00000000022ef40 vscnprintf+0x20/0x44
-> > [c000000ff1503830] c0000000000ab61c vprintk_emit+0x94/0x2cc
-> > [c000000ff15038a0] c0000000000acc9c vprintk_func+0x60/0x74
-> > [c000000ff15038c0] c000000000619694 printk+0x38/0x4c
-> > [c000000ff15038e0] c000000000224950 kobject_get+0x40/0x60
-> > [c000000ff1503950] c00000000022507c kobject_add_internal+0x60/0x2c4
-> > [c000000ff15039e0] c000000000225350 kobject_init_and_add+0x70/0x78
-> > [c000000ff1503a60] c00000000053c288 cpuidle_add_sysfs+0x9c/0xe0
-> > [c000000ff1503ae0] c00000000053aeac cpuidle_register_device+0xd4/0x12c
-> > [c000000ff1503b30] c00000000053b108 cpuidle_register+0x98/0xcc
-> > [c000000ff1503bc0] c00000000085eaf0 powernv_processor_idle_init+0x140/0x1e0
-> > [c000000ff1503c60] c00000000000cd60 do_one_initcall+0xc0/0x15c
-> > [c000000ff1503d20] c000000000833e84 kernel_init_freeable+0x1a0/0x25c
-> > [c000000ff1503dc0] c00000000000d478 kernel_init+0x24/0x12c
-> > [c000000ff1503e30] c00000000000b564 ret_from_kernel_thread+0x5c/0x78
 > 
-> I really don't understand how a CPU not being present leads to a crash
-> in printf()? Something in that call chain should have checked that the
-> CPU was registered before crashing in printf() - surely?
-
-Yes, we should have just failed to register the cpuidle driver.  I have
-the fix here:
-
-[PATCH] cpuidle: Validate cpu_dev in cpuidle_add_sysfs
-http://patchwork.ozlabs.org/patch/740634/
-
---Vaidy
+>>
+>>>
+>>>> +	b	pnv_powersave_wakeup
+>>>> +#endif
+>>>>  	/*  
+>>>
+>>> [...]
+>>>
+>>> Rest looks good to me.
+>>>
+>>> Reviewed-by: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
+>>
+>> Thanks,
+>> Nick
+>>
