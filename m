@@ -1,18 +1,18 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vnW3b3djjzDqZV
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Mar 2017 22:36:11 +1100 (AEDT)
-In-Reply-To: <925b1b5f2d28b5015354405af72bf23d21a1c5c4.1487090656.git.ldufour@linux.vnet.ibm.com>
-To: Laurent Dufour <ldufour@linux.vnet.ibm.com>, benh@kernel.crashing.org,
- paulus@samba.org, aneesh.kumar@linux.vnet.ibm.com, bsingharora@gmail.com,
- npiggin@gmail.com
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vnW3c4K9CzDqZp
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Mar 2017 22:36:12 +1100 (AEDT)
+In-Reply-To: <20170221023854.47493-1-aik@ozlabs.ru>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [1/3] powerpc/mm: move mmap_sem unlock up from do_sigbus
-Message-Id: <3vnW3b2R4Fz9s83@ozlabs.org>
-Date: Tue, 21 Mar 2017 22:36:11 +1100 (AEDT)
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
+ David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: [kernel] powerpc/powernv: Fix it_ops::get() callback to return in
+ cpu endian
+Message-Id: <3vnW3c2Chrz9s87@ozlabs.org>
+Date: Tue, 21 Mar 2017 22:36:12 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,15 +22,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2017-02-14 at 16:45:10 UTC, Laurent Dufour wrote:
-> Move mmap_sem releasing in the do_sigbus()'s unique caller : mm_fault_error()
+On Tue, 2017-02-21 at 02:38:54 UTC, Alexey Kardashevskiy wrote:
+> The iommu_table_ops callbacks are declared CPU endian as they take and
+> return "unsigned long"; underlying hardware tables are big-endian.
 > 
-> No functional changes.
+> However get() was missing be64_to_cpu(), this adds the missing conversion.
 > 
-> Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+> The only caller of this is crash dump at arch/powerpc/kernel/iommu.c,
+> iommu_table_clear() which only compares TCE to zero so this change
+> should not cause behavioral change.
+> 
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
+> Acked-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 
-Series applied to powerpc next, thanks.
+Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/c2294e0ffe741c8b34c630a71c7dc4
+https://git.kernel.org/powerpc/c/81d5fe1a3b1acfaadc7921d08609e0
 
 cheers
