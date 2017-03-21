@@ -1,19 +1,16 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vnW3j6XYxzDqbk
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Mar 2017 22:36:17 +1100 (AEDT)
-In-Reply-To: <1489324627-19126-17-git-send-email-geert@linux-m68k.org>
-To: Geert Uytterhoeven <geert@linux-m68k.org>, devicetree@vger.kernel.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vnW3k5FxPzDqc1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Mar 2017 22:36:18 +1100 (AEDT)
+In-Reply-To: <20170314123648.26068-2-npiggin@gmail.com>
+To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Mark Rutland <mark.rutland@arm.com>, linux-kernel@vger.kernel.org,
- Rob Herring <robh+dt@kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [v2, 16/23] MAINTAINERS: Add file patterns for powerpc device tree
- bindings
-Message-Id: <3vnW3j4rcMz9s7v@ozlabs.org>
-Date: Tue, 21 Mar 2017 22:36:17 +1100 (AEDT)
+Cc: Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [1/6] powerpc/64s: machine check print NIP
+Message-Id: <3vnW3k3vhDz9s87@ozlabs.org>
+Date: Tue, 21 Mar 2017 22:36:18 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,18 +20,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 2017-03-12 at 13:17:00 UTC, Geert Uytterhoeven wrote:
-> Submitters of device tree binding documentation may forget to CC
-> the subsystem maintainer if this is missing.
+On Tue, 2017-03-14 at 12:36:43 UTC, Nicholas Piggin wrote:
+> Print the faulting address of the machine check that may help with
+> debugging. The effective address reported can be a target memory address
+> rather than the faulting instruction address.
 > 
-> Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Paul Mackerras <paulus@samba.org>
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Cc: linuxppc-dev@lists.ozlabs.org
+> Fix up a dangling bracket while here.
+> 
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 
-Applied to powerpc next, thanks.
+Series applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/58f169139e9692e290a7d5d9b034b7
+https://git.kernel.org/powerpc/c/fc84427b7e1471b0a1220c56072f57
 
 cheers
