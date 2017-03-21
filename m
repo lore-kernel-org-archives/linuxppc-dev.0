@@ -2,16 +2,15 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vnW0B0rjZzDq7c
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Mar 2017 22:33:14 +1100 (AEDT)
-In-Reply-To: <20170317051320.7069-1-npiggin@gmail.com>
-To: Nicholas Piggin <npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vnW3X27MmzDq7d
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Mar 2017 22:36:08 +1100 (AEDT)
+In-Reply-To: <1473501690-11987-1-git-send-email-mpe@ellerman.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, linux-pcmcia@lists.infradead.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: "Gautham R . Shenoy" <ego@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: powerpc/64s: fix idle wakeup potential to clobber registers
-Message-Id: <3vnW0B0JDsz9s7v@ozlabs.org>
-Date: Tue, 21 Mar 2017 22:33:13 +1100 (AEDT)
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org, arnd@arndb.de
+Subject: Re: drivers/pcmcia: NO_IRQ removal for electra_cf.c
+Message-Id: <3vnW3X13S2z9s7t@ozlabs.org>
+Date: Tue, 21 Mar 2017 22:36:07 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,22 +20,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2017-03-17 at 05:13:20 UTC, Nicholas Piggin wrote:
-> We concluded there may be a window where the idle wakeup code could
-> get to pnv_wakeup_tb_loss (which clobbers non-volatile GPRs), but the
-> hardware may set SRR1[46:47] to 01b (no state loss) which would
-> result in the wakeup code failing to restore non-volatile GPRs.
+On Sat, 2016-09-10 at 10:01:30 UTC, Michael Ellerman wrote:
+> We'd like to eventually remove NO_IRQ on powerpc, so remove usages of it
+> from electra_cf.c which is a powerpc-only driver.
 > 
-> I was not able to trigger this condition with trivial tests on
-> real hardware or simulator, but the ISA (at least 2.07) seems to
-> allow for it, and Gautham says that it can happen if there is an
-> exception pending when the sleep/winkle instruction is executed.
-> 
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-> Acked-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
-Applied to powerpc fixes, thanks.
+Applied to powerpc next.
 
-https://git.kernel.org/powerpc/c/6d98ce0be541d4a3cfbb52cd75072c
+https://git.kernel.org/powerpc/c/6c8343e82bec46ece4fe773304a84c
 
 cheers
