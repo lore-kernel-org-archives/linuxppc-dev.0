@@ -2,17 +2,16 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vnW3f0XVyzDqZS
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vnW3f6rn7zDqbt
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Mar 2017 22:36:14 +1100 (AEDT)
-In-Reply-To: <20170224005210.1318-2-hamish.martin@alliedtelesis.co.nz>
-To: Hamish Martin <hamish.martin@alliedtelesis.co.nz>, benh@kernel.crashing.org,
- paulus@samba.org
+In-Reply-To: <1488788731-2537-1-git-send-email-me@tobin.cc>
+To: "Tobin C. Harding" <me@tobin.cc>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Hamish Martin <hamish.martin@alliedtelesis.co.nz>,
- chris.packham@alliedtelesis.co.nz, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [v2,1/2] powerpc: Move THREAD_SHIFT config to KConfig
-Message-Id: <3vnW3d6gXTz9s88@ozlabs.org>
-Date: Tue, 21 Mar 2017 22:36:13 +1100 (AEDT)
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ "Tobin C. Harding" <me@tobin.cc>
+Subject: Re: powerpc: fix sparse warning, include kernel header
+Message-Id: <3vnW3f5czwz9s84@ozlabs.org>
+Date: Tue, 21 Mar 2017 22:36:14 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,15 +21,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2017-02-24 at 00:52:09 UTC, Hamish Martin wrote:
-> Shift the logic for defining THREAD_SHIFT logic to Kconfig in order to
-> allow override by users.
+On Mon, 2017-03-06 at 08:25:31 UTC, "Tobin C. Harding" wrote:
+> Spares emits two symbol not declared warnings. The two functions in
+> question are declared already in a kernel header.
 > 
-> Signed-off-by: Hamish Martin <hamish.martin@alliedtelesis.co.nz>
-> Reviewed-by: Chris Packham <chris.packham@alliedtelesis.co.nz>
+> Add include directive to include kernel header.
+> 
+> Signed-off-by: Tobin C. Harding <me@tobin.cc>
 
-Series applied to powerpc next, thanks.
+Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/476134070c037820bd909ff6e43e0d
+https://git.kernel.org/powerpc/c/1fc439c81312cd27aed553964c0d9d
 
 cheers
