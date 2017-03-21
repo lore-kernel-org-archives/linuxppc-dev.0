@@ -1,21 +1,46 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
- [IPv6:2607:f8b0:400e:c00::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <vaibhav@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vnL6b4msHzDqSS
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Mar 2017 15:53:11 +1100 (AEDT)
-Received: by mail-pf0-x242.google.com with SMTP id o126so20295574pfb.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Mar 2017 21:53:11 -0700 (PDT)
-From: Nicholas Piggin <npiggin@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Nicholas Piggin <npiggin@gmail.com>,
- "Gautham R . Shenoy" <ego@linux.vnet.ibm.com>
-Subject: [PATCH 2/2] powerpc/64s: msgclr when handling doorbell exceptions
-Date: Tue, 21 Mar 2017 14:52:54 +1000
-Message-Id: <20170321045254.21384-3-npiggin@gmail.com>
-In-Reply-To: <20170321045254.21384-1-npiggin@gmail.com>
-References: <20170321045254.21384-1-npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vnLSt0mnGzDq7c
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Mar 2017 16:09:01 +1100 (AEDT)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v2L58miJ049839
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Mar 2017 01:08:54 -0400
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 29amb2qbww-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Mar 2017 01:08:54 -0400
+Received: from localhost
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <vaibhav@linux.vnet.ibm.com>;
+ Tue, 21 Mar 2017 15:08:51 +1000
+Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v2L58dEo49872960
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Mar 2017 16:08:47 +1100
+Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
+ by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v2L58E3C013073
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Mar 2017 16:08:14 +1100
+From: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+To: Frederic Barrat <fbarrat@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Philippe Bergheaud <philippe.bergheaud@fr.ibm.com>,
+ Greg Kurz <gkurz@linux.vnet.ibm.com>, Ian Munsie <imunsie@au1.ibm.com>,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ Christophe Lombard <christophe_lombard@fr.ibm.com>
+Subject: Re: [PATCH 2/3] cxl: Introduce afu_desc sysfs attribute
+In-Reply-To: <1b3669f3-40f9-b521-d722-a5e2cc915826@linux.vnet.ibm.com>
+References: <20170314040606.16894-1-vaibhav@linux.vnet.ibm.com>
+ <20170314040606.16894-3-vaibhav@linux.vnet.ibm.com>
+ <1b3669f3-40f9-b521-d722-a5e2cc915826@linux.vnet.ibm.com>
+Date: Tue, 21 Mar 2017 10:37:42 +0530
+MIME-Version: 1.0
+Content-Type: text/plain
+Message-Id: <87k27jw735.fsf@vajain21.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,89 +50,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-msgsnd doorbell exceptions are cleared when the doorbell interrupt is
-taken. However if a doorbell exception causes a system reset interrupt
-wake from power saving state, the message is not cleared. Processing
-the doorbell from the system reset interrupt requires msgclr to avoid
-taking the exception twice.
+Thanks for reviewing the patch Fred!!
 
-Testing this plus the previous wakup direct patch gives:
+Frederic Barrat <fbarrat@linux.vnet.ibm.com> writes:
+>> +
+>> +	if (afu->attr_afud.size > 0) {
+>> +		sysfs_attr_init(&afu->attr_afud.attr);
+>> +		afu->attr_afud.attr.name = "afu_desc";
+>> +		afu->attr_afud.attr.mode = 0444;
+>
+>
+> So I had a long pause here, wondering if we are showing too much 
+> information to ANY user. Most of the content of the AFU descriptor is 
+> already world-readable through other sysfs attributes, the only ones 
+> troubling me are offset 0x50 and 0x58, ie. the page resolution interrupt 
+> handling. We currently don't support it (yet), but we need to think 
+> about it. A user process, by monitoring offset x50 could get a glimpse 
+> of the layout of the address space of other processes. Not the actual 
+> content, but at least what addresses are valid. I think that's already 
+> too much.
+As we discussed "Paged Resolution EA (offset 0x58)" register is write
+only should ideally return 0x00  for all reads (need to confirm with
+h/w on this). Secondly there isnt much information exposed from register
+"Paged Resolution Handle(offset 0x50)" apart from process handle. Lastly
+presently Paged-Response Resolution isn't supported for cxl on linux. So,
+I think we are safe for the time being.
 
-                                original         wakeup direct     msgclr
-Different threads, same core:   315k/s           264k/s            345k/s
-Different cores:                235k/s           242k/s            242k/s
+> Why not just exporting an area only covering 64 bits (and guaranteed not 
+> to be all 1's) and call it mmio_check? It would seem safer to me.
+AFAIK the minimum granuality that we have is PAGE_SIZE and we cannot mmap
+anything less than PAGE_SIZE. Though one exception for hashed paged
+table on power, we have an ability to map 4K PFN on 64K hosts but it
+isnt supported for radix on P9.
 
-Net speedup is +10% for same core, and +3% for different core.
----
- arch/powerpc/include/asm/dbell.h      | 13 +++++++++++++
- arch/powerpc/include/asm/ppc-opcode.h |  3 +++
- arch/powerpc/kernel/dbell.c           |  9 +++++++++
- 3 files changed, 25 insertions(+)
+At best I can limit access to first page of the afu descriptor.
 
-diff --git a/arch/powerpc/include/asm/dbell.h b/arch/powerpc/include/asm/dbell.h
-index 378167377065..b242badb2af7 100644
---- a/arch/powerpc/include/asm/dbell.h
-+++ b/arch/powerpc/include/asm/dbell.h
-@@ -46,6 +46,19 @@ static inline void _ppc_msgsnd(u32 msg)
- 		__asm__ __volatile__ (PPC_MSGSNDP(%0) : : "r" (msg));
- }
- 
-+static inline void _ppc_msgclr(u32 msg)
-+{
-+	__asm__ __volatile__ (ASM_FTR_IFSET(PPC_MSGCLR(%1), PPC_MSGCLRP(%1), %0)
-+				: : "i" (CPU_FTR_HVMODE), "r" (msg));
-+}
-+
-+static inline void ppc_msgclr(enum ppc_dbell type)
-+{
-+	u32 msg = PPC_DBELL_TYPE(type);
-+
-+	_ppc_msgclr(msg);
-+}
-+
- #else /* CONFIG_PPC_BOOK3S */
- 
- #define PPC_DBELL_MSGTYPE		PPC_DBELL
-diff --git a/arch/powerpc/include/asm/ppc-opcode.h b/arch/powerpc/include/asm/ppc-opcode.h
-index e7d6d86563ee..eb8c7d5fcfbe 100644
---- a/arch/powerpc/include/asm/ppc-opcode.h
-+++ b/arch/powerpc/include/asm/ppc-opcode.h
-@@ -162,6 +162,7 @@
- #define PPC_INST_MSGSND			0x7c00019c
- #define PPC_INST_MSGCLR			0x7c0001dc
- #define PPC_INST_MSGSNDP		0x7c00011c
-+#define PPC_INST_MSGCLRP		0x7c00015c
- #define PPC_INST_MTTMR			0x7c0003dc
- #define PPC_INST_NOP			0x60000000
- #define PPC_INST_PASTE			0x7c00070c
-@@ -349,6 +350,8 @@
- 					___PPC_RB(b))
- #define PPC_MSGSNDP(b)		stringify_in_c(.long PPC_INST_MSGSNDP | \
- 					___PPC_RB(b))
-+#define PPC_MSGCLRP(b)		stringify_in_c(.long PPC_INST_MSGCLRP | \
-+					___PPC_RB(b))
- #define PPC_POPCNTB(a, s)	stringify_in_c(.long PPC_INST_POPCNTB | \
- 					__PPC_RA(a) | __PPC_RS(s))
- #define PPC_POPCNTD(a, s)	stringify_in_c(.long PPC_INST_POPCNTD | \
-diff --git a/arch/powerpc/kernel/dbell.c b/arch/powerpc/kernel/dbell.c
-index 2128f3a96c32..2919f11b6afe 100644
---- a/arch/powerpc/kernel/dbell.c
-+++ b/arch/powerpc/kernel/dbell.c
-@@ -40,6 +40,15 @@ void doorbell_exception(struct pt_regs *regs)
- 
- 	irq_enter();
- 
-+	/*
-+	 * May have come from doorbell triggered sreset wakeup, which does
-+	 * not clear the message (tested on POWER8). Clear it here so we
-+	 * don't get a doorbell interrupt when enabling hard irqs. This
-+	 * msgclear could be moved into the sreset wakeup replay specific
-+	 * code if it is expensive.
-+	 */
-+	ppc_msgclr(PPC_DBELL_MSGTYPE);
-+
- 	may_hard_irq_enable();
- 
- 	kvmppc_set_host_ipi(smp_processor_id(), 0);
+
 -- 
-2.11.0
+Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+Linux Technology Center, IBM India Pvt. Ltd.
