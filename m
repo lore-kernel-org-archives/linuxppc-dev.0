@@ -1,44 +1,35 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <clombard@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vnRst3p3CzDqbW
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Mar 2017 20:12:34 +1100 (AEDT)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v2L93T0s013016
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Mar 2017 05:12:31 -0400
-Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [125.16.236.9])
- by mx0b-001b2d01.pphosted.com with ESMTP id 29ajfey47q-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vnSSG6WsqzDq7d
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Mar 2017 20:38:54 +1100 (AEDT)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v2L9cifg137378
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Mar 2017 05:38:52 -0400
+Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 29awkv2nmm-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Mar 2017 05:12:31 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Mar 2017 05:38:51 -0400
 Received: from localhost
- by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Tue, 21 Mar 2017 14:42:28 +0530
-Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay01.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v2L9CQhp10879204
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Mar 2017 14:42:26 +0530
-Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
- by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v2L9CPcV027151
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Mar 2017 14:42:26 +0530
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Laurent Dufour <ldufour@linux.vnet.ibm.com>, mpe@ellerman.id.au,
- benh@kernel.crashing.org, paulus@samba.org, bsingharora@gmail.com,
- npiggin@gmail.com
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/3] powerpc/mm: move mmap_sem unlocking in do_page_fault()
-In-Reply-To: <6515aebdbd7adad576f1c97753809547b273504a.1487090656.git.ldufour@linux.vnet.ibm.com>
-References: <cover.1487090656.git.ldufour@linux.vnet.ibm.com>
- <6515aebdbd7adad576f1c97753809547b273504a.1487090656.git.ldufour@linux.vnet.ibm.com>
-Date: Tue, 21 Mar 2017 14:42:25 +0530
+ for <linuxppc-dev@lists.ozlabs.org> from <clombard@linux.vnet.ibm.com>;
+ Tue, 21 Mar 2017 09:38:49 -0000
+Subject: Re: [PATCH V2 4/6] cxl: Rename some psl8 specific functions
+To: Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, andrew.donnellan@au1.ibm.com
+References: <1489489722-935-1-git-send-email-clombard@linux.vnet.ibm.com>
+ <1489489722-935-5-git-send-email-clombard@linux.vnet.ibm.com>
+ <31e63969-5b41-4224-c653-15695f43d675@linux.vnet.ibm.com>
+From: christophe lombard <clombard@linux.vnet.ibm.com>
+Date: Tue, 21 Mar 2017 10:38:20 +0100
 MIME-Version: 1.0
-Content-Type: text/plain
-Message-Id: <874lynoux2.fsf@skywalker.in.ibm.com>
+In-Reply-To: <31e63969-5b41-4224-c653-15695f43d675@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Message-Id: <2501db6a-b204-2333-2f0b-7472462831d8@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,82 +39,366 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Laurent Dufour <ldufour@linux.vnet.ibm.com> writes:
-
-> Since the fault retry is now handled earlier, we can release the
-> mmap_sem lock earlier too and remove later unlocking previously done in
-> mm_fault_error().
+Le 20/03/2017 à 17:26, Frederic Barrat a écrit :
 >
-
-Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com> 
-
-
-> Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/mm/fault.c | 19 ++++---------------
->  1 file changed, 4 insertions(+), 15 deletions(-)
 >
-> diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
-> index 2a6bc7e6e69a..21e06cce8984 100644
-> --- a/arch/powerpc/mm/fault.c
-> +++ b/arch/powerpc/mm/fault.c
-> @@ -151,13 +151,6 @@ static int mm_fault_error(struct pt_regs *regs, unsigned long addr, int fault)
->  	 * continue the pagefault.
->  	 */
->  	if (fatal_signal_pending(current)) {
-> -		/*
-> -		 * If we have retry set, the mmap semaphore will have
-> -		 * alrady been released in __lock_page_or_retry(). Else
-> -		 * we release it now.
-> -		 */
-> -		if (!(fault & VM_FAULT_RETRY))
-> -			up_read(&current->mm->mmap_sem);
->  		/* Coming from kernel, we need to deal with uaccess fixups */
->  		if (user_mode(regs))
->  			return MM_FAULT_RETURN;
-> @@ -170,8 +163,6 @@ static int mm_fault_error(struct pt_regs *regs, unsigned long addr, int fault)
+> Le 14/03/2017 à 12:08, Christophe Lombard a écrit :
+>> Rename a few functions, changing the '_psl' suffix to '_psl8', to make
+>> clear that the implementation is psl8 specific.
+>> Those functions will have an equivalent implementation for the psl9 in
+>> a later patch.
+>>
+>> Signed-off-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
+>> ---
+>>  drivers/misc/cxl/cxl.h     | 22 ++++++++++-----------
+>>  drivers/misc/cxl/debugfs.c |  6 +++---
+>>  drivers/misc/cxl/guest.c   |  2 +-
+>>  drivers/misc/cxl/irq.c     |  2 +-
+>>  drivers/misc/cxl/native.c  | 14 +++++++-------
+>>  drivers/misc/cxl/pci.c     | 48 
+>> +++++++++++++++++++++++-----------------------
+>>  6 files changed, 47 insertions(+), 47 deletions(-)
+>>
+>> diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
+>> index 3e03a66..1f04238 100644
+>> --- a/drivers/misc/cxl/cxl.h
+>> +++ b/drivers/misc/cxl/cxl.h
+>> @@ -815,10 +815,10 @@ void afu_irq_name_free(struct cxl_context *ctx);
+>>
+>>  #ifdef CONFIG_DEBUG_FS
+>>
+>> -int cxl_attach_afu_directed_psl(struct cxl_context *ctx, u64 wed, 
+>> u64 amr);
+>> -int cxl_activate_dedicated_process_psl(struct cxl_afu *afu);
+>> -int cxl_attach_dedicated_process_psl(struct cxl_context *ctx, u64 
+>> wed, u64 amr);
+>> -void cxl_update_dedicated_ivtes_psl(struct cxl_context *ctx);
+>> +int cxl_attach_afu_directed_psl8(struct cxl_context *ctx, u64 wed, 
+>> u64 amr);
+>> +int cxl_activate_dedicated_process_psl8(struct cxl_afu *afu);
+>> +int cxl_attach_dedicated_process_psl8(struct cxl_context *ctx, u64 
+>> wed, u64 amr);
+>> +void cxl_update_dedicated_ivtes_psl8(struct cxl_context *ctx);
 >
->  	/* Out of memory */
->  	if (fault & VM_FAULT_OOM) {
-> -		up_read(&current->mm->mmap_sem);
-> -
->  		/*
->  		 * We ran out of memory, or some other thing happened to us that
->  		 * made us unable to handle the page fault gracefully.
-> @@ -182,10 +173,8 @@ static int mm_fault_error(struct pt_regs *regs, unsigned long addr, int fault)
->  		return MM_FAULT_RETURN;
->  	}
 >
-> -	if (fault & (VM_FAULT_SIGBUS|VM_FAULT_HWPOISON|VM_FAULT_HWPOISON_LARGE)) {
-> -		up_read(&current->mm->mmap_sem);
-> +	if (fault & (VM_FAULT_SIGBUS|VM_FAULT_HWPOISON|VM_FAULT_HWPOISON_LARGE))
->  		return do_sigbus(regs, addr, fault);
-> -	}
+> See previous comment regarding "#ifdef CONFIG_DEBUG_FS"
 >
->  	/* We don't understand the fault code, this is fatal */
->  	BUG();
-> @@ -452,11 +441,12 @@ int do_page_fault(struct pt_regs *regs, unsigned long address,
->  				goto retry;
->  		}
->  		/* We will enter mm_fault_error() below */
-> -	}
-> +	} else
-> +		up_read(&current->mm->mmap_sem);
+> The rest of the patch looks good to me.
 >
->  	if (unlikely(fault & (VM_FAULT_RETRY|VM_FAULT_ERROR))) {
->  		if (fault & VM_FAULT_SIGSEGV)
-> -			goto bad_area;
-> +			goto bad_area_nosemaphore;
->  		rc = mm_fault_error(regs, address, fault);
->  		if (rc >= MM_FAULT_RETURN)
->  			goto bail;
-> @@ -488,7 +478,6 @@ int do_page_fault(struct pt_regs *regs, unsigned long address,
->  			      regs, address);
->  	}
+>   Fred
 >
-> -	up_read(&mm->mmap_sem);
->  	goto bail;
 >
->  bad_area:
-> -- 
-> 2.7.4
+you are right. Thanks
+>
+>
+>
+>>
+>>  int cxl_debugfs_init(void);
+>>  void cxl_debugfs_exit(void);
+>> @@ -826,10 +826,10 @@ int cxl_debugfs_adapter_add(struct cxl *adapter);
+>>  void cxl_debugfs_adapter_remove(struct cxl *adapter);
+>>  int cxl_debugfs_afu_add(struct cxl_afu *afu);
+>>  void cxl_debugfs_afu_remove(struct cxl_afu *afu);
+>> -void cxl_stop_trace_psl(struct cxl *cxl);
+>> -void cxl_debugfs_add_adapter_regs_psl(struct cxl *adapter, struct 
+>> dentry *dir);
+>> +void cxl_stop_trace_psl8(struct cxl *cxl);
+>> +void cxl_debugfs_add_adapter_regs_psl8(struct cxl *adapter, struct 
+>> dentry *dir);
+>>  void cxl_debugfs_add_adapter_regs_xsl(struct cxl *adapter, struct 
+>> dentry *dir);
+>> -void cxl_debugfs_add_afu_regs_psl(struct cxl_afu *afu, struct dentry 
+>> *dir);
+>> +void cxl_debugfs_add_afu_regs_psl8(struct cxl_afu *afu, struct 
+>> dentry *dir);
+>>
+>>  #else /* CONFIG_DEBUG_FS */
+>>
+>> @@ -931,9 +931,9 @@ struct cxl_irq_info {
+>>  };
+>>
+>>  void cxl_assign_psn_space(struct cxl_context *ctx);
+>> -int cxl_invalidate_all_psl(struct cxl *adapter);
+>> -irqreturn_t cxl_irq_psl(int irq, struct cxl_context *ctx, struct 
+>> cxl_irq_info *irq_info);
+>> -irqreturn_t cxl_fail_irq_psl(struct cxl_afu *afu, struct 
+>> cxl_irq_info *irq_info);
+>> +int cxl_invalidate_all_psl8(struct cxl *adapter);
+>> +irqreturn_t cxl_irq_psl8(int irq, struct cxl_context *ctx, struct 
+>> cxl_irq_info *irq_info);
+>> +irqreturn_t cxl_fail_irq_psl8(struct cxl_afu *afu, struct 
+>> cxl_irq_info *irq_info);
+>>  int cxl_register_one_irq(struct cxl *adapter, irq_handler_t handler,
+>>              void *cookie, irq_hw_number_t *dest_hwirq,
+>>              unsigned int *dest_virq, const char *name);
+>> @@ -944,7 +944,7 @@ int cxl_data_cache_flush(struct cxl *adapter);
+>>  int cxl_afu_disable(struct cxl_afu *afu);
+>>  int cxl_psl_purge(struct cxl_afu *afu);
+>>
+>> -void cxl_native_irq_dump_regs_psl(struct cxl_context *ctx);
+>> +void cxl_native_irq_dump_regs_psl8(struct cxl_context *ctx);
+>>  void cxl_native_err_irq_dump_regs(struct cxl *adapter);
+>>  int cxl_pci_vphb_add(struct cxl_afu *afu);
+>>  void cxl_pci_vphb_remove(struct cxl_afu *afu);
+>> diff --git a/drivers/misc/cxl/debugfs.c b/drivers/misc/cxl/debugfs.c
+>> index 4848ebf..2ff10a9 100644
+>> --- a/drivers/misc/cxl/debugfs.c
+>> +++ b/drivers/misc/cxl/debugfs.c
+>> @@ -15,7 +15,7 @@
+>>
+>>  static struct dentry *cxl_debugfs;
+>>
+>> -void cxl_stop_trace_psl(struct cxl *adapter)
+>> +void cxl_stop_trace_psl8(struct cxl *adapter)
+>>  {
+>>      int slice;
+>>
+>> @@ -53,7 +53,7 @@ static struct dentry *debugfs_create_io_x64(const 
+>> char *name, umode_t mode,
+>>                        (void __force *)value, &fops_io_x64);
+>>  }
+>>
+>> -void cxl_debugfs_add_adapter_regs_psl(struct cxl *adapter, struct 
+>> dentry *dir)
+>> +void cxl_debugfs_add_adapter_regs_psl8(struct cxl *adapter, struct 
+>> dentry *dir)
+>>  {
+>>      debugfs_create_io_x64("fir1", S_IRUSR, dir, 
+>> _cxl_p1_addr(adapter, CXL_PSL_FIR1));
+>>      debugfs_create_io_x64("fir2", S_IRUSR, dir, 
+>> _cxl_p1_addr(adapter, CXL_PSL_FIR2));
+>> @@ -92,7 +92,7 @@ void cxl_debugfs_adapter_remove(struct cxl *adapter)
+>>      debugfs_remove_recursive(adapter->debugfs);
+>>  }
+>>
+>> -void cxl_debugfs_add_afu_regs_psl(struct cxl_afu *afu, struct dentry 
+>> *dir)
+>> +void cxl_debugfs_add_afu_regs_psl8(struct cxl_afu *afu, struct 
+>> dentry *dir)
+>>  {
+>>      debugfs_create_io_x64("fir", S_IRUSR, dir, _cxl_p1n_addr(afu, 
+>> CXL_PSL_FIR_SLICE_An));
+>>      debugfs_create_io_x64("serr", S_IRUSR, dir, _cxl_p1n_addr(afu, 
+>> CXL_PSL_SERR_An));
+>> diff --git a/drivers/misc/cxl/guest.c b/drivers/misc/cxl/guest.c
+>> index f6ba698..3ad7381 100644
+>> --- a/drivers/misc/cxl/guest.c
+>> +++ b/drivers/misc/cxl/guest.c
+>> @@ -169,7 +169,7 @@ static irqreturn_t guest_psl_irq(int irq, void 
+>> *data)
+>>          return IRQ_HANDLED;
+>>      }
+>>
+>> -    rc = cxl_irq_psl(irq, ctx, &irq_info);
+>> +    rc = cxl_irq_psl8(irq, ctx, &irq_info);
+>>      return rc;
+>>  }
+>>
+>> diff --git a/drivers/misc/cxl/irq.c b/drivers/misc/cxl/irq.c
+>> index 2fa119e..fa9f8a2 100644
+>> --- a/drivers/misc/cxl/irq.c
+>> +++ b/drivers/misc/cxl/irq.c
+>> @@ -34,7 +34,7 @@ static irqreturn_t schedule_cxl_fault(struct 
+>> cxl_context *ctx, u64 dsisr, u64 da
+>>      return IRQ_HANDLED;
+>>  }
+>>
+>> -irqreturn_t cxl_irq_psl(int irq, struct cxl_context *ctx, struct 
+>> cxl_irq_info *irq_info)
+>> +irqreturn_t cxl_irq_psl8(int irq, struct cxl_context *ctx, struct 
+>> cxl_irq_info *irq_info)
+>>  {
+>>      u64 dsisr, dar;
+>>
+>> diff --git a/drivers/misc/cxl/native.c b/drivers/misc/cxl/native.c
+>> index 2d1b0c6..ea08605 100644
+>> --- a/drivers/misc/cxl/native.c
+>> +++ b/drivers/misc/cxl/native.c
+>> @@ -258,7 +258,7 @@ void cxl_release_spa(struct cxl_afu *afu)
+>>      }
+>>  }
+>>
+>> -int cxl_invalidate_all_psl(struct cxl *adapter)
+>> +int cxl_invalidate_all_psl8(struct cxl *adapter)
+>>  {
+>>      unsigned long timeout = jiffies + (HZ * CXL_TIMEOUT);
+>>
+>> @@ -578,7 +578,7 @@ static void update_ivtes_directed(struct 
+>> cxl_context *ctx)
+>>          WARN_ON(add_process_element(ctx));
+>>  }
+>>
+>> -int cxl_attach_afu_directed_psl(struct cxl_context *ctx, u64 wed, 
+>> u64 amr)
+>> +int cxl_attach_afu_directed_psl8(struct cxl_context *ctx, u64 wed, 
+>> u64 amr)
+>>  {
+>>      u32 pid;
+>>      int result;
+>> @@ -671,7 +671,7 @@ static int deactivate_afu_directed(struct cxl_afu 
+>> *afu)
+>>      return 0;
+>>  }
+>>
+>> -int cxl_activate_dedicated_process_psl(struct cxl_afu *afu)
+>> +int cxl_activate_dedicated_process_psl8(struct cxl_afu *afu)
+>>  {
+>>      dev_info(&afu->dev, "Activating dedicated process mode\n");
+>>
+>> @@ -694,7 +694,7 @@ int cxl_activate_dedicated_process_psl(struct 
+>> cxl_afu *afu)
+>>      return cxl_chardev_d_afu_add(afu);
+>>  }
+>>
+>> -void cxl_update_dedicated_ivtes_psl(struct cxl_context *ctx)
+>> +void cxl_update_dedicated_ivtes_psl8(struct cxl_context *ctx)
+>>  {
+>>      struct cxl_afu *afu = ctx->afu;
+>>
+>> @@ -710,7 +710,7 @@ void cxl_update_dedicated_ivtes_psl(struct 
+>> cxl_context *ctx)
+>>              ((u64)ctx->irqs.range[3] & 0xffff));
+>>  }
+>>
+>> -int cxl_attach_dedicated_process_psl(struct cxl_context *ctx, u64 
+>> wed, u64 amr)
+>> +int cxl_attach_dedicated_process_psl8(struct cxl_context *ctx, u64 
+>> wed, u64 amr)
+>>  {
+>>      struct cxl_afu *afu = ctx->afu;
+>>      u64 pid;
+>> @@ -880,7 +880,7 @@ static int native_get_irq_info(struct cxl_afu 
+>> *afu, struct cxl_irq_info *info)
+>>      return 0;
+>>  }
+>>
+>> -void cxl_native_irq_dump_regs_psl(struct cxl_context *ctx)
+>> +void cxl_native_irq_dump_regs_psl8(struct cxl_context *ctx)
+>>  {
+>>      u64 fir1, fir2, fir_slice, serr, afu_debug;
+>>
+>> @@ -916,7 +916,7 @@ static irqreturn_t 
+>> native_handle_psl_slice_error(struct cxl_context *ctx,
+>>      return cxl_ops->ack_irq(ctx, 0, errstat);
+>>  }
+>>
+>> -irqreturn_t cxl_fail_irq_psl(struct cxl_afu *afu, struct 
+>> cxl_irq_info *irq_info)
+>> +irqreturn_t cxl_fail_irq_psl8(struct cxl_afu *afu, struct 
+>> cxl_irq_info *irq_info)
+>>  {
+>>      if (irq_info->dsisr & CXL_PSL_DSISR_TRANS)
+>>          cxl_p2n_write(afu, CXL_PSL_TFC_An, CXL_PSL_TFC_An_AE);
+>> diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
+>> index 4d475a5..b952527 100644
+>> --- a/drivers/misc/cxl/pci.c
+>> +++ b/drivers/misc/cxl/pci.c
+>> @@ -377,7 +377,7 @@ static int calc_capp_routing(struct pci_dev *dev, 
+>> u64 *chipid, u64 *capp_unit_id
+>>      return 0;
+>>  }
+>>
+>> -static int init_implementation_adapter_regs_psl(struct cxl *adapter, 
+>> struct pci_dev *dev)
+>> +static int init_implementation_adapter_regs_psl8(struct cxl 
+>> *adapter, struct pci_dev *dev)
+>>  {
+>>      u64 psl_dsnctl, psl_fircntl;
+>>      u64 chipid;
+>> @@ -434,7 +434,7 @@ static int 
+>> init_implementation_adapter_regs_xsl(struct cxl *adapter, struct pci_
+>>  /* For the PSL this is a multiple for 0 < n <= 7: */
+>>  #define PSL_2048_250MHZ_CYCLES 1
+>>
+>> -static void write_timebase_ctrl_psl(struct cxl *adapter)
+>> +static void write_timebase_ctrl_psl8(struct cxl *adapter)
+>>  {
+>>      cxl_p1_write(adapter, CXL_PSL_TB_CTLSTAT,
+>>               TBSYNC_CNT(2 * PSL_2048_250MHZ_CYCLES));
+>> @@ -455,7 +455,7 @@ static void write_timebase_ctrl_xsl(struct cxl 
+>> *adapter)
+>>               TBSYNC_CNT(XSL_4000_CLOCKS));
+>>  }
+>>
+>> -static u64 timebase_read_psl(struct cxl *adapter)
+>> +static u64 timebase_read_psl8(struct cxl *adapter)
+>>  {
+>>      return cxl_p1_read(adapter, CXL_PSL_Timebase);
+>>  }
+>> @@ -513,7 +513,7 @@ static void cxl_setup_psl_timebase(struct cxl 
+>> *adapter, struct pci_dev *dev)
+>>      return;
+>>  }
+>>
+>> -static int init_implementation_afu_regs_psl(struct cxl_afu *afu)
+>> +static int init_implementation_afu_regs_psl8(struct cxl_afu *afu)
+>>  {
+>>      /* read/write masks for this slice */
+>>      cxl_p1n_write(afu, CXL_PSL_APCALLOC_A, 0xFFFFFFFEFEFEFEFEULL);
+>> @@ -996,7 +996,7 @@ static int cxl_afu_descriptor_looks_ok(struct 
+>> cxl_afu *afu)
+>>      return 0;
+>>  }
+>>
+>> -static int sanitise_afu_regs_psl(struct cxl_afu *afu)
+>> +static int sanitise_afu_regs_psl8(struct cxl_afu *afu)
+>>  {
+>>      u64 reg;
+>>
+>> @@ -1526,26 +1526,26 @@ static void cxl_deconfigure_adapter(struct 
+>> cxl *adapter)
+>>      pci_disable_device(pdev);
+>>  }
+>>
+>> -static const struct cxl_service_layer_ops psl_ops = {
+>> -    .adapter_regs_init = init_implementation_adapter_regs_psl,
+>> -    .invalidate_all = cxl_invalidate_all_psl,
+>> -    .afu_regs_init = init_implementation_afu_regs_psl,
+>> -    .sanitise_afu_regs = sanitise_afu_regs_psl,
+>> +static const struct cxl_service_layer_ops psl8_ops = {
+>> +    .adapter_regs_init = init_implementation_adapter_regs_psl8,
+>> +    .invalidate_all = cxl_invalidate_all_psl8,
+>> +    .afu_regs_init = init_implementation_afu_regs_psl8,
+>> +    .sanitise_afu_regs = sanitise_afu_regs_psl8,
+>>      .register_serr_irq = cxl_native_register_serr_irq,
+>>      .release_serr_irq = cxl_native_release_serr_irq,
+>> -    .handle_interrupt = cxl_irq_psl,
+>> -    .fail_irq = cxl_fail_irq_psl,
+>> -    .activate_dedicated_process = cxl_activate_dedicated_process_psl,
+>> -    .attach_afu_directed = cxl_attach_afu_directed_psl,
+>> -    .attach_dedicated_process = cxl_attach_dedicated_process_psl,
+>> -    .update_dedicated_ivtes = cxl_update_dedicated_ivtes_psl,
+>> -    .debugfs_add_adapter_regs = cxl_debugfs_add_adapter_regs_psl,
+>> -    .debugfs_add_afu_regs = cxl_debugfs_add_afu_regs_psl,
+>> -    .psl_irq_dump_registers = cxl_native_irq_dump_regs_psl,
+>> +    .handle_interrupt = cxl_irq_psl8,
+>> +    .fail_irq = cxl_fail_irq_psl8,
+>> +    .activate_dedicated_process = cxl_activate_dedicated_process_psl8,
+>> +    .attach_afu_directed = cxl_attach_afu_directed_psl8,
+>> +    .attach_dedicated_process = cxl_attach_dedicated_process_psl8,
+>> +    .update_dedicated_ivtes = cxl_update_dedicated_ivtes_psl8,
+>> +    .debugfs_add_adapter_regs = cxl_debugfs_add_adapter_regs_psl8,
+>> +    .debugfs_add_afu_regs = cxl_debugfs_add_afu_regs_psl8,
+>> +    .psl_irq_dump_registers = cxl_native_irq_dump_regs_psl8,
+>>      .err_irq_dump_registers = cxl_native_err_irq_dump_regs,
+>> -    .debugfs_stop_trace = cxl_stop_trace_psl,
+>> -    .write_timebase_ctrl = write_timebase_ctrl_psl,
+>> -    .timebase_read = timebase_read_psl,
+>> +    .debugfs_stop_trace = cxl_stop_trace_psl8,
+>> +    .write_timebase_ctrl = write_timebase_ctrl_psl8,
+>> +    .timebase_read = timebase_read_psl8,
+>>      .capi_mode = OPAL_PHB_CAPI_MODE_CAPI,
+>>      .needs_reset_before_disable = true,
+>>  };
+>> @@ -1566,8 +1566,8 @@ static void set_sl_ops(struct cxl *adapter, 
+>> struct pci_dev *dev)
+>>          adapter->native->sl_ops = &xsl_ops;
+>>          adapter->min_pe = 1; /* Workaround for CX-4 hardware bug */
+>>      } else {
+>> -        dev_info(&dev->dev, "Device uses a PSL\n");
+>> -        adapter->native->sl_ops = &psl_ops;
+>> +        dev_info(&dev->dev, "Device uses a PSL8\n");
+>> +        adapter->native->sl_ops = &psl8_ops;
+>>      }
+>>  }
+>>
