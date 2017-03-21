@@ -1,29 +1,48 @@
-Return-Path: <geert.uytterhoeven@gmail.com>
-Received: from mail-io0-x244.google.com (mail-io0-x244.google.com
- [IPv6:2607:f8b0:4001:c06::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <fbarrat@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vnTlb4BPzzDq7d
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Mar 2017 21:37:15 +1100 (AEDT)
-Received: by mail-io0-x244.google.com with SMTP id 68so6839997ioh.3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Mar 2017 03:37:15 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vnVd06yb7zDq7d
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Mar 2017 22:16:36 +1100 (AEDT)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v2LBBl2f008800
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Mar 2017 07:16:26 -0400
+Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 29b0kcpph3-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Mar 2017 07:16:26 -0400
+Received: from localhost
+ by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
+ Tue, 21 Mar 2017 11:16:24 -0000
+Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
+ [9.149.105.59])
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v2LBGKam11403730
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Mar 2017 11:16:20 GMT
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 4C4CFA4051
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Mar 2017 11:16:00 +0000 (GMT)
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id AD38EA405B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Mar 2017 11:15:59 +0000 (GMT)
+Received: from [9.164.130.69] (unknown [9.164.130.69])
+ by d06av23.portsmouth.uk.ibm.com (Postfix) with ESMTP
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Mar 2017 11:15:59 +0000 (GMT)
+Subject: Re: [PATCH V2 1/6] cxl: Remove unused values in bare-metal
+ environment.
+To: linuxppc-dev@lists.ozlabs.org
+References: <1489489722-935-1-git-send-email-clombard@linux.vnet.ibm.com>
+ <1489489722-935-2-git-send-email-clombard@linux.vnet.ibm.com>
+From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+Date: Tue, 21 Mar 2017 12:16:18 +0100
 MIME-Version: 1.0
-Sender: geert.uytterhoeven@gmail.com
-In-Reply-To: <20170320184253.4858.12956.stgit@bhelgaas-glaptop.roam.corp.google.com>
-References: <20170320182014.4858.22352.stgit@bhelgaas-glaptop.roam.corp.google.com>
- <20170320184253.4858.12956.stgit@bhelgaas-glaptop.roam.corp.google.com>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Tue, 21 Mar 2017 11:37:11 +0100
-Message-ID: <CAMuHMdXzCPwijpHsvgHGDYRawF5paBxi4RNYPjxA8fRKOHQb0w@mail.gmail.com>
-Subject: Re: [PATCH v2 2/4] asm-generic/io.h: Remove unused generic
- __ioremap() definition
-To: Bjorn Helgaas <bhelgaas@google.com>
-Cc: Arnd Bergmann <arnd@arndb.de>, Michael Ellerman <mpe@ellerman.id.au>,
- Linux-Arch <linux-arch@vger.kernel.org>, linux-pci <linux-pci@vger.kernel.org>,
- "Luis R. Rodriguez" <mcgrof@kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Content-Type: text/plain; charset=UTF-8
+In-Reply-To: <1489489722-935-2-git-send-email-clombard@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Message-Id: <86e0fbf1-f6f2-bffa-aeaa-8fc44ccbd816@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,44 +52,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Bj=C3=B6rn,
 
-On Mon, Mar 20, 2017 at 7:42 PM, Bjorn Helgaas <bhelgaas@google.com> wrote:
-> Several arches use __ioremap() to help implement the generic ioremap(),
-> ioremap_nocache(), and ioremap_wc() interfaces, but this usage is all
-> inside the arch/ directory.
+
+Le 14/03/2017 à 12:08, Christophe Lombard a écrit :
+> The two fields pid and tid of the structure cxl_irq_info are only used
+> in the guest environment. To avoid confusion, it's not necessary
+> to fill the fields in the bare-metal environment.
+> The PSL Process and Thread Identification Register is only used when
+> attaching a dedicated process for PSL8 only.
+
+I forgot to mention: we should probably say in the commit message that 
+the code change is justified because the CXL_PSL_PID_TID_An register 
+goes away in CAIA2 and cxl was not really using it.
+
+   Fred
+
+
+
 >
-> The only __ioremap() uses outside arch/ are in the ZorroII RAM disk drive=
-r
-> and some framebuffer drivers that are only buildable on m68k and powerpc,
-> and they use the versions provided by those arches.
+> Signed-off-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
+> ---
+>  drivers/misc/cxl/native.c | 5 -----
+>  1 file changed, 5 deletions(-)
 >
-> There's no need for a generic version of __ioremap(), so remove it.
-
-These all predate the ioremap_*() variants, and can be converted to
-either ioremap_nocache() or ioremap_wt().
-
-However, PPC doesn't implement ioremap_wt() yet, so asm-generic will
-fall back to the less-efficient nocache variant.
-PPC does support __ioremap(..., _PAGE_WRITETHRU), so adding a wrapper
-is trivial.
-
-> Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
-> Reviewed-by: Arnd Bergmann <arnd@arndb.de>
-
-Regardless,
-Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
-.org
-
-In personal conversations with technical people, I call myself a hacker. Bu=
-t
-when I'm talking to journalists I just say "programmer" or something like t=
-hat.
-                                -- Linus Torvalds
+> diff --git a/drivers/misc/cxl/native.c b/drivers/misc/cxl/native.c
+> index 7ae7105..7257e8b 100644
+> --- a/drivers/misc/cxl/native.c
+> +++ b/drivers/misc/cxl/native.c
+> @@ -859,8 +859,6 @@ static int native_detach_process(struct cxl_context *ctx)
+>
+>  static int native_get_irq_info(struct cxl_afu *afu, struct cxl_irq_info *info)
+>  {
+> -	u64 pidtid;
+> -
+>  	/* If the adapter has gone away, we can't get any meaningful
+>  	 * information.
+>  	 */
+> @@ -870,9 +868,6 @@ static int native_get_irq_info(struct cxl_afu *afu, struct cxl_irq_info *info)
+>  	info->dsisr = cxl_p2n_read(afu, CXL_PSL_DSISR_An);
+>  	info->dar = cxl_p2n_read(afu, CXL_PSL_DAR_An);
+>  	info->dsr = cxl_p2n_read(afu, CXL_PSL_DSR_An);
+> -	pidtid = cxl_p2n_read(afu, CXL_PSL_PID_TID_An);
+> -	info->pid = pidtid >> 32;
+> -	info->tid = pidtid & 0xffffffff;
+>  	info->afu_err = cxl_p2n_read(afu, CXL_AFU_ERR_An);
+>  	info->errstat = cxl_p2n_read(afu, CXL_PSL_ErrStat_An);
+>  	info->proc_handle = 0;
+>
