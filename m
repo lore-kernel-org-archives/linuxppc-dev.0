@@ -1,25 +1,45 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
- [IPv6:2607:f8b0:400e:c05::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <vaibhav@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vnKQT3QTBzDq7c
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Mar 2017 15:21:53 +1100 (AEDT)
-Received: by mail-pg0-x241.google.com with SMTP id 79so14500490pgf.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Mar 2017 21:21:53 -0700 (PDT)
-Date: Tue, 21 Mar 2017 14:21:39 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Anton Blanchard <anton@samba.org>
-Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] powerpc: Add POWER9 copy_page() loop
-Message-ID: <20170321142139.3072b9b6@roar.ozlabs.ibm.com>
-In-Reply-To: <20170321150103.6c1336bd@kryten>
-References: <20170320234046.32718-1-anton@ozlabs.org>
- <20170321130109.1dd058c0@roar.ozlabs.ibm.com>
- <20170321150103.6c1336bd@kryten>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vnKWH73J6zDq7c
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Mar 2017 15:26:03 +1100 (AEDT)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v2L4O4h4020004
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Mar 2017 00:25:53 -0400
+Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [125.16.236.1])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 299yqcjbn8-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Mar 2017 00:25:53 -0400
+Received: from localhost
+ by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <vaibhav@linux.vnet.ibm.com>;
+ Tue, 21 Mar 2017 09:55:50 +0530
+Received: from d28av08.in.ibm.com (d28av08.in.ibm.com [9.184.220.148])
+ by d28relay08.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v2L4OZxp15204590
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Mar 2017 09:54:35 +0530
+Received: from d28av08.in.ibm.com (localhost [127.0.0.1])
+ by d28av08.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v2L4PlbE016011
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Mar 2017 09:55:48 +0530
+From: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+To: Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Ian Munsie <imunsie@au1.ibm.com>,
+ Christophe Lombard <christophe_lombard@fr.ibm.com>,
+ Philippe Bergheaud <philippe.bergheaud@fr.ibm.com>, stable@vger.kernel.org
+Subject: Re: [PATCH v2] cxl: Force context lock during EEH flow
+In-Reply-To: <83375caf-9b1a-dc15-98cb-8c65077dc5e8@au1.ibm.com>
+References: <20170320095525.8582-1-vaibhav@linux.vnet.ibm.com>
+ <83375caf-9b1a-dc15-98cb-8c65077dc5e8@au1.ibm.com>
+Date: Tue, 21 Mar 2017 09:55:41 +0530
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain
+Message-Id: <87pohbw916.fsf@vajain21.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,62 +49,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 21 Mar 2017 15:01:03 +1100
-Anton Blanchard <anton@samba.org> wrote:
+Thanks for reviewing the patch Andrew,
 
-> Hi Nick,
-> 
-> > I've got a patch that makes alternate feature patching a bit
-> > more flexible and not hit relocation limits when using big "else"
-> > parts. I was thinking of doing something like
-> > 
-> > _GLOBAL_TOC(copy_page)
-> > BEGIN_FTR_SECTION_NESTED(50)
-> > #include "copypage_power9.S"
-> > FTR_SECTION_ELSE_NESTED(50)
-> > #include "copypage_power7.S"
-> > ALT_FTR_SECTION_END_NESTED_IFSET(CPU_FTR_ARCH_300, 50)  
-> 
-> Good idea, I hadn't thought of embedding it all in a feature section.
+Andrew Donnellan <andrew.donnellan@au1.ibm.com> writes:
+> This change looks alright to me, it's a fix really, but I think might 
+> need a quick mention in the changelog? AFAICT it'll change the return 
+> value in cases where, for whatever reason, an earlier slice returns 
+> PCI_ERS_RESULT_NONE and a later slice would return 
+> PCI_ERS_RESULT_DISCONNECT, from what I can see.
+Yes I agree. Will resend the patch mentioning this change in the
+change-log.
 
-It may not work currently because you get those ftr_alt_97 relocation
-errors with the "else" parts because relative branches to other code
-need to be direct and I think reachable from both places.
-
-
-> > I guess POWER asm doesn't need this but it's good practice to prevent
-> > copy paste errors? It would be nice to have some macros to hide all
-> > these constants, but that's for another patch. The commenting is good.  
-> 
-> The .machine X macros? Unfortunately the format of dcbt is different
-> for recent server chips. This wasn't a great idea in retrospect because
-> if you do get the instruction layout wrong, you wont get a fault to warn
-> you.
-
-Is that embedded vs server, or pre-POWER4 vs POWER4 and up? Anyway no
-big deal.
-
-> > I don't suppose the stream setup is costly enough to consider
-> > touching a cacheline or two ahead before starting it?  
-> 
-> Starting up software streams is a bit of an art - if the demand loads
-> get ahead then a hardware stream gets started before the software one.
-> Note all the eieios to try and avoid this happening.
-> 
-> I've struggled with software prefetch on previous chips and sometimes I
-> wonder if it is worth the pain.
-
-Oh I see. Makes sense.
-
-> > (Also for another day) We might be able to avoid the stack and call
-> > for some common cases. Pretty small overcall cost I guess, but it
-> > could be beneficial for memcpy if not copy_page.  
-> 
-> Definitely. Also the breakpoint for using vector should be much
-> lower if we have already saved the user state in a previous call.
-
-Yes agreed.
-
-Another problem is multiple small mem/string/crypto operations may
-never trip the limit even if it would make sense. Difficult to improve
-that (kernel could provide a hint to the arch maybe).
+-- 
+Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+Linux Technology Center, IBM India Pvt. Ltd.
