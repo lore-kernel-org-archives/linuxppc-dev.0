@@ -1,33 +1,33 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vnfwZ24pXzDqYB
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Mar 2017 04:30:38 +1100 (AEDT)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vnfwc59RZzDqYB
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Mar 2017 04:30:40 +1100 (AEDT)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v2LHTOYt102594
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Mar 2017 13:30:26 -0400
+ v2LHTa5F003637
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Mar 2017 13:30:29 -0400
 Received: from e16.ny.us.ibm.com (e16.ny.us.ibm.com [129.33.205.206])
- by mx0a-001b2d01.pphosted.com with ESMTP id 29b0kd8154-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 29b58tuadf-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Mar 2017 13:30:26 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Mar 2017 13:30:29 -0400
 Received: from localhost
  by e16.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Tue, 21 Mar 2017 13:30:25 -0400
+ Tue, 21 Mar 2017 13:30:27 -0400
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
 Cc: linuxppc-dev@lists.ozlabs.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH V3 05/10] powerpc/mm: Add translation mode information in
- /proc/cpuinfo
-Date: Tue, 21 Mar 2017 22:59:55 +0530
+Subject: [PATCH V3 06/10] powerpc/mm/hugetlb: Filter out hugepage size not
+ supported by page table layout
+Date: Tue, 21 Mar 2017 22:59:56 +0530
 In-Reply-To: <1490117400-9891-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1490117400-9891-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Message-Id: <1490117400-9891-5-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Message-Id: <1490117400-9891-6-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,51 +37,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-With this we have on powernv and pseries /proc/cpuinfo reporting
+Without this if firmware reports 1MB page size support we will crash
+trying to use 1MB as hugetlb page size.
 
-timebase        : 512000000
-platform        : PowerNV
-model           : 8247-22L
-machine         : PowerNV 8247-22L
-firmware        : OPAL
-MMU		: Hash
+echo 300 > /sys/kernel/mm/hugepages/hugepages-1024kB/nr_hugepages
 
-Reviewed-by: Paul Mackerras <paulus@ozlabs.org>
+kernel BUG at ./arch/powerpc/include/asm/hugetlb.h:19!
+.....
+....
+[c0000000e2c27b30] c00000000029dae8 .hugetlb_fault+0x638/0xda0
+[c0000000e2c27c30] c00000000026fb64 .handle_mm_fault+0x844/0x1d70
+[c0000000e2c27d70] c00000000004805c .do_page_fault+0x3dc/0x7c0
+[c0000000e2c27e30] c00000000000ac98 handle_page_fault+0x10/0x30
+
+With fix, we don't enable 1MB as hugepage size.
+
+bash-4.2# cd /sys/kernel/mm/hugepages/
+bash-4.2# ls
+hugepages-16384kB  hugepages-16777216kB
+
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/platforms/powernv/setup.c | 4 ++++
- arch/powerpc/platforms/pseries/setup.c | 4 ++++
- 2 files changed, 8 insertions(+)
+ arch/powerpc/mm/hugetlbpage.c | 18 ++++++++++++++++++
+ 1 file changed, 18 insertions(+)
 
-diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
-index d50c7d99baaf..2d937f6d9260 100644
---- a/arch/powerpc/platforms/powernv/setup.c
-+++ b/arch/powerpc/platforms/powernv/setup.c
-@@ -95,6 +95,10 @@ static void pnv_show_cpuinfo(struct seq_file *m)
- 	else
- 		seq_printf(m, "firmware\t: BML\n");
- 	of_node_put(root);
-+	if (radix_enabled())
-+		seq_printf(m, "MMU\t\t: Radix\n");
-+	else
-+		seq_printf(m, "MMU\t\t: Hash\n");
- }
+diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
+index 8c3389cbcd12..a4f33de4008e 100644
+--- a/arch/powerpc/mm/hugetlbpage.c
++++ b/arch/powerpc/mm/hugetlbpage.c
+@@ -753,6 +753,24 @@ static int __init add_huge_page_size(unsigned long long size)
+ 	if ((mmu_psize = shift_to_mmu_psize(shift)) < 0)
+ 		return -EINVAL;
  
- static void pnv_prepare_going_down(void)
-diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
-index b4d362ed03a1..b5d86426e97b 100644
---- a/arch/powerpc/platforms/pseries/setup.c
-+++ b/arch/powerpc/platforms/pseries/setup.c
-@@ -87,6 +87,10 @@ static void pSeries_show_cpuinfo(struct seq_file *m)
- 		model = of_get_property(root, "model", NULL);
- 	seq_printf(m, "machine\t\t: CHRP %s\n", model);
- 	of_node_put(root);
-+	if (radix_enabled())
-+		seq_printf(m, "MMU\t\t: Radix\n");
-+	else
-+		seq_printf(m, "MMU\t\t: Hash\n");
- }
++#ifdef CONFIG_PPC_BOOK3S_64
++	/*
++	 * We need to make sure that for different page sizes reported by
++	 * firmware we only add hugetlb support for page sizes that can be
++	 * supported by linux page table layout.
++	 * For now we have
++	 * Radix: 2M
++	 * Hash: 16M and 16G
++	 */
++	if (radix_enabled()) {
++		if (mmu_psize != MMU_PAGE_2M)
++			return -EINVAL;
++	} else {
++		if (mmu_psize != MMU_PAGE_16M && mmu_psize != MMU_PAGE_16G)
++			return -EINVAL;
++	}
++#endif
++
+ 	BUG_ON(mmu_psize_defs[mmu_psize].shift != shift);
  
- /* Initialize firmware assisted non-maskable interrupts if
+ 	/* Return if huge page size has already been setup */
 -- 
 2.7.4
