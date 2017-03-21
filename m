@@ -1,27 +1,44 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vnNxY5lyhzDq7d
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Mar 2017 18:00:33 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Kees Cook <keescook@chromium.org>, Jonathan Corbet <corbet@lwn.net>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Cc: Emese Revfy <re.emese@gmail.com>, "kernel-hardening\@lists.openwall.com"
- <kernel-hardening@lists.openwall.com>,
- "linux-doc\@vger.kernel.org" <linux-doc@vger.kernel.org>,
- LKML <linux-kernel@vger.kernel.org>,
- "linuxppc-dev\@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [kernel-hardening] Re: [PATCH] gcc-plugins: update architecture
- list in documentation
-In-Reply-To: <CAGXu5jK=GGQeGQrv-9Z__caRxu7u333boJFXRNjcqBXOspYeQw@mail.gmail.com>
-References: <20170320065522.14839-1-andrew.donnellan@au1.ibm.com>
- <87var44a0b.fsf@concordia.ellerman.id.au>
- <CAGXu5jK=GGQeGQrv-9Z__caRxu7u333boJFXRNjcqBXOspYeQw@mail.gmail.com>
-Date: Tue, 21 Mar 2017 18:00:26 +1100
-Message-ID: <87mvcfp111.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vnR7f4l28zDq7d
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Mar 2017 19:39:26 +1100 (AEDT)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v2L8Y1aJ117435
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Mar 2017 04:39:18 -0400
+Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [125.16.236.9])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 29awug7xgq-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Mar 2017 04:39:18 -0400
+Received: from localhost
+ by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Tue, 21 Mar 2017 14:09:15 +0530
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+ by d28relay04.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v2L8dBXN15204472
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Mar 2017 14:09:11 +0530
+Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
+ by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v2L8d7NG026891
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Mar 2017 14:09:10 +0530
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Laurent Dufour <ldufour@linux.vnet.ibm.com>, mpe@ellerman.id.au,
+ benh@kernel.crashing.org, paulus@samba.org, bsingharora@gmail.com,
+ npiggin@gmail.com
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] powerpc/mm: move mmap_sem unlock up from do_sigbus
+In-Reply-To: <925b1b5f2d28b5015354405af72bf23d21a1c5c4.1487090656.git.ldufour@linux.vnet.ibm.com>
+References: <cover.1487090656.git.ldufour@linux.vnet.ibm.com>
+ <925b1b5f2d28b5015354405af72bf23d21a1c5c4.1487090656.git.ldufour@linux.vnet.ibm.com>
+Date: Tue, 21 Mar 2017 14:09:06 +0530
 MIME-Version: 1.0
 Content-Type: text/plain
+Message-Id: <87a88fowgl.fsf@skywalker.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,33 +48,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Kees Cook <keescook@chromium.org> writes:
+Laurent Dufour <ldufour@linux.vnet.ibm.com> writes:
 
-> On Mon, Mar 20, 2017 at 1:39 AM, Michael Ellerman <mpe@ellerman.id.au> wrote:
->> Andrew Donnellan <andrew.donnellan@au1.ibm.com> writes:
->>
->>> Commit 65c059bcaa73 ("powerpc: Enable support for GCC plugins") enabled GCC
->>> plugins on powerpc, but neglected to update the architecture list in the
->>> docs. Rectify this.
->>>
->>> Fixes: 65c059bcaa73 ("powerpc: Enable support for GCC plugins")
->>> Signed-off-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
->>> ---
->>>  Documentation/gcc-plugins.txt | 4 ++--
->>>  1 file changed, 2 insertions(+), 2 deletions(-)
->>
->> It would be nice to merge this for v4.11, so the docs are up to do date
->> with the code for the release.
->>
->> I'm not sure who owns it though, should it go via Jon as docs
->> maintainer (added to CC), or via Kees tree or mine?
+> Move mmap_sem releasing in the do_sigbus()'s unique caller : mm_fault_error()
 >
-> If you have other changes queued for v4.11, please take it via your
-> tree. Otherwise, perhaps the docs tree or mine? (I don't currently
-> have any fixes queued; I'm just trying to minimize pull requests going
-> to Linus...)
+> No functional changes.
+>
 
-I have some fixes queued already, so unless Jon yells I'll take it in
-the next day or so.
+Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 
-cheers
+> Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/mm/fault.c | 6 +++---
+>  1 file changed, 3 insertions(+), 3 deletions(-)
+>
+> diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
+> index 62a50d6d1053..ee09604bbe12 100644
+> --- a/arch/powerpc/mm/fault.c
+> +++ b/arch/powerpc/mm/fault.c
+> @@ -119,8 +119,6 @@ static int do_sigbus(struct pt_regs *regs, unsigned long address,
+>  	siginfo_t info;
+>  	unsigned int lsb = 0;
+>
+> -	up_read(&current->mm->mmap_sem);
+> -
+>  	if (!user_mode(regs))
+>  		return MM_FAULT_ERR(SIGBUS);
+>
+> @@ -184,8 +182,10 @@ static int mm_fault_error(struct pt_regs *regs, unsigned long addr, int fault)
+>  		return MM_FAULT_RETURN;
+>  	}
+>
+> -	if (fault & (VM_FAULT_SIGBUS|VM_FAULT_HWPOISON|VM_FAULT_HWPOISON_LARGE))
+> +	if (fault & (VM_FAULT_SIGBUS|VM_FAULT_HWPOISON|VM_FAULT_HWPOISON_LARGE)) {
+> +		up_read(&current->mm->mmap_sem);
+>  		return do_sigbus(regs, addr, fault);
+> +	}
+>
+>  	/* We don't understand the fault code, this is fatal */
+>  	BUG();
+> -- 
+> 2.7.4
