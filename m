@@ -1,20 +1,19 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
- [IPv6:2607:f8b0:400e:c00::243])
+Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
+ [IPv6:2607:f8b0:400e:c00::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vnL6X1phMzDq95
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Mar 2017 15:53:08 +1100 (AEDT)
-Received: by mail-pf0-x243.google.com with SMTP id o126so20295396pfb.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Mar 2017 21:53:08 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vnL6b4msHzDqSS
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Mar 2017 15:53:11 +1100 (AEDT)
+Received: by mail-pf0-x242.google.com with SMTP id o126so20295574pfb.1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Mar 2017 21:53:11 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Nicholas Piggin <npiggin@gmail.com>,
  "Gautham R . Shenoy" <ego@linux.vnet.ibm.com>
-Subject: [PATCH 1/2] powerpc/powernv: process interrupts from system reset
- wakeup
-Date: Tue, 21 Mar 2017 14:52:53 +1000
-Message-Id: <20170321045254.21384-2-npiggin@gmail.com>
+Subject: [PATCH 2/2] powerpc/64s: msgclr when handling doorbell exceptions
+Date: Tue, 21 Mar 2017 14:52:54 +1000
+Message-Id: <20170321045254.21384-3-npiggin@gmail.com>
 In-Reply-To: <20170321045254.21384-1-npiggin@gmail.com>
 References: <20170321045254.21384-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,152 +25,89 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When the CPU wakes from low power state, it begins at the system reset
-interrupt with the exception that caused the wakeup encoded in SRR1.
+msgsnd doorbell exceptions are cleared when the doorbell interrupt is
+taken. However if a doorbell exception causes a system reset interrupt
+wake from power saving state, the message is not cleared. Processing
+the doorbell from the system reset interrupt requires msgclr to avoid
+taking the exception twice.
 
-Today, powernv idle wakeup ignores the wakeup reason (except a special
-case for HMI), and the regular interrupt corresponding to the exception
-will fire after the idle wakeup exits.
+Testing this plus the previous wakup direct patch gives:
 
-Change this to replay the interrupt from the idle wakeup before
-interrupts are hard-enabled.
+                                original         wakeup direct     msgclr
+Different threads, same core:   315k/s           264k/s            345k/s
+Different cores:                235k/s           242k/s            242k/s
 
-Test on POWER8 of context_switch selftests benchmark with polling idle
-disabled (e.g., always nap) gives the following results:
-
-                                original         wakeup direct
-Different threads, same core:   315k/s           264k/s
-Different cores:                235k/s           242k/s
-
-There is a slowdown for doorbell IPI (same core) case because system
-reset wakeup does not clear the message and the doorbell interrupt fires
-again needlessly.
+Net speedup is +10% for same core, and +3% for different core.
 ---
- arch/powerpc/include/asm/machdep.h    |  1 -
- arch/powerpc/include/asm/processor.h  |  1 +
- arch/powerpc/platforms/powernv/idle.c | 11 ++++++++---
- drivers/cpuidle/cpuidle-powernv.c     | 35 +++++++++++++++++++++++++++++++++--
- 4 files changed, 42 insertions(+), 6 deletions(-)
+ arch/powerpc/include/asm/dbell.h      | 13 +++++++++++++
+ arch/powerpc/include/asm/ppc-opcode.h |  3 +++
+ arch/powerpc/kernel/dbell.c           |  9 +++++++++
+ 3 files changed, 25 insertions(+)
 
-diff --git a/arch/powerpc/include/asm/machdep.h b/arch/powerpc/include/asm/machdep.h
-index 5011b69107a7..c0d9fd2e8c04 100644
---- a/arch/powerpc/include/asm/machdep.h
-+++ b/arch/powerpc/include/asm/machdep.h
-@@ -223,7 +223,6 @@ struct machdep_calls {
- 
- extern void e500_idle(void);
- extern void power4_idle(void);
--extern void power7_idle(void);
- extern void ppc6xx_idle(void);
- extern void book3e_idle(void);
- 
-diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
-index e0fecbcea2a2..8190943d2619 100644
---- a/arch/powerpc/include/asm/processor.h
-+++ b/arch/powerpc/include/asm/processor.h
-@@ -454,6 +454,7 @@ extern int powersave_nap;	/* set if nap mode can be used in idle loop */
- extern unsigned long power7_nap(int check_irq);
- extern unsigned long power7_sleep(void);
- extern unsigned long power7_winkle(void);
-+extern unsigned long power7_idle(void);
- extern unsigned long power9_idle_stop(unsigned long stop_psscr_val,
- 				      unsigned long stop_psscr_mask);
- 
-diff --git a/arch/powerpc/platforms/powernv/idle.c b/arch/powerpc/platforms/powernv/idle.c
-index 54546b632026..6b28a4f9c1fd 100644
---- a/arch/powerpc/platforms/powernv/idle.c
-+++ b/arch/powerpc/platforms/powernv/idle.c
-@@ -234,11 +234,16 @@ u64 pnv_default_stop_mask;
- /*
-  * Used for ppc_md.power_save which needs a function with no parameters
-  */
--static void power9_idle(void)
-+static void power9_power_save(void)
- {
- 	power9_idle_stop(pnv_default_stop_val, pnv_default_stop_mask);
+diff --git a/arch/powerpc/include/asm/dbell.h b/arch/powerpc/include/asm/dbell.h
+index 378167377065..b242badb2af7 100644
+--- a/arch/powerpc/include/asm/dbell.h
++++ b/arch/powerpc/include/asm/dbell.h
+@@ -46,6 +46,19 @@ static inline void _ppc_msgsnd(u32 msg)
+ 		__asm__ __volatile__ (PPC_MSGSNDP(%0) : : "r" (msg));
  }
  
-+static void power7_power_save(void)
++static inline void _ppc_msgclr(u32 msg)
 +{
-+	power7_idle();
++	__asm__ __volatile__ (ASM_FTR_IFSET(PPC_MSGCLR(%1), PPC_MSGCLRP(%1), %0)
++				: : "i" (CPU_FTR_HVMODE), "r" (msg));
 +}
 +
- /*
-  * First deep stop state. Used to figure out when to save/restore
-  * hypervisor context.
-@@ -534,9 +539,9 @@ static int __init pnv_init_idle_states(void)
- 	}
++static inline void ppc_msgclr(enum ppc_dbell type)
++{
++	u32 msg = PPC_DBELL_TYPE(type);
++
++	_ppc_msgclr(msg);
++}
++
+ #else /* CONFIG_PPC_BOOK3S */
  
- 	if (supported_cpuidle_states & OPAL_PM_NAP_ENABLED)
--		ppc_md.power_save = power7_idle;
-+		ppc_md.power_save = power7_power_save;
- 	else if (supported_cpuidle_states & OPAL_PM_STOP_INST_FAST)
--		ppc_md.power_save = power9_idle;
-+		ppc_md.power_save = power9_power_save;
+ #define PPC_DBELL_MSGTYPE		PPC_DBELL
+diff --git a/arch/powerpc/include/asm/ppc-opcode.h b/arch/powerpc/include/asm/ppc-opcode.h
+index e7d6d86563ee..eb8c7d5fcfbe 100644
+--- a/arch/powerpc/include/asm/ppc-opcode.h
++++ b/arch/powerpc/include/asm/ppc-opcode.h
+@@ -162,6 +162,7 @@
+ #define PPC_INST_MSGSND			0x7c00019c
+ #define PPC_INST_MSGCLR			0x7c0001dc
+ #define PPC_INST_MSGSNDP		0x7c00011c
++#define PPC_INST_MSGCLRP		0x7c00015c
+ #define PPC_INST_MTTMR			0x7c0003dc
+ #define PPC_INST_NOP			0x60000000
+ #define PPC_INST_PASTE			0x7c00070c
+@@ -349,6 +350,8 @@
+ 					___PPC_RB(b))
+ #define PPC_MSGSNDP(b)		stringify_in_c(.long PPC_INST_MSGSNDP | \
+ 					___PPC_RB(b))
++#define PPC_MSGCLRP(b)		stringify_in_c(.long PPC_INST_MSGCLRP | \
++					___PPC_RB(b))
+ #define PPC_POPCNTB(a, s)	stringify_in_c(.long PPC_INST_POPCNTB | \
+ 					__PPC_RA(a) | __PPC_RS(s))
+ #define PPC_POPCNTD(a, s)	stringify_in_c(.long PPC_INST_POPCNTD | \
+diff --git a/arch/powerpc/kernel/dbell.c b/arch/powerpc/kernel/dbell.c
+index 2128f3a96c32..2919f11b6afe 100644
+--- a/arch/powerpc/kernel/dbell.c
++++ b/arch/powerpc/kernel/dbell.c
+@@ -40,6 +40,15 @@ void doorbell_exception(struct pt_regs *regs)
  
- out:
- 	return 0;
-diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
-index 370593006f5f..e7e080c0790c 100644
---- a/drivers/cpuidle/cpuidle-powernv.c
-+++ b/drivers/cpuidle/cpuidle-powernv.c
-@@ -70,13 +70,37 @@ static int snooze_loop(struct cpuidle_device *dev,
- 	return index;
- }
+ 	irq_enter();
  
-+/*
-+ * Table to convert shifted SRR1 wakeup reason for POWER7, POWER8, POWER9
-+ * to __replay_interrupt vector.
-+ */
-+static const unsigned short srr1_wakeup_to_replay_table[0x10] =
-+{ 0, 0, 0, 0xe80,	/* 0x3 = hv doorbell */
-+  0, 0xa00,		/* 0x5 = doorbell */
-+  0x900,		/* 0x6 = decrementer */
-+  0, 0x500,		/* 0x8 = external */
-+  0xea0,		/* 0x9 = hv virt (POWER9) */
-+  0xe60,		/* 0xa = hmi */
-+  0, 0, 0, 0, 0, };
++	/*
++	 * May have come from doorbell triggered sreset wakeup, which does
++	 * not clear the message (tested on POWER8). Clear it here so we
++	 * don't get a doorbell interrupt when enabling hard irqs. This
++	 * msgclear could be moved into the sreset wakeup replay specific
++	 * code if it is expensive.
++	 */
++	ppc_msgclr(PPC_DBELL_MSGTYPE);
 +
-+/* Shift SRR1_WAKEMASK_P8 down and convert to __replay_interrupt vector */
-+#define SRR1_TO_REPLAY(srr1) \
-+	((unsigned int)srr1_wakeup_to_replay_table[((srr1) >> 18) & 0xf])
-+
- static int nap_loop(struct cpuidle_device *dev,
- 			struct cpuidle_driver *drv,
- 			int index)
- {
-+	u64 srr1;
-+	unsigned int reason;
-+
- 	ppc64_runlatch_off();
--	power7_idle();
-+	srr1 = power7_idle();
- 	ppc64_runlatch_on();
-+
-+	reason = SRR1_TO_REPLAY(srr1);
-+	__replay_interrupt(reason);
-+
- 	return index;
- }
+ 	may_hard_irq_enable();
  
-@@ -111,10 +135,17 @@ static int stop_loop(struct cpuidle_device *dev,
- 		     struct cpuidle_driver *drv,
- 		     int index)
- {
-+	u64 srr1;
-+	unsigned int reason;
-+
- 	ppc64_runlatch_off();
--	power9_idle_stop(stop_psscr_table[index].val,
-+	srr1 = power9_idle_stop(stop_psscr_table[index].val,
- 			 stop_psscr_table[index].mask);
- 	ppc64_runlatch_on();
-+
-+	reason = SRR1_TO_REPLAY(srr1);
-+	__replay_interrupt(reason);
-+
- 	return index;
- }
- 
+ 	kvmppc_set_host_ipi(smp_processor_id(), 0);
 -- 
 2.11.0
