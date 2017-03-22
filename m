@@ -3,31 +3,30 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vnwPG6lFtzDqZX
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Mar 2017 14:37:54 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vnwPJ5rH9zDqZr
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Mar 2017 14:37:56 +1100 (AEDT)
 Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v2M3T75a076067
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Mar 2017 23:37:44 -0400
-Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
- by mx0a-001b2d01.pphosted.com with ESMTP id 29b9vrtc7r-1
+ v2M3T7HS076028
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Mar 2017 23:37:55 -0400
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 29b9vrtceq-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Mar 2017 23:37:44 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Mar 2017 23:37:55 -0400
 Received: from localhost
- by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Tue, 21 Mar 2017 21:37:43 -0600
+ Tue, 21 Mar 2017 21:37:54 -0600
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
 Cc: linuxppc-dev@lists.ozlabs.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH V5 06/17] powerpc/mm/slice: Update slice mask printing to use
- bitmap printing.
-Date: Wed, 22 Mar 2017 09:06:52 +0530
+Subject: [PATCH V5 09/17] powerpc/mm/hash: VSID 0 is no more an invalid VSID
+Date: Wed, 22 Mar 2017 09:06:55 +0530
 In-Reply-To: <1490153823-29241-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1490153823-29241-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Message-Id: <1490153823-29241-7-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Message-Id: <1490153823-29241-10-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,80 +36,109 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We now get output like below which is much better.
-
-[    0.935306]  good_mask low_slice: 0-15
-[    0.935360]  good_mask high_slice: 0-511
-
-Compared to
-
-[    0.953414]  good_mask:1111111111111111 - 1111111111111.........
-
-I also fixed an error with slice_dbg printing.
+This is now used by linear mapped region of the kernel. User space still
+should not see a VSID 0. But having that VSID check confuse the reader.
+Remove the same and convert the error checking to be based on addr value
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/mm/slice.c | 30 +++++++-----------------------
- 1 file changed, 7 insertions(+), 23 deletions(-)
+ arch/powerpc/include/asm/book3s/64/mmu-hash.h |  6 ------
+ arch/powerpc/mm/hash_utils_64.c               | 19 +++++++------------
+ arch/powerpc/mm/pgtable-hash64.c              |  1 -
+ arch/powerpc/mm/tlb_hash64.c                  |  1 -
+ 4 files changed, 7 insertions(+), 20 deletions(-)
 
-diff --git a/arch/powerpc/mm/slice.c b/arch/powerpc/mm/slice.c
-index e1c42b54f5c5..ee3cfc5d9bbc 100644
---- a/arch/powerpc/mm/slice.c
-+++ b/arch/powerpc/mm/slice.c
-@@ -52,29 +52,13 @@ int _slice_debug = 1;
+diff --git a/arch/powerpc/include/asm/book3s/64/mmu-hash.h b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
+index 3897d30820b0..078d7bf93a69 100644
+--- a/arch/powerpc/include/asm/book3s/64/mmu-hash.h
++++ b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
+@@ -673,12 +673,6 @@ static inline unsigned long get_vsid(unsigned long context, unsigned long ea,
+ 	unsigned long vsid_bits;
+ 	unsigned long protovsid;
  
- static void slice_print_mask(const char *label, struct slice_mask mask)
- {
--	char	*p, buf[SLICE_NUM_LOW + 3 + SLICE_NUM_HIGH + 1];
--	int	i;
+-	/*
+-	 * Bad address. We return VSID 0 for that
+-	 */
+-	if ((ea & ~REGION_MASK) >= H_PGTABLE_RANGE)
+-		return 0;
 -
- 	if (!_slice_debug)
- 		return;
--	p = buf;
--	for (i = 0; i < SLICE_NUM_LOW; i++)
--		*(p++) = (mask.low_slices & (1 << i)) ? '1' : '0';
--	*(p++) = ' ';
--	*(p++) = '-';
--	*(p++) = ' ';
--	for (i = 0; i < SLICE_NUM_HIGH; i++) {
--		if (test_bit(i, mask.high_slices))
--			*(p++) = '1';
--		else
--			*(p++) = '0';
--	}
--	*(p++) = 0;
--
--	printk(KERN_DEBUG "%s:%s\n", label, buf);
-+	pr_devel("%s low_slice: %*pbl\n", label, (int)SLICE_NUM_LOW, &mask.low_slices);
-+	pr_devel("%s high_slice: %*pbl\n", label, (int)SLICE_NUM_HIGH, mask.high_slices);
- }
+ 	if (!mmu_has_feature(MMU_FTR_68_BIT_VA))
+ 		va_bits = 65;
  
--#define slice_dbg(fmt...) do { if (_slice_debug) pr_debug(fmt); } while(0)
-+#define slice_dbg(fmt...) do { if (_slice_debug) pr_devel(fmt); } while (0)
+diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
+index 6922a8d267cc..04523052ad8e 100644
+--- a/arch/powerpc/mm/hash_utils_64.c
++++ b/arch/powerpc/mm/hash_utils_64.c
+@@ -1222,6 +1222,13 @@ int hash_page_mm(struct mm_struct *mm, unsigned long ea,
+ 		ea, access, trap);
+ 	trace_hash_fault(ea, access, trap);
  
- #else
- 
-@@ -243,8 +227,8 @@ static void slice_convert(struct mm_struct *mm, struct slice_mask mask, int psiz
++	/* Bad address. */
++	if ((ea & ~REGION_MASK) >= H_PGTABLE_RANGE) {
++		DBG_LOW("Bad address!\n");
++		rc = 1;
++		goto bail;
++	}
++
+ 	/* Get region & vsid */
+  	switch (REGION_ID(ea)) {
+ 	case USER_REGION_ID:
+@@ -1252,12 +1259,6 @@ int hash_page_mm(struct mm_struct *mm, unsigned long ea,
  	}
+ 	DBG_LOW(" mm=%p, mm->pgdir=%p, vsid=%016lx\n", mm, mm->pgd, vsid);
  
- 	slice_dbg(" lsps=%lx, hsps=%lx\n",
--		  mm->context.low_slices_psize,
--		  mm->context.high_slices_psize);
-+		  (unsigned long)mm->context.low_slices_psize,
-+		  (unsigned long)mm->context.high_slices_psize);
+-	/* Bad address. */
+-	if (!vsid) {
+-		DBG_LOW("Bad address!\n");
+-		rc = 1;
+-		goto bail;
+-	}
+ 	/* Get pgdir */
+ 	pgdir = mm->pgd;
+ 	if (pgdir == NULL) {
+@@ -1500,8 +1501,6 @@ void hash_preload(struct mm_struct *mm, unsigned long ea,
+ 	/* Get VSID */
+ 	ssize = user_segment_size(ea);
+ 	vsid = get_vsid(mm->context.id, ea, ssize);
+-	if (!vsid)
+-		return;
+ 	/*
+ 	 * Hash doesn't like irqs. Walking linux page table with irq disabled
+ 	 * saves us from holding multiple locks.
+@@ -1746,10 +1745,6 @@ static void kernel_map_linear_page(unsigned long vaddr, unsigned long lmi)
  
- 	spin_unlock_irqrestore(&slice_convert_lock, flags);
+ 	hash = hpt_hash(vpn, PAGE_SHIFT, mmu_kernel_ssize);
  
-@@ -686,8 +670,8 @@ void slice_set_user_psize(struct mm_struct *mm, unsigned int psize)
+-	/* Don't create HPTE entries for bad address */
+-	if (!vsid)
+-		return;
+-
+ 	ret = hpte_insert_repeating(hash, vpn, __pa(vaddr), mode,
+ 				    HPTE_V_BOLTED,
+ 				    mmu_linear_psize, mmu_kernel_ssize);
+diff --git a/arch/powerpc/mm/pgtable-hash64.c b/arch/powerpc/mm/pgtable-hash64.c
+index 8b85a14b08ea..ddfeb141af29 100644
+--- a/arch/powerpc/mm/pgtable-hash64.c
++++ b/arch/powerpc/mm/pgtable-hash64.c
+@@ -263,7 +263,6 @@ void hpte_do_hugepage_flush(struct mm_struct *mm, unsigned long addr,
+ 	if (!is_kernel_addr(addr)) {
+ 		ssize = user_segment_size(addr);
+ 		vsid = get_vsid(mm->context.id, addr, ssize);
+-		WARN_ON(vsid == 0);
+ 	} else {
+ 		vsid = get_kernel_vsid(addr, mmu_kernel_ssize);
+ 		ssize = mmu_kernel_ssize;
+diff --git a/arch/powerpc/mm/tlb_hash64.c b/arch/powerpc/mm/tlb_hash64.c
+index 4517aa43a8b1..d8fa336bf05d 100644
+--- a/arch/powerpc/mm/tlb_hash64.c
++++ b/arch/powerpc/mm/tlb_hash64.c
+@@ -87,7 +87,6 @@ void hpte_need_flush(struct mm_struct *mm, unsigned long addr,
+ 		vsid = get_kernel_vsid(addr, mmu_kernel_ssize);
+ 		ssize = mmu_kernel_ssize;
+ 	}
+-	WARN_ON(vsid == 0);
+ 	vpn = hpt_vpn(addr, vsid, ssize);
+ 	rpte = __real_pte(__pte(pte), ptep);
  
- 
- 	slice_dbg(" lsps=%lx, hsps=%lx\n",
--		  mm->context.low_slices_psize,
--		  mm->context.high_slices_psize);
-+		  (unsigned long)mm->context.low_slices_psize,
-+		  (unsigned long)mm->context.high_slices_psize);
- 
-  bail:
- 	spin_unlock_irqrestore(&slice_convert_lock, flags);
 -- 
 2.7.4
