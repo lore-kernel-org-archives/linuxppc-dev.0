@@ -1,34 +1,38 @@
-Return-Path: <robh+dt@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <ego@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vpCJt0b3tzDq7Z
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Mar 2017 01:50:06 +1100 (AEDT)
-Received: from mail.kernel.org (localhost [127.0.0.1])
- by mail.kernel.org (Postfix) with ESMTP id 1AD37203A0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Mar 2017 14:50:03 +0000 (UTC)
-Received: from mail-yw0-f176.google.com (mail-yw0-f176.google.com
- [209.85.161.176])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 3C7362038F
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Mar 2017 14:50:01 +0000 (UTC)
-Received: by mail-yw0-f176.google.com with SMTP id i203so15309378ywc.3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Mar 2017 07:50:01 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <1490154573-22475-1-git-send-email-alistair@popple.id.au>
-References: <1490154573-22475-1-git-send-email-alistair@popple.id.au>
-From: Rob Herring <robh+dt@kernel.org>
-Date: Wed, 22 Mar 2017 09:49:40 -0500
-Message-ID: <CAL_JsqK1N98e0=ECs7+xY=16niPtp86BkNC09EMsXFkm90dafw@mail.gmail.com>
-Subject: Re: [PATCH 1/3] drivers/of/base.c: Add of_property_read_u64_index
-To: Alistair Popple <alistair@popple.id.au>
-Cc: Michael Ellerman <mpe@ellerman.id.au>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- mhairgrove@nvidia.com, shailendras@nvidia.com
-Content-Type: text/plain; charset=UTF-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vpCdn4snfzDq8x
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Mar 2017 02:04:45 +1100 (AEDT)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v2MF3Cx8116526
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Mar 2017 11:04:34 -0400
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 29b9vqaejv-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Mar 2017 11:04:34 -0400
+Received: from localhost
+ by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ego@linux.vnet.ibm.com>;
+ Wed, 22 Mar 2017 09:04:33 -0600
+From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>, Michael Neuling <mikey@neuling.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ "Shreyas B. Prabhu" <shreyasbp@gmail.com>,
+ Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
+ Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+ Anton Blanchard <anton@samba.org>, Balbir Singh <bsingharora@gmail.com>,
+ Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>,
+ Nicholas Piggin <npiggin@gmail.com>,
+ Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+Subject: [v3 PATCH 0/4] powernv:idle: Fixes for CPU-Hotplug on POWER DD1.0
+Date: Wed, 22 Mar 2017 20:34:13 +0530
+Message-Id: <cover.1490194710.git.ego@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,14 +42,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Mar 21, 2017 at 10:49 PM, Alistair Popple <alistair@popple.id.au> wrote:
-> There is of_property_read_u32_index but no u64 variant. This patch
-> adds one similar to the u32 version for u64.
->
-> Signed-off-by: Alistair Popple <alistair@popple.id.au>
-> ---
->  drivers/of/base.c  | 31 +++++++++++++++++++++++++++++++
->  include/linux/of.h |  3 +++
->  2 files changed, 34 insertions(+)
+From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 
-Acked-by: Rob Herring <robh@kernel.org>
+Hi,
+
+This is the third version of the patchset containing the fixes to
+make CPU-Hotplug working on correctly on POWER9 DD1 systems.
+
+The earlier versions can be found here:
+[v2] : https://lkml.org/lkml/2017/3/20/555
+[v1] : https://lkml.org/lkml/2017/3/13/46
+
+The only change in this patch series from v2 are the following
+optimizations suggested by Nicholas Piggin.
+
+- Dynamically allocate the thread_sibling_pacas array to contain
+  "threads_per_core" number of slots instead of declaring the array
+  size upfront.
+
+- Use SPRN_TIR instead of (SPRN_PIR & 0x3) to determine the thread's
+  index within a core.
+
+Patch 4 in the series requires Nicholas Piggin's ack. Rest of the
+patches are unchanged from the previous version.
+
+These patches are based on v4.11-rc3.
+
+The patches have been tested with stop1 (ESL=EC=1) as the
+deepest-state entered into during CPU-Hotplug.
+
+Gautham R. Shenoy (4):
+  powernv: Move CPU-Offline idle state invocation from smp.c to idle.c
+  powernv:smp: Add busy-wait loop as fall back for CPU-Hotplug
+  powernv:idle: Don't override default/deepest directly in kernel
+  powernv: Recover correct PACA on wakeup from a stop on P9 DD1
+
+ arch/powerpc/include/asm/cpuidle.h       |  1 +
+ arch/powerpc/include/asm/paca.h          |  5 ++
+ arch/powerpc/kernel/asm-offsets.c        |  1 +
+ arch/powerpc/kernel/idle_book3s.S        | 48 +++++++++++++++-
+ arch/powerpc/platforms/powernv/idle.c    | 96 ++++++++++++++++++++++++++------
+ arch/powerpc/platforms/powernv/powernv.h |  2 -
+ arch/powerpc/platforms/powernv/smp.c     | 18 +-----
+ 7 files changed, 136 insertions(+), 35 deletions(-)
+
+-- 
+1.9.4
