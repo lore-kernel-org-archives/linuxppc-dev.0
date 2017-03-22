@@ -3,21 +3,21 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vpCds5JNGzDqYB
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Mar 2017 02:04:49 +1100 (AEDT)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v2MExIPg049816
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Mar 2017 11:04:36 -0400
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
- by mx0a-001b2d01.pphosted.com with ESMTP id 29b9vp2k3v-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vpCdw0JphzDqY4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Mar 2017 02:04:51 +1100 (AEDT)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v2MEx4PH096599
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Mar 2017 11:04:39 -0400
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 29b9vqtrp6-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Mar 2017 11:04:35 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Mar 2017 11:04:39 -0400
 Received: from localhost
- by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <ego@linux.vnet.ibm.com>;
- Wed, 22 Mar 2017 09:04:35 -0600
+ Wed, 22 Mar 2017 09:04:38 -0600
 From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>, Michael Neuling <mikey@neuling.org>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
@@ -30,14 +30,14 @@ To: Michael Ellerman <mpe@ellerman.id.au>, Michael Neuling <mikey@neuling.org>,
  Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
  "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-Subject: [v3 PATCH 3/4] powernv:idle: Don't override default/deepest directly
- in kernel
-Date: Wed, 22 Mar 2017 20:34:16 +0530
+Subject: [v3 PATCH 4/4] powernv: Recover correct PACA on wakeup from a stop on
+ P9 DD1
+Date: Wed, 22 Mar 2017 20:34:17 +0530
 In-Reply-To: <cover.1490194710.git.ego@linux.vnet.ibm.com>
 References: <cover.1490194710.git.ego@linux.vnet.ibm.com>
 In-Reply-To: <cover.1490194710.git.ego@linux.vnet.ibm.com>
 References: <cover.1490194710.git.ego@linux.vnet.ibm.com>
-Message-Id: <5e7165f86094e575508ca9581cb0cd3970bd355f.1490194710.git.ego@linux.vnet.ibm.com>
+Message-Id: <2387240280c6445bd22ee9be621997b6f951ef3d.1490194710.git.ego@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,128 +49,188 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 
-Currently during idle-init on power9, if we don't find suitable stop
-states in the device tree that can be used as the
-default_stop/deepest_stop, we set stop0 (ESL=1,EC=1) as the default
-stop state psscr to be used by power9_idle and deepest stop state
-which is used by CPU-Hotplug.
+POWER9 DD1.0 hardware has an issue due to which the SPRs of a thread
+waking up from stop 0,1,2 with ESL=1 can endup being misplaced in the
+core. Thus the HSPRG0 of a thread waking up from can contain the paca
+pointer of its sibling.
 
-However, if the platform firmware has not configured or enabled a stop
-state, the kernel should not make any assumptions and fallback to a
-default choice.
+This patch implements a context recovery framework within threads of a
+core, by provisioning space in paca_struct for saving every sibling
+threads's paca pointers. Basically, we should be able to arrive at the
+right paca pointer from any of the thread's existing paca pointer.
 
-If the kernel uses a stop state that is not configured by the platform
-firmware, it may lead to further failures which should be avoided.
+At bootup, during powernv idle-init, we save the paca address of every
+CPU in each one its siblings paca_struct in the slot corresponding to
+this CPU's index in the core.
 
-In this patch, we modify the init code to ensure that the kernel uses
-only the stop states exposed by the firmware through the device
-tree. When a suitable default stop state isn't found, we disable
-ppc_md.power_save for power9. Similarly, when a suitable
-deepest_stop_state is not found in the device tree exported by the
-firmware, fall back to the default busy-wait loop in the CPU-Hotplug
-code.
+On wakeup from a stop, the thread will determine its index in the core
+from the TIR register and recover its PACA pointer by indexing into
+the correct slot in the provisioned space in the current PACA.
+
+Furthermore, ensure that the NVGPRs are restored from the stack on the
+way out by setting the NAPSTATELOST in paca.
 
 [Changelog written with inputs from svaidy@linux.vnet.ibm.com]
-Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
+
 Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
 ---
- arch/powerpc/platforms/powernv/idle.c | 35 ++++++++++++++++++-----------------
- 1 file changed, 18 insertions(+), 17 deletions(-)
+ arch/powerpc/include/asm/paca.h       |  5 ++++
+ arch/powerpc/kernel/asm-offsets.c     |  1 +
+ arch/powerpc/kernel/idle_book3s.S     | 48 ++++++++++++++++++++++++++++++++++-
+ arch/powerpc/platforms/powernv/idle.c | 30 ++++++++++++++++++++++
+ 4 files changed, 83 insertions(+), 1 deletion(-)
 
+diff --git a/arch/powerpc/include/asm/paca.h b/arch/powerpc/include/asm/paca.h
+index 708c3e5..2a17c15 100644
+--- a/arch/powerpc/include/asm/paca.h
++++ b/arch/powerpc/include/asm/paca.h
+@@ -172,6 +172,11 @@ struct paca_struct {
+ 	u8 thread_mask;
+ 	/* Mask to denote subcore sibling threads */
+ 	u8 subcore_sibling_mask;
++	/*
++	 * Pointer to an array which contains pointer
++	 * to the sibling threads' paca.
++	 */
++	struct paca_struct **thread_sibling_pacas;
+ #endif
+ 
+ #ifdef CONFIG_PPC_BOOK3S_64
+diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
+index 4367e7d..6ec5016 100644
+--- a/arch/powerpc/kernel/asm-offsets.c
++++ b/arch/powerpc/kernel/asm-offsets.c
+@@ -727,6 +727,7 @@ int main(void)
+ 	OFFSET(PACA_THREAD_IDLE_STATE, paca_struct, thread_idle_state);
+ 	OFFSET(PACA_THREAD_MASK, paca_struct, thread_mask);
+ 	OFFSET(PACA_SUBCORE_SIBLING_MASK, paca_struct, subcore_sibling_mask);
++	OFFSET(PACA_SIBLING_PACA_PTRS, paca_struct, thread_sibling_pacas);
+ #endif
+ 
+ 	DEFINE(PPC_DBELL_SERVER, PPC_DBELL_SERVER);
+diff --git a/arch/powerpc/kernel/idle_book3s.S b/arch/powerpc/kernel/idle_book3s.S
+index 9957287..24717a7 100644
+--- a/arch/powerpc/kernel/idle_book3s.S
++++ b/arch/powerpc/kernel/idle_book3s.S
+@@ -375,6 +375,46 @@ _GLOBAL(power9_idle_stop)
+ 	li	r4,1
+ 	b	pnv_powersave_common
+ 	/* No return */
++
++
++/*
++ * On waking up from stop 0,1,2 with ESL=1 on POWER9 DD1,
++ * HSPRG0 will be set to the HSPRG0 value of one of the
++ * threads in this core. Thus the value we have in r13
++ * may not be this thread's paca pointer.
++ *
++ * Fortunately, the TIR remains invariant. Since this thread's
++ * paca pointer is recorded in all its sibling's paca, we can
++ * correctly recover this thread's paca pointer if we
++ * know the index of this thread in the core.
++ *
++ * This index can be obtained from the TIR.
++ *
++ * i.e, thread's position in the core = TIR.
++ * If this value is i, then this thread's paca is
++ * paca->thread_sibling_pacas[i].
++ */
++power9_dd1_recover_paca:
++	mfspr	r4, SPRN_TIR
++	/*
++	 * Since each entry in thread_sibling_pacas is 8 bytes
++	 * we need to left-shift by 3 bits. Thus r4 = i * 8
++	 */
++	sldi	r4, r4, 3
++	/* Get &paca->thread_sibling_pacas[0] in r5 */
++	ld	r5, PACA_SIBLING_PACA_PTRS(r13)
++	/* Load paca->thread_sibling_pacas[i] into r13 */
++	ldx	r13, r4, r5
++	SET_PACA(r13)
++	ld	r2, PACATOC(r13)
++	/*
++	 * Indicate that we have lost NVGPR state
++	 * which needs to be restored from the stack.
++	 */
++	li	r3, 1
++	stb	r0,PACA_NAPSTATELOST(r13)
++	blr
++
+ /*
+  * Called from reset vector. Check whether we have woken up with
+  * hypervisor state loss. If yes, restore hypervisor state and return
+@@ -385,7 +425,13 @@ _GLOBAL(power9_idle_stop)
+  */
+ _GLOBAL(pnv_restore_hyp_resource)
+ BEGIN_FTR_SECTION
+-	ld	r2,PACATOC(r13);
++BEGIN_FTR_SECTION_NESTED(70)
++	mflr 	r6
++	bl	power9_dd1_recover_paca
++	mtlr	r6
++FTR_SECTION_ELSE_NESTED(70)
++	ld	r2, PACATOC(r13)
++ALT_FTR_SECTION_END_NESTED_IFSET(CPU_FTR_POWER9_DD1, 70)
+ 	/*
+ 	 * POWER ISA 3. Use PSSCR to determine if we
+ 	 * are waking up from deep idle state
 diff --git a/arch/powerpc/platforms/powernv/idle.c b/arch/powerpc/platforms/powernv/idle.c
-index f335e0f..63ade78 100644
+index 63ade78..b369e39 100644
 --- a/arch/powerpc/platforms/powernv/idle.c
 +++ b/arch/powerpc/platforms/powernv/idle.c
-@@ -147,7 +147,6 @@ u32 pnv_get_supported_cpuidle_states(void)
- }
- EXPORT_SYMBOL_GPL(pnv_get_supported_cpuidle_states);
+@@ -122,9 +122,12 @@ static void pnv_alloc_idle_core_states(void)
+ 	for (i = 0; i < nr_cores; i++) {
+ 		int first_cpu = i * threads_per_core;
+ 		int node = cpu_to_node(first_cpu);
++		size_t paca_ptr_array_size;
  
--
- static void pnv_fastsleep_workaround_apply(void *info)
+ 		core_idle_state = kmalloc_node(sizeof(u32), GFP_KERNEL, node);
+ 		*core_idle_state = PNV_CORE_IDLE_THREAD_BITS;
++		paca_ptr_array_size = (threads_per_core *
++				       sizeof(struct paca_struct *));
  
- {
-@@ -241,8 +240,9 @@ static DEVICE_ATTR(fastsleep_workaround_applyonce, 0600,
-  * The default stop state that will be used by ppc_md.power_save
-  * function on platforms that support stop instruction.
-  */
--u64 pnv_default_stop_val;
--u64 pnv_default_stop_mask;
-+static u64 pnv_default_stop_val;
-+static u64 pnv_default_stop_mask;
-+static bool default_stop_found;
- 
- /*
-  * Used for ppc_md.power_save which needs a function with no parameters
-@@ -262,8 +262,9 @@ static void power9_idle(void)
-  * psscr value and mask of the deepest stop idle state.
-  * Used when a cpu is offlined.
-  */
--u64 pnv_deepest_stop_psscr_val;
--u64 pnv_deepest_stop_psscr_mask;
-+static u64 pnv_deepest_stop_psscr_val;
-+static u64 pnv_deepest_stop_psscr_mask;
-+static bool deepest_stop_found;
- 
- /*
-  * pnv_cpu_offline: A function that puts the CPU into the deepest
-@@ -275,7 +276,7 @@ unsigned long pnv_cpu_offline(unsigned int cpu)
- 
- 	u32 idle_states = pnv_get_supported_cpuidle_states();
- 
--	if (cpu_has_feature(CPU_FTR_ARCH_300)) {
-+	if (cpu_has_feature(CPU_FTR_ARCH_300) && deepest_stop_found) {
- 		srr1 = power9_idle_stop(pnv_deepest_stop_psscr_val,
- 					pnv_deepest_stop_psscr_mask);
- 	} else if (idle_states & OPAL_PM_WINKLE_ENABLED) {
-@@ -385,7 +386,6 @@ static int __init pnv_power9_idle_init(struct device_node *np, u32 *flags,
- 	u32 *residency_ns = NULL;
- 	u64 max_residency_ns = 0;
- 	int rc = 0, i;
--	bool default_stop_found = false, deepest_stop_found = false;
- 
- 	psscr_val = kcalloc(dt_idle_states, sizeof(*psscr_val), GFP_KERNEL);
- 	psscr_mask = kcalloc(dt_idle_states, sizeof(*psscr_mask), GFP_KERNEL);
-@@ -465,21 +465,24 @@ static int __init pnv_power9_idle_init(struct device_node *np, u32 *flags,
+ 		for (j = 0; j < threads_per_core; j++) {
+ 			int cpu = first_cpu + j;
+@@ -132,6 +135,11 @@ static void pnv_alloc_idle_core_states(void)
+ 			paca[cpu].core_idle_state_ptr = core_idle_state;
+ 			paca[cpu].thread_idle_state = PNV_THREAD_RUNNING;
+ 			paca[cpu].thread_mask = 1 << j;
++			if (!cpu_has_feature(CPU_FTR_POWER9_DD1))
++				continue;
++			paca[cpu].thread_sibling_pacas =
++				kmalloc_node(paca_ptr_array_size,
++					     GFP_KERNEL, node);
  		}
  	}
  
--	if (!default_stop_found) {
--		pnv_default_stop_val = PSSCR_HV_DEFAULT_VAL;
--		pnv_default_stop_mask = PSSCR_HV_DEFAULT_MASK;
--		pr_warn("Setting default stop psscr val=0x%016llx,mask=0x%016llx\n",
-+	if (unlikely(!default_stop_found)) {
-+		pr_warn("cpuidle-powernv: No suitable default stop state found. Disabling platform idle.\n");
-+	} else {
-+		ppc_md.power_save = power9_idle;
-+		pr_info("cpuidle-powernv: Default stop: psscr = 0x%016llx,mask=0x%016llx\n",
- 			pnv_default_stop_val, pnv_default_stop_mask);
- 	}
+@@ -560,6 +568,28 @@ static int __init pnv_init_idle_states(void)
  
--	if (!deepest_stop_found) {
--		pnv_deepest_stop_psscr_val = PSSCR_HV_DEFAULT_VAL;
--		pnv_deepest_stop_psscr_mask = PSSCR_HV_DEFAULT_MASK;
--		pr_warn("Setting default stop psscr val=0x%016llx,mask=0x%016llx\n",
-+	if (unlikely(!deepest_stop_found)) {
-+		pr_warn("cpuidle-powernv: No suitable stop state for CPU-Hotplug. Offlined CPUs will busy wait");
-+	} else {
-+		pr_info("cpuidle-powernv: Deepest stop: psscr = 0x%016llx,mask=0x%016llx\n",
- 			pnv_deepest_stop_psscr_val,
- 			pnv_deepest_stop_psscr_mask);
- 	}
+ 	pnv_alloc_idle_core_states();
  
-+	pr_info("cpuidle-powernv: Requested Level (RL) value of first deep stop = 0x%llx\n",
-+		pnv_first_deep_stop_state);
- out:
- 	kfree(psscr_val);
- 	kfree(psscr_mask);
-@@ -559,8 +562,6 @@ static int __init pnv_init_idle_states(void)
- 
++	/*
++	 * For each CPU, record its PACA address in each of it's
++	 * sibling thread's PACA at the slot corresponding to this
++	 * CPU's index in the core.
++	 */
++	if (cpu_has_feature(CPU_FTR_POWER9_DD1)) {
++		int cpu;
++
++		pr_info("powernv: idle: Saving PACA pointers of all CPUs in their thread sibling PACA\n");
++		for_each_possible_cpu(cpu) {
++			int base_cpu = cpu_first_thread_sibling(cpu);
++			int idx = cpu_thread_in_core(cpu);
++			int i;
++
++			for (i = 0; i < threads_per_core; i++) {
++				int j = base_cpu + i;
++
++				paca[j].thread_sibling_pacas[idx] = &paca[cpu];
++			}
++		}
++	}
++
  	if (supported_cpuidle_states & OPAL_PM_NAP_ENABLED)
  		ppc_md.power_save = power7_idle;
--	else if (supported_cpuidle_states & OPAL_PM_STOP_INST_FAST)
--		ppc_md.power_save = power9_idle;
  
- out:
- 	return 0;
 -- 
 1.9.4
