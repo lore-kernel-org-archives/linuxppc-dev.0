@@ -3,30 +3,30 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vnwP40qx6zDqZq
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Mar 2017 14:37:43 +1100 (AEDT)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v2M3TFfb103588
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Mar 2017 23:37:33 -0400
-Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
- by mx0b-001b2d01.pphosted.com with ESMTP id 29b9vptrhn-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vnwP65T0NzDq95
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Mar 2017 14:37:46 +1100 (AEDT)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v2M3TGVq103209
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Mar 2017 23:37:36 -0400
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 29b9vmadh4-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Mar 2017 23:37:33 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Mar 2017 23:37:35 -0400
 Received: from localhost
- by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Tue, 21 Mar 2017 21:37:32 -0600
+ Tue, 21 Mar 2017 21:37:35 -0600
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
 Cc: linuxppc-dev@lists.ozlabs.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH V5 03/17] powerpc/mm: Move copy_mm_to_paca to paca.c
-Date: Wed, 22 Mar 2017 09:06:49 +0530
+Subject: [PATCH V5 04/17] powerpc/mm: Remove redundant TASK_SIZE_USER64 checks
+Date: Wed, 22 Mar 2017 09:06:50 +0530
 In-Reply-To: <1490153823-29241-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1490153823-29241-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Message-Id: <1490153823-29241-4-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Message-Id: <1490153823-29241-5-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,121 +36,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We also update the function arg to struct mm_struct. Move this so that function
-finds the definition of struct mm_struct. No functional change in this patch.
+The check against VSID range is implied when we check task size against
+hash and radix pgtable range[1], because we make sure page table range cannot
+exceed vsid range.
+
+[1] BUILD_BUG_ON(TASK_SIZE_USER64 > H_PGTABLE_RANGE);
+BUILD_BUG_ON(TASK_SIZE_USER64 > RADIX_PGTABLE_RANGE);
+
+The check for smaller task size is also removed here, because the follow up
+patch will support a tasksize smaller than pgtable range.
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/paca.h | 18 +-----------------
- arch/powerpc/kernel/paca.c      | 19 +++++++++++++++++++
- arch/powerpc/mm/hash_utils_64.c |  4 ++--
- arch/powerpc/mm/slb.c           |  2 +-
- arch/powerpc/mm/slice.c         |  2 +-
- 5 files changed, 24 insertions(+), 21 deletions(-)
+ arch/powerpc/mm/init_64.c    | 4 ----
+ arch/powerpc/mm/pgtable_64.c | 5 -----
+ 2 files changed, 9 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/paca.h b/arch/powerpc/include/asm/paca.h
-index 708c3e592eeb..f48c250339fd 100644
---- a/arch/powerpc/include/asm/paca.h
-+++ b/arch/powerpc/include/asm/paca.h
-@@ -206,23 +206,7 @@ struct paca_struct {
+diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
+index 9be992083d2a..8f6f2a173e47 100644
+--- a/arch/powerpc/mm/init_64.c
++++ b/arch/powerpc/mm/init_64.c
+@@ -71,10 +71,6 @@
+ #if H_PGTABLE_RANGE > USER_VSID_RANGE
+ #warning Limited user VSID range means pagetable space is wasted
  #endif
- };
- 
--#ifdef CONFIG_PPC_BOOK3S
--static inline void copy_mm_to_paca(mm_context_t *context)
--{
--	get_paca()->mm_ctx_id = context->id;
--#ifdef CONFIG_PPC_MM_SLICES
--	get_paca()->mm_ctx_low_slices_psize = context->low_slices_psize;
--	memcpy(&get_paca()->mm_ctx_high_slices_psize,
--	       &context->high_slices_psize, SLICE_ARRAY_SIZE);
--#else
--	get_paca()->mm_ctx_user_psize = context->user_psize;
--	get_paca()->mm_ctx_sllp = context->sllp;
--#endif
--}
--#else
--static inline void copy_mm_to_paca(mm_context_t *context){}
--#endif
 -
-+extern void copy_mm_to_paca(struct mm_struct *mm);
- extern struct paca_struct *paca;
- extern void initialise_paca(struct paca_struct *new_paca, int cpu);
- extern void setup_paca(struct paca_struct *new_paca);
-diff --git a/arch/powerpc/kernel/paca.c b/arch/powerpc/kernel/paca.c
-index dfc479df9634..e2cf745a4b94 100644
---- a/arch/powerpc/kernel/paca.c
-+++ b/arch/powerpc/kernel/paca.c
-@@ -245,3 +245,22 @@ void __init free_unused_pacas(void)
+-#if (TASK_SIZE_USER64 < H_PGTABLE_RANGE) && (TASK_SIZE_USER64 < USER_VSID_RANGE)
+-#warning TASK_SIZE is smaller than it needs to be.
+-#endif
+ #endif /* CONFIG_PPC_STD_MMU_64 */
  
- 	free_lppacas();
- }
-+
-+void copy_mm_to_paca(struct mm_struct *mm)
-+{
-+#ifdef CONFIG_PPC_BOOK3S
-+	mm_context_t *context = &mm->context;
-+
-+	get_paca()->mm_ctx_id = context->id;
-+#ifdef CONFIG_PPC_MM_SLICES
-+	get_paca()->mm_ctx_low_slices_psize = context->low_slices_psize;
-+	memcpy(&get_paca()->mm_ctx_high_slices_psize,
-+	       &context->high_slices_psize, SLICE_ARRAY_SIZE);
-+#else /* CONFIG_PPC_MM_SLICES */
-+	get_paca()->mm_ctx_user_psize = context->user_psize;
-+	get_paca()->mm_ctx_sllp = context->sllp;
-+#endif
-+#else /* CONFIG_PPC_BOOK3S */
-+	return;
-+#endif
-+}
-diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
-index c554768b1fa2..1bbf572243f7 100644
---- a/arch/powerpc/mm/hash_utils_64.c
-+++ b/arch/powerpc/mm/hash_utils_64.c
-@@ -1120,7 +1120,7 @@ void demote_segment_4k(struct mm_struct *mm, unsigned long addr)
- 	copro_flush_all_slbs(mm);
- 	if ((get_paca_psize(addr) != MMU_PAGE_4K) && (current->mm == mm)) {
+ phys_addr_t memstart_addr = ~0;
+diff --git a/arch/powerpc/mm/pgtable_64.c b/arch/powerpc/mm/pgtable_64.c
+index db93cf747a03..3e0cfb6420dd 100644
+--- a/arch/powerpc/mm/pgtable_64.c
++++ b/arch/powerpc/mm/pgtable_64.c
+@@ -56,11 +56,6 @@
  
--		copy_mm_to_paca(&mm->context);
-+		copy_mm_to_paca(mm);
- 		slb_flush_and_rebolt();
- 	}
- }
-@@ -1192,7 +1192,7 @@ static void check_paca_psize(unsigned long ea, struct mm_struct *mm,
- {
- 	if (user_region) {
- 		if (psize != get_paca_psize(ea)) {
--			copy_mm_to_paca(&mm->context);
-+			copy_mm_to_paca(mm);
- 			slb_flush_and_rebolt();
- 		}
- 	} else if (get_paca()->vmalloc_sllp !=
-diff --git a/arch/powerpc/mm/slb.c b/arch/powerpc/mm/slb.c
-index 5e01b2ece1d0..98ae810b8c21 100644
---- a/arch/powerpc/mm/slb.c
-+++ b/arch/powerpc/mm/slb.c
-@@ -229,7 +229,7 @@ void switch_slb(struct task_struct *tsk, struct mm_struct *mm)
- 		asm volatile("slbie %0" : : "r" (slbie_data));
+ #include "mmu_decl.h"
  
- 	get_paca()->slb_cache_ptr = 0;
--	copy_mm_to_paca(&mm->context);
-+	copy_mm_to_paca(mm);
+-#ifdef CONFIG_PPC_STD_MMU_64
+-#if TASK_SIZE_USER64 > (1UL << (ESID_BITS + SID_SHIFT))
+-#error TASK_SIZE_USER64 exceeds user VSID range
+-#endif
+-#endif
  
- 	/*
- 	 * preload some userspace segments into the SLB.
-diff --git a/arch/powerpc/mm/slice.c b/arch/powerpc/mm/slice.c
-index 2396db6b3a05..b40b4111ca13 100644
---- a/arch/powerpc/mm/slice.c
-+++ b/arch/powerpc/mm/slice.c
-@@ -192,7 +192,7 @@ static void slice_flush_segments(void *parm)
- 	if (mm != current->active_mm)
- 		return;
- 
--	copy_mm_to_paca(&current->active_mm->context);
-+	copy_mm_to_paca(current->active_mm);
- 
- 	local_irq_save(flags);
- 	slb_flush_and_rebolt();
+ #ifdef CONFIG_PPC_BOOK3S_64
+ /*
 -- 
 2.7.4
