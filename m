@@ -1,21 +1,17 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vp6Ht3dthzDq7Z
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Mar 2017 22:03:54 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Thadeu Lima de Souza Cascardo <cascardo@canonical.com>,
- linuxppc-dev@lists.ozlabs.org
-Cc: linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: fix /proc/self/stack
-In-Reply-To: <20170317155921.24369-1-cascardo@canonical.com>
-References: <20170317155921.24369-1-cascardo@canonical.com>
-Date: Wed, 22 Mar 2017 22:03:53 +1100
-Message-ID: <87inn1d146.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vp7b93zzyzDq7Z
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Mar 2017 23:02:13 +1100 (AEDT)
+In-Reply-To: <20170320065522.14839-1-andrew.donnellan@au1.ibm.com>
+To: Andrew Donnellan <andrew.donnellan@au1.ibm.com>, keescook@chromium.org,
+ re.emese@gmail.com, kernel-hardening@lists.openwall.com
+From: Michael Ellerman <patch-notifications@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: Re: gcc-plugins: update architecture list in documentation
+Message-Id: <3vp7b938Gbz9s7j@ozlabs.org>
+Date: Wed, 22 Mar 2017 23:02:13 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,43 +21,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Thadeu Lima de Souza Cascardo <cascardo@canonical.com> writes:
+On Mon, 2017-03-20 at 06:55:22 UTC, Andrew Donnellan wrote:
+> Commit 65c059bcaa73 ("powerpc: Enable support for GCC plugins") enabled GCC
+> plugins on powerpc, but neglected to update the architecture list in the
+> docs. Rectify this.
+> 
+> Fixes: 65c059bcaa73 ("powerpc: Enable support for GCC plugins")
+> Signed-off-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
 
-> For the current task, the kernel stack would only tell the last time the
-> process was rescheduled, if ever. Use the current stack pointer for the
-> current task.
+Applied to powerpc fixes, thanks.
 
-You say "fix" in the subject, but is it a bug, or just an enhancement?
-
-> This is also consistent with some other architectures.
-
-Such as .. arm64 and x86 (though it's buried in the unwind code).
-
-> diff --git a/arch/powerpc/kernel/stacktrace.c b/arch/powerpc/kernel/stacktrace.c
-> index 6671195..2446066 100644
-> --- a/arch/powerpc/kernel/stacktrace.c
-> +++ b/arch/powerpc/kernel/stacktrace.c
-> @@ -59,7 +59,12 @@ EXPORT_SYMBOL_GPL(save_stack_trace);
->  
->  void save_stack_trace_tsk(struct task_struct *tsk, struct stack_trace *trace)
->  {
-> -	save_context_stack(trace, tsk->thread.ksp, tsk, 0);
-> +	unsigned long sp = tsk->thread.ksp;
-> +
-> +	if (tsk == current)
-> +		sp = current_stack_pointer();
-	else
-		sp = tsk->thread.ksp;
-
-Would be clearer IMHO.
-
-> +
-> +	save_context_stack(trace, sp, tsk, 0);
->  }
->  EXPORT_SYMBOL_GPL(save_stack_trace_tsk);
->  
-> -- 
-> 2.9.3
-
+https://git.kernel.org/powerpc/c/cc638a488a5205713b51eabd047be6
 
 cheers
