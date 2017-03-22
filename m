@@ -1,19 +1,22 @@
-Return-Path: <anton@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <matthew.brown.dev@gmail.com>
+Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
+ [IPv6:2607:f8b0:400e:c05::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vpN1H5DshzDqBv
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Mar 2017 08:22:11 +1100 (AEDT)
-From: Anton Blanchard <anton@ozlabs.org>
-To: benh@kernel.crashing.org,
-	paulus@samba.org,
-	mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 3/3] powerpc/configs: Re-enable POWER8 crc32c
-Date: Thu, 23 Mar 2017 08:22:01 +1100
-Message-Id: <20170322212201.26036-3-anton@ozlabs.org>
-In-Reply-To: <20170322212201.26036-1-anton@ozlabs.org>
-References: <20170322212201.26036-1-anton@ozlabs.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vpPSv6XDvzDq7N
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Mar 2017 09:27:43 +1100 (AEDT)
+Received: by mail-pg0-x243.google.com with SMTP id w20so7824054pgc.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Mar 2017 15:27:43 -0700 (PDT)
+Received: from matt.ozlabs.ibm.com ([122.99.82.10])
+ by smtp.gmail.com with ESMTPSA id r13sm5835935pfg.55.2017.03.22.15.27.39
+ for <linuxppc-dev@lists.ozlabs.org>
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+ Wed, 22 Mar 2017 15:27:40 -0700 (PDT)
+From: Matt Brown <matthew.brown.dev@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [v7] powerpc/powernv: add hdat attribute to sysfs
+Date: Thu, 23 Mar 2017 09:27:16 +1100
+Message-Id: <20170322222716.21767-1-matthew.brown.dev@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,57 +26,122 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Anton Blanchard <anton@samba.org>
+The HDAT data area is consumed by skiboot and turned into a device-tree.
+In some cases we would like to look directly at the HDAT, so this patch
+adds a sysfs node to allow it to be viewed.  This is not possible through
+/dev/mem as it is reserved memory which is stopped by the /dev/mem filter.
 
-The config option for the POWER8 crc32c recently changed from
-CONFIG_CRYPT_CRC32C_VPMSUM to CONFIG_CRYPTO_CRC32C_VPMSUM. Update
-the configs.
-
-Signed-off-by: Anton Blanchard <anton@samba.org
+Signed-off-by: Matt Brown <matthew.brown.dev@gmail.com>
 ---
- arch/powerpc/configs/powernv_defconfig | 2 +-
- arch/powerpc/configs/ppc64_defconfig   | 2 +-
- arch/powerpc/configs/pseries_defconfig | 2 +-
- 3 files changed, 3 insertions(+), 3 deletions(-)
+Changelog:
 
-diff --git a/arch/powerpc/configs/powernv_defconfig b/arch/powerpc/configs/powernv_defconfig
-index 4926d7f..0695ce0 100644
---- a/arch/powerpc/configs/powernv_defconfig
-+++ b/arch/powerpc/configs/powernv_defconfig
-@@ -306,7 +306,7 @@ CONFIG_CRYPTO_TEST=m
- CONFIG_CRYPTO_CCM=m
- CONFIG_CRYPTO_PCBC=m
- CONFIG_CRYPTO_HMAC=y
--CONFIG_CRYPT_CRC32C_VPMSUM=m
-+CONFIG_CRYPTO_CRC32C_VPMSUM=m
- CONFIG_CRYPTO_MD5_PPC=m
- CONFIG_CRYPTO_MICHAEL_MIC=m
- CONFIG_CRYPTO_SHA256=y
-diff --git a/arch/powerpc/configs/ppc64_defconfig b/arch/powerpc/configs/ppc64_defconfig
-index dfac33c..e353168f9 100644
---- a/arch/powerpc/configs/ppc64_defconfig
-+++ b/arch/powerpc/configs/ppc64_defconfig
-@@ -340,7 +340,7 @@ CONFIG_PPC_EARLY_DEBUG=y
- CONFIG_CRYPTO_TEST=m
- CONFIG_CRYPTO_PCBC=m
- CONFIG_CRYPTO_HMAC=y
--CONFIG_CRYPT_CRC32C_VPMSUM=m
-+CONFIG_CRYPTO_CRC32C_VPMSUM=m
- CONFIG_CRYPTO_MD5_PPC=m
- CONFIG_CRYPTO_MICHAEL_MIC=m
- CONFIG_CRYPTO_SHA256=y
-diff --git a/arch/powerpc/configs/pseries_defconfig b/arch/powerpc/configs/pseries_defconfig
-index 47f72c8..1a61aa2 100644
---- a/arch/powerpc/configs/pseries_defconfig
-+++ b/arch/powerpc/configs/pseries_defconfig
-@@ -303,7 +303,7 @@ CONFIG_XMON=y
- CONFIG_CRYPTO_TEST=m
- CONFIG_CRYPTO_PCBC=m
- CONFIG_CRYPTO_HMAC=y
--CONFIG_CRYPT_CRC32C_VPMSUM=m
-+CONFIG_CRYPTO_CRC32C_VPMSUM=m
- CONFIG_CRYPTO_MD5_PPC=m
- CONFIG_CRYPTO_MICHAEL_MIC=m
- CONFIG_CRYPTO_SHA256=y
+v7:	
+	- moved exported_attrs and attr_name into opal_export_attrs
+---
+ arch/powerpc/platforms/powernv/opal.c | 84 +++++++++++++++++++++++++++++++++++
+ 1 file changed, 84 insertions(+)
+
+diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
+index 2822935..b8f057f 100644
+--- a/arch/powerpc/platforms/powernv/opal.c
++++ b/arch/powerpc/platforms/powernv/opal.c
+@@ -604,6 +604,87 @@ static void opal_export_symmap(void)
+ 		pr_warn("Error %d creating OPAL symbols file\n", rc);
+ }
+ 
++static ssize_t export_attr_read(struct file *fp, struct kobject *kobj,
++			     struct bin_attribute *bin_attr, char *buf,
++			     loff_t off, size_t count)
++{
++	return memory_read_from_buffer(buf, count, &off, bin_attr->private,
++				       bin_attr->size);
++}
++
++/*
++ * opal_export_attrs: creates a sysfs node for each property listed in
++ * the device-tree under /ibm,opal/firmware/exports/
++ * All new sysfs nodes are created under /opal/exports/.
++ * This allows for reserved memory regions (e.g. HDAT) to be read.
++ * The new sysfs nodes are only readable by root.
++ */
++static void opal_export_attrs(void)
++{
++	/* /sys/firmware/opal/exports */
++	struct kobject *opal_export_kobj;
++	struct bin_attribute *exported_attrs;
++	char **attr_name;
++
++	struct bin_attribute *attr_tmp;
++	const __be64 *syms;
++	unsigned int size;
++	struct device_node *fw;
++	struct property *prop;
++	int rc;
++	int attr_count = 0;
++	int n = 0;
++
++	/* Create new 'exports' directory */
++	opal_export_kobj = kobject_create_and_add("exports", opal_kobj);
++	if (!opal_export_kobj) {
++		pr_warn("kobject_create_and_add opal_exports failed\n");
++		return;
++	}
++
++	fw = of_find_node_by_path("/ibm,opal/firmware/exports");
++	if (!fw)
++		return;
++
++	for (prop = fw->properties; prop != NULL; prop = prop->next)
++		attr_count++;
++
++	if (attr_count > 2) {
++		exported_attrs = kzalloc(sizeof(exported_attrs)*(attr_count-2),
++				GFP_KERNEL);
++		attr_name = kzalloc(sizeof(char *)*(attr_count-2), GFP_KERNEL);
++	}
++
++	for_each_property_of_node(fw, prop) {
++
++		attr_name[n] = kstrdup(prop->name, GFP_KERNEL);
++		syms = of_get_property(fw, attr_name[n], &size);
++
++		if (!strcmp(attr_name[n], "name") ||
++				!strcmp(attr_name[n], "phandle"))
++			continue;
++
++		if (!syms || size != 2 * sizeof(__be64))
++			continue;
++
++		attr_tmp = &exported_attrs[n];
++		attr_tmp->attr.name = attr_name[n];
++		attr_tmp->attr.mode = 0400;
++		attr_tmp->read = export_attr_read;
++		attr_tmp->private = __va(be64_to_cpu(syms[0]));
++		attr_tmp->size = be64_to_cpu(syms[1]);
++
++		rc = sysfs_create_bin_file(opal_export_kobj, attr_tmp);
++		if (rc)
++			pr_warn("Error %d creating OPAL sysfs exports/%s file\n",
++					rc, attr_name[n]);
++		n++;
++	}
++
++	of_node_put(fw);
++
++}
++
+ static void __init opal_dump_region_init(void)
+ {
+ 	void *addr;
+@@ -742,6 +823,9 @@ static int __init opal_init(void)
+ 		opal_msglog_sysfs_init();
+ 	}
+ 
++	/* Export all properties */
++	opal_export_attrs();
++
+ 	/* Initialize platform devices: IPMI backend, PRD & flash interface */
+ 	opal_pdev_init("ibm,opal-ipmi");
+ 	opal_pdev_init("ibm,opal-flash");
 -- 
 2.9.3
