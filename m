@@ -1,32 +1,33 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vnwP65T0NzDq95
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Mar 2017 14:37:46 +1100 (AEDT)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vnwP90TQTzDq7Z
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Mar 2017 14:37:48 +1100 (AEDT)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v2M3TGVq103209
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Mar 2017 23:37:36 -0400
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
- by mx0a-001b2d01.pphosted.com with ESMTP id 29b9vmadh4-1
+ v2M3T7lM103959
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Mar 2017 23:37:40 -0400
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 29b9vhtjcw-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Mar 2017 23:37:35 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Mar 2017 23:37:39 -0400
 Received: from localhost
- by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Tue, 21 Mar 2017 21:37:35 -0600
+ Tue, 21 Mar 2017 21:37:39 -0600
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
 Cc: linuxppc-dev@lists.ozlabs.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH V5 04/17] powerpc/mm: Remove redundant TASK_SIZE_USER64 checks
-Date: Wed, 22 Mar 2017 09:06:50 +0530
+Subject: [PATCH V5 05/17] powerpc/mm/slice: Move slice_mask struct definition
+ to slice.c
+Date: Wed, 22 Mar 2017 09:06:51 +0530
 In-Reply-To: <1490153823-29241-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1490153823-29241-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Message-Id: <1490153823-29241-5-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Message-Id: <1490153823-29241-6-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,52 +37,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The check against VSID range is implied when we check task size against
-hash and radix pgtable range[1], because we make sure page table range cannot
-exceed vsid range.
+This structure definition need not be in a header since this is used only by
+slice.c file. So move it to slice.c. This also allow us to use SLICE_NUM_HIGH
+instead of 64.
 
-[1] BUILD_BUG_ON(TASK_SIZE_USER64 > H_PGTABLE_RANGE);
-BUILD_BUG_ON(TASK_SIZE_USER64 > RADIX_PGTABLE_RANGE);
-
-The check for smaller task size is also removed here, because the follow up
-patch will support a tasksize smaller than pgtable range.
+I also switch the low_slices type to u64 from u16. This doesn't have an impact
+on size of struct due to padding added with u16 type. This helps in using
+bitmap printing function for printing slice mask.
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/mm/init_64.c    | 4 ----
- arch/powerpc/mm/pgtable_64.c | 5 -----
- 2 files changed, 9 deletions(-)
+ arch/powerpc/include/asm/page_64.h | 11 -----------
+ arch/powerpc/mm/slice.c            | 10 +++++++++-
+ 2 files changed, 9 insertions(+), 12 deletions(-)
 
-diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
-index 9be992083d2a..8f6f2a173e47 100644
---- a/arch/powerpc/mm/init_64.c
-+++ b/arch/powerpc/mm/init_64.c
-@@ -71,10 +71,6 @@
- #if H_PGTABLE_RANGE > USER_VSID_RANGE
- #warning Limited user VSID range means pagetable space is wasted
- #endif
+diff --git a/arch/powerpc/include/asm/page_64.h b/arch/powerpc/include/asm/page_64.h
+index bd55ff751938..c4d9654bd637 100644
+--- a/arch/powerpc/include/asm/page_64.h
++++ b/arch/powerpc/include/asm/page_64.h
+@@ -99,17 +99,6 @@ extern u64 ppc64_pft_size;
+ #define GET_HIGH_SLICE_INDEX(addr)	((addr) >> SLICE_HIGH_SHIFT)
+ 
+ #ifndef __ASSEMBLY__
+-/*
+- * One bit per slice. We have lower slices which cover 256MB segments
+- * upto 4G range. That gets us 16 low slices. For the rest we track slices
+- * in 1TB size.
+- * 64 below is actually SLICE_NUM_HIGH to fixup complie errros
+- */
+-struct slice_mask {
+-	u16 low_slices;
+-	DECLARE_BITMAP(high_slices, 64);
+-};
 -
--#if (TASK_SIZE_USER64 < H_PGTABLE_RANGE) && (TASK_SIZE_USER64 < USER_VSID_RANGE)
--#warning TASK_SIZE is smaller than it needs to be.
--#endif
- #endif /* CONFIG_PPC_STD_MMU_64 */
+ struct mm_struct;
  
- phys_addr_t memstart_addr = ~0;
-diff --git a/arch/powerpc/mm/pgtable_64.c b/arch/powerpc/mm/pgtable_64.c
-index db93cf747a03..3e0cfb6420dd 100644
---- a/arch/powerpc/mm/pgtable_64.c
-+++ b/arch/powerpc/mm/pgtable_64.c
-@@ -56,11 +56,6 @@
+ extern unsigned long slice_get_unmapped_area(unsigned long addr,
+diff --git a/arch/powerpc/mm/slice.c b/arch/powerpc/mm/slice.c
+index b40b4111ca13..e1c42b54f5c5 100644
+--- a/arch/powerpc/mm/slice.c
++++ b/arch/powerpc/mm/slice.c
+@@ -37,7 +37,15 @@
+ #include <asm/hugetlb.h>
  
- #include "mmu_decl.h"
+ static DEFINE_SPINLOCK(slice_convert_lock);
+-
++/*
++ * One bit per slice. We have lower slices which cover 256MB segments
++ * upto 4G range. That gets us 16 low slices. For the rest we track slices
++ * in 1TB size.
++ */
++struct slice_mask {
++	u64 low_slices;
++	DECLARE_BITMAP(high_slices, SLICE_NUM_HIGH);
++};
  
--#ifdef CONFIG_PPC_STD_MMU_64
--#if TASK_SIZE_USER64 > (1UL << (ESID_BITS + SID_SHIFT))
--#error TASK_SIZE_USER64 exceeds user VSID range
--#endif
--#endif
- 
- #ifdef CONFIG_PPC_BOOK3S_64
- /*
+ #ifdef DEBUG
+ int _slice_debug = 1;
 -- 
 2.7.4
