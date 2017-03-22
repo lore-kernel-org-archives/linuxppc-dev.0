@@ -1,20 +1,22 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vp5tM5qTrzDq7Z
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Mar 2017 21:45:15 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vp66b3CxmzDq7Z
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Mar 2017 21:55:51 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
-Cc: "Gautham R . Shenoy" <ego@linux.vnet.ibm.com>,
- Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [PATCH 1/2] powerpc/powernv: process interrupts from system reset
- wakeup
-In-Reply-To: <20170321045254.21384-2-npiggin@gmail.com>
-References: <20170321045254.21384-1-npiggin@gmail.com>
- <20170321045254.21384-2-npiggin@gmail.com>
-Date: Wed, 22 Mar 2017 21:45:13 +1100
-Message-ID: <87o9wtd1za.fsf@concordia.ellerman.id.au>
+To: svaidy@linux.vnet.ibm.com
+Cc: Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] powerpc/powernv/cpuidle: Pass correct drv->cpumask for
+ registration
+In-Reply-To: <20170320043112.GA4123@drishya.in.ibm.com>
+References: <20170317180550.9931-1-svaidy@linux.vnet.ibm.com>
+ <1489814882.5616.11.camel@neuling.org>
+ <20170318064425.GC4225@drishya.in.ibm.com>
+ <87k27kzlz0.fsf@concordia.ellerman.id.au>
+ <20170320043112.GA4123@drishya.in.ibm.com>
+Date: Wed, 22 Mar 2017 21:55:50 +1100
+Message-ID: <87lgrxd1hl.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,166 +28,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Nicholas Piggin <npiggin@gmail.com> writes:
-
-> When the CPU wakes from low power state, it begins at the system reset
-> interrupt with the exception that caused the wakeup encoded in SRR1.
+Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com> writes:
+> * Michael Ellerman <mpe@ellerman.id.au> [2017-03-20 14:05:39]:
+>> Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com> writes:
+>  
+>> > On powernv platform cpu_present could be less than cpu_possible
+>> > in cases where firmware detects the cpu, but it is not available
+>> > for OS.
+>> 
+>> It's entirely normal for present < possible, on my laptop for example,
+>> so I don't see how that causes the bug.
 >
-> Today, powernv idle wakeup ignores the wakeup reason (except a special
-> case for HMI), and the regular interrupt corresponding to the exception
-> will fire after the idle wakeup exits.
+> Yes, present < possible in itself not a problem.  It is whether
+> cpu_device exist for that cpu or not.
+...
 >
-> Change this to replay the interrupt from the idle wakeup before
-> interrupts are hard-enabled.
+> Currently if CONFIG_HOTPLUG_CPU=n, then we skip calling register_cpu()
+> and that causes the problem.
+...
+>> 
+>> I really don't understand how a CPU not being present leads to a crash
+>> in printf()? Something in that call chain should have checked that the
+>> CPU was registered before crashing in printf() - surely?
 >
-> Test on POWER8 of context_switch selftests benchmark with polling idle
-> disabled (e.g., always nap) gives the following results:
+> Yes, we should have just failed to register the cpuidle driver.  I have
+> the fix here:
 >
->                                 original         wakeup direct
-> Different threads, same core:   315k/s           264k/s
-> Different cores:                235k/s           242k/s
->
-> There is a slowdown for doorbell IPI (same core) case because system
-> reset wakeup does not clear the message and the doorbell interrupt fires
-> again needlessly.
+> [PATCH] cpuidle: Validate cpu_dev in cpuidle_add_sysfs
+> http://patchwork.ozlabs.org/patch/740634/
 
-Seems like a win.
+OK. Can you send a v2 of this with a better change log that includes all
+the clarifications above.
 
-> diff --git a/arch/powerpc/include/asm/machdep.h b/arch/powerpc/include/asm/machdep.h
-> index 5011b69107a7..c0d9fd2e8c04 100644
-> --- a/arch/powerpc/include/asm/machdep.h
-> +++ b/arch/powerpc/include/asm/machdep.h
-> @@ -223,7 +223,6 @@ struct machdep_calls {
->  
->  extern void e500_idle(void);
->  extern void power4_idle(void);
-> -extern void power7_idle(void);
->  extern void ppc6xx_idle(void);
->  extern void book3e_idle(void);
->  
-> diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
-> index e0fecbcea2a2..8190943d2619 100644
-> --- a/arch/powerpc/include/asm/processor.h
-> +++ b/arch/powerpc/include/asm/processor.h
-> @@ -454,6 +454,7 @@ extern int powersave_nap;	/* set if nap mode can be used in idle loop */
->  extern unsigned long power7_nap(int check_irq);
->  extern unsigned long power7_sleep(void);
->  extern unsigned long power7_winkle(void);
-> +extern unsigned long power7_idle(void);
->  extern unsigned long power9_idle_stop(unsigned long stop_psscr_val,
->  				      unsigned long stop_psscr_mask);
->  
-> diff --git a/arch/powerpc/platforms/powernv/idle.c b/arch/powerpc/platforms/powernv/idle.c
-> index 54546b632026..6b28a4f9c1fd 100644
-> --- a/arch/powerpc/platforms/powernv/idle.c
-> +++ b/arch/powerpc/platforms/powernv/idle.c
-> @@ -234,11 +234,16 @@ u64 pnv_default_stop_mask;
->  /*
->   * Used for ppc_md.power_save which needs a function with no parameters
->   */
-> -static void power9_idle(void)
-> +static void power9_power_save(void)
->  {
->  	power9_idle_stop(pnv_default_stop_val, pnv_default_stop_mask);
->  }
->  
-> +static void power7_power_save(void)
-> +{
-> +	power7_idle();
-> +}
-
-Erk. This makes me wonder if we can just mandate using cpuidle for
-powernv and drop ppc_md.power_save. I wonder who if anyone has ever
-tested powernv without cpuidle.
-
-I notice we already have:
-
-config CPU_IDLE
-	bool "CPU idle PM support"
-	default y if ACPI || PPC_PSERIES
-
-
-But not your problem for this patch.
-
-> @@ -534,9 +539,9 @@ static int __init pnv_init_idle_states(void)
->  	}
->  
->  	if (supported_cpuidle_states & OPAL_PM_NAP_ENABLED)
-> -		ppc_md.power_save = power7_idle;
-> +		ppc_md.power_save = power7_power_save;
->  	else if (supported_cpuidle_states & OPAL_PM_STOP_INST_FAST)
-> -		ppc_md.power_save = power9_idle;
-> +		ppc_md.power_save = power9_power_save;
->  
->  out:
->  	return 0;
-> diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
-> index 370593006f5f..e7e080c0790c 100644
-> --- a/drivers/cpuidle/cpuidle-powernv.c
-> +++ b/drivers/cpuidle/cpuidle-powernv.c
-> @@ -70,13 +70,37 @@ static int snooze_loop(struct cpuidle_device *dev,
->  	return index;
->  }
->  
-> +/*
-> + * Table to convert shifted SRR1 wakeup reason for POWER7, POWER8, POWER9
-> + * to __replay_interrupt vector.
-> + */
-> +static const unsigned short srr1_wakeup_to_replay_table[0x10] =
-> +{ 0, 0, 0, 0xe80,	/* 0x3 = hv doorbell */
-> +  0, 0xa00,		/* 0x5 = doorbell */
-> +  0x900,		/* 0x6 = decrementer */
-> +  0, 0x500,		/* 0x8 = external */
-> +  0xea0,		/* 0x9 = hv virt (POWER9) */
-> +  0xe60,		/* 0xa = hmi */
-> +  0, 0, 0, 0, 0, };
-> +
-> +/* Shift SRR1_WAKEMASK_P8 down and convert to __replay_interrupt vector */
-> +#define SRR1_TO_REPLAY(srr1) \
-> +	((unsigned int)srr1_wakeup_to_replay_table[((srr1) >> 18) & 0xf])
-
-This is a bit hairy, I'd just use a switch, but I guess this generates
-vastly better code?
-
-> +
->  static int nap_loop(struct cpuidle_device *dev,
->  			struct cpuidle_driver *drv,
->  			int index)
->  {
-> +	u64 srr1;
-> +	unsigned int reason;
-> +
->  	ppc64_runlatch_off();
-> -	power7_idle();
-> +	srr1 = power7_idle();
->  	ppc64_runlatch_on();
-> +
-> +	reason = SRR1_TO_REPLAY(srr1);
-> +	__replay_interrupt(reason);
-> +
->  	return index;
->  }
->  
-> @@ -111,10 +135,17 @@ static int stop_loop(struct cpuidle_device *dev,
->  		     struct cpuidle_driver *drv,
->  		     int index)
->  {
-> +	u64 srr1;
-> +	unsigned int reason;
-> +
->  	ppc64_runlatch_off();
-> -	power9_idle_stop(stop_psscr_table[index].val,
-> +	srr1 = power9_idle_stop(stop_psscr_table[index].val,
->  			 stop_psscr_table[index].mask);
->  	ppc64_runlatch_on();
-> +
-> +	reason = SRR1_TO_REPLAY(srr1);
-> +	__replay_interrupt(reason);
-> +
->  	return index;
->  }
-
-We end up with a bit of duplicated code there, but I guess it's not
-worth worrying about.
+And despite your subject being powerpc/powernv/cpuidle, this is a
+cpuidle patch. I can merge it, but I at least need you to Cc the cpuidle
+maintainers so they have a chance to see it.
 
 cheers
