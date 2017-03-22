@@ -3,18 +3,18 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vpCdn4snfzDq8x
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vpCdn4r75zDq7d
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Mar 2017 02:04:45 +1100 (AEDT)
 Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v2MF3Cx8116526
+ v2MExEAj100089
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Mar 2017 11:04:34 -0400
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
- by mx0b-001b2d01.pphosted.com with ESMTP id 29b9vqaejv-1
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 29b9vqaek5-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Mar 2017 11:04:34 -0400
 Received: from localhost
- by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <ego@linux.vnet.ibm.com>;
  Wed, 22 Mar 2017 09:04:33 -0600
@@ -30,9 +30,14 @@ To: Michael Ellerman <mpe@ellerman.id.au>, Michael Neuling <mikey@neuling.org>,
  Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
  "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-Subject: [v3 PATCH 0/4] powernv:idle: Fixes for CPU-Hotplug on POWER DD1.0
-Date: Wed, 22 Mar 2017 20:34:13 +0530
-Message-Id: <cover.1490194710.git.ego@linux.vnet.ibm.com>
+Subject: [v3 PATCH 2/4] powernv:smp: Add busy-wait loop as fall back for
+ CPU-Hotplug
+Date: Wed, 22 Mar 2017 20:34:15 +0530
+In-Reply-To: <cover.1490194710.git.ego@linux.vnet.ibm.com>
+References: <cover.1490194710.git.ego@linux.vnet.ibm.com>
+In-Reply-To: <cover.1490194710.git.ego@linux.vnet.ibm.com>
+References: <cover.1490194710.git.ego@linux.vnet.ibm.com>
+Message-Id: <261607d15ec471d88a8d31ee50614c64a4018b90.1490194710.git.ego@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,47 +49,65 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 
-Hi,
+Currently, the powernv cpu-offline function assumes that platform idle
+states such as stop on POWER9, winkle/sleep/nap on POWER8 are always
+available. On POWER8, it picks nap as the default state if other deep
+idle states like sleep/winkle are not available and enabled in the
+platform.
 
-This is the third version of the patchset containing the fixes to
-make CPU-Hotplug working on correctly on POWER9 DD1 systems.
+On POWER9, nap is not available and all idle states are managed by
+STOP instruction.  The parameters to the idle state are passed through
+processor stop status control register (PSSCR).  Hence as such
+executing STOP would take parameters from current PSSCR. We do not
+want to make any assumptions in kernel on what STOP states and PSSCR
+features are configured by the platform.
 
-The earlier versions can be found here:
-[v2] : https://lkml.org/lkml/2017/3/20/555
-[v1] : https://lkml.org/lkml/2017/3/13/46
+Ideally platform will configure a good set of stop states that can be
+used in the kernel.  We would like to start with a clean slate, if the
+platform choose to not configure any state or there is an error in
+platform firmware that lead to no stop states being configured or
+allowed to be requested.
 
-The only change in this patch series from v2 are the following
-optimizations suggested by Nicholas Piggin.
+This patch adds a fallback method for CPU-Hotplug that is similar to
+snooze loop at idle where the threads are left to spin at low priority
+and hence reduce the cycles consumed.
 
-- Dynamically allocate the thread_sibling_pacas array to contain
-  "threads_per_core" number of slots instead of declaring the array
-  size upfront.
+This is a safe fallback mechanism in the case when no stop state would
+be requested if the platform firmware did not configure them most
+likely due to an error condition.
 
-- Use SPRN_TIR instead of (SPRN_PIR & 0x3) to determine the thread's
-  index within a core.
+Requesting a stop state when the platform has not configured them or
+enabled them would lead to further error conditions which could be
+difficult to debug.
 
-Patch 4 in the series requires Nicholas Piggin's ack. Rest of the
-patches are unchanged from the previous version.
+[Changelog written with inputs from svaidy@linux.vnet.ibm.com]
+Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
+Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+---
+ arch/powerpc/platforms/powernv/idle.c | 10 +++++++++-
+ 1 file changed, 9 insertions(+), 1 deletion(-)
 
-These patches are based on v4.11-rc3.
-
-The patches have been tested with stop1 (ESL=EC=1) as the
-deepest-state entered into during CPU-Hotplug.
-
-Gautham R. Shenoy (4):
-  powernv: Move CPU-Offline idle state invocation from smp.c to idle.c
-  powernv:smp: Add busy-wait loop as fall back for CPU-Hotplug
-  powernv:idle: Don't override default/deepest directly in kernel
-  powernv: Recover correct PACA on wakeup from a stop on P9 DD1
-
- arch/powerpc/include/asm/cpuidle.h       |  1 +
- arch/powerpc/include/asm/paca.h          |  5 ++
- arch/powerpc/kernel/asm-offsets.c        |  1 +
- arch/powerpc/kernel/idle_book3s.S        | 48 +++++++++++++++-
- arch/powerpc/platforms/powernv/idle.c    | 96 ++++++++++++++++++++++++++------
- arch/powerpc/platforms/powernv/powernv.h |  2 -
- arch/powerpc/platforms/powernv/smp.c     | 18 +-----
- 7 files changed, 136 insertions(+), 35 deletions(-)
-
+diff --git a/arch/powerpc/platforms/powernv/idle.c b/arch/powerpc/platforms/powernv/idle.c
+index 419edff..f335e0f 100644
+--- a/arch/powerpc/platforms/powernv/idle.c
++++ b/arch/powerpc/platforms/powernv/idle.c
+@@ -283,8 +283,16 @@ unsigned long pnv_cpu_offline(unsigned int cpu)
+ 	} else if ((idle_states & OPAL_PM_SLEEP_ENABLED) ||
+ 		   (idle_states & OPAL_PM_SLEEP_ENABLED_ER1)) {
+ 		srr1 = power7_sleep();
+-	} else {
++	} else if (idle_states & OPAL_PM_NAP_ENABLED) {
+ 		srr1 = power7_nap(1);
++	} else {
++		/* This is the fallback method. We emulate snooze */
++		while (!generic_check_cpu_restart(cpu)) {
++			HMT_low();
++			HMT_very_low();
++		}
++		srr1 = 0;
++		HMT_medium();
+ 	}
+ 
+ 	return srr1;
 -- 
 1.9.4
