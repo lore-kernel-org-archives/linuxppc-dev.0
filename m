@@ -1,40 +1,45 @@
-Return-Path: <andrew.donnellan@au1.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <ego@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vnyV51vHlzDq7Z
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Mar 2017 16:12:12 +1100 (AEDT)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v2M58aIt073947
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Mar 2017 01:12:08 -0400
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
- by mx0a-001b2d01.pphosted.com with ESMTP id 29b9vj6qbr-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vnz8P4RxdzDq7Z
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Mar 2017 16:41:57 +1100 (AEDT)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v2M5dBdj128817
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Mar 2017 01:41:48 -0400
+Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 29b9vk0bmw-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Mar 2017 01:12:08 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Mar 2017 01:41:48 -0400
 Received: from localhost
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
- Wed, 22 Mar 2017 15:12:05 +1000
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v2M5Bsd749086640
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Mar 2017 16:12:02 +1100
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v2M5BSRi010564
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Mar 2017 16:11:28 +1100
-Subject: Re: [v6] powerpc/powernv: add hdat attribute to sysfs
-To: Matt Brown <matthew.brown.dev@gmail.com>, linuxppc-dev@lists.ozlabs.org
-References: <20170321235323.6314-1-matthew.brown.dev@gmail.com>
-From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Date: Wed, 22 Mar 2017 16:11:06 +1100
+ for <linuxppc-dev@lists.ozlabs.org> from <ego@linux.vnet.ibm.com>;
+ Wed, 22 Mar 2017 01:41:47 -0400
+Date: Wed, 22 Mar 2017 11:11:40 +0530
+From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+To: Nicholas Piggin <npiggin@gmail.com>
+Cc: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Michael Neuling <mikey@neuling.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ "Shreyas B. Prabhu" <shreyasbp@gmail.com>,
+ Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
+ Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+ Anton Blanchard <anton@samba.org>, Balbir Singh <bsingharora@gmail.com>,
+ Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [v2 PATCH 1/4] powernv: Move CPU-Offline idle state invocation
+ from smp.c to idle.c
+Reply-To: ego@linux.vnet.ibm.com
+References: <cover.1490024477.git.ego@linux.vnet.ibm.com>
+ <358fc68275a4986d2e112418aea447f49f644f7e.1490024477.git.ego@linux.vnet.ibm.com>
+ <20170321023517.4cb27add@roar.ozlabs.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <20170321235323.6314-1-matthew.brown.dev@gmail.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Message-Id: <4354b063-39aa-87ea-b690-522d8dec352d@au1.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20170321023517.4cb27add@roar.ozlabs.ibm.com>
+Message-Id: <20170322054140.GA30295@in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,49 +49,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 22/03/17 10:53, Matt Brown wrote:
-> The HDAT data area is consumed by skiboot and turned into a device-tree.
-> In some cases we would like to look directly at the HDAT, so this patch
-> adds a sysfs node to allow it to be viewed.  This is not possible through
-> /dev/mem as it is reserved memory which is stopped by the /dev/mem filter.
->
-> Signed-off-by: Matt Brown <matthew.brown.dev@gmail.com>
-> ---
-> Changelog
->
-> v6
-> 	- attribute names are stored locally, removing potential null pointer errors
-> 	- added of_node_put for the corresponding of_find_node
-> 	- folded exports node creation into opal_export_attr()
-> 	- fixed kzalloc flags to GFP_KERNEL
-> 	- fixed struct array indexing
-> 	- fixed error message
-> ---
->  arch/powerpc/platforms/powernv/opal.c | 84 +++++++++++++++++++++++++++++++++++
->  1 file changed, 84 insertions(+)
->
-> diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
-> index 2822935..953537e 100644
-> --- a/arch/powerpc/platforms/powernv/opal.c
-> +++ b/arch/powerpc/platforms/powernv/opal.c
-> @@ -604,6 +604,87 @@ static void opal_export_symmap(void)
->  		pr_warn("Error %d creating OPAL symbols file\n", rc);
->  }
->
-> +static ssize_t export_attr_read(struct file *fp, struct kobject *kobj,
-> +			     struct bin_attribute *bin_attr, char *buf,
-> +			     loff_t off, size_t count)
-> +{
-> +	return memory_read_from_buffer(buf, count, &off, bin_attr->private,
-> +				       bin_attr->size);
-> +}
-> +
-> +static struct bin_attribute *exported_attrs;
-> +static char **attr_name;
+Hi Nick,
 
-Can these be moved inside opal_export_attrs()?
+On Tue, Mar 21, 2017 at 02:35:17AM +1000, Nicholas Piggin wrote:
+> On Mon, 20 Mar 2017 21:24:15 +0530
+> "Gautham R. Shenoy" <ego@linux.vnet.ibm.com> wrote:
+> 
+> > From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+> > 
+> > Move the piece of code in powernv/smp.c::pnv_smp_cpu_kill_self() which
+> > transitions the CPU to the deepest available platform idle state to a
+> > new function named pnv_cpu_offline() in powernv/idle.c. The rationale
+> > behind this code movement is that the data required to determine the
+> > deepest available platform state resides in powernv/idle.c.
+> > 
+> > Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+> 
+> Looks good. As a nitpick, possibly one or two variables in idle.c could
+> become static (pnv_deepest_stop_psscr_*).
+>
 
+I changed that, but it ended up being in the next patch.
 
--- 
-Andrew Donnellan              OzLabs, ADL Canberra
-andrew.donnellan@au1.ibm.com  IBM Australia Limited
+> Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
+> 
+
+Thanks!
+
+--
+Thanks and Regards
+gautham.
