@@ -3,30 +3,31 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vnwPZ4s4YzDqZr
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Mar 2017 14:38:10 +1100 (AEDT)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vnwPl4c01zDqbX
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Mar 2017 14:38:19 +1100 (AEDT)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v2M3T9ai125057
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Mar 2017 23:38:08 -0400
-Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
- by mx0b-001b2d01.pphosted.com with ESMTP id 29b9vmagmd-1
+ v2M3TDJm103484
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Mar 2017 23:38:17 -0400
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 29b9vptsbe-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Mar 2017 23:38:08 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Mar 2017 23:38:17 -0400
 Received: from localhost
- by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Tue, 21 Mar 2017 21:38:07 -0600
+ Tue, 21 Mar 2017 21:38:15 -0600
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
 Cc: linuxppc-dev@lists.ozlabs.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH V5 13/17] powerpc/mm/hash: Store task size in PACA
-Date: Wed, 22 Mar 2017 09:06:59 +0530
+Subject: [PATCH V5 15/17] powerpc/mm: Switch TASK_SIZE check to use
+ mm->task_size
+Date: Wed, 22 Mar 2017 09:07:01 +0530
 In-Reply-To: <1490153823-29241-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1490153823-29241-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Message-Id: <1490153823-29241-14-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Message-Id: <1490153823-29241-16-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,79 +37,131 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We optmize the slice page size array copy to paca by copying only the
-range based on task size. This will require us to not look at page size
-array beyond task size in PACA on slb fault. To enable that copy task size
-to paca which will be used during slb fault.
-
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/paca.h   | 4 +++-
- arch/powerpc/kernel/asm-offsets.c | 4 ++++
- arch/powerpc/kernel/paca.c        | 1 +
- arch/powerpc/mm/slb_low.S         | 8 +++++++-
- 4 files changed, 15 insertions(+), 2 deletions(-)
+ arch/powerpc/mm/hugetlbpage-radix.c |  4 ++--
+ arch/powerpc/mm/mmap.c              | 12 ++++++------
+ arch/powerpc/mm/slice.c             |  6 +++---
+ arch/powerpc/mm/subpage-prot.c      |  3 ++-
+ 4 files changed, 13 insertions(+), 12 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/paca.h b/arch/powerpc/include/asm/paca.h
-index f48c250339fd..25f4a1c14759 100644
---- a/arch/powerpc/include/asm/paca.h
-+++ b/arch/powerpc/include/asm/paca.h
-@@ -144,7 +144,9 @@ struct paca_struct {
- 	u16 mm_ctx_sllp;
- #endif
- #endif
--
-+#ifdef CONFIG_PPC_STD_MMU_64
-+	u64 task_size;
-+#endif
- 	/*
- 	 * then miscellaneous read-write fields
- 	 */
-diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
-index 4367e7df51a1..a60ef1d976ab 100644
---- a/arch/powerpc/kernel/asm-offsets.c
-+++ b/arch/powerpc/kernel/asm-offsets.c
-@@ -189,6 +189,10 @@ int main(void)
- #endif /* CONFIG_PPC_MM_SLICES */
- #endif
+diff --git a/arch/powerpc/mm/hugetlbpage-radix.c b/arch/powerpc/mm/hugetlbpage-radix.c
+index 35254a678456..686cfe8e664b 100644
+--- a/arch/powerpc/mm/hugetlbpage-radix.c
++++ b/arch/powerpc/mm/hugetlbpage-radix.c
+@@ -52,7 +52,7 @@ radix__hugetlb_get_unmapped_area(struct file *file, unsigned long addr,
  
-+#ifdef CONFIG_PPC_STD_MMU_64
-+	DEFINE(PACATASKSIZE, offsetof(struct paca_struct, task_size));
-+#endif
-+
- #ifdef CONFIG_PPC_BOOK3E
- 	OFFSET(PACAPGD, paca_struct, pgd);
- 	OFFSET(PACA_KERNELPGD, paca_struct, kernel_pgd);
-diff --git a/arch/powerpc/kernel/paca.c b/arch/powerpc/kernel/paca.c
-index bffdbd6d6774..50b60e23d07f 100644
---- a/arch/powerpc/kernel/paca.c
-+++ b/arch/powerpc/kernel/paca.c
-@@ -254,6 +254,7 @@ void copy_mm_to_paca(struct mm_struct *mm)
- 	get_paca()->mm_ctx_id = context->id;
- #ifdef CONFIG_PPC_MM_SLICES
- 	VM_BUG_ON(!mm->task_size);
-+	get_paca()->task_size = mm->task_size;
- 	get_paca()->mm_ctx_low_slices_psize = context->low_slices_psize;
- 	memcpy(&get_paca()->mm_ctx_high_slices_psize,
- 	       &context->high_slices_psize, TASK_SLICE_ARRAY_SZ(mm));
-diff --git a/arch/powerpc/mm/slb_low.S b/arch/powerpc/mm/slb_low.S
-index 35e91e89640f..b09e7748856f 100644
---- a/arch/powerpc/mm/slb_low.S
-+++ b/arch/powerpc/mm/slb_low.S
-@@ -149,7 +149,13 @@ END_MMU_FTR_SECTION_IFCLR(MMU_FTR_1T_SEGMENT)
- 	 * For userspace addresses, make sure this is region 0.
- 	 */
- 	cmpdi	r9, 0
--	bne	8f
-+	bne-	8f
-+        /*
-+         * user space make sure we are within the allowed limit
-+	 */
-+	ld	r11,PACATASKSIZE(r13)
-+	cmpld	r3,r11
-+	bge-	8f
+ 	if (len & ~huge_page_mask(h))
+ 		return -EINVAL;
+-	if (len > TASK_SIZE)
++	if (len > mm->task_size)
+ 		return -ENOMEM;
  
- 	/* when using slices, we extract the psize off the slice bitmaps
- 	 * and then we need to get the sllp encoding off the mmu_psize_defs
+ 	if (flags & MAP_FIXED) {
+@@ -64,7 +64,7 @@ radix__hugetlb_get_unmapped_area(struct file *file, unsigned long addr,
+ 	if (addr) {
+ 		addr = ALIGN(addr, huge_page_size(h));
+ 		vma = find_vma(mm, addr);
+-		if (TASK_SIZE - len >= addr &&
++		if (mm->task_size - len >= addr &&
+ 		    (!vma || addr + len <= vma->vm_start))
+ 			return addr;
+ 	}
+diff --git a/arch/powerpc/mm/mmap.c b/arch/powerpc/mm/mmap.c
+index a5d9ef59debe..bce788a41bc3 100644
+--- a/arch/powerpc/mm/mmap.c
++++ b/arch/powerpc/mm/mmap.c
+@@ -97,7 +97,7 @@ radix__arch_get_unmapped_area(struct file *filp, unsigned long addr,
+ 	struct vm_area_struct *vma;
+ 	struct vm_unmapped_area_info info;
+ 
+-	if (len > TASK_SIZE - mmap_min_addr)
++	if (len > mm->task_size - mmap_min_addr)
+ 		return -ENOMEM;
+ 
+ 	if (flags & MAP_FIXED)
+@@ -106,7 +106,7 @@ radix__arch_get_unmapped_area(struct file *filp, unsigned long addr,
+ 	if (addr) {
+ 		addr = PAGE_ALIGN(addr);
+ 		vma = find_vma(mm, addr);
+-		if (TASK_SIZE - len >= addr && addr >= mmap_min_addr &&
++		if (mm->task_size - len >= addr && addr >= mmap_min_addr &&
+ 		    (!vma || addr + len <= vma->vm_start))
+ 			return addr;
+ 	}
+@@ -114,7 +114,7 @@ radix__arch_get_unmapped_area(struct file *filp, unsigned long addr,
+ 	info.flags = 0;
+ 	info.length = len;
+ 	info.low_limit = mm->mmap_base;
+-	info.high_limit = TASK_SIZE;
++	info.high_limit = mm->task_size;
+ 	info.align_mask = 0;
+ 	return vm_unmapped_area(&info);
+ }
+@@ -132,7 +132,7 @@ radix__arch_get_unmapped_area_topdown(struct file *filp,
+ 	struct vm_unmapped_area_info info;
+ 
+ 	/* requested length too big for entire address space */
+-	if (len > TASK_SIZE - mmap_min_addr)
++	if (len > mm->task_size - mmap_min_addr)
+ 		return -ENOMEM;
+ 
+ 	if (flags & MAP_FIXED)
+@@ -142,7 +142,7 @@ radix__arch_get_unmapped_area_topdown(struct file *filp,
+ 	if (addr) {
+ 		addr = PAGE_ALIGN(addr);
+ 		vma = find_vma(mm, addr);
+-		if (TASK_SIZE - len >= addr && addr >= mmap_min_addr &&
++		if (mm->task_size - len >= addr && addr >= mmap_min_addr &&
+ 				(!vma || addr + len <= vma->vm_start))
+ 			return addr;
+ 	}
+@@ -164,7 +164,7 @@ radix__arch_get_unmapped_area_topdown(struct file *filp,
+ 		VM_BUG_ON(addr != -ENOMEM);
+ 		info.flags = 0;
+ 		info.low_limit = TASK_UNMAPPED_BASE;
+-		info.high_limit = TASK_SIZE;
++		info.high_limit = mm->task_size;
+ 		addr = vm_unmapped_area(&info);
+ 	}
+ 
+diff --git a/arch/powerpc/mm/slice.c b/arch/powerpc/mm/slice.c
+index 217638846053..6d214786a2df 100644
+--- a/arch/powerpc/mm/slice.c
++++ b/arch/powerpc/mm/slice.c
+@@ -277,7 +277,7 @@ static unsigned long slice_find_area_bottomup(struct mm_struct *mm,
+ 	info.align_offset = 0;
+ 
+ 	addr = TASK_UNMAPPED_BASE;
+-	while (addr < TASK_SIZE) {
++	while (addr < mm->task_size) {
+ 		info.low_limit = addr;
+ 		if (!slice_scan_available(addr, available, 1, &addr))
+ 			continue;
+@@ -289,8 +289,8 @@ static unsigned long slice_find_area_bottomup(struct mm_struct *mm,
+ 		 * Check if we need to reduce the range, or if we can
+ 		 * extend it to cover the next available slice.
+ 		 */
+-		if (addr >= TASK_SIZE)
+-			addr = TASK_SIZE;
++		if (addr >= mm->task_size)
++			addr = mm->task_size;
+ 		else if (slice_scan_available(addr, available, 1, &next_end)) {
+ 			addr = next_end;
+ 			goto next_slice;
+diff --git a/arch/powerpc/mm/subpage-prot.c b/arch/powerpc/mm/subpage-prot.c
+index 94210940112f..e94fbd4c8845 100644
+--- a/arch/powerpc/mm/subpage-prot.c
++++ b/arch/powerpc/mm/subpage-prot.c
+@@ -197,7 +197,8 @@ long sys_subpage_prot(unsigned long addr, unsigned long len, u32 __user *map)
+ 
+ 	/* Check parameters */
+ 	if ((addr & ~PAGE_MASK) || (len & ~PAGE_MASK) ||
+-	    addr >= TASK_SIZE || len >= TASK_SIZE || addr + len > TASK_SIZE)
++	    addr >= mm->task_size || len >= mm->task_size ||
++	    addr + len > mm->task_size)
+ 		return -EINVAL;
+ 
+ 	if (is_hugepage_only_range(mm, addr, len))
 -- 
 2.7.4
