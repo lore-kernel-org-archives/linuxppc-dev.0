@@ -1,33 +1,22 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
- [IPv6:2607:f8b0:400e:c05::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vp2vm46DHzDq7Z
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Mar 2017 19:31:16 +1100 (AEDT)
-Received: by mail-pg0-x241.google.com with SMTP id 81so21237322pgh.3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Mar 2017 01:31:16 -0700 (PDT)
-Date: Wed, 22 Mar 2017 18:30:55 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Gautham R Shenoy <ego@linux.vnet.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, Michael Neuling
- <mikey@neuling.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- "Shreyas B. Prabhu" <shreyasbp@gmail.com>, Shilpasri G Bhat
- <shilpa.bhat@linux.vnet.ibm.com>, Vaidyanathan Srinivasan
- <svaidy@linux.vnet.ibm.com>, Anton Blanchard <anton@samba.org>, Balbir
- Singh <bsingharora@gmail.com>, Akshay Adiga
- <akshay.adiga@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Subject: Re: [v2 PATCH 4/4] powernv: Recover correct PACA on wakeup from a
- stop on P9 DD1
-Message-ID: <20170322183055.1ce9f6ed@roar.ozlabs.ibm.com>
-In-Reply-To: <20170322055846.GB8326@in.ibm.com>
-References: <cover.1490024477.git.ego@linux.vnet.ibm.com>
- <5beb1c3fb26ef0b487be3aa0488ea31aabfcb311.1490024477.git.ego@linux.vnet.ibm.com>
- <20170321025946.3c0b68c5@roar.ozlabs.ibm.com>
- <20170322055846.GB8326@in.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vp5tM5qTrzDq7Z
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Mar 2017 21:45:15 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Cc: "Gautham R . Shenoy" <ego@linux.vnet.ibm.com>,
+ Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [PATCH 1/2] powerpc/powernv: process interrupts from system reset
+ wakeup
+In-Reply-To: <20170321045254.21384-2-npiggin@gmail.com>
+References: <20170321045254.21384-1-npiggin@gmail.com>
+ <20170321045254.21384-2-npiggin@gmail.com>
+Date: Wed, 22 Mar 2017 21:45:13 +1100
+Message-ID: <87o9wtd1za.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,109 +26,166 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 22 Mar 2017 11:28:46 +0530
-Gautham R Shenoy <ego@linux.vnet.ibm.com> wrote:
+Nicholas Piggin <npiggin@gmail.com> writes:
 
-> On Tue, Mar 21, 2017 at 02:59:46AM +1000, Nicholas Piggin wrote:
-> > On Mon, 20 Mar 2017 21:24:18 +0530
-> > "Gautham R. Shenoy" <ego@linux.vnet.ibm.com> wrote:
-> >   
-> > > From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-> > > 
-> > > POWER9 DD1.0 hardware has an issue due to which the SPRs of a thread
-> > > waking up from stop 0,1,2 with ESL=1 can endup being misplaced in the
-> > > core. Thus the HSPRG0 of a thread waking up from can contain the paca
-> > > pointer of its sibling.
-> > > 
-> > > This patch implements a context recovery framework within threads of a
-> > > core, by provisioning space in paca_struct for saving every sibling
-> > > threads's paca pointers. Basically, we should be able to arrive at the
-> > > right paca pointer from any of the thread's existing paca pointer.
-> > > 
-> > > At bootup, during powernv idle-init, we save the paca address of every
-> > > CPU in each one its siblings paca_struct in the slot corresponding to
-> > > this CPU's index in the core.
-> > > 
-> > > On wakeup from a stop, the thread will determine its index in the core
-> > > from the lower 2 bits of the PIR register and recover its PACA pointer
-> > > by indexing into the correct slot in the provisioned space in the
-> > > current PACA.
-> > > 
-> > > Furthermore, ensure that the NVGPRs are restored from the stack on the
-> > > way out by setting the NAPSTATELOST in paca.  
-> > 
-> > Thanks for expanding on this, it makes the patch easier to follow :)
-> > 
-> > As noted before, I think if we use PACA_EXNMI for system reset, then
-> > *hopefully* there should be minimal races with the initial use of other
-> > thread's PACA at the start of the exception. So I'll work on getting
-> > that in, but it need not prevent this patch from being merged first
-> > IMO.
-> >   
-> > > [Changelog written with inputs from svaidy@linux.vnet.ibm.com]
-> > > 
-> > > Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
-> > > ---
-> > >  arch/powerpc/include/asm/paca.h       |  5 ++++
-> > >  arch/powerpc/kernel/asm-offsets.c     |  1 +
-> > >  arch/powerpc/kernel/idle_book3s.S     | 49 ++++++++++++++++++++++++++++++++++-
-> > >  arch/powerpc/platforms/powernv/idle.c | 22 ++++++++++++++++
-> > >  4 files changed, 76 insertions(+), 1 deletion(-)
-> > > 
-> > > diff --git a/arch/powerpc/include/asm/paca.h b/arch/powerpc/include/asm/paca.h
-> > > index 708c3e5..4405630 100644
-> > > --- a/arch/powerpc/include/asm/paca.h
-> > > +++ b/arch/powerpc/include/asm/paca.h
-> > > @@ -172,6 +172,11 @@ struct paca_struct {
-> > >  	u8 thread_mask;
-> > >  	/* Mask to denote subcore sibling threads */
-> > >  	u8 subcore_sibling_mask;
-> > > +	/*
-> > > +	 * Pointer to an array which contains pointer
-> > > +	 * to the sibling threads' paca.
-> > > +	 */
-> > > +	struct paca_struct *thread_sibling_pacas[8];  
-> 
-> > 
-> > Is 8 the right number? I wonder if we have a define for it.  
-> 
-> Thats the maximum number of threads per core that we have had on POWER
-> so far.
-> 
-> Perhaps, I can make this
-> 
-> 	 struct paca_struct **thread_sibling_pacas;
-> 
-> and allocate threads_per_core number of slots in
-> pnv_init_idle_states. Sounds ok ?
+> When the CPU wakes from low power state, it begins at the system reset
+> interrupt with the exception that caused the wakeup encoded in SRR1.
+>
+> Today, powernv idle wakeup ignores the wakeup reason (except a special
+> case for HMI), and the regular interrupt corresponding to the exception
+> will fire after the idle wakeup exits.
+>
+> Change this to replay the interrupt from the idle wakeup before
+> interrupts are hard-enabled.
+>
+> Test on POWER8 of context_switch selftests benchmark with polling idle
+> disabled (e.g., always nap) gives the following results:
+>
+>                                 original         wakeup direct
+> Different threads, same core:   315k/s           264k/s
+> Different cores:                235k/s           242k/s
+>
+> There is a slowdown for doorbell IPI (same core) case because system
+> reset wakeup does not clear the message and the doorbell interrupt fires
+> again needlessly.
 
-I guess that would minimise PACA overhead for non-DD1 machines,
-so if it's not too much trouble, that might be good.
+Seems like a win.
 
+> diff --git a/arch/powerpc/include/asm/machdep.h b/arch/powerpc/include/asm/machdep.h
+> index 5011b69107a7..c0d9fd2e8c04 100644
+> --- a/arch/powerpc/include/asm/machdep.h
+> +++ b/arch/powerpc/include/asm/machdep.h
+> @@ -223,7 +223,6 @@ struct machdep_calls {
+>  
+>  extern void e500_idle(void);
+>  extern void power4_idle(void);
+> -extern void power7_idle(void);
+>  extern void ppc6xx_idle(void);
+>  extern void book3e_idle(void);
+>  
+> diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
+> index e0fecbcea2a2..8190943d2619 100644
+> --- a/arch/powerpc/include/asm/processor.h
+> +++ b/arch/powerpc/include/asm/processor.h
+> @@ -454,6 +454,7 @@ extern int powersave_nap;	/* set if nap mode can be used in idle loop */
+>  extern unsigned long power7_nap(int check_irq);
+>  extern unsigned long power7_sleep(void);
+>  extern unsigned long power7_winkle(void);
+> +extern unsigned long power7_idle(void);
+>  extern unsigned long power9_idle_stop(unsigned long stop_psscr_val,
+>  				      unsigned long stop_psscr_mask);
+>  
+> diff --git a/arch/powerpc/platforms/powernv/idle.c b/arch/powerpc/platforms/powernv/idle.c
+> index 54546b632026..6b28a4f9c1fd 100644
+> --- a/arch/powerpc/platforms/powernv/idle.c
+> +++ b/arch/powerpc/platforms/powernv/idle.c
+> @@ -234,11 +234,16 @@ u64 pnv_default_stop_mask;
+>  /*
+>   * Used for ppc_md.power_save which needs a function with no parameters
+>   */
+> -static void power9_idle(void)
+> +static void power9_power_save(void)
+>  {
+>  	power9_idle_stop(pnv_default_stop_val, pnv_default_stop_mask);
+>  }
+>  
+> +static void power7_power_save(void)
+> +{
+> +	power7_idle();
+> +}
 
-> > > +power9_dd1_recover_paca:
-> > > +	mfspr	r4, SPRN_PIR
-> > > +	clrldi	r4, r4, 62  
-> > 
-> > Does SPRN_TIR work?  
-> 
-> I wasn't aware of SPRN_TIR!
-> 
-> I can check this. If my reading of the ISA is correct, TIR should
-> contain the thread number which are in the range [0..3].
+Erk. This makes me wonder if we can just mandate using cpuidle for
+powernv and drop ppc_md.power_save. I wonder who if anyone has ever
+tested powernv without cpuidle.
 
-Yep.
+I notice we already have:
+
+config CPU_IDLE
+	bool "CPU idle PM support"
+	default y if ACPI || PPC_PSERIES
 
 
-> > Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
-> >   
-> 
-> Thanks for reviewing the patch.
+But not your problem for this patch.
 
-No problems. Don't worry about the machine check wakeup for the moment
-either. It's more important to just get the normal wakeup fix in I think.
-We can revisit what to do there after my machine check patches go in
-(idle machine check does not really work right now for POWER9 anyway).
+> @@ -534,9 +539,9 @@ static int __init pnv_init_idle_states(void)
+>  	}
+>  
+>  	if (supported_cpuidle_states & OPAL_PM_NAP_ENABLED)
+> -		ppc_md.power_save = power7_idle;
+> +		ppc_md.power_save = power7_power_save;
+>  	else if (supported_cpuidle_states & OPAL_PM_STOP_INST_FAST)
+> -		ppc_md.power_save = power9_idle;
+> +		ppc_md.power_save = power9_power_save;
+>  
+>  out:
+>  	return 0;
+> diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
+> index 370593006f5f..e7e080c0790c 100644
+> --- a/drivers/cpuidle/cpuidle-powernv.c
+> +++ b/drivers/cpuidle/cpuidle-powernv.c
+> @@ -70,13 +70,37 @@ static int snooze_loop(struct cpuidle_device *dev,
+>  	return index;
+>  }
+>  
+> +/*
+> + * Table to convert shifted SRR1 wakeup reason for POWER7, POWER8, POWER9
+> + * to __replay_interrupt vector.
+> + */
+> +static const unsigned short srr1_wakeup_to_replay_table[0x10] =
+> +{ 0, 0, 0, 0xe80,	/* 0x3 = hv doorbell */
+> +  0, 0xa00,		/* 0x5 = doorbell */
+> +  0x900,		/* 0x6 = decrementer */
+> +  0, 0x500,		/* 0x8 = external */
+> +  0xea0,		/* 0x9 = hv virt (POWER9) */
+> +  0xe60,		/* 0xa = hmi */
+> +  0, 0, 0, 0, 0, };
+> +
+> +/* Shift SRR1_WAKEMASK_P8 down and convert to __replay_interrupt vector */
+> +#define SRR1_TO_REPLAY(srr1) \
+> +	((unsigned int)srr1_wakeup_to_replay_table[((srr1) >> 18) & 0xf])
 
-Thanks,
-Nick
+This is a bit hairy, I'd just use a switch, but I guess this generates
+vastly better code?
+
+> +
+>  static int nap_loop(struct cpuidle_device *dev,
+>  			struct cpuidle_driver *drv,
+>  			int index)
+>  {
+> +	u64 srr1;
+> +	unsigned int reason;
+> +
+>  	ppc64_runlatch_off();
+> -	power7_idle();
+> +	srr1 = power7_idle();
+>  	ppc64_runlatch_on();
+> +
+> +	reason = SRR1_TO_REPLAY(srr1);
+> +	__replay_interrupt(reason);
+> +
+>  	return index;
+>  }
+>  
+> @@ -111,10 +135,17 @@ static int stop_loop(struct cpuidle_device *dev,
+>  		     struct cpuidle_driver *drv,
+>  		     int index)
+>  {
+> +	u64 srr1;
+> +	unsigned int reason;
+> +
+>  	ppc64_runlatch_off();
+> -	power9_idle_stop(stop_psscr_table[index].val,
+> +	srr1 = power9_idle_stop(stop_psscr_table[index].val,
+>  			 stop_psscr_table[index].mask);
+>  	ppc64_runlatch_on();
+> +
+> +	reason = SRR1_TO_REPLAY(srr1);
+> +	__replay_interrupt(reason);
+> +
+>  	return index;
+>  }
+
+We end up with a bit of duplicated code there, but I guess it's not
+worth worrying about.
+
+cheers
