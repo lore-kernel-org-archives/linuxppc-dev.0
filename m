@@ -1,22 +1,19 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vp66b3CxmzDq7Z
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Mar 2017 21:55:51 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vp6Ht3dthzDq7Z
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Mar 2017 22:03:54 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: svaidy@linux.vnet.ibm.com
-Cc: Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] powerpc/powernv/cpuidle: Pass correct drv->cpumask for
- registration
-In-Reply-To: <20170320043112.GA4123@drishya.in.ibm.com>
-References: <20170317180550.9931-1-svaidy@linux.vnet.ibm.com>
- <1489814882.5616.11.camel@neuling.org>
- <20170318064425.GC4225@drishya.in.ibm.com>
- <87k27kzlz0.fsf@concordia.ellerman.id.au>
- <20170320043112.GA4123@drishya.in.ibm.com>
-Date: Wed, 22 Mar 2017 21:55:50 +1100
-Message-ID: <87lgrxd1hl.fsf@concordia.ellerman.id.au>
+To: Thadeu Lima de Souza Cascardo <cascardo@canonical.com>,
+ linuxppc-dev@lists.ozlabs.org
+Cc: linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: fix /proc/self/stack
+In-Reply-To: <20170317155921.24369-1-cascardo@canonical.com>
+References: <20170317155921.24369-1-cascardo@canonical.com>
+Date: Wed, 22 Mar 2017 22:03:53 +1100
+Message-ID: <87inn1d146.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,40 +25,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com> writes:
-> * Michael Ellerman <mpe@ellerman.id.au> [2017-03-20 14:05:39]:
->> Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com> writes:
+Thadeu Lima de Souza Cascardo <cascardo@canonical.com> writes:
+
+> For the current task, the kernel stack would only tell the last time the
+> process was rescheduled, if ever. Use the current stack pointer for the
+> current task.
+
+You say "fix" in the subject, but is it a bug, or just an enhancement?
+
+> This is also consistent with some other architectures.
+
+Such as .. arm64 and x86 (though it's buried in the unwind code).
+
+> diff --git a/arch/powerpc/kernel/stacktrace.c b/arch/powerpc/kernel/stacktrace.c
+> index 6671195..2446066 100644
+> --- a/arch/powerpc/kernel/stacktrace.c
+> +++ b/arch/powerpc/kernel/stacktrace.c
+> @@ -59,7 +59,12 @@ EXPORT_SYMBOL_GPL(save_stack_trace);
 >  
->> > On powernv platform cpu_present could be less than cpu_possible
->> > in cases where firmware detects the cpu, but it is not available
->> > for OS.
->> 
->> It's entirely normal for present < possible, on my laptop for example,
->> so I don't see how that causes the bug.
->
-> Yes, present < possible in itself not a problem.  It is whether
-> cpu_device exist for that cpu or not.
-...
->
-> Currently if CONFIG_HOTPLUG_CPU=n, then we skip calling register_cpu()
-> and that causes the problem.
-...
->> 
->> I really don't understand how a CPU not being present leads to a crash
->> in printf()? Something in that call chain should have checked that the
->> CPU was registered before crashing in printf() - surely?
->
-> Yes, we should have just failed to register the cpuidle driver.  I have
-> the fix here:
->
-> [PATCH] cpuidle: Validate cpu_dev in cpuidle_add_sysfs
-> http://patchwork.ozlabs.org/patch/740634/
+>  void save_stack_trace_tsk(struct task_struct *tsk, struct stack_trace *trace)
+>  {
+> -	save_context_stack(trace, tsk->thread.ksp, tsk, 0);
+> +	unsigned long sp = tsk->thread.ksp;
+> +
+> +	if (tsk == current)
+> +		sp = current_stack_pointer();
+	else
+		sp = tsk->thread.ksp;
 
-OK. Can you send a v2 of this with a better change log that includes all
-the clarifications above.
+Would be clearer IMHO.
 
-And despite your subject being powerpc/powernv/cpuidle, this is a
-cpuidle patch. I can merge it, but I at least need you to Cc the cpuidle
-maintainers so they have a chance to see it.
+> +
+> +	save_context_stack(trace, sp, tsk, 0);
+>  }
+>  EXPORT_SYMBOL_GPL(save_stack_trace_tsk);
+>  
+> -- 
+> 2.9.3
+
 
 cheers
