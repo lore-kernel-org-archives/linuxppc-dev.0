@@ -1,18 +1,46 @@
-Return-Path: <oohall@gmail.com>
-Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
- [IPv6:2607:f8b0:400e:c00::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <ego@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vpf2c1xPJzDq5g
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Mar 2017 18:54:16 +1100 (AEDT)
-Received: by mail-pf0-x244.google.com with SMTP id o126so30494561pfb.1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Mar 2017 00:54:16 -0700 (PDT)
-From: Oliver O'Halloran <oohall@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Oliver O'Halloran <oohall@gmail.com>
-Subject: [PATCH v2] powerpc/powernv: de-deuplicate OPAL call wrappers
-Date: Thu, 23 Mar 2017 18:54:01 +1100
-Message-Id: <20170323075401.4371-1-oohall@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vplKy1hkJzDq5g
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Mar 2017 22:52:53 +1100 (AEDT)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v2NBnX5N020420
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Mar 2017 07:52:51 -0400
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 29c4nj1swj-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Mar 2017 07:52:51 -0400
+Received: from localhost
+ by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ego@linux.vnet.ibm.com>;
+ Thu, 23 Mar 2017 05:52:50 -0600
+Date: Thu, 23 Mar 2017 17:22:37 +0530
+From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+Cc: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Hemant Kumar <hemant@linux.vnet.ibm.com>,
+ "Gautham R . Shenoy" <ego@linux.vnet.ibm.com>,
+ Balbir Singh <bsingharora@gmail.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
+ Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+ Michael Neuling <mikey@neuling.org>,
+ Stewart Smith <stewart@linux.vnet.ibm.com>,
+ Daniel Axtens <dja@axtens.net>, Stephane Eranian <eranian@google.com>,
+ Anju T Sudhakar <anju@linux.vnet.ibm.com>
+Subject: Re: [PATCH v5 06/13] powerpc/perf: IMC pmu cpumask and cpu hotplug
+ support
+Reply-To: ego@linux.vnet.ibm.com
+References: <1489649707-8021-1-git-send-email-maddy@linux.vnet.ibm.com>
+ <1489649707-8021-7-git-send-email-maddy@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1489649707-8021-7-git-send-email-maddy@linux.vnet.ibm.com>
+Message-Id: <20170323115237.GA4897@in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,100 +50,265 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently the code to perform an OPAL call is duplicated between the
-normal path and path taken when tracepoints are enabled. There's no
-real need for this and combining them makes opal_tracepoint_entry
-considerably easier to understand.
+Hi Hemant, Maddy, 
 
-Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
----
-v1 -> v2:
-	slight rework due to the real mode opal call changes
----
- arch/powerpc/platforms/powernv/opal-wrappers.S | 53 +++++++++++---------------
- 1 file changed, 22 insertions(+), 31 deletions(-)
+On Thu, Mar 16, 2017 at 01:05:00PM +0530, Madhavan Srinivasan wrote:
+> From: Hemant Kumar <hemant@linux.vnet.ibm.com>
+> 
+> Adds cpumask attribute to be used by each IMC pmu. Only one cpu (any
+> online CPU) from each chip for nest PMUs is designated to read counters.
+> 
+> On CPU hotplug, dying CPU is checked to see whether it is one of the
+> designated cpus, if yes, next online cpu from the same chip (for nest
+> units) is designated as new cpu to read counters. For this purpose, we
+> introduce a new state : CPUHP_AP_PERF_POWERPC_NEST_ONLINE.
+> 
+> Cc: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+> Cc: Balbir Singh <bsingharora@gmail.com>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Paul Mackerras <paulus@samba.org>
+> Cc: Anton Blanchard <anton@samba.org>
+> Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+> Cc: Michael Neuling <mikey@neuling.org>
+> Cc: Stewart Smith <stewart@linux.vnet.ibm.com>
+> Cc: Daniel Axtens <dja@axtens.net>
+> Cc: Stephane Eranian <eranian@google.com>
+> Cc: Anju T Sudhakar <anju@linux.vnet.ibm.com>
+> Signed-off-by: Hemant Kumar <hemant@linux.vnet.ibm.com>
+> Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/include/asm/opal-api.h            |   3 +-
+>  arch/powerpc/include/asm/opal.h                |   3 +
+>  arch/powerpc/perf/imc-pmu.c                    | 163 ++++++++++++++++++++++++-
+>  arch/powerpc/platforms/powernv/opal-wrappers.S |   1 +
+>  include/linux/cpuhotplug.h                     |   1 +
+>  5 files changed, 169 insertions(+), 2 deletions(-)
+> 
+> diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
+> index a0aa285869b5..e1c3d4837857 100644
+> --- a/arch/powerpc/include/asm/opal-api.h
+> +++ b/arch/powerpc/include/asm/opal-api.h
+> @@ -168,7 +168,8 @@
+>  #define OPAL_INT_SET_MFRR			125
+>  #define OPAL_PCI_TCE_KILL			126
+>  #define OPAL_NMMU_SET_PTCR			127
+> -#define OPAL_LAST				127
+> +#define OPAL_NEST_IMC_COUNTERS_CONTROL		145
+> +#define OPAL_LAST				145
+> 
+>  /* Device tree flags */
+> 
+> diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
+> index 1ff03a6da76e..d93d08204243 100644
+> --- a/arch/powerpc/include/asm/opal.h
+> +++ b/arch/powerpc/include/asm/opal.h
+> @@ -227,6 +227,9 @@ int64_t opal_pci_tce_kill(uint64_t phb_id, uint32_t kill_type,
+>  			  uint64_t dma_addr, uint32_t npages);
+>  int64_t opal_nmmu_set_ptcr(uint64_t chip_id, uint64_t ptcr);
+> 
+> +int64_t opal_nest_imc_counters_control(uint64_t mode, uint64_t value1,
+> +				uint64_t value2, uint64_t value3);
+> +
+>  /* Internal functions */
+>  extern int early_init_dt_scan_opal(unsigned long node, const char *uname,
+>  				   int depth, void *data);
+> diff --git a/arch/powerpc/perf/imc-pmu.c b/arch/powerpc/perf/imc-pmu.c
+> index f6f1ef9f56af..e46ff6d2a584 100644
+> --- a/arch/powerpc/perf/imc-pmu.c
+> +++ b/arch/powerpc/perf/imc-pmu.c
+> @@ -16,6 +16,7 @@
+> +static int ppc_nest_imc_cpu_online(unsigned int cpu)
+> +{
 
-diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
-index da8a0f7a035c..ebf6719d241a 100644
---- a/arch/powerpc/platforms/powernv/opal-wrappers.S
-+++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
-@@ -50,21 +50,13 @@ END_FTR_SECTION(0, 1);						\
- #define OPAL_BRANCH(LABEL)
- #endif
- 
--/* TODO:
-- *
-- * - Trace irqs in/off (needs saving/restoring all args, argh...)
-- * - Get r11 feed up by Dave so I can have better register usage
-+/*
-+ * DO_OPAL_CALL assumes:
-+ * r0  = opal call token
-+ * r12 = msr
-+ * LR has been saved
-  */
--
--#define OPAL_CALL(name, token)		\
-- _GLOBAL_TOC(name);			\
--	mfmsr	r12;			\
--	mflr	r0;			\
--	andi.	r11,r12,MSR_IR|MSR_DR; 	\
--	std	r0,PPC_LR_STKOFF(r1);	\
--	li	r0,token;		\
--	beq	opal_real_call;         \
--	OPAL_BRANCH(opal_tracepoint_entry) \
-+#define DO_OPAL_CALL()			\
- 	mfcr	r11;			\
- 	stw	r11,8(r1);		\
- 	li	r11,0;			\
-@@ -83,6 +75,18 @@ END_FTR_SECTION(0, 1);						\
- 	mtspr	SPRN_HSRR0,r12;		\
- 	hrfid
- 
-+#define OPAL_CALL(name, token)		\
-+ _GLOBAL_TOC(name);			\
-+	mfmsr	r12;			\
-+	mflr	r0;			\
-+	andi.	r11,r12,MSR_IR|MSR_DR; 	\
-+	std	r0,PPC_LR_STKOFF(r1);	\
-+	li	r0,token;		\
-+	beq	opal_real_call;         \
-+	OPAL_BRANCH(opal_tracepoint_entry) \
-+	DO_OPAL_CALL()
-+
-+
- opal_return:
- 	/*
- 	 * Fixup endian on OPAL return... we should be able to simplify
-@@ -148,26 +152,13 @@ opal_tracepoint_entry:
- 	ld	r8,STK_REG(R29)(r1)
- 	ld	r9,STK_REG(R30)(r1)
- 	ld	r10,STK_REG(R31)(r1)
-+
-+	/* setup LR so we return via tracepoint_return */
- 	LOAD_REG_ADDR(r11,opal_tracepoint_return)
--	mfcr	r12
- 	std	r11,16(r1)
--	stw	r12,8(r1)
--	li	r11,0
-+
- 	mfmsr	r12
--	ori	r11,r11,MSR_EE
--	std	r12,PACASAVEDMSR(r13)
--	andc	r12,r12,r11
--	mtmsrd	r12,1
--	LOAD_REG_ADDR(r11,opal_return)
--	mtlr	r11
--	li	r11,MSR_DR|MSR_IR|MSR_LE
--	andc	r12,r12,r11
--	mtspr	SPRN_HSRR1,r12
--	LOAD_REG_ADDR(r11,opal)
--	ld	r12,8(r11)
--	ld	r2,0(r11)
--	mtspr	SPRN_HSRR0,r12
--	hrfid
-+	DO_OPAL_CALL()
- 
- opal_tracepoint_return:
- 	std	r3,STK_REG(R31)(r1)
--- 
-2.9.3
+I take it that 'cpu' is coming online.
+
+> +	int nid, fcpu, ncpu;
+> +	struct cpumask *l_cpumask, tmp_mask;
+> +
+> +	/* Fint the cpumask of this node */
+> +	nid = cpu_to_node(cpu);
+> +	l_cpumask = cpumask_of_node(nid);
+> +
+> +	/*
+> +	 * If any of the cpu from this node is already present in the mask,
+> +	 * just return, if not, then set this cpu in the mask.
+> +	 */
+> +	if (!cpumask_and(&tmp_mask, l_cpumask, &nest_imc_cpumask)) {
+
+In this case, none of the cpus in the node are in the mask. So we set
+and this cpu in the imc cpumask and return.
+
+> +		cpumask_set_cpu(cpu, &nest_imc_cpumask);
+> +		return 0;
+> +	}
+
+But this case implies that there is already a CPU from the node which
+is in the imc_cpumask. As per the comment above, we are supposed to
+just return. So why are we doing the following ?
+
+Either the comment above is incorrect or I am missing something here.
+
+> +
+> +	fcpu = cpumask_first(l_cpumask);
+> +	ncpu = cpumask_next(cpu, l_cpumask);
+> +	if (cpu == fcpu) {
+> +		if (cpumask_test_and_clear_cpu(ncpu, &nest_imc_cpumask)) {
+> +			cpumask_set_cpu(cpu, &nest_imc_cpumask);
+> +			nest_change_cpu_context(ncpu, cpu);
+> +		}
+> +	}
+
+It seems that we want to set only the smallest online cpu in the node
+in the nest_imc_cpumask. So, if the newly onlined cpu is the smallest,
+we replace the previous representative with cpu.
+
+So, the comment above needs to be fixed.
+
+> +
+> +	return 0;
+> +}
+> +
+> +static int ppc_nest_imc_cpu_offline(unsigned int cpu)
+> +{
+> +	int nid, target = -1;
+> +	struct cpumask *l_cpumask;
+> +
+> +	/*
+> +	 * Check in the designated list for this cpu. Dont bother
+> +	 * if not one of them.
+> +	 */
+> +	if (!cpumask_test_and_clear_cpu(cpu, &nest_imc_cpumask))
+> +		return 0;
+> +
+> +	/*
+> +	 * Now that this cpu is one of the designated,
+> +	 * find a next cpu a) which is online and b) in same chip.
+> +	 */
+> +	nid = cpu_to_node(cpu);
+> +	l_cpumask = cpumask_of_node(nid);
+> +	target = cpumask_next(cpu, l_cpumask);
+> +
+> +	/*
+> +	 * Update the cpumask with the target cpu and
+> +	 * migrate the context if needed
+> +	 */
+> +	if (target >= 0 && target <= nr_cpu_ids) {
+> +		cpumask_set_cpu(target, &nest_imc_cpumask);
+> +		nest_change_cpu_context(cpu, target);
+> +	}
+> +	return 0;
+> +}
+> +
+> +static int nest_pmu_cpumask_init(void)
+> +{
+> +	const struct cpumask *l_cpumask;
+> +	int cpu, nid;
+> +	int *cpus_opal_rc;
+> +
+> +	if (!cpumask_empty(&nest_imc_cpumask))
+> +		return 0;
+> +
+
+	
+> +	/*
+> +	 * Nest PMUs are per-chip counters. So designate a cpu
+> +	 * from each chip for counter collection.
+> +	 */
+> +	for_each_online_node(nid) {
+> +		l_cpumask = cpumask_of_node(nid);
+> +
+> +		/* designate first online cpu in this node */
+> +		cpu = cpumask_first(l_cpumask);
+> +		cpumask_set_cpu(cpu, &nest_imc_cpumask);
+> +	}
+> +
+
+
+What happens if a cpu in nest_imc_cpumask goes offline at this point ?
+
+Is that possible ?
+
+> +	/*
+> +	 * Memory for OPAL call return value.
+> +	 */
+> +	cpus_opal_rc = kzalloc((sizeof(int) * nr_cpu_ids), GFP_KERNEL);
+> +	if (!cpus_opal_rc)
+> +		goto fail;
+> +
+> +	/* Initialize Nest PMUs in each node using designated cpus */
+> +	on_each_cpu_mask(&nest_imc_cpumask, (smp_call_func_t)nest_init,
+> +						(void *)cpus_opal_rc, 1);
+> +
+> +	/* Check return value array for any OPAL call failure */
+> +	for_each_cpu(cpu, &nest_imc_cpumask) {
+> +		if (cpus_opal_rc[cpu])
+> +			goto fail;
+> +	}
+> +
+> +	cpuhp_setup_state(CPUHP_AP_PERF_POWERPC_NEST_ONLINE,
+> +			  "POWER_NEST_IMC_ONLINE",
+> +			  ppc_nest_imc_cpu_online,
+> +			  ppc_nest_imc_cpu_offline);
+> +
+> +	return 0;
+> +
+> +fail:
+> +	return -ENODEV;
+> +}
+> +
+>  static int nest_imc_event_init(struct perf_event *event)
+>  {
+>  	int chip_id;
+> @@ -63,7 +218,7 @@ static int nest_imc_event_init(struct perf_event *event)
+>  	chip_id = topology_physical_package_id(event->cpu);
+>  	pcni = &nest_perchip_info[chip_id];
+>  	event->hw.event_base = pcni->vbase[config/PAGE_SIZE] +
+> -							(config & ~PAGE_MASK);
+> +		(config & ~PAGE_MASK);
+> 
+>  	return 0;
+>  }
+> @@ -122,6 +277,7 @@ static int update_pmu_ops(struct imc_pmu *pmu)
+>  	pmu->pmu.stop = imc_event_stop;
+>  	pmu->pmu.read = imc_perf_event_update;
+>  	pmu->attr_groups[1] = &imc_format_group;
+> +	pmu->attr_groups[2] = &imc_pmu_cpumask_attr_group;
+>  	pmu->pmu.attr_groups = pmu->attr_groups;
+> 
+>  	return 0;
+> @@ -189,6 +345,11 @@ int init_imc_pmu(struct imc_events *events, int idx,
+>  {
+>  	int ret = -ENODEV;
+> 
+> +	/* Add cpumask and register for hotplug notification */
+> +	ret = nest_pmu_cpumask_init();
+> +	if (ret)
+> +		return ret;
+> +
+>  	ret = update_events_in_group(events, idx, pmu_ptr);
+>  	if (ret)
+>  		goto err_free;
+> diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
+> index da8a0f7a035c..b7208d8e6cc0 100644
+> --- a/arch/powerpc/platforms/powernv/opal-wrappers.S
+> +++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
+> @@ -301,3 +301,4 @@ OPAL_CALL(opal_int_eoi,				OPAL_INT_EOI);
+>  OPAL_CALL(opal_int_set_mfrr,			OPAL_INT_SET_MFRR);
+>  OPAL_CALL(opal_pci_tce_kill,			OPAL_PCI_TCE_KILL);
+>  OPAL_CALL(opal_nmmu_set_ptcr,			OPAL_NMMU_SET_PTCR);
+> +OPAL_CALL(opal_nest_imc_counters_control,	OPAL_NEST_IMC_COUNTERS_CONTROL);
+> diff --git a/include/linux/cpuhotplug.h b/include/linux/cpuhotplug.h
+> index 62d240e962f0..cfb0cedc72af 100644
+> --- a/include/linux/cpuhotplug.h
+> +++ b/include/linux/cpuhotplug.h
+> @@ -136,6 +136,7 @@ enum cpuhp_state {
+>  	CPUHP_AP_PERF_ARM_CCI_ONLINE,
+>  	CPUHP_AP_PERF_ARM_CCN_ONLINE,
+>  	CPUHP_AP_PERF_ARM_L2X0_ONLINE,
+> +	CPUHP_AP_PERF_POWERPC_NEST_ONLINE,
+>  	CPUHP_AP_PERF_ARM_QCOM_L2_ONLINE,
+>  	CPUHP_AP_WORKQUEUE_ONLINE,
+>  	CPUHP_AP_RCUTREE_ONLINE,
+> -- 
+> 2.7.4
+> 
