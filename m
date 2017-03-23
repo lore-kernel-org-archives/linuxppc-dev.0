@@ -1,24 +1,47 @@
-Return-Path: <oohall@gmail.com>
-Received: from mail-qt0-x241.google.com (mail-qt0-x241.google.com
- [IPv6:2607:f8b0:400d:c0d::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <maddy@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vpTSt2G7RzDq5g
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Mar 2017 12:27:58 +1100 (AEDT)
-Received: by mail-qt0-x241.google.com with SMTP id x35so27562175qtc.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Mar 2017 18:27:58 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <8760jalreg.fsf@concordia.ellerman.id.au>
-References: <20170302004920.21948-1-oohall@gmail.com>
- <20170302004920.21948-2-oohall@gmail.com>
- <8760jalreg.fsf@concordia.ellerman.id.au>
-From: "Oliver O'Halloran" <oohall@gmail.com>
-Date: Thu, 23 Mar 2017 12:27:55 +1100
-Message-ID: <CAOSf1CFSg4hDNo_=wWmy4TjXv3kASmy9iKiU8kzzsjOKS1GX7A@mail.gmail.com>
-Subject: Re: [PATCH 2/5] powerpc/smp: add set_cpus_related()
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org
-Content-Type: text/plain; charset=UTF-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vpX5Y4hrjzDq5g
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Mar 2017 14:26:25 +1100 (AEDT)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v2N3OITx050376
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Mar 2017 23:26:21 -0400
+Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [125.16.236.4])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 29bys5qqu0-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Mar 2017 23:26:20 -0400
+Received: from localhost
+ by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
+ Thu, 23 Mar 2017 08:56:17 +0530
+Received: from d28av08.in.ibm.com (d28av08.in.ibm.com [9.184.220.148])
+ by d28relay09.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v2N3QEij19005546
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Mar 2017 08:56:14 +0530
+Received: from d28av08.in.ibm.com (localhost [127.0.0.1])
+ by d28av08.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v2N3QCPR006375
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Mar 2017 08:56:14 +0530
+From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+To: mpe@ellerman.id.au
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+ Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>,
+ Arnaldo Carvalho de Melo <acme@kernel.org>,
+ Alexander Shishkin <alexander.shishkin@linux.intel.com>,
+ Wang Nan <wangnan0@huawei.com>, Alexei Starovoitov <ast@kernel.org>,
+ Stephane Eranian <eranian@google.com>,
+ Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+Subject: [PATCH v3 1/6] powerpc/perf: Define big-endian version of
+ perf_mem_data_src
+Date: Thu, 23 Mar 2017 08:56:03 +0530
+In-Reply-To: <1490239568-30429-1-git-send-email-maddy@linux.vnet.ibm.com>
+References: <1490239568-30429-1-git-send-email-maddy@linux.vnet.ibm.com>
+Message-Id: <1490239568-30429-2-git-send-email-maddy@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,108 +51,140 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Mar 15, 2017 at 10:18 PM, Michael Ellerman <mpe@ellerman.id.au> wrote:
-> Oliver O'Halloran <oohall@gmail.com> writes:
->> diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
->> index dfe0e1d9cd06..1c531887ca51 100644
->> --- a/arch/powerpc/kernel/smp.c
->> +++ b/arch/powerpc/kernel/smp.c
->> @@ -377,6 +377,25 @@ static void smp_store_cpu_info(int id)
->>  #endif
->>  }
->>
->> +/*
->> + * Relationships between CPUs are maintained in a set of per-cpu cpumasks. We
->> + * need to ensure that they are kept consistant between CPUs when they are
->> + * changed.
->> + *
->> + * This is slightly tricky since the core mask must be a strict superset of
->> + * the sibling mask.
->> + */
->> +static void set_cpus_related(int i, int j, bool related, struct cpumask *(*relation_fn)(int))
->> +{
->> +     if (related) {
->> +             cpumask_set_cpu(i, relation_fn(j));
->> +             cpumask_set_cpu(j, relation_fn(i));
->> +     } else {
->> +             cpumask_clear_cpu(i, relation_fn(j));
->> +             cpumask_clear_cpu(j, relation_fn(i));
->> +     }
->> +}
->
-> I think you pushed the abstraction one notch too far on this one, or
-> perhaps not far enough.
->
-> We end up with a function called "set" that might clear, depending on a
-> bool you pass. Which is hard to parse, eg:
->
->         set_cpus_related(cpu, base + i, false, cpu_sibling_mask);
->
-> And I know there's two places where we pass an existing bool "add", but
-> there's four where we pass true or false.
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 
-I think you're looking at this patch. With the full series applied we
-never pass a literal to set_cpus_related() directly:
+perf_mem_data_src is an union that is initialized via the ->val field
+and accessed via the bitmap fields. For this to work on big endian
+platforms (Which is broken now), we also need a big-endian represenation
+of perf_mem_data_src. i.e, in a big endian system, if user request
+PERF_SAMPLE_DATA_SRC (perf report -d), will get the default value from
+perf_sample_data_init(), which is PERF_MEM_NA. Value for PERF_MEM_NA
+is constructed using shifts:
 
-[12:14 oliver ~/.../powerpc/kernel (p9-sched $%)]$ gg set_cpus_related
-smp.c:391:static void set_cpus_related(int i, int j, bool related,
-struct cpumask *(*relation_fn)(int))
-smp.c:647:      set_cpus_related(cpu, cpu, add, cpu_core_mask);
-smp.c:651:                      set_cpus_related(cpu, i, add, cpu_core_mask);
-smp.c:685:      set_cpus_related(cpu, cpu, onlining, mask_fn);
-smp.c:697:                      set_cpus_related(cpu, i, onlining, mask_fn);
-smp.c:721:              set_cpus_related(cpu, base + i, onlining,
-cpu_sibling_mask);
-smp.c:736:      set_cpus_related(cpu, cpu, onlining, cpu_core_mask);
-smp.c:746:              set_cpus_related(cpu, i, onlining, cpu_core_mask);
+  /* TLB access */
+  #define PERF_MEM_TLB_NA		0x01 /* not available */
+  ...
+  #define PERF_MEM_TLB_SHIFT	26
 
-I agree that set_cpus_related() is probably a bad name,
-make_cpus_related() maybe?
+  #define PERF_MEM_S(a, s) \
+	(((__u64)PERF_MEM_##a##_##s) << PERF_MEM_##a##_SHIFT)
 
->
-> If we want to push it in that direction I think we should just pass the
-> set/clear routine instead of the flag, so:
->
->         do_cpus_related(cpu, base + i, cpumask_clear_cpu, cpu_sibling_mask);
->
-> But that might be overdoing it.
+  #define PERF_MEM_NA (PERF_MEM_S(OP, NA)   |\
+		    PERF_MEM_S(LVL, NA)   |\
+		    PERF_MEM_S(SNOOP, NA) |\
+		    PERF_MEM_S(LOCK, NA)  |\
+		    PERF_MEM_S(TLB, NA))
 
-I think this would be ok.
+Which works out as:
 
->
-> So I think we should just do:
->
-> static void set_cpus_related(int i, int j, struct cpumask *(*mask_func)(int))
-> {
->         cpumask_set_cpu(i, mask_func(j));
->         cpumask_set_cpu(j, mask_func(i));
-> }
->
-> static void clear_cpus_related(int i, int j, struct cpumask *(*mask_func)(int))
-> {
->         cpumask_clear_cpu(i, mask_func(j));
->         cpumask_clear_cpu(j, mask_func(i));
-> }
->
->
-> So the cases with add become:
->
->         if (add)
->                 set_cpus_related(cpu, i, cpu_core_mask(i));
->         else
->                 clear_cpus_related(cpu, i, cpu_core_mask(i));
+  ((0x01 << 0) | (0x01 << 5) | (0x01 << 19) | (0x01 << 24) | (0x01 << 26))
 
-Dunno, I was trying to get rid of this sort of thing since the logic
-is duplicated in a lot of places. Seemed to me that it was just
-pointlessly verbose rather than being helpfully explicit.
+Which means the PERF_MEM_NA value comes out of the kernel as 0x5080021
+in CPU endian.
 
->
-> Which is not as pretty but more explicit.
->
-> And the other cases look much better, eg:
->
->         clear_cpus_related(cpu, base + i, cpu_sibling_mask);
->
-> ??
->
-> cheers
+But then in the perf tool, the code uses the bitfields to inspect the
+value, and currently the bitfields are defined using little endian
+ordering.
+
+So eg. in perf_mem__tlb_scnprintf() we see:
+  data_src->val = 0x5080021
+             op = 0x0
+            lvl = 0x0
+          snoop = 0x0
+           lock = 0x0
+           dtlb = 0x0
+           rsvd = 0x5080021
+
+Patch does a minimal fix of adding big endian definition of the bitfields
+to match the values that are already exported by the kernel on big endian.
+And it makes no change on little endian.
+
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: Arnaldo Carvalho de Melo <acme@kernel.org>
+Cc: Alexander Shishkin <alexander.shishkin@linux.intel.com>
+Cc: Wang Nan <wangnan0@huawei.com>
+Cc: Alexei Starovoitov <ast@kernel.org>
+Cc: Stephane Eranian <eranian@google.com>
+Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+---
+Changelog v2:
+-Added Michael Ellerman's explanation to comiit message.
+Changelog v1:
+-Fixed author-ship and added suka's "Signed-off-by:".
+
+ include/uapi/linux/perf_event.h       | 16 ++++++++++++++++
+ tools/include/uapi/linux/perf_event.h | 16 ++++++++++++++++
+ 2 files changed, 32 insertions(+)
+
+diff --git a/include/uapi/linux/perf_event.h b/include/uapi/linux/perf_event.h
+index c66a485a24ac..c4af1159a200 100644
+--- a/include/uapi/linux/perf_event.h
++++ b/include/uapi/linux/perf_event.h
+@@ -891,6 +891,7 @@ enum perf_callchain_context {
+ #define PERF_FLAG_PID_CGROUP		(1UL << 2) /* pid=cgroup id, per-cpu mode only */
+ #define PERF_FLAG_FD_CLOEXEC		(1UL << 3) /* O_CLOEXEC */
+ 
++#if defined(__LITTLE_ENDIAN_BITFIELD)
+ union perf_mem_data_src {
+ 	__u64 val;
+ 	struct {
+@@ -902,6 +903,21 @@ union perf_mem_data_src {
+ 			mem_rsvd:31;
+ 	};
+ };
++#elif defined(__BIG_ENDIAN_BITFIELD)
++union perf_mem_data_src {
++	__u64 val;
++	struct {
++		__u64	mem_rsvd:31,
++			mem_dtlb:7,	/* tlb access */
++			mem_lock:2,	/* lock instr */
++			mem_snoop:5,	/* snoop mode */
++			mem_lvl:14,	/* memory hierarchy level */
++			mem_op:5;	/* type of opcode */
++	};
++};
++#else
++#error "Unknown endianness"
++#endif
+ 
+ /* type of opcode (load/store/prefetch,code) */
+ #define PERF_MEM_OP_NA		0x01 /* not available */
+diff --git a/tools/include/uapi/linux/perf_event.h b/tools/include/uapi/linux/perf_event.h
+index c66a485a24ac..c4af1159a200 100644
+--- a/tools/include/uapi/linux/perf_event.h
++++ b/tools/include/uapi/linux/perf_event.h
+@@ -891,6 +891,7 @@ enum perf_callchain_context {
+ #define PERF_FLAG_PID_CGROUP		(1UL << 2) /* pid=cgroup id, per-cpu mode only */
+ #define PERF_FLAG_FD_CLOEXEC		(1UL << 3) /* O_CLOEXEC */
+ 
++#if defined(__LITTLE_ENDIAN_BITFIELD)
+ union perf_mem_data_src {
+ 	__u64 val;
+ 	struct {
+@@ -902,6 +903,21 @@ union perf_mem_data_src {
+ 			mem_rsvd:31;
+ 	};
+ };
++#elif defined(__BIG_ENDIAN_BITFIELD)
++union perf_mem_data_src {
++	__u64 val;
++	struct {
++		__u64	mem_rsvd:31,
++			mem_dtlb:7,	/* tlb access */
++			mem_lock:2,	/* lock instr */
++			mem_snoop:5,	/* snoop mode */
++			mem_lvl:14,	/* memory hierarchy level */
++			mem_op:5;	/* type of opcode */
++	};
++};
++#else
++#error "Unknown endianness"
++#endif
+ 
+ /* type of opcode (load/store/prefetch,code) */
+ #define PERF_MEM_OP_NA		0x01 /* not available */
+-- 
+2.7.4
