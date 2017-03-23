@@ -1,21 +1,18 @@
-Return-Path: <davem@davemloft.net>
-Received: from shards.monkeyblade.net (shards.monkeyblade.net
- [184.105.139.130])
- by lists.ozlabs.org (Postfix) with ESMTP id 3vq2wk35j7zDq7c
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Mar 2017 10:35:31 +1100 (AEDT)
-Date: Thu, 23 Mar 2017 16:35:20 -0700 (PDT)
-Message-Id: <20170323.163520.123614131649571916.davem@davemloft.net>
-To: willy@infradead.org
-Cc: pasha.tatashin@oracle.com, linux-kernel@vger.kernel.org,
- sparclinux@vger.kernel.org, linux-mm@kvack.org,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.or
-Subject: Re: [v1 0/5] parallelized "struct page" zeroing
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20170323232638.GB29134@bombadil.infradead.org>
+Return-Path: <pasha.tatashin@oracle.com>
+Received: from userp1040.oracle.com (userp1040.oracle.com [156.151.31.81])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vq22R0JT8zDq7c
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Mar 2017 09:55:26 +1100 (AEDT)
+From: Pavel Tatashin <pasha.tatashin@oracle.com>
+To: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
+ linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.or
+Subject: [v1 5/5] mm: teach platforms not to zero struct pages memory
+Date: Thu, 23 Mar 2017 19:01:53 -0400
+Message-Id: <1490310113-824438-6-git-send-email-pasha.tatashin@oracle.com>
+In-Reply-To: <1490310113-824438-1-git-send-email-pasha.tatashin@oracle.com>
 References: <1490310113-824438-1-git-send-email-pasha.tatashin@oracle.com>
- <20170323232638.GB29134@bombadil.infradead.org>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,29 +22,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Matthew Wilcox <willy@infradead.org>
-Date: Thu, 23 Mar 2017 16:26:38 -0700
+If we are using deferred struct page initialization feature, most of
+"struct page"es are getting initialized after other CPUs are started, and
+hence we are benefiting from doing this job in parallel. However, we are
+still zeroing all the memory that is allocated for "struct pages" using the
+boot CPU.  This patch solves this problem, by deferring zeroing "struct
+pages" to only when they are initialized.
 
-> On Thu, Mar 23, 2017 at 07:01:48PM -0400, Pavel Tatashin wrote:
->> When deferred struct page initialization feature is enabled, we get a
->> performance gain of initializing vmemmap in parallel after other CPUs are
->> started. However, we still zero the memory for vmemmap using one boot CPU.
->> This patch-set fixes the memset-zeroing limitation by deferring it as well.
->> 
->> Here is example performance gain on SPARC with 32T:
->> base
->> https://hastebin.com/ozanelatat.go
->> 
->> fix
->> https://hastebin.com/utonawukof.go
->> 
->> As you can see without the fix it takes: 97.89s to boot
->> With the fix it takes: 46.91 to boot.
-> 
-> How long does it take if we just don't zero this memory at all?  We seem
-> to be initialising most of struct page in __init_single_page(), so it
-> seems like a lot of additional complexity to conditionally zero the rest
-> of struct page.
+Signed-off-by: Pavel Tatashin <pasha.tatashin@oracle.com>
+Reviewed-by: Shannon Nelson <shannon.nelson@oracle.com>
+---
+ arch/powerpc/mm/init_64.c |    2 +-
+ arch/sparc/mm/init_64.c   |    2 +-
+ arch/x86/mm/init_64.c     |    2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
 
-Alternatively, just zero out the entire vmemmap area when it is setup
-in the kernel page tables.
+diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
+index eb4c270..24faf2d 100644
+--- a/arch/powerpc/mm/init_64.c
++++ b/arch/powerpc/mm/init_64.c
+@@ -181,7 +181,7 @@ int __meminit vmemmap_populate(unsigned long start, unsigned long end, int node)
+ 		if (vmemmap_populated(start, page_size))
+ 			continue;
+ 
+-		p = vmemmap_alloc_block(page_size, node, true);
++		p = vmemmap_alloc_block(page_size, node, VMEMMAP_ZERO);
+ 		if (!p)
+ 			return -ENOMEM;
+ 
+diff --git a/arch/sparc/mm/init_64.c b/arch/sparc/mm/init_64.c
+index d91e462..280834e 100644
+--- a/arch/sparc/mm/init_64.c
++++ b/arch/sparc/mm/init_64.c
+@@ -2542,7 +2542,7 @@ int __meminit vmemmap_populate(unsigned long vstart, unsigned long vend,
+ 		pte = pmd_val(*pmd);
+ 		if (!(pte & _PAGE_VALID)) {
+ 			void *block = vmemmap_alloc_block(PMD_SIZE, node,
+-							  true);
++							  VMEMMAP_ZERO);
+ 
+ 			if (!block)
+ 				return -ENOMEM;
+diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
+index 46101b6..9d8c72c 100644
+--- a/arch/x86/mm/init_64.c
++++ b/arch/x86/mm/init_64.c
+@@ -1177,7 +1177,7 @@ static int __meminit vmemmap_populate_hugepages(unsigned long start,
+ 			void *p;
+ 
+ 			p = __vmemmap_alloc_block_buf(PMD_SIZE, node, altmap,
+-						      true);
++						      VMEMMAP_ZERO);
+ 			if (p) {
+ 				pte_t entry;
+ 
+-- 
+1.7.1
