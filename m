@@ -1,23 +1,46 @@
-Return-Path: <daniel.baluta@gmail.com>
-Received: from mail-wm0-x243.google.com (mail-wm0-x243.google.com
- [IPv6:2a00:1450:400c:c09::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <ego@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vplXp3sKWzDq5g
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Mar 2017 23:02:18 +1100 (AEDT)
-Received: by mail-wm0-x243.google.com with SMTP id n11so16118873wma.0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Mar 2017 05:02:17 -0700 (PDT)
-From: Daniel Baluta <daniel.baluta@gmail.com>
-To: timur@tabi.org, nicoleotsuka@gmail.com, Xiubo.Lee@gmail.com,
- fabio.estevam@nxp.com, lgirdwood@gmail.com, broonie@kernel.org,
- perex@perex.cz, tiwai@suse.com
-Cc: alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, daniel.baluta@nxp.com, mihai.serban@nxp.com,
- viorel.suman@nxp.com, shengjiu.wang@nxp.com,
- Nicolin Chen <b42378@freescale.com>
-Subject: [PATCH] ASoC: WM8962: Let codec driver enable/disable its MCLK
-Date: Thu, 23 Mar 2017 14:01:50 +0200
-Message-Id: <1490270510-17061-1-git-send-email-daniel.baluta@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vpn3H6RxPzDq5g
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Mar 2017 00:10:19 +1100 (AEDT)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v2ND9mHI065572
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Mar 2017 09:10:18 -0400
+Received: from e11.ny.us.ibm.com (e11.ny.us.ibm.com [129.33.205.201])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 29bxhudbf1-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Mar 2017 09:10:16 -0400
+Received: from localhost
+ by e11.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ego@linux.vnet.ibm.com>;
+ Thu, 23 Mar 2017 09:10:05 -0400
+Date: Thu, 23 Mar 2017 18:39:47 +0530
+From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+Cc: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Hemant Kumar <hemant@linux.vnet.ibm.com>,
+ "Gautham R . Shenoy" <ego@linux.vnet.ibm.com>,
+ Balbir Singh <bsingharora@gmail.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
+ Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+ Michael Neuling <mikey@neuling.org>,
+ Stewart Smith <stewart@linux.vnet.ibm.com>,
+ Daniel Axtens <dja@axtens.net>, Stephane Eranian <eranian@google.com>,
+ Anju T Sudhakar <anju@linux.vnet.ibm.com>
+Subject: Re: [PATCH v5 08/13] powerpc/perf: PMU functions for Core IMC and
+ hotplugging
+Reply-To: ego@linux.vnet.ibm.com
+References: <1489649707-8021-1-git-send-email-maddy@linux.vnet.ibm.com>
+ <1489649707-8021-9-git-send-email-maddy@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1489649707-8021-9-git-send-email-maddy@linux.vnet.ibm.com>
+Message-Id: <20170323130947.GB4897@in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,121 +50,96 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Nicolin Chen <b42378@freescale.com>
+Hi Maddy, Hemant, Anju,
 
-WM8962 needs its MCLK when powerup in wm8962_resume(). Thus it's better
-to control the MCLK in codec driver. Thus remove the clock enable in
-machine dirver accordingly.
+On Thu, Mar 16, 2017 at 01:05:02PM +0530, Madhavan Srinivasan wrote:
 
-While at it, get rid of imx_wm8962_remove function since it is now
-empty.
+[..snip..]
 
-Signed-off-by: Nicolin Chen <b42378@freescale.com>
-Signed-off-by: Daniel Baluta <daniel.baluta@nxp.com>
----
- sound/soc/fsl/imx-wm8962.c | 40 ++++++++--------------------------------
- 1 file changed, 8 insertions(+), 32 deletions(-)
+> +
+> +static void core_imc_change_cpu_context(int old_cpu, int new_cpu)
+> +{
+> +	if (!core_imc_pmu)
+> +		return;
+> +	perf_pmu_migrate_context(&core_imc_pmu->pmu, old_cpu, new_cpu);
+> +}
+> +
+> +
+> +static int ppc_core_imc_cpu_online(unsigned int cpu)
+> +{
+> +	int ret;
+> +
+> +	/* If a cpu for this core is already set, then, don't do anything */
+> +	ret = cpumask_any_and(&core_imc_cpumask,
+> +				 cpu_sibling_mask(cpu));
+> +	if (ret < nr_cpu_ids)
+> +		return 0;
+> +
+> +	/* Else, set the cpu in the mask, and change the context */
+> +	cpumask_set_cpu(cpu, &core_imc_cpumask);
+> +	core_imc_change_cpu_context(-1, cpu);
 
-diff --git a/sound/soc/fsl/imx-wm8962.c b/sound/soc/fsl/imx-wm8962.c
-index 1b60958..3d894d9 100644
---- a/sound/soc/fsl/imx-wm8962.c
-+++ b/sound/soc/fsl/imx-wm8962.c
-@@ -33,7 +33,6 @@ struct imx_wm8962_data {
- 	struct snd_soc_card card;
- 	char codec_dai_name[DAI_NAME_SIZE];
- 	char platform_name[DAI_NAME_SIZE];
--	struct clk *codec_clk;
- 	unsigned int clk_frequency;
- };
- 
-@@ -163,6 +162,7 @@ static int imx_wm8962_probe(struct platform_device *pdev)
- 	struct imx_priv *priv = &card_priv;
- 	struct i2c_client *codec_dev;
- 	struct imx_wm8962_data *data;
-+	struct clk *codec_clk;
- 	int int_port, ext_port;
- 	int ret;
- 
-@@ -231,19 +231,14 @@ static int imx_wm8962_probe(struct platform_device *pdev)
- 		goto fail;
- 	}
- 
--	data->codec_clk = devm_clk_get(&codec_dev->dev, NULL);
--	if (IS_ERR(data->codec_clk)) {
--		ret = PTR_ERR(data->codec_clk);
-+	codec_clk = devm_clk_get(&codec_dev->dev, NULL);
-+	if (IS_ERR(codec_clk)) {
-+		ret = PTR_ERR(codec_clk);
- 		dev_err(&codec_dev->dev, "failed to get codec clk: %d\n", ret);
- 		goto fail;
- 	}
- 
--	data->clk_frequency = clk_get_rate(data->codec_clk);
--	ret = clk_prepare_enable(data->codec_clk);
--	if (ret) {
--		dev_err(&codec_dev->dev, "failed to enable codec clk: %d\n", ret);
--		goto fail;
--	}
-+	data->clk_frequency = clk_get_rate(codec_clk);
- 
- 	data->dai.name = "HiFi";
- 	data->dai.stream_name = "HiFi";
-@@ -258,10 +253,10 @@ static int imx_wm8962_probe(struct platform_device *pdev)
- 	data->card.dev = &pdev->dev;
- 	ret = snd_soc_of_parse_card_name(&data->card, "model");
- 	if (ret)
--		goto clk_fail;
-+		goto fail;
- 	ret = snd_soc_of_parse_audio_routing(&data->card, "audio-routing");
- 	if (ret)
--		goto clk_fail;
-+		goto fail;
- 	data->card.num_links = 1;
- 	data->card.owner = THIS_MODULE;
- 	data->card.dai_link = &data->dai;
-@@ -277,16 +272,9 @@ static int imx_wm8962_probe(struct platform_device *pdev)
- 	ret = devm_snd_soc_register_card(&pdev->dev, &data->card);
- 	if (ret) {
- 		dev_err(&pdev->dev, "snd_soc_register_card failed (%d)\n", ret);
--		goto clk_fail;
-+		goto fail;
- 	}
- 
--	of_node_put(ssi_np);
--	of_node_put(codec_np);
--
--	return 0;
--
--clk_fail:
--	clk_disable_unprepare(data->codec_clk);
- fail:
- 	of_node_put(ssi_np);
- 	of_node_put(codec_np);
-@@ -294,17 +282,6 @@ static int imx_wm8962_probe(struct platform_device *pdev)
- 	return ret;
- }
- 
--static int imx_wm8962_remove(struct platform_device *pdev)
--{
--	struct snd_soc_card *card = platform_get_drvdata(pdev);
--	struct imx_wm8962_data *data = snd_soc_card_get_drvdata(card);
--
--	if (!IS_ERR(data->codec_clk))
--		clk_disable_unprepare(data->codec_clk);
--
--	return 0;
--}
--
- static const struct of_device_id imx_wm8962_dt_ids[] = {
- 	{ .compatible = "fsl,imx-audio-wm8962", },
- 	{ /* sentinel */ }
-@@ -318,7 +295,6 @@ static struct platform_driver imx_wm8962_driver = {
- 		.of_match_table = imx_wm8962_dt_ids,
- 	},
- 	.probe = imx_wm8962_probe,
--	.remove = imx_wm8962_remove,
- };
- module_platform_driver(imx_wm8962_driver);
- 
--- 
-2.7.4
+So, in the core case, we are ok as long as any cpu in the core is
+present in the imc_cpumask. It need not have to be the smallest online
+cpu in the core.
+
+Can the same logic be applied to the earlier nest case ?
+
+We can have a single function for cpu_offline and cpu_online which
+implements these checks and sets the cpu bit if required.
+
+ppc_entity_imc_cpu_offline(unsigned int cpu, cpumask_t
+			   entity_imc_mask,
+			   entity_imc_change_cpu_context_fn)
+{
+	.
+	.
+	.
+	
+}
+
+
+static ppc_nest_imc_cpu_offline(unsigned int cpu)
+{
+	return ppc_entity_imc_cpu_offline(cpu, nest_imc_mask,
+					  nest_imc_change_cpu_context);
+}
+
+And similar ones for core imc and thread imc.
+
+Does this sound reasonable ?
+
+> +	return 0;
+> +}
+> +
+> +static int ppc_core_imc_cpu_offline(unsigned int cpu)
+> +{
+> +	int target;
+> +	unsigned int ncpu;
+> +
+> +	/*
+> +	 * clear this cpu out of the mask, if not present in the mask,
+> +	 * don't bother doing anything.
+> +	 */
+> +	if (!cpumask_test_and_clear_cpu(cpu, &core_imc_cpumask))
+> +		return 0;
+> +
+> +	/* Find any online cpu in that core except the current "cpu" */
+> +	ncpu = cpumask_any_but(cpu_sibling_mask(cpu), cpu);
+> +
+> +	if (ncpu < nr_cpu_ids) {
+> +		target = ncpu;
+> +		cpumask_set_cpu(target, &core_imc_cpumask);
+> +	} else
+> +		target = -1;
+> +
+> +	/* migrate the context */
+> +	core_imc_change_cpu_context(cpu, target);
+> +
+> +	return 0;
+> +}
+> +
+
+--
+Thanks and Regards
+gautham.
