@@ -1,22 +1,23 @@
-Return-Path: <matthew.brown.dev@gmail.com>
-Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
- [IPv6:2607:f8b0:400e:c05::243])
+Return-Path: <oohall@gmail.com>
+Received: from mail-qt0-x242.google.com (mail-qt0-x242.google.com
+ [IPv6:2607:f8b0:400d:c0d::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vpPSv6XDvzDq7N
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Mar 2017 09:27:43 +1100 (AEDT)
-Received: by mail-pg0-x243.google.com with SMTP id w20so7824054pgc.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Mar 2017 15:27:43 -0700 (PDT)
-Received: from matt.ozlabs.ibm.com ([122.99.82.10])
- by smtp.gmail.com with ESMTPSA id r13sm5835935pfg.55.2017.03.22.15.27.39
- for <linuxppc-dev@lists.ozlabs.org>
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Wed, 22 Mar 2017 15:27:40 -0700 (PDT)
-From: Matt Brown <matthew.brown.dev@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [v7] powerpc/powernv: add hdat attribute to sysfs
-Date: Thu, 23 Mar 2017 09:27:16 +1100
-Message-Id: <20170322222716.21767-1-matthew.brown.dev@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vpT3y00p8zDq5g
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Mar 2017 12:09:49 +1100 (AEDT)
+Received: by mail-qt0-x242.google.com with SMTP id n37so27521446qtb.3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Mar 2017 18:09:49 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <877f3qlrep.fsf@concordia.ellerman.id.au>
+References: <20170302004920.21948-1-oohall@gmail.com>
+ <877f3qlrep.fsf@concordia.ellerman.id.au>
+From: "Oliver O'Halloran" <oohall@gmail.com>
+Date: Thu, 23 Mar 2017 12:09:47 +1100
+Message-ID: <CAOSf1CHwODMGc=G=OT21TrSit_G4ypd5sgCrCZOxWAGy3GtEww@mail.gmail.com>
+Subject: Re: [PATCH 1/5] powerpc/smp: use cpu_to_chip_id() to find siblings
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,122 +27,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The HDAT data area is consumed by skiboot and turned into a device-tree.
-In some cases we would like to look directly at the HDAT, so this patch
-adds a sysfs node to allow it to be viewed.  This is not possible through
-/dev/mem as it is reserved memory which is stopped by the /dev/mem filter.
+On Wed, Mar 15, 2017 at 10:18 PM, Michael Ellerman <mpe@ellerman.id.au> wrote:
+> Oliver O'Halloran <oohall@gmail.com> writes:
+>
+>> To determine which logical CPUs are on the same core the kernel uses the
+>> ibm,chipid property from the device tree node associated with that cpu.
+>> The lookup for this this information is currently open coded in both
+>> traverse_siblings() and traverse_siblings_chip_id(). This patch replaces
+>> these manual lookups with the existing cpu_to_chip_id() function.
+>
+> Some minor nits.
+>
+> cpu_to_chip_id() actually searches recursively up the parents until it
+> finds a ibm,chip-id, so it's not a 1:1 replacement for the existing
+> logic, but it's probably still an OK conversion. It's still worth
+> mentioning in the change log thought.
 
-Signed-off-by: Matt Brown <matthew.brown.dev@gmail.com>
----
-Changelog:
+fair enough
 
-v7:	
-	- moved exported_attrs and attr_name into opal_export_attrs
----
- arch/powerpc/platforms/powernv/opal.c | 84 +++++++++++++++++++++++++++++++++++
- 1 file changed, 84 insertions(+)
+>> diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+>> index 893bd7f79be6..dfe0e1d9cd06 100644
+>> --- a/arch/powerpc/kernel/smp.c
+>> +++ b/arch/powerpc/kernel/smp.c
+>> @@ -664,23 +655,19 @@ static void traverse_core_siblings(int cpu, bool add)
+>>  {
+>>       struct device_node *l2_cache, *np;
+>>       const struct cpumask *mask;
+>> -     int i, chip, plen;
+>> -     const __be32 *prop;
+>> +     int chip_id;
+>> +     int i;
+>>
+>> -     /* First see if we have ibm,chip-id properties in cpu nodes */
+>> -     np = of_get_cpu_node(cpu, NULL);
+>> -     if (np) {
+>> -             chip = -1;
+>> -             prop = of_get_property(np, "ibm,chip-id", &plen);
+>> -             if (prop && plen == sizeof(int))
+>> -                     chip = of_read_number(prop, 1);
+>> -             of_node_put(np);
+>> -             if (chip >= 0) {
+>> -                     traverse_siblings_chip_id(cpu, add, chip);
+>> -                     return;
+>> -             }
+>> +     /* threads that share a chip-id are considered siblings (same die) */
+>
+> You might know it means the "same die", but AFAIK there's no actual
+> definition for what the chip-id means, so let's not write comments that
+> might be wrong in future. Just saying they're considered siblings is
+> sufficient.
+>
+> Also "Threads" :)
 
-diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
-index 2822935..b8f057f 100644
---- a/arch/powerpc/platforms/powernv/opal.c
-+++ b/arch/powerpc/platforms/powernv/opal.c
-@@ -604,6 +604,87 @@ static void opal_export_symmap(void)
- 		pr_warn("Error %d creating OPAL symbols file\n", rc);
- }
- 
-+static ssize_t export_attr_read(struct file *fp, struct kobject *kobj,
-+			     struct bin_attribute *bin_attr, char *buf,
-+			     loff_t off, size_t count)
-+{
-+	return memory_read_from_buffer(buf, count, &off, bin_attr->private,
-+				       bin_attr->size);
-+}
-+
-+/*
-+ * opal_export_attrs: creates a sysfs node for each property listed in
-+ * the device-tree under /ibm,opal/firmware/exports/
-+ * All new sysfs nodes are created under /opal/exports/.
-+ * This allows for reserved memory regions (e.g. HDAT) to be read.
-+ * The new sysfs nodes are only readable by root.
-+ */
-+static void opal_export_attrs(void)
-+{
-+	/* /sys/firmware/opal/exports */
-+	struct kobject *opal_export_kobj;
-+	struct bin_attribute *exported_attrs;
-+	char **attr_name;
-+
-+	struct bin_attribute *attr_tmp;
-+	const __be64 *syms;
-+	unsigned int size;
-+	struct device_node *fw;
-+	struct property *prop;
-+	int rc;
-+	int attr_count = 0;
-+	int n = 0;
-+
-+	/* Create new 'exports' directory */
-+	opal_export_kobj = kobject_create_and_add("exports", opal_kobj);
-+	if (!opal_export_kobj) {
-+		pr_warn("kobject_create_and_add opal_exports failed\n");
-+		return;
-+	}
-+
-+	fw = of_find_node_by_path("/ibm,opal/firmware/exports");
-+	if (!fw)
-+		return;
-+
-+	for (prop = fw->properties; prop != NULL; prop = prop->next)
-+		attr_count++;
-+
-+	if (attr_count > 2) {
-+		exported_attrs = kzalloc(sizeof(exported_attrs)*(attr_count-2),
-+				GFP_KERNEL);
-+		attr_name = kzalloc(sizeof(char *)*(attr_count-2), GFP_KERNEL);
-+	}
-+
-+	for_each_property_of_node(fw, prop) {
-+
-+		attr_name[n] = kstrdup(prop->name, GFP_KERNEL);
-+		syms = of_get_property(fw, attr_name[n], &size);
-+
-+		if (!strcmp(attr_name[n], "name") ||
-+				!strcmp(attr_name[n], "phandle"))
-+			continue;
-+
-+		if (!syms || size != 2 * sizeof(__be64))
-+			continue;
-+
-+		attr_tmp = &exported_attrs[n];
-+		attr_tmp->attr.name = attr_name[n];
-+		attr_tmp->attr.mode = 0400;
-+		attr_tmp->read = export_attr_read;
-+		attr_tmp->private = __va(be64_to_cpu(syms[0]));
-+		attr_tmp->size = be64_to_cpu(syms[1]);
-+
-+		rc = sysfs_create_bin_file(opal_export_kobj, attr_tmp);
-+		if (rc)
-+			pr_warn("Error %d creating OPAL sysfs exports/%s file\n",
-+					rc, attr_name[n]);
-+		n++;
-+	}
-+
-+	of_node_put(fw);
-+
-+}
-+
- static void __init opal_dump_region_init(void)
- {
- 	void *addr;
-@@ -742,6 +823,9 @@ static int __init opal_init(void)
- 		opal_msglog_sysfs_init();
- 	}
- 
-+	/* Export all properties */
-+	opal_export_attrs();
-+
- 	/* Initialize platform devices: IPMI backend, PRD & flash interface */
- 	opal_pdev_init("ibm,opal-ipmi");
- 	opal_pdev_init("ibm,opal-flash");
--- 
-2.9.3
+The cpus masks are all built in terms of threads, so this is
+technically correct even if it sounds stupid. Maybe "logical cpus"
+would be better?
+
+>
+> cheers
