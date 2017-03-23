@@ -1,38 +1,24 @@
-Return-Path: <maddy@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <oohall@gmail.com>
+Received: from mail-qk0-x233.google.com (mail-qk0-x233.google.com
+ [IPv6:2607:f8b0:400d:c09::233])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vpX612VYrzDqc9
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Mar 2017 14:26:49 +1100 (AEDT)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v2N3OCrK094265
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Mar 2017 23:26:47 -0400
-Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [125.16.236.5])
- by mx0a-001b2d01.pphosted.com with ESMTP id 29c4yvbpjc-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Mar 2017 23:26:47 -0400
-Received: from localhost
- by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
- Thu, 23 Mar 2017 08:56:14 +0530
-Received: from d28av08.in.ibm.com (d28av08.in.ibm.com [9.184.220.148])
- by d28relay10.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v2N3Ovr217826016
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Mar 2017 08:54:57 +0530
-Received: from d28av08.in.ibm.com (localhost [127.0.0.1])
- by d28av08.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v2N3QAF6006364
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Mar 2017 08:56:11 +0530
-From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-To: mpe@ellerman.id.au
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Subject: [PATCH v3 0/6] powerpc/perf: Export memory hierarchy level
-Date: Thu, 23 Mar 2017 08:56:02 +0530
-Message-Id: <1490239568-30429-1-git-send-email-maddy@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vpXGB5189zDqnb
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Mar 2017 14:33:54 +1100 (AEDT)
+Received: by mail-qk0-x233.google.com with SMTP id p22so30539173qka.3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Mar 2017 20:33:54 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <871stylr1n.fsf@concordia.ellerman.id.au>
+References: <20170302004920.21948-1-oohall@gmail.com>
+ <20170302004920.21948-4-oohall@gmail.com>
+ <871stylr1n.fsf@concordia.ellerman.id.au>
+From: "Oliver O'Halloran" <oohall@gmail.com>
+Date: Thu, 23 Mar 2017 14:33:51 +1100
+Message-ID: <CAOSf1CF6BHr+T8r+0kV8sk0-NzfzLf=dwxpJkK0gCofMa_TPAg@mail.gmail.com>
+Subject: Re: [PATCH 4/5] powerpc/smp: add cpu_cache_mask
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,47 +28,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Power8/Power9 Perforence Monitoring Unit (PMU) supports
-different sampling modes (SM) such as Random Instruction
-Sampling (RIS), Random Load/Store Facility Sampling (RLS)
-and Random Branch Sampling (RBS). Sample mode RLS updates
-Sampled Instruction Event Register [SIER] bits with memory
-hierarchy information for a cache reload. Patchset exports
-the hierarchy information to the user via the perf_mem_data_src
-object from SIER.
+On Wed, Mar 15, 2017 at 10:26 PM, Michael Ellerman <mpe@ellerman.id.au> wrote:
+> Oliver O'Halloran <oohall@gmail.com> writes:
+>
+>> Traditionally we have only ever tracked which CPUs are in the same core
+>> (cpu_sibling_mask) and on the same die (cpu_core_mask). For Power9 we
+>> need to be aware of which CPUs share cache with each other so this patch
+>> adds cpu_cache_mask and the underlying cpu_cache_map variable to track
+>> this.
+>
+> But which cache?
 
-Patchset is a rebase of the work posted previously with minor
-updates to it.
+I'm not sure it matters. All the scheduler really wants to know is
+that that migrating between cpus with a shared cache is cheaper than
+migrating elsewhere.
 
-https://lkml.org/lkml/2015/6/11/92
+> Some CPUs on Power8 share L3, or L4.
 
-Changelog v2:
--Updated the commit messages
--Fixed isa207_find_source() to consider all the possible sier[ldst] values.
+Eh... it's not really the same. The "L4" is part of the memory buffers
+and it's function is conceptually different to the processor caches.
+The L3 on P8 is only shared when the core that owns is offline (or
+sleeping) so the scheduler doesn't really need to be aware of it. Even
+if the scheduler was aware I don't think it can take advantage of it
+without some terrible hacks.
 
-Changelog v1:
-- Fixed author-ship for the first patch and added suka's "Signed-off-by:".
+>
+> I think just call it cpu_l2cache_map to make it explicit.
 
-Madhavan Srinivasan (5):
-  powerpc/perf: Export memory hierarchy info to user space
-  powerpc/perf: Support to export MMCRA[TEC*] field to userspace
-  powerpc/perf: Support to export SIERs bit in Power8
-  powerpc/perf: Support to export SIERs bit in Power9
-  powerpc/perf: Add Power8 mem_access event to sysfs
+I was being deliberately vague. I know it's only a shared currently,
+but it's possible we might have a (real) shared L3 in the future. The
+latest high-end x86 chips have some of l3 sharing across the entire
+chip so you never know. I'm not particularly attached to the name
+though, so i'll rename it if you really want.
 
-Sukadev Bhattiprolu (1):
-  powerpc/perf: Define big-endian version of perf_mem_data_src
-
- arch/powerpc/include/asm/perf_event_server.h |  3 +
- arch/powerpc/perf/core-book3s.c              |  8 +++
- arch/powerpc/perf/isa207-common.c            | 88 ++++++++++++++++++++++++++++
- arch/powerpc/perf/isa207-common.h            | 26 +++++++-
- arch/powerpc/perf/power8-events-list.h       |  6 ++
- arch/powerpc/perf/power8-pmu.c               |  4 ++
- arch/powerpc/perf/power9-pmu.c               |  2 +
- include/uapi/linux/perf_event.h              | 16 +++++
- tools/include/uapi/linux/perf_event.h        | 16 +++++
- 9 files changed, 168 insertions(+), 1 deletion(-)
-
--- 
-2.7.4
+Oliver
