@@ -1,44 +1,24 @@
-Return-Path: <ego@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <helgaas@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vptV41xcTzDq93
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Mar 2017 04:15:23 +1100 (AEDT)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v2NH49Wu096978
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Mar 2017 13:15:19 -0400
-Received: from e16.ny.us.ibm.com (e16.ny.us.ibm.com [129.33.205.206])
- by mx0a-001b2d01.pphosted.com with ESMTP id 29bt5dj7p6-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Mar 2017 13:15:19 -0400
-Received: from localhost
- by e16.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ego@linux.vnet.ibm.com>;
- Thu, 23 Mar 2017 13:15:18 -0400
-Date: Thu, 23 Mar 2017 22:45:11 +0530
-From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
-To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Cc: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Anju T Sudhakar <anju@linux.vnet.ibm.com>,
- "Gautham R . Shenoy" <ego@linux.vnet.ibm.com>,
- Balbir Singh <bsingharora@gmail.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
- Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
- Michael Neuling <mikey@neuling.org>,
- Stewart Smith <stewart@linux.vnet.ibm.com>,
- Daniel Axtens <dja@axtens.net>, Stephane Eranian <eranian@google.com>
-Subject: Re: [PATCH 12/13] powerpc/perf: Thread imc cpuhotplug support
-Reply-To: ego@linux.vnet.ibm.com
-References: <1489649707-8021-1-git-send-email-maddy@linux.vnet.ibm.com>
- <1489649707-8021-13-git-send-email-maddy@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vpzL40FnXzDq93
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Mar 2017 07:53:48 +1100 (AEDT)
+Date: Thu, 23 Mar 2017 15:53:42 -0500
+From: Bjorn Helgaas <helgaas@kernel.org>
+To: Yongji Xie <xyjxie@linux.vnet.ibm.com>
+Cc: bhelgaas@google.com, linux-pci@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, alex.williamson@redhat.com,
+ gwshan@linux.vnet.ibm.com, aik@ozlabs.ru, benh@kernel.crashing.org,
+ mpe@ellerman.id.au, paulus@samba.org, zhong@linux.vnet.ibm.com
+Subject: Re: [PATCH v9 2/3] PCI: Add a macro to set default alignment for all
+ PCI devices
+Message-ID: <20170323205342.GB23612@bhelgaas-glaptop.roam.corp.google.com>
+References: <1487141106-2503-1-git-send-email-xyjxie@linux.vnet.ibm.com>
+ <1487141106-2503-3-git-send-email-xyjxie@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1489649707-8021-13-git-send-email-maddy@linux.vnet.ibm.com>
-Message-Id: <20170323171511.GA4148@in.ibm.com>
+In-Reply-To: <1487141106-2503-3-git-send-email-xyjxie@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,122 +28,141 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Maddy, Anju,
+Hi Yongji,
 
-On Thu, Mar 16, 2017 at 01:05:06PM +0530, Madhavan Srinivasan wrote:
-> From: Anju T Sudhakar <anju@linux.vnet.ibm.com>
+On Wed, Feb 15, 2017 at 02:45:05PM +0800, Yongji Xie wrote:
+> When vfio passthroughs a PCI device of which MMIO BARs are
+> smaller than PAGE_SIZE, guest will not handle the mmio
+> accesses to the BARs which leads to mmio emulations in host.
 > 
-> This patch adds support for thread IMC on cpuhotplug.
+> This is because vfio will not allow to passthrough one BAR's
+> mmio page which may be shared with other BARs. Otherwise,
+> there will be a backdoor that guest can use to access BARs
+> of other guest.
+
+Please include a pointer to the VFIO code that enforces this.  It's
+not obvious to me how it would do this.  This doesn't change the
+*size* of the resource, only the alignment.  So if VFIO sees a BAR
+like [mem 0x80000000-0x800000ff], it knows the BAR is aligned enough
+that it *could* be the only thing on a page, but I don't know how it
+could know that there will never be another BAR at 0x80000100.  Even
+if there's no other BAR on that page *now*, it would have to know that
+no hot-added device will ever be placed on that page.
+
+> This patch adds a macro to set default alignment for all
+> PCI devices. Then we could solve this issue on some platforms
+> which would easily hit this issue because of their 64K page
+> such as PowerNV platform by defining this macro as PAGE_SIZE.
 > 
-> When a cpu goes offline, the LDBAR for that cpu is disabled, and when it comes
-> back online the previous ldbar value is written back to the LDBAR for that cpu.
-> 
-> To register the hotplug functions for thread_imc, a new state
-> CPUHP_AP_PERF_POWERPC_THREADIMC_ONLINE is added to the list of existing
-> states.
-> 
-> Cc: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
-> Cc: Balbir Singh <bsingharora@gmail.com>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Paul Mackerras <paulus@samba.org>
-> Cc: Anton Blanchard <anton@samba.org>
-> Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-> Cc: Michael Neuling <mikey@neuling.org>
-> Cc: Stewart Smith <stewart@linux.vnet.ibm.com>
-> Cc: Daniel Axtens <dja@axtens.net>
-> Cc: Stephane Eranian <eranian@google.com>
-> Signed-off-by: Anju T Sudhakar <anju@linux.vnet.ibm.com>
-> Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+> Signed-off-by: Yongji Xie <xyjxie@linux.vnet.ibm.com>
 > ---
->  arch/powerpc/perf/imc-pmu.c | 33 ++++++++++++++++++++++++++++-----
->  include/linux/cpuhotplug.h  |  1 +
->  2 files changed, 29 insertions(+), 5 deletions(-)
+>  arch/powerpc/include/asm/pci.h |    4 ++++
+>  drivers/pci/pci.c              |    3 +++
+>  2 files changed, 7 insertions(+), 0 deletions(-)
 > 
-> diff --git a/arch/powerpc/perf/imc-pmu.c b/arch/powerpc/perf/imc-pmu.c
-> index 6802960db51c..2ff39fe2a5ce 100644
-> --- a/arch/powerpc/perf/imc-pmu.c
-> +++ b/arch/powerpc/perf/imc-pmu.c
-> @@ -687,6 +687,16 @@ static void cleanup_all_thread_imc_memory(void)
->  	on_each_cpu(cleanup_thread_imc_memory, NULL, 1);
->  }
-> 
-> +static void thread_imc_update_ldbar(unsigned int cpu_id)
-> +{
-> +	u64 ldbar_addr, ldbar_value;
+> diff --git a/arch/powerpc/include/asm/pci.h b/arch/powerpc/include/asm/pci.h
+> index e9bd6cf..5e31bc2 100644
+> --- a/arch/powerpc/include/asm/pci.h
+> +++ b/arch/powerpc/include/asm/pci.h
+> @@ -28,6 +28,10 @@
+>  #define PCIBIOS_MIN_IO		0x1000
+>  #define PCIBIOS_MIN_MEM		0x10000000
+>  
+> +#ifdef CONFIG_PPC_POWERNV
+> +#define PCIBIOS_DEFAULT_ALIGNMENT	PAGE_SIZE
+> +#endif
 > +
-> +	ldbar_addr = (u64)virt_to_phys((void *)per_cpu_add[cpu_id]);
-> +	ldbar_value = (ldbar_addr & (u64)THREAD_IMC_LDBAR_MASK) |
-> +			(u64)THREAD_IMC_ENABLE;
-> +	mtspr(SPRN_LDBAR, ldbar_value);
-> +}
-> +
->  /*
->   * Allocates a page of memory for each of the online cpus, and, writes the
->   * physical base address of that page to the LDBAR for that cpu. This starts
-> @@ -694,20 +704,33 @@ static void cleanup_all_thread_imc_memory(void)
->   */
->  static void thread_imc_mem_alloc(void *dummy)
->  {
-> -	u64 ldbar_addr, ldbar_value;
->  	int cpu_id = smp_processor_id();
-> 
->  	per_cpu_add[cpu_id] = (u64)__get_free_pages(GFP_KERNEL | __GFP_ZERO,
->  						    0);
-> -	ldbar_addr = (u64)virt_to_phys((void *)per_cpu_add[cpu_id]);
-> -	ldbar_value = (ldbar_addr & (u64)THREAD_IMC_LDBAR_MASK) |
-> -		(u64)THREAD_IMC_ENABLE;
-> -	mtspr(SPRN_LDBAR, ldbar_value);
-> +	thread_imc_update_ldbar(cpu_id);
-> +}
-> +
-> +static int ppc_thread_imc_cpu_online(unsigned int cpu)
-> +{
-> +	thread_imc_update_ldbar(cpu);
-> +	return 0;
-> +
-> +}
-> +
-> +static int ppc_thread_imc_cpu_offline(unsigned int cpu)
-> +{
-> +	mtspr(SPRN_LDBAR, 0);
-> +	return 0;
->  }
+>  struct pci_dev;
+>  
+>  /* Values for the `which' argument to sys_pciconfig_iobase syscall.  */
+> diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+> index a881c0d..2622e9b 100644
+> --- a/drivers/pci/pci.c
+> +++ b/drivers/pci/pci.c
+> @@ -4965,6 +4965,9 @@ static resource_size_t pci_specified_resource_alignment(struct pci_dev *dev)
+>  	resource_size_t align = 0;
+>  	char *p;
+>  
+> +#ifdef PCIBIOS_DEFAULT_ALIGNMENT
+> +	align = PCIBIOS_DEFAULT_ALIGNMENT;
+> +#endif
 
-This patch looks ok to me.
+I'd prefer to move this #ifdef out of the code path, as in the patch
+below.
 
-So it appears that in case of a full-core deep stop entry/exit you
-will need to save/restore LDBAR as well. But I will take it up for the
-next set of stop cleanups.
+I don't know how powerpc kernels are built: can you build a kernel
+that will run on PowerNV as well as on different powerpc systems?  If
+so, is it acceptable to force that kernel to user 64K alignment even
+when it's running on non-PowerNV systems?  Or do you need a function
+call here instead of a #define?
 
-For this patch,
-Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+>  	spin_lock(&resource_alignment_lock);
+>  	p = resource_alignment_param;
+>  	if (!*p)
 
-> 
->  void thread_imc_cpu_init(void)
->  {
->  	on_each_cpu(thread_imc_mem_alloc, NULL, 1);
-> +	cpuhp_setup_state(CPUHP_AP_PERF_POWERPC_THREADIMC_ONLINE,
-> +			  "POWER_THREAD_IMC_ONLINE",
-> +			   ppc_thread_imc_cpu_online,
-> +			   ppc_thread_imc_cpu_offline);
->  }
-> 
->  static void thread_imc_ldbar_disable(void *dummy)
-> diff --git a/include/linux/cpuhotplug.h b/include/linux/cpuhotplug.h
-> index abde85d9511a..724df46b2c3c 100644
-> --- a/include/linux/cpuhotplug.h
-> +++ b/include/linux/cpuhotplug.h
-> @@ -138,6 +138,7 @@ enum cpuhp_state {
->  	CPUHP_AP_PERF_ARM_L2X0_ONLINE,
->  	CPUHP_AP_PERF_POWERPC_NEST_ONLINE,
->  	CPUHP_AP_PERF_POWERPC_COREIMC_ONLINE,
-> +	CPUHP_AP_PERF_POWERPC_THREADIMC_ONLINE,
->  	CPUHP_AP_PERF_ARM_QCOM_L2_ONLINE,
->  	CPUHP_AP_WORKQUEUE_ONLINE,
->  	CPUHP_AP_RCUTREE_ONLINE,
-> -- 
-> 2.7.4
-> 
---
-Thanks and Regards
-gautham.
+
+commit 60106ae302a264f9be15fa736dae2ea51140b988
+Author: Yongji Xie <xyjxie@linux.vnet.ibm.com>
+Date:   Wed Feb 15 14:45:05 2017 +0800
+
+    PCI: Add PCIBIOS_DEFAULT_ALIGNMENT for arch-specific alignment control
+    
+    When VFIO passes through a PCI device to a guest, it does not allow the
+    guest direct access to BARs that are smaller than PAGE_SIZE.  This is
+    because a page might contain several small BARs for unrelated devices and
+    a guest should not be able to access all of them.
+    
+    VFIO emulates guest accesses to these small BARs, which is functional but
+    slow.  On systems with large page sizes, e.g., PowerNV with 64K pages, BARs
+    are more likely to share a page and performance is more of a problem.
+    
+    Add a macro to set default alignment for all PCI devices.  An arch can set
+    this to PAGE_SIZE to prevent memory BARs from sharing a page.
+    
+    [bhelgaas: add default PCIBIOS_DEFAULT_ALIGNMENT definition, changelog]
+    Signed-off-by: Yongji Xie <xyjxie@linux.vnet.ibm.com>
+    Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
+
+diff --git a/arch/powerpc/include/asm/pci.h b/arch/powerpc/include/asm/pci.h
+index 93eded8d3843..dc3c81ab4cc4 100644
+--- a/arch/powerpc/include/asm/pci.h
++++ b/arch/powerpc/include/asm/pci.h
+@@ -28,6 +28,10 @@
+ #define PCIBIOS_MIN_IO		0x1000
+ #define PCIBIOS_MIN_MEM		0x10000000
+ 
++#ifdef CONFIG_PPC_POWERNV
++#define PCIBIOS_DEFAULT_ALIGNMENT	PAGE_SIZE
++#endif
++
+ struct pci_dev;
+ 
+ /* Values for the `which' argument to sys_pciconfig_iobase syscall.  */
+diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+index 7904d02ffdb9..e9a079063fd0 100644
+--- a/drivers/pci/pci.c
++++ b/drivers/pci/pci.c
+@@ -4962,7 +4962,7 @@ static resource_size_t pci_specified_resource_alignment(struct pci_dev *dev)
+ {
+ 	int seg, bus, slot, func, align_order, count;
+ 	unsigned short vendor, device, subsystem_vendor, subsystem_device;
+-	resource_size_t align = 0;
++	resource_size_t align = PCIBIOS_DEFAULT_ALIGNMENT;
+ 	char *p;
+ 
+ 	spin_lock(&resource_alignment_lock);
+diff --git a/include/linux/pci.h b/include/linux/pci.h
+index eb3da1a04e6c..618beb5809d1 100644
+--- a/include/linux/pci.h
++++ b/include/linux/pci.h
+@@ -1630,6 +1630,10 @@ static inline int pci_get_new_domain_nr(void) { return -ENOSYS; }
+ #define pci_root_bus_fwnode(bus)	NULL
+ #endif
+ 
++#ifndef PCIBIOS_DEFAULT_ALIGNMENT
++#define PCIBIOS_DEFAULT_ALIGNMENT	0
++#endif
++
+ /* these helpers provide future and backwards compatibility
+  * for accessing popular PCI BAR info */
+ #define pci_resource_start(dev, bar)	((dev)->resource[(bar)].start)
