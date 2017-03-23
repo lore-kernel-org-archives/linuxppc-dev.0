@@ -1,46 +1,23 @@
-Return-Path: <ego@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <daniel.baluta@gmail.com>
+Received: from mail-wm0-x243.google.com (mail-wm0-x243.google.com
+ [IPv6:2a00:1450:400c:c09::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vplKy1hkJzDq5g
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Mar 2017 22:52:53 +1100 (AEDT)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v2NBnX5N020420
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Mar 2017 07:52:51 -0400
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
- by mx0b-001b2d01.pphosted.com with ESMTP id 29c4nj1swj-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Mar 2017 07:52:51 -0400
-Received: from localhost
- by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ego@linux.vnet.ibm.com>;
- Thu, 23 Mar 2017 05:52:50 -0600
-Date: Thu, 23 Mar 2017 17:22:37 +0530
-From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
-To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Cc: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Hemant Kumar <hemant@linux.vnet.ibm.com>,
- "Gautham R . Shenoy" <ego@linux.vnet.ibm.com>,
- Balbir Singh <bsingharora@gmail.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
- Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
- Michael Neuling <mikey@neuling.org>,
- Stewart Smith <stewart@linux.vnet.ibm.com>,
- Daniel Axtens <dja@axtens.net>, Stephane Eranian <eranian@google.com>,
- Anju T Sudhakar <anju@linux.vnet.ibm.com>
-Subject: Re: [PATCH v5 06/13] powerpc/perf: IMC pmu cpumask and cpu hotplug
- support
-Reply-To: ego@linux.vnet.ibm.com
-References: <1489649707-8021-1-git-send-email-maddy@linux.vnet.ibm.com>
- <1489649707-8021-7-git-send-email-maddy@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1489649707-8021-7-git-send-email-maddy@linux.vnet.ibm.com>
-Message-Id: <20170323115237.GA4897@in.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vplXp3sKWzDq5g
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Mar 2017 23:02:18 +1100 (AEDT)
+Received: by mail-wm0-x243.google.com with SMTP id n11so16118873wma.0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Mar 2017 05:02:17 -0700 (PDT)
+From: Daniel Baluta <daniel.baluta@gmail.com>
+To: timur@tabi.org, nicoleotsuka@gmail.com, Xiubo.Lee@gmail.com,
+ fabio.estevam@nxp.com, lgirdwood@gmail.com, broonie@kernel.org,
+ perex@perex.cz, tiwai@suse.com
+Cc: alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, daniel.baluta@nxp.com, mihai.serban@nxp.com,
+ viorel.suman@nxp.com, shengjiu.wang@nxp.com,
+ Nicolin Chen <b42378@freescale.com>
+Subject: [PATCH] ASoC: WM8962: Let codec driver enable/disable its MCLK
+Date: Thu, 23 Mar 2017 14:01:50 +0200
+Message-Id: <1490270510-17061-1-git-send-email-daniel.baluta@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,265 +27,121 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Hemant, Maddy, 
+From: Nicolin Chen <b42378@freescale.com>
 
-On Thu, Mar 16, 2017 at 01:05:00PM +0530, Madhavan Srinivasan wrote:
-> From: Hemant Kumar <hemant@linux.vnet.ibm.com>
-> 
-> Adds cpumask attribute to be used by each IMC pmu. Only one cpu (any
-> online CPU) from each chip for nest PMUs is designated to read counters.
-> 
-> On CPU hotplug, dying CPU is checked to see whether it is one of the
-> designated cpus, if yes, next online cpu from the same chip (for nest
-> units) is designated as new cpu to read counters. For this purpose, we
-> introduce a new state : CPUHP_AP_PERF_POWERPC_NEST_ONLINE.
-> 
-> Cc: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
-> Cc: Balbir Singh <bsingharora@gmail.com>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Paul Mackerras <paulus@samba.org>
-> Cc: Anton Blanchard <anton@samba.org>
-> Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-> Cc: Michael Neuling <mikey@neuling.org>
-> Cc: Stewart Smith <stewart@linux.vnet.ibm.com>
-> Cc: Daniel Axtens <dja@axtens.net>
-> Cc: Stephane Eranian <eranian@google.com>
-> Cc: Anju T Sudhakar <anju@linux.vnet.ibm.com>
-> Signed-off-by: Hemant Kumar <hemant@linux.vnet.ibm.com>
-> Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/include/asm/opal-api.h            |   3 +-
->  arch/powerpc/include/asm/opal.h                |   3 +
->  arch/powerpc/perf/imc-pmu.c                    | 163 ++++++++++++++++++++++++-
->  arch/powerpc/platforms/powernv/opal-wrappers.S |   1 +
->  include/linux/cpuhotplug.h                     |   1 +
->  5 files changed, 169 insertions(+), 2 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
-> index a0aa285869b5..e1c3d4837857 100644
-> --- a/arch/powerpc/include/asm/opal-api.h
-> +++ b/arch/powerpc/include/asm/opal-api.h
-> @@ -168,7 +168,8 @@
->  #define OPAL_INT_SET_MFRR			125
->  #define OPAL_PCI_TCE_KILL			126
->  #define OPAL_NMMU_SET_PTCR			127
-> -#define OPAL_LAST				127
-> +#define OPAL_NEST_IMC_COUNTERS_CONTROL		145
-> +#define OPAL_LAST				145
-> 
->  /* Device tree flags */
-> 
-> diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
-> index 1ff03a6da76e..d93d08204243 100644
-> --- a/arch/powerpc/include/asm/opal.h
-> +++ b/arch/powerpc/include/asm/opal.h
-> @@ -227,6 +227,9 @@ int64_t opal_pci_tce_kill(uint64_t phb_id, uint32_t kill_type,
->  			  uint64_t dma_addr, uint32_t npages);
->  int64_t opal_nmmu_set_ptcr(uint64_t chip_id, uint64_t ptcr);
-> 
-> +int64_t opal_nest_imc_counters_control(uint64_t mode, uint64_t value1,
-> +				uint64_t value2, uint64_t value3);
-> +
->  /* Internal functions */
->  extern int early_init_dt_scan_opal(unsigned long node, const char *uname,
->  				   int depth, void *data);
-> diff --git a/arch/powerpc/perf/imc-pmu.c b/arch/powerpc/perf/imc-pmu.c
-> index f6f1ef9f56af..e46ff6d2a584 100644
-> --- a/arch/powerpc/perf/imc-pmu.c
-> +++ b/arch/powerpc/perf/imc-pmu.c
-> @@ -16,6 +16,7 @@
-> +static int ppc_nest_imc_cpu_online(unsigned int cpu)
-> +{
+WM8962 needs its MCLK when powerup in wm8962_resume(). Thus it's better
+to control the MCLK in codec driver. Thus remove the clock enable in
+machine dirver accordingly.
 
-I take it that 'cpu' is coming online.
+While at it, get rid of imx_wm8962_remove function since it is now
+empty.
 
-> +	int nid, fcpu, ncpu;
-> +	struct cpumask *l_cpumask, tmp_mask;
-> +
-> +	/* Fint the cpumask of this node */
-> +	nid = cpu_to_node(cpu);
-> +	l_cpumask = cpumask_of_node(nid);
-> +
-> +	/*
-> +	 * If any of the cpu from this node is already present in the mask,
-> +	 * just return, if not, then set this cpu in the mask.
-> +	 */
-> +	if (!cpumask_and(&tmp_mask, l_cpumask, &nest_imc_cpumask)) {
+Signed-off-by: Nicolin Chen <b42378@freescale.com>
+Signed-off-by: Daniel Baluta <daniel.baluta@nxp.com>
+---
+ sound/soc/fsl/imx-wm8962.c | 40 ++++++++--------------------------------
+ 1 file changed, 8 insertions(+), 32 deletions(-)
 
-In this case, none of the cpus in the node are in the mask. So we set
-and this cpu in the imc cpumask and return.
-
-> +		cpumask_set_cpu(cpu, &nest_imc_cpumask);
-> +		return 0;
-> +	}
-
-But this case implies that there is already a CPU from the node which
-is in the imc_cpumask. As per the comment above, we are supposed to
-just return. So why are we doing the following ?
-
-Either the comment above is incorrect or I am missing something here.
-
-> +
-> +	fcpu = cpumask_first(l_cpumask);
-> +	ncpu = cpumask_next(cpu, l_cpumask);
-> +	if (cpu == fcpu) {
-> +		if (cpumask_test_and_clear_cpu(ncpu, &nest_imc_cpumask)) {
-> +			cpumask_set_cpu(cpu, &nest_imc_cpumask);
-> +			nest_change_cpu_context(ncpu, cpu);
-> +		}
-> +	}
-
-It seems that we want to set only the smallest online cpu in the node
-in the nest_imc_cpumask. So, if the newly onlined cpu is the smallest,
-we replace the previous representative with cpu.
-
-So, the comment above needs to be fixed.
-
-> +
-> +	return 0;
-> +}
-> +
-> +static int ppc_nest_imc_cpu_offline(unsigned int cpu)
-> +{
-> +	int nid, target = -1;
-> +	struct cpumask *l_cpumask;
-> +
-> +	/*
-> +	 * Check in the designated list for this cpu. Dont bother
-> +	 * if not one of them.
-> +	 */
-> +	if (!cpumask_test_and_clear_cpu(cpu, &nest_imc_cpumask))
-> +		return 0;
-> +
-> +	/*
-> +	 * Now that this cpu is one of the designated,
-> +	 * find a next cpu a) which is online and b) in same chip.
-> +	 */
-> +	nid = cpu_to_node(cpu);
-> +	l_cpumask = cpumask_of_node(nid);
-> +	target = cpumask_next(cpu, l_cpumask);
-> +
-> +	/*
-> +	 * Update the cpumask with the target cpu and
-> +	 * migrate the context if needed
-> +	 */
-> +	if (target >= 0 && target <= nr_cpu_ids) {
-> +		cpumask_set_cpu(target, &nest_imc_cpumask);
-> +		nest_change_cpu_context(cpu, target);
-> +	}
-> +	return 0;
-> +}
-> +
-> +static int nest_pmu_cpumask_init(void)
-> +{
-> +	const struct cpumask *l_cpumask;
-> +	int cpu, nid;
-> +	int *cpus_opal_rc;
-> +
-> +	if (!cpumask_empty(&nest_imc_cpumask))
-> +		return 0;
-> +
-
-	
-> +	/*
-> +	 * Nest PMUs are per-chip counters. So designate a cpu
-> +	 * from each chip for counter collection.
-> +	 */
-> +	for_each_online_node(nid) {
-> +		l_cpumask = cpumask_of_node(nid);
-> +
-> +		/* designate first online cpu in this node */
-> +		cpu = cpumask_first(l_cpumask);
-> +		cpumask_set_cpu(cpu, &nest_imc_cpumask);
-> +	}
-> +
-
-
-What happens if a cpu in nest_imc_cpumask goes offline at this point ?
-
-Is that possible ?
-
-> +	/*
-> +	 * Memory for OPAL call return value.
-> +	 */
-> +	cpus_opal_rc = kzalloc((sizeof(int) * nr_cpu_ids), GFP_KERNEL);
-> +	if (!cpus_opal_rc)
-> +		goto fail;
-> +
-> +	/* Initialize Nest PMUs in each node using designated cpus */
-> +	on_each_cpu_mask(&nest_imc_cpumask, (smp_call_func_t)nest_init,
-> +						(void *)cpus_opal_rc, 1);
-> +
-> +	/* Check return value array for any OPAL call failure */
-> +	for_each_cpu(cpu, &nest_imc_cpumask) {
-> +		if (cpus_opal_rc[cpu])
-> +			goto fail;
-> +	}
-> +
-> +	cpuhp_setup_state(CPUHP_AP_PERF_POWERPC_NEST_ONLINE,
-> +			  "POWER_NEST_IMC_ONLINE",
-> +			  ppc_nest_imc_cpu_online,
-> +			  ppc_nest_imc_cpu_offline);
-> +
-> +	return 0;
-> +
-> +fail:
-> +	return -ENODEV;
-> +}
-> +
->  static int nest_imc_event_init(struct perf_event *event)
->  {
->  	int chip_id;
-> @@ -63,7 +218,7 @@ static int nest_imc_event_init(struct perf_event *event)
->  	chip_id = topology_physical_package_id(event->cpu);
->  	pcni = &nest_perchip_info[chip_id];
->  	event->hw.event_base = pcni->vbase[config/PAGE_SIZE] +
-> -							(config & ~PAGE_MASK);
-> +		(config & ~PAGE_MASK);
-> 
->  	return 0;
->  }
-> @@ -122,6 +277,7 @@ static int update_pmu_ops(struct imc_pmu *pmu)
->  	pmu->pmu.stop = imc_event_stop;
->  	pmu->pmu.read = imc_perf_event_update;
->  	pmu->attr_groups[1] = &imc_format_group;
-> +	pmu->attr_groups[2] = &imc_pmu_cpumask_attr_group;
->  	pmu->pmu.attr_groups = pmu->attr_groups;
-> 
->  	return 0;
-> @@ -189,6 +345,11 @@ int init_imc_pmu(struct imc_events *events, int idx,
->  {
->  	int ret = -ENODEV;
-> 
-> +	/* Add cpumask and register for hotplug notification */
-> +	ret = nest_pmu_cpumask_init();
-> +	if (ret)
-> +		return ret;
-> +
->  	ret = update_events_in_group(events, idx, pmu_ptr);
->  	if (ret)
->  		goto err_free;
-> diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
-> index da8a0f7a035c..b7208d8e6cc0 100644
-> --- a/arch/powerpc/platforms/powernv/opal-wrappers.S
-> +++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
-> @@ -301,3 +301,4 @@ OPAL_CALL(opal_int_eoi,				OPAL_INT_EOI);
->  OPAL_CALL(opal_int_set_mfrr,			OPAL_INT_SET_MFRR);
->  OPAL_CALL(opal_pci_tce_kill,			OPAL_PCI_TCE_KILL);
->  OPAL_CALL(opal_nmmu_set_ptcr,			OPAL_NMMU_SET_PTCR);
-> +OPAL_CALL(opal_nest_imc_counters_control,	OPAL_NEST_IMC_COUNTERS_CONTROL);
-> diff --git a/include/linux/cpuhotplug.h b/include/linux/cpuhotplug.h
-> index 62d240e962f0..cfb0cedc72af 100644
-> --- a/include/linux/cpuhotplug.h
-> +++ b/include/linux/cpuhotplug.h
-> @@ -136,6 +136,7 @@ enum cpuhp_state {
->  	CPUHP_AP_PERF_ARM_CCI_ONLINE,
->  	CPUHP_AP_PERF_ARM_CCN_ONLINE,
->  	CPUHP_AP_PERF_ARM_L2X0_ONLINE,
-> +	CPUHP_AP_PERF_POWERPC_NEST_ONLINE,
->  	CPUHP_AP_PERF_ARM_QCOM_L2_ONLINE,
->  	CPUHP_AP_WORKQUEUE_ONLINE,
->  	CPUHP_AP_RCUTREE_ONLINE,
-> -- 
-> 2.7.4
-> 
+diff --git a/sound/soc/fsl/imx-wm8962.c b/sound/soc/fsl/imx-wm8962.c
+index 1b60958..3d894d9 100644
+--- a/sound/soc/fsl/imx-wm8962.c
++++ b/sound/soc/fsl/imx-wm8962.c
+@@ -33,7 +33,6 @@ struct imx_wm8962_data {
+ 	struct snd_soc_card card;
+ 	char codec_dai_name[DAI_NAME_SIZE];
+ 	char platform_name[DAI_NAME_SIZE];
+-	struct clk *codec_clk;
+ 	unsigned int clk_frequency;
+ };
+ 
+@@ -163,6 +162,7 @@ static int imx_wm8962_probe(struct platform_device *pdev)
+ 	struct imx_priv *priv = &card_priv;
+ 	struct i2c_client *codec_dev;
+ 	struct imx_wm8962_data *data;
++	struct clk *codec_clk;
+ 	int int_port, ext_port;
+ 	int ret;
+ 
+@@ -231,19 +231,14 @@ static int imx_wm8962_probe(struct platform_device *pdev)
+ 		goto fail;
+ 	}
+ 
+-	data->codec_clk = devm_clk_get(&codec_dev->dev, NULL);
+-	if (IS_ERR(data->codec_clk)) {
+-		ret = PTR_ERR(data->codec_clk);
++	codec_clk = devm_clk_get(&codec_dev->dev, NULL);
++	if (IS_ERR(codec_clk)) {
++		ret = PTR_ERR(codec_clk);
+ 		dev_err(&codec_dev->dev, "failed to get codec clk: %d\n", ret);
+ 		goto fail;
+ 	}
+ 
+-	data->clk_frequency = clk_get_rate(data->codec_clk);
+-	ret = clk_prepare_enable(data->codec_clk);
+-	if (ret) {
+-		dev_err(&codec_dev->dev, "failed to enable codec clk: %d\n", ret);
+-		goto fail;
+-	}
++	data->clk_frequency = clk_get_rate(codec_clk);
+ 
+ 	data->dai.name = "HiFi";
+ 	data->dai.stream_name = "HiFi";
+@@ -258,10 +253,10 @@ static int imx_wm8962_probe(struct platform_device *pdev)
+ 	data->card.dev = &pdev->dev;
+ 	ret = snd_soc_of_parse_card_name(&data->card, "model");
+ 	if (ret)
+-		goto clk_fail;
++		goto fail;
+ 	ret = snd_soc_of_parse_audio_routing(&data->card, "audio-routing");
+ 	if (ret)
+-		goto clk_fail;
++		goto fail;
+ 	data->card.num_links = 1;
+ 	data->card.owner = THIS_MODULE;
+ 	data->card.dai_link = &data->dai;
+@@ -277,16 +272,9 @@ static int imx_wm8962_probe(struct platform_device *pdev)
+ 	ret = devm_snd_soc_register_card(&pdev->dev, &data->card);
+ 	if (ret) {
+ 		dev_err(&pdev->dev, "snd_soc_register_card failed (%d)\n", ret);
+-		goto clk_fail;
++		goto fail;
+ 	}
+ 
+-	of_node_put(ssi_np);
+-	of_node_put(codec_np);
+-
+-	return 0;
+-
+-clk_fail:
+-	clk_disable_unprepare(data->codec_clk);
+ fail:
+ 	of_node_put(ssi_np);
+ 	of_node_put(codec_np);
+@@ -294,17 +282,6 @@ static int imx_wm8962_probe(struct platform_device *pdev)
+ 	return ret;
+ }
+ 
+-static int imx_wm8962_remove(struct platform_device *pdev)
+-{
+-	struct snd_soc_card *card = platform_get_drvdata(pdev);
+-	struct imx_wm8962_data *data = snd_soc_card_get_drvdata(card);
+-
+-	if (!IS_ERR(data->codec_clk))
+-		clk_disable_unprepare(data->codec_clk);
+-
+-	return 0;
+-}
+-
+ static const struct of_device_id imx_wm8962_dt_ids[] = {
+ 	{ .compatible = "fsl,imx-audio-wm8962", },
+ 	{ /* sentinel */ }
+@@ -318,7 +295,6 @@ static struct platform_driver imx_wm8962_driver = {
+ 		.of_match_table = imx_wm8962_dt_ids,
+ 	},
+ 	.probe = imx_wm8962_probe,
+-	.remove = imx_wm8962_remove,
+ };
+ module_platform_driver(imx_wm8962_driver);
+ 
+-- 
+2.7.4
