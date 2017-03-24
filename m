@@ -1,15 +1,15 @@
 Return-Path: <aik@ozlabs.ru>
 Received: from ozlabs.ru (ozlabs.ru [107.173.13.209])
- by lists.ozlabs.org (Postfix) with ESMTP id 3vqDXZ0qY1zDqb3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Mar 2017 17:48:44 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id 3vqDYL2fQRzDqck
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Mar 2017 17:49:26 +1100 (AEDT)
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
  David Gibson <david@gibson.dropbear.id.au>, kvm-ppc@vger.kernel.org,
  kvm@vger.kernel.org, Paul Mackerras <paulus@samba.org>
-Subject: [PATCH kernel] KVM: PPC: Exit KVM on failed mapping
-Date: Fri, 24 Mar 2017 17:48:10 +1100
-Message-Id: <20170324064810.18325-1-aik@ozlabs.ru>
+Subject: [PATCH kernel] KVM: PPC: Preserve storage control bits
+Date: Fri, 24 Mar 2017 17:49:22 +1100
+Message-Id: <20170324064922.18429-1-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,74 +19,93 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-At the moment kvmppc_mmu_map_page() returns -1 if
-mmu_hash_ops.hpte_insert() fails for any reason so the page fault handler
-resumes the guest and it faults on the same address again.
+PR KVM page fault handler performs eaddr to pte translation for a guest,
+however kvmppc_mmu_book3s_64_xlate() does not preserve WIMG bits
+(storage control) in the kvmppc_pte struct. If PR KVM is running as
+a second level guest under HV KVM, and PR KVM tries inserting HPT entry,
+this fails in HV KVM if it already has this mapping.
 
-This adds distinction to kvmppc_mmu_map_page() to return -EIO if
-mmu_hash_ops.hpte_insert() failed for a reason other than full pteg.
-At the moment only pSeries_lpar_hpte_insert() returns -2 if
-plpar_pte_enter() failed with a code other than H_PTEG_FULL.
-Other mmu_hash_ops.hpte_insert() instances can only fail with
--1 "full pteg".
-
-With this change, if PR KVM fails to update HPT, it can signal
-the userspace about this instead of returning to guest and having
-the very same page fault over and over again.
+This preserves WIMG bits between kvmppc_mmu_book3s_64_xlate() and
+kvmppc_mmu_map_page().
 
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 ---
 
-This was found with nested KVM+VFIO when PR KVM was trying to map MMIO BAR
-of a VFIO PCI device but since it would not preserve WIMG bits, HV KVM
-would fail, mmu_hash_ops.hpte_insert() would return error and PR KVM
-would just continue and trap again on the same memory access.
+This allows MMIO BAR mapping for nested guest with VFIO.
 
-With this patch but without "KVM: PPC: Preserve storage control bits"
-nested QEMU will abort with informative screen instead of endlessly
-trying to proceed further in booting.
+This is the check in HV KVM which failed:
+
+arch/powerpc/kvm/book3s_hv_rm_mmu.c
+long kvmppc_do_h_enter(struct kvm *kvm, unsigned long flags,
+[...]
+
+        /*If we had host pte mapping then  Check WIMG */
+        if (ptep && !hpte_cache_flags_ok(ptel, is_ci)) {
+                if (is_ci)
+                        return H_PARAMETER;
+                /*
+                 * Allow guest to map emulated device memory as
+                 * uncacheable, but actually make it cacheable.
+                 */
+                ptel &= ~(HPTE_R_W|HPTE_R_I|HPTE_R_G);
+                ptel |= HPTE_R_M;
+        }
 ---
- arch/powerpc/kvm/book3s_64_mmu_host.c | 5 ++++-
- arch/powerpc/kvm/book3s_pr.c          | 6 +++++-
- 2 files changed, 9 insertions(+), 2 deletions(-)
+ arch/powerpc/include/asm/kvm_host.h   | 1 +
+ arch/powerpc/kvm/book3s_64_mmu.c      | 1 +
+ arch/powerpc/kvm/book3s_64_mmu_host.c | 2 ++
+ arch/powerpc/kvm/book3s_pr.c          | 2 +-
+ 4 files changed, 5 insertions(+), 1 deletion(-)
 
+diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
+index 7bba8f415627..bf6822cd4f86 100644
+--- a/arch/powerpc/include/asm/kvm_host.h
++++ b/arch/powerpc/include/asm/kvm_host.h
+@@ -345,6 +345,7 @@ struct kvmppc_pte {
+ 	bool may_read		: 1;
+ 	bool may_write		: 1;
+ 	bool may_execute	: 1;
++	unsigned long wimg;
+ 	u8 page_size;		/* MMU_PAGE_xxx */
+ };
+ 
+diff --git a/arch/powerpc/kvm/book3s_64_mmu.c b/arch/powerpc/kvm/book3s_64_mmu.c
+index 70153578131a..29ebe2fd5867 100644
+--- a/arch/powerpc/kvm/book3s_64_mmu.c
++++ b/arch/powerpc/kvm/book3s_64_mmu.c
+@@ -319,6 +319,7 @@ static int kvmppc_mmu_book3s_64_xlate(struct kvm_vcpu *vcpu, gva_t eaddr,
+ 		gpte->may_execute = true;
+ 	gpte->may_read = false;
+ 	gpte->may_write = false;
++	gpte->wimg = r & HPTE_R_WIMG;
+ 
+ 	switch (pp) {
+ 	case 0:
 diff --git a/arch/powerpc/kvm/book3s_64_mmu_host.c b/arch/powerpc/kvm/book3s_64_mmu_host.c
-index a587e8f4fd26..4b4e927c4822 100644
+index 4b4e927c4822..145a61892c48 100644
 --- a/arch/powerpc/kvm/book3s_64_mmu_host.c
 +++ b/arch/powerpc/kvm/book3s_64_mmu_host.c
-@@ -177,12 +177,15 @@ int kvmppc_mmu_map_page(struct kvm_vcpu *vcpu, struct kvmppc_pte *orig_pte,
- 	ret = mmu_hash_ops.hpte_insert(hpteg, vpn, hpaddr, rflags, vflags,
- 				       hpsize, hpsize, MMU_SEGSIZE_256M);
+@@ -145,6 +145,8 @@ int kvmppc_mmu_map_page(struct kvm_vcpu *vcpu, struct kvmppc_pte *orig_pte,
+ 	else
+ 		kvmppc_mmu_flush_icache(pfn);
  
--	if (ret < 0) {
-+	if (ret == -1) {
- 		/* If we couldn't map a primary PTE, try a secondary */
- 		hash = ~hash;
- 		vflags ^= HPTE_V_SECONDARY;
- 		attempt++;
- 		goto map_again;
-+	} else if (ret < 0) {
-+		r = -EIO;
-+		goto out_unlock;
- 	} else {
- 		trace_kvm_book3s_64_mmu_map(rflags, hpteg,
- 					    vpn, hpaddr, orig_pte);
++	rflags = (rflags & ~HPTE_R_WIMG) | orig_pte->wimg;
++
+ 	/*
+ 	 * Use 64K pages if possible; otherwise, on 64K page kernels,
+ 	 * we need to transfer 4 more bits from guest real to host real addr.
 diff --git a/arch/powerpc/kvm/book3s_pr.c b/arch/powerpc/kvm/book3s_pr.c
-index 633502f52bbb..ce437b98477e 100644
+index ce437b98477e..f026b062c0ed 100644
 --- a/arch/powerpc/kvm/book3s_pr.c
 +++ b/arch/powerpc/kvm/book3s_pr.c
-@@ -625,7 +625,11 @@ int kvmppc_handle_pagefault(struct kvm_run *run, struct kvm_vcpu *vcpu,
- 			kvmppc_mmu_unmap_page(vcpu, &pte);
- 		}
- 		/* The guest's PTE is not mapped yet. Map on the host */
--		kvmppc_mmu_map_page(vcpu, &pte, iswrite);
-+		if (kvmppc_mmu_map_page(vcpu, &pte, iswrite) == -EIO) {
-+			/* Exit KVM if mapping failed */
-+			run->exit_reason = KVM_EXIT_INTERNAL_ERROR;
-+			return RESUME_HOST;
-+		}
- 		if (data)
- 			vcpu->stat.sp_storage++;
- 		else if (vcpu->arch.mmu.is_dcbz32(vcpu) &&
+@@ -537,7 +537,7 @@ int kvmppc_handle_pagefault(struct kvm_run *run, struct kvm_vcpu *vcpu,
+ 	int r = RESUME_GUEST;
+ 	int relocated;
+ 	int page_found = 0;
+-	struct kvmppc_pte pte;
++	struct kvmppc_pte pte = { 0 };
+ 	bool dr = (kvmppc_get_msr(vcpu) & MSR_DR) ? true : false;
+ 	bool ir = (kvmppc_get_msr(vcpu) & MSR_IR) ? true : false;
+ 	u64 vsid;
 -- 
 2.11.0
