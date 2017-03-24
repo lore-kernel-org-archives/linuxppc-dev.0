@@ -1,31 +1,29 @@
-Return-Path: <nicoleotsuka@gmail.com>
-Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
- [IPv6:2607:f8b0:400e:c05::244])
+Return-Path: <ego.lkml@gmail.com>
+Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
+ [IPv6:2607:f8b0:400e:c00::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vqG083jVyzDq95
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Mar 2017 18:54:16 +1100 (AEDT)
-Received: by mail-pg0-x244.google.com with SMTP id 81so1606988pgh.3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Mar 2017 00:54:16 -0700 (PDT)
-Date: Fri, 24 Mar 2017 00:54:06 -0700
-From: Nicolin Chen <nicoleotsuka@gmail.com>
-To: Daniel Baluta <daniel.baluta@gmail.com>
-Cc: Timur Tabi <timur@tabi.org>, Xiubo.Lee@gmail.com, fabio.estevam@nxp.com,
- Liam Girdwood <lgirdwood@gmail.com>,
- Mark Brown <broonie@kernel.org>, Jaroslav Kysela <perex@perex.cz>,
- Takashi Iwai <tiwai@suse.com>, alsa-devel@alsa-project.org,
- linuxppc-dev@lists.ozlabs.org,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Daniel Baluta <daniel.baluta@nxp.com>, mihai.serban@nxp.com,
- viorel.suman@nxp.com, shengjiu.wang@nxp.com
-Subject: Re: [PATCH] ASoC: WM8962: Let codec driver enable/disable its MCLK
-Message-ID: <20170324075405.GA2000@Asurada>
-References: <1490270510-17061-1-git-send-email-daniel.baluta@gmail.com>
- <20170324045814.GA15344@Asurada-CZ80>
- <CAEnQRZCPcvkGUTc5bFKuOi-W1v39LmO_gAs31J_cWe6gFVVFEw@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vqGnG02dPzDqcK
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Mar 2017 19:29:54 +1100 (AEDT)
+Received: by mail-pf0-x244.google.com with SMTP id o126so1495186pfb.1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Mar 2017 01:29:53 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CAEnQRZCPcvkGUTc5bFKuOi-W1v39LmO_gAs31J_cWe6gFVVFEw@mail.gmail.com>
+Reply-To: ego@linux.vnet.ibm.com
+In-Reply-To: <20170323152247.14733-2-svaidy@linux.vnet.ibm.com>
+References: <20170323152247.14733-1-svaidy@linux.vnet.ibm.com>
+ <20170323152247.14733-2-svaidy@linux.vnet.ibm.com>
+From: Gautham R Shenoy <ego.lkml@gmail.com>
+Date: Fri, 24 Mar 2017 13:59:51 +0530
+Message-ID: <CAHZ_5WzhbXio=VybzMSB5-prGXVs5TGz4Rk+-dsAepQb3eWa+A@mail.gmail.com>
+Subject: Re: [PATCH v2 1/2] powerpc/powernv/cpuidle: Pass correct drv->cpumask
+ for registration
+To: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Cc: Michael Neuling <mikey@neuling.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ "Rafael J . Wysocki" <rjw@rjwysocki.net>,
+ Daniel Lezcano <daniel.lezcano@linaro.org>,
+ linuxppc-dev@lists.ozlabs.org, LKML <linux-kernel@vger.kernel.org>,
+ Linux PM list <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,34 +33,97 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Mar 24, 2017 at 09:37:00AM +0200, Daniel Baluta wrote:
-> On Fri, Mar 24, 2017 at 6:58 AM, Nicolin Chen <nicoleotsuka@gmail.com> wrote:
-> > On Thu, Mar 23, 2017 at 02:01:50PM +0200, Daniel Baluta wrote:
-> >> From: Nicolin Chen <b42378@freescale.com>
-> >>
-> >> WM8962 needs its MCLK when powerup in wm8962_resume(). Thus it's better
-> >> to control the MCLK in codec driver. Thus remove the clock enable in
-> >> machine dirver accordingly.
-> >>
-> >> While at it, get rid of imx_wm8962_remove function since it is now
-> >> empty.
-> >>
-> >> Signed-off-by: Nicolin Chen <b42378@freescale.com>
-> >
-> > Hmm...it'd probably be better to let yourself be the author and remove
-> > my signed-off here. Just got an email deliver failure since that email
-> > address is apparently not available any more.
-> 
-> Hi Nic,
-> 
-> I will fix the prefix subject as suggested. Is it OK to use
-> your current email address for the signed-off-by tag?
+On Thu, Mar 23, 2017 at 8:52 PM, Vaidyanathan Srinivasan
+<svaidy@linux.vnet.ibm.com> wrote:
+> drv->cpumask defaults to cpu_possible_mask in __cpuidle_driver_init().
+> On PowerNV platform cpu_present could be less than cpu_possible in cases
+> where firmware detects the cpu, but it is not available to the OS.  When
+> CONFIG_HOTPLUG_CPU=n, such cpus are not hotplugable at runtime and hence
+> we skip creating cpu_device.
+>
+> This breaks cpuidle on powernv where register_cpu() is not called for
+> cpus in cpu_possible_mask that cannot be hot-added at runtime.
+>
+> Trying cpuidle_register_device() on cpu without cpu_device will cause
+> crash like this:
+>
+> cpu 0xf: Vector: 380 (Data SLB Access) at [c000000ff1503490]
+>     pc: c00000000022c8bc: string+0x34/0x60
+>     lr: c00000000022ed78: vsnprintf+0x284/0x42c
+>     sp: c000000ff1503710
+>    msr: 9000000000009033
+>    dar: 6000000060000000
+>   current = 0xc000000ff1480000
+>   paca    = 0xc00000000fe82d00   softe: 0        irq_happened: 0x01
+>     pid   = 1, comm = swapper/8
+> Linux version 4.11.0-rc2 (sv@sagarika) (gcc version 4.9.4
+> (Buildroot 2017.02-00004-gc28573e) ) #15 SMP Fri Mar 17 19:32:02 IST 2017
+> enter ? for help
+> [link register   ] c00000000022ed78 vsnprintf+0x284/0x42c
+> [c000000ff1503710] c00000000022ebb8 vsnprintf+0xc4/0x42c (unreliable)
+> [c000000ff1503800] c00000000022ef40 vscnprintf+0x20/0x44
+> [c000000ff1503830] c0000000000ab61c vprintk_emit+0x94/0x2cc
+> [c000000ff15038a0] c0000000000acc9c vprintk_func+0x60/0x74
+> [c000000ff15038c0] c000000000619694 printk+0x38/0x4c
+> [c000000ff15038e0] c000000000224950 kobject_get+0x40/0x60
+> [c000000ff1503950] c00000000022507c kobject_add_internal+0x60/0x2c4
+> [c000000ff15039e0] c000000000225350 kobject_init_and_add+0x70/0x78
+> [c000000ff1503a60] c00000000053c288 cpuidle_add_sysfs+0x9c/0xe0
+> [c000000ff1503ae0] c00000000053aeac cpuidle_register_device+0xd4/0x12c
+> [c000000ff1503b30] c00000000053b108 cpuidle_register+0x98/0xcc
+> [c000000ff1503bc0] c00000000085eaf0 powernv_processor_idle_init+0x140/0x1e0
+> [c000000ff1503c60] c00000000000cd60 do_one_initcall+0xc0/0x15c
+> [c000000ff1503d20] c000000000833e84 kernel_init_freeable+0x1a0/0x25c
+> [c000000ff1503dc0] c00000000000d478 kernel_init+0x24/0x12c
+> [c000000ff1503e30] c00000000000b564 ret_from_kernel_thread+0x5c/0x78
+>
+> This patch fixes the bug by passing correct cpumask from
+> powernv-cpuidle driver.
+>
+> Signed-off-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
 
-The email address in the "From" would probably still remain that one,
-which causes the problem.
 
-I personally prefer that you resend it using your own and I could give
-an Ack to it. It isn't really necessary to let me take the credit :)
+Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
 
-Thanks
-Nicolin
+> ---
+>  drivers/cpuidle/cpuidle-powernv.c | 18 ++++++++++++++++++
+>  1 file changed, 18 insertions(+)
+>
+> diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
+> index a06df51..82f7b33 100644
+> --- a/drivers/cpuidle/cpuidle-powernv.c
+> +++ b/drivers/cpuidle/cpuidle-powernv.c
+> @@ -175,6 +175,24 @@ static int powernv_cpuidle_driver_init(void)
+>                 drv->state_count += 1;
+>         }
+>
+> +       /*
+> +        * On PowerNV platform cpu_present may be less that cpu_possible in
+> +        * cases where firmware detects the cpu, but it is not available to the
+> +        * OS.  If CONFIG_HOTPLUG_CPU=n then such CPUs are not hotplugable at
+> +        * runtime and hence cpu_devices are not created for those cpus by
+> +        * generic topology_init().
+> +        *
+> +        * drv->cpumask defaults to cpu_possible_mask in
+> +        * __cpuidle_driver_init().  This breaks cpuidle on powernv where
+> +        * cpu_devices are not created for cpus in cpu_possible_mask that
+> +        * cannot be hot-added later at runtime.
+> +        *
+> +        * Trying cpuidle_register_device() on a cpu without cpu_devices is
+> +        * incorrect. Hence pass correct cpu mask to generic cpuidle driver.
+> +        */
+> +
+> +       drv->cpumask = (struct cpumask *)cpu_present_mask;
+> +
+>         return 0;
+>  }
+>
+> --
+> 2.9.3
+>
+
+
+
+-- 
+Thanks and Regards
+gautham.
