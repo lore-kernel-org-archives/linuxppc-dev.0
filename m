@@ -1,17 +1,23 @@
-Return-Path: <mikey@neuling.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Return-Path: <srs0=zpq8=3b=au1.ibm.com=michael.neuling@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vq5m627LkzDq5W
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Mar 2017 12:43:18 +1100 (AEDT)
-Message-ID: <1490319797.28113.46.camel@neuling.org>
-Subject: [PATCH] powerpc/powernv: Fix XSCOM address mangling for form 1
- indirect
-From: Michael Neuling <mikey@neuling.org>
-To: mpe@ellerman.id.au
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, mikey@neuling.org,
- benh@kernel.crashing.org
-Date: Fri, 24 Mar 2017 12:43:17 +1100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vq8zc4zBDzDq7d
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Mar 2017 15:08:28 +1100 (AEDT)
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3vq8zc4JcGz8vrs
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Mar 2017 15:08:28 +1100 (AEDT)
+Message-ID: <1490328509.28113.55.camel@au1.ibm.com>
+Subject: Re: [PATCH v3 03/10] VAS: Define vas_init() and vas_exit()
+From: Michael Neuling <michael.neuling@au1.ibm.com>
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>, Michael Ellerman
+ <mpe@ellerman.id.au>
+Cc: stewart@linux.vnet.ibm.com, linuxppc-dev@ozlabs.org,
+ apopple@au1.ibm.com,  oohall@gmail.com
+Date: Fri, 24 Mar 2017 15:08:29 +1100
+In-Reply-To: <1489721642-5657-4-git-send-email-sukadev@linux.vnet.ibm.com>
+References: <1489721642-5657-1-git-send-email-sukadev@linux.vnet.ibm.com>
+ <1489721642-5657-4-git-send-email-sukadev@linux.vnet.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -23,79 +29,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-POWER9 adds form 1 scoms. The form of the indirection is specified in
-the top nibble of the scom address.
+On Thu, 2017-03-16 at 20:33 -0700, Sukadev Bhattiprolu wrote:
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -3673,8 +3673,6 @@ F:=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0a=
+rch/powerpc/platforms/powernv/pci-cxl.c
+> =C2=A0F:=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0drivers/misc/cxl/
+> =C2=A0F:=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0include/misc/cxl*
+> =C2=A0F:=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0include/uapi/misc/cxl.h
+> -F:=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0Documentation/powerpc/cxl.txt
+> -F:=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0Documentation/ABI/testing/sysfs-class-cx=
+l
+>=20
 
-Currently we do some (ugly) bit mangling so that we can fit a 64 bit
-scom address into the debugfs interface. The current code only shifts
-the top bit (indirect bit).
+This shouldn't be deleted.
 
-This patch changes it to shift the whole top nibble so that the form
-of the indirection is also shifted.
-
-This patch is backwards compatible with older scoms.
-
-(This change isn't required in the
-arch/powerpc/platformspowernv/opal-prd.c scom interface as it passes
-the whole 64bit scom address without any bit mangling)
-
-Signed-off-by: Michael Neuling <mikey@neuling.org>
----
-(resending to correct linuxppc address)
-
-=C2=A0arch/powerpc/platforms/powernv/opal-xscom.c | 27 +++++++++++++++++---=
--------
-=C2=A01 file changed, 17 insertions(+), 10 deletions(-)
-
-diff --git a/arch/powerpc/platforms/powernv/opal-xscom.c
-b/arch/powerpc/platforms/powernv/opal-xscom.c
-index d0ac535cf5..28651fb254 100644
---- a/arch/powerpc/platforms/powernv/opal-xscom.c
-+++ b/arch/powerpc/platforms/powernv/opal-xscom.c
-@@ -73,25 +73,32 @@ static int opal_xscom_err_xlate(int64_t rc)
-=C2=A0
-=C2=A0static u64 opal_scom_unmangle(u64 addr)
-=C2=A0{
-+	u64 tmp;
-+
-=C2=A0	/*
--	=C2=A0* XSCOM indirect addresses have the top bit set. Additionally
--	=C2=A0* the rest of the top 3 nibbles is always 0.
-+	=C2=A0* XSCOM addresses use the top nibble to set indirect mode and
-+	=C2=A0* its form.=C2=A0=C2=A0Bits 4-11 are always 0.
-=C2=A0	=C2=A0*
-=C2=A0	=C2=A0* Because the debugfs interface uses signed offsets and shifts
-=C2=A0	=C2=A0* the address left by 3, we basically cannot use the top 4 bit=
-s
-=C2=A0	=C2=A0* of the 64-bit address, and thus cannot use the indirect bit.
-=C2=A0	=C2=A0*
--	=C2=A0* To deal with that, we support the indirect bit being in bit
--	=C2=A0* 4 (IBM notation) instead of bit 0 in this API, we do the
--	=C2=A0* conversion here. To leave room for further xscom address
--	=C2=A0* expansion, we only clear out the top byte
-+	=C2=A0* To deal with that, we support the indirect bits being in
-+	=C2=A0* bits 4-7 (IBM notation) instead of bit 0-3 in this API, we
-+	=C2=A0* do the conversion here.
-=C2=A0	=C2=A0*
--	=C2=A0* For in-kernel use, we also support the real indirect bit, so
--	=C2=A0* we test for any of the top 5 bits
-+	=C2=A0* For in-kernel use, we don't need to do this mangling.=C2=A0=C2=A0=
-In
-+	=C2=A0* kernel won't have bits 4-7 set.
-=C2=A0	=C2=A0*
-+	=C2=A0* So:
-+	=C2=A0*=C2=A0=C2=A0=C2=A0debugfs will always=C2=A0=C2=A0=C2=A0set 0-3 =3D=
- 0 and clear 4-7
-+	=C2=A0*=C2=A0=C2=A0=C2=A0=C2=A0kernel will always clear 0-3 =3D 0 and=C2=
-=A0=C2=A0=C2=A0set 4-7
-=C2=A0	=C2=A0*/
--	if (addr & (0x1full << 59))
--		addr =3D (addr & ~(0xffull << 56)) | (1ull << 63);
-+	tmp =3D addr;
-+	tmp=C2=A0=C2=A0&=3D 0x0f00000000000000;
-+	addr &=3D 0xf0ffffffffffffff;
-+	addr |=3D tmp << 4;
-+
-=C2=A0	return addr;
-=C2=A0}
-=C2=A0
+Mikey
