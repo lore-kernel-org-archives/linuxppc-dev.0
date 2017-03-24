@@ -1,29 +1,51 @@
-Return-Path: <ego.lkml@gmail.com>
-Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
- [IPv6:2607:f8b0:400e:c00::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <shilpa.bhat@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vqGnG02dPzDqcK
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Mar 2017 19:29:54 +1100 (AEDT)
-Received: by mail-pf0-x244.google.com with SMTP id o126so1495186pfb.1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Mar 2017 01:29:53 -0700 (PDT)
-MIME-Version: 1.0
-Reply-To: ego@linux.vnet.ibm.com
-In-Reply-To: <20170323152247.14733-2-svaidy@linux.vnet.ibm.com>
-References: <20170323152247.14733-1-svaidy@linux.vnet.ibm.com>
- <20170323152247.14733-2-svaidy@linux.vnet.ibm.com>
-From: Gautham R Shenoy <ego.lkml@gmail.com>
-Date: Fri, 24 Mar 2017 13:59:51 +0530
-Message-ID: <CAHZ_5WzhbXio=VybzMSB5-prGXVs5TGz4Rk+-dsAepQb3eWa+A@mail.gmail.com>
-Subject: Re: [PATCH v2 1/2] powerpc/powernv/cpuidle: Pass correct drv->cpumask
- for registration
-To: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Cc: Michael Neuling <mikey@neuling.org>, Michael Ellerman <mpe@ellerman.id.au>,
- "Rafael J . Wysocki" <rjw@rjwysocki.net>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vqH7Y6v9pzDqcK
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Mar 2017 19:45:45 +1100 (AEDT)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v2O8iB4s138356
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Mar 2017 04:45:33 -0400
+Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [125.16.236.2])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 29cxewcpa1-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Mar 2017 04:45:33 -0400
+Received: from localhost
+ by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <shilpa.bhat@linux.vnet.ibm.com>;
+ Fri, 24 Mar 2017 14:15:30 +0530
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+ by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v2O8jRD810944536
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Mar 2017 14:15:27 +0530
+Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v2O8jPIn028217
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Mar 2017 14:15:27 +0530
+Subject: Re: [v2 PATCH] powernv-cpuidle: Validate DT property array size
+To: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ "Rafael J. Wysocki" <rjw@rjwysocki.net>,
  Daniel Lezcano <daniel.lezcano@linaro.org>,
- linuxppc-dev@lists.ozlabs.org, LKML <linux-kernel@vger.kernel.org>,
- Linux PM list <linux-pm@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
+ Michael Neuling <mikey@neuling.org>,
+ Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+ "Shreyas B. Prabhu" <shreyasbp@gmail.com>,
+ Balbir Singh <bsingharora@gmail.com>,
+ Stewart Smith <stewart@linux.vnet.ibm.com>
+References: <1489565753-2693-1-git-send-email-ego@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ linux-pm@vger.kernel.org
+From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Date: Fri, 24 Mar 2017 14:15:25 +0530
+MIME-Version: 1.0
+In-Reply-To: <1489565753-2693-1-git-send-email-ego@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=windows-1252
+Message-Id: <6d2873de-ee47-e362-ef1a-6ac11ebee121@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,97 +55,130 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Mar 23, 2017 at 8:52 PM, Vaidyanathan Srinivasan
-<svaidy@linux.vnet.ibm.com> wrote:
-> drv->cpumask defaults to cpu_possible_mask in __cpuidle_driver_init().
-> On PowerNV platform cpu_present could be less than cpu_possible in cases
-> where firmware detects the cpu, but it is not available to the OS.  When
-> CONFIG_HOTPLUG_CPU=n, such cpus are not hotplugable at runtime and hence
-> we skip creating cpu_device.
->
-> This breaks cpuidle on powernv where register_cpu() is not called for
-> cpus in cpu_possible_mask that cannot be hot-added at runtime.
->
-> Trying cpuidle_register_device() on cpu without cpu_device will cause
-> crash like this:
->
-> cpu 0xf: Vector: 380 (Data SLB Access) at [c000000ff1503490]
->     pc: c00000000022c8bc: string+0x34/0x60
->     lr: c00000000022ed78: vsnprintf+0x284/0x42c
->     sp: c000000ff1503710
->    msr: 9000000000009033
->    dar: 6000000060000000
->   current = 0xc000000ff1480000
->   paca    = 0xc00000000fe82d00   softe: 0        irq_happened: 0x01
->     pid   = 1, comm = swapper/8
-> Linux version 4.11.0-rc2 (sv@sagarika) (gcc version 4.9.4
-> (Buildroot 2017.02-00004-gc28573e) ) #15 SMP Fri Mar 17 19:32:02 IST 2017
-> enter ? for help
-> [link register   ] c00000000022ed78 vsnprintf+0x284/0x42c
-> [c000000ff1503710] c00000000022ebb8 vsnprintf+0xc4/0x42c (unreliable)
-> [c000000ff1503800] c00000000022ef40 vscnprintf+0x20/0x44
-> [c000000ff1503830] c0000000000ab61c vprintk_emit+0x94/0x2cc
-> [c000000ff15038a0] c0000000000acc9c vprintk_func+0x60/0x74
-> [c000000ff15038c0] c000000000619694 printk+0x38/0x4c
-> [c000000ff15038e0] c000000000224950 kobject_get+0x40/0x60
-> [c000000ff1503950] c00000000022507c kobject_add_internal+0x60/0x2c4
-> [c000000ff15039e0] c000000000225350 kobject_init_and_add+0x70/0x78
-> [c000000ff1503a60] c00000000053c288 cpuidle_add_sysfs+0x9c/0xe0
-> [c000000ff1503ae0] c00000000053aeac cpuidle_register_device+0xd4/0x12c
-> [c000000ff1503b30] c00000000053b108 cpuidle_register+0x98/0xcc
-> [c000000ff1503bc0] c00000000085eaf0 powernv_processor_idle_init+0x140/0x1e0
-> [c000000ff1503c60] c00000000000cd60 do_one_initcall+0xc0/0x15c
-> [c000000ff1503d20] c000000000833e84 kernel_init_freeable+0x1a0/0x25c
-> [c000000ff1503dc0] c00000000000d478 kernel_init+0x24/0x12c
-> [c000000ff1503e30] c00000000000b564 ret_from_kernel_thread+0x5c/0x78
->
-> This patch fixes the bug by passing correct cpumask from
-> powernv-cpuidle driver.
->
-> Signed-off-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
 
 
-Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
-
+On 03/15/2017 01:45 PM, Gautham R. Shenoy wrote:
+> From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+> 
+> The various properties associated with powernv idle states such as
+> names, flags, residency-ns, latencies-ns, psscr, psscr-mask are
+> exposed in the device-tree as property arrays such the pointwise
+> entries in each of these arrays correspond to the properties of the
+> same idle state.
+> 
+> This patch validates that the lengths of the property arrays are the
+> same. If there is a mismatch, the patch will ensure that we bail out
+> and not expose the platform idle states via cpuidle.
+> 
+> Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
 > ---
->  drivers/cpuidle/cpuidle-powernv.c | 18 ++++++++++++++++++
->  1 file changed, 18 insertions(+)
->
+> v1: https://lkml.org/lkml/2017/2/23/349
+> Changes from v1: Print the full property array name in warning message.
+
+Reviewed-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+
+> 
+>  drivers/cpuidle/cpuidle-powernv.c | 64 +++++++++++++++++++++++++++++++++++++--
+>  1 file changed, 61 insertions(+), 3 deletions(-)
+> 
 > diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
-> index a06df51..82f7b33 100644
+> index 3705930..a06df51 100644
 > --- a/drivers/cpuidle/cpuidle-powernv.c
 > +++ b/drivers/cpuidle/cpuidle-powernv.c
-> @@ -175,6 +175,24 @@ static int powernv_cpuidle_driver_init(void)
->                 drv->state_count += 1;
->         }
->
-> +       /*
-> +        * On PowerNV platform cpu_present may be less that cpu_possible in
-> +        * cases where firmware detects the cpu, but it is not available to the
-> +        * OS.  If CONFIG_HOTPLUG_CPU=n then such CPUs are not hotplugable at
-> +        * runtime and hence cpu_devices are not created for those cpus by
-> +        * generic topology_init().
-> +        *
-> +        * drv->cpumask defaults to cpu_possible_mask in
-> +        * __cpuidle_driver_init().  This breaks cpuidle on powernv where
-> +        * cpu_devices are not created for cpus in cpu_possible_mask that
-> +        * cannot be hot-added later at runtime.
-> +        *
-> +        * Trying cpuidle_register_device() on a cpu without cpu_devices is
-> +        * incorrect. Hence pass correct cpu mask to generic cpuidle driver.
-> +        */
-> +
-> +       drv->cpumask = (struct cpumask *)cpu_present_mask;
-> +
->         return 0;
+> @@ -197,11 +197,25 @@ static inline void add_powernv_state(int index, const char *name,
+>  	stop_psscr_table[index].mask = psscr_mask;
 >  }
->
-> --
-> 2.9.3
->
-
-
-
--- 
-Thanks and Regards
-gautham.
+> 
+> +/*
+> + * Returns 0 if prop1_len == prop2_len. Else returns -1
+> + */
+> +static inline int validate_dt_prop_sizes(const char *prop1, int prop1_len,
+> +					 const char *prop2, int prop2_len)
+> +{
+> +	if (prop1_len == prop2_len)
+> +		return 0;
+> +
+> +	pr_warn("cpuidle-powernv: array sizes don't match for %s and %s\n",
+> +		prop1, prop2);
+> +	return -1;
+> +}
+> +
+>  static int powernv_add_idle_states(void)
+>  {
+>  	struct device_node *power_mgt;
+>  	int nr_idle_states = 1; /* Snooze */
+> -	int dt_idle_states;
+> +	int dt_idle_states, count;
+>  	u32 latency_ns[CPUIDLE_STATE_MAX];
+>  	u32 residency_ns[CPUIDLE_STATE_MAX];
+>  	u32 flags[CPUIDLE_STATE_MAX];
+> @@ -226,6 +240,21 @@ static int powernv_add_idle_states(void)
+>  		goto out;
+>  	}
+> 
+> +	count = of_property_count_u32_elems(power_mgt,
+> +					    "ibm,cpu-idle-state-latencies-ns");
+> +
+> +	if (validate_dt_prop_sizes("ibm,cpu-idle-state-flags", dt_idle_states,
+> +				   "ibm,cpu-idle-state-latencies-ns",
+> +				   count) != 0)
+> +		goto out;
+> +
+> +	count = of_property_count_strings(power_mgt,
+> +					  "ibm,cpu-idle-state-names");
+> +	if (validate_dt_prop_sizes("ibm,cpu-idle-state-flags", dt_idle_states,
+> +				   "ibm,cpu-idle-state-names",
+> +				   count) != 0)
+> +		goto out;
+> +
+>  	/*
+>  	 * Since snooze is used as first idle state, max idle states allowed is
+>  	 * CPUIDLE_STATE_MAX -1
+> @@ -260,6 +289,22 @@ static int powernv_add_idle_states(void)
+>  	has_stop_states = (flags[0] &
+>  			   (OPAL_PM_STOP_INST_FAST | OPAL_PM_STOP_INST_DEEP));
+>  	if (has_stop_states) {
+> +		count = of_property_count_u64_elems(power_mgt,
+> +						    "ibm,cpu-idle-state-psscr");
+> +		if (validate_dt_prop_sizes("ibm,cpu-idle-state-flags",
+> +					   dt_idle_states,
+> +					   "ibm,cpu-idle-state-psscr",
+> +					   count) != 0)
+> +			goto out;
+> +
+> +		count = of_property_count_u64_elems(power_mgt,
+> +						    "ibm,cpu-idle-state-psscr-mask");
+> +		if (validate_dt_prop_sizes("ibm,cpu-idle-state-flags",
+> +					   dt_idle_states,
+> +					   "ibm,cpu-idle-state-psscr-mask",
+> +					   count) != 0)
+> +			goto out;
+> +
+>  		if (of_property_read_u64_array(power_mgt,
+>  		    "ibm,cpu-idle-state-psscr", psscr_val, dt_idle_states)) {
+>  			pr_warn("cpuidle-powernv: missing ibm,cpu-idle-state-psscr in DT\n");
+> @@ -274,8 +319,21 @@ static int powernv_add_idle_states(void)
+>  		}
+>  	}
+> 
+> -	rc = of_property_read_u32_array(power_mgt,
+> -		"ibm,cpu-idle-state-residency-ns", residency_ns, dt_idle_states);
+> +	count = of_property_count_u32_elems(power_mgt,
+> +					    "ibm,cpu-idle-state-residency-ns");
+> +
+> +	if (count < 0) {
+> +		rc = count;
+> +	} else if (validate_dt_prop_sizes("ibm,cpu-idle-state-flags",
+> +					  dt_idle_states,
+> +					  "ibm,cpu-idle-state-residency-ns",
+> +					  count) != 0) {
+> +		goto out;
+> +	} else {
+> +		rc = of_property_read_u32_array(power_mgt,
+> +						"ibm,cpu-idle-state-residency-ns",
+> +						residency_ns, dt_idle_states);
+> +	}
+> 
+>  	for (i = 0; i < dt_idle_states; i++) {
+>  		unsigned int exit_latency, target_residency;
+> 
