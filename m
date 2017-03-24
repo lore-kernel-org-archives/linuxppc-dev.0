@@ -1,22 +1,21 @@
-Return-Path: <mikey@neuling.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <paulus@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vqBT6644zzDqBv
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Mar 2017 16:15:38 +1100 (AEDT)
-Message-ID: <1490332539.28113.63.camel@neuling.org>
-Subject: Re: [PATCH v3 05/10] VAS: Define helpers to init window context
-From: Michael Neuling <mikey@neuling.org>
-To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>, Michael Ellerman
- <mpe@ellerman.id.au>
-Cc: stewart@linux.vnet.ibm.com, linuxppc-dev@ozlabs.org,
- apopple@au1.ibm.com,  oohall@gmail.com
-Date: Fri, 24 Mar 2017 16:15:39 +1100
-In-Reply-To: <1489721642-5657-6-git-send-email-sukadev@linux.vnet.ibm.com>
-References: <1489721642-5657-1-git-send-email-sukadev@linux.vnet.ibm.com>
- <1489721642-5657-6-git-send-email-sukadev@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vqBdQ27dczDq95
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Mar 2017 16:22:50 +1100 (AEDT)
+Date: Fri, 24 Mar 2017 16:22:46 +1100
+From: Paul Mackerras <paulus@ozlabs.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, kvm-ppc@vger.kernel.org
+Subject: Re: [PATCH 06/12] powerpc/xive: Native exploitation of the XIVE
+ interrupt controller
+Message-ID: <20170324052246.fgncotb3v3xei4lk@oak.ozlabs.ibm.com>
+References: <20170320064914.4437-1-benh@kernel.crashing.org>
+ <20170320064914.4437-6-benh@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20170320064914.4437-6-benh@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,340 +25,2496 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2017-03-16 at 20:33 -0700, Sukadev Bhattiprolu wrote:
-> Define helpers to initialize window context registers of the VAS
-> hardware. These will be used in follow-on patches when opening/closing
-> VAS windows.
->=20
-> Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+On Mon, Mar 20, 2017 at 05:49:08PM +1100, Benjamin Herrenschmidt wrote:
+> The XIVE interrupt controller is the new interrupt controller
+> found in POWER9. It supports advanced virtualization capabilities
+> among other things.
+> 
+> Currently we use a set of firmware calls that simulate the old
+> "XICS" interrupt controller but this is fairly inefficient.
+> 
+> This adds the framework for using XIVE along with a native
+> backend which OPAL for configuration. Later, a backend allowing
+> the use in a KVM or PowerVM guest will also be provided.
+> 
+> This disables some fast path for interrupts in KVM when XIVE is
+> enabled as these rely on the firmware emulation code which is no
+> longer available when the XIVE is used natively by Linux.
+> 
+> A latter patch will make KVM also directly exploit the XIVE, thus
+> recovering the lost performance (and more).
+> 
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+
+Mostly looks fine, a few minor comments below...
+
 > ---
-> Changelog[v3]
-> 	- Have caller, rather than init_xlate_regs() reset window regs
-> 	=C2=A0=C2=A0so we don't reset any settings caller may already have set.
-> 	- Translation mode should be 0x3 (0b11) not 0x11.
-> 	- Skip initilaizing read-only registers NX_UTIL and NX_UTIL_SE
-> 	- Skip initializing adder registers from UWC - they are already
-> 	=C2=A0=C2=A0initialized from the HVWC.
-> 	- Check winctx->user_win when setting translation registers
-> ---
-> =C2=A0drivers/misc/vas/vas-internal.h |=C2=A0=C2=A059 ++++++-
-> =C2=A0drivers/misc/vas/vas-window.c=C2=A0=C2=A0=C2=A0| 334
-> ++++++++++++++++++++++++++++++++++++++++
-> =C2=A02 files changed, 390 insertions(+), 3 deletions(-)
->=20
-> diff --git a/drivers/misc/vas/vas-internal.h b/drivers/misc/vas/vas-inter=
-nal.h
-> index 15b62e0..8e721df 100644
-> --- a/drivers/misc/vas/vas-internal.h
-> +++ b/drivers/misc/vas/vas-internal.h
-> @@ -11,6 +11,7 @@
-> =C2=A0#define VAS_INTERNAL_H
-> =C2=A0#include <linux/atomic.h>
-> =C2=A0#include <linux/idr.h>
-> +#include <linux/io.h>
-> =C2=A0#include <asm/vas.h>
-> =C2=A0
-> =C2=A0#ifdef CONFIG_PPC_4K_PAGES
-> @@ -336,9 +337,6 @@ struct vas_window {
-> =C2=A0	/* Feilds applicable only to receive windows */
-> =C2=A0	enum vas_cop_type cop;
-> =C2=A0	atomic_t num_txwins;
+>  arch/powerpc/include/asm/xive.h          |  116 +++
+>  arch/powerpc/include/asm/xmon.h          |    2 +
+>  arch/powerpc/platforms/powernv/Kconfig   |    2 +
+>  arch/powerpc/platforms/powernv/setup.c   |   15 +-
+>  arch/powerpc/platforms/powernv/smp.c     |   39 +-
+>  arch/powerpc/sysdev/Kconfig              |    1 +
+>  arch/powerpc/sysdev/Makefile             |    1 +
+>  arch/powerpc/sysdev/xive/Kconfig         |    7 +
+>  arch/powerpc/sysdev/xive/Makefile        |    4 +
+>  arch/powerpc/sysdev/xive/common.c        | 1175 ++++++++++++++++++++++++++++++
+>  arch/powerpc/sysdev/xive/native.c        |  604 +++++++++++++++
+>  arch/powerpc/sysdev/xive/xive-internal.h |   51 ++
+>  arch/powerpc/sysdev/xive/xive-regs.h     |   88 +++
+>  arch/powerpc/xmon/xmon.c                 |   93 ++-
+>  14 files changed, 2186 insertions(+), 12 deletions(-)
+>  create mode 100644 arch/powerpc/include/asm/xive.h
+>  create mode 100644 arch/powerpc/sysdev/xive/Kconfig
+>  create mode 100644 arch/powerpc/sysdev/xive/Makefile
+>  create mode 100644 arch/powerpc/sysdev/xive/common.c
+>  create mode 100644 arch/powerpc/sysdev/xive/native.c
+>  create mode 100644 arch/powerpc/sysdev/xive/xive-internal.h
+>  create mode 100644 arch/powerpc/sysdev/xive/xive-regs.h
+> 
+> diff --git a/arch/powerpc/include/asm/xive.h b/arch/powerpc/include/asm/xive.h
+> new file mode 100644
+> index 0000000..b1604b73
+> --- /dev/null
+> +++ b/arch/powerpc/include/asm/xive.h
+> @@ -0,0 +1,116 @@
+> +#ifndef _ASM_POWERPC_XIVE_H
+> +#define _ASM_POWERPC_XIVE_H
+> +
+> +#define XIVE_INVALID_VP	0xffffffff
+> +
+> +#ifdef CONFIG_PPC_XIVE
+> +
+> +extern void __iomem *xive_tm_area;
+> +extern u32 xive_tm_offset;
+> +
+> +/*
+> + * Per-irq data (irq_get_handler_data for normal IRQs), IPIs
+> + * have it stored in the xive_cpu structure. We also cache
+> + * for normal interrupts the current target CPU.
+> + */
+> +struct xive_irq_data {
+> +	/* Setup by backend */
+> +	u64 flags;
+> +#define XIVE_IRQ_FLAG_STORE_EOI	0x01
+> +#define XIVE_IRQ_FLAG_LSI	0x02
+> +#define XIVE_IRQ_FLAG_SHIFT_BUG	0x04
+> +#define XIVE_IRQ_FLAG_MASK_FW	0x08
+> +#define XIVE_IRQ_FLAG_EOI_FW	0x10
+> +	u64 eoi_page;
+> +	void __iomem *eoi_mmio;
+> +	u64 trig_page;
+> +	void __iomem *trig_mmio;
+> +	u32 esb_shift;
+> +	int src_chip;
+> +
+> +	/* Setup/used by frontend */
+> +	int target;
+> +	bool saved_p;
+> +};
+> +#define XIVE_INVALID_CHIP_ID	-1
+> +
+> +/* A queue tracking structure in a CPU */
+> +struct xive_q {
+> +	__be32 			*qpage;
+> +	u32			msk;
+> +	u32			idx;
+> +	u32			toggle;
+> +	u64			eoi_phys;
+> +	void __iomem		*eoi_mmio;
+> +	u32			esc_irq;
+> +	atomic_t		count;
+> +	atomic_t		pending_count;
+> +};
+> +
+> +/*
+> + * "magic" ESB MMIO offsets
+> + */
+> +#define XIVE_ESB_GET		0x800
+> +#define XIVE_ESB_SET_PQ_00	0xc00
+> +#define XIVE_ESB_SET_PQ_01	0xd00
+> +#define XIVE_ESB_SET_PQ_10	0xe00
+> +#define XIVE_ESB_SET_PQ_11	0xf00
+> +#define XIVE_ESB_MASK		XIVE_ESB_SET_PQ_01
+> +
+> +extern bool __xive_enabled;
+> +
+> +static inline bool xive_enabled(void) { return __xive_enabled; }
+> +
+> +extern bool xive_native_init(void);
+> +extern void xive_smp_probe(void);
+> +extern int  xive_smp_prepare_cpu(unsigned int cpu);
+> +extern void xive_smp_setup_cpu(void);
+> +extern void xive_smp_disable_cpu(void);
+> +extern void xive_kexec_teardown_cpu(int secondary);
+> +extern void xive_shutdown(void);
+> +extern void xive_flush_interrupt(void);
+> +
+> +/* xmon hook */
+> +extern void xmon_xive_do_dump(int cpu);
+> +
+> +/* APIs used by KVM */
+> +extern u32 xive_native_default_eq_shift(void);
+> +extern u32 xive_native_alloc_vp_block(u32 max_vcpus);
+> +extern void xive_native_free_vp_block(u32 vp_base);
+> +extern int xive_native_populate_irq_data(u32 hw_irq,
+> +					 struct xive_irq_data *data);
+> +extern void xive_cleanup_irq_data(struct xive_irq_data *xd);
+> +extern u32 xive_native_alloc_irq(void);
+> +extern void xive_native_free_irq(u32 irq);
+> +extern int xive_native_configure_irq(u32 hw_irq, u32 target, u8 prio, u32 sw_irq);
+> +
+> +extern int xive_native_configure_queue(u32 vp_id, struct xive_q *q, u8 prio,
+> +				       __be32 *qpage, u32 order, bool can_escalate);
+> +extern void xive_native_disable_queue(u32 vp_id, struct xive_q *q, u8 prio);
+> +
+> +extern bool __xive_irq_trigger(struct xive_irq_data *xd);
+> +extern bool __xive_irq_retrigger(struct xive_irq_data *xd);
+> +extern void xive_do_source_eoi(u32 hw_irq, struct xive_irq_data *xd);
+> +
+> +extern bool is_xive_irq(struct irq_chip *chip);
+> +
+> +#else
+> +
+> +static inline bool xive_enabled(void) { return false; }
+> +
+> +static inline bool xive_native_init(void) { return false; }
+> +static inline void xive_smp_probe(void) { }
+> +extern inline int  xive_smp_prepare_cpu(unsigned int cpu) { return -EINVAL; }
+> +static inline void xive_smp_setup_cpu(void) { }
+> +static inline void xive_smp_disable_cpu(void) { }
+> +static inline void xive_kexec_teardown_cpu(int secondary) { }
+> +static inline void xive_shutdown(void) { }
+> +static inline void xive_flush_interrupt(void) { }
+> +
+> +static inline u32 xive_native_alloc_vp_block(u32 max_vcpus)
+> +    { return XIVE_INVALID_VP; }
+> +static inline void xive_native_free_vp_block(u32 vp_base) { }
+> +
+> +#endif
+> +
+> +#endif /* _ASM_POWERPC_XIVE_H */
+> diff --git a/arch/powerpc/include/asm/xmon.h b/arch/powerpc/include/asm/xmon.h
+> index 5eb8e59..eb42a0c 100644
+> --- a/arch/powerpc/include/asm/xmon.h
+> +++ b/arch/powerpc/include/asm/xmon.h
+> @@ -29,5 +29,7 @@ static inline void xmon_register_spus(struct list_head *list) { };
+>  extern int cpus_are_in_xmon(void);
+>  #endif
+>  
+> +extern void xmon_printf(const char *format, ...);
+> +
+>  #endif /* __KERNEL __ */
+>  #endif /* __ASM_POWERPC_XMON_H */
+> diff --git a/arch/powerpc/platforms/powernv/Kconfig b/arch/powerpc/platforms/powernv/Kconfig
+> index 3a07e4d..81ee2ed 100644
+> --- a/arch/powerpc/platforms/powernv/Kconfig
+> +++ b/arch/powerpc/platforms/powernv/Kconfig
+> @@ -4,6 +4,8 @@ config PPC_POWERNV
+>  	select PPC_NATIVE
+>  	select PPC_XICS
+>  	select PPC_ICP_NATIVE
+> +	select PPC_XIVE
+> +	select PPC_XIVE_NATIVE
+>  	select PPC_P7_NAP
+>  	select PCI
+>  	select PCI_MSI
+> diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
+> index d50c7d9..adceac9 100644
+> --- a/arch/powerpc/platforms/powernv/setup.c
+> +++ b/arch/powerpc/platforms/powernv/setup.c
+> @@ -32,6 +32,7 @@
+>  #include <asm/machdep.h>
+>  #include <asm/firmware.h>
+>  #include <asm/xics.h>
+> +#include <asm/xive.h>
+>  #include <asm/opal.h>
+>  #include <asm/kexec.h>
+>  #include <asm/smp.h>
+> @@ -76,7 +77,9 @@ static void __init pnv_init(void)
+>  
+>  static void __init pnv_init_IRQ(void)
+>  {
+> -	xics_init();
+> +	/* Try using a XIVE if available, otherwise use a XICS */
+> +	if (!xive_native_init())
+> +		xics_init();
+>  
+>  	WARN_ON(!ppc_md.get_irq);
+>  }
+> @@ -218,10 +221,12 @@ static void pnv_kexec_wait_secondaries_down(void)
+>  
+>  static void pnv_kexec_cpu_down(int crash_shutdown, int secondary)
+>  {
+> -	xics_kexec_teardown_cpu(secondary);
+> +	if (xive_enabled())
+> +		xive_kexec_teardown_cpu(secondary);
+> +	else
+> +		xics_kexec_teardown_cpu(secondary);
+>  
+>  	/* On OPAL, we return all CPUs to firmware */
 > -
-> -	int32_t hwirq;
-> -	uint64_t irq_port;
-
-We are removing things already? :-)
-
-> =C2=A0};
-> =C2=A0
-> =C2=A0/*
-> @@ -392,4 +390,59 @@ struct vas_winctx {
-> =C2=A0extern int vas_initialized;
-> =C2=A0extern int vas_window_reset(struct vas_instance *vinst, int winid);
-> =C2=A0extern struct vas_instance *find_vas_instance(int vasid);
+>  	if (!firmware_has_feature(FW_FEATURE_OPAL))
+>  		return;
+>  
+> @@ -237,6 +242,10 @@ static void pnv_kexec_cpu_down(int crash_shutdown, int secondary)
+>  		/* Primary waits for the secondaries to have reached OPAL */
+>  		pnv_kexec_wait_secondaries_down();
+>  
+> +		/* Switch XIVE back to emulation mode */
+> +		if (xive_enabled())
+> +			xive_shutdown();
 > +
+>  		/*
+>  		 * We might be running as little-endian - now that interrupts
+>  		 * are disabled, reset the HILE bit to big-endian so we don't
+> diff --git a/arch/powerpc/platforms/powernv/smp.c b/arch/powerpc/platforms/powernv/smp.c
+> index 8b67e1e..f571955 100644
+> --- a/arch/powerpc/platforms/powernv/smp.c
+> +++ b/arch/powerpc/platforms/powernv/smp.c
+> @@ -29,6 +29,7 @@
+>  #include <asm/vdso_datapage.h>
+>  #include <asm/cputhreads.h>
+>  #include <asm/xics.h>
+> +#include <asm/xive.h>
+>  #include <asm/opal.h>
+>  #include <asm/runlatch.h>
+>  #include <asm/code-patching.h>
+> @@ -47,7 +48,9 @@
+>  
+>  static void pnv_smp_setup_cpu(int cpu)
+>  {
+> -	if (cpu != boot_cpuid)
+> +	if (xive_enabled())
+> +		xive_smp_setup_cpu();
+> +	else if (cpu != boot_cpuid)
+>  		xics_setup_cpu();
+>  
+>  #ifdef CONFIG_PPC_DOORBELL
+> @@ -132,7 +135,10 @@ static int pnv_smp_cpu_disable(void)
+>  	vdso_data->processorCount--;
+>  	if (cpu == boot_cpuid)
+>  		boot_cpuid = cpumask_any(cpu_online_mask);
+> -	xics_migrate_irqs_away();
+> +	if (xive_enabled())
+> +		xive_smp_disable_cpu();
+> +	else
+> +		xics_migrate_irqs_away();
+>  	return 0;
+>  }
+>  
+> @@ -213,9 +219,12 @@ static void pnv_smp_cpu_kill_self(void)
+>  		if (((srr1 & wmask) == SRR1_WAKEEE) ||
+>  		    ((srr1 & wmask) == SRR1_WAKEHVI) ||
+>  		    (local_paca->irq_happened & PACA_IRQ_EE)) {
+> -			if (cpu_has_feature(CPU_FTR_ARCH_300))
+> -				icp_opal_flush_interrupt();
+> -			else
+> +			if (cpu_has_feature(CPU_FTR_ARCH_300)) {
+> +				if (xive_enabled())
+> +					xive_flush_interrupt();
+> +				else
+> +					icp_opal_flush_interrupt();
+> +			} else
+>  				icp_native_flush_interrupt();
+>  		} else if ((srr1 & wmask) == SRR1_WAKEHDBELL) {
+>  			unsigned long msg = PPC_DBELL_TYPE(PPC_DBELL_SERVER);
+> @@ -252,10 +261,26 @@ static int pnv_cpu_bootable(unsigned int nr)
+>  	return smp_generic_cpu_bootable(nr);
+>  }
+>  
+> +static int pnv_smp_prepare_cpu(int cpu)
+> +{
+> +	if (xive_enabled())
+> +		return xive_smp_prepare_cpu(cpu);
+> +	return 0;
+> +}
+> +
+> +static void __init pnv_smp_probe(void)
+> +{
+> +	if (xive_enabled())
+> +		xive_smp_probe();
+> +	else
+> +		xics_smp_probe();
+> +}
+> +
+>  static struct smp_ops_t pnv_smp_ops = {
+>  	.message_pass	= smp_muxed_ipi_message_pass,
+> -	.cause_ipi	= NULL,	/* Filled at runtime by xics_smp_probe() */
+> -	.probe		= xics_smp_probe,
+> +	.cause_ipi	= NULL, /* Filled at runtime by xi{cs,ve}_smp_probe() */
+> +	.probe		= pnv_smp_probe,
+> +	.prepare_cpu	= pnv_smp_prepare_cpu,
+>  	.kick_cpu	= pnv_smp_kick_cpu,
+>  	.setup_cpu	= pnv_smp_setup_cpu,
+>  	.cpu_bootable	= pnv_cpu_bootable,
+> diff --git a/arch/powerpc/sysdev/Kconfig b/arch/powerpc/sysdev/Kconfig
+> index 52dc165..caf882e 100644
+> --- a/arch/powerpc/sysdev/Kconfig
+> +++ b/arch/powerpc/sysdev/Kconfig
+> @@ -28,6 +28,7 @@ config PPC_MSI_BITMAP
+>  	default y if PPC_POWERNV
+>  
+>  source "arch/powerpc/sysdev/xics/Kconfig"
+> +source "arch/powerpc/sysdev/xive/Kconfig"
+>  
+>  config PPC_SCOM
+>  	bool
+> diff --git a/arch/powerpc/sysdev/Makefile b/arch/powerpc/sysdev/Makefile
+> index a254824..c0ae11d 100644
+> --- a/arch/powerpc/sysdev/Makefile
+> +++ b/arch/powerpc/sysdev/Makefile
+> @@ -71,5 +71,6 @@ obj-$(CONFIG_PPC_EARLY_DEBUG_MEMCONS)	+= udbg_memcons.o
+>  subdir-ccflags-$(CONFIG_PPC_WERROR) := -Werror
+>  
+>  obj-$(CONFIG_PPC_XICS)		+= xics/
+> +obj-$(CONFIG_PPC_XIVE)		+= xive/
+>  
+>  obj-$(CONFIG_GE_FPGA)		+= ge/
+> diff --git a/arch/powerpc/sysdev/xive/Kconfig b/arch/powerpc/sysdev/xive/Kconfig
+> new file mode 100644
+> index 0000000..c8816c8
+> --- /dev/null
+> +++ b/arch/powerpc/sysdev/xive/Kconfig
+> @@ -0,0 +1,7 @@
+> +config PPC_XIVE
+> +       def_bool n
+> +       select PPC_SMP_MUXED_IPI
+> +       select HARDIRQS_SW_RESEND
+> +
+> +config PPC_XIVE_NATIVE
+> +       def_bool n
+> diff --git a/arch/powerpc/sysdev/xive/Makefile b/arch/powerpc/sysdev/xive/Makefile
+> new file mode 100644
+> index 0000000..3fab303
+> --- /dev/null
+> +++ b/arch/powerpc/sysdev/xive/Makefile
+> @@ -0,0 +1,4 @@
+> +subdir-ccflags-$(CONFIG_PPC_WERROR) := -Werror
+> +
+> +obj-y				+= common.o
+> +obj-$(CONFIG_PPC_XIVE_NATIVE)	+= native.o
+> diff --git a/arch/powerpc/sysdev/xive/common.c b/arch/powerpc/sysdev/xive/common.c
+> new file mode 100644
+> index 0000000..96037e0
+> --- /dev/null
+> +++ b/arch/powerpc/sysdev/xive/common.c
+> @@ -0,0 +1,1175 @@
 > +/*
-> + * VREG(x):
-> + * Expand a register's short name (eg: LPID) into two parameters:
-> + *	- the register's short name in string form ("LPID"), and
-> + *	- the name of the macro (eg: VAS_LPID_OFFSET), defining the
-> + *	=C2=A0=C2=A0register's offset in the window context
-> + */
-> +#define VREG_SFX(n, s)	__stringify(n), VAS_##n##s
-> +#define VREG(r)		VREG_SFX(r, _OFFSET)
-> +
-> +#ifndef vas_debug
-> +static inline void vas_log_write(struct vas_window *win, char *name,
-> +			void *regptr, uint64_t val)
-> +{
-> +	if (val)
-> +		pr_err("%swin #%d: %s reg %p, val 0x%llx\n",
-> +				win->tx_win ? "Tx" : "Rx", win->winid, name,
-> +				regptr, val);
-> +}
-> +
-> +#else	/* vas_debug */
-> +
-> +#define vas_log_write(win, name, reg, val)
-> +
-> +#endif	/* vas_debug */
-> +
-> +static inline void write_uwc_reg(struct vas_window *win, char *name,
-> +			int32_t reg, uint64_t val)
-> +{
-> +	void *regptr;
-> +
-> +	regptr =3D win->uwc_map + reg;
-> +	vas_log_write(win, name, regptr, val);
-> +
-> +	out_be64(regptr, val);
-> +}
-> +
-> +static inline void write_hvwc_reg(struct vas_window *win, char *name,
-> +			int32_t reg, uint64_t val)
-> +{
-> +	void *regptr;
-> +
-> +	regptr =3D win->hvwc_map + reg;
-> +	vas_log_write(win, name, regptr, val);
-> +
-> +	out_be64(regptr, val);
-> +}
-> +
-> +static inline uint64_t read_hvwc_reg(struct vas_window *win,
-> +			char *name __maybe_unused, int32_t reg)
-> +{
-> +	return in_be64(win->hvwc_map+reg);
-> +}
-> +
-> =C2=A0#endif
-> diff --git a/drivers/misc/vas/vas-window.c b/drivers/misc/vas/vas-window.=
-c
-> index 32dd1d0..edf5c9f 100644
-> --- a/drivers/misc/vas/vas-window.c
-> +++ b/drivers/misc/vas/vas-window.c
-> @@ -14,6 +14,8 @@
-> =C2=A0#include <asm/vas.h>
-> =C2=A0#include "vas-internal.h"
-> =C2=A0
-> +static int fault_winid;
-> +
-> =C2=A0/*
-> =C2=A0 * Compute the paste address region for the window @window using th=
-e
-> =C2=A0 * ->win_base_addr and ->win_id_shift we got from device tree.
-> @@ -138,6 +140,338 @@ int map_wc_mmio_bars(struct vas_window *window)
-> =C2=A0	return 0;
-> =C2=A0}
-> =C2=A0
-> +/*
-> + * Reset all valid registers in the HV and OS/User Window Contexts for
-> + * the window identified by @window.
+> + * Copyright 2016,2017 IBM Corporation.
 > + *
-> + * NOTE: We cannot really use a for loop to reset window context. Not al=
-l
-> + *	=C2=A0offsets in a window context are valid registers and the valid
-> + *	=C2=A0registers are not sequential. And, we can only write to offsets
-> + *	=C2=A0with valid registers (or is that only in Simics?).
+> + * This program is free software; you can redistribute it and/or
+> + * modify it under the terms of the GNU General Public License
+> + * as published by the Free Software Foundation; either version
+> + * 2 of the License, or (at your option) any later version.
 > + */
-> +void reset_window_regs(struct vas_window *window)
-> +{
-> +	write_hvwc_reg(window, VREG(LPID), 0ULL);
-> +	write_hvwc_reg(window, VREG(PID), 0ULL);
-> +	write_hvwc_reg(window, VREG(XLATE_MSR), 0ULL);
-> +	write_hvwc_reg(window, VREG(XLATE_LPCR), 0ULL);
-> +	write_hvwc_reg(window, VREG(XLATE_CTL), 0ULL);
-> +	write_hvwc_reg(window, VREG(AMR), 0ULL);
-> +	write_hvwc_reg(window, VREG(SEIDR), 0ULL);
-> +	write_hvwc_reg(window, VREG(FAULT_TX_WIN), 0ULL);
-> +	write_hvwc_reg(window, VREG(OSU_INTR_SRC_RA), 0ULL);
-> +	write_hvwc_reg(window, VREG(HV_INTR_SRC_RA), 0ULL);
-> +	write_hvwc_reg(window, VREG(PSWID), 0ULL);
-> +	write_hvwc_reg(window, VREG(SPARE1), 0ULL);
-> +	write_hvwc_reg(window, VREG(SPARE2), 0ULL);
-> +	write_hvwc_reg(window, VREG(SPARE3), 0ULL);
-> +	write_hvwc_reg(window, VREG(SPARE4), 0ULL);
-> +	write_hvwc_reg(window, VREG(SPARE5), 0ULL);
-> +	write_hvwc_reg(window, VREG(SPARE6), 0ULL);
-> +	write_hvwc_reg(window, VREG(LFIFO_BAR), 0ULL);
-> +	write_hvwc_reg(window, VREG(LDATA_STAMP_CTL), 0ULL);
-> +	write_hvwc_reg(window, VREG(LDMA_CACHE_CTL), 0ULL);
-> +	write_hvwc_reg(window, VREG(LRFIFO_PUSH), 0ULL);
-> +	write_hvwc_reg(window, VREG(CURR_MSG_COUNT), 0ULL);
-> +	write_hvwc_reg(window, VREG(LNOTIFY_AFTER_COUNT), 0ULL);
-> +	write_hvwc_reg(window, VREG(LRX_WCRED), 0ULL);
-> +	write_hvwc_reg(window, VREG(LRX_WCRED_ADDER), 0ULL);
-> +	write_hvwc_reg(window, VREG(TX_WCRED), 0ULL);
-> +	write_hvwc_reg(window, VREG(TX_WCRED_ADDER), 0ULL);
-> +	write_hvwc_reg(window, VREG(LFIFO_SIZE), 0ULL);
-> +	write_hvwc_reg(window, VREG(WINCTL), 0ULL);
-> +	write_hvwc_reg(window, VREG(WIN_STATUS), 0ULL);
-> +	write_hvwc_reg(window, VREG(WIN_CTX_CACHING_CTL), 0ULL);
-> +	write_hvwc_reg(window, VREG(TX_RSVD_BUF_COUNT), 0ULL);
-> +	write_hvwc_reg(window, VREG(LRFIFO_WIN_PTR), 0ULL);
-> +	write_hvwc_reg(window, VREG(LNOTIFY_CTL), 0ULL);
-> +	write_hvwc_reg(window, VREG(LNOTIFY_PID), 0ULL);
-> +	write_hvwc_reg(window, VREG(LNOTIFY_LPID), 0ULL);
-> +	write_hvwc_reg(window, VREG(LNOTIFY_TID), 0ULL);
-> +	write_hvwc_reg(window, VREG(LNOTIFY_SCOPE), 0ULL);
-> +	write_hvwc_reg(window, VREG(NX_UTIL_ADDER), 0ULL);
+> +#include <linux/types.h>
+> +#include <linux/threads.h>
+> +#include <linux/kernel.h>
+> +#include <linux/irq.h>
+> +#include <linux/debugfs.h>
+> +#include <linux/smp.h>
+> +#include <linux/interrupt.h>
+> +#include <linux/seq_file.h>
+> +#include <linux/init.h>
+> +#include <linux/cpu.h>
+> +#include <linux/of.h>
+> +#include <linux/slab.h>
+> +#include <linux/spinlock.h>
+> +#include <linux/msi.h>
 > +
-> +	/* Skip read-only registers: NX_UTIL and NX_UTIL_SE */
+> +#include <asm/prom.h>
+> +#include <asm/io.h>
+> +#include <asm/smp.h>
+> +#include <asm/machdep.h>
+> +#include <asm/irq.h>
+> +#include <asm/errno.h>
+> +#include <asm/xive.h>
+> +#include <asm/xmon.h>
+> +
+> +#include "xive-regs.h"
+> +#include "xive-internal.h"
+> +
+> +#undef DEBUG_FLUSH
+> +#undef DEBUG_ALL
+> +
+> +#define DBG(fmt...)		pr_devel("XIVE: " fmt)
+> +
+> +#ifdef DEBUG_ALL
+> +#define DBG_VERBOSE(fmt...)	pr_devel("XIVE: " fmt)
+> +#else
+> +#define DBG_VERBOSE(fmt...)	do { } while(0)
+> +#endif
+> +
+> +bool __xive_enabled;
+> +bool xive_cmdline_disabled;
+> +
+> +/* We use only one priority for now */
+> +static u8 xive_irq_priority;
+> +
+> +void __iomem *xive_tm_area;
+> +u32 xive_tm_offset;
+> +static const struct xive_ops *xive_ops;
+> +static struct irq_domain *xive_irq_domain;
+> +
+> +/* The IPIs all use the same logical irq number */
+> +static u32 xive_ipi_irq;
+> +
+> +/* Xive state for each CPU */
+> +static DEFINE_PER_CPU(struct xive_cpu *, xive_cpu);
+> +
+> +/*
+> + * A "disabled" interrupt should never fire, to catch problems
+> + * we set its logical number to this
+> + */
+> +#define XIVE_BAD_IRQ		0x7fffffff
+> +#define XIVE_MAX_IRQ		(XIVE_BAD_IRQ - 1)
+> +
+> +/* An invalid CPU target */
+> +#define XIVE_INVALID_TARGET	(-1)
+> +
+> +static u32 xive_read_eq(struct xive_q *q, u8 prio, bool just_peek)
+
+A brief comment here explaining what the function does would be
+helpful.  Likewise for xive_scan_interrupts(), etc. etc.
+
+The 'prio' argument doesn't seem to be used.
+
+> +{
+> +	u32 cur;
+> +
+> +	if (!q->qpage)
+> +		return 0;
+> +	cur = be32_to_cpup(q->qpage + q->idx);
+> +	if ((cur >> 31) == q->toggle)
+> +		return 0;
+> +	if (!just_peek) {
+> +		q->idx = (q->idx + 1) & q->msk;
+> +		if (q->idx == 0)
+> +			q->toggle ^= 1;
+> +	}
+> +	return cur & 0x7fffffff;
+> +}
+> +
+> +static u32 xive_scan_interrupts(struct xive_cpu *xc, bool just_peek)
+> +{
+> +	u32 hirq = 0;
+> +	u8 prio;
+> +
+> +	/* Find highest pending priority */
+> +	while (xc->pending_prio != 0) {
+> +		struct xive_q *q;
+> +
+> +		prio = ffs(xc->pending_prio) - 1;
+> +		DBG_VERBOSE("scan_irq: trying prio %d\n", prio);
+> +
+> +		/* Try to fetch */
+> +		hirq = xive_read_eq(&xc->queue[prio], prio, just_peek);
+> +
+> +		/* Found something ? That's it */
+> +		if (hirq)
+> +			break;
+> +
+> +		/* Clear pending bits */
+> +		xc->pending_prio &= ~(1 << prio);
+> +
+> +		/*
+> +		 * Check if the queue count needs adjusting due to
+> +		 * interrupts being moved away.
+> +		 */
+> +		q = &xc->queue[prio];
+> +		if (atomic_read(&q->pending_count)) {
+> +			int p = atomic_xchg(&q->pending_count, 0);
+> +			if (p) {
+> +				WARN_ON(p > atomic_read(&q->count));
+> +				atomic_sub(p, &q->count);
+> +			}
+> +		}
+> +	}
+> +
+> +	/* If nothing was found, set CPPR to 0xff */
+> +	if (hirq == 0)
+> +		prio = 0xff;
+> +
+> +	/* Update HW CPPR to match if necessary */
+> +	if (prio != xc->cppr) {
+> +		DBG_VERBOSE("scan_irq: adjusting CPPR to %d\n", prio);
+> +		xc->cppr = prio;
+> +		out_8(xive_tm_area + xive_tm_offset + TM_CPPR, prio);
+> +	}
+> +
+> +	return hirq;
+> +}
+> +
+> +#ifdef CONFIG_XMON
+> +static void xive_dump_eq(const char *name, struct xive_q *q)
+> +{
+> +	u32 i0, i1, idx;
+> +
+> +	if (!q->qpage)
+> +		return;
+> +	idx = q->idx;
+> +	i0 = be32_to_cpup(q->qpage + idx);
+> +	idx = (idx + 1) & q->msk;
+> +	i1 = be32_to_cpup(q->qpage + idx);
+> +	xmon_printf("  %s Q T=%d %08x %08x ...\n", name,
+> +		    q->toggle, i0, i1);
+> +}
+> +
+> +void xmon_xive_do_dump(int cpu)
+> +{
+> +	struct xive_cpu *xc = per_cpu(xive_cpu, cpu);
+> +	struct xive_irq_data *xd;
+> +	uint64_t val, offset;
+> +
+> +	xmon_printf("XIVE state for CPU %d:\n", cpu);
+> +	xmon_printf("  pp=%02x cppr=%02x\n", xc->pending_prio, xc->cppr);
+> +	xive_dump_eq("IRQ", &xc->queue[xive_irq_priority]);
+> +	xd = &xc->ipi_data;
+> +	offset = 0x800;
+> +	if (xd->flags & XIVE_IRQ_FLAG_SHIFT_BUG)
+> +		offset |= offset << 4;
+> +	val = in_be64(xd->eoi_mmio + offset);
+> +	xmon_printf("  IPI state: %x:%c%c\n", xc->hw_ipi,
+> +		    val & 2 ? 'P' : 'p',
+> +		    val & 1 ? 'Q' : 'q');
+> +}
+> +#endif /* CONFIG_XMON */
+> +
+> +static void xive_update_pending_irqs(struct xive_cpu *xc)
+> +{
+> +	u8 he, cppr;
+> +	u16 ack;
+> +
+> +	/* Perform the acknowledge hypervisor to register cycle */
+> +	ack = be16_to_cpu(__raw_readw(xive_tm_area + TM_SPC_ACK_HV_REG));
+
+This sounds like it's something that only the hypervisor should do, so
+it's not clear why it's in common code.
+
+> +	/* Synchronize subsequent queue accesses */
+> +	mb();
+> +
+> +	DBG_VERBOSE("CPU %d get_irq, ack=%04x\n", smp_processor_id(), ack);
+> +
+> +	/* Check the HE field */
+
+What is a "HE" field?
+
+> +	cppr = ack & 0xff;
+> +	he = GETFIELD(TM_QW3_NSR_HE, (ack >> 8));
+> +	switch(he) {
+> +	case TM_QW3_NSR_HE_NONE:
+> +		break;
+> +	case TM_QW3_NSR_HE_PHYS:
+> +		if (cppr == 0xff)
+> +			return;
+> +		xc->pending_prio |= 1 << cppr;
+> +		if (cppr >= xc->cppr)
+> +			pr_err("XIVE: CPU %d odd ack CPPR, got %d at %d\n",
+> +			       smp_processor_id(), cppr, xc->cppr);
+> +		xc->cppr = cppr;
+> +		break;
+> +	case TM_QW3_NSR_HE_POOL:
+> +	case TM_QW3_NSR_HE_LSI:
+> +		pr_err("XIVE: CPU %d got unexpected interrupt type HE=%d\n",
+> +		       smp_processor_id(), he);
+> +		return;
+> +	}
+> +}
+> +
+> +static unsigned int xive_get_irq(void)
+> +{
+> +	struct xive_cpu *xc = __this_cpu_read(xive_cpu);
+> +	u32 hirq;
 > +
 > +	/*
-> +	=C2=A0* The send and receive window credit adder registers are also
-> +	=C2=A0* accessible from HVWC and have been initialized above. We don't
-> +	=C2=A0* need to initialize from the OS/User Window Context, so skip
-> +	=C2=A0* following calls:
-> +	=C2=A0*
-> +	=C2=A0*	write_uwc_reg(window, VREG(TX_WCRED_ADDER), 0ULL);
-> +	=C2=A0*	write_uwc_reg(window, VREG(LRX_WCRED_ADDER), 0ULL);
-> +	=C2=A0*/
+> +	 * This can be called either as a result of a HW interrupt or
+> +	 * as a "replay" because EOI decided there was still something
+> +	 * in one of the queues.
+> +	 *
+> +	 * First we perform an ACK cycle in order to update our mask
+> +	 * of pending priorities. This will also have the effect of
+> +	 * updating the CPPR to the most favored pending interrupts.
+> +	 *
+> +	 * In the future, if we have a way to differenciate a first
+> +	 * entry (on HW interrupt) from a replay triggered by EOI,
+> +	 * we could skip this on replays unless we soft-mask tells us
+> +	 * that a new HW interrupt occurred.
+> +	 */
+> +	xive_update_pending_irqs(xc);
+> +
+> +	DBG_VERBOSE("get_irq: pending=%02x\n", xc->pending_prio);
+> +
+> +	hirq = xive_scan_interrupts(xc, false);
+> +
+> +	DBG_VERBOSE("get_irq: got irq 0x%x, new pending=0x%02x\n",
+> +	    hirq, xc->pending_prio);
+> +
+> +	/* Return pending interrupt if any */
+> +	if (hirq == XIVE_BAD_IRQ)
+> +		return 0;
+> +	return hirq;
 > +}
 > +
-> +/*
-> + * Initialize window context registers related to Address Translation.
-> + * These registers are common to send/receive windows although they
-> + * differ for user/kernel windows. As we resolve the TODOs we may
-> + * want to add fields to vas_winctx and move the initialization to
-> + * init_vas_winctx_regs().
-> + */
-> +static void init_xlate_regs(struct vas_window *window, bool user_win)
+> +
+> +static void xive_do_queue_eoi(struct xive_cpu *xc)
 > +{
-> +	uint64_t lpcr, msr, val;
+> +	if (xive_scan_interrupts(xc, true) != 0) {
+> +		DBG_VERBOSE("eoi: pending=0x%02x\n", xc->pending_prio);
+> +		force_external_irq_replay();
+> +	}
+> +}
 > +
-> +	msr =3D mfmsr();
-> +	WARN_ON_ONCE(!(msr & MSR_SF));
-
-We don't support 32 bit userspace?  I would return an error rather than thi=
-s.
-
+> +static u8 xive_poke_esb(struct xive_irq_data *xd, u32 offset)
+> +{
+> +	u64 val;
 > +
-> +	val =3D 0ULL;
-> +	if (user_win) {
-> +		val =3D SET_FIELD(VAS_XLATE_MSR_DR, val, true);
-> +		val =3D SET_FIELD(VAS_XLATE_MSR_TA, val, false);
-> +		val =3D SET_FIELD(VAS_XLATE_MSR_PR, val, true);
-> +		val =3D SET_FIELD(VAS_XLATE_MSR_US, val, false);
-> +		val =3D SET_FIELD(VAS_XLATE_MSR_HV, val, true);
-> +		val =3D SET_FIELD(VAS_XLATE_MSR_SF, val, true);
-> +		val =3D SET_FIELD(VAS_XLATE_MSR_UV, val, false);
+> +	if (xd->flags & XIVE_IRQ_FLAG_SHIFT_BUG)
+> +		offset |= offset << 4;
+> +
+> +	val = in_be64(xd->eoi_mmio + offset);
+> +
+> +	return (u8)val;
+> +}
+> +
+> +static void xive_do_source_eoi(u32 hw_irq, struct xive_irq_data *xd)
+> +{
+> +	/* If the XIVE supports the new "store EOI facility, use it */
+> +	if (xd->flags & XIVE_IRQ_FLAG_STORE_EOI)
+> +		out_be64(xd->eoi_mmio, 0);
+> +	else if (hw_irq && xd->flags & XIVE_IRQ_FLAG_EOI_FW) {
+> +		if (WARN_ON_ONCE(!xive_ops->eoi))
+> +			return;
+> +		xive_ops->eoi(hw_irq);
 > +	} else {
-> +		val =3D SET_FIELD(VAS_XLATE_MSR_DR, val, false);
-
-kernel contexts don't go through the nestmmu?
-
-> +		val =3D SET_FIELD(VAS_XLATE_MSR_TA, val, false);
-> +		val =3D SET_FIELD(VAS_XLATE_MSR_PR, val, msr & MSR_PR);
-
-I don't understand this.  It should just be 0 for the kernel.
-
-> +		val =3D SET_FIELD(VAS_XLATE_MSR_US, val, false);
-> +		val =3D SET_FIELD(VAS_XLATE_MSR_HV, val, true);
-> +		val =3D SET_FIELD(VAS_XLATE_MSR_SF, val, true);
-> +		val =3D SET_FIELD(VAS_XLATE_MSR_UV, val, false);
-> +	}
-> +	write_hvwc_reg(window, VREG(XLATE_MSR), val);
+> +		uint8_t eoi_val;
 > +
-> +	lpcr =3D mfspr(SPRN_LPCR);
-> +	val =3D 0ULL;
-> +	/*
-> +	=C2=A0* NOTE: From Section 5.7.6.1 Segment Lookaside Buffer of the
-> +	=C2=A0*	=C2=A0Power ISA, v2.07, Page size encoding is 0 =3D 4KB, 5 =3D =
-64KB.
-> +	=C2=A0*
-> +	=C2=A0* NOTE: From Section 1.3.1, Address Translation Context of the
-> +	=C2=A0*	=C2=A0Nest MMU Workbook, LPCR_SC should be 0 for Power9.
-> +	=C2=A0*/
-> +	val =3D SET_FIELD(VAS_XLATE_LPCR_PAGE_SIZE, val, 5);
-> +	val =3D SET_FIELD(VAS_XLATE_LPCR_ISL, val, lpcr & LPCR_ISL);
-> +	val =3D SET_FIELD(VAS_XLATE_LPCR_TC, val, lpcr & LPCR_TC);
-> +	val =3D SET_FIELD(VAS_XLATE_LPCR_SC, val, 0);
-> +	write_hvwc_reg(window, VREG(XLATE_LPCR), val);
-> +
-> +	/*
-> +	=C2=A0* Section 1.3.1 (Address translation Context) of NMMU workbook.
-> +	=C2=A0*	0b00	Hashed Page Table mode
-> +	=C2=A0*	0b01	Reserved
-> +	=C2=A0*	0b10	Radix on HPT - not supported in P9
-> +	=C2=A0*	0b11	Radix on Radix (only mode supported in Linux on
-> P9).
+> +		/*
+> +		 * Otherwise for EOI, we use the special MMIO that does
+> +		 * a clear of both P and Q and returns the old Q.
+> +		 *
+> +		 * This allows us to then do a re-trigger if Q was set
+> +		 * rather than synthetizing an interrupt in software
+                               ^^^^^^^^^^^^ synthesizing
 
-Linux supports hash on P9.
-
-Does VAS only support radix?  If so you should error out if we are booted h=
-ash.
-
-> +	=C2=A0*/
-> +	val =3D 0ULL;
-> +	val =3D SET_FIELD(VAS_XLATE_MODE, val, 0x3);
-
-You can use radix_enabled() to set this for hash vs radix.
-
-> +	write_hvwc_reg(window, VREG(XLATE_CTL), val);
+> +		 */
+> +		eoi_val = xive_poke_esb(xd, XIVE_ESB_SET_PQ_00);
+> +		DBG_VERBOSE("eoi_val=%x\n", offset, eoi_val);
 > +
-> +	/*
-> +	=C2=A0* TODO: Can we mfspr(AMR) even for user windows?
-> +	=C2=A0*/
-> +	val =3D 0ULL;
-> +	val =3D SET_FIELD(VAS_AMR, val, mfspr(SPRN_AMR));
-> +	write_hvwc_reg(window, VREG(AMR), val);
+> +		if ((xd->flags & XIVE_IRQ_FLAG_LSI) || !(eoi_val & 1))
+> +			return;
 > +
-> +	/*
-> +	=C2=A0* TODO: Assuming Secure Executable ID Register (SEIDR) is only us=
-ed
-> +	=C2=A0*	=C2=A0in the ultravisor mode. Since MSR(UV) is 0 for now, set
-> SEIDR
-> +	=C2=A0*	=C2=A0to 0 as well, although we should 'mfspr(SEIDR)' at some
-> point.
-> +	=C2=A0*/
-> +	val =3D 0ULL;
-> +	val =3D SET_FIELD(VAS_SEIDR, val, 0);
-> +	write_hvwc_reg(window, VREG(SEIDR), val);
-> +}
-> +
-> +/*
-> + * Initialize Reserved Send Buffer Count for the send window. It involve=
-s
-> + * writing to the register, reading it back to confirm that the hardware
-> + * has enough buffers to reserve. See section 1.3.1.2.1 of VAS workbook.
-> + *
-> + * Since we can only make a best-effort attempt to fulfill the request,
-> + * we don't return any errors if we cannot.
-> + *
-> + * TODO: Reserved (aka dedicated) send buffers are not supported yet.
-> + */
-> +static void init_rsvd_tx_buf_count(struct vas_window *txwin,
-> +				struct vas_winctx *winctx)
-> +{
-> +	write_hvwc_reg(txwin, VREG(TX_RSVD_BUF_COUNT), 0ULL);
-> +}
-> +
-> +/*
-> + * Compute the log2() of the FIFO size expressed as kilobytes. It is int=
-ended
-> + * to be used to initialize the Local FIFO Size Register defined in Sect=
-ion
-> + * 3.14.25 of the VAS Workbook.
-
-There is a ilog2() function..
-
-> + */
-> +static int map_fifo_size_to_reg(int fifo_size)
-> +{
-> +	int kb;
-> +	int map;
-> +
-> +	kb =3D fifo_size / 1024;
-> +	if (!kb)
-> +		kb =3D 1;
-> +
-> +	map =3D -1;
-> +	while (kb) {
-> +		kb >>=3D 1;
-> +		map++;
+> +		/* Re-trigger */
+> +		if (xd->trig_mmio)
+> +			out_be64(xd->trig_mmio, 0);
 > +	}
 > +
-> +	return map;
 > +}
 > +
+> +static void xive_irq_eoi(struct irq_data *d)
+> +{
+> +	struct xive_irq_data *xd = irq_data_get_irq_handler_data(d);
+> +	struct xive_cpu *xc = __this_cpu_read(xive_cpu);
+> +
+> +	DBG_VERBOSE("eoi_irq: irq=%d [0x%lx] pending=%02x\n",
+> +		    d->irq, irqd_to_hwirq(d), xc->pending_prio);
+> +
+> +	if (!irqd_irq_disabled(d))
+> +		xive_do_source_eoi(irqd_to_hwirq(d), xd);
+> +
+> +	/*
+> +	 * Clear saved_p to indicate that it's no longer occupying
+> +	 * a queue slot on the target queue
+> +	 */
+> +	xd->saved_p = false;
+> +
+> +	xive_do_queue_eoi(xc);
+> +}
+> +
+> +static void xive_do_source_set_mask(struct xive_irq_data *xd,
+> +				    bool masked)
+> +{
+> +	if (masked)
+> +		xive_poke_esb(xd, XIVE_ESB_SET_PQ_01);
+> +	else
+> +		xive_poke_esb(xd, XIVE_ESB_SET_PQ_00);
+> +}
+> +
+> +static bool xive_try_pick_target(int cpu)
+> +{
+> +	struct xive_cpu *xc = per_cpu(xive_cpu, cpu);
+> +	struct xive_q *q = &xc->queue[xive_irq_priority];
+> +	int max;
+> +
+> +	/* Calculate max number of interrupts in that queue.
+> +	 *
+> +	 * We leave a gap of 1 just in case...
+> +	 */
+> +	max = (q->msk + 1) - 1;
+> +	return !!atomic_add_unless(&q->count, 1, max);
+> +}
+> +
+> +static void xive_dec_target_count(int cpu)
+> +{
+> +	struct xive_cpu *xc = per_cpu(xive_cpu, cpu);
+> +	struct xive_q *q = &xc->queue[xive_irq_priority];
+> +
+> +	if (WARN_ON(cpu < 0))
+> +		return;
+> +
+> +	/*
+> +	 * We increment the "pending count" which will be used
+> +	 * to decrement the target queue count whenever it's next
+> +	 * processed and found empty. This ensure that we don't
+> +	 * decrement while we still have the interrupt there
+> +	 * occupying a slot.
+> +	 */
+> +	atomic_inc(&q->pending_count);
+> +}
+> +
+> +static int xive_find_target_in_mask(const struct cpumask *mask,
+> +				    unsigned int fuzz)
+> +{
+> +	int cpu, first, num, i;
+> +
+> +	/* Pick up a starting point CPU in the mask based on  fuzz */
+> +	num = cpumask_weight(mask);
+> +	first = (fuzz++) % num;
+
+Incrementing fuzz here is not very useful, given it's a parameter and
+it's not used subsequently in this function.
+
+> +
+> +	/* Locate it */
+> +	cpu = cpumask_first(mask);
+> +	for (i = 0; i < first; i++)
+> +		cpu = cpumask_next(cpu, mask);
+> +	first = cpu;
+> +
+> +	/*
+> +	 * Now go through the entire mask until we find a valid
+> +	 * target.
+> +	 */
+> +	for (;;) {
+> +		/*
+> +		 * We re-check online as the fallback case passes us
+> +		 * an untested affinity mask
+> +		 */
+> +		if (cpu_online(cpu) && xive_try_pick_target(cpu))
+> +			return cpu;
+> +		cpu = cpumask_next(cpu, mask);
+
+Don't we need to wrap around from the end of the mask to the beginning
+here?  i.e. if (cpu == (none found)) cpu = cpumask_first(mask)
+
+> +		if (cpu == first)
+> +			break;
+> +	}
+> +	return -1;
+> +}
+> +
+> +static int xive_pick_irq_target(struct irq_data *d,
+> +				const struct cpumask *affinity)
+> +{
+> +	static unsigned int fuzz;
+> +	struct xive_irq_data *xd = irq_data_get_irq_handler_data(d);
+> +	cpumask_var_t mask;
+> +	int cpu = -1;
+> +
+> +	/*
+> +	 * Pick a target CPU for an interrupt. This is done at
+> +	 * startup or if the affinity is changed in a way that
+> +	 * invalidates the current target.
+> +	 */
+> +
+> +	/* If we have chip IDs, first we try to build a mask of
+> +	 * CPUs matching ther CPU and find a target in there
+> +	 */
+> +	if (xd->src_chip != XIVE_INVALID_CHIP_ID &&
+> +		zalloc_cpumask_var(&mask, GFP_ATOMIC)) {
+> +		/* Build a mask of matching chip IDs */
+> +		for_each_cpu_and(cpu, affinity, cpu_online_mask) {
+> +			struct xive_cpu *xc = per_cpu(xive_cpu, cpu);
+> +			if (xc->chip_id == xd->src_chip)
+> +				cpumask_set_cpu(cpu, mask);
+> +		}
+> +		/* Try to find a target */
+> +		if (!cpumask_empty(mask))
+> +			cpu = xive_find_target_in_mask(mask, fuzz++);
+> +		free_cpumask_var(mask);
+> +		if (cpu >= 0)
+> +			return cpu;
+> +		fuzz--;
+> +	}
+> +
+> +	/* No chip IDs, fallback to using the affinity mask */
+> +	return xive_find_target_in_mask(affinity, fuzz++);
+> +}
+> +
+> +static unsigned int xive_irq_startup(struct irq_data *d)
+> +{
+> +	struct xive_irq_data *xd = irq_data_get_irq_handler_data(d);
+> +	unsigned int hw_irq = (unsigned int)irqd_to_hwirq(d);
+> +	int target, rc;
+> +
+> +	DBG("xive_irq_startup: irq %d [0x%x] data @%p\n",
+> +	    d->irq, hw_irq, d);
+> +
+> +#ifdef CONFIG_PCI_MSI
+> +	/*
+> +	 * The generic MSI code returns with the interrupt disabled on the
+> +	 * card, using the MSI mask bits. Firmware doesn't appear to unmask
+> +	 * at that level, so we do it here by hand.
+> +	 */
+> +	if (irq_data_get_msi_desc(d))
+> +		pci_msi_unmask_irq(d);
+> +#endif
+> +
+> +	/* Pick a target */
+> +	target = xive_pick_irq_target(d, irq_data_get_affinity_mask(d));
+> +	if (target == XIVE_INVALID_TARGET) {
+> +		/* Try again breaking affinity */
+> +		target = xive_pick_irq_target(d, cpu_online_mask);
+> +		if (target == XIVE_INVALID_TARGET)
+> +			return -ENXIO;
+> +		pr_warn("XIVE: irq %d started with broken affinity\n",
+> +			d->irq);
+> +	}
+> +	xd->target = target;
+> +
+> +	/*
+> +	 * Configure the logical number to be the Linux IRQ number
+> +	 * and set the target queue
+> +	 */
+> +	rc = xive_ops->configure_irq(hw_irq,
+> +				     get_hard_smp_processor_id(target),
+> +				     xive_irq_priority, d->irq);
+> +	if (rc)
+> +		return rc;
+> +
+> +	/* Unmask the ESB */
+> +	xive_do_source_set_mask(xd, false);
+> +
+> +	return 0;
+> +}
+> +
+> +static void xive_irq_shutdown(struct irq_data *d)
+> +{
+> +	struct xive_irq_data *xd = irq_data_get_irq_handler_data(d);
+> +	unsigned int hw_irq = (unsigned int)irqd_to_hwirq(d);
+> +
+> +	DBG("xive_irq_shutdown: irq %d [0x%x] data @%p\n",
+> +	    d->irq, hw_irq, d);
+> +
+> +	if (WARN_ON(xd->target == XIVE_INVALID_TARGET))
+> +		return;
+> +
+> +	/* Mask the interrupt at the source */
+> +	xive_do_source_set_mask(xd, true);
+> +
+> +	/* Mask the interrupt in HW in the IVT/EAS */
+> +	xive_ops->configure_irq(hw_irq,
+> +				get_hard_smp_processor_id(xd->target),
+> +				0xff, hw_irq);
+> +
+> +	xive_dec_target_count(xd->target);
+> +	xd->target = XIVE_INVALID_TARGET;
+> +}
+> +
+> +static void xive_irq_unmask(struct irq_data *d)
+> +{
+> +	struct xive_irq_data *xd = irq_data_get_irq_handler_data(d);
+> +
+> +	DBG("xive_irq_unmask: irq %d data @%p\n", d->irq, xd);
+> +
+> +	/*
+> +	 * This is a workaround for PCI LSI problems on P9, for
+> +	 * these, we call FW to set the mask. The problems might
+> +	 * be fixed by P9 DD2.0, if that is the case, we will make
+> +	 * this a DD1 workaround only
+> +	 */
+> +	if (xd->flags & XIVE_IRQ_FLAG_MASK_FW) {
+> +		unsigned int hw_irq = (unsigned int)irqd_to_hwirq(d);
+> +		xive_ops->configure_irq(hw_irq,
+> +					get_hard_smp_processor_id(xd->target),
+> +					xive_irq_priority, d->irq);
+> +		return;
+> +	}
+> +
+> +	xive_do_source_set_mask(xd, false);
+> +}
+> +
+> +static void xive_irq_mask(struct irq_data *d)
+> +{
+> +	struct xive_irq_data *xd = irq_data_get_irq_handler_data(d);
+> +
+> +	DBG("xive_irq_mask: irq %d data @%p\n", d->irq, xd);
+> +
+> +	/*
+> +	 * This is a workaround for PCI LSI problems on P9, for
+> +	 * these, we call OPAL to set the mask. The problems might
+> +	 * be fixed by P9 DD2.0, if that is the case, we will make
+> +	 * this a DD1 workaround only
+> +	 */
+> +	if (xd->flags & XIVE_IRQ_FLAG_MASK_FW) {
+> +		unsigned int hw_irq = (unsigned int)irqd_to_hwirq(d);
+> +		xive_ops->configure_irq(hw_irq,
+> +					get_hard_smp_processor_id(xd->target),
+> +					0xff, d->irq);
+> +		return;
+> +	}
+> +
+> +	xive_do_source_set_mask(xd, true);
+> +}
+> +
+> +static int xive_irq_set_affinity(struct irq_data *d,
+> +				 const struct cpumask *cpumask,
+> +				 bool force)
+> +{
+> +	struct xive_irq_data *xd = irq_data_get_irq_handler_data(d);
+> +	unsigned int hw_irq = (unsigned int)irqd_to_hwirq(d);
+> +	u32 target, old_target;
+> +	int rc = 0;
+> +
+> +	DBG("xive_irq_set_affinity: irq %d\n", d->irq);
+> +
+> +	/* Is this valid ? */
+> +	if (cpumask_any_and(cpumask, cpu_online_mask) >= nr_cpu_ids)
+> +		return -EINVAL;
+> +
+> +	/* If existing target is already in the new mask, and is
+> +	 * online then do nothing.
+> +	 */
+> +	if (cpu_online(xd->target) &&
+> +	    cpumask_test_cpu(xd->target, cpumask))
+> +		return IRQ_SET_MASK_OK;
+> +
+> +	/* Pick a new target */
+> +	target = xive_pick_irq_target(d, cpumask);
+> +
+> +	/* No target found */
+> +	if (target == XIVE_INVALID_TARGET)
+> +		return -ENXIO;
+> +
+> +	old_target = xd->target;
+> +
+> +	/*
+> +	 * Only configure the irq if it's not currently passed-through to
+> +	 * a KVM guest
+
+Does the code here implement that, or is it a requirement on
+xive_ops->configure_irq, or is it not implemented in this patch but
+comes along in a later patch?
+
+> +	 */
+> +	rc = xive_ops->configure_irq(hw_irq,
+> +				     get_hard_smp_processor_id(target),
+> +				     xive_irq_priority, d->irq);
+> +	if (rc < 0) {
+> +		pr_err("XIVE: Error %d reconfiguring irq %d\n", rc, d->irq);
+> +		return rc;
+> +	}
+> +
+> +	DBG("  target: 0x%x\n", target);
+> +	xd->target = target;
+> +
+> +	/* Give up previous target */
+> +	if (old_target != XIVE_INVALID_TARGET)
+> +	    xive_dec_target_count(old_target);
+> +
+> +	return IRQ_SET_MASK_OK;
+> +}
+> +
+> +static int xive_irq_set_type(struct irq_data *d, unsigned int flow_type)
+> +{
+> +	struct xive_irq_data *xd = irq_data_get_irq_handler_data(d);
+> +
+> +	/*
+> +	 * We only support these. This has really no effect other than setting
+> +	 * the corresponding descriptor bits mind you but those will in turn
+> +	 * affect the resend function when re-enabling an edge interrupt.
+> +	 *
+> +	 * Set set the default to edge as explained in map().
+> +	 */
+> +	if (flow_type == IRQ_TYPE_DEFAULT || flow_type == IRQ_TYPE_NONE)
+> +		flow_type = IRQ_TYPE_EDGE_RISING;
+> +
+> +	if (flow_type != IRQ_TYPE_EDGE_RISING &&
+> +	    flow_type != IRQ_TYPE_LEVEL_LOW)
+> +		return -EINVAL;
+> +
+> +	irqd_set_trigger_type(d, flow_type);
+> +
+> +	/*
+> +	 * Double check it matches what the FW thinks
+> +	 *
+> +	 * NOTE: We don't know yet if the PAPR interface will provide
+> +	 * the LSI vs MSI information appart from the device-tree so
+                                      ^^^^^^ apart
+
+> +	 * this check might have to move into an optional backend call
+> +	 * that is specific to the native backend
+> +	 */
+> +	if ((flow_type == IRQ_TYPE_LEVEL_LOW) !=
+> +	    !!(xd->flags & XIVE_IRQ_FLAG_LSI))
+> +		pr_warn("XIVE: Interrupt %d (HW 0x%x) type mismatch,"
+> +			" Linux says %s, FW says %s\n",
+> +			d->irq, (u32)irqd_to_hwirq(d),
+> +			(flow_type == IRQ_TYPE_LEVEL_LOW) ? "Level" : "Edge",
+> +			(xd->flags & XIVE_IRQ_FLAG_LSI) ? "Level" : "Edge");
+> +
+> +	return IRQ_SET_MASK_OK_NOCOPY;
+> +}
+> +
+> +static int xive_irq_retrigger(struct irq_data *d)
+> +{
+> +	struct xive_irq_data *xd = irq_data_get_irq_handler_data(d);
+> +
+> +	/* This should be only for MSIs */
+> +	if (WARN_ON(xd->flags & XIVE_IRQ_FLAG_LSI))
+> +		return 0;
+> +
+> +	/*
+> +	 * To perform a retrigger, we first set the PQ bits to
+> +	 * 11, then perform an EOI.
+> +	 */
+> +	xive_poke_esb(xd, XIVE_ESB_SET_PQ_11);
+> +
+> +	/*
+> +	 * Note: We pass "0" to the hw_irq argument in order to
+> +	 * avoid calling into the backend EOI code which we don't
+> +	 * want to do in the case of a re-trigger. Backends typically
+> +	 * only do EOI for LSIs anyway.
+> +	 */
+> +	xive_do_source_eoi(0, xd);
+> +
+> +	return 1;
+> +}
+> +
+> +static struct irq_chip xive_irq_chip = {
+> +	.name = "XIVE-IRQ",
+> +	.irq_startup = xive_irq_startup,
+> +	.irq_shutdown = xive_irq_shutdown,
+> +	.irq_eoi = xive_irq_eoi,
+> +	.irq_mask = xive_irq_mask,
+> +	.irq_unmask = xive_irq_unmask,
+> +	.irq_set_affinity = xive_irq_set_affinity,
+> +	.irq_set_type = xive_irq_set_type,
+> +	.irq_retrigger = xive_irq_retrigger,
+> +};
+> +
+> +bool is_xive_irq(struct irq_chip *chip)
+> +{
+> +	return chip == &xive_irq_chip;
+> +}
+> +
+> +void xive_cleanup_irq_data(struct xive_irq_data *xd)
+> +{
+> +	if (xd->eoi_mmio) {
+> +		iounmap(xd->eoi_mmio);
+> +		if (xd->eoi_mmio == xd->trig_mmio)
+> +			xd->trig_mmio = NULL;
+> +		xd->eoi_mmio = NULL;
+> +	}
+> +	if (xd->trig_mmio) {
+> +		iounmap(xd->trig_mmio);
+> +		xd->trig_mmio = NULL;
+> +	}
+> +}
+> +
+> +static int xive_irq_alloc_data(unsigned int virq, irq_hw_number_t hw)
+> +{
+> +	struct xive_irq_data *xd;
+> +	int rc;
+> +
+> +	xd = kzalloc(sizeof(struct xive_irq_data), GFP_KERNEL);
+> +	if (!xd)
+> +		return -ENOMEM;
+> +	rc = xive_ops->populate_irq_data(hw, xd);
+> +	if (rc) {
+> +		kfree(xd);
+> +		return rc;
+> +	}
+> +	xd->target = XIVE_INVALID_TARGET;
+> +	irq_set_handler_data(virq, xd);
+> +
+> +	return 0;
+> +}
+> +
+> +static void xive_irq_free_data(unsigned int virq)
+> +{
+> +	struct xive_irq_data *xd = irq_get_handler_data(virq);
+> +
+> +	if (!xd)
+> +		return;
+> +	irq_set_handler_data(virq, NULL);
+> +	xive_cleanup_irq_data(xd);
+> +	kfree(xd);
+> +}
+> +
+> +#ifdef CONFIG_SMP
+> +
+> +static void xive_cause_ipi(int cpu, unsigned long msg)
+> +{
+> +	struct xive_cpu *xc;
+> +	struct xive_irq_data *xd;
+> +
+> +	xc = per_cpu(xive_cpu, cpu);
+> +
+> +	DBG_VERBOSE("IPI msg#%ld CPU %d -> %d (HW IRQ 0x%x)\n",
+> +		    msg, smp_processor_id(), cpu, xc->hw_ipi);
+> +
+> +	xd = &xc->ipi_data;
+> +	if (WARN_ON(!xd->trig_mmio))
+> +		return;
+> +	out_be64(xd->trig_mmio, 0);
+> +}
+> +
+> +static irqreturn_t xive_muxed_ipi_action(int irq, void *dev_id)
+> +{
+> +	return smp_ipi_demux();
+> +}
+> +
+> +static void xive_ipi_eoi(struct irq_data *d)
+> +{
+> +	struct xive_cpu *xc = __this_cpu_read(xive_cpu);
+> +
+> +	/* Handle possible race with unplug and drop stale IPIs */
+> +	if (!xc)
+> +		return;
+> +	xive_do_source_eoi(xc->hw_ipi, &xc->ipi_data);
+> +	xive_do_queue_eoi(xc);
+> +}
+> +
+> +static void xive_ipi_unmask(struct irq_data *d)
+> +{
+> +	/* Nothing to do, we never mask IPIs, but the callback
+> +	 * must exist
+> +	 */
+> +}
+> +
+> +static void xive_ipi_mask(struct irq_data *d)
+> +{
+> +	/* Nothing to do, we never mask IPIs, but the callback
+> +	 * must exist
+> +	 */
+> +}
+> +
+> +static struct irq_chip xive_ipi_chip = {
+> +	.name = "XIVE-IPI",
+> +	.irq_eoi = xive_ipi_eoi,
+> +	.irq_mask = xive_ipi_mask,
+> +	.irq_unmask = xive_ipi_unmask,
+> +};
+> +
+> +static void __init xive_request_ipi(void)
+> +{
+> +	unsigned int virq;
+> +
+> +	/* Initialize it */
+> +	virq = irq_create_mapping(xive_irq_domain, 0);
+> +	xive_ipi_irq = virq;
+> +
+> +	BUG_ON(request_irq(virq, xive_muxed_ipi_action,
+> +			   IRQF_PERCPU | IRQF_NO_THREAD, "IPI", NULL));
+> +}
+> +
+> +static int xive_setup_cpu_ipi(unsigned int cpu)
+> +{
+> +	struct xive_cpu *xc;
+> +	int rc;
+> +
+> +	pr_debug("XIVE: Setting up IPI for CPU %d\n", cpu);
+> +
+> +	xc = per_cpu(xive_cpu, cpu);
+> +
+> +	/* Check if we are already setup */
+> +	if (xc->hw_ipi != 0)
+> +		return 0;
+> +
+> +	/* Grab an IPI from the backend, this will populate xc->hw_ipi */
+> +	if (xive_ops->get_ipi(cpu, xc))
+> +		return -EIO;
+> +
+> +	/* Populate the IRQ data in the xive_cpu structure and
+> +	 * configure the HW / enable the IPIs
+> +	 */
+> +	rc = xive_ops->populate_irq_data(xc->hw_ipi, &xc->ipi_data);
+> +	if (rc) {
+> +		pr_err("XIVE: Failed to populate IPI data on CPU %d\n", cpu);
+> +		return -EIO;
+> +	}
+> +	rc = xive_ops->configure_irq(xc->hw_ipi,
+> +				     get_hard_smp_processor_id(cpu),
+> +				     xive_irq_priority, xive_ipi_irq);
+> +	if (rc) {
+> +		pr_err("XIVE: Failed to map IPI CPU %d\n", cpu);
+> +		return -EIO;
+> +	}
+> +	DBG("XIVE: CPU %d HW IPI %x, virq %d, trig_mmio=%p\n", cpu,
+> +	    xc->hw_ipi, xive_ipi_irq, xc->ipi_data.trig_mmio);
+> +
+> +	/* Unmask it */
+> +	xive_do_source_set_mask(&xc->ipi_data, false);
+> +
+> +	return 0;
+> +}
+> +
+> +static void xive_cleanup_cpu_ipi(unsigned int cpu, struct xive_cpu *xc)
+> +{
+> +	/* Disable the IPI and free the IRQ data */
+> +
+> +	/* Already cleaned up ? */
+> +	if (xc->hw_ipi == 0)
+> +		return;
+> +
+> +	/* Mask the IPI */
+> +	xive_do_source_set_mask(&xc->ipi_data, true);
+> +
+> +	/*
+> +	 * Note: We don't call xive_cleanup_irq_data() to free
+> +	 * the mappings as this is called from an IPI on kexec
+> +	 * which is not a safe environment to call iounmap()
+> +	 */
+> +
+> +	/* Deconfigure/mask in the backend */
+> +	xive_ops->configure_irq(xc->hw_ipi, hard_smp_processor_id(),
+> +				0xff, xive_ipi_irq);
+> +
+> +	/* Free the IPIs in the backend */
+> +	xive_ops->put_ipi(cpu, xc);
+> +}
+> +
+> +void __init xive_smp_probe(void)
+> +{
+> +	smp_ops->cause_ipi = xive_cause_ipi;
+> +
+> +	/* Register the IPI */
+> +	xive_request_ipi();
+> +
+> +	/* Allocate and setup IPI for the boot CPU */
+> +	xive_setup_cpu_ipi(smp_processor_id());
+> +}
+> +
+> +#endif /* CONFIG_SMP */
+> +
+> +static int xive_irq_domain_map(struct irq_domain *h, unsigned int virq,
+> +			       irq_hw_number_t hw)
+> +{
+> +	int rc;
+> +
+> +	/*
+> +	 * Mark interrupts as edge sensitive by default so that resend
+> +	 * actually works. Will fix that up below if needed.
+> +	 */
+> +	irq_clear_status_flags(virq, IRQ_LEVEL);
+> +
+> +	/* IPIs are special and come up with HW number 0 */
+> +	if (hw == 0) {
+> +		/*
+> +		 * IPIs are marked per-cpu. We use separate HW interrupts under
+> +		 * the hood but associated with the same "linux" interrupt
+> +		 */
+> +		irq_set_chip_and_handler(virq, &xive_ipi_chip,
+> +					 handle_percpu_irq);
+> +		return 0;
+> +	}
+> +
+> +	rc = xive_irq_alloc_data(virq, hw);
+> +	if (rc)
+> +		return rc;
+> +
+> +	irq_set_chip_and_handler(virq, &xive_irq_chip, handle_fasteoi_irq);
+> +
+> +	return 0;
+> +}
+> +
+> +static void xive_irq_domain_unmap(struct irq_domain *d, unsigned int virq)
+> +{
+> +	struct irq_data *data = irq_get_irq_data(virq);
+> +	unsigned int hw_irq;
+> +
+> +	if (!data)
+> +		return;
+> +	hw_irq = (unsigned int)irqd_to_hwirq(data);
+> +	if (hw_irq)
+> +		xive_irq_free_data(virq);
+> +}
+> +
+> +static int xive_irq_domain_xlate(struct irq_domain *h, struct device_node *ct,
+> +				 const u32 *intspec, unsigned int intsize,
+> +				 irq_hw_number_t *out_hwirq, unsigned int *out_flags)
+> +
+> +{
+> +	*out_hwirq = intspec[0];
+> +
+> +	/*
+> +	 * If intsize is at least 2, we look for the type in the second cell,
+> +	 * we assume the LSB indicates a level interrupt.
+> +	 */
+> +	if (intsize > 1) {
+> +		if (intspec[1] & 1)
+> +			*out_flags = IRQ_TYPE_LEVEL_LOW;
+> +		else
+> +			*out_flags = IRQ_TYPE_EDGE_RISING;
+> +	} else
+> +		*out_flags = IRQ_TYPE_LEVEL_LOW;
+> +
+> +	return 0;
+> +}
+> +
+> +static int xive_irq_domain_match(struct irq_domain *h, struct device_node *node,
+> +				 enum irq_domain_bus_token bus_token)
+> +{
+> +	return xive_ops->match(node);
+> +}
+> +
+> +static const struct irq_domain_ops xive_irq_domain_ops = {
+> +	.match = xive_irq_domain_match,
+> +	.map = xive_irq_domain_map,
+> +	.unmap = xive_irq_domain_unmap,
+> +	.xlate = xive_irq_domain_xlate,
+> +};
+> +
+> +static void __init xive_init_host(void)
+> +{
+> +	xive_irq_domain = irq_domain_add_nomap(NULL, XIVE_MAX_IRQ,
+> +					       &xive_irq_domain_ops, NULL);
+> +	BUG_ON(xive_irq_domain == NULL);
+> +	irq_set_default_host(xive_irq_domain);
+> +}
+> +
+> +static void xive_cleanup_cpu_queues(unsigned int cpu, struct xive_cpu *xc)
+> +{
+> +	if (xc->queue[xive_irq_priority].qpage)
+> +		xive_ops->cleanup_queue(cpu, xc, xive_irq_priority);
+> +}
+> +
+> +static int xive_setup_cpu_queues(unsigned int cpu, struct xive_cpu *xc)
+> +{
+> +	int rc = 0;
+> +
+> +	/* We setup 1 queues for now with a 64k page */
+> +	if (!xc->queue[xive_irq_priority].qpage)
+> +		rc = xive_ops->setup_queue(cpu, xc, xive_irq_priority);
+> +
+> +	return rc;
+> +}
+> +
+> +static int xive_prepare_cpu(unsigned int cpu)
+> +{
+> +	struct xive_cpu *xc;
+> +
+> +	xc = per_cpu(xive_cpu, cpu);
+> +	if (!xc) {
+> +		struct device_node *np;
+> +
+> +		xc = kzalloc_node(sizeof(struct xive_cpu),
+> +				  GFP_KERNEL, cpu_to_node(cpu));
+> +		if (!xc)
+> +			return -ENOMEM;
+> +		np = of_get_cpu_node(cpu, NULL);
+> +		if (np)
+> +			xc->chip_id = of_get_ibm_chip_id(np);
+> +		of_node_put(np);
+> +
+> +		per_cpu(xive_cpu, cpu) = xc;
+> +	}
+> +
+> +	/* Setup EQs if not already */
+> +	return xive_setup_cpu_queues(cpu, xc);
+> +}
+> +
+> +static void xive_setup_cpu(void)
+> +{
+> +	struct xive_cpu *xc = __this_cpu_read(xive_cpu);
+> +
+> +	/* Debug: Dump the TM state */
+> +	DBG("CPU %d [HW 0x%02x] VT=%02x\n",
+> +	    smp_processor_id(), hard_smp_processor_id(),
+> +	    in_8(xive_tm_area + xive_tm_offset + TM_WORD2));
+> +
+> +	/* The backend might have additional things to do */
+> +	if (xive_ops->setup_cpu)
+> +		xive_ops->setup_cpu(smp_processor_id(), xc);
+> +
+> +	/* Set CPPR to 0xff to enable flow of interrupts */
+> +	xc->cppr = 0xff;
+> +	out_8(xive_tm_area + xive_tm_offset + TM_CPPR, 0xff);
+> +}
+> +
+> +#ifdef CONFIG_SMP
+> +void xive_smp_setup_cpu(void)
+> +{
+> +	DBG("XIVE: SMP setup CPU %d\n", smp_processor_id());
+> +
+> +	/* This will have already been done on the boot CPU */
+> +	if (smp_processor_id() != boot_cpuid)
+> +		xive_setup_cpu();
+> +
+> +}
+> +
+> +int xive_smp_prepare_cpu(unsigned int cpu)
+> +{
+> +	int rc;
+> +
+> +	/* Allocate per-CPU data and queues */
+> +	rc = xive_prepare_cpu(cpu);
+> +	if (rc)
+> +		return rc;
+> +
+> +	/* Allocate and setup IPI for the new CPU */
+> +	return xive_setup_cpu_ipi(cpu);
+> +}
+> +
+> +#ifdef CONFIG_HOTPLUG_CPU
+> +static void xive_flush_cpu_queue(unsigned int cpu, struct xive_cpu *xc)
+> +{
+> +	u32 irq;
+> +
+> +	/* We assume local irqs are disabled */
+> +	WARN_ON(!irqs_disabled());
+> +
+> +	/* Check what's already in the CPU queue */
+> +	while ((irq = xive_scan_interrupts(xc, false)) != 0) {
+> +		/*
+> +		 * We need to re-route that interrupt to its new distination.
+                                                     destination ^^^^^^^^^^^
+
+
+> +		 * First get and lock the descriptor
+> +		 */
+> +		struct irq_desc *desc = irq_to_desc(irq);
+> +		struct irq_data *d = irq_desc_get_irq_data(desc);
+> +		struct xive_irq_data *xd;
+> +		unsigned int hw_irq = (unsigned int)irqd_to_hwirq(d);
+> +
+> +		/*
+> +		 * Ignore anything that isn't a XIVE irq and ignore
+> +		 * IPIs, so can just be dropped.
+> +		 */
+> +		if (d->domain != xive_irq_domain || hw_irq == 0)
+> +			continue;
+> +#ifdef DEBUG_FLUSH
+> +		pr_info("CPU %d: Got irq %d while offline, re-routing...\n",
+> +			cpu, irq);
+> +#endif
+> +		raw_spin_lock(&desc->lock);
+> +		xd = irq_desc_get_handler_data(desc);
+
+What actually does the rerouting here?  Nothing in this loop has a
+name that would lead me to think that it is the thing that is doing
+the rerouting.
+
+> +
+> +		/* For LSIs, we EOI, this will cause a resend if it's
+> +		 * still asserted. Otherwise do an MSI retrigger
+> +		 */
+> +		if (xd->flags & XIVE_IRQ_FLAG_LSI)
+> +			xive_do_source_eoi(irqd_to_hwirq(d), xd);
+> +		else
+> +			xive_irq_retrigger(d);
+> +		raw_spin_unlock(&desc->lock);
+> +	}
+> +}
+> +
+> +void xive_smp_disable_cpu(void)
+> +{
+> +	struct xive_cpu *xc = __this_cpu_read(xive_cpu);
+> +	unsigned int cpu = smp_processor_id();
+> +
+> +	/* Migrate interrupts away from the CPU */
+> +	irq_migrate_all_off_this_cpu();
+> +
+> +	/* Set CPPR to 0 to disable flow of interrupts */
+> +	xc->cppr = 0;
+> +	out_8(xive_tm_area + xive_tm_offset + TM_CPPR, 0);
+> +
+> +	/* Flush everything still in the queue */
+> +	xive_flush_cpu_queue(cpu, xc);
+> +
+> +	/* Re-enable CPPR  */
+> +	xc->cppr = 0xff;
+> +	out_8(xive_tm_area + xive_tm_offset + TM_CPPR, 0xff);
+> +}
+> +
+> +void xive_flush_interrupt(void)
+> +{
+> +	struct xive_cpu *xc = __this_cpu_read(xive_cpu);
+> +	unsigned int cpu = smp_processor_id();
+> +
+> +	/* Called if an interrupt occurs while the CPU is hot unplugged */
+> +	xive_flush_cpu_queue(cpu, xc);
+> +}
+> +
+> +#endif /* CONFIG_HOTPLUG_CPU */
+> +
+> +#endif /* CONFIG_SMP */
+> +
+> +void xive_kexec_teardown_cpu(int secondary)
+> +{
+> +	struct xive_cpu *xc = __this_cpu_read(xive_cpu);
+> +	unsigned int cpu = smp_processor_id();
+> +
+> +	/* Set CPPR to 0 to disable flow of interrupts */
+> +	xc->cppr = 0;
+> +	out_8(xive_tm_area + xive_tm_offset + TM_CPPR, 0);
+> +
+> +	/* Backend cleanup if any */
+> +	if (xive_ops->teardown_cpu)
+> +		xive_ops->teardown_cpu(cpu, xc);
+> +
+> +	/* Get rid of IPI */
+> +	xive_cleanup_cpu_ipi(cpu, xc);
+> +
+> +	/* Disable and free the queues */
+> +	xive_cleanup_cpu_queues(cpu, xc);
+> +}
+> +
+> +void xive_shutdown(void)
+> +{
+> +	xive_ops->shutdown();
+> +}
+> +
+> +bool xive_core_init(const struct xive_ops *ops, void __iomem *area, u32 offset,
+> +		    u8 max_prio)
+> +{
+> +	xive_tm_area = area;
+> +	xive_tm_offset = offset;
+> +	xive_ops = ops;
+> +	xive_irq_priority = max_prio;
+> +
+> +	ppc_md.get_irq = xive_get_irq;
+> +	__xive_enabled = true;
+> +
+> +	DBG("Initializing host..\n");
+> +	xive_init_host();
+> +
+> +	DBG("Initializing boot CPU..\n");
+> +
+> +	/* Allocate per-CPU data and queues */
+> +	xive_prepare_cpu(smp_processor_id());
+> +
+> +	/* Get ready for interrupts */
+> +	xive_setup_cpu();
+> +
+> +	pr_info("XIVE: Interrupt handling intialized with %s backend\n",
+> +		xive_ops->name);
+> +	pr_info("XIVE: Using priority %d for all interrupts\n", max_prio);
+> +
+> +	return true;
+> +}
+> +
+> +static int __init xive_off(char *arg)
+> +{
+> +	xive_cmdline_disabled = true;
+> +	return 0;
+> +}
+> +__setup("xive=off", xive_off);
+> diff --git a/arch/powerpc/sysdev/xive/native.c b/arch/powerpc/sysdev/xive/native.c
+> new file mode 100644
+> index 0000000..26cc6bf
+> --- /dev/null
+> +++ b/arch/powerpc/sysdev/xive/native.c
+> @@ -0,0 +1,604 @@
+> +/*
+> + * Copyright 2016,2017 IBM Corporation.
+> + *
+> + * This program is free software; you can redistribute it and/or
+> + * modify it under the terms of the GNU General Public License
+> + * as published by the Free Software Foundation; either version
+> + * 2 of the License, or (at your option) any later version.
+> + */
+> +#include <linux/types.h>
+> +#include <linux/irq.h>
+> +#include <linux/debugfs.h>
+> +#include <linux/smp.h>
+> +#include <linux/interrupt.h>
+> +#include <linux/seq_file.h>
+> +#include <linux/init.h>
+> +#include <linux/of.h>
+> +#include <linux/slab.h>
+> +#include <linux/spinlock.h>
+> +#include <linux/delay.h>
+> +#include <linux/cpumask.h>
+> +#include <linux/mm.h>
+> +
+> +#include <asm/prom.h>
+> +#include <asm/io.h>
+> +#include <asm/smp.h>
+> +#include <asm/irq.h>
+> +#include <asm/errno.h>
+> +#include <asm/xive.h>
+> +#include <asm/opal.h>
+> +
+> +#include "xive-regs.h"
+> +#include "xive-internal.h"
+> +
+> +#define DBG(fmt...)	pr_devel("XIVE: " fmt)
+> +
+> +/* Enable this for using queue MMIO page for EOI. We don't currently
+> + * use it as we always notify
+> + */
+> +#undef USE_QUEUE_MMIO
+> +
+> +static u32 xive_provision_size;
+> +static u32 *xive_provision_chips;
+> +static u32 xive_provision_chip_count;
+> +static u32 xive_queue_shift;
+> +static u32 xive_pool_vps = XIVE_INVALID_VP;
+> +static struct kmem_cache *xive_provision_cache;
+> +
+> +int xive_native_populate_irq_data(u32 hw_irq, struct xive_irq_data *data)
+> +{
+> +	__be64 flags, eoi_page, trig_page;
+> +	__be32 esb_shift, src_chip;
+> +	u64 opal_flags;
+> +	s64 rc;
+> +
+> +	memset(data, 0, sizeof(*data));
+> +
+> +	rc = opal_xive_get_irq_info(hw_irq, &flags, &eoi_page, &trig_page,
+> +				    &esb_shift, &src_chip);
+> +	if (rc) {
+> +		pr_err("XIVE: opal_xive_get_irq_info(0x%x) returned %lld\n",
+> +		       hw_irq, rc);
+> +		return -EINVAL;
+> +	}
+> +
+> +	opal_flags = be64_to_cpu(flags);
+> +	if (opal_flags & OPAL_XIVE_IRQ_STORE_EOI)
+> +		data->flags |= XIVE_IRQ_FLAG_STORE_EOI;
+> +	if (opal_flags & OPAL_XIVE_IRQ_LSI)
+> +		data->flags |= XIVE_IRQ_FLAG_LSI;
+> +	if (opal_flags & OPAL_XIVE_IRQ_SHIFT_BUG)
+> +		data->flags |= XIVE_IRQ_FLAG_SHIFT_BUG;
+> +	if (opal_flags & OPAL_XIVE_IRQ_MASK_VIA_FW)
+> +		data->flags |= XIVE_IRQ_FLAG_MASK_FW;
+> +	if (opal_flags & OPAL_XIVE_IRQ_EOI_VIA_FW)
+> +		data->flags |= XIVE_IRQ_FLAG_EOI_FW;
+> +	data->eoi_page = be64_to_cpu(eoi_page);
+> +	data->trig_page = be64_to_cpu(trig_page);
+> +	data->esb_shift = be32_to_cpu(esb_shift);
+> +	data->src_chip = be32_to_cpu(src_chip);
+> +
+> +	data->eoi_mmio = ioremap(data->eoi_page, 1u << data->esb_shift);
+> +	if (!data->eoi_mmio) {
+> +		pr_err("XIVE: Failed to map EOI page for irq 0x%x\n", hw_irq);
+> +		return -ENOMEM;
+> +	}
+> +
+> +	if (!data->trig_page)
+> +		return 0;
+> +	if (data->trig_page == data->eoi_page) {
+> +		data->trig_mmio = data->eoi_mmio;
+> +		return 0;
+> +	}
+> +
+> +	data->trig_mmio = ioremap(data->trig_page, 1u << data->esb_shift);
+> +	if (!data->trig_mmio) {
+> +		pr_err("XIVE: Failed to map trigger page for irq 0x%x\n", hw_irq);
+> +		return -ENOMEM;
+> +	}
+> +	return 0;
+> +}
+> +
+> +int xive_native_configure_irq(u32 hw_irq, u32 target, u8 prio, u32 sw_irq)
+> +{
+> +	s64 rc;
+> +
+> +	for (;;) {
+> +		rc = opal_xive_set_irq_config(hw_irq, target, prio, sw_irq);
+> +		if (rc != OPAL_BUSY)
+> +			break;
+> +		msleep(1);
+> +	}
+> +	return rc == 0 ? 0 : -ENXIO;
+> +}
+> +
+> +/* This can be called multiple time to change a queue configuration */
+> +int xive_native_configure_queue(u32 vp_id, struct xive_q *q, u8 prio,
+> +				__be32 *qpage, u32 order, bool can_escalate)
+> +{
+> +	s64 rc = 0;
+> +	__be64 qeoi_page_be;
+> +	__be32 esc_irq_be;
+> +	u64 flags, qpage_phys;
+> +
+> +	/* If there's an actual queue page, clean it */
+> +	if (order) {
+> +		BUG_ON(!qpage);
+> +		qpage_phys = __pa(qpage);
+> +	} else
+> +		qpage_phys = 0;
+> +
+> +	/* Initialize the rest of the fields */
+> +	q->msk = order ? ((1u << (order - 2)) - 1) : 0;
+> +	q->idx = 0;
+> +	q->toggle = 0;
+> +
+> +	rc = opal_xive_get_queue_info(vp_id, prio, NULL, NULL,
+> +				      &qeoi_page_be,
+> +				      &esc_irq_be,
+> +				      NULL);
+> +	if (rc) {
+> +		pr_err("XIVE: Error %lld getting queue info prio %d\n",
+> +		       rc, prio);
+> +		rc = -EIO;
+> +		goto fail;
+> +	}
+> +	q->eoi_phys = be64_to_cpu(qeoi_page_be);
+> +
+> +#ifdef USE_QUEUE_MMIO
+> +	if (!q->eoi_mmio)
+> +		q->eoi_mmio = ioremap(q->eoi_phys, PAGE_SIZE);
+> +	if (!q->eoi_mmio) {
+> +		pr_err("XIVE: Failed to map queue MMIO prio %d CPU %d\n",
+> +		       rc, prio, cpu);
+> +		rc = -ENOMEM;
+> +		goto fail;
+> +	}
+> +#endif /* USE_QUEUE_MMIO */
+> +
+> +	/* Default flags */
+> +	flags = OPAL_XIVE_EQ_ALWAYS_NOTIFY | OPAL_XIVE_EQ_ENABLED;
+> +
+> +	/* Escalation needed ? */
+> +	if (can_escalate) {
+> +		q->esc_irq = be32_to_cpu(esc_irq_be);
+> +		flags |= OPAL_XIVE_EQ_ESCALATE;
+> +	}
+> +
+> +	/* Configure and enable the queue in HW */
+> +	for (;;) {
+> +		rc = opal_xive_set_queue_info(vp_id, prio, qpage_phys, order, flags);
+> +		if (rc != OPAL_BUSY)
+> +			break;
+> +		msleep(1);
+> +	}
+> +	if (rc) {
+> +		pr_err("XIVE: Error %lld setting queue for prio %d\n",
+> +		       rc, prio);
+> +		rc = -EIO;
+> +	} else {
+> +		/*
+> +		 * KVM code requires all of the above to be visible before
+> +		 * q->qpage is set due to how it manages IPI EOIs
+> +		 */
+> +		wmb();
+> +		q->qpage = qpage;
+> +	}
+> + fail:
+> +	return rc;
+> +}
+> +
+> +static void __xive_native_disable_queue(u32 vp_id, struct xive_q *q, u8 prio)
+> +{
+> +	s64 rc;
+> +
+> +	/* Disable the queue in HW */
+> +	for (;;) {
+> +		rc = opal_xive_set_queue_info(vp_id, prio, 0, 0, 0);
+> +			break;
+> +		msleep(1);
+> +	}
+> +	if (rc)
+> +		pr_err("XIVE: Error %lld disabling queue for prio %d\n",
+> +		       rc, prio);
+> +}
+> +
+> +void xive_native_disable_queue(u32 vp_id, struct xive_q *q, u8 prio)
+> +{
+> +	__xive_native_disable_queue(vp_id, q, prio);
+> +
+> +	if (q->eoi_mmio)
+> +		iounmap(q->eoi_mmio);
+> +	q->eoi_mmio = NULL;
+> +}
+> +
+> +static int xive_native_setup_queue(unsigned int cpu, struct xive_cpu *xc, u8 prio)
+> +{
+> +	struct xive_q *q = &xc->queue[prio];
+> +	unsigned int alloc_order;
+> +	struct page *pages;
+> +	__be32 *qpage;
+> +
+> +	alloc_order = (xive_queue_shift > PAGE_SHIFT) ?
+> +		(xive_queue_shift - PAGE_SHIFT) : 0;
+> +	pages = alloc_pages_node(cpu_to_node(cpu), GFP_KERNEL, alloc_order);
+> +	if (!pages)
+> +		return -ENOMEM;
+> +	qpage = (__be32 *)page_address(pages);
+> +	memset(qpage, 0, 1 << xive_queue_shift);
+> +	return xive_native_configure_queue(get_hard_smp_processor_id(cpu),
+> +					   q, prio, qpage, xive_queue_shift, false);
+> +}
+> +
+> +static void xive_native_cleanup_queue(unsigned int cpu, struct xive_cpu *xc, u8 prio)
+> +{
+> +	struct xive_q *q = &xc->queue[prio];
+> +	unsigned int alloc_order;
+> +
+> +	/*
+> +	 * We use the variant with no iounmap as this is called on exec
+> +	 * from an IPI and iounmap isn't safe
+> +	 */
+> +	__xive_native_disable_queue(get_hard_smp_processor_id(cpu), q, prio);
+> +	alloc_order = (xive_queue_shift > PAGE_SHIFT) ?
+> +		(xive_queue_shift - PAGE_SHIFT) : 0;
+> +	free_pages((unsigned long)q->qpage, alloc_order);
+> +	q->qpage = NULL;
+> +}
+> +
+> +static bool xive_native_match(struct device_node *node)
+> +{
+> +	return of_device_is_compatible(node, "ibm,opal-xive-vc");
+> +}
+> +
+> +#ifdef CONFIG_SMP
+> +static int xive_native_get_ipi(unsigned int cpu, struct xive_cpu *xc)
+> +{
+> +	struct device_node *np;
+> +	unsigned int chip_id;
+> +	s64 irq;
+> +
+> +	/* Find the chip ID */
+> +	np = of_get_cpu_node(cpu, NULL);
+> +	if (np) {
+> +		if (of_property_read_u32(np, "ibm,chip-id", &chip_id) < 0)
+> +			chip_id = 0;
+> +	}
+> +
+> +	/* Allocate an IPI and populate info about it */
+> +	for (;;) {
+> +		irq = opal_xive_allocate_irq(chip_id);
+> +		if (irq == OPAL_BUSY) {
+> +			msleep(1);
+> +			continue;
+> +		}
+> +		if (irq < 0) {
+> +			pr_err("XIVE: Failed to allocate IPI on CPU %d\n",
+> +			       cpu);
+> +			return -ENXIO;
+> +		}
+> +		xc->hw_ipi = irq;
+> +		break;
+> +	}
+> +	return 0;
+> +}
+> +
+> +u32 xive_native_alloc_irq(void)
+> +{
+> +	s64 rc;
+> +
+> +	for (;;) {
+> +		rc = opal_xive_allocate_irq(OPAL_XIVE_ANY_CHIP);
+> +		if (rc != OPAL_BUSY)
+> +			break;
+> +		msleep(1);
+> +	}
+> +	if (rc < 0)
+> +		return 0;
+> +	return rc;
+> +}
+> +
+> +void xive_native_free_irq(u32 irq)
+> +{
+> +	for (;;) {
+> +		s64 rc = opal_xive_free_irq(irq);
+> +		if (rc != OPAL_BUSY)
+> +			break;
+> +		msleep(1);
+> +	}
+> +}
+> +
+> +static void xive_native_put_ipi(unsigned int cpu, struct xive_cpu *xc)
+> +{
+> +	s64 rc;
+> +
+> +	/* Free the IPI */
+> +	if (!xc->hw_ipi)
+> +		return;
+> +	for (;;) {
+> +		rc = opal_xive_free_irq(xc->hw_ipi);
+> +		if (rc == OPAL_BUSY) {
+> +			msleep(1);
+> +			continue;
+> +		}
+> +		xc->hw_ipi = 0;
+> +		break;
+> +	}
+> +}
+> +#endif /* CONFIG_SMP */
+> +
+> +static void xive_native_shutdown(void)
+> +{
+> +	/* Switch the XIVE to emulation mode */
+> +	opal_xive_reset(OPAL_XIVE_MODE_EMU);
+> +}
+> +
+> +static void xive_native_eoi(u32 hw_irq)
+> +{
+> +	/* Not normally used except if specific interrupts need
+> +	 * a workaround on EOI
+> +	 */
+> +	opal_int_eoi(hw_irq);
+> +}
+> +
+> +static void xive_native_setup_cpu(unsigned int cpu, struct xive_cpu *xc)
+> +{
+> +	s64 rc;
+> +	u32 vp;
+> +	__be64 vp_cam_be;
+> +	u64 vp_cam;
+> +
+> +	if (xive_pool_vps == XIVE_INVALID_VP)
+> +		return;
+> +
+> +	/* Enable the pool VP */
+> +	vp = xive_pool_vps + get_hard_smp_processor_id(cpu);
+> +	pr_debug("XIVE: CPU %d setting up pool VP 0x%x\n", cpu, vp);
+> +	for (;;) {
+> +		rc = opal_xive_set_vp_info(vp, OPAL_XIVE_VP_ENABLED, 0);
+> +		if (rc != OPAL_BUSY)
+> +			break;
+> +		msleep(1);
+> +	}
+> +	if (rc) {
+> +		pr_err("XIVE: Failed to enable pool VP on CPU %d\n", cpu);
+> +		return;
+> +	}
+> +
+> +	/* Grab it's CAM value */
+> +	rc = opal_xive_get_vp_info(vp, NULL, &vp_cam_be, NULL, NULL);
+> +	if (rc) {
+> +		pr_err("XIVE: Failed to get pool VP info CPU %d\n", cpu);
+> +		return;
+> +	}
+> +	vp_cam = be64_to_cpu(vp_cam_be);
+> +
+> +	pr_debug("XIVE: VP CAM = %llx\n", vp_cam);
+> +
+> +	/* Push it on the CPU (set LSMFB to 0xff to skip backlog scan) */
+> +	pr_debug("XIVE: (Old HW value: %08x)\n",
+> +		 in_be32(xive_tm_area + TM_QW2_HV_POOL + TM_WORD2));
+> +	out_be32(xive_tm_area + TM_QW2_HV_POOL + TM_WORD0, 0xff);
+> +	out_be32(xive_tm_area + TM_QW2_HV_POOL + TM_WORD2,
+> +		 TM_QW2W2_VP | vp_cam);
+> +	pr_debug("XIVE: (New HW value: %08x)\n",
+> +		 in_be32(xive_tm_area + TM_QW2_HV_POOL + TM_WORD2));
+> +}
+> +
+> +static void xive_native_teardown_cpu(unsigned int cpu, struct xive_cpu *xc)
+> +{
+> +	s64 rc;
+> +	u32 vp;
+> +
+> +	if (xive_pool_vps == XIVE_INVALID_VP)
+> +		return;
+> +
+> +	/* Pull the pool VP from the CPU */
+> +	in_be64(xive_tm_area + TM_SPC_PULL_POOL_CTX);
+> +
+> +	/* Disable it */
+> +	vp = xive_pool_vps + get_hard_smp_processor_id(cpu);
+> +	for (;;) {
+> +		rc = opal_xive_set_vp_info(vp, 0, 0);
+> +		if (rc != OPAL_BUSY)
+> +			break;
+> +		msleep(1);
+> +	}
+> +}
+> +
+> +static void xive_native_sync_source(u32 hw_irq)
+> +{
+> +	opal_xive_sync(XIVE_SYNC_EAS, hw_irq);
+> +}
+> +
+> +static const struct xive_ops xive_native_ops = {
+> +	.populate_irq_data	= xive_native_populate_irq_data,
+> +	.configure_irq		= xive_native_configure_irq,
+> +	.setup_queue		= xive_native_setup_queue,
+> +	.cleanup_queue		= xive_native_cleanup_queue,
+> +	.match			= xive_native_match,
+> +	.shutdown		= xive_native_shutdown,
+> +	.eoi			= xive_native_eoi,
+> +	.setup_cpu		= xive_native_setup_cpu,
+> +	.teardown_cpu		= xive_native_teardown_cpu,
+> +	.sync_source		= xive_native_sync_source,
+> +#ifdef CONFIG_SMP
+> +	.get_ipi		= xive_native_get_ipi,
+> +	.put_ipi		= xive_native_put_ipi,
+> +#endif /* CONFIG_SMP */
+> +	.name			= "native",
+> +};
+> +
+> +static bool xive_parse_provisioning(struct device_node *np)
+> +{
+> +	int rc;
+> +
+> +	if (of_property_read_u32(np, "ibm,xive-provision-page-size",
+> +				 &xive_provision_size) < 0)
+> +		return true;
+> +	rc = of_property_count_elems_of_size(np, "ibm,xive-provision-chips", 4);
+> +	if (rc < 0) {
+> +		pr_err("XIVE: Error %d getting provision chips array\n", rc);
+> +		return false;
+> +	}
+> +	xive_provision_chip_count = rc;
+> +	if (rc == 0)
+> +		return true;
+> +
+> +	xive_provision_chips = kzalloc(4 * xive_provision_chip_count,
+> +				       GFP_KERNEL);
+> +	BUG_ON(!xive_provision_chips);
+> +
+> +	rc = of_property_read_u32_array(np, "ibm,xive-provision-chips",
+> +					xive_provision_chips,
+> +					xive_provision_chip_count);
+> +	if (rc < 0) {
+> +		pr_err("XIVE: Error %d reading provision chips array\n", rc);
+> +		return false;
+> +	}
+> +
+> +	xive_provision_cache = kmem_cache_create("xive-provision",
+> +						 xive_provision_size,
+> +						 xive_provision_size,
+> +						 0, NULL);
+> +	if (!xive_provision_cache) {
+> +		pr_err("XIVE: Failed to allocate provision cache\n");
+> +		return false;
+> +	}
+> +	return true;
+> +}
+> +
+> +u32 xive_native_default_eq_shift(void)
+> +{
+> +	return xive_queue_shift;
+> +}
+> +
+> +bool xive_native_init(void)
+> +{
+> +	struct device_node *np;
+> +	struct resource r;
+> +	void __iomem *tm_area;
+> +	struct property *prop;
+> +	u8 max_prio = 7;
+> +	const __be32 *p;
+> +	u32 val;
+> +	s64 rc;
+> +
+> +	if (xive_cmdline_disabled)
+> +		return false;
+> +
+> +	DBG("xive_native_init()\n");
+> +	np = of_find_compatible_node(NULL, NULL, "ibm,opal-xive-pe");
+> +	if (!np) {
+> +		DBG("not found !\n");
+> +		return false;
+> +	}
+> +	DBG("Found %s\n", np->full_name);
+> +
+> +	/* Resource 1 is HV window */
+> +	if (of_address_to_resource(np, 1, &r)) {
+> +		pr_err("XIVE: Failed to get TM area resource\n");
+
+"TM" is confusing since it would usually mean "Transactional memory".
+I couldn't see anywhere in this patch where you spell out that it
+means "Thread Management".  For messages that are printed out it's
+probably better to say "thread mgmt area" rather than "TM area".
+
+> +		return false;
+> +	}
+> +	tm_area = ioremap(r.start, resource_size(&r));
+> +	if (!tm_area) {
+> +		pr_err("XIVE: Failed to map TM area\n");
+> +		return false;
+> +	}
+> +
+> +	/* Read number of priorities */
+> +	if (of_property_read_u32(np, "ibm,xive-#priorities", &val) == 0)
+> +		max_prio = val - 1;
+> +
+> +	/* Iterate the EQ sizes and pick one */
+> +	of_property_for_each_u32(np, "ibm,xive-eq-sizes", prop, p, val) {
+> +		xive_queue_shift = val;
+> +		if (val == PAGE_SHIFT)
+> +			break;
+> +	}
+> +
+> +	/* Grab size of provisionning pages */
+                        ^^^^^^^^^^^^^ provisioning
+
+> +	xive_parse_provisioning(np);
+> +
+> +	/* Switch the XIVE to exploitation mode */
+> +	rc = opal_xive_reset(OPAL_XIVE_MODE_EXPL);
+> +	if (rc) {
+> +		pr_err("XIVE: Switch to exploitation mode failed"
+> +		       " with error %lld\n", rc);
+> +		return false;
+> +	}
+> +
+> +	/* Initialize XIVE core with our backend */
+> +	if (!xive_core_init(&xive_native_ops, tm_area, TM_QW3_HV_PHYS,
+> +			    max_prio)) {
+> +		opal_xive_reset(OPAL_XIVE_MODE_EMU);
+> +		return false;
+> +	}
+> +	pr_info("XIVE: Using %dkB queues\n", 1 << (xive_queue_shift - 10));
+> +	return true;
+> +}
+> +
+> +static bool xive_native_provision_pages(void)
+> +{
+> +	u32 i;
+> +	void *p;
+> +
+> +	for (i = 0; i < xive_provision_chip_count; i++) {
+> +		u32 chip = xive_provision_chips[i];
+> +
+> +		/* XXX TODO: Try to make the allocation local to the node where
+> +		 * the chip reside
+> +		 */
+> +		p = kmem_cache_alloc(xive_provision_cache, GFP_KERNEL);
+> +		if (!p) {
+> +			pr_err("XIVE: Failed to allocate provisioning page\n");
+> +			return false;
+> +		}
+> +		opal_xive_donate_page(chip, __pa(p));
+> +	}
+> +	return true;
+> +}
+> +
+> +u32 xive_native_alloc_vp_block(u32 max_vcpus)
+> +{
+> +	s64 rc;
+> +	u32 order;
+> +
+> +	order = fls(max_vcpus) - 1;
+> +	pr_info("XIVE: VP block alloc, for max VCPUs %d"
+> +		" use order %d\n", max_vcpus, order);
+> +	for (;;) {
+> +		rc = opal_xive_alloc_vp_block(order);
+> +		switch (rc) {
+> +		case OPAL_BUSY:
+> +			msleep(1);
+> +			break;
+> +		case OPAL_XIVE_PROVISIONING:
+> +			if (!xive_native_provision_pages())
+> +				return XIVE_INVALID_VP;
+> +			break;
+> +		default:
+> +			if (rc < 0) {
+> +				pr_err("XIVE: OPAL failed to allocate VCPUs"
+> +				       " order %d, err %lld\n",
+> +				       order, rc);
+> +				return XIVE_INVALID_VP;
+> +			}
+> +			return rc;
+> +		}
+> +	}
+> +}
+> +EXPORT_SYMBOL_GPL(xive_native_alloc_vp_block);
+> +
+> +void xive_native_free_vp_block(u32 vp_base)
+> +{
+> +	s64 rc;
+> +
+> +	if (vp_base == XIVE_INVALID_VP)
+> +		return;
+> +
+> +	rc = opal_xive_free_vp_block(vp_base);
+> +	if (rc < 0)
+> +		pr_warn("XIVE: OPAL error %lld freeing VP block\n", rc);
+> +}
+> +EXPORT_SYMBOL_GPL(xive_native_free_vp_block);
+> diff --git a/arch/powerpc/sysdev/xive/xive-internal.h b/arch/powerpc/sysdev/xive/xive-internal.h
+> new file mode 100644
+> index 0000000..e736fc5
+> --- /dev/null
+> +++ b/arch/powerpc/sysdev/xive/xive-internal.h
+> @@ -0,0 +1,51 @@
+> +#ifndef __XIVE_INTERNAL_H
+> +#define __XIVE_INTERNAL_H
+> +
+> +/* Each CPU carry one of these with various per-CPU state */
+> +struct xive_cpu {
+> +#ifdef CONFIG_SMP
+> +	/* HW irq number and data of IPI */
+> +	u32 hw_ipi;
+> +	struct xive_irq_data ipi_data;
+> +#endif /* CONFIG_SMP */
+> +
+> +	int chip_id;
+> +
+> +	/* Queue datas. Only one is populated */
+> +#define XIVE_MAX_QUEUES	8
+> +	struct xive_q queue[XIVE_MAX_QUEUES];
+> +
+> +	/* Pending mask. Each bit corresponds to a priority that
+> +	 * potentially has pending interrupts
+> +	 */
+> +	u8 pending_prio;
+> +
+> +	/* Cache of HW CPPR */
+> +	u8 cppr;
+> +};
+> +
+> +/* Backend ops */
+> +struct xive_ops {
+> +	int	(*populate_irq_data)(u32 hw_irq, struct xive_irq_data *data);
+> +	int 	(*configure_irq)(u32 hw_irq, u32 target, u8 prio, u32 sw_irq);
+> +	int	(*setup_queue)(unsigned int cpu, struct xive_cpu *xc, u8 prio);
+> +	void	(*cleanup_queue)(unsigned int cpu, struct xive_cpu *xc, u8 prio);
+> +	void	(*setup_cpu)(unsigned int cpu, struct xive_cpu *xc);
+> +	void	(*teardown_cpu)(unsigned int cpu, struct xive_cpu *xc);
+> +	bool	(*match)(struct device_node *np);
+> +	void	(*shutdown)(void);
+> +	void	(*eoi)(u32 hw_irq);
+> +	void	(*sync_source)(u32 hw_irq);
+> +#ifdef CONFIG_SMP
+> +	int	(*get_ipi)(unsigned int cpu, struct xive_cpu *xc);
+> +	void	(*put_ipi)(unsigned int cpu, struct xive_cpu *xc);
+> +#endif
+> +	const char *name;
+> +};
+> +
+> +bool xive_core_init(const struct xive_ops *ops, void __iomem *area, u32 offset,
+> +		    u8 max_prio);
+> +
+> +extern bool xive_cmdline_disabled;
+> +
+> +#endif /*  __XIVE_INTERNAL_H */
+> diff --git a/arch/powerpc/sysdev/xive/xive-regs.h b/arch/powerpc/sysdev/xive/xive-regs.h
+> new file mode 100644
+> index 0000000..f1edb23
+> --- /dev/null
+> +++ b/arch/powerpc/sysdev/xive/xive-regs.h
+> @@ -0,0 +1,88 @@
+> +#ifndef __XIVE_REGS_H__
+> +#define __XIVE_REGS_H__
+> +
+> +/*
+> + * TM registers
+
+"Thread Management (TM) registers"
+
+> + */
+> +
+> +/* TM register offsets */
+> +#define TM_QW0_USER		0x000 /* All rings */
+> +#define TM_QW1_OS		0x010 /* Ring 0..2 */
+> +#define TM_QW2_HV_POOL		0x020 /* Ring 0..1 */
+> +#define TM_QW3_HV_PHYS		0x030 /* Ring 0..1 */
+> +
+> +/* Byte offsets inside a QW             QW0 QW1 QW2 QW3 */
+> +#define TM_NSR			0x0  /*  +   +   -   +  */
+> +#define TM_CPPR			0x1  /*  -   +   -   +  */
+> +#define TM_IPB			0x2  /*  -   +   +   +  */
+> +#define TM_LSMFB		0x3  /*  -   +   +   +  */
+> +#define TM_ACK_CNT		0x4  /*  -   +   -   -  */
+> +#define TM_INC			0x5  /*  -   +   -   +  */
+> +#define TM_AGE			0x6  /*  -   +   -   +  */
+> +#define TM_PIPR			0x7  /*  -   +   -   +  */
+> +
+> +#define TM_WORD0		0x0
+> +#define TM_WORD1		0x4
+> +
+> +/* QW word 2 contains the valid bit at the top and other fields
+> + * depending on the QW
+> + */
+> +#define TM_WORD2		0x8
+> +#define   TM_QW0W2_VU		PPC_BIT32(0)
+> +#define   TM_QW0W2_LOGIC_SERV	PPC_BITMASK32(1,31) // XX 2,31 ?
+> +#define   TM_QW1W2_VO		PPC_BIT32(0)
+> +#define   TM_QW1W2_OS_CAM	PPC_BITMASK32(8,31)
+> +#define   TM_QW2W2_VP		PPC_BIT32(0)
+> +#define   TM_QW2W2_POOL_CAM	PPC_BITMASK32(8,31)
+> +#define   TM_QW3W2_VT		PPC_BIT32(0)
+> +#define   TM_QW3W2_LP		PPC_BIT32(6)
+> +#define   TM_QW3W2_LE		PPC_BIT32(7)
+> +#define   TM_QW3W2_T		PPC_BIT32(31)
+> +
+> +/* In addition to normal loads to "peek" and writes (only when invalid)
+> + * using 4 and 8 bytes accesses, the above registers support these
+> + * "special" byte operations:
+> + *
+> + *   - Byte load from QW0[NSR] - User level NSR (EBB)
+> + *   - Byte store to QW0[NSR] - User level NSR (EBB)
+> + *   - Byte load/store to QW1[CPPR] and QW3[CPPR] - CPPR access
+> + *   - Byte load from QW3[TM_WORD2] - Read VT||00000||LP||LE on thrd 0
+> + *                                    otherwise VT||0000000
+> + *   - Byte store to QW3[TM_WORD2] - Set VT bit (and LP/LE if present)
+> + *
+> + * Then we have all these "special" CI ops at these offset that trigger
+> + * all sorts of side effects:
+> + */
+> +#define TM_SPC_ACK_EBB		0x800	/* Load8 ack EBB to reg*/
+> +#define TM_SPC_ACK_OS_REG	0x810	/* Load16 ack OS irq to reg */
+> +#define TM_SPC_PUSH_USR_CTX	0x808	/* Store32 Push/Validate user context */
+> +#define TM_SPC_PULL_USR_CTX	0x808	/* Load32 Pull/Invalidate user context */
+> +#define TM_SPC_SET_OS_PENDING	0x812	/* Store8 Set OS irq pending bit */
+> +#define TM_SPC_PULL_OS_CTX	0x818	/* Load32/Load64 Pull/Invalidate OS context to reg */
+> +#define TM_SPC_PULL_POOL_CTX	0x828	/* Load32/Load64 Pull/Invalidate Pool context to reg*/
+> +#define TM_SPC_ACK_HV_REG	0x830	/* Load16 ack HV irq to reg */
+> +#define TM_SPC_PULL_USR_CTX_OL	0xc08	/* Store8 Pull/Inval usr ctx to odd line */
+> +#define TM_SPC_ACK_OS_EL	0xc10	/* Store8 ack OS irq to even line */
+> +#define TM_SPC_ACK_HV_POOL_EL	0xc20	/* Store8 ack HV evt pool to even line */
+> +#define TM_SPC_ACK_HV_EL	0xc30	/* Store8 ack HV irq to even line */
+> +/* XXX more... */
+> +
+> +/* NSR fields for the various QW ack types */
+> +#define TM_QW0_NSR_EB		PPC_BIT8(0)
+> +#define TM_QW1_NSR_EO		PPC_BIT8(0)
+> +#define TM_QW3_NSR_HE		PPC_BITMASK8(0,1)
+> +#define  TM_QW3_NSR_HE_NONE	0
+> +#define  TM_QW3_NSR_HE_POOL	1
+> +#define  TM_QW3_NSR_HE_PHYS	2
+> +#define  TM_QW3_NSR_HE_LSI	3
+> +#define TM_QW3_NSR_I		PPC_BIT8(2)
+> +#define TM_QW3_NSR_GRP_LVL	PPC_BIT8(3,7)
+> +
+> +/* Utilities to manipulate these (originaly from OPAL) */
+> +#define MASK_TO_LSH(m)		(__builtin_ffsl(m) - 1)
+> +#define GETFIELD(m, v)		(((v) & (m)) >> MASK_TO_LSH(m))
+> +#define SETFIELD(m, v, val)				\
+> +	(((v) & ~(m)) |	((((typeof(v))(val)) << MASK_TO_LSH(m)) & (m)))
+> +
+> +
+> +#endif /* __XIVE_H__ */
+> diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
+> index 16321ad..c71e919 100644
+> --- a/arch/powerpc/xmon/xmon.c
+> +++ b/arch/powerpc/xmon/xmon.c
+> @@ -48,7 +48,7 @@
+>  #include <asm/reg.h>
+>  #include <asm/debug.h>
+>  #include <asm/hw_breakpoint.h>
+> -
+> +#include <asm/xive.h>
+>  #include <asm/opal.h>
+>  #include <asm/firmware.h>
+>  
+> @@ -232,7 +232,13 @@ Commands:\n\
+>    "\
+>    dr	dump stream of raw bytes\n\
+>    dt	dump the tracing buffers (uses printk)\n\
+> -  e	print exception information\n\
+> +"
+> +#ifdef CONFIG_PPC_POWERNV
+> +"  dx#   dump xive on CPU\n\
+> +  dxi#  dump xive irq state\n\
+> +  dxa   dump xive on all CPUs\n"
+> +#endif
+> +"  e	print exception information\n\
+>    f	flush cache\n\
+>    la	lookup symbol+offset of specified address\n\
+>    ls	lookup address of specified symbol\n\
+> @@ -2338,6 +2344,81 @@ static void dump_pacas(void)
+>  }
+>  #endif
+>  
+> +#ifdef CONFIG_PPC_POWERNV
+> +static void dump_one_xive(int cpu)
+> +{
+> +	unsigned int hwid = get_hard_smp_processor_id(cpu);
+> +
+> +	opal_xive_dump(XIVE_DUMP_TM_HYP, hwid);
+> +	opal_xive_dump(XIVE_DUMP_TM_POOL, hwid);
+> +	opal_xive_dump(XIVE_DUMP_TM_OS, hwid);
+> +	opal_xive_dump(XIVE_DUMP_TM_USER, hwid);
+> +	opal_xive_dump(XIVE_DUMP_VP, hwid);
+> +	opal_xive_dump(XIVE_DUMP_EMU_STATE, hwid);
+> +
+> +	if (setjmp(bus_error_jmp) != 0) {
+> +		catch_memory_errors = 0;
+> +		printf("*** Error dumping xive on cpu %d\n", cpu);
+> +		return;
+> +	}
+> +
+> +	catch_memory_errors = 1;
+> +	sync();
+> +	xmon_xive_do_dump(cpu);
+> +	sync();
+> +	__delay(200);
+> +	catch_memory_errors = 0;
+> +}
+> +
+> +static void dump_all_xives(void)
+> +{
+> +	int cpu;
+> +
+> +	if (num_possible_cpus() == 0) {
+> +		printf("No possible cpus, use 'dx #' to dump individual cpus\n");
+> +		return;
+> +	}
+> +
+> +	for_each_possible_cpu(cpu)
+> +		dump_one_xive(cpu);
+> +}
+> +
+> +static void dump_one_xive_irq(uint32_t num)
+> +{
+> +	int64_t rc;
+> +	__be64 vp;
+> +	uint8_t prio;
+> +	__be32 lirq;
+> +
+> +	rc = opal_xive_get_irq_config(num, &vp, &prio, &lirq);
+> +	xmon_printf("IRQ 0x%x config: vp=0x%llx prio=%d lirq=0x%x (rc=%lld)\n",
+> +		    num, be64_to_cpu(vp), prio, be32_to_cpu(lirq), rc);
+> +}
+> +
+> +static void dump_xives(void)
+> +{
+> +	unsigned long num;
+> +	int c;
+> +
+> +	c = inchar();
+> +	if (c == 'a') {
+> +		dump_all_xives();
+> +		return;
+> +	} else if (c == 'i') {
+> +		if (scanhex(&num))
+> +			dump_one_xive_irq(num);
+> +		return;
+> +	}
+> +
+> +	termch = c;	/* Put c back, it wasn't 'a' */
+> +
+> +	if (scanhex(&num))
+> +		dump_one_xive(num);
+> +	else
+> +		dump_one_xive(xmon_owner);
+> +}
+> +#endif /* CONFIG_PPC_POWERNV */
+> +
+>  static void dump_by_size(unsigned long addr, long count, int size)
+>  {
+>  	unsigned char temp[16];
+> @@ -2386,6 +2467,14 @@ dump(void)
+>  		return;
+>  	}
+>  #endif
+> +#ifdef CONFIG_PPC_POWERNV
+> +	if (c == 'x') {
+> +		xmon_start_pagination();
+> +		dump_xives();
+> +		xmon_end_pagination();
+> +		return;
+> +	}
+> +#endif
+>  
+>  	if (c == '\n')
+>  		termch = c;
+> -- 
+> 2.9.3
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe kvm-ppc" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
+Paul.
