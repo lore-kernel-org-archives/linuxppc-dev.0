@@ -2,7 +2,7 @@ Return-Path: <willy@infradead.org>
 Received: from bombadil.infradead.org (bombadil.infradead.org [65.50.211.133])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
  bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vqT4V3XJ7zDqYB
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vqT4V3RShzDqY6
  for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Mar 2017 03:13:46 +1100 (AEDT)
 From: Matthew Wilcox <willy@infradead.org>
 To: linux-kernel@vger.kernel.org
@@ -11,9 +11,9 @@ Cc: linux-fbdev@vger.kernel.org, linux-arch@vger.kernel.org,
  x86@kernel.org, linux-mips@linux-mips.org, linuxppc-dev@lists.ozlabs.org,
  sparclinux@vger.kernel.org, Minchan Kim <minchan@kernel.org>,
  Matthew Wilcox <mawilcox@microsoft.com>
-Subject: [PATCH v3 5/7] zram: Convert to using memset_l
-Date: Fri, 24 Mar 2017 09:13:16 -0700
-Message-Id: <20170324161318.18718-6-willy@infradead.org>
+Subject: [PATCH v3 1/7] Add multibyte memset functions
+Date: Fri, 24 Mar 2017 09:13:12 -0700
+Message-Id: <20170324161318.18718-2-willy@infradead.org>
 In-Reply-To: <20170324161318.18718-1-willy@infradead.org>
 References: <20170324161318.18718-1-willy@infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,56 +27,137 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Matthew Wilcox <mawilcox@microsoft.com>
 
-zram was the motivation for creating memset_l().  Minchan Kim sees a 7%
-performance improvement on x86 with 100MB of non-zero deduplicatable
-data:
-
-        perf stat -r 10 dd if=/dev/zram0 of=/dev/null
-
-vanilla:        0.232050465 seconds time elapsed ( +-  0.51% )
-memset_l:	0.217219387 seconds time elapsed ( +-  0.07% )
+memset16(), memset32() and memset64() are like memset(), but allow the
+caller to fill the destination with a multibyte pattern.  memset_l()
+and memset_p() allow the caller to use unsigned long and pointer
+values respectively.  memset64() is currently only available on 64-bit
+architectures.
 
 Signed-off-by: Matthew Wilcox <mawilcox@microsoft.com>
-Tested-by: Minchan Kim <minchan@kernel.org>
 ---
- drivers/block/zram/zram_drv.c | 15 +++------------
- 1 file changed, 3 insertions(+), 12 deletions(-)
+ include/linux/string.h | 30 ++++++++++++++++++++++
+ lib/string.c           | 68 ++++++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 98 insertions(+)
 
-diff --git a/drivers/block/zram/zram_drv.c b/drivers/block/zram/zram_drv.c
-index e27d89a36c34..25dcad309695 100644
---- a/drivers/block/zram/zram_drv.c
-+++ b/drivers/block/zram/zram_drv.c
-@@ -157,20 +157,11 @@ static inline void update_used_max(struct zram *zram,
- 	} while (old_max != cur_max);
+diff --git a/include/linux/string.h b/include/linux/string.h
+index 26b6f6a66f83..b376875b650c 100644
+--- a/include/linux/string.h
++++ b/include/linux/string.h
+@@ -99,6 +99,36 @@ extern __kernel_size_t strcspn(const char *,const char *);
+ #ifndef __HAVE_ARCH_MEMSET
+ extern void * memset(void *,int,__kernel_size_t);
+ #endif
++
++#ifndef __HAVE_ARCH_MEMSET16
++extern void *memset16(uint16_t *, uint16_t, __kernel_size_t);
++#endif
++
++#ifndef __HAVE_ARCH_MEMSET32
++extern void *memset32(uint32_t *, uint32_t, __kernel_size_t);
++#endif
++
++#ifndef __HAVE_ARCH_MEMSET64
++extern void *memset64(uint64_t *, uint64_t, __kernel_size_t);
++#endif
++
++static inline void *memset_l(unsigned long *p, unsigned long v,
++		__kernel_size_t n)
++{
++	if (BITS_PER_LONG == 32)
++		return memset32((uint32_t *)p, v, n);
++	else
++		return memset64((uint64_t *)p, v, n);
++}
++
++static inline void *memset_p(void **p, void *v, __kernel_size_t n)
++{
++	if (BITS_PER_LONG == 32)
++		return memset32((uint32_t *)p, (uintptr_t)v, n);
++	else
++		return memset64((uint64_t *)p, (uintptr_t)v, n);
++}
++
+ #ifndef __HAVE_ARCH_MEMCPY
+ extern void * memcpy(void *,const void *,__kernel_size_t);
+ #endif
+diff --git a/lib/string.c b/lib/string.c
+index ed83562a53ae..f18ba402e503 100644
+--- a/lib/string.c
++++ b/lib/string.c
+@@ -697,6 +697,74 @@ void memzero_explicit(void *s, size_t count)
  }
+ EXPORT_SYMBOL(memzero_explicit);
  
--static inline void zram_fill_page(char *ptr, unsigned long len,
-+static inline void zram_fill_page(void *ptr, unsigned long len,
- 					unsigned long value)
- {
--	int i;
--	unsigned long *page = (unsigned long *)ptr;
--
- 	WARN_ON_ONCE(!IS_ALIGNED(len, sizeof(unsigned long)));
--
--	if (likely(value == 0)) {
--		memset(ptr, 0, len);
--	} else {
--		for (i = 0; i < len / sizeof(*page); i++)
--			page[i] = value;
--	}
-+	memset_l(ptr, value, len / sizeof(unsigned long));
- }
- 
- static bool page_same_filled(void *ptr, unsigned long *element)
-@@ -193,7 +184,7 @@ static bool page_same_filled(void *ptr, unsigned long *element)
- static void handle_same_page(struct bio_vec *bvec, unsigned long element)
- {
- 	struct page *page = bvec->bv_page;
--	void *user_mem;
-+	char *user_mem;
- 
- 	user_mem = kmap_atomic(page);
- 	zram_fill_page(user_mem + bvec->bv_offset, bvec->bv_len, element);
++#ifndef __HAVE_ARCH_MEMSET16
++/**
++ * memset16() - Fill a memory area with a uint16_t
++ * @s: Pointer to the start of the area.
++ * @v: The value to fill the area with
++ * @count: The number of values to store
++ *
++ * Differs from memset() in that it fills with a uint16_t instead
++ * of a byte.  Remember that @count is the number of uint16_ts to
++ * store, not the number of bytes.
++ */
++void *memset16(uint16_t *s, uint16_t v, size_t count)
++{
++	uint16_t *xs = s;
++
++	while (count--)
++		*xs++ = v;
++	return s;
++}
++EXPORT_SYMBOL(memset16);
++#endif
++
++#ifndef __HAVE_ARCH_MEMSET32
++/**
++ * memset32() - Fill a memory area with a uint32_t
++ * @s: Pointer to the start of the area.
++ * @v: The value to fill the area with
++ * @count: The number of values to store
++ *
++ * Differs from memset() in that it fills with a uint32_t instead
++ * of a byte.  Remember that @count is the number of uint32_ts to
++ * store, not the number of bytes.
++ */
++void *memset32(uint32_t *s, uint32_t v, size_t count)
++{
++	uint32_t *xs = s;
++
++	while (count--)
++		*xs++ = v;
++	return s;
++}
++EXPORT_SYMBOL(memset32);
++#endif
++
++#ifndef __HAVE_ARCH_MEMSET64
++#if BITS_PER_LONG > 32
++/**
++ * memset64() - Fill a memory area with a uint64_t
++ * @s: Pointer to the start of the area.
++ * @v: The value to fill the area with
++ * @count: The number of values to store
++ *
++ * Differs from memset() in that it fills with a uint64_t instead
++ * of a byte.  Remember that @count is the number of uint64_ts to
++ * store, not the number of bytes.
++ */
++void *memset64(uint64_t *s, uint64_t v, size_t count)
++{
++	uint64_t *xs = s;
++
++	while (count--)
++		*xs++ = v;
++	return s;
++}
++EXPORT_SYMBOL(memset64);
++#endif
++#endif
++
+ #ifndef __HAVE_ARCH_MEMCPY
+ /**
+  * memcpy - Copy one area of memory to another
 -- 
 2.11.0
