@@ -1,27 +1,25 @@
-Return-Path: <nicoleotsuka@gmail.com>
-Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
- [IPv6:2607:f8b0:400e:c05::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <srs0=zpq8=3b=au1.ibm.com=michael.neuling@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vq9vD3dg7zDqBv
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Mar 2017 15:49:43 +1100 (AEDT)
-Received: by mail-pg0-x243.google.com with SMTP id w20so819065pgc.1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Mar 2017 21:49:43 -0700 (PDT)
-Date: Thu, 23 Mar 2017 21:49:36 -0700
-From: Nicolin Chen <nicoleotsuka@gmail.com>
-To: Daniel Baluta <daniel.baluta@gmail.com>
-Cc: timur@tabi.org, Xiubo.Lee@gmail.com, fabio.estevam@nxp.com,
- lgirdwood@gmail.com, broonie@kernel.org, perex@perex.cz,
- tiwai@suse.com, alsa-devel@alsa-project.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- daniel.baluta@nxp.com, mihai.serban@nxp.com, viorel.suman@nxp.com,
- shengjiu.wang@nxp.com, Nicolin Chen <b42378@freescale.com>
-Subject: Re: [PATCH] ASoC: WM8962: Let codec driver enable/disable its MCLK
-Message-ID: <20170324044935.GA4067@Asurada-CZ80>
-References: <1490270510-17061-1-git-send-email-daniel.baluta@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1490270510-17061-1-git-send-email-daniel.baluta@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vq9zL34LNzDqC2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Mar 2017 15:53:18 +1100 (AEDT)
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3vq9zL2PLzz8wBM
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Mar 2017 15:53:18 +1100 (AEDT)
+Message-ID: <1490331198.28113.61.camel@au1.ibm.com>
+Subject: Re: [PATCH v3 04/10] VAS: Define helpers for access MMIO regions
+From: Michael Neuling <michael.neuling@au1.ibm.com>
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>, Michael Ellerman
+ <mpe@ellerman.id.au>
+Cc: stewart@linux.vnet.ibm.com, linuxppc-dev@ozlabs.org,
+ apopple@au1.ibm.com,  oohall@gmail.com
+Date: Fri, 24 Mar 2017 15:53:18 +1100
+In-Reply-To: <1489721642-5657-5-git-send-email-sukadev@linux.vnet.ibm.com>
+References: <1489721642-5657-1-git-send-email-sukadev@linux.vnet.ibm.com>
+ <1489721642-5657-5-git-send-email-sukadev@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,140 +29,178 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
-
-Could you please revise the subject a bit? I forgot what's the
-original one I submitted (internally) years ago. But the patch
-is for imx-wm8962 instead of WM8962.
-
-So please use
-  ASoC: fsl: imx-wm8962: 
-or at least
-  ASoC: imx-wm8962: 
-
-The change itself looks fine though.
-
-Thanks
-Nic
-----
-
-On Thu, Mar 23, 2017 at 02:01:50PM +0200, Daniel Baluta wrote:
-> From: Nicolin Chen <b42378@freescale.com>
-> 
-> WM8962 needs its MCLK when powerup in wm8962_resume(). Thus it's better
-> to control the MCLK in codec driver. Thus remove the clock enable in
-> machine dirver accordingly.
-> 
-> While at it, get rid of imx_wm8962_remove function since it is now
-> empty.
-> 
-> Signed-off-by: Nicolin Chen <b42378@freescale.com>
-> Signed-off-by: Daniel Baluta <daniel.baluta@nxp.com>
+On Thu, 2017-03-16 at 20:33 -0700, Sukadev Bhattiprolu wrote:
+> Define some helper functions to access the MMIO regions. We use these
+> in a follow-on patches to read/write VAS hardware registers. These
+> helpers are also used to later issue 'paste' instructions to submit
+> requests to the NX hardware engines.
+>=20
+> Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 > ---
->  sound/soc/fsl/imx-wm8962.c | 40 ++++++++--------------------------------
->  1 file changed, 8 insertions(+), 32 deletions(-)
-> 
-> diff --git a/sound/soc/fsl/imx-wm8962.c b/sound/soc/fsl/imx-wm8962.c
-> index 1b60958..3d894d9 100644
-> --- a/sound/soc/fsl/imx-wm8962.c
-> +++ b/sound/soc/fsl/imx-wm8962.c
-> @@ -33,7 +33,6 @@ struct imx_wm8962_data {
->  	struct snd_soc_card card;
->  	char codec_dai_name[DAI_NAME_SIZE];
->  	char platform_name[DAI_NAME_SIZE];
-> -	struct clk *codec_clk;
->  	unsigned int clk_frequency;
->  };
->  
-> @@ -163,6 +162,7 @@ static int imx_wm8962_probe(struct platform_device *pdev)
->  	struct imx_priv *priv = &card_priv;
->  	struct i2c_client *codec_dev;
->  	struct imx_wm8962_data *data;
-> +	struct clk *codec_clk;
->  	int int_port, ext_port;
->  	int ret;
->  
-> @@ -231,19 +231,14 @@ static int imx_wm8962_probe(struct platform_device *pdev)
->  		goto fail;
->  	}
->  
-> -	data->codec_clk = devm_clk_get(&codec_dev->dev, NULL);
-> -	if (IS_ERR(data->codec_clk)) {
-> -		ret = PTR_ERR(data->codec_clk);
-> +	codec_clk = devm_clk_get(&codec_dev->dev, NULL);
-> +	if (IS_ERR(codec_clk)) {
-> +		ret = PTR_ERR(codec_clk);
->  		dev_err(&codec_dev->dev, "failed to get codec clk: %d\n", ret);
->  		goto fail;
->  	}
->  
-> -	data->clk_frequency = clk_get_rate(data->codec_clk);
-> -	ret = clk_prepare_enable(data->codec_clk);
-> -	if (ret) {
-> -		dev_err(&codec_dev->dev, "failed to enable codec clk: %d\n", ret);
-> -		goto fail;
-> -	}
-> +	data->clk_frequency = clk_get_rate(codec_clk);
->  
->  	data->dai.name = "HiFi";
->  	data->dai.stream_name = "HiFi";
-> @@ -258,10 +253,10 @@ static int imx_wm8962_probe(struct platform_device *pdev)
->  	data->card.dev = &pdev->dev;
->  	ret = snd_soc_of_parse_card_name(&data->card, "model");
->  	if (ret)
-> -		goto clk_fail;
-> +		goto fail;
->  	ret = snd_soc_of_parse_audio_routing(&data->card, "audio-routing");
->  	if (ret)
-> -		goto clk_fail;
-> +		goto fail;
->  	data->card.num_links = 1;
->  	data->card.owner = THIS_MODULE;
->  	data->card.dai_link = &data->dai;
-> @@ -277,16 +272,9 @@ static int imx_wm8962_probe(struct platform_device *pdev)
->  	ret = devm_snd_soc_register_card(&pdev->dev, &data->card);
->  	if (ret) {
->  		dev_err(&pdev->dev, "snd_soc_register_card failed (%d)\n", ret);
-> -		goto clk_fail;
-> +		goto fail;
->  	}
->  
-> -	of_node_put(ssi_np);
-> -	of_node_put(codec_np);
-> -
-> -	return 0;
-> -
-> -clk_fail:
-> -	clk_disable_unprepare(data->codec_clk);
->  fail:
->  	of_node_put(ssi_np);
->  	of_node_put(codec_np);
-> @@ -294,17 +282,6 @@ static int imx_wm8962_probe(struct platform_device *pdev)
->  	return ret;
->  }
->  
-> -static int imx_wm8962_remove(struct platform_device *pdev)
-> -{
-> -	struct snd_soc_card *card = platform_get_drvdata(pdev);
-> -	struct imx_wm8962_data *data = snd_soc_card_get_drvdata(card);
-> -
-> -	if (!IS_ERR(data->codec_clk))
-> -		clk_disable_unprepare(data->codec_clk);
-> -
-> -	return 0;
-> -}
-> -
->  static const struct of_device_id imx_wm8962_dt_ids[] = {
->  	{ .compatible = "fsl,imx-audio-wm8962", },
->  	{ /* sentinel */ }
-> @@ -318,7 +295,6 @@ static struct platform_driver imx_wm8962_driver = {
->  		.of_match_table = imx_wm8962_dt_ids,
->  	},
->  	.probe = imx_wm8962_probe,
-> -	.remove = imx_wm8962_remove,
->  };
->  module_platform_driver(imx_wm8962_driver);
->  
-> -- 
-> 2.7.4
-> 
+> Changelog [v3]:
+> 	- Minor reorg/cleanup of map/unmap functions
+>=20
+> Changelog [v2]:
+> 	- Get HVWC, UWC and paste addresses from window->vinst (i.e DT)
+> 	=C2=A0=C2=A0rather than kernel macros.
+> ---
+> =C2=A0drivers/misc/vas/vas-window.c | 126
+> ++++++++++++++++++++++++++++++++++++++++++
+> =C2=A01 file changed, 126 insertions(+)
+>=20
+> diff --git a/drivers/misc/vas/vas-window.c b/drivers/misc/vas/vas-window.=
+c
+> index 468f3bf..32dd1d0 100644
+> --- a/drivers/misc/vas/vas-window.c
+> +++ b/drivers/misc/vas/vas-window.c
+> @@ -9,9 +9,135 @@
+> =C2=A0
+> =C2=A0#include <linux/types.h>
+> =C2=A0#include <linux/mutex.h>
+> +#include <linux/slab.h>
+> +#include <linux/io.h>
+> =C2=A0#include <asm/vas.h>
+> =C2=A0#include "vas-internal.h"
+> =C2=A0
+> +/*
+> + * Compute the paste address region for the window @window using the
+> + * ->win_base_addr and ->win_id_shift we got from device tree.
+> + */
+> +void compute_paste_address(struct vas_window *window, uint64_t *addr, in=
+t
+> *len)
+> +{
+> +	uint64_t base, shift;
+> +	int winid;
+> +
+> +	base =3D window->vinst->win_base_addr;
+> +	shift =3D window->vinst->win_id_shift;
+> +	winid =3D window->winid;
+> +
+> +	*addr=C2=A0=C2=A0=3D base + (winid << shift);
+> +	*len =3D PAGE_SIZE;
+> +
+> +	pr_debug("Txwin #%d: Paste addr 0x%llx\n", winid, *addr);
+> +}
+> +
+> +static inline void get_hvwc_mmio_bar(struct vas_window *window,
+> +			uint64_t *start, int *len)
+> +{
+> +	uint64_t pbaddr;
+> +
+> +	pbaddr =3D window->vinst->hvwc_bar_start;
+> +	*start =3D pbaddr + window->winid * VAS_HVWC_SIZE;
+> +	*len =3D VAS_HVWC_SIZE;
+> +}
+> +
+> +static inline void get_uwc_mmio_bar(struct vas_window *window,
+> +			uint64_t *start, int *len)
+> +{
+> +	uint64_t pbaddr;
+> +
+> +	pbaddr =3D window->vinst->uwc_bar_start;
+> +	*start =3D pbaddr + window->winid * VAS_UWC_SIZE;
+> +	*len =3D VAS_UWC_SIZE;
+
+I'm not sure this works for 4K pages since VAS_UWC_SIZE =3D PAGE_SIZE but i=
+n
+reality I think it's always 64K.  Right?
+
+Seem like we are mixing pages sizes and hardware sizes here.
+
+(I realise 4K isn't supported yet, but....)
+
+> +}
+> +
+> +static void *map_mmio_region(char *name, uint64_t start, int len)
+> +{
+> +	void *map;
+> +
+> +	if (!request_mem_region(start, len, name)) {
+> +		pr_devel("%s(): request_mem_region(0x%llx, %d) failed\n",
+> +				__func__, start, len);
+> +		return NULL;
+> +	}
+> +
+> +	map =3D __ioremap(start, len, pgprot_val(pgprot_cached(__pgprot(0))));
+> +	if (!map) {
+> +		pr_devel("%s(): ioremap(0x%llx, %d) failed\n", __func__,
+> start,
+> +				len);
+> +		return NULL;
+> +	}
+> +
+> +	return map;
+> +}
+> +
+> +/*
+> + * Unmap the MMIO regions for a window.
+> + */
+> +static void unmap_wc_paste_kaddr(struct vas_window *window)
+> +{
+> +	int len;
+> +	uint64_t busaddr_start;
+> +
+> +	if (window->paste_kaddr) {
+> +		iounmap(window->paste_kaddr);
+> +		compute_paste_address(window, &busaddr_start, &len);
+> +		release_mem_region((phys_addr_t)busaddr_start, len);
+> +		window->paste_kaddr =3D NULL;
+> +	}
+> +
+> +}
+> +
+> +static void unmap_wc_mmio_bars(struct vas_window *window)
+> +{
+> +	int len;
+> +	uint64_t busaddr_start;
+> +
+> +	unmap_wc_paste_kaddr(window);
+> +
+> +	if (window->hvwc_map) {
+> +		iounmap(window->hvwc_map);
+> +		get_hvwc_mmio_bar(window, &busaddr_start, &len);
+> +		release_mem_region((phys_addr_t)busaddr_start, len);
+> +		window->hvwc_map =3D NULL;
+> +	}
+> +
+> +	if (window->uwc_map) {
+> +		iounmap(window->uwc_map);
+> +		get_uwc_mmio_bar(window, &busaddr_start, &len);
+> +		release_mem_region((phys_addr_t)busaddr_start, len);
+> +		window->uwc_map =3D NULL;
+> +	}
+> +}
+> +
+> +/*
+> + * Find the Hypervisor Window Context (HVWC) MMIO Base Address Region an=
+d the
+> + * OS/User Window Context (UWC) MMIO Base Address Region for the given
+> window.
+> + * Map these bus addresses and save the mapped kernel addresses in @wind=
+ow.
+> + */
+> +int map_wc_mmio_bars(struct vas_window *window)
+> +{
+> +	int len;
+> +	uint64_t start;
+> +
+> +	window->paste_kaddr =3D window->hvwc_map =3D window->uwc_map =3D NULL;
+> +
+> +	get_hvwc_mmio_bar(window, &start, &len);
+> +	window->hvwc_map =3D map_mmio_region("HVWCM_Window", start, len);
+> +
+> +	get_uwc_mmio_bar(window, &start, &len);
+> +	window->uwc_map =3D map_mmio_region("UWCM_Window", start, len);
+> +
+> +	if (!window->hvwc_map || !window->uwc_map) {
+> +		unmap_wc_mmio_bars(window);
+> +		return -1;
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> =C2=A0/* stub for now */
+> =C2=A0int vas_window_reset(struct vas_instance *vinst, int winid)
+> =C2=A0{
