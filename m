@@ -1,25 +1,24 @@
-Return-Path: <srs0=zpq8=3b=au1.ibm.com=michael.neuling@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <daniel.baluta@gmail.com>
+Received: from mail-wm0-x243.google.com (mail-wm0-x243.google.com
+ [IPv6:2a00:1450:400c:c09::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vqHRC2XSYzDqcL
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Mar 2017 19:59:19 +1100 (AEDT)
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3vqHRC1ltLz8wBV
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Mar 2017 19:59:19 +1100 (AEDT)
-Message-ID: <1490345959.28113.67.camel@au1.ibm.com>
-Subject: Re: [PATCH v3 06/10] VAS: Define helpers to alloc/free windows
-From: Michael Neuling <michael.neuling@au1.ibm.com>
-To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>, Michael Ellerman
- <mpe@ellerman.id.au>
-Cc: stewart@linux.vnet.ibm.com, linuxppc-dev@ozlabs.org,
- apopple@au1.ibm.com,  oohall@gmail.com
-Date: Fri, 24 Mar 2017 19:59:19 +1100
-In-Reply-To: <1489721642-5657-7-git-send-email-sukadev@linux.vnet.ibm.com>
-References: <1489721642-5657-1-git-send-email-sukadev@linux.vnet.ibm.com>
- <1489721642-5657-7-git-send-email-sukadev@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vqHnM1J89zDqcy
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Mar 2017 20:15:03 +1100 (AEDT)
+Received: by mail-wm0-x243.google.com with SMTP id u132so1952250wmg.1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Mar 2017 02:15:03 -0700 (PDT)
+From: Daniel Baluta <daniel.baluta@gmail.com>
+To: lgirdwood@gmail.com,
+	broonie@kernel.org,
+	alsa-devel@alsa-project.org
+Cc: timur@tabi.org, nicoleotsuka@gmail.com, Xiubo.Lee@gmail.com,
+ fabio.estevam@nxp.com, perex@perex.cz, tiwai@suse.com,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ daniel.baluta@nxp.com, mihai.serban@nxp.com, viorel.suman@nxp.com,
+ shengjiu.wang@nxp.com
+Subject: [PATCH v2] ASoC: imx-wm8960: Let codec driver enable/disable its MCLK
+Date: Fri, 24 Mar 2017 11:14:48 +0200
+Message-Id: <1490346888-30937-1-git-send-email-daniel.baluta@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,134 +28,126 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2017-03-16 at 20:33 -0700, Sukadev Bhattiprolu wrote:
-> Define helpers to allocate/free VAS window objects. These will
-> be used in follow-on patches when opening/closing windows.
->=20
-> Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-> ---
-> =C2=A0drivers/misc/vas/vas-window.c | 74 ++++++++++++++++++++++++++++++++=
-+++++++++-
-> -
-> =C2=A01 file changed, 72 insertions(+), 2 deletions(-)
->=20
-> diff --git a/drivers/misc/vas/vas-window.c b/drivers/misc/vas/vas-window.=
-c
-> index edf5c9f..9233bf5 100644
-> --- a/drivers/misc/vas/vas-window.c
-> +++ b/drivers/misc/vas/vas-window.c
-> @@ -119,7 +119,7 @@ static void unmap_wc_mmio_bars(struct vas_window *win=
-dow)
-> =C2=A0 * OS/User Window Context (UWC) MMIO Base Address Region for the gi=
-ven
-> window.
-> =C2=A0 * Map these bus addresses and save the mapped kernel addresses in =
-@window.
-> =C2=A0 */
-> -int map_wc_mmio_bars(struct vas_window *window)
-> +static int map_wc_mmio_bars(struct vas_window *window)
-> =C2=A0{
-> =C2=A0	int len;
-> =C2=A0	uint64_t start;
-> @@ -472,8 +472,78 @@ int init_winctx_regs(struct vas_window *window, stru=
-ct
-> vas_winctx *winctx)
-> =C2=A0	return 0;
-> =C2=A0}
-> =C2=A0
-> -/* stub for now */
-> +DEFINE_SPINLOCK(vas_ida_lock);
-> +
-> +void vas_release_window_id(struct ida *ida, int winid)
-> +{
-> +	spin_lock(&vas_ida_lock);
-> +	ida_remove(ida, winid);
-> +	spin_unlock(&vas_ida_lock);
-> +}
-> +
-> +int vas_assign_window_id(struct ida *ida)
-> +{
-> +	int rc, winid;
-> +
-> +	rc =3D ida_pre_get(ida, GFP_KERNEL);
-> +	if (!rc)
-> +		return -EAGAIN;
-> +
-> +	spin_lock(&vas_ida_lock);
-> +	rc =3D ida_get_new_above(ida, 0, &winid);
-> +	spin_unlock(&vas_ida_lock);
-> +
-> +	if (rc)
-> +		return rc;
-> +
-> +	if (winid > VAS_MAX_WINDOWS_PER_CHIP) {
-> +		pr_err("VAS: Too many (%d) open windows\n", winid);
-> +		vas_release_window_id(ida, winid);
-> +		return -EAGAIN;
-> +	}
-> +
-> +	return winid;
-> +}
-> +
-> +static void vas_window_free(struct vas_window *window)
-> +{
-> +	unmap_wc_mmio_bars(window);
-> +	kfree(window->paste_addr_name);
-> +	kfree(window);
-> +}
-> +
-> +static struct vas_window *vas_window_alloc(struct vas_instance *vinst, i=
-nt
-> id)
-> +{
-> +	struct vas_window *window;
-> +
-> +	window =3D kzalloc(sizeof(*window), GFP_KERNEL);
-> +	if (!window)
-> +		return NULL;
-> +
-> +	window->vinst =3D vinst;
-> +	window->winid =3D id;
-> +
-> +	if (map_wc_mmio_bars(window))
-> +		goto out_free;
-> +
-> +	return window;
-> +
-> +out_free:
-> +	kfree(window);
-> +	return NULL;
-> +}
-> +
-> =C2=A0int vas_window_reset(struct vas_instance *vinst, int winid)
->=20
+From: Daniel Baluta <daniel.baluta@nxp.com>
 
-This interface seems a little weird to me. Needing an alloc in a hardware r=
-eset
-path seems a bit strange.
+WM8962 needs its MCLK when powerup in wm8962_resume(). Thus it's better
+to control the MCLK in codec driver. Thus remove the clock enable in
+machine driver accordingly.
 
-Maybe the data structures are the issue.  A window is a hardware construct.=
-=20
-Something that uses it should probably be called something else like a cont=
-ext.=20
-Something that references a window should just be the vas_instance + winid.=
-=20
+While at it, get rid of imx_wm8962_remove function since it is now
+empty.
 
-You should be able to reset this hardware window by referencing structures
-already allocated.  Something associated with the struct vas_instance.
+Signed-off-by: Daniel Baluta <daniel.baluta@nxp.com>
+---
+Changes since v1:
+	* s/wm8960/imx-wm890/ in subject prefix
+	* s/dirver/driver in commit message
+	* took ownership over the patch from Nicolin Chen
+	as per his agreement.
 
-Mikey
+ sound/soc/fsl/imx-wm8962.c | 40 ++++++++--------------------------------
+ 1 file changed, 8 insertions(+), 32 deletions(-)
 
-> =C2=A0{
-> +	struct vas_window *window;
-> +
-> +	window =3D vas_window_alloc(vinst, winid);
-> +	if (!window)
-> +		return -ENOMEM;
-> +
-> +	reset_window_regs(window);
-> +
-> +	vas_window_free(window);
-> +
-> =C2=A0	return 0;
-> =C2=A0}
+diff --git a/sound/soc/fsl/imx-wm8962.c b/sound/soc/fsl/imx-wm8962.c
+index 1b60958..3d894d9 100644
+--- a/sound/soc/fsl/imx-wm8962.c
++++ b/sound/soc/fsl/imx-wm8962.c
+@@ -33,7 +33,6 @@ struct imx_wm8962_data {
+ 	struct snd_soc_card card;
+ 	char codec_dai_name[DAI_NAME_SIZE];
+ 	char platform_name[DAI_NAME_SIZE];
+-	struct clk *codec_clk;
+ 	unsigned int clk_frequency;
+ };
+ 
+@@ -163,6 +162,7 @@ static int imx_wm8962_probe(struct platform_device *pdev)
+ 	struct imx_priv *priv = &card_priv;
+ 	struct i2c_client *codec_dev;
+ 	struct imx_wm8962_data *data;
++	struct clk *codec_clk;
+ 	int int_port, ext_port;
+ 	int ret;
+ 
+@@ -231,19 +231,14 @@ static int imx_wm8962_probe(struct platform_device *pdev)
+ 		goto fail;
+ 	}
+ 
+-	data->codec_clk = devm_clk_get(&codec_dev->dev, NULL);
+-	if (IS_ERR(data->codec_clk)) {
+-		ret = PTR_ERR(data->codec_clk);
++	codec_clk = devm_clk_get(&codec_dev->dev, NULL);
++	if (IS_ERR(codec_clk)) {
++		ret = PTR_ERR(codec_clk);
+ 		dev_err(&codec_dev->dev, "failed to get codec clk: %d\n", ret);
+ 		goto fail;
+ 	}
+ 
+-	data->clk_frequency = clk_get_rate(data->codec_clk);
+-	ret = clk_prepare_enable(data->codec_clk);
+-	if (ret) {
+-		dev_err(&codec_dev->dev, "failed to enable codec clk: %d\n", ret);
+-		goto fail;
+-	}
++	data->clk_frequency = clk_get_rate(codec_clk);
+ 
+ 	data->dai.name = "HiFi";
+ 	data->dai.stream_name = "HiFi";
+@@ -258,10 +253,10 @@ static int imx_wm8962_probe(struct platform_device *pdev)
+ 	data->card.dev = &pdev->dev;
+ 	ret = snd_soc_of_parse_card_name(&data->card, "model");
+ 	if (ret)
+-		goto clk_fail;
++		goto fail;
+ 	ret = snd_soc_of_parse_audio_routing(&data->card, "audio-routing");
+ 	if (ret)
+-		goto clk_fail;
++		goto fail;
+ 	data->card.num_links = 1;
+ 	data->card.owner = THIS_MODULE;
+ 	data->card.dai_link = &data->dai;
+@@ -277,16 +272,9 @@ static int imx_wm8962_probe(struct platform_device *pdev)
+ 	ret = devm_snd_soc_register_card(&pdev->dev, &data->card);
+ 	if (ret) {
+ 		dev_err(&pdev->dev, "snd_soc_register_card failed (%d)\n", ret);
+-		goto clk_fail;
++		goto fail;
+ 	}
+ 
+-	of_node_put(ssi_np);
+-	of_node_put(codec_np);
+-
+-	return 0;
+-
+-clk_fail:
+-	clk_disable_unprepare(data->codec_clk);
+ fail:
+ 	of_node_put(ssi_np);
+ 	of_node_put(codec_np);
+@@ -294,17 +282,6 @@ static int imx_wm8962_probe(struct platform_device *pdev)
+ 	return ret;
+ }
+ 
+-static int imx_wm8962_remove(struct platform_device *pdev)
+-{
+-	struct snd_soc_card *card = platform_get_drvdata(pdev);
+-	struct imx_wm8962_data *data = snd_soc_card_get_drvdata(card);
+-
+-	if (!IS_ERR(data->codec_clk))
+-		clk_disable_unprepare(data->codec_clk);
+-
+-	return 0;
+-}
+-
+ static const struct of_device_id imx_wm8962_dt_ids[] = {
+ 	{ .compatible = "fsl,imx-audio-wm8962", },
+ 	{ /* sentinel */ }
+@@ -318,7 +295,6 @@ static struct platform_driver imx_wm8962_driver = {
+ 		.of_match_table = imx_wm8962_dt_ids,
+ 	},
+ 	.probe = imx_wm8962_probe,
+-	.remove = imx_wm8962_remove,
+ };
+ module_platform_driver(imx_wm8962_driver);
+ 
+-- 
+2.7.4
