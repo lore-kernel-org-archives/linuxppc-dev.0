@@ -1,27 +1,26 @@
-Return-Path: <srs0=9r9s=3c=linux-powerpc.org=kda@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vqzPp3Yj7zDq7Z
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Mar 2017 23:00:30 +1100 (AEDT)
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3vqzPp2Q1dz8vrN
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Mar 2017 23:00:30 +1100 (AEDT)
-Received: from mail-pf0-x22c.google.com (mail-pf0-x22c.google.com
- [IPv6:2607:f8b0:400e:c00::22c])
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
+ [IPv6:2607:f8b0:400e:c05::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3vqzPn5VyLz9s7j
- for <linuxppc-dev@ozlabs.org>; Sat, 25 Mar 2017 23:00:29 +1100 (AEDT)
-Received: by mail-pf0-x22c.google.com with SMTP id p189so6508333pfp.1
- for <linuxppc-dev@ozlabs.org>; Sat, 25 Mar 2017 05:00:29 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vqzyq6ycFzDq7Z
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Mar 2017 23:25:38 +1100 (AEDT)
+Received: by mail-pg0-x242.google.com with SMTP id g2so2742350pge.2
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Mar 2017 05:25:38 -0700 (PDT)
+Subject: Re: [PATCH guest kernel] vfio/powerpc/spapr_tce: Enforce IOMMU type
+ compatibility check
+To: Alex Williamson <alex.williamson@redhat.com>
+References: <20170324064406.17076-1-aik@ozlabs.ru>
+ <20170324142905.3129266b@t450s.home>
+Cc: linuxppc-dev@lists.ozlabs.org, David Gibson
+ <david@gibson.dropbear.id.au>, kvm-ppc@vger.kernel.org, kvm@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+Message-ID: <d6909bd7-e861-03b0-cb32-bffaefaf518f@ozlabs.ru>
+Date: Sat, 25 Mar 2017 23:25:29 +1100
 MIME-Version: 1.0
-From: Denis Kirjanov <kda@linux-powerpc.org>
-Date: Sat, 25 Mar 2017 15:00:27 +0300
-Message-ID: <CAOJe8K3h2a9QDb0F7cTUUxFNP_i7w4LGy4eedFYSzLOuoJwRbg@mail.gmail.com>
-Subject: kvmppc: BUG: using smp_processor_id() in preemptible
-To: linuxppc-dev <linuxppc-dev@ozlabs.org>
-Content-Type: text/plain; charset=UTF-8
+In-Reply-To: <20170324142905.3129266b@t450s.home>
+Content-Type: text/plain; charset=koi8-r
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,37 +30,88 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-[Now with the proper subject]
+On 25/03/17 07:29, Alex Williamson wrote:
+> On Fri, 24 Mar 2017 17:44:06 +1100
+> Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
+> 
+>> The existing SPAPR TCE driver advertises both VFIO_SPAPR_TCE_IOMMU and
+>> VFIO_SPAPR_TCE_v2_IOMMU types to the userspace and the userspace usually
+>> picks the v2.
+>>
+>> Normally the userspace would create a container, attach an IOMMU group
+>> to it and only then set the IOMMU type (which would normally be v2).
+>>
+>> However a specific IOMMU group may not support v2, in other words
+>> it may not implement set_window/unset_window/take_ownership/
+>> release_ownership and such a group should not be attached to
+>> a v2 container.
+>>
+>> This adds extra checks that a new group can do what the selected IOMMU
+>> type suggests. The userspace can then test the return value from
+>> ioctl(VFIO_SET_IOMMU, VFIO_SPAPR_TCE_v2_IOMMU) and try
+>> VFIO_SPAPR_TCE_IOMMU.
+>>
+>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+>> ---
+>>
+>> This is one of the patches needed to do nested VFIO - for either
+>> second level guest or DPDK running in a guest.
+>> ---
+>>  drivers/vfio/vfio_iommu_spapr_tce.c | 8 ++++++++
+>>  1 file changed, 8 insertions(+)
+> 
+> I'm not sure I understand why you're labeling this "guest kernel", is a
 
-Hi,
 
-the commit 5a319350a46572d073042a3194676099dd2c135d
-has introduces the following warning with CONFIG_DEBUG_PREEMPT enabled:
+That is my script :)
 
-[  129.314426] BUG: using smp_processor_id() in preemptible [00000000]
-code: modprobe/5459
-[  129.314580] caller is .kvmppc_book3s_init_hv+0x184/0x350 [kvm_hv]
-[  129.314697] CPU: 11 PID: 5459 Comm: modprobe Not tainted
-4.11.0-rc3-00022-gc7e790c #1
-[  129.314848] Call Trace:
-[  129.314915] [c0000007d624b810] [c0000000023eef10]
-.dump_stack+0xe4/0x150 (unreliable)
-[  129.315065] [c0000007d624b8a0] [c000000001f6ec04]
-.check_preemption_disabled+0x134/0x150
-[  129.315210] [c0000007d624b940] [d00000000a010274]
-.kvmppc_book3s_init_hv+0x184/0x350 [kvm_hv]
-[  129.315339] [c0000007d624ba00] [c00000000191d5cc] .do_one_initcall+0x5c/0x1c0
-[  129.315416] [c0000007d624bad0] [c0000000023e9494] .do_init_module+0x84/0x240
-[  129.315492] [c0000007d624bb70] [c000000001aade18] .load_module+0x1f68/0x2a10
-[  129.315568] [c0000007d624bd20] [c000000001aaeb30] .SyS_finit_module+0xc0/0xf0
-[  129.315645] [c0000007d624be30] [c00000000191baec] system_call+0x38/0xfc
+> VM the only case where we can have combinations that only a subset of
+> the groups might support v2?  
 
-I think that we have to explicitly add a call to preempt_disable to
-the get_paca() macro with the CONFIG_DEBUG_PREEMPT enabled.
+powernv (non-virtualized, and it runs HV KVM) host provides v2-capable
+groups, they all the same, and a pseries host (which normally runs as a
+guest but it can do nested KVM as well - it is called PR KVM) can do only
+v1 (after this patch, without it - no vfio at all).
 
-Probably we need to create a common accessor function since we already
-have a special cases like svcpu_get/svcpu_put
+> What terrible things happen when such a
+> combination is created?
 
-If you agree I'm going send a patch.
+There is no mixture at the moment, I just needed a way to tell userspace
+that a group cannot do v2.
 
-Thanks!
+> The fix itself seems sane, but I'm trying to
+> figure out whether it should be marked for stable, should go in for
+> v4.11, or be queued for v4.12.  Thanks,
+
+No need for stable.
+
+
+> 
+> Alex
+> 
+>> diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
+>> index cf3de91fbfe7..a7d811524092 100644
+>> --- a/drivers/vfio/vfio_iommu_spapr_tce.c
+>> +++ b/drivers/vfio/vfio_iommu_spapr_tce.c
+>> @@ -1335,8 +1335,16 @@ static int tce_iommu_attach_group(void *iommu_data,
+>>  
+>>  	if (!table_group->ops || !table_group->ops->take_ownership ||
+>>  			!table_group->ops->release_ownership) {
+>> +		if (container->v2) {
+>> +			ret = -EPERM;
+>> +			goto unlock_exit;
+>> +		}
+>>  		ret = tce_iommu_take_ownership(container, table_group);
+>>  	} else {
+>> +		if (!container->v2) {
+>> +			ret = -EPERM;
+>> +			goto unlock_exit;
+>> +		}
+>>  		ret = tce_iommu_take_ownership_ddw(container, table_group);
+>>  		if (!tce_groups_attached(container) && !container->tables[0])
+>>  			container->def_window_pending = true;
+> 
+
+
+-- 
+Alexey
