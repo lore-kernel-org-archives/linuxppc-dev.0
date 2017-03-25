@@ -1,23 +1,23 @@
 Return-Path: <elohimes@gmail.com>
-Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
- [IPv6:2607:f8b0:400e:c05::241])
+Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
+ [IPv6:2607:f8b0:400e:c00::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vr0Cr4NCFzDq7Z
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Mar 2017 23:36:56 +1100 (AEDT)
-Received: by mail-pg0-x241.google.com with SMTP id 79so2798045pgf.0
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Mar 2017 05:36:55 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vr0R104gHzDq7Z
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Mar 2017 23:46:37 +1100 (AEDT)
+Received: by mail-pf0-x244.google.com with SMTP id r137so2473082pfr.3
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Mar 2017 05:46:36 -0700 (PDT)
 From: Yongji Xie <elohimes@gmail.com>
 To: bhelgaas@google.com
 Cc: linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  alex.williamson@redhat.com, gwshan@linux.vnet.ibm.com, aik@ozlabs.ru,
  benh@kernel.crashing.org, mpe@ellerman.id.au, paulus@samba.org,
  zhong@linux.vnet.ibm.com
-Subject: Re: [PATCH v9 2/3] PCI: Add a macro to set default alignment for all
- PCI devices
-Date: Sat, 25 Mar 2017 20:36:52 +0800
-Message-Id: <1490445412-4050-1-git-send-email-elohimes@gmail.com>
-In-Reply-To: <20170323205342.GB23612@bhelgaas-glaptop.roam.corp.google.com> 
+Subject: Re: [PATCH v9 3/3] PCI: Don't extend device's size when using default
+ alignment for all devices
+Date: Sat, 25 Mar 2017 20:46:32 +0800
+Message-Id: <1490445992-4102-1-git-send-email-elohimes@gmail.com>
+In-Reply-To: <20170323215558.GC23612@bhelgaas-glaptop.roam.corp.google.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,78 +27,78 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Mar 23, 2017 at 03:53:42PM -0500, Bjorn Helgaas wrote:
-> Hi Yongji,
+On Thu, Mar 23, 2017 at 04:55:58PM -0500, Bjorn Helgaas wrote:
 >
-> On Wed, Feb 15, 2017 at 02:45:05PM +0800, Yongji Xie wrote:
->> When vfio passthroughs a PCI device of which MMIO BARs are
->> smaller than PAGE_SIZE, guest will not handle the mmio
->> accesses to the BARs which leads to mmio emulations in host.
->>
->> This is because vfio will not allow to passthrough one BAR's
->> mmio page which may be shared with other BARs. Otherwise,
->> there will be a backdoor that guest can use to access BARs
->> of other guest.
+> On Wed, Feb 15, 2017 at 02:45:06PM +0800, Yongji Xie wrote:
+>> Currently we reassign the alignment by extending resources' size in
+>> pci_reassigndev_resource_alignment(). This could potentially break
+>> some drivers when the driver uses the size to locate register
+>> whose length is related to the size. Some examples as below:
 >
-> Please include a pointer to the VFIO code that enforces this.  It's
-> not obvious to me how it would do this.  This doesn't change the
-> *size* of the resource, only the alignment.  So if VFIO sees a BAR
-> like [mem 0x80000000-0x800000ff], it knows the BAR is aligned enough
-> that it *could* be the only thing on a page, but I don't know how it
-> could know that there will never be another BAR at 0x80000100.  Even
-> if there's no other BAR on that page *now*, it would have to know that
-> no hot-added device will ever be placed on that page.
+> I understand the motivation to stop changing the resource size.  That
+> makes good sense.
 >
->> This patch adds a macro to set default alignment for all
->> PCI devices. Then we could solve this issue on some platforms
->> which would easily hit this issue because of their 64K page
->> such as PowerNV platform by defining this macro as PAGE_SIZE.
->>
->> Signed-off-by: Yongji Xie <xyjxie@linux.vnet.ibm.com>
->> ---
->> arch/powerpc/include/asm/pci.h |    4 ++++
->> drivers/pci/pci.c              |    3 +++
->> 2 files changed, 7 insertions(+), 0 deletions(-)
->>
->> diff --git a/arch/powerpc/include/asm/pci.h b/arch/powerpc/include/asm/pci.h
->> index e9bd6cf..5e31bc2 100644
->> --- a/arch/powerpc/include/asm/pci.h
->> +++ b/arch/powerpc/include/asm/pci.h
->> @@ -28,6 +28,10 @@
->> #define PCIBIOS_MIN_IO               0x1000
->> #define PCIBIOS_MIN_MEM              0x10000000
->>
->> +#ifdef CONFIG_PPC_POWERNV
->> +#define PCIBIOS_DEFAULT_ALIGNMENT   PAGE_SIZE
->> +#endif
->> +
->> struct pci_dev;
->>
->> /* Values for the `which' argument to sys_pciconfig_iobase syscall.  */
->> diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
->> index a881c0d..2622e9b 100644
->> --- a/drivers/pci/pci.c
->> +++ b/drivers/pci/pci.c
->> @@ -4965,6 +4965,9 @@ static resource_size_t pci_specified_resource_alignment(struct pci_dev *dev)
->>      resource_size_t align = 0;
->>      char *p;
->>
->> +#ifdef PCIBIOS_DEFAULT_ALIGNMENT
->> +    align = PCIBIOS_DEFAULT_ALIGNMENT;
->> +#endif
+>> - misc\Hpilo.c:
 >
-> I'd prefer to move this #ifdef out of the code path, as in the patch
-> below.
->
-> I don't know how powerpc kernels are built: can you build a kernel
-> that will run on PowerNV as well as on different powerpc systems?  If
-> so, is it acceptable to force that kernel to user 64K alignment even
-> when it's running on non-PowerNV systems?  Or do you need a function
-> call here instead of a #define?
+> This isn't Windows; please use regular Linux forward slashes here.
 >
 
-That's a good point, the macro may be also defined on non-PowerNV systems.
-Maybe an arch-specific function is more reasonable here.
+Will fix it.
+
+>> off = pci_resource_len(pdev, bar) - 0x2000;
+>>
+>> - net\ethernet\chelsio\cxgb4\cxgb4_uld.h:
+>> (pci_resource_len((pdev), 2) - roundup_pow_of_two((vres)->ocq.size))
+>>
+>> - infiniband\hw\nes\Nes_hw.c:
+>> num_pds = pci_resource_len(nesdev->pcidev, BAR_1) >> PAGE_SHIFT;
+>>
+>> This risk could be easily prevented before because we only had one way
+>> (kernel parameter resource_alignment) to touch those codes. And even
+>> some users may be happy to see the extended size.
+>>
+>> But now we define a default alignment for all devices which would also
+>> touch those codes. It would be hard to prevent the risk in this case. So
+>> this patch tries to use START_ALIGNMENT to identify the resource's
+>> alignment without extending the size when the alignment reassigning is
+>> caused by the default alignment.
+>
+> But I don't understand the new START_ALIGNMENT case.
+>
+
+The START_ALIGNMENT case will be used when we have default alignment
+for PCI devices, which can identify the resource's alignment without
+extending the size. If we don't use START_ALIGNMENT for default alignment,
+resources' size would be extended by default, that means the system's 
+default action could potentially break drivers, it looks unreasonable.
+
+>> Signed-off-by: Yongji Xie <xyjxie@linux.vnet.ibm.com>
+>> ---
+>> drivers/pci/pci.c |   34 ++++++++++++++++++++++++----------
+>> 1 files changed, 24 insertions(+), 10 deletions(-)
+>>
+>> diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+>> index 2622e9b..0017e5e 100644
+>> --- a/drivers/pci/pci.c
+>> +++ b/drivers/pci/pci.c
+>> @@ -4958,7 +4958,8 @@ void pci_ignore_hotplug(struct pci_dev *dev)
+>>  * RETURNS: Resource alignment if it is specified.
+>>  *          Zero if it is not specified.
+>
+> Since there's function doc, please update it to reflect the new
+> "resize" return parameter.
+>
+
+Will do it.
+
+> What does "resize" mean?  I can't figure it out from your code.
+
+"resize" means we will update the resource'alignment by extending the 
+resource's size. This would happen when we use kernel parameter to identify 
+resource's alignment. If the resource's alignment is identified by the default 
+alignment function(macro) rather than kernel parameter, "resize" should be 
+false, which means we update the resource'alignment without extending the 
+resource's size.
 
 Thanks,
 Yongji
