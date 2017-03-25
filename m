@@ -1,25 +1,25 @@
 Return-Path: <srs0=9r9s=3c=linux-powerpc.org=kda@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vqzMK0mXgzDq7Z
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Mar 2017 22:58:21 +1100 (AEDT)
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3vqzMJ6cJmz8t6N
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Mar 2017 22:58:20 +1100 (AEDT)
-Received: from mail-pf0-x231.google.com (mail-pf0-x231.google.com
- [IPv6:2607:f8b0:400e:c00::231])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vqzPp3Yj7zDq7Z
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Mar 2017 23:00:30 +1100 (AEDT)
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3vqzPp2Q1dz8vrN
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Mar 2017 23:00:30 +1100 (AEDT)
+Received: from mail-pf0-x22c.google.com (mail-pf0-x22c.google.com
+ [IPv6:2607:f8b0:400e:c00::22c])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3vqzMJ2svvz9s7j
- for <linuxppc-dev@ozlabs.org>; Sat, 25 Mar 2017 22:58:20 +1100 (AEDT)
-Received: by mail-pf0-x231.google.com with SMTP id o190so6492366pfo.0
- for <linuxppc-dev@ozlabs.org>; Sat, 25 Mar 2017 04:58:20 -0700 (PDT)
+ by ozlabs.org (Postfix) with ESMTPS id 3vqzPn5VyLz9s7j
+ for <linuxppc-dev@ozlabs.org>; Sat, 25 Mar 2017 23:00:29 +1100 (AEDT)
+Received: by mail-pf0-x22c.google.com with SMTP id p189so6508333pfp.1
+ for <linuxppc-dev@ozlabs.org>; Sat, 25 Mar 2017 05:00:29 -0700 (PDT)
 MIME-Version: 1.0
 From: Denis Kirjanov <kda@linux-powerpc.org>
-Date: Sat, 25 Mar 2017 14:58:16 +0300
-Message-ID: <CAOJe8K318P+izR8vn3C3XxteP7BN+X5XNk=38MSVt5NjXp0duA@mail.gmail.com>
-Subject: 
+Date: Sat, 25 Mar 2017 15:00:27 +0300
+Message-ID: <CAOJe8K3h2a9QDb0F7cTUUxFNP_i7w4LGy4eedFYSzLOuoJwRbg@mail.gmail.com>
+Subject: kvmppc: BUG: using smp_processor_id() in preemptible
 To: linuxppc-dev <linuxppc-dev@ozlabs.org>
 Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -30,6 +30,8 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+
+[Now with the proper subject]
 
 Hi,
 
