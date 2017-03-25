@@ -1,25 +1,22 @@
-Return-Path: <oohall@gmail.com>
-Received: from mail-qt0-x233.google.com (mail-qt0-x233.google.com
- [IPv6:2607:f8b0:400d:c0d::233])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mikey@neuling.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vqkS45Q8yzDq7Z
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Mar 2017 13:16:36 +1100 (AEDT)
-Received: by mail-qt0-x233.google.com with SMTP id n21so5021326qta.1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Mar 2017 19:16:36 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <1596fddf-b6c0-02cc-cbbd-0f74606206aa@cisco.com>
-References: <1596fddf-b6c0-02cc-cbbd-0f74606206aa@cisco.com>
-From: "Oliver O'Halloran" <oohall@gmail.com>
-Date: Sat, 25 Mar 2017 13:16:33 +1100
-Message-ID: <CAOSf1CFrhMJiD0XPboNVkgKvgG+EOdHJSzUsN8wVuB1YsO-K7g@mail.gmail.com>
-Subject: Re: Build failure -- powerpc/boot: Add OPAL console to epapr wrappers
-To: Daniel Walker <danielwa@cisco.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- xe-linux-external@cisco.com
-Content-Type: text/plain; charset=UTF-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vqmBC4Y4TzDq7Z
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Mar 2017 14:34:43 +1100 (AEDT)
+Message-ID: <1490412884.28113.71.camel@neuling.org>
+Subject: Re: [PATCH v3 05/10] VAS: Define helpers to init window context
+From: Michael Neuling <mikey@neuling.org>
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, stewart@linux.vnet.ibm.com,
+ linuxppc-dev@ozlabs.org, apopple@au1.ibm.com, oohall@gmail.com
+Date: Sat, 25 Mar 2017 14:34:44 +1100
+In-Reply-To: <20170324214757.GE8330@us.ibm.com>
+References: <1489721642-5657-1-git-send-email-sukadev@linux.vnet.ibm.com>
+ <1489721642-5657-6-git-send-email-sukadev@linux.vnet.ibm.com>
+ <1490332539.28113.63.camel@neuling.org> <20170324214757.GE8330@us.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,58 +26,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, Mar 25, 2017 at 4:00 AM, Daniel Walker <danielwa@cisco.com> wrote:
-> I get this build failure,
->
->
-> In file included from arch/powerpc/boot/fdt.c:51:
-> ../arch/powerpc/boot/libfdt_env.h:9: error: redefinition of typedef
-> 'uint32_t'
-> ../arch/powerpc/boot/types.h:20: note: previous declaration of 'uint32_t'
-> was here
-> ../arch/powerpc/boot/libfdt_env.h:10: error: redefinition of typedef
-> 'uint64_t'
-> ../arch/powerpc/boot/types.h:21: note: previous declaration of 'uint64_t'
-> was here
-> make[2]: *** [arch/powerpc/boot/fdt.o] Error 1
-> make[1]: *** [uImage] Error 2
-> make[1]: Leaving directory `/nobackup/danielwa/linux/t1040'
-> make: *** [sub-make] Error 2
->
->
-> and it bisects to ,
->
->
-> commit 656ad58ef19e2a763fa5c938b20ae0f6b8d67242
-> Author: Oliver O'Halloran <oohall@gmail.com>
-> Date:   Fri Jul 1 00:34:37 2016 +1000
->
->     powerpc/boot: Add OPAL console to epapr wrappers
->
->     This patch adds an OPAL console backend to the powerpc boot wrapper so
->     that decompression failures inside the wrapper can be reported to the
->     user. This is important since it typically indicates data corruption in
->     the firmware and other nasty things.
->
->     Currently this only works when building a little endian kernel. When
->     compiling a 64 bit BE kernel the wrapper is always build 32 bit to be
->     compatible with some 32 bit firmwares. BE support will be added at a
->     later date. Another limitation of this is that only the "raw" type of
->     OPAL console is supported, however machines that provide a hvsi console
->     also provide a raw console so this is not an issue in practice.
->
->     Actually-written-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
->     Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
->     [mpe: Move #ifdef __powerpc64__ to avoid warnings on 32-bit]
->     Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
->
->
-> I can provide a config file if needed. My apologies if this was already
-> reported.
 
-Thanks for the report, I don't think this is a known bug. mpe's build
-testing is pretty thorough so I'm surprised this wasn't caught sooner.
+> > > +	val =3D 0ULL;
+> > > +	if (user_win) {
+> > > +		val =3D SET_FIELD(VAS_XLATE_MSR_DR, val, true);
+> > > +		val =3D SET_FIELD(VAS_XLATE_MSR_TA, val, false);
+> > > +		val =3D SET_FIELD(VAS_XLATE_MSR_PR, val, true);
+> > > +		val =3D SET_FIELD(VAS_XLATE_MSR_US, val, false);
+> > > +		val =3D SET_FIELD(VAS_XLATE_MSR_HV, val, true);
+> > > +		val =3D SET_FIELD(VAS_XLATE_MSR_SF, val, true);
+> > > +		val =3D SET_FIELD(VAS_XLATE_MSR_UV, val, false);
+> > > +	} else {
+> > > +		val =3D SET_FIELD(VAS_XLATE_MSR_DR, val, false);
+> >=20
+> > kernel contexts don't go through the nestmmu?
+>=20
+> I think so, but will check with Alistair/Ben.
 
-A config file and the version of gcc that you're using would be useful.
+Well it's kinda up to you.  Do you want to use the kernel mapping or not?  =
+I
+probably would unless there are issues.
 
-Oliver
+Mikey
