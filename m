@@ -1,26 +1,23 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
- [IPv6:2607:f8b0:400e:c05::242])
+Return-Path: <elohimes@gmail.com>
+Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
+ [IPv6:2607:f8b0:400e:c05::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vqzyq6ycFzDq7Z
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Mar 2017 23:25:38 +1100 (AEDT)
-Received: by mail-pg0-x242.google.com with SMTP id g2so2742350pge.2
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Mar 2017 05:25:38 -0700 (PDT)
-Subject: Re: [PATCH guest kernel] vfio/powerpc/spapr_tce: Enforce IOMMU type
- compatibility check
-To: Alex Williamson <alex.williamson@redhat.com>
-References: <20170324064406.17076-1-aik@ozlabs.ru>
- <20170324142905.3129266b@t450s.home>
-Cc: linuxppc-dev@lists.ozlabs.org, David Gibson
- <david@gibson.dropbear.id.au>, kvm-ppc@vger.kernel.org, kvm@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-Message-ID: <d6909bd7-e861-03b0-cb32-bffaefaf518f@ozlabs.ru>
-Date: Sat, 25 Mar 2017 23:25:29 +1100
-MIME-Version: 1.0
-In-Reply-To: <20170324142905.3129266b@t450s.home>
-Content-Type: text/plain; charset=koi8-r
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vr0Cr4NCFzDq7Z
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Mar 2017 23:36:56 +1100 (AEDT)
+Received: by mail-pg0-x241.google.com with SMTP id 79so2798045pgf.0
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Mar 2017 05:36:55 -0700 (PDT)
+From: Yongji Xie <elohimes@gmail.com>
+To: bhelgaas@google.com
+Cc: linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ alex.williamson@redhat.com, gwshan@linux.vnet.ibm.com, aik@ozlabs.ru,
+ benh@kernel.crashing.org, mpe@ellerman.id.au, paulus@samba.org,
+ zhong@linux.vnet.ibm.com
+Subject: Re: [PATCH v9 2/3] PCI: Add a macro to set default alignment for all
+ PCI devices
+Date: Sat, 25 Mar 2017 20:36:52 +0800
+Message-Id: <1490445412-4050-1-git-send-email-elohimes@gmail.com>
+In-Reply-To: <20170323205342.GB23612@bhelgaas-glaptop.roam.corp.google.com> 
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,88 +27,78 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 25/03/17 07:29, Alex Williamson wrote:
-> On Fri, 24 Mar 2017 17:44:06 +1100
-> Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
-> 
->> The existing SPAPR TCE driver advertises both VFIO_SPAPR_TCE_IOMMU and
->> VFIO_SPAPR_TCE_v2_IOMMU types to the userspace and the userspace usually
->> picks the v2.
+On Thu, Mar 23, 2017 at 03:53:42PM -0500, Bjorn Helgaas wrote:
+> Hi Yongji,
+>
+> On Wed, Feb 15, 2017 at 02:45:05PM +0800, Yongji Xie wrote:
+>> When vfio passthroughs a PCI device of which MMIO BARs are
+>> smaller than PAGE_SIZE, guest will not handle the mmio
+>> accesses to the BARs which leads to mmio emulations in host.
 >>
->> Normally the userspace would create a container, attach an IOMMU group
->> to it and only then set the IOMMU type (which would normally be v2).
+>> This is because vfio will not allow to passthrough one BAR's
+>> mmio page which may be shared with other BARs. Otherwise,
+>> there will be a backdoor that guest can use to access BARs
+>> of other guest.
+>
+> Please include a pointer to the VFIO code that enforces this.  It's
+> not obvious to me how it would do this.  This doesn't change the
+> *size* of the resource, only the alignment.  So if VFIO sees a BAR
+> like [mem 0x80000000-0x800000ff], it knows the BAR is aligned enough
+> that it *could* be the only thing on a page, but I don't know how it
+> could know that there will never be another BAR at 0x80000100.  Even
+> if there's no other BAR on that page *now*, it would have to know that
+> no hot-added device will ever be placed on that page.
+>
+>> This patch adds a macro to set default alignment for all
+>> PCI devices. Then we could solve this issue on some platforms
+>> which would easily hit this issue because of their 64K page
+>> such as PowerNV platform by defining this macro as PAGE_SIZE.
 >>
->> However a specific IOMMU group may not support v2, in other words
->> it may not implement set_window/unset_window/take_ownership/
->> release_ownership and such a group should not be attached to
->> a v2 container.
->>
->> This adds extra checks that a new group can do what the selected IOMMU
->> type suggests. The userspace can then test the return value from
->> ioctl(VFIO_SET_IOMMU, VFIO_SPAPR_TCE_v2_IOMMU) and try
->> VFIO_SPAPR_TCE_IOMMU.
->>
->> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+>> Signed-off-by: Yongji Xie <xyjxie@linux.vnet.ibm.com>
 >> ---
+>> arch/powerpc/include/asm/pci.h |    4 ++++
+>> drivers/pci/pci.c              |    3 +++
+>> 2 files changed, 7 insertions(+), 0 deletions(-)
 >>
->> This is one of the patches needed to do nested VFIO - for either
->> second level guest or DPDK running in a guest.
->> ---
->>  drivers/vfio/vfio_iommu_spapr_tce.c | 8 ++++++++
->>  1 file changed, 8 insertions(+)
-> 
-> I'm not sure I understand why you're labeling this "guest kernel", is a
+>> diff --git a/arch/powerpc/include/asm/pci.h b/arch/powerpc/include/asm/pci.h
+>> index e9bd6cf..5e31bc2 100644
+>> --- a/arch/powerpc/include/asm/pci.h
+>> +++ b/arch/powerpc/include/asm/pci.h
+>> @@ -28,6 +28,10 @@
+>> #define PCIBIOS_MIN_IO               0x1000
+>> #define PCIBIOS_MIN_MEM              0x10000000
+>>
+>> +#ifdef CONFIG_PPC_POWERNV
+>> +#define PCIBIOS_DEFAULT_ALIGNMENT   PAGE_SIZE
+>> +#endif
+>> +
+>> struct pci_dev;
+>>
+>> /* Values for the `which' argument to sys_pciconfig_iobase syscall.  */
+>> diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+>> index a881c0d..2622e9b 100644
+>> --- a/drivers/pci/pci.c
+>> +++ b/drivers/pci/pci.c
+>> @@ -4965,6 +4965,9 @@ static resource_size_t pci_specified_resource_alignment(struct pci_dev *dev)
+>>      resource_size_t align = 0;
+>>      char *p;
+>>
+>> +#ifdef PCIBIOS_DEFAULT_ALIGNMENT
+>> +    align = PCIBIOS_DEFAULT_ALIGNMENT;
+>> +#endif
+>
+> I'd prefer to move this #ifdef out of the code path, as in the patch
+> below.
+>
+> I don't know how powerpc kernels are built: can you build a kernel
+> that will run on PowerNV as well as on different powerpc systems?  If
+> so, is it acceptable to force that kernel to user 64K alignment even
+> when it's running on non-PowerNV systems?  Or do you need a function
+> call here instead of a #define?
+>
 
+That's a good point, the macro may be also defined on non-PowerNV systems.
+Maybe an arch-specific function is more reasonable here.
 
-That is my script :)
-
-> VM the only case where we can have combinations that only a subset of
-> the groups might support v2?  
-
-powernv (non-virtualized, and it runs HV KVM) host provides v2-capable
-groups, they all the same, and a pseries host (which normally runs as a
-guest but it can do nested KVM as well - it is called PR KVM) can do only
-v1 (after this patch, without it - no vfio at all).
-
-> What terrible things happen when such a
-> combination is created?
-
-There is no mixture at the moment, I just needed a way to tell userspace
-that a group cannot do v2.
-
-> The fix itself seems sane, but I'm trying to
-> figure out whether it should be marked for stable, should go in for
-> v4.11, or be queued for v4.12.  Thanks,
-
-No need for stable.
-
-
-> 
-> Alex
-> 
->> diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
->> index cf3de91fbfe7..a7d811524092 100644
->> --- a/drivers/vfio/vfio_iommu_spapr_tce.c
->> +++ b/drivers/vfio/vfio_iommu_spapr_tce.c
->> @@ -1335,8 +1335,16 @@ static int tce_iommu_attach_group(void *iommu_data,
->>  
->>  	if (!table_group->ops || !table_group->ops->take_ownership ||
->>  			!table_group->ops->release_ownership) {
->> +		if (container->v2) {
->> +			ret = -EPERM;
->> +			goto unlock_exit;
->> +		}
->>  		ret = tce_iommu_take_ownership(container, table_group);
->>  	} else {
->> +		if (!container->v2) {
->> +			ret = -EPERM;
->> +			goto unlock_exit;
->> +		}
->>  		ret = tce_iommu_take_ownership_ddw(container, table_group);
->>  		if (!tce_groups_attached(container) && !container->tables[0])
->>  			container->def_window_pending = true;
-> 
-
-
--- 
-Alexey
+Thanks,
+Yongji
