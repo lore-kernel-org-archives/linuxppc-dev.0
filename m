@@ -1,23 +1,22 @@
-Return-Path: <elohimes@gmail.com>
-Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
- [IPv6:2607:f8b0:400e:c00::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vr0R104gHzDq7Z
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Mar 2017 23:46:37 +1100 (AEDT)
-Received: by mail-pf0-x244.google.com with SMTP id r137so2473082pfr.3
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Mar 2017 05:46:36 -0700 (PDT)
-From: Yongji Xie <elohimes@gmail.com>
-To: bhelgaas@google.com
-Cc: linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- alex.williamson@redhat.com, gwshan@linux.vnet.ibm.com, aik@ozlabs.ru,
- benh@kernel.crashing.org, mpe@ellerman.id.au, paulus@samba.org,
- zhong@linux.vnet.ibm.com
-Subject: Re: [PATCH v9 3/3] PCI: Don't extend device's size when using default
- alignment for all devices
-Date: Sat, 25 Mar 2017 20:46:32 +0800
-Message-Id: <1490445992-4102-1-git-send-email-elohimes@gmail.com>
-In-Reply-To: <20170323215558.GC23612@bhelgaas-glaptop.roam.corp.google.com>
+Return-Path: <willy@infradead.org>
+Received: from bombadil.infradead.org (bombadil.infradead.org [65.50.211.133])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vrCyP15rzzDq7Z
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Mar 2017 08:26:05 +1100 (AEDT)
+Date: Sat, 25 Mar 2017 14:25:58 -0700
+From: Matthew Wilcox <willy@infradead.org>
+To: Pavel Tatashin <pasha.tatashin@oracle.com>
+Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
+ linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, borntraeger@de.ibm.com,
+ heiko.carstens@de.ibm.com, davem@davemloft.net
+Subject: Re: [v2 0/5] parallelized "struct page" zeroing
+Message-ID: <20170325212558.GA1288@bombadil.infradead.org>
+References: <1490383192-981017-1-git-send-email-pasha.tatashin@oracle.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1490383192-981017-1-git-send-email-pasha.tatashin@oracle.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,78 +26,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Mar 23, 2017 at 04:55:58PM -0500, Bjorn Helgaas wrote:
->
-> On Wed, Feb 15, 2017 at 02:45:06PM +0800, Yongji Xie wrote:
->> Currently we reassign the alignment by extending resources' size in
->> pci_reassigndev_resource_alignment(). This could potentially break
->> some drivers when the driver uses the size to locate register
->> whose length is related to the size. Some examples as below:
->
-> I understand the motivation to stop changing the resource size.  That
-> makes good sense.
->
->> - misc\Hpilo.c:
->
-> This isn't Windows; please use regular Linux forward slashes here.
->
+On Fri, Mar 24, 2017 at 03:19:47PM -0400, Pavel Tatashin wrote:
+> Changelog:
+> 	v1 - v2
+> 	- Per request, added s390 to deferred "struct page" zeroing
+> 	- Collected performance data on x86 which proofs the importance to
+> 	  keep memset() as prefetch (see below).
+> 
+> When deferred struct page initialization feature is enabled, we get a
+> performance gain of initializing vmemmap in parallel after other CPUs are
+> started. However, we still zero the memory for vmemmap using one boot CPU.
+> This patch-set fixes the memset-zeroing limitation by deferring it as well.
+> 
+> Performance gain on SPARC with 32T:
+> base:	https://hastebin.com/ozanelatat.go
+> fix:	https://hastebin.com/utonawukof.go
+> 
+> As you can see without the fix it takes: 97.89s to boot
+> With the fix it takes: 46.91 to boot.
+> 
+> Performance gain on x86 with 1T:
+> base:	https://hastebin.com/uvifasohon.pas
+> fix:	https://hastebin.com/anodiqaguj.pas
+> 
+> On Intel we save 10.66s/T while on SPARC we save 1.59s/T. Intel has
+> twice as many pages, and also fewer nodes than SPARC (sparc 32 nodes, vs.
+> intel 8 nodes).
+> 
+> It takes one thread 11.25s to zero vmemmap on Intel for 1T, so it should
+> take additional 11.25 / 8 = 1.4s  (this machine has 8 nodes) per node to
+> initialize the memory, but it takes only additional 0.456s per node, which
+> means on Intel we also benefit from having memset() and initializing all
+> other fields in one place.
 
-Will fix it.
-
->> off = pci_resource_len(pdev, bar) - 0x2000;
->>
->> - net\ethernet\chelsio\cxgb4\cxgb4_uld.h:
->> (pci_resource_len((pdev), 2) - roundup_pow_of_two((vres)->ocq.size))
->>
->> - infiniband\hw\nes\Nes_hw.c:
->> num_pds = pci_resource_len(nesdev->pcidev, BAR_1) >> PAGE_SHIFT;
->>
->> This risk could be easily prevented before because we only had one way
->> (kernel parameter resource_alignment) to touch those codes. And even
->> some users may be happy to see the extended size.
->>
->> But now we define a default alignment for all devices which would also
->> touch those codes. It would be hard to prevent the risk in this case. So
->> this patch tries to use START_ALIGNMENT to identify the resource's
->> alignment without extending the size when the alignment reassigning is
->> caused by the default alignment.
->
-> But I don't understand the new START_ALIGNMENT case.
->
-
-The START_ALIGNMENT case will be used when we have default alignment
-for PCI devices, which can identify the resource's alignment without
-extending the size. If we don't use START_ALIGNMENT for default alignment,
-resources' size would be extended by default, that means the system's 
-default action could potentially break drivers, it looks unreasonable.
-
->> Signed-off-by: Yongji Xie <xyjxie@linux.vnet.ibm.com>
->> ---
->> drivers/pci/pci.c |   34 ++++++++++++++++++++++++----------
->> 1 files changed, 24 insertions(+), 10 deletions(-)
->>
->> diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
->> index 2622e9b..0017e5e 100644
->> --- a/drivers/pci/pci.c
->> +++ b/drivers/pci/pci.c
->> @@ -4958,7 +4958,8 @@ void pci_ignore_hotplug(struct pci_dev *dev)
->>  * RETURNS: Resource alignment if it is specified.
->>  *          Zero if it is not specified.
->
-> Since there's function doc, please update it to reflect the new
-> "resize" return parameter.
->
-
-Will do it.
-
-> What does "resize" mean?  I can't figure it out from your code.
-
-"resize" means we will update the resource'alignment by extending the 
-resource's size. This would happen when we use kernel parameter to identify 
-resource's alignment. If the resource's alignment is identified by the default 
-alignment function(macro) rather than kernel parameter, "resize" should be 
-false, which means we update the resource'alignment without extending the 
-resource's size.
-
-Thanks,
-Yongji
+My question was how long it takes if you memset in neither place.
