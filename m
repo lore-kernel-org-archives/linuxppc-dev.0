@@ -1,28 +1,23 @@
-Return-Path: <srs0=qpr8=3e=linux-powerpc.org=kda@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vs6cT6PszzDqbc
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Mar 2017 19:28:41 +1100 (AEDT)
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3vs6cT5mjbz8t0T
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Mar 2017 19:28:41 +1100 (AEDT)
-Received: from mail-lf0-x242.google.com (mail-lf0-x242.google.com
- [IPv6:2a00:1450:4010:c07::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3vs6cS5Tt9z9s3s
- for <linuxppc-dev@ozlabs.org>; Mon, 27 Mar 2017 19:28:40 +1100 (AEDT)
-Received: by mail-lf0-x242.google.com with SMTP id r36so6304083lfi.0
- for <linuxppc-dev@ozlabs.org>; Mon, 27 Mar 2017 01:28:40 -0700 (PDT)
-From: Denis Kirjanov <kda@linux-powerpc.org>
-To: linuxppc-dev@ozlabs.org
-Cc: benh@kernel.crashing.org, mpe@ellerman.id.au, paulus@ozlabs.org,
- Denis Kirjanov <kda@linux-powerpc.org>
-Subject: [PATCH] kvm: powerpc: book3s: Disable preemption while accessing paca
- xics_phys filed
-Date: Mon, 27 Mar 2017 04:26:54 -0400
-Message-Id: <1490603214-30116-1-git-send-email-kda@linux-powerpc.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vs71n51gqzDq7d
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Mar 2017 19:47:09 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org
+Cc: kvm@vger.kernel.org, Alexey Kardashevskiy <aik@ozlabs.ru>,
+ kvm-ppc@vger.kernel.org, Alex Williamson <alex.williamson@redhat.com>,
+ Paul Mackerras <paulus@samba.org>, David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: [PATCH kernel v11 02/10] powerpc/powernv/iommu: Add real mode
+ version of iommu_table_ops::exchange()
+In-Reply-To: <20170322042156.11756-3-aik@ozlabs.ru>
+References: <20170322042156.11756-1-aik@ozlabs.ru>
+ <20170322042156.11756-3-aik@ozlabs.ru>
+Date: Mon, 27 Mar 2017 19:47:08 +1100
+Message-ID: <877f3bf6nn.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,58 +27,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-With CONFIG_DEBUG_PREEMPT enabled we see the following trace:
+Alexey Kardashevskiy <aik@ozlabs.ru> writes:
 
-[  129.314426] BUG: using smp_processor_id() in preemptible [00000000]
-code: modprobe/5459
-[  129.314580] caller is .kvmppc_book3s_init_hv+0x184/0x350 [kvm_hv]
-[  129.314697] CPU: 11 PID: 5459 Comm: modprobe Not tainted
-4.11.0-rc3-00022-gc7e790c #1
-[  129.314848] Call Trace:
-[  129.314915] [c0000007d624b810] [c0000000023eef10] .dump_stack+0xe4/0x150 (unreliable)
-[  129.315065] [c0000007d624b8a0] [c000000001f6ec04] .check_preemption_disabled+0x134/0x150
-[  129.315210] [c0000007d624b940] [d00000000a010274] .kvmppc_book3s_init_hv+0x184/0x350 [kvm_hv]
-[  129.315339] [c0000007d624ba00] [c00000000191d5cc] .do_one_initcall+0x5c/0x1c0
-[  129.315416] [c0000007d624bad0] [c0000000023e9494] .do_init_module+0x84/0x240
-[  129.315492] [c0000007d624bb70] [c000000001aade18] .load_module+0x1f68/0x2a10
-[  129.315568] [c0000007d624bd20] [c000000001aaeb30] .SyS_finit_module+0xc0/0xf0
-[  129.315645] [c0000007d624be30] [c00000000191baec] system_call+0x38/0xfc
+> diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
+> index 5f202a566ec5..9bace5df05d5 100644
+> --- a/arch/powerpc/kernel/iommu.c
+> +++ b/arch/powerpc/kernel/iommu.c
+> @@ -1004,6 +1004,29 @@ long iommu_tce_xchg(struct iommu_table *tbl, unsigned long entry,
+>  }
+>  EXPORT_SYMBOL_GPL(iommu_tce_xchg);
+>  
+> +long iommu_tce_xchg_rm(struct iommu_table *tbl, unsigned long entry,
+> +		unsigned long *hpa, enum dma_data_direction *direction)
+> +{
+> +	long ret;
+> +
+> +	ret = tbl->it_ops->exchange_rm(tbl, entry, hpa, direction);
+> +
+> +	if (!ret && ((*direction == DMA_FROM_DEVICE) ||
+> +			(*direction == DMA_BIDIRECTIONAL))) {
+> +		struct page *pg = realmode_pfn_to_page(*hpa >> PAGE_SHIFT);
 
-Disable preemption while accessing paca struct to avoid inconsistent state
+This breaks the corenet64_smp_defconfig build:
 
-Fixes: f725758 ("KVM: PPC: Book3S HV: Use OPAL XICS emulation on POWER9")
-Signed-off-by: Denis Kirjanov <kda@linux-powerpc.org>
----
- arch/powerpc/kvm/book3s_hv.c | 10 +++++++++-
- 1 file changed, 9 insertions(+), 1 deletion(-)
+arch/powerpc/kernel/iommu.c:1037:21: error: implicit declaration of function 'realmode_pfn_to_page' [-Werror=implicit-function-declaration]
 
-diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-index 1ec86d9..8e96bab 100644
---- a/arch/powerpc/kvm/book3s_hv.c
-+++ b/arch/powerpc/kvm/book3s_hv.c
-@@ -3913,6 +3913,10 @@ static int kvmppc_radix_possible(void)
- static int kvmppc_book3s_init_hv(void)
- {
- 	int r;
-+#ifdef CONFIG_SMP
-+	unsigned long xics_phys;
-+#endif
-+
- 	/*
- 	 * FIXME!! Do we need to check on all cpus ?
- 	 */
-@@ -3930,7 +3934,11 @@ static int kvmppc_book3s_init_hv(void)
- 	 * indirectly, via OPAL.
- 	 */
- #ifdef CONFIG_SMP
--	if (!get_paca()->kvm_hstate.xics_phys) {
-+	preempt_disable();
-+	xics_phys = get_paca()->kvm_hstate.xics_phys;
-+	preempt_enable();
-+
-+	if (!xics_phys) {
- 		struct device_node *np;
- 
- 		np = of_find_compatible_node(NULL, NULL, "ibm,opal-intc");
--- 
-1.8.3.1
+
+I think you can probably just put it inside #ifdef CONFIG_PPC_BOOK3S_64.
+
+cheers
