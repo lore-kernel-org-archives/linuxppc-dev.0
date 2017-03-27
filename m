@@ -1,37 +1,21 @@
-Return-Path: <heiko.carstens@de.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <dgibson@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vs3L013vKzDq7d
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Mar 2017 17:00:55 +1100 (AEDT)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v2R5s0xT146324
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Mar 2017 02:00:42 -0400
-Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
- by mx0a-001b2d01.pphosted.com with ESMTP id 29dn2e6j3e-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Mar 2017 02:00:41 -0400
-Received: from localhost
- by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <heiko.carstens@de.ibm.com>;
- Mon, 27 Mar 2017 07:00:39 +0100
-Date: Mon, 27 Mar 2017 08:00:32 +0200
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Pavel Tatashin <pasha.tatashin@oracle.com>
-Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
- linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, borntraeger@de.ibm.com,
- davem@davemloft.net, willy@infradead.org
-Subject: Re: [v2 5/5] mm: teach platforms not to zero struct pages memory
-References: <1490383192-981017-1-git-send-email-pasha.tatashin@oracle.com>
- <1490383192-981017-6-git-send-email-pasha.tatashin@oracle.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vs4136dNXzDq7d
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Mar 2017 17:31:19 +1100 (AEDT)
+Date: Mon, 27 Mar 2017 15:24:30 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Cc: linuxppc-dev@lists.ozlabs.org, Gavin Shan <gwshan@linux.vnet.ibm.com>
+Subject: Re: [PATCH kernel] powerpc/powernv: Check kzalloc() return in
+ pnv_pci_table_alloc
+Message-ID: <20170327042430.GT19078@umbus.fritz.box>
+References: <20170327032803.18775-1-aik@ozlabs.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1490383192-981017-6-git-send-email-pasha.tatashin@oracle.com>
-Message-Id: <20170327060032.GB5092@osiris>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="B0+HW0pjZ+2jqF7e"
+In-Reply-To: <20170327032803.18775-1-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,50 +25,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Mar 24, 2017 at 03:19:52PM -0400, Pavel Tatashin wrote:
-> If we are using deferred struct page initialization feature, most of
-> "struct page"es are getting initialized after other CPUs are started, and
-> hence we are benefiting from doing this job in parallel. However, we are
-> still zeroing all the memory that is allocated for "struct pages" using the
-> boot CPU.  This patch solves this problem, by deferring zeroing "struct
-> pages" to only when they are initialized.
-> 
-> Signed-off-by: Pavel Tatashin <pasha.tatashin@oracle.com>
-> Reviewed-by: Shannon Nelson <shannon.nelson@oracle.com>
-> ---
->  arch/powerpc/mm/init_64.c |    2 +-
->  arch/s390/mm/vmem.c       |    2 +-
->  arch/sparc/mm/init_64.c   |    2 +-
->  arch/x86/mm/init_64.c     |    2 +-
->  4 files changed, 4 insertions(+), 4 deletions(-)
-> 
-> diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
-> index eb4c270..24faf2d 100644
-> --- a/arch/powerpc/mm/init_64.c
-> +++ b/arch/powerpc/mm/init_64.c
-> @@ -181,7 +181,7 @@ int __meminit vmemmap_populate(unsigned long start, unsigned long end, int node)
->  		if (vmemmap_populated(start, page_size))
->  			continue;
-> 
-> -		p = vmemmap_alloc_block(page_size, node, true);
-> +		p = vmemmap_alloc_block(page_size, node, VMEMMAP_ZERO);
->  		if (!p)
->  			return -ENOMEM;
-> 
-> diff --git a/arch/s390/mm/vmem.c b/arch/s390/mm/vmem.c
-> index 9c75214..ffe9ba1 100644
-> --- a/arch/s390/mm/vmem.c
-> +++ b/arch/s390/mm/vmem.c
-> @@ -252,7 +252,7 @@ int __meminit vmemmap_populate(unsigned long start, unsigned long end, int node)
->  				void *new_page;
-> 
->  				new_page = vmemmap_alloc_block(PMD_SIZE, node,
-> -							       true);
-> +							       VMEMMAP_ZERO);
->  				if (!new_page)
->  					goto out;
->  				pmd_val(*pm_dir) = __pa(new_page) | sgt_prot;
 
-s390 has two call sites that need to be converted, like you did in one of
-your previous patches. The same seems to be true for powerpc, unless there
-is a reason to not convert them?
+--B0+HW0pjZ+2jqF7e
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Mon, Mar 27, 2017 at 02:28:03PM +1100, Alexey Kardashevskiy wrote:
+> pnv_pci_table_alloc() ignores posible failure from kzalloc_node(),
+> this adds a check. There are 2 callers of pnv_pci_table_alloc(),
+> one already checks for tbl!=3DNULL, this adds BUG_ON() to the other path
+> which only happens during boot time in IODA1 and not expected to fail.
+>=20
+> Fixes: 0eaf4defc7c4 ("powerpc/spapr: vfio: Switch from iommu_table to new=
+ iommu_table_group")
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+
+Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
+
+> ---
+>  arch/powerpc/platforms/powernv/pci-ioda.c | 1 +
+>  arch/powerpc/platforms/powernv/pci.c      | 3 +++
+>  2 files changed, 4 insertions(+)
+>=20
+> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/pla=
+tforms/powernv/pci-ioda.c
+> index e36738291c32..dcda3f6b7d36 100644
+> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
+> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+> @@ -2128,6 +2128,7 @@ static void pnv_pci_ioda1_setup_dma_pe(struct pnv_p=
+hb *phb,
+> =20
+>  found:
+>  	tbl =3D pnv_pci_table_alloc(phb->hose->node);
+> +	BUG_ON(!tbl);
+>  	iommu_register_group(&pe->table_group, phb->hose->global_number,
+>  			pe->pe_number);
+>  	pnv_pci_link_table_and_group(phb->hose->node, 0, tbl, &pe->table_group);
+> diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platform=
+s/powernv/pci.c
+> index eb835e977e33..9acdf6889c0d 100644
+> --- a/arch/powerpc/platforms/powernv/pci.c
+> +++ b/arch/powerpc/platforms/powernv/pci.c
+> @@ -766,6 +766,9 @@ struct iommu_table *pnv_pci_table_alloc(int nid)
+>  	struct iommu_table *tbl;
+> =20
+>  	tbl =3D kzalloc_node(sizeof(struct iommu_table), GFP_KERNEL, nid);
+> +	if (!tbl)
+> +		return NULL;
+> +
+>  	INIT_LIST_HEAD_RCU(&tbl->it_group_list);
+> =20
+>  	return tbl;
+
+--=20
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
+
+--B0+HW0pjZ+2jqF7e
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAEBCAAGBQJY2JP8AAoJEGw4ysog2bOSfkkQAIY9KUcCK2yigXVZhRriV3X2
+lGcL6RcpZl1flGJnsSrXsZTi+GBUbTe88hEjM8bZXAyBSwU7cPwMEOaIXNnDhEEX
+Kot34uEmoSIl1coEAkV9fSP6WO3DmMYVKZIypEwmfHQuaVG3PatgvL1K1Xls15Eq
+u0fG2gR82UevuA9TBfCDYUOQ9H+OzMRrxQv3PXVU5QkCvilPkbgE9QLA/eLXXmzo
+4uzUu/INrEuuC60q+ioBZK9A4D9MjthaJJ5NJRTCiUAP3/8sqBKtkDMHL20wo3Wq
+RDNrgPqn7IZhSxOy5dq3srjzm9+mJY1YDT5Uu+dlS9mviq5A73LspgLXNA5M3HYM
+SIi+JY6iqIntT8WekmafNwuB6G2JqzqVp6/6PHDtkjkVIwCDtJ/Bv0kqWMthWbRu
+W7iZxGxPALJaQcxDsuqicQDkOpU12IEm/zRFgwbKbrXGzTzdiPVxnZVw3pOQjEE2
+10y+NYW7aSnAOeLHR1LURj4bT9hNabbwQ4RSF1qt01LbvcoAuPeW6QLhL20H1RMI
+U2N8MuHe2y9eNYOi3fOLqSXzfnYeImFHUO+blB01cxZ48Mn2r8nU6TnT7/eAgo7j
+tOtwYLQBltAnpMpSqRJAj7gJ8h3NwRuxvvNEnH4M52GK2+NtOgHhc8V06bEE2bbK
+ih44VIfdr8s+L9lvHI+E
+=RBCG
+-----END PGP SIGNATURE-----
+
+--B0+HW0pjZ+2jqF7e--
