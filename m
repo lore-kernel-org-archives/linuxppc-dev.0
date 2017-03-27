@@ -2,20 +2,22 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vs71n51gqzDq7d
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Mar 2017 19:47:09 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vs92G45Q1zDq7d
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Mar 2017 21:17:42 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org
-Cc: kvm@vger.kernel.org, Alexey Kardashevskiy <aik@ozlabs.ru>,
- kvm-ppc@vger.kernel.org, Alex Williamson <alex.williamson@redhat.com>,
- Paul Mackerras <paulus@samba.org>, David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: [PATCH kernel v11 02/10] powerpc/powernv/iommu: Add real mode
- version of iommu_table_ops::exchange()
-In-Reply-To: <20170322042156.11756-3-aik@ozlabs.ru>
-References: <20170322042156.11756-1-aik@ozlabs.ru>
- <20170322042156.11756-3-aik@ozlabs.ru>
-Date: Mon, 27 Mar 2017 19:47:08 +1100
-Message-ID: <877f3bf6nn.fsf@concordia.ellerman.id.au>
+To: Bjorn Helgaas <helgaas@kernel.org>, Yongji Xie <xyjxie@linux.vnet.ibm.com>
+Cc: bhelgaas@google.com, linux-pci@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, alex.williamson@redhat.com,
+ gwshan@linux.vnet.ibm.com, aik@ozlabs.ru, benh@kernel.crashing.org,
+ paulus@samba.org, zhong@linux.vnet.ibm.com
+Subject: Re: [PATCH v9 2/3] PCI: Add a macro to set default alignment for all
+ PCI devices
+In-Reply-To: <20170323205342.GB23612@bhelgaas-glaptop.roam.corp.google.com>
+References: <1487141106-2503-1-git-send-email-xyjxie@linux.vnet.ibm.com>
+ <1487141106-2503-3-git-send-email-xyjxie@linux.vnet.ibm.com>
+ <20170323205342.GB23612@bhelgaas-glaptop.roam.corp.google.com>
+Date: Mon, 27 Mar 2017 21:17:37 +1100
+Message-ID: <8737dzf2gu.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,32 +29,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Alexey Kardashevskiy <aik@ozlabs.ru> writes:
+Bjorn Helgaas <helgaas@kernel.org> writes:
+>
+> I don't know how powerpc kernels are built: can you build a kernel
+> that will run on PowerNV as well as on different powerpc systems?
 
-> diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
-> index 5f202a566ec5..9bace5df05d5 100644
-> --- a/arch/powerpc/kernel/iommu.c
-> +++ b/arch/powerpc/kernel/iommu.c
-> @@ -1004,6 +1004,29 @@ long iommu_tce_xchg(struct iommu_table *tbl, unsigned long entry,
->  }
->  EXPORT_SYMBOL_GPL(iommu_tce_xchg);
->  
-> +long iommu_tce_xchg_rm(struct iommu_table *tbl, unsigned long entry,
-> +		unsigned long *hpa, enum dma_data_direction *direction)
-> +{
-> +	long ret;
-> +
-> +	ret = tbl->it_ops->exchange_rm(tbl, entry, hpa, direction);
-> +
-> +	if (!ret && ((*direction == DMA_FROM_DEVICE) ||
-> +			(*direction == DMA_BIDIRECTIONAL))) {
-> +		struct page *pg = realmode_pfn_to_page(*hpa >> PAGE_SHIFT);
+Yes you can. But there are some restrictions.
 
-This breaks the corenet64_smp_defconfig build:
+You can only build a 64-bit OR a 32-bit kernel.
 
-arch/powerpc/kernel/iommu.c:1037:21: error: implicit declaration of function 'realmode_pfn_to_page' [-Werror=implicit-function-declaration]
+And within 64-bit you can only build a *kernel* for the "server
+architecture (~= IBM CPUs)" or the "embedded architecture
+(Freescale/NXP)".
 
+So in practice you can build a 64-bit kernel that supports:
+ - powernv (bare metal on IBM server chips)
+ - pseries (virtualised on IBM server chips or qemu)
+ - powermac (Apple G5s)
+ - pasemi (long dead but still used by some Amiga folks?)
+ - Cell/PS3 (also long dead)
 
-I think you can probably just put it inside #ifdef CONFIG_PPC_BOOK3S_64.
+> If so, is it acceptable to force that kernel to user 64K alignment even
+> when it's running on non-PowerNV systems?
+
+Probably, but I'm not sure TBH. Benh will know, I'll try and get his
+attention.
 
 cheers
