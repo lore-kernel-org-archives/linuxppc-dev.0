@@ -1,20 +1,21 @@
-Return-Path: <dgibson@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <paulus@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vrv2Z6B6szDq95
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Mar 2017 10:47:02 +1100 (AEDT)
-Date: Mon, 27 Mar 2017 09:41:21 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH guest kernel] powerpc/pseries: Enable VFIO
-Message-ID: <20170326224121.GP19078@umbus.fritz.box>
-References: <20170324063721.16887-1-aik@ozlabs.ru>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vrvR10D9NzDq95
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Mar 2017 11:04:45 +1100 (AEDT)
+Date: Mon, 27 Mar 2017 11:04:41 +1100
+From: Paul Mackerras <paulus@ozlabs.org>
+To: Denis Kirjanov <kda@linux-powerpc.org>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: kvmppc: BUG: using smp_processor_id() in preemptible
+Message-ID: <20170327000441.GA21072@fergus.ozlabs.ibm.com>
+References: <CAOJe8K3h2a9QDb0F7cTUUxFNP_i7w4LGy4eedFYSzLOuoJwRbg@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="SlnaBQtdWG0gYnqZ"
-In-Reply-To: <20170324063721.16887-1-aik@ozlabs.ru>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <CAOJe8K3h2a9QDb0F7cTUUxFNP_i7w4LGy4eedFYSzLOuoJwRbg@mail.gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,146 +25,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Sat, Mar 25, 2017 at 03:00:27PM +0300, Denis Kirjanov wrote:
+> [Now with the proper subject]
+> 
+> Hi,
+> 
+> the commit 5a319350a46572d073042a3194676099dd2c135d
+> has introduces the following warning with CONFIG_DEBUG_PREEMPT enabled:
+> 
+> [  129.314426] BUG: using smp_processor_id() in preemptible [00000000]
+> code: modprobe/5459
+> [  129.314580] caller is .kvmppc_book3s_init_hv+0x184/0x350 [kvm_hv]
+> [  129.314697] CPU: 11 PID: 5459 Comm: modprobe Not tainted
+> 4.11.0-rc3-00022-gc7e790c #1
+> [  129.314848] Call Trace:
+> [  129.314915] [c0000007d624b810] [c0000000023eef10]
+> .dump_stack+0xe4/0x150 (unreliable)
+> [  129.315065] [c0000007d624b8a0] [c000000001f6ec04]
+> .check_preemption_disabled+0x134/0x150
+> [  129.315210] [c0000007d624b940] [d00000000a010274]
+> .kvmppc_book3s_init_hv+0x184/0x350 [kvm_hv]
+> [  129.315339] [c0000007d624ba00] [c00000000191d5cc] .do_one_initcall+0x5c/0x1c0
+> [  129.315416] [c0000007d624bad0] [c0000000023e9494] .do_init_module+0x84/0x240
+> [  129.315492] [c0000007d624bb70] [c000000001aade18] .load_module+0x1f68/0x2a10
+> [  129.315568] [c0000007d624bd20] [c000000001aaeb30] .SyS_finit_module+0xc0/0xf0
+> [  129.315645] [c0000007d624be30] [c00000000191baec] system_call+0x38/0xfc
+> 
+> I think that we have to explicitly add a call to preempt_disable to
+> the get_paca() macro with the CONFIG_DEBUG_PREEMPT enabled.
+> 
+> Probably we need to create a common accessor function since we already
+> have a special cases like svcpu_get/svcpu_put
+> 
+> If you agree I'm going send a patch.
 
---SlnaBQtdWG0gYnqZ
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+I don't think we should put a preempt_disable() in get_paca().  If we
+did that then we would also have to make a put_paca() that does
+preempt_enable() and add a call to put_paca() everywhere that we call
+get_paca().
 
-On Fri, Mar 24, 2017 at 05:37:21PM +1100, Alexey Kardashevskiy wrote:
-> This enables VFIO on pseries host in order to allow VFIO in nested guest
-> under PR KVM or DPDK in a HV guest. This adds support of
-> the VFIO_SPAPR_TCE_IOMMU type.
->=20
-> This adds exchange() callback to allow TCE updates by the SPAPR TCE IOMMU
-> driver in VFIO.
->=20
-> This initializes DMA32 window parameters in iommu_table_group as
-> as this does not implement VFIO_SPAPR_TCE_v2_IOMMU and
-> VFIO_SPAPR_TCE_IOMMU just reuses the existing DMA32 window.
->=20
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+All we really need to do is add a preempt_disable/enable pair in
+kvmppc_book3s_init_hv().
 
-Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
-
-> ---
->  arch/powerpc/platforms/pseries/iommu.c | 40 ++++++++++++++++++++++++++++=
-++++--
->  1 file changed, 38 insertions(+), 2 deletions(-)
->=20
-> diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platfo=
-rms/pseries/iommu.c
-> index 4d757eaa46bf..7c8ed68d727e 100644
-> --- a/arch/powerpc/platforms/pseries/iommu.c
-> +++ b/arch/powerpc/platforms/pseries/iommu.c
-> @@ -550,6 +550,7 @@ static void iommu_table_setparms(struct pci_controlle=
-r *phb,
->  static void iommu_table_setparms_lpar(struct pci_controller *phb,
->  				      struct device_node *dn,
->  				      struct iommu_table *tbl,
-> +				      struct iommu_table_group *table_group,
->  				      const __be32 *dma_window)
->  {
->  	unsigned long offset, size;
-> @@ -563,6 +564,9 @@ static void iommu_table_setparms_lpar(struct pci_cont=
-roller *phb,
->  	tbl->it_type =3D TCE_PCI;
->  	tbl->it_offset =3D offset >> tbl->it_page_shift;
->  	tbl->it_size =3D size >> tbl->it_page_shift;
-> +
-> +	table_group->tce32_start =3D offset;
-> +	table_group->tce32_size =3D size;
->  }
-> =20
->  struct iommu_table_ops iommu_table_pseries_ops =3D {
-> @@ -651,8 +655,38 @@ static void pci_dma_bus_setup_pSeries(struct pci_bus=
- *bus)
->  	pr_debug("ISA/IDE, window size is 0x%llx\n", pci->phb->dma_window_size);
->  }
-> =20
-> +#ifdef CONFIG_IOMMU_API
-> +static int tce_exchange_pSeries(struct iommu_table *tbl, long index,
-> +		unsigned long *tce, enum dma_data_direction *direction)
-> +{
-> +	long rc;
-> +	unsigned long ioba =3D (unsigned long) index << tbl->it_page_shift;
-> +	unsigned long flags, oldtce =3D 0;
-> +	u64 proto_tce =3D iommu_direction_to_tce_perm(*direction);
-> +	unsigned long newtce =3D *tce | proto_tce;
-> +
-> +	spin_lock_irqsave(&tbl->large_pool.lock, flags);
-> +
-> +	rc =3D plpar_tce_get((u64)tbl->it_index, ioba, &oldtce);
-> +	if (!rc)
-> +		rc =3D plpar_tce_put((u64)tbl->it_index, ioba, newtce);
-> +
-> +	if (!rc) {
-> +		*direction =3D iommu_tce_direction(oldtce);
-> +		*tce =3D oldtce & ~(TCE_PCI_READ | TCE_PCI_WRITE);
-> +	}
-> +
-> +	spin_unlock_irqrestore(&tbl->large_pool.lock, flags);
-> +
-> +	return rc;
-> +}
-> +#endif
-> +
->  struct iommu_table_ops iommu_table_lpar_multi_ops =3D {
->  	.set =3D tce_buildmulti_pSeriesLP,
-> +#ifdef CONFIG_IOMMU_API
-> +	.exchange =3D tce_exchange_pSeries,
-> +#endif
->  	.clear =3D tce_freemulti_pSeriesLP,
->  	.get =3D tce_get_pSeriesLP
->  };
-> @@ -689,7 +723,8 @@ static void pci_dma_bus_setup_pSeriesLP(struct pci_bu=
-s *bus)
->  	if (!ppci->table_group) {
->  		ppci->table_group =3D iommu_pseries_alloc_group(ppci->phb->node);
->  		tbl =3D ppci->table_group->tables[0];
-> -		iommu_table_setparms_lpar(ppci->phb, pdn, tbl, dma_window);
-> +		iommu_table_setparms_lpar(ppci->phb, pdn, tbl,
-> +				ppci->table_group, dma_window);
->  		tbl->it_ops =3D &iommu_table_lpar_multi_ops;
->  		iommu_init_table(tbl, ppci->phb->node);
->  		iommu_register_group(ppci->table_group,
-> @@ -1143,7 +1178,8 @@ static void pci_dma_dev_setup_pSeriesLP(struct pci_=
-dev *dev)
->  	if (!pci->table_group) {
->  		pci->table_group =3D iommu_pseries_alloc_group(pci->phb->node);
->  		tbl =3D pci->table_group->tables[0];
-> -		iommu_table_setparms_lpar(pci->phb, pdn, tbl, dma_window);
-> +		iommu_table_setparms_lpar(pci->phb, pdn, tbl,
-> +				pci->table_group, dma_window);
->  		tbl->it_ops =3D &iommu_table_lpar_multi_ops;
->  		iommu_init_table(tbl, pci->phb->node);
->  		iommu_register_group(pci->table_group,
-
---=20
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
-
---SlnaBQtdWG0gYnqZ
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBCAAGBQJY2EOOAAoJEGw4ysog2bOS/5sP/0X/fZwJqt5CbyDIURnddEsn
-ItsvNhVe2vv4gMB6l3N/dgWjobUV+NFgZjI11t2Rcia0yqLVA0d3hKBcueBisL6i
-xTbk9/kn84MngT6c23aW0w/M1p//NSWqn7IO7gqDVx8QFTOvIGFUc3mnZ6z0OiR1
-m5BbepHL2YQwT7JlQIzDbYdmKRR5BgK3Is3pMk3VDOPA27oEwmQpqtVbFrs2GDkH
-cRKFjugCXkuqDOxb8qtzm+RgBz/D6aB25QNCEWfCBXDuJ2OUMmjjSwPUJEVrv41m
-cLKNZFCaowO7owFYplPcScDKhRdbd7mcyqefzewrSUv5s2aQ0p9JV3y0s/8c4aJf
-JfPQzYoNgdQCI+IT1F4NYvTdb/lz5PYghYDiGNVjPmEBINA7tu8nFO1BiJG00mt3
-L7fyT40FZfzNtwmnLf7yF0C5i1JvlbBAr+g7W/YZAv5j4NZOpBjn5ehfEwambkxK
-X4AbdrLb1Y8SeE5rrwGcMX6BvskF2J/fSh1NZ7H53rxnzPm8US5u+dk8P6e4AaCE
-VrN6csX0kujoxqOiB/rRDy777bec8aLZ7F8n49mgahPZWJmnz9kaqVFSfhtGQhaj
-MGO+e9OnnSlDyohOwvw6ycL5w/U3pEuC6RggwGHOkh6dGFn3rX/EA1PiW3Y3dA5U
-vU1HZoACU5Hx195XVhlk
-=kxUr
------END PGP SIGNATURE-----
-
---SlnaBQtdWG0gYnqZ--
+Paul.
