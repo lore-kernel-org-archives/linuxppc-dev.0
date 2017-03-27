@@ -1,16 +1,28 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from ozlabs.ru (ozlabs.ru [107.173.13.209])
- by lists.ozlabs.org (Postfix) with ESMTP id 3vs6bL1gv3zDq7d
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Mar 2017 19:27:41 +1100 (AEDT)
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
- David Gibson <david@gibson.dropbear.id.au>,
- Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH kernel v2] powerpc/powernv: Check kzalloc() return value in
- pnv_pci_table_alloc
-Date: Mon, 27 Mar 2017 19:27:37 +1100
-Message-Id: <20170327082737.14448-1-aik@ozlabs.ru>
+Return-Path: <srs0=qpr8=3e=linux-powerpc.org=kda@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vs6cT6PszzDqbc
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Mar 2017 19:28:41 +1100 (AEDT)
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3vs6cT5mjbz8t0T
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Mar 2017 19:28:41 +1100 (AEDT)
+Received: from mail-lf0-x242.google.com (mail-lf0-x242.google.com
+ [IPv6:2a00:1450:4010:c07::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3vs6cS5Tt9z9s3s
+ for <linuxppc-dev@ozlabs.org>; Mon, 27 Mar 2017 19:28:40 +1100 (AEDT)
+Received: by mail-lf0-x242.google.com with SMTP id r36so6304083lfi.0
+ for <linuxppc-dev@ozlabs.org>; Mon, 27 Mar 2017 01:28:40 -0700 (PDT)
+From: Denis Kirjanov <kda@linux-powerpc.org>
+To: linuxppc-dev@ozlabs.org
+Cc: benh@kernel.crashing.org, mpe@ellerman.id.au, paulus@ozlabs.org,
+ Denis Kirjanov <kda@linux-powerpc.org>
+Subject: [PATCH] kvm: powerpc: book3s: Disable preemption while accessing paca
+ xics_phys filed
+Date: Mon, 27 Mar 2017 04:26:54 -0400
+Message-Id: <1490603214-30116-1-git-send-email-kda@linux-powerpc.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,48 +32,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-pnv_pci_table_alloc() ignores possible failure from kzalloc_node(),
-this adds a check. There are 2 callers of pnv_pci_table_alloc(),
-one already checks for tbl!=NULL, this adds WARN_ON() to the other path
-which only happens during boot time in IODA1 and not expected to fail.
+With CONFIG_DEBUG_PREEMPT enabled we see the following trace:
 
-Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
----
-Changes:
-v2:
-* s/BUG_ON/WARN_ON/
----
- arch/powerpc/platforms/powernv/pci-ioda.c | 3 +++
- arch/powerpc/platforms/powernv/pci.c      | 3 +++
- 2 files changed, 6 insertions(+)
+[  129.314426] BUG: using smp_processor_id() in preemptible [00000000]
+code: modprobe/5459
+[  129.314580] caller is .kvmppc_book3s_init_hv+0x184/0x350 [kvm_hv]
+[  129.314697] CPU: 11 PID: 5459 Comm: modprobe Not tainted
+4.11.0-rc3-00022-gc7e790c #1
+[  129.314848] Call Trace:
+[  129.314915] [c0000007d624b810] [c0000000023eef10] .dump_stack+0xe4/0x150 (unreliable)
+[  129.315065] [c0000007d624b8a0] [c000000001f6ec04] .check_preemption_disabled+0x134/0x150
+[  129.315210] [c0000007d624b940] [d00000000a010274] .kvmppc_book3s_init_hv+0x184/0x350 [kvm_hv]
+[  129.315339] [c0000007d624ba00] [c00000000191d5cc] .do_one_initcall+0x5c/0x1c0
+[  129.315416] [c0000007d624bad0] [c0000000023e9494] .do_init_module+0x84/0x240
+[  129.315492] [c0000007d624bb70] [c000000001aade18] .load_module+0x1f68/0x2a10
+[  129.315568] [c0000007d624bd20] [c000000001aaeb30] .SyS_finit_module+0xc0/0xf0
+[  129.315645] [c0000007d624be30] [c00000000191baec] system_call+0x38/0xfc
 
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index e36738291c32..04ef03a5201b 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -2128,6 +2128,9 @@ static void pnv_pci_ioda1_setup_dma_pe(struct pnv_phb *phb,
- 
- found:
- 	tbl = pnv_pci_table_alloc(phb->hose->node);
-+	if (WARN_ON(!tbl))
-+		return;
+Disable preemption while accessing paca struct to avoid inconsistent state
+
+Fixes: f725758 ("KVM: PPC: Book3S HV: Use OPAL XICS emulation on POWER9")
+Signed-off-by: Denis Kirjanov <kda@linux-powerpc.org>
+---
+ arch/powerpc/kvm/book3s_hv.c | 10 +++++++++-
+ 1 file changed, 9 insertions(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+index 1ec86d9..8e96bab 100644
+--- a/arch/powerpc/kvm/book3s_hv.c
++++ b/arch/powerpc/kvm/book3s_hv.c
+@@ -3913,6 +3913,10 @@ static int kvmppc_radix_possible(void)
+ static int kvmppc_book3s_init_hv(void)
+ {
+ 	int r;
++#ifdef CONFIG_SMP
++	unsigned long xics_phys;
++#endif
 +
- 	iommu_register_group(&pe->table_group, phb->hose->global_number,
- 			pe->pe_number);
- 	pnv_pci_link_table_and_group(phb->hose->node, 0, tbl, &pe->table_group);
-diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
-index eb835e977e33..9acdf6889c0d 100644
---- a/arch/powerpc/platforms/powernv/pci.c
-+++ b/arch/powerpc/platforms/powernv/pci.c
-@@ -766,6 +766,9 @@ struct iommu_table *pnv_pci_table_alloc(int nid)
- 	struct iommu_table *tbl;
- 
- 	tbl = kzalloc_node(sizeof(struct iommu_table), GFP_KERNEL, nid);
-+	if (!tbl)
-+		return NULL;
+ 	/*
+ 	 * FIXME!! Do we need to check on all cpus ?
+ 	 */
+@@ -3930,7 +3934,11 @@ static int kvmppc_book3s_init_hv(void)
+ 	 * indirectly, via OPAL.
+ 	 */
+ #ifdef CONFIG_SMP
+-	if (!get_paca()->kvm_hstate.xics_phys) {
++	preempt_disable();
++	xics_phys = get_paca()->kvm_hstate.xics_phys;
++	preempt_enable();
 +
- 	INIT_LIST_HEAD_RCU(&tbl->it_group_list);
++	if (!xics_phys) {
+ 		struct device_node *np;
  
- 	return tbl;
+ 		np = of_find_compatible_node(NULL, NULL, "ibm,opal-intc");
 -- 
-2.11.0
+1.8.3.1
