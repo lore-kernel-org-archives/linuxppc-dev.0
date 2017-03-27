@@ -1,22 +1,22 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vs9gB2pqjzDq7d
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Mar 2017 21:46:14 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vs9gS0XP2zDqZS
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Mar 2017 21:46:28 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: Hari Bathini <hbathini@linux.vnet.ibm.com>
 Cc: fenghua.yu@intel.com, tony.luck@intel.com, linux-ia64@vger.kernel.org,
  Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>, dyoung@redhat.com,
  kexec@lists.infradead.org, linux-kernel@vger.kernel.org, ebiederm@xmission.com,
  akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org, vgoyal@redhat.com
-Subject: Re: [RESEND PATCH v4 3/5] powerpc/fadump: remove dependency with
- CONFIG_KEXEC
-In-Reply-To: <149035343956.6881.1536459326017709354.stgit@hbathini.in.ibm.com>
+Subject: Re: [RESEND PATCH v4 4/5] powerpc/fadump: reuse crashkernel parameter
+ for fadump memory reservation
+In-Reply-To: <149035346749.6881.911095631212975718.stgit@hbathini.in.ibm.com>
 References: <149035332237.6881.9486330442785822384.stgit@hbathini.in.ibm.com>
- <149035343956.6881.1536459326017709354.stgit@hbathini.in.ibm.com>
-Date: Mon, 27 Mar 2017 21:46:12 +1100
-Message-ID: <87shlzdmkr.fsf@concordia.ellerman.id.au>
+ <149035346749.6881.911095631212975718.stgit@hbathini.in.ibm.com>
+Date: Mon, 27 Mar 2017 21:46:27 +1100
+Message-ID: <87poh3dmkc.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -30,21 +30,31 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Hari Bathini <hbathini@linux.vnet.ibm.com> writes:
 
-> Now that crashkernel parameter parsing and vmcoreinfo related code is
-> moved under CONFIG_CRASH_CORE instead of CONFIG_KEXEC_CORE, remove
-> dependency with CONFIG_KEXEC for CONFIG_FA_DUMP. While here, get rid
-> of definitions of fadump_append_elf_note() & fadump_final_note()
-> functions to reuse similar functions compiled under CONFIG_CRASH_CORE.
+> fadump supports specifying memory to reserve for fadump's crash kernel
+> with fadump_reserve_mem kernel parameter. This parameter currently
+> supports passing a fixed memory size, like fadump_reserve_mem=<size>
+> only. This patch aims to add support for other syntaxes like range-based
+> memory size <range1>:<size1>[,<range2>:<size2>,<range3>:<size3>,...]
+> which allows using the same parameter to boot the kernel with different
+> system RAM sizes.
 >
+> As crashkernel parameter already supports the above mentioned syntaxes,
+> this patch deprecates fadump_reserve_mem parameter and reuses crashkernel
+> parameter instead, to specify memory for fadump's crash kernel memory
+> reservation as well. If any offset is provided in crashkernel parameter,
+> it will be ignored in case of fadump, as fadump reserves memory at end
+> of RAM.
+>
+> Advantages using crashkernel parameter instead of fadump_reserve_mem
+> parameter are one less kernel parameter overall, code reuse and support
+> for multiple syntaxes to specify memory.
+>
+> Suggested-by: Dave Young <dyoung@redhat.com>
 > Signed-off-by: Hari Bathini <hbathini@linux.vnet.ibm.com>
 > Reviewed-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
 > ---
->  arch/powerpc/Kconfig               |   10 ++++++----
->  arch/powerpc/include/asm/fadump.h  |    2 ++
->  arch/powerpc/kernel/crash.c        |    2 --
->  arch/powerpc/kernel/fadump.c       |   34 +++-------------------------------
->  arch/powerpc/kernel/setup-common.c |    5 +++++
->  5 files changed, 16 insertions(+), 37 deletions(-)
+>  arch/powerpc/kernel/fadump.c |   23 ++++++++++-------------
+>  1 file changed, 10 insertions(+), 13 deletions(-)
 
 Acked-by: Michael Ellerman <mpe@ellerman.id.au>
 
