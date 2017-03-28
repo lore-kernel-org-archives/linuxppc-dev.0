@@ -1,22 +1,20 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vsXGR2lySzDqYC
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Mar 2017 11:44:31 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vsXlC2pKYzDqY7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Mar 2017 12:05:59 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
- Matthew Wilcox <willy@infradead.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@au1.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- Anton Blanchard <anton@samba.org>
-Subject: Re: [PATCH 1/2] powerpc: string: implement optimized memset variants
-In-Reply-To: <d6a1a353de6a87bb5474ca9f1c1ff7ab2c4a1eb4.1490641759.git.naveen.n.rao@linux.vnet.ibm.com>
-References: <20170322193030.GA8008@bombadil.infradead.org>
- <cover.1490641759.git.naveen.n.rao@linux.vnet.ibm.com>
- <d6a1a353de6a87bb5474ca9f1c1ff7ab2c4a1eb4.1490641759.git.naveen.n.rao@linux.vnet.ibm.com>
-Date: Tue, 28 Mar 2017 11:44:30 +1100
-Message-ID: <87mvc6b575.fsf@concordia.ellerman.id.au>
+To: Oliver O'Halloran <oohall@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 4/5] powerpc/smp: add cpu_cache_mask
+In-Reply-To: <CAOSf1CF6BHr+T8r+0kV8sk0-NzfzLf=dwxpJkK0gCofMa_TPAg@mail.gmail.com>
+References: <20170302004920.21948-1-oohall@gmail.com>
+ <20170302004920.21948-4-oohall@gmail.com>
+ <871stylr1n.fsf@concordia.ellerman.id.au>
+ <CAOSf1CF6BHr+T8r+0kV8sk0-NzfzLf=dwxpJkK0gCofMa_TPAg@mail.gmail.com>
+Date: Tue, 28 Mar 2017 12:05:58 +1100
+Message-ID: <87k27ab47d.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,33 +26,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-"Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> writes:
+Oliver O'Halloran <oohall@gmail.com> writes:
 
-> diff --git a/arch/powerpc/lib/mem_64.S b/arch/powerpc/lib/mem_64.S
-> index 85fa9869aec5..ec531de99996 100644
-> --- a/arch/powerpc/lib/mem_64.S
-> +++ b/arch/powerpc/lib/mem_64.S
-> @@ -13,6 +13,23 @@
->  #include <asm/ppc_asm.h>
->  #include <asm/export.h>
->  
-> +_GLOBAL(__memset16)
-> +	rlwimi	r4,r4,16,0,15
-> +	/* fall through */
-> +
-> +_GLOBAL(__memset32)
-> +	rldimi	r4,r4,32,0
-> +	/* fall through */
-> +
-> +_GLOBAL(__memset64)
-> +	neg	r0,r3
-> +	andi.	r0,r0,7
-> +	cmplw	cr1,r5,r0
-> +	b	.Lms
-> +EXPORT_SYMBOL(__memset16)
-> +EXPORT_SYMBOL(__memset32)
-> +EXPORT_SYMBOL(__memset64)
+> On Wed, Mar 15, 2017 at 10:26 PM, Michael Ellerman <mpe@ellerman.id.au> wrote:
+>> Oliver O'Halloran <oohall@gmail.com> writes:
+>>
+>>> Traditionally we have only ever tracked which CPUs are in the same core
+>>> (cpu_sibling_mask) and on the same die (cpu_core_mask). For Power9 we
+>>> need to be aware of which CPUs share cache with each other so this patch
+>>> adds cpu_cache_mask and the underlying cpu_cache_map variable to track
+>>> this.
+>
+>> Some CPUs on Power8 share L3, or L4.
+>
+> Eh... it's not really the same. The "L4" is part of the memory buffers
+> and it's function is conceptually different to the processor caches.
+> The L3 on P8 is only shared when the core that owns is offline (or
+> sleeping) so the scheduler doesn't really need to be aware of it.
 
-You'll have to convince me that's better than what GCC produces.
+But that's exactly my point, this mask only tracks whether CPUs share an
+L2, so it should be named as such.
+
+>> I think just call it cpu_l2cache_map to make it explicit.
+>
+> I was being deliberately vague. I know it's only a shared currently,
+> but it's possible we might have a (real) shared L3 in the future. The
+> latest high-end x86 chips have some of l3 sharing across the entire
+> chip so you never know.
+
+Sure, but in that case we'd probably want a new mask to track which CPUs
+share L3, because we'd probably also have CPUs sharing L2, and those
+masks might not be equal.
+
+But if I'm wrong we can just rename it *then*.
+
+>I'm not particularly attached to the name though, so i'll rename it
+>if you really want.
+
+Yes please.
 
 cheers
