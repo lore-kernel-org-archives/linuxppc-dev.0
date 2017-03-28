@@ -1,21 +1,20 @@
-Return-Path: <daniel.baluta@nxp.com>
-Received: from EUR03-AM5-obe.outbound.protection.outlook.com
- (mail-eopbgr30089.outbound.protection.outlook.com [40.107.3.89])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vslFC1GkzzDqZS
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Mar 2017 19:59:10 +1100 (AEDT)
-From: Daniel Baluta <daniel.baluta@nxp.com>
-To: <nicoleotsuka@gmail.com>, <broonie@kernel.org>,
- <alsa-devel@alsa-project.org>
-CC: <timur@tabi.org>, <Xiubo.Lee@gmail.com>, <fabio.estevam@nxp.com>,
- <lgirdwood@gmail.com>, <perex@perex.cz>, <tiwai@suse.com>,
- <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>
-Subject: [PATCH v3 2/2] ASoC: imx-wm8962: Fix codec_clk cleanup
-Date: Tue, 28 Mar 2017 11:58:52 +0300
-Message-ID: <1490691532-2086-3-git-send-email-daniel.baluta@nxp.com>
-In-Reply-To: <1490691532-2086-1-git-send-email-daniel.baluta@nxp.com>
-References: <1490691532-2086-1-git-send-email-daniel.baluta@nxp.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vsmbt4xtlzDqY4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Mar 2017 21:00:26 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Abdul Haleem <abdhalee@linux.vnet.ibm.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+ Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: [PowerPC][next-20170324][kselftest] kernel Oops when running
+ tm/tm-signal-context-chk-vsx
+In-Reply-To: <1490612559.8344.15.camel@abdul.in.ibm.com>
+References: <1490612559.8344.15.camel@abdul.in.ibm.com>
+Date: Tue, 28 Mar 2017 21:00:25 +1100
+Message-ID: <871sthbu12.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,34 +26,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Resource managed devm_clk_get only works with platform's device dev.
+Abdul Haleem <abdhalee@linux.vnet.ibm.com> writes:
 
-Reported-by: Nicolin Chen <nicoleotsuka@gmail.com>
-Signed-off-by: Daniel Baluta <daniel.baluta@nxp.com>
----
- sound/soc/fsl/imx-wm8962.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+> Hi,
+>
+> While running kernel self tests on ppc64, tm/tm-signal-context-chk-vsx
+> tests fails with Oops message. 
+>
+> I was able to reproduce only twice out of 20 runs on next-20170324 only.
+> so it is difficult to bisect the commit causing the issue.
 
-diff --git a/sound/soc/fsl/imx-wm8962.c b/sound/soc/fsl/imx-wm8962.c
-index 3d894d9..52659fa 100644
---- a/sound/soc/fsl/imx-wm8962.c
-+++ b/sound/soc/fsl/imx-wm8962.c
-@@ -231,7 +231,7 @@ static int imx_wm8962_probe(struct platform_device *pdev)
- 		goto fail;
- 	}
- 
--	codec_clk = devm_clk_get(&codec_dev->dev, NULL);
-+	codec_clk = clk_get(&codec_dev->dev, NULL);
- 	if (IS_ERR(codec_clk)) {
- 		ret = PTR_ERR(codec_clk);
- 		dev_err(&codec_dev->dev, "failed to get codec clk: %d\n", ret);
-@@ -239,6 +239,7 @@ static int imx_wm8962_probe(struct platform_device *pdev)
- 	}
- 
- 	data->clk_frequency = clk_get_rate(codec_clk);
-+	clk_put(codec_clk);
- 
- 	data->dai.name = "HiFi";
- 	data->dai.stream_name = "HiFi";
--- 
-2.7.4
+Can you try mainline as of this commit:
+
+605df8d674ac ("selftests/powerpc: Replace stxvx and lxvx with stxvd2x/lxvd2x")
+
+https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git/commit/?id=605df8d674ac65e044a0bf4998b28c2f350b7f9e
+
+cheers
