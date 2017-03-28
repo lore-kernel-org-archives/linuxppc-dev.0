@@ -1,39 +1,32 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <broonie@sirena.org.uk>
+Received: from mezzanine.sirena.org.uk (mezzanine.sirena.org.uk
+ [IPv6:2400:8900::f03c:91ff:fedb:4f4])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vsvmS1Y7LzDqkL
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Mar 2017 02:23:20 +1100 (AEDT)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v2SFE489113523
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Mar 2017 11:23:09 -0400
-Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
- by mx0a-001b2d01.pphosted.com with ESMTP id 29fsw9tf01-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Mar 2017 11:23:08 -0400
-Received: from localhost
- by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Tue, 28 Mar 2017 11:23:07 -0400
-Subject: Re: [PATCH V5 16/17] mm: Let arch choose the initial value of task
- size
-To: Michael Ellerman <mpe@ellerman.id.au>, benh@kernel.crashing.org,
- paulus@samba.org
-References: <1490153823-29241-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1490153823-29241-17-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <87vaqtabw8.fsf@concordia.ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>,
- linux-mm@kvack.org, Andrew Morton <akpm@linux-foundation.org>
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Date: Tue, 28 Mar 2017 20:52:58 +0530
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vsvq06lgzzDqdG
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Mar 2017 02:25:32 +1100 (AEDT)
+Date: Tue, 28 Mar 2017 16:24:57 +0100
+From: Mark Brown <broonie@kernel.org>
+To: Charles Keepax <ckeepax@opensource.wolfsonmicro.com>
+Cc: Daniel Baluta <daniel.baluta@gmail.com>,
+ Daniel Baluta <daniel.baluta@nxp.com>,
+ Nicolin Chen <nicoleotsuka@gmail.com>, alsa-devel@alsa-project.org,
+ Timur Tabi <timur@tabi.org>, Xiubo.Lee@gmail.com,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Liam Girdwood <lgirdwood@gmail.com>, Takashi Iwai <tiwai@suse.com>,
+ fabio.estevam@nxp.com, linuxppc-dev@lists.ozlabs.org
+Message-ID: <20170328152457.2j5zaxdbdavpuspa@sirena.org.uk>
+References: <1490691532-2086-1-git-send-email-daniel.baluta@nxp.com>
+ <1490691532-2086-3-git-send-email-daniel.baluta@nxp.com>
+ <20170328092103.GQ6986@localhost.localdomain>
+ <CAEnQRZAx1o9xtbf3u1A_Zun7MSaJjdjunpJm1Q6=ZAA3beoFbA@mail.gmail.com>
+ <20170328115306.GR6986@localhost.localdomain>
 MIME-Version: 1.0
-In-Reply-To: <87vaqtabw8.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Message-Id: <6c8904b5-c4a0-b828-6aad-14220efc5236@linux.vnet.ibm.com>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="snmk5xbbpahugqfp"
+In-Reply-To: <20170328115306.GR6986@localhost.localdomain>
+Subject: Re: [alsa-devel] [PATCH v3 2/2] ASoC: imx-wm8962: Fix codec_clk
+ cleanup
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,36 +37,41 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
+--snmk5xbbpahugqfp
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-On Tuesday 28 March 2017 04:47 PM, Michael Ellerman wrote:
-> "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> writes:
->
->> As we start supporting larger address space (>128TB), we want to give
->> architecture a control on max task size of an application which is different
->> from the TASK_SIZE. For ex: ppc64 needs to track the base page size of a segment
->> and it is copied from mm_context_t to PACA on each context switch. If we know that
->> application has not used an address range above 128TB we only need to copy
->> details about 128TB range to PACA. This will help in improving context switch
->> performance by avoiding larger copy operation.
->>
->> Cc: Kirill A. Shutemov <kirill.shutemov@linux.intel.com>
->> Cc: linux-mm@kvack.org
->> Cc: Andrew Morton <akpm@linux-foundation.org>
->> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
->> ---
->>  fs/exec.c | 10 +++++++++-
->>  1 file changed, 9 insertions(+), 1 deletion(-)
->
-> I'll need an ACK at least on this from someone in mm land.
->
-> I assume there's no way I can merge patch 17 without this?
+On Tue, Mar 28, 2017 at 12:53:06PM +0100, Charles Keepax wrote:
+> On Tue, Mar 28, 2017 at 01:47:04PM +0300, Daniel Baluta wrote:
 
-That is correct.
+> > >> -     codec_clk = devm_clk_get(&codec_dev->dev, NULL);
+> > >> +     codec_clk = clk_get(&codec_dev->dev, NULL);
 
-I didn't add linux-mm to cc for rest of the patches. They are all ppc64 
-specific and can be found at
+> > is different from &codec_dev->dev.
 
-https://lists.ozlabs.org/pipermail/linuxppc-dev/2017-March/155726.html
+> I get that they are different, I just don't get why changing
+> from a devm_clk_get to a clk_get is a better fix than changing
+> &codec->dev to &pdev->dev.
 
+This should be clear from the semantics of clk_get(): you're looking up
+the clock in the context of the supplied device and the clock is
+attached to the CODEC so you need to look up in the CODEC context.  What
+would be even better would be to move the allocation of the clock into
+the CODEC driver...
 
--aneesh
+--snmk5xbbpahugqfp
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCAAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAljagEgACgkQJNaLcl1U
+h9AKugf/StJ149lY5qxFIidYO0Ivx0sfdE0kKrP8LJee5gI9llEg3gLIetZ/Zdw8
+7aVlTFxfD/l8U2ym9TUbfVVbu4Aj7oruKkw1zGiMlpoHzzTNSYKXvNP7gPA/8UCp
+5q8Y+vrW2zAwoprvvPfKZefn2RhZ44ts1F3kDDiX9MMQIOx/xBZFaDcWBg4SuFxR
+FA8nKooE/4Fj9H0//eBgoQBePR9wZaMBeYskRy0IJZskTyPaMr6kheLe4aoTmiNC
+XWe6oAAkTdx0Vi4hYcu6PLmqyof1TUiuBONt/hANqJLgQTBrN0B5w3HlaFnmGCAd
+5FQwg2ng+ONbILs5V4JjunNpcKzx4A==
+=c1d6
+-----END PGP SIGNATURE-----
+
+--snmk5xbbpahugqfp--
