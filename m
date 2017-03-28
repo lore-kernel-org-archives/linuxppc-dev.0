@@ -1,24 +1,43 @@
-Return-Path: <bhsharma@redhat.com>
-Received: from mail-qk0-f178.google.com (mail-qk0-f178.google.com
- [209.85.220.178])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <andrew.donnellan@au1.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vt1c04mkHzDqY4
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Mar 2017 06:46:24 +1100 (AEDT)
-Received: by mail-qk0-f178.google.com with SMTP id d10so69394004qke.1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Mar 2017 12:46:24 -0700 (PDT)
-From: Bhupesh Sharma <bhsharma@redhat.com>
-To: linuxppc-dev@lists.ozlabs.org, kernel-hardening@lists.openwall.com,
- linux-kernel@vger.kernel.org
-Cc: dcashman@google.com, mpe@ellerman.id.au, bhupesh.linux@gmail.com,
- keescook@chromium.org, bhsharma@redhat.com, agraf@suse.com,
- benh@kernel.crashing.org, paulus@samba.org, agust@denx.de,
- alistair@popple.id.au, mporter@kernel.crashing.org,
- vitb@kernel.crashing.org, oss@buserror.net, galak@kernel.crashing.org,
- dcashman@android.com
-Subject: [PATCH v3] powerpc: mm: support ARCH_MMAP_RND_BITS
-Date: Wed, 29 Mar 2017 01:15:47 +0530
-Message-Id: <1490730347-5165-1-git-send-email-bhsharma@redhat.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vt74b2lPszDq93
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Mar 2017 10:53:01 +1100 (AEDT)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v2SNmnDL035025
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Mar 2017 19:52:56 -0400
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 29ft6fm0vn-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Mar 2017 19:52:55 -0400
+Received: from localhost
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
+ Wed, 29 Mar 2017 09:52:53 +1000
+Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v2SNqgbQ42926188
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Mar 2017 10:52:50 +1100
+Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
+ by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v2SNqIER025412
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Mar 2017 10:52:18 +1100
+Subject: Re: [PATCH V3 1/7] cxl: Read vsec perst load image
+To: Christophe Lombard <clombard@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, fbarrat@linux.vnet.ibm.com,
+ imunsie@au1.ibm.com
+References: <1490714052-18902-1-git-send-email-clombard@linux.vnet.ibm.com>
+ <1490714052-18902-2-git-send-email-clombard@linux.vnet.ibm.com>
+From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Date: Wed, 29 Mar 2017 10:51:53 +1100
+MIME-Version: 1.0
+In-Reply-To: <1490714052-18902-2-git-send-email-clombard@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <973f703c-3294-345e-96e2-6c2f2b5d60aa@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,122 +47,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-powerpc arch_mmap_rnd() currently uses hard-coded values - (23-PAGE_SHIFT) for
-32-bit and (30-PAGE_SHIFT) for 64-bit, to generate the random offset
-for the mmap base address for a ASLR ELF.
+Reviewed-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
 
-This patch makes sure that powerpc mmap arch_mmap_rnd() implementation
-is similar to other ARCHs (like x86, arm64) and uses mmap_rnd_bits
-and helpers to generate the mmap address randomization.
+On 29/03/17 02:14, Christophe Lombard wrote:
+> This bit is used to cause a flash image load for programmable
+> CAIA-compliant implementation. If this bit is set to ‘0’, a power
+> cycle of the adapter is required to load a programmable CAIA-com-
+> pliant implementation from flash.
+> This field will be used by the following patches.
+>
+> Signed-off-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
+> ---
+>  drivers/misc/cxl/pci.c | 1 +
+>  1 file changed, 1 insertion(+)
+>
+> diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
+> index 91f6459..e82a207 100644
+> --- a/drivers/misc/cxl/pci.c
+> +++ b/drivers/misc/cxl/pci.c
+> @@ -1332,6 +1332,7 @@ static int cxl_read_vsec(struct cxl *adapter, struct pci_dev *dev)
+>  	CXL_READ_VSEC_IMAGE_STATE(dev, vsec, &image_state);
+>  	adapter->user_image_loaded = !!(image_state & CXL_VSEC_USER_IMAGE_LOADED);
+>  	adapter->perst_select_user = !!(image_state & CXL_VSEC_USER_IMAGE_LOADED);
+> +	adapter->perst_loads_image = !!(image_state & CXL_VSEC_PERST_LOADS_IMAGE);
+>
+>  	CXL_READ_VSEC_NAFUS(dev, vsec, &adapter->slices);
+>  	CXL_READ_VSEC_AFU_DESC_OFF(dev, vsec, &afu_desc_off);
+>
 
-The maximum and minimum randomization range values represent
-a compromise between increased ASLR effectiveness and avoiding
-address-space fragmentation.
-
-Using the Kconfig option and suitable /proc tunable, platform
-developers may choose where to place this compromise.
-
-Also this patch keeps the default values as new minimums.
-
-Signed-off-by: Bhupesh Sharma <bhsharma@redhat.com>
-Reviewed-by: Kees Cook <keescook@chromium.org>
----
-* Changes since v2:
-v2 can be seen here (https://patchwork.kernel.org/patch/9551509/)
-    - Changed a few minimum and maximum randomization ranges as per Michael's suggestion.
-    - Corrected Kees's email address in the Reviewed-by line.
-    - Added further comments in kconfig to explain how the address ranges were worked out.
-
-* Changes since v1:
-v1 can be seen here (https://lists.ozlabs.org/pipermail/linuxppc-dev/2017-February/153594.html)
-    - No functional change in this patch.
-    - Dropped PATCH 2/2 from v1 as recommended by Kees Cook.
-
- arch/powerpc/Kconfig   | 44 ++++++++++++++++++++++++++++++++++++++++++++
- arch/powerpc/mm/mmap.c |  7 ++++---
- 2 files changed, 48 insertions(+), 3 deletions(-)
-
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 97a8bc8..84aae67 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -22,6 +22,48 @@ config MMU
- 	bool
- 	default y
- 
-+# min bits determined by the following formula:
-+# VA_BITS - PAGE_SHIFT - CONSTANT
-+# where,
-+# 	VA_BITS = 46 bits for 64BIT and 4GB - 1 Page = 31 bits for 32BIT
-+# 	CONSTANT = 16 for 64BIT and 8 for 32BIT
-+config ARCH_MMAP_RND_BITS_MIN
-+       default 5 if PPC_256K_PAGES && 32BIT  # 31 - 18 - 8 = 5
-+       default 7 if PPC_64K_PAGES && 32BIT   # 31 - 16 - 8 = 7
-+       default 9 if PPC_16K_PAGES && 32BIT   # 31 - 14 - 8 = 9
-+       default 11 if PPC_4K_PAGES && 32BIT   # 31 - 12 - 8 = 11
-+       default 12 if PPC_256K_PAGES && 64BIT # 46 - 18 - 16 = 12
-+       default 14 if PPC_64K_PAGES && 64BIT  # 46 - 16 - 16 = 14
-+       default 16 if PPC_16K_PAGES && 64BIT  # 46 - 14 - 16 = 16
-+       default 18 if PPC_4K_PAGES && 64BIT   # 46 - 12 - 16 = 18
-+
-+# max bits determined by the following formula:
-+# VA_BITS - PAGE_SHIFT - CONSTANT
-+# where, 
-+# 	VA_BITS = 46 bits for 64BIT, and 4GB - 1 Page = 31 bits for 32BIT
-+# 	CONSTANT = 2, both for 64BIT and 32BIT
-+config ARCH_MMAP_RND_BITS_MAX
-+       default 11 if PPC_256K_PAGES && 32BIT # 31 - 18 - 2 = 11
-+       default 13 if PPC_64K_PAGES && 32BIT  # 31 - 16 - 2 = 13
-+       default 15 if PPC_16K_PAGES && 32BIT  # 31 - 14 - 2 = 15
-+       default 17 if PPC_4K_PAGES && 32BIT   # 31 - 12 - 2 = 17
-+       default 26 if PPC_256K_PAGES && 64BIT # 46 - 18 - 2 = 26
-+       default 28 if PPC_64K_PAGES && 64BIT  # 46 - 16 - 2 = 28
-+       default 30 if PPC_16K_PAGES && 64BIT  # 46 - 14 - 2 = 30
-+       default 32 if PPC_4K_PAGES && 64BIT   # 46 - 12 - 2 = 32
-+
-+config ARCH_MMAP_RND_COMPAT_BITS_MIN
-+       default 5 if PPC_256K_PAGES
-+       default 7 if PPC_64K_PAGES
-+       default 9 if PPC_16K_PAGES
-+       default 11
-+
-+config ARCH_MMAP_RND_COMPAT_BITS_MAX
-+       default 11 if PPC_256K_PAGES
-+       default 13 if PPC_64K_PAGES
-+       default 15 if PPC_16K_PAGES 
-+       default 17
-+
- config HAVE_SETUP_PER_CPU_AREA
- 	def_bool PPC64
- 
-@@ -142,6 +184,8 @@ config PPC
- 	select HAVE_IRQ_EXIT_ON_IRQ_STACK
- 	select HAVE_KERNEL_GZIP
- 	select HAVE_KPROBES
-+	select HAVE_ARCH_MMAP_RND_BITS
-+	select HAVE_ARCH_MMAP_RND_COMPAT_BITS if COMPAT
- 	select HAVE_KRETPROBES
- 	select HAVE_LIVEPATCH			if HAVE_DYNAMIC_FTRACE_WITH_REGS
- 	select HAVE_MEMBLOCK
-diff --git a/arch/powerpc/mm/mmap.c b/arch/powerpc/mm/mmap.c
-index a5d9ef5..92a9355 100644
---- a/arch/powerpc/mm/mmap.c
-+++ b/arch/powerpc/mm/mmap.c
-@@ -61,11 +61,12 @@ unsigned long arch_mmap_rnd(void)
- {
- 	unsigned long rnd;
- 
--	/* 8MB for 32bit, 1GB for 64bit */
-+#ifdef CONFIG_COMPAT
- 	if (is_32bit_task())
--		rnd = get_random_long() % (1<<(23-PAGE_SHIFT));
-+		rnd = get_random_long() & ((1UL << mmap_rnd_compat_bits) - 1);
- 	else
--		rnd = get_random_long() % (1UL<<(30-PAGE_SHIFT));
-+#endif
-+		rnd = get_random_long() & ((1UL << mmap_rnd_bits) - 1);
- 
- 	return rnd << PAGE_SHIFT;
- }
 -- 
-2.7.4
+Andrew Donnellan              OzLabs, ADL Canberra
+andrew.donnellan@au1.ibm.com  IBM Australia Limited
