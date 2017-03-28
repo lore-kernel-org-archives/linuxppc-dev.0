@@ -1,45 +1,22 @@
-Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vsn514zRtzDqC2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Mar 2017 21:22:13 +1100 (AEDT)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v2SAJM6L131325
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Mar 2017 06:22:08 -0400
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
- by mx0b-001b2d01.pphosted.com with ESMTP id 29fnea28rr-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Mar 2017 06:22:08 -0400
-Received: from localhost
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Tue, 28 Mar 2017 20:22:05 +1000
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v2SALsMs16711822
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Mar 2017 21:22:02 +1100
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v2SALTrW026339
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Mar 2017 21:21:29 +1100
-Date: Tue, 28 Mar 2017 15:51:09 +0530
-From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Matthew Wilcox <willy@infradead.org>, Paul Mackerras <paulus@au1.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, Anton Blanchard <anton@samba.org>
-Subject: Re: [PATCH 1/2] powerpc: string: implement optimized memset variants
-References: <20170322193030.GA8008@bombadil.infradead.org>
- <cover.1490641759.git.naveen.n.rao@linux.vnet.ibm.com>
- <d6a1a353de6a87bb5474ca9f1c1ff7ab2c4a1eb4.1490641759.git.naveen.n.rao@linux.vnet.ibm.com>
- <87mvc6b575.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vsncT6HsNzDq93
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Mar 2017 21:46:01 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, Paul Mackerras <paulus@samba.org>,
+ "Aneesh Kumar K . V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Greg Kurz <groug@kaod.org>
+Subject: Re: [PATCH kernel] powerpc/iommu: Do not call PageTransHuge() on tail
+ pages
+In-Reply-To: <20170328052559.12912-1-aik@ozlabs.ru>
+References: <20170328052559.12912-1-aik@ozlabs.ru>
+Date: Tue, 28 Mar 2017 21:45:58 +1100
+Message-ID: <87y3vpadcp.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <87mvc6b575.fsf@concordia.ellerman.id.au>
-Message-Id: <20170328102109.GC4762@naverao1-tp.localdomain>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,54 +26,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2017/03/28 11:44AM, Michael Ellerman wrote:
-> "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> writes:
-> 
-> > diff --git a/arch/powerpc/lib/mem_64.S b/arch/powerpc/lib/mem_64.S
-> > index 85fa9869aec5..ec531de99996 100644
-> > --- a/arch/powerpc/lib/mem_64.S
-> > +++ b/arch/powerpc/lib/mem_64.S
-> > @@ -13,6 +13,23 @@
-> >  #include <asm/ppc_asm.h>
-> >  #include <asm/export.h>
-> >  
-> > +_GLOBAL(__memset16)
-> > +	rlwimi	r4,r4,16,0,15
-> > +	/* fall through */
-> > +
-> > +_GLOBAL(__memset32)
-> > +	rldimi	r4,r4,32,0
-> > +	/* fall through */
-> > +
-> > +_GLOBAL(__memset64)
-> > +	neg	r0,r3
-> > +	andi.	r0,r0,7
-> > +	cmplw	cr1,r5,r0
-> > +	b	.Lms
-> > +EXPORT_SYMBOL(__memset16)
-> > +EXPORT_SYMBOL(__memset32)
-> > +EXPORT_SYMBOL(__memset64)
-> 
-> You'll have to convince me that's better than what GCC produces.
+Alexey Kardashevskiy <aik@ozlabs.ru> writes:
 
-Sure :) I got lazy yesterday night and didn't post the test results...
+> The CMA pages migration code does not support compound pages at
+> the moment so it performs few tests before proceeding to actual page
+> migration.
+>
+> One of the tests - PageTransHuge() - has VM_BUG_ON_PAGE(PageTail()) as
+> it should be called on head pages. Since we also test for PageCompound(),
+> and it contains PageTail(), we can simply move PageCompound() in front
+> of PageTransHuge() and therefore avoid possible VM_BUG_ON_PAGE.
+>
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> ---
+>
+> Some of actual POWER8 systems do crash on that BUG_ON.
 
-I hadn't tested zram yesterday, but only done tests with a naive test 
-module that memset's a large 1GB buffer with integers. With that test, I 
-saw:
+So this is:
 
-without patch:       0.389253910 seconds time elapsed    ( +-  1.49% )
-with patch:          0.173269267 seconds time elapsed    ( +-  1.55% )
+Fixes: 2e5bbb5461f1 ("KVM: PPC: Book3S HV: Migrate pinned pages out of CMA")
 
-.. which is better than 2x.
+And therefore:
 
-I also tested zram today with the command shared by Wilcox:
+Cc: stable@vger.kernel.org # v4.9+
 
-without patch:       1.493782568 seconds time elapsed    ( +-  0.08% )
-with patch:          1.408457577 seconds time elapsed    ( +-  0.15% )
+?
 
-... which also shows an improvement along the same lines as x86, as 
-reported by Minchan Kim.
-
-
-- Naveen
+cheers
