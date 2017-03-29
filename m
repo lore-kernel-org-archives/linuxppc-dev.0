@@ -1,28 +1,27 @@
-Return-Path: <anshuman.linux@gmail.com>
-Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
- [IPv6:2607:f8b0:400e:c05::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <srs0=73t8=3g=gmail.com=kirjanov@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vtMh61M8KzDqGv
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Mar 2017 20:21:10 +1100 (AEDT)
-Received: by mail-pg0-x242.google.com with SMTP id 79so1949508pgf.0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Mar 2017 02:21:10 -0700 (PDT)
-Subject: Re: [PATCH V5 16/17] mm: Let arch choose the initial value of task
- size
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
-References: <1490153823-29241-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1490153823-29241-17-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>, linux-mm@kvack.org,
- Andrew Morton <akpm@linux-foundation.org>
-From: Anshuman Khandual <anshuman.linux@gmail.com>
-Message-ID: <00df9abd-b023-0d1c-6753-654f682cd754@gmail.com>
-Date: Wed, 29 Mar 2017 14:50:51 +0530
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vtNCy4JZXzDqGt
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Mar 2017 20:45:18 +1100 (AEDT)
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3vtNCy36ZQz8w6P
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Mar 2017 20:45:18 +1100 (AEDT)
 MIME-Version: 1.0
-In-Reply-To: <1490153823-29241-17-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Content-Type: multipart/alternative;
- boundary="------------D1740DB1BDDFFECE9575679A"
+In-Reply-To: <20170329093747.GC13844@fergus.ozlabs.ibm.com>
+References: <1490603214-30116-1-git-send-email-kda@linux-powerpc.org>
+ <87a884evrc.fsf@concordia.ellerman.id.au>
+ <20170329093747.GC13844@fergus.ozlabs.ibm.com>
+From: Denis Kirjanov <kirjanov@gmail.com>
+Date: Wed, 29 Mar 2017 12:45:13 +0300
+Message-ID: <CAHj3AV=0dBL-2WfKcsVK57zYRWwnpz+w-89y8Tek5wGNVA-=qg@mail.gmail.com>
+Subject: Re: [PATCH] kvm: powerpc: book3s: Disable preemption while accessing
+ paca xics_phys filed
+To: Paul Mackerras <paulus@ozlabs.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>,
+ "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+ Denis Kirjanov <kda@linux-powerpc.org>
+Content-Type: multipart/alternative; boundary=94eb2c092b64e388ed054bdb6e7a
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,111 +31,92 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------D1740DB1BDDFFECE9575679A
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
+--94eb2c092b64e388ed054bdb6e7a
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
+On Wednesday, March 29, 2017, Paul Mackerras <paulus@ozlabs.org> wrote:
 
-
-On Wednesday 22 March 2017 09:07 AM, Aneesh Kumar K.V wrote:
-> As we start supporting larger address space (>128TB), we want to give
-> architecture a control on max task size of an application which is different
-> from the TASK_SIZE. For ex: ppc64 needs to track the base page size of a segment
-> and it is copied from mm_context_t to PACA on each context switch. If we know that
-> application has not used an address range above 128TB we only need to copy
-> details about 128TB range to PACA. This will help in improving context switch
-> performance by avoiding larger copy operation.
+> On Wed, Mar 29, 2017 at 12:07:03PM +1100, Michael Ellerman wrote:
+> > Denis Kirjanov <kda@linux-powerpc.org <javascript:;>> writes:
+> >
+> [...]
+> > > @@ -3930,7 +3934,11 @@ static int kvmppc_book3s_init_hv(void)
+> > >      * indirectly, via OPAL.
+> > >      */
+> > >  #ifdef CONFIG_SMP
+> > > -   if (!get_paca()->kvm_hstate.xics_phys) {
+> > > +   preempt_disable();
+> > > +   xics_phys =3D get_paca()->kvm_hstate.xics_phys;
+> > > +   preempt_enable();
+> > > +
+> > > +   if (!xics_phys) {
+> > >             struct device_node *np;
+> >
+> > Can you tell me what actual problem (other than the warning) this is
+> > fixing?
 >
-> Cc: Kirill A. Shutemov <kirill.shutemov@linux.intel.com>
-> Cc: linux-mm@kvack.org
-> Cc: Andrew Morton <akpm@linux-foundation.org>
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-> ---
->   fs/exec.c | 10 +++++++++-
->   1 file changed, 9 insertions(+), 1 deletion(-)
+> If paca->kvm_hstate.xics_phys is non-zero on one cpu, it will be
+> non-zero on them all.  Therefore this is not fixing any actual
+> problem, just the warning.
 >
-> diff --git a/fs/exec.c b/fs/exec.c
-> index 65145a3df065..5550a56d03c3 100644
-> --- a/fs/exec.c
-> +++ b/fs/exec.c
-> @@ -1308,6 +1308,14 @@ void would_dump(struct linux_binprm *bprm, struct file *file)
->   }
->   EXPORT_SYMBOL(would_dump);
->   
-> +#ifndef arch_init_task_size
-> +static inline void arch_init_task_size(void)
-> +{
-> +	current->mm->task_size = TASK_SIZE;
-> +}
-> +#define arch_init_task_size arch_init_task_size
-> +#endif
+> By the way, the #ifdefs are ugly, and could be removed.  (Yes I know
+> it was me that put the first #ifdef in that function.)
+>
+> Paul.
+>
 
-Why not a proper CONFIG_ARCH_DEFINED_TASK_SIZE kind of option for this ? 
-Also
-are there no assumptions about task current->mm->size being TASK_SIZE in 
-other
-places which might get broken ?
+Then we can replace get_paca with local_paca to avoid the warning, right?
 
---------------D1740DB1BDDFFECE9575679A
-Content-Type: text/html; charset=windows-1252
-Content-Transfer-Encoding: 7bit
 
-<html>
-  <head>
-    <meta content="text/html; charset=windows-1252"
-      http-equiv="Content-Type">
-  </head>
-  <body bgcolor="#FFFFFF" text="#000000">
-    <p><br>
-    </p>
-    <br>
-    <div class="moz-cite-prefix">On Wednesday 22 March 2017 09:07 AM,
-      Aneesh Kumar K.V wrote:<br>
-    </div>
-    <blockquote
-cite="mid:1490153823-29241-17-git-send-email-aneesh.kumar@linux.vnet.ibm.com"
-      type="cite">
-      <pre wrap="">As we start supporting larger address space (&gt;128TB), we want to give
-architecture a control on max task size of an application which is different
-from the TASK_SIZE. For ex: ppc64 needs to track the base page size of a segment
-and it is copied from mm_context_t to PACA on each context switch. If we know that
-application has not used an address range above 128TB we only need to copy
-details about 128TB range to PACA. This will help in improving context switch
-performance by avoiding larger copy operation.
+--=20
+Regards / Mit besten Gr=C3=BC=C3=9Fen,
+Denis
 
-Cc: Kirill A. Shutemov <a class="moz-txt-link-rfc2396E" href="mailto:kirill.shutemov@linux.intel.com">&lt;kirill.shutemov@linux.intel.com&gt;</a>
-Cc: <a class="moz-txt-link-abbreviated" href="mailto:linux-mm@kvack.org">linux-mm@kvack.org</a>
-Cc: Andrew Morton <a class="moz-txt-link-rfc2396E" href="mailto:akpm@linux-foundation.org">&lt;akpm@linux-foundation.org&gt;</a>
-Signed-off-by: Aneesh Kumar K.V <a class="moz-txt-link-rfc2396E" href="mailto:aneesh.kumar@linux.vnet.ibm.com">&lt;aneesh.kumar@linux.vnet.ibm.com&gt;</a>
----
- fs/exec.c | 10 +++++++++-
- 1 file changed, 9 insertions(+), 1 deletion(-)
+--94eb2c092b64e388ed054bdb6e7a
+Content-Type: text/html; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/fs/exec.c b/fs/exec.c
-index 65145a3df065..5550a56d03c3 100644
---- a/fs/exec.c
-+++ b/fs/exec.c
-@@ -1308,6 +1308,14 @@ void would_dump(struct linux_binprm *bprm, struct file *file)
- }
- EXPORT_SYMBOL(would_dump);
- 
-+#ifndef arch_init_task_size
-+static inline void arch_init_task_size(void)
-+{
-+	current-&gt;mm-&gt;task_size = TASK_SIZE;
-+}
-+#define arch_init_task_size arch_init_task_size
-+#endif</pre>
-    </blockquote>
-    <br>
-    <font size="-1">Why not a proper CONFIG_ARCH_DEFINED_TASK_SIZE kind
-      of option for this ? Also<br>
-      are there no assumptions about task current-&gt;mm-&gt;size being
-      TASK_SIZE in other<br>
-      places which might get broken ?<br>
-    </font><font size="-1"></font>
-  </body>
-</html>
+<br><br>On Wednesday, March 29, 2017, Paul Mackerras &lt;<a href=3D"mailto:=
+paulus@ozlabs.org">paulus@ozlabs.org</a>&gt; wrote:<br><blockquote class=3D=
+"gmail_quote" style=3D"margin:0 0 0 .8ex;border-left:1px #ccc solid;padding=
+-left:1ex">On Wed, Mar 29, 2017 at 12:07:03PM +1100, Michael Ellerman wrote=
+:<br>
+&gt; Denis Kirjanov &lt;<a href=3D"javascript:;" onclick=3D"_e(event, &#39;=
+cvml&#39;, &#39;kda@linux-powerpc.org&#39;)">kda@linux-powerpc.org</a>&gt; =
+writes:<br>
+&gt;<br>
+[...]<br>
+&gt; &gt; @@ -3930,7 +3934,11 @@ static int kvmppc_book3s_init_hv(void)<br>
+&gt; &gt;=C2=A0 =C2=A0 =C2=A0 * indirectly, via OPAL.<br>
+&gt; &gt;=C2=A0 =C2=A0 =C2=A0 */<br>
+&gt; &gt;=C2=A0 #ifdef CONFIG_SMP<br>
+&gt; &gt; -=C2=A0 =C2=A0if (!get_paca()-&gt;kvm_hstate.xics_<wbr>phys) {<br=
+>
+&gt; &gt; +=C2=A0 =C2=A0preempt_disable();<br>
+&gt; &gt; +=C2=A0 =C2=A0xics_phys =3D get_paca()-&gt;kvm_hstate.xics_<wbr>p=
+hys;<br>
+&gt; &gt; +=C2=A0 =C2=A0preempt_enable();<br>
+&gt; &gt; +<br>
+&gt; &gt; +=C2=A0 =C2=A0if (!xics_phys) {<br>
+&gt; &gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0struct device_node=
+ *np;<br>
+&gt;<br>
+&gt; Can you tell me what actual problem (other than the warning) this is<b=
+r>
+&gt; fixing?<br>
+<br>
+If paca-&gt;kvm_hstate.xics_phys is non-zero on one cpu, it will be<br>
+non-zero on them all.=C2=A0 Therefore this is not fixing any actual<br>
+problem, just the warning.<br>
+<br>
+By the way, the #ifdefs are ugly, and could be removed.=C2=A0 (Yes I know<b=
+r>
+it was me that put the first #ifdef in that function.)<br>
+<br>
+Paul.<br>
+</blockquote><div><br></div><div>Then we can replace get_paca with local_pa=
+ca to avoid the warning, right?=C2=A0</div><br><br>-- <br>Regards / Mit bes=
+ten Gr=C3=BC=C3=9Fen,<br>Denis<br><br>
 
---------------D1740DB1BDDFFECE9575679A--
+--94eb2c092b64e388ed054bdb6e7a--
