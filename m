@@ -3,32 +3,19 @@ Received: from mezzanine.sirena.org.uk (mezzanine.sirena.org.uk
  [IPv6:2400:8900::f03c:91ff:fedb:4f4])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vtQxn3C59zDqHC
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Mar 2017 22:48:13 +1100 (AEDT)
-Date: Wed, 29 Mar 2017 12:47:52 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vtR5V4RlfzDqGy
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Mar 2017 22:54:54 +1100 (AEDT)
 From: Mark Brown <broonie@kernel.org>
-To: Daniel Baluta <daniel.baluta@gmail.com>
-Cc: Charles Keepax <ckeepax@opensource.wolfsonmicro.com>,
- Daniel Baluta <daniel.baluta@nxp.com>,
- Nicolin Chen <nicoleotsuka@gmail.com>, alsa-devel@alsa-project.org,
- Timur Tabi <timur@tabi.org>, Xiubo.Lee@gmail.com,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Liam Girdwood <lgirdwood@gmail.com>, Takashi Iwai <tiwai@suse.com>,
- fabio.estevam@nxp.com, linuxppc-dev@lists.ozlabs.org
-Message-ID: <20170329114752.bpfzkkvbvan3ayn5@sirena.org.uk>
-References: <1490691532-2086-1-git-send-email-daniel.baluta@nxp.com>
- <1490691532-2086-3-git-send-email-daniel.baluta@nxp.com>
- <20170328092103.GQ6986@localhost.localdomain>
- <CAEnQRZAx1o9xtbf3u1A_Zun7MSaJjdjunpJm1Q6=ZAA3beoFbA@mail.gmail.com>
- <20170328115306.GR6986@localhost.localdomain>
- <20170328152457.2j5zaxdbdavpuspa@sirena.org.uk>
- <CAEnQRZCiaCfzQRDo-3UupH8fv9BttZBVVXo63FdnrdqG49F1GQ@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="vspbhsb2mi47wgbn"
-In-Reply-To: <CAEnQRZCiaCfzQRDo-3UupH8fv9BttZBVVXo63FdnrdqG49F1GQ@mail.gmail.com>
-Subject: Re: [alsa-devel] [PATCH v3 2/2] ASoC: imx-wm8962: Fix codec_clk
- cleanup
+To: Daniel Baluta <daniel.baluta@nxp.com>
+Cc: Nicolin Chen <nicoleotsuka@gmail.com>, Mark Brown <broonie@kernel.org>,
+ nicoleotsuka@gmail.com, broonie@kernel.org, alsa-devel@alsa-project.org,
+ timur@tabi.org, Xiubo.Lee@gmail.com, linux-kernel@vger.kernel.org,
+ lgirdwood@gmail.com, tiwai@suse.com, fabio.estevam@nxp.com,
+ linuxppc-dev@lists.ozlabs.org, alsa-devel@alsa-project.org
+In-Reply-To: <1490691532-2086-3-git-send-email-daniel.baluta@nxp.com>
+Message-Id: <E1ctCBS-0001ci-Rs@debutante>
+Date: Wed, 29 Mar 2017 12:54:38 +0100
+Subject: Applied "ASoC: imx-wm8962: Fix codec_clk cleanup" to the asoc tree
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,46 +25,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+The patch
 
---vspbhsb2mi47wgbn
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+   ASoC: imx-wm8962: Fix codec_clk cleanup
 
-On Wed, Mar 29, 2017 at 02:38:23PM +0300, Daniel Baluta wrote:
+has been applied to the asoc tree at
 
-> If I read the code correctly, both machine and codec driver are doing:
+   git://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git 
 
-> * codec_clk = clk_get(...)
+All being well this means that it will be integrated into the linux-next
+tree (usually sometime in the next 24 hours) and sent to Linus during
+the next merge window (or sooner if it is a bug fix), however if
+problems are discovered then the patch may be dropped or reverted.  
 
-> I guess that the codec driver is the first to be loaded and it will call:
+You may get further e-mails resulting from automated or manual testing
+and review of the tree, please engage with people reporting problems and
+send followup patches addressing any issues that are reported if needed.
 
-> * __clk_create_clk
+If any updates are required or you are submitting further changes they
+should be sent as incremental updates against current git, existing
+patches will not be replaced.
 
-> which will do the allocation. Then when machine driver is loaded, it
-> will only take a reference to the allocated clock.
+Please add any relevant lists and maintainers to the CCs when replying
+to this mail.
 
-> I might be very wrong on this. Can you clarify what does moving allocation
-> of the clock into codec driver implies? Machine driver only needs a reference
-> to codec_clk to just get the clock's rate.
+Thanks,
+Mark
 
-Oh, so the CODEC is already requesting the clock.  Then what I'm saying
-is work out a way to use the handle to the clock that the CODEC driver
-created.  In effect the machine driver is telling the CODEC driver to do
-things with the input clock.
+>From db22d189453cee666f8da2e67419f14f4b2fd9d1 Mon Sep 17 00:00:00 2001
+From: Daniel Baluta <daniel.baluta@nxp.com>
+Date: Tue, 28 Mar 2017 11:58:52 +0300
+Subject: [PATCH] ASoC: imx-wm8962: Fix codec_clk cleanup
 
---vspbhsb2mi47wgbn
-Content-Type: application/pgp-signature; name="signature.asc"
+Resource managed devm_clk_get only works with platform's device dev.
 
------BEGIN PGP SIGNATURE-----
+Reported-by: Nicolin Chen <nicoleotsuka@gmail.com>
+Signed-off-by: Daniel Baluta <daniel.baluta@nxp.com>
+Signed-off-by: Mark Brown <broonie@kernel.org>
+---
+ sound/soc/fsl/imx-wm8962.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-iQEzBAABCAAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAljbnucACgkQJNaLcl1U
-h9DZ6Qf/VAZ2sbMrBxYzJO/3l4uqg/RdBeUQQm5/uC4DM6Uj72lVsDAUJS77YYyH
-yhBBXX3B95rDnksxd0rJIC6sVlay6XG7wFG85D+Fuz+ZgzOtcQYKS5zEN6+RW17i
-O2FXmmylr+1+ewxqgdtRqS3ix82wY96+Z1Q+YJlrR7RzcAJQjHss/yILbbOULe4v
-ox5tI7G5F09NgKkNRslL6RhywqA8l5iT43HWSKwOJMxdKU7xYlPeS+BomZ+ME08e
-7Og7Loz/cjumAAJEnr1FKHE2/WG1ku6uOHlcyfYPA/RfPnjBoxLDyJrd+H3DW0ln
-C/FcExTx1UZPsmTj2gkLSMqp4gxcBw==
-=9xKi
------END PGP SIGNATURE-----
-
---vspbhsb2mi47wgbn--
+diff --git a/sound/soc/fsl/imx-wm8962.c b/sound/soc/fsl/imx-wm8962.c
+index 3d894d9123e0..52659faa2eb9 100644
+--- a/sound/soc/fsl/imx-wm8962.c
++++ b/sound/soc/fsl/imx-wm8962.c
+@@ -231,7 +231,7 @@ static int imx_wm8962_probe(struct platform_device *pdev)
+ 		goto fail;
+ 	}
+ 
+-	codec_clk = devm_clk_get(&codec_dev->dev, NULL);
++	codec_clk = clk_get(&codec_dev->dev, NULL);
+ 	if (IS_ERR(codec_clk)) {
+ 		ret = PTR_ERR(codec_clk);
+ 		dev_err(&codec_dev->dev, "failed to get codec clk: %d\n", ret);
+@@ -239,6 +239,7 @@ static int imx_wm8962_probe(struct platform_device *pdev)
+ 	}
+ 
+ 	data->clk_frequency = clk_get_rate(codec_clk);
++	clk_put(codec_clk);
+ 
+ 	data->dai.name = "HiFi";
+ 	data->dai.stream_name = "HiFi";
+-- 
+2.11.0
