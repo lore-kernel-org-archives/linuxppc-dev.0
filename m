@@ -1,19 +1,19 @@
 Return-Path: <roy.pledge@nxp.com>
-Received: from NAM03-DM3-obe.outbound.protection.outlook.com
- (mail-dm3nam03on0059.outbound.protection.outlook.com [104.47.41.59])
+Received: from NAM02-SN1-obe.outbound.protection.outlook.com
+ (mail-sn1nam02on0080.outbound.protection.outlook.com [104.47.36.80])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vtgVm0d1PzDqJV
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Mar 2017 08:14:07 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vtgVn2DfpzDqJV
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Mar 2017 08:14:09 +1100 (AEDT)
 From: Roy Pledge <roy.pledge@nxp.com>
 To: <robin.murphy@arm.com>, <oss@buserror.net>,
  <linuxppc-dev@lists.ozlabs.org>, <linux-arm-kernel@lists.infradead.org>,
  <devicetree@vger.kernel.org>
 CC: <madalin.bucur@nxp.com>, Roy Pledge <roy.pledge@nxp.com>
-Subject: [RFC PATCH 2/5] soc/fsl/qbman: Use shared-dma-pool for QMan private
+Subject: [RFC PATCH 3/5] dts: arch/powerpc: Update Freescale DTS for QBMan
  memory allocations
-Date: Wed, 29 Mar 2017 17:13:54 -0400
-Message-ID: <1490822037-6752-3-git-send-email-roy.pledge@nxp.com>
+Date: Wed, 29 Mar 2017 17:13:55 -0400
+Message-ID: <1490822037-6752-4-git-send-email-roy.pledge@nxp.com>
 In-Reply-To: <1490822037-6752-1-git-send-email-roy.pledge@nxp.com>
 References: <1490822037-6752-1-git-send-email-roy.pledge@nxp.com>
 Reply-To: <roy.pledge@nxp.com>
@@ -28,203 +28,903 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Use the shared-memory-pool mechanism for frame queue descriptor and
-packed frame descriptor record area allocations.
+QBMan now uses the shared-dma-pool mechansim to manage early
+memory reservations.
 
 Signed-off-by: Roy Pledge <roy.pledge@nxp.com>
 ---
- drivers/soc/fsl/qbman/qman_ccsr.c | 119 +++++++++++++++++++++-----------------
- drivers/soc/fsl/qbman/qman_priv.h |   4 +-
- drivers/soc/fsl/qbman/qman_test.h |   2 -
- 3 files changed, 68 insertions(+), 57 deletions(-)
+ arch/powerpc/boot/dts/fsl/b4qds.dtsi        |  6 ++++++
+ arch/powerpc/boot/dts/fsl/b4si-post.dtsi    | 15 ---------------
+ arch/powerpc/boot/dts/fsl/cyrus_p5020.dts   |  6 ++++++
+ arch/powerpc/boot/dts/fsl/kmcent2.dts       |  6 ++++++
+ arch/powerpc/boot/dts/fsl/kmcoge4.dts       |  6 ++++++
+ arch/powerpc/boot/dts/fsl/oca4080.dts       |  6 ++++++
+ arch/powerpc/boot/dts/fsl/p1023rdb.dts      |  6 ++++++
+ arch/powerpc/boot/dts/fsl/p1023si-post.dtsi | 15 ---------------
+ arch/powerpc/boot/dts/fsl/p2041rdb.dts      |  6 ++++++
+ arch/powerpc/boot/dts/fsl/p2041si-post.dtsi | 15 ---------------
+ arch/powerpc/boot/dts/fsl/p3041ds.dts       |  6 ++++++
+ arch/powerpc/boot/dts/fsl/p3041si-post.dtsi | 15 ---------------
+ arch/powerpc/boot/dts/fsl/p4080ds.dts       |  6 ++++++
+ arch/powerpc/boot/dts/fsl/p4080si-post.dtsi | 15 ---------------
+ arch/powerpc/boot/dts/fsl/p5020ds.dts       |  6 ++++++
+ arch/powerpc/boot/dts/fsl/p5020si-post.dtsi | 15 ---------------
+ arch/powerpc/boot/dts/fsl/p5040ds.dts       |  6 ++++++
+ arch/powerpc/boot/dts/fsl/p5040si-post.dtsi | 15 ---------------
+ arch/powerpc/boot/dts/fsl/t1023rdb.dts      |  6 ++++++
+ arch/powerpc/boot/dts/fsl/t1023si-post.dtsi | 15 ---------------
+ arch/powerpc/boot/dts/fsl/t1024qds.dts      |  6 ++++++
+ arch/powerpc/boot/dts/fsl/t1024rdb.dts      |  6 ++++++
+ arch/powerpc/boot/dts/fsl/t1040si-post.dtsi | 15 ---------------
+ arch/powerpc/boot/dts/fsl/t104xd4rdb.dtsi   |  6 ++++++
+ arch/powerpc/boot/dts/fsl/t104xqds.dtsi     |  6 ++++++
+ arch/powerpc/boot/dts/fsl/t104xrdb.dtsi     |  6 ++++++
+ arch/powerpc/boot/dts/fsl/t2081si-post.dtsi | 15 ---------------
+ arch/powerpc/boot/dts/fsl/t208xqds.dtsi     |  6 ++++++
+ arch/powerpc/boot/dts/fsl/t208xrdb.dtsi     |  6 ++++++
+ arch/powerpc/boot/dts/fsl/t4240qds.dts      |  6 ++++++
+ arch/powerpc/boot/dts/fsl/t4240rdb.dts      |  6 ++++++
+ arch/powerpc/boot/dts/fsl/t4240si-post.dtsi | 15 ---------------
+ 32 files changed, 126 insertions(+), 165 deletions(-)
 
-diff --git a/drivers/soc/fsl/qbman/qman_ccsr.c b/drivers/soc/fsl/qbman/qman_ccsr.c
-index 90bc40c..35c59ca 100644
---- a/drivers/soc/fsl/qbman/qman_ccsr.c
-+++ b/drivers/soc/fsl/qbman/qman_ccsr.c
-@@ -400,63 +400,19 @@ static int qm_init_pfdr(struct device *dev, u32 pfdr_start, u32 num)
- 	return -ENODEV;
- }
+diff --git a/arch/powerpc/boot/dts/fsl/b4qds.dtsi b/arch/powerpc/boot/dts/fsl/b4qds.dtsi
+index 3785ef8..a2abd1e 100644
+--- a/arch/powerpc/boot/dts/fsl/b4qds.dtsi
++++ b/arch/powerpc/boot/dts/fsl/b4qds.dtsi
+@@ -110,16 +110,22 @@
+ 		ranges;
  
--/*
-- * Ideally we would use the DMA API to turn rmem->base into a DMA address
-- * (especially if iommu translations ever get involved).  Unfortunately, the
-- * DMA API currently does not allow mapping anything that is not backed with
-- * a struct page.
-- */
-+/* QMan needs two global memory areas initialized at boot time:
-+    1) FQD: Frame Queue Descriptors used to manage frame queues
-+    2) PFDR: Packed Frame Queue Descriptor Records used to store frames
-+   Both areas are reserved using the device tree reserved memory framework
-+   and the addresses and sizes are initialized when the QMan device is probed */
- static dma_addr_t fqd_a, pfdr_a;
- static size_t fqd_sz, pfdr_sz;
+ 		bman_fbpr: bman-fbpr {
++			compatible = "shared-dma-pool";
+ 			size = <0 0x1000000>;
+ 			alignment = <0 0x1000000>;
++			no-map;
+ 		};
+ 		qman_fqd: qman-fqd {
++			compatible = "shared-dma-pool";
+ 			size = <0 0x400000>;
+ 			alignment = <0 0x400000>;
++			no-map;
+ 		};
+ 		qman_pfdr: qman-pfdr {
++			compatible = "shared-dma-pool";
+ 			size = <0 0x2000000>;
+ 			alignment = <0 0x2000000>;
++			no-map;
+ 		};
+ 	};
  
--static int qman_fqd(struct reserved_mem *rmem)
--{
--	fqd_a = rmem->base;
--	fqd_sz = rmem->size;
--
--	WARN_ON(!(fqd_a && fqd_sz));
--
--	return 0;
--}
--RESERVEDMEM_OF_DECLARE(qman_fqd, "fsl,qman-fqd", qman_fqd);
--
--static int qman_pfdr(struct reserved_mem *rmem)
--{
--	pfdr_a = rmem->base;
--	pfdr_sz = rmem->size;
--
--	WARN_ON(!(pfdr_a && pfdr_sz));
--
--	return 0;
--}
--RESERVEDMEM_OF_DECLARE(qman_pfdr, "fsl,qman-pfdr", qman_pfdr);
--
- static unsigned int qm_get_fqid_maxcnt(void)
- {
- 	return fqd_sz / 64;
- }
+diff --git a/arch/powerpc/boot/dts/fsl/b4si-post.dtsi b/arch/powerpc/boot/dts/fsl/b4si-post.dtsi
+index 1b33f51..844d99b 100644
+--- a/arch/powerpc/boot/dts/fsl/b4si-post.dtsi
++++ b/arch/powerpc/boot/dts/fsl/b4si-post.dtsi
+@@ -32,21 +32,6 @@
+  * this software, even if advised of the possibility of such damage.
+  */
  
--/*
-- * Flush this memory range from data cache so that QMAN originated
-- * transactions for this memory region could be marked non-coherent.
-- */
--static int zero_priv_mem(struct device *dev, struct device_node *node,
--			 phys_addr_t addr, size_t sz)
--{
--	/* map as cacheable, non-guarded */
--	void __iomem *tmpp = ioremap_prot(addr, sz, 0);
+-&bman_fbpr {
+-	compatible = "fsl,bman-fbpr";
+-	alloc-ranges = <0 0 0x10000 0>;
+-};
 -
--	if (!tmpp)
--		return -ENOMEM;
+-&qman_fqd {
+-	compatible = "fsl,qman-fqd";
+-	alloc-ranges = <0 0 0x10000 0>;
+-};
 -
--	memset_io(tmpp, 0, sz);
--	flush_dcache_range((unsigned long)tmpp,
--			   (unsigned long)tmpp + sz);
--	iounmap(tmpp);
+-&qman_pfdr {
+-	compatible = "fsl,qman-pfdr";
+-	alloc-ranges = <0 0 0x10000 0>;
+-};
 -
--	return 0;
--}
--
- static void log_edata_bits(struct device *dev, u32 bit_count)
- {
- 	u32 i, j, mask = 0xffffffff;
-@@ -687,11 +643,12 @@ static int qman_resource_init(struct device *dev)
- static int fsl_qman_probe(struct platform_device *pdev)
- {
- 	struct device *dev = &pdev->dev;
--	struct device_node *node = dev->of_node;
-+	struct device_node *mem_node, *node = dev->of_node;
- 	struct resource *res;
- 	int ret, err_irq;
- 	u16 id;
- 	u8 major, minor;
-+	u64 size;
+ &ifc {
+ 	#address-cells = <2>;
+ 	#size-cells = <1>;
+diff --git a/arch/powerpc/boot/dts/fsl/cyrus_p5020.dts b/arch/powerpc/boot/dts/fsl/cyrus_p5020.dts
+index c603390..2b2227b 100644
+--- a/arch/powerpc/boot/dts/fsl/cyrus_p5020.dts
++++ b/arch/powerpc/boot/dts/fsl/cyrus_p5020.dts
+@@ -31,16 +31,22 @@
+ 		ranges;
  
- 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
- 	if (!res) {
-@@ -727,10 +684,66 @@ static int fsl_qman_probe(struct platform_device *pdev)
- 		qm_channel_caam = QMAN_CHANNEL_CAAM_REV3;
- 	}
+ 		bman_fbpr: bman-fbpr {
++			compatible = "shared-dma-pool";
+ 			size = <0 0x1000000>;
+ 			alignment = <0 0x1000000>;
++			no-map;
+ 		};
+ 		qman_fqd: qman-fqd {
++			compatible = "shared-dma-pool";
+ 			size = <0 0x400000>;
+ 			alignment = <0 0x400000>;
++			no-map;
+ 		};
+ 		qman_pfdr: qman-pfdr {
++			compatible = "shared-dma-pool";
+ 			size = <0 0x2000000>;
+ 			alignment = <0 0x2000000>;
++			no-map;
+ 		};
+ 	};
  
--	ret = zero_priv_mem(dev, node, fqd_a, fqd_sz);
--	WARN_ON(ret);
--	if (ret)
-+	/* Order of memory regions is assumed as FQD followed by PFDR
-+	   in order to ensure allocations from the correct regions the
-+	   driver initializes then allocates each piece in order */
-+
-+	ret = of_reserved_mem_device_init_by_idx(dev, dev->of_node, 0);
-+	if (ret) {
-+		dev_err(dev, "of_reserved_mem_device_init_by_idx(0) failed 0x%x\n",
-+			ret);
-+		return -ENODEV;
-+	}
-+	mem_node = of_parse_phandle(dev->of_node, "memory-region", 0);
-+	if (mem_node) {
-+		ret = of_property_read_u64(mem_node, "size", &size);
-+		if (ret) {
-+			dev_err(dev, "FQD: of_address_to_resource fails 0x%x\n", ret);
-+			return -ENODEV;
-+		}
-+		fqd_sz = size;
-+	} else {
-+		dev_err(dev, "No memory-region found for FQD\n");
-+		return -ENODEV;
-+	}
-+	if (!dma_zalloc_coherent(dev, fqd_sz, &fqd_a, 0)) {
-+		dev_err(dev, "Alloc FQD memory failed\n");
-+		return -ENODEV;
-+	}
-+
-+	dev_info(dev, "Allocated FQD 0x%llx 0x%zx\n", fqd_a, fqd_sz);
-+
-+	/* Disassociate the FQD reseverd memory area from the device because
-+	   a device can only have one DMA memory area. This should be fine
-+	   since the memory is allocated and initalized and only ever accessed
-+	   by the QMan device from now on */
-+	of_reserved_mem_device_release(dev);
-+
-+	/* Setup PFDR memory */
-+	ret = of_reserved_mem_device_init_by_idx(dev, dev->of_node, 1);
-+	if (ret) {
-+		dev_err(dev, "of_reserved_mem_device_init(1) failed 0x%x\n",
-+			ret);
-+		return -ENODEV;
-+	}
-+	mem_node = of_parse_phandle(dev->of_node, "memory-region", 1);
-+	if (mem_node) {
-+		ret = of_property_read_u64(mem_node, "size", &size);
-+		if (ret) {
-+			dev_err(dev, "PFDR: of_address_to_resource fails 0x%x\n", ret);
-+			return -ENODEV;
-+		}
-+		pfdr_sz = size;
-+	} else {
-+		dev_err(dev, "No memory-region found for PFDR\n");
-+		return -ENODEV;
-+	}
-+	if (!dma_zalloc_coherent(dev, pfdr_sz, &pfdr_a, 0)) {
-+		dev_err(dev, "Alloc PFDR Failed size 0x%zx\n", pfdr_sz);
- 		return -ENODEV;
-+	}
-+
-+	dev_info(dev, "Allocated PFDR 0x%llx 0x%zx\n", pfdr_a, pfdr_sz);
+diff --git a/arch/powerpc/boot/dts/fsl/kmcent2.dts b/arch/powerpc/boot/dts/fsl/kmcent2.dts
+index 47afa43..98f5257 100644
+--- a/arch/powerpc/boot/dts/fsl/kmcent2.dts
++++ b/arch/powerpc/boot/dts/fsl/kmcent2.dts
+@@ -28,16 +28,22 @@
+ 		ranges;
  
- 	ret = qman_init_ccsr(dev);
- 	if (ret) {
-diff --git a/drivers/soc/fsl/qbman/qman_priv.h b/drivers/soc/fsl/qbman/qman_priv.h
-index 22725bd..1e998ea5 100644
---- a/drivers/soc/fsl/qbman/qman_priv.h
-+++ b/drivers/soc/fsl/qbman/qman_priv.h
-@@ -28,12 +28,12 @@
+ 		bman_fbpr: bman-fbpr {
++			compatible = "shared-dma-pool";
+ 			size = <0 0x1000000>;
+ 			alignment = <0 0x1000000>;
++			no-map;
+ 		};
+ 		qman_fqd: qman-fqd {
++			compatible = "shared-dma-pool";
+ 			size = <0 0x400000>;
+ 			alignment = <0 0x400000>;
++			no-map;
+ 		};
+ 		qman_pfdr: qman-pfdr {
++			compatible = "shared-dma-pool";
+ 			size = <0 0x2000000>;
+ 			alignment = <0 0x2000000>;
++			no-map;
+ 		};
+ 	};
+ 
+diff --git a/arch/powerpc/boot/dts/fsl/kmcoge4.dts b/arch/powerpc/boot/dts/fsl/kmcoge4.dts
+index e103c0f..6cfff87 100644
+--- a/arch/powerpc/boot/dts/fsl/kmcoge4.dts
++++ b/arch/powerpc/boot/dts/fsl/kmcoge4.dts
+@@ -31,16 +31,22 @@
+ 		ranges;
+ 
+ 		bman_fbpr: bman-fbpr {
++			compatible = "shared-dma-pool";
+ 			size = <0 0x1000000>;
+ 			alignment = <0 0x1000000>;
++			no-map;
+ 		};
+ 		qman_fqd: qman-fqd {
++			compatible = "shared-dma-pool";
+ 			size = <0 0x400000>;
+ 			alignment = <0 0x400000>;
++			no-map;
+ 		};
+ 		qman_pfdr: qman-pfdr {
++			compatible = "shared-dma-pool";
+ 			size = <0 0x2000000>;
+ 			alignment = <0 0x2000000>;
++			no-map;
+ 		};
+ 	};
+ 
+diff --git a/arch/powerpc/boot/dts/fsl/oca4080.dts b/arch/powerpc/boot/dts/fsl/oca4080.dts
+index 17bc6f3..e06ce75 100644
+--- a/arch/powerpc/boot/dts/fsl/oca4080.dts
++++ b/arch/powerpc/boot/dts/fsl/oca4080.dts
+@@ -55,16 +55,22 @@
+ 		ranges;
+ 
+ 		bman_fbpr: bman-fbpr {
++			compatible = "shared-dma-pool";
+ 			size = <0 0x1000000>;
+ 			alignment = <0 0x1000000>;
++			no-map;
+ 		};
+ 		qman_fqd: qman-fqd {
++			compatible = "shared-dma-pool";
+ 			size = <0 0x400000>;
+ 			alignment = <0 0x400000>;
++			no-map;
+ 		};
+ 		qman_pfdr: qman-pfdr {
++			compatible = "shared-dma-pool";
+ 			size = <0 0x2000000>;
+ 			alignment = <0 0x2000000>;
++			no-map;
+ 		};
+ 	};
+ 
+diff --git a/arch/powerpc/boot/dts/fsl/p1023rdb.dts b/arch/powerpc/boot/dts/fsl/p1023rdb.dts
+index 9716ca6..d4abdcf 100644
+--- a/arch/powerpc/boot/dts/fsl/p1023rdb.dts
++++ b/arch/powerpc/boot/dts/fsl/p1023rdb.dts
+@@ -53,16 +53,22 @@
+ 		ranges;
+ 
+ 		bman_fbpr: bman-fbpr {
++			compatible = "shared-dma-pool";
+ 			size = <0 0x1000000>;
+ 			alignment = <0 0x1000000>;
++			no-map;
+ 		};
+ 		qman_fqd: qman-fqd {
++			compatible = "shared-dma-pool";
+ 			size = <0 0x400000>;
+ 			alignment = <0 0x400000>;
++			no-map;
+ 		};
+ 		qman_pfdr: qman-pfdr {
++			compatible = "shared-dma-pool";
+ 			size = <0 0x2000000>;
+ 			alignment = <0 0x2000000>;
++			no-map;
+ 		};
+ 	};
+ 
+diff --git a/arch/powerpc/boot/dts/fsl/p1023si-post.dtsi b/arch/powerpc/boot/dts/fsl/p1023si-post.dtsi
+index da6d3fc..9dbbba6 100644
+--- a/arch/powerpc/boot/dts/fsl/p1023si-post.dtsi
++++ b/arch/powerpc/boot/dts/fsl/p1023si-post.dtsi
+@@ -32,21 +32,6 @@
   * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   */
  
--#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+-&bman_fbpr {
+-	compatible = "fsl,bman-fbpr";
+-	alloc-ranges = <0 0 0x10 0>;
+-};
 -
- #include "dpaa_sys.h"
- 
- #include <soc/fsl/qman.h>
- #include <linux/iommu.h>
-+#include <linux/dma-contiguous.h>
-+#include <linux/of_address.h>
- 
- #if defined(CONFIG_FSL_PAMU)
- #include <asm/fsl_pamu_stash.h>
-diff --git a/drivers/soc/fsl/qbman/qman_test.h b/drivers/soc/fsl/qbman/qman_test.h
-index d5f8cb2..41bdbc48 100644
---- a/drivers/soc/fsl/qbman/qman_test.h
-+++ b/drivers/soc/fsl/qbman/qman_test.h
-@@ -30,7 +30,5 @@
- 
- #include "qman_priv.h"
- 
--#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+-&qman_fqd {
+-	compatible = "fsl,qman-fqd";
+-	alloc-ranges = <0 0 0x10 0>;
+-};
 -
- int qman_test_stash(void);
- int qman_test_api(void);
+-&qman_pfdr {
+-	compatible = "fsl,qman-pfdr";
+-	alloc-ranges = <0 0 0x10 0>;
+-};
+-
+ &lbc {
+ 	#address-cells = <2>;
+ 	#size-cells = <1>;
+diff --git a/arch/powerpc/boot/dts/fsl/p2041rdb.dts b/arch/powerpc/boot/dts/fsl/p2041rdb.dts
+index e50fea9..4f6c233 100644
+--- a/arch/powerpc/boot/dts/fsl/p2041rdb.dts
++++ b/arch/powerpc/boot/dts/fsl/p2041rdb.dts
+@@ -64,16 +64,22 @@
+ 		ranges;
+ 
+ 		bman_fbpr: bman-fbpr {
++			compatible = "shared-dma-pool";
+ 			size = <0 0x1000000>;
+ 			alignment = <0 0x1000000>;
++			no-map;
+ 		};
+ 		qman_fqd: qman-fqd {
++			compatible = "shared-dma-pool";
+ 			size = <0 0x400000>;
+ 			alignment = <0 0x400000>;
++			no-map;
+ 		};
+ 		qman_pfdr: qman-pfdr {
++			compatible = "shared-dma-pool";
+ 			size = <0 0x2000000>;
+ 			alignment = <0 0x2000000>;
++			no-map;
+ 		};
+ 	};
+ 
+diff --git a/arch/powerpc/boot/dts/fsl/p2041si-post.dtsi b/arch/powerpc/boot/dts/fsl/p2041si-post.dtsi
+index 51e975d..f8615bb 100644
+--- a/arch/powerpc/boot/dts/fsl/p2041si-post.dtsi
++++ b/arch/powerpc/boot/dts/fsl/p2041si-post.dtsi
+@@ -32,21 +32,6 @@
+  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+  */
+ 
+-&bman_fbpr {
+-	compatible = "fsl,bman-fbpr";
+-	alloc-ranges = <0 0 0x10 0>;
+-};
+-
+-&qman_fqd {
+-	compatible = "fsl,qman-fqd";
+-	alloc-ranges = <0 0 0x10 0>;
+-};
+-
+-&qman_pfdr {
+-	compatible = "fsl,qman-pfdr";
+-	alloc-ranges = <0 0 0x10 0>;
+-};
+-
+ &lbc {
+ 	compatible = "fsl,p2041-elbc", "fsl,elbc", "simple-bus";
+ 	interrupts = <25 2 0 0>;
+diff --git a/arch/powerpc/boot/dts/fsl/p3041ds.dts b/arch/powerpc/boot/dts/fsl/p3041ds.dts
+index 40748e4..50507c9 100644
+--- a/arch/powerpc/boot/dts/fsl/p3041ds.dts
++++ b/arch/powerpc/boot/dts/fsl/p3041ds.dts
+@@ -65,16 +65,22 @@
+ 		ranges;
+ 
+ 		bman_fbpr: bman-fbpr {
++			compatible = "shared-dma-pool";
+ 			size = <0 0x1000000>;
+ 			alignment = <0 0x1000000>;
++			no-map;
+ 		};
+ 		qman_fqd: qman-fqd {
++			compatible = "shared-dma-pool";
+ 			size = <0 0x400000>;
+ 			alignment = <0 0x400000>;
++			no-map;
+ 		};
+ 		qman_pfdr: qman-pfdr {
++			compatible = "shared-dma-pool";
+ 			size = <0 0x2000000>;
+ 			alignment = <0 0x2000000>;
++			no-map;
+ 		};
+ 	};
+ 
+diff --git a/arch/powerpc/boot/dts/fsl/p3041si-post.dtsi b/arch/powerpc/boot/dts/fsl/p3041si-post.dtsi
+index 187676f..a19b86c 100644
+--- a/arch/powerpc/boot/dts/fsl/p3041si-post.dtsi
++++ b/arch/powerpc/boot/dts/fsl/p3041si-post.dtsi
+@@ -32,21 +32,6 @@
+  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+  */
+ 
+-&bman_fbpr {
+-	compatible = "fsl,bman-fbpr";
+-	alloc-ranges = <0 0 0x10 0>;
+-};
+-
+-&qman_fqd {
+-	compatible = "fsl,qman-fqd";
+-	alloc-ranges = <0 0 0x10 0>;
+-};
+-
+-&qman_pfdr {
+-	compatible = "fsl,qman-pfdr";
+-	alloc-ranges = <0 0 0x10 0>;
+-};
+-
+ &lbc {
+ 	compatible = "fsl,p3041-elbc", "fsl,elbc", "simple-bus";
+ 	interrupts = <25 2 0 0>;
+diff --git a/arch/powerpc/boot/dts/fsl/p4080ds.dts b/arch/powerpc/boot/dts/fsl/p4080ds.dts
+index 816b978..813117a 100644
+--- a/arch/powerpc/boot/dts/fsl/p4080ds.dts
++++ b/arch/powerpc/boot/dts/fsl/p4080ds.dts
+@@ -65,16 +65,22 @@
+ 		ranges;
+ 
+ 		bman_fbpr: bman-fbpr {
++			compatible = "shared-dma-pool";
+ 			size = <0 0x1000000>;
+ 			alignment = <0 0x1000000>;
++			no-map;
+ 		};
+ 		qman_fqd: qman-fqd {
++			compatible = "shared-dma-pool";
+ 			size = <0 0x400000>;
+ 			alignment = <0 0x400000>;
++			no-map;
+ 		};
+ 		qman_pfdr: qman-pfdr {
++			compatible = "shared-dma-pool";
+ 			size = <0 0x2000000>;
+ 			alignment = <0 0x2000000>;
++			no-map;
+ 		};
+ 	};
+ 
+diff --git a/arch/powerpc/boot/dts/fsl/p4080si-post.dtsi b/arch/powerpc/boot/dts/fsl/p4080si-post.dtsi
+index a025208..42868c7 100644
+--- a/arch/powerpc/boot/dts/fsl/p4080si-post.dtsi
++++ b/arch/powerpc/boot/dts/fsl/p4080si-post.dtsi
+@@ -32,21 +32,6 @@
+  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+  */
+ 
+-&bman_fbpr {
+-	compatible = "fsl,bman-fbpr";
+-	alloc-ranges = <0 0 0x10 0>;
+-};
+-
+-&qman_fqd {
+-	compatible = "fsl,qman-fqd";
+-	alloc-ranges = <0 0 0x10 0>;
+-};
+-
+-&qman_pfdr {
+-	compatible = "fsl,qman-pfdr";
+-	alloc-ranges = <0 0 0x10 0>;
+-};
+-
+ &lbc {
+ 	compatible = "fsl,p4080-elbc", "fsl,elbc", "simple-bus";
+ 	interrupts = <25 2 0 0>;
+diff --git a/arch/powerpc/boot/dts/fsl/p5020ds.dts b/arch/powerpc/boot/dts/fsl/p5020ds.dts
+index cd6f373..479f772 100644
+--- a/arch/powerpc/boot/dts/fsl/p5020ds.dts
++++ b/arch/powerpc/boot/dts/fsl/p5020ds.dts
+@@ -65,16 +65,22 @@
+ 		ranges;
+ 
+ 		bman_fbpr: bman-fbpr {
++			compatible = "shared-dma-pool";
+ 			size = <0 0x1000000>;
+ 			alignment = <0 0x1000000>;
++			no-map;
+ 		};
+ 		qman_fqd: qman-fqd {
++			compatible = "shared-dma-pool";
+ 			size = <0 0x400000>;
+ 			alignment = <0 0x400000>;
++			no-map;
+ 		};
+ 		qman_pfdr: qman-pfdr {
++			compatible = "shared-dma-pool";
+ 			size = <0 0x2000000>;
+ 			alignment = <0 0x2000000>;
++			no-map;
+ 		};
+ 	};
+ 
+diff --git a/arch/powerpc/boot/dts/fsl/p5020si-post.dtsi b/arch/powerpc/boot/dts/fsl/p5020si-post.dtsi
+index cd008cd..dec5e12 100644
+--- a/arch/powerpc/boot/dts/fsl/p5020si-post.dtsi
++++ b/arch/powerpc/boot/dts/fsl/p5020si-post.dtsi
+@@ -32,21 +32,6 @@
+  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+  */
+ 
+-&bman_fbpr {
+-	compatible = "fsl,bman-fbpr";
+-	alloc-ranges = <0 0 0x10000 0>;
+-};
+-
+-&qman_fqd {
+-	compatible = "fsl,qman-fqd";
+-	alloc-ranges = <0 0 0x10000 0>;
+-};
+-
+-&qman_pfdr {
+-	compatible = "fsl,qman-pfdr";
+-	alloc-ranges = <0 0 0x10000 0>;
+-};
+-
+ &lbc {
+ 	compatible = "fsl,p5020-elbc", "fsl,elbc", "simple-bus";
+ 	interrupts = <25 2 0 0>;
+diff --git a/arch/powerpc/boot/dts/fsl/p5040ds.dts b/arch/powerpc/boot/dts/fsl/p5040ds.dts
+index 4508473..b97ca39 100644
+--- a/arch/powerpc/boot/dts/fsl/p5040ds.dts
++++ b/arch/powerpc/boot/dts/fsl/p5040ds.dts
+@@ -77,16 +77,22 @@
+ 		ranges;
+ 
+ 		bman_fbpr: bman-fbpr {
++			compatible = "shared-dma-pool";
+ 			size = <0 0x1000000>;
+ 			alignment = <0 0x1000000>;
++			no-map;
+ 		};
+ 		qman_fqd: qman-fqd {
++			compatible = "shared-dma-pool";
+ 			size = <0 0x400000>;
+ 			alignment = <0 0x400000>;
++			no-map;
+ 		};
+ 		qman_pfdr: qman-pfdr {
++			compatible = "shared-dma-pool";
+ 			size = <0 0x2000000>;
+ 			alignment = <0 0x2000000>;
++			no-map;
+ 		};
+ 	};
+ 
+diff --git a/arch/powerpc/boot/dts/fsl/p5040si-post.dtsi b/arch/powerpc/boot/dts/fsl/p5040si-post.dtsi
+index e2bd931..7a109d5 100644
+--- a/arch/powerpc/boot/dts/fsl/p5040si-post.dtsi
++++ b/arch/powerpc/boot/dts/fsl/p5040si-post.dtsi
+@@ -32,21 +32,6 @@
+  * software, even if advised of the possibility of such damage.
+  */
+ 
+-&bman_fbpr {
+-	compatible = "fsl,bman-fbpr";
+-	alloc-ranges = <0 0 0x10000 0>;
+-};
+-
+-&qman_fqd {
+-	compatible = "fsl,qman-fqd";
+-	alloc-ranges = <0 0 0x10000 0>;
+-};
+-
+-&qman_pfdr {
+-	compatible = "fsl,qman-pfdr";
+-	alloc-ranges = <0 0 0x10000 0>;
+-};
+-
+ &lbc {
+ 	compatible = "fsl,p5040-elbc", "fsl,elbc", "simple-bus";
+ 	interrupts = <25 2 0 0>;
+diff --git a/arch/powerpc/boot/dts/fsl/t1023rdb.dts b/arch/powerpc/boot/dts/fsl/t1023rdb.dts
+index 5ba6fbf..034ec42 100644
+--- a/arch/powerpc/boot/dts/fsl/t1023rdb.dts
++++ b/arch/powerpc/boot/dts/fsl/t1023rdb.dts
+@@ -47,18 +47,24 @@
+ 		ranges;
+ 
+ 		bman_fbpr: bman-fbpr {
++			compatible = "shared-dma-pool";
+ 			size = <0 0x1000000>;
+ 			alignment = <0 0x1000000>;
++			no-map;
+ 		};
+ 
+ 		qman_fqd: qman-fqd {
++			compatible = "shared-dma-pool";
+ 			size = <0 0x400000>;
+ 			alignment = <0 0x400000>;
++			no-map;
+ 		};
+ 
+ 		qman_pfdr: qman-pfdr {
++			compatible = "shared-dma-pool";
+ 			size = <0 0x2000000>;
+ 			alignment = <0 0x2000000>;
++			no-map;
+ 		};
+ 	};
+ 
+diff --git a/arch/powerpc/boot/dts/fsl/t1023si-post.dtsi b/arch/powerpc/boot/dts/fsl/t1023si-post.dtsi
+index 4908af5..de951f8 100644
+--- a/arch/powerpc/boot/dts/fsl/t1023si-post.dtsi
++++ b/arch/powerpc/boot/dts/fsl/t1023si-post.dtsi
+@@ -34,21 +34,6 @@
+ 
+ #include <dt-bindings/thermal/thermal.h>
+ 
+-&bman_fbpr {
+-	compatible = "fsl,bman-fbpr";
+-	alloc-ranges = <0 0 0x10000 0>;
+-};
+-
+-&qman_fqd {
+-	compatible = "fsl,qman-fqd";
+-	alloc-ranges = <0 0 0x10000 0>;
+-};
+-
+-&qman_pfdr {
+-	compatible = "fsl,qman-pfdr";
+-	alloc-ranges = <0 0 0x10000 0>;
+-};
+-
+ &ifc {
+ 	#address-cells = <2>;
+ 	#size-cells = <1>;
+diff --git a/arch/powerpc/boot/dts/fsl/t1024qds.dts b/arch/powerpc/boot/dts/fsl/t1024qds.dts
+index d6858b7..a6fa860 100644
+--- a/arch/powerpc/boot/dts/fsl/t1024qds.dts
++++ b/arch/powerpc/boot/dts/fsl/t1024qds.dts
+@@ -47,18 +47,24 @@
+ 		ranges;
+ 
+ 		bman_fbpr: bman-fbpr {
++			compatible = "shared-dma-pool";
+ 			size = <0 0x1000000>;
+ 			alignment = <0 0x1000000>;
++			no-map;
+ 		};
+ 
+ 		qman_fqd: qman-fqd {
++			compatible = "shared-dma-pool";
+ 			size = <0 0x400000>;
+ 			alignment = <0 0x400000>;
++			no-map;
+ 		};
+ 
+ 		qman_pfdr: qman-pfdr {
++			compatible = "shared-dma-pool";
+ 			size = <0 0x2000000>;
+ 			alignment = <0 0x2000000>;
++			no-map;
+ 		};
+ 	};
+ 
+diff --git a/arch/powerpc/boot/dts/fsl/t1024rdb.dts b/arch/powerpc/boot/dts/fsl/t1024rdb.dts
+index 73a6453..09cf13c 100644
+--- a/arch/powerpc/boot/dts/fsl/t1024rdb.dts
++++ b/arch/powerpc/boot/dts/fsl/t1024rdb.dts
+@@ -51,18 +51,24 @@
+ 		ranges;
+ 
+ 		bman_fbpr: bman-fbpr {
++			compatible = "shared-dma-pool";
+ 			size = <0 0x1000000>;
+ 			alignment = <0 0x1000000>;
++			no-map;
+ 		};
+ 
+ 		qman_fqd: qman-fqd {
++			compatible = "shared-dma-pool";
+ 			size = <0 0x400000>;
+ 			alignment = <0 0x400000>;
++			no-map;
+ 		};
+ 
+ 		qman_pfdr: qman-pfdr {
++			compatible = "shared-dma-pool";
+ 			size = <0 0x2000000>;
+ 			alignment = <0 0x2000000>;
++			no-map;
+ 		};
+ 	};
+ 
+diff --git a/arch/powerpc/boot/dts/fsl/t1040si-post.dtsi b/arch/powerpc/boot/dts/fsl/t1040si-post.dtsi
+index 145c7f4..3fa5a14 100644
+--- a/arch/powerpc/boot/dts/fsl/t1040si-post.dtsi
++++ b/arch/powerpc/boot/dts/fsl/t1040si-post.dtsi
+@@ -34,21 +34,6 @@
+ 
+ #include <dt-bindings/thermal/thermal.h>
+ 
+-&bman_fbpr {
+-	compatible = "fsl,bman-fbpr";
+-	alloc-ranges = <0 0 0x10000 0>;
+-};
+-
+-&qman_fqd {
+-	compatible = "fsl,qman-fqd";
+-	alloc-ranges = <0 0 0x10000 0>;
+-};
+-
+-&qman_pfdr {
+-	compatible = "fsl,qman-pfdr";
+-	alloc-ranges = <0 0 0x10000 0>;
+-};
+-
+ &ifc {
+ 	#address-cells = <2>;
+ 	#size-cells = <1>;
+diff --git a/arch/powerpc/boot/dts/fsl/t104xd4rdb.dtsi b/arch/powerpc/boot/dts/fsl/t104xd4rdb.dtsi
+index 863f943..531600b 100644
+--- a/arch/powerpc/boot/dts/fsl/t104xd4rdb.dtsi
++++ b/arch/powerpc/boot/dts/fsl/t104xd4rdb.dtsi
+@@ -39,16 +39,22 @@
+ 		ranges;
+ 
+ 		bman_fbpr: bman-fbpr {
++			compatible = "shared-dma-pool";
+ 			size = <0 0x1000000>;
+ 			alignment = <0 0x1000000>;
++			no-map;
+ 		};
+ 		qman_fqd: qman-fqd {
++			compatible = "shared-dma-pool";
+ 			size = <0 0x400000>;
+ 			alignment = <0 0x400000>;
++			no-map;
+ 		};
+ 		qman_pfdr: qman-pfdr {
++			compatible = "shared-dma-pool";
+ 			size = <0 0x2000000>;
+ 			alignment = <0 0x2000000>;
++			no-map;
+ 		};
+ 	};
+ 
+diff --git a/arch/powerpc/boot/dts/fsl/t104xqds.dtsi b/arch/powerpc/boot/dts/fsl/t104xqds.dtsi
+index 2fd4cbe..bb7cc7b 100644
+--- a/arch/powerpc/boot/dts/fsl/t104xqds.dtsi
++++ b/arch/powerpc/boot/dts/fsl/t104xqds.dtsi
+@@ -71,16 +71,22 @@
+ 		ranges;
+ 
+ 		bman_fbpr: bman-fbpr {
++			compatible = "shared-dma-pool";
+ 			size = <0 0x1000000>;
+ 			alignment = <0 0x1000000>;
++			no-map;
+ 		};
+ 		qman_fqd: qman-fqd {
++			compatible = "shared-dma-pool";
+ 			size = <0 0x400000>;
+ 			alignment = <0 0x400000>;
++			no-map;
+ 		};
+ 		qman_pfdr: qman-pfdr {
++			compatible = "shared-dma-pool";
+ 			size = <0 0x2000000>;
+ 			alignment = <0 0x2000000>;
++			no-map
+ 		};
+ 	};
+ 
+diff --git a/arch/powerpc/boot/dts/fsl/t104xrdb.dtsi b/arch/powerpc/boot/dts/fsl/t104xrdb.dtsi
+index 5fdddbd..d0ba614 100644
+--- a/arch/powerpc/boot/dts/fsl/t104xrdb.dtsi
++++ b/arch/powerpc/boot/dts/fsl/t104xrdb.dtsi
+@@ -45,16 +45,22 @@
+ 		ranges;
+ 
+ 		bman_fbpr: bman-fbpr {
++			compatible = "shared-dma-pool";
+ 			size = <0 0x1000000>;
+ 			alignment = <0 0x1000000>;
++			no-map;
+ 		};
+ 		qman_fqd: qman-fqd {
++			compatible = "shared-dma-pool";
+ 			size = <0 0x400000>;
+ 			alignment = <0 0x400000>;
++			no-map;
+ 		};
+ 		qman_pfdr: qman-pfdr {
++			compatible = "shared-dma-pool";
+ 			size = <0 0x2000000>;
+ 			alignment = <0 0x2000000>;
++			no-map;
+ 		};
+ 	};
+ 
+diff --git a/arch/powerpc/boot/dts/fsl/t2081si-post.dtsi b/arch/powerpc/boot/dts/fsl/t2081si-post.dtsi
+index a97296c..5215e86 100644
+--- a/arch/powerpc/boot/dts/fsl/t2081si-post.dtsi
++++ b/arch/powerpc/boot/dts/fsl/t2081si-post.dtsi
+@@ -32,21 +32,6 @@
+  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+  */
+ 
+-&bman_fbpr {
+-	compatible = "fsl,bman-fbpr";
+-	alloc-ranges = <0 0 0x10000 0>;
+-};
+-
+-&qman_fqd {
+-	compatible = "fsl,qman-fqd";
+-	alloc-ranges = <0 0 0x10000 0>;
+-};
+-
+-&qman_pfdr {
+-	compatible = "fsl,qman-pfdr";
+-	alloc-ranges = <0 0 0x10000 0>;
+-};
+-
+ &ifc {
+ 	#address-cells = <2>;
+ 	#size-cells = <1>;
+diff --git a/arch/powerpc/boot/dts/fsl/t208xqds.dtsi b/arch/powerpc/boot/dts/fsl/t208xqds.dtsi
+index ec080bd..334da3b 100644
+--- a/arch/powerpc/boot/dts/fsl/t208xqds.dtsi
++++ b/arch/powerpc/boot/dts/fsl/t208xqds.dtsi
+@@ -45,16 +45,22 @@
+ 		ranges;
+ 
+ 		bman_fbpr: bman-fbpr {
++			compatible = "shared-dma-pool";
+ 			size = <0 0x1000000>;
+ 			alignment = <0 0x1000000>;
++			no-map;
+ 		};
+ 		qman_fqd: qman-fqd {
++			compatible = "shared-dma-pool";
+ 			size = <0 0x400000>;
+ 			alignment = <0 0x400000>;
++			no-map;
+ 		};
+ 		qman_pfdr: qman-pfdr {
++			compatible = "shared-dma-pool";
+ 			size = <0 0x2000000>;
+ 			alignment = <0 0x2000000>;
++			no-map;
+ 		};
+ 	};
+ 
+diff --git a/arch/powerpc/boot/dts/fsl/t208xrdb.dtsi b/arch/powerpc/boot/dts/fsl/t208xrdb.dtsi
+index ff87e67..102fe75 100644
+--- a/arch/powerpc/boot/dts/fsl/t208xrdb.dtsi
++++ b/arch/powerpc/boot/dts/fsl/t208xrdb.dtsi
+@@ -45,16 +45,22 @@
+ 		ranges;
+ 
+ 		bman_fbpr: bman-fbpr {
++			compatible = "shared-dma-pool";
+ 			size = <0 0x1000000>;
+ 			alignment = <0 0x1000000>;
++			no-map;
+ 		};
+ 		qman_fqd: qman-fqd {
++			compatible = "shared-dma-pool";
+ 			size = <0 0x400000>;
+ 			alignment = <0 0x400000>;
++			no-map;
+ 		};
+ 		qman_pfdr: qman-pfdr {
++			compatible = "shared-dma-pool";
+ 			size = <0 0x2000000>;
+ 			alignment = <0 0x2000000>;
++			no-map;
+ 		};
+ 	};
+ 
+diff --git a/arch/powerpc/boot/dts/fsl/t4240qds.dts b/arch/powerpc/boot/dts/fsl/t4240qds.dts
+index 9573cea..92375b4 100644
+--- a/arch/powerpc/boot/dts/fsl/t4240qds.dts
++++ b/arch/powerpc/boot/dts/fsl/t4240qds.dts
+@@ -326,16 +326,22 @@
+ 		ranges;
+ 
+ 		bman_fbpr: bman-fbpr {
++			compatible = "shared-dma-pool";
+ 			size = <0 0x1000000>;
+ 			alignment = <0 0x1000000>;
++			no-map;
+ 		};
+ 		qman_fqd: qman-fqd {
++			compatible = "shared-dma-pool";
+ 			size = <0 0x400000>;
+ 			alignment = <0 0x400000>;
++			no-map;
+ 		};
+ 		qman_pfdr: qman-pfdr {
++			compatible = "shared-dma-pool";
+ 			size = <0 0x2000000>;
+ 			alignment = <0 0x2000000>;
++			no-map;
+ 		};
+ 	};
+ 
+diff --git a/arch/powerpc/boot/dts/fsl/t4240rdb.dts b/arch/powerpc/boot/dts/fsl/t4240rdb.dts
+index 8166c66..5cd8a62 100644
+--- a/arch/powerpc/boot/dts/fsl/t4240rdb.dts
++++ b/arch/powerpc/boot/dts/fsl/t4240rdb.dts
+@@ -86,16 +86,22 @@
+ 		ranges;
+ 
+ 		bman_fbpr: bman-fbpr {
++			compatible = "shared-dma-pool";
+ 			size = <0 0x1000000>;
+ 			alignment = <0 0x1000000>;
++			no-map;
+ 		};
+ 		qman_fqd: qman-fqd {
++			compatible = "shared-dma-pool";
+ 			size = <0 0x400000>;
+ 			alignment = <0 0x400000>;
++			no-map;
+ 		};
+ 		qman_pfdr: qman-pfdr {
++			compatible = "shared-dma-pool";
+ 			size = <0 0x2000000>;
+ 			alignment = <0 0x2000000>;
++			no-map;
+ 		};
+ 	};
+ 
+diff --git a/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi b/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi
+index 68c4ead..97d5ae1 100644
+--- a/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi
++++ b/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi
+@@ -32,21 +32,6 @@
+  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+  */
+ 
+-&bman_fbpr {
+-	compatible = "fsl,bman-fbpr";
+-	alloc-ranges = <0 0 0x10000 0>;
+-};
+-
+-&qman_fqd {
+-	compatible = "fsl,qman-fqd";
+-	alloc-ranges = <0 0 0x10000 0>;
+-};
+-
+-&qman_pfdr {
+-	compatible = "fsl,qman-pfdr";
+-	alloc-ranges = <0 0 0x10000 0>;
+-};
+-
+ &ifc {
+ 	#address-cells = <2>;
+ 	#size-cells = <1>;
 -- 
 2.9.3
