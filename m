@@ -1,17 +1,29 @@
-Return-Path: <msuchanek@suse.de>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
+Return-Path: <gregkh@linuxfoundation.org>
+Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
+ [140.211.169.12])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vtTH72n4PzDqGt
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Mar 2017 00:33:22 +1100 (AEDT)
-From: Michal Suchanek <msuchanek@suse.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Cc: Michal Suchanek <msuchanek@suse.de>
-Subject: [PATCH] macintosh: Do not arbitrarily limit architecture for
- macintosh drivers.
-Date: Wed, 29 Mar 2017 15:33:18 +0200
-Message-Id: <20170329133318.16189-1-msuchanek@suse.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vtW1j6DJgzDqJ2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Mar 2017 01:51:53 +1100 (AEDT)
+Date: Wed, 29 Mar 2017 16:51:35 +0200
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: Michal Suchanek <msuchanek@suse.de>,
+ "Leonidas S. Barbosa" <leosilva@linux.vnet.ibm.com>,
+ Paulo Flabiano Smorigo <pfsmorigo@linux.vnet.ibm.com>
+Cc: Herbert Xu <herbert@gondor.apana.org.au>,
+ "David S. Miller" <davem@davemloft.net>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Geert Uytterhoeven <geert+renesas@glider.be>,
+ Mauro Carvalho Chehab <mchehab@kernel.org>,
+ linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] crypto: vmx: Remove dubiously licensed crypto code
+Message-ID: <20170329145135.GA28057@kroah.com>
+References: <20170329125639.14288-1-msuchanek@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20170329125639.14288-1-msuchanek@suse.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,29 +33,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The mac mouse emulation is neat solution for notebooks with suboptimal
-touchpads. For historical reason this is available on x86 but not arm or
-mips so remove the limitation.
+On Wed, Mar 29, 2017 at 02:56:39PM +0200, Michal Suchanek wrote:
+> While reviewing commit 11c6e16ee13a ("crypto: vmx - Adding asm
+> subroutines for XTS") which adds the OpenSSL license header to
+> drivers/crypto/vmx/aesp8-ppc.pl licensing of this driver came into
+> qestion. The whole license reads:
+> 
+>  # Licensed under the OpenSSL license (the "License").  You may not use
+>  # this file except in compliance with the License.  You can obtain a
+>  # copy
+>  # in the file LICENSE in the source distribution or at
+>  # https://www.openssl.org/source/license.html
+> 
+>  #
+>  # ====================================================================
+>  # Written by Andy Polyakov <appro@openssl.org> for the OpenSSL
+>  # project. The module is, however, dual licensed under OpenSSL and
+>  # CRYPTOGAMS licenses depending on where you obtain it. For further
+>  # details see http://www.openssl.org/~appro/cryptogams/.
+>  # ====================================================================
+> 
+> After seeking legal advice it is still not clear that this driver can be
+> legally used in Linux. In particular the "depending on where you obtain
+> it" part does not make it clear when you can apply the GPL and when the
+> OpenSSL license.
+> 
+> I tried contacting the author of the code for clarification but did not
+> hear back. In absence of clear licensing the only solution I see is
+> removing this code.
+> 
+> Signed-off-by: Michal Suchanek <msuchanek@suse.de>
+> ---
+>  MAINTAINERS                       |   12 -
+>  drivers/crypto/Kconfig            |    8 -
+>  drivers/crypto/Makefile           |    1 -
+>  drivers/crypto/vmx/.gitignore     |    2 -
+>  drivers/crypto/vmx/Kconfig        |    9 -
+>  drivers/crypto/vmx/Makefile       |   21 -
+>  drivers/crypto/vmx/aes.c          |  150 --
+>  drivers/crypto/vmx/aes_cbc.c      |  202 --
+>  drivers/crypto/vmx/aes_ctr.c      |  191 --
+>  drivers/crypto/vmx/aes_xts.c      |  190 --
+>  drivers/crypto/vmx/aesp8-ppc.h    |   25 -
+>  drivers/crypto/vmx/aesp8-ppc.pl   | 3789 -------------------------------------
+>  drivers/crypto/vmx/ghash.c        |  227 ---
+>  drivers/crypto/vmx/ghashp8-ppc.pl |  234 ---
+>  drivers/crypto/vmx/ppc-xlate.pl   |  228 ---
+>  drivers/crypto/vmx/vmx.c          |   88 -
+>  16 files changed, 5377 deletions(-)
+>  delete mode 100644 drivers/crypto/vmx/.gitignore
+>  delete mode 100644 drivers/crypto/vmx/Kconfig
+>  delete mode 100644 drivers/crypto/vmx/Makefile
+>  delete mode 100644 drivers/crypto/vmx/aes.c
+>  delete mode 100644 drivers/crypto/vmx/aes_cbc.c
+>  delete mode 100644 drivers/crypto/vmx/aes_ctr.c
+>  delete mode 100644 drivers/crypto/vmx/aes_xts.c
+>  delete mode 100644 drivers/crypto/vmx/aesp8-ppc.h
+>  delete mode 100644 drivers/crypto/vmx/aesp8-ppc.pl
+>  delete mode 100644 drivers/crypto/vmx/ghash.c
+>  delete mode 100644 drivers/crypto/vmx/ghashp8-ppc.pl
+>  delete mode 100644 drivers/crypto/vmx/ppc-xlate.pl
+>  delete mode 100644 drivers/crypto/vmx/vmx.c
+> 
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index 1b0a87ffffab..fd4cbf046ab4 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -6190,18 +6190,6 @@ T:	git git://git.kernel.org/pub/scm/linux/kernel/git/aegl/linux.git
+>  S:	Maintained
+>  F:	arch/ia64/
+>  
+> -IBM Power VMX Cryptographic instructions
+> -M:	Leonidas S. Barbosa <leosilva@linux.vnet.ibm.com>
+> -M:	Paulo Flabiano Smorigo <pfsmorigo@linux.vnet.ibm.com>
 
-The other more specific drivers depend on various platform drivers
-anyway so users will not select those by accident.
+Any reason why you didn't cc: these maintainers on your patch?
 
-Signed-off-by: Michal Suchanek <msuchanek@suse.de>
----
- drivers/macintosh/Kconfig | 1 -
- 1 file changed, 1 deletion(-)
+thanks,
 
-diff --git a/drivers/macintosh/Kconfig b/drivers/macintosh/Kconfig
-index 97a420c11eed..c23c040bc668 100644
---- a/drivers/macintosh/Kconfig
-+++ b/drivers/macintosh/Kconfig
-@@ -1,7 +1,6 @@
- 
- menuconfig MACINTOSH_DRIVERS
- 	bool "Macintosh device drivers"
--	depends on PPC || MAC || X86
- 	default y if (PPC_PMAC || MAC)
- 	---help---
- 	  Say Y here to get to see options for devices used with Macintosh
--- 
-2.10.2
+greg k-h
