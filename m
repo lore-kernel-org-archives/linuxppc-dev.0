@@ -1,35 +1,27 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <srs0=yriu=3g=linux-powerpc.org=kda@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vtPcc2qhJzDqH3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Mar 2017 21:48:16 +1100 (AEDT)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v2TAiYkw047388
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Mar 2017 06:48:09 -0400
-Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
- by mx0a-001b2d01.pphosted.com with ESMTP id 29ftv291wm-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Mar 2017 06:48:09 -0400
-Received: from localhost
- by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Wed, 29 Mar 2017 06:48:07 -0400
-Subject: Re: [PATCH V5 02/17] powerpc/mm/slice: Update the function prototype
-To: Paul Mackerras <paulus@ozlabs.org>
-References: <1490153823-29241-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1490153823-29241-3-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <20170329034338.GB13844@fergus.ozlabs.ibm.com>
-Cc: benh@kernel.crashing.org, mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Date: Wed, 29 Mar 2017 16:18:01 +0530
-MIME-Version: 1.0
-In-Reply-To: <20170329034338.GB13844@fergus.ozlabs.ibm.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Message-Id: <48543412-6a34-8734-cf6e-02325180e0f7@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vtPq90fT2zDqH3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Mar 2017 21:57:25 +1100 (AEDT)
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3vtPq901hpz8t3x
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Mar 2017 21:57:25 +1100 (AEDT)
+Received: from mail-lf0-x244.google.com (mail-lf0-x244.google.com
+ [IPv6:2a00:1450:4010:c07::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3vtPq775MNz9s3s
+ for <linuxppc-dev@ozlabs.org>; Wed, 29 Mar 2017 21:57:23 +1100 (AEDT)
+Received: by mail-lf0-x244.google.com with SMTP id v2so1224580lfi.2
+ for <linuxppc-dev@ozlabs.org>; Wed, 29 Mar 2017 03:57:23 -0700 (PDT)
+From: Denis Kirjanov <kda@linux-powerpc.org>
+To: linuxppc-dev@ozlabs.org
+Cc: mpe@ellerman.id.au, paulus@ozlabs.org,
+ Denis Kirjanov <kda@linux-powerpc.org>
+Subject: [PATCH] kvm: powerpc: book3s: use local_paca instead of get_paca
+Date: Wed, 29 Mar 2017 06:55:37 -0400
+Message-Id: <1490784937-10593-1-git-send-email-kda@linux-powerpc.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,19 +31,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+with CONFIG_DEBUG_PREEMPT get_paca produces the following warning
+in kvmppc_book3s_init_hv since we are getting into the
+smp_processor_id debugging code
 
+There is no real issue with the xics_phys field.
+If paca->kvm_hstate.xics_phys is non-zero on one cpu, it will be
+non-zero on them all.  Therefore this is not fixing any actual
+problem, just the warning.
 
-On Wednesday 29 March 2017 09:13 AM, Paul Mackerras wrote:
-> On Wed, Mar 22, 2017 at 09:06:48AM +0530, Aneesh Kumar K.V wrote:
->> This avoid copying the slice_mask struct as function return value
->
-> Did you do before/after comparisons of kernel text size?
->
-> Paul.
->
-    text    data     bss     dec     hex filename
-10114479        5023602 1071772 16209853         f757bd 
-./vmlinux.beforepatch
-10114351        5023602 1071772 16209725         f7573d ./vmlinux.afterpatch
+[  138.521188] BUG: using smp_processor_id() in preemptible [00000000] code: modprobe/5596
+[  138.521308] caller is .kvmppc_book3s_init_hv+0x184/0x350 [kvm_hv]
+[  138.521404] CPU: 5 PID: 5596 Comm: modprobe Not tainted 4.11.0-rc3-00022-gc7e790c #1
+[  138.521509] Call Trace:
+[  138.521563] [c0000007d018b810] [c0000000023eef10] .dump_stack+0xe4/0x150 (unreliable)
+[  138.521694] [c0000007d018b8a0] [c000000001f6ec04] .check_preemption_disabled+0x134/0x150
+[  138.521829] [c0000007d018b940] [d00000000a010274] .kvmppc_book3s_init_hv+0x184/0x350 [kvm_hv]
+[  138.521963] [c0000007d018ba00] [c00000000191d5cc] .do_one_initcall+0x5c/0x1c0
+[  138.522082] [c0000007d018bad0] [c0000000023e9494] .do_init_module+0x84/0x240
+[  138.522201] [c0000007d018bb70] [c000000001aade18] .load_module+0x1f68/0x2a10
+[  138.522319] [c0000007d018bd20] [c000000001aaeb30] .SyS_finit_module+0xc0/0xf0
+[  138.522439] [c0000007d018be30] [c00000000191baec] system_call+0x38/0xfc
 
--aneesh
+Signed-off-by: Denis Kirjanov <kda@linux-powerpc.org>
+---
+ arch/powerpc/kvm/book3s_hv.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+index 1ec86d9..cb4ff36 100644
+--- a/arch/powerpc/kvm/book3s_hv.c
++++ b/arch/powerpc/kvm/book3s_hv.c
+@@ -3930,7 +3930,7 @@ static int kvmppc_book3s_init_hv(void)
+ 	 * indirectly, via OPAL.
+ 	 */
+ #ifdef CONFIG_SMP
+-	if (!get_paca()->kvm_hstate.xics_phys) {
++	if (!local_paca->kvm_hstate.xics_phys) {
+ 		struct device_node *np;
+ 
+ 		np = of_find_compatible_node(NULL, NULL, "ibm,opal-intc");
+-- 
+1.8.3.1
