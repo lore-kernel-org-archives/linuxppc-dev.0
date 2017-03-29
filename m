@@ -1,42 +1,22 @@
-Return-Path: <tyreld@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <matthew.brown.dev@gmail.com>
+Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
+ [IPv6:2607:f8b0:400e:c05::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vtk2Y1VkhzDqJx
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Mar 2017 10:08:21 +1100 (AEDT)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v2TMxE9Q038356
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Mar 2017 19:08:09 -0400
-Received: from e14.ny.us.ibm.com (e14.ny.us.ibm.com [129.33.205.204])
- by mx0a-001b2d01.pphosted.com with ESMTP id 29gcthj48e-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Mar 2017 19:08:09 -0400
-Received: from localhost
- by e14.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <tyreld@linux.vnet.ibm.com>;
- Wed, 29 Mar 2017 19:08:08 -0400
-Subject: Re: [PATCH] crypto: vmx: Remove dubiously licensed crypto code
-To: =?UTF-8?Q?Michal_Such=c3=a1nek?= <msuchanek@suse.de>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-References: <20170329125639.14288-1-msuchanek@suse.de>
- <20170329145135.GA28057@kroah.com> <20170329171327.38d4fdd6@kitsune.suse.cz>
-Cc: "Leonidas S. Barbosa" <leosilva@linux.vnet.ibm.com>,
- Herbert Xu <herbert@gondor.apana.org.au>,
- Geert Uytterhoeven <geert+renesas@glider.be>,
- linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- linux-crypto@vger.kernel.org,
- Paulo Flabiano Smorigo <pfsmorigo@linux.vnet.ibm.com>,
- Mauro Carvalho Chehab <mchehab@kernel.org>,
- linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
-From: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
-Date: Wed, 29 Mar 2017 16:08:01 -0700
-MIME-Version: 1.0
-In-Reply-To: <20170329171327.38d4fdd6@kitsune.suse.cz>
-Content-Type: text/plain; charset=windows-1252
-Message-Id: <7ec54553-610c-a5dc-d4d9-3c83f6a161d9@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vtkV05zPKzDqH7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Mar 2017 10:28:40 +1100 (AEDT)
+Received: by mail-pg0-x244.google.com with SMTP id g2so5420400pge.2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Mar 2017 16:28:40 -0700 (PDT)
+Received: from matt.ozlabs.ibm.com ([122.99.82.10])
+ by smtp.gmail.com with ESMTPSA id x15sm321886pfk.68.2017.03.29.16.28.37
+ for <linuxppc-dev@lists.ozlabs.org>
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+ Wed, 29 Mar 2017 16:28:38 -0700 (PDT)
+From: Matt Brown <matthew.brown.dev@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [v8] powerpc/powernv: add 'firmware/exports' attributes to sysfs
+Date: Thu, 30 Mar 2017 10:28:01 +1100
+Message-Id: <20170329232801.20544-1-matthew.brown.dev@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,53 +26,128 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 03/29/2017 08:13 AM, Michal Suchánek wrote:
-> On Wed, 29 Mar 2017 16:51:35 +0200
-> Greg Kroah-Hartman <gregkh@linuxfoundation.org> wrote:
-> 
->> On Wed, Mar 29, 2017 at 02:56:39PM +0200, Michal Suchanek wrote:
->>> While reviewing commit 11c6e16ee13a ("crypto: vmx - Adding asm
->>> subroutines for XTS") which adds the OpenSSL license header to
->>> drivers/crypto/vmx/aesp8-ppc.pl licensing of this driver came into
->>> qestion. The whole license reads:
->>>
->>>  # Licensed under the OpenSSL license (the "License").  You may not
->>> use # this file except in compliance with the License.  You can
->>> obtain a # copy
->>>  # in the file LICENSE in the source distribution or at
->>>  # https://www.openssl.org/source/license.html
->>>
->>>  #
->>>  #
->>> ====================================================================
->>> # Written by Andy Polyakov <appro@openssl.org> for the OpenSSL #
->>> project. The module is, however, dual licensed under OpenSSL and #
->>> CRYPTOGAMS licenses depending on where you obtain it. For further #
->>> details see http://www.openssl.org/~appro/cryptogams/. #
->>> ====================================================================
->>>
->>> After seeking legal advice it is still not clear that this driver
->>> can be legally used in Linux. In particular the "depending on where
->>> you obtain it" part does not make it clear when you can apply the
->>> GPL and when the OpenSSL license.
->>>
->>> I tried contacting the author of the code for clarification but did
->>> not hear back. In absence of clear licensing the only solution I
->>> see is removing this code.
+The HDAT data area is consumed by skiboot and turned into a device-tree. In
+some cases we would like to look directly at the HDAT. This is not possible
+through /dev/mem as it is reserved memory which is stopped by the /dev/mem
+filter. There are also other memory areas which are reserved but could be
+useful to view for debugging purposes.
 
-A quick 'git grep OpenSSL' of the Linux tree returns several other
-crypto files under the ARM architecture that are similarly licensed. Namely:
+This patch adds sysfs nodes to allow specified memory areas to be viewed.
+sysfs nodes are created for each property in the device-tree under
+/ibm,opal/firmware/exports/, and adds them to /sys/firmware/opal/exports/
+with root read-only permissions.
 
-arch/arm/crypto/sha1-armv4-large.S
-arch/arm/crypto/sha256-armv4.pl
-arch/arm/crypto/sha256-core.S_shipped
-arch/arm/crypto/sha512-armv4.pl
-arch/arm/crypto/sha512-core.S_shipped
-arch/arm64/crypto/sha256-core.S_shipped
-arch/arm64/crypto/sha512-armv8.pl
-arch/arm64/crypto/sha512-core.S_shipped
+Signed-off-by: Matt Brown <matthew.brown.dev@gmail.com>
+---
+Changelog
+v8
+	- fixed error handling
+	- added dynamic allocation of attributes
+	- using of_property_read_u64_array for reading attr vals
+	- reordered vars
+	- renaming vars
+---
+ arch/powerpc/platforms/powernv/opal.c | 81 +++++++++++++++++++++++++++++++++++
+ 1 file changed, 81 insertions(+)
 
-On closer inspection of some of those files have the addendum that
-"Permission to use under GPL terms is granted", but not all of them.
-
--Tyrel
+diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
+index 2822935..232f94e 100644
+--- a/arch/powerpc/platforms/powernv/opal.c
++++ b/arch/powerpc/platforms/powernv/opal.c
+@@ -604,6 +604,84 @@ static void opal_export_symmap(void)
+ 		pr_warn("Error %d creating OPAL symbols file\n", rc);
+ }
+ 
++static ssize_t export_attr_read(struct file *fp, struct kobject *kobj,
++			     struct bin_attribute *bin_attr, char *buf,
++			     loff_t off, size_t count)
++{
++	return memory_read_from_buffer(buf, count, &off, bin_attr->private,
++				       bin_attr->size);
++}
++
++/*
++ * opal_export_attrs: creates a sysfs node for each property listed in
++ * the device-tree under /ibm,opal/firmware/exports/
++ * All new sysfs nodes are created under /opal/exports/.
++ * This allows for reserved memory regions (e.g. HDAT) to be read.
++ * The new sysfs nodes are only readable by root.
++ */
++static void opal_export_attrs(void)
++{
++	struct bin_attribute *attr_tmp;
++	struct device_node *np;
++	struct property *prop;
++	struct kobject *kobj;
++	u64 vals[2];
++	int rc, n;
++
++	/* Create new 'exports' directory - /sys/firmware/opal/exports */
++	kobj = kobject_create_and_add("exports", opal_kobj);
++	if (!kobj) {
++		pr_warn("kobject_create_and_add exports failed\n");
++		return;
++	}
++
++	np = of_find_node_by_path("/ibm,opal/firmware/exports");
++	if (!np)
++		return;
++
++	n = 0;
++	for (prop = np->properties; prop != NULL; prop = prop->next)
++		n++;
++
++	if (n < 2)
++		goto cleanup;
++
++	for_each_property_of_node(np, prop) {
++		if (!strcmp(prop->name, "name") ||
++				!strcmp(prop->name, "phandle"))
++			continue;
++
++		if (of_property_read_u64_array(np, prop->name, &vals[0], 2))
++			continue;
++
++		attr_tmp = kmalloc(sizeof(*attr_tmp), GFP_KERNEL);
++
++		if (attr_tmp == NULL) {
++			pr_warn("Failed kmalloc for bin_attribute attr_tmp");
++			continue;
++		}
++
++		attr_tmp->attr.name = kstrdup(prop->name, GFP_KERNEL);
++		attr_tmp->attr.mode = 0400;
++		attr_tmp->read = export_attr_read;
++		attr_tmp->private = __va(vals[0]);
++		attr_tmp->size = vals[1];
++
++		if (attr_tmp->attr.name == NULL) {
++			pr_warn("Failed kstrdup for bin_attribute attr.name");
++			kfree(attr_tmp);
++			continue;
++		}
++		rc = sysfs_create_bin_file(kobj, attr_tmp);
++		if (rc)
++			pr_warn("Error %d creating OPAL sysfs exports/%s file\n",
++				      rc, prop->name);
++	}
++
++cleanup:
++	of_node_put(np);
++}
++
+ static void __init opal_dump_region_init(void)
+ {
+ 	void *addr;
+@@ -742,6 +820,9 @@ static int __init opal_init(void)
+ 		opal_msglog_sysfs_init();
+ 	}
+ 
++	/* Export all properties */
++	opal_export_attrs();
++
+ 	/* Initialize platform devices: IPMI backend, PRD & flash interface */
+ 	opal_pdev_init("ibm,opal-ipmi");
+ 	opal_pdev_init("ibm,opal-flash");
+-- 
+2.9.3
