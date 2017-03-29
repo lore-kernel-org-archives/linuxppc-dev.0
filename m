@@ -1,21 +1,44 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <andrew.donnellan@au1.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vt8k234m1zDq95
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Mar 2017 12:07:06 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Denis Kirjanov <kda@linux-powerpc.org>, linuxppc-dev@ozlabs.org
-Cc: benh@kernel.crashing.org, paulus@ozlabs.org,
- Denis Kirjanov <kda@linux-powerpc.org>
-Subject: Re: [PATCH] kvm: powerpc: book3s: Disable preemption while accessing
- paca xics_phys filed
-In-Reply-To: <1490603214-30116-1-git-send-email-kda@linux-powerpc.org>
-References: <1490603214-30116-1-git-send-email-kda@linux-powerpc.org>
-Date: Wed, 29 Mar 2017 12:07:03 +1100
-Message-ID: <87a884evrc.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vtCCx17slzDq93
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Mar 2017 13:59:40 +1100 (AEDT)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v2T2rqQ6141475
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Mar 2017 22:59:38 -0400
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 29fsu241m8-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Mar 2017 22:59:37 -0400
+Received: from localhost
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
+ Wed, 29 Mar 2017 12:59:35 +1000
+Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v2T2xOi89371842
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Mar 2017 13:59:32 +1100
+Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
+ by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v2T2x0j5004590
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Mar 2017 13:59:00 +1100
+Subject: Re: [PATCH V3 3/7] cxl: Keep track of mm struct associated with a
+ context
+To: Christophe Lombard <clombard@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, fbarrat@linux.vnet.ibm.com,
+ imunsie@au1.ibm.com
+References: <1490714052-18902-1-git-send-email-clombard@linux.vnet.ibm.com>
+ <1490714052-18902-4-git-send-email-clombard@linux.vnet.ibm.com>
+From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Date: Wed, 29 Mar 2017 13:58:35 +1100
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <1490714052-18902-4-git-send-email-clombard@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Message-Id: <01a90c58-05cf-83d0-eaab-1ce8a2d05bf1@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,61 +48,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Denis Kirjanov <kda@linux-powerpc.org> writes:
+On 29/03/17 02:14, Christophe Lombard wrote:
+> The mm_struct corresponding to the current task is acquired each time
+> an interrupt is raised. So to simplify the code, we only get the
+> mm_struct when attaching an AFU context to the process.
+> The mm_count reference is increased to ensure that the mm_struct can't
+> be freed. The mm_struct will be released when the context is detached.
+> A reference on mm_users is not kept to avoid a circular dependency if
+> the process mmaps its cxl mmio and forget to unmap before exiting.
+>
+> Signed-off-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
 
-> With CONFIG_DEBUG_PREEMPT enabled we see the following trace:
->
-> [  129.314426] BUG: using smp_processor_id() in preemptible [00000000]
-> code: modprobe/5459
-> [  129.314580] caller is .kvmppc_book3s_init_hv+0x184/0x350 [kvm_hv]
-> [  129.314697] CPU: 11 PID: 5459 Comm: modprobe Not tainted
-> 4.11.0-rc3-00022-gc7e790c #1
-> [  129.314848] Call Trace:
-> [  129.314915] [c0000007d624b810] [c0000000023eef10] .dump_stack+0xe4/0x150 (unreliable)
-> [  129.315065] [c0000007d624b8a0] [c000000001f6ec04] .check_preemption_disabled+0x134/0x150
-> [  129.315210] [c0000007d624b940] [d00000000a010274] .kvmppc_book3s_init_hv+0x184/0x350 [kvm_hv]
-> [  129.315339] [c0000007d624ba00] [c00000000191d5cc] .do_one_initcall+0x5c/0x1c0
-> [  129.315416] [c0000007d624bad0] [c0000000023e9494] .do_init_module+0x84/0x240
-> [  129.315492] [c0000007d624bb70] [c000000001aade18] .load_module+0x1f68/0x2a10
-> [  129.315568] [c0000007d624bd20] [c000000001aaeb30] .SyS_finit_module+0xc0/0xf0
-> [  129.315645] [c0000007d624be30] [c00000000191baec] system_call+0x38/0xfc
->
-> Disable preemption while accessing paca struct to avoid inconsistent state
->
-> Fixes: f725758 ("KVM: PPC: Book3S HV: Use OPAL XICS emulation on POWER9")
-> Signed-off-by: Denis Kirjanov <kda@linux-powerpc.org>
-> ---
->  arch/powerpc/kvm/book3s_hv.c | 10 +++++++++-
->  1 file changed, 9 insertions(+), 1 deletion(-)
->
-> diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-> index 1ec86d9..8e96bab 100644
-> --- a/arch/powerpc/kvm/book3s_hv.c
-> +++ b/arch/powerpc/kvm/book3s_hv.c
-> @@ -3913,6 +3913,10 @@ static int kvmppc_radix_possible(void)
->  static int kvmppc_book3s_init_hv(void)
->  {
->  	int r;
-> +#ifdef CONFIG_SMP
-> +	unsigned long xics_phys;
-> +#endif
-> +
->  	/*
->  	 * FIXME!! Do we need to check on all cpus ?
->  	 */
-> @@ -3930,7 +3934,11 @@ static int kvmppc_book3s_init_hv(void)
->  	 * indirectly, via OPAL.
->  	 */
->  #ifdef CONFIG_SMP
-> -	if (!get_paca()->kvm_hstate.xics_phys) {
-> +	preempt_disable();
-> +	xics_phys = get_paca()->kvm_hstate.xics_phys;
-> +	preempt_enable();
-> +
-> +	if (!xics_phys) {
->  		struct device_node *np;
-  
-Can you tell me what actual problem (other than the warning) this is
-fixing?
+Reviewed-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
 
-cheers
+-- 
+Andrew Donnellan              OzLabs, ADL Canberra
+andrew.donnellan@au1.ibm.com  IBM Australia Limited
