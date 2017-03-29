@@ -1,44 +1,23 @@
-Return-Path: <andrew.donnellan@au1.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vtCCx17slzDq93
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Mar 2017 13:59:40 +1100 (AEDT)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v2T2rqQ6141475
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Mar 2017 22:59:38 -0400
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
- by mx0a-001b2d01.pphosted.com with ESMTP id 29fsu241m8-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Mar 2017 22:59:37 -0400
-Received: from localhost
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
- Wed, 29 Mar 2017 12:59:35 +1000
-Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v2T2xOi89371842
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Mar 2017 13:59:32 +1100
-Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
- by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v2T2x0j5004590
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Mar 2017 13:59:00 +1100
-Subject: Re: [PATCH V3 3/7] cxl: Keep track of mm struct associated with a
- context
-To: Christophe Lombard <clombard@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, fbarrat@linux.vnet.ibm.com,
- imunsie@au1.ibm.com
-References: <1490714052-18902-1-git-send-email-clombard@linux.vnet.ibm.com>
- <1490714052-18902-4-git-send-email-clombard@linux.vnet.ibm.com>
-From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Date: Wed, 29 Mar 2017 13:58:35 +1100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vtCzZ6wx9zDq93
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Mar 2017 14:34:02 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ benh@kernel.crashing.org, paulus@samba.org
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: Re: [PATCH V5 04/17] powerpc/mm: Remove redundant TASK_SIZE_USER64
+ checks
+In-Reply-To: <1490153823-29241-5-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+References: <1490153823-29241-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1490153823-29241-5-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Date: Wed, 29 Mar 2017 14:34:02 +1100
+Message-ID: <87inmskb85.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <1490714052-18902-4-git-send-email-clombard@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Message-Id: <01a90c58-05cf-83d0-eaab-1ce8a2d05bf1@au1.ibm.com>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,19 +27,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 29/03/17 02:14, Christophe Lombard wrote:
-> The mm_struct corresponding to the current task is acquired each time
-> an interrupt is raised. So to simplify the code, we only get the
-> mm_struct when attaching an AFU context to the process.
-> The mm_count reference is increased to ensure that the mm_struct can't
-> be freed. The mm_struct will be released when the context is detached.
-> A reference on mm_users is not kept to avoid a circular dependency if
-> the process mmaps its cxl mmio and forget to unmap before exiting.
+"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> writes:
+
+> The check against VSID range is implied when we check task size against
+> hash and radix pgtable range[1], because we make sure page table range cannot
+> exceed vsid range.
 >
-> Signed-off-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
+> [1] BUILD_BUG_ON(TASK_SIZE_USER64 > H_PGTABLE_RANGE);
+> BUILD_BUG_ON(TASK_SIZE_USER64 > RADIX_PGTABLE_RANGE);
+>
+> The check for smaller task size is also removed here, because the follow up
+> patch will support a tasksize smaller than pgtable range.
+>
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/mm/init_64.c    | 4 ----
+>  arch/powerpc/mm/pgtable_64.c | 5 -----
+>  2 files changed, 9 deletions(-)
 
-Reviewed-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+As discussed this has become:
 
--- 
-Andrew Donnellan              OzLabs, ADL Canberra
-andrew.donnellan@au1.ibm.com  IBM Australia Limited
+commit f0aceca42796829295f5d20d01d4bee9773b63b7
+Author:     Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+AuthorDate: Wed Mar 22 09:06:50 2017 +0530
+Commit:     Michael Ellerman <mpe@ellerman.id.au>
+CommitDate: Tue Mar 28 20:28:20 2017 +1100
+
+    powerpc/mm: Remove checks that TASK_SIZE_USER64 is too small
+    
+    Remove the checks that TASK_SIZE_USER64 is smaller than H_PGTABLE_RANGE
+    and USER_VSID_RANGE.
+    
+    In a following patch we will deliberately add support for a TASK_SIZE
+    smaller than both ranges, so this will no longer be an error condition.
+    
+    Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+    [mpe: Keep the check in pgtable_64.c that we don't exceed USER_VSID_RANGE]
+    Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+
+diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
+index 9be992083d2a..8f6f2a173e47 100644
+--- a/arch/powerpc/mm/init_64.c
++++ b/arch/powerpc/mm/init_64.c
+@@ -71,10 +71,6 @@
+ #if H_PGTABLE_RANGE > USER_VSID_RANGE
+ #warning Limited user VSID range means pagetable space is wasted
+ #endif
+-
+-#if (TASK_SIZE_USER64 < H_PGTABLE_RANGE) && (TASK_SIZE_USER64 < USER_VSID_RANGE)
+-#warning TASK_SIZE is smaller than it needs to be.
+-#endif
+ #endif /* CONFIG_PPC_STD_MMU_64 */
+ 
+ phys_addr_t memstart_addr = ~0;
+
+
+cheers
