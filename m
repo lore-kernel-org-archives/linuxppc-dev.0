@@ -1,19 +1,19 @@
 Return-Path: <roy.pledge@nxp.com>
-Received: from NAM01-BY2-obe.outbound.protection.outlook.com
- (mail-by2nam01on0042.outbound.protection.outlook.com [104.47.34.42])
+Received: from NAM03-DM3-obe.outbound.protection.outlook.com
+ (mail-dm3nam03on0059.outbound.protection.outlook.com [104.47.41.59])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vtgVk3BkFzDqJX
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Mar 2017 08:14:06 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vtgVm0d1PzDqJV
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Mar 2017 08:14:07 +1100 (AEDT)
 From: Roy Pledge <roy.pledge@nxp.com>
 To: <robin.murphy@arm.com>, <oss@buserror.net>,
  <linuxppc-dev@lists.ozlabs.org>, <linux-arm-kernel@lists.infradead.org>,
  <devicetree@vger.kernel.org>
 CC: <madalin.bucur@nxp.com>, Roy Pledge <roy.pledge@nxp.com>
-Subject: [RFC PATCH 1/5] soc/fsl/qbman: Use shared-dma-pool for BMan private
+Subject: [RFC PATCH 2/5] soc/fsl/qbman: Use shared-dma-pool for QMan private
  memory allocations
-Date: Wed, 29 Mar 2017 17:13:53 -0400
-Message-ID: <1490822037-6752-2-git-send-email-roy.pledge@nxp.com>
+Date: Wed, 29 Mar 2017 17:13:54 -0400
+Message-ID: <1490822037-6752-3-git-send-email-roy.pledge@nxp.com>
 In-Reply-To: <1490822037-6752-1-git-send-email-roy.pledge@nxp.com>
 References: <1490822037-6752-1-git-send-email-roy.pledge@nxp.com>
 Reply-To: <roy.pledge@nxp.com>
@@ -28,76 +28,203 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Use the shared-memory-pool mechanism for free buffer proxy record
-area allocation.
+Use the shared-memory-pool mechanism for frame queue descriptor and
+packed frame descriptor record area allocations.
 
 Signed-off-by: Roy Pledge <roy.pledge@nxp.com>
 ---
- drivers/soc/fsl/qbman/bman_ccsr.c | 27 ++++++++++++++++++++++++++-
- drivers/soc/fsl/qbman/bman_priv.h |  3 +++
- 2 files changed, 29 insertions(+), 1 deletion(-)
+ drivers/soc/fsl/qbman/qman_ccsr.c | 119 +++++++++++++++++++++-----------------
+ drivers/soc/fsl/qbman/qman_priv.h |   4 +-
+ drivers/soc/fsl/qbman/qman_test.h |   2 -
+ 3 files changed, 68 insertions(+), 57 deletions(-)
 
-diff --git a/drivers/soc/fsl/qbman/bman_ccsr.c b/drivers/soc/fsl/qbman/bman_ccsr.c
-index a8e8389..5485c3c 100644
---- a/drivers/soc/fsl/qbman/bman_ccsr.c
-+++ b/drivers/soc/fsl/qbman/bman_ccsr.c
-@@ -170,10 +170,11 @@ static int fsl_bman_probe(struct platform_device *pdev)
+diff --git a/drivers/soc/fsl/qbman/qman_ccsr.c b/drivers/soc/fsl/qbman/qman_ccsr.c
+index 90bc40c..35c59ca 100644
+--- a/drivers/soc/fsl/qbman/qman_ccsr.c
++++ b/drivers/soc/fsl/qbman/qman_ccsr.c
+@@ -400,63 +400,19 @@ static int qm_init_pfdr(struct device *dev, u32 pfdr_start, u32 num)
+ 	return -ENODEV;
+ }
+ 
+-/*
+- * Ideally we would use the DMA API to turn rmem->base into a DMA address
+- * (especially if iommu translations ever get involved).  Unfortunately, the
+- * DMA API currently does not allow mapping anything that is not backed with
+- * a struct page.
+- */
++/* QMan needs two global memory areas initialized at boot time:
++    1) FQD: Frame Queue Descriptors used to manage frame queues
++    2) PFDR: Packed Frame Queue Descriptor Records used to store frames
++   Both areas are reserved using the device tree reserved memory framework
++   and the addresses and sizes are initialized when the QMan device is probed */
+ static dma_addr_t fqd_a, pfdr_a;
+ static size_t fqd_sz, pfdr_sz;
+ 
+-static int qman_fqd(struct reserved_mem *rmem)
+-{
+-	fqd_a = rmem->base;
+-	fqd_sz = rmem->size;
+-
+-	WARN_ON(!(fqd_a && fqd_sz));
+-
+-	return 0;
+-}
+-RESERVEDMEM_OF_DECLARE(qman_fqd, "fsl,qman-fqd", qman_fqd);
+-
+-static int qman_pfdr(struct reserved_mem *rmem)
+-{
+-	pfdr_a = rmem->base;
+-	pfdr_sz = rmem->size;
+-
+-	WARN_ON(!(pfdr_a && pfdr_sz));
+-
+-	return 0;
+-}
+-RESERVEDMEM_OF_DECLARE(qman_pfdr, "fsl,qman-pfdr", qman_pfdr);
+-
+ static unsigned int qm_get_fqid_maxcnt(void)
  {
- 	int ret, err_irq;
+ 	return fqd_sz / 64;
+ }
+ 
+-/*
+- * Flush this memory range from data cache so that QMAN originated
+- * transactions for this memory region could be marked non-coherent.
+- */
+-static int zero_priv_mem(struct device *dev, struct device_node *node,
+-			 phys_addr_t addr, size_t sz)
+-{
+-	/* map as cacheable, non-guarded */
+-	void __iomem *tmpp = ioremap_prot(addr, sz, 0);
+-
+-	if (!tmpp)
+-		return -ENOMEM;
+-
+-	memset_io(tmpp, 0, sz);
+-	flush_dcache_range((unsigned long)tmpp,
+-			   (unsigned long)tmpp + sz);
+-	iounmap(tmpp);
+-
+-	return 0;
+-}
+-
+ static void log_edata_bits(struct device *dev, u32 bit_count)
+ {
+ 	u32 i, j, mask = 0xffffffff;
+@@ -687,11 +643,12 @@ static int qman_resource_init(struct device *dev)
+ static int fsl_qman_probe(struct platform_device *pdev)
+ {
  	struct device *dev = &pdev->dev;
 -	struct device_node *node = dev->of_node;
 +	struct device_node *mem_node, *node = dev->of_node;
  	struct resource *res;
- 	u16 id, bm_pool_cnt;
+ 	int ret, err_irq;
+ 	u16 id;
  	u8 major, minor;
 +	u64 size;
  
  	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
  	if (!res) {
-@@ -201,6 +202,30 @@ static int fsl_bman_probe(struct platform_device *pdev)
- 		return -ENODEV;
+@@ -727,10 +684,66 @@ static int fsl_qman_probe(struct platform_device *pdev)
+ 		qm_channel_caam = QMAN_CHANNEL_CAAM_REV3;
  	}
  
-+	ret = of_reserved_mem_device_init(dev);
+-	ret = zero_priv_mem(dev, node, fqd_a, fqd_sz);
+-	WARN_ON(ret);
+-	if (ret)
++	/* Order of memory regions is assumed as FQD followed by PFDR
++	   in order to ensure allocations from the correct regions the
++	   driver initializes then allocates each piece in order */
++
++	ret = of_reserved_mem_device_init_by_idx(dev, dev->of_node, 0);
 +	if (ret) {
-+		dev_err(dev, "of_reserved_mem_device_init() failed 0x%x\n", ret);
++		dev_err(dev, "of_reserved_mem_device_init_by_idx(0) failed 0x%x\n",
++			ret);
 +		return -ENODEV;
 +	}
 +	mem_node = of_parse_phandle(dev->of_node, "memory-region", 0);
 +	if (mem_node) {
 +		ret = of_property_read_u64(mem_node, "size", &size);
 +		if (ret) {
-+			dev_err(dev, "FBPR: of_address_to_resource fails 0x%x\n", ret);
++			dev_err(dev, "FQD: of_address_to_resource fails 0x%x\n", ret);
 +			return -ENODEV;
 +		}
-+		fbpr_sz = size;
++		fqd_sz = size;
 +	} else {
-+		dev_err(dev, "No memory-region found for FBPR\n");
++		dev_err(dev, "No memory-region found for FQD\n");
 +		return -ENODEV;
 +	}
-+	if (!dma_zalloc_coherent(dev, fbpr_sz, &fbpr_a, 0)) {
-+		dev_err(dev, "Alloc FBPR memory failed\n");
++	if (!dma_zalloc_coherent(dev, fqd_sz, &fqd_a, 0)) {
++		dev_err(dev, "Alloc FQD memory failed\n");
 +		return -ENODEV;
 +	}
 +
-+	dev_info(dev, "Allocated FBPR 0x%llx 0x%zx\n", fbpr_a, fbpr_sz);
++	dev_info(dev, "Allocated FQD 0x%llx 0x%zx\n", fqd_a, fqd_sz);
 +
- 	bm_set_memory(fbpr_a, fbpr_sz);
++	/* Disassociate the FQD reseverd memory area from the device because
++	   a device can only have one DMA memory area. This should be fine
++	   since the memory is allocated and initalized and only ever accessed
++	   by the QMan device from now on */
++	of_reserved_mem_device_release(dev);
++
++	/* Setup PFDR memory */
++	ret = of_reserved_mem_device_init_by_idx(dev, dev->of_node, 1);
++	if (ret) {
++		dev_err(dev, "of_reserved_mem_device_init(1) failed 0x%x\n",
++			ret);
++		return -ENODEV;
++	}
++	mem_node = of_parse_phandle(dev->of_node, "memory-region", 1);
++	if (mem_node) {
++		ret = of_property_read_u64(mem_node, "size", &size);
++		if (ret) {
++			dev_err(dev, "PFDR: of_address_to_resource fails 0x%x\n", ret);
++			return -ENODEV;
++		}
++		pfdr_sz = size;
++	} else {
++		dev_err(dev, "No memory-region found for PFDR\n");
++		return -ENODEV;
++	}
++	if (!dma_zalloc_coherent(dev, pfdr_sz, &pfdr_a, 0)) {
++		dev_err(dev, "Alloc PFDR Failed size 0x%zx\n", pfdr_sz);
+ 		return -ENODEV;
++	}
++
++	dev_info(dev, "Allocated PFDR 0x%llx 0x%zx\n", pfdr_a, pfdr_sz);
  
- 	err_irq = platform_get_irq(pdev, 0);
-diff --git a/drivers/soc/fsl/qbman/bman_priv.h b/drivers/soc/fsl/qbman/bman_priv.h
-index f6896a2..765a4bf 100644
---- a/drivers/soc/fsl/qbman/bman_priv.h
-+++ b/drivers/soc/fsl/qbman/bman_priv.h
-@@ -33,6 +33,9 @@
+ 	ret = qman_init_ccsr(dev);
+ 	if (ret) {
+diff --git a/drivers/soc/fsl/qbman/qman_priv.h b/drivers/soc/fsl/qbman/qman_priv.h
+index 22725bd..1e998ea5 100644
+--- a/drivers/soc/fsl/qbman/qman_priv.h
++++ b/drivers/soc/fsl/qbman/qman_priv.h
+@@ -28,12 +28,12 @@
+  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+  */
+ 
+-#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+-
  #include "dpaa_sys.h"
  
- #include <soc/fsl/bman.h>
+ #include <soc/fsl/qman.h>
+ #include <linux/iommu.h>
 +#include <linux/dma-contiguous.h>
 +#include <linux/of_address.h>
-+#include <linux/dma-mapping.h>
  
- /* Portal processing (interrupt) sources */
- #define BM_PIRQ_RCRI	0x00000002	/* RCR Ring (below threshold) */
+ #if defined(CONFIG_FSL_PAMU)
+ #include <asm/fsl_pamu_stash.h>
+diff --git a/drivers/soc/fsl/qbman/qman_test.h b/drivers/soc/fsl/qbman/qman_test.h
+index d5f8cb2..41bdbc48 100644
+--- a/drivers/soc/fsl/qbman/qman_test.h
++++ b/drivers/soc/fsl/qbman/qman_test.h
+@@ -30,7 +30,5 @@
+ 
+ #include "qman_priv.h"
+ 
+-#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+-
+ int qman_test_stash(void);
+ int qman_test_api(void);
 -- 
 2.9.3
