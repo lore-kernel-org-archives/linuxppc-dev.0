@@ -1,22 +1,28 @@
-Return-Path: <paulus@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <anshuman.linux@gmail.com>
+Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
+ [IPv6:2607:f8b0:400e:c05::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vtN3R5myGzDqGv
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Mar 2017 20:37:55 +1100 (AEDT)
-Date: Wed, 29 Mar 2017 20:37:47 +1100
-From: Paul Mackerras <paulus@ozlabs.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Denis Kirjanov <kda@linux-powerpc.org>, linuxppc-dev@ozlabs.org,
- benh@kernel.crashing.org
-Subject: Re: [PATCH] kvm: powerpc: book3s: Disable preemption while accessing
- paca xics_phys filed
-Message-ID: <20170329093747.GC13844@fergus.ozlabs.ibm.com>
-References: <1490603214-30116-1-git-send-email-kda@linux-powerpc.org>
- <87a884evrc.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vtMh61M8KzDqGv
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Mar 2017 20:21:10 +1100 (AEDT)
+Received: by mail-pg0-x242.google.com with SMTP id 79so1949508pgf.0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Mar 2017 02:21:10 -0700 (PDT)
+Subject: Re: [PATCH V5 16/17] mm: Let arch choose the initial value of task
+ size
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
+References: <1490153823-29241-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1490153823-29241-17-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>, linux-mm@kvack.org,
+ Andrew Morton <akpm@linux-foundation.org>
+From: Anshuman Khandual <anshuman.linux@gmail.com>
+Message-ID: <00df9abd-b023-0d1c-6753-654f682cd754@gmail.com>
+Date: Wed, 29 Mar 2017 14:50:51 +0530
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <87a884evrc.fsf@concordia.ellerman.id.au>
+In-Reply-To: <1490153823-29241-17-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Content-Type: multipart/alternative;
+ boundary="------------D1740DB1BDDFFECE9575679A"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,30 +32,111 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Mar 29, 2017 at 12:07:03PM +1100, Michael Ellerman wrote:
-> Denis Kirjanov <kda@linux-powerpc.org> writes:
+This is a multi-part message in MIME format.
+--------------D1740DB1BDDFFECE9575679A
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
+
+
+
+On Wednesday 22 March 2017 09:07 AM, Aneesh Kumar K.V wrote:
+> As we start supporting larger address space (>128TB), we want to give
+> architecture a control on max task size of an application which is different
+> from the TASK_SIZE. For ex: ppc64 needs to track the base page size of a segment
+> and it is copied from mm_context_t to PACA on each context switch. If we know that
+> application has not used an address range above 128TB we only need to copy
+> details about 128TB range to PACA. This will help in improving context switch
+> performance by avoiding larger copy operation.
 >
-[...]
-> > @@ -3930,7 +3934,11 @@ static int kvmppc_book3s_init_hv(void)
-> >  	 * indirectly, via OPAL.
-> >  	 */
-> >  #ifdef CONFIG_SMP
-> > -	if (!get_paca()->kvm_hstate.xics_phys) {
-> > +	preempt_disable();
-> > +	xics_phys = get_paca()->kvm_hstate.xics_phys;
-> > +	preempt_enable();
-> > +
-> > +	if (!xics_phys) {
-> >  		struct device_node *np;
+> Cc: Kirill A. Shutemov <kirill.shutemov@linux.intel.com>
+> Cc: linux-mm@kvack.org
+> Cc: Andrew Morton <akpm@linux-foundation.org>
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> ---
+>   fs/exec.c | 10 +++++++++-
+>   1 file changed, 9 insertions(+), 1 deletion(-)
+>
+> diff --git a/fs/exec.c b/fs/exec.c
+> index 65145a3df065..5550a56d03c3 100644
+> --- a/fs/exec.c
+> +++ b/fs/exec.c
+> @@ -1308,6 +1308,14 @@ void would_dump(struct linux_binprm *bprm, struct file *file)
+>   }
+>   EXPORT_SYMBOL(would_dump);
 >   
-> Can you tell me what actual problem (other than the warning) this is
-> fixing?
+> +#ifndef arch_init_task_size
+> +static inline void arch_init_task_size(void)
+> +{
+> +	current->mm->task_size = TASK_SIZE;
+> +}
+> +#define arch_init_task_size arch_init_task_size
+> +#endif
 
-If paca->kvm_hstate.xics_phys is non-zero on one cpu, it will be
-non-zero on them all.  Therefore this is not fixing any actual
-problem, just the warning.
+Why not a proper CONFIG_ARCH_DEFINED_TASK_SIZE kind of option for this ? 
+Also
+are there no assumptions about task current->mm->size being TASK_SIZE in 
+other
+places which might get broken ?
 
-By the way, the #ifdefs are ugly, and could be removed.  (Yes I know
-it was me that put the first #ifdef in that function.)
+--------------D1740DB1BDDFFECE9575679A
+Content-Type: text/html; charset=windows-1252
+Content-Transfer-Encoding: 7bit
 
-Paul.
+<html>
+  <head>
+    <meta content="text/html; charset=windows-1252"
+      http-equiv="Content-Type">
+  </head>
+  <body bgcolor="#FFFFFF" text="#000000">
+    <p><br>
+    </p>
+    <br>
+    <div class="moz-cite-prefix">On Wednesday 22 March 2017 09:07 AM,
+      Aneesh Kumar K.V wrote:<br>
+    </div>
+    <blockquote
+cite="mid:1490153823-29241-17-git-send-email-aneesh.kumar@linux.vnet.ibm.com"
+      type="cite">
+      <pre wrap="">As we start supporting larger address space (&gt;128TB), we want to give
+architecture a control on max task size of an application which is different
+from the TASK_SIZE. For ex: ppc64 needs to track the base page size of a segment
+and it is copied from mm_context_t to PACA on each context switch. If we know that
+application has not used an address range above 128TB we only need to copy
+details about 128TB range to PACA. This will help in improving context switch
+performance by avoiding larger copy operation.
+
+Cc: Kirill A. Shutemov <a class="moz-txt-link-rfc2396E" href="mailto:kirill.shutemov@linux.intel.com">&lt;kirill.shutemov@linux.intel.com&gt;</a>
+Cc: <a class="moz-txt-link-abbreviated" href="mailto:linux-mm@kvack.org">linux-mm@kvack.org</a>
+Cc: Andrew Morton <a class="moz-txt-link-rfc2396E" href="mailto:akpm@linux-foundation.org">&lt;akpm@linux-foundation.org&gt;</a>
+Signed-off-by: Aneesh Kumar K.V <a class="moz-txt-link-rfc2396E" href="mailto:aneesh.kumar@linux.vnet.ibm.com">&lt;aneesh.kumar@linux.vnet.ibm.com&gt;</a>
+---
+ fs/exec.c | 10 +++++++++-
+ 1 file changed, 9 insertions(+), 1 deletion(-)
+
+diff --git a/fs/exec.c b/fs/exec.c
+index 65145a3df065..5550a56d03c3 100644
+--- a/fs/exec.c
++++ b/fs/exec.c
+@@ -1308,6 +1308,14 @@ void would_dump(struct linux_binprm *bprm, struct file *file)
+ }
+ EXPORT_SYMBOL(would_dump);
+ 
++#ifndef arch_init_task_size
++static inline void arch_init_task_size(void)
++{
++	current-&gt;mm-&gt;task_size = TASK_SIZE;
++}
++#define arch_init_task_size arch_init_task_size
++#endif</pre>
+    </blockquote>
+    <br>
+    <font size="-1">Why not a proper CONFIG_ARCH_DEFINED_TASK_SIZE kind
+      of option for this ? Also<br>
+      are there no assumptions about task current-&gt;mm-&gt;size being
+      TASK_SIZE in other<br>
+      places which might get broken ?<br>
+    </font><font size="-1"></font>
+  </body>
+</html>
+
+--------------D1740DB1BDDFFECE9575679A--
