@@ -1,27 +1,24 @@
-Return-Path: <srs0=yriu=3g=linux-powerpc.org=kda@ozlabs.org>
+Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vtPq90fT2zDqH3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Mar 2017 21:57:25 +1100 (AEDT)
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3vtPq901hpz8t3x
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Mar 2017 21:57:25 +1100 (AEDT)
-Received: from mail-lf0-x244.google.com (mail-lf0-x244.google.com
- [IPv6:2a00:1450:4010:c07::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3vtPq775MNz9s3s
- for <linuxppc-dev@ozlabs.org>; Wed, 29 Mar 2017 21:57:23 +1100 (AEDT)
-Received: by mail-lf0-x244.google.com with SMTP id v2so1224580lfi.2
- for <linuxppc-dev@ozlabs.org>; Wed, 29 Mar 2017 03:57:23 -0700 (PDT)
-From: Denis Kirjanov <kda@linux-powerpc.org>
-To: linuxppc-dev@ozlabs.org
-Cc: mpe@ellerman.id.au, paulus@ozlabs.org,
- Denis Kirjanov <kda@linux-powerpc.org>
-Subject: [PATCH] kvm: powerpc: book3s: use local_paca instead of get_paca
-Date: Wed, 29 Mar 2017 06:55:37 -0400
-Message-Id: <1490784937-10593-1-git-send-email-kda@linux-powerpc.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vtQhF4VCLzDqH9
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Mar 2017 22:36:29 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+Cc: Matthew Wilcox <willy@infradead.org>, Paul Mackerras <paulus@au1.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, Anton Blanchard <anton@samba.org>
+Subject: Re: [PATCH 1/2] powerpc: string: implement optimized memset variants
+In-Reply-To: <20170328102109.GC4762@naverao1-tp.localdomain>
+References: <20170322193030.GA8008@bombadil.infradead.org>
+ <cover.1490641759.git.naveen.n.rao@linux.vnet.ibm.com>
+ <d6a1a353de6a87bb5474ca9f1c1ff7ab2c4a1eb4.1490641759.git.naveen.n.rao@linux.vnet.ibm.com>
+ <87mvc6b575.fsf@concordia.ellerman.id.au>
+ <20170328102109.GC4762@naverao1-tp.localdomain>
+Date: Wed, 29 Mar 2017 22:36:28 +1100
+Message-ID: <87a884jow3.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,45 +28,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-with CONFIG_DEBUG_PREEMPT get_paca produces the following warning
-in kvmppc_book3s_init_hv since we are getting into the
-smp_processor_id debugging code
+"Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> writes:
+> I also tested zram today with the command shared by Wilcox:
+>
+> without patch:       1.493782568 seconds time elapsed    ( +-  0.08% )
+> with patch:          1.408457577 seconds time elapsed    ( +-  0.15% )
+>
+> ... which also shows an improvement along the same lines as x86, as 
+> reported by Minchan Kim.
 
-There is no real issue with the xics_phys field.
-If paca->kvm_hstate.xics_phys is non-zero on one cpu, it will be
-non-zero on them all.  Therefore this is not fixing any actual
-problem, just the warning.
+I got:
 
-[  138.521188] BUG: using smp_processor_id() in preemptible [00000000] code: modprobe/5596
-[  138.521308] caller is .kvmppc_book3s_init_hv+0x184/0x350 [kvm_hv]
-[  138.521404] CPU: 5 PID: 5596 Comm: modprobe Not tainted 4.11.0-rc3-00022-gc7e790c #1
-[  138.521509] Call Trace:
-[  138.521563] [c0000007d018b810] [c0000000023eef10] .dump_stack+0xe4/0x150 (unreliable)
-[  138.521694] [c0000007d018b8a0] [c000000001f6ec04] .check_preemption_disabled+0x134/0x150
-[  138.521829] [c0000007d018b940] [d00000000a010274] .kvmppc_book3s_init_hv+0x184/0x350 [kvm_hv]
-[  138.521963] [c0000007d018ba00] [c00000000191d5cc] .do_one_initcall+0x5c/0x1c0
-[  138.522082] [c0000007d018bad0] [c0000000023e9494] .do_init_module+0x84/0x240
-[  138.522201] [c0000007d018bb70] [c000000001aade18] .load_module+0x1f68/0x2a10
-[  138.522319] [c0000007d018bd20] [c000000001aaeb30] .SyS_finit_module+0xc0/0xf0
-[  138.522439] [c0000007d018be30] [c00000000191baec] system_call+0x38/0xfc
+  1.344847397 seconds time elapsed                                          ( +-  0.13% )
 
-Signed-off-by: Denis Kirjanov <kda@linux-powerpc.org>
----
- arch/powerpc/kvm/book3s_hv.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Using the C versions. Can you also benchmark those on your setup so we
+can compare? So basically apply Matt's series but not your 2.
 
-diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-index 1ec86d9..cb4ff36 100644
---- a/arch/powerpc/kvm/book3s_hv.c
-+++ b/arch/powerpc/kvm/book3s_hv.c
-@@ -3930,7 +3930,7 @@ static int kvmppc_book3s_init_hv(void)
- 	 * indirectly, via OPAL.
- 	 */
- #ifdef CONFIG_SMP
--	if (!get_paca()->kvm_hstate.xics_phys) {
-+	if (!local_paca->kvm_hstate.xics_phys) {
- 		struct device_node *np;
- 
- 		np = of_find_compatible_node(NULL, NULL, "ibm,opal-intc");
--- 
-1.8.3.1
+cheers
