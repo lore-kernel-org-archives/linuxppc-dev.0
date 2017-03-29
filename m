@@ -1,44 +1,21 @@
-Return-Path: <andrew.donnellan@au1.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vt7lC4BjtzDq93
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Mar 2017 11:23:03 +1100 (AEDT)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v2T0IjF7109010
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Mar 2017 20:23:00 -0400
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
- by mx0b-001b2d01.pphosted.com with ESMTP id 29fsref8ps-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Mar 2017 20:22:59 -0400
-Received: from localhost
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
- Wed, 29 Mar 2017 10:22:57 +1000
-Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v2T0MkXW50528286
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Mar 2017 11:22:54 +1100
-Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
- by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v2T0MLxm008712
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Mar 2017 11:22:21 +1100
-Subject: Re: [PATCH V3 2/7] cxl: Remove unused values in bare-metal
- environment.
-To: Christophe Lombard <clombard@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, fbarrat@linux.vnet.ibm.com,
- imunsie@au1.ibm.com
-References: <1490714052-18902-1-git-send-email-clombard@linux.vnet.ibm.com>
- <1490714052-18902-3-git-send-email-clombard@linux.vnet.ibm.com>
-From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Date: Wed, 29 Mar 2017 11:21:55 +1100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vt8k234m1zDq95
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Mar 2017 12:07:06 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Denis Kirjanov <kda@linux-powerpc.org>, linuxppc-dev@ozlabs.org
+Cc: benh@kernel.crashing.org, paulus@ozlabs.org,
+ Denis Kirjanov <kda@linux-powerpc.org>
+Subject: Re: [PATCH] kvm: powerpc: book3s: Disable preemption while accessing
+ paca xics_phys filed
+In-Reply-To: <1490603214-30116-1-git-send-email-kda@linux-powerpc.org>
+References: <1490603214-30116-1-git-send-email-kda@linux-powerpc.org>
+Date: Wed, 29 Mar 2017 12:07:03 +1100
+Message-ID: <87a884evrc.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <1490714052-18902-3-git-send-email-clombard@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Message-Id: <5ce2cdd1-7e56-998b-f1fa-2c50fd543d6c@au1.ibm.com>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,43 +25,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 29/03/17 02:14, Christophe Lombard wrote:
-> The two fields pid and tid of the structure cxl_irq_info are only used
-> in the guest environment. To avoid confusion, it's not necessary
-> to fill the fields in the bare-metal environment. These two fields
-> are renamed to 'reserved' to avoid undefined behavior on bare-metal.
-> The PSL Process and Thread Identification Register (CXL_PSL_PID_TID_An)
-> is only used when attaching a dedicated process for PSL8 only. This
-> register goes away in CAIA2.
+Denis Kirjanov <kda@linux-powerpc.org> writes:
+
+> With CONFIG_DEBUG_PREEMPT enabled we see the following trace:
 >
-> Signed-off-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
-
-Reviewed-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-
+> [  129.314426] BUG: using smp_processor_id() in preemptible [00000000]
+> code: modprobe/5459
+> [  129.314580] caller is .kvmppc_book3s_init_hv+0x184/0x350 [kvm_hv]
+> [  129.314697] CPU: 11 PID: 5459 Comm: modprobe Not tainted
+> 4.11.0-rc3-00022-gc7e790c #1
+> [  129.314848] Call Trace:
+> [  129.314915] [c0000007d624b810] [c0000000023eef10] .dump_stack+0xe4/0x150 (unreliable)
+> [  129.315065] [c0000007d624b8a0] [c000000001f6ec04] .check_preemption_disabled+0x134/0x150
+> [  129.315210] [c0000007d624b940] [d00000000a010274] .kvmppc_book3s_init_hv+0x184/0x350 [kvm_hv]
+> [  129.315339] [c0000007d624ba00] [c00000000191d5cc] .do_one_initcall+0x5c/0x1c0
+> [  129.315416] [c0000007d624bad0] [c0000000023e9494] .do_init_module+0x84/0x240
+> [  129.315492] [c0000007d624bb70] [c000000001aade18] .load_module+0x1f68/0x2a10
+> [  129.315568] [c0000007d624bd20] [c000000001aaeb30] .SyS_finit_module+0xc0/0xf0
+> [  129.315645] [c0000007d624be30] [c00000000191baec] system_call+0x38/0xfc
+>
+> Disable preemption while accessing paca struct to avoid inconsistent state
+>
+> Fixes: f725758 ("KVM: PPC: Book3S HV: Use OPAL XICS emulation on POWER9")
+> Signed-off-by: Denis Kirjanov <kda@linux-powerpc.org>
 > ---
->  drivers/misc/cxl/cxl.h    | 13 +++++++------
->  drivers/misc/cxl/hcalls.c |  4 ++--
->  drivers/misc/cxl/native.c |  5 -----
->  3 files changed, 9 insertions(+), 13 deletions(-)
+>  arch/powerpc/kvm/book3s_hv.c | 10 +++++++++-
+>  1 file changed, 9 insertions(+), 1 deletion(-)
 >
-> diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
-> index 79e60ec..2bbe077 100644
-> --- a/drivers/misc/cxl/cxl.h
-> +++ b/drivers/misc/cxl/cxl.h
-> @@ -895,19 +895,20 @@ int __detach_context(struct cxl_context *ctx);
->   * plpar_hcall9() in hvCall.S
->   * As a consequence:
->   * - we don't need to do any endianness conversion
-> - * - the pid and tid are an exception. They are 32-bit values returned in
-> - *   the same 64-bit register. So we do need to worry about byte ordering.
-> + * - the pid (reserved0) and tid (reserved1) are an exception. They are
-> + *   32-bit values returned in the same 64-bit register. So we do need
-> + *   to worry about byte ordering.
->   */
+> diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+> index 1ec86d9..8e96bab 100644
+> --- a/arch/powerpc/kvm/book3s_hv.c
+> +++ b/arch/powerpc/kvm/book3s_hv.c
+> @@ -3913,6 +3913,10 @@ static int kvmppc_radix_possible(void)
+>  static int kvmppc_book3s_init_hv(void)
+>  {
+>  	int r;
+> +#ifdef CONFIG_SMP
+> +	unsigned long xics_phys;
+> +#endif
+> +
+>  	/*
+>  	 * FIXME!! Do we need to check on all cpus ?
+>  	 */
+> @@ -3930,7 +3934,11 @@ static int kvmppc_book3s_init_hv(void)
+>  	 * indirectly, via OPAL.
+>  	 */
+>  #ifdef CONFIG_SMP
+> -	if (!get_paca()->kvm_hstate.xics_phys) {
+> +	preempt_disable();
+> +	xics_phys = get_paca()->kvm_hstate.xics_phys;
+> +	preempt_enable();
+> +
+> +	if (!xics_phys) {
+>  		struct device_node *np;
+  
+Can you tell me what actual problem (other than the warning) this is
+fixing?
 
-Comment should explain that pid/tid are now reserved0/1 because we've 
-decided not to use them at all.
-
--- 
-Andrew Donnellan              OzLabs, ADL Canberra
-andrew.donnellan@au1.ibm.com  IBM Australia Limited
+cheers
