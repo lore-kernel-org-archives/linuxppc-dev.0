@@ -1,16 +1,16 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vv3G93cCqzDqL8
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Mar 2017 23:04:33 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vv3GB01mMzDqLq
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Mar 2017 23:04:34 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: linuxppc-dev@ozlabs.org
 Cc: aneesh.kumar@linux.vnet.ibm.com
-Subject: [PATCH v6 17/19] powerpc/pseries: Skip using reserved virtual address
- range
-Date: Thu, 30 Mar 2017 23:04:05 +1100
-Message-Id: <1490875447-4016-17-git-send-email-mpe@ellerman.id.au>
+Subject: [PATCH v6 18/19] powerpc/mm: Switch some TASK_SIZE checks to use
+ mm_context addr_limit
+Date: Thu, 30 Mar 2017 23:04:06 +1100
+Message-Id: <1490875447-4016-18-git-send-email-mpe@ellerman.id.au>
 In-Reply-To: <1490875447-4016-1-git-send-email-mpe@ellerman.id.au>
 References: <1490875447-4016-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,181 +24,132 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
-Now that we use all the available virtual address range, we need to make
-sure we don't generate VSID such that it overlaps with the reserved vsid
-range. Reserved vsid range include the virtual address range used by the
-adjunct partition and also the VRMA virtual segment. We find the context
-value that can result in generating such a VSID and reserve it early in
-boot.
-
-We don't look at the adjunct range, because for now we disable the
-adjunct usage in a Linux LPAR via CAS interface.
-
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-[mpe: Rewrite hash__reserve_context_id(), move the rest into pseries]
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/include/asm/book3s/64/mmu-hash.h |  7 +++
- arch/powerpc/include/asm/kvm_book3s_64.h      |  2 -
- arch/powerpc/include/asm/mmu_context.h        |  1 +
- arch/powerpc/mm/hash_utils_64.c               |  1 -
- arch/powerpc/mm/mmu_context_book3s64.c        | 16 +++++++
- arch/powerpc/platforms/pseries/lpar.c         | 61 +++++++++++++++++++++++++++
- 6 files changed, 85 insertions(+), 3 deletions(-)
+ arch/powerpc/mm/hugetlbpage-radix.c |  4 ++--
+ arch/powerpc/mm/mmap.c              | 12 ++++++------
+ arch/powerpc/mm/slice.c             |  6 +++---
+ arch/powerpc/mm/subpage-prot.c      |  3 ++-
+ 4 files changed, 13 insertions(+), 12 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/book3s/64/mmu-hash.h b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
-index 5961b0d65a79..6d56974adf28 100644
---- a/arch/powerpc/include/asm/book3s/64/mmu-hash.h
-+++ b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
-@@ -589,11 +589,18 @@ extern void slb_set_size(u16 size);
- #define VSID_MULTIPLIER_256M	ASM_CONST(12538073)	/* 24-bit prime */
- #define VSID_BITS_256M		(VA_BITS - SID_SHIFT)
- #define VSID_BITS_65_256M	(65 - SID_SHIFT)
-+/*
-+ * Modular multiplicative inverse of VSID_MULTIPLIER under modulo VSID_MODULUS
-+ */
-+#define VSID_MULINV_256M	ASM_CONST(665548017062)
+diff --git a/arch/powerpc/mm/hugetlbpage-radix.c b/arch/powerpc/mm/hugetlbpage-radix.c
+index 35254a678456..95207c117b82 100644
+--- a/arch/powerpc/mm/hugetlbpage-radix.c
++++ b/arch/powerpc/mm/hugetlbpage-radix.c
+@@ -52,7 +52,7 @@ radix__hugetlb_get_unmapped_area(struct file *file, unsigned long addr,
  
- #define VSID_MULTIPLIER_1T	ASM_CONST(12538073)	/* 24-bit prime */
- #define VSID_BITS_1T		(VA_BITS - SID_SHIFT_1T)
- #define VSID_BITS_65_1T		(65 - SID_SHIFT_1T)
-+#define VSID_MULINV_1T		ASM_CONST(209034062)
+ 	if (len & ~huge_page_mask(h))
+ 		return -EINVAL;
+-	if (len > TASK_SIZE)
++	if (len > mm->context.addr_limit)
+ 		return -ENOMEM;
  
-+/* 1TB VSID reserved for VRMA */
-+#define VRMA_VSID	0x1ffffffUL
- #define USER_VSID_RANGE	(1UL << (ESID_BITS + SID_SHIFT))
+ 	if (flags & MAP_FIXED) {
+@@ -64,7 +64,7 @@ radix__hugetlb_get_unmapped_area(struct file *file, unsigned long addr,
+ 	if (addr) {
+ 		addr = ALIGN(addr, huge_page_size(h));
+ 		vma = find_vma(mm, addr);
+-		if (TASK_SIZE - len >= addr &&
++		if (mm->context.addr_limit - len >= addr &&
+ 		    (!vma || addr + len <= vma->vm_start))
+ 			return addr;
+ 	}
+diff --git a/arch/powerpc/mm/mmap.c b/arch/powerpc/mm/mmap.c
+index a5d9ef59debe..6e9fead92969 100644
+--- a/arch/powerpc/mm/mmap.c
++++ b/arch/powerpc/mm/mmap.c
+@@ -97,7 +97,7 @@ radix__arch_get_unmapped_area(struct file *filp, unsigned long addr,
+ 	struct vm_area_struct *vma;
+ 	struct vm_unmapped_area_info info;
  
- /* 4 bits per slice and we have one slice per 1TB */
-diff --git a/arch/powerpc/include/asm/kvm_book3s_64.h b/arch/powerpc/include/asm/kvm_book3s_64.h
-index d9b48f5bb606..d55c7f881ce7 100644
---- a/arch/powerpc/include/asm/kvm_book3s_64.h
-+++ b/arch/powerpc/include/asm/kvm_book3s_64.h
-@@ -49,8 +49,6 @@ static inline bool kvm_is_radix(struct kvm *kvm)
- #define KVM_DEFAULT_HPT_ORDER	24	/* 16MB HPT by default */
- #endif
+-	if (len > TASK_SIZE - mmap_min_addr)
++	if (len > mm->context.addr_limit - mmap_min_addr)
+ 		return -ENOMEM;
  
--#define VRMA_VSID	0x1ffffffUL	/* 1TB VSID reserved for VRMA */
--
- /*
-  * We use a lock bit in HPTE dword 0 to synchronize updates and
-  * accesses to each HPTE, and another bit to indicate non-present
-diff --git a/arch/powerpc/include/asm/mmu_context.h b/arch/powerpc/include/asm/mmu_context.h
-index 7d721101ec78..78803a7ebdd9 100644
---- a/arch/powerpc/include/asm/mmu_context.h
-+++ b/arch/powerpc/include/asm/mmu_context.h
-@@ -52,6 +52,7 @@ static inline void switch_mmu_context(struct mm_struct *prev,
+ 	if (flags & MAP_FIXED)
+@@ -106,7 +106,7 @@ radix__arch_get_unmapped_area(struct file *filp, unsigned long addr,
+ 	if (addr) {
+ 		addr = PAGE_ALIGN(addr);
+ 		vma = find_vma(mm, addr);
+-		if (TASK_SIZE - len >= addr && addr >= mmap_min_addr &&
++		if (mm->context.addr_limit - len >= addr && addr >= mmap_min_addr &&
+ 		    (!vma || addr + len <= vma->vm_start))
+ 			return addr;
+ 	}
+@@ -114,7 +114,7 @@ radix__arch_get_unmapped_area(struct file *filp, unsigned long addr,
+ 	info.flags = 0;
+ 	info.length = len;
+ 	info.low_limit = mm->mmap_base;
+-	info.high_limit = TASK_SIZE;
++	info.high_limit = mm->context.addr_limit;
+ 	info.align_mask = 0;
+ 	return vm_unmapped_area(&info);
  }
+@@ -132,7 +132,7 @@ radix__arch_get_unmapped_area_topdown(struct file *filp,
+ 	struct vm_unmapped_area_info info;
  
- extern int hash__alloc_context_id(void);
-+extern void hash__reserve_context_id(int id);
- extern void __destroy_context(int context_id);
- static inline void mmu_context_init(void) { }
- #else
-diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
-index 716255f88bbd..8848fec51ce9 100644
---- a/arch/powerpc/mm/hash_utils_64.c
-+++ b/arch/powerpc/mm/hash_utils_64.c
-@@ -1868,5 +1868,4 @@ static int __init hash64_debugfs(void)
- 	return 0;
- }
- machine_device_initcall(pseries, hash64_debugfs);
--
- #endif /* CONFIG_DEBUG_FS */
-diff --git a/arch/powerpc/mm/mmu_context_book3s64.c b/arch/powerpc/mm/mmu_context_book3s64.c
-index fd0bc6db2dcd..7bc5b63034db 100644
---- a/arch/powerpc/mm/mmu_context_book3s64.c
-+++ b/arch/powerpc/mm/mmu_context_book3s64.c
-@@ -57,6 +57,22 @@ static int alloc_context_id(int min_id, int max_id)
- 	return index;
- }
+ 	/* requested length too big for entire address space */
+-	if (len > TASK_SIZE - mmap_min_addr)
++	if (len > mm->context.addr_limit - mmap_min_addr)
+ 		return -ENOMEM;
  
-+void hash__reserve_context_id(int id)
-+{
-+	int rc, result = 0;
-+
-+	do {
-+		if (!ida_pre_get(&mmu_context_ida, GFP_KERNEL))
-+			break;
-+
-+		spin_lock(&mmu_context_lock);
-+		rc = ida_get_new_above(&mmu_context_ida, id, &result);
-+		spin_unlock(&mmu_context_lock);
-+	} while (rc == -EAGAIN);
-+
-+	WARN(result != id, "mmu: Failed to reserve context id %d (rc %d)\n", id, result);
-+}
-+
- int hash__alloc_context_id(void)
- {
- 	unsigned long max;
-diff --git a/arch/powerpc/platforms/pseries/lpar.c b/arch/powerpc/platforms/pseries/lpar.c
-index 8b1fe895daa3..6541d0b03e4c 100644
---- a/arch/powerpc/platforms/pseries/lpar.c
-+++ b/arch/powerpc/platforms/pseries/lpar.c
-@@ -958,3 +958,64 @@ int h_get_mpp_x(struct hvcall_mpp_x_data *mpp_x_data)
+ 	if (flags & MAP_FIXED)
+@@ -142,7 +142,7 @@ radix__arch_get_unmapped_area_topdown(struct file *filp,
+ 	if (addr) {
+ 		addr = PAGE_ALIGN(addr);
+ 		vma = find_vma(mm, addr);
+-		if (TASK_SIZE - len >= addr && addr >= mmap_min_addr &&
++		if (mm->context.addr_limit - len >= addr && addr >= mmap_min_addr &&
+ 				(!vma || addr + len <= vma->vm_start))
+ 			return addr;
+ 	}
+@@ -164,7 +164,7 @@ radix__arch_get_unmapped_area_topdown(struct file *filp,
+ 		VM_BUG_ON(addr != -ENOMEM);
+ 		info.flags = 0;
+ 		info.low_limit = TASK_UNMAPPED_BASE;
+-		info.high_limit = TASK_SIZE;
++		info.high_limit = mm->context.addr_limit;
+ 		addr = vm_unmapped_area(&info);
+ 	}
  
- 	return rc;
- }
-+
-+static unsigned long vsid_unscramble(unsigned long vsid, int ssize)
-+{
-+	unsigned long protovsid;
-+	unsigned long va_bits = VA_BITS;
-+	unsigned long modinv, vsid_modulus;
-+	unsigned long max_mod_inv, tmp_modinv;
-+
-+	if (!mmu_has_feature(MMU_FTR_68_BIT_VA))
-+		va_bits = 65;
-+
-+	if (ssize == MMU_SEGSIZE_256M) {
-+		modinv = VSID_MULINV_256M;
-+		vsid_modulus = ((1UL << (va_bits - SID_SHIFT)) - 1);
-+	} else {
-+		modinv = VSID_MULINV_1T;
-+		vsid_modulus = ((1UL << (va_bits - SID_SHIFT_1T)) - 1);
-+	}
-+
-+	/*
-+	 * vsid outside our range.
-+	 */
-+	if (vsid >= vsid_modulus)
-+		return 0;
-+
-+	/*
-+	 * If modinv is the modular multiplicate inverse of (x % vsid_modulus)
-+	 * and vsid = (protovsid * x) % vsid_modulus, then we say:
-+	 *   protovsid = (vsid * modinv) % vsid_modulus
-+	 */
-+
-+	/* Check if (vsid * modinv) overflow (63 bits) */
-+	max_mod_inv = 0x7fffffffffffffffull / vsid;
-+	if (modinv < max_mod_inv)
-+		return (vsid * modinv) % vsid_modulus;
-+
-+	tmp_modinv = modinv/max_mod_inv;
-+	modinv %= max_mod_inv;
-+
-+	protovsid = (((vsid * max_mod_inv) % vsid_modulus) * tmp_modinv) % vsid_modulus;
-+	protovsid = (protovsid + vsid * modinv) % vsid_modulus;
-+
-+	return protovsid;
-+}
-+
-+static int __init reserve_vrma_context_id(void)
-+{
-+	unsigned long protovsid;
-+
-+	/*
-+	 * Reserve context ids which map to reserved virtual addresses. For now
-+	 * we only reserve the context id which maps to the VRMA VSID. We ignore
-+	 * the addresses in "ibm,adjunct-virtual-addresses" because we don't
-+	 * enable adjunct support via the "ibm,client-architecture-support"
-+	 * interface.
-+	 */
-+	protovsid = vsid_unscramble(VRMA_VSID, MMU_SEGSIZE_1T);
-+	hash__reserve_context_id(protovsid >> ESID_BITS_1T);
-+	return 0;
-+}
-+machine_device_initcall(pseries, reserve_vrma_context_id);
+diff --git a/arch/powerpc/mm/slice.c b/arch/powerpc/mm/slice.c
+index a79a20d4cf99..bf41825054d0 100644
+--- a/arch/powerpc/mm/slice.c
++++ b/arch/powerpc/mm/slice.c
+@@ -277,7 +277,7 @@ static unsigned long slice_find_area_bottomup(struct mm_struct *mm,
+ 	info.align_offset = 0;
+ 
+ 	addr = TASK_UNMAPPED_BASE;
+-	while (addr < TASK_SIZE) {
++	while (addr < mm->context.addr_limit) {
+ 		info.low_limit = addr;
+ 		if (!slice_scan_available(addr, available, 1, &addr))
+ 			continue;
+@@ -289,8 +289,8 @@ static unsigned long slice_find_area_bottomup(struct mm_struct *mm,
+ 		 * Check if we need to reduce the range, or if we can
+ 		 * extend it to cover the next available slice.
+ 		 */
+-		if (addr >= TASK_SIZE)
+-			addr = TASK_SIZE;
++		if (addr >= mm->context.addr_limit)
++			addr = mm->context.addr_limit;
+ 		else if (slice_scan_available(addr, available, 1, &next_end)) {
+ 			addr = next_end;
+ 			goto next_slice;
+diff --git a/arch/powerpc/mm/subpage-prot.c b/arch/powerpc/mm/subpage-prot.c
+index 94210940112f..a409f78d206b 100644
+--- a/arch/powerpc/mm/subpage-prot.c
++++ b/arch/powerpc/mm/subpage-prot.c
+@@ -197,7 +197,8 @@ long sys_subpage_prot(unsigned long addr, unsigned long len, u32 __user *map)
+ 
+ 	/* Check parameters */
+ 	if ((addr & ~PAGE_MASK) || (len & ~PAGE_MASK) ||
+-	    addr >= TASK_SIZE || len >= TASK_SIZE || addr + len > TASK_SIZE)
++	    addr >= mm->context.addr_limit || len >= mm->context.addr_limit ||
++	    addr + len > mm->context.addr_limit)
+ 		return -EINVAL;
+ 
+ 	if (is_hugepage_only_range(mm, addr, len))
 -- 
 2.7.4
