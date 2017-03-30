@@ -1,19 +1,16 @@
-Return-Path: <joe@perches.com>
-Received: from smtprelay.hostedemail.com (smtprelay0082.hostedemail.com
- [216.40.44.82])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vv0x45Fs6zDqKs
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Mar 2017 21:19:36 +1100 (AEDT)
-From: Joe Perches <joe@perches.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH] powerpc/powernv/ioda2: Add __printf format/argument
- verification
-Date: Thu, 30 Mar 2017 03:19:25 -0700
-Message-Id: <f4003df27f480c533b311dc9515f13fdaa962563.1490869145.git.joe@perches.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vv3Ft1X4tzDqKm
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Mar 2017 23:04:18 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: linuxppc-dev@ozlabs.org
+Cc: aneesh.kumar@linux.vnet.ibm.com
+Subject: [PATCH v6 01/19] powerpc/mm/slice: Convert slice_mask high slice to a
+ bitmap
+Date: Thu, 30 Mar 2017 23:03:49 +1100
+Message-Id: <1490875447-4016-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,128 +20,313 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Fix fallout too.
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
-Signed-off-by: Joe Perches <joe@perches.com>
+In followup patch we want to increase the va range which will result
+in us requiring high_slices to have more than 64 bits. To enable this
+convert high_slices to bitmap. We keep the number bits same in this patch
+and later change that to higher value
+
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+[mpe: Fold in fix to use bitmap_empty()]
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/platforms/powernv/pci-ioda.c | 31 ++++++++++++++++---------------
- arch/powerpc/platforms/powernv/pci.h      |  2 ++
- 2 files changed, 18 insertions(+), 15 deletions(-)
+ arch/powerpc/include/asm/page_64.h |  15 ++---
+ arch/powerpc/mm/slice.c            | 112 +++++++++++++++++++++++++------------
+ 2 files changed, 81 insertions(+), 46 deletions(-)
 
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index 7461322f0a1a..b1f027354f6b 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -848,11 +848,11 @@ static int pnv_ioda_deconfigure_pe(struct pnv_phb *phb, struct pnv_ioda_pe *pe)
- 	rc = opal_pci_set_peltv(phb->opal_id, pe->pe_number,
- 				pe->pe_number, OPAL_REMOVE_PE_FROM_DOMAIN);
- 	if (rc)
--		pe_warn(pe, "OPAL error %ld remove self from PELTV\n", rc);
-+		pe_warn(pe, "OPAL error %lld remove self from PELTV\n", rc);
- 	rc = opal_pci_set_pe(phb->opal_id, pe->pe_number, pe->rid,
- 			     bcomp, dcomp, fcomp, OPAL_UNMAP_PE);
- 	if (rc)
--		pe_err(pe, "OPAL error %ld trying to setup PELT table\n", rc);
-+		pe_err(pe, "OPAL error %lld trying to setup PELT table\n", rc);
+diff --git a/arch/powerpc/include/asm/page_64.h b/arch/powerpc/include/asm/page_64.h
+index 3e83d2a20b6f..bd55ff751938 100644
+--- a/arch/powerpc/include/asm/page_64.h
++++ b/arch/powerpc/include/asm/page_64.h
+@@ -98,19 +98,16 @@ extern u64 ppc64_pft_size;
+ #define GET_LOW_SLICE_INDEX(addr)	((addr) >> SLICE_LOW_SHIFT)
+ #define GET_HIGH_SLICE_INDEX(addr)	((addr) >> SLICE_HIGH_SHIFT)
  
- 	pe->pbus = NULL;
- 	pe->pdev = NULL;
-@@ -1159,11 +1159,12 @@ static struct pnv_ioda_pe *pnv_ioda_setup_bus_PE(struct pci_bus *bus, bool all)
- 	pe->rid = bus->busn_res.start << 8;
++#ifndef __ASSEMBLY__
+ /*
+- * 1 bit per slice and we have one slice per 1TB
+- * Right now we support only 64TB.
+- * IF we change this we will have to change the type
+- * of high_slices
++ * One bit per slice. We have lower slices which cover 256MB segments
++ * upto 4G range. That gets us 16 low slices. For the rest we track slices
++ * in 1TB size.
++ * 64 below is actually SLICE_NUM_HIGH to fixup complie errros
+  */
+-#define SLICE_MASK_SIZE 8
+-
+-#ifndef __ASSEMBLY__
+-
+ struct slice_mask {
+ 	u16 low_slices;
+-	u64 high_slices;
++	DECLARE_BITMAP(high_slices, 64);
+ };
  
- 	if (all)
--		pe_info(pe, "Secondary bus %d..%d associated with PE#%x\n",
--			bus->busn_res.start, bus->busn_res.end, pe->pe_number);
-+		pe_info(pe, "Secondary bus %pad..%pad associated with PE#%x\n",
-+			&bus->busn_res.start, &bus->busn_res.end,
-+			pe->pe_number);
- 	else
--		pe_info(pe, "Secondary bus %d associated with PE#%x\n",
--			bus->busn_res.start, pe->pe_number);
-+		pe_info(pe, "Secondary bus %pad associated with PE#%x\n",
-+			&bus->busn_res.start, pe->pe_number);
+ struct mm_struct;
+diff --git a/arch/powerpc/mm/slice.c b/arch/powerpc/mm/slice.c
+index bf150557dba8..639c7171d174 100644
+--- a/arch/powerpc/mm/slice.c
++++ b/arch/powerpc/mm/slice.c
+@@ -36,11 +36,6 @@
+ #include <asm/copro.h>
+ #include <asm/hugetlb.h>
  
- 	if (pnv_ioda_configure_pe(phb, pe)) {
- 		/* XXX What do we do here ? */
-@@ -1417,7 +1418,7 @@ static void pnv_pci_ioda2_release_dma_pe(struct pci_dev *dev, struct pnv_ioda_pe
- 	tbl = pe->table_group.tables[0];
- 	rc = pnv_pci_ioda2_unset_window(&pe->table_group, 0);
- 	if (rc)
--		pe_warn(pe, "OPAL error %ld release DMA window\n", rc);
-+		pe_warn(pe, "OPAL error %lld release DMA window\n", rc);
+-/* some sanity checks */
+-#if (H_PGTABLE_RANGE >> 43) > SLICE_MASK_SIZE
+-#error H_PGTABLE_RANGE exceeds slice_mask high_slices size
+-#endif
+-
+ static DEFINE_SPINLOCK(slice_convert_lock);
  
- 	pnv_pci_ioda2_set_bypass(pe, false);
- 	if (pe->table_group.group) {
-@@ -2165,8 +2166,8 @@ static void pnv_pci_ioda1_setup_dma_pe(struct pnv_phb *phb,
- 					      __pa(addr) + tce32_segsz * i,
- 					      tce32_segsz, IOMMU_PAGE_SIZE_4K);
- 		if (rc) {
--			pe_err(pe, " Failed to configure 32-bit TCE table,"
--			       " err %ld\n", rc);
-+			pe_err(pe, " Failed to configure 32-bit TCE table, err %lld\n",
-+			       rc);
- 			goto fail;
- 		}
+ 
+@@ -49,7 +44,7 @@ int _slice_debug = 1;
+ 
+ static void slice_print_mask(const char *label, struct slice_mask mask)
+ {
+-	char	*p, buf[16 + 3 + 64 + 1];
++	char	*p, buf[SLICE_NUM_LOW + 3 + SLICE_NUM_HIGH + 1];
+ 	int	i;
+ 
+ 	if (!_slice_debug)
+@@ -60,8 +55,12 @@ static void slice_print_mask(const char *label, struct slice_mask mask)
+ 	*(p++) = ' ';
+ 	*(p++) = '-';
+ 	*(p++) = ' ';
+-	for (i = 0; i < SLICE_NUM_HIGH; i++)
+-		*(p++) = (mask.high_slices & (1ul << i)) ? '1' : '0';
++	for (i = 0; i < SLICE_NUM_HIGH; i++) {
++		if (test_bit(i, mask.high_slices))
++			*(p++) = '1';
++		else
++			*(p++) = '0';
++	}
+ 	*(p++) = 0;
+ 
+ 	printk(KERN_DEBUG "%s:%s\n", label, buf);
+@@ -80,7 +79,10 @@ static struct slice_mask slice_range_to_mask(unsigned long start,
+ 					     unsigned long len)
+ {
+ 	unsigned long end = start + len - 1;
+-	struct slice_mask ret = { 0, 0 };
++	struct slice_mask ret;
++
++	ret.low_slices = 0;
++	bitmap_zero(ret.high_slices, SLICE_NUM_HIGH);
+ 
+ 	if (start < SLICE_LOW_TOP) {
+ 		unsigned long mend = min(end, (SLICE_LOW_TOP - 1));
+@@ -89,10 +91,13 @@ static struct slice_mask slice_range_to_mask(unsigned long start,
+ 			- (1u << GET_LOW_SLICE_INDEX(start));
  	}
-@@ -2219,9 +2220,9 @@ static long pnv_pci_ioda2_set_window(struct iommu_table_group *table_group,
- 	const __u64 start_addr = tbl->it_offset << tbl->it_page_shift;
- 	const __u64 win_size = tbl->it_size << tbl->it_page_shift;
  
--	pe_info(pe, "Setting up window#%d %llx..%llx pg=%x\n", num,
--			start_addr, start_addr + win_size - 1,
--			IOMMU_PAGE_SIZE(tbl));
-+	pe_info(pe, "Setting up window#%d %llx..%llx pg=%lx\n",
-+		num, start_addr, start_addr + win_size - 1,
-+		IOMMU_PAGE_SIZE(tbl));
+-	if ((start + len) > SLICE_LOW_TOP)
+-		ret.high_slices = (1ul << (GET_HIGH_SLICE_INDEX(end) + 1))
+-			- (1ul << GET_HIGH_SLICE_INDEX(start));
++	if ((start + len) > SLICE_LOW_TOP) {
++		unsigned long start_index = GET_HIGH_SLICE_INDEX(start);
++		unsigned long align_end = ALIGN(end, (1UL << SLICE_HIGH_SHIFT));
++		unsigned long count = GET_HIGH_SLICE_INDEX(align_end) - start_index;
  
- 	/*
- 	 * Map TCE table through TVT. The TVE index is the PE number
-@@ -2235,7 +2236,7 @@ static long pnv_pci_ioda2_set_window(struct iommu_table_group *table_group,
- 			size << 3,
- 			IOMMU_PAGE_SIZE(tbl));
- 	if (rc) {
--		pe_err(pe, "Failed to configure TCE table, err %ld\n", rc);
-+		pe_err(pe, "Failed to configure TCE table, err %lld\n", rc);
- 		return rc;
++		bitmap_set(ret.high_slices, start_index, count);
++	}
+ 	return ret;
+ }
+ 
+@@ -129,9 +134,12 @@ static int slice_high_has_vma(struct mm_struct *mm, unsigned long slice)
+ 
+ static struct slice_mask slice_mask_for_free(struct mm_struct *mm)
+ {
+-	struct slice_mask ret = { 0, 0 };
++	struct slice_mask ret;
+ 	unsigned long i;
+ 
++	ret.low_slices = 0;
++	bitmap_zero(ret.high_slices, SLICE_NUM_HIGH);
++
+ 	for (i = 0; i < SLICE_NUM_LOW; i++)
+ 		if (!slice_low_has_vma(mm, i))
+ 			ret.low_slices |= 1u << i;
+@@ -141,7 +149,7 @@ static struct slice_mask slice_mask_for_free(struct mm_struct *mm)
+ 
+ 	for (i = 0; i < SLICE_NUM_HIGH; i++)
+ 		if (!slice_high_has_vma(mm, i))
+-			ret.high_slices |= 1ul << i;
++			__set_bit(i, ret.high_slices);
+ 
+ 	return ret;
+ }
+@@ -150,10 +158,13 @@ static struct slice_mask slice_mask_for_size(struct mm_struct *mm, int psize)
+ {
+ 	unsigned char *hpsizes;
+ 	int index, mask_index;
+-	struct slice_mask ret = { 0, 0 };
++	struct slice_mask ret;
+ 	unsigned long i;
+ 	u64 lpsizes;
+ 
++	ret.low_slices = 0;
++	bitmap_zero(ret.high_slices, SLICE_NUM_HIGH);
++
+ 	lpsizes = mm->context.low_slices_psize;
+ 	for (i = 0; i < SLICE_NUM_LOW; i++)
+ 		if (((lpsizes >> (i * 4)) & 0xf) == psize)
+@@ -164,7 +175,7 @@ static struct slice_mask slice_mask_for_size(struct mm_struct *mm, int psize)
+ 		mask_index = i & 0x1;
+ 		index = i >> 1;
+ 		if (((hpsizes[index] >> (mask_index * 4)) & 0xf) == psize)
+-			ret.high_slices |= 1ul << i;
++			__set_bit(i, ret.high_slices);
  	}
  
-@@ -3421,7 +3422,7 @@ static void pnv_pci_ioda2_release_pe_dma(struct pnv_ioda_pe *pe)
- #ifdef CONFIG_IOMMU_API
- 	rc = pnv_pci_ioda2_unset_window(&pe->table_group, 0);
- 	if (rc)
--		pe_warn(pe, "OPAL error %ld release DMA window\n", rc);
-+		pe_warn(pe, "OPAL error %lld release DMA window\n", rc);
+ 	return ret;
+@@ -172,8 +183,13 @@ static struct slice_mask slice_mask_for_size(struct mm_struct *mm, int psize)
+ 
+ static int slice_check_fit(struct slice_mask mask, struct slice_mask available)
+ {
++	DECLARE_BITMAP(result, SLICE_NUM_HIGH);
++
++	bitmap_and(result, mask.high_slices,
++		   available.high_slices, SLICE_NUM_HIGH);
++
+ 	return (mask.low_slices & available.low_slices) == mask.low_slices &&
+-		(mask.high_slices & available.high_slices) == mask.high_slices;
++		bitmap_equal(result, mask.high_slices, SLICE_NUM_HIGH);
+ }
+ 
+ static void slice_flush_segments(void *parm)
+@@ -220,7 +236,7 @@ static void slice_convert(struct mm_struct *mm, struct slice_mask mask, int psiz
+ 	for (i = 0; i < SLICE_NUM_HIGH; i++) {
+ 		mask_index = i & 0x1;
+ 		index = i >> 1;
+-		if (mask.high_slices & (1ul << i))
++		if (test_bit(i, mask.high_slices))
+ 			hpsizes[index] = (hpsizes[index] &
+ 					  ~(0xf << (mask_index * 4))) |
+ 				(((unsigned long)psize) << (mask_index * 4));
+@@ -256,7 +272,7 @@ static bool slice_scan_available(unsigned long addr,
+ 		slice = GET_HIGH_SLICE_INDEX(addr);
+ 		*boundary_addr = (slice + end) ?
+ 			((slice + end) << SLICE_HIGH_SHIFT) : SLICE_LOW_TOP;
+-		return !!(available.high_slices & (1ul << slice));
++		return !!test_bit(slice, available.high_slices);
+ 	}
+ }
+ 
+@@ -363,15 +379,24 @@ static unsigned long slice_find_area(struct mm_struct *mm, unsigned long len,
+ 		return slice_find_area_bottomup(mm, len, mask, psize);
+ }
+ 
+-#define or_mask(dst, src)	do {			\
+-	(dst).low_slices |= (src).low_slices;		\
+-	(dst).high_slices |= (src).high_slices;		\
+-} while (0)
++static inline void slice_or_mask(struct slice_mask *dst, struct slice_mask *src)
++{
++	DECLARE_BITMAP(result, SLICE_NUM_HIGH);
+ 
+-#define andnot_mask(dst, src)	do {			\
+-	(dst).low_slices &= ~(src).low_slices;		\
+-	(dst).high_slices &= ~(src).high_slices;	\
+-} while (0)
++	dst->low_slices |= src->low_slices;
++	bitmap_or(result, dst->high_slices, src->high_slices, SLICE_NUM_HIGH);
++	bitmap_copy(dst->high_slices, result, SLICE_NUM_HIGH);
++}
++
++static inline void slice_andnot_mask(struct slice_mask *dst, struct slice_mask *src)
++{
++	DECLARE_BITMAP(result, SLICE_NUM_HIGH);
++
++	dst->low_slices &= ~src->low_slices;
++
++	bitmap_andnot(result, dst->high_slices, src->high_slices, SLICE_NUM_HIGH);
++	bitmap_copy(dst->high_slices, result, SLICE_NUM_HIGH);
++}
+ 
+ #ifdef CONFIG_PPC_64K_PAGES
+ #define MMU_PAGE_BASE	MMU_PAGE_64K
+@@ -383,15 +408,28 @@ unsigned long slice_get_unmapped_area(unsigned long addr, unsigned long len,
+ 				      unsigned long flags, unsigned int psize,
+ 				      int topdown)
+ {
+-	struct slice_mask mask = {0, 0};
++	struct slice_mask mask;
+ 	struct slice_mask good_mask;
+-	struct slice_mask potential_mask = {0,0} /* silence stupid warning */;
+-	struct slice_mask compat_mask = {0, 0};
++	struct slice_mask potential_mask;
++	struct slice_mask compat_mask;
+ 	int fixed = (flags & MAP_FIXED);
+ 	int pshift = max_t(int, mmu_psize_defs[psize].shift, PAGE_SHIFT);
+ 	struct mm_struct *mm = current->mm;
+ 	unsigned long newaddr;
+ 
++	/*
++	 * init different masks
++	 */
++	mask.low_slices = 0;
++	bitmap_zero(mask.high_slices, SLICE_NUM_HIGH);
++
++	/* silence stupid warning */;
++	potential_mask.low_slices = 0;
++	bitmap_zero(potential_mask.high_slices, SLICE_NUM_HIGH);
++
++	compat_mask.low_slices = 0;
++	bitmap_zero(compat_mask.high_slices, SLICE_NUM_HIGH);
++
+ 	/* Sanity checks */
+ 	BUG_ON(mm->task_size == 0);
+ 	VM_BUG_ON(radix_enabled());
+@@ -449,7 +487,7 @@ unsigned long slice_get_unmapped_area(unsigned long addr, unsigned long len,
+ 	if (psize == MMU_PAGE_64K) {
+ 		compat_mask = slice_mask_for_size(mm, MMU_PAGE_4K);
+ 		if (fixed)
+-			or_mask(good_mask, compat_mask);
++			slice_or_mask(&good_mask, &compat_mask);
+ 	}
  #endif
  
- 	pnv_pci_ioda2_set_bypass(pe, false);
-@@ -3456,7 +3457,7 @@ static void pnv_ioda_free_pe_seg(struct pnv_ioda_pe *pe,
- 					phb->ioda.reserved_pe_idx, win, 0, idx);
+@@ -484,7 +522,7 @@ unsigned long slice_get_unmapped_area(unsigned long addr, unsigned long len,
+ 	 * empty and thus can be converted
+ 	 */
+ 	potential_mask = slice_mask_for_free(mm);
+-	or_mask(potential_mask, good_mask);
++	slice_or_mask(&potential_mask, &good_mask);
+ 	slice_print_mask(" potential", potential_mask);
  
- 		if (rc != OPAL_SUCCESS)
--			pe_warn(pe, "Error %ld unmapping (%d) segment#%d\n",
-+			pe_warn(pe, "Error %lld unmapping (%d) segment#%d\n",
- 				rc, win, idx);
+ 	if ((addr != 0 || fixed) && slice_check_fit(mask, potential_mask)) {
+@@ -517,7 +555,7 @@ unsigned long slice_get_unmapped_area(unsigned long addr, unsigned long len,
+ #ifdef CONFIG_PPC_64K_PAGES
+ 	if (addr == -ENOMEM && psize == MMU_PAGE_64K) {
+ 		/* retry the search with 4k-page slices included */
+-		or_mask(potential_mask, compat_mask);
++		slice_or_mask(&potential_mask, &compat_mask);
+ 		addr = slice_find_area(mm, len, potential_mask, psize,
+ 				       topdown);
+ 	}
+@@ -531,9 +569,9 @@ unsigned long slice_get_unmapped_area(unsigned long addr, unsigned long len,
+ 	slice_print_mask(" mask", mask);
  
- 		map[idx] = IODA_INVALID_PE;
-diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
-index e1d3e5526b54..139df2478f7e 100644
---- a/arch/powerpc/platforms/powernv/pci.h
-+++ b/arch/powerpc/platforms/powernv/pci.h
-@@ -1,6 +1,7 @@
- #ifndef __POWERNV_PCI_H
- #define __POWERNV_PCI_H
+  convert:
+-	andnot_mask(mask, good_mask);
+-	andnot_mask(mask, compat_mask);
+-	if (mask.low_slices || mask.high_slices) {
++	slice_andnot_mask(&mask, &good_mask);
++	slice_andnot_mask(&mask, &compat_mask);
++	if (mask.low_slices || !bitmap_empty(mask.high_slices, SLICE_NUM_HIGH)) {
+ 		slice_convert(mm, mask, psize);
+ 		if (psize > MMU_PAGE_BASE)
+ 			on_each_cpu(slice_flush_segments, mm, 1);
+@@ -700,7 +738,7 @@ int is_hugepage_only_range(struct mm_struct *mm, unsigned long addr,
+ 	if (psize == MMU_PAGE_64K) {
+ 		struct slice_mask compat_mask;
+ 		compat_mask = slice_mask_for_size(mm, MMU_PAGE_4K);
+-		or_mask(available, compat_mask);
++		slice_or_mask(&available, &compat_mask);
+ 	}
+ #endif
  
-+#include <linux/compiler.h>		/* for __printf */
- #include <linux/iommu.h>
- #include <asm/iommu.h>
- #include <asm/msi_bitmap.h>
-@@ -218,6 +219,7 @@ extern struct pnv_ioda_pe *pnv_ioda_get_pe(struct pci_dev *dev);
- extern void pnv_set_msi_irq_chip(struct pnv_phb *phb, unsigned int virq);
- extern bool pnv_pci_enable_device_hook(struct pci_dev *dev);
- 
-+__printf(3, 4)
- extern void pe_level_printk(const struct pnv_ioda_pe *pe, const char *level,
- 			    const char *fmt, ...);
- #define pe_err(pe, fmt, ...)					\
 -- 
-2.10.0.rc2.1.g053435c
+2.7.4
