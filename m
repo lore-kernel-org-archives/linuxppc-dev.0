@@ -2,15 +2,15 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vv3Fz00CTzDqLC
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Mar 2017 23:04:23 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vv3G06p64zDqLM
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Mar 2017 23:04:24 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: linuxppc-dev@ozlabs.org
 Cc: aneesh.kumar@linux.vnet.ibm.com
-Subject: [PATCH v6 06/19] powerpc/mm/slice: Update slice mask printing to use
- bitmap printing.
-Date: Thu, 30 Mar 2017 23:03:54 +1100
-Message-Id: <1490875447-4016-6-git-send-email-mpe@ellerman.id.au>
+Subject: [PATCH v6 07/19] powerpc/mm/hash: Abstract context id allocation for
+ KVM
+Date: Thu, 30 Mar 2017 23:03:55 +1100
+Message-Id: <1490875447-4016-7-git-send-email-mpe@ellerman.id.au>
 In-Reply-To: <1490875447-4016-1-git-send-email-mpe@ellerman.id.au>
 References: <1490875447-4016-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -22,83 +22,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+KVM wants to be able to allocate an MMU context id, which it does
+currently by calling __init_new_context().
 
-We now get output like below which is much better.
+We're about to rework that code, so provide a wrapper for KVM so it
+can not worry about the details.
 
-[    0.935306]  good_mask low_slice: 0-15
-[    0.935360]  good_mask high_slice: 0-511
-
-Compared to
-
-[    0.953414]  good_mask:1111111111111111 - 1111111111111.........
-
-I also fixed an error with slice_dbg printing.
-
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/mm/slice.c | 30 +++++++-----------------------
- 1 file changed, 7 insertions(+), 23 deletions(-)
+ arch/powerpc/include/asm/mmu_context.h |  2 +-
+ arch/powerpc/kvm/book3s_64_mmu_host.c  |  2 +-
+ arch/powerpc/mm/mmu_context_book3s64.c | 10 ++++++++--
+ 3 files changed, 10 insertions(+), 4 deletions(-)
 
-diff --git a/arch/powerpc/mm/slice.c b/arch/powerpc/mm/slice.c
-index 7599c2703520..95e5a20b1b6a 100644
---- a/arch/powerpc/mm/slice.c
-+++ b/arch/powerpc/mm/slice.c
-@@ -52,29 +52,13 @@ int _slice_debug = 1;
- 
- static void slice_print_mask(const char *label, struct slice_mask mask)
- {
--	char	*p, buf[SLICE_NUM_LOW + 3 + SLICE_NUM_HIGH + 1];
--	int	i;
--
- 	if (!_slice_debug)
- 		return;
--	p = buf;
--	for (i = 0; i < SLICE_NUM_LOW; i++)
--		*(p++) = (mask.low_slices & (1 << i)) ? '1' : '0';
--	*(p++) = ' ';
--	*(p++) = '-';
--	*(p++) = ' ';
--	for (i = 0; i < SLICE_NUM_HIGH; i++) {
--		if (test_bit(i, mask.high_slices))
--			*(p++) = '1';
--		else
--			*(p++) = '0';
--	}
--	*(p++) = 0;
--
--	printk(KERN_DEBUG "%s:%s\n", label, buf);
-+	pr_devel("%s low_slice: %*pbl\n", label, (int)SLICE_NUM_LOW, &mask.low_slices);
-+	pr_devel("%s high_slice: %*pbl\n", label, (int)SLICE_NUM_HIGH, mask.high_slices);
+diff --git a/arch/powerpc/include/asm/mmu_context.h b/arch/powerpc/include/asm/mmu_context.h
+index b9e3f0aca261..7d721101ec78 100644
+--- a/arch/powerpc/include/asm/mmu_context.h
++++ b/arch/powerpc/include/asm/mmu_context.h
+@@ -51,7 +51,7 @@ static inline void switch_mmu_context(struct mm_struct *prev,
+ 	return switch_slb(tsk, next);
  }
  
--#define slice_dbg(fmt...) do { if (_slice_debug) pr_debug(fmt); } while(0)
-+#define slice_dbg(fmt...) do { if (_slice_debug) pr_devel(fmt); } while (0)
- 
+-extern int __init_new_context(void);
++extern int hash__alloc_context_id(void);
+ extern void __destroy_context(int context_id);
+ static inline void mmu_context_init(void) { }
  #else
+diff --git a/arch/powerpc/kvm/book3s_64_mmu_host.c b/arch/powerpc/kvm/book3s_64_mmu_host.c
+index a587e8f4fd26..b35f44c98d1f 100644
+--- a/arch/powerpc/kvm/book3s_64_mmu_host.c
++++ b/arch/powerpc/kvm/book3s_64_mmu_host.c
+@@ -390,7 +390,7 @@ int kvmppc_mmu_init(struct kvm_vcpu *vcpu)
+ 	struct kvmppc_vcpu_book3s *vcpu3s = to_book3s(vcpu);
+ 	int err;
  
-@@ -243,8 +227,8 @@ static void slice_convert(struct mm_struct *mm, struct slice_mask mask, int psiz
- 	}
+-	err = __init_new_context();
++	err = hash__alloc_context_id();
+ 	if (err < 0)
+ 		return -1;
+ 	vcpu3s->context_id[0] = err;
+diff --git a/arch/powerpc/mm/mmu_context_book3s64.c b/arch/powerpc/mm/mmu_context_book3s64.c
+index 73bf6e14c3aa..650a498b1de9 100644
+--- a/arch/powerpc/mm/mmu_context_book3s64.c
++++ b/arch/powerpc/mm/mmu_context_book3s64.c
+@@ -30,7 +30,7 @@
+ static DEFINE_SPINLOCK(mmu_context_lock);
+ static DEFINE_IDA(mmu_context_ida);
  
- 	slice_dbg(" lsps=%lx, hsps=%lx\n",
--		  mm->context.low_slices_psize,
--		  mm->context.high_slices_psize);
-+		  (unsigned long)mm->context.low_slices_psize,
-+		  (unsigned long)mm->context.high_slices_psize);
+-int __init_new_context(void)
++static int __init_new_context(void)
+ {
+ 	int index;
+ 	int err;
+@@ -57,7 +57,13 @@ int __init_new_context(void)
  
- 	spin_unlock_irqrestore(&slice_convert_lock, flags);
- 
-@@ -686,8 +670,8 @@ void slice_set_user_psize(struct mm_struct *mm, unsigned int psize)
- 
- 
- 	slice_dbg(" lsps=%lx, hsps=%lx\n",
--		  mm->context.low_slices_psize,
--		  mm->context.high_slices_psize);
-+		  (unsigned long)mm->context.low_slices_psize,
-+		  (unsigned long)mm->context.high_slices_psize);
- 
-  bail:
- 	spin_unlock_irqrestore(&slice_convert_lock, flags);
+ 	return index;
+ }
+-EXPORT_SYMBOL_GPL(__init_new_context);
++
++int hash__alloc_context_id(void)
++{
++	return __init_new_context();
++}
++EXPORT_SYMBOL_GPL(hash__alloc_context_id);
++
+ static int radix__init_new_context(struct mm_struct *mm, int index)
+ {
+ 	unsigned long rts_field;
 -- 
 2.7.4
