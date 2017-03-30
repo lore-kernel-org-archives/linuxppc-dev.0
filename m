@@ -1,42 +1,41 @@
-Return-Path: <pfsmorigo@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <vipin@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vv94n55lrzDqGt
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Mar 2017 03:26:49 +1100 (AEDT)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v2UGNhY0036874
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Mar 2017 12:26:41 -0400
-Received: from e11.ny.us.ibm.com (e11.ny.us.ibm.com [129.33.205.201])
- by mx0b-001b2d01.pphosted.com with ESMTP id 29gttwyt3r-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vvBlt0DYNzDq7N
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Mar 2017 04:42:17 +1100 (AEDT)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v2UHcpaS049917
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Mar 2017 13:42:11 -0400
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 29gfr2y0ax-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Mar 2017 12:26:40 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Mar 2017 13:42:10 -0400
 Received: from localhost
- by e11.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <pfsmorigo@linux.vnet.ibm.com>;
- Thu, 30 Mar 2017 12:26:40 -0400
+ for <linuxppc-dev@lists.ozlabs.org> from <vipin@linux.vnet.ibm.com>;
+ Fri, 31 Mar 2017 03:42:08 +1000
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v2UHfvof51052700
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Mar 2017 04:42:05 +1100
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v2UHfWM7017876
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Mar 2017 04:41:32 +1100
+Subject: Re: [PATCH v4] powernv/sensor: Handle OPAL_WRONG_STATE error return
+To: Michael Ellerman <mpe@ellerman.id.au>
+References: <1489147052-9590-1-git-send-email-vipin@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, stewart@linux.vnet.ibm.com
+From: Vipin K Parashar <vipin@linux.vnet.ibm.com>
+Date: Thu, 30 Mar 2017 23:11:14 +0530
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
- format=flowed
-Date: Thu, 30 Mar 2017 13:30:17 -0300
-From: Paulo Flabiano Smorigo <pfsmorigo@linux.vnet.ibm.com>
-To: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
-Cc: =?UTF-8?Q?Michal_Such=C3=A1nek?= <msuchanek@suse.de>, Greg Kroah-Hartman
- <gregkh@linuxfoundation.org>, "Leonidas S. Barbosa"
- <leosilva@linux.vnet.ibm.com>, Herbert Xu <herbert@gondor.apana.org.au>,
- Geert Uytterhoeven <geert+renesas@glider.be>,
- linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- linux-crypto@vger.kernel.org, Mauro Carvalho Chehab <mchehab@kernel.org>,
- linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
-Subject: Re: [PATCH] crypto: vmx: Remove dubiously licensed crypto code
-In-Reply-To: <7ec54553-610c-a5dc-d4d9-3c83f6a161d9@linux.vnet.ibm.com>
-References: <20170329125639.14288-1-msuchanek@suse.de>
- <20170329145135.GA28057@kroah.com> <20170329171327.38d4fdd6@kitsune.suse.cz>
- <7ec54553-610c-a5dc-d4d9-3c83f6a161d9@linux.vnet.ibm.com>
-Message-Id: <8591ac8ff6ef6fa9c4bd264017ac360d@linux.vnet.ibm.com>
+In-Reply-To: <1489147052-9590-1-git-send-email-vipin@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Message-Id: <04fa0398-8583-547d-6d33-128087bbd8ec@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,67 +45,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2017-03-29 20:08, Tyrel Datwyler wrote:
-> On 03/29/2017 08:13 AM, Michal Suchánek wrote:
->> On Wed, 29 Mar 2017 16:51:35 +0200
->> Greg Kroah-Hartman <gregkh@linuxfoundation.org> wrote:
->> 
->>> On Wed, Mar 29, 2017 at 02:56:39PM +0200, Michal Suchanek wrote:
->>>> While reviewing commit 11c6e16ee13a ("crypto: vmx - Adding asm
->>>> subroutines for XTS") which adds the OpenSSL license header to
->>>> drivers/crypto/vmx/aesp8-ppc.pl licensing of this driver came into
->>>> qestion. The whole license reads:
->>>> 
->>>>  # Licensed under the OpenSSL license (the "License").  You may not
->>>> use # this file except in compliance with the License.  You can
->>>> obtain a # copy
->>>>  # in the file LICENSE in the source distribution or at
->>>>  # https://www.openssl.org/source/license.html
->>>> 
->>>>  #
->>>>  #
->>>> ====================================================================
->>>> # Written by Andy Polyakov <appro@openssl.org> for the OpenSSL #
->>>> project. The module is, however, dual licensed under OpenSSL and #
->>>> CRYPTOGAMS licenses depending on where you obtain it. For further #
->>>> details see http://www.openssl.org/~appro/cryptogams/. #
->>>> ====================================================================
->>>> 
->>>> After seeking legal advice it is still not clear that this driver
->>>> can be legally used in Linux. In particular the "depending on where
->>>> you obtain it" part does not make it clear when you can apply the
->>>> GPL and when the OpenSSL license.
->>>> 
->>>> I tried contacting the author of the code for clarification but did
->>>> not hear back. In absence of clear licensing the only solution I
->>>> see is removing this code.
-> 
-> A quick 'git grep OpenSSL' of the Linux tree returns several other
-> crypto files under the ARM architecture that are similarly licensed. 
-> Namely:
-> 
-> arch/arm/crypto/sha1-armv4-large.S
-> arch/arm/crypto/sha256-armv4.pl
-> arch/arm/crypto/sha256-core.S_shipped
-> arch/arm/crypto/sha512-armv4.pl
-> arch/arm/crypto/sha512-core.S_shipped
-> arch/arm64/crypto/sha256-core.S_shipped
-> arch/arm64/crypto/sha512-armv8.pl
-> arch/arm64/crypto/sha512-core.S_shipped
-> 
-> On closer inspection of some of those files have the addendum that
-> "Permission to use under GPL terms is granted", but not all of them.
-> 
-> -Tyrel
+Hi Michael,
 
-In 2015, Andy Polyakov, the author, replied in this mailing list [1]:
+Any feedback/outlook with this patch ?
 
-"I have no problems with reusing assembly modules in kernel context. The
-whole idea behind cryptogams initiative was exactly to reuse code in
-different contexts."
+Regards,
+Vipin
 
-[1] https://patchwork.kernel.org/patch/6027481/
 
--- 
-Paulo Flabiano Smorigo
-IBM Linux Technology Center
+On Friday 10 March 2017 05:27 PM, Vipin K Parashar wrote:
+> OPAL returns OPAL_WRONG_STATE upon failing to provide
+> sensor data due to core sleeping/offline. Added check
+> in opal_get_sensor_data() for sensor read failure with
+> OPAL_WRONG_STATE return code and returned -EIO.
+>
+> Signed-off-by: Vipin K Parashar <vipin@linux.vnet.ibm.com>
+> ---
+> Changes in v4:
+>   - Removed sleeping core log message with KERN_NOTICE priority.
+>
+> Changes in v3:
+>   - Added a new case for OPAL_WRONG_STATE in sensor read
+>     along with a log message indicating sleeping/offline core
+>     causing read fail.
+>
+>   arch/powerpc/platforms/powernv/opal-sensor.c | 4 ++++
+>   1 file changed, 4 insertions(+)
+>
+> diff --git a/arch/powerpc/platforms/powernv/opal-sensor.c b/arch/powerpc/platforms/powernv/opal-sensor.c
+> index 308efd1..aa267f1 100644
+> --- a/arch/powerpc/platforms/powernv/opal-sensor.c
+> +++ b/arch/powerpc/platforms/powernv/opal-sensor.c
+> @@ -64,6 +64,10 @@ int opal_get_sensor_data(u32 sensor_hndl, u32 *sensor_data)
+>   		*sensor_data = be32_to_cpu(data);
+>   		break;
+>
+> +	case OPAL_WRONG_STATE:
+> +		ret = -EIO;
+> +		break;
+> +
+>   	default:
+>   		ret = opal_error_code(ret);
+>   		break;
