@@ -1,41 +1,25 @@
-Return-Path: <vipin@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <nicstange@gmail.com>
+Received: from mail-wr0-x241.google.com (mail-wr0-x241.google.com
+ [IPv6:2a00:1450:400c:c0c::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vvBlt0DYNzDq7N
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Mar 2017 04:42:17 +1100 (AEDT)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v2UHcpaS049917
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Mar 2017 13:42:11 -0400
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
- by mx0a-001b2d01.pphosted.com with ESMTP id 29gfr2y0ax-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Mar 2017 13:42:10 -0400
-Received: from localhost
- by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <vipin@linux.vnet.ibm.com>;
- Fri, 31 Mar 2017 03:42:08 +1000
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v2UHfvof51052700
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Mar 2017 04:42:05 +1100
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v2UHfWM7017876
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Mar 2017 04:41:32 +1100
-Subject: Re: [PATCH v4] powernv/sensor: Handle OPAL_WRONG_STATE error return
-To: Michael Ellerman <mpe@ellerman.id.au>
-References: <1489147052-9590-1-git-send-email-vipin@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, stewart@linux.vnet.ibm.com
-From: Vipin K Parashar <vipin@linux.vnet.ibm.com>
-Date: Thu, 30 Mar 2017 23:11:14 +0530
-MIME-Version: 1.0
-In-Reply-To: <1489147052-9590-1-git-send-email-vipin@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Message-Id: <04fa0398-8583-547d-6d33-128087bbd8ec@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vvFgF47ySzDq7c
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Mar 2017 06:53:29 +1100 (AEDT)
+Received: by mail-wr0-x241.google.com with SMTP id p52so15034665wrc.2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Mar 2017 12:53:29 -0700 (PDT)
+From: Nicolai Stange <nicstange@gmail.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Cc: John Stultz <john.stultz@linaro.org>, linux-kernel@vger.kernel.org,
+ Nicolai Stange <nicstange@gmail.com>, Ingo Molnar <mingo@kernel.org>,
+ =?UTF-8?q?Fr=C3=A9d=C3=A9ric=20Weisbecker?= <fweisbec@gmail.com>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ "Oliver O'Halloran" <oohall@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc/time: set ->min_delta_ticks and ->max_delta_ticks
+Date: Thu, 30 Mar 2017 21:53:17 +0200
+Message-Id: <20170330195317.7328-1-nicstange@gmail.com>
+In-Reply-To: <20170326134403.16226-1-nicstange@gmail.com>
+References: <20170326134403.16226-1-nicstange@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,45 +29,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Michael,
+In preparation for making the clockevents core NTP correction aware,
+all clockevent device drivers must set ->min_delta_ticks and
+->max_delta_ticks rather than ->min_delta_ns and ->max_delta_ns: a
+clockevent device's rate is going to change dynamically and thus, the
+ratio of ns to ticks ceases to stay invariant.
 
-Any feedback/outlook with this patch ?
+Make the powerpc arch's clockevent driver initialize these fields properly.
 
-Regards,
-Vipin
+This patch alone doesn't introduce any change in functionality as the
+clockevents core still looks exclusively at the (untouched) ->min_delta_ns
+and ->max_delta_ns. As soon as this has changed, a followup patch will
+purge the initialization of ->min_delta_ns and ->max_delta_ns from this
+driver.
 
+Signed-off-by: Nicolai Stange <nicstange@gmail.com>
+---
 
-On Friday 10 March 2017 05:27 PM, Vipin K Parashar wrote:
-> OPAL returns OPAL_WRONG_STATE upon failing to provide
-> sensor data due to core sleeping/offline. Added check
-> in opal_get_sensor_data() for sensor read failure with
-> OPAL_WRONG_STATE return code and returned -EIO.
->
-> Signed-off-by: Vipin K Parashar <vipin@linux.vnet.ibm.com>
-> ---
-> Changes in v4:
->   - Removed sleeping core log message with KERN_NOTICE priority.
->
-> Changes in v3:
->   - Added a new case for OPAL_WRONG_STATE in sensor read
->     along with a log message indicating sleeping/offline core
->     causing read fail.
->
->   arch/powerpc/platforms/powernv/opal-sensor.c | 4 ++++
->   1 file changed, 4 insertions(+)
->
-> diff --git a/arch/powerpc/platforms/powernv/opal-sensor.c b/arch/powerpc/platforms/powernv/opal-sensor.c
-> index 308efd1..aa267f1 100644
-> --- a/arch/powerpc/platforms/powernv/opal-sensor.c
-> +++ b/arch/powerpc/platforms/powernv/opal-sensor.c
-> @@ -64,6 +64,10 @@ int opal_get_sensor_data(u32 sensor_hndl, u32 *sensor_data)
->   		*sensor_data = be32_to_cpu(data);
->   		break;
->
-> +	case OPAL_WRONG_STATE:
-> +		ret = -EIO;
-> +		break;
-> +
->   	default:
->   		ret = opal_error_code(ret);
->   		break;
+Notes:
+    This prerequisite patch is part of a larger effort to feed NTP
+    corrections into the clockevent devices' frequencies and thus
+    avoiding their notion of time to diverge from the system's
+    one. If you're interested, the current state of the whole series
+    can be found at [1].
+    
+    If you haven't got any objections and these prerequisites get
+    merged by 4.12 everywhere, I'll proceed with the remainder of
+    this series in 4.13.
+    
+    Applicable to next-20170324 as well as to John' Stultz tree [2].
+    
+    [1]
+      git://nicst.de/linux.git cev-freq-adj.v10.fortglx-4.12-time
+      https://nicst.de/git/?p=linux.git;a=shortlog;h=refs/heads/cev-freq-adj.v10.fortglx-4.12-time
+    
+    [2]
+      https://git.linaro.org/people/john.stultz/linux.git fortglx/4.12/time
+
+ arch/powerpc/kernel/time.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
+index 07b90725855e..2b33cfaac7b8 100644
+--- a/arch/powerpc/kernel/time.c
++++ b/arch/powerpc/kernel/time.c
+@@ -995,8 +995,10 @@ static void __init init_decrementer_clockevent(void)
+ 
+ 	decrementer_clockevent.max_delta_ns =
+ 		clockevent_delta2ns(decrementer_max, &decrementer_clockevent);
++	decrementer_clockevent.max_delta_ticks = decrementer_max;
+ 	decrementer_clockevent.min_delta_ns =
+ 		clockevent_delta2ns(2, &decrementer_clockevent);
++	decrementer_clockevent.min_delta_ticks = 2;
+ 
+ 	register_decrementer_clockevent(cpu);
+ }
+-- 
+2.12.0
