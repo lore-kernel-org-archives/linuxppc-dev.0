@@ -1,33 +1,28 @@
-Return-Path: <srs0=oe5u=3h=gmail.com=npiggin@ozlabs.org>
+Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vtlPn6trrzDqK3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Mar 2017 11:10:05 +1100 (AEDT)
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3vtlPn5xw5z8vJP
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Mar 2017 11:10:05 +1100 (AEDT)
-Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
- [IPv6:2607:f8b0:400e:c05::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3vtlPn2HV9z9s77
- for <linuxppc-dev@ozlabs.org>; Thu, 30 Mar 2017 11:10:05 +1100 (AEDT)
-Received: by mail-pg0-x244.google.com with SMTP id 79so5642067pgf.0
- for <linuxppc-dev@ozlabs.org>; Wed, 29 Mar 2017 17:10:05 -0700 (PDT)
-Date: Thu, 30 Mar 2017 10:09:47 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Michael Ellerman
- <mpe@ellerman.id.au>
-Subject: Re: [PATCH 2/2] powerpc/book3s: Display task info for MCE error in
- user mode.
-Message-ID: <20170330100947.74c7a76d@roar.ozlabs.ibm.com>
-In-Reply-To: <149070872807.18309.16273606222489045198.stgit@jupiter.in.ibm.com>
-References: <149070869902.18309.14355142133222424050.stgit@jupiter.in.ibm.com>
- <149070872807.18309.16273606222489045198.stgit@jupiter.in.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vtlZR6hGyzDqK3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Mar 2017 11:17:35 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Michal Suchanek <msuchanek@suse.de>,
+ Herbert Xu <herbert@gondor.apana.org.au>,
+ "David S. Miller" <davem@davemloft.net>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Geert Uytterhoeven <geert+renesas@glider.be>,
+ Mauro Carvalho Chehab <mchehab@kernel.org>, linux-kernel@vger.kernel.org,
+ linux-crypto@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ paulmck@linux.vnet.ibm.com <paulmck@linux.vnet.ibm.com>, appro@openssl.org
+Cc: Michal Suchanek <msuchanek@suse.de>
+Subject: Re: [PATCH] crypto: vmx: Remove dubiously licensed crypto code
+In-Reply-To: <20170329125639.14288-1-msuchanek@suse.de>
+References: <20170329125639.14288-1-msuchanek@suse.de>
+Date: Thu, 30 Mar 2017 11:17:33 +1100
+Message-ID: <87r31flisi.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,31 +32,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 28 Mar 2017 19:15:28 +0530
-Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com> wrote:
+Michal Suchanek <msuchanek@suse.de> writes:
 
-> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
-> 
-> For MCE that hit while in use mode MSR(HV=1,PR=1), print the task info on the
-> console MCE error log. This will help to identify application that stumbled
-> upon MCE error.
+> While reviewing commit 11c6e16ee13a ("crypto: vmx - Adding asm
+> subroutines for XTS") which adds the OpenSSL license header to
+> drivers/crypto/vmx/aesp8-ppc.pl licensing of this driver came into
+> qestion. The whole license reads:
+>
+>  # Licensed under the OpenSSL license (the "License").  You may not use
+>  # this file except in compliance with the License.  You can obtain a
+>  # copy
+>  # in the file LICENSE in the source distribution or at
+>  # https://www.openssl.org/source/license.html
+>
+>  #
+>  # ====================================================================
+>  # Written by Andy Polyakov <appro@openssl.org> for the OpenSSL
+>  # project. The module is, however, dual licensed under OpenSSL and
+>  # CRYPTOGAMS licenses depending on where you obtain it. For further
+>  # details see http://www.openssl.org/~appro/cryptogams/.
+>  # ====================================================================
+>
+> After seeking legal advice it is still not clear that this driver can be
+> legally used in Linux. In particular the "depending on where you obtain
+> it" part does not make it clear when you can apply the GPL and when the
+> OpenSSL license.
 
-I think you may still want these details for a task currently in
-kernel. How about something like if (!in_interrupt()) {
+It seems pretty clear to me that the intention is that the CRYPTOGAM
+license applies.
+
+If you visit it's URL it includes:
+
+  ALTERNATIVELY, provided that this notice is retained in full, this
+  product may be distributed under the terms of the GNU General Public
+  License (GPL), in which case the provisions of the GPL apply INSTEAD OF
+  those given above.
 
 
-> @@ -311,8 +312,13 @@ void machine_check_print_event_info(struct machine_check_event *evt)
->  	printk("%s%s Machine check interrupt [%s]\n", level, sevstr,
->  	       evt->disposition == MCE_DISPOSITION_RECOVERED ?
->  	       "Recovered" : "Not recovered");
-> -	printk("%s  NIP [%016llx]: %pS\n", level, evt->srr0,
-> +	if (user_mode) {
-> +		printk("%s  NIP: [%016llx] PID: %d Comm: %s\n", level,
-> +				evt->srr0, current->pid, current->comm);
-> +	} else {
-> +		printk("%s  NIP [%016llx]: %pS\n", level, evt->srr0,
->  							(void *)evt->srr0);
-> +	}
->  	printk("%s  Initiator: %s\n", level,
->  	       evt->initiator == MCE_INITIATOR_CPU ? "CPU" : "Unknown");
->  	switch (evt->error_type) {
+I agree that the text in the file is not sufficiently clear about what
+license applies, but I'm unconvinced that there is any code here that is
+actually being distributed incorrectly.
+
+Getting the text in the header changed to be clearer seems like the
+obvious solution.
+
+> I tried contacting the author of the code for clarification but did not
+> hear back. In absence of clear licensing the only solution I see is
+> removing this code.
+
+Did you try contacting anyone else? Like perhaps the powerpc or crypto
+maintainers, or anyone else who's worked on the driver?
+
+Sending a patch to delete all the code clearly works to get people's
+attention, I'll give you that.
