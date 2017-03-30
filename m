@@ -1,20 +1,42 @@
-Return-Path: <robin.murphy@arm.com>
-Received: from foss.arm.com (foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 3vv62N5TfVzDqLS
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Mar 2017 01:09:32 +1100 (AEDT)
-Subject: Re: [RFC PATCH 2/5] soc/fsl/qbman: Use shared-dma-pool for QMan
- private memory allocations
-To: roy.pledge@nxp.com, oss@buserror.net, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org
-References: <1490822037-6752-1-git-send-email-roy.pledge@nxp.com>
- <1490822037-6752-3-git-send-email-roy.pledge@nxp.com>
-Cc: madalin.bucur@nxp.com
-From: Robin Murphy <robin.murphy@arm.com>
-Message-ID: <b1cd8d44-8c74-ab50-5dc9-1f978cae5bdf@arm.com>
-Date: Thu, 30 Mar 2017 15:09:25 +0100
+Return-Path: <pfsmorigo@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vv94n55lrzDqGt
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Mar 2017 03:26:49 +1100 (AEDT)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v2UGNhY0036874
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Mar 2017 12:26:41 -0400
+Received: from e11.ny.us.ibm.com (e11.ny.us.ibm.com [129.33.205.201])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 29gttwyt3r-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Mar 2017 12:26:40 -0400
+Received: from localhost
+ by e11.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <pfsmorigo@linux.vnet.ibm.com>;
+ Thu, 30 Mar 2017 12:26:40 -0400
 MIME-Version: 1.0
-In-Reply-To: <1490822037-6752-3-git-send-email-roy.pledge@nxp.com>
-Content-Type: text/plain; charset=windows-1252
+Content-Type: text/plain; charset=UTF-8;
+ format=flowed
+Date: Thu, 30 Mar 2017 13:30:17 -0300
+From: Paulo Flabiano Smorigo <pfsmorigo@linux.vnet.ibm.com>
+To: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+Cc: =?UTF-8?Q?Michal_Such=C3=A1nek?= <msuchanek@suse.de>, Greg Kroah-Hartman
+ <gregkh@linuxfoundation.org>, "Leonidas S. Barbosa"
+ <leosilva@linux.vnet.ibm.com>, Herbert Xu <herbert@gondor.apana.org.au>,
+ Geert Uytterhoeven <geert+renesas@glider.be>,
+ linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ linux-crypto@vger.kernel.org, Mauro Carvalho Chehab <mchehab@kernel.org>,
+ linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
+Subject: Re: [PATCH] crypto: vmx: Remove dubiously licensed crypto code
+In-Reply-To: <7ec54553-610c-a5dc-d4d9-3c83f6a161d9@linux.vnet.ibm.com>
+References: <20170329125639.14288-1-msuchanek@suse.de>
+ <20170329145135.GA28057@kroah.com> <20170329171327.38d4fdd6@kitsune.suse.cz>
+ <7ec54553-610c-a5dc-d4d9-3c83f6a161d9@linux.vnet.ibm.com>
+Message-Id: <8591ac8ff6ef6fa9c4bd264017ac360d@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,242 +46,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Roy,
-
-On 29/03/17 22:13, Roy Pledge wrote:
-> Use the shared-memory-pool mechanism for frame queue descriptor and
-> packed frame descriptor record area allocations.
-
-Thanks for persevering with this - in my opinion it's now looking like
-it was worth the effort :)
-
-AFAICS the ioremap_wc() that this leads to does appear to give back
-something non-cacheable on PPC (assuming "pgprot_noncached_wc" isn't
-horrendously misnamed), and "no-map" should rule out any cacheable
-linear map alias existing, so it would seem that this approach should
-avert Scott's concerns about attribute mismatches.
-
-> Signed-off-by: Roy Pledge <roy.pledge@nxp.com>
-> ---
->  drivers/soc/fsl/qbman/qman_ccsr.c | 119 +++++++++++++++++++++-----------------
->  drivers/soc/fsl/qbman/qman_priv.h |   4 +-
->  drivers/soc/fsl/qbman/qman_test.h |   2 -
->  3 files changed, 68 insertions(+), 57 deletions(-)
+On 2017-03-29 20:08, Tyrel Datwyler wrote:
+> On 03/29/2017 08:13 AM, Michal Suchánek wrote:
+>> On Wed, 29 Mar 2017 16:51:35 +0200
+>> Greg Kroah-Hartman <gregkh@linuxfoundation.org> wrote:
+>> 
+>>> On Wed, Mar 29, 2017 at 02:56:39PM +0200, Michal Suchanek wrote:
+>>>> While reviewing commit 11c6e16ee13a ("crypto: vmx - Adding asm
+>>>> subroutines for XTS") which adds the OpenSSL license header to
+>>>> drivers/crypto/vmx/aesp8-ppc.pl licensing of this driver came into
+>>>> qestion. The whole license reads:
+>>>> 
+>>>>  # Licensed under the OpenSSL license (the "License").  You may not
+>>>> use # this file except in compliance with the License.  You can
+>>>> obtain a # copy
+>>>>  # in the file LICENSE in the source distribution or at
+>>>>  # https://www.openssl.org/source/license.html
+>>>> 
+>>>>  #
+>>>>  #
+>>>> ====================================================================
+>>>> # Written by Andy Polyakov <appro@openssl.org> for the OpenSSL #
+>>>> project. The module is, however, dual licensed under OpenSSL and #
+>>>> CRYPTOGAMS licenses depending on where you obtain it. For further #
+>>>> details see http://www.openssl.org/~appro/cryptogams/. #
+>>>> ====================================================================
+>>>> 
+>>>> After seeking legal advice it is still not clear that this driver
+>>>> can be legally used in Linux. In particular the "depending on where
+>>>> you obtain it" part does not make it clear when you can apply the
+>>>> GPL and when the OpenSSL license.
+>>>> 
+>>>> I tried contacting the author of the code for clarification but did
+>>>> not hear back. In absence of clear licensing the only solution I
+>>>> see is removing this code.
 > 
-> diff --git a/drivers/soc/fsl/qbman/qman_ccsr.c b/drivers/soc/fsl/qbman/qman_ccsr.c
-> index 90bc40c..35c59ca 100644
-> --- a/drivers/soc/fsl/qbman/qman_ccsr.c
-> +++ b/drivers/soc/fsl/qbman/qman_ccsr.c
-> @@ -400,63 +400,19 @@ static int qm_init_pfdr(struct device *dev, u32 pfdr_start, u32 num)
->  	return -ENODEV;
->  }
->  
-> -/*
-> - * Ideally we would use the DMA API to turn rmem->base into a DMA address
-> - * (especially if iommu translations ever get involved).  Unfortunately, the
-> - * DMA API currently does not allow mapping anything that is not backed with
-> - * a struct page.
-> - */
-> +/* QMan needs two global memory areas initialized at boot time:
-> +    1) FQD: Frame Queue Descriptors used to manage frame queues
-> +    2) PFDR: Packed Frame Queue Descriptor Records used to store frames
-> +   Both areas are reserved using the device tree reserved memory framework
-> +   and the addresses and sizes are initialized when the QMan device is probed */
->  static dma_addr_t fqd_a, pfdr_a;
->  static size_t fqd_sz, pfdr_sz;
->  
-> -static int qman_fqd(struct reserved_mem *rmem)
-> -{
-> -	fqd_a = rmem->base;
-> -	fqd_sz = rmem->size;
-> -
-> -	WARN_ON(!(fqd_a && fqd_sz));
-> -
-> -	return 0;
-> -}
-> -RESERVEDMEM_OF_DECLARE(qman_fqd, "fsl,qman-fqd", qman_fqd);
-> -
-> -static int qman_pfdr(struct reserved_mem *rmem)
-> -{
-> -	pfdr_a = rmem->base;
-> -	pfdr_sz = rmem->size;
-> -
-> -	WARN_ON(!(pfdr_a && pfdr_sz));
-> -
-> -	return 0;
-> -}
-> -RESERVEDMEM_OF_DECLARE(qman_pfdr, "fsl,qman-pfdr", qman_pfdr);
-> -
-
-I notice that patch #1 isn't removing the equivalent bman_fbpr() handler
-and declaration as here - is that deliberate or just an oversight?
-
->  static unsigned int qm_get_fqid_maxcnt(void)
->  {
->  	return fqd_sz / 64;
->  }
->  
-> -/*
-> - * Flush this memory range from data cache so that QMAN originated
-> - * transactions for this memory region could be marked non-coherent.
-> - */
-> -static int zero_priv_mem(struct device *dev, struct device_node *node,
-> -			 phys_addr_t addr, size_t sz)
-> -{
-> -	/* map as cacheable, non-guarded */
-> -	void __iomem *tmpp = ioremap_prot(addr, sz, 0);
-> -
-> -	if (!tmpp)
-> -		return -ENOMEM;
-> -
-> -	memset_io(tmpp, 0, sz);
-> -	flush_dcache_range((unsigned long)tmpp,
-> -			   (unsigned long)tmpp + sz);
-> -	iounmap(tmpp);
-> -
-> -	return 0;
-> -}
-> -
->  static void log_edata_bits(struct device *dev, u32 bit_count)
->  {
->  	u32 i, j, mask = 0xffffffff;
-> @@ -687,11 +643,12 @@ static int qman_resource_init(struct device *dev)
->  static int fsl_qman_probe(struct platform_device *pdev)
->  {
->  	struct device *dev = &pdev->dev;
-> -	struct device_node *node = dev->of_node;
-> +	struct device_node *mem_node, *node = dev->of_node;
->  	struct resource *res;
->  	int ret, err_irq;
->  	u16 id;
->  	u8 major, minor;
-> +	u64 size;
->  
->  	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
->  	if (!res) {
-> @@ -727,10 +684,66 @@ static int fsl_qman_probe(struct platform_device *pdev)
->  		qm_channel_caam = QMAN_CHANNEL_CAAM_REV3;
->  	}
->  
-> -	ret = zero_priv_mem(dev, node, fqd_a, fqd_sz);
-> -	WARN_ON(ret);
-> -	if (ret)
-> +	/* Order of memory regions is assumed as FQD followed by PFDR
-> +	   in order to ensure allocations from the correct regions the
-> +	   driver initializes then allocates each piece in order */
-> +
-> +	ret = of_reserved_mem_device_init_by_idx(dev, dev->of_node, 0);
-> +	if (ret) {
-> +		dev_err(dev, "of_reserved_mem_device_init_by_idx(0) failed 0x%x\n",
-> +			ret);
-> +		return -ENODEV;
-> +	}
-> +	mem_node = of_parse_phandle(dev->of_node, "memory-region", 0);
-> +	if (mem_node) {
-> +		ret = of_property_read_u64(mem_node, "size", &size);
-> +		if (ret) {
-> +			dev_err(dev, "FQD: of_address_to_resource fails 0x%x\n", ret);
-
-Nit: of_address_to_resource?
-
-> +			return -ENODEV;
-> +		}
-> +		fqd_sz = size;
-> +	} else {
-> +		dev_err(dev, "No memory-region found for FQD\n");
-> +		return -ENODEV;
-> +	}
-> +	if (!dma_zalloc_coherent(dev, fqd_sz, &fqd_a, 0)) {
-> +		dev_err(dev, "Alloc FQD memory failed\n");
-> +		return -ENODEV;
-> +	}
-
-Between here, below, and patch #1, it looks like this "init, get size,
-alloc" pattern could be nicely factored out into a common helper function.
-
-> +
-> +	dev_info(dev, "Allocated FQD 0x%llx 0x%zx\n", fqd_a, fqd_sz);
-> +
-> +	/* Disassociate the FQD reseverd memory area from the device because
-> +	   a device can only have one DMA memory area. This should be fine
-> +	   since the memory is allocated and initalized and only ever accessed
-> +	   by the QMan device from now on */
-
-Typos: reserved, initialized.
-
-> +	of_reserved_mem_device_release(dev);
-
-I see the driver does not implement a .remove method where you would
-otherwise be technically expected to balance the allocation with a
-dma_free_coherent(), so I think this trick is acceptable. If anyone
-wants to change that in future, it wouldn't seem unreasonable to extend
-the core code to handle multiple areas per device (and at worst, I guess
-you could deviously juggle dev->dma_mem around the DMA API calls).
-
-Other than those first few nits, and any possible PPC-specific angles
-I'm not aware of, I think the series is looking good!
-
-Thanks,
-Robin.
-
-> +
-> +	/* Setup PFDR memory */
-> +	ret = of_reserved_mem_device_init_by_idx(dev, dev->of_node, 1);
-> +	if (ret) {
-> +		dev_err(dev, "of_reserved_mem_device_init(1) failed 0x%x\n",
-> +			ret);
-> +		return -ENODEV;
-> +	}
-> +	mem_node = of_parse_phandle(dev->of_node, "memory-region", 1);
-> +	if (mem_node) {
-> +		ret = of_property_read_u64(mem_node, "size", &size);
-> +		if (ret) {
-> +			dev_err(dev, "PFDR: of_address_to_resource fails 0x%x\n", ret);
-> +			return -ENODEV;
-> +		}
-> +		pfdr_sz = size;
-> +	} else {
-> +		dev_err(dev, "No memory-region found for PFDR\n");
-> +		return -ENODEV;
-> +	}
-> +	if (!dma_zalloc_coherent(dev, pfdr_sz, &pfdr_a, 0)) {
-> +		dev_err(dev, "Alloc PFDR Failed size 0x%zx\n", pfdr_sz);
->  		return -ENODEV;
-> +	}
-> +
-> +	dev_info(dev, "Allocated PFDR 0x%llx 0x%zx\n", pfdr_a, pfdr_sz);
->  
->  	ret = qman_init_ccsr(dev);
->  	if (ret) {
-> diff --git a/drivers/soc/fsl/qbman/qman_priv.h b/drivers/soc/fsl/qbman/qman_priv.h
-> index 22725bd..1e998ea5 100644
-> --- a/drivers/soc/fsl/qbman/qman_priv.h
-> +++ b/drivers/soc/fsl/qbman/qman_priv.h
-> @@ -28,12 +28,12 @@
->   * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
->   */
->  
-> -#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
-> -
->  #include "dpaa_sys.h"
->  
->  #include <soc/fsl/qman.h>
->  #include <linux/iommu.h>
-> +#include <linux/dma-contiguous.h>
-> +#include <linux/of_address.h>
->  
->  #if defined(CONFIG_FSL_PAMU)
->  #include <asm/fsl_pamu_stash.h>
-> diff --git a/drivers/soc/fsl/qbman/qman_test.h b/drivers/soc/fsl/qbman/qman_test.h
-> index d5f8cb2..41bdbc48 100644
-> --- a/drivers/soc/fsl/qbman/qman_test.h
-> +++ b/drivers/soc/fsl/qbman/qman_test.h
-> @@ -30,7 +30,5 @@
->  
->  #include "qman_priv.h"
->  
-> -#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
-> -
->  int qman_test_stash(void);
->  int qman_test_api(void);
+> A quick 'git grep OpenSSL' of the Linux tree returns several other
+> crypto files under the ARM architecture that are similarly licensed. 
+> Namely:
 > 
+> arch/arm/crypto/sha1-armv4-large.S
+> arch/arm/crypto/sha256-armv4.pl
+> arch/arm/crypto/sha256-core.S_shipped
+> arch/arm/crypto/sha512-armv4.pl
+> arch/arm/crypto/sha512-core.S_shipped
+> arch/arm64/crypto/sha256-core.S_shipped
+> arch/arm64/crypto/sha512-armv8.pl
+> arch/arm64/crypto/sha512-core.S_shipped
+> 
+> On closer inspection of some of those files have the addendum that
+> "Permission to use under GPL terms is granted", but not all of them.
+> 
+> -Tyrel
+
+In 2015, Andy Polyakov, the author, replied in this mailing list [1]:
+
+"I have no problems with reusing assembly modules in kernel context. The
+whole idea behind cryptogams initiative was exactly to reuse code in
+different contexts."
+
+[1] https://patchwork.kernel.org/patch/6027481/
+
+-- 
+Paulo Flabiano Smorigo
+IBM Linux Technology Center
