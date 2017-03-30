@@ -2,15 +2,15 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vv3Fx0Yq8zDqKm
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vv3Fx6qLJzDqL4
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Mar 2017 23:04:21 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: linuxppc-dev@ozlabs.org
 Cc: aneesh.kumar@linux.vnet.ibm.com
-Subject: [PATCH v6 04/19] powerpc/mm: Remove checks that TASK_SIZE_USER64 is
- too small
-Date: Thu, 30 Mar 2017 23:03:52 +1100
-Message-Id: <1490875447-4016-4-git-send-email-mpe@ellerman.id.au>
+Subject: [PATCH v6 05/19] powerpc/mm/slice: Move slice_mask struct definition
+ to slice.c
+Date: Thu, 30 Mar 2017 23:03:53 +1100
+Message-Id: <1490875447-4016-5-git-send-email-mpe@ellerman.id.au>
 In-Reply-To: <1490875447-4016-1-git-send-email-mpe@ellerman.id.au>
 References: <1490875447-4016-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,33 +24,63 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
-Remove the checks that TASK_SIZE_USER64 is smaller than H_PGTABLE_RANGE
-and USER_VSID_RANGE.
+This structure definition need not be in a header since this is used only by
+slice.c file. So move it to slice.c. This also allow us to use SLICE_NUM_HIGH
+instead of 64.
 
-In a following patch we will deliberately add support for a TASK_SIZE
-smaller than both ranges, so this will no longer be an error condition.
+I also switch the low_slices type to u64 from u16. This doesn't have an impact
+on size of struct due to padding added with u16 type. This helps in using
+bitmap printing function for printing slice mask.
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-[mpe: Keep the check in pgtable_64.c that we don't exceed USER_VSID_RANGE]
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/mm/init_64.c | 4 ----
- 1 file changed, 4 deletions(-)
+ arch/powerpc/include/asm/page_64.h | 11 -----------
+ arch/powerpc/mm/slice.c            | 10 +++++++++-
+ 2 files changed, 9 insertions(+), 12 deletions(-)
 
-diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
-index 9be992083d2a..8f6f2a173e47 100644
---- a/arch/powerpc/mm/init_64.c
-+++ b/arch/powerpc/mm/init_64.c
-@@ -71,10 +71,6 @@
- #if H_PGTABLE_RANGE > USER_VSID_RANGE
- #warning Limited user VSID range means pagetable space is wasted
- #endif
--
--#if (TASK_SIZE_USER64 < H_PGTABLE_RANGE) && (TASK_SIZE_USER64 < USER_VSID_RANGE)
--#warning TASK_SIZE is smaller than it needs to be.
--#endif
- #endif /* CONFIG_PPC_STD_MMU_64 */
+diff --git a/arch/powerpc/include/asm/page_64.h b/arch/powerpc/include/asm/page_64.h
+index bd55ff751938..c4d9654bd637 100644
+--- a/arch/powerpc/include/asm/page_64.h
++++ b/arch/powerpc/include/asm/page_64.h
+@@ -99,17 +99,6 @@ extern u64 ppc64_pft_size;
+ #define GET_HIGH_SLICE_INDEX(addr)	((addr) >> SLICE_HIGH_SHIFT)
  
- phys_addr_t memstart_addr = ~0;
+ #ifndef __ASSEMBLY__
+-/*
+- * One bit per slice. We have lower slices which cover 256MB segments
+- * upto 4G range. That gets us 16 low slices. For the rest we track slices
+- * in 1TB size.
+- * 64 below is actually SLICE_NUM_HIGH to fixup complie errros
+- */
+-struct slice_mask {
+-	u16 low_slices;
+-	DECLARE_BITMAP(high_slices, 64);
+-};
+-
+ struct mm_struct;
+ 
+ extern unsigned long slice_get_unmapped_area(unsigned long addr,
+diff --git a/arch/powerpc/mm/slice.c b/arch/powerpc/mm/slice.c
+index 175e0dbce89b..7599c2703520 100644
+--- a/arch/powerpc/mm/slice.c
++++ b/arch/powerpc/mm/slice.c
+@@ -37,7 +37,15 @@
+ #include <asm/hugetlb.h>
+ 
+ static DEFINE_SPINLOCK(slice_convert_lock);
+-
++/*
++ * One bit per slice. We have lower slices which cover 256MB segments
++ * upto 4G range. That gets us 16 low slices. For the rest we track slices
++ * in 1TB size.
++ */
++struct slice_mask {
++	u64 low_slices;
++	DECLARE_BITMAP(high_slices, SLICE_NUM_HIGH);
++};
+ 
+ #ifdef DEBUG
+ int _slice_debug = 1;
 -- 
 2.7.4
