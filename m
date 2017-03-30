@@ -1,53 +1,47 @@
-Return-Path: <srs0=6f2n=3h=linux.vnet.ibm.com=mahesh@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vtwdd3kLnzDqKm
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Mar 2017 18:05:57 +1100 (AEDT)
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3vtwdd2wTLz8svk
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Mar 2017 18:05:57 +1100 (AEDT)
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3vtwdb5Xl9z9ryZ
- for <linuxppc-dev@ozlabs.org>; Thu, 30 Mar 2017 18:05:55 +1100 (AEDT)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v2U73ig8164192
- for <linuxppc-dev@ozlabs.org>; Thu, 30 Mar 2017 03:05:51 -0400
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
- by mx0b-001b2d01.pphosted.com with ESMTP id 29gfk2htkt-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vtwst35KqzDqKx
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Mar 2017 18:16:34 +1100 (AEDT)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v2U78gQ1145632
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Mar 2017 03:16:23 -0400
+Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [125.16.236.6])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 29gfrjj8gk-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Thu, 30 Mar 2017 03:05:51 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Mar 2017 03:16:22 -0400
 Received: from localhost
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
- Thu, 30 Mar 2017 17:05:48 +1000
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v2U75bC849283218
- for <linuxppc-dev@ozlabs.org>; Thu, 30 Mar 2017 18:05:45 +1100
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v2U75CXZ011297
- for <linuxppc-dev@ozlabs.org>; Thu, 30 Mar 2017 18:05:12 +1100
-Subject: Re: [PATCH 2/2] powerpc/book3s: Display task info for MCE error in
- user mode.
-To: Nicholas Piggin <npiggin@gmail.com>
-References: <149070869902.18309.14355142133222424050.stgit@jupiter.in.ibm.com>
- <149070872807.18309.16273606222489045198.stgit@jupiter.in.ibm.com>
- <20170330100947.74c7a76d@roar.ozlabs.ibm.com>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
- Michael Ellerman <mpe@ellerman.id.au>
-From: Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com>
-Date: Thu, 30 Mar 2017 12:34:55 +0530
+ for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
+ Thu, 30 Mar 2017 12:46:19 +0530
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+ by d28relay07.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v2U7F1DA11010204
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Mar 2017 12:45:01 +0530
+Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v2U7GGOs012845
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Mar 2017 12:46:17 +0530
+Date: Thu, 30 Mar 2017 12:46:13 +0530
+From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Paul Mackerras <paulus@au1.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ Anton Blanchard <anton@samba.org>, Matthew Wilcox <willy@infradead.org>
+Subject: Re: [PATCH 1/2] powerpc: string: implement optimized memset variants
+References: <20170322193030.GA8008@bombadil.infradead.org>
+ <cover.1490641759.git.naveen.n.rao@linux.vnet.ibm.com>
+ <d6a1a353de6a87bb5474ca9f1c1ff7ab2c4a1eb4.1490641759.git.naveen.n.rao@linux.vnet.ibm.com>
+ <87mvc6b575.fsf@concordia.ellerman.id.au>
+ <20170328102109.GC4762@naverao1-tp.localdomain>
+ <87a884jow3.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <20170330100947.74c7a76d@roar.ozlabs.ibm.com>
-Content-Type: text/plain; charset=windows-1252
-Message-Id: <15565296-4e1e-18bf-b369-dc5821e266c0@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <87a884jow3.fsf@concordia.ellerman.id.au>
+Message-Id: <20170330071613.GE4762@naverao1-tp.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -57,37 +51,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 03/30/2017 05:39 AM, Nicholas Piggin wrote:
-> On Tue, 28 Mar 2017 19:15:28 +0530
-> Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com> wrote:
+On 2017/03/29 10:36PM, Michael Ellerman wrote:
+> "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> writes:
+> > I also tested zram today with the command shared by Wilcox:
+> >
+> > without patch:       1.493782568 seconds time elapsed    ( +-  0.08% )
+> > with patch:          1.408457577 seconds time elapsed    ( +-  0.15% )
+> >
+> > ... which also shows an improvement along the same lines as x86, as 
+> > reported by Minchan Kim.
 > 
->> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
->>
->> For MCE that hit while in use mode MSR(HV=1,PR=1), print the task info on the
->> console MCE error log. This will help to identify application that stumbled
->> upon MCE error.
+> I got:
 > 
-> I think you may still want these details for a task currently in
-> kernel. How about something like if (!in_interrupt()) {
+>   1.344847397 seconds time elapsed                                          ( +-  0.13% )
+> 
+> Using the C versions. Can you also benchmark those on your setup so we
+> can compare? So basically apply Matt's series but not your 2.
 
-We queue up the MCE event to delay the printing of recovered MCEs in the
-kernel. We may have to hook up the task details in the MCE event.
+Ok, with a more comprehensive test:
+	$ sudo modprobe zram
+	$ sudo zramctl -f -s 1G
+	# ~/tmp/1g has repeated 8 byte patterns
+	$ sudo bash -c "cat ~/tmp/1g > /dev/zram0"
 
-> 
-> 
->> @@ -311,8 +312,13 @@ void machine_check_print_event_info(struct machine_check_event *evt)
->>  	printk("%s%s Machine check interrupt [%s]\n", level, sevstr,
->>  	       evt->disposition == MCE_DISPOSITION_RECOVERED ?
->>  	       "Recovered" : "Not recovered");
->> -	printk("%s  NIP [%016llx]: %pS\n", level, evt->srr0,
->> +	if (user_mode) {
->> +		printk("%s  NIP: [%016llx] PID: %d Comm: %s\n", level,
->> +				evt->srr0, current->pid, current->comm);
->> +	} else {
->> +		printk("%s  NIP [%016llx]: %pS\n", level, evt->srr0,
->>  							(void *)evt->srr0);
->> +	}
->>  	printk("%s  Initiator: %s\n", level,
->>  	       evt->initiator == MCE_INITIATOR_CPU ? "CPU" : "Unknown");
->>  	switch (evt->error_type) {
-> 
+Here are the results I got on a P8 vm with:
+	$ sudo ./perf stat -r 10 taskset -c 16-23 dd if=/dev/zram0 of=/dev/null
+
+vanilla:	1.770592578 seconds time elapsed	( +-  0.07% )
+generic:	1.728865141 seconds time elapsed	( +-  0.06% )
+optimized:	1.695363255 seconds time elapsed        ( +-  0.10% )
+
+(generic) is with Matt's arch-independent patches applied. Profiling 
+indicates that most of the overhead is actually with the lzo 
+decompression...
+
+Also, with a simple module to memset64() a 1GB vmalloc'ed buffer, here 
+are the results:
+generic:	0.245315533 seconds time elapsed	( +-  1.83% )
+optimized:	0.169282701 seconds time elapsed	( +-  1.96% )
+
+
+- Naveen
