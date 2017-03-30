@@ -1,15 +1,15 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vv3Fv0ml2zDqKm
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Mar 2017 23:04:19 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vv3Fw31FTzDqKm
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Mar 2017 23:04:20 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: linuxppc-dev@ozlabs.org
 Cc: aneesh.kumar@linux.vnet.ibm.com
-Subject: [PATCH v6 02/19] powerpc/mm/slice: Update the function prototype
-Date: Thu, 30 Mar 2017 23:03:50 +1100
-Message-Id: <1490875447-4016-2-git-send-email-mpe@ellerman.id.au>
+Subject: [PATCH v6 03/19] powerpc/mm: Move copy_mm_to_paca to paca.c
+Date: Thu, 30 Mar 2017 23:03:51 +1100
+Message-Id: <1490875447-4016-3-git-send-email-mpe@ellerman.id.au>
 In-Reply-To: <1490875447-4016-1-git-send-email-mpe@ellerman.id.au>
 References: <1490875447-4016-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -23,193 +23,122 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
-This avoid copying the slice_mask struct as function return value
+We also update the function arg to struct mm_struct. Move this so that function
+finds the definition of struct mm_struct. No functional change in this patch.
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/mm/slice.c | 62 ++++++++++++++++++++++---------------------------
- 1 file changed, 28 insertions(+), 34 deletions(-)
+ arch/powerpc/include/asm/paca.h | 18 +-----------------
+ arch/powerpc/kernel/paca.c      | 19 +++++++++++++++++++
+ arch/powerpc/mm/hash_utils_64.c |  4 ++--
+ arch/powerpc/mm/slb.c           |  2 +-
+ arch/powerpc/mm/slice.c         |  2 +-
+ 5 files changed, 24 insertions(+), 21 deletions(-)
 
-diff --git a/arch/powerpc/mm/slice.c b/arch/powerpc/mm/slice.c
-index 639c7171d174..d1da357583e3 100644
---- a/arch/powerpc/mm/slice.c
-+++ b/arch/powerpc/mm/slice.c
-@@ -75,19 +75,18 @@ static void slice_print_mask(const char *label, struct slice_mask mask) {}
- 
+diff --git a/arch/powerpc/include/asm/paca.h b/arch/powerpc/include/asm/paca.h
+index 708c3e592eeb..f48c250339fd 100644
+--- a/arch/powerpc/include/asm/paca.h
++++ b/arch/powerpc/include/asm/paca.h
+@@ -206,23 +206,7 @@ struct paca_struct {
  #endif
+ };
  
--static struct slice_mask slice_range_to_mask(unsigned long start,
--					     unsigned long len)
-+static void slice_range_to_mask(unsigned long start, unsigned long len,
-+				struct slice_mask *ret)
- {
- 	unsigned long end = start + len - 1;
--	struct slice_mask ret;
- 
--	ret.low_slices = 0;
--	bitmap_zero(ret.high_slices, SLICE_NUM_HIGH);
-+	ret->low_slices = 0;
-+	bitmap_zero(ret->high_slices, SLICE_NUM_HIGH);
- 
- 	if (start < SLICE_LOW_TOP) {
- 		unsigned long mend = min(end, (SLICE_LOW_TOP - 1));
- 
--		ret.low_slices = (1u << (GET_LOW_SLICE_INDEX(mend) + 1))
-+		ret->low_slices = (1u << (GET_LOW_SLICE_INDEX(mend) + 1))
- 			- (1u << GET_LOW_SLICE_INDEX(start));
- 	}
- 
-@@ -96,9 +95,8 @@ static struct slice_mask slice_range_to_mask(unsigned long start,
- 		unsigned long align_end = ALIGN(end, (1UL << SLICE_HIGH_SHIFT));
- 		unsigned long count = GET_HIGH_SLICE_INDEX(align_end) - start_index;
- 
--		bitmap_set(ret.high_slices, start_index, count);
-+		bitmap_set(ret->high_slices, start_index, count);
- 	}
--	return ret;
- }
- 
- static int slice_area_is_free(struct mm_struct *mm, unsigned long addr,
-@@ -132,53 +130,47 @@ static int slice_high_has_vma(struct mm_struct *mm, unsigned long slice)
- 	return !slice_area_is_free(mm, start, end - start);
- }
- 
--static struct slice_mask slice_mask_for_free(struct mm_struct *mm)
-+static void slice_mask_for_free(struct mm_struct *mm, struct slice_mask *ret)
- {
--	struct slice_mask ret;
- 	unsigned long i;
- 
--	ret.low_slices = 0;
--	bitmap_zero(ret.high_slices, SLICE_NUM_HIGH);
-+	ret->low_slices = 0;
-+	bitmap_zero(ret->high_slices, SLICE_NUM_HIGH);
- 
- 	for (i = 0; i < SLICE_NUM_LOW; i++)
- 		if (!slice_low_has_vma(mm, i))
--			ret.low_slices |= 1u << i;
-+			ret->low_slices |= 1u << i;
- 
- 	if (mm->task_size <= SLICE_LOW_TOP)
--		return ret;
-+		return;
- 
- 	for (i = 0; i < SLICE_NUM_HIGH; i++)
- 		if (!slice_high_has_vma(mm, i))
--			__set_bit(i, ret.high_slices);
+-#ifdef CONFIG_PPC_BOOK3S
+-static inline void copy_mm_to_paca(mm_context_t *context)
+-{
+-	get_paca()->mm_ctx_id = context->id;
+-#ifdef CONFIG_PPC_MM_SLICES
+-	get_paca()->mm_ctx_low_slices_psize = context->low_slices_psize;
+-	memcpy(&get_paca()->mm_ctx_high_slices_psize,
+-	       &context->high_slices_psize, SLICE_ARRAY_SIZE);
+-#else
+-	get_paca()->mm_ctx_user_psize = context->user_psize;
+-	get_paca()->mm_ctx_sllp = context->sllp;
+-#endif
+-}
+-#else
+-static inline void copy_mm_to_paca(mm_context_t *context){}
+-#endif
 -
--	return ret;
-+			__set_bit(i, ret->high_slices);
++extern void copy_mm_to_paca(struct mm_struct *mm);
+ extern struct paca_struct *paca;
+ extern void initialise_paca(struct paca_struct *new_paca, int cpu);
+ extern void setup_paca(struct paca_struct *new_paca);
+diff --git a/arch/powerpc/kernel/paca.c b/arch/powerpc/kernel/paca.c
+index dfc479df9634..e2cf745a4b94 100644
+--- a/arch/powerpc/kernel/paca.c
++++ b/arch/powerpc/kernel/paca.c
+@@ -245,3 +245,22 @@ void __init free_unused_pacas(void)
+ 
+ 	free_lppacas();
  }
++
++void copy_mm_to_paca(struct mm_struct *mm)
++{
++#ifdef CONFIG_PPC_BOOK3S
++	mm_context_t *context = &mm->context;
++
++	get_paca()->mm_ctx_id = context->id;
++#ifdef CONFIG_PPC_MM_SLICES
++	get_paca()->mm_ctx_low_slices_psize = context->low_slices_psize;
++	memcpy(&get_paca()->mm_ctx_high_slices_psize,
++	       &context->high_slices_psize, SLICE_ARRAY_SIZE);
++#else /* CONFIG_PPC_MM_SLICES */
++	get_paca()->mm_ctx_user_psize = context->user_psize;
++	get_paca()->mm_ctx_sllp = context->sllp;
++#endif
++#else /* CONFIG_PPC_BOOK3S */
++	return;
++#endif
++}
+diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
+index d0ee17029e99..716255f88bbd 100644
+--- a/arch/powerpc/mm/hash_utils_64.c
++++ b/arch/powerpc/mm/hash_utils_64.c
+@@ -1133,7 +1133,7 @@ void demote_segment_4k(struct mm_struct *mm, unsigned long addr)
+ 	copro_flush_all_slbs(mm);
+ 	if ((get_paca_psize(addr) != MMU_PAGE_4K) && (current->mm == mm)) {
  
--static struct slice_mask slice_mask_for_size(struct mm_struct *mm, int psize)
-+static void slice_mask_for_size(struct mm_struct *mm, int psize, struct slice_mask *ret)
- {
- 	unsigned char *hpsizes;
- 	int index, mask_index;
--	struct slice_mask ret;
- 	unsigned long i;
- 	u64 lpsizes;
- 
--	ret.low_slices = 0;
--	bitmap_zero(ret.high_slices, SLICE_NUM_HIGH);
-+	ret->low_slices = 0;
-+	bitmap_zero(ret->high_slices, SLICE_NUM_HIGH);
- 
- 	lpsizes = mm->context.low_slices_psize;
- 	for (i = 0; i < SLICE_NUM_LOW; i++)
- 		if (((lpsizes >> (i * 4)) & 0xf) == psize)
--			ret.low_slices |= 1u << i;
-+			ret->low_slices |= 1u << i;
- 
- 	hpsizes = mm->context.high_slices_psize;
- 	for (i = 0; i < SLICE_NUM_HIGH; i++) {
- 		mask_index = i & 0x1;
- 		index = i >> 1;
- 		if (((hpsizes[index] >> (mask_index * 4)) & 0xf) == psize)
--			__set_bit(i, ret.high_slices);
-+			__set_bit(i, ret->high_slices);
+-		copy_mm_to_paca(&mm->context);
++		copy_mm_to_paca(mm);
+ 		slb_flush_and_rebolt();
  	}
--
--	return ret;
  }
+@@ -1205,7 +1205,7 @@ static void check_paca_psize(unsigned long ea, struct mm_struct *mm,
+ {
+ 	if (user_region) {
+ 		if (psize != get_paca_psize(ea)) {
+-			copy_mm_to_paca(&mm->context);
++			copy_mm_to_paca(mm);
+ 			slb_flush_and_rebolt();
+ 		}
+ 	} else if (get_paca()->vmalloc_sllp !=
+diff --git a/arch/powerpc/mm/slb.c b/arch/powerpc/mm/slb.c
+index 5e01b2ece1d0..98ae810b8c21 100644
+--- a/arch/powerpc/mm/slb.c
++++ b/arch/powerpc/mm/slb.c
+@@ -229,7 +229,7 @@ void switch_slb(struct task_struct *tsk, struct mm_struct *mm)
+ 		asm volatile("slbie %0" : : "r" (slbie_data));
  
- static int slice_check_fit(struct slice_mask mask, struct slice_mask available)
-@@ -460,7 +452,7 @@ unsigned long slice_get_unmapped_area(unsigned long addr, unsigned long len,
- 	/* First make up a "good" mask of slices that have the right size
- 	 * already
- 	 */
--	good_mask = slice_mask_for_size(mm, psize);
-+	slice_mask_for_size(mm, psize, &good_mask);
- 	slice_print_mask(" good_mask", good_mask);
+ 	get_paca()->slb_cache_ptr = 0;
+-	copy_mm_to_paca(&mm->context);
++	copy_mm_to_paca(mm);
  
  	/*
-@@ -485,7 +477,7 @@ unsigned long slice_get_unmapped_area(unsigned long addr, unsigned long len,
- #ifdef CONFIG_PPC_64K_PAGES
- 	/* If we support combo pages, we can allow 64k pages in 4k slices */
- 	if (psize == MMU_PAGE_64K) {
--		compat_mask = slice_mask_for_size(mm, MMU_PAGE_4K);
-+		slice_mask_for_size(mm, MMU_PAGE_4K, &compat_mask);
- 		if (fixed)
- 			slice_or_mask(&good_mask, &compat_mask);
- 	}
-@@ -494,7 +486,7 @@ unsigned long slice_get_unmapped_area(unsigned long addr, unsigned long len,
- 	/* First check hint if it's valid or if we have MAP_FIXED */
- 	if (addr != 0 || fixed) {
- 		/* Build a mask for the requested range */
--		mask = slice_range_to_mask(addr, len);
-+		slice_range_to_mask(addr, len, &mask);
- 		slice_print_mask(" mask", mask);
+ 	 * preload some userspace segments into the SLB.
+diff --git a/arch/powerpc/mm/slice.c b/arch/powerpc/mm/slice.c
+index d1da357583e3..175e0dbce89b 100644
+--- a/arch/powerpc/mm/slice.c
++++ b/arch/powerpc/mm/slice.c
+@@ -192,7 +192,7 @@ static void slice_flush_segments(void *parm)
+ 	if (mm != current->active_mm)
+ 		return;
  
- 		/* Check if we fit in the good mask. If we do, we just return,
-@@ -521,7 +513,7 @@ unsigned long slice_get_unmapped_area(unsigned long addr, unsigned long len,
- 	/* We don't fit in the good mask, check what other slices are
- 	 * empty and thus can be converted
- 	 */
--	potential_mask = slice_mask_for_free(mm);
-+	slice_mask_for_free(mm, &potential_mask);
- 	slice_or_mask(&potential_mask, &good_mask);
- 	slice_print_mask(" potential", potential_mask);
+-	copy_mm_to_paca(&current->active_mm->context);
++	copy_mm_to_paca(current->active_mm);
  
-@@ -564,7 +556,7 @@ unsigned long slice_get_unmapped_area(unsigned long addr, unsigned long len,
- 	if (addr == -ENOMEM)
- 		return -ENOMEM;
- 
--	mask = slice_range_to_mask(addr, len);
-+	slice_range_to_mask(addr, len, &mask);
- 	slice_dbg(" found potential area at 0x%lx\n", addr);
- 	slice_print_mask(" mask", mask);
- 
-@@ -696,9 +688,11 @@ void slice_set_user_psize(struct mm_struct *mm, unsigned int psize)
- void slice_set_range_psize(struct mm_struct *mm, unsigned long start,
- 			   unsigned long len, unsigned int psize)
- {
--	struct slice_mask mask = slice_range_to_mask(start, len);
-+	struct slice_mask mask;
- 
- 	VM_BUG_ON(radix_enabled());
-+
-+	slice_range_to_mask(start, len, &mask);
- 	slice_convert(mm, mask, psize);
- }
- 
-@@ -731,13 +725,13 @@ int is_hugepage_only_range(struct mm_struct *mm, unsigned long addr,
- 	if (radix_enabled())
- 		return 0;
- 
--	mask = slice_range_to_mask(addr, len);
--	available = slice_mask_for_size(mm, psize);
-+	slice_range_to_mask(addr, len, &mask);
-+	slice_mask_for_size(mm, psize, &available);
- #ifdef CONFIG_PPC_64K_PAGES
- 	/* We need to account for 4k slices too */
- 	if (psize == MMU_PAGE_64K) {
- 		struct slice_mask compat_mask;
--		compat_mask = slice_mask_for_size(mm, MMU_PAGE_4K);
-+		slice_mask_for_size(mm, MMU_PAGE_4K, &compat_mask);
- 		slice_or_mask(&available, &compat_mask);
- 	}
- #endif
+ 	local_irq_save(flags);
+ 	slb_flush_and_rebolt();
 -- 
 2.7.4
