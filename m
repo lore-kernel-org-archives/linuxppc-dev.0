@@ -1,43 +1,20 @@
-Return-Path: <andrew.donnellan@au1.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <matthew.brown.dev@gmail.com>
+Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
+ [IPv6:2607:f8b0:400e:c05::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vtsX562jlzDqKT
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Mar 2017 15:45:57 +1100 (AEDT)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v2U4hq78052319
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Mar 2017 00:45:54 -0400
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
- by mx0b-001b2d01.pphosted.com with ESMTP id 29gfk2ce5b-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Mar 2017 00:45:53 -0400
-Received: from localhost
- by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
- Thu, 30 Mar 2017 14:45:50 +1000
-Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v2U4jdp546792890
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Mar 2017 15:45:47 +1100
-Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
- by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v2U4jFf1016201
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Mar 2017 15:45:15 +1100
-Subject: Re: [PATCH V3 0/7] cxl: Add support for Coherent Accelerator
- Interface Architecture 2.0
-To: Christophe Lombard <clombard@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, fbarrat@linux.vnet.ibm.com,
- imunsie@au1.ibm.com
-References: <1490714052-18902-1-git-send-email-clombard@linux.vnet.ibm.com>
-From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Date: Thu, 30 Mar 2017 15:44:50 +1100
-MIME-Version: 1.0
-In-Reply-To: <1490714052-18902-1-git-send-email-clombard@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <9d6099a1-23d0-6b32-a015-fa9a2e2a42a5@au1.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vtt8B0szkzDqJ1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Mar 2017 16:13:46 +1100 (AEDT)
+Received: by mail-pg0-x243.google.com with SMTP id g2so7155105pge.2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Mar 2017 22:13:46 -0700 (PDT)
+From: Matt Brown <matthew.brown.dev@gmail.com>
+To: linux-raid@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org,
+	dja@axtens.net
+Subject: [PATCH] raid6/altivec: adding vpermxor implementation for raid6 Q
+ syndrome
+Date: Thu, 30 Mar 2017 16:13:13 +1100
+Message-Id: <20170330051313.31358-1-matthew.brown.dev@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,24 +24,300 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 29/03/17 02:14, Christophe Lombard wrote:
-> This series adds support for a cxl card which supports the Coherent
-> Accelerator Interface Architecture 2.0.
->
-> It requires IBM Power9 system and the Power Service Layer, version 9.
-> The PSL provides the address translation and system memory cache for
-> CAIA compliant Accelerators.
-> the PSL attaches to the IBM Processor chip through the PCIe link using
-> the PSL-specific “CAPI Protocol” Transaction Layer Packets.
-> The PSL and CAPP communicate using PowerBus packets.
-> When using a PCIe link the PCIe Host Bridge (PHB) decodes the CAPI
-> Protocol Packets from the PSL and forwards them as PowerBus data
-> packets. The PSL also has an optional DMA feature which allows the AFU
-> to send native PCIe reads and writes to the Processor.
+The raid6 Q syndrome check has been optimised using the vpermxor
+instruction.  This instruction was made available with POWER8, ISA version
+2.07. It allows for both vperm and vxor instructions to be done in a single
+instruction. This has been tested for correctness on a ppc64le vm with a
+basic RAID6 setup containing 5 drives.
 
-Today Mikey reminded me that Documentation/powerpc/cxl.txt still exists 
-- we probably ought to update it.
+The performance benchmarks are from the raid6test in the /lib/raid6/test
+directory. These results are from an IBM Firestone machine with ppc64le
+architecture. The benchmark results show a 35% speed increase over the best
+existing algorithm for powerpc (altivec). The raid6test has also been run
+on a big-endian ppc64 vm to ensure it also works for big-endian
+architectures.
 
+Performance benchmarks:
+
+	raid6: altivecx4 gen() 18773 MB/s
+	raid6: altivecx8 gen() 19438 MB/s
+
+	raid6: vpermxor4 gen() 25112 MB/s
+	raid6: vpermxor8 gen() 26279 MB/s
+
+Note: Also fixed a small bug in pq.h regarding a missing and mismatched
+ifdef statement
+
+Signed-off-by: Matt Brown <matthew.brown.dev@gmail.com>
+---
+ include/linux/raid/pq.h |   4 ++
+ lib/raid6/Makefile      |  27 ++++++++++++-
+ lib/raid6/algos.c       |   4 ++
+ lib/raid6/altivec.uc    |   3 ++
+ lib/raid6/test/Makefile |  28 ++++++++++++-
+ lib/raid6/vpermxor.uc   | 102 ++++++++++++++++++++++++++++++++++++++++++++++++
+ 6 files changed, 165 insertions(+), 3 deletions(-)
+ create mode 100644 lib/raid6/vpermxor.uc
+
+diff --git a/include/linux/raid/pq.h b/include/linux/raid/pq.h
+index 4d57bba..3df9aa6 100644
+--- a/include/linux/raid/pq.h
++++ b/include/linux/raid/pq.h
+@@ -107,6 +107,10 @@ extern const struct raid6_calls raid6_avx512x2;
+ extern const struct raid6_calls raid6_avx512x4;
+ extern const struct raid6_calls raid6_tilegx8;
+ extern const struct raid6_calls raid6_s390vx8;
++extern const struct raid6_calls raid6_vpermxor1;
++extern const struct raid6_calls raid6_vpermxor2;
++extern const struct raid6_calls raid6_vpermxor4;
++extern const struct raid6_calls raid6_vpermxor8;
+ 
+ struct raid6_recov_calls {
+ 	void (*data2)(int, size_t, int, int, void **);
+diff --git a/lib/raid6/Makefile b/lib/raid6/Makefile
+index 3057011..7775aad 100644
+--- a/lib/raid6/Makefile
++++ b/lib/raid6/Makefile
+@@ -4,7 +4,8 @@ raid6_pq-y	+= algos.o recov.o tables.o int1.o int2.o int4.o \
+ 		   int8.o int16.o int32.o
+ 
+ raid6_pq-$(CONFIG_X86) += recov_ssse3.o recov_avx2.o mmx.o sse1.o sse2.o avx2.o avx512.o recov_avx512.o
+-raid6_pq-$(CONFIG_ALTIVEC) += altivec1.o altivec2.o altivec4.o altivec8.o
++raid6_pq-$(CONFIG_ALTIVEC) += altivec1.o altivec2.o altivec4.o altivec8.o \
++				vpermxor1.o vpermxor2.o vpermxor4.o vpermxor8.o
+ raid6_pq-$(CONFIG_KERNEL_MODE_NEON) += neon.o neon1.o neon2.o neon4.o neon8.o
+ raid6_pq-$(CONFIG_TILEGX) += tilegx8.o
+ raid6_pq-$(CONFIG_S390) += s390vx8.o recov_s390xc.o
+@@ -88,6 +89,30 @@ $(obj)/altivec8.c:   UNROLL := 8
+ $(obj)/altivec8.c:   $(src)/altivec.uc $(src)/unroll.awk FORCE
+ 	$(call if_changed,unroll)
+ 
++CFLAGS_vpermxor1.o += $(altivec_flags)
++targets += vpermxor1.c
++$(obj)/vpermxor1.c: UNROLL := 1
++$(obj)/vpermxor1.c: $(src)/vpermxor.uc $(src)/unroll.awk FORCE
++	$(call if_changed,unroll)
++
++CFLAGS_vpermxor2.o += $(altivec_flags)
++targets += vpermxor2.c
++$(obj)/vpermxor2.c: UNROLL := 2
++$(obj)/vpermxor2.c: $(src)/vpermxor.uc $(src)/unroll.awk FORCE
++	$(call if_changed,unroll)
++
++CFLAGS_vpermxor4.o += $(altivec_flags)
++targets += vpermxor4.c
++$(obj)/vpermxor4.c: UNROLL := 4
++$(obj)/vpermxor4.c: $(src)/vpermxor.uc $(src)/unroll.awk FORCE
++	$(call if_changed,unroll)
++
++CFLAGS_vpermxor8.o += $(altivec_flags)
++targets += vpermxor8.c
++$(obj)/vpermxor8.c: UNROLL := 8
++$(obj)/vpermxor8.c: $(src)/vpermxor.uc $(src)/unroll.awk FORCE
++	$(call if_changed,unroll)
++
+ CFLAGS_neon1.o += $(NEON_FLAGS)
+ targets += neon1.c
+ $(obj)/neon1.c:   UNROLL := 1
+diff --git a/lib/raid6/algos.c b/lib/raid6/algos.c
+index 7857049..edd4f69 100644
+--- a/lib/raid6/algos.c
++++ b/lib/raid6/algos.c
+@@ -74,6 +74,10 @@ const struct raid6_calls * const raid6_algos[] = {
+ 	&raid6_altivec2,
+ 	&raid6_altivec4,
+ 	&raid6_altivec8,
++	&raid6_vpermxor1,
++	&raid6_vpermxor2,
++	&raid6_vpermxor4,
++	&raid6_vpermxor8,
+ #endif
+ #if defined(CONFIG_TILEGX)
+ 	&raid6_tilegx8,
+diff --git a/lib/raid6/altivec.uc b/lib/raid6/altivec.uc
+index 682aae8..d20ed0d 100644
+--- a/lib/raid6/altivec.uc
++++ b/lib/raid6/altivec.uc
+@@ -24,10 +24,13 @@
+ 
+ #include <linux/raid/pq.h>
+ 
++#ifdef CONFIG_ALTIVEC
++
+ #include <altivec.h>
+ #ifdef __KERNEL__
+ # include <asm/cputable.h>
+ # include <asm/switch_to.h>
++#endif /* __KERNEL__ */
+ 
+ /*
+  * This is the C data type to use.  We use a vector of
+diff --git a/lib/raid6/test/Makefile b/lib/raid6/test/Makefile
+index 2c7b60e..29ebb39 100644
+--- a/lib/raid6/test/Makefile
++++ b/lib/raid6/test/Makefile
+@@ -47,13 +47,25 @@ else
+                          gcc -c -x c - >&/dev/null && \
+                          rm ./-.o && echo yes)
+         ifeq ($(HAS_ALTIVEC),yes)
+-                OBJS += altivec1.o altivec2.o altivec4.o altivec8.o
++		OBJS += altivec1.o altivec2.o altivec4.o altivec8.o
+         endif
+ endif
+ ifeq ($(ARCH),tilegx)
+ OBJS += tilegx8.o
+ endif
+ 
++ifeq ($(ARCH),ppc64le)
++	CFLAGS += -I../../../arch/powerpc/include
++	CFLAGS += -DCONFIG_ALTIVEC
++	OBJS += altivec1.o altivec2.o altivec4.o altivec8.o \
++		vpermxor1.o vpermxor2.o vpermxor4.o vpermxor8.o
++else ifeq ($(ARCH),ppc64)
++	CFLAGS += -I../../../arch/powerpc/include
++	CFLAGS += -DCONFIG_ALTIVEC
++	OBJS += altivec1.o altivec2.o altivec4.o altivec8.o \
++		vpermxor1.o vpermxor2.o vpermxor4.o vpermxor8.o
++endif
++
+ .c.o:
+ 	$(CC) $(CFLAGS) -c -o $@ $<
+ 
+@@ -97,6 +109,18 @@ altivec4.c: altivec.uc ../unroll.awk
+ altivec8.c: altivec.uc ../unroll.awk
+ 	$(AWK) ../unroll.awk -vN=8 < altivec.uc > $@
+ 
++vpermxor1.c: vpermxor.uc ../unroll.awk
++	$(AWK) ../unroll.awk -vN=1 < vpermxor.uc > $@
++
++vpermxor2.c: vpermxor.uc ../unroll.awk
++	$(AWK) ../unroll.awk -vN=2 < vpermxor.uc > $@
++
++vpermxor4.c: vpermxor.uc ../unroll.awk
++	$(AWK) ../unroll.awk -vN=4 < vpermxor.uc > $@
++
++vpermxor8.c: vpermxor.uc ../unroll.awk
++	$(AWK) ../unroll.awk -vN=8 < vpermxor.uc > $@
++
+ int1.c: int.uc ../unroll.awk
+ 	$(AWK) ../unroll.awk -vN=1 < int.uc > $@
+ 
+@@ -122,7 +146,7 @@ tables.c: mktables
+ 	./mktables > tables.c
+ 
+ clean:
+-	rm -f *.o *.a mktables mktables.c *.uc int*.c altivec*.c neon*.c tables.c raid6test
++	rm -f *.o *.a mktables mktables.c *.uc int*.c altivec*.c vpermxor*.c neon*.c tables.c raid6test
+ 	rm -f tilegx*.c
+ 
+ spotless: clean
+diff --git a/lib/raid6/vpermxor.uc b/lib/raid6/vpermxor.uc
+new file mode 100644
+index 0000000..96f48e3
+--- /dev/null
++++ b/lib/raid6/vpermxor.uc
+@@ -0,0 +1,102 @@
++/*
++ * Copyright 2017, Matt Brown, IBM Corp.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ *
++ * vpermxor$#.c
++ *
++ * $#-way unrolled portable integer math RAID-6 instruction set
++ * This file is postprocessed using unroll.awk
++ *
++ * vpermxor$#.c makes use of the vpermxor opcode to optimise the RAID6 Q
++ * syndrome calculations.
++ * This can be run on systems which have both Altivec and the vpermxor opcode.
++ *
++ * This instruction was introduced in POWER8 - ISA v2.07.
++ */
++
++#include <linux/raid/pq.h>
++#ifdef CONFIG_ALTIVEC
++
++#include <altivec.h>
++#ifdef __KERNEL__
++#include <asm/cputable.h>
++#include <asm/switch_to.h>
++#endif
++
++typedef vector unsigned char unative_t;
++#define NSIZE sizeof(unative_t)
++
++static const vector unsigned char gf_low = {0x1e, 0x1c, 0x1a, 0x18, 0x16, 0x14,
++					    0x12, 0x10, 0x0e, 0x0c, 0x0a, 0x08,
++					    0x06, 0x04, 0x02,0x00};
++static const vector unsigned char gf_high = {0xfd, 0xdd, 0xbd, 0x9d, 0x7d, 0x5d,
++					     0x3d, 0x1d, 0xe0, 0xc0, 0xa0, 0x80,
++					     0x60, 0x40, 0x20, 0x00};
++
++static void noinline raid6_vpermxor$#_gen_syndrome_real(int disks, size_t bytes,
++							void **ptrs)
++{
++	u8 **dptr = (u8 **)ptrs;
++	u8 *p, *q;
++	int d, z, z0;
++	unative_t wp$$, wq$$, wd$$;
++
++	z0 = disks - 3;		/* Highest data disk */
++	p = dptr[z0+1];		/* XOR parity */
++	q = dptr[z0+2];		/* RS syndrome */
++
++	for (d = 0; d < bytes; d += NSIZE*$#) {
++		wp$$ = wq$$ = *(unative_t *)&dptr[z0][d+$$*NSIZE];
++
++		for (z = z0-1; z>=0; z--) {
++			wd$$ = *(unative_t *)&dptr[z][d+$$*NSIZE];
++			/* P syndrome */
++			wp$$ = vec_xor(wp$$, wd$$);
++
++			/*Q syndrome */
++			__asm__ __volatile__("vpermxor %0,%1,%2,%3\n\t":"=v"(wq$$):"v"(gf_high), "v"(gf_low), "v"(wq$$));
++			wq$$ = vec_xor(wq$$, wd$$);
++		}
++		*(unative_t *)&p[d+NSIZE*$$] = wp$$;
++		*(unative_t *)&q[d+NSIZE*$$] = wq$$;
++	}
++}
++
++static void raid6_vpermxor$#_gen_syndrome(int disks, size_t bytes, void **ptrs)
++{
++	preempt_disable();
++	enable_kernel_altivec();
++
++	raid6_vpermxor$#_gen_syndrome_real(disks, bytes, ptrs);
++
++	disable_kernel_altivec();
++	preempt_enable();
++}
++
++int raid6_have_altivec_vpermxor(void);
++#if $# == 1
++int raid6_have_altivec_vpermxor(void)
++{
++	/* Check if CPU has both altivec and the vpermxor instruction*/
++# ifdef __KERNEL__
++	return (cpu_has_feature(CONFIG_ALTIVEC) &&
++		cpu_has_feature(CPU_FTR_ARCH_207S));
++# else
++	return 1;
++#endif
++
++}
++#endif
++
++const struct raid6_calls raid6_vpermxor$# = {
++	raid6_vpermxor$#_gen_syndrome,
++	NULL,
++	raid6_have_altivec_vpermxor,
++	"vpermxor$#",
++	0
++};
++#endif
 -- 
-Andrew Donnellan              OzLabs, ADL Canberra
-andrew.donnellan@au1.ibm.com  IBM Australia Limited
+2.9.3
