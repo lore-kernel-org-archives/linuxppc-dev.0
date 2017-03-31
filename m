@@ -2,15 +2,17 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vvgsY4hW7zDq7Z
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Mar 2017 23:33:53 +1100 (AEDT)
-In-Reply-To: <1490073878-5900-1-git-send-email-mpe@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vvgsZ5bjSzDq7Z
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Mar 2017 23:33:54 +1100 (AEDT)
+In-Reply-To: <20170322192751.30531-2-gpiccoli@linux.vnet.ibm.com>
+To: "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: powerpc/64: Don't use early_cpu_has_feature() in
- cpu_ready_for_interrupts()
-Message-Id: <3vvgsY3mC3z9s2s@ozlabs.org>
-Date: Fri, 31 Mar 2017 23:33:53 +1100 (AEDT)
+Cc: xinhui.pan@linux.vnet.ibm.com, paulus@samba.org,
+ gpiccoli@linux.vnet.ibm.com
+Subject: Re: [v4, 1/3] powerpc/xmon: Fix an unexpected xmon on/off state change
+Message-Id: <3vvgsZ3rypz9s77@ozlabs.org>
+Date: Fri, 31 Mar 2017 23:33:54 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,14 +22,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2017-03-21 at 05:24:38 UTC, Michael Ellerman wrote:
-> cpu_ready_for_interrupts() is called after feature patching, so there's
-> no need to use early_cpu_has_feature().
+On Wed, 2017-03-22 at 19:27:49 UTC, "Guilherme G. Piccoli" wrote:
+> From: Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>
 > 
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> Once xmon is triggered by sysrq-x, it is enabled always afterwards even
+> if it is disabled during boot. This will cause a system reset interrupt
+> fail to dump. So keep xmon in its original state after exit.
+> 
+> We have several ways to set xmon on or off.
+> 1) by a build config CONFIG_XMON_DEFAULT.
+> 2) by a boot cmdline with xmon or xmon=early or xmon=on to enable xmon
+> and xmon=off to disable xmon. This value will override that in step 1.
+> 3) by a debugfs interface, as proposed in this patchset.
+> And this value can override those in step 1 and 2.
+> 
+> Signed-off-by: Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>
+> Signed-off-by: Guilherme G. Piccoli <gpiccoli@linux.vnet.ibm.com>
 
-Applied to powerpc next.
+Series applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/5511a45fc134f0784c403ef3488e2c
+https://git.kernel.org/powerpc/c/3b5bf42b81d56085fd58692b5117f6
 
 cheers
