@@ -1,16 +1,16 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vvgsc6Z6fzDqH7
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Mar 2017 23:33:56 +1100 (AEDT)
-In-Reply-To: <20170323075401.4371-1-oohall@gmail.com>
-To: Oliver O'Halloran <oohall@gmail.com>, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vvgsf0mDlzDqHC
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Mar 2017 23:33:58 +1100 (AEDT)
+In-Reply-To: <1490319797.28113.46.camel@neuling.org>
+To: Michael Neuling <mikey@neuling.org>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Oliver O'Halloran <oohall@gmail.com>
-Subject: Re: [v2] powerpc/powernv: de-deuplicate OPAL call wrappers
-Message-Id: <3vvgsc1Q9xz9s2x@ozlabs.org>
-Date: Fri, 31 Mar 2017 23:33:56 +1100 (AEDT)
+Cc: mikey@neuling.org, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: powerpc/powernv: Fix XSCOM address mangling for form 1 indirect
+Message-Id: <3vvgsd5YSDz9s03@ozlabs.org>
+Date: Fri, 31 Mar 2017 23:33:57 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,16 +20,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2017-03-23 at 07:54:01 UTC, Oliver O'Halloran wrote:
-> Currently the code to perform an OPAL call is duplicated between the
-> normal path and path taken when tracepoints are enabled. There's no
-> real need for this and combining them makes opal_tracepoint_entry
-> considerably easier to understand.
+On Fri, 2017-03-24 at 01:43:17 UTC, Michael Neuling wrote:
+> POWER9 adds form 1 scoms. The form of the indirection is specified in
+> the top nibble of the scom address.
 > 
-> Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
+> Currently we do some (ugly) bit mangling so that we can fit a 64 bit
+> scom address into the debugfs interface. The current code only shifts
+> the top bit (indirect bit).
+> 
+> This patch changes it to shift the whole top nibble so that the form
+> of the indirection is also shifted.
+> 
+> This patch is backwards compatible with older scoms.
+> 
+> (This change isn't required in the
+> arch/powerpc/platformspowernv/opal-prd.c scom interface as it passes
+> the whole 64bit scom address without any bit mangling)
+> 
+> Signed-off-by: Michael Neuling <mikey@neuling.org>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/c3a08e93d66e9ba59ffbfb610af2f7
+https://git.kernel.org/powerpc/c/517c27570cf38f182e7a688d50a9b9
 
 cheers
