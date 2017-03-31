@@ -1,24 +1,43 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <srs0=lfg8=3i=linux.vnet.ibm.com=sukadev@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vvRlW62LbzDqGw
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Mar 2017 14:27:51 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Robin Murphy <robin.murphy@arm.com>, roy.pledge@nxp.com, oss@buserror.net,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
- devicetree@vger.kernel.org
-Cc: madalin.bucur@nxp.com
-Subject: Re: [RFC PATCH 2/5] soc/fsl/qbman: Use shared-dma-pool for QMan
- private memory allocations
-In-Reply-To: <b1cd8d44-8c74-ab50-5dc9-1f978cae5bdf@arm.com>
-References: <1490822037-6752-1-git-send-email-roy.pledge@nxp.com>
- <1490822037-6752-3-git-send-email-roy.pledge@nxp.com>
- <b1cd8d44-8c74-ab50-5dc9-1f978cae5bdf@arm.com>
-Date: Fri, 31 Mar 2017 14:27:51 +1100
-Message-ID: <871ste5dmw.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vvV680218zDqH6
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Mar 2017 16:14:07 +1100 (AEDT)
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3vvV676RG4z8sxx
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Mar 2017 16:14:07 +1100 (AEDT)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3vvV6734Dzz9ryv
+ for <linuxppc-dev@ozlabs.org>; Fri, 31 Mar 2017 16:14:07 +1100 (AEDT)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v2V5DqKx071515
+ for <linuxppc-dev@ozlabs.org>; Fri, 31 Mar 2017 01:14:05 -0400
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 29h1pfgfks-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Fri, 31 Mar 2017 01:14:05 -0400
+Received: from localhost
+ by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
+ Thu, 30 Mar 2017 23:14:04 -0600
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ michael.neuling@au1.ibm.com, stewart@linux.vnet.ibm.com,
+ apopple@au1.ibm.com, hbabu@us.ibm.com, oohall@gmail.com,
+ bsingharora@gmail.com, linuxppc-dev@ozlabs.org,
+ <linux-kernel@vger.kernel.org>
+Subject: [PATCH v4 01/11] Add Power9 PVR
+Date: Thu, 30 Mar 2017 22:13:34 -0700
+In-Reply-To: <1490937224-29149-1-git-send-email-sukadev@linux.vnet.ibm.com>
+References: <1490937224-29149-1-git-send-email-sukadev@linux.vnet.ibm.com>
+Message-Id: <1490937224-29149-2-git-send-email-sukadev@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,24 +47,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Robin Murphy <robin.murphy@arm.com> writes:
+Add Power9 PVR
 
-> Hi Roy,
->
-> On 29/03/17 22:13, Roy Pledge wrote:
->> Use the shared-memory-pool mechanism for frame queue descriptor and
->> packed frame descriptor record area allocations.
->
-> Thanks for persevering with this - in my opinion it's now looking like
-> it was worth the effort :)
->
-> AFAICS the ioremap_wc() that this leads to does appear to give back
-> something non-cacheable on PPC (assuming "pgprot_noncached_wc" isn't
-> horrendously misnamed), and "no-map" should rule out any cacheable
-> linear map alias existing, so it would seem that this approach should
-> avert Scott's concerns about attribute mismatches.
+Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+---
+ arch/powerpc/include/asm/reg.h | 1 +
+ 1 file changed, 1 insertion(+)
 
-How does 'no-map' translate into something being excluded from the
-linear mapping?
-
-cheers
+diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
+index fc879fd..7a45ff7 100644
+--- a/arch/powerpc/include/asm/reg.h
++++ b/arch/powerpc/include/asm/reg.h
+@@ -1225,6 +1225,7 @@
+ #define PVR_POWER8E	0x004B
+ #define PVR_POWER8NVL	0x004C
+ #define PVR_POWER8	0x004D
++#define PVR_POWER9	0x004E
+ #define PVR_BE		0x0070
+ #define PVR_PA6T	0x0090
+ 
+-- 
+2.7.4
