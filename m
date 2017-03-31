@@ -2,30 +2,30 @@ Return-Path: <srs0=lfg8=3i=linux.vnet.ibm.com=sukadev@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vvV6R3CQ8zDqHq
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Mar 2017 16:14:23 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vvV6X5fhFzDqHj
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Mar 2017 16:14:28 +1100 (AEDT)
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3vvV6R2M8zz8w3D
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Mar 2017 16:14:23 +1100 (AEDT)
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3vvV6X47mRz8w5m
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Mar 2017 16:14:28 +1100 (AEDT)
 Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3vvV6Q3sbtz9s77
- for <linuxppc-dev@ozlabs.org>; Fri, 31 Mar 2017 16:14:22 +1100 (AEDT)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v2V5DpDu045409
- for <linuxppc-dev@ozlabs.org>; Fri, 31 Mar 2017 01:14:18 -0400
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
- by mx0a-001b2d01.pphosted.com with ESMTP id 29h2pgc38k-1
+ by ozlabs.org (Postfix) with ESMTPS id 3vvV6W5Fw5z9s2x
+ for <linuxppc-dev@ozlabs.org>; Fri, 31 Mar 2017 16:14:27 +1100 (AEDT)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v2V5Drvn121259
+ for <linuxppc-dev@ozlabs.org>; Fri, 31 Mar 2017 01:14:21 -0400
+Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 29gx8c98bu-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Fri, 31 Mar 2017 01:14:17 -0400
+ for <linuxppc-dev@ozlabs.org>; Fri, 31 Mar 2017 01:14:21 -0400
 Received: from localhost
- by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Thu, 30 Mar 2017 23:14:16 -0600
+ Thu, 30 Mar 2017 23:14:20 -0600
 From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
@@ -33,11 +33,11 @@ Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  apopple@au1.ibm.com, hbabu@us.ibm.com, oohall@gmail.com,
  bsingharora@gmail.com, linuxppc-dev@ozlabs.org,
  <linux-kernel@vger.kernel.org>
-Subject: [PATCH v4 09/11] VAS: Define vas_win_close() interface
-Date: Thu, 30 Mar 2017 22:13:42 -0700
+Subject: [PATCH v4 11/11] VAS: Define copy/paste interfaces
+Date: Thu, 30 Mar 2017 22:13:44 -0700
 In-Reply-To: <1490937224-29149-1-git-send-email-sukadev@linux.vnet.ibm.com>
 References: <1490937224-29149-1-git-send-email-sukadev@linux.vnet.ibm.com>
-Message-Id: <1490937224-29149-10-git-send-email-sukadev@linux.vnet.ibm.com>
+Message-Id: <1490937224-29149-12-git-send-email-sukadev@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,161 +47,216 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Define the vas_win_close() interface which should be used to close a
-send or receive windows.
-
-While the hardware configurations required to open send and receive windows
-differ, the configuration to close a window is the same for both. So we use
-a single interface to close the window.
+Define interfaces (wrappers) to the 'copy' and 'paste' instructions
+(which are new in PowerISA 3.0). These are intended to be used to
+by NX driver(s) to submit Coprocessor Request Blocks (CRBs) to the
+NX hardware engines.
 
 Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
----
-Changelog[v4]:
-	- Drop the poll for credits return (we can set the required credit,
-	  but cannot really find the available credit at a point in time)
 
-Changelog[v3]:
-	- Fix order of parameters in GET_FIELD().
-	- Update references and sequence for closing/quiescing a window.
 ---
- arch/powerpc/include/asm/vas.h              |  7 +++
- arch/powerpc/platforms/powernv/vas-window.c | 96 +++++++++++++++++++++++++++--
- 2 files changed, 99 insertions(+), 4 deletions(-)
+Changelog[v3]
+	- Map raw CR value from paste instruction into an error code.
+---
+ arch/powerpc/include/asm/vas.h              | 13 +++++
+ arch/powerpc/platforms/powernv/copy-paste.h | 74 +++++++++++++++++++++++++++++
+ arch/powerpc/platforms/powernv/vas-window.c | 50 +++++++++++++++++++
+ arch/powerpc/platforms/powernv/vas.h        | 14 ++++++
+ 4 files changed, 151 insertions(+)
+ create mode 100644 arch/powerpc/platforms/powernv/copy-paste.h
 
 diff --git a/arch/powerpc/include/asm/vas.h b/arch/powerpc/include/asm/vas.h
-index 09ea6f7..c923b8f 100644
+index 944bb4b..4e5a470 100644
 --- a/arch/powerpc/include/asm/vas.h
 +++ b/arch/powerpc/include/asm/vas.h
-@@ -76,4 +76,11 @@ extern void vas_init_rx_win_attr(struct vas_rx_win_attr *rxattr,
- extern struct vas_window *vas_rx_win_open(int vasid, enum vas_cop_type cop,
- 			struct vas_rx_win_attr *attr);
+@@ -125,4 +125,17 @@ struct vas_window *vas_tx_win_open(int vasid, enum vas_cop_type cop,
+  */
+ int vas_win_close(struct vas_window *win);
  
 +/*
-+ * Close the send or receive window identified by @win. For receive windows
-+ * return -EAGAIN if there are active send windows attached to this receive
-+ * window.
++ * Copy the co-processor request block (CRB) @crb into the local L2 cache.
++ * For now, @offset must be 0 and @first must be true.
 + */
-+int vas_win_close(struct vas_window *win);
++extern int vas_copy_crb(void *crb, int offset, bool first);
++
++/*
++ * Paste a previously copied CRB (see vas_copy_crb()) from the L2 cache to
++ * the hardware address associated with the window @win. For now, @off must
++ * 0 and @last must be true. @re is expected/assumed to be true for NX windows.
++ */
++extern int vas_paste_crb(struct vas_window *win, int off, bool last, bool re);
 +
  #endif /* _MISC_VAS_H */
-diff --git a/arch/powerpc/platforms/powernv/vas-window.c b/arch/powerpc/platforms/powernv/vas-window.c
-index 04f6bb2..7b1a36c 100644
---- a/arch/powerpc/platforms/powernv/vas-window.c
-+++ b/arch/powerpc/platforms/powernv/vas-window.c
-@@ -470,7 +470,7 @@ int vas_assign_window_id(struct ida *ida)
- 	return winid;
- }
- 
--void vas_window_free(struct vas_window *window)
-+static void vas_window_free(struct vas_window *window)
- {
- 	unmap_wc_mmio_bars(window);
- 	kfree(window->paste_addr_name);
-@@ -498,10 +498,12 @@ static struct vas_window *vas_window_alloc(struct vas_instance *vinst, int id)
- 	return NULL;
- }
- 
--/* stub for now */
--int vas_win_close(struct vas_window *window)
-+static void put_rx_win(struct vas_window *rxwin)
- {
--	return -1;
-+	/* Better not be a send window! */
-+	WARN_ON_ONCE(rxwin->tx_win);
-+
-+	atomic_dec(&rxwin->num_txwins);
- }
- 
- struct vas_window *get_vinstance_rxwin(struct vas_instance *vinst,
-@@ -706,3 +708,89 @@ struct vas_window *vas_rx_win_open(int vasid, enum vas_cop_type cop,
- 	vas_release_window_id(&vinst->ida, rxwin->winid);
- 	return ERR_PTR(rc);
- }
-+
-+static void poll_window_busy_state(struct vas_window *window)
-+{
-+	int busy;
-+	uint64_t val;
-+
-+retry:
-+	/*
-+	 * Poll Window Busy flag
-+	 */
-+	val = read_hvwc_reg(window, VREG(WIN_STATUS));
-+	busy = GET_FIELD(VAS_WIN_BUSY, val);
-+	if (busy) {
-+		val = 0;
-+		schedule_timeout(2000);
-+		goto retry;
-+	}
-+}
-+
-+static void poll_window_castout(struct vas_window *window)
-+{
-+	int cached;
-+	uint64_t val;
-+
-+	/* Cast window context out of the cache */
-+retry:
-+	val = read_hvwc_reg(window, VREG(WIN_CTX_CACHING_CTL));
-+	cached = GET_FIELD(VAS_WIN_CACHE_STATUS, val);
-+	if (cached) {
-+		val = 0ULL;
-+		val = SET_FIELD(VAS_CASTOUT_REQ, val, 1);
-+		val = SET_FIELD(VAS_PUSH_TO_MEM, val, 0);
-+		write_hvwc_reg(window, VREG(WIN_CTX_CACHING_CTL), val);
-+
-+		schedule_timeout(2000);
-+		goto retry;
-+	}
-+}
+diff --git a/arch/powerpc/platforms/powernv/copy-paste.h b/arch/powerpc/platforms/powernv/copy-paste.h
+new file mode 100644
+index 0000000..7783bb8
+--- /dev/null
++++ b/arch/powerpc/platforms/powernv/copy-paste.h
+@@ -0,0 +1,74 @@
++/*
++ * Copyright 2016 IBM Corp.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ */
 +
 +/*
-+ * Close a window.
-+ *
-+ * See Section 1.12.1 of VAS workbook v1.05 for details on closing window:
-+ *	- disable new paste operations (unmap paste address)
-+ *	- Poll for the "Window Busy" bit to be cleared
-+ *	- Clear the Open/Enable bit for the Window.
-+ *	- Poll for return of window Credits (implies FIFO empty for Rx win?)
-+ *	- Unpin and cast window context out of cache
-+ *
-+ * Besides the hardware, kernel has some bookkeeping of course.
++ * Macros taken from tools/testing/selftests/powerpc/context_switch/cp_abort.c
 + */
-+int vas_win_close(struct vas_window *window)
++#define PASTE(RA, RB, L, RC) \
++	.long (0x7c00070c | (RA) << (31-15) | (RB) << (31-20) \
++			  | (L) << (31-10) | (RC) << (31-31))
++
++#define COPY(RA, RB, L) \
++	.long (0x7c00060c | (RA) << (31-15) | (RB) << (31-20) \
++			  | (L) << (31-10))
++
++#define CR0_FXM		"0x80"
++#define CR0_SHIFT	28
++#define CR0_MASK	0xF
++/*
++ * Copy/paste instructions:
++ *
++ *	copy RA,RB,L
++ *		Copy contents of address (RA) + effective_address(RB)
++ *		to internal copy-buffer.
++ *
++ *		L == 1 indicates this is the first copy.
++ *
++ *		L == 0 indicates its a continuation of a prior first copy.
++ *
++ *	paste RA,RB,L
++ *		Paste contents of internal copy-buffer to the address
++ *		(RA) + effective_address(RB)
++ *
++ *		L == 0 indicates its a continuation of a prior paste. i.e.
++ *		don't wait for the completion or update status.
++ *
++ *		L == 1 indicates this is the last paste in the group (i.e.
++ *		wait for the group to complete and update status in CR0).
++ *
++ *	For Power9, the L bit must be 'true' in both copy and paste.
++ */
++
++static inline int vas_copy(void *crb, int offset, int first)
 +{
-+	uint64_t val;
++	WARN_ON_ONCE(!first);
 +
-+	if (!window)
-+		return 0;
-+
-+	if (!window->tx_win && atomic_read(&window->num_txwins) != 0) {
-+		pr_devel("VAS: Attempting to close an active Rx window!\n");
-+		WARN_ON_ONCE(1);
-+		return -EAGAIN;
-+	}
-+
-+	unmap_wc_paste_kaddr(window);
-+
-+	poll_window_busy_state(window);
-+
-+	/* Unpin window from cache and close it */
-+	val = read_hvwc_reg(window, VREG(WINCTL));
-+	val = SET_FIELD(VAS_WINCTL_PIN, val, 0);
-+	val = SET_FIELD(VAS_WINCTL_OPEN, val, 0);
-+	write_hvwc_reg(window, VREG(WINCTL), val);
-+
-+	poll_window_castout(window);
-+
-+	/* if send window, drop reference to matching receive window */
-+	if (window->tx_win)
-+		put_rx_win(window->rxwin);
-+
-+	vas_release_window_id(&window->vinst->ida, window->winid);
-+
-+	vas_window_free(window);
++	__asm__ __volatile(stringify_in_c(COPY(%0, %1, %2))";"
++		:
++		: "b" (offset), "b" (crb), "i" (1)
++		: "memory");
 +
 +	return 0;
 +}
++
++static inline int vas_paste(void *paste_address, int offset, int last)
++{
++	unsigned long long cr;
++
++	WARN_ON_ONCE(!last);
++
++	cr = 0;
++	__asm__ __volatile(stringify_in_c(PASTE(%1, %2, 1, 1))";"
++		"mfocrf %0," CR0_FXM ";"
++		: "=r" (cr)
++		: "b" (paste_address), "b" (offset)
++		: "memory");
++
++	return cr;
++}
+diff --git a/arch/powerpc/platforms/powernv/vas-window.c b/arch/powerpc/platforms/powernv/vas-window.c
+index 4f4c134..fe09d6f 100644
+--- a/arch/powerpc/platforms/powernv/vas-window.c
++++ b/arch/powerpc/platforms/powernv/vas-window.c
+@@ -14,6 +14,7 @@
+ #include <linux/log2.h>
+ 
+ #include "vas.h"
++#include "copy-paste.h"
+ 
+ static int fault_winid;
+ 
+@@ -866,6 +867,55 @@ struct vas_window *vas_tx_win_open(int vasid, enum vas_cop_type cop,
+ 
+ }
+ 
++int vas_copy_crb(void *crb, int offset, bool first)
++{
++	if (!vas_initialized())
++		return -1;
++
++	return vas_copy(crb, offset, first);
++}
++
++#define RMA_LSMP_REPORT_ENABLE PPC_BIT(53)
++int vas_paste_crb(struct vas_window *txwin, int offset, bool last, bool re)
++{
++	int rc;
++	uint64_t val;
++	void *addr;
++
++	if (!vas_initialized())
++		return -1;
++	/*
++	 * Only NX windows are supported for now and hardware assumes
++	 * report-enable flag is set for NX windows. Ensure software
++	 * complies too.
++	 */
++	WARN_ON_ONCE(!re);
++
++	addr = txwin->paste_kaddr;
++	if (re) {
++		/*
++		 * Set the REPORT_ENABLE bit (equivalent to writing
++		 * to 1K offset of the paste address)
++		 */
++		val = SET_FIELD(RMA_LSMP_REPORT_ENABLE, 0ULL, 1);
++		addr += val;
++	}
++
++	/*
++	 * Map the raw CR value from vas_paste() to an error code (there
++	 * is just pass or fail for now though).
++	 */
++	rc = vas_paste(addr, offset, last);
++	if (rc == 0x20000000)
++		rc = 0;
++	else
++		rc = -EINVAL;
++
++	print_fifo_msg_count(txwin);
++
++	return rc;
++}
++
+ static void poll_window_busy_state(struct vas_window *window)
+ {
+ 	int busy;
+diff --git a/arch/powerpc/platforms/powernv/vas.h b/arch/powerpc/platforms/powernv/vas.h
+index 86ed526..83c2559 100644
+--- a/arch/powerpc/platforms/powernv/vas.h
++++ b/arch/powerpc/platforms/powernv/vas.h
+@@ -453,4 +453,18 @@ static inline uint64_t read_hvwc_reg(struct vas_window *win,
+ 	return in_be64(win->hvwc_map+reg);
+ }
+ 
++#ifdef vas_debug
++
++static void print_fifo_msg_count(struct vas_window *txwin)
++{
++	uint64_t read_hvwc_reg(struct vas_window *w, char *n, uint64_t o);
++	pr_devel("Winid %d, Msg count %llu\n", txwin->winid,
++			(uint64_t)read_hvwc_reg(txwin, VREG(LRFIFO_PUSH)));
++}
++#else	/* vas_debug */
++
++#define print_fifo_msg_count(window)
++
++#endif	/* vas_debug */
++
+ #endif /* _VAS_H */
 -- 
 2.7.4
