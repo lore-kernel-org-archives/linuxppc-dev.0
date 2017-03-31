@@ -2,17 +2,15 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vvgsb5JGVzDq7Z
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Mar 2017 23:33:55 +1100 (AEDT)
-In-Reply-To: <20170322212201.26036-1-anton@ozlabs.org>
-To: Anton Blanchard <anton@ozlabs.org>, benh@kernel.crashing.org,
- paulus@samba.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vvgsc6Z6fzDqH7
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Mar 2017 23:33:56 +1100 (AEDT)
+In-Reply-To: <20170323075401.4371-1-oohall@gmail.com>
+To: Oliver O'Halloran <oohall@gmail.com>, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [1/3] powerpc/configs: Re-enable ISO9660_FS as a built-in in 64
- bit configs
-Message-Id: <3vvgsb2Mysz9s78@ozlabs.org>
-Date: Fri, 31 Mar 2017 23:33:55 +1100 (AEDT)
+Cc: Oliver O'Halloran <oohall@gmail.com>
+Subject: Re: [v2] powerpc/powernv: de-deuplicate OPAL call wrappers
+Message-Id: <3vvgsc1Q9xz9s2x@ozlabs.org>
+Date: Fri, 31 Mar 2017 23:33:56 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,18 +20,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2017-03-22 at 21:21:59 UTC, Anton Blanchard wrote:
-> From: Anton Blanchard <anton@samba.org>
+On Thu, 2017-03-23 at 07:54:01 UTC, Oliver O'Halloran wrote:
+> Currently the code to perform an OPAL call is duplicated between the
+> normal path and path taken when tracepoints are enabled. There's no
+> real need for this and combining them makes opal_tracepoint_entry
+> considerably easier to understand.
 > 
-> It turns out cloud-config uses ISO9660 filesystems to inject
-> configuration data into cloud images. The cloud-config failures when
-> ISO9660_FS is not enabled are cryptic, and building it in makes
-> mainline testing easier, so re-enable it.
-> 
-> Signed-off-by: Anton Blanchard <anton@samba.org>
+> Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
 
-Series applied to powerpc next, thanks.
+Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/4ce410d65a4703aa3fc29c8a1f172e
+https://git.kernel.org/powerpc/c/c3a08e93d66e9ba59ffbfb610af2f7
 
 cheers
