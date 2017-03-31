@@ -1,22 +1,18 @@
-Return-Path: <paulus@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <oohall@gmail.com>
+Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
+ [IPv6:2607:f8b0:400e:c05::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vvMy83TtMzDqC4
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Mar 2017 11:36:48 +1100 (AEDT)
-Date: Fri, 31 Mar 2017 11:36:45 +1100
-From: Paul Mackerras <paulus@ozlabs.org>
-To: "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, xinhui.pan@linux.vnet.ibm.com,
- benh@kernel.crashing.org, mpe@ellerman.id.au
-Subject: Re: [PATCH v4 2/3] powerpc/xmon: drop the nobt option from xmon plus
- minor fixes
-Message-ID: <20170331003645.GA12861@fergus.ozlabs.ibm.com>
-References: <20170322192751.30531-1-gpiccoli@linux.vnet.ibm.com>
- <20170322192751.30531-3-gpiccoli@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170322192751.30531-3-gpiccoli@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vvPJw2K81zDqGw
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Mar 2017 12:38:08 +1100 (AEDT)
+Received: by mail-pg0-x242.google.com with SMTP id g2so13467773pge.2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Mar 2017 18:38:08 -0700 (PDT)
+From: Oliver O'Halloran <oohall@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Oliver O'Halloran <oohall@gmail.com>, Rashmica Gupta <rashmica.g@gmail.com>
+Subject: [PATCH 1/2] powerpc/mm: fix up pgtable dump flags
+Date: Fri, 31 Mar 2017 12:37:48 +1100
+Message-Id: <20170331013749.17874-1-oohall@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,22 +22,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Mar 22, 2017 at 04:27:50PM -0300, Guilherme G. Piccoli wrote:
-> The xmon parameter nobt was added long time ago, by commit 26c8af5f01df
-> ("[POWERPC] print backtrace when entering xmon"). The problem that time
-> was that during a crash in a machine with USB keyboard, xmon wouldn't
-> respond to commands from the keyboard, so printing the backtrace wouldn't
-> be possible.
-> 
-> Idea then was to show automatically the backtrace on xmon crash for the
-> first time it's invoked (if it recovers, next time xmon won't show
-> backtrace automatically). The nobt parameter was added _only_ to prevent
-> this automatic trace show. Seems long time ago USB keyboards didn't work
-> that well!
+On Book3s we have two PTE flags used to mark cache-inhibited mappings:
+_PAGE_TOLERANT and _PAGE_NON_IDEMPOTENT. Currently the kernel page
+table dumper only looks at the generic _PAGE_NO_CACHE which is
+defined to be _PAGE_TOLERANT. This patch modifies the dumper so
+both flags are shown in the dump.
 
-Xmon still can't use a USB keyboard.  It's not a question of how well
-USB keyboards work, it's that having a non-interrupt-driven USB stack
-with (at least) an OHCI host controller driver and a keyboard driver
-in xmon is impractical.
+Cc: Rashmica Gupta <rashmica.g@gmail.com>
+Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
+---
+ arch/powerpc/mm/dump_linuxpagetables.c | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
 
-Paul.
+diff --git a/arch/powerpc/mm/dump_linuxpagetables.c b/arch/powerpc/mm/dump_linuxpagetables.c
+index 49abaf4dc8e3..e7cbfd5a0940 100644
+--- a/arch/powerpc/mm/dump_linuxpagetables.c
++++ b/arch/powerpc/mm/dump_linuxpagetables.c
+@@ -154,11 +154,24 @@ static const struct flag_info flag_array[] = {
+ 		.clear	= "             ",
+ 	}, {
+ #endif
++#ifndef CONFIG_PPC_BOOK3S_64
+ 		.mask	= _PAGE_NO_CACHE,
+ 		.val	= _PAGE_NO_CACHE,
+ 		.set	= "no cache",
+ 		.clear	= "        ",
+ 	}, {
++#else
++		.mask	= _PAGE_NON_IDEMPOTENT,
++		.val	= _PAGE_NON_IDEMPOTENT,
++		.set	= "non-idempotent",
++		.clear	= "              ",
++	}, {
++		.mask	= _PAGE_TOLERANT,
++		.val	= _PAGE_TOLERANT,
++		.set	= "tolerant",
++		.clear	= "        ",
++	}, {
++#endif
+ #ifdef CONFIG_PPC_BOOK3S_64
+ 		.mask	= H_PAGE_BUSY,
+ 		.val	= H_PAGE_BUSY,
+-- 
+2.9.3
