@@ -1,18 +1,24 @@
-Return-Path: <anton@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vvRFR74SnzDqGw
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Mar 2017 14:05:15 +1100 (AEDT)
-From: Anton Blanchard <anton@ozlabs.org>
-To: benh@kernel.crashing.org,
-	paulus@samba.org,
-	mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc: Avoid taking a data miss on every userspace
- instruction miss
-Date: Fri, 31 Mar 2017 14:05:11 +1100
-Message-Id: <20170331030511.30038-1-anton@ozlabs.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vvRlW62LbzDqGw
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Mar 2017 14:27:51 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Robin Murphy <robin.murphy@arm.com>, roy.pledge@nxp.com, oss@buserror.net,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
+ devicetree@vger.kernel.org
+Cc: madalin.bucur@nxp.com
+Subject: Re: [RFC PATCH 2/5] soc/fsl/qbman: Use shared-dma-pool for QMan
+ private memory allocations
+In-Reply-To: <b1cd8d44-8c74-ab50-5dc9-1f978cae5bdf@arm.com>
+References: <1490822037-6752-1-git-send-email-roy.pledge@nxp.com>
+ <1490822037-6752-3-git-send-email-roy.pledge@nxp.com>
+ <b1cd8d44-8c74-ab50-5dc9-1f978cae5bdf@arm.com>
+Date: Fri, 31 Mar 2017 14:27:51 +1100
+Message-ID: <871ste5dmw.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,51 +28,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Anton Blanchard <anton@samba.org>
+Robin Murphy <robin.murphy@arm.com> writes:
 
-Early on in do_page_fault() we call store_updates_sp(), regardless of
-the type of exception. For an instruction miss this doesn't make
-sense, because we only use this information to detect if a data miss
-is the result of a stack expansion instruction or not.
+> Hi Roy,
+>
+> On 29/03/17 22:13, Roy Pledge wrote:
+>> Use the shared-memory-pool mechanism for frame queue descriptor and
+>> packed frame descriptor record area allocations.
+>
+> Thanks for persevering with this - in my opinion it's now looking like
+> it was worth the effort :)
+>
+> AFAICS the ioremap_wc() that this leads to does appear to give back
+> something non-cacheable on PPC (assuming "pgprot_noncached_wc" isn't
+> horrendously misnamed), and "no-map" should rule out any cacheable
+> linear map alias existing, so it would seem that this approach should
+> avert Scott's concerns about attribute mismatches.
 
-Worse still, it results in a data miss within every userspace
-instruction miss handler, because we try and load the very instruction
-we are about to install a pte for!
+How does 'no-map' translate into something being excluded from the
+linear mapping?
 
-A simple exec microbenchmark runs 6% faster on POWER8 with this fix:
-
-int main(int argc, char *argv[])
-{
-	unsigned long left = atol(argv[1]);
-	char leftstr[16];
-
-	if (left-- == 0)
-		return 0;
-
-	sprintf(leftstr, "%ld", left);
-	execlp(argv[0], argv[0], leftstr, NULL);
-	perror("exec failed\n");
-
-	return 0;
-}
-
-Signed-off-by: Anton Blanchard <anton@samba.org>
----
- arch/powerpc/mm/fault.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
-index fd6484fc2fa9..3a7d580fdc59 100644
---- a/arch/powerpc/mm/fault.c
-+++ b/arch/powerpc/mm/fault.c
-@@ -287,7 +287,7 @@ int do_page_fault(struct pt_regs *regs, unsigned long address,
- 	 * can result in fault, which will cause a deadlock when called with
- 	 * mmap_sem held
- 	 */
--	if (user_mode(regs))
-+	if (!is_exec && user_mode(regs))
- 		store_update_sp = store_updates_sp(regs);
- 
- 	if (user_mode(regs))
--- 
-2.11.0
+cheers
