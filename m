@@ -2,30 +2,30 @@ Return-Path: <srs0=lfg8=3i=linux.vnet.ibm.com=sukadev@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vvV6L6gjBzDqJ9
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Mar 2017 16:14:18 +1100 (AEDT)
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3vvV6L4wjwz8w3D
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Mar 2017 16:14:18 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vvV6P42MczDqHJ
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Mar 2017 16:14:21 +1100 (AEDT)
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3vvV6P21Btz8sxx
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Mar 2017 16:14:21 +1100 (AEDT)
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3vvV6L153gz9s77
- for <linuxppc-dev@ozlabs.org>; Fri, 31 Mar 2017 16:14:17 +1100 (AEDT)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by ozlabs.org (Postfix) with ESMTPS id 3vvV6N59V8z9s4s
+ for <linuxppc-dev@ozlabs.org>; Fri, 31 Mar 2017 16:14:20 +1100 (AEDT)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v2V5Dq5V112329
- for <linuxppc-dev@ozlabs.org>; Fri, 31 Mar 2017 01:14:09 -0400
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
- by mx0a-001b2d01.pphosted.com with ESMTP id 29h4bny2kq-1
+ v2V5DoDp043863
+ for <linuxppc-dev@ozlabs.org>; Fri, 31 Mar 2017 01:14:17 -0400
+Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 29hf2xcca1-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Fri, 31 Mar 2017 01:14:09 -0400
+ for <linuxppc-dev@ozlabs.org>; Fri, 31 Mar 2017 01:14:16 -0400
 Received: from localhost
- by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Thu, 30 Mar 2017 23:14:08 -0600
+ Thu, 30 Mar 2017 23:14:15 -0600
 From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
@@ -33,11 +33,11 @@ Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  apopple@au1.ibm.com, hbabu@us.ibm.com, oohall@gmail.com,
  bsingharora@gmail.com, linuxppc-dev@ozlabs.org,
  <linux-kernel@vger.kernel.org>
-Subject: [PATCH v4 04/11] VAS: Define vas_init() and vas_exit()
-Date: Thu, 30 Mar 2017 22:13:37 -0700
+Subject: [PATCH v4 07/11] VAS: Define helpers to alloc/free windows
+Date: Thu, 30 Mar 2017 22:13:40 -0700
 In-Reply-To: <1490937224-29149-1-git-send-email-sukadev@linux.vnet.ibm.com>
 References: <1490937224-29149-1-git-send-email-sukadev@linux.vnet.ibm.com>
-Message-Id: <1490937224-29149-5-git-send-email-sukadev@linux.vnet.ibm.com>
+Message-Id: <1490937224-29149-8-git-send-email-sukadev@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,253 +47,94 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Implement vas_init() and vas_exit() functions for a new VAS module.
-This VAS module is essentially a library for other device drivers
-and kernel users of the NX coprocessors like NX-842 and NX-GZIP.
-In the future this will be extended to add support for user space
-to access the NX coprocessors.
+Define helpers to allocate/free VAS window objects. These will
+be used in follow-on patches when opening/closing windows.
 
 Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 ---
-Changelog[v4]:
-	- [Michael Neuling] Fix some accidental deletions; fix help text
-	  in Kconfig; change vas_initialized to a function; move from
-	  drivers/misc to arch/powerpc/kernel
-	- Drop the vas_window_reset() interface. It is not needed as
-	  window will be initialized before each use.
-Changelog[v3]:
-	- Zero vas_instances memory on allocation
-	- [Haren Myneni] Fix description in Kconfig
-Changelog[v2]:
-	- Get HVWC, UWC and window address parameters from device tree.
----
- arch/powerpc/platforms/powernv/Kconfig      |  14 +++
- arch/powerpc/platforms/powernv/Makefile     |   1 +
- arch/powerpc/platforms/powernv/vas-window.c |  19 ++++
- arch/powerpc/platforms/powernv/vas.c        | 145 ++++++++++++++++++++++++++++
- arch/powerpc/platforms/powernv/vas.h        |   3 +
- 5 files changed, 182 insertions(+)
- create mode 100644 arch/powerpc/platforms/powernv/vas-window.c
- create mode 100644 arch/powerpc/platforms/powernv/vas.c
+ arch/powerpc/platforms/powernv/vas-window.c | 63 ++++++++++++++++++++++++++++-
+ 1 file changed, 62 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/platforms/powernv/Kconfig b/arch/powerpc/platforms/powernv/Kconfig
-index 3a07e4d..54e2a4e 100644
---- a/arch/powerpc/platforms/powernv/Kconfig
-+++ b/arch/powerpc/platforms/powernv/Kconfig
-@@ -27,3 +27,17 @@ config OPAL_PRD
- 	help
- 	  This enables the opal-prd driver, a facility to run processor
- 	  recovery diagnostics on OpenPower machines
-+
-+config VAS
-+	tristate "IBM Virtual Accelerator Switchboard (VAS)"
-+	depends on PPC_POWERNV
-+	default n
-+	help
-+	  This enables support for IBM Virtual Accelerator Switchboard (VAS).
-+
-+	  VAS allows accelerators in co-processors like NX-GZIP and NX-842
-+	  to be accessible to kernel subsystems.
-+
-+	  VAS adapters are found in POWER9 based systems.
-+
-+	  If unsure, say N.
-diff --git a/arch/powerpc/platforms/powernv/Makefile b/arch/powerpc/platforms/powernv/Makefile
-index b5d98cb..ebef20b 100644
---- a/arch/powerpc/platforms/powernv/Makefile
-+++ b/arch/powerpc/platforms/powernv/Makefile
-@@ -12,3 +12,4 @@ obj-$(CONFIG_PPC_SCOM)	+= opal-xscom.o
- obj-$(CONFIG_MEMORY_FAILURE)	+= opal-memory-errors.o
- obj-$(CONFIG_TRACEPOINTS)	+= opal-tracepoints.o
- obj-$(CONFIG_OPAL_PRD)	+= opal-prd.o
-+obj-$(CONFIG_VAS)	+= vas.o vas-window.o
 diff --git a/arch/powerpc/platforms/powernv/vas-window.c b/arch/powerpc/platforms/powernv/vas-window.c
-new file mode 100644
-index 0000000..6156fbe
---- /dev/null
+index 5ddcb63..0c178fe 100644
+--- a/arch/powerpc/platforms/powernv/vas-window.c
 +++ b/arch/powerpc/platforms/powernv/vas-window.c
-@@ -0,0 +1,19 @@
-+/*
-+ * Copyright 2016 IBM Corp.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
-+ */
+@@ -120,7 +120,7 @@ static void unmap_wc_mmio_bars(struct vas_window *window)
+  * OS/User Window Context (UWC) MMIO Base Address Region for the given window.
+  * Map these bus addresses and save the mapped kernel addresses in @window.
+  */
+-int map_wc_mmio_bars(struct vas_window *window)
++static int map_wc_mmio_bars(struct vas_window *window)
+ {
+ 	int len;
+ 	uint64_t start;
+@@ -437,6 +437,67 @@ int init_winctx_regs(struct vas_window *window, struct vas_winctx *winctx)
+ 	return 0;
+ }
+ 
++DEFINE_SPINLOCK(vas_ida_lock);
 +
-+#include <linux/types.h>
-+#include <linux/mutex.h>
-+
-+#include "vas.h"
-+
-+/* stub for now */
-+int vas_win_close(struct vas_window *window)
++void vas_release_window_id(struct ida *ida, int winid)
 +{
-+	return -1;
++	spin_lock(&vas_ida_lock);
++	ida_remove(ida, winid);
++	spin_unlock(&vas_ida_lock);
 +}
-diff --git a/arch/powerpc/platforms/powernv/vas.c b/arch/powerpc/platforms/powernv/vas.c
-new file mode 100644
-index 0000000..9bf8f57
---- /dev/null
-+++ b/arch/powerpc/platforms/powernv/vas.c
-@@ -0,0 +1,145 @@
-+/*
-+ * Copyright 2016 IBM Corp.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
-+ */
 +
-+#include <linux/module.h>
-+#include <linux/kernel.h>
-+#include <linux/export.h>
-+#include <linux/types.h>
-+#include <linux/slab.h>
-+#include <linux/of.h>
-+
-+#include "vas.h"
-+
-+static bool init_done;
-+int vas_num_instances;
-+struct vas_instance *vas_instances;
-+
-+static int init_vas_instance(struct device_node *dn,
-+				struct vas_instance *vinst)
++int vas_assign_window_id(struct ida *ida)
 +{
-+	int rc;
-+	const __be32 *p;
-+	u64 values[6];
++	int rc, winid;
 +
-+	ida_init(&vinst->ida);
-+	mutex_init(&vinst->mutex);
++	rc = ida_pre_get(ida, GFP_KERNEL);
++	if (!rc)
++		return -EAGAIN;
 +
-+	p = of_get_property(dn, "vas-id", NULL);
-+	if (!p) {
-+		pr_err("VAS: NULL vas-id? %p\n", p);
-+		return -ENODEV;
-+	}
++	spin_lock(&vas_ida_lock);
++	rc = ida_get_new_above(ida, 0, &winid);
++	spin_unlock(&vas_ida_lock);
 +
-+	vinst->vas_id = of_read_number(p, 1);
-+
-+	/*
-+	 * Hardcoded 6 is tied to corresponding code in
-+	 *      skiboot.git/core/vas.c
-+	 */
-+	rc = of_property_read_variable_u64_array(dn, "reg", values, 6, 6);
-+	if (rc != 6) {
-+		pr_err("VAS %d: Unable to read reg properties, rc %d\n",
-+				vinst->vas_id, rc);
++	if (rc)
 +		return rc;
++
++	if (winid > VAS_MAX_WINDOWS_PER_CHIP) {
++		pr_err("VAS: Too many (%d) open windows\n", winid);
++		vas_release_window_id(ida, winid);
++		return -EAGAIN;
 +	}
 +
-+	vinst->hvwc_bar_start = values[0];
-+	vinst->hvwc_bar_len = values[1];
-+	vinst->uwc_bar_start = values[2];
-+	vinst->uwc_bar_len = values[3];
-+	vinst->win_base_addr = values[4];
-+	vinst->win_id_shift = values[5];
-+
-+	return 0;
++	return winid;
 +}
 +
-+/*
-+ * Although this is read/used multiple times, it is written to only
-+ * during initialization.
-+ */
-+struct vas_instance *find_vas_instance(int vasid)
++void vas_window_free(struct vas_window *window)
 +{
-+	int i;
-+	struct vas_instance *vinst;
++	unmap_wc_mmio_bars(window);
++	kfree(window->paste_addr_name);
++	kfree(window);
++}
 +
-+	for (i = 0; i < vas_num_instances; i++) {
-+		vinst = &vas_instances[i];
-+		if (vinst->vas_id == vasid)
-+			return vinst;
-+	}
-+	pr_err("VAS instance for vas-id %d not found\n", vasid);
-+	WARN_ON_ONCE(1);
++struct vas_window *vas_window_alloc(struct vas_instance *vinst, int id)
++{
++	struct vas_window *window;
++
++	window = kzalloc(sizeof(*window), GFP_KERNEL);
++	if (!window)
++		return NULL;
++
++	window->vinst = vinst;
++	window->winid = id;
++
++	if (map_wc_mmio_bars(window))
++		goto out_free;
++
++	return window;
++
++out_free:
++	kfree(window);
 +	return NULL;
 +}
 +
-+
-+bool vas_initialized(void)
-+{
-+	return init_done;
-+}
-+
-+int vas_init(void)
-+{
-+	int rc;
-+	struct device_node *dn;
-+	struct vas_instance *vinst;
-+
-+	if (!pvr_version_is(PVR_POWER9))
-+		return -ENODEV;
-+
-+	vas_num_instances = 0;
-+	for_each_node_by_name(dn, "vas")
-+		vas_num_instances++;
-+
-+	if (!vas_num_instances)
-+		return -ENODEV;
-+
-+	vas_instances = kcalloc(vas_num_instances, sizeof(*vinst), GFP_KERNEL);
-+	if (!vas_instances)
-+		return -ENOMEM;
-+
-+	vinst = &vas_instances[0];
-+	for_each_node_by_name(dn, "vas") {
-+		rc = init_vas_instance(dn, vinst);
-+		if (rc) {
-+			pr_err("Error %d initializing VAS instance %ld\n", rc,
-+					(vinst-&vas_instances[0]));
-+			goto cleanup;
-+		}
-+		vinst++;
-+	}
-+
-+	rc = -ENODEV;
-+	if (vinst == &vas_instances[0]) {
-+		/* Should not happen as we saw some above. */
-+		pr_err("VAS: Did not find any VAS DT nodes now!\n");
-+		goto cleanup;
-+	}
-+
-+	pr_devel("VAS: Initialized %d instances\n", vas_num_instances);
-+	init_done = true;
-+
-+	return 0;
-+
-+cleanup:
-+	kfree(vas_instances);
-+	return rc;
-+}
-+
-+void vas_exit(void)
-+{
-+	init_done = false;
-+	kfree(vas_instances);
-+}
-+
-+module_init(vas_init);
-+module_exit(vas_exit);
-+MODULE_DESCRIPTION("IBM Virtual Accelerator Switchboard");
-+MODULE_AUTHOR("Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>");
-+MODULE_LICENSE("GPL");
-diff --git a/arch/powerpc/platforms/powernv/vas.h b/arch/powerpc/platforms/powernv/vas.h
-index c63395d..46aaa17 100644
---- a/arch/powerpc/platforms/powernv/vas.h
-+++ b/arch/powerpc/platforms/powernv/vas.h
-@@ -384,4 +384,7 @@ struct vas_winctx {
- 	enum vas_notify_after_count notify_after_count;
- };
- 
-+extern bool vas_initialized(void);
-+extern struct vas_instance *find_vas_instance(int vasid);
-+
- #endif /* _VAS_H */
+ /* stub for now */
+ int vas_win_close(struct vas_window *window)
+ {
 -- 
 2.7.4
