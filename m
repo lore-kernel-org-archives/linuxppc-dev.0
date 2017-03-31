@@ -1,20 +1,26 @@
-Return-Path: <oohall@gmail.com>
-Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
- [IPv6:2607:f8b0:400e:c00::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vvPK25NV5zDqH3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Mar 2017 12:38:14 +1100 (AEDT)
-Received: by mail-pf0-x242.google.com with SMTP id n11so2772491pfg.2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Mar 2017 18:38:14 -0700 (PDT)
-From: Oliver O'Halloran <oohall@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Oliver O'Halloran <oohall@gmail.com>, Rashmica Gupta <rashmica.g@gmail.com>
-Subject: [PATCH 2/2] powerpc/mm: add phys addr to linux page table dump
-Date: Fri, 31 Mar 2017 12:37:49 +1100
-Message-Id: <20170331013749.17874-2-oohall@gmail.com>
-In-Reply-To: <20170331013749.17874-1-oohall@gmail.com>
-References: <20170331013749.17874-1-oohall@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vvRCL4S8nzDqGw
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Mar 2017 14:03:26 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Nicolai Stange <nicstange@gmail.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>
+Cc: John Stultz <john.stultz@linaro.org>, linux-kernel@vger.kernel.org,
+ Nicolai Stange <nicstange@gmail.com>, Ingo Molnar <mingo@kernel.org>,
+ =?utf-8?B?RnLDqWTDqXJpYw==?= Weisbecker <fweisbec@gmail.com>, Thomas
+ Gleixner <tglx@linutronix.de>, Oliver O'Halloran <oohall@gmail.com>,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] powerpc/time: set ->min_delta_ticks and ->max_delta_ticks
+In-Reply-To: <20170330195317.7328-1-nicstange@gmail.com>
+References: <20170326134403.16226-1-nicstange@gmail.com>
+ <20170330195317.7328-1-nicstange@gmail.com>
+Date: Fri, 31 Mar 2017 14:03:22 +1100
+Message-ID: <874lya5erp.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,85 +30,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The current page table dumper scans the linux page tables and coalesces
-mappings with adjacent virtual addresses and similar PTE flags. This
-behaviour is somewhat broken when you consider the IOREMAP space where
-entirely unrelated mappings will appear to be contiguous.  This patch
-modifies the range coalescing so that only ranges that are both physically
-and virtually contiguous are combined. This patch also adds to the dump
-output the physical address at the start of each range.
+Nicolai Stange <nicstange@gmail.com> writes:
 
-Cc: Rashmica Gupta <rashmica.g@gmail.com>
-Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
----
- arch/powerpc/mm/dump_linuxpagetables.c | 18 ++++++++++++++++--
- 1 file changed, 16 insertions(+), 2 deletions(-)
+> In preparation for making the clockevents core NTP correction aware,
+> all clockevent device drivers must set ->min_delta_ticks and
+> ->max_delta_ticks rather than ->min_delta_ns and ->max_delta_ns: a
+> clockevent device's rate is going to change dynamically and thus, the
+> ratio of ns to ticks ceases to stay invariant.
+>
+> Make the powerpc arch's clockevent driver initialize these fields properly.
+>
+> This patch alone doesn't introduce any change in functionality as the
+> clockevents core still looks exclusively at the (untouched) ->min_delta_ns
+> and ->max_delta_ns. As soon as this has changed, a followup patch will
+> purge the initialization of ->min_delta_ns and ->max_delta_ns from this
+> driver.
+>
+> Signed-off-by: Nicolai Stange <nicstange@gmail.com>
+> ---
+>
+> Notes:
+>     This prerequisite patch is part of a larger effort to feed NTP
+>     corrections into the clockevent devices' frequencies and thus
+>     avoiding their notion of time to diverge from the system's
+>     one. If you're interested, the current state of the whole series
+>     can be found at [1].
+>     
+>     If you haven't got any objections and these prerequisites get
+>     merged by 4.12 everywhere, I'll proceed with the remainder of
+>     this series in 4.13.
+>     
+>     Applicable to next-20170324 as well as to John' Stultz tree [2].
+>     
+>     [1]
+>       git://nicst.de/linux.git cev-freq-adj.v10.fortglx-4.12-time
+>       https://nicst.de/git/?p=linux.git;a=shortlog;h=refs/heads/cev-freq-adj.v10.fortglx-4.12-time
+>     
+>     [2]
+>       https://git.linaro.org/people/john.stultz/linux.git fortglx/4.12/time
+>
+>  arch/powerpc/kernel/time.c | 2 ++
+>  1 file changed, 2 insertions(+)
+>
+> diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
+> index 07b90725855e..2b33cfaac7b8 100644
+> --- a/arch/powerpc/kernel/time.c
+> +++ b/arch/powerpc/kernel/time.c
+> @@ -995,8 +995,10 @@ static void __init init_decrementer_clockevent(void)
+>  
+>  	decrementer_clockevent.max_delta_ns =
+>  		clockevent_delta2ns(decrementer_max, &decrementer_clockevent);
+> +	decrementer_clockevent.max_delta_ticks = decrementer_max;
+>  	decrementer_clockevent.min_delta_ns =
+>  		clockevent_delta2ns(2, &decrementer_clockevent);
+> +	decrementer_clockevent.min_delta_ticks = 2;
 
-diff --git a/arch/powerpc/mm/dump_linuxpagetables.c b/arch/powerpc/mm/dump_linuxpagetables.c
-index e7cbfd5a0940..85e6a45bd7ee 100644
---- a/arch/powerpc/mm/dump_linuxpagetables.c
-+++ b/arch/powerpc/mm/dump_linuxpagetables.c
-@@ -56,6 +56,8 @@ struct pg_state {
- 	struct seq_file *seq;
- 	const struct addr_marker *marker;
- 	unsigned long start_address;
-+	unsigned long start_pa;
-+	unsigned long last_pa;
- 	unsigned int level;
- 	u64 current_flags;
- };
-@@ -265,7 +267,9 @@ static void dump_addr(struct pg_state *st, unsigned long addr)
- 	const char *unit = units;
- 	unsigned long delta;
- 
--	seq_printf(st->seq, "0x%016lx-0x%016lx   ", st->start_address, addr-1);
-+	seq_printf(st->seq, "0x%016lx-0x%016lx ", st->start_address, addr-1);
-+	seq_printf(st->seq, "%016lx ", st->start_pa);
-+
- 	delta = (addr - st->start_address) >> 10;
- 	/* Work out what appropriate unit to use */
- 	while (!(delta & 1023) && unit[1]) {
-@@ -280,11 +284,15 @@ static void note_page(struct pg_state *st, unsigned long addr,
- 	       unsigned int level, u64 val)
- {
- 	u64 flag = val & pg_level[level].mask;
-+	u64 pa = val & PTE_RPN_MASK;
-+
- 	/* At first no level is set */
- 	if (!st->level) {
- 		st->level = level;
- 		st->current_flags = flag;
- 		st->start_address = addr;
-+		st->start_pa = pa;
-+		st->last_pa = pa;
- 		seq_printf(st->seq, "---[ %s ]---\n", st->marker->name);
- 	/*
- 	 * Dump the section of virtual memory when:
-@@ -292,9 +300,11 @@ static void note_page(struct pg_state *st, unsigned long addr,
- 	 *   - we change levels in the tree.
- 	 *   - the address is in a different section of memory and is thus
- 	 *   used for a different purpose, regardless of the flags.
-+	 *   - the pa of this page is not adjacent to the last inspected page
- 	 */
- 	} else if (flag != st->current_flags || level != st->level ||
--		   addr >= st->marker[1].start_address) {
-+		   addr >= st->marker[1].start_address ||
-+		   pa != st->last_pa + PAGE_SIZE) {
- 
- 		/* Check the PTE flags */
- 		if (st->current_flags) {
-@@ -318,8 +328,12 @@ static void note_page(struct pg_state *st, unsigned long addr,
- 			seq_printf(st->seq, "---[ %s ]---\n", st->marker->name);
- 		}
- 		st->start_address = addr;
-+		st->start_pa = pa;
-+		st->last_pa = pa;
- 		st->current_flags = flag;
- 		st->level = level;
-+	} else {
-+		st->last_pa = pa;
- 	}
- }
- 
--- 
-2.9.3
+Seems to do what it says on the tin.
+
+Acked-by: Michael Ellerman <mpe@ellerman.id.au> (powerpc)
+
+
+cheers
