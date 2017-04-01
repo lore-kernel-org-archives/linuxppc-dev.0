@@ -1,32 +1,33 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <haren@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vwLgC5KZvzDqC4
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  2 Apr 2017 01:42:15 +1100 (AEDT)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v31EcWew063526
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 1 Apr 2017 10:42:05 -0400
-Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
- by mx0b-001b2d01.pphosted.com with ESMTP id 29j5tuygtr-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vwPhB1tykzDq7c
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  2 Apr 2017 02:58:18 +1000 (AEST)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v31Gv0Ig049442
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 1 Apr 2017 12:58:04 -0400
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 29j97eq2nu-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 01 Apr 2017 10:42:05 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 01 Apr 2017 12:58:04 -0400
 Received: from localhost
- by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Sat, 1 Apr 2017 08:42:04 -0600
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH 2/2] powerpc/mm/radix: Remove unnecessary ptesync
-Date: Sat,  1 Apr 2017 20:11:48 +0530
-In-Reply-To: <1491057708-15934-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-References: <1491057708-15934-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Message-Id: <1491057708-15934-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <haren@linux.vnet.ibm.com>;
+ Sat, 1 Apr 2017 10:58:04 -0600
+Subject: [PATCH 0/5] crypto/nx: Enable NX 842 compression engine on Power9
+From: Haren Myneni <haren@linux.vnet.ibm.com>
+To: herbert@gondor.apana.org.au, mpe@ellerman.id.au, ddstreet@ieee.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-crypto@vger.kernel.org,
+ benh@kernel.crashing.org, mikey@neuling.org, suka@us.ibm.com,
+ hbabu@us.ibm.com
+Content-Type: text/plain; charset="UTF-8"
+Date: Sat, 01 Apr 2017 09:57:56 -0700
+Mime-Version: 1.0
+Message-Id: <1491065876.29552.25.camel@hbabu-laptop>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,42 +37,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-For a tlbiel with pid, we need to issue tlbiel with set number encoded. We
-don't need to do ptesync for each of those. Instead we need one for the entire
-tlbiel pid operation.
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
----
- arch/powerpc/mm/tlb-radix.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+[PATCH 0/5] crypto/nx: Enable NX 842 compression engine on Power9
 
-diff --git a/arch/powerpc/mm/tlb-radix.c b/arch/powerpc/mm/tlb-radix.c
-index f3e58bd60d1a..b68b5219cf45 100644
---- a/arch/powerpc/mm/tlb-radix.c
-+++ b/arch/powerpc/mm/tlb-radix.c
-@@ -34,10 +34,8 @@ static inline void __tlbiel_pid(unsigned long pid, int set,
- 	prs = 1; /* process scoped */
- 	r = 1;   /* raidx format */
- 
--	asm volatile("ptesync": : :"memory");
- 	asm volatile(PPC_TLBIEL(%0, %4, %3, %2, %1)
- 		     : : "r"(rb), "i"(r), "i"(prs), "i"(ric), "r"(rs) : "memory");
--	asm volatile("ptesync": : :"memory");
- }
- 
- /*
-@@ -47,9 +45,11 @@ static inline void _tlbiel_pid(unsigned long pid, unsigned long ric)
- {
- 	int set;
- 
-+	asm volatile("ptesync": : :"memory");
- 	for (set = 0; set < POWER9_TLB_SETS_RADIX ; set++) {
- 		__tlbiel_pid(pid, set, ric);
- 	}
-+	asm volatile("ptesync": : :"memory");
- 	asm volatile(PPC_INVALIDATE_ERAT "; isync" : : :"memory");
- }
- 
+P9 introduces Virtual Accelerator Switchboard (VAS) to communicate
+with NX 842 engine. icswx function is used to access NX before.
+On powerNV systems, NX-842 driver invokes VAS functions for
+configuring RxFIFO (receive window) per each NX engine. VAS uses
+this FIFO to communicate the request to NX. The kernel opens send 
+window which is used to transfer compression/decompression requests 
+to VAS. It maps the send window to the corresponding RxFIFO. 
+copy/paste instructions are used to pass the CRB to VAS.
+
+This patch series adds P9 NX support for 842 compression engine.
+First 3 patches reorganize the current code so that VAS function
+can be added.
+- nx842_powernv_function points to VAS function if VAS feature is
+  available. Otherwise icswx function is used.
+- Move configure CRB code nx842_cfg_crb() 
+- In addition to freeing co-processor structs for initialization 
+  failures and exit, both send and receive windows have to closed
+  for VAS.
+
+The last 2 patches adds configuring and invoking VAS, and also 
+checking P9 NX specific errors that are provided in co-processor 
+status block (CSB) for failures.
+
+Haren Myneni (5):
+  crypto/nx: Rename nx842_powernv_function as icswx function
+  crypto/nx: Create nx842_cfg_crb function
+  crypto/nx: Create nx842_delete_coproc function
+  crypto/nx: Add P9 NX support for 842 compression engine.
+  crypto/nx: Add P9 NX specific error codes for 842 engine
+
+ arch/powerpc/include/asm/icswx.h   |   3 +
+ arch/powerpc/include/asm/vas.h     |   2 +
+ drivers/crypto/nx/Kconfig          |   1 +
+ drivers/crypto/nx/nx-842-powernv.c | 435 +++++++++++++++++++++++++++++++++----
+ drivers/crypto/nx/nx-842.h         |   8 +
+ 5 files changed, 407 insertions(+), 42 deletions(-)
+
 -- 
-2.7.4
+1.8.3.1
