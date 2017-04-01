@@ -1,24 +1,31 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vwF5S5bv0zDqHG
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Apr 2017 21:31:08 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com>,
- Paul Mackerras <paulus@ozlabs.org>
-Cc: xinhui.pan@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v4 2/3] powerpc/xmon: drop the nobt option from xmon plus
- minor fixes
-In-Reply-To: <38390ee4-b1ea-7be7-1095-2706aca5faae@linux.vnet.ibm.com>
-References: <20170322192751.30531-1-gpiccoli@linux.vnet.ibm.com>
- <20170322192751.30531-3-gpiccoli@linux.vnet.ibm.com>
- <20170331003645.GA12861@fergus.ozlabs.ibm.com>
- <38390ee4-b1ea-7be7-1095-2706aca5faae@linux.vnet.ibm.com>
-Date: Sat, 01 Apr 2017 21:31:07 +1100
-Message-ID: <87shlsa07o.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vwLg94yvkzDqC4
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  2 Apr 2017 01:42:13 +1100 (AEDT)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v31EckuQ079306
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 1 Apr 2017 10:42:03 -0400
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 29j8v42xnp-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 01 Apr 2017 10:42:02 -0400
+Received: from localhost
+ by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Sat, 1 Apr 2017 08:42:02 -0600
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH 1/2] powerpc/mm/radix: Don't do page walk cache flush when
+ doing full mm flush
+Date: Sat,  1 Apr 2017 20:11:47 +0530
+Message-Id: <1491057708-15934-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,36 +35,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-"Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com> writes:
+For fullmm tlb flush, we do a flush with RIC_FLUSH_ALL which will invalidate all
+related caches (radix__tlb_flush()). Hence the pwc flush is not needed.
 
-> On 03/30/2017 09:36 PM, Paul Mackerras wrote:
->> On Wed, Mar 22, 2017 at 04:27:50PM -0300, Guilherme G. Piccoli wrote:
->>> The xmon parameter nobt was added long time ago, by commit 26c8af5f01df
->>> ("[POWERPC] print backtrace when entering xmon"). The problem that time
->>> was that during a crash in a machine with USB keyboard, xmon wouldn't
->>> respond to commands from the keyboard, so printing the backtrace wouldn't
->>> be possible.
->>>
->>> Idea then was to show automatically the backtrace on xmon crash for the
->>> first time it's invoked (if it recovers, next time xmon won't show
->>> backtrace automatically). The nobt parameter was added _only_ to prevent
->>> this automatic trace show. Seems long time ago USB keyboards didn't work
->>> that well!
->> 
->> Xmon still can't use a USB keyboard.  It's not a question of how well
->> USB keyboards work, it's that having a non-interrupt-driven USB stack
->> with (at least) an OHCI host controller driver and a keyboard driver
->> in xmon is impractical.
->
-> That's nice to know Paul, thank you. Fortunately, we kept the automatic
-> trace showing feature!
->
-> Seems my commit message was unfortunate/wrong in this aspect, though.
-> @mpe, if you wanna change, feel free. Although it's not essential...
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+---
+ arch/powerpc/mm/tlb-radix.c | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
 
-It's already merged, so it is what it is.
-
-I do remember not quite understanding what you meant with the "long time
-ago" bit, but didn't think much more of it.
-
-cheers
+diff --git a/arch/powerpc/mm/tlb-radix.c b/arch/powerpc/mm/tlb-radix.c
+index 83dc1ccc2fa1..f3e58bd60d1a 100644
+--- a/arch/powerpc/mm/tlb-radix.c
++++ b/arch/powerpc/mm/tlb-radix.c
+@@ -129,6 +129,12 @@ void radix__local_flush_tlb_pwc(struct mmu_gather *tlb, unsigned long addr)
+ {
+ 	unsigned long pid;
+ 	struct mm_struct *mm = tlb->mm;
++	/*
++	 * If we are doing a full mm flush, we will do a tlb flush
++	 * with RIC_FLUSH_ALL later.
++	 */
++	if (tlb->fullmm)
++		return;
+ 
+ 	preempt_disable();
+ 
+@@ -195,6 +201,12 @@ void radix__flush_tlb_pwc(struct mmu_gather *tlb, unsigned long addr)
+ 	unsigned long pid;
+ 	struct mm_struct *mm = tlb->mm;
+ 
++	/*
++	 * If we are doing a full mm flush, we will do a tlb flush
++	 * with RIC_FLUSH_ALL later.
++	 */
++	if (tlb->fullmm)
++		return;
+ 	preempt_disable();
+ 
+ 	pid = mm->context.id;
+-- 
+2.7.4
