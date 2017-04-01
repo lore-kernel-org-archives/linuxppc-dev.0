@@ -1,33 +1,33 @@
 Return-Path: <haren@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vwPnN0KV9zDqJ1
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  2 Apr 2017 03:02:47 +1000 (AEST)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v31GxCXF030260
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 1 Apr 2017 13:02:45 -0400
-Received: from e15.ny.us.ibm.com (e15.ny.us.ibm.com [129.33.205.205])
- by mx0b-001b2d01.pphosted.com with ESMTP id 29j9a1f5r6-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vwPz54VrMzDqHg
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  2 Apr 2017 03:11:13 +1000 (AEST)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v31H8qpK002325
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 1 Apr 2017 13:11:00 -0400
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 29j6hckvkr-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 01 Apr 2017 13:02:45 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 01 Apr 2017 13:11:00 -0400
 Received: from localhost
- by e15.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <haren@linux.vnet.ibm.com>;
- Sat, 1 Apr 2017 13:02:44 -0400
-Subject: [PATCH 5/5] crypto/nx: Add P9 NX specific error codes for 842 engine
+ Sat, 1 Apr 2017 11:10:59 -0600
+Subject: [RESEND PATCH 0/5] Enable NX 842 compression engine on Power9
 From: Haren Myneni <haren@linux.vnet.ibm.com>
 To: herbert@gondor.apana.org.au, mpe@ellerman.id.au, ddstreet@ieee.org
 Cc: linuxppc-dev@lists.ozlabs.org, linux-crypto@vger.kernel.org,
  benh@kernel.crashing.org, mikey@neuling.org, suka@us.ibm.com,
  hbabu@us.ibm.com
 Content-Type: text/plain; charset="UTF-8"
-Date: Sat, 01 Apr 2017 10:02:34 -0700
+Date: Sat, 01 Apr 2017 10:10:51 -0700
 Mime-Version: 1.0
-Message-Id: <1491066154.29552.30.camel@hbabu-laptop>
+Message-Id: <1491066651.29552.35.camel@hbabu-laptop>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,101 +37,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-[PATCH 5/5] crypto/nx: Add P9 NX specific error codes for 842 engine
+Sorry for reposting. Missed to specify dependency - VAS kernel changes.
 
-This patch adds changes for checking P9 specific 842 engine
-error codes. These errros are reported in co-processor status
-block (CSB) for failures.
+[PATCH 0/5] Enable NX 842 compression engine on Power9
 
-Signed-off-by: Haren Myneni <haren@us.ibm.com>
----
- arch/powerpc/include/asm/icswx.h   |  3 +++
- drivers/crypto/nx/nx-842-powernv.c | 18 ++++++++++++++++++
- drivers/crypto/nx/nx-842.h         |  8 ++++++++
- 3 files changed, 29 insertions(+)
+P9 introduces Virtual Accelerator Switchboard (VAS) to communicate
+with NX 842 engine. icswx function is used to access NX before.
+On powerNV systems, NX-842 driver invokes VAS functions for
+configuring RxFIFO (receive window) per each NX engine. VAS uses
+this FIFO to communicate the request to NX. The kernel opens send 
+window which is used to transfer compression/decompression requests 
+to VAS. It maps the send window to the corresponding RxFIFO. 
+copy/paste instructions are used to pass the CRB to VAS.
 
-diff --git a/arch/powerpc/include/asm/icswx.h b/arch/powerpc/include/asm/icswx.h
-index 27e588f..6a2c875 100644
---- a/arch/powerpc/include/asm/icswx.h
-+++ b/arch/powerpc/include/asm/icswx.h
-@@ -69,7 +69,10 @@ struct coprocessor_completion_block {
- #define CSB_CC_WR_PROTECTION	(16)
- #define CSB_CC_UNKNOWN_CODE	(17)
- #define CSB_CC_ABORT		(18)
-+#define CSB_CC_EXCEED_BYTE_COUNT	(19)	/* P9 or later */
- #define CSB_CC_TRANSPORT	(20)
-+#define CSB_CC_INVALID_CRB	(21)	/* P9 or later */
-+#define CSB_CC_INVALID_DDE	(30)	/* P9 or later */
- #define CSB_CC_SEGMENTED_DDL	(31)
- #define CSB_CC_PROGRESS_POINT	(32)
- #define CSB_CC_DDE_OVERFLOW	(33)
-diff --git a/drivers/crypto/nx/nx-842-powernv.c b/drivers/crypto/nx/nx-842-powernv.c
-index 66efd39..719d9f1 100644
---- a/drivers/crypto/nx/nx-842-powernv.c
-+++ b/drivers/crypto/nx/nx-842-powernv.c
-@@ -258,6 +258,13 @@ static int wait_for_csb(struct nx842_workmem *wmem,
- 	case CSB_CC_TEMPL_OVERFLOW:
- 		CSB_ERR(csb, "Compressed data template shows data past end");
- 		return -EINVAL;
-+	case CSB_CC_EXCEED_BYTE_COUNT:	/* P9 or later */
-+		/*
-+		 * DDE byte count exceeds the limit specified in Maximum
-+		 * byte count register.
-+		 */
-+		CSB_ERR(csb, "DDE byte count exceeds the limit");
-+		return -EINVAL;
- 
- 	/* these should not happen */
- 	case CSB_CC_INVALID_ALIGN:
-@@ -299,9 +306,17 @@ static int wait_for_csb(struct nx842_workmem *wmem,
- 		CSB_ERR(csb, "Too many DDEs in DDL");
- 		return -EINVAL;
- 	case CSB_CC_TRANSPORT:
-+	case CSB_CC_INVALID_CRB:	/* P9 or later */
- 		/* shouldn't happen, we setup CRB correctly */
- 		CSB_ERR(csb, "Invalid CRB");
- 		return -EINVAL;
-+	case CSB_CC_INVALID_DDE:	/* P9 or later */
-+		/*
-+		 * shouldn't happen, setup_direct/indirect_dde creates
-+		 * DDE right
-+		 */
-+		CSB_ERR(csb, "Invalid DDE");
-+		return -EINVAL;
- 	case CSB_CC_SEGMENTED_DDL:
- 		/* shouldn't happen, setup_ddl creates DDL right */
- 		CSB_ERR(csb, "Segmented DDL error");
-@@ -345,6 +360,9 @@ static int wait_for_csb(struct nx842_workmem *wmem,
- 	case CSB_CC_HW:
- 		CSB_ERR(csb, "Correctable hardware error");
- 		return -EPROTO;
-+	case CSB_CC_HW_EXPIRED_TIMER:	/* P9 or later */
-+		CSB_ERR(csb, "Job did not finish within allowed time");
-+		return -EPROTO;
- 
- 	default:
- 		CSB_ERR(csb, "Invalid CC %d", csb->cc);
-diff --git a/drivers/crypto/nx/nx-842.h b/drivers/crypto/nx/nx-842.h
-index 30929bd..ed06112 100644
---- a/drivers/crypto/nx/nx-842.h
-+++ b/drivers/crypto/nx/nx-842.h
-@@ -76,9 +76,17 @@
- #define CSB_CC_DECRYPT_OVERFLOW	(64)
- /* asym crypt codes */
- #define CSB_CC_MINV_OVERFLOW	(128)
-+/*
-+ * HW error - Job did not finish in the maximum time allowed.
-+ * Jon terminated.
-+ */
-+#define CSB_CC_HW_EXPIRED_TIMER		(224)
- /* These are reserved for hypervisor use */
- #define CSB_CC_HYP_RESERVE_START	(240)
- #define CSB_CC_HYP_RESERVE_END		(253)
-+#define CSB_CC_HYP_RESERVE_P9_END	(251)
-+/* No valid interrupt server (P9 or later). */
-+#define CSB_CC_HYP_RESERVE_NO_INTR_SERVER	(252)
- #define CSB_CC_HYP_NO_HW		(254)
- #define CSB_CC_HYP_HANG_ABORTED		(255)
- 
+This patch series adds P9 NX support for 842 compression engine.
+First 3 patches reorganize the current code so that VAS function
+can be added.
+- nx842_powernv_function points to VAS function if VAS feature is
+  available. Otherwise icswx function is used.
+- Move configure CRB code nx842_cfg_crb() 
+- In addition to freeing co-processor structs for initialization 
+  failures and exit, both send and receive windows have to closed
+  for VAS.
+
+The last 2 patches adds configuring and invoking VAS, and also 
+checking P9 NX specific errors that are provided in co-processor 
+status block (CSB) for failures.
+
+Patches have been tested in P9 Simics environment using VAS changes. 
+This patchset depends on VAS kernel changes:
+https://lists.ozlabs.org/pipermail/linuxppc-dev/2017-March/156078.html
+
+Thanks to Sukadev Bhattiprolu for his review, input and testing with 
+VAS changes.
+
+Haren Myneni (5):
+  crypto/nx: Rename nx842_powernv_function as icswx function
+  crypto/nx: Create nx842_cfg_crb function
+  crypto/nx: Create nx842_delete_coproc function
+  crypto/nx: Add P9 NX support for 842 compression engine.
+  crypto/nx: Add P9 NX specific error codes for 842 engine
+
+ arch/powerpc/include/asm/icswx.h   |   3 +
+ arch/powerpc/include/asm/vas.h     |   2 +
+ drivers/crypto/nx/Kconfig          |   1 +
+ drivers/crypto/nx/nx-842-powernv.c | 435 +++++++++++++++++++++++++++++++++----
+ drivers/crypto/nx/nx-842.h         |   8 +
+ 5 files changed, 407 insertions(+), 42 deletions(-)
+
 -- 
 1.8.3.1
