@@ -3,31 +3,31 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vwPjV2KkrzDqHv
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  2 Apr 2017 02:59:26 +1000 (AEST)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vwPkX3ppqzDqJ6
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  2 Apr 2017 03:00:20 +1000 (AEST)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v31Gwp7W013808
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 1 Apr 2017 12:59:10 -0400
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
- by mx0a-001b2d01.pphosted.com with ESMTP id 29jaa05agy-1
+ v31Gwkrk003935
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 1 Apr 2017 13:00:07 -0400
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 29jab8d2c6-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 01 Apr 2017 12:59:10 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 01 Apr 2017 13:00:07 -0400
 Received: from localhost
- by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <haren@linux.vnet.ibm.com>;
- Sat, 1 Apr 2017 10:59:09 -0600
-Subject: [PATCH 1/5] crypto/nx: Rename nx842_powernv_function as icswx function
+ Sat, 1 Apr 2017 11:00:06 -0600
+Subject: [PATCH 2/5] crypto/nx: Create nx842_cfg_crb function
 From: Haren Myneni <haren@linux.vnet.ibm.com>
 To: herbert@gondor.apana.org.au, mpe@ellerman.id.au, ddstreet@ieee.org
 Cc: linuxppc-dev@lists.ozlabs.org, linux-crypto@vger.kernel.org,
  benh@kernel.crashing.org, mikey@neuling.org, suka@us.ibm.com,
  hbabu@us.ibm.com
 Content-Type: text/plain; charset="UTF-8"
-Date: Sat, 01 Apr 2017 09:59:01 -0700
+Date: Sat, 01 Apr 2017 10:00:00 -0700
 Mime-Version: 1.0
-Message-Id: <1491065941.29552.26.camel@hbabu-laptop>
+Message-Id: <1491066000.29552.27.camel@hbabu-laptop>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,84 +37,107 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-[PATCH 1/5] crypto/nx: Rename nx842_powernv_function as icswx function
+[PATCH 2/5] crypto/nx: Create nx842_cfg_crb function
 
-nx842_powernv_function is points to nx842_icswx_function and
-will be point to VAS function which will be added later for
-P9 NX support.
+Configure CRB is moved to nx842_cfg_crb() so that it can be
+used for icswx function and VAS function which will be added
+later.
 
 Signed-off-by: Haren Myneni <haren@us.ibm.com>
 ---
- drivers/crypto/nx/nx-842-powernv.c | 24 +++++++++++++++++-------
- 1 file changed, 17 insertions(+), 7 deletions(-)
+ drivers/crypto/nx/nx-842-powernv.c | 57 +++++++++++++++++++++++++-------------
+ 1 file changed, 38 insertions(+), 19 deletions(-)
 
 diff --git a/drivers/crypto/nx/nx-842-powernv.c b/drivers/crypto/nx/nx-842-powernv.c
-index 3abb045..125f1dc 100644
+index 125f1dc..4cd6a6f 100644
 --- a/drivers/crypto/nx/nx-842-powernv.c
 +++ b/drivers/crypto/nx/nx-842-powernv.c
-@@ -47,14 +47,22 @@ struct nx842_workmem {
- 
- struct nx842_coproc {
- 	unsigned int chip_id;
--	unsigned int ct;
--	unsigned int ci;
-+	union {
-+		struct {
-+			unsigned int ct;
-+			unsigned int ci;
-+		} icswx;
-+	};
- 	struct list_head list;
- };
- 
- /* no cpu hotplug on powernv, so this list never changes after init */
- static LIST_HEAD(nx842_coprocs);
--static unsigned int nx842_ct;
-+static unsigned int nx842_ct;	/* use with icswx function */
-+
-+static int (*nx842_powernv_function)(const unsigned char *in,
-+				unsigned int inlen, unsigned char *out,
-+				unsigned int *outlenp, void *workmem, int fc);
- 
- /**
-  * setup_indirect_dde - Setup an indirect DDE
-@@ -355,7 +363,7 @@ static int wait_for_csb(struct nx842_workmem *wmem,
+@@ -362,6 +362,40 @@ static int wait_for_csb(struct nx842_workmem *wmem,
+ 	return 0;
  }
  
- /**
-- * nx842_powernv_function - compress/decompress data using the 842 algorithm
-+ * nx842_icswx_function - compress/decompress data using the 842 algorithm
-  *
-  * (De)compression provided by the NX842 coprocessor on IBM PowerNV systems.
-  * This compresses or decompresses the provided input buffer into the provided
-@@ -385,7 +393,7 @@ static int wait_for_csb(struct nx842_workmem *wmem,
-  *   -ETIMEDOUT	hardware did not complete operation in reasonable time
-  *   -EINTR	operation was aborted
-  */
--static int nx842_powernv_function(const unsigned char *in, unsigned int inlen,
-+static int nx842_icswx_function(const unsigned char *in, unsigned int inlen,
- 				  unsigned char *out, unsigned int *outlenp,
- 				  void *workmem, int fc)
- {
-@@ -554,8 +562,8 @@ static int __init nx842_powernv_probe(struct device_node *dn)
- 		return -ENOMEM;
- 
- 	coproc->chip_id = chip_id;
--	coproc->ct = ct;
--	coproc->ci = ci;
-+	coproc->icswx.ct = ct;
-+	coproc->icswx.ci = ci;
- 	INIT_LIST_HEAD(&coproc->list);
- 	list_add(&coproc->list, &nx842_coprocs);
- 
-@@ -625,6 +633,8 @@ static __init int nx842_powernv_init(void)
- 	if (!nx842_ct)
- 		return -ENODEV;
- 
-+	nx842_powernv_function = nx842_icswx_function;
++static int nx842_cfg_crb(const unsigned char *in, unsigned int inlen,
++			unsigned char *out, unsigned int outlen,
++			struct nx842_workmem *wmem)
++{
++	struct coprocessor_request_block *crb;
++	struct coprocessor_status_block *csb;
++	u64 csb_addr;
++	int ret;
 +
- 	ret = crypto_register_alg(&nx842_powernv_alg);
- 	if (ret) {
- 		struct nx842_coproc *coproc, *n;
++	crb = &wmem->crb;
++	csb = &crb->csb;
++
++	/* Clear any previous values */
++	memset(crb, 0, sizeof(*crb));
++
++	/* set up DDLs */
++	ret = setup_ddl(&crb->source, wmem->ddl_in,
++			(unsigned char *)in, inlen, true);
++	if (ret)
++		return ret;
++
++	ret = setup_ddl(&crb->target, wmem->ddl_out,
++			out, outlen, false);
++	if (ret)
++		return ret;
++
++	/* set up CRB's CSB addr */
++	csb_addr = nx842_get_pa(csb) & CRB_CSB_ADDRESS;
++	csb_addr |= CRB_CSB_AT; /* Addrs are phys */
++	crb->csb_addr = cpu_to_be64(csb_addr);
++
++	return 0;
++}
++
+ /**
+  * nx842_icswx_function - compress/decompress data using the 842 algorithm
+  *
+@@ -401,7 +435,6 @@ static int nx842_icswx_function(const unsigned char *in, unsigned int inlen,
+ 	struct coprocessor_status_block *csb;
+ 	struct nx842_workmem *wmem;
+ 	int ret;
+-	u64 csb_addr;
+ 	u32 ccw;
+ 	unsigned int outlen = *outlenp;
+ 
+@@ -415,33 +448,19 @@ static int nx842_icswx_function(const unsigned char *in, unsigned int inlen,
+ 		return -ENODEV;
+ 	}
+ 
+-	crb = &wmem->crb;
+-	csb = &crb->csb;
+-
+-	/* Clear any previous values */
+-	memset(crb, 0, sizeof(*crb));
+-
+-	/* set up DDLs */
+-	ret = setup_ddl(&crb->source, wmem->ddl_in,
+-			(unsigned char *)in, inlen, true);
+-	if (ret)
+-		return ret;
+-	ret = setup_ddl(&crb->target, wmem->ddl_out,
+-			out, outlen, false);
++	ret = nx842_cfg_crb(in, inlen, out, outlen, wmem);
+ 	if (ret)
+ 		return ret;
+ 
++	crb = &wmem->crb;
++	csb = &crb->csb;
++
+ 	/* set up CCW */
+ 	ccw = 0;
+ 	ccw = SET_FIELD(CCW_CT, ccw, nx842_ct);
+ 	ccw = SET_FIELD(CCW_CI_842, ccw, 0); /* use 0 for hw auto-selection */
+ 	ccw = SET_FIELD(CCW_FC_842, ccw, fc);
+ 
+-	/* set up CRB's CSB addr */
+-	csb_addr = nx842_get_pa(csb) & CRB_CSB_ADDRESS;
+-	csb_addr |= CRB_CSB_AT; /* Addrs are phys */
+-	crb->csb_addr = cpu_to_be64(csb_addr);
+-
+ 	wmem->start = ktime_get();
+ 
+ 	/* do ICSWX */
 -- 
 1.8.3.1
