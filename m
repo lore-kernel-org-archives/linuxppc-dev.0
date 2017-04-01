@@ -1,33 +1,19 @@
-Return-Path: <haren@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vwPz54VrMzDqHg
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  2 Apr 2017 03:11:13 +1000 (AEST)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v31H8qpK002325
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 1 Apr 2017 13:11:00 -0400
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
- by mx0a-001b2d01.pphosted.com with ESMTP id 29j6hckvkr-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 01 Apr 2017 13:11:00 -0400
-Received: from localhost
- by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <haren@linux.vnet.ibm.com>;
- Sat, 1 Apr 2017 11:10:59 -0600
-Subject: [RESEND PATCH 0/5] Enable NX 842 compression engine on Power9
-From: Haren Myneni <haren@linux.vnet.ibm.com>
-To: herbert@gondor.apana.org.au, mpe@ellerman.id.au, ddstreet@ieee.org
-Cc: linuxppc-dev@lists.ozlabs.org, linux-crypto@vger.kernel.org,
- benh@kernel.crashing.org, mikey@neuling.org, suka@us.ibm.com,
- hbabu@us.ibm.com
-Content-Type: text/plain; charset="UTF-8"
-Date: Sat, 01 Apr 2017 10:10:51 -0700
+Return-Path: <davem@davemloft.net>
+Received: from shards.monkeyblade.net (shards.monkeyblade.net
+ [184.105.139.130])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3vwS8m14HgzDqHV
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  2 Apr 2017 04:49:41 +1000 (AEST)
+Date: Sat, 01 Apr 2017 11:49:34 -0700 (PDT)
+Message-Id: <20170401.114934.685734473213788248.davem@davemloft.net>
+To: madalin.bucur@nxp.com
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] fsl/fman: take into account all RGMII modes
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1490880100-13373-1-git-send-email-madalin.bucur@nxp.com>
+References: <1490880100-13373-1-git-send-email-madalin.bucur@nxp.com>
 Mime-Version: 1.0
-Message-Id: <1491066651.29552.35.camel@hbabu-laptop>
+Content-Type: Text/Plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,53 +23,11 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Sorry for reposting. Missed to specify dependency - VAS kernel changes.
+From: Madalin Bucur <madalin.bucur@nxp.com>
+Date: Thu, 30 Mar 2017 16:21:40 +0300
 
-[PATCH 0/5] Enable NX 842 compression engine on Power9
+> Accept the internal delay RGMII variants.
+> 
+> Signed-off-by: Madalin Bucur <madalin.bucur@nxp.com>
 
-P9 introduces Virtual Accelerator Switchboard (VAS) to communicate
-with NX 842 engine. icswx function is used to access NX before.
-On powerNV systems, NX-842 driver invokes VAS functions for
-configuring RxFIFO (receive window) per each NX engine. VAS uses
-this FIFO to communicate the request to NX. The kernel opens send 
-window which is used to transfer compression/decompression requests 
-to VAS. It maps the send window to the corresponding RxFIFO. 
-copy/paste instructions are used to pass the CRB to VAS.
-
-This patch series adds P9 NX support for 842 compression engine.
-First 3 patches reorganize the current code so that VAS function
-can be added.
-- nx842_powernv_function points to VAS function if VAS feature is
-  available. Otherwise icswx function is used.
-- Move configure CRB code nx842_cfg_crb() 
-- In addition to freeing co-processor structs for initialization 
-  failures and exit, both send and receive windows have to closed
-  for VAS.
-
-The last 2 patches adds configuring and invoking VAS, and also 
-checking P9 NX specific errors that are provided in co-processor 
-status block (CSB) for failures.
-
-Patches have been tested in P9 Simics environment using VAS changes. 
-This patchset depends on VAS kernel changes:
-https://lists.ozlabs.org/pipermail/linuxppc-dev/2017-March/156078.html
-
-Thanks to Sukadev Bhattiprolu for his review, input and testing with 
-VAS changes.
-
-Haren Myneni (5):
-  crypto/nx: Rename nx842_powernv_function as icswx function
-  crypto/nx: Create nx842_cfg_crb function
-  crypto/nx: Create nx842_delete_coproc function
-  crypto/nx: Add P9 NX support for 842 compression engine.
-  crypto/nx: Add P9 NX specific error codes for 842 engine
-
- arch/powerpc/include/asm/icswx.h   |   3 +
- arch/powerpc/include/asm/vas.h     |   2 +
- drivers/crypto/nx/Kconfig          |   1 +
- drivers/crypto/nx/nx-842-powernv.c | 435 +++++++++++++++++++++++++++++++++----
- drivers/crypto/nx/nx-842.h         |   8 +
- 5 files changed, 407 insertions(+), 42 deletions(-)
-
--- 
-1.8.3.1
+Applied, thanks.
