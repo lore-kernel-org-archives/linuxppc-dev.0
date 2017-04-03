@@ -1,36 +1,16 @@
-Return-Path: <stewart@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vxF960LqPzDqHH
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Apr 2017 11:37:45 +1000 (AEST)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v331XmNx122815
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 2 Apr 2017 21:37:34 -0400
-Received: from e11.ny.us.ibm.com (e11.ny.us.ibm.com [129.33.205.201])
- by mx0b-001b2d01.pphosted.com with ESMTP id 29k3uugrm9-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 02 Apr 2017 21:37:33 -0400
-Received: from localhost
- by e11.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <stewart@linux.vnet.ibm.com>;
- Sun, 2 Apr 2017 21:37:33 -0400
-From: Stewart Smith <stewart@linux.vnet.ibm.com>
-To: Haren Myneni <haren@linux.vnet.ibm.com>, herbert@gondor.apana.org.au,
- mpe@ellerman.id.au, ddstreet@ieee.org
-Cc: mikey@neuling.org, suka@us.ibm.com, linux-crypto@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 4/5] crypto/nx: Add P9 NX support for 842 compression
- engine.
-In-Reply-To: <1491066107.29552.29.camel@hbabu-laptop>
-References: <1491066107.29552.29.camel@hbabu-laptop>
-Date: Mon, 03 Apr 2017 11:37:22 +1000
-MIME-Version: 1.0
-Content-Type: text/plain
-Message-Id: <87vaqmmfu5.fsf@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vxFnl26YczDqHJ
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Apr 2017 12:06:03 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: linuxppc-dev@ozlabs.org
+Cc: scottwood@freescale.com
+Subject: [PATCH] powerpc/nohash: Fix use of mmu_has_feature() in
+ setup_initial_memory_limit()
+Date: Mon,  3 Apr 2017 12:05:55 +1000
+Message-Id: <1491185155-27876-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,25 +20,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Haren Myneni <haren@linux.vnet.ibm.com> writes:
-> @@ -656,13 +953,21 @@ static __init int nx842_powernv_init(void)
->  	BUILD_BUG_ON(DDE_BUFFER_ALIGN % DDE_BUFFER_SIZE_MULT);
->  	BUILD_BUG_ON(DDE_BUFFER_SIZE_MULT % DDE_BUFFER_LAST_MULT);
->
-> -	for_each_compatible_node(dn, NULL, "ibm,power-nx")
-> -		nx842_powernv_probe(dn);
-> +	if (is_vas_available()) {
-> +		for_each_compatible_node(dn, NULL, "ibm,xscom")
-> +			nx842_powernv_probe_vas(dn);
+setup_initial_memory_limit() is called from early_init_devtree(), which
+runs prior to feature patching. If the kernel is built with CONFIG_JUMP_LABEL=y
+and CONFIG_JUMP_LABEL_FEATURE_CHECKS=y then we will potentially get the
+wrong value.
 
-I'm not keen on how the device bindings work, instead, I think firmware
-should provide a 'ibm,vas' compatible node, rather than simply searching
-through all the ibm,xscom nodes.
+If we also have CONFIG_JUMP_LABEL_FEATURE_CHECK_DEBUG=y we get a warning
+and backtrace:
 
-XSCOMs aren't something that Linux should really know about, it's a
-debug interface, and one we use through PRD to do PRD-things, XSCOMs
-aren't part of the architecture.
+  Warning! mmu_has_feature() used prior to jump label init!
+  CPU: 0 PID: 0 Comm: swapper Not tainted 4.11.0-rc4-gccN-next-20170331-g6af2434 #1
+  Call Trace:
+  [c000000000fc3d50] [c000000000a26c30] .dump_stack+0xa8/0xe8 (unreliable)
+  [c000000000fc3de0] [c00000000002e6b8] .setup_initial_memory_limit+0xa4/0x104
+  [c000000000fc3e60] [c000000000d5c23c] .early_init_devtree+0xd0/0x2f8
+  [c000000000fc3f00] [c000000000d5d3b0] .early_setup+0x90/0x11c
+  [c000000000fc3f90] [c000000000000520] start_here_multiplatform+0x68/0x80
 
+Fix it by using early_mmu_has_feature().
+
+Fixes: c12e6f24d413 ("powerpc: Add option to use jump label for mmu_has_feature()")
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/mm/tlb_nohash.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/mm/tlb_nohash.c b/arch/powerpc/mm/tlb_nohash.c
+index ba28fcb98597..bfc4a0869609 100644
+--- a/arch/powerpc/mm/tlb_nohash.c
++++ b/arch/powerpc/mm/tlb_nohash.c
+@@ -770,7 +770,7 @@ void setup_initial_memory_limit(phys_addr_t first_memblock_base,
+ 	 * avoid going over total available memory just in case...
+ 	 */
+ #ifdef CONFIG_PPC_FSL_BOOK3E
+-	if (mmu_has_feature(MMU_FTR_TYPE_FSL_E)) {
++	if (early_mmu_has_feature(MMU_FTR_TYPE_FSL_E)) {
+ 		unsigned long linear_sz;
+ 		unsigned int num_cams;
+ 
 -- 
-Stewart Smith
-OPAL Architect, IBM.
+2.7.4
