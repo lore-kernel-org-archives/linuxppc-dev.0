@@ -1,24 +1,18 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
- [IPv6:2607:f8b0:400e:c05::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <anton@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vxHcH54llzDqHJ
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Apr 2017 13:27:59 +1000 (AEST)
-Received: by mail-pg0-x242.google.com with SMTP id 81so26751235pgh.3
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 02 Apr 2017 20:27:58 -0700 (PDT)
-Message-ID: <1491190072.8948.1.camel@gmail.com>
-Subject: Re: [PATCH kernel] powerpc/iommu: Do not call PageTransHuge() on
- tail pages
-From: Balbir Singh <bsingharora@gmail.com>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org
-Cc: Paul Mackerras <paulus@samba.org>, "Aneesh Kumar K . V"
- <aneesh.kumar@linux.vnet.ibm.com>, Greg Kurz <groug@kaod.org>
-Date: Mon, 03 Apr 2017 13:27:52 +1000
-In-Reply-To: <20170328052559.12912-1-aik@ozlabs.ru>
-References: <20170328052559.12912-1-aik@ozlabs.ru>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vxMv72N3qzDqH6
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Apr 2017 16:41:07 +1000 (AEST)
+From: Anton Blanchard <anton@ozlabs.org>
+To: benh@kernel.crashing.org,
+	paulus@samba.org,
+	mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc: Avoid taking a data miss on every userspace
+ instruction miss
+Date: Mon,  3 Apr 2017 16:41:02 +1000
+Message-Id: <20170403064102.23245-1-anton@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,22 +22,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2017-03-28 at 16:25 +1100, Alexey Kardashevskiy wrote:
-> The CMA pages migration code does not support compound pages at
-> the moment so it performs few tests before proceeding to actual page
-> migration.
-> 
-> One of the tests - PageTransHuge() - has VM_BUG_ON_PAGE(PageTail()) as
-> it should be called on head pages. Since we also test for PageCompound(),
-> and it contains PageTail(), we can simply move PageCompound() in front
-> of PageTransHuge() and therefore avoid possible VM_BUG_ON_PAGE.
-> 
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> ---
+From: Anton Blanchard <anton@samba.org>
 
-The fix looks reasonable to me. I suspect the checks can be simplified
-and we can support split and move of THP in the future.
+Early on in do_page_fault() we call store_updates_sp(), regardless of
+the type of exception. For an instruction miss this doesn't make
+sense, because we only use this information to detect if a data miss
+is the result of a stack expansion instruction or not.
 
-For now, looks good
+Worse still, it results in a data miss within every userspace
+instruction miss handler, because we try and load the very instruction
+we are about to install a pte for!
 
-Acked-by: Balbir Singh <bsingharora@gmail.com>
+A simple exec microbenchmark runs 6% faster on POWER8 with this fix:
+
+ #include <stdlib.h>
+ #include <stdio.h>
+ #include <unistd.h>
+
+int main(int argc, char *argv[])
+{
+	unsigned long left = atol(argv[1]);
+	char leftstr[16];
+
+	if (left-- == 0)
+		return 0;
+
+	sprintf(leftstr, "%ld", left);
+	execlp(argv[0], argv[0], leftstr, NULL);
+	perror("exec failed\n");
+
+	return 0;
+}
+
+Pass the number of iterations on the command line (eg 10000) and time
+how long it takes to execute.
+
+Signed-off-by: Anton Blanchard <anton@samba.org>
+---
+ arch/powerpc/mm/fault.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
+index fd6484fc2fa9..3a7d580fdc59 100644
+--- a/arch/powerpc/mm/fault.c
++++ b/arch/powerpc/mm/fault.c
+@@ -287,7 +287,7 @@ int do_page_fault(struct pt_regs *regs, unsigned long address,
+ 	 * can result in fault, which will cause a deadlock when called with
+ 	 * mmap_sem held
+ 	 */
+-	if (user_mode(regs))
++	if (!is_exec && user_mode(regs))
+ 		store_update_sp = store_updates_sp(regs);
+ 
+ 	if (user_mode(regs))
+-- 
+2.11.0
