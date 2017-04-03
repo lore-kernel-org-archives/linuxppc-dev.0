@@ -1,21 +1,22 @@
-Return-Path: <anton@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <anton@samba.org>
+Received: from hr2.samba.org (hr2.samba.org [IPv6:2a01:4f8:192:486::147:1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vxm94559JzDqJk
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Apr 2017 07:54:32 +1000 (AEST)
-From: Anton Blanchard <anton@ozlabs.org>
-To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- svaidy@linux.vnet.ibm.com, ego@linux.vnet.ibm.com, rjw@rjwysocki.net,
- daniel.lezcano@linaro.org, npiggin@gmail.com
-Cc: linuxppc-dev@lists.ozlabs.org,
-	linux-pm@vger.kernel.org
-Subject: [PATCH 3/3] cpuidle: powernv: Avoid a branch in the core
- snooze_loop() loop
-Date: Tue,  4 Apr 2017 07:54:14 +1000
-Message-Id: <20170403215414.16951-3-anton@ozlabs.org>
-In-Reply-To: <20170403215414.16951-1-anton@ozlabs.org>
-References: <20170403215414.16951-1-anton@ozlabs.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vxmHh1snwzDqGr
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Apr 2017 08:00:15 +1000 (AEST)
+Date: Tue, 4 Apr 2017 08:00:01 +1000
+From: Anton Blanchard <anton@samba.org>
+To: LEROY Christophe <christophe.leroy@c-s.fr>
+Cc: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au, paulus@samba.org,
+ benh@kernel.crashing.org
+Subject: Re: [PATCH] powerpc: Avoid taking a data miss on every userspace
+ instruction miss
+Message-ID: <20170404080001.2c03b043@kryten>
+In-Reply-To: <20170403205548.Horde.yvekJnoFaOaIi2_bvtIsLA2@messagerie.c-s.fr>
+References: <20170403064102.23245-1-anton@ozlabs.org>
+ <20170403205548.Horde.yvekJnoFaOaIi2_bvtIsLA2@messagerie.c-s.fr>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,33 +26,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Anton Blanchard <anton@samba.org>
+Hi Christophe,
 
-When in the snooze_loop() we want to take up the least amount of
-resources. On my version of gcc (6.3), we end up with an extra
-branch because it predicts snooze_timeout_en to be false, whereas it
-is almost always true.
+> > -	if (user_mode(regs))
+> > +	if (!is_exec && user_mode(regs))  
+> 
+> Shouldn't it also check 'is_write' ?
+> If it is a store, is_write should be set, shouldn't it ?
 
-Use likely() to avoid the branch and be a little nicer to the
-other non idle threads on the core.
+Thanks, Ben had the same suggestion. I'll add that further optimisation
+in a subsequent patch.
 
-Signed-off-by: Anton Blanchard <anton@samba.org>
----
- drivers/cpuidle/cpuidle-powernv.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
-index 8c991c254b95..251a60bfa8ee 100644
---- a/drivers/cpuidle/cpuidle-powernv.c
-+++ b/drivers/cpuidle/cpuidle-powernv.c
-@@ -58,7 +58,7 @@ static int snooze_loop(struct cpuidle_device *dev,
- 	ppc64_runlatch_off();
- 	HMT_very_low();
- 	while (!need_resched()) {
--		if (snooze_timeout_en && get_tb() > snooze_exit_time)
-+		if (likely(snooze_timeout_en) && get_tb() > snooze_exit_time)
- 			break;
- 	}
- 
--- 
-2.11.0
+Anton
