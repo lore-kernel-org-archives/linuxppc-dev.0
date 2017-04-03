@@ -1,24 +1,19 @@
-Return-Path: <dja@axtens.net>
-Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
- [IPv6:2607:f8b0:400e:c05::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <anton@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vxlxq0cWbzDq7Z
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Apr 2017 07:44:46 +1000 (AEST)
-Received: by mail-pg0-x242.google.com with SMTP id o123so32452448pga.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 03 Apr 2017 14:44:46 -0700 (PDT)
-From: Daniel Axtens <dja@axtens.net>
-To: Matt Brown <matthew.brown.dev@gmail.com>, linux-raid@vger.kernel.org
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] raid6/altivec: adding vpermxor implementation for raid6 Q
- syndrome
-In-Reply-To: <877f31n2mn.fsf@possimpible.ozlabs.ibm.com>
-References: <20170330051313.31358-1-matthew.brown.dev@gmail.com>
- <877f31n2mn.fsf@possimpible.ozlabs.ibm.com>
-Date: Tue, 04 Apr 2017 07:44:32 +1000
-Message-ID: <87wpb1kvy7.fsf@possimpible.ozlabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vxm8z5DNCzDqGr
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Apr 2017 07:54:27 +1000 (AEST)
+From: Anton Blanchard <anton@ozlabs.org>
+To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ svaidy@linux.vnet.ibm.com, ego@linux.vnet.ibm.com, rjw@rjwysocki.net,
+ daniel.lezcano@linaro.org, npiggin@gmail.com
+Cc: linuxppc-dev@lists.ozlabs.org,
+	linux-pm@vger.kernel.org
+Subject: [PATCH 1/3] cpuidle: powernv: Don't bounce between low and very low
+ thread priority
+Date: Tue,  4 Apr 2017 07:54:12 +1000
+Message-Id: <20170403215414.16951-1-anton@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,60 +23,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> In that function, the flow is:
->  pagefault_disable();
->  enable_kernel_altivec();
->  <vectorised function>
->  pagefault_enable();
->
-> There are a few things that it would be nice (but by no means essential)
-> to find out:
->  - what is the difference between pagefault and prempt enable/disable
->  - is it required to disable altivec after the end of the function or
->    can we leave that enabled?
+From: Anton Blanchard <anton@samba.org>
 
-Answering my own question here, dc4fbba11e46 ("powerpc: Create
-disable_kernel_{fp,altivec,vsx,spe}()") adds the disable_ function, and
-it's a no-op except under debug conditions. So it should stay.
+The core of snooze_loop() continually bounces between low and very
+low thread priority. Changing thread priorities is an expensive
+operation that can negatively impact other threads on a core.
 
-Regards,
-Daniel
+All CPUs that can run PowerNV support very low priority, so we can
+avoid the change completely.
 
+Signed-off-by: Anton Blanchard <anton@samba.org>
+---
+ drivers/cpuidle/cpuidle-powernv.c | 1 -
+ 1 file changed, 1 deletion(-)
 
->
->> +
->> +int raid6_have_altivec_vpermxor(void);
->> +#if $# == 1
->> +int raid6_have_altivec_vpermxor(void)
->> +{
->> +	/* Check if CPU has both altivec and the vpermxor instruction*/
-> Please add a space: s|ion*/|ion */|
->> +# ifdef __KERNEL__
->> +	return (cpu_has_feature(CONFIG_ALTIVEC) &&
->> +		cpu_has_feature(CPU_FTR_ARCH_207S));
-> I assume this is future-proof - an ISA 3.00 cpu will advertise 2.07S
-> compat?
->
->> +# else
->> +	return 1;
->> +#endif
->> +
->> +}
->> +#endif
->> +
->> +const struct raid6_calls raid6_vpermxor$# = {
->> +	raid6_vpermxor$#_gen_syndrome,
->> +	NULL,
->> +	raid6_have_altivec_vpermxor,
->> +	"vpermxor$#",
->> +	0
->> +};
->> +#endif
->> -- 
->> 2.9.3
->
-> Apart from that this patch looks good and I expect I will be able to
-> formally Review v2.
->
-> Regards,
-> Daniel
+diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
+index cda8f62d555b..9d9f164894eb 100644
+--- a/drivers/cpuidle/cpuidle-powernv.c
++++ b/drivers/cpuidle/cpuidle-powernv.c
+@@ -57,7 +57,6 @@ static int snooze_loop(struct cpuidle_device *dev,
+ 	snooze_exit_time = get_tb() + snooze_timeout;
+ 	ppc64_runlatch_off();
+ 	while (!need_resched()) {
+-		HMT_low();
+ 		HMT_very_low();
+ 		if (snooze_timeout_en && get_tb() > snooze_exit_time)
+ 			break;
+-- 
+2.11.0
