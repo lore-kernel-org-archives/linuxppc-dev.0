@@ -2,17 +2,17 @@ Return-Path: <thuth@redhat.com>
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vxV8z3WlQzDq7Z
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Apr 2017 21:23:31 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vxVGw3MjbzDq7Z
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Apr 2017 21:28:40 +1000 (AEST)
 From: Thomas Huth <thuth@redhat.com>
 To: Paul Mackerras <paulus@samba.org>,
 	kvm-ppc@vger.kernel.org
 Cc: kvm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  Laurent Vivier <lvivier@redhat.com>
-Subject: [PATCH] KVM: PPC: Book3S PR: Do not fail emulation with mtspr/mfspr
- for unknown SPRs
-Date: Mon,  3 Apr 2017 13:23:15 +0200
-Message-Id: <1491218595-10943-1-git-send-email-thuth@redhat.com>
+Subject: [PATCH] KVM: PPC: Book3S PR: Do not always inject facility
+ unavailable exceptions
+Date: Mon,  3 Apr 2017 13:28:34 +0200
+Message-Id: <1491218914-10992-1-git-send-email-thuth@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,78 +22,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-According to the PowerISA 2.07, mtspr and mfspr should not generate
-an illegal instruction exception when being used with an undefined SPR,
-but rather treat the instruction as a NOP, inject a privilege exception
-or an emulation assistance exception - depending on the SPR number.
-Also turn the printk here into a ratelimited print statement, so that
-the guest can not flood the dmesg log of the host by issueing lots of
-illegal mtspr/mfspr instruction here.
+KVM should not inject a facility unavailable exception into the guest
+when it tries to execute a mtspr/mfspr instruction for an SPR that
+is unavailable, and the vCPU is *not* running in PRoblem state.
+
+It's right that we inject an exception when the vCPU is in PR mode, since
+chapter "6.2.10 Facility Status and Control Register" of the PowerISA
+v2.07 says that "When the FSCR makes a facility unavailable, attempted
+usage of the facility in *problem state* is treated as follows: [...]
+Access of an SPR using mfspr/mtspr causes a Facility Unavailable
+interrupt". But if the guest vCPU is not in PR mode, we should follow
+the behavior that is described in chapter "4.4.4 Move To/From System
+Register Instructions" instead and treat the instruction as a NOP.
 
 Signed-off-by: Thomas Huth <thuth@redhat.com>
 ---
- arch/powerpc/kvm/book3s.c         |  1 +
- arch/powerpc/kvm/book3s_emulate.c | 30 ++++++++++++++++++++++--------
- 2 files changed, 23 insertions(+), 8 deletions(-)
+ arch/powerpc/kvm/book3s_pr.c | 28 +++++++++++++++++++++++++++-
+ 1 file changed, 27 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/kvm/book3s.c b/arch/powerpc/kvm/book3s.c
-index b6b5c18..9b007f9 100644
---- a/arch/powerpc/kvm/book3s.c
-+++ b/arch/powerpc/kvm/book3s.c
-@@ -137,6 +137,7 @@ void kvmppc_inject_interrupt(struct kvm_vcpu *vcpu, int vec, u64 flags)
- 	kvmppc_set_pc(vcpu, kvmppc_interrupt_offset(vcpu) + vec);
- 	vcpu->arch.mmu.reset_msr(vcpu);
- }
-+EXPORT_SYMBOL_GPL(kvmppc_inject_interrupt);
- 
- static int kvmppc_book3s_vec2irqprio(unsigned int vec)
- {
-diff --git a/arch/powerpc/kvm/book3s_emulate.c b/arch/powerpc/kvm/book3s_emulate.c
-index 8359752..9c31e23 100644
---- a/arch/powerpc/kvm/book3s_emulate.c
-+++ b/arch/powerpc/kvm/book3s_emulate.c
-@@ -503,10 +503,16 @@ int kvmppc_core_emulate_mtspr_pr(struct kvm_vcpu *vcpu, int sprn, ulong spr_val)
- 		break;
- unprivileged:
- 	default:
--		printk(KERN_INFO "KVM: invalid SPR write: %d\n", sprn);
--#ifndef DEBUG_SPR
--		emulated = EMULATE_FAIL;
--#endif
-+		pr_info_ratelimited("KVM: invalid SPR write: %d\n", sprn);
-+		if (sprn & 0x10) {
-+			if (kvmppc_get_msr(vcpu) & MSR_PR)
-+				kvmppc_core_queue_program(vcpu, SRR1_PROGPRIV);
-+		} else {
-+			if ((kvmppc_get_msr(vcpu) & MSR_PR) || sprn == 0)
-+				kvmppc_inject_interrupt(vcpu,
-+						BOOK3S_INTERRUPT_H_EMUL_ASSIST,
-+						0);
-+		}
- 		break;
+diff --git a/arch/powerpc/kvm/book3s_pr.c b/arch/powerpc/kvm/book3s_pr.c
+index d4dfc0c..3e6c0b3 100644
+--- a/arch/powerpc/kvm/book3s_pr.c
++++ b/arch/powerpc/kvm/book3s_pr.c
+@@ -27,6 +27,7 @@
+ #include <asm/reg.h>
+ #include <asm/cputable.h>
+ #include <asm/cacheflush.h>
++#include <asm/disassemble.h>
+ #include <asm/tlbflush.h>
+ #include <linux/uaccess.h>
+ #include <asm/io.h>
+@@ -830,6 +831,31 @@ static void kvmppc_emulate_fac(struct kvm_vcpu *vcpu, ulong fac)
  	}
+ }
  
-@@ -648,10 +654,18 @@ int kvmppc_core_emulate_mfspr_pr(struct kvm_vcpu *vcpu, int sprn, ulong *spr_val
- 		break;
- 	default:
- unprivileged:
--		printk(KERN_INFO "KVM: invalid SPR read: %d\n", sprn);
--#ifndef DEBUG_SPR
--		emulated = EMULATE_FAIL;
--#endif
-+		pr_info_ratelimited("KVM: invalid SPR read: %d\n", sprn);
-+		if (sprn & 0x10) {
-+			if (kvmppc_get_msr(vcpu) & MSR_PR)
-+				kvmppc_core_queue_program(vcpu, SRR1_PROGPRIV);
-+		} else {
-+			if ((kvmppc_get_msr(vcpu) & MSR_PR) || sprn == 0 ||
-+			    sprn == 4 || sprn == 5 || sprn == 6)
-+				kvmppc_inject_interrupt(vcpu,
-+						BOOK3S_INTERRUPT_H_EMUL_ASSIST,
-+						0);
-+		}
++static void kvmppc_handle_fac_not_enabled(struct kvm_vcpu *vcpu, ulong fac)
++{
++	enum emulation_result er;
++	u32 inst;
 +
- 		break;
++	if (kvmppc_get_msr(vcpu) & MSR_PR) {
++		kvmppc_trigger_fac_interrupt(vcpu, fac);
++		return;
++	}
++
++	er = kvmppc_get_last_inst(vcpu, INST_GENERIC, &inst);
++	if (er != EMULATE_DONE)
++		return;
++
++	if (get_op(inst) == 31 && (get_xop(inst) == OP_31_XOP_MTSPR ||
++				   get_xop(inst) == OP_31_XOP_MFSPR)) {
++		/* mtspr and mfspr are treated as NOP for unsupported SPRs */
++		kvmppc_set_pc(vcpu, kvmppc_get_pc(vcpu) + 4);
++		pr_debug_ratelimited("%s: write/read of disabled SPR: %d\n",
++				     __func__, get_sprn(inst));
++	} else {
++		kvmppc_trigger_fac_interrupt(vcpu, fac);
++	}
++}
++
+ /* Enable facilities (TAR, EBB, DSCR) for the guest */
+ static int kvmppc_handle_fac(struct kvm_vcpu *vcpu, ulong fac)
+ {
+@@ -855,7 +881,7 @@ static int kvmppc_handle_fac(struct kvm_vcpu *vcpu, ulong fac)
+ 
+ 	if (!guest_fac_enabled) {
+ 		/* Facility not enabled by the guest */
+-		kvmppc_trigger_fac_interrupt(vcpu, fac);
++		kvmppc_handle_fac_not_enabled(vcpu, fac);
+ 		return RESUME_GUEST;
  	}
  
 -- 
