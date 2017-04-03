@@ -1,19 +1,18 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vxSc10t5tzDq7Z
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vxSc13Pp7zDq8M
  for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Apr 2017 20:13:21 +1000 (AEST)
-In-Reply-To: <148969794004.4130.14805754334064000704.stgit@hbathini.in.ibm.com>
-To: Hari Bathini <hbathini@linux.vnet.ibm.com>,
- Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>,
- linuxppc-dev <linuxppc-dev@ozlabs.org>
+In-Reply-To: <1490117400-9891-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ benh@kernel.crashing.org, paulus@samba.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: [v2,
- 1/2] powerpc/fadump: reserve memory at an offset closer to bottom of
- RAM
-Message-Id: <3vxSc029vlz9s86@ozlabs.org>
-Date: Mon,  3 Apr 2017 20:13:20 +1000 (AEST)
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: Re: [V3,01/10] powerpc/mm/nohash: MM_SLICE is only used by book3s 64
+Message-Id: <3vxSc12215z9s89@ozlabs.org>
+Date: Mon,  3 Apr 2017 20:13:21 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,20 +22,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2017-03-16 at 21:05:26 UTC, Hari Bathini wrote:
-> Currently, the area to preserve boot memory is reserved at the top of
-> RAM. This leaves fadump vulnerable to memory hot-remove operations. As
-> memory for fadump has to be reserved early in the boot process, fadump
-> can't be registered after a memory hot-remove operation. Though this
-> problem can't be eleminated completely, the impact can be minimized by
-> reserving memory at an offset closer to bottom of the RAM. The offset
-> for fadump memory reservation can be any value greater than fadump boot
-> memory size.
+On Tue, 2017-03-21 at 17:29:51 UTC, "Aneesh Kumar K.V" wrote:
+> BOOKE code is dead code as per the Kconfig details. So make it simpler
+> by enabling MM_SLICE only for book3s_64. The changes w.r.t nohash is just
+> removing deadcode. W.r.t ppc64, 4k without hugetlb will now enable MM_SLICE.
+> But that is good, because we reduce one extra variant which probably is not
+> getting tested much.
 > 
-> Signed-off-by: Hari Bathini <hbathini@linux.vnet.ibm.com>
+> Reviewed-by: Paul Mackerras <paulus@ozlabs.org>
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 
 Series applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/f6e6bedb773118713a8eb3736a4c99
+https://git.kernel.org/powerpc/c/b42279f0165cdfb093718ec368e56d
 
 cheers
