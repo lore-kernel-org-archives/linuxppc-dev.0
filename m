@@ -1,18 +1,24 @@
-Return-Path: <oohall@gmail.com>
-Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
- [IPv6:2607:f8b0:400e:c05::241])
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
+ [IPv6:2607:f8b0:400e:c05::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vxHYN5PKyzDqHJ
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Apr 2017 13:25:28 +1000 (AEST)
-Received: by mail-pg0-x241.google.com with SMTP id 81so26739692pgh.3
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 02 Apr 2017 20:25:28 -0700 (PDT)
-From: Oliver O'Halloran <oohall@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Oliver O'Halloran <oohall@gmail.com>
-Subject: [PATCH] powerpc/misc: fix exported functions that reference the TOC
-Date: Mon,  3 Apr 2017 13:25:12 +1000
-Message-Id: <20170403032512.22085-1-oohall@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vxHcH54llzDqHJ
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Apr 2017 13:27:59 +1000 (AEST)
+Received: by mail-pg0-x242.google.com with SMTP id 81so26751235pgh.3
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 02 Apr 2017 20:27:58 -0700 (PDT)
+Message-ID: <1491190072.8948.1.camel@gmail.com>
+Subject: Re: [PATCH kernel] powerpc/iommu: Do not call PageTransHuge() on
+ tail pages
+From: Balbir Singh <bsingharora@gmail.com>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org
+Cc: Paul Mackerras <paulus@samba.org>, "Aneesh Kumar K . V"
+ <aneesh.kumar@linux.vnet.ibm.com>, Greg Kurz <groug@kaod.org>
+Date: Mon, 03 Apr 2017 13:27:52 +1000
+In-Reply-To: <20170328052559.12912-1-aik@ozlabs.ru>
+References: <20170328052559.12912-1-aik@ozlabs.ru>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,68 +28,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When the kernel is compiled to use 64bit ABIv2 the _GLOBAL() macro does not
-include a global entry point. A function's global entry point is used when the
-function is called from a different TOC context and in the kernel this
-typically means a call from a module into the vmlinux (or vis-a-vis).
+On Tue, 2017-03-28 at 16:25 +1100, Alexey Kardashevskiy wrote:
+> The CMA pages migration code does not support compound pages at
+> the moment so it performs few tests before proceeding to actual page
+> migration.
+> 
+> One of the tests - PageTransHuge() - has VM_BUG_ON_PAGE(PageTail()) as
+> it should be called on head pages. Since we also test for PageCompound(),
+> and it contains PageTail(), we can simply move PageCompound() in front
+> of PageTransHuge() and therefore avoid possible VM_BUG_ON_PAGE.
+> 
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> ---
 
-There are a few exported ASM functions declared with _GLOBAL() and calling
-them from a module will module will likely crash the kernel since any TOC
-relative load will yield garbage.
+The fix looks reasonable to me. I suspect the checks can be simplified
+and we can support split and move of THP in the future.
 
-To fix this use _GLOBAL_TOC() for exported asm functions rather than _GLOBAL()
-and some documentation about when to use each.
+For now, looks good
 
-Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
----
- arch/powerpc/include/asm/ppc_asm.h | 12 ++++++++++++
- arch/powerpc/kernel/misc_64.S      |  4 ++--
- 2 files changed, 14 insertions(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/ppc_asm.h b/arch/powerpc/include/asm/ppc_asm.h
-index 359c443..3abf8c3 100644
---- a/arch/powerpc/include/asm/ppc_asm.h
-+++ b/arch/powerpc/include/asm/ppc_asm.h
-@@ -198,6 +198,18 @@ END_FW_FTR_SECTION_IFSET(FW_FEATURE_SPLPAR)
- 
- #ifdef PPC64_ELF_ABI_v2
- 
-+/*
-+ * When to use _GLOBAL_TOC() instead of _GLOBAL():
-+ *
-+ * a) The function is exported using EXPORT_SYMBOL_*()
-+ *          *and*
-+ * b) The function, or any function that it calls, references the TOC.
-+ *
-+ * In this situation _GLOBAL_TOC() is required because exported functions are
-+ * callable from modules which may a different TOC to the kernel proper and the
-+ * _GLOBAL() macro skips the TOC setup which is required on ELF ABIv2.
-+ */
-+
- #define _GLOBAL(name) \
- 	.align 2 ; \
- 	.type name,@function; \
-diff --git a/arch/powerpc/kernel/misc_64.S b/arch/powerpc/kernel/misc_64.S
-index ec94aef..d18da8c 100644
---- a/arch/powerpc/kernel/misc_64.S
-+++ b/arch/powerpc/kernel/misc_64.S
-@@ -67,7 +67,7 @@ PPC64_CACHES:
-  *   flush all bytes from start through stop-1 inclusive
-  */
- 
--_GLOBAL(flush_icache_range)
-+_GLOBAL_TOC(flush_icache_range)
- BEGIN_FTR_SECTION
- 	PURGE_PREFETCHED_INS
- 	blr
-@@ -120,7 +120,7 @@ EXPORT_SYMBOL(flush_icache_range)
-  *
-  *    flush all bytes from start to stop-1 inclusive
-  */
--_GLOBAL(flush_dcache_range)
-+_GLOBAL_TOC(flush_dcache_range)
- 
- /*
-  * Flush the data cache to memory 
--- 
-2.9.3
+Acked-by: Balbir Singh <bsingharora@gmail.com>
