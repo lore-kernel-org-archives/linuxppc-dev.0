@@ -1,23 +1,18 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <thuth@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vy4Mf2r9KzDqH6
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Apr 2017 20:04:46 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Daniel Axtens <dja@axtens.net>, Matt Brown <matthew.brown.dev@gmail.com>,
- linux-raid@vger.kernel.org
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] raid6/altivec: adding vpermxor implementation for raid6 Q
- syndrome
-In-Reply-To: <87wpb1kvy7.fsf@possimpible.ozlabs.ibm.com>
-References: <20170330051313.31358-1-matthew.brown.dev@gmail.com>
- <877f31n2mn.fsf@possimpible.ozlabs.ibm.com>
- <87wpb1kvy7.fsf@possimpible.ozlabs.ibm.com>
-Date: Tue, 04 Apr 2017 20:04:44 +1000
-Message-ID: <87pogsv683.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vy4N32tSgzDqKv
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Apr 2017 20:05:07 +1000 (AEST)
+From: Thomas Huth <thuth@redhat.com>
+To: Paul Mackerras <paulus@samba.org>,
+	kvm-ppc@vger.kernel.org
+Cc: kvm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Laurent Vivier <lvivier@redhat.com>
+Subject: [PATCH v2] KVM: PPC: Book3S PR: Do not fail emulation with
+ mtspr/mfspr for unknown SPRs
+Date: Tue,  4 Apr 2017 12:05:03 +0200
+Message-Id: <1491300303-16153-1-git-send-email-thuth@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,31 +22,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Daniel Axtens <dja@axtens.net> writes:
+According to the PowerISA 2.07, mtspr and mfspr should not always
+generate an illegal instruction exception when being used with an
+undefined SPR, but rather treat the instruction as a NOP or inject a
+privilege exception in some cases, too - depending on the SPR number.
+Also turn the printk here into a ratelimited print statement, so that
+the guest can not flood the dmesg log of the host by issueing lots of
+illegal mtspr/mfspr instruction here.
 
->> In that function, the flow is:
->>  pagefault_disable();
->>  enable_kernel_altivec();
->>  <vectorised function>
->>  pagefault_enable();
->>
->> There are a few things that it would be nice (but by no means essential)
->> to find out:
->>  - what is the difference between pagefault and prempt enable/disable
->>  - is it required to disable altivec after the end of the function or
->>    can we leave that enabled?
->
-> Answering my own question here, dc4fbba11e46 ("powerpc: Create
-> disable_kernel_{fp,altivec,vsx,spe}()") adds the disable_ function, and
-> it's a no-op except under debug conditions. So it should stay.
+Signed-off-by: Thomas Huth <thuth@redhat.com>
+---
+ v2:
+ - Inject illegal instruction program interrupt instead of emulation
+   assist interrupt (according to the last programming note in section
+   6.5.9 of Book III of the PowerISA v2.07)
 
-Yeah enabling altivec for use in the kernel requires saving the
-userspace altivec state first (so we don't clobber it).
+ arch/powerpc/kvm/book3s_emulate.c | 26 ++++++++++++++++++--------
+ 1 file changed, 18 insertions(+), 8 deletions(-)
 
-But once we've enabled it in the kernel, we can just leave it enabled
-until we return to userspace and save the cost of disabling it. There's
-a small risk that leaving altivec enabled allows some other kernel code
-to use altivec when it shouldn't, hence the debug option to make
-disable_kernel_altivec() actually disable it.
-
-cheers
+diff --git a/arch/powerpc/kvm/book3s_emulate.c b/arch/powerpc/kvm/book3s_emulate.c
+index 8359752..bf4181e 100644
+--- a/arch/powerpc/kvm/book3s_emulate.c
++++ b/arch/powerpc/kvm/book3s_emulate.c
+@@ -503,10 +503,14 @@ int kvmppc_core_emulate_mtspr_pr(struct kvm_vcpu *vcpu, int sprn, ulong spr_val)
+ 		break;
+ unprivileged:
+ 	default:
+-		printk(KERN_INFO "KVM: invalid SPR write: %d\n", sprn);
+-#ifndef DEBUG_SPR
+-		emulated = EMULATE_FAIL;
+-#endif
++		pr_info_ratelimited("KVM: invalid SPR write: %d\n", sprn);
++		if (sprn & 0x10) {
++			if (kvmppc_get_msr(vcpu) & MSR_PR)
++				kvmppc_core_queue_program(vcpu, SRR1_PROGPRIV);
++		} else {
++			if ((kvmppc_get_msr(vcpu) & MSR_PR) || sprn == 0)
++				kvmppc_core_queue_program(vcpu, SRR1_PROGILL);
++		}
+ 		break;
+ 	}
+ 
+@@ -648,10 +652,16 @@ int kvmppc_core_emulate_mfspr_pr(struct kvm_vcpu *vcpu, int sprn, ulong *spr_val
+ 		break;
+ 	default:
+ unprivileged:
+-		printk(KERN_INFO "KVM: invalid SPR read: %d\n", sprn);
+-#ifndef DEBUG_SPR
+-		emulated = EMULATE_FAIL;
+-#endif
++		pr_info_ratelimited("KVM: invalid SPR read: %d\n", sprn);
++		if (sprn & 0x10) {
++			if (kvmppc_get_msr(vcpu) & MSR_PR)
++				kvmppc_core_queue_program(vcpu, SRR1_PROGPRIV);
++		} else {
++			if ((kvmppc_get_msr(vcpu) & MSR_PR) || sprn == 0 ||
++			    sprn == 4 || sprn == 5 || sprn == 6)
++				kvmppc_core_queue_program(vcpu, SRR1_PROGILL);
++		}
++
+ 		break;
+ 	}
+ 
+-- 
+1.8.3.1
