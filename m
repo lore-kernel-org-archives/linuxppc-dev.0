@@ -3,31 +3,31 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vy9j10HcXzDqL9
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Apr 2017 00:05:08 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vy9j775pQzDqKh
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Apr 2017 00:05:15 +1000 (AEST)
 Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v34E3hpi084145
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 4 Apr 2017 10:04:58 -0400
-Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
- by mx0b-001b2d01.pphosted.com with ESMTP id 29mc5jatnt-1
+ v34E3iOD084225
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 4 Apr 2017 10:05:14 -0400
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 29mc5jau4b-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Apr 2017 10:04:58 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Apr 2017 10:05:13 -0400
 Received: from localhost
- by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Tue, 4 Apr 2017 08:04:55 -0600
+ Tue, 4 Apr 2017 08:05:11 -0600
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
 Cc: linuxppc-dev@lists.ozlabs.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [RFC PATCH 2/7] mm/follow_page_mask: Split follow_page_mask to
- smaller functions.
-Date: Tue,  4 Apr 2017 19:34:30 +0530
+Subject: [RFC PATCH 6/7] powerpc/hugetlb: Add code to support to follow huge
+ page directory entries
+Date: Tue,  4 Apr 2017 19:34:34 +0530
 In-Reply-To: <1491314675-15787-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1491314675-15787-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Message-Id: <1491314675-15787-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Message-Id: <1491314675-15787-6-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,190 +37,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Makes code reading easy. No functional changes in this patch.
+Add follow_huge_pd implementation for ppc64.
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- mm/gup.c | 148 +++++++++++++++++++++++++++++++++++++++------------------------
- 1 file changed, 91 insertions(+), 57 deletions(-)
+ arch/powerpc/mm/hugetlbpage.c | 42 ++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 42 insertions(+)
 
-diff --git a/mm/gup.c b/mm/gup.c
-index 04aa405350dc..73d46f9f7b81 100644
---- a/mm/gup.c
-+++ b/mm/gup.c
-@@ -208,68 +208,16 @@ static struct page *follow_page_pte(struct vm_area_struct *vma,
- 	return no_page_table(vma, flags);
+diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
+index 80f6d2ed551a..9d66d4f810aa 100644
+--- a/arch/powerpc/mm/hugetlbpage.c
++++ b/arch/powerpc/mm/hugetlbpage.c
+@@ -17,6 +17,8 @@
+ #include <linux/memblock.h>
+ #include <linux/bootmem.h>
+ #include <linux/moduleparam.h>
++#include <linux/swap.h>
++#include <linux/swapops.h>
+ #include <asm/pgtable.h>
+ #include <asm/pgalloc.h>
+ #include <asm/tlb.h>
+@@ -618,6 +620,10 @@ void hugetlb_free_pgd_range(struct mmu_gather *tlb,
  }
  
--/**
-- * follow_page_mask - look up a page descriptor from a user-virtual address
-- * @vma: vm_area_struct mapping @address
-- * @address: virtual address to look up
-- * @flags: flags modifying lookup behaviour
-- * @page_mask: on output, *page_mask is set according to the size of the page
-- *
-- * @flags can have FOLL_ flags set, defined in <linux/mm.h>
-- *
-- * Returns the mapped (struct page *), %NULL if no mapping exists, or
-- * an error pointer if there is a mapping to something not represented
-- * by a page descriptor (see also vm_normal_page()).
-- */
--struct page *follow_page_mask(struct vm_area_struct *vma,
--			      unsigned long address, unsigned int flags,
--			      unsigned int *page_mask)
-+static struct page *follow_pmd_mask(struct vm_area_struct *vma,
-+				    unsigned long address, pud_t *pudp,
-+				    unsigned int flags, unsigned int *page_mask)
- {
--	pgd_t *pgd;
--	p4d_t *p4d;
--	pud_t *pud;
- 	pmd_t *pmd;
- 	spinlock_t *ptl;
- 	struct page *page;
- 	struct mm_struct *mm = vma->vm_mm;
- 
--	*page_mask = 0;
--
--	page = follow_huge_addr(mm, address, flags & FOLL_WRITE);
--	if (!IS_ERR(page)) {
--		BUG_ON(flags & FOLL_GET);
--		return page;
--	}
--
--	pgd = pgd_offset(mm, address);
--	if (pgd_none(*pgd) || unlikely(pgd_bad(*pgd)))
--		return no_page_table(vma, flags);
--	p4d = p4d_offset(pgd, address);
--	if (p4d_none(*p4d))
--		return no_page_table(vma, flags);
--	BUILD_BUG_ON(p4d_huge(*p4d));
--	if (unlikely(p4d_bad(*p4d)))
--		return no_page_table(vma, flags);
--	pud = pud_offset(p4d, address);
--	if (pud_none(*pud))
--		return no_page_table(vma, flags);
--	if (pud_huge(*pud) && vma->vm_flags & VM_HUGETLB) {
--		page = follow_huge_pud(mm, address, pud, flags);
--		if (page)
--			return page;
--		return no_page_table(vma, flags);
--	}
--	if (pud_devmap(*pud)) {
--		ptl = pud_lock(mm, pud);
--		page = follow_devmap_pud(vma, address, pud, flags);
--		spin_unlock(ptl);
--		if (page)
--			return page;
--	}
--	if (unlikely(pud_bad(*pud)))
--		return no_page_table(vma, flags);
--
--	pmd = pmd_offset(pud, address);
-+	pmd = pmd_offset(pudp, address);
- 	if (pmd_none(*pmd))
- 		return no_page_table(vma, flags);
- 	if (pmd_huge(*pmd) && vma->vm_flags & VM_HUGETLB) {
-@@ -319,13 +267,99 @@ struct page *follow_page_mask(struct vm_area_struct *vma,
- 		return ret ? ERR_PTR(ret) :
- 			follow_page_pte(vma, address, pmd, flags);
- 	}
--
- 	page = follow_trans_huge_pmd(vma, address, pmd, flags);
- 	spin_unlock(ptl);
- 	*page_mask = HPAGE_PMD_NR - 1;
- 	return page;
- }
- 
-+
-+static struct page *follow_pud_mask(struct vm_area_struct *vma,
-+				    unsigned long address, p4d_t *p4dp,
-+				    unsigned int flags, unsigned int *page_mask)
-+{
-+	pud_t *pud;
-+	spinlock_t *ptl;
-+	struct page *page;
-+	struct mm_struct *mm = vma->vm_mm;
-+
-+	pud = pud_offset(p4dp, address);
-+	if (pud_none(*pud))
-+		return no_page_table(vma, flags);
-+	if (pud_huge(*pud) && vma->vm_flags & VM_HUGETLB) {
-+		page = follow_huge_pud(mm, address, pud, flags);
-+		if (page)
-+			return page;
-+		return no_page_table(vma, flags);
-+	}
-+	if (pud_devmap(*pud)) {
-+		ptl = pud_lock(mm, pud);
-+		page = follow_devmap_pud(vma, address, pud, flags);
-+		spin_unlock(ptl);
-+		if (page)
-+			return page;
-+	}
-+	if (unlikely(pud_bad(*pud)))
-+		return no_page_table(vma, flags);
-+
-+	return follow_pmd_mask(vma, address, pud, flags, page_mask);
-+}
-+
-+
-+static struct page *follow_p4d_mask(struct vm_area_struct *vma,
-+				    unsigned long address, pgd_t *pgdp,
-+				    unsigned int flags, unsigned int *page_mask)
-+{
-+	p4d_t *p4d;
-+
-+	p4d = p4d_offset(pgdp, address);
-+	if (p4d_none(*p4d))
-+		return no_page_table(vma, flags);
-+	BUILD_BUG_ON(p4d_huge(*p4d));
-+	if (unlikely(p4d_bad(*p4d)))
-+		return no_page_table(vma, flags);
-+
-+	return follow_pud_mask(vma, address, p4d, flags, page_mask);
-+}
-+
-+/**
-+ * follow_page_mask - look up a page descriptor from a user-virtual address
-+ * @vma: vm_area_struct mapping @address
-+ * @address: virtual address to look up
-+ * @flags: flags modifying lookup behaviour
-+ * @page_mask: on output, *page_mask is set according to the size of the page
-+ *
-+ * @flags can have FOLL_ flags set, defined in <linux/mm.h>
-+ *
-+ * Returns the mapped (struct page *), %NULL if no mapping exists, or
-+ * an error pointer if there is a mapping to something not represented
-+ * by a page descriptor (see also vm_normal_page()).
+ /*
++ * 64 bit book3s use generic follow_page_mask
 + */
-+struct page *follow_page_mask(struct vm_area_struct *vma,
-+			      unsigned long address, unsigned int flags,
-+			      unsigned int *page_mask)
++#ifndef CONFIG_PPC_BOOK3S_64
++/*
+  * We are holding mmap_sem, so a parallel huge page collapse cannot run.
+  * To prevent hugepage split, disable irq.
+  */
+@@ -673,6 +679,42 @@ follow_huge_pud(struct mm_struct *mm, unsigned long address,
+ 	return NULL;
+ }
+ 
++#else /* !CONFIG_PPC_BOOK3S_64 */
++
++struct page *follow_huge_pd(struct vm_area_struct *vma,
++			    unsigned long address, hugepd_t hpd,
++			    int flags, int pdshift)
 +{
-+	pgd_t *pgd;
-+	struct page *page;
++	pte_t *ptep;
++	spinlock_t *ptl;
++	struct page *page = NULL;
++	unsigned long mask;
++	int shift = hugepd_shift(hpd);
 +	struct mm_struct *mm = vma->vm_mm;
 +
-+	*page_mask = 0;
++retry:
++	ptl = &mm->page_table_lock;
++	spin_lock(ptl);
 +
-+	/* make this handle hugepd */
-+	page = follow_huge_addr(mm, address, flags & FOLL_WRITE);
-+	if (!IS_ERR(page)) {
-+		BUG_ON(flags & FOLL_GET);
-+		return page;
++	ptep = hugepte_offset(hpd, address, pdshift);
++	if (pte_present(*ptep)) {
++		mask = (1UL << shift) - 1;
++		page = pte_page(*ptep);
++		page += ((address & mask) >> PAGE_SHIFT);
++		if (flags & FOLL_GET)
++			get_page(page);
++	} else {
++		if (is_hugetlb_entry_migration(*ptep)) {
++			spin_unlock(ptl);
++			__migration_entry_wait(mm, ptep, ptl);
++			goto retry;
++		}
 +	}
-+
-+	pgd = pgd_offset(mm, address);
-+
-+	if (pgd_none(*pgd) || unlikely(pgd_bad(*pgd)))
-+		return no_page_table(vma, flags);
-+
-+	return follow_p4d_mask(vma, address, pgd, flags, page_mask);
++	spin_unlock(ptl);
++	return page;
 +}
++#endif
 +
- static int get_gate_page(struct mm_struct *mm, unsigned long address,
- 		unsigned int gup_flags, struct vm_area_struct **vma,
- 		struct page **page)
+ static unsigned long hugepte_addr_end(unsigned long addr, unsigned long end,
+ 				      unsigned long sz)
+ {
 -- 
 2.7.4
