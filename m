@@ -3,28 +3,29 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vy9gt324JzDq7c
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Apr 2017 00:04:10 +1000 (AEST)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v34E3ifk029172
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 4 Apr 2017 10:04:00 -0400
-Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
- by mx0b-001b2d01.pphosted.com with ESMTP id 29m24aqwb2-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vy9hv40XgzDqLl
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Apr 2017 00:05:03 +1000 (AEST)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v34E3hNI075596
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 4 Apr 2017 10:04:53 -0400
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 29mbv2by0u-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Apr 2017 10:04:00 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Apr 2017 10:04:53 -0400
 Received: from localhost
- by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Tue, 4 Apr 2017 10:03:59 -0400
+ Tue, 4 Apr 2017 08:04:51 -0600
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
 Cc: linuxppc-dev@lists.ozlabs.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [RFC PATCH] powerpc/mm/hugetlb: Add support for 1G huge pages
-Date: Tue,  4 Apr 2017 19:33:45 +0530
-Message-Id: <1491314625-15307-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [RFC PATCH 1/7] mm/hugetlb/migration: Use set_huge_pte_at instead of
+ set_pte_at
+Date: Tue,  4 Apr 2017 19:34:29 +0530
+Message-Id: <1491314675-15787-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,80 +35,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch adds support for gigantic pages in ppc64. We also updates
-gigantic_page_supported helper such that arch can override it.
+The right interface to use to set a hugetlb pte entry is set_huge_pte_at. Use
+that instead of set_pte_at.
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/book3s/64/hugetlb.h | 9 +++++++++
- arch/powerpc/mm/hugetlbpage.c                | 7 +++++--
- arch/powerpc/platforms/Kconfig.cputype       | 1 +
- mm/hugetlb.c                                 | 4 ++++
- 4 files changed, 19 insertions(+), 2 deletions(-)
+ mm/migrate.c | 21 +++++++++++----------
+ 1 file changed, 11 insertions(+), 10 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/book3s/64/hugetlb.h b/arch/powerpc/include/asm/book3s/64/hugetlb.h
-index 6666cd366596..a994d069fdaf 100644
---- a/arch/powerpc/include/asm/book3s/64/hugetlb.h
-+++ b/arch/powerpc/include/asm/book3s/64/hugetlb.h
-@@ -50,4 +50,13 @@ static inline pte_t arch_make_huge_pte(pte_t entry, struct vm_area_struct *vma,
- 	else
- 		return entry;
- }
-+
-+#define gigantic_page_supported gigantic_page_supported
-+static inline bool gigantic_page_supported(void)
-+{
-+	if (radix_enabled())
-+		return true;
-+	return false;
-+}
-+
- #endif
-diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
-index a4f33de4008e..80f6d2ed551a 100644
---- a/arch/powerpc/mm/hugetlbpage.c
-+++ b/arch/powerpc/mm/hugetlbpage.c
-@@ -763,8 +763,11 @@ static int __init add_huge_page_size(unsigned long long size)
- 	 * Hash: 16M and 16G
- 	 */
- 	if (radix_enabled()) {
--		if (mmu_psize != MMU_PAGE_2M)
--			return -EINVAL;
-+		if (mmu_psize != MMU_PAGE_2M) {
-+			if (cpu_has_feature(CPU_FTR_POWER9_DD1) ||
-+			    (mmu_psize != MMU_PAGE_1G))
-+				return -EINVAL;
-+		}
- 	} else {
- 		if (mmu_psize != MMU_PAGE_16M && mmu_psize != MMU_PAGE_16G)
- 			return -EINVAL;
-diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
-index a7c0c1fafe68..382c3dd86d6d 100644
---- a/arch/powerpc/platforms/Kconfig.cputype
-+++ b/arch/powerpc/platforms/Kconfig.cputype
-@@ -343,6 +343,7 @@ config PPC_STD_MMU_64
- config PPC_RADIX_MMU
- 	bool "Radix MMU Support"
- 	depends on PPC_BOOK3S_64
-+	select ARCH_HAS_GIGANTIC_PAGE
- 	default y
- 	help
- 	  Enable support for the Power ISA 3.0 Radix style MMU. Currently this
-diff --git a/mm/hugetlb.c b/mm/hugetlb.c
-index 3d0aab9ee80d..2c090189f314 100644
---- a/mm/hugetlb.c
-+++ b/mm/hugetlb.c
-@@ -1158,7 +1158,11 @@ static int alloc_fresh_gigantic_page(struct hstate *h,
- 	return 0;
- }
+diff --git a/mm/migrate.c b/mm/migrate.c
+index 9a0897a14d37..4c272ac6fe53 100644
+--- a/mm/migrate.c
++++ b/mm/migrate.c
+@@ -224,25 +224,26 @@ static int remove_migration_pte(struct page *page, struct vm_area_struct *vma,
+ 		if (is_write_migration_entry(entry))
+ 			pte = maybe_mkwrite(pte, vma);
  
-+#ifndef gigantic_page_supported
- static inline bool gigantic_page_supported(void) { return true; }
-+#define gigantic_page_supported gigantic_page_supported
++		flush_dcache_page(new);
+ #ifdef CONFIG_HUGETLB_PAGE
+ 		if (PageHuge(new)) {
+ 			pte = pte_mkhuge(pte);
+ 			pte = arch_make_huge_pte(pte, vma, new, 0);
+-		}
+-#endif
+-		flush_dcache_page(new);
+-		set_pte_at(vma->vm_mm, pvmw.address, pvmw.pte, pte);
+-
+-		if (PageHuge(new)) {
++			set_huge_pte_at(vma->vm_mm, pvmw.address, pvmw.pte, pte);
+ 			if (PageAnon(new))
+ 				hugepage_add_anon_rmap(new, vma, pvmw.address);
+ 			else
+ 				page_dup_rmap(new, true);
+-		} else if (PageAnon(new))
+-			page_add_anon_rmap(new, vma, pvmw.address, false);
+-		else
+-			page_add_file_rmap(new, false);
++		} else
 +#endif
-+
- #else
- static inline bool gigantic_page_supported(void) { return false; }
- static inline void free_gigantic_page(struct page *page, unsigned int order) { }
++		{
++			set_pte_at(vma->vm_mm, pvmw.address, pvmw.pte, pte);
+ 
++			if (PageAnon(new))
++				page_add_anon_rmap(new, vma, pvmw.address, false);
++			else
++				page_add_file_rmap(new, false);
++		}
+ 		if (vma->vm_flags & VM_LOCKED && !PageTransCompound(new))
+ 			mlock_vma_page(new);
+ 
 -- 
 2.7.4
