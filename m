@@ -1,12 +1,12 @@
 Return-Path: <dja@axtens.net>
-Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
- [IPv6:2607:f8b0:400e:c05::242])
+Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
+ [IPv6:2607:f8b0:400e:c05::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vxsMG1J1GzDqGv
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Apr 2017 11:48:41 +1000 (AEST)
-Received: by mail-pg0-x242.google.com with SMTP id 81so33585346pgh.3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 03 Apr 2017 18:48:41 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vxsMW20kBzDqHV
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Apr 2017 11:48:55 +1000 (AEST)
+Received: by mail-pg0-x243.google.com with SMTP id 79so33586136pgf.0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 03 Apr 2017 18:48:55 -0700 (PDT)
 From: Daniel Axtens <dja@axtens.net>
 To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>, mpe@ellerman.id.au
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
@@ -16,13 +16,13 @@ Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  Hemant Kumar <hemant@linux.vnet.ibm.com>,
  Anju T Sudhakar <anju@linux.vnet.ibm.com>,
  Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Subject: Re: [PATCH v6 02/11] powerpc/powernv: Autoload IMC device driver
- module
-In-Reply-To: <1491231308-15282-3-git-send-email-maddy@linux.vnet.ibm.com>
+Subject: Re: [PATCH v6 01/11] powerpc/powernv: Data structure and macros
+ definitions
+In-Reply-To: <1491231308-15282-2-git-send-email-maddy@linux.vnet.ibm.com>
 References: <1491231308-15282-1-git-send-email-maddy@linux.vnet.ibm.com>
- <1491231308-15282-3-git-send-email-maddy@linux.vnet.ibm.com>
-Date: Tue, 04 Apr 2017 11:48:36 +1000
-Message-ID: <87inmlkknf.fsf@possimpible.ozlabs.ibm.com>
+ <1491231308-15282-2-git-send-email-maddy@linux.vnet.ibm.com>
+Date: Tue, 04 Apr 2017 11:48:50 +1000
+Message-ID: <87h925kkn1.fsf@possimpible.ozlabs.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -36,87 +36,56 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Hi,
 
-> +		do {
-> +			pages = PAGE_SIZE * i;
-> +			pcni->vbase[i++] = (u64)phys_to_virt(pcni->pbase +
-> +							     pages);
-> +		} while (i < (pcni->size / PAGE_SIZE));
+> +#define IMC_MAX_CHIPS			32
+> +#define IMC_MAX_PMUS			32
+> +#define IMC_MAX_PMU_NAME_LEN		256
+I've noticed this is used as both the maximum length for event names and
+event value strings. Would another name suit better?
 
-I also just noticed that there's no check here against
-IMC_NEST_MAX_PAGES: should that be inserted? (If for no other reason
-than to stop every static analysis tool complaining!)
-
-Daniel
-
-> +	}
 > +
-> +	return 0;
-> +err:
-> +	return -ENODEV;
-> +}
+> +#define IMC_NEST_MAX_PAGES		16
 > +
-> +static const struct of_device_id opal_imc_match[] = {
-> +	{ .compatible = IMC_DTB_COMPAT },
-> +	{},
+> +#define IMC_DTB_COMPAT			"ibm,opal-in-memory-counters"
+> +#define IMC_DTB_NEST_COMPAT		"ibm,imc-counters-nest"
+> +
+> +/*
+> + * Structure to hold per chip specific memory address
+> + * information for nest pmus. Nest Counter data are exported
+> + * in per-chip reserved memory region by the PORE Engine.
+> + */
+> +struct perchip_nest_info {
+> +	u32 chip_id;
+> +	u64 pbase;
+> +	u64 vbase[IMC_NEST_MAX_PAGES];
+> +	u64 size;
 > +};
 > +
-> +static struct platform_driver opal_imc_driver = {
-> +	.driver = {
-> +		.name = "opal-imc-counters",
-> +		.of_match_table = opal_imc_match,
-> +	},
-> +	.probe = opal_imc_counters_probe,
+> +/*
+> + * Place holder for nest pmu events and values.
+> + */
+> +struct imc_events {
+> +	char *ev_name;
+> +	char *ev_value;
 > +};
 > +
-> +MODULE_DEVICE_TABLE(of, opal_imc_match);
-> +module_platform_driver(opal_imc_driver);
-> +MODULE_DESCRIPTION("PowerNV OPAL IMC driver");
-> +MODULE_LICENSE("GPL");
-> diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
-> index e0f856bfbfe8..85ea1296f030 100644
-> --- a/arch/powerpc/platforms/powernv/opal.c
-> +++ b/arch/powerpc/platforms/powernv/opal.c
-> @@ -14,6 +14,7 @@
->  #include <linux/printk.h>
->  #include <linux/types.h>
->  #include <linux/of.h>
-> +#include <linux/of_address.h>
->  #include <linux/of_fdt.h>
->  #include <linux/of_platform.h>
->  #include <linux/interrupt.h>
-> @@ -30,6 +31,7 @@
->  #include <asm/opal.h>
->  #include <asm/firmware.h>
->  #include <asm/mce.h>
-> +#include <asm/imc-pmu.h>
->  
->  #include "powernv.h"
->  
-> @@ -631,6 +633,15 @@ static void opal_pdev_init(const char *compatible)
->  		of_platform_device_create(np, NULL, NULL);
->  }
->  
-> +static void opal_imc_init_dev(void)
-> +{
-> +	struct device_node *np;
+> +/*
+> + * Device tree parser code detects IMC pmu support and
+> + * registers new IMC pmus. This structure will
+> + * hold the pmu functions and attrs for each imc pmu and
+> + * will be referenced at the time of pmu registration.
+> + */
+> +struct imc_pmu {
+> +	struct pmu pmu;
+> +	int domain;
+> +	const struct attribute_group *attr_groups[4];
+> +};
 > +
-> +	np = of_find_compatible_node(NULL, NULL, IMC_DTB_COMPAT);
-> +	if (np)
-> +		of_platform_device_create(np, NULL, NULL);
-> +}
+> +/*
+> + * Domains for IMC PMUs
+> + */
+> +#define IMC_DOMAIN_NEST		1
+> +#define IMC_DOMAIN_UNKNOWN	-1
 > +
->  static int kopald(void *unused)
->  {
->  	unsigned long timeout = msecs_to_jiffies(opal_heartbeat) + 1;
-> @@ -704,6 +715,9 @@ static int __init opal_init(void)
->  	/* Setup a heatbeat thread if requested by OPAL */
->  	opal_init_heartbeat();
->  
-> +	/* Detect IMC pmu counters support and create PMUs */
-> +	opal_imc_init_dev();
-> +
->  	/* Create leds platform devices */
->  	leds = of_find_node_by_path("/ibm,opal/leds");
->  	if (leds) {
+> +#endif /* PPC_POWERNV_IMC_PMU_DEF_H */
 > -- 
 > 2.7.4
