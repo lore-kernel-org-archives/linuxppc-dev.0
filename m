@@ -1,25 +1,22 @@
-Return-Path: <alex.williamson@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <kda@linux-powerpc.org>
+Received: from mail-pg0-x22f.google.com (mail-pg0-x22f.google.com
+ [IPv6:2607:f8b0:400e:c05::22f])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vyCkT6KMhzDq7c
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Apr 2017 01:36:33 +1000 (AEST)
-Date: Tue, 4 Apr 2017 09:36:30 -0600
-From: Alex Williamson <alex.williamson@redhat.com>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Cc: linuxppc-dev@lists.ozlabs.org, David Gibson
- <david@gibson.dropbear.id.au>, kvm-ppc@vger.kernel.org,
- kvm@vger.kernel.org, Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH guest kernel] vfio/powerpc/spapr_tce: Enforce IOMMU type
- compatibility check
-Message-ID: <20170404093630.0c81e407@t450s.home>
-In-Reply-To: <7e067e71-ecde-6515-0b27-202a1ce4948a@ozlabs.ru>
-References: <20170324064406.17076-1-aik@ozlabs.ru>
- <20170324142905.3129266b@t450s.home>
- <d6909bd7-e861-03b0-cb32-bffaefaf518f@ozlabs.ru>
- <7e067e71-ecde-6515-0b27-202a1ce4948a@ozlabs.ru>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vyFV96FRQzDq7c
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Apr 2017 02:54:57 +1000 (AEST)
+Received: by mail-pg0-x22f.google.com with SMTP id 21so158112910pgg.1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Apr 2017 09:54:57 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+In-Reply-To: <87vaqktim2.fsf@concordia.ellerman.id.au>
+References: <87vaqktim2.fsf@concordia.ellerman.id.au>
+From: Denis Kirjanov <kda@linux-powerpc.org>
+Date: Tue, 4 Apr 2017 19:54:55 +0300
+Message-ID: <CAOJe8K2eveE+s=dHdk_ppdd8wWbPRq834gejnC2pLCJKTafJEA@mail.gmail.com>
+Subject: Re: POWER4 - who has one?
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,96 +26,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 4 Apr 2017 20:12:45 +1000
-Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
+On 4/4/17, Michael Ellerman <mpe@ellerman.id.au> wrote:
+> Hi folks,
+>
+> Quick quiz, who still has a POWER4?
+>
+> And if so are you running mainline on it?
 
-> On 25/03/17 23:25, Alexey Kardashevskiy wrote:
-> > On 25/03/17 07:29, Alex Williamson wrote:  
-> >> On Fri, 24 Mar 2017 17:44:06 +1100
-> >> Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
-> >>  
-> >>> The existing SPAPR TCE driver advertises both VFIO_SPAPR_TCE_IOMMU and
-> >>> VFIO_SPAPR_TCE_v2_IOMMU types to the userspace and the userspace usually
-> >>> picks the v2.
-> >>>
-> >>> Normally the userspace would create a container, attach an IOMMU group
-> >>> to it and only then set the IOMMU type (which would normally be v2).
-> >>>
-> >>> However a specific IOMMU group may not support v2, in other words
-> >>> it may not implement set_window/unset_window/take_ownership/
-> >>> release_ownership and such a group should not be attached to
-> >>> a v2 container.
-> >>>
-> >>> This adds extra checks that a new group can do what the selected IOMMU
-> >>> type suggests. The userspace can then test the return value from
-> >>> ioctl(VFIO_SET_IOMMU, VFIO_SPAPR_TCE_v2_IOMMU) and try
-> >>> VFIO_SPAPR_TCE_IOMMU.
-> >>>
-> >>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> >>> ---
-> >>>
-> >>> This is one of the patches needed to do nested VFIO - for either
-> >>> second level guest or DPDK running in a guest.
-> >>> ---
-> >>>  drivers/vfio/vfio_iommu_spapr_tce.c | 8 ++++++++
-> >>>  1 file changed, 8 insertions(+)  
-> >>
-> >> I'm not sure I understand why you're labeling this "guest kernel", is a  
-> > 
-> > 
-> > That is my script :)
-> >   
-> >> VM the only case where we can have combinations that only a subset of
-> >> the groups might support v2?    
-> > 
-> > powernv (non-virtualized, and it runs HV KVM) host provides v2-capable
-> > groups, they all the same, and a pseries host (which normally runs as a
-> > guest but it can do nested KVM as well - it is called PR KVM) can do only
-> > v1 (after this patch, without it - no vfio at all).
-> >   
-> >> What terrible things happen when such a
-> >> combination is created?  
-> > 
-> > There is no mixture at the moment, I just needed a way to tell userspace
-> > that a group cannot do v2.
-> >   
-> >> The fix itself seems sane, but I'm trying to
-> >> figure out whether it should be marked for stable, should go in for
-> >> v4.11, or be queued for v4.12.  Thanks,  
-> > 
-> > No need for stable.  
-> 
-> 
-> So what is the next step with this patch?
+Not the same thing, but I have a box on two 970MP
 
-Unless there are objections or further comments, I'll put this in my
-next branch for v4.12, probably this week.  Thanks,
-
-Alex
-
-> >>> diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
-> >>> index cf3de91fbfe7..a7d811524092 100644
-> >>> --- a/drivers/vfio/vfio_iommu_spapr_tce.c
-> >>> +++ b/drivers/vfio/vfio_iommu_spapr_tce.c
-> >>> @@ -1335,8 +1335,16 @@ static int tce_iommu_attach_group(void *iommu_data,
-> >>>  
-> >>>  	if (!table_group->ops || !table_group->ops->take_ownership ||
-> >>>  			!table_group->ops->release_ownership) {
-> >>> +		if (container->v2) {
-> >>> +			ret = -EPERM;
-> >>> +			goto unlock_exit;
-> >>> +		}
-> >>>  		ret = tce_iommu_take_ownership(container, table_group);
-> >>>  	} else {
-> >>> +		if (!container->v2) {
-> >>> +			ret = -EPERM;
-> >>> +			goto unlock_exit;
-> >>> +		}
-> >>>  		ret = tce_iommu_take_ownership_ddw(container, table_group);
-> >>>  		if (!tce_groups_attached(container) && !container->tables[0])
-> >>>  			container->def_window_pending = true;  
-> >>  
-> > 
-> >   
-> 
-> 
+>
+> cheers
+>
