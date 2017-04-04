@@ -1,17 +1,33 @@
-Return-Path: <dan.carpenter@oracle.com>
-Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <srs0=0lnn=3m=linux-powerpc.org=kda@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vy7jl6lTGzDq7c
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Apr 2017 22:35:39 +1000 (AEST)
-Date: Tue, 4 Apr 2017 15:35:23 +0300
-From: Dan Carpenter <dan.carpenter@oracle.com>
-To: nfont@linux.vnet.ibm.com
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: [bug report] ibmvnic: Cleanup failure path in ibmvnic_open
-Message-ID: <20170404123523.GA12843@mwanda>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vy8702m6wzDq5W
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Apr 2017 22:54:04 +1000 (AEST)
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3vy8702Cbpz8svk
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Apr 2017 22:54:04 +1000 (AEST)
+Received: from mail-pg0-x234.google.com (mail-pg0-x234.google.com
+ [IPv6:2607:f8b0:400e:c05::234])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3vy86z5nVRz9s8W
+ for <linuxppc-dev@ozlabs.org>; Tue,  4 Apr 2017 22:54:03 +1000 (AEST)
+Received: by mail-pg0-x234.google.com with SMTP id x125so151640825pgb.0
+ for <linuxppc-dev@ozlabs.org>; Tue, 04 Apr 2017 05:54:03 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <877f30v19q.fsf@concordia.ellerman.id.au>
+References: <1490882779-16066-1-git-send-email-kda@linux-powerpc.org>
+ <877f30v19q.fsf@concordia.ellerman.id.au>
+From: Denis Kirjanov <kda@linux-powerpc.org>
+Date: Tue, 4 Apr 2017 15:54:01 +0300
+Message-ID: <CAOJe8K3qURm2XcWfzXMF8rPqHJYSyGLKuZc2MX34khhOAh7aAg@mail.gmail.com>
+Subject: Re: [PATCH] tty/hvc_console: fix console lock ordering with spinlock
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: gregkh@linuxfoundation.org, jslaby@suse.com, linuxppc-dev@ozlabs.org,
+ linux-kernel@vger.kernel.org,
+ "benh@kernel.crashing.org" <benh@kernel.crashing.org>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,166 +37,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-[  This patch changed the code from using multiple come-from label names
-   to using a single err label.  Both are terrible ways to do error
-   handling.
+On 4/4/17, Michael Ellerman <mpe@ellerman.id.au> wrote:
+> Denis Kirjanov <kda@linux-powerpc.org> writes:
+>
+>> hvc_remove() takes a spin lock first then acquires the console
+>> semaphore. This situation can easily lead to a deadlock scenario
+>> where we call scheduler with spin lock held.
+>
+> Have you actually hit the deadlock? Because that code's been like that
+> for years and I've never received a bug report.
 
-   Come-From Labels:
+Nope, I didn't. I've found the bug in the code while looking at the
+lockdep output
 
-   Come-from labels look like this:
+>
+>> diff --git a/drivers/tty/hvc/hvc_console.c
+>> b/drivers/tty/hvc/hvc_console.c
+>> index b19ae36..a8d3991 100644
+>> --- a/drivers/tty/hvc/hvc_console.c
+>> +++ b/drivers/tty/hvc/hvc_console.c
+>> @@ -920,17 +920,17 @@ int hvc_remove(struct hvc_struct *hp)
+>>
+>>  	tty = tty_port_tty_get(&hp->port);
+>>
+>> +	console_lock();
+>>  	spin_lock_irqsave(&hp->lock, flags);
+>>  	if (hp->index < MAX_NR_HVC_CONSOLES) {
+>> -		console_lock();
+>>  		vtermnos[hp->index] = -1;
+>>  		cons_ops[hp->index] = NULL;
+>> -		console_unlock();
+>>  	}
+>>
+>>  	/* Don't whack hp->irq because tty_hangup() will need to free the irq.
+>> */
+>>
+>>  	spin_unlock_irqrestore(&hp->lock, flags);
+>> +	console_unlock();
+>
+> I get that you're trying to do the minimal change, but I don't think the
+> result is ideal. If this isn't a console hvc then we take both locks but
+> do nothing.
+>
+> So what about:
+>
+> 	if (hp->index < MAX_NR_HVC_CONSOLES) {
+> 		console_lock();
+> 		spin_lock_irqsave(&hp->lock, flags);
+> 		vtermnos[hp->index] = -1;
+> 		cons_ops[hp->index] = NULL;
+> 		spin_unlock_irqrestore(&hp->lock, flags);
+> 		console_unlock();
+> 	}
+Are you sure that we don't corrupt the hp->index between hvc_poll in
+interrupt context and hvc_remoev?
 
-	foo = alloc();
-	if (!foo)
-		goto alloc_failed;
-
-   The "alloc_failed" name is infuriating to look at because you can
-   easily see that alloc_failed because you literally just read that on
-   the line before.  It looks like it is useful information but it's a
-   trick.  What we want to know is what does the goto do?  The label
-   name should be verb based.
-
-   One Err Style Error Handling:
-
-   This is the most bug prone way of handling errors.  You can easily
-   see that if you count the number of bugs from static checkers.  These
-   labels try to handle every possible condition which is more difficult
-   than handling a specific error state.  Plus, the label names for
-   these are always vague and annoying.
-
-   This patch introduces a classic One Err Bug.
-
-   Kernel Style Error Handling:
-
-   It's best if you use a string of error labels that each unwind a
-   specific thing.  Never free something that hasn't been allocated.
-   Choose verb based labels like:
-
-	err_release_bar:
-		release_bar(bar);
-	err_free_foo:
-		kfree(foo);
-
-   When you're reviewing code that uses this style of error handling you
-   only need to track the most recently allocated thing.  It works like
-   this:
-
-	foo = alloc();
-	if (!foo)
-		return -ENOMEM;
-	bar = get_bar();
-	if (!bar)
-		goto err_free_foo;
-
-   With this code you don't have to scroll up and down the function.
-   It's obviously correct just from looking at those 6 lines.
-
-	- dan ]
-
-Hello Nathan Fontenot,
-
-The patch 1b8955ee5f6c: "ibmvnic: Cleanup failure path in
-ibmvnic_open" from Mar 30, 2017, leads to the following static
-checker warning:
-
-	drivers/net/ethernet/ibm/ibmvnic.c:672 ibmvnic_open()
-	error: we previously assumed 'adapter->napi' could be null (see line 626)
-
-drivers/net/ethernet/ibm/ibmvnic.c
-   593  static int ibmvnic_open(struct net_device *netdev)
-   594  {
-   595          struct ibmvnic_adapter *adapter = netdev_priv(netdev);
-   596          struct device *dev = &adapter->vdev->dev;
-   597          union ibmvnic_crq crq;
-   598          int rc = 0;
-   599          int i;
-   600  
-   601          if (adapter->is_closed) {
-   602                  rc = ibmvnic_init(adapter);
-   603                  if (rc)
-   604                          return rc;
-   605          }
-   606  
-   607          rc = ibmvnic_login(netdev);
-   608          if (rc)
-   609                  return rc;
-                        ^^^^^^^^^^
-See?  We didn't clean up form ibmvnic_init() so this is buggy already.
-It should be goto uninit;  The One Err Style error handling is too
-complicated so people just give up.  But Kernel Style error handling
-methodically writes itself.
-
-   610  
-   611          rc = netif_set_real_num_tx_queues(netdev, adapter->req_tx_queues);
-   612          if (rc) {
-   613                  dev_err(dev, "failed to set the number of tx queues\n");
-   614                  return -1;
-   615          }
-   616  
-   617          rc = init_sub_crq_irqs(adapter);
-   618          if (rc) {
-   619                  dev_err(dev, "failed to initialize sub crq irqs\n");
-   620                  return -1;
-   621          }
-   622  
-   623          adapter->map_id = 1;
-   624          adapter->napi = kcalloc(adapter->req_rx_queues,
-   625                                  sizeof(struct napi_struct), GFP_KERNEL);
-   626          if (!adapter->napi)
-   627                  goto ibmvnic_open_fail;
-                        ^^^^^^^^^^^^^^^^^^^^^^
-If we hit this goto then we will Oops.
-
-   628          for (i = 0; i < adapter->req_rx_queues; i++) {
-   629                  netif_napi_add(netdev, &adapter->napi[i], ibmvnic_poll,
-   630                                 NAPI_POLL_WEIGHT);
-   631                  napi_enable(&adapter->napi[i]);
-   632          }
-   633  
-   634          send_map_query(adapter);
-   635  
-   636          rc = init_rx_pools(netdev);
-   637          if (rc)
-   638                  goto ibmvnic_open_fail;
-   639  
-   640          rc = init_tx_pools(netdev);
-   641          if (rc)
-   642                  goto ibmvnic_open_fail;
-   643  
-   644          rc = init_bounce_buffer(netdev);
-   645          if (rc)
-   646                  goto ibmvnic_open_fail;
-   647  
-   648          replenish_pools(adapter);
-   649  
-   650          /* We're ready to receive frames, enable the sub-crq interrupts and
-   651           * set the logical link state to up
-   652           */
-   653          for (i = 0; i < adapter->req_rx_queues; i++)
-   654                  enable_scrq_irq(adapter, adapter->rx_scrq[i]);
-   655  
-   656          for (i = 0; i < adapter->req_tx_queues; i++)
-   657                  enable_scrq_irq(adapter, adapter->tx_scrq[i]);
-   658  
-   659          memset(&crq, 0, sizeof(crq));
-   660          crq.logical_link_state.first = IBMVNIC_CRQ_CMD;
-   661          crq.logical_link_state.cmd = LOGICAL_LINK_STATE;
-   662          crq.logical_link_state.link_state = IBMVNIC_LOGICAL_LNK_UP;
-   663          ibmvnic_send_crq(adapter, &crq);
-   664  
-   665          netif_tx_start_all_queues(netdev);
-   666          adapter->is_closed = false;
-   667  
-   668          return 0;
-   669  
-   670  ibmvnic_open_fail:
-   671          for (i = 0; i < adapter->req_rx_queues; i++)
-   672                  napi_disable(&adapter->napi[i]);
-                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Oops.
-
-   673          release_resources(adapter);
-   674          return -ENOMEM;
-   675  }
-
-regards,
-dan carpenter
+>
+> cheers
+>
