@@ -2,19 +2,23 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vy6l720MqzDq7c
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Apr 2017 21:51:47 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vy6wr4kJ0zDq7c
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Apr 2017 22:00:12 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Denis Kirjanov <kda@linux-powerpc.org>, gregkh@linuxfoundation.org,
- jslaby@suse.com
-Cc: linuxppc-dev@ozlabs.org, Denis Kirjanov <kda@linux-powerpc.org>,
- linux-kernel@vger.kernel.org,
- benh@kernel.crashing.org <benh@kernel.crashing.org>
-Subject: Re: [PATCH] tty/hvc_console: fix console lock ordering with spinlock
-In-Reply-To: <1490882779-16066-1-git-send-email-kda@linux-powerpc.org>
-References: <1490882779-16066-1-git-send-email-kda@linux-powerpc.org>
-Date: Tue, 04 Apr 2017 21:51:45 +1000
-Message-ID: <877f30v19q.fsf@concordia.ellerman.id.au>
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+Cc: Paul Mackerras <paulus@au1.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ Anton Blanchard <anton@samba.org>, Matthew Wilcox <willy@infradead.org>
+Subject: Re: [PATCH 1/2] powerpc: string: implement optimized memset variants
+In-Reply-To: <20170330071613.GE4762@naverao1-tp.localdomain>
+References: <20170322193030.GA8008@bombadil.infradead.org>
+ <cover.1490641759.git.naveen.n.rao@linux.vnet.ibm.com>
+ <d6a1a353de6a87bb5474ca9f1c1ff7ab2c4a1eb4.1490641759.git.naveen.n.rao@linux.vnet.ibm.com>
+ <87mvc6b575.fsf@concordia.ellerman.id.au>
+ <20170328102109.GC4762@naverao1-tp.localdomain>
+ <87a884jow3.fsf@concordia.ellerman.id.au>
+ <20170330071613.GE4762@naverao1-tp.localdomain>
+Date: Tue, 04 Apr 2017 22:00:07 +1000
+Message-ID: <874ly4v0vs.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,50 +30,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Denis Kirjanov <kda@linux-powerpc.org> writes:
+"Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> writes:
+> (generic) is with Matt's arch-independent patches applied. Profiling 
+> indicates that most of the overhead is actually with the lzo 
+> decompression...
+>
+> Also, with a simple module to memset64() a 1GB vmalloc'ed buffer, here 
+> are the results:
+> generic:	0.245315533 seconds time elapsed	( +-  1.83% )
+> optimized:	0.169282701 seconds time elapsed	( +-  1.96% )
 
-> hvc_remove() takes a spin lock first then acquires the console
-> semaphore. This situation can easily lead to a deadlock scenario
-> where we call scheduler with spin lock held.
+Great, that's pretty conclusive.
 
-Have you actually hit the deadlock? Because that code's been like that
-for years and I've never received a bug report.
-
-> diff --git a/drivers/tty/hvc/hvc_console.c b/drivers/tty/hvc/hvc_console.c
-> index b19ae36..a8d3991 100644
-> --- a/drivers/tty/hvc/hvc_console.c
-> +++ b/drivers/tty/hvc/hvc_console.c
-> @@ -920,17 +920,17 @@ int hvc_remove(struct hvc_struct *hp)
->  
->  	tty = tty_port_tty_get(&hp->port);
->  
-> +	console_lock();
->  	spin_lock_irqsave(&hp->lock, flags);
->  	if (hp->index < MAX_NR_HVC_CONSOLES) {
-> -		console_lock();
->  		vtermnos[hp->index] = -1;
->  		cons_ops[hp->index] = NULL;
-> -		console_unlock();
->  	}
->  
->  	/* Don't whack hp->irq because tty_hangup() will need to free the irq. */
->  
->  	spin_unlock_irqrestore(&hp->lock, flags);
-> +	console_unlock();
-
-I get that you're trying to do the minimal change, but I don't think the
-result is ideal. If this isn't a console hvc then we take both locks but
-do nothing.
-
-So what about:
-
-	if (hp->index < MAX_NR_HVC_CONSOLES) {
-		console_lock();
-		spin_lock_irqsave(&hp->lock, flags);
-		vtermnos[hp->index] = -1;
-		cons_ops[hp->index] = NULL;
-		spin_unlock_irqrestore(&hp->lock, flags);
-		console_unlock();
-	}
+I'm pretty sure I can take these 2 patches independently of Matt's
+series, they just won't be used by much until his series goes in, so
+I'll do that unless someone yells.
 
 cheers
