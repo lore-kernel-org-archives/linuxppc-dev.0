@@ -1,30 +1,35 @@
-Return-Path: <dja@axtens.net>
-Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
- [IPv6:2607:f8b0:400e:c05::242])
+Return-Path: <srs0=bjuu=3m=gmail.com=npiggin@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vxv0r2VmxzDq7c
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Apr 2017 13:02:52 +1000 (AEST)
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3vxv0r1T4sz8sxT
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Apr 2017 13:02:52 +1000 (AEST)
+Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
+ [IPv6:2607:f8b0:400e:c05::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vxssc1wdMzDq7c
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Apr 2017 12:11:31 +1000 (AEST)
-Received: by mail-pg0-x242.google.com with SMTP id g2so33568859pge.2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 03 Apr 2017 19:11:31 -0700 (PDT)
-From: Daniel Axtens <dja@axtens.net>
-To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>, mpe@ellerman.id.au
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- ego@linux.vnet.ibm.com, bsingharora@gmail.com, benh@kernel.crashing.org,
- paulus@samba.org, anton@samba.org, sukadev@linux.vnet.ibm.com,
- mikey@neuling.org, stewart@linux.vnet.ibm.com, eranian@google.com,
- Hemant Kumar <hemant@linux.vnet.ibm.com>,
- Anju T Sudhakar <anju@linux.vnet.ibm.com>,
- Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Subject: Re: [PATCH v6 04/11] powerpc/perf: Add event attribute and group to
- IMC pmus
-In-Reply-To: <1491231308-15282-5-git-send-email-maddy@linux.vnet.ibm.com>
-References: <1491231308-15282-1-git-send-email-maddy@linux.vnet.ibm.com>
- <1491231308-15282-5-git-send-email-maddy@linux.vnet.ibm.com>
-Date: Tue, 04 Apr 2017 12:11:25 +1000
-Message-ID: <87bmscly5u.fsf@possimpible.ozlabs.ibm.com>
+ by ozlabs.org (Postfix) with ESMTPS id 3vxv0q4pc8z9s82
+ for <linuxppc-dev@ozlabs.org>; Tue,  4 Apr 2017 13:02:51 +1000 (AEST)
+Received: by mail-pg0-x244.google.com with SMTP id g2so33862875pge.2
+ for <linuxppc-dev@ozlabs.org>; Mon, 03 Apr 2017 20:02:51 -0700 (PDT)
+Date: Tue, 4 Apr 2017 13:02:33 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>, Linux Kernel
+ Mailing List <linux-kernel@vger.kernel.org>, Anton Blanchard
+ <anton@samba.org>, linuxppc-dev <linuxppc-dev@ozlabs.org>
+Subject: Re: [RFC][PATCH] spin loop arch primitives for busy waiting
+Message-ID: <20170404130233.1f45115b@roar.ozlabs.ibm.com>
+In-Reply-To: <CA+55aFzdUMZHzXtn9PyhJg7GjYNQ5fy6=LzBNJx==Ab=U=YYjw@mail.gmail.com>
+References: <20170403081328.30266-1-npiggin@gmail.com>
+ <CA+55aFx92vOh28CWp5zid8RzbM=5pO0Or51zS4D8M97L=69hHA@mail.gmail.com>
+ <20170404095001.664718b8@roar.ozlabs.ibm.com>
+ <CA+55aFzdUMZHzXtn9PyhJg7GjYNQ5fy6=LzBNJx==Ab=U=YYjw@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,214 +39,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+On Mon, 3 Apr 2017 17:43:05 -0700
+Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-> Device tree IMC driver code parses the IMC units and their events. It
-> passes the information to IMC pmu code which is placed in powerpc/perf
-> as "imc-pmu.c".
->
-> This patch creates only event attributes and attribute groups for the
-> IMC pmus.
->
-> Signed-off-by: Anju T Sudhakar <anju@linux.vnet.ibm.com>
-> Signed-off-by: Hemant Kumar <hemant@linux.vnet.ibm.com>
-> Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/perf/Makefile                |  6 +-
->  arch/powerpc/perf/imc-pmu.c               | 97 +++++++++++++++++++++++++++++++
->  arch/powerpc/platforms/powernv/opal-imc.c | 12 +++-
->  3 files changed, 112 insertions(+), 3 deletions(-)
->  create mode 100644 arch/powerpc/perf/imc-pmu.c
->
-> diff --git a/arch/powerpc/perf/Makefile b/arch/powerpc/perf/Makefile
-> index 4d606b99a5cb..d0d1f04203c7 100644
-> --- a/arch/powerpc/perf/Makefile
-> +++ b/arch/powerpc/perf/Makefile
-> @@ -2,10 +2,14 @@ subdir-ccflags-$(CONFIG_PPC_WERROR) := -Werror
->  
->  obj-$(CONFIG_PERF_EVENTS)	+= callchain.o perf_regs.o
->  
-> +imc-$(CONFIG_PPC_POWERNV)       += imc-pmu.o
-> +
->  obj-$(CONFIG_PPC_PERF_CTRS)	+= core-book3s.o bhrb.o
->  obj64-$(CONFIG_PPC_PERF_CTRS)	+= power4-pmu.o ppc970-pmu.o power5-pmu.o \
->  				   power5+-pmu.o power6-pmu.o power7-pmu.o \
-> -				   isa207-common.o power8-pmu.o power9-pmu.o
-> +				   isa207-common.o power8-pmu.o power9-pmu.o \
-> +				   $(imc-y)
+> On Mon, Apr 3, 2017 at 4:50 PM, Nicholas Piggin <npiggin@gmail.com> wrote:
 
-Hmm, this seems... obtuse. Will the IMC stuff fail to compile on
-non-powerNV? Can we just link it in like we do with every other sort of
-performance counter and let runtime detection do its thing?
+> > If you have any ideas, I'd be open to them.  
+> 
+> So the idea would be that maybe we can just make those things
+> explicit. IOW, instead of having that magical looping construct that
+> does other magical hidden things as part of the loop, maybe we can
+> just have a
+> 
+>    begin_cpu_relax();
+>    while (!cond)
+>        cpu_relax();
+>    end_cpu_relax();
+> 
+> and then architectures can decide how they implement it. So for x86,
+> the begin/end macros would be empty. For ppc, maybe begin/end would be
+> the "lower and raise priority", while cpu_relax() itself is an empty
+> thing.
+> 
+> Or maybe "begin" just clears a counter, while "cpu_relax()" does some
+> "increase iterations, and lower priority after X iterations", and then
+> "end" raises the priority again.
+> 
+> The "do magic having a special loop" approach disturbs me. I'd much
+> rather have more explicit hooks that allow people to do their own loop
+> semantics (including having a "return" to exit early).
 
-> +
->  obj32-$(CONFIG_PPC_PERF_CTRS)	+= mpc7450-pmu.o
->  
->  obj-$(CONFIG_FSL_EMB_PERF_EVENT) += core-fsl-emb.o
-> diff --git a/arch/powerpc/perf/imc-pmu.c b/arch/powerpc/perf/imc-pmu.c
-> new file mode 100644
-> index 000000000000..ec464c76b749
-> --- /dev/null
-> +++ b/arch/powerpc/perf/imc-pmu.c
-> @@ -0,0 +1,97 @@
-> +/*
-> + * Nest Performance Monitor counter support.
-> + *
-> + * Copyright (C) 2016 Madhavan Srinivasan, IBM Corporation.
-> + *	     (C) 2016 Hemant K Shaw, IBM Corporation.
-> + * This program is free software; you can redistribute it and/or modify it
-> + * under the terms of the GNU General Public License version 2 as published
-> + * by the Free Software Foundation.
-> + */
-> +#include <linux/perf_event.h>
-> +#include <linux/slab.h>
-> +#include <asm/opal.h>
-> +#include <asm/imc-pmu.h>
-> +#include <asm/cputhreads.h>
-> +#include <asm/smp.h>
-> +#include <linux/string.h>
-> +
-> +struct perchip_nest_info nest_perchip_info[IMC_MAX_CHIPS];
-> +struct imc_pmu *per_nest_pmu_arr[IMC_MAX_PMUS];
-> +
-> +/* dev_str_attr : Populate event "name" and string "str" in attribute */
-> +static struct attribute *dev_str_attr(const char *name, const char *str)
-> +{
-> +	struct perf_pmu_events_attr *attr;
-> +
-> +	attr = kzalloc(sizeof(*attr), GFP_KERNEL);
-> +
-> +	sysfs_attr_init(&attr->attr.attr);
-> +
-> +	attr->event_str = str;
-> +	attr->attr.attr.name = name;
-> +	attr->attr.attr.mode = 0444;
-> +	attr->attr.show = perf_event_sysfs_show;
-> +
-> +	return &attr->attr.attr;
-> +}
-> +
-> +/*
-> + * update_events_in_group: Update the "events" information in an attr_group
-> + *                         and assign the attr_group to the pmu "pmu".
-> + */
-> +static int update_events_in_group(struct imc_events *events,
-> +				  int idx, struct imc_pmu *pmu)
+I guess so. Users will still have to read the documentation rather than
+just throw it in ad hoc because it seems like a good idea.
 
-So I've probably missed a key point in the earlier patches, but for the
-life of me I cannot figure out what idx is supposed to represent.
+For example powerpc must not use any other primitives that might change
+SMT priority in the idle loop. For x86 if you do too much work, the rep
+; nop component becomes relatively small and you lose benefit (10 cycles
+latency pre-skylake).
 
-> +{
-> +	struct attribute_group *attr_group;
-> +	struct attribute **attrs;
-> +	int i;
-> +
-> +	/* Allocate memory for attribute group */
-> +	attr_group = kzalloc(sizeof(*attr_group), GFP_KERNEL);
-> +	if (!attr_group)
-> +		return -ENOMEM;
-> +
-> +	/* Allocate memory for attributes */
-> +	attrs = kzalloc((sizeof(struct attribute *) * (idx + 1)), GFP_KERNEL);
+I would suggest keeping standalone cpu_relax() for incidental code in
+drivers and things (powerpc may add some extra nops between SMT low
+and SMT normal priorities to improve it a little), and this would
+be used by important core code and primitives.
 
-Also, idx is an int, so:
- - things will go wrong if idx is -1
- - things will go very wrong if idx is -2
- - do you need to do some sort of validation to make sure it's within
-   bounds? If not in this function, what function ensures the necessary
-   'sanity check' preconditions for idx?
+> But that depends on architectures having some pattern that we *can*
+> abstract. Would some "begin/in-loop/end" pattern like the above be
+> sufficient?
 
-> +	if (!attrs) {
-> +		kfree(attr_group);
-> +		return -ENOMEM;
-> +	}
-> +
-> +	attr_group->name = "events";
-> +	attr_group->attrs = attrs;
-> +	for (i = 0; i < idx; i++, events++) {
-> +		attrs[i] = dev_str_attr((char *)events->ev_name,
-> +					(char *)events->ev_value);
-> +	}
-> +
-> +	pmu->attr_groups[0] = attr_group;
+Yes. begin/in/end would be sufficient for powerpc SMT priority, and
+for x86, and it looks like sparc64 too. So we could do that if you
+prefer.
 
-Again, I may have missed something, but what's special about group 0?
-Patch 1 lets you have up to 4 groups - are they used elsewhere?
+After this, I might look at optimizing the loop code itself (optimizing
+exit condition, de-pipelining, etc). That would require spin loop
+primitives like this again. BUT they would not have funny restrictions
+on exit conditions because they wouldn't do SMT priority. If I get
+positive numbers for that, would you be opposed to having such
+primitives (just for the important core spin loops)?
 
-> +	return 0;
-> +}
-> +
-> +/*
-> + * init_imc_pmu : Setup the IMC pmu device in "pmu_ptr" and its events
-> + *                "events".
-> + * Setup the cpu mask information for these pmus and setup the state machine
-> + * hotplug notifiers as well.
+> I think s390 might have issues too, since they tried to have that
+> "cpu_relax_yield" thing (which is only used by stop_machine), and
+> they've tried cpu_relax_lowlatency() and other games.
 
-I cannot figure out how this function sets cpu mask information or sets
-up hotplug notifiers. Is this done in a later patch? (looking at the
-subject lines - perhaps patch 6?)
+There are some considerations with hv/guest yielding, yes. I'm not
+touching that yet, but it needs to be looked at. Generic code has no
+chance of looking at primitives available and deciding which should
+be best used (not least because they aren't documented).
 
-> + */
-> +int init_imc_pmu(struct imc_events *events, int idx,
-> +		 struct imc_pmu *pmu_ptr)
+I think for the most part, busy loops shouldn't be done if they tend
+to be more expensive than a context switch + associated cache costs,
+so hypervisors are okay there. It's just rare cases where we *have*
+to spin. Directed spinning or yielding for a resource is possibly more
+general pattern and something to look at adding to these spin APIs, but
+for now they should be okay to just remain within the loop body.
 
-Should this be marked __init, or can it be called in a hotplug path?
+Summary: hypervisor guests should not be affected by the new
+APIs, but we could look at augmenting them later with some hv hints.
 
-> +{
-> +	int ret = -ENODEV;
-> +
-> +	ret = update_events_in_group(events, idx, pmu_ptr);
-> +	if (ret)
-> +		goto err_free;
-> +
-> +	return 0;
-> +
-> +err_free:
-> +	/* Only free the attr_groups which are dynamically allocated  */
-> +	if (pmu_ptr->attr_groups[0]) {
-> +		kfree(pmu_ptr->attr_groups[0]->attrs);
-> +		kfree(pmu_ptr->attr_groups[0]);
-> +	}
-> +
-> +	return ret;
-> +}
-> diff --git a/arch/powerpc/platforms/powernv/opal-imc.c b/arch/powerpc/platforms/powernv/opal-imc.c
-> index ba0203e669c0..73c46703c2af 100644
-> --- a/arch/powerpc/platforms/powernv/opal-imc.c
-> +++ b/arch/powerpc/platforms/powernv/opal-imc.c
-> @@ -32,8 +32,11 @@
->  #include <asm/cputable.h>
->  #include <asm/imc-pmu.h>
->  
-> -struct perchip_nest_info nest_perchip_info[IMC_MAX_CHIPS];
-> -struct imc_pmu *per_nest_pmu_arr[IMC_MAX_PMUS];
-> +extern struct perchip_nest_info nest_perchip_info[IMC_MAX_CHIPS];
-> +extern struct imc_pmu *per_nest_pmu_arr[IMC_MAX_PMUS];
-
-Why are these definitions being moved?
-If they're still needed in this file, should the extern lines live in a
-header file?
-
-> +
-> +extern int init_imc_pmu(struct imc_events *events,
-> +			int idx, struct imc_pmu *pmu_ptr);
->  
->  static int imc_event_info(char *name, struct imc_events *events)
->  {
-> @@ -379,6 +382,11 @@ static int imc_pmu_create(struct device_node *parent, int pmu_index)
->  		idx += ret;
->  	}
->  
-> +	ret = init_imc_pmu(events, idx, pmu_ptr);
-> +	if (ret) {
-> +		pr_err("IMC PMU %s Register failed\n", pmu_ptr->pmu.name);
-> +		goto free_events;
-> +	}
->  	return 0;
->  
->  free_events:
-> -- 
-> 2.7.4
-
-Regards,
-Daniel
+Thanks,
+Nick
