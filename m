@@ -3,30 +3,32 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vy9jC3r3VzDqH6
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Apr 2017 00:05:19 +1000 (AEST)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v34E3h2H075508
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 4 Apr 2017 10:05:17 -0400
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
- by mx0a-001b2d01.pphosted.com with ESMTP id 29mbv2byqn-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vy9mP6wxszDqSn
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Apr 2017 00:08:05 +1000 (AEST)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v34E3xBb105600
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 4 Apr 2017 10:07:57 -0400
+Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 29ktf7ae8q-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Apr 2017 10:05:17 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Apr 2017 10:07:57 -0400
 Received: from localhost
- by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Tue, 4 Apr 2017 08:05:14 -0600
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+ Tue, 4 Apr 2017 10:07:56 -0400
+Subject: Re: [RFC PATCH 1/7] mm/hugetlb/migration: Use set_huge_pte_at instead
+ of set_pte_at
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [RFC PATCH 7/7] powerpc/hugetlb: Enable hugetlb migration for ppc64
-Date: Tue,  4 Apr 2017 19:34:35 +0530
-In-Reply-To: <1491314675-15787-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1491314675-15787-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Message-Id: <1491314675-15787-7-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Date: Tue, 4 Apr 2017 19:37:50 +0530
+MIME-Version: 1.0
+In-Reply-To: <1491314675-15787-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Message-Id: <93a2973d-aca7-7559-5b8e-d6e50487be00@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,26 +38,12 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
----
- arch/powerpc/platforms/Kconfig.cputype | 5 +++++
- 1 file changed, 5 insertions(+)
 
-diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
-index 382c3dd86d6d..c0ca27521679 100644
---- a/arch/powerpc/platforms/Kconfig.cputype
-+++ b/arch/powerpc/platforms/Kconfig.cputype
-@@ -350,6 +350,11 @@ config PPC_RADIX_MMU
- 	  is only implemented by IBM Power9 CPUs, if you don't have one of them
- 	  you can probably disable this.
- 
-+config ARCH_ENABLE_HUGEPAGE_MIGRATION
-+	def_bool y
-+	depends on PPC_BOOK3S_64 && HUGETLB_PAGE && MIGRATION
-+
-+
- config PPC_MMU_NOHASH
- 	def_bool y
- 	depends on !PPC_STD_MMU
--- 
-2.7.4
+The patch series is not yet send to linux-mm. Once I get feedback on the 
+approach used, I will resend this to linux-mm.
+
+Also if there is sufficient interest we could also get nohash hugetlb 
+migration to work. But I avoided doing that in this series, because of 
+my inability to test the changes.
+
+-aneesh
