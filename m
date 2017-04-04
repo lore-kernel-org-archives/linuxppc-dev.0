@@ -2,19 +2,18 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vy5s42rnyzDq7c
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Apr 2017 21:11:52 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vy5sm3kNmzDqL5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Apr 2017 21:12:28 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: Haren Myneni <haren@linux.vnet.ibm.com>, herbert@gondor.apana.org.au,
  ddstreet@ieee.org
 Cc: linuxppc-dev@lists.ozlabs.org, linux-crypto@vger.kernel.org,
  benh@kernel.crashing.org, mikey@neuling.org, suka@us.ibm.com, hbabu@us.ibm.com
-Subject: Re: [PATCH 1/5] crypto/nx: Rename nx842_powernv_function as icswx
- function
-In-Reply-To: <1491065941.29552.26.camel@hbabu-laptop>
-References: <1491065941.29552.26.camel@hbabu-laptop>
-Date: Tue, 04 Apr 2017 21:11:51 +1000
-Message-ID: <87inmkv348.fsf@concordia.ellerman.id.au>
+Subject: Re: [PATCH 2/5] crypto/nx: Create nx842_cfg_crb function
+In-Reply-To: <1491066000.29552.27.camel@hbabu-laptop>
+References: <1491066000.29552.27.camel@hbabu-laptop>
+Date: Tue, 04 Apr 2017 21:12:27 +1000
+Message-ID: <87fuhov338.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,19 +27,14 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Haren Myneni <haren@linux.vnet.ibm.com> writes:
 
-> [PATCH 1/5] crypto/nx: Rename nx842_powernv_function as icswx function
+> [PATCH 2/5] crypto/nx: Create nx842_cfg_crb function
 >
-> nx842_powernv_function is points to nx842_icswx_function and
-> will be point to VAS function which will be added later for
-> P9 NX support.
+> Configure CRB is moved to nx842_cfg_crb() so that it can be
+> used for icswx function and VAS function which will be added
+> later.
 
-I know it's nit-picking but can you give it a better name while you're
-there.
+Buy a vowel! :)
 
-I was thinking it should be called "send" or something, but it actually
-synchronously sends and waits for a request.
-
-So perhaps just nx842_exec(), for "execute a request", and then you can
-have nx842_exec_icswx() and nx842_exec_vas().
+nx842_configure_crb() is fine.
 
 cheers
