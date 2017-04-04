@@ -1,36 +1,47 @@
-Return-Path: <srs0=bjuu=3m=gmail.com=npiggin@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <svaidy@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vxwX63H8rzDqJp
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Apr 2017 14:11:34 +1000 (AEST)
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3vxwX62SqXz8t03
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Apr 2017 14:11:34 +1000 (AEST)
-Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
- [IPv6:2607:f8b0:400e:c05::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3vxwX567rvz9s8D
- for <linuxppc-dev@ozlabs.org>; Tue,  4 Apr 2017 14:11:33 +1000 (AEST)
-Received: by mail-pg0-x244.google.com with SMTP id o123so34271262pga.1
- for <linuxppc-dev@ozlabs.org>; Mon, 03 Apr 2017 21:11:33 -0700 (PDT)
-Date: Tue, 4 Apr 2017 14:11:21 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>, Linux Kernel
- Mailing List <linux-kernel@vger.kernel.org>, Anton Blanchard
- <anton@samba.org>, linuxppc-dev <linuxppc-dev@ozlabs.org>
-Subject: Re: [RFC][PATCH] spin loop arch primitives for busy waiting
-Message-ID: <20170404141121.5510e925@roar.ozlabs.ibm.com>
-In-Reply-To: <20170404130233.1f45115b@roar.ozlabs.ibm.com>
-References: <20170403081328.30266-1-npiggin@gmail.com>
- <CA+55aFx92vOh28CWp5zid8RzbM=5pO0Or51zS4D8M97L=69hHA@mail.gmail.com>
- <20170404095001.664718b8@roar.ozlabs.ibm.com>
- <CA+55aFzdUMZHzXtn9PyhJg7GjYNQ5fy6=LzBNJx==Ab=U=YYjw@mail.gmail.com>
- <20170404130233.1f45115b@roar.ozlabs.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vxwb02kbmzDqH6
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Apr 2017 14:14:04 +1000 (AEST)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v34491tp091760
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 4 Apr 2017 00:13:53 -0400
+Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [125.16.236.1])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 29m0j416vf-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Apr 2017 00:13:52 -0400
+Received: from localhost
+ by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <svaidy@linux.vnet.ibm.com>;
+ Tue, 4 Apr 2017 09:43:49 +0530
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v344DlId15466646
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 4 Apr 2017 09:43:47 +0530
+Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
+ by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v344Dj55013145
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 4 Apr 2017 09:43:46 +0530
+Date: Tue, 4 Apr 2017 09:43:43 +0530
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+To: Nicholas Piggin <npiggin@gmail.com>
+Cc: Anton Blanchard <anton@ozlabs.org>, benh@kernel.crashing.org,
+ paulus@samba.org, mpe@ellerman.id.au, ego@linux.vnet.ibm.com,
+ rjw@rjwysocki.net, daniel.lezcano@linaro.org,
+ linuxppc-dev@lists.ozlabs.org, linux-pm@vger.kernel.org
+Subject: Re: [PATCH 1/3] cpuidle: powernv: Don't bounce between low and very
+ low thread priority
+Reply-To: svaidy@linux.vnet.ibm.com
+References: <20170403215414.16951-1-anton@ozlabs.org>
+ <20170404095207.28fc5229@roar.ozlabs.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <20170404095207.28fc5229@roar.ozlabs.ibm.com>
+Message-Id: <20170404041343.GE21029@drishya.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,140 +51,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 4 Apr 2017 13:02:33 +1000
-Nicholas Piggin <npiggin@gmail.com> wrote:
+* Nicholas Piggin <npiggin@gmail.com> [2017-04-04 09:52:07]:
 
-> On Mon, 3 Apr 2017 17:43:05 -0700
-> Linus Torvalds <torvalds@linux-foundation.org> wrote:
+> On Tue,  4 Apr 2017 07:54:12 +1000
+> Anton Blanchard <anton@ozlabs.org> wrote:
 > 
-
-> > But that depends on architectures having some pattern that we *can*
-> > abstract. Would some "begin/in-loop/end" pattern like the above be
-> > sufficient?  
+> > From: Anton Blanchard <anton@samba.org>
+> > 
+> > The core of snooze_loop() continually bounces between low and very
+> > low thread priority. Changing thread priorities is an expensive
+> > operation that can negatively impact other threads on a core.
+> > 
+> > All CPUs that can run PowerNV support very low priority, so we can
+> > avoid the change completely.
 > 
-> Yes. begin/in/end would be sufficient for powerpc SMT priority, and
-> for x86, and it looks like sparc64 too. So we could do that if you
-> prefer.
+> This looks good. I have HMT_lowest() which does alt feature patching
+> we can use for pseries and default idle code.
 
-How's this? I changed your name a bit just so we have a common spin_
-prefix. With example powerpc implementation and one caller converted
-to see the effect.
+Alternatively, if we are going to set priority only once in various
+other places, HMT_low(); HMT_very_low(); should not add to extra
+cycles.  Let me code that up.
 
----
- arch/powerpc/include/asm/processor.h | 17 +++++++++++++
- include/linux/processor.h            | 48 ++++++++++++++++++++++++++++++++++++
- kernel/sched/idle.c                  |  7 +++++-
- 3 files changed, 71 insertions(+), 1 deletion(-)
- create mode 100644 include/linux/processor.h
+--Vaidy
 
-diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
-index e9bbd450d966..1274dc818e74 100644
---- a/arch/powerpc/include/asm/processor.h
-+++ b/arch/powerpc/include/asm/processor.h
-@@ -402,6 +402,23 @@ static inline unsigned long __pack_fe01(unsigned int fpmode)
  
- #ifdef CONFIG_PPC64
- #define cpu_relax()	do { HMT_low(); HMT_medium(); barrier(); } while (0)
-+
-+#ifndef spin_begin
-+#define spin_begin()	HMT_low()
-+#endif
-+
-+#ifndef spin_cpu_relax
-+#define spin_cpu_relax()	barrier()
-+#endif
-+
-+#ifndef spin_cpu_yield
-+#define spin_cpu_yield()
-+#endif
-+
-+#ifndef spin_end
-+#define spin_end()	HMT_medium()
-+#endif
-+
- #else
- #define cpu_relax()	barrier()
- #endif
-diff --git a/include/linux/processor.h b/include/linux/processor.h
-new file mode 100644
-index 000000000000..65e5635d0069
---- /dev/null
-+++ b/include/linux/processor.h
-@@ -0,0 +1,48 @@
-+/* Misc low level processor primitives */
-+#ifndef _LINUX_PROCESSOR_H
-+#define _LINUX_PROCESSOR_H
-+
-+#include <asm/processor.h>
-+
-+/*
-+ * spin_begin is used before beginning a busy-wait loop, and must be paired
-+ * with spin_end when the loop is exited. spin_cpu_relax must be called
-+ * within the loop.
-+ *
-+ * These loop body should be as small and fast as possible, on the order of
-+ * tens of instructions/cycles as a guide. It should and avoid calling
-+ * cpu_relax, or any "spin" or sleep type of primitive including nested uses
-+ * of these primitives. It should not lock or take any other resource.
-+ * Violations of this will not cause a bug, but may cause sub optimal
-+ * performance.
-+ *
-+ * These loops are optimized to be used where wait times are expected to be
-+ * less than the cost of a context switch (and associated overhead).
-+ *
-+ * Detection of resource owner and decision to spin or sleep or guest-yield
-+ * (e.g., spin lock holder vcpu preempted, or mutex owner not on CPU) can be
-+ * tested within the busy loop body if necessary.
-+ */
-+#ifndef spin_begin
-+#define spin_begin()
-+#endif
-+
-+#ifndef spin_cpu_relax
-+#define spin_cpu_relax() cpu_relax()
-+#endif
-+
-+/*
-+ * spin_cpu_yield may be called to yield (undirected) to the hypervisor if
-+ * necessary. This should be used if the wait is expected to take longer
-+ * than context switch overhead, but we can't sleep or do a directed yield.
-+ */
-+#ifndef spin_cpu_yield
-+#define spin_cpu_yield() cpu_relax_yield()
-+#endif
-+
-+#ifndef spin_end
-+#define spin_end()
-+#endif
-+
-+#endif /* _LINUX_PROCESSOR_H */
-+
-diff --git a/kernel/sched/idle.c b/kernel/sched/idle.c
-index ac6d5176463d..99a032d9f4a9 100644
---- a/kernel/sched/idle.c
-+++ b/kernel/sched/idle.c
-@@ -10,6 +10,7 @@
- #include <linux/mm.h>
- #include <linux/stackprotector.h>
- #include <linux/suspend.h>
-+#include <linux/processor.h>
- 
- #include <asm/tlb.h>
- 
-@@ -63,9 +64,13 @@ static noinline int __cpuidle cpu_idle_poll(void)
- 	trace_cpu_idle_rcuidle(0, smp_processor_id());
- 	local_irq_enable();
- 	stop_critical_timings();
-+
-+	spin_begin();
- 	while (!tif_need_resched() &&
- 		(cpu_idle_force_poll || tick_check_broadcast_expired()))
--		cpu_relax();
-+		spin_cpu_relax();
-+	spin_end();
-+
- 	start_critical_timings();
- 	trace_cpu_idle_rcuidle(PWR_EVENT_EXIT, smp_processor_id());
- 	rcu_idle_exit();
--- 
-2.11.0
