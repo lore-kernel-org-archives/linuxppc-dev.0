@@ -1,43 +1,30 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vy9Ns2QLCzDqH6
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Apr 2017 23:51:09 +1000 (AEST)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vy9gt324JzDq7c
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Apr 2017 00:04:10 +1000 (AEST)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v34DmsOw055240
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 4 Apr 2017 09:50:58 -0400
-Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [125.16.236.3])
- by mx0b-001b2d01.pphosted.com with ESMTP id 29ktf79ej4-1
+ v34E3ifk029172
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 4 Apr 2017 10:04:00 -0400
+Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 29m24aqwb2-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Apr 2017 09:50:58 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Apr 2017 10:04:00 -0400
 Received: from localhost
- by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Tue, 4 Apr 2017 19:20:53 +0530
-Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v34DooAJ19464354
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 4 Apr 2017 19:20:50 +0530
-Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
- by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v34DonIJ002527
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 4 Apr 2017 19:20:50 +0530
-Subject: Re: [PATCH] powerpc/hugetlb: Add ABI defines for MAP_HUGE_16MB and
- MAP_HUGE_16GB
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
-References: <20170404060310.7588-1-khandual@linux.vnet.ibm.com>
- <64a8341c-653f-ad59-009e-90cf49dcf551@linux.vnet.ibm.com>
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Date: Tue, 4 Apr 2017 19:20:48 +0530
-MIME-Version: 1.0
-In-Reply-To: <64a8341c-653f-ad59-009e-90cf49dcf551@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=windows-1252
-Message-Id: <f7208305-1aad-bc98-87e3-a8a46404c19e@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Tue, 4 Apr 2017 10:03:59 -0400
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: [RFC PATCH] powerpc/mm/hugetlb: Add support for 1G huge pages
+Date: Tue,  4 Apr 2017 19:33:45 +0530
+Message-Id: <1491314625-15307-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,47 +34,80 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/04/2017 02:03 PM, Aneesh Kumar K.V wrote:
-> 
-> 
-> On Tuesday 04 April 2017 11:33 AM, Anshuman Khandual wrote:
->> This just adds user space exported ABI definitions for both 16MB and
->> 16GB non default huge page sizes to be used with mmap() system call.
->>
->> Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
->> ---
->> These defined values will be used along with MAP_HUGETLB while calling
->> mmap() system call if the desired HugeTLB page size is not the default
->> one. Follows similar definitions present in x86.
->>
->> arch/x86/include/uapi/asm/mman.h:#define MAP_HUGE_2MB    (21 <<
->> MAP_HUGE_SHIFT)
->> arch/x86/include/uapi/asm/mman.h:#define MAP_HUGE_1GB    (30 <<
->> MAP_HUGE_SHIFT)
->>
->>  arch/powerpc/include/uapi/asm/mman.h | 3 +++
->>  1 file changed, 3 insertions(+)
->>
->> diff --git a/arch/powerpc/include/uapi/asm/mman.h
->> b/arch/powerpc/include/uapi/asm/mman.h
->> index 03c06ba..e78980b 100644
->> --- a/arch/powerpc/include/uapi/asm/mman.h
->> +++ b/arch/powerpc/include/uapi/asm/mman.h
->> @@ -29,4 +29,7 @@
->>  #define MAP_STACK    0x20000        /* give out an address that is
->> best suited for process/thread stacks */
->>  #define MAP_HUGETLB    0x40000        /* create a huge page mapping */
->>
->> +#define MAP_HUGE_16MB    (24 << MAP_HUGE_SHIFT)    /* 16MB HugeTLB
->> Page */
->> +#define MAP_HUGE_16GB    (34 << MAP_HUGE_SHIFT)    /* 16GB HugeTLB
->> Page */
->> +
->>  #endif /* _UAPI_ASM_POWERPC_MMAN_H */
->>
-> 
-> I am doing a similar patch as part of 1G and hugetlb migration series.
-> Can you add 2M and 1G #defines also so that i can drop the patch from my
-> series and pick this ?
+This patch adds support for gigantic pages in ppc64. We also updates
+gigantic_page_supported helper such that arch can override it.
 
-Sure, will just have to add the two lines from x86 code :)
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+---
+ arch/powerpc/include/asm/book3s/64/hugetlb.h | 9 +++++++++
+ arch/powerpc/mm/hugetlbpage.c                | 7 +++++--
+ arch/powerpc/platforms/Kconfig.cputype       | 1 +
+ mm/hugetlb.c                                 | 4 ++++
+ 4 files changed, 19 insertions(+), 2 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/book3s/64/hugetlb.h b/arch/powerpc/include/asm/book3s/64/hugetlb.h
+index 6666cd366596..a994d069fdaf 100644
+--- a/arch/powerpc/include/asm/book3s/64/hugetlb.h
++++ b/arch/powerpc/include/asm/book3s/64/hugetlb.h
+@@ -50,4 +50,13 @@ static inline pte_t arch_make_huge_pte(pte_t entry, struct vm_area_struct *vma,
+ 	else
+ 		return entry;
+ }
++
++#define gigantic_page_supported gigantic_page_supported
++static inline bool gigantic_page_supported(void)
++{
++	if (radix_enabled())
++		return true;
++	return false;
++}
++
+ #endif
+diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
+index a4f33de4008e..80f6d2ed551a 100644
+--- a/arch/powerpc/mm/hugetlbpage.c
++++ b/arch/powerpc/mm/hugetlbpage.c
+@@ -763,8 +763,11 @@ static int __init add_huge_page_size(unsigned long long size)
+ 	 * Hash: 16M and 16G
+ 	 */
+ 	if (radix_enabled()) {
+-		if (mmu_psize != MMU_PAGE_2M)
+-			return -EINVAL;
++		if (mmu_psize != MMU_PAGE_2M) {
++			if (cpu_has_feature(CPU_FTR_POWER9_DD1) ||
++			    (mmu_psize != MMU_PAGE_1G))
++				return -EINVAL;
++		}
+ 	} else {
+ 		if (mmu_psize != MMU_PAGE_16M && mmu_psize != MMU_PAGE_16G)
+ 			return -EINVAL;
+diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
+index a7c0c1fafe68..382c3dd86d6d 100644
+--- a/arch/powerpc/platforms/Kconfig.cputype
++++ b/arch/powerpc/platforms/Kconfig.cputype
+@@ -343,6 +343,7 @@ config PPC_STD_MMU_64
+ config PPC_RADIX_MMU
+ 	bool "Radix MMU Support"
+ 	depends on PPC_BOOK3S_64
++	select ARCH_HAS_GIGANTIC_PAGE
+ 	default y
+ 	help
+ 	  Enable support for the Power ISA 3.0 Radix style MMU. Currently this
+diff --git a/mm/hugetlb.c b/mm/hugetlb.c
+index 3d0aab9ee80d..2c090189f314 100644
+--- a/mm/hugetlb.c
++++ b/mm/hugetlb.c
+@@ -1158,7 +1158,11 @@ static int alloc_fresh_gigantic_page(struct hstate *h,
+ 	return 0;
+ }
+ 
++#ifndef gigantic_page_supported
+ static inline bool gigantic_page_supported(void) { return true; }
++#define gigantic_page_supported gigantic_page_supported
++#endif
++
+ #else
+ static inline bool gigantic_page_supported(void) { return false; }
+ static inline void free_gigantic_page(struct page *page, unsigned int order) { }
+-- 
+2.7.4
