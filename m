@@ -3,32 +3,39 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vy2Lc1Zg4zDq7c
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Apr 2017 18:33:44 +1000 (AEST)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vy3Rj5RZ2zDq7c
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Apr 2017 19:23:13 +1000 (AEST)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v348ORgZ042435
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 4 Apr 2017 04:33:36 -0400
-Received: from e16.ny.us.ibm.com (e16.ny.us.ibm.com [129.33.205.206])
- by mx0a-001b2d01.pphosted.com with ESMTP id 29m51m96c3-1
+ v349ITaL026097
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 4 Apr 2017 05:23:10 -0400
+Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [125.16.236.9])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 29m259aa0x-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Apr 2017 04:33:36 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Apr 2017 05:23:09 -0400
 Received: from localhost
- by e16.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Tue, 4 Apr 2017 04:33:35 -0400
-Subject: Re: [PATCH] powerpc/hugetlb: Add ABI defines for MAP_HUGE_16MB and
- MAP_HUGE_16GB
-To: Anshuman Khandual <khandual@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
-References: <20170404060310.7588-1-khandual@linux.vnet.ibm.com>
+ Tue, 4 Apr 2017 14:53:06 +0530
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ by d28relay04.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v349N4Ja5832770
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 4 Apr 2017 14:53:04 +0530
+Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
+ by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v349N3OH030889
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 4 Apr 2017 14:53:04 +0530
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Date: Tue, 4 Apr 2017 14:03:29 +0530
+To: Frederic Barrat <fbarrat@linux.vnet.ibm.com>, bsingharora@gmail.com,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] powerpc/mm: Add missing global TLBI if cxl is active
+In-Reply-To: <20170329171942.14267-1-fbarrat@linux.vnet.ibm.com>
+References: <20170329171942.14267-1-fbarrat@linux.vnet.ibm.com>
+Date: Tue, 04 Apr 2017 14:53:02 +0530
 MIME-Version: 1.0
-In-Reply-To: <20170404060310.7588-1-khandual@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Message-Id: <64a8341c-653f-ad59-009e-90cf49dcf551@linux.vnet.ibm.com>
+Content-Type: text/plain
+Message-Id: <874ly434sp.fsf@skywalker.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,40 +45,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Frederic Barrat <fbarrat@linux.vnet.ibm.com> writes:
 
-
-On Tuesday 04 April 2017 11:33 AM, Anshuman Khandual wrote:
-> This just adds user space exported ABI definitions for both 16MB and
-> 16GB non default huge page sizes to be used with mmap() system call.
+> Commit 4c6d9acce1f4 ("powerpc/mm: Add hooks for cxl") converted local
+> TLBIs to global if the cxl driver is active. It is necessary because
+> the CAPP snoops invalidations to forward them to the PSL on the cxl
+> adapter.
+> However one path was apparently forgotten. native_flush_hash_range()
+> still sends local TLBIs, as found out the hard way recently.
 >
-> Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+> This patch fixes it by following the same logic as previously: if the
+> cxl driver is active, the local TLBIs are 'upgraded' to global.
+>
+> Fixes: 4c6d9acce1f4 ("powerpc/mm: Add hooks for cxl")
+> Cc: stable@vger.kernel.org
+> Signed-off-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+
+Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+
 > ---
-> These defined values will be used along with MAP_HUGETLB while calling
-> mmap() system call if the desired HugeTLB page size is not the default
-> one. Follows similar definitions present in x86.
+>  arch/powerpc/mm/hash_native_64.c | 7 +++++--
+>  1 file changed, 5 insertions(+), 2 deletions(-)
 >
-> arch/x86/include/uapi/asm/mman.h:#define MAP_HUGE_2MB    (21 << MAP_HUGE_SHIFT)
-> arch/x86/include/uapi/asm/mman.h:#define MAP_HUGE_1GB    (30 << MAP_HUGE_SHIFT)
->
->  arch/powerpc/include/uapi/asm/mman.h | 3 +++
->  1 file changed, 3 insertions(+)
->
-> diff --git a/arch/powerpc/include/uapi/asm/mman.h b/arch/powerpc/include/uapi/asm/mman.h
-> index 03c06ba..e78980b 100644
-> --- a/arch/powerpc/include/uapi/asm/mman.h
-> +++ b/arch/powerpc/include/uapi/asm/mman.h
-> @@ -29,4 +29,7 @@
->  #define MAP_STACK	0x20000		/* give out an address that is best suited for process/thread stacks */
->  #define MAP_HUGETLB	0x40000		/* create a huge page mapping */
->
-> +#define MAP_HUGE_16MB	(24 << MAP_HUGE_SHIFT)	/* 16MB HugeTLB Page */
-> +#define MAP_HUGE_16GB	(34 << MAP_HUGE_SHIFT)	/* 16GB HugeTLB Page */
+> diff --git a/arch/powerpc/mm/hash_native_64.c b/arch/powerpc/mm/hash_native_64.c
+> index cc33260..65bb8f3 100644
+> --- a/arch/powerpc/mm/hash_native_64.c
+> +++ b/arch/powerpc/mm/hash_native_64.c
+> @@ -638,6 +638,10 @@ static void native_flush_hash_range(unsigned long number, int local)
+>  	unsigned long psize = batch->psize;
+>  	int ssize = batch->ssize;
+>  	int i;
+> +	unsigned int use_local;
 > +
->  #endif /* _UAPI_ASM_POWERPC_MMAN_H */
+> +	use_local = local && mmu_has_feature(MMU_FTR_TLBIEL) &&
+> +		mmu_psize_defs[psize].tlbiel && !cxl_ctx_in_use();
 >
-
-I am doing a similar patch as part of 1G and hugetlb migration series. 
-Can you add 2M and 1G #defines also so that i can drop the patch from my 
-series and pick this ?
-
--aneesh
+>  	local_irq_save(flags);
+>
+> @@ -667,8 +671,7 @@ static void native_flush_hash_range(unsigned long number, int local)
+>  		} pte_iterate_hashed_end();
+>  	}
+>
+> -	if (mmu_has_feature(MMU_FTR_TLBIEL) &&
+> -	    mmu_psize_defs[psize].tlbiel && local) {
+> +	if (use_local) {
+>  		asm volatile("ptesync":::"memory");
+>  		for (i = 0; i < number; i++) {
+>  			vpn = batch->vpn[i];
+> -- 
+> 2.9.3
