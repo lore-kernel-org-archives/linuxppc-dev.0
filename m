@@ -1,35 +1,30 @@
-Return-Path: <srs0=f5xk=3m=gmail.com=linus971@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vxqvc73shzDq5W
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Apr 2017 10:43:08 +1000 (AEST)
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3vxqvc6B5jz8sxJ
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Apr 2017 10:43:08 +1000 (AEST)
-Received: from mail-io0-x229.google.com (mail-io0-x229.google.com
- [IPv6:2607:f8b0:4001:c06::229])
+Return-Path: <dja@axtens.net>
+Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
+ [IPv6:2607:f8b0:400e:c05::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3vxqvc27SVz9s7s
- for <linuxppc-dev@ozlabs.org>; Tue,  4 Apr 2017 10:43:08 +1000 (AEST)
-Received: by mail-io0-x229.google.com with SMTP id l7so86262282ioe.3
- for <linuxppc-dev@ozlabs.org>; Mon, 03 Apr 2017 17:43:08 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vxrFp5vj4zDqC4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Apr 2017 10:58:54 +1000 (AEST)
+Received: by mail-pg0-x242.google.com with SMTP id g2so33239258pge.2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 03 Apr 2017 17:58:54 -0700 (PDT)
+From: Daniel Axtens <dja@axtens.net>
+To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>, mpe@ellerman.id.au
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ ego@linux.vnet.ibm.com, bsingharora@gmail.com, benh@kernel.crashing.org,
+ paulus@samba.org, anton@samba.org, sukadev@linux.vnet.ibm.com,
+ mikey@neuling.org, stewart@linux.vnet.ibm.com, eranian@google.com,
+ Hemant Kumar <hemant@linux.vnet.ibm.com>,
+ Anju T Sudhakar <anju@linux.vnet.ibm.com>,
+ Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+Subject: Re: [PATCH v6 02/11] powerpc/powernv: Autoload IMC device driver
+ module
+In-Reply-To: <1491231308-15282-3-git-send-email-maddy@linux.vnet.ibm.com>
+References: <1491231308-15282-1-git-send-email-maddy@linux.vnet.ibm.com>
+ <1491231308-15282-3-git-send-email-maddy@linux.vnet.ibm.com>
+Date: Tue, 04 Apr 2017 10:58:48 +1000
+Message-ID: <87pogtkmyf.fsf@possimpible.ozlabs.ibm.com>
 MIME-Version: 1.0
-Sender: linus971@gmail.com
-In-Reply-To: <20170404095001.664718b8@roar.ozlabs.ibm.com>
-References: <20170403081328.30266-1-npiggin@gmail.com>
- <CA+55aFx92vOh28CWp5zid8RzbM=5pO0Or51zS4D8M97L=69hHA@mail.gmail.com>
- <20170404095001.664718b8@roar.ozlabs.ibm.com>
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Mon, 3 Apr 2017 17:43:05 -0700
-Message-ID: <CA+55aFzdUMZHzXtn9PyhJg7GjYNQ5fy6=LzBNJx==Ab=U=YYjw@mail.gmail.com>
-Subject: Re: [RFC][PATCH] spin loop arch primitives for busy waiting
-To: Nicholas Piggin <npiggin@gmail.com>
-Cc: "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Anton Blanchard <anton@samba.org>, linuxppc-dev <linuxppc-dev@ozlabs.org>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,52 +34,110 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Apr 3, 2017 at 4:50 PM, Nicholas Piggin <npiggin@gmail.com> wrote:
->
-> POWER does not have an instruction like pause. We can only set current
-> thread priority, and current implementations do something like allocate
-> issue cycles to threads based on relative priorities. So there should
-> be at least one or two issue cycles at low priority, but ideally we
-> would not be changing priority in the busy-wait loop because it can
-> impact other threads in the core.
->
-> I couldn't think of a good way to improve cpu_relax. Our (open source)
-> firmware has a cpu_relax, and it puts a bunch of nops between low and
-> normal priority instructions so we get some fetch cycles at low prio.
-> That isn't ideal though.
->
-> If you have any ideas, I'd be open to them.
+Hi all,
 
-So the idea would be that maybe we can just make those things
-explicit. IOW, instead of having that magical looping construct that
-does other magical hidden things as part of the loop, maybe we can
-just have a
+I'm trying to get my head around these patches - at this point I'm just
+doing a first pass, so I may have more substantive structural comments
+later on. In the mean time - here are some minor C nits:
 
-   begin_cpu_relax();
-   while (!cond)
-       cpu_relax();
-   end_cpu_relax();
+> + * Copyright	(C) 2016 Madhavan Srinivasan, IBM Corporation.
+> + *		(C) 2016 Hemant K Shaw, IBM Corporation.
 
-and then architectures can decide how they implement it. So for x86,
-the begin/end macros would be empty. For ppc, maybe begin/end would be
-the "lower and raise priority", while cpu_relax() itself is an empty
-thing.
+Should these be bumped to 2017?
 
-Or maybe "begin" just clears a counter, while "cpu_relax()" does some
-"increase iterations, and lower priority after X iterations", and then
-"end" raises the priority again.
+> +
+> +		do {
+> +			pages = PAGE_SIZE * i;
+> +			pcni->vbase[i++] = (u64)phys_to_virt(pcni->pbase +
+> +							     pages);
+> +		} while (i < (pcni->size / PAGE_SIZE));
+> +	}
+I had to scroll back up to the top of this function to make sure I
+understood what this loop does. Would it be better to write it as:
 
-The "do magic having a special loop" approach disturbs me. I'd much
-rather have more explicit hooks that allow people to do their own loop
-semantics (including having a "return" to exit early).
+for (i = 0; i < (pcni->size / PAGE_SIZE); i++) {
+    pages = PAGE_SIZE * i;
+    pcni->vbase[i] = (u64)....
+}
 
-But that depends on architectures having some pattern that we *can*
-abstract. Would some "begin/in-loop/end" pattern like the above be
-sufficient? The pure "in-loop" case we have now (ie "cpu_relax()"
-clearly isn't sufficient.
+And, just checking - this is expected to work on both 4 and 64kB pages?
 
-I think s390 might have issues too, since they tried to have that
-"cpu_relax_yield" thing (which is only used by stop_machine), and
-they've tried cpu_relax_lowlatency() and other games.
+> +
+> +	return 0;
+> +err:
+> +	return -ENODEV;
 
-                    Linus
+You're not releasing any resources here - would it be better to just
+replace the gotos with this return? I haven't checked to see if you
+change the function later on to allocate memory - if so please ignore :)
+
+> +}
+> +
+> +static const struct of_device_id opal_imc_match[] = {
+> +	{ .compatible = IMC_DTB_COMPAT },
+> +	{},
+> +};
+> +
+> +static struct platform_driver opal_imc_driver = {
+> +	.driver = {
+> +		.name = "opal-imc-counters",
+> +		.of_match_table = opal_imc_match,
+> +	},
+> +	.probe = opal_imc_counters_probe,
+> +};
+> +
+> +MODULE_DEVICE_TABLE(of, opal_imc_match);
+> +module_platform_driver(opal_imc_driver);
+> +MODULE_DESCRIPTION("PowerNV OPAL IMC driver");
+> +MODULE_LICENSE("GPL");
+> diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
+> index e0f856bfbfe8..85ea1296f030 100644
+> --- a/arch/powerpc/platforms/powernv/opal.c
+> +++ b/arch/powerpc/platforms/powernv/opal.c
+> @@ -14,6 +14,7 @@
+>  #include <linux/printk.h>
+>  #include <linux/types.h>
+>  #include <linux/of.h>
+> +#include <linux/of_address.h>
+>  #include <linux/of_fdt.h>
+>  #include <linux/of_platform.h>
+>  #include <linux/interrupt.h>
+> @@ -30,6 +31,7 @@
+>  #include <asm/opal.h>
+>  #include <asm/firmware.h>
+>  #include <asm/mce.h>
+> +#include <asm/imc-pmu.h>
+>  
+>  #include "powernv.h"
+>  
+> @@ -631,6 +633,15 @@ static void opal_pdev_init(const char *compatible)
+>  		of_platform_device_create(np, NULL, NULL);
+>  }
+>  
+> +static void opal_imc_init_dev(void)
+> +{
+> +	struct device_node *np;
+> +
+> +	np = of_find_compatible_node(NULL, NULL, IMC_DTB_COMPAT);
+> +	if (np)
+> +		of_platform_device_create(np, NULL, NULL);
+> +}
+
+Should this function be tagged __init?
+
+> +
+>  static int kopald(void *unused)
+>  {
+>  	unsigned long timeout = msecs_to_jiffies(opal_heartbeat) + 1;
+> @@ -704,6 +715,9 @@ static int __init opal_init(void)
+>  	/* Setup a heatbeat thread if requested by OPAL */
+>  	opal_init_heartbeat();
+>  
+> +	/* Detect IMC pmu counters support and create PMUs */
+> +	opal_imc_init_dev();
+> +
+>  	/* Create leds platform devices */
+>  	leds = of_find_node_by_path("/ibm,opal/leds");
+>  	if (leds) {
+> -- 
+> 2.7.4
