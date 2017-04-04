@@ -1,30 +1,24 @@
-Return-Path: <laurentiu.tudor@nxp.com>
-Received: from EUR01-VE1-obe.outbound.protection.outlook.com
- (mail-ve1eur01on0065.outbound.protection.outlook.com [104.47.1.65])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <srs0=vfdj=3m=kernel.crashing.org=benh@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vy8vH4mQvzDq5W
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Apr 2017 23:28:59 +1000 (AEST)
-From: Laurentiu Tudor <laurentiu.tudor@nxp.com>
-To: Michael Ellerman <mpe@ellerman.id.au>, =?utf-8?B?SG9yaWEgR2VhbnTEgw==?=
- <horia.geanta@nxp.com>, Herbert Xu <herbert@gondor.apana.org.au>, Scott Wood
- <oss@buserror.net>, Roy Pledge <roy.pledge@nxp.com>
-CC: Claudiu Manoil <claudiu.manoil@nxp.com>, Cristian Stoica
- <cristian.stoica@nxp.com>, Dan Douglass <dan.douglass@nxp.com>,
- "linux-arm-kernel@lists.infradead.org"
- <linux-arm-kernel@lists.infradead.org>, Vakul Garg <vakul.garg@nxp.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "David S.
- Miller" <davem@davemloft.net>, Alexandru Porosanu
- <alexandru.porosanu@nxp.com>, "linux-crypto@vger.kernel.org"
- <linux-crypto@vger.kernel.org>
-Subject: Re: [7/7] crypto: caam/qi - add ablkcipher and authenc algorithms
-Date: Tue, 4 Apr 2017 13:28:49 +0000
-Message-ID: <58E39F90.6050408@nxp.com>
-References: <20170317100602.2837-8-horia.geanta@nxp.com>
- <87vaqkvk6c.fsf@concordia.ellerman.id.au>
-In-Reply-To: <87vaqkvk6c.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vy9Jh4lbwzDq7c
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Apr 2017 23:47:32 +1000 (AEST)
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3vy9Jh3byYz8syf
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Apr 2017 23:47:32 +1000 (AEST)
+Message-ID: <1491313645.4166.47.camel@kernel.crashing.org>
+Subject: Re: [PATCH 02/12] powerpc: Sync opal-api.h
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org,
+ kvm-ppc@vger.kernel.org
+Date: Tue, 04 Apr 2017 23:47:25 +1000
+In-Reply-To: <871st8uzyn.fsf@concordia.ellerman.id.au>
+References: <20170320064914.4437-1-benh@kernel.crashing.org>
+ <20170320064914.4437-2-benh@kernel.crashing.org>
+ <871st8uzyn.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,97 +28,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-SGkgTWljaGFlbCwNCg0KSnVzdCBhIGNvdXBsZSBvZiBiYXNpYyB0aGluZ3MgdG8gY2hlY2s6DQog
-IC0gd2FzIHRoZSBkdGIgdXBkYXRlZCB0byB0aGUgbmV3ZXN0Pw0KICAtIGlzIHRoZSBxbWFuIG5v
-ZGUgcHJlc2VudD8gVGhpcyBzaG91bGQgYmUgZWFzaWx5IHZpc2libGUgaW4gDQovcHJvYy9kZXZp
-Y2UtdHJlZS9zb2NAZmZlMDAwMDAwL3FtYW5AMzE4MDAwLg0KDQotLS0NCkJlc3QgUmVnYXJkcywg
-TGF1cmVudGl1DQoNCk9uIDA0LzA0LzIwMTcgMDg6MDMgQU0sIE1pY2hhZWwgRWxsZXJtYW4gd3Jv
-dGU6DQo+IEhvcmlhIEdlYW50xIMgPGhvcmlhLmdlYW50YUBueHAuY29tPiB3cml0ZXM6DQo+DQo+
-PiBBZGQgc3VwcG9ydCB0byBzdWJtaXQgYWJsa2NpcGhlciBhbmQgYXV0aGVuYyBhbGdvcml0aG1z
-DQo+PiB2aWEgdGhlIFFJIGJhY2tlbmQ6DQo+PiAtYWJsa2NpcGhlcjoNCj4+IGNiYyh7YWVzLGRl
-cyxkZXMzX2VkZX0pDQo+PiBjdHIoYWVzKSwgcmZjMzY4NihjdHIoYWVzKSkNCj4+IHh0cyhhZXMp
-DQo+PiAtYXV0aGVuYzoNCj4+IGF1dGhlbmMoaG1hYyhtZDUpLGNiYyh7YWVzLGRlcyxkZXMzX2Vk
-ZX0pKQ0KPj4gYXV0aGVuYyhobWFjKHNoYSopLGNiYyh7YWVzLGRlcyxkZXMzX2VkZX0pKQ0KPj4N
-Cj4+IGNhYW0vcWkgYmVpbmcgYSBuZXcgZHJpdmVyLCBsZXQncyB3YWl0IHNvbWUgdGltZSB0byBz
-ZXR0bGUgZG93biB3aXRob3V0DQo+PiBpbnRlcmZlcmluZyB3aXRoIGV4aXN0aW5nIGNhYW0vanIg
-ZHJpdmVyLg0KPj4gQWNjb3JkaW5nbHksIGZvciBub3cgYWxsIGNhYW0vcWkgYWxnb3JpdGhtcyAo
-Y2FhbWFsZ19xaSBtb2R1bGUpIGFyZQ0KPj4gbWFya2VkIHRvIGJlIG9mIGxvd2VyIHByaW9yaXR5
-IHRoYW4gY2FhbS9qciBvbmVzIChjYWFtYWxnIG1vZHVsZSkuDQo+Pg0KPj4gU2lnbmVkLW9mZi1i
-eTogVmFrdWwgR2FyZyA8dmFrdWwuZ2FyZ0BueHAuY29tPg0KPj4gU2lnbmVkLW9mZi1ieTogQWxl
-eCBQb3Jvc2FudSA8YWxleGFuZHJ1LnBvcm9zYW51QG54cC5jb20+DQo+PiBTaWduZWQtb2ZmLWJ5
-OiBIb3JpYSBHZWFudMSDIDxob3JpYS5nZWFudGFAbnhwLmNvbT4NCj4+IC0tLQ0KPj4gICBkcml2
-ZXJzL2NyeXB0by9jYWFtL0tjb25maWcgICAgICAgIHwgICAyMCArLQ0KPj4gICBkcml2ZXJzL2Ny
-eXB0by9jYWFtL01ha2VmaWxlICAgICAgIHwgICAgMSArDQo+PiAgIGRyaXZlcnMvY3J5cHRvL2Nh
-YW0vY2FhbWFsZy5jICAgICAgfCAgICA5ICstDQo+PiAgIGRyaXZlcnMvY3J5cHRvL2NhYW0vY2Fh
-bWFsZ19kZXNjLmMgfCAgIDc3ICstDQo+PiAgIGRyaXZlcnMvY3J5cHRvL2NhYW0vY2FhbWFsZ19k
-ZXNjLmggfCAgIDE1ICstDQo+PiAgIGRyaXZlcnMvY3J5cHRvL2NhYW0vY2FhbWFsZ19xaS5jICAg
-fCAyMzg3ICsrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKw0KPj4gICBkcml2ZXJz
-L2NyeXB0by9jYWFtL3NnX3N3X3FtLmggICAgIHwgIDEwOCArKw0KPj4gICA3IGZpbGVzIGNoYW5n
-ZWQsIDI2MDEgaW5zZXJ0aW9ucygrKSwgMTYgZGVsZXRpb25zKC0pDQo+PiAgIGNyZWF0ZSBtb2Rl
-IDEwMDY0NCBkcml2ZXJzL2NyeXB0by9jYWFtL2NhYW1hbGdfcWkuYw0KPj4gICBjcmVhdGUgbW9k
-ZSAxMDA2NDQgZHJpdmVycy9jcnlwdG8vY2FhbS9zZ19zd19xbS5oDQo+DQo+DQo+IFRoaXMgYXBw
-ZWFycyB0byBiZSBibG93aW5nIHVwIG15IEZyZWVzY2FsZSAoTlhQKSBQNTAyMERTIGJvYXJkOg0K
-Pg0KPiAgICBVbmFibGUgdG8gaGFuZGxlIGtlcm5lbCBwYWdpbmcgcmVxdWVzdCBmb3IgZGF0YSBh
-dCBhZGRyZXNzIDB4MDAwMDAwMjANCj4gICAgRmF1bHRpbmcgaW5zdHJ1Y3Rpb24gYWRkcmVzczog
-MHhjMDAwMDAwMDAwNDM5M2U0DQo+ICAgIE9vcHM6IEtlcm5lbCBhY2Nlc3Mgb2YgYmFkIGFyZWEs
-IHNpZzogMTEgWyMxXQ0KPiAgICBTTVAgTlJfQ1BVUz0yNA0KPiAgICBDb3JlTmV0IEdlbmVyaWMN
-Cj4gICAgTW9kdWxlcyBsaW5rZWQgaW46DQo+ICAgIENQVTogMCBQSUQ6IDEgQ29tbTogc3dhcHBl
-ci8wIE5vdCB0YWludGVkIDQuMTEuMC1yYzMtY29tcGlsZXJfZ2NjLTQuNi4zLTAwMDQ2LWdiMTg5
-ODE3Y2Y3ODkgIzUNCj4gICAgdGFzazogYzAwMDAwMDBmNzBjMDAwMCB0YXNrLnN0YWNrOiBjMDAw
-MDAwMGY3MGM4MDAwDQo+ICAgIE5JUDogYzAwMDAwMDAwMDQzOTNlNCBMUjogYzAwMDAwMDAwMDRh
-ZWJhMCBDVFI6IGMwMDAwMDAwMDA0ZmE3ZDgNCj4gICAgUkVHUzogYzAwMDAwMDBmNzBjYjE2MCBU
-UkFQOiAwMzAwICAgTm90IHRhaW50ZWQgICg0LjExLjAtcmMzLWNvbXBpbGVyX2djYy00LjYuMy0w
-MDA0Ni1nYjE4OTgxN2NmNzg5KQ0KPiAgICBNU1I6IDAwMDAwMDAwODAwMjkwMDAgPENFLEVFLE1F
-Pg0KPiAgICAgIENSOiAyNGFkYmU0OCAgWEVSOiAyMDAwMDAwMA0KPiAgICBERUFSOiAwMDAwMDAw
-MDAwMDAwMDIwIEVTUjogMDAwMDAwMDAwMDAwMDAwMCBTT0ZURTogMQ0KPiAgICBHUFIwMDogYzAw
-MDAwMDAwMDZmZWJhMCBjMDAwMDAwMGY3MGNiM2UwIGMwMDAwMDAwMDBlNjAwMDAgMDAwMDAwMDAw
-MDAwMDAwMA0KPiAgICBHUFIwNDogMDAwMDAwMDAwMDAwMDAwMSAwMDAwMDAwMDAwMDAwMDAwIGMw
-MDAwMDAwMDBlMGIyOTAgMDAwMDAwMDAwMDAwMDAwMw0KPiAgICBHUFIwODogMDAwMDAwMDAwMDAw
-MDAwNCBjMDAwMDAwMDAwZWE1MjgwIDAwMDAwMDAwMDAwMDAwMDQgMDAwMDAwMDAwMDAwMDAwNA0K
-PiAgICBHUFIxMjogMDAwMDAwMDA4OGFkYmUyMiBjMDAwMDAwMDNmZmY1MDAwIGMwMDAwMDAwMDBi
-YTM1MTggODAwMDA4MDA4ODA5MGZhOA0KPiAgICBHUFIxNjogMDAwMDAwMDAwMDAwMTAwMCBjMDAw
-MDAwMDAwYmEzNTAwIGMwMDAwMDAwZjcyYzY4ZDggMDAwMDAwMDAwMDAwMDAwNA0KPiAgICBHUFIy
-MDogYzAwMDAwMDAwMGVhNTI4MCBjMDAwMDAwMDAwYmEzNGU4IDAwMDAwMDAwMDAwMDAwMjAgMDAw
-MDAwMDAwMDAwMDAwNA0KPiAgICBHUFIyNDogYzAwMDAwMDAwMGVhYjdjMCAwMDAwMDAwMDAwMDAw
-MDAwIGMwMDAwMDAwZjdmYzg4MTggYzAwMDAwMDAwMGViMDAwMA0KPiAgICBHUFIyODogYzAwMDAw
-MDBmNzg2Y2MwMCBjMDAwMDAwMDAwZWFiNzgwIGZmZmZmZmZmZjc4NmNjMDAgYzAwMDAwMDAwMGVh
-YjdjMA0KPiAgICBOSVAgW2MwMDAwMDAwMDA0MzkzZTRdIC5nZW5fcG9vbF9hbGxvYysweDAvMHhj
-DQo+ICAgIExSIFtjMDAwMDAwMDAwNGFlYmEwXSAucW1hbl9hbGxvY19jZ3JpZF9yYW5nZSsweDI0
-LzB4NTQNCj4gICAgQ2FsbCBUcmFjZToNCj4gICAgW2MwMDAwMDAwZjcwY2IzZTBdIFtjMDAwMDAw
-MDAwNTA0MDU0XSAucGxhdGZvcm1fZGV2aWNlX3JlZ2lzdGVyX2Z1bGwrMHgxMmMvMHgxNTAgKHVu
-cmVsaWFibGUpDQo+ICAgIFtjMDAwMDAwMGY3MGNiNDYwXSBbYzAwMDAwMDAwMDZmZWJhMF0gLmNh
-YW1fcWlfaW5pdCsweDE1OC8weDYzYw0KPiAgICBbYzAwMDAwMDBmNzBjYjVmMF0gW2MwMDAwMDAw
-MDA2ZmM2NGNdIC5jYWFtX3Byb2JlKzB4OGI4LzB4MTgzMA0KPiAgICBbYzAwMDAwMDBmNzBjYjc0
-MF0gW2MwMDAwMDAwMDA1MDMyODhdIC5wbGF0Zm9ybV9kcnZfcHJvYmUrMHg2MC8weGFjDQo+ICAg
-IFtjMDAwMDAwMGY3MGNiN2MwXSBbYzAwMDAwMDAwMDUwMTE5NF0gLmRyaXZlcl9wcm9iZV9kZXZp
-Y2UrMHgyNDgvMHgzNDQNCj4gICAgW2MwMDAwMDAwZjcwY2I4NzBdIFtjMDAwMDAwMDAwNTAxM2I0
-XSAuX19kcml2ZXJfYXR0YWNoKzB4MTI0LzB4MTI4DQo+ICAgIFtjMDAwMDAwMGY3MGNiOTAwXSBb
-YzAwMDAwMDAwMDRmZWQ5MF0gLmJ1c19mb3JfZWFjaF9kZXYrMHg4MC8weGNjDQo+ICAgIFtjMDAw
-MDAwMGY3MGNiOWEwXSBbYzAwMDAwMDAwMDUwMDg1OF0gLmRyaXZlcl9hdHRhY2grMHgyNC8weDM4
-DQo+ICAgIFtjMDAwMDAwMGY3MGNiYTEwXSBbYzAwMDAwMDAwMDUwMDQzY10gLmJ1c19hZGRfZHJp
-dmVyKzB4MTRjLzB4MjljDQo+ICAgIFtjMDAwMDAwMGY3MGNiYWIwXSBbYzAwMDAwMDAwMDUwMWQ2
-NF0gLmRyaXZlcl9yZWdpc3RlcisweDhjLzB4MTU0DQo+ICAgIFtjMDAwMDAwMGY3MGNiYjMwXSBb
-YzAwMDAwMDAwMDUwMzAwMF0gLl9fcGxhdGZvcm1fZHJpdmVyX3JlZ2lzdGVyKzB4NDgvMHg1Yw0K
-PiAgICBbYzAwMDAwMDBmNzBjYmJhMF0gW2MwMDAwMDAwMDBjN2Y3OThdIC5jYWFtX2RyaXZlcl9p
-bml0KzB4MWMvMHgzMA0KPiAgICBbYzAwMDAwMDBmNzBjYmMxMF0gW2MwMDAwMDAwMDAwMDE5MDRd
-IC5kb19vbmVfaW5pdGNhbGwrMHg2MC8weDFhOA0KPiAgICBbYzAwMDAwMDBmNzBjYmNmMF0gW2Mw
-MDAwMDAwMDBjMzVmMzBdIC5rZXJuZWxfaW5pdF9mcmVlYWJsZSsweDI0OC8weDMzNA0KPiAgICBb
-YzAwMDAwMDBmNzBjYmRiMF0gW2MwMDAwMDAwMDAwMDIwZmNdIC5rZXJuZWxfaW5pdCsweDFjLzB4
-ZjIwDQo+ICAgIFtjMDAwMDAwMGY3MGNiZTMwXSBbYzAwMDAwMDAwMDAwMDliY10gLnJldF9mcm9t
-X2tlcm5lbF90aHJlYWQrMHg1OC8weDljDQo+ICAgIEluc3RydWN0aW9uIGR1bXA6DQo+ICAgIGVi
-NjFmZmQ4IGViODFmZmUwIGViYTFmZmU4IGViYzFmZmYwIGViZTFmZmY4IDRlODAwMDIwIDM4NjAw
-MDAwIDRiZmZmZmIwDQo+ICAgIDdjZTUzYjc4IDRiZmZmZjBjIDdmNjdkYjc4IDRiZmZmZjI0IDxl
-OGEzMDAyMD4gZThjMzAwMjggNGJmZmZkMzAgZmJlMWZmZjgNCj4gICAgLS0tWyBlbmQgdHJhY2Ug
-OWY2MTA4NzA2ODk5MWIwMiBdLS0tDQo+DQo+DQo+IGhvbWU6bGludXgtbmV4dCg0KShJKT4gZ2l0
-IGJpc2VjdCBsb2cNCj4gLi4uDQo+IGdpdCBiaXNlY3QgYmFkIGIxODk4MTdjZjc4OTRlMDNmZDM3
-MDBhY2Q5MjMyMjFkMzAwNzI1OWUNCj4gIyBmaXJzdCBiYWQgY29tbWl0OiBbYjE4OTgxN2NmNzg5
-NGUwM2ZkMzcwMGFjZDkyMzIyMWQzMDA3MjU5ZV0gY3J5cHRvOiBjYWFtL3FpIC0gYWRkIGFibGtj
-aXBoZXIgYW5kIGF1dGhlbmMgYWxnb3JpdGhtcw0KPg0KPg0KPiBUaGUgb29wcyBpcyBzYXlpbmcg
-Z2VuX3Bvb2xfYWxsb2MoKSB3YXMgY2FsbGVkIHdpdGggYSBOVUxMIHBvaW50ZXIsIHNvDQo+IGl0
-IHNlZW1zIHFtX2NncmFsbG9jIGlzIE5VTEw6DQo+DQo+IHN0YXRpYyBpbnQgcW1hbl9hbGxvY19y
-YW5nZShzdHJ1Y3QgZ2VuX3Bvb2wgKnAsIHUzMiAqcmVzdWx0LCB1MzIgY250KQ0KPiB7DQo+IAl1
-bnNpZ25lZCBsb25nIGFkZHI7DQo+DQo+IAlhZGRyID0gZ2VuX3Bvb2xfYWxsb2MocCwgY250KTsN
-Cj4gCS4uLg0KPg0KPiBpbnQgcW1hbl9hbGxvY19jZ3JpZF9yYW5nZSh1MzIgKnJlc3VsdCwgdTMy
-IGNvdW50KQ0KPiB7DQo+IAlyZXR1cm4gcW1hbl9hbGxvY19yYW5nZShxbV9jZ3JhbGxvYywgcmVz
-dWx0LCBjb3VudCk7DQo+IH0NCj4NCj4NCj4gSSBkaWRuJ3QgcHVsbCB0aGUgdGhyZWFkIGFueSBm
-dXJ0aGVyIHRoYW4gdGhhdC4NCj4NCj4gY2hlZXJzDQo+
+On Tue, 2017-04-04 at 22:20 +1000, Michael Ellerman wrote:
+> Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+> 
+> ...
+> 
+> Give me some change log !
+
+Well, the subject says it all :-) Sync the API with the latest OPAL :-)
+
+> > Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> > ---
+> >  arch/powerpc/include/asm/opal-api.h            | 302
+> > ++++++++++++++++++++-----
+> 
+> It looks like you've just copied it over in its entirety, including
+> lots of unused cruft.
+> 
+> Please just give me the XIVE bits you need.
+
+Why ? It's a lot easier in the long run to have the file actually in
+sync between the two projects no ?
+
+Cheers,
+Ben.
