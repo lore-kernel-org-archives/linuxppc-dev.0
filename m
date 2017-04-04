@@ -1,27 +1,35 @@
-Return-Path: <oss@buserror.net>
-Received: from host.buserror.net (host.buserror.net [209.198.135.123])
+Return-Path: <srs0=f5xk=3m=gmail.com=linus971@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vxqvc73shzDq5W
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Apr 2017 10:43:08 +1000 (AEST)
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3vxqvc6B5jz8sxJ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Apr 2017 10:43:08 +1000 (AEST)
+Received: from mail-io0-x229.google.com (mail-io0-x229.google.com
+ [IPv6:2607:f8b0:4001:c06::229])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vxqgb5kZ2zDq5W
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Apr 2017 10:32:43 +1000 (AEST)
-Message-ID: <1491265953.2944.78.camel@buserror.net>
-From: Scott Wood <oss@buserror.net>
-To: Roy Pledge <roy.pledge@nxp.com>, Rob Herring <robh@kernel.org>
-Cc: "robin.murphy@arm.com" <robin.murphy@arm.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-arm-kernel@lists.infradead.org"
- <linux-arm-kernel@lists.infradead.org>, "devicetree@vger.kernel.org"
- <devicetree@vger.kernel.org>, Madalin-Cristian Bucur <madalin.bucur@nxp.com>
-Date: Mon, 03 Apr 2017 19:32:33 -0500
-In-Reply-To: <VI1PR04MB32166AA6361CD6F24DBC3AAF86080@VI1PR04MB3216.eurprd04.prod.outlook.com>
-References: <1490822037-6752-1-git-send-email-roy.pledge@nxp.com>
- <1490822037-6752-5-git-send-email-roy.pledge@nxp.com>
- <20170403154229.mf63zeiwv5naxyrr@rob-hp-laptop>
- <VI1PR04MB32166AA6361CD6F24DBC3AAF86080@VI1PR04MB3216.eurprd04.prod.outlook.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Subject: Re: [RFC PATCH 4/5] dt-bindings: soc/fsl: Update reserved memory
- binding for QBMan
+ by ozlabs.org (Postfix) with ESMTPS id 3vxqvc27SVz9s7s
+ for <linuxppc-dev@ozlabs.org>; Tue,  4 Apr 2017 10:43:08 +1000 (AEST)
+Received: by mail-io0-x229.google.com with SMTP id l7so86262282ioe.3
+ for <linuxppc-dev@ozlabs.org>; Mon, 03 Apr 2017 17:43:08 -0700 (PDT)
+MIME-Version: 1.0
+Sender: linus971@gmail.com
+In-Reply-To: <20170404095001.664718b8@roar.ozlabs.ibm.com>
+References: <20170403081328.30266-1-npiggin@gmail.com>
+ <CA+55aFx92vOh28CWp5zid8RzbM=5pO0Or51zS4D8M97L=69hHA@mail.gmail.com>
+ <20170404095001.664718b8@roar.ozlabs.ibm.com>
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Mon, 3 Apr 2017 17:43:05 -0700
+Message-ID: <CA+55aFzdUMZHzXtn9PyhJg7GjYNQ5fy6=LzBNJx==Ab=U=YYjw@mail.gmail.com>
+Subject: Re: [RFC][PATCH] spin loop arch primitives for busy waiting
+To: Nicholas Piggin <npiggin@gmail.com>
+Cc: "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Anton Blanchard <anton@samba.org>, linuxppc-dev <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,41 +39,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2017-04-03 at 19:49 +0000, Roy Pledge wrote:
-> On 4/3/2017 11:42 AM, Rob Herring wrote:
-> > 
-> > On Wed, Mar 29, 2017 at 05:13:56PM -0400, Roy Pledge wrote:
-> > > 
-> > > Updates the QMan and BMan device tree bindings for reserved memory
-> > > nodes. This makes the reserved memory allocation compatiable with
-> > s/compatiable/compatible/
-> > 
-> > > 
-> > > the shared-dma-pool usage.
-> > This change is not backwards compatible. Please state that and explain 
-> > why that is okay. If PPC needs to not change, then the old strings and 
-> > properties should remain, but deprecated.
-> I think I can make the old device trees compatible since the
-> "compatible" string changed without too much effort or ifdefery in the
-> code.  However I would like to eventually see all PPC users move to the
-> new mode as I do believe it is more in alignment with the spirit of the
-> reserved-memory framework that is in the kernel.
+On Mon, Apr 3, 2017 at 4:50 PM, Nicholas Piggin <npiggin@gmail.com> wrote:
+>
+> POWER does not have an instruction like pause. We can only set current
+> thread priority, and current implementations do something like allocate
+> issue cycles to threads based on relative priorities. So there should
+> be at least one or two issue cycles at low priority, but ideally we
+> would not be changing priority in the busy-wait loop because it can
+> impact other threads in the core.
+>
+> I couldn't think of a good way to improve cpu_relax. Our (open source)
+> firmware has a cpu_relax, and it puts a bunch of nops between low and
+> normal priority instructions so we get some fetch cycles at low prio.
+> That isn't ideal though.
+>
+> If you have any ideas, I'd be open to them.
 
-How much benefit is there to changing PPC if you have to retain the old method
-anyway for compatibility?  Whereas if you don't convert, you retain test
-coverage for the old device trees, and don't have to worry about
-the memblock_end_of_DRAM() questions.
+So the idea would be that maybe we can just make those things
+explicit. IOW, instead of having that magical looping construct that
+does other magical hidden things as part of the loop, maybe we can
+just have a
 
->   Do I need to mention the old mode in the binding.txt file? 
+   begin_cpu_relax();
+   while (!cond)
+       cpu_relax();
+   end_cpu_relax();
 
-Yes.
+and then architectures can decide how they implement it. So for x86,
+the begin/end macros would be empty. For ppc, maybe begin/end would be
+the "lower and raise priority", while cpu_relax() itself is an empty
+thing.
 
->  I'm trying to keep things clean
-> so someone reading the binding doesn't get a headache and trying to
-> preserve my own sanity as we move forward with adding new features to
-> this driver.
+Or maybe "begin" just clears a counter, while "cpu_relax()" does some
+"increase iterations, and lower priority after X iterations", and then
+"end" raises the priority again.
 
-If they're sufficiently different then just describe the new and old nodes
-separately rather than putting a bunch of if/else clauses in there.
+The "do magic having a special loop" approach disturbs me. I'd much
+rather have more explicit hooks that allow people to do their own loop
+semantics (including having a "return" to exit early).
 
--Scott
+But that depends on architectures having some pattern that we *can*
+abstract. Would some "begin/in-loop/end" pattern like the above be
+sufficient? The pure "in-loop" case we have now (ie "cpu_relax()"
+clearly isn't sufficient.
+
+I think s390 might have issues too, since they tried to have that
+"cpu_relax_yield" thing (which is only used by stop_machine), and
+they've tried cpu_relax_lowlatency() and other games.
+
+                    Linus
