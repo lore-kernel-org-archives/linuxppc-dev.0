@@ -2,23 +2,17 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vy6wr4kJ0zDq7c
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Apr 2017 22:00:12 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vy7Mj71C7zDq7c
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Apr 2017 22:20:01 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-Cc: Paul Mackerras <paulus@au1.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- Anton Blanchard <anton@samba.org>, Matthew Wilcox <willy@infradead.org>
-Subject: Re: [PATCH 1/2] powerpc: string: implement optimized memset variants
-In-Reply-To: <20170330071613.GE4762@naverao1-tp.localdomain>
-References: <20170322193030.GA8008@bombadil.infradead.org>
- <cover.1490641759.git.naveen.n.rao@linux.vnet.ibm.com>
- <d6a1a353de6a87bb5474ca9f1c1ff7ab2c4a1eb4.1490641759.git.naveen.n.rao@linux.vnet.ibm.com>
- <87mvc6b575.fsf@concordia.ellerman.id.au>
- <20170328102109.GC4762@naverao1-tp.localdomain>
- <87a884jow3.fsf@concordia.ellerman.id.au>
- <20170330071613.GE4762@naverao1-tp.localdomain>
-Date: Tue, 04 Apr 2017 22:00:07 +1000
-Message-ID: <874ly4v0vs.fsf@concordia.ellerman.id.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, linuxppc-dev@ozlabs.org,
+ kvm-ppc@vger.kernel.org
+Subject: Re: [PATCH 02/12] powerpc: Sync opal-api.h
+In-Reply-To: <20170320064914.4437-2-benh@kernel.crashing.org>
+References: <20170320064914.4437-1-benh@kernel.crashing.org>
+ <20170320064914.4437-2-benh@kernel.crashing.org>
+Date: Tue, 04 Apr 2017 22:20:00 +1000
+Message-ID: <871st8uzyn.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -30,20 +24,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-"Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> writes:
-> (generic) is with Matt's arch-independent patches applied. Profiling 
-> indicates that most of the overhead is actually with the lzo 
-> decompression...
->
-> Also, with a simple module to memset64() a 1GB vmalloc'ed buffer, here 
-> are the results:
-> generic:	0.245315533 seconds time elapsed	( +-  1.83% )
-> optimized:	0.169282701 seconds time elapsed	( +-  1.96% )
+Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
 
-Great, that's pretty conclusive.
+...
 
-I'm pretty sure I can take these 2 patches independently of Matt's
-series, they just won't be used by much until his series goes in, so
-I'll do that unless someone yells.
+Give me some change log !
+
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> ---
+>  arch/powerpc/include/asm/opal-api.h            | 302 ++++++++++++++++++++-----
+
+It looks like you've just copied it over in its entirety, including lots
+of unused cruft.
+
+Please just give me the XIVE bits you need.
 
 cheers
