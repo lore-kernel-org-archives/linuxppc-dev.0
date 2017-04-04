@@ -1,41 +1,43 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vy3Rj5RZ2zDq7c
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Apr 2017 19:23:13 +1000 (AEST)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vy3WX6CFgzDq7c
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Apr 2017 19:26:32 +1000 (AEST)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v349ITaL026097
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 4 Apr 2017 05:23:10 -0400
-Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [125.16.236.9])
- by mx0a-001b2d01.pphosted.com with ESMTP id 29m259aa0x-1
+ v349Nive119718
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 4 Apr 2017 05:26:24 -0400
+Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [125.16.236.7])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 29m1njknmd-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Apr 2017 05:23:09 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Apr 2017 05:26:23 -0400
 Received: from localhost
- by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Tue, 4 Apr 2017 14:53:06 +0530
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ Tue, 4 Apr 2017 14:56:20 +0530
+Received: from d28av08.in.ibm.com (d28av08.in.ibm.com [9.184.220.148])
  by d28relay04.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v349N4Ja5832770
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 4 Apr 2017 14:53:04 +0530
-Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v349N3OH030889
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 4 Apr 2017 14:53:04 +0530
+ v349QJPO16122034
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 4 Apr 2017 14:56:19 +0530
+Received: from d28av08.in.ibm.com (localhost [127.0.0.1])
+ by d28av08.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v349QIBp019156
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 4 Apr 2017 14:56:19 +0530
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Frederic Barrat <fbarrat@linux.vnet.ibm.com>, bsingharora@gmail.com,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] powerpc/mm: Add missing global TLBI if cxl is active
-In-Reply-To: <20170329171942.14267-1-fbarrat@linux.vnet.ibm.com>
-References: <20170329171942.14267-1-fbarrat@linux.vnet.ibm.com>
-Date: Tue, 04 Apr 2017 14:53:02 +0530
+To: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, Balbir Singh <bsingharora@gmail.com>,
+ Paul Mackerras <paulus@samba.org>, Greg Kurz <groug@kaod.org>
+Subject: Re: [PATCH kernel] powerpc/iommu: Do not call PageTransHuge() on tail
+ pages
+In-Reply-To: <20170328052559.12912-1-aik@ozlabs.ru>
+References: <20170328052559.12912-1-aik@ozlabs.ru>
+Date: Tue, 04 Apr 2017 14:56:17 +0530
 MIME-Version: 1.0
 Content-Type: text/plain
-Message-Id: <874ly434sp.fsf@skywalker.in.ibm.com>
+Message-Id: <871st834na.fsf@skywalker.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,52 +47,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Frederic Barrat <fbarrat@linux.vnet.ibm.com> writes:
+Alexey Kardashevskiy <aik@ozlabs.ru> writes:
 
-> Commit 4c6d9acce1f4 ("powerpc/mm: Add hooks for cxl") converted local
-> TLBIs to global if the cxl driver is active. It is necessary because
-> the CAPP snoops invalidations to forward them to the PSL on the cxl
-> adapter.
-> However one path was apparently forgotten. native_flush_hash_range()
-> still sends local TLBIs, as found out the hard way recently.
+> The CMA pages migration code does not support compound pages at
+> the moment so it performs few tests before proceeding to actual page
+> migration.
 >
-> This patch fixes it by following the same logic as previously: if the
-> cxl driver is active, the local TLBIs are 'upgraded' to global.
+> One of the tests - PageTransHuge() - has VM_BUG_ON_PAGE(PageTail()) as
+> it should be called on head pages. Since we also test for PageCompound(),
+> and it contains PageTail(), we can simply move PageCompound() in front
+> of PageTransHuge() and therefore avoid possible VM_BUG_ON_PAGE.
 >
-> Fixes: 4c6d9acce1f4 ("powerpc/mm: Add hooks for cxl")
-> Cc: stable@vger.kernel.org
-> Signed-off-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-
-Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 > ---
->  arch/powerpc/mm/hash_native_64.c | 7 +++++--
->  1 file changed, 5 insertions(+), 2 deletions(-)
 >
-> diff --git a/arch/powerpc/mm/hash_native_64.c b/arch/powerpc/mm/hash_native_64.c
-> index cc33260..65bb8f3 100644
-> --- a/arch/powerpc/mm/hash_native_64.c
-> +++ b/arch/powerpc/mm/hash_native_64.c
-> @@ -638,6 +638,10 @@ static void native_flush_hash_range(unsigned long number, int local)
->  	unsigned long psize = batch->psize;
->  	int ssize = batch->ssize;
->  	int i;
-> +	unsigned int use_local;
-> +
-> +	use_local = local && mmu_has_feature(MMU_FTR_TLBIEL) &&
-> +		mmu_psize_defs[psize].tlbiel && !cxl_ctx_in_use();
+> Some of actual POWER8 systems do crash on that BUG_ON.
+> ---
+>  arch/powerpc/mm/mmu_context_iommu.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
 >
->  	local_irq_save(flags);
+> diff --git a/arch/powerpc/mm/mmu_context_iommu.c b/arch/powerpc/mm/mmu_context_iommu.c
+> index 497130c5c742..ba7fccf993b3 100644
+> --- a/arch/powerpc/mm/mmu_context_iommu.c
+> +++ b/arch/powerpc/mm/mmu_context_iommu.c
+> @@ -81,7 +81,7 @@ struct page *new_iommu_non_cma_page(struct page *page, unsigned long private,
+>  	gfp_t gfp_mask = GFP_USER;
+>  	struct page *new_page;
 >
-> @@ -667,8 +671,7 @@ static void native_flush_hash_range(unsigned long number, int local)
->  		} pte_iterate_hashed_end();
->  	}
+> -	if (PageHuge(page) || PageTransHuge(page) || PageCompound(page))
+> +	if (PageCompound(page) || PageHuge(page) || PageTransHuge(page))
+
+
+A checked for compound page should be sufficient here, because a
+Huge/TransHuge page is also marked compound. If we want to indicate that
+we don't handle hugetlb and THP pages, we can write that as a comment ?
+
+
+
+>  		return NULL;
 >
-> -	if (mmu_has_feature(MMU_FTR_TLBIEL) &&
-> -	    mmu_psize_defs[psize].tlbiel && local) {
-> +	if (use_local) {
->  		asm volatile("ptesync":::"memory");
->  		for (i = 0; i < number; i++) {
->  			vpn = batch->vpn[i];
+>  	if (PageHighMem(page))
+> @@ -100,7 +100,7 @@ static int mm_iommu_move_page_from_cma(struct page *page)
+>  	LIST_HEAD(cma_migrate_pages);
+>
+>  	/* Ignore huge pages for now */
+> -	if (PageHuge(page) || PageTransHuge(page) || PageCompound(page))
+> +	if (PageCompound(page) || PageHuge(page) || PageTransHuge(page))
+>  		return -EBUSY;
+>
+>  	lru_add_drain();
 > -- 
-> 2.9.3
+> 2.11.0
