@@ -2,27 +2,26 @@ Return-Path: <oss@buserror.net>
 Received: from host.buserror.net (host.buserror.net [209.198.135.123])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vxqVm0zCmzDq5W
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Apr 2017 10:25:03 +1000 (AEST)
-Message-ID: <1491265487.2944.71.camel@buserror.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vxqgb5kZ2zDq5W
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Apr 2017 10:32:43 +1000 (AEST)
+Message-ID: <1491265953.2944.78.camel@buserror.net>
 From: Scott Wood <oss@buserror.net>
-To: Robin Murphy <robin.murphy@arm.com>, Michael Ellerman
- <mpe@ellerman.id.au>,  roy.pledge@nxp.com, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org
-Cc: Mark Rutland <mark.rutland@arm.com>, madalin.bucur@nxp.com
-Date: Mon, 03 Apr 2017 19:24:47 -0500
-In-Reply-To: <df00c0ab-22b8-1086-def1-69baf648df72@arm.com>
+To: Roy Pledge <roy.pledge@nxp.com>, Rob Herring <robh@kernel.org>
+Cc: "robin.murphy@arm.com" <robin.murphy@arm.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-arm-kernel@lists.infradead.org"
+ <linux-arm-kernel@lists.infradead.org>, "devicetree@vger.kernel.org"
+ <devicetree@vger.kernel.org>, Madalin-Cristian Bucur <madalin.bucur@nxp.com>
+Date: Mon, 03 Apr 2017 19:32:33 -0500
+In-Reply-To: <VI1PR04MB32166AA6361CD6F24DBC3AAF86080@VI1PR04MB3216.eurprd04.prod.outlook.com>
 References: <1490822037-6752-1-git-send-email-roy.pledge@nxp.com>
- <1490822037-6752-3-git-send-email-roy.pledge@nxp.com>
- <b1cd8d44-8c74-ab50-5dc9-1f978cae5bdf@arm.com>
- <871ste5dmw.fsf@concordia.ellerman.id.au>
- <dfaa1a28-66d8-15fb-7d2d-75e206161770@arm.com>
- <1491031518.2944.62.camel@buserror.net>
- <df00c0ab-22b8-1086-def1-69baf648df72@arm.com>
+ <1490822037-6752-5-git-send-email-roy.pledge@nxp.com>
+ <20170403154229.mf63zeiwv5naxyrr@rob-hp-laptop>
+ <VI1PR04MB32166AA6361CD6F24DBC3AAF86080@VI1PR04MB3216.eurprd04.prod.outlook.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Subject: Re: [RFC PATCH 2/5] soc/fsl/qbman: Use shared-dma-pool for QMan
- private memory allocations
+Subject: Re: [RFC PATCH 4/5] dt-bindings: soc/fsl: Update reserved memory
+ binding for QBMan
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,66 +31,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2017-04-03 at 15:52 +0100, Robin Murphy wrote:
-> On 01/04/17 08:25, Scott Wood wrote:
+On Mon, 2017-04-03 at 19:49 +0000, Roy Pledge wrote:
+> On 4/3/2017 11:42 AM, Rob Herring wrote:
 > > 
-> > On Fri, 2017-03-31 at 18:55 +0100, Robin Murphy wrote:
+> > On Wed, Mar 29, 2017 at 05:13:56PM -0400, Roy Pledge wrote:
 > > > 
-> > > On 31/03/17 04:27, Michael Ellerman wrote:
-> > > > 
-> > > > 
-> > > > Robin Murphy <robin.murphy@arm.com> writes:
-> > > > 
-> > > > > 
-> > > > > 
-> > > > > Hi Roy,
-> > > > > 
-> > > > > On 29/03/17 22:13, Roy Pledge wrote:
-> > > > > > 
-> > > > > > 
-> > > > > > Use the shared-memory-pool mechanism for frame queue descriptor
-> > > > > > and
-> > > > > > packed frame descriptor record area allocations.
-> > > > > Thanks for persevering with this - in my opinion it's now looking
-> > > > > like
-> > > > > it was worth the effort :)
-> > > > > 
-> > > > > AFAICS the ioremap_wc() that this leads to does appear to give back
-> > > > > something non-cacheable on PPC (assuming "pgprot_noncached_wc" isn't
-> > > > > horrendously misnamed), and "no-map" should rule out any cacheable
-> > > > > linear map alias existing, so it would seem that this approach
-> > > > > should
-> > > > > avert Scott's concerns about attribute mismatches.
-> > > > How does 'no-map' translate into something being excluded from the
-> > > > linear mapping?
-> > > Reserved regions marked with "no-map" get memblock_remove()d by
-> > > early_init_dt_alloc_reserved_memory_arch(). As I understand things, the
-> > > linear map should only cover memblock areas, and it would be explicitly
-> > > violating the semantics of "no-map" to still cover such a region.
-> > Discontiguous memory isn't supported on these PPC chips.  Everything up to
-> > memblock_end_of_DRAM() gets mapped -- and if that were to change, the
-> > fragmentation would waste TLB1 entries.
-> Ah, so the "PPC-specific angles I'm not aware of" category is indeed
-> non-empty - I guess the lack of HAVE_GENERIC_DMA_COHERENT might be
-> related, then.
-> 
-> That said, though, AFAICS only certain x86 and s390 configurations ever
-> call memblock_set_bottom_up(true), so we should be able to assume that
-> the reserved region allocations always fall through to
-> __memblock_find_range_top_down(). Thus if your DRAM is contiguous, then
-> "no-map"-ing the reserved regions will simply end up pushing
-> memblock_end_of_DRAM() down in a manner that would appear to still avoid
-> overlaps.
+> > > Updates the QMan and BMan device tree bindings for reserved memory
+> > > nodes. This makes the reserved memory allocation compatiable with
+> > s/compatiable/compatible/
+> > 
+> > > 
+> > > the shared-dma-pool usage.
+> > This change is not backwards compatible. Please state that and explain 
+> > why that is okay. If PPC needs to not change, then the old strings and 
+> > properties should remain, but deprecated.
+> I think I can make the old device trees compatible since the
+> "compatible" string changed without too much effort or ifdefery in the
+> code.  However I would like to eventually see all PPC users move to the
+> new mode as I do believe it is more in alignment with the spirit of the
+> reserved-memory framework that is in the kernel.
 
-Can you guarantee it will be at the end?  What if there were other early
-memblock allocations (e.g. other reserved-memory regions without no-map) that
-came first?
+How much benefit is there to changing PPC if you have to retain the old method
+anyway for compatibility?  Whereas if you don't convert, you retain test
+coverage for the old device trees, and don't have to worry about
+the memblock_end_of_DRAM() questions.
 
->  I can only see that going wrong if the end of DRAM wasn't at
-> least 32MB aligned to begin with - is that ever likely to happen in
-> practice?
+>   Do I need to mention the old mode in the binding.txt file? 
 
-Probably not, unless the user asks for an unusual memory size via mem= or
-similar.
+Yes.
+
+>  I'm trying to keep things clean
+> so someone reading the binding doesn't get a headache and trying to
+> preserve my own sanity as we move forward with adding new features to
+> this driver.
+
+If they're sufficiently different then just describe the new and old nodes
+separately rather than putting a bunch of if/else clauses in there.
 
 -Scott
