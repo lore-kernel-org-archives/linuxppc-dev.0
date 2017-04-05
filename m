@@ -1,43 +1,21 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vykj95kwPzDqHj
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Apr 2017 21:52:13 +1000 (AEST)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v35BmpVU080419
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Apr 2017 07:52:01 -0400
-Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [125.16.236.7])
- by mx0b-001b2d01.pphosted.com with ESMTP id 29mtpqy5bk-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Apr 2017 07:52:01 -0400
-Received: from localhost
- by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Wed, 5 Apr 2017 17:21:58 +0530
-Received: from d28av06.in.ibm.com (d28av06.in.ibm.com [9.184.220.48])
- by d28relay01.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v35BptHa12910812
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Apr 2017 17:21:55 +0530
-Received: from d28av06.in.ibm.com (localhost [127.0.0.1])
- by d28av06.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v35Bpsvt014417
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Apr 2017 17:21:55 +0530
-Subject: Re: [RFC PATCH 1/7] mm/hugetlb/migration: Use set_huge_pte_at instead
- of set_pte_at
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
-References: <1491314675-15787-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Date: Wed, 5 Apr 2017 17:21:48 +0530
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vykyc11q1zDqGv
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Apr 2017 22:03:52 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Oliver O'Halloran <oohall@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Oliver O'Halloran <oohall@gmail.com>
+Subject: Re: [PATCH] powerpc/misc: fix exported functions that reference the
+ TOC
+In-Reply-To: <87r319vctk.fsf@concordia.ellerman.id.au>
+References: <20170403032512.22085-1-oohall@gmail.com>
+ <87r319vctk.fsf@concordia.ellerman.id.au>
+Date: Wed, 05 Apr 2017 22:03:50 +1000
+Message-ID: <874ly383ix.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <1491314675-15787-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=windows-1252
-Message-Id: <9153677a-555a-dcee-b10b-ee684c66984e@linux.vnet.ibm.com>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,8 +25,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/04/2017 07:34 PM, Aneesh Kumar K.V wrote:
-> The right interface to use to set a hugetlb pte entry is set_huge_pte_at. Use
-> that instead of set_pte_at.
+Michael Ellerman <mpe@ellerman.id.au> writes:
 
-This is a generic change, should not mm list be added for this patch.
+> Oliver O'Halloran <oohall@gmail.com> writes:
+>
+>> When the kernel is compiled to use 64bit ABIv2 the _GLOBAL() macro does not
+>> include a global entry point. A function's global entry point is used when the
+>> function is called from a different TOC context and in the kernel this
+>> typically means a call from a module into the vmlinux (or vis-a-vis).
+>>
+>> There are a few exported ASM functions declared with _GLOBAL() and calling
+>> them from a module will module will likely crash the kernel since any TOC
+>> relative load will yield garbage.
+>>
+>> To fix this use _GLOBAL_TOC() for exported asm functions rather than _GLOBAL()
+>> and some documentation about when to use each.
+>
+> I wonder if we should just change _GLOBAL() to include the global entry
+> point. Persisting with _GLOBAL_TOC() seems like it's just going to be a
+> game of whack-a-mole.
+
+Turns out that doesn't work well at all.
+
+We have *a lot* of places that use _GLOBAL() to make a symbol global,
+but which aren't functions entry points, eg:
+
+  	.align	7
+  _GLOBAL(ret_from_except)
+  	ld	r11,_TRAP(r1)
+  	andi.	r0,r11,1
+  	bne	ret_from_except_lite
+  	REST_NVGPRS(r1)
+  
+  _GLOBAL(ret_from_except_lite)
+  	...
+
+
+Because ret_from_except wants to fallthrough there, we can't have
+_GLOBAL() insert instructions at ret_from_except_lite.
+
+So for now we'll merge a version of this fix.
+
+In the medium term we should change all our asm functions to use
+FUNC_START(), so it's clear they are functions, and then FUNC_START()
+should add the global entry point.
+
+We can then have a hard rule that anything EXPORT_SYMBOL'ed should use
+FUNC_START().
+
+cheers
