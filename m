@@ -1,18 +1,28 @@
-Return-Path: <thuth@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <srs0=8xr5=3n=davemloft.net=davem@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vynWM1mdszDqH6
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Apr 2017 23:58:55 +1000 (AEST)
-From: Thomas Huth <thuth@redhat.com>
-To: Paul Mackerras <paulus@samba.org>,
-	kvm-ppc@vger.kernel.org
-Cc: kvm@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v3] KVM: PPC: Book3S PR: Do not fail emulation with
- mtspr/mfspr for unknown SPRs
-Date: Wed,  5 Apr 2017 15:58:51 +0200
-Message-Id: <1491400731-2492-1-git-send-email-thuth@redhat.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vynbC2mzLzDqGv
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Apr 2017 00:02:15 +1000 (AEST)
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3vynbC1N6yz8w2b
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Apr 2017 00:02:15 +1000 (AEST)
+Received: from shards.monkeyblade.net (unknown [184.105.139.130])
+ by ozlabs.org (Postfix) with ESMTP id 3vynbB6b70z9s8D
+ for <linuxppc-dev@ozlabs.org>; Thu,  6 Apr 2017 00:02:12 +1000 (AEST)
+Date: Wed, 05 Apr 2017 07:01:57 -0700 (PDT)
+Message-Id: <20170405.070157.871721909352646302.davem@davemloft.net>
+To: npiggin@gmail.com
+Cc: torvalds@linux-foundation.org, linux-arch@vger.kernel.org,
+ linux-kernel@vger.kernel.org, anton@samba.org, linuxppc-dev@ozlabs.org
+Subject: Re: [RFC][PATCH] spin loop arch primitives for busy waiting
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20170404130233.1f45115b@roar.ozlabs.ibm.com>
+References: <20170404095001.664718b8@roar.ozlabs.ibm.com>
+ <CA+55aFzdUMZHzXtn9PyhJg7GjYNQ5fy6=LzBNJx==Ab=U=YYjw@mail.gmail.com>
+ <20170404130233.1f45115b@roar.ozlabs.ibm.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,103 +32,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-According to the PowerISA 2.07, mtspr and mfspr should not always
-generate an illegal instruction exception when being used with an
-undefined SPR, but rather treat the instruction as a NOP or inject a
-privilege exception in some cases, too - depending on the SPR number.
-Also turn the printk here into a ratelimited print statement, so that
-the guest can not flood the dmesg log of the host by issueing lots of
-illegal mtspr/mfspr instruction here.
+From: Nicholas Piggin <npiggin@gmail.com>
+Date: Tue, 4 Apr 2017 13:02:33 +1000
 
-Signed-off-by: Thomas Huth <thuth@redhat.com>
----
- v3:
- - Make sure that we do not advance the program counter after we've
-   already changed it due to injecting a program interrupt
+> On Mon, 3 Apr 2017 17:43:05 -0700
+> Linus Torvalds <torvalds@linux-foundation.org> wrote:
+> 
+>> But that depends on architectures having some pattern that we *can*
+>> abstract. Would some "begin/in-loop/end" pattern like the above be
+>> sufficient?
+> 
+> Yes. begin/in/end would be sufficient for powerpc SMT priority, and
+> for x86, and it looks like sparc64 too. So we could do that if you
+> prefer.
 
- v2:
- - Inject illegal instruction program interrupt instead of emulation
-   assist interrupt (according to the last programming note in section
-   6.5.9 of Book III of the PowerISA v2.07)
+Sparc64 has two cases, on older chips we can induce a cpu thread yield
+with a special sequence of instructions, and on newer chips we have
+a bonafide pause instruction.
 
- arch/powerpc/kvm/book3s_emulate.c | 34 ++++++++++++++++++++++++++--------
- arch/powerpc/kvm/emulate.c        |  8 ++++++++
- 2 files changed, 34 insertions(+), 8 deletions(-)
-
-diff --git a/arch/powerpc/kvm/book3s_emulate.c b/arch/powerpc/kvm/book3s_emulate.c
-index 8359752..68d6898 100644
---- a/arch/powerpc/kvm/book3s_emulate.c
-+++ b/arch/powerpc/kvm/book3s_emulate.c
-@@ -503,10 +503,18 @@ int kvmppc_core_emulate_mtspr_pr(struct kvm_vcpu *vcpu, int sprn, ulong spr_val)
- 		break;
- unprivileged:
- 	default:
--		printk(KERN_INFO "KVM: invalid SPR write: %d\n", sprn);
--#ifndef DEBUG_SPR
--		emulated = EMULATE_FAIL;
--#endif
-+		pr_info_ratelimited("KVM: invalid SPR write: %d\n", sprn);
-+		if (sprn & 0x10) {
-+			if (kvmppc_get_msr(vcpu) & MSR_PR) {
-+				kvmppc_core_queue_program(vcpu, SRR1_PROGPRIV);
-+				emulated = EMULATE_AGAIN;
-+			}
-+		} else {
-+			if ((kvmppc_get_msr(vcpu) & MSR_PR) || sprn == 0) {
-+				kvmppc_core_queue_program(vcpu, SRR1_PROGILL);
-+				emulated = EMULATE_AGAIN;
-+			}
-+		}
- 		break;
- 	}
- 
-@@ -648,10 +656,20 @@ int kvmppc_core_emulate_mfspr_pr(struct kvm_vcpu *vcpu, int sprn, ulong *spr_val
- 		break;
- 	default:
- unprivileged:
--		printk(KERN_INFO "KVM: invalid SPR read: %d\n", sprn);
--#ifndef DEBUG_SPR
--		emulated = EMULATE_FAIL;
--#endif
-+		pr_info_ratelimited("KVM: invalid SPR read: %d\n", sprn);
-+		if (sprn & 0x10) {
-+			if (kvmppc_get_msr(vcpu) & MSR_PR) {
-+				kvmppc_core_queue_program(vcpu, SRR1_PROGPRIV);
-+				emulated = EMULATE_AGAIN;
-+			}
-+		} else {
-+			if ((kvmppc_get_msr(vcpu) & MSR_PR) || sprn == 0 ||
-+			    sprn == 4 || sprn == 5 || sprn == 6) {
-+				kvmppc_core_queue_program(vcpu, SRR1_PROGILL);
-+				emulated = EMULATE_AGAIN;
-+			}
-+		}
-+
- 		break;
- 	}
- 
-diff --git a/arch/powerpc/kvm/emulate.c b/arch/powerpc/kvm/emulate.c
-index b379146..c873ffe 100644
---- a/arch/powerpc/kvm/emulate.c
-+++ b/arch/powerpc/kvm/emulate.c
-@@ -259,10 +259,18 @@ int kvmppc_emulate_instruction(struct kvm_run *run, struct kvm_vcpu *vcpu)
- 
- 		case OP_31_XOP_MFSPR:
- 			emulated = kvmppc_emulate_mfspr(vcpu, sprn, rt);
-+			if (emulated == EMULATE_AGAIN) {
-+				emulated = EMULATE_DONE;
-+				advance = 0;
-+			}
- 			break;
- 
- 		case OP_31_XOP_MTSPR:
- 			emulated = kvmppc_emulate_mtspr(vcpu, sprn, rs);
-+			if (emulated == EMULATE_AGAIN) {
-+				emulated = EMULATE_DONE;
-+				advance = 0;
-+			}
- 			break;
- 
- 		case OP_31_XOP_TLBSYNC:
--- 
-1.8.3.1
+So cpu_relax() all by itself pretty much works for us.
