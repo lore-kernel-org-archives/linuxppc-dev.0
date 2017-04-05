@@ -1,50 +1,21 @@
-Return-Path: <maddy@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <paulus@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vyXkQ3R53zDqH6
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Apr 2017 14:22:38 +1000 (AEST)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v354KX2B037151
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Apr 2017 00:22:36 -0400
-Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [125.16.236.3])
- by mx0a-001b2d01.pphosted.com with ESMTP id 29mq0ew2xu-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Apr 2017 00:22:35 -0400
-Received: from localhost
- by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
- Wed, 5 Apr 2017 09:52:32 +0530
-Received: from d28av06.in.ibm.com (d28av06.in.ibm.com [9.184.220.48])
- by d28relay09.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v354MTSF9961696
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Apr 2017 09:52:29 +0530
-Received: from d28av06.in.ibm.com (localhost [127.0.0.1])
- by d28av06.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v354MRu1008317
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Apr 2017 09:52:29 +0530
-Subject: Re: [PATCH v6 01/11] powerpc/powernv: Data structure and macros
- definitions
-To: Daniel Axtens <dja@axtens.net>, mpe@ellerman.id.au
-References: <1491231308-15282-1-git-send-email-maddy@linux.vnet.ibm.com>
- <1491231308-15282-2-git-send-email-maddy@linux.vnet.ibm.com>
- <87h925kkn1.fsf@possimpible.ozlabs.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- ego@linux.vnet.ibm.com, bsingharora@gmail.com,
- benh@kernel.crashing.org, paulus@samba.org, anton@samba.org,
- sukadev@linux.vnet.ibm.com, mikey@neuling.org,
- stewart@linux.vnet.ibm.com, eranian@google.com,
- Hemant Kumar <hemant@linux.vnet.ibm.com>,
- Anju T Sudhakar <anju@linux.vnet.ibm.com>
-From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Date: Wed, 5 Apr 2017 09:52:26 +0530
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vyY5Y5V17zDqH6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Apr 2017 14:39:13 +1000 (AEST)
+Date: Wed, 5 Apr 2017 14:39:10 +1000
+From: Paul Mackerras <paulus@ozlabs.org>
+To: Thomas Huth <thuth@redhat.com>
+Cc: kvm-ppc@vger.kernel.org, kvm@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, Laurent Vivier <lvivier@redhat.com>
+Subject: Re: [PATCH v2] KVM: PPC: Book3S PR: Do not fail emulation with
+ mtspr/mfspr for unknown SPRs
+Message-ID: <20170405043910.GA26143@fergus.ozlabs.ibm.com>
+References: <1491300303-16153-1-git-send-email-thuth@redhat.com>
 MIME-Version: 1.0
-In-Reply-To: <87h925kkn1.fsf@possimpible.ozlabs.ibm.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Message-Id: <204d2af0-aa83-19c3-7a1a-cf1b7215ac4a@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1491300303-16153-1-git-send-email-thuth@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -54,68 +25,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Tue, Apr 04, 2017 at 12:05:03PM +0200, Thomas Huth wrote:
+> According to the PowerISA 2.07, mtspr and mfspr should not always
+> generate an illegal instruction exception when being used with an
+> undefined SPR, but rather treat the instruction as a NOP or inject a
+> privilege exception in some cases, too - depending on the SPR number.
+> Also turn the printk here into a ratelimited print statement, so that
+> the guest can not flood the dmesg log of the host by issueing lots of
+> illegal mtspr/mfspr instruction here.
+> 
+> Signed-off-by: Thomas Huth <thuth@redhat.com>
+> ---
+>  v2:
+>  - Inject illegal instruction program interrupt instead of emulation
+>    assist interrupt (according to the last programming note in section
+>    6.5.9 of Book III of the PowerISA v2.07)
+> 
+>  arch/powerpc/kvm/book3s_emulate.c | 26 ++++++++++++++++++--------
+>  1 file changed, 18 insertions(+), 8 deletions(-)
+> 
+> diff --git a/arch/powerpc/kvm/book3s_emulate.c b/arch/powerpc/kvm/book3s_emulate.c
+> index 8359752..bf4181e 100644
+> --- a/arch/powerpc/kvm/book3s_emulate.c
+> +++ b/arch/powerpc/kvm/book3s_emulate.c
+> @@ -503,10 +503,14 @@ int kvmppc_core_emulate_mtspr_pr(struct kvm_vcpu *vcpu, int sprn, ulong spr_val)
+>  		break;
+>  unprivileged:
+>  	default:
+> -		printk(KERN_INFO "KVM: invalid SPR write: %d\n", sprn);
+> -#ifndef DEBUG_SPR
+> -		emulated = EMULATE_FAIL;
+> -#endif
+> +		pr_info_ratelimited("KVM: invalid SPR write: %d\n", sprn);
+> +		if (sprn & 0x10) {
+> +			if (kvmppc_get_msr(vcpu) & MSR_PR)
+> +				kvmppc_core_queue_program(vcpu, SRR1_PROGPRIV);
+> +		} else {
+> +			if ((kvmppc_get_msr(vcpu) & MSR_PR) || sprn == 0)
+> +				kvmppc_core_queue_program(vcpu, SRR1_PROGILL);
+> +		}
+>  		break;
 
+In the cases where we generate an interrupt, we are now returning
+EMULATE_DONE, which means that kvmppc_emulate_instruction() will
+advance the PC by 4 after this function returns.  Since
+kvmppc_core_queue_program() injects the interrupt straight away, this
+means that the guest will resume execution at 0x704 rather than
+0x700.
 
-On Tuesday 04 April 2017 07:18 AM, Daniel Axtens wrote:
-> Hi,
->
->> +#define IMC_MAX_CHIPS			32
->> +#define IMC_MAX_PMUS			32
->> +#define IMC_MAX_PMU_NAME_LEN		256
-> I've noticed this is used as both the maximum length for event names and
-> event value strings. Would another name suit better?
-
-This is used in the value string length comparison also. So yes, will
-change the name to suit better.
-
-Thanks for review
-Maddy
-
->
->> +
->> +#define IMC_NEST_MAX_PAGES		16
->> +
->> +#define IMC_DTB_COMPAT			"ibm,opal-in-memory-counters"
->> +#define IMC_DTB_NEST_COMPAT		"ibm,imc-counters-nest"
->> +
->> +/*
->> + * Structure to hold per chip specific memory address
->> + * information for nest pmus. Nest Counter data are exported
->> + * in per-chip reserved memory region by the PORE Engine.
->> + */
->> +struct perchip_nest_info {
->> +	u32 chip_id;
->> +	u64 pbase;
->> +	u64 vbase[IMC_NEST_MAX_PAGES];
->> +	u64 size;
->> +};
->> +
->> +/*
->> + * Place holder for nest pmu events and values.
->> + */
->> +struct imc_events {
->> +	char *ev_name;
->> +	char *ev_value;
->> +};
->> +
->> +/*
->> + * Device tree parser code detects IMC pmu support and
->> + * registers new IMC pmus. This structure will
->> + * hold the pmu functions and attrs for each imc pmu and
->> + * will be referenced at the time of pmu registration.
->> + */
->> +struct imc_pmu {
->> +	struct pmu pmu;
->> +	int domain;
->> +	const struct attribute_group *attr_groups[4];
->> +};
->> +
->> +/*
->> + * Domains for IMC PMUs
->> + */
->> +#define IMC_DOMAIN_NEST		1
->> +#define IMC_DOMAIN_UNKNOWN	-1
->> +
->> +#endif /* PPC_POWERNV_IMC_PMU_DEF_H */
->> -- 
->> 2.7.4
+Paul.
