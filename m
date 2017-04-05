@@ -1,25 +1,23 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
- [IPv6:2607:f8b0:400e:c00::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vycCP57ZXzDqH6
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Apr 2017 16:59:29 +1000 (AEST)
-Received: by mail-pf0-x243.google.com with SMTP id 197so769623pfv.0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Apr 2017 23:59:29 -0700 (PDT)
-Message-ID: <1491375562.28260.33.camel@gmail.com>
-Subject: Re: [PATCH V2] powerpc/hugetlb: Add ABI defines for supported
- HugeTLB page sizes
-From: Balbir Singh <bsingharora@gmail.com>
-To: Anshuman Khandual <khandual@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vycRG3wptzDq8M
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Apr 2017 17:09:46 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Balbir Singh <bsingharora@gmail.com>,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
 Cc: aneesh.kumar@linux.vnet.ibm.com
-Date: Wed, 05 Apr 2017 16:59:22 +1000
-In-Reply-To: <20170405051907.18192-1-khandual@linux.vnet.ibm.com>
+Subject: Re: [PATCH V2] powerpc/hugetlb: Add ABI defines for supported HugeTLB
+ page sizes
+In-Reply-To: <1491375562.28260.33.camel@gmail.com>
 References: <f7208305-1aad-bc98-87e3-a8a46404c19e@linux.vnet.ibm.com>
  <20170405051907.18192-1-khandual@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ <1491375562.28260.33.camel@gmail.com>
+Date: Wed, 05 Apr 2017 17:09:43 +1000
+Message-ID: <87pogrtjns.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,45 +27,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2017-04-05 at 10:49 +0530, Anshuman Khandual wrote:
-> This just adds user space exported ABI definitions for 2MB, 16MB, 1GB,
-> 16GB non default huge page sizes to be used with mmap() system call.
-> 
-> Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-> ---
-> These defined values will be used along with MAP_HUGETLB while calling
-> mmap() system call if the desired HugeTLB page size is not the default
-> one. Follows similar definitions present in x86.
-> 
-> arch/x86/include/uapi/asm/mman.h:#define MAP_HUGE_2MB    (21 << MAP_HUGE_SHIFT)
-> arch/x86/include/uapi/asm/mman.h:#define MAP_HUGE_1GB    (30 << MAP_HUGE_SHIFT)
-> 
-> Changes in V2:
-> - Added definitions for 2MB and 1GB HugeTLB pages per Aneesh
+Balbir Singh <bsingharora@gmail.com> writes:
+> On Wed, 2017-04-05 at 10:49 +0530, Anshuman Khandual wrote:
+>> diff --git a/arch/powerpc/include/uapi/asm/mman.h b/arch/powerpc/include/uapi/asm/mman.h
+>> index 03c06ba..3eb788c 100644
+>> --- a/arch/powerpc/include/uapi/asm/mman.h
+>> +++ b/arch/powerpc/include/uapi/asm/mman.h
+>> @@ -29,4 +29,9 @@
+>>  #define MAP_STACK	0x20000		/* give out an address that is best suited for process/thread stacks */
+>>  #define MAP_HUGETLB	0x40000		/* create a huge page mapping */
+>>  
+>> +#define MAP_HUGE_2MB	(21 << MAP_HUGE_SHIFT)	/* 2MB HugeTLB Page */
+>> +#define MAP_HUGE_16MB	(24 << MAP_HUGE_SHIFT)	/* 16MB HugeTLB Page */
+>> +#define MAP_HUGE_1GB	(30 << MAP_HUGE_SHIFT)	/* 1GB HugeTLB Page */
+>> +#define MAP_HUGE_16GB	(34 << MAP_HUGE_SHIFT)	/* 16GB HugeTLB Page */
+>> +
+>>  #endif /* _UAPI_ASM_POWERPC_MMAN_H */
+>
+> We may want to call out what MMU supports what size, so that an error can
+> be interpreted from the header file comments.
 
-I think it also helps if you mention these are used in bits 26:31 (6 bits)
-to encode the size.
+No don't, it can depend on what's configured in Linux and/or hypervisor
+config and/or firmware and so on, so any header file comments are most
+likely just going to be misleading and/or out of date.
 
-> 
->  arch/powerpc/include/uapi/asm/mman.h | 5 +++++
->  1 file changed, 5 insertions(+)
-> 
-> diff --git a/arch/powerpc/include/uapi/asm/mman.h b/arch/powerpc/include/uapi/asm/mman.h
-> index 03c06ba..3eb788c 100644
-> --- a/arch/powerpc/include/uapi/asm/mman.h
-> +++ b/arch/powerpc/include/uapi/asm/mman.h
-> @@ -29,4 +29,9 @@
->  #define MAP_STACK	0x20000		/* give out an address that is best suited for process/thread stacks */
->  #define MAP_HUGETLB	0x40000		/* create a huge page mapping */
->  
-> +#define MAP_HUGE_2MB	(21 << MAP_HUGE_SHIFT)	/* 2MB HugeTLB Page */
-> +#define MAP_HUGE_16MB	(24 << MAP_HUGE_SHIFT)	/* 16MB HugeTLB Page */
-> +#define MAP_HUGE_1GB	(30 << MAP_HUGE_SHIFT)	/* 1GB HugeTLB Page */
-> +#define MAP_HUGE_16GB	(34 << MAP_HUGE_SHIFT)	/* 16GB HugeTLB Page */
-> +
->  #endif /* _UAPI_ASM_POWERPC_MMAN_H */
-
-We may want to call out what MMU supports what size, so that an error can
-be interpreted from the header file comments.
-
-Reviewed-by: Balbir Singh <bsingharora@gmail.com>
+cheers
