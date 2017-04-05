@@ -1,23 +1,22 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Return-Path: <srs0=xpzz=3n=kernel.crashing.org=benh@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vycRG3wptzDq8M
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Apr 2017 17:09:46 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Balbir Singh <bsingharora@gmail.com>,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Cc: aneesh.kumar@linux.vnet.ibm.com
-Subject: Re: [PATCH V2] powerpc/hugetlb: Add ABI defines for supported HugeTLB
- page sizes
-In-Reply-To: <1491375562.28260.33.camel@gmail.com>
-References: <f7208305-1aad-bc98-87e3-a8a46404c19e@linux.vnet.ibm.com>
- <20170405051907.18192-1-khandual@linux.vnet.ibm.com>
- <1491375562.28260.33.camel@gmail.com>
-Date: Wed, 05 Apr 2017 17:09:43 +1000
-Message-ID: <87pogrtjns.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vydSC1sD1zDqGv
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Apr 2017 17:55:39 +1000 (AEST)
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3vydSC1C8qz8t15
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Apr 2017 17:55:39 +1000 (AEST)
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3vydSB3R27z9s84
+ for <linuxppc-dev@ozlabs.org>; Wed,  5 Apr 2017 17:55:38 +1000 (AEST)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH v2 01/10] powerpc: Add more PPC bit conversion macros
+Date: Wed,  5 Apr 2017 17:54:47 +1000
+Message-Id: <20170405075456.13561-1-benh@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,28 +26,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Balbir Singh <bsingharora@gmail.com> writes:
-> On Wed, 2017-04-05 at 10:49 +0530, Anshuman Khandual wrote:
->> diff --git a/arch/powerpc/include/uapi/asm/mman.h b/arch/powerpc/include/uapi/asm/mman.h
->> index 03c06ba..3eb788c 100644
->> --- a/arch/powerpc/include/uapi/asm/mman.h
->> +++ b/arch/powerpc/include/uapi/asm/mman.h
->> @@ -29,4 +29,9 @@
->>  #define MAP_STACK	0x20000		/* give out an address that is best suited for process/thread stacks */
->>  #define MAP_HUGETLB	0x40000		/* create a huge page mapping */
->>  
->> +#define MAP_HUGE_2MB	(21 << MAP_HUGE_SHIFT)	/* 2MB HugeTLB Page */
->> +#define MAP_HUGE_16MB	(24 << MAP_HUGE_SHIFT)	/* 16MB HugeTLB Page */
->> +#define MAP_HUGE_1GB	(30 << MAP_HUGE_SHIFT)	/* 1GB HugeTLB Page */
->> +#define MAP_HUGE_16GB	(34 << MAP_HUGE_SHIFT)	/* 16GB HugeTLB Page */
->> +
->>  #endif /* _UAPI_ASM_POWERPC_MMAN_H */
->
-> We may want to call out what MMU supports what size, so that an error can
-> be interpreted from the header file comments.
+Add 32 and 8 bit variants
 
-No don't, it can depend on what's configured in Linux and/or hypervisor
-config and/or firmware and so on, so any header file comments are most
-likely just going to be misleading and/or out of date.
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
+ arch/powerpc/include/asm/bitops.h | 8 ++++++++
+ 1 file changed, 8 insertions(+)
 
-cheers
+diff --git a/arch/powerpc/include/asm/bitops.h b/arch/powerpc/include/asm/bitops.h
+index bc5fdfd..33a24fd 100644
+--- a/arch/powerpc/include/asm/bitops.h
++++ b/arch/powerpc/include/asm/bitops.h
+@@ -55,6 +55,14 @@
+ #define PPC_BITEXTRACT(bits, ppc_bit, dst_bit)			\
+ 	((((bits) >> PPC_BITLSHIFT(ppc_bit)) & 1) << (dst_bit))
+ 
++#define PPC_BITLSHIFT32(be)	(32 - 1 - (be))
++#define PPC_BIT32(bit)		(1UL << PPC_BITLSHIFT32(bit))
++#define PPC_BITMASK32(bs, be)	((PPC_BIT32(bs) - PPC_BIT32(be))|PPC_BIT32(bs))
++
++#define PPC_BITLSHIFT8(be)	(8 - 1 - (be))
++#define PPC_BIT8(bit)		(1UL << PPC_BITLSHIFT8(bit))
++#define PPC_BITMASK8(bs, be)	((PPC_BIT8(bs) - PPC_BIT8(be))|PPC_BIT8(bs))
++
+ #include <asm/barrier.h>
+ 
+ /* Macro for generating the ***_bits() functions */
+-- 
+2.9.3
