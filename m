@@ -1,38 +1,52 @@
-Return-Path: <robh+dt@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <srs0=rqy9=3n=linux.vnet.ibm.com=mahesh@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vyr9l6Bb5zDqHJ
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Apr 2017 01:58:51 +1000 (AEST)
-Received: from mail.kernel.org (localhost [127.0.0.1])
- by mail.kernel.org (Postfix) with ESMTP id 2369C2014A
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Apr 2017 15:58:49 +0000 (UTC)
-Received: from mail-yw0-f179.google.com (mail-yw0-f179.google.com
- [209.85.161.179])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vyyZk7159zDqGv
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Apr 2017 06:47:26 +1000 (AEST)
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3vyyZk62V3z8sXJ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Apr 2017 06:47:26 +1000 (AEST)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 76999201B4
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Apr 2017 15:58:45 +0000 (UTC)
-Received: by mail-yw0-f179.google.com with SMTP id i203so8140483ywc.3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Apr 2017 08:58:45 -0700 (PDT)
+ by ozlabs.org (Postfix) with ESMTPS id 3vyyZk2qB8z9s8c
+ for <linuxppc-dev@ozlabs.org>; Thu,  6 Apr 2017 06:47:25 +1000 (AEST)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v35Kj20g001849
+ for <linuxppc-dev@ozlabs.org>; Wed, 5 Apr 2017 16:47:23 -0400
+Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [125.16.236.5])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 29n79j1k51-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Wed, 05 Apr 2017 16:47:23 -0400
+Received: from localhost
+ by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
+ Thu, 6 Apr 2017 02:17:20 +0530
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+ by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v35KlHKS11927684
+ for <linuxppc-dev@ozlabs.org>; Thu, 6 Apr 2017 02:17:17 +0530
+Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
+ by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v35KlGmK009853
+ for <linuxppc-dev@ozlabs.org>; Thu, 6 Apr 2017 02:17:17 +0530
+Subject: [PATCH v7 1/3] KVM: PPC: Add new capability to control MCE behaviour
+From: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
+To: gleb@kernel.org, agraf@suse.de, KVM-PPC <kvm-ppc@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@ozlabs.org>,
+ Paul Mackerras <paulus@samba.org>, pbonzini@redhat.com
+Cc: Aravinda Prasad <aravinda@linux.vnet.ibm.com>, KVM <kvm@vger.kernel.org>,
+ david@gibson.dropbear.id.au
+Date: Thu, 06 Apr 2017 02:17:15 +0530
+In-Reply-To: <149142508580.28284.10052904644951828717.stgit@jupiter.in.ibm.com>
+References: <149142508580.28284.10052904644951828717.stgit@jupiter.in.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <20170406003251.533e2845@roar.ozlabs.ibm.com>
-References: <20170405123706.6081-1-npiggin@gmail.com>
- <20170405123706.6081-3-npiggin@gmail.com>
- <CAL_JsqK4zbACwWVb-rsrvBb4hjBCexrqKRKrzSiZrZH5w=bKqQ@mail.gmail.com>
- <20170406003251.533e2845@roar.ozlabs.ibm.com>
-From: Rob Herring <robh+dt@kernel.org>
-Date: Wed, 5 Apr 2017 10:58:23 -0500
-Message-ID: <CAL_JsqLEvjb8S-+-JEa4ALHeCWHiR1A_4ur9kd3pBRJaFYWVKw@mail.gmail.com>
-Subject: Re: [PATCH 2/3] of/fdt: introduce of_scan_flat_dt_subnodes and
- of_get_flat_dt_phandle
-To: Nicholas Piggin <npiggin@gmail.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Frank Rowand <frowand.list@gmail.com>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="utf-8"
+Message-Id: <149142523540.28284.11369785235451616846.stgit@jupiter.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,95 +56,117 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Apr 5, 2017 at 9:32 AM, Nicholas Piggin <npiggin@gmail.com> wrote:
-> On Wed, 5 Apr 2017 08:35:06 -0500
-> Rob Herring <robh+dt@kernel.org> wrote:
->
->> On Wed, Apr 5, 2017 at 7:37 AM, Nicholas Piggin <npiggin@gmail.com> wrote:
->> > Introduce primitives for FDT parsing. These will be used for powerpc
->> > cpufeatures node scanning, which has quite complex structure but should
->> > be processed early.
->>
->> Have you looked at unflattening the FDT earlier?
->
-> Hi, thanks for taking a look. Did you mean to trim the cc list?
+From: Aravinda Prasad <aravinda@linux.vnet.ibm.com>
 
-Ugg, no. I've added everyone back.
+This patch introduces a new KVM capability to control
+how KVM behaves on machine check exception (MCE).
+Without this capability, KVM redirects machine check
+exceptions to guest's 0x200 vector, if the address in
+error belongs to the guest. With this capability KVM
+causes a guest exit with NMI exit reason.
 
-> It may be possible but I'd like to avoid it if we can. There might
-> turn out to be some errata or feature that requires early setup. And
-> the current cpu feature parsing code does it with flat dt.
+The new capability is required to avoid problems if
+a new kernel/KVM is used with an old QEMU for guests
+that don't issue "ibm,nmi-register". As old QEMU does
+not understand the NMI exit type, it treats it as a
+fatal error. However, the guest could have handled
+the machine check error if the exception was delivered
+to guest's 0x200 interrupt vector instead of NMI exit
+in case of old QEMU.
 
-Well, I'd like to avoid expanding usage of flat DT parsing in the
-kernel. But you could just put this function into arch/powerpc and I'd
-never see it, but I like that even less. Mainly, I just wanted to
-raise the point.
+Signed-off-by: Aravinda Prasad <aravinda@linux.vnet.ibm.com>
+Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
+Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+---
+ Documentation/virtual/kvm/api.txt   |   11 +++++++++++
+ arch/powerpc/include/asm/kvm_host.h |    1 +
+ arch/powerpc/kernel/asm-offsets.c   |    1 +
+ arch/powerpc/kvm/powerpc.c          |    9 +++++++++
+ include/uapi/linux/kvm.h            |    1 +
+ 5 files changed, 23 insertions(+)
 
-Your argument works until you need that setup in assembly code, then
-you are in the situation that you need to either handle the setup in
-bootloader/firmware or have an simple way to determine that condition.
-
-Rob
-
->
->> > Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
->> > ---
->> >  drivers/of/fdt.c       | 39 +++++++++++++++++++++++++++++++++++++++
->> >  include/linux/of_fdt.h |  6 ++++++
->> >  2 files changed, 45 insertions(+)
->> >
->> > diff --git a/drivers/of/fdt.c b/drivers/of/fdt.c
->> > index e5ce4b59e162..a45854fe5156 100644
->> > --- a/drivers/of/fdt.c
->> > +++ b/drivers/of/fdt.c
->> > @@ -754,6 +754,37 @@ int __init of_scan_flat_dt(int (*it)(unsigned long node,
->> >  }
->> >
->> >  /**
->> > + * of_scan_flat_dt_subnodes - scan sub-nodes of a node call callback on each.
->> > + * @it: callback function
->> > + * @data: context data pointer
->> > + *
->> > + * This function is used to scan sub-nodes of a node.
->> > + */
->> > +int __init of_scan_flat_dt_subnodes(unsigned long node,
->> > +                                   int (*it)(unsigned long node,
->> > +                                             const char *uname,
->> > +                                             void *data),
->> > +                                   void *data)
->> > +{
->> > +       const void *blob = initial_boot_params;
->> > +       const char *pathp;
->> > +       int offset, rc = 0;
->> > +
->> > +       offset = node;
->> > +        for (offset = fdt_first_subnode(blob, offset);
->> > +             offset >= 0 && !rc;
->> > +             offset = fdt_next_subnode(blob, offset)) {
->>
->> fdt_for_each_subnode()
->
-> Got it.
->
->>
->> > +
->> > +               pathp = fdt_get_name(blob, offset, NULL);
->> > +               if (*pathp == '/')
->> > +                       pathp = kbasename(pathp);
->>
->> Seems a bit odd that you parse the name in this function. Perhaps the
->> caller should do that, or if you want subnodes matching a certain
->> name, then do the matching here. But you didn't copy me on the rest of
->> the series, so I don't know how you are using this.
->
-> Hmm, it was a while since writing that part. I guess I just copied
-> of_scan_flat_dt interface.
->
-> Caller is in this patch:
->
-> https://patchwork.ozlabs.org/patch/747262/
->
-> I'll include you in subsequent post if you prefer.
->
-> Thanks,
-> Nick
+diff --git a/Documentation/virtual/kvm/api.txt b/Documentation/virtual/kvm/api.txt
+index fd10689..1c9d281 100644
+--- a/Documentation/virtual/kvm/api.txt
++++ b/Documentation/virtual/kvm/api.txt
+@@ -4164,6 +4164,17 @@ to take care of that.
+ This capability can be enabled dynamically even if VCPUs were already
+ created and are running.
+ 
++7.9 KVM_CAP_PPC_FWNMI
++
++Architectures: ppc
++Parameters: none
++
++With this capability a machine check exception in the guest address
++space will cause KVM to exit the guest with NMI exit reason. This
++enables QEMU to build error log and branch to guest kernel registered
++machine check handling routine. Without this capability KVM will
++branch to guests' 0x200 interrupt vector.
++
+ 8. Other capabilities.
+ ----------------------
+ 
+diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
+index 7bba8f4..4d02cbc 100644
+--- a/arch/powerpc/include/asm/kvm_host.h
++++ b/arch/powerpc/include/asm/kvm_host.h
+@@ -279,6 +279,7 @@ struct kvm_arch {
+ 	struct dentry *debugfs_dir;
+ 	struct dentry *htab_dentry;
+ 	struct kvm_resize_hpt *resize_hpt; /* protected by kvm->lock */
++	u8 fwnmi_enabled;
+ #endif /* CONFIG_KVM_BOOK3S_HV_POSSIBLE */
+ #ifdef CONFIG_KVM_BOOK3S_PR_POSSIBLE
+ 	struct mutex hpt_mutex;
+diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
+index 4367e7d..0daa47b 100644
+--- a/arch/powerpc/kernel/asm-offsets.c
++++ b/arch/powerpc/kernel/asm-offsets.c
+@@ -481,6 +481,7 @@ int main(void)
+ 	OFFSET(KVM_ENABLED_HCALLS, kvm, arch.enabled_hcalls);
+ 	OFFSET(KVM_VRMA_SLB_V, kvm, arch.vrma_slb_v);
+ 	OFFSET(KVM_RADIX, kvm, arch.radix);
++	OFFSET(KVM_FWNMI, kvm, arch.fwnmi_enabled);
+ 	OFFSET(VCPU_DSISR, kvm_vcpu, arch.shregs.dsisr);
+ 	OFFSET(VCPU_DAR, kvm_vcpu, arch.shregs.dar);
+ 	OFFSET(VCPU_VPA, kvm_vcpu, arch.vpa.pinned_addr);
+diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
+index 95c91a9..b8e8cd4 100644
+--- a/arch/powerpc/kvm/powerpc.c
++++ b/arch/powerpc/kvm/powerpc.c
+@@ -618,6 +618,9 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
+ 		/* Disable this on POWER9 until code handles new HPTE format */
+ 		r = !!hv_enabled && !cpu_has_feature(CPU_FTR_ARCH_300);
+ 		break;
++	case KVM_CAP_PPC_FWNMI:
++		r = 1;
++		break;
+ #endif
+ 	case KVM_CAP_PPC_HTM:
+ 		r = cpu_has_feature(CPU_FTR_TM_COMP) &&
+@@ -1226,6 +1229,12 @@ static int kvm_vcpu_ioctl_enable_cap(struct kvm_vcpu *vcpu,
+ 		break;
+ 	}
+ #endif /* CONFIG_KVM_XICS */
++#ifdef CONFIG_PPC_BOOK3S_64
++	case KVM_CAP_PPC_FWNMI:
++		r = 0;
++		vcpu->kvm->arch.fwnmi_enabled = true;
++		break;
++#endif /* CONFIG_PPC_BOOK3S_64 */
+ 	default:
+ 		r = -EINVAL;
+ 		break;
+diff --git a/include/uapi/linux/kvm.h b/include/uapi/linux/kvm.h
+index f51d508..d5428a7 100644
+--- a/include/uapi/linux/kvm.h
++++ b/include/uapi/linux/kvm.h
+@@ -883,6 +883,7 @@ struct kvm_ppc_resize_hpt {
+ #define KVM_CAP_PPC_MMU_RADIX 134
+ #define KVM_CAP_PPC_MMU_HASH_V3 135
+ #define KVM_CAP_IMMEDIATE_EXIT 136
++#define KVM_CAP_PPC_FWNMI 137
+ 
+ #ifdef KVM_CAP_IRQ_ROUTING
+ 
