@@ -1,50 +1,25 @@
-Return-Path: <maddy@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
+ [IPv6:2607:f8b0:400e:c00::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vybkP1GThzDqHG
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Apr 2017 16:37:48 +1000 (AEST)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v356XVhv022108
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Apr 2017 02:37:37 -0400
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
- by mx0b-001b2d01.pphosted.com with ESMTP id 29mee8xh62-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Apr 2017 02:37:37 -0400
-Received: from localhost
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
- Wed, 5 Apr 2017 16:37:34 +1000
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v356bN7954591504
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Apr 2017 16:37:31 +1000
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v356aw63004683
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Apr 2017 16:36:59 +1000
-Subject: Re: [PATCH v6 02/11] powerpc/powernv: Autoload IMC device driver
- module
-To: Daniel Axtens <dja@axtens.net>, mpe@ellerman.id.au
-References: <1491231308-15282-1-git-send-email-maddy@linux.vnet.ibm.com>
- <1491231308-15282-3-git-send-email-maddy@linux.vnet.ibm.com>
- <87inmlkknf.fsf@possimpible.ozlabs.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- ego@linux.vnet.ibm.com, bsingharora@gmail.com,
- benh@kernel.crashing.org, paulus@samba.org, anton@samba.org,
- sukadev@linux.vnet.ibm.com, mikey@neuling.org,
- stewart@linux.vnet.ibm.com, eranian@google.com,
- Hemant Kumar <hemant@linux.vnet.ibm.com>,
- Anju T Sudhakar <anju@linux.vnet.ibm.com>
-From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Date: Wed, 5 Apr 2017 12:06:31 +0530
-MIME-Version: 1.0
-In-Reply-To: <87inmlkknf.fsf@possimpible.ozlabs.ibm.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Message-Id: <05b9fddb-e6e5-102c-55af-e06cf3ca18f8@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vycCP57ZXzDqH6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Apr 2017 16:59:29 +1000 (AEST)
+Received: by mail-pf0-x243.google.com with SMTP id 197so769623pfv.0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Apr 2017 23:59:29 -0700 (PDT)
+Message-ID: <1491375562.28260.33.camel@gmail.com>
+Subject: Re: [PATCH V2] powerpc/hugetlb: Add ABI defines for supported
+ HugeTLB page sizes
+From: Balbir Singh <bsingharora@gmail.com>
+To: Anshuman Khandual <khandual@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
+Cc: aneesh.kumar@linux.vnet.ibm.com
+Date: Wed, 05 Apr 2017 16:59:22 +1000
+In-Reply-To: <20170405051907.18192-1-khandual@linux.vnet.ibm.com>
+References: <f7208305-1aad-bc98-87e3-a8a46404c19e@linux.vnet.ibm.com>
+ <20170405051907.18192-1-khandual@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -54,96 +29,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Wed, 2017-04-05 at 10:49 +0530, Anshuman Khandual wrote:
+> This just adds user space exported ABI definitions for 2MB, 16MB, 1GB,
+> 16GB non default huge page sizes to be used with mmap() system call.
+> 
+> Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+> ---
+> These defined values will be used along with MAP_HUGETLB while calling
+> mmap() system call if the desired HugeTLB page size is not the default
+> one. Follows similar definitions present in x86.
+> 
+> arch/x86/include/uapi/asm/mman.h:#define MAP_HUGE_2MB    (21 << MAP_HUGE_SHIFT)
+> arch/x86/include/uapi/asm/mman.h:#define MAP_HUGE_1GB    (30 << MAP_HUGE_SHIFT)
+> 
+> Changes in V2:
+> - Added definitions for 2MB and 1GB HugeTLB pages per Aneesh
 
+I think it also helps if you mention these are used in bits 26:31 (6 bits)
+to encode the size.
 
-On Tuesday 04 April 2017 07:18 AM, Daniel Axtens wrote:
-> Hi,
->
->> +		do {
->> +			pages = PAGE_SIZE * i;
->> +			pcni->vbase[i++] = (u64)phys_to_virt(pcni->pbase +
->> +							     pages);
->> +		} while (i < (pcni->size / PAGE_SIZE));
-> I also just noticed that there's no check here against
-> IMC_NEST_MAX_PAGES: should that be inserted? (If for no other reason
-> than to stop every static analysis tool complaining!)
-Yes make sense. Can add that in the next version.
+> 
+>  arch/powerpc/include/uapi/asm/mman.h | 5 +++++
+>  1 file changed, 5 insertions(+)
+> 
+> diff --git a/arch/powerpc/include/uapi/asm/mman.h b/arch/powerpc/include/uapi/asm/mman.h
+> index 03c06ba..3eb788c 100644
+> --- a/arch/powerpc/include/uapi/asm/mman.h
+> +++ b/arch/powerpc/include/uapi/asm/mman.h
+> @@ -29,4 +29,9 @@
+>  #define MAP_STACK	0x20000		/* give out an address that is best suited for process/thread stacks */
+>  #define MAP_HUGETLB	0x40000		/* create a huge page mapping */
+>  
+> +#define MAP_HUGE_2MB	(21 << MAP_HUGE_SHIFT)	/* 2MB HugeTLB Page */
+> +#define MAP_HUGE_16MB	(24 << MAP_HUGE_SHIFT)	/* 16MB HugeTLB Page */
+> +#define MAP_HUGE_1GB	(30 << MAP_HUGE_SHIFT)	/* 1GB HugeTLB Page */
+> +#define MAP_HUGE_16GB	(34 << MAP_HUGE_SHIFT)	/* 16GB HugeTLB Page */
+> +
+>  #endif /* _UAPI_ASM_POWERPC_MMAN_H */
 
-Thanks for review
-Maddy
+We may want to call out what MMU supports what size, so that an error can
+be interpreted from the header file comments.
 
-
-> Daniel
->
->> +	}
->> +
->> +	return 0;
->> +err:
->> +	return -ENODEV;
->> +}
->> +
->> +static const struct of_device_id opal_imc_match[] = {
->> +	{ .compatible = IMC_DTB_COMPAT },
->> +	{},
->> +};
->> +
->> +static struct platform_driver opal_imc_driver = {
->> +	.driver = {
->> +		.name = "opal-imc-counters",
->> +		.of_match_table = opal_imc_match,
->> +	},
->> +	.probe = opal_imc_counters_probe,
->> +};
->> +
->> +MODULE_DEVICE_TABLE(of, opal_imc_match);
->> +module_platform_driver(opal_imc_driver);
->> +MODULE_DESCRIPTION("PowerNV OPAL IMC driver");
->> +MODULE_LICENSE("GPL");
->> diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
->> index e0f856bfbfe8..85ea1296f030 100644
->> --- a/arch/powerpc/platforms/powernv/opal.c
->> +++ b/arch/powerpc/platforms/powernv/opal.c
->> @@ -14,6 +14,7 @@
->>   #include <linux/printk.h>
->>   #include <linux/types.h>
->>   #include <linux/of.h>
->> +#include <linux/of_address.h>
->>   #include <linux/of_fdt.h>
->>   #include <linux/of_platform.h>
->>   #include <linux/interrupt.h>
->> @@ -30,6 +31,7 @@
->>   #include <asm/opal.h>
->>   #include <asm/firmware.h>
->>   #include <asm/mce.h>
->> +#include <asm/imc-pmu.h>
->>   
->>   #include "powernv.h"
->>   
->> @@ -631,6 +633,15 @@ static void opal_pdev_init(const char *compatible)
->>   		of_platform_device_create(np, NULL, NULL);
->>   }
->>   
->> +static void opal_imc_init_dev(void)
->> +{
->> +	struct device_node *np;
->> +
->> +	np = of_find_compatible_node(NULL, NULL, IMC_DTB_COMPAT);
->> +	if (np)
->> +		of_platform_device_create(np, NULL, NULL);
->> +}
->> +
->>   static int kopald(void *unused)
->>   {
->>   	unsigned long timeout = msecs_to_jiffies(opal_heartbeat) + 1;
->> @@ -704,6 +715,9 @@ static int __init opal_init(void)
->>   	/* Setup a heatbeat thread if requested by OPAL */
->>   	opal_init_heartbeat();
->>   
->> +	/* Detect IMC pmu counters support and create PMUs */
->> +	opal_imc_init_dev();
->> +
->>   	/* Create leds platform devices */
->>   	leds = of_find_node_by_path("/ibm,opal/leds");
->>   	if (leds) {
->> -- 
->> 2.7.4
+Reviewed-by: Balbir Singh <bsingharora@gmail.com>
