@@ -1,28 +1,36 @@
-Return-Path: <srs0=8xr5=3n=davemloft.net=davem@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vynbC2mzLzDqGv
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Apr 2017 00:02:15 +1000 (AEST)
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3vynbC1N6yz8w2b
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Apr 2017 00:02:15 +1000 (AEST)
-Received: from shards.monkeyblade.net (unknown [184.105.139.130])
- by ozlabs.org (Postfix) with ESMTP id 3vynbB6b70z9s8D
- for <linuxppc-dev@ozlabs.org>; Thu,  6 Apr 2017 00:02:12 +1000 (AEST)
-Date: Wed, 05 Apr 2017 07:01:57 -0700 (PDT)
-Message-Id: <20170405.070157.871721909352646302.davem@davemloft.net>
-To: npiggin@gmail.com
-Cc: torvalds@linux-foundation.org, linux-arch@vger.kernel.org,
- linux-kernel@vger.kernel.org, anton@samba.org, linuxppc-dev@ozlabs.org
-Subject: Re: [RFC][PATCH] spin loop arch primitives for busy waiting
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20170404130233.1f45115b@roar.ozlabs.ibm.com>
-References: <20170404095001.664718b8@roar.ozlabs.ibm.com>
- <CA+55aFzdUMZHzXtn9PyhJg7GjYNQ5fy6=LzBNJx==Ab=U=YYjw@mail.gmail.com>
- <20170404130233.1f45115b@roar.ozlabs.ibm.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vyqNp0t6RzDqHH
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Apr 2017 01:23:21 +1000 (AEST)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v35FJH11007230
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Apr 2017 11:23:17 -0400
+Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 29n22fvesr-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Apr 2017 11:23:17 -0400
+Received: from localhost
+ by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Wed, 5 Apr 2017 11:23:16 -0400
+Subject: Re: [RFC PATCH 1/7] mm/hugetlb/migration: Use set_huge_pte_at instead
+ of set_pte_at
+To: Anshuman Khandual <khandual@linux.vnet.ibm.com>, benh@kernel.crashing.org,
+ paulus@samba.org, mpe@ellerman.id.au
+References: <1491314675-15787-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <9153677a-555a-dcee-b10b-ee684c66984e@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Date: Wed, 5 Apr 2017 20:53:08 +0530
+MIME-Version: 1.0
+In-Reply-To: <9153677a-555a-dcee-b10b-ee684c66984e@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Message-Id: <343c6f89-486a-af0c-15d5-a60abb36c24c@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,22 +40,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Nicholas Piggin <npiggin@gmail.com>
-Date: Tue, 4 Apr 2017 13:02:33 +1000
 
-> On Mon, 3 Apr 2017 17:43:05 -0700
-> Linus Torvalds <torvalds@linux-foundation.org> wrote:
-> 
->> But that depends on architectures having some pattern that we *can*
->> abstract. Would some "begin/in-loop/end" pattern like the above be
->> sufficient?
-> 
-> Yes. begin/in/end would be sufficient for powerpc SMT priority, and
-> for x86, and it looks like sparc64 too. So we could do that if you
-> prefer.
 
-Sparc64 has two cases, on older chips we can induce a cpu thread yield
-with a special sequence of instructions, and on newer chips we have
-a bonafide pause instruction.
+On Wednesday 05 April 2017 05:21 PM, Anshuman Khandual wrote:
+> On 04/04/2017 07:34 PM, Aneesh Kumar K.V wrote:
+>> The right interface to use to set a hugetlb pte entry is set_huge_pte_at. Use
+>> that instead of set_pte_at.
+>
+> This is a generic change, should not mm list be added for this patch.
+>
 
-So cpu_relax() all by itself pretty much works for us.
+
+yes to all the patches. Look for my reply to patch 1 where I mentioned 
+the plan for linux-mm
+
+
+https://lists.ozlabs.org/pipermail/linuxppc-dev/2017-April/156225.html
+
+-aneesh
