@@ -1,50 +1,48 @@
-Return-Path: <maddy@linux.vnet.ibm.com>
+Return-Path: <clombard@linux.vnet.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vylXw08LvzDqGv
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Apr 2017 22:30:07 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vylfB2kvwzDqH6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Apr 2017 22:34:42 +1000 (AEST)
 Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v35CSjql100659
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Apr 2017 08:29:59 -0400
-Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [125.16.236.6])
- by mx0a-001b2d01.pphosted.com with ESMTP id 29mxy05s0f-1
+ v35CSik2100620
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Apr 2017 08:34:40 -0400
+Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 29mxy060sg-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Apr 2017 08:29:59 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Apr 2017 08:34:40 -0400
 Received: from localhost
- by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
- Wed, 5 Apr 2017 17:59:55 +0530
-Received: from d28av07.in.ibm.com (d28av07.in.ibm.com [9.184.220.146])
- by d28relay10.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v35CSYeN17629362
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Apr 2017 17:58:34 +0530
-Received: from d28av07.in.ibm.com (localhost [127.0.0.1])
- by d28av07.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v35CTpB5010397
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Apr 2017 17:59:53 +0530
-Subject: Re: [PATCH v6 03/11] powerpc/powernv: Detect supported IMC units and
- its events
-To: Daniel Axtens <dja@axtens.net>, mpe@ellerman.id.au
-References: <1491231308-15282-1-git-send-email-maddy@linux.vnet.ibm.com>
- <1491231308-15282-4-git-send-email-maddy@linux.vnet.ibm.com>
- <87mvbxkkym.fsf@possimpible.ozlabs.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- ego@linux.vnet.ibm.com, bsingharora@gmail.com,
- benh@kernel.crashing.org, paulus@samba.org, anton@samba.org,
- sukadev@linux.vnet.ibm.com, mikey@neuling.org,
- stewart@linux.vnet.ibm.com, eranian@google.com,
- Hemant Kumar <hemant@linux.vnet.ibm.com>,
- Anju T Sudhakar <anju@linux.vnet.ibm.com>
-From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Date: Wed, 5 Apr 2017 17:59:51 +0530
+ for <linuxppc-dev@lists.ozlabs.org> from <clombard@linux.vnet.ibm.com>;
+ Wed, 5 Apr 2017 13:34:37 +0100
+Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
+ [9.149.105.61])
+ by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v35CYYRT39846014
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Apr 2017 12:34:34 GMT
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 28C5D11C066
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Apr 2017 13:33:57 +0100 (BST)
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id BC07811C052
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Apr 2017 13:33:56 +0100 (BST)
+Received: from [9.164.133.52] (unknown [9.164.133.52])
+ by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTP
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Apr 2017 13:33:56 +0100 (BST)
+Subject: Re: [PATCH V3 4/7] cxl: Update implementation service layer
+To: linuxppc-dev@lists.ozlabs.org
+References: <1490714052-18902-1-git-send-email-clombard@linux.vnet.ibm.com>
+ <1490714052-18902-5-git-send-email-clombard@linux.vnet.ibm.com>
+ <6e5dcbc4-a65f-3719-c04e-c41e190c5209@linux.vnet.ibm.com>
+From: christophe lombard <clombard@linux.vnet.ibm.com>
+Date: Wed, 5 Apr 2017 14:34:32 +0200
 MIME-Version: 1.0
-In-Reply-To: <87mvbxkkym.fsf@possimpible.ozlabs.ibm.com>
+In-Reply-To: <6e5dcbc4-a65f-3719-c04e-c41e190c5209@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=windows-1252; format=flowed
-Message-Id: <d56eabb4-8e96-e4d9-c2c1-b031b9826049@linux.vnet.ibm.com>
+Message-Id: <88bf3063-8131-59bf-5fce-beb84573bbc7@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -54,542 +52,606 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-
-On Tuesday 04 April 2017 07:11 AM, Daniel Axtens wrote:
-> Madhavan Srinivasan <maddy@linux.vnet.ibm.com> writes:
+Le 03/04/2017 à 14:39, Frederic Barrat a écrit :
 >
->> From: Hemant Kumar <hemant@linux.vnet.ibm.com>
->>
->> Parse device tree to detect IMC units. Traverse through each IMC unit
->> node to find supported events and corresponding unit/scale files (if any).
->>
->> Here is the DTS file for reference:
->>
->> 	https://github.com/open-power/ima-catalog/blob/master/81E00612.4E0100.dts
->>
->> The device tree for IMC counters starts at the node "imc-counters".
->> This node contains all the IMC PMU nodes and event nodes
->> for these IMC PMUs. The PMU nodes have an "events" property which has a
->> phandle value for the actual events node. The events are separated from
->> the PMU nodes to abstract out the common events. For example, PMU node
->> "mcs0", "mcs1" etc. will contain a pointer to "nest-mcs-events" since,
->> the events are common between these PMUs. These events have a different
->> prefix based on their relation to different PMUs, and hence, the PMU
->> nodes themselves contain an "events-prefix" property. The value for this
->> property concatenated to the event name, forms the actual event
->> name. Also, the PMU have a "reg" field as the base offset for the events
->> which belong to this PMU. This "reg" field is added to an event in the
->> "events" node, which gives us the location of the counter data. Kernel
->> code uses this offset as event configuration value.
-> This is probably because I haven't looked at this area recently, but
-> what do you mean by 'event configuration value'? If I understand
-> correctly, you're saying something like "kernel code stores this
-> calculated location in the event configuration data" - is that about
-> right?
-Yes. Thats right. So incase of IMC, event are stored in the
-memory and each event has specific offset  in the memory.
-We are using this  event offset as the "event configuration value".
-
-Here is the example, consider event
-/sys/devices/nest_mcs0/events# cat PM_MCS0_DOWN_128B_DATA_XFER
-event=0x198
-#
-
 >
-> Apologies if this is a dumb question.
->
->> Device tree parser code also looks for scale/unit property in the event
->> node and passes on the value as an event attr for perf interface to use
->> in the post processing by the perf tool. Some PMUs may have common scale
->> and unit properties which implies that all events supported by this PMU
->> inherit the scale and unit properties of the PMU itself. For those
->> events, we need to set the common unit and scale values.
+> Le 28/03/2017 à 17:14, Christophe Lombard a écrit :
+>> The service layer API (in cxl.h) lists some low-level functions whose
+>> implementation is different on PSL8, PSL9 and XSL:
+>> - Init implementation for the adapter and the afu.
+>> - Invalidate TLB/SLB.
+>> - Attach process for dedicated/directed models.
+>> - Handle psl interrupts.
+>> - Debug registers for the adapter and the afu.
+>> - Traces.
+>> Each environment implements its own functions, and the common code uses
+>> them through function pointers, defined in cxl_service_layer_ops.
 >>
->> For failure to initialize any unit or any event, disable that unit and
->> continue setting up the rest of them.
->>
->> Signed-off-by: Hemant Kumar <hemant@linux.vnet.ibm.com>
->> Signed-off-by: Anju T Sudhakar <anju@linux.vnet.ibm.com>
->> Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+>> Signed-off-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
 >> ---
->>   arch/powerpc/platforms/powernv/opal-imc.c | 386 ++++++++++++++++++++++++++++++
->>   1 file changed, 386 insertions(+)
+>>  drivers/misc/cxl/cxl.h     | 40 ++++++++++++++++++++++++-----------
+>>  drivers/misc/cxl/debugfs.c | 16 +++++++-------
+>>  drivers/misc/cxl/guest.c   |  2 +-
+>>  drivers/misc/cxl/irq.c     |  2 +-
+>>  drivers/misc/cxl/native.c  | 52 
+>> ++++++++++++++++++++++++++++------------------
+>>  drivers/misc/cxl/pci.c     | 47 
+>> ++++++++++++++++++++++++++++-------------
+>>  6 files changed, 102 insertions(+), 57 deletions(-)
 >>
->> diff --git a/arch/powerpc/platforms/powernv/opal-imc.c b/arch/powerpc/platforms/powernv/opal-imc.c
->> index c476d596c6a8..ba0203e669c0 100644
->> --- a/arch/powerpc/platforms/powernv/opal-imc.c
->> +++ b/arch/powerpc/platforms/powernv/opal-imc.c
->> @@ -33,6 +33,388 @@
->>   #include <asm/imc-pmu.h>
->>   
->>   struct perchip_nest_info nest_perchip_info[IMC_MAX_CHIPS];
->> +struct imc_pmu *per_nest_pmu_arr[IMC_MAX_PMUS];
+>> diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
+>> index d8282e4..65d9fb6 100644
+>> --- a/drivers/misc/cxl/cxl.h
+>> +++ b/drivers/misc/cxl/cxl.h
+>> @@ -553,13 +553,23 @@ struct cxl_context {
+>>      struct mm_struct *mm;
+>>  };
+>>
+>> +struct cxl_irq_info;
 >> +
->> +static int imc_event_info(char *name, struct imc_events *events)
-> This seems to be an allocation/init function: should that be reflected
-> in the name?
+>>  struct cxl_service_layer_ops {
+>>      int (*adapter_regs_init)(struct cxl *adapter, struct pci_dev *dev);
+>> +    int (*invalidate_all)(struct cxl *adapter);
+>>      int (*afu_regs_init)(struct cxl_afu *afu);
+>> +    int (*sanitise_afu_regs)(struct cxl_afu *afu);
+>>      int (*register_serr_irq)(struct cxl_afu *afu);
+>>      void (*release_serr_irq)(struct cxl_afu *afu);
+>> -    void (*debugfs_add_adapter_sl_regs)(struct cxl *adapter, struct 
+>> dentry *dir);
+>> -    void (*debugfs_add_afu_sl_regs)(struct cxl_afu *afu, struct 
+>> dentry *dir);
+>> +    irqreturn_t (*handle_interrupt)(int irq, struct cxl_context 
+>> *ctx, struct cxl_irq_info *irq_info);
+>> +    irqreturn_t (*fail_irq)(struct cxl_afu *afu, struct cxl_irq_info 
+>> *irq_info);
+>> +    int (*activate_dedicated_process)(struct cxl_afu *afu);
+>> +    int (*attach_afu_directed)(struct cxl_context *ctx, u64 wed, u64 
+>> amr);
+>> +    int (*attach_dedicated_process)(struct cxl_context *ctx, u64 
+>> wed, u64 amr);
+>> +    void (*update_dedicated_ivtes)(struct cxl_context *ctx);
+>> +    void (*debugfs_add_adapter_regs)(struct cxl *adapter, struct 
+>> dentry *dir);
+>> +    void (*debugfs_add_afu_regs)(struct cxl_afu *afu, struct dentry 
+>> *dir);
 >
->> +{
->> +	char *buf;
+>
+> Some of those callbacks should be defined for the xsl_ops structure 
+> (Mellanox Cx4). We don't really support CX4 any more, we'll probably 
+> remove the code once CX5 is upstream, but for the time being, we 
+> should keep it around.
+>
+>
+>
+
+Good point. Some callbacks are missing.
+>
+>>      void (*psl_irq_dump_registers)(struct cxl_context *ctx);
+>>      void (*err_irq_dump_registers)(struct cxl *adapter);
+>>      void (*debugfs_stop_trace)(struct cxl *adapter);
+>> @@ -803,6 +813,11 @@ int afu_register_irqs(struct cxl_context *ctx, 
+>> u32 count);
+>>  void afu_release_irqs(struct cxl_context *ctx, void *cookie);
+>>  void afu_irq_name_free(struct cxl_context *ctx);
+>>
+>> +int cxl_attach_afu_directed_psl(struct cxl_context *ctx, u64 wed, 
+>> u64 amr);
+>> +int cxl_activate_dedicated_process_psl(struct cxl_afu *afu);
+>> +int cxl_attach_dedicated_process_psl(struct cxl_context *ctx, u64 
+>> wed, u64 amr);
+>> +void cxl_update_dedicated_ivtes_psl(struct cxl_context *ctx);
 >> +
->> +	/* memory for content */
->> +	buf = kzalloc(IMC_MAX_PMU_NAME_LEN, GFP_KERNEL);
->> +	if (!buf)
->> +		return -ENOMEM;
->> +
->> +	events->ev_name = name;
-> We trust the name will never become a dangling pointer? We don't need to
-> duplicate it?
-Yes. Event names are from the DTS and can add a check
-for it. Secondly we allocate memory for this in imc_events_node_parser()
-and duplicate it.
+>>  #ifdef CONFIG_DEBUG_FS
+>>
+>>  int cxl_debugfs_init(void);
+>> @@ -811,10 +826,10 @@ int cxl_debugfs_adapter_add(struct cxl *adapter);
+>>  void cxl_debugfs_adapter_remove(struct cxl *adapter);
+>>  int cxl_debugfs_afu_add(struct cxl_afu *afu);
+>>  void cxl_debugfs_afu_remove(struct cxl_afu *afu);
+>> -void cxl_stop_trace(struct cxl *cxl);
+>> -void cxl_debugfs_add_adapter_psl_regs(struct cxl *adapter, struct 
+>> dentry *dir);
+>> -void cxl_debugfs_add_adapter_xsl_regs(struct cxl *adapter, struct 
+>> dentry *dir);
+>> -void cxl_debugfs_add_afu_psl_regs(struct cxl_afu *afu, struct dentry 
+>> *dir);
+>> +void cxl_stop_trace_psl(struct cxl *cxl);
+>> +void cxl_debugfs_add_adapter_regs_psl(struct cxl *adapter, struct 
+>> dentry *dir);
+>> +void cxl_debugfs_add_adapter_regs_xsl(struct cxl *adapter, struct 
+>> dentry *dir);
+>> +void cxl_debugfs_add_afu_regs_psl(struct cxl_afu *afu, struct dentry 
+>> *dir);
+>>
+>>  #else /* CONFIG_DEBUG_FS */
+>>
+>> @@ -849,17 +864,17 @@ static inline void cxl_stop_trace(struct cxl *cxl)
+>>  {
+>>  }
+>>
+>> -static inline void cxl_debugfs_add_adapter_psl_regs(struct cxl 
+>> *adapter,
+>> +static inline void cxl_debugfs_add_adapter_regs_psl(struct cxl 
+>> *adapter,
+>>                              struct dentry *dir)
+>>  {
+>>  }
+>>
+>> -static inline void cxl_debugfs_add_adapter_xsl_regs(struct cxl 
+>> *adapter,
+>> +static inline void cxl_debugfs_add_adapter_regs_xsl(struct cxl 
+>> *adapter,
+>>                              struct dentry *dir)
+>>  {
+>>  }
+>>
+>> -static inline void cxl_debugfs_add_afu_psl_regs(struct cxl_afu *afu, 
+>> struct dentry *dir)
+>> +static inline void cxl_debugfs_add_afu_regs_psl(struct cxl_afu *afu, 
+>> struct dentry *dir)
+>>  {
+>>  }
+>>
+>> @@ -917,19 +932,20 @@ struct cxl_irq_info {
+>>  };
+>>
+>>  void cxl_assign_psn_space(struct cxl_context *ctx);
+>> -irqreturn_t cxl_irq(int irq, struct cxl_context *ctx, struct 
+>> cxl_irq_info *irq_info);
+>> +int cxl_invalidate_all_psl(struct cxl *adapter);
+>> +irqreturn_t cxl_irq_psl(int irq, struct cxl_context *ctx, struct 
+>> cxl_irq_info *irq_info);
+>> +irqreturn_t cxl_fail_irq_psl(struct cxl_afu *afu, struct 
+>> cxl_irq_info *irq_info);
+>>  int cxl_register_one_irq(struct cxl *adapter, irq_handler_t handler,
+>>              void *cookie, irq_hw_number_t *dest_hwirq,
+>>              unsigned int *dest_virq, const char *name);
+>>
+>>  int cxl_check_error(struct cxl_afu *afu);
+>>  int cxl_afu_slbia(struct cxl_afu *afu);
+>> -int cxl_tlb_slb_invalidate(struct cxl *adapter);
+>>  int cxl_data_cache_flush(struct cxl *adapter);
+>>  int cxl_afu_disable(struct cxl_afu *afu);
+>>  int cxl_psl_purge(struct cxl_afu *afu);
+>>
+>> -void cxl_native_psl_irq_dump_regs(struct cxl_context *ctx);
+>> +void cxl_native_irq_dump_regs_psl(struct cxl_context *ctx);
+>>  void cxl_native_err_irq_dump_regs(struct cxl *adapter);
+>>  int cxl_pci_vphb_add(struct cxl_afu *afu);
+>>  void cxl_pci_vphb_remove(struct cxl_afu *afu);
+>> diff --git a/drivers/misc/cxl/debugfs.c b/drivers/misc/cxl/debugfs.c
+>> index 9c06ac8..4848ebf 100644
+>> --- a/drivers/misc/cxl/debugfs.c
+>> +++ b/drivers/misc/cxl/debugfs.c
+>> @@ -15,7 +15,7 @@
+>>
+>>  static struct dentry *cxl_debugfs;
+>>
+>> -void cxl_stop_trace(struct cxl *adapter)
+>> +void cxl_stop_trace_psl(struct cxl *adapter)
+>>  {
+>>      int slice;
+>>
+>> @@ -53,7 +53,7 @@ static struct dentry *debugfs_create_io_x64(const 
+>> char *name, umode_t mode,
+>>                        (void __force *)value, &fops_io_x64);
+>>  }
+>>
+>> -void cxl_debugfs_add_adapter_psl_regs(struct cxl *adapter, struct 
+>> dentry *dir)
+>> +void cxl_debugfs_add_adapter_regs_psl(struct cxl *adapter, struct 
+>> dentry *dir)
+>>  {
+>>      debugfs_create_io_x64("fir1", S_IRUSR, dir, 
+>> _cxl_p1_addr(adapter, CXL_PSL_FIR1));
+>>      debugfs_create_io_x64("fir2", S_IRUSR, dir, 
+>> _cxl_p1_addr(adapter, CXL_PSL_FIR2));
+>> @@ -61,7 +61,7 @@ void cxl_debugfs_add_adapter_psl_regs(struct cxl 
+>> *adapter, struct dentry *dir)
+>>      debugfs_create_io_x64("trace", S_IRUSR | S_IWUSR, dir, 
+>> _cxl_p1_addr(adapter, CXL_PSL_TRACE));
+>>  }
+>>
+>> -void cxl_debugfs_add_adapter_xsl_regs(struct cxl *adapter, struct 
+>> dentry *dir)
+>> +void cxl_debugfs_add_adapter_regs_xsl(struct cxl *adapter, struct 
+>> dentry *dir)
+>>  {
+>>      debugfs_create_io_x64("fec", S_IRUSR, dir, _cxl_p1_addr(adapter, 
+>> CXL_XSL_FEC));
+>>  }
+>> @@ -82,8 +82,8 @@ int cxl_debugfs_adapter_add(struct cxl *adapter)
+>>
+>>      debugfs_create_io_x64("err_ivte", S_IRUSR, dir, 
+>> _cxl_p1_addr(adapter, CXL_PSL_ErrIVTE));
+>>
+>> -    if (adapter->native->sl_ops->debugfs_add_adapter_sl_regs)
+>> - adapter->native->sl_ops->debugfs_add_adapter_sl_regs(adapter, dir);
+>> +    if (adapter->native->sl_ops->debugfs_add_adapter_regs)
+>> + adapter->native->sl_ops->debugfs_add_adapter_regs(adapter, dir);
+>>      return 0;
+>>  }
+>>
+>> @@ -92,7 +92,7 @@ void cxl_debugfs_adapter_remove(struct cxl *adapter)
+>>      debugfs_remove_recursive(adapter->debugfs);
+>>  }
+>>
+>> -void cxl_debugfs_add_afu_psl_regs(struct cxl_afu *afu, struct dentry 
+>> *dir)
+>> +void cxl_debugfs_add_afu_regs_psl(struct cxl_afu *afu, struct dentry 
+>> *dir)
+>>  {
+>>      debugfs_create_io_x64("fir", S_IRUSR, dir, _cxl_p1n_addr(afu, 
+>> CXL_PSL_FIR_SLICE_An));
+>>      debugfs_create_io_x64("serr", S_IRUSR, dir, _cxl_p1n_addr(afu, 
+>> CXL_PSL_SERR_An));
+>> @@ -121,8 +121,8 @@ int cxl_debugfs_afu_add(struct cxl_afu *afu)
+>>      debugfs_create_io_x64("sstp1",      S_IRUSR, dir, 
+>> _cxl_p2n_addr(afu, CXL_SSTP1_An));
+>>      debugfs_create_io_x64("err_status", S_IRUSR, dir, 
+>> _cxl_p2n_addr(afu, CXL_PSL_ErrStat_An));
+>>
+>> -    if (afu->adapter->native->sl_ops->debugfs_add_afu_sl_regs)
+>> - afu->adapter->native->sl_ops->debugfs_add_afu_sl_regs(afu, dir);
+>> +    if (afu->adapter->native->sl_ops->debugfs_add_afu_regs)
+>> + afu->adapter->native->sl_ops->debugfs_add_afu_regs(afu, dir);
+>>
+>>      return 0;
+>>  }
+>> diff --git a/drivers/misc/cxl/guest.c b/drivers/misc/cxl/guest.c
+>> index e04bc4d..f6ba698 100644
+>> --- a/drivers/misc/cxl/guest.c
+>> +++ b/drivers/misc/cxl/guest.c
+>> @@ -169,7 +169,7 @@ static irqreturn_t guest_psl_irq(int irq, void 
+>> *data)
+>>          return IRQ_HANDLED;
+>>      }
+>>
+>> -    rc = cxl_irq(irq, ctx, &irq_info);
+>> +    rc = cxl_irq_psl(irq, ctx, &irq_info);
+>>      return rc;
+>>  }
+>>
+>> diff --git a/drivers/misc/cxl/irq.c b/drivers/misc/cxl/irq.c
+>> index 1a402bb..2fa119e 100644
+>> --- a/drivers/misc/cxl/irq.c
+>> +++ b/drivers/misc/cxl/irq.c
+>> @@ -34,7 +34,7 @@ static irqreturn_t schedule_cxl_fault(struct 
+>> cxl_context *ctx, u64 dsisr, u64 da
+>>      return IRQ_HANDLED;
+>>  }
+>>
+>> -irqreturn_t cxl_irq(int irq, struct cxl_context *ctx, struct 
+>> cxl_irq_info *irq_info)
+>> +irqreturn_t cxl_irq_psl(int irq, struct cxl_context *ctx, struct 
+>> cxl_irq_info *irq_info)
+>>  {
+>>      u64 dsisr, dar;
+>>
+>> diff --git a/drivers/misc/cxl/native.c b/drivers/misc/cxl/native.c
+>> index 7257e8b..c5048e8 100644
+>> --- a/drivers/misc/cxl/native.c
+>> +++ b/drivers/misc/cxl/native.c
+>> @@ -258,7 +258,7 @@ void cxl_release_spa(struct cxl_afu *afu)
+>>      }
+>>  }
+>>
+>> -int cxl_tlb_slb_invalidate(struct cxl *adapter)
+>> +int cxl_invalidate_all_psl(struct cxl *adapter)
+>>  {
+>>      unsigned long timeout = jiffies + (HZ * CXL_TIMEOUT);
+>>
+>> @@ -578,7 +578,7 @@ static void update_ivtes_directed(struct 
+>> cxl_context *ctx)
+>>          WARN_ON(add_process_element(ctx));
+>>  }
+>>
+>> -static int attach_afu_directed(struct cxl_context *ctx, u64 wed, u64 
+>> amr)
+>> +int cxl_attach_afu_directed_psl(struct cxl_context *ctx, u64 wed, 
+>> u64 amr)
+>>  {
+>>      u32 pid;
+>>      int result;
+>> @@ -671,7 +671,7 @@ static int deactivate_afu_directed(struct cxl_afu 
+>> *afu)
+>>      return 0;
+>>  }
+>>
+>> -static int activate_dedicated_process(struct cxl_afu *afu)
+>> +int cxl_activate_dedicated_process_psl(struct cxl_afu *afu)
+>>  {
+>>      dev_info(&afu->dev, "Activating dedicated process mode\n");
+>>
+>> @@ -694,7 +694,7 @@ static int activate_dedicated_process(struct 
+>> cxl_afu *afu)
+>>      return cxl_chardev_d_afu_add(afu);
+>>  }
+>>
+>> -static void update_ivtes_dedicated(struct cxl_context *ctx)
+>> +void cxl_update_dedicated_ivtes_psl(struct cxl_context *ctx)
+>>  {
+>>      struct cxl_afu *afu = ctx->afu;
+>>
+>> @@ -710,7 +710,7 @@ static void update_ivtes_dedicated(struct 
+>> cxl_context *ctx)
+>>              ((u64)ctx->irqs.range[3] & 0xffff));
+>>  }
+>>
+>> -static int attach_dedicated(struct cxl_context *ctx, u64 wed, u64 amr)
+>> +int cxl_attach_dedicated_process_psl(struct cxl_context *ctx, u64 
+>> wed, u64 amr)
+>>  {
+>>      struct cxl_afu *afu = ctx->afu;
+>>      u64 pid;
+>> @@ -728,7 +728,8 @@ static int attach_dedicated(struct cxl_context 
+>> *ctx, u64 wed, u64 amr)
+>>
+>>      cxl_prefault(ctx, wed);
+>>
+>> -    update_ivtes_dedicated(ctx);
+>> +    if (ctx->afu->adapter->native->sl_ops->update_dedicated_ivtes)
+>> + afu->adapter->native->sl_ops->update_dedicated_ivtes(ctx);
+>>
+>>      cxl_p2n_write(afu, CXL_PSL_AMR_An, amr);
+>>
+>> @@ -778,8 +779,9 @@ static int native_afu_activate_mode(struct 
+>> cxl_afu *afu, int mode)
+>>
+>>      if (mode == CXL_MODE_DIRECTED)
+>>          return activate_afu_directed(afu);
+>> -    if (mode == CXL_MODE_DEDICATED)
+>> -        return activate_dedicated_process(afu);
+>> +    if ((mode == CXL_MODE_DEDICATED) &&
+>> + (afu->adapter->native->sl_ops->activate_dedicated_process))
+>> +        return 
+>> afu->adapter->native->sl_ops->activate_dedicated_process(afu);
+>>
+>>      return -EINVAL;
+>>  }
+>> @@ -793,11 +795,13 @@ static int native_attach_process(struct 
+>> cxl_context *ctx, bool kernel,
+>>      }
+>>
+>>      ctx->kernel = kernel;
+>> -    if (ctx->afu->current_mode == CXL_MODE_DIRECTED)
+>> -        return attach_afu_directed(ctx, wed, amr);
+>> +    if ((ctx->afu->current_mode == CXL_MODE_DIRECTED) &&
+>> + (ctx->afu->adapter->native->sl_ops->attach_afu_directed))
+>> +        return 
+>> ctx->afu->adapter->native->sl_ops->attach_afu_directed(ctx, wed, amr);
+>>
+>> -    if (ctx->afu->current_mode == CXL_MODE_DEDICATED)
+>> -        return attach_dedicated(ctx, wed, amr);
+>> +    if ((ctx->afu->current_mode == CXL_MODE_DEDICATED) &&
+>> + (ctx->afu->adapter->native->sl_ops->attach_dedicated_process))
+>> +        return 
+>> ctx->afu->adapter->native->sl_ops->attach_dedicated_process(ctx, wed, 
+>> amr);
+>>
+>>      return -EINVAL;
+>>  }
+>> @@ -830,8 +834,9 @@ static void native_update_ivtes(struct 
+>> cxl_context *ctx)
+>>  {
+>>      if (ctx->afu->current_mode == CXL_MODE_DIRECTED)
+>>          return update_ivtes_directed(ctx);
+>> -    if (ctx->afu->current_mode == CXL_MODE_DEDICATED)
+>> -        return update_ivtes_dedicated(ctx);
+>> +    if ((ctx->afu->current_mode == CXL_MODE_DEDICATED) &&
+>> + (ctx->afu->adapter->native->sl_ops->update_dedicated_ivtes))
+>> +        return 
+>> ctx->afu->adapter->native->sl_ops->update_dedicated_ivtes(ctx);
+>>      WARN(1, "native_update_ivtes: Bad mode\n");
+>>  }
+>>
+>> @@ -875,7 +880,7 @@ static int native_get_irq_info(struct cxl_afu 
+>> *afu, struct cxl_irq_info *info)
+>>      return 0;
+>>  }
+>>
+>> -void cxl_native_psl_irq_dump_regs(struct cxl_context *ctx)
+>> +void cxl_native_irq_dump_regs_psl(struct cxl_context *ctx)
+>>  {
+>>      u64 fir1, fir2, fir_slice, serr, afu_debug;
+>>
+>> @@ -911,7 +916,7 @@ static irqreturn_t 
+>> native_handle_psl_slice_error(struct cxl_context *ctx,
+>>      return cxl_ops->ack_irq(ctx, 0, errstat);
+>>  }
+>>
+>> -static irqreturn_t fail_psl_irq(struct cxl_afu *afu, struct 
+>> cxl_irq_info *irq_info)
+>> +irqreturn_t cxl_fail_irq_psl(struct cxl_afu *afu, struct 
+>> cxl_irq_info *irq_info)
+>>  {
+>>      if (irq_info->dsisr & CXL_PSL_DSISR_TRANS)
+>>          cxl_p2n_write(afu, CXL_PSL_TFC_An, CXL_PSL_TFC_An_AE);
+>> @@ -927,7 +932,7 @@ static irqreturn_t native_irq_multiplexed(int 
+>> irq, void *data)
+>>      struct cxl_context *ctx;
+>>      struct cxl_irq_info irq_info;
+>>      u64 phreg = cxl_p2n_read(afu, CXL_PSL_PEHandle_An);
+>> -    int ph, ret;
+>> +    int ph, ret = IRQ_HANDLED;
+>>
+>>      /* check if eeh kicked in while the interrupt was in flight */
+>>      if (unlikely(phreg == ~0ULL)) {
+>> @@ -940,13 +945,17 @@ static irqreturn_t native_irq_multiplexed(int 
+>> irq, void *data)
+>>      ph = phreg & 0xffff;
+>>      if ((ret = native_get_irq_info(afu, &irq_info))) {
+>>          WARN(1, "Unable to get CXL IRQ Info: %i\n", ret);
+>> -        return fail_psl_irq(afu, &irq_info);
+>> +        if (afu->adapter->native->sl_ops->fail_irq)
+>> +            return afu->adapter->native->sl_ops->fail_irq(afu, 
+>> &irq_info);
+>> +        return IRQ_HANDLED;
+>>      }
+>>
+>>      rcu_read_lock();
+>>      ctx = idr_find(&afu->contexts_idr, ph);
+>>      if (ctx) {
+>> -        ret = cxl_irq(irq, ctx, &irq_info);
+>> +        ret = IRQ_HANDLED;
+>> +        if (afu->adapter->native->sl_ops->handle_interrupt)
+>> +            ret = 
+>> afu->adapter->native->sl_ops->handle_interrupt(irq, ctx, &irq_info);
+>>          rcu_read_unlock();
+>>          return ret;
+>>      }
+>> @@ -956,7 +965,10 @@ static irqreturn_t native_irq_multiplexed(int 
+>> irq, void *data)
+>>          " %016llx\n(Possible AFU HW issue - was a term/remove acked"
+>>          " with outstanding transactions?)\n", ph, irq_info.dsisr,
+>>          irq_info.dar);
+>> -    return fail_psl_irq(afu, &irq_info);
+>> +    ret = IRQ_HANDLED;
+>> +    if (afu->adapter->native->sl_ops->fail_irq)
+>> +        ret = afu->adapter->native->sl_ops->fail_irq(afu, &irq_info);
+>> +    return ret;
+>>  }
+>
+>
+> I think code could be a bit better by removing a few too many 
+> "ret=IRQ_HANDLED". The root of the pb is that native_get_irq_info() 
+> doesn't return a irqreturn_t type, so be could just declare a new "int 
+> rc" variable to handle its return value.
+>
+>   Fred
+>
+>
+
+Count it as done !
 
 
 >
-> Should the pointer be const?
->
->> +	events->ev_value = buf;
->> +	return 0;
->> +}
+>>
+>>  static void native_irq_wait(struct cxl_context *ctx)
+>> diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
+>> index e82a207..4d475a5 100644
+>> --- a/drivers/misc/cxl/pci.c
+>> +++ b/drivers/misc/cxl/pci.c
+>> @@ -377,7 +377,7 @@ static int calc_capp_routing(struct pci_dev *dev, 
+>> u64 *chipid, u64 *capp_unit_id
+>>      return 0;
+>>  }
+>>
+>> -static int init_implementation_adapter_psl_regs(struct cxl *adapter, 
+>> struct pci_dev *dev)
+>> +static int init_implementation_adapter_regs_psl(struct cxl *adapter, 
+>> struct pci_dev *dev)
+>>  {
+>>      u64 psl_dsnctl, psl_fircntl;
+>>      u64 chipid;
+>> @@ -409,7 +409,7 @@ static int 
+>> init_implementation_adapter_psl_regs(struct cxl *adapter, struct pci_
+>>      return 0;
+>>  }
+>>
+>> -static int init_implementation_adapter_xsl_regs(struct cxl *adapter, 
+>> struct pci_dev *dev)
+>> +static int init_implementation_adapter_regs_xsl(struct cxl *adapter, 
+>> struct pci_dev *dev)
+>>  {
+>>      u64 xsl_dsnctl;
+>>      u64 chipid;
+>> @@ -513,7 +513,7 @@ static void cxl_setup_psl_timebase(struct cxl 
+>> *adapter, struct pci_dev *dev)
+>>      return;
+>>  }
+>>
+>> -static int init_implementation_afu_psl_regs(struct cxl_afu *afu)
+>> +static int init_implementation_afu_regs_psl(struct cxl_afu *afu)
+>>  {
+>>      /* read/write masks for this slice */
+>>      cxl_p1n_write(afu, CXL_PSL_APCALLOC_A, 0xFFFFFFFEFEFEFEFEULL);
+>> @@ -996,7 +996,7 @@ static int cxl_afu_descriptor_looks_ok(struct 
+>> cxl_afu *afu)
+>>      return 0;
+>>  }
+>>
+>> -static int sanitise_afu_regs(struct cxl_afu *afu)
+>> +static int sanitise_afu_regs_psl(struct cxl_afu *afu)
+>>  {
+>>      u64 reg;
+>>
+>> @@ -1102,8 +1102,11 @@ static int pci_configure_afu(struct cxl_afu 
+>> *afu, struct cxl *adapter, struct pc
+>>      if ((rc = pci_map_slice_regs(afu, adapter, dev)))
+>>          return rc;
+>>
+>> -    if ((rc = sanitise_afu_regs(afu)))
+>> -        goto err1;
+>> +    if (adapter->native->sl_ops->sanitise_afu_regs) {
+>> +        rc = adapter->native->sl_ops->sanitise_afu_regs(afu);
+>> +        if (rc)
+>> +            goto err1;
+>> +    }
+>>
+>>      /* We need to reset the AFU before we can read the AFU 
+>> descriptor */
+>>      if ((rc = cxl_ops->afu_reset(afu)))
+>> @@ -1432,9 +1435,15 @@ static void cxl_release_adapter(struct device 
+>> *dev)
+>>
+>>  static int sanitise_adapter_regs(struct cxl *adapter)
+>>  {
+>> +    int rc = 0;
 >> +
->> +static int imc_event_info_str(struct property *pp, char *name,
->> +			       struct imc_events *events)
-> This creates and sets an initial value based on a property, ...
->
->> +static int imc_event_info_val(char *name, u32 val,
->> +			      struct imc_events *events)
-> ... this creates and sets based on a u32.
->
-> Could you call them something that suggests their purpose a bit better?
-> Maybe event_info_from_{property,val}?
-
-Yes. Will fix the name.
-
->
->> +{
->> +	int ret;
+>>      /* Clear PSL tberror bit by writing 1 to it */
+>>      cxl_p1_write(adapter, CXL_PSL_ErrIVTE, CXL_PSL_ErrIVTE_tberror);
+>> -    return cxl_tlb_slb_invalidate(adapter);
 >> +
->> +	ret = imc_event_info(name, events);
->> +	if (ret)
->> +		return ret;
->> +	sprintf(events->ev_value, "event=0x%x", val);
+>> +    if (adapter->native->sl_ops->invalidate_all)
+>> +        rc = adapter->native->sl_ops->invalidate_all(adapter);
 >> +
->> +	return 0;
->> +}
->> +
->> +static int set_event_property(struct property *pp, char *event_prop,
->> +			      struct imc_events *events, char *ev_name)
->> +{
->> +	char *buf;
->> +	int ret;
->> +
->> +	buf = kzalloc(IMC_MAX_PMU_NAME_LEN, GFP_KERNEL);
->> +	if (!buf)
->> +		return -ENOMEM;
->> +
->> +	sprintf(buf, "%s.%s", ev_name, event_prop);
->> +	ret = imc_event_info_str(pp, buf, events);
->> +	if (ret) {
->> +		kfree(events->ev_name);
->> +		kfree(events->ev_value);
-> How do you know the buffer for ev_value was successfully allocated? Can
-> you be sure it is safe to free? (Consider imc_event_info returning -ENOMEM)
-
-Nice catch. Right, cant assume it. Will rework this code.
-
->
->> +	}
->> +
->> +	return ret;
->> +}
->> +
->> +/*
->> + * imc_events_node_parser: Parse the event node "dev" and assign the parsed
->> + *                         information to event "events".
->> + *
->> + * Parses the "reg" property of this event. "reg" gives us the event offset.
->> + * Also, parse the "scale" and "unit" properties, if any.
->> + */
->> +static int imc_events_node_parser(struct device_node *dev,
->> +				  struct imc_events *events,
->> +				  struct property *event_scale,
->> +				  struct property *event_unit,
->> +				  struct property *name_prefix,
->> +				  u32 reg)
->> +{
->> +	struct property *name, *pp;
->> +	char *ev_name;
->> +	u32 val;
->> +	int idx = 0, ret;
->> +
->> +	if (!dev)
->> +		return -EINVAL;
->> +
->> +	/*
->> +	 * Loop through each property of an event node
->> +	 */
->> +	name = of_find_property(dev, "event-name", NULL);
->> +	if (!name)
->> +		return -ENODEV;
->> +
->> +	if (!name->value ||
->> +	  (strnlen(name->value, name->length) == name->length) ||
->> +	  (name->length > IMC_MAX_PMU_NAME_LEN))
->> +		return -EINVAL;
->> +
->> +	ev_name = kzalloc(IMC_MAX_PMU_NAME_LEN, GFP_KERNEL);
->> +	if (!ev_name)
->> +		return -ENOMEM;
-> I see you allocating memory here and in set_event_property for the
-> name. Would it be better to move that into imc_event_info and make that
-> function responsible for the whole set of allocations regarding the
-> event?
-No, I would prefer the current way. Reason being, incase of
-allocation in set_event_property is only incase of scale and
-unit property since perf tool expects scale file to be
-exported as <eventname>.scale. And secondly memory
-allocated in imc_event_info is to carry the event configuretion
-value and it is not for event_name.
-
-
->
-> (I'm happy to be talked out of this - it just seems like it would make
-> it much easier to reason about the lifecycles of the memory allocations.)
->
->> +
->> +	snprintf(ev_name, IMC_MAX_PMU_NAME_LEN, "%s%s",
->> +		 (char *)name_prefix->value,
->> +		 (char *)name->value);
->> +
->> +	/*
->> +	 * Parse each property of this event node "dev". Property "reg" has
->> +	 * the offset which is assigned to the event name. Other properties
->> +	 * like "scale" and "unit" are assigned to event.scale and event.unit
->> +	 * accordingly.
->> +	 */
->> +	for_each_property_of_node(dev, pp) {
->> +		/*
->> +		 * If there is an issue in parsing a single property of
->> +		 * this event, we just clean up the buffers, but we still
->> +		 * continue to parse.
->> +		 */
->> +		if (strncmp(pp->name, "reg", 3) == 0) {
->> +			of_property_read_u32(dev, pp->name, &val);
->> +			val += reg;
->> +			ret = imc_event_info_val(ev_name, val, &events[idx]);
->> +			if (ret) {
->> +				kfree(events[idx].ev_name);
->> +				kfree(events[idx].ev_value);
->> +				continue;
->> +			}
->> +			/*
->> +			 * If the common scale and unit properties available,
->> +			 * then, assign them to this event
->> +			 */
->> +			if (event_scale) {
->> +				idx++;
->> +				ret = set_event_property(event_scale, "scale",
->> +							 &events[idx],
->> +							 ev_name);
->> +				if (ret)
->> +					continue;
->> +				idx++;
-> Why do we increment the idx an extra two times if event_scale is
-> provided? We don't do that for the other ones...
-OK, patch 8 fixed this. Let me pull that hunk and
-merge it here.
-
-
->
->> +			}
->> +			if (event_unit) {
->> +				ret = set_event_property(event_unit, "unit",
->> +							 &events[idx],
->> +							 ev_name);
->> +				if (ret)
->> +					continue;
->> +			}
->> +			idx++;
->> +		} else if (strncmp(pp->name, "unit", 4) == 0) {
->> +			ret = set_event_property(pp, "unit", &events[idx],
->> +						 ev_name);
->> +			if (ret)
->> +				continue;
->> +			idx++;
->> +		} else if (strncmp(pp->name, "scale", 5) == 0) {
->> +			ret = set_event_property(pp, "scale", &events[idx],
->> +						 ev_name);
->> +			if (ret)
->> +				continue;
->> +			idx++;
->> +		}
->> +	}
-> I find it really difficult to convince myself of the control flow in
-> that loop.
->
-> In particular, the comment at the top claims:
->> +		 * If there is an issue in parsing a single property of
->> +		 * this event, we just clean up the buffers, but we still
->> +		 * continue to parse.
-> I am not quite sure precisely what that means. I first thought it meant
-> that if you cannot parse one of the properties of the event
-> (scale/unit), you would clean up the entire event, and parse the next
-> entire event. It looks like the code in fact simply cleans up that
-> *property* and continues to parse other properties.
->
-> Does that make sense to do? If you can't parse the scale of an event for
-> instance, does it make sense to continue with the rest of that event?
-OK this is definitely true if we cant parse the "reg" property.
-Will fix it.
-
-
-
->
-> Initially I was concerned that 'continue' wasn't sufficient to even
-> clean up the property, but I worked through the error conditions of
-> set_event_property and now I am satisfied.
->
->> +
->> +	return idx;
->> +}
->> +
->> +/*
->> + * imc_get_domain : Returns the domain for pmu "pmu_dev".
->> + */
->> +int imc_get_domain(struct device_node *pmu_dev)
->> +{
->> +	if (of_device_is_compatible(pmu_dev, IMC_DTB_NEST_COMPAT))
->> +		return IMC_DOMAIN_NEST;
->> +	else
->> +		return IMC_DOMAIN_UNKNOWN;
->> +}
->> +
->> +/*
->> + * get_nr_children : Returns the number of children for a pmu device node.
->> + */
->> +static int get_nr_children(struct device_node *pmu_node)
->> +{
->> +	struct device_node *child;
->> +	int i = 0;
->> +
->> +	for_each_child_of_node(pmu_node, child)
->> +		i++;
->> +	return i;
->> +}
->> +
->> +/*
->> + * imc_free_events : Cleanup the "events" list having "nr_entries" entries.
->> + */
->> +static void imc_free_events(struct imc_events *events, int nr_entries)
->> +{
->> +	int i;
->> +
->> +	/* Nothing to clean, return */
->> +	if (!events)
->> +		return;
->> +	for (i = 0; i < nr_entries; i++) {
->> +		kfree(events[i].ev_name);
->> +		kfree(events[i].ev_value);
->> +	}
->> +
->> +	kfree(events);
->> +}
->> +
->> +/*
->> + * imc_pmu_create : Takes the parent device which is the pmu unit and a
->> + *                  pmu_index as the inputs.
->> + * Allocates memory for the pmu, sets up its domain (NEST or CORE), and
->> + * allocates memory for the events supported by this pmu. Assigns a name for
->> + * the pmu. Calls imc_events_node_parser() to setup the individual events.
->> + * If everything goes fine, it calls, init_imc_pmu() to setup the pmu device
->> + * and register it.
->> + */
->> +static int imc_pmu_create(struct device_node *parent, int pmu_index)
->> +{
->> +	struct device_node *ev_node = NULL, *dir = NULL;
->> +	struct imc_events *events;
->> +	struct imc_pmu *pmu_ptr;
->> +	u32 prop, reg;
->> +	struct property *pp, *scale_pp, *unit_pp, *name_prefix;
->> +	char *buf;
->> +	int idx = 0, ret = 0, nr_children = 0;
->> +
->> +	if (!parent)
->> +		return -EINVAL;
->> +
->> +	/* memory for pmu */
->> +	pmu_ptr = kzalloc(sizeof(struct imc_pmu), GFP_KERNEL);
->> +	if (!pmu_ptr)
->> +		return -ENOMEM;
->> +
->> +	pmu_ptr->domain = imc_get_domain(parent);
->> +	if (pmu_ptr->domain == IMC_DOMAIN_UNKNOWN)
->> +		goto free_pmu;
->> +
->> +	/* Needed for hotplug/migration */
->> +	per_nest_pmu_arr[pmu_index] = pmu_ptr;
->> +
->> +	/*
->> +	 * "events" property inside a PMU node contains the phandle value
->> +	 * for the actual events node. The "events" node for the IMC PMU
->> +	 * is not in this node, rather inside "imc-counters" node, since,
->> +	 * we want to factor out the common events (thereby, reducing the
->> +	 * size of the device tree)
->> +	 */
->> +	of_property_read_u32(parent, "events", &prop);
->> +	if (!prop)
->> +		return -EINVAL;
->> +
->> +	/*
->> +	 * Fetch the actual node where the events for this PMU exist.
->> +	 */
->> +	dir = of_find_node_by_phandle(prop);
->> +	if (!dir)
->> +		return -EINVAL;
->> +
->> +	/*
->> +	 * Get the maximum no. of events in this node.
->> +	 * Multiply by 3 to account for .scale and .unit properties
->> +	 * This number suggests the amount of memory needed to setup the
->> +	 * events for this pmu.
->> +	 */
->> +	nr_children = get_nr_children(dir) * 3;
->> +
->> +	/* memory for pmu events */
->> +	events = kzalloc((sizeof(struct imc_events) * nr_children),
->> +			 GFP_KERNEL);
->> +	if (!events) {
->> +		ret = -ENOMEM;
->> +		goto free_pmu;
->> +	}
->> +
->> +	pp = of_find_property(parent, "name", NULL);
->> +	if (!pp) {
->> +		ret = -ENODEV;
->> +		goto free_events;
->> +	}
->> +
->> +	if (!pp->value ||
->> +	  (strnlen(pp->value, pp->length) == pp->length) ||
->> +	    (pp->length > IMC_MAX_PMU_NAME_LEN)) {
->> +		ret = -EINVAL;
->> +		goto free_events;
->> +	}
->> +
->> +	buf = kzalloc(IMC_MAX_PMU_NAME_LEN, GFP_KERNEL);
->> +	if (!buf) {
->> +		ret = -ENOMEM;
->> +		goto free_events;
->> +	}
->> +
->> +	/* Save the name to register it later */
->> +	sprintf(buf, "nest_%s", (char *)pp->value);
->> +	pmu_ptr->pmu.name = (char *)buf;
->> +
->> +	/*
->> +	 * Check if there is a common "scale" and "unit" properties inside
->> +	 * the PMU node for all the events supported by this PMU.
->> +	 */
->> +	scale_pp = of_find_property(parent, "scale", NULL);
->> +	unit_pp = of_find_property(parent, "unit", NULL);
->> +
->> +	/*
->> +	 * Get the event-prefix property from the PMU node
->> +	 * which needs to be attached with the event names.
->> +	 */
->> +	name_prefix = of_find_property(parent, "events-prefix", NULL);
->> +	if (!name_prefix)
->> +		return -ENODEV;
->> +
->> +	/*
->> +	 * "reg" property gives out the base offset of the counters data
->> +	 * for this PMU.
->> +	 */
->> +	of_property_read_u32(parent, "reg", &reg);
->> +
->> +	if (!name_prefix->value ||
->> +	   (strnlen(name_prefix->value, name_prefix->length) == name_prefix->length) ||
->> +	   (name_prefix->length > IMC_MAX_PMU_NAME_LEN))
->> +		return -EINVAL;
->> +
->> +	/* Loop through event nodes */
->> +	for_each_child_of_node(dir, ev_node) {
->> +		ret = imc_events_node_parser(ev_node, &events[idx], scale_pp,
->> +					     unit_pp, name_prefix, reg);
->> +		if (ret < 0) {
->> +			/* Unable to parse this event */
->> +			if (ret == -ENOMEM)
->> +				goto free_events;
->> +			continue;
->> +		}
->> +
->> +		/*
->> +		 * imc_event_node_parser will return number of
->> +		 * event entries created for this. This could include
->> +		 * event scale and unit files also.
->> +		 */
->> +		idx += ret;
->> +	}
->> +
->> +	return 0;
->> +
->> +free_events:
->> +	imc_free_events(events, idx);
->> +free_pmu:
->> +	kfree(pmu_ptr);
->> +	return ret;
->> +}
->> +
->> +/*
->> + * imc_pmu_setup : Setup the IMC PMUs (children of "parent").
->> + */
->> +static void imc_pmu_setup(struct device_node *parent)
-> Should this be marked __init?
-
-Yes we can.
-
-Thanks for review
-Maddy
->> +{
->> +	struct device_node *child;
->> +	int pmu_count = 0, rc = 0;
->> +	const struct property *pp;
->> +
->> +	if (!parent)
->> +		return;
->> +
->> +	/* Setup all the IMC pmus */
->> +	for_each_child_of_node(parent, child) {
->> +		pp = of_get_property(child, "compatible", NULL);
->> +		if (pp) {
->> +			/*
->> +			 * If there is a node with a "compatible" field,
->> +			 * that's a PMU node
->> +			 */
->> +			rc = imc_pmu_create(child, pmu_count);
->> +			if (rc)
->> +				return;
->> +			pmu_count++;
->> +		}
->> +	}
->> +}
->>   
->>   static int opal_imc_counters_probe(struct platform_device *pdev)
->>   {
->> @@ -102,6 +484,10 @@ static int opal_imc_counters_probe(struct platform_device *pdev)
->>   		} while (i < (pcni->size / PAGE_SIZE));
->>   	}
->>   
->> +#ifdef CONFIG_PERF_EVENTS
->> +	imc_pmu_setup(imc_dev);
->> +#endif
->> +
->>   	return 0;
->>   err:
->>   	return -ENODEV;
->> -- 
->> 2.7.4
-> Regards,
-> Daniel
+>> +    return rc;
+>>  }
+>>
+>>  /* This should contain *only* operations that can safely be done in
+>> @@ -1518,15 +1527,23 @@ static void cxl_deconfigure_adapter(struct 
+>> cxl *adapter)
+>>  }
+>>
+>>  static const struct cxl_service_layer_ops psl_ops = {
+>> -    .adapter_regs_init = init_implementation_adapter_psl_regs,
+>> -    .afu_regs_init = init_implementation_afu_psl_regs,
+>> +    .adapter_regs_init = init_implementation_adapter_regs_psl,
+>> +    .invalidate_all = cxl_invalidate_all_psl,
+>> +    .afu_regs_init = init_implementation_afu_regs_psl,
+>> +    .sanitise_afu_regs = sanitise_afu_regs_psl,
+>>      .register_serr_irq = cxl_native_register_serr_irq,
+>>      .release_serr_irq = cxl_native_release_serr_irq,
+>> -    .debugfs_add_adapter_sl_regs = cxl_debugfs_add_adapter_psl_regs,
+>> -    .debugfs_add_afu_sl_regs = cxl_debugfs_add_afu_psl_regs,
+>> -    .psl_irq_dump_registers = cxl_native_psl_irq_dump_regs,
+>> +    .handle_interrupt = cxl_irq_psl,
+>> +    .fail_irq = cxl_fail_irq_psl,
+>> +    .activate_dedicated_process = cxl_activate_dedicated_process_psl,
+>> +    .attach_afu_directed = cxl_attach_afu_directed_psl,
+>> +    .attach_dedicated_process = cxl_attach_dedicated_process_psl,
+>> +    .update_dedicated_ivtes = cxl_update_dedicated_ivtes_psl,
+>> +    .debugfs_add_adapter_regs = cxl_debugfs_add_adapter_regs_psl,
+>> +    .debugfs_add_afu_regs = cxl_debugfs_add_afu_regs_psl,
+>> +    .psl_irq_dump_registers = cxl_native_irq_dump_regs_psl,
+>>      .err_irq_dump_registers = cxl_native_err_irq_dump_regs,
+>> -    .debugfs_stop_trace = cxl_stop_trace,
+>> +    .debugfs_stop_trace = cxl_stop_trace_psl,
+>>      .write_timebase_ctrl = write_timebase_ctrl_psl,
+>>      .timebase_read = timebase_read_psl,
+>>      .capi_mode = OPAL_PHB_CAPI_MODE_CAPI,
+>> @@ -1534,8 +1551,8 @@ static const struct cxl_service_layer_ops 
+>> psl_ops = {
+>>  };
+>>
+>>  static const struct cxl_service_layer_ops xsl_ops = {
+>> -    .adapter_regs_init = init_implementation_adapter_xsl_regs,
+>> -    .debugfs_add_adapter_sl_regs = cxl_debugfs_add_adapter_xsl_regs,
+>> +    .adapter_regs_init = init_implementation_adapter_regs_xsl,
+>> +    .debugfs_add_adapter_regs = cxl_debugfs_add_adapter_regs_xsl,
+>>      .write_timebase_ctrl = write_timebase_ctrl_xsl,
+>>      .timebase_read = timebase_read_xsl,
+>>      .capi_mode = OPAL_PHB_CAPI_MODE_DMA,
+>>
 >
