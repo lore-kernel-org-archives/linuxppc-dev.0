@@ -1,20 +1,18 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <thuth@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vymD01nnHzDqHK
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Apr 2017 23:00:32 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Denis Kirjanov <kda@linux-powerpc.org>
-Cc: "linuxppc-dev\@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: POWER4 - who has one?
-In-Reply-To: <CAOJe8K2eveE+s=dHdk_ppdd8wWbPRq834gejnC2pLCJKTafJEA@mail.gmail.com>
-References: <87vaqktim2.fsf@concordia.ellerman.id.au>
- <CAOJe8K2eveE+s=dHdk_ppdd8wWbPRq834gejnC2pLCJKTafJEA@mail.gmail.com>
-Date: Wed, 05 Apr 2017 23:00:31 +1000
-Message-ID: <87d1cruhzk.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vynWM1mdszDqH6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Apr 2017 23:58:55 +1000 (AEST)
+From: Thomas Huth <thuth@redhat.com>
+To: Paul Mackerras <paulus@samba.org>,
+	kvm-ppc@vger.kernel.org
+Cc: kvm@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v3] KVM: PPC: Book3S PR: Do not fail emulation with
+ mtspr/mfspr for unknown SPRs
+Date: Wed,  5 Apr 2017 15:58:51 +0200
+Message-Id: <1491400731-2492-1-git-send-email-thuth@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,17 +22,103 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Denis Kirjanov <kda@linux-powerpc.org> writes:
+According to the PowerISA 2.07, mtspr and mfspr should not always
+generate an illegal instruction exception when being used with an
+undefined SPR, but rather treat the instruction as a NOP or inject a
+privilege exception in some cases, too - depending on the SPR number.
+Also turn the printk here into a ratelimited print statement, so that
+the guest can not flood the dmesg log of the host by issueing lots of
+illegal mtspr/mfspr instruction here.
 
-> On 4/4/17, Michael Ellerman <mpe@ellerman.id.au> wrote:
->> Hi folks,
->>
->> Quick quiz, who still has a POWER4?
->>
->> And if so are you running mainline on it?
->
-> Not the same thing, but I have a box on two 970MP
+Signed-off-by: Thomas Huth <thuth@redhat.com>
+---
+ v3:
+ - Make sure that we do not advance the program counter after we've
+   already changed it due to injecting a program interrupt
 
-Yeah not 100% the same. Thanks for testing 970MP.
+ v2:
+ - Inject illegal instruction program interrupt instead of emulation
+   assist interrupt (according to the last programming note in section
+   6.5.9 of Book III of the PowerISA v2.07)
 
-cheers
+ arch/powerpc/kvm/book3s_emulate.c | 34 ++++++++++++++++++++++++++--------
+ arch/powerpc/kvm/emulate.c        |  8 ++++++++
+ 2 files changed, 34 insertions(+), 8 deletions(-)
+
+diff --git a/arch/powerpc/kvm/book3s_emulate.c b/arch/powerpc/kvm/book3s_emulate.c
+index 8359752..68d6898 100644
+--- a/arch/powerpc/kvm/book3s_emulate.c
++++ b/arch/powerpc/kvm/book3s_emulate.c
+@@ -503,10 +503,18 @@ int kvmppc_core_emulate_mtspr_pr(struct kvm_vcpu *vcpu, int sprn, ulong spr_val)
+ 		break;
+ unprivileged:
+ 	default:
+-		printk(KERN_INFO "KVM: invalid SPR write: %d\n", sprn);
+-#ifndef DEBUG_SPR
+-		emulated = EMULATE_FAIL;
+-#endif
++		pr_info_ratelimited("KVM: invalid SPR write: %d\n", sprn);
++		if (sprn & 0x10) {
++			if (kvmppc_get_msr(vcpu) & MSR_PR) {
++				kvmppc_core_queue_program(vcpu, SRR1_PROGPRIV);
++				emulated = EMULATE_AGAIN;
++			}
++		} else {
++			if ((kvmppc_get_msr(vcpu) & MSR_PR) || sprn == 0) {
++				kvmppc_core_queue_program(vcpu, SRR1_PROGILL);
++				emulated = EMULATE_AGAIN;
++			}
++		}
+ 		break;
+ 	}
+ 
+@@ -648,10 +656,20 @@ int kvmppc_core_emulate_mfspr_pr(struct kvm_vcpu *vcpu, int sprn, ulong *spr_val
+ 		break;
+ 	default:
+ unprivileged:
+-		printk(KERN_INFO "KVM: invalid SPR read: %d\n", sprn);
+-#ifndef DEBUG_SPR
+-		emulated = EMULATE_FAIL;
+-#endif
++		pr_info_ratelimited("KVM: invalid SPR read: %d\n", sprn);
++		if (sprn & 0x10) {
++			if (kvmppc_get_msr(vcpu) & MSR_PR) {
++				kvmppc_core_queue_program(vcpu, SRR1_PROGPRIV);
++				emulated = EMULATE_AGAIN;
++			}
++		} else {
++			if ((kvmppc_get_msr(vcpu) & MSR_PR) || sprn == 0 ||
++			    sprn == 4 || sprn == 5 || sprn == 6) {
++				kvmppc_core_queue_program(vcpu, SRR1_PROGILL);
++				emulated = EMULATE_AGAIN;
++			}
++		}
++
+ 		break;
+ 	}
+ 
+diff --git a/arch/powerpc/kvm/emulate.c b/arch/powerpc/kvm/emulate.c
+index b379146..c873ffe 100644
+--- a/arch/powerpc/kvm/emulate.c
++++ b/arch/powerpc/kvm/emulate.c
+@@ -259,10 +259,18 @@ int kvmppc_emulate_instruction(struct kvm_run *run, struct kvm_vcpu *vcpu)
+ 
+ 		case OP_31_XOP_MFSPR:
+ 			emulated = kvmppc_emulate_mfspr(vcpu, sprn, rt);
++			if (emulated == EMULATE_AGAIN) {
++				emulated = EMULATE_DONE;
++				advance = 0;
++			}
+ 			break;
+ 
+ 		case OP_31_XOP_MTSPR:
+ 			emulated = kvmppc_emulate_mtspr(vcpu, sprn, rs);
++			if (emulated == EMULATE_AGAIN) {
++				emulated = EMULATE_DONE;
++				advance = 0;
++			}
+ 			break;
+ 
+ 		case OP_31_XOP_TLBSYNC:
+-- 
+1.8.3.1
