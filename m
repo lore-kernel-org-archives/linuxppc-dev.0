@@ -2,48 +2,52 @@ Return-Path: <srs0=rqy9=3n=linux.vnet.ibm.com=mahesh@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vyyb95cRxzDqL5
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Apr 2017 06:47:49 +1000 (AEST)
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3vyyb94XcTz8sXJ
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Apr 2017 06:47:49 +1000 (AEST)
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vyybv2DXGzDqL5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Apr 2017 06:48:27 +1000 (AEST)
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3vyybv1Jcdz8sXJ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Apr 2017 06:48:27 +1000 (AEST)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3vyyb901Lhz9s8c
- for <linuxppc-dev@ozlabs.org>; Thu,  6 Apr 2017 06:47:48 +1000 (AEST)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v35KiBd4127631
- for <linuxppc-dev@ozlabs.org>; Wed, 5 Apr 2017 16:47:46 -0400
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
- by mx0b-001b2d01.pphosted.com with ESMTP id 29n3s8us3j-1
+ by ozlabs.org (Postfix) with ESMTPS id 3vyybt5XMrz9s9Y
+ for <linuxppc-dev@ozlabs.org>; Thu,  6 Apr 2017 06:48:26 +1000 (AEST)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v35KhtGc146471
+ for <linuxppc-dev@ozlabs.org>; Wed, 5 Apr 2017 16:48:25 -0400
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 29n79j1mcg-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Wed, 05 Apr 2017 16:47:46 -0400
+ for <linuxppc-dev@ozlabs.org>; Wed, 05 Apr 2017 16:48:24 -0400
 Received: from localhost
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
- Thu, 6 Apr 2017 06:47:43 +1000
-Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v35KlY0b53477484
- for <linuxppc-dev@ozlabs.org>; Thu, 6 Apr 2017 06:47:42 +1000
-Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
- by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v35KlAJH028811
- for <linuxppc-dev@ozlabs.org>; Thu, 6 Apr 2017 06:47:10 +1000
-Subject: [PATCH v7 0/3] KVM: PPC: Add FWNMI support for KVM guests on POWER
+ Thu, 6 Apr 2017 06:48:22 +1000
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v35KmCJ643188398
+ for <linuxppc-dev@ozlabs.org>; Thu, 6 Apr 2017 06:48:20 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v35KlkdS002106
+ for <linuxppc-dev@ozlabs.org>; Thu, 6 Apr 2017 06:47:47 +1000
+Subject: [PATCH v7 3/3] KVM: PPC: Exit guest upon MCE when FWNMI capability
+ is enabled
 From: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
 To: gleb@kernel.org, agraf@suse.de, KVM-PPC <kvm-ppc@vger.kernel.org>,
  linuxppc-dev <linuxppc-dev@ozlabs.org>,
  Paul Mackerras <paulus@samba.org>, pbonzini@redhat.com
-Cc: KVM <kvm@vger.kernel.org>, david@gibson.dropbear.id.au
-Date: Thu, 06 Apr 2017 02:16:45 +0530
+Cc: Aravinda Prasad <aravinda@linux.vnet.ibm.com>, KVM <kvm@vger.kernel.org>,
+ david@gibson.dropbear.id.au
+Date: Thu, 06 Apr 2017 02:17:28 +0530
+In-Reply-To: <149142508580.28284.10052904644951828717.stgit@jupiter.in.ibm.com>
+References: <149142508580.28284.10052904644951828717.stgit@jupiter.in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Message-Id: <149142508580.28284.10052904644951828717.stgit@jupiter.in.ibm.com>
+Message-Id: <149142524804.28284.12117063788144773417.stgit@jupiter.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -55,75 +59,260 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Aravinda Prasad <aravinda@linux.vnet.ibm.com>
 
-This series of patches add FWNMI support for KVM guests
-on POWER.
+Enhance KVM to cause a guest exit with KVM_EXIT_NMI
+exit reason upon a machine check exception (MCE) in
+the guest address space if the KVM_CAP_PPC_FWNMI
+capability is enabled (instead of delivering a 0x200
+interrupt to guest). This enables QEMU to build error
+log and deliver machine check exception to guest via
+guest registered machine check handler.
 
-Memory errors such as bit flips that cannot be corrected
-by hardware is passed on to the kernel for handling
-by raising machine check exception (an NMI). Upon such
-machine check exceptions, if the address in error belongs
-to the guest, the error is passed on to the guest
-kernel for handling. However, for guest kernels that
-have issued "ibm,nmi-register" call, QEMU should build
-an error log and pass on the error log to the guest-
-kernel registered machine check handler routine.
+This approach simplifies the delivery of machine
+check exception to guest OS compared to the earlier
+approach of KVM directly invoking 0x200 guest interrupt
+vector.
 
-This patch series adds the functionality to pass on the
-machine check exception to the guest kernel by
-giving control to QEMU. QEMU builds the error log
-and invokes the guest-kernel registered handler.
+This design/approach is based on the feedback for the
+QEMU patches to handle machine check exception. Details
+of earlier approach of handling machine check exception
+in QEMU and related discussions can be found at:
 
-QEMU part can be found at:
-http://lists.nongnu.org/archive/html/qemu-ppc/2015-12/msg00199.html
+https://lists.nongnu.org/archive/html/qemu-devel/2014-11/msg00813.html
 
-Change Log v7:
-  - Move the FWNMI capability stuff inside #ifdef CONFIG_PPC_BOOK3S_64 block.
-  - Split 2nd patch into two, one that adds mce hook and other that touches
-    kvm code.
+Note:
 
-Change Log v6:
-  - Deliver all MCE errors (handled/unhandled) for FWNMI capable guest.
-  - Use kvm_run->flags to pass NMI disposition status.
+This patch invokes an mce hook at the time of guest exit to
+facilitate the host-side handling of machine check exception
+before the exception is passed on to the guest. Hence, the
+host-side handling which was performed earlier via machine_check_fwnmi
+is removed.
 
-Change Log v5:
-  - Added capability documentation. No functionality/code change.
+The reasons for this approach is (i) it is not possible
+to distinguish whether the exception occurred in the
+guest or the host from the pt_regs passed on the
+machine_check_exception(). Hence machine_check_exception()
+calls panic, instead of passing on the exception to
+the guest, if the machine check exception is not
+recoverable. (ii) the approach introduced in this
+patch gives opportunity to the host kernel to perform
+actions in virtual mode before passing on the exception
+to the guest. This approach does not require complex
+tweaks to machine_check_fwnmi and friends.
 
-Change Log v4:
-  - Allow host-side handling of the machine check exception before
-    passing on the exception to the guest.
-
-Change Log v3:
-  - Split the patch into 2. First patch introduces the
-    new capability while the second one enhances KVM to
-    redirect MCE.
-  - Fix access width bug
-
-Change Log v2:
-  - Added KVM capability
+Signed-off-by: Aravinda Prasad <aravinda@linux.vnet.ibm.com>
+Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
+Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
 ---
-
-Aravinda Prasad (2):
-      KVM: PPC: Add new capability to control MCE behaviour
-      KVM: PPC: Exit guest upon MCE when FWNMI capability is enabled
-
-Mahesh Salgaonkar (1):
-      powerpc/powernv: Introduce a machine check hook for Guest MCEs.
-
-
- Documentation/virtual/kvm/api.txt       |   11 +++++++
- arch/powerpc/include/asm/kvm_host.h     |    3 ++
- arch/powerpc/include/asm/machdep.h      |    7 ++++
- arch/powerpc/include/asm/opal.h         |    4 ++
+ arch/powerpc/include/asm/kvm_host.h     |    2 +
  arch/powerpc/include/uapi/asm/kvm.h     |    6 ++++
- arch/powerpc/kernel/asm-offsets.c       |    1 +
  arch/powerpc/kvm/book3s_hv.c            |   24 ++++++++++----
  arch/powerpc/kvm/book3s_hv_ras.c        |   18 ++++++++++-
  arch/powerpc/kvm/book3s_hv_rmhandlers.S |   52 ++++++++++++++++++-------------
- arch/powerpc/kvm/powerpc.c              |    9 +++++
- arch/powerpc/platforms/powernv/opal.c   |   26 ++++++++++++++++
- arch/powerpc/platforms/powernv/setup.c  |    3 ++
- include/uapi/linux/kvm.h                |    1 +
- 13 files changed, 135 insertions(+), 30 deletions(-)
+ 5 files changed, 72 insertions(+), 30 deletions(-)
 
---
-Signature
+diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
+index 4d02cbc..0627a5a 100644
+--- a/arch/powerpc/include/asm/kvm_host.h
++++ b/arch/powerpc/include/asm/kvm_host.h
+@@ -35,6 +35,7 @@
+ #include <asm/page.h>
+ #include <asm/cacheflush.h>
+ #include <asm/hvcall.h>
++#include <asm/mce.h>
+ 
+ #define KVM_MAX_VCPUS		NR_CPUS
+ #define KVM_MAX_VCORES		NR_CPUS
+@@ -675,6 +676,7 @@ struct kvm_vcpu_arch {
+ 	int prev_cpu;
+ 	bool timer_running;
+ 	wait_queue_head_t cpu_run;
++	struct machine_check_event mce_evt; /* Valid if trap == 0x200 */
+ 
+ 	struct kvm_vcpu_arch_shared *shared;
+ #if defined(CONFIG_PPC_BOOK3S_64) && defined(CONFIG_KVM_BOOK3S_PR_POSSIBLE)
+diff --git a/arch/powerpc/include/uapi/asm/kvm.h b/arch/powerpc/include/uapi/asm/kvm.h
+index 4edbe4b..1fdf64c 100644
+--- a/arch/powerpc/include/uapi/asm/kvm.h
++++ b/arch/powerpc/include/uapi/asm/kvm.h
+@@ -57,6 +57,12 @@ struct kvm_regs {
+ 
+ #define KVM_SREGS_E_FSL_PIDn	(1 << 0) /* PID1/PID2 */
+ 
++/* flags for kvm_run.flags */
++#define KVM_RUN_PPC_NMI_DISP_MASK		(3 << 0)
++#define   KVM_RUN_PPC_NMI_DISP_FULLY_RECOV	(1 << 0)
++#define   KVM_RUN_PPC_NMI_DISP_LIMITED_RECOV	(2 << 0)
++#define   KVM_RUN_PPC_NMI_DISP_NOT_RECOV	(3 << 0)
++
+ /*
+  * Feature bits indicate which sections of the sregs struct are valid,
+  * both in KVM_GET_SREGS and KVM_SET_SREGS.  On KVM_SET_SREGS, registers
+diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+index 1ec86d9..4d488b1 100644
+--- a/arch/powerpc/kvm/book3s_hv.c
++++ b/arch/powerpc/kvm/book3s_hv.c
+@@ -966,15 +966,25 @@ static int kvmppc_handle_exit_hv(struct kvm_run *run, struct kvm_vcpu *vcpu,
+ 		r = RESUME_GUEST;
+ 		break;
+ 	case BOOK3S_INTERRUPT_MACHINE_CHECK:
++		/* Exit to guest with KVM_EXIT_NMI as exit reason */
++		run->exit_reason = KVM_EXIT_NMI;
++		run->hw.hardware_exit_reason = vcpu->arch.trap;
++		/* Clear out the old NMI status from run->flags */
++		run->flags &= ~KVM_RUN_PPC_NMI_DISP_MASK;
++		/* Now set the NMI status */
++		if (vcpu->arch.mce_evt.disposition == MCE_DISPOSITION_RECOVERED)
++			run->flags |= KVM_RUN_PPC_NMI_DISP_FULLY_RECOV;
++		else
++			run->flags |= KVM_RUN_PPC_NMI_DISP_NOT_RECOV;
++
++		r = RESUME_HOST;
+ 		/*
+-		 * Deliver a machine check interrupt to the guest.
+-		 * We have to do this, even if the host has handled the
+-		 * machine check, because machine checks use SRR0/1 and
+-		 * the interrupt might have trashed guest state in them.
++		 * Invoke host-kernel handler to perform any host-side
++		 * handling before exiting the guest.
+ 		 */
+-		kvmppc_book3s_queue_irqprio(vcpu,
+-					    BOOK3S_INTERRUPT_MACHINE_CHECK);
+-		r = RESUME_GUEST;
++		if (ppc_md.machine_check_exception_guest)
++			ppc_md.machine_check_exception_guest(
++							&vcpu->arch.mce_evt);
+ 		break;
+ 	case BOOK3S_INTERRUPT_PROGRAM:
+ 	{
+diff --git a/arch/powerpc/kvm/book3s_hv_ras.c b/arch/powerpc/kvm/book3s_hv_ras.c
+index 7ef0993..c356f9a 100644
+--- a/arch/powerpc/kvm/book3s_hv_ras.c
++++ b/arch/powerpc/kvm/book3s_hv_ras.c
+@@ -130,12 +130,28 @@ static long kvmppc_realmode_mc_power7(struct kvm_vcpu *vcpu)
+ 
+ out:
+ 	/*
++	 * For guest that supports FWNMI capability, hook the MCE event into
++	 * vcpu structure. We are going to exit the guest with KVM_EXIT_NMI
++	 * exit reason. On our way to exit we will pull this event from vcpu
++	 * structure and print it from thread 0 of the core/subcore.
++	 *
++	 * For guest that does not support FWNMI capability (old QEMU):
+ 	 * We are now going enter guest either through machine check
+ 	 * interrupt (for unhandled errors) or will continue from
+ 	 * current HSRR0 (for handled errors) in guest. Hence
+ 	 * queue up the event so that we can log it from host console later.
+ 	 */
+-	machine_check_queue_event();
++	if (vcpu->kvm->arch.fwnmi_enabled) {
++		/*
++		 * Hook up the mce event on to vcpu structure.
++		 * First clear the old event.
++		 */
++		memset(&vcpu->arch.mce_evt, 0, sizeof(vcpu->arch.mce_evt));
++		if (get_mce_event(&mce_evt, MCE_EVENT_RELEASE)) {
++			vcpu->arch.mce_evt = mce_evt;
++		}
++	} else
++		machine_check_queue_event();
+ 
+ 	return handled;
+ }
+diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+index 7c6477d..b6fe741 100644
+--- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
++++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+@@ -134,15 +134,13 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
+ 	stb	r0, HSTATE_HWTHREAD_REQ(r13)
+ 
+ 	/*
+-	 * For external and machine check interrupts, we need
+-	 * to call the Linux handler to process the interrupt.
+-	 * We do that by jumping to absolute address 0x500 for
+-	 * external interrupts, or the machine_check_fwnmi label
+-	 * for machine checks (since firmware might have patched
+-	 * the vector area at 0x200).  The [h]rfid at the end of the
+-	 * handler will return to the book3s_hv_interrupts.S code.
+-	 * For other interrupts we do the rfid to get back
+-	 * to the book3s_hv_interrupts.S code here.
++	 * For external interrupts we need to call the Linux
++	 * handler to process the interrupt. We do that by jumping
++	 * to absolute address 0x500 for external interrupts.
++	 * The [h]rfid at the end of the handler will return to
++	 * the book3s_hv_interrupts.S code. For other interrupts
++	 * we do the rfid to get back to the book3s_hv_interrupts.S
++	 * code here.
+ 	 */
+ 	ld	r8, 112+PPC_LR_STKOFF(r1)
+ 	addi	r1, r1, 112
+@@ -157,7 +155,6 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
+ 	andi.	r0, r0, MSR_IR		/* in real mode? */
+ 	bne	.Lvirt_return
+ 
+-	cmpwi	cr1, r12, BOOK3S_INTERRUPT_MACHINE_CHECK
+ 	cmpwi	r12, BOOK3S_INTERRUPT_EXTERNAL
+ 	beq	11f
+ 	cmpwi	r12, BOOK3S_INTERRUPT_H_DOORBELL
+@@ -172,7 +169,10 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
+ 	mtmsrd	r6, 1			/* Clear RI in MSR */
+ 	mtsrr0	r8
+ 	mtsrr1	r7
+-	beq	cr1, 13f		/* machine check */
++	/*
++	 * BOOK3S_INTERRUPT_MACHINE_CHECK is handled at the
++	 * time of guest exit
++	 */
+ 	RFI
+ 
+ 	/* On POWER7, we have external interrupts set to use HSRR0/1 */
+@@ -180,8 +180,6 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
+ 	mtspr	SPRN_HSRR1, r7
+ 	ba	0x500
+ 
+-13:	b	machine_check_fwnmi
+-
+ 14:	mtspr	SPRN_HSRR0, r8
+ 	mtspr	SPRN_HSRR1, r7
+ 	b	hmi_exception_after_realmode
+@@ -2494,22 +2492,32 @@ machine_check_realmode:
+ 	ld	r9, HSTATE_KVM_VCPU(r13)
+ 	li	r12, BOOK3S_INTERRUPT_MACHINE_CHECK
+ 	/*
+-	 * Deliver unhandled/fatal (e.g. UE) MCE errors to guest through
+-	 * machine check interrupt (set HSRR0 to 0x200). And for handled
+-	 * errors (no-fatal), just go back to guest execution with current
+-	 * HSRR0 instead of exiting guest. This new approach will inject
+-	 * machine check to guest for fatal error causing guest to crash.
+-	 *
+-	 * The old code used to return to host for unhandled errors which
+-	 * was causing guest to hang with soft lockups inside guest and
+-	 * makes it difficult to recover guest instance.
++	 * For the guest that is FWNMI capable, deliver all the MCE errors
++	 * (handled/unhandled) by exiting the guest with KVM_EXIT_NMI exit
++	 * reason. This new approach injects machine check errors in guest
++	 * address space to guest with additional information in the form
++	 * of RTAS event, thus enabling guest kernel to suitably handle
++	 * such errors.
+ 	 *
++	 * For the guest that is not FWNMI capable (old QEMU) fallback
++	 * to old behaviour for backward compatibility:
++	 * Deliver unhandled/fatal (e.g. UE) MCE errors to guest either
++	 * through machine check interrupt (set HSRR0 to 0x200).
++	 * For handled errors (no-fatal), just go back to guest execution
++	 * with current HSRR0.
+ 	 * if we receive machine check with MSR(RI=0) then deliver it to
+ 	 * guest as machine check causing guest to crash.
+ 	 */
+ 	ld	r11, VCPU_MSR(r9)
+ 	rldicl.	r0, r11, 64-MSR_HV_LG, 63 /* check if it happened in HV mode */
+ 	bne	mc_cont			/* if so, exit to host */
++	/* Check if guest is capable of handling NMI exit */
++	ld	r10, VCPU_KVM(r9)
++	lbz	r10, KVM_FWNMI(r10)
++	cmpdi	r10, 1			/* FWNMI capable? */
++	beq	mc_cont			/* if so, exit with KVM_EXIT_NMI. */
++
++	/* if not, fall through for backward compatibility. */
+ 	andi.	r10, r11, MSR_RI	/* check for unrecoverable exception */
+ 	beq	1f			/* Deliver a machine check to guest */
+ 	ld	r10, VCPU_PC(r9)
