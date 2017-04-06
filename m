@@ -2,16 +2,14 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vzNh3752lzDqJL
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Apr 2017 23:23:31 +1000 (AEST)
-In-Reply-To: <20170329171942.14267-1-fbarrat@linux.vnet.ibm.com>
-To: Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
- aneesh.kumar@linux.vnet.ibm.com, bsingharora@gmail.com,
- linuxppc-dev@lists.ozlabs.org
-From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: powerpc/mm: Add missing global TLBI if cxl is active
-Message-Id: <3vzNh35lLSz9s8N@ozlabs.org>
-Date: Thu,  6 Apr 2017 23:23:31 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vzNx32cYdzDqHJ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Apr 2017 23:34:47 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: linuxppc-dev@ozlabs.org
+Cc: anton@samba.org
+Subject: [PATCH] powerpc/crypto/crc32c-vpmsum: Fix missing preempt_disable()
+Date: Thu,  6 Apr 2017 23:34:38 +1000
+Message-Id: <1491485678-3444-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,24 +19,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2017-03-29 at 17:19:42 UTC, Frederic Barrat wrote:
-> Commit 4c6d9acce1f4 ("powerpc/mm: Add hooks for cxl") converted local
-> TLBIs to global if the cxl driver is active. It is necessary because
-> the CAPP snoops invalidations to forward them to the PSL on the cxl
-> adapter.
-> However one path was apparently forgotten. native_flush_hash_range()
-> still sends local TLBIs, as found out the hard way recently.
-> 
-> This patch fixes it by following the same logic as previously: if the
-> cxl driver is active, the local TLBIs are 'upgraded' to global.
-> 
-> Fixes: 4c6d9acce1f4 ("powerpc/mm: Add hooks for cxl")
-> Cc: stable@vger.kernel.org
-> Signed-off-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-> Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+In crc32c_vpmsum() we call enable_kernel_altivec() without first
+disabling preemption, which is not allowed:
 
-Applied to powerpc fixes, thanks.
+  WARNING: CPU: 9 PID: 2949 at ../arch/powerpc/kernel/process.c:277 enable_kernel_altivec+0x100/0x120
+  Modules linked in: dm_thin_pool dm_persistent_data dm_bio_prison dm_bufio libcrc32c vmx_crypto ...
+  CPU: 9 PID: 2949 Comm: docker Not tainted 4.11.0-rc5-compiler_gcc-6.3.1-00033-g308ac7563944 #381
+  ...
+  NIP [c00000000001e320] enable_kernel_altivec+0x100/0x120
+  LR [d000000003df0910] crc32c_vpmsum+0x108/0x150 [crc32c_vpmsum]
+  Call Trace:
+    0xc138fd09 (unreliable)
+    crc32c_vpmsum+0x108/0x150 [crc32c_vpmsum]
+    crc32c_vpmsum_update+0x3c/0x60 [crc32c_vpmsum]
+    crypto_shash_update+0x88/0x1c0
+    crc32c+0x64/0x90 [libcrc32c]
+    dm_bm_checksum+0x48/0x80 [dm_persistent_data]
+    sb_check+0x84/0x120 [dm_thin_pool]
+    dm_bm_validate_buffer.isra.0+0xc0/0x1b0 [dm_persistent_data]
+    dm_bm_read_lock+0x80/0xf0 [dm_persistent_data]
+    __create_persistent_data_objects+0x16c/0x810 [dm_thin_pool]
+    dm_pool_metadata_open+0xb0/0x1a0 [dm_thin_pool]
+    pool_ctr+0x4cc/0xb60 [dm_thin_pool]
+    dm_table_add_target+0x16c/0x3c0
+    table_load+0x184/0x400
+    ctl_ioctl+0x2f0/0x560
+    dm_ctl_ioctl+0x38/0x50
+    do_vfs_ioctl+0xd8/0x920
+    SyS_ioctl+0x68/0xc0
+    system_call+0x38/0xfc
 
-https://git.kernel.org/powerpc/c/88b1bf7268f56887ca88eb09c6fb0f
+It used to be sufficient just to call pagefault_disable(), because that
+also disabled preemption. But the two were decoupled in commit 8222dbe21e79
+("sched/preempt, mm/fault: Decouple preemption from the page fault
+logic") in mid 2015.
 
-cheers
+So add the missing preempt_disable/enable(). We should also call
+disable_kernel_fp(), although it does nothing by default, there is a
+debug switch to make it active and all enables should be paired with
+disables.
+
+Fixes: 6dd7a82cc54e ("crypto: powerpc - Add POWER8 optimised crc32c")
+Cc: stable@vger.kernel.org # v4.8+
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/crypto/crc32c-vpmsum_glue.c | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/arch/powerpc/crypto/crc32c-vpmsum_glue.c b/arch/powerpc/crypto/crc32c-vpmsum_glue.c
+index 411994551afc..f058e0c3e4d4 100644
+--- a/arch/powerpc/crypto/crc32c-vpmsum_glue.c
++++ b/arch/powerpc/crypto/crc32c-vpmsum_glue.c
+@@ -33,10 +33,13 @@ static u32 crc32c_vpmsum(u32 crc, unsigned char const *p, size_t len)
+ 	}
+ 
+ 	if (len & ~VMX_ALIGN_MASK) {
++		preempt_disable();
+ 		pagefault_disable();
+ 		enable_kernel_altivec();
+ 		crc = __crc32c_vpmsum(crc, p, len & ~VMX_ALIGN_MASK);
++		disable_kernel_altivec();
+ 		pagefault_enable();
++		preempt_enable();
+ 	}
+ 
+ 	tail = len & VMX_ALIGN_MASK;
+-- 
+2.7.4
