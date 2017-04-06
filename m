@@ -2,15 +2,15 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vzNMP2T3PzDqL0
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Apr 2017 23:09:05 +1000 (AEST)
-In-Reply-To: <20170404045605.gmr2uqelm3uxouwt@oak.ozlabs.ibm.com>
-To: Paul Mackerras <paulus@ozlabs.org>, linuxppc-dev@ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vzNMQ2drXzDqMZ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Apr 2017 23:09:06 +1000 (AEST)
+In-Reply-To: <1491392949-6879-1-git-send-email-mpe@ellerman.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: powerpc: Don't try to fix up misaligned load-with-reservation
- instructions
-Message-Id: <3vzNMN6qw4z9s8S@ozlabs.org>
-Date: Thu,  6 Apr 2017 23:09:04 +1000 (AEST)
+Cc: oohall@gmail.com
+Subject: Re: [v2] powerpc/64: Fix flush_(d|i)cache_range() called from modules
+Message-Id: <3vzNMQ0Jcwz9s8S@ozlabs.org>
+Date: Thu,  6 Apr 2017 23:09:05 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,31 +20,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2017-04-04 at 04:56:05 UTC, Paul Mackerras wrote:
-> In the past, there was only one load-with-reservation instruction,
-> lwarx, and if a program attempted a lwarx on a misaligned address, it
-> would take an alignment interrupt and the kernel handler would emulate
-> it as though it was lwzx, which was not really correct, but benign
-> since it is loading the right amount of data, and the lwarx should be
-> paired with a stwcx. to the same address, which would also cause an
-> alignment interrupt which would result in a SIGBUS being delivered to
-> the process.
+On Wed, 2017-04-05 at 11:49:09 UTC, Michael Ellerman wrote:
+> From: Oliver O'Halloran <oohall@gmail.com>
 > 
-> We now have 5 different sizes of load-with-reservation instruction.
-> Of those, lharx and ldarx cause an immediate SIGBUS by luck since
-> their entries in aligninfo[] overlap instructions which were not
-> fixed up, but lqarx overlaps with lhz and will be emulated as such.
-> lbarx can never generate an alignment interrupt since it only
-> operates on 1 byte.
+> When the kernel is compiled to use 64bit ABIv2 the _GLOBAL() macro does
+> not include a global entry point. A function's global entry point is
+> used when the function is called from a different TOC context and in the
+> kernel this typically means a call from a module into the vmlinux (or
+> vice-versa).
 > 
-> To straighten this out and fix the lqarx case, this adds code to
-> detect the l[hwdq]arx instructions and return without fixing them
-> up, resulting in a SIGBUS being delivered to the process.
+> There are a few exported asm functions declared with _GLOBAL() and
+> calling them from a module will likely crash the kernel since any TOC
+> relative load will yield garbage.
 > 
-> Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
+> flush_icache_range() and flush_dcache_range() are both exported to
+> modules, and use the TOC, so must use _GLOBAL_TOC().
+> 
+> Fixes: 721aeaa9fdf3 ("powerpc: Build little endian ppc64 kernel with ABIv2")
+> Cc: stable@vger.kernel.org # v3.16+
+> Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
-Applied to powerpc fixes, thanks.
+Applied to powerpc fixes.
 
-https://git.kernel.org/powerpc/c/48fe9e9488743eec9b7c1addd3c93f
+https://git.kernel.org/powerpc/c/8f5f525d5b83f7d76a6baf9c4e94d4
 
 cheers
