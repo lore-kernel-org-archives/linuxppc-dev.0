@@ -1,41 +1,31 @@
-Return-Path: <robh+dt@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <srs0=qsk2=3o=arm.com=will.deacon@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vzPjq4wfkzDqH6
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Apr 2017 00:10:07 +1000 (AEST)
-Received: from mail.kernel.org (localhost [127.0.0.1])
- by mail.kernel.org (Postfix) with ESMTP id EB48F2014A
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Apr 2017 14:10:04 +0000 (UTC)
-Received: from mail-yw0-f181.google.com (mail-yw0-f181.google.com
- [209.85.161.181])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id B8FAE2021A
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Apr 2017 14:10:02 +0000 (UTC)
-Received: by mail-yw0-f181.google.com with SMTP id i203so20662240ywc.3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Apr 2017 07:10:02 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <20170406103829.67d462e1@roar.ozlabs.ibm.com>
-References: <20170405123706.6081-1-npiggin@gmail.com>
- <20170405123706.6081-3-npiggin@gmail.com>
- <CAL_JsqK4zbACwWVb-rsrvBb4hjBCexrqKRKrzSiZrZH5w=bKqQ@mail.gmail.com>
- <20170406003251.533e2845@roar.ozlabs.ibm.com>
- <CAL_JsqLEvjb8S-+-JEa4ALHeCWHiR1A_4ur9kd3pBRJaFYWVKw@mail.gmail.com>
- <1491425881.4166.90.camel@kernel.crashing.org>
- <20170406103829.67d462e1@roar.ozlabs.ibm.com>
-From: Rob Herring <robh+dt@kernel.org>
-Date: Thu, 6 Apr 2017 09:09:41 -0500
-Message-ID: <CAL_JsqKuomE41grhAvjFxkFbS4A3-M_TK8gP8FU=HdDpQ3TTkg@mail.gmail.com>
-Subject: Re: [PATCH 2/3] of/fdt: introduce of_scan_flat_dt_subnodes and
- of_get_flat_dt_phandle
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vzPnt2vd1zDqHJ
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Apr 2017 00:13:38 +1000 (AEST)
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3vzPnt29Hzz8stc
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Apr 2017 00:13:38 +1000 (AEST)
+Received: from foss.arm.com (foss.arm.com [217.140.101.70])
+ by ozlabs.org (Postfix) with ESMTP id 3vzPnt0P2Yz9s9Y
+ for <linuxppc-dev@ozlabs.org>; Fri,  7 Apr 2017 00:13:37 +1000 (AEST)
+Date: Thu, 6 Apr 2017 15:13:53 +0100
+From: Will Deacon <will.deacon@arm.com>
 To: Nicholas Piggin <npiggin@gmail.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Frank Rowand <frowand.list@gmail.com>
-Content-Type: text/plain; charset=UTF-8
+Cc: David Miller <davem@davemloft.net>, torvalds@linux-foundation.org,
+ linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
+ anton@samba.org, linuxppc-dev@ozlabs.org, peterz@infradead.org
+Subject: Re: [RFC][PATCH] spin loop arch primitives for busy waiting
+Message-ID: <20170406141352.GF18204@arm.com>
+References: <20170404095001.664718b8@roar.ozlabs.ibm.com>
+ <CA+55aFzdUMZHzXtn9PyhJg7GjYNQ5fy6=LzBNJx==Ab=U=YYjw@mail.gmail.com>
+ <20170404130233.1f45115b@roar.ozlabs.ibm.com>
+ <20170405.070157.871721909352646302.davem@davemloft.net>
+ <20170406105958.196c6977@roar.ozlabs.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20170406105958.196c6977@roar.ozlabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,45 +35,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Apr 5, 2017 at 7:38 PM, Nicholas Piggin <npiggin@gmail.com> wrote:
-> On Thu, 06 Apr 2017 06:58:01 +1000
-> Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
->
->> On Wed, 2017-04-05 at 10:58 -0500, Rob Herring wrote:
->> > Well, I'd like to avoid expanding usage of flat DT parsing in the
->> > kernel. But you could just put this function into arch/powerpc and I'd
->> > never see it, but I like that even less. Mainly, I just wanted to
->> > raise the point.
->> >
->> > Your argument works until you need that setup in assembly code, then
->> > you are in the situation that you need to either handle the setup in
->> > bootloader/firmware or have an simple way to determine that condition.
->>
->> The main issue is that changing that is a very very invasive change in
->> an extremely fragile and rather nasty area of code shared by 32 and 64-
->> bit for which we don't even have easy access to all the machines to
->> test with anymore :)
->>
->> It's probably not impossible, but it would delay the new cpu feature
->> stuff that Nick is making by a lot, probably monthes, making it nearly
->> impossible to get back into distros etc...
->>
->> So while it might be something to consider, I would definitely keep
->> that as a separate unit of work to do later.
->
-> Yeah, it's no longer a "drop in" replacement for existing features
-> testing if we do this, which makes it hard to backport too (we will
-> need this for compatibility with future firmware, so it will have to
-> go into distro kernels.)
->
-> Given that it's quite a small addition to of/fdt code, hopefully
-> that gives you a reasonable justification to accept it.
->
-> If you prefer not to, that's okay, but I think we would have to carry
-> it in arch/powerpc at least for a time, because of the schedule we're
-> working to for POWER9 enablement. As a longer term item I agree with you
-> and Ben, it would be worth considering unflattening earlier.
+Hi Nick,
 
-As I mentioned, keeping it in arch/powerpc I like even less. So this is fine.
+On Thu, Apr 06, 2017 at 10:59:58AM +1000, Nicholas Piggin wrote:
+> On Wed, 05 Apr 2017 07:01:57 -0700 (PDT)
+> David Miller <davem@davemloft.net> wrote:
+> 
+> > From: Nicholas Piggin <npiggin@gmail.com>
+> > Date: Tue, 4 Apr 2017 13:02:33 +1000
+> > 
+> > > On Mon, 3 Apr 2017 17:43:05 -0700
+> > > Linus Torvalds <torvalds@linux-foundation.org> wrote:
+> > >   
+> > >> But that depends on architectures having some pattern that we *can*
+> > >> abstract. Would some "begin/in-loop/end" pattern like the above be
+> > >> sufficient?  
+> > > 
+> > > Yes. begin/in/end would be sufficient for powerpc SMT priority, and
+> > > for x86, and it looks like sparc64 too. So we could do that if you
+> > > prefer.  
+> > 
+> > Sparc64 has two cases, on older chips we can induce a cpu thread yield
+> > with a special sequence of instructions, and on newer chips we have
+> > a bonafide pause instruction.
+> > 
+> > So cpu_relax() all by itself pretty much works for us.
+> > 
+> 
+> Thanks for taking a look. The default spin primitives should just
+> continue to do the right thing for you in that case.
+> 
+> Arm has a yield instruction, ia64 has a pause... No unusual
+> requirements that I can see.
 
-Rob
+Yield tends to be implemented as a NOP in practice, since it's in the
+architecture for SMT CPUs and most ARM CPUs are single-threaded. We do have
+the WFE instruction (wait for event) which is used in our implementation of
+smp_cond_load_acquire, but I don't think we'd be able to use it with the
+proposals here.
+
+WFE can stop the clock for the CPU until an "event" is signalled by
+another CPU. This could be done by an explicit SEV (send event) instruction,
+but that tends to require heavy barriers on the signalling side. Instead,
+the preferred way to generate an event is to clear the exclusive monitor
+reservation for the CPU executing the WFE. That means that the waiter
+does something like:
+
+	LDXR x0, [some_address]	// Load exclusive from some_address
+	CMP  x0, some value	// If the value matches what I want
+	B.EQ out		// then we're done
+	WFE			// otherwise, wait
+
+at this point, the waiter will stop on the WFE until its monitor is cleared,
+which happens if another CPU writes to some_address.
+
+We've wrapped this up in the arm64 code as __cmpwait, and we use that
+to build smp_cond_load_acquire. It would be nice to use the same machinery
+for the conditional spinning here, unless you anticipate that we're only
+going to be spinning for a handful of iterations anyway?
+
+Cheers,
+
+Will
