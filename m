@@ -1,16 +1,17 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vzNHv2DBJzDqJL
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Apr 2017 23:06:03 +1000 (AEST)
-In-Reply-To: <20170330040349.GA31756@us.ibm.com>
-To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vzNHw0gnNzDqJL
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Apr 2017 23:06:04 +1000 (AEST)
+In-Reply-To: <20170403064102.23245-1-anton@ozlabs.org>
+To: Anton Blanchard <anton@ozlabs.org>, benh@kernel.crashing.org,
+ paulus@samba.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: praveen.pandey@in.ibm.com, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Subject: Re: powerpc/prom: Increase RMA size to 512MB
-Message-Id: <3vzNHv1ZFfz9s8T@ozlabs.org>
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: Re: powerpc: Avoid taking a data miss on every userspace instruction
+ miss
+Message-Id: <3vzNHv6zMZz9s9c@ozlabs.org>
 Date: Thu,  6 Apr 2017 23:06:03 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -21,32 +22,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2017-03-30 at 04:03:49 UTC, Sukadev Bhattiprolu wrote:
-> >From 3ae8d1ed31b01b92b172fe20e4560cfbfab135ec Mon Sep 17 00:00:00 2001
-> From: root <root@furatripa-lp2.aus.stglabs.ibm.com>
-> Date: Mon, 27 Mar 2017 19:43:14 -0400
-> Subject: [PATCH] powerpc/prom: Increase RMA size to 512MB
+On Mon, 2017-04-03 at 06:41:02 UTC, Anton Blanchard wrote:
+> From: Anton Blanchard <anton@samba.org>
 > 
-> When booting very large systems with a large initrd, we run out of
-> space for either the RTAS or the flattened device tree (FDT). Boot
-> fails with messages like:
+> Early on in do_page_fault() we call store_updates_sp(), regardless of
+> the type of exception. For an instruction miss this doesn't make
+> sense, because we only use this information to detect if a data miss
+> is the result of a stack expansion instruction or not.
 > 
-> 	Could not allocate memory for RTAS
-> or
-> 	No memory for flatten_device_tree (no room)
+> Worse still, it results in a data miss within every userspace
+> instruction miss handler, because we try and load the very instruction
+> we are about to install a pte for!
 > 
-> Increasing the minimum RMA size to 512MB fixes the problem. This
-> should not have an impact on smaller LPARs (with 256MB memory),
-> as the firmware will cap the RMA to the memory assigned to the LPAR.
+> A simple exec microbenchmark runs 6% faster on POWER8 with this fix:
 > 
-> Fix is based on input/discussions with Michael Ellerman. Thanks to
-> Praveen K. Pandey for testing on a large system.
+>  #include <stdlib.h>
+>  #include <stdio.h>
+>  #include <unistd.h>
 > 
-> Reported-by: Praveen K. Pandey <preveen.pandey@in.ibm.com>
-> Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+> int main(int argc, char *argv[])
+> {
+> 	unsigned long left = atol(argv[1]);
+> 	char leftstr[16];
+> 
+> 	if (left-- == 0)
+> 		return 0;
+> 
+> 	sprintf(leftstr, "%ld", left);
+> 	execlp(argv[0], argv[0], leftstr, NULL);
+> 	perror("exec failed\n");
+> 
+> 	return 0;
+> }
+> 
+> Pass the number of iterations on the command line (eg 10000) and time
+> how long it takes to execute.
+> 
+> Signed-off-by: Anton Blanchard <anton@samba.org>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/687da8fce1682c9f1e87530e731189
+https://git.kernel.org/powerpc/c/a7a9dcd882a67b68568868b988289f
 
 cheers
