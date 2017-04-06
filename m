@@ -1,46 +1,30 @@
-Return-Path: <andrew.donnellan@au1.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
+ [IPv6:2607:f8b0:400e:c05::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vz3gx2hy9zDqHH
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Apr 2017 10:37:16 +1000 (AEST)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v360Nqhs065121
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Apr 2017 20:37:10 -0400
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
- by mx0a-001b2d01.pphosted.com with ESMTP id 29n5ycmj6v-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Apr 2017 20:37:10 -0400
-Received: from localhost
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
- Thu, 6 Apr 2017 10:37:08 +1000
-Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v360aw1Z55967810
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Apr 2017 10:37:06 +1000
-Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
- by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v360aXW5008696
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Apr 2017 10:36:34 +1000
-Subject: Re: [PATCH] cxl: Route eeh events to all drivers in
- cxl_pci_error_detected()
-To: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>,
- Frederic Barrat <fbarrat@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-References: <20170405061608.13797-1-vaibhav@linux.vnet.ibm.com>
-Cc: Ian Munsie <imunsie@au1.ibm.com>,
- Christophe Lombard <christophe_lombard@fr.ibm.com>,
- Philippe Bergheaud <philippe.bergheaud@fr.ibm.com>,
- Greg Kurz <gkurz@linux.vnet.ibm.com>
-From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Date: Thu, 6 Apr 2017 10:36:07 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vz3jZ6drLzDqHH
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Apr 2017 10:38:42 +1000 (AEST)
+Received: by mail-pg0-x244.google.com with SMTP id 79so4545342pgf.0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Apr 2017 17:38:42 -0700 (PDT)
+Date: Thu, 6 Apr 2017 10:38:29 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Rob Herring <robh+dt@kernel.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, linuxppc-dev
+ <linuxppc-dev@lists.ozlabs.org>, Frank Rowand <frowand.list@gmail.com>
+Subject: Re: [PATCH 2/3] of/fdt: introduce of_scan_flat_dt_subnodes and
+ of_get_flat_dt_phandle
+Message-ID: <20170406103829.67d462e1@roar.ozlabs.ibm.com>
+In-Reply-To: <1491425881.4166.90.camel@kernel.crashing.org>
+References: <20170405123706.6081-1-npiggin@gmail.com>
+ <20170405123706.6081-3-npiggin@gmail.com>
+ <CAL_JsqK4zbACwWVb-rsrvBb4hjBCexrqKRKrzSiZrZH5w=bKqQ@mail.gmail.com>
+ <20170406003251.533e2845@roar.ozlabs.ibm.com>
+ <CAL_JsqLEvjb8S-+-JEa4ALHeCWHiR1A_4ur9kd3pBRJaFYWVKw@mail.gmail.com>
+ <1491425881.4166.90.camel@kernel.crashing.org>
 MIME-Version: 1.0
-In-Reply-To: <20170405061608.13797-1-vaibhav@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Message-Id: <9789e76d-d410-57e6-8cae-7d81919810e7@au1.ibm.com>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,71 +34,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/04/17 16:16, Vaibhav Jain wrote:
-> Fix a boundary condition where in some cases an eeh event that results
-> in card reset isn't passed on to a driver attached to the virtual PCI
-> device associated with a slice. This will happen in case when a slice
-> attached device driver returns a value other than
-> PCI_ERS_RESULT_NEED_RESET from the eeh error_detected() callback. This
-> would result in an early return from cxl_pci_error_detected() and
-> other drivers attached to other AFUs on the card wont be notified.
->
-> The patch fixes this by making sure that all slice attached
-> device-drivers are notified and the return values from
-> error_detected() callback are aggregated in a scheme where request for
-> 'disconnect' trumps all and 'none' trumps 'need_reset'.
->
-> Based-on: https://patchwork.ozlabs.org/patch/747102/
-> Fixes: 9e8df8a21963("cxl: EEH support")
-> Signed-off-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+On Thu, 06 Apr 2017 06:58:01 +1000
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-Reviewed-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+> On Wed, 2017-04-05 at 10:58 -0500, Rob Herring wrote:
+> > Well, I'd like to avoid expanding usage of flat DT parsing in the
+> > kernel. But you could just put this function into arch/powerpc and I'd
+> > never see it, but I like that even less. Mainly, I just wanted to
+> > raise the point.
+> > 
+> > Your argument works until you need that setup in assembly code, then
+> > you are in the situation that you need to either handle the setup in
+> > bootloader/firmware or have an simple way to determine that condition.  
+> 
+> The main issue is that changing that is a very very invasive change in
+> an extremely fragile and rather nasty area of code shared by 32 and 64-
+> bit for which we don't even have easy access to all the machines to
+> test with anymore :)
+> 
+> It's probably not impossible, but it would delay the new cpu feature
+> stuff that Nick is making by a lot, probably monthes, making it nearly
+> impossible to get back into distros etc... 
+> 
+> So while it might be something to consider, I would definitely keep
+> that as a separate unit of work to do later.
 
-Should this go to stable?
+Yeah, it's no longer a "drop in" replacement for existing features
+testing if we do this, which makes it hard to backport too (we will
+need this for compatibility with future firmware, so it will have to
+go into distro kernels.)
 
-> ---
->  drivers/misc/cxl/pci.c | 15 +++++++++------
->  1 file changed, 9 insertions(+), 6 deletions(-)
->
-> diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
-> index 1e98245..701f6a3 100644
-> --- a/drivers/misc/cxl/pci.c
-> +++ b/drivers/misc/cxl/pci.c
-> @@ -1782,7 +1782,7 @@ static pci_ers_result_t cxl_pci_error_detected(struct pci_dev *pdev,
->  {
->  	struct cxl *adapter = pci_get_drvdata(pdev);
->  	struct cxl_afu *afu;
-> -	pci_ers_result_t result = PCI_ERS_RESULT_NEED_RESET;
-> +	pci_ers_result_t result = PCI_ERS_RESULT_NEED_RESET, afu_result;
->  	int i;
->
->  	/* At this point, we could still have an interrupt pending.
-> @@ -1886,15 +1886,18 @@ static pci_ers_result_t cxl_pci_error_detected(struct pci_dev *pdev,
->  	for (i = 0; i < adapter->slices; i++) {
->  		afu = adapter->afu[i];
->
-> -		result = cxl_vphb_error_detected(afu, state);
-> -
-> -		/* Only continue if everyone agrees on NEED_RESET */
-> -		if (result != PCI_ERS_RESULT_NEED_RESET)
-> -			return result;
-> +		afu_result = cxl_vphb_error_detected(afu, state);
->
->  		cxl_context_detach_all(afu);
->  		cxl_ops->afu_deactivate_mode(afu, afu->current_mode);
->  		pci_deconfigure_afu(afu);
-> +
-> +		/* Disconnect trumps all, NONE trumps NEED_RESET */
-> +		if (afu_result == PCI_ERS_RESULT_DISCONNECT)
-> +			result = PCI_ERS_RESULT_DISCONNECT;
-> +		else if ((afu_result == PCI_ERS_RESULT_NONE) &&
-> +			 (result == PCI_ERS_RESULT_NEED_RESET))
-> +			result = PCI_ERS_RESULT_NONE;
->  	}
->
->  	/* should take the context lock here */
->
+Given that it's quite a small addition to of/fdt code, hopefully
+that gives you a reasonable justification to accept it.
 
--- 
-Andrew Donnellan              OzLabs, ADL Canberra
-andrew.donnellan@au1.ibm.com  IBM Australia Limited
+If you prefer not to, that's okay, but I think we would have to carry
+it in arch/powerpc at least for a time, because of the schedule we're
+working to for POWER9 enablement. As a longer term item I agree with you
+and Ben, it would be worth considering unflattening earlier.
+
+Thanks,
+Nick
