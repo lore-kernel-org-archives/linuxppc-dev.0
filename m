@@ -2,21 +2,21 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vzBjK1qSNzDqLD
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Apr 2017 15:53:57 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vzBvr6zG6zDqKk
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Apr 2017 16:03:04 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>, gleb@kernel.org,
- agraf@suse.de, KVM-PPC <kvm-ppc@vger.kernel.org>,
+To: Alistair Popple <alistair@popple.id.au>, linuxppc-dev@lists.ozlabs.org
+Cc: Balbir Singh <bsingharora@gmail.com>,
  linuxppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
- pbonzini@redhat.com
-Cc: KVM <kvm@vger.kernel.org>, david@gibson.dropbear.id.au
-Subject: Re: [PATCH v7 2/3] powerpc/powernv: Introduce a machine check hook
- for Guest MCEs.
-In-Reply-To: <149142524189.28284.14876788789820474952.stgit@jupiter.in.ibm.com>
-References: <149142508580.28284.10052904644951828717.stgit@jupiter.in.ibm.com>
- <149142524189.28284.14876788789820474952.stgit@jupiter.in.ibm.com>
-Date: Thu, 06 Apr 2017 15:53:53 +1000
-Message-ID: <878tneuln2.fsf@concordia.ellerman.id.au>
+ Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [RFC] [PATCH] Trace TLBIE's
+In-Reply-To: <2637022.69IxkT9g0N@new-mexico>
+References: <3dcd0c76-46fd-cb7a-945d-4b5a679fa544@gmail.com>
+ <87polmtscd.fsf@concordia.ellerman.id.au>
+ <8a496713-bc00-6520-b715-481de507363e@gmail.com>
+ <2637022.69IxkT9g0N@new-mexico>
+Date: Thu, 06 Apr 2017 16:03:04 +1000
+Message-ID: <8760iiul7r.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,69 +28,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com> writes:
+Alistair Popple <alistair@popple.id.au> writes:
 
-> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+> On Wed, 23 Nov 2016 10:40:36 PM Balbir Singh wrote:
+>>
+>> > But overall I guess it's OK. We'd want to do a quick benchmark to make
+>> > sure it's not adding any overhead.
+>>
+>> OK.. I'll try and find a benchmark and run it with traces disabled.
 >
-> This patch introduces a mce hook which is invoked at the time of guest
-> exit to facilitate the host-side handling of machine check exception
-> before the exception is passed on to the guest. This hook will be invoked
-> from host virtual mode from KVM (before exiting the guest with
-> KVM_EXIT_NMI reason) for machine check exception that occurs in the guest.
+> For what's it's worth I didn't notice any slow down running a NAMD
+> test with tracing disabled and ~400000 tlbie's in 34s. Turning tracing
+> on could have slowed things down ever so slightly, but I didn't notice
+> as it may have just been in the noise of the benchmark I was running
+> (I wasn't specifically looking at timing, hence the vagueness of the
+> remarks).
+>
+> Otherwise the patch worked and would be useful - I have already had to
+> setup tlbie counting/tracing several times in the last 12 months.
+>
+> Tested-by: Alistair Popple <alistair@popple.id.au>
 
-Hi Mahesh,
+OK thanks.
 
-This patch doesn't meaningfully abstract anything.
+To get it merged I'd like:
+ - always called after the barriers.
+ - no calls in loops, instead add a "count" field to the trace point and
+   when we call it multiple times in a loop we pass the count.
 
-opal_machine_check_guest() doesn't call opal, or do anything opal
-specific. It just passes the evt struct back to code in mce.c, which is
-where the struct came from in the first place.
+So you'd see entries something like:
 
-> --- a/arch/powerpc/platforms/powernv/opal.c
-> +++ b/arch/powerpc/platforms/powernv/opal.c
-> @@ -479,6 +479,32 @@ int opal_machine_check(struct pt_regs *regs)
->  	return 0;
->  }
->  
-> +#ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
-> +/*
-> + * opal_machine_check_guest() is a hook which is invoked at the time
-> + * of guest exit to facilitate the host-side handling of machine check
-> + * exception before the exception is passed on to the guest. This hook
-> + * is invoked from host virtual mode from KVM (before exiting the guest
-> + * with KVM_EXIT_NMI reason) for machine check exception that occurs in
-> + * the guest.
-> + *
-> + * Currently no action is performed in the host other than printing the
-> + * event information. The machine check exception is passed on to the
-> + * guest kernel and the guest kernel will attempt for recovery.
-> + */
-> +int opal_machine_check_guest(struct machine_check_event *evt)
-> +{
-> +	/* Print things out */
-> +	if (evt->version != MCE_V1) {
-> +		pr_err("Machine Check Exception, Unknown event version %d !\n",
-> +		       evt->version);
-> +		return 0;
-> +	}
-> +	machine_check_print_event_info(evt);
-> +	return 0;
-> +}
-> +#endif
-
-Called from kvmppc_handle_exit_hv():
-
-+		if (ppc_md.machine_check_exception_guest)
-+			ppc_md.machine_check_exception_guest(
-+							&vcpu->arch.mce_evt);
- 		break;
-
-Just call machine_check_print_event_info() directly from
-kvmppc_handle_exit_hv().
-
-You'll need to export symbol it, but that's all AFAICS, I don't think it
-even needs any #ifdefs.
-
-If we ever want to do anything different we can change the code then.
+<...>-5141  [062]  1354.486693: tlbie: lpid=0, local=1, rb=0x7b5d0ff874f11f1, rs=0, ric=0, prs=0, r=0, count=128
 
 cheers
