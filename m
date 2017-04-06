@@ -1,50 +1,41 @@
-Return-Path: <maddy@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <stewart@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vzCpk3M89zDqLd
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Apr 2017 16:43:42 +1000 (AEST)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v366ha0U082929
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Apr 2017 02:43:39 -0400
-Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [125.16.236.5])
- by mx0b-001b2d01.pphosted.com with ESMTP id 29nbp0ue5x-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vzDHL1xRCzDqMG
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Apr 2017 17:05:02 +1000 (AEST)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v3674pB0112462
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Apr 2017 03:04:56 -0400
+Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 29n9g7gved-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Apr 2017 02:43:39 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Apr 2017 03:04:54 -0400
 Received: from localhost
- by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
- Thu, 6 Apr 2017 12:13:29 +0530
-Received: from d28av08.in.ibm.com (d28av08.in.ibm.com [9.184.220.148])
- by d28relay05.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v366hLvx16842818
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Apr 2017 12:13:21 +0530
-Received: from d28av08.in.ibm.com (localhost [127.0.0.1])
- by d28av08.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v366hOUn023671
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Apr 2017 12:13:26 +0530
-Subject: Re: [PATCH v6 04/11] powerpc/perf: Add event attribute and group to
- IMC pmus
-To: Daniel Axtens <dja@axtens.net>, mpe@ellerman.id.au
-References: <1491231308-15282-1-git-send-email-maddy@linux.vnet.ibm.com>
- <1491231308-15282-5-git-send-email-maddy@linux.vnet.ibm.com>
- <87bmscly5u.fsf@possimpible.ozlabs.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <stewart@linux.vnet.ibm.com>;
+ Thu, 6 Apr 2017 03:04:28 -0400
+From: Stewart Smith <stewart@linux.vnet.ibm.com>
+To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>, mpe@ellerman.id.au
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  ego@linux.vnet.ibm.com, bsingharora@gmail.com,
  benh@kernel.crashing.org, paulus@samba.org, anton@samba.org,
- sukadev@linux.vnet.ibm.com, mikey@neuling.org,
- stewart@linux.vnet.ibm.com, eranian@google.com,
- Hemant Kumar <hemant@linux.vnet.ibm.com>,
- Anju T Sudhakar <anju@linux.vnet.ibm.com>
-From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Date: Thu, 6 Apr 2017 12:13:23 +0530
+ sukadev@linux.vnet.ibm.com, mikey@neuling.org, dja@axtens.net,
+ eranian@google.com, Hemant Kumar <hemant@linux.vnet.ibm.com>,
+ Anju T Sudhakar <anju@linux.vnet.ibm.com>,
+ Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+Subject: Re: [PATCH v6 02/11] powerpc/powernv: Autoload IMC device driver
+ module
+In-Reply-To: <1491231308-15282-3-git-send-email-maddy@linux.vnet.ibm.com>
+References: <1491231308-15282-1-git-send-email-maddy@linux.vnet.ibm.com>
+ <1491231308-15282-3-git-send-email-maddy@linux.vnet.ibm.com>
+Date: Thu, 06 Apr 2017 17:04:13 +1000
 MIME-Version: 1.0
-In-Reply-To: <87bmscly5u.fsf@possimpible.ozlabs.ibm.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Message-Id: <c25cd134-9c53-5523-c4ad-faeef02e2af2@linux.vnet.ibm.com>
+Content-Type: text/plain
+Message-Id: <87wpayhv9u.fsf@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -54,238 +45,139 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-
-On Tuesday 04 April 2017 07:41 AM, Daniel Axtens wrote:
-> Hi,
+Madhavan Srinivasan <maddy@linux.vnet.ibm.com> writes:
+> From: Hemant Kumar <hemant@linux.vnet.ibm.com>
 >
->> Device tree IMC driver code parses the IMC units and their events. It
->> passes the information to IMC pmu code which is placed in powerpc/perf
->> as "imc-pmu.c".
->>
->> This patch creates only event attributes and attribute groups for the
->> IMC pmus.
->>
->> Signed-off-by: Anju T Sudhakar <anju@linux.vnet.ibm.com>
->> Signed-off-by: Hemant Kumar <hemant@linux.vnet.ibm.com>
->> Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
->> ---
->>   arch/powerpc/perf/Makefile                |  6 +-
->>   arch/powerpc/perf/imc-pmu.c               | 97 +++++++++++++++++++++++++++++++
->>   arch/powerpc/platforms/powernv/opal-imc.c | 12 +++-
->>   3 files changed, 112 insertions(+), 3 deletions(-)
->>   create mode 100644 arch/powerpc/perf/imc-pmu.c
->>
->> diff --git a/arch/powerpc/perf/Makefile b/arch/powerpc/perf/Makefile
->> index 4d606b99a5cb..d0d1f04203c7 100644
->> --- a/arch/powerpc/perf/Makefile
->> +++ b/arch/powerpc/perf/Makefile
->> @@ -2,10 +2,14 @@ subdir-ccflags-$(CONFIG_PPC_WERROR) := -Werror
->>   
->>   obj-$(CONFIG_PERF_EVENTS)	+= callchain.o perf_regs.o
->>   
->> +imc-$(CONFIG_PPC_POWERNV)       += imc-pmu.o
->> +
->>   obj-$(CONFIG_PPC_PERF_CTRS)	+= core-book3s.o bhrb.o
->>   obj64-$(CONFIG_PPC_PERF_CTRS)	+= power4-pmu.o ppc970-pmu.o power5-pmu.o \
->>   				   power5+-pmu.o power6-pmu.o power7-pmu.o \
->> -				   isa207-common.o power8-pmu.o power9-pmu.o
->> +				   isa207-common.o power8-pmu.o power9-pmu.o \
->> +				   $(imc-y)
-> Hmm, this seems... obtuse. Will the IMC stuff fail to compile on
-> non-powerNV? Can we just link it in like we do with every other sort of
-> performance counter and let runtime detection do its thing?
-Yes. This is true. Also, in powernv_defconfig, we could
-have perf_events config disabled. So will address this.
-
+> This patch does three things :
+>  - Enables "opal.c" to create a platform device for the IMC interface
+>    according to the appropriate compatibility string.
+>  - Find the reserved-memory region details from the system device tree
+>    and get the base address of HOMER (Reserved memory) region address for each chip.
+>  - We also get the Nest PMU counter data offsets (in the HOMER region)
+>    and their sizes. The offsets for the counters' data are fixed and
+>    won't change from chip to chip.
 >
->> +
->>   obj32-$(CONFIG_PPC_PERF_CTRS)	+= mpc7450-pmu.o
->>   
->>   obj-$(CONFIG_FSL_EMB_PERF_EVENT) += core-fsl-emb.o
->> diff --git a/arch/powerpc/perf/imc-pmu.c b/arch/powerpc/perf/imc-pmu.c
->> new file mode 100644
->> index 000000000000..ec464c76b749
->> --- /dev/null
->> +++ b/arch/powerpc/perf/imc-pmu.c
->> @@ -0,0 +1,97 @@
->> +/*
->> + * Nest Performance Monitor counter support.
->> + *
->> + * Copyright (C) 2016 Madhavan Srinivasan, IBM Corporation.
->> + *	     (C) 2016 Hemant K Shaw, IBM Corporation.
->> + * This program is free software; you can redistribute it and/or modify it
->> + * under the terms of the GNU General Public License version 2 as published
->> + * by the Free Software Foundation.
->> + */
->> +#include <linux/perf_event.h>
->> +#include <linux/slab.h>
->> +#include <asm/opal.h>
->> +#include <asm/imc-pmu.h>
->> +#include <asm/cputhreads.h>
->> +#include <asm/smp.h>
->> +#include <linux/string.h>
->> +
->> +struct perchip_nest_info nest_perchip_info[IMC_MAX_CHIPS];
->> +struct imc_pmu *per_nest_pmu_arr[IMC_MAX_PMUS];
->> +
->> +/* dev_str_attr : Populate event "name" and string "str" in attribute */
->> +static struct attribute *dev_str_attr(const char *name, const char *str)
->> +{
->> +	struct perf_pmu_events_attr *attr;
->> +
->> +	attr = kzalloc(sizeof(*attr), GFP_KERNEL);
->> +
->> +	sysfs_attr_init(&attr->attr.attr);
->> +
->> +	attr->event_str = str;
->> +	attr->attr.attr.name = name;
->> +	attr->attr.attr.mode = 0444;
->> +	attr->attr.show = perf_event_sysfs_show;
->> +
->> +	return &attr->attr.attr;
->> +}
->> +
->> +/*
->> + * update_events_in_group: Update the "events" information in an attr_group
->> + *                         and assign the attr_group to the pmu "pmu".
->> + */
->> +static int update_events_in_group(struct imc_events *events,
->> +				  int idx, struct imc_pmu *pmu)
-> So I've probably missed a key point in the earlier patches, but for the
-> life of me I cannot figure out what idx is supposed to represent.
-Ok will add comment. Idea is to keep track of number of events
-to update when we create the event_attribute.
-
+> The device tree parsing logic is separated from the PMU creation
+> functions (which is done in subsequent patches).
 >
->> +{
->> +	struct attribute_group *attr_group;
->> +	struct attribute **attrs;
->> +	int i;
->> +
->> +	/* Allocate memory for attribute group */
->> +	attr_group = kzalloc(sizeof(*attr_group), GFP_KERNEL);
->> +	if (!attr_group)
->> +		return -ENOMEM;
->> +
->> +	/* Allocate memory for attributes */
->> +	attrs = kzalloc((sizeof(struct attribute *) * (idx + 1)), GFP_KERNEL);
-> Also, idx is an int, so:
->   - things will go wrong if idx is -1
->   - things will go very wrong if idx is -2
->   - do you need to do some sort of validation to make sure it's within
->     bounds? If not in this function, what function ensures the necessary
->     'sanity check' preconditions for idx?
-
-Yes, valid point. Should add sanity check for this variable.
-
-
+> Signed-off-by: Anju T Sudhakar <anju@linux.vnet.ibm.com>
+> Signed-off-by: Hemant Kumar <hemant@linux.vnet.ibm.com>
+> Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/platforms/powernv/Makefile   |   2 +-
+>  arch/powerpc/platforms/powernv/opal-imc.c | 126 ++++++++++++++++++++++++++++++
+>  arch/powerpc/platforms/powernv/opal.c     |  14 ++++
+>  3 files changed, 141 insertions(+), 1 deletion(-)
+>  create mode 100644 arch/powerpc/platforms/powernv/opal-imc.c
 >
->> +	if (!attrs) {
->> +		kfree(attr_group);
->> +		return -ENOMEM;
->> +	}
->> +
->> +	attr_group->name = "events";
->> +	attr_group->attrs = attrs;
->> +	for (i = 0; i < idx; i++, events++) {
->> +		attrs[i] = dev_str_attr((char *)events->ev_name,
->> +					(char *)events->ev_value);
->> +	}
->> +
->> +	pmu->attr_groups[0] = attr_group;
-> Again, I may have missed something, but what's special about group 0?
-> Patch 1 lets you have up to 4 groups - are they used elsewhere?
-
-Each entry in the group is a specific attribute for the PMU unit.
-So we use group 0 as event and group 1/2 as format and cpumask
-attributes.
-
-Will add comment to explain that.
-
+> diff --git a/arch/powerpc/platforms/powernv/Makefile b/arch/powerpc/platforms/powernv/Makefile
+> index b5d98cb3f482..44909fec1121 100644
+> --- a/arch/powerpc/platforms/powernv/Makefile
+> +++ b/arch/powerpc/platforms/powernv/Makefile
+> @@ -2,7 +2,7 @@ obj-y			+= setup.o opal-wrappers.o opal.o opal-async.o idle.o
+>  obj-y			+= opal-rtc.o opal-nvram.o opal-lpc.o opal-flash.o
+>  obj-y			+= rng.o opal-elog.o opal-dump.o opal-sysparam.o opal-sensor.o
+>  obj-y			+= opal-msglog.o opal-hmi.o opal-power.o opal-irqchip.o
+> -obj-y			+= opal-kmsg.o
+> +obj-y			+= opal-kmsg.o opal-imc.o
 >
->> +	return 0;
->> +}
->> +
->> +/*
->> + * init_imc_pmu : Setup the IMC pmu device in "pmu_ptr" and its events
->> + *                "events".
->> + * Setup the cpu mask information for these pmus and setup the state machine
->> + * hotplug notifiers as well.
-> I cannot figure out how this function sets cpu mask information or sets
-> up hotplug notifiers. Is this done in a later patch? (looking at the
-> subject lines - perhaps patch 6?)
+>  obj-$(CONFIG_SMP)	+= smp.o subcore.o subcore-asm.o
+>  obj-$(CONFIG_PCI)	+= pci.o pci-ioda.o npu-dma.o
+> diff --git a/arch/powerpc/platforms/powernv/opal-imc.c b/arch/powerpc/platforms/powernv/opal-imc.c
+> new file mode 100644
+> index 000000000000..c476d596c6a8
+> --- /dev/null
+> +++ b/arch/powerpc/platforms/powernv/opal-imc.c
+> @@ -0,0 +1,126 @@
+> +/*
+> + * OPAL IMC interface detection driver
+> + * Supported on POWERNV platform
+> + *
+> + * Copyright	(C) 2016 Madhavan Srinivasan, IBM Corporation.
+> + *		(C) 2016 Hemant K Shaw, IBM Corporation.
+> + *
+> + * This program is free software; you can redistribute it and/or modify
+> + * it under the terms of the GNU General Public License version 2 as
+> + * published by the Free Software Foundation.
+> + *
+> + * This program is distributed in the hope that it will be useful,
+> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> + * GNU General Public License for more details.
+> + */
+> +#include <linux/kernel.h>
+> +#include <linux/module.h>
+> +#include <linux/platform_device.h>
+> +#include <linux/miscdevice.h>
+> +#include <linux/fs.h>
+> +#include <linux/of.h>
+> +#include <linux/of_address.h>
+> +#include <linux/of_platform.h>
+> +#include <linux/poll.h>
+> +#include <linux/mm.h>
+> +#include <linux/slab.h>
+> +#include <linux/crash_dump.h>
+> +#include <asm/opal.h>
+> +#include <asm/io.h>
+> +#include <asm/uaccess.h>
+> +#include <asm/cputable.h>
+> +#include <asm/imc-pmu.h>
+> +
+> +struct perchip_nest_info nest_perchip_info[IMC_MAX_CHIPS];
+> +
+> +static int opal_imc_counters_probe(struct platform_device *pdev)
+> +{
+> +	struct device_node *child, *imc_dev, *rm_node = NULL;
+> +	struct perchip_nest_info *pcni;
+> +	u32 pages, nest_offset, nest_size, idx;
+> +	int i = 0;
+> +	const char *node_name;
+> +	const __be32 *addrp;
+> +	u64 reg_addr, reg_size;
+> +
+> +	if (!pdev || !pdev->dev.of_node)
+> +		return -ENODEV;
+> +
+> +	/*
+> +	 * Check whether this kdump kernel. If yes, just return.
+> +	 */
+> +	if (is_kdump_kernel())
+> +		return -ENODEV;
+> +
+> +	imc_dev = pdev->dev.of_node;
+> +
+> +	/*
+> +	 * nest_offset : where the nest-counters' data start.
+> +	 * size : size of the entire nest-counters region
+> +	 */
+> +	if (of_property_read_u32(imc_dev, "imc-nest-offset", &nest_offset))
+> +		goto err;
+> +
+> +	if (of_property_read_u32(imc_dev, "imc-nest-size", &nest_size))
+> +		goto err;
+> +
+> +	/* Find the "homer region" for each chip */
+> +	rm_node = of_find_node_by_path("/reserved-memory");
+> +	if (!rm_node)
+> +		goto err;
+> +
+> +	for_each_child_of_node(rm_node, child) {
+> +		if (of_property_read_string_index(child, "name", 0,
+> +						  &node_name))
+> +			continue;
+> +		if (strncmp("ibm,homer-image", node_name,
+> +			    strlen("ibm,homer-image")))
+> +			continue;
 
-Yes. Its done in patch6, Will remove that text since it confusing here.
+A better way to do this would be to reference the memory region, like
+what's shown in
+Documentation/devicetree/bindings/reserved-memory/reserved-memory.txt
 
->
->> + */
->> +int init_imc_pmu(struct imc_events *events, int idx,
->> +		 struct imc_pmu *pmu_ptr)
-> Should this be marked __init, or can it be called in a hotplug path?
+just reference the phandle of the memory region.
 
-Yes. I will.
->
->> +{
->> +	int ret = -ENODEV;
->> +
->> +	ret = update_events_in_group(events, idx, pmu_ptr);
->> +	if (ret)
->> +		goto err_free;
->> +
->> +	return 0;
->> +
->> +err_free:
->> +	/* Only free the attr_groups which are dynamically allocated  */
->> +	if (pmu_ptr->attr_groups[0]) {
->> +		kfree(pmu_ptr->attr_groups[0]->attrs);
->> +		kfree(pmu_ptr->attr_groups[0]);
->> +	}
->> +
->> +	return ret;
->> +}
->> diff --git a/arch/powerpc/platforms/powernv/opal-imc.c b/arch/powerpc/platforms/powernv/opal-imc.c
->> index ba0203e669c0..73c46703c2af 100644
->> --- a/arch/powerpc/platforms/powernv/opal-imc.c
->> +++ b/arch/powerpc/platforms/powernv/opal-imc.c
->> @@ -32,8 +32,11 @@
->>   #include <asm/cputable.h>
->>   #include <asm/imc-pmu.h>
->>   
->> -struct perchip_nest_info nest_perchip_info[IMC_MAX_CHIPS];
->> -struct imc_pmu *per_nest_pmu_arr[IMC_MAX_PMUS];
->> +extern struct perchip_nest_info nest_perchip_info[IMC_MAX_CHIPS];
->> +extern struct imc_pmu *per_nest_pmu_arr[IMC_MAX_PMUS];
-> Why are these definitions being moved?
-> If they're still needed in this file, should the extern lines live in a
-> header file?
-We primarily use these values in the pmu functions. But will add
-the extern to the header file.
+seeing as these are per chip, why not just have something linking
+together chip-id and the IMC layout node?
 
-Thanks for review
-
-Maddy
->
->> +
->> +extern int init_imc_pmu(struct imc_events *events,
->> +			int idx, struct imc_pmu *pmu_ptr);
->>   
->>   static int imc_event_info(char *name, struct imc_events *events)
->>   {
->> @@ -379,6 +382,11 @@ static int imc_pmu_create(struct device_node *parent, int pmu_index)
->>   		idx += ret;
->>   	}
->>   
->> +	ret = init_imc_pmu(events, idx, pmu_ptr);
->> +	if (ret) {
->> +		pr_err("IMC PMU %s Register failed\n", pmu_ptr->pmu.name);
->> +		goto free_events;
->> +	}
->>   	return 0;
->>   
->>   free_events:
->> -- 
->> 2.7.4
-> Regards,
-> Daniel
->
+-- 
+Stewart Smith
+OPAL Architect, IBM.
