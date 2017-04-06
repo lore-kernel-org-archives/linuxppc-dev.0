@@ -1,39 +1,40 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <srs0=hhrr=3o=gmail.com=linus971@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vzPqp2LrQzDqJC
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Apr 2017 00:15:18 +1000 (AEST)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v36EDrPi031600
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Apr 2017 10:15:06 -0400
-Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [125.16.236.7])
- by mx0a-001b2d01.pphosted.com with ESMTP id 29n5h78rj1-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Apr 2017 10:15:06 -0400
-Received: from localhost
- by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Thu, 6 Apr 2017 19:45:00 +0530
-Received: from d28av06.in.ibm.com (d28av06.in.ibm.com [9.184.220.48])
- by d28relay05.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v36EEqWL13631542
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Apr 2017 19:44:52 +0530
-Received: from d28av06.in.ibm.com (localhost [127.0.0.1])
- by d28av06.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v36EEuoI003442
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Apr 2017 19:44:57 +0530
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: aneesh.kumar@linux.vnet.ibm.com, mpe@ellerman.id.au
-Subject: [PATCH 2/3] powerpc/mm: Add comments to the vmemmap layout
-Date: Thu,  6 Apr 2017 19:44:49 +0530
-In-Reply-To: <20170406141450.16060-1-khandual@linux.vnet.ibm.com>
-References: <20170406141450.16060-1-khandual@linux.vnet.ibm.com>
-Message-Id: <20170406141450.16060-2-khandual@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vzRBG0P3wzDqHH
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Apr 2017 01:16:22 +1000 (AEST)
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3vzRBF6j6pz8syf
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Apr 2017 01:16:21 +1000 (AEST)
+Received: from mail-it0-x243.google.com (mail-it0-x243.google.com
+ [IPv6:2607:f8b0:4001:c0b::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3vzRBF1ttnz9s85
+ for <linuxppc-dev@ozlabs.org>; Fri,  7 Apr 2017 01:16:21 +1000 (AEST)
+Received: by mail-it0-x243.google.com with SMTP id w11so4647415itb.0
+ for <linuxppc-dev@ozlabs.org>; Thu, 06 Apr 2017 08:16:21 -0700 (PDT)
+MIME-Version: 1.0
+Sender: linus971@gmail.com
+In-Reply-To: <20170406141352.GF18204@arm.com>
+References: <20170404095001.664718b8@roar.ozlabs.ibm.com>
+ <CA+55aFzdUMZHzXtn9PyhJg7GjYNQ5fy6=LzBNJx==Ab=U=YYjw@mail.gmail.com>
+ <20170404130233.1f45115b@roar.ozlabs.ibm.com>
+ <20170405.070157.871721909352646302.davem@davemloft.net>
+ <20170406105958.196c6977@roar.ozlabs.ibm.com> <20170406141352.GF18204@arm.com>
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Thu, 6 Apr 2017 08:16:19 -0700
+Message-ID: <CA+55aFwgNhF=QUKMKLc9TfQ=cgF2mvMEVx9hJms4wQqCsib9Rw@mail.gmail.com>
+Subject: Re: [RFC][PATCH] spin loop arch primitives for busy waiting
+To: Will Deacon <will.deacon@arm.com>
+Cc: Nicholas Piggin <npiggin@gmail.com>, David Miller <davem@davemloft.net>,
+ "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Anton Blanchard <anton@samba.org>,
+ linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+ Peter Zijlstra <peterz@infradead.org>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,103 +44,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add some explaination to the layout of vmemmap virtual address
-space and how physical page mapping is only used for valid PFNs
-present at any point on the system.
+On Thu, Apr 6, 2017 at 7:13 AM, Will Deacon <will.deacon@arm.com> wrote:
+>
+> We've wrapped this up in the arm64 code as __cmpwait, and we use that
+> to build smp_cond_load_acquire. It would be nice to use the same machinery
+> for the conditional spinning here, unless you anticipate that we're only
+> going to be spinning for a handful of iterations anyway?
 
-Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
----
-Previous discussions around this http://patchwork.ozlabs.org/patch/584111/
+I suspect most of these loops aren't set up for the WFE kind of
+spinning, because they look for more than one variable.
 
- arch/powerpc/mm/pgtable-hash64.c | 75 ++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 75 insertions(+)
+.. and the ones that _are_ set up for this probably should just be
+rewritten to use smp_cond_load_acquire() anyway, because the "wait for
+value" special case is fairly special.
 
-diff --git a/arch/powerpc/mm/pgtable-hash64.c b/arch/powerpc/mm/pgtable-hash64.c
-index 8b85a14..16877f6 100644
---- a/arch/powerpc/mm/pgtable-hash64.c
-+++ b/arch/powerpc/mm/pgtable-hash64.c
-@@ -22,6 +22,81 @@
- 
- #ifdef CONFIG_SPARSEMEM_VMEMMAP
- /*
-+ * vmemmap is the starting address of the virtual address space where
-+ * struct pages are allocated for all possible PFNs present on the system
-+ * including holes and bad memory (hence sparse). These virtual struct
-+ * pages are stored in sequence in this virtual address space irrespective
-+ * of the fact whether the corresponding PFN is valid or not. This achieves
-+ * constant relationship between address of struct page and its PFN.
-+ *
-+ * During boot or memory hotplug operation when a new memory section is
-+ * added, physical memory allocation (including hash table bolting) will
-+ * be performed for the set of struct pages which are part of the memory
-+ * section. This saves memory by not allocating struct pages for PFNs
-+ * which are not valid.
-+ *
-+ *		----------------------------------------------
-+ *		| PHYSICAL ALLOCATION OF VIRTUAL STRUCT PAGES|
-+ *		----------------------------------------------
-+ *
-+ *	   f000000000000000                  c000000000000000
-+ * vmemmap +--------------+                  +--------------+
-+ *  +      |  page struct | +--------------> |  page struct |
-+ *  |      +--------------+                  +--------------+
-+ *  |      |  page struct | +--------------> |  page struct |
-+ *  |      +--------------+ |                +--------------+
-+ *  |      |  page struct | +       +------> |  page struct |
-+ *  |      +--------------+         |        +--------------+
-+ *  |      |  page struct |         |   +--> |  page struct |
-+ *  |      +--------------+         |   |    +--------------+
-+ *  |      |  page struct |         |   |
-+ *  |      +--------------+         |   |
-+ *  |      |  page struct |         |   |
-+ *  |      +--------------+         |   |
-+ *  |      |  page struct |         |   |
-+ *  |      +--------------+         |   |
-+ *  |      |  page struct |         |   |
-+ *  |      +--------------+         |   |
-+ *  |      |  page struct | +-------+   |
-+ *  |      +--------------+             |
-+ *  |      |  page struct | +-----------+
-+ *  |      +--------------+
-+ *  |      |  page struct | No mapping
-+ *  |      +--------------+
-+ *  |      |  page struct | No mapping
-+ *  v      +--------------+
-+ *
-+ *		-----------------------------------------
-+ *		| RELATION BETWEEN STRUCT PAGES AND PFNS|
-+ *		-----------------------------------------
-+ *
-+ * vmemmap +--------------+                 +---------------+
-+ *  +      |  page struct | +-------------> |      PFN      |
-+ *  |      +--------------+                 +---------------+
-+ *  |      |  page struct | +-------------> |      PFN      |
-+ *  |      +--------------+                 +---------------+
-+ *  |      |  page struct | +-------------> |      PFN      |
-+ *  |      +--------------+                 +---------------+
-+ *  |      |  page struct | +-------------> |      PFN      |
-+ *  |      +--------------+                 +---------------+
-+ *  |      |              |
-+ *  |      +--------------+
-+ *  |      |              |
-+ *  |      +--------------+
-+ *  |      |              |
-+ *  |      +--------------+                 +---------------+
-+ *  |      |  page struct | +-------------> |      PFN      |
-+ *  |      +--------------+                 +---------------+
-+ *  |      |              |
-+ *  |      +--------------+
-+ *  |      |              |
-+ *  |      +--------------+                 +---------------+
-+ *  |      |  page struct | +-------------> |      PFN      |
-+ *  |      +--------------+                 +---------------+
-+ *  |      |  page struct | +-------------> |      PFN      |
-+ *  v      +--------------+                 +---------------+
-+ */
-+/*
-  * On hash-based CPUs, the vmemmap is bolted in the hash table.
-  *
-  */
--- 
-1.9.3
+In theory x86 could use monitor/mwait for it too, in practice I think
+it tends to still be too high latency (because it was originally just
+designed for the idle loop). mwait got extended to actually be useful,
+but I'm not sure what the latency is for the modern one.
+
+               Linus
