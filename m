@@ -1,41 +1,44 @@
-Return-Path: <srs0=i0ht=3o=infradead.org=peterz@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <srs0=hhrr=3o=gmail.com=linus971@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vzXgw477lzDqHK
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Apr 2017 05:23:56 +1000 (AEST)
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3vzXgw3NN9z8syC
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Apr 2017 05:23:56 +1000 (AEST)
-Received: from merlin.infradead.org (merlin.infradead.org
- [IPv6:2001:4978:20e::2])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vzY4h2sgyzDqC4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Apr 2017 05:41:56 +1000 (AEST)
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3vzY4h2103z8syC
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Apr 2017 05:41:56 +1000 (AEST)
+Received: from mail-it0-x234.google.com (mail-it0-x234.google.com
+ [IPv6:2607:f8b0:4001:c0b::234])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3vzXgv16LBz9s7B
- for <linuxppc-dev@ozlabs.org>; Fri,  7 Apr 2017 05:23:55 +1000 (AEST)
-Date: Thu, 6 Apr 2017 21:23:42 +0200
-From: Peter Zijlstra <peterz@infradead.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
+ by ozlabs.org (Postfix) with ESMTPS id 3vzY4g4dBJz9s7g
+ for <linuxppc-dev@ozlabs.org>; Fri,  7 Apr 2017 05:41:54 +1000 (AEST)
+Received: by mail-it0-x234.google.com with SMTP id y18so32419641itc.1
+ for <linuxppc-dev@ozlabs.org>; Thu, 06 Apr 2017 12:41:54 -0700 (PDT)
+MIME-Version: 1.0
+Sender: linus971@gmail.com
+In-Reply-To: <20170406192342.GC3093@worktop>
+References: <20170404095001.664718b8@roar.ozlabs.ibm.com>
+ <CA+55aFzdUMZHzXtn9PyhJg7GjYNQ5fy6=LzBNJx==Ab=U=YYjw@mail.gmail.com>
+ <20170404130233.1f45115b@roar.ozlabs.ibm.com>
+ <20170405.070157.871721909352646302.davem@davemloft.net>
+ <20170406105958.196c6977@roar.ozlabs.ibm.com> <20170406141352.GF18204@arm.com>
+ <CA+55aFwgNhF=QUKMKLc9TfQ=cgF2mvMEVx9hJms4wQqCsib9Rw@mail.gmail.com>
+ <20170406163651.hj7apd63uxupgdb3@hirez.programming.kicks-ass.net>
+ <CA+55aFzTn9e=F68SOtEvvZLdT6zCj9+gLc-OS7qhDKdM7zaasA@mail.gmail.com>
+ <20170406192342.GC3093@worktop>
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Thu, 6 Apr 2017 12:41:52 -0700
+Message-ID: <CA+55aFzvRiVx3dvXaQUpYwoHq0DnrV9RPXWnqSeb9b80DFosHA@mail.gmail.com>
+Subject: Re: [RFC][PATCH] spin loop arch primitives for busy waiting
+To: Peter Zijlstra <peterz@infradead.org>
 Cc: Will Deacon <will.deacon@arm.com>, Nicholas Piggin <npiggin@gmail.com>,
  David Miller <davem@davemloft.net>,
  "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>,
  Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
  Anton Blanchard <anton@samba.org>,
  linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Subject: Re: [RFC][PATCH] spin loop arch primitives for busy waiting
-Message-ID: <20170406192342.GC3093@worktop>
-References: <20170404095001.664718b8@roar.ozlabs.ibm.com>
- <CA+55aFzdUMZHzXtn9PyhJg7GjYNQ5fy6=LzBNJx==Ab=U=YYjw@mail.gmail.com>
- <20170404130233.1f45115b@roar.ozlabs.ibm.com>
- <20170405.070157.871721909352646302.davem@davemloft.net>
- <20170406105958.196c6977@roar.ozlabs.ibm.com>
- <20170406141352.GF18204@arm.com>
- <CA+55aFwgNhF=QUKMKLc9TfQ=cgF2mvMEVx9hJms4wQqCsib9Rw@mail.gmail.com>
- <20170406163651.hj7apd63uxupgdb3@hirez.programming.kicks-ass.net>
- <CA+55aFzTn9e=F68SOtEvvZLdT6zCj9+gLc-OS7qhDKdM7zaasA@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CA+55aFzTn9e=F68SOtEvvZLdT6zCj9+gLc-OS7qhDKdM7zaasA@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,78 +48,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Apr 06, 2017 at 10:31:46AM -0700, Linus Torvalds wrote:
-> And we'd probably want to make it even more strict, in that soem mwait
-> implementations might simply not be very good for short waits.
+On Thu, Apr 6, 2017 at 12:23 PM, Peter Zijlstra <peterz@infradead.org> wrote:
+>
+> Something like so then. According to the SDM mwait is a no-op if we do
+> not execute monitor first. So this variant should get the first
+> iteration without expensive instructions.
 
-Yeah, we need to find something that works; assuming its beneficial at
-all on modern chips.
+No, the problem is that we *would* have executed a prior monitor that
+could still be pending - from a previous invocation of
+smp_cond_load_acquire().
 
-> > But it builds and boots, no clue if its better or worse. Changing mwait
-> > eax to 0 would give us C1 and might also be worth a try I suppose.
-> 
-> Hmm. Also:
-> 
-> > +               ___mwait(0xf0 /* C0 */, 0x01 /* INT */);                \
-> 
-> Do you actually want that "INT" bit set? It's only meaningful if
-> interrupts are _masked_, afaik. Which doesn't necessarily make sense
-> for this case.
+Especially with spinlocks, these things can very much happen back-to-back.
 
-Correct, in fact its quite broken. Corrected.
+And it would be pending with a different address (the previous
+spinlock) that might not have changed since then (and might not be
+changing), so now we might actually be pausing in mwait waiting for
+that *other* thing to change.
 
-> But maybe "monitor" is really cheap. I suspect it's microcoded,
-> though, which implies "no".
+So it would probably need to do something complicated like
 
-Something like so then. According to the SDM mwait is a no-op if we do
-not execute monitor first. So this variant should get the first
-iteration without expensive instructions.
+  #define smp_cond_load_acquire(ptr, cond_expr)                         \
+  ({                                                                    \
+        typeof(ptr) __PTR = (ptr);                                      \
+        typeof(*ptr) VAL;                                               \
+        do {                                                            \
+                VAL = READ_ONCE(*__PTR);                                \
+                if (cond_expr)                                          \
+                        break;                                          \
+                for (;;) {                                              \
+                        ___monitor(__PTR, 0, 0);                        \
+                        VAL = READ_ONCE(*__PTR);                        \
+                        if (cond_expr) break;                           \
+                        ___mwait(0xf0 /* C0 */, 0);                     \
+                }                                                       \
+        } while (0)                                                     \
+        smp_acquire__after_ctrl_dep();                                  \
+        VAL;                                                            \
+  })
 
-And this variant is actually quite amenable to alternative(), with which
-we can pick between PAUSE and this.
+which might just generate nasty enough code to not be worth it.
 
----
- arch/x86/include/asm/barrier.h | 30 ++++++++++++++++++++++++++++++
- 1 file changed, 30 insertions(+)
+I dunno
 
-diff --git a/arch/x86/include/asm/barrier.h b/arch/x86/include/asm/barrier.h
-index bfb28ca..2b5d5a2 100644
---- a/arch/x86/include/asm/barrier.h
-+++ b/arch/x86/include/asm/barrier.h
-@@ -80,6 +80,36 @@ do {									\
- #define __smp_mb__before_atomic()	barrier()
- #define __smp_mb__after_atomic()	barrier()
- 
-+static inline void ___monitor(const void *eax, unsigned long ecx,
-+			     unsigned long edx)
-+{
-+	/* "monitor %eax, %ecx, %edx;" */
-+	asm volatile(".byte 0x0f, 0x01, 0xc8;"
-+		     :: "a" (eax), "c" (ecx), "d"(edx));
-+}
-+
-+static inline void ___mwait(unsigned long eax, unsigned long ecx)
-+{
-+	/* "mwait %eax, %ecx;" */
-+	asm volatile(".byte 0x0f, 0x01, 0xc9;"
-+		     :: "a" (eax), "c" (ecx));
-+}
-+
-+#define smp_cond_load_acquire(ptr, cond_expr)				\
-+({									\
-+	typeof(ptr) __PTR = (ptr);					\
-+	typeof(*ptr) VAL;						\
-+	for (;;) {							\
-+		VAL = READ_ONCE(*__PTR);				\
-+		if (cond_expr)						\
-+			break;						\
-+		___mwait(0xf0 /* C0 */, 0);				\
-+		___monitor(__PTR, 0, 0);				\
-+	}								\
-+	smp_acquire__after_ctrl_dep();					\
-+	VAL;								\
-+})
-+
- #include <asm-generic/barrier.h>
- 
- #endif /* _ASM_X86_BARRIER_H */
+             Linus
