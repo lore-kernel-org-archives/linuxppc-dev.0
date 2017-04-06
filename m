@@ -1,20 +1,16 @@
-Return-Path: <fengguang.wu@intel.com>
-Received: from mga04.intel.com (mga04.intel.com [192.55.52.120])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vzGrb6pJWzDqJ9
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Apr 2017 19:00:30 +1000 (AEST)
-Date: Thu, 6 Apr 2017 16:59:49 +0800
-From: kbuild test robot <lkp@intel.com>
-To: Nicholas Piggin <npiggin@gmail.com>
-Cc: kbuild-all@01.org, Michael Ellerman <mpe@ellerman.id.au>,
- linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [PATCH 3/3] powerpc/64s: cpufeatures: add initial implementation
- for cpufeatures
-Message-ID: <201704061608.7qHsw9bE%fengguang.wu@intel.com>
-MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="+HP7ph2BbKc20aGI"
-In-Reply-To: <20170405123706.6081-4-npiggin@gmail.com>
+Return-Path: <bp@alien8.de>
+Received: from mail.skyhub.de (mail.skyhub.de [IPv6:2a01:4f8:190:11c2::b:1457])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3vzH9J1K88zDqGv
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Apr 2017 19:15:00 +1000 (AEST)
+From: Borislav Petkov <bp@alien8.de>
+To: linux-edac <linux-edac@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-arm-kernel@lists.infradead.org,
+ linuxppc-dev@lists.ozlabs.org, Chris Metcalf <cmetcalf@mellanox.com>
+Subject: [PATCH 08/11] EDAC: Remove EDAC_MM_EDAC
+Date: Thu,  6 Apr 2017 11:06:31 +0200
+Message-Id: <20170406090634.30950-9-bp@alien8.de>
+In-Reply-To: <20170406090634.30950-1-bp@alien8.de>
+References: <20170406090634.30950-1-bp@alien8.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,174 +20,607 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+From: Borislav Petkov <bp@suse.de>
 
---+HP7ph2BbKc20aGI
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Move all the EDAC core functionality behind CONFIG_EDAC and get rid of
+that indirection. Update defconfigs which had it.
 
-Hi Nicholas,
+While at it, fix dependencies such that EDAC depends on RAS for the
+tracepoints.
 
-[auto build test ERROR on powerpc/next]
-[also build test ERROR on v4.11-rc5 next-20170406]
-[if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
-
-url:    https://github.com/0day-ci/linux/commits/Nicholas-Piggin/latest-cpufeatures-patch-series/20170406-140710
-base:   https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git next
-config: powerpc-allnoconfig (attached as .config)
-compiler: powerpc-linux-gnu-gcc (Debian 6.1.1-9) 6.1.1 20160705
-reproduce:
-        wget https://raw.githubusercontent.com/01org/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
-        chmod +x ~/bin/make.cross
-        # save the attached .config to linux build tree
-        make.cross ARCH=powerpc 
-
-All errors (new ones prefixed by >>):
-
-   arch/powerpc/kernel/prom.c: In function 'early_init_dt_scan_cpufeatures':
->> arch/powerpc/kernel/prom.c:508:2: error: 'has_cpufeatures_node' undeclared (first use in this function)
-     has_cpufeatures_node = 1;
-     ^~~~~~~~~~~~~~~~~~~~
-   arch/powerpc/kernel/prom.c:508:2: note: each undeclared identifier is reported only once for each function it appears in
-   arch/powerpc/kernel/prom.c: In function 'early_init_dt_scan_cpus':
-   arch/powerpc/kernel/prom.c:631:7: error: 'has_cpufeatures_node' undeclared (first use in this function)
-     if (!has_cpufeatures_node) {
-          ^~~~~~~~~~~~~~~~~~~~
-
-vim +/has_cpufeatures_node +508 arch/powerpc/kernel/prom.c
-
-   502			printk("cpu-features node has missing property \"isa\"\n");
-   503			return 0;
-   504		}
-   505	
-   506		isa = be32_to_cpup(prop);
-   507	
- > 508		has_cpufeatures_node = 1;
-   509	
-   510		/* Count and allocate space for cpu features */
-   511		of_scan_flat_dt_subnodes(node, count_cpufeatures_subnodes,
-
+Signed-off-by: Borislav Petkov <bp@suse.de>
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: Chris Metcalf <cmetcalf@mellanox.com>
+Cc: linux-edac@vger.kernel.org
 ---
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+ arch/arm/configs/multi_v7_defconfig             |   1 -
+ arch/arm/configs/pxa_defconfig                  |   3 +-
+ arch/powerpc/configs/85xx-hw.config             |   3 +-
+ arch/powerpc/configs/85xx/ge_imp3a_defconfig    |   1 -
+ arch/powerpc/configs/85xx/xes_mpc85xx_defconfig |   1 -
+ arch/powerpc/configs/cell_defconfig             |   1 -
+ arch/powerpc/configs/pasemi_defconfig           |   1 -
+ arch/powerpc/configs/ppc64_defconfig            |   1 -
+ arch/powerpc/configs/ppc64e_defconfig           |   1 -
+ arch/powerpc/configs/ppc6xx_defconfig           |   3 +-
+ arch/tile/configs/tilegx_defconfig              |   1 -
+ arch/tile/configs/tilepro_defconfig             |   1 -
+ drivers/acpi/Kconfig                            |   1 -
+ drivers/edac/Kconfig                            | 101 ++++++++++--------------
+ drivers/edac/Makefile                           |   3 +-
+ drivers/edac/edac_stub.c                        |   2 +-
+ 16 files changed, 48 insertions(+), 77 deletions(-)
 
---+HP7ph2BbKc20aGI
-Content-Type: application/gzip
-Content-Disposition: attachment; filename=".config.gz"
-Content-Transfer-Encoding: base64
-
-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
-Djvc8rarU2/6PdKa/QGrih1IElYAAA==
-
---+HP7ph2BbKc20aGI--
+diff --git a/arch/arm/configs/multi_v7_defconfig b/arch/arm/configs/multi_v7_defconfig
+index a94126fb02c2..6aa7be191f1a 100644
+--- a/arch/arm/configs/multi_v7_defconfig
++++ b/arch/arm/configs/multi_v7_defconfig
+@@ -748,7 +748,6 @@ CONFIG_LEDS_TRIGGER_DEFAULT_ON=y
+ CONFIG_LEDS_TRIGGER_TRANSIENT=y
+ CONFIG_LEDS_TRIGGER_CAMERA=y
+ CONFIG_EDAC=y
+-CONFIG_EDAC_MM_EDAC=y
+ CONFIG_EDAC_HIGHBANK_MC=y
+ CONFIG_EDAC_HIGHBANK_L2=y
+ CONFIG_RTC_CLASS=y
+diff --git a/arch/arm/configs/pxa_defconfig b/arch/arm/configs/pxa_defconfig
+index 2aac99fd1c41..1318f61589dc 100644
+--- a/arch/arm/configs/pxa_defconfig
++++ b/arch/arm/configs/pxa_defconfig
+@@ -635,8 +635,7 @@ CONFIG_LEDS_TRIGGER_GPIO=m
+ CONFIG_LEDS_TRIGGER_DEFAULT_ON=m
+ CONFIG_LEDS_TRIGGER_TRANSIENT=m
+ CONFIG_LEDS_TRIGGER_CAMERA=m
+-CONFIG_EDAC=y
+-CONFIG_EDAC_MM_EDAC=m
++CONFIG_EDAC=m
+ CONFIG_RTC_CLASS=y
+ CONFIG_RTC_DEBUG=y
+ CONFIG_RTC_DRV_DS1307=m
+diff --git a/arch/powerpc/configs/85xx-hw.config b/arch/powerpc/configs/85xx-hw.config
+index 528ff0e714e6..c03d0fb16665 100644
+--- a/arch/powerpc/configs/85xx-hw.config
++++ b/arch/powerpc/configs/85xx-hw.config
+@@ -16,9 +16,8 @@ CONFIG_DAVICOM_PHY=y
+ CONFIG_DMADEVICES=y
+ CONFIG_E1000E=y
+ CONFIG_E1000=y
+-CONFIG_EDAC_MM_EDAC=y
+-CONFIG_EDAC_MPC85XX=y
+ CONFIG_EDAC=y
++CONFIG_EDAC_MPC85XX=y
+ CONFIG_EEPROM_AT24=y
+ CONFIG_EEPROM_LEGACY=y
+ CONFIG_FB_FSL_DIU=y
+diff --git a/arch/powerpc/configs/85xx/ge_imp3a_defconfig b/arch/powerpc/configs/85xx/ge_imp3a_defconfig
+index c79283be5680..a917f7afb4f9 100644
+--- a/arch/powerpc/configs/85xx/ge_imp3a_defconfig
++++ b/arch/powerpc/configs/85xx/ge_imp3a_defconfig
+@@ -155,7 +155,6 @@ CONFIG_USB_OHCI_HCD_PPC_OF_BE=y
+ CONFIG_USB_OHCI_HCD_PPC_OF_LE=y
+ CONFIG_USB_STORAGE=y
+ CONFIG_EDAC=y
+-CONFIG_EDAC_MM_EDAC=y
+ CONFIG_EDAC_MPC85XX=y
+ CONFIG_RTC_CLASS=y
+ # CONFIG_RTC_INTF_PROC is not set
+diff --git a/arch/powerpc/configs/85xx/xes_mpc85xx_defconfig b/arch/powerpc/configs/85xx/xes_mpc85xx_defconfig
+index dbd961de251e..72900b84d3e0 100644
+--- a/arch/powerpc/configs/85xx/xes_mpc85xx_defconfig
++++ b/arch/powerpc/configs/85xx/xes_mpc85xx_defconfig
+@@ -116,7 +116,6 @@ CONFIG_LEDS_TRIGGERS=y
+ CONFIG_LEDS_TRIGGER_TIMER=y
+ CONFIG_LEDS_TRIGGER_HEARTBEAT=y
+ CONFIG_EDAC=y
+-CONFIG_EDAC_MM_EDAC=y
+ CONFIG_RTC_CLASS=y
+ CONFIG_RTC_DRV_DS1307=y
+ CONFIG_RTC_DRV_CMOS=y
+diff --git a/arch/powerpc/configs/cell_defconfig b/arch/powerpc/configs/cell_defconfig
+index 2d7fcbe047ac..aa564599e368 100644
+--- a/arch/powerpc/configs/cell_defconfig
++++ b/arch/powerpc/configs/cell_defconfig
+@@ -179,7 +179,6 @@ CONFIG_INFINIBAND_MTHCA=m
+ CONFIG_INFINIBAND_IPOIB=m
+ CONFIG_INFINIBAND_IPOIB_DEBUG_DATA=y
+ CONFIG_EDAC=y
+-CONFIG_EDAC_MM_EDAC=y
+ CONFIG_EDAC_CELL=y
+ CONFIG_UIO=m
+ CONFIG_EXT2_FS=y
+diff --git a/arch/powerpc/configs/pasemi_defconfig b/arch/powerpc/configs/pasemi_defconfig
+index 5553c5ce4274..fe43ff47bd2f 100644
+--- a/arch/powerpc/configs/pasemi_defconfig
++++ b/arch/powerpc/configs/pasemi_defconfig
+@@ -142,7 +142,6 @@ CONFIG_USB_UHCI_HCD=y
+ CONFIG_USB_SL811_HCD=y
+ CONFIG_USB_STORAGE=y
+ CONFIG_EDAC=y
+-CONFIG_EDAC_MM_EDAC=y
+ CONFIG_EDAC_PASEMI=y
+ CONFIG_RTC_CLASS=y
+ CONFIG_RTC_DRV_DS1307=y
+diff --git a/arch/powerpc/configs/ppc64_defconfig b/arch/powerpc/configs/ppc64_defconfig
+index 4f1288b04303..f2e03f032041 100644
+--- a/arch/powerpc/configs/ppc64_defconfig
++++ b/arch/powerpc/configs/ppc64_defconfig
+@@ -262,7 +262,6 @@ CONFIG_INFINIBAND_IPOIB_CM=y
+ CONFIG_INFINIBAND_SRP=m
+ CONFIG_INFINIBAND_ISER=m
+ CONFIG_EDAC=y
+-CONFIG_EDAC_MM_EDAC=y
+ CONFIG_EDAC_PASEMI=y
+ CONFIG_RTC_CLASS=y
+ CONFIG_RTC_DRV_DS1307=y
+diff --git a/arch/powerpc/configs/ppc64e_defconfig b/arch/powerpc/configs/ppc64e_defconfig
+index 11a3473f9e2e..6340e6c53c54 100644
+--- a/arch/powerpc/configs/ppc64e_defconfig
++++ b/arch/powerpc/configs/ppc64e_defconfig
+@@ -173,7 +173,6 @@ CONFIG_INFINIBAND_MTHCA=m
+ CONFIG_INFINIBAND_IPOIB=m
+ CONFIG_INFINIBAND_ISER=m
+ CONFIG_EDAC=y
+-CONFIG_EDAC_MM_EDAC=y
+ CONFIG_RTC_CLASS=y
+ CONFIG_RTC_DRV_DS1307=y
+ CONFIG_FS_DAX=y
+diff --git a/arch/powerpc/configs/ppc6xx_defconfig b/arch/powerpc/configs/ppc6xx_defconfig
+index 1d2d69dd6409..18d0d60dadbf 100644
+--- a/arch/powerpc/configs/ppc6xx_defconfig
++++ b/arch/powerpc/configs/ppc6xx_defconfig
+@@ -988,8 +988,7 @@ CONFIG_LEDS_TRIGGER_BACKLIGHT=m
+ CONFIG_LEDS_TRIGGER_DEFAULT_ON=m
+ CONFIG_ACCESSIBILITY=y
+ CONFIG_A11Y_BRAILLE_CONSOLE=y
+-CONFIG_EDAC=y
+-CONFIG_EDAC_MM_EDAC=m
++CONFIG_EDAC=m
+ CONFIG_RTC_CLASS=y
+ # CONFIG_RTC_HCTOSYS is not set
+ CONFIG_RTC_DRV_DS1307=m
+diff --git a/arch/tile/configs/tilegx_defconfig b/arch/tile/configs/tilegx_defconfig
+index fd122ef45b00..0d925fa0f0c1 100644
+--- a/arch/tile/configs/tilegx_defconfig
++++ b/arch/tile/configs/tilegx_defconfig
+@@ -249,7 +249,6 @@ CONFIG_USB_EHCI_HCD=y
+ CONFIG_USB_OHCI_HCD=y
+ CONFIG_USB_STORAGE=y
+ CONFIG_EDAC=y
+-CONFIG_EDAC_MM_EDAC=y
+ CONFIG_RTC_CLASS=y
+ CONFIG_RTC_DRV_TILE=y
+ CONFIG_EXT2_FS=y
+diff --git a/arch/tile/configs/tilepro_defconfig b/arch/tile/configs/tilepro_defconfig
+index eb6a55944191..149d8e8eacb8 100644
+--- a/arch/tile/configs/tilepro_defconfig
++++ b/arch/tile/configs/tilepro_defconfig
+@@ -358,7 +358,6 @@ CONFIG_WATCHDOG_NOWAYOUT=y
+ # CONFIG_VGA_ARB is not set
+ # CONFIG_USB_SUPPORT is not set
+ CONFIG_EDAC=y
+-CONFIG_EDAC_MM_EDAC=y
+ CONFIG_RTC_CLASS=y
+ CONFIG_RTC_DRV_TILE=y
+ CONFIG_EXT2_FS=y
+diff --git a/drivers/acpi/Kconfig b/drivers/acpi/Kconfig
+index a71874df3410..a20cfcbee694 100644
+--- a/drivers/acpi/Kconfig
++++ b/drivers/acpi/Kconfig
+@@ -471,7 +471,6 @@ config ACPI_EXTLOG
+ 	tristate "Extended Error Log support"
+ 	depends on X86_MCE && X86_LOCAL_APIC && EDAC
+ 	select UEFI_CPER
+-	select RAS
+ 	default n
+ 	help
+ 	  Certain usages such as Predictive Failure Analysis (PFA) require
+diff --git a/drivers/edac/Kconfig b/drivers/edac/Kconfig
+index 7c68e6f955c7..1ac18c989fb3 100644
+--- a/drivers/edac/Kconfig
++++ b/drivers/edac/Kconfig
+@@ -10,8 +10,8 @@ config EDAC_SUPPORT
+ 	bool
+ 
+ menuconfig EDAC
+-	bool "EDAC (Error Detection And Correction) reporting"
+-	depends on HAS_IOMEM && EDAC_SUPPORT
++	tristate "EDAC (Error Detection And Correction) reporting"
++	depends on HAS_IOMEM && EDAC_SUPPORT && RAS
+ 	help
+ 	  EDAC is designed to report errors in the core system.
+ 	  These are low-level errors that are reported in the CPU or
+@@ -62,20 +62,9 @@ config EDAC_DECODE_MCE
+ 	  which occur really early upon boot, before the module infrastructure
+ 	  has been initialized.
+ 
+-config EDAC_MM_EDAC
+-	tristate "Main Memory EDAC (Error Detection And Correction) reporting"
+-	select RAS
+-	help
+-	  Some systems are able to detect and correct errors in main
+-	  memory.  EDAC can report statistics on memory error
+-	  detection and correction (EDAC - or commonly referred to ECC
+-	  errors).  EDAC will also try to decode where these errors
+-	  occurred so that a particular failing memory module can be
+-	  replaced.  If unsure, select 'Y'.
+-
+ config EDAC_GHES
+ 	bool "Output ACPI APEI/GHES BIOS detected errors via EDAC"
+-	depends on ACPI_APEI_GHES && (EDAC_MM_EDAC=y)
++	depends on ACPI_APEI_GHES && (EDAC=y)
+ 	default y
+ 	help
+ 	  Not all machines support hardware-driven error report. Some of those
+@@ -98,7 +87,7 @@ config EDAC_GHES
+ 
+ config EDAC_AMD64
+ 	tristate "AMD64 (Opteron, Athlon64)"
+-	depends on EDAC_MM_EDAC && AMD_NB && EDAC_DECODE_MCE
++	depends on AMD_NB && EDAC_DECODE_MCE
+ 	help
+ 	  Support for error detection and correction of DRAM ECC errors on
+ 	  the AMD64 families (>= K8) of memory controllers.
+@@ -124,28 +113,28 @@ config EDAC_AMD64_ERROR_INJECTION
+ 
+ config EDAC_AMD76X
+ 	tristate "AMD 76x (760, 762, 768)"
+-	depends on EDAC_MM_EDAC && PCI && X86_32
++	depends on PCI && X86_32
+ 	help
+ 	  Support for error detection and correction on the AMD 76x
+ 	  series of chipsets used with the Athlon processor.
+ 
+ config EDAC_E7XXX
+ 	tristate "Intel e7xxx (e7205, e7500, e7501, e7505)"
+-	depends on EDAC_MM_EDAC && PCI && X86_32
++	depends on PCI && X86_32
+ 	help
+ 	  Support for error detection and correction on the Intel
+ 	  E7205, E7500, E7501 and E7505 server chipsets.
+ 
+ config EDAC_E752X
+ 	tristate "Intel e752x (e7520, e7525, e7320) and 3100"
+-	depends on EDAC_MM_EDAC && PCI && X86
++	depends on PCI && X86
+ 	help
+ 	  Support for error detection and correction on the Intel
+ 	  E7520, E7525, E7320 server chipsets.
+ 
+ config EDAC_I82443BXGX
+ 	tristate "Intel 82443BX/GX (440BX/GX)"
+-	depends on EDAC_MM_EDAC && PCI && X86_32
++	depends on PCI && X86_32
+ 	depends on BROKEN
+ 	help
+ 	  Support for error detection and correction on the Intel
+@@ -153,56 +142,56 @@ config EDAC_I82443BXGX
+ 
+ config EDAC_I82875P
+ 	tristate "Intel 82875p (D82875P, E7210)"
+-	depends on EDAC_MM_EDAC && PCI && X86_32
++	depends on PCI && X86_32
+ 	help
+ 	  Support for error detection and correction on the Intel
+ 	  DP82785P and E7210 server chipsets.
+ 
+ config EDAC_I82975X
+ 	tristate "Intel 82975x (D82975x)"
+-	depends on EDAC_MM_EDAC && PCI && X86
++	depends on PCI && X86
+ 	help
+ 	  Support for error detection and correction on the Intel
+ 	  DP82975x server chipsets.
+ 
+ config EDAC_I3000
+ 	tristate "Intel 3000/3010"
+-	depends on EDAC_MM_EDAC && PCI && X86
++	depends on PCI && X86
+ 	help
+ 	  Support for error detection and correction on the Intel
+ 	  3000 and 3010 server chipsets.
+ 
+ config EDAC_I3200
+ 	tristate "Intel 3200"
+-	depends on EDAC_MM_EDAC && PCI && X86
++	depends on PCI && X86
+ 	help
+ 	  Support for error detection and correction on the Intel
+ 	  3200 and 3210 server chipsets.
+ 
+ config EDAC_IE31200
+ 	tristate "Intel e312xx"
+-	depends on EDAC_MM_EDAC && PCI && X86
++	depends on PCI && X86
+ 	help
+ 	  Support for error detection and correction on the Intel
+ 	  E3-1200 based DRAM controllers.
+ 
+ config EDAC_X38
+ 	tristate "Intel X38"
+-	depends on EDAC_MM_EDAC && PCI && X86
++	depends on PCI && X86
+ 	help
+ 	  Support for error detection and correction on the Intel
+ 	  X38 server chipsets.
+ 
+ config EDAC_I5400
+ 	tristate "Intel 5400 (Seaburg) chipsets"
+-	depends on EDAC_MM_EDAC && PCI && X86
++	depends on PCI && X86
+ 	help
+ 	  Support for error detection and correction the Intel
+ 	  i5400 MCH chipset (Seaburg).
+ 
+ config EDAC_I7CORE
+ 	tristate "Intel i7 Core (Nehalem) processors"
+-	depends on EDAC_MM_EDAC && PCI && X86 && X86_MCE_INTEL
++	depends on PCI && X86 && X86_MCE_INTEL
+ 	help
+ 	  Support for error detection and correction the Intel
+ 	  i7 Core (Nehalem) Integrated Memory Controller that exists on
+@@ -211,58 +200,56 @@ config EDAC_I7CORE
+ 
+ config EDAC_I82860
+ 	tristate "Intel 82860"
+-	depends on EDAC_MM_EDAC && PCI && X86_32
++	depends on PCI && X86_32
+ 	help
+ 	  Support for error detection and correction on the Intel
+ 	  82860 chipset.
+ 
+ config EDAC_R82600
+ 	tristate "Radisys 82600 embedded chipset"
+-	depends on EDAC_MM_EDAC && PCI && X86_32
++	depends on PCI && X86_32
+ 	help
+ 	  Support for error detection and correction on the Radisys
+ 	  82600 embedded chipset.
+ 
+ config EDAC_I5000
+ 	tristate "Intel Greencreek/Blackford chipset"
+-	depends on EDAC_MM_EDAC && X86 && PCI
++	depends on X86 && PCI
+ 	help
+ 	  Support for error detection and correction the Intel
+ 	  Greekcreek/Blackford chipsets.
+ 
+ config EDAC_I5100
+ 	tristate "Intel San Clemente MCH"
+-	depends on EDAC_MM_EDAC && X86 && PCI
++	depends on X86 && PCI
+ 	help
+ 	  Support for error detection and correction the Intel
+ 	  San Clemente MCH.
+ 
+ config EDAC_I7300
+ 	tristate "Intel Clarksboro MCH"
+-	depends on EDAC_MM_EDAC && X86 && PCI
++	depends on X86 && PCI
+ 	help
+ 	  Support for error detection and correction the Intel
+ 	  Clarksboro MCH (Intel 7300 chipset).
+ 
+ config EDAC_SBRIDGE
+ 	tristate "Intel Sandy-Bridge/Ivy-Bridge/Haswell Integrated MC"
+-	depends on EDAC_MM_EDAC && PCI && X86_64 && X86_MCE_INTEL
+-	depends on PCI_MMCONFIG
++	depends on PCI && X86_64 && X86_MCE_INTEL && PCI_MMCONFIG
+ 	help
+ 	  Support for error detection and correction the Intel
+ 	  Sandy Bridge, Ivy Bridge and Haswell Integrated Memory Controllers.
+ 
+ config EDAC_SKX
+ 	tristate "Intel Skylake server Integrated MC"
+-	depends on EDAC_MM_EDAC && PCI && X86_64 && X86_MCE_INTEL
+-	depends on PCI_MMCONFIG
++	depends on PCI && X86_64 && X86_MCE_INTEL && PCI_MMCONFIG
+ 	help
+ 	  Support for error detection and correction the Intel
+ 	  Skylake server Integrated Memory Controllers.
+ 
+ config EDAC_PND2
+ 	tristate "Intel Pondicherry2"
+-	depends on EDAC_MM_EDAC && PCI && X86_64 && X86_MCE_INTEL
++	depends on PCI && X86_64 && X86_MCE_INTEL
+ 	help
+ 	  Support for error detection and correction on the Intel
+ 	  Pondicherry2 Integrated Memory Controller. This SoC IP is
+@@ -271,36 +258,35 @@ config EDAC_PND2
+ 
+ config EDAC_MPC85XX
+ 	tristate "Freescale MPC83xx / MPC85xx"
+-	depends on EDAC_MM_EDAC && FSL_SOC
++	depends on FSL_SOC
+ 	help
+ 	  Support for error detection and correction on the Freescale
+ 	  MPC8349, MPC8560, MPC8540, MPC8548, T4240
+ 
+ config EDAC_LAYERSCAPE
+ 	tristate "Freescale Layerscape DDR"
+-	depends on EDAC_MM_EDAC && ARCH_LAYERSCAPE
++	depends on ARCH_LAYERSCAPE
+ 	help
+ 	  Support for error detection and correction on Freescale memory
+ 	  controllers on Layerscape SoCs.
+ 
+ config EDAC_MV64X60
+ 	tristate "Marvell MV64x60"
+-	depends on EDAC_MM_EDAC && MV64X60
++	depends on MV64X60
+ 	help
+ 	  Support for error detection and correction on the Marvell
+ 	  MV64360 and MV64460 chipsets.
+ 
+ config EDAC_PASEMI
+ 	tristate "PA Semi PWRficient"
+-	depends on EDAC_MM_EDAC && PCI
+-	depends on PPC_PASEMI
++	depends on PPC_PASEMI && PCI
+ 	help
+ 	  Support for error detection and correction on PA Semi
+ 	  PWRficient.
+ 
+ config EDAC_CELL
+ 	tristate "Cell Broadband Engine memory controller"
+-	depends on EDAC_MM_EDAC && PPC_CELL_COMMON
++	depends on PPC_CELL_COMMON
+ 	help
+ 	  Support for error detection and correction on the
+ 	  Cell Broadband Engine internal memory controller
+@@ -308,7 +294,7 @@ config EDAC_CELL
+ 
+ config EDAC_PPC4XX
+ 	tristate "PPC4xx IBM DDR2 Memory Controller"
+-	depends on EDAC_MM_EDAC && 4xx
++	depends on 4xx
+ 	help
+ 	  This enables support for EDAC on the ECC memory used
+ 	  with the IBM DDR2 memory controller found in various
+@@ -317,7 +303,7 @@ config EDAC_PPC4XX
+ 
+ config EDAC_AMD8131
+ 	tristate "AMD8131 HyperTransport PCI-X Tunnel"
+-	depends on EDAC_MM_EDAC && PCI && PPC_MAPLE
++	depends on PCI && PPC_MAPLE
+ 	help
+ 	  Support for error detection and correction on the
+ 	  AMD8131 HyperTransport PCI-X Tunnel chip.
+@@ -326,7 +312,7 @@ config EDAC_AMD8131
+ 
+ config EDAC_AMD8111
+ 	tristate "AMD8111 HyperTransport I/O Hub"
+-	depends on EDAC_MM_EDAC && PCI && PPC_MAPLE
++	depends on PCI && PPC_MAPLE
+ 	help
+ 	  Support for error detection and correction on the
+ 	  AMD8111 HyperTransport I/O Hub chip.
+@@ -335,7 +321,7 @@ config EDAC_AMD8111
+ 
+ config EDAC_CPC925
+ 	tristate "IBM CPC925 Memory Controller (PPC970FX)"
+-	depends on EDAC_MM_EDAC && PPC64
++	depends on PPC64
+ 	help
+ 	  Support for error detection and correction on the
+ 	  IBM CPC925 Bridge and Memory Controller, which is
+@@ -344,7 +330,7 @@ config EDAC_CPC925
+ 
+ config EDAC_TILE
+ 	tristate "Tilera Memory Controller"
+-	depends on EDAC_MM_EDAC && TILE
++	depends on TILE
+ 	default y
+ 	help
+ 	  Support for error detection and correction on the
+@@ -352,49 +338,48 @@ config EDAC_TILE
+ 
+ config EDAC_HIGHBANK_MC
+ 	tristate "Highbank Memory Controller"
+-	depends on EDAC_MM_EDAC && ARCH_HIGHBANK
++	depends on ARCH_HIGHBANK
+ 	help
+ 	  Support for error detection and correction on the
+ 	  Calxeda Highbank memory controller.
+ 
+ config EDAC_HIGHBANK_L2
+ 	tristate "Highbank L2 Cache"
+-	depends on EDAC_MM_EDAC && ARCH_HIGHBANK
++	depends on ARCH_HIGHBANK
+ 	help
+ 	  Support for error detection and correction on the
+ 	  Calxeda Highbank memory controller.
+ 
+ config EDAC_OCTEON_PC
+ 	tristate "Cavium Octeon Primary Caches"
+-	depends on EDAC_MM_EDAC && CPU_CAVIUM_OCTEON
++	depends on CPU_CAVIUM_OCTEON
+ 	help
+ 	  Support for error detection and correction on the primary caches of
+ 	  the cnMIPS cores of Cavium Octeon family SOCs.
+ 
+ config EDAC_OCTEON_L2C
+ 	tristate "Cavium Octeon Secondary Caches (L2C)"
+-	depends on EDAC_MM_EDAC && CAVIUM_OCTEON_SOC
++	depends on CAVIUM_OCTEON_SOC
+ 	help
+ 	  Support for error detection and correction on the
+ 	  Cavium Octeon family of SOCs.
+ 
+ config EDAC_OCTEON_LMC
+ 	tristate "Cavium Octeon DRAM Memory Controller (LMC)"
+-	depends on EDAC_MM_EDAC && CAVIUM_OCTEON_SOC
++	depends on CAVIUM_OCTEON_SOC
+ 	help
+ 	  Support for error detection and correction on the
+ 	  Cavium Octeon family of SOCs.
+ 
+ config EDAC_OCTEON_PCI
+ 	tristate "Cavium Octeon PCI Controller"
+-	depends on EDAC_MM_EDAC && PCI && CAVIUM_OCTEON_SOC
++	depends on PCI && CAVIUM_OCTEON_SOC
+ 	help
+ 	  Support for error detection and correction on the
+ 	  Cavium Octeon family of SOCs.
+ 
+ config EDAC_THUNDERX
+ 	tristate "Cavium ThunderX EDAC"
+-	depends on EDAC_MM_EDAC
+ 	depends on ARM64
+ 	depends on PCI
+ 	help
+@@ -405,7 +390,7 @@ config EDAC_THUNDERX
+ 
+ config EDAC_ALTERA
+ 	bool "Altera SOCFPGA ECC"
+-	depends on EDAC_MM_EDAC=y && ARCH_SOCFPGA
++	depends on EDAC=y && ARCH_SOCFPGA
+ 	help
+ 	  Support for error detection and correction on the
+ 	  Altera SOCs. This must be selected for SDRAM ECC.
+@@ -471,14 +456,14 @@ config EDAC_ALTERA_SDMMC
+ 
+ config EDAC_SYNOPSYS
+ 	tristate "Synopsys DDR Memory Controller"
+-	depends on EDAC_MM_EDAC && ARCH_ZYNQ
++	depends on ARCH_ZYNQ
+ 	help
+ 	  Support for error detection and correction on the Synopsys DDR
+ 	  memory controller.
+ 
+ config EDAC_XGENE
+ 	tristate "APM X-Gene SoC"
+-	depends on EDAC_MM_EDAC && (ARM64 || COMPILE_TEST)
++	depends on (ARM64 || COMPILE_TEST)
+ 	help
+ 	  Support for error detection and correction on the
+ 	  APM X-Gene family of SOCs.
+diff --git a/drivers/edac/Makefile b/drivers/edac/Makefile
+index 76517ebc0a7f..a8fb734cb28d 100644
+--- a/drivers/edac/Makefile
++++ b/drivers/edac/Makefile
+@@ -6,8 +6,7 @@
+ # GNU General Public License.
+ #
+ 
+-obj-$(CONFIG_EDAC)			:= edac_stub.o
+-obj-$(CONFIG_EDAC_MM_EDAC)		+= edac_core.o
++obj-$(CONFIG_EDAC)			:= edac_stub.o edac_core.o
+ 
+ edac_core-y	:= edac_mc.o edac_device.o edac_mc_sysfs.o
+ edac_core-y	+= edac_module.o edac_device_sysfs.o wq.o
+diff --git a/drivers/edac/edac_stub.c b/drivers/edac/edac_stub.c
+index aa31cbd17cd2..6aacc569401e 100644
+--- a/drivers/edac/edac_stub.c
++++ b/drivers/edac/edac_stub.c
+@@ -20,7 +20,7 @@
+ int edac_report_status = EDAC_REPORTING_ENABLED;
+ EXPORT_SYMBOL_GPL(edac_report_status);
+ 
+-static int __init edac_report_setup(char *str)
++static int __init __maybe_unused edac_report_setup(char *str)
+ {
+ 	if (!str)
+ 		return -EINVAL;
+-- 
+2.11.0
