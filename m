@@ -1,27 +1,27 @@
-Return-Path: <alistair@popple.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <matthew.brown.dev@gmail.com>
+Received: from mail-yw0-x22f.google.com (mail-yw0-x22f.google.com
+ [IPv6:2607:f8b0:4002:c05::22f])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vzBFR4QxvzDqKk
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Apr 2017 15:33:15 +1000 (AEST)
-Received: from ipmail07.adl2.internode.on.net (ipmail07.adl2.internode.on.net
- [150.101.137.131])
- by ozlabs.org (Postfix) with ESMTP id 3vzBFR2jDZz9s85
- for <linuxppc-dev@ozlabs.org>; Thu,  6 Apr 2017 15:33:15 +1000 (AEST)
-From: Alistair Popple <alistair@popple.id.au>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Balbir Singh <bsingharora@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>,
- linuxppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
- Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [RFC] [PATCH] Trace TLBIE's
-Date: Thu, 06 Apr 2017 15:32:40 +1000
-Message-ID: <2637022.69IxkT9g0N@new-mexico>
-In-Reply-To: <8a496713-bc00-6520-b715-481de507363e@gmail.com>
-References: <3dcd0c76-46fd-cb7a-945d-4b5a679fa544@gmail.com>
- <87polmtscd.fsf@concordia.ellerman.id.au>
- <8a496713-bc00-6520-b715-481de507363e@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vzBFQ63HvzDqKd
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Apr 2017 15:33:14 +1000 (AEST)
+Received: by mail-yw0-x22f.google.com with SMTP id v76so15542840ywg.0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Apr 2017 22:33:14 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <87efx9kkiv.fsf@possimpible.ozlabs.ibm.com>
+References: <20170330051313.31358-1-matthew.brown.dev@gmail.com>
+ <877f31n2mn.fsf@possimpible.ozlabs.ibm.com>
+ <87wpb1kvy7.fsf@possimpible.ozlabs.ibm.com>
+ <CAPoR37YvxSKnerVMPEVE1FzjjT6O6z8sNVsHw_PrWdsVtyEaMA@mail.gmail.com>
+ <87efx9kkiv.fsf@possimpible.ozlabs.ibm.com>
+From: Matt Brown <matthew.brown.dev@gmail.com>
+Date: Thu, 6 Apr 2017 15:33:12 +1000
+Message-ID: <CAPoR37aZ=VihOBiVJUgj0ToJjYWoipTfnfDOe=wxa1LPwyZ2mw@mail.gmail.com>
+Subject: Re: [PATCH] raid6/altivec: adding vpermxor implementation for raid6 Q
+ syndrome
+To: Daniel Axtens <dja@axtens.net>
+Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,26 +31,99 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 23 Nov 2016 10:40:36 PM Balbir Singh wrote:
+Hi Daniel,
+
+Just to respond to your comments,
+
+The inline asm line cannot be formatted over multiple lines due to the
+unrolling process, but we can take out the volatile.
+
+The pagefault_disable() also seems to be an old method of disabling
+preemption, but no longer actually works to disable preemption.
+Preempt_disable should be used instead now. So the use of
+pagefault_disable() in crc32d-vpmsum_glue.c is actually a bug.
+
+Thanks,
+Matt
+
+On Tue, Apr 4, 2017 at 11:51 AM, Daniel Axtens <dja@axtens.net> wrote:
+> Hi Matt,
 >
-> > But overall I guess it's OK. We'd want to do a quick benchmark to make
-> > sure it's not adding any overhead.
+>> Woops, totally missed that big chunk of makefile in the commit.
+>> I had a chat with Oliver last week about the backwards compatibility stuff.
+>> This will work for all versions >= 207S.
+>>
+>> From what I can tell there is almost no difference between
+>> pagefault_disable() and preempt_disable(), but I'll follow that up
+>> when I'm in the office next.
 >
-> OK.. I'll try and find a benchmark and run it with traces disabled.
-
-For what's it's worth I didn't notice any slow down running a NAMD
-test with tracing disabled and ~400000 tlbie's in 34s. Turning tracing
-on could have slowed things down ever so slightly, but I didn't notice
-as it may have just been in the noise of the benchmark I was running
-(I wasn't specifically looking at timing, hence the vagueness of the
-remarks).
-
-Otherwise the patch worked and would be useful - I have already had to
-setup tlbie counting/tracing several times in the last 12 months.
-
-Tested-by: Alistair Popple <alistair@popple.id.au>
-
-- Alistair
-
-> Thanks for the review
-> Balbir Singh
+> Cool, good to know.
+>
+> See you when you're next in!
+>
+> Regards,
+> Daniel
+>
+>>
+>> Thanks for the review,
+>>
+>> Matt
+>>
+>> On Tue, Apr 4, 2017 at 7:44 AM, Daniel Axtens <dja@axtens.net> wrote:
+>>>> In that function, the flow is:
+>>>>  pagefault_disable();
+>>>>  enable_kernel_altivec();
+>>>>  <vectorised function>
+>>>>  pagefault_enable();
+>>>>
+>>>> There are a few things that it would be nice (but by no means essential)
+>>>> to find out:
+>>>>  - what is the difference between pagefault and prempt enable/disable
+>>>>  - is it required to disable altivec after the end of the function or
+>>>>    can we leave that enabled?
+>>>
+>>> Answering my own question here, dc4fbba11e46 ("powerpc: Create
+>>> disable_kernel_{fp,altivec,vsx,spe}()") adds the disable_ function, and
+>>> it's a no-op except under debug conditions. So it should stay.
+>>>
+>>> Regards,
+>>> Daniel
+>>>
+>>>
+>>>>
+>>>>> +
+>>>>> +int raid6_have_altivec_vpermxor(void);
+>>>>> +#if $# == 1
+>>>>> +int raid6_have_altivec_vpermxor(void)
+>>>>> +{
+>>>>> +    /* Check if CPU has both altivec and the vpermxor instruction*/
+>>>> Please add a space: s|ion*/|ion */|
+>>>>> +# ifdef __KERNEL__
+>>>>> +    return (cpu_has_feature(CONFIG_ALTIVEC) &&
+>>>>> +            cpu_has_feature(CPU_FTR_ARCH_207S));
+>>>> I assume this is future-proof - an ISA 3.00 cpu will advertise 2.07S
+>>>> compat?
+>>>>
+>>>>> +# else
+>>>>> +    return 1;
+>>>>> +#endif
+>>>>> +
+>>>>> +}
+>>>>> +#endif
+>>>>> +
+>>>>> +const struct raid6_calls raid6_vpermxor$# = {
+>>>>> +    raid6_vpermxor$#_gen_syndrome,
+>>>>> +    NULL,
+>>>>> +    raid6_have_altivec_vpermxor,
+>>>>> +    "vpermxor$#",
+>>>>> +    0
+>>>>> +};
+>>>>> +#endif
+>>>>> --
+>>>>> 2.9.3
+>>>>
+>>>> Apart from that this patch looks good and I expect I will be able to
+>>>> formally Review v2.
+>>>>
+>>>> Regards,
+>>>> Daniel
