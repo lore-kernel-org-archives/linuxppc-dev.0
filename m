@@ -1,42 +1,49 @@
-Return-Path: <srs0=hhrr=3o=gmail.com=linus971@ozlabs.org>
+Return-Path: <srs0=+vpc=3o=linux.vnet.ibm.com=mahesh@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vzVBY2MZrzDqHH
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Apr 2017 03:31:49 +1000 (AEST)
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3vzVBY173hz8sxT
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Apr 2017 03:31:49 +1000 (AEST)
-Received: from mail-io0-x22f.google.com (mail-io0-x22f.google.com
- [IPv6:2607:f8b0:4001:c06::22f])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vzVYD3KBWzDqHH
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Apr 2017 03:48:00 +1000 (AEST)
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3vzVYC34Jcz8syC
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Apr 2017 03:47:59 +1000 (AEST)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3vzVBX2LBrz9s84
- for <linuxppc-dev@ozlabs.org>; Fri,  7 Apr 2017 03:31:48 +1000 (AEST)
-Received: by mail-io0-x22f.google.com with SMTP id l7so34233718ioe.3
- for <linuxppc-dev@ozlabs.org>; Thu, 06 Apr 2017 10:31:48 -0700 (PDT)
+ by ozlabs.org (Postfix) with ESMTPS id 3vzVYB1L58z9s8N
+ for <linuxppc-dev@ozlabs.org>; Fri,  7 Apr 2017 03:47:58 +1000 (AEST)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v36HhiCm025198
+ for <linuxppc-dev@ozlabs.org>; Thu, 6 Apr 2017 13:47:53 -0400
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 29nq7x12f3-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Thu, 06 Apr 2017 13:47:52 -0400
+Received: from localhost
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
+ Fri, 7 Apr 2017 03:47:49 +1000
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v36HldT840960126
+ for <linuxppc-dev@ozlabs.org>; Fri, 7 Apr 2017 03:47:47 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v36HlATH007646
+ for <linuxppc-dev@ozlabs.org>; Fri, 7 Apr 2017 03:47:11 +1000
+Subject: [PATCH v8 0/3] KVM: PPC: Add FWNMI support for KVM guests on POWER
+From: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
+To: gleb@kernel.org, Michael Ellerman <mpe@ellerman.id.au>, agraf@suse.de,
+ KVM-PPC <kvm-ppc@vger.kernel.org>, linuxppc-dev <linuxppc-dev@ozlabs.org>,
+ Paul Mackerras <paulus@samba.org>, pbonzini@redhat.com
+Cc: KVM <kvm@vger.kernel.org>, david@gibson.dropbear.id.au
+Date: Thu, 06 Apr 2017 23:16:54 +0530
 MIME-Version: 1.0
-Sender: linus971@gmail.com
-In-Reply-To: <20170406163651.hj7apd63uxupgdb3@hirez.programming.kicks-ass.net>
-References: <20170404095001.664718b8@roar.ozlabs.ibm.com>
- <CA+55aFzdUMZHzXtn9PyhJg7GjYNQ5fy6=LzBNJx==Ab=U=YYjw@mail.gmail.com>
- <20170404130233.1f45115b@roar.ozlabs.ibm.com>
- <20170405.070157.871721909352646302.davem@davemloft.net>
- <20170406105958.196c6977@roar.ozlabs.ibm.com> <20170406141352.GF18204@arm.com>
- <CA+55aFwgNhF=QUKMKLc9TfQ=cgF2mvMEVx9hJms4wQqCsib9Rw@mail.gmail.com>
- <20170406163651.hj7apd63uxupgdb3@hirez.programming.kicks-ass.net>
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Thu, 6 Apr 2017 10:31:46 -0700
-Message-ID: <CA+55aFzTn9e=F68SOtEvvZLdT6zCj9+gLc-OS7qhDKdM7zaasA@mail.gmail.com>
-Subject: Re: [RFC][PATCH] spin loop arch primitives for busy waiting
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Will Deacon <will.deacon@arm.com>, Nicholas Piggin <npiggin@gmail.com>,
- David Miller <davem@davemloft.net>,
- "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Anton Blanchard <anton@samba.org>,
- linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="utf-8"
+Message-Id: <149150078227.9475.13869552319691573937.stgit@jupiter.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,60 +53,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Apr 6, 2017 at 9:36 AM, Peter Zijlstra <peterz@infradead.org> wrote:
->
-> Something like the below, which is ugly (because I couldn't be bothered
-> to resolve the header recursion and thus duplicates the monitor/mwait
-> functions) and broken (because it hard assumes the hardware can do
-> monitor/mwait).
+From: Aravinda Prasad <aravinda@linux.vnet.ibm.com>
 
-Yeah, I think it needs to be conditional not just om mwait support,
-but on the "new" mwait support (ie "CPUID.05H:ECX[bit 1] = 1").
+This series of patches add FWNMI support for KVM guests
+on POWER.
 
-And we'd probably want to make it even more strict, in that soem mwait
-implementations might simply not be very good for short waits.
+Memory errors such as bit flips that cannot be corrected
+by hardware is passed on to the kernel for handling
+by raising machine check exception (an NMI). Upon such
+machine check exceptions, if the address in error belongs
+to the guest, the error is passed on to the guest
+kernel for handling. However, for guest kernels that
+have issued "ibm,nmi-register" call, QEMU should build
+an error log and pass on the error log to the guest-
+kernel registered machine check handler routine.
 
-Because I think the latency was hundreds of cycles at some point (but
-that may have been the original version that wouldn't have had the
-"new mwait" bit set), and there are also issues with virtualization
-(ie we may not want to do this in a guest because it causes a VM
-exit).
+This patch series adds the functionality to pass on the
+machine check exception to the guest kernel by
+giving control to QEMU. QEMU builds the error log
+and invokes the guest-kernel registered handler.
 
-> But it builds and boots, no clue if its better or worse. Changing mwait
-> eax to 0 would give us C1 and might also be worth a try I suppose.
+QEMU part can be found at:
+http://lists.nongnu.org/archive/html/qemu-ppc/2015-12/msg00199.html
 
-Hmm. Also:
+Change Log v8:
+  - export symbol machine_check_print_event_info() and directly call it
+    from kvmppc_handle_exit_hv().
 
-> +               ___mwait(0xf0 /* C0 */, 0x01 /* INT */);                \
+Change Log v7:
+  - Move the FWNMI capability inside #ifdef CONFIG_PPC_BOOK3S_64 block.
+  - Split 2nd patch into two, one that adds mce hook and other that touches
+    kvm code.
 
-Do you actually want that "INT" bit set? It's only meaningful if
-interrupts are _masked_, afaik. Which doesn't necessarily make sense
-for this case.
+Change Log v6:
+  - Deliver all MCE errors (handled/unhandled) for FWNMI capable guest.
+  - Use kvm_run->flags to pass NMI disposition status.
 
-If interrupts would actually get delivered to software, mwait will
-exit regardless.
+Change Log v5:
+  - Added capability documentation. No functionality/code change.
 
-So I think __mwait(0,0) might be the rigth thing at least in some
-cases. Or at least worth timing at some point.
+Change Log v4:
+  - Allow host-side handling of the machine check exception before
+    passing on the exception to the guest.
 
-Of course, we really shouldn't have very many places that actually
-need this. We currently use it in three places, I think:
+Change Log v3:
+  - Split the patch into 2. First patch introduces the
+    new capability while the second one enhances KVM to
+    redirect MCE.
+  - Fix access width bug
 
- - spinlocks. This is likely the the big case.
+Change Log v2:
+  - Added KVM capability
 
- - the per-cpu cross-cpu calling (call_single_data) exclusivity waiting
+---
 
- - the magical on_cpu waiting in ttwu. I'm not sure how often this
-actually triggers, the original argument for this was to avoid an
-expensive barrier - the loop itself probably very seldom actually
-triggers.
+Aravinda Prasad (2):
+      KVM: PPC: Add new capability to control MCE behaviour
+      KVM: PPC: Exit guest upon MCE when FWNMI capability is enabled
 
-It may be, for example, that just the fact that your implementation
-does the "__monitor()" part before doing the load and test, might be
-already too expensive for the (common) cases where we don't expect to
-loop.
+Mahesh Salgaonkar (1):
+      powerpc/book3s: EXPORT_SYMBOL machine_check_print_event_info
 
-But maybe "monitor" is really cheap. I suspect it's microcoded,
-though, which implies "no".
 
-                      Linus
+ Documentation/virtual/kvm/api.txt       |   11 +++++++
+ arch/powerpc/include/asm/kvm_host.h     |    3 ++
+ arch/powerpc/include/uapi/asm/kvm.h     |    6 ++++
+ arch/powerpc/kernel/asm-offsets.c       |    1 +
+ arch/powerpc/kernel/mce.c               |    1 +
+ arch/powerpc/kvm/book3s_hv.c            |   23 ++++++++------
+ arch/powerpc/kvm/book3s_hv_ras.c        |   18 ++++++++++-
+ arch/powerpc/kvm/book3s_hv_rmhandlers.S |   52 ++++++++++++++++++-------------
+ arch/powerpc/kvm/powerpc.c              |    9 +++++
+ include/uapi/linux/kvm.h                |    1 +
+ 10 files changed, 93 insertions(+), 32 deletions(-)
+
+--
+Signature
