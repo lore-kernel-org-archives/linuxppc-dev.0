@@ -1,41 +1,55 @@
-Return-Path: <stewart@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <srs0=+vpc=3o=linux.vnet.ibm.com=mahesh@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vzDJF6lzyzDqMZ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Apr 2017 17:05:49 +1000 (AEST)
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3vzDJF3N2tz8sZm
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Apr 2017 17:05:49 +1000 (AEST)
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vzDHL1xRCzDqMG
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Apr 2017 17:05:02 +1000 (AEST)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v3674pB0112462
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Apr 2017 03:04:56 -0400
-Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
- by mx0a-001b2d01.pphosted.com with ESMTP id 29n9g7gved-1
+ by ozlabs.org (Postfix) with ESMTPS id 3vzDJC6MNJz9sDF
+ for <linuxppc-dev@ozlabs.org>; Thu,  6 Apr 2017 17:05:47 +1000 (AEST)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v36751Cs029488
+ for <linuxppc-dev@ozlabs.org>; Thu, 6 Apr 2017 03:05:43 -0400
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 29ngh29bmr-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Apr 2017 03:04:54 -0400
+ for <linuxppc-dev@ozlabs.org>; Thu, 06 Apr 2017 03:05:42 -0400
 Received: from localhost
- by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <stewart@linux.vnet.ibm.com>;
- Thu, 6 Apr 2017 03:04:28 -0400
-From: Stewart Smith <stewart@linux.vnet.ibm.com>
-To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>, mpe@ellerman.id.au
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- ego@linux.vnet.ibm.com, bsingharora@gmail.com,
- benh@kernel.crashing.org, paulus@samba.org, anton@samba.org,
- sukadev@linux.vnet.ibm.com, mikey@neuling.org, dja@axtens.net,
- eranian@google.com, Hemant Kumar <hemant@linux.vnet.ibm.com>,
- Anju T Sudhakar <anju@linux.vnet.ibm.com>,
- Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Subject: Re: [PATCH v6 02/11] powerpc/powernv: Autoload IMC device driver
- module
-In-Reply-To: <1491231308-15282-3-git-send-email-maddy@linux.vnet.ibm.com>
-References: <1491231308-15282-1-git-send-email-maddy@linux.vnet.ibm.com>
- <1491231308-15282-3-git-send-email-maddy@linux.vnet.ibm.com>
-Date: Thu, 06 Apr 2017 17:04:13 +1000
+ for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
+ Thu, 6 Apr 2017 17:05:40 +1000
+Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v3675Sj255574650
+ for <linuxppc-dev@ozlabs.org>; Thu, 6 Apr 2017 17:05:36 +1000
+Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
+ by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v36754IN023156
+ for <linuxppc-dev@ozlabs.org>; Thu, 6 Apr 2017 17:05:04 +1000
+Subject: Re: [PATCH v7 2/3] powerpc/powernv: Introduce a machine check hook
+ for Guest MCEs.
+To: David Gibson <david@gibson.dropbear.id.au>
+References: <149142508580.28284.10052904644951828717.stgit@jupiter.in.ibm.com>
+ <149142524189.28284.14876788789820474952.stgit@jupiter.in.ibm.com>
+ <20170406052258.GB12179@umbus>
+Cc: gleb@kernel.org, agraf@suse.de, KVM-PPC <kvm-ppc@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@ozlabs.org>,
+ Paul Mackerras <paulus@samba.org>, pbonzini@redhat.com,
+ KVM <kvm@vger.kernel.org>
+From: Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com>
+Date: Thu, 6 Apr 2017 12:34:40 +0530
 MIME-Version: 1.0
-Content-Type: text/plain
-Message-Id: <87wpayhv9u.fsf@linux.vnet.ibm.com>
+In-Reply-To: <20170406052258.GB12179@umbus>
+Content-Type: text/plain; charset=windows-1252
+Message-Id: <d136eb23-e6f6-106d-6cdc-1b9c9c38f674@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,139 +59,131 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Madhavan Srinivasan <maddy@linux.vnet.ibm.com> writes:
-> From: Hemant Kumar <hemant@linux.vnet.ibm.com>
->
-> This patch does three things :
->  - Enables "opal.c" to create a platform device for the IMC interface
->    according to the appropriate compatibility string.
->  - Find the reserved-memory region details from the system device tree
->    and get the base address of HOMER (Reserved memory) region address for each chip.
->  - We also get the Nest PMU counter data offsets (in the HOMER region)
->    and their sizes. The offsets for the counters' data are fixed and
->    won't change from chip to chip.
->
-> The device tree parsing logic is separated from the PMU creation
-> functions (which is done in subsequent patches).
->
-> Signed-off-by: Anju T Sudhakar <anju@linux.vnet.ibm.com>
-> Signed-off-by: Hemant Kumar <hemant@linux.vnet.ibm.com>
-> Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/platforms/powernv/Makefile   |   2 +-
->  arch/powerpc/platforms/powernv/opal-imc.c | 126 ++++++++++++++++++++++++++++++
->  arch/powerpc/platforms/powernv/opal.c     |  14 ++++
->  3 files changed, 141 insertions(+), 1 deletion(-)
->  create mode 100644 arch/powerpc/platforms/powernv/opal-imc.c
->
-> diff --git a/arch/powerpc/platforms/powernv/Makefile b/arch/powerpc/platforms/powernv/Makefile
-> index b5d98cb3f482..44909fec1121 100644
-> --- a/arch/powerpc/platforms/powernv/Makefile
-> +++ b/arch/powerpc/platforms/powernv/Makefile
-> @@ -2,7 +2,7 @@ obj-y			+= setup.o opal-wrappers.o opal.o opal-async.o idle.o
->  obj-y			+= opal-rtc.o opal-nvram.o opal-lpc.o opal-flash.o
->  obj-y			+= rng.o opal-elog.o opal-dump.o opal-sysparam.o opal-sensor.o
->  obj-y			+= opal-msglog.o opal-hmi.o opal-power.o opal-irqchip.o
-> -obj-y			+= opal-kmsg.o
-> +obj-y			+= opal-kmsg.o opal-imc.o
->
->  obj-$(CONFIG_SMP)	+= smp.o subcore.o subcore-asm.o
->  obj-$(CONFIG_PCI)	+= pci.o pci-ioda.o npu-dma.o
-> diff --git a/arch/powerpc/platforms/powernv/opal-imc.c b/arch/powerpc/platforms/powernv/opal-imc.c
-> new file mode 100644
-> index 000000000000..c476d596c6a8
-> --- /dev/null
-> +++ b/arch/powerpc/platforms/powernv/opal-imc.c
-> @@ -0,0 +1,126 @@
-> +/*
-> + * OPAL IMC interface detection driver
-> + * Supported on POWERNV platform
-> + *
-> + * Copyright	(C) 2016 Madhavan Srinivasan, IBM Corporation.
-> + *		(C) 2016 Hemant K Shaw, IBM Corporation.
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License version 2 as
-> + * published by the Free Software Foundation.
-> + *
-> + * This program is distributed in the hope that it will be useful,
-> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
-> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-> + * GNU General Public License for more details.
-> + */
-> +#include <linux/kernel.h>
-> +#include <linux/module.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/miscdevice.h>
-> +#include <linux/fs.h>
-> +#include <linux/of.h>
-> +#include <linux/of_address.h>
-> +#include <linux/of_platform.h>
-> +#include <linux/poll.h>
-> +#include <linux/mm.h>
-> +#include <linux/slab.h>
-> +#include <linux/crash_dump.h>
-> +#include <asm/opal.h>
-> +#include <asm/io.h>
-> +#include <asm/uaccess.h>
-> +#include <asm/cputable.h>
-> +#include <asm/imc-pmu.h>
-> +
-> +struct perchip_nest_info nest_perchip_info[IMC_MAX_CHIPS];
-> +
-> +static int opal_imc_counters_probe(struct platform_device *pdev)
-> +{
-> +	struct device_node *child, *imc_dev, *rm_node = NULL;
-> +	struct perchip_nest_info *pcni;
-> +	u32 pages, nest_offset, nest_size, idx;
-> +	int i = 0;
-> +	const char *node_name;
-> +	const __be32 *addrp;
-> +	u64 reg_addr, reg_size;
-> +
-> +	if (!pdev || !pdev->dev.of_node)
-> +		return -ENODEV;
-> +
-> +	/*
-> +	 * Check whether this kdump kernel. If yes, just return.
-> +	 */
-> +	if (is_kdump_kernel())
-> +		return -ENODEV;
-> +
-> +	imc_dev = pdev->dev.of_node;
-> +
-> +	/*
-> +	 * nest_offset : where the nest-counters' data start.
-> +	 * size : size of the entire nest-counters region
-> +	 */
-> +	if (of_property_read_u32(imc_dev, "imc-nest-offset", &nest_offset))
-> +		goto err;
-> +
-> +	if (of_property_read_u32(imc_dev, "imc-nest-size", &nest_size))
-> +		goto err;
-> +
-> +	/* Find the "homer region" for each chip */
-> +	rm_node = of_find_node_by_path("/reserved-memory");
-> +	if (!rm_node)
-> +		goto err;
-> +
-> +	for_each_child_of_node(rm_node, child) {
-> +		if (of_property_read_string_index(child, "name", 0,
-> +						  &node_name))
-> +			continue;
-> +		if (strncmp("ibm,homer-image", node_name,
-> +			    strlen("ibm,homer-image")))
-> +			continue;
+On 04/06/2017 10:52 AM, David Gibson wrote:
+> On Thu, Apr 06, 2017 at 02:17:22AM +0530, Mahesh J Salgaonkar wrote:
+>> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+>>
+>> This patch introduces a mce hook which is invoked at the time of guest
+>> exit to facilitate the host-side handling of machine check exception
+>> before the exception is passed on to the guest. This hook will be invoked
+>> from host virtual mode from KVM (before exiting the guest with
+>> KVM_EXIT_NMI reason) for machine check exception that occurs in the guest.
+>>
+>> Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+> 
+> Um.. this introduces the hook, and puts in an implementation of it,
+> but AFAICT, nothing calls it, either here or in the next patch.  That
+> seems a bit pointless.
 
-A better way to do this would be to reference the memory region, like
-what's shown in
-Documentation/devicetree/bindings/reserved-memory/reserved-memory.txt
+It gets called in the next patch [3/3] through
+ppc_md.machine_check_exception_guest(). See the hunk for file
+arch/powerpc/kvm/book3s_hv.c in next patch.
 
-just reference the phandle of the memory region.
-
-seeing as these are per chip, why not just have something linking
-together chip-id and the IMC layout node?
-
--- 
-Stewart Smith
-OPAL Architect, IBM.
+> 
+>> ---
+>>  arch/powerpc/include/asm/machdep.h     |    7 +++++++
+>>  arch/powerpc/include/asm/opal.h        |    4 ++++
+>>  arch/powerpc/platforms/powernv/opal.c  |   26 ++++++++++++++++++++++++++
+>>  arch/powerpc/platforms/powernv/setup.c |    3 +++
+>>  4 files changed, 40 insertions(+)
+>>
+>> diff --git a/arch/powerpc/include/asm/machdep.h b/arch/powerpc/include/asm/machdep.h
+>> index 5011b69..9d74e7a 100644
+>> --- a/arch/powerpc/include/asm/machdep.h
+>> +++ b/arch/powerpc/include/asm/machdep.h
+>> @@ -15,6 +15,7 @@
+>>  #include <linux/export.h>
+>>  
+>>  #include <asm/setup.h>
+>> +#include <asm/mce.h>
+>>  
+>>  /* We export this macro for external modules like Alsa to know if
+>>   * ppc_md.feature_call is implemented or not
+>> @@ -112,6 +113,12 @@ struct machdep_calls {
+>>  	/* Called during machine check exception to retrive fixup address. */
+>>  	bool		(*mce_check_early_recovery)(struct pt_regs *regs);
+>>  
+>> +#ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
+>> +	/* Called after KVM interrupt handler finishes handling MCE for guest */
+>> +	int		(*machine_check_exception_guest)
+>> +					(struct machine_check_event *evt);
+>> +#endif
+>> +
+>>  	/* Motherboard/chipset features. This is a kind of general purpose
+>>  	 * hook used to control some machine specific features (like reset
+>>  	 * lines, chip power control, etc...).
+>> diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
+>> index 1ff03a6..9b1fcbf 100644
+>> --- a/arch/powerpc/include/asm/opal.h
+>> +++ b/arch/powerpc/include/asm/opal.h
+>> @@ -17,6 +17,7 @@
+>>  #ifndef __ASSEMBLY__
+>>  
+>>  #include <linux/notifier.h>
+>> +#include <asm/mce.h>
+>>  
+>>  /* We calculate number of sg entries based on PAGE_SIZE */
+>>  #define SG_ENTRIES_PER_NODE ((PAGE_SIZE - 16) / sizeof(struct opal_sg_entry))
+>> @@ -273,6 +274,9 @@ extern int opal_hmi_handler_init(void);
+>>  extern int opal_event_init(void);
+>>  
+>>  extern int opal_machine_check(struct pt_regs *regs);
+>> +#ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
+>> +extern int opal_machine_check_guest(struct machine_check_event *evt);
+>> +#endif
+>>  extern bool opal_mce_check_early_recovery(struct pt_regs *regs);
+>>  extern int opal_hmi_exception_early(struct pt_regs *regs);
+>>  extern int opal_handle_hmi_exception(struct pt_regs *regs);
+>> diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
+>> index e0f856b..5e633a4 100644
+>> --- a/arch/powerpc/platforms/powernv/opal.c
+>> +++ b/arch/powerpc/platforms/powernv/opal.c
+>> @@ -479,6 +479,32 @@ int opal_machine_check(struct pt_regs *regs)
+>>  	return 0;
+>>  }
+>>  
+>> +#ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
+>> +/*
+>> + * opal_machine_check_guest() is a hook which is invoked at the time
+>> + * of guest exit to facilitate the host-side handling of machine check
+>> + * exception before the exception is passed on to the guest. This hook
+>> + * is invoked from host virtual mode from KVM (before exiting the guest
+>> + * with KVM_EXIT_NMI reason) for machine check exception that occurs in
+>> + * the guest.
+>> + *
+>> + * Currently no action is performed in the host other than printing the
+>> + * event information. The machine check exception is passed on to the
+>> + * guest kernel and the guest kernel will attempt for recovery.
+>> + */
+>> +int opal_machine_check_guest(struct machine_check_event *evt)
+>> +{
+>> +	/* Print things out */
+>> +	if (evt->version != MCE_V1) {
+>> +		pr_err("Machine Check Exception, Unknown event version %d !\n",
+>> +		       evt->version);
+>> +		return 0;
+>> +	}
+>> +	machine_check_print_event_info(evt);
+>> +	return 0;
+>> +}
+>> +#endif
+>> +
+>>  /* Early hmi handler called in real mode. */
+>>  int opal_hmi_exception_early(struct pt_regs *regs)
+>>  {
+>> diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
+>> index d50c7d9..333ee09 100644
+>> --- a/arch/powerpc/platforms/powernv/setup.c
+>> +++ b/arch/powerpc/platforms/powernv/setup.c
+>> @@ -264,6 +264,9 @@ static void __init pnv_setup_machdep_opal(void)
+>>  	ppc_md.mce_check_early_recovery = opal_mce_check_early_recovery;
+>>  	ppc_md.hmi_exception_early = opal_hmi_exception_early;
+>>  	ppc_md.handle_hmi_exception = opal_handle_hmi_exception;
+>> +#ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
+>> +	ppc_md.machine_check_exception_guest = opal_machine_check_guest;
+>> +#endif
+>>  }
+>>  
+>>  static int __init pnv_probe(void)
+>>
+> 
