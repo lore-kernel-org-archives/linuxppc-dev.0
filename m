@@ -2,19 +2,15 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vzNJ04DjhzDqKJ
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Apr 2017 23:06:08 +1000 (AEST)
-In-Reply-To: <1491213104-24450-3-git-send-email-alistair@popple.id.au>
-To: Alistair Popple <alistair@popple.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vzNMP2T3PzDqL0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Apr 2017 23:09:05 +1000 (AEST)
+In-Reply-To: <20170404045605.gmr2uqelm3uxouwt@oak.ozlabs.ibm.com>
+To: Paul Mackerras <paulus@ozlabs.org>, linuxppc-dev@ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: devicetree@vger.kernel.org, Alistair Popple <alistair@popple.id.au>,
- mhairgrove@nvidia.com, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
- robh+dt@kernel.org, shailendras@nvidia.com
-Subject: Re: [v2,
- 3/3] powerpc/powernv: Introduce address translation services for
- Nvlink2
-Message-Id: <3vzNJ01sS5z9s8N@ozlabs.org>
-Date: Thu,  6 Apr 2017 23:06:08 +1000 (AEST)
+Subject: Re: powerpc: Don't try to fix up misaligned load-with-reservation
+ instructions
+Message-Id: <3vzNMN6qw4z9s8S@ozlabs.org>
+Date: Thu,  6 Apr 2017 23:09:04 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,26 +20,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2017-04-03 at 09:51:44 UTC, Alistair Popple wrote:
-> Nvlink2 supports address translation services (ATS) allowing devices
-> to request address translations from an mmu known as the nest MMU
-> which is setup to walk the CPU page tables.
+On Tue, 2017-04-04 at 04:56:05 UTC, Paul Mackerras wrote:
+> In the past, there was only one load-with-reservation instruction,
+> lwarx, and if a program attempted a lwarx on a misaligned address, it
+> would take an alignment interrupt and the kernel handler would emulate
+> it as though it was lwzx, which was not really correct, but benign
+> since it is loading the right amount of data, and the lwarx should be
+> paired with a stwcx. to the same address, which would also cause an
+> alignment interrupt which would result in a SIGBUS being delivered to
+> the process.
 > 
-> To access this functionality certain firmware calls are required to
-> setup and manage hardware context tables in the nvlink processing unit
-> (NPU). The NPU also manages forwarding of TLB invalidates (known as
-> address translation shootdowns/ATSDs) to attached devices.
+> We now have 5 different sizes of load-with-reservation instruction.
+> Of those, lharx and ldarx cause an immediate SIGBUS by luck since
+> their entries in aligninfo[] overlap instructions which were not
+> fixed up, but lqarx overlaps with lhz and will be emulated as such.
+> lbarx can never generate an alignment interrupt since it only
+> operates on 1 byte.
 > 
-> This patch exports several methods to allow device drivers to register
-> a process id (PASID/PID) in the hardware tables and to receive
-> notification of when a device should stop issuing address translation
-> requests (ATRs). It also adds a fault handler to allow device drivers
-> to demand fault pages in.
+> To straighten this out and fix the lqarx case, this adds code to
+> detect the l[hwdq]arx instructions and return without fixing them
+> up, resulting in a SIGBUS being delivered to the process.
 > 
-> Signed-off-by: Alistair Popple <alistair@popple.id.au>
+> Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
 
-Applied to powerpc next, thanks.
+Applied to powerpc fixes, thanks.
 
-https://git.kernel.org/powerpc/c/1ab66d1fbadad86b1f4a9c7857e193
+https://git.kernel.org/powerpc/c/48fe9e9488743eec9b7c1addd3c93f
 
 cheers
