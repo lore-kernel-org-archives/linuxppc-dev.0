@@ -1,53 +1,40 @@
-Return-Path: <srs0=m5y3=3p=linux.vnet.ibm.com=hbathini@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Return-Path: <srs0=aakg=3p=infradead.org=peterz@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vztxJ63bszDqHl
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Apr 2017 19:06:44 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vzvmF2YLpzDqHl
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Apr 2017 19:43:57 +1000 (AEST)
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3vztxJ5R8tz8tQr
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Apr 2017 19:06:44 +1000 (AEST)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3vztxJ2RwYz9s7j
- for <linuxppc-dev@ozlabs.org>; Fri,  7 Apr 2017 19:06:44 +1000 (AEST)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v3793cfT071015
- for <linuxppc-dev@ozlabs.org>; Fri, 7 Apr 2017 05:06:35 -0400
-Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [125.16.236.5])
- by mx0a-001b2d01.pphosted.com with ESMTP id 29p61qw5ub-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Fri, 07 Apr 2017 05:06:35 -0400
-Received: from localhost
- by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <hbathini@linux.vnet.ibm.com>;
- Fri, 7 Apr 2017 14:36:32 +0530
-Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay04.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v3796SD37471310
- for <linuxppc-dev@ozlabs.org>; Fri, 7 Apr 2017 14:36:28 +0530
-Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
- by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v3796Rib001919
- for <linuxppc-dev@ozlabs.org>; Fri, 7 Apr 2017 14:36:28 +0530
-Subject: Re: [PATCH v2 1/2] fadump: reduce memory consumption for capture
- kernel
-To: Michael Ellerman <mpe@ellerman.id.au>
-References: <148647105867.9464.16492047069430229118.stgit@hbathini.in.ibm.com>
- <878tnd7zim.fsf@concordia.ellerman.id.au>
- <d50dfb98-68ac-0135-8e65-560aec1d752e@linux.vnet.ibm.com>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
- Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
-From: Hari Bathini <hbathini@linux.vnet.ibm.com>
-Date: Fri, 7 Apr 2017 14:36:26 +0530
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3vzvmF1ylFz8syC
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Apr 2017 19:43:57 +1000 (AEST)
+Received: from bombadil.infradead.org (bombadil.infradead.org [65.50.211.133])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3vzvmD6zLLz9s7c
+ for <linuxppc-dev@ozlabs.org>; Fri,  7 Apr 2017 19:43:56 +1000 (AEST)
+Date: Fri, 7 Apr 2017 11:43:49 +0200
+From: Peter Zijlstra <peterz@infradead.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Will Deacon <will.deacon@arm.com>, Nicholas Piggin <npiggin@gmail.com>,
+ David Miller <davem@davemloft.net>,
+ "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Anton Blanchard <anton@samba.org>,
+ linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Subject: Re: [RFC][PATCH] spin loop arch primitives for busy waiting
+Message-ID: <20170407094349.f4hdqibbgl36s776@hirez.programming.kicks-ass.net>
+References: <20170404095001.664718b8@roar.ozlabs.ibm.com>
+ <CA+55aFzdUMZHzXtn9PyhJg7GjYNQ5fy6=LzBNJx==Ab=U=YYjw@mail.gmail.com>
+ <20170404130233.1f45115b@roar.ozlabs.ibm.com>
+ <20170405.070157.871721909352646302.davem@davemloft.net>
+ <20170406105958.196c6977@roar.ozlabs.ibm.com>
+ <20170406141352.GF18204@arm.com>
+ <CA+55aFwgNhF=QUKMKLc9TfQ=cgF2mvMEVx9hJms4wQqCsib9Rw@mail.gmail.com>
+ <20170406163651.hj7apd63uxupgdb3@hirez.programming.kicks-ass.net>
+ <CA+55aFzTn9e=F68SOtEvvZLdT6zCj9+gLc-OS7qhDKdM7zaasA@mail.gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <d50dfb98-68ac-0135-8e65-560aec1d752e@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Message-Id: <74594fd5-1980-1ef2-c64b-f7cdd96ff44c@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <CA+55aFzTn9e=F68SOtEvvZLdT6zCj9+gLc-OS7qhDKdM7zaasA@mail.gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -57,112 +44,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Thu, Apr 06, 2017 at 10:31:46AM -0700, Linus Torvalds wrote:
+> But maybe "monitor" is really cheap. I suspect it's microcoded,
+> though, which implies "no".
 
+On my IVB-EP (will also try on something newer):
 
-On Friday 07 April 2017 12:54 PM, Hari Bathini wrote:
-> Hi Michael,
->
->
-> On Friday 07 April 2017 07:24 AM, Michael Ellerman wrote:
->> Hari Bathini <hbathini@linux.vnet.ibm.com> writes:
->>
->>> In case of fadump, capture (fadump) kernel boots like a normal kernel.
->>> While this has its advantages, the capture kernel would initialize all
->>> the components like normal kernel, which may not necessarily be needed
->>> for a typical dump capture kernel. So, fadump capture kernel ends up
->>> needing more memory than a typical (read kdump) capture kernel to boot.
->>>
->>> This can be overcome by introducing parameters like fadump_nr_cpus=1,
->>> similar to nr_cpus=1 parameter, applicable only when fadump is active.
->>> But this approach needs introduction of special parameters applicable
->>> only when fadump is active (capture kernel), for every parameter that
->>> reduces memory/resource consumption.
->>>
->>> A better approach would be to pass extra parameters to fadump capture
->>> kernel. As firmware leaves the memory contents intact from the time of
->>> crash till the new kernel is booted up, parameters to append to capture
->>> kernel can be saved in real memory region and retrieved later when the
->>> capture kernel is in its early boot process for appending to command
->>> line parameters.
->>>
->>> This patch introduces a new node /sys/kernel/fadump_cmdline_append to
->>> specify the parameters to pass to fadump capture kernel, saves them in
->>> real memory region and appends these parameters to capture kernel early
->>> in its boot process.
->> As we discussed on IRC I don't really like this.
->>
->> It's clever, (ab)using the fact that the first kernel's memory is left
->> intact. But it's also a bit gross :)
->
-> No doubt. It is an ugly trick :)
->
->> It also has a few real problems, like hard coding 128MB as the handover
->> location. You may not have memory there, or it may be reserved.
->>
->
-> Yeah, there is a chance that appending parameters is not possible
-> like in the scenarios you mentioned above. My intention behind this
-> hack is to build on this handover area later to probably pass off a
-> special intird which brings down the dump capture time and memory
-> consumption further. But to put it in your words, it would be abusing
-> it even more :P . So, I would take it as a road not worthing taking..
->
->> My preference would be that the fadump kernel "just works". If it's
->> using too much memory then the fadump kernel should do whatever it needs
->> to use less memory, eg. shrinking nr_cpu_ids etc.
->
->> Do we actually know *why* the fadump kernel is running out of memory?
->> Obviously large numbers of CPUs is one of the main drivers (lots of
->> stacks required). But other than that what is causing the memory
->> pressure? I would like some data on that before we proceed.
->
-> Almost the same amount of memory in comparison with the memory
-> required to boot the production kernel but that is unwarranted for fadump
-> (dump capture) kernel. Let's say the production kernel is configured for
-> memory cgroups or hugepages which is not required in a dump capture 
-> kernel
-> but with no option to say so, we are wasting that much more memory on 
-> fadump
-> and eventually depriving the production kernel of that memory.
->
-> So, if parameters like cgroup_disable=memory, 
-> transparent_hugepages=never,
-> numa=off, nr_cpus=1, etc.. are passed to fadump (dump capture) kernel 
-> it would
-> be beneficial. Not to mention any future additions to the kernel that 
-> increase the
-> footprint of a production kernel..
->
->> If we *must* have a way to pass command line arguments to the fadump
->> kernel then I think we should just use a command line argument that
->> specifies them.
->>
->> eg: 
->> fadump_append=nr_cpus=1,use_less_memory,some_other_obscure_parameter=100
->>
->>
->
-> Hmmm.. this sounds like a better interface. But I would like know your 
-> preference on
-> how to process fadump_append parameter:
->
-> 1. Modify cmdline early in fadump kernel boot process (before parsing 
-> parameters) to change
->    fadump_append="nr_cpus=1 cgroup_disable=memory" in cmdline to 
-> "nr_cpus=1 cgroup_disable=memory"
->    so that fadump doesn't have to bother about processing this 
-> parameters later.
-> 2. A parse function in fadump to parse fadump_append parameters. A 
-> function similar to parse_early_param()
->    meant for fadump_append parameter alone..
-> 3. fadump code processes fadump_append for each parameter passed in it.
->
-> The third one sounds like a nightmare to me as we need to make fadump 
-> code aware of every new parameter
-> we want to enforce on fadump..
->
+MONITOR	~332 cycles
+MWAIT	~224 cycles (C0, explicitly invalidated MONITOR)
 
-I prefer option 2 for it is simple and cleaner..
-
-Thanks
-Hari
+So yes, expensive.
