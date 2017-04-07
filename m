@@ -1,28 +1,21 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w00bT683gzDq7c
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Apr 2017 23:21:41 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w017y1y1mzDqGv
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Apr 2017 23:46:22 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Laurentiu Tudor <laurentiu.tudor@nxp.com>, Horia =?utf-8?Q?Geant=C4=83?=
- <horia.geanta@nxp.com>, Herbert Xu <herbert@gondor.apana.org.au>, Scott
- Wood <oss@buserror.net>, Roy Pledge <roy.pledge@nxp.com>
-Cc: Claudiu Manoil <claudiu.manoil@nxp.com>,
- Cristian Stoica <cristian.stoica@nxp.com>, Dan Douglass <dan.douglass@nxp.com>,
- "linux-arm-kernel\@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- Vakul Garg <vakul.garg@nxp.com>,
- "linuxppc-dev\@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "David S. Miller" <davem@davemloft.net>,
- Alexandru Porosanu <alexandru.porosanu@nxp.com>,
- "linux-crypto\@vger.kernel.org" <linux-crypto@vger.kernel.org>
-Subject: Re: [7/7] crypto: caam/qi - add ablkcipher and authenc algorithms
-In-Reply-To: <58E4D9C3.4070406@nxp.com>
-References: <20170317100602.2837-8-horia.geanta@nxp.com>
- <87vaqkvk6c.fsf@concordia.ellerman.id.au> <58E39F90.6050408@nxp.com>
- <87lgrftbgl.fsf@concordia.ellerman.id.au> <58E4D9C3.4070406@nxp.com>
-Date: Fri, 07 Apr 2017 23:21:40 +1000
-Message-ID: <87inmggxp7.fsf@concordia.ellerman.id.au>
+To: Hari Bathini <hbathini@linux.vnet.ibm.com>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
+ Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
+Subject: Re: [PATCH v2 1/2] fadump: reduce memory consumption for capture
+ kernel
+In-Reply-To: <d50dfb98-68ac-0135-8e65-560aec1d752e@linux.vnet.ibm.com>
+References: <148647105867.9464.16492047069430229118.stgit@hbathini.in.ibm.com>
+ <878tnd7zim.fsf@concordia.ellerman.id.au>
+ <d50dfb98-68ac-0135-8e65-560aec1d752e@linux.vnet.ibm.com>
+Date: Fri, 07 Apr 2017 23:46:21 +1000
+Message-ID: <87efx4gwk2.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -34,37 +27,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Laurentiu Tudor <laurentiu.tudor@nxp.com> writes:
-
-> On 04/05/2017 01:06 PM, Michael Ellerman wrote:
->> Laurentiu Tudor <laurentiu.tudor@nxp.com> writes:
->>
->>> Hi Michael,
->>>
->>> Just a couple of basic things to check:
->>>    - was the dtb updated to the newest?
->>
->> Possibly not, it's an automated build/boot, I'll have to check what it
->> does with the dtb.
->>
->>>    - is the qman node present? This should be easily visible in
->>> /proc/device-tree/soc@ffe000000/qman@318000.
->>
->> No it's not there.
->>
->> That's running linux-next with:
->>
->> CONFIG_CRYPTO_DEV_FSL_CAAM_CRYPTO_API_QI=n
->>
->>
->> Does that mean I didn't update the device tree?
+Hari Bathini <hbathini@linux.vnet.ibm.com> writes:
+> On Friday 07 April 2017 07:24 AM, Michael Ellerman wrote:
+>> My preference would be that the fadump kernel "just works". If it's
+>> using too much memory then the fadump kernel should do whatever it needs
+>> to use less memory, eg. shrinking nr_cpu_ids etc.
 >
-> I think so. Also, I just checked that the node is actually there by 
-> compiling p5020ds.dts and then decompiling the dtb.
+>> Do we actually know *why* the fadump kernel is running out of memory?
+>> Obviously large numbers of CPUs is one of the main drivers (lots of
+>> stacks required). But other than that what is causing the memory
+>> pressure? I would like some data on that before we proceed.
+>
+> Almost the same amount of memory in comparison with the memory
+> required to boot the production kernel but that is unwarranted for fadump
+> (dump capture) kernel.
 
-OK, I'll make sure I update the DTB.
+That's not data! :)
 
-It will still be good if the code was a bit more robust about the qman
-being missing.
+The dump kernel is booted with *much* less memory than the production
+kernel (that's the whole issue!) and so it doesn't need to create struct
+pages for all that memory, which means it should need less memory.
+
+The vfs caches are also sized based on the available memory, so they
+should also shrink in the dump kernel.
+
+I want some actual numbers on what's driving the memory usage.
+
+I tried some of these parameters to see how much memory they would save:
+
+> So, if parameters like
+> cgroup_disable=memory,
+
+0 bytes saved.
+
+> transparent_hugepages=never,
+
+0 bytes saved.
+
+> numa=off,
+
+64KB saved.
+
+> nr_cpus=1,
+
+3MB saved (vs 16 CPUs)
+
+
+Now maybe on your system those do save memory for some reason, but
+please prove it to me. Otherwise I'm inclined to merge:
+
+diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
+index 8ff0dd4e77a7..03f1f253c372 100644
+--- a/arch/powerpc/kernel/fadump.c
++++ b/arch/powerpc/kernel/fadump.c
+@@ -79,8 +79,10 @@ int __init early_init_dt_scan_fw_dump(unsigned long node,
+ 	 * dump data waiting for us.
+ 	 */
+ 	fdm_active = of_get_flat_dt_prop(node, "ibm,kernel-dump", NULL);
+-	if (fdm_active)
++	if (fdm_active) {
+ 		fw_dump.dump_active = 1;
++		nr_cpu_ids = 1;
++	}
+ 
+ 	/* Get the sizes required to store dump data for the firmware provided
+ 	 * dump sections.
 
 cheers
