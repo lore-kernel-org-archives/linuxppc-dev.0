@@ -2,19 +2,27 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w007j2hkrzDqKG
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Apr 2017 23:01:05 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w00bT683gzDq7c
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Apr 2017 23:21:41 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Anshuman Khandual <khandual@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
-Cc: aneesh.kumar@linux.vnet.ibm.com, christophe.leroy@c-s.fr
-Subject: Re: [PATCH V4] powerpc/hugetlb: Add ABI defines for supported HugeTLB
- page sizes
-In-Reply-To: <20170407035539.21688-1-khandual@linux.vnet.ibm.com>
-References: <5fb76b92-2988-1207-2bed-814a96e6a51a@linux.vnet.ibm.com>
- <20170407035539.21688-1-khandual@linux.vnet.ibm.com>
-Date: Fri, 07 Apr 2017 23:01:03 +1000
-Message-ID: <87lgrcgynk.fsf@concordia.ellerman.id.au>
+To: Laurentiu Tudor <laurentiu.tudor@nxp.com>, Horia =?utf-8?Q?Geant=C4=83?=
+ <horia.geanta@nxp.com>, Herbert Xu <herbert@gondor.apana.org.au>, Scott
+ Wood <oss@buserror.net>, Roy Pledge <roy.pledge@nxp.com>
+Cc: Claudiu Manoil <claudiu.manoil@nxp.com>,
+ Cristian Stoica <cristian.stoica@nxp.com>, Dan Douglass <dan.douglass@nxp.com>,
+ "linux-arm-kernel\@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ Vakul Garg <vakul.garg@nxp.com>,
+ "linuxppc-dev\@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "David S. Miller" <davem@davemloft.net>,
+ Alexandru Porosanu <alexandru.porosanu@nxp.com>,
+ "linux-crypto\@vger.kernel.org" <linux-crypto@vger.kernel.org>
+Subject: Re: [7/7] crypto: caam/qi - add ablkcipher and authenc algorithms
+In-Reply-To: <58E4D9C3.4070406@nxp.com>
+References: <20170317100602.2837-8-horia.geanta@nxp.com>
+ <87vaqkvk6c.fsf@concordia.ellerman.id.au> <58E39F90.6050408@nxp.com>
+ <87lgrftbgl.fsf@concordia.ellerman.id.au> <58E4D9C3.4070406@nxp.com>
+Date: Fri, 07 Apr 2017 23:21:40 +1000
+Message-ID: <87inmggxp7.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,42 +34,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Anshuman Khandual <khandual@linux.vnet.ibm.com> writes:
+Laurentiu Tudor <laurentiu.tudor@nxp.com> writes:
 
-> This just adds user space exported ABI definitions for 2MB, 16MB, 1GB,
-> 16GB non default huge page sizes to be used with mmap() system call.
+> On 04/05/2017 01:06 PM, Michael Ellerman wrote:
+>> Laurentiu Tudor <laurentiu.tudor@nxp.com> writes:
+>>
+>>> Hi Michael,
+>>>
+>>> Just a couple of basic things to check:
+>>>    - was the dtb updated to the newest?
+>>
+>> Possibly not, it's an automated build/boot, I'll have to check what it
+>> does with the dtb.
+>>
+>>>    - is the qman node present? This should be easily visible in
+>>> /proc/device-tree/soc@ffe000000/qman@318000.
+>>
+>> No it's not there.
+>>
+>> That's running linux-next with:
+>>
+>> CONFIG_CRYPTO_DEV_FSL_CAAM_CRYPTO_API_QI=n
+>>
+>>
+>> Does that mean I didn't update the device tree?
+>
+> I think so. Also, I just checked that the node is actually there by 
+> compiling p5020ds.dts and then decompiling the dtb.
 
-I updated this for you to include all the sizes.
+OK, I'll make sure I update the DTB.
 
-> diff --git a/arch/powerpc/include/uapi/asm/mman.h b/arch/powerpc/include/uapi/asm/mman.h
-> index 03c06ba..ebe99c7 100644
-> --- a/arch/powerpc/include/uapi/asm/mman.h
-> +++ b/arch/powerpc/include/uapi/asm/mman.h
-> @@ -29,4 +29,18 @@
->  #define MAP_STACK	0x20000		/* give out an address that is best suited for process/thread stacks */
->  #define MAP_HUGETLB	0x40000		/* create a huge page mapping */
->  
-> +/*
-> + * These constant defines should be used for creating the
-> + * 'flags' argument (26:31 bit positions) for mmap() system
-> + * call should the caller decide to use non default HugeTLB
-> + * page size.
-> + */
-
-And I reworded the comment the make it clearer (I think) that most users
-shouldn't need to use these, and should just use the default size:
-
-/*
- * When MAP_HUGETLB is set bits [26:31] encode the log2 of the huge page size.
- * A value of zero indicates that the default huge page size should be used.
- * To use a non-default huge page size, one of these defines can be used, or the
- * size can be encoded by hand. Note that on most systems only a subset, or
- * possibly none, of these sizes will be available.
- */
-
-
-Also do you want to send a patch to the man page?
-
-https://git.kernel.org/pub/scm/docs/man-pages/man-pages.git/tree/man2/mmap.2#n248
+It will still be good if the code was a bit more robust about the qman
+being missing.
 
 cheers
