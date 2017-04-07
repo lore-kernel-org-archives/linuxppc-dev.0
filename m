@@ -1,43 +1,43 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <srs0=zfgn=3p=gmail.com=npiggin@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vzxcd5tn9zDqHl
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Apr 2017 21:07:29 +1000 (AEST)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v37B3amB051772
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 7 Apr 2017 07:07:26 -0400
-Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [125.16.236.6])
- by mx0a-001b2d01.pphosted.com with ESMTP id 29p94bhjef-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 07 Apr 2017 07:07:26 -0400
-Received: from localhost
- by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Fri, 7 Apr 2017 16:37:22 +0530
-Received: from d28av08.in.ibm.com (d28av08.in.ibm.com [9.184.220.148])
- by d28relay07.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v37B60SO15138928
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 7 Apr 2017 16:36:01 +0530
-Received: from d28av08.in.ibm.com (localhost [127.0.0.1])
- by d28av08.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v37B7Jv3010361
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 7 Apr 2017 16:37:20 +0530
-Subject: Re: [RFC PATCH 3/7] mm/hugetlb: export hugetlb_entry_migration helper
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
-References: <1491314675-15787-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1491314675-15787-3-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Date: Fri, 7 Apr 2017 16:37:18 +0530
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vzy2s1j91zDqHl
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Apr 2017 21:26:45 +1000 (AEST)
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3vzy2s0nydz8swH
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Apr 2017 21:26:45 +1000 (AEST)
+Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
+ [IPv6:2607:f8b0:400e:c05::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3vzy2q41sXz9s7C
+ for <linuxppc-dev@ozlabs.org>; Fri,  7 Apr 2017 21:26:43 +1000 (AEST)
+Received: by mail-pg0-x242.google.com with SMTP id g2so14924772pge.2
+ for <linuxppc-dev@ozlabs.org>; Fri, 07 Apr 2017 04:26:43 -0700 (PDT)
+Date: Fri, 7 Apr 2017 21:26:26 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, Will Deacon
+ <will.deacon@arm.com>, David Miller <davem@davemloft.net>,
+ "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>, Linux Kernel
+ Mailing List <linux-kernel@vger.kernel.org>, Anton Blanchard
+ <anton@samba.org>, linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Subject: Re: [RFC][PATCH] spin loop arch primitives for busy waiting
+Message-ID: <20170407212626.59f68530@roar.ozlabs.ibm.com>
+In-Reply-To: <20170407094349.f4hdqibbgl36s776@hirez.programming.kicks-ass.net>
+References: <20170404095001.664718b8@roar.ozlabs.ibm.com>
+ <CA+55aFzdUMZHzXtn9PyhJg7GjYNQ5fy6=LzBNJx==Ab=U=YYjw@mail.gmail.com>
+ <20170404130233.1f45115b@roar.ozlabs.ibm.com>
+ <20170405.070157.871721909352646302.davem@davemloft.net>
+ <20170406105958.196c6977@roar.ozlabs.ibm.com>
+ <20170406141352.GF18204@arm.com>
+ <CA+55aFwgNhF=QUKMKLc9TfQ=cgF2mvMEVx9hJms4wQqCsib9Rw@mail.gmail.com>
+ <20170406163651.hj7apd63uxupgdb3@hirez.programming.kicks-ass.net>
+ <CA+55aFzTn9e=F68SOtEvvZLdT6zCj9+gLc-OS7qhDKdM7zaasA@mail.gmail.com>
+ <20170407094349.f4hdqibbgl36s776@hirez.programming.kicks-ass.net>
 MIME-Version: 1.0
-In-Reply-To: <1491314675-15787-3-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=windows-1252
-Message-Id: <91e9d4dd-8249-71e0-bbd4-97cfadd29290@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,8 +47,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/04/2017 07:34 PM, Aneesh Kumar K.V wrote:
-> We will be using this later from the ppc64 code. Change the return type to bool.
+On Fri, 7 Apr 2017 11:43:49 +0200
+Peter Zijlstra <peterz@infradead.org> wrote:
 
-How all other arch were able to detect the hugetlb migration
-entries without using this helper function before ?
+> On Thu, Apr 06, 2017 at 10:31:46AM -0700, Linus Torvalds wrote:
+> > But maybe "monitor" is really cheap. I suspect it's microcoded,
+> > though, which implies "no".  
+> 
+> On my IVB-EP (will also try on something newer):
+> 
+> MONITOR	~332 cycles
+> MWAIT	~224 cycles (C0, explicitly invalidated MONITOR)
+> 
+> So yes, expensive.
+
+Interestingly, Intel optimization manual says:
+
+  The latency of PAUSE instruction in prior generation microarchitecture
+  is about 10 cycles, whereas on Skylake microarchitecture it has been
+  extended to as many as 140 cycles.
+
+In another part this is claimed for efficiency improvement. Still much
+cheaper than your monitor+mwait on your IVB but if skylake is a bit
+faster it might become worth it.
