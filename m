@@ -1,19 +1,19 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
- [IPv6:2607:f8b0:400e:c05::242])
+Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
+ [IPv6:2607:f8b0:400e:c05::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w00175r5zzDqHl
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Apr 2017 22:55:23 +1000 (AEST)
-Received: by mail-pg0-x242.google.com with SMTP id o123so15446693pga.1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 07 Apr 2017 05:55:23 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w00281rrFzDqJ8
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Apr 2017 22:56:16 +1000 (AEST)
+Received: by mail-pg0-x244.google.com with SMTP id 79so15456495pgf.0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 07 Apr 2017 05:56:16 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Nicholas Piggin <npiggin@gmail.com>, Paul Mackerras <paulus@ozlabs.org>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: [PATCH 0/5] doorbell patches for POWER9
-Date: Fri,  7 Apr 2017 22:55:05 +1000
-Message-Id: <20170407125510.30991-1-npiggin@gmail.com>
+Date: Fri,  7 Apr 2017 22:55:57 +1000
+Message-Id: <20170407125602.31146-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
