@@ -2,16 +2,17 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vzzb60p6TzDqHl
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Apr 2017 22:36:18 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vzzpR4CxpzDqHl
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Apr 2017 22:46:07 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Sachin Sant <sachinp@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org
-Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Subject: Re: kselftest:lost_exception_test failure with 4.11.0-rc5
-In-Reply-To: <2868072E-9D12-4BE0-94F6-FE9C33A3766F@linux.vnet.ibm.com>
-References: <2868072E-9D12-4BE0-94F6-FE9C33A3766F@linux.vnet.ibm.com>
-Date: Fri, 07 Apr 2017 22:36:10 +1000
-Message-ID: <87r314gzt1.fsf@concordia.ellerman.id.au>
+To: Anshuman Khandual <khandual@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
+Cc: aneesh.kumar@linux.vnet.ibm.com
+Subject: Re: [PATCH] powerpc/mm: Remove reduntant initmem information from log
+In-Reply-To: <20170407065311.8599-1-khandual@linux.vnet.ibm.com>
+References: <20170407065311.8599-1-khandual@linux.vnet.ibm.com>
+Date: Fri, 07 Apr 2017 22:46:06 +1000
+Message-ID: <87o9w8gzch.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -23,69 +24,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Sachin Sant <sachinp@linux.vnet.ibm.com> writes:
+Anshuman Khandual <khandual@linux.vnet.ibm.com> writes:
 
-> I have run into few instances where the lost_exception_test from
-> powerpc kselftest fails with SIGABRT. Following o/p is against
-> 4.11.0-rc5. The failure is intermittent. 
+> Generic core VM already prints these information in the log
+> buffer, hence there is no need for a second print. This just
+> removes the second print from arch powerpc NUMA init path.
+>
+> Before the patch:
+>
+> $dmesg | grep "Initmem"
+>
+> numa: Initmem setup node 0 [mem 0x00000000-0xffffffff]
+> numa: Initmem setup node 1 [mem 0x100000000-0x1ffffffff]
+> numa: Initmem setup node 2 [mem 0x200000000-0x2ffffffff]
+> numa: Initmem setup node 3 [mem 0x300000000-0x3ffffffff]
+> numa: Initmem setup node 4 [mem 0x400000000-0x4ffffffff]
+> numa: Initmem setup node 5 [mem 0x500000000-0x5ffffffff]
+> numa: Initmem setup node 6 [mem 0x600000000-0x6ffffffff]
+> numa: Initmem setup node 7 [mem 0x700000000-0x7ffffffff]
+> Initmem setup node 0 [mem 0x0000000000000000-0x00000000ffffffff]
+> Initmem setup node 1 [mem 0x0000000100000000-0x00000001ffffffff]
+> Initmem setup node 2 [mem 0x0000000200000000-0x00000002ffffffff]
+> Initmem setup node 3 [mem 0x0000000300000000-0x00000003ffffffff]
+> Initmem setup node 4 [mem 0x0000000400000000-0x00000004ffffffff]
+> Initmem setup node 5 [mem 0x0000000500000000-0x00000005ffffffff]
+> Initmem setup node 6 [mem 0x0000000600000000-0x00000006ffffffff]
+> Initmem setup node 7 [mem 0x0000000700000000-0x00000007ffffffff]
+>
+> After the patch:
+>
+> $dmesg | grep "Initmem"
+>
+> Initmem setup node 0 [mem 0x0000000000000000-0x00000000ffffffff]
+> Initmem setup node 1 [mem 0x0000000100000000-0x00000001ffffffff]
+> Initmem setup node 2 [mem 0x0000000200000000-0x00000002ffffffff]
+> Initmem setup node 3 [mem 0x0000000300000000-0x00000003ffffffff]
+> Initmem setup node 4 [mem 0x0000000400000000-0x00000004ffffffff]
+> Initmem setup node 5 [mem 0x0000000500000000-0x00000005ffffffff]
+> Initmem setup node 6 [mem 0x0000000600000000-0x00000006ffffffff]
+> Initmem setup node 7 [mem 0x0000000700000000-0x00000007ffffffff]
+>
+> Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 
-What hardware are you on?
+Looks good.
 
-How long does it take to run when it fails? I assume ~2 minutes?
+> ---
+> Generic core VM prints the information inside free_area_init_node
+> function but only when CONFIG_HAVE_MEMBLOCK_NODE_MAP is enabled.
+> So if there are other PPC platforms which dont enable the config,
+> we can put the code section inside applicable platform configs
+> instead of removing it completely.
 
-> When the test fails it is killed due to SIGABRT.
+Are there other PPC platforms which don't enable it?
 
-> # ./lost_exception_test 
-> test: lost_exception
-> tags: git_version:unknown
-> Binding to cpu 8
-> main test running as pid 9208
-> EBB Handler is at 0x10003dcc
-> !! killing lost_exception
+...
 
-This is the parent (test harness saying) it's about to kill the child,
-because it took too long.
-
-It sends SIGTERM, but the child catches that, prints all this info, and
-then aborts() - so that's why you're seeing SIGABRT.
-
-> ebb_state):
->   ebb_count    = 191529
-
-The test usually runs until it's taken 1,000,000 EBBs, so it looks like
-we got stuck.
-
->   spurious     = 0
->   negative     = 0
->   no_overflow  = 0
->   pmc[1] count = 0x0
->   pmc[2] count = 0x0
->   pmc[3] count = 0x0
->   pmc[4] count = 0x4c1b707
-
-We use a varying sample period of between 400 and 600, and from above
-we've taken 191,529 EBBs.
-
-0x4c1b707 / 191,529 ~= 416
-
-So that looks reasonable.
-
->   pmc[5] count = 0x0
->   pmc[6] count = 0x0
-> HW state:
-> MMCR0 0x0000000080000080 FC PMAO 
-
-But this says we're stopped with counters frozen and an event pending.
-
-> MMCR2 0x0000000000000000
-> EBBHR 0x0000000010003dcc
-> BESCR 0x8000000100000000 GE PMAE 
-
-And that says we have global enable set and events enabled.
+config PPC
+        ...
+	select HAVE_MEMBLOCK
+	select HAVE_MEMBLOCK_NODE_MAP
 
 
-So I think there is a bug here somewhere. I don't really have time to
-dig into it now, neither does Maddy I think. But we should try and get
-to it at some point.
+No.
+
+So this should be fine for all PPC.
 
 cheers
