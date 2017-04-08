@@ -1,26 +1,26 @@
-Return-Path: <ak@linux.intel.com>
-Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
+Return-Path: <yao.jin@linux.intel.com>
+Received: from mga05.intel.com (mga05.intel.com [192.55.52.43])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w06YH0SkQzDqHl
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Apr 2017 03:50:09 +1000 (AEST)
-Date: Fri, 7 Apr 2017 10:50:06 -0700
-From: Andi Kleen <ak@linux.intel.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Jin Yao <yao.jin@linux.intel.com>, acme@kernel.org, jolsa@kernel.org,
- mingo@redhat.com, alexander.shishkin@linux.intel.com,
- Linux-kernel@vger.kernel.org, kan.liang@intel.com,
- yao.jin@intel.com, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w0VRb204TzDqHq
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Apr 2017 18:46:34 +1000 (AEST)
 Subject: Re: [PATCH v2 2/5] perf/x86/intel: Record branch type
-Message-ID: <20170407175006.GB4021@tassilo.jf.intel.com>
+To: Andi Kleen <ak@linux.intel.com>, Peter Zijlstra <peterz@infradead.org>
+Cc: acme@kernel.org, jolsa@kernel.org, mingo@redhat.com,
+ alexander.shishkin@linux.intel.com, Linux-kernel@vger.kernel.org,
+ kan.liang@intel.com, yao.jin@intel.com, linuxppc-dev@lists.ozlabs.org
 References: <1491562066-7472-1-git-send-email-yao.jin@linux.intel.com>
  <1491562066-7472-3-git-send-email-yao.jin@linux.intel.com>
  <20170407152031.k2auigfkj7ek4suo@hirez.programming.kicks-ass.net>
  <20170407164834.GA4021@tassilo.jf.intel.com>
  <20170407172024.r66fkp4xkux5blxi@hirez.programming.kicks-ass.net>
+ <20170407175006.GB4021@tassilo.jf.intel.com>
+From: "Jin, Yao" <yao.jin@linux.intel.com>
+Message-ID: <a3ef37a8-ab07-cce6-fbcf-f8fa11b03186@linux.intel.com>
+Date: Sat, 8 Apr 2017 16:46:29 +0800
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170407172024.r66fkp4xkux5blxi@hirez.programming.kicks-ass.net>
+In-Reply-To: <20170407175006.GB4021@tassilo.jf.intel.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,28 +30,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> > It's a somewhat common situation with partially JITed code, if you
-> > don't have an agent. You can still do a lot of useful things.
-> 
-> Like what? How can you say anything about code you don't have?
+> Without this patch, we don't know if it's conditional or something else.
+> And the kernel already knows this for its filtering, so it can as well
+> report it.
+>
+> Right the CROSS_* and forward backward information could be computed
+> later.
+>
+> -Andi
+>
+>
+OK, I will move CROSS_* and JCC forward/backward computing to user-space though it makes user-space code to be complicated.
 
-For example if you combine the PMU topdown measurement, and see if it's
-frontend bound, and then you see it has lots of forward conditionals,
-then dynamic basic block reordering will help. If you have lots
-of cross page jumps then function reordering will help. etc.
-
-> > We found it useful to have this extra information during workload
-> > analysis. Forward conditionals and page crossing jumps
-> > are indications of frontend problems.
-> 
-> But you already have the exact same information in {to,from}, why would
-> you need to repackage information already contained?
-
-Without this patch, we don't know if it's conditional or something else.
-And the kernel already knows this for its filtering, so it can as well
-report it.
-
-Right the CROSS_* and forward backward information could be computed
-later.
-
--Andi
+Thanks
+Jin Yao
