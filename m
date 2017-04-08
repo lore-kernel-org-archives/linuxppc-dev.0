@@ -1,24 +1,20 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w0W9Z66vmzDqHq
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Apr 2017 19:19:30 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w0X9F2Vn1zDqHq
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Apr 2017 20:04:17 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: pc@us.ibm.com, Anshuman Khandual <khandual@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
-Cc: aneesh.kumar@linux.vnet.ibm.com
-Subject: Re: [PATCH V4] powerpc/hugetlb: Add ABI defines for supported HugeTLB
- page sizes
-In-Reply-To: <947e3e42-9c9e-a7b2-dc1b-0e5ffe747168@us.ibm.com>
-References: <5fb76b92-2988-1207-2bed-814a96e6a51a@linux.vnet.ibm.com>
- <20170407035539.21688-1-khandual@linux.vnet.ibm.com>
- <87lgrcgynk.fsf@concordia.ellerman.id.au>
- <947e3e42-9c9e-a7b2-dc1b-0e5ffe747168@us.ibm.com>
-Date: Sat, 08 Apr 2017 19:19:26 +1000
-Message-ID: <87a87rgstd.fsf@concordia.ellerman.id.au>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: benh@kernel.crashing.org, fbarrat@linux.vnet.ibm.com,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, oohall@gmail.com,
+ paulus@ozlabs.org
+Subject: [GIT PULL] Please pull powerpc/linux.git powerpc-4.11-7 tag
+Date: Sat, 08 Apr 2017 20:04:14 +1000
+Message-ID: <877f2vgqqp.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: multipart/signed; boundary="=-=-=";
+ micalg=pgp-sha1; protocol="application/pgp-signature"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,37 +24,85 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Paul Clarke <pc@us.ibm.com> writes:
+--=-=-=
+Content-Type: text/plain
 
-> nits... take 'em or leave 'em...
->
-> On 04/07/2017 08:01 AM, Michael Ellerman wrote:
->> Anshuman Khandual <khandual@linux.vnet.ibm.com> writes:
->> And I reworded the comment the make it clearer (I think) that most users
->> shouldn't need to use these, and should just use the default size:
->>
->> /*
->>  * When MAP_HUGETLB is set bits [26:31] encode the log2 of the huge page size.
->
-> need a comma after "set".
+Hi Linus,
 
-Hmm, 'spose.
+Please pull some more powerpc fixes for 4.11:
 
-> also, "bits [26:31]" of what?
+The following changes since commit cc638a488a5205713b51eabd047be6ea641cc328:
 
-Flags!
+  gcc-plugins: update architecture list in documentation (2017-03-21 22:20:05 +1100)
 
-But yeah fair cop, as it happened I was rebasing it anyway, so:
+are available in the git repository at:
 
-/*
- * When MAP_HUGETLB is set, bits [26:31] of the flags argument to mmap(2),
- * encode the log2 of the huge page size. A value of zero indicates that the
- * default huge page size should be used. To use a non-default huge page size,
- * one of these defines can be used, or the size can be encoded by hand. Note
- * that on most systems only a subset, or possibly none, of these sizes will be
- * available.
- */
+  git://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git tags/powerpc-4.11-7
 
-Thanks for the review.
+for you to fetch changes up to 4749228f022893faf54a3dbc70796f78b7d4f342:
 
-cheers
+  powerpc/crypto/crc32c-vpmsum: Fix missing preempt_disable() (2017-04-07 21:12:58 +1000)
+
+----------------------------------------------------------------
+powerpc fixes for 4.11 #7
+
+Headed to stable:
+ - disable HFSCR[TM] if TM is not supported, fixes a potential host kernel crash
+   triggered by a hostile guest, but only in configurations that no one uses
+ - don't try to fix up misaligned load-with-reservation instructions
+ - fix flush_(d|i)cache_range() called from modules on little endian kernels
+ - add missing global TLB invalidate if cxl is active
+ - fix missing preempt_disable() in crc32c-vpmsum
+
+And a fix for selftests build changes that went in this release:
+ - selftests/powerpc: Fix standalone powerpc build
+
+Thanks to:
+  Benjamin Herrenschmidt, Frederic Barrat, Oliver O'Halloran, Paul Mackerras.
+
+----------------------------------------------------------------
+Benjamin Herrenschmidt (1):
+      powerpc: Disable HFSCR[TM] if TM is not supported
+
+Frederic Barrat (1):
+      powerpc/mm: Add missing global TLB invalidate if cxl is active
+
+Michael Ellerman (2):
+      selftests/powerpc: Fix standalone powerpc build
+      powerpc/crypto/crc32c-vpmsum: Fix missing preempt_disable()
+
+Oliver O'Halloran (1):
+      powerpc/64: Fix flush_(d|i)cache_range() called from modules
+
+Paul Mackerras (1):
+      powerpc: Don't try to fix up misaligned load-with-reservation instructions
+
+ arch/powerpc/crypto/crc32c-vpmsum_glue.c |  3 +++
+ arch/powerpc/kernel/align.c              | 27 +++++++++++++++++++--------
+ arch/powerpc/kernel/misc_64.S            |  4 ++--
+ arch/powerpc/kernel/setup_64.c           |  9 +++++++++
+ arch/powerpc/mm/hash_native_64.c         |  7 +++++--
+ tools/testing/selftests/powerpc/Makefile | 10 +++++-----
+ 6 files changed, 43 insertions(+), 17 deletions(-)
+
+--=-=-=
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJY6LWfAAoJEFHr6jzI4aWAmtMQAKYCjY5l2f8/CrNwYuRuS9xo
+MeuvMHB4GQN2txBu+pMQPTbZFOWJlX3TVNlMINLiRoyr4yNypaAuJv+YxgNDm7AI
+b5QwgQz8V5aPycbhyh+4QcVxXRcAT0vCDSu1UQOEbdmZNImwkfZd9oO2MO8vHNle
+sTubfzXDElMGXsqxQ0IvKeo0cx/gCd+k1dqYII59ZTigsaDyV3cXnXBsBzztk2Sp
+9gLQ9TcSUQwl0UNSWObT970iTQwExi4KbNkDWfRAcO3ieRr8UOTCxrdATwVZpGOw
+VSqTlSfKEjMRVHz9h73BrHTsxMFUGRa2cdcZxecc90v+aInxsy49XEp4JUPtdLfd
+MURP9qm3B/+8tDnsceaMss2mdXu3/jy5hT5xOx02VotV7iMHwPhYSMOKJbaeG8KK
+X38WyH31uSe+j53gf989x+QufDTNg4Mte5nuIEdA4CDVlTq/zcAO1mVP0sj2uwZZ
+vnqRuSQhyDIKzUmUIsZ3FWnaTIItizEqyQyUeBa4VGvpqHWv8zEEbKmI08AywEGL
+5gcMvxcuUX22PwxLHbZ8YgpNree+m57cHYbOsWL1HzcfwbSxgnr8wDlv21mkW/jV
+EBJU+00YgQzbHuhHRkvvDPIf0NCvZOjdvAl3TQoGPsGCTAetOTNp38YB77324tA4
+cLNfdjvtjy7uPrSYv73A
+=jlhk
+-----END PGP SIGNATURE-----
+--=-=-=--
