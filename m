@@ -1,22 +1,43 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <andrew.donnellan@au1.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w1gsD6VBXzDq7Z
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Apr 2017 16:54:24 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Daniel Axtens <dja@axtens.net>, Matt Brown <matthew.brown.dev@gmail.com>,
- linuxppc-dev@lists.ozlabs.org
-Cc: linux-raid@vger.kernel.org
-Subject: Re: [v2] raid6/altivec: Add vpermxor implementation for raid6 Q
- syndrome
-In-Reply-To: <87r316hxmi.fsf@possimpible.ozlabs.ibm.com>
-References: <20170406053816.5239-1-matthew.brown.dev@gmail.com>
- <87r316hxmi.fsf@possimpible.ozlabs.ibm.com>
-Date: Mon, 10 Apr 2017 16:54:24 +1000
-Message-ID: <874lxwhhwf.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w1hBR6CWwzDq7Z
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Apr 2017 17:09:19 +1000 (AEST)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v3A72wtx060693
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Apr 2017 03:09:06 -0400
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 29r3jem1vj-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Apr 2017 03:09:06 -0400
+Received: from localhost
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
+ Mon, 10 Apr 2017 17:09:04 +1000
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v3A78q0r38862988
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Apr 2017 17:09:00 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v3A78R14027968
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Apr 2017 17:08:27 +1000
+Subject: Re: [PATCH V4 4/7] cxl: Update implementation service layer
+To: Christophe Lombard <clombard@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, fbarrat@linux.vnet.ibm.com,
+ imunsie@au1.ibm.com
+References: <1491574319-11852-1-git-send-email-clombard@linux.vnet.ibm.com>
+ <1491574319-11852-5-git-send-email-clombard@linux.vnet.ibm.com>
+From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Date: Mon, 10 Apr 2017 17:08:03 +1000
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <1491574319-11852-5-git-send-email-clombard@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Message-Id: <ef32c5f1-d004-bbf1-4139-09235ec188ca@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,66 +47,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Daniel Axtens <dja@axtens.net> writes:
 
-> Hi Matt,
+
+On 08/04/17 00:11, Christophe Lombard wrote:
+> The service layer API (in cxl.h) lists some low-level functions whose
+> implementation is different on PSL8, PSL9 and XSL:
+> - Init implementation for the adapter and the afu.
+> - Invalidate TLB/SLB.
+> - Attach process for dedicated/directed models.
+> - Handle psl interrupts.
+> - Debug registers for the adapter and the afu.
+> - Traces.
+> Each environment implements its own functions, and the common code uses
+> them through function pointers, defined in cxl_service_layer_ops.
 >
-> Thanks for answering my questions and doing those fixes.
->
->
->> Bugs fixed:
->> 	- A small bug in pq.h regarding a missing and mismatched
->> 	  ifdef statement
->> 	- Fixed test/Makefile to correctly build test on ppc
->>
->
-> I think this commit should be labelled:
-> Fixes: 4f8c55c5ad49 ("lib/raid6: build proper files on corresponding arch")
->
-> mpe can probably add that when he merges - no need to do a new version :)
+> Signed-off-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
 
-Please send a separate patch which does that fix.
+Reviewed-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
 
->>  else
->> -        HAS_ALTIVEC := $(shell printf '\#include <altivec.h>\nvector int a;\n' |\
->> -                         gcc -c -x c - >&/dev/null && \
->> -                         rm ./-.o && echo yes)
->> -        ifeq ($(HAS_ALTIVEC),yes)
->> -                OBJS += altivec1.o altivec2.o altivec4.o altivec8.o
->> +	 HAS_ALTIVEC := $(shell printf '\#include <altivec.h>\nvector int a;\n' |\
->> +			 gcc -c -x c - >/dev/null && rm ./-.o && echo yes)
->> +	 ifeq ($(HAS_ALTIVEC),yes)
->> +		CFLAGS += -I../../../arch/powerpc/include
->> +		CFLAGS += -DCONFIG_ALTIVEC
->> +		OBJS += altivec1.o altivec2.o altivec4.o altivec8.o \
->> +			vpermxor1.o vpermxor2.o vpermxor4.o vpermxor8.o
->>          endif
->>  endif
-> Looks like vim has replaced spaces with tabs here. Not sure how much we
-> care...
-
-We care at least because it makes the diff look bigger than it really
-is, if I'm reading it right the first three lines haven't actually
-changed.
-
->> @@ -97,6 +99,18 @@ altivec4.c: altivec.uc ../unroll.awk
->>  altivec8.c: altivec.uc ../unroll.awk
->>  	$(AWK) ../unroll.awk -vN=8 < altivec.uc > $@
->>
-> ... especially seeing as tabs are already used in the file here!
-
-It's a Makefile! Tabs have meaning :)
-
->> +# ifdef __KERNEL__
->> +	return (cpu_has_feature(CONFIG_ALTIVEC) &&
->> +		cpu_has_feature(CPU_FTR_ARCH_207S));
-> I think CPU_FTR_ARCH_207S implies Altivec? Again, not a real problem,
-
-It doesn't.
-
-And also CONFIG_ALTIVEC is not a cpu feature!
-
-You should be using CPU_FTR_ALTIVEC_COMP. That copes with the case where
-the kernel is compiled without ALTIVEC support.
-
-cheers
+-- 
+Andrew Donnellan              OzLabs, ADL Canberra
+andrew.donnellan@au1.ibm.com  IBM Australia Limited
