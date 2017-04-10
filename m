@@ -1,45 +1,32 @@
-Return-Path: <srs0=ls+1=3s=linux.vnet.ibm.com=tyreld@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w1yTV1KdtzDq5b
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Apr 2017 03:53:18 +1000 (AEST)
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3w1yTT5Bptz8tCT
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Apr 2017 03:53:17 +1000 (AEST)
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3w1yTT0ybVz9sNZ
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Apr 2017 03:53:16 +1000 (AEST)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v3AHnOTn035436
- for <linuxppc-dev@ozlabs.org>; Mon, 10 Apr 2017 13:53:14 -0400
-Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
- by mx0b-001b2d01.pphosted.com with ESMTP id 29r99tscxd-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Mon, 10 Apr 2017 13:53:14 -0400
-Received: from localhost
- by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <tyreld@linux.vnet.ibm.com>;
- Mon, 10 Apr 2017 11:53:13 -0600
-Subject: Re: WARN @lib/refcount.c:128 during hot unplug of I/O adapter.
-To: Michael Ellerman <mpe@ellerman.id.au>,
- Sachin Sant <sachinp@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org
-References: <E5B3D5CE-EB6A-4470-B7E9-4F6F7B029809@linux.vnet.ibm.com>
- <a7a782f2-3783-fd96-eda9-1c7634b2a2e5@linux.vnet.ibm.com>
- <8760ig983f.fsf@concordia.ellerman.id.au>
-Cc: Nathan Fontenot <nfont@linux.vnet.ibm.com>,
- LKML <linux-kernel@vger.kernel.org>
-From: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
-Date: Mon, 10 Apr 2017 10:53:08 -0700
+Return-Path: <schindele@nentec.de>
+Received: from dmz-mail.nentec.de (gate.nentec.de [213.218.23.37])
+ by lists.ozlabs.org (Postfix) with SMTP id 3w1tk30sPpzDq7Z
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Apr 2017 01:03:53 +1000 (AEST)
+Received: from localhost (localhost [127.0.0.1])
+ by zimbra.nentec.de (Postfix) with ESMTP id BEE3317E0DC2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Apr 2017 16:44:05 +0200 (CEST)
+Received: from zimbra.nentec.de ([127.0.0.1])
+ by localhost (zimbra.nentec.de [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id LxcvB7L_7o0k for <linuxppc-dev@lists.ozlabs.org>;
+ Mon, 10 Apr 2017 16:44:05 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+ by zimbra.nentec.de (Postfix) with ESMTP id A47AC17E0EF8
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Apr 2017 16:44:05 +0200 (CEST)
+Received: from zimbra.nentec.de ([127.0.0.1])
+ by localhost (zimbra.nentec.de [127.0.0.1]) (amavisd-new, port 10026)
+ with ESMTP id n27iB4d4MppH for <linuxppc-dev@lists.ozlabs.org>;
+ Mon, 10 Apr 2017 16:44:05 +0200 (CEST)
+Received: from sherry.localnet (sherry.nentec.de [153.92.64.8])
+ by zimbra.nentec.de (Postfix) with ESMTPS id 8EE2017E0DC2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Apr 2017 16:44:05 +0200 (CEST)
+From: Juergen Schindele <schindele@nentec.de>
+To: linuxppc-dev@lists.ozlabs.org
+Reply-To: schindele@nentec.de
+Subject: Freescale mpc8315 IRQ0 setup
+Date: Mon, 10 Apr 2017 16:53:18 +0200
+Message-ID: <2666241.ms6yMRjznt@sherry>
 MIME-Version: 1.0
-In-Reply-To: <8760ig983f.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <89aec36c-e352-e055-5e80-1235449762ce@linux.vnet.ibm.com>
+Content-Type: multipart/alternative; boundary="nextPart5740079.IIbRtX7q1Z"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,37 +36,225 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/06/2017 09:04 PM, Michael Ellerman wrote:
-> Tyrel Datwyler <tyreld@linux.vnet.ibm.com> writes:
-> 
->> On 04/06/2017 03:27 AM, Sachin Sant wrote:
->>> On a POWER8 LPAR running 4.11.0-rc5, a hot unplug operation on
->>> any I/O adapter results in the following warning
->>>
->>> This problem has been in the code for some time now. I had first seen this in
->>> -next tree.
->>>
+This is a multi-part message in MIME format.
 
-<snip>
+--nextPart5740079.IIbRtX7q1Z
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="iso-8859-1"
 
->>> Have attached the dmesg log from the system. Let me know if any additional
->>> information is required to help debug this problem.
->>
->> I remember you mentioning this when the issue was brought up for CPUs. I
->> assume the case is the same here where the issue is only seen with
->> adapters that were hot-added after boot (ie. hot-remove of adapter
->> present at boot doesn't trip the warning)?
-> 
-> So who's fixing this?
+Dear mailing list,
+i found out on our platform with freescale mpc8315 SOC that in
+linux kernel code the setup of IRQ0 which we use is not correct.
+One should be able to use falling EDGE interrupt capabilities like on
+IRQ1-IRQ7. These setups are fixed in "arch/powerpc/sysdev/ipic.c"
+The internal interrupt number of IRQ0 is not like IRQ1-IRQ7 in one bloc=
+k
+but on number 48. To verify details please consult MPC8315ERM.pdf
+developpers manual.
 
-I started looking at it when Bharata submitted a patch trying to fix the
-issue for CPUs, but got side tracked by other things. I suspect that
-this underflow has actually been an issue for quite some time, and we
-are just now becoming aware of it thanks to the recount_t patchset being
-merged. I'll look into it again this week.
+To correct these "EDGE" capabilities of IRQ0 i suggest the following=20=
 
--Tyrel
+patch:
+please consider integrating it to your patches.
 
-> 
-> cheers
-> 
+--- arch/powerpc/sysdev/ipic.c  (Revision correct)
++++ arch/powerpc/sysdev/ipic.c  (Arbeitskopie)
+@@ -316,6 +316,7 @@
+                .prio_mask =3D 7,
+        },
+        [48] =3D {
++               .ack    =3D IPIC_SEPNR,
+                .mask   =3D IPIC_SEMSR,
+                .prio   =3D IPIC_SMPRR_A,
+                .force  =3D IPIC_SEFCR,
+
+Thank you for your attention
+--=20
+i. A.
+J=FCrgen Schindele
+Softwareentwicklung
+
+PSI Nentec GmbH
+Greschbachstra=DFe 12
+76229 Karlsruhe
+Deutschland
+Telefon: +49 721 94249-51
+Telefax: +49 721 94249-10
+schindele@nentec.de
+www.nentec.de
+
+Gesch=E4ftsf=FChrung: Klaus Becker, Wolfgang Fischer
+Sitz der Gesellschaft: Karlsruhe
+Handelsregister: Amtsgericht Mannheim HRB 107658
+
+Diese E-Mail enth=E4lt vertrauliche oder rechtlich gesch=FCtzte=20
+Informationen. Wenn Sie nicht der vorgesehene Empf=E4nger sind,=20
+informieren Sie bitte sofort den Absender und l=F6schen Sie diese E-Mai=
+l.=20
+Das unbefugte Kopieren dieser E-Mail oder die unbefugte Weitergabe=20
+der enthaltenen Informationen ist nicht gestattet.
+
+The information contained in this message is confidential or protected=20=
+
+by law. If you are not the intended recipient, please contact the sende=
+r=20
+and delete this message. Any unauthorised copying of this message or=20=
+
+unauthorised distribution of the information contained herein is=20
+prohibited.=20
+
+--nextPart5740079.IIbRtX7q1Z
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/html; charset="iso-8859-1"
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN" "http://www.w3.org/TR/=
+REC-html40/strict.dtd">
+<html><head><meta name=3D"qrichtext" content=3D"1" /><style type=3D"tex=
+t/css">
+p, li { white-space: pre-wrap; }
+</style></head><body style=3D" font-family:'Sans Serif'; font-size:9pt;=
+ font-weight:400; font-style:normal;">
+<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin=
+-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">Dea=
+r mailing list,</p>
+<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin=
+-right:0px; -qt-block-indent:0; text-indent:0px;">i found out on our pl=
+atform with freescale mpc8315 SOC that in</p>
+<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin=
+-right:0px; -qt-block-indent:0; text-indent:0px;">linux kernel code the=
+ setup of IRQ0 which we use is not correct.</p>
+<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin=
+-right:0px; -qt-block-indent:0; text-indent:0px;">One should be able to=
+ use falling EDGE interrupt capabilities like on</p>
+<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin=
+-right:0px; -qt-block-indent:0; text-indent:0px;">IRQ1-IRQ7. These setu=
+ps are fixed in &quot;arch/powerpc/sysdev/ipic.c&quot;</p>
+<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin=
+-right:0px; -qt-block-indent:0; text-indent:0px;">The internal interrup=
+t number of IRQ0 is not like IRQ1-IRQ7 in one block</p>
+<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin=
+-right:0px; -qt-block-indent:0; text-indent:0px;">but on number 48. To =
+verify details please consult MPC8315ERM.pdf</p>
+<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin=
+-right:0px; -qt-block-indent:0; text-indent:0px;">developpers manual.</=
+p>
+<p style=3D"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px=
+; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0p=
+x; ">&nbsp;</p>
+<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin=
+-right:0px; -qt-block-indent:0; text-indent:0px;">To correct these &quo=
+t;EDGE&quot; capabilities of IRQ0 i suggest the following patch:</p>
+<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin=
+-right:0px; -qt-block-indent:0; text-indent:0px;">please consider integ=
+rating it to your patches.</p>
+<p style=3D"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px=
+; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0p=
+x; ">&nbsp;</p>
+<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin=
+-right:0px; -qt-block-indent:0; text-indent:0px;">--- arch/powerpc/sysd=
+ev/ipic.c  (Revision correct)</p>
+<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin=
+-right:0px; -qt-block-indent:0; text-indent:0px;">+++ arch/powerpc/sysd=
+ev/ipic.c  (Arbeitskopie)</p>
+<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin=
+-right:0px; -qt-block-indent:0; text-indent:0px;">@@ -316,6 +316,7 @@</=
+p>
+<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin=
+-right:0px; -qt-block-indent:0; text-indent:0px;">                .prio=
+_mask =3D 7,</p>
+<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin=
+-right:0px; -qt-block-indent:0; text-indent:0px;">        },</p>
+<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin=
+-right:0px; -qt-block-indent:0; text-indent:0px;">        [48] =3D {</p=
+>
+<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin=
+-right:0px; -qt-block-indent:0; text-indent:0px;">+               .ack =
+   =3D IPIC_SEPNR,</p>
+<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin=
+-right:0px; -qt-block-indent:0; text-indent:0px;">                .mask=
+   =3D IPIC_SEMSR,</p>
+<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin=
+-right:0px; -qt-block-indent:0; text-indent:0px;">                .prio=
+   =3D IPIC_SMPRR_A,</p>
+<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin=
+-right:0px; -qt-block-indent:0; text-indent:0px;">                .forc=
+e  =3D IPIC_SEFCR,</p>
+<p style=3D"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px=
+; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0p=
+x; ">&nbsp;</p>
+<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin=
+-right:0px; -qt-block-indent:0; text-indent:0px;"><span style=3D" font-=
+size:12px; color:#181615; background-color:#ffffff;">Thank you for your=
+ attention</span></p>
+<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin=
+-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">-- =
+</p>
+<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin=
+-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">i. =
+A.</p>
+<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin=
+-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">J=FC=
+rgen Schindele</p>
+<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin=
+-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">Sof=
+twareentwicklung</p>
+<p style=3D"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px=
+; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0p=
+x; ">&nbsp;</p>
+<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin=
+-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">PSI=
+ Nentec GmbH</p>
+<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin=
+-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">Gre=
+schbachstra=DFe 12</p>
+<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin=
+-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">762=
+29 Karlsruhe</p>
+<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin=
+-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">Deu=
+tschland</p>
+<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin=
+-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">Tel=
+efon: +49 721 94249-51</p>
+<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin=
+-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">Tel=
+efax: +49 721 94249-10</p>
+<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin=
+-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">sch=
+indele@nentec.de</p>
+<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin=
+-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">www=
+.nentec.de</p>
+<p style=3D"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px=
+; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0p=
+x; ">&nbsp;</p>
+<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin=
+-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">Ges=
+ch=E4ftsf=FChrung: Klaus Becker, Wolfgang Fischer</p>
+<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin=
+-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">Sit=
+z der Gesellschaft: Karlsruhe</p>
+<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin=
+-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">Han=
+delsregister: Amtsgericht Mannheim HRB 107658</p>
+<p style=3D"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px=
+; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0p=
+x; ">&nbsp;</p>
+<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin=
+-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">Die=
+se E-Mail enth=E4lt vertrauliche oder rechtlich gesch=FCtzte Informatio=
+nen. Wenn Sie nicht der vorgesehene Empf=E4nger sind, informieren Sie b=
+itte sofort den Absender und l=F6schen Sie diese E-Mail. Das unbefugte =
+Kopieren dieser E-Mail oder die unbefugte Weitergabe der enthaltenen In=
+formationen ist nicht gestattet.</p>
+<p style=3D"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px=
+; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0p=
+x; ">&nbsp;</p>
+<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin=
+-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">The=
+ information contained in this message is confidential or protected by =
+law. If you are not the intended recipient, please contact the sender a=
+nd delete this message. Any unauthorised copying of this message or una=
+uthorised distribution of the information contained herein is prohibite=
+d. </p></body></html>
+--nextPart5740079.IIbRtX7q1Z--
