@@ -1,22 +1,49 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
- [IPv6:2607:f8b0:400e:c05::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <srs0=tsnp=3s=linux.vnet.ibm.com=khandual@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w1kCN18dTzDq7Z
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Apr 2017 18:40:13 +1000 (AEST)
-Received: by mail-pg0-x244.google.com with SMTP id 79so24942840pgf.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Apr 2017 01:40:13 -0700 (PDT)
-Subject: Re: [PATCH v2] powerpc/eeh: Avoid use after free in
- eeh_handle_special_event()
-To: Russell Currey <ruscur@russell.cc>, linuxppc-dev@lists.ozlabs.org
-References: <20170410071153.21680-1-ruscur@russell.cc>
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-Message-ID: <8113d48b-f7e4-b1fd-0c00-cb5835e6d15a@ozlabs.ru>
-Date: Mon, 10 Apr 2017 18:40:07 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w1lKf6SGwzDq7Z
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Apr 2017 19:30:46 +1000 (AEST)
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3w1lKf5sNfz8t7X
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Apr 2017 19:30:46 +1000 (AEST)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3w1lKf2yHzz9sNV
+ for <linuxppc-dev@ozlabs.org>; Mon, 10 Apr 2017 19:30:46 +1000 (AEST)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v3A9O7p0066152
+ for <linuxppc-dev@ozlabs.org>; Mon, 10 Apr 2017 05:30:23 -0400
+Received: from e23smtp04.au.ibm.com ([202.81.31.146])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 29r5p5bgsd-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Mon, 10 Apr 2017 05:30:22 -0400
+Received: from localhost
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
+ Mon, 10 Apr 2017 19:30:15 +1000
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v3A9U53h55050386
+ for <linuxppc-dev@ozlabs.org>; Mon, 10 Apr 2017 19:30:13 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v3A9TbbF009954
+ for <linuxppc-dev@ozlabs.org>; Mon, 10 Apr 2017 19:29:37 +1000
+Subject: Re: [PATCH] powerpc/powernv: Fix powernv Kconfig dependencies
+To: Alistair Popple <alistair@popple.id.au>, mpe@ellerman.id.au
+References: <1491801875-25733-1-git-send-email-alistair@popple.id.au>
+Cc: linuxppc-dev@ozlabs.org
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Date: Mon, 10 Apr 2017 14:59:18 +0530
 MIME-Version: 1.0
-In-Reply-To: <20170410071153.21680-1-ruscur@russell.cc>
-Content-Type: text/plain; charset=koi8-r
+In-Reply-To: <1491801875-25733-1-git-send-email-alistair@popple.id.au>
+Content-Type: text/plain; charset=windows-1252
+Message-Id: <f05e6976-d320-917a-ca58-ac36b7c503a6@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,134 +53,10 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 10/04/17 17:11, Russell Currey wrote:
-> eeh_handle_special_event() is called when an EEH event is detected but
-> can't be narrowed down to a specific PE.  This function looks through
-> every PE to find one in an erroneous state, then calls the regular event
-> handler eeh_handle_normal_event() once it knows which PE has an error.
-> 
-> However, if eeh_handle_normal_event() found that the PE cannot possibly
-> be recovered, it will free it, rendering the passed PE stale.
-> This leads to a use after free in eeh_handle_special_event() as it attempts to
-> clear the "recovering" state on the PE after eeh_handle_normal_event() returns.
-> 
-> Thus, make sure the PE is valid when attempting to clear state in
-> eeh_handle_special_event().
-> 
-> Cc: <stable@vger.kernel.org> #3.10+
-> Reported-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> Signed-off-by: Russell Currey <ruscur@russell.cc>
-> ---
-> V2: check a specific return path instead of looking at the PE itself
-> ---
->  arch/powerpc/kernel/eeh_driver.c | 19 +++++++++++++++----
->  1 file changed, 15 insertions(+), 4 deletions(-)
-> 
-> diff --git a/arch/powerpc/kernel/eeh_driver.c b/arch/powerpc/kernel/eeh_driver.c
-> index b94887165a10..e510408e08e1 100644
-> --- a/arch/powerpc/kernel/eeh_driver.c
-> +++ b/arch/powerpc/kernel/eeh_driver.c
-> @@ -724,7 +724,7 @@ static int eeh_reset_device(struct eeh_pe *pe, struct pci_bus *bus,
->   */
->  #define MAX_WAIT_FOR_RECOVERY 300
->  
-> -static void eeh_handle_normal_event(struct eeh_pe *pe)
-> +static int eeh_handle_normal_event(struct eeh_pe *pe)
->  {
->  	struct pci_bus *frozen_bus;
->  	struct eeh_dev *edev, *tmp;
-> @@ -736,7 +736,7 @@ static void eeh_handle_normal_event(struct eeh_pe *pe)
->  	if (!frozen_bus) {
->  		pr_err("%s: Cannot find PCI bus for PHB#%x-PE#%x\n",
->  			__func__, pe->phb->global_number, pe->addr);
-> -		return;
-> +		return -EIO;
->  	}
->  
->  	eeh_pe_update_time_stamp(pe);
-> @@ -870,7 +870,7 @@ static void eeh_handle_normal_event(struct eeh_pe *pe)
->  	pr_info("EEH: Notify device driver to resume\n");
->  	eeh_pe_dev_traverse(pe, eeh_report_resume, NULL);
->  
-> -	return;
-> +	return rc;
+On 04/10/2017 10:54 AM, Alistair Popple wrote:
+> The patch to introduce address translation services for Nvlink2 uses
+> MMU notifiers. However usage of MMU notifiers requires a Kconfig
+> option which is not selected by default on powerpc so add it to the
+> powernv Kconfig.
 
-
-eeh_handle_normal_event() uses "rc" to store return values from different
-things:
-
-- eeh_ops->wait_state() (which is pnv_eeh_wait_state) returns mask of
-EEH_STATE_MMIO_ACTIVE/etc, errors would be EEH_STATE_UNAVAILABLE or
-EEH_STATE_NOT_SUPPORT, both positive and the latter is used everywhere in
-EEH code to report errors instead of negative linux errors.
-
-- eeh_reset_device() returns usual linux negative errors, such as -EIO,
--ENODEV.
-
-I'd suggest following one scheme or another here.
-
-
->  
->  excess_failures:
->  	/*
-> @@ -915,8 +915,12 @@ static void eeh_handle_normal_event(struct eeh_pe *pe)
->  			pci_lock_rescan_remove();
->  			pci_hp_remove_devices(frozen_bus);
->  			pci_unlock_rescan_remove();
-> +
-> +			/* The passed PE should no longer be used */
-> +			rc = -EFAULT;
-
-
-I looked if eeh_handle_normal_event() could return -EFAULT in any other
-branch. eeh_pci_enable() could return linux error if it failed in
-pnv_eeh_set_option() which at least in theory can get -EFAULT from
-unfreeze_pe(). Do we want to rely of the fact that unfreeze_pe() won't
-return -EFAULT and we do not end up with non removed device?
-
-May be instead of very popular EFAULT, eeh_handle_normal_event() is better
-to return bool saying that pe is dead? Or move the whole
-if(frozen_bus){
-	...
-	pci_hp_remove_devices()
-	...
-}
-
-to a eeh_teardown_frozen_bus() helper, make eeh_handle_normal_event()
-return frozen_bus if it needs to be frozen and pass that to
-eeh_teardown_frozen_bus() if not NULL?
-
-
-btw eeh_handle_normal_event() does not really need the excess_failures
-label, that "excess_failures: pr_err()" could be moved to "goto
-excess_failures" (which will become "goto perm_error") and then perm_error:
-could go too :)
-
-
->  		}
->  	}
-> +	return rc;
->  }
->  
->  static void eeh_handle_special_event(void)
-> @@ -982,7 +986,14 @@ static void eeh_handle_special_event(void)
->  		 */
->  		if (rc == EEH_NEXT_ERR_FROZEN_PE ||
->  		    rc == EEH_NEXT_ERR_FENCED_PHB) {
-> -			eeh_handle_normal_event(pe);
-> +			/*
-> +			 * eeh_handle_normal_event() can make the PE stale if it
-> +			 * determines that the PE cannot possibly be recovered.
-> +			 * Don't modify the PE state if that's the case.
-> +			 */
-> +			if (eeh_handle_normal_event(pe) == -EFAULT)
-> +				continue;
-> +
->  			eeh_pe_state_clear(pe, EEH_PE_RECOVERING);
->  		} else {
->  			pci_lock_rescan_remove();
-> 
-
-
--- 
-Alexey
+We would also need this for HMM enablement on powerpc going forward.
