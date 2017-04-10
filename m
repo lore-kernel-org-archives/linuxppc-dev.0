@@ -1,21 +1,21 @@
-Return-Path: <neilb@suse.de>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
+Return-Path: <anton@samba.org>
+Received: from hr2.samba.org (hr2.samba.org [IPv6:2a01:4f8:192:486::147:1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w1YgH2vLGzDq7h
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Apr 2017 12:15:23 +1000 (AEST)
-From: NeilBrown <neilb@suse.com>
-To: "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>,
- "Martin K. Petersen" <martin.petersen@oracle.com>
-Date: Mon, 10 Apr 2017 12:15:13 +1000
-Cc: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
-Cc: linux-scsi@vger.kernel.org , linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Subject: [PATCH] scsi: ibmvfc: don't check for failure from mempool_alloc()
-Message-ID: <878tn9xb2m.fsf@notabene.neil.brown.name>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w1ZwX0Q6WzDq7Z
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Apr 2017 13:11:56 +1000 (AEST)
+Date: Mon, 10 Apr 2017 13:11:39 +1000
+From: Anton Blanchard <anton@samba.org>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 2/2] powerpc/mm/radix: Remove unnecessary ptesync
+Message-ID: <20170410131139.7ecc926a@kryten>
+In-Reply-To: <1491057708-15934-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+References: <1491057708-15934-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1491057708-15934-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="=-=-=";
- micalg=pgp-sha256; protocol="application/pgp-signature"
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,59 +25,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---=-=-=
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+On Sat,  1 Apr 2017 20:11:48 +0530
+"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> wrote:
 
+> For a tlbiel with pid, we need to issue tlbiel with set number
+> encoded. We don't need to do ptesync for each of those. Instead we
+> need one for the entire tlbiel pid operation.
+> 
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 
-mempool_alloc() cannot fail when passed GFP_NOIO or any
-other gfp setting that is permitted to sleep.
-So remove this pointless code.
+Thanks Aneesh.
 
-Signed-off-by: NeilBrown <neilb@suse.com>
-=2D--
- drivers/scsi/ibmvscsi/ibmvfc.c | 6 ------
- 1 file changed, 6 deletions(-)
+Acked-by: Anton Blanchard <anton@samba.org>
 
-diff --git a/drivers/scsi/ibmvscsi/ibmvfc.c b/drivers/scsi/ibmvscsi/ibmvfc.c
-index 2c92dabb55f6..26cd3c28186a 100644
-=2D-- a/drivers/scsi/ibmvscsi/ibmvfc.c
-+++ b/drivers/scsi/ibmvscsi/ibmvfc.c
-@@ -3910,12 +3910,6 @@ static int ibmvfc_alloc_target(struct ibmvfc_host *v=
-host, u64 scsi_id)
- 	spin_unlock_irqrestore(vhost->host->host_lock, flags);
-=20
- 	tgt =3D mempool_alloc(vhost->tgt_pool, GFP_NOIO);
-=2D	if (!tgt) {
-=2D		dev_err(vhost->dev, "Target allocation failure for scsi id %08llx\n",
-=2D			scsi_id);
-=2D		return -ENOMEM;
-=2D	}
-=2D
- 	memset(tgt, 0, sizeof(*tgt));
- 	tgt->scsi_id =3D scsi_id;
- 	tgt->new_scsi_id =3D scsi_id;
-=2D-=20
-2.12.2
+Anton
 
-
---=-=-=
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCAAdFiEEG8Yp69OQ2HB7X0l6Oeye3VZigbkFAljq6rEACgkQOeye3VZi
-gbngbQ//XtuQiu7ppun4sOfhtZVgLW+G1k4u3zn7N4O+u4gvRO7Cb5Ki9jq6Nx58
-aiHnOOJbBdBupSowZe/kfHeNGQCgk3/BdvVq48i5A33OmVJhcKRHPJpinI+Y11Ei
-WguYoeqjokO9aaNEVQ8X3SD0mz/L5su3oF3dxIPKjW1KsWOD1iAjjrINw03YrqOP
-OQCOsvENbwThBAxqdIN6LIexcHycdiR7g6bxx35ywzefNy6JGWz2+fJs1RXTYRWk
-yTq75+622ek0qACG3uWWT3WwGzqMrcTWK8UhVVnge4eQGBJuwqzXJuNBAZnIjokQ
-bMyPwuoSexEx0kalL7IUxpvmzLzt1X4NITTu349vd33ZVA7WX3EJtW5I82W3Auyj
-ORQU328e4rAJooccDKCue2ZxNs/FPBw5OjCRyGGd43cf2oBKFyLZGMRgBiLypbgf
-TSyQTlee2W55KA0/4C24PAeUuDqDgB1EN+QH8mk5+pRgj1cOI+I3TJGDil3ptwpW
-T5FY5xUqbD/Z5kZIT8IHyVyZOeA3sOnGf1b+LOGODzw1W0ld/2PV9RS8jYbAsJgN
-Y12amk5eleKT7/Pu5Og41gq3FByL+9ml5jJvtVGrJ2EVPihB6y4bVyfHakYfTeKK
-pBHGA3S2ywZA+jO3i8MMPoIJfbIhutXNZkJbA9Wf8bICNsaWQ1U=
-=Gvh/
------END PGP SIGNATURE-----
---=-=-=--
+> ---
+>  arch/powerpc/mm/tlb-radix.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/arch/powerpc/mm/tlb-radix.c b/arch/powerpc/mm/tlb-radix.c
+> index f3e58bd60d1a..b68b5219cf45 100644
+> --- a/arch/powerpc/mm/tlb-radix.c
+> +++ b/arch/powerpc/mm/tlb-radix.c
+> @@ -34,10 +34,8 @@ static inline void __tlbiel_pid(unsigned long pid,
+> int set, prs = 1; /* process scoped */
+>  	r = 1;   /* raidx format */
+>  
+> -	asm volatile("ptesync": : :"memory");
+>  	asm volatile(PPC_TLBIEL(%0, %4, %3, %2, %1)
+>  		     : : "r"(rb), "i"(r), "i"(prs), "i"(ric),
+> "r"(rs) : "memory");
+> -	asm volatile("ptesync": : :"memory");
+>  }
+>  
+>  /*
+> @@ -47,9 +45,11 @@ static inline void _tlbiel_pid(unsigned long pid,
+> unsigned long ric) {
+>  	int set;
+>  
+> +	asm volatile("ptesync": : :"memory");
+>  	for (set = 0; set < POWER9_TLB_SETS_RADIX ; set++) {
+>  		__tlbiel_pid(pid, set, ric);
+>  	}
+> +	asm volatile("ptesync": : :"memory");
+>  	asm volatile(PPC_INVALIDATE_ERAT "; isync" : : :"memory");
+>  }
+>  
