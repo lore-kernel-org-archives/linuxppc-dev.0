@@ -1,21 +1,19 @@
-Return-Path: <chris@chris-wilson.co.uk>
-Received: from fireflyinternet.com (mail.fireflyinternet.com [109.228.58.192])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w1LJP2vxPzDqHW
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Apr 2017 03:43:16 +1000 (AEST)
-Date: Sun, 9 Apr 2017 18:26:31 +0100
-From: Chris Wilson <chris@chris-wilson.co.uk>
-To: Thorsten Leemhuis <regressions@leemhuis.info>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- linuxppc-dev@lists.ozlabs.org, Jonathan Corbet <corbet@lwn.net>
-Subject: Re: Linux 4.11: Reported regressions as of Sunday, 2017-04-09
-Message-ID: <20170409172631.GA6834@nuc-i3427.alporthouse.com>
-References: <14254185-456f-4940-6a67-bc75d1eeb123@leemhuis.info>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <14254185-456f-4940-6a67-bc75d1eeb123@leemhuis.info>
+Return-Path: <rashmica.g@gmail.com>
+Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
+ [IPv6:2607:f8b0:400e:c05::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w1YQW6YNXzDq7Z
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Apr 2017 12:04:19 +1000 (AEST)
+Received: by mail-pg0-x242.google.com with SMTP id 79so23819584pgf.0
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 09 Apr 2017 19:04:19 -0700 (PDT)
+From: Rashmica Gupta <rashmica.g@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org,
+	mpe@ellerman.id.au
+Cc: Rashmica Gupta <rashmica.g@gmail.com>
+Subject: [PATCH] powerpc/mm: Dump hash table
+Date: Mon, 10 Apr 2017 12:04:04 +1000
+Message-Id: <20170410020404.11375-1-rashmica.g@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,17 +23,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Apr 09, 2017 at 07:15:49PM +0200, Thorsten Leemhuis wrote:
-> Desc: i915 gpu hangs under load
-> Repo: 2017-03-22 https://www.mail-archive.com/intel-gfx@lists.freedesktop.org/msg116227.html https://bugs.freedesktop.org/show_bug.cgi?id=100181 https://www.mail-archive.com/linux-kernel@vger.kernel.org/msg1372182.html
-> Stat: 2017-04-07 https://www.mail-archive.com/linux-kernel@vger.kernel.org/msg1372182.html
-> Note: A few patches from Andrea (who's seeing problems as well) are being discussed
+Current behaviour assumes that memory in RAM is contiguous and
+iterates from the start of RAM to (start + size of memory). When the
+memory isn't physically contiguous, this approach doesn't work.
 
-Note, Andrea saw a completely different problem unrelated to the GPU
-hang and date back to ~4.9. Both reported issues have been fixed, with
-the earlier report already in mainline but Andrea's fix is not yet in a
-PR.
--Chris
+If memory exists at 0-5 GB and 6-10 GB then the current approach will
+check if entries exist in the hash table from 0GB to 9GB. This patch
+changes the behaviour to iterate up to the end of RAM.
 
+Signed-off-by: Rashmica Gupta <rashmica.g@gmail.com>
+---
+ arch/powerpc/mm/dump_hashpagetable.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/mm/dump_hashpagetable.c b/arch/powerpc/mm/dump_hashpagetable.c
+index d979709..ee07398 100644
+--- a/arch/powerpc/mm/dump_hashpagetable.c
++++ b/arch/powerpc/mm/dump_hashpagetable.c
+@@ -468,7 +468,7 @@ static void walk_linearmapping(struct pg_state *st)
+ 	unsigned long psize = 1 << mmu_psize_defs[mmu_linear_psize].shift;
+ 
+ 	for (addr = PAGE_OFFSET; addr < PAGE_OFFSET +
+-			memblock_phys_mem_size(); addr += psize)
++			memblock_end_of_DRAM(); addr += psize)
+ 		hpte_find(st, addr, mmu_linear_psize);
+ }
+ 
 -- 
-Chris Wilson, Intel Open Source Technology Centre
+2.9.3
