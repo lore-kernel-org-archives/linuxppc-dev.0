@@ -2,22 +2,24 @@ Return-Path: <srs0=5cae=3s=kernel.crashing.org=benh@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w1gKZ0vzSzDq7Z
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Apr 2017 16:30:26 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w1gKb4hPKzDq7Z
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Apr 2017 16:30:27 +1000 (AEST)
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3w1gKZ0DX2z8w25
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Apr 2017 16:30:26 +1000 (AEST)
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3w1gKb49Srz8w25
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Apr 2017 16:30:27 +1000 (AEST)
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3w1gKY2Zhjz9s7p
- for <linuxppc-dev@ozlabs.org>; Mon, 10 Apr 2017 16:30:25 +1000 (AEST)
+ by ozlabs.org (Postfix) with ESMTPS id 3w1gKZ6Ctyz9s7p
+ for <linuxppc-dev@ozlabs.org>; Mon, 10 Apr 2017 16:30:26 +1000 (AEST)
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH v2 1/3] powerpc/xive: Don't call cpu_online() on an invalid
- CPU number
-Date: Mon, 10 Apr 2017 16:29:59 +1000
-Message-Id: <20170410063001.7235-1-benh@kernel.crashing.org>
+Subject: [PATCH v2 2/3] powerpx/xive: Fix irq target selection returning out
+ of bounds cpu#
+Date: Mon, 10 Apr 2017 16:30:00 +1000
+Message-Id: <20170410063001.7235-2-benh@kernel.crashing.org>
+In-Reply-To: <20170410063001.7235-1-benh@kernel.crashing.org>
+References: <20170410063001.7235-1-benh@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,28 +29,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-If the interrupt didn't have a selected target yet, we could
-call cpu_online() and do other cpumask tests with cpu #-1 which
-would result in random outcomes.
+xive_pick_irq_target() first tries to construct a mask that is
+the intersection of the requested affinity, online CPUs, and
+the group of CPUs that are on the same chip as the interrupt
+source.
+
+If that resulting mask is empty, we were incorrectly returning
+nr_cpu_ids as a target.
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
- arch/powerpc/sysdev/xive/common.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ arch/powerpc/sysdev/xive/common.c | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
 diff --git a/arch/powerpc/sysdev/xive/common.c b/arch/powerpc/sysdev/xive/common.c
-index 9201819..dbd0f45 100644
+index dbd0f45..f37d257 100644
 --- a/arch/powerpc/sysdev/xive/common.c
 +++ b/arch/powerpc/sysdev/xive/common.c
-@@ -656,7 +656,8 @@ static int xive_irq_set_affinity(struct irq_data *d,
- 	/* If existing target is already in the new mask, and is
- 	 * online then do nothing.
- 	 */
--	if (cpu_online(xd->target) &&
-+	if (xd->target != XIVE_INVALID_TARGET &&
-+	    cpu_online(xd->target) &&
- 	    cpumask_test_cpu(xd->target, cpumask))
- 		return IRQ_SET_MASK_OK;
+@@ -486,7 +486,7 @@ static int xive_pick_irq_target(struct irq_data *d,
  
+ 	/*
+ 	 * If we have chip IDs, first we try to build a mask of
+-	 * CPUs matching ther CPU and find a target in there
++	 * CPUs matching the CPU and find a target in there
+ 	 */
+ 	if (xd->src_chip != XIVE_INVALID_CHIP_ID &&
+ 		zalloc_cpumask_var(&mask, GFP_ATOMIC)) {
+@@ -497,7 +497,9 @@ static int xive_pick_irq_target(struct irq_data *d,
+ 				cpumask_set_cpu(cpu, mask);
+ 		}
+ 		/* Try to find a target */
+-		if (!cpumask_empty(mask))
++		if (cpumask_empty(mask))
++			cpu = -1;
++		else
+ 			cpu = xive_find_target_in_mask(mask, fuzz++);
+ 		free_cpumask_var(mask);
+ 		if (cpu >= 0)
 -- 
 2.9.3
