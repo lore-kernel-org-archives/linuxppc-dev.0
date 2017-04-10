@@ -1,32 +1,45 @@
-Return-Path: <bhsharma@redhat.com>
-Received: from mail-pg0-f47.google.com (mail-pg0-f47.google.com [74.125.83.47])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <srs0=ls+1=3s=linux.vnet.ibm.com=tyreld@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w1xlc6NyMzDq5b
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Apr 2017 03:20:28 +1000 (AEST)
-Received: by mail-pg0-f47.google.com with SMTP id x125so109082393pgb.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Apr 2017 10:20:28 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w1yTV1KdtzDq5b
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Apr 2017 03:53:18 +1000 (AEST)
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3w1yTT5Bptz8tCT
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Apr 2017 03:53:17 +1000 (AEST)
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3w1yTT0ybVz9sNZ
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Apr 2017 03:53:16 +1000 (AEST)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v3AHnOTn035436
+ for <linuxppc-dev@ozlabs.org>; Mon, 10 Apr 2017 13:53:14 -0400
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 29r99tscxd-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Mon, 10 Apr 2017 13:53:14 -0400
+Received: from localhost
+ by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <tyreld@linux.vnet.ibm.com>;
+ Mon, 10 Apr 2017 11:53:13 -0600
+Subject: Re: WARN @lib/refcount.c:128 during hot unplug of I/O adapter.
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ Sachin Sant <sachinp@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org
+References: <E5B3D5CE-EB6A-4470-B7E9-4F6F7B029809@linux.vnet.ibm.com>
+ <a7a782f2-3783-fd96-eda9-1c7634b2a2e5@linux.vnet.ibm.com>
+ <8760ig983f.fsf@concordia.ellerman.id.au>
+Cc: Nathan Fontenot <nfont@linux.vnet.ibm.com>,
+ LKML <linux-kernel@vger.kernel.org>
+From: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+Date: Mon, 10 Apr 2017 10:53:08 -0700
 MIME-Version: 1.0
-In-Reply-To: <1490730347-5165-1-git-send-email-bhsharma@redhat.com>
-References: <1490730347-5165-1-git-send-email-bhsharma@redhat.com>
-From: Bhupesh Sharma <bhsharma@redhat.com>
-Date: Mon, 10 Apr 2017 22:50:26 +0530
-Message-ID: <CACi5LpMwX5iQaOT=0nnm+6bMuob2PLHW6sTj_sW+SPwQn6hVxQ@mail.gmail.com>
-Subject: Re: [PATCH v3] powerpc: mm: support ARCH_MMAP_RND_BITS
-To: linuxppc-dev@lists.ozlabs.org, kernel-hardening@lists.openwall.com,
- linux-kernel@vger.kernel.org, Steve Best <sbest@redhat.com>,
- "Gustavo Luiz Duarte (IBM)" <gduarte@redhat.com>
-Cc: Daniel Cashman <dcashman@google.com>, Michael Ellerman <mpe@ellerman.id.au>,
- Bhupesh SHARMA <bhupesh.linux@gmail.com>, Kees Cook <keescook@chromium.org>,
- Bhupesh Sharma <bhsharma@redhat.com>, Alexander Graf <agraf@suse.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Anatolij Gustschin <agust@denx.de>, Alistair Popple <alistair@popple.id.au>,
- Matt Porter <mporter@kernel.crashing.org>,
- Vitaly Bordug <vitb@kernel.crashing.org>,
- Scott Wood <oss@buserror.net>, Kumar Gala <galak@kernel.crashing.org>,
- Daniel Cashman <dcashman@android.com>
-Content-Type: text/plain; charset=UTF-8
+In-Reply-To: <8760ig983f.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <89aec36c-e352-e055-5e80-1235449762ce@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,131 +49,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Michael,
+On 04/06/2017 09:04 PM, Michael Ellerman wrote:
+> Tyrel Datwyler <tyreld@linux.vnet.ibm.com> writes:
+> 
+>> On 04/06/2017 03:27 AM, Sachin Sant wrote:
+>>> On a POWER8 LPAR running 4.11.0-rc5, a hot unplug operation on
+>>> any I/O adapter results in the following warning
+>>>
+>>> This problem has been in the code for some time now. I had first seen this in
+>>> -next tree.
+>>>
 
-On Wed, Mar 29, 2017 at 1:15 AM, Bhupesh Sharma <bhsharma@redhat.com> wrote:
-> powerpc arch_mmap_rnd() currently uses hard-coded values - (23-PAGE_SHIFT) for
-> 32-bit and (30-PAGE_SHIFT) for 64-bit, to generate the random offset
-> for the mmap base address for a ASLR ELF.
->
-> This patch makes sure that powerpc mmap arch_mmap_rnd() implementation
-> is similar to other ARCHs (like x86, arm64) and uses mmap_rnd_bits
-> and helpers to generate the mmap address randomization.
->
-> The maximum and minimum randomization range values represent
-> a compromise between increased ASLR effectiveness and avoiding
-> address-space fragmentation.
->
-> Using the Kconfig option and suitable /proc tunable, platform
-> developers may choose where to place this compromise.
->
-> Also this patch keeps the default values as new minimums.
->
-> Signed-off-by: Bhupesh Sharma <bhsharma@redhat.com>
-> Reviewed-by: Kees Cook <keescook@chromium.org>
-> ---
-> * Changes since v2:
-> v2 can be seen here (https://patchwork.kernel.org/patch/9551509/)
->     - Changed a few minimum and maximum randomization ranges as per Michael's suggestion.
->     - Corrected Kees's email address in the Reviewed-by line.
->     - Added further comments in kconfig to explain how the address ranges were worked out.
->
-> * Changes since v1:
-> v1 can be seen here (https://lists.ozlabs.org/pipermail/linuxppc-dev/2017-February/153594.html)
->     - No functional change in this patch.
->     - Dropped PATCH 2/2 from v1 as recommended by Kees Cook.
->
->  arch/powerpc/Kconfig   | 44 ++++++++++++++++++++++++++++++++++++++++++++
->  arch/powerpc/mm/mmap.c |  7 ++++---
->  2 files changed, 48 insertions(+), 3 deletions(-)
->
-> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-> index 97a8bc8..84aae67 100644
-> --- a/arch/powerpc/Kconfig
-> +++ b/arch/powerpc/Kconfig
-> @@ -22,6 +22,48 @@ config MMU
->         bool
->         default y
->
-> +# min bits determined by the following formula:
-> +# VA_BITS - PAGE_SHIFT - CONSTANT
-> +# where,
-> +#      VA_BITS = 46 bits for 64BIT and 4GB - 1 Page = 31 bits for 32BIT
-> +#      CONSTANT = 16 for 64BIT and 8 for 32BIT
-> +config ARCH_MMAP_RND_BITS_MIN
-> +       default 5 if PPC_256K_PAGES && 32BIT  # 31 - 18 - 8 = 5
-> +       default 7 if PPC_64K_PAGES && 32BIT   # 31 - 16 - 8 = 7
-> +       default 9 if PPC_16K_PAGES && 32BIT   # 31 - 14 - 8 = 9
-> +       default 11 if PPC_4K_PAGES && 32BIT   # 31 - 12 - 8 = 11
-> +       default 12 if PPC_256K_PAGES && 64BIT # 46 - 18 - 16 = 12
-> +       default 14 if PPC_64K_PAGES && 64BIT  # 46 - 16 - 16 = 14
-> +       default 16 if PPC_16K_PAGES && 64BIT  # 46 - 14 - 16 = 16
-> +       default 18 if PPC_4K_PAGES && 64BIT   # 46 - 12 - 16 = 18
-> +
-> +# max bits determined by the following formula:
-> +# VA_BITS - PAGE_SHIFT - CONSTANT
-> +# where,
-> +#      VA_BITS = 46 bits for 64BIT, and 4GB - 1 Page = 31 bits for 32BIT
-> +#      CONSTANT = 2, both for 64BIT and 32BIT
-> +config ARCH_MMAP_RND_BITS_MAX
-> +       default 11 if PPC_256K_PAGES && 32BIT # 31 - 18 - 2 = 11
-> +       default 13 if PPC_64K_PAGES && 32BIT  # 31 - 16 - 2 = 13
-> +       default 15 if PPC_16K_PAGES && 32BIT  # 31 - 14 - 2 = 15
-> +       default 17 if PPC_4K_PAGES && 32BIT   # 31 - 12 - 2 = 17
-> +       default 26 if PPC_256K_PAGES && 64BIT # 46 - 18 - 2 = 26
-> +       default 28 if PPC_64K_PAGES && 64BIT  # 46 - 16 - 2 = 28
-> +       default 30 if PPC_16K_PAGES && 64BIT  # 46 - 14 - 2 = 30
-> +       default 32 if PPC_4K_PAGES && 64BIT   # 46 - 12 - 2 = 32
-> +
-> +config ARCH_MMAP_RND_COMPAT_BITS_MIN
-> +       default 5 if PPC_256K_PAGES
-> +       default 7 if PPC_64K_PAGES
-> +       default 9 if PPC_16K_PAGES
-> +       default 11
-> +
-> +config ARCH_MMAP_RND_COMPAT_BITS_MAX
-> +       default 11 if PPC_256K_PAGES
-> +       default 13 if PPC_64K_PAGES
-> +       default 15 if PPC_16K_PAGES
-> +       default 17
-> +
->  config HAVE_SETUP_PER_CPU_AREA
->         def_bool PPC64
->
-> @@ -142,6 +184,8 @@ config PPC
->         select HAVE_IRQ_EXIT_ON_IRQ_STACK
->         select HAVE_KERNEL_GZIP
->         select HAVE_KPROBES
-> +       select HAVE_ARCH_MMAP_RND_BITS
-> +       select HAVE_ARCH_MMAP_RND_COMPAT_BITS if COMPAT
->         select HAVE_KRETPROBES
->         select HAVE_LIVEPATCH                   if HAVE_DYNAMIC_FTRACE_WITH_REGS
->         select HAVE_MEMBLOCK
-> diff --git a/arch/powerpc/mm/mmap.c b/arch/powerpc/mm/mmap.c
-> index a5d9ef5..92a9355 100644
-> --- a/arch/powerpc/mm/mmap.c
-> +++ b/arch/powerpc/mm/mmap.c
-> @@ -61,11 +61,12 @@ unsigned long arch_mmap_rnd(void)
->  {
->         unsigned long rnd;
->
-> -       /* 8MB for 32bit, 1GB for 64bit */
-> +#ifdef CONFIG_COMPAT
->         if (is_32bit_task())
-> -               rnd = get_random_long() % (1<<(23-PAGE_SHIFT));
-> +               rnd = get_random_long() & ((1UL << mmap_rnd_compat_bits) - 1);
->         else
-> -               rnd = get_random_long() % (1UL<<(30-PAGE_SHIFT));
-> +#endif
-> +               rnd = get_random_long() & ((1UL << mmap_rnd_bits) - 1);
->
->         return rnd << PAGE_SHIFT;
->  }
-> --
-> 2.7.4
->
+<snip>
 
-Ping. Any comments on this one?
+>>> Have attached the dmesg log from the system. Let me know if any additional
+>>> information is required to help debug this problem.
+>>
+>> I remember you mentioning this when the issue was brought up for CPUs. I
+>> assume the case is the same here where the issue is only seen with
+>> adapters that were hot-added after boot (ie. hot-remove of adapter
+>> present at boot doesn't trip the warning)?
+> 
+> So who's fixing this?
 
-Regards,
-Bhupesh
+I started looking at it when Bharata submitted a patch trying to fix the
+issue for CPUs, but got side tracked by other things. I suspect that
+this underflow has actually been an issue for quite some time, and we
+are just now becoming aware of it thanks to the recount_t patchset being
+merged. I'll look into it again this week.
+
+-Tyrel
+
+> 
+> cheers
+> 
