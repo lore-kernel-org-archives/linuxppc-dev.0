@@ -1,49 +1,22 @@
-Return-Path: <srs0=tsnp=3s=linux.vnet.ibm.com=khandual@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <elohimes@gmail.com>
+Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
+ [IPv6:2607:f8b0:400e:c00::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w1lKf6SGwzDq7Z
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Apr 2017 19:30:46 +1000 (AEST)
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3w1lKf5sNfz8t7X
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Apr 2017 19:30:46 +1000 (AEST)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3w1lKf2yHzz9sNV
- for <linuxppc-dev@ozlabs.org>; Mon, 10 Apr 2017 19:30:46 +1000 (AEST)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v3A9O7p0066152
- for <linuxppc-dev@ozlabs.org>; Mon, 10 Apr 2017 05:30:23 -0400
-Received: from e23smtp04.au.ibm.com ([202.81.31.146])
- by mx0a-001b2d01.pphosted.com with ESMTP id 29r5p5bgsd-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Mon, 10 Apr 2017 05:30:22 -0400
-Received: from localhost
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Mon, 10 Apr 2017 19:30:15 +1000
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v3A9U53h55050386
- for <linuxppc-dev@ozlabs.org>; Mon, 10 Apr 2017 19:30:13 +1000
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v3A9TbbF009954
- for <linuxppc-dev@ozlabs.org>; Mon, 10 Apr 2017 19:29:37 +1000
-Subject: Re: [PATCH] powerpc/powernv: Fix powernv Kconfig dependencies
-To: Alistair Popple <alistair@popple.id.au>, mpe@ellerman.id.au
-References: <1491801875-25733-1-git-send-email-alistair@popple.id.au>
-Cc: linuxppc-dev@ozlabs.org
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Date: Mon, 10 Apr 2017 14:59:18 +0530
-MIME-Version: 1.0
-In-Reply-To: <1491801875-25733-1-git-send-email-alistair@popple.id.au>
-Content-Type: text/plain; charset=windows-1252
-Message-Id: <f05e6976-d320-917a-ca58-ac36b7c503a6@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w1pfy16cCzDq7Z
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Apr 2017 22:00:58 +1000 (AEST)
+Received: by mail-pf0-x243.google.com with SMTP id a188so664044pfa.2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Apr 2017 05:00:58 -0700 (PDT)
+From: Yongji Xie <elohimes@gmail.com>
+To: bhelgaas@google.com
+Cc: linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ alex.williamson@redhat.com, gwshan@linux.vnet.ibm.com, aik@ozlabs.ru,
+ benh@kernel.crashing.org, mpe@ellerman.id.au, paulus@samba.org,
+ zhong@linux.vnet.ibm.com
+Subject: [PATCH v10 0/4] PCI: Introduce a way to enforce all MMIO BARs not to
+ share PAGE_SIZE
+Date: Mon, 10 Apr 2017 19:58:10 +0800
+Message-Id: <1491825494-19331-1-git-send-email-elohimes@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -53,10 +26,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/10/2017 10:54 AM, Alistair Popple wrote:
-> The patch to introduce address translation services for Nvlink2 uses
-> MMU notifiers. However usage of MMU notifiers requires a Kconfig
-> option which is not selected by default on powerpc so add it to the
-> powernv Kconfig.
+This series introduces a way for PCI resource allocator to force
+MMIO BARs not to share PAGE_SIZE. This would make sense to VFIO
+driver. Because current VFIO implementation disallows to mmap
+sub-page(size < PAGE_SIZE) MMIO BARs which may share the same page
+with other BARs for security reasons. Thus, we have to handle mmio
+access to these BARs in QEMU emulation rather than in guest which
+will cause some performance loss.
 
-We would also need this for HMM enablement on powerpc going forward.
+In our solution, we try to make use of the existing code path of
+resource_alignment kernel parameter and add a macro to set default
+alignment for it. Thus we can define this macro by default on some
+archs which may easily hit the performance issue because of their
+64K page.
+
+In this series, patch 1 fixes a bug related to bridge window
+size/alignment caculating; patch 2,3 add support for setting default
+alignment of all MMIO BAR.
+
+Changelog v10:
+- Introduce an arch-specific function to set default alignment
+  for all PCI devices instead of using macro
+- Fix some minor comment issues
+- Code style improvements
+
+Changelog v9:
+- Add a patch to fix for caculating bridge window's size and alignment
+- Remove an unrelated patch
+- Rework the patch that fix bug that reassign resources's alignment by
+  changing its size
+
+Changelog v8:
+- Rebased against v4.10-rc4
+- Rework the patch 2
+- Change the commit log of patch 1
+
+Changelog v7:
+- Rebased against v4.9-rc2
+- Drop two merged patches
+- Rework the patch which fix a bug that resources's size is changed when
+  using resource_alignment
+- Add a patch that fix a bug for IOV BARs when using resource_alignment
+
+Changelog v6:
+- Remove the option "noresize@" of resource_alignment
+
+Changelog v5:
+- Rebased against v4.8-rc6
+- Drop the patch that forbidding disable memory decoding in
+  pci_reassigndev_resource_alignment()
+
+Changelog v4:
+- Rebased against v4.8-rc1
+- Drop one irrelevant patch
+- Drop the patch that adding wildcard to resource_alignment to enforce
+  the alignment of all MMIO BARs to be at least PAGE_SIZE
+- Change the format of option "noresize" of resource_alignment
+- Code style improvements
+
+Changelog v3:
+- Ignore enforced alignment to fixed BARs
+- Fix issue that disabling memory decoding when reassigning the alignment
+- Only enable default alignment on PowerNV platform
+
+Changelog v2:
+- Ignore enforced alignment to VF BARs on pci_reassigndev_resource_alignment()
+
+Yongji Xie (4):
+  PCI: A fix for caculating bridge window's size and alignment
+  PCI: Add pcibios_default_alignment() for arch-specific alignment control
+  powerpc/powernv: Override pcibios_default_alignment() to force PCI devices to be page aligned
+  PCI: Don't extend device's size when using default alignment for all devices
+
+ arch/powerpc/include/asm/machdep.h        |    2 ++
+ arch/powerpc/kernel/pci-common.c          |    8 ++++++
+ arch/powerpc/platforms/powernv/pci-ioda.c |    7 +++++
+ drivers/pci/pci.c                         |   44 +++++++++++++++++++++--------
+ drivers/pci/setup-bus.c                   |    4 +--
+ 5 files changed, 51 insertions(+), 14 deletions(-)
+
+-- 
+1.7.9.5
