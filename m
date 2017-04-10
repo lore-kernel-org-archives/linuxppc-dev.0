@@ -1,32 +1,38 @@
-Return-Path: <schindele@nentec.de>
-Received: from dmz-mail.nentec.de (gate.nentec.de [213.218.23.37])
- by lists.ozlabs.org (Postfix) with SMTP id 3w1tk30sPpzDq7Z
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Apr 2017 01:03:53 +1000 (AEST)
-Received: from localhost (localhost [127.0.0.1])
- by zimbra.nentec.de (Postfix) with ESMTP id BEE3317E0DC2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Apr 2017 16:44:05 +0200 (CEST)
-Received: from zimbra.nentec.de ([127.0.0.1])
- by localhost (zimbra.nentec.de [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id LxcvB7L_7o0k for <linuxppc-dev@lists.ozlabs.org>;
- Mon, 10 Apr 2017 16:44:05 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
- by zimbra.nentec.de (Postfix) with ESMTP id A47AC17E0EF8
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Apr 2017 16:44:05 +0200 (CEST)
-Received: from zimbra.nentec.de ([127.0.0.1])
- by localhost (zimbra.nentec.de [127.0.0.1]) (amavisd-new, port 10026)
- with ESMTP id n27iB4d4MppH for <linuxppc-dev@lists.ozlabs.org>;
- Mon, 10 Apr 2017 16:44:05 +0200 (CEST)
-Received: from sherry.localnet (sherry.nentec.de [153.92.64.8])
- by zimbra.nentec.de (Postfix) with ESMTPS id 8EE2017E0DC2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Apr 2017 16:44:05 +0200 (CEST)
-From: Juergen Schindele <schindele@nentec.de>
-To: linuxppc-dev@lists.ozlabs.org
-Reply-To: schindele@nentec.de
-Subject: Freescale mpc8315 IRQ0 setup
-Date: Mon, 10 Apr 2017 16:53:18 +0200
-Message-ID: <2666241.ms6yMRjznt@sherry>
+Return-Path: <ksiva@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w1w2m1jgWzDq5b
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Apr 2017 02:03:28 +1000 (AEST)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v3AFwdCm112536
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Apr 2017 12:03:25 -0400
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 29rbfp62tj-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Apr 2017 12:03:25 -0400
+Received: from localhost
+ by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ksiva@linux.vnet.ibm.com>;
+ Mon, 10 Apr 2017 10:03:24 -0600
+Subject: Re: [PATCH] ibmveth: Support to enable LSO/CSO for Trunk VEA.
+To: David Miller <davem@davemloft.net>
+References: <1491559079-10855-1-git-send-email-ksiva@linux.vnet.ibm.com>
+ <20170408.114515.1339820744697810446.davem@davemloft.net>
+Cc: netdev@vger.kernel.org, tlfalcon@linux.vnet.ibm.com,
+ benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ brking@linux.vnet.ibm.com, seroyer@linux.vnet.ibm.com
+From: Sivakumar Krishnasamy <ksiva@linux.vnet.ibm.com>
+Date: Mon, 10 Apr 2017 21:33:13 +0530
 MIME-Version: 1.0
-Content-Type: multipart/alternative; boundary="nextPart5740079.IIbRtX7q1Z"
+In-Reply-To: <20170408.114515.1339820744697810446.davem@davemloft.net>
+Content-Type: multipart/alternative;
+ boundary="------------95733C3FB7B4AE36718F6D9D"
+Message-Id: <ffdcd6e6-9eab-99e3-543e-9f808c50e268@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,224 +43,192 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 This is a multi-part message in MIME format.
+--------------95733C3FB7B4AE36718F6D9D
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
 
---nextPart5740079.IIbRtX7q1Z
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="iso-8859-1"
+Let me give some background before I answer your queries.
 
-Dear mailing list,
-i found out on our platform with freescale mpc8315 SOC that in
-linux kernel code the setup of IRQ0 which we use is not correct.
-One should be able to use falling EDGE interrupt capabilities like on
-IRQ1-IRQ7. These setups are fixed in "arch/powerpc/sysdev/ipic.c"
-The internal interrupt number of IRQ0 is not like IRQ1-IRQ7 in one bloc=
-k
-but on number 48. To verify details please consult MPC8315ERM.pdf
-developpers manual.
+In IBM PowerVM environment, ibmveth driver supports largesend and 
+checksum offload today, but only for virtual ethernet adapters (VEA) 
+which are *not *configured in "Trunk mode".  In trunk mode, one cannot 
+enable checksum and largesend offload capabilities. Without these 
+offloads enabled, the performance numbers are not good. This patch is to 
+enable these offloads for "Trunk" VEAs.
 
-To correct these "EDGE" capabilities of IRQ0 i suggest the following=20=
+The following shows a typical configuration for network packet flow, 
+when VMs in the PowerVM server have their network virtualized and 
+communicate to external world.
 
-patch:
-please consider integrating it to your patches.
+         VM (ibmveth) <-> PowerVM Hypervisor <-> PowerVM I/O Server VM ( 
+ibmveth in "Trunk mode" <-> OVS <-> Physical NIC ) <->  External Network
 
---- arch/powerpc/sysdev/ipic.c  (Revision correct)
-+++ arch/powerpc/sysdev/ipic.c  (Arbeitskopie)
-@@ -316,6 +316,7 @@
-                .prio_mask =3D 7,
-        },
-        [48] =3D {
-+               .ack    =3D IPIC_SEPNR,
-                .mask   =3D IPIC_SEMSR,
-                .prio   =3D IPIC_SMPRR_A,
-                .force  =3D IPIC_SEFCR,
+As you can see the packets originating in VM will travel through local 
+ibmveth driver and then to PowerVM Hypervisor, then it gets delivered to 
+ibmveth driver configured in "Trunk" mode in I/O Server, which is then 
+bridged by OVS to external network via Physical NIC.  To have largesend 
+and checksum offload enabled end to end, from VM up to Physical NIC, 
+ibmveth needs to support these offload capabilities when configured in 
+"Trunk" mode too.
 
-Thank you for your attention
---=20
-i. A.
-J=FCrgen Schindele
-Softwareentwicklung
+Before this patch, when a VM communicates with external network (in a 
+configuration similar to above), throughput numbers were not so good 
+(~1.5 Gbps) and with the patch, I see ~9.4 Gbps throughput for a 10G NIC 
+(iperf used for measurements).
 
-PSI Nentec GmbH
-Greschbachstra=DFe 12
-76229 Karlsruhe
-Deutschland
-Telefon: +49 721 94249-51
-Telefax: +49 721 94249-10
-schindele@nentec.de
-www.nentec.de
-
-Gesch=E4ftsf=FChrung: Klaus Becker, Wolfgang Fischer
-Sitz der Gesellschaft: Karlsruhe
-Handelsregister: Amtsgericht Mannheim HRB 107658
-
-Diese E-Mail enth=E4lt vertrauliche oder rechtlich gesch=FCtzte=20
-Informationen. Wenn Sie nicht der vorgesehene Empf=E4nger sind,=20
-informieren Sie bitte sofort den Absender und l=F6schen Sie diese E-Mai=
-l.=20
-Das unbefugte Kopieren dieser E-Mail oder die unbefugte Weitergabe=20
-der enthaltenen Informationen ist nicht gestattet.
-
-The information contained in this message is confidential or protected=20=
-
-by law. If you are not the intended recipient, please contact the sende=
-r=20
-and delete this message. Any unauthorised copying of this message or=20=
-
-unauthorised distribution of the information contained herein is=20
-prohibited.=20
-
---nextPart5740079.IIbRtX7q1Z
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/html; charset="iso-8859-1"
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN" "http://www.w3.org/TR/=
-REC-html40/strict.dtd">
-<html><head><meta name=3D"qrichtext" content=3D"1" /><style type=3D"tex=
-t/css">
-p, li { white-space: pre-wrap; }
-</style></head><body style=3D" font-family:'Sans Serif'; font-size:9pt;=
- font-weight:400; font-style:normal;">
-<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin=
--right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">Dea=
-r mailing list,</p>
-<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin=
--right:0px; -qt-block-indent:0; text-indent:0px;">i found out on our pl=
-atform with freescale mpc8315 SOC that in</p>
-<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin=
--right:0px; -qt-block-indent:0; text-indent:0px;">linux kernel code the=
- setup of IRQ0 which we use is not correct.</p>
-<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin=
--right:0px; -qt-block-indent:0; text-indent:0px;">One should be able to=
- use falling EDGE interrupt capabilities like on</p>
-<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin=
--right:0px; -qt-block-indent:0; text-indent:0px;">IRQ1-IRQ7. These setu=
-ps are fixed in &quot;arch/powerpc/sysdev/ipic.c&quot;</p>
-<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin=
--right:0px; -qt-block-indent:0; text-indent:0px;">The internal interrup=
-t number of IRQ0 is not like IRQ1-IRQ7 in one block</p>
-<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin=
--right:0px; -qt-block-indent:0; text-indent:0px;">but on number 48. To =
-verify details please consult MPC8315ERM.pdf</p>
-<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin=
--right:0px; -qt-block-indent:0; text-indent:0px;">developpers manual.</=
-p>
-<p style=3D"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px=
-; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0p=
-x; ">&nbsp;</p>
-<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin=
--right:0px; -qt-block-indent:0; text-indent:0px;">To correct these &quo=
-t;EDGE&quot; capabilities of IRQ0 i suggest the following patch:</p>
-<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin=
--right:0px; -qt-block-indent:0; text-indent:0px;">please consider integ=
-rating it to your patches.</p>
-<p style=3D"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px=
-; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0p=
-x; ">&nbsp;</p>
-<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin=
--right:0px; -qt-block-indent:0; text-indent:0px;">--- arch/powerpc/sysd=
-ev/ipic.c  (Revision correct)</p>
-<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin=
--right:0px; -qt-block-indent:0; text-indent:0px;">+++ arch/powerpc/sysd=
-ev/ipic.c  (Arbeitskopie)</p>
-<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin=
--right:0px; -qt-block-indent:0; text-indent:0px;">@@ -316,6 +316,7 @@</=
-p>
-<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin=
--right:0px; -qt-block-indent:0; text-indent:0px;">                .prio=
-_mask =3D 7,</p>
-<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin=
--right:0px; -qt-block-indent:0; text-indent:0px;">        },</p>
-<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin=
--right:0px; -qt-block-indent:0; text-indent:0px;">        [48] =3D {</p=
+On 4/9/2017 12:15 AM, David Miller wrote:
+> From: Sivakumar Krishnasamy <ksiva@linux.vnet.ibm.com>
+> Date: Fri,  7 Apr 2017 05:57:59 -0400
 >
-<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin=
--right:0px; -qt-block-indent:0; text-indent:0px;">+               .ack =
-   =3D IPIC_SEPNR,</p>
-<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin=
--right:0px; -qt-block-indent:0; text-indent:0px;">                .mask=
-   =3D IPIC_SEMSR,</p>
-<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin=
--right:0px; -qt-block-indent:0; text-indent:0px;">                .prio=
-   =3D IPIC_SMPRR_A,</p>
-<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin=
--right:0px; -qt-block-indent:0; text-indent:0px;">                .forc=
-e  =3D IPIC_SEFCR,</p>
-<p style=3D"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px=
-; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0p=
-x; ">&nbsp;</p>
-<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin=
--right:0px; -qt-block-indent:0; text-indent:0px;"><span style=3D" font-=
-size:12px; color:#181615; background-color:#ffffff;">Thank you for your=
- attention</span></p>
-<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin=
--right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">-- =
-</p>
-<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin=
--right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">i. =
-A.</p>
-<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin=
--right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">J=FC=
-rgen Schindele</p>
-<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin=
--right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">Sof=
-twareentwicklung</p>
-<p style=3D"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px=
-; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0p=
-x; ">&nbsp;</p>
-<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin=
--right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">PSI=
- Nentec GmbH</p>
-<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin=
--right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">Gre=
-schbachstra=DFe 12</p>
-<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin=
--right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">762=
-29 Karlsruhe</p>
-<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin=
--right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">Deu=
-tschland</p>
-<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin=
--right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">Tel=
-efon: +49 721 94249-51</p>
-<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin=
--right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">Tel=
-efax: +49 721 94249-10</p>
-<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin=
--right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">sch=
-indele@nentec.de</p>
-<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin=
--right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">www=
-.nentec.de</p>
-<p style=3D"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px=
-; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0p=
-x; ">&nbsp;</p>
-<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin=
--right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">Ges=
-ch=E4ftsf=FChrung: Klaus Becker, Wolfgang Fischer</p>
-<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin=
--right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">Sit=
-z der Gesellschaft: Karlsruhe</p>
-<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin=
--right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">Han=
-delsregister: Amtsgericht Mannheim HRB 107658</p>
-<p style=3D"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px=
-; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0p=
-x; ">&nbsp;</p>
-<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin=
--right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">Die=
-se E-Mail enth=E4lt vertrauliche oder rechtlich gesch=FCtzte Informatio=
-nen. Wenn Sie nicht der vorgesehene Empf=E4nger sind, informieren Sie b=
-itte sofort den Absender und l=F6schen Sie diese E-Mail. Das unbefugte =
-Kopieren dieser E-Mail oder die unbefugte Weitergabe der enthaltenen In=
-formationen ist nicht gestattet.</p>
-<p style=3D"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px=
-; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0p=
-x; ">&nbsp;</p>
-<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin=
--right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">The=
- information contained in this message is confidential or protected by =
-law. If you are not the intended recipient, please contact the sender a=
-nd delete this message. Any unauthorised copying of this message or una=
-uthorised distribution of the information contained herein is prohibite=
-d. </p></body></html>
---nextPart5740079.IIbRtX7q1Z--
+>> Enable largesend and checksum offload for ibmveth configured in trunk mode.
+>> Added support to SKB frag_list in TX path by skb_linearize'ing such SKBs.
+>>
+>> Signed-off-by: Sivakumar Krishnasamy <ksiva@linux.vnet.ibm.com>
+> Why is linearization necessary?
+>
+> It would seem that the gains you get from GRO are nullified by
+> linearizing the SKB and thus copying all the data around and
+> allocating buffers.
+When Physical NIC has GRO enabled and when OVS bridges these packets, 
+OVS vport send code will end up calling /dev_queue_xmit/, which in turn 
+calls /validate_xmit_skb/.
+
+/validate_xmit_skb/ has the below code snippet,
+
+    /if (netif_needs_gso(skb, features)) {//
+    //    struct sk_buff *segs;//
+    //
+    //    segs = skb_gso_segment(skb, features); /<=== Segments the GSO
+    packet into MTU sized segments.
+
+When the OVS outbound vport is ibmveth, /netif_needs_gso/ returns 
+positively if the SKB has a /frag_list/ and if the driver doesn't 
+support the same (NETIF_F_FRAGLIST feature).  So all the packets 
+received by ibmveth are of MSS size (or lesser) due to the above code.
+
+On a 10G physical NIC, the maximum throughput achieved was 2.2 Gbps due 
+to the above segmentation in /validate_xmit_skb/. With the patch to 
+linearize the SKB, the throughput increased to 9 Gbps (and ibmveth 
+received packets without being segmented). This is ~4X improvement even 
+though we end up allocating buffers and copying data.
+>
+> Finally, all of that new checksumming stuff looks extremely
+> suspicious.  You have to explain why that is happening and why it
+> isn't because this driver is doing something incorrectly.
+>
+> Thanks.
+>
+We are now enabling support for OVS and improving bridging performance 
+in IBM's PowerVM environment, which brings in these new offload 
+requirements for ibmveth driver configured in Trunk mode.
+
+Please let me know if you need more details.
+
+--------------95733C3FB7B4AE36718F6D9D
+Content-Type: text/html; charset=windows-1252
+Content-Transfer-Encoding: 8bit
+
+<html>
+  <head>
+    <meta content="text/html; charset=windows-1252"
+      http-equiv="Content-Type">
+  </head>
+  <body bgcolor="#FFFFFF" text="#000000">
+    <p>Let me give some background before I answer your queries. <br>
+      <br>
+      In IBM PowerVM environment, ibmveth driver supports largesend and
+      checksum offload today, but only for virtual ethernet adapters
+      (VEA) which are <b>not </b>configured in "Trunk mode".  In trunk
+      mode, one cannot enable checksum and largesend offload
+      capabilities. Without these offloads enabled, the performance
+      numbers are not good. This patch is to enable these offloads for
+      "Trunk" VEAs. <br>
+      <br>
+      The following shows a typical configuration for network packet
+      flow, when VMs in the PowerVM server have their network
+      virtualized and communicate to external world. <br>
+    </p>
+    <p>        VM (ibmveth) &lt;-&gt; PowerVM Hypervisor &lt;-&gt; 
+      PowerVM I/O Server VM ( ibmveth in "Trunk mode" &lt;-&gt; OVS
+      &lt;-&gt; Physical NIC ) &lt;-&gt;  External Network <br>
+      <br>
+      As you can see the packets originating in VM will travel through
+      local ibmveth driver and then to PowerVM Hypervisor, then it gets
+      delivered to ibmveth driver configured in "Trunk" mode in I/O
+      Server, which is then bridged by OVS to external network via
+      Physical NIC.  To have largesend and checksum offload enabled end
+      to end, from VM up to Physical NIC, ibmveth needs to support these
+      offload capabilities when configured in "Trunk" mode too. <br>
+      <br>
+      Before this patch, when a VM communicates with external network
+      (in a configuration similar to above), throughput numbers were not
+      so good (~1.5 Gbps) and with the patch, I see ~9.4 Gbps throughput
+      for a 10G NIC (iperf used for measurements).<br>
+    </p>
+    On 4/9/2017 12:15 AM, David Miller wrote:<br>
+    <blockquote
+      cite="mid:20170408.114515.1339820744697810446.davem@davemloft.net"
+      type="cite">
+      <pre wrap="">From: Sivakumar Krishnasamy <a class="moz-txt-link-rfc2396E" href="mailto:ksiva@linux.vnet.ibm.com">&lt;ksiva@linux.vnet.ibm.com&gt;</a>
+Date: Fri,  7 Apr 2017 05:57:59 -0400
+
+</pre>
+      <blockquote type="cite">
+        <pre wrap="">Enable largesend and checksum offload for ibmveth configured in trunk mode.
+Added support to SKB frag_list in TX path by skb_linearize'ing such SKBs.
+
+Signed-off-by: Sivakumar Krishnasamy <a class="moz-txt-link-rfc2396E" href="mailto:ksiva@linux.vnet.ibm.com">&lt;ksiva@linux.vnet.ibm.com&gt;</a>
+</pre>
+      </blockquote>
+      <pre wrap="">
+Why is linearization necessary?
+
+It would seem that the gains you get from GRO are nullified by
+linearizing the SKB and thus copying all the data around and
+allocating buffers.</pre>
+    </blockquote>
+    When Physical NIC has GRO enabled and when OVS bridges these
+    packets, OVS vport send code will end up calling <i>dev_queue_xmit</i>,
+    which in turn calls <i>validate_xmit_skb</i>.<br>
+    <br>
+    <i>validate_xmit_skb</i> has the below code snippet,<br>
+    <blockquote><i>if (netif_needs_gso(skb, features)) {</i><i><br>
+      </i><i>    struct sk_buff *segs;</i><i><br>
+      </i><i><br>
+      </i><i>    segs = skb_gso_segment(skb, features);     </i>&lt;===
+      Segments the GSO packet into MTU sized segments.<br>
+    </blockquote>
+    When the OVS outbound vport is ibmveth, <i>netif_needs_gso</i>
+    returns positively if the SKB has a <i>frag_list</i> and if the
+    driver doesn't support the same (NETIF_F_FRAGLIST feature).  So all
+    the packets received by ibmveth are of MSS size (or lesser) due to
+    the above code. <br>
+    <br>
+    On a 10G physical NIC, the maximum throughput achieved was 2.2 Gbps
+    due to the above segmentation in <i>validate_xmit_skb</i>. With the
+    patch to linearize the SKB, the throughput increased to 9 Gbps (and
+    ibmveth received packets without being segmented). This is ~4X
+    improvement even though we end up allocating buffers and copying
+    data. <br>
+    <blockquote
+      cite="mid:20170408.114515.1339820744697810446.davem@davemloft.net"
+      type="cite">
+      <pre wrap="">
+
+Finally, all of that new checksumming stuff looks extremely
+suspicious.  You have to explain why that is happening and why it
+isn't because this driver is doing something incorrectly.
+
+Thanks.
+
+</pre>
+    </blockquote>
+    We are now enabling support for OVS and improving bridging
+    performance in IBM's PowerVM environment, which brings in these new
+    offload requirements for ibmveth driver configured in Trunk mode. <br>
+    <br>
+    Please let me know if you need more details.
+  </body>
+</html>
+
+--------------95733C3FB7B4AE36718F6D9D--
