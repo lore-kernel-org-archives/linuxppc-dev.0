@@ -1,19 +1,21 @@
-Return-Path: <rashmica.g@gmail.com>
-Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
- [IPv6:2607:f8b0:400e:c05::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <neilb@suse.de>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w1YQW6YNXzDq7Z
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Apr 2017 12:04:19 +1000 (AEST)
-Received: by mail-pg0-x242.google.com with SMTP id 79so23819584pgf.0
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 09 Apr 2017 19:04:19 -0700 (PDT)
-From: Rashmica Gupta <rashmica.g@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org,
-	mpe@ellerman.id.au
-Cc: Rashmica Gupta <rashmica.g@gmail.com>
-Subject: [PATCH] powerpc/mm: Dump hash table
-Date: Mon, 10 Apr 2017 12:04:04 +1000
-Message-Id: <20170410020404.11375-1-rashmica.g@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w1YgH2vLGzDq7h
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Apr 2017 12:15:23 +1000 (AEST)
+From: NeilBrown <neilb@suse.com>
+To: "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>,
+ "Martin K. Petersen" <martin.petersen@oracle.com>
+Date: Mon, 10 Apr 2017 12:15:13 +1000
+Cc: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+Cc: linux-scsi@vger.kernel.org , linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Subject: [PATCH] scsi: ibmvfc: don't check for failure from mempool_alloc()
+Message-ID: <878tn9xb2m.fsf@notabene.neil.brown.name>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="=-=-=";
+ micalg=pgp-sha256; protocol="application/pgp-signature"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,31 +25,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Current behaviour assumes that memory in RAM is contiguous and
-iterates from the start of RAM to (start + size of memory). When the
-memory isn't physically contiguous, this approach doesn't work.
+--=-=-=
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-If memory exists at 0-5 GB and 6-10 GB then the current approach will
-check if entries exist in the hash table from 0GB to 9GB. This patch
-changes the behaviour to iterate up to the end of RAM.
 
-Signed-off-by: Rashmica Gupta <rashmica.g@gmail.com>
----
- arch/powerpc/mm/dump_hashpagetable.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+mempool_alloc() cannot fail when passed GFP_NOIO or any
+other gfp setting that is permitted to sleep.
+So remove this pointless code.
 
-diff --git a/arch/powerpc/mm/dump_hashpagetable.c b/arch/powerpc/mm/dump_hashpagetable.c
-index d979709..ee07398 100644
---- a/arch/powerpc/mm/dump_hashpagetable.c
-+++ b/arch/powerpc/mm/dump_hashpagetable.c
-@@ -468,7 +468,7 @@ static void walk_linearmapping(struct pg_state *st)
- 	unsigned long psize = 1 << mmu_psize_defs[mmu_linear_psize].shift;
- 
- 	for (addr = PAGE_OFFSET; addr < PAGE_OFFSET +
--			memblock_phys_mem_size(); addr += psize)
-+			memblock_end_of_DRAM(); addr += psize)
- 		hpte_find(st, addr, mmu_linear_psize);
- }
- 
--- 
-2.9.3
+Signed-off-by: NeilBrown <neilb@suse.com>
+=2D--
+ drivers/scsi/ibmvscsi/ibmvfc.c | 6 ------
+ 1 file changed, 6 deletions(-)
+
+diff --git a/drivers/scsi/ibmvscsi/ibmvfc.c b/drivers/scsi/ibmvscsi/ibmvfc.c
+index 2c92dabb55f6..26cd3c28186a 100644
+=2D-- a/drivers/scsi/ibmvscsi/ibmvfc.c
++++ b/drivers/scsi/ibmvscsi/ibmvfc.c
+@@ -3910,12 +3910,6 @@ static int ibmvfc_alloc_target(struct ibmvfc_host *v=
+host, u64 scsi_id)
+ 	spin_unlock_irqrestore(vhost->host->host_lock, flags);
+=20
+ 	tgt =3D mempool_alloc(vhost->tgt_pool, GFP_NOIO);
+=2D	if (!tgt) {
+=2D		dev_err(vhost->dev, "Target allocation failure for scsi id %08llx\n",
+=2D			scsi_id);
+=2D		return -ENOMEM;
+=2D	}
+=2D
+ 	memset(tgt, 0, sizeof(*tgt));
+ 	tgt->scsi_id =3D scsi_id;
+ 	tgt->new_scsi_id =3D scsi_id;
+=2D-=20
+2.12.2
+
+
+--=-=-=
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCAAdFiEEG8Yp69OQ2HB7X0l6Oeye3VZigbkFAljq6rEACgkQOeye3VZi
+gbngbQ//XtuQiu7ppun4sOfhtZVgLW+G1k4u3zn7N4O+u4gvRO7Cb5Ki9jq6Nx58
+aiHnOOJbBdBupSowZe/kfHeNGQCgk3/BdvVq48i5A33OmVJhcKRHPJpinI+Y11Ei
+WguYoeqjokO9aaNEVQ8X3SD0mz/L5su3oF3dxIPKjW1KsWOD1iAjjrINw03YrqOP
+OQCOsvENbwThBAxqdIN6LIexcHycdiR7g6bxx35ywzefNy6JGWz2+fJs1RXTYRWk
+yTq75+622ek0qACG3uWWT3WwGzqMrcTWK8UhVVnge4eQGBJuwqzXJuNBAZnIjokQ
+bMyPwuoSexEx0kalL7IUxpvmzLzt1X4NITTu349vd33ZVA7WX3EJtW5I82W3Auyj
+ORQU328e4rAJooccDKCue2ZxNs/FPBw5OjCRyGGd43cf2oBKFyLZGMRgBiLypbgf
+TSyQTlee2W55KA0/4C24PAeUuDqDgB1EN+QH8mk5+pRgj1cOI+I3TJGDil3ptwpW
+T5FY5xUqbD/Z5kZIT8IHyVyZOeA3sOnGf1b+LOGODzw1W0ld/2PV9RS8jYbAsJgN
+Y12amk5eleKT7/Pu5Og41gq3FByL+9ml5jJvtVGrJ2EVPihB6y4bVyfHakYfTeKK
+pBHGA3S2ywZA+jO3i8MMPoIJfbIhutXNZkJbA9Wf8bICNsaWQ1U=
+=Gvh/
+-----END PGP SIGNATURE-----
+--=-=-=--
