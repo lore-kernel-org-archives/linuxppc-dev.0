@@ -1,33 +1,16 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
- [IPv6:2607:f8b0:400e:c05::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <ruscur@russell.cc>
+Received: from new1-smtp.messagingengine.com (new1-smtp.messagingengine.com
+ [66.111.4.221])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w1fJ16r2CzDq8B
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Apr 2017 15:44:01 +1000 (AEST)
-Received: by mail-pg0-x241.google.com with SMTP id 79so24406596pgf.0
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 09 Apr 2017 22:44:01 -0700 (PDT)
-Date: Mon, 10 Apr 2017 15:43:48 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Rob Herring <robh+dt@kernel.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Michael Ellerman
- <mpe@ellerman.id.au>, "devicetree@vger.kernel.org"
- <devicetree@vger.kernel.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Frank Rowand <frowand.list@gmail.com>
-Subject: Re: [PATCH 2/3] of/fdt: introduce of_scan_flat_dt_subnodes and
- of_get_flat_dt_phandle
-Message-ID: <20170410154348.051e7a34@roar.ozlabs.ibm.com>
-In-Reply-To: <CAL_JsqKuomE41grhAvjFxkFbS4A3-M_TK8gP8FU=HdDpQ3TTkg@mail.gmail.com>
-References: <20170405123706.6081-1-npiggin@gmail.com>
- <20170405123706.6081-3-npiggin@gmail.com>
- <CAL_JsqK4zbACwWVb-rsrvBb4hjBCexrqKRKrzSiZrZH5w=bKqQ@mail.gmail.com>
- <20170406003251.533e2845@roar.ozlabs.ibm.com>
- <CAL_JsqLEvjb8S-+-JEa4ALHeCWHiR1A_4ur9kd3pBRJaFYWVKw@mail.gmail.com>
- <1491425881.4166.90.camel@kernel.crashing.org>
- <20170406103829.67d462e1@roar.ozlabs.ibm.com>
- <CAL_JsqKuomE41grhAvjFxkFbS4A3-M_TK8gP8FU=HdDpQ3TTkg@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w1fgw5P7rzDq7Z
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Apr 2017 16:01:16 +1000 (AEST)
+From: Russell Currey <ruscur@russell.cc>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Russell Currey <ruscur@russell.cc>
+Subject: [PATCH] powerpc/powernv/pci: Reduce spam when dumping PEST
+Date: Mon, 10 Apr 2017 15:53:28 +1000
+Message-Id: <20170410055328.11727-1-ruscur@russell.cc>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,111 +20,122 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 6 Apr 2017 09:09:41 -0500
-Rob Herring <robh+dt@kernel.org> wrote:
+Dumping the PE State Tables (PEST) can be highly verbose if a number of PEs
+are affected, especially in the case where the whole PHB is frozen and 255
+lines get printed.  Check for duplicates when dumping the PEST to reduce
+useless output.
 
-> On Wed, Apr 5, 2017 at 7:38 PM, Nicholas Piggin <npiggin@gmail.com> wrote:
-> > Given that it's quite a small addition to of/fdt code, hopefully
-> > that gives you a reasonable justification to accept it.
-> >
-> > If you prefer not to, that's okay, but I think we would have to carry
-> > it in arch/powerpc at least for a time, because of the schedule we're
-> > working to for POWER9 enablement. As a longer term item I agree with you
-> > and Ben, it would be worth considering unflattening earlier.  
-> 
-> As I mentioned, keeping it in arch/powerpc I like even less. So this is fine.
+For example:
 
-Here is the patch with the change you suggested. Can I add your
-ack and send it via the powerpc tree with the change that uses
-these interfaces?
+    PE[f8] A/B: 9700002600000000 80000080d00000f8
+    PE[f9] A/B: 8000000000000000 0000000000000000
+    PE[..fe] A/B: as above
+    PE[ff] A/B: 8440002b00000000 0000000000000000
 
-Thanks,
-Nick
+instead of:
 
+    PE[f8] A/B: 9700002600000000 80000080d00000f8
+    PE[f9] A/B: 8000000000000000 0000000000000000
+    PE[fa] A/B: 8000000000000000 0000000000000000
+    PE[fb] A/B: 8000000000000000 0000000000000000
+    PE[fc] A/B: 8000000000000000 0000000000000000
+    PE[fd] A/B: 8000000000000000 0000000000000000
+    PE[fe] A/B: 8000000000000000 0000000000000000
+    PE[ff] A/B: 8440002b00000000 0000000000000000
+
+and you can imagine how much worse it can get for 255 PEs.
+
+Signed-off-by: Russell Currey <ruscur@russell.cc>
 ---
- drivers/of/fdt.c       | 38 ++++++++++++++++++++++++++++++++++++++
- include/linux/of_fdt.h |  6 ++++++
- 2 files changed, 44 insertions(+)
+ arch/powerpc/platforms/powernv/pci.c | 52 ++++++++++++++++++++++--------------
+ 1 file changed, 32 insertions(+), 20 deletions(-)
 
-diff --git a/drivers/of/fdt.c b/drivers/of/fdt.c
-index e5ce4b59e162..961ca97072a9 100644
---- a/drivers/of/fdt.c
-+++ b/drivers/of/fdt.c
-@@ -754,6 +754,36 @@ int __init of_scan_flat_dt(int (*it)(unsigned long node,
+diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
+index eb835e977e33..303c9d84d3d4 100644
+--- a/arch/powerpc/platforms/powernv/pci.c
++++ b/arch/powerpc/platforms/powernv/pci.c
+@@ -227,11 +227,40 @@ void pnv_teardown_msi_irqs(struct pci_dev *pdev)
  }
+ #endif /* CONFIG_PCI_MSI */
  
- /**
-+ * of_scan_flat_dt_subnodes - scan sub-nodes of a node call callback on each.
-+ * @it: callback function
-+ * @data: context data pointer
-+ *
-+ * This function is used to scan sub-nodes of a node.
-+ */
-+int __init of_scan_flat_dt_subnodes(unsigned long parent,
-+				    int (*it)(unsigned long node,
-+					      const char *uname,
-+					      void *data),
-+				    void *data)
++/* Nicely print the contents of the PE State Tables (PEST). */
++static void pnv_pci_dump_pest(__be64 pestA[], __be64 pestB[], int pest_size)
 +{
-+	const void *blob = initial_boot_params;
-+	int node;
++	int i;
++	__be64 prevA, prevB;
++	bool dup = false;
++	prevA = prevB = ~0;
 +
-+	fdt_for_each_subnode(node, blob, parent) {
-+		const char *pathp;
-+		int rc;
++	for (i = 0; i < pest_size; i++) {
++		__be64 peA = be64_to_cpu(pestA[i]);
++		__be64 peB = be64_to_cpu(pestB[i]);
 +
-+		pathp = fdt_get_name(blob, node, NULL);
-+		if (*pathp == '/')
-+			pathp = kbasename(pathp);
-+		rc = it(node, pathp, data);
-+		if (rc)
-+			return rc;
++		if (peA != prevA || peB != prevB) {
++			if (dup) {
++				pr_info("PE[..%x] A/B: as above\n", i-1);
++				dup = false;
++			}
++			prevA = peA;
++			prevB = peB;
++			if (peA || peB)
++				pr_info("PE[%2x] A/B: %016llx %016llx\n",
++					i, peA, peB);
++		} else {
++			/* Don't need to track zeroes */
++			if (!dup && (peA || peB))
++				dup = true;
++		}
 +	}
-+	return 0;
 +}
 +
-+/**
-  * of_get_flat_dt_subnode_by_name - get the subnode by given name
-  *
-  * @node: the parent node
-@@ -812,6 +842,14 @@ int __init of_flat_dt_match(unsigned long node, const char *const *compat)
- 	return of_fdt_match(initial_boot_params, node, compat);
+ static void pnv_pci_dump_p7ioc_diag_data(struct pci_controller *hose,
+ 					 struct OpalIoPhbErrorCommon *common)
+ {
+ 	struct OpalIoP7IOCPhbErrorData *data;
+-	int i;
+ 
+ 	data = (struct OpalIoP7IOCPhbErrorData *)common;
+ 	pr_info("P7IOC PHB#%x Diag-data (Version: %d)\n",
+@@ -308,22 +337,13 @@ static void pnv_pci_dump_p7ioc_diag_data(struct pci_controller *hose,
+ 			be64_to_cpu(data->dma1ErrorLog0),
+ 			be64_to_cpu(data->dma1ErrorLog1));
+ 
+-	for (i = 0; i < OPAL_P7IOC_NUM_PEST_REGS; i++) {
+-		if ((be64_to_cpu(data->pestA[i]) >> 63) == 0 &&
+-		    (be64_to_cpu(data->pestB[i]) >> 63) == 0)
+-			continue;
+-
+-		pr_info("PE[%3d] A/B: %016llx %016llx\n",
+-			i, be64_to_cpu(data->pestA[i]),
+-			be64_to_cpu(data->pestB[i]));
+-	}
++	pnv_pci_dump_pest(data->pestA, data->pestB, OPAL_P7IOC_NUM_PEST_REGS);
  }
  
-+/**
-+ * of_get_flat_dt_prop - Given a node in the flat blob, return the phandle
-+ */
-+uint32_t __init of_get_flat_dt_phandle(unsigned long node)
-+{
-+	return fdt_get_phandle(initial_boot_params, node);
-+}
-+
- struct fdt_scan_status {
- 	const char *name;
- 	int namelen;
-diff --git a/include/linux/of_fdt.h b/include/linux/of_fdt.h
-index 271b3fdf0070..1dfbfd0d8040 100644
---- a/include/linux/of_fdt.h
-+++ b/include/linux/of_fdt.h
-@@ -54,6 +54,11 @@ extern char __dtb_end[];
- extern int of_scan_flat_dt(int (*it)(unsigned long node, const char *uname,
- 				     int depth, void *data),
- 			   void *data);
-+extern int of_scan_flat_dt_subnodes(unsigned long node,
-+				    int (*it)(unsigned long node,
-+					      const char *uname,
-+					      void *data),
-+				    void *data);
- extern int of_get_flat_dt_subnode_by_name(unsigned long node,
- 					  const char *uname);
- extern const void *of_get_flat_dt_prop(unsigned long node, const char *name,
-@@ -62,6 +67,7 @@ extern int of_flat_dt_is_compatible(unsigned long node, const char *name);
- extern int of_flat_dt_match(unsigned long node, const char *const *matches);
- extern unsigned long of_get_flat_dt_root(void);
- extern int of_get_flat_dt_size(void);
-+extern uint32_t of_get_flat_dt_phandle(unsigned long node);
+ static void pnv_pci_dump_phb3_diag_data(struct pci_controller *hose,
+ 					struct OpalIoPhbErrorCommon *common)
+ {
+ 	struct OpalIoPhb3ErrorData *data;
+-	int i;
  
- extern int early_init_dt_scan_chosen(unsigned long node, const char *uname,
- 				     int depth, void *data);
+ 	data = (struct OpalIoPhb3ErrorData*)common;
+ 	pr_info("PHB3 PHB#%x Diag-data (Version: %d)\n",
+@@ -404,15 +424,7 @@ static void pnv_pci_dump_phb3_diag_data(struct pci_controller *hose,
+ 			be64_to_cpu(data->dma1ErrorLog0),
+ 			be64_to_cpu(data->dma1ErrorLog1));
+ 
+-	for (i = 0; i < OPAL_PHB3_NUM_PEST_REGS; i++) {
+-		if ((be64_to_cpu(data->pestA[i]) >> 63) == 0 &&
+-		    (be64_to_cpu(data->pestB[i]) >> 63) == 0)
+-			continue;
+-
+-		pr_info("PE[%3d] A/B: %016llx %016llx\n",
+-				i, be64_to_cpu(data->pestA[i]),
+-				be64_to_cpu(data->pestB[i]));
+-	}
++	pnv_pci_dump_pest(data->pestA, data->pestB, OPAL_PHB3_NUM_PEST_REGS);
+ }
+ 
+ void pnv_pci_dump_phb_diag_data(struct pci_controller *hose,
 -- 
-2.11.0
+2.12.2
