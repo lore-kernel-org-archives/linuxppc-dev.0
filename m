@@ -1,17 +1,15 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w253C09vCzDqFy
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Apr 2017 08:49:26 +1000 (AEST)
-In-Reply-To: <1491185155-27876-1-git-send-email-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w253C5MqDzDqJ2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Apr 2017 08:49:27 +1000 (AEST)
+In-Reply-To: <1491372648-21708-1-git-send-email-mpe@ellerman.id.au>
 To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: scottwood@freescale.com
-Subject: Re: powerpc/nohash: Fix use of mmu_has_feature() in
- setup_initial_memory_limit()
-Message-Id: <3w253B5mN3z9sNJ@ozlabs.org>
-Date: Tue, 11 Apr 2017 08:49:26 +1000 (AEST)
+Subject: Re: [v2] powerpc: Make sparsemem the default on 64-bit Book3S
+Message-Id: <3w253C4MrQz9sNK@ozlabs.org>
+Date: Tue, 11 Apr 2017 08:49:27 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,31 +19,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2017-04-03 at 02:05:55 UTC, Michael Ellerman wrote:
-> setup_initial_memory_limit() is called from early_init_devtree(), which
-> runs prior to feature patching. If the kernel is built with CONFIG_JUMP_LABEL=y
-> and CONFIG_JUMP_LABEL_FEATURE_CHECKS=y then we will potentially get the
-> wrong value.
+On Wed, 2017-04-05 at 06:10:48 UTC, Michael Ellerman wrote:
+> Make sparsemem the default on all 64-bit Book3S platforms. It already is
+> for pseries and ps3, and we need to enable it for powernv because on
+> POWER9 memory between chips is discontiguous.
 > 
-> If we also have CONFIG_JUMP_LABEL_FEATURE_CHECK_DEBUG=y we get a warning
-> and backtrace:
+> For the other platforms sparsemem should work fine, though it might add
+> a small amount of overhead. We can always force FLATMEM in the
+> defconfigs if necessary.
 > 
->   Warning! mmu_has_feature() used prior to jump label init!
->   CPU: 0 PID: 0 Comm: swapper Not tainted 4.11.0-rc4-gccN-next-20170331-g6af2434 #1
->   Call Trace:
->   [c000000000fc3d50] [c000000000a26c30] .dump_stack+0xa8/0xe8 (unreliable)
->   [c000000000fc3de0] [c00000000002e6b8] .setup_initial_memory_limit+0xa4/0x104
->   [c000000000fc3e60] [c000000000d5c23c] .early_init_devtree+0xd0/0x2f8
->   [c000000000fc3f00] [c000000000d5d3b0] .early_setup+0x90/0x11c
->   [c000000000fc3f90] [c000000000000520] start_here_multiplatform+0x68/0x80
-> 
-> Fix it by using early_mmu_has_feature().
-> 
-> Fixes: c12e6f24d413 ("powerpc: Add option to use jump label for mmu_has_feature()")
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 > Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
 Applied to powerpc next.
 
-https://git.kernel.org/powerpc/c/4868e3508d1934d28961f940ed6b9f
+https://git.kernel.org/powerpc/c/7b3912f4223541c5108565d4bad289
 
 cheers
