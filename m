@@ -1,27 +1,24 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
- [IPv6:2607:f8b0:400e:c00::244])
+Return-Path: <rashmicy@gmail.com>
+Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
+ [IPv6:2607:f8b0:400e:c00::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w1cdM6z33zDq7Z
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Apr 2017 14:28:55 +1000 (AEST)
-Received: by mail-pf0-x244.google.com with SMTP id c198so4879308pfc.0
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 09 Apr 2017 21:28:55 -0700 (PDT)
-Date: Mon, 10 Apr 2017 14:28:42 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@ozlabs.org>
-Subject: Re: [PATCH 1/5] powerpc/pseries: do not use msgsndp doorbells on
- POWER9 guests
-Message-ID: <20170410142842.1a41ffab@roar.ozlabs.ibm.com>
-In-Reply-To: <1491797258.4166.205.camel@kernel.crashing.org>
-References: <20170407125602.31146-1-npiggin@gmail.com>
- <20170407125602.31146-2-npiggin@gmail.com>
- <1491725015.4166.188.camel@kernel.crashing.org>
- <20170410132245.16802599@roar.ozlabs.ibm.com>
- <1491797258.4166.205.camel@kernel.crashing.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w1ddh6JXyzDq7Z
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Apr 2017 15:14:16 +1000 (AEST)
+Received: by mail-pf0-x242.google.com with SMTP id i5so4986133pfc.3
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 09 Apr 2017 22:14:16 -0700 (PDT)
+Subject: Re: [PATCH] powerpc/mm: Dump hash table
+To: Anshuman Khandual <khandual@linux.vnet.ibm.com>,
+ Rashmica Gupta <rashmica.g@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+ mpe@ellerman.id.au
+References: <20170410020404.11375-1-rashmica.g@gmail.com>
+ <3b8a7252-dc80-8c04-2df8-4dca17348f8f@linux.vnet.ibm.com>
+From: RashmicaGupta <rashmicy@gmail.com>
+Message-ID: <2ce28fb7-9dce-c35d-d0a7-f09b2f147195@gmail.com>
+Date: Mon, 10 Apr 2017 15:14:11 +1000
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+In-Reply-To: <3b8a7252-dc80-8c04-2df8-4dca17348f8f@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,37 +28,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 10 Apr 2017 14:07:38 +1000
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-> On Mon, 2017-04-10 at 13:22 +1000, Nicholas Piggin wrote:
-> > On Sun, 09 Apr 2017 18:03:35 +1000  
-> > > Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:  
-> >   
-> > > On Fri, 2017-04-07 at 22:55 +1000, Nicholas Piggin wrote:  
-> > > > POWER9 hypervisors will not necessarily run guest threads together on
-> > > > the same core at the same time, so msgsndp should not be used.    
-> > > 
-> > > Maybe we shouldn't advertise doorbells at all ?  
-> > 
-> > Possibly not. I don't know if there is a good way to switch it off
-> > in the guest from the host with device tree currently. Might be better
-> > to clear it early in the guest rather than test it here though?  
-> 
-> Sure for now. Long term a separate DT entry would be good.
 
-cpufeatures will do that, but I wonder if some hypervisors won't implement
-that binding then might be worth getting into an existing one in PAPR.
-
-Anyway for now I'll make the change and have P9 guest clear the feature
-themselves if you like.
-
-> Might be
-> worth re-enabling one day if we have HW virtualization of geust
-> doorbells.
-
-Yes. Also some hypervisor might run in a virtual sibling = physical
-sibling mode on P9 too where it could still work.
-
-Thanks,
-Nick
+On 10/04/17 14:02, Anshuman Khandual wrote:
+> On 04/10/2017 07:34 AM, Rashmica Gupta wrote:
+>> Current behaviour assumes that memory in RAM is contiguous and
+>> iterates from the start of RAM to (start + size of memory). When the
+>> memory isn't physically contiguous, this approach doesn't work.
+> In dis contiguous platform, we just finish up walking linear
+> mapping prematurely before the end of the RAM ?
+Yes, that is what the following example explains.
+>
+>> If memory exists at 0-5 GB and 6-10 GB then the current approach will
+>> check if entries exist in the hash table from 0GB to 9GB. This patch
+>> changes the behaviour to iterate up to the end of RAM.
+> So it fixes the commit which added memblock_phys_mem_size().
+> Hence needs "Fixes: " tag as well.
+>
+Woops, will add that!
