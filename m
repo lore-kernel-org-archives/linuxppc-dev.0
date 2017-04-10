@@ -3,33 +3,33 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w1xSh50wyzDq5b
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Apr 2017 03:07:32 +1000 (AEST)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w1xcF090XzDq7Z
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Apr 2017 03:14:04 +1000 (AEST)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v3AH3b2K120995
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Apr 2017 13:07:27 -0400
-Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
- by mx0a-001b2d01.pphosted.com with ESMTP id 29re42049n-1
+ v3AHDWBX125616
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Apr 2017 13:13:50 -0400
+Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 29rcbwwk68-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Apr 2017 13:07:27 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Apr 2017 13:13:50 -0400
 Received: from localhost
- by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
- Mon, 10 Apr 2017 18:07:24 +0100
-Subject: Re: [PATCH V4 5/7] cxl: Rename some psl8 specific functions
+ Mon, 10 Apr 2017 18:13:48 +0100
+Subject: Re: [PATCH V4 6/7] cxl: Isolate few psl8 specific calls
 To: Christophe Lombard <clombard@linux.vnet.ibm.com>,
  linuxppc-dev@lists.ozlabs.org, imunsie@au1.ibm.com,
  andrew.donnellan@au1.ibm.com
 References: <1491574319-11852-1-git-send-email-clombard@linux.vnet.ibm.com>
- <1491574319-11852-6-git-send-email-clombard@linux.vnet.ibm.com>
+ <1491574319-11852-7-git-send-email-clombard@linux.vnet.ibm.com>
 From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-Date: Mon, 10 Apr 2017 19:06:54 +0200
+Date: Mon, 10 Apr 2017 19:13:18 +0200
 MIME-Version: 1.0
-In-Reply-To: <1491574319-11852-6-git-send-email-clombard@linux.vnet.ibm.com>
+In-Reply-To: <1491574319-11852-7-git-send-email-clombard@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=windows-1252; format=flowed
-Message-Id: <7b2e7721-fdbc-15ed-d0ab-91604837d190@linux.vnet.ibm.com>
+Message-Id: <1c31a1d5-dbff-bf57-213c-e6b38a82b807@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,337 +42,440 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 
 Le 07/04/2017 à 16:11, Christophe Lombard a écrit :
-> Rename a few functions, changing the '_psl' suffix to '_psl8', to make
-> clear that the implementation is psl8 specific.
-> Those functions will have an equivalent implementation for the psl9 in
-> a later patch.
+> Point out the specific Coherent Accelerator Interface Architecture,
+> level 1, registers.
+> Code and functions specific to PSL8 (CAIA1) must be framed.
 >
 > Signed-off-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
 > ---
 
+There are a few changes in native.c which are about splitting long 
+strings, but that's minor. And the rest looks ok.
+
+I'll do the last patch tomorrow.
+
 Acked-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
 
 
->  drivers/misc/cxl/cxl.h     | 26 ++++++++++----------
->  drivers/misc/cxl/debugfs.c |  6 ++---
->  drivers/misc/cxl/guest.c   |  2 +-
->  drivers/misc/cxl/irq.c     |  2 +-
->  drivers/misc/cxl/native.c  | 12 +++++-----
->  drivers/misc/cxl/pci.c     | 60 +++++++++++++++++++++++-----------------------
->  6 files changed, 54 insertions(+), 54 deletions(-)
+>  drivers/misc/cxl/context.c | 28 +++++++++++---------
+>  drivers/misc/cxl/cxl.h     | 35 +++++++++++++++++++------
+>  drivers/misc/cxl/debugfs.c |  6 +++--
+>  drivers/misc/cxl/native.c  | 43 +++++++++++++++++++++----------
+>  drivers/misc/cxl/pci.c     | 64 +++++++++++++++++++++++++++++++---------------
+>  5 files changed, 120 insertions(+), 56 deletions(-)
 >
+> diff --git a/drivers/misc/cxl/context.c b/drivers/misc/cxl/context.c
+> index 2e935ea..ac2531e 100644
+> --- a/drivers/misc/cxl/context.c
+> +++ b/drivers/misc/cxl/context.c
+> @@ -39,23 +39,26 @@ int cxl_context_init(struct cxl_context *ctx, struct cxl_afu *afu, bool master)
+>  {
+>  	int i;
+>
+> -	spin_lock_init(&ctx->sste_lock);
+>  	ctx->afu = afu;
+>  	ctx->master = master;
+>  	ctx->pid = NULL; /* Set in start work ioctl */
+>  	mutex_init(&ctx->mapping_lock);
+>  	ctx->mapping = NULL;
+>
+> -	/*
+> -	 * Allocate the segment table before we put it in the IDR so that we
+> -	 * can always access it when dereferenced from IDR. For the same
+> -	 * reason, the segment table is only destroyed after the context is
+> -	 * removed from the IDR.  Access to this in the IOCTL is protected by
+> -	 * Linux filesytem symantics (can't IOCTL until open is complete).
+> -	 */
+> -	i = cxl_alloc_sst(ctx);
+> -	if (i)
+> -		return i;
+> +	if (cxl_is_psl8(afu)) {
+> +		spin_lock_init(&ctx->sste_lock);
+> +
+> +		/*
+> +		 * Allocate the segment table before we put it in the IDR so that we
+> +		 * can always access it when dereferenced from IDR. For the same
+> +		 * reason, the segment table is only destroyed after the context is
+> +		 * removed from the IDR.  Access to this in the IOCTL is protected by
+> +		 * Linux filesytem symantics (can't IOCTL until open is complete).
+> +		 */
+> +		i = cxl_alloc_sst(ctx);
+> +		if (i)
+> +			return i;
+> +	}
+>
+>  	INIT_WORK(&ctx->fault_work, cxl_handle_fault);
+>
+> @@ -308,7 +311,8 @@ static void reclaim_ctx(struct rcu_head *rcu)
+>  {
+>  	struct cxl_context *ctx = container_of(rcu, struct cxl_context, rcu);
+>
+> -	free_page((u64)ctx->sstp);
+> +	if (cxl_is_psl8(ctx->afu))
+> +		free_page((u64)ctx->sstp);
+>  	if (ctx->ff_page)
+>  		__free_page(ctx->ff_page);
+>  	ctx->sstp = NULL;
 > diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
-> index 626073d..a54c003 100644
+> index a54c003..82335c0 100644
 > --- a/drivers/misc/cxl/cxl.h
 > +++ b/drivers/misc/cxl/cxl.h
-> @@ -813,10 +813,10 @@ int afu_register_irqs(struct cxl_context *ctx, u32 count);
->  void afu_release_irqs(struct cxl_context *ctx, void *cookie);
->  void afu_irq_name_free(struct cxl_context *ctx);
+> @@ -73,7 +73,7 @@ static const cxl_p1_reg_t CXL_PSL_Control = {0x0020};
+>  static const cxl_p1_reg_t CXL_PSL_DLCNTL  = {0x0060};
+>  static const cxl_p1_reg_t CXL_PSL_DLADDR  = {0x0068};
 >
-> -int cxl_attach_afu_directed_psl(struct cxl_context *ctx, u64 wed, u64 amr);
-> -int cxl_activate_dedicated_process_psl(struct cxl_afu *afu);
-> -int cxl_attach_dedicated_process_psl(struct cxl_context *ctx, u64 wed, u64 amr);
-> -void cxl_update_dedicated_ivtes_psl(struct cxl_context *ctx);
-> +int cxl_attach_afu_directed_psl8(struct cxl_context *ctx, u64 wed, u64 amr);
-> +int cxl_activate_dedicated_process_psl8(struct cxl_afu *afu);
-> +int cxl_attach_dedicated_process_psl8(struct cxl_context *ctx, u64 wed, u64 amr);
-> +void cxl_update_dedicated_ivtes_psl8(struct cxl_context *ctx);
+> -/* PSL Lookaside Buffer Management Area */
+> +/* PSL Lookaside Buffer Management Area - CAIA 1 */
+>  static const cxl_p1_reg_t CXL_PSL_LBISEL  = {0x0080};
+>  static const cxl_p1_reg_t CXL_PSL_SLBIE   = {0x0088};
+>  static const cxl_p1_reg_t CXL_PSL_SLBIA   = {0x0090};
+> @@ -82,7 +82,7 @@ static const cxl_p1_reg_t CXL_PSL_TLBIA   = {0x00A8};
+>  static const cxl_p1_reg_t CXL_PSL_AFUSEL  = {0x00B0};
 >
->  #ifdef CONFIG_DEBUG_FS
+>  /* 0x00C0:7EFF Implementation dependent area */
+> -/* PSL registers */
+> +/* PSL registers - CAIA 1 */
+>  static const cxl_p1_reg_t CXL_PSL_FIR1      = {0x0100};
+>  static const cxl_p1_reg_t CXL_PSL_FIR2      = {0x0108};
+>  static const cxl_p1_reg_t CXL_PSL_Timebase  = {0x0110};
+> @@ -109,7 +109,7 @@ static const cxl_p1n_reg_t CXL_PSL_AMBAR_An       = {0x10};
+>  static const cxl_p1n_reg_t CXL_PSL_SPOffset_An    = {0x18};
+>  static const cxl_p1n_reg_t CXL_PSL_ID_An          = {0x20};
+>  static const cxl_p1n_reg_t CXL_PSL_SERR_An        = {0x28};
+> -/* Memory Management and Lookaside Buffer Management */
+> +/* Memory Management and Lookaside Buffer Management - CAIA 1*/
+>  static const cxl_p1n_reg_t CXL_PSL_SDR_An         = {0x30};
+>  static const cxl_p1n_reg_t CXL_PSL_AMOR_An        = {0x38};
+>  /* Pointer Area */
+> @@ -124,6 +124,7 @@ static const cxl_p1n_reg_t CXL_PSL_IVTE_Limit_An  = {0xB8};
+>  /* 0xC0:FF Implementation Dependent Area */
+>  static const cxl_p1n_reg_t CXL_PSL_FIR_SLICE_An   = {0xC0};
+>  static const cxl_p1n_reg_t CXL_AFU_DEBUG_An       = {0xC8};
+> +/* 0xC0:FF Implementation Dependent Area - CAIA 1 */
+>  static const cxl_p1n_reg_t CXL_PSL_APCALLOC_A     = {0xD0};
+>  static const cxl_p1n_reg_t CXL_PSL_COALLOC_A      = {0xD8};
+>  static const cxl_p1n_reg_t CXL_PSL_RXCTL_A        = {0xE0};
+> @@ -133,12 +134,14 @@ static const cxl_p1n_reg_t CXL_PSL_SLICE_TRACE    = {0xE8};
+>  /* Configuration and Control Area */
+>  static const cxl_p2n_reg_t CXL_PSL_PID_TID_An = {0x000};
+>  static const cxl_p2n_reg_t CXL_CSRP_An        = {0x008};
+> +/* Configuration and Control Area - CAIA 1 */
+>  static const cxl_p2n_reg_t CXL_AURP0_An       = {0x010};
+>  static const cxl_p2n_reg_t CXL_AURP1_An       = {0x018};
+>  static const cxl_p2n_reg_t CXL_SSTP0_An       = {0x020};
+>  static const cxl_p2n_reg_t CXL_SSTP1_An       = {0x028};
+> +/* Configuration and Control Area - CAIA 1 */
+>  static const cxl_p2n_reg_t CXL_PSL_AMR_An     = {0x030};
+> -/* Segment Lookaside Buffer Management */
+> +/* Segment Lookaside Buffer Management - CAIA 1 */
+>  static const cxl_p2n_reg_t CXL_SLBIE_An       = {0x040};
+>  static const cxl_p2n_reg_t CXL_SLBIA_An       = {0x048};
+>  static const cxl_p2n_reg_t CXL_SLBI_Select_An = {0x050};
+> @@ -257,7 +260,7 @@ static const cxl_p2n_reg_t CXL_PSL_WED_An     = {0x0A0};
+>  #define CXL_SSTP1_An_STVA_L_MASK (~((1ull << (63-55))-1))
+>  #define CXL_SSTP1_An_V              (1ull << (63-63))
 >
-> @@ -826,10 +826,10 @@ int cxl_debugfs_adapter_add(struct cxl *adapter);
->  void cxl_debugfs_adapter_remove(struct cxl *adapter);
->  int cxl_debugfs_afu_add(struct cxl_afu *afu);
->  void cxl_debugfs_afu_remove(struct cxl_afu *afu);
-> -void cxl_stop_trace_psl(struct cxl *cxl);
-> -void cxl_debugfs_add_adapter_regs_psl(struct cxl *adapter, struct dentry *dir);
-> +void cxl_stop_trace_psl8(struct cxl *cxl);
-> +void cxl_debugfs_add_adapter_regs_psl8(struct cxl *adapter, struct dentry *dir);
->  void cxl_debugfs_add_adapter_regs_xsl(struct cxl *adapter, struct dentry *dir);
-> -void cxl_debugfs_add_afu_regs_psl(struct cxl_afu *afu, struct dentry *dir);
-> +void cxl_debugfs_add_afu_regs_psl8(struct cxl_afu *afu, struct dentry *dir);
+> -/****** CXL_PSL_SLBIE_[An] **************************************************/
+> +/****** CXL_PSL_SLBIE_[An] - CAIA 1 **************************************************/
+>  /* write: */
+>  #define CXL_SLBIE_C        PPC_BIT(36)         /* Class */
+>  #define CXL_SLBIE_SS       PPC_BITMASK(37, 38) /* Segment Size */
+> @@ -267,10 +270,10 @@ static const cxl_p2n_reg_t CXL_PSL_WED_An     = {0x0A0};
+>  #define CXL_SLBIE_MAX      PPC_BITMASK(24, 31)
+>  #define CXL_SLBIE_PENDING  PPC_BITMASK(56, 63)
 >
->  #else /* CONFIG_DEBUG_FS */
+> -/****** Common to all CXL_TLBIA/SLBIA_[An] **********************************/
+> +/****** Common to all CXL_TLBIA/SLBIA_[An] - CAIA 1 **********************************/
+>  #define CXL_TLB_SLB_P          (1ull) /* Pending (read) */
 >
-> @@ -860,11 +860,11 @@ static inline void cxl_debugfs_afu_remove(struct cxl_afu *afu)
->  {
+> -/****** Common to all CXL_TLB/SLB_IA/IE_[An] registers **********************/
+> +/****** Common to all CXL_TLB/SLB_IA/IE_[An] registers - CAIA 1 **********************/
+>  #define CXL_TLB_SLB_IQ_ALL     (0ull) /* Inv qualifier */
+>  #define CXL_TLB_SLB_IQ_LPID    (1ull) /* Inv qualifier */
+>  #define CXL_TLB_SLB_IQ_LPIDPID (3ull) /* Inv qualifier */
+> @@ -278,7 +281,7 @@ static const cxl_p2n_reg_t CXL_PSL_WED_An     = {0x0A0};
+>  /****** CXL_PSL_AFUSEL ******************************************************/
+>  #define CXL_PSL_AFUSEL_A (1ull << (63-55)) /* Adapter wide invalidates affect all AFUs */
+>
+> -/****** CXL_PSL_DSISR_An ****************************************************/
+> +/****** CXL_PSL_DSISR_An - CAIA 1 ****************************************************/
+>  #define CXL_PSL_DSISR_An_DS (1ull << (63-0))  /* Segment not found */
+>  #define CXL_PSL_DSISR_An_DM (1ull << (63-1))  /* PTE not found (See also: M) or protection fault */
+>  #define CXL_PSL_DSISR_An_ST (1ull << (63-2))  /* Segment Table PTE not found */
+> @@ -749,6 +752,22 @@ static inline u64 cxl_p2n_read(struct cxl_afu *afu, cxl_p2n_reg_t reg)
+>  		return ~0ULL;
 >  }
 >
-> -static inline void cxl_stop_trace(struct cxl *cxl)
-> +static inline void cxl_stop_trace_psl8(struct cxl *cxl)
->  {
->  }
+> +static inline bool cxl_is_power8(void)
+> +{
+> +	if ((pvr_version_is(PVR_POWER8E)) ||
+> +	    (pvr_version_is(PVR_POWER8NVL)) ||
+> +	    (pvr_version_is(PVR_POWER8)))
+> +		return true;
+> +	return false;
+> +}
+> +
+> +static inline bool cxl_is_psl8(struct cxl_afu *afu)
+> +{
+> +	if (afu->adapter->caia_major == 1)
+> +		return true;
+> +	return false;
+> +}
+> +
+>  ssize_t cxl_pci_afu_read_err_buffer(struct cxl_afu *afu, char *buf,
+>  				loff_t off, size_t count);
 >
-> -static inline void cxl_debugfs_add_adapter_regs_psl(struct cxl *adapter,
-> +static inline void cxl_debugfs_add_adapter_regs_psl8(struct cxl *adapter,
->  						    struct dentry *dir)
->  {
->  }
-> @@ -874,7 +874,7 @@ static inline void cxl_debugfs_add_adapter_regs_xsl(struct cxl *adapter,
->  {
->  }
->
-> -static inline void cxl_debugfs_add_afu_regs_psl(struct cxl_afu *afu, struct dentry *dir)
-> +static inline void cxl_debugfs_add_afu_regs_psl8(struct cxl_afu *afu, struct dentry *dir)
->  {
->  }
->
-> @@ -919,8 +919,8 @@ struct cxl_irq_info {
->  };
->
->  void cxl_assign_psn_space(struct cxl_context *ctx);
-> -int cxl_invalidate_all_psl(struct cxl *adapter);
-> -irqreturn_t cxl_irq_psl(int irq, struct cxl_context *ctx, struct cxl_irq_info *irq_info);
-> +int cxl_invalidate_all_psl8(struct cxl *adapter);
-> +irqreturn_t cxl_irq_psl8(int irq, struct cxl_context *ctx, struct cxl_irq_info *irq_info);
->  irqreturn_t cxl_fail_irq_psl(struct cxl_afu *afu, struct cxl_irq_info *irq_info);
->  int cxl_register_one_irq(struct cxl *adapter, irq_handler_t handler,
->  			void *cookie, irq_hw_number_t *dest_hwirq,
-> @@ -932,7 +932,7 @@ int cxl_data_cache_flush(struct cxl *adapter);
->  int cxl_afu_disable(struct cxl_afu *afu);
->  int cxl_psl_purge(struct cxl_afu *afu);
->
-> -void cxl_native_irq_dump_regs_psl(struct cxl_context *ctx);
-> +void cxl_native_irq_dump_regs_psl8(struct cxl_context *ctx);
->  void cxl_native_err_irq_dump_regs(struct cxl *adapter);
->  int cxl_pci_vphb_add(struct cxl_afu *afu);
->  void cxl_pci_vphb_remove(struct cxl_afu *afu);
 > diff --git a/drivers/misc/cxl/debugfs.c b/drivers/misc/cxl/debugfs.c
-> index 4848ebf..2ff10a9 100644
+> index 2ff10a9..43a1a27 100644
 > --- a/drivers/misc/cxl/debugfs.c
 > +++ b/drivers/misc/cxl/debugfs.c
-> @@ -15,7 +15,7 @@
+> @@ -94,6 +94,9 @@ void cxl_debugfs_adapter_remove(struct cxl *adapter)
 >
->  static struct dentry *cxl_debugfs;
->
-> -void cxl_stop_trace_psl(struct cxl *adapter)
-> +void cxl_stop_trace_psl8(struct cxl *adapter)
+>  void cxl_debugfs_add_afu_regs_psl8(struct cxl_afu *afu, struct dentry *dir)
 >  {
->  	int slice;
->
-> @@ -53,7 +53,7 @@ static struct dentry *debugfs_create_io_x64(const char *name, umode_t mode,
->  					  (void __force *)value, &fops_io_x64);
->  }
->
-> -void cxl_debugfs_add_adapter_regs_psl(struct cxl *adapter, struct dentry *dir)
-> +void cxl_debugfs_add_adapter_regs_psl8(struct cxl *adapter, struct dentry *dir)
->  {
->  	debugfs_create_io_x64("fir1", S_IRUSR, dir, _cxl_p1_addr(adapter, CXL_PSL_FIR1));
->  	debugfs_create_io_x64("fir2", S_IRUSR, dir, _cxl_p1_addr(adapter, CXL_PSL_FIR2));
-> @@ -92,7 +92,7 @@ void cxl_debugfs_adapter_remove(struct cxl *adapter)
->  	debugfs_remove_recursive(adapter->debugfs);
->  }
->
-> -void cxl_debugfs_add_afu_regs_psl(struct cxl_afu *afu, struct dentry *dir)
-> +void cxl_debugfs_add_afu_regs_psl8(struct cxl_afu *afu, struct dentry *dir)
->  {
+> +	debugfs_create_io_x64("sstp0", S_IRUSR, dir, _cxl_p2n_addr(afu, CXL_SSTP0_An));
+> +	debugfs_create_io_x64("sstp1", S_IRUSR, dir, _cxl_p2n_addr(afu, CXL_SSTP1_An));
+> +
 >  	debugfs_create_io_x64("fir", S_IRUSR, dir, _cxl_p1n_addr(afu, CXL_PSL_FIR_SLICE_An));
 >  	debugfs_create_io_x64("serr", S_IRUSR, dir, _cxl_p1n_addr(afu, CXL_PSL_SERR_An));
-> diff --git a/drivers/misc/cxl/guest.c b/drivers/misc/cxl/guest.c
-> index f6ba698..3ad7381 100644
-> --- a/drivers/misc/cxl/guest.c
-> +++ b/drivers/misc/cxl/guest.c
-> @@ -169,7 +169,7 @@ static irqreturn_t guest_psl_irq(int irq, void *data)
->  		return IRQ_HANDLED;
->  	}
+>  	debugfs_create_io_x64("afu_debug", S_IRUSR, dir, _cxl_p1n_addr(afu, CXL_AFU_DEBUG_An));
+> @@ -117,8 +120,7 @@ int cxl_debugfs_afu_add(struct cxl_afu *afu)
+>  	debugfs_create_io_x64("sr",         S_IRUSR, dir, _cxl_p1n_addr(afu, CXL_PSL_SR_An));
+>  	debugfs_create_io_x64("dsisr",      S_IRUSR, dir, _cxl_p2n_addr(afu, CXL_PSL_DSISR_An));
+>  	debugfs_create_io_x64("dar",        S_IRUSR, dir, _cxl_p2n_addr(afu, CXL_PSL_DAR_An));
+> -	debugfs_create_io_x64("sstp0",      S_IRUSR, dir, _cxl_p2n_addr(afu, CXL_SSTP0_An));
+> -	debugfs_create_io_x64("sstp1",      S_IRUSR, dir, _cxl_p2n_addr(afu, CXL_SSTP1_An));
+> +
+>  	debugfs_create_io_x64("err_status", S_IRUSR, dir, _cxl_p2n_addr(afu, CXL_PSL_ErrStat_An));
 >
-> -	rc = cxl_irq_psl(irq, ctx, &irq_info);
-> +	rc = cxl_irq_psl8(irq, ctx, &irq_info);
->  	return rc;
->  }
->
-> diff --git a/drivers/misc/cxl/irq.c b/drivers/misc/cxl/irq.c
-> index 2fa119e..fa9f8a2 100644
-> --- a/drivers/misc/cxl/irq.c
-> +++ b/drivers/misc/cxl/irq.c
-> @@ -34,7 +34,7 @@ static irqreturn_t schedule_cxl_fault(struct cxl_context *ctx, u64 dsisr, u64 da
->  	return IRQ_HANDLED;
->  }
->
-> -irqreturn_t cxl_irq_psl(int irq, struct cxl_context *ctx, struct cxl_irq_info *irq_info)
-> +irqreturn_t cxl_irq_psl8(int irq, struct cxl_context *ctx, struct cxl_irq_info *irq_info)
->  {
->  	u64 dsisr, dar;
->
+>  	if (afu->adapter->native->sl_ops->debugfs_add_afu_regs)
 > diff --git a/drivers/misc/cxl/native.c b/drivers/misc/cxl/native.c
-> index c147863e..ee3164e 100644
+> index ee3164e..0401e4dc 100644
 > --- a/drivers/misc/cxl/native.c
 > +++ b/drivers/misc/cxl/native.c
-> @@ -258,7 +258,7 @@ void cxl_release_spa(struct cxl_afu *afu)
+> @@ -155,13 +155,21 @@ int cxl_psl_purge(struct cxl_afu *afu)
+>  		}
+>
+>  		dsisr = cxl_p2n_read(afu, CXL_PSL_DSISR_An);
+> -		pr_devel_ratelimited("PSL purging... PSL_CNTL: 0x%016llx  PSL_DSISR: 0x%016llx\n", PSL_CNTL, dsisr);
+> +		pr_devel_ratelimited("PSL purging... PSL_CNTL: 0x%016llx"
+> +				     "  PSL_DSISR: 0x%016llx\n",
+> +				     PSL_CNTL, dsisr);
+> +
+>  		if (dsisr & CXL_PSL_DSISR_TRANS) {
+>  			dar = cxl_p2n_read(afu, CXL_PSL_DAR_An);
+> -			dev_notice(&afu->dev, "PSL purge terminating pending translation, DSISR: 0x%016llx, DAR: 0x%016llx\n", dsisr, dar);
+> +			dev_notice(&afu->dev, "PSL purge terminating "
+> +					      "pending translation, "
+> +					      "DSISR: 0x%016llx, DAR: 0x%016llx\n",
+> +					       dsisr, dar);
+>  			cxl_p2n_write(afu, CXL_PSL_TFC_An, CXL_PSL_TFC_An_AE);
+>  		} else if (dsisr) {
+> -			dev_notice(&afu->dev, "PSL purge acknowledging pending non-translation fault, DSISR: 0x%016llx\n", dsisr);
+> +			dev_notice(&afu->dev, "PSL purge acknowledging "
+> +					      "pending non-translation fault, "
+> +					      "DSISR: 0x%016llx\n", dsisr);
+>  			cxl_p2n_write(afu, CXL_PSL_TFC_An, CXL_PSL_TFC_An_A);
+>  		} else {
+>  			cpu_relax();
+> @@ -466,7 +474,8 @@ static int remove_process_element(struct cxl_context *ctx)
+>
+>  	if (!rc)
+>  		ctx->pe_inserted = false;
+> -	slb_invalid(ctx);
+> +	if (cxl_is_power8())
+> +		slb_invalid(ctx);
+>  	pr_devel("%s Remove pe: %i finished\n", __func__, ctx->pe);
+>  	mutex_unlock(&ctx->afu->native->spa_mutex);
+>
+> @@ -499,7 +508,8 @@ static int activate_afu_directed(struct cxl_afu *afu)
+>  	attach_spa(afu);
+>
+>  	cxl_p1n_write(afu, CXL_PSL_SCNTL_An, CXL_PSL_SCNTL_An_PM_AFU);
+> -	cxl_p1n_write(afu, CXL_PSL_AMOR_An, 0xFFFFFFFFFFFFFFFFULL);
+> +	if (cxl_is_power8())
+> +		cxl_p1n_write(afu, CXL_PSL_AMOR_An, 0xFFFFFFFFFFFFFFFFULL);
+>  	cxl_p1n_write(afu, CXL_PSL_ID_An, CXL_PSL_ID_An_F | CXL_PSL_ID_An_L);
+>
+>  	afu->current_mode = CXL_MODE_DIRECTED;
+> @@ -872,7 +882,8 @@ static int native_get_irq_info(struct cxl_afu *afu, struct cxl_irq_info *info)
+>
+>  	info->dsisr = cxl_p2n_read(afu, CXL_PSL_DSISR_An);
+>  	info->dar = cxl_p2n_read(afu, CXL_PSL_DAR_An);
+> -	info->dsr = cxl_p2n_read(afu, CXL_PSL_DSR_An);
+> +	if (cxl_is_power8())
+> +		info->dsr = cxl_p2n_read(afu, CXL_PSL_DSR_An);
+>  	info->afu_err = cxl_p2n_read(afu, CXL_AFU_ERR_An);
+>  	info->errstat = cxl_p2n_read(afu, CXL_PSL_ErrStat_An);
+>  	info->proc_handle = 0;
+> @@ -984,7 +995,8 @@ static void native_irq_wait(struct cxl_context *ctx)
+>  		if (ph != ctx->pe)
+>  			return;
+>  		dsisr = cxl_p2n_read(ctx->afu, CXL_PSL_DSISR_An);
+> -		if ((dsisr & CXL_PSL_DSISR_PENDING) == 0)
+> +		if (cxl_is_psl8(ctx->afu) &&
+> +		   ((dsisr & CXL_PSL_DSISR_PENDING) == 0))
+>  			return;
+>  		/*
+>  		 * We are waiting for the workqueue to process our
+> @@ -1001,21 +1013,25 @@ static void native_irq_wait(struct cxl_context *ctx)
+>  static irqreturn_t native_slice_irq_err(int irq, void *data)
+>  {
+>  	struct cxl_afu *afu = data;
+> -	u64 fir_slice, errstat, serr, afu_debug, afu_error, dsisr;
+> +	u64 errstat, serr, afu_error, dsisr;
+> +	u64 fir_slice, afu_debug;
+>
+>  	/*
+>  	 * slice err interrupt is only used with full PSL (no XSL)
+>  	 */
+>  	serr = cxl_p1n_read(afu, CXL_PSL_SERR_An);
+> -	fir_slice = cxl_p1n_read(afu, CXL_PSL_FIR_SLICE_An);
+>  	errstat = cxl_p2n_read(afu, CXL_PSL_ErrStat_An);
+> -	afu_debug = cxl_p1n_read(afu, CXL_AFU_DEBUG_An);
+>  	afu_error = cxl_p2n_read(afu, CXL_AFU_ERR_An);
+>  	dsisr = cxl_p2n_read(afu, CXL_PSL_DSISR_An);
+>  	cxl_afu_decode_psl_serr(afu, serr);
+> -	dev_crit(&afu->dev, "PSL_FIR_SLICE_An: 0x%016llx\n", fir_slice);
+> +
+> +	if (cxl_is_power8()) {
+> +		fir_slice = cxl_p1n_read(afu, CXL_PSL_FIR_SLICE_An);
+> +		afu_debug = cxl_p1n_read(afu, CXL_AFU_DEBUG_An);
+> +		dev_crit(&afu->dev, "PSL_FIR_SLICE_An: 0x%016llx\n", fir_slice);
+> +		dev_crit(&afu->dev, "CXL_PSL_AFU_DEBUG_An: 0x%016llx\n", afu_debug);
+> +	}
+>  	dev_crit(&afu->dev, "CXL_PSL_ErrStat_An: 0x%016llx\n", errstat);
+> -	dev_crit(&afu->dev, "CXL_PSL_AFU_DEBUG_An: 0x%016llx\n", afu_debug);
+>  	dev_crit(&afu->dev, "AFU_ERR_An: 0x%.16llx\n", afu_error);
+>  	dev_crit(&afu->dev, "PSL_DSISR_An: 0x%.16llx\n", dsisr);
+>
+> @@ -1108,7 +1124,8 @@ int cxl_native_register_serr_irq(struct cxl_afu *afu)
 >  	}
->  }
 >
-> -int cxl_invalidate_all_psl(struct cxl *adapter)
-> +int cxl_invalidate_all_psl8(struct cxl *adapter)
->  {
->  	unsigned long timeout = jiffies + (HZ * CXL_TIMEOUT);
+>  	serr = cxl_p1n_read(afu, CXL_PSL_SERR_An);
+> -	serr = (serr & 0x00ffffffffff0000ULL) | (afu->serr_hwirq & 0xffff);
+> +	if (cxl_is_power8())
+> +		serr = (serr & 0x00ffffffffff0000ULL) | (afu->serr_hwirq & 0xffff);
+>  	cxl_p1n_write(afu, CXL_PSL_SERR_An, serr);
 >
-> @@ -578,7 +578,7 @@ static void update_ivtes_directed(struct cxl_context *ctx)
->  		WARN_ON(add_process_element(ctx));
->  }
->
-> -int cxl_attach_afu_directed_psl(struct cxl_context *ctx, u64 wed, u64 amr)
-> +int cxl_attach_afu_directed_psl8(struct cxl_context *ctx, u64 wed, u64 amr)
->  {
->  	u32 pid;
->  	int result;
-> @@ -671,7 +671,7 @@ static int deactivate_afu_directed(struct cxl_afu *afu)
 >  	return 0;
->  }
->
-> -int cxl_activate_dedicated_process_psl(struct cxl_afu *afu)
-> +int cxl_activate_dedicated_process_psl8(struct cxl_afu *afu)
->  {
->  	dev_info(&afu->dev, "Activating dedicated process mode\n");
->
-> @@ -694,7 +694,7 @@ int cxl_activate_dedicated_process_psl(struct cxl_afu *afu)
->  	return cxl_chardev_d_afu_add(afu);
->  }
->
-> -void cxl_update_dedicated_ivtes_psl(struct cxl_context *ctx)
-> +void cxl_update_dedicated_ivtes_psl8(struct cxl_context *ctx)
->  {
->  	struct cxl_afu *afu = ctx->afu;
->
-> @@ -710,7 +710,7 @@ void cxl_update_dedicated_ivtes_psl(struct cxl_context *ctx)
->  			((u64)ctx->irqs.range[3] & 0xffff));
->  }
->
-> -int cxl_attach_dedicated_process_psl(struct cxl_context *ctx, u64 wed, u64 amr)
-> +int cxl_attach_dedicated_process_psl8(struct cxl_context *ctx, u64 wed, u64 amr)
->  {
->  	struct cxl_afu *afu = ctx->afu;
->  	u64 pid;
-> @@ -880,7 +880,7 @@ static int native_get_irq_info(struct cxl_afu *afu, struct cxl_irq_info *info)
->  	return 0;
->  }
->
-> -void cxl_native_irq_dump_regs_psl(struct cxl_context *ctx)
-> +void cxl_native_irq_dump_regs_psl8(struct cxl_context *ctx)
->  {
->  	u64 fir1, fir2, fir_slice, serr, afu_debug;
->
 > diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
-> index e9c679e..69008a4 100644
+> index 69008a4..a910115 100644
 > --- a/drivers/misc/cxl/pci.c
 > +++ b/drivers/misc/cxl/pci.c
-> @@ -377,7 +377,7 @@ static int calc_capp_routing(struct pci_dev *dev, u64 *chipid, u64 *capp_unit_id
+> @@ -324,32 +324,33 @@ static void dump_afu_descriptor(struct cxl_afu *afu)
+>  #undef show_reg
+>  }
+>
+> -#define CAPP_UNIT0_ID 0xBA
+> -#define CAPP_UNIT1_ID 0XBE
+> +#define P8_CAPP_UNIT0_ID 0xBA
+> +#define P8_CAPP_UNIT1_ID 0XBE
+>
+>  static u64 get_capp_unit_id(struct device_node *np)
+>  {
+>  	u32 phb_index;
+>
+> -	/*
+> -	 * For chips other than POWER8NVL, we only have CAPP 0,
+> -	 * irrespective of which PHB is used.
+> -	 */
+> -	if (!pvr_version_is(PVR_POWER8NVL))
+> -		return CAPP_UNIT0_ID;
+> +	if (of_property_read_u32(np, "ibm,phb-index", &phb_index))
+> +		return 0;
+>
+>  	/*
+> -	 * For POWER8NVL, assume CAPP 0 is attached to PHB0 and
+> -	 * CAPP 1 is attached to PHB1.
+> +	 * POWER 8:
+> +	 *  - For chips other than POWER8NVL, we only have CAPP 0,
+> +	 *    irrespective of which PHB is used.
+> +	 *  - For POWER8NVL, assume CAPP 0 is attached to PHB0 and
+> +	 *    CAPP 1 is attached to PHB1.
+>  	 */
+> -	if (of_property_read_u32(np, "ibm,phb-index", &phb_index))
+> -		return 0;
+> +	if (cxl_is_power8()) {
+> +		if (!pvr_version_is(PVR_POWER8NVL))
+> +			return P8_CAPP_UNIT0_ID;
+>
+> -	if (phb_index == 0)
+> -		return CAPP_UNIT0_ID;
+> +		if (phb_index == 0)
+> +			return P8_CAPP_UNIT0_ID;
+>
+> -	if (phb_index == 1)
+> -		return CAPP_UNIT1_ID;
+> +		if (phb_index == 1)
+> +			return P8_CAPP_UNIT1_ID;
+> +	}
+>
 >  	return 0;
 >  }
+> @@ -968,7 +969,7 @@ static int cxl_afu_descriptor_looks_ok(struct cxl_afu *afu)
+>  	}
 >
-> -static int init_implementation_adapter_regs_psl(struct cxl *adapter, struct pci_dev *dev)
-> +static int init_implementation_adapter_regs_psl8(struct cxl *adapter, struct pci_dev *dev)
->  {
->  	u64 psl_dsnctl, psl_fircntl;
->  	u64 chipid;
-> @@ -434,7 +434,7 @@ static int init_implementation_adapter_regs_xsl(struct cxl *adapter, struct pci_
->  /* For the PSL this is a multiple for 0 < n <= 7: */
->  #define PSL_2048_250MHZ_CYCLES 1
+>  	if (afu->pp_psa && (afu->pp_size < PAGE_SIZE))
+> -		dev_warn(&afu->dev, "AFU uses < PAGE_SIZE per-process PSA!");
+> +		dev_warn(&afu->dev, "AFU uses pp_size(%#016llx) < PAGE_SIZE per-process PSA!\n", afu->pp_size);
 >
-> -static void write_timebase_ctrl_psl(struct cxl *adapter)
-> +static void write_timebase_ctrl_psl8(struct cxl *adapter)
->  {
->  	cxl_p1_write(adapter, CXL_PSL_TB_CTLSTAT,
->  		     TBSYNC_CNT(2 * PSL_2048_250MHZ_CYCLES));
-> @@ -455,7 +455,7 @@ static void write_timebase_ctrl_xsl(struct cxl *adapter)
->  		     TBSYNC_CNT(XSL_4000_CLOCKS));
+>  	for (i = 0; i < afu->crs_num; i++) {
+>  		rc = cxl_ops->afu_cr_read32(afu, i, 0, &val);
+> @@ -1251,8 +1252,13 @@ int cxl_pci_reset(struct cxl *adapter)
+>
+>  	dev_info(&dev->dev, "CXL reset\n");
+>
+> -	/* the adapter is about to be reset, so ignore errors */
+> -	cxl_data_cache_flush(adapter);
+> +	/*
+> +	 * The adapter is about to be reset, so ignore errors.
+> +	 * Not supported on P9 DD1 but don't forget to enable it
+> +	 * on P9 DD2
+> +	 */
+> +	if (cxl_is_power8())
+> +		cxl_data_cache_flush(adapter);
+>
+>  	/* pcie_warm_reset requests a fundamental pci reset which includes a
+>  	 * PERST assert/deassert.  PERST triggers a loading of the image
+> @@ -1382,6 +1388,14 @@ static void cxl_fixup_malformed_tlp(struct cxl *adapter, struct pci_dev *dev)
+>  	pci_write_config_dword(dev, aer + PCI_ERR_UNCOR_MASK, data);
 >  }
 >
-> -static u64 timebase_read_psl(struct cxl *adapter)
-> +static u64 timebase_read_psl8(struct cxl *adapter)
+> +static bool cxl_compatible_caia_version(struct cxl *adapter)
+> +{
+> +	if (cxl_is_power8() && (adapter->caia_major == 1))
+> +		return true;
+> +
+> +	return false;
+> +}
+> +
+>  static int cxl_vsec_looks_ok(struct cxl *adapter, struct pci_dev *dev)
 >  {
->  	return cxl_p1_read(adapter, CXL_PSL_Timebase);
->  }
-> @@ -513,7 +513,7 @@ static void cxl_setup_psl_timebase(struct cxl *adapter, struct pci_dev *dev)
->  	return;
->  }
+>  	if (adapter->vsec_status & CXL_STATUS_SECOND_PORT)
+> @@ -1392,6 +1406,12 @@ static int cxl_vsec_looks_ok(struct cxl *adapter, struct pci_dev *dev)
+>  		return -EINVAL;
+>  	}
 >
-> -static int init_implementation_afu_regs_psl(struct cxl_afu *afu)
-> +static int init_implementation_afu_regs_psl8(struct cxl_afu *afu)
->  {
->  	/* read/write masks for this slice */
->  	cxl_p1n_write(afu, CXL_PSL_APCALLOC_A, 0xFFFFFFFEFEFEFEFEULL);
-> @@ -996,7 +996,7 @@ static int cxl_afu_descriptor_looks_ok(struct cxl_afu *afu)
->  	return 0;
->  }
->
-> -static int sanitise_afu_regs_psl(struct cxl_afu *afu)
-> +static int sanitise_afu_regs_psl8(struct cxl_afu *afu)
->  {
->  	u64 reg;
->
-> @@ -1526,40 +1526,40 @@ static void cxl_deconfigure_adapter(struct cxl *adapter)
->  	pci_disable_device(pdev);
->  }
->
-> -static const struct cxl_service_layer_ops psl_ops = {
-> -	.adapter_regs_init = init_implementation_adapter_regs_psl,
-> -	.invalidate_all = cxl_invalidate_all_psl,
-> -	.afu_regs_init = init_implementation_afu_regs_psl,
-> -	.sanitise_afu_regs = sanitise_afu_regs_psl,
-> +static const struct cxl_service_layer_ops psl8_ops = {
-> +	.adapter_regs_init = init_implementation_adapter_regs_psl8,
-> +	.invalidate_all = cxl_invalidate_all_psl8,
-> +	.afu_regs_init = init_implementation_afu_regs_psl8,
-> +	.sanitise_afu_regs = sanitise_afu_regs_psl8,
->  	.register_serr_irq = cxl_native_register_serr_irq,
->  	.release_serr_irq = cxl_native_release_serr_irq,
-> -	.handle_interrupt = cxl_irq_psl,
-> +	.handle_interrupt = cxl_irq_psl8,
->  	.fail_irq = cxl_fail_irq_psl,
-> -	.activate_dedicated_process = cxl_activate_dedicated_process_psl,
-> -	.attach_afu_directed = cxl_attach_afu_directed_psl,
-> -	.attach_dedicated_process = cxl_attach_dedicated_process_psl,
-> -	.update_dedicated_ivtes = cxl_update_dedicated_ivtes_psl,
-> -	.debugfs_add_adapter_regs = cxl_debugfs_add_adapter_regs_psl,
-> -	.debugfs_add_afu_regs = cxl_debugfs_add_afu_regs_psl,
-> -	.psl_irq_dump_registers = cxl_native_irq_dump_regs_psl,
-> +	.activate_dedicated_process = cxl_activate_dedicated_process_psl8,
-> +	.attach_afu_directed = cxl_attach_afu_directed_psl8,
-> +	.attach_dedicated_process = cxl_attach_dedicated_process_psl8,
-> +	.update_dedicated_ivtes = cxl_update_dedicated_ivtes_psl8,
-> +	.debugfs_add_adapter_regs = cxl_debugfs_add_adapter_regs_psl8,
-> +	.debugfs_add_afu_regs = cxl_debugfs_add_afu_regs_psl8,
-> +	.psl_irq_dump_registers = cxl_native_irq_dump_regs_psl8,
->  	.err_irq_dump_registers = cxl_native_err_irq_dump_regs,
-> -	.debugfs_stop_trace = cxl_stop_trace_psl,
-> -	.write_timebase_ctrl = write_timebase_ctrl_psl,
-> -	.timebase_read = timebase_read_psl,
-> +	.debugfs_stop_trace = cxl_stop_trace_psl8,
-> +	.write_timebase_ctrl = write_timebase_ctrl_psl8,
-> +	.timebase_read = timebase_read_psl8,
->  	.capi_mode = OPAL_PHB_CAPI_MODE_CAPI,
->  	.needs_reset_before_disable = true,
->  };
->
->  static const struct cxl_service_layer_ops xsl_ops = {
->  	.adapter_regs_init = init_implementation_adapter_regs_xsl,
-> -	.invalidate_all = cxl_invalidate_all_psl,
-> -	.sanitise_afu_regs = sanitise_afu_regs_psl,
-> -	.handle_interrupt = cxl_irq_psl,
-> +	.invalidate_all = cxl_invalidate_all_psl8,
-> +	.sanitise_afu_regs = sanitise_afu_regs_psl8,
-> +	.handle_interrupt = cxl_irq_psl8,
->  	.fail_irq = cxl_fail_irq_psl,
-> -	.activate_dedicated_process = cxl_activate_dedicated_process_psl,
-> -	.attach_afu_directed = cxl_attach_afu_directed_psl,
-> -	.attach_dedicated_process = cxl_attach_dedicated_process_psl,
-> -	.update_dedicated_ivtes = cxl_update_dedicated_ivtes_psl,
-> +	.activate_dedicated_process = cxl_activate_dedicated_process_psl8,
-> +	.attach_afu_directed = cxl_attach_afu_directed_psl8,
-> +	.attach_dedicated_process = cxl_attach_dedicated_process_psl8,
-> +	.update_dedicated_ivtes = cxl_update_dedicated_ivtes_psl8,
->  	.debugfs_add_adapter_regs = cxl_debugfs_add_adapter_regs_xsl,
->  	.write_timebase_ctrl = write_timebase_ctrl_xsl,
->  	.timebase_read = timebase_read_xsl,
-> @@ -1574,8 +1574,8 @@ static void set_sl_ops(struct cxl *adapter, struct pci_dev *dev)
+> +	if (!cxl_compatible_caia_version(adapter)) {
+> +		dev_info(&dev->dev, "Ignoring card. PSL type is not supported "
+> +				    "(caia version: %d)\n", adapter->caia_major);
+> +		return -ENODEV;
+> +	}
+> +
+>  	if (!adapter->slices) {
+>  		/* Once we support dynamic reprogramming we can use the card if
+>  		 * it supports loadable AFUs */
+> @@ -1574,8 +1594,10 @@ static void set_sl_ops(struct cxl *adapter, struct pci_dev *dev)
 >  		adapter->native->sl_ops = &xsl_ops;
 >  		adapter->min_pe = 1; /* Workaround for CX-4 hardware bug */
 >  	} else {
-> -		dev_info(&dev->dev, "Device uses a PSL\n");
-> -		adapter->native->sl_ops = &psl_ops;
-> +		dev_info(&dev->dev, "Device uses a PSL8\n");
-> +		adapter->native->sl_ops = &psl8_ops;
+> -		dev_info(&dev->dev, "Device uses a PSL8\n");
+> -		adapter->native->sl_ops = &psl8_ops;
+> +		if (cxl_is_power8()) {
+> +			dev_info(&dev->dev, "Device uses a PSL8\n");
+> +			adapter->native->sl_ops = &psl8_ops;
+> +		}
 >  	}
 >  }
 >
