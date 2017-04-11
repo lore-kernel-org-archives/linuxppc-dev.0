@@ -1,50 +1,18 @@
-Return-Path: <srs0=jylx=3t=au1.ibm.com=benh@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w29dv5F0FzDq99
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Apr 2017 12:16:19 +1000 (AEST)
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3w29dv4h27z8t40
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Apr 2017 12:16:19 +1000 (AEST)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <yao.jin@linux.intel.com>
+Received: from mga06.intel.com (mga06.intel.com [134.134.136.31])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3w29dt6s3Nz9s8F
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Apr 2017 12:16:18 +1000 (AEST)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v3B29Efa013589
- for <linuxppc-dev@ozlabs.org>; Mon, 10 Apr 2017 22:16:12 -0400
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
- by mx0a-001b2d01.pphosted.com with ESMTP id 29rn4yaean-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Mon, 10 Apr 2017 22:16:12 -0400
-Received: from localhost
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <benh@au1.ibm.com>;
- Tue, 11 Apr 2017 12:16:10 +1000
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v3B2FxO633751122
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Apr 2017 12:16:07 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v3B2FYc0027366
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Apr 2017 12:15:34 +1000
-Subject: Re: EEH error in doing DMA with PEX 8619
-From: Benjamin Herrenschmidt <benh@au1.ibm.com>
-Reply-To: benh@au1.ibm.com
-To: IanJiang <ianjiang.cn@gmail.com>, linuxppc-dev@ozlabs.org
-Date: Tue, 11 Apr 2017 12:15:10 +1000
-In-Reply-To: <1491876268752-121154.post@n7.nabble.com>
-References: <1491826953201-121121.post@n7.nabble.com>
- <20170410222442.GA11610@gwshan> <1491876268752-121154.post@n7.nabble.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Message-Id: <1491876910.4166.219.camel@au1.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w2BZj1frTzDq5x
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Apr 2017 12:58:36 +1000 (AEST)
+From: Jin Yao <yao.jin@linux.intel.com>
+To: acme@kernel.org, jolsa@kernel.org, peterz@infradead.org, mingo@redhat.com,
+ alexander.shishkin@linux.intel.com
+Cc: Linux-kernel@vger.kernel.org, ak@linux.intel.com, kan.liang@intel.com,
+ yao.jin@intel.com, linuxppc-dev@lists.ozlabs.org,
+ Jin Yao <yao.jin@linux.intel.com>
+Subject: [PATCH v3 0/5] perf report: Show branch type
+Date: Tue, 11 Apr 2017 18:56:28 +0800
+Message-Id: <1491908193-25418-1-git-send-email-yao.jin@linux.intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -54,153 +22,177 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2017-04-10 at 19:04 -0700, IanJiang wrote:
-> Thanks for your replay.
-> 
-> I fixed my test according your suggestion. The CPU physical addresses (0x
-> 1f9e400000 and 0x 1f82c00000) converted with virt_to_phys() are used ,
-> instead of DMA addresses, or BUS physical addresses (0x 60a00000 and 0x
-> 60c00000). However, EEH still reports error.
+v3:
+---
+1. Move the JCC forward/backward and cross page computing from
+   kernel to userspace.
 
-That's incorrect. The system has an IOMMU, only addressed properly
-mapped/translated by the IOMMU can be used for DMA. That is addresses
-returned by things like dma_map_single/sg, dma_alloc_coherent, etc...
+2. Use lookup table to replace original switch/case processing.
 
-You also need to ensure you configure a proper dma mask.
+Changed:
+  perf/core: Define the common branch type classification
+  perf/x86/intel: Record branch type
+  perf report: Show branch type statistics for stdio mode
+  perf report: Show branch type in callchain entry
 
-Using virt_to_phys() is NEVER correct on *any* architecture.
+Not changed:
+  perf record: Create a new option save_type in --branch-filter
 
-Cheers,
-Ben.
+v2:
+---
+1. Use 4 bits in perf_branch_entry to record branch type.
 
-> Memory info.
-> ==========
-> 
-> [130508.050783] Plx8000_NT: Received PLX message ===> 
-> [130508.050784] Plx8000_NT: PLX_IOCTL_PHYSICAL_MEM_ALLOCATE
-> [130508.050785] Plx8000_NT: Attempt to allocate physical memory (1953KB)
-> [130508.051165] Plx8000_NT: Allocated physical memory...
-> [130508.051167] Plx8000_NT:     CPU Phys Addr: 1f9e400000
-> [130508.051168] Plx8000_NT:     Bus Phys Addr: 60a00000
-> [130508.051170] Plx8000_NT:     Kernel VA    : c000001f9e400000
-> [130508.051171] Plx8000_NT:     Size         : 1E8480h (1MB)
-> [130508.051173] Plx8000_NT: ...Completed message
-> [130508.051184] Plx8000_NT: 
-> [130508.051185] Plx8000_NT: Received message ===> MMAP
-> [130508.051187] Plx8000_NT: Mapped Phys (1f9e400000) ==> User VA
-> (3fff83ad0000)
-> [130508.051189] Plx8000_NT: ...Completed message
-> [130508.051196] Plx8000_NT: 
-> [130508.051198] Plx8000_NT: Received PLX message ===> 
-> [130508.051199] Plx8000_NT: PLX_IOCTL_PHYSICAL_MEM_ALLOCATE
-> [130508.051200] Plx8000_NT: Attempt to allocate physical memory (1953KB)
-> [130508.051562] Plx8000_NT: Allocated physical memory...
-> [130508.051564] Plx8000_NT:     CPU Phys Addr: 1f82c00000
-> [130508.051565] Plx8000_NT:     Bus Phys Addr: 60c00000
-> [130508.051566] Plx8000_NT:     Kernel VA    : c000001f82c00000
-> [130508.051568] Plx8000_NT:     Size         : 1E8480h (1MB)
-> [130508.051569] Plx8000_NT: ...Completed message
-> [130508.051580] Plx8000_NT: 
-> [130508.051581] Plx8000_NT: Received message ===> MMAP
-> [130508.051583] Plx8000_NT: Mapped Phys (1f82c00000) ==> User VA
-> (3fff838e0000)
-> [130508.051585] Plx8000_NT: ...Completed message
-> [130508.051600] Plx8000_NT: 
-> 
-> EEH info.
-> ========
-> 
-> [130515.365924] Plx8000_DMA: Received PLX message ===> 
-> [130515.365972] Plx8000_DMA: PLX_IOCTL_DMA_TRANSFER_BLOCK
-> [130515.366033] PLX DMA[PlxDmaTransferBlock-2479]
-> [130515.366084] PLX DMA[PlxDmaTransferBlock-2488]
-> [130515.366131] PLX DMA[PlxDmaTransferBlock-2495]
-> [130515.366181] Plx8000_DMA: Ch 0 - DMA 0000001F_9E400000 -->
-> 0000001F_82C00000 (65536 bytes)
-> [130515.366250] PLX DMA[PlxDmaTransferBlock-2503]
-> [130515.366296] PLX DMA[PlxDmaTransferBlock-2511]
-> [130515.366343] PLX DMA[PlxDmaTransferBlock-2516]
-> [130515.366392] PLX DMA[PlxDmaTransferBlock-2521]
-> [130515.366440] PLX DMA[PlxDmaTransferBlock-2532]
-> [130515.366487] PLX DMA[PlxDmaTransferBlock-2535]
-> [130515.366537] PLX DMA[PlxDmaTransferBlock-2539]
-> [130515.366584] PLX DMA[PlxDmaTransferBlock-2550]
-> [130515.366632] PLX DMA[PlxDmaTransferBlock-2557]
-> [130515.366681] PLX DMA[PlxDmaTransferBlock-2562]
-> [130515.366728] Plx8000_DMA: Start DMA transfer...
-> [130515.366775] PLX DMA[PlxDmaTransferBlock-2565]
-> [130515.366826] PLX DMA[PlxDmaTransferBlock-2569]
-> [130515.366868] EEH: Frozen PE#1 on PHB#1 detected
-> [130515.366872] EEH: PE location: Slot4, PHB location: N/A
-> [130515.367997] EEH: This PCI device has failed 1 times in the last hour
-> [130515.367997] EEH: Notify device drivers to shutdown
-> [130515.368006] EEH: Collect temporary log
-> [130515.368072] EEH: of node=0001:01:00:0
-> [130515.368075] EEH: PCI device/vendor: 861910b5
-> [130515.368077] EEH: PCI cmd/status register: 00100547
-> [130515.368079] EEH: Bridge secondary status: 0000
-> [130515.368081] EEH: Bridge control: 0002
-> [130515.368081] EEH: PCI-E capabilities and status follow:
-> [130515.368091] EEH: PCI-E 00: 0052a410 00008004 00000046 0000cc82 
-> [130515.368098] EEH: PCI-E 10: 00820000 00000000 00000000 00000000 
-> [130515.368099] EEH: PCI-E 20: 00000000 
-> [130515.368100] EEH: PCI-E AER capability register set follows:
-> [130515.368109] EEH: PCI-E AER 00: 13810001 00000000 00000000 00062030 
-> [130515.368116] EEH: PCI-E AER 10: 00000000 00002000 000000ff 00000000 
-> [130515.368122] EEH: PCI-E AER 20: 00000000 00000000 00000000 00000000 
-> [130515.368125] EEH: PCI-E AER 30: 00000000 0e0e0e0e 
-> [130515.368127] EEH: of node=0001:01:00:1
-> [130515.368294] Plx8000_DMA: ...Completed message
-> [130515.368295] PLX DMA[Dispatch_IoControl-1053]
-> [130515.368295] PLX DMA[Dispatch_IoControl-1061]
-> [130515.368297] Plx8000_DMA: 
-> [130515.368298] Plx8000_DMA: Received PLX message ===> 
-> [130515.368298] Plx8000_DMA: PLX_IOCTL_NOTIFICATION_WAIT
-> [130515.368299] Plx8000_DMA: Waiting for Interrupt wait object
-> (c000003c0705f880) to wake-up
-> [130515.369283] EEH: PCI device/vendor: 861910b5
-> [130515.369336] EEH: PCI cmd/status register: 10100546
-> [130515.369384] EEH: PCI-E capabilities and status follow:
-> [130515.369440] EEH: PCI-E 00: 0002a410 00008fe4 0020204e 0000cc82 
-> [130515.369506] EEH: PCI-E 10: 00820000 00000000 00000000 00000000 
-> [130515.369564] EEH: PCI-E 20: 00000000 
-> [130515.393162] EEH: PCI-E AER capability register set follows:
-> [130515.420590] EEH: PCI-E AER 00: 1f410001 00000000 00000000 00062030 
-> [130515.441475] EEH: PCI-E AER 10: 00000000 00002000 000001ff 00000000 
-> [130515.454700] EEH: PCI-E AER 20: 00000000 00000000 00000000 00000000 
-> [130515.469331] EEH: PCI-E AER 30: 00000000 00000000 
-> [130515.488728] EEH: of node=0001:02:01:0
-> [130515.502865] EEH: PCI device/vendor: 861910b5
-> [130515.516637] EEH: PCI cmd/status register: 00100546
-> [130515.536602] EEH: PCI-E capabilities and status follow:
-> [130515.536659] EEH: PCI-E 00: 0002a410 00008fc4 0000004e 0100cc82 
-> [130515.552999] EEH: PCI-E 10: 00420000 00000000 00000000 00000000 
-> [130515.569904] EEH: PCI-E 20: 00000000 
-> [130515.594771] EEH: PCI-E AER capability register set follows:
-> [130515.623612] EEH: PCI-E AER 00: 14810001 00000000 00000000 00062030 
-> [130515.646365] EEH: PCI-E AER 10: 00000000 00002000 000001ff 00000000 
-> [130515.675020] EEH: PCI-E AER 20: 00000000 00000000 00000000 00000000 
-> [130515.722944] EEH: PCI-E AER 30: 00000000 00000000 
-> [130515.722994] PHB3 PHB#1 Diag-data (Version: 1)
-> [130515.777673] brdgCtl:     00000002
-> [130515.837348] RootSts:     0002004f 00400000 f0820008 00100147 00002800
-> [130515.862070] RootErrSts:  00000000 00008000 00000000
-> [130515.910110] PhbSts:      0000001c00000000 0000001c00000000
-> [130515.927288] Lem:         0000000008000000 42498e327f502eae
-> 0000000000000000
-> [130515.954319] InAErr:      0000000100000000 0000000100000000
-> 0e0c010100000800 0000001f9e400000
-> [130515.987234] PE[  1] A/B: 8200802401010000 8000001f9e400000
-> [130516.000681] EEH: Enable I/O for affected devices
-> [130516.008885] EEH: Notify device drivers to resume I/O
-> [130516.028718] EEH: Enabled DMA for affected devices
-> [130516.059665] EEH: Notify device driver to resume
-> [130518.366890] Plx8000_DMA: Timeout waiting for interrupt
-> [130518.367090] Plx8000_DMA: ...Completed message
-> 
-> 
-> 
-> 
-> --
-> View this message in context: http://linuxppc.10917.n7.nabble.com/EEH-error-in-doing-DMA-with-PEX-8619-tp121121p121154.html
-> Sent from the linuxppc-dev mailing list archive at Nabble.com.
+2. Pull out some common branch types from FAR_BRANCH. Now the branch
+   types defined in perf_event.h:
+
+PERF_BR_NONE      : unknown
+PERF_BR_JCC_FWD   : conditional forward jump
+PERF_BR_JCC_BWD   : conditional backward jump
+PERF_BR_JMP       : jump
+PERF_BR_IND_JMP   : indirect jump
+PERF_BR_CALL      : call
+PERF_BR_IND_CALL  : indirect call
+PERF_BR_RET       : return
+PERF_BR_SYSCALL   : syscall
+PERF_BR_SYSRET    : syscall return
+PERF_BR_IRQ       : hw interrupt/trap/fault
+PERF_BR_INT       : sw interrupt
+PERF_BR_IRET      : return from interrupt
+PERF_BR_FAR_BRANCH: others not generic far branch type
+
+3. Use 2 bits in perf_branch_entry for a "cross" metrics checking
+   for branch cross 4K or 2M area. It's an approximate computing
+   for checking if the branch cross 4K page or 2MB page.
+
+For example:
+
+perf record -g --branch-filter any,save_type <command>
+
+perf report --stdio
+
+     JCC forward:  27.7%
+    JCC backward:   9.8%
+             JMP:   0.0%
+         IND_JMP:   6.5%
+            CALL:  26.6%
+        IND_CALL:   0.0%
+             RET:  29.3%
+            IRET:   0.0%
+        CROSS_4K:   0.0%
+        CROSS_2M:  14.3%
+
+perf report --branch-history --stdio --no-children
+
+    -23.60%--main div.c:42 (RET cycles:2)
+             compute_flag div.c:28 (RET cycles:2)
+             compute_flag div.c:27 (RET CROSS_2M cycles:1)
+             rand rand.c:28 (RET CROSS_2M cycles:1)
+             rand rand.c:28 (RET cycles:1)
+             __random random.c:298 (RET cycles:1)
+             __random random.c:297 (JCC forward cycles:1)
+             __random random.c:295 (JCC forward cycles:1)
+             __random random.c:295 (JCC forward cycles:1)
+             __random random.c:295 (JCC forward cycles:1)
+             __random random.c:295 (RET cycles:9)
+
+Changed:
+  perf/core: Define the common branch type classification
+  perf/x86/intel: Record branch type
+  perf report: Show branch type statistics for stdio mode
+  perf report: Show branch type in callchain entry
+
+Not changed:
+  perf record: Create a new option save_type in --branch-filter
+
+v1:
+---
+It is often useful to know the branch types while analyzing branch
+data. For example, a call is very different from a conditional branch.
+
+Currently we have to look it up in binary while the binary may later
+not be available and even the binary is available but user has to take
+some time. It is very useful for user to check it directly in perf
+report.
+
+Perf already has support for disassembling the branch instruction
+to get the branch type.
+
+The patch series records the branch type and show the branch type with
+other LBR information in callchain entry via perf report. The patch
+series also adds the branch type summary at the end of
+perf report --stdio.
+
+To keep consistent on kernel and userspace and make the classification
+more common, the patch adds the common branch type classification
+in perf_event.h.
+
+The common branch types are:
+
+ JCC forward: Conditional forward jump
+JCC backward: Conditional backward jump
+         JMP: Jump imm
+     IND_JMP: Jump reg/mem
+        CALL: Call imm
+    IND_CALL: Call reg/mem
+         RET: Ret
+  FAR_BRANCH: SYSCALL/SYSRET, IRQ, IRET, TSX Abort
+
+An example:
+
+1. Record branch type (new option "save_type")
+
+perf record -g --branch-filter any,save_type <command>
+
+2. Show the branch type statistics at the end of perf report --stdio
+
+perf report --stdio
+
+     JCC forward:  34.0%
+    JCC backward:   3.6%
+             JMP:   0.0%
+         IND_JMP:   6.5%
+            CALL:  26.6%
+        IND_CALL:   0.0%
+             RET:  29.3%
+      FAR_BRANCH:   0.0%
+
+3. Show branch type in callchain entry
+
+perf report --branch-history --stdio --no-children
+
+    --23.91%--main div.c:42 (RET cycles:2)
+              compute_flag div.c:28 (RET cycles:2)
+              compute_flag div.c:27 (RET cycles:1)
+              rand rand.c:28 (RET cycles:1)
+              rand rand.c:28 (RET cycles:1)
+              __random random.c:298 (RET cycles:1)
+              __random random.c:297 (JCC forward cycles:1)
+              __random random.c:295 (JCC forward cycles:1)
+              __random random.c:295 (JCC forward cycles:1)
+              __random random.c:295 (JCC forward cycles:1)
+              __random random.c:295 (RET cycles:9)
+
+Jin Yao (5):
+  perf/core: Define the common branch type classification
+  perf/x86/intel: Record branch type
+  perf record: Create a new option save_type in --branch-filter
+  perf report: Show branch type statistics for stdio mode
+  perf report: Show branch type in callchain entry
+
+ arch/x86/events/intel/lbr.c              |  53 ++++++++-
+ include/uapi/linux/perf_event.h          |  29 ++++-
+ tools/include/uapi/linux/perf_event.h    |  29 ++++-
+ tools/perf/Documentation/perf-record.txt |   1 +
+ tools/perf/builtin-report.c              |  70 +++++++++++
+ tools/perf/util/callchain.c              | 195 +++++++++++++++++++++----------
+ tools/perf/util/callchain.h              |   4 +-
+ tools/perf/util/event.h                  |   3 +-
+ tools/perf/util/hist.c                   |   5 +-
+ tools/perf/util/machine.c                |  26 +++--
+ tools/perf/util/parse-branch-options.c   |   1 +
+ tools/perf/util/util.c                   |  59 ++++++++++
+ tools/perf/util/util.h                   |  17 +++
+ 13 files changed, 411 insertions(+), 81 deletions(-)
+
+-- 
+2.7.4
