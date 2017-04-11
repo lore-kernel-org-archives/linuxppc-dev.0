@@ -1,41 +1,26 @@
-Return-Path: <fbarrat@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <yao.jin@linux.intel.com>
+Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w2Pb721yczDq5x
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Apr 2017 21:14:43 +1000 (AEST)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v3BBERKS009578
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Apr 2017 07:14:30 -0400
-Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
- by mx0a-001b2d01.pphosted.com with ESMTP id 29rh6yp5rd-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Apr 2017 07:14:29 -0400
-Received: from localhost
- by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
- Tue, 11 Apr 2017 12:14:13 +0100
-Subject: Re: [PATCH v4] cxl: Force context lock during EEH flow
-To: Michael Ellerman <mpe@ellerman.id.au>,
- Vaibhav Jain <vaibhav@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-References: <20170405113553.7354-1-vaibhav@linux.vnet.ibm.com>
- <272babe1-780f-c1da-c358-c70238a8ada7@linux.vnet.ibm.com>
- <87mvbnut12.fsf@concordia.ellerman.id.au>
-Cc: Philippe Bergheaud <philippe.bergheaud@fr.ibm.com>, stable@vger.kernel.org,
- Uma Krishnan <ukrishn@linux.vnet.ibm.com>,
- Ian Munsie <imunsie@au1.ibm.com>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- Christophe Lombard <christophe_lombard@fr.ibm.com>,
- Greg Kurz <gkurz@linux.vnet.ibm.com>
-From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-Date: Tue, 11 Apr 2017 13:13:42 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w2Q6062rNzDq5x
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Apr 2017 21:37:59 +1000 (AEST)
+Subject: Re: [PATCH v3 2/5] perf/x86/intel: Record branch type
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: acme@kernel.org, jolsa@kernel.org, mingo@redhat.com,
+ alexander.shishkin@linux.intel.com, Linux-kernel@vger.kernel.org,
+ ak@linux.intel.com, kan.liang@intel.com, yao.jin@intel.com,
+ linuxppc-dev@lists.ozlabs.org, Thomas Gleixner <tglx@linutronix.de>
+References: <1491908193-25418-1-git-send-email-yao.jin@linux.intel.com>
+ <1491908193-25418-3-git-send-email-yao.jin@linux.intel.com>
+ <20170411075219.bcteozodfkmwo45f@hirez.programming.kicks-ass.net>
+ <eff40b15-0da5-f573-1716-d9732ea1fd36@linux.intel.com>
+ <20170411083521.rlnkfz326rwpzs3k@hirez.programming.kicks-ass.net>
+From: "Jin, Yao" <yao.jin@linux.intel.com>
+Message-ID: <4fd82c89-5986-1c4b-2195-a9d0e7245b04@linux.intel.com>
+Date: Tue, 11 Apr 2017 19:37:53 +0800
 MIME-Version: 1.0
-In-Reply-To: <87mvbnut12.fsf@concordia.ellerman.id.au>
+In-Reply-To: <20170411083521.rlnkfz326rwpzs3k@hirez.programming.kicks-ass.net>
 Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <a175a714-fa02-2fbd-e1c7-aa9e1305aac1@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,51 +32,36 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 
 
-Le 11/04/2017 à 12:40, Michael Ellerman a écrit :
-> Frederic Barrat <fbarrat@linux.vnet.ibm.com> writes:
->
->> Le 05/04/2017 à 13:35, Vaibhav Jain a écrit :
->>> During an eeh event when the cxl card is fenced and card sysfs attr
->>> perst_reloads_same_image is set following warning message is seen in the
->>> kernel logs:
->>>
->>>  [   60.622727] Adapter context unlocked with 0 active contexts
->>>  [   60.622762] ------------[ cut here ]------------
->>>  [   60.622771] WARNING: CPU: 12 PID: 627 at
->>>  ../drivers/misc/cxl/main.c:325 cxl_adapter_context_unlock+0x60/0x80 [cxl]
->>>
->>> Even though this warning is harmless, it clutters the kernel log
->>> during an eeh event. This warning is triggered as the EEH callback
->>> cxl_pci_error_detected doesn't obtain a context-lock before forcibly
->>> detaching all active context and when context-lock is released during
->>> call to cxl_configure_adapter from cxl_pci_slot_reset, a warning in
->>> cxl_adapter_context_unlock is triggered.
->>>
->>> To fix this warning, we acquire the adapter context-lock via
->>> cxl_adapter_context_lock() in the eeh callback
->>> cxl_pci_error_detected() once all the virtual AFU PHBs are notified
->>> and their contexts detached. The context-lock is released in
->>> cxl_pci_slot_reset() after the adapter is successfully reconfigured
->>> and before we call slot_reset callback on slice attached device-drivers.
->>>
->>> Cc: stable@vger.kernel.org
->>> Fixes: 70b565bbdb91("cxl: Prevent adapter reset if an active context exists")
->>> Reported-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
->>> Signed-off-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
->>> ---
+On 4/11/2017 4:35 PM, Peter Zijlstra wrote:
+> On Tue, Apr 11, 2017 at 04:11:21PM +0800, Jin, Yao wrote:
 >>
->> Pending test result from cxl-flash:
->> Acked-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+>> On 4/11/2017 3:52 PM, Peter Zijlstra wrote:
+>>> This is still a completely inadequate changelog. I really will not
+>>> accept patches like this.
+>>>
+>> Hi,
+>>
+>> The changelog is added in the cover-letter ("[PATCH v3 0/5] perf report: Show branch type").
+>>
+>> Does the changelog need to be added in each patch's description?
+>>
+>> That's fine, I can add and resend this patch.
+> The cover letter is not retained; it is throw away information.
 >
-> Still pending ... ?
-
-Yes, still waiting. It was mentioned in a call with the cxlflash team 
-yesterday.
-
-   Fred
-
-
-
+> Each patch should have a coherent changelog that explain why the patch
+> was done and explain non trivial things in the implementation.
 >
-> cheers
+> Simply copy/pasting the same story in multiple patches is not right
+> either, for the simple fact that the patches were not the same. You did
+> a different thing, so you need a different story.
 >
+>
+>
+Thanks so much for the suggestion!
+
+I accept this and decide to make changes on my patch description. Maybe 
+not adding a full change-log, I will add a section in patch description 
+to describe the major changes from previous version.
+
+Thanks
+Jin Yao
