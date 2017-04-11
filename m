@@ -1,26 +1,24 @@
-Return-Path: <bsingharora@gmail.com>
+Return-Path: <aik@ozlabs.ru>
 Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
  [IPv6:2607:f8b0:400e:c05::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w2Kk372vBzDq7Z
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Apr 2017 18:20:27 +1000 (AEST)
-Received: by mail-pg0-x244.google.com with SMTP id o123so28871819pga.1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Apr 2017 01:20:27 -0700 (PDT)
-Message-ID: <1491898818.8380.3.camel@gmail.com>
-Subject: Re: [PATCH kernel v2] powerpc/iommu: Do not call PageTransHuge() on
- tail pages
-From: Balbir Singh <bsingharora@gmail.com>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org
-Cc: Michael Ellerman <mpe@ellerman.id.au>, "Aneesh Kumar K . V"
- <aneesh.kumar@linux.vnet.ibm.com>, Greg Kurz <groug@kaod.org>, Paul
- Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org,
- stable@vger.kernel.org,  #@ozlabs.ru, v4.9+@ozlabs.ru
-Date: Tue, 11 Apr 2017 18:20:18 +1000
-In-Reply-To: <20170411075457.28020-1-aik@ozlabs.ru>
-References: <20170411075457.28020-1-aik@ozlabs.ru>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w2Kvh1lSmzDq7W
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Apr 2017 18:28:47 +1000 (AEST)
+Received: by mail-pg0-x244.google.com with SMTP id 79so28911695pgf.0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Apr 2017 01:28:47 -0700 (PDT)
+Subject: Re: [PATCH kernel v2] powerpc/powernv: Check kzalloc() return value
+ in pnv_pci_table_alloc
+To: linuxppc-dev@lists.ozlabs.org
+References: <20170327082737.14448-1-aik@ozlabs.ru>
+Cc: David Gibson <david@gibson.dropbear.id.au>,
+ Michael Ellerman <mpe@ellerman.id.au>
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+Message-ID: <49ac3f79-6f23-f6ab-6860-8cff16faf5de@ozlabs.ru>
+Date: Tue, 11 Apr 2017 18:28:42 +1000
+MIME-Version: 1.0
+In-Reply-To: <20170327082737.14448-1-aik@ozlabs.ru>
+Content-Type: text/plain; charset=koi8-r
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,29 +28,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2017-04-11 at 17:54 +1000, Alexey Kardashevskiy wrote:
-> The CMA pages migration code does not support compound pages at
-> the moment so it performs few tests before proceeding to actual page
-> migration.
+On 27/03/17 19:27, Alexey Kardashevskiy wrote:
+> pnv_pci_table_alloc() ignores possible failure from kzalloc_node(),
+> this adds a check. There are 2 callers of pnv_pci_table_alloc(),
+> one already checks for tbl!=NULL, this adds WARN_ON() to the other path
+> which only happens during boot time in IODA1 and not expected to fail.
 > 
-> One of the tests - PageTransHuge() - has VM_BUG_ON_PAGE(PageTail()) as
-> it is designed to be called on head pages only. Since we also test for
-> PageCompound(), and it contains PageTail() and PageHead(), we can
-> simplify the check by leaving just PageCompound() and therefore avoid
-> possible VM_BUG_ON_PAGE.
-> 
-> Fixes: 2e5bbb5461f1 ("KVM: PPC: Book3S HV: Migrate pinned pages out of CMA")
-> Cc: stable@vger.kernel.org # v4.9+
 > Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> Acked-by: Balbir Singh <bsingharora@gmail.com>
 > ---
-> 
 > Changes:
 > v2:
-> * instead of moving PageCompound() to the beginning, this just drops
-> PageHuge() and PageTransHuge()
->
+> * s/BUG_ON/WARN_ON/
 
-Looks good! My Acked-by is already present
+Bad/good?
 
-Balbir Singh. 
+
+> ---
+>  arch/powerpc/platforms/powernv/pci-ioda.c | 3 +++
+>  arch/powerpc/platforms/powernv/pci.c      | 3 +++
+>  2 files changed, 6 insertions(+)
+> 
+> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+> index e36738291c32..04ef03a5201b 100644
+> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
+> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+> @@ -2128,6 +2128,9 @@ static void pnv_pci_ioda1_setup_dma_pe(struct pnv_phb *phb,
+>  
+>  found:
+>  	tbl = pnv_pci_table_alloc(phb->hose->node);
+> +	if (WARN_ON(!tbl))
+> +		return;
+> +
+>  	iommu_register_group(&pe->table_group, phb->hose->global_number,
+>  			pe->pe_number);
+>  	pnv_pci_link_table_and_group(phb->hose->node, 0, tbl, &pe->table_group);
+> diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
+> index eb835e977e33..9acdf6889c0d 100644
+> --- a/arch/powerpc/platforms/powernv/pci.c
+> +++ b/arch/powerpc/platforms/powernv/pci.c
+> @@ -766,6 +766,9 @@ struct iommu_table *pnv_pci_table_alloc(int nid)
+>  	struct iommu_table *tbl;
+>  
+>  	tbl = kzalloc_node(sizeof(struct iommu_table), GFP_KERNEL, nid);
+> +	if (!tbl)
+> +		return NULL;
+> +
+>  	INIT_LIST_HEAD_RCU(&tbl->it_group_list);
+>  
+>  	return tbl;
+> 
+
+
+-- 
+Alexey
