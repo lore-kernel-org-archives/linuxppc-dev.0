@@ -3,17 +3,17 @@ Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
  [IPv6:2607:f8b0:400e:c05::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w2ZCN3Hv9zDq7j
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2017 03:43:12 +1000 (AEST)
-Received: by mail-pg0-x244.google.com with SMTP id 81so670364pgh.3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Apr 2017 10:43:12 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w2ZCR45FZzDq7j
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2017 03:43:15 +1000 (AEST)
+Received: by mail-pg0-x244.google.com with SMTP id g2so675880pge.2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Apr 2017 10:43:15 -0700 (PDT)
 From: Oliver O'Halloran <oohall@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: arbab@linux.vnet.ibm.com, bsingharora@gmail.com, linux-nvdimm@lists.01.org,
  Oliver O'Halloran <oohall@gmail.com>
-Subject: [PATCH 6/9] powerpc, mm: Enable ZONE_DEVICE on powerpc
-Date: Wed, 12 Apr 2017 03:42:30 +1000
-Message-Id: <20170411174233.21902-7-oohall@gmail.com>
+Subject: [PATCH 7/9] powerpc/mm: Wire up ioremap_cache
+Date: Wed, 12 Apr 2017 03:42:31 +1000
+Message-Id: <20170411174233.21902-8-oohall@gmail.com>
 In-Reply-To: <20170411174233.21902-1-oohall@gmail.com>
 References: <20170411174233.21902-1-oohall@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,26 +25,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Flip the switch. Running around and screaming "IT'S ALIVE" is optional,
-but recommended.
+The default implementation of ioremap_cache() is aliased to ioremap().
+On powerpc ioremap() creates cache-inhibited mappings by default which
+is almost certainly not what you wanted.
 
 Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
 ---
- mm/Kconfig | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/include/asm/io.h | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/mm/Kconfig b/mm/Kconfig
-index 43d000e44424..d696af58f97f 100644
---- a/mm/Kconfig
-+++ b/mm/Kconfig
-@@ -724,7 +724,7 @@ config ZONE_DEVICE
- 	depends on MEMORY_HOTPLUG
- 	depends on MEMORY_HOTREMOVE
- 	depends on SPARSEMEM_VMEMMAP
--	depends on X86_64 #arch_add_memory() comprehends device memory
-+	depends on (X86_64 || PPC_BOOK3S_64)  #arch_add_memory() comprehends device memory
+diff --git a/arch/powerpc/include/asm/io.h b/arch/powerpc/include/asm/io.h
+index 5ed292431b5b..839eb031857f 100644
+--- a/arch/powerpc/include/asm/io.h
++++ b/arch/powerpc/include/asm/io.h
+@@ -757,6 +757,8 @@ extern void __iomem *ioremap_prot(phys_addr_t address, unsigned long size,
+ extern void __iomem *ioremap_wc(phys_addr_t address, unsigned long size);
+ #define ioremap_nocache(addr, size)	ioremap((addr), (size))
+ #define ioremap_uc(addr, size)		ioremap((addr), (size))
++#define ioremap_cache(addr, size) \
++	ioremap_prot((addr), (size), pgprot_val(PAGE_KERNEL))
  
- 	help
- 	  Device memory hotplug support allows for establishing pmem,
+ extern void iounmap(volatile void __iomem *addr);
+ 
 -- 
 2.9.3
