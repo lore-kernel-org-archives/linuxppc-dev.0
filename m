@@ -1,42 +1,26 @@
-Return-Path: <ravi.bangoria@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <srs0=g6dx=3t=gmail.com=bsingharora@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w2FSS4HH9zDq5W
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Apr 2017 15:08:24 +1000 (AEST)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v3B53nbp056092
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Apr 2017 01:08:21 -0400
-Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [125.16.236.2])
- by mx0a-001b2d01.pphosted.com with ESMTP id 29rmq6s362-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Apr 2017 01:08:21 -0400
-Received: from localhost
- by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ravi.bangoria@linux.vnet.ibm.com>;
- Tue, 11 Apr 2017 10:38:18 +0530
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay05.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v3B58Arx9568380
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Apr 2017 10:38:10 +0530
-Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v3B58EZE005086
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Apr 2017 10:38:15 +0530
-From: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
-To: mpe@ellerman.id.au
-Cc: benh@kernel.crashing.org, paulus@samba.org, npiggin@gmail.com,
- aneesh.kumar@linux.vnet.ibm.com, bsingharora@gmail.com,
- chris@distroguy.com, viro@zeniv.linux.org.uk, christophe.leroy@c-s.fr,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- anton@samba.org, naveen.n.rao@linux.vnet.ibm.com,
- Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
-Subject: [PATCH v2] ppc64/kprobe: Fix oops when kprobed on 'stdu' instruction
-Date: Tue, 11 Apr 2017 10:38:13 +0530
-Message-Id: <1491887293-3815-1-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w2Fp72JCHzDq5W
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Apr 2017 15:23:43 +1000 (AEST)
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3w2Fp71W3Bz8swH
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Apr 2017 15:23:43 +1000 (AEST)
+Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
+ [IPv6:2607:f8b0:400e:c05::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3w2Fp63ssyz9sNV
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Apr 2017 15:23:42 +1000 (AEST)
+Received: by mail-pg0-x243.google.com with SMTP id g2so28308380pge.2
+ for <linuxppc-dev@ozlabs.org>; Mon, 10 Apr 2017 22:23:42 -0700 (PDT)
+From: Balbir Singh <bsingharora@gmail.com>
+To: mpe@ellerman.id.au,
+	linuxppc-dev@ozlabs.org
+Subject: [PATCH 1/2] powerpc/tracing: Trace TLBIE(L)
+Date: Tue, 11 Apr 2017 15:23:25 +1000
+Message-Id: <20170411052325.20206-1-bsingharora@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,83 +30,221 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-If we set a kprobe on a 'stdu' instruction on powerpc64, we see a kernel 
-OOPS:
+Just a quick patch to trace tlbie(l)'s. The idea being that it can be
+enabled when we suspect corruption or when we need to see if we are doing
+the right thing during flush. I think the format can be enhanced to
+make it nicer (expand the RB/RS/IS/L cases in more detail if we ever
+need that level of details).
 
-  [ 1275.165932] Bad kernel stack pointer cd93c840 at c000000000009868
-  [ 1275.166378] Oops: Bad kernel stack pointer, sig: 6 [#1]
-  ...
-  GPR00: c000001fcd93cb30 00000000cd93c840 c0000000015c5e00 00000000cd93c840
-  ...
-  [ 1275.178305] NIP [c000000000009868] resume_kernel+0x2c/0x58
-  [ 1275.178594] LR [c000000000006208] program_check_common+0x108/0x180
+A typical trace might look like this
 
-Basically, on 64 bit system, when user probes on 'stdu' instruction,
-kernel does not emulate actual store in emulate_step itself because it
-may corrupt exception frame. So kernel does actual store operation in
-exception return code i.e. resume_kernel().
+<...>-5141  [062]  1354.486693: tlbie:
+	tlbie with lpid 0, local 0, rb=7b5d0ff874f11f1, rs=0, ric=0 prs=0 r=0
+systemd-udevd-2584  [018]  1354.486772: tlbie:
+	tlbie with lpid 0, local 0, rb=17be1f421adc10c1, rs=0, ric=0 prs=0 r=0
+...
 
-resume_kernel() loads the saved stack pointer from memory using lwz,
-effectively loading a corrupt (32bit) address, causing the kernel crash.
+qemu-system-ppc-5371  [016]  1412.369519: tlbie:
+	tlbie with lpid 0, local 1, rb=67bd8900174c11c1, rs=0, ric=0 prs=0 r=0
+qemu-system-ppc-5377  [056]  1421.687262: tlbie:
+	tlbie with lpid 1, local 0, rb=5f04edffa00c11c1, rs=1, ric=0 prs=0 r=0
 
-Fix this by loading the 64bit value instead.
-
-Fixes: be96f63375a1 ("powerpc: Split out instruction analysis part of emulate_step()") 
-Signed-off-by: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
-Reviewed-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com> 
+Signed-off-by: Balbir Singh <bsingharora@gmail.com>
 ---
-History:
-  Commit 8e9f69371536 ("powerpc/kprobe: Don't emulate store when kprobe
-  stwu r1") fixed exception frame corruption for 32 bit system which uses
-  'stwu' instruction for stack frame allocation. This commit also added
-  code for 64 bit system but did not enabled it for 'stdu' instruction.
-  So 'stdu' instruction on 64 bit machine was emulating actual store in
-  emulate_step() itself until...
 
-  Commit be96f63375a1 ("powerpc: Split out instruction analysis part of
-  emulate_step()"), enabled it for 'stdu' instruction on 64 bit machine.
+ NOTES: Did not implement the count suggestion to see individual flushes
+ The calls are always outside of ptesync, except for when in a loop in do_tlbies
 
-  So kprobe on 'stdu' has always been broken on powerpc64.  We haven't
-  noticed since most stdu operations were probably landing in the red
-  zone so the exception frame never got corrupted. In that sense, this
-  fix is needed for BE ever since load/store emulation was added.
+ arch/powerpc/include/asm/trace.h    | 33 +++++++++++++++++++++++++++++++++
+ arch/powerpc/kvm/book3s_hv_rm_mmu.c | 11 +++++++++--
+ arch/powerpc/mm/hash_native_64.c    |  3 +++
+ arch/powerpc/mm/tlb-radix.c         |  9 +++++++++
+ 4 files changed, 54 insertions(+), 2 deletions(-)
 
-  For LE, this is only getting exposed now due to my recent patch to
-  enable load/store emulation on LE, which got merged as commit
-  e148bd17f48b ("powerpc: Emulation support for load/store instructions
-  on LE").
-
-  Please mark this for stable as well.
-
-Changes in v2:
-  - Replace 'stwu' with 'stdu' in the comment.
-
- arch/powerpc/kernel/entry_64.S | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
-
-diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-index 6432d4b..767ef6d 100644
---- a/arch/powerpc/kernel/entry_64.S
-+++ b/arch/powerpc/kernel/entry_64.S
-@@ -689,7 +689,7 @@ resume_kernel:
+diff --git a/arch/powerpc/include/asm/trace.h b/arch/powerpc/include/asm/trace.h
+index c05cef6..18f168a 100644
+--- a/arch/powerpc/include/asm/trace.h
++++ b/arch/powerpc/include/asm/trace.h
+@@ -168,6 +168,39 @@ TRACE_EVENT(hash_fault,
+ 		      __entry->addr, __entry->access, __entry->trap)
+ );
  
- 	addi	r8,r1,INT_FRAME_SIZE	/* Get the kprobed function entry */
++
++TRACE_EVENT(tlbie,
++
++	TP_PROTO(unsigned long lpid, unsigned long local, unsigned long rb,
++		unsigned long rs, unsigned long ric, unsigned long prs,
++		unsigned long r),
++	TP_ARGS(lpid, local, rb, rs, ric, prs, r),
++	TP_STRUCT__entry(
++		__field(unsigned long, lpid)
++		__field(unsigned long, local)
++		__field(unsigned long, rb)
++		__field(unsigned long, rs)
++		__field(unsigned long, ric)
++		__field(unsigned long, prs)
++		__field(unsigned long, r)
++		),
++
++	TP_fast_assign(
++		__entry->lpid = lpid;
++		__entry->local = local;
++		__entry->rb = rb;
++		__entry->rs = rs;
++		__entry->ric = ric;
++		__entry->prs = prs;
++		__entry->r = r;
++		),
++
++	TP_printk("lpid=%ld, local=%ld, rb=0x%lx, rs=0x%lx, ric=0x%lx, "
++		"prs=0x%lx, r=0x%lx", __entry->lpid, __entry->local,
++		__entry->rb, __entry->rs, __entry->ric, __entry->prs,
++		__entry->r)
++);
++
+ #endif /* _TRACE_POWERPC_H */
  
--	lwz	r3,GPR1(r1)
-+	ld	r3,GPR1(r1)
- 	subi	r3,r3,INT_FRAME_SIZE	/* dst: Allocate a trampoline exception frame */
- 	mr	r4,r1			/* src:  current exception frame */
- 	mr	r1,r3			/* Reroute the trampoline frame to r1 */
-@@ -703,8 +703,8 @@ resume_kernel:
- 	addi	r6,r6,8
- 	bdnz	2b
+ #undef TRACE_INCLUDE_PATH
+diff --git a/arch/powerpc/kvm/book3s_hv_rm_mmu.c b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
+index ce6f212..584c74c 100644
+--- a/arch/powerpc/kvm/book3s_hv_rm_mmu.c
++++ b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
+@@ -15,6 +15,7 @@
+ #include <linux/log2.h>
  
--	/* Do real store operation to complete stwu */
--	lwz	r5,GPR1(r1)
-+	/* Do real store operation to complete stdu */
-+	ld	r5,GPR1(r1)
- 	std	r8,0(r5)
+ #include <asm/tlbflush.h>
++#include <asm/trace.h>
+ #include <asm/kvm_ppc.h>
+ #include <asm/kvm_book3s.h>
+ #include <asm/book3s/64/mmu-hash.h>
+@@ -443,17 +444,23 @@ static void do_tlbies(struct kvm *kvm, unsigned long *rbvalues,
+ 			cpu_relax();
+ 		if (need_sync)
+ 			asm volatile("ptesync" : : : "memory");
+-		for (i = 0; i < npages; ++i)
++		for (i = 0; i < npages; ++i) {
+ 			asm volatile(PPC_TLBIE_5(%0,%1,0,0,0) : :
+ 				     "r" (rbvalues[i]), "r" (kvm->arch.lpid));
++			trace_tlbie(kvm->arch.lpid, 0, rbvalues[i],
++				kvm->arch.lpid, 0, 0, 0);
++		}
+ 		asm volatile("eieio; tlbsync; ptesync" : : : "memory");
+ 		kvm->arch.tlbie_lock = 0;
+ 	} else {
+ 		if (need_sync)
+ 			asm volatile("ptesync" : : : "memory");
+-		for (i = 0; i < npages; ++i)
++		for (i = 0; i < npages; ++i) {
+ 			asm volatile(PPC_TLBIEL(%0,%1,0,0,0) : :
+ 				     "r" (rbvalues[i]), "r" (0));
++			trace_tlbie(kvm->arch.lpid, 1, rbvalues[i],
++				0, 0, 0, 0);
++		}
+ 		asm volatile("ptesync" : : : "memory");
+ 	}
+ }
+diff --git a/arch/powerpc/mm/hash_native_64.c b/arch/powerpc/mm/hash_native_64.c
+index 65bb8f3..bdaac28 100644
+--- a/arch/powerpc/mm/hash_native_64.c
++++ b/arch/powerpc/mm/hash_native_64.c
+@@ -23,6 +23,7 @@
+ #include <asm/mmu_context.h>
+ #include <asm/pgtable.h>
+ #include <asm/tlbflush.h>
++#include <asm/trace.h>
+ #include <asm/tlb.h>
+ #include <asm/cputable.h>
+ #include <asm/udbg.h>
+@@ -98,6 +99,7 @@ static inline void __tlbie(unsigned long vpn, int psize, int apsize, int ssize)
+ 			     : "memory");
+ 		break;
+ 	}
++	trace_tlbie(0, 0, va, 0, 0, 0, 0);
+ }
  
- 	/* Clear _TIF_EMULATE_STACK_STORE flag */
+ static inline void __tlbiel(unsigned long vpn, int psize, int apsize, int ssize)
+@@ -147,6 +149,7 @@ static inline void __tlbiel(unsigned long vpn, int psize, int apsize, int ssize)
+ 			     : "memory");
+ 		break;
+ 	}
++	trace_tlbie(0, 1, va, 0, 0, 0, 0);
+ 
+ }
+ 
+diff --git a/arch/powerpc/mm/tlb-radix.c b/arch/powerpc/mm/tlb-radix.c
+index 83dc1cc..c320f1d 100644
+--- a/arch/powerpc/mm/tlb-radix.c
++++ b/arch/powerpc/mm/tlb-radix.c
+@@ -16,6 +16,7 @@
+ 
+ #include <asm/tlb.h>
+ #include <asm/tlbflush.h>
++#include <asm/trace.h>
+ 
+ static DEFINE_RAW_SPINLOCK(native_tlbie_lock);
+ 
+@@ -38,6 +39,7 @@ static inline void __tlbiel_pid(unsigned long pid, int set,
+ 	asm volatile(PPC_TLBIEL(%0, %4, %3, %2, %1)
+ 		     : : "r"(rb), "i"(r), "i"(prs), "i"(ric), "r"(rs) : "memory");
+ 	asm volatile("ptesync": : :"memory");
++	trace_tlbie(0, 1, rb, rs, ric, prs, r);
+ }
+ 
+ /*
+@@ -66,6 +68,7 @@ static inline void _tlbie_pid(unsigned long pid, unsigned long ric)
+ 	asm volatile(PPC_TLBIE_5(%0, %4, %3, %2, %1)
+ 		     : : "r"(rb), "i"(r), "i"(prs), "i"(ric), "r"(rs) : "memory");
+ 	asm volatile("eieio; tlbsync; ptesync": : :"memory");
++	trace_tlbie(0, 0, rb, rs, ric, prs, r);
+ }
+ 
+ static inline void _tlbiel_va(unsigned long va, unsigned long pid,
+@@ -83,6 +86,7 @@ static inline void _tlbiel_va(unsigned long va, unsigned long pid,
+ 	asm volatile(PPC_TLBIEL(%0, %4, %3, %2, %1)
+ 		     : : "r"(rb), "i"(r), "i"(prs), "i"(ric), "r"(rs) : "memory");
+ 	asm volatile("ptesync": : :"memory");
++	trace_tlbie(0, 1, rb, rs, ric, prs, r);
+ }
+ 
+ static inline void _tlbie_va(unsigned long va, unsigned long pid,
+@@ -100,6 +104,7 @@ static inline void _tlbie_va(unsigned long va, unsigned long pid,
+ 	asm volatile(PPC_TLBIE_5(%0, %4, %3, %2, %1)
+ 		     : : "r"(rb), "i"(r), "i"(prs), "i"(ric), "r"(rs) : "memory");
+ 	asm volatile("eieio; tlbsync; ptesync": : :"memory");
++	trace_tlbie(0, 0, rb, rs, ric, prs, r);
+ }
+ 
+ /*
+@@ -374,6 +379,7 @@ void radix__flush_tlb_lpid_va(unsigned long lpid, unsigned long gpa,
+ 	asm volatile(PPC_TLBIE_5(%0, %4, %3, %2, %1)
+ 		     : : "r"(rb), "i"(r), "i"(prs), "i"(ric), "r"(rs) : "memory");
+ 	asm volatile("eieio; tlbsync; ptesync": : :"memory");
++	trace_tlbie(lpid, 0, rb, rs, ric, prs, r);
+ }
+ EXPORT_SYMBOL(radix__flush_tlb_lpid_va);
+ 
+@@ -391,6 +397,7 @@ void radix__flush_tlb_lpid(unsigned long lpid)
+ 	asm volatile(PPC_TLBIE_5(%0, %4, %3, %2, %1)
+ 		     : : "r"(rb), "i"(r), "i"(prs), "i"(ric), "r"(rs) : "memory");
+ 	asm volatile("eieio; tlbsync; ptesync": : :"memory");
++	trace_tlbie(lpid, 0, rb, rs, ric, prs, r);
+ }
+ EXPORT_SYMBOL(radix__flush_tlb_lpid);
+ 
+@@ -417,12 +424,14 @@ void radix__flush_tlb_all(void)
+ 	 */
+ 	asm volatile(PPC_TLBIE_5(%0, %4, %3, %2, %1)
+ 		     : : "r"(rb), "i"(r), "i"(1), "i"(ric), "r"(rs) : "memory");
++	trace_tlbie(0, 0, rb, rs, ric, prs, r);
+ 	/*
+ 	 * now flush host entires by passing PRS = 0 and LPID == 0
+ 	 */
+ 	asm volatile(PPC_TLBIE_5(%0, %4, %3, %2, %1)
+ 		     : : "r"(rb), "i"(r), "i"(prs), "i"(ric), "r"(0) : "memory");
+ 	asm volatile("eieio; tlbsync; ptesync": : :"memory");
++	trace_tlbie(0, 0, rb, 0, ric, prs, r);
+ }
+ 
+ void radix__flush_tlb_pte_p9_dd1(unsigned long old_pte, struct mm_struct *mm,
 -- 
-1.9.3
+2.9.3
