@@ -1,19 +1,24 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from ozlabs.ru (ozlabs.ru [107.173.13.209])
- by lists.ozlabs.org (Postfix) with ESMTP id 3w2K9L0YlSzDq5x
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Apr 2017 17:55:34 +1000 (AEST)
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, Balbir Singh <bsingharora@gmail.com>,
- Michael Ellerman <mpe@ellerman.id.au>,
- "Aneesh Kumar K . V" <aneesh.kumar@linux.vnet.ibm.com>,
- Greg Kurz <groug@kaod.org>, Paul Mackerras <paulus@samba.org>,
- linux-kernel@vger.kernel.org, stable@vger.kernel.org, #@ozlabs.ru,
- v4.9+@ozlabs.ru
-Subject: [PATCH kernel v2] powerpc/iommu: Do not call PageTransHuge() on tail
- pages
-Date: Tue, 11 Apr 2017 17:54:57 +1000
-Message-Id: <20170411075457.28020-1-aik@ozlabs.ru>
+Return-Path: <yao.jin@linux.intel.com>
+Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w2KWf2hwwzDq7W
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Apr 2017 18:11:25 +1000 (AEST)
+Subject: Re: [PATCH v3 2/5] perf/x86/intel: Record branch type
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: acme@kernel.org, jolsa@kernel.org, mingo@redhat.com,
+ alexander.shishkin@linux.intel.com, Linux-kernel@vger.kernel.org,
+ ak@linux.intel.com, kan.liang@intel.com, yao.jin@intel.com,
+ linuxppc-dev@lists.ozlabs.org, Thomas Gleixner <tglx@linutronix.de>
+References: <1491908193-25418-1-git-send-email-yao.jin@linux.intel.com>
+ <1491908193-25418-3-git-send-email-yao.jin@linux.intel.com>
+ <20170411075219.bcteozodfkmwo45f@hirez.programming.kicks-ass.net>
+From: "Jin, Yao" <yao.jin@linux.intel.com>
+Message-ID: <eff40b15-0da5-f573-1716-d9732ea1fd36@linux.intel.com>
+Date: Tue, 11 Apr 2017 16:11:21 +0800
+MIME-Version: 1.0
+In-Reply-To: <20170411075219.bcteozodfkmwo45f@hirez.programming.kicks-ass.net>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,52 +28,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The CMA pages migration code does not support compound pages at
-the moment so it performs few tests before proceeding to actual page
-migration.
 
-One of the tests - PageTransHuge() - has VM_BUG_ON_PAGE(PageTail()) as
-it is designed to be called on head pages only. Since we also test for
-PageCompound(), and it contains PageTail() and PageHead(), we can
-simplify the check by leaving just PageCompound() and therefore avoid
-possible VM_BUG_ON_PAGE.
 
-Fixes: 2e5bbb5461f1 ("KVM: PPC: Book3S HV: Migrate pinned pages out of CMA")
-Cc: stable@vger.kernel.org # v4.9+
-Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-Acked-by: Balbir Singh <bsingharora@gmail.com>
----
+On 4/11/2017 3:52 PM, Peter Zijlstra wrote:
+> This is still a completely inadequate changelog. I really will not
+> accept patches like this.
+>
+Hi,
 
-Changes:
-v2:
-* instead of moving PageCompound() to the beginning, this just drops
-PageHuge() and PageTransHuge()
+The changelog is added in the cover-letter ("[PATCH v3 0/5] perf report: Show branch type").
 
----
- arch/powerpc/mm/mmu_context_iommu.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+Does the changelog need to be added in each patch's description?
 
-diff --git a/arch/powerpc/mm/mmu_context_iommu.c b/arch/powerpc/mm/mmu_context_iommu.c
-index 497130c5c742..96f835cbf212 100644
---- a/arch/powerpc/mm/mmu_context_iommu.c
-+++ b/arch/powerpc/mm/mmu_context_iommu.c
-@@ -81,7 +81,7 @@ struct page *new_iommu_non_cma_page(struct page *page, unsigned long private,
- 	gfp_t gfp_mask = GFP_USER;
- 	struct page *new_page;
- 
--	if (PageHuge(page) || PageTransHuge(page) || PageCompound(page))
-+	if (PageCompound(page))
- 		return NULL;
- 
- 	if (PageHighMem(page))
-@@ -100,7 +100,7 @@ static int mm_iommu_move_page_from_cma(struct page *page)
- 	LIST_HEAD(cma_migrate_pages);
- 
- 	/* Ignore huge pages for now */
--	if (PageHuge(page) || PageTransHuge(page) || PageCompound(page))
-+	if (PageCompound(page))
- 		return -EBUSY;
- 
- 	lru_add_drain();
--- 
-2.11.0
+That's fine, I can add and resend this patch.
+
+Thanks
+Jin Yao
