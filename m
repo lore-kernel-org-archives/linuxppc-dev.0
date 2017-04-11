@@ -1,25 +1,30 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
- [IPv6:2607:f8b0:400e:c05::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <pmladek@suse.com>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w2R0v48QMzDq5x
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Apr 2017 22:18:38 +1000 (AEST)
-Received: by mail-pg0-x242.google.com with SMTP id 79so29716806pgf.0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Apr 2017 05:18:38 -0700 (PDT)
-Date: Tue, 11 Apr 2017 22:18:18 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@ozlabs.org>
-Subject: Re: [PATCH 1/5] powerpc/pseries: do not use msgsndp doorbells on
- POWER9 guests
-Message-ID: <20170411221818.5a177da0@roar.ozlabs.ibm.com>
-In-Reply-To: <87vaqbuueu.fsf@concordia.ellerman.id.au>
-References: <20170407125602.31146-1-npiggin@gmail.com>
- <20170407125602.31146-2-npiggin@gmail.com>
- <87vaqbuueu.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w2RNB09CpzDq5x
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Apr 2017 22:35:22 +1000 (AEST)
+Date: Tue, 11 Apr 2017 14:35:16 +0200
+From: Petr Mladek <pmladek@suse.com>
+To: Josh Poimboeuf <jpoimboe@redhat.com>
+Cc: Jessica Yu <jeyu@redhat.com>, Jiri Kosina <jikos@kernel.org>,
+ Miroslav Benes <mbenes@suse.cz>, linux-kernel@vger.kernel.org,
+ live-patching@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, x86@kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ Vojtech Pavlik <vojtech@suse.com>, Jiri Slaby <jslaby@suse.cz>,
+ Chris J Arges <chris.j.arges@canonical.com>,
+ Andy Lutomirski <luto@kernel.org>, Ingo Molnar <mingo@kernel.org>,
+ Peter Zijlstra <peterz@infradead.org>,
+ Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+ Balbir Singh <bsingharora@gmail.com>
+Subject: Re: [PATCH v5 13/15] livepatch: change to a per-task consistency model
+Message-ID: <20170411123516.GD3452@pathway.suse.cz>
+References: <cover.1487036215.git.jpoimboe@redhat.com>
+ <a999d965d598b23564355c24db0ed6799f105fa6.1487036215.git.jpoimboe@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <a999d965d598b23564355c24db0ed6799f105fa6.1487036215.git.jpoimboe@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,36 +34,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-cc'ing Paul
-
-On Tue, 11 Apr 2017 20:10:17 +1000
-Michael Ellerman <mpe@ellerman.id.au> wrote:
-
-> Nicholas Piggin <npiggin@gmail.com> writes:
+On Mon 2017-02-13 19:42:40, Josh Poimboeuf wrote:
+> Change livepatch to use a basic per-task consistency model.  This is the
+> foundation which will eventually enable us to patch those ~10% of
+> security patches which change function or data semantics.  This is the
+> biggest remaining piece needed to make livepatch more generally useful.
 > 
-> > POWER9 hypervisors will not necessarily run guest threads together on
-> > the same core at the same time, so msgsndp should not be used.  
 > 
-> I'm worried this is encoding the behaviour of a particular hypervisor in
-> the guest kernel.
+> Signed-off-by: Josh Poimboeuf <jpoimboe@redhat.com>
 
-Yeah, it's not ideal.
+Just for record, this last version looks fine to me. I do not see
+problems any longer. Everything looks consistent now ;-)
+It is a great work. Feel free to use:
 
-> If we *can't* use msgsndp then the hypervisor better do something to
-> stop us from using it.
+Reviewed-by: Petr Mladek <pmladek@suse.com>
 
-POWER9 hypervisor has an hfscr and should clear that if it does not gang
-threads like POWER8. The guest still needs to know not to use it though...
+Thanks a lot for patience.
 
-> If it would be preferable for us not to use msgsndp, then the hypervisor
-> can tell us that somehow, eg. in the device tree.
-
-I don't know that we have a really good way to do that other than guests
-to clear the doorbell feature for POWER9.
-
-Does the hypervisor set any relevant DT we can use today that says virtual
-sibling != physical sibling? If not, then we'll just have to clear it from
-all POWER9 guests until we get a DT proprety from phyp.
-
-Thanks,
-Nick
+Best Regards,
+Petr
