@@ -1,24 +1,26 @@
-Return-Path: <peterz@infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org [65.50.211.133])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w2Kgx4pYfzDq5x
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Apr 2017 18:18:37 +1000 (AEST)
-Date: Tue, 11 Apr 2017 10:18:30 +0200
-From: Peter Zijlstra <peterz@infradead.org>
-To: Jin Yao <yao.jin@linux.intel.com>
-Cc: acme@kernel.org, jolsa@kernel.org, mingo@redhat.com,
- alexander.shishkin@linux.intel.com, Linux-kernel@vger.kernel.org,
- ak@linux.intel.com, kan.liang@intel.com, yao.jin@intel.com,
- linuxppc-dev@lists.ozlabs.org, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH v3 2/5] perf/x86/intel: Record branch type
-Message-ID: <20170411081830.57372og2mzkhiftr@hirez.programming.kicks-ass.net>
-References: <1491908193-25418-1-git-send-email-yao.jin@linux.intel.com>
- <1491908193-25418-3-git-send-email-yao.jin@linux.intel.com>
- <20170411075219.bcteozodfkmwo45f@hirez.programming.kicks-ass.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170411075219.bcteozodfkmwo45f@hirez.programming.kicks-ass.net>
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
+ [IPv6:2607:f8b0:400e:c05::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w2Kk372vBzDq7Z
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Apr 2017 18:20:27 +1000 (AEST)
+Received: by mail-pg0-x244.google.com with SMTP id o123so28871819pga.1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Apr 2017 01:20:27 -0700 (PDT)
+Message-ID: <1491898818.8380.3.camel@gmail.com>
+Subject: Re: [PATCH kernel v2] powerpc/iommu: Do not call PageTransHuge() on
+ tail pages
+From: Balbir Singh <bsingharora@gmail.com>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org
+Cc: Michael Ellerman <mpe@ellerman.id.au>, "Aneesh Kumar K . V"
+ <aneesh.kumar@linux.vnet.ibm.com>, Greg Kurz <groug@kaod.org>, Paul
+ Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org,
+ stable@vger.kernel.org,  #@ozlabs.ru, v4.9+@ozlabs.ru
+Date: Tue, 11 Apr 2017 18:20:18 +1000
+In-Reply-To: <20170411075457.28020-1-aik@ozlabs.ru>
+References: <20170411075457.28020-1-aik@ozlabs.ru>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,47 +30,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Apr 11, 2017 at 09:52:19AM +0200, Peter Zijlstra wrote:
-> On Tue, Apr 11, 2017 at 06:56:30PM +0800, Jin Yao wrote:
+On Tue, 2017-04-11 at 17:54 +1000, Alexey Kardashevskiy wrote:
+> The CMA pages migration code does not support compound pages at
+> the moment so it performs few tests before proceeding to actual page
+> migration.
+> 
+> One of the tests - PageTransHuge() - has VM_BUG_ON_PAGE(PageTail()) as
+> it is designed to be called on head pages only. Since we also test for
+> PageCompound(), and it contains PageTail() and PageHead(), we can
+> simplify the check by leaving just PageCompound() and therefore avoid
+> possible VM_BUG_ON_PAGE.
+> 
+> Fixes: 2e5bbb5461f1 ("KVM: PPC: Book3S HV: Migrate pinned pages out of CMA")
+> Cc: stable@vger.kernel.org # v4.9+
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> Acked-by: Balbir Singh <bsingharora@gmail.com>
+> ---
+> 
+> Changes:
+> v2:
+> * instead of moving PageCompound() to the beginning, this just drops
+> PageHuge() and PageTransHuge()
+>
 
-> > @@ -960,6 +1006,11 @@ intel_pmu_lbr_filter(struct cpu_hw_events *cpuc)
-> >  			cpuc->lbr_entries[i].from = 0;
-> >  			compress = true;
-> >  		}
-> > +
-> > +		if ((br_sel & X86_BR_TYPE_SAVE) == X86_BR_TYPE_SAVE)
-> > +			cpuc->lbr_entries[i].type = common_branch_type(type);
-> > +		else
-> > +			cpuc->lbr_entries[i].type = PERF_BR_NONE;
-> >  	}
+Looks good! My Acked-by is already present
 
-I was wondering WTH you did that else; because it should already be 0
-(aka, BR_NONE). Then I found intel_pmu_lbr_read_32() is already broken,
-and you just broke intel_pmu_lbr_read_64().
-
-Arguably we should add a union on the last __u64 with a name for the
-entire thing, but the below is the minimal fix.
-
----
-Subject: perf,x86: Avoid exposing wrong/stale data in intel_pmu_lbr_read_32()
-From: Peter Zijlstra <peterz@infradead.org>
-Date: Tue Apr 11 10:10:28 CEST 2017
-
-When the perf_branch_entry::{in_tx,abort,cycles} fields were added,
-intel_pmu_lbr_read_32() wasn't updated to initialize them.
-
-Fixes: 135c5612c460 ("perf/x86/intel: Support Haswell/v4 LBR format")
-Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
----
---- a/arch/x86/events/intel/lbr.c
-+++ b/arch/x86/events/intel/lbr.c
-@@ -507,6 +507,9 @@ static void intel_pmu_lbr_read_32(struct
- 		cpuc->lbr_entries[i].to		= msr_lastbranch.to;
- 		cpuc->lbr_entries[i].mispred	= 0;
- 		cpuc->lbr_entries[i].predicted	= 0;
-+		cpuc->lbr_entries[i].in_tx	= 0;
-+		cpuc->lbr_entries[i].abort	= 0;
-+		cpuc->lbr_entries[i].cycles	= 0;
- 		cpuc->lbr_entries[i].reserved	= 0;
- 	}
- 	cpuc->lbr_stack.nr = i;
+Balbir Singh. 
