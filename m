@@ -2,20 +2,19 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w2NVZ63yfzDq5x
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Apr 2017 20:25:42 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w2NjV4RXpzDq5x
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Apr 2017 20:35:10 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- benh@kernel.crashing.org, paulus@samba.org
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: [RFC PATCH 6/7] powerpc/hugetlb: Add code to support to follow
- huge page directory entries
-In-Reply-To: <1491314675-15787-6-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-References: <1491314675-15787-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1491314675-15787-6-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Date: Tue, 11 Apr 2017 20:25:41 +1000
-Message-ID: <87shlfutp6.fsf@concordia.ellerman.id.au>
+To: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>,
+ linuxppc-dev <linuxppc-dev@ozlabs.org>,
+ Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2/2] powerpc/book3s: mce: Use add_taint_no_warn() in
+ machine_check_early().
+In-Reply-To: <148765089349.20315.11180051017586952500.stgit@jupiter.in.ibm.com>
+References: <148765088309.20315.15300624012053746538.stgit@jupiter.in.ibm.com>
+ <148765089349.20315.11180051017586952500.stgit@jupiter.in.ibm.com>
+Date: Tue, 11 Apr 2017 20:35:08 +1000
+Message-ID: <87pogjut9f.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,45 +26,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> writes:
+Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com> writes:
 
-> Add follow_huge_pd implementation for ppc64.
+> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
 >
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/mm/hugetlbpage.c | 42 ++++++++++++++++++++++++++++++++++++++++++
->  1 file changed, 42 insertions(+)
+> machine_check_early() gets called in real mode. The very first time when
+> add_taint() is called, it prints a warning which ends up calling opal
+> call (that uses OPAL_CALL wrapper) for writing it to console. If we get a
+> very first machine check while we are in opal we are doomed. OPAL_CALL
+> overwrites the PACASAVEDMSR in r13 and in this case when we are done with
+> MCE handling the original opal call will use this new MSR on it's way
+> back to opal_return. This usually leads unexpected behaviour or kernel
+> to panic. Instead use the add_taint_no_warn() that does not call printk.
 >
-> diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
-> index 80f6d2ed551a..9d66d4f810aa 100644
-> --- a/arch/powerpc/mm/hugetlbpage.c
-> +++ b/arch/powerpc/mm/hugetlbpage.c
-> @@ -17,6 +17,8 @@
->  #include <linux/memblock.h>
->  #include <linux/bootmem.h>
->  #include <linux/moduleparam.h>
-> +#include <linux/swap.h>
-> +#include <linux/swapops.h>
->  #include <asm/pgtable.h>
->  #include <asm/pgalloc.h>
->  #include <asm/tlb.h>
-> @@ -618,6 +620,10 @@ void hugetlb_free_pgd_range(struct mmu_gather *tlb,
->  }
->  
->  /*
-> + * 64 bit book3s use generic follow_page_mask
-> + */
-> +#ifndef CONFIG_PPC_BOOK3S_64
+> This is broken with current FW level. We got lucky so far for not getting
+> very first MCE hit while in OPAL. But easily reproducible on Mambo.
+> This should go to stable as well alongwith patch 1/2.
 
-I think it's always easier to follow if you use:
+This is not a good way to fix a bug that needs to go back to stable.
+Changing generic code means I need to sync up with the right maintainer,
+get acks, etc. And then convince people that it should go to stable also.
 
-  #ifdef x
-  ...
-  #else /* !x */
-  ...
-  #endif
+So you can please fix this a different way for stable?
 
-ie. in this case put the Book3S 64 case first and the existing code in the
-#else.
+Can we just do the tainting later, once we're in virtual mode?
 
 cheers
+
+> Fixes: 27ea2c420cad powerpc: Set the correct kernel taint on machine check errors.
+> Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/kernel/traps.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+> index 62b587f..4a048dc 100644
+> --- a/arch/powerpc/kernel/traps.c
+> +++ b/arch/powerpc/kernel/traps.c
+> @@ -306,7 +306,7 @@ long machine_check_early(struct pt_regs *regs)
+>  
+>  	__this_cpu_inc(irq_stat.mce_exceptions);
+>  
+> -	add_taint(TAINT_MACHINE_CHECK, LOCKDEP_NOW_UNRELIABLE);
+> +	add_taint_no_warn(TAINT_MACHINE_CHECK, LOCKDEP_NOW_UNRELIABLE);
+>  
+>  	/*
+>  	 * See if platform is capable of handling machine check. (e.g. PowerNV
