@@ -1,24 +1,26 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
- [IPv6:2607:f8b0:400e:c05::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <peterz@infradead.org>
+Received: from merlin.infradead.org (merlin.infradead.org
+ [IPv6:2001:4978:20e::2])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w2Kvh1lSmzDq7W
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Apr 2017 18:28:47 +1000 (AEST)
-Received: by mail-pg0-x244.google.com with SMTP id 79so28911695pgf.0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Apr 2017 01:28:47 -0700 (PDT)
-Subject: Re: [PATCH kernel v2] powerpc/powernv: Check kzalloc() return value
- in pnv_pci_table_alloc
-To: linuxppc-dev@lists.ozlabs.org
-References: <20170327082737.14448-1-aik@ozlabs.ru>
-Cc: David Gibson <david@gibson.dropbear.id.au>,
- Michael Ellerman <mpe@ellerman.id.au>
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-Message-ID: <49ac3f79-6f23-f6ab-6860-8cff16faf5de@ozlabs.ru>
-Date: Tue, 11 Apr 2017 18:28:42 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w2L3P2h75zDq5x
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Apr 2017 18:35:29 +1000 (AEST)
+Date: Tue, 11 Apr 2017 10:35:21 +0200
+From: Peter Zijlstra <peterz@infradead.org>
+To: "Jin, Yao" <yao.jin@linux.intel.com>
+Cc: acme@kernel.org, jolsa@kernel.org, mingo@redhat.com,
+ alexander.shishkin@linux.intel.com, Linux-kernel@vger.kernel.org,
+ ak@linux.intel.com, kan.liang@intel.com, yao.jin@intel.com,
+ linuxppc-dev@lists.ozlabs.org, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH v3 2/5] perf/x86/intel: Record branch type
+Message-ID: <20170411083521.rlnkfz326rwpzs3k@hirez.programming.kicks-ass.net>
+References: <1491908193-25418-1-git-send-email-yao.jin@linux.intel.com>
+ <1491908193-25418-3-git-send-email-yao.jin@linux.intel.com>
+ <20170411075219.bcteozodfkmwo45f@hirez.programming.kicks-ass.net>
+ <eff40b15-0da5-f573-1716-d9732ea1fd36@linux.intel.com>
 MIME-Version: 1.0
-In-Reply-To: <20170327082737.14448-1-aik@ozlabs.ru>
-Content-Type: text/plain; charset=koi8-r
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <eff40b15-0da5-f573-1716-d9732ea1fd36@linux.intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,56 +30,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 27/03/17 19:27, Alexey Kardashevskiy wrote:
-> pnv_pci_table_alloc() ignores possible failure from kzalloc_node(),
-> this adds a check. There are 2 callers of pnv_pci_table_alloc(),
-> one already checks for tbl!=NULL, this adds WARN_ON() to the other path
-> which only happens during boot time in IODA1 and not expected to fail.
+On Tue, Apr 11, 2017 at 04:11:21PM +0800, Jin, Yao wrote:
 > 
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> ---
-> Changes:
-> v2:
-> * s/BUG_ON/WARN_ON/
-
-Bad/good?
-
-
-> ---
->  arch/powerpc/platforms/powernv/pci-ioda.c | 3 +++
->  arch/powerpc/platforms/powernv/pci.c      | 3 +++
->  2 files changed, 6 insertions(+)
 > 
-> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-> index e36738291c32..04ef03a5201b 100644
-> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
-> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-> @@ -2128,6 +2128,9 @@ static void pnv_pci_ioda1_setup_dma_pe(struct pnv_phb *phb,
->  
->  found:
->  	tbl = pnv_pci_table_alloc(phb->hose->node);
-> +	if (WARN_ON(!tbl))
-> +		return;
-> +
->  	iommu_register_group(&pe->table_group, phb->hose->global_number,
->  			pe->pe_number);
->  	pnv_pci_link_table_and_group(phb->hose->node, 0, tbl, &pe->table_group);
-> diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
-> index eb835e977e33..9acdf6889c0d 100644
-> --- a/arch/powerpc/platforms/powernv/pci.c
-> +++ b/arch/powerpc/platforms/powernv/pci.c
-> @@ -766,6 +766,9 @@ struct iommu_table *pnv_pci_table_alloc(int nid)
->  	struct iommu_table *tbl;
->  
->  	tbl = kzalloc_node(sizeof(struct iommu_table), GFP_KERNEL, nid);
-> +	if (!tbl)
-> +		return NULL;
-> +
->  	INIT_LIST_HEAD_RCU(&tbl->it_group_list);
->  
->  	return tbl;
+> On 4/11/2017 3:52 PM, Peter Zijlstra wrote:
+> > This is still a completely inadequate changelog. I really will not
+> > accept patches like this.
+> > 
+> Hi,
 > 
+> The changelog is added in the cover-letter ("[PATCH v3 0/5] perf report: Show branch type").
+> 
+> Does the changelog need to be added in each patch's description?
+> 
+> That's fine, I can add and resend this patch.
 
+The cover letter is not retained; it is throw away information.
 
--- 
-Alexey
+Each patch should have a coherent changelog that explain why the patch
+was done and explain non trivial things in the implementation.
+
+Simply copy/pasting the same story in multiple patches is not right
+either, for the simple fact that the patches were not the same. You did
+a different thing, so you need a different story.
