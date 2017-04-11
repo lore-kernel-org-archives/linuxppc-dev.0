@@ -1,38 +1,29 @@
-Return-Path: <ananth@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <srs0=g6dx=3t=gmail.com=bsingharora@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w2GfB1NkKzDq5x
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Apr 2017 16:01:53 +1000 (AEST)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v3B5wnuC023005
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Apr 2017 02:01:51 -0400
-Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
- by mx0a-001b2d01.pphosted.com with ESMTP id 29rmq6u274-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Apr 2017 02:01:51 -0400
-Received: from localhost
- by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ananth@linux.vnet.ibm.com>;
- Tue, 11 Apr 2017 00:01:50 -0600
-Date: Tue, 11 Apr 2017 11:31:43 +0530
-From: Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>
-To: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
-Cc: mpe@ellerman.id.au, chris@distroguy.com, npiggin@gmail.com,
- linux-kernel@vger.kernel.org, paulus@samba.org,
- aneesh.kumar@linux.vnet.ibm.com, naveen.n.rao@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org, anton@samba.org, viro@zeniv.linux.org.uk
-Subject: Re: [PATCH v2] ppc64/kprobe: Fix oops when kprobed on 'stdu'
- instruction
-Reply-To: ananth@linux.vnet.ibm.com
-References: <1491887293-3815-1-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1491887293-3815-1-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
-Message-Id: <20170411060143.GC5926@in.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w2HxW3qYbzDq5x
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Apr 2017 17:00:15 +1000 (AEST)
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3w2HxW32V2z8wFX
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Apr 2017 17:00:15 +1000 (AEST)
+Received: from mail-pf0-x232.google.com (mail-pf0-x232.google.com
+ [IPv6:2607:f8b0:400e:c00::232])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3w2HxV41wnz9sNS
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Apr 2017 17:00:13 +1000 (AEST)
+Received: by mail-pf0-x232.google.com with SMTP id o126so44499251pfb.3
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Apr 2017 00:00:13 -0700 (PDT)
+Message-ID: <1491894007.8380.0.camel@gmail.com>
+Subject: Re: [PATCH 1/2] powerpc/tracing: Trace TLBIE(L)
+From: Balbir Singh <bsingharora@gmail.com>
+To: mpe@ellerman.id.au, linuxppc-dev@ozlabs.org
+Date: Tue, 11 Apr 2017 17:00:07 +1000
+In-Reply-To: <20170411052325.20206-1-bsingharora@gmail.com>
+References: <20170411052325.20206-1-bsingharora@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,30 +33,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Apr 11, 2017 at 10:38:13AM +0530, Ravi Bangoria wrote:
-> If we set a kprobe on a 'stdu' instruction on powerpc64, we see a kernel 
-> OOPS:
-> 
->   [ 1275.165932] Bad kernel stack pointer cd93c840 at c000000000009868
->   [ 1275.166378] Oops: Bad kernel stack pointer, sig: 6 [#1]
->   ...
->   GPR00: c000001fcd93cb30 00000000cd93c840 c0000000015c5e00 00000000cd93c840
->   ...
->   [ 1275.178305] NIP [c000000000009868] resume_kernel+0x2c/0x58
->   [ 1275.178594] LR [c000000000006208] program_check_common+0x108/0x180
-> 
-> Basically, on 64 bit system, when user probes on 'stdu' instruction,
-> kernel does not emulate actual store in emulate_step itself because it
-> may corrupt exception frame. So kernel does actual store operation in
-> exception return code i.e. resume_kernel().
-> 
-> resume_kernel() loads the saved stack pointer from memory using lwz,
-> effectively loading a corrupt (32bit) address, causing the kernel crash.
-> 
-> Fix this by loading the 64bit value instead.
-> 
-> Fixes: be96f63375a1 ("powerpc: Split out instruction analysis part of emulate_step()") 
-> Signed-off-by: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
-> Reviewed-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com> 
+On Tue, 2017-04-11 at 15:23 +1000, Balbir Singh wrote:
+> Just a quick patch to trace tlbie(l)'s. The idea being that it can be
+> enabled when we suspect corruption or when we need to see if we are doing
+> the right thing during flush. I think the format can be enhanced to
+> make it nicer (expand the RB/RS/IS/L cases in more detail if we ever
+> need that level of details).
 
-Reviewed-by: Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>
+The subject is misleading this is not PATCH 1/2, but should read
+[PATCH v2]. Sorry! I can resend this if required
+
+Balbir
