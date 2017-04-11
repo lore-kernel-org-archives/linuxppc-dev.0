@@ -1,24 +1,21 @@
-Return-Path: <dan.j.williams@intel.com>
-Received: from mail-oi0-x22d.google.com (mail-oi0-x22d.google.com
- [IPv6:2607:f8b0:4003:c06::22d])
+Return-Path: <anton@samba.org>
+Received: from hr2.samba.org (hr2.samba.org [IPv6:2a01:4f8:192:486::147:1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w2b5F4RxtzDq5x
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2017 04:22:54 +1000 (AEST)
-Received: by mail-oi0-x22d.google.com with SMTP id r203so6464899oib.3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Apr 2017 11:22:54 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <20170411174233.21902-1-oohall@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w2j2m5x2bzDq5x
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2017 08:51:12 +1000 (AEST)
+Date: Wed, 12 Apr 2017 08:50:56 +1000
+From: Anton Blanchard <anton@samba.org>
+To: Oliver O'Halloran <oohall@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-nvdimm@lists.01.org,
+ arbab@linux.vnet.ibm.com, Rashmica Gupta <rashmica.g@gmail.com>
+Subject: Re: [PATCH 8/9] powerpc/mm: Wire up hpte_removebolted for powernv
+Message-ID: <20170412085056.4da27f32@kryten>
+In-Reply-To: <20170411174233.21902-9-oohall@gmail.com>
 References: <20170411174233.21902-1-oohall@gmail.com>
-From: Dan Williams <dan.j.williams@intel.com>
-Date: Tue, 11 Apr 2017 11:22:48 -0700
-Message-ID: <CAPcyv4hKnP_pddKP8Ve6R0n6sXihPeLCw5seq06iHJ=Hc3yaQA@mail.gmail.com>
-Subject: Re: ZONE_DEVICE and pmem API support for powerpc
-To: "Oliver O'Halloran" <oohall@gmail.com>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, bsingharora@gmail.com,
- arbab@linux.vnet.ibm.com,
- "linux-nvdimm@lists.01.org" <linux-nvdimm@lists.01.org>
-Content-Type: text/plain; charset=UTF-8
+ <20170411174233.21902-9-oohall@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,41 +25,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Apr 11, 2017 at 10:42 AM, Oliver O'Halloran <oohall@gmail.com> wrote:
-> Hi all,
->
-> This series adds support for ZONE_DEVICE and the pmem api on powerpc. Namely,
-> support for altmaps and the various bits and pieces required for DAX PMD faults.
-> The first two patches touch generic mm/ code, but otherwise this is fairly well
-> contained in arch/powerpc.
->
-> If the nvdimm folks could sanity check this series I'd appreciate it.
+Hi Oliver,
 
-Quick feedback: I'm in the process of cleaning up and resubmitting my
-patch set to push the pmem api down into the driver directly.
+> From: Rashmica Gupta <rashmica.g@gmail.com>
+> 
+> Adds support for removing bolted (i.e kernel linear mapping) mappings
+> on powernv. This is needed to support memory hot unplug operations
+> which are required for the teardown of DAX/PMEM devices.
+> 
+> Cc: Rashmica Gupta <rashmica.g@gmail.com>
+> Cc: Anton Blanchard <anton@samba.org>
+> Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
+> ---
+> Could the original author of this add their S-o-b? I pulled it out of
+> Rashmica's memtrace patch, but I remember someone saying Anton wrote
+> it originally.
 
-    https://lwn.net/Articles/713064/
+I did.
 
-I'm also reworking memory hotplug to allow sub-section allocations
-which has collided with Michal Hocko's hotplug reworks. It will be
-good to have some more eyes on that work to understand the cross-arch
-implications.
+Signed-off-by: Anton Blanchard <anton@samba.org>
 
-    https://lkml.org/lkml/2017/3/19/146
+Anton
 
-> Series is based on next-20170411, but it should apply elsewhere with minor
-> fixups to arch_{add|remove}_memory due to conflicts with HMM.  For those
-> interested in testing this, there is a driver and matching firmware that carves
-> out some system memory for use as an emulated Con Tutto memory card.
->
-> Driver: https://github.com/oohal/linux/tree/contutto-next
-> Firmware: https://github.com/oohal/skiboot/tree/fake-contutto
->
-> Edit core/init.c:686 to control the amount of memory borrowed for the emulated
-> device.  I'm keeping the driver out of tree for a until 4.13 since I plan on
-> reworking the firmware interface anyway and There's at least one showstopper
-> bug.
-
-Is this memory card I/O-cache coherent? I.e. existing dma mapping api
-can hand out mappings to it? Just trying to figure out if this the
-existing pmem-definition of ZONE_DEVICE or a new one.
+> ---
+>  arch/powerpc/mm/hash_native_64.c | 31 +++++++++++++++++++++++++++++++
+>  1 file changed, 31 insertions(+)
+> 
+> diff --git a/arch/powerpc/mm/hash_native_64.c
+> b/arch/powerpc/mm/hash_native_64.c index 65bb8f33b399..9ba91d4905a4
+> 100644 --- a/arch/powerpc/mm/hash_native_64.c
+> +++ b/arch/powerpc/mm/hash_native_64.c
+> @@ -407,6 +407,36 @@ static void native_hpte_updateboltedpp(unsigned
+> long newpp, unsigned long ea, tlbie(vpn, psize, psize, ssize, 0);
+>  }
+>  
+> +/*
+> + * Remove a bolted kernel entry. Memory hotplug uses this.
+> + *
+> + * No need to lock here because we should be the only user.
+> + */
+> +static int native_hpte_removebolted(unsigned long ea, int psize, int
+> ssize) +{
+> +	unsigned long vpn;
+> +	unsigned long vsid;
+> +	long slot;
+> +	struct hash_pte *hptep;
+> +
+> +	vsid = get_kernel_vsid(ea, ssize);
+> +	vpn = hpt_vpn(ea, vsid, ssize);
+> +
+> +	slot = native_hpte_find(vpn, psize, ssize);
+> +	if (slot == -1)
+> +		return -ENOENT;
+> +
+> +	hptep = htab_address + slot;
+> +
+> +	/* Invalidate the hpte */
+> +	hptep->v = 0;
+> +
+> +	/* Invalidate the TLB */
+> +	tlbie(vpn, psize, psize, ssize, 0);
+> +	return 0;
+> +}
+> +
+> +
+>  static void native_hpte_invalidate(unsigned long slot, unsigned long
+> vpn, int bpsize, int apsize, int ssize, int local)
+>  {
+> @@ -725,6 +755,7 @@ void __init hpte_init_native(void)
+>  	mmu_hash_ops.hpte_invalidate	= native_hpte_invalidate;
+>  	mmu_hash_ops.hpte_updatepp	= native_hpte_updatepp;
+>  	mmu_hash_ops.hpte_updateboltedpp =
+> native_hpte_updateboltedpp;
+> +	mmu_hash_ops.hpte_removebolted = native_hpte_removebolted;
+>  	mmu_hash_ops.hpte_insert	= native_hpte_insert;
+>  	mmu_hash_ops.hpte_remove	= native_hpte_remove;
+>  	mmu_hash_ops.hpte_clear_all	= native_hpte_clear;
