@@ -1,37 +1,15 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w2zT374tlzDq7h
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2017 19:41:27 +1000 (AEST)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v3C9dQ1a068913
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2017 05:41:20 -0400
-Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [125.16.236.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 29scj8mgrs-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2017 05:41:20 -0400
-Received: from localhost
- by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Wed, 12 Apr 2017 15:11:17 +0530
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay01.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v3C9fEE514680308
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2017 15:11:14 +0530
-Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v3C9fDfw025107
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2017 15:11:14 +0530
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: aneesh.kumar@linux.vnet.ibm.com, mpe@ellerman.id.au
-Subject: [PATCH] selftests/powerpc/mm: Add a test for virtual address mapping
-Date: Wed, 12 Apr 2017 15:11:12 +0530
-Message-Id: <20170412094112.13181-1-khandual@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w307h0Z2TzDq7h
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2017 20:11:28 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: linuxppc-dev@ozlabs.org
+Cc: aneesh.kumar@linux.vnet.ibm.com
+Subject: [PATCH] powerpc/mm: Fix swapper_pg_dir size on 64-bit hash w/64K pages
+Date: Wed, 12 Apr 2017 20:11:07 +1000
+Message-Id: <1491991867-8758-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,141 +19,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This verifies virtual address mapping below and above the
-128TB range and makes sure that address returned are within
-the expected range depending upon the hint passed from the
-user space.
+Recently in commit f6eedbba7a26 ("powerpc/mm/hash: Increase VA range to 128TB"),
+we increased H_PGD_INDEX_SIZE to 15 when we're building with 64K pages. This
+makes it larger than RADIX_PGD_INDEX_SIZE (13), which means the logic to
+calculate MAX_PGD_INDEX_SIZE in book3s/64/pgtable.h is wrong.
 
-Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+The end result is that the PGD (Page Global Directory, ie top level page table)
+of the kernel (aka. swapper_pg_dir), is too small.
+
+This generally doesn't lead to a crash, as we don't use the full range in normal
+operation. However if we try to dump the kernel pagetables we can trigger a
+crash because we walk off the end of the pgd into other memory and eventually
+try to dereference something bogus:
+
+  $ cat /sys/kernel/debug/kernel_pagetables
+  Unable to handle kernel paging request for data at address 0xe8fece0000000000
+  Faulting instruction address: 0xc000000000072314
+  cpu 0xc: Vector: 380 (Data SLB Access) at [c0000000daa13890]
+      pc: c000000000072314: ptdump_show+0x164/0x430
+      lr: c000000000072550: ptdump_show+0x3a0/0x430
+     dar: e802cf0000000000
+  seq_read+0xf8/0x560
+  full_proxy_read+0x84/0xc0
+  __vfs_read+0x6c/0x1d0
+  vfs_read+0xbc/0x1b0
+  SyS_read+0x6c/0x110
+  system_call+0x38/0xfc
+
+The root cause is that MAX_PGD_INDEX_SIZE isn't actually computed to be
+the max of H_PGD_INDEX_SIZE or RADIX_PGD_INDEX_SIZE. To fix that move
+the calculation into asm-offsets.c where we can do it easily using
+max().
+
+Fixes: f6eedbba7a26 ("powerpc/mm/hash: Increase VA range to 128TB")
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
-Tested this on latest ppc-next with Aneesh's yesterday's patch
-which can be found at https://patchwork.ozlabs.org/patch/749510/
+ arch/powerpc/include/asm/book3s/64/pgtable.h | 4 ----
+ arch/powerpc/kernel/asm-offsets.c            | 4 ++--
+ 2 files changed, 2 insertions(+), 6 deletions(-)
 
- tools/testing/selftests/powerpc/mm/.gitignore |  3 +-
- tools/testing/selftests/powerpc/mm/Makefile   |  2 +-
- tools/testing/selftests/powerpc/mm/vaddr.c    | 89 +++++++++++++++++++++++++++
- 3 files changed, 92 insertions(+), 2 deletions(-)
- create mode 100644 tools/testing/selftests/powerpc/mm/vaddr.c
-
-diff --git a/tools/testing/selftests/powerpc/mm/.gitignore b/tools/testing/selftests/powerpc/mm/.gitignore
-index e715a3f..af1f31f 100644
---- a/tools/testing/selftests/powerpc/mm/.gitignore
-+++ b/tools/testing/selftests/powerpc/mm/.gitignore
-@@ -1,4 +1,5 @@
- hugetlb_vs_thp_test
- subpage_prot
- tempfile
--prot_sao
-\ No newline at end of file
-+prot_sao
-+vaddr
-diff --git a/tools/testing/selftests/powerpc/mm/Makefile b/tools/testing/selftests/powerpc/mm/Makefile
-index 1cffe54..7345db2 100644
---- a/tools/testing/selftests/powerpc/mm/Makefile
-+++ b/tools/testing/selftests/powerpc/mm/Makefile
-@@ -1,7 +1,7 @@
- noarg:
- 	$(MAKE) -C ../
+diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
+index fb72ff6b98e6..fb8380a2d8d5 100644
+--- a/arch/powerpc/include/asm/book3s/64/pgtable.h
++++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
+@@ -232,10 +232,6 @@ extern unsigned long __pte_frag_nr;
+ extern unsigned long __pte_frag_size_shift;
+ #define PTE_FRAG_SIZE_SHIFT __pte_frag_size_shift
+ #define PTE_FRAG_SIZE (1UL << PTE_FRAG_SIZE_SHIFT)
+-/*
+- * Pgtable size used by swapper, init in asm code
+- */
+-#define MAX_PGD_TABLE_SIZE (sizeof(pgd_t) << RADIX_PGD_INDEX_SIZE)
  
--TEST_GEN_PROGS := hugetlb_vs_thp_test subpage_prot prot_sao
-+TEST_GEN_PROGS := hugetlb_vs_thp_test subpage_prot prot_sao vaddr
- TEST_GEN_FILES := tempfile
+ #define PTRS_PER_PTE	(1 << PTE_INDEX_SIZE)
+ #define PTRS_PER_PMD	(1 << PMD_INDEX_SIZE)
+diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
+index e7c8229a8812..8e1163426ccb 100644
+--- a/arch/powerpc/kernel/asm-offsets.c
++++ b/arch/powerpc/kernel/asm-offsets.c
+@@ -400,8 +400,8 @@ int main(void)
+ 	DEFINE(BUG_ENTRY_SIZE, sizeof(struct bug_entry));
+ #endif
  
- include ../../lib.mk
-diff --git a/tools/testing/selftests/powerpc/mm/vaddr.c b/tools/testing/selftests/powerpc/mm/vaddr.c
-new file mode 100644
-index 0000000..d6485e9
---- /dev/null
-+++ b/tools/testing/selftests/powerpc/mm/vaddr.c
-@@ -0,0 +1,89 @@
-+/*
-+ * Copyright 2017, Anshuman Khandual, IBM Corp.
-+ * Licensed under GPLv2.
-+ */
-+
-+#include <stdio.h>
-+#include <stdlib.h>
-+#include <string.h>
-+#include <unistd.h>
-+#include <errno.h>
-+#include <numaif.h>
-+#include <sys/mman.h>
-+#include <sys/time.h>
-+#include "utils.h"
-+
-+#define PAGE_SIZE        65536UL  /* 64KB */
-+#define MAP_SIZE_16GB    262144UL /* 16GB  */
-+#define NR_SLICES_128TB  8192UL   /* 128TB */
-+#define NR_SLICES_384TB  24576UL  /* 384TB */
-+#define ADDR_MARK_128TB  0x800000000000UL /* Beyond 128TB */
-+
-+static char *hind_addr(void)
-+{
-+	int bits = 48 + rand() % 15;
-+
-+	return (char *) (1UL << bits);
-+}
-+
-+static int validate_addr(char *ptr, int high_addr)
-+{
-+	unsigned long addr = (unsigned long) ptr;
-+
-+	if (high_addr) {
-+		if (addr < ADDR_MARK_128TB) {
-+			printf("Bad address %lx\n", addr);
-+			return 1;
-+		}
-+		return 0;
-+	}
-+
-+	if (addr > ADDR_MARK_128TB) {
-+		printf("Bad address %lx\n", addr);
-+		return 1;
-+	}
-+	return 0;
-+}
-+
-+int vaddr(void)
-+{
-+	char *ptr[NR_SLICES_128TB];
-+	char *hptr[NR_SLICES_384TB];
-+	char *hint;
-+	int  i;
-+
-+	for (i = 0; i < NR_SLICES_128TB; i++) {
-+		ptr[i] = mmap(NULL, MAP_SIZE_16GB, PROT_READ | PROT_WRITE,
-+					MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
-+
-+		if (ptr[i] == MAP_FAILED)
-+			break;
-+
-+		if (validate_addr(ptr[i], 0))
-+			return 1;
-+	}
-+
-+	for (i = 0; i < NR_SLICES_384TB; i++) {
-+		hint = hind_addr();
-+		hptr[i] = mmap(hint, MAP_SIZE_16GB, PROT_READ | PROT_WRITE,
-+					MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
-+
-+		if (hptr[i] == MAP_FAILED)
-+			break;
-+
-+		if (validate_addr(hptr[i], 1))
-+			return 1;
-+	}
-+
-+	for (i = 0; i < NR_SLICES_128TB; i++)
-+		munmap(ptr[i], MAP_SIZE_16GB);
-+
-+	for (i = 0; i < NR_SLICES_384TB; i++)
-+		munmap(hptr[i], MAP_SIZE_16GB);
-+	return 0;
-+}
-+
-+int main(int argc, char *argv[])
-+{
-+	return test_harness(vaddr, "vaddr-range");
-+}
+-#ifdef MAX_PGD_TABLE_SIZE
+-	DEFINE(PGD_TABLE_SIZE, MAX_PGD_TABLE_SIZE);
++#ifdef CONFIG_PPC_BOOK3S_64
++	DEFINE(PGD_TABLE_SIZE, (sizeof(pgd_t) << max(RADIX_PGD_INDEX_SIZE, H_PGD_INDEX_SIZE)));
+ #else
+ 	DEFINE(PGD_TABLE_SIZE, PGD_TABLE_SIZE);
+ #endif
 -- 
-1.8.5.2
+2.7.4
