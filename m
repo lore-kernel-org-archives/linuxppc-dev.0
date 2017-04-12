@@ -2,21 +2,18 @@ Return-Path: <christophe.leroy@c-s.fr>
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w38DH6gyZzDq7h
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Apr 2017 02:15:59 +1000 (AEST)
-Subject: Re: [PATCH] powerpc: Avoid taking a data miss on every userspace
- instruction miss
-To: Anton Blanchard <anton@samba.org>
-References: <20170403064102.23245-1-anton@ozlabs.org>
- <20170403205548.Horde.yvekJnoFaOaIi2_bvtIsLA2@messagerie.c-s.fr>
- <20170404080001.2c03b043@kryten>
-Cc: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au, paulus@samba.org,
- benh@kernel.crashing.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w38mx3LbjzDq7h
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Apr 2017 02:40:49 +1000 (AEST)
+Subject: Re: [v3,1/2] powerpc/mm: Dump linux pagetables
+To: Michael Ellerman <patch-notifications@ellerman.id.au>,
+ Rashmica Gupta <rashmicy@gmail.com>
+References: <3tKKXq67gcz9t1T@ozlabs.org>
+Cc: linuxppc-dev@lists.ozlabs.org
 From: Christophe LEROY <christophe.leroy@c-s.fr>
-Message-ID: <09625197-3387-eeb6-5f80-5d14d1332b2d@c-s.fr>
-Date: Wed, 12 Apr 2017 18:15:55 +0200
+Message-ID: <e858f33a-ee89-7a7c-02d6-de4e8ac32e26@c-s.fr>
+Date: Wed, 12 Apr 2017 18:40:45 +0200
 MIME-Version: 1.0
-In-Reply-To: <20170404080001.2c03b043@kryten>
+In-Reply-To: <3tKKXq67gcz9t1T@ozlabs.org>
 Content-Type: text/plain; charset=windows-1252; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -27,117 +24,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Anton,
+Hi Rashmica,
 
-Le 04/04/2017 à 00:00, Anton Blanchard a écrit :
-> Hi Christophe,
->
->>> -	if (user_mode(regs))
->>> +	if (!is_exec && user_mode(regs))
+Le 17/11/2016 à 13:03, Michael Ellerman a écrit :
+> On Fri, 2016-27-05 at 05:48:59 UTC, Rashmica Gupta wrote:
+>> Useful to be able to dump the kernels page tables to check permissions
+>> and memory types - derived from arm64's implementation.
 >>
->> Shouldn't it also check 'is_write' ?
->> If it is a store, is_write should be set, shouldn't it ?
+>> Add a debugfs file to check the page tables. To use this the PPC_PTDUMP
+>> config option must be selected.
+>>
+>> Signed-off-by: Rashmica Gupta <rashmicy@gmail.com>
 >
-> Thanks, Ben had the same suggestion. I'll add that further optimisation
-> in a subsequent patch.
+> Applied to powerpc next, thanks.
 >
-> Anton
->
+> https://git.kernel.org/powerpc/c/8eb07b187000d48152c4ef97f075bd
 
-For your information, I made some benchmark test using 'perf stat' with 
-your app on MPC8321 and MPC885, and I got the following results:
+For your information, compilation fails on mpc885_ads_defconfig when we 
+activate PPC_PTDUMP:
 
-MPC8321 before the change:
-
-  Performance counter stats for './fault 1000' (10 runs):
-
-        4491.971466      cpu-clock (msec) 
-               ( +-  0.03% )
-              47386      faults 
-               ( +-  0.02% )
-
-        4.727864465 seconds time elapsed 
-          ( +-  0.17% )
-
-
-MPC8321 after your change:
-
-  Performance counter stats for './fault 1000' (10 runs):
-
-        4278.738845      cpu-clock (msec) 
-               ( +-  0.02% )
-              35181      faults 
-               ( +-  0.02% )
-
-        4.504443891 seconds time elapsed 
-          ( +-  0.19% )
-
-
-MPC8321 after changing !is_exec by is_write
-
-  Performance counter stats for './fault 1000' (10 runs):
-
-        4268.187261      cpu-clock (msec) 
-               ( +-  0.03% )
-              35181      faults 
-               ( +-  0.01% )
-
-        4.489207922 seconds time elapsed 
-          ( +-  0.20% )
-
-
-
-
-
-MPC885 before the change:
-
-  Performance counter stats for './fault 500' (10 runs):
-
-          726605854      cpu-cycles 
-               ( +-  0.03% )
-             176067      dTLB-load-misses 
-               ( +-  0.08% )
-              52722      iTLB-load-misses 
-               ( +-  0.01% )
-              25718      faults 
-               ( +-  0.03% )
-
-        5.795924654 seconds time elapsed 
-          ( +-  0.14% )
-
-
-MPC885 after your change:
-
-  Performance counter stats for './fault 500' (10 runs):
-
-          711233251      cpu-cycles 
-               ( +-  0.04% )
-             152462      dTLB-load-misses 
-               ( +-  0.09% )
-              52715      iTLB-load-misses 
-               ( +-  0.01% )
-              19611      faults 
-               ( +-  0.02% )
-
-        5.673784606 seconds time elapsed 
-          ( +-  0.14% )
-
-
-MPC885 after changing !is_exec by is_write
-
-  Performance counter stats for './fault 500' (10 runs):
-
-          710904083      cpu-cycles 
-               ( +-  0.05% )
-             147162      dTLB-load-misses 
-               ( +-  0.06% )
-              52716      iTLB-load-misses 
-               ( +-  0.01% )
-              19610      faults 
-               ( +-  0.02% )
-
-        5.672091139 seconds time elapsed 
-          ( +-  0.15% )
+   CC      arch/powerpc/mm/dump_linuxpagetables.o
+arch/powerpc/mm/dump_linuxpagetables.c: In function 'walk_pagetables':
+arch/powerpc/mm/dump_linuxpagetables.c:369:10: error: 'KERN_VIRT_START' 
+undeclared (first use in this function)
+arch/powerpc/mm/dump_linuxpagetables.c:369:10: note: each undeclared 
+identifier is reported only once for each function it appears in
+arch/powerpc/mm/dump_linuxpagetables.c: In function 'populate_markers':
+arch/powerpc/mm/dump_linuxpagetables.c:383:37: error: 'ISA_IO_BASE' 
+undeclared (first use in this function)
+arch/powerpc/mm/dump_linuxpagetables.c:384:37: error: 'ISA_IO_END' 
+undeclared (first use in this function)
+arch/powerpc/mm/dump_linuxpagetables.c:385:37: error: 'PHB_IO_BASE' 
+undeclared (first use in this function)
+arch/powerpc/mm/dump_linuxpagetables.c:386:37: error: 'PHB_IO_END' 
+undeclared (first use in this function)
+arch/powerpc/mm/dump_linuxpagetables.c:387:37: error: 'IOREMAP_BASE' 
+undeclared (first use in this function)
+arch/powerpc/mm/dump_linuxpagetables.c:388:37: error: 'IOREMAP_END' 
+undeclared (first use in this function)
+arch/powerpc/mm/dump_linuxpagetables.c:392:38: error: 'VMEMMAP_BASE' 
+undeclared (first use in this function)
+arch/powerpc/mm/dump_linuxpagetables.c: In function 'ptdump_show':
+arch/powerpc/mm/dump_linuxpagetables.c:400:20: error: 'KERN_VIRT_START' 
+undeclared (first use in this function)
+make[1]: *** [arch/powerpc/mm/dump_linuxpagetables.o] Error 1
+make: *** [arch/powerpc/mm] Error 2
 
 
 
