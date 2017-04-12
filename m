@@ -1,54 +1,24 @@
-Return-Path: <srs0=pk4x=3u=au1.ibm.com=benh@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
+ [IPv6:2607:f8b0:400e:c00::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w2n2P04yWzDq7c
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2017 11:51:09 +1000 (AEST)
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3w2n2N6Zmxz8t7X
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2017 11:51:08 +1000 (AEST)
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3w2n2N2dXcz9sNr
- for <linuxppc-dev@ozlabs.org>; Wed, 12 Apr 2017 11:51:08 +1000 (AEST)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v3C1nJGC031605
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Apr 2017 21:51:06 -0400
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
- by mx0b-001b2d01.pphosted.com with ESMTP id 29rxx38ssc-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Apr 2017 21:51:05 -0400
-Received: from localhost
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <benh@au1.ibm.com>;
- Wed, 12 Apr 2017 11:51:03 +1000
-Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v3C1orbj45220012
- for <linuxppc-dev@ozlabs.org>; Wed, 12 Apr 2017 11:51:01 +1000
-Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
- by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v3C1oTbB006191
- for <linuxppc-dev@ozlabs.org>; Wed, 12 Apr 2017 11:50:29 +1000
-Subject: Re: EEH error in doing DMA with PEX 8619
-From: Benjamin Herrenschmidt <benh@au1.ibm.com>
-Reply-To: benh@au1.ibm.com
-To: IanJiang <ianjiang.cn@gmail.com>, linuxppc-dev@ozlabs.org
-Date: Wed, 12 Apr 2017 11:50:03 +1000
-In-Reply-To: <1491961190461-121224.post@n7.nabble.com>
-References: <1491826953201-121121.post@n7.nabble.com>
- <20170410222442.GA11610@gwshan> <1491876268752-121154.post@n7.nabble.com>
- <1491876910.4166.219.camel@au1.ibm.com> <20170411044238.GA8157@gwshan>
- <1491902810921-121181.post@n7.nabble.com>
- <1491903331.4166.240.camel@kernel.crashing.org>
- <1491961190461-121224.post@n7.nabble.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w2n4p1NLKzDq7c
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2017 11:53:14 +1000 (AEST)
+Received: by mail-pf0-x244.google.com with SMTP id o126so2358130pfb.1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Apr 2017 18:53:14 -0700 (PDT)
+Message-ID: <1491961986.8380.13.camel@gmail.com>
+Subject: Re: [PATCH 8/9] powerpc/mm: Wire up hpte_removebolted for powernv
+From: Balbir Singh <bsingharora@gmail.com>
+To: Oliver O'Halloran <oohall@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Cc: arbab@linux.vnet.ibm.com, linux-nvdimm@lists.01.org, Rashmica Gupta
+ <rashmica.g@gmail.com>, Anton Blanchard <anton@samba.org>
+Date: Wed, 12 Apr 2017 11:53:06 +1000
+In-Reply-To: <20170411174233.21902-9-oohall@gmail.com>
+References: <20170411174233.21902-1-oohall@gmail.com>
+ <20170411174233.21902-9-oohall@gmail.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Message-Id: <1491961803.7236.36.camel@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -58,34 +28,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2017-04-11 at 18:39 -0700, IanJiang wrote:
-> On Tue, Apr 11, 2017 at 5:37 PM, Benjamin Herrenschmidt [via
-> linuxppc]
-> <ml-node+s10917n121182h95@n7.nabble.com> wrote:
+On Wed, 2017-04-12 at 03:42 +1000, Oliver O'Halloran wrote:
+> From: Rashmica Gupta <rashmica.g@gmail.com>
 > 
-> > Another possibility would be if the requests from the PLX have a 
-> > different initiator ID on the bus than the device you are setting
-> > up 
-> > the DMA for. 
+> Adds support for removing bolted (i.e kernel linear mapping) mappings on
+> powernv. This is needed to support memory hot unplug operations which
+> are required for the teardown of DAX/PMEM devices.
 > 
-> Is there a way to check out the initiator ID in the driver? I'd like
-> to make sure of this.
-
-If you are running bare metal (ie, not under any hypervisor, aka
-"powernv" platform), the EEH error log will contain a register dump. If
-you paste that to us, we might be able to decode it, it will tell us
-more data about the cause of the failure, including possibly the
-initiator of the failing transaction.
-
-The initiator ID (aka RID, aka bus/device/fn) of the DMA packets must
-match the ones of the struct pci_dev you are using to establish the
-mapping.
-
-Cheers,
-Ben.
-
+> Cc: Rashmica Gupta <rashmica.g@gmail.com>
+> Cc: Anton Blanchard <anton@samba.org>
+> Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
+> ---
+> Could the original author of this add their S-o-b? I pulled it out of
+> Rashmica's memtrace patch, but I remember someone saying Anton wrote
+> it originally.
+> ---
+>  arch/powerpc/mm/hash_native_64.c | 31 +++++++++++++++++++++++++++++++
+>  1 file changed, 31 insertions(+)
 > 
-> --
-> View this message in context: http://linuxppc.10917.n7.nabble.com/EEH
-> -error-in-doing-DMA-with-PEX-8619-tp121121p121224.html
-> Sent from the linuxppc-dev mailing list archive at Nabble.com.
+> diff --git a/arch/powerpc/mm/hash_native_64.c b/arch/powerpc/mm/hash_native_64.c
+> index 65bb8f33b399..9ba91d4905a4 100644
+> --- a/arch/powerpc/mm/hash_native_64.c
+> +++ b/arch/powerpc/mm/hash_native_64.c
+> @@ -407,6 +407,36 @@ static void native_hpte_updateboltedpp(unsigned long newpp, unsigned long ea,
+>  	tlbie(vpn, psize, psize, ssize, 0);
+>  }
+>  
+> +/*
+> + * Remove a bolted kernel entry. Memory hotplug uses this.
+> + *
+> + * No need to lock here because we should be the only user.
+
+As long as this is after the necessary isolation and is called from
+arch_remove_memory(), I think we should be fine
+
+> + */
+> +static int native_hpte_removebolted(unsigned long ea, int psize, int ssize)
+> +{
+> +	unsigned long vpn;
+> +	unsigned long vsid;
+> +	long slot;
+> +	struct hash_pte *hptep;
+> +
+> +	vsid = get_kernel_vsid(ea, ssize);
+> +	vpn = hpt_vpn(ea, vsid, ssize);
+> +
+> +	slot = native_hpte_find(vpn, psize, ssize);
+> +	if (slot == -1)
+> +		return -ENOENT;
+
+If slot == -1, it means someone else removed the HPTE entry? Are we racing?
+I suspect we should never hit this situation during hotunplug, specifically
+since this is bolted.
+
+> +
+> +	hptep = htab_address + slot;
+> +
+> +	/* Invalidate the hpte */
+> +	hptep->v = 0;
+
+Under DEBUG or otherwise, I would add more checks like
+
+1. was hpte_v & HPTE_V_VALID and BOLTED set? If not, we've already invalidated
+that hpte and we can skip the tlbie. Since this was bolted you might be right
+that it is always valid and bolted
+
+
+
+> +
+> +	/* Invalidate the TLB */
+> +	tlbie(vpn, psize, psize, ssize, 0);
+
+The API also does not clear linear_map_hash_slots[] under DEBUG_PAGEALLOC
+
+> +	return 0;
+> +}
+> +
+> +
+
+Balbir Singh.
