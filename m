@@ -3,40 +3,39 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w2xGj54s8zDqFS
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w2xGj4t7ZzDqFL
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2017 18:02:21 +1000 (AEST)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v3C7rvbK047494
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2017 04:02:11 -0400
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
- by mx0a-001b2d01.pphosted.com with ESMTP id 29s29rsejx-1
+ v3C7si9X117892
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2017 04:02:09 -0400
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 29rxerpdjb-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2017 04:02:11 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2017 04:02:08 -0400
 Received: from localhost
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
- Wed, 12 Apr 2017 18:02:09 +1000
+ Wed, 12 Apr 2017 18:02:05 +1000
 Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v3C81wOn43319540
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2017 18:02:06 +1000
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v3C81tij25231492
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2017 18:02:03 +1000
 Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
  by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v3C81Uer002953
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2017 18:01:30 +1000
+ v3C81QIj002865
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2017 18:01:27 +1000
 From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, mpe@ellerman.id.au
 Cc: anton@samba.org, paulus@samba.org, npiggin@gmail.com,
  linuxppc-dev@lists.ozlabs.org,
  Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Subject: [PATCH v7 06/11] powerpc: Avoid using EXCEPTION_PROLOG_1 macro in
- MASKABLE_*
-Date: Wed, 12 Apr 2017 13:30:35 +0530
+Subject: [PATCH v7 05/11] powerpc: Rename soft_enabled to soft_disable_mask
+Date: Wed, 12 Apr 2017 13:30:34 +0530
 In-Reply-To: <1491984040-28801-1-git-send-email-maddy@linux.vnet.ibm.com>
 References: <1491984040-28801-1-git-send-email-maddy@linux.vnet.ibm.com>
-Message-Id: <1491984040-28801-7-git-send-email-maddy@linux.vnet.ibm.com>
+Message-Id: <1491984040-28801-6-git-send-email-maddy@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,46 +45,288 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently we use both EXCEPTION_PROLOG_1 and __EXCEPTION_PROLOG_1
-in the MASKABLE_* macros. As a cleanup, this patch makes MASKABLE_*
-to use only __EXCEPTION_PROLOG_1. There is not logic change.
+Rename the paca->soft_enabled to paca->soft_disable_mask as
+it is no more used as a flag for interrupt state.
 
-Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
 Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/exception-64s.h | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ arch/powerpc/include/asm/hw_irq.h  | 26 +++++++++++++-------------
+ arch/powerpc/include/asm/kvm_ppc.h |  2 +-
+ arch/powerpc/include/asm/paca.h    |  2 +-
+ arch/powerpc/kernel/asm-offsets.c  |  2 +-
+ arch/powerpc/kernel/irq.c          |  8 ++++----
+ arch/powerpc/kernel/ptrace.c       |  2 +-
+ arch/powerpc/kernel/setup_64.c     |  4 ++--
+ arch/powerpc/kernel/time.c         |  6 +++---
+ arch/powerpc/mm/hugetlbpage.c      |  2 +-
+ arch/powerpc/xmon/xmon.c           |  4 ++--
+ 10 files changed, 29 insertions(+), 29 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/exception-64s.h b/arch/powerpc/include/asm/exception-64s.h
-index 5d0904433a3a..25f8134d1b62 100644
---- a/arch/powerpc/include/asm/exception-64s.h
-+++ b/arch/powerpc/include/asm/exception-64s.h
-@@ -492,7 +492,7 @@ END_FTR_SECTION_NESTED(ftr,ftr,943)
- 				    EXC_STD, SOFTEN_TEST_PR)
- 
- #define MASKABLE_EXCEPTION_PSERIES_OOL(vec, label)			\
--	EXCEPTION_PROLOG_1(PACA_EXGEN, SOFTEN_TEST_PR, vec);		\
-+	__EXCEPTION_PROLOG_1(PACA_EXGEN, SOFTEN_TEST_PR, vec);		\
- 	EXCEPTION_PROLOG_PSERIES_1(label, EXC_STD)
- 
- #define MASKABLE_EXCEPTION_HV(loc, vec, label)				\
-@@ -500,7 +500,7 @@ END_FTR_SECTION_NESTED(ftr,ftr,943)
- 				    EXC_HV, SOFTEN_TEST_HV)
- 
- #define MASKABLE_EXCEPTION_HV_OOL(vec, label)				\
--	EXCEPTION_PROLOG_1(PACA_EXGEN, SOFTEN_TEST_HV, vec);		\
-+	__EXCEPTION_PROLOG_1(PACA_EXGEN, SOFTEN_TEST_HV, vec);		\
- 	EXCEPTION_PROLOG_PSERIES_1(label, EXC_HV)
- 
- #define __MASKABLE_RELON_EXCEPTION_PSERIES(vec, label, h, extra)	\
-@@ -521,7 +521,7 @@ END_FTR_SECTION_NESTED(ftr,ftr,943)
- 					  EXC_HV, SOFTEN_TEST_HV)
- 
- #define MASKABLE_RELON_EXCEPTION_HV_OOL(vec, label)			\
--	EXCEPTION_PROLOG_1(PACA_EXGEN, SOFTEN_TEST_HV, vec);		\
-+	__EXCEPTION_PROLOG_1(PACA_EXGEN, SOFTEN_TEST_HV, vec);		\
- 	EXCEPTION_PROLOG_PSERIES_1(label, EXC_HV)
+diff --git a/arch/powerpc/include/asm/hw_irq.h b/arch/powerpc/include/asm/hw_irq.h
+index f7c761902dc9..fa23c73d2f7a 100644
+--- a/arch/powerpc/include/asm/hw_irq.h
++++ b/arch/powerpc/include/asm/hw_irq.h
+@@ -28,7 +28,7 @@
+ #define PACA_IRQ_HMI		0x20
  
  /*
+- * flags for paca->soft_enabled
++ * flags for paca->soft_disable_mask
+  */
+ #define IRQ_DISABLE_MASK_NONE	0
+ #define IRQ_DISABLE_MASK_LINUX	1
+@@ -50,38 +50,38 @@ extern void unknown_exception(struct pt_regs *regs);
+ /*
+  *TODO:
+  * Currently none of the soft_eanbled modification helpers have clobbers
+- * for modifying the r13->soft_enabled memory itself. Secondly they only
++ * for modifying the r13->soft_disable_mask memory itself. Secondly they only
+  * include "memory" clobber as a hint. Ideally, if all the accesses to
+- * soft_enabled go via these helpers, we could avoid the "memory" clobber.
++ * soft_disable_mask go via these helpers, we could avoid the "memory" clobber.
+  * Former could be taken care by having location in the constraints.
+  */
+-static inline notrace void soft_enabled_set(unsigned long enable)
++static inline notrace void soft_disable_mask_set(unsigned long enable)
+ {
+ 	__asm__ __volatile__("stb %0,%1(13)"
+-	: : "r" (enable), "i" (offsetof(struct paca_struct, soft_enabled))
++	: : "r" (enable), "i" (offsetof(struct paca_struct, soft_disable_mask))
+ 	: "memory");
+ }
+ 
+-static inline notrace unsigned long soft_enabled_return(void)
++static inline notrace unsigned long soft_disable_mask_return(void)
+ {
+ 	unsigned long flags;
+ 
+ 	asm volatile(
+ 		"lbz %0,%1(13)"
+ 		: "=r" (flags)
+-		: "i" (offsetof(struct paca_struct, soft_enabled)));
++		: "i" (offsetof(struct paca_struct, soft_disable_mask)));
+ 
+ 	return flags;
+ }
+ 
+-static inline notrace unsigned long soft_enabled_set_return(unsigned long enable)
++static inline notrace unsigned long soft_disable_mask_set_return(unsigned long enable)
+ {
+ 	unsigned long flags, zero;
+ 
+ 	asm volatile(
+ 		"mr %1,%3; lbz %0,%2(13); stb %1,%2(13)"
+ 		: "=r" (flags), "=&r" (zero)
+-		: "i" (offsetof(struct paca_struct, soft_enabled)),\
++		: "i" (offsetof(struct paca_struct, soft_disable_mask)),\
+ 		  "r" (enable)
+ 		: "memory");
+ 
+@@ -90,12 +90,12 @@ static inline notrace unsigned long soft_enabled_set_return(unsigned long enable
+ 
+ static inline unsigned long arch_local_save_flags(void)
+ {
+-	return soft_enabled_return();
++	return soft_disable_mask_return();
+ }
+ 
+ static inline unsigned long arch_local_irq_disable(void)
+ {
+-	return soft_enabled_set_return(IRQ_DISABLE_MASK_LINUX);
++	return soft_disable_mask_set_return(IRQ_DISABLE_MASK_LINUX);
+ }
+ 
+ extern void arch_local_irq_restore(unsigned long);
+@@ -131,8 +131,8 @@ static inline bool arch_irqs_disabled(void)
+ #define hard_irq_disable()	do {			\
+ 	u8 _was_enabled;				\
+ 	__hard_irq_disable();				\
+-	_was_enabled = local_paca->soft_enabled;	\
+-	local_paca->soft_enabled = IRQ_DISABLE_MASK_LINUX;\
++	_was_enabled = local_paca->soft_disable_mask;	\
++	local_paca->soft_disable_mask = IRQ_DISABLE_MASK_LINUX;\
+ 	local_paca->irq_happened |= PACA_IRQ_HARD_DIS;	\
+ 	if (!(_was_enabled & IRQ_DISABLE_MASK_LINUX))	\
+ 		trace_hardirqs_off();			\
+diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
+index 491508c8d41e..92a3808b0fab 100644
+--- a/arch/powerpc/include/asm/kvm_ppc.h
++++ b/arch/powerpc/include/asm/kvm_ppc.h
+@@ -785,7 +785,7 @@ static inline void kvmppc_fix_ee_before_entry(void)
+ 
+ 	/* Only need to enable IRQs by hard enabling them after this */
+ 	local_paca->irq_happened = 0;
+-	soft_enabled_set(IRQ_DISABLE_MASK_NONE);
++	soft_disable_mask_set(IRQ_DISABLE_MASK_NONE);
+ #endif
+ }
+ 
+diff --git a/arch/powerpc/include/asm/paca.h b/arch/powerpc/include/asm/paca.h
+index 708c3e592eeb..3f84abe93aa3 100644
+--- a/arch/powerpc/include/asm/paca.h
++++ b/arch/powerpc/include/asm/paca.h
+@@ -154,7 +154,7 @@ struct paca_struct {
+ 	u64 saved_r1;			/* r1 save for RTAS calls or PM */
+ 	u64 saved_msr;			/* MSR saved here by enter_rtas */
+ 	u16 trap_save;			/* Used when bad stack is encountered */
+-	u8 soft_enabled;		/* irq soft-enable flag */
++	u8 soft_disable_mask;		/* mask for irq soft disable  */
+ 	u8 irq_happened;		/* irq happened while soft-disabled */
+ 	u8 io_sync;			/* writel() needs spin_unlock sync */
+ 	u8 irq_work_pending;		/* IRQ_WORK interrupt while soft-disable */
+diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
+index 4367e7df51a1..9deb68eb5f07 100644
+--- a/arch/powerpc/kernel/asm-offsets.c
++++ b/arch/powerpc/kernel/asm-offsets.c
+@@ -178,7 +178,7 @@ int main(void)
+ 	OFFSET(PACATOC, paca_struct, kernel_toc);
+ 	OFFSET(PACAKBASE, paca_struct, kernelbase);
+ 	OFFSET(PACAKMSR, paca_struct, kernel_msr);
+-	OFFSET(PACASOFTIRQEN, paca_struct, soft_enabled);
++	OFFSET(PACASOFTIRQEN, paca_struct, soft_disable_mask);
+ 	OFFSET(PACAIRQHAPPENED, paca_struct, irq_happened);
+ #ifdef CONFIG_PPC_BOOK3S
+ 	OFFSET(PACACONTEXTID, paca_struct, mm_ctx_id);
+diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
+index 6055b04d2592..fdd817a6f9f8 100644
+--- a/arch/powerpc/kernel/irq.c
++++ b/arch/powerpc/kernel/irq.c
+@@ -207,7 +207,7 @@ notrace void arch_local_irq_restore(unsigned long en)
+ 	unsigned int replay;
+ 
+ 	/* Write the new soft-enabled value */
+-	soft_enabled_set(en);
++	soft_disable_mask_set(en);
+ 	if (en == IRQ_DISABLE_MASK_LINUX)
+ 		return;
+ 	/*
+@@ -253,7 +253,7 @@ notrace void arch_local_irq_restore(unsigned long en)
+ 	}
+ #endif /* CONFIG_TRACE_IRQFLAGS */
+ 
+-	soft_enabled_set(IRQ_DISABLE_MASK_LINUX);
++	soft_disable_mask_set(IRQ_DISABLE_MASK_LINUX);
+ 
+ 	/*
+ 	 * Check if anything needs to be re-emitted. We haven't
+@@ -263,7 +263,7 @@ notrace void arch_local_irq_restore(unsigned long en)
+ 	replay = __check_irq_replay();
+ 
+ 	/* We can soft-enable now */
+-	soft_enabled_set(IRQ_DISABLE_MASK_NONE);
++	soft_disable_mask_set(IRQ_DISABLE_MASK_NONE);
+ 
+ 	/*
+ 	 * And replay if we have to. This will return with interrupts
+@@ -337,7 +337,7 @@ bool prep_irq_for_idle(void)
+ 	 * of entering the low power state.
+ 	 */
+ 	local_paca->irq_happened &= ~PACA_IRQ_HARD_DIS;
+-	soft_enabled_set(IRQ_DISABLE_MASK_NONE);
++	soft_disable_mask_set(IRQ_DISABLE_MASK_NONE);
+ 
+ 	/* Tell the caller to enter the low power state */
+ 	return true;
+diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
+index 75c10d4aaf30..147f5a2f511a 100644
+--- a/arch/powerpc/kernel/ptrace.c
++++ b/arch/powerpc/kernel/ptrace.c
+@@ -277,7 +277,7 @@ int ptrace_get_reg(struct task_struct *task, int regno, unsigned long *data)
+ 		return get_user_dscr(task, data);
+ 
+ 	/*
+-	 * softe copies paca->soft_enabled variable state. Since soft_enabled is
++	 * softe copies paca->soft_disable_mask variable state. Since softe is
+ 	 * no more used as a flag, lets force usr to alway see the softe value as 1
+ 	 * which means interrupts are not soft disabled.
+ 	 */
+diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
+index 5c1273fff699..107b1c0d6452 100644
+--- a/arch/powerpc/kernel/setup_64.c
++++ b/arch/powerpc/kernel/setup_64.c
+@@ -188,7 +188,7 @@ static void __init fixup_boot_paca(void)
+ 	/* Allow percpu accesses to work until we setup percpu data */
+ 	get_paca()->data_offset = 0;
+ 	/* Mark interrupts disabled in PACA */
+-	soft_enabled_set(IRQ_DISABLE_MASK_LINUX);
++	soft_disable_mask_set(IRQ_DISABLE_MASK_LINUX);
+ }
+ 
+ static void __init configure_exceptions(void)
+@@ -342,7 +342,7 @@ void __init early_setup(unsigned long dt_ptr)
+ void early_setup_secondary(void)
+ {
+ 	/* Mark interrupts disabled in PACA */
+-	soft_enabled_set(IRQ_DISABLE_MASK_LINUX);
++	soft_disable_mask_set(IRQ_DISABLE_MASK_LINUX);
+ 
+ 	/* Initialize the hash table or TLB handling */
+ 	early_init_mmu_secondary();
+diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
+index 5662e2af105f..836c364f9804 100644
+--- a/arch/powerpc/kernel/time.c
++++ b/arch/powerpc/kernel/time.c
+@@ -244,7 +244,7 @@ static u64 scan_dispatch_log(u64 stop_tb)
+ void accumulate_stolen_time(void)
+ {
+ 	u64 sst, ust;
+-	unsigned long save_soft_enabled;
++	unsigned long save_soft_disable_mask;
+ 	struct cpu_accounting_data *acct = &local_paca->accounting;
+ 
+ 	/* We are called early in the exception entry, before
+@@ -253,7 +253,7 @@ void accumulate_stolen_time(void)
+ 	 * needs to reflect that so various debug stuff doesn't
+ 	 * complain
+ 	 */
+-	save_soft_enabled = soft_enabled_set_return(IRQ_DISABLE_MASK_LINUX);
++	save_soft_disable_mask = soft_disable_mask_set_return(IRQ_DISABLE_MASK_LINUX);
+ 
+ 	sst = scan_dispatch_log(acct->starttime_user);
+ 	ust = scan_dispatch_log(acct->starttime);
+@@ -261,7 +261,7 @@ void accumulate_stolen_time(void)
+ 	acct->utime -= ust;
+ 	acct->steal_time += ust + sst;
+ 
+-	soft_enabled_set(save_soft_enabled);
++	soft_disable_mask_set(save_soft_disable_mask);
+ }
+ 
+ static inline u64 calculate_stolen_time(u64 stop_tb)
+diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
+index 3e428dce8fda..3401be76385d 100644
+--- a/arch/powerpc/mm/hugetlbpage.c
++++ b/arch/powerpc/mm/hugetlbpage.c
+@@ -883,7 +883,7 @@ void flush_dcache_icache_hugepage(struct page *page)
+  * So long as we atomically load page table pointers we are safe against teardown,
+  * we can follow the address down to the the page and take a ref on it.
+  * This function need to be called with interrupts disabled. We use this variant
+- * when we have MSR[EE] = 0 but the paca->soft_enabled = IRQ_DISABLE_MASK_NONE
++ * when we have MSR[EE] = 0 but the paca->soft_disable_mask = IRQ_DISABLE_MASK_NONE
+  */
+ 
+ pte_t *__find_linux_pte_or_hugepte(pgd_t *pgdir, unsigned long ea,
+diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
+index 16321ad9e70c..60aae8ade511 100644
+--- a/arch/powerpc/xmon/xmon.c
++++ b/arch/powerpc/xmon/xmon.c
+@@ -1545,7 +1545,7 @@ static void excprint(struct pt_regs *fp)
+ 	printf("  current = 0x%lx\n", current);
+ #ifdef CONFIG_PPC64
+ 	printf("  paca    = 0x%lx\t softe: %d\t irq_happened: 0x%02x\n",
+-	       local_paca, local_paca->soft_enabled, local_paca->irq_happened);
++	       local_paca, local_paca->soft_disable_mask, local_paca->irq_happened);
+ #endif
+ 	if (current) {
+ 		printf("    pid   = %ld, comm = %s\n",
+@@ -2273,7 +2273,7 @@ static void dump_one_paca(int cpu)
+ 	DUMP(p, stab_rr, "lx");
+ 	DUMP(p, saved_r1, "lx");
+ 	DUMP(p, trap_save, "x");
+-	DUMP(p, soft_enabled, "x");
++	DUMP(p, soft_disable_mask, "x");
+ 	DUMP(p, irq_happened, "x");
+ 	DUMP(p, io_sync, "x");
+ 	DUMP(p, irq_work_pending, "x");
 -- 
 2.7.4
