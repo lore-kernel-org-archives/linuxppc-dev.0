@@ -1,22 +1,39 @@
-Return-Path: <jolsa@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w31BD0XLyzDq7h
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2017 20:58:44 +1000 (AEST)
-Date: Wed, 12 Apr 2017 12:58:39 +0200
-From: Jiri Olsa <jolsa@redhat.com>
-To: Jin Yao <yao.jin@linux.intel.com>
-Cc: acme@kernel.org, jolsa@kernel.org, peterz@infradead.org,
- mingo@redhat.com, alexander.shishkin@linux.intel.com,
- Linux-kernel@vger.kernel.org, ak@linux.intel.com,
- kan.liang@intel.com, yao.jin@intel.com, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v4 0/5] perf report: Show branch type
-Message-ID: <20170412105839.GC14409@krava>
-References: <1491949266-6835-1-git-send-email-yao.jin@linux.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1491949266-6835-1-git-send-email-yao.jin@linux.intel.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w31CV5zMDzDqHl
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2017 20:59:50 +1000 (AEST)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v3CAwZdR035315
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2017 06:59:38 -0400
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 29seq8jxp3-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2017 06:59:38 -0400
+Received: from localhost
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
+ Wed, 12 Apr 2017 20:59:35 +1000
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v3CAxNn253477436
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2017 20:59:31 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v3CAwt0V019117
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2017 20:58:55 +1000
+From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>,
+ Masami Hiramatsu <mhiramat@kernel.org>, Ingo Molnar <mingo@kernel.org>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: [PATCH v2 0/5] powerpc: a few kprobe fixes and refactoring
+Date: Wed, 12 Apr 2017 16:28:23 +0530
+Message-Id: <cover.1491991939.git.naveen.n.rao@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,73 +43,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Apr 12, 2017 at 06:21:01AM +0800, Jin Yao wrote:
+v1:
+https://www.mail-archive.com/linux-kernel@vger.kernel.org/msg1334843.html
 
-SNIP
+For v2, this series has been re-ordered and rebased on top of
+powerpc/next so as to make it easier to resolve conflicts with -tip. No
+other changes.
 
-> 
-> 3. Use 2 bits in perf_branch_entry for a "cross" metrics checking
->    for branch cross 4K or 2M area. It's an approximate computing
->    for checking if the branch cross 4K page or 2MB page.
-> 
-> For example:
-> 
-> perf record -g --branch-filter any,save_type <command>
-> 
-> perf report --stdio
-> 
->      JCC forward:  27.7%
->     JCC backward:   9.8%
->              JMP:   0.0%
->          IND_JMP:   6.5%
->             CALL:  26.6%
->         IND_CALL:   0.0%
->              RET:  29.3%
->             IRET:   0.0%
->         CROSS_4K:   0.0%
->         CROSS_2M:  14.3%
-
-got mangled perf report --stdio output for:
+- Naveen
 
 
-[root@ibm-x3650m4-02 perf]# ./perf record -j any,save_type kill
-kill: not enough arguments
-[ perf record: Woken up 1 times to write data ]
-[ perf record: Captured and wrote 0.013 MB perf.data (18 samples) ]
+Naveen N. Rao (5):
+  kprobes: convert kprobe_lookup_name() to a function
+  powerpc: kprobes: fix handling of function offsets on ABIv2
+  powerpc: introduce a new helper to obtain function entry points
+  powerpc: kprobes: factor out code to emulate instruction into a helper
+  powerpc: kprobes: emulate instructions on kprobe handler re-entry
 
-[root@ibm-x3650m4-02 perf]# ./perf report --stdio -f | head -30
-# To display the perf.data header info, please use --header/--header-only options.
-#
-#
-# Total Lost Samples: 0
-#
-# Samples: 253  of event 'cycles'
-# Event count (approx.): 253
-#
-# Overhead  Command  Source Shared Object  Source Symbol                            Target Symbol                            Basic Block Cycles
-# ........  .......  ....................  .......................................  .......................................  ..................
-#
-     8.30%  perf
-Um  [kernel.vmlinux]      [k] __intel_pmu_enable_all.constprop.17  [k] native_write_msr                     -                 
-     7.91%  perf
-Um  [kernel.vmlinux]      [k] intel_pmu_lbr_enable_all             [k] __intel_pmu_enable_all.constprop.17  -                 
-     7.91%  perf
-Um  [kernel.vmlinux]      [k] native_write_msr                     [k] intel_pmu_lbr_enable_all             -                 
-     6.32%  kill     libc-2.24.so          [.] _dl_addr                             [.] _dl_addr                             -                 
-     5.93%  perf
-Um  [kernel.vmlinux]      [k] perf_iterate_ctx                     [k] perf_iterate_ctx                     -                 
-     2.77%  kill     libc-2.24.so          [.] malloc                               [.] malloc                               -                 
-     1.98%  kill     libc-2.24.so          [.] _int_malloc                          [.] _int_malloc                          -                 
-     1.58%  kill     [kernel.vmlinux]      [k] __rb_insert_augmented                [k] __rb_insert_augmented                -                 
-     1.58%  perf
-Um  [kernel.vmlinux]      [k] perf_event_exec                      [k] perf_event_exec                      -                 
-     1.19%  kill     [kernel.vmlinux]      [k] anon_vma_interval_tree_insert        [k] anon_vma_interval_tree_insert        -                 
-     1.19%  kill     [kernel.vmlinux]      [k] free_pgd_range                       [k] free_pgd_range                       -                 
-     1.19%  kill     [kernel.vmlinux]      [k] n_tty_write                          [k] n_tty_write                          -                 
-     1.19%  perf
-Um  [kernel.vmlinux]      [k] native_sched_clock                   [k] sched_clock                          -                 
-...
-SNIP
+ arch/powerpc/include/asm/code-patching.h |  37 ++++++++++
+ arch/powerpc/include/asm/kprobes.h       |  53 --------------
+ arch/powerpc/kernel/kprobes.c            | 119 +++++++++++++++++++++++++------
+ arch/powerpc/kernel/optprobes.c          |   6 +-
+ include/linux/kprobes.h                  |   1 +
+ kernel/kprobes.c                         |  21 +++---
+ 6 files changed, 147 insertions(+), 90 deletions(-)
 
-
-jirka
+-- 
+2.12.1
