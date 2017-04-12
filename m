@@ -1,27 +1,16 @@
-Return-Path: <rashmicy@gmail.com>
-Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
- [IPv6:2607:f8b0:400e:c05::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w2qDx4fppzDq7h
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2017 13:30:25 +1000 (AEST)
-Received: by mail-pg0-x243.google.com with SMTP id o123so2724474pga.1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Apr 2017 20:30:25 -0700 (PDT)
-Subject: Re: [PATCH 8/9] powerpc/mm: Wire up hpte_removebolted for powernv
-To: Stephen Rothwell <sfr@canb.auug.org.au>,
- Oliver O'Halloran <oohall@gmail.com>
-References: <20170411174233.21902-1-oohall@gmail.com>
- <20170411174233.21902-9-oohall@gmail.com> <20170412085056.4da27f32@kryten>
- <20170412101819.402451e0@canb.auug.org.au>
-Cc: Anton Blanchard <anton@samba.org>, Rashmica Gupta <rashmica.g@gmail.com>,
- linuxppc-dev@lists.ozlabs.org, arbab@linux.vnet.ibm.com,
- linux-nvdimm@lists.01.org
-From: Rashmica Gupta <rashmicy@gmail.com>
-Message-ID: <ca08ec04-5e59-cfa5-3682-eeba7cc3b58e@gmail.com>
-Date: Wed, 12 Apr 2017 13:30:18 +1000
-MIME-Version: 1.0
-In-Reply-To: <20170412101819.402451e0@canb.auug.org.au>
-Content-Type: text/plain; charset=windows-1252; format=flowed
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w2qRC6PYtzDq7j
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2017 13:39:19 +1000 (AEST)
+In-Reply-To: <1491485678-3444-1-git-send-email-mpe@ellerman.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
+From: Michael Ellerman <patch-notifications@ellerman.id.au>
+Cc: anton@samba.org
+Subject: Re: powerpc/crypto/crc32c-vpmsum: Fix missing preempt_disable()
+Message-Id: <3w2qRC5Svjz9sNJ@ozlabs.org>
+Date: Wed, 12 Apr 2017 13:39:19 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,29 +20,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Thu, 2017-04-06 at 13:34:38 UTC, Michael Ellerman wrote:
+> In crc32c_vpmsum() we call enable_kernel_altivec() without first
+> disabling preemption, which is not allowed:
+> 
+>   WARNING: CPU: 9 PID: 2949 at ../arch/powerpc/kernel/process.c:277 enable_kernel_altivec+0x100/0x120
+>   Modules linked in: dm_thin_pool dm_persistent_data dm_bio_prison dm_bufio libcrc32c vmx_crypto ...
+>   CPU: 9 PID: 2949 Comm: docker Not tainted 4.11.0-rc5-compiler_gcc-6.3.1-00033-g308ac7563944 #381
+>   ...
+>   NIP [c00000000001e320] enable_kernel_altivec+0x100/0x120
+>   LR [d000000003df0910] crc32c_vpmsum+0x108/0x150 [crc32c_vpmsum]
+>   Call Trace:
+>     0xc138fd09 (unreliable)
+>     crc32c_vpmsum+0x108/0x150 [crc32c_vpmsum]
+>     crc32c_vpmsum_update+0x3c/0x60 [crc32c_vpmsum]
+>     crypto_shash_update+0x88/0x1c0
+>     crc32c+0x64/0x90 [libcrc32c]
+>     dm_bm_checksum+0x48/0x80 [dm_persistent_data]
+>     sb_check+0x84/0x120 [dm_thin_pool]
+>     dm_bm_validate_buffer.isra.0+0xc0/0x1b0 [dm_persistent_data]
+>     dm_bm_read_lock+0x80/0xf0 [dm_persistent_data]
+>     __create_persistent_data_objects+0x16c/0x810 [dm_thin_pool]
+>     dm_pool_metadata_open+0xb0/0x1a0 [dm_thin_pool]
+>     pool_ctr+0x4cc/0xb60 [dm_thin_pool]
+>     dm_table_add_target+0x16c/0x3c0
+>     table_load+0x184/0x400
+>     ctl_ioctl+0x2f0/0x560
+>     dm_ctl_ioctl+0x38/0x50
+>     do_vfs_ioctl+0xd8/0x920
+>     SyS_ioctl+0x68/0xc0
+>     system_call+0x38/0xfc
+> 
+> It used to be sufficient just to call pagefault_disable(), because that
+> also disabled preemption. But the two were decoupled in commit 8222dbe21e79
+> ("sched/preempt, mm/fault: Decouple preemption from the page fault
+> logic") in mid 2015.
+> 
+> So add the missing preempt_disable/enable(). We should also call
+> disable_kernel_fp(), although it does nothing by default, there is a
+> debug switch to make it active and all enables should be paired with
+> disables.
+> 
+> Fixes: 6dd7a82cc54e ("crypto: powerpc - Add POWER8 optimised crc32c")
+> Cc: stable@vger.kernel.org # v4.8+
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
+Applied to powerpc fixes.
 
-On 12/04/17 10:18, Stephen Rothwell wrote:
-> Hi Oliver,
->
-> On Wed, 12 Apr 2017 08:50:56 +1000 Anton Blanchard <anton@samba.org> wrote:
->>> From: Rashmica Gupta <rashmica.g@gmail.com>
->>>
->>> Adds support for removing bolted (i.e kernel linear mapping) mappings
->>> on powernv. This is needed to support memory hot unplug operations
->>> which are required for the teardown of DAX/PMEM devices.
->>>
->>> Cc: Rashmica Gupta <rashmica.g@gmail.com>
->>> Cc: Anton Blanchard <anton@samba.org>
->>> Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
->>> ---
->>> Could the original author of this add their S-o-b? I pulled it out of
->>> Rashmica's memtrace patch, but I remember someone saying Anton wrote
->>> it originally.
->> I did.
->>
->> Signed-off-by: Anton Blanchard <anton@samba.org>
-> If you are going to claim that Rashmica authored this patch (and you do
-> with the From: line above), then you need her Signed-off-by as well.
->
-Oliver, can you change the 'From' to a 'Reviewed By'?
+https://git.kernel.org/powerpc/c/4749228f022893faf54a3dbc70796f
+
+cheers
