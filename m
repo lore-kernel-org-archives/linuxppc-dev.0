@@ -3,41 +3,42 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w31CZ5MH1zDqHK
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2017 20:59:54 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w31Cb68DmzDqJL
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2017 20:59:55 +1000 (AEST)
 Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v3CAwfQb071267
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2017 06:59:44 -0400
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
- by mx0a-001b2d01.pphosted.com with ESMTP id 29sb7cadct-1
+ v3CAweYB071234
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2017 06:59:54 -0400
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 29sb7cadku-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2017 06:59:44 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2017 06:59:54 -0400
 Received: from localhost
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Wed, 12 Apr 2017 20:59:41 +1000
+ Wed, 12 Apr 2017 20:59:51 +1000
 Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v3CAxVwM23527574
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2017 20:59:39 +1000
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v3CAxeT941353256
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2017 20:59:48 +1000
 Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
  by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v3CAx2Ea019172
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2017 20:59:02 +1000
+ v3CAxBa5019280
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2017 20:59:11 +1000
 From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
 Cc: Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>,
  Masami Hiramatsu <mhiramat@kernel.org>, Ingo Molnar <mingo@kernel.org>,
  linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [PATCH v2 1/5] kprobes: convert kprobe_lookup_name() to a function
-Date: Wed, 12 Apr 2017 16:28:24 +0530
+Subject: [PATCH v2 5/5] powerpc: kprobes: emulate instructions on kprobe
+ handler re-entry
+Date: Wed, 12 Apr 2017 16:28:28 +0530
 In-Reply-To: <cover.1491991939.git.naveen.n.rao@linux.vnet.ibm.com>
 References: <cover.1491991939.git.naveen.n.rao@linux.vnet.ibm.com>
 In-Reply-To: <cover.1491991939.git.naveen.n.rao@linux.vnet.ibm.com>
 References: <cover.1491991939.git.naveen.n.rao@linux.vnet.ibm.com>
-Message-Id: <2780c632bc2c6e39f27920f8cc98e17430189e27.1491991939.git.naveen.n.rao@linux.vnet.ibm.com>
+Message-Id: <7021f79a5738ecb25ee3e07931e927138e9493eb.1491991939.git.naveen.n.rao@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,231 +48,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The macro is now pretty long and ugly on powerpc. In the light of
-further changes needed here, convert it to a __weak variant to be
-over-ridden with a nicer looking function.
+On kprobe handler re-entry, try to emulate the instruction rather than
+single stepping always.
 
-Suggested-by: Masami Hiramatsu <mhiramat@kernel.org>
+As a related change, remove the duplicate saving of msr as that is
+already done in set_current_kprobe()
+
+Acked-by: Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>
 Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/kprobes.h | 53 ----------------------------------
- arch/powerpc/kernel/kprobes.c      | 58 ++++++++++++++++++++++++++++++++++++++
- arch/powerpc/kernel/optprobes.c    |  4 +--
- include/linux/kprobes.h            |  1 +
- kernel/kprobes.c                   | 20 ++++++-------
- 5 files changed, 69 insertions(+), 67 deletions(-)
+ arch/powerpc/kernel/kprobes.c | 9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/include/asm/kprobes.h b/arch/powerpc/include/asm/kprobes.h
-index 0503c98b2117..a843884aafaf 100644
---- a/arch/powerpc/include/asm/kprobes.h
-+++ b/arch/powerpc/include/asm/kprobes.h
-@@ -61,59 +61,6 @@ extern kprobe_opcode_t optprobe_template_end[];
- #define MAX_OPTINSN_SIZE	(optprobe_template_end - optprobe_template_entry)
- #define RELATIVEJUMP_SIZE	sizeof(kprobe_opcode_t)	/* 4 bytes */
- 
--#ifdef PPC64_ELF_ABI_v2
--/* PPC64 ABIv2 needs local entry point */
--#define kprobe_lookup_name(name, addr)					\
--{									\
--	addr = (kprobe_opcode_t *)kallsyms_lookup_name(name);		\
--	if (addr)							\
--		addr = (kprobe_opcode_t *)ppc_function_entry(addr);	\
--}
--#elif defined(PPC64_ELF_ABI_v1)
--/*
-- * 64bit powerpc ABIv1 uses function descriptors:
-- * - Check for the dot variant of the symbol first.
-- * - If that fails, try looking up the symbol provided.
-- *
-- * This ensures we always get to the actual symbol and not the descriptor.
-- * Also handle <module:symbol> format.
-- */
--#define kprobe_lookup_name(name, addr)					\
--{									\
--	char dot_name[MODULE_NAME_LEN + 1 + KSYM_NAME_LEN];		\
--	const char *modsym;							\
--	bool dot_appended = false;					\
--	if ((modsym = strchr(name, ':')) != NULL) {			\
--		modsym++;						\
--		if (*modsym != '\0' && *modsym != '.') {		\
--			/* Convert to <module:.symbol> */		\
--			strncpy(dot_name, name, modsym - name);		\
--			dot_name[modsym - name] = '.';			\
--			dot_name[modsym - name + 1] = '\0';		\
--			strncat(dot_name, modsym,			\
--				sizeof(dot_name) - (modsym - name) - 2);\
--			dot_appended = true;				\
--		} else {						\
--			dot_name[0] = '\0';				\
--			strncat(dot_name, name, sizeof(dot_name) - 1);	\
--		}							\
--	} else if (name[0] != '.') {					\
--		dot_name[0] = '.';					\
--		dot_name[1] = '\0';					\
--		strncat(dot_name, name, KSYM_NAME_LEN - 2);		\
--		dot_appended = true;					\
--	} else {							\
--		dot_name[0] = '\0';					\
--		strncat(dot_name, name, KSYM_NAME_LEN - 1);		\
--	}								\
--	addr = (kprobe_opcode_t *)kallsyms_lookup_name(dot_name);	\
--	if (!addr && dot_appended) {					\
--		/* Let's try the original non-dot symbol lookup	*/	\
--		addr = (kprobe_opcode_t *)kallsyms_lookup_name(name);	\
--	}								\
--}
--#endif
--
- #define flush_insn_slot(p)	do { } while (0)
- #define kretprobe_blacklist_size 0
- 
 diff --git a/arch/powerpc/kernel/kprobes.c b/arch/powerpc/kernel/kprobes.c
-index 331751701fed..a7aa7394954d 100644
+index 8b48f7d046bd..005bd4a75902 100644
 --- a/arch/powerpc/kernel/kprobes.c
 +++ b/arch/powerpc/kernel/kprobes.c
-@@ -42,6 +42,64 @@ DEFINE_PER_CPU(struct kprobe_ctlblk, kprobe_ctlblk);
- 
- struct kretprobe_blackpoint kretprobe_blacklist[] = {{NULL, NULL}};
- 
-+kprobe_opcode_t *kprobe_lookup_name(const char *name)
-+{
-+	kprobe_opcode_t *addr;
+@@ -273,10 +273,17 @@ int __kprobes kprobe_handler(struct pt_regs *regs)
+ 			 */
+ 			save_previous_kprobe(kcb);
+ 			set_current_kprobe(p, regs, kcb);
+-			kcb->kprobe_saved_msr = regs->msr;
+ 			kprobes_inc_nmissed_count(p);
+ 			prepare_singlestep(p, regs);
+ 			kcb->kprobe_status = KPROBE_REENTER;
++			if (p->ainsn.boostable >= 0) {
++				ret = try_to_emulate(p, regs);
 +
-+#ifdef PPC64_ELF_ABI_v2
-+	/* PPC64 ABIv2 needs local entry point */
-+	addr = (kprobe_opcode_t *)kallsyms_lookup_name(name);
-+	if (addr)
-+		addr = (kprobe_opcode_t *)ppc_function_entry(addr);
-+#elif defined(PPC64_ELF_ABI_v1)
-+	/*
-+	 * 64bit powerpc ABIv1 uses function descriptors:
-+	 * - Check for the dot variant of the symbol first.
-+	 * - If that fails, try looking up the symbol provided.
-+	 *
-+	 * This ensures we always get to the actual symbol and not
-+	 * the descriptor.
-+	 *
-+	 * Also handle <module:symbol> format.
-+	 */
-+	char dot_name[MODULE_NAME_LEN + 1 + KSYM_NAME_LEN];
-+	const char *modsym;
-+	bool dot_appended = false;
-+	if ((modsym = strchr(name, ':')) != NULL) {
-+		modsym++;
-+		if (*modsym != '\0' && *modsym != '.') {
-+			/* Convert to <module:.symbol> */
-+			strncpy(dot_name, name, modsym - name);
-+			dot_name[modsym - name] = '.';
-+			dot_name[modsym - name + 1] = '\0';
-+			strncat(dot_name, modsym,
-+				sizeof(dot_name) - (modsym - name) - 2);
-+			dot_appended = true;
-+		} else {
-+			dot_name[0] = '\0';
-+			strncat(dot_name, name, sizeof(dot_name) - 1);
-+		}
-+	} else if (name[0] != '.') {
-+		dot_name[0] = '.';
-+		dot_name[1] = '\0';
-+		strncat(dot_name, name, KSYM_NAME_LEN - 2);
-+		dot_appended = true;
-+	} else {
-+		dot_name[0] = '\0';
-+		strncat(dot_name, name, KSYM_NAME_LEN - 1);
-+	}
-+	addr = (kprobe_opcode_t *)kallsyms_lookup_name(dot_name);
-+	if (!addr && dot_appended) {
-+		/* Let's try the original non-dot symbol lookup	*/
-+		addr = (kprobe_opcode_t *)kallsyms_lookup_name(name);
-+	}
-+#else
-+	addr = (kprobe_opcode_t *)kallsyms_lookup_name(dot_name);
-+#endif
-+
-+	return addr;
-+}
-+
- int __kprobes arch_prepare_kprobe(struct kprobe *p)
- {
- 	int ret = 0;
-diff --git a/arch/powerpc/kernel/optprobes.c b/arch/powerpc/kernel/optprobes.c
-index 2282bf4e63cd..aefe076d00e0 100644
---- a/arch/powerpc/kernel/optprobes.c
-+++ b/arch/powerpc/kernel/optprobes.c
-@@ -243,8 +243,8 @@ int arch_prepare_optimized_kprobe(struct optimized_kprobe *op, struct kprobe *p)
- 	/*
- 	 * 2. branch to optimized_callback() and emulate_step()
- 	 */
--	kprobe_lookup_name("optimized_callback", op_callback_addr);
--	kprobe_lookup_name("emulate_step", emulate_step_addr);
-+	op_callback_addr = kprobe_lookup_name("optimized_callback");
-+	emulate_step_addr = kprobe_lookup_name("emulate_step");
- 	if (!op_callback_addr || !emulate_step_addr) {
- 		WARN(1, "kprobe_lookup_name() failed\n");
- 		goto error;
-diff --git a/include/linux/kprobes.h b/include/linux/kprobes.h
-index c328e4f7dcad..16f153c84646 100644
---- a/include/linux/kprobes.h
-+++ b/include/linux/kprobes.h
-@@ -379,6 +379,7 @@ static inline struct kprobe_ctlblk *get_kprobe_ctlblk(void)
- 	return this_cpu_ptr(&kprobe_ctlblk);
- }
- 
-+kprobe_opcode_t *kprobe_lookup_name(const char *name);
- int register_kprobe(struct kprobe *p);
- void unregister_kprobe(struct kprobe *p);
- int register_kprobes(struct kprobe **kps, int num);
-diff --git a/kernel/kprobes.c b/kernel/kprobes.c
-index 699c5bc51a92..f3421b6b47a3 100644
---- a/kernel/kprobes.c
-+++ b/kernel/kprobes.c
-@@ -58,15 +58,6 @@
- #define KPROBE_TABLE_SIZE (1 << KPROBE_HASH_BITS)
- 
- 
--/*
-- * Some oddball architectures like 64bit powerpc have function descriptors
-- * so this must be overridable.
-- */
--#ifndef kprobe_lookup_name
--#define kprobe_lookup_name(name, addr) \
--	addr = ((kprobe_opcode_t *)(kallsyms_lookup_name(name)))
--#endif
--
- static int kprobes_initialized;
- static struct hlist_head kprobe_table[KPROBE_TABLE_SIZE];
- static struct hlist_head kretprobe_inst_table[KPROBE_TABLE_SIZE];
-@@ -81,6 +72,11 @@ static struct {
- 	raw_spinlock_t lock ____cacheline_aligned_in_smp;
- } kretprobe_table_locks[KPROBE_TABLE_SIZE];
- 
-+kprobe_opcode_t * __weak kprobe_lookup_name(const char *name)
-+{
-+	return ((kprobe_opcode_t *)(kallsyms_lookup_name(name)));
-+}
-+
- static raw_spinlock_t *kretprobe_table_lock_ptr(unsigned long hash)
- {
- 	return &(kretprobe_table_locks[hash].lock);
-@@ -1400,7 +1396,7 @@ static kprobe_opcode_t *kprobe_addr(struct kprobe *p)
- 		goto invalid;
- 
- 	if (p->symbol_name) {
--		kprobe_lookup_name(p->symbol_name, addr);
-+		addr = kprobe_lookup_name(p->symbol_name);
- 		if (!addr)
- 			return ERR_PTR(-ENOENT);
- 	}
-@@ -2192,8 +2188,8 @@ static int __init init_kprobes(void)
- 	if (kretprobe_blacklist_size) {
- 		/* lookup the function address from its name */
- 		for (i = 0; kretprobe_blacklist[i].name != NULL; i++) {
--			kprobe_lookup_name(kretprobe_blacklist[i].name,
--					   kretprobe_blacklist[i].addr);
-+			kretprobe_blacklist[i].addr =
-+				kprobe_lookup_name(kretprobe_blacklist[i].name);
- 			if (!kretprobe_blacklist[i].addr)
- 				printk("kretprobe: lookup failed: %s\n",
- 				       kretprobe_blacklist[i].name);
++				if (ret > 0) {
++					restore_previous_kprobe(kcb);
++					return 1;
++				}
++			}
+ 			return 1;
+ 		} else {
+ 			if (*addr != BREAKPOINT_INSTRUCTION) {
 -- 
 2.12.1
