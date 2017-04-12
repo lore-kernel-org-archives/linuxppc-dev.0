@@ -2,18 +2,17 @@ Return-Path: <sfr@canb.auug.org.au>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w2lXV1jRfzDq5W
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2017 10:43:38 +1000 (AEST)
-Date: Wed, 12 Apr 2017 10:43:37 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w2m7G0V0yzDq7Z
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2017 11:10:18 +1000 (AEST)
+Date: Wed, 12 Apr 2017 11:10:17 +1000
 From: Stephen Rothwell <sfr@canb.auug.org.au>
 To: Oliver O'Halloran <oohall@gmail.com>
 Cc: linuxppc-dev@lists.ozlabs.org, arbab@linux.vnet.ibm.com,
  linux-nvdimm@lists.01.org
-Subject: Re: [PATCH 6/9] powerpc, mm: Enable ZONE_DEVICE on powerpc
-Message-ID: <20170412104337.535c5abb@canb.auug.org.au>
-In-Reply-To: <20170411174233.21902-7-oohall@gmail.com>
+Subject: Re: ZONE_DEVICE and pmem API support for powerpc
+Message-ID: <20170412111017.0b94b80b@canb.auug.org.au>
+In-Reply-To: <20170411174233.21902-1-oohall@gmail.com>
 References: <20170411174233.21902-1-oohall@gmail.com>
- <20170411174233.21902-7-oohall@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,32 +26,13 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Hi Oliver,
 
-On Wed, 12 Apr 2017 03:42:30 +1000 Oliver O'Halloran <oohall@gmail.com> wrote:
+On Wed, 12 Apr 2017 03:42:24 +1000 Oliver O'Halloran <oohall@gmail.com> wrote:
 >
-> Flip the switch. Running around and screaming "IT'S ALIVE" is optional,
-> but recommended.
-> 
-> Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
-> ---
->  mm/Kconfig | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/mm/Kconfig b/mm/Kconfig
-> index 43d000e44424..d696af58f97f 100644
-> --- a/mm/Kconfig
-> +++ b/mm/Kconfig
-> @@ -724,7 +724,7 @@ config ZONE_DEVICE
->  	depends on MEMORY_HOTPLUG
->  	depends on MEMORY_HOTREMOVE
->  	depends on SPARSEMEM_VMEMMAP
-> -	depends on X86_64 #arch_add_memory() comprehends device memory
-> +	depends on (X86_64 || PPC_BOOK3S_64)  #arch_add_memory() comprehends device memory
->  
+> Series is based on next-20170411, but it should apply elsewhere with minor
+> fixups to arch_{add|remove}_memory due to conflicts with HMM.  For those
 
-That's fine, but at what point do we create
-CONFIG_ARCH_HAVE_ZONE_DEVICE, replace the "depends on
-<archs/platforms>" above with "depends on ARCH_HAVE_ZONE_DEVICE" and
-select that from the appropriate places?
+Just to make life fun for you, Andrew has dropped the HMM patches from
+his quilt series today (and so they will not be in next-20170412).
 
 -- 
 Cheers,
