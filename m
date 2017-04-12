@@ -1,24 +1,24 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
- [IPv6:2607:f8b0:400e:c05::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <jolsa@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w35Vs5Z8PzDq7h
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Apr 2017 00:13:25 +1000 (AEST)
-Received: by mail-pg0-x242.google.com with SMTP id 34so2720348pgx.3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2017 07:13:25 -0700 (PDT)
-Date: Thu, 13 Apr 2017 00:12:52 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] powerpc/64s: catch external interrupts going to host in
- POWER9
-Message-ID: <20170413001252.250018c4@roar.ozlabs.ibm.com>
-In-Reply-To: <1492004742.7236.58.camel@kernel.crashing.org>
-References: <20170412131123.17445-1-npiggin@gmail.com>
- <1492004742.7236.58.camel@kernel.crashing.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w35pN5JrtzDq7h
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Apr 2017 00:26:52 +1000 (AEST)
+Date: Wed, 12 Apr 2017 16:26:47 +0200
+From: Jiri Olsa <jolsa@redhat.com>
+To: "Jin, Yao" <yao.jin@linux.intel.com>
+Cc: acme@kernel.org, jolsa@kernel.org, peterz@infradead.org,
+ mingo@redhat.com, alexander.shishkin@linux.intel.com,
+ Linux-kernel@vger.kernel.org, ak@linux.intel.com,
+ kan.liang@intel.com, yao.jin@intel.com, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v4 0/5] perf report: Show branch type
+Message-ID: <20170412142647.GA27451@krava>
+References: <1491949266-6835-1-git-send-email-yao.jin@linux.intel.com>
+ <20170412105839.GC14409@krava>
+ <baf0ed91-e69c-255b-10f0-a4d82efa78eb@linux.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <baf0ed91-e69c-255b-10f0-a4d82efa78eb@linux.intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,57 +28,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 12 Apr 2017 23:45:42 +1000
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+On Wed, Apr 12, 2017 at 08:25:34PM +0800, Jin, Yao wrote:
 
-> On Wed, 2017-04-12 at 23:11 +1000, Nicholas Piggin wrote:
-> > After setting LPES0 in the host on POWER9, the host external interrupt
-> > handler no longer works correctly, because it's set to HV mode (HSRR)
-> > for POWER7/8 with LPES0 clear. We don't expect to get any EE in the host
-> > with XIVE, but it seems preferable to catch unexpected interrupts in case
-> > there are bugs or unexpected behaviour.
-> >   
-> > > Signed-off-by: Nicholas Piggin <npiggin@gmail.com>  
-> > ---  
+SNIP
+
+> > # Overhead  Command  Source Shared Object  Source Symbol                            Target Symbol                            Basic Block Cycles
+> > # ........  .......  ....................  .......................................  .......................................  ..................
+> > #
+> >       8.30%  perf
+> > Um  [kernel.vmlinux]      [k] __intel_pmu_enable_all.constprop.17  [k] native_write_msr                     -
+> >       7.91%  perf
+> > Um  [kernel.vmlinux]      [k] intel_pmu_lbr_enable_all             [k] __intel_pmu_enable_all.constprop.17  -
+> >       7.91%  perf
+> > Um  [kernel.vmlinux]      [k] native_write_msr                     [k] intel_pmu_lbr_enable_all             -
+> >       6.32%  kill     libc-2.24.so          [.] _dl_addr                             [.] _dl_addr                             -
+> >       5.93%  perf
+> > Um  [kernel.vmlinux]      [k] perf_iterate_ctx                     [k] perf_iterate_ctx                     -
+> >       2.77%  kill     libc-2.24.so          [.] malloc                               [.] malloc                               -
+> >       1.98%  kill     libc-2.24.so          [.] _int_malloc                          [.] _int_malloc                          -
+> >       1.58%  kill     [kernel.vmlinux]      [k] __rb_insert_augmented                [k] __rb_insert_augmented                -
+> >       1.58%  perf
+> > Um  [kernel.vmlinux]      [k] perf_event_exec                      [k] perf_event_exec                      -
+> >       1.19%  kill     [kernel.vmlinux]      [k] anon_vma_interval_tree_insert        [k] anon_vma_interval_tree_insert        -
+> >       1.19%  kill     [kernel.vmlinux]      [k] free_pgd_range                       [k] free_pgd_range                       -
+> >       1.19%  kill     [kernel.vmlinux]      [k] n_tty_write                          [k] n_tty_write                          -
+> >       1.19%  perf
+> > Um  [kernel.vmlinux]      [k] native_sched_clock                   [k] sched_clock                          -
+> > ...
+> > SNIP
+> > 
+> > 
+> > jirka
 > 
-> No. Let's just get LPES back to P8 value in the host, we don't care as
-> we don't get those EEs on normal systems. Then make sure KVM properly
-> sets it the way we want when setting up the guest LPCR (which it should
-> be doing with my patches).
-> Much simpler patch...
+> Hi,
+> 
+> Thanks so much for trying this patch.
+> 
+> The branch statistics is printed at the end of perf report --stdio.
 
+yep, but for some reason with your changes the head report
+got changed as well, I haven't checked the details yet..
 
-Yeah sure that sounds good. How's this then?
-
----
- arch/powerpc/kernel/exceptions-64s.S | 14 +++++++++++++-
- 1 file changed, 13 insertions(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-index 857bf7c5b946..c78165e5fb77 100644
---- a/arch/powerpc/kernel/exceptions-64s.S
-+++ b/arch/powerpc/kernel/exceptions-64s.S
-@@ -735,8 +735,20 @@ EXC_VIRT_END(hardware_interrupt, 0x4500, 0x100)
- 
- TRAMP_KVM(PACA_EXGEN, 0x500)
- TRAMP_KVM_HV(PACA_EXGEN, 0x500)
--EXC_COMMON_ASYNC(hardware_interrupt_common, 0x500, do_IRQ)
- 
-+EXC_COMMON_BEGIN(hardware_interrupt_common)
-+BEGIN_FTR_SECTION
-+	/*
-+	 * The POWER9 XIVE interrupt controller should be configured to send
-+	 * all interrupts to the host as HVI, even with the OPAL XICS
-+	 * emulation, so HVMODE should never see a 0x500 interrupt. However we
-+	 * catch it in case of a bug.
-+	 */
-+	b	unknown_host_ee_common
-+END_FTR_SECTION_IFSET(CPU_FTR_HVMODE | CPU_FTR_ARCH_300)
-+	STD_EXCEPTION_COMMON_ASYNC(0x500, hardware_interrupt_common, do_IRQ)
-+
-+EXC_COMMON_ASYNC(unknown_host_ee_common, 0x500, unknown_exception)
- 
- EXC_REAL(alignment, 0x600, 0x100)
- EXC_VIRT(alignment, 0x4600, 0x100, 0x600)
--- 
-2.11.0
+jirka
