@@ -1,20 +1,41 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <paulmck@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w38mx3LbjzDq7h
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Apr 2017 02:40:49 +1000 (AEST)
-Subject: Re: [v3,1/2] powerpc/mm: Dump linux pagetables
-To: Michael Ellerman <patch-notifications@ellerman.id.au>,
- Rashmica Gupta <rashmicy@gmail.com>
-References: <3tKKXq67gcz9t1T@ozlabs.org>
-Cc: linuxppc-dev@lists.ozlabs.org
-From: Christophe LEROY <christophe.leroy@c-s.fr>
-Message-ID: <e858f33a-ee89-7a7c-02d6-de4e8ac32e26@c-s.fr>
-Date: Wed, 12 Apr 2017 18:40:45 +0200
-MIME-Version: 1.0
-In-Reply-To: <3tKKXq67gcz9t1T@ozlabs.org>
-Content-Type: text/plain; charset=windows-1252; format=flowed
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w3B695TwbzDq7h
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Apr 2017 03:40:49 +1000 (AEST)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v3CHcblt101852
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2017 13:40:36 -0400
+Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 29sb7cxh7v-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2017 13:40:35 -0400
+Received: from localhost
+ by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <paulmck@linux.vnet.ibm.com>;
+ Wed, 12 Apr 2017 13:40:34 -0400
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org
+Cc: mingo@kernel.org, jiangshanlai@gmail.com, dipankar@in.ibm.com,
+ akpm@linux-foundation.org, mathieu.desnoyers@efficios.com,
+ josh@joshtriplett.org, tglx@linutronix.de, peterz@infradead.org,
+ rostedt@goodmis.org, dhowells@redhat.com, edumazet@google.com,
+ fweisbec@gmail.com, oleg@redhat.com, bobby.prani@gmail.com,
+ "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+ Will Deacon <will.deacon@arm.com>,
+ Boqun Feng <boqun.feng@linux.vnet.ibm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH tip/core/rcu 02/40] rcu: Make arch select
+ smp_mb__after_unlock_lock() strength
+Date: Wed, 12 Apr 2017 10:39:47 -0700
+In-Reply-To: <20170412174003.GA23207@linux.vnet.ibm.com>
+References: <20170412174003.GA23207@linux.vnet.ibm.com>
+Message-Id: <1492018825-25634-2-git-send-email-paulmck@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,52 +45,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Rashmica,
+The definition of smp_mb__after_unlock_lock() is currently smp_mb()
+for CONFIG_PPC and a no-op otherwise.  It would be better to instead
+provide an architecture-selectable Kconfig option, and select the
+strength of smp_mb__after_unlock_lock() based on that option.  This
+commit therefore creates CONFIG_ARCH_WEAK_RELACQ, has PPC select it,
+and bases the definition of smp_mb__after_unlock_lock() on this new
+CONFIG_ARCH_WEAK_RELACQ Kconfig option.
 
-Le 17/11/2016 à 13:03, Michael Ellerman a écrit :
-> On Fri, 2016-27-05 at 05:48:59 UTC, Rashmica Gupta wrote:
->> Useful to be able to dump the kernels page tables to check permissions
->> and memory types - derived from arm64's implementation.
->>
->> Add a debugfs file to check the page tables. To use this the PPC_PTDUMP
->> config option must be selected.
->>
->> Signed-off-by: Rashmica Gupta <rashmicy@gmail.com>
->
-> Applied to powerpc next, thanks.
->
-> https://git.kernel.org/powerpc/c/8eb07b187000d48152c4ef97f075bd
+Reported-by: Ingo Molnar <mingo@kernel.org>
+Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Will Deacon <will.deacon@arm.com>
+Cc: Boqun Feng <boqun.feng@linux.vnet.ibm.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Acked-by: Michael Ellerman <mpe@ellerman.id.au>
+Cc: <linuxppc-dev@lists.ozlabs.org>
+---
+ arch/Kconfig             | 3 +++
+ arch/powerpc/Kconfig     | 1 +
+ include/linux/rcupdate.h | 6 +++---
+ 3 files changed, 7 insertions(+), 3 deletions(-)
 
-For your information, compilation fails on mpc885_ads_defconfig when we 
-activate PPC_PTDUMP:
-
-   CC      arch/powerpc/mm/dump_linuxpagetables.o
-arch/powerpc/mm/dump_linuxpagetables.c: In function 'walk_pagetables':
-arch/powerpc/mm/dump_linuxpagetables.c:369:10: error: 'KERN_VIRT_START' 
-undeclared (first use in this function)
-arch/powerpc/mm/dump_linuxpagetables.c:369:10: note: each undeclared 
-identifier is reported only once for each function it appears in
-arch/powerpc/mm/dump_linuxpagetables.c: In function 'populate_markers':
-arch/powerpc/mm/dump_linuxpagetables.c:383:37: error: 'ISA_IO_BASE' 
-undeclared (first use in this function)
-arch/powerpc/mm/dump_linuxpagetables.c:384:37: error: 'ISA_IO_END' 
-undeclared (first use in this function)
-arch/powerpc/mm/dump_linuxpagetables.c:385:37: error: 'PHB_IO_BASE' 
-undeclared (first use in this function)
-arch/powerpc/mm/dump_linuxpagetables.c:386:37: error: 'PHB_IO_END' 
-undeclared (first use in this function)
-arch/powerpc/mm/dump_linuxpagetables.c:387:37: error: 'IOREMAP_BASE' 
-undeclared (first use in this function)
-arch/powerpc/mm/dump_linuxpagetables.c:388:37: error: 'IOREMAP_END' 
-undeclared (first use in this function)
-arch/powerpc/mm/dump_linuxpagetables.c:392:38: error: 'VMEMMAP_BASE' 
-undeclared (first use in this function)
-arch/powerpc/mm/dump_linuxpagetables.c: In function 'ptdump_show':
-arch/powerpc/mm/dump_linuxpagetables.c:400:20: error: 'KERN_VIRT_START' 
-undeclared (first use in this function)
-make[1]: *** [arch/powerpc/mm/dump_linuxpagetables.o] Error 1
-make: *** [arch/powerpc/mm] Error 2
-
-
-
-Christophe
+diff --git a/arch/Kconfig b/arch/Kconfig
+index cd211a14a88f..adefaf344239 100644
+--- a/arch/Kconfig
++++ b/arch/Kconfig
+@@ -320,6 +320,9 @@ config HAVE_CMPXCHG_LOCAL
+ config HAVE_CMPXCHG_DOUBLE
+ 	bool
+ 
++config ARCH_WEAK_RELEASE_ACQUIRE
++	bool
++
+ config ARCH_WANT_IPC_PARSE_VERSION
+ 	bool
+ 
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 97a8bc8a095c..7a5c9b764cd2 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -99,6 +99,7 @@ config PPC
+ 	select ARCH_USE_BUILTIN_BSWAP
+ 	select ARCH_USE_CMPXCHG_LOCKREF		if PPC64
+ 	select ARCH_WANT_IPC_PARSE_VERSION
++	select ARCH_WEAK_RELEASE_ACQUIRE
+ 	select BINFMT_ELF
+ 	select BUILDTIME_EXTABLE_SORT
+ 	select CLONE_BACKWARDS
+diff --git a/include/linux/rcupdate.h b/include/linux/rcupdate.h
+index de88b33c0974..e6146d0074f8 100644
+--- a/include/linux/rcupdate.h
++++ b/include/linux/rcupdate.h
+@@ -1127,11 +1127,11 @@ do { \
+  * if the UNLOCK and LOCK are executed by the same CPU or if the
+  * UNLOCK and LOCK operate on the same lock variable.
+  */
+-#ifdef CONFIG_PPC
++#ifdef CONFIG_ARCH_WEAK_RELEASE_ACQUIRE
+ #define smp_mb__after_unlock_lock()	smp_mb()  /* Full ordering for lock. */
+-#else /* #ifdef CONFIG_PPC */
++#else /* #ifdef CONFIG_ARCH_WEAK_RELEASE_ACQUIRE */
+ #define smp_mb__after_unlock_lock()	do { } while (0)
+-#endif /* #else #ifdef CONFIG_PPC */
++#endif /* #else #ifdef CONFIG_ARCH_WEAK_RELEASE_ACQUIRE */
+ 
+ 
+ #endif /* __LINUX_RCUPDATE_H */
+-- 
+2.5.2
