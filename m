@@ -1,23 +1,23 @@
 Return-Path: <ego@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w32Fk3WwWzDq9L
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w32Fk6LH9zDq9s
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2017 21:46:50 +1000 (AEST)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v3CBd9Bf091072
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2017 07:46:42 -0400
-Received: from e14.ny.us.ibm.com (e14.ny.us.ibm.com [129.33.205.204])
- by mx0a-001b2d01.pphosted.com with ESMTP id 29scj8t3qr-1
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v3CBdJc0122343
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2017 07:46:46 -0400
+Received: from e15.ny.us.ibm.com (e15.ny.us.ibm.com [129.33.205.205])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 29shx4d4ny-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2017 07:46:42 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2017 07:46:45 -0400
 Received: from localhost
- by e14.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e15.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <ego@linux.vnet.ibm.com>;
- Wed, 12 Apr 2017 07:46:40 -0400
+ Wed, 12 Apr 2017 07:46:45 -0400
 From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>, Michael Neuling <mikey@neuling.org>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
@@ -31,13 +31,13 @@ To: Michael Ellerman <mpe@ellerman.id.au>, Michael Neuling <mikey@neuling.org>,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
  "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-Subject: [PATCH 1/3] powernv:idle: Use correct IDLE_THREAD_BITS in POWER8/9
-Date: Wed, 12 Apr 2017 17:16:20 +0530
+Subject: [PATCH 3/3] powernv:idle: Set LPCR_UPRT on wakeup from deep-stop
+Date: Wed, 12 Apr 2017 17:16:22 +0530
 In-Reply-To: <cover.1491996797.git.ego@linux.vnet.ibm.com>
 References: <cover.1491996797.git.ego@linux.vnet.ibm.com>
 In-Reply-To: <cover.1491996797.git.ego@linux.vnet.ibm.com>
 References: <cover.1491996797.git.ego@linux.vnet.ibm.com>
-Message-Id: <1b89d07b1a7ea140501a86b1ed246c5af1b0ce83.1491996797.git.ego@linux.vnet.ibm.com>
+Message-Id: <9be8410e0abe5ae1afa16a6f987c53046ef51757.1491996797.git.ego@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,74 +49,49 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 
-This patch ensures that POWER8 and POWER9 processors use the correct
-value of IDLE_THREAD_BITS as POWER8 has 8 threads per core and hence
-the IDLE_THREAD_BITS should be 0xFF while POWER9 has only 4 threads
-per core and hence the IDLE_THREAD_BITS should be 0xF.
+On wakeup from a deep-stop used for CPU-Hotplug, we invoke
+cur_cpu_spec->cpu_restore() which would set sane default values to
+various SPRs including LPCR.
 
+On POWER9, the cpu_restore_power9() call would would restore LPCR to a
+sane value that is set at early boot time, thereby clearing LPCR_UPRT.
+
+However, LPCR_UPRT is required to be set if we are running in Radix
+mode. If this is not set we will end up with a crash when we enable
+IR,DR.
+
+To fix this, after returning from cur_cpu_spec->cpu_restore() in the
+idle exit path, set LPCR_UPRT if we are running in Radix mode.
+
+Cc: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/cpuidle.h    | 3 ++-
- arch/powerpc/kernel/idle_book3s.S     | 9 ++++++---
- arch/powerpc/platforms/powernv/idle.c | 5 ++++-
- 3 files changed, 12 insertions(+), 5 deletions(-)
+ arch/powerpc/kernel/idle_book3s.S | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
 
-diff --git a/arch/powerpc/include/asm/cpuidle.h b/arch/powerpc/include/asm/cpuidle.h
-index 52586f9..fece6ca 100644
---- a/arch/powerpc/include/asm/cpuidle.h
-+++ b/arch/powerpc/include/asm/cpuidle.h
-@@ -34,7 +34,8 @@
- #define PNV_CORE_IDLE_THREAD_WINKLE_BITS_SHIFT	8
- #define PNV_CORE_IDLE_THREAD_WINKLE_BITS	0x0000FF00
- 
--#define PNV_CORE_IDLE_THREAD_BITS       	0x000000FF
-+#define PNV_CORE_IDLE_4THREAD_BITS       	0x0000000F
-+#define PNV_CORE_IDLE_8THREAD_BITS       	0x000000FF
- 
- /*
-  * ============================ NOTE =================================
 diff --git a/arch/powerpc/kernel/idle_book3s.S b/arch/powerpc/kernel/idle_book3s.S
-index 2b13fe2..9b747e9 100644
+index 6a9bd28..39a9b63 100644
 --- a/arch/powerpc/kernel/idle_book3s.S
 +++ b/arch/powerpc/kernel/idle_book3s.S
-@@ -223,7 +223,7 @@ lwarx_loop1:
- 	add	r15,r15,r5			/* Add if winkle */
- 	andc	r15,r15,r7			/* Clear thread bit */
+@@ -804,6 +804,19 @@ no_segments:
+ #endif
+ 	mtctr	r12
+ 	bctrl
++/*
++ * cur_cpu_spec->cpu_restore would restore LPCR to a
++ * sane value that is set at early boot time,
++ * thereby clearing LPCR_UPRT.
++ * LPCR_UPRT is required if we are running in Radix mode.
++ * Set it here if that be the case.
++ */
++BEGIN_MMU_FTR_SECTION
++	mfspr	r3, SPRN_LPCR
++	LOAD_REG_IMMEDIATE(r4, LPCR_UPRT)
++	or	r3, r3, r4
++	mtspr	SPRN_LPCR, r3
++END_MMU_FTR_SECTION_IFSET(MMU_FTR_TYPE_RADIX)
  
--	andi.	r9,r15,PNV_CORE_IDLE_THREAD_BITS
-+	andi.	r9,r15,PNV_CORE_IDLE_8THREAD_BITS
- 
- /*
-  * If cr0 = 0, then current thread is the last thread of the core entering
-@@ -582,8 +582,11 @@ END_FTR_SECTION_IFSET(CPU_FTR_HVMODE)
- 	stwcx.	r15,0,r14
- 	bne-	1b
- 	isync
--
--	andi.	r9,r15,PNV_CORE_IDLE_THREAD_BITS
-+BEGIN_FTR_SECTION
-+	andi.	r9,r15,PNV_CORE_IDLE_4THREAD_BITS
-+FTR_SECTION_ELSE
-+	andi.	r9,r15,PNV_CORE_IDLE_8THREAD_BITS
-+ALT_FTR_SECTION_END_IFSET(CPU_FTR_ARCH_300)
- 	cmpwi	cr2,r9,0
- 
- 	/*
-diff --git a/arch/powerpc/platforms/powernv/idle.c b/arch/powerpc/platforms/powernv/idle.c
-index 445f30a..d46920b 100644
---- a/arch/powerpc/platforms/powernv/idle.c
-+++ b/arch/powerpc/platforms/powernv/idle.c
-@@ -112,7 +112,10 @@ static void pnv_alloc_idle_core_states(void)
- 		size_t paca_ptr_array_size;
- 
- 		core_idle_state = kmalloc_node(sizeof(u32), GFP_KERNEL, node);
--		*core_idle_state = PNV_CORE_IDLE_THREAD_BITS;
-+		if (cpu_has_feature(CPU_FTR_ARCH_300))
-+			*core_idle_state = PNV_CORE_IDLE_4THREAD_BITS;
-+		else
-+			*core_idle_state = PNV_CORE_IDLE_8THREAD_BITS;
- 		paca_ptr_array_size = (threads_per_core *
- 				       sizeof(struct paca_struct *));
+ hypervisor_state_restored:
  
 -- 
 1.9.4
