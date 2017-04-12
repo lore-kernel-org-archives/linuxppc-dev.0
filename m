@@ -1,26 +1,24 @@
-Return-Path: <oohall@gmail.com>
-Received: from mail-qt0-x236.google.com (mail-qt0-x236.google.com
- [IPv6:2607:f8b0:400d:c0d::236])
+Return-Path: <dja@axtens.net>
+Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
+ [IPv6:2607:f8b0:400e:c05::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w2ysT34DqzDq7h
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2017 19:14:05 +1000 (AEST)
-Received: by mail-qt0-x236.google.com with SMTP id m36so17317102qtb.0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2017 02:14:05 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w2z8l2JJFzDq7h
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2017 19:27:18 +1000 (AEST)
+Received: by mail-pg0-x244.google.com with SMTP id g2so4080272pge.2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2017 02:27:18 -0700 (PDT)
+From: Daniel Axtens <dja@axtens.net>
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ Matt Brown <matthew.brown.dev@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Cc: linux-raid@vger.kernel.org
+Subject: Re: [PATCH 1/2] lib/raid6: Build proper files on corresponding arch
+In-Reply-To: <87wpaqt8ia.fsf@concordia.ellerman.id.au>
+References: <20170412013552.21650-1-matthew.brown.dev@gmail.com>
+ <87wpaqt8ia.fsf@concordia.ellerman.id.au>
+Date: Wed, 12 Apr 2017 19:27:12 +1000
+Message-ID: <87inmakmbz.fsf@possimpible.ozlabs.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <CAPcyv4hKnP_pddKP8Ve6R0n6sXihPeLCw5seq06iHJ=Hc3yaQA@mail.gmail.com>
-References: <20170411174233.21902-1-oohall@gmail.com>
- <CAPcyv4hKnP_pddKP8Ve6R0n6sXihPeLCw5seq06iHJ=Hc3yaQA@mail.gmail.com>
-From: "Oliver O'Halloran" <oohall@gmail.com>
-Date: Wed, 12 Apr 2017 19:14:02 +1000
-Message-ID: <CAOSf1CEtUHeQspR9=sRKJQxxsH==_82L8AzUy10aUj=d=e0_kA@mail.gmail.com>
-Subject: Re: ZONE_DEVICE and pmem API support for powerpc
-To: Dan Williams <dan.j.williams@intel.com>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Balbir Singh <bsingharora@gmail.com>,
- Reza Arbab <arbab@linux.vnet.ibm.com>,
- "linux-nvdimm@lists.01.org" <linux-nvdimm@lists.01.org>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,63 +28,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Apr 12, 2017 at 4:22 AM, Dan Williams <dan.j.williams@intel.com> wrote:
-> On Tue, Apr 11, 2017 at 10:42 AM, Oliver O'Halloran <oohall@gmail.com> wrote:
->> Hi all,
->>
->> This series adds support for ZONE_DEVICE and the pmem api on powerpc. Namely,
->> support for altmaps and the various bits and pieces required for DAX PMD faults.
->> The first two patches touch generic mm/ code, but otherwise this is fairly well
->> contained in arch/powerpc.
->>
->> If the nvdimm folks could sanity check this series I'd appreciate it.
+Michael Ellerman <mpe@ellerman.id.au> writes:
+
+> Matt Brown <matthew.brown.dev@gmail.com> writes:
 >
-> Quick feedback: I'm in the process of cleaning up and resubmitting my
-> patch set to push the pmem api down into the driver directly.
+>> diff --git a/lib/raid6/test/Makefile b/lib/raid6/test/Makefile
+>> index 9c333e9..62b26d1 100644
+>> --- a/lib/raid6/test/Makefile
+>> +++ b/lib/raid6/test/Makefile
+>> @@ -44,10 +44,12 @@ else ifeq ($(HAS_NEON),yes)
+>>          CFLAGS += -DCONFIG_KERNEL_MODE_NEON=1
+>>  else
+>>          HAS_ALTIVEC := $(shell printf '\#include <altivec.h>\nvector int a;\n' |\
+>> -                         gcc -c -x c - >&/dev/null && \
+>> -                         rm ./-.o && echo yes)
+>> +			 gcc -c -x c - >/dev/null && rm ./-.o && echo yes)
+>>          ifeq ($(HAS_ALTIVEC),yes)
+>> -                OBJS += altivec1.o altivec2.o altivec4.o altivec8.o
+>> +		CFLAGS += -I../../../arch/powerpc/include
+>> +		CFLAGS += -DCONFIG_ALTIVEC
+>> +		OBJS += altivec1.o altivec2.o altivec4.o altivec8.o \
+>> +			vpermxor1.o vpermxor2.o vpermxor4.o vpermxor8.o
 >
->     https://lwn.net/Articles/713064/
+> The whitespace in here is a bit of a mess, but you should follow what's
+> there and use spaces to indent your additions.
 
-That's been on my radar for a while and I was hoping it would be in
-4.12. Moving operations into the driver makes a lot of sense from a
-design perspective and it should make supporting some of the
-contutto's eccentricities a bit easier.
+My apologies for steering you in the wrong direction here Matt!
 
-> I'm also reworking memory hotplug to allow sub-section allocations
-> which has collided with Michal Hocko's hotplug reworks. It will be
-> good to have some more eyes on that work to understand the cross-arch
-> implications.
+Also, should the changes to altivec.uc in patch 2 be part of this patch?
+>From memory they are also needed to run the tests?
+
+Regards,
+Daniel
 >
->     https://lkml.org/lkml/2017/3/19/146
-
-I'd been putting off looking at this since I figured it would clash
-with the hotplug rework and HMM, but I'll see if I can get it working
-on ppc.
-
->> Series is based on next-20170411, but it should apply elsewhere with minor
->> fixups to arch_{add|remove}_memory due to conflicts with HMM.  For those
->> interested in testing this, there is a driver and matching firmware that carves
->> out some system memory for use as an emulated Con Tutto memory card.
->>
->> Driver: https://github.com/oohal/linux/tree/contutto-next
->> Firmware: https://github.com/oohal/skiboot/tree/fake-contutto
->>
->> Edit core/init.c:686 to control the amount of memory borrowed for the emulated
->> device.  I'm keeping the driver out of tree for a until 4.13 since I plan on
->> reworking the firmware interface anyway and There's at least one showstopper
->> bug.
->
-> Is this memory card I/O-cache coherent? I.e. existing dma mapping api
-> can hand out mappings to it? Just trying to figure out if this the
-> existing pmem-definition of ZONE_DEVICE or a new one.
-
-As far as the rest of the system is concerned Con Tutto memory is
-identical to normal system memory. All accesses to the card's memory
-is mediated by a memory controller which participates in the memory
-coherency protocol. That said, the link between the card and the
-system is non-coherent so logic on the FPGA can access memory
-incoherently. I'm primarily interested in using the card as a memory
-platform so I haven't spent a lot of time thinking about the latter
-use case, but a different concept of device memory might be required
-there.
-
-Oliver
+> cheers
