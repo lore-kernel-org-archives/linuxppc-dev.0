@@ -1,34 +1,35 @@
-Return-Path: <mwb@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <ukrishn@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w3CN22NymzDqB7
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Apr 2017 04:37:54 +1000 (AEST)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v3CISXlm128251
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2017 14:37:45 -0400
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
- by mx0b-001b2d01.pphosted.com with ESMTP id 29snvj3q7u-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w3D703P1CzDq7h
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Apr 2017 05:11:39 +1000 (AEST)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v3CJ9FOj089315
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2017 15:11:28 -0400
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 29ssdka7bu-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2017 14:37:45 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2017 15:11:27 -0400
 Received: from localhost
- by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
- Wed, 12 Apr 2017 12:37:44 -0600
-Subject: [PATCH 5/5] powerpc: Enable support for new 'ibm,
- dynamic-memory-v2' devtree property
-From: Michael Bringmann <mwb@linux.vnet.ibm.com>
-To: ltc-virtual-io@lists.linux.ibm.com, linuxppc-dev@lists.ozlabs.org
-Cc: nfont@linux.vnet.ibm.com
-Date: Wed, 12 Apr 2017 13:37:40 -0500
-In-Reply-To: <149202212688.38498.11025778802721939795.stgit@powerkvm6.aus.stglabs.ibm.com>
-References: <149202212688.38498.11025778802721939795.stgit@powerkvm6.aus.stglabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Message-Id: <149202225119.38498.4859469474394943037.stgit@powerkvm6.aus.stglabs.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <ukrishn@linux.vnet.ibm.com>;
+ Wed, 12 Apr 2017 13:11:26 -0600
+From: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
+To: linux-scsi@vger.kernel.org, James Bottomley <jejb@linux.vnet.ibm.com>,
+ "Martin K. Petersen" <martin.petersen@oracle.com>,
+ "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>,
+ "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Ian Munsie <imunsie@au1.ibm.com>,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
+ Christophe Lombard <clombard@linux.vnet.ibm.com>
+Subject: [PATCH 00/17]  cxlflash: Enhancements and miscellaneous fixes
+Date: Wed, 12 Apr 2017 14:10:15 -0500
+Message-Id: <1492024215-55579-1-git-send-email-ukrishn@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,25 +39,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-prom_init.c: Enable support for new DRC device tree properties
-"ibm,dynamic-memory-v2" in initial handshake between the Linux kernel
-and the front end processor.
+This patch series contains miscellaneous patches and adds 4 port device
+support. This series also includes patches to improve performance of the
+driver in the legacy IO path.
 
-Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
----
- arch/powerpc/kernel/prom_init.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+This series is intended for 4.12 and is bisectable
 
-diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
-index 102b1a1..6ab7b6a 100644
---- a/arch/powerpc/kernel/prom_init.c
-+++ b/arch/powerpc/kernel/prom_init.c
-@@ -869,7 +869,7 @@ struct ibm_arch_vec __cacheline_aligned ibm_architecture_vec = {
- 		.mmu = 0,
- 		.hash_ext = 0,
- 		.radix_ext = 0,
--		.byte22 = OV5_FEAT(OV5_DRC_INFO),
-+		.byte22 = OV5_FEAT(OV5_DRC_INFO) | OV5_FEAT(OV5_DYN_MEM_V2),
- 	},
- 
- 	/* option vector 6: IBM PAPR hints */
+Matthew R. Ochs (16):
+  cxlflash: Separate RRQ processing from the RRQ interrupt handler
+  cxlflash: Serialize RRQ access and support offlevel processing
+  cxlflash: Implement IRQ polling for RRQ processing
+  cxlflash: Update sysfs helper routines to pass config structure
+  cxlflash: Support dynamic number of FC ports
+  cxlflash: Remove port configuration assumptions
+  cxlflash: Hide FC internals behind common access routine
+  cxlflash: SISlite updates to support 4 ports
+  cxlflash: Support up to 4 ports
+  cxlflash: Fence EEH during probe
+  cxlflash: Remove unnecessary DMA mapping
+  cxlflash: Fix power-of-two validations
+  cxlflash: Fix warnings/errors
+  cxlflash: Improve asynchronous interrupt processing
+  cxlflash: Add hardware queues attribute
+  cxlflash: Introduce hardware queue steering
+
+Uma Krishnan (1):
+  cxlflash: Support multiple hardware queues
+
+ Documentation/powerpc/cxlflash.txt |    5 +
+ drivers/scsi/cxlflash/common.h     |  137 +++--
+ drivers/scsi/cxlflash/lunmgt.c     |    4 +-
+ drivers/scsi/cxlflash/main.c       | 1162 +++++++++++++++++++++++++++---------
+ drivers/scsi/cxlflash/main.h       |    2 -
+ drivers/scsi/cxlflash/sislite.h    |  124 ++--
+ drivers/scsi/cxlflash/superpipe.c  |   16 +-
+ drivers/scsi/cxlflash/superpipe.h  |   56 +-
+ drivers/scsi/cxlflash/vlun.c       |   99 +--
+ drivers/scsi/cxlflash/vlun.h       |    2 +-
+ 10 files changed, 1182 insertions(+), 425 deletions(-)
+
+-- 
+2.1.0
