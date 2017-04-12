@@ -1,16 +1,22 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <rashmica.g@gmail.com>
+Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
+ [IPv6:2607:f8b0:400e:c05::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w2qRC6PYtzDq7j
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2017 13:39:19 +1000 (AEST)
-In-Reply-To: <1491485678-3444-1-git-send-email-mpe@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
-From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: anton@samba.org
-Subject: Re: powerpc/crypto/crc32c-vpmsum: Fix missing preempt_disable()
-Message-Id: <3w2qRC5Svjz9sNJ@ozlabs.org>
-Date: Wed, 12 Apr 2017 13:39:19 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w2rLC0428zDq7h
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2017 14:20:03 +1000 (AEST)
+Received: by mail-pg0-x244.google.com with SMTP id 34so11091pgx.3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Apr 2017 21:20:02 -0700 (PDT)
+Subject: Re: [PATCH 1/2] powerpc/mm: fix up pgtable dump flags
+To: Oliver O'Halloran <oohall@gmail.com>, linuxppc-dev@lists.ozlabs.org
+References: <20170331013749.17874-1-oohall@gmail.com>
+Cc: Rashmica Gupta <rashmica.g@gmail.com>
+From: Rashmica Gupta <rashmica.g@gmail.com>
+Message-ID: <c68c1247-b676-5b48-264d-8affe0c10ead@gmail.com>
+Date: Wed, 12 Apr 2017 14:19:56 +1000
+MIME-Version: 1.0
+In-Reply-To: <20170331013749.17874-1-oohall@gmail.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,53 +26,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2017-04-06 at 13:34:38 UTC, Michael Ellerman wrote:
-> In crc32c_vpmsum() we call enable_kernel_altivec() without first
-> disabling preemption, which is not allowed:
-> 
->   WARNING: CPU: 9 PID: 2949 at ../arch/powerpc/kernel/process.c:277 enable_kernel_altivec+0x100/0x120
->   Modules linked in: dm_thin_pool dm_persistent_data dm_bio_prison dm_bufio libcrc32c vmx_crypto ...
->   CPU: 9 PID: 2949 Comm: docker Not tainted 4.11.0-rc5-compiler_gcc-6.3.1-00033-g308ac7563944 #381
->   ...
->   NIP [c00000000001e320] enable_kernel_altivec+0x100/0x120
->   LR [d000000003df0910] crc32c_vpmsum+0x108/0x150 [crc32c_vpmsum]
->   Call Trace:
->     0xc138fd09 (unreliable)
->     crc32c_vpmsum+0x108/0x150 [crc32c_vpmsum]
->     crc32c_vpmsum_update+0x3c/0x60 [crc32c_vpmsum]
->     crypto_shash_update+0x88/0x1c0
->     crc32c+0x64/0x90 [libcrc32c]
->     dm_bm_checksum+0x48/0x80 [dm_persistent_data]
->     sb_check+0x84/0x120 [dm_thin_pool]
->     dm_bm_validate_buffer.isra.0+0xc0/0x1b0 [dm_persistent_data]
->     dm_bm_read_lock+0x80/0xf0 [dm_persistent_data]
->     __create_persistent_data_objects+0x16c/0x810 [dm_thin_pool]
->     dm_pool_metadata_open+0xb0/0x1a0 [dm_thin_pool]
->     pool_ctr+0x4cc/0xb60 [dm_thin_pool]
->     dm_table_add_target+0x16c/0x3c0
->     table_load+0x184/0x400
->     ctl_ioctl+0x2f0/0x560
->     dm_ctl_ioctl+0x38/0x50
->     do_vfs_ioctl+0xd8/0x920
->     SyS_ioctl+0x68/0xc0
->     system_call+0x38/0xfc
-> 
-> It used to be sufficient just to call pagefault_disable(), because that
-> also disabled preemption. But the two were decoupled in commit 8222dbe21e79
-> ("sched/preempt, mm/fault: Decouple preemption from the page fault
-> logic") in mid 2015.
-> 
-> So add the missing preempt_disable/enable(). We should also call
-> disable_kernel_fp(), although it does nothing by default, there is a
-> debug switch to make it active and all enables should be paired with
-> disables.
-> 
-> Fixes: 6dd7a82cc54e ("crypto: powerpc - Add POWER8 optimised crc32c")
-> Cc: stable@vger.kernel.org # v4.8+
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
-Applied to powerpc fixes.
+On 31/03/17 12:37, Oliver O'Halloran wrote:
+> On Book3s we have two PTE flags used to mark cache-inhibited mappings:
+> _PAGE_TOLERANT and _PAGE_NON_IDEMPOTENT. Currently the kernel page
+> table dumper only looks at the generic _PAGE_NO_CACHE which is
+> defined to be _PAGE_TOLERANT. This patch modifies the dumper so
+> both flags are shown in the dump.
+>
+> Cc: Rashmica Gupta <rashmica.g@gmail.com>
+> Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
+Should we also add in _PAGE_SAO  that is in Book3s?
 
-https://git.kernel.org/powerpc/c/4749228f022893faf54a3dbc70796f
 
-cheers
+> ---
+>   arch/powerpc/mm/dump_linuxpagetables.c | 13 +++++++++++++
+>   1 file changed, 13 insertions(+)
+>
+> diff --git a/arch/powerpc/mm/dump_linuxpagetables.c b/arch/powerpc/mm/dump_linuxpagetables.c
+> index 49abaf4dc8e3..e7cbfd5a0940 100644
+> --- a/arch/powerpc/mm/dump_linuxpagetables.c
+> +++ b/arch/powerpc/mm/dump_linuxpagetables.c
+> @@ -154,11 +154,24 @@ static const struct flag_info flag_array[] = {
+>   		.clear	= "             ",
+>   	}, {
+>   #endif
+> +#ifndef CONFIG_PPC_BOOK3S_64
+>   		.mask	= _PAGE_NO_CACHE,
+>   		.val	= _PAGE_NO_CACHE,
+>   		.set	= "no cache",
+>   		.clear	= "        ",
+>   	}, {
+> +#else
+> +		.mask	= _PAGE_NON_IDEMPOTENT,
+> +		.val	= _PAGE_NON_IDEMPOTENT,
+> +		.set	= "non-idempotent",
+> +		.clear	= "              ",
+> +	}, {
+> +		.mask	= _PAGE_TOLERANT,
+> +		.val	= _PAGE_TOLERANT,
+> +		.set	= "tolerant",
+> +		.clear	= "        ",
+> +	}, {
+> +#endif
+>   #ifdef CONFIG_PPC_BOOK3S_64
+>   		.mask	= H_PAGE_BUSY,
+>   		.val	= H_PAGE_BUSY,
