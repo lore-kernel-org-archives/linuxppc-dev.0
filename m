@@ -1,19 +1,19 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w2vkV3TbszDq7h
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2017 16:52:50 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w2vnG0CWgzDq7h
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2017 16:55:14 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Rashmica Gupta <rashmica.g@gmail.com>, Oliver O'Halloran <oohall@gmail.com>,
- linuxppc-dev@lists.ozlabs.org
-Cc: Rashmica Gupta <rashmica.g@gmail.com>
-Subject: Re: [PATCH 1/2] powerpc/mm: fix up pgtable dump flags
-In-Reply-To: <c68c1247-b676-5b48-264d-8affe0c10ead@gmail.com>
-References: <20170331013749.17874-1-oohall@gmail.com>
- <c68c1247-b676-5b48-264d-8affe0c10ead@gmail.com>
-Date: Wed, 12 Apr 2017 16:52:50 +1000
-Message-ID: <8737deungd.fsf@concordia.ellerman.id.au>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ benh@kernel.crashing.org, paulus@samba.org
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: Re: [PATCH] powerpc/mm/hash: don't opencode VMALLOC_INDEX
+In-Reply-To: <1491972022-14602-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+References: <1491972022-14602-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Date: Wed, 12 Apr 2017 16:55:13 +1000
+Message-ID: <87zifmt8ry.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,27 +25,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Rashmica Gupta <rashmica.g@gmail.com> writes:
+"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> writes:
 
-> On 31/03/17 12:37, Oliver O'Halloran wrote:
->> On Book3s we have two PTE flags used to mark cache-inhibited mappings:
->> _PAGE_TOLERANT and _PAGE_NON_IDEMPOTENT. Currently the kernel page
->> table dumper only looks at the generic _PAGE_NO_CACHE which is
->> defined to be _PAGE_TOLERANT. This patch modifies the dumper so
->> both flags are shown in the dump.
->>
->> Cc: Rashmica Gupta <rashmica.g@gmail.com>
->> Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
+> powerpc/mm/hash: don't opencode VMALLOC_INDEX
 
-> Should we also add in _PAGE_SAO  that is in Book3s?
+OK.
 
-I don't think we ever expect to see it in the kernel page tables. But if
-we did that would be "interesting".
+> Also remove wrong indentation to fix checkpatch.pl warning.
 
-I've forgotten what the code does with unknown bits, does it already
-print them in some way?
+No thanks :)
 
-If not we should either add that or add _PAGE_SAO and everything else
-that could possibly ever be there.
+Or at least do it as a separate patch.
+
+I'll fix it up this time.
 
 cheers
+
+> diff --git a/arch/powerpc/mm/slb.c b/arch/powerpc/mm/slb.c
+> index 98ae810b8c21..3d580ccf4b71 100644
+> --- a/arch/powerpc/mm/slb.c
+> +++ b/arch/powerpc/mm/slb.c
+> @@ -131,9 +131,9 @@ static void __slb_flush_and_rebolt(void)
+>  		     "slbmte	%2,%3\n"
+>  		     "isync"
+>  		     :: "r"(mk_vsid_data(VMALLOC_START, mmu_kernel_ssize, vflags)),
+> -		        "r"(mk_esid_data(VMALLOC_START, mmu_kernel_ssize, 1)),
+> -		        "r"(ksp_vsid_data),
+> -		        "r"(ksp_esid_data)
+> +			"r"(mk_esid_data(VMALLOC_START, mmu_kernel_ssize, VMALLOC_INDEX)),
+> +			"r"(ksp_vsid_data),
+> +			"r"(ksp_esid_data)
+>  		     : "memory");
+>  }
+>  
+> -- 
+> 2.7.4
