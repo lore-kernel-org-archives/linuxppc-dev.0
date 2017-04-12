@@ -1,19 +1,43 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <andrew.donnellan@au1.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w2vvy0HVbzDq7j
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2017 17:01:02 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Matt Brown <matthew.brown.dev@gmail.com>, linuxppc-dev@lists.ozlabs.org
-Cc: linux-raid@vger.kernel.org, dja@axtens.net
-Subject: Re: [PATCH 1/2] lib/raid6: Build proper files on corresponding arch
-In-Reply-To: <20170412013552.21650-1-matthew.brown.dev@gmail.com>
-References: <20170412013552.21650-1-matthew.brown.dev@gmail.com>
-Date: Wed, 12 Apr 2017 17:01:01 +1000
-Message-ID: <87wpaqt8ia.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w2x4B4qCrzDq7h
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2017 17:53:13 +1000 (AEST)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v3C7couZ034296
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2017 03:53:08 -0400
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 29sema3rq7-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2017 03:53:08 -0400
+Received: from localhost
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
+ Wed, 12 Apr 2017 17:53:05 +1000
+Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v3C7qtJn32768248
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2017 17:53:03 +1000
+Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
+ by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v3C7qUaN009344
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2017 17:52:31 +1000
+From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Subject: Re: [PATCH V4 7/7] cxl: Add psl9 specific code
+To: Christophe Lombard <clombard@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, fbarrat@linux.vnet.ibm.com,
+ imunsie@au1.ibm.com
+References: <1491574319-11852-1-git-send-email-clombard@linux.vnet.ibm.com>
+ <1491574319-11852-8-git-send-email-clombard@linux.vnet.ibm.com>
+Date: Wed, 12 Apr 2017 17:52:06 +1000
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <1491574319-11852-8-git-send-email-clombard@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <12e9c746-4f52-d807-2e4f-32ad0b827fb2@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,27 +47,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Matt Brown <matthew.brown.dev@gmail.com> writes:
+On 08/04/17 00:11, Christophe Lombard wrote:
+> +static u32 get_phb_index(struct device_node *np)
+>  {
+>  	u32 phb_index;
+>
+>  	if (of_property_read_u32(np, "ibm,phb-index", &phb_index))
+> -		return 0;
+> +		return -ENODEV;
 
-> diff --git a/lib/raid6/test/Makefile b/lib/raid6/test/Makefile
-> index 9c333e9..62b26d1 100644
-> --- a/lib/raid6/test/Makefile
-> +++ b/lib/raid6/test/Makefile
-> @@ -44,10 +44,12 @@ else ifeq ($(HAS_NEON),yes)
->          CFLAGS += -DCONFIG_KERNEL_MODE_NEON=1
->  else
->          HAS_ALTIVEC := $(shell printf '\#include <altivec.h>\nvector int a;\n' |\
-> -                         gcc -c -x c - >&/dev/null && \
-> -                         rm ./-.o && echo yes)
-> +			 gcc -c -x c - >/dev/null && rm ./-.o && echo yes)
->          ifeq ($(HAS_ALTIVEC),yes)
-> -                OBJS += altivec1.o altivec2.o altivec4.o altivec8.o
-> +		CFLAGS += -I../../../arch/powerpc/include
-> +		CFLAGS += -DCONFIG_ALTIVEC
-> +		OBJS += altivec1.o altivec2.o altivec4.o altivec8.o \
-> +			vpermxor1.o vpermxor2.o vpermxor4.o vpermxor8.o
+Function is unsigned.
 
-The whitespace in here is a bit of a mess, but you should follow what's
-there and use spaces to indent your additions.
-
-cheers
+-- 
+Andrew Donnellan              OzLabs, ADL Canberra
+andrew.donnellan@au1.ibm.com  IBM Australia Limited
