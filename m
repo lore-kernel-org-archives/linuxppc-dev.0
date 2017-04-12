@@ -1,37 +1,27 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <rashmicy@gmail.com>
+Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
+ [IPv6:2607:f8b0:400e:c05::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w2pkn1LYXzDq7Z
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2017 13:07:44 +1000 (AEST)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v3C2whrL077288
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Apr 2017 23:07:40 -0400
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
- by mx0a-001b2d01.pphosted.com with ESMTP id 29rn513sxh-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Apr 2017 23:07:39 -0400
-Received: from localhost
- by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Tue, 11 Apr 2017 21:07:39 -0600
-Subject: Re: [PATCH 3/9] powerpc/mm: Add _PAGE_DEVMAP for ppc64.
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w2qDx4fppzDq7h
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2017 13:30:25 +1000 (AEST)
+Received: by mail-pg0-x243.google.com with SMTP id o123so2724474pga.1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Apr 2017 20:30:25 -0700 (PDT)
+Subject: Re: [PATCH 8/9] powerpc/mm: Wire up hpte_removebolted for powernv
 To: Stephen Rothwell <sfr@canb.auug.org.au>,
- "Oliver O'Halloran" <oohall@gmail.com>
+ Oliver O'Halloran <oohall@gmail.com>
 References: <20170411174233.21902-1-oohall@gmail.com>
- <20170411174233.21902-4-oohall@gmail.com>
- <20170412101922.572b59ca@canb.auug.org.au>
-Cc: linuxppc-dev@lists.ozlabs.org, arbab@linux.vnet.ibm.com,
+ <20170411174233.21902-9-oohall@gmail.com> <20170412085056.4da27f32@kryten>
+ <20170412101819.402451e0@canb.auug.org.au>
+Cc: Anton Blanchard <anton@samba.org>, Rashmica Gupta <rashmica.g@gmail.com>,
+ linuxppc-dev@lists.ozlabs.org, arbab@linux.vnet.ibm.com,
  linux-nvdimm@lists.01.org
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Date: Wed, 12 Apr 2017 08:37:30 +0530
+From: Rashmica Gupta <rashmicy@gmail.com>
+Message-ID: <ca08ec04-5e59-cfa5-3682-eeba7cc3b58e@gmail.com>
+Date: Wed, 12 Apr 2017 13:30:18 +1000
 MIME-Version: 1.0
-In-Reply-To: <20170412101922.572b59ca@canb.auug.org.au>
+In-Reply-To: <20170412101819.402451e0@canb.auug.org.au>
 Content-Type: text/plain; charset=windows-1252; format=flowed
-Message-Id: <19df521f-ed1b-a351-9141-c3ba11c96cfb@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,23 +33,27 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 
 
-On Wednesday 12 April 2017 05:49 AM, Stephen Rothwell wrote:
+On 12/04/17 10:18, Stephen Rothwell wrote:
 > Hi Oliver,
 >
-> On Wed, 12 Apr 2017 03:42:27 +1000 Oliver O'Halloran <oohall@gmail.com> wrote:
+> On Wed, 12 Apr 2017 08:50:56 +1000 Anton Blanchard <anton@samba.org> wrote:
+>>> From: Rashmica Gupta <rashmica.g@gmail.com>
+>>>
+>>> Adds support for removing bolted (i.e kernel linear mapping) mappings
+>>> on powernv. This is needed to support memory hot unplug operations
+>>> which are required for the teardown of DAX/PMEM devices.
+>>>
+>>> Cc: Rashmica Gupta <rashmica.g@gmail.com>
+>>> Cc: Anton Blanchard <anton@samba.org>
+>>> Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
+>>> ---
+>>> Could the original author of this add their S-o-b? I pulled it out of
+>>> Rashmica's memtrace patch, but I remember someone saying Anton wrote
+>>> it originally.
+>> I did.
 >>
->> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
->>
->> Add a _PAGE_DEVMAP bit for PTE and DAX PMD entires. PowerPC doesn't
->> currently support PUD faults so we haven't extended it to the PUD
->> level.
->>
->> Cc: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
->> Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
+>> Signed-off-by: Anton Blanchard <anton@samba.org>
+> If you are going to claim that Rashmica authored this patch (and you do
+> with the From: line above), then you need her Signed-off-by as well.
 >
-> This needs Aneesh's Signed-off-by.
->
-
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-
--aneesh
+Oliver, can you change the 'From' to a 'Reviewed By'?
