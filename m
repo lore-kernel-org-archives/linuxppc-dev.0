@@ -1,31 +1,24 @@
-Return-Path: <srs0=fsug=3u=kernel.crashing.org=benh@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
+ [IPv6:2607:f8b0:400e:c05::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w35401hYJzDq7j
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2017 23:53:36 +1000 (AEST)
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3w35400msRz8t6N
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2017 23:53:36 +1000 (AEST)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3w353y6vl7z9sN9
- for <linuxppc-dev@ozlabs.org>; Wed, 12 Apr 2017 23:53:34 +1000 (AEST)
-Message-ID: <1492005205.7236.63.camel@kernel.crashing.org>
-Subject: Re: EEH error in doing DMA with PEX 8619
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: IanJiang <ianjiang.cn@gmail.com>, linuxppc-dev@ozlabs.org
-Date: Wed, 12 Apr 2017 23:53:25 +1000
-In-Reply-To: <CAFE2VE+pm=bBVBx3Ws08kcKGhZO+BaxJcmskjg4DFjNKHQj-9w@mail.gmail.com>
-References: <1491826953201-121121.post@n7.nabble.com>
- <20170410222442.GA11610@gwshan> <1491876268752-121154.post@n7.nabble.com>
- <1491876910.4166.219.camel@au1.ibm.com> <20170411044238.GA8157@gwshan>
- <1491902810921-121181.post@n7.nabble.com>
- <1491903331.4166.240.camel@kernel.crashing.org>
- <CAFE2VE+pm=bBVBx3Ws08kcKGhZO+BaxJcmskjg4DFjNKHQj-9w@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w35Vs5Z8PzDq7h
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Apr 2017 00:13:25 +1000 (AEST)
+Received: by mail-pg0-x242.google.com with SMTP id 34so2720348pgx.3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2017 07:13:25 -0700 (PDT)
+Date: Thu, 13 Apr 2017 00:12:52 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] powerpc/64s: catch external interrupts going to host in
+ POWER9
+Message-ID: <20170413001252.250018c4@roar.ozlabs.ibm.com>
+In-Reply-To: <1492004742.7236.58.camel@kernel.crashing.org>
+References: <20170412131123.17445-1-npiggin@gmail.com>
+ <1492004742.7236.58.camel@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,18 +28,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2017-04-12 at 01:42 -0700, IanJiang wrote:
+On Wed, 12 Apr 2017 23:45:42 +1000
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+
+> On Wed, 2017-04-12 at 23:11 +1000, Nicholas Piggin wrote:
+> > After setting LPES0 in the host on POWER9, the host external interrupt
+> > handler no longer works correctly, because it's set to HV mode (HSRR)
+> > for POWER7/8 with LPES0 clear. We don't expect to get any EE in the host
+> > with XIVE, but it seems preferable to catch unexpected interrupts in case
+> > there are bugs or unexpected behaviour.
+> >   
+> > > Signed-off-by: Nicholas Piggin <npiggin@gmail.com>  
+> > ---  
 > 
-> In my test, DMA buffers are allocated with  (bus 2, device 1, function 
-> 0) in module Plx8000_NT, but DMA is issued by (bus 1 device 0 function 
-> 1) in module Plx8000_DMA. And error of (bus 1 device 0 function 1) is 
-> reported by EEH. 
+> No. Let's just get LPES back to P8 value in the host, we don't care as
+> we don't get those EEs on normal systems. Then make sure KVM properly
+> sets it the way we want when setting up the guest LPCR (which it should
+> be doing with my patches).
+> Much simpler patch...
 
-This is going to break on other systems too. If you enable strict iommu
-on x86 for example.
 
-You need to ensure that DMA are allocated for the same requester ID
-that will be performing the transactions.
+Yeah sure that sounds good. How's this then?
 
-Cheers,
-Ben.
+---
+ arch/powerpc/kernel/exceptions-64s.S | 14 +++++++++++++-
+ 1 file changed, 13 insertions(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+index 857bf7c5b946..c78165e5fb77 100644
+--- a/arch/powerpc/kernel/exceptions-64s.S
++++ b/arch/powerpc/kernel/exceptions-64s.S
+@@ -735,8 +735,20 @@ EXC_VIRT_END(hardware_interrupt, 0x4500, 0x100)
+ 
+ TRAMP_KVM(PACA_EXGEN, 0x500)
+ TRAMP_KVM_HV(PACA_EXGEN, 0x500)
+-EXC_COMMON_ASYNC(hardware_interrupt_common, 0x500, do_IRQ)
+ 
++EXC_COMMON_BEGIN(hardware_interrupt_common)
++BEGIN_FTR_SECTION
++	/*
++	 * The POWER9 XIVE interrupt controller should be configured to send
++	 * all interrupts to the host as HVI, even with the OPAL XICS
++	 * emulation, so HVMODE should never see a 0x500 interrupt. However we
++	 * catch it in case of a bug.
++	 */
++	b	unknown_host_ee_common
++END_FTR_SECTION_IFSET(CPU_FTR_HVMODE | CPU_FTR_ARCH_300)
++	STD_EXCEPTION_COMMON_ASYNC(0x500, hardware_interrupt_common, do_IRQ)
++
++EXC_COMMON_ASYNC(unknown_host_ee_common, 0x500, unknown_exception)
+ 
+ EXC_REAL(alignment, 0x600, 0x100)
+ EXC_VIRT(alignment, 0x4600, 0x100, 0x600)
+-- 
+2.11.0
