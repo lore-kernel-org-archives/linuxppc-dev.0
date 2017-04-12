@@ -1,44 +1,26 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <srs0=ztpm=3u=gmail.com=bsingharora@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w2tN50K7HzDq7j
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2017 15:51:48 +1000 (AEST)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v3C5mWUq050991
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2017 01:51:46 -0400
-Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [125.16.236.4])
- by mx0b-001b2d01.pphosted.com with ESMTP id 29scje3wfu-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2017 01:51:46 -0400
-Received: from localhost
- by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Wed, 12 Apr 2017 11:21:42 +0530
-Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay06.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v3C5pe378257772
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2017 11:21:40 +0530
-Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
- by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v3C5pc86012552
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2017 11:21:40 +0530
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: "Oliver O'Halloran" <oohall@gmail.com>, linuxppc-dev@lists.ozlabs.org
-Cc: arbab@linux.vnet.ibm.com, bsingharora@gmail.com, linux-nvdimm@lists.01.org,
- "Oliver O'Halloran" <oohall@gmail.com>, linux-mm@kvack.org
-Subject: Re: [PATCH 2/9] mm/huge_memory: Deposit a pgtable for DAX PMD faults
- when required
-In-Reply-To: <20170411174233.21902-3-oohall@gmail.com>
-References: <20170411174233.21902-1-oohall@gmail.com>
- <20170411174233.21902-3-oohall@gmail.com>
-Date: Wed, 12 Apr 2017 11:21:35 +0530
-MIME-Version: 1.0
-Content-Type: text/plain
-Message-Id: <8760iaqil4.fsf@skywalker.in.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w2vLk1D0JzDq7h
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2017 16:35:42 +1000 (AEST)
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3w2vLk0WrKz8sZm
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2017 16:35:42 +1000 (AEST)
+Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
+ [IPv6:2607:f8b0:400e:c00::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3w2vLj4HdTz9sNJ
+ for <linuxppc-dev@ozlabs.org>; Wed, 12 Apr 2017 16:35:41 +1000 (AEST)
+Received: by mail-pf0-x241.google.com with SMTP id a188so3191128pfa.2
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Apr 2017 23:35:41 -0700 (PDT)
+From: Balbir Singh <bsingharora@gmail.com>
+To: mpe@ellerman.id.au,
+	linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc/syscalls/trace: Fix mmap in syscalls_trace
+Date: Wed, 12 Apr 2017 16:35:19 +1000
+Message-Id: <20170412063519.18560-1-bsingharora@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,85 +30,113 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Oliver O'Halloran <oohall@gmail.com> writes:
+This patch uses SYSCALL_DEFINE6 for sys_mmap and sys_mmap2
+so that the meta-data associated with these syscalls is
+visible to the syscall tracer. In the absence of this
+generic syscalls (defined outside arch) like munmap,etc.
+are visible in available_events, syscall_enter_mmap and
+syscall_exit_mmap is not.
 
-> Although all architectures use a deposited page table for THP on anonymous VMAs
-> some architectures (s390 and powerpc) require the deposited storage even for
-> file backed VMAs due to quirks of their MMUs. This patch adds support for
-> depositing a table in DAX PMD fault handling path for archs that require it.
-> Other architectures should see no functional changes.
->
-> Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-> Cc: linux-mm@kvack.org
-> Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
+A side-effect of this change is that the return type has
+changed from unsigned long to long.
 
-Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+Prior to these changes, we had, under /sys/kernel/tracing
 
+cat available_events  | grep syscalls | grep map
+syscalls:sys_exit_remap_file_pages
+syscalls:sys_enter_remap_file_pages
+syscalls:sys_exit_munmap
+syscalls:sys_enter_munmap
+syscalls:sys_exit_mremap
+syscalls:sys_enter_mremap
 
-> ---
->  mm/huge_memory.c | 20 ++++++++++++++++++--
->  1 file changed, 18 insertions(+), 2 deletions(-)
->
-> diff --git a/mm/huge_memory.c b/mm/huge_memory.c
-> index aa01dd47cc65..a84909cf20d3 100644
-> --- a/mm/huge_memory.c
-> +++ b/mm/huge_memory.c
-> @@ -715,7 +715,8 @@ int do_huge_pmd_anonymous_page(struct vm_fault *vmf)
->  }
->
->  static void insert_pfn_pmd(struct vm_area_struct *vma, unsigned long addr,
-> -		pmd_t *pmd, pfn_t pfn, pgprot_t prot, bool write)
-> +		pmd_t *pmd, pfn_t pfn, pgprot_t prot, bool write,
-> +		pgtable_t pgtable)
->  {
->  	struct mm_struct *mm = vma->vm_mm;
->  	pmd_t entry;
-> @@ -729,6 +730,12 @@ static void insert_pfn_pmd(struct vm_area_struct *vma, unsigned long addr,
->  		entry = pmd_mkyoung(pmd_mkdirty(entry));
->  		entry = maybe_pmd_mkwrite(entry, vma);
->  	}
-> +
-> +	if (pgtable) {
-> +		pgtable_trans_huge_deposit(mm, pmd, pgtable);
-> +		atomic_long_inc(&mm->nr_ptes);
-> +	}
-> +
->  	set_pmd_at(mm, addr, pmd, entry);
->  	update_mmu_cache_pmd(vma, addr, pmd);
->  	spin_unlock(ptl);
-> @@ -738,6 +745,7 @@ int vmf_insert_pfn_pmd(struct vm_area_struct *vma, unsigned long addr,
->  			pmd_t *pmd, pfn_t pfn, bool write)
->  {
->  	pgprot_t pgprot = vma->vm_page_prot;
-> +	pgtable_t pgtable = NULL;
->  	/*
->  	 * If we had pmd_special, we could avoid all these restrictions,
->  	 * but we need to be consistent with PTEs and architectures that
-> @@ -752,9 +760,15 @@ int vmf_insert_pfn_pmd(struct vm_area_struct *vma, unsigned long addr,
->  	if (addr < vma->vm_start || addr >= vma->vm_end)
->  		return VM_FAULT_SIGBUS;
->
-> +	if (arch_needs_pgtable_deposit()) {
-> +		pgtable = pte_alloc_one(vma->vm_mm, addr);
-> +		if (!pgtable)
-> +			return VM_FAULT_OOM;
-> +	}
-> +
->  	track_pfn_insert(vma, &pgprot, pfn);
->
-> -	insert_pfn_pmd(vma, addr, pmd, pfn, pgprot, write);
-> +	insert_pfn_pmd(vma, addr, pmd, pfn, pgprot, write, pgtable);
->  	return VM_FAULT_NOPAGE;
->  }
->  EXPORT_SYMBOL_GPL(vmf_insert_pfn_pmd);
-> @@ -1611,6 +1625,8 @@ int zap_huge_pmd(struct mmu_gather *tlb, struct vm_area_struct *vma,
->  			tlb->fullmm);
->  	tlb_remove_pmd_tlb_entry(tlb, pmd, addr);
->  	if (vma_is_dax(vma)) {
-> +		if (arch_needs_pgtable_deposit())
-> +			zap_deposited_table(tlb->mm, pmd);
->  		spin_unlock(ptl);
->  		if (is_huge_zero_pmd(orig_pmd))
->  			tlb_remove_page_size(tlb, pmd_page(orig_pmd), HPAGE_PMD_SIZE);
-> -- 
-> 2.9.3
+After these changes we have mmap in available_events.
+
+cat available_events  | grep syscalls | grep map
+syscalls:sys_exit_mmap
+syscalls:sys_enter_mmap
+syscalls:sys_exit_remap_file_pages
+syscalls:sys_enter_remap_file_pages
+syscalls:sys_exit_munmap
+syscalls:sys_enter_munmap
+syscalls:sys_exit_mremap
+syscalls:sys_enter_mremap
+
+Sample trace:
+     cat-3399  [001] ....   196.542410: sys_mmap(addr: 7fff922a0000, len: 20000, prot: 3, flags: 812, fd: 3, offset: 1b0000)
+     cat-3399  [001] ....   196.542443: sys_mmap -> 0x7fff922a0000
+     cat-3399  [001] ....   196.542668: sys_munmap(addr: 7fff922c0000, len: 6d2c)
+     cat-3399  [001] ....   196.542677: sys_munmap -> 0x0
+
+Signed-off-by: Balbir Singh <bsingharora@gmail.com>
+---
+
+ Changelog:
+   Removed RFC
+   Fixed len from unsigned long to size_t
+   Added some examples of use of mmap trace
+
+ arch/powerpc/include/asm/syscalls.h |  4 ++--
+ arch/powerpc/kernel/syscalls.c      | 16 ++++++++--------
+ 2 files changed, 10 insertions(+), 10 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/syscalls.h b/arch/powerpc/include/asm/syscalls.h
+index 23be8f1..16fab68 100644
+--- a/arch/powerpc/include/asm/syscalls.h
++++ b/arch/powerpc/include/asm/syscalls.h
+@@ -8,10 +8,10 @@
+ 
+ struct rtas_args;
+ 
+-asmlinkage unsigned long sys_mmap(unsigned long addr, size_t len,
++asmlinkage long sys_mmap(unsigned long addr, size_t len,
+ 		unsigned long prot, unsigned long flags,
+ 		unsigned long fd, off_t offset);
+-asmlinkage unsigned long sys_mmap2(unsigned long addr, size_t len,
++asmlinkage long sys_mmap2(unsigned long addr, size_t len,
+ 		unsigned long prot, unsigned long flags,
+ 		unsigned long fd, unsigned long pgoff);
+ asmlinkage long ppc64_personality(unsigned long personality);
+diff --git a/arch/powerpc/kernel/syscalls.c b/arch/powerpc/kernel/syscalls.c
+index de04c9f..a877bf8 100644
+--- a/arch/powerpc/kernel/syscalls.c
++++ b/arch/powerpc/kernel/syscalls.c
+@@ -42,11 +42,11 @@
+ #include <asm/unistd.h>
+ #include <asm/asm-prototypes.h>
+ 
+-static inline unsigned long do_mmap2(unsigned long addr, size_t len,
++static inline long do_mmap2(unsigned long addr, size_t len,
+ 			unsigned long prot, unsigned long flags,
+ 			unsigned long fd, unsigned long off, int shift)
+ {
+-	unsigned long ret = -EINVAL;
++	long ret = -EINVAL;
+ 
+ 	if (!arch_validate_prot(prot))
+ 		goto out;
+@@ -62,16 +62,16 @@ static inline unsigned long do_mmap2(unsigned long addr, size_t len,
+ 	return ret;
+ }
+ 
+-unsigned long sys_mmap2(unsigned long addr, size_t len,
+-			unsigned long prot, unsigned long flags,
+-			unsigned long fd, unsigned long pgoff)
++SYSCALL_DEFINE6(mmap2, unsigned long, addr, size_t, len,
++		unsigned long, prot, unsigned long, flags,
++		unsigned long, fd, unsigned long, pgoff)
+ {
+ 	return do_mmap2(addr, len, prot, flags, fd, pgoff, PAGE_SHIFT-12);
+ }
+ 
+-unsigned long sys_mmap(unsigned long addr, size_t len,
+-		       unsigned long prot, unsigned long flags,
+-		       unsigned long fd, off_t offset)
++SYSCALL_DEFINE6(mmap, unsigned long, addr, size_t, len,
++		unsigned long, prot, unsigned long, flags,
++		unsigned long, fd, off_t, offset)
+ {
+ 	return do_mmap2(addr, len, prot, flags, fd, offset, PAGE_SHIFT);
+ }
+-- 
+2.9.3
