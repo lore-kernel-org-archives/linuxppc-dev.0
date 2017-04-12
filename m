@@ -1,46 +1,44 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w2rzH6kMSzDq7h
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2017 14:48:43 +1000 (AEST)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v3C4huXm071608
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2017 00:48:31 -0400
-Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [125.16.236.5])
- by mx0b-001b2d01.pphosted.com with ESMTP id 29scje22r7-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w2tDs0hl7zDq7h
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2017 15:45:32 +1000 (AEST)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v3C5hlh7129879
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2017 01:45:28 -0400
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 29s05ev624-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2017 00:48:30 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2017 01:45:27 -0400
 Received: from localhost
- by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Wed, 12 Apr 2017 10:18:27 +0530
-Received: from d28av08.in.ibm.com (d28av08.in.ibm.com [9.184.220.148])
- by d28relay08.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v3C4l46v3932182
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2017 10:17:04 +0530
-Received: from d28av08.in.ibm.com (localhost [127.0.0.1])
- by d28av08.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v3C4mOcO006620
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2017 10:18:25 +0530
-Subject: Re: [RFC PATCH 6/7] powerpc/hugetlb: Add code to support to follow
- huge page directory entries
-To: Michael Ellerman <mpe@ellerman.id.au>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- benh@kernel.crashing.org, paulus@samba.org
-References: <1491314675-15787-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1491314675-15787-6-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <87shlfutp6.fsf@concordia.ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Date: Wed, 12 Apr 2017 10:18:19 +0530
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Wed, 12 Apr 2017 15:45:25 +1000
+Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v3C5jFqM28311558
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2017 15:45:23 +1000
+Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
+ by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v3C5ioG0010526
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2017 15:44:51 +1000
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: "Oliver O'Halloran" <oohall@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Cc: arbab@linux.vnet.ibm.com, bsingharora@gmail.com, linux-nvdimm@lists.01.org,
+ "Oliver O'Halloran" <oohall@gmail.com>,
+ "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, linux-mm@kvack.org
+Subject: Re: [PATCH 1/9] mm/huge_memory: Use zap_deposited_table() more
+In-Reply-To: <20170411174233.21902-2-oohall@gmail.com>
+References: <20170411174233.21902-1-oohall@gmail.com>
+ <20170411174233.21902-2-oohall@gmail.com>
+Date: Wed, 12 Apr 2017 11:14:30 +0530
 MIME-Version: 1.0
-In-Reply-To: <87shlfutp6.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset=windows-1252
-Message-Id: <84b5c71d-e953-aabd-c7fd-137dcc0ea643@linux.vnet.ibm.com>
+Content-Type: text/plain
+Message-Id: <878tn6qiwx.fsf@skywalker.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,45 +48,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/11/2017 03:55 PM, Michael Ellerman wrote:
-> "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> writes:
-> 
->> Add follow_huge_pd implementation for ppc64.
->>
->> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
->> ---
->>  arch/powerpc/mm/hugetlbpage.c | 42 ++++++++++++++++++++++++++++++++++++++++++
->>  1 file changed, 42 insertions(+)
->>
->> diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
->> index 80f6d2ed551a..9d66d4f810aa 100644
->> --- a/arch/powerpc/mm/hugetlbpage.c
->> +++ b/arch/powerpc/mm/hugetlbpage.c
->> @@ -17,6 +17,8 @@
->>  #include <linux/memblock.h>
->>  #include <linux/bootmem.h>
->>  #include <linux/moduleparam.h>
->> +#include <linux/swap.h>
->> +#include <linux/swapops.h>
->>  #include <asm/pgtable.h>
->>  #include <asm/pgalloc.h>
->>  #include <asm/tlb.h>
->> @@ -618,6 +620,10 @@ void hugetlb_free_pgd_range(struct mmu_gather *tlb,
->>  }
->>  
->>  /*
->> + * 64 bit book3s use generic follow_page_mask
->> + */
->> +#ifndef CONFIG_PPC_BOOK3S_64
-> I think it's always easier to follow if you use:
-> 
->   #ifdef x
->   ...
->   #else /* !x */
->   ...
->   #endif
-> 
-> ie. in this case put the Book3S 64 case first and the existing code in the
-> #else.
+Oliver O'Halloran <oohall@gmail.com> writes:
 
-Yeah, it was difficult to read in the first glance.
+> Depending flags of the PMD being zapped there may or may not be a
+> deposited pgtable to be freed. In two of the three cases this is open
+> coded while the third uses the zap_deposited_table() helper. This patch
+> converts the others to use the helper to clean things up a bit.
+>
+> Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+> Cc: "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
+> Cc: linux-mm@kvack.org
+> Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
+
+Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+
+> ---
+> For reference:
+>
+> void zap_deposited_table(struct mm_struct *mm, pmd_t *pmd)
+> {
+>         pgtable_t pgtable;
+>
+>         pgtable = pgtable_trans_huge_withdraw(mm, pmd);
+>         pte_free(mm, pgtable);
+>         atomic_long_dec(&mm->nr_ptes);
+> }
+> ---
+>  mm/huge_memory.c | 8 ++------
+>  1 file changed, 2 insertions(+), 6 deletions(-)
+>
+> diff --git a/mm/huge_memory.c b/mm/huge_memory.c
+> index b787c4cfda0e..aa01dd47cc65 100644
+> --- a/mm/huge_memory.c
+> +++ b/mm/huge_memory.c
+> @@ -1615,8 +1615,7 @@ int zap_huge_pmd(struct mmu_gather *tlb, struct vm_area_struct *vma,
+>  		if (is_huge_zero_pmd(orig_pmd))
+>  			tlb_remove_page_size(tlb, pmd_page(orig_pmd), HPAGE_PMD_SIZE);
+>  	} else if (is_huge_zero_pmd(orig_pmd)) {
+> -		pte_free(tlb->mm, pgtable_trans_huge_withdraw(tlb->mm, pmd));
+> -		atomic_long_dec(&tlb->mm->nr_ptes);
+> +		zap_deposited_table(tlb->mm, pmd);
+>  		spin_unlock(ptl);
+>  		tlb_remove_page_size(tlb, pmd_page(orig_pmd), HPAGE_PMD_SIZE);
+>  	} else {
+> @@ -1625,10 +1624,7 @@ int zap_huge_pmd(struct mmu_gather *tlb, struct vm_area_struct *vma,
+>  		VM_BUG_ON_PAGE(page_mapcount(page) < 0, page);
+>  		VM_BUG_ON_PAGE(!PageHead(page), page);
+>  		if (PageAnon(page)) {
+> -			pgtable_t pgtable;
+> -			pgtable = pgtable_trans_huge_withdraw(tlb->mm, pmd);
+> -			pte_free(tlb->mm, pgtable);
+> -			atomic_long_dec(&tlb->mm->nr_ptes);
+> +			zap_deposited_table(tlb->mm, pmd);
+>  			add_mm_counter(tlb->mm, MM_ANONPAGES, -HPAGE_PMD_NR);
+>  		} else {
+>  			if (arch_needs_pgtable_deposit())
+> -- 
+> 2.9.3
