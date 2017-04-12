@@ -2,18 +2,18 @@ Return-Path: <sfr@canb.auug.org.au>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w2lJm3Y4yzDq7c
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2017 10:33:28 +1000 (AEST)
-Date: Wed, 12 Apr 2017 10:33:27 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w2lXV1jRfzDq5W
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2017 10:43:38 +1000 (AEST)
+Date: Wed, 12 Apr 2017 10:43:37 +1000
 From: Stephen Rothwell <sfr@canb.auug.org.au>
 To: Oliver O'Halloran <oohall@gmail.com>
 Cc: linuxppc-dev@lists.ozlabs.org, arbab@linux.vnet.ibm.com,
  linux-nvdimm@lists.01.org
-Subject: Re: [PATCH 4/9] powerpc/mm: Reshuffle vmemmap_free()
-Message-ID: <20170412103327.3bfe4291@canb.auug.org.au>
-In-Reply-To: <20170411174233.21902-5-oohall@gmail.com>
+Subject: Re: [PATCH 6/9] powerpc, mm: Enable ZONE_DEVICE on powerpc
+Message-ID: <20170412104337.535c5abb@canb.auug.org.au>
+In-Reply-To: <20170411174233.21902-7-oohall@gmail.com>
 References: <20170411174233.21902-1-oohall@gmail.com>
- <20170411174233.21902-5-oohall@gmail.com>
+ <20170411174233.21902-7-oohall@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,30 +27,32 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Hi Oliver,
 
-On Wed, 12 Apr 2017 03:42:28 +1000 Oliver O'Halloran <oohall@gmail.com> wrote:
+On Wed, 12 Apr 2017 03:42:30 +1000 Oliver O'Halloran <oohall@gmail.com> wrote:
 >
-> diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
-> index ec84b31c6c86..f8124edb6ffa 100644
-> --- a/arch/powerpc/mm/init_64.c
-> +++ b/arch/powerpc/mm/init_64.c
-> @@ -234,12 +234,15 @@ static unsigned long vmemmap_list_free(unsigned long start)
->  void __ref vmemmap_free(unsigned long start, unsigned long end)
->  {
->  	unsigned long page_size = 1 << mmu_psize_defs[mmu_vmemmap_psize].shift;
-> +	unsigned long page_order = get_order(page_size);
+> Flip the switch. Running around and screaming "IT'S ALIVE" is optional,
+> but recommended.
+> 
+> Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
+> ---
+>  mm/Kconfig | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/mm/Kconfig b/mm/Kconfig
+> index 43d000e44424..d696af58f97f 100644
+> --- a/mm/Kconfig
+> +++ b/mm/Kconfig
+> @@ -724,7 +724,7 @@ config ZONE_DEVICE
+>  	depends on MEMORY_HOTPLUG
+>  	depends on MEMORY_HOTREMOVE
+>  	depends on SPARSEMEM_VMEMMAP
+> -	depends on X86_64 #arch_add_memory() comprehends device memory
+> +	depends on (X86_64 || PPC_BOOK3S_64)  #arch_add_memory() comprehends device memory
 >  
->  	start = _ALIGN_DOWN(start, page_size);
->  
->  	pr_debug("vmemmap_free %lx...%lx\n", start, end);
->  
->  	for (; start < end; start += page_size) {
-> +		struct page *page = pfn_to_page(addr >> PAGE_SHIFT);
 
-The declaration of addr is below here and, even so, it would be
-uninitialised ...
-
-> +		unsigned int nr_pages;
->  		unsigned long addr;
+That's fine, but at what point do we create
+CONFIG_ARCH_HAVE_ZONE_DEVICE, replace the "depends on
+<archs/platforms>" above with "depends on ARCH_HAVE_ZONE_DEVICE" and
+select that from the appropriate places?
 
 -- 
 Cheers,
