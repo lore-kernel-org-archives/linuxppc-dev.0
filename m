@@ -1,25 +1,19 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
+ [IPv6:2607:f8b0:400e:c00::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w3c4Z4FX6zDq7g
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Apr 2017 20:10:54 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Oliver O'Halloran <oohall@gmail.com>, Balbir Singh <bsingharora@gmail.com>
-Cc: Rashmica Gupta <rashmica.g@gmail.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Anton Blanchard <anton@samba.org>, Reza Arbab <arbab@linux.vnet.ibm.com>,
- "linux-nvdimm\@lists.01.org" <linux-nvdimm@lists.01.org>
-Subject: Re: [PATCH 8/9] powerpc/mm: Wire up hpte_removebolted for powernv
-In-Reply-To: <CAOSf1CHr2uMC1f5fMkqVpS7-J1K20cHShjp7FcNawV2KL4D_Dw@mail.gmail.com>
-References: <20170411174233.21902-1-oohall@gmail.com>
- <20170411174233.21902-9-oohall@gmail.com>
- <1491961986.8380.13.camel@gmail.com>
- <CAOSf1CHr2uMC1f5fMkqVpS7-J1K20cHShjp7FcNawV2KL4D_Dw@mail.gmail.com>
-Date: Thu, 13 Apr 2017 20:10:53 +1000
-Message-ID: <8760i8aa8i.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w3cCC3v8LzDq7g
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Apr 2017 20:16:39 +1000 (AEST)
+Received: by mail-pf0-x243.google.com with SMTP id o126so9988628pfb.1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Apr 2017 03:16:38 -0700 (PDT)
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Nicholas Piggin <npiggin@gmail.com>,
+	linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 0/4 v2] doorbell patches for POWER9
+Date: Thu, 13 Apr 2017 20:16:20 +1000
+Message-Id: <20170413101624.26628-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,18 +23,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Oliver O'Halloran <oohall@gmail.com> writes:
-> On Wed, Apr 12, 2017 at 11:53 AM, Balbir Singh <bsingharora@gmail.com> wrote:
->>
->> The API also does not clear linear_map_hash_slots[] under DEBUG_PAGEALLOC
->
-> I'm not sure what API you're referring to here. The tracking for
-> linear_map_hash_slots[] is agnostic of mmu_hash_ops so we shouldn't be
-> touching it here. It also looks like DEBUG_PAGEALLOC is a bit broken
-> with hotplugged memory anyway so I think that's a fix for a different
-> patch.
+Since last:
+- Ported up to powerpc next (thanks mpe)
+- Dropped darn workaround from DD1 for now.
+- Dropped the guest doorbell hack. It's not an immediate problem and
+  will be tackled in other ways.
 
-It's old and has probably bit-rotted, so I'm happy for it to be fixed up
-later if necessary.
+Nicholas Piggin (4):
+  powerpc: change the doorbell IPI calling convention
+  powerpc: Introduce msgsnd/doorbell barrier primitives
+  powerpc/64s: avoid branch for ppc_msgsnd
+  powerpc/powernv: POWER9 support for msgsnd/doorbell IPI
 
-cheers
+ arch/powerpc/include/asm/dbell.h          | 40 +++++++++++++++------
+ arch/powerpc/include/asm/feature-fixups.h | 20 +++++++++++
+ arch/powerpc/include/asm/ppc-opcode.h     |  2 ++
+ arch/powerpc/include/asm/ppc_asm.h        |  8 +++++
+ arch/powerpc/include/asm/smp.h            |  4 +--
+ arch/powerpc/include/asm/xics.h           |  2 +-
+ arch/powerpc/kernel/dbell.c               | 58 +++++++++++++++++++++++++++----
+ arch/powerpc/kernel/smp.c                 | 27 +++++++-------
+ arch/powerpc/platforms/85xx/smp.c         | 11 ++----
+ arch/powerpc/platforms/powermac/smp.c     |  2 +-
+ arch/powerpc/platforms/powernv/smp.c      | 47 +++++++++++++++++++++----
+ arch/powerpc/platforms/pseries/smp.c      | 27 ++++++--------
+ arch/powerpc/sysdev/xics/icp-hv.c         |  2 +-
+ arch/powerpc/sysdev/xics/icp-native.c     | 12 +------
+ arch/powerpc/sysdev/xics/icp-opal.c       |  2 +-
+ arch/powerpc/sysdev/xics/xics-common.c    |  3 --
+ arch/powerpc/sysdev/xive/common.c         |  6 ++--
+ 17 files changed, 186 insertions(+), 87 deletions(-)
+
+-- 
+2.11.0
