@@ -1,24 +1,22 @@
-Return-Path: <mhiramat@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
+ [IPv6:2607:f8b0:400e:c05::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w3Shf1V0lzDq7g
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Apr 2017 14:38:10 +1000 (AEST)
-Date: Thu, 13 Apr 2017 13:37:58 +0900
-From: Masami Hiramatsu <mhiramat@kernel.org>
-To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, Ananth N Mavinakayanahalli
- <ananth@linux.vnet.ibm.com>, Masami Hiramatsu <mhiramat@kernel.org>, Ingo
- Molnar <mingo@kernel.org>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2 5/5] powerpc: kprobes: emulate instructions on kprobe
- handler re-entry
-Message-Id: <20170413133758.0f9e0c86bd3230dcd820f8e7@kernel.org>
-In-Reply-To: <7021f79a5738ecb25ee3e07931e927138e9493eb.1491991939.git.naveen.n.rao@linux.vnet.ibm.com>
-References: <cover.1491991939.git.naveen.n.rao@linux.vnet.ibm.com>
- <7021f79a5738ecb25ee3e07931e927138e9493eb.1491991939.git.naveen.n.rao@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w3TYf6NlGzDq7g
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Apr 2017 15:17:10 +1000 (AEST)
+Received: by mail-pg0-x244.google.com with SMTP id o123so9010956pga.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2017 22:17:10 -0700 (PDT)
+From: Balbir Singh <bsingharora@gmail.com>
+To: benh@kernel.crashing.org,
+	paulus@samba.org,
+	mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org,
+	Balbir Singh <bsingharora@gmail.com>
+Subject: [RFC][PATCH] powerpc/mm: convert tlbie to tlbiel when no batch is
+ active
+Date: Thu, 13 Apr 2017 15:16:55 +1000
+Message-Id: <20170413051655.26113-1-bsingharora@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,54 +26,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 12 Apr 2017 16:28:28 +0530
-"Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
+Do the checks that __flush_tlb_pending() does and check if
+a local flush will do when batch->active is false inside of
+hpte_need_flush(). I've checked the changes with tlbie tracing,
+I see local flushes as applicable now and I've also run
+some basic ltp testcases on top of these changes on a powernv
+machine.
 
-> On kprobe handler re-entry, try to emulate the instruction rather than
-> single stepping always.
-> 
+Signed-off-by: Balbir Singh <bsingharora@gmail.com>
+---
+ arch/powerpc/mm/tlb_hash64.c | 13 +++++++++----
+ 1 file changed, 9 insertions(+), 4 deletions(-)
 
-> As a related change, remove the duplicate saving of msr as that is
-> already done in set_current_kprobe()
-
-If so, this part might be separated as a cleanup patch...
-
-Thanks,
-
-> 
-> Acked-by: Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>
-> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/kernel/kprobes.c | 9 ++++++++-
->  1 file changed, 8 insertions(+), 1 deletion(-)
-> 
-> diff --git a/arch/powerpc/kernel/kprobes.c b/arch/powerpc/kernel/kprobes.c
-> index 8b48f7d046bd..005bd4a75902 100644
-> --- a/arch/powerpc/kernel/kprobes.c
-> +++ b/arch/powerpc/kernel/kprobes.c
-> @@ -273,10 +273,17 @@ int __kprobes kprobe_handler(struct pt_regs *regs)
->  			 */
->  			save_previous_kprobe(kcb);
->  			set_current_kprobe(p, regs, kcb);
-> -			kcb->kprobe_saved_msr = regs->msr;
->  			kprobes_inc_nmissed_count(p);
->  			prepare_singlestep(p, regs);
->  			kcb->kprobe_status = KPROBE_REENTER;
-> +			if (p->ainsn.boostable >= 0) {
-> +				ret = try_to_emulate(p, regs);
-> +
-> +				if (ret > 0) {
-> +					restore_previous_kprobe(kcb);
-> +					return 1;
-> +				}
-> +			}
->  			return 1;
->  		} else {
->  			if (*addr != BREAKPOINT_INSTRUCTION) {
-> -- 
-> 2.12.1
-> 
-
-
+diff --git a/arch/powerpc/mm/tlb_hash64.c b/arch/powerpc/mm/tlb_hash64.c
+index 4517aa4..1268e3a 100644
+--- a/arch/powerpc/mm/tlb_hash64.c
++++ b/arch/powerpc/mm/tlb_hash64.c
+@@ -93,12 +93,17 @@ void hpte_need_flush(struct mm_struct *mm, unsigned long addr,
+ 
+ 	/*
+ 	 * Check if we have an active batch on this CPU. If not, just
+-	 * flush now and return. For now, we don global invalidates
+-	 * in that case, might be worth testing the mm cpu mask though
+-	 * and decide to use local invalidates instead...
++	 * flush now and return.
+ 	 */
+ 	if (!batch->active) {
+-		flush_hash_page(vpn, rpte, psize, ssize, 0);
++		const struct cpumask *tmp;
++		int local = 0;
++
++		tmp = cpumask_of(smp_processor_id());
++		if (cpumask_equal(mm_cpumask(mm), tmp))
++			local = 1;
++
++		flush_hash_page(vpn, rpte, psize, ssize, local);
+ 		put_cpu_var(ppc64_tlb_batch);
+ 		return;
+ 	}
 -- 
-Masami Hiramatsu <mhiramat@kernel.org>
+2.9.3
