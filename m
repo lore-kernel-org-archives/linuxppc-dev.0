@@ -1,27 +1,24 @@
-Return-Path: <oohall@gmail.com>
-Received: from mail-qt0-x243.google.com (mail-qt0-x243.google.com
- [IPv6:2607:f8b0:400d:c0d::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mhiramat@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w3SKv6n6FzDq7g
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Apr 2017 14:21:55 +1000 (AEST)
-Received: by mail-qt0-x243.google.com with SMTP id c45so6501062qtb.0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2017 21:21:55 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <1491961986.8380.13.camel@gmail.com>
-References: <20170411174233.21902-1-oohall@gmail.com>
- <20170411174233.21902-9-oohall@gmail.com>
- <1491961986.8380.13.camel@gmail.com>
-From: "Oliver O'Halloran" <oohall@gmail.com>
-Date: Thu, 13 Apr 2017 14:21:53 +1000
-Message-ID: <CAOSf1CHr2uMC1f5fMkqVpS7-J1K20cHShjp7FcNawV2KL4D_Dw@mail.gmail.com>
-Subject: Re: [PATCH 8/9] powerpc/mm: Wire up hpte_removebolted for powernv
-To: Balbir Singh <bsingharora@gmail.com>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Reza Arbab <arbab@linux.vnet.ibm.com>,
- "linux-nvdimm@lists.01.org" <linux-nvdimm@lists.01.org>,
- Rashmica Gupta <rashmica.g@gmail.com>, Anton Blanchard <anton@samba.org>
-Content-Type: text/plain; charset=UTF-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w3STC4xNDzDq7g
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Apr 2017 14:28:15 +1000 (AEST)
+Date: Thu, 13 Apr 2017 13:28:04 +0900
+From: Masami Hiramatsu <mhiramat@kernel.org>
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, Ananth N Mavinakayanahalli
+ <ananth@linux.vnet.ibm.com>, Masami Hiramatsu <mhiramat@kernel.org>, Ingo
+ Molnar <mingo@kernel.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2 2/5] powerpc: kprobes: fix handling of function
+ offsets on ABIv2
+Message-Id: <20170413132804.0db5e64a2ee6e9b2130719bb@kernel.org>
+In-Reply-To: <dcf77485d32f1a49d0c79a5be7e038491c10ea2a.1491991939.git.naveen.n.rao@linux.vnet.ibm.com>
+References: <cover.1491991939.git.naveen.n.rao@linux.vnet.ibm.com>
+ <dcf77485d32f1a49d0c79a5be7e038491c10ea2a.1491991939.git.naveen.n.rao@linux.vnet.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,99 +28,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Apr 12, 2017 at 11:53 AM, Balbir Singh <bsingharora@gmail.com> wrote:
-> On Wed, 2017-04-12 at 03:42 +1000, Oliver O'Halloran wrote:
->> From: Rashmica Gupta <rashmica.g@gmail.com>
->>
->> Adds support for removing bolted (i.e kernel linear mapping) mappings on
->> powernv. This is needed to support memory hot unplug operations which
->> are required for the teardown of DAX/PMEM devices.
->>
->> Cc: Rashmica Gupta <rashmica.g@gmail.com>
->> Cc: Anton Blanchard <anton@samba.org>
->> Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
->> ---
->> Could the original author of this add their S-o-b? I pulled it out of
->> Rashmica's memtrace patch, but I remember someone saying Anton wrote
->> it originally.
->> ---
->>  arch/powerpc/mm/hash_native_64.c | 31 +++++++++++++++++++++++++++++++
->>  1 file changed, 31 insertions(+)
->>
->> diff --git a/arch/powerpc/mm/hash_native_64.c b/arch/powerpc/mm/hash_native_64.c
->> index 65bb8f33b399..9ba91d4905a4 100644
->> --- a/arch/powerpc/mm/hash_native_64.c
->> +++ b/arch/powerpc/mm/hash_native_64.c
->> @@ -407,6 +407,36 @@ static void native_hpte_updateboltedpp(unsigned long newpp, unsigned long ea,
->>       tlbie(vpn, psize, psize, ssize, 0);
->>  }
->>
->> +/*
->> + * Remove a bolted kernel entry. Memory hotplug uses this.
->> + *
->> + * No need to lock here because we should be the only user.
->
-> As long as this is after the necessary isolation and is called from
-> arch_remove_memory(), I think we should be fine
->
->> + */
->> +static int native_hpte_removebolted(unsigned long ea, int psize, int ssize)
->> +{
->> +     unsigned long vpn;
->> +     unsigned long vsid;
->> +     long slot;
->> +     struct hash_pte *hptep;
->> +
->> +     vsid = get_kernel_vsid(ea, ssize);
->> +     vpn = hpt_vpn(ea, vsid, ssize);
->> +
->> +     slot = native_hpte_find(vpn, psize, ssize);
->> +     if (slot == -1)
->> +             return -ENOENT;
->
-> If slot == -1, it means someone else removed the HPTE entry? Are we racing?
-> I suspect we should never hit this situation during hotunplug, specifically
-> since this is bolted.
+On Wed, 12 Apr 2017 16:28:25 +0530
+"Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
 
-Or the slot was never populated in the first place. I'd rather keep
-the current behaviour since it aligns with the behaviour of
-pSeries_lpar_hpte_removebolted and we might hit these situations in
-the future if the sub-section hotplug patches are merged (big if...).
+> commit 239aeba76409 ("perf powerpc: Fix kprobe and kretprobe handling
+> with kallsyms on ppc64le") changed how we use the offset field in struct
+> kprobe on ABIv2. perf now offsets from the GEP (Global entry point) if an
+> offset is specified and otherwise chooses the LEP (Local entry point).
+> 
+> Fix the same in kernel for kprobe API users. We do this by extending
+> kprobe_lookup_name() to accept an additional parameter to indicate the
+> offset specified with the kprobe registration. If offset is 0, we return
+> the local function entry and return the global entry point otherwise.
+> 
+> With:
+> 	# cd /sys/kernel/debug/tracing/
+> 	# echo "p _do_fork" >> kprobe_events
+> 	# echo "p _do_fork+0x10" >> kprobe_events
+> 
+> before this patch:
+> 	# cat ../kprobes/list
+> 	c0000000000d0748  k  _do_fork+0x8    [DISABLED]
+> 	c0000000000d0758  k  _do_fork+0x18    [DISABLED]
+> 	c0000000000412b0  k  kretprobe_trampoline+0x0    [OPTIMIZED]
+> 
+> and after:
+> 	# cat ../kprobes/list
+> 	c0000000000d04c8  k  _do_fork+0x8    [DISABLED]
+> 	c0000000000d04d0  k  _do_fork+0x10    [DISABLED]
+> 	c0000000000412b0  k  kretprobe_trampoline+0x0    [OPTIMIZED]
+> 
+> Acked-by: Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>
+> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/kernel/kprobes.c   | 4 ++--
+>  arch/powerpc/kernel/optprobes.c | 4 ++--
+>  include/linux/kprobes.h         | 2 +-
+>  kernel/kprobes.c                | 7 ++++---
+>  4 files changed, 9 insertions(+), 8 deletions(-)
+> 
+> diff --git a/arch/powerpc/kernel/kprobes.c b/arch/powerpc/kernel/kprobes.c
+> index a7aa7394954d..0732a0291ace 100644
+> --- a/arch/powerpc/kernel/kprobes.c
+> +++ b/arch/powerpc/kernel/kprobes.c
+> @@ -42,14 +42,14 @@ DEFINE_PER_CPU(struct kprobe_ctlblk, kprobe_ctlblk);
+>  
+>  struct kretprobe_blackpoint kretprobe_blacklist[] = {{NULL, NULL}};
+>  
+> -kprobe_opcode_t *kprobe_lookup_name(const char *name)
+> +kprobe_opcode_t *kprobe_lookup_name(const char *name, unsigned int offset)
 
->
->> +
->> +     hptep = htab_address + slot;
->> +
->> +     /* Invalidate the hpte */
->> +     hptep->v = 0;
->
-> Under DEBUG or otherwise, I would add more checks like
->
-> 1. was hpte_v & HPTE_V_VALID and BOLTED set? If not, we've already invalidated
-> that hpte and we can skip the tlbie. Since this was bolted you might be right
-> that it is always valid and bolted
+Hmm, if we do this change, it is natural that kprobe_lookup_name()
+returns the address + offset.
 
-A VM_WARN_ON() if the bolted bit is clear might be appropriate. We
-don't need to check the valid bit since hpte_native_find() will fail
-if it's cleared.
+Thank you,
 
->
->> +
->> +     /* Invalidate the TLB */
->> +     tlbie(vpn, psize, psize, ssize, 0);
->
-> The API also does not clear linear_map_hash_slots[] under DEBUG_PAGEALLOC
 
-I'm not sure what API you're referring to here. The tracking for
-linear_map_hash_slots[] is agnostic of mmu_hash_ops so we shouldn't be
-touching it here. It also looks like DEBUG_PAGEALLOC is a bit broken
-with hotplugged memory anyway so I think that's a fix for a different
-patch.
 
->
->> +     return 0;
->> +}
->> +
->> +
->
-> Balbir Singh.
+-- 
+Masami Hiramatsu <mhiramat@kernel.org>
