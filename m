@@ -1,47 +1,30 @@
-Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mikey@neuling.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w3VMv6rclzDqJ0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Apr 2017 15:53:47 +1000 (AEST)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v3D5ra9f049209
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Apr 2017 01:53:39 -0400
-Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [125.16.236.9])
- by mx0b-001b2d01.pphosted.com with ESMTP id 29t3h6837a-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Apr 2017 01:53:38 -0400
-Received: from localhost
- by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Thu, 13 Apr 2017 11:23:35 +0530
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay08.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v3D5qBhD11272332
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Apr 2017 11:22:11 +0530
-Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v3D5rW55022500
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Apr 2017 11:23:32 +0530
-Date: Thu, 13 Apr 2017 11:23:30 +0530
-From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-To: Masami Hiramatsu <mhiramat@kernel.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>,
- Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>,
- Ingo Molnar <mingo@kernel.org>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2 5/5] powerpc: kprobes: emulate instructions on kprobe
- handler re-entry
-References: <cover.1491991939.git.naveen.n.rao@linux.vnet.ibm.com>
- <7021f79a5738ecb25ee3e07931e927138e9493eb.1491991939.git.naveen.n.rao@linux.vnet.ibm.com>
- <20170413133758.0f9e0c86bd3230dcd820f8e7@kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170413133758.0f9e0c86bd3230dcd820f8e7@kernel.org>
-Message-Id: <20170413055330.GD30806@naverao1-tp.localdomain>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w3W6v54QrzDq7g
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Apr 2017 16:27:35 +1000 (AEST)
+Message-ID: <1492064854.4624.48.camel@neuling.org>
+Subject: Re: [PATCH 3/3] powernv:idle: Set LPCR_UPRT on wakeup from deep-stop
+From: Michael Neuling <mikey@neuling.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, "Aneesh Kumar K.V"
+ <aneesh.kumar@linux.vnet.ibm.com>, "Gautham R. Shenoy"
+ <ego@linux.vnet.ibm.com>,  Michael Ellerman <mpe@ellerman.id.au>, "Shreyas
+ B. Prabhu" <shreyasbp@gmail.com>, Shilpasri G Bhat
+ <shilpa.bhat@linux.vnet.ibm.com>, Vaidyanathan Srinivasan
+ <svaidy@linux.vnet.ibm.com>, Anton Blanchard <anton@samba.org>, Balbir
+ Singh <bsingharora@gmail.com>, Akshay Adiga
+ <akshay.adiga@linux.vnet.ibm.com>,  Nicholas Piggin <npiggin@gmail.com>,
+ Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Date: Thu, 13 Apr 2017 16:27:34 +1000
+In-Reply-To: <1492056725.7236.95.camel@kernel.crashing.org>
+References: <cover.1491996797.git.ego@linux.vnet.ibm.com>
+ <9be8410e0abe5ae1afa16a6f987c53046ef51757.1491996797.git.ego@linux.vnet.ibm.com>
+ <8737ddq7py.fsf@skywalker.in.ibm.com>
+ <1492056725.7236.95.camel@kernel.crashing.org>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,19 +34,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2017/04/13 01:37PM, Masami Hiramatsu wrote:
-> On Wed, 12 Apr 2017 16:28:28 +0530
-> "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
-> 
-> > On kprobe handler re-entry, try to emulate the instruction rather than
-> > single stepping always.
-> > 
-> 
-> > As a related change, remove the duplicate saving of msr as that is
-> > already done in set_current_kprobe()
-> 
-> If so, this part might be separated as a cleanup patch...
+On Thu, 2017-04-13 at 14:12 +1000, Benjamin Herrenschmidt wrote:
+> On Thu, 2017-04-13 at 09:28 +0530, Aneesh Kumar K.V wrote:
+> > > =C2=A0 #endif
+> > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0mtctr=C2=A0=C2=A0=C2=A0r12
+> > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0bctrl
+> > > +/*
+> > > + * cur_cpu_spec->cpu_restore would restore LPCR to a
+> > > + * sane value that is set at early boot time,
+> > > + * thereby clearing LPCR_UPRT.
+> > > + * LPCR_UPRT is required if we are running in Radix mode.
+> > > + * Set it here if that be the case.
+> > > + */
+> > > +BEGIN_MMU_FTR_SECTION
+> > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0mfspr=C2=A0=C2=A0=C2=A0r3, SPRN_LPCR
+> > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0LOAD_REG_IMMEDIATE(r4, LPCR_UPRT)
+> > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0or=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
+r3, r3, r4
+> > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0mtspr=C2=A0=C2=A0=C2=A0SPRN_LPCR, r3
+> > > +END_MMU_FTR_SECTION_IFSET(MMU_FTR_TYPE_RADIX)
+>=20
+> We are probably better off saving the value somewhere during boot
+> and just "blasting" it whole back.
 
-Sure, thanks for the review!
+We seem to touch LPCR in a bunch of places these days.  Not sure when "some=
+times
+ during boot" should actually be.
 
-- Naveen
+Mikey
