@@ -1,22 +1,43 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
- [IPv6:2607:f8b0:400e:c05::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w3TYf6NlGzDq7g
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Apr 2017 15:17:10 +1000 (AEST)
-Received: by mail-pg0-x244.google.com with SMTP id o123so9010956pga.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2017 22:17:10 -0700 (PDT)
-From: Balbir Singh <bsingharora@gmail.com>
-To: benh@kernel.crashing.org,
-	paulus@samba.org,
-	mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org,
-	Balbir Singh <bsingharora@gmail.com>
-Subject: [RFC][PATCH] powerpc/mm: convert tlbie to tlbiel when no batch is
- active
-Date: Thu, 13 Apr 2017 15:16:55 +1000
-Message-Id: <20170413051655.26113-1-bsingharora@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w3Tg56rCFzDq7g
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Apr 2017 15:21:53 +1000 (AEST)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v3D5IcjU142544
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Apr 2017 01:21:42 -0400
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 29ssdkvf8c-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Apr 2017 01:21:42 -0400
+Received: from localhost
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Thu, 13 Apr 2017 15:21:40 +1000
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v3D5LTSm23658576
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Apr 2017 15:21:37 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v3D5L05G003660
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Apr 2017 15:21:01 +1000
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: "Oliver O'Halloran" <oohall@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Cc: arbab@linux.vnet.ibm.com, bsingharora@gmail.com, linux-nvdimm@lists.01.org,
+ "Oliver O'Halloran" <oohall@gmail.com>
+Subject: Re: [PATCH 3/9] powerpc/mm: Add _PAGE_DEVMAP for ppc64.
+In-Reply-To: <20170411174233.21902-4-oohall@gmail.com>
+References: <20170411174233.21902-1-oohall@gmail.com>
+ <20170411174233.21902-4-oohall@gmail.com>
+Date: Thu, 13 Apr 2017 10:50:43 +0530
+MIME-Version: 1.0
+Content-Type: text/plain
+Message-Id: <87zifkq3x0.fsf@skywalker.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,43 +47,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Do the checks that __flush_tlb_pending() does and check if
-a local flush will do when batch->active is false inside of
-hpte_need_flush(). I've checked the changes with tlbie tracing,
-I see local flushes as applicable now and I've also run
-some basic ltp testcases on top of these changes on a powernv
-machine.
+Oliver O'Halloran <oohall@gmail.com> writes:
 
-Signed-off-by: Balbir Singh <bsingharora@gmail.com>
----
- arch/powerpc/mm/tlb_hash64.c | 13 +++++++++----
- 1 file changed, 9 insertions(+), 4 deletions(-)
+> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+>
+> Add a _PAGE_DEVMAP bit for PTE and DAX PMD entires. PowerPC doesn't
+> currently support PUD faults so we haven't extended it to the PUD
+> level.
+>
+> Cc: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
 
-diff --git a/arch/powerpc/mm/tlb_hash64.c b/arch/powerpc/mm/tlb_hash64.c
-index 4517aa4..1268e3a 100644
---- a/arch/powerpc/mm/tlb_hash64.c
-+++ b/arch/powerpc/mm/tlb_hash64.c
-@@ -93,12 +93,17 @@ void hpte_need_flush(struct mm_struct *mm, unsigned long addr,
- 
- 	/*
- 	 * Check if we have an active batch on this CPU. If not, just
--	 * flush now and return. For now, we don global invalidates
--	 * in that case, might be worth testing the mm cpu mask though
--	 * and decide to use local invalidates instead...
-+	 * flush now and return.
- 	 */
- 	if (!batch->active) {
--		flush_hash_page(vpn, rpte, psize, ssize, 0);
-+		const struct cpumask *tmp;
-+		int local = 0;
-+
-+		tmp = cpumask_of(smp_processor_id());
-+		if (cpumask_equal(mm_cpumask(mm), tmp))
-+			local = 1;
-+
-+		flush_hash_page(vpn, rpte, psize, ssize, local);
- 		put_cpu_var(ppc64_tlb_batch);
- 		return;
- 	}
--- 
-2.9.3
+
+Few changes we would need. We will now need to make sure a devmap
+pmd entry is not confused with THP. ie,
+
+we should compare against _PAGE_PTE and _PAGE_DEVMAP in
+pmd_trans_huge(). hash already has one bit we use to differentiate
+between hugetlb and THP. May be we can genarlize this and come up with a
+way to differentiate THP, HUGETLB,pmd DEVMAP entries ?
+
+
+also I don't see you handing get_user_pages_fast() ?
+
+
+-aneesh
