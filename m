@@ -1,15 +1,24 @@
-Return-Path: <michael@ozlabs.org>
+Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w3h8l2rhfzDq7g
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Apr 2017 23:14:47 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w3h9n5hRdzDqFR
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Apr 2017 23:15:41 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org
-Cc: benh@kernel.crashing.org, lorenzo.pieralisi@arm.com, linux@armlinux.org.uk
-Subject: [PATCH] powerpc: Drop include of linux/io.h from asm/io.h
-Date: Thu, 13 Apr 2017 23:14:36 +1000
-Message-Id: <1492089276-13713-1-git-send-email-mpe@ellerman.id.au>
+To: Christophe LEROY <christophe.leroy@c-s.fr>,
+ Michael Ellerman <patch-notifications@ellerman.id.au>,
+ Rashmica Gupta <rashmicy@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [v3,1/2] powerpc/mm: Dump linux pagetables
+In-Reply-To: <eae95407-0131-1be8-0bcb-1c4ed8d66f20@c-s.fr>
+References: <3tKKXq67gcz9t1T@ozlabs.org>
+ <e858f33a-ee89-7a7c-02d6-de4e8ac32e26@c-s.fr>
+ <87r30w8ryj.fsf@concordia.ellerman.id.au>
+ <eae95407-0131-1be8-0bcb-1c4ed8d66f20@c-s.fr>
+Date: Thu, 13 Apr 2017 23:15:39 +1000
+Message-ID: <87inm88n44.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,38 +28,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently powerpc's asm/io.h includes linux/io.h, and linux/io.h
-includes asm/io.h.
+Christophe LEROY <christophe.leroy@c-s.fr> writes:
+> Le 13/04/2017 =C3=A0 13:31, Michael Ellerman a =C3=A9crit :
+>> Christophe LEROY <christophe.leroy@c-s.fr> writes:
+>>> Le 17/11/2016 =C3=A0 13:03, Michael Ellerman a =C3=A9crit :
+>>>> On Fri, 2016-27-05 at 05:48:59 UTC, Rashmica Gupta wrote:
+>>>>> Useful to be able to dump the kernels page tables to check permissions
+>>>>> and memory types - derived from arm64's implementation.
+>>>>>
+>>>>> Add a debugfs file to check the page tables. To use this the PPC_PTDU=
+MP
+>>>>> config option must be selected.
+>>>>>
+>>>>> Signed-off-by: Rashmica Gupta <rashmicy@gmail.com>
+>>>>
+>>>> Applied to powerpc next, thanks.
+>>>>
+>>>> https://git.kernel.org/powerpc/c/8eb07b187000d48152c4ef97f075bd
+>>>
+>>> For your information, compilation fails on mpc885_ads_defconfig when we
+>>> activate PPC_PTDUMP:
+>>>
+>>>    CC      arch/powerpc/mm/dump_linuxpagetables.o
+>>> arch/powerpc/mm/dump_linuxpagetables.c: In function 'walk_pagetables':
+>>> arch/powerpc/mm/dump_linuxpagetables.c:369:10: error: 'KERN_VIRT_START'
+>>> undeclared (first use in this function)
+>>
+>> Yeah it's basically 64-bit only at the moment.
+>>
+>> I have a TODO for it: https://github.com/linuxppc/linux/issues/88
+>>
+>> But I haven't got around to doing it, maybe someone who has more
+>> interest in 32-bit will have time before me ;)
+>
+> Well, I just did it a few minutes ago.
 
-This can cause problems because depending on which is included first the
-order of definitions between the two files will change.
+It's like magic! :)
 
-The include of linux/io.h was added back in 2008 in commit b41e5fffe8b8
-("[POWERPC] devres: Add devm_ioremap_prot()"). It's not entirely clear
-it was needed then, but devm_ioremap_prot() has since been removed
-entirely as unused, in dedd24a12fe6 ("powerpc: Remove unused
-devm_ioremap_prot()").
-
-So it seems to be unnecessary and can potentially cause problems, so
-remove the include of linux/io.h from asm/io.h
-
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/include/asm/io.h | 2 --
- 1 file changed, 2 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/io.h b/arch/powerpc/include/asm/io.h
-index 5ed292431b5b..91919a98e5d0 100644
---- a/arch/powerpc/include/asm/io.h
-+++ b/arch/powerpc/include/asm/io.h
-@@ -25,8 +25,6 @@ extern struct pci_dev *isa_bridge_pcidev;
- #endif
- 
- #include <linux/device.h>
--#include <linux/io.h>
--
- #include <linux/compiler.h>
- #include <asm/page.h>
- #include <asm/byteorder.h>
--- 
-2.7.4
+cheers
