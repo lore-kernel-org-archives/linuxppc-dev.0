@@ -1,50 +1,37 @@
-Return-Path: <ego@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
+ [IPv6:2607:f8b0:400e:c00::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w3fNc1DlvzDq8t
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Apr 2017 21:54:56 +1000 (AEST)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v3DBrmaw026983
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Apr 2017 07:54:42 -0400
-Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
- by mx0a-001b2d01.pphosted.com with ESMTP id 29t5cmt554-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Apr 2017 07:54:42 -0400
-Received: from localhost
- by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ego@linux.vnet.ibm.com>;
- Thu, 13 Apr 2017 07:54:41 -0400
-Date: Thu, 13 Apr 2017 17:24:34 +0530
-From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
-To: Nicholas Piggin <npiggin@gmail.com>
-Cc: Michael Neuling <mikey@neuling.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>,
- "Shreyas B. Prabhu" <shreyasbp@gmail.com>,
- Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
- Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
- Anton Blanchard <anton@samba.org>, Balbir Singh <bsingharora@gmail.com>,
- Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>,
- Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w3fhz0WzzzDq5b
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Apr 2017 22:09:07 +1000 (AEST)
+Received: by mail-pf0-x243.google.com with SMTP id o126so10537054pfb.1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Apr 2017 05:09:06 -0700 (PDT)
+Date: Thu, 13 Apr 2017 22:08:41 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+Cc: Michael Neuling <mikey@neuling.org>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, "Aneesh Kumar K.V"
+ <aneesh.kumar@linux.vnet.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>,
+ "Shreyas B. Prabhu" <shreyasbp@gmail.com>, Shilpasri G Bhat
+ <shilpa.bhat@linux.vnet.ibm.com>, Vaidyanathan Srinivasan
+ <svaidy@linux.vnet.ibm.com>, Anton Blanchard <anton@samba.org>, Balbir
+ Singh <bsingharora@gmail.com>, Akshay Adiga
+ <akshay.adiga@linux.vnet.ibm.com>, Mahesh J Salgaonkar
+ <mahesh@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 Subject: Re: [PATCH 3/3] powernv:idle: Set LPCR_UPRT on wakeup from deep-stop
-Reply-To: ego@linux.vnet.ibm.com
+Message-ID: <20170413220841.68e75ec4@roar.ozlabs.ibm.com>
+In-Reply-To: <20170413115434.GC2425@in.ibm.com>
 References: <cover.1491996797.git.ego@linux.vnet.ibm.com>
  <9be8410e0abe5ae1afa16a6f987c53046ef51757.1491996797.git.ego@linux.vnet.ibm.com>
  <8737ddq7py.fsf@skywalker.in.ibm.com>
  <1492056725.7236.95.camel@kernel.crashing.org>
  <1492064854.4624.48.camel@neuling.org>
  <20170413171817.2854f597@roar.ozlabs.ibm.com>
+ <20170413115434.GC2425@in.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <20170413171817.2854f597@roar.ozlabs.ibm.com>
-Message-Id: <20170413115434.GC2425@in.ibm.com>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -54,45 +41,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Apr 13, 2017 at 05:18:17PM +1000, Nicholas Piggin wrote:
-> On Thu, 13 Apr 2017 16:27:34 +1000
-> Michael Neuling <mikey@neuling.org> wrote:
-> 
-> > On Thu, 2017-04-13 at 14:12 +1000, Benjamin Herrenschmidt wrote:
-> > > On Thu, 2017-04-13 at 09:28 +0530, Aneesh Kumar K.V wrote:  
-> > > > >   #endif
-> > > > >        mtctr   r12
-> > > > >        bctrl
-> > > > > +/*
-> > > > > + * cur_cpu_spec->cpu_restore would restore LPCR to a
-> > > > > + * sane value that is set at early boot time,
-> > > > > + * thereby clearing LPCR_UPRT.
-> > > > > + * LPCR_UPRT is required if we are running in Radix mode.
-> > > > > + * Set it here if that be the case.
-> > > > > + */
-> > > > > +BEGIN_MMU_FTR_SECTION
-> > > > > +     mfspr   r3, SPRN_LPCR
-> > > > > +     LOAD_REG_IMMEDIATE(r4, LPCR_UPRT)
-> > > > > +     or      r3, r3, r4
-> > > > > +     mtspr   SPRN_LPCR, r3
-> > > > > +END_MMU_FTR_SECTION_IFSET(MMU_FTR_TYPE_RADIX)  
+On Thu, 13 Apr 2017 17:24:34 +0530
+Gautham R Shenoy <ego@linux.vnet.ibm.com> wrote:
+
+> On Thu, Apr 13, 2017 at 05:18:17PM +1000, Nicholas Piggin wrote:
+> > On Thu, 13 Apr 2017 16:27:34 +1000
+> > Michael Neuling <mikey@neuling.org> wrote:
+> >   
+> > > On Thu, 2017-04-13 at 14:12 +1000, Benjamin Herrenschmidt wrote:  
+> > > > On Thu, 2017-04-13 at 09:28 +0530, Aneesh Kumar K.V wrote:    
+> > > > > > Â  #endif
+> > > > > > Â Â Â Â Â Â Â mtctrÂ Â Â r12
+> > > > > > Â Â Â Â Â Â Â bctrl
+> > > > > > +/*
+> > > > > > + * cur_cpu_spec->cpu_restore would restore LPCR to a
+> > > > > > + * sane value that is set at early boot time,
+> > > > > > + * thereby clearing LPCR_UPRT.
+> > > > > > + * LPCR_UPRT is required if we are running in Radix mode.
+> > > > > > + * Set it here if that be the case.
+> > > > > > + */
+> > > > > > +BEGIN_MMU_FTR_SECTION
+> > > > > > +Â Â Â Â Â mfsprÂ Â Â r3, SPRN_LPCR
+> > > > > > +Â Â Â Â Â LOAD_REG_IMMEDIATE(r4, LPCR_UPRT)
+> > > > > > +Â Â Â Â Â orÂ Â Â Â Â Â r3, r3, r4
+> > > > > > +Â Â Â Â Â mtsprÂ Â Â SPRN_LPCR, r3
+> > > > > > +END_MMU_FTR_SECTION_IFSET(MMU_FTR_TYPE_RADIX)    
+> > > > 
+> > > > We are probably better off saving the value somewhere during boot
+> > > > and just "blasting" it whole back.    
 > > > 
-> > > We are probably better off saving the value somewhere during boot
-> > > and just "blasting" it whole back.  
+> > > We seem to touch LPCR in a bunch of places these days.  Not sure when "sometimes
+> > >  during boot" should actually be.  
 > > 
-> > We seem to touch LPCR in a bunch of places these days.  Not sure when "sometimes
-> >  during boot" should actually be.
+> > In the short term, what if we just save LPCR and restore it after calling
+> > cpu_restore? As you say there are a lot of things that touch LPCR we're
+> > not catching here.  
 > 
-> In the short term, what if we just save LPCR and restore it after calling
-> cpu_restore? As you say there are a lot of things that touch LPCR we're
-> not catching here.
+> In that case can we skip calling cpu_restore in the idle_exit path
+> altogether and simply restore LPCR to the value that the thread had
+> before executing stop ?
 
-In that case can we skip calling cpu_restore in the idle_exit path
-altogether and simply restore LPCR to the value that the thread had
-before executing stop ?
-
-> 
-
---
-Thanks and Regards
-gautham.
+Good question. For a minimal fix I would keep calling cpu_restore. I'd
+like to get rid of it if we can though, but that might take a bit more
+work.
