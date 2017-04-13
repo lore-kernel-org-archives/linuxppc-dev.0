@@ -1,24 +1,52 @@
-Return-Path: <yao.jin@linux.intel.com>
-Received: from mga03.intel.com (mga03.intel.com [134.134.136.65])
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w3R560BcqzDq7g
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Apr 2017 13:25:45 +1000 (AEST)
-Subject: Re: [PATCH v4 0/5] perf report: Show branch type
-From: "Jin, Yao" <yao.jin@linux.intel.com>
-To: Jiri Olsa <jolsa@redhat.com>
-Cc: acme@kernel.org, jolsa@kernel.org, peterz@infradead.org,
- mingo@redhat.com, alexander.shishkin@linux.intel.com,
- Linux-kernel@vger.kernel.org, ak@linux.intel.com, kan.liang@intel.com,
- yao.jin@intel.com, linuxppc-dev@lists.ozlabs.org, treeze.taeung@gmail.com
-References: <1491949266-6835-1-git-send-email-yao.jin@linux.intel.com>
- <20170412105839.GC14409@krava>
- <74ee84f8-e756-65d2-9ba4-b560f6e241bd@linux.intel.com>
-Message-ID: <c480d004-8a02-65fb-48b5-6db43b8efa4f@linux.intel.com>
-Date: Thu, 13 Apr 2017 11:25:39 +0800
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w3Rs754jKzDq7g
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Apr 2017 14:00:27 +1000 (AEST)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v3D3rp44121820
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Apr 2017 00:00:14 -0400
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 29sw2a93g5-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Apr 2017 00:00:11 -0400
+Received: from localhost
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Thu, 13 Apr 2017 13:59:37 +1000
+Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v3D3xO4A40632570
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Apr 2017 13:59:32 +1000
+Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
+ by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v3D3x0eI030437
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Apr 2017 13:59:00 +1000
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Michael Neuling <mikey@neuling.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ "Shreyas B. Prabhu" <shreyasbp@gmail.com>,
+ Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
+ Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+ Anton Blanchard <anton@samba.org>, Balbir Singh <bsingharora@gmail.com>,
+ Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>,
+ Nicholas Piggin <npiggin@gmail.com>,
+ Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+Subject: Re: [PATCH 3/3] powernv:idle: Set LPCR_UPRT on wakeup from deep-stop
+In-Reply-To: <9be8410e0abe5ae1afa16a6f987c53046ef51757.1491996797.git.ego@linux.vnet.ibm.com>
+References: <cover.1491996797.git.ego@linux.vnet.ibm.com>
+ <9be8410e0abe5ae1afa16a6f987c53046ef51757.1491996797.git.ego@linux.vnet.ibm.com>
+Date: Thu, 13 Apr 2017 09:28:33 +0530
 MIME-Version: 1.0
-In-Reply-To: <74ee84f8-e756-65d2-9ba4-b560f6e241bd@linux.intel.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain
+Message-Id: <8737ddq7py.fsf@skywalker.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,229 +56,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+"Gautham R. Shenoy" <ego@linux.vnet.ibm.com> writes:
 
+> From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+>
+> On wakeup from a deep-stop used for CPU-Hotplug, we invoke
+> cur_cpu_spec->cpu_restore() which would set sane default values to
+> various SPRs including LPCR.
+>
+> On POWER9, the cpu_restore_power9() call would would restore LPCR to a
+> sane value that is set at early boot time, thereby clearing LPCR_UPRT.
+>
+> However, LPCR_UPRT is required to be set if we are running in Radix
+> mode. If this is not set we will end up with a crash when we enable
+> IR,DR.
+>
+> To fix this, after returning from cur_cpu_spec->cpu_restore() in the
+> idle exit path, set LPCR_UPRT if we are running in Radix mode.
+>
+> Cc: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/kernel/idle_book3s.S | 13 +++++++++++++
+>  1 file changed, 13 insertions(+)
+>
+> diff --git a/arch/powerpc/kernel/idle_book3s.S b/arch/powerpc/kernel/idle_book3s.S
+> index 6a9bd28..39a9b63 100644
+> --- a/arch/powerpc/kernel/idle_book3s.S
+> +++ b/arch/powerpc/kernel/idle_book3s.S
+> @@ -804,6 +804,19 @@ no_segments:
+>  #endif
+>  	mtctr	r12
+>  	bctrl
+> +/*
+> + * cur_cpu_spec->cpu_restore would restore LPCR to a
+> + * sane value that is set at early boot time,
+> + * thereby clearing LPCR_UPRT.
+> + * LPCR_UPRT is required if we are running in Radix mode.
+> + * Set it here if that be the case.
+> + */
+> +BEGIN_MMU_FTR_SECTION
+> +	mfspr	r3, SPRN_LPCR
+> +	LOAD_REG_IMMEDIATE(r4, LPCR_UPRT)
+> +	or	r3, r3, r4
+> +	mtspr	SPRN_LPCR, r3
+> +END_MMU_FTR_SECTION_IFSET(MMU_FTR_TYPE_RADIX)
 
-On 4/13/2017 10:00 AM, Jin, Yao wrote:
->
->
-> On 4/12/2017 6:58 PM, Jiri Olsa wrote:
->> On Wed, Apr 12, 2017 at 06:21:01AM +0800, Jin Yao wrote:
->>
->> SNIP
->>
->>> 3. Use 2 bits in perf_branch_entry for a "cross" metrics checking
->>>     for branch cross 4K or 2M area. It's an approximate computing
->>>     for checking if the branch cross 4K page or 2MB page.
->>>
->>> For example:
->>>
->>> perf record -g --branch-filter any,save_type <command>
->>>
->>> perf report --stdio
->>>
->>>       JCC forward:  27.7%
->>>      JCC backward:   9.8%
->>>               JMP:   0.0%
->>>           IND_JMP:   6.5%
->>>              CALL:  26.6%
->>>          IND_CALL:   0.0%
->>>               RET:  29.3%
->>>              IRET:   0.0%
->>>          CROSS_4K:   0.0%
->>>          CROSS_2M:  14.3%
->> got mangled perf report --stdio output for:
->>
->>
->> [root@ibm-x3650m4-02 perf]# ./perf record -j any,save_type kill
->> kill: not enough arguments
->> [ perf record: Woken up 1 times to write data ]
->> [ perf record: Captured and wrote 0.013 MB perf.data (18 samples) ]
->>
->> [root@ibm-x3650m4-02 perf]# ./perf report --stdio -f | head -30
->> # To display the perf.data header info, please use 
->> --header/--header-only options.
->> #
->> #
->> # Total Lost Samples: 0
->> #
->> # Samples: 253  of event 'cycles'
->> # Event count (approx.): 253
->> #
->> # Overhead  Command  Source Shared Object  Source 
->> Symbol                            Target 
->> Symbol                            Basic Block Cycles
->> # ........  .......  .................... 
->> ....................................... 
->> .......................................  ..................
->> #
->>       8.30%  perf
->> Um  [kernel.vmlinux]      [k] __intel_pmu_enable_all.constprop.17  
->> [k] native_write_msr                     -
->>       7.91%  perf
->> Um  [kernel.vmlinux]      [k] intel_pmu_lbr_enable_all             
->> [k] __intel_pmu_enable_all.constprop.17  -
->>       7.91%  perf
->> Um  [kernel.vmlinux]      [k] native_write_msr                     
->> [k] intel_pmu_lbr_enable_all             -
->>       6.32%  kill     libc-2.24.so          [.] 
->> _dl_addr                             [.] 
->> _dl_addr                             -
->>       5.93%  perf
->> Um  [kernel.vmlinux]      [k] perf_iterate_ctx                     
->> [k] perf_iterate_ctx                     -
->>       2.77%  kill     libc-2.24.so          [.] 
->> malloc                               [.] 
->> malloc                               -
->>       1.98%  kill     libc-2.24.so          [.] 
->> _int_malloc                          [.] 
->> _int_malloc                          -
->>       1.58%  kill     [kernel.vmlinux]      [k] 
->> __rb_insert_augmented                [k] 
->> __rb_insert_augmented                -
->>       1.58%  perf
->> Um  [kernel.vmlinux]      [k] perf_event_exec                      
->> [k] perf_event_exec                      -
->>       1.19%  kill     [kernel.vmlinux]      [k] 
->> anon_vma_interval_tree_insert        [k] 
->> anon_vma_interval_tree_insert        -
->>       1.19%  kill     [kernel.vmlinux]      [k] 
->> free_pgd_range                       [k] 
->> free_pgd_range                       -
->>       1.19%  kill     [kernel.vmlinux]      [k] 
->> n_tty_write                          [k] 
->> n_tty_write                          -
->>       1.19%  perf
->> Um  [kernel.vmlinux]      [k] native_sched_clock                   
->> [k] sched_clock                          -
->> ...
->> SNIP
->>
->>
->> jirka
->
-> Sorry, I look at this issue at midnight in Shanghai. I misunderstood 
-> that the above output was only a mail format issue. Sorry about that.
->
-> Now I recheck the output, and yes, the perf report output is mangled. 
-> But my patch doesn't touch the associated code.
->
-> Anyway I remove my patches, pull the latest update from perf/core 
-> branch and run tests to check if its a regression issue. I test on HSW 
-> and SKL both.
->
-> 1. On HSW.
->
-> root@hsw:/tmp# perf record -j any kill
-> ...... /* SNIP */
-> For more details see kill(1).
-> [ perf record: Woken up 1 times to write data ]
-> [ perf record: Captured and wrote 0.014 MB perf.data (9 samples) ]
->
-> root@hsw:/tmp# perf report --stdio
-> # To display the perf.data header info, please use 
-> --header/--header-only options.
-> #
-> #
-> # Total Lost Samples: 0
-> #
-> # Samples: 144  of event 'cycles'
-> # Event count (approx.): 144
-> #
-> # Overhead  Command  Source Shared Object  Source 
-> Symbol                    Target Symbol                    Basic Block 
-> Cycles
-> # ........  .......  .................... 
-> ...............................  ............................... 
-> ..................
-> #
->     10.42%  kill     libc-2.23.so          [.] 
-> read_alias_file              [.] read_alias_file              -
->      9.72%  kill     [kernel.vmlinux]      [k] 
-> update_load_avg              [k] update_load_avg              -
->      9.03%  perf
-> Um  [unknown]             [k] 0000000000000000             [k] 
-> 0000000000000000             -
->      8.33%  kill     libc-2.23.so          [.] 
-> _int_malloc                  [.] _int_malloc                  -
-> ...... /* SNIP */
->      0.69%  kill     [kernel.vmlinux]      [k] 
-> _raw_spin_lock               [k] unmap_page_range             -
->      0.69%  perf
-> Um  [kernel.vmlinux]      [k] __intel_pmu_enable_all       [k] 
-> native_write_msr             -
->      0.69%  perf
-> Um  [kernel.vmlinux]      [k] intel_pmu_lbr_enable_all     [k] 
-> __intel_pmu_enable_all       -
->      0.69%  perf
-> Um  [kernel.vmlinux]      [k] native_write_msr             [k] 
-> intel_pmu_lbr_enable_all     -
->
-> The issue is still there.
->
-> 2. On SKL
->
-> root@skl:/tmp# perf record -j any kill
-> ...... /* SNIP */
-> For more details see kill(1).
-> [ perf record: Woken up 1 times to write data ]
-> [ perf record: Captured and wrote 0.012 MB perf.data (1 samples) ]
->
-> root@skl:/tmp# perf report --stdio
->
-> # To display the perf.data header info, please use 
-> --header/--header-only options.
-> #
-> #
-> # Total Lost Samples: 0
-> #
-> # Samples: 32  of event 'cycles'
-> # Event count (approx.): 32
-> #
-> # Overhead  Command  Source Shared Object  Source 
-> Symbol                 Target Symbol                 Basic Block Cycles
-> # ........  .......  .................... 
-> ............................  ............................ 
-> ..................
-> #
->     90.62%  perf
-> Um  [unknown]             [k] 0000000000000000          [k] 
-> 0000000000000000          -
->      3.12%  perf
-> Um  [kernel.vmlinux]      [k] __intel_pmu_enable_all    [k] 
-> native_write_msr          11
->      3.12%  perf
-> Um  [kernel.vmlinux]      [k] intel_pmu_lbr_enable_all  [k] 
-> __intel_pmu_enable_all    4
->      3.12%  perf
-> Um  [kernel.vmlinux]      [k] native_write_msr          [k] 
-> intel_pmu_lbr_enable_all  -
->
-> The issue is there too.
->
-> Now it works without my patch and it runs with latest perf/core 
-> branch. So it looks like a regression issue.
->
-> Thanks
-> Jin Yao
->
->
+What about LPCR_HR ?
 
-I have tested, the regression issue is happened after this commit:
+>  
+>  hypervisor_state_restored:
+>  
+> -- 
+> 1.9.4
 
-bdd97ca perf tools: Refactor the code to strip command name with {l,r}trim()
-
-CC to the author for double checking.
-
-Thanks
-Jin Yao
-
->
->
->
->
->
->
->
->
->
->
+-aneesh
