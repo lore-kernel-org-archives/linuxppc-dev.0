@@ -1,21 +1,30 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
- [IPv6:2607:f8b0:400e:c00::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w3cCT4pRyzDqBJ
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Apr 2017 20:16:53 +1000 (AEST)
-Received: by mail-pf0-x244.google.com with SMTP id c198so10001117pfc.0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Apr 2017 03:16:52 -0700 (PDT)
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Nicholas Piggin <npiggin@gmail.com>,
-	linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 4/4] powerpc/powernv: POWER9 support for msgsnd/doorbell IPI
-Date: Thu, 13 Apr 2017 20:16:24 +1000
-Message-Id: <20170413101624.26628-5-npiggin@gmail.com>
-In-Reply-To: <20170413101624.26628-1-npiggin@gmail.com>
-References: <20170413101624.26628-1-npiggin@gmail.com>
+Return-Path: <mchehab@smtp.s-opensource.com>
+Received: from osg.samsung.com
+ (ec2-52-27-115-49.us-west-2.compute.amazonaws.com [52.27.115.49])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3w3cDy60wrzDqFV
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Apr 2017 20:18:10 +1000 (AEST)
+From: Mauro Carvalho Chehab <mchehab@s-opensource.com>
+To: Linux Doc Mailing List <linux-doc@vger.kernel.org>,
+ Jonathan Corbet <corbet@lwn.net>
+Cc: Markus Heiser <markus.heiser@darmarIT.de>,
+ Mauro Carvalho Chehab <mchehab@s-opensource.com>,
+ Mauro Carvalho Chehab <mchehab@infradead.org>,
+ LKML <linux-kernel@vger.kernel.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Ian Munsie <imunsie@au1.ibm.com>,
+ Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
+ Kees Cook <keescook@chromium.org>, Anton Vorontsov <anton@enomsg.org>,
+ Colin Cross <ccross@android.com>, Tony Luck <tony.luck@intel.com>,
+ Andreas Klinger <ak@it-klinger.de>, Jonathan Cameron <jic23@kernel.org>,
+ Matt Ranostay <mranostay@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v2 02/11] ABI: fix some syntax issues at the ABI database
+Date: Thu, 13 Apr 2017 07:08:45 -0300
+Message-Id: <666eab282a59ecbefa2f69b1dc5044f48cc27583.1492077070.git.mchehab@s-opensource.com>
+In-Reply-To: <cover.1492077070.git.mchehab@s-opensource.com>
+References: <cover.1492077070.git.mchehab@s-opensource.com>
+In-Reply-To: <cover.1492077070.git.mchehab@s-opensource.com>
+References: <cover.1492077070.git.mchehab@s-opensource.com>
+Sender: Mauro Carvalho Chehab <mchehab@smtp.s-opensource.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,161 +34,320 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-POWER9 requires msgsync for receiver-side synchronization, and a DD1
-workaround restricts IPIs to core-local.
+On those three files, the ABI representation described at
+README are violated.
 
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+- at sysfs-bus-iio-proximity-as3935:
+	a ':' character is missing after "What"
+
+- at sysfs-class-devfreq:
+	there's a typo at Description
+
+- at sysfs-class-cxl, it is using the ":" character at a
+	file preamble, causing it to be misinterpreted as a
+	tag.
+
+- On the other files, instead of "What", they use "Where".
+
+Signed-off-by: Mauro Carvalho Chehab <mchehab@s-opensource.com>
 ---
- arch/powerpc/include/asm/dbell.h          |  3 +++
- arch/powerpc/include/asm/feature-fixups.h | 20 ++++++++++++++++++++
- arch/powerpc/include/asm/ppc-opcode.h     |  2 ++
- arch/powerpc/include/asm/ppc_asm.h        |  8 ++++++++
- arch/powerpc/platforms/powernv/smp.c      | 28 ++++++++++++++++++++++++++--
- 5 files changed, 59 insertions(+), 2 deletions(-)
+ Documentation/ABI/testing/pstore                   |  2 +-
+ .../testing/sysfs-bus-event_source-devices-format  |  2 +-
+ .../ABI/testing/sysfs-bus-i2c-devices-hm6352       |  6 +++---
+ .../ABI/testing/sysfs-bus-iio-distance-srf08       |  4 ++--
+ .../ABI/testing/sysfs-bus-iio-proximity-as3935     |  4 ++--
+ .../ABI/testing/sysfs-bus-pci-devices-cciss        | 22 +++++++++++-----------
+ .../ABI/testing/sysfs-bus-usb-devices-usbsevseg    | 12 ++++++------
+ Documentation/ABI/testing/sysfs-class-cxl          |  6 +++---
+ Documentation/ABI/testing/sysfs-class-devfreq      |  2 +-
+ Documentation/ABI/testing/sysfs-class-powercap     |  2 +-
+ Documentation/ABI/testing/sysfs-kernel-fscaps      |  2 +-
+ Documentation/ABI/testing/sysfs-kernel-vmcoreinfo  |  2 +-
+ 12 files changed, 33 insertions(+), 33 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/dbell.h b/arch/powerpc/include/asm/dbell.h
-index 040944659a20..f70cbfe0ec04 100644
---- a/arch/powerpc/include/asm/dbell.h
-+++ b/arch/powerpc/include/asm/dbell.h
-@@ -51,6 +51,9 @@ static inline void ppc_msgsnd_sync(void)
- /* sync after taking message interrupt */
- static inline void ppc_msgsync(void)
- {
-+	/* sync is not required when taking messages from the same core */
-+	__asm__ __volatile__ (ASM_FTR_IFSET(PPC_MSGSYNC " ; lwsync", "", %0)
-+				: : "i" (CPU_FTR_HVMODE|CPU_FTR_ARCH_300));
- }
+diff --git a/Documentation/ABI/testing/pstore b/Documentation/ABI/testing/pstore
+index 5fca9f5e10a3..8d6e48f4e8ef 100644
+--- a/Documentation/ABI/testing/pstore
++++ b/Documentation/ABI/testing/pstore
+@@ -1,4 +1,4 @@
+-Where:		/sys/fs/pstore/... (or /dev/pstore/...)
++What:		/sys/fs/pstore/... (or /dev/pstore/...)
+ Date:		March 2011
+ Kernel Version: 2.6.39
+ Contact:	tony.luck@intel.com
+diff --git a/Documentation/ABI/testing/sysfs-bus-event_source-devices-format b/Documentation/ABI/testing/sysfs-bus-event_source-devices-format
+index 77f47ff5ee02..b6f8748e0200 100644
+--- a/Documentation/ABI/testing/sysfs-bus-event_source-devices-format
++++ b/Documentation/ABI/testing/sysfs-bus-event_source-devices-format
+@@ -1,4 +1,4 @@
+-Where:		/sys/bus/event_source/devices/<dev>/format
++What:		/sys/bus/event_source/devices/<dev>/format
+ Date:		January 2012
+ Kernel Version: 3.3
+ Contact:	Jiri Olsa <jolsa@redhat.com>
+diff --git a/Documentation/ABI/testing/sysfs-bus-i2c-devices-hm6352 b/Documentation/ABI/testing/sysfs-bus-i2c-devices-hm6352
+index feb2e4a87075..29bd447e50a0 100644
+--- a/Documentation/ABI/testing/sysfs-bus-i2c-devices-hm6352
++++ b/Documentation/ABI/testing/sysfs-bus-i2c-devices-hm6352
+@@ -1,18 +1,18 @@
+-Where:		/sys/bus/i2c/devices/.../heading0_input
++What:		/sys/bus/i2c/devices/.../heading0_input
+ Date:		April 2010
+ Kernel Version: 2.6.36?
+ Contact:	alan.cox@intel.com
+ Description:	Reports the current heading from the compass as a floating
+ 		point value in degrees.
  
- #else /* CONFIG_PPC_BOOK3S */
-diff --git a/arch/powerpc/include/asm/feature-fixups.h b/arch/powerpc/include/asm/feature-fixups.h
-index ddf54f5bbdd1..d6b8c9a20496 100644
---- a/arch/powerpc/include/asm/feature-fixups.h
-+++ b/arch/powerpc/include/asm/feature-fixups.h
-@@ -66,7 +66,14 @@ label##5:							\
- #define END_FTR_SECTION(msk, val)		\
- 	END_FTR_SECTION_NESTED(msk, val, 97)
+-Where:		/sys/bus/i2c/devices/.../power_state
++What:		/sys/bus/i2c/devices/.../power_state
+ Date:		April 2010
+ Kernel Version: 2.6.36?
+ Contact:	alan.cox@intel.com
+ Description:	Sets the power state of the device. 0 sets the device into
+ 		sleep mode, 1 wakes it up.
  
-+#define END_FTR_SECTION_NESTED_IFSET(msk, label) \
-+	END_FTR_SECTION_NESTED((msk), (msk), label)
-+
- #define END_FTR_SECTION_IFSET(msk)	END_FTR_SECTION((msk), (msk))
-+
-+#define END_FTR_SECTION_NESTED_IFCLR(msk, label) \
-+	END_FTR_SECTION_NESTED((msk), 0, label)
-+
- #define END_FTR_SECTION_IFCLR(msk)	END_FTR_SECTION((msk), 0)
+-Where:		/sys/bus/i2c/devices/.../calibration
++What:		/sys/bus/i2c/devices/.../calibration
+ Date:		April 2010
+ Kernel Version: 2.6.36?
+ Contact:	alan.cox@intel.com
+diff --git a/Documentation/ABI/testing/sysfs-bus-iio-distance-srf08 b/Documentation/ABI/testing/sysfs-bus-iio-distance-srf08
+index 0a1ca1487fa9..a133fd8d081a 100644
+--- a/Documentation/ABI/testing/sysfs-bus-iio-distance-srf08
++++ b/Documentation/ABI/testing/sysfs-bus-iio-distance-srf08
+@@ -1,4 +1,4 @@
+-What		/sys/bus/iio/devices/iio:deviceX/sensor_sensitivity
++What:		/sys/bus/iio/devices/iio:deviceX/sensor_sensitivity
+ Date:		January 2017
+ KernelVersion:	4.11
+ Contact:	linux-iio@vger.kernel.org
+@@ -6,7 +6,7 @@ Description:
+ 		Show or set the gain boost of the amp, from 0-31 range.
+ 		default 31
  
- /* CPU feature sections with alternatives, use BEGIN_FTR_SECTION to start */
-@@ -153,12 +160,25 @@ label##5:							\
- 	section_else "; "					\
- 	stringify_in_c(ALT_FTR_SECTION_END((msk), (val)))
+-What		/sys/bus/iio/devices/iio:deviceX/sensor_max_range
++What:		/sys/bus/iio/devices/iio:deviceX/sensor_max_range
+ Date:		January 2017
+ KernelVersion:	4.11
+ Contact:	linux-iio@vger.kernel.org
+diff --git a/Documentation/ABI/testing/sysfs-bus-iio-proximity-as3935 b/Documentation/ABI/testing/sysfs-bus-iio-proximity-as3935
+index 33e96f740639..61a3c9fed07d 100644
+--- a/Documentation/ABI/testing/sysfs-bus-iio-proximity-as3935
++++ b/Documentation/ABI/testing/sysfs-bus-iio-proximity-as3935
+@@ -1,4 +1,4 @@
+-What		/sys/bus/iio/devices/iio:deviceX/in_proximity_input
++What:		/sys/bus/iio/devices/iio:deviceX/in_proximity_input
+ Date:		March 2014
+ KernelVersion:	3.15
+ Contact:	Matt Ranostay <mranostay@gmail.com>
+@@ -6,7 +6,7 @@ Description:
+ 		Get the current distance in meters of storm (1km steps)
+ 		1000-40000 = distance in meters
  
-+#define ASM_FTR_IF_NESTED(section_if, section_else, msk, val, label)	\
-+	stringify_in_c(BEGIN_FTR_SECTION_NESTED(label))		\
-+	section_if "; "						\
-+	stringify_in_c(FTR_SECTION_ELSE_NESTED(label))		\
-+	section_else "; "					\
-+	stringify_in_c(ALT_FTR_SECTION_END_NESTED((msk), (val), label))
-+
- #define ASM_FTR_IFSET(section_if, section_else, msk)	\
- 	ASM_FTR_IF(section_if, section_else, (msk), (msk))
+-What		/sys/bus/iio/devices/iio:deviceX/sensor_sensitivity
++What:		/sys/bus/iio/devices/iio:deviceX/sensor_sensitivity
+ Date:		March 2014
+ KernelVersion:	3.15
+ Contact:	Matt Ranostay <mranostay@gmail.com>
+diff --git a/Documentation/ABI/testing/sysfs-bus-pci-devices-cciss b/Documentation/ABI/testing/sysfs-bus-pci-devices-cciss
+index 53d99edd1d75..eb449169c30b 100644
+--- a/Documentation/ABI/testing/sysfs-bus-pci-devices-cciss
++++ b/Documentation/ABI/testing/sysfs-bus-pci-devices-cciss
+@@ -1,66 +1,66 @@
+-Where:		/sys/bus/pci/devices/<dev>/ccissX/cXdY/model
++What:		/sys/bus/pci/devices/<dev>/ccissX/cXdY/model
+ Date:		March 2009
+ Kernel Version: 2.6.30
+ Contact:	iss_storagedev@hp.com
+ Description:	Displays the SCSI INQUIRY page 0 model for logical drive
+ 		Y of controller X.
  
-+#define ASM_FTR_IFSET_NESTED(section_if, section_else, msk, label)	\
-+	ASM_FTR_IF(section_if, section_else, (msk), (msk), label)
-+
- #define ASM_FTR_IFCLR(section_if, section_else, msk)	\
- 	ASM_FTR_IF(section_if, section_else, (msk), 0)
+-Where:		/sys/bus/pci/devices/<dev>/ccissX/cXdY/rev
++What:		/sys/bus/pci/devices/<dev>/ccissX/cXdY/rev
+ Date:		March 2009
+ Kernel Version: 2.6.30
+ Contact:	iss_storagedev@hp.com
+ Description:	Displays the SCSI INQUIRY page 0 revision for logical
+ 		drive Y of controller X.
  
-+#define ASM_FTR_IFCLR_NESTED(section_if, section_else, msk, label)	\
-+	ASM_FTR_IF(section_if, section_else, (msk), 0, label)
-+
- #define ASM_MMU_FTR_IF(section_if, section_else, msk, val)	\
- 	stringify_in_c(BEGIN_MMU_FTR_SECTION)			\
- 	section_if "; "						\
-diff --git a/arch/powerpc/include/asm/ppc-opcode.h b/arch/powerpc/include/asm/ppc-opcode.h
-index e7d6d86563ee..142d78d645f4 100644
---- a/arch/powerpc/include/asm/ppc-opcode.h
-+++ b/arch/powerpc/include/asm/ppc-opcode.h
-@@ -161,6 +161,7 @@
- #define PPC_INST_MFTMR			0x7c0002dc
- #define PPC_INST_MSGSND			0x7c00019c
- #define PPC_INST_MSGCLR			0x7c0001dc
-+#define PPC_INST_MSGSYNC		0x7c0006ec
- #define PPC_INST_MSGSNDP		0x7c00011c
- #define PPC_INST_MTTMR			0x7c0003dc
- #define PPC_INST_NOP			0x60000000
-@@ -345,6 +346,7 @@
- 					___PPC_RB(b) | __PPC_EH(eh))
- #define PPC_MSGSND(b)		stringify_in_c(.long PPC_INST_MSGSND | \
- 					___PPC_RB(b))
-+#define PPC_MSGSYNC		stringify_in_c(.long PPC_INST_MSGSYNC)
- #define PPC_MSGCLR(b)		stringify_in_c(.long PPC_INST_MSGCLR | \
- 					___PPC_RB(b))
- #define PPC_MSGSNDP(b)		stringify_in_c(.long PPC_INST_MSGSNDP | \
-diff --git a/arch/powerpc/include/asm/ppc_asm.h b/arch/powerpc/include/asm/ppc_asm.h
-index 359c44341761..4d9cac8b1066 100644
---- a/arch/powerpc/include/asm/ppc_asm.h
-+++ b/arch/powerpc/include/asm/ppc_asm.h
-@@ -402,6 +402,14 @@ END_FTR_SECTION_IFCLR(CPU_FTR_601)
- 	FTR_SECTION_ELSE_NESTED(848);	\
- 	mtocrf (FXM), RS;		\
- 	ALT_FTR_SECTION_END_NESTED_IFCLR(CPU_FTR_NOEXECUTE, 848)
-+
-+#if defined(CONFIG_BOOKS)
-+#define MSGSYNC(reg)			\
-+	BEGIN_FTR_SECTION_NESTED(849);	\
-+	PPC_MSGSYNC;			\
-+	lwsync;				\
-+	END_FTR_SECTION_NESTED_IFSET(CPU_FTR_HVMODE|CPU_FTR_ARCH_300, 849)
-+#endif
- #endif
+-Where:		/sys/bus/pci/devices/<dev>/ccissX/cXdY/unique_id
++What:		/sys/bus/pci/devices/<dev>/ccissX/cXdY/unique_id
+ Date:		March 2009
+ Kernel Version: 2.6.30
+ Contact:	iss_storagedev@hp.com
+ Description:	Displays the SCSI INQUIRY page 83 serial number for logical
+ 		drive Y of controller X.
  
- /*
-diff --git a/arch/powerpc/platforms/powernv/smp.c b/arch/powerpc/platforms/powernv/smp.c
-index 33bd4dd2cb41..951a2e230cfa 100644
---- a/arch/powerpc/platforms/powernv/smp.c
-+++ b/arch/powerpc/platforms/powernv/smp.c
-@@ -257,6 +257,23 @@ static void pnv_cause_ipi(int cpu)
- 	icp_ops->cause_ipi(cpu);
- }
+-Where:		/sys/bus/pci/devices/<dev>/ccissX/cXdY/vendor
++What:		/sys/bus/pci/devices/<dev>/ccissX/cXdY/vendor
+ Date:		March 2009
+ Kernel Version: 2.6.30
+ Contact:	iss_storagedev@hp.com
+ Description:	Displays the SCSI INQUIRY page 0 vendor for logical drive
+ 		Y of controller X.
  
-+static void pnv_p9_dd1_cause_ipi(int cpu)
-+{
-+	int this_cpu = get_cpu();
-+
-+	/*
-+	 * POWER9 DD1 has a global addressed msgsnd, but for now we restrict
-+	 * IPIs to same core, because it requires additional synchronization
-+	 * for inter-core doorbells which we do not implement.
-+	 */
-+	if (cpumask_test_cpu(cpu, cpu_sibling_mask(this_cpu)))
-+		doorbell_global_ipi(cpu);
-+	else
-+		icp_ops->cause_ipi(cpu);
-+
-+	put_cpu();
-+}
-+
- static void __init pnv_smp_probe(void)
- {
- 	if (xive_enabled())
-@@ -264,8 +281,15 @@ static void __init pnv_smp_probe(void)
- 	else
- 		xics_smp_probe();
+-Where:		/sys/bus/pci/devices/<dev>/ccissX/cXdY/block:cciss!cXdY
++What:		/sys/bus/pci/devices/<dev>/ccissX/cXdY/block:cciss!cXdY
+ Date:		March 2009
+ Kernel Version: 2.6.30
+ Contact:	iss_storagedev@hp.com
+ Description:	A symbolic link to /sys/block/cciss!cXdY
  
--	if (cpu_has_feature(CPU_FTR_DBELL) && !cpu_has_feature(CPU_FTR_ARCH_300)) {
--		smp_ops->cause_ipi = pnv_cause_ipi;
-+	if (cpu_has_feature(CPU_FTR_DBELL)) {
-+		if (cpu_has_feature(CPU_FTR_ARCH_300)) {
-+			if (cpu_has_feature(CPU_FTR_POWER9_DD1))
-+				smp_ops->cause_ipi = pnv_p9_dd1_cause_ipi;
-+			else
-+				smp_ops->cause_ipi = doorbell_global_ipi;
-+		} else {
-+			smp_ops->cause_ipi = pnv_cause_ipi;
-+		}
- 	} else {
- 		smp_ops->cause_ipi = icp_ops->cause_ipi;
- 	}
+-Where:		/sys/bus/pci/devices/<dev>/ccissX/rescan
++What:		/sys/bus/pci/devices/<dev>/ccissX/rescan
+ Date:		August 2009
+ Kernel Version:	2.6.31
+ Contact:	iss_storagedev@hp.com
+ Description:	Kicks of a rescan of the controller to discover logical
+ 		drive topology changes.
+ 
+-Where:		/sys/bus/pci/devices/<dev>/ccissX/cXdY/lunid
++What:		/sys/bus/pci/devices/<dev>/ccissX/cXdY/lunid
+ Date:		August 2009
+ Kernel Version: 2.6.31
+ Contact:	iss_storagedev@hp.com
+ Description:	Displays the 8-byte LUN ID used to address logical
+ 		drive Y of controller X.
+ 
+-Where:		/sys/bus/pci/devices/<dev>/ccissX/cXdY/raid_level
++What:		/sys/bus/pci/devices/<dev>/ccissX/cXdY/raid_level
+ Date:		August 2009
+ Kernel Version: 2.6.31
+ Contact:	iss_storagedev@hp.com
+ Description:	Displays the RAID level of logical drive Y of
+ 		controller X.
+ 
+-Where:		/sys/bus/pci/devices/<dev>/ccissX/cXdY/usage_count
++What:		/sys/bus/pci/devices/<dev>/ccissX/cXdY/usage_count
+ Date:		August 2009
+ Kernel Version: 2.6.31
+ Contact:	iss_storagedev@hp.com
+ Description:	Displays the usage count (number of opens) of logical drive Y
+ 		of controller X.
+ 
+-Where:		/sys/bus/pci/devices/<dev>/ccissX/resettable
++What:		/sys/bus/pci/devices/<dev>/ccissX/resettable
+ Date:		February 2011
+ Kernel Version:	2.6.38
+ Contact:	iss_storagedev@hp.com
+@@ -71,7 +71,7 @@ Description:	Value of 1 indicates the controller can honor the reset_devices
+ 		a dump device, as kdump requires resetting the device in order
+ 		to work reliably.
+ 
+-Where:		/sys/bus/pci/devices/<dev>/ccissX/transport_mode
++What:		/sys/bus/pci/devices/<dev>/ccissX/transport_mode
+ Date:		July 2011
+ Kernel Version:	3.0
+ Contact:	iss_storagedev@hp.com
+diff --git a/Documentation/ABI/testing/sysfs-bus-usb-devices-usbsevseg b/Documentation/ABI/testing/sysfs-bus-usb-devices-usbsevseg
+index 70d00dfa443d..f6199b314196 100644
+--- a/Documentation/ABI/testing/sysfs-bus-usb-devices-usbsevseg
++++ b/Documentation/ABI/testing/sysfs-bus-usb-devices-usbsevseg
+@@ -1,12 +1,12 @@
+-Where:		/sys/bus/usb/.../powered
++What:		/sys/bus/usb/.../powered
+ Date:		August 2008
+ Kernel Version:	2.6.26
+ Contact:	Harrison Metzger <harrisonmetz@gmail.com>
+ Description:	Controls whether the device's display will powered.
+ 		A value of 0 is off and a non-zero value is on.
+ 
+-Where:		/sys/bus/usb/.../mode_msb
+-Where:		/sys/bus/usb/.../mode_lsb
++What:		/sys/bus/usb/.../mode_msb
++What:		/sys/bus/usb/.../mode_lsb
+ Date:		August 2008
+ Kernel Version:	2.6.26
+ Contact:	Harrison Metzger <harrisonmetz@gmail.com>
+@@ -16,7 +16,7 @@ Description:	Controls the devices display mode.
+ 		for an 8 character display the values are
+ 			MSB 0x08; LSB 0xFF.
+ 
+-Where:		/sys/bus/usb/.../textmode
++What:		/sys/bus/usb/.../textmode
+ Date:		August 2008
+ Kernel Version:	2.6.26
+ Contact:	Harrison Metzger <harrisonmetz@gmail.com>
+@@ -25,13 +25,13 @@ Description:	Controls the way the device interprets its text buffer.
+ 		hex:	each character is between 0-15
+ 		ascii:	each character is between '0'-'9' and 'A'-'F'.
+ 
+-Where:		/sys/bus/usb/.../text
++What:		/sys/bus/usb/.../text
+ Date:		August 2008
+ Kernel Version:	2.6.26
+ Contact:	Harrison Metzger <harrisonmetz@gmail.com>
+ Description:	The text (or data) for the device to display
+ 
+-Where:		/sys/bus/usb/.../decimals
++What:		/sys/bus/usb/.../decimals
+ Date:		August 2008
+ Kernel Version:	2.6.26
+ Contact:	Harrison Metzger <harrisonmetz@gmail.com>
+diff --git a/Documentation/ABI/testing/sysfs-class-cxl b/Documentation/ABI/testing/sysfs-class-cxl
+index 640f65e79ef1..d0b32452dfe1 100644
+--- a/Documentation/ABI/testing/sysfs-class-cxl
++++ b/Documentation/ABI/testing/sysfs-class-cxl
+@@ -1,6 +1,6 @@
+-Note: Attributes that are shared between devices are stored in the directory
+-pointed to by the symlink device/.
+-Example: The real path of the attribute /sys/class/cxl/afu0.0s/irqs_max is
++Please notice that attributes that are shared between devices are stored in
++the directory pointed to by the symlink device/.
++For example, the real path of the attribute /sys/class/cxl/afu0.0s/irqs_max is
+ /sys/class/cxl/afu0.0s/device/irqs_max, i.e. /sys/class/cxl/afu0.0/irqs_max.
+ 
+ 
+diff --git a/Documentation/ABI/testing/sysfs-class-devfreq b/Documentation/ABI/testing/sysfs-class-devfreq
+index ee39acacf6f8..01196e19afca 100644
+--- a/Documentation/ABI/testing/sysfs-class-devfreq
++++ b/Documentation/ABI/testing/sysfs-class-devfreq
+@@ -47,7 +47,7 @@ Description:
+ What:		/sys/class/devfreq/.../trans_stat
+ Date:		October 2012
+ Contact:	MyungJoo Ham <myungjoo.ham@samsung.com>
+-Descrtiption:
++Description:
+ 		This ABI shows the statistics of devfreq behavior on a
+ 		specific device. It shows the time spent in each state and
+ 		the number of transitions between states.
+diff --git a/Documentation/ABI/testing/sysfs-class-powercap b/Documentation/ABI/testing/sysfs-class-powercap
+index db3b3ff70d84..f333a0ccc29b 100644
+--- a/Documentation/ABI/testing/sysfs-class-powercap
++++ b/Documentation/ABI/testing/sysfs-class-powercap
+@@ -147,6 +147,6 @@ What:		/sys/class/powercap/.../<power zone>/enabled
+ Date:		September 2013
+ KernelVersion:	3.13
+ Contact:	linux-pm@vger.kernel.org
+-Description
++Description:
+ 		This allows to enable/disable power capping at power zone level.
+ 		This applies to current power zone and its children.
+diff --git a/Documentation/ABI/testing/sysfs-kernel-fscaps b/Documentation/ABI/testing/sysfs-kernel-fscaps
+index 50a3033b5e15..bcff34665192 100644
+--- a/Documentation/ABI/testing/sysfs-kernel-fscaps
++++ b/Documentation/ABI/testing/sysfs-kernel-fscaps
+@@ -2,7 +2,7 @@ What:		/sys/kernel/fscaps
+ Date:		February 2011
+ KernelVersion:	2.6.38
+ Contact:	Ludwig Nussel <ludwig.nussel@suse.de>
+-Description
++Description:
+ 		Shows whether file system capabilities are honored
+ 		when executing a binary
+ 
+diff --git a/Documentation/ABI/testing/sysfs-kernel-vmcoreinfo b/Documentation/ABI/testing/sysfs-kernel-vmcoreinfo
+index 7bd81168e063..1f1087a5f075 100644
+--- a/Documentation/ABI/testing/sysfs-kernel-vmcoreinfo
++++ b/Documentation/ABI/testing/sysfs-kernel-vmcoreinfo
+@@ -4,7 +4,7 @@ KernelVersion:	2.6.24
+ Contact:	Ken'ichi Ohmichi <oomichi@mxs.nes.nec.co.jp>
+ 		Kexec Mailing List <kexec@lists.infradead.org>
+ 		Vivek Goyal <vgoyal@redhat.com>
+-Description
++Description:
+ 		Shows physical address and size of vmcoreinfo ELF note.
+ 		First value contains physical address of note in hex and
+ 		second value contains the size of note in hex. This ELF
 -- 
-2.11.0
+2.9.3
