@@ -1,24 +1,16 @@
-Return-Path: <mpe@ellerman.id.au>
+Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w3dJ70XvJzDq7g
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Apr 2017 21:05:59 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- Christophe Lombard <clombard@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, imunsie@au1.ibm.com
-Subject: Re: [PATCH V4 7/7] cxl: Add psl9 specific code
-In-Reply-To: <50091fa6-d6f5-47ff-dab3-ab9e2c50ab6b@linux.vnet.ibm.com>
-References: <1491574319-11852-1-git-send-email-clombard@linux.vnet.ibm.com>
- <1491574319-11852-8-git-send-email-clombard@linux.vnet.ibm.com>
- <12e9c746-4f52-d807-2e4f-32ad0b827fb2@au1.ibm.com>
- <50091fa6-d6f5-47ff-dab3-ab9e2c50ab6b@linux.vnet.ibm.com>
-Date: Thu, 13 Apr 2017 21:05:57 +1000
-Message-ID: <87wpao8t4a.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w3dh72PYJzDq7g
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Apr 2017 21:23:19 +1000 (AEST)
+In-Reply-To: <20170331013749.17874-1-oohall@gmail.com>
+To: Oliver O'Halloran <oohall@gmail.com>, linuxppc-dev@lists.ozlabs.org
+From: Michael Ellerman <patch-notifications@ellerman.id.au>
+Cc: Rashmica Gupta <rashmica.g@gmail.com>, Oliver O'Halloran <oohall@gmail.com>
+Subject: Re: [1/2] powerpc/mm: fix up pgtable dump flags
+Message-Id: <3w3dh716qbz9sNW@ozlabs.org>
+Date: Thu, 13 Apr 2017 21:23:19 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,27 +20,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Frederic Barrat <fbarrat@linux.vnet.ibm.com> writes:
+On Fri, 2017-03-31 at 01:37:48 UTC, Oliver O'Halloran wrote:
+> On Book3s we have two PTE flags used to mark cache-inhibited mappings:
+> _PAGE_TOLERANT and _PAGE_NON_IDEMPOTENT. Currently the kernel page
+> table dumper only looks at the generic _PAGE_NO_CACHE which is
+> defined to be _PAGE_TOLERANT. This patch modifies the dumper so
+> both flags are shown in the dump.
+> 
+> Cc: Rashmica Gupta <rashmica.g@gmail.com>
+> Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
 
-> Le 12/04/2017 =C3=A0 09:52, Andrew Donnellan a =C3=A9crit :
->> On 08/04/17 00:11, Christophe Lombard wrote:
->>> +static u32 get_phb_index(struct device_node *np)
->>>  {
->>>      u32 phb_index;
->>>
->>>      if (of_property_read_u32(np, "ibm,phb-index", &phb_index))
->>> -        return 0;
->>> +        return -ENODEV;
->>
->> Function is unsigned.
->
-> [Christophe is off till the end of the week, so I'm following up]
->
-> Michael: what's the easiest for you at this point? Shall I send a new=20
-> version of the 7th patch with all changes consolidated (tab error + doc=20
-> + Andrew's remark above)?
+Series applied to powerpc next, thanks.
 
-An incremental patch would have been easiest, but that's OK I've taken
-your remix.
+https://git.kernel.org/powerpc/c/70538eaa70c36340b4bb27206cad31
 
 cheers
