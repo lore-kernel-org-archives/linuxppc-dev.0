@@ -3,17 +3,17 @@ Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
  [IPv6:2607:f8b0:400e:c05::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w3cCM3vg7zDqBH
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Apr 2017 20:16:47 +1000 (AEST)
-Received: by mail-pg0-x243.google.com with SMTP id 79so10575707pgf.0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Apr 2017 03:16:47 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w3cCQ2wwXzDqBP
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Apr 2017 20:16:50 +1000 (AEST)
+Received: by mail-pg0-x243.google.com with SMTP id 79so10575971pgf.0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Apr 2017 03:16:50 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
 Cc: Nicholas Piggin <npiggin@gmail.com>,
 	linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 2/4] powerpc: Introduce msgsnd/doorbell barrier primitives
-Date: Thu, 13 Apr 2017 20:16:22 +1000
-Message-Id: <20170413101624.26628-3-npiggin@gmail.com>
+Subject: [PATCH 3/4] powerpc/64s: avoid branch for ppc_msgsnd
+Date: Thu, 13 Apr 2017 20:16:23 +1000
+Message-Id: <20170413101624.26628-4-npiggin@gmail.com>
 In-Reply-To: <20170413101624.26628-1-npiggin@gmail.com>
 References: <20170413101624.26628-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,130 +25,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-POWER9 changes requirements and adds new instructions for
-synchronization.
-
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/include/asm/dbell.h | 22 ++++++++++++++++++++++
- arch/powerpc/include/asm/smp.h   |  1 +
- arch/powerpc/kernel/dbell.c      |  8 +++++---
- arch/powerpc/kernel/smp.c        | 10 ++++++++--
- 4 files changed, 36 insertions(+), 5 deletions(-)
+ arch/powerpc/include/asm/dbell.h | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/dbell.h b/arch/powerpc/include/asm/dbell.h
-index a66eb596940c..350694a1a6e5 100644
+index 350694a1a6e5..040944659a20 100644
 --- a/arch/powerpc/include/asm/dbell.h
 +++ b/arch/powerpc/include/asm/dbell.h
-@@ -44,6 +44,17 @@ static inline void _ppc_msgsnd(u32 msg)
- 		__asm__ __volatile__ (PPC_MSGSNDP(%0) : : "r" (msg));
- }
+@@ -38,10 +38,8 @@ enum ppc_dbell {
  
-+/* sync before sending message */
-+static inline void ppc_msgsnd_sync(void)
-+{
-+	__asm__ __volatile__ ("sync" : : : "memory");
-+}
-+
-+/* sync after taking message interrupt */
-+static inline void ppc_msgsync(void)
-+{
-+}
-+
- #else /* CONFIG_PPC_BOOK3S */
- 
- #define PPC_DBELL_MSGTYPE		PPC_DBELL
-@@ -53,6 +64,17 @@ static inline void _ppc_msgsnd(u32 msg)
- 	__asm__ __volatile__ (PPC_MSGSND(%0) : : "r" (msg));
- }
- 
-+/* sync before sending message */
-+static inline void ppc_msgsnd_sync(void)
-+{
-+	__asm__ __volatile__ ("sync" : : : "memory");
-+}
-+
-+/* sync after taking message interrupt */
-+static inline void ppc_msgsync(void)
-+{
-+}
-+
- #endif /* CONFIG_PPC_BOOK3S */
- 
- extern void doorbell_global_ipi(int cpu);
-diff --git a/arch/powerpc/include/asm/smp.h b/arch/powerpc/include/asm/smp.h
-index d9ed3b02615e..751b2bd944fc 100644
---- a/arch/powerpc/include/asm/smp.h
-+++ b/arch/powerpc/include/asm/smp.h
-@@ -128,6 +128,7 @@ extern const char *smp_ipi_name[];
- extern void smp_muxed_ipi_message_pass(int cpu, int msg);
- extern void smp_muxed_ipi_set_message(int cpu, int msg);
- extern irqreturn_t smp_ipi_demux(void);
-+extern irqreturn_t smp_ipi_demux_relaxed(void);
- 
- void smp_init_pSeries(void);
- void smp_init_cell(void);
-diff --git a/arch/powerpc/kernel/dbell.c b/arch/powerpc/kernel/dbell.c
-index 5869c66adfd0..b6fe883b1016 100644
---- a/arch/powerpc/kernel/dbell.c
-+++ b/arch/powerpc/kernel/dbell.c
-@@ -38,7 +38,7 @@ void doorbell_global_ipi(int cpu)
- 
- 	kvmppc_set_host_ipi(cpu, 1);
- 	/* Order previous accesses vs. msgsnd, which is treated as a store */
--	mb();
-+	ppc_msgsnd_sync();
- 	ppc_msgsnd(PPC_DBELL_MSGTYPE, 0, tag);
- }
- 
-@@ -53,7 +53,7 @@ void doorbell_core_ipi(int cpu)
- 
- 	kvmppc_set_host_ipi(cpu, 1);
- 	/* Order previous accesses vs. msgsnd, which is treated as a store */
--	mb();
-+	ppc_msgsnd_sync();
- 	ppc_msgsnd(PPC_DBELL_MSGTYPE, 0, tag);
- }
- 
-@@ -82,12 +82,14 @@ void doorbell_exception(struct pt_regs *regs)
- 
- 	irq_enter();
- 
-+	ppc_msgsync();
-+
- 	may_hard_irq_enable();
- 
- 	kvmppc_set_host_ipi(smp_processor_id(), 0);
- 	__this_cpu_inc(irq_stat.doorbell_irqs);
- 
--	smp_ipi_demux();
-+	smp_ipi_demux_relaxed(); /* already performed the barrier */
- 
- 	irq_exit();
- 	set_irq_regs(old_regs);
-diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
-index 17de938d41c5..2eca1e491e2b 100644
---- a/arch/powerpc/kernel/smp.c
-+++ b/arch/powerpc/kernel/smp.c
-@@ -246,11 +246,17 @@ void smp_muxed_ipi_message_pass(int cpu, int msg)
- 
- irqreturn_t smp_ipi_demux(void)
+ static inline void _ppc_msgsnd(u32 msg)
  {
-+	mb();	/* order any irq clear */
-+
-+	return smp_ipi_demux_relaxed();
-+}
-+
-+/* sync-free variant. Callers should ensure synchronization */
-+irqreturn_t smp_ipi_demux_relaxed(void)
-+{
- 	struct cpu_messages *info;
- 	unsigned long all;
+-	if (cpu_has_feature(CPU_FTR_HVMODE))
+-		__asm__ __volatile__ (PPC_MSGSND(%0) : : "r" (msg));
+-	else
+-		__asm__ __volatile__ (PPC_MSGSNDP(%0) : : "r" (msg));
++	__asm__ __volatile__ (ASM_FTR_IFSET(PPC_MSGSND(%1), PPC_MSGSNDP(%1), %0)
++				: : "i" (CPU_FTR_HVMODE), "r" (msg));
+ }
  
--	mb();	/* order any irq clear */
--
- 	info = this_cpu_ptr(&ipi_message);
- 	do {
- 		all = xchg(&info->messages, 0);
+ /* sync before sending message */
 -- 
 2.11.0
