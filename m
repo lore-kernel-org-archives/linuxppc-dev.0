@@ -1,25 +1,22 @@
-Return-Path: <oohall@gmail.com>
-Received: from mail-qk0-x242.google.com (mail-qk0-x242.google.com
- [IPv6:2607:f8b0:400d:c09::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mhiramat@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w3QGY01JCzDq7g
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Apr 2017 12:48:52 +1000 (AEST)
-Received: by mail-qk0-x242.google.com with SMTP id k139so6612557qke.2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2017 19:48:52 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <8737deungd.fsf@concordia.ellerman.id.au>
-References: <20170331013749.17874-1-oohall@gmail.com>
- <c68c1247-b676-5b48-264d-8affe0c10ead@gmail.com>
- <8737deungd.fsf@concordia.ellerman.id.au>
-From: "Oliver O'Halloran" <oohall@gmail.com>
-Date: Thu, 13 Apr 2017 12:48:50 +1000
-Message-ID: <CAOSf1CG1ssBekn2BHBHGET3ZdGa3r0OaQpfWz8uMEoww+FE=WQ@mail.gmail.com>
-Subject: Re: [PATCH 1/2] powerpc/mm: fix up pgtable dump flags
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Rashmica Gupta <rashmica.g@gmail.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Content-Type: text/plain; charset=UTF-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w3QZG1ZQ0zDq7j
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Apr 2017 13:02:30 +1000 (AEST)
+Date: Thu, 13 Apr 2017 12:02:17 +0900
+From: Masami Hiramatsu <mhiramat@kernel.org>
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, Ananth N Mavinakayanahalli
+ <ananth@linux.vnet.ibm.com>, Masami Hiramatsu <mhiramat@kernel.org>, Ingo
+ Molnar <mingo@kernel.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2 0/5] powerpc: a few kprobe fixes and refactoring
+Message-Id: <20170413120217.0a1223bdaea42448ec011c66@kernel.org>
+In-Reply-To: <cover.1491991939.git.naveen.n.rao@linux.vnet.ibm.com>
+References: <cover.1491991939.git.naveen.n.rao@linux.vnet.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,32 +26,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Apr 12, 2017 at 4:52 PM, Michael Ellerman <mpe@ellerman.id.au> wrote:
-> Rashmica Gupta <rashmica.g@gmail.com> writes:
->
->> On 31/03/17 12:37, Oliver O'Halloran wrote:
->>> On Book3s we have two PTE flags used to mark cache-inhibited mappings:
->>> _PAGE_TOLERANT and _PAGE_NON_IDEMPOTENT. Currently the kernel page
->>> table dumper only looks at the generic _PAGE_NO_CACHE which is
->>> defined to be _PAGE_TOLERANT. This patch modifies the dumper so
->>> both flags are shown in the dump.
->>>
->>> Cc: Rashmica Gupta <rashmica.g@gmail.com>
->>> Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
->
->> Should we also add in _PAGE_SAO  that is in Book3s?
->
-> I don't think we ever expect to see it in the kernel page tables. But if
-> we did that would be "interesting".
->
-> I've forgotten what the code does with unknown bits, does it already
-> print them in some way?
+Hi Naveen,
 
-Currently it just traverses the list of known bits and prints out a
-message for each. Printing any unknown bits is probably a good idea.
-I'll send another patch to add that though and leave this one as-is.
+BTW, I saw you sent 3 different series, are there any
+conflict each other? or can we pick those independently?
 
-> If not we should either add that or add _PAGE_SAO and everything else
-> that could possibly ever be there.
+Thanks,
 
-ok
+On Wed, 12 Apr 2017 16:28:23 +0530
+"Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
+
+> v1:
+> https://www.mail-archive.com/linux-kernel@vger.kernel.org/msg1334843.html
+> 
+> For v2, this series has been re-ordered and rebased on top of
+> powerpc/next so as to make it easier to resolve conflicts with -tip. No
+> other changes.
+> 
+> - Naveen
+> 
+> 
+> Naveen N. Rao (5):
+>   kprobes: convert kprobe_lookup_name() to a function
+>   powerpc: kprobes: fix handling of function offsets on ABIv2
+>   powerpc: introduce a new helper to obtain function entry points
+>   powerpc: kprobes: factor out code to emulate instruction into a helper
+>   powerpc: kprobes: emulate instructions on kprobe handler re-entry
+> 
+>  arch/powerpc/include/asm/code-patching.h |  37 ++++++++++
+>  arch/powerpc/include/asm/kprobes.h       |  53 --------------
+>  arch/powerpc/kernel/kprobes.c            | 119 +++++++++++++++++++++++++------
+>  arch/powerpc/kernel/optprobes.c          |   6 +-
+>  include/linux/kprobes.h                  |   1 +
+>  kernel/kprobes.c                         |  21 +++---
+>  6 files changed, 147 insertions(+), 90 deletions(-)
+> 
+> -- 
+> 2.12.1
+> 
+
+
+-- 
+Masami Hiramatsu <mhiramat@kernel.org>
