@@ -1,23 +1,24 @@
-Return-Path: <mhiramat@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <yao.jin@linux.intel.com>
+Received: from mga03.intel.com (mga03.intel.com [134.134.136.65])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w3QkK3b2CzDq5W
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Apr 2017 13:09:29 +1000 (AEST)
-Date: Thu, 13 Apr 2017 12:09:14 +0900
-From: Masami Hiramatsu <mhiramat@kernel.org>
-To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, Ananth N Mavinakayanahalli
- <ananth@linux.vnet.ibm.com>, Masami Hiramatsu <mhiramat@kernel.org>, Ingo
- Molnar <mingo@kernel.org>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2 1/5] kprobes: convert kprobe_lookup_name() to a function
-Message-Id: <20170413120914.2ea08bd2b4506986de84db84@kernel.org>
-In-Reply-To: <2780c632bc2c6e39f27920f8cc98e17430189e27.1491991939.git.naveen.n.rao@linux.vnet.ibm.com>
-References: <cover.1491991939.git.naveen.n.rao@linux.vnet.ibm.com>
- <2780c632bc2c6e39f27920f8cc98e17430189e27.1491991939.git.naveen.n.rao@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w3R560BcqzDq7g
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Apr 2017 13:25:45 +1000 (AEST)
+Subject: Re: [PATCH v4 0/5] perf report: Show branch type
+From: "Jin, Yao" <yao.jin@linux.intel.com>
+To: Jiri Olsa <jolsa@redhat.com>
+Cc: acme@kernel.org, jolsa@kernel.org, peterz@infradead.org,
+ mingo@redhat.com, alexander.shishkin@linux.intel.com,
+ Linux-kernel@vger.kernel.org, ak@linux.intel.com, kan.liang@intel.com,
+ yao.jin@intel.com, linuxppc-dev@lists.ozlabs.org, treeze.taeung@gmail.com
+References: <1491949266-6835-1-git-send-email-yao.jin@linux.intel.com>
+ <20170412105839.GC14409@krava>
+ <74ee84f8-e756-65d2-9ba4-b560f6e241bd@linux.intel.com>
+Message-ID: <c480d004-8a02-65fb-48b5-6db43b8efa4f@linux.intel.com>
+Date: Thu, 13 Apr 2017 11:25:39 +0800
+MIME-Version: 1.0
+In-Reply-To: <74ee84f8-e756-65d2-9ba4-b560f6e241bd@linux.intel.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,246 +28,229 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 12 Apr 2017 16:28:24 +0530
-"Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
-
-> The macro is now pretty long and ugly on powerpc. In the light of
-> further changes needed here, convert it to a __weak variant to be
-> over-ridden with a nicer looking function.
-
-Looks good to me.
-
-Acked-by: Masami Hiramatsu <mhiramat@kernel.org>
-
-Thanks!
-
-> 
-> Suggested-by: Masami Hiramatsu <mhiramat@kernel.org>
-> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/include/asm/kprobes.h | 53 ----------------------------------
->  arch/powerpc/kernel/kprobes.c      | 58 ++++++++++++++++++++++++++++++++++++++
->  arch/powerpc/kernel/optprobes.c    |  4 +--
->  include/linux/kprobes.h            |  1 +
->  kernel/kprobes.c                   | 20 ++++++-------
->  5 files changed, 69 insertions(+), 67 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/kprobes.h b/arch/powerpc/include/asm/kprobes.h
-> index 0503c98b2117..a843884aafaf 100644
-> --- a/arch/powerpc/include/asm/kprobes.h
-> +++ b/arch/powerpc/include/asm/kprobes.h
-> @@ -61,59 +61,6 @@ extern kprobe_opcode_t optprobe_template_end[];
->  #define MAX_OPTINSN_SIZE	(optprobe_template_end - optprobe_template_entry)
->  #define RELATIVEJUMP_SIZE	sizeof(kprobe_opcode_t)	/* 4 bytes */
->  
-> -#ifdef PPC64_ELF_ABI_v2
-> -/* PPC64 ABIv2 needs local entry point */
-> -#define kprobe_lookup_name(name, addr)					\
-> -{									\
-> -	addr = (kprobe_opcode_t *)kallsyms_lookup_name(name);		\
-> -	if (addr)							\
-> -		addr = (kprobe_opcode_t *)ppc_function_entry(addr);	\
-> -}
-> -#elif defined(PPC64_ELF_ABI_v1)
-> -/*
-> - * 64bit powerpc ABIv1 uses function descriptors:
-> - * - Check for the dot variant of the symbol first.
-> - * - If that fails, try looking up the symbol provided.
-> - *
-> - * This ensures we always get to the actual symbol and not the descriptor.
-> - * Also handle <module:symbol> format.
-> - */
-> -#define kprobe_lookup_name(name, addr)					\
-> -{									\
-> -	char dot_name[MODULE_NAME_LEN + 1 + KSYM_NAME_LEN];		\
-> -	const char *modsym;							\
-> -	bool dot_appended = false;					\
-> -	if ((modsym = strchr(name, ':')) != NULL) {			\
-> -		modsym++;						\
-> -		if (*modsym != '\0' && *modsym != '.') {		\
-> -			/* Convert to <module:.symbol> */		\
-> -			strncpy(dot_name, name, modsym - name);		\
-> -			dot_name[modsym - name] = '.';			\
-> -			dot_name[modsym - name + 1] = '\0';		\
-> -			strncat(dot_name, modsym,			\
-> -				sizeof(dot_name) - (modsym - name) - 2);\
-> -			dot_appended = true;				\
-> -		} else {						\
-> -			dot_name[0] = '\0';				\
-> -			strncat(dot_name, name, sizeof(dot_name) - 1);	\
-> -		}							\
-> -	} else if (name[0] != '.') {					\
-> -		dot_name[0] = '.';					\
-> -		dot_name[1] = '\0';					\
-> -		strncat(dot_name, name, KSYM_NAME_LEN - 2);		\
-> -		dot_appended = true;					\
-> -	} else {							\
-> -		dot_name[0] = '\0';					\
-> -		strncat(dot_name, name, KSYM_NAME_LEN - 1);		\
-> -	}								\
-> -	addr = (kprobe_opcode_t *)kallsyms_lookup_name(dot_name);	\
-> -	if (!addr && dot_appended) {					\
-> -		/* Let's try the original non-dot symbol lookup	*/	\
-> -		addr = (kprobe_opcode_t *)kallsyms_lookup_name(name);	\
-> -	}								\
-> -}
-> -#endif
-> -
->  #define flush_insn_slot(p)	do { } while (0)
->  #define kretprobe_blacklist_size 0
->  
-> diff --git a/arch/powerpc/kernel/kprobes.c b/arch/powerpc/kernel/kprobes.c
-> index 331751701fed..a7aa7394954d 100644
-> --- a/arch/powerpc/kernel/kprobes.c
-> +++ b/arch/powerpc/kernel/kprobes.c
-> @@ -42,6 +42,64 @@ DEFINE_PER_CPU(struct kprobe_ctlblk, kprobe_ctlblk);
->  
->  struct kretprobe_blackpoint kretprobe_blacklist[] = {{NULL, NULL}};
->  
-> +kprobe_opcode_t *kprobe_lookup_name(const char *name)
-> +{
-> +	kprobe_opcode_t *addr;
-> +
-> +#ifdef PPC64_ELF_ABI_v2
-> +	/* PPC64 ABIv2 needs local entry point */
-> +	addr = (kprobe_opcode_t *)kallsyms_lookup_name(name);
-> +	if (addr)
-> +		addr = (kprobe_opcode_t *)ppc_function_entry(addr);
-> +#elif defined(PPC64_ELF_ABI_v1)
-> +	/*
-> +	 * 64bit powerpc ABIv1 uses function descriptors:
-> +	 * - Check for the dot variant of the symbol first.
-> +	 * - If that fails, try looking up the symbol provided.
-> +	 *
-> +	 * This ensures we always get to the actual symbol and not
-> +	 * the descriptor.
-> +	 *
-> +	 * Also handle <module:symbol> format.
-> +	 */
-> +	char dot_name[MODULE_NAME_LEN + 1 + KSYM_NAME_LEN];
-> +	const char *modsym;
-> +	bool dot_appended = false;
-> +	if ((modsym = strchr(name, ':')) != NULL) {
-> +		modsym++;
-> +		if (*modsym != '\0' && *modsym != '.') {
-> +			/* Convert to <module:.symbol> */
-> +			strncpy(dot_name, name, modsym - name);
-> +			dot_name[modsym - name] = '.';
-> +			dot_name[modsym - name + 1] = '\0';
-> +			strncat(dot_name, modsym,
-> +				sizeof(dot_name) - (modsym - name) - 2);
-> +			dot_appended = true;
-> +		} else {
-> +			dot_name[0] = '\0';
-> +			strncat(dot_name, name, sizeof(dot_name) - 1);
-> +		}
-> +	} else if (name[0] != '.') {
-> +		dot_name[0] = '.';
-> +		dot_name[1] = '\0';
-> +		strncat(dot_name, name, KSYM_NAME_LEN - 2);
-> +		dot_appended = true;
-> +	} else {
-> +		dot_name[0] = '\0';
-> +		strncat(dot_name, name, KSYM_NAME_LEN - 1);
-> +	}
-> +	addr = (kprobe_opcode_t *)kallsyms_lookup_name(dot_name);
-> +	if (!addr && dot_appended) {
-> +		/* Let's try the original non-dot symbol lookup	*/
-> +		addr = (kprobe_opcode_t *)kallsyms_lookup_name(name);
-> +	}
-> +#else
-> +	addr = (kprobe_opcode_t *)kallsyms_lookup_name(dot_name);
-> +#endif
-> +
-> +	return addr;
-> +}
-> +
->  int __kprobes arch_prepare_kprobe(struct kprobe *p)
->  {
->  	int ret = 0;
-> diff --git a/arch/powerpc/kernel/optprobes.c b/arch/powerpc/kernel/optprobes.c
-> index 2282bf4e63cd..aefe076d00e0 100644
-> --- a/arch/powerpc/kernel/optprobes.c
-> +++ b/arch/powerpc/kernel/optprobes.c
-> @@ -243,8 +243,8 @@ int arch_prepare_optimized_kprobe(struct optimized_kprobe *op, struct kprobe *p)
->  	/*
->  	 * 2. branch to optimized_callback() and emulate_step()
->  	 */
-> -	kprobe_lookup_name("optimized_callback", op_callback_addr);
-> -	kprobe_lookup_name("emulate_step", emulate_step_addr);
-> +	op_callback_addr = kprobe_lookup_name("optimized_callback");
-> +	emulate_step_addr = kprobe_lookup_name("emulate_step");
->  	if (!op_callback_addr || !emulate_step_addr) {
->  		WARN(1, "kprobe_lookup_name() failed\n");
->  		goto error;
-> diff --git a/include/linux/kprobes.h b/include/linux/kprobes.h
-> index c328e4f7dcad..16f153c84646 100644
-> --- a/include/linux/kprobes.h
-> +++ b/include/linux/kprobes.h
-> @@ -379,6 +379,7 @@ static inline struct kprobe_ctlblk *get_kprobe_ctlblk(void)
->  	return this_cpu_ptr(&kprobe_ctlblk);
->  }
->  
-> +kprobe_opcode_t *kprobe_lookup_name(const char *name);
->  int register_kprobe(struct kprobe *p);
->  void unregister_kprobe(struct kprobe *p);
->  int register_kprobes(struct kprobe **kps, int num);
-> diff --git a/kernel/kprobes.c b/kernel/kprobes.c
-> index 699c5bc51a92..f3421b6b47a3 100644
-> --- a/kernel/kprobes.c
-> +++ b/kernel/kprobes.c
-> @@ -58,15 +58,6 @@
->  #define KPROBE_TABLE_SIZE (1 << KPROBE_HASH_BITS)
->  
->  
-> -/*
-> - * Some oddball architectures like 64bit powerpc have function descriptors
-> - * so this must be overridable.
-> - */
-> -#ifndef kprobe_lookup_name
-> -#define kprobe_lookup_name(name, addr) \
-> -	addr = ((kprobe_opcode_t *)(kallsyms_lookup_name(name)))
-> -#endif
-> -
->  static int kprobes_initialized;
->  static struct hlist_head kprobe_table[KPROBE_TABLE_SIZE];
->  static struct hlist_head kretprobe_inst_table[KPROBE_TABLE_SIZE];
-> @@ -81,6 +72,11 @@ static struct {
->  	raw_spinlock_t lock ____cacheline_aligned_in_smp;
->  } kretprobe_table_locks[KPROBE_TABLE_SIZE];
->  
-> +kprobe_opcode_t * __weak kprobe_lookup_name(const char *name)
-> +{
-> +	return ((kprobe_opcode_t *)(kallsyms_lookup_name(name)));
-> +}
-> +
->  static raw_spinlock_t *kretprobe_table_lock_ptr(unsigned long hash)
->  {
->  	return &(kretprobe_table_locks[hash].lock);
-> @@ -1400,7 +1396,7 @@ static kprobe_opcode_t *kprobe_addr(struct kprobe *p)
->  		goto invalid;
->  
->  	if (p->symbol_name) {
-> -		kprobe_lookup_name(p->symbol_name, addr);
-> +		addr = kprobe_lookup_name(p->symbol_name);
->  		if (!addr)
->  			return ERR_PTR(-ENOENT);
->  	}
-> @@ -2192,8 +2188,8 @@ static int __init init_kprobes(void)
->  	if (kretprobe_blacklist_size) {
->  		/* lookup the function address from its name */
->  		for (i = 0; kretprobe_blacklist[i].name != NULL; i++) {
-> -			kprobe_lookup_name(kretprobe_blacklist[i].name,
-> -					   kretprobe_blacklist[i].addr);
-> +			kretprobe_blacklist[i].addr =
-> +				kprobe_lookup_name(kretprobe_blacklist[i].name);
->  			if (!kretprobe_blacklist[i].addr)
->  				printk("kretprobe: lookup failed: %s\n",
->  				       kretprobe_blacklist[i].name);
-> -- 
-> 2.12.1
-> 
 
 
--- 
-Masami Hiramatsu <mhiramat@kernel.org>
+On 4/13/2017 10:00 AM, Jin, Yao wrote:
+>
+>
+> On 4/12/2017 6:58 PM, Jiri Olsa wrote:
+>> On Wed, Apr 12, 2017 at 06:21:01AM +0800, Jin Yao wrote:
+>>
+>> SNIP
+>>
+>>> 3. Use 2 bits in perf_branch_entry for a "cross" metrics checking
+>>>     for branch cross 4K or 2M area. It's an approximate computing
+>>>     for checking if the branch cross 4K page or 2MB page.
+>>>
+>>> For example:
+>>>
+>>> perf record -g --branch-filter any,save_type <command>
+>>>
+>>> perf report --stdio
+>>>
+>>>       JCC forward:  27.7%
+>>>      JCC backward:   9.8%
+>>>               JMP:   0.0%
+>>>           IND_JMP:   6.5%
+>>>              CALL:  26.6%
+>>>          IND_CALL:   0.0%
+>>>               RET:  29.3%
+>>>              IRET:   0.0%
+>>>          CROSS_4K:   0.0%
+>>>          CROSS_2M:  14.3%
+>> got mangled perf report --stdio output for:
+>>
+>>
+>> [root@ibm-x3650m4-02 perf]# ./perf record -j any,save_type kill
+>> kill: not enough arguments
+>> [ perf record: Woken up 1 times to write data ]
+>> [ perf record: Captured and wrote 0.013 MB perf.data (18 samples) ]
+>>
+>> [root@ibm-x3650m4-02 perf]# ./perf report --stdio -f | head -30
+>> # To display the perf.data header info, please use 
+>> --header/--header-only options.
+>> #
+>> #
+>> # Total Lost Samples: 0
+>> #
+>> # Samples: 253  of event 'cycles'
+>> # Event count (approx.): 253
+>> #
+>> # Overhead  Command  Source Shared Object  Source 
+>> Symbol                            Target 
+>> Symbol                            Basic Block Cycles
+>> # ........  .......  .................... 
+>> ....................................... 
+>> .......................................  ..................
+>> #
+>>       8.30%  perf
+>> Um  [kernel.vmlinux]      [k] __intel_pmu_enable_all.constprop.17  
+>> [k] native_write_msr                     -
+>>       7.91%  perf
+>> Um  [kernel.vmlinux]      [k] intel_pmu_lbr_enable_all             
+>> [k] __intel_pmu_enable_all.constprop.17  -
+>>       7.91%  perf
+>> Um  [kernel.vmlinux]      [k] native_write_msr                     
+>> [k] intel_pmu_lbr_enable_all             -
+>>       6.32%  kill     libc-2.24.so          [.] 
+>> _dl_addr                             [.] 
+>> _dl_addr                             -
+>>       5.93%  perf
+>> Um  [kernel.vmlinux]      [k] perf_iterate_ctx                     
+>> [k] perf_iterate_ctx                     -
+>>       2.77%  kill     libc-2.24.so          [.] 
+>> malloc                               [.] 
+>> malloc                               -
+>>       1.98%  kill     libc-2.24.so          [.] 
+>> _int_malloc                          [.] 
+>> _int_malloc                          -
+>>       1.58%  kill     [kernel.vmlinux]      [k] 
+>> __rb_insert_augmented                [k] 
+>> __rb_insert_augmented                -
+>>       1.58%  perf
+>> Um  [kernel.vmlinux]      [k] perf_event_exec                      
+>> [k] perf_event_exec                      -
+>>       1.19%  kill     [kernel.vmlinux]      [k] 
+>> anon_vma_interval_tree_insert        [k] 
+>> anon_vma_interval_tree_insert        -
+>>       1.19%  kill     [kernel.vmlinux]      [k] 
+>> free_pgd_range                       [k] 
+>> free_pgd_range                       -
+>>       1.19%  kill     [kernel.vmlinux]      [k] 
+>> n_tty_write                          [k] 
+>> n_tty_write                          -
+>>       1.19%  perf
+>> Um  [kernel.vmlinux]      [k] native_sched_clock                   
+>> [k] sched_clock                          -
+>> ...
+>> SNIP
+>>
+>>
+>> jirka
+>
+> Sorry, I look at this issue at midnight in Shanghai. I misunderstood 
+> that the above output was only a mail format issue. Sorry about that.
+>
+> Now I recheck the output, and yes, the perf report output is mangled. 
+> But my patch doesn't touch the associated code.
+>
+> Anyway I remove my patches, pull the latest update from perf/core 
+> branch and run tests to check if its a regression issue. I test on HSW 
+> and SKL both.
+>
+> 1. On HSW.
+>
+> root@hsw:/tmp# perf record -j any kill
+> ...... /* SNIP */
+> For more details see kill(1).
+> [ perf record: Woken up 1 times to write data ]
+> [ perf record: Captured and wrote 0.014 MB perf.data (9 samples) ]
+>
+> root@hsw:/tmp# perf report --stdio
+> # To display the perf.data header info, please use 
+> --header/--header-only options.
+> #
+> #
+> # Total Lost Samples: 0
+> #
+> # Samples: 144  of event 'cycles'
+> # Event count (approx.): 144
+> #
+> # Overhead  Command  Source Shared Object  Source 
+> Symbol                    Target Symbol                    Basic Block 
+> Cycles
+> # ........  .......  .................... 
+> ...............................  ............................... 
+> ..................
+> #
+>     10.42%  kill     libc-2.23.so          [.] 
+> read_alias_file              [.] read_alias_file              -
+>      9.72%  kill     [kernel.vmlinux]      [k] 
+> update_load_avg              [k] update_load_avg              -
+>      9.03%  perf
+> Um  [unknown]             [k] 0000000000000000             [k] 
+> 0000000000000000             -
+>      8.33%  kill     libc-2.23.so          [.] 
+> _int_malloc                  [.] _int_malloc                  -
+> ...... /* SNIP */
+>      0.69%  kill     [kernel.vmlinux]      [k] 
+> _raw_spin_lock               [k] unmap_page_range             -
+>      0.69%  perf
+> Um  [kernel.vmlinux]      [k] __intel_pmu_enable_all       [k] 
+> native_write_msr             -
+>      0.69%  perf
+> Um  [kernel.vmlinux]      [k] intel_pmu_lbr_enable_all     [k] 
+> __intel_pmu_enable_all       -
+>      0.69%  perf
+> Um  [kernel.vmlinux]      [k] native_write_msr             [k] 
+> intel_pmu_lbr_enable_all     -
+>
+> The issue is still there.
+>
+> 2. On SKL
+>
+> root@skl:/tmp# perf record -j any kill
+> ...... /* SNIP */
+> For more details see kill(1).
+> [ perf record: Woken up 1 times to write data ]
+> [ perf record: Captured and wrote 0.012 MB perf.data (1 samples) ]
+>
+> root@skl:/tmp# perf report --stdio
+>
+> # To display the perf.data header info, please use 
+> --header/--header-only options.
+> #
+> #
+> # Total Lost Samples: 0
+> #
+> # Samples: 32  of event 'cycles'
+> # Event count (approx.): 32
+> #
+> # Overhead  Command  Source Shared Object  Source 
+> Symbol                 Target Symbol                 Basic Block Cycles
+> # ........  .......  .................... 
+> ............................  ............................ 
+> ..................
+> #
+>     90.62%  perf
+> Um  [unknown]             [k] 0000000000000000          [k] 
+> 0000000000000000          -
+>      3.12%  perf
+> Um  [kernel.vmlinux]      [k] __intel_pmu_enable_all    [k] 
+> native_write_msr          11
+>      3.12%  perf
+> Um  [kernel.vmlinux]      [k] intel_pmu_lbr_enable_all  [k] 
+> __intel_pmu_enable_all    4
+>      3.12%  perf
+> Um  [kernel.vmlinux]      [k] native_write_msr          [k] 
+> intel_pmu_lbr_enable_all  -
+>
+> The issue is there too.
+>
+> Now it works without my patch and it runs with latest perf/core 
+> branch. So it looks like a regression issue.
+>
+> Thanks
+> Jin Yao
+>
+>
+
+I have tested, the regression issue is happened after this commit:
+
+bdd97ca perf tools: Refactor the code to strip command name with {l,r}trim()
+
+CC to the author for double checking.
+
+Thanks
+Jin Yao
+
+>
+>
+>
+>
+>
+>
+>
+>
+>
+>
