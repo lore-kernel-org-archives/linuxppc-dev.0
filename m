@@ -1,43 +1,23 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w3Tg56rCFzDq7g
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Apr 2017 15:21:53 +1000 (AEST)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v3D5IcjU142544
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Apr 2017 01:21:42 -0400
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
- by mx0a-001b2d01.pphosted.com with ESMTP id 29ssdkvf8c-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Apr 2017 01:21:42 -0400
-Received: from localhost
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Thu, 13 Apr 2017 15:21:40 +1000
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v3D5LTSm23658576
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Apr 2017 15:21:37 +1000
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v3D5L05G003660
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Apr 2017 15:21:01 +1000
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: "Oliver O'Halloran" <oohall@gmail.com>, linuxppc-dev@lists.ozlabs.org
-Cc: arbab@linux.vnet.ibm.com, bsingharora@gmail.com, linux-nvdimm@lists.01.org,
- "Oliver O'Halloran" <oohall@gmail.com>
-Subject: Re: [PATCH 3/9] powerpc/mm: Add _PAGE_DEVMAP for ppc64.
-In-Reply-To: <20170411174233.21902-4-oohall@gmail.com>
-References: <20170411174233.21902-1-oohall@gmail.com>
- <20170411174233.21902-4-oohall@gmail.com>
-Date: Thu, 13 Apr 2017 10:50:43 +0530
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w3V2s2qtRzDq7g
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Apr 2017 15:39:01 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Oliver O'Halloran <oohall@gmail.com>
+Cc: Rashmica Gupta <rashmica.g@gmail.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [PATCH 1/2] powerpc/mm: fix up pgtable dump flags
+In-Reply-To: <CAOSf1CG1ssBekn2BHBHGET3ZdGa3r0OaQpfWz8uMEoww+FE=WQ@mail.gmail.com>
+References: <20170331013749.17874-1-oohall@gmail.com>
+ <c68c1247-b676-5b48-264d-8affe0c10ead@gmail.com>
+ <8737deungd.fsf@concordia.ellerman.id.au>
+ <CAOSf1CG1ssBekn2BHBHGET3ZdGa3r0OaQpfWz8uMEoww+FE=WQ@mail.gmail.com>
+Date: Thu, 13 Apr 2017 15:39:00 +1000
+Message-ID: <87inm8amtn.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
-Message-Id: <87zifkq3x0.fsf@skywalker.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,26 +29,31 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Oliver O'Halloran <oohall@gmail.com> writes:
 
-> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+> On Wed, Apr 12, 2017 at 4:52 PM, Michael Ellerman <mpe@ellerman.id.au> wrote:
+>> Rashmica Gupta <rashmica.g@gmail.com> writes:
+>>
+>>> On 31/03/17 12:37, Oliver O'Halloran wrote:
+>>>> On Book3s we have two PTE flags used to mark cache-inhibited mappings:
+>>>> _PAGE_TOLERANT and _PAGE_NON_IDEMPOTENT. Currently the kernel page
+>>>> table dumper only looks at the generic _PAGE_NO_CACHE which is
+>>>> defined to be _PAGE_TOLERANT. This patch modifies the dumper so
+>>>> both flags are shown in the dump.
+>>>>
+>>>> Cc: Rashmica Gupta <rashmica.g@gmail.com>
+>>>> Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
+>>
+>>> Should we also add in _PAGE_SAO  that is in Book3s?
+>>
+>> I don't think we ever expect to see it in the kernel page tables. But if
+>> we did that would be "interesting".
+>>
+>> I've forgotten what the code does with unknown bits, does it already
+>> print them in some way?
 >
-> Add a _PAGE_DEVMAP bit for PTE and DAX PMD entires. PowerPC doesn't
-> currently support PUD faults so we haven't extended it to the PUD
-> level.
->
-> Cc: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-> Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
+> Currently it just traverses the list of known bits and prints out a
+> message for each. Printing any unknown bits is probably a good idea.
+> I'll send another patch to add that though and leave this one as-is.
 
+Thanks.
 
-Few changes we would need. We will now need to make sure a devmap
-pmd entry is not confused with THP. ie,
-
-we should compare against _PAGE_PTE and _PAGE_DEVMAP in
-pmd_trans_huge(). hash already has one bit we use to differentiate
-between hugetlb and THP. May be we can genarlize this and come up with a
-way to differentiate THP, HUGETLB,pmd DEVMAP entries ?
-
-
-also I don't see you handing get_user_pages_fast() ?
-
-
--aneesh
+cheers
