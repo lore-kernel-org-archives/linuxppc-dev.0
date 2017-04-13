@@ -1,16 +1,21 @@
-Return-Path: <michael@ozlabs.org>
+Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w3dh969GczDq8M
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Apr 2017 21:23:21 +1000 (AEST)
-In-Reply-To: <1491991867-8758-1-git-send-email-mpe@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
-From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: aneesh.kumar@linux.vnet.ibm.com
-Subject: Re: powerpc/mm: Fix swapper_pg_dir size on 64-bit hash w/64K pages
-Message-Id: <3w3dh94qgFz9sNl@ozlabs.org>
-Date: Thu, 13 Apr 2017 21:23:21 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w3dpC03QkzDq7g
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Apr 2017 21:28:35 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Christophe LEROY <christophe.leroy@c-s.fr>, Scott Wood <oss@buserror.net>
+Cc: "linuxppc-dev\@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ David Miller <davem@davemloft.net>
+Subject: Re: [linuxppc-dev] Patch notification: 1 patch updated
+In-Reply-To: <9424872d-157d-4f87-3422-b84c3a8e47a9@c-s.fr>
+References: <20170407121001.12571.87508@ozlabs.org>
+ <9424872d-157d-4f87-3422-b84c3a8e47a9@c-s.fr>
+Date: Thu, 13 Apr 2017 21:28:33 +1000
+Message-ID: <87tw5s8s2m.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,44 +25,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2017-04-12 at 10:11:07 UTC, Michael Ellerman wrote:
-> Recently in commit f6eedbba7a26 ("powerpc/mm/hash: Increase VA range to 128TB"),
-> we increased H_PGD_INDEX_SIZE to 15 when we're building with 64K pages. This
-> makes it larger than RADIX_PGD_INDEX_SIZE (13), which means the logic to
-> calculate MAX_PGD_INDEX_SIZE in book3s/64/pgtable.h is wrong.
-> 
-> The end result is that the PGD (Page Global Directory, ie top level page table)
-> of the kernel (aka. swapper_pg_dir), is too small.
-> 
-> This generally doesn't lead to a crash, as we don't use the full range in normal
-> operation. However if we try to dump the kernel pagetables we can trigger a
-> crash because we walk off the end of the pgd into other memory and eventually
-> try to dereference something bogus:
-> 
->   $ cat /sys/kernel/debug/kernel_pagetables
->   Unable to handle kernel paging request for data at address 0xe8fece0000000000
->   Faulting instruction address: 0xc000000000072314
->   cpu 0xc: Vector: 380 (Data SLB Access) at [c0000000daa13890]
->       pc: c000000000072314: ptdump_show+0x164/0x430
->       lr: c000000000072550: ptdump_show+0x3a0/0x430
->      dar: e802cf0000000000
->   seq_read+0xf8/0x560
->   full_proxy_read+0x84/0xc0
->   __vfs_read+0x6c/0x1d0
->   vfs_read+0xbc/0x1b0
->   SyS_read+0x6c/0x110
->   system_call+0x38/0xfc
-> 
-> The root cause is that MAX_PGD_INDEX_SIZE isn't actually computed to be
-> the max of H_PGD_INDEX_SIZE or RADIX_PGD_INDEX_SIZE. To fix that move
-> the calculation into asm-offsets.c where we can do it easily using
-> max().
-> 
-> Fixes: f6eedbba7a26 ("powerpc/mm/hash: Increase VA range to 128TB")
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+Christophe LEROY <christophe.leroy@c-s.fr> writes:
 
-Applied to powerpc next.
+> Hello Michael and Scott,
+>
+> I see that the status of the below patch has been changed to 'Not=20
+> Applicable' in the linuxppc-dev Patchwork.
+>
+> About this serie, David S. Miller said:
+>
+> Sujet : Re: [PATCH 0/2] get rid of immrbar_virt_to_phys()
+> Date : Wed, 08 Feb 2017 13:17:32 -0500 (EST)
+> De : David Miller <davem@davemloft.net>
+> Pour : christophe.leroy@c-s.fr
+> Copie =C3=A0 : leoli@freescale.com, qiang.zhao@nxp.com, oss@buserror.net,=
+=20
+> linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,=20
+> netdev@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+>
+> From: Christophe Leroy <christophe.leroy@c-s.fr>
+> Date: Tue,  7 Feb 2017 10:05:07 +0100 (CET)
+>
+>  > ucc_geth ethernet driver is the only driver using=20
+> immrbar_virt_to_phys() and it uses it incorrectly.
+>  >
+>  > This patch fixes ucc_geth driver then removes immrbar_virt_to_phys()
+>
+> Feel free to merge this via whatever tree handles that SOC fsl driver.
+>
+> Acked-by: David S. Miller <davem@davemloft.net>
+>
+> Therefore, who is going to commit this patch ?
 
-https://git.kernel.org/powerpc/c/03dfee6d5f824d14e3ecb742518740
+Sorry my bad, I tend to mark all "net:" patches as not applicable
+because Dave nearly always takes them.
 
+But I'll put this back to new and delegate it to Scott.
+=20
 cheers
