@@ -1,29 +1,20 @@
-Return-Path: <peterz@infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org [65.50.211.133])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w3b302PLRzDq7g
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Apr 2017 19:24:28 +1000 (AEST)
-Date: Thu, 13 Apr 2017 11:24:18 +0200
-From: Peter Zijlstra <peterz@infradead.org>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, mingo@kernel.org, jiangshanlai@gmail.com,
- dipankar@in.ibm.com, akpm@linux-foundation.org,
- mathieu.desnoyers@efficios.com, josh@joshtriplett.org,
- tglx@linutronix.de, rostedt@goodmis.org, dhowells@redhat.com,
- edumazet@google.com, fweisbec@gmail.com, oleg@redhat.com,
- bobby.prani@gmail.com, Will Deacon <will.deacon@arm.com>,
- Boqun Feng <boqun.feng@linux.vnet.ibm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH tip/core/rcu 02/40] rcu: Make arch select
- smp_mb__after_unlock_lock() strength
-Message-ID: <20170413092418.a2rudzukbgookior@hirez.programming.kicks-ass.net>
-References: <20170412174003.GA23207@linux.vnet.ibm.com>
- <1492018825-25634-2-git-send-email-paulmck@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1492018825-25634-2-git-send-email-paulmck@linux.vnet.ibm.com>
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
+ [IPv6:2607:f8b0:400e:c00::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w3bWz5WndzDq7g
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Apr 2017 19:46:07 +1000 (AEST)
+Received: by mail-pf0-x244.google.com with SMTP id i5so9792444pfc.3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Apr 2017 02:46:06 -0700 (PDT)
+From: Nicholas Piggin <npiggin@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Nicholas Piggin <npiggin@gmail.com>,
+	Paul Mackerras <paulus@samba.org>
+Subject: [PATCH] powerpc/64s: Use relon prolog for EXC_VIRT_OOL_MASKABLE_HV
+ handlers
+Date: Thu, 13 Apr 2017 19:45:48 +1000
+Message-Id: <20170413094548.10616-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,13 +24,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Apr 12, 2017 at 10:39:47AM -0700, Paul E. McKenney wrote:
-> The definition of smp_mb__after_unlock_lock() is currently smp_mb()
-> for CONFIG_PPC and a no-op otherwise.  It would be better to instead
-> provide an architecture-selectable Kconfig option, and select the
-> strength of smp_mb__after_unlock_lock() based on that option. 
+Hypervisor Virtualization and Directed Hypervisor Doorbell interrupt
+handlers use the macro EXC_VIRT_OOL_MASKABLE_HV for their relocation-on
+handlers, which calls MASKABLE_RELON_EXCEPTION_HV_OOL, which uses the
+real mode interrupt prolog.
 
+Use the RELON variant instead to reduce overhead.
 
-Why is this better? Do we want to have more of this? I thought we still
-wanted to convince PPC to go RCsc and eradicate all this RCpc 'fun'. But
-instead now you're making it look like its OK to grow more of this pain.
+Fixes: 1707dd1613 ("powerpc: Save CFAR before branching in interrupt entry paths")
+Cc: Paul Mackerras <paulus@samba.org>
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+---
+
+I was hesitant about using the Fixes: tag on this one because it's not
+a correctness bug as far as I can see.
+
+Thanks,
+Nick
+
+ arch/powerpc/include/asm/exception-64s.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/include/asm/exception-64s.h b/arch/powerpc/include/asm/exception-64s.h
+index 14752eee3d0c..b89c91e27dd0 100644
+--- a/arch/powerpc/include/asm/exception-64s.h
++++ b/arch/powerpc/include/asm/exception-64s.h
+@@ -522,7 +522,7 @@ END_FTR_SECTION_NESTED(ftr,ftr,943)
+ 
+ #define MASKABLE_RELON_EXCEPTION_HV_OOL(vec, label)			\
+ 	EXCEPTION_PROLOG_1(PACA_EXGEN, SOFTEN_TEST_HV, vec);		\
+-	EXCEPTION_PROLOG_PSERIES_1(label, EXC_HV)
++	EXCEPTION_RELON_PROLOG_PSERIES_1(label, EXC_HV)
+ 
+ /*
+  * Our exception common code can be passed various "additions"
+-- 
+2.11.0
