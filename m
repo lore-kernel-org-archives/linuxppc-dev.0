@@ -1,21 +1,26 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w3V2s2qtRzDq7g
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Apr 2017 15:39:01 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w3VDw4ztDzDq7g
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Apr 2017 15:47:44 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Oliver O'Halloran <oohall@gmail.com>
-Cc: Rashmica Gupta <rashmica.g@gmail.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [PATCH 1/2] powerpc/mm: fix up pgtable dump flags
-In-Reply-To: <CAOSf1CG1ssBekn2BHBHGET3ZdGa3r0OaQpfWz8uMEoww+FE=WQ@mail.gmail.com>
-References: <20170331013749.17874-1-oohall@gmail.com>
- <c68c1247-b676-5b48-264d-8affe0c10ead@gmail.com>
- <8737deungd.fsf@concordia.ellerman.id.au>
- <CAOSf1CG1ssBekn2BHBHGET3ZdGa3r0OaQpfWz8uMEoww+FE=WQ@mail.gmail.com>
-Date: Thu, 13 Apr 2017 15:39:00 +1000
-Message-ID: <87inm8amtn.fsf@concordia.ellerman.id.au>
+To: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>,
+ Sebastian Siewior <bigeasy@linutronix.de>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ "David S. Miller" <davem@davemloft.net>, Fenghua Yu <fenghua.yu@intel.com>,
+ Herbert Xu <herbert@gondor.apana.org.au>,
+ Lai Jiangshan <jiangshanlai@gmail.com>, Len Brown <lenb@kernel.org>,
+ "Rafael J. Wysocki" <rjw@rjwysocki.net>, Tejun Heo <tj@kernel.org>,
+ Tony Luck <tony.luck@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [patch 05/13] powerpc/smp: Replace open coded task affinity logic
+In-Reply-To: <20170412201042.518053336@linutronix.de>
+References: <20170412200726.941336635@linutronix.de>
+ <20170412201042.518053336@linutronix.de>
+Date: Thu, 13 Apr 2017 15:47:44 +1000
+Message-ID: <87fuhcamf3.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,33 +32,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Oliver O'Halloran <oohall@gmail.com> writes:
+Thomas Gleixner <tglx@linutronix.de> writes:
 
-> On Wed, Apr 12, 2017 at 4:52 PM, Michael Ellerman <mpe@ellerman.id.au> wrote:
->> Rashmica Gupta <rashmica.g@gmail.com> writes:
->>
->>> On 31/03/17 12:37, Oliver O'Halloran wrote:
->>>> On Book3s we have two PTE flags used to mark cache-inhibited mappings:
->>>> _PAGE_TOLERANT and _PAGE_NON_IDEMPOTENT. Currently the kernel page
->>>> table dumper only looks at the generic _PAGE_NO_CACHE which is
->>>> defined to be _PAGE_TOLERANT. This patch modifies the dumper so
->>>> both flags are shown in the dump.
->>>>
->>>> Cc: Rashmica Gupta <rashmica.g@gmail.com>
->>>> Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
->>
->>> Should we also add in _PAGE_SAO  that is in Book3s?
->>
->> I don't think we ever expect to see it in the kernel page tables. But if
->> we did that would be "interesting".
->>
->> I've forgotten what the code does with unknown bits, does it already
->> print them in some way?
+> Init task invokes smp_ops->setup_cpu() from smp_cpus_done(). Init task can
+> run on any online CPU at this point, but the setup_cpu() callback requires
+> to be invoked on the boot CPU. This is achieved by temporarily setting the
+> affinity of the calling user space thread to the requested CPU and reset it
+> to the original affinity afterwards.
 >
-> Currently it just traverses the list of known bits and prints out a
-> message for each. Printing any unknown bits is probably a good idea.
-> I'll send another patch to add that though and leave this one as-is.
+> That's racy vs. CPU hotplug and concurrent affinity settings for that
+> thread resulting in code executing on the wrong CPU and overwriting the
+> new affinity setting.
+>
+> That's actually not a problem in this context as neither CPU hotplug nor
+> affinity settings can happen, but the access to task_struct::cpus_allowed
+> is about to restricted.
+>
+> Replace it with a call to work_on_cpu_safe() which achieves the same result.
+>
+> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Paul Mackerras <paulus@samba.org>
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> Cc: linuxppc-dev@lists.ozlabs.org
+> ---
+>  arch/powerpc/kernel/smp.c |   26 +++++++++++---------------
+>  1 file changed, 11 insertions(+), 15 deletions(-)
 
-Thanks.
+LGTM.
+
+Acked-by: Michael Ellerman <mpe@ellerman.id.au> (powerpc)
 
 cheers
