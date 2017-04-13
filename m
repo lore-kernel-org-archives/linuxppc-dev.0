@@ -1,20 +1,31 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
- [IPv6:2607:f8b0:400e:c00::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w3bWz5WndzDq7g
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Apr 2017 19:46:07 +1000 (AEST)
-Received: by mail-pf0-x244.google.com with SMTP id i5so9792444pfc.3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Apr 2017 02:46:06 -0700 (PDT)
-From: Nicholas Piggin <npiggin@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Nicholas Piggin <npiggin@gmail.com>,
-	Paul Mackerras <paulus@samba.org>
-Subject: [PATCH] powerpc/64s: Use relon prolog for EXC_VIRT_OOL_MASKABLE_HV
- handlers
-Date: Thu, 13 Apr 2017 19:45:48 +1000
-Message-Id: <20170413094548.10616-1-npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w3bs03XCczDq7g
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Apr 2017 20:00:52 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Michael Neuling <mikey@neuling.org>,
+ "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ "Shreyas B. Prabhu" <shreyasbp@gmail.com>,
+ Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
+ Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+ Anton Blanchard <anton@samba.org>, Balbir Singh <bsingharora@gmail.com>,
+ Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>,
+ Nicholas Piggin <npiggin@gmail.com>,
+ Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] powernv:idle: Use correct IDLE_THREAD_BITS in POWER8/9
+In-Reply-To: <1492065380.4624.50.camel@neuling.org>
+References: <cover.1491996797.git.ego@linux.vnet.ibm.com>
+ <1b89d07b1a7ea140501a86b1ed246c5af1b0ce83.1491996797.git.ego@linux.vnet.ibm.com>
+ <1492065380.4624.50.camel@neuling.org>
+Date: Thu, 13 Apr 2017 20:00:47 +1000
+Message-ID: <87bms0aapc.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,39 +35,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hypervisor Virtualization and Directed Hypervisor Doorbell interrupt
-handlers use the macro EXC_VIRT_OOL_MASKABLE_HV for their relocation-on
-handlers, which calls MASKABLE_RELON_EXCEPTION_HV_OOL, which uses the
-real mode interrupt prolog.
+Michael Neuling <mikey@neuling.org> writes:
 
-Use the RELON variant instead to reduce overhead.
+> On Wed, 2017-04-12 at 17:16 +0530, Gautham R. Shenoy wrote:
+>> From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+>> 
+>> This patch ensures that POWER8 and POWER9 processors use the correct
+>> value of IDLE_THREAD_BITS as POWER8 has 8 threads per core and hence
+>> the IDLE_THREAD_BITS should be 0xFF while POWER9 has only 4 threads
+>> per core and hence the IDLE_THREAD_BITS should be 0xF.
+>
+> Why don't we derive this from the device tree rather than hard wiring it per cpu
+> type?
 
-Fixes: 1707dd1613 ("powerpc: Save CFAR before branching in interrupt entry paths")
-Cc: Paul Mackerras <paulus@samba.org>
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
----
+Right.
 
-I was hesitant about using the Fixes: tag on this one because it's not
-a correctness bug as far as I can see.
+In fact we already have threads_per_core which is exactly that.
 
-Thanks,
-Nick
-
- arch/powerpc/include/asm/exception-64s.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/include/asm/exception-64s.h b/arch/powerpc/include/asm/exception-64s.h
-index 14752eee3d0c..b89c91e27dd0 100644
---- a/arch/powerpc/include/asm/exception-64s.h
-+++ b/arch/powerpc/include/asm/exception-64s.h
-@@ -522,7 +522,7 @@ END_FTR_SECTION_NESTED(ftr,ftr,943)
- 
- #define MASKABLE_RELON_EXCEPTION_HV_OOL(vec, label)			\
- 	EXCEPTION_PROLOG_1(PACA_EXGEN, SOFTEN_TEST_HV, vec);		\
--	EXCEPTION_PROLOG_PSERIES_1(label, EXC_HV)
-+	EXCEPTION_RELON_PROLOG_PSERIES_1(label, EXC_HV)
- 
- /*
-  * Our exception common code can be passed various "additions"
--- 
-2.11.0
+cheers
