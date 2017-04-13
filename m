@@ -2,17 +2,21 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w3hWx2MNNzDqB9
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Apr 2017 23:31:25 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w3hkS25qpzDq7g
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Apr 2017 23:40:32 +1000 (AEST)
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPSA id 3w3hkR72S3z9s83
+ for <linuxppc-dev@ozlabs.org>; Thu, 13 Apr 2017 23:40:31 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
-Cc: Paul Mackerras <paulus@samba.org>, Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [PATCH] powerpc/64s: Use relon prolog for
- EXC_VIRT_OOL_MASKABLE_HV handlers
-In-Reply-To: <20170413094548.10616-1-npiggin@gmail.com>
-References: <20170413094548.10616-1-npiggin@gmail.com>
-Date: Thu, 13 Apr 2017 23:31:23 +1000
-Message-ID: <877f2o8mdw.fsf@concordia.ellerman.id.au>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [RFC PATCH 1/3] powerpc: Allow platforms to force-enable
+ CONFIG_SMP
+In-Reply-To: <1491360291-30299-1-git-send-email-mpe@ellerman.id.au>
+References: <1491360291-30299-1-git-send-email-mpe@ellerman.id.au>
+Date: Thu, 13 Apr 2017 23:40:31 +1000
+Message-ID: <874lxs8lyo.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,46 +28,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Nicholas Piggin <npiggin@gmail.com> writes:
+Michael Ellerman <mpe@ellerman.id.au> writes:
 
-> Hypervisor Virtualization and Directed Hypervisor Doorbell interrupt
-> handlers use the macro EXC_VIRT_OOL_MASKABLE_HV for their relocation-on
-> handlers, which calls MASKABLE_RELON_EXCEPTION_HV_OOL, which uses the
-> real mode interrupt prolog.
+> Of the 64-bit Book3S platforms, only powermac supports booting on an
+> actual non-SMP system. The other platforms can be built with SMP
+> disabled, but it doesn't make a lot of sense given the CPUs they support
+> are all multicore or multithreaded.
 >
-> Use the RELON variant instead to reduce overhead.
->
-> Fixes: 1707dd1613 ("powerpc: Save CFAR before branching in interrupt entry paths")
-> Cc: Paul Mackerras <paulus@samba.org>
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-> ---
->
-> I was hesitant about using the Fixes: tag on this one because it's not
-> a correctness bug as far as I can see.
+> So give platforms the option of forcing SMP=y.
 
-Fixes can just mean "if you have this other commit you'll most likely
-want this one too".
-
-You can clarify the degree of Fixness in the change log, which then
-allows a backporter to decide if they want it or not.
-
-In this case I think it's entirely right, this is a fairly unfortunate
-bug from a performance point of view if I'm reading it right.
+For the record I'm planning to merge this.
 
 cheers
 
-> diff --git a/arch/powerpc/include/asm/exception-64s.h b/arch/powerpc/include/asm/exception-64s.h
-> index 14752eee3d0c..b89c91e27dd0 100644
-> --- a/arch/powerpc/include/asm/exception-64s.h
-> +++ b/arch/powerpc/include/asm/exception-64s.h
-> @@ -522,7 +522,7 @@ END_FTR_SECTION_NESTED(ftr,ftr,943)
+> diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
+> index 99b0ae8acb78..5c011e4baf0b 100644
+> --- a/arch/powerpc/platforms/Kconfig.cputype
+> +++ b/arch/powerpc/platforms/Kconfig.cputype
+> @@ -371,9 +371,15 @@ config PPC_PERF_CTRS
+>         help
+>           This enables the powerpc-specific perf_event back-end.
 >  
->  #define MASKABLE_RELON_EXCEPTION_HV_OOL(vec, label)			\
->  	EXCEPTION_PROLOG_1(PACA_EXGEN, SOFTEN_TEST_HV, vec);		\
-> -	EXCEPTION_PROLOG_PSERIES_1(label, EXC_HV)
-> +	EXCEPTION_RELON_PROLOG_PSERIES_1(label, EXC_HV)
->  
->  /*
->   * Our exception common code can be passed various "additions"
+> +config FORCE_SMP
+> +	# Allow platforms to force SMP=y by selecting this
+> +	bool
+> +	default n
+> +	select SMP
+> +
+>  config SMP
+>  	depends on PPC_BOOK3S || PPC_BOOK3E || FSL_BOOKE || PPC_47x
+> -	bool "Symmetric multi-processing support"
+> +	bool "Symmetric multi-processing support" if !FORCE_SMP
+>  	---help---
+>  	  This enables support for systems with more than one CPU. If you have
+>  	  a system with only one CPU, say N. If you have a system with more
 > -- 
-> 2.11.0
+> 2.7.4
