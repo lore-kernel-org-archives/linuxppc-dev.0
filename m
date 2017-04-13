@@ -1,7 +1,7 @@
 Return-Path: <javier@osg.samsung.com>
 Received: from osg.samsung.com
  (ec2-52-27-115-49.us-west-2.compute.amazonaws.com [52.27.115.49])
- by lists.ozlabs.org (Postfix) with ESMTP id 3w3qRg5vmJzDq8M
+ by lists.ozlabs.org (Postfix) with ESMTP id 3w3qRg5j2HzDq8B
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Apr 2017 04:43:11 +1000 (AEST)
 From: Javier Martinez Canillas <javier@osg.samsung.com>
 To: linux-kernel@vger.kernel.org
@@ -11,10 +11,10 @@ Cc: Wolfram Sang <wsa@the-dreams.de>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Rob Herring <robh+dt@kernel.org>,
  Mark Rutland <mark.rutland@arm.com>, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 22/22] powerpc/44x: Add generic compatible string for I2C
+Subject: [PATCH v2 17/22] powerpc/5200: Add generic compatible string for I2C
  EEPROM
-Date: Thu, 13 Apr 2017 15:28:39 -0300
-Message-Id: <20170413182839.25381-23-javier@osg.samsung.com>
+Date: Thu, 13 Apr 2017 15:28:34 -0300
+Message-Id: <20170413182839.25381-18-javier@osg.samsung.com>
 In-Reply-To: <20170413182839.25381-1-javier@osg.samsung.com>
 References: <20170413182839.25381-1-javier@osg.samsung.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -38,26 +38,25 @@ So add this generic fallback to the device node compatible string to make
 the device to match the driver using the OF device ID table.
 
 Signed-off-by: Javier Martinez Canillas <javier@osg.samsung.com>
-
 ---
 
 Changes in v2: None
 
- arch/powerpc/boot/dts/warp.dts | 2 +-
+ arch/powerpc/boot/dts/digsy_mtc.dts | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/boot/dts/warp.dts b/arch/powerpc/boot/dts/warp.dts
-index e576ee85c42f..5b36dbf6c9f4 100644
---- a/arch/powerpc/boot/dts/warp.dts
-+++ b/arch/powerpc/boot/dts/warp.dts
-@@ -238,7 +238,7 @@
+diff --git a/arch/powerpc/boot/dts/digsy_mtc.dts b/arch/powerpc/boot/dts/digsy_mtc.dts
+index 955bff629df3..6c804254b885 100644
+--- a/arch/powerpc/boot/dts/digsy_mtc.dts
++++ b/arch/powerpc/boot/dts/digsy_mtc.dts
+@@ -73,7 +73,7 @@
  
- 				/* This will create 52 and 53 */
- 				at24@52 {
--					compatible = "at,24c04";
-+					compatible = "at,24c04","atmel,24c04";
- 					reg = <0x52>;
- 				};
+ 		i2c@3d00 {
+ 			eeprom@50 {
+-				compatible = "at,24c08";
++				compatible = "at,24c08","atmel,24c08";
+ 				reg = <0x50>;
  			};
+ 
 -- 
 2.9.3
