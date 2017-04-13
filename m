@@ -1,7 +1,7 @@
 Return-Path: <javier@osg.samsung.com>
 Received: from osg.samsung.com
  (ec2-52-27-115-49.us-west-2.compute.amazonaws.com [52.27.115.49])
- by lists.ozlabs.org (Postfix) with ESMTP id 3w3qRg5j2HzDq8B
+ by lists.ozlabs.org (Postfix) with ESMTP id 3w3qRg5NXczDq7q
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Apr 2017 04:43:11 +1000 (AEST)
 From: Javier Martinez Canillas <javier@osg.samsung.com>
 To: linux-kernel@vger.kernel.org
@@ -11,10 +11,10 @@ Cc: Wolfram Sang <wsa@the-dreams.de>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Rob Herring <robh+dt@kernel.org>,
  Mark Rutland <mark.rutland@arm.com>, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 17/22] powerpc/5200: Add generic compatible string for I2C
+Subject: [PATCH v2 21/22] powerpc/5200: Add generic compatible string for I2C
  EEPROM
-Date: Thu, 13 Apr 2017 15:28:34 -0300
-Message-Id: <20170413182839.25381-18-javier@osg.samsung.com>
+Date: Thu, 13 Apr 2017 15:28:38 -0300
+Message-Id: <20170413182839.25381-22-javier@osg.samsung.com>
 In-Reply-To: <20170413182839.25381-1-javier@osg.samsung.com>
 References: <20170413182839.25381-1-javier@osg.samsung.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -42,21 +42,35 @@ Signed-off-by: Javier Martinez Canillas <javier@osg.samsung.com>
 
 Changes in v2: None
 
- arch/powerpc/boot/dts/digsy_mtc.dts | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/boot/dts/pcm030.dts | 2 +-
+ arch/powerpc/boot/dts/pcm032.dts | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/boot/dts/digsy_mtc.dts b/arch/powerpc/boot/dts/digsy_mtc.dts
-index 955bff629df3..6c804254b885 100644
---- a/arch/powerpc/boot/dts/digsy_mtc.dts
-+++ b/arch/powerpc/boot/dts/digsy_mtc.dts
-@@ -73,7 +73,7 @@
- 
- 		i2c@3d00 {
- 			eeprom@50 {
--				compatible = "at,24c08";
-+				compatible = "at,24c08","atmel,24c08";
- 				reg = <0x50>;
+diff --git a/arch/powerpc/boot/dts/pcm030.dts b/arch/powerpc/boot/dts/pcm030.dts
+index 192e66af0001..c7a26c9f634e 100644
+--- a/arch/powerpc/boot/dts/pcm030.dts
++++ b/arch/powerpc/boot/dts/pcm030.dts
+@@ -71,7 +71,7 @@
+ 				reg = <0x51>;
  			};
- 
+ 			eeprom@52 {
+-				compatible = "catalyst,24c32";
++				compatible = "catalyst,24c32","atmel,24c32";
+ 				reg = <0x52>;
+ 				pagesize = <32>;
+ 			};
+diff --git a/arch/powerpc/boot/dts/pcm032.dts b/arch/powerpc/boot/dts/pcm032.dts
+index 96b139bf50e9..27d6a1e4c018 100644
+--- a/arch/powerpc/boot/dts/pcm032.dts
++++ b/arch/powerpc/boot/dts/pcm032.dts
+@@ -75,7 +75,7 @@
+ 				reg = <0x51>;
+ 			};
+ 			eeprom@52 {
+-				compatible = "catalyst,24c32";
++				compatible = "catalyst,24c32","atmel,24c32";
+ 				reg = <0x52>;
+ 				pagesize = <32>;
+ 			};
 -- 
 2.9.3
