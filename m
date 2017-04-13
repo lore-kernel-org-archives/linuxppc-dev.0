@@ -1,15 +1,15 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w3dh72PYJzDq7g
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Apr 2017 21:23:19 +1000 (AEST)
-In-Reply-To: <20170331013749.17874-1-oohall@gmail.com>
-To: Oliver O'Halloran <oohall@gmail.com>, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w3dh80WMtzDq7g
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Apr 2017 21:23:20 +1000 (AEST)
+In-Reply-To: <20170410020404.11375-1-rashmica.g@gmail.com>
+To: Rashmica Gupta <rashmica.g@gmail.com>, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Rashmica Gupta <rashmica.g@gmail.com>, Oliver O'Halloran <oohall@gmail.com>
-Subject: Re: [1/2] powerpc/mm: fix up pgtable dump flags
-Message-Id: <3w3dh716qbz9sNW@ozlabs.org>
+Cc: Rashmica Gupta <rashmica.g@gmail.com>
+Subject: Re: powerpc/mm: Dump hash table
+Message-Id: <3w3dh773XSz9sNg@ozlabs.org>
 Date: Thu, 13 Apr 2017 21:23:19 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -20,18 +20,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2017-03-31 at 01:37:48 UTC, Oliver O'Halloran wrote:
-> On Book3s we have two PTE flags used to mark cache-inhibited mappings:
-> _PAGE_TOLERANT and _PAGE_NON_IDEMPOTENT. Currently the kernel page
-> table dumper only looks at the generic _PAGE_NO_CACHE which is
-> defined to be _PAGE_TOLERANT. This patch modifies the dumper so
-> both flags are shown in the dump.
+On Mon, 2017-04-10 at 02:04:04 UTC, Rashmica Gupta wrote:
+> Current behaviour assumes that memory in RAM is contiguous and
+> iterates from the start of RAM to (start + size of memory). When the
+> memory isn't physically contiguous, this approach doesn't work.
 > 
-> Cc: Rashmica Gupta <rashmica.g@gmail.com>
-> Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
+> If memory exists at 0-5 GB and 6-10 GB then the current approach will
+> check if entries exist in the hash table from 0GB to 9GB. This patch
+> changes the behaviour to iterate up to the end of RAM.
+> 
+> Signed-off-by: Rashmica Gupta <rashmica.g@gmail.com>
 
-Series applied to powerpc next, thanks.
+Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/70538eaa70c36340b4bb27206cad31
+https://git.kernel.org/powerpc/c/9e4114b3913cff37be509224116b6f
 
 cheers
