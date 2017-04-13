@@ -1,23 +1,26 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-pg0-x230.google.com (mail-pg0-x230.google.com
- [IPv6:2607:f8b0:400e:c05::230])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <jolsa@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w3Yc803SYzDq7g
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Apr 2017 18:19:36 +1000 (AEST)
-Received: by mail-pg0-x230.google.com with SMTP id g2so27040299pge.3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Apr 2017 01:19:35 -0700 (PDT)
-Message-ID: <1492071568.8380.20.camel@gmail.com>
-Subject: Re: [PATCH] powerpc/configs: Enable function trace by default
-From: Balbir Singh <bsingharora@gmail.com>
-To: Christophe LEROY <christophe.leroy@c-s.fr>, mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org
-Date: Thu, 13 Apr 2017 18:19:28 +1000
-In-Reply-To: <eea3c818-f5ca-4cd9-c715-307104534970@c-s.fr>
-References: <20170413070309.10497-1-bsingharora@gmail.com>
- <eea3c818-f5ca-4cd9-c715-307104534970@c-s.fr>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w3Ym96zw7zDq7g
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Apr 2017 18:26:33 +1000 (AEST)
+Date: Thu, 13 Apr 2017 10:26:28 +0200
+From: Jiri Olsa <jolsa@redhat.com>
+To: "Jin, Yao" <yao.jin@linux.intel.com>
+Cc: acme@kernel.org, jolsa@kernel.org, peterz@infradead.org,
+ mingo@redhat.com, alexander.shishkin@linux.intel.com,
+ Linux-kernel@vger.kernel.org, ak@linux.intel.com,
+ kan.liang@intel.com, yao.jin@intel.com,
+ linuxppc-dev@lists.ozlabs.org, treeze.taeung@gmail.com
+Subject: Re: [PATCH v4 0/5] perf report: Show branch type
+Message-ID: <20170413082628.GB4784@krava>
+References: <1491949266-6835-1-git-send-email-yao.jin@linux.intel.com>
+ <20170412105839.GC14409@krava>
+ <74ee84f8-e756-65d2-9ba4-b560f6e241bd@linux.intel.com>
+ <c480d004-8a02-65fb-48b5-6db43b8efa4f@linux.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <c480d004-8a02-65fb-48b5-6db43b8efa4f@linux.intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,30 +30,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2017-04-13 at 09:24 +0200, Christophe LEROY wrote:
-> Hi Baldir
+On Thu, Apr 13, 2017 at 11:25:39AM +0800, Jin, Yao wrote:
 
-Hi Christophe, It's Balbir
+SNIP
 
+> > 
+> > Now it works without my patch and it runs with latest perf/core branch.
+> > So it looks like a regression issue.
+> > 
+> > Thanks
+> > Jin Yao
+> > 
+> > 
 > 
-> Le 13/04/2017 à 09:03, Balbir Singh a écrit :
-> > We expect to have these configs on by default, most
-> > distros turn them off, its always good to have them on
-> > so that we can use them and hopefully not break them
+> I have tested, the regression issue is happened after this commit:
 > 
-> Isn't it the purpose of the target allyesconfig to allow such tests ?
+> bdd97ca perf tools: Refactor the code to strip command name with {l,r}trim()
 > 
+> CC to the author for double checking.
 
-As a developer I don't use allyesconfig for submitting patches or testing
-the kernel.
+cool, thanks
 
-> FTRACE is quite CPU consumming, shouldn't it really be on by default ?
-
-It does some work at boot to NOP out function entry points at _mcount
-locations. Is that what you are referring to? Or the overhead of the
-code in terms of size? Most distro kernels have tracing on by default.
-
-The rest of the overhead is enablement based.
-
-Thanks for the review!
-Balbir Singh
+jirka
