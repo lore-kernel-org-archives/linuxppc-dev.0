@@ -1,27 +1,48 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-lf0-x22a.google.com (mail-lf0-x22a.google.com
- [IPv6:2a00:1450:4010:c07::22a])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <ego@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w3fJs1MNhzDq7j
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Apr 2017 21:51:41 +1000 (AEST)
-Received: by mail-lf0-x22a.google.com with SMTP id s141so28309784lfe.3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Apr 2017 04:51:41 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w3fKW3jvQzDq9d
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Apr 2017 21:52:15 +1000 (AEST)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v3DBhi5o094057
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Apr 2017 07:52:05 -0400
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 29t7knudwe-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Apr 2017 07:52:05 -0400
+Received: from localhost
+ by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ego@linux.vnet.ibm.com>;
+ Thu, 13 Apr 2017 05:52:04 -0600
+Date: Thu, 13 Apr 2017 17:21:58 +0530
+From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+To: Michael Neuling <mikey@neuling.org>
+Cc: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ "Shreyas B. Prabhu" <shreyasbp@gmail.com>,
+ Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
+ Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+ Anton Blanchard <anton@samba.org>, Balbir Singh <bsingharora@gmail.com>,
+ Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>,
+ Nicholas Piggin <npiggin@gmail.com>,
+ Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/3] powernv:idle: Decouple TB restore & Per-core SPRs
+ restore
+Reply-To: ego@linux.vnet.ibm.com
+References: <cover.1491996797.git.ego@linux.vnet.ibm.com>
+ <27511c1235ee58c66eabdea65b39f5dd35d91426.1491996797.git.ego@linux.vnet.ibm.com>
+ <1492066545.4624.52.camel@neuling.org>
 MIME-Version: 1.0
-In-Reply-To: <585eeaa5-52bd-7fe4-2179-3582570966e5@c-s.fr>
-References: <20170413070309.10497-1-bsingharora@gmail.com>
- <eea3c818-f5ca-4cd9-c715-307104534970@c-s.fr>
- <1492071568.8380.20.camel@gmail.com>
- <585eeaa5-52bd-7fe4-2179-3582570966e5@c-s.fr>
-From: Balbir Singh <bsingharora@gmail.com>
-Date: Thu, 13 Apr 2017 21:51:37 +1000
-Message-ID: <CAKTCnznab6t9btdz9ZubgO05ju_Zv3uB+h0Z9Y9M3PUBGku8bQ@mail.gmail.com>
-Subject: Re: [PATCH] powerpc/configs: Enable function trace by default
-To: Christophe LEROY <christophe.leroy@c-s.fr>
-Cc: Michael Ellerman <mpe@ellerman.id.au>,
- "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
- <linuxppc-dev@lists.ozlabs.org>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <1492066545.4624.52.camel@neuling.org>
+Message-Id: <20170413115158.GB2425@in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,61 +52,87 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Apr 13, 2017 at 6:41 PM, Christophe LEROY
-<christophe.leroy@c-s.fr> wrote:
->
->
-> Le 13/04/2017 =C3=A0 10:19, Balbir Singh a =C3=A9crit :
->>
->> On Thu, 2017-04-13 at 09:24 +0200, Christophe LEROY wrote:
->>>
->>> Hi Baldir
->>
->>
->> Hi Christophe, It's Balbir
->
->
-> Sorry
->
-No worries!
+On Thu, Apr 13, 2017 at 04:55:45PM +1000, Michael Neuling wrote:
+> On Wed, 2017-04-12 at 17:16 +0530, Gautham R. Shenoy wrote:
+> > From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+> > 
+> > The idle-exit code assumes that if Timebase is not lost, then neither
+> > are the per-core hypervisor resources lost. 
+> 
+> Double negative!  How about:
+> 
+> The idle-exit code assumes that if the timebase is restored, then the
+> per-core hypervisor resources are also restored.
 
->>
->>>
->>> Le 13/04/2017 =C3=A0 09:03, Balbir Singh a =C3=A9crit :
->>>>
->>>> We expect to have these configs on by default, most
->>>> distros turn them off, its always good to have them on
->>>> so that we can use them and hopefully not break them
->>>
->>>
->>> Isn't it the purpose of the target allyesconfig to allow such tests ?
->>>
->>
->> As a developer I don't use allyesconfig for submitting patches or testin=
-g
->> the kernel.
->
->
-> I do it most of the time to check compilation doesn't fail.
->
->>
->>> FTRACE is quite CPU consumming, shouldn't it really be on by default ?
->>
->>
->> It does some work at boot to NOP out function entry points at _mcount
->> locations. Is that what you are referring to? Or the overhead of the
->> code in terms of size? Most distro kernels have tracing on by default.
->
->
-> You said in you patch text: "most distros turn them off".
+Ok. To be more explicit, this was the intention:
+
+On POWER8, in case of 
+   -  nap: both timebase and hypervisor state is retained.
+   -  fast-sleep: timebase is lost. But the hypervisor state is retained.
+   -  winkle: timebase and hypervisor state is lost.
+
+Hence, the current code assumes that if the timebase value is
+retained, then so is the hypervisor state. Thus, the current code
+doesn't restore per-core hypervisor state if this is the case.
+
+But that is no longer true on POWER9 where we do have stop states
+where timebase value is retained, but the hypervisor state is lost. So
+we have to ensure that the per-core hypervisor state gets restored in
+such cases.
+
+> 
+> > This was true on POWER8
+> > where fast-sleep lost only TB but not per-core resources, and winkle
+> > lost both.
+> > 
+> > This assumption is not true for POWER9 however, since there can be
+> > states which do not lose timebase but can lose per-core SPRs.
+> > 
+> > Hence check if we need to restore the per-core hypervisor state even
+> > if timebase is not lost.
+> 
+> I think I understand what you're doing, just seems awkwardly worded.
+
+Will fix the wording.
+
+> 
+> Is this actually what the patch is doing?  It seem to be just changing one
+> branch.
 >
 
-My bad.. sometimes one can type faster than one can think, this is one
-of those occasions :)
+Yes, we change the branch to .Ltb_resynced which will ensure in the
+case when timebase is retained, we explicitly check if we are waking
+up from a deep stop that loses per-core hypervisor state (indicated by
+cr4 being eq or gt).
 
-> If most distros turn it ON (and not OFF as you said), then I can understa=
-nd
-
-Yes
-
-Balbir Singh.
+> Mikey
+> 
+> > 
+> > Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+> > ---
+> >  arch/powerpc/kernel/idle_book3s.S | 7 ++++---
+> >  1 file changed, 4 insertions(+), 3 deletions(-)
+> > 
+> > diff --git a/arch/powerpc/kernel/idle_book3s.S
+> > b/arch/powerpc/kernel/idle_book3s.S
+> > index 9b747e9..6a9bd28 100644
+> > --- a/arch/powerpc/kernel/idle_book3s.S
+> > +++ b/arch/powerpc/kernel/idle_book3s.S
+> > @@ -723,13 +723,14 @@ timebase_resync:
+> >  	 * Use cr3 which indicates that we are waking up with atleast partial
+> >  	 * hypervisor state loss to determine if TIMEBASE RESYNC is needed.
+> >  	 */
+> > -	ble	cr3,clear_lock
+> > +	ble	cr3,.Ltb_resynced
+> >  	/* Time base re-sync */
+> >  	bl	opal_resync_timebase;
+> >  	/*
+> > -	 * If waking up from sleep, per core state is not lost, skip to
+> > -	 * clear_lock.
+> > +	 * If waking up from sleep (POWER8), per core state
+> > +	 * is not lost, skip to clear_lock.
+> >  	 */
+> > +.Ltb_resynced:
+> >  	blt	cr4,clear_lock
+> >  
+> >  	/*
