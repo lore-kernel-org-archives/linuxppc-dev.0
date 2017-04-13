@@ -1,28 +1,27 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <oohall@gmail.com>
+Received: from mail-qt0-x243.google.com (mail-qt0-x243.google.com
+ [IPv6:2607:f8b0:400d:c0d::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w3S6v6HVfzDq7g
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Apr 2017 14:12:23 +1000 (AEST)
-Message-ID: <1492056725.7236.95.camel@kernel.crashing.org>
-Subject: Re: [PATCH 3/3] powernv:idle: Set LPCR_UPRT on wakeup from deep-stop
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>, "Gautham R.
- Shenoy" <ego@linux.vnet.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>,
- Michael Neuling <mikey@neuling.org>, "Shreyas B. Prabhu"
- <shreyasbp@gmail.com>, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
- Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>, Anton Blanchard
- <anton@samba.org>, Balbir Singh <bsingharora@gmail.com>, Akshay Adiga
- <akshay.adiga@linux.vnet.ibm.com>, Nicholas Piggin <npiggin@gmail.com>,
- Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Date: Thu, 13 Apr 2017 14:12:05 +1000
-In-Reply-To: <8737ddq7py.fsf@skywalker.in.ibm.com>
-References: <cover.1491996797.git.ego@linux.vnet.ibm.com>
- <9be8410e0abe5ae1afa16a6f987c53046ef51757.1491996797.git.ego@linux.vnet.ibm.com>
- <8737ddq7py.fsf@skywalker.in.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w3SKv6n6FzDq7g
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Apr 2017 14:21:55 +1000 (AEST)
+Received: by mail-qt0-x243.google.com with SMTP id c45so6501062qtb.0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2017 21:21:55 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <1491961986.8380.13.camel@gmail.com>
+References: <20170411174233.21902-1-oohall@gmail.com>
+ <20170411174233.21902-9-oohall@gmail.com>
+ <1491961986.8380.13.camel@gmail.com>
+From: "Oliver O'Halloran" <oohall@gmail.com>
+Date: Thu, 13 Apr 2017 14:21:53 +1000
+Message-ID: <CAOSf1CHr2uMC1f5fMkqVpS7-J1K20cHShjp7FcNawV2KL4D_Dw@mail.gmail.com>
+Subject: Re: [PATCH 8/9] powerpc/mm: Wire up hpte_removebolted for powernv
+To: Balbir Singh <bsingharora@gmail.com>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Reza Arbab <arbab@linux.vnet.ibm.com>,
+ "linux-nvdimm@lists.01.org" <linux-nvdimm@lists.01.org>,
+ Rashmica Gupta <rashmica.g@gmail.com>, Anton Blanchard <anton@samba.org>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,26 +31,99 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2017-04-13 at 09:28 +0530, Aneesh Kumar K.V wrote:
-> >   #endif
-> >        mtctr   r12
-> >        bctrl
-> > +/*
-> > + * cur_cpu_spec->cpu_restore would restore LPCR to a
-> > + * sane value that is set at early boot time,
-> > + * thereby clearing LPCR_UPRT.
-> > + * LPCR_UPRT is required if we are running in Radix mode.
-> > + * Set it here if that be the case.
-> > + */
-> > +BEGIN_MMU_FTR_SECTION
-> > +     mfspr   r3, SPRN_LPCR
-> > +     LOAD_REG_IMMEDIATE(r4, LPCR_UPRT)
-> > +     or      r3, r3, r4
-> > +     mtspr   SPRN_LPCR, r3
-> > +END_MMU_FTR_SECTION_IFSET(MMU_FTR_TYPE_RADIX)
+On Wed, Apr 12, 2017 at 11:53 AM, Balbir Singh <bsingharora@gmail.com> wrote:
+> On Wed, 2017-04-12 at 03:42 +1000, Oliver O'Halloran wrote:
+>> From: Rashmica Gupta <rashmica.g@gmail.com>
+>>
+>> Adds support for removing bolted (i.e kernel linear mapping) mappings on
+>> powernv. This is needed to support memory hot unplug operations which
+>> are required for the teardown of DAX/PMEM devices.
+>>
+>> Cc: Rashmica Gupta <rashmica.g@gmail.com>
+>> Cc: Anton Blanchard <anton@samba.org>
+>> Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
+>> ---
+>> Could the original author of this add their S-o-b? I pulled it out of
+>> Rashmica's memtrace patch, but I remember someone saying Anton wrote
+>> it originally.
+>> ---
+>>  arch/powerpc/mm/hash_native_64.c | 31 +++++++++++++++++++++++++++++++
+>>  1 file changed, 31 insertions(+)
+>>
+>> diff --git a/arch/powerpc/mm/hash_native_64.c b/arch/powerpc/mm/hash_native_64.c
+>> index 65bb8f33b399..9ba91d4905a4 100644
+>> --- a/arch/powerpc/mm/hash_native_64.c
+>> +++ b/arch/powerpc/mm/hash_native_64.c
+>> @@ -407,6 +407,36 @@ static void native_hpte_updateboltedpp(unsigned long newpp, unsigned long ea,
+>>       tlbie(vpn, psize, psize, ssize, 0);
+>>  }
+>>
+>> +/*
+>> + * Remove a bolted kernel entry. Memory hotplug uses this.
+>> + *
+>> + * No need to lock here because we should be the only user.
+>
+> As long as this is after the necessary isolation and is called from
+> arch_remove_memory(), I think we should be fine
+>
+>> + */
+>> +static int native_hpte_removebolted(unsigned long ea, int psize, int ssize)
+>> +{
+>> +     unsigned long vpn;
+>> +     unsigned long vsid;
+>> +     long slot;
+>> +     struct hash_pte *hptep;
+>> +
+>> +     vsid = get_kernel_vsid(ea, ssize);
+>> +     vpn = hpt_vpn(ea, vsid, ssize);
+>> +
+>> +     slot = native_hpte_find(vpn, psize, ssize);
+>> +     if (slot == -1)
+>> +             return -ENOENT;
+>
+> If slot == -1, it means someone else removed the HPTE entry? Are we racing?
+> I suspect we should never hit this situation during hotunplug, specifically
+> since this is bolted.
 
-We are probably better off saving the value somewhere during boot
-and just "blasting" it whole back.
+Or the slot was never populated in the first place. I'd rather keep
+the current behaviour since it aligns with the behaviour of
+pSeries_lpar_hpte_removebolted and we might hit these situations in
+the future if the sub-section hotplug patches are merged (big if...).
 
-Cheers
-Ben.
+>
+>> +
+>> +     hptep = htab_address + slot;
+>> +
+>> +     /* Invalidate the hpte */
+>> +     hptep->v = 0;
+>
+> Under DEBUG or otherwise, I would add more checks like
+>
+> 1. was hpte_v & HPTE_V_VALID and BOLTED set? If not, we've already invalidated
+> that hpte and we can skip the tlbie. Since this was bolted you might be right
+> that it is always valid and bolted
+
+A VM_WARN_ON() if the bolted bit is clear might be appropriate. We
+don't need to check the valid bit since hpte_native_find() will fail
+if it's cleared.
+
+>
+>> +
+>> +     /* Invalidate the TLB */
+>> +     tlbie(vpn, psize, psize, ssize, 0);
+>
+> The API also does not clear linear_map_hash_slots[] under DEBUG_PAGEALLOC
+
+I'm not sure what API you're referring to here. The tracking for
+linear_map_hash_slots[] is agnostic of mmu_hash_ops so we shouldn't be
+touching it here. It also looks like DEBUG_PAGEALLOC is a bit broken
+with hotplugged memory anyway so I think that's a fix for a different
+patch.
+
+>
+>> +     return 0;
+>> +}
+>> +
+>> +
+>
+> Balbir Singh.
