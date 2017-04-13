@@ -1,24 +1,21 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
- [IPv6:2607:f8b0:400e:c05::242])
+Return-Path: <anton@samba.org>
+Received: from hr2.samba.org (hr2.samba.org [IPv6:2a01:4f8:192:486::147:1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w3NCm6L7WzDq88
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Apr 2017 11:16:20 +1000 (AEST)
-Received: by mail-pg0-x242.google.com with SMTP id 34so5373015pgx.3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2017 18:16:20 -0700 (PDT)
-Message-ID: <1492046172.8380.16.camel@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w3NVq2n7mzDq88
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Apr 2017 11:29:23 +1000 (AEST)
+Date: Thu, 13 Apr 2017 11:29:01 +1000
+From: Anton Blanchard <anton@samba.org>
+To: Balbir Singh <bsingharora@gmail.com>
+Cc: Michael Ellerman <patch-notifications@ellerman.id.au>,
+ benh@kernel.crashing.org, paulus@samba.org, linuxppc-dev@lists.ozlabs.org
 Subject: Re: powerpc: Avoid taking a data miss on every userspace
  instruction miss
-From: Balbir Singh <bsingharora@gmail.com>
-To: Michael Ellerman <patch-notifications@ellerman.id.au>, Anton Blanchard
- <anton@ozlabs.org>, benh@kernel.crashing.org, paulus@samba.org
-Cc: linuxppc-dev@lists.ozlabs.org
-Date: Thu, 13 Apr 2017 11:16:12 +1000
-In-Reply-To: <3vzNHv6zMZz9s9c@ozlabs.org>
-References: <3vzNHv6zMZz9s9c@ozlabs.org>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+Message-ID: <20170413112901.3fbaac05@kryten>
+In-Reply-To: <1492046172.8380.16.camel@gmail.com>
+References: <3vzNHv6zMZz9s9c@ozlabs.org> <1492046172.8380.16.camel@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,15 +25,11 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2017-04-06 at 23:06 +1000, Michael Ellerman wrote:
-> On Mon, 2017-04-03 at 06:41:02 UTC, Anton Blanchard wrote:
-> > From: Anton Blanchard <anton@samba.org>
-> > 
-> Applied to powerpc next, thanks.
-> 
-> https://git.kernel.org/powerpc/c/a7a9dcd882a67b68568868b988289f
->
+Hi Balbir,
 
-FYI: The version you applied does not have checks for is_write
+> FYI: The version you applied does not have checks for is_write
 
-Balbir Singh. 
+Yeah, we decided to do that in a follow up patch. I'm ok if someone
+gets to it before me :)
+
+Anton
