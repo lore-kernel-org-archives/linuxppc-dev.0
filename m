@@ -1,19 +1,19 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
- [IPv6:2607:f8b0:400e:c05::244])
+Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
+ [IPv6:2607:f8b0:400e:c05::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w3cCJ1ZSyzDq9d
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Apr 2017 20:16:44 +1000 (AEST)
-Received: by mail-pg0-x244.google.com with SMTP id o123so10559522pga.1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Apr 2017 03:16:44 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w3cCM3vg7zDqBH
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Apr 2017 20:16:47 +1000 (AEST)
+Received: by mail-pg0-x243.google.com with SMTP id 79so10575707pgf.0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Apr 2017 03:16:47 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
 Cc: Nicholas Piggin <npiggin@gmail.com>,
 	linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 1/4] powerpc: change the doorbell IPI calling convention
-Date: Thu, 13 Apr 2017 20:16:21 +1000
-Message-Id: <20170413101624.26628-2-npiggin@gmail.com>
+Subject: [PATCH 2/4] powerpc: Introduce msgsnd/doorbell barrier primitives
+Date: Thu, 13 Apr 2017 20:16:22 +1000
+Message-Id: <20170413101624.26628-3-npiggin@gmail.com>
 In-Reply-To: <20170413101624.26628-1-npiggin@gmail.com>
 References: <20170413101624.26628-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,482 +25,130 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Change the doorbell callers to know about their msgsnd addressing,
-rather than have them set a per-cpu target data tag at boot that gets
-sent to the cause_ipi functions. The data is only used for doorbell IPI
-functions, no other IPI types, so it makes sense to keep that detail
-local to doorbell.
-
-Have the platform code understand doorbell IPIs, rather than the
-interrupt controller code understand them. Platform code can look at
-capabilities it has available and decide which to use.
+POWER9 changes requirements and adds new instructions for
+synchronization.
 
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/include/asm/dbell.h       |  9 ++----
- arch/powerpc/include/asm/smp.h         |  3 +-
- arch/powerpc/include/asm/xics.h        |  2 +-
- arch/powerpc/kernel/dbell.c            | 52 ++++++++++++++++++++++++++++++----
- arch/powerpc/kernel/smp.c              | 17 ++++-------
- arch/powerpc/platforms/85xx/smp.c      | 11 ++-----
- arch/powerpc/platforms/powermac/smp.c  |  2 +-
- arch/powerpc/platforms/powernv/smp.c   | 23 ++++++++++-----
- arch/powerpc/platforms/pseries/smp.c   | 27 +++++++-----------
- arch/powerpc/sysdev/xics/icp-hv.c      |  2 +-
- arch/powerpc/sysdev/xics/icp-native.c  | 12 +-------
- arch/powerpc/sysdev/xics/icp-opal.c    |  2 +-
- arch/powerpc/sysdev/xics/xics-common.c |  3 --
- arch/powerpc/sysdev/xive/common.c      |  6 ++--
- 14 files changed, 92 insertions(+), 79 deletions(-)
+ arch/powerpc/include/asm/dbell.h | 22 ++++++++++++++++++++++
+ arch/powerpc/include/asm/smp.h   |  1 +
+ arch/powerpc/kernel/dbell.c      |  8 +++++---
+ arch/powerpc/kernel/smp.c        | 10 ++++++++--
+ 4 files changed, 36 insertions(+), 5 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/dbell.h b/arch/powerpc/include/asm/dbell.h
-index 378167377065..a66eb596940c 100644
+index a66eb596940c..350694a1a6e5 100644
 --- a/arch/powerpc/include/asm/dbell.h
 +++ b/arch/powerpc/include/asm/dbell.h
-@@ -35,8 +35,6 @@ enum ppc_dbell {
- #ifdef CONFIG_PPC_BOOK3S
+@@ -44,6 +44,17 @@ static inline void _ppc_msgsnd(u32 msg)
+ 		__asm__ __volatile__ (PPC_MSGSNDP(%0) : : "r" (msg));
+ }
  
- #define PPC_DBELL_MSGTYPE		PPC_DBELL_SERVER
--#define SPRN_DOORBELL_CPUTAG		SPRN_TIR
--#define PPC_DBELL_TAG_MASK		0x7f
- 
- static inline void _ppc_msgsnd(u32 msg)
- {
-@@ -49,8 +47,6 @@ static inline void _ppc_msgsnd(u32 msg)
++/* sync before sending message */
++static inline void ppc_msgsnd_sync(void)
++{
++	__asm__ __volatile__ ("sync" : : : "memory");
++}
++
++/* sync after taking message interrupt */
++static inline void ppc_msgsync(void)
++{
++}
++
  #else /* CONFIG_PPC_BOOK3S */
  
  #define PPC_DBELL_MSGTYPE		PPC_DBELL
--#define SPRN_DOORBELL_CPUTAG		SPRN_PIR
--#define PPC_DBELL_TAG_MASK		0x3fff
+@@ -53,6 +64,17 @@ static inline void _ppc_msgsnd(u32 msg)
+ 	__asm__ __volatile__ (PPC_MSGSND(%0) : : "r" (msg));
+ }
  
- static inline void _ppc_msgsnd(u32 msg)
- {
-@@ -59,9 +55,10 @@ static inline void _ppc_msgsnd(u32 msg)
- 
++/* sync before sending message */
++static inline void ppc_msgsnd_sync(void)
++{
++	__asm__ __volatile__ ("sync" : : : "memory");
++}
++
++/* sync after taking message interrupt */
++static inline void ppc_msgsync(void)
++{
++}
++
  #endif /* CONFIG_PPC_BOOK3S */
  
--extern void doorbell_cause_ipi(int cpu, unsigned long data);
-+extern void doorbell_global_ipi(int cpu);
-+extern void doorbell_core_ipi(int cpu);
-+extern int doorbell_try_core_ipi(int cpu);
- extern void doorbell_exception(struct pt_regs *regs);
--extern void doorbell_setup_this_cpu(void);
- 
- static inline void ppc_msgsnd(enum ppc_dbell type, u32 flags, u32 tag)
- {
+ extern void doorbell_global_ipi(int cpu);
 diff --git a/arch/powerpc/include/asm/smp.h b/arch/powerpc/include/asm/smp.h
-index 63fa780b71a0..d9ed3b02615e 100644
+index d9ed3b02615e..751b2bd944fc 100644
 --- a/arch/powerpc/include/asm/smp.h
 +++ b/arch/powerpc/include/asm/smp.h
-@@ -40,7 +40,7 @@ extern int cpu_to_chip_id(int cpu);
- struct smp_ops_t {
- 	void  (*message_pass)(int cpu, int msg);
- #ifdef CONFIG_PPC_SMP_MUXED_IPI
--	void  (*cause_ipi)(int cpu, unsigned long data);
-+	void  (*cause_ipi)(int cpu);
- #endif
- 	void  (*probe)(void);
- 	int   (*kick_cpu)(int nr);
-@@ -125,7 +125,6 @@ extern int smp_request_message_ipi(int virq, int message);
- extern const char *smp_ipi_name[];
- 
- /* for irq controllers with only a single ipi */
--extern void smp_muxed_ipi_set_data(int cpu, unsigned long data);
+@@ -128,6 +128,7 @@ extern const char *smp_ipi_name[];
  extern void smp_muxed_ipi_message_pass(int cpu, int msg);
  extern void smp_muxed_ipi_set_message(int cpu, int msg);
  extern irqreturn_t smp_ipi_demux(void);
-diff --git a/arch/powerpc/include/asm/xics.h b/arch/powerpc/include/asm/xics.h
-index e0b9e576905a..7ce2c3ac2964 100644
---- a/arch/powerpc/include/asm/xics.h
-+++ b/arch/powerpc/include/asm/xics.h
-@@ -57,7 +57,7 @@ struct icp_ops {
- 	void (*teardown_cpu)(void);
- 	void (*flush_ipi)(void);
- #ifdef CONFIG_SMP
--	void (*cause_ipi)(int cpu, unsigned long data);
-+	void (*cause_ipi)(int cpu);
- 	irq_handler_t ipi_action;
- #endif
- };
++extern irqreturn_t smp_ipi_demux_relaxed(void);
+ 
+ void smp_init_pSeries(void);
+ void smp_init_cell(void);
 diff --git a/arch/powerpc/kernel/dbell.c b/arch/powerpc/kernel/dbell.c
-index 2128f3a96c32..5869c66adfd0 100644
+index 5869c66adfd0..b6fe883b1016 100644
 --- a/arch/powerpc/kernel/dbell.c
 +++ b/arch/powerpc/kernel/dbell.c
-@@ -20,18 +20,60 @@
- #include <asm/kvm_ppc.h>
+@@ -38,7 +38,7 @@ void doorbell_global_ipi(int cpu)
  
- #ifdef CONFIG_SMP
--void doorbell_setup_this_cpu(void)
-+
-+/*
-+ * Doorbells must only be used if CPU_FTR_DBELL is available.
-+ * msgsnd is used in HV, and msgsndp is used in !HV.
-+ *
-+ * These should be used by platform code that is aware of restrictions.
-+ * Other arch code should use ->cause_ipi.
-+ *
-+ * doorbell_global_ipi() sends a dbell to any target CPU.
-+ * Must be used only by architectures that address msgsnd target
-+ * by PIR/get_hard_smp_processor_id.
-+ */
-+void doorbell_global_ipi(int cpu)
- {
--	unsigned long tag = mfspr(SPRN_DOORBELL_CPUTAG) & PPC_DBELL_TAG_MASK;
-+	u32 tag = get_hard_smp_processor_id(cpu);
- 
--	smp_muxed_ipi_set_data(smp_processor_id(), tag);
-+	kvmppc_set_host_ipi(cpu, 1);
-+	/* Order previous accesses vs. msgsnd, which is treated as a store */
-+	mb();
-+	ppc_msgsnd(PPC_DBELL_MSGTYPE, 0, tag);
- }
- 
--void doorbell_cause_ipi(int cpu, unsigned long data)
-+/*
-+ * doorbell_core_ipi() sends a dbell to a target CPU in the same core.
-+ * Must be used only by architectures that address msgsnd target
-+ * by TIR/cpu_thread_in_core.
-+ */
-+void doorbell_core_ipi(int cpu)
- {
-+	u32 tag = cpu_thread_in_core(cpu);
-+
-+	kvmppc_set_host_ipi(cpu, 1);
+ 	kvmppc_set_host_ipi(cpu, 1);
  	/* Order previous accesses vs. msgsnd, which is treated as a store */
- 	mb();
--	ppc_msgsnd(PPC_DBELL_MSGTYPE, 0, data);
-+	ppc_msgsnd(PPC_DBELL_MSGTYPE, 0, tag);
-+}
-+
-+/*
-+ * Attempt to cause a core doorbell if destination is on the same core.
-+ * Returns 1 on success, 0 on failure.
-+ */
-+int doorbell_try_core_ipi(int cpu)
-+{
-+	int this_cpu = get_cpu();
-+	int ret = 0;
-+
-+	if (cpumask_test_cpu(cpu, cpu_sibling_mask(this_cpu))) {
-+		doorbell_core_ipi(cpu);
-+		ret = 1;
-+	}
-+
-+	put_cpu();
-+
-+	return ret;
+-	mb();
++	ppc_msgsnd_sync();
+ 	ppc_msgsnd(PPC_DBELL_MSGTYPE, 0, tag);
  }
  
- void doorbell_exception(struct pt_regs *regs)
+@@ -53,7 +53,7 @@ void doorbell_core_ipi(int cpu)
+ 
+ 	kvmppc_set_host_ipi(cpu, 1);
+ 	/* Order previous accesses vs. msgsnd, which is treated as a store */
+-	mb();
++	ppc_msgsnd_sync();
+ 	ppc_msgsnd(PPC_DBELL_MSGTYPE, 0, tag);
+ }
+ 
+@@ -82,12 +82,14 @@ void doorbell_exception(struct pt_regs *regs)
+ 
+ 	irq_enter();
+ 
++	ppc_msgsync();
++
+ 	may_hard_irq_enable();
+ 
+ 	kvmppc_set_host_ipi(smp_processor_id(), 0);
+ 	__this_cpu_inc(irq_stat.doorbell_irqs);
+ 
+-	smp_ipi_demux();
++	smp_ipi_demux_relaxed(); /* already performed the barrier */
+ 
+ 	irq_exit();
+ 	set_irq_regs(old_regs);
 diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
-index 6e61cdb89194..17de938d41c5 100644
+index 17de938d41c5..2eca1e491e2b 100644
 --- a/arch/powerpc/kernel/smp.c
 +++ b/arch/powerpc/kernel/smp.c
-@@ -39,6 +39,7 @@
- #include <asm/irq.h>
- #include <asm/hw_irq.h>
- #include <asm/kvm_ppc.h>
-+#include <asm/dbell.h>
- #include <asm/page.h>
- #include <asm/pgtable.h>
- #include <asm/prom.h>
-@@ -211,17 +212,9 @@ int smp_request_message_ipi(int virq, int msg)
- #ifdef CONFIG_PPC_SMP_MUXED_IPI
- struct cpu_messages {
- 	long messages;			/* current messages */
--	unsigned long data;		/* data for cause ipi */
- };
- static DEFINE_PER_CPU_SHARED_ALIGNED(struct cpu_messages, ipi_message);
- 
--void smp_muxed_ipi_set_data(int cpu, unsigned long data)
--{
--	struct cpu_messages *info = &per_cpu(ipi_message, cpu);
--
--	info->data = data;
--}
--
- void smp_muxed_ipi_set_message(int cpu, int msg)
- {
- 	struct cpu_messages *info = &per_cpu(ipi_message, cpu);
-@@ -236,14 +229,13 @@ void smp_muxed_ipi_set_message(int cpu, int msg)
- 
- void smp_muxed_ipi_message_pass(int cpu, int msg)
- {
--	struct cpu_messages *info = &per_cpu(ipi_message, cpu);
--
- 	smp_muxed_ipi_set_message(cpu, msg);
-+
- 	/*
- 	 * cause_ipi functions are required to include a full barrier
- 	 * before doing whatever causes the IPI.
- 	 */
--	smp_ops->cause_ipi(cpu, info->data);
-+	smp_ops->cause_ipi(cpu);
- }
- 
- #ifdef __BIG_ENDIAN__
-@@ -254,11 +246,12 @@ void smp_muxed_ipi_message_pass(int cpu, int msg)
+@@ -246,11 +246,17 @@ void smp_muxed_ipi_message_pass(int cpu, int msg)
  
  irqreturn_t smp_ipi_demux(void)
  {
--	struct cpu_messages *info = this_cpu_ptr(&ipi_message);
-+	struct cpu_messages *info;
- 	unsigned long all;
- 
- 	mb();	/* order any irq clear */
- 
-+	info = this_cpu_ptr(&ipi_message);
- 	do {
- 		all = xchg(&info->messages, 0);
- #if defined(CONFIG_KVM_XICS) && defined(CONFIG_KVM_BOOK3S_HV_POSSIBLE)
-diff --git a/arch/powerpc/platforms/85xx/smp.c b/arch/powerpc/platforms/85xx/smp.c
-index 078097a0b09d..0975066f76e8 100644
---- a/arch/powerpc/platforms/85xx/smp.c
-+++ b/arch/powerpc/platforms/85xx/smp.c
-@@ -461,16 +461,9 @@ static void mpc85xx_smp_machine_kexec(struct kimage *image)
- }
- #endif /* CONFIG_KEXEC_CORE */
- 
--static void smp_85xx_basic_setup(int cpu_nr)
--{
--	if (cpu_has_feature(CPU_FTR_DBELL))
--		doorbell_setup_this_cpu();
--}
--
- static void smp_85xx_setup_cpu(int cpu_nr)
- {
- 	mpic_setup_this_cpu();
--	smp_85xx_basic_setup(cpu_nr);
- }
- 
- void __init mpc85xx_smp_init(void)
-@@ -484,7 +477,7 @@ void __init mpc85xx_smp_init(void)
- 		smp_85xx_ops.setup_cpu = smp_85xx_setup_cpu;
- 		smp_85xx_ops.message_pass = smp_mpic_message_pass;
- 	} else
--		smp_85xx_ops.setup_cpu = smp_85xx_basic_setup;
-+		smp_85xx_ops.setup_cpu = NULL;
- 
- 	if (cpu_has_feature(CPU_FTR_DBELL)) {
- 		/*
-@@ -492,7 +485,7 @@ void __init mpc85xx_smp_init(void)
- 		 * smp_muxed_ipi_message_pass
- 		 */
- 		smp_85xx_ops.message_pass = NULL;
--		smp_85xx_ops.cause_ipi = doorbell_cause_ipi;
-+		smp_85xx_ops.cause_ipi = doorbell_global_ipi;
- 		smp_85xx_ops.probe = NULL;
- 	}
- 
-diff --git a/arch/powerpc/platforms/powermac/smp.c b/arch/powerpc/platforms/powermac/smp.c
-index 746ca7321b03..a3207cea360e 100644
---- a/arch/powerpc/platforms/powermac/smp.c
-+++ b/arch/powerpc/platforms/powermac/smp.c
-@@ -172,7 +172,7 @@ static irqreturn_t psurge_ipi_intr(int irq, void *d)
- 	return IRQ_HANDLED;
- }
- 
--static void smp_psurge_cause_ipi(int cpu, unsigned long data)
-+static void smp_psurge_cause_ipi(int cpu)
- {
- 	psurge_set_ipi(cpu);
- }
-diff --git a/arch/powerpc/platforms/powernv/smp.c b/arch/powerpc/platforms/powernv/smp.c
-index 39296bf7009e..33bd4dd2cb41 100644
---- a/arch/powerpc/platforms/powernv/smp.c
-+++ b/arch/powerpc/platforms/powernv/smp.c
-@@ -53,11 +53,6 @@ static void pnv_smp_setup_cpu(int cpu)
- 		xive_smp_setup_cpu();
- 	else if (cpu != boot_cpuid)
- 		xics_setup_cpu();
--
--#ifdef CONFIG_PPC_DOORBELL
--	if (cpu_has_feature(CPU_FTR_DBELL))
--		doorbell_setup_this_cpu();
--#endif
- }
- 
- static int pnv_smp_kick_cpu(int nr)
-@@ -254,17 +249,31 @@ static int pnv_smp_prepare_cpu(int cpu)
- 	return 0;
- }
- 
-+static void pnv_cause_ipi(int cpu)
-+{
-+	if (doorbell_try_core_ipi(cpu))
-+		return;
++	mb();	/* order any irq clear */
 +
-+	icp_ops->cause_ipi(cpu);
++	return smp_ipi_demux_relaxed();
 +}
 +
- static void __init pnv_smp_probe(void)
- {
- 	if (xive_enabled())
- 		xive_smp_probe();
- 	else
- 		xics_smp_probe();
-+
-+	if (cpu_has_feature(CPU_FTR_DBELL) && !cpu_has_feature(CPU_FTR_ARCH_300)) {
-+		smp_ops->cause_ipi = pnv_cause_ipi;
-+	} else {
-+		smp_ops->cause_ipi = icp_ops->cause_ipi;
-+	}
- }
++/* sync-free variant. Callers should ensure synchronization */
++irqreturn_t smp_ipi_demux_relaxed(void)
++{
+ 	struct cpu_messages *info;
+ 	unsigned long all;
  
- static struct smp_ops_t pnv_smp_ops = {
--	.message_pass	= smp_muxed_ipi_message_pass,
--	.cause_ipi	= NULL, /* Filled at runtime by xi{cs,ve}_smp_probe() */
-+	.message_pass	= NULL, /* Use smp_muxed_ipi_message_pass */
-+	.cause_ipi	= NULL,	/* Filled at runtime by pnv_smp_probe() */
- 	.probe		= pnv_smp_probe,
- 	.prepare_cpu	= pnv_smp_prepare_cpu,
- 	.kick_cpu	= pnv_smp_kick_cpu,
-diff --git a/arch/powerpc/platforms/pseries/smp.c b/arch/powerpc/platforms/pseries/smp.c
-index f6f83aeccaaa..12ff5bef67fd 100644
---- a/arch/powerpc/platforms/pseries/smp.c
-+++ b/arch/powerpc/platforms/pseries/smp.c
-@@ -55,11 +55,6 @@
-  */
- static cpumask_var_t of_spin_mask;
- 
--/*
-- * If we multiplex IPI mechanisms, store the appropriate XICS IPI mechanism here
-- */
--static void  (*xics_cause_ipi)(int cpu, unsigned long data);
+-	mb();	/* order any irq clear */
 -
- /* Query where a cpu is now.  Return codes #defined in plpar_wrappers.h */
- int smp_query_cpu_stopped(unsigned int pcpu)
- {
-@@ -143,8 +138,6 @@ static void smp_setup_cpu(int cpu)
- {
- 	if (cpu != boot_cpuid)
- 		xics_setup_cpu();
--	if (cpu_has_feature(CPU_FTR_DBELL))
--		doorbell_setup_this_cpu();
- 
- 	if (firmware_has_feature(FW_FEATURE_SPLPAR))
- 		vpa_init(cpu);
-@@ -187,23 +180,23 @@ static int smp_pSeries_kick_cpu(int nr)
- 	return 0;
- }
- 
--/* Only used on systems that support multiple IPI mechanisms */
--static void pSeries_cause_ipi_mux(int cpu, unsigned long data)
-+static void smp_pseries_cause_ipi(int cpu)
- {
--	if (cpumask_test_cpu(cpu, cpu_sibling_mask(smp_processor_id())))
--		doorbell_cause_ipi(cpu, data);
--	else
--		xics_cause_ipi(cpu, data);
-+	/* POWER9 should not use this handler */
-+	if (doorbell_try_core_ipi(cpu))
-+		return;
-+
-+	icp_ops->cause_ipi(cpu);
- }
- 
- static __init void pSeries_smp_probe(void)
- {
- 	xics_smp_probe();
- 
--	if (cpu_has_feature(CPU_FTR_DBELL)) {
--		xics_cause_ipi = smp_ops->cause_ipi;
--		smp_ops->cause_ipi = pSeries_cause_ipi_mux;
--	}
-+	if (cpu_has_feature(CPU_FTR_DBELL))
-+		smp_ops->cause_ipi = smp_pseries_cause_ipi;
-+	else
-+		smp_ops->cause_ipi = icp_ops->cause_ipi;
- }
- 
- static struct smp_ops_t pseries_smp_ops = {
-diff --git a/arch/powerpc/sysdev/xics/icp-hv.c b/arch/powerpc/sysdev/xics/icp-hv.c
-index e7fa26c4ff73..bbc839a98c41 100644
---- a/arch/powerpc/sysdev/xics/icp-hv.c
-+++ b/arch/powerpc/sysdev/xics/icp-hv.c
-@@ -138,7 +138,7 @@ static void icp_hv_set_cpu_priority(unsigned char cppr)
- 
- #ifdef CONFIG_SMP
- 
--static void icp_hv_cause_ipi(int cpu, unsigned long data)
-+static void icp_hv_cause_ipi(int cpu)
- {
- 	icp_hv_set_qirr(cpu, IPI_PRIORITY);
- }
-diff --git a/arch/powerpc/sysdev/xics/icp-native.c b/arch/powerpc/sysdev/xics/icp-native.c
-index f0f3f47a3fc9..2bfb9968d562 100644
---- a/arch/powerpc/sysdev/xics/icp-native.c
-+++ b/arch/powerpc/sysdev/xics/icp-native.c
-@@ -143,19 +143,9 @@ static unsigned int icp_native_get_irq(void)
- 
- #ifdef CONFIG_SMP
- 
--static void icp_native_cause_ipi(int cpu, unsigned long data)
-+static void icp_native_cause_ipi(int cpu)
- {
- 	kvmppc_set_host_ipi(cpu, 1);
--#ifdef CONFIG_PPC_DOORBELL
--	if (cpu_has_feature(CPU_FTR_DBELL)) {
--		if (cpumask_test_cpu(cpu, cpu_sibling_mask(get_cpu()))) {
--			doorbell_cause_ipi(cpu, data);
--			put_cpu();
--			return;
--		}
--		put_cpu();
--	}
--#endif
- 	icp_native_set_qirr(cpu, IPI_PRIORITY);
- }
- 
-diff --git a/arch/powerpc/sysdev/xics/icp-opal.c b/arch/powerpc/sysdev/xics/icp-opal.c
-index b53f80f0b4d8..c71d2ea42627 100644
---- a/arch/powerpc/sysdev/xics/icp-opal.c
-+++ b/arch/powerpc/sysdev/xics/icp-opal.c
-@@ -126,7 +126,7 @@ static void icp_opal_eoi(struct irq_data *d)
- 
- #ifdef CONFIG_SMP
- 
--static void icp_opal_cause_ipi(int cpu, unsigned long data)
-+static void icp_opal_cause_ipi(int cpu)
- {
- 	int hw_cpu = get_hard_smp_processor_id(cpu);
- 
-diff --git a/arch/powerpc/sysdev/xics/xics-common.c b/arch/powerpc/sysdev/xics/xics-common.c
-index 23efe4e42172..2eb53c12ee6e 100644
---- a/arch/powerpc/sysdev/xics/xics-common.c
-+++ b/arch/powerpc/sysdev/xics/xics-common.c
-@@ -143,9 +143,6 @@ static void xics_request_ipi(void)
- 
- void __init xics_smp_probe(void)
- {
--	/* Setup cause_ipi callback  based on which ICP is used */
--	smp_ops->cause_ipi = icp_ops->cause_ipi;
--
- 	/* Register all the IPIs */
- 	xics_request_ipi();
- }
-diff --git a/arch/powerpc/sysdev/xive/common.c b/arch/powerpc/sysdev/xive/common.c
-index d9cd7f705f21..6a98efb14264 100644
---- a/arch/powerpc/sysdev/xive/common.c
-+++ b/arch/powerpc/sysdev/xive/common.c
-@@ -834,15 +834,15 @@ static void xive_irq_free_data(unsigned int virq)
- 
- #ifdef CONFIG_SMP
- 
--static void xive_cause_ipi(int cpu, unsigned long msg)
-+static void xive_cause_ipi(int cpu)
- {
- 	struct xive_cpu *xc;
- 	struct xive_irq_data *xd;
- 
- 	xc = per_cpu(xive_cpu, cpu);
- 
--	DBG_VERBOSE("IPI msg#%ld CPU %d -> %d (HW IRQ 0x%x)\n",
--		    msg, smp_processor_id(), cpu, xc->hw_ipi);
-+	DBG_VERBOSE("IPI CPU %d -> %d (HW IRQ 0x%x)\n",
-+		    smp_processor_id(), cpu, xc->hw_ipi);
- 
- 	xd = &xc->ipi_data;
- 	if (WARN_ON(!xd->trig_mmio))
+ 	info = this_cpu_ptr(&ipi_message);
+ 	do {
+ 		all = xchg(&info->messages, 0);
 -- 
 2.11.0
