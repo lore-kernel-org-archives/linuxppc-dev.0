@@ -1,17 +1,42 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <khandual@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w4JV110X4zDq7c
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Apr 2017 23:31:53 +1000 (AEST)
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH] powerpc/32: Remove redundant test in transfer_to_handler()
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Scott Wood <oss@buserror.net>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Message-Id: <20170414133148.A458B6E5FA@localhost.localdomain>
-Date: Fri, 14 Apr 2017 15:31:48 +0200 (CEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w4Jd65R8XzDq7c
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Apr 2017 23:38:02 +1000 (AEST)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v3EDXT2Y133827
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Apr 2017 09:37:55 -0400
+Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [125.16.236.6])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 29tsptc670-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Apr 2017 09:37:54 -0400
+Received: from localhost
+ by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
+ Fri, 14 Apr 2017 19:07:51 +0530
+Received: from d28av06.in.ibm.com (d28av06.in.ibm.com [9.184.220.48])
+ by d28relay05.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v3EDbgwS18546692
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Apr 2017 19:07:42 +0530
+Received: from d28av06.in.ibm.com (localhost [127.0.0.1])
+ by d28av06.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v3EDblRw022234
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Apr 2017 19:07:48 +0530
+Subject: Re: [PATCH 1/3] powerpc/mm: Rename variable to reflect start address
+ of a section
+To: linuxppc-dev@lists.ozlabs.org
+References: <20170406141450.16060-1-khandual@linux.vnet.ibm.com>
+Cc: aneesh.kumar@linux.vnet.ibm.com, Michael Ellerman <mpe@ellerman.id.au>
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Date: Fri, 14 Apr 2017 19:07:41 +0530
+MIME-Version: 1.0
+In-Reply-To: <20170406141450.16060-1-khandual@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=windows-1252
+Message-Id: <15325398-8566-5c1a-4252-e55213f1c195@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,28 +46,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-As stated in the comment on top of transfer_to_handler(),
-all callers set cr0.eq if the exception occurred in kernel mode
-(i.e. MSR:PR = 0)
+On 04/06/2017 07:44 PM, Anshuman Khandual wrote:
+> The commit (16a05bff1: powerpc: start loop at section start of
+> start in vmemmap_populated()) reused 'start' variable to compute
+> the starting address of the memory section where the given address
+> belongs. Then the same variable is used for iterating over starting
+> address of all memory sections before reaching the 'end' address.
+> Renaming it as 'section_start' makes the logic more clear.
+> 
+> Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+> ---
+> Previous discussions on this http://patchwork.ozlabs.org/patch/584103/
 
-Therefore, it is not needed to do the test again
+Hello Michael,
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
- arch/powerpc/kernel/entry_32.S | 1 -
- 1 file changed, 1 deletion(-)
+Are you okay with this cleanup, we had discussed about this before which
+can be pulled up from the link above. The other two patches are just
+in-code documentation addition to relevant files.
 
-diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
-index a38600949f3a..0651a7438fa6 100644
---- a/arch/powerpc/kernel/entry_32.S
-+++ b/arch/powerpc/kernel/entry_32.S
-@@ -141,7 +141,6 @@ transfer_to_handler:
- 	stw	r2,GPR2(r11)
- 	stw	r12,_NIP(r11)
- 	stw	r9,_MSR(r11)
--	andi.	r2,r9,MSR_PR
- 	mfctr	r12
- 	mfspr	r2,SPRN_XER
- 	stw	r12,_CTR(r11)
--- 
-2.12.0
+Regards
+Anshuman
