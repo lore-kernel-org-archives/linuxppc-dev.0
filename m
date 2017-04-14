@@ -1,34 +1,17 @@
-Return-Path: <ricklind@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w45rW27fBzDq7c
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Apr 2017 15:32:10 +1000 (AEST)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v3E5Sbam126347
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Apr 2017 01:32:03 -0400
-Received: from e12.ny.us.ibm.com (e12.ny.us.ibm.com [129.33.205.202])
- by mx0a-001b2d01.pphosted.com with ESMTP id 29tp4auwf8-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Apr 2017 01:32:03 -0400
-Received: from localhost
- by e12.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ricklind@linux.vnet.ibm.com>;
- Fri, 14 Apr 2017 01:32:02 -0400
-Subject: Re: [PATCH] arch/powerpc/mm/slice: Cleanup leftover use of task_size
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
-References: <1492067567-24688-1-git-send-email-ricklind@linux.vnet.ibm.com>
- <87lgr4p0ff.fsf@skywalker.in.ibm.com>
-From: Rick Lindsley <ricklind@linux.vnet.ibm.com>
-Date: Thu, 13 Apr 2017 22:31:58 -0700
-MIME-Version: 1.0
-In-Reply-To: <87lgr4p0ff.fsf@skywalker.in.ibm.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Message-Id: <e9d2ec20-5067-9bd8-c709-0acf1ca9e86e@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w467h4MFvzDq7c
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Apr 2017 15:45:20 +1000 (AEST)
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH v2] powerpc/mm: Fix missing page attributes in page table dump
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Scott Wood <oss@buserror.net>, Rashmica Gupta <rashmicy@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Message-Id: <20170414054516.757356014A@localhost.localdomain>
+Date: Fri, 14 Apr 2017 07:45:16 +0200 (CEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,21 +21,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/13/2017 12:33 PM, Aneesh Kumar K.V wrote:
+On some targets, _PAGE_RW is 0 and this is _PAGE_RO which is used.
+There is also _PAGE_SHARED that is missing.
 
-> I missed this part earlier. I guess that should be fixed in radix code.
-> This came in via fbfef9027c2a7ad9277755509fdb849dbccfe8c1 (powerpc/mm:
-> Switch some TASK_SIZE checks to use mm_context addr_limit). That patch
-> needs update. When we switched from mm->task_size to
-> mm->context.addr_limit in latest version of the patch, we missed
-> updating the above correctly. I have now send a version  which should
-> update this correctly.
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ v2: Unlike the 3 other pgtable.h, arch/powerpc/include/asm/book3s/64/pgtable.h
+ doesn't include pte-common.h . Therefore, _PAGE_SHARED has to be defined
+ explicitly there, just like _PAGE_RO is. (build issue reported by kbuild robot)
 
-Ok - so the intent then is that you may extend your address space, but
-you still may not allocate anything larger than task_size (which will
-never be larger than 128TB)?  The section we are talking about is checking
-the length of the request against task_size, so that means we may not
-allocate a single vm area larger than 128TB even though it would be okay
-to (say) allocate 3 of those within 512TB of address space?
+ arch/powerpc/include/asm/book3s/64/pgtable.h | 1 +
+ arch/powerpc/mm/dump_linuxpagetables.c       | 9 +++++++++
+ 2 files changed, 10 insertions(+)
 
-Rick
+diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
+index fb72ff6b98e6..fc9dc57a787b 100644
+--- a/arch/powerpc/include/asm/book3s/64/pgtable.h
++++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
+@@ -13,6 +13,7 @@
+ #define _PAGE_BIT_SWAP_TYPE	0
+ 
+ #define _PAGE_RO		0
++#define _PAGE_SHARED		0
+ 
+ #define _PAGE_EXEC		0x00001 /* execute permission */
+ #define _PAGE_WRITE		0x00002 /* write access allowed */
+diff --git a/arch/powerpc/mm/dump_linuxpagetables.c b/arch/powerpc/mm/dump_linuxpagetables.c
+index 05109d7fa027..22d2433333f5 100644
+--- a/arch/powerpc/mm/dump_linuxpagetables.c
++++ b/arch/powerpc/mm/dump_linuxpagetables.c
+@@ -119,8 +119,13 @@ static const struct flag_info flag_array[] = {
+ 		.set	= "user",
+ 		.clear	= "    ",
+ 	}, {
++#if _PAGE_RO == 0
+ 		.mask	= _PAGE_RW,
+ 		.val	= _PAGE_RW,
++#else
++		.mask	= _PAGE_RO,
++		.val	= 0,
++#endif
+ 		.set	= "rw",
+ 		.clear	= "ro",
+ 	}, {
+@@ -207,6 +212,10 @@ static const struct flag_info flag_array[] = {
+ 		.mask	= _PAGE_SPECIAL,
+ 		.val	= _PAGE_SPECIAL,
+ 		.set	= "special",
++	}, {
++		.mask	= _PAGE_SHARED,
++		.val	= _PAGE_SHARED,
++		.set	= "shared",
+ 	}
+ };
+ 
+-- 
+2.12.0
