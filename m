@@ -1,17 +1,33 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <ricklind@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w467h4MFvzDq7c
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Apr 2017 15:45:20 +1000 (AEST)
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v2] powerpc/mm: Fix missing page attributes in page table dump
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Scott Wood <oss@buserror.net>, Rashmica Gupta <rashmicy@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Message-Id: <20170414054516.757356014A@localhost.localdomain>
-Date: Fri, 14 Apr 2017 07:45:16 +0200 (CEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w488m6jl6zDq7c
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Apr 2017 17:16:24 +1000 (AEST)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v3E7DoQA014844
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Apr 2017 03:16:19 -0400
+Received: from e13.ny.us.ibm.com (e13.ny.us.ibm.com [129.33.205.203])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 29t32rxub3-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Apr 2017 03:16:18 -0400
+Received: from localhost
+ by e13.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ricklind@linux.vnet.ibm.com>;
+ Fri, 14 Apr 2017 03:16:18 -0400
+Subject: Re: [PATCH] arch/powerpc/mm/slice: Cleanup leftover use of task_size
+To: kbuild test robot <lkp@intel.com>
+References: <201704132333.lhqnK0L3%fengguang.wu@intel.com>
+Cc: kbuild-all@01.org, linuxppc-dev@lists.ozlabs.org
+From: Rick Lindsley <ricklind@linux.vnet.ibm.com>
+Date: Fri, 14 Apr 2017 00:16:12 -0700
+MIME-Version: 1.0
+In-Reply-To: <201704132333.lhqnK0L3%fengguang.wu@intel.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Message-Id: <3371c437-75c9-1aa0-5d60-02ff1a2f07bb@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,59 +37,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On some targets, _PAGE_RW is 0 and this is _PAGE_RO which is used.
-There is also _PAGE_SHARED that is missing.
+On 04/13/2017 08:35 AM, kbuild test robot wrote:
+> Hi Rick,
+>
+> [auto build test ERROR on powerpc/next]
+> [also build test ERROR on next-20170413]
+> [cannot apply to v4.11-rc6]
+> [if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
- v2: Unlike the 3 other pgtable.h, arch/powerpc/include/asm/book3s/64/pgtable.h
- doesn't include pte-common.h . Therefore, _PAGE_SHARED has to be defined
- explicitly there, just like _PAGE_RO is. (build issue reported by kbuild robot)
+Bah. I encountered this during a backport and typoed the structure name in preparing the patch here.  All the references to addr_limit should have been context.addr_limit.
 
- arch/powerpc/include/asm/book3s/64/pgtable.h | 1 +
- arch/powerpc/mm/dump_linuxpagetables.c       | 9 +++++++++
- 2 files changed, 10 insertions(+)
+However, Aneesh's post https://lists.ozlabs.org/pipermail/linuxppc-dev/2017-April/156781.html makes this one unnecessary. With that patch, the two branches, radix and hash, are congruent in their treatment of addr_limit.
 
-diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
-index fb72ff6b98e6..fc9dc57a787b 100644
---- a/arch/powerpc/include/asm/book3s/64/pgtable.h
-+++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
-@@ -13,6 +13,7 @@
- #define _PAGE_BIT_SWAP_TYPE	0
- 
- #define _PAGE_RO		0
-+#define _PAGE_SHARED		0
- 
- #define _PAGE_EXEC		0x00001 /* execute permission */
- #define _PAGE_WRITE		0x00002 /* write access allowed */
-diff --git a/arch/powerpc/mm/dump_linuxpagetables.c b/arch/powerpc/mm/dump_linuxpagetables.c
-index 05109d7fa027..22d2433333f5 100644
---- a/arch/powerpc/mm/dump_linuxpagetables.c
-+++ b/arch/powerpc/mm/dump_linuxpagetables.c
-@@ -119,8 +119,13 @@ static const struct flag_info flag_array[] = {
- 		.set	= "user",
- 		.clear	= "    ",
- 	}, {
-+#if _PAGE_RO == 0
- 		.mask	= _PAGE_RW,
- 		.val	= _PAGE_RW,
-+#else
-+		.mask	= _PAGE_RO,
-+		.val	= 0,
-+#endif
- 		.set	= "rw",
- 		.clear	= "ro",
- 	}, {
-@@ -207,6 +212,10 @@ static const struct flag_info flag_array[] = {
- 		.mask	= _PAGE_SPECIAL,
- 		.val	= _PAGE_SPECIAL,
- 		.set	= "special",
-+	}, {
-+		.mask	= _PAGE_SHARED,
-+		.val	= _PAGE_SHARED,
-+		.set	= "shared",
- 	}
- };
- 
--- 
-2.12.0
+Rick
