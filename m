@@ -1,42 +1,17 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w4Jd65R8XzDq7c
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Apr 2017 23:38:02 +1000 (AEST)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v3EDXT2Y133827
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Apr 2017 09:37:55 -0400
-Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [125.16.236.6])
- by mx0b-001b2d01.pphosted.com with ESMTP id 29tsptc670-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Apr 2017 09:37:54 -0400
-Received: from localhost
- by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Fri, 14 Apr 2017 19:07:51 +0530
-Received: from d28av06.in.ibm.com (d28av06.in.ibm.com [9.184.220.48])
- by d28relay05.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v3EDbgwS18546692
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Apr 2017 19:07:42 +0530
-Received: from d28av06.in.ibm.com (localhost [127.0.0.1])
- by d28av06.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v3EDblRw022234
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Apr 2017 19:07:48 +0530
-Subject: Re: [PATCH 1/3] powerpc/mm: Rename variable to reflect start address
- of a section
-To: linuxppc-dev@lists.ozlabs.org
-References: <20170406141450.16060-1-khandual@linux.vnet.ibm.com>
-Cc: aneesh.kumar@linux.vnet.ibm.com, Michael Ellerman <mpe@ellerman.id.au>
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Date: Fri, 14 Apr 2017 19:07:41 +0530
-MIME-Version: 1.0
-In-Reply-To: <20170406141450.16060-1-khandual@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=windows-1252
-Message-Id: <15325398-8566-5c1a-4252-e55213f1c195@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w4Jv36W8gzDq7c
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Apr 2017 23:50:07 +1000 (AEST)
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH] video: console: Remove reference to CONFIG_8xx
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+ "David S. Miller" <davem@davemloft.net>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-fbdev@vger.kernel.org
+Message-Id: <20170414135004.46D646831E@localhost.localdomain>
+Date: Fri, 14 Apr 2017 15:50:04 +0200 (CEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,23 +21,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/06/2017 07:44 PM, Anshuman Khandual wrote:
-> The commit (16a05bff1: powerpc: start loop at section start of
-> start in vmemmap_populated()) reused 'start' variable to compute
-> the starting address of the memory section where the given address
-> belongs. Then the same variable is used for iterating over starting
-> address of all memory sections before reaching the 'end' address.
-> Renaming it as 'section_start' makes the logic more clear.
-> 
-> Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-> ---
-> Previous discussions on this http://patchwork.ozlabs.org/patch/584103/
+CONFIG_8xx is deprecated and should soon be removed in favor
+of CONFIG_PPC_8xx.
 
-Hello Michael,
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ This is the last instance of CONFIG_8xx outside of arch/powerpc/
 
-Are you okay with this cleanup, we had discussed about this before which
-can be pulled up from the link above. The other two patches are just
-in-code documentation addition to relevant files.
+ drivers/video/console/Kconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Regards
-Anshuman
+diff --git a/drivers/video/console/Kconfig b/drivers/video/console/Kconfig
+index 5b71bd905a60..2111d06f8c81 100644
+--- a/drivers/video/console/Kconfig
++++ b/drivers/video/console/Kconfig
+@@ -6,7 +6,7 @@ menu "Console display driver support"
+ 
+ config VGA_CONSOLE
+ 	bool "VGA text console" if EXPERT || !X86
+-	depends on !4xx && !8xx && !SPARC && !M68K && !PARISC && !FRV && \
++	depends on !4xx && !PPC_8xx && !SPARC && !M68K && !PARISC && !FRV && \
+ 		!SUPERH && !BLACKFIN && !AVR32 && !MN10300 && !CRIS && \
+ 		(!ARM || ARCH_FOOTBRIDGE || ARCH_INTEGRATOR || ARCH_NETWINDER) && \
+ 		!ARM64 && !ARC && !MICROBLAZE && !OPENRISC
+-- 
+2.12.0
