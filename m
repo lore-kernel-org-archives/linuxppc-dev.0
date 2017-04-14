@@ -1,36 +1,24 @@
-Return-Path: <tyreld@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <helgaas@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w4XDt43PszDq8M
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Apr 2017 08:21:18 +1000 (AEST)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v3EMJ0Rh035881
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Apr 2017 18:21:12 -0400
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
- by mx0a-001b2d01.pphosted.com with ESMTP id 29teu5sqx4-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Apr 2017 18:21:12 -0400
-Received: from localhost
- by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <tyreld@linux.vnet.ibm.com>;
- Fri, 14 Apr 2017 16:21:11 -0600
-Subject: Re: [PATCH 4/5] pseries/hotplug init: Convert new DRC memory property
- for hotplug runtime
-To: Michael Bringmann <mwb@linux.vnet.ibm.com>,
- ltc-virtual-io@lists.linux.ibm.com, linuxppc-dev@lists.ozlabs.org
-References: <149202212688.38498.11025778802721939795.stgit@powerkvm6.aus.stglabs.ibm.com>
- <149202223617.38498.4163495496103882812.stgit@powerkvm6.aus.stglabs.ibm.com>
-Cc: nfont@linux.vnet.ibm.com
-From: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
-Date: Fri, 14 Apr 2017 15:21:05 -0700
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w4Xzl5hgmzDq5x
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Apr 2017 08:54:59 +1000 (AEST)
+Date: Fri, 14 Apr 2017 17:54:52 -0500
+From: Bjorn Helgaas <helgaas@kernel.org>
+To: Yongji Xie <elohimes@gmail.com>
+Cc: bhelgaas@google.com, linux-pci@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, alex.williamson@redhat.com,
+ gwshan@linux.vnet.ibm.com, aik@ozlabs.ru, benh@kernel.crashing.org,
+ mpe@ellerman.id.au, paulus@samba.org, zhong@linux.vnet.ibm.com
+Subject: Re: [PATCH v10 4/4] PCI: Don't extend device's size when using
+ default alignment for all devices
+Message-ID: <20170414225452.GC5864@bhelgaas-glaptop.roam.corp.google.com>
+References: <1491825494-19331-1-git-send-email-elohimes@gmail.com>
+ <1491825494-19331-5-git-send-email-elohimes@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <149202223617.38498.4163495496103882812.stgit@powerkvm6.aus.stglabs.ibm.com>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <5cc09ba7-c9d8-8d88-1dc8-6c5ebb31a1bd@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1491825494-19331-5-git-send-email-elohimes@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,173 +28,176 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/12/2017 11:37 AM, Michael Bringmann wrote:
-> hotplug_init: Simplify the code needed for runtime memory hotplug and
-> maintenance with a conversion routine that transforms the compressed
-> property "ibm,dynamic-memory-v2" to the form of "ibm,dynamic-memory"
-> within the "ibm,dynamic-reconfiguration-memory" property.  Thus only
-
-ibm,dynamic-reconfiguration-memory is a device tree node not a property.
-So, s/property/node.
-
--Tyrel
-
-> a single set of routines should be required at runtime to parse, edit,
-> and manipulate the memory representation in the device tree.  Similarly,
-> any userspace applications that need this information will only need
-> to recognize the older format to be able to continue to operate.
+On Mon, Apr 10, 2017 at 07:58:14PM +0800, Yongji Xie wrote:
+> Currently we reassign the alignment by extending resources' size in
+> pci_reassigndev_resource_alignment(). This could potentially break
+> some drivers when the driver uses the size to locate register
+> whose length is related to the size. Some examples as below:
 > 
-> Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
+> - misc/Hpilo.c:
+
+If you're going to quote filenames, they need to match the actual
+files in the tree.  In this case, "hpilo.c", not "Hpilo.c".  Also
+"Nes_hw.c" below is incorrect.
+
+> off = pci_resource_len(pdev, bar) - 0x2000;
+> 
+> - net/ethernet/chelsio/cxgb4/cxgb4_uld.h:
+> (pci_resource_len((pdev), 2) - roundup_pow_of_two((vres)->ocq.size))
+> 
+> - infiniband/hw/nes/Nes_hw.c:
+> num_pds = pci_resource_len(nesdev->pcidev, BAR_1) >> PAGE_SHIFT;
+
+This BAR is apparently at least a page in size already, so this only
+breaks if we request alignment of more than a page size.
+
+> This risk could be easily prevented before because we only had one way
+> (kernel parameter resource_alignment) to touch those codes. And even
+> some users may be happy to see the extended size.
+
+Currently, pci_reassigndev_resource_alignment() extends the size of
+some resources when we use "pci=resource_alignment=..."  That
+certainly breaks places like the ones above.
+
+What do you mean by "some users may be happy to see the extended
+size"?  We're increasing a resource size to something larger than what
+the BAR actually responds to.  I don't see how that can ever be an
+*improvement*.  I can see how most drivers won't care, and a few (like
+the ones you cite above) will break.  But I don't see how any driver
+could be *helped* by us making the resource larger.
+
+> But now we introduce pcibios_default_alignment() to set default alignment
+> for all PCI devices which would also touch those codes. It would be hard
+> to prevent the risk in this case. So this patch tries to use
+> START_ALIGNMENT to identify the resource's alignment without extending
+> the size when the alignment reassigning is caused by the default alignment.
+> 
+> Signed-off-by: Yongji Xie <elohimes@gmail.com>
 > ---
->  arch/powerpc/platforms/pseries/Makefile         |    4 -
->  arch/powerpc/platforms/pseries/hotplug-memory.c |   96 +++++++++++++++++++++++
->  2 files changed, 96 insertions(+), 4 deletions(-)
+>  drivers/pci/pci.c |   34 ++++++++++++++++++++++++----------
+>  1 file changed, 24 insertions(+), 10 deletions(-)
 > 
-> diff --git a/arch/powerpc/platforms/pseries/Makefile b/arch/powerpc/platforms/pseries/Makefile
-> index 8f4ba08..87eb665 100644
-> --- a/arch/powerpc/platforms/pseries/Makefile
-> +++ b/arch/powerpc/platforms/pseries/Makefile
-> @@ -5,14 +5,14 @@ obj-y			:= lpar.o hvCall.o nvram.o reconfig.o \
->  			   of_helpers.o \
->  			   setup.o iommu.o event_sources.o ras.o \
->  			   firmware.o power.o dlpar.o mobility.o rng.o \
-> -			   pci.o pci_dlpar.o eeh_pseries.o msi.o
-> +			   pci.o pci_dlpar.o eeh_pseries.o msi.o \
-> +			   hotplug-memory.o
->  obj-$(CONFIG_SMP)	+= smp.o
->  obj-$(CONFIG_SCANLOG)	+= scanlog.o
->  obj-$(CONFIG_KEXEC_CORE)	+= kexec.o
->  obj-$(CONFIG_PSERIES_ENERGY)	+= pseries_energy.o
-> 
->  obj-$(CONFIG_HOTPLUG_CPU)	+= hotplug-cpu.o
-> -obj-$(CONFIG_MEMORY_HOTPLUG)	+= hotplug-memory.o
-> 
->  obj-$(CONFIG_HVC_CONSOLE)	+= hvconsole.o
->  obj-$(CONFIG_HVCS)		+= hvcserver.o
-> diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/powerpc/platforms/pseries/hotplug-memory.c
-> index e104c71..92f41a1 100644
-> --- a/arch/powerpc/platforms/pseries/hotplug-memory.c
-> +++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
-> @@ -24,8 +24,6 @@
->  #include <asm/sparsemem.h>
->  #include "pseries.h"
-> 
-> -static bool rtas_hp_event;
-> -
->  unsigned long pseries_memory_block_size(void)
+> diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+> index 02f1255..358366e 100644
+> --- a/drivers/pci/pci.c
+> +++ b/drivers/pci/pci.c
+> @@ -4959,11 +4959,13 @@ resource_size_t __weak pcibios_default_alignment(struct pci_dev *dev)
+>  /**
+>   * pci_specified_resource_alignment - get resource alignment specified by user.
+>   * @dev: the PCI device to get
+> + * @resize: whether or not to change resources' size when reassigning alignment
+>   *
+>   * RETURNS: Resource alignment if it is specified.
+>   *          Zero if it is not specified.
+>   */
+> -static resource_size_t pci_specified_resource_alignment(struct pci_dev *dev)
+> +static resource_size_t pci_specified_resource_alignment(struct pci_dev *dev,
+> +							bool *resize)
 >  {
->  	struct device_node *np;
-> @@ -69,6 +67,10 @@ unsigned long pseries_memory_block_size(void)
->  	return memblock_size;
->  }
-> 
-> +#ifdef CONFIG_MEMORY_HOTPLUG
-> +
-> +static bool rtas_hp_event;
-> +
->  static void dlpar_free_property(struct property *prop)
->  {
->  	kfree(prop->name);
-> @@ -1165,11 +1167,101 @@ static int pseries_memory_notifier(struct notifier_block *nb,
->  static struct notifier_block pseries_mem_nb = {
->  	.notifier_call = pseries_memory_notifier,
->  };
-> +#endif /* CONFIG_MEMORY_HOTPLUG */
-> +
-> +static int pseries_rewrite_dynamic_memory_v2(void)
-> +{
-> +	unsigned long memblock_size;
-> +	struct device_node *dn;
-> +	struct property *prop, *prop_v2;
-> +	__be32 *p;
-> +	struct of_drconf_cell *lmbs;
-> +	u32 num_lmb_desc_sets, num_lmbs;
-> +	int i, j, k;
-> +
-> +	dn = of_find_node_by_path("/ibm,dynamic-reconfiguration-memory");
-> +	if (!dn)
-> +		return -EINVAL;
-> +
-> +	prop_v2 = of_find_property(dn, "ibm,dynamic-memory-v2", NULL);
-> +	if (!prop_v2)
-> +		return -EINVAL;
-> +
-> +	memblock_size = pseries_memory_block_size();
-> +	if (!memblock_size)
-> +		return -EINVAL;
-> +
-> +	/* The first int of the property is the number of lmb sets
-> +	 * described by the property.
-> +	 */
-> +	p = (__be32 *)prop_v2->value;
-> +	num_lmb_desc_sets = be32_to_cpu(*p++);
-> +
-> +	/* Count the number of LMBs for generating the alternate format
-> +	 */
-> +	for (i = 0, num_lmbs = 0; i < num_lmb_desc_sets; i++) {
-> +		struct of_drconf_cell_v2 drmem;
-> +
-> +		read_drconf_cell_v2(&drmem, (const __be32 **)&p);
-> +		num_lmbs += drmem.num_seq_lmbs;
-> +	}
-> +
-> +	/* Create an empty copy of the new 'ibm,dynamic-memory' property
-> +	 */
-> +	prop = kzalloc(sizeof(*prop), GFP_KERNEL);
-> +	if (!prop)
-> +		return -ENOMEM;
-> +	prop->name = kstrdup("ibm,dynamic-memory", GFP_KERNEL);
-> +	prop->length = dyn_mem_v2_len(num_lmbs);
-> +	prop->value = kzalloc(prop->length, GFP_KERNEL);
-> +
-> +	/* Copy/expand the ibm,dynamic-memory-v2 format to produce the
-> +	 * ibm,dynamic-memory format.
-> +	 */
-> +	p = (__be32 *)prop->value;
-> +	*p = cpu_to_be32(num_lmbs);
-> +	p++;
-> +	lmbs = (struct of_drconf_cell *)p;
-> +
-> +	p = (__be32 *)prop_v2->value;
-> +	p++;
-> +
-> +	for (i = 0, k = 0; i < num_lmb_desc_sets; i++) {
-> +		struct of_drconf_cell_v2 drmem;
-> +
-> +		read_drconf_cell_v2(&drmem, (const __be32 **)&p);
-> +
-> +		for (j = 0; j < drmem.num_seq_lmbs; j++) {
-> +			lmbs[k+j].base_addr = be64_to_cpu(drmem.base_addr);
-> +			lmbs[k+j].drc_index = be32_to_cpu(drmem.drc_index);
-> +			lmbs[k+j].aa_index  = be32_to_cpu(drmem.aa_index);
-> +			lmbs[k+i].flags     = be32_to_cpu(drmem.flags);
-> +
-> +			drmem.base_addr += memblock_size;
-> +			drmem.drc_index++;
-> +		}
-> +
-> +		k += drmem.num_seq_lmbs;
-> +	}
-> +
-> +	of_remove_property(dn, prop_v2);
-> +
-> +	of_add_property(dn, prop);
-> +
-> +	/* And disable feature flag since the property has gone away */
-> +	powerpc_firmware_features &= ~FW_FEATURE_DYN_MEM_V2;
-> +
-> +	return 0;
-> +}
-> 
->  static int __init pseries_memory_hotplug_init(void)
->  {
-> +	if (firmware_has_feature(FW_FEATURE_DYN_MEM_V2))
-> +		pseries_rewrite_dynamic_memory_v2();
-> +#ifdef CONFIG_MEMORY_HOTPLUG
->  	if (firmware_has_feature(FW_FEATURE_LPAR))
->  		of_reconfig_notifier_register(&pseries_mem_nb);
-> +#endif /* CONFIG_MEMORY_HOTPLUG */
-> 
->  	return 0;
->  }
+>  	int seg, bus, slot, func, align_order, count;
+>  	unsigned short vendor, device, subsystem_vendor, subsystem_device;
+> @@ -5005,6 +5007,7 @@ static resource_size_t pci_specified_resource_alignment(struct pci_dev *dev)
+>  				(!device || (device == dev->device)) &&
+>  				(!subsystem_vendor || (subsystem_vendor == dev->subsystem_vendor)) &&
+>  				(!subsystem_device || (subsystem_device == dev->subsystem_device))) {
+> +				*resize = true;
+>  				if (align_order == -1)
+>  					align = PAGE_SIZE;
+>  				else
+> @@ -5030,6 +5033,7 @@ static resource_size_t pci_specified_resource_alignment(struct pci_dev *dev)
+>  				bus == dev->bus->number &&
+>  				slot == PCI_SLOT(dev->devfn) &&
+>  				func == PCI_FUNC(dev->devfn)) {
+> +				*resize = true;
+>  				if (align_order == -1)
+>  					align = PAGE_SIZE;
+>  				else
+> @@ -5062,6 +5066,7 @@ void pci_reassigndev_resource_alignment(struct pci_dev *dev)
+>  	struct resource *r;
+>  	resource_size_t align, size;
+>  	u16 command;
+> +	bool resize = false;
+>  
+>  	/*
+>  	 * VF BARs are read-only zero according to SR-IOV spec r1.1, sec
+> @@ -5073,7 +5078,7 @@ void pci_reassigndev_resource_alignment(struct pci_dev *dev)
+>  		return;
+>  
+>  	/* check if specified PCI is target device to reassign */
+> -	align = pci_specified_resource_alignment(dev);
+> +	align = pci_specified_resource_alignment(dev, &resize);
+>  	if (!align)
+>  		return;
+>  
+> @@ -5101,15 +5106,24 @@ void pci_reassigndev_resource_alignment(struct pci_dev *dev)
+>  		}
+>  
+>  		size = resource_size(r);
+> -		if (size < align) {
+> -			size = align;
+> -			dev_info(&dev->dev,
+> -				"Rounding up size of resource #%d to %#llx.\n",
+> -				i, (unsigned long long)size);
+> +		if (resize) {
+> +			if (size < align) {
+> +				size = align;
+> +				dev_info(&dev->dev,
+> +					"Rounding up size of resource #%d to %#llx.\n",
+> +					i, (unsigned long long)size);
+> +			}
+> +			r->flags |= IORESOURCE_UNSET;
+> +			r->start = 0;
+> +		} else {
+> +			if (size < align) {
+> +				r->flags &= ~IORESOURCE_SIZEALIGN;
+> +				r->flags |= IORESOURCE_STARTALIGN |
+> +							IORESOURCE_UNSET;
+> +				r->start = align;
+> +			}
+
+I'm still not happy about the fact that we now have these two cases:
+
+  1) If we increase resource alignment because of the
+     "pci=resource_alignment=" parameter, we increase the resource
+     size, and
+
+  2) If we increase resource alignment because of
+     pcibios_default_alignment(), we use IORESOURCE_STARTALIGN and do
+     not increase the resource size.
+
+This makes the code complicated and hard to maintain in the future.
+We talked about this earlier [1], but I'm not sure I've figured out
+the reason.  Here's my guess:
+
+Let's assume we have a 4K BAR and we're requesting alignment to 64K.
+In case 1, we're only changing the alignment for specified devices.
+If we used IORESOURCE_STARTALIGN, we would align that 4K BAR of the
+specified devices to 64K, but BARs of other devices could still be
+assigned in that same 64K page.  Therefore, we must increase the size
+to prevent other BARs in the page, even though this might break some
+drivers.
+
+But in case 2, we're changing the alignment for *all* devices.  In
+this case, we *can* use IORESOURCE_STARTALIGN because we're going to
+align *every* BAR of every device to 64K, so no other BARs will be put
+in the same page.  And since we didn't change the resource size, we
+avoid the problem of breaking drivers.
+
+If that's the reasoning, I'm not 100% sure that the complexity of this
+code is worth it.  It took me half a day to come up with this theory.
+If we do have to go this route, we *must* include comments along this
+line to make it easier next time.
+
+[1] https://lkml.kernel.org/r/20160929115422.GA31048@localhost
+
+>  		}
+> -		r->flags |= IORESOURCE_UNSET;
+> -		r->end = size - 1;
+> -		r->start = 0;
+> +		r->end = r->start + size - 1;
+>  	}
+>  	/* Need to disable bridge's resource window,
+>  	 * to enable the kernel to reassign new resource
+> -- 
+> 1.7.9.5
 > 
