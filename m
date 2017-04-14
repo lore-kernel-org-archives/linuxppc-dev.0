@@ -1,18 +1,42 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <khandual@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w4J2W5GdrzDq7c
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Apr 2017 23:11:30 +1000 (AEST)
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH] powerpc/32: Fix protection of kernel RAM after freeing unused
- memory
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Scott Wood <oss@buserror.net>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Message-Id: <20170414131126.AA07A67422@localhost.localdomain>
-Date: Fri, 14 Apr 2017 15:11:26 +0200 (CEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w4JQd2yPCzDq7c
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Apr 2017 23:28:57 +1000 (AEST)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v3EDSD37098887
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Apr 2017 09:28:52 -0400
+Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [125.16.236.3])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 29tp3e2fsw-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Apr 2017 09:28:51 -0400
+Received: from localhost
+ by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
+ Fri, 14 Apr 2017 18:58:48 +0530
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+ by d28relay06.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v3EDSkoK6488308
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Apr 2017 18:58:46 +0530
+Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
+ by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v3EDSj4l018777
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Apr 2017 18:58:46 +0530
+Subject: Re: [PATCH] selftests/powerpc/mm: Add a test for virtual address
+ mapping
+To: linuxppc-dev@lists.ozlabs.org
+References: <20170412094112.13181-1-khandual@linux.vnet.ibm.com>
+Cc: aneesh.kumar@linux.vnet.ibm.com, Michael Ellerman <mpe@ellerman.id.au>
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Date: Fri, 14 Apr 2017 18:58:44 +0530
+MIME-Version: 1.0
+In-Reply-To: <20170412094112.13181-1-khandual@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=windows-1252
+Message-Id: <fb110fed-60f0-858c-af74-9b59672262f8@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,82 +46,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-As seen below, allthough the init sections have been freed, the
-associated memory area is still marked as executable in the
-page tables. This patch fixes that.
+On 04/12/2017 03:11 PM, Anshuman Khandual wrote:
+> This verifies virtual address mapping below and above the
+> 128TB range and makes sure that address returned are within
+> the expected range depending upon the hint passed from the
+> user space.
+> 
+> Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+> ---
+> Tested this on latest ppc-next with Aneesh's yesterday's patch
+> which can be found at https://patchwork.ozlabs.org/patch/749510/
 
-[    5.860093] Freeing unused kernel memory: 592K (c0570000 - c0604000)
+Hello Aneesh/Michael,
 
----[ Start of kernel VM ]---
-0xc0000000-0xc0497fff        4704K  rw  X  present dirty accessed shared
-0xc0498000-0xc056ffff         864K  rw     present dirty accessed shared
-0xc0570000-0xc059ffff         192K  rw  X  present dirty accessed shared
-0xc05a0000-0xc7ffffff      125312K  rw     present dirty accessed shared
----[ vmalloc() Area ]---
+Does this look okay as a small singular test for below and above
+the 128TB range allocations ? Or do you think some thing else needs
+to be added here as well.
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
- arch/powerpc/mm/mem.c        |  3 +++
- arch/powerpc/mm/mmu_decl.h   |  1 +
- arch/powerpc/mm/pgtable_32.c | 20 ++++++++++++++++++++
- 3 files changed, 24 insertions(+)
-
-diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
-index 9ee536ec0739..e95931c4e6cf 100644
---- a/arch/powerpc/mm/mem.c
-+++ b/arch/powerpc/mm/mem.c
-@@ -401,6 +401,9 @@ void free_initmem(void)
- {
- 	ppc_md.progress = ppc_printk_progress;
- 	free_initmem_default(POISON_FREE_INITMEM);
-+#ifdef CONFIG_PPC32
-+	remap_init_ram();
-+#endif
- }
- 
- #ifdef CONFIG_BLK_DEV_INITRD
-diff --git a/arch/powerpc/mm/mmu_decl.h b/arch/powerpc/mm/mmu_decl.h
-index f988db655e5b..d39d92600839 100644
---- a/arch/powerpc/mm/mmu_decl.h
-+++ b/arch/powerpc/mm/mmu_decl.h
-@@ -95,6 +95,7 @@ extern void _tlbia(void);
- 
- extern void mapin_ram(void);
- extern int map_page(unsigned long va, phys_addr_t pa, int flags);
-+void remap_init_ram(void);
- extern void setbat(int index, unsigned long virt, phys_addr_t phys,
- 		   unsigned int size, pgprot_t prot);
- 
-diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
-index a65c0b4c0669..d506bd61b629 100644
---- a/arch/powerpc/mm/pgtable_32.c
-+++ b/arch/powerpc/mm/pgtable_32.c
-@@ -323,6 +323,26 @@ get_pteptr(struct mm_struct *mm, unsigned long addr, pte_t **ptep, pmd_t **pmdp)
-         return(retval);
- }
- 
-+void remap_init_ram(void)
-+{
-+	unsigned long start = (unsigned long)_sinittext & PAGE_MASK;
-+	unsigned long end = (unsigned long)_einittext;
-+	unsigned long va;
-+
-+	for (va = start; va < end; va += PAGE_SIZE) {
-+		pte_t *kpte;
-+		pmd_t *kpmd;
-+		pte_t pte = pfn_pte(__pa(va) >> PAGE_SHIFT, PAGE_KERNEL);
-+
-+		if (!get_pteptr(&init_mm, va, &kpte, &kpmd))
-+			continue;
-+		__set_pte_at(&init_mm, va, kpte, pte, 0);
-+		wmb();
-+		pte_unmap(kpte);
-+	}
-+	flush_tlb_kernel_range(start, end);
-+}
-+
- #ifdef CONFIG_DEBUG_PAGEALLOC
- 
- static int __change_page_attr(struct page *page, pgprot_t prot)
--- 
-2.12.0
+Regards
+Anshuman
