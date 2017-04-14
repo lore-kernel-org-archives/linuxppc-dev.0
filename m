@@ -1,23 +1,23 @@
 Return-Path: <tyreld@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w4X9H1XnKzDq8M
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Apr 2017 08:18:10 +1000 (AEST)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v3EM8TJa155842
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Apr 2017 18:18:08 -0400
-Received: from e16.ny.us.ibm.com (e16.ny.us.ibm.com [129.33.205.206])
- by mx0b-001b2d01.pphosted.com with ESMTP id 29ttw6hgrs-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w4XDt43PszDq8M
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Apr 2017 08:21:18 +1000 (AEST)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v3EMJ0Rh035881
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Apr 2017 18:21:12 -0400
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 29teu5sqx4-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Apr 2017 18:18:08 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Apr 2017 18:21:12 -0400
 Received: from localhost
- by e16.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <tyreld@linux.vnet.ibm.com>;
- Fri, 14 Apr 2017 18:18:07 -0400
+ Fri, 14 Apr 2017 16:21:11 -0600
 Subject: Re: [PATCH 4/5] pseries/hotplug init: Convert new DRC memory property
  for hotplug runtime
 To: Michael Bringmann <mwb@linux.vnet.ibm.com>,
@@ -26,11 +26,11 @@ References: <149202212688.38498.11025778802721939795.stgit@powerkvm6.aus.stglabs
  <149202223617.38498.4163495496103882812.stgit@powerkvm6.aus.stglabs.ibm.com>
 Cc: nfont@linux.vnet.ibm.com
 From: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
-Date: Fri, 14 Apr 2017 15:18:04 -0700
+Date: Fri, 14 Apr 2017 15:21:05 -0700
 MIME-Version: 1.0
 In-Reply-To: <149202223617.38498.4163495496103882812.stgit@powerkvm6.aus.stglabs.ibm.com>
 Content-Type: text/plain; charset=utf-8
-Message-Id: <a405e2ae-152f-8d36-cca7-0908dda35e64@linux.vnet.ibm.com>
+Message-Id: <5cc09ba7-c9d8-8d88-1dc8-6c5ebb31a1bd@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,6 +45,12 @@ On 04/12/2017 11:37 AM, Michael Bringmann wrote:
 > maintenance with a conversion routine that transforms the compressed
 > property "ibm,dynamic-memory-v2" to the form of "ibm,dynamic-memory"
 > within the "ibm,dynamic-reconfiguration-memory" property.  Thus only
+
+ibm,dynamic-reconfiguration-memory is a device tree node not a property.
+So, s/property/node.
+
+-Tyrel
+
 > a single set of routines should be required at runtime to parse, edit,
 > and manipulate the memory representation in the device tree.  Similarly,
 > any userspace applications that need this information will only need
@@ -118,12 +124,6 @@ On 04/12/2017 11:37 AM, Michael Bringmann wrote:
 > +	int i, j, k;
 > +
 > +	dn = of_find_node_by_path("/ibm,dynamic-reconfiguration-memory");
-
-This call returns a node pointer with its refcount incremented. You need
-to call of_node_put() when you are finished or you will leak a reference.
-
--Tyrel
-
 > +	if (!dn)
 > +		return -EINVAL;
 > +
