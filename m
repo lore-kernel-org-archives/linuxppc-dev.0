@@ -1,8 +1,8 @@
 Return-Path: <javier@osg.samsung.com>
 Received: from osg.samsung.com
  (ec2-52-27-115-49.us-west-2.compute.amazonaws.com [52.27.115.49])
- by lists.ozlabs.org (Postfix) with ESMTP id 3w3zyB30D0zDqBJ
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Apr 2017 11:06:42 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTP id 3w3zyG4kWyzDqFb
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Apr 2017 11:06:46 +1000 (AEST)
 From: Javier Martinez Canillas <javier@osg.samsung.com>
 To: linux-kernel@vger.kernel.org
 Cc: Wolfram Sang <wsa@the-dreams.de>,
@@ -11,10 +11,10 @@ Cc: Wolfram Sang <wsa@the-dreams.de>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Rob Herring <robh+dt@kernel.org>,
  Mark Rutland <mark.rutland@arm.com>, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v3 19/21] powerpc/512x: Add generic compatible string for I2C
+Subject: [PATCH v3 20/21] powerpc/83xx: Add generic compatible string for I2C
  EEPROM
-Date: Thu, 13 Apr 2017 22:04:43 -0300
-Message-Id: <20170414010445.21727-20-javier@osg.samsung.com>
+Date: Thu, 13 Apr 2017 22:04:44 -0300
+Message-Id: <20170414010445.21727-21-javier@osg.samsung.com>
 In-Reply-To: <20170414010445.21727-1-javier@osg.samsung.com>
 References: <20170414010445.21727-1-javier@osg.samsung.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -43,21 +43,91 @@ Signed-off-by: Javier Martinez Canillas <javier@osg.samsung.com>
 Changes in v3: None
 Changes in v2: None
 
- arch/powerpc/boot/dts/mpc5121ads.dts | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/boot/dts/mpc8308_p1m.dts  | 2 +-
+ arch/powerpc/boot/dts/mpc8349emitx.dts | 2 +-
+ arch/powerpc/boot/dts/mpc8377_rdb.dts  | 2 +-
+ arch/powerpc/boot/dts/mpc8377_wlan.dts | 2 +-
+ arch/powerpc/boot/dts/mpc8378_rdb.dts  | 2 +-
+ arch/powerpc/boot/dts/mpc8379_rdb.dts  | 2 +-
+ 6 files changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/arch/powerpc/boot/dts/mpc5121ads.dts b/arch/powerpc/boot/dts/mpc5121ads.dts
-index 75888ce2c792..ece5d60256ee 100644
---- a/arch/powerpc/boot/dts/mpc5121ads.dts
-+++ b/arch/powerpc/boot/dts/mpc5121ads.dts
-@@ -94,7 +94,7 @@
- 			};
- 
- 			eeprom@50 {
--				compatible = "at,24c32";
-+				compatible = "at,24c32", "atmel,24c32";
+diff --git a/arch/powerpc/boot/dts/mpc8308_p1m.dts b/arch/powerpc/boot/dts/mpc8308_p1m.dts
+index 57f86cdf9f36..cab933b3957a 100644
+--- a/arch/powerpc/boot/dts/mpc8308_p1m.dts
++++ b/arch/powerpc/boot/dts/mpc8308_p1m.dts
+@@ -123,7 +123,7 @@
+ 			interrupt-parent = <&ipic>;
+ 			dfsrr;
+ 			fram@50 {
+-				compatible = "ramtron,24c64";
++				compatible = "ramtron,24c64", "atmel,24c64";
  				reg = <0x50>;
  			};
+ 		};
+diff --git a/arch/powerpc/boot/dts/mpc8349emitx.dts b/arch/powerpc/boot/dts/mpc8349emitx.dts
+index 90aed3ac2f69..00c5ef08e474 100644
+--- a/arch/powerpc/boot/dts/mpc8349emitx.dts
++++ b/arch/powerpc/boot/dts/mpc8349emitx.dts
+@@ -92,7 +92,7 @@
+ 			dfsrr;
+ 
+ 			eeprom: at24@50 {
+-				compatible = "st,24c256";
++				compatible = "st,24c256", "atmel,24c256";
+ 				reg = <0x50>;
+ 			};
+ 
+diff --git a/arch/powerpc/boot/dts/mpc8377_rdb.dts b/arch/powerpc/boot/dts/mpc8377_rdb.dts
+index e32613963ab0..02c59d05fe16 100644
+--- a/arch/powerpc/boot/dts/mpc8377_rdb.dts
++++ b/arch/powerpc/boot/dts/mpc8377_rdb.dts
+@@ -150,7 +150,7 @@
+ 				};
+ 
+ 				at24@50 {
+-					compatible = "at24,24c256";
++					compatible = "at24,24c256", "atmel,24c256";
+ 					reg = <0x50>;
+ 				};
+ 
+diff --git a/arch/powerpc/boot/dts/mpc8377_wlan.dts b/arch/powerpc/boot/dts/mpc8377_wlan.dts
+index c0c790168b96..2bc3ed8a18c3 100644
+--- a/arch/powerpc/boot/dts/mpc8377_wlan.dts
++++ b/arch/powerpc/boot/dts/mpc8377_wlan.dts
+@@ -135,7 +135,7 @@
+ 				dfsrr;
+ 
+ 				at24@50 {
+-					compatible = "at24,24c256";
++					compatible = "at24,24c256", "atmel,24c256";
+ 					reg = <0x50>;
+ 				};
+ 
+diff --git a/arch/powerpc/boot/dts/mpc8378_rdb.dts b/arch/powerpc/boot/dts/mpc8378_rdb.dts
+index 71842fcd621f..9e681e3d6064 100644
+--- a/arch/powerpc/boot/dts/mpc8378_rdb.dts
++++ b/arch/powerpc/boot/dts/mpc8378_rdb.dts
+@@ -150,7 +150,7 @@
+ 				};
+ 
+ 				at24@50 {
+-					compatible = "at24,24c256";
++					compatible = "at24,24c256", "atmel,24c256";
+ 					reg = <0x50>;
+ 				};
+ 
+diff --git a/arch/powerpc/boot/dts/mpc8379_rdb.dts b/arch/powerpc/boot/dts/mpc8379_rdb.dts
+index e442a29b2fe0..3197bb78e19b 100644
+--- a/arch/powerpc/boot/dts/mpc8379_rdb.dts
++++ b/arch/powerpc/boot/dts/mpc8379_rdb.dts
+@@ -148,7 +148,7 @@
+ 				};
+ 
+ 				at24@50 {
+-					compatible = "at24,24c256";
++					compatible = "at24,24c256", "atmel,24c256";
+ 					reg = <0x50>;
+ 				};
  
 -- 
 2.9.3
