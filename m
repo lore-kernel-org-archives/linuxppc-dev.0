@@ -1,24 +1,20 @@
-Return-Path: <helgaas@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <msuchanek@suse.de>
+Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w4Mlg5t42zDq7c
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Apr 2017 01:58:55 +1000 (AEST)
-Date: Fri, 14 Apr 2017 10:58:49 -0500
-From: Bjorn Helgaas <helgaas@kernel.org>
-To: Yongji Xie <elohimes@gmail.com>
-Cc: bhelgaas@google.com, linux-pci@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, alex.williamson@redhat.com,
- gwshan@linux.vnet.ibm.com, aik@ozlabs.ru, benh@kernel.crashing.org,
- mpe@ellerman.id.au, paulus@samba.org, zhong@linux.vnet.ibm.com
-Subject: Re: [PATCH v10 3/4] powerpc/powernv: Override
- pcibios_default_alignment() to force PCI devices to be page aligned
-Message-ID: <20170414155849.GB5864@bhelgaas-glaptop.roam.corp.google.com>
-References: <1491825494-19331-1-git-send-email-elohimes@gmail.com>
- <1491825494-19331-4-git-send-email-elohimes@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w4TWq3tK8zDq8M
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Apr 2017 06:19:02 +1000 (AEST)
+Date: Fri, 14 Apr 2017 22:18:57 +0200
+From: Michal Suchanek <msuchanek@suse.de>
+To: linuxppc-dev@lists.ozlabs.org, Anshuman Khandual
+ <khandual@linux.vnet.ibm.com>
+Subject: Re: [PATCH] selftests/powerpc/mm: Add a test for virtual address
+ mapping
+Message-ID: <20170414221857.58171fce@neko>
+In-Reply-To: <20170412094112.13181-1-khandual@linux.vnet.ibm.com>
+References: <20170412094112.13181-1-khandual@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1491825494-19331-4-git-send-email-elohimes@gmail.com>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,79 +24,155 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Apr 10, 2017 at 07:58:13PM +0800, Yongji Xie wrote:
-> This overrides pcibios_default_alignment() to set default alignment
-> to PAGE_SIZE for all PCI devices on PowerNV platform. Thus sub-page
-> BARs would not share a page and could be mapped into guest when VFIO
-> passthrough them.
+Hello,
 
-Thanks for doing this.  This looks like a reasonable strategy to me,
-but it would be good to get a powerpc ack for it.
+On Wed, 12 Apr 2017 15:11:12 +0530
+Anshuman Khandual <khandual@linux.vnet.ibm.com> wrote:
 
-> Signed-off-by: Yongji Xie <elohimes@gmail.com>
-> ---
->  arch/powerpc/include/asm/machdep.h        |    2 ++
->  arch/powerpc/kernel/pci-common.c          |    8 ++++++++
->  arch/powerpc/platforms/powernv/pci-ioda.c |    7 +++++++
->  3 files changed, 17 insertions(+)
+> This verifies virtual address mapping below and above the
+> 128TB range and makes sure that address returned are within
+> the expected range depending upon the hint passed from the
+> user space.
+
+This description does not mention anything PPC specific. Can this be
+generalized to work with Intel L5 enabled kernel as well?
+
+Thanks
+
+Michal
+
 > 
-> diff --git a/arch/powerpc/include/asm/machdep.h b/arch/powerpc/include/asm/machdep.h
-> index 5011b69..a82c192 100644
-> --- a/arch/powerpc/include/asm/machdep.h
-> +++ b/arch/powerpc/include/asm/machdep.h
-> @@ -173,6 +173,8 @@ struct machdep_calls {
->  	/* Called after scan and before resource survey */
->  	void (*pcibios_fixup_phb)(struct pci_controller *hose);
+> Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+> ---
+> Tested this on latest ppc-next with Aneesh's yesterday's patch
+> which can be found at https://patchwork.ozlabs.org/patch/749510/
+> 
+>  tools/testing/selftests/powerpc/mm/.gitignore |  3 +-
+>  tools/testing/selftests/powerpc/mm/Makefile   |  2 +-
+>  tools/testing/selftests/powerpc/mm/vaddr.c    | 89
+> +++++++++++++++++++++++++++ 3 files changed, 92 insertions(+), 2
+> deletions(-) create mode 100644
+> tools/testing/selftests/powerpc/mm/vaddr.c
+> 
+> diff --git a/tools/testing/selftests/powerpc/mm/.gitignore
+> b/tools/testing/selftests/powerpc/mm/.gitignore index
+> e715a3f..af1f31f 100644 ---
+> a/tools/testing/selftests/powerpc/mm/.gitignore +++
+> b/tools/testing/selftests/powerpc/mm/.gitignore @@ -1,4 +1,5 @@
+>  hugetlb_vs_thp_test
+>  subpage_prot
+>  tempfile
+> -prot_sao
+> \ No newline at end of file
+> +prot_sao
+> +vaddr
+> diff --git a/tools/testing/selftests/powerpc/mm/Makefile
+> b/tools/testing/selftests/powerpc/mm/Makefile index 1cffe54..7345db2
+> 100644 --- a/tools/testing/selftests/powerpc/mm/Makefile
+> +++ b/tools/testing/selftests/powerpc/mm/Makefile
+> @@ -1,7 +1,7 @@
+>  noarg:
+>  	$(MAKE) -C ../
 >  
-> +	resource_size_t (*pcibios_default_alignment)(struct pci_dev *);
+> -TEST_GEN_PROGS := hugetlb_vs_thp_test subpage_prot prot_sao
+> +TEST_GEN_PROGS := hugetlb_vs_thp_test subpage_prot prot_sao vaddr
+>  TEST_GEN_FILES := tempfile
+>  
+>  include ../../lib.mk
+> diff --git a/tools/testing/selftests/powerpc/mm/vaddr.c
+> b/tools/testing/selftests/powerpc/mm/vaddr.c new file mode 100644
+> index 0000000..d6485e9
+> --- /dev/null
+> +++ b/tools/testing/selftests/powerpc/mm/vaddr.c
+> @@ -0,0 +1,89 @@
+> +/*
+> + * Copyright 2017, Anshuman Khandual, IBM Corp.
+> + * Licensed under GPLv2.
+> + */
 > +
->  #ifdef CONFIG_PCI_IOV
->  	void (*pcibios_fixup_sriov)(struct pci_dev *pdev);
->  	resource_size_t (*pcibios_iov_resource_alignment)(struct pci_dev *, int resno);
-> diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
-> index ffda24a..ceda574 100644
-> --- a/arch/powerpc/kernel/pci-common.c
-> +++ b/arch/powerpc/kernel/pci-common.c
-> @@ -233,6 +233,14 @@ void pcibios_reset_secondary_bus(struct pci_dev *dev)
->  	pci_reset_secondary_bus(dev);
->  }
->  
-> +resource_size_t pcibios_default_alignment(struct pci_dev *pdev)
+> +#include <stdio.h>
+> +#include <stdlib.h>
+> +#include <string.h>
+> +#include <unistd.h>
+> +#include <errno.h>
+> +#include <numaif.h>
+> +#include <sys/mman.h>
+> +#include <sys/time.h>
+> +#include "utils.h"
+> +
+> +#define PAGE_SIZE        65536UL  /* 64KB */
+> +#define MAP_SIZE_16GB    262144UL /* 16GB  */
+> +#define NR_SLICES_128TB  8192UL   /* 128TB */
+> +#define NR_SLICES_384TB  24576UL  /* 384TB */
+> +#define ADDR_MARK_128TB  0x800000000000UL /* Beyond 128TB */
+> +
+> +static char *hind_addr(void)
 > +{
-> +	if (ppc_md.pcibios_default_alignment)
-> +		return ppc_md.pcibios_default_alignment(pdev);
+> +	int bits = 48 + rand() % 15;
 > +
+> +	return (char *) (1UL << bits);
+> +}
+> +
+> +static int validate_addr(char *ptr, int high_addr)
+> +{
+> +	unsigned long addr = (unsigned long) ptr;
+> +
+> +	if (high_addr) {
+> +		if (addr < ADDR_MARK_128TB) {
+> +			printf("Bad address %lx\n", addr);
+> +			return 1;
+> +		}
+> +		return 0;
+> +	}
+> +
+> +	if (addr > ADDR_MARK_128TB) {
+> +		printf("Bad address %lx\n", addr);
+> +		return 1;
+> +	}
 > +	return 0;
 > +}
 > +
->  #ifdef CONFIG_PCI_IOV
->  resource_size_t pcibios_iov_resource_alignment(struct pci_dev *pdev, int resno)
->  {
-> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-> index e367382..354c852 100644
-> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
-> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-> @@ -3297,6 +3297,11 @@ static void pnv_pci_setup_bridge(struct pci_bus *bus, unsigned long type)
->  	}
->  }
->  
-> +static resource_size_t pnv_pci_default_alignment(struct pci_dev *pdev)
+> +int vaddr(void)
 > +{
-> +	return PAGE_SIZE;
+> +	char *ptr[NR_SLICES_128TB];
+> +	char *hptr[NR_SLICES_384TB];
+> +	char *hint;
+> +	int  i;
+> +
+> +	for (i = 0; i < NR_SLICES_128TB; i++) {
+> +		ptr[i] = mmap(NULL, MAP_SIZE_16GB, PROT_READ |
+> PROT_WRITE,
+> +					MAP_PRIVATE | MAP_ANONYMOUS,
+> -1, 0); +
+> +		if (ptr[i] == MAP_FAILED)
+> +			break;
+> +
+> +		if (validate_addr(ptr[i], 0))
+> +			return 1;
+> +	}
+> +
+> +	for (i = 0; i < NR_SLICES_384TB; i++) {
+> +		hint = hind_addr();
+> +		hptr[i] = mmap(hint, MAP_SIZE_16GB, PROT_READ |
+> PROT_WRITE,
+> +					MAP_PRIVATE | MAP_ANONYMOUS,
+> -1, 0); +
+> +		if (hptr[i] == MAP_FAILED)
+> +			break;
+> +
+> +		if (validate_addr(hptr[i], 1))
+> +			return 1;
+> +	}
+> +
+> +	for (i = 0; i < NR_SLICES_128TB; i++)
+> +		munmap(ptr[i], MAP_SIZE_16GB);
+> +
+> +	for (i = 0; i < NR_SLICES_384TB; i++)
+> +		munmap(hptr[i], MAP_SIZE_16GB);
+> +	return 0;
 > +}
 > +
->  #ifdef CONFIG_PCI_IOV
->  static resource_size_t pnv_pci_iov_resource_alignment(struct pci_dev *pdev,
->  						      int resno)
-> @@ -3830,6 +3835,8 @@ static void __init pnv_pci_init_ioda_phb(struct device_node *np,
->  		hose->controller_ops = pnv_pci_ioda_controller_ops;
->  	}
->  
-> +	ppc_md.pcibios_default_alignment = pnv_pci_default_alignment;
-> +
->  #ifdef CONFIG_PCI_IOV
->  	ppc_md.pcibios_fixup_sriov = pnv_pci_ioda_fixup_iov_resources;
->  	ppc_md.pcibios_iov_resource_alignment = pnv_pci_iov_resource_alignment;
-> -- 
-> 1.7.9.5
-> 
+> +int main(int argc, char *argv[])
+> +{
+> +	return test_harness(vaddr, "vaddr-range");
+> +}
