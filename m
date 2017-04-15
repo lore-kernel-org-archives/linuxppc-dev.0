@@ -1,24 +1,32 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
- [IPv6:2607:f8b0:400e:c00::243])
+Return-Path: <bhelgaas@google.com>
+Received: from mail-wr0-x229.google.com (mail-wr0-x229.google.com
+ [IPv6:2a00:1450:400c:c0c::229])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w4rSR2bY6zDq7Z
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Apr 2017 20:32:23 +1000 (AEST)
-Received: by mail-pf0-x243.google.com with SMTP id i5so18093626pfc.3
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Apr 2017 03:32:23 -0700 (PDT)
-Date: Sat, 15 Apr 2017 20:31:57 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH] powerpc/64s: Use relon prolog for
- EXC_VIRT_OOL_MASKABLE_HV handlers
-Message-ID: <20170415203157.779872d1@roar.ozlabs.ibm.com>
-In-Reply-To: <877f2o8mdw.fsf@concordia.ellerman.id.au>
-References: <20170413094548.10616-1-npiggin@gmail.com>
- <877f2o8mdw.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w50Xf60MbzDq8V
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 16 Apr 2017 02:36:34 +1000 (AEST)
+Received: by mail-wr0-x229.google.com with SMTP id z109so64041784wrb.1
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Apr 2017 09:36:34 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+In-Reply-To: <1492206774.25766.14.camel@kernel.crashing.org>
+References: <1491825494-19331-1-git-send-email-elohimes@gmail.com>
+ <1491825494-19331-4-git-send-email-elohimes@gmail.com>
+ <20170414155849.GB5864@bhelgaas-glaptop.roam.corp.google.com>
+ <1492206774.25766.14.camel@kernel.crashing.org>
+From: Bjorn Helgaas <bhelgaas@google.com>
+Date: Sat, 15 Apr 2017 11:36:10 -0500
+Message-ID: <CAErSpo5Orx8c453Fn6-PX-7woseSkZFcYO1Yu+1L+B-h6w0T+A@mail.gmail.com>
+Subject: Re: [PATCH v10 3/4] powerpc/powernv: Override
+ pcibios_default_alignment() to force PCI devices to be page aligned
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Bjorn Helgaas <helgaas@kernel.org>, Yongji Xie <elohimes@gmail.com>,
+ "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "alex.williamson@redhat.com" <alex.williamson@redhat.com>,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>,
+ Alexey Kardashevskiy <aik@ozlabs.ru>, Michael Ellerman <mpe@ellerman.id.au>,
+ "paulus@samba.org" <paulus@samba.org>, Li Zhong <zhong@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,39 +36,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 13 Apr 2017 23:31:23 +1000
-Michael Ellerman <mpe@ellerman.id.au> wrote:
+On Fri, Apr 14, 2017 at 4:52 PM, Benjamin Herrenschmidt
+<benh@kernel.crashing.org> wrote:
+> On Fri, 2017-04-14 at 10:58 -0500, Bjorn Helgaas wrote:
+>> On Mon, Apr 10, 2017 at 07:58:13PM +0800, Yongji Xie wrote:
+>> > This overrides pcibios_default_alignment() to set default alignment
+>> > to PAGE_SIZE for all PCI devices on PowerNV platform. Thus sub-page
+>> > BARs would not share a page and could be mapped into guest when
+>> > VFIO
+>> > passthrough them.
+>>
+>> Thanks for doing this.  This looks like a reasonable strategy to me,
+>> but it would be good to get a powerpc ack for it.
+>
+> I agree in principle. I'm surprised that PowerPC is the only one
+> interested here though, what about other platforms who want to use
+> KVM and PCI pass-through and use Linux to assign BARs ?
 
-> Nicholas Piggin <npiggin@gmail.com> writes:
-> 
-> > Hypervisor Virtualization and Directed Hypervisor Doorbell interrupt
-> > handlers use the macro EXC_VIRT_OOL_MASKABLE_HV for their relocation-on
-> > handlers, which calls MASKABLE_RELON_EXCEPTION_HV_OOL, which uses the
-> > real mode interrupt prolog.
-> >
-> > Use the RELON variant instead to reduce overhead.
-> >
-> > Fixes: 1707dd1613 ("powerpc: Save CFAR before branching in interrupt entry paths")
-> > Cc: Paul Mackerras <paulus@samba.org>
-> > Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-> > ---
-> >
-> > I was hesitant about using the Fixes: tag on this one because it's not
-> > a correctness bug as far as I can see.  
-> 
-> Fixes can just mean "if you have this other commit you'll most likely
-> want this one too".
-> 
-> You can clarify the degree of Fixness in the change log, which then
-> allows a backporter to decide if they want it or not.
-> 
-> In this case I think it's entirely right, this is a fairly unfortunate
-> bug from a performance point of view if I'm reading it right.
+If I understand correctly, the problem is with BARs smaller than a
+page, and this happens more on PowerPC because larger page sizes are
+more common there.
 
-Okay, makes sense. For POWER8 it only affects doorbell IPIs. Context switch
-microbenchmark between threads with snooze disabled (which causes IPI) gets
-about 3% faster, about 370 cycles. Should be more important on POWER9 with
-global doorbells and HVI for host interrupts.
-
-Thanks,
-Nick
+Bjorn
