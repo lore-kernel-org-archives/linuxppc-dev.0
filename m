@@ -1,25 +1,30 @@
-Return-Path: <tglx@linutronix.de>
-Received: from Galois.linutronix.de (Galois.linutronix.de
- [IPv6:2a01:7a0:2:106d:700::1])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w51m66VfzzDq8V
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 16 Apr 2017 03:31:34 +1000 (AEST)
-Message-Id: <20170415171651.824802220@linutronix.de>
-Date: Sat, 15 Apr 2017 19:01:14 +0200
-From: Thomas Gleixner <tglx@linutronix.de>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>,
- Steven Rostedt <rostedt@goodmis.org>,
- Sebastian Siewior <bigeasy@linutronix.de>, Alexander Graf <agraf@suse.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>, kvm@vger.kernel.org,
- kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: [patch 07/20] KVM/PPC/Book3S HV: Use
- cpuhp_setup_state_nocalls_locked()
-References: <20170415170107.643253702@linutronix.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-15
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w57sg4mYPzDq8V
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 16 Apr 2017 08:06:47 +1000 (AEST)
+Message-ID: <1492293974.25766.30.camel@kernel.crashing.org>
+Subject: Re: [PATCH v10 3/4] powerpc/powernv: Override
+ pcibios_default_alignment() to force PCI devices to be page aligned
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Bjorn Helgaas <bhelgaas@google.com>
+Cc: Bjorn Helgaas <helgaas@kernel.org>, Yongji Xie <elohimes@gmail.com>,
+ "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, linuxppc-dev
+ <linuxppc-dev@lists.ozlabs.org>, "alex.williamson@redhat.com"
+ <alex.williamson@redhat.com>, Gavin Shan <gwshan@linux.vnet.ibm.com>,
+ Alexey Kardashevskiy <aik@ozlabs.ru>, Michael Ellerman
+ <mpe@ellerman.id.au>, "paulus@samba.org" <paulus@samba.org>, Li Zhong
+ <zhong@linux.vnet.ibm.com>
+Date: Sun, 16 Apr 2017 08:06:14 +1000
+In-Reply-To: <CAErSpo5Orx8c453Fn6-PX-7woseSkZFcYO1Yu+1L+B-h6w0T+A@mail.gmail.com>
+References: <1491825494-19331-1-git-send-email-elohimes@gmail.com>
+ <1491825494-19331-4-git-send-email-elohimes@gmail.com>
+ <20170414155849.GB5864@bhelgaas-glaptop.roam.corp.google.com>
+ <1492206774.25766.14.camel@kernel.crashing.org>
+ <CAErSpo5Orx8c453Fn6-PX-7woseSkZFcYO1Yu+1L+B-h6w0T+A@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,44 +34,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+On Sat, 2017-04-15 at 11:36 -0500, Bjorn Helgaas wrote:
+> > I agree in principle. I'm surprised that PowerPC is the only one
+> > interested here though, what about other platforms who want to use
+> > KVM and PCI pass-through and use Linux to assign BARs ?
+> 
+> If I understand correctly, the problem is with BARs smaller than a
+> page, and this happens more on PowerPC because larger page sizes are
+> more common there.
 
-kvmppc_alloc_host_rm_ops() holds get_online_cpus() while invoking
-cpuhp_setup_state_nocalls().
+Yes, it happens "more". That doesn't mean it doesn't happen at all on
+others :-) Anyway, I'm not objecting, just surprised.
 
-cpuhp_setup_state_nocalls() invokes get_online_cpus() as well. This is
-correct, but prevents the conversion of the hotplug locking to a percpu
-rwsem.
-
-Use cpuhp_setup_state_nocalls_locked() to avoid the nested call.
-
-Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Cc: Alexander Graf <agraf@suse.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: kvm@vger.kernel.org
-Cc: kvm-ppc@vger.kernel.org
-Cc: linuxppc-dev@lists.ozlabs.org
-
----
- arch/powerpc/kvm/book3s_hv.c |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
-
---- a/arch/powerpc/kvm/book3s_hv.c
-+++ b/arch/powerpc/kvm/book3s_hv.c
-@@ -3336,10 +3336,10 @@ void kvmppc_alloc_host_rm_ops(void)
- 		return;
- 	}
- 
--	cpuhp_setup_state_nocalls(CPUHP_KVM_PPC_BOOK3S_PREPARE,
--				  "ppc/kvm_book3s:prepare",
--				  kvmppc_set_host_core,
--				  kvmppc_clear_host_core);
-+	cpuhp_setup_state_nocalls_locked(CPUHP_KVM_PPC_BOOK3S_PREPARE,
-+					 "ppc/kvm_book3s:prepare",
-+					 kvmppc_set_host_core,
-+					 kvmppc_clear_host_core);
- 	put_online_cpus();
- }
- 
+Cheers,
+Ben.
