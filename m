@@ -1,32 +1,23 @@
-Return-Path: <bhelgaas@google.com>
-Received: from mail-wr0-x229.google.com (mail-wr0-x229.google.com
- [IPv6:2a00:1450:400c:c0c::229])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <tglx@linutronix.de>
+Received: from Galois.linutronix.de (Galois.linutronix.de
+ [IPv6:2a01:7a0:2:106d:700::1])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w50Xf60MbzDq8V
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 16 Apr 2017 02:36:34 +1000 (AEST)
-Received: by mail-wr0-x229.google.com with SMTP id z109so64041784wrb.1
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Apr 2017 09:36:34 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w51m368zczDq8V
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 16 Apr 2017 03:31:31 +1000 (AEST)
+Message-Id: <20170415171652.331526644@linutronix.de>
+Date: Sat, 15 Apr 2017 19:01:20 +0200
+From: Thomas Gleixner <tglx@linutronix.de>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>,
+ Steven Rostedt <rostedt@goodmis.org>,
+ Sebastian Siewior <bigeasy@linutronix.de>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
+Subject: [patch 13/20] powerpc/powernv: Use stop_machine_locked()
+References: <20170415170107.643253702@linutronix.de>
 MIME-Version: 1.0
-In-Reply-To: <1492206774.25766.14.camel@kernel.crashing.org>
-References: <1491825494-19331-1-git-send-email-elohimes@gmail.com>
- <1491825494-19331-4-git-send-email-elohimes@gmail.com>
- <20170414155849.GB5864@bhelgaas-glaptop.roam.corp.google.com>
- <1492206774.25766.14.camel@kernel.crashing.org>
-From: Bjorn Helgaas <bhelgaas@google.com>
-Date: Sat, 15 Apr 2017 11:36:10 -0500
-Message-ID: <CAErSpo5Orx8c453Fn6-PX-7woseSkZFcYO1Yu+1L+B-h6w0T+A@mail.gmail.com>
-Subject: Re: [PATCH v10 3/4] powerpc/powernv: Override
- pcibios_default_alignment() to force PCI devices to be page aligned
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Bjorn Helgaas <helgaas@kernel.org>, Yongji Xie <elohimes@gmail.com>,
- "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "alex.williamson@redhat.com" <alex.williamson@redhat.com>,
- Gavin Shan <gwshan@linux.vnet.ibm.com>,
- Alexey Kardashevskiy <aik@ozlabs.ru>, Michael Ellerman <mpe@ellerman.id.au>,
- "paulus@samba.org" <paulus@samba.org>, Li Zhong <zhong@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=ISO-8859-15
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,25 +27,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Apr 14, 2017 at 4:52 PM, Benjamin Herrenschmidt
-<benh@kernel.crashing.org> wrote:
-> On Fri, 2017-04-14 at 10:58 -0500, Bjorn Helgaas wrote:
->> On Mon, Apr 10, 2017 at 07:58:13PM +0800, Yongji Xie wrote:
->> > This overrides pcibios_default_alignment() to set default alignment
->> > to PAGE_SIZE for all PCI devices on PowerNV platform. Thus sub-page
->> > BARs would not share a page and could be mapped into guest when
->> > VFIO
->> > passthrough them.
->>
->> Thanks for doing this.  This looks like a reasonable strategy to me,
->> but it would be good to get a powerpc ack for it.
->
-> I agree in principle. I'm surprised that PowerPC is the only one
-> interested here though, what about other platforms who want to use
-> KVM and PCI pass-through and use Linux to assign BARs ?
+set_subcores_per_core() holds get_online_cpus() while invoking stop_machine().
 
-If I understand correctly, the problem is with BARs smaller than a
-page, and this happens more on PowerPC because larger page sizes are
-more common there.
+stop_machine() invokes get_online_cpus() as well. This is correct, but
+prevents the conversion of the hotplug locking to a percpu rwsem.
 
-Bjorn
+Use stop_machine_locked() to avoid the nested call.
+
+Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org
+
+---
+ arch/powerpc/platforms/powernv/subcore.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/arch/powerpc/platforms/powernv/subcore.c
++++ b/arch/powerpc/platforms/powernv/subcore.c
+@@ -356,7 +356,7 @@ static int set_subcores_per_core(int new
+ 	/* Ensure state is consistent before we call the other cpus */
+ 	mb();
+ 
+-	stop_machine(cpu_update_split_mode, &new_mode, cpu_online_mask);
++	stop_machine_locked(cpu_update_split_mode, &new_mode, cpu_online_mask);
+ 
+ 	put_online_cpus();
+ 
