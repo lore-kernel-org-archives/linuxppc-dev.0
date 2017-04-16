@@ -1,30 +1,19 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
+ [IPv6:2607:f8b0:400e:c00::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w57sg4mYPzDq8V
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 16 Apr 2017 08:06:47 +1000 (AEST)
-Message-ID: <1492293974.25766.30.camel@kernel.crashing.org>
-Subject: Re: [PATCH v10 3/4] powerpc/powernv: Override
- pcibios_default_alignment() to force PCI devices to be page aligned
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Bjorn Helgaas <bhelgaas@google.com>
-Cc: Bjorn Helgaas <helgaas@kernel.org>, Yongji Xie <elohimes@gmail.com>,
- "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, linuxppc-dev
- <linuxppc-dev@lists.ozlabs.org>, "alex.williamson@redhat.com"
- <alex.williamson@redhat.com>, Gavin Shan <gwshan@linux.vnet.ibm.com>,
- Alexey Kardashevskiy <aik@ozlabs.ru>, Michael Ellerman
- <mpe@ellerman.id.au>, "paulus@samba.org" <paulus@samba.org>, Li Zhong
- <zhong@linux.vnet.ibm.com>
-Date: Sun, 16 Apr 2017 08:06:14 +1000
-In-Reply-To: <CAErSpo5Orx8c453Fn6-PX-7woseSkZFcYO1Yu+1L+B-h6w0T+A@mail.gmail.com>
-References: <1491825494-19331-1-git-send-email-elohimes@gmail.com>
- <1491825494-19331-4-git-send-email-elohimes@gmail.com>
- <20170414155849.GB5864@bhelgaas-glaptop.roam.corp.google.com>
- <1492206774.25766.14.camel@kernel.crashing.org>
- <CAErSpo5Orx8c453Fn6-PX-7woseSkZFcYO1Yu+1L+B-h6w0T+A@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w5YVP6KJ5zDq7h
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Apr 2017 00:21:33 +1000 (AEST)
+Received: by mail-pf0-x242.google.com with SMTP id g23so6425615pfj.1
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 16 Apr 2017 07:21:33 -0700 (PDT)
+From: Nicholas Piggin <npiggin@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Nicholas Piggin <npiggin@gmail.com>,
+ "Aneesh Kumar K . V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH] powerpc/64s: Minor fix for MCE TLB flush for radix
+Date: Mon, 17 Apr 2017 00:21:19 +1000
+Message-Id: <20170416142119.27242-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,17 +23,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 2017-04-15 at 11:36 -0500, Bjorn Helgaas wrote:
-> > I agree in principle. I'm surprised that PowerPC is the only one
-> > interested here though, what about other platforms who want to use
-> > KVM and PCI pass-through and use Linux to assign BARs ?
-> 
-> If I understand correctly, the problem is with BARs smaller than a
-> page, and this happens more on PowerPC because larger page sizes are
-> more common there.
+The TLB flush for radix first flushes TLB for radix configuration,
+then flushes for hash configuration. The second flush is unnecessary
+but does not affect correctness.
 
-Yes, it happens "more". That doesn't mean it doesn't happen at all on
-others :-) Anyway, I'm not objecting, just surprised.
+Fixes: 1a472c9dba6b9 ("powerpc/mm/radix: Add tlbflush routines")
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+---
+ arch/powerpc/kernel/mce_power.c | 9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
 
-Cheers,
-Ben.
+diff --git a/arch/powerpc/kernel/mce_power.c b/arch/powerpc/kernel/mce_power.c
+index 763d6f58caa8..7b765aa9f2ff 100644
+--- a/arch/powerpc/kernel/mce_power.c
++++ b/arch/powerpc/kernel/mce_power.c
+@@ -72,10 +72,13 @@ void __flush_tlb_power8(unsigned int action)
+ 
+ void __flush_tlb_power9(unsigned int action)
+ {
+-	if (radix_enabled())
+-		flush_tlb_206(POWER9_TLB_SETS_RADIX, action);
++	unsigned int num_sets;
+ 
+-	flush_tlb_206(POWER9_TLB_SETS_HASH, action);
++	if (radix_enabled())
++		num_sets = POWER9_TLB_SETS_RADIX;
++	else
++		num_sets = POWER9_TLB_SETS_HASH;
++	flush_tlb_206(num_sets, action);
+ }
+ 
+ 
+-- 
+2.11.0
