@@ -3,39 +3,40 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w5r5b4Rd2zDqJ1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w5r5b4x6zzDqJ7
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Apr 2017 11:19:31 +1000 (AEST)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v3H1Ivhf130090
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 16 Apr 2017 21:19:30 -0400
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
- by mx0a-001b2d01.pphosted.com with ESMTP id 29ucdj3mf5-1
+ v3H1IwRm020361
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 16 Apr 2017 21:19:19 -0400
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 29udufhh70-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 16 Apr 2017 21:19:29 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 16 Apr 2017 21:19:19 -0400
 Received: from localhost
- by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
- Mon, 17 Apr 2017 11:19:27 +1000
+ Mon, 17 Apr 2017 11:19:16 +1000
 Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v3H1JGGv21627020
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Apr 2017 11:19:24 +1000
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v3H1J6w165929304
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Apr 2017 11:19:14 +1000
 Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
  by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v3H1Iq8Z023849
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Apr 2017 11:18:52 +1000
+ v3H1IfMo023690
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Apr 2017 11:18:42 +1000
 From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, mpe@ellerman.id.au
 Cc: anton@samba.org, paulus@samba.org, npiggin@gmail.com,
  linuxppc-dev@lists.ozlabs.org,
  Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Subject: [PATCH v8 12/12] powerpc: rewrite local_t using soft_irq
-Date: Mon, 17 Apr 2017 06:47:37 +0530
+Subject: [PATCH v8 09/12] powerpc: Add support to mask perf interrupts and
+ replay them
+Date: Mon, 17 Apr 2017 06:47:34 +0530
 In-Reply-To: <1492391857-8606-1-git-send-email-maddy@linux.vnet.ibm.com>
 References: <1492391857-8606-1-git-send-email-maddy@linux.vnet.ibm.com>
-Message-Id: <1492391857-8606-13-git-send-email-maddy@linux.vnet.ibm.com>
+Message-Id: <1492391857-8606-10-git-send-email-maddy@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,292 +46,158 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Local atomic operations are fast and highly reentrant per CPU counters.
-Used for percpu variable updates. Local atomic operations only guarantee
-variable modification atomicity wrt the CPU which owns the data and
-these needs to be executed in a preemption safe way.
+Two new bit mask field "IRQ_DISABLE_MASK_PMU" is introduced to support
+the masking of PMI and "IRQ_DISABLE_MASK_ALL" to aid interrupt masking checking.
 
-Here is the design of this patch. Since local_* operations
-are only need to be atomic to interrupts (IIUC), we have two options.
-Either replay the "op" if interrupted or replay the interrupt after
-the "op". Initial patchset posted was based on implementing local_* operation
-based on CR5 which replay's the "op". Patchset had issues in case of
-rewinding the address pointor from an array. This make the slow path
-really slow. Since CR5 based implementation proposed using __ex_table to find
-the rewind addressr, this rasied concerns about size of __ex_table and vmlinux.
+Couple of new irq #defs "PACA_IRQ_PMI" and "SOFTEN_VALUE_0xf0*" added to
+use in the exception code to check for PMI interrupts.
 
-https://lists.ozlabs.org/pipermail/linuxppc-dev/2014-December/123115.html
+In the masked_interrupt handler, for PMIs we reset the MSR[EE]
+and return. In the __check_irq_replay(), replay the PMI interrupt
+by calling performance_monitor_common handler.
 
-But this patch uses, powerpc_local_irq_pmu_save to soft_disable
-interrupts (including PMIs). After finishing the "op", powerpc_local_irq_pmu_restore()
-called and correspondingly interrupts are replayed if any occured.
-
-patch re-write the current local_* functions to use arch_local_irq_disbale.
-Base flow for each function is
-
-{
-	powerpc_local_irq_pmu_save(flags)
-	load
-	..
-	store
-	powerpc_local_irq_pmu_restore(flags)
-}
-
-Reason for the approach is that, currently l[w/d]arx/st[w/d]cx.
-instruction pair is used for local_* operations, which are heavy
-on cycle count and they dont support a local variant. So to
-see whether the new implementation helps, used a modified
-version of Rusty's benchmark code on local_t.
-
-https://lkml.org/lkml/2008/12/16/450
-
-Modifications to Rusty's benchmark code:
-- Executed only local_t test
-
-Here are the values with the patch.
-
-Time in ns per iteration
-
-Local_t             Without Patch           With Patch
-
-_inc                        28              8
-_add                        28              8
-_read                       3               3
-_add_return	            28              7
-
-Currently only asm/local.h has been rewritten, and also
-the entire change is tested only in PPC64 (pseries guest)
-and PPC64 host (LE)
-
-Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
 Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/local.h | 201 +++++++++++++++++++++++++++++++++++++++
- 1 file changed, 201 insertions(+)
+ arch/powerpc/include/asm/exception-64s.h |  5 +++++
+ arch/powerpc/include/asm/hw_irq.h        |  5 ++++-
+ arch/powerpc/kernel/entry_64.S           |  5 +++++
+ arch/powerpc/kernel/exceptions-64s.S     |  6 ++++--
+ arch/powerpc/kernel/irq.c                | 24 +++++++++++++++++++++++-
+ 5 files changed, 41 insertions(+), 4 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/local.h b/arch/powerpc/include/asm/local.h
-index b8da91363864..7d117c07b0b1 100644
---- a/arch/powerpc/include/asm/local.h
-+++ b/arch/powerpc/include/asm/local.h
-@@ -3,6 +3,9 @@
+diff --git a/arch/powerpc/include/asm/exception-64s.h b/arch/powerpc/include/asm/exception-64s.h
+index 72c96162c492..b59f02f9acce 100644
+--- a/arch/powerpc/include/asm/exception-64s.h
++++ b/arch/powerpc/include/asm/exception-64s.h
+@@ -474,6 +474,7 @@ END_FTR_SECTION_NESTED(ftr,ftr,943)
+ #define SOFTEN_VALUE_0xe80	PACA_IRQ_DBELL
+ #define SOFTEN_VALUE_0xe60	PACA_IRQ_HMI
+ #define SOFTEN_VALUE_0xea0	PACA_IRQ_EE
++#define SOFTEN_VALUE_0xf00	PACA_IRQ_PMI
  
- #include <linux/percpu.h>
- #include <linux/atomic.h>
-+#include <linux/irqflags.h>
-+
-+#include <asm/hw_irq.h>
+ #define __SOFTEN_TEST(h, vec, bitmask)					\
+ 	lbz	r10,PACASOFTIRQEN(r13);					\
+@@ -538,6 +539,10 @@ END_FTR_SECTION_NESTED(ftr,ftr,943)
+ 	_MASKABLE_RELON_EXCEPTION_PSERIES(vec, label,			\
+ 					  EXC_STD, SOFTEN_NOTEST_PR, bitmask)
  
- typedef struct
- {
-@@ -14,6 +17,202 @@ typedef struct
- #define local_read(l)	atomic_long_read(&(l)->a)
- #define local_set(l,i)	atomic_long_set(&(l)->a, (i))
++#define MASKABLE_RELON_EXCEPTION_PSERIES_OOL(vec, label, bitmask)	\
++	MASKABLE_EXCEPTION_PROLOG_1(PACA_EXGEN, SOFTEN_NOTEST_PR, vec, bitmask);\
++	EXCEPTION_PROLOG_PSERIES_1(label, EXC_STD);
++
+ #define MASKABLE_RELON_EXCEPTION_HV(loc, vec, label, bitmask)		\
+ 	_MASKABLE_RELON_EXCEPTION_PSERIES(vec, label,			\
+ 					  EXC_HV, SOFTEN_TEST_HV, bitmask)
+diff --git a/arch/powerpc/include/asm/hw_irq.h b/arch/powerpc/include/asm/hw_irq.h
+index fa23c73d2f7a..e21553e9bfc9 100644
+--- a/arch/powerpc/include/asm/hw_irq.h
++++ b/arch/powerpc/include/asm/hw_irq.h
+@@ -26,12 +26,15 @@
+ #define PACA_IRQ_DEC		0x08 /* Or FIT */
+ #define PACA_IRQ_EE_EDGE	0x10 /* BookE only */
+ #define PACA_IRQ_HMI		0x20
++#define PACA_IRQ_PMI		0x40
  
-+#ifdef CONFIG_PPC64
-+
-+static __inline__ void local_add(long i, local_t *l)
-+{
-+	long t;
-+	unsigned long flags;
-+
-+	powerpc_local_irq_pmu_save(flags);
-+	__asm__ __volatile__(
-+	PPC_LL" %0,0(%2)\n\
-+	add	%0,%1,%0\n"
-+	PPC_STL" %0,0(%2)\n"
-+	: "=&r" (t)
-+	: "r" (i), "r" (&(l->a.counter)));
-+	powerpc_local_irq_pmu_restore(flags);
-+}
-+
-+static __inline__ void local_sub(long i, local_t *l)
-+{
-+	long t;
-+	unsigned long flags;
-+
-+	powerpc_local_irq_pmu_save(flags);
-+	__asm__ __volatile__(
-+	PPC_LL" %0,0(%2)\n\
-+	subf	%0,%1,%0\n"
-+	PPC_STL" %0,0(%2)\n"
-+	: "=&r" (t)
-+	: "r" (i), "r" (&(l->a.counter)));
-+	powerpc_local_irq_pmu_restore(flags);
-+}
-+
-+static __inline__ long local_add_return(long a, local_t *l)
-+{
-+	long t;
-+	unsigned long flags;
-+
-+	powerpc_local_irq_pmu_save(flags);
-+	__asm__ __volatile__(
-+	PPC_LL" %0,0(%2)\n\
-+	add	%0,%1,%0\n"
-+	PPC_STL "%0,0(%2)\n"
-+	: "=&r" (t)
-+	: "r" (a), "r" (&(l->a.counter))
-+	: "memory");
-+	powerpc_local_irq_pmu_restore(flags);
-+
-+	return t;
-+}
-+
-+#define local_add_negative(a, l)	(local_add_return((a), (l)) < 0)
-+
-+static __inline__ long local_sub_return(long a, local_t *l)
-+{
-+	long t;
-+	unsigned long flags;
-+
-+	powerpc_local_irq_pmu_save(flags);
-+	__asm__ __volatile__(
-+	PPC_LL" %0,0(%2)\n\
-+	subf	%0,%1,%0\n"
-+	PPC_STL "%0,0(%2)\n"
-+	: "=&r" (t)
-+	: "r" (a), "r" (&(l->a.counter))
-+	: "memory");
-+	powerpc_local_irq_pmu_restore(flags);
-+
-+	return t;
-+}
-+
-+static __inline__ long local_inc_return(local_t *l)
-+{
-+	long t;
-+	unsigned long flags;
-+
-+	powerpc_local_irq_pmu_save(flags);
-+	__asm__ __volatile__(
-+	PPC_LL" %0,0(%1)\n\
-+	addic	%0,%0,1\n"
-+	PPC_STL "%0,0(%1)\n"
-+	: "=&r" (t)
-+	: "r" (&(l->a.counter))
-+	: "xer", "memory");
-+	powerpc_local_irq_pmu_restore(flags);
-+
-+	return t;
-+}
-+
-+/*
-+ * local_inc_and_test - increment and test
-+ * @l: pointer of type local_t
-+ *
-+ * Atomically increments @l by 1
-+ * and returns true if the result is zero, or false for all
-+ * other cases.
-+ */
-+#define local_inc_and_test(l) (local_inc_return(l) == 0)
-+
-+static __inline__ long local_dec_return(local_t *l)
-+{
-+	long t;
-+	unsigned long flags;
-+
-+	powerpc_local_irq_pmu_save(flags);
-+	__asm__ __volatile__(
-+	PPC_LL" %0,0(%1)\n\
-+	addic	%0,%0,-1\n"
-+	PPC_STL "%0,0(%1)\n"
-+	: "=&r" (t)
-+	: "r" (&(l->a.counter))
-+	: "xer", "memory");
-+	powerpc_local_irq_pmu_restore(flags);
-+
-+	return t;
-+}
-+
-+#define local_inc(l)	local_inc_return(l)
-+#define local_dec(l)	local_dec_return(l)
-+
-+#define local_cmpxchg(l, o, n) \
-+	(cmpxchg_local(&((l)->a.counter), (o), (n)))
-+#define local_xchg(l, n) (xchg_local(&((l)->a.counter), (n)))
-+
-+/**
-+ * local_add_unless - add unless the number is a given value
-+ * @l: pointer of type local_t
-+ * @a: the amount to add to v...
-+ * @u: ...unless v is equal to u.
-+ *
-+ * Atomically adds @a to @l, so long as it was not @u.
-+ * Returns non-zero if @l was not @u, and zero otherwise.
-+ */
-+static __inline__ int local_add_unless(local_t *l, long a, long u)
-+{
-+	long t;
-+	unsigned long flags;
-+
-+	powerpc_local_irq_pmu_save(flags);
-+	__asm__ __volatile__ (
-+	PPC_LL" %0,0(%1)\n\
-+	cmpw	0,%0,%3 \n\
-+	beq-	2f \n\
-+	add	%0,%2,%0 \n"
-+	PPC_STL" %0,0(%1) \n"
-+"       subf	%0,%2,%0 \n\
-+2:"
-+        : "=&r" (t)
-+        : "r" (&(l->a.counter)), "r" (a), "r" (u)
-+        : "cc", "memory");
-+        powerpc_local_irq_pmu_restore(flags);
-+
-+	return t != u;
-+}
-+
-+#define local_inc_not_zero(l) local_add_unless((l), 1, 0)
-+
-+#define local_sub_and_test(a, l)	(local_sub_return((a), (l)) == 0)
-+#define local_dec_and_test(l)		(local_dec_return((l)) == 0)
-+
-+/*
-+ * Atomically test *l and decrement if it is greater than 0.
-+ * The function returns the old value of *l minus 1.
-+ */
-+static __inline__ long local_dec_if_positive(local_t *l)
-+{
-+	long t;
-+	unsigned long flags;
-+
-+	powerpc_local_irq_pmu_save(flags);
-+	__asm__ __volatile__(
-+	PPC_LL" %0,0(%1)\n\
-+	cmpwi	%0,1\n\
-+	addi	%0,%0,-1\n\
-+	blt-	2f\n"
-+	PPC_STL "%0,0(%1)\n"
-+	"\n\
-+2:"	: "=&b" (t)
-+	: "r" (&(l->a.counter))
-+	: "cc", "memory");
-+	powerpc_local_irq_pmu_restore(flags);
-+
-+	return t;
-+}
-+
-+/* Use these for per-cpu local_t variables: on some archs they are
-+ * much more efficient than these naive implementations.  Note they take
-+ * a variable, not an address.
-+ */
-+
-+#define __local_inc(l)		((l)->a.counter++)
-+#define __local_dec(l)		((l)->a.counter++)
-+#define __local_add(i,l)	((l)->a.counter+=(i))
-+#define __local_sub(i,l)	((l)->a.counter-=(i))
-+
-+#else
-+
- #define local_add(i,l)	atomic_long_add((i),(&(l)->a))
- #define local_sub(i,l)	atomic_long_sub((i),(&(l)->a))
- #define local_inc(l)	atomic_long_inc(&(l)->a)
-@@ -172,4 +371,6 @@ static __inline__ long local_dec_if_positive(local_t *l)
- #define __local_add(i,l)	((l)->a.counter+=(i))
- #define __local_sub(i,l)	((l)->a.counter-=(i))
+ /*
+  * flags for paca->soft_disable_mask
+  */
+ #define IRQ_DISABLE_MASK_NONE	0
+ #define IRQ_DISABLE_MASK_LINUX	1
++#define IRQ_DISABLE_MASK_PMU	2
++#define IRQ_DISABLE_MASK_ALL	3
  
-+#endif /* CONFIG_PPC64 */
+ #endif /* CONFIG_PPC64 */
+ 
+@@ -132,7 +135,7 @@ static inline bool arch_irqs_disabled(void)
+ 	u8 _was_enabled;				\
+ 	__hard_irq_disable();				\
+ 	_was_enabled = local_paca->soft_disable_mask;	\
+-	local_paca->soft_disable_mask = IRQ_DISABLE_MASK_LINUX;\
++	local_paca->soft_disable_mask = IRQ_DISABLE_MASK_ALL;\
+ 	local_paca->irq_happened |= PACA_IRQ_HARD_DIS;	\
+ 	if (!(_was_enabled & IRQ_DISABLE_MASK_LINUX))	\
+ 		trace_hardirqs_off();			\
+diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
+index f3afa0b9332d..d021f7de79bd 100644
+--- a/arch/powerpc/kernel/entry_64.S
++++ b/arch/powerpc/kernel/entry_64.S
+@@ -931,6 +931,11 @@ restore_check_irq_replay:
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD;
+  	bl	do_IRQ
+ 	b	ret_from_except
++1:	cmpwi	cr0,r3,0xf00
++	bne	1f
++	addi	r3,r1,STACK_FRAME_OVERHEAD;
++	bl	performance_monitor_exception
++	b	ret_from_except
+ 1:	cmpwi	cr0,r3,0xe60
+ 	bne	1f
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD;
+diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+index 5c93a1700d83..c473f8779646 100644
+--- a/arch/powerpc/kernel/exceptions-64s.S
++++ b/arch/powerpc/kernel/exceptions-64s.S
+@@ -1046,8 +1046,8 @@ EXC_REAL_NONE(0xee0, 0x20)
+ EXC_VIRT_NONE(0x4ee0, 0x20)
+ 
+ 
+-EXC_REAL_OOL(performance_monitor, 0xf00, 0x20)
+-EXC_VIRT_OOL(performance_monitor, 0x4f00, 0x20, 0xf00)
++EXC_REAL_OOL_MASKABLE(performance_monitor, 0xf00, 0x20, IRQ_DISABLE_MASK_PMU)
++EXC_VIRT_OOL_MASKABLE(performance_monitor, 0x4f00, 0x20, 0xf00, IRQ_DISABLE_MASK_PMU)
+ TRAMP_KVM(PACA_EXGEN, 0xf00)
+ EXC_COMMON_ASYNC(performance_monitor_common, 0xf00, performance_monitor_exception)
+ 
+@@ -1594,6 +1594,8 @@ _GLOBAL(__replay_interrupt)
+ 	beq	decrementer_common
+ 	cmpwi	r3,0x500
+ 	beq	hardware_interrupt_common
++	cmpwi	r3,0xf00
++	beq	performance_monitor_common
+ BEGIN_FTR_SECTION
+ 	cmpwi	r3,0xe80
+ 	beq	h_doorbell_common
+diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
+index fdd817a6f9f8..835a08d9c48f 100644
+--- a/arch/powerpc/kernel/irq.c
++++ b/arch/powerpc/kernel/irq.c
+@@ -169,6 +169,27 @@ notrace unsigned int __check_irq_replay(void)
+ 	if ((happened & PACA_IRQ_DEC) || decrementer_check_overflow())
+ 		return 0x900;
+ 
++	/*
++	 * In masked_handler() for PMI, we disable MSR[EE] and return.
++	 * Replay it here.
++	 *
++	 * After this point, PMIs could still be disabled in certain
++	 * scenarios like this one.
++	 *
++	 * local_irq_disable();
++	 * powerpc_irq_pmu_save();
++	 * powerpc_irq_pmu_restore();
++	 * local_irq_restore();
++	 *
++	 * Even though powerpc_irq_pmu_restore() would have replayed the PMIs
++	 * if any, we have still not enabled EE and this will happen only at
++	 * complition of last *_restore in this nested cases. And PMIs will
++	 * once again start firing only when we have MSR[EE] enabled.
++	 */
++	local_paca->irq_happened &= ~PACA_IRQ_PMI;
++	if (happened & PACA_IRQ_PMI)
++		return 0xf00;
 +
- #endif /* _ARCH_POWERPC_LOCAL_H */
+ 	/* Finally check if an external interrupt happened */
+ 	local_paca->irq_happened &= ~PACA_IRQ_EE;
+ 	if (happened & PACA_IRQ_EE)
+@@ -208,7 +229,8 @@ notrace void arch_local_irq_restore(unsigned long en)
+ 
+ 	/* Write the new soft-enabled value */
+ 	soft_disable_mask_set(en);
+-	if (en == IRQ_DISABLE_MASK_LINUX)
++	/* any bits still disabled */
++	if (en)
+ 		return;
+ 	/*
+ 	 * From this point onward, we can take interrupts, preempt,
 -- 
 2.7.4
