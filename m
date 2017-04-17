@@ -3,39 +3,40 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w5xRh3zY9zDqFl
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Apr 2017 15:20:31 +1000 (AEST)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w5xb61ZyVzDqFl
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Apr 2017 15:26:57 +1000 (AEST)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v3H5IxYx116021
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Apr 2017 01:20:26 -0400
-Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [125.16.236.5])
- by mx0b-001b2d01.pphosted.com with ESMTP id 29ucey90cj-1
+ v3H5OnSQ053194
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Apr 2017 01:26:51 -0400
+Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [125.16.236.9])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 29ud500ptw-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Apr 2017 01:20:26 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Apr 2017 01:26:51 -0400
 Received: from localhost
- by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 17 Apr 2017 10:50:23 +0530
-Received: from d28av07.in.ibm.com (d28av07.in.ibm.com [9.184.220.146])
- by d28relay07.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v3H5IwLg7667824
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Apr 2017 10:48:58 +0530
-Received: from d28av07.in.ibm.com (localhost [127.0.0.1])
- by d28av07.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v3H5KLrl025277
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Apr 2017 10:50:21 +0530
+ Mon, 17 Apr 2017 10:56:48 +0530
+Received: from d28av08.in.ibm.com (d28av08.in.ibm.com [9.184.220.148])
+ by d28relay08.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v3H5PN2x8585328
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Apr 2017 10:55:23 +0530
+Received: from d28av08.in.ibm.com (localhost [127.0.0.1])
+ by d28av08.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v3H5QjVK023967
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Apr 2017 10:56:46 +0530
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
-Cc: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [PATCH] powerpc/64s: Minor fix for MCE TLB flush for radix
-In-Reply-To: <20170416142119.27242-1-npiggin@gmail.com>
-References: <20170416142119.27242-1-npiggin@gmail.com>
-Date: Mon, 17 Apr 2017 10:50:20 +0530
+To: Anshuman Khandual <khandual@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] selftests/powerpc/mm: Add a test for virtual address
+ mapping
+In-Reply-To: <20170412094112.13181-1-khandual@linux.vnet.ibm.com>
+References: <20170412094112.13181-1-khandual@linux.vnet.ibm.com>
+Date: Mon, 17 Apr 2017 10:56:44 +0530
 MIME-Version: 1.0
 Content-Type: text/plain
-Message-Id: <87lgqzhap7.fsf@skywalker.in.ibm.com>
+Message-Id: <87inm3haej.fsf@skywalker.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,42 +46,163 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Nicholas Piggin <npiggin@gmail.com> writes:
+Anshuman Khandual <khandual@linux.vnet.ibm.com> writes:
 
-> The TLB flush for radix first flushes TLB for radix configuration,
-> then flushes for hash configuration. The second flush is unnecessary
-> but does not affect correctness.
+> This verifies virtual address mapping below and above the
+> 128TB range and makes sure that address returned are within
+> the expected range depending upon the hint passed from the
+> user space.
 >
-> Fixes: 1a472c9dba6b9 ("powerpc/mm/radix: Add tlbflush routines")
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-
-Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-
-
+> Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 > ---
->  arch/powerpc/kernel/mce_power.c | 9 ++++++---
->  1 file changed, 6 insertions(+), 3 deletions(-)
+> Tested this on latest ppc-next with Aneesh's yesterday's patch
+> which can be found at https://patchwork.ozlabs.org/patch/749510/
 >
-> diff --git a/arch/powerpc/kernel/mce_power.c b/arch/powerpc/kernel/mce_power.c
-> index 763d6f58caa8..7b765aa9f2ff 100644
-> --- a/arch/powerpc/kernel/mce_power.c
-> +++ b/arch/powerpc/kernel/mce_power.c
-> @@ -72,10 +72,13 @@ void __flush_tlb_power8(unsigned int action)
+>  tools/testing/selftests/powerpc/mm/.gitignore |  3 +-
+>  tools/testing/selftests/powerpc/mm/Makefile   |  2 +-
+>  tools/testing/selftests/powerpc/mm/vaddr.c    | 89 +++++++++++++++++++++++++++
+>  3 files changed, 92 insertions(+), 2 deletions(-)
+>  create mode 100644 tools/testing/selftests/powerpc/mm/vaddr.c
 >
->  void __flush_tlb_power9(unsigned int action)
->  {
-> -	if (radix_enabled())
-> -		flush_tlb_206(POWER9_TLB_SETS_RADIX, action);
-> +	unsigned int num_sets;
+> diff --git a/tools/testing/selftests/powerpc/mm/.gitignore b/tools/testing/selftests/powerpc/mm/.gitignore
+> index e715a3f..af1f31f 100644
+> --- a/tools/testing/selftests/powerpc/mm/.gitignore
+> +++ b/tools/testing/selftests/powerpc/mm/.gitignore
+> @@ -1,4 +1,5 @@
+>  hugetlb_vs_thp_test
+>  subpage_prot
+>  tempfile
+> -prot_sao
+> \ No newline at end of file
+> +prot_sao
+> +vaddr
+> diff --git a/tools/testing/selftests/powerpc/mm/Makefile b/tools/testing/selftests/powerpc/mm/Makefile
+> index 1cffe54..7345db2 100644
+> --- a/tools/testing/selftests/powerpc/mm/Makefile
+> +++ b/tools/testing/selftests/powerpc/mm/Makefile
+> @@ -1,7 +1,7 @@
+>  noarg:
+>  	$(MAKE) -C ../
 >
-> -	flush_tlb_206(POWER9_TLB_SETS_HASH, action);
-> +	if (radix_enabled())
-> +		num_sets = POWER9_TLB_SETS_RADIX;
-> +	else
-> +		num_sets = POWER9_TLB_SETS_HASH;
-> +	flush_tlb_206(num_sets, action);
->  }
+> -TEST_GEN_PROGS := hugetlb_vs_thp_test subpage_prot prot_sao
+> +TEST_GEN_PROGS := hugetlb_vs_thp_test subpage_prot prot_sao vaddr
+>  TEST_GEN_FILES := tempfile
 >
->
+>  include ../../lib.mk
+> diff --git a/tools/testing/selftests/powerpc/mm/vaddr.c b/tools/testing/selftests/powerpc/mm/vaddr.c
+> new file mode 100644
+> index 0000000..d6485e9
+> --- /dev/null
+> +++ b/tools/testing/selftests/powerpc/mm/vaddr.c
+> @@ -0,0 +1,89 @@
+> +/*
+> + * Copyright 2017, Anshuman Khandual, IBM Corp.
+> + * Licensed under GPLv2.
+> + */
+> +
+> +#include <stdio.h>
+> +#include <stdlib.h>
+> +#include <string.h>
+> +#include <unistd.h>
+> +#include <errno.h>
+> +#include <numaif.h>
+> +#include <sys/mman.h>
+> +#include <sys/time.h>
+> +#include "utils.h"
+> +
+> +#define PAGE_SIZE        65536UL  /* 64KB */
+> +#define MAP_SIZE_16GB    262144UL /* 16GB  */
+
+can we make it MMAP_CHUNK_SIZE ?
+
+> +#define NR_SLICES_128TB  8192UL   /* 128TB */
+
+NR_CHUNK_128TB ?
+
+> +#define NR_SLICES_384TB  24576UL  /* 384TB */
+
+Can you add more comments around that. Those numbers/names have special
+meaning on powerpc. I guess you are not doing anything related that.
+Hence rename slices to something else or add a comment saying how many
+16GB slices. Also explain why you are taking 16GB as the size.
+
+> +#define ADDR_MARK_128TB  0x800000000000UL /* Beyond 128TB */
+> +
+> +static char *hind_addr(void)
+> +{
+> +	int bits = 48 + rand() % 15;
+> +
+> +	return (char *) (1UL << bits);
+> +}
+> +
+> +static int validate_addr(char *ptr, int high_addr)
+> +{
+> +	unsigned long addr = (unsigned long) ptr;
+> +
+> +	if (high_addr) {
+> +		if (addr < ADDR_MARK_128TB) {
+> +			printf("Bad address %lx\n", addr);
+> +			return 1;
+> +		}
+> +		return 0;
+> +	}
+> +
+> +	if (addr > ADDR_MARK_128TB) {
+> +		printf("Bad address %lx\n", addr);
+> +		return 1;
+> +	}
+> +	return 0;
+> +}
+> +
+> +int vaddr(void)
+> +{
+> +	char *ptr[NR_SLICES_128TB];
+> +	char *hptr[NR_SLICES_384TB];
+> +	char *hint;
+> +	int  i;
+> +
+> +	for (i = 0; i < NR_SLICES_128TB; i++) {
+> +		ptr[i] = mmap(NULL, MAP_SIZE_16GB, PROT_READ | PROT_WRITE,
+> +					MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+> +
+> +		if (ptr[i] == MAP_FAILED)
+> +			break;
+> +
+> +		if (validate_addr(ptr[i], 0))
+> +			return 1;
+> +	}
+> +
+> +	for (i = 0; i < NR_SLICES_384TB; i++) {
+> +		hint = hind_addr();
+
+Why add rand() why not a constant value ?
+
+> +		hptr[i] = mmap(hint, MAP_SIZE_16GB, PROT_READ | PROT_WRITE,
+> +					MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+> +
+> +		if (hptr[i] == MAP_FAILED)
+> +			break;
+> +
+> +		if (validate_addr(hptr[i], 1))
+> +			return 1;
+> +	}
+
+We can also add check to make sure mmap fail if we passed a hint addr
+below 128TB ? 
+
+
+> +
+> +	for (i = 0; i < NR_SLICES_128TB; i++)
+> +		munmap(ptr[i], MAP_SIZE_16GB);
+> +
+> +	for (i = 0; i < NR_SLICES_384TB; i++)
+> +		munmap(hptr[i], MAP_SIZE_16GB);
+> +	return 0;
+> +}
+> +
+> +int main(int argc, char *argv[])
+> +{
+> +	return test_harness(vaddr, "vaddr-range");
+> +}
 > -- 
-> 2.11.0
+> 1.8.5.2
