@@ -1,40 +1,32 @@
-Return-Path: <mrochs@linux.vnet.ibm.com>
+Return-Path: <mwb@linux.vnet.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w6BMs1M7RzDqJq
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Apr 2017 01:03:04 +1000 (AEST)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w6BNJ3fLQzDqGv
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Apr 2017 01:03:28 +1000 (AEST)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v3HEwpNh115767
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Apr 2017 11:03:03 -0400
-Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
- by mx0a-001b2d01.pphosted.com with ESMTP id 29vwf3pq3t-1
+ v3HEwkC1056712
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Apr 2017 11:03:17 -0400
+Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 29vwa1f6a7-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Apr 2017 11:03:03 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Apr 2017 11:03:17 -0400
 Received: from localhost
- by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <mrochs@linux.vnet.ibm.com>;
- Mon, 17 Apr 2017 11:03:01 -0400
-Content-Type: text/plain; charset=us-ascii
-Mime-Version: 1.0 (Mac OS X Mail 10.2 \(3259\))
-Subject: Re: [PATCH v4] cxl: Force context lock during EEH flow
-From: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>
-In-Reply-To: <20170405113553.7354-1-vaibhav@linux.vnet.ibm.com>
-Date: Mon, 17 Apr 2017 10:02:47 -0500
-Cc: Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org,
- Philippe Bergheaud <philippe.bergheaud@fr.ibm.com>,
- stable@vger.kernel.org, Uma Krishnan <ukrishn@linux.vnet.ibm.com>,
- Ian Munsie <imunsie@au1.ibm.com>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- Christophe Lombard <christophe_lombard@fr.ibm.com>,
- Greg Kurz <gkurz@linux.vnet.ibm.com>
-References: <20170405113553.7354-1-vaibhav@linux.vnet.ibm.com>
-To: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
-Message-Id: <B82C40A5-0B82-4F1D-BA89-176E788AD5F4@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
+ Mon, 17 Apr 2017 11:03:15 -0400
+Subject: [PATCH V2 0/5] powerpc/devtree: Add support for 'ibm,
+ dynamic-memory-v2' property
+From: Michael Bringmann <mwb@linux.vnet.ibm.com>
+To: ltc-virtual-io@lists.linux.ibm.com, linuxppc-dev@lists.ozlabs.org
+Cc: nfont@linux.vnet.ibm.com
+Date: Mon, 17 Apr 2017 10:03:12 -0500
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Message-Id: <149244134630.49112.5423447491302011316.stgit@powerkvm6.aus.stglabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,42 +36,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> On Apr 5, 2017, at 6:35 AM, Vaibhav Jain <vaibhav@linux.vnet.ibm.com> =
-wrote:
->=20
-> During an eeh event when the cxl card is fenced and card sysfs attr
-> perst_reloads_same_image is set following warning message is seen in =
-the
-> kernel logs:
->=20
-> [   60.622727] Adapter context unlocked with 0 active contexts
-> [   60.622762] ------------[ cut here ]------------
-> [   60.622771] WARNING: CPU: 12 PID: 627 at
-> ../drivers/misc/cxl/main.c:325 cxl_adapter_context_unlock+0x60/0x80 =
-[cxl]
->=20
-> Even though this warning is harmless, it clutters the kernel log
-> during an eeh event. This warning is triggered as the EEH callback
-> cxl_pci_error_detected doesn't obtain a context-lock before forcibly
-> detaching all active context and when context-lock is released during
-> call to cxl_configure_adapter from cxl_pci_slot_reset, a warning in
-> cxl_adapter_context_unlock is triggered.
->=20
-> To fix this warning, we acquire the adapter context-lock via
-> cxl_adapter_context_lock() in the eeh callback
-> cxl_pci_error_detected() once all the virtual AFU PHBs are notified
-> and their contexts detached. The context-lock is released in
-> cxl_pci_slot_reset() after the adapter is successfully reconfigured
-> and before we call slot_reset callback on slice attached =
-device-drivers.
->=20
-> Cc: stable@vger.kernel.org
-> Fixes: 70b565bbdb91("cxl: Prevent adapter reset if an active context =
-exists")
-> Reported-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-> Signed-off-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+"ibm,dynamic-memory-v2": This property replaces the "ibm,dynamic-memory"
+node representation within the "ibm,dynamic-reconfiguration-memory"
+node provided by the BMC.  This element format is intended to provide
+a more compact representation of memory, especially, for systems with
+massive amounts of RAM.  To simplify portability, this property is
+converted to the "ibm,dynamic-memory" property during system boot.
 
-Looks good. Uma should be following up later today after testing =
-completes.
+"ibm,architecture.vec": Bidirectional communication mechanism between
+the host system and the front end processor indicating what features
+the host system supports and what features the front end processor will
+actually provide.  In this case, we are indicating that the host system
+can support the new device tree structure "ibm,dynamic-memory-v2".
 
-Reviewed-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
+Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
+
+Michael Bringmann (5):
+  powerpc: Check arch.vec earlier during boot for memory features
+  powerpc/memory: Parse new memory property to register blocks.
+  powerpc/memory: Parse new memory property to initialize structures.
+  pseries/hotplug init: Convert new DRC memory property for hotplug runtime
+  powerpc: Enable support for new 'ibm,dynamic-memory-v2' devtree property
+---
+Changes in V2:
+  -- Add missing of_node_put() calls.
+---
+
+ arch/powerpc/include/asm/firmware.h             |    4 
+ arch/powerpc/include/asm/prom.h                 |   33 +++-
+ arch/powerpc/kernel/prom.c                      |  131 +++++++++++---
+ arch/powerpc/kernel/prom_init.c                 |    2 
+ arch/powerpc/mm/numa.c                          |  213 ++++++++++++++++++-----
+ arch/powerpc/platforms/pseries/Makefile         |    4 
+ arch/powerpc/platforms/pseries/firmware.c       |    1 
+ arch/powerpc/platforms/pseries/hotplug-memory.c |  104 +++++++++++
+ 8 files changed, 406 insertions(+), 86 deletions(-)
+
+--
+Signature
