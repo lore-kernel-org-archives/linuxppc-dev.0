@@ -1,34 +1,34 @@
 Return-Path: <mwb@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w6BLD0ZSyzDqKp
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Apr 2017 01:01:39 +1000 (AEST)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w6BLH3C4fzDqKg
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Apr 2017 01:01:43 +1000 (AEST)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v3HEwp3k116018
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Apr 2017 11:01:29 -0400
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
- by mx0a-001b2d01.pphosted.com with ESMTP id 29vwf3pmhn-1
+ v3HEwq41122649
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Apr 2017 11:01:41 -0400
+Received: from e11.ny.us.ibm.com (e11.ny.us.ibm.com [129.33.205.201])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 29vvwvqvuk-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Apr 2017 11:01:28 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Apr 2017 11:01:40 -0400
 Received: from localhost
- by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e11.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
- Mon, 17 Apr 2017 09:01:23 -0600
-Subject: [PATCH V2 4/5] pseries/hotplug init: Convert new DRC memory
- property for hotplug runtime
+ Mon, 17 Apr 2017 11:01:40 -0400
+Subject: [PATCH V2 2/5] powerpc/memory: Parse new memory property to
+ register blocks.
 From: Michael Bringmann <mwb@linux.vnet.ibm.com>
 To: Michael Bringmann <mwb@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
  ltc-virtual-io@lists.linux.ibm.com
-Date: Mon, 17 Apr 2017 10:01:19 -0500
+Date: Mon, 17 Apr 2017 10:00:49 -0500
 In-Reply-To: <149244116099.48989.17054073410274001992.stgit@powerkvm6.aus.stglabs.ibm.com>
 References: <149244116099.48989.17054073410274001992.stgit@powerkvm6.aus.stglabs.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Message-Id: <149244127176.48989.14287539157071554799.stgit@powerkvm6.aus.stglabs.ibm.com>
+Message-Id: <149244123980.48989.6618977352534857155.stgit@powerkvm6.aus.stglabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,177 +38,320 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-hotplug_init: Simplify the code needed for runtime memory hotplug and
-maintenance with a conversion routine that transforms the compressed
-property "ibm,dynamic-memory-v2" to the form of "ibm,dynamic-memory"
-within the "ibm,dynamic-reconfiguration-memory" node.  Thus only
-a single set of routines should be required at runtime to parse, edit,
-and manipulate the memory representation in the device tree.  Similarly,
-any userspace applications that need this information will only need
-to recognize the older format to be able to continue to operate.
+powerpc/memory: Add parallel routines to parse the new property
+"ibm,dynamic-memory-v2" property when it is present, and then to
+register the relevant memory blocks with the operating system.
+This property format is intended to provide a more compact
+representation of memory when communicating with the front end
+processor, especially when describing vast amounts of RAM.
 
 Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
 ---
-Changes in V2:
-  -- Add missing of_node_put() calls.
-  -- Correct description of change.
----
- arch/powerpc/platforms/pseries/Makefile         |    4 -
- arch/powerpc/platforms/pseries/hotplug-memory.c |  104 +++++++++++++++++++++++
- 2 files changed, 104 insertions(+), 4 deletions(-)
+ arch/powerpc/include/asm/firmware.h       |    4 +
+ arch/powerpc/include/asm/prom.h           |   25 +++++-
+ arch/powerpc/kernel/prom.c                |  125 ++++++++++++++++++++++++-----
+ arch/powerpc/mm/numa.c                    |   20 ++++-
+ arch/powerpc/platforms/pseries/firmware.c |    1 
+ 5 files changed, 146 insertions(+), 29 deletions(-)
 
-diff --git a/arch/powerpc/platforms/pseries/Makefile b/arch/powerpc/platforms/pseries/Makefile
-index 8f4ba08..87eb665 100644
---- a/arch/powerpc/platforms/pseries/Makefile
-+++ b/arch/powerpc/platforms/pseries/Makefile
-@@ -5,14 +5,14 @@ obj-y			:= lpar.o hvCall.o nvram.o reconfig.o \
- 			   of_helpers.o \
- 			   setup.o iommu.o event_sources.o ras.o \
- 			   firmware.o power.o dlpar.o mobility.o rng.o \
--			   pci.o pci_dlpar.o eeh_pseries.o msi.o
-+			   pci.o pci_dlpar.o eeh_pseries.o msi.o \
-+			   hotplug-memory.o
- obj-$(CONFIG_SMP)	+= smp.o
- obj-$(CONFIG_SCANLOG)	+= scanlog.o
- obj-$(CONFIG_KEXEC_CORE)	+= kexec.o
- obj-$(CONFIG_PSERIES_ENERGY)	+= pseries_energy.o
+diff --git a/arch/powerpc/include/asm/firmware.h b/arch/powerpc/include/asm/firmware.h
+index 329d537..062e5f5 100644
+--- a/arch/powerpc/include/asm/firmware.h
++++ b/arch/powerpc/include/asm/firmware.h
+@@ -52,6 +52,7 @@
+ #define FW_FEATURE_TYPE1_AFFINITY ASM_CONST(0x0000000100000000)
+ #define FW_FEATURE_PRRN		ASM_CONST(0x0000000200000000)
+ #define FW_FEATURE_DRC_INFO	ASM_CONST(0x0000000400000000)
++#define FW_FEATURE_DYN_MEM_V2	ASM_CONST(0x0000000800000000)
  
- obj-$(CONFIG_HOTPLUG_CPU)	+= hotplug-cpu.o
--obj-$(CONFIG_MEMORY_HOTPLUG)	+= hotplug-memory.o
+ #ifndef __ASSEMBLY__
  
- obj-$(CONFIG_HVC_CONSOLE)	+= hvconsole.o
- obj-$(CONFIG_HVCS)		+= hvcserver.o
-diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/powerpc/platforms/pseries/hotplug-memory.c
-index e104c71..f948505 100644
---- a/arch/powerpc/platforms/pseries/hotplug-memory.c
-+++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
-@@ -24,8 +24,6 @@
- #include <asm/sparsemem.h>
- #include "pseries.h"
+@@ -68,7 +69,8 @@ enum {
+ 		FW_FEATURE_CMO | FW_FEATURE_VPHN | FW_FEATURE_XCMO |
+ 		FW_FEATURE_SET_MODE | FW_FEATURE_BEST_ENERGY |
+ 		FW_FEATURE_TYPE1_AFFINITY | FW_FEATURE_PRRN |
+-		FW_FEATURE_HPT_RESIZE | FW_FEATURE_DRC_INFO,
++		FW_FEATURE_HPT_RESIZE | FW_FEATURE_DRC_INFO |
++		FW_FEATURE_DYN_MEM_V2,
+ 	FW_FEATURE_PSERIES_ALWAYS = 0,
+ 	FW_FEATURE_POWERNV_POSSIBLE = FW_FEATURE_OPAL,
+ 	FW_FEATURE_POWERNV_ALWAYS = 0,
+diff --git a/arch/powerpc/include/asm/prom.h b/arch/powerpc/include/asm/prom.h
+index d469d7c..77d76d8 100644
+--- a/arch/powerpc/include/asm/prom.h
++++ b/arch/powerpc/include/asm/prom.h
+@@ -69,6 +69,8 @@ struct boot_param_header {
+  * OF address retreival & translation
+  */
  
--static bool rtas_hp_event;
--
- unsigned long pseries_memory_block_size(void)
- {
- 	struct device_node *np;
-@@ -69,6 +67,10 @@ unsigned long pseries_memory_block_size(void)
- 	return memblock_size;
- }
- 
-+#ifdef CONFIG_MEMORY_HOTPLUG
++extern int n_mem_addr_cells;
 +
-+static bool rtas_hp_event;
-+
- static void dlpar_free_property(struct property *prop)
- {
- 	kfree(prop->name);
-@@ -1165,11 +1167,109 @@ static int pseries_memory_notifier(struct notifier_block *nb,
- static struct notifier_block pseries_mem_nb = {
- 	.notifier_call = pseries_memory_notifier,
+ /* Parse the ibm,dma-window property of an OF node into the busno, phys and
+  * size parameters.
+  */
+@@ -81,8 +83,9 @@ void of_parse_dma_window(struct device_node *dn, const __be32 *dma_window,
+ extern int of_get_ibm_chip_id(struct device_node *np);
+ 
+ /* The of_drconf_cell struct defines the layout of the LMB array
+- * specified in the device tree property
+- * ibm,dynamic-reconfiguration-memory/ibm,dynamic-memory
++ * specified in the device tree properties,
++ *     ibm,dynamic-reconfiguration-memory/ibm,dynamic-memory
++ *     ibm,dynamic-reconfiguration-memory/ibm,dynamic-memory-v2
+  */
+ struct of_drconf_cell {
+ 	u64	base_addr;
+@@ -92,9 +95,20 @@ struct of_drconf_cell {
+ 	u32	flags;
  };
-+#endif /* CONFIG_MEMORY_HOTPLUG */
+ 
+-#define DRCONF_MEM_ASSIGNED	0x00000008
+-#define DRCONF_MEM_AI_INVALID	0x00000040
+-#define DRCONF_MEM_RESERVED	0x00000080
++#define DRCONF_MEM_ASSIGNED		0x00000008
++#define DRCONF_MEM_AI_INVALID		0x00000040
++#define DRCONF_MEM_RESERVED		0x00000080
 +
-+static int pseries_rewrite_dynamic_memory_v2(void)
++struct of_drconf_cell_v2 {
++	u32	num_seq_lmbs;
++	u64	base_addr;
++	u32	drc_index;
++	u32	aa_index;
++	u32	flags;
++} __attribute__((packed));
++
++extern void read_drconf_cell_v2(struct of_drconf_cell_v2 *drmem,
++				const __be32 **cellp);
+ 
+ extern int of_one_drc_info(struct property **prop, void **curval,
+ 			char **dtype, char **dname,
+@@ -180,6 +194,7 @@ extern int of_one_drc_info(struct property **prop, void **curval,
+ /* Radix Table Extensions */
+ #define OV5_RADIX_GTSE		0x1A40	/* Guest Translation Shoot Down Avail */
+ #define OV5_DRC_INFO		0x1640	/* Redef Prop Structures: drc-info   */
++#define OV5_DYN_MEM_V2		0x1680	/* Redef Prop Structures: dyn-mem-v2   */
+ 
+ /* Option Vector 6: IBM PAPR hints */
+ #define OV6_LINUX		0x02	/* Linux is our OS */
+diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+index bca4abd..1bc0a36 100644
+--- a/arch/powerpc/kernel/prom.c
++++ b/arch/powerpc/kernel/prom.c
+@@ -76,6 +76,21 @@
+ static phys_addr_t first_memblock_size;
+ static int __initdata boot_cpu_count;
+ 
++#ifdef	CONFIG_PPC64
++static int if_iommu_is_off(u64 base, u64 *size)
 +{
-+	unsigned long memblock_size;
-+	struct device_node *dn;
-+	struct property *prop, *prop_v2;
-+	__be32 *p;
-+	struct of_drconf_cell *lmbs;
-+	u32 num_lmb_desc_sets, num_lmbs;
-+	int i, j, k;
-+
-+	dn = of_find_node_by_path("/ibm,dynamic-reconfiguration-memory");
-+	if (!dn)
-+		return -EINVAL;
-+
-+	prop_v2 = of_find_property(dn, "ibm,dynamic-memory-v2", NULL);
-+	if (!prop_v2) {
-+		of_node_put(dn);
-+		return -EINVAL;
++	if (iommu_is_off) {
++		if (base >= 0x80000000ul)
++			return 1;
++		if ((base + (*size)) > 0x80000000ul)
++			(*size) = 0x80000000ul - base;
 +	}
-+
-+	memblock_size = pseries_memory_block_size();
-+	if (!memblock_size) {
-+		of_node_put(dn);
-+		return -EINVAL;
-+	}
-+
-+	/* The first int of the property is the number of lmb sets
-+	 * described by the property.
-+	 */
-+	p = (__be32 *)prop_v2->value;
-+	num_lmb_desc_sets = be32_to_cpu(*p++);
-+
-+	/* Count the number of LMBs for generating the alternate format
-+	 */
-+	for (i = 0, num_lmbs = 0; i < num_lmb_desc_sets; i++) {
-+		struct of_drconf_cell_v2 drmem;
-+
-+		read_drconf_cell_v2(&drmem, (const __be32 **)&p);
-+		num_lmbs += drmem.num_seq_lmbs;
-+	}
-+
-+	/* Create an empty copy of the new 'ibm,dynamic-memory' property
-+	 */
-+	prop = kzalloc(sizeof(*prop), GFP_KERNEL);
-+	if (!prop) {
-+		of_node_put(dn);
-+		return -ENOMEM;
-+	}
-+	prop->name = kstrdup("ibm,dynamic-memory", GFP_KERNEL);
-+	prop->length = dyn_mem_v2_len(num_lmbs);
-+	prop->value = kzalloc(prop->length, GFP_KERNEL);
-+
-+	/* Copy/expand the ibm,dynamic-memory-v2 format to produce the
-+	 * ibm,dynamic-memory format.
-+	 */
-+	p = (__be32 *)prop->value;
-+	*p = cpu_to_be32(num_lmbs);
-+	p++;
-+	lmbs = (struct of_drconf_cell *)p;
-+
-+	p = (__be32 *)prop_v2->value;
-+	p++;
-+
-+	for (i = 0, k = 0; i < num_lmb_desc_sets; i++) {
-+		struct of_drconf_cell_v2 drmem;
-+
-+		read_drconf_cell_v2(&drmem, (const __be32 **)&p);
-+
-+		for (j = 0; j < drmem.num_seq_lmbs; j++) {
-+			lmbs[k+j].base_addr = be64_to_cpu(drmem.base_addr);
-+			lmbs[k+j].drc_index = be32_to_cpu(drmem.drc_index);
-+			lmbs[k+j].aa_index  = be32_to_cpu(drmem.aa_index);
-+			lmbs[k+i].flags     = be32_to_cpu(drmem.flags);
-+
-+			drmem.base_addr += memblock_size;
-+			drmem.drc_index++;
-+		}
-+
-+		k += drmem.num_seq_lmbs;
-+	}
-+
-+	of_node_put(dn);
-+
-+	of_remove_property(dn, prop_v2);
-+
-+	of_add_property(dn, prop);
-+
-+	/* And disable feature flag since the property has gone away */
-+	powerpc_firmware_features &= ~FW_FEATURE_DYN_MEM_V2;
-+
 +	return 0;
 +}
- 
- static int __init pseries_memory_hotplug_init(void)
++#else
++#define	if_iommu_is_off(base, size)	0
++#endif
++
+ static int __init early_parse_mem(char *p)
  {
-+	if (firmware_has_feature(FW_FEATURE_DYN_MEM_V2))
-+		pseries_rewrite_dynamic_memory_v2();
-+#ifdef CONFIG_MEMORY_HOTPLUG
- 	if (firmware_has_feature(FW_FEATURE_LPAR))
- 		of_reconfig_notifier_register(&pseries_mem_nb);
-+#endif /* CONFIG_MEMORY_HOTPLUG */
+ 	if (!p)
+@@ -444,23 +459,34 @@ static int __init early_init_dt_scan_chosen_ppc(unsigned long node,
  
+ #ifdef CONFIG_PPC_PSERIES
+ /*
+- * Interpret the ibm,dynamic-memory property in the
+- * /ibm,dynamic-reconfiguration-memory node.
++ * Retrieve and validate the ibm,lmb-size property for drconf memory
++ * from the flattened device tree.
++ */
++static u64 __init get_lmb_size(unsigned long node)
++{
++	const __be32 *ls;
++	int len;
++	ls = of_get_flat_dt_prop(node, "ibm,lmb-size", &len);
++	if (!ls || len < dt_root_size_cells * sizeof(__be32))
++		return 0;
++	return dt_mem_next_cell(dt_root_size_cells, &ls);
++}
++
++/*
++ * Interpret the ibm,dynamic-memory property/ibm,dynamic-memory-v2
++ * in the /ibm,dynamic-reconfiguration-memory node.
+  * This contains a list of memory blocks along with NUMA affinity
+  * information.
+  */
+-static int __init early_init_dt_scan_drconf_memory(unsigned long node)
++static int __init early_init_dt_scan_drconf_memory_v1(unsigned long node)
+ {
+-	const __be32 *dm, *ls, *usm;
++	const __be32 *dm, *usm;
+ 	int l;
+ 	unsigned long n, flags;
+ 	u64 base, size, memblock_size;
+ 	unsigned int is_kexec_kdump = 0, rngs;
+ 
+-	ls = of_get_flat_dt_prop(node, "ibm,lmb-size", &l);
+-	if (ls == NULL || l < dt_root_size_cells * sizeof(__be32))
+-		return 0;
+-	memblock_size = dt_mem_next_cell(dt_root_size_cells, &ls);
++	memblock_size = get_lmb_size(node);
+ 
+ 	dm = of_get_flat_dt_prop(node, "ibm,dynamic-memory", &l);
+ 	if (dm == NULL || l < sizeof(__be32))
+@@ -507,18 +533,78 @@ static int __init early_init_dt_scan_drconf_memory(unsigned long node)
+ 				size = dt_mem_next_cell(dt_root_size_cells,
+ 							 &usm);
+ 			}
+-			if (iommu_is_off) {
+-				if (base >= 0x80000000ul)
+-					continue;
+-				if ((base + size) > 0x80000000ul)
+-					size = 0x80000000ul - base;
+-			}
++			if (if_iommu_is_off(base, &size))
++				continue;
+ 			memblock_add(base, size);
+ 		} while (--rngs);
+ 	}
+ 	memblock_dump_all();
  	return 0;
  }
++
++static int __init early_init_dt_scan_drconf_memory_v2(unsigned long node)
++{
++	const __be32 *dm;
++	int l;
++	unsigned long num_sets;
++	u64 size, base, memblock_size;
++
++	memblock_size = get_lmb_size(node);
++
++	dm = of_get_flat_dt_prop(node, "ibm,dynamic-memory-v2", &l);
++	if (dm == NULL || l < sizeof(__be32))
++		return 0;
++
++	/* Verify expected length of the array of ibm,dynamic-memory-v2
++	 * structs fits in the actual size of the property data.
++	 */
++	num_sets = of_read_number(dm++, 1);
++	if (l < (num_sets * (dt_root_addr_cells + 4) + 1) * sizeof(__be32))
++		return 0;
++
++	if (n_mem_addr_cells == 0)
++		n_mem_addr_cells = dt_root_addr_cells;
++
++	for (; num_sets != 0; --num_sets) {
++		struct of_drconf_cell_v2 drmem;
++		unsigned long nsl;
++
++		read_drconf_cell_v2(&drmem, &dm);
++		base = drmem.base_addr;
++		nsl = drmem.num_seq_lmbs;
++		size = memblock_size;
++
++		/* SKip this block if the reserved bit is set in flags
++		 * or if the block is not assigned to this partition
++		 */
++		if ((drmem.flags & DRCONF_MEM_RESERVED) ||
++		    !(drmem.flags & DRCONF_MEM_ASSIGNED))
++			continue;
++
++		for (; nsl != 0; nsl--) {
++			size = memblock_size;
++			if (if_iommu_is_off(base, &size))
++				continue;
++			memblock_add(base, size);
++			base += size;
++		}
++	}
++
++	memblock_dump_all();
++	return 0;
++}
++
++static int __init early_init_dt_scan_drconf_memory(unsigned long node)
++{
++	const __be32 *dm;
++	int l;
++	dm = of_get_flat_dt_prop(node, "ibm,dynamic-memory-v2", &l);
++	if (dm == NULL || l < sizeof(__be32))
++		return early_init_dt_scan_drconf_memory_v1(node);
++	else
++		return early_init_dt_scan_drconf_memory_v2(node);
++}
++
+ #else
+ #define early_init_dt_scan_drconf_memory(node)	0
+ #endif /* CONFIG_PPC_PSERIES */
+@@ -550,14 +636,9 @@ static int __init early_init_dt_scan_memory_ppc(unsigned long node,
+ 
+ void __init early_init_dt_add_memory_arch(u64 base, u64 size)
+ {
+-#ifdef CONFIG_PPC64
+-	if (iommu_is_off) {
+-		if (base >= 0x80000000ul)
+-			return;
+-		if ((base + size) > 0x80000000ul)
+-			size = 0x80000000ul - base;
+-	}
+-#endif
++	if (if_iommu_is_off(base, &size))
++		return;
++
+ 	/* Keep track of the beginning of memory -and- the size of
+ 	 * the very first block in the device-tree as it represents
+ 	 * the RMA on ppc64 server
+diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
+index 9befaee..4fdc5ff 100644
+--- a/arch/powerpc/mm/numa.c
++++ b/arch/powerpc/mm/numa.c
+@@ -57,7 +57,8 @@
+ EXPORT_SYMBOL(node_data);
+ 
+ static int min_common_depth;
+-static int n_mem_addr_cells, n_mem_size_cells;
++int n_mem_addr_cells;
++static int n_mem_size_cells;
+ static int form1_affinity;
+ 
+ #define MAX_DISTANCE_REF_POINTS 4
+@@ -405,6 +406,23 @@ static void read_drconf_cell(struct of_drconf_cell *drmem, const __be32 **cellp)
+ 
+ 	*cellp = cp + 4;
+ }
++ 
++ /*
++ * Retrieve and validate the ibm,dynamic-memory property of the device tree.
++ * Read the next memory block set entry from the ibm,dynamic-memory-v2 property
++ * and return the information in the provided of_drconf_cell_v2 structure.
++ */
++void read_drconf_cell_v2(struct of_drconf_cell_v2 *drmem, const __be32 **cellp)
++{
++	const __be32 *cp = (const __be32 *)*cellp;
++	drmem->num_seq_lmbs = be32_to_cpu(*cp++);
++	drmem->base_addr = read_n_cells(n_mem_addr_cells, &cp);
++	drmem->drc_index = be32_to_cpu(*cp++);
++	drmem->aa_index = be32_to_cpu(*cp++);
++	drmem->flags = be32_to_cpu(*cp++);
++
++	*cellp = cp;
++}
+ 
+ /*
+  * Retrieve and validate the ibm,dynamic-memory property of the device tree.
+diff --git a/arch/powerpc/platforms/pseries/firmware.c b/arch/powerpc/platforms/pseries/firmware.c
+index 757d757..eb688ae 100644
+--- a/arch/powerpc/platforms/pseries/firmware.c
++++ b/arch/powerpc/platforms/pseries/firmware.c
+@@ -115,6 +115,7 @@ struct vec5_fw_feature {
+ 	{FW_FEATURE_TYPE1_AFFINITY,	OV5_TYPE1_AFFINITY},
+ 	{FW_FEATURE_PRRN,		OV5_PRRN},
+ 	{FW_FEATURE_DRC_INFO,		OV5_DRC_INFO},
++	{FW_FEATURE_DYN_MEM_V2,		OV5_DYN_MEM_V2},
+ };
+ 
+ static void __init fw_vec5_feature_init(const char *vec5, unsigned long len)
