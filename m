@@ -2,10 +2,10 @@ Return-Path: <helgaas@kernel.org>
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w6M6C1mKZzDqJ2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Apr 2017 07:36:51 +1000 (AEST)
-Subject: [PATCH v11 3/7] PCI: Add pcibios_default_alignment() for
- arch-specific alignment control
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w6M6L1ql4zDqJX
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Apr 2017 07:36:58 +1000 (AEST)
+Subject: [PATCH v11 4/7] powerpc/powernv: Override
+ pcibios_default_alignment() to force PCI devices to be page aligned
 From: Bjorn Helgaas <bhelgaas@google.com>
 To: Yongji Xie <elohimes@gmail.com>
 Cc: zhong@linux.vnet.ibm.com, Alexey Kardashevskiy <aik@ozlabs.ru>,
@@ -14,8 +14,8 @@ Cc: zhong@linux.vnet.ibm.com, Alexey Kardashevskiy <aik@ozlabs.ru>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  linuxppc-dev@lists.ozlabs.org
-Date: Mon, 17 Apr 2017 16:36:46 -0500
-Message-ID: <20170417213646.21092.24262.stgit@bhelgaas-glaptop.roam.corp.google.com>
+Date: Mon, 17 Apr 2017 16:36:53 -0500
+Message-ID: <20170417213653.21092.27784.stgit@bhelgaas-glaptop.roam.corp.google.com>
 In-Reply-To: <20170417212705.21092.90222.stgit@bhelgaas-glaptop.roam.corp.google.com>
 References: <20170417212705.21092.90222.stgit@bhelgaas-glaptop.roam.corp.google.com>
 MIME-Version: 1.0
@@ -31,58 +31,73 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Yongji Xie <elohimes@gmail.com>
 
-When VFIO passes through a PCI device to a guest, it does not allow
-the guest to mmap BARs that are smaller than PAGE_SIZE unless it
-can reserve the rest of the page (see vfio_pci_probe_mmaps()). This
-is because a page might contain several small BARs for unrelated
-devices and a guest should not be able to access all of them.
-
-VFIO emulates guest accesses to non-mappable BARs, which is functional
-but slow. On systems with large page sizes, e.g., PowerNV with 64K pages,
-BARs are more likely to share a page and performance is more likely to
-be a problem.
-
-Add a weak function to set default alignment for all PCI devices.
-An arch can override it to force the PCI core to place memory BARs on
-their own pages.
+This overrides pcibios_default_alignment() to set default alignment
+to PAGE_SIZE for all PCI devices on PowerNV platform. Thus sub-page
+BARs would not share a page and could be mapped into guest when VFIO
+passthrough them.
 
 Signed-off-by: Yongji Xie <elohimes@gmail.com>
 Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
 ---
- drivers/pci/pci.c |   10 ++++++++--
- 1 file changed, 8 insertions(+), 2 deletions(-)
+ arch/powerpc/include/asm/machdep.h        |    2 ++
+ arch/powerpc/kernel/pci-common.c          |    8 ++++++++
+ arch/powerpc/platforms/powernv/pci-ioda.c |    7 +++++++
+ 3 files changed, 17 insertions(+)
 
-diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-index 679af2a253ad..a2d1f144c94f 100644
---- a/drivers/pci/pci.c
-+++ b/drivers/pci/pci.c
-@@ -4947,6 +4947,11 @@ void pci_ignore_hotplug(struct pci_dev *dev)
- }
- EXPORT_SYMBOL_GPL(pci_ignore_hotplug);
+diff --git a/arch/powerpc/include/asm/machdep.h b/arch/powerpc/include/asm/machdep.h
+index 5011b69107a7..a82c1925ff43 100644
+--- a/arch/powerpc/include/asm/machdep.h
++++ b/arch/powerpc/include/asm/machdep.h
+@@ -173,6 +173,8 @@ struct machdep_calls {
+ 	/* Called after scan and before resource survey */
+ 	void (*pcibios_fixup_phb)(struct pci_controller *hose);
  
-+resource_size_t __weak pcibios_default_alignment(struct pci_dev *dev)
++	resource_size_t (*pcibios_default_alignment)(struct pci_dev *);
++
+ #ifdef CONFIG_PCI_IOV
+ 	void (*pcibios_fixup_sriov)(struct pci_dev *pdev);
+ 	resource_size_t (*pcibios_iov_resource_alignment)(struct pci_dev *, int resno);
+diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
+index ffda24a38dda..ceda57484e8e 100644
+--- a/arch/powerpc/kernel/pci-common.c
++++ b/arch/powerpc/kernel/pci-common.c
+@@ -233,6 +233,14 @@ void pcibios_reset_secondary_bus(struct pci_dev *dev)
+ 	pci_reset_secondary_bus(dev);
+ }
+ 
++resource_size_t pcibios_default_alignment(struct pci_dev *pdev)
 +{
++	if (ppc_md.pcibios_default_alignment)
++		return ppc_md.pcibios_default_alignment(pdev);
++
 +	return 0;
 +}
 +
- #define RESOURCE_ALIGNMENT_PARAM_SIZE COMMAND_LINE_SIZE
- static char resource_alignment_param[RESOURCE_ALIGNMENT_PARAM_SIZE] = {0};
- static DEFINE_SPINLOCK(resource_alignment_lock);
-@@ -4962,14 +4967,15 @@ static resource_size_t pci_specified_resource_alignment(struct pci_dev *dev)
+ #ifdef CONFIG_PCI_IOV
+ resource_size_t pcibios_iov_resource_alignment(struct pci_dev *pdev, int resno)
  {
- 	int seg, bus, slot, func, align_order, count;
- 	unsigned short vendor, device, subsystem_vendor, subsystem_device;
--	resource_size_t align = 0;
-+	resource_size_t align = pcibios_default_alignment(dev);
- 	char *p;
- 
- 	spin_lock(&resource_alignment_lock);
- 	p = resource_alignment_param;
--	if (!*p)
-+	if (!*p && !align)
- 		goto out;
- 	if (pci_has_flag(PCI_PROBE_ONLY)) {
-+		align = 0;
- 		pr_info_once("PCI: Ignoring requested alignments (PCI_PROBE_ONLY)\n");
- 		goto out;
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index 6901a06da2f9..b724487cbd0f 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -3287,6 +3287,11 @@ static void pnv_pci_setup_bridge(struct pci_bus *bus, unsigned long type)
  	}
+ }
+ 
++static resource_size_t pnv_pci_default_alignment(struct pci_dev *pdev)
++{
++	return PAGE_SIZE;
++}
++
+ #ifdef CONFIG_PCI_IOV
+ static resource_size_t pnv_pci_iov_resource_alignment(struct pci_dev *pdev,
+ 						      int resno)
+@@ -3820,6 +3825,8 @@ static void __init pnv_pci_init_ioda_phb(struct device_node *np,
+ 		hose->controller_ops = pnv_pci_ioda_controller_ops;
+ 	}
+ 
++	ppc_md.pcibios_default_alignment = pnv_pci_default_alignment;
++
+ #ifdef CONFIG_PCI_IOV
+ 	ppc_md.pcibios_fixup_sriov = pnv_pci_ioda_fixup_iov_resources;
+ 	ppc_md.pcibios_iov_resource_alignment = pnv_pci_iov_resource_alignment;
