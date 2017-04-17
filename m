@@ -1,32 +1,34 @@
 Return-Path: <mwb@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w6BJn0TkzzDq5x
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Apr 2017 01:00:24 +1000 (AEST)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v3HEwsnD037856
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Apr 2017 11:00:13 -0400
-Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
- by mx0a-001b2d01.pphosted.com with ESMTP id 29vx43mxjk-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w6BKF5FkWzDqFx
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Apr 2017 01:00:49 +1000 (AEST)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v3HEwkDe084525
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Apr 2017 11:00:39 -0400
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 29uceyuqxu-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Apr 2017 11:00:13 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Apr 2017 11:00:39 -0400
 Received: from localhost
- by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
- Mon, 17 Apr 2017 09:00:12 -0600
-Subject: [PATCH V2 0/5] powerpc/devtree: Add support for 'ibm,
- dynamic-memory-v2' property
+ Mon, 17 Apr 2017 09:00:38 -0600
+Subject: [PATCH V2 1/5] powerpc/dynmemv2: Check arch.vec earlier during boot
+ for memory features
 From: Michael Bringmann <mwb@linux.vnet.ibm.com>
-To: mwb@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
+To: Michael Bringmann <mwb@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
  ltc-virtual-io@lists.linux.ibm.com
-Date: Mon, 17 Apr 2017 10:00:09 -0500
+Date: Mon, 17 Apr 2017 10:00:34 -0500
+In-Reply-To: <149244116099.48989.17054073410274001992.stgit@powerkvm6.aus.stglabs.ibm.com>
+References: <149244116099.48989.17054073410274001992.stgit@powerkvm6.aus.stglabs.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Message-Id: <149244116099.48989.17054073410274001992.stgit@powerkvm6.aus.stglabs.ibm.com>
+Message-Id: <149244121473.48989.13468189401836043300.stgit@powerkvm6.aus.stglabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,41 +38,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-"ibm,dynamic-memory-v2": This property replaces the "ibm,dynamic-memory"
-node representation within the "ibm,dynamic-reconfiguration-memory"
-node provided by the BMC.  This element format is intended to provide
-a more compact representation of memory, especially, for systems with
-massive amounts of RAM.  To simplify portability, this property is
-converted to the "ibm,dynamic-memory" property during system boot.
-
-"ibm,architecture.vec": Bidirectional communication mechanism between
-the host system and the front end processor indicating what features
-the host system supports and what features the front end processor will
-actually provide.  In this case, we are indicating that the host system
-can support the new device tree structure "ibm,dynamic-memory-v2".
+architecture.vec5 features: The boot-time memory management needs to
+know the form of the "ibm,dynamic-memory-v2" property early during
+scanning of the flattened device tree.  This patch moves execution of
+the function pseries_probe_fw_features() early enough to be before
+the scanning of the memory properties in the device tree to allow
+recognition of the supported properties.
 
 Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
-
-Michael Bringmann (5):
-  powerpc: Check arch.vec earlier during boot for memory features
-  powerpc/memory: Parse new memory property to register blocks.
-  powerpc/memory: Parse new memory property to initialize structures.
-  pseries/hotplug init: Convert new DRC memory property for hotplug runtime
-  powerpc: Enable support for new 'ibm,dynamic-memory-v2' devtree property
 ---
-Changes in V2:
-  -- Add missing of_node_put() calls.
----
+ arch/powerpc/kernel/prom.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
- arch/powerpc/include/asm/firmware.h             |    4 
- arch/powerpc/include/asm/prom.h                 |   33 +++-
- arch/powerpc/kernel/prom.c                      |  131 +++++++++++---
- arch/powerpc/kernel/prom_init.c                 |    2 
- arch/powerpc/mm/numa.c                          |  213 ++++++++++++++++++-----
- arch/powerpc/platforms/pseries/Makefile         |    4 
- arch/powerpc/platforms/pseries/firmware.c       |    1 
- arch/powerpc/platforms/pseries/hotplug-memory.c |  104 +++++++++++
- 8 files changed, 406 insertions(+), 86 deletions(-)
-
---
-Signature
+diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+index f5d399e..bca4abd 100644
+--- a/arch/powerpc/kernel/prom.c
++++ b/arch/powerpc/kernel/prom.c
+@@ -679,6 +679,9 @@ void __init early_init_devtree(void *params)
+ 	 */
+ 	of_scan_flat_dt(early_init_dt_scan_chosen_ppc, boot_command_line);
+ 
++	/* Now try to figure out if we are running on LPAR and so on */
++	pseries_probe_fw_features();
++
+ 	/* Scan memory nodes and rebuild MEMBLOCKs */
+ 	of_scan_flat_dt(early_init_dt_scan_root, NULL);
+ 	of_scan_flat_dt(early_init_dt_scan_memory_ppc, NULL);
+@@ -746,9 +749,6 @@ void __init early_init_devtree(void *params)
+ #endif
+ 	epapr_paravirt_early_init();
+ 
+-	/* Now try to figure out if we are running on LPAR and so on */
+-	pseries_probe_fw_features();
+-
+ #ifdef CONFIG_PPC_PS3
+ 	/* Identify PS3 firmware */
+ 	if (of_flat_dt_is_compatible(of_get_flat_dt_root(), "sony,ps3"))
