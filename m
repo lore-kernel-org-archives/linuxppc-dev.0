@@ -3,30 +3,30 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w6BGB0hhqzDq9K
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Apr 2017 00:58:09 +1000 (AEST)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w6BJn0TkzzDq5x
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Apr 2017 01:00:24 +1000 (AEST)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v3HEraXZ074158
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Apr 2017 10:57:57 -0400
-Received: from e16.ny.us.ibm.com (e16.ny.us.ibm.com [129.33.205.206])
- by mx0a-001b2d01.pphosted.com with ESMTP id 29udugah3k-1
+ v3HEwsnD037856
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Apr 2017 11:00:13 -0400
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 29vx43mxjk-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Apr 2017 10:57:56 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Apr 2017 11:00:13 -0400
 Received: from localhost
- by e16.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
- Mon, 17 Apr 2017 10:57:55 -0400
+ Mon, 17 Apr 2017 09:00:12 -0600
 Subject: [PATCH V2 0/5] powerpc/devtree: Add support for 'ibm,
  dynamic-memory-v2' property
 From: Michael Bringmann <mwb@linux.vnet.ibm.com>
-To: ltc-virtual-io@lists.linux.ibm.com, linuxppc-dev@lists.ozlabs.org
-Cc: nfont@linux.vnet.ibm.com
-Date: Mon, 17 Apr 2017 09:57:51 -0500
+To: mwb@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
+ ltc-virtual-io@lists.linux.ibm.com
+Date: Mon, 17 Apr 2017 10:00:09 -0500
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Message-Id: <149244104074.48921.6140704323824598793.stgit@powerkvm6.aus.stglabs.ibm.com>
+Message-Id: <149244116099.48989.17054073410274001992.stgit@powerkvm6.aus.stglabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -60,6 +60,7 @@ Michael Bringmann (5):
 ---
 Changes in V2:
   -- Add missing of_node_put() calls.
+---
 
  arch/powerpc/include/asm/firmware.h             |    4 
  arch/powerpc/include/asm/prom.h                 |   33 +++-
@@ -72,3 +73,4 @@ Changes in V2:
  8 files changed, 406 insertions(+), 86 deletions(-)
 
 --
+Signature
