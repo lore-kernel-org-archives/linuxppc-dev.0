@@ -2,9 +2,10 @@ Return-Path: <helgaas@kernel.org>
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w6M5x13CLzDqFc
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Apr 2017 07:36:37 +1000 (AEST)
-Subject: [PATCH v11 1/7] PCI: Ignore requested alignment for IOV BARs
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w6M640RgXzDqG1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Apr 2017 07:36:44 +1000 (AEST)
+Subject: [PATCH v11 2/7] PCI: A fix for caculating bridge window's size and
+ alignment
 From: Bjorn Helgaas <bhelgaas@google.com>
 To: Yongji Xie <elohimes@gmail.com>
 Cc: zhong@linux.vnet.ibm.com, Alexey Kardashevskiy <aik@ozlabs.ru>,
@@ -13,8 +14,8 @@ Cc: zhong@linux.vnet.ibm.com, Alexey Kardashevskiy <aik@ozlabs.ru>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  linuxppc-dev@lists.ozlabs.org
-Date: Mon, 17 Apr 2017 16:36:32 -0500
-Message-ID: <20170417213632.21092.89690.stgit@bhelgaas-glaptop.roam.corp.google.com>
+Date: Mon, 17 Apr 2017 16:36:39 -0500
+Message-ID: <20170417213639.21092.22951.stgit@bhelgaas-glaptop.roam.corp.google.com>
 In-Reply-To: <20170417212705.21092.90222.stgit@bhelgaas-glaptop.roam.corp.google.com>
 References: <20170417212705.21092.90222.stgit@bhelgaas-glaptop.roam.corp.google.com>
 MIME-Version: 1.0
@@ -28,32 +29,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Yongji Xie <xyjxie@linux.vnet.ibm.com>
+From: Yongji Xie <elohimes@gmail.com>
 
-We would call pci_reassigndev_resource_alignment() before
-pci_init_capabilities().  So the requested alignment would never work for
-IOV BARs.
+In case that one device's alignment is greater than its size,
+we may get an incorrect size and alignment for its bus's memory
+window in pbus_size_mem(). This patch fixes this case.
 
-Furthermore, it's meaningless to request additional alignment for IOV BARs,
-the IOV BAR alignment is only determined by the VF BAR size.
-
-Signed-off-by: Yongji Xie <xyjxie@linux.vnet.ibm.com>
+Signed-off-by: Yongji Xie <elohimes@gmail.com>
 Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
-Reviewed-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 ---
- drivers/pci/pci.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/pci/setup-bus.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-index 7904d02ffdb9..679af2a253ad 100644
---- a/drivers/pci/pci.c
-+++ b/drivers/pci/pci.c
-@@ -5084,7 +5084,7 @@ void pci_reassigndev_resource_alignment(struct pci_dev *dev)
- 	command &= ~PCI_COMMAND_MEMORY;
- 	pci_write_config_word(dev, PCI_COMMAND, command);
- 
--	for (i = 0; i < PCI_BRIDGE_RESOURCES; i++) {
-+	for (i = 0; i <= PCI_ROM_RESOURCE; i++) {
- 		r = &dev->resource[i];
- 		if (!(r->flags & IORESOURCE_MEM))
- 			continue;
+diff --git a/drivers/pci/setup-bus.c b/drivers/pci/setup-bus.c
+index cb389277df41..958da7db9033 100644
+--- a/drivers/pci/setup-bus.c
++++ b/drivers/pci/setup-bus.c
+@@ -1066,10 +1066,10 @@ static int pbus_size_mem(struct pci_bus *bus, unsigned long mask,
+ 				r->flags = 0;
+ 				continue;
+ 			}
+-			size += r_size;
++			size += max(r_size, align);
+ 			/* Exclude ranges with size > align from
+ 			   calculation of the alignment. */
+-			if (r_size == align)
++			if (r_size <= align)
+ 				aligns[order] += align;
+ 			if (order > max_order)
+ 				max_order = order;
