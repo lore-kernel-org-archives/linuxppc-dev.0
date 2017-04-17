@@ -1,34 +1,38 @@
-Return-Path: <bhelgaas@google.com>
-Received: from mail-wm0-x230.google.com (mail-wm0-x230.google.com
- [IPv6:2a00:1450:400c:c09::230])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <ukrishn@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w6CRn4801zDq5x
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Apr 2017 01:51:33 +1000 (AEST)
-Received: by mail-wm0-x230.google.com with SMTP id w64so36600070wma.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Apr 2017 08:51:33 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w6DpR31TPzDq5x
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Apr 2017 02:52:46 +1000 (AEST)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v3HGhW7i030613
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Apr 2017 12:52:41 -0400
+Received: from e11.ny.us.ibm.com (e11.ny.us.ibm.com [129.33.205.201])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 29ufnkujhf-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Apr 2017 12:52:41 -0400
+Received: from localhost
+ by e11.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ukrishn@linux.vnet.ibm.com>;
+ Mon, 17 Apr 2017 12:52:40 -0400
+Subject: Re: [PATCH v4] cxl: Force context lock during EEH flow
+To: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>,
+ Frederic Barrat <fbarrat@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+References: <20170405113553.7354-1-vaibhav@linux.vnet.ibm.com>
+Cc: Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ Ian Munsie <imunsie@au1.ibm.com>,
+ Christophe Lombard <christophe_lombard@fr.ibm.com>,
+ Philippe Bergheaud <philippe.bergheaud@fr.ibm.com>,
+ Greg Kurz <gkurz@linux.vnet.ibm.com>, stable@vger.kernel.org
+From: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
+Date: Mon, 17 Apr 2017 11:52:44 -0500
 MIME-Version: 1.0
-In-Reply-To: <1492293974.25766.30.camel@kernel.crashing.org>
-References: <1491825494-19331-1-git-send-email-elohimes@gmail.com>
- <1491825494-19331-4-git-send-email-elohimes@gmail.com>
- <20170414155849.GB5864@bhelgaas-glaptop.roam.corp.google.com>
- <1492206774.25766.14.camel@kernel.crashing.org>
- <CAErSpo5Orx8c453Fn6-PX-7woseSkZFcYO1Yu+1L+B-h6w0T+A@mail.gmail.com>
- <1492293974.25766.30.camel@kernel.crashing.org>
-From: Bjorn Helgaas <bhelgaas@google.com>
-Date: Mon, 17 Apr 2017 10:51:09 -0500
-Message-ID: <CAErSpo6X0JwjqfPN3A5XGqKTdsXw3crTOvn9n+jvN86XHgriVw@mail.gmail.com>
-Subject: Re: [PATCH v10 3/4] powerpc/powernv: Override
- pcibios_default_alignment() to force PCI devices to be page aligned
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Bjorn Helgaas <helgaas@kernel.org>, Yongji Xie <elohimes@gmail.com>,
- "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "alex.williamson@redhat.com" <alex.williamson@redhat.com>,
- Gavin Shan <gwshan@linux.vnet.ibm.com>,
- Alexey Kardashevskiy <aik@ozlabs.ru>, Michael Ellerman <mpe@ellerman.id.au>,
- "paulus@samba.org" <paulus@samba.org>, Li Zhong <zhong@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=UTF-8
+In-Reply-To: <20170405113553.7354-1-vaibhav@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Message-Id: <ea9eb773-2002-5051-8bb9-45a6b309f954@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,20 +42,110 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, Apr 15, 2017 at 5:06 PM, Benjamin Herrenschmidt
-<benh@kernel.crashing.org> wrote:
-> On Sat, 2017-04-15 at 11:36 -0500, Bjorn Helgaas wrote:
->> > I agree in principle. I'm surprised that PowerPC is the only one
->> > interested here though, what about other platforms who want to use
->> > KVM and PCI pass-through and use Linux to assign BARs ?
->>
->> If I understand correctly, the problem is with BARs smaller than a
->> page, and this happens more on PowerPC because larger page sizes are
->> more common there.
+On 4/5/2017 6:35 AM, Vaibhav Jain wrote:
+> During an eeh event when the cxl card is fenced and card sysfs attr
+> perst_reloads_same_image is set following warning message is seen in the
+> kernel logs:
 >
-> Yes, it happens "more". That doesn't mean it doesn't happen at all on
-> others :-) Anyway, I'm not objecting, just surprised.
+>  [   60.622727] Adapter context unlocked with 0 active contexts
+>  [   60.622762] ------------[ cut here ]------------
+>  [   60.622771] WARNING: CPU: 12 PID: 627 at
+>  ../drivers/misc/cxl/main.c:325 cxl_adapter_context_unlock+0x60/0x80 [cxl]
+>
+> Even though this warning is harmless, it clutters the kernel log
+> during an eeh event. This warning is triggered as the EEH callback
+> cxl_pci_error_detected doesn't obtain a context-lock before forcibly
+> detaching all active context and when context-lock is released during
+> call to cxl_configure_adapter from cxl_pci_slot_reset, a warning in
+> cxl_adapter_context_unlock is triggered.
+>
+> To fix this warning, we acquire the adapter context-lock via
+> cxl_adapter_context_lock() in the eeh callback
+> cxl_pci_error_detected() once all the virtual AFU PHBs are notified
+> and their contexts detached. The context-lock is released in
+> cxl_pci_slot_reset() after the adapter is successfully reconfigured
+> and before we call slot_reset callback on slice attached device-drivers.
+>
+> Cc: stable@vger.kernel.org
+> Fixes: 70b565bbdb91("cxl: Prevent adapter reset if an active context exists")
+> Reported-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+> Signed-off-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+> ---
+> Change-Log:
+>
+> v3..v4
+> - Moved the call to context-unlock from cxl_pci_resume to
+> cxl_pci_slot_reset to let cxlflash module activate its master context
+> during slot reset. (Fred)
+>
+> v2..v3
+> - As discussed with Fred removed function
+> cxl_adapter_context_force_lock() which may potentially expose the code
+> to deadlock in the future.
+> -  Other details of changes in cxl_pci_error_detected() to fix an
+> earlier issue of eeh callbacks not being passed on to all slices, is
+> being reworked as a separate patch.
+>
+> v2..v1
+> - Moved the call to cxl_adapter_context_force_lock() from
+> cxl_pci_error_detected() to cxl_remove. (Fred)
+> ---
+>  drivers/misc/cxl/pci.c | 19 +++++++++++++++++--
+>  1 file changed, 17 insertions(+), 2 deletions(-)
+>
+> diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
+> index b27ea98..dd9a128 100644
+> --- a/drivers/misc/cxl/pci.c
+> +++ b/drivers/misc/cxl/pci.c
+> @@ -1496,8 +1496,6 @@ static int cxl_configure_adapter(struct cxl *adapter, struct pci_dev *dev)
+>  	if ((rc = cxl_native_register_psl_err_irq(adapter)))
+>  		goto err;
+>
+> -	/* Release the context lock as adapter is configured */
+> -	cxl_adapter_context_unlock(adapter);
+>  	return 0;
+>
+>  err:
+> @@ -1596,6 +1594,9 @@ static struct cxl *cxl_pci_init_adapter(struct pci_dev *dev)
+>  	if ((rc = cxl_sysfs_adapter_add(adapter)))
+>  		goto err_put1;
+>
+> +	/* Release the context lock as adapter is configured */
+> +	cxl_adapter_context_unlock(adapter);
+> +
+>  	return adapter;
+>
+>  err_put1:
+> @@ -1895,6 +1896,13 @@ static pci_ers_result_t cxl_pci_error_detected(struct pci_dev *pdev,
+>  		cxl_ops->afu_deactivate_mode(afu, afu->current_mode);
+>  		pci_deconfigure_afu(afu);
+>  	}
+> +
+> +	/* should take the context lock here */
+> +	if (cxl_adapter_context_lock(adapter) != 0)
+> +		dev_warn(&adapter->dev,
+> +			 "Couldn't take context lock with %d active-contexts\n",
+> +			 atomic_read(&adapter->contexts_num));
+> +
+>  	cxl_deconfigure_adapter(adapter);
+>
+>  	return result;
+> @@ -1913,6 +1921,13 @@ static pci_ers_result_t cxl_pci_slot_reset(struct pci_dev *pdev)
+>  	if (cxl_configure_adapter(adapter, pdev))
+>  		goto err;
+>
+> +	/*
+> +	 * Unlock context activation for the adapter. Ideally this should be
+> +	 * done in cxl_pci_resume but cxlflash module tries to activate the
+> +	 * master context as part of slot_reset callback.
+> +	 */
+> +	cxl_adapter_context_unlock(adapter);
+> +
+>  	for (i = 0; i < adapter->slices; i++) {
+>  		afu = adapter->afu[i];
+>
 
-Yeah, I agree.  Maybe the devices interesting for pass-through tend to
-have BARs of least 4KB?  Those would never be a problem on x86.  But I
-have absolutely no data either way.
+Looks good. FV regressions and EEH recoveries (in parallel to I/O) were 
+successful.
+
+Tested-by: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
