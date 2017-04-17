@@ -1,43 +1,44 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <anju@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w5zs20JgZzDqG1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Apr 2017 17:09:09 +1000 (AEST)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w619N1hHbzDqG4
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Apr 2017 18:08:23 +1000 (AEST)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v3H78pjW024785
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Apr 2017 03:09:00 -0400
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
- by mx0a-001b2d01.pphosted.com with ESMTP id 29ufp1fav3-1
+ v3H84Sij019466
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Apr 2017 04:08:21 -0400
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 29ufgx965e-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Apr 2017 03:09:00 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Apr 2017 04:08:20 -0400
 Received: from localhost
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 17 Apr 2017 17:08:58 +1000
-Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v3H78llU3080678
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Apr 2017 17:08:55 +1000
-Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
- by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v3H78NFQ029720
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Apr 2017 17:08:23 +1000
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Balbir Singh <bsingharora@gmail.com>, benh@kernel.crashing.org,
- paulus@samba.org, mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [RFC][PATCH] powerpc/mm: convert tlbie to tlbiel when no batch is
- active
-In-Reply-To: <20170413051655.26113-1-bsingharora@gmail.com>
-References: <20170413051655.26113-1-bsingharora@gmail.com>
-Date: Mon, 17 Apr 2017 12:37:56 +0530
+ for <linuxppc-dev@lists.ozlabs.org> from <anju@linux.vnet.ibm.com>;
+ Mon, 17 Apr 2017 02:08:20 -0600
+Subject: Re: [PATCH v6 03/11] powerpc/powernv: Detect supported IMC units and
+ its events
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ Stewart Smith <stewart@linux.vnet.ibm.com>,
+ Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+References: <1491231308-15282-1-git-send-email-maddy@linux.vnet.ibm.com>
+ <1491231308-15282-4-git-send-email-maddy@linux.vnet.ibm.com>
+ <87r316hqy9.fsf@linux.vnet.ibm.com>
+ <50380e09-9f5e-d2d4-ce91-26c616b2ce5e@linux.vnet.ibm.com>
+ <87o9w08rdx.fsf@concordia.ellerman.id.au>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ ego@linux.vnet.ibm.com, bsingharora@gmail.com,
+ benh@kernel.crashing.org, paulus@samba.org, anton@samba.org,
+ sukadev@linux.vnet.ibm.com, mikey@neuling.org, dja@axtens.net,
+ eranian@google.com, Hemant Kumar <hemant@linux.vnet.ibm.com>
+From: Anju T Sudhakar <anju@linux.vnet.ibm.com>
+Date: Mon, 17 Apr 2017 13:38:10 +0530
 MIME-Version: 1.0
-Content-Type: text/plain
-Message-Id: <87fuh7h5pv.fsf@skywalker.in.ibm.com>
+In-Reply-To: <87o9w08rdx.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Message-Id: <8aacfd08-8007-172a-3e00-77a3c5bfdb08@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,52 +48,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Balbir Singh <bsingharora@gmail.com> writes:
+Hi Michael,
 
-> Do the checks that __flush_tlb_pending() does and check if
-> a local flush will do when batch->active is false inside of
-> hpte_need_flush(). I've checked the changes with tlbie tracing,
-> I see local flushes as applicable now and I've also run
-> some basic ltp testcases on top of these changes on a powernv
-> machine.
+
+On Thursday 13 April 2017 05:13 PM, Michael Ellerman wrote:
+> Anju T Sudhakar <anju@linux.vnet.ibm.com> writes:
+>> On Thursday 06 April 2017 02:07 PM, Stewart Smith wrote:
+>>> Madhavan Srinivasan <maddy@linux.vnet.ibm.com> writes:
+>>>> --- a/arch/powerpc/platforms/powernv/opal-imc.c
+>>>> +++ b/arch/powerpc/platforms/powernv/opal-imc.c
+>>>> @@ -33,6 +33,388 @@
+>>> <snip>
+>>>> +static void imc_pmu_setup(struct device_node *parent)
+>>>> +{
+>>>> +	struct device_node *child;
+>>>> +	int pmu_count = 0, rc = 0;
+>>>> +	const struct property *pp;
+>>>> +
+>>>> +	if (!parent)
+>>>> +		return;
+>>>> +
+>>>> +	/* Setup all the IMC pmus */
+>>>> +	for_each_child_of_node(parent, child) {
+>>>> +		pp = of_get_property(child, "compatible", NULL);
+>>>> +		if (pp) {
+>>>> +			/*
+>>>> +			 * If there is a node with a "compatible" field,
+>>>> +			 * that's a PMU node
+>>>> +			 */
+>>>> +			rc = imc_pmu_create(child, pmu_count);
+>>>> +			if (rc)
+>>>> +				return;
+>>>> +			pmu_count++;
+>>>> +		}
+>>>> +	}
+>>>> +}
+>>> This doesn't strike me as the right kind of structure, the presence of a
+>>> compatible property really just says "hey, there's this device and it's
+>>> compatible with these ways of accessing it".
+>>>
+>>> I'm guessing the idea behind having imc-nest-offset/size in a top level
+>>> node is because it's common to everything under it and the aim is to not
+>>> blow up the device tree to be enormous.
+>>>
+>>> So why not go after each ibm,imc-counters-nest compatible node under the
+>>> top level ibm,opal-in-memory-counters node? (i'm not convinced that
+>>> having ibm,ibmc-counters-nest versus ibm,imc-counters-core and
+>>> ibm,imc-counters-thread as I see in the dts is correct though, as
+>>> they're all accessed exactly the same way?)
+>> The idea here is, we have one directory which contains common events
+>> information for nest(same incase of core and thread), and one directory
+>> for each nest(/core/thread) pmu.
+>> So while parsing we need to make sure that the node which we are parsing
+>> is the pmu node, not the node which contains the common event
+>> information. We use the "compatible" property here for that purpose.
+>> Because we don't have a compatible property for the node which contains
+>> events info.
+> That's a really bad hack.
 >
-> Signed-off-by: Balbir Singh <bsingharora@gmail.com>
-> ---
->  arch/powerpc/mm/tlb_hash64.c | 13 +++++++++----
->  1 file changed, 9 insertions(+), 4 deletions(-)
+> You can use the compatible property to detect the node you're looking
+> for, but you need to look at the *value* of the property and check it's
+> what you expect. Just checking that it's there is fragile.
 >
-> diff --git a/arch/powerpc/mm/tlb_hash64.c b/arch/powerpc/mm/tlb_hash64.c
-> index 4517aa4..1268e3a 100644
-> --- a/arch/powerpc/mm/tlb_hash64.c
-> +++ b/arch/powerpc/mm/tlb_hash64.c
-> @@ -93,12 +93,17 @@ void hpte_need_flush(struct mm_struct *mm, unsigned long addr,
->  
->  	/*
->  	 * Check if we have an active batch on this CPU. If not, just
-> -	 * flush now and return. For now, we don global invalidates
-> -	 * in that case, might be worth testing the mm cpu mask though
-> -	 * and decide to use local invalidates instead...
-> +	 * flush now and return.
->  	 */
->  	if (!batch->active) {
-> -		flush_hash_page(vpn, rpte, psize, ssize, 0);
-> +		const struct cpumask *tmp;
-> +		int local = 0;
-> +
-> +		tmp = cpumask_of(smp_processor_id());
-> +		if (cpumask_equal(mm_cpumask(mm), tmp))
-> +			local = 1;
-> +
-> +		flush_hash_page(vpn, rpte, psize, ssize, local);
-
-Can you use mm_is_thread_local(). Also switch similar open coded paths
-when doing that ?
+> cheers
+>
 
 
->  		put_cpu_var(ppc64_tlb_batch);
->  		return;
->  	}
-> -- 
-> 2.9.3
 
--aneesh
+ok. I will rework this code.
+
+
+
+Thanks,
+Anju
