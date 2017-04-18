@@ -1,18 +1,12 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
- [IPv6:2607:f8b0:400e:c05::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w6vsc5FM4zDq99
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2017 05:12:52 +1000 (AEST)
-Received: by mail-pg0-x242.google.com with SMTP id o123so348132pga.1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Apr 2017 12:12:52 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
-Cc: Nicholas Piggin <npiggin@gmail.com>
-Subject: [PATCH 4/4] powerpc/64s: cpu-features: initial implementation
-Date: Wed, 19 Apr 2017 05:12:19 +1000
-Message-Id: <20170418191220.3166-5-npiggin@gmail.com>
+Cc: Nicholas Piggin <npiggin@gmail.com>,
+	skiboot@lists.ozlabs.org
+Subject: [PATCH][OPAL] cpu-features: add base and POWER8, POWER9 /cpus/ibm,
+ powerpc-cpu-features dt
+Date: Wed, 19 Apr 2017 05:12:20 +1000
+Message-Id: <20170418191220.3166-6-npiggin@gmail.com>
 In-Reply-To: <20170418191220.3166-1-npiggin@gmail.com>
 References: <20170418191220.3166-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,71 +18,976 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The /cpus/ibm,powerpc-cpu-features dt binding describes CPU features with
-ascii names and extensible compatibility, privilege, and enablement metadata
-that allows improved flexibility and compatibility with new hardware.
+Since last time:
+- Added binding specification and design overview documentation.
+- Renamed the dt node to ibm,powerpc specific.
+- Moved dependency building pass into its own function.
 
-Design overview and specification of features is available in the OPAL
-source.
-
-
-Since last post:
-- Updated to powerpc next, in particular XIVE merge
-- Updated and expanded documentation in skiboot. Device tree binding
-  documentation in Linux is a copy of the binding specification from
-  skiboot and includes a pointer back there.
-- Renamed usable-mask to usable-privilege to describe it better
-- Changed hv-support and os-support to bitmasks for better extensibility
-  for other recipes in future.
-
-
-Looking at hfscr/fscr/lpcr/msr etc bits before and after the patch to
-make sure we're doing things properly. There is one difference:
-
-- PPC_FEATURE2_EBB is set independent of PMU init. EBB facility is
-theoretically more general than PMU, I don't think this should be
-a problem?
-
-POWER9:
-- CPU_FTR_ICSWX bit is now clear. Should this be cleared on POEWR9?
-
-And Mambo has a few issues with POWER8:
-- HFSCR bit 54 and 57 are now clear (mambo sets at init)
-- PMAO_BUG is set. This is due to mambo setting architected POWER8 mode
-and POWER8E PVR. Current kernels lose PMAO_BUG bit.
-- CI_LARGE_PAGE is now set (mambo boot does not set it for some reason,
-haven't looked at why).
 ---
- .../bindings/powerpc/ibm,powerpc-cpu-features.txt  | 233 ++++++++
- arch/powerpc/Kconfig                               |  16 +
- arch/powerpc/include/asm/cpu_has_feature.h         |   4 +-
- arch/powerpc/include/asm/cpufeatures.h             |  55 ++
- arch/powerpc/include/asm/cputable.h                |   2 +
- arch/powerpc/include/uapi/asm/cputable.h           |   6 +
- arch/powerpc/kernel/Makefile                       |   1 +
- arch/powerpc/kernel/cpufeatures.c                  | 636 +++++++++++++++++++++
- arch/powerpc/kernel/cputable.c                     |  37 +-
- arch/powerpc/kernel/prom.c                         | 338 ++++++++++-
- arch/powerpc/kernel/setup-common.c                 |   2 +-
- arch/powerpc/kernel/setup_64.c                     |  15 +-
- 12 files changed, 1328 insertions(+), 17 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/powerpc/ibm,powerpc-cpu-features.txt
- create mode 100644 arch/powerpc/include/asm/cpufeatures.h
- create mode 100644 arch/powerpc/kernel/cpufeatures.c
+ core/Makefile.inc                                  |   2 +-
+ core/cpufeatures.c                                 | 896 +++++++++++++++++++++
+ core/device.c                                      |   7 +
+ core/init.c                                        |   1 +
+ .../ibm,powerpc-cpu-features/binding.txt           | 226 ++++++
+ .../ibm,powerpc-cpu-features/design.txt            | 157 ++++
+ include/device.h                                   |   1 +
+ include/skiboot.h                                  |   5 +
+ 8 files changed, 1294 insertions(+), 1 deletion(-)
+ create mode 100644 core/cpufeatures.c
+ create mode 100644 doc/device-tree/ibm,powerpc-cpu-features/binding.txt
+ create mode 100644 doc/device-tree/ibm,powerpc-cpu-features/design.txt
 
-diff --git a/Documentation/devicetree/bindings/powerpc/ibm,powerpc-cpu-features.txt b/Documentation/devicetree/bindings/powerpc/ibm,powerpc-cpu-features.txt
+diff --git a/core/Makefile.inc b/core/Makefile.inc
+index b09c30c0..7c247836 100644
+--- a/core/Makefile.inc
++++ b/core/Makefile.inc
+@@ -8,7 +8,7 @@ CORE_OBJS += pci-opal.o fast-reboot.o device.o exceptions.o trace.o affinity.o
+ CORE_OBJS += vpd.o hostservices.o platform.o nvram.o nvram-format.o hmi.o
+ CORE_OBJS += console-log.o ipmi.o time-utils.o pel.o pool.o errorlog.o
+ CORE_OBJS += timer.o i2c.o rtc.o flash.o sensor.o ipmi-opal.o
+-CORE_OBJS += flash-subpartition.o bitmap.o buddy.o pci-quirk.o
++CORE_OBJS += flash-subpartition.o bitmap.o buddy.o pci-quirk.o cpufeatures.o
+ 
+ ifeq ($(SKIBOOT_GCOV),1)
+ CORE_OBJS += gcov-profiling.o
+diff --git a/core/cpufeatures.c b/core/cpufeatures.c
 new file mode 100644
-index 000000000000..bf7fc71f3062
+index 00000000..1acedc1d
 --- /dev/null
-+++ b/Documentation/devicetree/bindings/powerpc/ibm,powerpc-cpu-features.txt
-@@ -0,0 +1,233 @@
-+*** NOTE ***
-+This document is copied from OPAL firmware
-+(skiboot/doc/device-tree/ibm,powerpc-cpu-features/binding.txt)
++++ b/core/cpufeatures.c
+@@ -0,0 +1,896 @@
++/* Copyright 2017 IBM Corp.
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ * 	http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
++ * implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
 +
-+There is more complete overview and documentation of features in that
-+source tree.  All patches and modifications should go there.
++/*
++ * This file deals with setting up the /cpus/features device tree
++ * by discovering CPU hardware and populating feature nodes.
++ */
 +
++#include <skiboot.h>
++#include <cpu.h>
++#include <ccan/str/str.h>
++#include <device.h>
++
++#ifdef DEBUG
++#define DBG(fmt, a...)	prlog(PR_DEBUG, "CPUFT: " fmt, ##a)
++#else
++#define DBG(fmt, a...)
++#endif
++
++/* Device-tree visible constants follow */
++#define ISA_V2_07B	2070
++#define ISA_V3_0B	3000
++
++#define USABLE_PR		(1U << 0)
++#define USABLE_OS		(1U << 1)
++#define USABLE_HV		(1U << 2)
++
++#define HV_SUPPORT_HFSCR	(1U << 0)
++#define OS_SUPPORT_FSCR		(1U << 0)
++
++/* Following are definitions for the match tables, not the DT binding itself */
++#define ISA_BASE	0
++
++#define HV_NONE		0
++#define HV_CUSTOM	1
++#define HV_HFSCR	2
++
++#define OS_NONE		0
++#define OS_CUSTOM	1
++#define OS_FSCR		2
++
++/* CPU bitmasks for match table */
++#define CPU_P8_DD1	(1U << 0)
++#define CPU_P8_DD2	(1U << 1)
++#define CPU_P9_DD1	(1U << 2)
++#define CPU_P9_DD2	(1U << 3)
++
++#define CPU_P8		(CPU_P8_DD1|CPU_P8_DD2)
++#define CPU_P9		(CPU_P9_DD1|CPU_P9_DD2)
++#define CPU_ALL		(CPU_P8|CPU_P9)
++
++struct cpu_feature {
++	const char *name;
++	uint32_t cpus_supported;
++	uint32_t isa;
++	uint32_t usable_privilege;
++	uint32_t hv_support;
++	uint32_t os_support;
++	uint32_t hfscr_bit_nr;
++	uint32_t fscr_bit_nr;
++	uint32_t hwcap_bit_nr;
++	const char *dependencies_names; /* space-delimited names */
++};
++
++/*
++ * The base (or NULL) cpu feature set is the CPU features available
++ * when no child nodes of the /cpus/ibm,powerpc-cpu-features node exist. The
++ * base feature set is POWER8 (ISAv2.07B), less features that are listed
++ * explicitly.
++ *
++ * XXX: currently, the feature dependencies are not necessarily captured
++ * exactly or completely. This is somewhat acceptable because all
++ * implementations must be aware of all these features.
++ */
++static const struct cpu_feature cpu_features_table[] = {
++	/*
++	 * Big endian as in ISAv2.07B, MSR_LE=0
++	 */
++	{ "big-endian",
++	CPU_ALL,
++	ISA_BASE, USABLE_HV|USABLE_OS|USABLE_PR,
++	HV_CUSTOM, OS_CUSTOM,
++	-1, -1, -1,
++	NULL, },
++
++	/*
++	 * Little endian as in ISAv2.07B, MSR_LE=1.
++	 *
++	 * When both big and little endian are defined, there is an LPCR ILE
++	 * bit and implementation specific way to switch HILE mode, MSR_SLE,
++	 * etc.
++	 */
++	{ "little-endian",
++	CPU_ALL,
++	ISA_BASE, USABLE_HV|USABLE_OS|USABLE_PR,
++	HV_CUSTOM, OS_CUSTOM,
++	-1, -1, -1,
++	NULL, },
++
++	/*
++	 * MSR_HV=1 mode as in ISAv2.07B (i.e., hypervisor privileged
++	 * instructions and registers).
++	 */
++	{ "hypervisor",
++	CPU_ALL,
++	ISA_BASE, USABLE_HV,
++	HV_CUSTOM, OS_NONE,
++	-1, -1, -1,
++	NULL, },
++
++	/*
++	 * ISAv2.07B interrupt vectors, registers, and control registers
++	 * (e.g., AIL, ILE, HV, etc LPCR bits).
++	 *
++	 * This does not necessarily specify all possible interrupt types.
++	 * floating-point, for example requires some ways to handle floating
++	 * point exceptions, but the low level details of interrupt handler
++	 * is not a dependency there. There will always be *some* interrupt
++	 * handler, (and some way to provide memory magagement, etc.).
++	 */
++	{ "interrupt-facilities",
++	CPU_ALL,
++	ISA_BASE, USABLE_HV|USABLE_OS,
++	HV_CUSTOM, OS_CUSTOM,
++	-1, -1, -1,
++	NULL, },
++
++	{ "smt",
++	CPU_ALL,
++	ISA_BASE, USABLE_HV|USABLE_OS|USABLE_PR,
++	HV_CUSTOM, OS_CUSTOM,
++	-1, -1, 14,
++	NULL, },
++
++	/*
++	 * ISAv2.07B Program Priority Registers (PPR)
++	 * PPR and associated control registers (e.g. RPR, PSPB),
++	 * priority "or" instructions, etc.
++	 */
++	{ "program-priority-register",
++	CPU_ALL,
++	ISA_BASE, USABLE_HV|USABLE_OS|USABLE_PR,
++	HV_NONE, OS_NONE,
++	-1, -1, -1,
++	NULL, },
++
++	/*
++	 * ISAv2.07B Book3S Chapter 5.7.9.1. Virtual Page Class Key Protecion
++	 * AMR, IAMR, AMOR, UAMOR, etc registers and MMU key bits.
++	 */
++	{ "virtual-page-class-key-protection",
++	CPU_ALL,
++	ISA_BASE, USABLE_HV|USABLE_OS|USABLE_PR,
++	HV_CUSTOM, OS_CUSTOM,
++	-1, -1, -1,
++	NULL, },
++
++	/*
++	 * ISAv2.07B SAO storage control attribute
++	 */
++	{ "strong-access-ordering",
++	CPU_ALL & ~CPU_P9_DD1,
++	ISA_BASE, USABLE_HV|USABLE_OS|USABLE_PR,
++	HV_CUSTOM, OS_CUSTOM,
++	-1, -1, -1,
++	NULL, },
++
++	/*
++	 * ISAv2.07B no-execute storage control attribute
++	 */
++	{ "no-execute",
++	CPU_ALL,
++	ISA_BASE, USABLE_HV|USABLE_OS,
++	HV_CUSTOM, OS_CUSTOM,
++	-1, -1, -1,
++	NULL, },
++
++	/*
++	 * Cache inhibited attribute supported on large pages.
++	 */
++	{ "cache-inhibited-large-page",
++	CPU_ALL,
++	ISA_BASE, USABLE_HV|USABLE_OS,
++	HV_CUSTOM, OS_CUSTOM,
++	-1, -1, -1,
++	NULL, },
++
++	/*
++	 * ISAv2.07B Book3S Chapter 8. Debug Facilities
++	 * CIEA, CIABR, DEAW, MEte, trace interrupt, etc.
++	 * Except CFAR, branch tracing.
++	 */
++	{ "debug-facilities",
++	CPU_ALL,
++	ISA_BASE, USABLE_HV|USABLE_OS,
++	HV_CUSTOM, OS_CUSTOM,
++	-1, -1, -1,
++	NULL, },
++
++	/*
++	 * ISAv2.07B CFAR
++	 */
++	{ "come-from-address-register",
++	CPU_ALL,
++	ISA_BASE, USABLE_HV|USABLE_OS,
++	HV_CUSTOM, OS_CUSTOM,
++	-1, -1, -1,
++	"debug-facilities", },
++
++	/*
++	 * ISAv2.07B Branch tracing (optional in ISA)
++	 */
++	{ "branch-tracing",
++	CPU_ALL,
++	ISA_BASE, USABLE_HV|USABLE_OS,
++	HV_CUSTOM, OS_CUSTOM,
++	-1, -1, -1,
++	"debug-facilities", },
++
++	/*
++	 * ISAv2.07B Floating-point Facility
++	 */
++	{ "floating-point",
++	CPU_ALL,
++	ISA_BASE, USABLE_HV|USABLE_OS|USABLE_PR,
++	HV_CUSTOM, OS_CUSTOM,
++	PPC_BITLSHIFT(63), -1, 27,
++	NULL, },
++
++	/*
++	 * ISAv2.07B Vector Facility (VMX)
++	 */
++	{ "vector",
++	CPU_ALL,
++	ISA_BASE, USABLE_HV|USABLE_OS|USABLE_PR,
++	HV_CUSTOM, OS_CUSTOM,
++	PPC_BITLSHIFT(62), -1, 28,
++	"floating-point", },
++
++	/*
++	 * ISAv2.07B Vector-scalar Facility (VSX)
++	 */
++	{ "vector-scalar",
++	CPU_ALL,
++	ISA_BASE, USABLE_HV|USABLE_OS|USABLE_PR,
++	HV_CUSTOM, OS_CUSTOM,
++	-1, -1, 7,
++	"vector", },
++
++	{ "vector-crypto",
++	CPU_ALL,
++	ISA_BASE, USABLE_HV|USABLE_OS|USABLE_PR,
++	HV_NONE, OS_NONE,
++	-1, -1, 57,
++	"vector", },
++
++	/*
++	 * ISAv2.07B Binary Coded Decimal (BCD)
++	 * BCD fixed point instructions
++	 */
++	{ "decimal-integer",
++	CPU_ALL,
++	ISA_BASE, USABLE_HV|USABLE_OS|USABLE_PR,
++	HV_NONE, OS_NONE,
++	-1, -1, -1,
++	NULL, },
++
++	/*
++	 * ISAv2.07B Decimal floating-point Facility (DFP)
++	 */
++	{ "decimal-floating-point",
++	CPU_ALL,
++	ISA_BASE, USABLE_HV|USABLE_OS|USABLE_PR,
++	HV_NONE, OS_NONE,
++	-1, -1, 10,
++	"floating-point", },
++
++	/*
++	 * ISAv2.07B
++	 * DSCR, default data prefetch LPCR, etc
++	 */
++	{ "data-stream-control-register",
++	CPU_ALL,
++	ISA_BASE, USABLE_HV|USABLE_OS|USABLE_PR,
++	HV_CUSTOM, OS_CUSTOM,
++	PPC_BITLSHIFT(61), PPC_BITLSHIFT(61), 61,
++	NULL, },
++
++	/*
++	 * ISAv2.07B Branch History Rolling Buffer (BHRB)
++	 */
++	{ "branch-history-rolling-buffer",
++	CPU_ALL,
++	ISA_BASE, USABLE_HV|USABLE_OS|USABLE_PR,
++	HV_CUSTOM, OS_CUSTOM,
++	PPC_BITLSHIFT(59), -1, -1,
++	NULL, },
++
++	/*
++	 * ISAv2.07B Transactional Memory Facility (TM or HTM)
++	 */
++	{ "transactional-memory",
++	CPU_ALL,
++	ISA_BASE, USABLE_HV|USABLE_OS|USABLE_PR,
++	HV_CUSTOM, OS_CUSTOM,
++	PPC_BITLSHIFT(58), -1, 62,
++	NULL, },
++
++	/*
++	 * ISAv3.0B TM additions
++	 * TEXASR bit 17, self-induced vs external footprint overflow
++	 */
++	{ "transactional-memory-v3",
++	CPU_ALL,
++	ISA_V3_0B, USABLE_HV|USABLE_OS|USABLE_PR,
++	HV_NONE, OS_NONE,
++	-1, -1, -1,
++	"transactional-memory", },
++
++	/*
++	 * ISAv2.07B Event-Based Branch Facility (EBB)
++	 */
++	{ "event-based-branch",
++	CPU_ALL,
++	ISA_BASE, USABLE_HV|USABLE_OS|USABLE_PR,
++	HV_CUSTOM, OS_CUSTOM,
++	PPC_BITLSHIFT(56), PPC_BITLSHIFT(56), 60,
++	NULL, },
++
++	/*
++	 * ISAv2.07B Target Address Register (TAR)
++	 */
++	{ "target-address-register",
++	CPU_ALL,
++	ISA_BASE, USABLE_HV|USABLE_OS|USABLE_PR,
++	HV_CUSTOM, OS_CUSTOM,
++	PPC_BITLSHIFT(55), PPC_BITLSHIFT(55), 58,
++	NULL, },
++
++	/*
++	 * ISAv2.07B Control Register (CTRL)
++	 */
++	{ "control-register",
++	CPU_ALL,
++	ISA_BASE, USABLE_HV|USABLE_OS,
++	HV_CUSTOM, OS_CUSTOM,
++	-1, -1, -1,
++	NULL, },
++
++	/*
++	 * ISAv2.07B Book3S Chapter 11. Processor Control.
++	 * msgsnd, msgsndp, doorbell, etc.
++	 *
++	 * ISAv3.0B is not compatible (different addressing, HFSCR required
++	 * for msgsndp).
++	 */
++	{ "processor-control-facility",
++	CPU_P8_DD2, /* P8 DD1 has no dbell */
++	ISA_BASE, USABLE_HV|USABLE_OS,
++	HV_CUSTOM, OS_CUSTOM,
++	-1, -1, -1,
++	NULL, },
++
++	/*
++	 * ISAv2.07B PURR, SPURR registers
++	 */
++	{ "processor-utilization-of-resources-register",
++	CPU_ALL,
++	ISA_BASE, USABLE_HV|USABLE_OS,
++	HV_CUSTOM, OS_CUSTOM,
++	-1, -1, -1,
++	NULL, },
++
++	/*
++	 * POWER8 initiate coprocessor store word indexed (icswx) instruction
++	 */
++	{ "coprocessor-icswx",
++	CPU_P8,
++	ISA_BASE, USABLE_HV|USABLE_OS,
++	HV_CUSTOM, OS_CUSTOM,
++	-1, -1, -1,
++	NULL, },
++
++	/*
++	 * ISAv2.07B hash based MMU and all instructions, registers,
++	 * data structures, exceptions, etc.
++	 */
++	{ "mmu-hash",
++	CPU_P8,
++	ISA_BASE, USABLE_HV|USABLE_OS,
++	HV_CUSTOM, OS_CUSTOM,
++	-1, -1, -1,
++	NULL, },
++
++	/*
++	 * POWER8 MCE / machine check exception.
++	 */
++	{ "machine-check-power8",
++	CPU_P8,
++	ISA_BASE, USABLE_HV|USABLE_OS,
++	HV_CUSTOM, OS_CUSTOM,
++	-1, -1, -1,
++	NULL, },
++
++	/*
++	 * POWER8 PMU / performance monitor unit.
++	 */
++	{ "performance-monitor-power8",
++	CPU_P8,
++	ISA_BASE, USABLE_HV|USABLE_OS,
++	HV_CUSTOM, OS_CUSTOM,
++	-1, -1, -1,
++	NULL, },
++
++	/*
++	 * ISAv2.07B alignment interrupts set DSISR register
++	 *
++	 * POWER CPUs do not used this, and it's removed from ISAv3.0B.
++	 */
++	{ "alignment-interrupt-dsisr",
++	0,
++	ISA_BASE, USABLE_HV|USABLE_OS,
++	HV_NONE, OS_NONE,
++	-1, -1, -1,
++	NULL, },
++
++	/*
++	 * ISAv2.07B / POWER8 doze, nap, sleep, winkle instructions
++	 * XXX: is Linux we using some BookIV specific implementation details
++	 * in nap handling? We have no POWER8 specific key here.
++	 */
++	{ "idle-nap",
++	CPU_P8,
++	ISA_BASE, USABLE_HV,
++	HV_CUSTOM, OS_NONE,
++	-1, -1, -1,
++	NULL, },
++
++	/*
++	 * ISAv2.07B wait instruction
++	 */
++	{ "wait",
++	CPU_P8,
++	ISA_BASE, USABLE_HV|USABLE_OS|USABLE_PR,
++	HV_NONE, OS_NONE,
++	-1, -1, -1,
++	NULL, },
++
++	{ "subcore",
++	CPU_P8,
++	ISA_BASE, USABLE_HV|USABLE_OS,
++	HV_CUSTOM, OS_CUSTOM,
++	-1, -1, -1,
++	"smt", },
++
++	/*
++	 * ISAv3.0B radix based MMU
++	 */
++	{ "mmu-radix",
++	CPU_P9,
++	ISA_V3_0B, USABLE_HV|USABLE_OS,
++	HV_CUSTOM, OS_CUSTOM,
++	-1, -1, -1,
++	NULL, },
++
++	/*
++	 * ISAv3.0B hash based MMU, new hash pte format, PCTR, etc
++	 */
++	{ "mmu-hash-v3",
++	CPU_P9,
++	ISA_V3_0B, USABLE_HV|USABLE_OS,
++	HV_CUSTOM, OS_CUSTOM,
++	-1, -1, -1,
++	NULL, },
++
++	/*
++	 * ISAv3.0B wait instruction
++	 */
++	{ "wait-v3",
++	CPU_P9,
++	ISA_V3_0B, USABLE_HV|USABLE_OS|USABLE_PR,
++	HV_NONE, OS_NONE,
++	-1, -1, -1,
++	NULL, },
++
++	/*
++	 * ISAv3.0B stop idle instructions and registers
++	 * XXX: Same question as for idle-nap
++	 */
++	{ "idle-stop",
++	CPU_P9,
++	ISA_V3_0B, USABLE_HV|USABLE_OS,
++	HV_CUSTOM, OS_CUSTOM,
++	-1, -1, -1,
++	NULL, },
++
++	/*
++	 * ISAv3.0B Hypervisor Virtualization Interrupt
++	 * Also associated system registers, LPCR EE, HEIC, HVICE,
++	 * system reset SRR1 reason, etc.
++	 */
++	{ "hypervisor-virtualization-interrupt",
++	CPU_P9,
++	ISA_V3_0B, USABLE_HV,
++	HV_CUSTOM, OS_NONE,
++	-1, -1, -1,
++	NULL, },
++
++	/*
++	 * POWER9 MCE / machine check exception.
++	 */
++	{ "machine-check-power9",
++	CPU_P9,
++	ISA_V3_0B, USABLE_HV|USABLE_OS,
++	HV_CUSTOM, OS_CUSTOM,
++	-1, -1, -1,
++	NULL, },
++
++	/*
++	 * POWER9 PMU / performance monitor unit.
++	 */
++	{ "performance-monitor-power9",
++	CPU_P9,
++	ISA_V3_0B, USABLE_HV|USABLE_OS,
++	HV_CUSTOM, OS_CUSTOM,
++	-1, -1, -1,
++	NULL, },
++
++	/*
++	 * ISAv3.0B scv/rfscv system call instructions and exceptions, fscr bit
++	 * etc.
++	 */
++	{ "system-call-vectored",
++	CPU_P9,
++	ISA_V3_0B, USABLE_OS|USABLE_PR,
++	HV_NONE, OS_CUSTOM,
++	-1, PPC_BITLSHIFT(51), -1,
++	NULL, },
++
++	/*
++	 * ISAv3.0B Book3S Chapter 10. Processor Control.
++	 * global msgsnd, msgsndp, msgsync, doorbell, etc.
++	 */
++	{ "processor-control-facility-v3",
++	CPU_P9,
++	ISA_V3_0B, USABLE_HV|USABLE_OS,
++	HV_CUSTOM, OS_NONE,
++	PPC_BITLSHIFT(53), -1, -1,
++	NULL, },
++
++	/*
++	 * ISAv3.0B addpcis instruction
++	 */
++	{ "pc-relative-addressing",
++	CPU_P9,
++	ISA_V3_0B, USABLE_HV|USABLE_OS|USABLE_PR,
++	HV_NONE, OS_NONE,
++	-1, -1, -1,
++	NULL, },
++
++	/*
++	 * ISAv2.07B Book3S Chapter 7. Timer Facilities
++	 * TB, VTB, DEC, HDEC, IC, etc registers and exceptions.
++	 * Not including PURR or SPURR registers.
++	 */
++	{ "timer-facilities",
++	CPU_ALL,
++	ISA_BASE, USABLE_HV|USABLE_OS,
++	HV_NONE, OS_NONE,
++	-1, -1, -1,
++	NULL, },
++
++	/*
++	 * ISAv3.0B Book3S Chapter 7. Timer Facilities
++	 * Large decrementer and hypervisor decrementer
++	 */
++	{ "timer-facilities-v3",
++	CPU_P9,
++	ISA_V3_0B, USABLE_HV|USABLE_OS,
++	HV_NONE, OS_NONE,
++	-1, -1, -1,
++	"timer-facilities", },
++
++	/*
++	 * ISAv3.0B deliver a random number instruction (darn)
++	 */
++	{ "random-number-generator",
++	CPU_P9,
++	ISA_V3_0B, USABLE_HV|USABLE_OS|USABLE_PR,
++	HV_NONE, OS_NONE,
++	-1, -1, -1,
++	NULL, },
++
++	/*
++	 * ISAv3.0B fixed point instructions
++	 * multiply-add, modulo, count trailing zeroes, cmprb, cmpeqb,
++	 * extswsli, mfvsrld, mtvsrdd, mtvsrws, addex
++	 */
++	{ "fixed-point-v3",
++	CPU_P9,
++	ISA_V3_0B, USABLE_HV|USABLE_OS|USABLE_PR,
++	HV_NONE, OS_NONE,
++	-1, -1, -1,
++	NULL, },
++
++	{ "decimal-integer-v3",
++	CPU_P9,
++	ISA_V3_0B, USABLE_HV|USABLE_OS|USABLE_PR,
++	HV_NONE, OS_NONE,
++	-1, -1, -1,
++	"fixed-point-v3 decimal-integer", },
++
++	/*
++	 * ISAv3.0B lightweight mffs
++	 */
++	{ "floating-point-v3",
++	CPU_P9,
++	ISA_V3_0B, USABLE_HV|USABLE_OS|USABLE_PR,
++	HV_NONE, OS_NONE,
++	-1, -1, -1,
++	"floating-point", },
++
++	{ "decimal-floating-point-v3",
++	CPU_P9,
++	ISA_V3_0B, USABLE_HV|USABLE_OS|USABLE_PR,
++	HV_NONE, OS_NONE,
++	-1, -1, -1,
++	"floating-point-v3 decimal-floating-point", },
++
++	{ "vector-v3",
++	CPU_P9,
++	ISA_V3_0B, USABLE_HV|USABLE_OS|USABLE_PR,
++	HV_NONE, OS_NONE,
++	-1, -1, -1,
++	"vector", },
++
++	{ "vector-scalar-v3",
++	CPU_P9,
++	ISA_V3_0B, USABLE_HV|USABLE_OS|USABLE_PR,
++	HV_NONE, OS_NONE,
++	-1, -1, -1,
++	"vector-v3 vector-scalar" },
++
++	{ "vector-binary128",
++	CPU_P9,
++	ISA_V3_0B, USABLE_HV|USABLE_OS|USABLE_PR,
++	HV_NONE, OS_NONE,
++	-1, -1, 54,
++	"vector-scalar-v3", },
++
++	{ "vector-binary16",
++	CPU_P9,
++	ISA_V3_0B, USABLE_HV|USABLE_OS|USABLE_PR,
++	HV_NONE, OS_NONE,
++	-1, -1, -1,
++	"vector-v3", },
++
++	/*
++	 * ISAv3.0B branch instruction and register additions
++	 * CA32, OV32, mcrxrx, setb
++	 */
++	{ "branch-v3",
++	CPU_P9,
++	ISA_V3_0B, USABLE_HV|USABLE_OS|USABLE_PR,
++	HV_NONE, OS_NONE,
++	-1, -1, -1,
++	NULL, },
++
++	/*
++	 * ISAv3.0B external exception for EBB
++	 */
++	{ "event-based-branch-v3",
++	CPU_P9,
++	ISA_V3_0B, USABLE_HV|USABLE_OS|USABLE_PR,
++	HV_NONE, OS_NONE,
++	-1, -1, -1,
++	"event-based-branch", },
++
++	/*
++	 * ISAv3.0B Atomic Memory Operations (AMO)
++	 */
++	{ "atomic-memory-operations",
++	CPU_P9,
++	ISA_V3_0B, USABLE_HV|USABLE_OS|USABLE_PR,
++	HV_NONE, OS_NONE,
++	-1, -1, -1,
++	NULL, },
++
++	/*
++	 * ISAv3.0B Copy-Paste Facility
++	 */
++	{ "copy-paste",
++	CPU_P9,
++	ISA_V3_0B, USABLE_HV|USABLE_OS|USABLE_PR,
++	HV_NONE, OS_NONE,
++	-1, -1, -1,
++	NULL, },
++
++	/*
++	 * ISAv3.0B GSR SPR register
++	 * POWER9 does not implement it
++	 */
++	{ "group-start-register",
++	0,
++	ISA_V3_0B, USABLE_HV|USABLE_OS,
++	HV_NONE, OS_NONE,
++	-1, -1, -1,
++	NULL, },
++};
++
++static void add_cpu_feature_nodeps(struct dt_node *features, const struct cpu_feature *f)
++{
++	struct dt_node *feature;
++
++	feature = dt_new(features, f->name);
++	assert(feature);
++
++	dt_add_property_cells(feature, "isa", f->isa);
++	dt_add_property_cells(feature, "usable-privilege", f->usable_privilege);
++
++	if (f->usable_privilege & USABLE_HV) {
++		if (f->hv_support != HV_NONE) {
++			uint32_t s = 0;
++			if (f->hv_support == HV_HFSCR)
++				s |= HV_SUPPORT_HFSCR;
++
++			dt_add_property_cells(feature, "hv-support", s);
++			if (f->hfscr_bit_nr != -1)
++				dt_add_property_cells(feature, "hfscr-bit-nr", f->hfscr_bit_nr);
++		} else {
++			assert(f->hfscr_bit_nr == -1);
++		}
++	}
++
++	if (f->usable_privilege & USABLE_OS) {
++		if (f->os_support != OS_NONE) {
++			uint32_t s = 0;
++			if (f->os_support == OS_FSCR)
++				s |= OS_SUPPORT_FSCR;
++			dt_add_property_cells(feature, "os-support", s);
++			if (f->fscr_bit_nr != -1)
++				dt_add_property_cells(feature, "fscr-bit-nr", f->fscr_bit_nr);
++		} else {
++			assert(f->fscr_bit_nr == -1);
++		}
++	}
++
++	if (f->usable_privilege & USABLE_PR) {
++		if (f->hwcap_bit_nr != -1)
++			dt_add_property_cells(feature, "hwcap-bit-nr", f->hwcap_bit_nr);
++	}
++
++	if (f->dependencies_names)
++		dt_add_property(feature, "dependencies", NULL, 0);
++}
++
++static void add_cpufeatures_dependencies(struct dt_node *features)
++{
++	struct dt_node *feature;
++
++	dt_for_each_node(features, feature) {
++		const struct cpu_feature *f;
++		const char *deps_names;
++		struct dt_property *deps;
++		int nr_deps;
++		int i;
++
++		/* Find features with dependencies */
++
++		deps = __dt_find_property(feature, "dependencies");
++		if (!deps)
++			continue;
++
++		/* Find the matching cpu table */
++		for (i = 0; i < ARRAY_SIZE(cpu_features_table); i++) {
++			f = &cpu_features_table[i];
++			if (!strcmp(f->name, feature->name))
++				break;
++		}
++		assert(f->dependencies_names);
++
++		/*
++		 * Count number of depended features and allocate space
++		 * for phandles in the property.
++		 */
++		deps_names = f->dependencies_names;
++		nr_deps = strcount(deps_names, " ") + 1;
++		dt_resize_property(&deps, nr_deps * sizeof(u32));
++		deps->len = nr_deps * sizeof(u32);
++
++		DBG("feature %s has %d dependencies (%s)\n", f->name, nr_deps, deps_names);
++		/*
++		 * For each one, find the depended feature then advance to
++		 * next name.
++		 */
++		for (i = 0; i < nr_deps; i++) {
++			struct dt_node *dep;
++			int len;
++
++			if (nr_deps - i == 1)
++				len = strlen(deps_names);
++			else
++				len = strchr(deps_names, ' ') - deps_names;
++
++			dt_for_each_node(features, dep) {
++				if (!strncmp(deps_names, dep->name, len))
++					goto found_dep;
++			}
++
++			prlog(PR_ERR, "CPUFT: feature %s dependencies not found\n", f->name);
++			break;
++found_dep:
++			DBG(" %s found dep (%s)\n", f->name, dep->name);
++			dt_property_set_cell(deps, i, dep->phandle);
++
++			/* Advance over the name + delimiter */
++			deps_names += len + 1;
++		}
++	}
++}
++
++static void add_cpufeatures(struct dt_node *cpus,
++		uint32_t cpu_feature_isa, uint32_t cpu_feature_cpu)
++{
++	struct dt_node *features;
++	int i;
++
++	DBG("creating cpufeatures for cpu:%d isa:%d\n", cpu_feature_cpu, cpu_feature_isa);
++
++	features = dt_new(cpus, "features");
++	assert(features);
++
++	dt_add_property_cells(features, "isa", cpu_feature_isa);
++
++	dt_add_property_string(features, "device_type", "ibm,powerpc-cpu-features");
++
++	/* add without dependencies */
++	for (i = 0; i < ARRAY_SIZE(cpu_features_table); i++) {
++		const struct cpu_feature *f = &cpu_features_table[i];
++
++		if (f->cpus_supported & cpu_feature_cpu) {
++			DBG("  '%s'\n", f->name);
++			add_cpu_feature_nodeps(features, f);
++		}
++	}
++
++	/* dependency construction pass */
++	add_cpufeatures_dependencies(features);
++}
++
++void dt_add_cpufeatures(struct dt_node *root)
++{
++	int version;
++	uint32_t cpu_feature_isa = 0;
++	uint32_t cpu_feature_cpu = 0;
++	struct dt_node *cpus;
++
++	version = mfspr(SPR_PVR);
++	switch(PVR_TYPE(version)) {
++	case PVR_TYPE_P8:
++	case PVR_TYPE_P8E:
++	case PVR_TYPE_P8NVL:
++		cpu_feature_isa = ISA_V2_07B;
++		if (PVR_VERS_MAJ(version) == 1)
++			cpu_feature_cpu = CPU_P8_DD1;
++		else
++			cpu_feature_cpu = CPU_P8_DD2;
++		break;
++	case PVR_TYPE_P9:
++		cpu_feature_isa = ISA_V3_0B;
++		if (PVR_VERS_MAJ(version) == 1)
++			cpu_feature_cpu = CPU_P9_DD1;
++		else
++			cpu_feature_cpu = CPU_P9_DD2;
++		break;
++	default:
++		return;
++	}
++
++	cpus = dt_new_check(root, "cpus");
++
++	add_cpufeatures(cpus, cpu_feature_isa, cpu_feature_cpu);
++}
+diff --git a/core/device.c b/core/device.c
+index f3ee63fb..38a420eb 100644
+--- a/core/device.c
++++ b/core/device.c
+@@ -598,6 +598,13 @@ u32 dt_property_get_cell(const struct dt_property *prop, u32 index)
+ 	return fdt32_to_cpu(((const u32 *)prop->prop)[index]);
+ }
+ 
++void dt_property_set_cell(struct dt_property *prop, u32 index, u32 val)
++{
++	assert(prop->len >= (index+1)*sizeof(u32));
++	/* Always aligned, so this works. */
++	((u32 *)prop->prop)[index] = cpu_to_fdt32(val);
++}
++
+ /* First child of this node. */
+ struct dt_node *dt_first(const struct dt_node *root)
+ {
+diff --git a/core/init.c b/core/init.c
+index 6b8137c8..4d4bf651 100644
+--- a/core/init.c
++++ b/core/init.c
+@@ -790,6 +790,7 @@ void __noreturn __nomcount main_cpu_entry(const void *fdt)
+ 	} else {
+ 		dt_expand(fdt);
+ 	}
++	dt_add_cpufeatures(dt_root);
+ 
+ 	/* Now that we have a full devicetree, verify that we aren't on fire. */
+ 	per_thread_sanity_checks();
+diff --git a/doc/device-tree/ibm,powerpc-cpu-features/binding.txt b/doc/device-tree/ibm,powerpc-cpu-features/binding.txt
+new file mode 100644
+index 00000000..a5270484
+--- /dev/null
++++ b/doc/device-tree/ibm,powerpc-cpu-features/binding.txt
+@@ -0,0 +1,226 @@
 +ibm,powerpc-cpu-features binding
 +================================
 +
@@ -315,1289 +1214,196 @@ index 000000000000..bf7fc71f3062
 +		};
 +
 +	};
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 9ff731f50a29..91ee314948cc 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -330,6 +330,22 @@ source "arch/powerpc/platforms/Kconfig"
- 
- menu "Kernel options"
- 
-+config PPC_CPUFEATURES_DT
-+	bool "cpufeatures cpu setup and device tree support (UNSTABLE)"
-+	depends on PPC_BOOK3S_64
-+	default n
-+	---help---
-+	  cpufeatures is a proposed new device tree binding for describing
-+	  CPU compatibility and features. Saying y here will attempt to use
-+	  cpufeatures binding if the firmware provides it. This binding is
-+	  not stable, so a kernel built with this option may not function
-+	  properly with future firmware.
-+
-+config PPC_CPUFEATURES_ENABLE_UNKNOWN
-+	bool "cpufeatures pass through unknown features to guest/userspace"
-+	depends on PPC_CPUFEATURES_DT
-+	default y
-+
- config HIGHMEM
- 	bool "High memory support"
- 	depends on PPC32
-diff --git a/arch/powerpc/include/asm/cpu_has_feature.h b/arch/powerpc/include/asm/cpu_has_feature.h
-index 6e834caa3720..445495aa2bbf 100644
---- a/arch/powerpc/include/asm/cpu_has_feature.h
-+++ b/arch/powerpc/include/asm/cpu_has_feature.h
-@@ -1,5 +1,5 @@
--#ifndef __ASM_POWERPC_CPUFEATURES_H
--#define __ASM_POWERPC_CPUFEATURES_H
-+#ifndef __ASM_POWERPC_CPU_HAS_FEATURE_H
-+#define __ASM_POWERPC_CPU_HAS_FEATURE_H
- 
- #ifndef __ASSEMBLY__
- 
-diff --git a/arch/powerpc/include/asm/cpufeatures.h b/arch/powerpc/include/asm/cpufeatures.h
+diff --git a/doc/device-tree/ibm,powerpc-cpu-features/design.txt b/doc/device-tree/ibm,powerpc-cpu-features/design.txt
 new file mode 100644
-index 000000000000..867c0e06982c
+index 00000000..490e80c5
 --- /dev/null
-+++ b/arch/powerpc/include/asm/cpufeatures.h
-@@ -0,0 +1,55 @@
-+#ifndef __ASM_POWERPC_CPUFEATURES_H
-+#define __ASM_POWERPC_CPUFEATURES_H
++++ b/doc/device-tree/ibm,powerpc-cpu-features/design.txt
+@@ -0,0 +1,157 @@
++ibm,powerpc-cpu-features binding
++================================
 +
-+/*
-+ *  Copyright 2017, IBM Corporation
-+ *  cpufeatures is the new way to discover CPU features with /cpus/features
-+ *  devicetree. This supersedes PVR based discovery ("cputable"), and older
-+ *  device tree feature advertisement.
-+ */
++The OPAL / skiboot code is the canonical location for this specification.  All
++definitions of features, constant, bit positions, etc. must be documented here
++before being deployed in Linux. This is not presently part of LoPAPR.
 +
-+#include <linux/types.h>
-+#include <asm/asm-compat.h>
-+#include <asm/feature-fixups.h>
-+#include <uapi/asm/cputable.h>
 +
-+extern void cpufeatures_setup_cpu(void);
++Interfaces
++----------
++This specification describes the /cpus/ibm,powerpc-cpu-features binding (the
++formal definition of binding can be found in binding.txt in this directory).
 +
-+/* Device-tree visible constants follow */
-+#define ISA_V2_07B      2070
-+#define ISA_V3_0B       3000
++This specification also involves the Linux ELF AUXV AT_HWCAP and AT_HWCAP2
++interfaces for PPC_FEATURE* bits. Allocation of new AT_HWCAP bits should be
++done in coordination with OPAL / skiboot, Linux, and glibc projects.
 +
-+#define USABLE_PR               (1U << 0)
-+#define USABLE_OS               (1U << 1)
-+#define USABLE_HV               (1U << 2)
++The binding is passed to the hypervisor by firmware. The hypervisor may
++build a subset with unsupported/disabled features and hypervisor specifics
++removed, and pass that to a guest OS. The OS may advertise features to
++userspace.
 +
-+#define HV_SUPPORT_HFSCR        (1U << 0)
-+#define OS_SUPPORT_FSCR         (1U << 0)
 +
-+/* For parsing, we define all bits set as "NONE" case */
-+#define HV_SUPPORT_NONE		0xffffffffU
-+#define OS_SUPPORT_NONE		0xffffffffU
++Background
++----------
++The cpu-features binding (subsequently "cpu-features") aims to provide an
++extensible metadata and protocol between different levels of system software
++(firmware, hypervisor, OS/guest, userspace) to advertise the CPU features
++available on the system. With each level able to shape the features available
++to the next.
 +
-+struct dt_cpu_feature {
-+	const char *name;
-+	uint32_t isa;
-+	uint32_t usable_privilege;
-+	uint32_t hv_support;
-+	uint32_t os_support;
-+	uint32_t hfscr_bit_nr;
-+	uint32_t fscr_bit_nr;
-+	uint32_t hwcap_bit_nr;
-+	/* fdt parsing */
-+	unsigned long node;
-+	int enabled;
-+	int disabled;
-+};
++The binding specifies features common to all CPUs in the system. Heterogeneous
++CPU features are not supported at present (such could be added by providing
++additional cpu-features nodes and linking those to particular CPUs with
++additional features).
 +
-+extern void cpufeatures_setup_start(u32 isa);
-+extern int cpufeatures_process_feature(struct dt_cpu_feature *f);
-+extern void cpufeatures_setup_finished(void);
++There is no strict definition for what a CPU feature must be, but an
++architectural behaviour or performance characteristic (or group of related
++behaviours). They must be documented in skiboot/core/cpufeatures.c sufficiently
++precisely. More guidelines for feature definitions below.
 +
-+/* kernel/prom.c */
-+extern int early_init_devtree_check_cpu_features_exists(void);
++cpu-features is intended to provide fine grained control of CPU features at
++all levels of the stack (firmware, hypervisor, OS, userspace), with the
++ability for new CPU features to be used by some components without all
++components being upgraded (e.g., a new floating point instruction could be
++used by userspace math library without upgrading kernel and hypervisor).
 +
-+#endif
-diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/asm/cputable.h
-index ab68d0ee7725..4edbc2f7569a 100644
---- a/arch/powerpc/include/asm/cputable.h
-+++ b/arch/powerpc/include/asm/cputable.h
-@@ -118,7 +118,9 @@ extern struct cpu_spec		*cur_cpu_spec;
++
++Overview
++--------
++
++The cpu-features node is created by firmware and passed to the hypervisor.
++The hypervisor may create cpu-features node to be passed to guest, based on
++the features that have been enabled, and policy decisions. Hypervisor specific
++features, and hypervisor bits and properties should not be advertised to
++guests. Guest OS may advertise features to userspace using another method
++(e.g., using AUXV vectors, userspace typically does not parse DT).
++
++When the cpu-features node is present, ibm,pa-features and individual feature
++properties (e.g., "ibm,vsx"), and cpu-version under the "cpu" compatible nodes
++can be ignored by the consumer. For compatibility, the provider must continue
++to provide those older properties and the consumer must not assume cpu-features
++exists.
++
++When this node exists, software may assume a base feature set which is ISA
++v2.07B (BookS) minus the explicit features listed in core/cpufeatures.c
++entries in this source tree.
++
++Each feature is advertised as a node underneath the cpu-features node, named
++with a human-readable string name that uniquely identifies specification of
++that capability.
++
++A feature node has a number of metadata properties describing privilege levels
++a feature may be used (HV, OS, PR/user), and information about how it is to
++be enabled and advertised to lesser privilege levels. Enabling means to make
++it available at a lesser privilege level, (how to enable a given feature
++for this privilege level is implicit: if the software know how to use a
++feature, it also knows how to enable it).
++
++Feature node properties:
++
++- "isa", the Power ISA version where this feature first became available.
++  In case of an implementation specific feature
++
++- "usable-privilege", a bitmask (HV, OS, PR/user) specifying which privilege
++  levels this feature may be used in.
++
++- "hv-support", a bitmask. If this exists, the hypervisor must do some work
++  to enable support for lesser privilege levels. Bits can be set in this mask
++  to specify prescription/recipes to enable the feature without custom code.
++  If no bits are set, no recipe exists and custom code must be used. HFSCR
++  register enable bit is the only such recipe currently.
++
++- "os-support", similar to hv-support. FSCR recipe.
++
++- Features may have additional properties associated, must be documented with
++  the feature.
++
++- Recipes may have additional properties associated. HFSCR recipe has
++  hfscr-bit-nr, and FSCR recipe has fscr-bit-nr.
++
++- "dependencies" array of phandles. If this exists, it links to the
++  features that must be enabled in order for this feature to be enabled.
++
++- "hwcap-bit-nr" if it exists provides a Linux ELF AUXV HWCAP bit number that
++  can be used to advertise this feature to userspace.
++
++Together, these compatibility, support, and dependencies properties allow
++unknown features to be enabled and advertised to lesser privilege levels
++(when possible).
++
++All bits not defined in usable, support masks must be 0, and should be ignored
++by consumers. This allows extensibility to add new privilege levels and new
++recipes. Unknown properties should also be ignored. This allows extensibility
++for additional methods and metadata for enablement and advertisement.
++
++The policy for seleting and configuring which features to advertise and use
++is left for implementations.
++
++
++Guidelines for defining features
++--------------------------------
++
++As a rough guide, features should be based on functional groups of changes
++to the ISA, or related performance characteristics.
++
++Grouping should be made by one or a combination of those that:
++- Share common enablement requirements (e.g., share particular registers or
++  firmware setup requirements).
++- Share common usage patterns (e..g, likely to be used together).
++- Are implemented with a particular new hardware unit.
++- Are optional in the ISA.
++
++Granularity can be debated, but fine grained and encompassing is generally
++preferable. For example, memory management unit may be considered fundamental,
++but the MMU in POWER9 is very different and in many ways incompatible from
++that in POWER8 even in hash mode.
++
++For example, "POWER9" would be too general, but a new feature for every
++instruction would be too specific. The "summary of changes" preface in Power
++ISA specification is a good starting point to give a guideline for granularity
++of the architected features.
++
++New features that offer additional or incompatible functionality beyond
++an existing feature may contain an ISA version postfix.
++
++Implementation specific behaviour should contain a CPU type postfix. E.g.,
++"machine-check-power9" gives exact MCE properties. If a future CPU has the same
++MCE architecture, it should define the same property. If it has a
++backward-compatible superset, it could additionally define
++"machine-check-newcpu".
++
++Features should be "positive" as much as possible. That is, the presence of
++a feature should indicate the presence of an additional CPU feature (e.g., a
++new instruction or register). This requires some anticipation and foresight
++for defining CPU features. "Negative" features may be unavoidable in some
++cases.
+diff --git a/include/device.h b/include/device.h
+index 5155daad..ca4dd0b0 100644
+--- a/include/device.h
++++ b/include/device.h
+@@ -125,6 +125,7 @@ void dt_check_del_prop(struct dt_node *node, const char *name);
+ /* Warning: moves *prop! */
+ void dt_resize_property(struct dt_property **prop, size_t len);
  
- extern unsigned int __start___ftr_fixup, __stop___ftr_fixup;
++void dt_property_set_cell(struct dt_property *prop, u32 index, u32 val);
+ u32 dt_property_get_cell(const struct dt_property *prop, u32 index);
  
-+extern void set_cur_cpu_spec(struct cpu_spec *s);
- extern struct cpu_spec *identify_cpu(unsigned long offset, unsigned int pvr);
-+extern void identify_cpu_name(unsigned int pvr);
- extern void do_feature_fixups(unsigned long value, void *fixup_start,
- 			      void *fixup_end);
+ /* First child of this node. */
+diff --git a/include/skiboot.h b/include/skiboot.h
+index 2b1f8a57..764ce8d2 100644
+--- a/include/skiboot.h
++++ b/include/skiboot.h
+@@ -184,6 +184,11 @@ extern void start_kernel_secondary(uint64_t entry) __noreturn;
+ /* Get description of machine from HDAT and create device-tree */
+ extern int parse_hdat(bool is_opal);
  
-diff --git a/arch/powerpc/include/uapi/asm/cputable.h b/arch/powerpc/include/uapi/asm/cputable.h
-index f63c96cd3608..b411f9e7757c 100644
---- a/arch/powerpc/include/uapi/asm/cputable.h
-+++ b/arch/powerpc/include/uapi/asm/cputable.h
-@@ -1,6 +1,12 @@
- #ifndef _UAPI__ASM_POWERPC_CPUTABLE_H
- #define _UAPI__ASM_POWERPC_CPUTABLE_H
- 
-+/*
-+ * IMPORTANT!
-+ * All future PPC_FEATURE_* definitions must be allocated by OPAL / skiboot
-+ * firmware, in accordance with the ibm,powerpc-cpu-features specification.
-+ */
++struct dt_node;
 +
- /* in AT_HWCAP */
- #define PPC_FEATURE_32			0x80000000
- #define PPC_FEATURE_64			0x40000000
-diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
-index 811f441a125f..9b264ebe6ac1 100644
---- a/arch/powerpc/kernel/Makefile
-+++ b/arch/powerpc/kernel/Makefile
-@@ -58,6 +58,7 @@ obj-$(CONFIG_PPC_RTAS)		+= rtas.o rtas-rtc.o $(rtaspci-y-y)
- obj-$(CONFIG_PPC_RTAS_DAEMON)	+= rtasd.o
- obj-$(CONFIG_RTAS_FLASH)	+= rtas_flash.o
- obj-$(CONFIG_RTAS_PROC)		+= rtas-proc.o
-+obj-$(CONFIG_PPC_CPUFEATURES_DT)	+= cpufeatures.o
- obj-$(CONFIG_EEH)              += eeh.o eeh_pe.o eeh_dev.o eeh_cache.o \
- 				  eeh_driver.o eeh_event.o eeh_sysfs.o
- obj-$(CONFIG_GENERIC_TBSYNC)	+= smp-tbsync.o
-diff --git a/arch/powerpc/kernel/cpufeatures.c b/arch/powerpc/kernel/cpufeatures.c
-new file mode 100644
-index 000000000000..b708e1493a2a
---- /dev/null
-+++ b/arch/powerpc/kernel/cpufeatures.c
-@@ -0,0 +1,636 @@
-+/*
-+ *  Copyright 2017, IBM Corporation
-+ */
++/* Add /cpus/features node for boot environment that passes an fdt */
++extern void dt_add_cpufeatures(struct dt_node *root);
 +
-+#include <linux/string.h>
-+#include <linux/sched.h>
-+#include <linux/threads.h>
-+#include <linux/init.h>
-+#include <linux/export.h>
-+#include <linux/jump_label.h>
-+
-+#include <asm/cpufeatures.h>
-+#include <asm/cputable.h>
-+#include <asm/prom.h>		/* for PTRRELOC on ARCH=ppc */
-+#include <asm/oprofile_impl.h>
-+#include <asm/mmu.h>
-+#include <asm/setup.h>
-+
-+#ifdef DEBUG
-+#define DBG(fmt...) pr_err(fmt)
-+#else
-+#define DBG(fmt...)
-+#endif
-+
-+#define CPU_FTRS_BASE \
-+	   (CPU_FTR_USE_TB | \
-+	    CPU_FTR_LWSYNC | \
-+	    CPU_FTR_FPU_UNAVAILABLE |\
-+	    CPU_FTR_NODSISRALIGN |\
-+	    CPU_FTR_NOEXECUTE |\
-+	    CPU_FTR_COHERENT_ICACHE | \
-+	    CPU_FTR_STCX_CHECKS_ADDRESS |\
-+	    CPU_FTR_POPCNTB | CPU_FTR_POPCNTD | \
-+	    CPU_FTR_DAWR | \
-+	    CPU_FTR_ARCH_206 |\
-+	    CPU_FTR_ARCH_207S)
-+
-+#define MMU_FTRS_HASH_BASE (MMU_FTRS_POWER8)
-+
-+#define COMMON_USER_BASE	(PPC_FEATURE_32 | PPC_FEATURE_64 | \
-+				 PPC_FEATURE_ARCH_2_06 |\
-+				 PPC_FEATURE_ICACHE_SNOOP)
-+#define COMMON_USER2_BASE	(PPC_FEATURE2_ARCH_2_07 | \
-+				 PPC_FEATURE2_ISEL)
-+/*
-+ * Set up the base CPU
-+ */
-+
-+extern void __flush_tlb_power8(unsigned int action);
-+extern void __flush_tlb_power9(unsigned int action);
-+extern long __machine_check_early_realmode_p8(struct pt_regs *regs);
-+extern long __machine_check_early_realmode_p9(struct pt_regs *regs);
-+
-+static int hv_mode;
-+
-+static struct {
-+	u64	hfscr;
-+	u64	fscr;
-+	u64	lpcr;
-+} system_registers;
-+
-+static void (*init_pmu_registers)(void);
-+
-+static void __restore_cpu_cpufeatures(void)
-+{
-+	if (hv_mode) {
-+		mtspr(SPRN_LPID, 0);
-+		mtspr(SPRN_HFSCR, system_registers.hfscr);
-+	}
-+	mtspr(SPRN_FSCR, system_registers.fscr);
-+	mtspr(SPRN_LPCR, system_registers.lpcr);
-+
-+	if (init_pmu_registers)
-+		init_pmu_registers();
-+}
-+
-+void __init cpufeatures_setup_cpu(void)
-+{
-+	struct cpu_spec s = {
-+		.cpu_name		= NULL,
-+		.cpu_features		= CPU_FTRS_BASE,
-+		.cpu_user_features	= COMMON_USER_BASE,
-+		.cpu_user_features2	= COMMON_USER2_BASE,
-+		.mmu_features		= 0,
-+		.icache_bsize		= 32, /* minimum block size, fixed by */
-+		.dcache_bsize		= 32, /* cache info init.             */
-+		.num_pmcs		= 0,
-+		.pmc_type		= PPC_PMC_DEFAULT,
-+		.oprofile_cpu_type	= NULL,
-+		.oprofile_type		= PPC_OPROFILE_INVALID,
-+		.cpu_setup		= NULL,
-+		.cpu_restore		= __restore_cpu_cpufeatures,
-+		.flush_tlb		= NULL,
-+		.machine_check_early	= NULL,
-+		.platform		= NULL,
-+	};
-+
-+	s.pvr_mask = s.pvr_value = mfspr(SPRN_PVR);
-+
-+	set_cur_cpu_spec(&s);
-+
-+	/* Initialize the base environment -- clear FSCR/HFSCR.  */
-+	hv_mode = !!(mfmsr() & MSR_HV);
-+	if (hv_mode)
-+		mtspr(SPRN_HFSCR, 0);
-+	mtspr(SPRN_FSCR, 0);
-+}
-+
-+static int __init feat_try_enable_unknown(struct dt_cpu_feature *f)
-+{
-+	if (f->hv_support == HV_SUPPORT_NONE) {
-+	} else if (f->hv_support & HV_SUPPORT_HFSCR) {
-+		u64 hfscr = mfspr(SPRN_HFSCR);
-+		hfscr |= 1UL << f->hfscr_bit_nr;
-+		mtspr(SPRN_HFSCR, hfscr);
-+	} else {
-+		/* Does not have a known recipe */
-+		return 0;
-+	}
-+
-+	if (f->os_support == OS_SUPPORT_NONE) {
-+	} else if (f->os_support & OS_SUPPORT_FSCR) {
-+		u64 fscr = mfspr(SPRN_FSCR);
-+		fscr |= 1UL << f->fscr_bit_nr;
-+		mtspr(SPRN_FSCR, fscr);
-+	} else {
-+		/* Does not have a known recipe */
-+		return 0;
-+	}
-+
-+	if ((f->usable_privilege & USABLE_PR) && (f->hwcap_bit_nr != -1)) {
-+		uint32_t word = f->hwcap_bit_nr / 32;
-+		uint32_t bit = f->hwcap_bit_nr % 32;
-+
-+		if (word == 0)
-+			cur_cpu_spec->cpu_user_features |= 1U << bit;
-+		else if (word == 1)
-+			cur_cpu_spec->cpu_user_features2 |= 1U << bit;
-+		else
-+			pr_err("CPU feature: %s could not advertise to user (no hwcap bits)\n", f->name);
-+	}
-+
-+	return 1;
-+}
-+
-+static int __init feat_enable(struct dt_cpu_feature *f)
-+{
-+	if (f->hv_support != HV_SUPPORT_NONE) {
-+		if (f->hfscr_bit_nr != -1) {
-+			u64 hfscr = mfspr(SPRN_HFSCR);
-+			hfscr |= 1UL << f->hfscr_bit_nr;
-+			mtspr(SPRN_HFSCR, hfscr);
-+		}
-+	}
-+
-+	if (f->os_support != OS_SUPPORT_NONE) {
-+		if (f->fscr_bit_nr != -1) {
-+			u64 fscr = mfspr(SPRN_FSCR);
-+			fscr |= 1UL << f->fscr_bit_nr;
-+			mtspr(SPRN_FSCR, fscr);
-+		}
-+	}
-+
-+	if ((f->usable_privilege & USABLE_PR) && (f->hwcap_bit_nr != -1)) {
-+		uint32_t word = f->hwcap_bit_nr / 32;
-+		uint32_t bit = f->hwcap_bit_nr % 32;
-+
-+		if (word == 0)
-+			cur_cpu_spec->cpu_user_features |= 1U << bit;
-+		else if (word == 1)
-+			cur_cpu_spec->cpu_user_features2 |= 1U << bit;
-+		else
-+			pr_err("CPU feature: %s could not advertise to user (no hwcap bits)\n", f->name);
-+	}
-+
-+	return 1;
-+}
-+
-+static int __init feat_disable(struct dt_cpu_feature *f)
-+{
-+	return 0;
-+}
-+
-+static int __init feat_enable_hv(struct dt_cpu_feature *f)
-+{
-+	u64 lpcr;
-+
-+	if (!hv_mode) {
-+		pr_err("CPU feature hypervisor present in device tree but HV mode not enabled in the CPU. Ignoring.\n");
-+		return 0;
-+	}
-+
-+	mtspr(SPRN_LPID, 0);
-+
-+	lpcr = mfspr(SPRN_LPCR);
-+	lpcr &=  ~LPCR_LPES0; /* HV external interrupts */
-+	mtspr(SPRN_LPCR, lpcr);
-+
-+	cur_cpu_spec->cpu_features |= CPU_FTR_HVMODE;
-+
-+	return 1;
-+}
-+
-+static int __init feat_enable_le(struct dt_cpu_feature *f)
-+{
-+	cur_cpu_spec->cpu_user_features |= PPC_FEATURE_TRUE_LE;
-+	return 1;
-+}
-+
-+static int __init feat_enable_smt(struct dt_cpu_feature *f)
-+{
-+	cur_cpu_spec->cpu_features |= CPU_FTR_SMT;
-+	cur_cpu_spec->cpu_user_features |= PPC_FEATURE_SMT;
-+	return 1;
-+}
-+
-+static int __init feat_enable_idle_nap(struct dt_cpu_feature *f)
-+{
-+	u64 lpcr;
-+
-+	/* Set PECE wakeup modes for ISA 207 */
-+	lpcr = mfspr(SPRN_LPCR);
-+	lpcr |=  LPCR_PECE0;
-+	lpcr |=  LPCR_PECE1;
-+	lpcr |=  LPCR_PECE2;
-+	mtspr(SPRN_LPCR, lpcr);
-+
-+	return 1;
-+}
-+
-+static int __init feat_enable_align_dsisr(struct dt_cpu_feature *f)
-+{
-+	cur_cpu_spec->cpu_features &= ~CPU_FTR_NODSISRALIGN;
-+
-+	return 1;
-+}
-+
-+static int __init feat_enable_idle_stop(struct dt_cpu_feature *f)
-+{
-+	u64 lpcr;
-+
-+	/* Set PECE wakeup modes for ISAv3.0B */
-+	lpcr = mfspr(SPRN_LPCR);
-+	lpcr |=  LPCR_PECE0;
-+	lpcr |=  LPCR_PECE1;
-+	lpcr |=  LPCR_PECE2;
-+	mtspr(SPRN_LPCR, lpcr);
-+
-+	return 1;
-+}
-+
-+static int __init feat_enable_mmu_hash(struct dt_cpu_feature *f)
-+{
-+	u64 lpcr;
-+
-+	lpcr = mfspr(SPRN_LPCR);
-+	lpcr &= ~LPCR_ISL;
-+
-+	/* VRMASD */
-+	lpcr |= LPCR_VPM0;
-+	lpcr &= ~LPCR_VPM1;
-+	lpcr |= 0x10UL << LPCR_VRMASD_SH; /* L=1 LP=00 */
-+	mtspr(SPRN_LPCR, lpcr);
-+
-+	cur_cpu_spec->mmu_features |= MMU_FTRS_HASH_BASE;
-+	cur_cpu_spec->cpu_user_features |= PPC_FEATURE_HAS_MMU;
-+
-+	return 1;
-+}
-+
-+static int __init feat_enable_mmu_hash_v3(struct dt_cpu_feature *f)
-+{
-+	u64 lpcr;
-+
-+	lpcr = mfspr(SPRN_LPCR);
-+	lpcr &= ~LPCR_ISL;
-+	mtspr(SPRN_LPCR, lpcr);
-+
-+	cur_cpu_spec->mmu_features |= MMU_FTRS_HASH_BASE;
-+	cur_cpu_spec->cpu_user_features |= PPC_FEATURE_HAS_MMU;
-+
-+	return 1;
-+}
-+
-+
-+static int __init feat_enable_mmu_radix(struct dt_cpu_feature *f)
-+{
-+#ifdef CONFIG_PPC_RADIX_MMU
-+	cur_cpu_spec->mmu_features |= MMU_FTR_TYPE_RADIX;
-+	cur_cpu_spec->mmu_features |= MMU_FTRS_HASH_BASE;
-+	cur_cpu_spec->cpu_user_features |= PPC_FEATURE_HAS_MMU;
-+
-+	return 1;
-+#endif
-+	return 0;
-+}
-+
-+static int __init feat_enable_dscr(struct dt_cpu_feature *f)
-+{
-+	u64 lpcr;
-+
-+	feat_enable(f);
-+
-+	lpcr = mfspr(SPRN_LPCR);
-+	lpcr &= ~LPCR_DPFD;
-+	lpcr |=  (4UL << LPCR_DPFD_SH);
-+	mtspr(SPRN_LPCR, lpcr);
-+
-+	return 1;
-+}
-+
-+static void hfscr_pmu_enable(void)
-+{
-+	u64 hfscr = mfspr(SPRN_HFSCR);
-+	hfscr |= PPC_BIT(60);
-+	mtspr(SPRN_HFSCR, hfscr);
-+}
-+
-+static void init_pmu_power8(void)
-+{
-+	if (hv_mode) {
-+		mtspr(SPRN_MMCRC, 0);
-+		mtspr(SPRN_MMCRH, 0);
-+	}
-+
-+	mtspr(SPRN_MMCRA, 0);
-+	mtspr(SPRN_MMCR0, 0);
-+	mtspr(SPRN_MMCR1, 0);
-+	mtspr(SPRN_MMCR2, 0);
-+	mtspr(SPRN_MMCRS, 0);
-+}
-+
-+static int __init feat_enable_mce_power8(struct dt_cpu_feature *f)
-+{
-+	cur_cpu_spec->platform = "power8";
-+	cur_cpu_spec->flush_tlb = __flush_tlb_power8;
-+	cur_cpu_spec->machine_check_early = __machine_check_early_realmode_p8;
-+
-+	return 1;
-+}
-+
-+static int __init feat_enable_pmu_power8(struct dt_cpu_feature *f)
-+{
-+	hfscr_pmu_enable();
-+
-+	init_pmu_power8();
-+	init_pmu_registers = init_pmu_power8;
-+
-+	cur_cpu_spec->cpu_features |= CPU_FTR_MMCRA;
-+	cur_cpu_spec->cpu_user_features |= PPC_FEATURE_PSERIES_PERFMON_COMPAT;
-+	if (pvr_version_is(PVR_POWER8E))
-+		cur_cpu_spec->cpu_features |= CPU_FTR_PMAO_BUG;
-+
-+	cur_cpu_spec->num_pmcs		= 6;
-+	cur_cpu_spec->pmc_type		= PPC_PMC_IBM;
-+	cur_cpu_spec->oprofile_cpu_type	= "ppc64/power8";
-+
-+	return 1;
-+}
-+
-+static void init_pmu_power9(void)
-+{
-+	if (hv_mode)
-+		mtspr(SPRN_MMCRC, 0);
-+
-+	mtspr(SPRN_MMCRA, 0);
-+	mtspr(SPRN_MMCR0, 0);
-+	mtspr(SPRN_MMCR1, 0);
-+	mtspr(SPRN_MMCR2, 0);
-+}
-+
-+static int __init feat_enable_mce_power9(struct dt_cpu_feature *f)
-+{
-+	cur_cpu_spec->platform = "power9";
-+	cur_cpu_spec->flush_tlb = __flush_tlb_power9;
-+	cur_cpu_spec->machine_check_early = __machine_check_early_realmode_p9;
-+
-+	return 1;
-+}
-+
-+static int __init feat_enable_pmu_power9(struct dt_cpu_feature *f)
-+{
-+	hfscr_pmu_enable();
-+
-+	init_pmu_power9();
-+	init_pmu_registers = init_pmu_power9;
-+
-+	cur_cpu_spec->cpu_features |= CPU_FTR_MMCRA;
-+	cur_cpu_spec->cpu_user_features |= PPC_FEATURE_PSERIES_PERFMON_COMPAT;
-+
-+	cur_cpu_spec->num_pmcs		= 6;
-+	cur_cpu_spec->pmc_type		= PPC_PMC_IBM;
-+	cur_cpu_spec->oprofile_cpu_type	= "ppc64/power9";
-+
-+	return 1;
-+}
-+
-+static int __init feat_enable_tm(struct dt_cpu_feature *f)
-+{
-+#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-+	feat_enable(f);
-+	cur_cpu_spec->cpu_user_features2 |= PPC_FEATURE2_HTM_NOSC;
-+	return 1;
-+#endif
-+	return 0;
-+}
-+
-+static int __init feat_enable_fp(struct dt_cpu_feature *f)
-+{
-+	feat_enable(f);
-+	cur_cpu_spec->cpu_features &= ~CPU_FTR_FPU_UNAVAILABLE;
-+
-+	return 1;
-+}
-+
-+static int __init feat_enable_vector(struct dt_cpu_feature *f)
-+{
-+#ifdef CONFIG_ALTIVEC
-+	feat_enable(f);
-+	cur_cpu_spec->cpu_features |= CPU_FTR_ALTIVEC;
-+	cur_cpu_spec->cpu_features |= CPU_FTR_VMX_COPY;
-+	cur_cpu_spec->cpu_user_features |= PPC_FEATURE_HAS_ALTIVEC;
-+
-+	return 1;
-+#endif
-+	return 0;
-+}
-+
-+static int __init feat_enable_vsx(struct dt_cpu_feature *f)
-+{
-+#ifdef CONFIG_VSX
-+	feat_enable(f);
-+	cur_cpu_spec->cpu_features |= CPU_FTR_VSX;
-+	cur_cpu_spec->cpu_user_features |= PPC_FEATURE_HAS_VSX;
-+
-+	return 1;
-+#endif
-+	return 0;
-+}
-+
-+static int __init feat_enable_purr(struct dt_cpu_feature *f)
-+{
-+	cur_cpu_spec->cpu_features |= CPU_FTR_PURR | CPU_FTR_SPURR;
-+
-+	return 1;
-+}
-+
-+static int __init feat_enable_dbell(struct dt_cpu_feature *f)
-+{
-+	u64 lpcr;
-+
-+	/* P9 has an HFSCR for privileged state */
-+	feat_enable(f);
-+
-+	cur_cpu_spec->cpu_features |= CPU_FTR_DBELL;
-+
-+	lpcr = mfspr(SPRN_LPCR);
-+	lpcr |=  LPCR_PECEDH; /* hyp doorbell wakeup */
-+	mtspr(SPRN_LPCR, lpcr);
-+
-+	return 1;
-+}
-+
-+static int __init feat_enable_hvi(struct dt_cpu_feature *f)
-+{
-+	u64 lpcr;
-+
-+	/*
-+	 * POWER9 XIVE interrupts including in OPAL XICS compatibility
-+	 * are always delivered as hypervisor virtualization interrupts (HVI)
-+	 * rather than EE.
-+	 *
-+	 * However LPES0 is not set here, in the chance that an EE does get
-+	 * delivered to the host somehow, the EE handler would not expect it
-+	 * to be delivered in LPES0 mode (e.g., using SRR[01]). This could
-+	 * happen if there is a bug in interrupt controller code, or IC is
-+	 * misconfigured in systemsim.
-+	 */
-+
-+	lpcr = mfspr(SPRN_LPCR);
-+	lpcr |= LPCR_HVICE;	/* enable hvi interrupts */
-+	lpcr |= LPCR_HEIC;	/* disable ee interrupts when MSR_HV */
-+	lpcr |= LPCR_PECE_HVEE; /* hvi can wake from stop */
-+	mtspr(SPRN_LPCR, lpcr);
-+
-+	return 1;
-+}
-+
-+static int __init feat_enable_large_ci(struct dt_cpu_feature *f)
-+{
-+	cur_cpu_spec->mmu_features |= MMU_FTR_CI_LARGE_PAGE;
-+
-+	return 1;
-+}
-+
-+struct dt_cpu_feature_match {
-+	const char *name;
-+	int (*enable)(struct dt_cpu_feature *f);
-+	u64 cpu_ftr_bit_mask;
-+};
-+
-+static struct dt_cpu_feature_match __initdata
-+		dt_cpu_feature_match_table[] = {
-+	{"hypervisor", feat_enable_hv, 0},
-+	{"big-endian", feat_enable, 0},
-+	{"little-endian", feat_enable_le, CPU_FTR_REAL_LE},
-+	{"smt", feat_enable_smt, 0},
-+	{"interrupt-facilities", feat_enable, 0},
-+	{"timer-facilities", feat_enable, 0},
-+	{"timer-facilities-v3", feat_enable, 0},
-+	{"debug-facilities", feat_enable, 0},
-+	{"come-from-address-register", feat_enable, CPU_FTR_CFAR},
-+	{"branch-tracing", feat_enable, 0},
-+	{"floating-point", feat_enable_fp, 0},
-+	{"vector", feat_enable_vector, 0},
-+	{"vector-scalar", feat_enable_vsx, 0},
-+	{"vector-scalar-v3", feat_enable, 0},
-+	{"decimal-floating-point", feat_enable, 0},
-+	{"decimal-integer", feat_enable, 0},
-+	{"vector-crypto", feat_enable, 0},
-+	{"mmu-hash", feat_enable_mmu_hash, 0},
-+	{"mmu-radix", feat_enable_mmu_radix, 0},
-+	{"mmu-hash-v3", feat_enable_mmu_hash_v3, 0},
-+	{"virtual-page-class-key-protection", feat_enable, 0},
-+	{"transactional-memory", feat_enable_tm, CPU_FTR_TM},
-+	{"transactional-memory-v3", feat_enable_tm, 0},
-+	{"idle-nap", feat_enable_idle_nap, 0},
-+	{"alignment-interrupt-dsisr", feat_enable_align_dsisr, 0},
-+	{"idle-stop", feat_enable_idle_stop, 0},
-+	{"machine-check-power8", feat_enable_mce_power8, 0},
-+	{"performance-monitor-power8", feat_enable_pmu_power8, 0},
-+	{"data-stream-control-register", feat_enable_dscr, CPU_FTR_DSCR},
-+	{"event-based-branch", feat_enable, 0},
-+	{"target-address-register", feat_enable, 0},
-+	{"branch-history-rolling-buffer", feat_enable, 0},
-+	{"control-register", feat_enable, CPU_FTR_CTRL},
-+	{"processor-control-facility", feat_enable_dbell, CPU_FTR_DBELL},
-+	{"processor-control-facility-v3", feat_enable_dbell, CPU_FTR_DBELL},
-+	{"processor-utilization-of-resources-register", feat_enable_purr, 0},
-+	{"subcore", feat_enable, CPU_FTR_SUBCORE},
-+	{"no-execute", feat_enable, 0},
-+	{"strong-access-ordering", feat_enable, CPU_FTR_SAO},
-+	{"cache-inhibited-large-page", feat_enable_large_ci, 0},
-+	{"coprocessor-icswx", feat_enable, CPU_FTR_ICSWX},
-+	{"hypervisor-virtualization-interrupt", feat_enable_hvi, 0},
-+	{"program-priority-register", feat_enable, CPU_FTR_HAS_PPR},
-+	{"wait", feat_enable, 0},
-+	{"atomic-memory-operations", feat_enable, 0},
-+	{"branch-v3", feat_enable, 0},
-+	{"copy-paste", feat_enable, 0},
-+	{"decimal-floating-point-v3", feat_enable, 0},
-+	{"decimal-integer-v3", feat_enable, 0},
-+	{"fixed-point-v3", feat_enable, 0},
-+	{"floating-point-v3", feat_enable, 0},
-+	{"group-start-register", feat_enable, 0},
-+	{"pc-relative-addressing", feat_enable, 0},
-+	{"machine-check-power9", feat_enable_mce_power9, 0},
-+	{"performance-monitor-power9", feat_enable_pmu_power9, 0},
-+	{"event-based-branch-v3", feat_enable, 0},
-+	{"random-number-generator", feat_enable, 0},
-+	{"system-call-vectored", feat_disable, 0},
-+	{"trace-interrupt-v3", feat_enable, 0},
-+	{"vector-v3", feat_enable, 0},
-+	{"vector-binary128", feat_enable, 0},
-+	{"vector-binary16", feat_enable, 0},
-+	{"wait-v3", feat_enable, 0},
-+};
-+
-+/* XXX: how to configure this? Default + boot time? */
-+#ifdef CONFIG_PPC_CPUFEATURES_ENABLE_UNKNOWN
-+#define CPU_FEATURE_ENABLE_UNKNOWN 1
-+#else
-+#define CPU_FEATURE_ENABLE_UNKNOWN 0
-+#endif
-+
-+void __init cpufeatures_setup_start(u32 isa)
-+{
-+	DBG("CPUFEATURES setup for isa %d\n", isa);
-+
-+	if (isa >= 3000) {
-+		cur_cpu_spec->cpu_features |= CPU_FTR_ARCH_300;
-+		cur_cpu_spec->cpu_user_features2 |= PPC_FEATURE2_ARCH_3_00;
-+	}
-+}
-+
-+int __init cpufeatures_process_feature(struct dt_cpu_feature *f)
-+{
-+	const struct dt_cpu_feature_match *m;
-+	int known = 0;
-+	int i;
-+
-+	for (i = 0; i < ARRAY_SIZE(dt_cpu_feature_match_table); i++) {
-+		m = &dt_cpu_feature_match_table[i];
-+		if (!strcmp(f->name, m->name)) {
-+			known = 1;
-+			if (m->enable(f))
-+				goto enabled;
-+			goto not_enabled;
-+		}
-+	}
-+
-+	if (CPU_FEATURE_ENABLE_UNKNOWN) {
-+		if (feat_try_enable_unknown(f))
-+			goto enabled;
-+	}
-+
-+not_enabled:
-+	if (known)
-+		DBG("CPU feature not enabling:%s (disabled or unsupported by kernel)\n", f->name);
-+	else
-+		DBG("CPU feature not enabling:%s (unknown and unsupported by kernel)\n", f->name);
-+
-+	return 0;
-+
-+enabled:
-+	if (m->cpu_ftr_bit_mask)
-+		cur_cpu_spec->cpu_features |= m->cpu_ftr_bit_mask;
-+	if (known)
-+		DBG("CPU feature enabling:%s\n", f->name);
-+	else
-+		DBG("CPU feature enabling:%s (unknown)\n", f->name);
-+
-+	return 1;
-+}
-+
-+void __init cpufeatures_setup_finished(void)
-+{
-+	if (hv_mode && !(cur_cpu_spec->cpu_features & CPU_FTR_HVMODE)) {
-+		pr_err("CPU feature hypervisor not present in device tree but HV mode is enabled in the CPU. Enabling.\n");
-+		cur_cpu_spec->cpu_features |= CPU_FTR_HVMODE;
-+	}
-+
-+	system_registers.hfscr = mfspr(SPRN_HFSCR);
-+	system_registers.fscr = mfspr(SPRN_FSCR);
-+	system_registers.lpcr = mfspr(SPRN_LPCR);
-+}
-diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
-index e79b9daa873c..9b3e88b1a9c8 100644
---- a/arch/powerpc/kernel/cputable.c
-+++ b/arch/powerpc/kernel/cputable.c
-@@ -23,7 +23,9 @@
- #include <asm/mmu.h>
- #include <asm/setup.h>
- 
--struct cpu_spec* cur_cpu_spec = NULL;
-+static struct cpu_spec the_cpu_spec __read_mostly;
-+
-+struct cpu_spec* cur_cpu_spec __read_mostly = NULL;
- EXPORT_SYMBOL(cur_cpu_spec);
- 
- /* The platform string corresponding to the real PVR */
-@@ -2179,7 +2181,15 @@ static struct cpu_spec __initdata cpu_specs[] = {
- #endif /* CONFIG_E500 */
- };
- 
--static struct cpu_spec the_cpu_spec;
-+void __init set_cur_cpu_spec(struct cpu_spec *s)
-+{
-+	struct cpu_spec *t = &the_cpu_spec;
-+
-+	t = PTRRELOC(t);
-+	*t = *s;
-+
-+	*PTRRELOC(&cur_cpu_spec) = &the_cpu_spec;
-+}
- 
- static struct cpu_spec * __init setup_cpu_spec(unsigned long offset,
- 					       struct cpu_spec *s)
-@@ -2266,6 +2276,29 @@ struct cpu_spec * __init identify_cpu(unsigned long offset, unsigned int pvr)
- 	return NULL;
- }
- 
-+/*
-+ * Used by cpufeatures to get the name for CPUs with a PVR table.
-+ * If they don't hae a PVR table, cpufeatures gets the name from
-+ * cpu device-tree node.
-+ */
-+void __init identify_cpu_name(unsigned int pvr)
-+{
-+	struct cpu_spec *s = cpu_specs;
-+	struct cpu_spec *t = &the_cpu_spec;
-+	int i;
-+
-+	s = PTRRELOC(s);
-+	t = PTRRELOC(t);
-+
-+	for (i = 0; i < ARRAY_SIZE(cpu_specs); i++,s++) {
-+		if ((pvr & s->pvr_mask) == s->pvr_value) {
-+			t->cpu_name = s->cpu_name;
-+			return;
-+		}
-+	}
-+}
-+
-+
- #ifdef CONFIG_JUMP_LABEL_FEATURE_CHECKS
- struct static_key_true cpu_feature_keys[NUM_CPU_FTR_KEYS] = {
- 			[0 ... NUM_CPU_FTR_KEYS - 1] = STATIC_KEY_TRUE_INIT
-diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-index d2f0afeae5a0..9223939e1093 100644
---- a/arch/powerpc/kernel/prom.c
-+++ b/arch/powerpc/kernel/prom.c
-@@ -57,6 +57,7 @@
- #include <asm/fadump.h>
- #include <asm/epapr_hcalls.h>
- #include <asm/firmware.h>
-+#include <asm/cpufeatures.h>
- 
- #include <mm/mmu_decl.h>
- 
-@@ -66,6 +67,12 @@
- #define DBG(fmt...)
- #endif
- 
-+#ifdef CONFIG_PPC_CPUFEATURES_DT
-+int __initdata has_cpufeatures_node = 0;
-+#else
-+static const int has_cpufeatures_node = 0;
-+#endif
-+
- #ifdef CONFIG_PPC64
- int __initdata iommu_is_off;
- int __initdata iommu_force_on;
-@@ -299,6 +306,273 @@ static void __init check_cpu_feature_properties(unsigned long node)
- 	}
- }
- 
-+#ifdef CONFIG_PPC_CPUFEATURES_DT
-+#define CPUFT_WARN(str, name) printk(KERN_WARNING "WARNING: /cpus/features/%s dt:%s\n", name, str)
-+
-+static int nr_dt_cpu_features;
-+static struct dt_cpu_feature *dt_cpu_features;
-+
-+static int __init process_cpufeatures_node(unsigned long node,
-+					  const char *uname, int i)
-+{
-+	const __be32 *prop;
-+	struct dt_cpu_feature *f;
-+	int len;
-+
-+	f = &dt_cpu_features[i];
-+	memset(f, 0, sizeof(struct dt_cpu_feature));
-+
-+	f->node = node;
-+
-+	f->name = uname;
-+
-+	prop = of_get_flat_dt_prop(node, "isa", &len);
-+	if (!prop) {
-+		CPUFT_WARN("missing isa property", uname);
-+		return 0;
-+	}
-+	f->isa = be32_to_cpup(prop);
-+
-+	prop = of_get_flat_dt_prop(node, "usable-privilege", &len);
-+	if (!prop) {
-+		CPUFT_WARN("missing usable-privilege property", uname);
-+		return 0;
-+	}
-+	f->usable_privilege = be32_to_cpup(prop);
-+
-+	prop = of_get_flat_dt_prop(node, "hv-support", &len);
-+	if (prop)
-+		f->hv_support = be32_to_cpup(prop);
-+	else
-+		f->hv_support = HV_SUPPORT_NONE;
-+
-+	prop = of_get_flat_dt_prop(node, "os-support", &len);
-+	if (prop)
-+		f->os_support = be32_to_cpup(prop);
-+	else
-+		f->os_support = OS_SUPPORT_NONE;
-+
-+	prop = of_get_flat_dt_prop(node, "hfscr-bit-nr", &len);
-+	if (prop)
-+		f->hfscr_bit_nr = be32_to_cpup(prop);
-+	else
-+		f->hfscr_bit_nr = -1;
-+	prop = of_get_flat_dt_prop(node, "fscr-bit-nr", &len);
-+	if (prop)
-+		f->fscr_bit_nr = be32_to_cpup(prop);
-+	else
-+		f->fscr_bit_nr = -1;
-+	prop = of_get_flat_dt_prop(node, "hwcap-bit-nr", &len);
-+	if (prop)
-+		f->hwcap_bit_nr = be32_to_cpup(prop);
-+	else
-+		f->hwcap_bit_nr = -1;
-+
-+	if (f->usable_privilege & USABLE_HV) {
-+		if (!(mfmsr() & MSR_HV)) {
-+			CPUFT_WARN("HV feature passed to guest\n", uname);
-+			return 0;
-+		}
-+
-+		if (f->hv_support == HV_SUPPORT_NONE && f->hfscr_bit_nr != -1) {
-+			CPUFT_WARN("unwanted hfscr_bit_nr\n", uname);
-+			return 0;
-+		}
-+
-+		if (f->hv_support == HV_SUPPORT_HFSCR) {
-+			if (f->hfscr_bit_nr == -1) {
-+				CPUFT_WARN("missing hfscr_bit_nr\n", uname);
-+				return 0;
-+			}
-+		}
-+	} else {
-+		if (f->hv_support != HV_SUPPORT_NONE || f->hfscr_bit_nr != -1) {
-+			CPUFT_WARN("unwanted hv_support/hfscr_bit_nr\n", uname);
-+			return 0;
-+		}
-+	}
-+
-+	if (f->usable_privilege & USABLE_OS) {
-+		if (f->os_support == OS_SUPPORT_NONE && f->fscr_bit_nr != -1) {
-+			CPUFT_WARN("unwanted fscr_bit_nr\n", uname);
-+			return 0;
-+		}
-+
-+		if (f->os_support == OS_SUPPORT_FSCR) {
-+			if (f->fscr_bit_nr == -1) {
-+				CPUFT_WARN("missing fscr_bit_nr\n", uname);
-+				return 0;
-+			}
-+		}
-+	} else {
-+		if (f->os_support != OS_SUPPORT_NONE || f->fscr_bit_nr != -1) {
-+			CPUFT_WARN("unwanted os_support/fscr_bit_nr\n", uname);
-+			return 0;
-+		}
-+	}
-+
-+	if (!(f->usable_privilege & USABLE_PR)) {
-+		if (f->hwcap_bit_nr != -1) {
-+			CPUFT_WARN("unwanted hwcap_bit_nr\n", uname);
-+			return 0;
-+		}
-+	}
-+
-+	/* Do all the independent features in the first pass */
-+	if (!of_get_flat_dt_prop(node, "dependencies", &len)) {
-+		if (cpufeatures_process_feature(f))
-+			f->enabled = 1;
-+		else
-+			f->disabled = 1;
-+	}
-+
-+	return 0;
-+}
-+
-+static void __init cpufeatures_deps_enable(struct dt_cpu_feature *f)
-+{
-+	const __be32 *prop;
-+	int len;
-+	int nr_deps;
-+	int i;
-+
-+	if (f->enabled || f->disabled)
-+		return;
-+
-+	prop = of_get_flat_dt_prop(f->node, "dependencies", &len);
-+	if (!prop) {
-+		CPUFT_WARN("missing dependencies property", f->name);
-+		return;
-+	}
-+
-+	nr_deps = len / sizeof(int);
-+
-+	for (i = 0; i < nr_deps; i++) {
-+		unsigned long phandle = be32_to_cpu(prop[i]);
-+		int j;
-+
-+		for (j = 0; j < nr_dt_cpu_features; j++) {
-+			struct dt_cpu_feature *d = &dt_cpu_features[j];
-+
-+			if (of_get_flat_dt_phandle(d->node) == phandle) {
-+				cpufeatures_deps_enable(d);
-+				if (d->disabled) {
-+					f->disabled = 1;
-+					return;
-+				}
-+			}
-+		}
-+	}
-+
-+	if (cpufeatures_process_feature(f))
-+		f->enabled = 1;
-+	else
-+		f->disabled = 1;
-+}
-+
-+static int __init scan_cpufeatures_subnodes(unsigned long node,
-+					  const char *uname,
-+					  void *data)
-+{
-+	int *count = data;
-+
-+	process_cpufeatures_node(node, uname, *count);
-+
-+	(*count)++;
-+
-+	return 0;
-+}
-+
-+static int __init count_cpufeatures_subnodes(unsigned long node,
-+					  const char *uname,
-+					  void *data)
-+{
-+	int *count = data;
-+
-+	(*count)++;
-+
-+	return 0;
-+}
-+
-+static int __init early_init_dt_scan_cpufeatures(unsigned long node,
-+					  const char *uname, int depth,
-+					  void *data)
-+{
-+	const char *type = of_get_flat_dt_prop(node, "device_type", NULL);
-+	const __be32 *prop;
-+	int count, i;
-+	u32 isa;
-+
-+	/* We are scanning "ibm,powerpc-cpu-features" nodes only */
-+	if (type == NULL || strcmp(type, "ibm,powerpc-cpu-features") != 0)
-+		return 0;
-+
-+	prop = of_get_flat_dt_prop(node, "isa", NULL);
-+	if (!prop) {
-+		printk("ibm,powerpc-cpu-features node has missing property \"isa\"\n");
-+		return 0;
-+	}
-+
-+	isa = be32_to_cpup(prop);
-+
-+	has_cpufeatures_node = 1;
-+
-+	/* Count and allocate space for cpu features */
-+	of_scan_flat_dt_subnodes(node, count_cpufeatures_subnodes,
-+						&nr_dt_cpu_features);
-+	dt_cpu_features = __va(
-+		memblock_alloc(sizeof(struct dt_cpu_feature)*
-+				nr_dt_cpu_features, PAGE_SIZE));
-+
-+	cpufeatures_setup_start(isa);
-+
-+	/* Scan nodes into dt_cpu_features and enable those without deps  */
-+	count = 0;
-+	of_scan_flat_dt_subnodes(node, scan_cpufeatures_subnodes, &count);
-+
-+	/* Recursive enable remaining features with dependencies */
-+	for (i = 0; i < nr_dt_cpu_features; i++) {
-+		struct dt_cpu_feature *f = &dt_cpu_features[i];
-+
-+		cpufeatures_deps_enable(f);
-+	}
-+
-+	cpufeatures_setup_finished();
-+
-+	memblock_free(__pa(dt_cpu_features),
-+			sizeof(struct dt_cpu_feature)*nr_dt_cpu_features);
-+
-+	return 0;
-+}
-+
-+static int __init early_init_dt_scan_cpufeatures_exists(unsigned long node,
-+					  const char *uname, int depth,
-+					  void *data)
-+{
-+	const char *type = of_get_flat_dt_prop(node, "device_type", NULL);
-+	int *exists = data;
-+
-+	/* We are scanning "ibm,powerpc-cpu-features" nodes only */
-+	if (type == NULL || strcmp(type, "ibm,powerpc-cpu-features") != 0)
-+		return 0;
-+
-+	*exists = 1;
-+
-+	return 0;
-+}
-+
-+/*
-+ * Does the /cpus/features/ node exist?
-+ */
-+int __init early_init_devtree_check_cpu_features_exists(void)
-+{
-+	int exists = 0;
-+	of_scan_flat_dt(early_init_dt_scan_cpufeatures_exists, &exists);
-+	return exists;
-+}
-+
-+#endif /* CONFIG_PPC_CPUFEATURES_DT */
-+
- static int __init early_init_dt_scan_cpus(unsigned long node,
- 					  const char *uname, int depth,
- 					  void *data)
-@@ -375,23 +649,61 @@ static int __init early_init_dt_scan_cpus(unsigned long node,
- 	 * A POWER6 partition in "POWER6 architected" mode
- 	 * uses the 0x0f000002 PVR value; in POWER5+ mode
- 	 * it uses 0x0f000001.
-+	 *
-+	 * In the case of the cpufeatures node existing, it is the
-+	 * responsibility of the firmware/hypervisor to provide the
-+	 * correct feature set for the architecture level.
- 	 */
--	prop = of_get_flat_dt_prop(node, "cpu-version", NULL);
--	if (prop && (be32_to_cpup(prop) & 0xff000000) == 0x0f000000)
--		identify_cpu(0, be32_to_cpup(prop));
-+	if (!has_cpufeatures_node) {
-+		prop = of_get_flat_dt_prop(node, "cpu-version", NULL);
-+		if (prop && (be32_to_cpup(prop) & 0xff000000) == 0x0f000000)
-+			identify_cpu(0, be32_to_cpup(prop));
-+		identical_pvr_fixup(node);
- 
--	identical_pvr_fixup(node);
-+		check_cpu_feature_properties(node);
-+		check_cpu_pa_features(node);
- 
--	check_cpu_feature_properties(node);
--	check_cpu_pa_features(node);
--	init_mmu_slb_size(node);
-+#ifdef CONFIG_PPC64
-+		if (nthreads > 1)
-+			cur_cpu_spec->cpu_features |= CPU_FTR_SMT;
-+		else
-+			cur_cpu_spec->cpu_features &= ~CPU_FTR_SMT;
-+#endif
-+	} else {
-+		unsigned int pvr;
-+
-+		/*
-+		 * Fill cpu_name with PVR table if it exists, for backward
-+		 * compatibility.
-+		 */
-+		pvr = cur_cpu_spec->pvr_value;
-+		prop = of_get_flat_dt_prop(node, "cpu-version", NULL);
-+		if (prop && (be32_to_cpup(prop) & 0xff000000) == 0x0f000000)
-+			pvr = be32_to_cpup(prop);
-+		identify_cpu_name(pvr);
-+
-+		/* Otherwise use cpu node dt */
-+		if (!cur_cpu_spec->cpu_name) {
-+			static char cpu_name[32];
-+			char *c;
-+
-+			/* Get cpu_name from device-tree cpu node */
-+			strncpy(cpu_name, uname, 32);
-+			c = strchr(cpu_name, '@');
-+			if (c)
-+				*c = '\0';
-+			cur_cpu_spec->cpu_name = cpu_name;
-+		}
- 
- #ifdef CONFIG_PPC64
--	if (nthreads > 1)
--		cur_cpu_spec->cpu_features |= CPU_FTR_SMT;
--	else
--		cur_cpu_spec->cpu_features &= ~CPU_FTR_SMT;
-+		if (nthreads == 1)
-+			cur_cpu_spec->cpu_features &= ~CPU_FTR_SMT;
- #endif
-+	}
-+
-+
-+	init_mmu_slb_size(node);
-+
- 	return 0;
- }
- 
-@@ -721,6 +1033,10 @@ void __init early_init_devtree(void *params)
- 
- 	DBG("Scanning CPUs ...\n");
- 
-+#ifdef CONFIG_PPC_CPUFEATURES_DT
-+	of_scan_flat_dt(early_init_dt_scan_cpufeatures, NULL);
-+#endif
-+
- 	/* Retrieve CPU related informations from the flat tree
- 	 * (altivec support, boot CPU ID, ...)
- 	 */
-diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
-index 5c10b5925ac2..b57df7fc9e5f 100644
---- a/arch/powerpc/kernel/setup-common.c
-+++ b/arch/powerpc/kernel/setup-common.c
-@@ -256,7 +256,7 @@ static int show_cpuinfo(struct seq_file *m, void *v)
- 	seq_printf(m, "processor\t: %lu\n", cpu_id);
- 	seq_printf(m, "cpu\t\t: ");
- 
--	if (cur_cpu_spec->pvr_mask)
-+	if (cur_cpu_spec->pvr_mask && cur_cpu_spec->cpu_name)
- 		seq_printf(m, "%s", cur_cpu_spec->cpu_name);
- 	else
- 		seq_printf(m, "unknown (%08x)", pvr);
-diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-index 6f473fab5f43..a49a8b4d3899 100644
---- a/arch/powerpc/kernel/setup_64.c
-+++ b/arch/powerpc/kernel/setup_64.c
-@@ -49,6 +49,7 @@
- #include <asm/paca.h>
- #include <asm/time.h>
- #include <asm/cputable.h>
-+#include <asm/cpufeatures.h>
- #include <asm/sections.h>
- #include <asm/btext.h>
- #include <asm/nvram.h>
-@@ -274,8 +275,17 @@ void __init early_setup(unsigned long dt_ptr)
- 
- 	/* -------- printk is _NOT_ safe to use here ! ------- */
- 
--	/* Identify CPU type */
-+#ifdef CONFIG_PPC_CPUFEATURES_DT
-+	/* Setup flat device-tree pointer */
-+	initial_boot_params = __va(dt_ptr);
-+	if (early_init_devtree_check_cpu_features_exists())
-+		cpufeatures_setup_cpu();
-+	else
-+		/* Legacy table-based approach when /cpus/features is missing */
-+		identify_cpu(0, mfspr(SPRN_PVR));
-+#else
- 	identify_cpu(0, mfspr(SPRN_PVR));
-+#endif
- 
- 	/* Assume we're on cpu 0 for now. Don't write to the paca yet! */
- 	initialise_paca(&boot_paca, 0);
-@@ -541,6 +551,9 @@ void __init initialize_cache_info(void)
- 	dcache_bsize = ppc64_caches.l1d.block_size;
- 	icache_bsize = ppc64_caches.l1i.block_size;
- 
-+	cur_cpu_spec->dcache_bsize = dcache_bsize;
-+	cur_cpu_spec->icache_bsize = icache_bsize;
-+
- 	DBG(" <- initialize_cache_info()\n");
- }
+ /* Root of device tree. */
+ extern struct dt_node *dt_root;
  
 -- 
 2.11.0
