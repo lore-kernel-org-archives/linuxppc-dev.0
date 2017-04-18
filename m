@@ -1,24 +1,19 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w6YdD27lFzDq5b
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Apr 2017 15:30:56 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w6Z1B3VX6zDq5b
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Apr 2017 15:48:14 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Bjorn Helgaas <bhelgaas@google.com>, Yongji Xie <elohimes@gmail.com>
-Cc: zhong@linux.vnet.ibm.com, Alexey Kardashevskiy <aik@ozlabs.ru>,
- linux-pci@vger.kernel.org, Gavin Shan <gwshan@linux.vnet.ibm.com>,
- Alex Williamson <alex.williamson@redhat.com>,
- Paul Mackerras <paulus@samba.org>,
+To: Christophe Leroy <christophe.leroy@c-s.fr>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v11 4/7] powerpc/powernv: Override
- pcibios_default_alignment() to force PCI devices to be page aligned
-In-Reply-To: <20170417213653.21092.27784.stgit@bhelgaas-glaptop.roam.corp.google.com>
-References: <20170417212705.21092.90222.stgit@bhelgaas-glaptop.roam.corp.google.com>
- <20170417213653.21092.27784.stgit@bhelgaas-glaptop.roam.corp.google.com>
-Date: Tue, 18 Apr 2017 15:30:55 +1000
-Message-ID: <87vaq2704w.fsf@concordia.ellerman.id.au>
+ Paul Mackerras <paulus@samba.org>, Scott Wood <oss@buserror.net>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] powerpc/mm: some cleanup of do_page_fault()
+In-Reply-To: <20170413145342.40ED56E667@localhost.localdomain>
+References: <20170413145342.40ED56E667@localhost.localdomain>
+Date: Tue, 18 Apr 2017 15:48:11 +1000
+Message-ID: <87shl66zc4.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -30,26 +25,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Bjorn Helgaas <bhelgaas@google.com> writes:
+Christophe Leroy <christophe.leroy@c-s.fr> writes:
 
-> From: Yongji Xie <elohimes@gmail.com>
->
-> This overrides pcibios_default_alignment() to set default alignment
-> to PAGE_SIZE for all PCI devices on PowerNV platform. Thus sub-page
-> BARs would not share a page and could be mapped into guest when VFIO
-> passthrough them.
->
-> Signed-off-by: Yongji Xie <elohimes@gmail.com>
-> Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
-> ---
->  arch/powerpc/include/asm/machdep.h        |    2 ++
->  arch/powerpc/kernel/pci-common.c          |    8 ++++++++
->  arch/powerpc/platforms/powernv/pci-ioda.c |    7 +++++++
+> This patch is a bunch of small cleanups of the do_page_fault()
+> function:
+> 1/ Function store_updates_sp() checks whether the faulting
+> instruction is a store updating r1. Therefore we can limit its calls
+> to stores exceptions
+> 2/ Only the get_user() in store_updates_sp() has to be done outside
+> the mm semaphore. All the comparison can be done within the semaphore,
+> so only when really needed.
+> 3/ As we got a DSI exception, the address pointed by regs->nip is
+> obviously valid, otherwise we would have had a instruction exception.
+> So __get_user() can be used instead of get_user()
+> 4/ Replaced one duplicate 'trap == 0x400' by 'is_exec'
+> 5/ Created a 'is_user = user_mode(regs)' and replaced all
+> 'user_mode(regs)'.
+> Analysis of the assembly code shows that when using user_mode(regs),
+> at least the 'andi. r7,r8,16384' is redone several times, and also
+> the 'lwz r8,132(r31)' at times. With the new form, the 'is_user'
+> is mapped to cr4, then all further use of is_user results in just
+> things like 'beq cr4,218 <do_page_fault+0x218>'
+> 6/ The 8xx has a dedicated exception for breakpoints, that directly
+> calls do_break()
 
-This looks fine to me, here's an ack, but don't feel you have to rebase
-to add it:
+Those are probably all OK, if you send them as separate patches.
 
-Acked-by: Michael Ellerman <mpe@ellerman.id.au>
+> 7/ stdu and stdux only exist on PPC64, so no need to check for them
+> on PPC32
 
+I don't love that, because it adds two ifdefs in the C code and the gain
+must be pretty small.
 
 cheers
