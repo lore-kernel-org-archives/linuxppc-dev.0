@@ -1,17 +1,30 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w6bdl4XNTzDq5b
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Apr 2017 17:01:31 +1000 (AEST)
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH] powerpc/32: Move entry_32 functions just after HEAD functions.
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Scott Wood <oss@buserror.net>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Message-Id: <20170418070126.A18EF67952@localhost.localdomain>
-Date: Tue, 18 Apr 2017 09:01:26 +0200 (CEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w6bfF3RjpzDqFR
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Apr 2017 17:01:57 +1000 (AEST)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v3I6x8EO018696
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Apr 2017 03:01:42 -0400
+Received: from e13.ny.us.ibm.com (e13.ny.us.ibm.com [129.33.205.203])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 29w26aqxdy-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Apr 2017 03:01:41 -0400
+Received: from localhost
+ by e13.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Tue, 18 Apr 2017 03:01:40 -0400
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH V2] powerpc/mm: Update mm context addr limit correctly.
+Date: Tue, 18 Apr 2017 12:31:27 +0530
+Message-Id: <1492498887-10006-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,63 +34,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-By default, PPC8xx PINs an ITLB on the first 8M of memory in order
-to avoid any ITLB miss on kernel code.
-However, with some debug functions like DEBUG_PAGEALLOC and
-(soon to come) DEBUG_RODATA, the PINned TLB is invalidated soon
-after startup so ITLB missed start to happen also on the kernel code.
+We added the addr < TASK_SIZE check to avoid updating addr_limit unnecessarily and
+also to avoid calling slice_flush_segments on all the cpus. This had the side
+effect of having different behaviour when using an addr value above TASK_SIZE
+before updating addr_limit and after updating addr_limit as show by below
+output:
 
-In order to avoid any ITLB miss in a critical section, we have to
-ensure that their is no page boundary crossed between the setup of
-a new value in SRR0/SRR1 and the associated RFI. This cannot be done
-easily if entry_32 functions sits in the middle of other .text
-functions. By placing entry_32 just after the .head section (as already
-done for entry_64 on PPC64), we can more easily ensure the issue
-doesn't happen.
+requesting with hint 0x0
+Addr returned 0x7fff893a0000
+requesting with hint 0xffffffffffffffff
+Addr returned 0x7fff891b0000                  <===== 1st return
+requesting with hint 0x1000000000000
+Addr returned 0x1000000000000
+requesting with hint 0xffffffffffffffff
+Addr returned 0x1ffff89410000                <==== second return
 
-Ex: with this change, all entry_32 functions playing with srr0/srr1
-appears between 0xc0002000 and 0xc0002fff on PPC_8xx.
+After fix:
+requesting with hint 0x0
+Addr returned 0x7fff8bc00000
+requesting with hint 0xffffffffffffffff
+Addr returned 0x1ffff8bc80000                <==== 1st return
+requesting with hint 0x1000000000000
+Addr returned 0x1000000000000
+requesting with hint 0xffffffffffffffff
+Addr returned 0x1ffff8bc60000                <==== second return
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+This also bring the ABI in-line with what is proposed on x86. ie, to use
+a hint addr above 128TB up to and including (2^64)-1 as an indication to search
+the full address space.
+
+Fixes: f4ea6dcb08ea2c (powerpc/mm: Enable mappings above 128TB)
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/Makefile        | 2 +-
- arch/powerpc/kernel/Makefile | 4 ++--
- 2 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-index 19b0d1a81959..8aa1dafb14eb 100644
---- a/arch/powerpc/Makefile
-+++ b/arch/powerpc/Makefile
-@@ -243,7 +243,7 @@ head-$(CONFIG_40x)		:= arch/powerpc/kernel/head_40x.o
- head-$(CONFIG_44x)		:= arch/powerpc/kernel/head_44x.o
- head-$(CONFIG_FSL_BOOKE)	:= arch/powerpc/kernel/head_fsl_booke.o
+Changes from V1:
+* Update with correct Fixes: sha1
+* Also add information about how hint addr is used 
+
+ arch/powerpc/mm/mmap.c  | 6 ++++--
+ arch/powerpc/mm/slice.c | 3 ++-
+ 2 files changed, 6 insertions(+), 3 deletions(-)
+
+diff --git a/arch/powerpc/mm/mmap.c b/arch/powerpc/mm/mmap.c
+index b2111baa0da6..355b6fe8a1e6 100644
+--- a/arch/powerpc/mm/mmap.c
++++ b/arch/powerpc/mm/mmap.c
+@@ -97,7 +97,8 @@ radix__arch_get_unmapped_area(struct file *filp, unsigned long addr,
+ 	struct vm_area_struct *vma;
+ 	struct vm_unmapped_area_info info;
  
--head-$(CONFIG_PPC64)		+= arch/powerpc/kernel/entry_64.o
-+head-y				+= arch/powerpc/kernel/entry_$(BITS).o
- head-$(CONFIG_PPC_FPU)		+= arch/powerpc/kernel/fpu.o
- head-$(CONFIG_ALTIVEC)		+= arch/powerpc/kernel/vector.o
- head-$(CONFIG_PPC_OF_BOOT_TRAMPOLINE)  += arch/powerpc/kernel/prom_init.o
-diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
-index 811f441a125f..eb2db44c5fe9 100644
---- a/arch/powerpc/kernel/Makefile
-+++ b/arch/powerpc/kernel/Makefile
-@@ -90,7 +90,7 @@ extra-y				+= vmlinux.lds
+-	if (unlikely(addr > mm->context.addr_limit && addr < TASK_SIZE))
++	if (unlikely(addr > mm->context.addr_limit &&
++		     mm->context.addr_limit != TASK_SIZE))
+ 		mm->context.addr_limit = TASK_SIZE;
  
- obj-$(CONFIG_RELOCATABLE)	+= reloc_$(BITS).o
+ 	if (len > mm->context.addr_limit - mmap_min_addr)
+@@ -139,7 +140,8 @@ radix__arch_get_unmapped_area_topdown(struct file *filp,
+ 	unsigned long addr = addr0;
+ 	struct vm_unmapped_area_info info;
  
--obj-$(CONFIG_PPC32)		+= entry_32.o setup_32.o
-+obj-$(CONFIG_PPC32)		+= setup_32.o
- obj-$(CONFIG_PPC64)		+= dma-iommu.o iommu.o
- obj-$(CONFIG_KGDB)		+= kgdb.o
- obj-$(CONFIG_BOOTX_TEXT)	+= btext.o
-@@ -154,7 +154,7 @@ UBSAN_SANITIZE_vdso.o := n
+-	if (unlikely(addr > mm->context.addr_limit && addr < TASK_SIZE))
++	if (unlikely(addr > mm->context.addr_limit &&
++		     mm->context.addr_limit != TASK_SIZE))
+ 		mm->context.addr_limit = TASK_SIZE;
  
- extra-$(CONFIG_PPC_FPU)		+= fpu.o
- extra-$(CONFIG_ALTIVEC)		+= vector.o
--extra-$(CONFIG_PPC64)		+= entry_64.o
-+extra-y				+= entry_$(BITS).o
- extra-$(CONFIG_PPC_OF_BOOT_TRAMPOLINE)	+= prom_init.o
- 
- extra-y				+= systbl_chk.i
+ 	/* requested length too big for entire address space */
+diff --git a/arch/powerpc/mm/slice.c b/arch/powerpc/mm/slice.c
+index 251b6bae7023..2d2d9760d057 100644
+--- a/arch/powerpc/mm/slice.c
++++ b/arch/powerpc/mm/slice.c
+@@ -419,7 +419,8 @@ unsigned long slice_get_unmapped_area(unsigned long addr, unsigned long len,
+ 	/*
+ 	 * Check if we need to expland slice area.
+ 	 */
+-	if (unlikely(addr > mm->context.addr_limit && addr < TASK_SIZE)) {
++	if (unlikely(addr > mm->context.addr_limit &&
++		     mm->context.addr_limit != TASK_SIZE)) {
+ 		mm->context.addr_limit = TASK_SIZE;
+ 		on_each_cpu(slice_flush_segments, mm, 1);
+ 	}
 -- 
-2.12.0
+2.7.4
