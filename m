@@ -1,18 +1,20 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
- [IPv6:2607:f8b0:400e:c05::244])
+Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
+ [IPv6:2607:f8b0:400e:c00::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w6vsS0nPVzDq8V
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2017 05:12:44 +1000 (AEST)
-Received: by mail-pg0-x244.google.com with SMTP id 34so337299pgx.3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Apr 2017 12:12:43 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w6vsW2lsBzDq9B
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2017 05:12:47 +1000 (AEST)
+Received: by mail-pf0-x244.google.com with SMTP id i5so288559pfc.3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Apr 2017 12:12:47 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
-Cc: Nicholas Piggin <npiggin@gmail.com>
-Subject: [PATCH 2/4] powerpc/64s: POWER9 no LPCR VRMASD bits
-Date: Wed, 19 Apr 2017 05:12:17 +1000
-Message-Id: <20170418191220.3166-3-npiggin@gmail.com>
+Cc: Nicholas Piggin <npiggin@gmail.com>,
+	devicetree@vger.kernel.org
+Subject: [PATCH 3/4] of/fdt: introduce of_scan_flat_dt_subnodes and
+ of_get_flat_dt_phandle
+Date: Wed, 19 Apr 2017 05:12:18 +1000
+Message-Id: <20170418191220.3166-4-npiggin@gmail.com>
 In-Reply-To: <20170418191220.3166-1-npiggin@gmail.com>
 References: <20170418191220.3166-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,100 +26,97 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-POWER9/ISAv3 has no VRMASD field in LPCR. Don't set reserved bits.
+Introduce primitives for FDT parsing. These will be used for powerpc
+cpufeatures node scanning, which has quite complex structure but should
+be processed early.
 
+Cc: devicetree@vger.kernel.org
+Acked-by: Rob Herring <robh@kernel.org>
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/kernel/cpu_setup_power.S | 21 ++++++++++++---------
- 1 file changed, 12 insertions(+), 9 deletions(-)
+ drivers/of/fdt.c       | 38 ++++++++++++++++++++++++++++++++++++++
+ include/linux/of_fdt.h |  6 ++++++
+ 2 files changed, 44 insertions(+)
 
-diff --git a/arch/powerpc/kernel/cpu_setup_power.S b/arch/powerpc/kernel/cpu_setup_power.S
-index 1fce4ddd2e6c..10cb2896b2ae 100644
---- a/arch/powerpc/kernel/cpu_setup_power.S
-+++ b/arch/powerpc/kernel/cpu_setup_power.S
-@@ -30,7 +30,7 @@ _GLOBAL(__setup_cpu_power7)
- 	mtspr	SPRN_LPID,r0
- 	mfspr	r3,SPRN_LPCR
- 	li	r4,(LPCR_LPES1 >> LPCR_LPES_SH)
--	bl	__init_LPCR
-+	bl	__init_LPCR_ISA206
- 	bl	__init_tlb_power7
- 	mtlr	r11
- 	blr
-@@ -44,7 +44,7 @@ _GLOBAL(__restore_cpu_power7)
- 	mtspr	SPRN_LPID,r0
- 	mfspr	r3,SPRN_LPCR
- 	li	r4,(LPCR_LPES1 >> LPCR_LPES_SH)
--	bl	__init_LPCR
-+	bl	__init_LPCR_ISA206
- 	bl	__init_tlb_power7
- 	mtlr	r11
- 	blr
-@@ -62,7 +62,7 @@ _GLOBAL(__setup_cpu_power8)
- 	mfspr	r3,SPRN_LPCR
- 	ori	r3, r3, LPCR_PECEDH
- 	li	r4,0 /* LPES = 0 */
--	bl	__init_LPCR
-+	bl	__init_LPCR_ISA206
- 	bl	__init_HFSCR
- 	bl	__init_tlb_power8
- 	bl	__init_PMU_HV
-@@ -84,7 +84,7 @@ _GLOBAL(__restore_cpu_power8)
- 	mfspr   r3,SPRN_LPCR
- 	ori	r3, r3, LPCR_PECEDH
- 	li	r4,0 /* LPES = 0 */
--	bl	__init_LPCR
-+	bl	__init_LPCR_ISA206
- 	bl	__init_HFSCR
- 	bl	__init_tlb_power8
- 	bl	__init_PMU_HV
-@@ -108,7 +108,7 @@ _GLOBAL(__setup_cpu_power9)
- 	LOAD_REG_IMMEDIATE(r4, LPCR_UPRT | LPCR_HR)
- 	andc	r3, r3, r4
- 	li	r4,0 /* LPES = 0 */
--	bl	__init_LPCR
-+	bl	__init_LPCR_ISA300
- 	bl	__init_HFSCR
- 	bl	__init_tlb_power9
- 	bl	__init_PMU_HV
-@@ -132,7 +132,7 @@ _GLOBAL(__restore_cpu_power9)
- 	LOAD_REG_IMMEDIATE(r4, LPCR_UPRT | LPCR_HR)
- 	andc	r3, r3, r4
- 	li	r4,0 /* LPES = 0 */
--	bl	__init_LPCR
-+	bl	__init_LPCR_ISA300
- 	bl	__init_HFSCR
- 	bl	__init_tlb_power9
- 	bl	__init_PMU_HV
-@@ -150,7 +150,7 @@ __init_hvmode_206:
- 	std	r5,CPU_SPEC_FEATURES(r4)
- 	blr
+diff --git a/drivers/of/fdt.c b/drivers/of/fdt.c
+index e5ce4b59e162..961ca97072a9 100644
+--- a/drivers/of/fdt.c
++++ b/drivers/of/fdt.c
+@@ -754,6 +754,36 @@ int __init of_scan_flat_dt(int (*it)(unsigned long node,
+ }
  
--__init_LPCR:
-+__init_LPCR_ISA206:
- 	/* Setup a sane LPCR:
- 	 *   Called with initial LPCR in R3 and desired LPES 2-bit value in R4
- 	 *
-@@ -163,6 +163,11 @@ __init_LPCR:
- 	 *
- 	 * Other bits untouched for now
- 	 */
-+	li	r5,0x10
-+	rldimi	r3,r5, LPCR_VRMASD_SH, 64-LPCR_VRMASD_SH-5
+ /**
++ * of_scan_flat_dt_subnodes - scan sub-nodes of a node call callback on each.
++ * @it: callback function
++ * @data: context data pointer
++ *
++ * This function is used to scan sub-nodes of a node.
++ */
++int __init of_scan_flat_dt_subnodes(unsigned long parent,
++				    int (*it)(unsigned long node,
++					      const char *uname,
++					      void *data),
++				    void *data)
++{
++	const void *blob = initial_boot_params;
++	int node;
 +
-+	/* POWER9 has no VRMASD */
-+__init_LPCR_ISA300:
- 	rldimi	r3,r4, LPCR_LPES_SH, 64-LPCR_LPES_SH-2
- 	ori	r3,r3,(LPCR_PECE0|LPCR_PECE1|LPCR_PECE2)
- 	li	r5,4
-@@ -170,8 +175,6 @@ __init_LPCR:
- 	clrrdi	r3,r3,1		/* clear HDICE */
- 	li	r5,4
- 	rldimi	r3,r5, LPCR_VC_SH, 0
--	li	r5,0x10
--	rldimi	r3,r5, LPCR_VRMASD_SH, 64-LPCR_VRMASD_SH-5
- 	mtspr	SPRN_LPCR,r3
- 	isync
- 	blr
++	fdt_for_each_subnode(node, blob, parent) {
++		const char *pathp;
++		int rc;
++
++		pathp = fdt_get_name(blob, node, NULL);
++		if (*pathp == '/')
++			pathp = kbasename(pathp);
++		rc = it(node, pathp, data);
++		if (rc)
++			return rc;
++	}
++	return 0;
++}
++
++/**
+  * of_get_flat_dt_subnode_by_name - get the subnode by given name
+  *
+  * @node: the parent node
+@@ -812,6 +842,14 @@ int __init of_flat_dt_match(unsigned long node, const char *const *compat)
+ 	return of_fdt_match(initial_boot_params, node, compat);
+ }
+ 
++/**
++ * of_get_flat_dt_prop - Given a node in the flat blob, return the phandle
++ */
++uint32_t __init of_get_flat_dt_phandle(unsigned long node)
++{
++	return fdt_get_phandle(initial_boot_params, node);
++}
++
+ struct fdt_scan_status {
+ 	const char *name;
+ 	int namelen;
+diff --git a/include/linux/of_fdt.h b/include/linux/of_fdt.h
+index 271b3fdf0070..1dfbfd0d8040 100644
+--- a/include/linux/of_fdt.h
++++ b/include/linux/of_fdt.h
+@@ -54,6 +54,11 @@ extern char __dtb_end[];
+ extern int of_scan_flat_dt(int (*it)(unsigned long node, const char *uname,
+ 				     int depth, void *data),
+ 			   void *data);
++extern int of_scan_flat_dt_subnodes(unsigned long node,
++				    int (*it)(unsigned long node,
++					      const char *uname,
++					      void *data),
++				    void *data);
+ extern int of_get_flat_dt_subnode_by_name(unsigned long node,
+ 					  const char *uname);
+ extern const void *of_get_flat_dt_prop(unsigned long node, const char *name,
+@@ -62,6 +67,7 @@ extern int of_flat_dt_is_compatible(unsigned long node, const char *name);
+ extern int of_flat_dt_match(unsigned long node, const char *const *matches);
+ extern unsigned long of_get_flat_dt_root(void);
+ extern int of_get_flat_dt_size(void);
++extern uint32_t of_get_flat_dt_phandle(unsigned long node);
+ 
+ extern int early_init_dt_scan_chosen(unsigned long node, const char *uname,
+ 				     int depth, void *data);
 -- 
 2.11.0
