@@ -1,30 +1,23 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w6bfF3RjpzDqFR
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Apr 2017 17:01:57 +1000 (AEST)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v3I6x8EO018696
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Apr 2017 03:01:42 -0400
-Received: from e13.ny.us.ibm.com (e13.ny.us.ibm.com [129.33.205.203])
- by mx0a-001b2d01.pphosted.com with ESMTP id 29w26aqxdy-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Apr 2017 03:01:41 -0400
-Received: from localhost
- by e13.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Tue, 18 Apr 2017 03:01:40 -0400
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH V2] powerpc/mm: Update mm context addr limit correctly.
-Date: Tue, 18 Apr 2017 12:31:27 +0530
-Message-Id: <1492498887-10006-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w6dHT5RNGzDq5b
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Apr 2017 18:15:49 +1000 (AEST)
+Subject: Re: [PATCH] powerpc/32: Fix protection of kernel RAM after freeing
+ unused memory
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Scott Wood <oss@buserror.net>
+References: <20170414131126.AA07A67422@localhost.localdomain>
+ <87mvbe6wxa.fsf@concordia.ellerman.id.au>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+From: Christophe LEROY <christophe.leroy@c-s.fr>
+Message-ID: <4a39282c-2c69-1a09-ef50-b5c8c25d0a02@c-s.fr>
+Date: Tue, 18 Apr 2017 10:15:16 +0200
+MIME-Version: 1.0
+In-Reply-To: <87mvbe6wxa.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset=windows-1252; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,84 +27,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We added the addr < TASK_SIZE check to avoid updating addr_limit unnecessarily and
-also to avoid calling slice_flush_segments on all the cpus. This had the side
-effect of having different behaviour when using an addr value above TASK_SIZE
-before updating addr_limit and after updating addr_limit as show by below
-output:
 
-requesting with hint 0x0
-Addr returned 0x7fff893a0000
-requesting with hint 0xffffffffffffffff
-Addr returned 0x7fff891b0000                  <===== 1st return
-requesting with hint 0x1000000000000
-Addr returned 0x1000000000000
-requesting with hint 0xffffffffffffffff
-Addr returned 0x1ffff89410000                <==== second return
 
-After fix:
-requesting with hint 0x0
-Addr returned 0x7fff8bc00000
-requesting with hint 0xffffffffffffffff
-Addr returned 0x1ffff8bc80000                <==== 1st return
-requesting with hint 0x1000000000000
-Addr returned 0x1000000000000
-requesting with hint 0xffffffffffffffff
-Addr returned 0x1ffff8bc60000                <==== second return
+Le 18/04/2017 à 08:40, Michael Ellerman a écrit :
+> Christophe Leroy <christophe.leroy@c-s.fr> writes:
+>
+>
+>> diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
+>> index a65c0b4c0669..d506bd61b629 100644
+>> --- a/arch/powerpc/mm/pgtable_32.c
+>> +++ b/arch/powerpc/mm/pgtable_32.c
+>> @@ -323,6 +323,26 @@ get_pteptr(struct mm_struct *mm, unsigned long addr, pte_t **ptep, pmd_t **pmdp)
+>>          return(retval);
+>>  }
+>>
+>> +void remap_init_ram(void)
+>> +{
+>> +	unsigned long start = (unsigned long)_sinittext & PAGE_MASK;
+>> +	unsigned long end = (unsigned long)_einittext;
+>> +	unsigned long va;
+>> +
+>> +	for (va = start; va < end; va += PAGE_SIZE) {
+>> +		pte_t *kpte;
+>> +		pmd_t *kpmd;
+>> +		pte_t pte = pfn_pte(__pa(va) >> PAGE_SHIFT, PAGE_KERNEL);
+>> +
+>> +		if (!get_pteptr(&init_mm, va, &kpte, &kpmd))
+>> +			continue;
+>> +		__set_pte_at(&init_mm, va, kpte, pte, 0);
+>> +		wmb();
+>> +		pte_unmap(kpte);
+>> +	}
+>> +	flush_tlb_kernel_range(start, end);
+>> +}
+>
+> Can we just use unmap_kernel_range() ?
 
-This also bring the ABI in-line with what is proposed on x86. ie, to use
-a hint addr above 128TB up to and including (2^64)-1 as an indication to search
-the full address space.
+We only want to remove the X bit.
+I think unmap_kernel_range() will unmap the area, wheareas we want to 
+keep it as part of the linear data area.
 
-Fixes: f4ea6dcb08ea2c (powerpc/mm: Enable mappings above 128TB)
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
----
+Christophe
 
-Changes from V1:
-* Update with correct Fixes: sha1
-* Also add information about how hint addr is used 
-
- arch/powerpc/mm/mmap.c  | 6 ++++--
- arch/powerpc/mm/slice.c | 3 ++-
- 2 files changed, 6 insertions(+), 3 deletions(-)
-
-diff --git a/arch/powerpc/mm/mmap.c b/arch/powerpc/mm/mmap.c
-index b2111baa0da6..355b6fe8a1e6 100644
---- a/arch/powerpc/mm/mmap.c
-+++ b/arch/powerpc/mm/mmap.c
-@@ -97,7 +97,8 @@ radix__arch_get_unmapped_area(struct file *filp, unsigned long addr,
- 	struct vm_area_struct *vma;
- 	struct vm_unmapped_area_info info;
- 
--	if (unlikely(addr > mm->context.addr_limit && addr < TASK_SIZE))
-+	if (unlikely(addr > mm->context.addr_limit &&
-+		     mm->context.addr_limit != TASK_SIZE))
- 		mm->context.addr_limit = TASK_SIZE;
- 
- 	if (len > mm->context.addr_limit - mmap_min_addr)
-@@ -139,7 +140,8 @@ radix__arch_get_unmapped_area_topdown(struct file *filp,
- 	unsigned long addr = addr0;
- 	struct vm_unmapped_area_info info;
- 
--	if (unlikely(addr > mm->context.addr_limit && addr < TASK_SIZE))
-+	if (unlikely(addr > mm->context.addr_limit &&
-+		     mm->context.addr_limit != TASK_SIZE))
- 		mm->context.addr_limit = TASK_SIZE;
- 
- 	/* requested length too big for entire address space */
-diff --git a/arch/powerpc/mm/slice.c b/arch/powerpc/mm/slice.c
-index 251b6bae7023..2d2d9760d057 100644
---- a/arch/powerpc/mm/slice.c
-+++ b/arch/powerpc/mm/slice.c
-@@ -419,7 +419,8 @@ unsigned long slice_get_unmapped_area(unsigned long addr, unsigned long len,
- 	/*
- 	 * Check if we need to expland slice area.
- 	 */
--	if (unlikely(addr > mm->context.addr_limit && addr < TASK_SIZE)) {
-+	if (unlikely(addr > mm->context.addr_limit &&
-+		     mm->context.addr_limit != TASK_SIZE)) {
- 		mm->context.addr_limit = TASK_SIZE;
- 		on_each_cpu(slice_flush_segments, mm, 1);
- 	}
--- 
-2.7.4
+>
+> Is this sufficient on all 32-bit PPC? (I have no idea)
+>
+> cheers
+>
