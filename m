@@ -1,34 +1,36 @@
 Return-Path: <tyreld@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w6Qmh4jV7zDq7Z
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Apr 2017 10:21:56 +1000 (AEST)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v3I0G2x0021271
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Apr 2017 20:21:52 -0400
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
- by mx0b-001b2d01.pphosted.com with ESMTP id 29vwu0yyhy-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w6QrF65GBzDq7Z
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Apr 2017 10:25:01 +1000 (AEST)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v3I0NbN3145144
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Apr 2017 20:24:46 -0400
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 29w0p6grx6-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Apr 2017 20:21:52 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Apr 2017 20:24:46 -0400
 Received: from localhost
- by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <tyreld@linux.vnet.ibm.com>;
- Mon, 17 Apr 2017 18:21:51 -0600
+ Mon, 17 Apr 2017 18:24:45 -0600
 From: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
 To: mpe@ellerman.id.au
 Cc: benh@kernel.crashing.org, linuxppc-dev@lists.ozlabs.org,
  nfont@linux.vnet.ibm.com, bharata@linux.vnet.ibm.com,
  sachinp@linux.vnet.ibm.com, devicetree@vger.kernel.org,
- pantelis.antoniou@konsulko.com, robh+dt@kernel.org,
+ robh+dt@kernel.org, sudeep.karkadanagesha@arm.com,
  Tyrel Datwyler <tyreld@linux.vnet.ibm.com>, stable@vger.kernel.org
-Subject: [PATCH 1/2] powerpc/pseries: fix of_node_put() underflow during dlpar
- remove
-Date: Mon, 17 Apr 2017 20:21:40 -0400
-Message-Id: <1492474900-10658-1-git-send-email-tyreld@linux.vnet.ibm.com>
+Subject: [PATCH 2/2] powerpc/sysfs: fix reference leak of cpu device_nodes
+ present at boot
+Date: Mon, 17 Apr 2017 20:24:39 -0400
+In-Reply-To: <1492474900-10658-1-git-send-email-tyreld@linux.vnet.ibm.com>
+References: <1492474900-10658-1-git-send-email-tyreld@linux.vnet.ibm.com>
+Message-Id: <1492475079-10740-1-git-send-email-tyreld@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,48 +40,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Historically device_node references were tracked using a kref embedded
-as a struct field. Commit 75b57ecf9 refactored device_nodes to be
-kobjects such that the device tree could by more simply exposed to
-userspace using sysfs. Commit 0829f6d1f6 followed up these changes to
-better control the kobject lifecycle and in particular the referecne
-counting via of_node_get(), of_node_put(), and of_node_init(). A side
-effect of this second commit was that it introduced an of_node_put()
-call when a dynamic node is detached that removes the initial kobj
-reference created by of_node_init() . Traditionally as the original
-dynamic device node user the pseries code had assumed responsibilty for
-releasing this final reference in its platform specific DLPAR detach code.
+For cpus present at boot each logical cpu acquires a reference to the
+associated device node of the core. This happens in register_cpu() which
+is called by topology_init(). The result of this is that we end up with
+a reference held by each thread of the core. However, these references
+are never freed if the cpu core is dlpar removed.
 
-This patch fixes a refcount underflow introduced by commit 0829f6d1f6,
-and recently exposed by the upstreaming of the recount API.
-
-Messages like the following are no longer seen in the kernel log with this
-patch following DLPAR remove operations of cpus and pci devices.
-
-  [  269.589441] rpadlpar_io: slot PHB 72 removed
-  [  270.589997] refcount_t: underflow; use-after-free.
-  [  270.590019] ------------[ cut here ]------------
-  [  270.590025] WARNING: CPU: 5 PID: 3335 at
-     lib/refcount.c:128 refcount_sub_and_test+0xf4/0x110
+This patch fixes the reference leaks by acquiring and releasing the
+references in the cpu hotplug callbacks un/register_cpu_online().
+With this patch symmetric reference counting is observed with both cpus
+present at boot, and those dlpar added after boot.
 
 Cc: stable@vger.kernel.org
-Fixes: 0829f6d1f69e ("of: device_node kobject lifecycle fixes")
+fixes: f86e4718f24b ("driver/core: cpu: initialize of_node in cpu's device struture")
 Signed-off-by: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
 ---
- arch/powerpc/platforms/pseries/dlpar.c | 1 -
- 1 file changed, 1 deletion(-)
+ arch/powerpc/kernel/sysfs.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-diff --git a/arch/powerpc/platforms/pseries/dlpar.c b/arch/powerpc/platforms/pseries/dlpar.c
-index 193e052..bda18d8 100644
---- a/arch/powerpc/platforms/pseries/dlpar.c
-+++ b/arch/powerpc/platforms/pseries/dlpar.c
-@@ -288,7 +288,6 @@ int dlpar_detach_node(struct device_node *dn)
- 	if (rc)
- 		return rc;
+diff --git a/arch/powerpc/kernel/sysfs.c b/arch/powerpc/kernel/sysfs.c
+index c1fb255..949957b 100644
+--- a/arch/powerpc/kernel/sysfs.c
++++ b/arch/powerpc/kernel/sysfs.c
+@@ -710,6 +710,10 @@ static int register_cpu_online(unsigned int cpu)
+ 	struct device_attribute *attrs, *pmc_attrs;
+ 	int i, nattrs;
  
--	of_node_put(dn); /* Must decrement the refcount */
++	/* For cpus present at boot a reference was already grabbed in register_cpu() */
++	if (!s->of_node)
++		s->of_node = of_get_cpu_node(cpu, NULL);
++
+ #ifdef CONFIG_PPC64
+ 	if (cpu_has_feature(CPU_FTR_SMT))
+ 		device_create_file(s, &dev_attr_smt_snooze_delay);
+@@ -864,6 +868,8 @@ static int unregister_cpu_online(unsigned int cpu)
+ 	}
+ #endif
+ 	cacheinfo_cpu_offline(cpu);
++	of_node_put(s->of_node);
++	s->of_node = NULL;
+ #endif /* CONFIG_HOTPLUG_CPU */
  	return 0;
  }
- 
 -- 
 1.8.3.1
