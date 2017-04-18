@@ -1,23 +1,16 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w6WLQ250KzDq5b
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Apr 2017 13:47:58 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w6Y364bGyzDq5b
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Apr 2017 15:04:50 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Anshuman Khandual <khandual@linux.vnet.ibm.com>,
- Michal Suchanek <msuchanek@suse.de>, linuxppc-dev@lists.ozlabs.org
-Cc: "'Kirill A. Shutemov'" <kirill.shutemov@linux.intel.com>
-Subject: Re: [PATCH] selftests/powerpc/mm: Add a test for virtual address
- mapping
-In-Reply-To: <adcab8f9-8c11-0678-a87f-8adb80d58a67@linux.vnet.ibm.com>
-References: <20170412094112.13181-1-khandual@linux.vnet.ibm.com>
- <20170414221857.58171fce@neko>
- <adcab8f9-8c11-0678-a87f-8adb80d58a67@linux.vnet.ibm.com>
-Date: Tue, 18 Apr 2017 13:47:54 +1000
-Message-ID: <87y3uy74wl.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+To: linuxppc-dev@ozlabs.org
+Cc: npiggin@gmail.com,
+	mahesh@linux.vnet.ibm.com
+Subject: [PATCH] powerpc/64: Fix HMI exception on LE with CONFIG_RELOCATABLE=y
+Date: Tue, 18 Apr 2017 15:04:46 +1000
+Message-Id: <1492491886-29233-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,31 +20,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Anshuman Khandual <khandual@linux.vnet.ibm.com> writes:
+Prior to commit 2337d207288f ("powerpc/64: CONFIG_RELOCATABLE support for hmi
+interrupts"), the branch from hmi_exception_early() to hmi_exception_realmode()
+was just a bl hmi_exception_realmode, which the linker would turn into a bl to
+the local entry point of hmi_exception_realmode. This was broken when
+CONFIG_RELOCATABLE=y because hmi_exception_realmode() is not in the low part of
+the kernel text that is copied down to 0x0.
 
-> On 04/15/2017 01:48 AM, Michal Suchanek wrote:
->> Hello,
->> 
->> On Wed, 12 Apr 2017 15:11:12 +0530
->> Anshuman Khandual <khandual@linux.vnet.ibm.com> wrote:
->> 
->>> This verifies virtual address mapping below and above the
->>> 128TB range and makes sure that address returned are within
->>> the expected range depending upon the hint passed from the
->>> user space.
->> 
->> This description does not mention anything PPC specific. Can this be
->> generalized to work with Intel L5 enabled kernel as well?
->
-> Hmm, I am not completely aware about the proposed mmap interface
-> for 128TB and beyond till 512TB by Kirill on x86. If both powerpc
-> and x86 will have the same semantics, then this test is generic
-> enough to cover both the architectures and will move it into
-> selftests/vm/ instead of current selftests/powerpc/mm.
+But in fixing that, we added a new bug on little endian kernels. Because the
+branch is now a bctrl when CONFIG_RELOCATABLE=y, we branch to the global entry
+point of hmi_exception_realmode(). The global entry point must be called with
+r12 containing the address of hmi_exception_realmode(), because it uses that
+value to calculate the TOC value (r2).
 
-I think it can be made generic, maybe it needs a few #ifdefs, but that's
-fine for a selftest.
+This may manifest as a checkstop, because we take a junk value from r12 which
+came from HSRR1, add a small constant to it and then use that as the TOC
+pointer. The HSRR1 value will have 0x9 as the top nibble, which puts it above
+RAM and somewhere in MMIO space.
 
-So yeah if you can move it to selftests/vm I think that would be better.
+Fix it by changing the BRANCH_LINK_TO_FAR() macro to always use r12 to load the
+label we're branching to. This means r12 will be setup correctly on LE, fixing
+this bug, and r12 is also volatile across function calls on BE so it's a good
+choice anyway.
 
-cheers
+Fixes: 2337d207288f ("powerpc/64: CONFIG_RELOCATABLE support for hmi interrupts")
+Reported-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+Acked-by: Nicholas Piggin <npiggin@gmail.com>
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/include/asm/exception-64s.h | 8 ++++----
+ arch/powerpc/kernel/exceptions-64s.S     | 2 +-
+ 2 files changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/exception-64s.h b/arch/powerpc/include/asm/exception-64s.h
+index 14752eee3d0c..ed3beadd2cc5 100644
+--- a/arch/powerpc/include/asm/exception-64s.h
++++ b/arch/powerpc/include/asm/exception-64s.h
+@@ -236,9 +236,9 @@ END_FTR_SECTION_NESTED(ftr,ftr,943)
+ 	mtctr	reg;							\
+ 	bctr
+ 
+-#define BRANCH_LINK_TO_FAR(reg, label)					\
+-	__LOAD_FAR_HANDLER(reg, label);					\
+-	mtctr	reg;							\
++#define BRANCH_LINK_TO_FAR(label)					\
++	__LOAD_FAR_HANDLER(r12, label);					\
++	mtctr	r12;							\
+ 	bctrl
+ 
+ /*
+@@ -265,7 +265,7 @@ END_FTR_SECTION_NESTED(ftr,ftr,943)
+ #define BRANCH_TO_COMMON(reg, label)					\
+ 	b	label
+ 
+-#define BRANCH_LINK_TO_FAR(reg, label)					\
++#define BRANCH_LINK_TO_FAR(label)					\
+ 	bl	label
+ 
+ #define BRANCH_TO_KVM(reg, label)					\
+diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+index 857bf7c5b946..6353019966e6 100644
+--- a/arch/powerpc/kernel/exceptions-64s.S
++++ b/arch/powerpc/kernel/exceptions-64s.S
+@@ -982,7 +982,7 @@ TRAMP_REAL_BEGIN(hmi_exception_early)
+ 	EXCEPTION_PROLOG_COMMON_2(PACA_EXGEN)
+ 	EXCEPTION_PROLOG_COMMON_3(0xe60)
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD
+-	BRANCH_LINK_TO_FAR(r4, hmi_exception_realmode)
++	BRANCH_LINK_TO_FAR(hmi_exception_realmode) /* Function call ABI */
+ 	/* Windup the stack. */
+ 	/* Move original HSRR0 and HSRR1 into the respective regs */
+ 	ld	r9,_MSR(r1)
+-- 
+2.7.4
