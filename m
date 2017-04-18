@@ -2,9 +2,9 @@ Return-Path: <jolsa@redhat.com>
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w6vRN16stzDq99
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2017 04:53:36 +1000 (AEST)
-Date: Tue, 18 Apr 2017 20:53:31 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w6vRX0MFnzDq9B
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2017 04:53:44 +1000 (AEST)
+Date: Tue, 18 Apr 2017 20:53:37 +0200
 From: Jiri Olsa <jolsa@redhat.com>
 To: Jin Yao <yao.jin@linux.intel.com>
 Cc: acme@kernel.org, jolsa@kernel.org, peterz@infradead.org,
@@ -13,7 +13,7 @@ Cc: acme@kernel.org, jolsa@kernel.org, peterz@infradead.org,
  kan.liang@intel.com, yao.jin@intel.com, linuxppc-dev@lists.ozlabs.org
 Subject: Re: [PATCH v4 4/5] perf report: Show branch type statistics for
  stdio mode
-Message-ID: <20170418185331.GC15584@krava>
+Message-ID: <20170418185337.GD15584@krava>
 References: <1491949266-6835-1-git-send-email-yao.jin@linux.intel.com>
  <1491949266-6835-5-git-send-email-yao.jin@linux.intel.com>
 MIME-Version: 1.0
@@ -32,33 +32,18 @@ On Wed, Apr 12, 2017 at 06:21:05AM +0800, Jin Yao wrote:
 
 SNIP
 
-> +const char *branch_type_name(int type)
+> +static int hist_iter__branch_callback(struct hist_entry_iter *iter,
+> +				      struct addr_location *al __maybe_unused,
+> +				      bool single __maybe_unused,
+> +				      void *arg)
 > +{
-> +	const char *branch_names[PERF_BR_MAX] = {
-> +		"N/A",
-> +		"JCC",
-> +		"JMP",
-> +		"IND_JMP",
-> +		"CALL",
-> +		"IND_CALL",
-> +		"RET",
-> +		"SYSCALL",
-> +		"SYSRET",
-> +		"IRQ",
-> +		"INT",
-> +		"IRET",
-> +		"FAR_BRANCH",
-> +	};
+> +	struct hist_entry *he = iter->he;
+> +	struct report *rep = arg;
+> +	struct branch_info *bi;
 > +
-> +	if ((type >= 0) && (type < PERF_BR_MAX))
-> +		return branch_names[type];
-> +
-> +	return NULL;
+> +	if (sort__mode == SORT_MODE__BRANCH) {
 
-looks like we should add util/branch.c with above functions
-and merge it with util/parse-branch-options.c
+is this check necessary? the hist_iter__branch_callback
+was set based on this check
 
-we create new file even for less code ;-)
-
-thanks,
 jirka
