@@ -2,9 +2,9 @@ Return-Path: <jolsa@redhat.com>
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w6vR43qqYzDq5b
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2017 04:53:20 +1000 (AEST)
-Date: Tue, 18 Apr 2017 20:53:14 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w6vRD26zLzDqC6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2017 04:53:28 +1000 (AEST)
+Date: Tue, 18 Apr 2017 20:53:23 +0200
 From: Jiri Olsa <jolsa@redhat.com>
 To: Jin Yao <yao.jin@linux.intel.com>
 Cc: acme@kernel.org, jolsa@kernel.org, peterz@infradead.org,
@@ -12,7 +12,7 @@ Cc: acme@kernel.org, jolsa@kernel.org, peterz@infradead.org,
  Linux-kernel@vger.kernel.org, ak@linux.intel.com,
  kan.liang@intel.com, yao.jin@intel.com, linuxppc-dev@lists.ozlabs.org
 Subject: Re: [PATCH v4 5/5] perf report: Show branch type in callchain entry
-Message-ID: <20170418185314.GA15584@krava>
+Message-ID: <20170418185323.GB15584@krava>
 References: <1491949266-6835-1-git-send-email-yao.jin@linux.intel.com>
  <1491949266-6835-6-git-send-email-yao.jin@linux.intel.com>
 MIME-Version: 1.0
@@ -31,50 +31,58 @@ On Wed, Apr 12, 2017 at 06:21:06AM +0800, Jin Yao wrote:
 
 SNIP
 
-> +static int branch_type_str(struct branch_type_stat *stat,
-> +			   char *bf, int bfsize)
-> +{
-> +	int i, j = 0, printed = 0;
-> +	u64 total = 0;
+>  static int counts_str_build(char *bf, int bfsize,
+>  			     u64 branch_count, u64 predicted_count,
+>  			     u64 abort_count, u64 cycles_count,
+> -			     u64 iter_count, u64 samples_count)
+> +			     u64 iter_count, u64 samples_count,
+> +			     struct branch_type_stat *brtype_stat)
+>  {
+> -	double predicted_percent = 0.0;
+> -	const char *null_str = "";
+> -	char iter_str[32];
+> -	char cycle_str[32];
+> -	char *istr, *cstr;
+>  	u64 cycles;
+> +	int printed, i = 0;
+>  
+>  	if (branch_count == 0)
+>  		return scnprintf(bf, bfsize, " (calltrace)");
+>  
+> +	printed = branch_type_str(brtype_stat, bf, bfsize);
+> +	if (printed)
+> +		i++;
 > +
-> +	for (i = 0; i < PERF_BR_MAX; i++)
-> +		total += stat->counts[i];
-> +
-> +	if (total == 0)
-> +		return 0;
-> +
-> +	printed += scnprintf(bf + printed, bfsize - printed, " (");
-> +
-> +	if (stat->jcc_fwd > 0) {
-> +		j++;
-> +		printed += scnprintf(bf + printed, bfsize - printed,
-> +				     "JCC forward");
-> +	}
-> +
-> +	if (stat->jcc_bwd > 0) {
-> +		if (j++)
+>  	cycles = cycles_count / branch_count;
+> +	if (cycles) {
+> +		if (i++)
 > +			printed += scnprintf(bf + printed, bfsize - printed,
-> +					     " JCC backward");
+> +				" cycles:%" PRId64 "", cycles);
 > +		else
 > +			printed += scnprintf(bf + printed, bfsize - printed,
-> +					     "JCC backward");
+> +				" (cycles:%" PRId64 "", cycles);
 > +	}
-> +
-> +	if (stat->cross_4k > 0) {
-> +		if (j++)
+>  
+>  	if (iter_count && samples_count) {
+> -		if (cycles > 0)
+> -			scnprintf(iter_str, sizeof(iter_str),
+> -				 " iterations:%" PRId64 "",
+> -				 iter_count / samples_count);
+> +		if (i++)
 > +			printed += scnprintf(bf + printed, bfsize - printed,
-> +					     " CROSS_4K");
-> +		else
-> +			printed += scnprintf(bf + printed, bfsize - printed,
-> +					     "CROSS_4K");
-> +	}
+> +				" iterations:%" PRId64 "",
+> +				iter_count / samples_count);
+>  		else
+> -			scnprintf(iter_str, sizeof(iter_str),
+> -				 "iterations:%" PRId64 "",
+> -				 iter_count / samples_count);
+> -		istr = iter_str;
 
-could that 2 legs if be shortened to just one scnprintf like (untested):
+could you please put the change from using iter_str
+to bf into separate patch before the actual branch
+display change?
 
-   printed += scnprintf(bf + printed, bfsize - printed, "%s%s", j++ ? " " : "", "CROSS_4K");
-
-I'd also probably use some kind of macro or function
-with all that similar code, but I dont insist ;-)
+it's hard to see if anything is broken ;-)
 
 thanks,
 jirka
