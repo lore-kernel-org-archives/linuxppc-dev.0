@@ -3,29 +3,29 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w6rz66kH8zDqB7
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2017 03:02:26 +1000 (AEST)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w6rzB0lCtzDqBS
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2017 03:02:29 +1000 (AEST)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v3IGwkon007473
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Apr 2017 13:02:14 -0400
-Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [125.16.236.6])
- by mx0a-001b2d01.pphosted.com with ESMTP id 29wmagfy07-1
+ v3IGwptE065606
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Apr 2017 13:02:20 -0400
+Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [125.16.236.4])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 29wnwwjm0q-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Apr 2017 13:02:14 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Apr 2017 13:02:19 -0400
 Received: from localhost
- by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <anju@linux.vnet.ibm.com>;
- Tue, 18 Apr 2017 22:32:11 +0530
+ Tue, 18 Apr 2017 22:32:16 +0530
 Received: from d28av06.in.ibm.com (d28av06.in.ibm.com [9.184.220.48])
- by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v3IH29Oi16580850
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Apr 2017 22:32:09 +0530
+ by d28relay10.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v3IH0pa217629256
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Apr 2017 22:30:51 +0530
 Received: from d28av06.in.ibm.com (localhost [127.0.0.1])
  by d28av06.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v3IH26Rm024749
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Apr 2017 22:32:08 +0530
+ v3IH2CPq024846
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Apr 2017 22:32:14 +0530
 From: Anju T Sudhakar <anju@linux.vnet.ibm.com>
 To: mpe@ellerman.id.au
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
@@ -35,11 +35,11 @@ Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  stewart@linux.vnet.ibm.com, dja@axtens.net, eranian@google.com,
  hemant@linux.vnet.ibm.com, maddy@linux.vnet.ibm.com,
  anju@linux.vnet.ibm.com
-Subject: [PATCH v7 06/10] powerpc/powernv: Core IMC events detection
-Date: Tue, 18 Apr 2017 22:31:46 +0530
+Subject: [PATCH v7 10/10] powerpc/perf: Thread imc cpuhotplug support
+Date: Tue, 18 Apr 2017 22:31:50 +0530
 In-Reply-To: <1492534910-7991-1-git-send-email-anju@linux.vnet.ibm.com>
 References: <1492534910-7991-1-git-send-email-anju@linux.vnet.ibm.com>
-Message-Id: <1492534910-7991-7-git-send-email-anju@linux.vnet.ibm.com>
+Message-Id: <1492534910-7991-11-git-send-email-anju@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,139 +49,94 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Hemant Kumar <hemant@linux.vnet.ibm.com>
+This patch adds support for thread IMC on cpuhotplug.
 
-This patch adds support for detection of core IMC events along with the
-Nest IMC events. It adds a new domain IMC_DOMAIN_CORE and its determined
-with the help of the compatibility string "ibm,imc-counters-core" based
-on the IMC device tree.
+When a cpu goes offline, the LDBAR for that cpu is disabled, and when it comes
+back online the previous ldbar value is written back to the LDBAR for that cpu.
 
+To register the hotplug functions for thread_imc, a new state
+CPUHP_AP_PERF_POWERPC_THREADIMC_ONLINE is added to the list of existing
+states.
+
+Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
 Signed-off-by: Anju T Sudhakar <anju@linux.vnet.ibm.com>
-Signed-off-by: Hemant Kumar <hemant@linux.vnet.ibm.com>
 Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/imc-pmu.h        |  4 +++-
- arch/powerpc/perf/imc-pmu.c               |  3 +++
- arch/powerpc/platforms/powernv/opal-imc.c | 28 +++++++++++++++++++++++++---
- 3 files changed, 31 insertions(+), 4 deletions(-)
+ arch/powerpc/perf/imc-pmu.c | 32 +++++++++++++++++++++++++++-----
+ include/linux/cpuhotplug.h  |  1 +
+ 2 files changed, 28 insertions(+), 5 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/imc-pmu.h b/arch/powerpc/include/asm/imc-pmu.h
-index 1478d0f..37fdd79 100644
---- a/arch/powerpc/include/asm/imc-pmu.h
-+++ b/arch/powerpc/include/asm/imc-pmu.h
-@@ -42,6 +42,7 @@
-  */
- #define IMC_DTB_COMPAT			"ibm,opal-in-memory-counters"
- #define IMC_DTB_NEST_COMPAT		"ibm,imc-counters-nest"
-+#define IMC_DTB_CORE_COMPAT		"ibm,imc-counters-core"
- 
- /*
-  * Structure to hold per chip specific memory address
-@@ -90,13 +91,14 @@ struct imc_pmu {
-  * Domains for IMC PMUs
-  */
- #define IMC_DOMAIN_NEST		1
-+#define IMC_DOMAIN_CORE		2
- #define IMC_DOMAIN_UNKNOWN	-1
- 
- #define IMC_COUNTER_ENABLE	1
- #define IMC_COUNTER_DISABLE	0
- 
--
- extern struct perchip_nest_info nest_perchip_info[IMC_MAX_CHIPS];
- extern struct imc_pmu *per_nest_pmu_arr[IMC_MAX_PMUS];
-+extern struct imc_pmu *core_imc_pmu;
- extern int __init init_imc_pmu(struct imc_events *events,int idx, struct imc_pmu *pmu_ptr);
- #endif /* PPC_POWERNV_IMC_PMU_DEF_H */
 diff --git a/arch/powerpc/perf/imc-pmu.c b/arch/powerpc/perf/imc-pmu.c
-index b86ef86..6fdac40 100644
+index 6c7d3ed..daf9151 100644
 --- a/arch/powerpc/perf/imc-pmu.c
 +++ b/arch/powerpc/perf/imc-pmu.c
-@@ -24,8 +24,11 @@ static atomic_t nest_events;
- /* Used to avoid races in calling enable/disable nest-pmu units*/
- static DEFINE_MUTEX(imc_nest_reserve);
- 
-+struct imc_pmu *core_imc_pmu;
-+
- /* Needed for sanity check */
- extern u64 nest_max_offset;
-+extern u64 core_max_offset;
- 
- PMU_FORMAT_ATTR(event, "config:0-20");
- static struct attribute *imc_format_attrs[] = {
-diff --git a/arch/powerpc/platforms/powernv/opal-imc.c b/arch/powerpc/platforms/powernv/opal-imc.c
-index 61f6d67..d712ef3 100644
---- a/arch/powerpc/platforms/powernv/opal-imc.c
-+++ b/arch/powerpc/platforms/powernv/opal-imc.c
-@@ -34,6 +34,7 @@
- #include <asm/imc-pmu.h>
- 
- u64 nest_max_offset;
-+u64 core_max_offset;
- 
- static int imc_event_prop_update(char *name, struct imc_events *events)
- {
-@@ -114,6 +115,10 @@ static void update_max_value(u32 value, int pmu_domain)
- 		if (nest_max_offset < value)
- 			nest_max_offset = value;
- 		break;
-+	case IMC_DOMAIN_CORE:
-+		if (core_max_offset < value)
-+			core_max_offset = value;
-+		break;
- 	default:
- 		/* Unknown domain, return */
- 		return;
-@@ -357,7 +362,7 @@ static struct imc_events *imc_events_setup(struct device_node *parent,
- /*
-  * imc_pmu_create : Takes the parent device which is the pmu unit and a
-  *                  pmu_index as the inputs.
-- * Allocates memory for the pmu, sets up its domain (NEST), and
-+ * Allocates memory for the pmu, sets up its domain (NEST/CORE), and
-  * calls imc_events_setup() to allocate memory for the events supported
-  * by this pmu. Assigns a name for the pmu. Calls imc_events_node_parser()
-  * to setup the individual events.
-@@ -386,7 +391,10 @@ static int imc_pmu_create(struct device_node *parent, int pmu_index, int domain)
- 		goto free_pmu;
- 
- 	/* Needed for hotplug/migration */
--	per_nest_pmu_arr[pmu_index] = pmu_ptr;
-+	if (pmu_ptr->domain == IMC_DOMAIN_CORE)
-+		core_imc_pmu = pmu_ptr;
-+	else if (pmu_ptr->domain == IMC_DOMAIN_NEST)
-+		per_nest_pmu_arr[pmu_index] = pmu_ptr;
- 
- 	pp = of_find_property(parent, "name", NULL);
- 	if (!pp) {
-@@ -407,7 +415,10 @@ static int imc_pmu_create(struct device_node *parent, int pmu_index, int domain)
- 		goto free_pmu;
- 	}
- 	/* Save the name to register it later */
--	sprintf(buf, "nest_%s", (char *)pp->value);
-+	if (pmu_ptr->domain == IMC_DOMAIN_NEST)
-+		sprintf(buf, "nest_%s", (char *)pp->value);
-+	else
-+		sprintf(buf, "%s_imc", (char *)pp->value);
- 	pmu_ptr->pmu.name = (char *)buf;
- 
- 	/*
-@@ -461,6 +472,17 @@ static void __init imc_pmu_setup(struct device_node *parent)
- 			return;
- 		pmu_count++;
- 	}
-+	/*
-+	 * Loop through the imc-counters tree for each compatible
-+	 * "ibm,imc-counters-core", and update "struct imc_pmu".
-+	 */
-+	for_each_compatible_node(child, NULL, IMC_DTB_CORE_COMPAT) {
-+		domain = IMC_DOMAIN_CORE;
-+		rc = imc_pmu_create(child, pmu_count, domain);
-+		if (rc)
-+			return;
-+		pmu_count++;
-+	}
+@@ -984,6 +984,16 @@ static void cleanup_all_thread_imc_memory(void)
+ 	on_each_cpu(cleanup_thread_imc_memory, NULL, 1);
  }
  
- static int opal_imc_counters_probe(struct platform_device *pdev)
++static void thread_imc_update_ldbar(unsigned int cpu_id)
++{
++	u64 ldbar_addr, ldbar_value;
++
++	ldbar_addr = (u64)virt_to_phys((void *)per_cpu_add[cpu_id]);
++	ldbar_value = (ldbar_addr & (u64)THREAD_IMC_LDBAR_MASK) |
++			(u64)THREAD_IMC_ENABLE;
++	mtspr(SPRN_LDBAR, ldbar_value);
++}
++
+ /*
+  * Allocates a page of memory for each of the online cpus, and, writes the
+  * physical base address of that page to the LDBAR for that cpu. This starts
+@@ -991,21 +1001,33 @@ static void cleanup_all_thread_imc_memory(void)
+  */
+ static void thread_imc_mem_alloc(void *dummy)
+ {
+-	u64 ldbar_addr, ldbar_value;
+ 	int cpu_id = smp_processor_id();
+ 	int phys_id = topology_physical_package_id(smp_processor_id());
+ 
+ 	per_cpu_add[cpu_id] = (u64)alloc_pages_exact_nid(phys_id,
+ 			(size_t)IMC_THREAD_COUNTER_MEM, GFP_KERNEL | __GFP_ZERO);
+-	ldbar_addr = (u64)virt_to_phys((void *)per_cpu_add[cpu_id]);
+-	ldbar_value = (ldbar_addr & (u64)THREAD_IMC_LDBAR_MASK) |
+-		(u64)THREAD_IMC_ENABLE;
+-	mtspr(SPRN_LDBAR, ldbar_value);
++	thread_imc_update_ldbar(cpu_id);
++}
++
++static int ppc_thread_imc_cpu_online(unsigned int cpu)
++{
++	thread_imc_update_ldbar(cpu);
++	return 0;
+ }
+ 
++static int ppc_thread_imc_cpu_offline(unsigned int cpu)
++{
++	mtspr(SPRN_LDBAR, 0);
++	return 0;
++ }
++
+ void thread_imc_cpu_init(void)
+ {
+ 	on_each_cpu(thread_imc_mem_alloc, NULL, 1);
++	cpuhp_setup_state(CPUHP_AP_PERF_POWERPC_THREADIMC_ONLINE,
++				"POWER_THREAD_IMC_ONLINE",
++				ppc_thread_imc_cpu_online,
++				ppc_thread_imc_cpu_offline);
+ }
+ 
+ /*
+diff --git a/include/linux/cpuhotplug.h b/include/linux/cpuhotplug.h
+index e7b7712..bbec927 100644
+--- a/include/linux/cpuhotplug.h
++++ b/include/linux/cpuhotplug.h
+@@ -139,6 +139,7 @@ enum cpuhp_state {
+ 	CPUHP_AP_PERF_ARM_QCOM_L2_ONLINE,
+ 	CPUHP_AP_PERF_POWERPC_NEST_ONLINE,
+ 	CPUHP_AP_PERF_POWERPC_COREIMC_ONLINE,
++	CPUHP_AP_PERF_POWERPC_THREADIMC_ONLINE,
+ 	CPUHP_AP_WORKQUEUE_ONLINE,
+ 	CPUHP_AP_RCUTREE_ONLINE,
+ 	CPUHP_AP_ONLINE_DYN,
 -- 
 2.7.4
