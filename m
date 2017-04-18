@@ -1,18 +1,18 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
- [IPv6:2607:f8b0:400e:c05::241])
+Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
+ [IPv6:2607:f8b0:400e:c05::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w6vsN40rHzDq5b
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2017 05:12:40 +1000 (AEST)
-Received: by mail-pg0-x241.google.com with SMTP id o123so347256pga.1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Apr 2017 12:12:40 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w6vsS0nPVzDq8V
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2017 05:12:44 +1000 (AEST)
+Received: by mail-pg0-x244.google.com with SMTP id 34so337299pgx.3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Apr 2017 12:12:43 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Nicholas Piggin <npiggin@gmail.com>
-Subject: [PATCH 1/4] powerpc/64s: Revert setting LPCR LPES0 on POWER9
-Date: Wed, 19 Apr 2017 05:12:16 +1000
-Message-Id: <20170418191220.3166-2-npiggin@gmail.com>
+Subject: [PATCH 2/4] powerpc/64s: POWER9 no LPCR VRMASD bits
+Date: Wed, 19 Apr 2017 05:12:17 +1000
+Message-Id: <20170418191220.3166-3-npiggin@gmail.com>
 In-Reply-To: <20170418191220.3166-1-npiggin@gmail.com>
 References: <20170418191220.3166-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,47 +24,100 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The XIVE enablement patches set LPES0 on POWER9 host. This bit sets
-external interrupts to guest delivery mode that uses SRR[01]. The host's
-EE interrupt handler expects HSRR[01] (for earlier CPUs). which is fine
-because XIVE is configured not to deliver EE to the host (HVI is used
-instead) so this should never be executed.
+POWER9/ISAv3 has no VRMASD field in LPCR. Don't set reserved bits.
 
-However a bug in interrupt controller code or odd configuration of
-mambo/systemsim could result in the host getting EE. Keeping EE delivery
-mode matching the host handler prevents strange crashes due to using
-the wrong exception registers.
-
-When running in guest mode and getting EE, the guest LPCR will be
-loaded by KVM which contains the LPES0 bit.
-
-Fixes: 08a1e650cc ("powerpc: Fixup LPCR:PECE and HEIC setting on POWER9")
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/kernel/cpu_setup_power.S | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ arch/powerpc/kernel/cpu_setup_power.S | 21 ++++++++++++---------
+ 1 file changed, 12 insertions(+), 9 deletions(-)
 
 diff --git a/arch/powerpc/kernel/cpu_setup_power.S b/arch/powerpc/kernel/cpu_setup_power.S
-index 7013ae3d1675..1fce4ddd2e6c 100644
+index 1fce4ddd2e6c..10cb2896b2ae 100644
 --- a/arch/powerpc/kernel/cpu_setup_power.S
 +++ b/arch/powerpc/kernel/cpu_setup_power.S
-@@ -107,7 +107,7 @@ _GLOBAL(__setup_cpu_power9)
- 	or	r3, r3, r4
+@@ -30,7 +30,7 @@ _GLOBAL(__setup_cpu_power7)
+ 	mtspr	SPRN_LPID,r0
+ 	mfspr	r3,SPRN_LPCR
+ 	li	r4,(LPCR_LPES1 >> LPCR_LPES_SH)
+-	bl	__init_LPCR
++	bl	__init_LPCR_ISA206
+ 	bl	__init_tlb_power7
+ 	mtlr	r11
+ 	blr
+@@ -44,7 +44,7 @@ _GLOBAL(__restore_cpu_power7)
+ 	mtspr	SPRN_LPID,r0
+ 	mfspr	r3,SPRN_LPCR
+ 	li	r4,(LPCR_LPES1 >> LPCR_LPES_SH)
+-	bl	__init_LPCR
++	bl	__init_LPCR_ISA206
+ 	bl	__init_tlb_power7
+ 	mtlr	r11
+ 	blr
+@@ -62,7 +62,7 @@ _GLOBAL(__setup_cpu_power8)
+ 	mfspr	r3,SPRN_LPCR
+ 	ori	r3, r3, LPCR_PECEDH
+ 	li	r4,0 /* LPES = 0 */
+-	bl	__init_LPCR
++	bl	__init_LPCR_ISA206
+ 	bl	__init_HFSCR
+ 	bl	__init_tlb_power8
+ 	bl	__init_PMU_HV
+@@ -84,7 +84,7 @@ _GLOBAL(__restore_cpu_power8)
+ 	mfspr   r3,SPRN_LPCR
+ 	ori	r3, r3, LPCR_PECEDH
+ 	li	r4,0 /* LPES = 0 */
+-	bl	__init_LPCR
++	bl	__init_LPCR_ISA206
+ 	bl	__init_HFSCR
+ 	bl	__init_tlb_power8
+ 	bl	__init_PMU_HV
+@@ -108,7 +108,7 @@ _GLOBAL(__setup_cpu_power9)
  	LOAD_REG_IMMEDIATE(r4, LPCR_UPRT | LPCR_HR)
  	andc	r3, r3, r4
--	li	r4,(LPCR_LPES0 >> LPCR_LPES_SH)
-+	li	r4,0 /* LPES = 0 */
- 	bl	__init_LPCR
+ 	li	r4,0 /* LPES = 0 */
+-	bl	__init_LPCR
++	bl	__init_LPCR_ISA300
  	bl	__init_HFSCR
  	bl	__init_tlb_power9
-@@ -131,7 +131,7 @@ _GLOBAL(__restore_cpu_power9)
- 	or	r3, r3, r4
+ 	bl	__init_PMU_HV
+@@ -132,7 +132,7 @@ _GLOBAL(__restore_cpu_power9)
  	LOAD_REG_IMMEDIATE(r4, LPCR_UPRT | LPCR_HR)
  	andc	r3, r3, r4
--	li	r4,(LPCR_LPES0 >> LPCR_LPES_SH)
-+	li	r4,0 /* LPES = 0 */
- 	bl	__init_LPCR
+ 	li	r4,0 /* LPES = 0 */
+-	bl	__init_LPCR
++	bl	__init_LPCR_ISA300
  	bl	__init_HFSCR
  	bl	__init_tlb_power9
+ 	bl	__init_PMU_HV
+@@ -150,7 +150,7 @@ __init_hvmode_206:
+ 	std	r5,CPU_SPEC_FEATURES(r4)
+ 	blr
+ 
+-__init_LPCR:
++__init_LPCR_ISA206:
+ 	/* Setup a sane LPCR:
+ 	 *   Called with initial LPCR in R3 and desired LPES 2-bit value in R4
+ 	 *
+@@ -163,6 +163,11 @@ __init_LPCR:
+ 	 *
+ 	 * Other bits untouched for now
+ 	 */
++	li	r5,0x10
++	rldimi	r3,r5, LPCR_VRMASD_SH, 64-LPCR_VRMASD_SH-5
++
++	/* POWER9 has no VRMASD */
++__init_LPCR_ISA300:
+ 	rldimi	r3,r4, LPCR_LPES_SH, 64-LPCR_LPES_SH-2
+ 	ori	r3,r3,(LPCR_PECE0|LPCR_PECE1|LPCR_PECE2)
+ 	li	r5,4
+@@ -170,8 +175,6 @@ __init_LPCR:
+ 	clrrdi	r3,r3,1		/* clear HDICE */
+ 	li	r5,4
+ 	rldimi	r3,r5, LPCR_VC_SH, 0
+-	li	r5,0x10
+-	rldimi	r3,r5, LPCR_VRMASD_SH, 64-LPCR_VRMASD_SH-5
+ 	mtspr	SPRN_LPCR,r3
+ 	isync
+ 	blr
 -- 
 2.11.0
