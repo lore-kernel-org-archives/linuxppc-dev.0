@@ -1,24 +1,18 @@
-Return-Path: <jolsa@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
+ [IPv6:2607:f8b0:400e:c05::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w6vRX0MFnzDq9B
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2017 04:53:44 +1000 (AEST)
-Date: Tue, 18 Apr 2017 20:53:37 +0200
-From: Jiri Olsa <jolsa@redhat.com>
-To: Jin Yao <yao.jin@linux.intel.com>
-Cc: acme@kernel.org, jolsa@kernel.org, peterz@infradead.org,
- mingo@redhat.com, alexander.shishkin@linux.intel.com,
- Linux-kernel@vger.kernel.org, ak@linux.intel.com,
- kan.liang@intel.com, yao.jin@intel.com, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v4 4/5] perf report: Show branch type statistics for
- stdio mode
-Message-ID: <20170418185337.GD15584@krava>
-References: <1491949266-6835-1-git-send-email-yao.jin@linux.intel.com>
- <1491949266-6835-5-git-send-email-yao.jin@linux.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1491949266-6835-5-git-send-email-yao.jin@linux.intel.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w6vsH5ChVzDq5b
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2017 05:12:35 +1000 (AEST)
+Received: by mail-pg0-x241.google.com with SMTP id g2so341321pge.2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Apr 2017 12:12:35 -0700 (PDT)
+From: Nicholas Piggin <npiggin@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Nicholas Piggin <npiggin@gmail.com>
+Subject: [PATCH 0/4 v2] cpufeatures merge candidate
+Date: Wed, 19 Apr 2017 05:12:15 +1000
+Message-Id: <20170418191220.3166-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,22 +22,11 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Apr 12, 2017 at 06:21:05AM +0800, Jin Yao wrote:
+I included binding documentation in OPAL, and wrote a design
+overview and implementation guideline document. Writing updated
+documentation lead to some small changes in the specification.
 
-SNIP
+Also a number of other small changes to Linux and OPAL.
 
-> +static int hist_iter__branch_callback(struct hist_entry_iter *iter,
-> +				      struct addr_location *al __maybe_unused,
-> +				      bool single __maybe_unused,
-> +				      void *arg)
-> +{
-> +	struct hist_entry *he = iter->he;
-> +	struct report *rep = arg;
-> +	struct branch_info *bi;
-> +
-> +	if (sort__mode == SORT_MODE__BRANCH) {
-
-is this check necessary? the hist_iter__branch_callback
-was set based on this check
-
-jirka
+Thanks,
+Nick
