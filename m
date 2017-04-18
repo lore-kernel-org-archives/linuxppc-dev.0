@@ -1,49 +1,36 @@
-Return-Path: <srs0=dvxa=32=linux.vnet.ibm.com=mahesh@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <robh+dt@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w6rRb1MzFzDq5b
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2017 02:38:35 +1000 (AEST)
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3w6rRb04DRz8t00
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2017 02:38:35 +1000 (AEST)
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w6rdX1tYrzDq5b
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2017 02:47:12 +1000 (AEST)
+Received: from mail.kernel.org (localhost [127.0.0.1])
+ by mail.kernel.org (Postfix) with ESMTP id 5D6472013D
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Apr 2017 16:47:09 +0000 (UTC)
+Received: from mail-yw0-f181.google.com (mail-yw0-f181.google.com
+ [209.85.161.181])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3w6rRZ1M9vz9s78
- for <linuxppc-dev@ozlabs.org>; Wed, 19 Apr 2017 02:38:33 +1000 (AEST)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v3IGO7Jh142827
- for <linuxppc-dev@ozlabs.org>; Tue, 18 Apr 2017 12:38:29 -0400
-Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [125.16.236.3])
- by mx0b-001b2d01.pphosted.com with ESMTP id 29w0e2mwcb-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Tue, 18 Apr 2017 12:38:29 -0400
-Received: from localhost
- by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
- Tue, 18 Apr 2017 22:08:25 +0530
-Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay08.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v3IGaxxn12714050
- for <linuxppc-dev@ozlabs.org>; Tue, 18 Apr 2017 22:06:59 +0530
-Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
- by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v3IGcM4V025455
- for <linuxppc-dev@ozlabs.org>; Tue, 18 Apr 2017 22:08:23 +0530
-Subject: [PATCH v2] powerpc/book3s: mce: Move add_taint() later in virtual
- mode.
-From: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
-To: linuxppc-dev <linuxppc-dev@ozlabs.org>,
- Michael Ellerman <mpe@ellerman.id.au>
-Cc: Daniel Axtens <dja@axtens.net>
-Date: Tue, 18 Apr 2017 22:08:17 +0530
+ by mail.kernel.org (Postfix) with ESMTPSA id AEE602021B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Apr 2017 16:47:06 +0000 (UTC)
+Received: by mail-yw0-f181.google.com with SMTP id j9so72824731ywj.3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Apr 2017 09:47:06 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Message-Id: <149253349689.12722.1516352063236500616.stgit@jupiter.in.ibm.com>
+In-Reply-To: <1492475525-10827-1-git-send-email-tyreld@linux.vnet.ibm.com>
+References: <1492475525-10827-1-git-send-email-tyreld@linux.vnet.ibm.com>
+From: Rob Herring <robh+dt@kernel.org>
+Date: Tue, 18 Apr 2017 11:46:44 -0500
+Message-ID: <CAL_Jsq+GRkssqcn0wGzMgQRUtT-BO4zNDyYE7u1Cr5EhADK1SQ@mail.gmail.com>
+Subject: Re: [PATCH] of: introduce event tracepoints for dynamic device_node
+ lifecyle
+To: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ Nathan Fontenot <nfont@linux.vnet.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Frank Rowand <frowand.list@gmail.com>,
+ rostedt@goodmis.org, Ingo Molnar <mingo@redhat.com>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -53,61 +40,251 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+On Mon, Apr 17, 2017 at 7:32 PM, Tyrel Datwyler
+<tyreld@linux.vnet.ibm.com> wrote:
+> This patch introduces event tracepoints for tracking a device_nodes
+> reference cycle as well as reconfig notifications generated in response
+> to node/property manipulations.
+>
+> With the recent upstreaming of the refcount API several device_node
+> underflows and leaks have come to my attention in the pseries (DLPAR) dynamic
+> logical partitioning code (ie. POWER speak for hotplugging virtual and physcial
+> resources at runtime such as cpus or IOAs). These tracepoints provide a
+> easy and quick mechanism for validating the reference counting of
+> device_nodes during their lifetime.
 
-machine_check_early() gets called in real mode. The very first time when
-add_taint() is called, it prints a warning which ends up calling opal
-call (that uses OPAL_CALL wrapper) for writing it to console. If we get a
-very first machine check while we are in opal we are doomed. OPAL_CALL
-overwrites the PACASAVEDMSR in r13 and in this case when we are done with
-MCE handling the original opal call will use this new MSR on it's way
-back to opal_return. This usually leads unexpected behaviour or kernel
-to panic. Instead move the add_taint() call later in the virtual mode
-where it is safe to call.
+Not really relevant for this patch, but since you are looking at
+pseries and refcounting, the refcounting largely exists for pseries.
+It's also hard to get right as this type of fix is fairly common. It's
+now used for overlays, but we really probably only need to refcount
+the overlays or changesets as a whole, not at a node level. If you
+have any thoughts on how a different model of refcounting could work
+for pseries, I'd like to discuss it.
 
-This is broken with current FW level. We got lucky so far for not getting
-very first MCE hit while in OPAL. But easily reproducible on Mambo.
-This should go to stable.
+> Further, when pseries lpars are migrated to a different machine we
+> perform a live update of our device tree to bring it into alignment with the
+> configuration of the new machine. The of_reconfig_notify trace point
+> provides a mechanism that can be turned for debuging the device tree
+> modifications with out having to build a custom kernel to get at the
+> DEBUG code introduced by commit 00aa3720.
+>
+> The following trace events are provided: of_node_get, of_node_put,
+> of_node_release, and of_reconfig_notify. These trace points require a kernel
+> built with ftrace support to be enabled. In a typical environment where
+> debugfs is mounted at /sys/kernel/debug the entire set of tracepoints
+> can be set with the following:
+>
+>   echo "of:*" > /sys/kernel/debug/tracing/set_event
+>
+> or
+>
+>   echo 1 > /sys/kernel/debug/tracing/of/enable
+>
+> The following shows the trace point data from a DLPAR remove of a cpu
+> from a pseries lpar:
+>
+> cat /sys/kernel/debug/tracing/trace | grep "POWER8@10"
+>
+> cpuhp/23-147   [023] ....   128.324827:
+>         of_node_put: refcount=5, dn->full_name=/cpus/PowerPC,POWER8@10
+> cpuhp/23-147   [023] ....   128.324829:
+>         of_node_put: refcount=4, dn->full_name=/cpus/PowerPC,POWER8@10
+> cpuhp/23-147   [023] ....   128.324829:
+>         of_node_put: refcount=3, dn->full_name=/cpus/PowerPC,POWER8@10
+> cpuhp/23-147   [023] ....   128.324831:
+>         of_node_put: refcount=2, dn->full_name=/cpus/PowerPC,POWER8@10
+>    drmgr-7284  [009] ....   128.439000:
+>         of_node_put: refcount=1, dn->full_name=/cpus/PowerPC,POWER8@10
+>    drmgr-7284  [009] ....   128.439002:
+>         of_reconfig_notify: action=DETACH_NODE, dn->full_name=/cpus/PowerPC,POWER8@10,
+>                             prop->name=null, old_prop->name=null
+>    drmgr-7284  [009] ....   128.439015:
+>         of_node_put: refcount=0, dn->full_name=/cpus/PowerPC,POWER8@10
+>    drmgr-7284  [009] ....   128.439016:
+>         of_node_release: dn->full_name=/cpus/PowerPC,POWER8@10, dn->_flags=4
+>
+> Signed-off-by: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+> ---
+>  drivers/of/dynamic.c      | 30 ++++++---------
+>  include/trace/events/of.h | 93 +++++++++++++++++++++++++++++++++++++++++++++++
+>  2 files changed, 105 insertions(+), 18 deletions(-)
+>  create mode 100644 include/trace/events/of.h
+>
+> diff --git a/drivers/of/dynamic.c b/drivers/of/dynamic.c
+> index 888fdbc..85c0966 100644
+> --- a/drivers/of/dynamic.c
+> +++ b/drivers/of/dynamic.c
+> @@ -16,6 +16,9 @@
+>
+>  #include "of_private.h"
+>
+> +#define CREATE_TRACE_POINTS
+> +#include <trace/events/of.h>
+> +
+>  /**
+>   * of_node_get() - Increment refcount of a node
+>   * @node:      Node to inc refcount, NULL is supported to simplify writing of
+> @@ -25,8 +28,10 @@
+>   */
+>  struct device_node *of_node_get(struct device_node *node)
+>  {
+> -       if (node)
+> +       if (node) {
+>                 kobject_get(&node->kobj);
+> +               trace_of_node_get(refcount_read(&node->kobj.kref.refcount), node->full_name);
 
-Fixes: 27ea2c420cad powerpc: Set the correct kernel taint on machine check errors.
-Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
----
- arch/powerpc/kernel/mce.c   |    2 ++
- arch/powerpc/kernel/traps.c |    4 ++--
- 2 files changed, 4 insertions(+), 2 deletions(-)
+Seems like there should be a kobj wrapper to read the refcount.
 
-diff --git a/arch/powerpc/kernel/mce.c b/arch/powerpc/kernel/mce.c
-index a1475e6..b23b323 100644
---- a/arch/powerpc/kernel/mce.c
-+++ b/arch/powerpc/kernel/mce.c
-@@ -221,6 +221,8 @@ static void machine_check_process_queued_event(struct irq_work *work)
- {
- 	int index;
- 
-+	add_taint(TAINT_MACHINE_CHECK, LOCKDEP_NOW_UNRELIABLE);
-+
- 	/*
- 	 * For now just print it to console.
- 	 * TODO: log this error event to FSP or nvram.
-diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-index ff365f9..af97e81 100644
---- a/arch/powerpc/kernel/traps.c
-+++ b/arch/powerpc/kernel/traps.c
-@@ -306,8 +306,6 @@ long machine_check_early(struct pt_regs *regs)
- 
- 	__this_cpu_inc(irq_stat.mce_exceptions);
- 
--	add_taint(TAINT_MACHINE_CHECK, LOCKDEP_NOW_UNRELIABLE);
--
- 	if (cur_cpu_spec && cur_cpu_spec->machine_check_early)
- 		handled = cur_cpu_spec->machine_check_early(regs);
- 	return handled;
-@@ -741,6 +739,8 @@ void machine_check_exception(struct pt_regs *regs)
- 
- 	__this_cpu_inc(irq_stat.mce_exceptions);
- 
-+	add_taint(TAINT_MACHINE_CHECK, LOCKDEP_NOW_UNRELIABLE);
-+
- 	/* See if any machine dependent calls. In theory, we would want
- 	 * to call the CPU first, and call the ppc_md. one if the CPU
- 	 * one returns a positive number. However there is existing code
+> +       }
+>         return node;
+>  }
+>  EXPORT_SYMBOL(of_node_get);
+> @@ -38,8 +43,10 @@ struct device_node *of_node_get(struct device_node *node)
+>   */
+>  void of_node_put(struct device_node *node)
+>  {
+> -       if (node)
+> +       if (node) {
+> +               trace_of_node_put(refcount_read(&node->kobj.kref.refcount) - 1, node->full_name);
+>                 kobject_put(&node->kobj);
+> +       }
+>  }
+>  EXPORT_SYMBOL(of_node_put);
+>
+> @@ -92,24 +99,9 @@ int of_reconfig_notifier_unregister(struct notifier_block *nb)
+>  int of_reconfig_notify(unsigned long action, struct of_reconfig_data *p)
+>  {
+>         int rc;
+> -#ifdef DEBUG
+> -       struct of_reconfig_data *pr = p;
+>
+> -       switch (action) {
+> -       case OF_RECONFIG_ATTACH_NODE:
+> -       case OF_RECONFIG_DETACH_NODE:
+> -               pr_debug("notify %-15s %s\n", action_names[action],
+> -                       pr->dn->full_name);
+> -               break;
+> -       case OF_RECONFIG_ADD_PROPERTY:
+> -       case OF_RECONFIG_REMOVE_PROPERTY:
+> -       case OF_RECONFIG_UPDATE_PROPERTY:
+> -               pr_debug("notify %-15s %s:%s\n", action_names[action],
+> -                       pr->dn->full_name, pr->prop->name);
+> -               break;
+> +       trace_of_reconfig_notify(action, p);
+>
+> -       }
+> -#endif
+>         rc = blocking_notifier_call_chain(&of_reconfig_chain, action, p);
+>         return notifier_to_errno(rc);
+>  }
+> @@ -326,6 +318,8 @@ void of_node_release(struct kobject *kobj)
+>         struct device_node *node = kobj_to_device_node(kobj);
+>         struct property *prop = node->properties;
+>
+> +       trace_of_node_release(node);
+> +
+>         /* We should never be releasing nodes that haven't been detached. */
+>         if (!of_node_check_flag(node, OF_DETACHED)) {
+>                 pr_err("ERROR: Bad of_node_put() on %s\n", node->full_name);
+> diff --git a/include/trace/events/of.h b/include/trace/events/of.h
+> new file mode 100644
+> index 0000000..0d53271
+> --- /dev/null
+> +++ b/include/trace/events/of.h
+> @@ -0,0 +1,93 @@
+> +#undef TRACE_SYSTEM
+> +#define TRACE_SYSTEM of
+> +
+> +#if !defined(_TRACE_OF_H) || defined(TRACE_HEADER_MULTI_READ)
+> +#define _TRACE_OF_H
+> +
+> +#include <linux/of.h>
+> +#include <linux/tracepoint.h>
+> +
+> +DECLARE_EVENT_CLASS(of_node_ref_template,
+> +
+> +       TP_PROTO(int refcount, const char* dn_name),
+> +
+> +       TP_ARGS(refcount, dn_name),
+> +
+> +       TP_STRUCT__entry(
+> +               __string(dn_name, dn_name)
+> +               __field(int, refcount)
+> +       ),
+> +
+> +       TP_fast_assign(
+> +               __assign_str(dn_name, dn_name);
+> +               __entry->refcount = refcount;
+> +       ),
+> +
+> +       TP_printk("refcount=%d, dn->full_name=%s",
+> +                 __entry->refcount, __get_str(dn_name))
+> +);
+> +
+> +DEFINE_EVENT(of_node_ref_template, of_node_get,
+> +            TP_PROTO(int refcount, const char* dn_name),
+> +            TP_ARGS(refcount, dn_name));
+> +
+> +DEFINE_EVENT(of_node_ref_template, of_node_put,
+> +            TP_PROTO(int refcount, const char* dn_name),
+> +            TP_ARGS(refcount, dn_name));
+> +
+> +TRACE_EVENT(of_node_release,
+> +
+> +       TP_PROTO(struct device_node *dn),
+> +
+> +       TP_ARGS(dn),
+> +
+> +       TP_STRUCT__entry(
+> +               __string(dn_name, dn->full_name)
+> +               __field(unsigned long, flags)
+> +       ),
+> +
+> +       TP_fast_assign(
+> +               __assign_str(dn_name, dn->full_name);
+> +               __entry->flags = dn->_flags;
+> +       ),
+> +
+> +       TP_printk("dn->full_name=%s, dn->_flags=%lu",
+> +                 __get_str(dn_name), __entry->flags)
+> +);
+> +
+> +#define of_reconfig_action_names \
+> +       {OF_RECONFIG_ATTACH_NODE, "ATTACH_NODE"}, \
+> +       {OF_RECONFIG_DETACH_NODE, "DETACH_NODE"}, \
+> +       {OF_RECONFIG_ADD_PROPERTY, "ADD_PROPERTY"}, \
+> +       {OF_RECONFIG_REMOVE_PROPERTY, "REMOVE_PROPERTY"}, \
+> +       {OF_RECONFIG_UPDATE_PROPERTY, "UPDATE_PROPERTY"}
+> +
+> +TRACE_EVENT(of_reconfig_notify,
+> +
+> +       TP_PROTO(unsigned long action, struct of_reconfig_data *ord),
+> +
+> +       TP_ARGS(action, ord),
+> +
+> +       TP_STRUCT__entry(
+> +               __field(unsigned long, action)
+> +               __string(dn_name, ord->dn->full_name)
+> +               __string(prop_name, ord->prop ? ord->prop->name : "null")
+> +               __string(oldprop_name, ord->old_prop ? ord->old_prop->name : "null")
+> +       ),
+> +
+> +       TP_fast_assign(
+> +               __entry->action = action;
+> +               __assign_str(dn_name, ord->dn->full_name);
+> +               __assign_str(prop_name, ord->prop ? ord->prop->name : "null");
+> +               __assign_str(oldprop_name, ord->old_prop ? ord->old_prop->name : "null");
+> +       ),
+> +
+> +       TP_printk("action=%s, dn->full_name=%s, prop->name=%s, old_prop->name=%s",
+> +                 __print_symbolic(__entry->action, of_reconfig_action_names),
+> +                 __get_str(dn_name), __get_str(prop_name), __get_str(oldprop_name))
+> +);
+> +
+> +#endif /*      _TRACE_OF_H */
+> +
+> +/* This part must be outside protection */
+> +#include <trace/define_trace.h>
+> --
+> 1.8.3.1
+>
