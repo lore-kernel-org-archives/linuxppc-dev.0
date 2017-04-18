@@ -1,36 +1,43 @@
-Return-Path: <robh+dt@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <anju@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w6rdX1tYrzDq5b
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2017 02:47:12 +1000 (AEST)
-Received: from mail.kernel.org (localhost [127.0.0.1])
- by mail.kernel.org (Postfix) with ESMTP id 5D6472013D
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Apr 2017 16:47:09 +0000 (UTC)
-Received: from mail-yw0-f181.google.com (mail-yw0-f181.google.com
- [209.85.161.181])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id AEE602021B
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Apr 2017 16:47:06 +0000 (UTC)
-Received: by mail-yw0-f181.google.com with SMTP id j9so72824731ywj.3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Apr 2017 09:47:06 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <1492475525-10827-1-git-send-email-tyreld@linux.vnet.ibm.com>
-References: <1492475525-10827-1-git-send-email-tyreld@linux.vnet.ibm.com>
-From: Rob Herring <robh+dt@kernel.org>
-Date: Tue, 18 Apr 2017 11:46:44 -0500
-Message-ID: <CAL_Jsq+GRkssqcn0wGzMgQRUtT-BO4zNDyYE7u1Cr5EhADK1SQ@mail.gmail.com>
-Subject: Re: [PATCH] of: introduce event tracepoints for dynamic device_node
- lifecyle
-To: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- Nathan Fontenot <nfont@linux.vnet.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Frank Rowand <frowand.list@gmail.com>,
- rostedt@goodmis.org, Ingo Molnar <mingo@redhat.com>
-Content-Type: text/plain; charset=UTF-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w6ryn5CcCzDq5b
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2017 03:02:09 +1000 (AEST)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v3IGwoJs132771
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Apr 2017 13:02:07 -0400
+Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [125.16.236.5])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 29w0khn7kt-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Apr 2017 13:02:06 -0400
+Received: from localhost
+ by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <anju@linux.vnet.ibm.com>;
+ Tue, 18 Apr 2017 22:32:02 +0530
+Received: from d28av06.in.ibm.com (d28av06.in.ibm.com [9.184.220.48])
+ by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v3IH203g18874456
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Apr 2017 22:32:00 +0530
+Received: from d28av06.in.ibm.com (localhost [127.0.0.1])
+ by d28av06.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v3IH1vFV024597
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Apr 2017 22:31:59 +0530
+From: Anju T Sudhakar <anju@linux.vnet.ibm.com>
+To: mpe@ellerman.id.au
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ ego@linux.vnet.ibm.com, bsingharora@gmail.com,
+ benh@kernel.crashing.org, paulus@samba.org, anton@samba.org,
+ sukadev@linux.vnet.ibm.com, mikey@neuling.org,
+ stewart@linux.vnet.ibm.com, dja@axtens.net, eranian@google.com,
+ hemant@linux.vnet.ibm.com, maddy@linux.vnet.ibm.com,
+ anju@linux.vnet.ibm.com
+Subject: [PATCH v7 00/10] IMC Instrumentation Support
+Date: Tue, 18 Apr 2017 22:31:40 +0530
+Message-Id: <1492534910-7991-1-git-send-email-anju@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,251 +47,271 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Apr 17, 2017 at 7:32 PM, Tyrel Datwyler
-<tyreld@linux.vnet.ibm.com> wrote:
-> This patch introduces event tracepoints for tracking a device_nodes
-> reference cycle as well as reconfig notifications generated in response
-> to node/property manipulations.
->
-> With the recent upstreaming of the refcount API several device_node
-> underflows and leaks have come to my attention in the pseries (DLPAR) dynamic
-> logical partitioning code (ie. POWER speak for hotplugging virtual and physcial
-> resources at runtime such as cpus or IOAs). These tracepoints provide a
-> easy and quick mechanism for validating the reference counting of
-> device_nodes during their lifetime.
+Power9 has In-Memory-Collection (IMC) infrastructure which contains
+various Performance Monitoring Units (PMUs) at Nest level (these are
+on-chip but off-core), Core level and Thread level.
 
-Not really relevant for this patch, but since you are looking at
-pseries and refcounting, the refcounting largely exists for pseries.
-It's also hard to get right as this type of fix is fairly common. It's
-now used for overlays, but we really probably only need to refcount
-the overlays or changesets as a whole, not at a node level. If you
-have any thoughts on how a different model of refcounting could work
-for pseries, I'd like to discuss it.
+The Nest PMU counters are handled by a Nest IMC microcode which runs
+in the OCC (On-Chip Controller) complex. The microcode collects the
+counter data and moves the nest IMC counter data to memory.
 
-> Further, when pseries lpars are migrated to a different machine we
-> perform a live update of our device tree to bring it into alignment with the
-> configuration of the new machine. The of_reconfig_notify trace point
-> provides a mechanism that can be turned for debuging the device tree
-> modifications with out having to build a custom kernel to get at the
-> DEBUG code introduced by commit 00aa3720.
->
-> The following trace events are provided: of_node_get, of_node_put,
-> of_node_release, and of_reconfig_notify. These trace points require a kernel
-> built with ftrace support to be enabled. In a typical environment where
-> debugfs is mounted at /sys/kernel/debug the entire set of tracepoints
-> can be set with the following:
->
->   echo "of:*" > /sys/kernel/debug/tracing/set_event
->
-> or
->
->   echo 1 > /sys/kernel/debug/tracing/of/enable
->
-> The following shows the trace point data from a DLPAR remove of a cpu
-> from a pseries lpar:
->
-> cat /sys/kernel/debug/tracing/trace | grep "POWER8@10"
->
-> cpuhp/23-147   [023] ....   128.324827:
->         of_node_put: refcount=5, dn->full_name=/cpus/PowerPC,POWER8@10
-> cpuhp/23-147   [023] ....   128.324829:
->         of_node_put: refcount=4, dn->full_name=/cpus/PowerPC,POWER8@10
-> cpuhp/23-147   [023] ....   128.324829:
->         of_node_put: refcount=3, dn->full_name=/cpus/PowerPC,POWER8@10
-> cpuhp/23-147   [023] ....   128.324831:
->         of_node_put: refcount=2, dn->full_name=/cpus/PowerPC,POWER8@10
->    drmgr-7284  [009] ....   128.439000:
->         of_node_put: refcount=1, dn->full_name=/cpus/PowerPC,POWER8@10
->    drmgr-7284  [009] ....   128.439002:
->         of_reconfig_notify: action=DETACH_NODE, dn->full_name=/cpus/PowerPC,POWER8@10,
->                             prop->name=null, old_prop->name=null
->    drmgr-7284  [009] ....   128.439015:
->         of_node_put: refcount=0, dn->full_name=/cpus/PowerPC,POWER8@10
->    drmgr-7284  [009] ....   128.439016:
->         of_node_release: dn->full_name=/cpus/PowerPC,POWER8@10, dn->_flags=4
->
-> Signed-off-by: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
-> ---
->  drivers/of/dynamic.c      | 30 ++++++---------
->  include/trace/events/of.h | 93 +++++++++++++++++++++++++++++++++++++++++++++++
->  2 files changed, 105 insertions(+), 18 deletions(-)
->  create mode 100644 include/trace/events/of.h
->
-> diff --git a/drivers/of/dynamic.c b/drivers/of/dynamic.c
-> index 888fdbc..85c0966 100644
-> --- a/drivers/of/dynamic.c
-> +++ b/drivers/of/dynamic.c
-> @@ -16,6 +16,9 @@
->
->  #include "of_private.h"
->
-> +#define CREATE_TRACE_POINTS
-> +#include <trace/events/of.h>
-> +
->  /**
->   * of_node_get() - Increment refcount of a node
->   * @node:      Node to inc refcount, NULL is supported to simplify writing of
-> @@ -25,8 +28,10 @@
->   */
->  struct device_node *of_node_get(struct device_node *node)
->  {
-> -       if (node)
-> +       if (node) {
->                 kobject_get(&node->kobj);
-> +               trace_of_node_get(refcount_read(&node->kobj.kref.refcount), node->full_name);
+The Core and Thread IMC PMU counters are handled in the core. Core
+level PMU counters give us the IMC counters' data per core and thread
+level PMU counters give us the IMC counters' data per CPU thread.
 
-Seems like there should be a kobj wrapper to read the refcount.
+This patchset enables the nest IMC, core IMC and thread IMC
+PMUs and is based on the initial work done by Madhavan Srinivasan.
+"Nest Instrumentation Support" :
+https://lists.ozlabs.org/pipermail/linuxppc-dev/2015-August/132078.html
 
-> +       }
->         return node;
->  }
->  EXPORT_SYMBOL(of_node_get);
-> @@ -38,8 +43,10 @@ struct device_node *of_node_get(struct device_node *node)
->   */
->  void of_node_put(struct device_node *node)
->  {
-> -       if (node)
-> +       if (node) {
-> +               trace_of_node_put(refcount_read(&node->kobj.kref.refcount) - 1, node->full_name);
->                 kobject_put(&node->kobj);
-> +       }
->  }
->  EXPORT_SYMBOL(of_node_put);
->
-> @@ -92,24 +99,9 @@ int of_reconfig_notifier_unregister(struct notifier_block *nb)
->  int of_reconfig_notify(unsigned long action, struct of_reconfig_data *p)
->  {
->         int rc;
-> -#ifdef DEBUG
-> -       struct of_reconfig_data *pr = p;
->
-> -       switch (action) {
-> -       case OF_RECONFIG_ATTACH_NODE:
-> -       case OF_RECONFIG_DETACH_NODE:
-> -               pr_debug("notify %-15s %s\n", action_names[action],
-> -                       pr->dn->full_name);
-> -               break;
-> -       case OF_RECONFIG_ADD_PROPERTY:
-> -       case OF_RECONFIG_REMOVE_PROPERTY:
-> -       case OF_RECONFIG_UPDATE_PROPERTY:
-> -               pr_debug("notify %-15s %s:%s\n", action_names[action],
-> -                       pr->dn->full_name, pr->prop->name);
-> -               break;
-> +       trace_of_reconfig_notify(action, p);
->
-> -       }
-> -#endif
->         rc = blocking_notifier_call_chain(&of_reconfig_chain, action, p);
->         return notifier_to_errno(rc);
->  }
-> @@ -326,6 +318,8 @@ void of_node_release(struct kobject *kobj)
->         struct device_node *node = kobj_to_device_node(kobj);
->         struct property *prop = node->properties;
->
-> +       trace_of_node_release(node);
-> +
->         /* We should never be releasing nodes that haven't been detached. */
->         if (!of_node_check_flag(node, OF_DETACHED)) {
->                 pr_err("ERROR: Bad of_node_put() on %s\n", node->full_name);
-> diff --git a/include/trace/events/of.h b/include/trace/events/of.h
-> new file mode 100644
-> index 0000000..0d53271
-> --- /dev/null
-> +++ b/include/trace/events/of.h
-> @@ -0,0 +1,93 @@
-> +#undef TRACE_SYSTEM
-> +#define TRACE_SYSTEM of
-> +
-> +#if !defined(_TRACE_OF_H) || defined(TRACE_HEADER_MULTI_READ)
-> +#define _TRACE_OF_H
-> +
-> +#include <linux/of.h>
-> +#include <linux/tracepoint.h>
-> +
-> +DECLARE_EVENT_CLASS(of_node_ref_template,
-> +
-> +       TP_PROTO(int refcount, const char* dn_name),
-> +
-> +       TP_ARGS(refcount, dn_name),
-> +
-> +       TP_STRUCT__entry(
-> +               __string(dn_name, dn_name)
-> +               __field(int, refcount)
-> +       ),
-> +
-> +       TP_fast_assign(
-> +               __assign_str(dn_name, dn_name);
-> +               __entry->refcount = refcount;
-> +       ),
-> +
-> +       TP_printk("refcount=%d, dn->full_name=%s",
-> +                 __entry->refcount, __get_str(dn_name))
-> +);
-> +
-> +DEFINE_EVENT(of_node_ref_template, of_node_get,
-> +            TP_PROTO(int refcount, const char* dn_name),
-> +            TP_ARGS(refcount, dn_name));
-> +
-> +DEFINE_EVENT(of_node_ref_template, of_node_put,
-> +            TP_PROTO(int refcount, const char* dn_name),
-> +            TP_ARGS(refcount, dn_name));
-> +
-> +TRACE_EVENT(of_node_release,
-> +
-> +       TP_PROTO(struct device_node *dn),
-> +
-> +       TP_ARGS(dn),
-> +
-> +       TP_STRUCT__entry(
-> +               __string(dn_name, dn->full_name)
-> +               __field(unsigned long, flags)
-> +       ),
-> +
-> +       TP_fast_assign(
-> +               __assign_str(dn_name, dn->full_name);
-> +               __entry->flags = dn->_flags;
-> +       ),
-> +
-> +       TP_printk("dn->full_name=%s, dn->_flags=%lu",
-> +                 __get_str(dn_name), __entry->flags)
-> +);
-> +
-> +#define of_reconfig_action_names \
-> +       {OF_RECONFIG_ATTACH_NODE, "ATTACH_NODE"}, \
-> +       {OF_RECONFIG_DETACH_NODE, "DETACH_NODE"}, \
-> +       {OF_RECONFIG_ADD_PROPERTY, "ADD_PROPERTY"}, \
-> +       {OF_RECONFIG_REMOVE_PROPERTY, "REMOVE_PROPERTY"}, \
-> +       {OF_RECONFIG_UPDATE_PROPERTY, "UPDATE_PROPERTY"}
-> +
-> +TRACE_EVENT(of_reconfig_notify,
-> +
-> +       TP_PROTO(unsigned long action, struct of_reconfig_data *ord),
-> +
-> +       TP_ARGS(action, ord),
-> +
-> +       TP_STRUCT__entry(
-> +               __field(unsigned long, action)
-> +               __string(dn_name, ord->dn->full_name)
-> +               __string(prop_name, ord->prop ? ord->prop->name : "null")
-> +               __string(oldprop_name, ord->old_prop ? ord->old_prop->name : "null")
-> +       ),
-> +
-> +       TP_fast_assign(
-> +               __entry->action = action;
-> +               __assign_str(dn_name, ord->dn->full_name);
-> +               __assign_str(prop_name, ord->prop ? ord->prop->name : "null");
-> +               __assign_str(oldprop_name, ord->old_prop ? ord->old_prop->name : "null");
-> +       ),
-> +
-> +       TP_printk("action=%s, dn->full_name=%s, prop->name=%s, old_prop->name=%s",
-> +                 __print_symbolic(__entry->action, of_reconfig_action_names),
-> +                 __get_str(dn_name), __get_str(prop_name), __get_str(oldprop_name))
-> +);
-> +
-> +#endif /*      _TRACE_OF_H */
-> +
-> +/* This part must be outside protection */
-> +#include <trace/define_trace.h>
-> --
-> 1.8.3.1
->
+v1 for this patchset can be found here :
+https://lwn.net/Articles/705475/
+
+Nest events:
+Per-chip nest instrumentation provides various per-chip metrics
+such as memory, powerbus, Xlink and Alink bandwidth.
+
+Core events:
+Per-core IMC instrumentation provides various per-core metrics
+such as non-idle cycles, non-idle instructions, various cache and
+memory related metrics etc.
+
+Thread events:
+All the events for thread level are same as core level with the
+difference being in the domain. These are per-cpu metrics.
+
+PMU Events' Information:
+OPAL obtains the IMC PMU and event information from the IMC Catalog
+and passes on to the kernel via the device tree. The events' information
+contains :
+ - Event name
+ - Event Offset
+ - Event description
+and, maybe :
+ - Event scale
+ - Event unit
+
+Some PMUs may have a common scale and unit values for all their
+supported events. For those cases, the scale and unit properties for
+those events must be inherited from the PMU.
+
+The event offset in the memory is where the counter data gets
+accumulated.
+
+The OPAL-side patches are posted upstream :
+https://lists.ozlabs.org/pipermail/skiboot/2017-April/006880.html
+
+The kernel discovers the IMC counters information in the device tree
+at the "imc-counters" device node which has a compatible field
+"ibm,opal-in-memory-counters".
+
+Parsing of the Events' information:
+To parse the IMC PMUs and events information, the kernel has to
+discover the "imc-counters" node and walk through the pmu and event
+nodes.
+
+Here is an excerpt of the dt showing the imc-counters with
+mcs0 (nest), core and thread node:
+https://github.com/open-power/ima-catalog/blob/master/81E00612.4E0100.dts
+
+
+/dts-v1/;
+
+[...]
+
+/dts-v1/;
+
+/ {
+        name = "";
+        compatible = "ibm,opal-in-memory-counters";
+        #address-cells = <0x1>;
+        #size-cells = <0x1>;
+        imc-nest-offset = <0x320000>;
+        imc-nest-size = <0x30000>;
+        version-id = "";
+
+        NEST_MCS: nest-mcs-events {
+                #address-cells = <0x1>;
+                #size-cells = <0x1>;
+
+                event@0 {
+                        event-name = "RRTO_QFULL_NO_DISP" ;
+                        reg = <0x0 0x8>;
+                        desc = "RRTO not dispatched in MCS0 due to capacity - pulses once for each time a valid RRTO op is not dispatched due to a command list full condition" ;
+                };
+                event@8 {
+                        event-name = "WRTO_QFULL_NO_DISP" ;
+                        reg = <0x8 0x8>;
+                        desc = "WRTO not dispatched in MCS0 due to capacity - pulses once for each time a valid WRTO op is not dispatched due to a command list full condition" ;
+                };
+		[...]
+	mcs0 {
+                compatible = "ibm,imc-counters-nest";
+                events-prefix = "PM_MCS0_";
+                unit = "";
+                scale = "";
+                reg = <0x118 0x8>;
+                events = < &NEST_MCS >;
+        };
+
+        mcs1 {
+                compatible = "ibm,imc-counters-nest";
+                events-prefix = "PM_MCS1_";
+                unit = "";
+                scale = "";
+                reg = <0x198 0x8>;
+                events = < &NEST_MCS >;
+        };
+	[...]
+CORE_EVENTS: core-events {
+                #address-cells = <0x1>;
+                #size-cells = <0x1>;
+
+                event@e0 {
+                        event-name = "0THRD_NON_IDLE_PCYC" ;
+                        reg = <0xe0 0x8>;
+                        desc = "The number of processor cycles when all threads are idle" ;
+                };
+                event@120 {
+                        event-name = "1THRD_NON_IDLE_PCYC" ;
+                        reg = <0x120 0x8>;
+                        desc = "The number of processor cycles when exactly one SMT thread is executing non-idle code" ;
+                };
+		[...]
+       core {
+                compatible = "ibm,imc-counters-core";
+                events-prefix = "CPM_";
+                unit = "";
+                scale = "";
+                reg = <0x0 0x8>;
+                events = < &CORE_EVENTS >;
+        };
+
+        thread {
+                compatible = "ibm,imc-counters-core";
+                events-prefix = "CPM_";
+                unit = "";
+                scale = "";
+                reg = <0x0 0x8>;
+                events = < &CORE_EVENTS >;
+        };
+};
+
+>From the device tree, the kernel parses the PMUs and their events'
+information.
+
+After parsing the IMC PMUs and their events, the PMUs and their
+attributes are registered in the kernel.
+
+This patchset (patches 9 and 10) configure the thread level IMC PMUs
+to count for tasks, which give us the thread level metric values per
+task.
+
+Example Usage :
+ # perf list
+
+  [...]
+  nest_mcs0/PM_MCS_DOWN_128B_DATA_XFER_MC0/           [Kernel PMU event]
+  nest_mcs0/PM_MCS_DOWN_128B_DATA_XFER_MC0_LAST_SAMPLE/ [Kernel PMU event]
+  [...]
+  core_imc/CPM_NON_IDLE_INST/                        [Kernel PMU event]
+  core_imc/CPM_NON_IDLE_PCYC/                        [Kernel PMU event]
+  [...]
+  thread_imc/CPM_NON_IDLE_INST/                      [Kernel PMU event]
+  thread_imc/CPM_NON_IDLE_PCYC/                      [Kernel PMU event]
+
+To see per chip data for nest_mcs0/PM_MCS_DOWN_128B_DATA_XFER_MC0/ :
+ # perf stat -e "nest_mcs0/PM_MCS_DOWN_128B_DATA_XFER_MC0/" -a --per-socket
+
+To see non-idle instructions for core 0 :
+ # ./perf stat -e "core_imc/CPM_NON_IDLE_INST/" -C 0 -I 1000
+
+To see non-idle instructions for a "make" :
+ # ./perf stat -e "thread_imc/CPM_NON_IDLE_PCYC/" make
+
+Comments/feedback/suggestions are welcome.
+
+
+TODO:
+1)Add a sysfs interface to disable the Core imc (both for ldbar and pdbar)
+
+
+Changelog:
+
+v6 -> v7:
+ - Updated the commit message and code comments.
+ - Changed the counter init code to disable the
+   nest/core counters by default and enable only 
+   when it is used.
+ - Updated the pmu-setup code to register the
+   PMUs which doesn't have events.
+ - replaced imc_event_info_val() to imc_event_prop_update()
+ - Updated the imc_pmu_setup() code, by checking for the "value"
+   of compatible property instead of merely checking for compatible.
+ - removed imc_get_domain().
+ - init_imc_pmu() and imc_pmu_setup() are made  __init.
+ - update_max_val() is invoked immediately after updating the offset value.
+v5 -> v6:
+ - merged few patches for the readability and code flow
+ - Updated the commit message and code comments.
+ - Added kdump check.
+ - updated cpuhotplug code and added checks for perf migration context
+ - Added READ_ONCE() when reading the counter data.
+ - replaced of_property_read_u32() with of_get_address() for "reg" property read
+ - replaced UNKNOWN_DOMAIN with IMC_DOMAIN_UNKNOWN
+ v4 -> v5:
+ - Updated opal call numbers
+ - Added a patch to disable Core-IMC device using shutdown callback
+ - Added patch to support cpuhotplug for thread-imc
+ - Added patch to disable and enable core imc engine in cpuhot plug path
+ v3 -> v4 :
+ - Changed the events parser code to discover the PMU and events because
+   of the changed format of the IMC DTS file (Patch 3).
+ - Implemented the two TODOs to include core and thread IMC support with
+   this patchset (Patches 7 through 10).
+ - Changed the CPU hotplug code of Nest IMC PMUs to include a new state
+   CPUHP_AP_PERF_POWERPC_NEST_ONLINE (Patch 6).
+ v2 -> v3 :
+ - Changed all references for IMA (In-Memory Accumulation) to IMC (In-Memory
+   Collection).
+ v1 -> v2 :
+ - Account for the cases where a PMU can have a common scale and unit
+   values for all its supported events (Patch 3/6).
+ - Fixed a Build error (for maple_defconfig) by enabling imc_pmu.o
+   only for CONFIG_PPC_POWERNV=y (Patch 4/6)
+ - Read from the "event-name" property instead of "name" for an event
+   node (Patch 3/6).
+
+Anju T Sudhakar (6):
+  powerpc/powernv: Autoload IMC device driver module
+  powerpc/powernv: Detect supported IMC units and its events
+  powerpc/perf: IMC pmu cpumask and cpuhotplug support
+  powerpc/powernv: Thread IMC events detection
+  powerpc/perf: Thread imc cpuhotplug support
+  powerpc/perf: Thread IMC PMU functions
+
+Hemant Kumar (4):
+  powerpc/powernv: Data structure and macros definitions for IMC
+  powerpc/perf: Add generic IMC pmu group and event functions
+  powerpc/powernv: Core IMC events detection
+  powerpc/perf: PMU functions for Core IMC and hotplugging
+
+
+ arch/powerpc/include/asm/imc-pmu.h             |  118 +++
+ arch/powerpc/include/asm/opal-api.h            |   21 +-
+ arch/powerpc/include/asm/opal.h                |   14 +
+ arch/powerpc/perf/Makefile                     |    3 +
+ arch/powerpc/perf/imc-pmu.c                    | 1100 ++++++++++++++++++++++++
+ arch/powerpc/platforms/powernv/Kconfig         |   10 +
+ arch/powerpc/platforms/powernv/Makefile        |    1 +
+ arch/powerpc/platforms/powernv/opal-imc.c      |  607 +++++++++++++
+ arch/powerpc/platforms/powernv/opal-wrappers.S |    2 +
+ arch/powerpc/platforms/powernv/opal.c          |   18 +
+ include/linux/cpuhotplug.h                     |    3 +
+ 11 files changed, 1896 insertions(+), 1 deletion(-)
+ create mode 100644 arch/powerpc/include/asm/imc-pmu.h
+ create mode 100644 arch/powerpc/perf/imc-pmu.c
+ create mode 100644 arch/powerpc/platforms/powernv/opal-imc.c
+
+-- 
+2.7.4
