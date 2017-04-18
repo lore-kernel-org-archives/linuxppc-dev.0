@@ -1,35 +1,49 @@
-Return-Path: <srs0=5uim=32=suse.de=msuchanek@ozlabs.org>
+Return-Path: <srs0=dvxa=32=linux.vnet.ibm.com=mahesh@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w6nKn19tdzDq5b
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2017 00:18:21 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w6rRb1MzFzDq5b
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2017 02:38:35 +1000 (AEST)
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3w6nKn0BJPz8sZm
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2017 00:18:21 +1000 (AEST)
-Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3w6rRb04DRz8t00
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2017 02:38:35 +1000 (AEST)
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3w6nKm2KTrz9s0m
- for <linuxppc-dev@ozlabs.org>; Wed, 19 Apr 2017 00:18:19 +1000 (AEST)
-Date: Tue, 18 Apr 2017 16:18:16 +0200
-From: Michal =?UTF-8?B?U3VjaMOhbmVr?= <msuchanek@suse.de>
-To: Hari Bathini <hbathini@linux.vnet.ibm.com>
-Cc: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>, linuxppc-dev
- <linuxppc-dev@ozlabs.org>
-Subject: Re: [PATCH v2 1/2] fadump: reduce memory consumption for capture
- kernel
-Message-ID: <20170418161816.20e124f0@kitsune.suse.cz>
-In-Reply-To: <c1591a61-6499-4364-9d37-a3035e0eaddf@linux.vnet.ibm.com>
-References: <148647105867.9464.16492047069430229118.stgit@hbathini.in.ibm.com>
- <878tnd7zim.fsf@concordia.ellerman.id.au>
- <d50dfb98-68ac-0135-8e65-560aec1d752e@linux.vnet.ibm.com>
- <87efx4gwk2.fsf@concordia.ellerman.id.au>
- <e1377bf8-e574-6ffa-6b63-3748a01dcdfa@linux.vnet.ibm.com>
- <20170413215826.367dbdf0@kitsune.suse.cz>
- <c1591a61-6499-4364-9d37-a3035e0eaddf@linux.vnet.ibm.com>
+ by ozlabs.org (Postfix) with ESMTPS id 3w6rRZ1M9vz9s78
+ for <linuxppc-dev@ozlabs.org>; Wed, 19 Apr 2017 02:38:33 +1000 (AEST)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v3IGO7Jh142827
+ for <linuxppc-dev@ozlabs.org>; Tue, 18 Apr 2017 12:38:29 -0400
+Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [125.16.236.3])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 29w0e2mwcb-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Tue, 18 Apr 2017 12:38:29 -0400
+Received: from localhost
+ by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
+ Tue, 18 Apr 2017 22:08:25 +0530
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+ by d28relay08.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v3IGaxxn12714050
+ for <linuxppc-dev@ozlabs.org>; Tue, 18 Apr 2017 22:06:59 +0530
+Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
+ by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v3IGcM4V025455
+ for <linuxppc-dev@ozlabs.org>; Tue, 18 Apr 2017 22:08:23 +0530
+Subject: [PATCH v2] powerpc/book3s: mce: Move add_taint() later in virtual
+ mode.
+From: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
+To: linuxppc-dev <linuxppc-dev@ozlabs.org>,
+ Michael Ellerman <mpe@ellerman.id.au>
+Cc: Daniel Axtens <dja@axtens.net>
+Date: Tue, 18 Apr 2017 22:08:17 +0530
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="utf-8"
+Message-Id: <149253349689.12722.1516352063236500616.stgit@jupiter.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,102 +53,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 17 Apr 2017 20:43:02 +0530
-Hari Bathini <hbathini@linux.vnet.ibm.com> wrote:
+From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
 
-> On Friday 14 April 2017 01:28 AM, Michal Such=C3=A1nek wrote:
-> > On Thu, 13 Apr 2017 01:59:13 +0530
-> > Hari Bathini <hbathini@linux.vnet.ibm.com> wrote:
-> > =20
-> >> On Friday 07 April 2017 07:16 PM, Michael Ellerman wrote: =20
-> >>> Hari Bathini <hbathini@linux.vnet.ibm.com> writes: =20
-> >>>> On Friday 07 April 2017 07:24 AM, Michael Ellerman wrote: =20
-> >>>>> My preference would be that the fadump kernel "just works". If
-> >>>>> it's using too much memory then the fadump kernel should do
-> >>>>> whatever it needs to use less memory, eg. shrinking nr_cpu_ids
-> >>>>> etc. Do we actually know *why* the fadump kernel is running out
-> >>>>> of memory? Obviously large numbers of CPUs is one of the main
-> >>>>> drivers (lots of stacks required). But other than that what is
-> >>>>> causing the memory pressure? I would like some data on that
-> >>>>> before we proceed. =20
-> >>>> Almost the same amount of memory in comparison with the memory
-> >>>> required to boot the production kernel but that is unwarranted
-> >>>> for fadump (dump capture) kernel. =20
-> >>> That's not data! :)
-> >>>
-> >>> The dump kernel is booted with *much* less memory than the
-> >>> production kernel (that's the whole issue!) and so it doesn't need
-> >>> to create struct pages for all that memory, which means it should
-> >>> need less memory.
-> >>>
-> >>> The vfs caches are also sized based on the available memory, so
-> >>> they should also shrink in the dump kernel.
-> >>>
-> >>> I want some actual numbers on what's driving the memory usage.
-> >>>
-> >>> I tried some of these parameters to see how much memory they would
-> >>> save: =20
-> >> Hi Michael,
-> >>
-> >> Tried to get data to show parameters like numa=3Doff &
-> >> cgroup_disable=3Dmemory matter too but parameter nr_cpus=3D1 is making
-> >> parameters like numa=3Doff, cgroup_disable=3Dmemory insignificant.
-> >> Also, these parameters not using much of early memory reservations
-> >> is making quantification of memory saved for each of them that
-> >> much more difficult. But I would still like to argue that passing
-> >> additional parameters to fadump is better than enforcing nr_cpus=3D1
-> >> in the kernel for:
-> >>
-> >>     a) With makedumpfile tool supporting multi-threading it would
-> >> make sense to leave the choice of how many CPUs to have, to the
-> >> user.
-> >>
-> >>     b) Parameters like udev.children-max=3D2 can help to reduce the
-> >> number of parallel executed events bringing down the memory
-> >> pressure on fadump kernel (when it is booted with more than one
-> >> CPU).
-> >>
-> >>     c) Ease of maintainability is better (considering any new
-> >> kernel features with some memory to save or stability to gain on
-> >> disabling, possible platform supports) with append approach over
-> >> enforcing these parameters
-> >>        in the kernel.
-> >>
-> >>     d) It would give user the flexibility to disable unwanted
-> >> kernel features in fadump kernel (numa=3Doff,
-> >> cgroup_disable=3Dmemory). For every feature enabled in the
-> >> production kernel, fadump kernel will have the choice to
-> >>        opt out of it, provided there is such cmdline option. =20
-> > Hello, =20
->=20
-> Hi Michal,
->=20
-> > can't the extra parameters be passed in the devicetree? =20
->=20
-> Hmmm.. possible. Without change in f/w, this may not be guaranteed
-> though.
->=20
-> > The docs say that the kernel can tell it's a fadump crash kernel by
-> > checking the devicetree ibm,dump-kernel property. Is there any
-> > reason =20
->=20
-> This node is exported by firmware
->=20
-> > more (optional) properties cannot be added? =20
->=20
-> Kernel change seems simple over f/w enhancement..
+machine_check_early() gets called in real mode. The very first time when
+add_taint() is called, it prints a warning which ends up calling opal
+call (that uses OPAL_CALL wrapper) for writing it to console. If we get a
+very first machine check while we are in opal we are doomed. OPAL_CALL
+overwrites the PACASAVEDMSR in r13 and in this case when we are done with
+MCE handling the original opal call will use this new MSR on it's way
+back to opal_return. This usually leads unexpected behaviour or kernel
+to panic. Instead move the add_taint() call later in the virtual mode
+where it is safe to call.
 
-That certainly looks so when you are a kernel developer and can
-implement the change yourself compared to convincing some firmware
-developer that this feature makes sense.
+This is broken with current FW level. We got lucky so far for not getting
+very first MCE hit while in OPAL. But easily reproducible on Mambo.
+This should go to stable.
 
-On the other hand, the proposed kernel-only solution introduces
-requirement that the maintainer does not like.
+Fixes: 27ea2c420cad powerpc: Set the correct kernel taint on machine check errors.
+Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+---
+ arch/powerpc/kernel/mce.c   |    2 ++
+ arch/powerpc/kernel/traps.c |    4 ++--
+ 2 files changed, 4 insertions(+), 2 deletions(-)
 
-For the platform as a whole does it make more sense to add a hack to
-the kernel or does it make sense to enhance the firmware to provide
-more options for firmware-assisted dump?
-
-Thanks
-
-Michal
+diff --git a/arch/powerpc/kernel/mce.c b/arch/powerpc/kernel/mce.c
+index a1475e6..b23b323 100644
+--- a/arch/powerpc/kernel/mce.c
++++ b/arch/powerpc/kernel/mce.c
+@@ -221,6 +221,8 @@ static void machine_check_process_queued_event(struct irq_work *work)
+ {
+ 	int index;
+ 
++	add_taint(TAINT_MACHINE_CHECK, LOCKDEP_NOW_UNRELIABLE);
++
+ 	/*
+ 	 * For now just print it to console.
+ 	 * TODO: log this error event to FSP or nvram.
+diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+index ff365f9..af97e81 100644
+--- a/arch/powerpc/kernel/traps.c
++++ b/arch/powerpc/kernel/traps.c
+@@ -306,8 +306,6 @@ long machine_check_early(struct pt_regs *regs)
+ 
+ 	__this_cpu_inc(irq_stat.mce_exceptions);
+ 
+-	add_taint(TAINT_MACHINE_CHECK, LOCKDEP_NOW_UNRELIABLE);
+-
+ 	if (cur_cpu_spec && cur_cpu_spec->machine_check_early)
+ 		handled = cur_cpu_spec->machine_check_early(regs);
+ 	return handled;
+@@ -741,6 +739,8 @@ void machine_check_exception(struct pt_regs *regs)
+ 
+ 	__this_cpu_inc(irq_stat.mce_exceptions);
+ 
++	add_taint(TAINT_MACHINE_CHECK, LOCKDEP_NOW_UNRELIABLE);
++
+ 	/* See if any machine dependent calls. In theory, we would want
+ 	 * to call the CPU first, and call the ppc_md. one if the CPU
+ 	 * one returns a positive number. However there is existing code
