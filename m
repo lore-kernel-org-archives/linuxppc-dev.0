@@ -1,23 +1,33 @@
-Return-Path: <martin.petersen@oracle.com>
-Received: from userp1040.oracle.com (userp1040.oracle.com [156.151.31.81])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <elohimes@gmail.com>
+Received: from mail-oi0-x242.google.com (mail-oi0-x242.google.com
+ [IPv6:2607:f8b0:4003:c06::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w74jh3ycwzDq8V
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2017 11:51:36 +1000 (AEST)
-To: NeilBrown <neilb@suse.com>
-Cc: "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>,
- "Martin K. Petersen" <martin.petersen@oracle.com>,
- Tyrel Datwyler <tyreld@linux.vnet.ibm.com>, linux-scsi@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] scsi: ibmvfc: don't check for failure from mempool_alloc()
-From: "Martin K. Petersen" <martin.petersen@oracle.com>
-References: <878tn9xb2m.fsf@notabene.neil.brown.name>
-Date: Tue, 18 Apr 2017 21:51:28 -0400
-In-Reply-To: <878tn9xb2m.fsf@notabene.neil.brown.name> (NeilBrown's message of
- "Mon, 10 Apr 2017 12:15:13 +1000")
-Message-ID: <yq1h91ltba7.fsf@oracle.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w759Q6htVzDq7h
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2017 12:12:10 +1000 (AEST)
+Received: by mail-oi0-x242.google.com with SMTP id t14so2093182oif.1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Apr 2017 19:12:10 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <87bmrt6udc.fsf@concordia.ellerman.id.au>
+References: <20170417212705.21092.90222.stgit@bhelgaas-glaptop.roam.corp.google.com>
+ <20170417213653.21092.27784.stgit@bhelgaas-glaptop.roam.corp.google.com>
+ <CAErSpo6gtDos6GH5Z7aOoW4a3uS4X-HOOHtPFtyg=F+B6+osrw@mail.gmail.com>
+ <87bmrt6udc.fsf@concordia.ellerman.id.au>
+From: Yongji Xie <elohimes@gmail.com>
+Date: Wed, 19 Apr 2017 10:12:07 +0800
+Message-ID: <CAONzpcaGfO5bcSdjpX4NC=Ui9oTWORaj-v1vTDUTckPC5WWjqQ@mail.gmail.com>
+Subject: Re: [PATCH v11 4/7] powerpc/powernv: Override
+ pcibios_default_alignment() to force PCI devices to be page aligned
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Bjorn Helgaas <bhelgaas@google.com>, Li Zhong <zhong@linux.vnet.ibm.com>,
+ Alexey Kardashevskiy <aik@ozlabs.ru>,
+ "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>,
+ Alex Williamson <alex.williamson@redhat.com>,
+ Paul Mackerras <paulus@samba.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,12 +37,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-NeilBrown <neilb@suse.com> writes:
+On 19 April 2017 at 09:47, Michael Ellerman <mpe@ellerman.id.au> wrote:
+> Bjorn Helgaas <bhelgaas@google.com> writes:
+>
+>> On Mon, Apr 17, 2017 at 4:36 PM, Bjorn Helgaas <bhelgaas@google.com> wrote:
+>>> From: Yongji Xie <elohimes@gmail.com>
+>>> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+>>> index 6901a06da2f9..b724487cbd0f 100644
+>>> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
+>>> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+>>> @@ -3287,6 +3287,11 @@ static void pnv_pci_setup_bridge(struct pci_bus *bus, unsigned long type)
+>>>         }
+>>>  }
+>>>
+>>> +static resource_size_t pnv_pci_default_alignment(struct pci_dev *pdev)
+>>> +{
+>>> +       return PAGE_SIZE;
+>>> +}
+>>
+>> Is it necessary that pcibios_default_alignment() take a pci_dev
+>> pointer?
+>
+> It's not necessary given the current implementation, obviously.
+>
+> But it did strike me as a good idea to pass it in case we ever want to
+> do anything device specific in future.
+>
+>> I'd like this better if it were:
+>>
+>>   resource_size_t pcibios_default_alignment(void) { ... }
+>>
+>> because the last patch relies on the assumption that all resources of
+>> *all* devices will be realigned to the same alignment.
+>
+> But I guess that precludes doing anything device specific, at least
+> without further changes. So in that case it would be better if the API
+> didn't include the pci_dev.
+>
+> Hopefully Yongji can confirm that there were no plans to use the
+> pci_dev in future patches.
+>
 
-> mempool_alloc() cannot fail when passed GFP_NOIO or any other gfp
-> setting that is permitted to sleep.  So remove this pointless code.
+Yes, seems like pci_dev pointer doesn't match the assumption
+that all resources will be realigned to the same alignment. It's OK
+to me to remove it.
 
-Applied to 4.12/scsi-queue. Thanks!
-
--- 
-Martin K. Petersen	Oracle Linux Engineering
+Thanks,
+Yongji
