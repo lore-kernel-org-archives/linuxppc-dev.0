@@ -1,29 +1,27 @@
-Return-Path: <rostedt@goodmis.org>
-Received: from smtprelay.hostedemail.com (smtprelay0036.hostedemail.com
- [216.40.44.36])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <frowand.list@gmail.com>
+Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
+ [IPv6:2607:f8b0:400e:c00::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w76Bs2YKvzDq8M
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2017 12:58:28 +1000 (AEST)
-Received: from smtprelay.hostedemail.com (10.5.19.251.rfc1918.com
- [10.5.19.251])
- by smtpgrave08.hostedemail.com (Postfix) with ESMTP id 39F7A211562
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2017 02:49:59 +0000 (UTC)
-Date: Tue, 18 Apr 2017 22:49:53 -0400
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Frank Rowand <frowand.list@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w76W80JJszDq8M
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2017 13:12:35 +1000 (AEST)
+Received: by mail-pf0-x241.google.com with SMTP id g23so1712350pfj.1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Apr 2017 20:12:35 -0700 (PDT)
+Subject: Re: [PATCH] of: introduce event tracepoints for dynamic device_node
+ lifecyle
+To: Steven Rostedt <rostedt@goodmis.org>
+References: <1492475525-10827-1-git-send-email-tyreld@linux.vnet.ibm.com>
+ <58F6AA35.2040902@gmail.com> <20170418224657.1b7ed057@grimm.local.home>
 Cc: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>, robh+dt@kernel.org,
  linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
  devicetree@vger.kernel.org, nfont@linux.vnet.ibm.com, mpe@ellerman.id.au,
  mingo@redhat.com
-Subject: Re: [PATCH] of: introduce event tracepoints for dynamic device_node
- lifecyle
-Message-ID: <20170418224953.685943a3@grimm.local.home>
-In-Reply-To: <58F6C088.8020304@gmail.com>
-References: <1492475525-10827-1-git-send-email-tyreld@linux.vnet.ibm.com>
- <58F6AA35.2040902@gmail.com> <58F6C088.8020304@gmail.com>
+From: Frank Rowand <frowand.list@gmail.com>
+Message-ID: <58F6D588.2050402@gmail.com>
+Date: Tue, 18 Apr 2017 20:12:08 -0700
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+In-Reply-To: <20170418224657.1b7ed057@grimm.local.home>
+Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,29 +31,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 18 Apr 2017 18:42:32 -0700
-Frank Rowand <frowand.list@gmail.com> wrote:
-
-> And of course the other issue with using tracepoints is the extra space
-> required to hold the tracepoint info.  With the pr_debug() approach, the
-> space usage can be easily removed for a production kernel via a config
-> option.
-
-Now if you are saying you want to be able to enable debugging without
-the tracing infrastructure I would agree. As the tracing infrastructure
-is large. But I'm working on shrinking it more.
-
+On 04/18/17 19:46, Steven Rostedt wrote:
+> On Tue, 18 Apr 2017 17:07:17 -0700
+> Frank Rowand <frowand.list@gmail.com> wrote:
 > 
-> Tracepoints are wonderful technology, but not always the proper tool to
-> use for debug info.
-
-But if you are going to have tracing enabled regardless, adding a few
-more tracepoints isn't going to make the difference.
-
--- Steve
-
 > 
-> > If Rob wants to convert printk() style data to trace data (and I can't
-> > convince him otherwise) then I will have further comments on this specific
-> > patch.
-> > 
+>> As far as I know, there is no easy way to combine trace data and printk()
+>> style data to create a single chronology of events.  If some of the
+>> information needed to debug an issue is trace data and some is printk()
+>> style data then it becomes more difficult to understand the overall
+>> situation.
+> 
+> You mean like:
+> 
+>  # echo 1 > /sys/kernel/debug/tracing/events/printk/console/enable
+> 
+> Makes all printks also go into the ftrace ring buffer.
+
+Thanks!  I was hoping there was going to be an easy answer like this.
+
+
+> -- Steve
+> 
+>>
+>> If Rob wants to convert printk() style data to trace data (and I can't
+>> convince him otherwise) then I will have further comments on this specific
+>> patch.
+>>
+> .
+> 
