@@ -3,41 +3,42 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w7MNv5d7YzDq9m
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2017 22:53:03 +1000 (AEST)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w7MPk43jtzDqB7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2017 22:53:46 +1000 (AEST)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v3JCniYS068619
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2017 08:52:52 -0400
-Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [125.16.236.6])
- by mx0a-001b2d01.pphosted.com with ESMTP id 29x752upab-1
+ v3JCrhXJ085885
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2017 08:53:43 -0400
+Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [125.16.236.5])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 29x74mku5v-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2017 08:52:50 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2017 08:53:43 -0400
 Received: from localhost
- by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Wed, 19 Apr 2017 18:22:46 +0530
+ Wed, 19 Apr 2017 18:22:49 +0530
 Received: from d28av08.in.ibm.com (d28av08.in.ibm.com [9.184.220.148])
- by d28relay07.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v3JCpJpJ14876698
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2017 18:21:19 +0530
+ by d28relay08.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v3JCpN6U16187498
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2017 18:21:23 +0530
 Received: from d28av08.in.ibm.com (localhost [127.0.0.1])
  by d28av08.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v3JCqgNZ020239
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2017 18:22:43 +0530
+ v3JCqk8j020278
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2017 18:22:46 +0530
 From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
 Cc: Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>,
  Masami Hiramatsu <mhiramat@kernel.org>, Ingo Molnar <mingo@kernel.org>,
  linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [PATCH v4 2/6] powerpc: ftrace: restore LR from pt_regs
-Date: Wed, 19 Apr 2017 18:22:24 +0530
+Subject: [PATCH v4 5/6] powerpc: introduce a new helper to obtain function
+ entry points
+Date: Wed, 19 Apr 2017 18:22:27 +0530
 In-Reply-To: <cover.1492605029.git.naveen.n.rao@linux.vnet.ibm.com>
 References: <cover.1492605029.git.naveen.n.rao@linux.vnet.ibm.com>
 In-Reply-To: <cover.1492606062.git.naveen.n.rao@linux.vnet.ibm.com>
 References: <cover.1492606062.git.naveen.n.rao@linux.vnet.ibm.com>
-Message-Id: <5aa5ca47d531a530285fe5b453f6921d0960bde3.1492606062.git.naveen.n.rao@linux.vnet.ibm.com>
+Message-Id: <7c3fcc090894c7d180274a17a7dfa09ca14df51f.1492606062.git.naveen.n.rao@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,57 +48,93 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Pass the real LR to the ftrace handler. This is needed for
-KPROBES_ON_FTRACE for the pre handlers.
-
-Also, with KPROBES_ON_FTRACE, the link register may be updated by the
-pre handlers or by a registed kretprobe. Honor updated LR by restoring
-it from pt_regs, rather than from the stack save area.
-
-Live patch and function graph continue to work fine with this change.
+kprobe_lookup_name() is specific to the kprobe subsystem and may not
+always return the function entry point (in a subsequent patch for
+KPROBES_ON_FTRACE). For looking up function entry points, introduce a
+separate helper and use the same in optprobes.c
 
 Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
 ---
- arch/powerpc/kernel/entry_64.S | 13 +++++++------
- 1 file changed, 7 insertions(+), 6 deletions(-)
+ arch/powerpc/include/asm/code-patching.h | 41 ++++++++++++++++++++++++++++++++
+ arch/powerpc/kernel/optprobes.c          |  6 ++---
+ 2 files changed, 44 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-index 8fd8718722a1..744b2f91444a 100644
---- a/arch/powerpc/kernel/entry_64.S
-+++ b/arch/powerpc/kernel/entry_64.S
-@@ -1248,9 +1248,10 @@ _GLOBAL(ftrace_caller)
+diff --git a/arch/powerpc/include/asm/code-patching.h b/arch/powerpc/include/asm/code-patching.h
+index 8ab937771068..abef812de7f8 100644
+--- a/arch/powerpc/include/asm/code-patching.h
++++ b/arch/powerpc/include/asm/code-patching.h
+@@ -12,6 +12,8 @@
  
- 	/* Get the _mcount() call site out of LR */
- 	mflr	r7
--	/* Save it as pt_regs->nip & pt_regs->link */
-+	/* Save it as pt_regs->nip */
- 	std     r7, _NIP(r1)
--	std     r7, _LINK(r1)
-+	/* Save the read LR in pt_regs->link */
-+	std     r0, _LINK(r1)
+ #include <asm/types.h>
+ #include <asm/ppc-opcode.h>
++#include <linux/string.h>
++#include <linux/kallsyms.h>
  
- 	/* Save callee's TOC in the ABI compliant location */
- 	std	r2, 24(r1)
-@@ -1297,16 +1298,16 @@ ftrace_call:
- 	REST_8GPRS(16,r1)
- 	REST_8GPRS(24,r1)
+ /* Flags for create_branch:
+  * "b"   == create_branch(addr, target, 0);
+@@ -99,6 +101,45 @@ static inline unsigned long ppc_global_function_entry(void *func)
+ #endif
+ }
  
-+	/* Restore possibly modified LR */
-+	ld	r0, _LINK(r1)
-+	mtlr	r0
++/*
++ * Wrapper around kallsyms_lookup() to return function entry address:
++ * - For ABIv1, we lookup the dot variant.
++ * - For ABIv2, we return the local entry point.
++ */
++static inline unsigned long ppc_kallsyms_lookup_name(const char *name)
++{
++	unsigned long addr;
++#ifdef PPC64_ELF_ABI_v1
++	/* check for dot variant */
++	char dot_name[1 + KSYM_NAME_LEN];
++	bool dot_appended = false;
 +
- 	/* Restore callee's TOC */
- 	ld	r2, 24(r1)
++	if (strnlen(name, KSYM_NAME_LEN) >= KSYM_NAME_LEN)
++		return 0;
++
++	if (name[0] != '.') {
++		dot_name[0] = '.';
++		dot_name[1] = '\0';
++		strlcat(dot_name, name, sizeof(dot_name));
++		dot_appended = true;
++	} else {
++		dot_name[0] = '\0';
++		strlcat(dot_name, name, sizeof(dot_name));
++	}
++	addr = kallsyms_lookup_name(dot_name);
++	if (!addr && dot_appended)
++		/* Let's try the original non-dot symbol lookup	*/
++		addr = kallsyms_lookup_name(name);
++#elif defined(PPC64_ELF_ABI_v2)
++	addr = kallsyms_lookup_name(name);
++	if (addr)
++		addr = ppc_function_entry((void *)addr);
++#else
++	addr = kallsyms_lookup_name(name);
++#endif
++	return addr;
++}
++
+ #ifdef CONFIG_PPC64
+ /*
+  * Some instruction encodings commonly used in dynamic ftracing
+diff --git a/arch/powerpc/kernel/optprobes.c b/arch/powerpc/kernel/optprobes.c
+index ce81a322251c..ec60ed0d4aad 100644
+--- a/arch/powerpc/kernel/optprobes.c
++++ b/arch/powerpc/kernel/optprobes.c
+@@ -243,10 +243,10 @@ int arch_prepare_optimized_kprobe(struct optimized_kprobe *op, struct kprobe *p)
+ 	/*
+ 	 * 2. branch to optimized_callback() and emulate_step()
+ 	 */
+-	op_callback_addr = kprobe_lookup_name("optimized_callback", 0);
+-	emulate_step_addr = kprobe_lookup_name("emulate_step", 0);
++	op_callback_addr = (kprobe_opcode_t *)ppc_kallsyms_lookup_name("optimized_callback");
++	emulate_step_addr = (kprobe_opcode_t *)ppc_kallsyms_lookup_name("emulate_step");
+ 	if (!op_callback_addr || !emulate_step_addr) {
+-		WARN(1, "kprobe_lookup_name() failed\n");
++		WARN(1, "Unable to lookup optimized_callback()/emulate_step()\n");
+ 		goto error;
+ 	}
  
- 	/* Pop our stack frame */
- 	addi r1, r1, SWITCH_FRAME_SIZE
- 
--	/* Restore original LR for return to B */
--	ld	r0, LRSAVE(r1)
--	mtlr	r0
--
- #ifdef CONFIG_LIVEPATCH
-         /* Based on the cmpd above, if the NIP was altered handle livepatch */
- 	bne-	livepatch_handler
 -- 
 2.12.1
