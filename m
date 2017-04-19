@@ -1,15 +1,16 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w77H74WbDzDq8t
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2017 13:47:15 +1000 (AEST)
-In-Reply-To: <20170407012744.21800-2-npiggin@gmail.com>
-To: Nicholas Piggin <npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w77H80TYWzDq8M
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2017 13:47:16 +1000 (AEST)
+In-Reply-To: <1491574319-11852-2-git-send-email-clombard@linux.vnet.ibm.com>
+To: Christophe Lombard <clombard@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, fbarrat@linux.vnet.ibm.com, imunsie@au1.ibm.com,
+ andrew.donnellan@au1.ibm.com
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [1/2] powerpc/64s: Add msgp facility unavailable log string
-Message-Id: <3w77H73f6Tz9s65@ozlabs.org>
+Subject: Re: [V4,1/7] cxl: Read vsec perst load image
+Message-Id: <3w77H75p7tz9s4s@ozlabs.org>
 Date: Wed, 19 Apr 2017 13:47:15 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -20,11 +21,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2017-04-07 at 01:27:43 UTC, Nicholas Piggin wrote:
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+On Fri, 2017-04-07 at 14:11:53 UTC, Christophe Lombard wrote:
+> This bit is used to cause a flash image load for programmable
+> CAIA-compliant implementation. If this bit is set to ‘0’, a power
+> cycle of the adapter is required to load a programmable CAIA-com-
+> pliant implementation from flash.
+> This field will be used by the following patches.
+> 
+> Signed-off-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
+> Reviewed-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+> Acked-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
 
 Series applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/794464f4dea0b13dacad267c06a01f
+https://git.kernel.org/powerpc/c/aba81433b50350fde68bf80fe9f75d
 
 cheers
