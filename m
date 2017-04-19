@@ -1,36 +1,34 @@
-Return-Path: <peterz@infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org [65.50.211.133])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w7TMJ098gzDq9P
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Apr 2017 03:22:04 +1000 (AEST)
-Date: Wed, 19 Apr 2017 19:21:39 +0200
-From: Peter Zijlstra <peterz@infradead.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Petr Mladek <pmladek@suse.com>, Andrew Morton <akpm@linux-foundation.org>,
- Russell King <rmk+kernel@arm.linux.org.uk>,
- Daniel Thompson <daniel.thompson@linaro.org>,
- Jiri Kosina <jkosina@suse.com>, Ingo Molnar <mingo@redhat.com>,
- Thomas Gleixner <tglx@linutronix.de>,
- Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>,
- Chris Metcalf <cmetcalf@ezchip.com>, linux-kernel@vger.kernel.org,
- x86@kernel.org, linux-arm-kernel@lists.infradead.org,
- adi-buildroot-devel@lists.sourceforge.net,
- linux-cris-kernel@axis.com, linux-mips@linux-mips.org,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
- Jan Kara <jack@suse.cz>, Ralf Baechle <ralf@linux-mips.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- David Miller <davem@davemloft.net>
-Subject: Re: [PATCH v5 1/4] printk/nmi: generic solution for safe printk in NMI
-Message-ID: <20170419172139.hipylcdsarhvnsby@hirez.programming.kicks-ass.net>
-References: <1461239325-22779-1-git-send-email-pmladek@suse.com>
- <1461239325-22779-2-git-send-email-pmladek@suse.com>
- <20170419131341.76bc7634@gandalf.local.home>
+Return-Path: <srs0=nspz=33=google.com=keescook@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w7Tpb01dkzDq9D
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Apr 2017 03:42:14 +1000 (AEST)
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3w7TpZ5s5Bz8swX
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Apr 2017 03:42:14 +1000 (AEST)
+Received: from mail-io0-x232.google.com (mail-io0-x232.google.com
+ [IPv6:2607:f8b0:4001:c06::232])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3w7TpZ0TJZz9s65
+ for <linuxppc-dev@ozlabs.org>; Thu, 20 Apr 2017 03:42:13 +1000 (AEST)
+Received: by mail-io0-x232.google.com with SMTP id a103so30480617ioj.1
+ for <linuxppc-dev@ozlabs.org>; Wed, 19 Apr 2017 10:42:13 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170419131341.76bc7634@gandalf.local.home>
+Sender: keescook@google.com
+In-Reply-To: <1492612181-8484-1-git-send-email-mpe@ellerman.id.au>
+References: <1492612181-8484-1-git-send-email-mpe@ellerman.id.au>
+From: Kees Cook <keescook@chromium.org>
+Date: Wed, 19 Apr 2017 10:42:08 -0700
+Message-ID: <CAGXu5jKAoukvBtH7i0K17MywkLEpizECCfMGJ+XKWWfPQHdQBw@mail.gmail.com>
+Subject: Re: [PATCH] powerpc/mm: Add support for runtime configuration of ASLR
+ limits
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+ Bhupesh Sharma <bhsharma@redhat.com>,
+ "kernel-hardening@lists.openwall.com" <kernel-hardening@lists.openwall.com>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,30 +38,142 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Apr 19, 2017 at 01:13:41PM -0400, Steven Rostedt wrote:
-> On Thu, 21 Apr 2016 13:48:42 +0200
-> Petr Mladek <pmladek@suse.com> wrote:
-> 
-> > printk() takes some locks and could not be used a safe way in NMI context.
-> 
-> I just found a problem with this solution. It kills ftrace dumps from
-> NMI context :-(
-> 
-> [ 1295.168495]    <...>-67423  10dNh1 382171111us : do_raw_spin_lock <-_raw_spin_lock
-> [ 1295.168495]    <...>-67423  10dNh1 382171111us : sched_stat_runtime: comm=cc1 pid=67423 runtime=96858 [ns] vruntime=11924198270 [ns]
-> [ 1295.168496]    <...>-67423  10dNh1 382171111us : lock_acquire: ffffffff81c5c940 read rcu_read_lock
-> [ 1295.168497]
-> [ 1295.168498] Lost 4890096 message(s)!
-> [ 1296.805063] ---[ end Kernel panic - not syncing: Hard LOCKUP
-> [ 1296.811553] unchecked MSR access error: WRMSR to 0x83f (tried to write 0x00000000000000f6) at rIP: 0xffffffff81046fc7 (native_apic_msr_write+0x27/0x40)
-> [ 1296.811553] Call Trace:
-> [ 1296.811553]  <NMI>
-> 
-> I was hoping to see a cause of a hard lockup by enabling
-> ftrace_dump_on_oops. But as NMIs now have a very small buffer that
-> gets flushed, we need to find a new way to print out the full ftrace
-> buffer over serial.
-> 
-> Thoughts?
+On Wed, Apr 19, 2017 at 7:29 AM, Michael Ellerman <mpe@ellerman.id.au> wrote:
+> Add powerpc support for mmap_rnd_bits and mmap_rnd_compat_bits, which are two
+> sysctls that allow a user to configure the number of bits of randomness used for
+> ASLR.
+>
+> Because of the way the Kconfig for ARCH_MMAP_RND_BITS is defined, we have to
+> construct at least the MIN value in Kconfig, vs in a header which would be more
+> natural. Given that we just go ahead and do it all in Kconfig.
+>
+> At least according to the code (the documentation makes no mention of it), the
+> value is defined as the number of bits of randomisation *of the page*, not the
+> address. This makes some sense, with larger page sizes more of the low bits are
+> forced to zero, which would reduce the randomisation if we didn't take the
+> PAGE_SIZE into account. However it does mean the min/max values have to change
+> depending on the PAGE_SIZE in order to actually limit the amount of address
+> space consumed by the randomisation.
+>
+> The result of that is that we have to define the default values based on both
+> 32-bit vs 64-bit, but also the configured PAGE_SIZE. Furthermore now that we
+> have 128TB address space support on Book3S, we also have to take that into
+> account.
+>
+> Finally we can wire up the value in arch_mmap_rnd().
+>
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
-early_printk ;-)
+Maybe add a Suggested-by: for the earlier patches?
+
+> ---
+>  arch/powerpc/Kconfig   | 44 ++++++++++++++++++++++++++++++++++++++++++++
+>  arch/powerpc/mm/mmap.c | 11 ++++++-----
+>  2 files changed, 50 insertions(+), 5 deletions(-)
+>
+>
+> This is based on my next branch which has the 128TB changes:
+>   https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git/log/?h=next
+>
+> I would definitely appreciate someone checking my math, and any test results.
+>
+> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+> index 97a8bc8a095c..608ee0b7b79f 100644
+> --- a/arch/powerpc/Kconfig
+> +++ b/arch/powerpc/Kconfig
+> @@ -22,6 +22,48 @@ config MMU
+>         bool
+>         default y
+>
+> +config ARCH_MMAP_RND_BITS_MAX
+> +       # On Book3S 64, the default virtual address space for 64-bit processes
+> +       # is 2^47 (128TB). As a maximum, allow randomisation to consume up to
+> +       # 32T of address space (2^45), which should ensure a reasonable gap
+> +       # between bottom-up and top-down allocations for applications that
+> +       # consume "normal" amounts of address space. Book3S 64 only supports 64K
+> +       # and 4K page sizes.
+> +       default 29 if PPC_BOOK3S_64 && PPC_64K_PAGES # 29 = 45 (32T) - 16 (64K)
+> +       default 33 if PPC_BOOK3S_64                  # 33 = 45 (32T) - 12 (4K)
+> +       #
+> +       # On all other 64-bit platforms (currently only Book3E), the virtual
+> +       # address space is 2^46 (64TB). Allow randomisation to consume up to 16T
+> +       # of address space (2^44). Only 4K page sizes are supported.
+> +       default 32 if 64BIT     # 32 = 44 (16T) - 12 (4K)
+> +       #
+> +       # For 32-bit, use the compat values, as they're the same.
+> +       default ARCH_MMAP_RND_COMPAT_BITS_MIN
+
+Shouldn't the default case be ..._MAX?
+
+> +
+> +config ARCH_MMAP_RND_BITS_MIN
+> +       # Allow randomisation to consume up to 1GB of address space (2^30).
+> +       default 14 if 64BIT && PPC_64K_PAGES    # 14 = 30 (1GB) - 16 (64K)
+> +       default 18 if 64BIT                     # 18 = 30 (1GB) - 12 (4K)
+> +       #
+> +       # For 32-bit, use the compat values, as they're the same.
+> +       default ARCH_MMAP_RND_COMPAT_BITS_MIN
+> +
+> +config ARCH_MMAP_RND_COMPAT_BITS_MAX
+> +       # Total virtual address space for 32-bit processes is 2^31 (2GB).
+> +       # Allow randomisation to consume up to 512MB of address space (2^29).
+> +       default 11 if PPC_256K_PAGES    # 11 = 29 (512MB) - 18 (256K)
+> +       default 13 if PPC_64K_PAGES     # 13 = 29 (512MB) - 16 (64K)
+> +       default 15 if PPC_16K_PAGES     # 15 = 29 (512MB) - 14 (16K)
+> +       default 17                      # 17 = 29 (512MB) - 12 (4K)
+> +
+> +config ARCH_MMAP_RND_COMPAT_BITS_MIN
+> +       # Total virtual address space for 32-bit processes is 2^31 (2GB).
+> +       # Allow randomisation to consume up to 8MB of address space (2^23).
+> +       default 5 if PPC_256K_PAGES     #  5 = 23 (8MB) - 18 (256K)
+> +       default 7 if PPC_64K_PAGES      #  7 = 23 (8MB) - 16 (64K)
+> +       default 9 if PPC_16K_PAGES      #  9 = 23 (8MB) - 14 (16K)
+> +       default 11                      # 11 = 23 (8MB) - 12 (4K)
+> +
+>  config HAVE_SETUP_PER_CPU_AREA
+>         def_bool PPC64
+>
+> @@ -120,6 +162,8 @@ config PPC
+>         select HAVE_ARCH_HARDENED_USERCOPY
+>         select HAVE_ARCH_JUMP_LABEL
+>         select HAVE_ARCH_KGDB
+> +       select HAVE_ARCH_MMAP_RND_BITS
+> +       select HAVE_ARCH_MMAP_RND_COMPAT_BITS   if COMPAT
+>         select HAVE_ARCH_SECCOMP_FILTER
+>         select HAVE_ARCH_TRACEHOOK
+>         select HAVE_CBPF_JIT                    if !PPC64
+> diff --git a/arch/powerpc/mm/mmap.c b/arch/powerpc/mm/mmap.c
+> index a5d9ef59debe..6141cfff634e 100644
+> --- a/arch/powerpc/mm/mmap.c
+> +++ b/arch/powerpc/mm/mmap.c
+> @@ -59,13 +59,14 @@ static inline int mmap_is_legacy(void)
+>
+>  unsigned long arch_mmap_rnd(void)
+>  {
+> -       unsigned long rnd;
+> +       unsigned long shift, rnd;
+>
+> -       /* 8MB for 32bit, 1GB for 64bit */
+> +       shift = mmap_rnd_bits;
+> +#ifdef CONFIG_COMPAT
+>         if (is_32bit_task())
+> -               rnd = get_random_long() % (1<<(23-PAGE_SHIFT));
+> -       else
+> -               rnd = get_random_long() % (1UL<<(30-PAGE_SHIFT));
+> +               shift = mmap_rnd_compat_bits;
+> +#endif
+> +       rnd = get_random_long() % (1 << shift);
+>
+>         return rnd << PAGE_SHIFT;
+>  }
+> --
+> 2.7.4
+>
+
+Yay! Ever closer to being able to extract arch_mmap_rnd() out of arch/ ;)
+
+-Kees
+
+-- 
+Kees Cook
+Pixel Security
