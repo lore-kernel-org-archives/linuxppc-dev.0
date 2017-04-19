@@ -1,16 +1,17 @@
-Return-Path: <michael@ozlabs.org>
+Return-Path: <dgibson@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w793z5BF5zDq9H
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2017 15:07:43 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: herbert@gondor.apana.org.au
-Cc: linuxppc-dev@ozlabs.org,
-	dja@axtens.net
-Subject: [PATCH] powerpc/crypto/crct10dif-vpmsum: Fix missing preempt_disable()
-Date: Wed, 19 Apr 2017 15:07:38 +1000
-Message-Id: <1492578458-26252-1-git-send-email-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w7C4k72cZzDqBS
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2017 16:38:30 +1000 (AEST)
+From: David Gibson <david@gibson.dropbear.id.au>
+To: michael@ellerman.id.au,
+	paulus@samba.org
+Cc: linuxppc-dev@lists.ozlabs.org, jasowang@redhat.com, thuth@redhat.com,
+ David Gibson <david@gibson.dropbear.id.au>
+Subject: [RFC] arch/powerpc: Turn off irqs in switch_mm()
+Date: Wed, 19 Apr 2017 16:38:26 +1000
+Message-Id: <20170419063826.1678-1-david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,45 +21,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In crct10dif_vpmsum() we call enable_kernel_altivec() without first
-disabling preemption, which is not allowed.
+There seems to be a mismatch in expectations between the powerpc arch code
+and the generic (and x86) code in terms of the irq state when switch_mm()
+is called.
 
-It used to be sufficient just to call pagefault_disable(), because that
-also disabled preemption. But the two were decoupled in commit 8222dbe21e79
-("sched/preempt, mm/fault: Decouple preemption from the page fault
-logic") in mid 2015.
+powerpc expects irqs to already be (soft) disabled when switch_mm() is
+called, as made clear in the commit message of 9c1e105 "powerpc: Allow
+perf_counters to access user memory at interrupt time".
 
-The crct10dif-vpmsum code inherited this bug from the crc32c-vpmsum code
-on which it was modelled.
+That seems to be true when it's called from the schedule, but not for
+use_mm().  This becomes clear when looking at the x86 code paths for
+switch_mm().  There, switch_mm() itself disable irqs, with a
+switch_mm_irqs_off() variant which expects that to be already done.
 
-So add the missing preempt_disable/enable(). We should also call
-disable_kernel_fp(), although it does nothing by default, there is a
-debug switch to make it active and all enables should be paired with
-disables.
+This patch addresses the problem, making the powerpc code mirror the x86
+code.
 
-Fixes: b01df1c16c9a ("crypto: powerpc - Add CRC-T10DIF acceleration")
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
 ---
- arch/powerpc/crypto/crct10dif-vpmsum_glue.c | 3 +++
- 1 file changed, 3 insertions(+)
+ arch/powerpc/include/asm/mmu_context.h | 17 +++++++++++++++--
+ 1 file changed, 15 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/crypto/crct10dif-vpmsum_glue.c b/arch/powerpc/crypto/crct10dif-vpmsum_glue.c
-index bebfc329f746..02ea277863d1 100644
---- a/arch/powerpc/crypto/crct10dif-vpmsum_glue.c
-+++ b/arch/powerpc/crypto/crct10dif-vpmsum_glue.c
-@@ -44,10 +44,13 @@ static u16 crct10dif_vpmsum(u16 crci, unsigned char const *p, size_t len)
+RH-Bugzilla: https://bugzilla.redhat.com/show_bug.cgi?id=1437794
+
+It seems that some more recent changes in vhost have made it more
+likely to hit this problem, triggering a WARN.
+
+diff --git a/arch/powerpc/include/asm/mmu_context.h b/arch/powerpc/include/asm/mmu_context.h
+index b9e3f0a..0012f03 100644
+--- a/arch/powerpc/include/asm/mmu_context.h
++++ b/arch/powerpc/include/asm/mmu_context.h
+@@ -70,8 +70,9 @@ extern void drop_cop(unsigned long acop, struct mm_struct *mm);
+  * switch_mm is the entry point called from the architecture independent
+  * code in kernel/sched/core.c
+  */
+-static inline void switch_mm(struct mm_struct *prev, struct mm_struct *next,
+-			     struct task_struct *tsk)
++static inline void switch_mm_irqs_off(struct mm_struct *prev,
++				      struct mm_struct *next,
++				      struct task_struct *tsk)
+ {
+ 	/* Mark this context has been used on the new CPU */
+ 	if (!cpumask_test_cpu(smp_processor_id(), mm_cpumask(next)))
+@@ -110,6 +111,18 @@ static inline void switch_mm(struct mm_struct *prev, struct mm_struct *next,
+ 	switch_mmu_context(prev, next, tsk);
+ }
  
- 	if (len & ~VMX_ALIGN_MASK) {
- 		crc <<= 16;
-+		preempt_disable();
- 		pagefault_disable();
- 		enable_kernel_altivec();
- 		crc = __crct10dif_vpmsum(crc, p, len & ~VMX_ALIGN_MASK);
-+		disable_kernel_altivec();
- 		pagefault_enable();
-+		preempt_enable();
- 		crc >>= 16;
- 	}
++static inline void switch_mm(struct mm_struct *prev, struct mm_struct *next,
++			     struct task_struct *tsk)
++{
++	unsigned long flags;
++
++	local_irq_save(flags);
++	switch_mm_irqs_off(prev, next, tsk);
++	local_irq_restore(flags);
++}
++#define switch_mm_irqs_off switch_mm_irqs_off
++
++
+ #define deactivate_mm(tsk,mm)	do { } while (0)
  
+ /*
 -- 
-2.7.4
+2.9.3
