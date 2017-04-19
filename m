@@ -1,27 +1,16 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w78gY16Q9zDq9H
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2017 14:50:01 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w793z5BF5zDq9H
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2017 15:07:43 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Peter Zijlstra <peterz@infradead.org>,
- Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- benh@kernel.crashing.org, paulus@samba.org, sukadev@linux.vnet.ibm.com,
- andrew.donnellan@au1.ibm.com, mingo@redhat.com, acme@kernel.org,
- alexander.shishkin@linux.intel.com, wangnan0@huawei.com, ast@kernel.org,
- eranian@google.com
-Subject: Re: [PATCH v3 1/6] powerpc/perf: Define big-endian version of
- perf_mem_data_src
-In-Reply-To: <20170413123849.556kqah6o6tzzs5d@hirez.programming.kicks-ass.net>
-References: <1491875470-17904-1-git-send-email-maddy@linux.vnet.ibm.com>
- <1491875470-17904-2-git-send-email-maddy@linux.vnet.ibm.com>
- <20170413123849.556kqah6o6tzzs5d@hirez.programming.kicks-ass.net>
-Date: Wed, 19 Apr 2017 14:50:00 +1000
-Message-ID: <8760i16lxj.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+To: herbert@gondor.apana.org.au
+Cc: linuxppc-dev@ozlabs.org,
+	dja@axtens.net
+Subject: [PATCH] powerpc/crypto/crct10dif-vpmsum: Fix missing preempt_disable()
+Date: Wed, 19 Apr 2017 15:07:38 +1000
+Message-Id: <1492578458-26252-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,111 +20,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Peter Zijlstra <peterz@infradead.org> writes:
+In crct10dif_vpmsum() we call enable_kernel_altivec() without first
+disabling preemption, which is not allowed.
 
-> On Tue, Apr 11, 2017 at 07:21:05AM +0530, Madhavan Srinivasan wrote:
->> From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
->> 
->> perf_mem_data_src is an union that is initialized via the ->val field
->> and accessed via the bitmap fields. For this to work on big endian
->> platforms (Which is broken now), we also need a big-endian represenation
->> of perf_mem_data_src. i.e, in a big endian system, if user request
->> PERF_SAMPLE_DATA_SRC (perf report -d), will get the default value from
->> perf_sample_data_init(), which is PERF_MEM_NA. Value for PERF_MEM_NA
->> is constructed using shifts:
->> 
->>   /* TLB access */
->>   #define PERF_MEM_TLB_NA		0x01 /* not available */
->>   ...
->>   #define PERF_MEM_TLB_SHIFT	26
->> 
->>   #define PERF_MEM_S(a, s) \
->> 	(((__u64)PERF_MEM_##a##_##s) << PERF_MEM_##a##_SHIFT)
->> 
->>   #define PERF_MEM_NA (PERF_MEM_S(OP, NA)   |\
->> 		    PERF_MEM_S(LVL, NA)   |\
->> 		    PERF_MEM_S(SNOOP, NA) |\
->> 		    PERF_MEM_S(LOCK, NA)  |\
->> 		    PERF_MEM_S(TLB, NA))
->> 
->> Which works out as:
->> 
->>   ((0x01 << 0) | (0x01 << 5) | (0x01 << 19) | (0x01 << 24) | (0x01 << 26))
->> 
->> Which means the PERF_MEM_NA value comes out of the kernel as 0x5080021
->> in CPU endian.
->> 
->> But then in the perf tool, the code uses the bitfields to inspect the
->> value, and currently the bitfields are defined using little endian
->> ordering.
->> 
->> So eg. in perf_mem__tlb_scnprintf() we see:
->>   data_src->val = 0x5080021
->>              op = 0x0
->>             lvl = 0x0
->>           snoop = 0x0
->>            lock = 0x0
->>            dtlb = 0x0
->>            rsvd = 0x5080021
->> 
->> Patch does a minimal fix of adding big endian definition of the bitfields
->> to match the values that are already exported by the kernel on big endian.
->> And it makes no change on little endian.
->
-> I think it is important to note that there are no current big-endian
-> users. So 'fixing' this will not break anybody and will ensure future
-> users (next patch) will work correctly.
+It used to be sufficient just to call pagefault_disable(), because that
+also disabled preemption. But the two were decoupled in commit 8222dbe21e79
+("sched/preempt, mm/fault: Decouple preemption from the page fault
+logic") in mid 2015.
 
-Actually that's only partly true. As I describe above the PERF_MEM_NA
-value is currently exported on BE platforms when a user requests it.
+The crct10dif-vpmsum code inherited this bug from the crc32c-vpmsum code
+on which it was modelled.
 
-So I added this text after the output from perf_mem__tlb_scnprintf():
+So add the missing preempt_disable/enable(). We should also call
+disable_kernel_fp(), although it does nothing by default, there is a
+debug switch to make it active and all enables should be paired with
+disables.
 
-  Because of the way the perf tool code is written this is still displayed to the
-  user as "N/A", so there is no bug visible at the UI level.
-  
-  Currently there are no big endian architectures which export a meaningful
-  value (ie. other than PERF_MEM_NA), so the extent of the bug on big endian
-  platforms is that the PERF_MEM_NA value is exported incorrectly as described
-  above. Subsequent patches will add support on big endian powerpc for populating
-  the data source value.
+Fixes: b01df1c16c9a ("crypto: powerpc - Add CRC-T10DIF acceleration")
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/crypto/crct10dif-vpmsum_glue.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-
-Hope that is clear.
-
-It also occurred to me that we don't actually have to redefine the whole
-union, it's only the bitfields that matter, so we could reduce the diff
-to:
-
-diff --git a/include/uapi/linux/perf_event.h b/include/uapi/linux/perf_event.h
-index c66a485a24ac..97152c79df6b 100644
---- a/include/uapi/linux/perf_event.h
-+++ b/include/uapi/linux/perf_event.h
-@@ -894,12 +894,23 @@ enum perf_callchain_context {
- union perf_mem_data_src {
- 	__u64 val;
- 	struct {
-+#if defined(__LITTLE_ENDIAN_BITFIELD)
- 		__u64   mem_op:5,	/* type of opcode */
- 			mem_lvl:14,	/* memory hierarchy level */
- 			mem_snoop:5,	/* snoop mode */
- 			mem_lock:2,	/* lock instr */
- 			mem_dtlb:7,	/* tlb access */
- 			mem_rsvd:31;
-+#elif defined(__BIG_ENDIAN_BITFIELD)
-+		__u64	mem_rsvd:31,
-+			mem_dtlb:7,	/* tlb access */
-+			mem_lock:2,	/* lock instr */
-+			mem_snoop:5,	/* snoop mode */
-+			mem_lvl:14,	/* memory hierarchy level */
-+			mem_op:5;	/* type of opcode */
-+#else
-+#error "Unknown endianness"
-+#endif
- 	};
- };
+diff --git a/arch/powerpc/crypto/crct10dif-vpmsum_glue.c b/arch/powerpc/crypto/crct10dif-vpmsum_glue.c
+index bebfc329f746..02ea277863d1 100644
+--- a/arch/powerpc/crypto/crct10dif-vpmsum_glue.c
++++ b/arch/powerpc/crypto/crct10dif-vpmsum_glue.c
+@@ -44,10 +44,13 @@ static u16 crct10dif_vpmsum(u16 crci, unsigned char const *p, size_t len)
  
-
-That looks better to me, thoughts?
-
-cheers
+ 	if (len & ~VMX_ALIGN_MASK) {
+ 		crc <<= 16;
++		preempt_disable();
+ 		pagefault_disable();
+ 		enable_kernel_altivec();
+ 		crc = __crct10dif_vpmsum(crc, p, len & ~VMX_ALIGN_MASK);
++		disable_kernel_altivec();
+ 		pagefault_enable();
++		preempt_enable();
+ 		crc >>= 16;
+ 	}
+ 
+-- 
+2.7.4
