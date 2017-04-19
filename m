@@ -1,34 +1,25 @@
-Return-Path: <srs0=nspz=33=google.com=keescook@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w7Tpb01dkzDq9D
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Apr 2017 03:42:14 +1000 (AEST)
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3w7TpZ5s5Bz8swX
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Apr 2017 03:42:14 +1000 (AEST)
-Received: from mail-io0-x232.google.com (mail-io0-x232.google.com
- [IPv6:2607:f8b0:4001:c06::232])
+Return-Path: <frowand.list@gmail.com>
+Received: from mail-io0-x243.google.com (mail-io0-x243.google.com
+ [IPv6:2607:f8b0:4001:c06::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3w7TpZ0TJZz9s65
- for <linuxppc-dev@ozlabs.org>; Thu, 20 Apr 2017 03:42:13 +1000 (AEST)
-Received: by mail-io0-x232.google.com with SMTP id a103so30480617ioj.1
- for <linuxppc-dev@ozlabs.org>; Wed, 19 Apr 2017 10:42:13 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w7TsT5NNBzDqBH
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Apr 2017 03:44:45 +1000 (AEST)
+Received: by mail-io0-x243.google.com with SMTP id k87so5565862ioi.0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2017 10:44:45 -0700 (PDT)
+Subject: Re: [PATCH] of: introduce event tracepoints for dynamic device_node
+ lifecyle
+To: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>, robh+dt@kernel.org
+References: <1492475525-10827-1-git-send-email-tyreld@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ devicetree@vger.kernel.org, nfont@linux.vnet.ibm.com, mpe@ellerman.id.au,
+ rostedt@goodmis.org, mingo@redhat.com
+From: Frank Rowand <frowand.list@gmail.com>
+Message-ID: <58F7A1F1.9030501@gmail.com>
+Date: Wed, 19 Apr 2017 10:44:17 -0700
 MIME-Version: 1.0
-Sender: keescook@google.com
-In-Reply-To: <1492612181-8484-1-git-send-email-mpe@ellerman.id.au>
-References: <1492612181-8484-1-git-send-email-mpe@ellerman.id.au>
-From: Kees Cook <keescook@chromium.org>
-Date: Wed, 19 Apr 2017 10:42:08 -0700
-Message-ID: <CAGXu5jKAoukvBtH7i0K17MywkLEpizECCfMGJ+XKWWfPQHdQBw@mail.gmail.com>
-Subject: Re: [PATCH] powerpc/mm: Add support for runtime configuration of ASLR
- limits
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
- Bhupesh Sharma <bhsharma@redhat.com>,
- "kernel-hardening@lists.openwall.com" <kernel-hardening@lists.openwall.com>
-Content-Type: text/plain; charset=UTF-8
+In-Reply-To: <1492475525-10827-1-git-send-email-tyreld@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,142 +29,244 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Apr 19, 2017 at 7:29 AM, Michael Ellerman <mpe@ellerman.id.au> wrote:
-> Add powerpc support for mmap_rnd_bits and mmap_rnd_compat_bits, which are two
-> sysctls that allow a user to configure the number of bits of randomness used for
-> ASLR.
->
-> Because of the way the Kconfig for ARCH_MMAP_RND_BITS is defined, we have to
-> construct at least the MIN value in Kconfig, vs in a header which would be more
-> natural. Given that we just go ahead and do it all in Kconfig.
->
-> At least according to the code (the documentation makes no mention of it), the
-> value is defined as the number of bits of randomisation *of the page*, not the
-> address. This makes some sense, with larger page sizes more of the low bits are
-> forced to zero, which would reduce the randomisation if we didn't take the
-> PAGE_SIZE into account. However it does mean the min/max values have to change
-> depending on the PAGE_SIZE in order to actually limit the amount of address
-> space consumed by the randomisation.
->
-> The result of that is that we have to define the default values based on both
-> 32-bit vs 64-bit, but also the configured PAGE_SIZE. Furthermore now that we
-> have 128TB address space support on Book3S, we also have to take that into
-> account.
->
-> Finally we can wire up the value in arch_mmap_rnd().
->
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+On 04/17/17 17:32, Tyrel Datwyler wrote:
+> This patch introduces event tracepoints for tracking a device_nodes
+> reference cycle as well as reconfig notifications generated in response
+> to node/property manipulations.
+> 
+> With the recent upstreaming of the refcount API several device_node
+> underflows and leaks have come to my attention in the pseries (DLPAR) dynamic
+> logical partitioning code (ie. POWER speak for hotplugging virtual and physcial
+> resources at runtime such as cpus or IOAs). These tracepoints provide a
+> easy and quick mechanism for validating the reference counting of
+> device_nodes during their lifetime.
+> 
+> Further, when pseries lpars are migrated to a different machine we
+> perform a live update of our device tree to bring it into alignment with the
+> configuration of the new machine. The of_reconfig_notify trace point
+> provides a mechanism that can be turned for debuging the device tree
+> modifications with out having to build a custom kernel to get at the
+> DEBUG code introduced by commit 00aa3720.
 
-Maybe add a Suggested-by: for the earlier patches?
+Is the normal kernel built with CONFIG_DYNAMIC_DEBUG=y?  If so, then
+simply removing the "ifdef DEBUG" around the switch in
+of_reconfig_notify() would solve that issue.
 
+-Frank
+
+
+> The following trace events are provided: of_node_get, of_node_put,
+> of_node_release, and of_reconfig_notify. These trace points require a kernel
+> built with ftrace support to be enabled. In a typical environment where
+> debugfs is mounted at /sys/kernel/debug the entire set of tracepoints
+> can be set with the following:
+> 
+>   echo "of:*" > /sys/kernel/debug/tracing/set_event
+> 
+> or
+> 
+>   echo 1 > /sys/kernel/debug/tracing/of/enable
+> 
+> The following shows the trace point data from a DLPAR remove of a cpu
+> from a pseries lpar:
+> 
+> cat /sys/kernel/debug/tracing/trace | grep "POWER8@10"
+> 
+> cpuhp/23-147   [023] ....   128.324827:
+> 	of_node_put: refcount=5, dn->full_name=/cpus/PowerPC,POWER8@10
+> cpuhp/23-147   [023] ....   128.324829:
+> 	of_node_put: refcount=4, dn->full_name=/cpus/PowerPC,POWER8@10
+> cpuhp/23-147   [023] ....   128.324829:
+> 	of_node_put: refcount=3, dn->full_name=/cpus/PowerPC,POWER8@10
+> cpuhp/23-147   [023] ....   128.324831:
+> 	of_node_put: refcount=2, dn->full_name=/cpus/PowerPC,POWER8@10
+>    drmgr-7284  [009] ....   128.439000:
+> 	of_node_put: refcount=1, dn->full_name=/cpus/PowerPC,POWER8@10
+>    drmgr-7284  [009] ....   128.439002:
+> 	of_reconfig_notify: action=DETACH_NODE, dn->full_name=/cpus/PowerPC,POWER8@10,
+> 			    prop->name=null, old_prop->name=null
+>    drmgr-7284  [009] ....   128.439015:
+> 	of_node_put: refcount=0, dn->full_name=/cpus/PowerPC,POWER8@10
+>    drmgr-7284  [009] ....   128.439016:
+> 	of_node_release: dn->full_name=/cpus/PowerPC,POWER8@10, dn->_flags=4
+> 
+> Signed-off-by: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
 > ---
->  arch/powerpc/Kconfig   | 44 ++++++++++++++++++++++++++++++++++++++++++++
->  arch/powerpc/mm/mmap.c | 11 ++++++-----
->  2 files changed, 50 insertions(+), 5 deletions(-)
->
->
-> This is based on my next branch which has the 128TB changes:
->   https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git/log/?h=next
->
-> I would definitely appreciate someone checking my math, and any test results.
->
-> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-> index 97a8bc8a095c..608ee0b7b79f 100644
-> --- a/arch/powerpc/Kconfig
-> +++ b/arch/powerpc/Kconfig
-> @@ -22,6 +22,48 @@ config MMU
->         bool
->         default y
->
-> +config ARCH_MMAP_RND_BITS_MAX
-> +       # On Book3S 64, the default virtual address space for 64-bit processes
-> +       # is 2^47 (128TB). As a maximum, allow randomisation to consume up to
-> +       # 32T of address space (2^45), which should ensure a reasonable gap
-> +       # between bottom-up and top-down allocations for applications that
-> +       # consume "normal" amounts of address space. Book3S 64 only supports 64K
-> +       # and 4K page sizes.
-> +       default 29 if PPC_BOOK3S_64 && PPC_64K_PAGES # 29 = 45 (32T) - 16 (64K)
-> +       default 33 if PPC_BOOK3S_64                  # 33 = 45 (32T) - 12 (4K)
-> +       #
-> +       # On all other 64-bit platforms (currently only Book3E), the virtual
-> +       # address space is 2^46 (64TB). Allow randomisation to consume up to 16T
-> +       # of address space (2^44). Only 4K page sizes are supported.
-> +       default 32 if 64BIT     # 32 = 44 (16T) - 12 (4K)
-> +       #
-> +       # For 32-bit, use the compat values, as they're the same.
-> +       default ARCH_MMAP_RND_COMPAT_BITS_MIN
-
-Shouldn't the default case be ..._MAX?
-
+>  drivers/of/dynamic.c      | 30 ++++++---------
+>  include/trace/events/of.h | 93 +++++++++++++++++++++++++++++++++++++++++++++++
+>  2 files changed, 105 insertions(+), 18 deletions(-)
+>  create mode 100644 include/trace/events/of.h
+> 
+> diff --git a/drivers/of/dynamic.c b/drivers/of/dynamic.c
+> index 888fdbc..85c0966 100644
+> --- a/drivers/of/dynamic.c
+> +++ b/drivers/of/dynamic.c
+> @@ -16,6 +16,9 @@
+>  
+>  #include "of_private.h"
+>  
+> +#define CREATE_TRACE_POINTS
+> +#include <trace/events/of.h>
 > +
-> +config ARCH_MMAP_RND_BITS_MIN
-> +       # Allow randomisation to consume up to 1GB of address space (2^30).
-> +       default 14 if 64BIT && PPC_64K_PAGES    # 14 = 30 (1GB) - 16 (64K)
-> +       default 18 if 64BIT                     # 18 = 30 (1GB) - 12 (4K)
-> +       #
-> +       # For 32-bit, use the compat values, as they're the same.
-> +       default ARCH_MMAP_RND_COMPAT_BITS_MIN
-> +
-> +config ARCH_MMAP_RND_COMPAT_BITS_MAX
-> +       # Total virtual address space for 32-bit processes is 2^31 (2GB).
-> +       # Allow randomisation to consume up to 512MB of address space (2^29).
-> +       default 11 if PPC_256K_PAGES    # 11 = 29 (512MB) - 18 (256K)
-> +       default 13 if PPC_64K_PAGES     # 13 = 29 (512MB) - 16 (64K)
-> +       default 15 if PPC_16K_PAGES     # 15 = 29 (512MB) - 14 (16K)
-> +       default 17                      # 17 = 29 (512MB) - 12 (4K)
-> +
-> +config ARCH_MMAP_RND_COMPAT_BITS_MIN
-> +       # Total virtual address space for 32-bit processes is 2^31 (2GB).
-> +       # Allow randomisation to consume up to 8MB of address space (2^23).
-> +       default 5 if PPC_256K_PAGES     #  5 = 23 (8MB) - 18 (256K)
-> +       default 7 if PPC_64K_PAGES      #  7 = 23 (8MB) - 16 (64K)
-> +       default 9 if PPC_16K_PAGES      #  9 = 23 (8MB) - 14 (16K)
-> +       default 11                      # 11 = 23 (8MB) - 12 (4K)
-> +
->  config HAVE_SETUP_PER_CPU_AREA
->         def_bool PPC64
->
-> @@ -120,6 +162,8 @@ config PPC
->         select HAVE_ARCH_HARDENED_USERCOPY
->         select HAVE_ARCH_JUMP_LABEL
->         select HAVE_ARCH_KGDB
-> +       select HAVE_ARCH_MMAP_RND_BITS
-> +       select HAVE_ARCH_MMAP_RND_COMPAT_BITS   if COMPAT
->         select HAVE_ARCH_SECCOMP_FILTER
->         select HAVE_ARCH_TRACEHOOK
->         select HAVE_CBPF_JIT                    if !PPC64
-> diff --git a/arch/powerpc/mm/mmap.c b/arch/powerpc/mm/mmap.c
-> index a5d9ef59debe..6141cfff634e 100644
-> --- a/arch/powerpc/mm/mmap.c
-> +++ b/arch/powerpc/mm/mmap.c
-> @@ -59,13 +59,14 @@ static inline int mmap_is_legacy(void)
->
->  unsigned long arch_mmap_rnd(void)
+>  /**
+>   * of_node_get() - Increment refcount of a node
+>   * @node:	Node to inc refcount, NULL is supported to simplify writing of
+> @@ -25,8 +28,10 @@
+>   */
+>  struct device_node *of_node_get(struct device_node *node)
 >  {
-> -       unsigned long rnd;
-> +       unsigned long shift, rnd;
->
-> -       /* 8MB for 32bit, 1GB for 64bit */
-> +       shift = mmap_rnd_bits;
-> +#ifdef CONFIG_COMPAT
->         if (is_32bit_task())
-> -               rnd = get_random_long() % (1<<(23-PAGE_SHIFT));
-> -       else
-> -               rnd = get_random_long() % (1UL<<(30-PAGE_SHIFT));
-> +               shift = mmap_rnd_compat_bits;
-> +#endif
-> +       rnd = get_random_long() % (1 << shift);
->
->         return rnd << PAGE_SHIFT;
+> -	if (node)
+> +	if (node) {
+>  		kobject_get(&node->kobj);
+> +		trace_of_node_get(refcount_read(&node->kobj.kref.refcount), node->full_name);
+> +	}
+>  	return node;
 >  }
-> --
-> 2.7.4
->
-
-Yay! Ever closer to being able to extract arch_mmap_rnd() out of arch/ ;)
-
--Kees
-
--- 
-Kees Cook
-Pixel Security
+>  EXPORT_SYMBOL(of_node_get);
+> @@ -38,8 +43,10 @@ struct device_node *of_node_get(struct device_node *node)
+>   */
+>  void of_node_put(struct device_node *node)
+>  {
+> -	if (node)
+> +	if (node) {
+> +		trace_of_node_put(refcount_read(&node->kobj.kref.refcount) - 1, node->full_name);
+>  		kobject_put(&node->kobj);
+> +	}
+>  }
+>  EXPORT_SYMBOL(of_node_put);
+>  
+> @@ -92,24 +99,9 @@ int of_reconfig_notifier_unregister(struct notifier_block *nb)
+>  int of_reconfig_notify(unsigned long action, struct of_reconfig_data *p)
+>  {
+>  	int rc;
+> -#ifdef DEBUG
+> -	struct of_reconfig_data *pr = p;
+>  
+> -	switch (action) {
+> -	case OF_RECONFIG_ATTACH_NODE:
+> -	case OF_RECONFIG_DETACH_NODE:
+> -		pr_debug("notify %-15s %s\n", action_names[action],
+> -			pr->dn->full_name);
+> -		break;
+> -	case OF_RECONFIG_ADD_PROPERTY:
+> -	case OF_RECONFIG_REMOVE_PROPERTY:
+> -	case OF_RECONFIG_UPDATE_PROPERTY:
+> -		pr_debug("notify %-15s %s:%s\n", action_names[action],
+> -			pr->dn->full_name, pr->prop->name);
+> -		break;
+> +	trace_of_reconfig_notify(action, p);
+>  
+> -	}
+> -#endif
+>  	rc = blocking_notifier_call_chain(&of_reconfig_chain, action, p);
+>  	return notifier_to_errno(rc);
+>  }
+> @@ -326,6 +318,8 @@ void of_node_release(struct kobject *kobj)
+>  	struct device_node *node = kobj_to_device_node(kobj);
+>  	struct property *prop = node->properties;
+>  
+> +	trace_of_node_release(node);
+> +
+>  	/* We should never be releasing nodes that haven't been detached. */
+>  	if (!of_node_check_flag(node, OF_DETACHED)) {
+>  		pr_err("ERROR: Bad of_node_put() on %s\n", node->full_name);
+> diff --git a/include/trace/events/of.h b/include/trace/events/of.h
+> new file mode 100644
+> index 0000000..0d53271
+> --- /dev/null
+> +++ b/include/trace/events/of.h
+> @@ -0,0 +1,93 @@
+> +#undef TRACE_SYSTEM
+> +#define TRACE_SYSTEM of
+> +
+> +#if !defined(_TRACE_OF_H) || defined(TRACE_HEADER_MULTI_READ)
+> +#define _TRACE_OF_H
+> +
+> +#include <linux/of.h>
+> +#include <linux/tracepoint.h>
+> +
+> +DECLARE_EVENT_CLASS(of_node_ref_template,
+> +
+> +	TP_PROTO(int refcount, const char* dn_name),
+> +
+> +	TP_ARGS(refcount, dn_name),
+> +
+> +	TP_STRUCT__entry(
+> +		__string(dn_name, dn_name)
+> +		__field(int, refcount)
+> +	),
+> +
+> +	TP_fast_assign(
+> +		__assign_str(dn_name, dn_name);
+> +		__entry->refcount = refcount;
+> +	),
+> +
+> +	TP_printk("refcount=%d, dn->full_name=%s",
+> +		  __entry->refcount, __get_str(dn_name))
+> +);
+> +
+> +DEFINE_EVENT(of_node_ref_template, of_node_get,
+> +	     TP_PROTO(int refcount, const char* dn_name),
+> +	     TP_ARGS(refcount, dn_name));
+> +
+> +DEFINE_EVENT(of_node_ref_template, of_node_put,
+> +	     TP_PROTO(int refcount, const char* dn_name),
+> +	     TP_ARGS(refcount, dn_name));
+> +
+> +TRACE_EVENT(of_node_release,
+> +
+> +	TP_PROTO(struct device_node *dn),
+> +
+> +	TP_ARGS(dn),
+> +
+> +	TP_STRUCT__entry(
+> +		__string(dn_name, dn->full_name)
+> +		__field(unsigned long, flags)
+> +	),
+> +
+> +	TP_fast_assign(
+> +		__assign_str(dn_name, dn->full_name);
+> +		__entry->flags = dn->_flags;
+> +	),
+> +
+> +	TP_printk("dn->full_name=%s, dn->_flags=%lu", 
+> +		  __get_str(dn_name), __entry->flags)
+> +);
+> +
+> +#define of_reconfig_action_names \
+> +	{OF_RECONFIG_ATTACH_NODE, "ATTACH_NODE"}, \
+> +	{OF_RECONFIG_DETACH_NODE, "DETACH_NODE"}, \
+> +	{OF_RECONFIG_ADD_PROPERTY, "ADD_PROPERTY"}, \
+> +	{OF_RECONFIG_REMOVE_PROPERTY, "REMOVE_PROPERTY"}, \
+> +	{OF_RECONFIG_UPDATE_PROPERTY, "UPDATE_PROPERTY"}
+> +
+> +TRACE_EVENT(of_reconfig_notify,
+> +
+> +	TP_PROTO(unsigned long action, struct of_reconfig_data *ord),
+> +
+> +	TP_ARGS(action, ord),
+> +
+> +	TP_STRUCT__entry(
+> +		__field(unsigned long, action)
+> +		__string(dn_name, ord->dn->full_name)
+> +		__string(prop_name, ord->prop ? ord->prop->name : "null")
+> +		__string(oldprop_name, ord->old_prop ? ord->old_prop->name : "null")
+> +	),
+> +
+> +	TP_fast_assign(
+> +		__entry->action = action;
+> +		__assign_str(dn_name, ord->dn->full_name);
+> +		__assign_str(prop_name, ord->prop ? ord->prop->name : "null");
+> +		__assign_str(oldprop_name, ord->old_prop ? ord->old_prop->name : "null");
+> +	),
+> +
+> +	TP_printk("action=%s, dn->full_name=%s, prop->name=%s, old_prop->name=%s",
+> +		  __print_symbolic(__entry->action, of_reconfig_action_names),
+> +		  __get_str(dn_name), __get_str(prop_name), __get_str(oldprop_name))
+> +);
+> +
+> +#endif /*	_TRACE_OF_H */
+> +
+> +/* This part must be outside protection */
+> +#include <trace/define_trace.h>
+> 
