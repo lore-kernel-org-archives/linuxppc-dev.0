@@ -1,28 +1,44 @@
-Return-Path: <turtle.in.the.kernel@gmail.com>
-Received: from mail-qt0-x242.google.com (mail-qt0-x242.google.com
- [IPv6:2607:f8b0:400d:c0d::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <gwshan@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w7dSg61jMzDqCd
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Apr 2017 09:27:15 +1000 (AEST)
-Received: by mail-qt0-x242.google.com with SMTP id t52so5329495qtb.3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2017 16:27:15 -0700 (PDT)
-Subject: Re: [PATCH] of: introduce event tracepoints for dynamic device_node
- lifecyle
-To: Michael Ellerman <mpe@ellerman.id.au>,
- Frank Rowand <frowand.list@gmail.com>,
- Tyrel Datwyler <tyreld@linux.vnet.ibm.com>, robh+dt@kernel.org
-References: <1492475525-10827-1-git-send-email-tyreld@linux.vnet.ibm.com>
- <58F6AA35.2040902@gmail.com> <87efwp6v4e.fsf@concordia.ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- devicetree@vger.kernel.org, nfont@linux.vnet.ibm.com, rostedt@goodmis.org,
- mingo@redhat.com
-From: Tyrel Datwyler <turtle.in.the.kernel@gmail.com>
-Message-ID: <1d51a229-612b-bf09-93d5-6e43b476e2cf@gmail.com>
-Date: Wed, 19 Apr 2017 16:27:10 -0700
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w7dyD5v5FzDqCf
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Apr 2017 09:49:24 +1000 (AEST)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v3JNmeQS039101
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2017 19:49:19 -0400
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 29wqpwfmne-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2017 19:49:19 -0400
+Received: from localhost
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Thu, 20 Apr 2017 09:49:17 +1000
+Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v3JNn7Aq43581640
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Apr 2017 09:49:15 +1000
+Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
+ by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v3JNmhNF030074
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Apr 2017 09:48:43 +1000
+Date: Thu, 20 Apr 2017 09:48:18 +1000
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: Russell Currey <ruscur@russell.cc>
+Cc: linuxppc-dev@lists.ozlabs.org, aik@ozlabs.ru
+Subject: Re: [PATCH v3 2/2] powerpc/eeh: Clean up and document event handling
+ functions
+Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+References: <20170419073927.29224-1-ruscur@russell.cc>
+ <20170419073927.29224-2-ruscur@russell.cc>
 MIME-Version: 1.0
-In-Reply-To: <87efwp6v4e.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset=windows-1252
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20170419073927.29224-2-ruscur@russell.cc>
+Message-Id: <20170419234818.GA7528@gwshan>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,128 +48,116 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/18/2017 06:31 PM, Michael Ellerman wrote:
-> Frank Rowand <frowand.list@gmail.com> writes:
-> 
->> On 04/17/17 17:32, Tyrel Datwyler wrote:
->>> This patch introduces event tracepoints for tracking a device_nodes
->>> reference cycle as well as reconfig notifications generated in response
->>> to node/property manipulations.
->>>
->>> With the recent upstreaming of the refcount API several device_node
->>> underflows and leaks have come to my attention in the pseries (DLPAR) dynamic
->>> logical partitioning code (ie. POWER speak for hotplugging virtual and physcial
->>> resources at runtime such as cpus or IOAs). These tracepoints provide a
->>> easy and quick mechanism for validating the reference counting of
->>> device_nodes during their lifetime.
->>>
->>> Further, when pseries lpars are migrated to a different machine we
->>> perform a live update of our device tree to bring it into alignment with the
->>> configuration of the new machine. The of_reconfig_notify trace point
->>> provides a mechanism that can be turned for debuging the device tree
->>> modifications with out having to build a custom kernel to get at the
->>> DEBUG code introduced by commit 00aa3720.
->>
->> I do not like changing individual (or small groups of) printk() style
->> debugging information to tracepoint style.
-> 
-> I'm not quite sure which printks() you're referring to.
-> 
-> The only printks that are removed in this series are under #ifdef DEBUG,
-> and so are essentially not there unless you build a custom kernel.
-> 
-> They also only cover the reconfig case, which is actually less
-> interesting than the much more common and bug-prone get/put logic.
-> 
->> As far as I know, there is no easy way to combine trace data and printk()
->> style data to create a single chronology of events.  If some of the
->> information needed to debug an issue is trace data and some is printk()
->> style data then it becomes more difficult to understand the overall
->> situation.
-> 
-> If you enable CONFIG_PRINTK_TIME then you should be able to just sort
-> the trace and the printk output by the timestamp. If you're really
-> trying to correlate the two then you should probably just be using
-> trace_printk().
-> 
-> But IMO this level of detail, tracing every get/put, does not belong in
-> printk. Trace points are absolutely the right solution for this type of
-> debugging.
+On Wed, Apr 19, 2017 at 05:39:27PM +1000, Russell Currey wrote:
+>Remove unnecessary tags in eeh_handle_normal_event(), and add function
+>comments for eeh_handle_normal_event() and eeh_handle_special_event().
+>
+>The only functional difference is that in the case of a PE reaching the
+>maximum number of failures, rather than one message telling you of this
+>and suggesting you reseat the device, there are two separate messages.
+>
+>Suggested-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+>Signed-off-by: Russell Currey <ruscur@russell.cc>
+>---
+>V3: new.  Thanks to Alexey for the suggestions.
+>---
+> arch/powerpc/kernel/eeh_driver.c | 36 ++++++++++++++++++++++++------------
+> 1 file changed, 24 insertions(+), 12 deletions(-)
+>
+>diff --git a/arch/powerpc/kernel/eeh_driver.c b/arch/powerpc/kernel/eeh_driver.c
+>index e50d1470714f..c405c79e50cd 100644
+>--- a/arch/powerpc/kernel/eeh_driver.c
+>+++ b/arch/powerpc/kernel/eeh_driver.c
+>@@ -724,6 +724,15 @@ static int eeh_reset_device(struct eeh_pe *pe, struct pci_bus *bus,
+>  */
+> #define MAX_WAIT_FOR_RECOVERY 300
+>
+>+/**
+>+ * eeh_handle_normal_event - Handle EEH events on a specific PE
+>+ * @pe: EEH PE
+>+ *
+>+ * Attempts to recover the given PE.  If recovery fails or the PE has failed
+>+ * too many times, remove the PE.
+>+ *
+>+ * Returns true if @pe should no longer be used, else false.
+>+ */
 
-Something else to keep in mind is that while pr_debugs could be used to
-provide feedback on the reference counts and of_reconfig events they
-don't in anyway tell us where they are happening in the kernel. The
-trace infrastructure provides the ability to stack trace those events.
-The following example provides me a lot more information about who is
-doing what and where after I hot-add an ethernet adapter:
+I think this bit of comments would be part of PATCH[1/2]? Also, the
+comments needn't to be in any document as it's static one. I guess
+you might not want it to show in stable branches as PATCH[1/2] has
+been tagged as stable. It's fine if that's the case.
 
-# echo stacktrace > /sys/kernel/debug/tracing/trace_options
-# cat trace | grep -A6 "/pci@800000020000018"
-...
-           drmgr-7349  [006] d...  7138.821875: of_node_get: refcount=8,
-dn->full_name=/pci@800000020000018
-           drmgr-7349  [006] d...  7138.821876: <stack trace>
- => .msi_quota_for_device
- => .rtas_setup_msi_irqs
- => .arch_setup_msi_irqs
- => .__pci_enable_msix
- => .pci_enable_msix_range
---
-           drmgr-7349  [006] d...  7138.821876: of_node_put: refcount=2,
-dn->full_name=/pci@800000020000018/ethernet@0
-           drmgr-7349  [006] d...  7138.821877: <stack trace>
- => .msi_quota_for_device
- => .rtas_setup_msi_irqs
- => .arch_setup_msi_irqs
- => .__pci_enable_msix
- => .pci_enable_msix_range
---
-           drmgr-7349  [006] ....  7138.821878: of_node_put: refcount=7,
-dn->full_name=/pci@800000020000018
-           drmgr-7349  [006] ....  7138.821879: <stack trace>
- => .rtas_setup_msi_irqs
- => .arch_setup_msi_irqs
- => .__pci_enable_msix
- => .pci_enable_msix_range
- => .bnx2x_enable_msix
---
+> static bool eeh_handle_normal_event(struct eeh_pe *pe)
+> {
+> 	struct pci_bus *frozen_bus;
+>@@ -741,8 +750,13 @@ static bool eeh_handle_normal_event(struct eeh_pe *pe)
+>
+> 	eeh_pe_update_time_stamp(pe);
+> 	pe->freeze_count++;
+>-	if (pe->freeze_count > eeh_max_freezes)
+>-		goto excess_failures;
+>+	if (pe->freeze_count > eeh_max_freezes) {
+>+		pr_err("EEH: PHB#%x-PE#%x has failed %d times in the\n"
+>+		       "last hour and has been permanently disabled.\n",
+>+		       pe->phb->global_number, pe->addr,
+>+		       pe->freeze_count);
+>+		goto hard_fail;
+>+	}
+> 	pr_warn("EEH: This PCI device has failed %d times in the last hour\n",
+> 		pe->freeze_count);
+>
+>@@ -872,25 +886,16 @@ static bool eeh_handle_normal_event(struct eeh_pe *pe)
+>
+> 	return false;
+>
+>-excess_failures:
+>+hard_fail:
+> 	/*
+> 	 * About 90% of all real-life EEH failures in the field
+> 	 * are due to poorly seated PCI cards. Only 10% or so are
+> 	 * due to actual, failed cards.
+> 	 */
 
-To get that same info as far as I know is to add a dump_stack() after
-each pr_debug.
+This bit of comments apply to "excess_failures" only, so it would
+be moved together with the pr_err(). Frankly speaking, I don't see
+the benebit of the cleanup. "excess_failure" in the original code
+indicates the case (excessive failures) explicitly, which is nice.
+However, it's not a big deal.
 
-Further, filters can be set on the tracepoint event fields such that
-trace data could be restricted to a particular device_node or refcount
-threshold. For example:
+>-	pr_err("EEH: PHB#%x-PE#%x has failed %d times in the\n"
+>-	       "last hour and has been permanently disabled.\n"
+>-	       "Please try reseating or replacing it.\n",
+>-		pe->phb->global_number, pe->addr,
+>-		pe->freeze_count);
+>-	goto perm_error;
+>-
+>-hard_fail:
+> 	pr_err("EEH: Unable to recover from failure from PHB#%x-PE#%x.\n"
+> 	       "Please try reseating or replacing it\n",
+> 		pe->phb->global_number, pe->addr);
+>
+>-perm_error:
 
-# cd /sys/kernel/debug/tracing# cat events/of/of_node_get/format
-# echo "dn_name == /pci@800000020000018" > events/of/filter
+We will have the message from above pr_err() for "perm_error" case, but
+we don't have that in original code.
 
-# cat trace
-           drmgr-10542 [003] ....  9630.677001: of_node_put: refcount=5,
-dn->full_name=/pci@800000020000018
-           drmgr-10542 [003] d...  9631.677368: of_node_get: refcount=6,
-dn->full_name=/pci@800000020000018
-           drmgr-10542 [003] ....  9631.677389: of_node_put: refcount=5,
-dn->full_name=/pci@800000020000018
-           drmgr-10542 [003] ....  9631.677390: of_reconfig_notify:
-action=DETACH_NODE, dn->full_name=/pci@800000020000018, prop->name=null,
-old_prop->name=null
-           drmgr-10542 [003] .n..  9632.025656: of_node_put: refcount=4,
-dn->full_name=/pci@800000020000018
-           drmgr-10542 [003] .n..  9632.025657: of_node_put: refcount=3,
-dn->full_name=/pci@800000020000018
+> 	eeh_slot_error_detail(pe, EEH_LOG_PERM);
+>
+> 	/* Notify all devices that they're about to go down. */
+>@@ -923,6 +928,13 @@ static bool eeh_handle_normal_event(struct eeh_pe *pe)
+> 	return false;
+> }
+>
+>+/**
+>+ * eeh_handle_special_event - Handle EEH events without a specific failing PE
+>+ *
+>+ * Called when an EEH event is detected but can't be narrowed down to a
+>+ * specific PE.  Iterates through possible failures and handles them as
+>+ * necessary.
+>+ */
+> static void eeh_handle_special_event(void)
+> {
+> 	struct eeh_pe *pe, *phb_pe;
 
-After setting the filter and doing a hot-remove of the pci device in
-question the trace quickly tells me 3 references are being leaked. In
-combination with the stacktrace option I can quickly correlate call
-sites that take references without releasing them.
-
--Tyrel
-
-> 
-> cheers
-> --
-> To unsubscribe from this list: send the line "unsubscribe devicetree" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
+Thanks,
+Gavin
