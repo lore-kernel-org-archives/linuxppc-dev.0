@@ -2,19 +2,19 @@ Return-Path: <christophe.leroy@c-s.fr>
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w7MSy0qLmzDqK1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2017 22:56:34 +1000 (AEST)
-Message-Id: <58f17a04cee5726467ef4e283dfbd7da68fa6ab4.1492606298.git.christophe.leroy@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w7MT06XRqzDqG4
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2017 22:56:36 +1000 (AEST)
+Message-Id: <592ce73ae7cbd2383740ac31e5fed5ca5beac721.1492606298.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1492606297.git.christophe.leroy@c-s.fr>
 References: <cover.1492606297.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH 2/5] powerpc/mm: split store_updates_sp() in two parts in
+Subject: [PATCH 4/5] powerpc/mm: Evaluate user_mode(regs) only once in
  do_page_fault()
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  Scott Wood <oss@buserror.net>
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Wed, 19 Apr 2017 14:56:26 +0200 (CEST)
+Date: Wed, 19 Apr 2017 14:56:30 +0200 (CEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,64 +24,134 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Only the get_user() in store_updates_sp() has to be done outside
-the mm semaphore. All the comparison can be done within the semaphore,
-so only when really needed.
+Analysis of the assembly code shows that when using user_mode(regs),
+at least the 'andi.' is redone all the time, and also
+the 'lwz ,132(r31)' most of the time. With the new form, the 'is_user'
+is mapped to cr4, then all further use of is_user results in just
+things like 'beq cr4,218 <do_page_fault+0x218>'
 
-As we got a DSI exception, the address pointed by regs->nip is
-obviously valid, otherwise we would have had a instruction exception.
-So __get_user() can be used instead of get_user()
+Without the patch:
+
+  50:	81 1e 00 84 	lwz     r8,132(r30)
+  54:	71 09 40 00 	andi.   r9,r8,16384
+  58:	40 82 00 0c 	bne     64 <do_page_fault+0x64>
+
+  84:	81 3e 00 84 	lwz     r9,132(r30)
+  8c:	71 2a 40 00 	andi.   r10,r9,16384
+  90:	41 a2 01 64 	beq     1f4 <do_page_fault+0x1f4>
+
+  d4:	81 3e 00 84 	lwz     r9,132(r30)
+  dc:	71 28 40 00 	andi.   r8,r9,16384
+  e0:	41 82 02 08 	beq     2e8 <do_page_fault+0x2e8>
+
+ 108:	81 3e 00 84 	lwz     r9,132(r30)
+ 110:	71 28 40 00 	andi.   r8,r9,16384
+ 118:	41 82 02 28 	beq     340 <do_page_fault+0x340>
+
+ 1e4:	81 3e 00 84 	lwz     r9,132(r30)
+ 1e8:	71 2a 40 00 	andi.   r10,r9,16384
+ 1ec:	40 82 01 68 	bne     354 <do_page_fault+0x354>
+
+ 228:	81 3e 00 84 	lwz     r9,132(r30)
+ 22c:	71 28 40 00 	andi.   r8,r9,16384
+ 230:	41 82 ff c4 	beq     1f4 <do_page_fault+0x1f4>
+
+ 288:	71 2a 40 00 	andi.   r10,r9,16384
+ 294:	41 a2 fe 60 	beq     f4 <do_page_fault+0xf4>
+
+ 50c:	81 3e 00 84 	lwz     r9,132(r30)
+ 514:	71 2a 40 00 	andi.   r10,r9,16384
+ 518:	40 a2 fc e0 	bne     1f8 <do_page_fault+0x1f8>
+
+ 534:	81 3e 00 84 	lwz     r9,132(r30)
+ 53c:	71 2a 40 00 	andi.   r10,r9,16384
+ 540:	41 82 fc b8 	beq     1f8 <do_page_fault+0x1f8>
+
+This patch creates a local var called 'is_user' which contains the
+result of user_mode(regs)
+
+With the patch:
+
+  20:	81 03 00 84 	lwz     r8,132(r3)
+  48:	55 09 97 fe 	rlwinm  r9,r8,18,31,31
+  58:	2e 09 00 00 	cmpwi   cr4,r9,0
+  5c:	40 92 00 0c 	bne     cr4,68 <do_page_fault+0x68>
+
+  88:	41 b2 01 90 	beq     cr4,218 <do_page_fault+0x218>
+
+  d4:	40 92 01 d0 	bne     cr4,2a4 <do_page_fault+0x2a4>
+
+ 120:	41 b2 00 f8 	beq     cr4,218 <do_page_fault+0x218>
+
+ 138:	41 b2 ff a0 	beq     cr4,d8 <do_page_fault+0xd8>
+
+ 1d4:	40 92 00 e0 	bne     cr4,2b4 <do_page_fault+0x2b4>
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/mm/fault.c | 13 +++++--------
- 1 file changed, 5 insertions(+), 8 deletions(-)
+ arch/powerpc/mm/fault.c | 13 +++++++------
+ 1 file changed, 7 insertions(+), 6 deletions(-)
 
 diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
-index 67fefb59d40e..9d21e5fd383d 100644
+index b56bf472db6d..8d1639eee3af 100644
 --- a/arch/powerpc/mm/fault.c
 +++ b/arch/powerpc/mm/fault.c
-@@ -73,12 +73,8 @@ static inline int notify_page_fault(struct pt_regs *regs)
-  * Check whether the instruction at regs->nip is a store using
-  * an update addressing form which will update r1.
-  */
--static int store_updates_sp(struct pt_regs *regs)
-+static int store_updates_sp(unsigned int inst)
- {
--	unsigned int inst;
--
--	if (get_user(inst, (unsigned int __user *)regs->nip))
--		return 0;
- 	/* check for 1 in the rA field */
- 	if (((inst >> 16) & 0x1f) != 1)
- 		return 0;
-@@ -207,7 +203,8 @@ int do_page_fault(struct pt_regs *regs, unsigned long address,
+@@ -202,6 +202,7 @@ int do_page_fault(struct pt_regs *regs, unsigned long address,
+ 	int is_write = 0;
  	int trap = TRAP(regs);
   	int is_exec = trap == 0x400;
++	int is_user = user_mode(regs);
  	int fault;
--	int rc = 0, store_update_sp = 0;
-+	int rc = 0;
-+	unsigned int inst = 0;
+ 	int rc = 0;
+ 	unsigned int inst = 0;
+@@ -244,7 +245,7 @@ int do_page_fault(struct pt_regs *regs, unsigned long address,
+ 	 * The kernel should never take an execute fault nor should it
+ 	 * take a page fault to a kernel address.
+ 	 */
+-	if (!user_mode(regs) && (is_exec || (address >= TASK_SIZE))) {
++	if (!is_user && (is_exec || (address >= TASK_SIZE))) {
+ 		rc = SIGSEGV;
+ 		goto bail;
+ 	}
+@@ -263,7 +264,7 @@ int do_page_fault(struct pt_regs *regs, unsigned long address,
+ 		local_irq_enable();
  
- #if !(defined(CONFIG_4xx) || defined(CONFIG_BOOKE))
- 	/*
-@@ -288,7 +285,7 @@ int do_page_fault(struct pt_regs *regs, unsigned long address,
+ 	if (faulthandler_disabled() || mm == NULL) {
+-		if (!user_mode(regs)) {
++		if (!is_user) {
+ 			rc = SIGSEGV;
+ 			goto bail;
+ 		}
+@@ -284,10 +285,10 @@ int do_page_fault(struct pt_regs *regs, unsigned long address,
+ 	 * can result in fault, which will cause a deadlock when called with
  	 * mmap_sem held
  	 */
- 	if (is_write && user_mode(regs))
--		store_update_sp = store_updates_sp(regs);
-+		__get_user(inst, (unsigned int __user *)regs->nip);
+-	if (is_write && user_mode(regs))
++	if (is_write && is_user)
+ 		__get_user(inst, (unsigned int __user *)regs->nip);
  
- 	if (user_mode(regs))
+-	if (user_mode(regs))
++	if (is_user)
  		flags |= FAULT_FLAG_USER;
-@@ -358,7 +355,7 @@ int do_page_fault(struct pt_regs *regs, unsigned long address,
- 		 * between the last mapped region and the stack will
- 		 * expand the stack rather than segfaulting.
- 		 */
--		if (address + 2048 < uregs->gpr[1] && !store_update_sp)
-+		if (address + 2048 < uregs->gpr[1] && !store_updates_sp(inst))
- 			goto bad_area;
+ 
+ 	/* When running in the kernel we expect faults to occur only to
+@@ -306,7 +307,7 @@ int do_page_fault(struct pt_regs *regs, unsigned long address,
+ 	 * thus avoiding the deadlock.
+ 	 */
+ 	if (!down_read_trylock(&mm->mmap_sem)) {
+-		if (!user_mode(regs) && !search_exception_tables(regs->nip))
++		if (!is_user && !search_exception_tables(regs->nip))
+ 			goto bad_area_nosemaphore;
+ 
+ retry:
+@@ -506,7 +507,7 @@ int do_page_fault(struct pt_regs *regs, unsigned long address,
+ 
+ bad_area_nosemaphore:
+ 	/* User mode accesses cause a SIGSEGV */
+-	if (user_mode(regs)) {
++	if (is_user) {
+ 		_exception(SIGSEGV, regs, code, address);
+ 		goto bail;
  	}
- 	if (expand_stack(vma, address))
 -- 
 2.12.0
