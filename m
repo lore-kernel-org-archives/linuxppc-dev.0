@@ -1,9 +1,9 @@
 Return-Path: <yao.jin@linux.intel.com>
-Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
+Received: from mga07.intel.com (mga07.intel.com [134.134.136.100])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w739P1xJRzDq5W
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2017 10:42:01 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w73QD2FkjzDq5W
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2017 10:53:07 +1000 (AEST)
 Subject: Re: [PATCH v4 4/5] perf report: Show branch type statistics for stdio
  mode
 To: Jiri Olsa <jolsa@redhat.com>
@@ -13,12 +13,12 @@ Cc: acme@kernel.org, jolsa@kernel.org, peterz@infradead.org,
  yao.jin@intel.com, linuxppc-dev@lists.ozlabs.org
 References: <1491949266-6835-1-git-send-email-yao.jin@linux.intel.com>
  <1491949266-6835-5-git-send-email-yao.jin@linux.intel.com>
- <20170418185337.GD15584@krava>
+ <20170418185331.GC15584@krava>
 From: "Jin, Yao" <yao.jin@linux.intel.com>
-Message-ID: <a3df40fc-576a-7f3f-3eb6-8e8e29fdd3a3@linux.intel.com>
-Date: Wed, 19 Apr 2017 08:41:56 +0800
+Message-ID: <2cc8fa33-f0f8-d202-f663-d3b6cfef43d0@linux.intel.com>
+Date: Wed, 19 Apr 2017 08:53:03 +0800
 MIME-Version: 1.0
-In-Reply-To: <20170418185337.GD15584@krava>
+In-Reply-To: <20170418185331.GC15584@krava>
 Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -36,22 +36,39 @@ On 4/19/2017 2:53 AM, Jiri Olsa wrote:
 >
 > SNIP
 >
->> +static int hist_iter__branch_callback(struct hist_entry_iter *iter,
->> +				      struct addr_location *al __maybe_unused,
->> +				      bool single __maybe_unused,
->> +				      void *arg)
+>> +const char *branch_type_name(int type)
 >> +{
->> +	struct hist_entry *he = iter->he;
->> +	struct report *rep = arg;
->> +	struct branch_info *bi;
+>> +	const char *branch_names[PERF_BR_MAX] = {
+>> +		"N/A",
+>> +		"JCC",
+>> +		"JMP",
+>> +		"IND_JMP",
+>> +		"CALL",
+>> +		"IND_CALL",
+>> +		"RET",
+>> +		"SYSCALL",
+>> +		"SYSRET",
+>> +		"IRQ",
+>> +		"INT",
+>> +		"IRET",
+>> +		"FAR_BRANCH",
+>> +	};
 >> +
->> +	if (sort__mode == SORT_MODE__BRANCH) {
-> is this check necessary? the hist_iter__branch_callback
-> was set based on this check
+>> +	if ((type >= 0) && (type < PERF_BR_MAX))
+>> +		return branch_names[type];
+>> +
+>> +	return NULL;
+> looks like we should add util/branch.c with above functions
+> and merge it with util/parse-branch-options.c
 >
+> we create new file even for less code ;-)
+>
+> thanks,
 > jirka
 
-Let me double check.
+Could we directly add branch_type_name() in util/parse-branch-options.c?
+
+I just feel it's a bit waste of creating a new file for less code. :)
 
 Thanks
 Jin Yao
