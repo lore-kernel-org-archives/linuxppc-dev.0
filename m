@@ -1,39 +1,20 @@
-Return-Path: <tyreld@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <roy.pledge@nxp.com>
+Received: from NAM02-SN1-obe.outbound.protection.outlook.com
+ (mail-sn1nam02on0086.outbound.protection.outlook.com [104.47.36.86])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w7WCY2nWmzDq9K
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Apr 2017 04:45:29 +1000 (AEST)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v3JIiUmo000894
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2017 14:45:14 -0400
-Received: from e12.ny.us.ibm.com (e12.ny.us.ibm.com [129.33.205.202])
- by mx0a-001b2d01.pphosted.com with ESMTP id 29x728kxu7-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2017 14:45:14 -0400
-Received: from localhost
- by e12.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <tyreld@linux.vnet.ibm.com>;
- Wed, 19 Apr 2017 14:45:13 -0400
-Subject: Re: [PATCH] of: introduce event tracepoints for dynamic device_node
- lifecyle
-To: Steven Rostedt <rostedt@goodmis.org>, Frank Rowand <frowand.list@gmail.com>
-References: <1492475525-10827-1-git-send-email-tyreld@linux.vnet.ibm.com>
- <58F6AA35.2040902@gmail.com> <58F6C088.8020304@gmail.com>
- <20170418224953.685943a3@grimm.local.home>
-Cc: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>, robh+dt@kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- devicetree@vger.kernel.org, nfont@linux.vnet.ibm.com,
- mpe@ellerman.id.au, mingo@redhat.com
-From: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
-Date: Wed, 19 Apr 2017 11:45:07 -0700
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w7Yy72998zDq8M
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Apr 2017 06:49:01 +1000 (AEST)
+From: Roy Pledge <roy.pledge@nxp.com>
+To: <linuxppc-dev@lists.ozlabs.org>, <linux-arm-kernel@lists.infradead.org>,
+ <linux-kernel@vger.kernel.org>, <oss@buserror.net>, <robin.murphy@arm.com>
+CC: <madalin.bucur@nxp.com>, Roy Pledge <roy.pledge@nxp.com>
+Subject: [PATCH v2 00/11] soc/fsl/qbman: Enable QBMan on ARM Platforms
+Date: Wed, 19 Apr 2017 16:48:39 -0400
+Message-ID: <1492634930-10765-1-git-send-email-roy.pledge@nxp.com>
+Reply-To: <roy.pledge@nxp.com>
 MIME-Version: 1.0
-In-Reply-To: <20170418224953.685943a3@grimm.local.home>
-Content-Type: text/plain; charset=windows-1252
-Message-Id: <641aa8ee-9b54-716a-77a1-076cafb95e3a@linux.vnet.ibm.com>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,37 +24,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/18/2017 07:49 PM, Steven Rostedt wrote:
-> On Tue, 18 Apr 2017 18:42:32 -0700
-> Frank Rowand <frowand.list@gmail.com> wrote:
-> 
->> And of course the other issue with using tracepoints is the extra space
->> required to hold the tracepoint info.  With the pr_debug() approach, the
->> space usage can be easily removed for a production kernel via a config
->> option.
-> 
-> Now if you are saying you want to be able to enable debugging without
-> the tracing infrastructure I would agree. As the tracing infrastructure
-> is large. But I'm working on shrinking it more.
+This patch series enables DPAA1 QBMan devices for ARM and
+ARM64 architectures. This allows the LS1043A and LS1046A to use
+QBMan functionality.
 
-The primary consumers of OF_DYNAMIC seem to be pseries and powernv where
-we are generally going to see the trace infrastructure enabled by
-default in production.
+Changes since v1:
+Reworked private memory allocations to use shared-dma-pool on ARM platforms
 
--Tyrel
+Claudiu Manoil (2):
+  soc/fsl/qbman: Drop L1_CACHE_BYTES compile time check
+  soc/fsl/qbman: Add missing headers on ARM
 
-> 
->>
->> Tracepoints are wonderful technology, but not always the proper tool to
->> use for debug info.
-> 
-> But if you are going to have tracing enabled regardless, adding a few
-> more tracepoints isn't going to make the difference.
-> 
-> -- Steve
-> 
->>
->>> If Rob wants to convert printk() style data to trace data (and I can't
->>> convince him otherwise) then I will have further comments on this specific
->>> patch.
->>>
+Madalin Bucur (4):
+  soc/fsl/qbman: Drop set/clear_bits usage
+  soc/fsl/qbman: add QMAN_REV32
+  soc/fsl/qbman: different register offsets on ARM
+  fsl/soc/qbman: Enable FSL_LAYERSCAPE config on ARM
+
+Roy Pledge (4):
+  soc/fsl/qbman: Use shared-dma-pool for BMan private memory allocations
+  soc/fsl/qbman: Use shared-dma-pool for QMan private memory allocations
+  dt-bindings: soc/fsl: Update reserved memory binding for QBMan
+  soc/fsl/qbman: Rework ioremap() calls for ARM/PPC
+
+Valentin Rothberg (1):
+  soc/fsl/qbman: Fix ARM32 typo
+
+ Documentation/devicetree/bindings/soc/fsl/bman.txt |  11 +-
+ Documentation/devicetree/bindings/soc/fsl/qman.txt |  18 +--
+ drivers/soc/fsl/qbman/Kconfig                      |   2 +-
+ drivers/soc/fsl/qbman/bman.c                       |  24 +++-
+ drivers/soc/fsl/qbman/bman_ccsr.c                  |  35 +++++-
+ drivers/soc/fsl/qbman/bman_portal.c                |  16 ++-
+ drivers/soc/fsl/qbman/bman_priv.h                  |   3 +
+ drivers/soc/fsl/qbman/dpaa_sys.h                   |   8 +-
+ drivers/soc/fsl/qbman/qman.c                       |  46 ++++++-
+ drivers/soc/fsl/qbman/qman_ccsr.c                  | 138 ++++++++++++++++-----
+ drivers/soc/fsl/qbman/qman_portal.c                |  16 ++-
+ drivers/soc/fsl/qbman/qman_priv.h                  |   5 +-
+ drivers/soc/fsl/qbman/qman_test.h                  |   2 -
+ 13 files changed, 259 insertions(+), 65 deletions(-)
+
+--
+2.7.4
