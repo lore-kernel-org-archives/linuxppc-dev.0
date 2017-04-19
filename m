@@ -1,19 +1,17 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w7bd05qWkzDqFJ
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Apr 2017 08:04:20 +1000 (AEST)
-In-Reply-To: <1492111101-12127-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- benh@kernel.crashing.org, paulus@samba.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w7bd157PXzDqFV
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Apr 2017 08:04:21 +1000 (AEST)
+In-Reply-To: <20170416142119.27242-1-npiggin@gmail.com>
+To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: powerpc/mm/radix: Use mm->task_size for boundary checking instead
- of addr_limit
-Message-Id: <3w7bd04k01z9s7n@ozlabs.org>
-Date: Thu, 20 Apr 2017 08:04:20 +1000 (AEST)
+Cc: "Aneesh Kumar K . V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: powerpc/64s: Minor fix for MCE TLB flush for radix
+Message-Id: <3w7bd14DDgz9s7h@ozlabs.org>
+Date: Thu, 20 Apr 2017 08:04:21 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,22 +21,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2017-04-13 at 19:18:21 UTC, "Aneesh Kumar K.V" wrote:
-> We don't init addr_limit correctly for 32 bit applications. So default to using
-> mm->task_size for boundary condition checking. We use addr_limit to only control
-> free space search. This makes sure that we do the right thing with 32 bit
-> applications.
+On Sun, 2017-04-16 at 14:21:19 UTC, Nicholas Piggin wrote:
+> The TLB flush for radix first flushes TLB for radix configuration,
+> then flushes for hash configuration. The second flush is unnecessary
+> but does not affect correctness.
 > 
-> We should consolidate the usage of TASK_SIZE/mm->task_size and
-> mm->context.addr_limit later.
-> 
-> Partially reverts: fbfef9027c2a7ad (powerpc/mm: Switch some TASK_SIZE checks to use
-> mm_context addr_limit)
-> 
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> Fixes: 1a472c9dba6b9 ("powerpc/mm/radix: Add tlbflush routines")
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/be77e999e3937322b7e15274b8fc7d
+https://git.kernel.org/powerpc/c/95dbdf4fa09823e35b29eab8f70939
 
 cheers
