@@ -1,18 +1,18 @@
 Return-Path: <roy.pledge@nxp.com>
-Received: from NAM02-BL2-obe.outbound.protection.outlook.com
- (mail-bl2nam02on0055.outbound.protection.outlook.com [104.47.38.55])
+Received: from NAM02-SN1-obe.outbound.protection.outlook.com
+ (mail-sn1nam02on0084.outbound.protection.outlook.com [104.47.36.84])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w7YyG2qSjzDq9D
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w7YyG5x16zDqBN
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Apr 2017 06:49:10 +1000 (AEST)
 From: Roy Pledge <roy.pledge@nxp.com>
 To: <linuxppc-dev@lists.ozlabs.org>, <linux-arm-kernel@lists.infradead.org>,
  <linux-kernel@vger.kernel.org>, <oss@buserror.net>, <robin.murphy@arm.com>
-CC: <madalin.bucur@nxp.com>, Claudiu Manoil <claudiu.manoil@nxp.com>, Stuart
- Yoder <stuart.yoder@nxp.com>, Roy Pledge <roy.pledge@nxp.com>
-Subject: [PATCH v2 11/11] fsl/soc/qbman: Enable FSL_LAYERSCAPE config on ARM
-Date: Wed, 19 Apr 2017 16:48:50 -0400
-Message-ID: <1492634930-10765-12-git-send-email-roy.pledge@nxp.com>
+CC: <madalin.bucur@nxp.com>, Valentin Rothberg <valentinrothberg@gmail.com>,
+ Claudiu Manoil <claudiu.manoil@nxp.com>, Roy Pledge <roy.pledge@nxp.com>
+Subject: [PATCH v2 06/11] soc/fsl/qbman: Fix ARM32 typo
+Date: Wed, 19 Apr 2017 16:48:45 -0400
+Message-ID: <1492634930-10765-7-git-send-email-roy.pledge@nxp.com>
 In-Reply-To: <1492634930-10765-1-git-send-email-roy.pledge@nxp.com>
 References: <1492634930-10765-1-git-send-email-roy.pledge@nxp.com>
 Reply-To: <roy.pledge@nxp.com>
@@ -27,28 +27,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Madalin Bucur <madalin.bucur@nxp.com>
+From: Valentin Rothberg <valentinrothberg@gmail.com>
 
-Signed-off-by: Madalin Bucur <madalin.bucur@nxp.com>
+The Kconfig symbol for 32bit ARM is 'ARM', not 'ARM32'.
+
+Signed-off-by: Valentin Rothberg <valentinrothberg@gmail.com>
 Signed-off-by: Claudiu Manoil <claudiu.manoil@nxp.com>
-[Stuart: changed to use ARCH_LAYERSCAPE]
-Signed-off-by: Stuart Yoder <stuart.yoder@nxp.com>
 Signed-off-by: Roy Pledge <roy.pledge@nxp.com>
 ---
- drivers/soc/fsl/qbman/Kconfig | 2 +-
+ drivers/soc/fsl/qbman/dpaa_sys.h | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/soc/fsl/qbman/Kconfig b/drivers/soc/fsl/qbman/Kconfig
-index 757033c..fb4e6bf 100644
---- a/drivers/soc/fsl/qbman/Kconfig
-+++ b/drivers/soc/fsl/qbman/Kconfig
-@@ -1,6 +1,6 @@
- menuconfig FSL_DPAA
- 	bool "Freescale DPAA 1.x support"
--	depends on FSL_SOC_BOOKE
-+	depends on (FSL_SOC_BOOKE || ARCH_LAYERSCAPE)
- 	select GENERIC_ALLOCATOR
- 	help
- 	  The Freescale Data Path Acceleration Architecture (DPAA) is a set of
+diff --git a/drivers/soc/fsl/qbman/dpaa_sys.h b/drivers/soc/fsl/qbman/dpaa_sys.h
+index f85c319..81a9a5e 100644
+--- a/drivers/soc/fsl/qbman/dpaa_sys.h
++++ b/drivers/soc/fsl/qbman/dpaa_sys.h
+@@ -53,7 +53,7 @@ static inline void dpaa_flush(void *p)
+ {
+ #ifdef CONFIG_PPC
+ 	flush_dcache_range((unsigned long)p, (unsigned long)p+64);
+-#elif defined(CONFIG_ARM32)
++#elif defined(CONFIG_ARM)
+ 	__cpuc_flush_dcache_area(p, 64);
+ #elif defined(CONFIG_ARM64)
+ 	__flush_dcache_area(p, 64);
 -- 
 2.7.4
