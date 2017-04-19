@@ -1,29 +1,20 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w7NPG0m7ZzDqFV
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2017 23:38:26 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w7NZx1YRgzDq8M
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2017 23:46:49 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: paulmck@linux.vnet.ibm.com, Peter Zijlstra <peterz@infradead.org>
-Cc: Boqun Feng <boqun.feng@linux.vnet.ibm.com>, tglx@linutronix.de,
- bobby.prani@gmail.com, fweisbec@gmail.com, jiangshanlai@gmail.com,
- linux-kernel@vger.kernel.org, rostedt@goodmis.org, josh@joshtriplett.org,
- dhowells@redhat.com, edumazet@google.com, mathieu.desnoyers@efficios.com,
- oleg@redhat.com, dipankar@in.ibm.com, Will Deacon <will.deacon@arm.com>,
- Paul Mackerras <paulus@samba.org>, akpm@linux-foundation.org,
- linuxppc-dev@lists.ozlabs.org, mingo@kernel.org
-Subject: Re: [PATCH tip/core/rcu 02/40] rcu: Make arch select
- smp_mb__after_unlock_lock() strength
-In-Reply-To: <20170413170349.GK3956@linux.vnet.ibm.com>
-References: <20170412174003.GA23207@linux.vnet.ibm.com>
- <1492018825-25634-2-git-send-email-paulmck@linux.vnet.ibm.com>
- <20170413092418.a2rudzukbgookior@hirez.programming.kicks-ass.net>
- <20170413162651.GD3956@linux.vnet.ibm.com>
- <20170413163757.wwhttkpm3v7emz33@hirez.programming.kicks-ass.net>
- <20170413170349.GK3956@linux.vnet.ibm.com>
-Date: Wed, 19 Apr 2017 23:38:22 +1000
-Message-ID: <87o9vs5xgx.fsf@concordia.ellerman.id.au>
+To: Balbir Singh <bsingharora@gmail.com>, Anton Blanchard <anton@samba.org>
+Cc: Christophe LEROY <christophe.leroy@c-s.fr>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] powerpc/configs: Enable function trace by default
+In-Reply-To: <1492606204.7284.1.camel@gmail.com>
+References: <20170413070309.10497-1-bsingharora@gmail.com>
+ <eea3c818-f5ca-4cd9-c715-307104534970@c-s.fr>
+ <1492071568.8380.20.camel@gmail.com> <20170419211346.5e228370@kryten>
+ <1492606204.7284.1.camel@gmail.com>
+Date: Wed, 19 Apr 2017 23:46:47 +1000
+Message-ID: <87lgqw5x2w.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -35,52 +26,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-"Paul E. McKenney" <paulmck@linux.vnet.ibm.com> writes:
+Balbir Singh <bsingharora@gmail.com> writes:
 
-> On Thu, Apr 13, 2017 at 06:37:57PM +0200, Peter Zijlstra wrote:
->> On Thu, Apr 13, 2017 at 09:26:51AM -0700, Paul E. McKenney wrote:
+> On Wed, 2017-04-19 at 21:13 +1000, Anton Blanchard wrote:
+>> Hi Balbir,
 >> 
->> > ARCH_WEAK_RELEASE_ACQUIRE actually works both ways.
+>> > > FTRACE is quite CPU consumming, shouldn't it really be on by
+>> > > default ?  
 >> > 
->> > To see this, imagine some strange alternate universe in which the Power
->> > hardware guys actually did decide to switch PPC to doing RCsc as you
->> > suggest.  There would still be a lot of Power hardware out there that
->> > still does RCpc.  Therefore, powerpc builds that needed to run on old
->> > Power hardware would select ARCH_WEAK_RELEASE_ACQUIRE, while kernels
->> > built to run only on the shiny new (but mythical) alternate-universe
->> > Power hardware would avoid selecting this Kconfig option.
+>> > It does some work at boot to NOP out function entry points at _mcount
+>> > locations. Is that what you are referring to? Or the overhead of the
+>> > code in terms of size? Most distro kernels have tracing on by default.
+>> > 
+>> > The rest of the overhead is enablement based.
 >> 
->> Ah, but Power software guys could do it today by replacing an LWSYNC
->> with a SYNC in say arch_spin_unlock().
+>> Unfortunately the overhead is somewhat high without
+>> CONFIG_MPROFILE_KERNEL, and enabling that option will break old
+>> toolchains. It would be great if we could automatically enable it based
+>> on the toolchain.
 >> 
->> And yes, I know this isn't a popular suggestion, but it would do the
->> trick.
+>> Even with CONFIG_MPROFILE_KERNEL enabled, we aren't noping out the
+>> redundant mflr at the start of each function.
 >
-> Indeed, there is a fine line between motivating people to move to new
-> hardware on the one hand and terminally annoying existing users on
-> the other.  ;-)
->
->> Its just that since there's one (PPC) we can sort of pressure them with
->> the pain of being the only ones to hit all the bugs. But the moment more
->> appear (and I'm afraid it'll be MIPS, with the excuse that PPC already
->> does this) it will be ever so much harder to get rid of it.
->> 
->> Then again, maybe I should just give up and accept the Linux kernel has
->> RCpc locks..
->
-> As usual, I must defer to the powerpc maintainers on this one.
+> Very good catch! I sent the enablement assuming that we want to have these
+> enabled to ensure we generally have these enabled in the distro kernels
+> and ideally want to test with these enabled and many of us turn them
+> on in any case. Do you see an issue with this being enabled by default?
+> I presume most workloads run on kernels that have them enabled these days?
 
-I reworked my locking tests a bit, to run longer, disable ASLR and a few
-other things, and ran them again. They just bang repeatedly on an
-uncontended lock, so nothing fancy at all.
+No definitely not. Most distro kernels don't even have the code, it only
+went into 4.6.
 
-Switching the release barrier to sync (from lwsync) slows it down by
-about 18%.
+> CONFIG_MPROFILE_KERNEL depends on CC_USING_MPROFILE_KERNEL which is
 
-So I think that pretty much rules it out, at least on current CPUs.
+No it doesn't:
 
-I'll try and get some more time to make sure I didn't do something
-stupid in the test, and maybe do a version that includes some
-contention.
+config MPROFILE_KERNEL
+	depends on PPC64 && CPU_LITTLE_ENDIAN
+	def_bool !DISABLE_MPROFILE_KERNEL
+
+> automatically detected and is LE only.
+
+It's automatically detected at build time, which is too late, so our
+only option is to break the build:
+
+ifdef CONFIG_MPROFILE_KERNEL
+    ifeq ($(shell $(srctree)/arch/powerpc/scripts/gcc-check-mprofile-kernel.sh $(CC) -I$(srctree)/include -D__KERNEL__),OK)
+        CC_FLAGS_FTRACE := -pg -mprofile-kernel
+        KBUILD_CPPFLAGS += -DCC_USING_MPROFILE_KERNEL
+    else
+        # If the user asked for mprofile-kernel but the toolchain doesn't
+        # support it, emit a warning and deliberately break the build later
+        # with mprofile-kernel-not-supported. We would prefer to make this an
+        # error right here, but then the user would never be able to run
+        # oldconfig to change their configuration.
+        $(warning Compiler does not support mprofile-kernel, set CONFIG_DISABLE_MPROFILE_KERNEL)
+        CC_FLAGS_FTRACE := -mprofile-kernel-not-supported
+    endif
+endif
+
+
+So in short it's a big PITA.
 
 cheers
