@@ -1,25 +1,24 @@
-Return-Path: <yao.jin@linux.intel.com>
-Received: from mga07.intel.com (mga07.intel.com [134.134.136.100])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w73QD2FkjzDq5W
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2017 10:53:07 +1000 (AEST)
-Subject: Re: [PATCH v4 4/5] perf report: Show branch type statistics for stdio
- mode
-To: Jiri Olsa <jolsa@redhat.com>
-Cc: acme@kernel.org, jolsa@kernel.org, peterz@infradead.org,
- mingo@redhat.com, alexander.shishkin@linux.intel.com,
- Linux-kernel@vger.kernel.org, ak@linux.intel.com, kan.liang@intel.com,
- yao.jin@intel.com, linuxppc-dev@lists.ozlabs.org
-References: <1491949266-6835-1-git-send-email-yao.jin@linux.intel.com>
- <1491949266-6835-5-git-send-email-yao.jin@linux.intel.com>
- <20170418185331.GC15584@krava>
-From: "Jin, Yao" <yao.jin@linux.intel.com>
-Message-ID: <2cc8fa33-f0f8-d202-f663-d3b6cfef43d0@linux.intel.com>
-Date: Wed, 19 Apr 2017 08:53:03 +0800
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w74GT547VzDq8M
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2017 11:31:29 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Frank Rowand <frowand.list@gmail.com>,
+ Tyrel Datwyler <tyreld@linux.vnet.ibm.com>, robh+dt@kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ devicetree@vger.kernel.org, nfont@linux.vnet.ibm.com, rostedt@goodmis.org,
+ mingo@redhat.com
+Subject: Re: [PATCH] of: introduce event tracepoints for dynamic device_node
+ lifecyle
+In-Reply-To: <58F6AA35.2040902@gmail.com>
+References: <1492475525-10827-1-git-send-email-tyreld@linux.vnet.ibm.com>
+ <58F6AA35.2040902@gmail.com>
+Date: Wed, 19 Apr 2017 11:31:29 +1000
+Message-ID: <87efwp6v4e.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <20170418185331.GC15584@krava>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,46 +28,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Frank Rowand <frowand.list@gmail.com> writes:
 
-
-On 4/19/2017 2:53 AM, Jiri Olsa wrote:
-> On Wed, Apr 12, 2017 at 06:21:05AM +0800, Jin Yao wrote:
+> On 04/17/17 17:32, Tyrel Datwyler wrote:
+>> This patch introduces event tracepoints for tracking a device_nodes
+>> reference cycle as well as reconfig notifications generated in response
+>> to node/property manipulations.
+>> 
+>> With the recent upstreaming of the refcount API several device_node
+>> underflows and leaks have come to my attention in the pseries (DLPAR) dynamic
+>> logical partitioning code (ie. POWER speak for hotplugging virtual and physcial
+>> resources at runtime such as cpus or IOAs). These tracepoints provide a
+>> easy and quick mechanism for validating the reference counting of
+>> device_nodes during their lifetime.
+>> 
+>> Further, when pseries lpars are migrated to a different machine we
+>> perform a live update of our device tree to bring it into alignment with the
+>> configuration of the new machine. The of_reconfig_notify trace point
+>> provides a mechanism that can be turned for debuging the device tree
+>> modifications with out having to build a custom kernel to get at the
+>> DEBUG code introduced by commit 00aa3720.
 >
-> SNIP
->
->> +const char *branch_type_name(int type)
->> +{
->> +	const char *branch_names[PERF_BR_MAX] = {
->> +		"N/A",
->> +		"JCC",
->> +		"JMP",
->> +		"IND_JMP",
->> +		"CALL",
->> +		"IND_CALL",
->> +		"RET",
->> +		"SYSCALL",
->> +		"SYSRET",
->> +		"IRQ",
->> +		"INT",
->> +		"IRET",
->> +		"FAR_BRANCH",
->> +	};
->> +
->> +	if ((type >= 0) && (type < PERF_BR_MAX))
->> +		return branch_names[type];
->> +
->> +	return NULL;
-> looks like we should add util/branch.c with above functions
-> and merge it with util/parse-branch-options.c
->
-> we create new file even for less code ;-)
->
-> thanks,
-> jirka
+> I do not like changing individual (or small groups of) printk() style
+> debugging information to tracepoint style.
 
-Could we directly add branch_type_name() in util/parse-branch-options.c?
+I'm not quite sure which printks() you're referring to.
 
-I just feel it's a bit waste of creating a new file for less code. :)
+The only printks that are removed in this series are under #ifdef DEBUG,
+and so are essentially not there unless you build a custom kernel.
 
-Thanks
-Jin Yao
+They also only cover the reconfig case, which is actually less
+interesting than the much more common and bug-prone get/put logic.
+
+> As far as I know, there is no easy way to combine trace data and printk()
+> style data to create a single chronology of events.  If some of the
+> information needed to debug an issue is trace data and some is printk()
+> style data then it becomes more difficult to understand the overall
+> situation.
+
+If you enable CONFIG_PRINTK_TIME then you should be able to just sort
+the trace and the printk output by the timestamp. If you're really
+trying to correlate the two then you should probably just be using
+trace_printk().
+
+But IMO this level of detail, tracing every get/put, does not belong in
+printk. Trace points are absolutely the right solution for this type of
+debugging.
+
+cheers
