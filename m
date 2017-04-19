@@ -1,24 +1,23 @@
-Return-Path: <jolsa@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w7PDQ4Bl5zDqFx
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Apr 2017 00:15:50 +1000 (AEST)
-Date: Wed, 19 Apr 2017 16:15:45 +0200
-From: Jiri Olsa <jolsa@redhat.com>
-To: Jin Yao <yao.jin@linux.intel.com>
-Cc: acme@kernel.org, jolsa@kernel.org, peterz@infradead.org,
- mingo@redhat.com, alexander.shishkin@linux.intel.com,
- Linux-kernel@vger.kernel.org, ak@linux.intel.com,
- kan.liang@intel.com, yao.jin@intel.com, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v5 6/7] perf report: Show branch type statistics for
- stdio mode
-Message-ID: <20170419141545.GF19643@krava>
-References: <1492616894-3635-1-git-send-email-yao.jin@linux.intel.com>
- <1492616894-3635-7-git-send-email-yao.jin@linux.intel.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w7PNV2qGRzDqHG
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Apr 2017 00:22:50 +1000 (AEST)
+Subject: Re: [PATCH 3/3] powerpc/mm: Implement CONFIG_DEBUG_RODATA on PPC32
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Scott Wood <oss@buserror.net>
+References: <cover.1492596044.git.christophe.leroy@c-s.fr>
+ <eabf767c896a023e5670adfa07398f1008756c13.1492596044.git.christophe.leroy@c-s.fr>
+ <87inm05we4.fsf@concordia.ellerman.id.au>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+From: Christophe LEROY <christophe.leroy@c-s.fr>
+Message-ID: <d3713d6a-28b6-fb8f-ce32-c0d37958b59f@c-s.fr>
+Date: Wed, 19 Apr 2017 16:22:46 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1492616894-3635-7-git-send-email-yao.jin@linux.intel.com>
+In-Reply-To: <87inm05we4.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset=windows-1252; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,55 +27,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Apr 19, 2017 at 11:48:13PM +0800, Jin Yao wrote:
 
-SNIP
 
-> +static void branch_type_stat_display(FILE *fp, struct branch_type_stat *stat)
-> +{
-> +	u64 total = 0;
-> +	int i;
-> +
-> +	for (i = 0; i < PERF_BR_MAX; i++)
-> +		total += stat->counts[i];
-> +
-> +	if (total == 0)
-> +		return;
-> +
-> +	fprintf(fp, "\n#");
-> +	fprintf(fp, "\n# Branch Statistics:");
-> +	fprintf(fp, "\n#");
-> +
-> +	if (stat->jcc_fwd > 0)
-> +		fprintf(fp, "\n%12s: %5.1f%%",
-> +			"JCC forward",
-> +			100.0 * (double)stat->jcc_fwd / (double)total);
-> +
-> +	if (stat->jcc_bwd > 0)
-> +		fprintf(fp, "\n%12s: %5.1f%%",
-> +			"JCC backward",
-> +			100.0 * (double)stat->jcc_bwd / (double)total);
-> +
-> +	if (stat->cross_4k > 0)
-> +		fprintf(fp, "\n%12s: %5.1f%%",
-> +			"CROSS_4K",
-> +			100.0 * (double)stat->cross_4k / (double)total);
-> +
-> +	if (stat->cross_2m > 0)
-> +		fprintf(fp, "\n%12s: %5.1f%%",
-> +			"CROSS_2M",
-> +			100.0 * (double)stat->cross_2m / (double)total);
-> +
-> +	for (i = 0; i < PERF_BR_MAX; i++) {
-> +		if (stat->counts[i] > 0)
-> +			fprintf(fp, "\n%12s: %5.1f%%",
-> +				branch_type_name(i),
-> +				100.0 *
-> +				(double)stat->counts[i] / (double)total);
-> +	}
-> +}
+Le 19/04/2017 à 16:01, Michael Ellerman a écrit :
+> Christophe Leroy <christophe.leroy@c-s.fr> writes:
+>
+>> diff --git a/arch/powerpc/kernel/ftrace.c b/arch/powerpc/kernel/ftrace.c
+>> index 32509de6ce4c..4af81fb23653 100644
+>> --- a/arch/powerpc/kernel/ftrace.c
+>> +++ b/arch/powerpc/kernel/ftrace.c
+>> @@ -526,7 +526,9 @@ void ftrace_replace_code(int enable)
+>>   */
+>>  void arch_ftrace_update_code(int command)
+>>  {
+>> +	set_kernel_text_rw();
+>>  	ftrace_modify_all_code(command);
+>> +	set_kernel_text_ro();
+>>  }
+>
+> I'm not sure that's the right place for that.
 
-could you please also move this one to that new branch.c file
 
-thanks,
-jirka
+I took arch/arm/ as model. It does the following. Is that wrong ?
+
+
+static int __ftrace_modify_code(void *data)
+{
+	int *command = data;
+
+	set_kernel_text_rw();
+	ftrace_modify_all_code(*command);
+	set_kernel_text_ro();
+
+	return 0;
+}
+
+void arch_ftrace_update_code(int command)
+{
+	stop_machine(__ftrace_modify_code, &command, NULL);
+}
+
+
+
+> If you look at other arches they hook into ftrace_modify_code(), where
+> you have the address that's being modified.
+>
+
+Ok, I will look at other arches.
+
+Christophe
