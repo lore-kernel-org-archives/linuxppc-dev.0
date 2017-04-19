@@ -1,46 +1,41 @@
-Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <paulmck@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w7SWQ4xDbzDq8t
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Apr 2017 02:44:02 +1000 (AEST)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v3JGhluV134574
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2017 12:43:51 -0400
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
- by mx0a-001b2d01.pphosted.com with ESMTP id 29x6x1786p-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w7SrV1NXVzDq9L
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Apr 2017 02:58:49 +1000 (AEST)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v3JGmuBe095248
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2017 12:58:45 -0400
+Received: from e16.ny.us.ibm.com (e16.ny.us.ibm.com [129.33.205.206])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 29xaqjkb2e-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2017 12:43:50 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2017 12:58:44 -0400
 Received: from localhost
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e16.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Thu, 20 Apr 2017 02:43:48 +1000
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v3JGhbYK36765912
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Apr 2017 02:43:45 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v3JGhCJG030805
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Apr 2017 02:43:12 +1000
-Date: Wed, 19 Apr 2017 16:42:50 +0000
-From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-Subject: Re: [PATCH v3 6/7] powerpc: kprobes: emulate instructions on kprobe
- handler re-entry
-To: Masami Hiramatsu <mhiramat@kernel.org>
-Cc: Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Ingo Molnar
- <mingo@kernel.org>, Michael Ellerman <mpe@ellerman.id.au>
-References: <cover.1492604782.git.naveen.n.rao@linux.vnet.ibm.com>
- <0d4193a90e4b2ad3cd2ef33d41228b80a2ac9f91.1492604782.git.naveen.n.rao@linux.vnet.ibm.com>
- <20170419234319.7893df9c158e565fede4a386@kernel.org>
-In-Reply-To: <20170419234319.7893df9c158e565fede4a386@kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <1492620027.h27iuc5j5o.astroid@naverao1-tp.none>
+ for <linuxppc-dev@lists.ozlabs.org> from <paulmck@linux.vnet.ibm.com>;
+ Wed, 19 Apr 2017 12:58:44 -0400
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org
+Cc: mingo@kernel.org, jiangshanlai@gmail.com, dipankar@in.ibm.com,
+ akpm@linux-foundation.org, mathieu.desnoyers@efficios.com,
+ josh@joshtriplett.org, tglx@linutronix.de, peterz@infradead.org,
+ rostedt@goodmis.org, dhowells@redhat.com, edumazet@google.com,
+ fweisbec@gmail.com, oleg@redhat.com, bobby.prani@gmail.com,
+ "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+ Will Deacon <will.deacon@arm.com>,
+ Boqun Feng <boqun.feng@linux.vnet.ibm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH v3 tip/core/rcu 02/40] rcu: Make arch select
+ smp_mb__after_unlock_lock() strength
+Date: Wed, 19 Apr 2017 09:57:59 -0700
+In-Reply-To: <20170419165805.GB10874@linux.vnet.ibm.com>
+References: <20170419165805.GB10874@linux.vnet.ibm.com>
+Message-Id: <1492621117-13939-2-git-send-email-paulmck@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,65 +45,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Excerpts from Masami Hiramatsu's message of April 19, 2017 20:13:
->=20
-> BTW, as I pointed, 5/7 and 6/7 should be merged since this actually
-> makes meaningful change.
+The definition of smp_mb__after_unlock_lock() is currently smp_mb()
+for CONFIG_PPC and a no-op otherwise.  It would be better to instead
+provide an architecture-selectable Kconfig option, and select the
+strength of smp_mb__after_unlock_lock() based on that option.  This
+commit therefore creates ARCH_WEAK_RELEASE_ACQUIRE, has PPC select it,
+and bases the definition of smp_mb__after_unlock_lock() on this new
+ARCH_WEAK_RELEASE_ACQUIRE Kconfig option.
 
-Yes, sorry if I wasn't clear in my previous reply in the (!) previous=20
-patch series.
+Reported-by: Ingo Molnar <mingo@kernel.org>
+Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Will Deacon <will.deacon@arm.com>
+Cc: Boqun Feng <boqun.feng@linux.vnet.ibm.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Acked-by: Michael Ellerman <mpe@ellerman.id.au>
+Cc: <linuxppc-dev@lists.ozlabs.org>
+Reviewed-by: Josh Triplett <josh@joshtriplett.org>
+---
+ arch/Kconfig             | 3 +++
+ arch/powerpc/Kconfig     | 1 +
+ include/linux/rcupdate.h | 6 +++---
+ 3 files changed, 7 insertions(+), 3 deletions(-)
 
-Since this has to go through the powerpc tree, I followed this since I=20
-felt that Michael Ellerman prefers to keep functional changes separate=20
-from refactoring. I'm fine with either approach.
-
-Michael?
-
-Thanks!
-- Naveen
-
->=20
-> Thank you,
->=20
-> On Wed, 19 Apr 2017 18:21:05 +0530
-> "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
->=20
->> On kprobe handler re-entry, try to emulate the instruction rather than
->> single stepping always.
->>=20
->> Acked-by: Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>
->> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
->> ---
->>  arch/powerpc/kernel/kprobes.c | 8 ++++++++
->>  1 file changed, 8 insertions(+)
->>=20
->> diff --git a/arch/powerpc/kernel/kprobes.c b/arch/powerpc/kernel/kprobes=
-.c
->> index 46e8c1e03ce4..067e9863bfdf 100644
->> --- a/arch/powerpc/kernel/kprobes.c
->> +++ b/arch/powerpc/kernel/kprobes.c
->> @@ -276,6 +276,14 @@ int __kprobes kprobe_handler(struct pt_regs *regs)
->>  			kprobes_inc_nmissed_count(p);
->>  			prepare_singlestep(p, regs);
->>  			kcb->kprobe_status =3D KPROBE_REENTER;
->> +			if (p->ainsn.boostable >=3D 0) {
->> +				ret =3D try_to_emulate(p, regs);
->> +
->> +				if (ret > 0) {
->> +					restore_previous_kprobe(kcb);
->> +					return 1;
->> +				}
->> +			}
->>  			return 1;
->>  		} else {
->>  			if (*addr !=3D BREAKPOINT_INSTRUCTION) {
->> --=20
->> 2.12.1
->>=20
->=20
->=20
-> --=20
-> Masami Hiramatsu <mhiramat@kernel.org>
->=20
->=20
-=
+diff --git a/arch/Kconfig b/arch/Kconfig
+index cd211a14a88f..adefaf344239 100644
+--- a/arch/Kconfig
++++ b/arch/Kconfig
+@@ -320,6 +320,9 @@ config HAVE_CMPXCHG_LOCAL
+ config HAVE_CMPXCHG_DOUBLE
+ 	bool
+ 
++config ARCH_WEAK_RELEASE_ACQUIRE
++	bool
++
+ config ARCH_WANT_IPC_PARSE_VERSION
+ 	bool
+ 
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 97a8bc8a095c..7a5c9b764cd2 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -99,6 +99,7 @@ config PPC
+ 	select ARCH_USE_BUILTIN_BSWAP
+ 	select ARCH_USE_CMPXCHG_LOCKREF		if PPC64
+ 	select ARCH_WANT_IPC_PARSE_VERSION
++	select ARCH_WEAK_RELEASE_ACQUIRE
+ 	select BINFMT_ELF
+ 	select BUILDTIME_EXTABLE_SORT
+ 	select CLONE_BACKWARDS
+diff --git a/include/linux/rcupdate.h b/include/linux/rcupdate.h
+index de88b33c0974..e6146d0074f8 100644
+--- a/include/linux/rcupdate.h
++++ b/include/linux/rcupdate.h
+@@ -1127,11 +1127,11 @@ do { \
+  * if the UNLOCK and LOCK are executed by the same CPU or if the
+  * UNLOCK and LOCK operate on the same lock variable.
+  */
+-#ifdef CONFIG_PPC
++#ifdef CONFIG_ARCH_WEAK_RELEASE_ACQUIRE
+ #define smp_mb__after_unlock_lock()	smp_mb()  /* Full ordering for lock. */
+-#else /* #ifdef CONFIG_PPC */
++#else /* #ifdef CONFIG_ARCH_WEAK_RELEASE_ACQUIRE */
+ #define smp_mb__after_unlock_lock()	do { } while (0)
+-#endif /* #else #ifdef CONFIG_PPC */
++#endif /* #else #ifdef CONFIG_ARCH_WEAK_RELEASE_ACQUIRE */
+ 
+ 
+ #endif /* __LINUX_RCUPDATE_H */
+-- 
+2.5.2
