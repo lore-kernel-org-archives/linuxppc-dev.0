@@ -1,46 +1,26 @@
-Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <David.Laight@ACULAB.COM>
+Received: from smtp-out6.electric.net (smtp-out6.electric.net
+ [192.162.217.188])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w7F5B3gZXzDqC2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2017 18:09:02 +1000 (AEST)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v3J88ipm101649
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2017 04:08:50 -0400
-Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [125.16.236.9])
- by mx0a-001b2d01.pphosted.com with ESMTP id 29wqpvacrk-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2017 04:08:50 -0400
-Received: from localhost
- by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Wed, 19 Apr 2017 13:38:47 +0530
-Received: from d28av07.in.ibm.com (d28av07.in.ibm.com [9.184.220.146])
- by d28relay04.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v3J88jEY18809078
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2017 13:38:45 +0530
-Received: from d28av07.in.ibm.com (localhost [127.0.0.1])
- by d28av07.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v3J88iYN030676
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2017 13:38:45 +0530
-Date: Wed, 19 Apr 2017 08:08:40 +0000
-From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-Subject: RE: [PATCH v2 1/5] kprobes: convert kprobe_lookup_name() to a function
-To: David Laight <David.Laight@ACULAB.COM>, Michael Ellerman
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w7Fyk66BwzDqBN
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2017 18:48:30 +1000 (AEST)
+From: David Laight <David.Laight@ACULAB.COM>
+To: "'Naveen N. Rao'" <naveen.n.rao@linux.vnet.ibm.com>, Michael Ellerman
  <mpe@ellerman.id.au>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Masami Hiramatsu <mhiramat@kernel.org>, Ingo Molnar <mingo@kernel.org>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "Masami
+ Hiramatsu" <mhiramat@kernel.org>, Ingo Molnar <mingo@kernel.org>
+Subject: RE: [PATCH v2 1/5] kprobes: convert kprobe_lookup_name() to a function
+Date: Wed, 19 Apr 2017 08:48:22 +0000
+Message-ID: <063D6719AE5E284EB5DD2968C1650D6DCFFD4D95@AcuExch.aculab.com>
 References: <cover.1491991939.git.naveen.n.rao@linux.vnet.ibm.com>
  <2780c632bc2c6e39f27920f8cc98e17430189e27.1491991939.git.naveen.n.rao@linux.vnet.ibm.com>
  <063D6719AE5E284EB5DD2968C1650D6DCFFD3C07@AcuExch.aculab.com>
-In-Reply-To: <063D6719AE5E284EB5DD2968C1650D6DCFFD3C07@AcuExch.aculab.com>
+ <1492589122.ncy876vm18.astroid@naverao1-tp.none>
+In-Reply-To: <1492589122.ncy876vm18.astroid@naverao1-tp.none>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <1492589122.ncy876vm18.astroid@naverao1-tp.none>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,46 +30,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Excerpts from David Laight's message of April 18, 2017 18:22:
-> From: Naveen N. Rao
->> Sent: 12 April 2017 11:58
-> ...
->> +kprobe_opcode_t *kprobe_lookup_name(const char *name)
->> +{
-> ...
->> +	char dot_name[MODULE_NAME_LEN + 1 + KSYM_NAME_LEN];
->> +	const char *modsym;
->> +	bool dot_appended =3D false;
->> +	if ((modsym =3D strchr(name, ':')) !=3D NULL) {
->> +		modsym++;
->> +		if (*modsym !=3D '\0' && *modsym !=3D '.') {
->> +			/* Convert to <module:.symbol> */
->> +			strncpy(dot_name, name, modsym - name);
->> +			dot_name[modsym - name] =3D '.';
->> +			dot_name[modsym - name + 1] =3D '\0';
->> +			strncat(dot_name, modsym,
->> +				sizeof(dot_name) - (modsym - name) - 2);
->> +			dot_appended =3D true;
->=20
-> If the ':' is 'a way down' name[] then although the strncpy() won't
-> overrun dot_name[] the rest of the code can.
-
-Nice catch, thanks David!
-We need to be validating the length of 'name'. I'll put out a patch for=20
-that.
-
-As an aside, I'm not sure I follow what you mean when you say that the=20
-strncpy() won't overrun dot_name[]. If we have a name[] longer than=20
-sizeof(dot_name) with the ':' after that, the strncpy() can also overrun=20
-dot_name[].
-
-
-- Naveen
-
->=20
-> The strncat() call is particularly borked.
->=20
-> 	David
->=20
->=20
-=
+RnJvbTogTmF2ZWVuIE4uIFJhbw0KPiBTZW50OiAxOSBBcHJpbCAyMDE3IDA5OjA5DQo+IFRvOiBE
+YXZpZCBMYWlnaHQ7IE1pY2hhZWwgRWxsZXJtYW4NCj4gQ2M6IGxpbnV4LWtlcm5lbEB2Z2VyLmtl
+cm5lbC5vcmc7IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnOyBNYXNhbWkgSGlyYW1hdHN1
+OyBJbmdvIE1vbG5hcg0KPiBTdWJqZWN0OiBSRTogW1BBVENIIHYyIDEvNV0ga3Byb2JlczogY29u
+dmVydCBrcHJvYmVfbG9va3VwX25hbWUoKSB0byBhIGZ1bmN0aW9uDQo+IA0KPiBFeGNlcnB0cyBm
+cm9tIERhdmlkIExhaWdodCdzIG1lc3NhZ2Ugb2YgQXByaWwgMTgsIDIwMTcgMTg6MjI6DQo+ID4g
+RnJvbTogTmF2ZWVuIE4uIFJhbw0KPiA+PiBTZW50OiAxMiBBcHJpbCAyMDE3IDExOjU4DQo+ID4g
+Li4uDQo+ID4+ICtrcHJvYmVfb3Bjb2RlX3QgKmtwcm9iZV9sb29rdXBfbmFtZShjb25zdCBjaGFy
+ICpuYW1lKQ0KPiA+PiArew0KPiA+IC4uLg0KPiA+PiArCWNoYXIgZG90X25hbWVbTU9EVUxFX05B
+TUVfTEVOICsgMSArIEtTWU1fTkFNRV9MRU5dOw0KPiA+PiArCWNvbnN0IGNoYXIgKm1vZHN5bTsN
+Cj4gPj4gKwlib29sIGRvdF9hcHBlbmRlZCA9IGZhbHNlOw0KPiA+PiArCWlmICgobW9kc3ltID0g
+c3RyY2hyKG5hbWUsICc6JykpICE9IE5VTEwpIHsNCj4gPj4gKwkJbW9kc3ltKys7DQo+ID4+ICsJ
+CWlmICgqbW9kc3ltICE9ICdcMCcgJiYgKm1vZHN5bSAhPSAnLicpIHsNCj4gPj4gKwkJCS8qIENv
+bnZlcnQgdG8gPG1vZHVsZTouc3ltYm9sPiAqLw0KPiA+PiArCQkJc3RybmNweShkb3RfbmFtZSwg
+bmFtZSwgbW9kc3ltIC0gbmFtZSk7DQo+ID4+ICsJCQlkb3RfbmFtZVttb2RzeW0gLSBuYW1lXSA9
+ICcuJzsNCj4gPj4gKwkJCWRvdF9uYW1lW21vZHN5bSAtIG5hbWUgKyAxXSA9ICdcMCc7DQo+ID4+
+ICsJCQlzdHJuY2F0KGRvdF9uYW1lLCBtb2RzeW0sDQo+ID4+ICsJCQkJc2l6ZW9mKGRvdF9uYW1l
+KSAtIChtb2RzeW0gLSBuYW1lKSAtIDIpOw0KPiA+PiArCQkJZG90X2FwcGVuZGVkID0gdHJ1ZTsN
+Cj4gPg0KPiA+IElmIHRoZSAnOicgaXMgJ2Egd2F5IGRvd24nIG5hbWVbXSB0aGVuIGFsdGhvdWdo
+IHRoZSBzdHJuY3B5KCkgd29uJ3QNCj4gPiBvdmVycnVuIGRvdF9uYW1lW10gdGhlIHJlc3Qgb2Yg
+dGhlIGNvZGUgY2FuLg0KPiANCj4gTmljZSBjYXRjaCwgdGhhbmtzIERhdmlkIQ0KPiBXZSBuZWVk
+IHRvIGJlIHZhbGlkYXRpbmcgdGhlIGxlbmd0aCBvZiAnbmFtZScuIEknbGwgcHV0IG91dCBhIHBh
+dGNoIGZvcg0KPiB0aGF0Lg0KDQpTaWxlbnQgdHJ1bmNhdGlvbiBpcyBhbG1vc3QgY2VydGFpbmx5
+IHdyb25nIGhlcmUuDQoNCj4gQXMgYW4gYXNpZGUsIEknbSBub3Qgc3VyZSBJIGZvbGxvdyB3aGF0
+IHlvdSBtZWFuIHdoZW4geW91IHNheSB0aGF0IHRoZQ0KPiBzdHJuY3B5KCkgd29uJ3Qgb3ZlcnJ1
+biBkb3RfbmFtZVtdLiBJZiB3ZSBoYXZlIGEgbmFtZVtdIGxvbmdlciB0aGFuDQo+IHNpemVvZihk
+b3RfbmFtZSkgd2l0aCB0aGUgJzonIGFmdGVyIHRoYXQsIHRoZSBzdHJuY3B5KCkgY2FuIGFsc28g
+b3ZlcnJ1bg0KPiBkb3RfbmFtZVtdLg0KDQpZZXMsIHRoYXQgc2hvdWxkIGp1c3QgYmUgYSBtZW1j
+cHkoKSwgYXMgc2hvdWxkIHRoZSBzdHJuY2F0KCkuDQoNClVzaW5nIHN0cm5jcHkoKSB3aGVyZSB0
+aGUgbGVuZ3RoIGlzIG90aGVyIHRoYW4gdGhlIHNpemUgb2YgdGhlIHRhcmdldCBidWZmZXINCnNo
+b3VsZCBiZSBiYW5uZWQuIE5vdCB0aGF0IGl0IGV2ZXIgZG9lcyB3aGF0IHBlb3BsZSBleHBlY3Qu
+DQpzdHJuY2F0KCkgaXMgZXZlbiB3b3JzZS4NCg0KCURhdmlkDQoNCg0KDQoNCg==
