@@ -1,22 +1,30 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <msuchanek@suse.de>
+Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w7Nw43RXfzDq9d
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Apr 2017 00:01:40 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Christophe Leroy <christophe.leroy@c-s.fr>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Scott Wood <oss@buserror.net>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 3/3] powerpc/mm: Implement CONFIG_DEBUG_RODATA on PPC32
-In-Reply-To: <eabf767c896a023e5670adfa07398f1008756c13.1492596044.git.christophe.leroy@c-s.fr>
-References: <cover.1492596044.git.christophe.leroy@c-s.fr>
- <eabf767c896a023e5670adfa07398f1008756c13.1492596044.git.christophe.leroy@c-s.fr>
-Date: Thu, 20 Apr 2017 00:01:39 +1000
-Message-ID: <87inm05we4.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w7P3x75VczDq9m
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Apr 2017 00:08:29 +1000 (AEST)
+Received: from relay2.suse.de (charybdis-ext.suse.de [195.135.220.254])
+ by mx1.suse.de (Postfix) with ESMTP id 979AAAB46
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2017 14:08:26 +0000 (UTC)
+Date: Wed, 19 Apr 2017 16:08:26 +0200
+From: Michal =?UTF-8?B?U3VjaMOhbmVr?= <msuchanek@suse.de>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v2 1/2] fadump: reduce memory consumption for capture
+ kernel
+Message-ID: <20170419160826.617d173f@kitsune.suse.cz>
+In-Reply-To: <878tmx6nbw.fsf@concordia.ellerman.id.au>
+References: <148647105867.9464.16492047069430229118.stgit@hbathini.in.ibm.com>
+ <878tnd7zim.fsf@concordia.ellerman.id.au>
+ <d50dfb98-68ac-0135-8e65-560aec1d752e@linux.vnet.ibm.com>
+ <87efx4gwk2.fsf@concordia.ellerman.id.au>
+ <e1377bf8-e574-6ffa-6b63-3748a01dcdfa@linux.vnet.ibm.com>
+ <20170413215826.367dbdf0@kitsune.suse.cz>
+ <c1591a61-6499-4364-9d37-a3035e0eaddf@linux.vnet.ibm.com>
+ <20170418161816.20e124f0@kitsune.suse.cz>
+ <878tmx6nbw.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,24 +34,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Christophe Leroy <christophe.leroy@c-s.fr> writes:
+On Wed, 19 Apr 2017 14:19:47 +1000
+Michael Ellerman <mpe@ellerman.id.au> wrote:
 
-> diff --git a/arch/powerpc/kernel/ftrace.c b/arch/powerpc/kernel/ftrace.c
-> index 32509de6ce4c..4af81fb23653 100644
-> --- a/arch/powerpc/kernel/ftrace.c
-> +++ b/arch/powerpc/kernel/ftrace.c
-> @@ -526,7 +526,9 @@ void ftrace_replace_code(int enable)
->   */
->  void arch_ftrace_update_code(int command)
->  {
-> +	set_kernel_text_rw();
->  	ftrace_modify_all_code(command);
-> +	set_kernel_text_ro();
->  }
-  
-I'm not sure that's the right place for that.
+> Michal Such=C3=A1nek <msuchanek@suse.de> writes:
+> > On Mon, 17 Apr 2017 20:43:02 +0530
+> > Hari Bathini <hbathini@linux.vnet.ibm.com> wrote: =20
+> >> On Friday 14 April 2017 01:28 AM, Michal Such=C3=A1nek wrote: =20
+> >> > more (optional) properties cannot be added?   =20
+> >>=20
+> >> Kernel change seems simple over f/w enhancement.. =20
+> >
+> > That certainly looks so when you are a kernel developer and can
+> > implement the change yourself compared to convincing some firmware
+> > developer that this feature makes sense.
+> >
+> > On the other hand, the proposed kernel-only solution introduces
+> > requirement that the maintainer does not like.
+> >
+> > For the platform as a whole does it make more sense to add a hack to
+> > the kernel or does it make sense to enhance the firmware to provide
+> > more options for firmware-assisted dump? =20
+>=20
+> Unfortunately it doesn't really matter, because there is firmware out
+> there that implements the current behaviour and will never be updated.
+> So we have to work with what's there.
+>=20
 
-If you look at other arches they hook into ftrace_modify_code(), where
-you have the address that's being modified.
+It's not that with the existing firmware fadump does not work. It just
+uses more memory than needed. So if new firmware revision allows more
+flexibility it will work for people with updated firmware and people
+with outdated firmware will get the current behavior.
 
-cheers
+The memory saving is only significant for big systems so only people
+running those will get significant improvement from the updated
+firmware.
+
+Thanks
+
+Michal
