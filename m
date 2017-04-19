@@ -1,15 +1,15 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w77H92sjlzDq8M
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w77H94DkvzDq8M
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2017 13:47:17 +1000 (AEST)
-In-Reply-To: <20170413101624.26628-2-npiggin@gmail.com>
-To: Nicholas Piggin <npiggin@gmail.com>
+In-Reply-To: <1492089276-13713-1-git-send-email-mpe@ellerman.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [1/4] powerpc: change the doorbell IPI calling convention
-Message-Id: <3w77H91kH3z9s7L@ozlabs.org>
+Cc: lorenzo.pieralisi@arm.com, linux@armlinux.org.uk
+Subject: Re: powerpc: Drop include of linux/io.h from asm/io.h
+Message-Id: <3w77H939cXz9s7M@ozlabs.org>
 Date: Wed, 19 Apr 2017 13:47:17 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -20,21 +20,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2017-04-13 at 10:16:21 UTC, Nicholas Piggin wrote:
-> Change the doorbell callers to know about their msgsnd addressing,
-> rather than have them set a per-cpu target data tag at boot that gets
-> sent to the cause_ipi functions. The data is only used for doorbell IPI
-> functions, no other IPI types, so it makes sense to keep that detail
-> local to doorbell.
+On Thu, 2017-04-13 at 13:14:36 UTC, Michael Ellerman wrote:
+> Currently powerpc's asm/io.h includes linux/io.h, and linux/io.h
+> includes asm/io.h.
 > 
-> Have the platform code understand doorbell IPIs, rather than the
-> interrupt controller code understand them. Platform code can look at
-> capabilities it has available and decide which to use.
+> This can cause problems because depending on which is included first the
+> order of definitions between the two files will change.
 > 
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> The include of linux/io.h was added back in 2008 in commit b41e5fffe8b8
+> ("[POWERPC] devres: Add devm_ioremap_prot()"). It's not entirely clear
+> it was needed then, but devm_ioremap_prot() has since been removed
+> entirely as unused, in dedd24a12fe6 ("powerpc: Remove unused
+> devm_ioremap_prot()").
+> 
+> So it seems to be unnecessary and can potentially cause problems, so
+> remove the include of linux/io.h from asm/io.h
+> 
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
-Series applied to powerpc next, thanks.
+Applied to powerpc next.
 
-https://git.kernel.org/powerpc/c/b866cc2199d6a6cdcefe4acfe4cfca
+https://git.kernel.org/powerpc/c/590c369e7ecc00be736be39ae0c62d
 
 cheers
