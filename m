@@ -1,33 +1,18 @@
-Return-Path: <elohimes@gmail.com>
-Received: from mail-oi0-x242.google.com (mail-oi0-x242.google.com
- [IPv6:2607:f8b0:4003:c06::242])
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
+ [IPv6:2607:f8b0:400e:c00::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w759Q6htVzDq7h
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2017 12:12:10 +1000 (AEST)
-Received: by mail-oi0-x242.google.com with SMTP id t14so2093182oif.1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Apr 2017 19:12:10 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <87bmrt6udc.fsf@concordia.ellerman.id.au>
-References: <20170417212705.21092.90222.stgit@bhelgaas-glaptop.roam.corp.google.com>
- <20170417213653.21092.27784.stgit@bhelgaas-glaptop.roam.corp.google.com>
- <CAErSpo6gtDos6GH5Z7aOoW4a3uS4X-HOOHtPFtyg=F+B6+osrw@mail.gmail.com>
- <87bmrt6udc.fsf@concordia.ellerman.id.au>
-From: Yongji Xie <elohimes@gmail.com>
-Date: Wed, 19 Apr 2017 10:12:07 +0800
-Message-ID: <CAONzpcaGfO5bcSdjpX4NC=Ui9oTWORaj-v1vTDUTckPC5WWjqQ@mail.gmail.com>
-Subject: Re: [PATCH v11 4/7] powerpc/powernv: Override
- pcibios_default_alignment() to force PCI devices to be page aligned
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Bjorn Helgaas <bhelgaas@google.com>, Li Zhong <zhong@linux.vnet.ibm.com>,
- Alexey Kardashevskiy <aik@ozlabs.ru>,
- "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- Gavin Shan <gwshan@linux.vnet.ibm.com>,
- Alex Williamson <alex.williamson@redhat.com>,
- Paul Mackerras <paulus@samba.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Content-Type: text/plain; charset=UTF-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w75WW5nK2zDq7h
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2017 12:27:51 +1000 (AEST)
+Received: by mail-pf0-x241.google.com with SMTP id c198so1589538pfc.0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Apr 2017 19:27:51 -0700 (PDT)
+From: Nicholas Piggin <npiggin@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Nicholas Piggin <npiggin@gmail.com>
+Subject: [PATCH] powerpc: POWER9 remove ICSWX feature
+Date: Wed, 19 Apr 2017 12:27:37 +1000
+Message-Id: <20170419022738.31791-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,50 +22,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 19 April 2017 at 09:47, Michael Ellerman <mpe@ellerman.id.au> wrote:
-> Bjorn Helgaas <bhelgaas@google.com> writes:
->
->> On Mon, Apr 17, 2017 at 4:36 PM, Bjorn Helgaas <bhelgaas@google.com> wrote:
->>> From: Yongji Xie <elohimes@gmail.com>
->>> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
->>> index 6901a06da2f9..b724487cbd0f 100644
->>> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
->>> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
->>> @@ -3287,6 +3287,11 @@ static void pnv_pci_setup_bridge(struct pci_bus *bus, unsigned long type)
->>>         }
->>>  }
->>>
->>> +static resource_size_t pnv_pci_default_alignment(struct pci_dev *pdev)
->>> +{
->>> +       return PAGE_SIZE;
->>> +}
->>
->> Is it necessary that pcibios_default_alignment() take a pci_dev
->> pointer?
->
-> It's not necessary given the current implementation, obviously.
->
-> But it did strike me as a good idea to pass it in case we ever want to
-> do anything device specific in future.
->
->> I'd like this better if it were:
->>
->>   resource_size_t pcibios_default_alignment(void) { ... }
->>
->> because the last patch relies on the assumption that all resources of
->> *all* devices will be realigned to the same alignment.
->
-> But I guess that precludes doing anything device specific, at least
-> without further changes. So in that case it would be better if the API
-> didn't include the pci_dev.
->
-> Hopefully Yongji can confirm that there were no plans to use the
-> pci_dev in future patches.
->
+POWER9 does not implement this instruction.
 
-Yes, seems like pci_dev pointer doesn't match the assumption
-that all resources will be realigned to the same alignment. It's OK
-to me to remove it.
+Fixes: c3ab300ea5 ("powerpc: Add POWER9 cputable entry")
 
-Thanks,
-Yongji
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+---
+ arch/powerpc/include/asm/cputable.h    | 2 +-
+ arch/powerpc/platforms/Kconfig.cputype | 3 ++-
+ 2 files changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/asm/cputable.h
+index 4edbc2f7569a..9c3a44bb4694 100644
+--- a/arch/powerpc/include/asm/cputable.h
++++ b/arch/powerpc/include/asm/cputable.h
+@@ -473,7 +473,7 @@ enum {
+ 	    CPU_FTR_PURR | CPU_FTR_SPURR | CPU_FTR_REAL_LE | \
+ 	    CPU_FTR_DSCR | CPU_FTR_SAO  | \
+ 	    CPU_FTR_STCX_CHECKS_ADDRESS | CPU_FTR_POPCNTB | CPU_FTR_POPCNTD | \
+-	    CPU_FTR_ICSWX | CPU_FTR_CFAR | CPU_FTR_HVMODE | CPU_FTR_VMX_COPY | \
++	    CPU_FTR_CFAR | CPU_FTR_HVMODE | CPU_FTR_VMX_COPY | \
+ 	    CPU_FTR_DBELL | CPU_FTR_HAS_PPR | CPU_FTR_DAWR | \
+ 	    CPU_FTR_ARCH_207S | CPU_FTR_TM_COMP | CPU_FTR_ARCH_300)
+ #define CPU_FTRS_POWER9_DD1 (CPU_FTRS_POWER9 | CPU_FTR_POWER9_DD1)
+diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
+index ef4c4b8fc547..3baf821a186d 100644
+--- a/arch/powerpc/platforms/Kconfig.cputype
++++ b/arch/powerpc/platforms/Kconfig.cputype
+@@ -279,7 +279,8 @@ config PPC_ICSWX
+ 
+ 	  This option enables kernel support for the PowerPC Initiate
+ 	  Coprocessor Store Word (icswx) coprocessor instruction on POWER7
+-	  or newer processors.
++	  and POWER8 processors. POWER9 uses new copy/paste instructions
++	  to invoke the coprocessor.
+ 
+ 	  This option is only useful if you have a processor that supports
+ 	  the icswx coprocessor instruction. It does not have any effect
+-- 
+2.11.0
