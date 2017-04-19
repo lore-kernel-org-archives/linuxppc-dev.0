@@ -2,8 +2,8 @@ Return-Path: <yao.jin@linux.intel.com>
 Received: from mga05.intel.com (mga05.intel.com [192.55.52.43])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w72yS4gLkzDq8V
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2017 10:32:32 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w73083lHqzDq8V
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2017 10:34:00 +1000 (AEST)
 Subject: Re: [PATCH v4 5/5] perf report: Show branch type in callchain entry
 To: Jiri Olsa <jolsa@redhat.com>
 Cc: acme@kernel.org, jolsa@kernel.org, peterz@infradead.org,
@@ -12,12 +12,12 @@ Cc: acme@kernel.org, jolsa@kernel.org, peterz@infradead.org,
  yao.jin@intel.com, linuxppc-dev@lists.ozlabs.org
 References: <1491949266-6835-1-git-send-email-yao.jin@linux.intel.com>
  <1491949266-6835-6-git-send-email-yao.jin@linux.intel.com>
- <20170418185323.GB15584@krava>
+ <20170418185314.GA15584@krava>
 From: "Jin, Yao" <yao.jin@linux.intel.com>
-Message-ID: <79f0c49a-5f63-5ed7-bb37-fe5f0c0af1e1@linux.intel.com>
-Date: Wed, 19 Apr 2017 08:32:27 +0800
+Message-ID: <c26d35d6-cfa9-3735-363c-05e5be981082@linux.intel.com>
+Date: Wed, 19 Apr 2017 08:33:56 +0800
 MIME-Version: 1.0
-In-Reply-To: <20170418185323.GB15584@krava>
+In-Reply-To: <20170418185314.GA15584@krava>
 Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -35,61 +35,55 @@ On 4/19/2017 2:53 AM, Jiri Olsa wrote:
 >
 > SNIP
 >
->>   static int counts_str_build(char *bf, int bfsize,
->>   			     u64 branch_count, u64 predicted_count,
->>   			     u64 abort_count, u64 cycles_count,
->> -			     u64 iter_count, u64 samples_count)
->> +			     u64 iter_count, u64 samples_count,
->> +			     struct branch_type_stat *brtype_stat)
->>   {
->> -	double predicted_percent = 0.0;
->> -	const char *null_str = "";
->> -	char iter_str[32];
->> -	char cycle_str[32];
->> -	char *istr, *cstr;
->>   	u64 cycles;
->> +	int printed, i = 0;
->>   
->>   	if (branch_count == 0)
->>   		return scnprintf(bf, bfsize, " (calltrace)");
->>   
->> +	printed = branch_type_str(brtype_stat, bf, bfsize);
->> +	if (printed)
->> +		i++;
+>> +static int branch_type_str(struct branch_type_stat *stat,
+>> +			   char *bf, int bfsize)
+>> +{
+>> +	int i, j = 0, printed = 0;
+>> +	u64 total = 0;
 >> +
->>   	cycles = cycles_count / branch_count;
->> +	if (cycles) {
->> +		if (i++)
+>> +	for (i = 0; i < PERF_BR_MAX; i++)
+>> +		total += stat->counts[i];
+>> +
+>> +	if (total == 0)
+>> +		return 0;
+>> +
+>> +	printed += scnprintf(bf + printed, bfsize - printed, " (");
+>> +
+>> +	if (stat->jcc_fwd > 0) {
+>> +		j++;
+>> +		printed += scnprintf(bf + printed, bfsize - printed,
+>> +				     "JCC forward");
+>> +	}
+>> +
+>> +	if (stat->jcc_bwd > 0) {
+>> +		if (j++)
 >> +			printed += scnprintf(bf + printed, bfsize - printed,
->> +				" cycles:%" PRId64 "", cycles);
+>> +					     " JCC backward");
 >> +		else
 >> +			printed += scnprintf(bf + printed, bfsize - printed,
->> +				" (cycles:%" PRId64 "", cycles);
+>> +					     "JCC backward");
 >> +	}
->>   
->>   	if (iter_count && samples_count) {
->> -		if (cycles > 0)
->> -			scnprintf(iter_str, sizeof(iter_str),
->> -				 " iterations:%" PRId64 "",
->> -				 iter_count / samples_count);
->> +		if (i++)
+>> +
+>> +	if (stat->cross_4k > 0) {
+>> +		if (j++)
 >> +			printed += scnprintf(bf + printed, bfsize - printed,
->> +				" iterations:%" PRId64 "",
->> +				iter_count / samples_count);
->>   		else
->> -			scnprintf(iter_str, sizeof(iter_str),
->> -				 "iterations:%" PRId64 "",
->> -				 iter_count / samples_count);
->> -		istr = iter_str;
-> could you please put the change from using iter_str
-> to bf into separate patch before the actual branch
-> display change?
+>> +					     " CROSS_4K");
+>> +		else
+>> +			printed += scnprintf(bf + printed, bfsize - printed,
+>> +					     "CROSS_4K");
+>> +	}
+> could that 2 legs if be shortened to just one scnprintf like (untested):
 >
-> it's hard to see if anything is broken ;-)
+>     printed += scnprintf(bf + printed, bfsize - printed, "%s%s", j++ ? " " : "", "CROSS_4K");
+>
+> I'd also probably use some kind of macro or function
+> with all that similar code, but I dont insist ;-)
 >
 > thanks,
 > jirka
-Got it, I will separate the patches.
+
+Thanks for this suggestion. I will use this kind of code. Of course, I 
+will test. :)
 
 Thanks
 Jin Yao
