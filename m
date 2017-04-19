@@ -2,23 +2,22 @@ Return-Path: <jolsa@redhat.com>
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w7PD12FDBzDqBN
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Apr 2017 00:15:29 +1000 (AEST)
-Date: Wed, 19 Apr 2017 16:15:23 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w7PD84YCczDqFq
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Apr 2017 00:15:36 +1000 (AEST)
+Date: Wed, 19 Apr 2017 16:15:31 +0200
 From: Jiri Olsa <jolsa@redhat.com>
 To: Jin Yao <yao.jin@linux.intel.com>
 Cc: acme@kernel.org, jolsa@kernel.org, peterz@infradead.org,
  mingo@redhat.com, alexander.shishkin@linux.intel.com,
  Linux-kernel@vger.kernel.org, ak@linux.intel.com,
  kan.liang@intel.com, yao.jin@intel.com, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v5 6/7] perf report: Show branch type statistics for
- stdio mode
-Message-ID: <20170419141523.GC19643@krava>
+Subject: Re: [PATCH v5 4/7] perf report: Refactor the branch info printing code
+Message-ID: <20170419141531.GD19643@krava>
 References: <1492616894-3635-1-git-send-email-yao.jin@linux.intel.com>
- <1492616894-3635-7-git-send-email-yao.jin@linux.intel.com>
+ <1492616894-3635-5-git-send-email-yao.jin@linux.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1492616894-3635-7-git-send-email-yao.jin@linux.intel.com>
+In-Reply-To: <1492616894-3635-5-git-send-email-yao.jin@linux.intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,46 +27,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Apr 19, 2017 at 11:48:13PM +0800, Jin Yao wrote:
+On Wed, Apr 19, 2017 at 11:48:11PM +0800, Jin Yao wrote:
 
 SNIP
 
-> +static void branch_type_stat_display(FILE *fp, struct branch_type_stat *stat)
-> +{
-> +	u64 total = 0;
-> +	int i;
-> +
-> +	for (i = 0; i < PERF_BR_MAX; i++)
-> +		total += stat->counts[i];
-> +
-> +	if (total == 0)
-> +		return;
-> +
-> +	fprintf(fp, "\n#");
-> +	fprintf(fp, "\n# Branch Statistics:");
-> +	fprintf(fp, "\n#");
-> +
-> +	if (stat->jcc_fwd > 0)
-> +		fprintf(fp, "\n%12s: %5.1f%%",
-> +			"JCC forward",
-> +			100.0 * (double)stat->jcc_fwd / (double)total);
-> +
-> +	if (stat->jcc_bwd > 0)
-> +		fprintf(fp, "\n%12s: %5.1f%%",
-> +			"JCC backward",
-> +			100.0 * (double)stat->jcc_bwd / (double)total);
-> +
-> +	if (stat->cross_4k > 0)
-> +		fprintf(fp, "\n%12s: %5.1f%%",
-> +			"CROSS_4K",
-> +			100.0 * (double)stat->cross_4k / (double)total);
-> +
-> +	if (stat->cross_2m > 0)
-> +		fprintf(fp, "\n%12s: %5.1f%%",
-> +			"CROSS_2M",
-> +			100.0 * (double)stat->cross_2m / (double)total);
+>  static int counts_str_build(char *bf, int bfsize,
+>  			     u64 branch_count, u64 predicted_count,
+>  			     u64 abort_count, u64 cycles_count,
+>  			     u64 iter_count, u64 samples_count)
+>  {
+> -	double predicted_percent = 0.0;
+> -	const char *null_str = "";
+> -	char iter_str[32];
+> -	char cycle_str[32];
+> -	char *istr, *cstr;
+>  	u64 cycles;
+> +	int printed = 0, i = 0;
+>  
+>  	if (branch_count == 0)
+>  		return scnprintf(bf, bfsize, " (calltrace)");
+>  
+>  	cycles = cycles_count / branch_count;
+> +	if (cycles)
+> +		printed += count_pri64_printf(i++, "cycles",
+> +				cycles,
+> +				bf + printed, bfsize - printed);
+>  
+> -	if (iter_count && samples_count) {
+> -		if (cycles > 0)
+> -			scnprintf(iter_str, sizeof(iter_str),
+> -				 " iterations:%" PRId64 "",
+> -				 iter_count / samples_count);
+> -		else
+> -			scnprintf(iter_str, sizeof(iter_str),
+> -				 "iterations:%" PRId64 "",
+> -				 iter_count / samples_count);
+> -		istr = iter_str;
+> -	} else
+> -		istr = (char *)null_str;
+> -
+> -	if (cycles > 0) {
+> -		scnprintf(cycle_str, sizeof(cycle_str),
+> -			  "cycles:%" PRId64 "", cycles);
+> -		cstr = cycle_str;
+> -	} else
+> -		cstr = (char *)null_str;
+> +	if (iter_count && samples_count)
+> +		printed += count_pri64_printf(i++, "iterations",
+> +				iter_count / samples_count,
+> +				bf + printed, bfsize - printed);
 
-{} brackets here as well
+please put the multiline condition code into {} brackets
+for all of the cases in this function
 
 thanks,
 jirka
