@@ -1,17 +1,18 @@
 Return-Path: <roy.pledge@nxp.com>
-Received: from NAM02-BL2-obe.outbound.protection.outlook.com
- (mail-bl2nam02on0055.outbound.protection.outlook.com [104.47.38.55])
+Received: from NAM03-DM3-obe.outbound.protection.outlook.com
+ (mail-dm3nam03on0081.outbound.protection.outlook.com [104.47.41.81])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w7YyF0NV1zDq9D
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Apr 2017 06:49:08 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w7YyF5ZDWzDq9d
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Apr 2017 06:49:09 +1000 (AEST)
 From: Roy Pledge <roy.pledge@nxp.com>
 To: <linuxppc-dev@lists.ozlabs.org>, <linux-arm-kernel@lists.infradead.org>,
  <linux-kernel@vger.kernel.org>, <oss@buserror.net>, <robin.murphy@arm.com>
-CC: <madalin.bucur@nxp.com>, Roy Pledge <roy.pledge@nxp.com>
-Subject: [PATCH v2 07/11] soc/fsl/qbman: Rework ioremap() calls for ARM/PPC
-Date: Wed, 19 Apr 2017 16:48:46 -0400
-Message-ID: <1492634930-10765-8-git-send-email-roy.pledge@nxp.com>
+CC: <madalin.bucur@nxp.com>, Claudiu Manoil <claudiu.manoil@nxp.com>, Roy
+ Pledge <roy.pledge@nxp.com>
+Subject: [PATCH v2 09/11] soc/fsl/qbman: different register offsets on ARM
+Date: Wed, 19 Apr 2017 16:48:48 -0400
+Message-ID: <1492634930-10765-10-git-send-email-roy.pledge@nxp.com>
 In-Reply-To: <1492634930-10765-1-git-send-email-roy.pledge@nxp.com>
 References: <1492634930-10765-1-git-send-email-roy.pledge@nxp.com>
 Reply-To: <roy.pledge@nxp.com>
@@ -26,83 +27,111 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Rework ioremap() for PPC and ARM. The PPC devices require a
-non-coherent mapping while ARM will work with a non-cachable/write
-combine mapping.
+From: Madalin Bucur <madalin.bucur@nxp.com>
 
+Signed-off-by: Madalin Bucur <madalin.bucur@nxp.com>
+Signed-off-by: Claudiu Manoil <claudiu.manoil@nxp.com>
 Signed-off-by: Roy Pledge <roy.pledge@nxp.com>
 ---
- drivers/soc/fsl/qbman/bman_portal.c | 16 +++++++++++++---
- drivers/soc/fsl/qbman/qman_portal.c | 16 +++++++++++++---
- 2 files changed, 26 insertions(+), 6 deletions(-)
+ drivers/soc/fsl/qbman/bman.c | 22 ++++++++++++++++++++++
+ drivers/soc/fsl/qbman/qman.c | 38 ++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 60 insertions(+)
 
-diff --git a/drivers/soc/fsl/qbman/bman_portal.c b/drivers/soc/fsl/qbman/bman_portal.c
-index 8354d4d..a661f30 100644
---- a/drivers/soc/fsl/qbman/bman_portal.c
-+++ b/drivers/soc/fsl/qbman/bman_portal.c
-@@ -125,7 +125,18 @@ static int bman_portal_probe(struct platform_device *pdev)
- 	}
- 	pcfg->irq = irq;
+diff --git a/drivers/soc/fsl/qbman/bman.c b/drivers/soc/fsl/qbman/bman.c
+index 3acded1..1fa9099 100644
+--- a/drivers/soc/fsl/qbman/bman.c
++++ b/drivers/soc/fsl/qbman/bman.c
+@@ -35,6 +35,27 @@
  
--	va = ioremap_prot(addr_phys[0]->start, resource_size(addr_phys[0]), 0);
-+#ifdef CONFIG_PPC
-+	/* PPC requires a cacheable/non-coherent mapping of the portal */
-+	va = ioremap_prot(addr_phys[0]->start, resource_size(addr_phys[0]),
-+			  (pgprot_val(PAGE_KERNEL) & ~_PAGE_COHERENT));
+ /* Portal register assists */
+ 
++#if defined(CONFIG_ARM) || defined(CONFIG_ARM64)
++/* Cache-inhibited register offsets */
++#define BM_REG_RCR_PI_CINH	0x3000
++#define BM_REG_RCR_CI_CINH	0x3100
++#define BM_REG_RCR_ITR		0x3200
++#define BM_REG_CFG		0x3300
++#define BM_REG_SCN(n)		(0x3400 + ((n) << 6))
++#define BM_REG_ISR		0x3e00
++#define BM_REG_IER		0x3e40
++#define BM_REG_ISDR		0x3e80
++#define BM_REG_IIR		0x3ec0
++
++/* Cache-enabled register offsets */
++#define BM_CL_CR		0x0000
++#define BM_CL_RR0		0x0100
++#define BM_CL_RR1		0x0140
++#define BM_CL_RCR		0x1000
++#define BM_CL_RCR_PI_CENA	0x3000
++#define BM_CL_RCR_CI_CENA	0x3100
++
 +#else
-+	/*
-+	 * For ARM we can use write combine mapping.  A cacheable/non shareable
-+	 * mapping will perform better but equires additional platform
-+	 * support which is not currently available
-+	 */
-+	va = ioremap_wc(addr_phys[0]->start, resource_size(addr_phys[0]));
+ /* Cache-inhibited register offsets */
+ #define BM_REG_RCR_PI_CINH	0x0000
+ #define BM_REG_RCR_CI_CINH	0x0004
+@@ -53,6 +74,7 @@
+ #define BM_CL_RCR		0x1000
+ #define BM_CL_RCR_PI_CENA	0x3000
+ #define BM_CL_RCR_CI_CENA	0x3100
 +#endif
- 	if (!va) {
- 		dev_err(dev, "ioremap::CE failed\n");
- 		goto err_ioremap1;
-@@ -133,8 +144,7 @@ static int bman_portal_probe(struct platform_device *pdev)
  
- 	pcfg->addr_virt[DPAA_PORTAL_CE] = va;
+ /*
+  * Portal modes.
+diff --git a/drivers/soc/fsl/qbman/qman.c b/drivers/soc/fsl/qbman/qman.c
+index 3f60289..121bbb7 100644
+--- a/drivers/soc/fsl/qbman/qman.c
++++ b/drivers/soc/fsl/qbman/qman.c
+@@ -41,6 +41,43 @@
  
--	va = ioremap_prot(addr_phys[1]->start, resource_size(addr_phys[1]),
--			  _PAGE_GUARDED | _PAGE_NO_CACHE);
-+	va = ioremap(addr_phys[1]->start, resource_size(addr_phys[1]));
- 	if (!va) {
- 		dev_err(dev, "ioremap::CI failed\n");
- 		goto err_ioremap2;
-diff --git a/drivers/soc/fsl/qbman/qman_portal.c b/drivers/soc/fsl/qbman/qman_portal.c
-index adbaa30..e7a9eef 100644
---- a/drivers/soc/fsl/qbman/qman_portal.c
-+++ b/drivers/soc/fsl/qbman/qman_portal.c
-@@ -265,7 +265,18 @@ static int qman_portal_probe(struct platform_device *pdev)
- 	}
- 	pcfg->irq = irq;
+ /* Portal register assists */
  
--	va = ioremap_prot(addr_phys[0]->start, resource_size(addr_phys[0]), 0);
-+#ifdef CONFIG_PPC
-+	/* PPC requires a cacheable/non-coherent mapping of the portal */
-+	va = ioremap_prot(addr_phys[0]->start, resource_size(addr_phys[0]),
-+			  (pgprot_val(PAGE_KERNEL) & ~_PAGE_COHERENT));
++#if defined(CONFIG_ARM) || defined(CONFIG_ARM64)
++/* Cache-inhibited register offsets */
++#define QM_REG_EQCR_PI_CINH	0x3000
++#define QM_REG_EQCR_CI_CINH	0x3040
++#define QM_REG_EQCR_ITR		0x3080
++#define QM_REG_DQRR_PI_CINH	0x3100
++#define QM_REG_DQRR_CI_CINH	0x3140
++#define QM_REG_DQRR_ITR		0x3180
++#define QM_REG_DQRR_DCAP	0x31C0
++#define QM_REG_DQRR_SDQCR	0x3200
++#define QM_REG_DQRR_VDQCR	0x3240
++#define QM_REG_DQRR_PDQCR	0x3280
++#define QM_REG_MR_PI_CINH	0x3300
++#define QM_REG_MR_CI_CINH	0x3340
++#define QM_REG_MR_ITR		0x3380
++#define QM_REG_CFG		0x3500
++#define QM_REG_ISR		0x3600
++#define QM_REG_IER		0x3640
++#define QM_REG_ISDR		0x3680
++#define QM_REG_IIR		0x36C0
++#define QM_REG_ITPR		0x3740
++
++/* Cache-enabled register offsets */
++#define QM_CL_EQCR		0x0000
++#define QM_CL_DQRR		0x1000
++#define QM_CL_MR		0x2000
++#define QM_CL_EQCR_PI_CENA	0x3000
++#define QM_CL_EQCR_CI_CENA	0x3040
++#define QM_CL_DQRR_PI_CENA	0x3100
++#define QM_CL_DQRR_CI_CENA	0x3140
++#define QM_CL_MR_PI_CENA	0x3300
++#define QM_CL_MR_CI_CENA	0x3340
++#define QM_CL_CR		0x3800
++#define QM_CL_RR0		0x3900
++#define QM_CL_RR1		0x3940
++
 +#else
-+	/*
-+	 * For ARM we can use write combine mapping.  A cacheable/non shareable
-+	 * mapping will perform better but equires additional platform
-+	 * support which is not currently available
-+	 */
-+	va = ioremap_wc(addr_phys[0]->start, resource_size(addr_phys[0]));
+ /* Cache-inhibited register offsets */
+ #define QM_REG_EQCR_PI_CINH	0x0000
+ #define QM_REG_EQCR_CI_CINH	0x0004
+@@ -75,6 +112,7 @@
+ #define QM_CL_CR		0x3800
+ #define QM_CL_RR0		0x3900
+ #define QM_CL_RR1		0x3940
 +#endif
- 	if (!va) {
- 		dev_err(dev, "ioremap::CE failed\n");
- 		goto err_ioremap1;
-@@ -273,8 +284,7 @@ static int qman_portal_probe(struct platform_device *pdev)
  
- 	pcfg->addr_virt[DPAA_PORTAL_CE] = va;
- 
--	va = ioremap_prot(addr_phys[1]->start, resource_size(addr_phys[1]),
--			  _PAGE_GUARDED | _PAGE_NO_CACHE);
-+	va = ioremap(addr_phys[1]->start, resource_size(addr_phys[1]));
- 	if (!va) {
- 		dev_err(dev, "ioremap::CI failed\n");
- 		goto err_ioremap2;
+ /*
+  * BTW, the drivers (and h/w programming model) already obtain the required
 -- 
 2.7.4
