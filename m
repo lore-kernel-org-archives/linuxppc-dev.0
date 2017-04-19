@@ -3,16 +3,18 @@ Received: from new1-smtp.messagingengine.com (new1-smtp.messagingengine.com
  [66.111.4.221])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w7DRg1wHTzDq9H
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2017 17:39:58 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w7DRh0BdszDqC2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2017 17:40:00 +1000 (AEST)
 From: Russell Currey <ruscur@russell.cc>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: aik@ozlabs.ru,
 	Russell Currey <ruscur@russell.cc>
-Subject: [PATCH v3 1/2] powerpc/eeh: Avoid use after free in
- eeh_handle_special_event()
-Date: Wed, 19 Apr 2017 17:39:26 +1000
-Message-Id: <20170419073927.29224-1-ruscur@russell.cc>
+Subject: [PATCH v3 2/2] powerpc/eeh: Clean up and document event handling
+ functions
+Date: Wed, 19 Apr 2017 17:39:27 +1000
+Message-Id: <20170419073927.29224-2-ruscur@russell.cc>
+In-Reply-To: <20170419073927.29224-1-ruscur@russell.cc>
+References: <20170419073927.29224-1-ruscur@russell.cc>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,88 +24,97 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-eeh_handle_special_event() is called when an EEH event is detected but
-can't be narrowed down to a specific PE.  This function looks through
-every PE to find one in an erroneous state, then calls the regular event
-handler eeh_handle_normal_event() once it knows which PE has an error.
+Remove unnecessary tags in eeh_handle_normal_event(), and add function
+comments for eeh_handle_normal_event() and eeh_handle_special_event().
 
-However, if eeh_handle_normal_event() found that the PE cannot possibly
-be recovered, it will free it, rendering the passed PE stale.
-This leads to a use after free in eeh_handle_special_event() as it attempts to
-clear the "recovering" state on the PE after eeh_handle_normal_event() returns.
+The only functional difference is that in the case of a PE reaching the
+maximum number of failures, rather than one message telling you of this
+and suggesting you reseat the device, there are two separate messages.
 
-Thus, make sure the PE is valid when attempting to clear state in
-eeh_handle_special_event().
-
-Cc: <stable@vger.kernel.org> #3.10+
-Reported-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+Suggested-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 Signed-off-by: Russell Currey <ruscur@russell.cc>
 ---
-V2: check a specific return path instead of looking at the PE itself
-V3: use a bool instead of a non-specific int return
+V3: new.  Thanks to Alexey for the suggestions.
 ---
- arch/powerpc/kernel/eeh_driver.c | 19 +++++++++++++++----
- 1 file changed, 15 insertions(+), 4 deletions(-)
+ arch/powerpc/kernel/eeh_driver.c | 36 ++++++++++++++++++++++++------------
+ 1 file changed, 24 insertions(+), 12 deletions(-)
 
 diff --git a/arch/powerpc/kernel/eeh_driver.c b/arch/powerpc/kernel/eeh_driver.c
-index b94887165a10..e50d1470714f 100644
+index e50d1470714f..c405c79e50cd 100644
 --- a/arch/powerpc/kernel/eeh_driver.c
 +++ b/arch/powerpc/kernel/eeh_driver.c
-@@ -724,7 +724,7 @@ static int eeh_reset_device(struct eeh_pe *pe, struct pci_bus *bus,
+@@ -724,6 +724,15 @@ static int eeh_reset_device(struct eeh_pe *pe, struct pci_bus *bus,
   */
  #define MAX_WAIT_FOR_RECOVERY 300
  
--static void eeh_handle_normal_event(struct eeh_pe *pe)
-+static bool eeh_handle_normal_event(struct eeh_pe *pe)
++/**
++ * eeh_handle_normal_event - Handle EEH events on a specific PE
++ * @pe: EEH PE
++ *
++ * Attempts to recover the given PE.  If recovery fails or the PE has failed
++ * too many times, remove the PE.
++ *
++ * Returns true if @pe should no longer be used, else false.
++ */
+ static bool eeh_handle_normal_event(struct eeh_pe *pe)
  {
  	struct pci_bus *frozen_bus;
- 	struct eeh_dev *edev, *tmp;
-@@ -736,7 +736,7 @@ static void eeh_handle_normal_event(struct eeh_pe *pe)
- 	if (!frozen_bus) {
- 		pr_err("%s: Cannot find PCI bus for PHB#%x-PE#%x\n",
- 			__func__, pe->phb->global_number, pe->addr);
--		return;
-+		return false;
- 	}
+@@ -741,8 +750,13 @@ static bool eeh_handle_normal_event(struct eeh_pe *pe)
  
  	eeh_pe_update_time_stamp(pe);
-@@ -870,7 +870,7 @@ static void eeh_handle_normal_event(struct eeh_pe *pe)
- 	pr_info("EEH: Notify device driver to resume\n");
- 	eeh_pe_dev_traverse(pe, eeh_report_resume, NULL);
+ 	pe->freeze_count++;
+-	if (pe->freeze_count > eeh_max_freezes)
+-		goto excess_failures;
++	if (pe->freeze_count > eeh_max_freezes) {
++		pr_err("EEH: PHB#%x-PE#%x has failed %d times in the\n"
++		       "last hour and has been permanently disabled.\n",
++		       pe->phb->global_number, pe->addr,
++		       pe->freeze_count);
++		goto hard_fail;
++	}
+ 	pr_warn("EEH: This PCI device has failed %d times in the last hour\n",
+ 		pe->freeze_count);
  
--	return;
-+	return false;
+@@ -872,25 +886,16 @@ static bool eeh_handle_normal_event(struct eeh_pe *pe)
  
- excess_failures:
+ 	return false;
+ 
+-excess_failures:
++hard_fail:
  	/*
-@@ -915,8 +915,12 @@ static void eeh_handle_normal_event(struct eeh_pe *pe)
- 			pci_lock_rescan_remove();
- 			pci_hp_remove_devices(frozen_bus);
- 			pci_unlock_rescan_remove();
-+
-+			/* The passed PE should no longer be used */
-+			return true;
- 		}
- 	}
-+	return false;
+ 	 * About 90% of all real-life EEH failures in the field
+ 	 * are due to poorly seated PCI cards. Only 10% or so are
+ 	 * due to actual, failed cards.
+ 	 */
+-	pr_err("EEH: PHB#%x-PE#%x has failed %d times in the\n"
+-	       "last hour and has been permanently disabled.\n"
+-	       "Please try reseating or replacing it.\n",
+-		pe->phb->global_number, pe->addr,
+-		pe->freeze_count);
+-	goto perm_error;
+-
+-hard_fail:
+ 	pr_err("EEH: Unable to recover from failure from PHB#%x-PE#%x.\n"
+ 	       "Please try reseating or replacing it\n",
+ 		pe->phb->global_number, pe->addr);
+ 
+-perm_error:
+ 	eeh_slot_error_detail(pe, EEH_LOG_PERM);
+ 
+ 	/* Notify all devices that they're about to go down. */
+@@ -923,6 +928,13 @@ static bool eeh_handle_normal_event(struct eeh_pe *pe)
+ 	return false;
  }
  
++/**
++ * eeh_handle_special_event - Handle EEH events without a specific failing PE
++ *
++ * Called when an EEH event is detected but can't be narrowed down to a
++ * specific PE.  Iterates through possible failures and handles them as
++ * necessary.
++ */
  static void eeh_handle_special_event(void)
-@@ -982,7 +986,14 @@ static void eeh_handle_special_event(void)
- 		 */
- 		if (rc == EEH_NEXT_ERR_FROZEN_PE ||
- 		    rc == EEH_NEXT_ERR_FENCED_PHB) {
--			eeh_handle_normal_event(pe);
-+			/*
-+			 * eeh_handle_normal_event() can make the PE stale if it
-+			 * determines that the PE cannot possibly be recovered.
-+			 * Don't modify the PE state if that's the case.
-+			 */
-+			if (eeh_handle_normal_event(pe))
-+				continue;
-+
- 			eeh_pe_state_clear(pe, EEH_PE_RECOVERING);
- 		} else {
- 			pci_lock_rescan_remove();
+ {
+ 	struct eeh_pe *pe, *phb_pe;
 -- 
 2.12.2
