@@ -1,17 +1,18 @@
-Return-Path: <dgibson@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <ruscur@russell.cc>
+Received: from new1-smtp.messagingengine.com (new1-smtp.messagingengine.com
+ [66.111.4.221])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w7C4k72cZzDqBS
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2017 16:38:30 +1000 (AEST)
-From: David Gibson <david@gibson.dropbear.id.au>
-To: michael@ellerman.id.au,
-	paulus@samba.org
-Cc: linuxppc-dev@lists.ozlabs.org, jasowang@redhat.com, thuth@redhat.com,
- David Gibson <david@gibson.dropbear.id.au>
-Subject: [RFC] arch/powerpc: Turn off irqs in switch_mm()
-Date: Wed, 19 Apr 2017 16:38:26 +1000
-Message-Id: <20170419063826.1678-1-david@gibson.dropbear.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w7DRg1wHTzDq9H
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2017 17:39:58 +1000 (AEST)
+From: Russell Currey <ruscur@russell.cc>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: aik@ozlabs.ru,
+	Russell Currey <ruscur@russell.cc>
+Subject: [PATCH v3 1/2] powerpc/eeh: Avoid use after free in
+ eeh_handle_special_event()
+Date: Wed, 19 Apr 2017 17:39:26 +1000
+Message-Id: <20170419073927.29224-1-ruscur@russell.cc>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,66 +22,88 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-There seems to be a mismatch in expectations between the powerpc arch code
-and the generic (and x86) code in terms of the irq state when switch_mm()
-is called.
+eeh_handle_special_event() is called when an EEH event is detected but
+can't be narrowed down to a specific PE.  This function looks through
+every PE to find one in an erroneous state, then calls the regular event
+handler eeh_handle_normal_event() once it knows which PE has an error.
 
-powerpc expects irqs to already be (soft) disabled when switch_mm() is
-called, as made clear in the commit message of 9c1e105 "powerpc: Allow
-perf_counters to access user memory at interrupt time".
+However, if eeh_handle_normal_event() found that the PE cannot possibly
+be recovered, it will free it, rendering the passed PE stale.
+This leads to a use after free in eeh_handle_special_event() as it attempts to
+clear the "recovering" state on the PE after eeh_handle_normal_event() returns.
 
-That seems to be true when it's called from the schedule, but not for
-use_mm().  This becomes clear when looking at the x86 code paths for
-switch_mm().  There, switch_mm() itself disable irqs, with a
-switch_mm_irqs_off() variant which expects that to be already done.
+Thus, make sure the PE is valid when attempting to clear state in
+eeh_handle_special_event().
 
-This patch addresses the problem, making the powerpc code mirror the x86
-code.
-
-Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+Cc: <stable@vger.kernel.org> #3.10+
+Reported-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+Signed-off-by: Russell Currey <ruscur@russell.cc>
 ---
- arch/powerpc/include/asm/mmu_context.h | 17 +++++++++++++++--
- 1 file changed, 15 insertions(+), 2 deletions(-)
+V2: check a specific return path instead of looking at the PE itself
+V3: use a bool instead of a non-specific int return
+---
+ arch/powerpc/kernel/eeh_driver.c | 19 +++++++++++++++----
+ 1 file changed, 15 insertions(+), 4 deletions(-)
 
-RH-Bugzilla: https://bugzilla.redhat.com/show_bug.cgi?id=1437794
-
-It seems that some more recent changes in vhost have made it more
-likely to hit this problem, triggering a WARN.
-
-diff --git a/arch/powerpc/include/asm/mmu_context.h b/arch/powerpc/include/asm/mmu_context.h
-index b9e3f0a..0012f03 100644
---- a/arch/powerpc/include/asm/mmu_context.h
-+++ b/arch/powerpc/include/asm/mmu_context.h
-@@ -70,8 +70,9 @@ extern void drop_cop(unsigned long acop, struct mm_struct *mm);
-  * switch_mm is the entry point called from the architecture independent
-  * code in kernel/sched/core.c
+diff --git a/arch/powerpc/kernel/eeh_driver.c b/arch/powerpc/kernel/eeh_driver.c
+index b94887165a10..e50d1470714f 100644
+--- a/arch/powerpc/kernel/eeh_driver.c
++++ b/arch/powerpc/kernel/eeh_driver.c
+@@ -724,7 +724,7 @@ static int eeh_reset_device(struct eeh_pe *pe, struct pci_bus *bus,
   */
--static inline void switch_mm(struct mm_struct *prev, struct mm_struct *next,
--			     struct task_struct *tsk)
-+static inline void switch_mm_irqs_off(struct mm_struct *prev,
-+				      struct mm_struct *next,
-+				      struct task_struct *tsk)
+ #define MAX_WAIT_FOR_RECOVERY 300
+ 
+-static void eeh_handle_normal_event(struct eeh_pe *pe)
++static bool eeh_handle_normal_event(struct eeh_pe *pe)
  {
- 	/* Mark this context has been used on the new CPU */
- 	if (!cpumask_test_cpu(smp_processor_id(), mm_cpumask(next)))
-@@ -110,6 +111,18 @@ static inline void switch_mm(struct mm_struct *prev, struct mm_struct *next,
- 	switch_mmu_context(prev, next, tsk);
+ 	struct pci_bus *frozen_bus;
+ 	struct eeh_dev *edev, *tmp;
+@@ -736,7 +736,7 @@ static void eeh_handle_normal_event(struct eeh_pe *pe)
+ 	if (!frozen_bus) {
+ 		pr_err("%s: Cannot find PCI bus for PHB#%x-PE#%x\n",
+ 			__func__, pe->phb->global_number, pe->addr);
+-		return;
++		return false;
+ 	}
+ 
+ 	eeh_pe_update_time_stamp(pe);
+@@ -870,7 +870,7 @@ static void eeh_handle_normal_event(struct eeh_pe *pe)
+ 	pr_info("EEH: Notify device driver to resume\n");
+ 	eeh_pe_dev_traverse(pe, eeh_report_resume, NULL);
+ 
+-	return;
++	return false;
+ 
+ excess_failures:
+ 	/*
+@@ -915,8 +915,12 @@ static void eeh_handle_normal_event(struct eeh_pe *pe)
+ 			pci_lock_rescan_remove();
+ 			pci_hp_remove_devices(frozen_bus);
+ 			pci_unlock_rescan_remove();
++
++			/* The passed PE should no longer be used */
++			return true;
+ 		}
+ 	}
++	return false;
  }
  
-+static inline void switch_mm(struct mm_struct *prev, struct mm_struct *next,
-+			     struct task_struct *tsk)
-+{
-+	unsigned long flags;
+ static void eeh_handle_special_event(void)
+@@ -982,7 +986,14 @@ static void eeh_handle_special_event(void)
+ 		 */
+ 		if (rc == EEH_NEXT_ERR_FROZEN_PE ||
+ 		    rc == EEH_NEXT_ERR_FENCED_PHB) {
+-			eeh_handle_normal_event(pe);
++			/*
++			 * eeh_handle_normal_event() can make the PE stale if it
++			 * determines that the PE cannot possibly be recovered.
++			 * Don't modify the PE state if that's the case.
++			 */
++			if (eeh_handle_normal_event(pe))
++				continue;
 +
-+	local_irq_save(flags);
-+	switch_mm_irqs_off(prev, next, tsk);
-+	local_irq_restore(flags);
-+}
-+#define switch_mm_irqs_off switch_mm_irqs_off
-+
-+
- #define deactivate_mm(tsk,mm)	do { } while (0)
- 
- /*
+ 			eeh_pe_state_clear(pe, EEH_PE_RECOVERING);
+ 		} else {
+ 			pci_lock_rescan_remove();
 -- 
-2.9.3
+2.12.2
