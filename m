@@ -2,17 +2,17 @@ Return-Path: <yao.jin@linux.intel.com>
 Received: from mga03.intel.com (mga03.intel.com [134.134.136.65])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w7Dgh09B0zDqC2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2017 17:50:23 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w7Dgk5hFrzDqFS
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2017 17:50:26 +1000 (AEST)
 From: Jin Yao <yao.jin@linux.intel.com>
 To: acme@kernel.org, jolsa@kernel.org, peterz@infradead.org, mingo@redhat.com,
  alexander.shishkin@linux.intel.com
 Cc: Linux-kernel@vger.kernel.org, ak@linux.intel.com, kan.liang@intel.com,
  yao.jin@intel.com, linuxppc-dev@lists.ozlabs.org,
  Jin Yao <yao.jin@linux.intel.com>
-Subject: [PATCH v5 1/7] perf/core: Define the common branch type classification
-Date: Wed, 19 Apr 2017 23:48:08 +0800
-Message-Id: <1492616894-3635-2-git-send-email-yao.jin@linux.intel.com>
+Subject: [PATCH v5 2/7] perf/x86/intel: Record branch type
+Date: Wed, 19 Apr 2017 23:48:09 +0800
+Message-Id: <1492616894-3635-3-git-send-email-yao.jin@linux.intel.com>
 In-Reply-To: <1492616894-3635-1-git-send-email-yao.jin@linux.intel.com>
 References: <1492616894-3635-1-git-send-email-yao.jin@linux.intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,189 +24,139 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-It is often useful to know the branch types while analyzing branch
-data. For example, a call is very different from a conditional branch.
-
-Currently we have to look it up in binary while the binary may later
-not be available and even the binary is available but user has to take
-some time. It is very useful for user to check it directly in perf
-report.
-
 Perf already has support for disassembling the branch instruction
-to get the x86 branch type.
+and using the branch type for filtering. The patch just records
+the branch type in perf_branch_entry.
 
-To keep consistent on kernel and userspace and make the classification
-more common, the patch adds the common branch type classification
-in perf_event.h.
-
-PERF_BR_NONE      : unknown
-PERF_BR_JCC       : conditional jump
-PERF_BR_JMP       : jump
-PERF_BR_IND_JMP   : indirect jump
-PERF_BR_CALL      : call
-PERF_BR_IND_CALL  : indirect call
-PERF_BR_RET       : return
-PERF_BR_SYSCALL   : syscall
-PERF_BR_SYSRET    : syscall return
-PERF_BR_IRQ       : hw interrupt/trap/fault
-PERF_BR_INT       : sw interrupt
-PERF_BR_IRET      : return from interrupt
-PERF_BR_FAR_BRANCH: not generic far branch type
-
-The patch also adds a new field type (4 bits) in perf_branch_entry
-to record the branch type.
-
-Since the disassembling of branch instruction needs some overhead,
-a new PERF_SAMPLE_BRANCH_TYPE_SAVE is introduced to indicate if it
-needs to disassemble the branch instruction and record the branch
-type.
+Before recording, the patch converts the x86 branch type to
+common branch type.
 
 Change log
 ----------
 
-v5: Not changed. The v5 patch series just change the userspace.
+v5: Just fix the merge error. No other update.
 
 v4: Comparing to previous version, the major changes are:
 
-1. Remove the PERF_BR_JCC_FWD/PERF_BR_JCC_BWD, they will be
-   computed later in userspace.
+1. Uses a lookup table to convert x86 branch type to common branch
+   type.
 
-2. Remove the "cross" field in perf_branch_entry. The cross page
-   computing will be done later in userspace.
+2. Move the JCC forward/JCC backward and cross page computing to
+   user space.
+
+3. Initialize branch type to 0 in intel_pmu_lbr_read_32 and
+   intel_pmu_lbr_read_64
 
 Signed-off-by: Jin Yao <yao.jin@linux.intel.com>
 ---
- include/uapi/linux/perf_event.h       | 29 ++++++++++++++++++++++++++++-
- tools/include/uapi/linux/perf_event.h | 29 ++++++++++++++++++++++++++++-
- 2 files changed, 56 insertions(+), 2 deletions(-)
+ arch/x86/events/intel/lbr.c | 53 ++++++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 52 insertions(+), 1 deletion(-)
 
-diff --git a/include/uapi/linux/perf_event.h b/include/uapi/linux/perf_event.h
-index d09a9cd..69af012 100644
---- a/include/uapi/linux/perf_event.h
-+++ b/include/uapi/linux/perf_event.h
-@@ -174,6 +174,8 @@ enum perf_branch_sample_type_shift {
- 	PERF_SAMPLE_BRANCH_NO_FLAGS_SHIFT	= 14, /* no flags */
- 	PERF_SAMPLE_BRANCH_NO_CYCLES_SHIFT	= 15, /* no cycles */
- 
-+	PERF_SAMPLE_BRANCH_TYPE_SAVE_SHIFT	= 16, /* save branch type */
+diff --git a/arch/x86/events/intel/lbr.c b/arch/x86/events/intel/lbr.c
+index f924629..f10a7ed 100644
+--- a/arch/x86/events/intel/lbr.c
++++ b/arch/x86/events/intel/lbr.c
+@@ -109,6 +109,9 @@ enum {
+ 	X86_BR_ZERO_CALL	= 1 << 15,/* zero length call */
+ 	X86_BR_CALL_STACK	= 1 << 16,/* call stack */
+ 	X86_BR_IND_JMP		= 1 << 17,/* indirect jump */
 +
- 	PERF_SAMPLE_BRANCH_MAX_SHIFT		/* non-ABI */
++	X86_BR_TYPE_SAVE	= 1 << 18,/* indicate to save branch type */
++
  };
  
-@@ -198,9 +200,32 @@ enum perf_branch_sample_type {
- 	PERF_SAMPLE_BRANCH_NO_FLAGS	= 1U << PERF_SAMPLE_BRANCH_NO_FLAGS_SHIFT,
- 	PERF_SAMPLE_BRANCH_NO_CYCLES	= 1U << PERF_SAMPLE_BRANCH_NO_CYCLES_SHIFT,
+ #define X86_BR_PLM (X86_BR_USER | X86_BR_KERNEL)
+@@ -510,6 +513,7 @@ static void intel_pmu_lbr_read_32(struct cpu_hw_events *cpuc)
+ 		cpuc->lbr_entries[i].in_tx	= 0;
+ 		cpuc->lbr_entries[i].abort	= 0;
+ 		cpuc->lbr_entries[i].cycles	= 0;
++		cpuc->lbr_entries[i].type	= 0;
+ 		cpuc->lbr_entries[i].reserved	= 0;
+ 	}
+ 	cpuc->lbr_stack.nr = i;
+@@ -596,6 +600,7 @@ static void intel_pmu_lbr_read_64(struct cpu_hw_events *cpuc)
+ 		cpuc->lbr_entries[out].in_tx	 = in_tx;
+ 		cpuc->lbr_entries[out].abort	 = abort;
+ 		cpuc->lbr_entries[out].cycles	 = cycles;
++		cpuc->lbr_entries[out].type	 = 0;
+ 		cpuc->lbr_entries[out].reserved	 = 0;
+ 		out++;
+ 	}
+@@ -673,6 +678,10 @@ static int intel_pmu_setup_sw_lbr_filter(struct perf_event *event)
  
-+	PERF_SAMPLE_BRANCH_TYPE_SAVE	=
-+		1U << PERF_SAMPLE_BRANCH_TYPE_SAVE_SHIFT,
+ 	if (br_type & PERF_SAMPLE_BRANCH_CALL)
+ 		mask |= X86_BR_CALL | X86_BR_ZERO_CALL;
 +
- 	PERF_SAMPLE_BRANCH_MAX		= 1U << PERF_SAMPLE_BRANCH_MAX_SHIFT,
- };
- 
-+/*
-+ * Common flow change classification
-+ */
-+enum {
-+	PERF_BR_NONE		= 0,	/* unknown */
-+	PERF_BR_JCC		= 1,	/* conditional jump */
-+	PERF_BR_JMP		= 2,	/* jump */
-+	PERF_BR_IND_JMP		= 3,	/* indirect jump */
-+	PERF_BR_CALL		= 4,	/* call */
-+	PERF_BR_IND_CALL	= 5,	/* indirect call */
-+	PERF_BR_RET		= 6,	/* return */
-+	PERF_BR_SYSCALL		= 7,	/* syscall */
-+	PERF_BR_SYSRET		= 8,	/* syscall return */
-+	PERF_BR_IRQ		= 9,	/* hw interrupt/trap/fault */
-+	PERF_BR_INT		= 10,	/* sw interrupt */
-+	PERF_BR_IRET		= 11,	/* return from interrupt */
-+	PERF_BR_FAR_BRANCH	= 12,	/* not generic far branch type */
-+	PERF_BR_MAX,
-+};
++	if (br_type & PERF_SAMPLE_BRANCH_TYPE_SAVE)
++		mask |= X86_BR_TYPE_SAVE;
 +
- #define PERF_SAMPLE_BRANCH_PLM_ALL \
- 	(PERF_SAMPLE_BRANCH_USER|\
- 	 PERF_SAMPLE_BRANCH_KERNEL|\
-@@ -999,6 +1024,7 @@ union perf_mem_data_src {
-  *     in_tx: running in a hardware transaction
-  *     abort: aborting a hardware transaction
-  *    cycles: cycles from last branch (or 0 if not supported)
-+ *      type: branch type
-  */
- struct perf_branch_entry {
- 	__u64	from;
-@@ -1008,7 +1034,8 @@ struct perf_branch_entry {
- 		in_tx:1,    /* in transaction */
- 		abort:1,    /* transaction abort */
- 		cycles:16,  /* cycle count to last branch */
--		reserved:44;
-+		type:4,     /* branch type */
-+		reserved:40;
- };
+ 	/*
+ 	 * stash actual user request into reg, it may
+ 	 * be used by fixup code for some CPU
+@@ -926,6 +935,44 @@ static int branch_type(unsigned long from, unsigned long to, int abort)
+ 	return ret;
+ }
  
- #endif /* _UAPI_LINUX_PERF_EVENT_H */
-diff --git a/tools/include/uapi/linux/perf_event.h b/tools/include/uapi/linux/perf_event.h
-index d09a9cd..69af012 100644
---- a/tools/include/uapi/linux/perf_event.h
-+++ b/tools/include/uapi/linux/perf_event.h
-@@ -174,6 +174,8 @@ enum perf_branch_sample_type_shift {
- 	PERF_SAMPLE_BRANCH_NO_FLAGS_SHIFT	= 14, /* no flags */
- 	PERF_SAMPLE_BRANCH_NO_CYCLES_SHIFT	= 15, /* no cycles */
- 
-+	PERF_SAMPLE_BRANCH_TYPE_SAVE_SHIFT	= 16, /* save branch type */
++#define X86_BR_TYPE_MAP_MAX	16
 +
- 	PERF_SAMPLE_BRANCH_MAX_SHIFT		/* non-ABI */
- };
- 
-@@ -198,9 +200,32 @@ enum perf_branch_sample_type {
- 	PERF_SAMPLE_BRANCH_NO_FLAGS	= 1U << PERF_SAMPLE_BRANCH_NO_FLAGS_SHIFT,
- 	PERF_SAMPLE_BRANCH_NO_CYCLES	= 1U << PERF_SAMPLE_BRANCH_NO_CYCLES_SHIFT,
- 
-+	PERF_SAMPLE_BRANCH_TYPE_SAVE	=
-+		1U << PERF_SAMPLE_BRANCH_TYPE_SAVE_SHIFT,
++static int
++common_branch_type(int type)
++{
++	int i, mask;
++	const int branch_map[X86_BR_TYPE_MAP_MAX] = {
++		PERF_BR_CALL,		/* X86_BR_CALL */
++		PERF_BR_RET,		/* X86_BR_RET */
++		PERF_BR_SYSCALL,	/* X86_BR_SYSCALL */
++		PERF_BR_SYSRET,		/* X86_BR_SYSRET */
++		PERF_BR_INT,		/* X86_BR_INT */
++		PERF_BR_IRET,		/* X86_BR_IRET */
++		PERF_BR_JCC,		/* X86_BR_JCC */
++		PERF_BR_JMP,		/* X86_BR_JMP */
++		PERF_BR_IRQ,		/* X86_BR_IRQ */
++		PERF_BR_IND_CALL,	/* X86_BR_IND_CALL */
++		PERF_BR_NONE,		/* X86_BR_ABORT */
++		PERF_BR_NONE,		/* X86_BR_IN_TX */
++		PERF_BR_NONE,		/* X86_BR_NO_TX */
++		PERF_BR_CALL,		/* X86_BR_ZERO_CALL */
++		PERF_BR_NONE,		/* X86_BR_CALL_STACK */
++		PERF_BR_IND_JMP,	/* X86_BR_IND_JMP */
++	};
 +
- 	PERF_SAMPLE_BRANCH_MAX		= 1U << PERF_SAMPLE_BRANCH_MAX_SHIFT,
- };
- 
-+/*
-+ * Common flow change classification
-+ */
-+enum {
-+	PERF_BR_NONE		= 0,	/* unknown */
-+	PERF_BR_JCC		= 1,	/* conditional jump */
-+	PERF_BR_JMP		= 2,	/* jump */
-+	PERF_BR_IND_JMP		= 3,	/* indirect jump */
-+	PERF_BR_CALL		= 4,	/* call */
-+	PERF_BR_IND_CALL	= 5,	/* indirect call */
-+	PERF_BR_RET		= 6,	/* return */
-+	PERF_BR_SYSCALL		= 7,	/* syscall */
-+	PERF_BR_SYSRET		= 8,	/* syscall return */
-+	PERF_BR_IRQ		= 9,	/* hw interrupt/trap/fault */
-+	PERF_BR_INT		= 10,	/* sw interrupt */
-+	PERF_BR_IRET		= 11,	/* return from interrupt */
-+	PERF_BR_FAR_BRANCH	= 12,	/* not generic far branch type */
-+	PERF_BR_MAX,
-+};
++	type >>= 2; /* skip X86_BR_USER and X86_BR_KERNEL */
++	mask = ~(~0 << 1);
 +
- #define PERF_SAMPLE_BRANCH_PLM_ALL \
- 	(PERF_SAMPLE_BRANCH_USER|\
- 	 PERF_SAMPLE_BRANCH_KERNEL|\
-@@ -999,6 +1024,7 @@ union perf_mem_data_src {
-  *     in_tx: running in a hardware transaction
-  *     abort: aborting a hardware transaction
-  *    cycles: cycles from last branch (or 0 if not supported)
-+ *      type: branch type
-  */
- struct perf_branch_entry {
- 	__u64	from;
-@@ -1008,7 +1034,8 @@ struct perf_branch_entry {
- 		in_tx:1,    /* in transaction */
- 		abort:1,    /* transaction abort */
- 		cycles:16,  /* cycle count to last branch */
--		reserved:44;
-+		type:4,     /* branch type */
-+		reserved:40;
- };
++	for (i = 0; i < X86_BR_TYPE_MAP_MAX; i++) {
++		if (type & mask)
++			return branch_map[i];
++
++		type >>= 1;
++	}
++
++	return PERF_BR_NONE;
++}
++
+ /*
+  * implement actual branch filter based on user demand.
+  * Hardware may not exactly satisfy that request, thus
+@@ -942,7 +989,8 @@ intel_pmu_lbr_filter(struct cpu_hw_events *cpuc)
+ 	bool compress = false;
  
- #endif /* _UAPI_LINUX_PERF_EVENT_H */
+ 	/* if sampling all branches, then nothing to filter */
+-	if ((br_sel & X86_BR_ALL) == X86_BR_ALL)
++	if (((br_sel & X86_BR_ALL) == X86_BR_ALL) &&
++	    ((br_sel & X86_BR_TYPE_SAVE) != X86_BR_TYPE_SAVE))
+ 		return;
+ 
+ 	for (i = 0; i < cpuc->lbr_stack.nr; i++) {
+@@ -963,6 +1011,9 @@ intel_pmu_lbr_filter(struct cpu_hw_events *cpuc)
+ 			cpuc->lbr_entries[i].from = 0;
+ 			compress = true;
+ 		}
++
++		if ((br_sel & X86_BR_TYPE_SAVE) == X86_BR_TYPE_SAVE)
++			cpuc->lbr_entries[i].type = common_branch_type(type);
+ 	}
+ 
+ 	if (!compress)
 -- 
 2.7.4
