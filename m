@@ -1,29 +1,38 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <gwshan@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w780l0d0pzDq8M
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2017 14:19:51 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Michal =?utf-8?Q?Such=C3=A1nek?= <msuchanek@suse.de>, Hari Bathini
- <hbathini@linux.vnet.ibm.com>
-Cc: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>,
- linuxppc-dev <linuxppc-dev@ozlabs.org>
-Subject: Re: [PATCH v2 1/2] fadump: reduce memory consumption for capture
- kernel
-In-Reply-To: <20170418161816.20e124f0@kitsune.suse.cz>
-References: <148647105867.9464.16492047069430229118.stgit@hbathini.in.ibm.com>
- <878tnd7zim.fsf@concordia.ellerman.id.au>
- <d50dfb98-68ac-0135-8e65-560aec1d752e@linux.vnet.ibm.com>
- <87efx4gwk2.fsf@concordia.ellerman.id.au>
- <e1377bf8-e574-6ffa-6b63-3748a01dcdfa@linux.vnet.ibm.com>
- <20170413215826.367dbdf0@kitsune.suse.cz>
- <c1591a61-6499-4364-9d37-a3035e0eaddf@linux.vnet.ibm.com>
- <20170418161816.20e124f0@kitsune.suse.cz>
-Date: Wed, 19 Apr 2017 14:19:47 +1000
-Message-ID: <878tmx6nbw.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w78ch2yw2zDq9D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2017 14:47:32 +1000 (AEST)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v3J4hiZ7097920
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2017 00:47:28 -0400
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 29wqpuuw7t-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2017 00:47:28 -0400
+Received: from localhost
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Wed, 19 Apr 2017 14:47:25 +1000
+Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v3J4lFY541418772
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2017 14:47:23 +1000
+Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
+ by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v3J4ko5W013363
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2017 14:46:50 +1000
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: mpe@ellerman.id.au, Gavin Shan <gwshan@linux.vnet.ibm.com>
+Subject: [PATCH v2] powerpc/powernv: Block PCI config access on BCM5718 during
+ EEH recovery
+Date: Wed, 19 Apr 2017 14:46:24 +1000
+Message-Id: <1492577184-20204-1-git-send-email-gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,30 +42,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michal Such=C3=A1nek <msuchanek@suse.de> writes:
-> On Mon, 17 Apr 2017 20:43:02 +0530
-> Hari Bathini <hbathini@linux.vnet.ibm.com> wrote:
->> On Friday 14 April 2017 01:28 AM, Michal Such=C3=A1nek wrote:
->> > more (optional) properties cannot be added?=20=20
->>=20
->> Kernel change seems simple over f/w enhancement..
->
-> That certainly looks so when you are a kernel developer and can
-> implement the change yourself compared to convincing some firmware
-> developer that this feature makes sense.
->
-> On the other hand, the proposed kernel-only solution introduces
-> requirement that the maintainer does not like.
->
-> For the platform as a whole does it make more sense to add a hack to
-> the kernel or does it make sense to enhance the firmware to provide
-> more options for firmware-assisted dump?
+Similar to what is done in commit b6541db13952 ("powerpc/eeh: Block
+PCI config access upon frozen PE"), we need block PCI config access
+for BCM5719 when recovering frozen error on them. Otherwise, an
+unexpected recursive fenced PHB error is observed.
 
-Unfortunately it doesn't really matter, because there is firmware out
-there that implements the current behaviour and will never be updated.
-So we have to work with what's there.
+   0001:06:00.0 Ethernet controller: Broadcom Corporation \
+                NetXtreme BCM5718 Gigabit Ethernet PCIe (rev 10)
+   0001:06:00.1 Ethernet controller: Broadcom Corporation \
+                NetXtreme BCM5718 Gigabit Ethernet PCIe (rev 10)
 
-I don't think fadump_append is a hack, though it's not pretty I'll
-admit.
+Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+---
+v2: s/BCM5719/BCM5718 in the subject
+---
+ arch/powerpc/platforms/powernv/eeh-powernv.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-cheers
+diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
+index 6fb5522..55a3c5f 100644
+--- a/arch/powerpc/platforms/powernv/eeh-powernv.c
++++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
+@@ -412,11 +412,14 @@ static void *pnv_eeh_probe(struct pci_dn *pdn, void *data)
+ 	 * been set for the PE, we will set EEH_PE_CFG_BLOCKED for
+ 	 * that PE to block its config space.
+ 	 *
++	 * Broadcom BCM5718 2-ports NICs (14e4:1656)
+ 	 * Broadcom Austin 4-ports NICs (14e4:1657)
+ 	 * Broadcom Shiner 4-ports 1G NICs (14e4:168a)
+ 	 * Broadcom Shiner 2-ports 10G NICs (14e4:168e)
+ 	 */
+ 	if ((pdn->vendor_id == PCI_VENDOR_ID_BROADCOM &&
++	     pdn->device_id == 0x1656) ||
++	    (pdn->vendor_id == PCI_VENDOR_ID_BROADCOM &&
+ 	     pdn->device_id == 0x1657) ||
+ 	    (pdn->vendor_id == PCI_VENDOR_ID_BROADCOM &&
+ 	     pdn->device_id == 0x168a) ||
+-- 
+2.7.4
