@@ -1,26 +1,28 @@
-Return-Path: <David.Laight@ACULAB.COM>
-Received: from smtp-out6.electric.net (smtp-out6.electric.net
- [192.162.217.188])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w7Fyk66BwzDqBN
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2017 18:48:30 +1000 (AEST)
-From: David Laight <David.Laight@ACULAB.COM>
-To: "'Naveen N. Rao'" <naveen.n.rao@linux.vnet.ibm.com>, Michael Ellerman
- <mpe@ellerman.id.au>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "Masami
- Hiramatsu" <mhiramat@kernel.org>, Ingo Molnar <mingo@kernel.org>
-Subject: RE: [PATCH v2 1/5] kprobes: convert kprobe_lookup_name() to a function
-Date: Wed, 19 Apr 2017 08:48:22 +0000
-Message-ID: <063D6719AE5E284EB5DD2968C1650D6DCFFD4D95@AcuExch.aculab.com>
-References: <cover.1491991939.git.naveen.n.rao@linux.vnet.ibm.com>
- <2780c632bc2c6e39f27920f8cc98e17430189e27.1491991939.git.naveen.n.rao@linux.vnet.ibm.com>
- <063D6719AE5E284EB5DD2968C1650D6DCFFD3C07@AcuExch.aculab.com>
- <1492589122.ncy876vm18.astroid@naverao1-tp.none>
-In-Reply-To: <1492589122.ncy876vm18.astroid@naverao1-tp.none>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w7Hrz4L76zDq8M
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2017 20:13:39 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Oliver O'Halloran <oohall@gmail.com>, Rob Herring <robh+dt@kernel.org>
+Cc: "devicetree\@vger.kernel.org" <devicetree@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel\@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ rostedt@goodmis.org, Ingo Molnar <mingo@redhat.com>,
+ Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
+ Nathan Fontenot <nfont@linux.vnet.ibm.com>,
+ Frank Rowand <frowand.list@gmail.com>
+Subject: Re: [PATCH] of: introduce event tracepoints for dynamic device_node
+ lifecyle
+In-Reply-To: <CAOSf1CH8HgP0rKd0WCp87BADYcEGT5OCoq_yq+f3ZeoyTcXeng@mail.gmail.com>
+References: <1492475525-10827-1-git-send-email-tyreld@linux.vnet.ibm.com>
+ <CAL_Jsq+GRkssqcn0wGzMgQRUtT-BO4zNDyYE7u1Cr5EhADK1SQ@mail.gmail.com>
+ <CAOSf1CH8HgP0rKd0WCp87BADYcEGT5OCoq_yq+f3ZeoyTcXeng@mail.gmail.com>
+Date: Wed, 19 Apr 2017 20:13:38 +1000
+Message-ID: <87y3uw66y5.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,35 +32,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-RnJvbTogTmF2ZWVuIE4uIFJhbw0KPiBTZW50OiAxOSBBcHJpbCAyMDE3IDA5OjA5DQo+IFRvOiBE
-YXZpZCBMYWlnaHQ7IE1pY2hhZWwgRWxsZXJtYW4NCj4gQ2M6IGxpbnV4LWtlcm5lbEB2Z2VyLmtl
-cm5lbC5vcmc7IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnOyBNYXNhbWkgSGlyYW1hdHN1
-OyBJbmdvIE1vbG5hcg0KPiBTdWJqZWN0OiBSRTogW1BBVENIIHYyIDEvNV0ga3Byb2JlczogY29u
-dmVydCBrcHJvYmVfbG9va3VwX25hbWUoKSB0byBhIGZ1bmN0aW9uDQo+IA0KPiBFeGNlcnB0cyBm
-cm9tIERhdmlkIExhaWdodCdzIG1lc3NhZ2Ugb2YgQXByaWwgMTgsIDIwMTcgMTg6MjI6DQo+ID4g
-RnJvbTogTmF2ZWVuIE4uIFJhbw0KPiA+PiBTZW50OiAxMiBBcHJpbCAyMDE3IDExOjU4DQo+ID4g
-Li4uDQo+ID4+ICtrcHJvYmVfb3Bjb2RlX3QgKmtwcm9iZV9sb29rdXBfbmFtZShjb25zdCBjaGFy
-ICpuYW1lKQ0KPiA+PiArew0KPiA+IC4uLg0KPiA+PiArCWNoYXIgZG90X25hbWVbTU9EVUxFX05B
-TUVfTEVOICsgMSArIEtTWU1fTkFNRV9MRU5dOw0KPiA+PiArCWNvbnN0IGNoYXIgKm1vZHN5bTsN
-Cj4gPj4gKwlib29sIGRvdF9hcHBlbmRlZCA9IGZhbHNlOw0KPiA+PiArCWlmICgobW9kc3ltID0g
-c3RyY2hyKG5hbWUsICc6JykpICE9IE5VTEwpIHsNCj4gPj4gKwkJbW9kc3ltKys7DQo+ID4+ICsJ
-CWlmICgqbW9kc3ltICE9ICdcMCcgJiYgKm1vZHN5bSAhPSAnLicpIHsNCj4gPj4gKwkJCS8qIENv
-bnZlcnQgdG8gPG1vZHVsZTouc3ltYm9sPiAqLw0KPiA+PiArCQkJc3RybmNweShkb3RfbmFtZSwg
-bmFtZSwgbW9kc3ltIC0gbmFtZSk7DQo+ID4+ICsJCQlkb3RfbmFtZVttb2RzeW0gLSBuYW1lXSA9
-ICcuJzsNCj4gPj4gKwkJCWRvdF9uYW1lW21vZHN5bSAtIG5hbWUgKyAxXSA9ICdcMCc7DQo+ID4+
-ICsJCQlzdHJuY2F0KGRvdF9uYW1lLCBtb2RzeW0sDQo+ID4+ICsJCQkJc2l6ZW9mKGRvdF9uYW1l
-KSAtIChtb2RzeW0gLSBuYW1lKSAtIDIpOw0KPiA+PiArCQkJZG90X2FwcGVuZGVkID0gdHJ1ZTsN
-Cj4gPg0KPiA+IElmIHRoZSAnOicgaXMgJ2Egd2F5IGRvd24nIG5hbWVbXSB0aGVuIGFsdGhvdWdo
-IHRoZSBzdHJuY3B5KCkgd29uJ3QNCj4gPiBvdmVycnVuIGRvdF9uYW1lW10gdGhlIHJlc3Qgb2Yg
-dGhlIGNvZGUgY2FuLg0KPiANCj4gTmljZSBjYXRjaCwgdGhhbmtzIERhdmlkIQ0KPiBXZSBuZWVk
-IHRvIGJlIHZhbGlkYXRpbmcgdGhlIGxlbmd0aCBvZiAnbmFtZScuIEknbGwgcHV0IG91dCBhIHBh
-dGNoIGZvcg0KPiB0aGF0Lg0KDQpTaWxlbnQgdHJ1bmNhdGlvbiBpcyBhbG1vc3QgY2VydGFpbmx5
-IHdyb25nIGhlcmUuDQoNCj4gQXMgYW4gYXNpZGUsIEknbSBub3Qgc3VyZSBJIGZvbGxvdyB3aGF0
-IHlvdSBtZWFuIHdoZW4geW91IHNheSB0aGF0IHRoZQ0KPiBzdHJuY3B5KCkgd29uJ3Qgb3ZlcnJ1
-biBkb3RfbmFtZVtdLiBJZiB3ZSBoYXZlIGEgbmFtZVtdIGxvbmdlciB0aGFuDQo+IHNpemVvZihk
-b3RfbmFtZSkgd2l0aCB0aGUgJzonIGFmdGVyIHRoYXQsIHRoZSBzdHJuY3B5KCkgY2FuIGFsc28g
-b3ZlcnJ1bg0KPiBkb3RfbmFtZVtdLg0KDQpZZXMsIHRoYXQgc2hvdWxkIGp1c3QgYmUgYSBtZW1j
-cHkoKSwgYXMgc2hvdWxkIHRoZSBzdHJuY2F0KCkuDQoNClVzaW5nIHN0cm5jcHkoKSB3aGVyZSB0
-aGUgbGVuZ3RoIGlzIG90aGVyIHRoYW4gdGhlIHNpemUgb2YgdGhlIHRhcmdldCBidWZmZXINCnNo
-b3VsZCBiZSBiYW5uZWQuIE5vdCB0aGF0IGl0IGV2ZXIgZG9lcyB3aGF0IHBlb3BsZSBleHBlY3Qu
-DQpzdHJuY2F0KCkgaXMgZXZlbiB3b3JzZS4NCg0KCURhdmlkDQoNCg0KDQoNCg==
+Oliver O'Halloran <oohall@gmail.com> writes:
+
+> On Wed, Apr 19, 2017 at 2:46 AM, Rob Herring <robh+dt@kernel.org> wrote:
+>> On Mon, Apr 17, 2017 at 7:32 PM, Tyrel Datwyler
+>> <tyreld@linux.vnet.ibm.com> wrote:
+>>> This patch introduces event tracepoints for tracking a device_nodes
+>>> reference cycle as well as reconfig notifications generated in response
+>>> to node/property manipulations.
+>>>
+>>> With the recent upstreaming of the refcount API several device_node
+>>> underflows and leaks have come to my attention in the pseries (DLPAR) dynamic
+>>> logical partitioning code (ie. POWER speak for hotplugging virtual and physcial
+>>> resources at runtime such as cpus or IOAs). These tracepoints provide a
+>>> easy and quick mechanism for validating the reference counting of
+>>> device_nodes during their lifetime.
+>>
+>> Not really relevant for this patch, but since you are looking at
+>> pseries and refcounting, the refcounting largely exists for pseries.
+>> It's also hard to get right as this type of fix is fairly common. It's
+>> now used for overlays, but we really probably only need to refcount
+>> the overlays or changesets as a whole, not at a node level. If you
+>> have any thoughts on how a different model of refcounting could work
+>> for pseries, I'd like to discuss it.
+>
+> One idea I've been kicking around is differentiating short and long
+> term references to a node.
+
+I actually did this a long time ago, but balked at the size of the patch
+to do the conversion. Let me see if I can find it lying around ...
+
+cheers
