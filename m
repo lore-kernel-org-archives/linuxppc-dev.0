@@ -1,23 +1,17 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w7PNV2qGRzDqHG
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Apr 2017 00:22:50 +1000 (AEST)
-Subject: Re: [PATCH 3/3] powerpc/mm: Implement CONFIG_DEBUG_RODATA on PPC32
-To: Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Scott Wood <oss@buserror.net>
-References: <cover.1492596044.git.christophe.leroy@c-s.fr>
- <eabf767c896a023e5670adfa07398f1008756c13.1492596044.git.christophe.leroy@c-s.fr>
- <87inm05we4.fsf@concordia.ellerman.id.au>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-From: Christophe LEROY <christophe.leroy@c-s.fr>
-Message-ID: <d3713d6a-28b6-fb8f-ce32-c0d37958b59f@c-s.fr>
-Date: Wed, 19 Apr 2017 16:22:46 +0200
-MIME-Version: 1.0
-In-Reply-To: <87inm05we4.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset=windows-1252; format=flowed
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w7PXZ1skKzDq9L
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Apr 2017 00:29:50 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: linuxppc-dev@ozlabs.org
+Cc: bhsharma@redhat.com, keescook@chromium.org,
+ kernel-hardening@lists.openwall.com
+Subject: [PATCH] powerpc/mm: Add support for runtime configuration of ASLR
+ limits
+Date: Thu, 20 Apr 2017 00:29:41 +1000
+Message-Id: <1492612181-8484-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,52 +21,126 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Add powerpc support for mmap_rnd_bits and mmap_rnd_compat_bits, which are two
+sysctls that allow a user to configure the number of bits of randomness used for
+ASLR.
+
+Because of the way the Kconfig for ARCH_MMAP_RND_BITS is defined, we have to
+construct at least the MIN value in Kconfig, vs in a header which would be more
+natural. Given that we just go ahead and do it all in Kconfig.
+
+At least according to the code (the documentation makes no mention of it), the
+value is defined as the number of bits of randomisation *of the page*, not the
+address. This makes some sense, with larger page sizes more of the low bits are
+forced to zero, which would reduce the randomisation if we didn't take the
+PAGE_SIZE into account. However it does mean the min/max values have to change
+depending on the PAGE_SIZE in order to actually limit the amount of address
+space consumed by the randomisation.
+
+The result of that is that we have to define the default values based on both
+32-bit vs 64-bit, but also the configured PAGE_SIZE. Furthermore now that we
+have 128TB address space support on Book3S, we also have to take that into
+account.
+
+Finally we can wire up the value in arch_mmap_rnd().
+
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/Kconfig   | 44 ++++++++++++++++++++++++++++++++++++++++++++
+ arch/powerpc/mm/mmap.c | 11 ++++++-----
+ 2 files changed, 50 insertions(+), 5 deletions(-)
 
 
-Le 19/04/2017 à 16:01, Michael Ellerman a écrit :
-> Christophe Leroy <christophe.leroy@c-s.fr> writes:
->
->> diff --git a/arch/powerpc/kernel/ftrace.c b/arch/powerpc/kernel/ftrace.c
->> index 32509de6ce4c..4af81fb23653 100644
->> --- a/arch/powerpc/kernel/ftrace.c
->> +++ b/arch/powerpc/kernel/ftrace.c
->> @@ -526,7 +526,9 @@ void ftrace_replace_code(int enable)
->>   */
->>  void arch_ftrace_update_code(int command)
->>  {
->> +	set_kernel_text_rw();
->>  	ftrace_modify_all_code(command);
->> +	set_kernel_text_ro();
->>  }
->
-> I'm not sure that's the right place for that.
+This is based on my next branch which has the 128TB changes:
+  https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git/log/?h=next
 
+I would definitely appreciate someone checking my math, and any test results.
 
-I took arch/arm/ as model. It does the following. Is that wrong ?
-
-
-static int __ftrace_modify_code(void *data)
-{
-	int *command = data;
-
-	set_kernel_text_rw();
-	ftrace_modify_all_code(*command);
-	set_kernel_text_ro();
-
-	return 0;
-}
-
-void arch_ftrace_update_code(int command)
-{
-	stop_machine(__ftrace_modify_code, &command, NULL);
-}
-
-
-
-> If you look at other arches they hook into ftrace_modify_code(), where
-> you have the address that's being modified.
->
-
-Ok, I will look at other arches.
-
-Christophe
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 97a8bc8a095c..608ee0b7b79f 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -22,6 +22,48 @@ config MMU
+ 	bool
+ 	default y
+ 
++config ARCH_MMAP_RND_BITS_MAX
++	# On Book3S 64, the default virtual address space for 64-bit processes
++	# is 2^47 (128TB). As a maximum, allow randomisation to consume up to
++	# 32T of address space (2^45), which should ensure a reasonable gap
++	# between bottom-up and top-down allocations for applications that
++	# consume "normal" amounts of address space. Book3S 64 only supports 64K
++	# and 4K page sizes.
++	default 29 if PPC_BOOK3S_64 && PPC_64K_PAGES # 29 = 45 (32T) - 16 (64K)
++	default 33 if PPC_BOOK3S_64		     # 33 = 45 (32T) - 12 (4K)
++	#
++	# On all other 64-bit platforms (currently only Book3E), the virtual
++	# address space is 2^46 (64TB). Allow randomisation to consume up to 16T
++	# of address space (2^44). Only 4K page sizes are supported.
++	default 32 if 64BIT	# 32 = 44 (16T) - 12 (4K)
++	#
++	# For 32-bit, use the compat values, as they're the same.
++	default ARCH_MMAP_RND_COMPAT_BITS_MIN
++
++config ARCH_MMAP_RND_BITS_MIN
++	# Allow randomisation to consume up to 1GB of address space (2^30).
++	default 14 if 64BIT && PPC_64K_PAGES	# 14 = 30 (1GB) - 16 (64K)
++	default 18 if 64BIT			# 18 = 30 (1GB) - 12 (4K)
++	#
++	# For 32-bit, use the compat values, as they're the same.
++	default ARCH_MMAP_RND_COMPAT_BITS_MIN
++
++config ARCH_MMAP_RND_COMPAT_BITS_MAX
++	# Total virtual address space for 32-bit processes is 2^31 (2GB).
++	# Allow randomisation to consume up to 512MB of address space (2^29).
++	default 11 if PPC_256K_PAGES	# 11 = 29 (512MB) - 18 (256K)
++	default 13 if PPC_64K_PAGES	# 13 = 29 (512MB) - 16 (64K)
++	default 15 if PPC_16K_PAGES 	# 15 = 29 (512MB) - 14 (16K)
++	default 17			# 17 = 29 (512MB) - 12 (4K)
++
++config ARCH_MMAP_RND_COMPAT_BITS_MIN
++	# Total virtual address space for 32-bit processes is 2^31 (2GB).
++	# Allow randomisation to consume up to 8MB of address space (2^23).
++	default 5 if PPC_256K_PAGES	#  5 = 23 (8MB) - 18 (256K)
++	default 7 if PPC_64K_PAGES	#  7 = 23 (8MB) - 16 (64K)
++	default 9 if PPC_16K_PAGES	#  9 = 23 (8MB) - 14 (16K)
++	default 11			# 11 = 23 (8MB) - 12 (4K)
++
+ config HAVE_SETUP_PER_CPU_AREA
+ 	def_bool PPC64
+ 
+@@ -120,6 +162,8 @@ config PPC
+ 	select HAVE_ARCH_HARDENED_USERCOPY
+ 	select HAVE_ARCH_JUMP_LABEL
+ 	select HAVE_ARCH_KGDB
++	select HAVE_ARCH_MMAP_RND_BITS
++	select HAVE_ARCH_MMAP_RND_COMPAT_BITS	if COMPAT
+ 	select HAVE_ARCH_SECCOMP_FILTER
+ 	select HAVE_ARCH_TRACEHOOK
+ 	select HAVE_CBPF_JIT			if !PPC64
+diff --git a/arch/powerpc/mm/mmap.c b/arch/powerpc/mm/mmap.c
+index a5d9ef59debe..6141cfff634e 100644
+--- a/arch/powerpc/mm/mmap.c
++++ b/arch/powerpc/mm/mmap.c
+@@ -59,13 +59,14 @@ static inline int mmap_is_legacy(void)
+ 
+ unsigned long arch_mmap_rnd(void)
+ {
+-	unsigned long rnd;
++	unsigned long shift, rnd;
+ 
+-	/* 8MB for 32bit, 1GB for 64bit */
++	shift = mmap_rnd_bits;
++#ifdef CONFIG_COMPAT
+ 	if (is_32bit_task())
+-		rnd = get_random_long() % (1<<(23-PAGE_SHIFT));
+-	else
+-		rnd = get_random_long() % (1UL<<(30-PAGE_SHIFT));
++		shift = mmap_rnd_compat_bits;
++#endif
++	rnd = get_random_long() % (1 << shift);
+ 
+ 	return rnd << PAGE_SHIFT;
+ }
+-- 
+2.7.4
