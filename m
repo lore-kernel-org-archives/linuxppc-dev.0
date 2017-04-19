@@ -1,44 +1,20 @@
-Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w7MPy2PbMzDqJL
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2017 22:53:58 +1000 (AEST)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v3JCrqpD081439
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2017 08:53:56 -0400
-Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [125.16.236.5])
- by mx0a-001b2d01.pphosted.com with ESMTP id 29x752uq67-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2017 08:53:55 -0400
-Received: from localhost
- by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Wed, 19 Apr 2017 18:22:51 +0530
-Received: from d28av08.in.ibm.com (d28av08.in.ibm.com [9.184.220.148])
- by d28relay10.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v3JCpOS220774936
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2017 18:21:24 +0530
-Received: from d28av08.in.ibm.com (localhost [127.0.0.1])
- by d28av08.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v3JCqllJ020294
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2017 18:22:47 +0530
-From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>,
- Masami Hiramatsu <mhiramat@kernel.org>, Ingo Molnar <mingo@kernel.org>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [PATCH v4 6/6] powerpc: kprobes: prefer ftrace when probing function
- entry
-Date: Wed, 19 Apr 2017 18:22:28 +0530
-In-Reply-To: <cover.1492605029.git.naveen.n.rao@linux.vnet.ibm.com>
-References: <cover.1492605029.git.naveen.n.rao@linux.vnet.ibm.com>
-In-Reply-To: <cover.1492606062.git.naveen.n.rao@linux.vnet.ibm.com>
-References: <cover.1492606062.git.naveen.n.rao@linux.vnet.ibm.com>
-Message-Id: <53ebcc66e4a7ccf1c22cd1703afb0e4738f981ea.1492606062.git.naveen.n.rao@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w7MSv2l83zDqHl
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2017 22:56:31 +1000 (AEST)
+Message-Id: <22c2ebcfe72f4f17be6d284d922895cec34e23fc.1492606297.git.christophe.leroy@c-s.fr>
+In-Reply-To: <cover.1492606297.git.christophe.leroy@c-s.fr>
+References: <cover.1492606297.git.christophe.leroy@c-s.fr>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH 1/5] powerpc/mm: only call store_updates_sp() on stores in
+ do_page_fault()
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Scott Wood <oss@buserror.net>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Date: Wed, 19 Apr 2017 14:56:24 +0200 (CEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,60 +24,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-KPROBES_ON_FTRACE avoids much of the overhead with regular kprobes as it
-eliminates the need for a trap, as well as the need to emulate or
-single-step instructions.
+Function store_updates_sp() checks whether the faulting
+instruction is a store updating r1. Therefore we can limit its calls
+to stores exceptions.
 
-Though OPTPROBES provides us with similar performance, we have limited
-optprobes trampoline slots. As such, when asked to probe at a function
-entry, default to using the ftrace infrastructure.
+This patch is an improvement of commit a7a9dcd882a67 ("powerpc: Avoid
+taking a data miss on every userspace instruction miss")
 
-With:
-	# cd /sys/kernel/debug/tracing
-	# echo 'p _do_fork' > kprobe_events
+With the same microbenchmark app, run with 500 as argument, on an
+MPC885 we get:
 
-before patch:
-	# cat ../kprobes/list
-	c0000000000daf08  k  _do_fork+0x8    [DISABLED]
-	c000000000044fc0  k  kretprobe_trampoline+0x0    [OPTIMIZED]
+Before this patch: 152000 DTLB misses
+After this patch:  147000 DTLB misses
 
-and after patch:
-	# cat ../kprobes/list
-	c0000000000d074c  k  _do_fork+0xc    [DISABLED][FTRACE]
-	c0000000000412b0  k  kretprobe_trampoline+0x0    [OPTIMIZED]
-
-Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/kernel/kprobes.c | 17 +++++++++++++++--
- 1 file changed, 15 insertions(+), 2 deletions(-)
+ arch/powerpc/mm/fault.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/kernel/kprobes.c b/arch/powerpc/kernel/kprobes.c
-index df963c6e47b1..d5d6fbd1d788 100644
---- a/arch/powerpc/kernel/kprobes.c
-+++ b/arch/powerpc/kernel/kprobes.c
-@@ -49,8 +49,21 @@ kprobe_opcode_t *kprobe_lookup_name(const char *name, unsigned int offset)
- #ifdef PPC64_ELF_ABI_v2
- 	/* PPC64 ABIv2 needs local entry point */
- 	addr = (kprobe_opcode_t *)kallsyms_lookup_name(name);
--	if (addr && !offset)
--		addr = (kprobe_opcode_t *)ppc_function_entry(addr);
-+	if (addr && !offset) {
-+#ifdef CONFIG_KPROBES_ON_FTRACE
-+		unsigned long faddr;
-+		/*
-+		 * Per livepatch.h, ftrace location is always within the first
-+		 * 16 bytes of a function on powerpc with -mprofile-kernel.
-+		 */
-+		faddr = ftrace_location_range((unsigned long)addr,
-+					      (unsigned long)addr + 16);
-+		if (faddr)
-+			addr = (kprobe_opcode_t *)faddr;
-+		else
-+#endif
-+			addr = (kprobe_opcode_t *)ppc_function_entry(addr);
-+	}
- #elif defined(PPC64_ELF_ABI_v1)
- 	/*
- 	 * 64bit powerpc ABIv1 uses function descriptors:
+diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
+index 3a7d580fdc59..67fefb59d40e 100644
+--- a/arch/powerpc/mm/fault.c
++++ b/arch/powerpc/mm/fault.c
+@@ -287,7 +287,7 @@ int do_page_fault(struct pt_regs *regs, unsigned long address,
+ 	 * can result in fault, which will cause a deadlock when called with
+ 	 * mmap_sem held
+ 	 */
+-	if (!is_exec && user_mode(regs))
++	if (is_write && user_mode(regs))
+ 		store_update_sp = store_updates_sp(regs);
+ 
+ 	if (user_mode(regs))
 -- 
-2.12.1
+2.12.0
