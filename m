@@ -1,21 +1,24 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w7pN52G83zDq9B
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Apr 2017 16:08:53 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w7pQl1rS9zDqFG
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Apr 2017 16:11:11 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
- Ingo Molnar <mingo@kernel.org>
+ Masami Hiramatsu <mhiramat@kernel.org>
 Cc: Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>,
- Masami Hiramatsu <mhiramat@kernel.org>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v3 3/7] kprobes: validate the symbol name length
-In-Reply-To: <6e14d22994530fb5200c74d1593e73541d3b8028.1492604782.git.naveen.n.rao@linux.vnet.ibm.com>
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Ingo Molnar <mingo@kernel.org>
+Subject: Re: [PATCH v3 6/7] powerpc: kprobes: emulate instructions on kprobe
+ handler re-entry
+In-Reply-To: <1492620027.h27iuc5j5o.astroid@naverao1-tp.none>
 References: <cover.1492604782.git.naveen.n.rao@linux.vnet.ibm.com>
- <6e14d22994530fb5200c74d1593e73541d3b8028.1492604782.git.naveen.n.rao@linux.vnet.ibm.com>
-Date: Thu, 20 Apr 2017 16:08:52 +1000
-Message-ID: <87o9vr4nm3.fsf@concordia.ellerman.id.au>
+ <0d4193a90e4b2ad3cd2ef33d41228b80a2ac9f91.1492604782.git.naveen.n.rao@linux.vnet.ibm.com>
+ <20170419234319.7893df9c158e565fede4a386@kernel.org>
+ <1492620027.h27iuc5j5o.astroid@naverao1-tp.none>
+Date: Thu, 20 Apr 2017 16:11:10 +1000
+Message-ID: <87lgqv4ni9.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -29,35 +32,21 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> writes:
 
-> diff --git a/kernel/kprobes.c b/kernel/kprobes.c
-> index 6a128f3a7ed1..bb86681c8a10 100644
-> --- a/kernel/kprobes.c
-> +++ b/kernel/kprobes.c
-> @@ -1382,6 +1382,28 @@ bool within_kprobe_blacklist(unsigned long addr)
->  	return false;
->  }
->  
-> +bool is_valid_kprobe_symbol_name(const char *name)
-> +{
-> +	size_t sym_len;
-> +	char *s;
-> +
-> +	s = strchr(name, ':');
-> +	if (s) {
-> +		sym_len = strnlen(s+1, KSYM_NAME_LEN);
-> +		if (sym_len <= 0 || sym_len >= KSYM_NAME_LEN)
-> +			return false;
-> +		sym_len = (size_t)(s - name);
-> +		if (sym_len <= 0 || sym_len >= MODULE_NAME_LEN)
-> +			return false;
-> +	} else {
-> +		sym_len = strnlen(name, MODULE_NAME_LEN);
-> +		if (sym_len <= 0 || sym_len >= MODULE_NAME_LEN)
-> +			return false;
-> +	}
+> Excerpts from Masami Hiramatsu's message of April 19, 2017 20:13:
+>> 
+>> BTW, as I pointed, 5/7 and 6/7 should be merged since this actually
+>> makes meaningful change.
+>
+> Yes, sorry if I wasn't clear in my previous reply in the (!) previous 
+> patch series.
+>
+> Since this has to go through the powerpc tree, I followed this since I 
+> felt that Michael Ellerman prefers to keep functional changes separate 
+> from refactoring. I'm fine with either approach.
+>
+> Michael?
 
-I think this is probably more elaborate than it needs to be.
-
-Why not just check the string is <= (MODULE_NAME_LEN + KSYM_NAME_LEN) ?
+Yeah I'd definitely like this to be two patches. Otherwise when reading
+the combined diff it's much harder to see the change.
 
 cheers
