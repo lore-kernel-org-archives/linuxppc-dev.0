@@ -2,17 +2,17 @@ Return-Path: <yao.jin@linux.intel.com>
 Received: from mga03.intel.com (mga03.intel.com [134.134.136.65])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w7llF0fR3zDqK8
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Apr 2017 14:10:16 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w7llH4zzSzDqHG
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Apr 2017 14:10:19 +1000 (AEST)
 From: Jin Yao <yao.jin@linux.intel.com>
 To: acme@kernel.org, jolsa@kernel.org, peterz@infradead.org, mingo@redhat.com,
  alexander.shishkin@linux.intel.com
 Cc: Linux-kernel@vger.kernel.org, ak@linux.intel.com, kan.liang@intel.com,
  yao.jin@intel.com, linuxppc-dev@lists.ozlabs.org,
  Jin Yao <yao.jin@linux.intel.com>
-Subject: [PATCH v6 6/7] perf report: Show branch type statistics for stdio mode
-Date: Thu, 20 Apr 2017 20:07:54 +0800
-Message-Id: <1492690075-17243-7-git-send-email-yao.jin@linux.intel.com>
+Subject: [PATCH v6 7/7] perf report: Show branch type in callchain entry
+Date: Thu, 20 Apr 2017 20:07:55 +0800
+Message-Id: <1492690075-17243-8-git-send-email-yao.jin@linux.intel.com>
 In-Reply-To: <1492690075-17243-1-git-send-email-yao.jin@linux.intel.com>
 References: <1492690075-17243-1-git-send-email-yao.jin@linux.intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,154 +24,305 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Show the branch type statistics at the end of perf report --stdio.
+Show branch type in callchain entry. The branch type is printed
+with other LBR information (such as cycles/abort/...).
 
 For example:
-perf report --stdio
+perf report --branch-history --stdio --no-children
 
- JCC forward:  27.6%
-JCC backward:  10.0%
-    CROSS_4K:   0.0%
-    CROSS_2M:  14.3%
-         JCC:  37.6%
-         JMP:   0.0%
-     IND_JMP:   6.5%
-        CALL:  26.6%
-    IND_CALL:   0.0%
-         RET:  29.3%
-
-The branch types are:
----------------------
- JCC forward: Conditional forward jump
-JCC backward: Conditional backward jump
-         JMP: Jump imm
-     IND_JMP: Jump reg/mem
-        CALL: Call imm
-    IND_CALL: Call reg/mem
-         RET: Ret
-     SYSCALL: Syscall
-      SYSRET: Syscall return
-         IRQ: HW interrupt/trap/fault
-         INT: SW interrupt
-        IRET: Return from interrupt
-  FAR_BRANCH: Others not generic branch type
-
-CROSS_4K and CROSS_2M:
-----------------------
-They are the metrics checking for branches cross 4K or 2MB pages.
-It's an approximate computing. We don't know if the area is 4K or
-2MB, so always compute both.
-
-To make the output simple, if a branch crosses 2M area, CROSS_4K
-will not be incremented.
+--24.21%--main div.c:42 (RET CROSS_2M cycles:2)
+          compute_flag div.c:28 (cycles:2)
+          compute_flag div.c:27 (RET CROSS_2M cycles:1)
+          rand rand.c:28 (cycles:1)
+          rand rand.c:28 (RET CROSS_2M cycles:1)
+          __random random.c:298 (cycles:1)
+          __random random.c:297 (JCC backward CROSS_2M cycles:1)
+          __random random.c:295 (cycles:1)
+          __random random.c:295 (JCC backward CROSS_2M cycles:1)
+          __random random.c:295 (cycles:1)
+          __random random.c:295 (RET CROSS_2M cycles:9)
 
 Change log
 ----------
 
-v6: Remove branch_type_stat_display() since it's moved to branch.c.
+v6: Remove the branch_type_str() since it's moved to branch.c.
 
-v5: Remove the unnecessary sort__mode checking in
-    hist_iter__branch_callback().
+v5: Rewrite the branch info print code in util/callchain.c.
 
 v4: Comparing to previous version, the major changes are:
 
-Add the computing of JCC forward/JCC backward and cross page checking
-by using the from and to addresses.
+Since we have to compute the JCC forward/JCC backward and cross
+page checking in user space by from and to addresses, while each
+callchain entry only contains one ip (either from or to), so
+this patch will append a branch from address to the callchain
+entry which just contains the to ip.
 
 Signed-off-by: Jin Yao <yao.jin@linux.intel.com>
 ---
- tools/perf/builtin-report.c | 25 +++++++++++++++++++++++++
- tools/perf/util/hist.c      |  5 +----
- 2 files changed, 26 insertions(+), 4 deletions(-)
+ tools/perf/util/callchain.c | 38 +++++++++++++++++++++++++++++---------
+ tools/perf/util/callchain.h |  5 ++++-
+ tools/perf/util/machine.c   | 26 +++++++++++++++++---------
+ 3 files changed, 50 insertions(+), 19 deletions(-)
 
-diff --git a/tools/perf/builtin-report.c b/tools/perf/builtin-report.c
-index 5bbd4b2..ba5026a 100644
---- a/tools/perf/builtin-report.c
-+++ b/tools/perf/builtin-report.c
-@@ -37,6 +37,7 @@
- #include "arch/common.h"
- #include "util/time-utils.h"
- #include "util/auxtrace.h"
-+#include "util/branch.h"
+diff --git a/tools/perf/util/callchain.c b/tools/perf/util/callchain.c
+index d44b5ed..cfae50d 100644
+--- a/tools/perf/util/callchain.c
++++ b/tools/perf/util/callchain.c
+@@ -23,6 +23,7 @@
+ #include "sort.h"
+ #include "machine.h"
+ #include "callchain.h"
++#include "branch.h"
  
- #include <dlfcn.h>
- #include <errno.h>
-@@ -68,6 +69,7 @@ struct report {
- 	u64			queue_size;
- 	int			socket_filter;
- 	DECLARE_BITMAP(cpu_bitmap, MAX_NR_CPUS);
-+	struct branch_type_stat	brtype_stat;
- };
+ __thread struct callchain_cursor callchain_cursor;
  
- static int report__config(const char *var, const char *value, void *cb)
-@@ -146,6 +148,22 @@ static int hist_iter__report_callback(struct hist_entry_iter *iter,
- 	return err;
- }
- 
-+static int hist_iter__branch_callback(struct hist_entry_iter *iter,
-+				      struct addr_location *al __maybe_unused,
-+				      bool single __maybe_unused,
-+				      void *arg)
-+{
-+	struct hist_entry *he = iter->he;
-+	struct report *rep = arg;
-+	struct branch_info *bi;
+@@ -468,6 +469,11 @@ fill_node(struct callchain_node *node, struct callchain_cursor *cursor)
+ 			call->cycles_count = cursor_node->branch_flags.cycles;
+ 			call->iter_count = cursor_node->nr_loop_iter;
+ 			call->samples_count = cursor_node->samples;
 +
-+	bi = he->branch_info;
-+	branch_type_count(&rep->brtype_stat, &bi->flags,
-+			  bi->from.addr, bi->to.addr);
-+
-+	return 0;
-+}
-+
- static int process_sample_event(struct perf_tool *tool,
- 				union perf_event *event,
- 				struct perf_sample *sample,
-@@ -184,6 +202,8 @@ static int process_sample_event(struct perf_tool *tool,
- 		 */
- 		if (!sample->branch_stack)
- 			goto out_put;
-+
-+		iter.add_entry_cb = hist_iter__branch_callback;
- 		iter.ops = &hist_iter_branch;
- 	} else if (rep->mem_mode) {
- 		iter.ops = &hist_iter_mem;
-@@ -406,6 +426,9 @@ static int perf_evlist__tty_browse_hists(struct perf_evlist *evlist,
- 		perf_read_values_destroy(&rep->show_threads_values);
- 	}
++			branch_type_count(&call->brtype_stat,
++					  &cursor_node->branch_flags,
++					  cursor_node->branch_from,
++					  cursor_node->ip);
+ 		}
  
-+	if (sort__mode == SORT_MODE__BRANCH)
-+		branch_type_stat_display(stdout, &rep->brtype_stat);
+ 		list_add_tail(&call->list, &node->val);
+@@ -580,6 +586,11 @@ static enum match_result match_chain(struct callchain_cursor_node *node,
+ 			cnode->cycles_count += node->branch_flags.cycles;
+ 			cnode->iter_count += node->nr_loop_iter;
+ 			cnode->samples_count += node->samples;
 +
- 	return 0;
- }
++			branch_type_count(&cnode->brtype_stat,
++					  &node->branch_flags,
++					  node->branch_from,
++					  node->ip);
+ 		}
  
-@@ -938,6 +961,8 @@ int cmd_report(int argc, const char **argv)
- 	if (has_br_stack && branch_call_mode)
- 		symbol_conf.show_branchflag_count = true;
- 
-+	memset(&report.brtype_stat, 0, sizeof(struct branch_type_stat));
-+
- 	/*
- 	 * Branch mode is a tristate:
- 	 * -1 means default, so decide based on the file having branch data.
-diff --git a/tools/perf/util/hist.c b/tools/perf/util/hist.c
-index 65d4275..f3a3be5 100644
---- a/tools/perf/util/hist.c
-+++ b/tools/perf/util/hist.c
-@@ -747,12 +747,9 @@ iter_prepare_branch_entry(struct hist_entry_iter *iter, struct addr_location *al
- }
- 
- static int
--iter_add_single_branch_entry(struct hist_entry_iter *iter,
-+iter_add_single_branch_entry(struct hist_entry_iter *iter __maybe_unused,
- 			     struct addr_location *al __maybe_unused)
+ 		return MATCH_EQ;
+@@ -814,7 +825,7 @@ merge_chain_branch(struct callchain_cursor *cursor,
+ 	list_for_each_entry_safe(list, next_list, &src->val, list) {
+ 		callchain_cursor_append(cursor, list->ip,
+ 					list->ms.map, list->ms.sym,
+-					false, NULL, 0, 0);
++					false, NULL, 0, 0, 0);
+ 		list_del(&list->list);
+ 		map__zput(list->ms.map);
+ 		free(list);
+@@ -854,7 +865,7 @@ int callchain_merge(struct callchain_cursor *cursor,
+ int callchain_cursor_append(struct callchain_cursor *cursor,
+ 			    u64 ip, struct map *map, struct symbol *sym,
+ 			    bool branch, struct branch_flags *flags,
+-			    int nr_loop_iter, int samples)
++			    int nr_loop_iter, int samples, u64 branch_from)
  {
--	/* to avoid calling callback function */
--	iter->he = NULL;
--
- 	return 0;
+ 	struct callchain_cursor_node *node = *cursor->last;
+ 
+@@ -878,6 +889,7 @@ int callchain_cursor_append(struct callchain_cursor *cursor,
+ 		memcpy(&node->branch_flags, flags,
+ 			sizeof(struct branch_flags));
+ 
++	node->branch_from = branch_from;
+ 	cursor->nr++;
+ 
+ 	cursor->last = &node->next;
+@@ -1133,14 +1145,19 @@ static int count_float_printf(int index, const char *str, float value,
+ static int counts_str_build(char *bf, int bfsize,
+ 			     u64 branch_count, u64 predicted_count,
+ 			     u64 abort_count, u64 cycles_count,
+-			     u64 iter_count, u64 samples_count)
++			     u64 iter_count, u64 samples_count,
++			     struct branch_type_stat *brtype_stat)
+ {
+ 	u64 cycles;
+-	int printed = 0, i = 0;
++	int printed, i = 0;
+ 
+ 	if (branch_count == 0)
+ 		return scnprintf(bf, bfsize, " (calltrace)");
+ 
++	printed = branch_type_str(brtype_stat, bf, bfsize);
++	if (printed)
++		i++;
++
+ 	if (predicted_count < branch_count) {
+ 		printed += count_float_printf(i++, "predicted",
+ 				predicted_count * 100.0 / branch_count,
+@@ -1176,13 +1193,14 @@ static int counts_str_build(char *bf, int bfsize,
+ static int callchain_counts_printf(FILE *fp, char *bf, int bfsize,
+ 				   u64 branch_count, u64 predicted_count,
+ 				   u64 abort_count, u64 cycles_count,
+-				   u64 iter_count, u64 samples_count)
++				   u64 iter_count, u64 samples_count,
++				   struct branch_type_stat *brtype_stat)
+ {
+-	char str[128];
++	char str[256];
+ 
+ 	counts_str_build(str, sizeof(str), branch_count,
+ 			 predicted_count, abort_count, cycles_count,
+-			 iter_count, samples_count);
++			 iter_count, samples_count, brtype_stat);
+ 
+ 	if (fp)
+ 		return fprintf(fp, "%s", str);
+@@ -1214,7 +1232,8 @@ int callchain_list_counts__printf_value(struct callchain_node *node,
+ 
+ 	return callchain_counts_printf(fp, bf, bfsize, branch_count,
+ 				       predicted_count, abort_count,
+-				       cycles_count, iter_count, samples_count);
++				       cycles_count, iter_count, samples_count,
++				       &clist->brtype_stat);
  }
  
+ static void free_callchain_node(struct callchain_node *node)
+@@ -1339,7 +1358,8 @@ int callchain_cursor__copy(struct callchain_cursor *dst,
+ 
+ 		rc = callchain_cursor_append(dst, node->ip, node->map, node->sym,
+ 					     node->branch, &node->branch_flags,
+-					     node->nr_loop_iter, node->samples);
++					     node->nr_loop_iter, node->samples,
++					     node->branch_from);
+ 		if (rc)
+ 			break;
+ 
+diff --git a/tools/perf/util/callchain.h b/tools/perf/util/callchain.h
+index c56c23d..9773820 100644
+--- a/tools/perf/util/callchain.h
++++ b/tools/perf/util/callchain.h
+@@ -7,6 +7,7 @@
+ #include "event.h"
+ #include "map.h"
+ #include "symbol.h"
++#include "branch.h"
+ 
+ #define HELP_PAD "\t\t\t\t"
+ 
+@@ -119,6 +120,7 @@ struct callchain_list {
+ 	u64			cycles_count;
+ 	u64			iter_count;
+ 	u64			samples_count;
++	struct branch_type_stat brtype_stat;
+ 	char		       *srcline;
+ 	struct list_head	list;
+ };
+@@ -135,6 +137,7 @@ struct callchain_cursor_node {
+ 	struct symbol			*sym;
+ 	bool				branch;
+ 	struct branch_flags		branch_flags;
++	u64				branch_from;
+ 	int				nr_loop_iter;
+ 	int				samples;
+ 	struct callchain_cursor_node	*next;
+@@ -198,7 +201,7 @@ static inline void callchain_cursor_reset(struct callchain_cursor *cursor)
+ int callchain_cursor_append(struct callchain_cursor *cursor, u64 ip,
+ 			    struct map *map, struct symbol *sym,
+ 			    bool branch, struct branch_flags *flags,
+-			    int nr_loop_iter, int samples);
++			    int nr_loop_iter, int samples, u64 branch_from);
+ 
+ /* Close a cursor writing session. Initialize for the reader */
+ static inline void callchain_cursor_commit(struct callchain_cursor *cursor)
+diff --git a/tools/perf/util/machine.c b/tools/perf/util/machine.c
+index 988e84c..096451f 100644
+--- a/tools/perf/util/machine.c
++++ b/tools/perf/util/machine.c
+@@ -1679,7 +1679,8 @@ static int add_callchain_ip(struct thread *thread,
+ 			    bool branch,
+ 			    struct branch_flags *flags,
+ 			    int nr_loop_iter,
+-			    int samples)
++			    int samples,
++			    u64 branch_from)
+ {
+ 	struct addr_location al;
+ 
+@@ -1732,7 +1733,8 @@ static int add_callchain_ip(struct thread *thread,
+ 	if (symbol_conf.hide_unresolved && al.sym == NULL)
+ 		return 0;
+ 	return callchain_cursor_append(cursor, al.addr, al.map, al.sym,
+-				       branch, flags, nr_loop_iter, samples);
++				       branch, flags, nr_loop_iter, samples,
++				       branch_from);
+ }
+ 
+ struct branch_info *sample__resolve_bstack(struct perf_sample *sample,
+@@ -1811,7 +1813,7 @@ static int resolve_lbr_callchain_sample(struct thread *thread,
+ 	struct ip_callchain *chain = sample->callchain;
+ 	int chain_nr = min(max_stack, (int)chain->nr), i;
+ 	u8 cpumode = PERF_RECORD_MISC_USER;
+-	u64 ip;
++	u64 ip, branch_from = 0;
+ 
+ 	for (i = 0; i < chain_nr; i++) {
+ 		if (chain->ips[i] == PERF_CONTEXT_USER)
+@@ -1853,6 +1855,8 @@ static int resolve_lbr_callchain_sample(struct thread *thread,
+ 					ip = lbr_stack->entries[0].to;
+ 					branch = true;
+ 					flags = &lbr_stack->entries[0].flags;
++					branch_from =
++						lbr_stack->entries[0].from;
+ 				}
+ 			} else {
+ 				if (j < lbr_nr) {
+@@ -1867,12 +1871,15 @@ static int resolve_lbr_callchain_sample(struct thread *thread,
+ 					ip = lbr_stack->entries[0].to;
+ 					branch = true;
+ 					flags = &lbr_stack->entries[0].flags;
++					branch_from =
++						lbr_stack->entries[0].from;
+ 				}
+ 			}
+ 
+ 			err = add_callchain_ip(thread, cursor, parent,
+ 					       root_al, &cpumode, ip,
+-					       branch, flags, 0, 0);
++					       branch, flags, 0, 0,
++					       branch_from);
+ 			if (err)
+ 				return (err < 0) ? err : 0;
+ 		}
+@@ -1971,19 +1978,20 @@ static int thread__resolve_callchain_sample(struct thread *thread,
+ 						       root_al,
+ 						       NULL, be[i].to,
+ 						       true, &be[i].flags,
+-						       nr_loop_iter, 1);
++						       nr_loop_iter, 1,
++						       be[i].from);
+ 			else
+ 				err = add_callchain_ip(thread, cursor, parent,
+ 						       root_al,
+ 						       NULL, be[i].to,
+ 						       true, &be[i].flags,
+-						       0, 0);
++						       0, 0, be[i].from);
+ 
+ 			if (!err)
+ 				err = add_callchain_ip(thread, cursor, parent, root_al,
+ 						       NULL, be[i].from,
+ 						       true, &be[i].flags,
+-						       0, 0);
++						       0, 0, 0);
+ 			if (err == -EINVAL)
+ 				break;
+ 			if (err)
+@@ -2013,7 +2021,7 @@ static int thread__resolve_callchain_sample(struct thread *thread,
+ 
+ 		err = add_callchain_ip(thread, cursor, parent,
+ 				       root_al, &cpumode, ip,
+-				       false, NULL, 0, 0);
++				       false, NULL, 0, 0, 0);
+ 
+ 		if (err)
+ 			return (err < 0) ? err : 0;
+@@ -2030,7 +2038,7 @@ static int unwind_entry(struct unwind_entry *entry, void *arg)
+ 		return 0;
+ 	return callchain_cursor_append(cursor, entry->ip,
+ 				       entry->map, entry->sym,
+-				       false, NULL, 0, 0);
++				       false, NULL, 0, 0, 0);
+ }
+ 
+ static int thread__resolve_callchain_unwind(struct thread *thread,
 -- 
 2.7.4
