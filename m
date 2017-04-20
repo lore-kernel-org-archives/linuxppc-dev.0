@@ -1,18 +1,20 @@
-Return-Path: <michael@ozlabs.org>
+Return-Path: <sfr@canb.auug.org.au>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w7ndN28g2zDqGx
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Apr 2017 15:35:20 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: herbert@gondor.apana.org.au
-Cc: linuxppc-dev@ozlabs.org,
-	dja@axtens.net,
-	linux-crypto@vger.kernel.org
-Subject: [PATCH v2] powerpc/crypto/crct10dif-vpmsum: Fix missing
- preempt_disable()
-Date: Thu, 20 Apr 2017 15:35:09 +1000
-Message-Id: <1492666509-4568-1-git-send-email-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w7ng33sVHzDq9B
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Apr 2017 15:36:47 +1000 (AEST)
+Date: Thu, 20 Apr 2017 15:36:47 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: Linux-Next Mailing List <linux-next@vger.kernel.org>, Linux Kernel
+ Mailing List <linux-kernel@vger.kernel.org>, Michael Ellerman
+ <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ PowerPC <linuxppc-dev@lists.ozlabs.org>
+Subject: linux-next: build failure after merge of the rcu tree
+Message-ID: <20170420153647.1a93652b@canb.auug.org.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,48 +24,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In crct10dif_vpmsum() we call enable_kernel_altivec() without first
-disabling preemption, which is not allowed.
+Hi Paul,
 
-It used to be sufficient just to call pagefault_disable(), because that
-also disabled preemption. But the two were decoupled in commit 8222dbe21e79
-("sched/preempt, mm/fault: Decouple preemption from the page fault
-logic") in mid 2015.
+[Also reported by Michael elsewhere]
 
-The crct10dif-vpmsum code inherited this bug from the crc32c-vpmsum code
-on which it was modelled.
+After merging the rcu tree, today's linux-next build (powerpc
+pseries_le_defconfig) failed like this:
 
-So add the missing preempt_disable/enable(). We should also call
-disable_kernel_fp(), although it does nothing by default, there is a
-debug switch to make it active and all enables should be paired with
-disables.
+arch/powerpc/kvm/book3s_hv_rmhandlers.S: Assembler messages:
+arch/powerpc/kvm/book3s_hv_rmhandlers.S:587: Error: operand out of range (0x0000000000009ff8 is not between 0xffffffffffff8000 and 0x0000000000007fff)
+arch/powerpc/kvm/book3s_hv_rmhandlers.S:617: Error: operand out of range (0x0000000000009d88 is not between 0xffffffffffff8000 and 0x0000000000007fff)
+arch/powerpc/kvm/book3s_hv_rmhandlers.S:619: Error: operand out of range (0x0000000000009dc0 is not between 0xffffffffffff8000 and 0x0000000000007ffc)
+arch/powerpc/kvm/book3s_hv_rmhandlers.S:643: Error: operand out of range (0x0000000000009df8 is not between 0xffffffffffff8000 and 0x0000000000007fff)
+arch/powerpc/kvm/book3s_hv_rmhandlers.S:650: Error: operand out of range (0x0000000000009d8c is not between 0xffffffffffff8000 and 0x0000000000007fff)
+arch/powerpc/kvm/book3s_hv_rmhandlers.S:1353: Error: operand out of range (0x0000000000009ff8 is not between 0xffffffffffff8000 and 0x0000000000007fff)
+arch/powerpc/kvm/book3s_hv_rmhandlers.S:1663: Error: operand out of range (0x0000000000009db0 is not between 0xffffffffffff8000 and 0x0000000000007fff)
+arch/powerpc/kvm/book3s_hv_rmhandlers.S:1665: Error: operand out of range (0x0000000000009dc8 is not between 0xffffffffffff8000 and 0x0000000000007ffc)
+arch/powerpc/kvm/book3s_hv_rmhandlers.S:1734: Error: operand out of range (0x0000000000009db8 is not between 0xffffffffffff8000 and 0x0000000000007ffc)
+arch/powerpc/kvm/book3s_hv_rmhandlers.S:1782: Error: operand out of range (0x0000000000009ff8 is not between 0xffffffffffff8000 and 0x0000000000007fff)
+arch/powerpc/kvm/book3s_hv_rmhandlers.S:1837: Error: operand out of range (0x0000000000009de0 is not between 0xffffffffffff8000 and 0x0000000000007ffc)
+arch/powerpc/kvm/book3s_hv_rmhandlers.S:1877: Error: operand out of range (0x0000000000009ff8 is not between 0xffffffffffff8000 and 0x0000000000007fff)
+arch/powerpc/kvm/book3s_hv_rmhandlers.S:1918: Error: operand out of range (0x0000000000009de0 is not between 0xffffffffffff8000 and 0x0000000000007ffc)
+arch/powerpc/kvm/book3s_hv_rmhandlers.S:1943: Error: operand out of range (0x000000000000a048 is not between 0xffffffffffff8000 and 0x0000000000007ffc)
 
-Fixes: b01df1c16c9a ("crypto: powerpc - Add CRC-T10DIF acceleration")
-Acked-by: Daniel Axtens <dja@axtens.net>
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/crypto/crct10dif-vpmsum_glue.c | 3 +++
- 1 file changed, 3 insertions(+)
+Caused by commit
 
-v2: No change to the patch. Add dja's ack. Add linux-crypto to Cc.
+  b2bb79507ba1 ("srcu: Parallelize callback handling")
 
-diff --git a/arch/powerpc/crypto/crct10dif-vpmsum_glue.c b/arch/powerpc/crypto/crct10dif-vpmsum_glue.c
-index bebfc329f746..02ea277863d1 100644
---- a/arch/powerpc/crypto/crct10dif-vpmsum_glue.c
-+++ b/arch/powerpc/crypto/crct10dif-vpmsum_glue.c
-@@ -44,10 +44,13 @@ static u16 crct10dif_vpmsum(u16 crci, unsigned char const *p, size_t len)
- 
- 	if (len & ~VMX_ALIGN_MASK) {
- 		crc <<= 16;
-+		preempt_disable();
- 		pagefault_disable();
- 		enable_kernel_altivec();
- 		crc = __crct10dif_vpmsum(crc, p, len & ~VMX_ALIGN_MASK);
-+		disable_kernel_altivec();
- 		pagefault_enable();
-+		preempt_enable();
- 		crc >>= 16;
- 	}
- 
+I have left it broken for today.
+
 -- 
-2.7.4
+Cheers,
+Stephen Rothwell
