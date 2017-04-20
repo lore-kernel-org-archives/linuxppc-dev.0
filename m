@@ -1,21 +1,23 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w7xKq5GDlzDqHG
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Apr 2017 21:22:23 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w7xPS6g0KzDqHG
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Apr 2017 21:25:32 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Kees Cook <keescook@chromium.org>
-Cc: "linuxppc-dev\@ozlabs.org" <linuxppc-dev@ozlabs.org>,
- Bhupesh Sharma <bhsharma@redhat.com>,
- "kernel-hardening\@lists.openwall.com" <kernel-hardening@lists.openwall.com>
-Subject: Re: [kernel-hardening] Re: [PATCH] powerpc/mm: Add support for
- runtime configuration of ASLR limits
-In-Reply-To: <CAGXu5jKAoukvBtH7i0K17MywkLEpizECCfMGJ+XKWWfPQHdQBw@mail.gmail.com>
-References: <1492612181-8484-1-git-send-email-mpe@ellerman.id.au>
- <CAGXu5jKAoukvBtH7i0K17MywkLEpizECCfMGJ+XKWWfPQHdQBw@mail.gmail.com>
-Date: Thu, 20 Apr 2017 21:22:22 +1000
-Message-ID: <87bmrr493l.fsf@concordia.ellerman.id.au>
+To: David Laight <David.Laight@ACULAB.COM>,
+ 'Christophe Leroy' <christophe.leroy@c-s.fr>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Scott Wood <oss@buserror.net>
+Cc: "linuxppc-dev\@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel\@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: RE: [PATCH] powerpc/32: Move entry_32 functions just after HEAD
+ functions.
+In-Reply-To: <063D6719AE5E284EB5DD2968C1650D6DCFFD56A5@AcuExch.aculab.com>
+References: <20170418070126.A18EF67952@localhost.localdomain>
+ <063D6719AE5E284EB5DD2968C1650D6DCFFD56A5@AcuExch.aculab.com>
+Date: Thu, 20 Apr 2017 21:25:32 +1000
+Message-ID: <878tmv48yb.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,70 +29,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Kees Cook <keescook@chromium.org> writes:
+David Laight <David.Laight@ACULAB.COM> writes:
 
-> On Wed, Apr 19, 2017 at 7:29 AM, Michael Ellerman <mpe@ellerman.id.au> wrote:
->> Add powerpc support for mmap_rnd_bits and mmap_rnd_compat_bits, which are two
->> sysctls that allow a user to configure the number of bits of randomness used for
->> ASLR.
->>
->> Because of the way the Kconfig for ARCH_MMAP_RND_BITS is defined, we have to
->> construct at least the MIN value in Kconfig, vs in a header which would be more
->> natural. Given that we just go ahead and do it all in Kconfig.
->>
->> At least according to the code (the documentation makes no mention of it), the
->> value is defined as the number of bits of randomisation *of the page*, not the
->> address. This makes some sense, with larger page sizes more of the low bits are
->> forced to zero, which would reduce the randomisation if we didn't take the
->> PAGE_SIZE into account. However it does mean the min/max values have to change
->> depending on the PAGE_SIZE in order to actually limit the amount of address
->> space consumed by the randomisation.
->>
->> The result of that is that we have to define the default values based on both
->> 32-bit vs 64-bit, but also the configured PAGE_SIZE. Furthermore now that we
->> have 128TB address space support on Book3S, we also have to take that into
->> account.
->>
->> Finally we can wire up the value in arch_mmap_rnd().
->>
->> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> From: Christophe Leroy
+>> By default, PPC8xx PINs an ITLB on the first 8M of memory in order
+>> to avoid any ITLB miss on kernel code.
+>> However, with some debug functions like DEBUG_PAGEALLOC and
+>> (soon to come) DEBUG_RODATA, the PINned TLB is invalidated soon
+>> after startup so ITLB missed start to happen also on the kernel code.
+>> 
+>> In order to avoid any ITLB miss in a critical section, we have to
+>> ensure that their is no page boundary crossed between the setup of
+>> a new value in SRR0/SRR1 and the associated RFI. This cannot be done
+>> easily if entry_32 functions sits in the middle of other .text
+>> functions. By placing entry_32 just after the .head section (as already
+>> done for entry_64 on PPC64), we can more easily ensure the issue
+>> doesn't happen.
 >
-> Maybe add a Suggested-by: for the earlier patches?
+> Shouldn't this be done by putting all the functions that 'matter'
+> into a named section instead of relying on the order of the input files?
+> (Which is what I think this is doing.)
 
-Sure.
+Yeah that is fragile if there's nothing more to it.
 
->> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
->> index 97a8bc8a095c..608ee0b7b79f 100644
->> --- a/arch/powerpc/Kconfig
->> +++ b/arch/powerpc/Kconfig
->> @@ -22,6 +22,48 @@ config MMU
->>         bool
->>         default y
->>
->> +config ARCH_MMAP_RND_BITS_MAX
->> +       # On Book3S 64, the default virtual address space for 64-bit processes
->> +       # is 2^47 (128TB). As a maximum, allow randomisation to consume up to
->> +       # 32T of address space (2^45), which should ensure a reasonable gap
->> +       # between bottom-up and top-down allocations for applications that
->> +       # consume "normal" amounts of address space. Book3S 64 only supports 64K
->> +       # and 4K page sizes.
->> +       default 29 if PPC_BOOK3S_64 && PPC_64K_PAGES # 29 = 45 (32T) - 16 (64K)
->> +       default 33 if PPC_BOOK3S_64                  # 33 = 45 (32T) - 12 (4K)
->> +       #
->> +       # On all other 64-bit platforms (currently only Book3E), the virtual
->> +       # address space is 2^46 (64TB). Allow randomisation to consume up to 16T
->> +       # of address space (2^44). Only 4K page sizes are supported.
->> +       default 32 if 64BIT     # 32 = 44 (16T) - 12 (4K)
->> +       #
->> +       # For 32-bit, use the compat values, as they're the same.
->> +       default ARCH_MMAP_RND_COMPAT_BITS_MIN
->
-> Shouldn't the default case be ..._MAX?
-
-Yes, ooops! Thanks for the review.
-
-> Yay! Ever closer to being able to extract arch_mmap_rnd() out of arch/ ;)
-
-Hah, you are an optimist :)
+I'm not sure if we need a special section. If the functions that must
+not cross a page boundary are aligned to a page boundary (with .align)
+then that would also work wouldn't it?
 
 cheers
