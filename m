@@ -1,38 +1,17 @@
-Return-Path: <paulmck@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w81M935CCzDq9D
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Apr 2017 00:23:49 +1000 (AEST)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v3KENbew140964
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Apr 2017 10:23:38 -0400
-Received: from e12.ny.us.ibm.com (e12.ny.us.ibm.com [129.33.205.202])
- by mx0a-001b2d01.pphosted.com with ESMTP id 29xpmby83k-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Apr 2017 10:23:37 -0400
-Received: from localhost
- by e12.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <paulmck@linux.vnet.ibm.com>;
- Thu, 20 Apr 2017 10:23:36 -0400
-Date: Thu, 20 Apr 2017 07:23:32 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Linux-Next Mailing List <linux-next@vger.kernel.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- PowerPC <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: linux-next: build failure after merge of the rcu tree
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20170420153647.1a93652b@canb.auug.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170420153647.1a93652b@canb.auug.org.au>
-Message-Id: <20170420142332.GL3956@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w81dn4k1bzDqJl
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Apr 2017 00:36:29 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: linuxppc-dev@ozlabs.org
+Cc: bhsharma@redhat.com, keescook@chromium.org,
+ kernel-hardening@lists.openwall.com
+Subject: [PATCH v2] powerpc/mm: Add support for runtime configuration of ASLR
+ limits
+Date: Fri, 21 Apr 2017 00:36:20 +1000
+Message-Id: <1492698980-19510-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,41 +21,126 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Apr 20, 2017 at 03:36:47PM +1000, Stephen Rothwell wrote:
-> Hi Paul,
-> 
-> [Also reported by Michael elsewhere]
-> 
-> After merging the rcu tree, today's linux-next build (powerpc
-> pseries_le_defconfig) failed like this:
-> 
-> arch/powerpc/kvm/book3s_hv_rmhandlers.S: Assembler messages:
-> arch/powerpc/kvm/book3s_hv_rmhandlers.S:587: Error: operand out of range (0x0000000000009ff8 is not between 0xffffffffffff8000 and 0x0000000000007fff)
-> arch/powerpc/kvm/book3s_hv_rmhandlers.S:617: Error: operand out of range (0x0000000000009d88 is not between 0xffffffffffff8000 and 0x0000000000007fff)
-> arch/powerpc/kvm/book3s_hv_rmhandlers.S:619: Error: operand out of range (0x0000000000009dc0 is not between 0xffffffffffff8000 and 0x0000000000007ffc)
-> arch/powerpc/kvm/book3s_hv_rmhandlers.S:643: Error: operand out of range (0x0000000000009df8 is not between 0xffffffffffff8000 and 0x0000000000007fff)
-> arch/powerpc/kvm/book3s_hv_rmhandlers.S:650: Error: operand out of range (0x0000000000009d8c is not between 0xffffffffffff8000 and 0x0000000000007fff)
-> arch/powerpc/kvm/book3s_hv_rmhandlers.S:1353: Error: operand out of range (0x0000000000009ff8 is not between 0xffffffffffff8000 and 0x0000000000007fff)
-> arch/powerpc/kvm/book3s_hv_rmhandlers.S:1663: Error: operand out of range (0x0000000000009db0 is not between 0xffffffffffff8000 and 0x0000000000007fff)
-> arch/powerpc/kvm/book3s_hv_rmhandlers.S:1665: Error: operand out of range (0x0000000000009dc8 is not between 0xffffffffffff8000 and 0x0000000000007ffc)
-> arch/powerpc/kvm/book3s_hv_rmhandlers.S:1734: Error: operand out of range (0x0000000000009db8 is not between 0xffffffffffff8000 and 0x0000000000007ffc)
-> arch/powerpc/kvm/book3s_hv_rmhandlers.S:1782: Error: operand out of range (0x0000000000009ff8 is not between 0xffffffffffff8000 and 0x0000000000007fff)
-> arch/powerpc/kvm/book3s_hv_rmhandlers.S:1837: Error: operand out of range (0x0000000000009de0 is not between 0xffffffffffff8000 and 0x0000000000007ffc)
-> arch/powerpc/kvm/book3s_hv_rmhandlers.S:1877: Error: operand out of range (0x0000000000009ff8 is not between 0xffffffffffff8000 and 0x0000000000007fff)
-> arch/powerpc/kvm/book3s_hv_rmhandlers.S:1918: Error: operand out of range (0x0000000000009de0 is not between 0xffffffffffff8000 and 0x0000000000007ffc)
-> arch/powerpc/kvm/book3s_hv_rmhandlers.S:1943: Error: operand out of range (0x000000000000a048 is not between 0xffffffffffff8000 and 0x0000000000007ffc)
-> 
-> Caused by commit
-> 
->   b2bb79507ba1 ("srcu: Parallelize callback handling")
-> 
-> I have left it broken for today.
+Add powerpc support for mmap_rnd_bits and mmap_rnd_compat_bits, which are two
+sysctls that allow a user to configure the number of bits of randomness used for
+ASLR.
 
-Well, I guess I made good on my promise to break this in a more subtle
-and creative way...  :-/
+Because of the way the Kconfig for ARCH_MMAP_RND_BITS is defined, we have to
+construct at least the MIN value in Kconfig, vs in a header which would be more
+natural. Given that we just go ahead and do it all in Kconfig.
 
-Please let me know what you need me to do.  I suppose that I could
-push part of the srcu_struct into another structure and dynamically
-allocate it, but that sounds a bit ugly...
+At least according to the code (the documentation makes no mention of it), the
+value is defined as the number of bits of randomisation *of the page*, not the
+address. This makes some sense, with larger page sizes more of the low bits are
+forced to zero, which would reduce the randomisation if we didn't take the
+PAGE_SIZE into account. However it does mean the min/max values have to change
+depending on the PAGE_SIZE in order to actually limit the amount of address
+space consumed by the randomisation.
 
-							Thanx, Paul
+The result of that is that we have to define the default values based on both
+32-bit vs 64-bit, but also the configured PAGE_SIZE. Furthermore now that we
+have 128TB address space support on Book3S, we also have to take that into
+account.
+
+Finally we can wire up the value in arch_mmap_rnd().
+
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+Signed-off-by: Bhupesh Sharma <bhsharma@redhat.com>
+---
+ arch/powerpc/Kconfig   | 44 ++++++++++++++++++++++++++++++++++++++++++++
+ arch/powerpc/mm/mmap.c | 11 ++++++-----
+ 2 files changed, 50 insertions(+), 5 deletions(-)
+
+v2: Fix the 32-bit MAX value incorrectly using MIN as spotted by Kees.
+
+Kees/Bhupesh, would love a Review/Ack/Tested-by from you, I'll plan to merge
+this later today (Friday) my time.
+
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 97a8bc8a095c..6f0503951e94 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -22,6 +22,48 @@ config MMU
+ 	bool
+ 	default y
+ 
++config ARCH_MMAP_RND_BITS_MAX
++	# On Book3S 64, the default virtual address space for 64-bit processes
++	# is 2^47 (128TB). As a maximum, allow randomisation to consume up to
++	# 32T of address space (2^45), which should ensure a reasonable gap
++	# between bottom-up and top-down allocations for applications that
++	# consume "normal" amounts of address space. Book3S 64 only supports 64K
++	# and 4K page sizes.
++	default 29 if PPC_BOOK3S_64 && PPC_64K_PAGES # 29 = 45 (32T) - 16 (64K)
++	default 33 if PPC_BOOK3S_64		     # 33 = 45 (32T) - 12 (4K)
++	#
++	# On all other 64-bit platforms (currently only Book3E), the virtual
++	# address space is 2^46 (64TB). Allow randomisation to consume up to 16T
++	# of address space (2^44). Only 4K page sizes are supported.
++	default 32 if 64BIT	# 32 = 44 (16T) - 12 (4K)
++	#
++	# For 32-bit, use the compat values, as they're the same.
++	default ARCH_MMAP_RND_COMPAT_BITS_MAX
++
++config ARCH_MMAP_RND_BITS_MIN
++	# Allow randomisation to consume up to 1GB of address space (2^30).
++	default 14 if 64BIT && PPC_64K_PAGES	# 14 = 30 (1GB) - 16 (64K)
++	default 18 if 64BIT			# 18 = 30 (1GB) - 12 (4K)
++	#
++	# For 32-bit, use the compat values, as they're the same.
++	default ARCH_MMAP_RND_COMPAT_BITS_MIN
++
++config ARCH_MMAP_RND_COMPAT_BITS_MAX
++	# Total virtual address space for 32-bit processes is 2^31 (2GB).
++	# Allow randomisation to consume up to 512MB of address space (2^29).
++	default 11 if PPC_256K_PAGES	# 11 = 29 (512MB) - 18 (256K)
++	default 13 if PPC_64K_PAGES	# 13 = 29 (512MB) - 16 (64K)
++	default 15 if PPC_16K_PAGES 	# 15 = 29 (512MB) - 14 (16K)
++	default 17			# 17 = 29 (512MB) - 12 (4K)
++
++config ARCH_MMAP_RND_COMPAT_BITS_MIN
++	# Total virtual address space for 32-bit processes is 2^31 (2GB).
++	# Allow randomisation to consume up to 8MB of address space (2^23).
++	default 5 if PPC_256K_PAGES	#  5 = 23 (8MB) - 18 (256K)
++	default 7 if PPC_64K_PAGES	#  7 = 23 (8MB) - 16 (64K)
++	default 9 if PPC_16K_PAGES	#  9 = 23 (8MB) - 14 (16K)
++	default 11			# 11 = 23 (8MB) - 12 (4K)
++
+ config HAVE_SETUP_PER_CPU_AREA
+ 	def_bool PPC64
+ 
+@@ -120,6 +162,8 @@ config PPC
+ 	select HAVE_ARCH_HARDENED_USERCOPY
+ 	select HAVE_ARCH_JUMP_LABEL
+ 	select HAVE_ARCH_KGDB
++	select HAVE_ARCH_MMAP_RND_BITS
++	select HAVE_ARCH_MMAP_RND_COMPAT_BITS	if COMPAT
+ 	select HAVE_ARCH_SECCOMP_FILTER
+ 	select HAVE_ARCH_TRACEHOOK
+ 	select HAVE_CBPF_JIT			if !PPC64
+diff --git a/arch/powerpc/mm/mmap.c b/arch/powerpc/mm/mmap.c
+index a5d9ef59debe..6141cfff634e 100644
+--- a/arch/powerpc/mm/mmap.c
++++ b/arch/powerpc/mm/mmap.c
+@@ -59,13 +59,14 @@ static inline int mmap_is_legacy(void)
+ 
+ unsigned long arch_mmap_rnd(void)
+ {
+-	unsigned long rnd;
++	unsigned long shift, rnd;
+ 
+-	/* 8MB for 32bit, 1GB for 64bit */
++	shift = mmap_rnd_bits;
++#ifdef CONFIG_COMPAT
+ 	if (is_32bit_task())
+-		rnd = get_random_long() % (1<<(23-PAGE_SHIFT));
+-	else
+-		rnd = get_random_long() % (1UL<<(30-PAGE_SHIFT));
++		shift = mmap_rnd_compat_bits;
++#endif
++	rnd = get_random_long() % (1 << shift);
+ 
+ 	return rnd << PAGE_SHIFT;
+ }
+-- 
+2.7.4
