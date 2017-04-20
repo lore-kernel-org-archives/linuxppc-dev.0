@@ -1,40 +1,52 @@
-Return-Path: <sergey.senozhatsky.work@gmail.com>
-Received: from mail-io0-x243.google.com (mail-io0-x243.google.com
- [IPv6:2607:f8b0:4001:c06::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <michaele@au1.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w7kt71rfYzDqFt
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Apr 2017 13:31:11 +1000 (AEST)
-Received: by mail-io0-x243.google.com with SMTP id d203so11216427iof.2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2017 20:31:11 -0700 (PDT)
-Date: Thu, 20 Apr 2017 12:31:12 +0900
-From: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Petr Mladek <pmladek@suse.com>, Andrew Morton <akpm@linux-foundation.org>,
- Peter Zijlstra <peterz@infradead.org>,
- Russell King <rmk+kernel@arm.linux.org.uk>,
- Daniel Thompson <daniel.thompson@linaro.org>,
- Jiri Kosina <jkosina@suse.com>, Ingo Molnar <mingo@redhat.com>,
- Thomas Gleixner <tglx@linutronix.de>,
- Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>,
- Chris Metcalf <cmetcalf@ezchip.com>, linux-kernel@vger.kernel.org,
- x86@kernel.org, linux-arm-kernel@lists.infradead.org,
- adi-buildroot-devel@lists.sourceforge.net,
- linux-cris-kernel@axis.com, linux-mips@linux-mips.org,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
- Jan Kara <jack@suse.cz>, Ralf Baechle <ralf@linux-mips.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- David Miller <davem@davemloft.net>
-Subject: Re: [PATCH v5 1/4] printk/nmi: generic solution for safe printk in NMI
-Message-ID: <20170420033112.GB542@jagdpanzerIV.localdomain>
-References: <1461239325-22779-1-git-send-email-pmladek@suse.com>
- <1461239325-22779-2-git-send-email-pmladek@suse.com>
- <20170419131341.76bc7634@gandalf.local.home>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w7l5t0ydDzDqG1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Apr 2017 13:41:21 +1000 (AEST)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v3K3d7aX146637
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2017 23:41:19 -0400
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 29x753vh0d-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2017 23:41:19 -0400
+Received: from localhost
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <michaele@au1.ibm.com>;
+ Thu, 20 Apr 2017 13:41:16 +1000
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v3K3f6sU26476638
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Apr 2017 13:41:14 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v3K3eajS008717
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Apr 2017 13:40:37 +1000
+From: Michael Ellerman <michaele@au1.ibm.com>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+ linux-kernel@vger.kernel.org, "paulus@samba.org" <paulus@samba.org>,
+ kvm@vger.kernel.org, kvm-ppc@vger.kernel.org,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ pbonzini@redhat.com
+Cc: mingo@kernel.org, jiangshanlai@gmail.com, dipankar@in.ibm.com,
+ akpm@linux-foundation.org, mathieu.desnoyers@efficios.com,
+ josh@joshtriplett.org, tglx@linutronix.de, peterz@infradead.org,
+ rostedt@goodmis.org, dhowells@redhat.com, edumazet@google.com,
+ fweisbec@gmail.com, oleg@redhat.com, bobby.prani@gmail.com,
+ "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Subject: powerpc KVM build break in linux-next (was Re: [PATCH tip/core/rcu
+ 40/40] srcu: Parallelize callback handling)
+In-Reply-To: <1492018825-25634-40-git-send-email-paulmck@linux.vnet.ibm.com>
+References: <20170412174003.GA23207@linux.vnet.ibm.com>
+ <1492018825-25634-40-git-send-email-paulmck@linux.vnet.ibm.com>
+Date: Thu, 20 Apr 2017 13:40:13 +1000
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170419131341.76bc7634@gandalf.local.home>
+Content-Type: text/plain
+Message-Id: <871ssn692a.fsf@concordia.ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,77 +56,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello Steven,
+"Paul E. McKenney" <paulmck@linux.vnet.ibm.com> writes:
 
-On (04/19/17 13:13), Steven Rostedt wrote:
-> > printk() takes some locks and could not be used a safe way in NMI context.
-> 
-> I just found a problem with this solution. It kills ftrace dumps from
-> NMI context :-(
-> 
-> [ 1295.168495]    <...>-67423  10dNh1 382171111us : do_raw_spin_lock <-_raw_spin_lock
-> [ 1295.168495]    <...>-67423  10dNh1 382171111us : sched_stat_runtime: comm=cc1 pid=67423 runtime=96858 [ns] vruntime=11924198270 [ns]
-> [ 1295.168496]    <...>-67423  10dNh1 382171111us : lock_acquire: ffffffff81c5c940 read rcu_read_lock
-> [ 1295.168497]
-> [ 1295.168498] Lost 4890096 message(s)!
-> [ 1296.805063] ---[ end Kernel panic - not syncing: Hard LOCKUP
-> [ 1296.811553] unchecked MSR access error: WRMSR to 0x83f (tried to write 0x00000000000000f6) at rIP: 0xffffffff81046fc7 (native_apic_msr_write+0x27/0x40)
-> [ 1296.811553] Call Trace:
-> [ 1296.811553]  <NMI>
-> 
-> I was hoping to see a cause of a hard lockup by enabling
-> ftrace_dump_on_oops. But as NMIs now have a very small buffer that
-> gets flushed, we need to find a new way to print out the full ftrace
-> buffer over serial.
-> 
-> Thoughts?
+> diff --git a/include/linux/srcutree.h b/include/linux/srcutree.h
+> index f2b3bd6c6bc2..0400e211aa44 100644
+> --- a/include/linux/srcutree.h
+> +++ b/include/linux/srcutree.h
+> @@ -24,25 +24,75 @@
+...
+> +/*
+> + * Per-SRCU-domain structure, similar in function to rcu_state.
+> + */
+>  struct srcu_struct {
+> -	unsigned long completed;
+> -	unsigned long srcu_gp_seq;
+> -	atomic_t srcu_exp_cnt;
+> -	struct srcu_array __percpu *per_cpu_ref;
+> -	spinlock_t queue_lock; /* protect ->srcu_cblist */
+> -	struct rcu_segcblist srcu_cblist;
+> +	struct srcu_node node[NUM_RCU_NODES];	/* Combining tree. */
+> +	struct srcu_node *level[RCU_NUM_LVLS + 1];
+> +						/* First node at each level. */
+> +	struct mutex srcu_cb_mutex;		/* Serialize CB preparation. */
+> +	spinlock_t gp_lock;			/* protect ->srcu_cblist */
+> +	struct mutex srcu_gp_mutex;		/* Serialize GP work. */
+> +	unsigned int srcu_idx;			/* Current rdr array element. */
+> +	unsigned long srcu_gp_seq;		/* Grace-period seq #. */
+> +	unsigned long srcu_gp_seq_needed;	/* Latest gp_seq needed. */
+> +	atomic_t srcu_exp_cnt;			/* # ongoing expedited GPs. */
+> +	struct srcu_data __percpu *sda;		/* Per-CPU srcu_data array. */
+> +	unsigned long srcu_barrier_seq;		/* srcu_barrier seq #. */
+> +	struct mutex srcu_barrier_mutex;	/* Serialize barrier ops. */
+> +	struct completion srcu_barrier_completion;
+> +						/* Awaken barrier rq at end. */
+> +	atomic_t srcu_barrier_cpu_cnt;		/* # CPUs not yet posting a */
+> +						/*  callback for the barrier */
+> +						/*  operation. */
 
-hmmm... a really tough one.
+This change seems to have had the non-obvious effect of breaking the
+powerpc KVM build.
 
-well, someone has to say this:
- the simplest thing is to have a bigger PRINTK_SAFE_LOG_BUF_SHIFT value :)
+Because struct kvm contains two srcu_structs which are located
+before the kvm_arch struct, the increase in size of srcu_struct has
+caused the offset from the start of struct kvm to kvm_arch to be too big
+for some of our asm.
 
-
-just thinking (well, sort of) out loud. the problem is that we can't tell if
-we already hold any printk related locks ("printk related locks" is not even
-well defined term). so printk from NMI can deadlock or it can be OK, we
-never know. but looking and vprintk_emit() and console_unlock() it seems that
-we have some sort of a hint now, which is this_cpu_read(printk_context) - if
-we are not in printk_safe context then we can say that _probably_ (and that's
-a Russian roulette) doing "normal" printk() will work. that is a *very-very*
-risky (and admittedly dumb) thing to assume, so we will move in a slightly
-different direction. checking this_cpu_read(printk_context) only assures us
-that we don't hold `logbuf_lock' on this CPU. and that is sort of something,
-at least we can be sure that doing printk_deferred() from this CPU is safe.
-printk_deferred() means that your NMI messages will end up in the logbuf,
-which is a) bigger in size than per-CPU buffer and b) some other CPU can
-immediately print those messages (hopefully).
-
-we also switch to printk_safe mode for call_console_drivers() in
-console_unlock(). but we can't make any solid assumptions there - serial
-console lock can already be acquired, we don't have any markers for that.
-it may be reasonable to assume that if we are not in printk_safe mode on
-this CPU then serial console is not locked from this CPU, but there is
-nothing that can assure us.
-
-so at the moment what I can think of is something like
-
-  -- check this_cpu_read(printk_context) in NMI prink
-
-	-- if we are NOT in printk_safe on this CPU, then do printk_deferred()
-	   and bypass `nmi_print_seq' buffer
-
-	-- if we are in printk_safe
-	  -- well... bad luck... have a bigger buffer.
-
-		.... or there are some other options here, but I'd prefer
-		not to list them, because people will hate me :)
+struct kvm {
+	spinlock_t mmu_lock;
+	struct mutex slots_lock;
+	struct mm_struct *mm; /* userspace tied to this vm */
+	struct kvm_memslots *memslots[KVM_ADDRESS_SPACE_NUM];
+	struct srcu_struct srcu;
+	struct srcu_struct irq_srcu;
+        ...
+	struct kvm_arch arch;
 
 
-so this shifts the purpose of `nmi_print_seq' buffer: use it only when
-you can't use logbuf. otherwise, do printk_deferred().
+Example error:
+  arch/powerpc/kvm/book3s_hv_rmhandlers.S:617: Error: operand out of range (0x000000000000b328 is not between 0xffffffffffff8000 and 0x0000000000007fff)
+
+Where line 617 is:
+  lwz	r7,KVM_LPID(r9)
+
+And the KVM_LPID constant comes from asm-offsets.s. The diff of old vs
+new is:
+
+  -->KVM_LPID 17752 offsetof(struct kvm, arch.lpid)	 #
+  +->KVM_LPID 45864 offsetof(struct kvm, arch.lpid)	 #
 
 
-need to think more.
+We can probably just fix it by changing the asm to keep the address of
+kvm_arch in a register, and then offset from that.
 
-	-ss
+cheers
