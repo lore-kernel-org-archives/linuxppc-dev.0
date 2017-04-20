@@ -1,17 +1,34 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <paolo.bonzini@gmail.com>
+Received: from mail-wm0-x244.google.com (mail-wm0-x244.google.com
+ [IPv6:2a00:1450:400c:c09::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w81dn4k1bzDqJl
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Apr 2017 00:36:29 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org
-Cc: bhsharma@redhat.com, keescook@chromium.org,
- kernel-hardening@lists.openwall.com
-Subject: [PATCH v2] powerpc/mm: Add support for runtime configuration of ASLR
- limits
-Date: Fri, 21 Apr 2017 00:36:20 +1000
-Message-Id: <1492698980-19510-1-git-send-email-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w82ny6VzfzDqKB
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Apr 2017 01:28:38 +1000 (AEST)
+Received: by mail-wm0-x244.google.com with SMTP id d79so11534738wmi.2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Apr 2017 08:28:38 -0700 (PDT)
+Sender: Paolo Bonzini <paolo.bonzini@gmail.com>
+Subject: Re: powerpc KVM build break in linux-next (was Re: [PATCH
+ tip/core/rcu 40/40] srcu: Parallelize callback handling)
+To: Michael Ellerman <michaele@au1.ibm.com>,
+ "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+ linux-kernel@vger.kernel.org, "paulus@samba.org" <paulus@samba.org>,
+ kvm@vger.kernel.org, kvm-ppc@vger.kernel.org,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+References: <20170412174003.GA23207@linux.vnet.ibm.com>
+ <1492018825-25634-40-git-send-email-paulmck@linux.vnet.ibm.com>
+ <871ssn692a.fsf@concordia.ellerman.id.au>
+Cc: mingo@kernel.org, jiangshanlai@gmail.com, dipankar@in.ibm.com,
+ akpm@linux-foundation.org, mathieu.desnoyers@efficios.com,
+ josh@joshtriplett.org, tglx@linutronix.de, peterz@infradead.org,
+ rostedt@goodmis.org, dhowells@redhat.com, edumazet@google.com,
+ fweisbec@gmail.com, oleg@redhat.com, bobby.prani@gmail.com
+From: Paolo Bonzini <pbonzini@redhat.com>
+Message-ID: <24c85d26-bb4b-892d-5837-6d02af570e0e@redhat.com>
+Date: Thu, 20 Apr 2017 17:28:32 +0200
+MIME-Version: 1.0
+In-Reply-To: <871ssn692a.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,126 +38,83 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add powerpc support for mmap_rnd_bits and mmap_rnd_compat_bits, which are two
-sysctls that allow a user to configure the number of bits of randomness used for
-ASLR.
 
-Because of the way the Kconfig for ARCH_MMAP_RND_BITS is defined, we have to
-construct at least the MIN value in Kconfig, vs in a header which would be more
-natural. Given that we just go ahead and do it all in Kconfig.
 
-At least according to the code (the documentation makes no mention of it), the
-value is defined as the number of bits of randomisation *of the page*, not the
-address. This makes some sense, with larger page sizes more of the low bits are
-forced to zero, which would reduce the randomisation if we didn't take the
-PAGE_SIZE into account. However it does mean the min/max values have to change
-depending on the PAGE_SIZE in order to actually limit the amount of address
-space consumed by the randomisation.
+On 20/04/2017 05:40, Michael Ellerman wrote:
+> "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> writes:
+> 
+>> diff --git a/include/linux/srcutree.h b/include/linux/srcutree.h
+>> index f2b3bd6c6bc2..0400e211aa44 100644
+>> --- a/include/linux/srcutree.h
+>> +++ b/include/linux/srcutree.h
+>> @@ -24,25 +24,75 @@
+> ...
+>> +/*
+>> + * Per-SRCU-domain structure, similar in function to rcu_state.
+>> + */
+>>  struct srcu_struct {
+>> -	unsigned long completed;
+>> -	unsigned long srcu_gp_seq;
+>> -	atomic_t srcu_exp_cnt;
+>> -	struct srcu_array __percpu *per_cpu_ref;
+>> -	spinlock_t queue_lock; /* protect ->srcu_cblist */
+>> -	struct rcu_segcblist srcu_cblist;
+>> +	struct srcu_node node[NUM_RCU_NODES];	/* Combining tree. */
+>> +	struct srcu_node *level[RCU_NUM_LVLS + 1];
+>> +						/* First node at each level. */
+>> +	struct mutex srcu_cb_mutex;		/* Serialize CB preparation. */
+>> +	spinlock_t gp_lock;			/* protect ->srcu_cblist */
+>> +	struct mutex srcu_gp_mutex;		/* Serialize GP work. */
+>> +	unsigned int srcu_idx;			/* Current rdr array element. */
+>> +	unsigned long srcu_gp_seq;		/* Grace-period seq #. */
+>> +	unsigned long srcu_gp_seq_needed;	/* Latest gp_seq needed. */
+>> +	atomic_t srcu_exp_cnt;			/* # ongoing expedited GPs. */
+>> +	struct srcu_data __percpu *sda;		/* Per-CPU srcu_data array. */
+>> +	unsigned long srcu_barrier_seq;		/* srcu_barrier seq #. */
+>> +	struct mutex srcu_barrier_mutex;	/* Serialize barrier ops. */
+>> +	struct completion srcu_barrier_completion;
+>> +						/* Awaken barrier rq at end. */
+>> +	atomic_t srcu_barrier_cpu_cnt;		/* # CPUs not yet posting a */
+>> +						/*  callback for the barrier */
+>> +						/*  operation. */
+> 
+> This change seems to have had the non-obvious effect of breaking the
+> powerpc KVM build.
+> 
+> Because struct kvm contains two srcu_structs which are located
+> before the kvm_arch struct, the increase in size of srcu_struct has
+> caused the offset from the start of struct kvm to kvm_arch to be too big
+> for some of our asm.
+> 
+> struct kvm {
+> 	spinlock_t mmu_lock;
+> 	struct mutex slots_lock;
+> 	struct mm_struct *mm; /* userspace tied to this vm */
+> 	struct kvm_memslots *memslots[KVM_ADDRESS_SPACE_NUM];
+> 	struct srcu_struct srcu;
+> 	struct srcu_struct irq_srcu;
+>         ...
+> 	struct kvm_arch arch;
+> 
+> 
+> Example error:
+>   arch/powerpc/kvm/book3s_hv_rmhandlers.S:617: Error: operand out of range (0x000000000000b328 is not between 0xffffffffffff8000 and 0x0000000000007fff)
+> 
+> Where line 617 is:
+>   lwz	r7,KVM_LPID(r9)
+> 
+> And the KVM_LPID constant comes from asm-offsets.s. The diff of old vs
+> new is:
+> 
+>   -->KVM_LPID 17752 offsetof(struct kvm, arch.lpid)	 #
+>   +->KVM_LPID 45864 offsetof(struct kvm, arch.lpid)	 #
+> 
+> 
+> We can probably just fix it by changing the asm to keep the address of
+> kvm_arch in a register, and then offset from that.
 
-The result of that is that we have to define the default values based on both
-32-bit vs 64-bit, but also the configured PAGE_SIZE. Furthermore now that we
-have 128TB address space support on Book3S, we also have to take that into
-account.
+Michael, if you want to move the two srcu structs at the end of struct
+kvm, that would be fine by me.  Please send a patch yourself so you can
+test it on PPC.  Thanks,
 
-Finally we can wire up the value in arch_mmap_rnd().
-
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-Signed-off-by: Bhupesh Sharma <bhsharma@redhat.com>
----
- arch/powerpc/Kconfig   | 44 ++++++++++++++++++++++++++++++++++++++++++++
- arch/powerpc/mm/mmap.c | 11 ++++++-----
- 2 files changed, 50 insertions(+), 5 deletions(-)
-
-v2: Fix the 32-bit MAX value incorrectly using MIN as spotted by Kees.
-
-Kees/Bhupesh, would love a Review/Ack/Tested-by from you, I'll plan to merge
-this later today (Friday) my time.
-
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 97a8bc8a095c..6f0503951e94 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -22,6 +22,48 @@ config MMU
- 	bool
- 	default y
- 
-+config ARCH_MMAP_RND_BITS_MAX
-+	# On Book3S 64, the default virtual address space for 64-bit processes
-+	# is 2^47 (128TB). As a maximum, allow randomisation to consume up to
-+	# 32T of address space (2^45), which should ensure a reasonable gap
-+	# between bottom-up and top-down allocations for applications that
-+	# consume "normal" amounts of address space. Book3S 64 only supports 64K
-+	# and 4K page sizes.
-+	default 29 if PPC_BOOK3S_64 && PPC_64K_PAGES # 29 = 45 (32T) - 16 (64K)
-+	default 33 if PPC_BOOK3S_64		     # 33 = 45 (32T) - 12 (4K)
-+	#
-+	# On all other 64-bit platforms (currently only Book3E), the virtual
-+	# address space is 2^46 (64TB). Allow randomisation to consume up to 16T
-+	# of address space (2^44). Only 4K page sizes are supported.
-+	default 32 if 64BIT	# 32 = 44 (16T) - 12 (4K)
-+	#
-+	# For 32-bit, use the compat values, as they're the same.
-+	default ARCH_MMAP_RND_COMPAT_BITS_MAX
-+
-+config ARCH_MMAP_RND_BITS_MIN
-+	# Allow randomisation to consume up to 1GB of address space (2^30).
-+	default 14 if 64BIT && PPC_64K_PAGES	# 14 = 30 (1GB) - 16 (64K)
-+	default 18 if 64BIT			# 18 = 30 (1GB) - 12 (4K)
-+	#
-+	# For 32-bit, use the compat values, as they're the same.
-+	default ARCH_MMAP_RND_COMPAT_BITS_MIN
-+
-+config ARCH_MMAP_RND_COMPAT_BITS_MAX
-+	# Total virtual address space for 32-bit processes is 2^31 (2GB).
-+	# Allow randomisation to consume up to 512MB of address space (2^29).
-+	default 11 if PPC_256K_PAGES	# 11 = 29 (512MB) - 18 (256K)
-+	default 13 if PPC_64K_PAGES	# 13 = 29 (512MB) - 16 (64K)
-+	default 15 if PPC_16K_PAGES 	# 15 = 29 (512MB) - 14 (16K)
-+	default 17			# 17 = 29 (512MB) - 12 (4K)
-+
-+config ARCH_MMAP_RND_COMPAT_BITS_MIN
-+	# Total virtual address space for 32-bit processes is 2^31 (2GB).
-+	# Allow randomisation to consume up to 8MB of address space (2^23).
-+	default 5 if PPC_256K_PAGES	#  5 = 23 (8MB) - 18 (256K)
-+	default 7 if PPC_64K_PAGES	#  7 = 23 (8MB) - 16 (64K)
-+	default 9 if PPC_16K_PAGES	#  9 = 23 (8MB) - 14 (16K)
-+	default 11			# 11 = 23 (8MB) - 12 (4K)
-+
- config HAVE_SETUP_PER_CPU_AREA
- 	def_bool PPC64
- 
-@@ -120,6 +162,8 @@ config PPC
- 	select HAVE_ARCH_HARDENED_USERCOPY
- 	select HAVE_ARCH_JUMP_LABEL
- 	select HAVE_ARCH_KGDB
-+	select HAVE_ARCH_MMAP_RND_BITS
-+	select HAVE_ARCH_MMAP_RND_COMPAT_BITS	if COMPAT
- 	select HAVE_ARCH_SECCOMP_FILTER
- 	select HAVE_ARCH_TRACEHOOK
- 	select HAVE_CBPF_JIT			if !PPC64
-diff --git a/arch/powerpc/mm/mmap.c b/arch/powerpc/mm/mmap.c
-index a5d9ef59debe..6141cfff634e 100644
---- a/arch/powerpc/mm/mmap.c
-+++ b/arch/powerpc/mm/mmap.c
-@@ -59,13 +59,14 @@ static inline int mmap_is_legacy(void)
- 
- unsigned long arch_mmap_rnd(void)
- {
--	unsigned long rnd;
-+	unsigned long shift, rnd;
- 
--	/* 8MB for 32bit, 1GB for 64bit */
-+	shift = mmap_rnd_bits;
-+#ifdef CONFIG_COMPAT
- 	if (is_32bit_task())
--		rnd = get_random_long() % (1<<(23-PAGE_SHIFT));
--	else
--		rnd = get_random_long() % (1UL<<(30-PAGE_SHIFT));
-+		shift = mmap_rnd_compat_bits;
-+#endif
-+	rnd = get_random_long() % (1 << shift);
- 
- 	return rnd << PAGE_SHIFT;
- }
--- 
-2.7.4
+Paolo
