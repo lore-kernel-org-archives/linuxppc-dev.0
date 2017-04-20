@@ -2,18 +2,17 @@ Return-Path: <yao.jin@linux.intel.com>
 Received: from mga03.intel.com (mga03.intel.com [134.134.136.65])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w7ll76BWVzDqJl
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Apr 2017 14:10:11 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w7ll86rC0zDqHG
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Apr 2017 14:10:12 +1000 (AEST)
 From: Jin Yao <yao.jin@linux.intel.com>
 To: acme@kernel.org, jolsa@kernel.org, peterz@infradead.org, mingo@redhat.com,
  alexander.shishkin@linux.intel.com
 Cc: Linux-kernel@vger.kernel.org, ak@linux.intel.com, kan.liang@intel.com,
  yao.jin@intel.com, linuxppc-dev@lists.ozlabs.org,
  Jin Yao <yao.jin@linux.intel.com>
-Subject: [PATCH v6 3/7] perf record: Create a new option save_type in
- --branch-filter
-Date: Thu, 20 Apr 2017 20:07:51 +0800
-Message-Id: <1492690075-17243-4-git-send-email-yao.jin@linux.intel.com>
+Subject: [PATCH v6 4/7] perf report: Refactor the branch info printing code
+Date: Thu, 20 Apr 2017 20:07:52 +0800
+Message-Id: <1492690075-17243-5-git-send-email-yao.jin@linux.intel.com>
 In-Reply-To: <1492690075-17243-1-git-send-email-yao.jin@linux.intel.com>
 References: <1492690075-17243-1-git-send-email-yao.jin@linux.intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,47 +24,177 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The option indicates the kernel to save branch type during sampling.
+The branch info such as predicted/cycles/... are printed at the
+callchain entries.
 
-One example:
-perf record -g --branch-filter any,save_type <command>
+For example: perf report --branch-history --no-children --stdio
+
+    --1.07%--main div.c:39 (predicted:52.4% cycles:1 iterations:17)
+              main div.c:44 (predicted:52.4% cycles:1)
+              main div.c:42 (cycles:2)
+              compute_flag div.c:28 (cycles:2)
+              compute_flag div.c:27 (cycles:1)
+              rand rand.c:28 (cycles:1)
+              rand rand.c:28 (cycles:1)
+              __random random.c:298 (cycles:1)
+              __random random.c:297 (cycles:1)
+              __random random.c:295 (cycles:1)
+              __random random.c:295 (cycles:1)
+              __random random.c:295 (cycles:1)
+
+But the current code is difficult to maintain and extend. This patch
+refactors the code for easy maintenance.
 
 Change log
 ----------
 
-v6: Not changed.
+v6: 1. Put the multiline condition code into {} brackets in
+       counts_str_build()
 
-v5: Not changed.
+    2. Keep the original display order, that is:
+       predicted, abort, cycles, iterations
+
+v5: It's a new patch in v5 patch series.
 
 Signed-off-by: Jin Yao <yao.jin@linux.intel.com>
 ---
- tools/perf/Documentation/perf-record.txt | 1 +
- tools/perf/util/parse-branch-options.c   | 1 +
- 2 files changed, 2 insertions(+)
+ tools/perf/util/callchain.c | 106 ++++++++++++++++++++------------------------
+ 1 file changed, 47 insertions(+), 59 deletions(-)
 
-diff --git a/tools/perf/Documentation/perf-record.txt b/tools/perf/Documentation/perf-record.txt
-index ea3789d..e2f5a4f 100644
---- a/tools/perf/Documentation/perf-record.txt
-+++ b/tools/perf/Documentation/perf-record.txt
-@@ -332,6 +332,7 @@ following filters are defined:
- 	- no_tx: only when the target is not in a hardware transaction
- 	- abort_tx: only when the target is a hardware transaction abort
- 	- cond: conditional branches
-+	- save_type: save branch type during sampling in case binary is not available later
+diff --git a/tools/perf/util/callchain.c b/tools/perf/util/callchain.c
+index 0096d45..d44b5ed 100644
+--- a/tools/perf/util/callchain.c
++++ b/tools/perf/util/callchain.c
+@@ -1106,83 +1106,71 @@ int callchain_branch_counts(struct callchain_root *root,
+ 						  cycles_count);
+ }
  
- +
- The option requires at least one branch type among any, any_call, any_ret, ind_call, cond.
-diff --git a/tools/perf/util/parse-branch-options.c b/tools/perf/util/parse-branch-options.c
-index 38fd115..e71fb5f 100644
---- a/tools/perf/util/parse-branch-options.c
-+++ b/tools/perf/util/parse-branch-options.c
-@@ -28,6 +28,7 @@ static const struct branch_mode branch_modes[] = {
- 	BRANCH_OPT("cond", PERF_SAMPLE_BRANCH_COND),
- 	BRANCH_OPT("ind_jmp", PERF_SAMPLE_BRANCH_IND_JUMP),
- 	BRANCH_OPT("call", PERF_SAMPLE_BRANCH_CALL),
-+	BRANCH_OPT("save_type", PERF_SAMPLE_BRANCH_TYPE_SAVE),
- 	BRANCH_END
- };
++static int count_pri64_printf(int index, const char *str, u64 value,
++	char *bf, int bfsize)
++{
++	int printed;
++
++	printed = scnprintf(bf, bfsize,
++		"%s%s:%" PRId64 "",
++		(index) ? " " : " (", str, value);
++
++	return printed;
++}
++
++static int count_float_printf(int index, const char *str, float value,
++	char *bf, int bfsize)
++{
++	int printed;
++
++	printed = scnprintf(bf, bfsize,
++		"%s%s:%.1f%%",
++		(index) ? " " : " (", str, value);
++
++	return printed;
++}
++
+ static int counts_str_build(char *bf, int bfsize,
+ 			     u64 branch_count, u64 predicted_count,
+ 			     u64 abort_count, u64 cycles_count,
+ 			     u64 iter_count, u64 samples_count)
+ {
+-	double predicted_percent = 0.0;
+-	const char *null_str = "";
+-	char iter_str[32];
+-	char cycle_str[32];
+-	char *istr, *cstr;
+ 	u64 cycles;
++	int printed = 0, i = 0;
  
+ 	if (branch_count == 0)
+ 		return scnprintf(bf, bfsize, " (calltrace)");
+ 
+-	cycles = cycles_count / branch_count;
+-
+-	if (iter_count && samples_count) {
+-		if (cycles > 0)
+-			scnprintf(iter_str, sizeof(iter_str),
+-				 " iterations:%" PRId64 "",
+-				 iter_count / samples_count);
+-		else
+-			scnprintf(iter_str, sizeof(iter_str),
+-				 "iterations:%" PRId64 "",
+-				 iter_count / samples_count);
+-		istr = iter_str;
+-	} else
+-		istr = (char *)null_str;
+-
+-	if (cycles > 0) {
+-		scnprintf(cycle_str, sizeof(cycle_str),
+-			  "cycles:%" PRId64 "", cycles);
+-		cstr = cycle_str;
+-	} else
+-		cstr = (char *)null_str;
+-
+-	predicted_percent = predicted_count * 100.0 / branch_count;
++	if (predicted_count < branch_count) {
++		printed += count_float_printf(i++, "predicted",
++				predicted_count * 100.0 / branch_count,
++				bf + printed, bfsize - printed);
++	}
+ 
+-	if ((predicted_count == branch_count) && (abort_count == 0)) {
+-		if ((cycles > 0) || (istr != (char *)null_str))
+-			return scnprintf(bf, bfsize, " (%s%s)", cstr, istr);
+-		else
+-			return scnprintf(bf, bfsize, "%s", (char *)null_str);
++	if (abort_count) {
++		printed += count_float_printf(i++, "abort",
++				abort_count * 100.0 / branch_count,
++				bf + printed, bfsize - printed);
+ 	}
+ 
+-	if ((predicted_count < branch_count) && (abort_count == 0)) {
+-		if ((cycles > 0) || (istr != (char *)null_str))
+-			return scnprintf(bf, bfsize,
+-				" (predicted:%.1f%% %s%s)",
+-				predicted_percent, cstr, istr);
+-		else {
+-			return scnprintf(bf, bfsize,
+-				" (predicted:%.1f%%)",
+-				predicted_percent);
+-		}
++	cycles = cycles_count / branch_count;
++	if (cycles) {
++		printed += count_pri64_printf(i++, "cycles",
++				cycles,
++				bf + printed, bfsize - printed);
+ 	}
+ 
+-	if ((predicted_count == branch_count) && (abort_count > 0)) {
+-		if ((cycles > 0) || (istr != (char *)null_str))
+-			return scnprintf(bf, bfsize,
+-				" (abort:%" PRId64 " %s%s)",
+-				abort_count, cstr, istr);
+-		else
+-			return scnprintf(bf, bfsize,
+-				" (abort:%" PRId64 ")",
+-				abort_count);
++	if (iter_count && samples_count) {
++		printed += count_pri64_printf(i++, "iterations",
++				iter_count / samples_count,
++				bf + printed, bfsize - printed);
+ 	}
+ 
+-	if ((cycles > 0) || (istr != (char *)null_str))
+-		return scnprintf(bf, bfsize,
+-			" (predicted:%.1f%% abort:%" PRId64 " %s%s)",
+-			predicted_percent, abort_count, cstr, istr);
++	if (i)
++		return scnprintf(bf + printed, bfsize - printed, ")");
+ 
+-	return scnprintf(bf, bfsize,
+-			" (predicted:%.1f%% abort:%" PRId64 ")",
+-			predicted_percent, abort_count);
++	bf[0] = 0;
++	return 0;
+ }
+ 
+ static int callchain_counts_printf(FILE *fp, char *bf, int bfsize,
 -- 
 2.7.4
