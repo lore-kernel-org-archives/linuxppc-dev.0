@@ -1,45 +1,32 @@
-Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w7qzX1bxyzDqCd
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Apr 2017 17:21:11 +1000 (AEST)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w7r8H2m02zDqJC
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Apr 2017 17:28:47 +1000 (AEST)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v3K7E7Hp044760
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Apr 2017 03:21:09 -0400
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
- by mx0a-001b2d01.pphosted.com with ESMTP id 29xaptynb6-1
+ v3K7Noil024580
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Apr 2017 03:28:36 -0400
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 29x7543u4a-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Apr 2017 03:21:05 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Apr 2017 03:28:36 -0400
 Received: from localhost
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Thu, 20 Apr 2017 17:20:26 +1000
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v3K7KFPQ7078288
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Apr 2017 17:20:23 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v3K7JoRs015278
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Apr 2017 17:19:51 +1000
-Date: Thu, 20 Apr 2017 07:19:28 +0000
-From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-Subject: Re: [PATCH v3 3/7] kprobes: validate the symbol name length
-To: Ingo Molnar <mingo@kernel.org>, Michael Ellerman <mpe@ellerman.id.au>
-Cc: Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Masami Hiramatsu <mhiramat@kernel.org>
-References: <cover.1492604782.git.naveen.n.rao@linux.vnet.ibm.com>
- <6e14d22994530fb5200c74d1593e73541d3b8028.1492604782.git.naveen.n.rao@linux.vnet.ibm.com>
- <87o9vr4nm3.fsf@concordia.ellerman.id.au>
-In-Reply-To: <87o9vr4nm3.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <1492672015.e5bcoosx02.astroid@naverao1-tp.none>
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Thu, 20 Apr 2017 01:28:35 -0600
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ Madhavan Srinivasan <masriniv@in.ibm.com>,
+ Anton Blanchard <anton@ozlabs.org>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: [RFC PATCH] powerpc/mm/radix: Optimize tlbiel flush
+Date: Thu, 20 Apr 2017 12:58:25 +0530
+Message-Id: <1492673305-29526-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,46 +36,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Excerpts from Michael Ellerman's message of April 20, 2017 11:38:
-> "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> writes:
->=20
->> diff --git a/kernel/kprobes.c b/kernel/kprobes.c
->> index 6a128f3a7ed1..bb86681c8a10 100644
->> --- a/kernel/kprobes.c
->> +++ b/kernel/kprobes.c
->> @@ -1382,6 +1382,28 @@ bool within_kprobe_blacklist(unsigned long addr)
->>  	return false;
->>  }
->> =20
->> +bool is_valid_kprobe_symbol_name(const char *name)
->> +{
->> +	size_t sym_len;
->> +	char *s;
->> +
->> +	s =3D strchr(name, ':');
->> +	if (s) {
->> +		sym_len =3D strnlen(s+1, KSYM_NAME_LEN);
->> +		if (sym_len <=3D 0 || sym_len >=3D KSYM_NAME_LEN)
->> +			return false;
->> +		sym_len =3D (size_t)(s - name);
->> +		if (sym_len <=3D 0 || sym_len >=3D MODULE_NAME_LEN)
->> +			return false;
->> +	} else {
->> +		sym_len =3D strnlen(name, MODULE_NAME_LEN);
->> +		if (sym_len <=3D 0 || sym_len >=3D MODULE_NAME_LEN)
->> +			return false;
->> +	}
->=20
-> I think this is probably more elaborate than it needs to be.
->=20
-> Why not just check the string is <=3D (MODULE_NAME_LEN + KSYM_NAME_LEN) ?
+For a page walk cache flush, we don't need to loop with set number. The set
+number is ignored with RIC=1 (pwc flush).
 
-Yes, that would be sufficient for now.
+For RIC=2 (flush all), inorder to flush implementation dependent caches, we can
+ignore the set number. Hence we do a RIC=2 flush with set no: 0, so we do both
+the tlb flush for set 0 and the implementation dependent cache flushes. This is
+then followed with tbl flush for set 1-127
 
-It's probably just me being paranoid, but I felt it's good to have=20
-stricter checks for user-provided strings, to guard against future=20
-changes to how we process this.
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+---
+Note: not yet tested.
 
-- Naveen
+ arch/powerpc/mm/tlb-radix.c | 28 +++++++++++++++++++++++-----
+ 1 file changed, 23 insertions(+), 5 deletions(-)
 
-=
+diff --git a/arch/powerpc/mm/tlb-radix.c b/arch/powerpc/mm/tlb-radix.c
+index b68b5219cf45..b827aef38b90 100644
+--- a/arch/powerpc/mm/tlb-radix.c
++++ b/arch/powerpc/mm/tlb-radix.c
+@@ -43,12 +43,30 @@ static inline void __tlbiel_pid(unsigned long pid, int set,
+  */
+ static inline void _tlbiel_pid(unsigned long pid, unsigned long ric)
+ {
+-	int set;
++	int set = 0;
+ 
+ 	asm volatile("ptesync": : :"memory");
+-	for (set = 0; set < POWER9_TLB_SETS_RADIX ; set++) {
+-		__tlbiel_pid(pid, set, ric);
++	if (ric == RIC_FLUSH_ALL) {
++		ric = RIC_FLUSH_TLB;
++		set = 1;
++		/* Use set 0 to flush all */
++		__tlbiel_pid(pid, 0, RIC_FLUSH_ALL);
+ 	}
++
++	for (; set < POWER9_TLB_SETS_RADIX ; set++)
++		__tlbiel_pid(pid, set, ric);
++
++	asm volatile("ptesync": : :"memory");
++	asm volatile(PPC_INVALIDATE_ERAT "; isync" : : :"memory");
++}
++
++static inline void _tlbiel_pwc(unsigned long pid)
++{
++	asm volatile("ptesync": : :"memory");
++	/*
++	 * for PWC flush, we don't look at set number
++	 */
++	__tlbiel_pid(pid, 0, RIC_FLUSH_PWC);
+ 	asm volatile("ptesync": : :"memory");
+ 	asm volatile(PPC_INVALIDATE_ERAT "; isync" : : :"memory");
+ }
+@@ -140,7 +158,7 @@ void radix__local_flush_tlb_pwc(struct mmu_gather *tlb, unsigned long addr)
+ 
+ 	pid = mm->context.id;
+ 	if (pid != MMU_NO_CONTEXT)
+-		_tlbiel_pid(pid, RIC_FLUSH_PWC);
++		_tlbiel_pwc(pid);
+ 
+ 	preempt_enable();
+ }
+@@ -222,7 +240,7 @@ void radix__flush_tlb_pwc(struct mmu_gather *tlb, unsigned long addr)
+ 		if (lock_tlbie)
+ 			raw_spin_unlock(&native_tlbie_lock);
+ 	} else
+-		_tlbiel_pid(pid, RIC_FLUSH_PWC);
++		_tlbiel_pwc(pid);
+ no_context:
+ 	preempt_enable();
+ }
+-- 
+2.7.4
