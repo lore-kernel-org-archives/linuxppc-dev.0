@@ -1,24 +1,19 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w7pQl1rS9zDqFG
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Apr 2017 16:11:11 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w7pwl14W5zDqHG
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Apr 2017 16:33:43 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
- Masami Hiramatsu <mhiramat@kernel.org>
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
 Cc: Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Ingo Molnar <mingo@kernel.org>
-Subject: Re: [PATCH v3 6/7] powerpc: kprobes: emulate instructions on kprobe
- handler re-entry
-In-Reply-To: <1492620027.h27iuc5j5o.astroid@naverao1-tp.none>
-References: <cover.1492604782.git.naveen.n.rao@linux.vnet.ibm.com>
- <0d4193a90e4b2ad3cd2ef33d41228b80a2ac9f91.1492604782.git.naveen.n.rao@linux.vnet.ibm.com>
- <20170419234319.7893df9c158e565fede4a386@kernel.org>
- <1492620027.h27iuc5j5o.astroid@naverao1-tp.none>
-Date: Thu, 20 Apr 2017 16:11:10 +1000
-Message-ID: <87lgqv4ni9.fsf@concordia.ellerman.id.au>
+ Masami Hiramatsu <mhiramat@kernel.org>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 1/2] powerpc: kprobes: blacklist exception handlers
+In-Reply-To: <1ec8a69d73b38e365347f0c4b6329407d8861afa.1492614257.git.naveen.n.rao@linux.vnet.ibm.com>
+References: <cover.1492614257.git.naveen.n.rao@linux.vnet.ibm.com>
+ <1ec8a69d73b38e365347f0c4b6329407d8861afa.1492614257.git.naveen.n.rao@linux.vnet.ibm.com>
+Date: Thu, 20 Apr 2017 16:33:42 +1000
+Message-ID: <87inlz4mgp.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -32,21 +27,39 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> writes:
 
-> Excerpts from Masami Hiramatsu's message of April 19, 2017 20:13:
->> 
->> BTW, as I pointed, 5/7 and 6/7 should be merged since this actually
->> makes meaningful change.
->
-> Yes, sorry if I wasn't clear in my previous reply in the (!) previous 
-> patch series.
->
-> Since this has to go through the powerpc tree, I followed this since I 
-> felt that Michael Ellerman prefers to keep functional changes separate 
-> from refactoring. I'm fine with either approach.
->
-> Michael?
+> diff --git a/arch/powerpc/kernel/kprobes.c b/arch/powerpc/kernel/kprobes.c
+> index 71286dfd76a0..59159337a097 100644
+> --- a/arch/powerpc/kernel/kprobes.c
+> +++ b/arch/powerpc/kernel/kprobes.c
+> @@ -112,6 +113,14 @@ kprobe_opcode_t *kprobe_lookup_name(const char *name, unsigned int offset)
+>  	return addr;
+>  }
+>  
+> +bool arch_within_kprobe_blacklist(unsigned long addr)
+> +{
+> +	return  (addr >= (unsigned long)__kprobes_text_start &&
+> +		 addr < (unsigned long)__kprobes_text_end) ||
+> +		(addr >= (unsigned long)_stext &&
+> +		 addr < (unsigned long)__head_end);
+> +}
 
-Yeah I'd definitely like this to be two patches. Otherwise when reading
-the combined diff it's much harder to see the change.
+This isn't quite right when the kernel is relocated.
+
+_stext and __head_end will be updated to point to the relocated copy of
+the kernel, eg:
+
+# grep -e _stext /proc/kallsyms 
+c000000002000000 T _stext
+
+So you probably also want something like:
+
+  if (_stext != PAGE_OFFSET &&
+      addr >= PAGE_OFFSET &&
+      addr < (PAGE_OFFSET + (__head_end - _stext)))
+      return true;
+
+But that's entirely untested :)
+
+You can test the relocatable case by enabling CONFIG_RELOCATABLE_TEST.
 
 cheers
