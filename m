@@ -1,18 +1,29 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <turtle.in.the.kernel@gmail.com>
+Received: from mail-io0-x242.google.com (mail-io0-x242.google.com
+ [IPv6:2607:f8b0:4001:c06::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w83Th66TBzDqKR
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Apr 2017 01:59:36 +1000 (AEST)
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH] powerpc/32: Avoid risk of unrecoverable TLBmiss inside
- entry_32.S
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Scott Wood <oss@buserror.net>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Message-Id: <20170420155932.BFC2C6E98F@localhost.localdomain>
-Date: Thu, 20 Apr 2017 17:59:32 +0200 (CEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w84f75YxZzDqKQ
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Apr 2017 02:51:59 +1000 (AEST)
+Received: by mail-io0-x242.google.com with SMTP id x86so18316428ioe.3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Apr 2017 09:51:59 -0700 (PDT)
+Subject: Re: [PATCH] of: introduce event tracepoints for dynamic device_node
+ lifecyle
+To: Frank Rowand <frowand.list@gmail.com>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Tyrel Datwyler <tyreld@linux.vnet.ibm.com>, robh+dt@kernel.org
+References: <1492475525-10827-1-git-send-email-tyreld@linux.vnet.ibm.com>
+ <58F6AA35.2040902@gmail.com> <87efwp6v4e.fsf@concordia.ellerman.id.au>
+ <1d51a229-612b-bf09-93d5-6e43b476e2cf@gmail.com> <58F83C66.7030806@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ devicetree@vger.kernel.org, nfont@linux.vnet.ibm.com, rostedt@goodmis.org,
+ mingo@redhat.com
+From: Tyrel Datwyler <turtle.in.the.kernel@gmail.com>
+Message-ID: <64505d40-926d-b302-4ff3-dff71aa5018a@gmail.com>
+Date: Thu, 20 Apr 2017 09:51:55 -0700
+MIME-Version: 1.0
+In-Reply-To: <58F83C66.7030806@gmail.com>
+Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,569 +33,336 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-By default, the 8xx pins an ITLB on the first 8M of memory in order
-to avoid any ITLB miss on kernel code.
-However, with some debug functions like DEBUG_PAGEALLOC and
-DEBUG_RODATA, pinning TLBs is contradictory.
+On 04/19/2017 09:43 PM, Frank Rowand wrote:
 
-In order to avoid any ITLB miss in a critical section without pinning
-TLBs, we have to ensure that there is no page boundary crossed between
-the setup of a new value in SRR0/SRR1 and the associated RFI.
+<snip>
 
-Today, the functions modifying srr0/srr1 are all located in
-setup_32.S. They are spread over almost 4kbytes.
+>> Something else to keep in mind is that while pr_debugs could be used to
+>> provide feedback on the reference counts and of_reconfig events they
+>> don't in anyway tell us where they are happening in the kernel. The
+> 
+> Yes, that is critical information.  When there are refcount issues, the
+> root cause is at varying levels back in the call stack.
+> 
+> 
+>> trace infrastructure provides the ability to stack trace those events.
+>> The following example provides me a lot more information about who is
+>> doing what and where after I hot-add an ethernet adapter:
+>>
+>> # echo stacktrace > /sys/kernel/debug/tracing/trace_options
+>> # cat trace | grep -A6 "/pci@800000020000018"
+>> ...
+>>            drmgr-7349  [006] d...  7138.821875: of_node_get: refcount=8,
+>> dn->full_name=/pci@800000020000018
+>>            drmgr-7349  [006] d...  7138.821876: <stack trace>
+>>  => .msi_quota_for_device
+>>  => .rtas_setup_msi_irqs
+>>  => .arch_setup_msi_irqs
+>>  => .__pci_enable_msix
+>>  => .pci_enable_msix_range
+> 
+> Nice!  It is great to have function names in the call stack.
 
-This patch reorganises setup_32.S to regroup those functions at the
-beginning of the file. It regroups them within the first 2kbytes.
+Agreed.
 
-Then the patch forces an 11 bits (2kbytes) alignment for those
-functions. This garanties that the functions remain in a
-single 4k page.
+<snip>
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
- This patch superseeds previous patch named "powerpc/32: Move entry_32
- functions just after HEAD functions.", taking into account suggestion
- from Michael.
+>> To get that same info as far as I know is to add a dump_stack() after
+>> each pr_debug.
+> 
+> Here is a patch that I have used.  It is not as user friendly in terms
+> of human readable stack traces (though a very small user space program
+> should be able to fix that).  The patch is cut and pasted into this
+> email, so probably white space damaged.
+> 
+> Instead of dumping the stack, each line in the "report" contains
+> the top six addresses in the call stack.  If interesting, they
+> can be post-processed (as I will show in some examples below).
 
- No modification is done to the code, only a move was done.
+Very cool. I wasn't familiar with the CALLER_ADDR* defines. Thanks for
+sharing.
 
- arch/powerpc/kernel/entry_32.S | 509 +++++++++++++++++++++--------------------
- 1 file changed, 258 insertions(+), 251 deletions(-)
+> 
+> ---
+>  drivers/of/dynamic.c |   29 +++++++++++++++++++++++++++++
+>  1 file changed, 29 insertions(+)
+> 
+> Index: b/drivers/of/dynamic.c
+> ===================================================================
+> --- a/drivers/of/dynamic.c
+> +++ b/drivers/of/dynamic.c
+> @@ -13,6 +13,7 @@
+>  #include <linux/slab.h>
+>  #include <linux/string.h>
+>  #include <linux/proc_fs.h>
+> +#include <linux/ftrace.h>
+>  
+>  #include "of_private.h"
+>  
+> @@ -27,6 +28,20 @@ struct device_node *of_node_get(struct d
+>  {
+>  	if (node)
+>  		kobject_get(&node->kobj);
+> +
+> +	if (node) {
+> +		int k;
+> +		int refcount = refcount_read(&node->kobj.kref.refcount);
+> +		pr_err("XXX get 0x%p %3d [0x%08lx 0x%08lx 0x%08lx 0x%08lx 0x%08lx 0x%08lx] ",
+> +			node, refcount,
+> +			CALLER_ADDR5, CALLER_ADDR4, CALLER_ADDR3,
+> +			CALLER_ADDR2, CALLER_ADDR1, CALLER_ADDR0);
+> +		// refcount = (refcount > 20) ? 20 : refcount; /* clamp max */
+> +		for (k = 0; k < refcount; k++)
+> +			pr_cont("+");
+> +		pr_cont(" %s\n", of_node_full_name(node));
+> +	}
+> +
+>  	return node;
+>  }
+>  EXPORT_SYMBOL(of_node_get);
+> @@ -38,8 +53,22 @@ EXPORT_SYMBOL(of_node_get);
+>   */
+>  void of_node_put(struct device_node *node)
+>  {
+> +	if (node) {
+> +		int k;
+> +		int refcount = refcount_read(&node->kobj.kref.refcount);
+> +		pr_err("XXX put 0x%p %3d [0x%08lx 0x%08lx 0x%08lx 0x%08lx 0x%08lx 0x%08lx] ",
+> +			node, refcount,
+> +			CALLER_ADDR5, CALLER_ADDR4, CALLER_ADDR3,
+> +			CALLER_ADDR2, CALLER_ADDR1, CALLER_ADDR0);
+> +		// refcount = (refcount > 20) ? 20 : refcount; /* clamp max */
+> +		for (k = 0; k < refcount; k++)
+> +			pr_cont("-");
+> +		pr_cont(" %s\n", of_node_full_name(node));
+> +	}
+> +
+>  	if (node)
+>  		kobject_put(&node->kobj);
+> +
+>  }
+>  EXPORT_SYMBOL(of_node_put);
+> 
+> 
+> I have used this mostly in the context of boot time, so there is a lot
+> of output.  My notes on configuration needed for my ARM boards are:
+> 
+>    FIXME: Currently using pr_err() so I don't need to set loglevel on boot.
+> 
+>           So obviously not a user friendly tool!!!
+>           The process is:
+>              - apply patch
+>              - configure, build, boot kernel
+>              - analyze data
+>              - remove patch
+> 
+>    LOG_BUF_SHIFT (was 17)
+>    General Setup ->
+>       [select 21] Kernel log buffer size (16 => 64KB, 17 => 128KB)
+> 
+> 
+>    Device Drivers ->
+>       Device Tree and Open Firmware support ->
+>         Device Tree overlays
+> 
+> 
+> Want CONFIG_FRAME_POINTER so that CALLER_ADDR* will work.
+> To be able to enable CONFIG_FRAME_POINTER, need to disable CONFIG_ARM_UNWIND.
+> 
+>    Kernel hacking ->
+>       [unselect] Enable stack unwinding support (EXPERIMENTAL)
+>       CONFIG_FRAME_POINTER will then be selected automatically
+> 
+> 
+> The output looks like:
+> 
+> [    0.231430] OF: XXX get 0xeefeb5dc   2 [0xc0814c58 0xc08148b0 0xc080e970 0xc080e894 0xc080e678 0xc080de7c] ++ /smp2p-adsp/slave-kernel
+> [    0.231457] OF: XXX get 0xeefeb5dc   3 [0xc08103c4 0xc0810024 0xc080fd94 0xc0814c58 0xc08149a8 0xc0814188] +++ /smp2p-adsp/slave-kernel
+> [    0.231495] OF: XXX get 0xeefeb5dc   4 [0xc08103c4 0xc0810024 0xc080fd94 0xc0814c58 0xc08149a8 0xc0814258] ++++ /smp2p-adsp/slave-kernel
+> [    0.231537] OF: XXX get 0xeefeb244   4 [0xc0810024 0xc080fd94 0xc0814c58 0xc08149a8 0xc0814278 0xc080ccc8] ++++ /smp2p-adsp
+> [    0.231568] OF: XXX put 0xeefeb5dc   4 [0xc08103c4 0xc0810024 0xc080fd94 0xc0814c58 0xc08149a8 0xc0814284] ---- /smp2p-adsp/slave-kernel
+> [    0.231610] OF: XXX get 0xeefe759c  23 [0xc0810024 0xc080fd94 0xc0814c58 0xc08149a8 0xc0814278 0xc080ccc8] +++++++++++++++++++++++ /
+> [    0.231702] OF: XXX put 0xeefeb244   4 [0xc08103c4 0xc0810024 0xc080fd94 0xc0814c58 0xc08149a8 0xc0814284] ---- /smp2p-adsp
+> [    0.231744] OF: XXX put 0xeefe759c  23 [0xc08103c4 0xc0810024 0xc080fd94 0xc0814c58 0xc08149a8 0xc0814284] ----------------------- /
+> [    0.231881] OF: XXX get 0xeefecb2c  22 [0xc0814c58 0xc08148b0 0xc080e970 0xc080e86c 0xc080e678 0xc080de7c] ++++++++++++++++++++++ /soc/interrupt-controller@f9000000
+> [    0.231972] OF: XXX put 0xeefecb2c  22 [0xc080fd94 0xc0814c58 0xc08148b0 0xc080e970 0xc080e894 0xc080e61c] ---------------------- /soc/interrupt-controller@f9000000
+> [    0.232101] OF: XXX get 0xeefeb5dc   4 [0xc0814c58 0xc08148b0 0xc080e970 0xc080e894 0xc080e678 0xc080de7c] ++++ /smp2p-adsp/slave-kernel
+> [    0.232134] OF: XXX put 0xeefeb5dc   4 [0xc080fd94 0xc0814c58 0xc08148b0 0xc080e970 0xc080e894 0xc080e61c] ---- /smp2p-adsp/slave-kernel
+> [    0.232178] OF: XXX get 0xeefeb5dc   4 [0xc0814c58 0xc08148b0 0xc080e970 0xc080e894 0xc080e678 0xc080de7c] ++++ /smp2p-adsp/slave-kernel
+> [    0.232211] OF: XXX get 0xeefeb5dc   5 [0xc08103c4 0xc0810024 0xc080fd94 0xc0814c58 0xc08149a8 0xc0814188] +++++ /smp2p-adsp/slave-kernel
+> [    0.232257] OF: XXX get 0xeefeb5dc   6 [0xc08103c4 0xc0810024 0xc080fd94 0xc0814c58 0xc08149a8 0xc0814258] ++++++ /smp2p-adsp/slave-kernel
+> [    0.232308] OF: XXX get 0xeefeb244   4 [0xc0810024 0xc080fd94 0xc0814c58 0xc08149a8 0xc0814278 0xc080ccc8] ++++ /smp2p-adsp
+> [    0.232339] OF: XXX put 0xeefeb5dc   6 [0xc08103c4 0xc0810024 0xc080fd94 0xc0814c58 0xc08149a8 0xc0814284] ------ /smp2p-adsp/slave-kernel
+> [    0.232390] OF: XXX get 0xeefe759c  23 [0xc0810024 0xc080fd94 0xc0814c58 0xc08149a8 0xc0814278 0xc080ccc8] +++++++++++++++++++++++ /
+> [    0.232482] OF: XXX put 0xeefeb244   4 [0xc08103c4 0xc0810024 0xc080fd94 0xc0814c58 0xc08149a8 0xc0814284] ---- /smp2p-adsp
+> 
+> 
+> 
+> But I normally strip off the timestamp, and grep for the "OF: XXX ",
+> which gets me only the get and put info.  It is also easy to grep
+> for a single node of interest.
+> 
+> The data fields are:
+>   get or put
+>   the struct device_node address
+>   refcount
+>   a 6 caller deep call stack
+>   for get, one '+' per refcount or for put, one '-' per refcount
+>   the full node name
+> 
+> The refcount for get is the post get value, for put is the pre put value,
+> so they are easy to match up for human scanning. The length of the "++++"
+> and "----" patterns on the end are also intended for easy human scanning.
+> 
+> Here are two actual refcount issues for the root node on my 4.11-rc1:
+> 
+> OF: XXX get 0xeefe759c   2 [0xc08138bc 0xc08137fc 0xc08136e4 0xc08136b4 0xc0813070 0xc080ccc8] ++ /
+> OF: XXX put 0xeefe759c   2 [0xc031aa28 0xc08138bc 0xc08137fc 0xc08136e4 0xc08136b4 0xc0813014] -- /
+> OF: XXX get 0xeefe759c   2 [0xc08138bc 0xc08137fc 0xc08136e4 0xc08136b4 0xc0813070 0xc080ccc8] ++ /
+> OF: XXX put 0xeefe759c   2 [0xc031aa40 0xc08138bc 0xc08137fc 0xc08136e4 0xc08136b4 0xc0813014] -- /
+> OF: XXX get 0xeefe759c  22 [0xc0308518 0xc09330e0 0xc0d00e3c 0xc03017d0 0xc0d3a1fc 0xc080d948] ++++++++++++++++++++++ /
+> OF: XXX put 0xeefe759c  22 [0xc0308518 0xc09330e0 0xc0d00e3c 0xc03017d0 0xc0d3a1fc 0xc080d8c8] ---------------------- /
+> OF: XXX get 0xeefe759c  22 [0xc0d00e3c 0xc03017d0 0xc0d3a234 0xc0810684 0xc081061c 0xc080d928] ++++++++++++++++++++++ /
+> OF: XXX get 0xeefe759c  23 [0xc08103c4 0xc0810024 0xc080fd84 0xc08137b4 0xc0812c88 0xc080ccc8] +++++++++++++++++++++++ /
+> OF: XXX put 0xeefe759c  23 [0xc08105d8 0xc08103c4 0xc0810024 0xc080fd84 0xc08137b4 0xc0812cb4] ----------------------- /
+> 
+> The call stack could easily be post-processed, for example using addr2line.
+> Here is the call stack for when the refcount incremented to 23 from 22 (or
+> more accurately, to 22 from 21):
+> 
+> 0xc0d00e3c Line 857 of "init/main.c"
+> 0xc03017d0 Line 792 of "init/main.c"
+> 0xc0d3a234 Line 528 of "drivers/of/platform.c"
+> 0xc0810684 Line 503 of "drivers/of/platform.c"
+> 0xc081061c Line 267 of "include/linux/of.h"
+> 0xc080d928 Line 815 of "drivers/of/base.c"
+> 
+> Which ends up being this code:
+> 
+>    of_platform_default_populate_init()
+>       of_platform_default_populate()
+>          of_platform_populate()
+>             [[ of_find_node_by_path("/") ]]
+>                [[ of_find_node_opts_by_path(path, NULL) ]]
+>                   of_node_get(of_root)
+> 
+> Note that some functions can be left out of the ARM call stack, with
+> a return going back more than one level.  The functions in the call
+> list above that are enclosed in '[[' and ']]' were found by source
+> inspection in those cases.
 
-diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
-index a38600949f3a..b46556571580 100644
---- a/arch/powerpc/kernel/entry_32.S
-+++ b/arch/powerpc/kernel/entry_32.S
-@@ -44,6 +44,13 @@
- #define LOAD_MSR_KERNEL(r, x)	li r,(x)
- #endif
- 
-+/*
-+ * Align to 2k in order to ensure that all functions modyfing srr0/srr1
-+ * fit into one page in order to not encounter a TLB miss between the
-+ * modification of srr0/srr1 and the associated rfi.
-+ */
-+	.align	11
-+
- #ifdef CONFIG_BOOKE
- 	.globl	mcheck_transfer_to_handler
- mcheck_transfer_to_handler:
-@@ -441,257 +448,6 @@ END_FTR_SECTION_IFSET(CPU_FTR_NEED_PAIRED_STWCX)
- 66:	li	r3,-ENOSYS
- 	b	ret_from_syscall
- 
--	.globl	ret_from_fork
--ret_from_fork:
--	REST_NVGPRS(r1)
--	bl	schedule_tail
--	li	r3,0
--	b	ret_from_syscall
--
--	.globl	ret_from_kernel_thread
--ret_from_kernel_thread:
--	REST_NVGPRS(r1)
--	bl	schedule_tail
--	mtlr	r14
--	mr	r3,r15
--	PPC440EP_ERR42
--	blrl
--	li	r3,0
--	b	ret_from_syscall
--
--/* Traced system call support */
--syscall_dotrace:
--	SAVE_NVGPRS(r1)
--	li	r0,0xc00
--	stw	r0,_TRAP(r1)
--	addi	r3,r1,STACK_FRAME_OVERHEAD
--	bl	do_syscall_trace_enter
--	/*
--	 * Restore argument registers possibly just changed.
--	 * We use the return value of do_syscall_trace_enter
--	 * for call number to look up in the table (r0).
--	 */
--	mr	r0,r3
--	lwz	r3,GPR3(r1)
--	lwz	r4,GPR4(r1)
--	lwz	r5,GPR5(r1)
--	lwz	r6,GPR6(r1)
--	lwz	r7,GPR7(r1)
--	lwz	r8,GPR8(r1)
--	REST_NVGPRS(r1)
--
--	cmplwi	r0,NR_syscalls
--	/* Return code is already in r3 thanks to do_syscall_trace_enter() */
--	bge-	ret_from_syscall
--	b	syscall_dotrace_cont
--
--syscall_exit_work:
--	andi.	r0,r9,_TIF_RESTOREALL
--	beq+	0f
--	REST_NVGPRS(r1)
--	b	2f
--0:	cmplw	0,r3,r8
--	blt+	1f
--	andi.	r0,r9,_TIF_NOERROR
--	bne-	1f
--	lwz	r11,_CCR(r1)			/* Load CR */
--	neg	r3,r3
--	oris	r11,r11,0x1000	/* Set SO bit in CR */
--	stw	r11,_CCR(r1)
--
--1:	stw	r6,RESULT(r1)	/* Save result */
--	stw	r3,GPR3(r1)	/* Update return value */
--2:	andi.	r0,r9,(_TIF_PERSYSCALL_MASK)
--	beq	4f
--
--	/* Clear per-syscall TIF flags if any are set.  */
--
--	li	r11,_TIF_PERSYSCALL_MASK
--	addi	r12,r12,TI_FLAGS
--3:	lwarx	r8,0,r12
--	andc	r8,r8,r11
--#ifdef CONFIG_IBM405_ERR77
--	dcbt	0,r12
--#endif
--	stwcx.	r8,0,r12
--	bne-	3b
--	subi	r12,r12,TI_FLAGS
--	
--4:	/* Anything which requires enabling interrupts? */
--	andi.	r0,r9,(_TIF_SYSCALL_DOTRACE|_TIF_SINGLESTEP)
--	beq	ret_from_except
--
--	/* Re-enable interrupts. There is no need to trace that with
--	 * lockdep as we are supposed to have IRQs on at this point
--	 */
--	ori	r10,r10,MSR_EE
--	SYNC
--	MTMSRD(r10)
--
--	/* Save NVGPRS if they're not saved already */
--	lwz	r4,_TRAP(r1)
--	andi.	r4,r4,1
--	beq	5f
--	SAVE_NVGPRS(r1)
--	li	r4,0xc00
--	stw	r4,_TRAP(r1)
--5:
--	addi	r3,r1,STACK_FRAME_OVERHEAD
--	bl	do_syscall_trace_leave
--	b	ret_from_except_full
--
--/*
-- * The fork/clone functions need to copy the full register set into
-- * the child process. Therefore we need to save all the nonvolatile
-- * registers (r13 - r31) before calling the C code.
-- */
--	.globl	ppc_fork
--ppc_fork:
--	SAVE_NVGPRS(r1)
--	lwz	r0,_TRAP(r1)
--	rlwinm	r0,r0,0,0,30		/* clear LSB to indicate full */
--	stw	r0,_TRAP(r1)		/* register set saved */
--	b	sys_fork
--
--	.globl	ppc_vfork
--ppc_vfork:
--	SAVE_NVGPRS(r1)
--	lwz	r0,_TRAP(r1)
--	rlwinm	r0,r0,0,0,30		/* clear LSB to indicate full */
--	stw	r0,_TRAP(r1)		/* register set saved */
--	b	sys_vfork
--
--	.globl	ppc_clone
--ppc_clone:
--	SAVE_NVGPRS(r1)
--	lwz	r0,_TRAP(r1)
--	rlwinm	r0,r0,0,0,30		/* clear LSB to indicate full */
--	stw	r0,_TRAP(r1)		/* register set saved */
--	b	sys_clone
--
--	.globl	ppc_swapcontext
--ppc_swapcontext:
--	SAVE_NVGPRS(r1)
--	lwz	r0,_TRAP(r1)
--	rlwinm	r0,r0,0,0,30		/* clear LSB to indicate full */
--	stw	r0,_TRAP(r1)		/* register set saved */
--	b	sys_swapcontext
--
--/*
-- * Top-level page fault handling.
-- * This is in assembler because if do_page_fault tells us that
-- * it is a bad kernel page fault, we want to save the non-volatile
-- * registers before calling bad_page_fault.
-- */
--	.globl	handle_page_fault
--handle_page_fault:
--	stw	r4,_DAR(r1)
--	addi	r3,r1,STACK_FRAME_OVERHEAD
--	bl	do_page_fault
--	cmpwi	r3,0
--	beq+	ret_from_except
--	SAVE_NVGPRS(r1)
--	lwz	r0,_TRAP(r1)
--	clrrwi	r0,r0,1
--	stw	r0,_TRAP(r1)
--	mr	r5,r3
--	addi	r3,r1,STACK_FRAME_OVERHEAD
--	lwz	r4,_DAR(r1)
--	bl	bad_page_fault
--	b	ret_from_except_full
--
--/*
-- * This routine switches between two different tasks.  The process
-- * state of one is saved on its kernel stack.  Then the state
-- * of the other is restored from its kernel stack.  The memory
-- * management hardware is updated to the second process's state.
-- * Finally, we can return to the second process.
-- * On entry, r3 points to the THREAD for the current task, r4
-- * points to the THREAD for the new task.
-- *
-- * This routine is always called with interrupts disabled.
-- *
-- * Note: there are two ways to get to the "going out" portion
-- * of this code; either by coming in via the entry (_switch)
-- * or via "fork" which must set up an environment equivalent
-- * to the "_switch" path.  If you change this , you'll have to
-- * change the fork code also.
-- *
-- * The code which creates the new task context is in 'copy_thread'
-- * in arch/ppc/kernel/process.c
-- */
--_GLOBAL(_switch)
--	stwu	r1,-INT_FRAME_SIZE(r1)
--	mflr	r0
--	stw	r0,INT_FRAME_SIZE+4(r1)
--	/* r3-r12 are caller saved -- Cort */
--	SAVE_NVGPRS(r1)
--	stw	r0,_NIP(r1)	/* Return to switch caller */
--	mfmsr	r11
--	li	r0,MSR_FP	/* Disable floating-point */
--#ifdef CONFIG_ALTIVEC
--BEGIN_FTR_SECTION
--	oris	r0,r0,MSR_VEC@h	/* Disable altivec */
--	mfspr	r12,SPRN_VRSAVE	/* save vrsave register value */
--	stw	r12,THREAD+THREAD_VRSAVE(r2)
--END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
--#endif /* CONFIG_ALTIVEC */
--#ifdef CONFIG_SPE
--BEGIN_FTR_SECTION
--	oris	r0,r0,MSR_SPE@h	 /* Disable SPE */
--	mfspr	r12,SPRN_SPEFSCR /* save spefscr register value */
--	stw	r12,THREAD+THREAD_SPEFSCR(r2)
--END_FTR_SECTION_IFSET(CPU_FTR_SPE)
--#endif /* CONFIG_SPE */
--	and.	r0,r0,r11	/* FP or altivec or SPE enabled? */
--	beq+	1f
--	andc	r11,r11,r0
--	MTMSRD(r11)
--	isync
--1:	stw	r11,_MSR(r1)
--	mfcr	r10
--	stw	r10,_CCR(r1)
--	stw	r1,KSP(r3)	/* Set old stack pointer */
--
--#ifdef CONFIG_SMP
--	/* We need a sync somewhere here to make sure that if the
--	 * previous task gets rescheduled on another CPU, it sees all
--	 * stores it has performed on this one.
--	 */
--	sync
--#endif /* CONFIG_SMP */
--
--	tophys(r0,r4)
--	mtspr	SPRN_SPRG_THREAD,r0	/* Update current THREAD phys addr */
--	lwz	r1,KSP(r4)	/* Load new stack pointer */
--
--	/* save the old current 'last' for return value */
--	mr	r3,r2
--	addi	r2,r4,-THREAD	/* Update current */
--
--#ifdef CONFIG_ALTIVEC
--BEGIN_FTR_SECTION
--	lwz	r0,THREAD+THREAD_VRSAVE(r2)
--	mtspr	SPRN_VRSAVE,r0		/* if G4, restore VRSAVE reg */
--END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
--#endif /* CONFIG_ALTIVEC */
--#ifdef CONFIG_SPE
--BEGIN_FTR_SECTION
--	lwz	r0,THREAD+THREAD_SPEFSCR(r2)
--	mtspr	SPRN_SPEFSCR,r0		/* restore SPEFSCR reg */
--END_FTR_SECTION_IFSET(CPU_FTR_SPE)
--#endif /* CONFIG_SPE */
--
--	lwz	r0,_CCR(r1)
--	mtcrf	0xFF,r0
--	/* r3-r12 are destroyed -- Cort */
--	REST_NVGPRS(r1)
--
--	lwz	r4,_NIP(r1)	/* Return to _switch caller in new task */
--	mtlr	r4
--	addi	r1,r1,INT_FRAME_SIZE
--	blr
--
- 	.globl	fast_exception_return
- fast_exception_return:
- #if !(defined(CONFIG_4xx) || defined(CONFIG_BOOKE))
-@@ -1182,6 +938,257 @@ global_dbcr0:
- 	.previous
- #endif /* !(CONFIG_4xx || CONFIG_BOOKE) */
- 
-+	.globl	ret_from_fork
-+ret_from_fork:
-+	REST_NVGPRS(r1)
-+	bl	schedule_tail
-+	li	r3,0
-+	b	ret_from_syscall
-+
-+	.globl	ret_from_kernel_thread
-+ret_from_kernel_thread:
-+	REST_NVGPRS(r1)
-+	bl	schedule_tail
-+	mtlr	r14
-+	mr	r3,r15
-+	PPC440EP_ERR42
-+	blrl
-+	li	r3,0
-+	b	ret_from_syscall
-+
-+/* Traced system call support */
-+syscall_dotrace:
-+	SAVE_NVGPRS(r1)
-+	li	r0,0xc00
-+	stw	r0,_TRAP(r1)
-+	addi	r3,r1,STACK_FRAME_OVERHEAD
-+	bl	do_syscall_trace_enter
-+	/*
-+	 * Restore argument registers possibly just changed.
-+	 * We use the return value of do_syscall_trace_enter
-+	 * for call number to look up in the table (r0).
-+	 */
-+	mr	r0,r3
-+	lwz	r3,GPR3(r1)
-+	lwz	r4,GPR4(r1)
-+	lwz	r5,GPR5(r1)
-+	lwz	r6,GPR6(r1)
-+	lwz	r7,GPR7(r1)
-+	lwz	r8,GPR8(r1)
-+	REST_NVGPRS(r1)
-+
-+	cmplwi	r0,NR_syscalls
-+	/* Return code is already in r3 thanks to do_syscall_trace_enter() */
-+	bge-	ret_from_syscall
-+	b	syscall_dotrace_cont
-+
-+syscall_exit_work:
-+	andi.	r0,r9,_TIF_RESTOREALL
-+	beq+	0f
-+	REST_NVGPRS(r1)
-+	b	2f
-+0:	cmplw	0,r3,r8
-+	blt+	1f
-+	andi.	r0,r9,_TIF_NOERROR
-+	bne-	1f
-+	lwz	r11,_CCR(r1)			/* Load CR */
-+	neg	r3,r3
-+	oris	r11,r11,0x1000	/* Set SO bit in CR */
-+	stw	r11,_CCR(r1)
-+
-+1:	stw	r6,RESULT(r1)	/* Save result */
-+	stw	r3,GPR3(r1)	/* Update return value */
-+2:	andi.	r0,r9,(_TIF_PERSYSCALL_MASK)
-+	beq	4f
-+
-+	/* Clear per-syscall TIF flags if any are set.  */
-+
-+	li	r11,_TIF_PERSYSCALL_MASK
-+	addi	r12,r12,TI_FLAGS
-+3:	lwarx	r8,0,r12
-+	andc	r8,r8,r11
-+#ifdef CONFIG_IBM405_ERR77
-+	dcbt	0,r12
-+#endif
-+	stwcx.	r8,0,r12
-+	bne-	3b
-+	subi	r12,r12,TI_FLAGS
-+
-+4:	/* Anything which requires enabling interrupts? */
-+	andi.	r0,r9,(_TIF_SYSCALL_DOTRACE|_TIF_SINGLESTEP)
-+	beq	ret_from_except
-+
-+	/* Re-enable interrupts. There is no need to trace that with
-+	 * lockdep as we are supposed to have IRQs on at this point
-+	 */
-+	ori	r10,r10,MSR_EE
-+	SYNC
-+	MTMSRD(r10)
-+
-+	/* Save NVGPRS if they're not saved already */
-+	lwz	r4,_TRAP(r1)
-+	andi.	r4,r4,1
-+	beq	5f
-+	SAVE_NVGPRS(r1)
-+	li	r4,0xc00
-+	stw	r4,_TRAP(r1)
-+5:
-+	addi	r3,r1,STACK_FRAME_OVERHEAD
-+	bl	do_syscall_trace_leave
-+	b	ret_from_except_full
-+
-+/*
-+ * The fork/clone functions need to copy the full register set into
-+ * the child process. Therefore we need to save all the nonvolatile
-+ * registers (r13 - r31) before calling the C code.
-+ */
-+	.globl	ppc_fork
-+ppc_fork:
-+	SAVE_NVGPRS(r1)
-+	lwz	r0,_TRAP(r1)
-+	rlwinm	r0,r0,0,0,30		/* clear LSB to indicate full */
-+	stw	r0,_TRAP(r1)		/* register set saved */
-+	b	sys_fork
-+
-+	.globl	ppc_vfork
-+ppc_vfork:
-+	SAVE_NVGPRS(r1)
-+	lwz	r0,_TRAP(r1)
-+	rlwinm	r0,r0,0,0,30		/* clear LSB to indicate full */
-+	stw	r0,_TRAP(r1)		/* register set saved */
-+	b	sys_vfork
-+
-+	.globl	ppc_clone
-+ppc_clone:
-+	SAVE_NVGPRS(r1)
-+	lwz	r0,_TRAP(r1)
-+	rlwinm	r0,r0,0,0,30		/* clear LSB to indicate full */
-+	stw	r0,_TRAP(r1)		/* register set saved */
-+	b	sys_clone
-+
-+	.globl	ppc_swapcontext
-+ppc_swapcontext:
-+	SAVE_NVGPRS(r1)
-+	lwz	r0,_TRAP(r1)
-+	rlwinm	r0,r0,0,0,30		/* clear LSB to indicate full */
-+	stw	r0,_TRAP(r1)		/* register set saved */
-+	b	sys_swapcontext
-+
-+/*
-+ * Top-level page fault handling.
-+ * This is in assembler because if do_page_fault tells us that
-+ * it is a bad kernel page fault, we want to save the non-volatile
-+ * registers before calling bad_page_fault.
-+ */
-+	.globl	handle_page_fault
-+handle_page_fault:
-+	stw	r4,_DAR(r1)
-+	addi	r3,r1,STACK_FRAME_OVERHEAD
-+	bl	do_page_fault
-+	cmpwi	r3,0
-+	beq+	ret_from_except
-+	SAVE_NVGPRS(r1)
-+	lwz	r0,_TRAP(r1)
-+	clrrwi	r0,r0,1
-+	stw	r0,_TRAP(r1)
-+	mr	r5,r3
-+	addi	r3,r1,STACK_FRAME_OVERHEAD
-+	lwz	r4,_DAR(r1)
-+	bl	bad_page_fault
-+	b	ret_from_except_full
-+
-+/*
-+ * This routine switches between two different tasks.  The process
-+ * state of one is saved on its kernel stack.  Then the state
-+ * of the other is restored from its kernel stack.  The memory
-+ * management hardware is updated to the second process's state.
-+ * Finally, we can return to the second process.
-+ * On entry, r3 points to the THREAD for the current task, r4
-+ * points to the THREAD for the new task.
-+ *
-+ * This routine is always called with interrupts disabled.
-+ *
-+ * Note: there are two ways to get to the "going out" portion
-+ * of this code; either by coming in via the entry (_switch)
-+ * or via "fork" which must set up an environment equivalent
-+ * to the "_switch" path.  If you change this , you'll have to
-+ * change the fork code also.
-+ *
-+ * The code which creates the new task context is in 'copy_thread'
-+ * in arch/ppc/kernel/process.c
-+ */
-+_GLOBAL(_switch)
-+	stwu	r1,-INT_FRAME_SIZE(r1)
-+	mflr	r0
-+	stw	r0,INT_FRAME_SIZE+4(r1)
-+	/* r3-r12 are caller saved -- Cort */
-+	SAVE_NVGPRS(r1)
-+	stw	r0,_NIP(r1)	/* Return to switch caller */
-+	mfmsr	r11
-+	li	r0,MSR_FP	/* Disable floating-point */
-+#ifdef CONFIG_ALTIVEC
-+BEGIN_FTR_SECTION
-+	oris	r0,r0,MSR_VEC@h	/* Disable altivec */
-+	mfspr	r12,SPRN_VRSAVE	/* save vrsave register value */
-+	stw	r12,THREAD+THREAD_VRSAVE(r2)
-+END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
-+#endif /* CONFIG_ALTIVEC */
-+#ifdef CONFIG_SPE
-+BEGIN_FTR_SECTION
-+	oris	r0,r0,MSR_SPE@h	 /* Disable SPE */
-+	mfspr	r12,SPRN_SPEFSCR /* save spefscr register value */
-+	stw	r12,THREAD+THREAD_SPEFSCR(r2)
-+END_FTR_SECTION_IFSET(CPU_FTR_SPE)
-+#endif /* CONFIG_SPE */
-+	and.	r0,r0,r11	/* FP or altivec or SPE enabled? */
-+	beq+	1f
-+	andc	r11,r11,r0
-+	MTMSRD(r11)
-+	isync
-+1:	stw	r11,_MSR(r1)
-+	mfcr	r10
-+	stw	r10,_CCR(r1)
-+	stw	r1,KSP(r3)	/* Set old stack pointer */
-+
-+#ifdef CONFIG_SMP
-+	/* We need a sync somewhere here to make sure that if the
-+	 * previous task gets rescheduled on another CPU, it sees all
-+	 * stores it has performed on this one.
-+	 */
-+	sync
-+#endif /* CONFIG_SMP */
-+
-+	tophys(r0,r4)
-+	mtspr	SPRN_SPRG_THREAD,r0	/* Update current THREAD phys addr */
-+	lwz	r1,KSP(r4)	/* Load new stack pointer */
-+
-+	/* save the old current 'last' for return value */
-+	mr	r3,r2
-+	addi	r2,r4,-THREAD	/* Update current */
-+
-+#ifdef CONFIG_ALTIVEC
-+BEGIN_FTR_SECTION
-+	lwz	r0,THREAD+THREAD_VRSAVE(r2)
-+	mtspr	SPRN_VRSAVE,r0		/* if G4, restore VRSAVE reg */
-+END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
-+#endif /* CONFIG_ALTIVEC */
-+#ifdef CONFIG_SPE
-+BEGIN_FTR_SECTION
-+	lwz	r0,THREAD+THREAD_SPEFSCR(r2)
-+	mtspr	SPRN_SPEFSCR,r0		/* restore SPEFSCR reg */
-+END_FTR_SECTION_IFSET(CPU_FTR_SPE)
-+#endif /* CONFIG_SPE */
-+
-+	lwz	r0,_CCR(r1)
-+	mtcrf	0xFF,r0
-+	/* r3-r12 are destroyed -- Cort */
-+	REST_NVGPRS(r1)
-+
-+	lwz	r4,_NIP(r1)	/* Return to _switch caller in new task */
-+	mtlr	r4
-+	addi	r1,r1,INT_FRAME_SIZE
-+	blr
-+
- do_work:			/* r10 contains MSR_KERNEL here */
- 	andi.	r0,r9,_TIF_NEED_RESCHED
- 	beq	do_user_signal
--- 
-2.12.0
+The same thing is encountered in ppc64 stack traces. I assume it is
+generally inlining of small functions, but I've never actually verified
+that theory. Probably should take the time to investigate, or just ask
+someone.
+
+> 
+> It looks like a put is missing, but about 250 get/put pairs later,
+> of_platform_populate() does the required put on node "/".
+> 
+> Then quite a bit later, after lots of balanced gets and puts, there is an
+> initcall that does a get on the root without a corresponding put.
+> 
+> 
+> The jump from refcount 2 to refcount 22 is an interesting case, insofar as it
+> is not the result of of_node_get().  It is instead inside a series of calls to
+> kobject_add():
+
+Took me a hot minute to track this one down when I first encountered the
+extreme reference count jump on the root node with no associated
+of_node_gets. Luckily, the other nodes with children sent me looking in
+the right direction.
+
+> 
+>    kernel_init()
+>       kernel_init_freeable()
+>         do_basic_setup()
+>             driver_init()
+>                of_core_init()
+>                   for_each_of_allnodes(np)
+>                      __of_attach_node_sysfs(np)
+>                         kobject_add()
+> 
+> 
+> Filtering and reformatting is "easily done" with grep and other
+> normal unix tools.
+> 
+> For example, a simple stream of command line tools can show a
+> streamlined report of the refcounts of a single node (in this
+> case the root node), which can easily be scanned for interesting
+> events:
+> 
+> [    0.199569]    2  ++ /
+> [    0.199629]    2  -- /
+> [    0.199826]    2  ++ /
+> [    0.199886]    2  -- /
+> [    0.212549]   22  ++++++++++++++++++++++ /
+> [    0.212855]   22  ---------------------- /
+> [    0.213087]   22  ++++++++++++++++++++++ /
+> [    0.213700]   23  +++++++++++++++++++++++ /
+> [    0.213797]   23  ----------------------- /
+> [    0.213973]   23  +++++++++++++++++++++++ /
+> 
+> ... hundreds of boring put/get pairs
+> 
+> [    0.458737]   23  ----------------------- /
+> [    0.458909]   23  +++++++++++++++++++++++ /
+> [    0.459035]   23  ----------------------- /
+> [    0.459305]   22  ---------------------- /
+> [    0.470255]   22  ++++++++++++++++++++++ /
+> 
+> ... hundreds of boring put/get pairs
+> 
+> [   93.110548]   22  ++++++++++++++++++++++ /
+> [   93.140046]   22  ---------------------- /
+> [   93.264639]   22  ++++++++++++++++++++++ /
+> [   93.389530]   23  +++++++++++++++++++++++ /
+> [   93.414269]   23  ----------------------- /
+> 
+> 
+> You might have noticed that the call trace is not interesting for
+> most of the gets and puts.  There are over 350 get/put pairs for
+> the root node in the boot that I collected the above examples on,
+> but only a few instances where the trace matters.  Thus leaving
+> the call stack in a compact format until needed is a feature.
+> 
+> I will be the first to admit that the tool is not polished and not
+> easy to use, though it is easily extended with post-processing.
+> 
+> I wrote the patch as a proof of concept a while ago and have not
+> fleshed it out.  In fact, calling it a "tool" is overstating what
+> it is.
+> 
+> 
+>> Further, filters can be set on the tracepoint event fields such that
+>> trace data could be restricted to a particular device_node or refcount
+>> threshold. For example:
+>>
+>> # cd /sys/kernel/debug/tracing# cat events/of/of_node_get/format
+>> # echo "dn_name == /pci@800000020000018" > events/of/filter
+>>
+>> # cat trace
+>>            drmgr-10542 [003] ....  9630.677001: of_node_put: refcount=5,
+>> dn->full_name=/pci@800000020000018
+>>            drmgr-10542 [003] d...  9631.677368: of_node_get: refcount=6,
+>> dn->full_name=/pci@800000020000018
+>>            drmgr-10542 [003] ....  9631.677389: of_node_put: refcount=5,
+>> dn->full_name=/pci@800000020000018
+>>            drmgr-10542 [003] ....  9631.677390: of_reconfig_notify:
+>> action=DETACH_NODE, dn->full_name=/pci@800000020000018, prop->name=null,
+>> old_prop->name=null
+>>            drmgr-10542 [003] .n..  9632.025656: of_node_put: refcount=4,
+>> dn->full_name=/pci@800000020000018
+>>            drmgr-10542 [003] .n..  9632.025657: of_node_put: refcount=3,
+>> dn->full_name=/pci@800000020000018
+>>
+>> After setting the filter and doing a hot-remove of the pci device in
+>> question the trace quickly tells me 3 references are being leaked. In
+>> combination with the stacktrace option I can quickly correlate call
+>> sites that take references without releasing them.
+> 
+> Thanks for sharing that.  It is nice seeing your results.
+
+Ditto.
+
+-Tyrel
