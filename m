@@ -1,20 +1,22 @@
-Return-Path: <anton@samba.org>
-Received: from hr2.samba.org (hr2.samba.org [IPv6:2a01:4f8:192:486::147:1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <jolsa@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w7sMX1wv9zDqJs
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Apr 2017 18:23:36 +1000 (AEST)
-Date: Thu, 20 Apr 2017 18:23:15 +1000
-From: Anton Blanchard <anton@samba.org>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au, Madhavan
- Srinivasan <masriniv@in.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [RFC PATCH] powerpc/mm/radix: Optimize tlbiel flush
-Message-ID: <20170420182315.4fce69b0@kryten>
-In-Reply-To: <1492673305-29526-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-References: <1492673305-29526-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w7v0G0ckyzDqJx
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Apr 2017 19:37:01 +1000 (AEST)
+Date: Thu, 20 Apr 2017 11:36:56 +0200
+From: Jiri Olsa <jolsa@redhat.com>
+To: Jin Yao <yao.jin@linux.intel.com>
+Cc: acme@kernel.org, jolsa@kernel.org, peterz@infradead.org,
+ mingo@redhat.com, alexander.shishkin@linux.intel.com,
+ Linux-kernel@vger.kernel.org, ak@linux.intel.com,
+ kan.liang@intel.com, yao.jin@intel.com, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v6 0/7] perf report: Show branch type
+Message-ID: <20170420093656.GA28272@krava>
+References: <1492690075-17243-1-git-send-email-yao.jin@linux.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1492690075-17243-1-git-send-email-yao.jin@linux.intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,92 +26,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Aneesh,
-
-> For a page walk cache flush, we don't need to loop with set number.
-> The set number is ignored with RIC=1 (pwc flush).
+On Thu, Apr 20, 2017 at 08:07:48PM +0800, Jin Yao wrote:
+> v6:
+>    Update according to the review comments from
+>    Jiri Olsa <jolsa@redhat.com>. Major modifications are: 
 > 
-> For RIC=2 (flush all), inorder to flush implementation dependent
-> caches, we can ignore the set number. Hence we do a RIC=2 flush with
-> set no: 0, so we do both the tlb flush for set 0 and the
-> implementation dependent cache flushes. This is then followed with
-> tbl flush for set 1-127
-
-I've applied your two previous radix tlbiel optimisations as my
-baseline, and using the simple exec microbenchmark in a7a9dcd882a6 I
-see:
-
-HPT:            100%
-Radix baseline: 248%
-Radix patched:   95%
-
-So this patch fixes the large regression we see with radix, and is even
-faster than our HPT number now. Nice work!
-
-Acked-by: Anton Blanchard <anton@samba.org>
-
-Anton
-
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-> ---
-> Note: not yet tested.
+>    1. Move that multiline conditional code inside {} brackets.
 > 
->  arch/powerpc/mm/tlb-radix.c | 28 +++++++++++++++++++++++-----
->  1 file changed, 23 insertions(+), 5 deletions(-)
+>    2. Move branch_type_stat_display() from builtin-report.c to
+>       branch.c. Move branch_type_str() from callchain.c to
+>       branch.c.
 > 
-> diff --git a/arch/powerpc/mm/tlb-radix.c b/arch/powerpc/mm/tlb-radix.c
-> index b68b5219cf45..b827aef38b90 100644
-> --- a/arch/powerpc/mm/tlb-radix.c
-> +++ b/arch/powerpc/mm/tlb-radix.c
-> @@ -43,12 +43,30 @@ static inline void __tlbiel_pid(unsigned long
-> pid, int set, */
->  static inline void _tlbiel_pid(unsigned long pid, unsigned long ric)
->  {
-> -	int set;
-> +	int set = 0;
->  
->  	asm volatile("ptesync": : :"memory");
-> -	for (set = 0; set < POWER9_TLB_SETS_RADIX ; set++) {
-> -		__tlbiel_pid(pid, set, ric);
-> +	if (ric == RIC_FLUSH_ALL) {
-> +		ric = RIC_FLUSH_TLB;
-> +		set = 1;
-> +		/* Use set 0 to flush all */
-> +		__tlbiel_pid(pid, 0, RIC_FLUSH_ALL);
->  	}
-> +
-> +	for (; set < POWER9_TLB_SETS_RADIX ; set++)
-> +		__tlbiel_pid(pid, set, ric);
-> +
-> +	asm volatile("ptesync": : :"memory");
-> +	asm volatile(PPC_INVALIDATE_ERAT "; isync" : : :"memory");
-> +}
-> +
-> +static inline void _tlbiel_pwc(unsigned long pid)
-> +{
-> +	asm volatile("ptesync": : :"memory");
-> +	/*
-> +	 * for PWC flush, we don't look at set number
-> +	 */
-> +	__tlbiel_pid(pid, 0, RIC_FLUSH_PWC);
->  	asm volatile("ptesync": : :"memory");
->  	asm volatile(PPC_INVALIDATE_ERAT "; isync" : : :"memory");
->  }
-> @@ -140,7 +158,7 @@ void radix__local_flush_tlb_pwc(struct mmu_gather
-> *tlb, unsigned long addr) 
->  	pid = mm->context.id;
->  	if (pid != MMU_NO_CONTEXT)
-> -		_tlbiel_pid(pid, RIC_FLUSH_PWC);
-> +		_tlbiel_pwc(pid);
->  
->  	preempt_enable();
->  }
-> @@ -222,7 +240,7 @@ void radix__flush_tlb_pwc(struct mmu_gather *tlb,
-> unsigned long addr) if (lock_tlbie)
->  			raw_spin_unlock(&native_tlbie_lock);
->  	} else
-> -		_tlbiel_pid(pid, RIC_FLUSH_PWC);
-> +		_tlbiel_pwc(pid);
->  no_context:
->  	preempt_enable();
->  }
+>    3. Keep the original branch info display order, that is:
+>       predicted, abort, cycles, iterations
+
+for the tools part
+
+Acked-by: Jiri Olsa <jolsa@kernel.org>
+
+thanks,
+jirka
