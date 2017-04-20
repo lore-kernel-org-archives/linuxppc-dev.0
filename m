@@ -1,29 +1,40 @@
-Return-Path: <frowand.list@gmail.com>
-Received: from mail-io0-x241.google.com (mail-io0-x241.google.com
- [IPv6:2607:f8b0:4001:c06::241])
+Return-Path: <sergey.senozhatsky.work@gmail.com>
+Received: from mail-io0-x243.google.com (mail-io0-x243.google.com
+ [IPv6:2607:f8b0:4001:c06::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w7jhw5tkVzDqB9
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Apr 2017 12:38:08 +1000 (AEST)
-Received: by mail-io0-x241.google.com with SMTP id x86so10662733ioe.3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2017 19:38:08 -0700 (PDT)
-Subject: Re: [PATCH] of: introduce event tracepoints for dynamic device_node
- lifecyle
-To: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
- Steven Rostedt <rostedt@goodmis.org>
-References: <1492475525-10827-1-git-send-email-tyreld@linux.vnet.ibm.com>
- <58F6AA35.2040902@gmail.com> <58F6C088.8020304@gmail.com>
- <20170418224953.685943a3@grimm.local.home>
- <641aa8ee-9b54-716a-77a1-076cafb95e3a@linux.vnet.ibm.com>
-Cc: robh+dt@kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, devicetree@vger.kernel.org,
- nfont@linux.vnet.ibm.com, mpe@ellerman.id.au, mingo@redhat.com
-From: Frank Rowand <frowand.list@gmail.com>
-Message-ID: <58F81EF4.5070304@gmail.com>
-Date: Wed, 19 Apr 2017 19:37:40 -0700
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w7kt71rfYzDqFt
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Apr 2017 13:31:11 +1000 (AEST)
+Received: by mail-io0-x243.google.com with SMTP id d203so11216427iof.2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2017 20:31:11 -0700 (PDT)
+Date: Thu, 20 Apr 2017 12:31:12 +0900
+From: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Petr Mladek <pmladek@suse.com>, Andrew Morton <akpm@linux-foundation.org>,
+ Peter Zijlstra <peterz@infradead.org>,
+ Russell King <rmk+kernel@arm.linux.org.uk>,
+ Daniel Thompson <daniel.thompson@linaro.org>,
+ Jiri Kosina <jkosina@suse.com>, Ingo Molnar <mingo@redhat.com>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>,
+ Chris Metcalf <cmetcalf@ezchip.com>, linux-kernel@vger.kernel.org,
+ x86@kernel.org, linux-arm-kernel@lists.infradead.org,
+ adi-buildroot-devel@lists.sourceforge.net,
+ linux-cris-kernel@axis.com, linux-mips@linux-mips.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
+ Jan Kara <jack@suse.cz>, Ralf Baechle <ralf@linux-mips.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ David Miller <davem@davemloft.net>
+Subject: Re: [PATCH v5 1/4] printk/nmi: generic solution for safe printk in NMI
+Message-ID: <20170420033112.GB542@jagdpanzerIV.localdomain>
+References: <1461239325-22779-1-git-send-email-pmladek@suse.com>
+ <1461239325-22779-2-git-send-email-pmladek@suse.com>
+ <20170419131341.76bc7634@gandalf.local.home>
 MIME-Version: 1.0
-In-Reply-To: <641aa8ee-9b54-716a-77a1-076cafb95e3a@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=windows-1252
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20170419131341.76bc7634@gandalf.local.home>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,47 +44,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/19/17 11:45, Tyrel Datwyler wrote:
-> On 04/18/2017 07:49 PM, Steven Rostedt wrote:
->> On Tue, 18 Apr 2017 18:42:32 -0700
->> Frank Rowand <frowand.list@gmail.com> wrote:
->>
->>> And of course the other issue with using tracepoints is the extra space
->>> required to hold the tracepoint info.  With the pr_debug() approach, the
->>> space usage can be easily removed for a production kernel via a config
->>> option.
->>
->> Now if you are saying you want to be able to enable debugging without
->> the tracing infrastructure I would agree. As the tracing infrastructure
->> is large. But I'm working on shrinking it more.
-> 
-> The primary consumers of OF_DYNAMIC seem to be pseries and powernv where
-> we are generally going to see the trace infrastructure enabled by
-> default in production.
+Hello Steven,
 
-Another primary consumer will be overlays for ARM expansion boards.  Still
-a work in progress.
+On (04/19/17 13:13), Steven Rostedt wrote:
+> > printk() takes some locks and could not be used a safe way in NMI context.
+> 
+> I just found a problem with this solution. It kills ftrace dumps from
+> NMI context :-(
+> 
+> [ 1295.168495]    <...>-67423  10dNh1 382171111us : do_raw_spin_lock <-_raw_spin_lock
+> [ 1295.168495]    <...>-67423  10dNh1 382171111us : sched_stat_runtime: comm=cc1 pid=67423 runtime=96858 [ns] vruntime=11924198270 [ns]
+> [ 1295.168496]    <...>-67423  10dNh1 382171111us : lock_acquire: ffffffff81c5c940 read rcu_read_lock
+> [ 1295.168497]
+> [ 1295.168498] Lost 4890096 message(s)!
+> [ 1296.805063] ---[ end Kernel panic - not syncing: Hard LOCKUP
+> [ 1296.811553] unchecked MSR access error: WRMSR to 0x83f (tried to write 0x00000000000000f6) at rIP: 0xffffffff81046fc7 (native_apic_msr_write+0x27/0x40)
+> [ 1296.811553] Call Trace:
+> [ 1296.811553]  <NMI>
+> 
+> I was hoping to see a cause of a hard lockup by enabling
+> ftrace_dump_on_oops. But as NMIs now have a very small buffer that
+> gets flushed, we need to find a new way to print out the full ftrace
+> buffer over serial.
+> 
+> Thoughts?
 
--Frank
+hmmm... a really tough one.
 
-> 
-> -Tyrel
-> 
->>
->>>
->>> Tracepoints are wonderful technology, but not always the proper tool to
->>> use for debug info.
->>
->> But if you are going to have tracing enabled regardless, adding a few
->> more tracepoints isn't going to make the difference.
->>
->> -- Steve
->>
->>>
->>>> If Rob wants to convert printk() style data to trace data (and I can't
->>>> convince him otherwise) then I will have further comments on this specific
->>>> patch.
->>>>
-> 
-> .
-> 
+well, someone has to say this:
+ the simplest thing is to have a bigger PRINTK_SAFE_LOG_BUF_SHIFT value :)
+
+
+just thinking (well, sort of) out loud. the problem is that we can't tell if
+we already hold any printk related locks ("printk related locks" is not even
+well defined term). so printk from NMI can deadlock or it can be OK, we
+never know. but looking and vprintk_emit() and console_unlock() it seems that
+we have some sort of a hint now, which is this_cpu_read(printk_context) - if
+we are not in printk_safe context then we can say that _probably_ (and that's
+a Russian roulette) doing "normal" printk() will work. that is a *very-very*
+risky (and admittedly dumb) thing to assume, so we will move in a slightly
+different direction. checking this_cpu_read(printk_context) only assures us
+that we don't hold `logbuf_lock' on this CPU. and that is sort of something,
+at least we can be sure that doing printk_deferred() from this CPU is safe.
+printk_deferred() means that your NMI messages will end up in the logbuf,
+which is a) bigger in size than per-CPU buffer and b) some other CPU can
+immediately print those messages (hopefully).
+
+we also switch to printk_safe mode for call_console_drivers() in
+console_unlock(). but we can't make any solid assumptions there - serial
+console lock can already be acquired, we don't have any markers for that.
+it may be reasonable to assume that if we are not in printk_safe mode on
+this CPU then serial console is not locked from this CPU, but there is
+nothing that can assure us.
+
+so at the moment what I can think of is something like
+
+  -- check this_cpu_read(printk_context) in NMI prink
+
+	-- if we are NOT in printk_safe on this CPU, then do printk_deferred()
+	   and bypass `nmi_print_seq' buffer
+
+	-- if we are in printk_safe
+	  -- well... bad luck... have a bigger buffer.
+
+		.... or there are some other options here, but I'd prefer
+		not to list them, because people will hate me :)
+
+
+so this shifts the purpose of `nmi_print_seq' buffer: use it only when
+you can't use logbuf. otherwise, do printk_deferred().
+
+
+need to think more.
+
+	-ss
