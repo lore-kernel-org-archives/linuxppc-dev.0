@@ -1,29 +1,21 @@
-Return-Path: <srs0=nfy5=34=axtens.net=dja@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w7x2Y6B00zDqFV
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Apr 2017 21:09:09 +1000 (AEST)
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3w7x2Y5XBMz8t00
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Apr 2017 21:09:09 +1000 (AEST)
-Received: from mail-yb0-x244.google.com (mail-yb0-x244.google.com
- [IPv6:2607:f8b0:4002:c09::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3w7x2Y0Mr9z9s7B
- for <linuxppc-dev@ozlabs.org>; Thu, 20 Apr 2017 21:09:08 +1000 (AEST)
-Received: by mail-yb0-x244.google.com with SMTP id 206so3575659ybe.0
- for <linuxppc-dev@ozlabs.org>; Thu, 20 Apr 2017 04:09:08 -0700 (PDT)
-From: Daniel Axtens <dja@axtens.net>
-To: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>,
- linuxppc-dev <linuxppc-dev@ozlabs.org>, Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH v2] powerpc/book3s: mce: Move add_taint() later in virtual
- mode.
-In-Reply-To: <149253349689.12722.1516352063236500616.stgit@jupiter.in.ibm.com>
-References: <149253349689.12722.1516352063236500616.stgit@jupiter.in.ibm.com>
-Date: Thu, 20 Apr 2017 21:09:02 +1000
-Message-ID: <874lxjbak1.fsf@possimpible.ozlabs.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w7xKq5GDlzDqHG
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Apr 2017 21:22:23 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Kees Cook <keescook@chromium.org>
+Cc: "linuxppc-dev\@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+ Bhupesh Sharma <bhsharma@redhat.com>,
+ "kernel-hardening\@lists.openwall.com" <kernel-hardening@lists.openwall.com>
+Subject: Re: [kernel-hardening] Re: [PATCH] powerpc/mm: Add support for
+ runtime configuration of ASLR limits
+In-Reply-To: <CAGXu5jKAoukvBtH7i0K17MywkLEpizECCfMGJ+XKWWfPQHdQBw@mail.gmail.com>
+References: <1492612181-8484-1-git-send-email-mpe@ellerman.id.au>
+ <CAGXu5jKAoukvBtH7i0K17MywkLEpizECCfMGJ+XKWWfPQHdQBw@mail.gmail.com>
+Date: Thu, 20 Apr 2017 21:22:22 +1000
+Message-ID: <87bmrr493l.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -35,39 +27,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Mahesh,
+Kees Cook <keescook@chromium.org> writes:
 
-> diff --git a/arch/powerpc/kernel/mce.c b/arch/powerpc/kernel/mce.c
-> index a1475e6..b23b323 100644
-> --- a/arch/powerpc/kernel/mce.c
-> +++ b/arch/powerpc/kernel/mce.c
-> @@ -221,6 +221,8 @@ static void machine_check_process_queued_event(struct irq_work *work)
->  {
->  	int index;
->  
-> +	add_taint(TAINT_MACHINE_CHECK, LOCKDEP_NOW_UNRELIABLE);
-> +
-This bit makes sense...
+> On Wed, Apr 19, 2017 at 7:29 AM, Michael Ellerman <mpe@ellerman.id.au> wrote:
+>> Add powerpc support for mmap_rnd_bits and mmap_rnd_compat_bits, which are two
+>> sysctls that allow a user to configure the number of bits of randomness used for
+>> ASLR.
+>>
+>> Because of the way the Kconfig for ARCH_MMAP_RND_BITS is defined, we have to
+>> construct at least the MIN value in Kconfig, vs in a header which would be more
+>> natural. Given that we just go ahead and do it all in Kconfig.
+>>
+>> At least according to the code (the documentation makes no mention of it), the
+>> value is defined as the number of bits of randomisation *of the page*, not the
+>> address. This makes some sense, with larger page sizes more of the low bits are
+>> forced to zero, which would reduce the randomisation if we didn't take the
+>> PAGE_SIZE into account. However it does mean the min/max values have to change
+>> depending on the PAGE_SIZE in order to actually limit the amount of address
+>> space consumed by the randomisation.
+>>
+>> The result of that is that we have to define the default values based on both
+>> 32-bit vs 64-bit, but also the configured PAGE_SIZE. Furthermore now that we
+>> have 128TB address space support on Book3S, we also have to take that into
+>> account.
+>>
+>> Finally we can wire up the value in arch_mmap_rnd().
+>>
+>> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+>
+> Maybe add a Suggested-by: for the earlier patches?
 
-> diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-> index ff365f9..af97e81 100644
-> --- a/arch/powerpc/kernel/traps.c
-> +++ b/arch/powerpc/kernel/traps.c
-> @@ -741,6 +739,8 @@ void machine_check_exception(struct pt_regs *regs)
->  
->  	__this_cpu_inc(irq_stat.mce_exceptions);
->  
-> +	add_taint(TAINT_MACHINE_CHECK, LOCKDEP_NOW_UNRELIABLE);
-> +
+Sure.
 
-But this bit I'm not sure about.
+>> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+>> index 97a8bc8a095c..608ee0b7b79f 100644
+>> --- a/arch/powerpc/Kconfig
+>> +++ b/arch/powerpc/Kconfig
+>> @@ -22,6 +22,48 @@ config MMU
+>>         bool
+>>         default y
+>>
+>> +config ARCH_MMAP_RND_BITS_MAX
+>> +       # On Book3S 64, the default virtual address space for 64-bit processes
+>> +       # is 2^47 (128TB). As a maximum, allow randomisation to consume up to
+>> +       # 32T of address space (2^45), which should ensure a reasonable gap
+>> +       # between bottom-up and top-down allocations for applications that
+>> +       # consume "normal" amounts of address space. Book3S 64 only supports 64K
+>> +       # and 4K page sizes.
+>> +       default 29 if PPC_BOOK3S_64 && PPC_64K_PAGES # 29 = 45 (32T) - 16 (64K)
+>> +       default 33 if PPC_BOOK3S_64                  # 33 = 45 (32T) - 12 (4K)
+>> +       #
+>> +       # On all other 64-bit platforms (currently only Book3E), the virtual
+>> +       # address space is 2^46 (64TB). Allow randomisation to consume up to 16T
+>> +       # of address space (2^44). Only 4K page sizes are supported.
+>> +       default 32 if 64BIT     # 32 = 44 (16T) - 12 (4K)
+>> +       #
+>> +       # For 32-bit, use the compat values, as they're the same.
+>> +       default ARCH_MMAP_RND_COMPAT_BITS_MIN
+>
+> Shouldn't the default case be ..._MAX?
 
-Isn't machine_check_exception called from asm in
-kernel/exceptions-64s.S? As in, it's called really early/in real mode?
+Yes, ooops! Thanks for the review.
 
-Regards,
-Daniel
+> Yay! Ever closer to being able to extract arch_mmap_rnd() out of arch/ ;)
 
->  	/* See if any machine dependent calls. In theory, we would want
->  	 * to call the CPU first, and call the ppc_md. one if the CPU
->  	 * one returns a positive number. However there is existing code
+Hah, you are an optimist :)
+
+cheers
