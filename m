@@ -3,42 +3,43 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w7qds3SZkzDqJL
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Apr 2017 17:05:53 +1000 (AEST)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w7qzX1bxyzDqCd
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Apr 2017 17:21:11 +1000 (AEST)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v3K74NT4121658
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Apr 2017 03:05:47 -0400
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
- by mx0a-001b2d01.pphosted.com with ESMTP id 29x7542yfn-1
+ v3K7E7Hp044760
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Apr 2017 03:21:09 -0400
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 29xaptynb6-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Apr 2017 03:05:43 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Apr 2017 03:21:05 -0400
 Received: from localhost
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Thu, 20 Apr 2017 17:05:07 +1000
-Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v3K74wNZ53018760
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Apr 2017 17:05:06 +1000
-Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
- by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v3K74XVT002024
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Apr 2017 17:04:34 +1000
-Date: Thu, 20 Apr 2017 07:04:11 +0000
+ Thu, 20 Apr 2017 17:20:26 +1000
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v3K7KFPQ7078288
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Apr 2017 17:20:23 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v3K7JoRs015278
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Apr 2017 17:19:51 +1000
+Date: Thu, 20 Apr 2017 07:19:28 +0000
 From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-Subject: Re: [PATCH 1/2] powerpc: kprobes: blacklist exception handlers
-To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH v3 3/7] kprobes: validate the symbol name length
+To: Ingo Molnar <mingo@kernel.org>, Michael Ellerman <mpe@ellerman.id.au>
 Cc: Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, Masami Hiramatsu <mhiramat@kernel.org>
-References: <cover.1492614257.git.naveen.n.rao@linux.vnet.ibm.com>
- <1ec8a69d73b38e365347f0c4b6329407d8861afa.1492614257.git.naveen.n.rao@linux.vnet.ibm.com>
- <87inlz4mgp.fsf@concordia.ellerman.id.au>
-In-Reply-To: <87inlz4mgp.fsf@concordia.ellerman.id.au>
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Masami Hiramatsu <mhiramat@kernel.org>
+References: <cover.1492604782.git.naveen.n.rao@linux.vnet.ibm.com>
+ <6e14d22994530fb5200c74d1593e73541d3b8028.1492604782.git.naveen.n.rao@linux.vnet.ibm.com>
+ <87o9vr4nm3.fsf@concordia.ellerman.id.au>
+In-Reply-To: <87o9vr4nm3.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <1492671481.pxvikq7i2m.astroid@naverao1-tp.none>
+Message-Id: <1492672015.e5bcoosx02.astroid@naverao1-tp.none>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,57 +49,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Excerpts from Michael Ellerman's message of April 20, 2017 12:03:
+Excerpts from Michael Ellerman's message of April 20, 2017 11:38:
 > "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> writes:
 >=20
->> diff --git a/arch/powerpc/kernel/kprobes.c b/arch/powerpc/kernel/kprobes=
-.c
->> index 71286dfd76a0..59159337a097 100644
->> --- a/arch/powerpc/kernel/kprobes.c
->> +++ b/arch/powerpc/kernel/kprobes.c
->> @@ -112,6 +113,14 @@ kprobe_opcode_t *kprobe_lookup_name(const char *nam=
-e, unsigned int offset)
->>  	return addr;
+>> diff --git a/kernel/kprobes.c b/kernel/kprobes.c
+>> index 6a128f3a7ed1..bb86681c8a10 100644
+>> --- a/kernel/kprobes.c
+>> +++ b/kernel/kprobes.c
+>> @@ -1382,6 +1382,28 @@ bool within_kprobe_blacklist(unsigned long addr)
+>>  	return false;
 >>  }
 >> =20
->> +bool arch_within_kprobe_blacklist(unsigned long addr)
+>> +bool is_valid_kprobe_symbol_name(const char *name)
 >> +{
->> +	return  (addr >=3D (unsigned long)__kprobes_text_start &&
->> +		 addr < (unsigned long)__kprobes_text_end) ||
->> +		(addr >=3D (unsigned long)_stext &&
->> +		 addr < (unsigned long)__head_end);
->> +}
+>> +	size_t sym_len;
+>> +	char *s;
+>> +
+>> +	s =3D strchr(name, ':');
+>> +	if (s) {
+>> +		sym_len =3D strnlen(s+1, KSYM_NAME_LEN);
+>> +		if (sym_len <=3D 0 || sym_len >=3D KSYM_NAME_LEN)
+>> +			return false;
+>> +		sym_len =3D (size_t)(s - name);
+>> +		if (sym_len <=3D 0 || sym_len >=3D MODULE_NAME_LEN)
+>> +			return false;
+>> +	} else {
+>> +		sym_len =3D strnlen(name, MODULE_NAME_LEN);
+>> +		if (sym_len <=3D 0 || sym_len >=3D MODULE_NAME_LEN)
+>> +			return false;
+>> +	}
 >=20
-> This isn't quite right when the kernel is relocated.
+> I think this is probably more elaborate than it needs to be.
 >=20
-> _stext and __head_end will be updated to point to the relocated copy of
-> the kernel, eg:
->=20
-> # grep -e _stext /proc/kallsyms=20
-> c000000002000000 T _stext
->=20
-> So you probably also want something like:
->=20
->   if (_stext !=3D PAGE_OFFSET &&
->       addr >=3D PAGE_OFFSET &&
->       addr < (PAGE_OFFSET + (__head_end - _stext)))
->       return true;
+> Why not just check the string is <=3D (MODULE_NAME_LEN + KSYM_NAME_LEN) ?
 
-Ah, so that's for ensuring we don't allow probing at the real exception=20
-vectors, which get copied down from _stext. In that case, we are covered=20
-by the test for kernel_text_address() in check_kprobe_address_safe(). We=20
-only allow probing from _stext to _etext.
+Yes, that would be sufficient for now.
 
->=20
-> But that's entirely untested :)
->=20
-> You can test the relocatable case by enabling CONFIG_RELOCATABLE_TEST.
+It's probably just me being paranoid, but I felt it's good to have=20
+stricter checks for user-provided strings, to guard against future=20
+changes to how we process this.
 
-Done, thanks. This is working as expected (without the need for the=20
-changes above).  I am not allowed to probe at the real exception vectors=20
-(and PAGE_OFFSET) as well as between _stext and __head_end.
-
-Thanks,
-Naveen
+- Naveen
 
 =
