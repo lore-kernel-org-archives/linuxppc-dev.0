@@ -1,20 +1,28 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <rostedt@goodmis.org>
+Received: from smtprelay.hostedemail.com (smtprelay0103.hostedemail.com
+ [216.40.44.103])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w7h941PMxzDqFb
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Apr 2017 11:28:55 +1000 (AEST)
-Message-ID: <1492651720.25766.139.camel@kernel.crashing.org>
-Subject: Re: [bug report] powerpc/xive: Native exploitation of the XIVE
- interrupt controller
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Dan Carpenter <dan.carpenter@oracle.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-Date: Thu, 20 Apr 2017 11:28:40 +1000
-In-Reply-To: <20170420012031.k4vx75eqrm2aborg@mwanda>
-References: <20170420012031.k4vx75eqrm2aborg@mwanda>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w7jbx27ckzDqC6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Apr 2017 12:33:49 +1000 (AEST)
+Date: Wed, 19 Apr 2017 22:33:42 -0400
+From: Steven Rostedt <rostedt@goodmis.org>
+To: Tyrel Datwyler <turtle.in.the.kernel@gmail.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, Frank Rowand
+ <frowand.list@gmail.com>, Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
+ robh+dt@kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, devicetree@vger.kernel.org,
+ nfont@linux.vnet.ibm.com, mingo@redhat.com
+Subject: Re: [PATCH] of: introduce event tracepoints for dynamic device_node
+ lifecyle
+Message-ID: <20170419223342.0bbe2593@grimm.local.home>
+In-Reply-To: <1d51a229-612b-bf09-93d5-6e43b476e2cf@gmail.com>
+References: <1492475525-10827-1-git-send-email-tyreld@linux.vnet.ibm.com>
+ <58F6AA35.2040902@gmail.com>
+ <87efwp6v4e.fsf@concordia.ellerman.id.au>
+ <1d51a229-612b-bf09-93d5-6e43b476e2cf@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,43 +32,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2017-04-20 at 04:20 +0300, Dan Carpenter wrote:
-> Hello Benjamin Herrenschmidt,
-> 
-> The patch 243e25112d06: "powerpc/xive: Native exploitation of the
-> XIVE interrupt controller" from Apr 5, 2017, leads to the following
-> static checker warning:
-> 
-> 	arch/powerpc/sysdev/xive/native.c:184
-> __xive_native_disable_queue()
-> 	info: ignoring unreachable code.
-> 
-> arch/powerpc/sysdev/xive/native.c
->    176  static void __xive_native_disable_queue(u32 vp_id, struct
-> xive_q *q, u8 prio)
->    177  {
->    178          s64 rc;
->    179  
->    180          /* Disable the queue in HW */
->    181          for (;;) {
->    182                  rc = opal_xive_set_queue_info(vp_id, prio, 0,
-> 0, 0);
->    183                          break;
-> 
-> This should be "if (!rc) break;"
+On Wed, 19 Apr 2017 16:27:10 -0700
+Tyrel Datwyler <turtle.in.the.kernel@gmail.com> wrote:
 
-Thanks, for some reason that line got accidentally dropped... oops.
+> # echo stacktrace > /sys/kernel/debug/tracing/trace_options
+> # cat trace | grep -A6 "/pci@800000020000018"
 
-> 
->    184                  msleep(1);
->    185          }
->    186          if (rc)
-> 
-> But we need some kind of timeout to ever print this error message.
-> 
->    187                  pr_err("Error %lld disabling queue for prio
-> %d\n", rc, prio);
->    188  }
-> 
-> regards,
-> dan carpenter
+Just to let you know that there is now stacktrace event triggers, where
+you don't need to stacktrace all events, you can pick and choose. And
+even filter the stack trace on specific fields of the event.
+
+ # cd /sys/kernel/debug/tracing
+ # echo "stacktrace if common_pid == $$ && reason == 3" \
+   > events/tlb/tlb_flush/trigger
+
+ # cat trace
+            bash-1103  [003] ...1  1290.100133: tlb_flush: pages:-1 reason:local mm shootdown (3)
+            bash-1103  [003] ...2  1290.100140: <stack trace>
+ => copy_process.part.39
+ => _do_fork
+ => SyS_clone
+ => do_syscall_64
+ => return_from_SYSCALL_64
+
+-- Steve
