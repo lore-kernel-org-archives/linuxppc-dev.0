@@ -1,28 +1,29 @@
-Return-Path: <rostedt@goodmis.org>
-Received: from smtprelay.hostedemail.com (smtprelay0103.hostedemail.com
- [216.40.44.103])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <frowand.list@gmail.com>
+Received: from mail-io0-x241.google.com (mail-io0-x241.google.com
+ [IPv6:2607:f8b0:4001:c06::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w7jbx27ckzDqC6
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Apr 2017 12:33:49 +1000 (AEST)
-Date: Wed, 19 Apr 2017 22:33:42 -0400
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Tyrel Datwyler <turtle.in.the.kernel@gmail.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, Frank Rowand
- <frowand.list@gmail.com>, Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
- robh+dt@kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, devicetree@vger.kernel.org,
- nfont@linux.vnet.ibm.com, mingo@redhat.com
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w7jhw5tkVzDqB9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Apr 2017 12:38:08 +1000 (AEST)
+Received: by mail-io0-x241.google.com with SMTP id x86so10662733ioe.3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2017 19:38:08 -0700 (PDT)
 Subject: Re: [PATCH] of: introduce event tracepoints for dynamic device_node
  lifecyle
-Message-ID: <20170419223342.0bbe2593@grimm.local.home>
-In-Reply-To: <1d51a229-612b-bf09-93d5-6e43b476e2cf@gmail.com>
+To: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
+ Steven Rostedt <rostedt@goodmis.org>
 References: <1492475525-10827-1-git-send-email-tyreld@linux.vnet.ibm.com>
- <58F6AA35.2040902@gmail.com>
- <87efwp6v4e.fsf@concordia.ellerman.id.au>
- <1d51a229-612b-bf09-93d5-6e43b476e2cf@gmail.com>
+ <58F6AA35.2040902@gmail.com> <58F6C088.8020304@gmail.com>
+ <20170418224953.685943a3@grimm.local.home>
+ <641aa8ee-9b54-716a-77a1-076cafb95e3a@linux.vnet.ibm.com>
+Cc: robh+dt@kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, devicetree@vger.kernel.org,
+ nfont@linux.vnet.ibm.com, mpe@ellerman.id.au, mingo@redhat.com
+From: Frank Rowand <frowand.list@gmail.com>
+Message-ID: <58F81EF4.5070304@gmail.com>
+Date: Wed, 19 Apr 2017 19:37:40 -0700
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+In-Reply-To: <641aa8ee-9b54-716a-77a1-076cafb95e3a@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,27 +33,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 19 Apr 2017 16:27:10 -0700
-Tyrel Datwyler <turtle.in.the.kernel@gmail.com> wrote:
+On 04/19/17 11:45, Tyrel Datwyler wrote:
+> On 04/18/2017 07:49 PM, Steven Rostedt wrote:
+>> On Tue, 18 Apr 2017 18:42:32 -0700
+>> Frank Rowand <frowand.list@gmail.com> wrote:
+>>
+>>> And of course the other issue with using tracepoints is the extra space
+>>> required to hold the tracepoint info.  With the pr_debug() approach, the
+>>> space usage can be easily removed for a production kernel via a config
+>>> option.
+>>
+>> Now if you are saying you want to be able to enable debugging without
+>> the tracing infrastructure I would agree. As the tracing infrastructure
+>> is large. But I'm working on shrinking it more.
+> 
+> The primary consumers of OF_DYNAMIC seem to be pseries and powernv where
+> we are generally going to see the trace infrastructure enabled by
+> default in production.
 
-> # echo stacktrace > /sys/kernel/debug/tracing/trace_options
-> # cat trace | grep -A6 "/pci@800000020000018"
+Another primary consumer will be overlays for ARM expansion boards.  Still
+a work in progress.
 
-Just to let you know that there is now stacktrace event triggers, where
-you don't need to stacktrace all events, you can pick and choose. And
-even filter the stack trace on specific fields of the event.
+-Frank
 
- # cd /sys/kernel/debug/tracing
- # echo "stacktrace if common_pid == $$ && reason == 3" \
-   > events/tlb/tlb_flush/trigger
-
- # cat trace
-            bash-1103  [003] ...1  1290.100133: tlb_flush: pages:-1 reason:local mm shootdown (3)
-            bash-1103  [003] ...2  1290.100140: <stack trace>
- => copy_process.part.39
- => _do_fork
- => SyS_clone
- => do_syscall_64
- => return_from_SYSCALL_64
-
--- Steve
+> 
+> -Tyrel
+> 
+>>
+>>>
+>>> Tracepoints are wonderful technology, but not always the proper tool to
+>>> use for debug info.
+>>
+>> But if you are going to have tracing enabled regardless, adding a few
+>> more tracepoints isn't going to make the difference.
+>>
+>> -- Steve
+>>
+>>>
+>>>> If Rob wants to convert printk() style data to trace data (and I can't
+>>>> convince him otherwise) then I will have further comments on this specific
+>>>> patch.
+>>>>
+> 
+> .
+> 
