@@ -1,30 +1,22 @@
-Return-Path: <frowand.list@gmail.com>
-Received: from mail-io0-x243.google.com (mail-io0-x243.google.com
- [IPv6:2607:f8b0:4001:c06::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w7wVh4SD9zDqK1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Apr 2017 20:45:00 +1000 (AEST)
-Received: by mail-io0-x243.google.com with SMTP id h41so14926558ioi.1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Apr 2017 03:45:00 -0700 (PDT)
-Subject: Re: [PATCH] of: introduce event tracepoints for dynamic device_node
- lifecyle
-To: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
- Steven Rostedt <rostedt@goodmis.org>
-References: <1492475525-10827-1-git-send-email-tyreld@linux.vnet.ibm.com>
- <58F6AA35.2040902@gmail.com> <58F6C088.8020304@gmail.com>
- <20170418224953.685943a3@grimm.local.home>
- <641aa8ee-9b54-716a-77a1-076cafb95e3a@linux.vnet.ibm.com>
- <58F81EF4.5070304@gmail.com>
-Cc: robh+dt@kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, devicetree@vger.kernel.org,
- nfont@linux.vnet.ibm.com, mpe@ellerman.id.au, mingo@redhat.com
-From: Frank Rowand <frowand.list@gmail.com>
-Message-ID: <58F89110.1020904@gmail.com>
-Date: Thu, 20 Apr 2017 03:44:32 -0700
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w7wrl4sdBzDqB7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Apr 2017 21:00:39 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Bhupesh Sharma <bhsharma@redhat.com>
+Cc: linuxppc-dev@ozlabs.org, Kees Cook <keescook@chromium.org>,
+ kernel-hardening@lists.openwall.com
+Subject: Re: [kernel-hardening] Re: [PATCH] powerpc/mm: Add support for
+ runtime configuration of ASLR limits
+In-Reply-To: <CACi5LpNepcyCgWj-bYnSWqNRDtE97wVJ6=shM2mRP3i0ROx+qg@mail.gmail.com>
+References: <1492612181-8484-1-git-send-email-mpe@ellerman.id.au>
+ <CACi5LpNepcyCgWj-bYnSWqNRDtE97wVJ6=shM2mRP3i0ROx+qg@mail.gmail.com>
+Date: Thu, 20 Apr 2017 21:00:35 +1000
+Message-ID: <87efwn4a3w.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <58F81EF4.5070304@gmail.com>
-Content-Type: text/plain; charset=windows-1252
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,54 +26,89 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/19/17 19:37, Frank Rowand wrote:
-> On 04/19/17 11:45, Tyrel Datwyler wrote:
->> On 04/18/2017 07:49 PM, Steven Rostedt wrote:
->>> On Tue, 18 Apr 2017 18:42:32 -0700
->>> Frank Rowand <frowand.list@gmail.com> wrote:
->>>
->>>> And of course the other issue with using tracepoints is the extra space
->>>> required to hold the tracepoint info.  With the pr_debug() approach, the
->>>> space usage can be easily removed for a production kernel via a config
->>>> option.
->>>
->>> Now if you are saying you want to be able to enable debugging without
->>> the tracing infrastructure I would agree. As the tracing infrastructure
->>> is large. But I'm working on shrinking it more.
->>
->> The primary consumers of OF_DYNAMIC seem to be pseries and powernv where
->> we are generally going to see the trace infrastructure enabled by
->> default in production.
-> 
-> Another primary consumer will be overlays for ARM expansion boards.  Still
-> a work in progress.
+Hi Bhupesh,
 
-And dynamic configuration for the FPGA folks.
+Bhupesh Sharma <bhsharma@redhat.com> writes:
+> On Wed, Apr 19, 2017 at 7:59 PM, Michael Ellerman <mpe@ellerman.id.au> wrote:
+>> Add powerpc support for mmap_rnd_bits and mmap_rnd_compat_bits, which are two
+>> sysctls that allow a user to configure the number of bits of randomness used for
+>> ASLR.
+...
+>>
+>> The result of that is that we have to define the default values based on both
+>> 32-bit vs 64-bit, but also the configured PAGE_SIZE. Furthermore now that we
+>> have 128TB address space support on Book3S, we also have to take that into
+>> account.
+>
+> Thanks for the patch. I have a couple of comments:
+>
+> (A) As Aneesh noted in the review of my v2 patch (see [1]), we need to
+> handle the configurable 512TB case as well. Right?
+
+No we don't need to handle 512TB, at least for now.
+
+A process has to opt-in to using the address space above 128TB, and it
+does that by calling mmap() with a hint above 128TB.
+
+But by the time the process is running, and can call mmap(), we have
+already finished calling arch_mmap_rnd() for that process. Once to
+randomise where we load the executable if it's ET_DYN (in load_elf_binary()),
+and the other to choose the mmap_base (arch_pick_mmap_layout()).
+
+In future I suspect we might want to optionally use the full address
+space for ASLR, and if/when that happens then we'll need to do something
+differently.
+
+>> Finally we can wire up the value in arch_mmap_rnd().
+>>
+>> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+>
+> (b) I am wondering if I missed your comments on my v2 on the same
+> subject - may be you missed my reminder message (see [2]).
+
+Your v3 was OK, and I would have merged it except I knew it needed
+reworking because of the 128TB address space change.
+
+I was waiting for you to do a v4 based on the 128TB changes, but then
+last night I saw your message asking which tree to base that on and so I
+decided to quickly do it myself so as to not miss v4.12.
+
+> I am just starting off on PPC related enhancements that we find useful
+> while working on Redhat/Fedora PPC systems (I have mainly been
+> associated with ARM and peripheral driver development in the past),
+> and would have been motivated further if I could get responses to my
+> queries which I had raised earlier on the list (see [3]) - especially
+> the branch to base newer version of patches on.
+
+Sure. I know this has dragged on, it's one of those changes that seems
+simple but isn't really. And then it collided with the 128TB changes
+which made it more complicated again.
+
+Sorry I didn't respond to your query on which tree to use, but I get a
+lot of email and some days I just don't get through it all - or indeed
+any of it :)
+
+For a quick query like that you might be better asking on IRC, I and a
+bunch of other folk who could have answered that question sit in #ppc64
+on Freenode, feel free to join.
 
 
-> -Frank
-> 
->>
->> -Tyrel
->>
->>>
->>>>
->>>> Tracepoints are wonderful technology, but not always the proper tool to
->>>> use for debug info.
->>>
->>> But if you are going to have tracing enabled regardless, adding a few
->>> more tracepoints isn't going to make the difference.
->>>
->>> -- Steve
->>>
->>>>
->>>>> If Rob wants to convert printk() style data to trace data (and I can't
->>>>> convince him otherwise) then I will have further comments on this specific
->>>>> patch.
->>>>>
->>
->> .
->>
-> 
-> .
-> 
+My next branch is here:
+  https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git/log/?h=next
+
+And it's also included in linux-next.
+
+In general you should just use Linus' master branch to base new work on.
+But in this case you did need to use my next because the 128TB changes
+are in there and this patch is dependent on them.
+
+> Also I am not sure how the PPC subsystem handles S-O-Bs of earlier
+> contributions on the same subject (as it varies from one
+> maintainer/subsystem to the other), so I leave it up to you.
+
+I don't think we handle them any differently. In this case I had this
+patch already written, I sent some of it to you earlier remember, so it
+wasn't actually based on your patch. But I'm happy to add your SOB,
+and/or Ack/Tested by.
+
+cheers
