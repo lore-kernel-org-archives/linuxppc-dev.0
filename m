@@ -2,19 +2,18 @@ Return-Path: <christophe.leroy@c-s.fr>
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w8YCH5kMhzDq66
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Apr 2017 21:18:51 +1000 (AEST)
-Message-Id: <a0105d18c39c419ed3b30270d0c2f30d10aa1947.1492772606.git.christophe.leroy@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w8YCJ4phkzDq66
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Apr 2017 21:18:52 +1000 (AEST)
+Message-Id: <1940eb7224ec831a9a4324bfd859797f180a2e53.1492772606.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1492772606.git.christophe.leroy@c-s.fr>
 References: <cover.1492772606.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH 1/4] powerpc: Discard ffs()/__ffs() function and use builtin
- functions instead
+Subject: [PATCH 2/4] powerpc: Use builtin functions for fls()/__fls()/fls64()
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  Scott Wood <oss@buserror.net>
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Fri, 21 Apr 2017 13:18:46 +0200 (CEST)
+Date: Fri, 21 Apr 2017 13:18:48 +0200 (CEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,150 +23,157 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-With the ffs() function as defined in arch/powerpc/include/asm/bitops.h
-GCC will not optimise the code in case of constant parameter, as shown
-by the small exemple below.
+With the fls() functions as defined in arch/powerpc/include/asm/bitops.h
+GCC will not optimise the code in case of constant parameter.
 
-int ffs_test(void)
+This patch replaces __fls() by the builtin function, and modifies
+fls() and fls64() to use builtins instead of inline assembly
+
+For non constant calls, the generated code is doing the same:
+
+int testfls(unsigned int x)
 {
-	return 4 << ffs(31);
+	return fls(x);
 }
 
-c0012334 <ffs_test>:
-c0012334:       39 20 00 01     li      r9,1
-c0012338:       38 60 00 04     li      r3,4
-c001233c:       7d 29 00 34     cntlzw  r9,r9
-c0012340:       21 29 00 20     subfic  r9,r9,32
-c0012344:       7c 63 48 30     slw     r3,r3,r9
-c0012348:       4e 80 00 20     blr
-
-With this patch, the same function will compile as follows:
-
-c0012334 <ffs_test>:
-c0012334:       38 60 00 08     li      r3,8
-c0012338:       4e 80 00 20     blr
-
-The same happens with __ffs()
-
-For non constant calls, the generated code is doing the same,
-allthought it is slightly different on 64 bits for ffs():
-
-unsigned long test__ffs(unsigned long x)
+unsigned long test__fls(unsigned long x)
 {
-	return __ffs(x);
+	return __fls(x);
 }
 
-int testffs(int x)
+int testfls64(__u64 x)
 {
-	return ffs(x);
+	return fls64(x);
 }
 
 On PPC32, before the patch:
-0000003c <test__ffs>:
-  3c:	7d 23 00 d0 	neg     r9,r3
-  40:	7d 23 18 38 	and     r3,r9,r3
-  44:	7c 63 00 34 	cntlzw  r3,r3
-  48:	20 63 00 1f 	subfic  r3,r3,31
-  4c:	4e 80 00 20 	blr
+00000064 <testfls>:
+  64:	7c 63 00 34 	cntlzw  r3,r3
+  68:	20 63 00 20 	subfic  r3,r3,32
+  6c:	4e 80 00 20 	blr
 
-00000050 <testffs>:
-  50:	7d 23 00 d0 	neg     r9,r3
-  54:	7d 23 18 38 	and     r3,r9,r3
-  58:	7c 63 00 34 	cntlzw  r3,r3
-  5c:	20 63 00 20 	subfic  r3,r3,32
-  60:	4e 80 00 20 	blr
+00000070 <test__fls>:
+  70:	7c 63 00 34 	cntlzw  r3,r3
+  74:	20 63 00 1f 	subfic  r3,r3,31
+  78:	4e 80 00 20 	blr
+
+0000007c <testfls64>:
+  7c:	2c 03 00 00 	cmpwi   r3,0
+  80:	40 82 00 10 	bne     90 <testfls64+0x14>
+  84:	7c 83 00 34 	cntlzw  r3,r4
+  88:	20 63 00 20 	subfic  r3,r3,32
+  8c:	4e 80 00 20 	blr
+  90:	7c 63 00 34 	cntlzw  r3,r3
+  94:	20 63 00 40 	subfic  r3,r3,64
+  98:	4e 80 00 20 	blr
 
 On PPC32, after the patch:
-0000002c <test__ffs>:
-  2c:	7d 23 00 d0 	neg     r9,r3
-  30:	7d 23 18 38 	and     r3,r9,r3
-  34:	7c 63 00 34 	cntlzw  r3,r3
-  38:	20 63 00 1f 	subfic  r3,r3,31
-  3c:	4e 80 00 20 	blr
+00000054 <testfls>:
+  54:	7c 63 00 34 	cntlzw  r3,r3
+  58:	20 63 00 20 	subfic  r3,r3,32
+  5c:	4e 80 00 20 	blr
 
-00000040 <testffs>:
-  40:	7d 23 00 d0 	neg     r9,r3
-  44:	7d 23 18 38 	and     r3,r9,r3
-  48:	7c 63 00 34 	cntlzw  r3,r3
-  4c:	20 63 00 20 	subfic  r3,r3,32
-  50:	4e 80 00 20 	blr
+00000060 <test__fls>:
+  60:	7c 63 00 34 	cntlzw  r3,r3
+  64:	20 63 00 1f 	subfic  r3,r3,31
+  68:	4e 80 00 20 	blr
+
+0000006c <testfls64>:
+  6c:	2c 03 00 00 	cmpwi   r3,0
+  70:	41 82 00 10 	beq     80 <testfls64+0x14>
+  74:	7c 63 00 34 	cntlzw  r3,r3
+  78:	20 63 00 40 	subfic  r3,r3,64
+  7c:	4e 80 00 20 	blr
+  80:	7c 83 00 34 	cntlzw  r3,r4
+  84:	20 63 00 40 	subfic  r3,r3,32
+  88:	4e 80 00 20 	blr
 
 On PPC64, before the patch:
-0000000000000060 <.test__ffs>:
-  60:	7c 03 00 d0 	neg     r0,r3
-  64:	7c 03 18 38 	and     r3,r0,r3
-  68:	7c 63 00 74 	cntlzd  r3,r3
-  6c:	20 63 00 3f 	subfic  r3,r3,63
-  70:	7c 63 07 b4 	extsw   r3,r3
-  74:	4e 80 00 20 	blr
+00000000000000a0 <.testfls>:
+  a0:	7c 63 00 34 	cntlzw  r3,r3
+  a4:	20 63 00 20 	subfic  r3,r3,32
+  a8:	7c 63 07 b4 	extsw   r3,r3
+  ac:	4e 80 00 20 	blr
 
-0000000000000080 <.testffs>:
-  80:	7c 03 00 d0 	neg     r0,r3
-  84:	7c 03 18 38 	and     r3,r0,r3
-  88:	7c 63 00 74 	cntlzd  r3,r3
-  8c:	20 63 00 40 	subfic  r3,r3,64
-  90:	7c 63 07 b4 	extsw   r3,r3
-  94:	4e 80 00 20 	blr
+00000000000000b0 <.test__fls>:
+  b0:	7c 63 00 74 	cntlzd  r3,r3
+  b4:	20 63 00 3f 	subfic  r3,r3,63
+  b8:	7c 63 07 b4 	extsw   r3,r3
+  bc:	4e 80 00 20 	blr
+
+00000000000000c0 <.testfls64>:
+  c0:	7c 63 00 74 	cntlzd  r3,r3
+  c4:	20 63 00 40 	subfic  r3,r3,64
+  c8:	7c 63 07 b4 	extsw   r3,r3
+  cc:	4e 80 00 20 	blr
 
 On PPC64, after the patch:
-0000000000000050 <.test__ffs>:
-  50:	7c 03 00 d0 	neg     r0,r3
-  54:	7c 03 18 38 	and     r3,r0,r3
-  58:	7c 63 00 74 	cntlzd  r3,r3
-  5c:	20 63 00 3f 	subfic  r3,r3,63
-  60:	4e 80 00 20 	blr
+0000000000000090 <.testfls>:
+  90:	7c 63 00 34 	cntlzw  r3,r3
+  94:	20 63 00 20 	subfic  r3,r3,32
+  98:	7c 63 07 b4 	extsw   r3,r3
+  9c:	4e 80 00 20 	blr
 
-0000000000000070 <.testffs>:
-  70:	7c 03 00 d0 	neg     r0,r3
-  74:	7c 03 18 38 	and     r3,r0,r3
-  78:	7c 63 00 34 	cntlzw  r3,r3
-  7c:	20 63 00 20 	subfic  r3,r3,32
-  80:	7c 63 07 b4 	extsw   r3,r3
-  84:	4e 80 00 20 	blr
-(ffs() operates on an int so cntlzw is equivalent to cntlzd)
+00000000000000a0 <.test__fls>:
+  a0:	7c 63 00 74 	cntlzd  r3,r3
+  a4:	20 63 00 3f 	subfic  r3,r3,63
+  a8:	4e 80 00 20 	blr
+  ac:	60 00 00 00 	nop
 
-In addition, when reading the generated vmlinux, we can observe
-that with the builtin functions, GCC sometimes efficiently spreads
-the instructions within the generated functions while the inline
-assembly force them to remain grouped together.
-
-__builtin_ffs() is already used in arch/powerpc/include/asm/page_32.h
+00000000000000b0 <.testfls64>:
+  b0:	7c 63 00 74 	cntlzd  r3,r3
+  b4:	20 63 00 40 	subfic  r3,r3,64
+  b8:	7c 63 07 b4 	extsw   r3,r3
+  bc:	4e 80 00 20 	blr
 
 Those builtins have been in GCC since at least 3.4.6 (see
 https://gcc.gnu.org/onlinedocs/gcc-3.4.6/gcc/Other-Builtins.html )
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/include/asm/bitops.h | 16 ++--------------
- 1 file changed, 2 insertions(+), 14 deletions(-)
+ arch/powerpc/include/asm/bitops.h | 24 +++---------------------
+ 1 file changed, 3 insertions(+), 21 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/bitops.h b/arch/powerpc/include/asm/bitops.h
-index 33a24fdd7958..71b05685f3a7 100644
+index 71b05685f3a7..af36b404dbe8 100644
 --- a/arch/powerpc/include/asm/bitops.h
 +++ b/arch/powerpc/include/asm/bitops.h
-@@ -253,21 +253,9 @@ static __inline__ unsigned long ffz(unsigned long x)
- 	return __ilog2(x & -x);
+@@ -263,33 +263,15 @@ static __inline__ unsigned long ffz(unsigned long x)
+  */
+ static __inline__ int fls(unsigned int x)
+ {
+-	int lz;
+-
+-	asm ("cntlzw %0,%1" : "=r" (lz) : "r" (x));
+-	return 32 - lz;
++	return 32 - __builtin_clz(x);
  }
  
--static __inline__ unsigned long __ffs(unsigned long x)
+-static __inline__ unsigned long __fls(unsigned long x)
 -{
--	return __ilog2(x & -x);
+-	return __ilog2(x);
 -}
-+#include <asm-generic/bitops/builtin-__ffs.h>
++#include <asm-generic/bitops/builtin-__fls.h>
  
 -/*
-- * ffs: find first bit set. This is defined the same way as
-- * the libc and compiler builtin ffs routines, therefore
-- * differs in spirit from the above ffz (man ffs).
+- * 64-bit can do this using one cntlzd (count leading zeroes doubleword)
+- * instruction; for 32-bit we use the generic version, which does two
+- * 32-bit fls calls.
 - */
--static __inline__ int ffs(int x)
--{
--	unsigned long i = (unsigned long)x;
--	return __ilog2(i & -i) + 1;
--}
-+#include <asm-generic/bitops/builtin-ffs.h>
+-#ifdef __powerpc64__
+ static __inline__ int fls64(__u64 x)
+ {
+-	int lz;
+-
+-	asm ("cntlzd %0,%1" : "=r" (lz) : "r" (x));
+-	return 64 - lz;
++	return 64 - __builtin_clzll(x);
+ }
+-#else
+-#include <asm-generic/bitops/fls64.h>
+-#endif /* __powerpc64__ */
  
- /*
-  * fls: find last (most-significant) bit set.
+ #ifdef CONFIG_PPC64
+ unsigned int __arch_hweight8(unsigned int w);
 -- 
 2.12.0
