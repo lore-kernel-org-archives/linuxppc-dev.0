@@ -1,40 +1,23 @@
-Return-Path: <pc@us.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mhiramat@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w8ccV0G5szDq5b
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Apr 2017 23:52:25 +1000 (AEST)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v3LDo3Xo142681
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Apr 2017 09:52:16 -0400
-Received: from e13.ny.us.ibm.com (e13.ny.us.ibm.com [129.33.205.203])
- by mx0a-001b2d01.pphosted.com with ESMTP id 29y9k8gy1f-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Apr 2017 09:52:15 -0400
-Received: from localhost
- by e13.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <pc@us.ibm.com>;
- Fri, 21 Apr 2017 09:52:14 -0400
-Reply-To: pc@us.ibm.com
-Subject: Re: [PATCH v4 4/7] powerpc/kprobes: Use safer string functions in
- kprobe_lookup_name()
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w8cfW402PzDq5b
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Apr 2017 23:54:11 +1000 (AEST)
+Date: Fri, 21 Apr 2017 22:54:00 +0900
+From: Masami Hiramatsu <mhiramat@kernel.org>
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, Ananth N Mavinakayanahalli
+ <ananth@linux.vnet.ibm.com>, Ingo Molnar <mingo@kernel.org>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v4 3/7] kprobes: validate the symbol name provided
+ during probe registration
+Message-Id: <20170421225400.81a4bd00f85725cf67c75e64@kernel.org>
+In-Reply-To: <20170421123234.6895-1-naveen.n.rao@linux.vnet.ibm.com>
 References: <6e14d22994530fb5200c74d1593e73541d3b8028.1492604782.git.naveen.n.rao@linux.vnet.ibm.com>
- <20170421123320.7344-1-naveen.n.rao@linux.vnet.ibm.com>
- <5393535f-4469-d6b7-f7ce-256a5612999f@us.ibm.com>
-To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Masami Hiramatsu <mhiramat@kernel.org>
-Cc: linuxppc-dev@lists.ozlabs.org, Ingo Molnar <mingo@kernel.org>,
- linux-kernel@vger.kernel.org
-From: Paul Clarke <pc@us.ibm.com>
-Date: Fri, 21 Apr 2017 08:52:09 -0500
-MIME-Version: 1.0
-In-Reply-To: <5393535f-4469-d6b7-f7ce-256a5612999f@us.ibm.com>
-Content-Type: text/plain; charset=windows-1252
-Message-Id: <e3b3a444-fa98-5ed3-7dd7-a45d93db8b1f@us.ibm.com>
+ <20170421123234.6895-1-naveen.n.rao@linux.vnet.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,93 +27,117 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Sent too soon.  The suggestions don't guarantee null termination.  Refined, below. (Sorry for the noise.)
+On Fri, 21 Apr 2017 18:02:33 +0530
+"Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
 
-On 04/21/2017 08:33 AM, Paul Clarke wrote:
-> On 04/21/2017 07:33 AM, Naveen N. Rao wrote:
->> Convert usage of strchr()/strncpy()/strncat() to
->> strnchr()/memcpy()/strlcat() for simpler and safer string manipulation.
+> When a kprobe is being registered, we use the symbol_name field to
+> lookup the address where the probe should be placed. Since this is a
+> user-provided field, let's ensure that the length of the string is
+> within expected limits.
+> 
+> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+> ---
+> Masami, Michael,
+> Here's a simplified version that should hopefully be fine. I have
+> simplified the logic to keep the code compact and simple.
 
->> diff --git a/arch/powerpc/kernel/kprobes.c b/arch/powerpc/kernel/kprobes.c
->> index 97b5eed1f76d..c73fb6e3b43f 100644
->> --- a/arch/powerpc/kernel/kprobes.c
->> +++ b/arch/powerpc/kernel/kprobes.c
->> @@ -65,28 +65,27 @@ kprobe_opcode_t *kprobe_lookup_name(const char *name, unsigned int offset)
->>  	char dot_name[MODULE_NAME_LEN + 1 + KSYM_NAME_LEN];
->>  	const char *modsym;
->>  	bool dot_appended = false;
->> -	if ((modsym = strchr(name, ':')) != NULL) {
->> +	if ((modsym = strnchr(name, ':', MODULE_NAME_LEN)) != NULL) {
->>  		modsym++;
->>  		if (*modsym != '\0' && *modsym != '.') {
->>  			/* Convert to <module:.symbol> */
->> -			strncpy(dot_name, name, modsym - name);
->> +			memcpy(dot_name, name, modsym - name);
->>  			dot_name[modsym - name] = '.';
->>  			dot_name[modsym - name + 1] = '\0';
->> -			strncat(dot_name, modsym,
->> -				sizeof(dot_name) - (modsym - name) - 2);
->> +			strlcat(dot_name, modsym, sizeof(dot_name));
-> 
-> Would it be more efficient here to replace this:
-> --
-> dot_name[modsym - name + 1] = '\0';
-> strlcat(dot_name, modsym, sizeof(dot_name));
-> --
-> 
-> with this:
-> strncpy(&dot_name[modsym - name + 1], modsym, KSYM_NAME_LEN);
+Ok, so as I replied to older version,
+ - Ensure name != NULL at first.
+ - Define it in kernel/kallsyms.c as a general routine.
 
-keep the null termination, and just adjust the starting point for strlcat:
---
-dot_name[modsym - name + 1] = '\0';
-strlcat(&dot_name[modsym - name + 1], modsym, KSYM_NAME_LEN);
---
+Since this validate the string which will be passed to kallsyms,
+I think it should be provided by kallsyms.
 
-> (So you aren't rescanning dot_name to find the end, when you already know the end position?)
-> 
->>  			dot_appended = true;
->>  		} else {
->>  			dot_name[0] = '\0';
->> -			strncat(dot_name, name, sizeof(dot_name) - 1);
->> +			strlcat(dot_name, name, sizeof(dot_name));
-> 
-> and here do:
-> strncpy(dot_name, name, sizeof(dot_name));
-> 
-> (and remove the null termination immediately above)
-
-nevermind.  :-)
+Thanks, 
 
 > 
->>  		}
->>  	} else if (name[0] != '.') {
->>  		dot_name[0] = '.';
->>  		dot_name[1] = '\0';
->> -		strncat(dot_name, name, KSYM_NAME_LEN - 2);
->> +		strlcat(dot_name, name, sizeof(dot_name));
+> - Naveen
 > 
-> and here do:
-> strncpy(&dot_name[1], name, sizeof(dot_name));
 > 
-> (and remove the null termination immediately above)
+>  include/linux/kprobes.h     |  1 +
+>  kernel/kprobes.c            | 30 ++++++++++++++++++++++++++++++
+>  kernel/trace/trace_kprobe.c |  4 ++++
+>  3 files changed, 35 insertions(+)
+> 
+> diff --git a/include/linux/kprobes.h b/include/linux/kprobes.h
+> index 1f82a3db00b1..4ee10fef5135 100644
+> --- a/include/linux/kprobes.h
+> +++ b/include/linux/kprobes.h
+> @@ -405,6 +405,7 @@ int disable_kprobe(struct kprobe *kp);
+>  int enable_kprobe(struct kprobe *kp);
+>  
+>  void dump_kprobe(struct kprobe *kp);
+> +bool is_valid_kprobe_symbol_name(const char *name);
+>  
+>  #else /* !CONFIG_KPROBES: */
+>  
+> diff --git a/kernel/kprobes.c b/kernel/kprobes.c
+> index 6a128f3a7ed1..ff9b1ac72a38 100644
+> --- a/kernel/kprobes.c
+> +++ b/kernel/kprobes.c
+> @@ -1383,6 +1383,34 @@ bool within_kprobe_blacklist(unsigned long addr)
+>  }
+>  
+>  /*
+> + * We mainly want to ensure that the provided string is of a reasonable length
+> + * and is of the form [<mod_name>:]<sym_name>, so that this is safe to process
+> + * further.
+> + * We don't worry about invalid characters as those will just prevent
+> + * matching existing kallsyms.
+> + */
+> +bool is_valid_kprobe_symbol_name(const char *name)
+> +{
+> +	size_t sym_len;
+> +	const char *s;
+> +
+> +	s = strnchr(name, ':', MODULE_NAME_LEN + KSYM_NAME_LEN + 1);
+> +	if (s) {
+> +		sym_len = (size_t)(s - name);
+> +		if (sym_len <= 0  || sym_len >= MODULE_NAME_LEN)
+> +			return false;
+> +		s++;
+> +	} else
+> +		s = name;
+> +
+> +	sym_len = strnlen(s, KSYM_NAME_LEN);
+> +	if (sym_len <= 0 || sym_len >= KSYM_NAME_LEN)
+> +		return false;
+> +
+> +	return true;
+> +}
+> +
+> +/*
+>   * If we have a symbol_name argument, look it up and add the offset field
+>   * to it. This way, we can specify a relative address to a symbol.
+>   * This returns encoded errors if it fails to look up symbol or invalid
+> @@ -1397,6 +1425,8 @@ static kprobe_opcode_t *kprobe_addr(struct kprobe *p)
+>  		goto invalid;
+>  
+>  	if (p->symbol_name) {
+> +		if (!is_valid_kprobe_symbol_name(p->symbol_name))
+> +			return ERR_PTR(-EINVAL);
+>  		addr = kprobe_lookup_name(p->symbol_name, p->offset);
+>  		if (!addr)
+>  			return ERR_PTR(-ENOENT);
+> diff --git a/kernel/trace/trace_kprobe.c b/kernel/trace/trace_kprobe.c
+> index 5f688cc724f0..bf73e5f31128 100644
+> --- a/kernel/trace/trace_kprobe.c
+> +++ b/kernel/trace/trace_kprobe.c
+> @@ -704,6 +704,10 @@ static int create_trace_kprobe(int argc, char **argv)
+>  			pr_info("Return probe must be used without offset.\n");
+>  			return -EINVAL;
+>  		}
+> +		if (!is_valid_kprobe_symbol_name(symbol)) {
+> +			pr_info("Symbol name is too long.\n");
+> +			return -EINVAL;
+> +		}
+>  	}
+>  	argc -= 2; argv += 2;
+>  
+> -- 
+> 2.12.1
 > 
 
-nevermind.  :-)
 
->>  		dot_appended = true;
->>  	} else {
->>  		dot_name[0] = '\0';
->> -		strncat(dot_name, name, KSYM_NAME_LEN - 1);
->> +		strlcat(dot_name, name, sizeof(dot_name));
-> 
-> and here do:
-> strncpy(dot_name, name, sizeof(dot_name));
-> 
-> (and remove the null termination immediately above)
-> 
->>  	}
-
-nevermind.  :-)
-
-PC
+-- 
+Masami Hiramatsu <mhiramat@kernel.org>
