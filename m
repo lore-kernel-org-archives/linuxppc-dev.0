@@ -1,34 +1,18 @@
-Return-Path: <pbonzini@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w8S5P6drjzDq66
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Apr 2017 17:28:25 +1000 (AEST)
-Subject: Re: powerpc KVM build break in linux-next (was Re: [PATCH
- tip/core/rcu 40/40] srcu: Parallelize callback handling)
-To: paulmck@linux.vnet.ibm.com, Michael Ellerman <michaele@au1.ibm.com>
-References: <20170412174003.GA23207@linux.vnet.ibm.com>
- <1492018825-25634-40-git-send-email-paulmck@linux.vnet.ibm.com>
- <871ssn692a.fsf@concordia.ellerman.id.au>
- <24c85d26-bb4b-892d-5837-6d02af570e0e@redhat.com>
- <20170421003834.GA14351@linux.vnet.ibm.com>
- <87zifatu3a.fsf@concordia.ellerman.id.au>
- <20170421041754.GV3956@linux.vnet.ibm.com>
-Cc: tglx@linutronix.de, kvm@vger.kernel.org, oleg@redhat.com,
- peterz@infradead.org, fweisbec@gmail.com, bobby.prani@gmail.com,
- jiangshanlai@gmail.com, linux-kernel@vger.kernel.org,
- kvm-ppc@vger.kernel.org, josh@joshtriplett.org, dhowells@redhat.com,
- edumazet@google.com, "paulus@samba.org" <paulus@samba.org>,
- rostedt@goodmis.org, dipankar@in.ibm.com,
- mathieu.desnoyers@efficios.com, akpm@linux-foundation.org,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- mingo@kernel.org
-From: Paolo Bonzini <pbonzini@redhat.com>
-Message-ID: <ca07b47e-8141-1691-169d-16c99d03902a@redhat.com>
-Date: Fri, 21 Apr 2017 09:27:59 +0200
-MIME-Version: 1.0
-In-Reply-To: <20170421041754.GV3956@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=windows-1252
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w8YCF2qDkzDq66
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Apr 2017 21:18:49 +1000 (AEST)
+Message-Id: <cover.1492772606.git.christophe.leroy@c-s.fr>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH 0/4] powerpc: Replace some bitops functions by builtin/generic
+ ones
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Scott Wood <oss@buserror.net>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Date: Fri, 21 Apr 2017 13:18:44 +0200 (CEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,24 +22,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+This patchset replaces the following bitops by builtin/generic ones:
+- ffs() / __ffs()
+- fls() / __fls() / fls64()
+- ffz()
+- __ilog2() / __ilog2_u32() / __ilog2_u64()
 
+The current functions are written as inline assembly which prevents
+GCC to optimise them in case of constant parameters and obliges GCC
+to group the related instructions all together.
 
-On 21/04/2017 06:17, Paul E. McKenney wrote:
->> Thanks, this looks perfect to me, and if you're happy to put it on top
->> of your tree that would limit the breakage to a smaller history window,
->> so that would be ideal.
->>
->> Tested-by: Michael Ellerman <mpe@ellerman.id.au>
-> Thank you, Michael!
-> 
-> Paolo, does this look good to you?  My upstream maintainer will be much
-> more likely to take this with your ack.  ;-)
+With the builtin alternatives, GCC optimises better
 
-Sure,
+Christophe Leroy (4):
+  powerpc: Discard ffs()/__ffs() function and use builtin functions
+    instead
+  powerpc: Use builtin functions for fls()/__fls()/fls64()
+  powerpc: Replace ffz() by equivalent generic function
+  powerpc: remove __ilog2()s and use generic ones
 
-Acked-by: Paolo Bonzini <pbonzini@redhat.com>
+ arch/powerpc/Kconfig              |  8 ----
+ arch/powerpc/include/asm/bitops.h | 87 ++++-----------------------------------
+ 2 files changed, 7 insertions(+), 88 deletions(-)
 
-since I don't expect conflicts between whoever applies this patch and
-the KVM tree.
-
-Paolo
+-- 
+2.12.0
