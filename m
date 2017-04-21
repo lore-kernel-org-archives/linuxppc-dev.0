@@ -2,18 +2,18 @@ Return-Path: <christophe.leroy@c-s.fr>
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w8YCJ4phkzDq66
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Apr 2017 21:18:52 +1000 (AEST)
-Message-Id: <1940eb7224ec831a9a4324bfd859797f180a2e53.1492772606.git.christophe.leroy@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w8YCK3wxgzDq7h
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Apr 2017 21:18:53 +1000 (AEST)
+Message-Id: <a32c02cd42659861732cc3d746613775d79c7d00.1492772606.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1492772606.git.christophe.leroy@c-s.fr>
 References: <cover.1492772606.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH 2/4] powerpc: Use builtin functions for fls()/__fls()/fls64()
+Subject: [PATCH 3/4] powerpc: Replace ffz() by equivalent generic function
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  Scott Wood <oss@buserror.net>
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Fri, 21 Apr 2017 13:18:48 +0200 (CEST)
+Date: Fri, 21 Apr 2017 13:18:50 +0200 (CEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,157 +23,98 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-With the fls() functions as defined in arch/powerpc/include/asm/bitops.h
+With the ffz() function as defined in arch/powerpc/include/asm/bitops.h
 GCC will not optimise the code in case of constant parameter.
 
-This patch replaces __fls() by the builtin function, and modifies
-fls() and fls64() to use builtins instead of inline assembly
+This patch replaces ffz() by the generic function.
+
+The generic ffz(x) expects to never be called with ~x == 0
+as written in the comment in include/asm-generic/bitops/ffz.h
+The only user of ffz() within arch/powerpc/ is
+platforms/512x/mpc5121_ads_cpld.c, which checks if x is not 0xff
 
 For non constant calls, the generated code is doing the same:
 
-int testfls(unsigned int x)
+unsigned long testffz(unsigned long x)
 {
-	return fls(x);
-}
-
-unsigned long test__fls(unsigned long x)
-{
-	return __fls(x);
-}
-
-int testfls64(__u64 x)
-{
-	return fls64(x);
+	return ffz(x);
 }
 
 On PPC32, before the patch:
-00000064 <testfls>:
-  64:	7c 63 00 34 	cntlzw  r3,r3
-  68:	20 63 00 20 	subfic  r3,r3,32
-  6c:	4e 80 00 20 	blr
-
-00000070 <test__fls>:
-  70:	7c 63 00 34 	cntlzw  r3,r3
-  74:	20 63 00 1f 	subfic  r3,r3,31
-  78:	4e 80 00 20 	blr
-
-0000007c <testfls64>:
-  7c:	2c 03 00 00 	cmpwi   r3,0
-  80:	40 82 00 10 	bne     90 <testfls64+0x14>
-  84:	7c 83 00 34 	cntlzw  r3,r4
-  88:	20 63 00 20 	subfic  r3,r3,32
-  8c:	4e 80 00 20 	blr
-  90:	7c 63 00 34 	cntlzw  r3,r3
-  94:	20 63 00 40 	subfic  r3,r3,64
-  98:	4e 80 00 20 	blr
+00000018 <testffz>:
+  18:	7c 63 18 f9 	not.    r3,r3
+  1c:	40 82 00 0c 	bne     28 <testffz+0x10>
+  20:	38 60 00 20 	li      r3,32
+  24:	4e 80 00 20 	blr
+  28:	7d 23 00 d0 	neg     r9,r3
+  2c:	7d 23 18 38 	and     r3,r9,r3
+  30:	7c 63 00 34 	cntlzw  r3,r3
+  34:	20 63 00 1f 	subfic  r3,r3,31
+  38:	4e 80 00 20 	blr
 
 On PPC32, after the patch:
-00000054 <testfls>:
-  54:	7c 63 00 34 	cntlzw  r3,r3
-  58:	20 63 00 20 	subfic  r3,r3,32
-  5c:	4e 80 00 20 	blr
-
-00000060 <test__fls>:
-  60:	7c 63 00 34 	cntlzw  r3,r3
-  64:	20 63 00 1f 	subfic  r3,r3,31
-  68:	4e 80 00 20 	blr
-
-0000006c <testfls64>:
-  6c:	2c 03 00 00 	cmpwi   r3,0
-  70:	41 82 00 10 	beq     80 <testfls64+0x14>
-  74:	7c 63 00 34 	cntlzw  r3,r3
-  78:	20 63 00 40 	subfic  r3,r3,64
-  7c:	4e 80 00 20 	blr
-  80:	7c 83 00 34 	cntlzw  r3,r4
-  84:	20 63 00 40 	subfic  r3,r3,32
-  88:	4e 80 00 20 	blr
+00000018 <testffz>:
+  18:	39 23 00 01 	addi    r9,r3,1
+  1c:	7d 23 18 78 	andc    r3,r9,r3
+  20:	7c 63 00 34 	cntlzw  r3,r3
+  24:	20 63 00 1f 	subfic  r3,r3,31
+  28:	4e 80 00 20 	blr
 
 On PPC64, before the patch:
-00000000000000a0 <.testfls>:
-  a0:	7c 63 00 34 	cntlzw  r3,r3
-  a4:	20 63 00 20 	subfic  r3,r3,32
-  a8:	7c 63 07 b4 	extsw   r3,r3
-  ac:	4e 80 00 20 	blr
-
-00000000000000b0 <.test__fls>:
-  b0:	7c 63 00 74 	cntlzd  r3,r3
-  b4:	20 63 00 3f 	subfic  r3,r3,63
-  b8:	7c 63 07 b4 	extsw   r3,r3
-  bc:	4e 80 00 20 	blr
-
-00000000000000c0 <.testfls64>:
-  c0:	7c 63 00 74 	cntlzd  r3,r3
-  c4:	20 63 00 40 	subfic  r3,r3,64
-  c8:	7c 63 07 b4 	extsw   r3,r3
-  cc:	4e 80 00 20 	blr
+0000000000000030 <.testffz>:
+  30:	7c 60 18 f9 	not.    r0,r3
+  34:	38 60 00 40 	li      r3,64
+  38:	4d 82 00 20 	beqlr
+  3c:	7c 60 00 d0 	neg     r3,r0
+  40:	7c 63 00 38 	and     r3,r3,r0
+  44:	7c 63 00 74 	cntlzd  r3,r3
+  48:	20 63 00 3f 	subfic  r3,r3,63
+  4c:	7c 63 07 b4 	extsw   r3,r3
+  50:	4e 80 00 20 	blr
 
 On PPC64, after the patch:
-0000000000000090 <.testfls>:
-  90:	7c 63 00 34 	cntlzw  r3,r3
-  94:	20 63 00 20 	subfic  r3,r3,32
-  98:	7c 63 07 b4 	extsw   r3,r3
-  9c:	4e 80 00 20 	blr
-
-00000000000000a0 <.test__fls>:
-  a0:	7c 63 00 74 	cntlzd  r3,r3
-  a4:	20 63 00 3f 	subfic  r3,r3,63
-  a8:	4e 80 00 20 	blr
-  ac:	60 00 00 00 	nop
-
-00000000000000b0 <.testfls64>:
-  b0:	7c 63 00 74 	cntlzd  r3,r3
-  b4:	20 63 00 40 	subfic  r3,r3,64
-  b8:	7c 63 07 b4 	extsw   r3,r3
-  bc:	4e 80 00 20 	blr
-
-Those builtins have been in GCC since at least 3.4.6 (see
-https://gcc.gnu.org/onlinedocs/gcc-3.4.6/gcc/Other-Builtins.html )
+0000000000000030 <.testffz>:
+  30:	38 03 00 01 	addi    r0,r3,1
+  34:	7c 03 18 78 	andc    r3,r0,r3
+  38:	7c 63 00 74 	cntlzd  r3,r3
+  3c:	20 63 00 3f 	subfic  r3,r3,63
+  40:	4e 80 00 20 	blr
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/include/asm/bitops.h | 24 +++---------------------
- 1 file changed, 3 insertions(+), 21 deletions(-)
+ arch/powerpc/include/asm/bitops.h | 20 +-------------------
+ 1 file changed, 1 insertion(+), 19 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/bitops.h b/arch/powerpc/include/asm/bitops.h
-index 71b05685f3a7..af36b404dbe8 100644
+index af36b404dbe8..d835cd697d6b 100644
 --- a/arch/powerpc/include/asm/bitops.h
 +++ b/arch/powerpc/include/asm/bitops.h
-@@ -263,33 +263,15 @@ static __inline__ unsigned long ffz(unsigned long x)
-  */
- static __inline__ int fls(unsigned int x)
- {
--	int lz;
--
--	asm ("cntlzw %0,%1" : "=r" (lz) : "r" (x));
--	return 32 - lz;
-+	return 32 - __builtin_clz(x);
+@@ -233,25 +233,7 @@ int __ilog2_u64(u64 n)
  }
- 
--static __inline__ unsigned long __fls(unsigned long x)
--{
--	return __ilog2(x);
--}
-+#include <asm-generic/bitops/builtin-__fls.h>
+ #endif
  
 -/*
-- * 64-bit can do this using one cntlzd (count leading zeroes doubleword)
-- * instruction; for 32-bit we use the generic version, which does two
-- * 32-bit fls calls.
+- * Determines the bit position of the least significant 0 bit in the
+- * specified double word. The returned bit position will be
+- * zero-based, starting from the right side (63/31 - 0).
 - */
--#ifdef __powerpc64__
- static __inline__ int fls64(__u64 x)
- {
--	int lz;
+-static __inline__ unsigned long ffz(unsigned long x)
+-{
+-	/* no zero exists anywhere in the 8 byte area. */
+-	if ((x = ~x) == 0)
+-		return BITS_PER_LONG;
 -
--	asm ("cntlzd %0,%1" : "=r" (lz) : "r" (x));
--	return 64 - lz;
-+	return 64 - __builtin_clzll(x);
- }
--#else
--#include <asm-generic/bitops/fls64.h>
--#endif /* __powerpc64__ */
+-	/*
+-	 * Calculate the bit position of the least significant '1' bit in x
+-	 * (since x has been changed this will actually be the least significant
+-	 * '0' bit in * the original x).  Note: (x & -x) gives us a mask that
+-	 * is the least significant * (RIGHT-most) 1-bit of the value in x.
+-	 */
+-	return __ilog2(x & -x);
+-}
++#include <asm-generic/bitops/ffz.h>
  
- #ifdef CONFIG_PPC64
- unsigned int __arch_hweight8(unsigned int w);
+ #include <asm-generic/bitops/builtin-__ffs.h>
+ 
 -- 
 2.12.0
