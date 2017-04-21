@@ -1,49 +1,42 @@
-Return-Path: <paulmck@linux.vnet.ibm.com>
+Return-Path: <shilpa.bhat@linux.vnet.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w8Msv4GzWzDqL3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Apr 2017 14:18:11 +1000 (AEST)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v3L4E78A143424
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Apr 2017 00:18:06 -0400
-Received: from e11.ny.us.ibm.com (e11.ny.us.ibm.com [129.33.205.201])
- by mx0b-001b2d01.pphosted.com with ESMTP id 29xxfapaf3-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w8ND10KdRzDqKk
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Apr 2017 14:33:52 +1000 (AEST)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v3L4T4i5056067
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Apr 2017 00:33:50 -0400
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 29xucargbb-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Apr 2017 00:18:06 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Apr 2017 00:33:49 -0400
 Received: from localhost
- by e11.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <paulmck@linux.vnet.ibm.com>;
- Fri, 21 Apr 2017 00:18:04 -0400
-Date: Thu, 20 Apr 2017 21:17:54 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Michael Ellerman <michaele@au1.ibm.com>
-Cc: Paolo Bonzini <pbonzini@redhat.com>, tglx@linutronix.de,
- kvm@vger.kernel.org, oleg@redhat.com, peterz@infradead.org,
- fweisbec@gmail.com, bobby.prani@gmail.com, jiangshanlai@gmail.com,
- linux-kernel@vger.kernel.org, kvm-ppc@vger.kernel.org,
- josh@joshtriplett.org, dhowells@redhat.com, edumazet@google.com,
- "paulus@samba.org" <paulus@samba.org>, rostedt@goodmis.org,
- dipankar@in.ibm.com, mathieu.desnoyers@efficios.com,
- akpm@linux-foundation.org,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- mingo@kernel.org
-Subject: Re: powerpc KVM build break in linux-next (was Re: [PATCH
- tip/core/rcu 40/40] srcu: Parallelize callback handling)
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20170412174003.GA23207@linux.vnet.ibm.com>
- <1492018825-25634-40-git-send-email-paulmck@linux.vnet.ibm.com>
- <871ssn692a.fsf@concordia.ellerman.id.au>
- <24c85d26-bb4b-892d-5837-6d02af570e0e@redhat.com>
- <20170421003834.GA14351@linux.vnet.ibm.com>
- <87zifatu3a.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <87zifatu3a.fsf@concordia.ellerman.id.au>
-Message-Id: <20170421041754.GV3956@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <shilpa.bhat@linux.vnet.ibm.com>;
+ Fri, 21 Apr 2017 14:33:10 +1000
+Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v3L4WxI96029578
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Apr 2017 14:33:07 +1000
+Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
+ by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v3L4WYF3001637
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Apr 2017 14:32:35 +1000
+From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+To: Jean Delvare <jdelvare@suse.com>, Guenter Roeck <linux@roeck-us.net>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Cc: linux-hwmon@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, svaidy@linux.vnet.ibm.com,
+ ego@linux.vnet.ibm.com, akshay.adiga@linux.vnet.ibm.com,
+ andrew@aj.id.au, clg@kaod.org,
+ Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Subject: [PATCH] hwmon: (ibmpowernv) Add min/max attributes and current sensors
+Date: Fri, 21 Apr 2017 10:01:52 +0530
+Message-Id: <1492749112-32465-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -53,91 +46,110 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Apr 21, 2017 at 11:42:01AM +1000, Michael Ellerman wrote:
-> "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> writes:
-> > On Thu, Apr 20, 2017 at 05:28:32PM +0200, Paolo Bonzini wrote:
-> >> On 20/04/2017 05:40, Michael Ellerman wrote:
-> >> > "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> writes:
-> >> > 
-> >> > This change seems to have had the non-obvious effect of breaking the
-> >> > powerpc KVM build.
-> ...
-> >> 
-> >> Michael, if you want to move the two srcu structs at the end of struct
-> >> kvm, that would be fine by me.  Please send a patch yourself so you can
-> >> test it on PPC.  Thanks,
-> >
-> > On the off-chance that it is at all helpful, I have added the commit
-> > shown below to -rcu.
-> 
-> As shown below :)
-> 
-> > If it helps, I am happy to push this, but am just as happy to drop it
-> > in favor of some other fix. If at all possible, I would like to get
-> > this into the upcoming merge window.
-> 
-> Thanks, this looks perfect to me, and if you're happy to put it on top
-> of your tree that would limit the breakage to a smaller history window,
-> so that would be ideal.
-> 
-> Tested-by: Michael Ellerman <mpe@ellerman.id.au>
+Add support for adding min/max values for the inband sensors copied by
+OCC to main memory. And also add current(mA) sensors to the list.
 
-Thank you, Michael!
+Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+---
+ drivers/hwmon/ibmpowernv.c | 55 ++++++++++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 53 insertions(+), 2 deletions(-)
 
-Paolo, does this look good to you?  My upstream maintainer will be much
-more likely to take this with your ack.  ;-)
-
-							Thanx, Paul
-
-> cheers
-> 
-> 
-> >From a19a6617e2817e485ccc2f7cc5a97bd7ff769b87 Mon Sep 17 00:00:00 2001
-> From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-> Date: Thu, 20 Apr 2017 17:30:06 -0700
-> Subject: kvm: Move srcu_struct fields to end of struct kvm
-> 
-> Parallelizing SRCU callback handling increased the size of srcu_struct,
-> which moved the kvm_arch field within the kvm struct out of reach of
-> powerpc's current assembly code, resulting in the following sort of
-> build error:
-> 
-> arch/powerpc/kvm/book3s_hv_rmhandlers.S:617: Error: operand out of range (0x000000000000b328 is not between 0xffffffffffff8000 and 0x0000000000007fff)
-> 
-> This commit moves the srcu_struct fields in the kvm structure to follow
-> the kvm_arch field, which again allows powerpc's assembly code to
-> reach it.
-> 
-> Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
-> Reported-by: Michael Ellerman <michaele@au1.ibm.com>
-> Reported-by: kbuild test robot <fengguang.wu@intel.com>
-> Suggested-by: Paolo Bonzini <pbonzini@redhat.com>
-> Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> ---
->  include/linux/kvm_host.h | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
-> index 2c14ad9..96c8e29 100644
-> --- a/include/linux/kvm_host.h
-> +++ b/include/linux/kvm_host.h
-> @@ -375,8 +375,6 @@ struct kvm {
->  	struct mutex slots_lock;
->  	struct mm_struct *mm; /* userspace tied to this vm */
->  	struct kvm_memslots *memslots[KVM_ADDRESS_SPACE_NUM];
-> -	struct srcu_struct srcu;
-> -	struct srcu_struct irq_srcu;
->  	struct kvm_vcpu *vcpus[KVM_MAX_VCPUS];
-> 
->  	/*
-> @@ -429,6 +427,8 @@ struct kvm {
->  	struct list_head devices;
->  	struct dentry *debugfs_dentry;
->  	struct kvm_stat_data **debugfs_stat_data;
-> +	struct srcu_struct srcu;
-> +	struct srcu_struct irq_srcu;
->  };
-> 
->  #define kvm_err(fmt, ...) \
-> -- 
-> cgit v1.1
+diff --git a/drivers/hwmon/ibmpowernv.c b/drivers/hwmon/ibmpowernv.c
+index 6d2e660..1f329fa8 100644
+--- a/drivers/hwmon/ibmpowernv.c
++++ b/drivers/hwmon/ibmpowernv.c
+@@ -50,6 +50,7 @@ enum sensors {
+ 	TEMP,
+ 	POWER_SUPPLY,
+ 	POWER_INPUT,
++	CURRENT,
+ 	MAX_SENSOR_TYPE,
+ };
+ 
+@@ -65,7 +66,8 @@ enum sensors {
+ 	{"fan", "ibm,opal-sensor-cooling-fan"},
+ 	{"temp", "ibm,opal-sensor-amb-temp"},
+ 	{"in", "ibm,opal-sensor-power-supply"},
+-	{"power", "ibm,opal-sensor-power"}
++	{"power", "ibm,opal-sensor-power"},
++	{"curr"}, /* Follows newer device tree compatible ibm,opal-sensor */
+ };
+ 
+ struct sensor_data {
+@@ -287,6 +289,7 @@ static int populate_attr_groups(struct platform_device *pdev)
+ 	opal = of_find_node_by_path("/ibm,opal/sensors");
+ 	for_each_child_of_node(opal, np) {
+ 		const char *label;
++		int len;
+ 
+ 		if (np->name == NULL)
+ 			continue;
+@@ -298,10 +301,14 @@ static int populate_attr_groups(struct platform_device *pdev)
+ 		sensor_groups[type].attr_count++;
+ 
+ 		/*
+-		 * add a new attribute for labels
++		 * add attributes for labels, min and max
+ 		 */
+ 		if (!of_property_read_string(np, "label", &label))
+ 			sensor_groups[type].attr_count++;
++		if (of_find_property(np, "sensor-data-min", &len))
++			sensor_groups[type].attr_count++;
++		if (of_find_property(np, "sensor-data-max", &len))
++			sensor_groups[type].attr_count++;
+ 	}
+ 
+ 	of_node_put(opal);
+@@ -428,6 +435,50 @@ static int create_device_attrs(struct platform_device *pdev)
+ 			pgroups[type]->attrs[sensor_groups[type].attr_count++] =
+ 				&sdata[count++].dev_attr.attr;
+ 		}
++
++		if (!of_property_read_u32(np, "sensor-data-max", &sensor_id)) {
++			switch (type) {
++			case POWER_INPUT:
++				attr_name = "input_highest";
++				break;
++			case TEMP:
++				attr_name = "max";
++				break;
++			default:
++				attr_name = "highest";
++				break;
++			}
++
++			sdata[count].id = sensor_id;
++			sdata[count].type = type;
++			sdata[count].hwmon_index = sdata[count - 1].hwmon_index;
++			create_hwmon_attr(&sdata[count], attr_name,
++					  show_sensor);
++			pgroups[type]->attrs[sensor_groups[type].attr_count++] =
++				&sdata[count++].dev_attr.attr;
++		}
++
++		if (!of_property_read_u32(np, "sensor-data-min", &sensor_id)) {
++			switch (type) {
++			case POWER_INPUT:
++				attr_name = "input_lowest";
++				break;
++			case TEMP:
++				attr_name = "min";
++				break;
++			default:
++				attr_name = "lowest";
++				break;
++			}
++
++			sdata[count].id = sensor_id;
++			sdata[count].type = type;
++			sdata[count].hwmon_index = sdata[count - 1].hwmon_index;
++			create_hwmon_attr(&sdata[count], attr_name,
++					  show_sensor);
++			pgroups[type]->attrs[sensor_groups[type].attr_count++] =
++				&sdata[count++].dev_attr.attr;
++		}
+ 	}
+ 
+ exit_put_node:
+-- 
+1.8.3.1
