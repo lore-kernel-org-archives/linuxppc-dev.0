@@ -1,16 +1,49 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <paulmck@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w8Mh766SfzDqLB
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Apr 2017 14:09:43 +1000 (AEST)
-In-Reply-To: <1492667755-16810-1-git-send-email-mpe@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
-From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: dan.carpenter@oracle.com
-Subject: Re: powerpc/xive: Fix missing check of rc != OPAL_BUSY
-Message-Id: <3w8Mh74g2Tz9s2Q@ozlabs.org>
-Date: Fri, 21 Apr 2017 14:09:43 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w8Msv4GzWzDqL3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Apr 2017 14:18:11 +1000 (AEST)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v3L4E78A143424
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Apr 2017 00:18:06 -0400
+Received: from e11.ny.us.ibm.com (e11.ny.us.ibm.com [129.33.205.201])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 29xxfapaf3-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Apr 2017 00:18:06 -0400
+Received: from localhost
+ by e11.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <paulmck@linux.vnet.ibm.com>;
+ Fri, 21 Apr 2017 00:18:04 -0400
+Date: Thu, 20 Apr 2017 21:17:54 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Michael Ellerman <michaele@au1.ibm.com>
+Cc: Paolo Bonzini <pbonzini@redhat.com>, tglx@linutronix.de,
+ kvm@vger.kernel.org, oleg@redhat.com, peterz@infradead.org,
+ fweisbec@gmail.com, bobby.prani@gmail.com, jiangshanlai@gmail.com,
+ linux-kernel@vger.kernel.org, kvm-ppc@vger.kernel.org,
+ josh@joshtriplett.org, dhowells@redhat.com, edumazet@google.com,
+ "paulus@samba.org" <paulus@samba.org>, rostedt@goodmis.org,
+ dipankar@in.ibm.com, mathieu.desnoyers@efficios.com,
+ akpm@linux-foundation.org,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ mingo@kernel.org
+Subject: Re: powerpc KVM build break in linux-next (was Re: [PATCH
+ tip/core/rcu 40/40] srcu: Parallelize callback handling)
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20170412174003.GA23207@linux.vnet.ibm.com>
+ <1492018825-25634-40-git-send-email-paulmck@linux.vnet.ibm.com>
+ <871ssn692a.fsf@concordia.ellerman.id.au>
+ <24c85d26-bb4b-892d-5837-6d02af570e0e@redhat.com>
+ <20170421003834.GA14351@linux.vnet.ibm.com>
+ <87zifatu3a.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <87zifatu3a.fsf@concordia.ellerman.id.au>
+Message-Id: <20170421041754.GV3956@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,22 +53,91 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2017-04-20 at 05:55:55 UTC, Michael Ellerman wrote:
-> Dan Carpenter noticed that the code in __xive_native_disable_queue() has a for
-> loop with an unconditional break in the middle, which doesn't make a lot of
-> sense.
+On Fri, Apr 21, 2017 at 11:42:01AM +1000, Michael Ellerman wrote:
+> "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> writes:
+> > On Thu, Apr 20, 2017 at 05:28:32PM +0200, Paolo Bonzini wrote:
+> >> On 20/04/2017 05:40, Michael Ellerman wrote:
+> >> > "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> writes:
+> >> > 
+> >> > This change seems to have had the non-obvious effect of breaking the
+> >> > powerpc KVM build.
+> ...
+> >> 
+> >> Michael, if you want to move the two srcu structs at the end of struct
+> >> kvm, that would be fine by me.  Please send a patch yourself so you can
+> >> test it on PPC.  Thanks,
+> >
+> > On the off-chance that it is at all helpful, I have added the commit
+> > shown below to -rcu.
 > 
-> What the code's supposed to do is loop as long as OPAL says it's busy, if we get
-> any other return code, either success or failure, then we should break the loop.
+> As shown below :)
 > 
-> So add the missing check.
+> > If it helps, I am happy to push this, but am just as happy to drop it
+> > in favor of some other fix. If at all possible, I would like to get
+> > this into the upcoming merge window.
 > 
-> Fixes: 243e25112d06 ("powerpc/xive: Native exploitation of the XIVE interrupt controller")
-> Reported-by: Dan Carpenter <dan.carpenter@oracle.com>
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> Thanks, this looks perfect to me, and if you're happy to put it on top
+> of your tree that would limit the breakage to a smaller history window,
+> so that would be ideal.
+> 
+> Tested-by: Michael Ellerman <mpe@ellerman.id.au>
 
-Applied to powerpc next.
+Thank you, Michael!
 
-https://git.kernel.org/powerpc/c/686978b15cef8314c3b3f38f0124e0
+Paolo, does this look good to you?  My upstream maintainer will be much
+more likely to take this with your ack.  ;-)
 
-cheers
+							Thanx, Paul
+
+> cheers
+> 
+> 
+> >From a19a6617e2817e485ccc2f7cc5a97bd7ff769b87 Mon Sep 17 00:00:00 2001
+> From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+> Date: Thu, 20 Apr 2017 17:30:06 -0700
+> Subject: kvm: Move srcu_struct fields to end of struct kvm
+> 
+> Parallelizing SRCU callback handling increased the size of srcu_struct,
+> which moved the kvm_arch field within the kvm struct out of reach of
+> powerpc's current assembly code, resulting in the following sort of
+> build error:
+> 
+> arch/powerpc/kvm/book3s_hv_rmhandlers.S:617: Error: operand out of range (0x000000000000b328 is not between 0xffffffffffff8000 and 0x0000000000007fff)
+> 
+> This commit moves the srcu_struct fields in the kvm structure to follow
+> the kvm_arch field, which again allows powerpc's assembly code to
+> reach it.
+> 
+> Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
+> Reported-by: Michael Ellerman <michaele@au1.ibm.com>
+> Reported-by: kbuild test robot <fengguang.wu@intel.com>
+> Suggested-by: Paolo Bonzini <pbonzini@redhat.com>
+> Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> ---
+>  include/linux/kvm_host.h | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
+> index 2c14ad9..96c8e29 100644
+> --- a/include/linux/kvm_host.h
+> +++ b/include/linux/kvm_host.h
+> @@ -375,8 +375,6 @@ struct kvm {
+>  	struct mutex slots_lock;
+>  	struct mm_struct *mm; /* userspace tied to this vm */
+>  	struct kvm_memslots *memslots[KVM_ADDRESS_SPACE_NUM];
+> -	struct srcu_struct srcu;
+> -	struct srcu_struct irq_srcu;
+>  	struct kvm_vcpu *vcpus[KVM_MAX_VCPUS];
+> 
+>  	/*
+> @@ -429,6 +427,8 @@ struct kvm {
+>  	struct list_head devices;
+>  	struct dentry *debugfs_dentry;
+>  	struct kvm_stat_data **debugfs_stat_data;
+> +	struct srcu_struct srcu;
+> +	struct srcu_struct irq_srcu;
+>  };
+> 
+>  #define kvm_err(fmt, ...) \
+> -- 
+> cgit v1.1
