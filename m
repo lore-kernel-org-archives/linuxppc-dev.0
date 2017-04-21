@@ -1,27 +1,23 @@
-Return-Path: <clg@kaod.org>
-Received: from 18.mo1.mail-out.ovh.net (18.mo1.mail-out.ovh.net [46.105.35.72])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <broonie@sirena.org.uk>
+Received: from mezzanine.sirena.org.uk (mezzanine.sirena.org.uk
+ [IPv6:2400:8900::f03c:91ff:fedb:4f4])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w8hD44PcNzDq8V
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Apr 2017 02:34:59 +1000 (AEST)
-Received: from player730.ha.ovh.net (b6.ovh.net [213.186.33.56])
- by mo1.mail-out.ovh.net (Postfix) with ESMTP id 3E38469AF2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Apr 2017 13:48:08 +0200 (CEST)
-Subject: Re: [PATCH] hwmon: (ibmpowernv) Add min/max attributes and current
- sensors
-To: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
- Jean Delvare <jdelvare@suse.com>, Guenter Roeck <linux@roeck-us.net>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-References: <1492749112-32465-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
-Cc: linux-hwmon@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, svaidy@linux.vnet.ibm.com,
- ego@linux.vnet.ibm.com, akshay.adiga@linux.vnet.ibm.com, andrew@aj.id.au
-From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
-Message-ID: <d4e170f4-b8a0-480a-3095-779cf27650f3@kaod.org>
-Date: Fri, 21 Apr 2017 13:47:50 +0200
-MIME-Version: 1.0
-In-Reply-To: <1492749112-32465-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=windows-1252
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w8jQ94P7LzDq8W
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Apr 2017 03:28:49 +1000 (AEST)
+From: Mark Brown <broonie@kernel.org>
+To: Stefan Agner <stefan@agner.ch>
+Cc: Nicolin Chen <nicoleotsuka@gmail.com>, Mark Brown <broonie@kernel.org>,
+ Timur Tabi <timur@tabi.org>, Nicolin Chen <nicoleotsuka@gmail.com>,
+ Xiubo Li <Xiubo.Lee@gmail.com>, Fabio Estevam <fabio.estevam@nxp.com>,
+ alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org,
+ Nicolas Iooss <nicolas.iooss_linux@m4x.org>, linux-kernel@vger.kernel.org,
+ alsa-devel@alsa-project.org
+In-Reply-To: <20170115124331.3546-1-nicolas.iooss_linux@m4x.org>
+Message-Id: <E1d1cMA-0001vD-Sz@debutante>
+Date: Fri, 21 Apr 2017 18:28:30 +0100
+Subject: Applied "ASoC: fsl_asrc_dma: use correct direction enum type" to the
+ asoc tree
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,127 +27,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello Shilpasri,
+The patch
 
-On 04/21/2017 06:31 AM, Shilpasri G Bhat wrote:
-> Add support for adding min/max values for the inband sensors copied by
-> OCC to main memory. And also add current(mA) sensors to the list.
-> 
-> Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-> ---
->  drivers/hwmon/ibmpowernv.c | 55 ++++++++++++++++++++++++++++++++++++++++++++--
->  1 file changed, 53 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/hwmon/ibmpowernv.c b/drivers/hwmon/ibmpowernv.c
-> index 6d2e660..1f329fa8 100644
-> --- a/drivers/hwmon/ibmpowernv.c
-> +++ b/drivers/hwmon/ibmpowernv.c
-> @@ -50,6 +50,7 @@ enum sensors {
->  	TEMP,
->  	POWER_SUPPLY,
->  	POWER_INPUT,
-> +	CURRENT,
->  	MAX_SENSOR_TYPE,
->  };
->  
-> @@ -65,7 +66,8 @@ enum sensors {
->  	{"fan", "ibm,opal-sensor-cooling-fan"},
->  	{"temp", "ibm,opal-sensor-amb-temp"},
->  	{"in", "ibm,opal-sensor-power-supply"},
-> -	{"power", "ibm,opal-sensor-power"}
-> +	{"power", "ibm,opal-sensor-power"},
-> +	{"curr"}, /* Follows newer device tree compatible ibm,opal-sensor */
+   ASoC: fsl_asrc_dma: use correct direction enum type
 
-why isn't there a compatible string ? 
+has been applied to the asoc tree at
 
->  };
->  
->  struct sensor_data {
-> @@ -287,6 +289,7 @@ static int populate_attr_groups(struct platform_device *pdev)
->  	opal = of_find_node_by_path("/ibm,opal/sensors");
->  	for_each_child_of_node(opal, np) {
->  		const char *label;
-> +		int len;
->  
->  		if (np->name == NULL)
->  			continue;
-> @@ -298,10 +301,14 @@ static int populate_attr_groups(struct platform_device *pdev)
->  		sensor_groups[type].attr_count++;
->  
->  		/*
-> -		 * add a new attribute for labels
-> +		 * add attributes for labels, min and max
->  		 */
->  		if (!of_property_read_string(np, "label", &label))
->  			sensor_groups[type].attr_count++;
+   git://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git 
 
-We are negating of_property_read_string() above, but not below.
-I wonder why ? 
- 
-> +		if (of_find_property(np, "sensor-data-min", &len))
-> +			sensor_groups[type].attr_count++;
-> +		if (of_find_property(np, "sensor-data-max", &len))
-> +			sensor_groups[type].attr_count++;
->  	}
->  
->  	of_node_put(opal);
-> @@ -428,6 +435,50 @@ static int create_device_attrs(struct platform_device *pdev)
->  			pgroups[type]->attrs[sensor_groups[type].attr_count++] =
->  				&sdata[count++].dev_attr.attr;
->  		}
-> +
-> +		if (!of_property_read_u32(np, "sensor-data-max", &sensor_id)) {
-> +			switch (type) {
-> +			case POWER_INPUT:
-> +				attr_name = "input_highest";
-> +				break;
-> +			case TEMP:
-> +				attr_name = "max";
-> +				break;
-> +			default:
-> +				attr_name = "highest";
-> +				break;
-> +			}
+All being well this means that it will be integrated into the linux-next
+tree (usually sometime in the next 24 hours) and sent to Linus during
+the next merge window (or sooner if it is a bug fix), however if
+problems are discovered then the patch may be dropped or reverted.  
 
-May be we could use a converting routine here ? create_device_attrs()
-is getting big.
+You may get further e-mails resulting from automated or manual testing
+and review of the tree, please engage with people reporting problems and
+send followup patches addressing any issues that are reported if needed.
 
-> +			sdata[count].id = sensor_id;
-> +			sdata[count].type = type;
-> +			sdata[count].hwmon_index = sdata[count - 1].hwmon_index;
-> +			create_hwmon_attr(&sdata[count], attr_name,
-> +					  show_sensor);
-> +			pgroups[type]->attrs[sensor_groups[type].attr_count++] =
-> +				&sdata[count++].dev_attr.attr;
-> +		}
-> +
-> +		if (!of_property_read_u32(np, "sensor-data-min", &sensor_id)) {
-> +			switch (type) {
-> +			case POWER_INPUT:
-> +				attr_name = "input_lowest";
-> +				break;
-> +			case TEMP:
-> +				attr_name = "min";
-> +				break;
-> +			default:
-> +				attr_name = "lowest";
-> +				break;
-> +			}
+If any updates are required or you are submitting further changes they
+should be sent as incremental updates against current git, existing
+patches will not be replaced.
 
-same here.
+Please add any relevant lists and maintainers to the CCs when replying
+to this mail.
 
 Thanks,
+Mark
 
-C.
-> +			sdata[count].id = sensor_id;
-> +			sdata[count].type = type;
-> +			sdata[count].hwmon_index = sdata[count - 1].hwmon_index;
-> +			create_hwmon_attr(&sdata[count], attr_name,
-> +					  show_sensor);
-> +			pgroups[type]->attrs[sensor_groups[type].attr_count++] =
-> +				&sdata[count++].dev_attr.attr;
-> +		}
->  	}
->  
->  exit_put_node:
-> 
+>From 24dbd9edb668e2376ce871199f5ee4fd59c62276 Mon Sep 17 00:00:00 2001
+From: Stefan Agner <stefan@agner.ch>
+Date: Wed, 19 Apr 2017 23:36:07 -0700
+Subject: [PATCH] ASoC: fsl_asrc_dma: use correct direction enum type
+
+The direction argument is of type enum dma_transfer_direction, and
+not enum dma_data_direction. The enumeration values are the same
+so this did not had an effect in practise.
+
+Signed-off-by: Stefan Agner <stefan@agner.ch>
+Acked-by: Nicolin Chen <nicoleotsuka@gmail.com>
+Signed-off-by: Mark Brown <broonie@kernel.org>
+---
+ sound/soc/fsl/fsl_asrc_dma.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/sound/soc/fsl/fsl_asrc_dma.c b/sound/soc/fsl/fsl_asrc_dma.c
+index dc30d780f874..282d841840b1 100644
+--- a/sound/soc/fsl/fsl_asrc_dma.c
++++ b/sound/soc/fsl/fsl_asrc_dma.c
+@@ -76,7 +76,7 @@ static int fsl_asrc_dma_prepare_and_submit(struct snd_pcm_substream *substream)
+ 			pair->dma_chan[!dir], runtime->dma_addr,
+ 			snd_pcm_lib_buffer_bytes(substream),
+ 			snd_pcm_lib_period_bytes(substream),
+-			dir == OUT ? DMA_TO_DEVICE : DMA_FROM_DEVICE, flags);
++			dir == OUT ? DMA_MEM_TO_DEV : DMA_DEV_TO_MEM, flags);
+ 	if (!pair->desc[!dir]) {
+ 		dev_err(dev, "failed to prepare slave DMA for Front-End\n");
+ 		return -ENOMEM;
+-- 
+2.11.0
