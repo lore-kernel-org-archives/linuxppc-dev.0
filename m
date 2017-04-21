@@ -1,46 +1,40 @@
-Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
+Return-Path: <pc@us.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w8cCK0lrGzDqFW
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Apr 2017 23:34:04 +1000 (AEST)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v3LDXxFU102469
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Apr 2017 09:33:59 -0400
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
- by mx0b-001b2d01.pphosted.com with ESMTP id 29y02edt8q-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w8cGf2vjwzDq5b
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Apr 2017 23:36:58 +1000 (AEST)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v3LDYbtZ006893
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Apr 2017 09:36:55 -0400
+Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 29yffj2yd9-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Apr 2017 09:33:57 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Apr 2017 09:36:55 -0400
 Received: from localhost
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Fri, 21 Apr 2017 23:33:09 +1000
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v3LDWvq48323482
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Apr 2017 23:33:05 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v3LDWWDs026243
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Apr 2017 23:32:32 +1000
-Date: Fri, 21 Apr 2017 13:32:10 +0000
-From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2 3/3] powerpc/mm: Implement CONFIG_DEBUG_RODATA on PPC32
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Christophe Leroy
- <christophe.leroy@c-s.fr>,
- Michael Ellerman <mpe@ellerman.id.au>, Scott Wood <oss@buserror.net>,
- Paul Mackerras <paulus@samba.org>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-References: <cover.1492778567.git.christophe.leroy@c-s.fr>
- <97d45054364142af48b8767f9f9e115504d7568b.1492778567.git.christophe.leroy@c-s.fr>
-In-Reply-To: <97d45054364142af48b8767f9f9e115504d7568b.1492778567.git.christophe.leroy@c-s
- .fr>
+ for <linuxppc-dev@lists.ozlabs.org> from <pc@us.ibm.com>;
+ Fri, 21 Apr 2017 07:36:54 -0600
+Reply-To: pc@us.ibm.com
+Subject: Re: [PATCH v4 4/7] powerpc/kprobes: Use safer string functions in
+ kprobe_lookup_name()
+References: <6e14d22994530fb5200c74d1593e73541d3b8028.1492604782.git.naveen.n.rao@linux.vnet.ibm.com>
+ <20170421123320.7344-1-naveen.n.rao@linux.vnet.ibm.com>
+ <5393535f-4469-d6b7-f7ce-256a5612999f@us.ibm.com>
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Masami Hiramatsu <mhiramat@kernel.org>
+Cc: linuxppc-dev@lists.ozlabs.org, Ingo Molnar <mingo@kernel.org>,
+ linux-kernel@vger.kernel.org
+From: Paul Clarke <pc@us.ibm.com>
+Date: Fri, 21 Apr 2017 08:36:48 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <1492781365.w4t118903f.astroid@naverao1-tp.none>
+In-Reply-To: <5393535f-4469-d6b7-f7ce-256a5612999f@us.ibm.com>
+Content-Type: text/plain; charset=windows-1252
+Message-Id: <8b6fb142-3cac-fa8a-406a-9f9b0949de07@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,45 +44,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Excerpts from Christophe Leroy's message of April 21, 2017 18:32:
-> This patch implements CONFIG_DEBUG_RODATA on PPC32.
->=20
-> As for CONFIG_DEBUG_PAGEALLOC, it deactivates BAT and LTLB mappings
-> in order to allow page protection setup at the level of each page.
->=20
-> As BAT/LTLB mappings are deactivated, their might be performance
-> impact. For this reason, we keep it OFF by default.
->=20
-> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+On 04/21/2017 08:33 AM, Paul Clarke wrote:
+> On 04/21/2017 07:33 AM, Naveen N. Rao wrote:
+>>  	} else if (name[0] != '.') {
+>>  		dot_name[0] = '.';
+>>  		dot_name[1] = '\0';
+>> -		strncat(dot_name, name, KSYM_NAME_LEN - 2);
+>> +		strlcat(dot_name, name, sizeof(dot_name));
+> 
+> and here do:
+> strncpy(&dot_name[1], name, sizeof(dot_name));
 
-[snip]
+oops.  s/sizeof(dot_name)/sizeof(dot_name) - 1/
 
-> diff --git a/arch/powerpc/kernel/ftrace.c=20
-> b/arch/powerpc/kernel/ftrace.c
-> index 32509de6ce4c..06d2ac53f471 100644
-> --- a/arch/powerpc/kernel/ftrace.c
-> +++ b/arch/powerpc/kernel/ftrace.c
-> @@ -46,6 +46,7 @@ static int
->  ftrace_modify_code(unsigned long ip, unsigned int old, unsigned int new)
->  {
->  	unsigned int replaced;
-> +	int err;
->=20
->  	/*
->  	 * Note:
-> @@ -67,10 +68,11 @@ ftrace_modify_code(unsigned long ip, unsigned int old=
-, unsigned int new)
->  	}
->=20
->  	/* replace the text with the new text */
-> -	if (patch_instruction((unsigned int *)ip, new))
-> -		return -EPERM;
-> +	set_kernel_text_rw(ip);
-> +	err =3D patch_instruction((unsigned int *)ip, new);
-> +	set_kernel_text_ro(ip);
-
-Is there a reason to not put those inside patch_instruction()?
-
-- Naveen
-
-=
+PC
