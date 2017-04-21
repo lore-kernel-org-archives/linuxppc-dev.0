@@ -2,15 +2,14 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w8Mh73xyZzDqLB
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w8Mh766SfzDqLB
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Apr 2017 14:09:43 +1000 (AEST)
-In-Reply-To: <20170413094548.10616-1-npiggin@gmail.com>
-To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <1492667755-16810-1-git-send-email-mpe@ellerman.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Paul Mackerras <paulus@samba.org>, Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: powerpc/64s: Use relon prolog for EXC_VIRT_OOL_MASKABLE_HV
- handlers
-Message-Id: <3w8Mh73PlNz9s73@ozlabs.org>
+Cc: dan.carpenter@oracle.com
+Subject: Re: powerpc/xive: Fix missing check of rc != OPAL_BUSY
+Message-Id: <3w8Mh74g2Tz9s2Q@ozlabs.org>
 Date: Fri, 21 Apr 2017 14:09:43 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -21,20 +20,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2017-04-13 at 09:45:48 UTC, Nicholas Piggin wrote:
-> Hypervisor Virtualization and Directed Hypervisor Doorbell interrupt
-> handlers use the macro EXC_VIRT_OOL_MASKABLE_HV for their relocation-on
-> handlers, which calls MASKABLE_RELON_EXCEPTION_HV_OOL, which uses the
-> real mode interrupt prolog.
+On Thu, 2017-04-20 at 05:55:55 UTC, Michael Ellerman wrote:
+> Dan Carpenter noticed that the code in __xive_native_disable_queue() has a for
+> loop with an unconditional break in the middle, which doesn't make a lot of
+> sense.
 > 
-> Use the RELON variant instead to reduce overhead.
+> What the code's supposed to do is loop as long as OPAL says it's busy, if we get
+> any other return code, either success or failure, then we should break the loop.
 > 
-> Fixes: 1707dd1613 ("powerpc: Save CFAR before branching in interrupt entry paths")
-> Cc: Paul Mackerras <paulus@samba.org>
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> So add the missing check.
+> 
+> Fixes: 243e25112d06 ("powerpc/xive: Native exploitation of the XIVE interrupt controller")
+> Reported-by: Dan Carpenter <dan.carpenter@oracle.com>
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
-Applied to powerpc next, thanks.
+Applied to powerpc next.
 
-https://git.kernel.org/powerpc/c/a050d20d024dc3e1b988e715e2d811
+https://git.kernel.org/powerpc/c/686978b15cef8314c3b3f38f0124e0
 
 cheers
