@@ -1,8 +1,8 @@
 Return-Path: <shuahkh@osg.samsung.com>
 Received: from osg.samsung.com
  (ec2-52-27-115-49.us-west-2.compute.amazonaws.com [52.27.115.49])
- by lists.ozlabs.org (Postfix) with ESMTP id 3w8sHj1HpqzDq9L
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Apr 2017 09:23:44 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTP id 3w8sHk30kFzDq9L
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Apr 2017 09:23:46 +1000 (AEST)
 From: Shuah Khan <shuahkh@osg.samsung.com>
 To: shuah@kernel.org, bamvor.zhangjian@linaro.org, benh@kernel.crashing.org,
  paulus@samba.org, mpe@ellerman.id.au, dvhart@infradead.org
@@ -11,9 +11,9 @@ Cc: Shuah Khan <shuahkh@osg.samsung.com>, viro@zeniv.linux.org.uk,
  dave.hansen@linux.intel.com, dsafonov@virtuozzo.com, rkrcmar@redhat.com,
  linux-kselftest@vger.kernel.org, linux-kernel@vger.kernel.org,
  linux-gpio@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 3/8] selftests: futex: override clean in lib.mk to fix warnings
-Date: Fri, 21 Apr 2017 17:14:45 -0600
-Message-Id: <2ccc4e205a4e25e227e7a90c0037d9e6a6f99ed1.1492815938.git.shuahkh@osg.samsung.com>
+Subject: [PATCH 4/8] selftests: gpio: override clean in lib.mk to fix warnings
+Date: Fri, 21 Apr 2017 17:14:46 -0600
+Message-Id: <b216b1808abff1e75c1b325a338a518b8477257a.1492815938.git.shuahkh@osg.samsung.com>
 In-Reply-To: <cover.1492815938.git.shuahkh@osg.samsung.com>
 References: <cover.1492815938.git.shuahkh@osg.samsung.com>
 In-Reply-To: <cover.1492815938.git.shuahkh@osg.samsung.com>
@@ -30,29 +30,28 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 Add override for lib.mk clean to fix the following warnings from clean
 target run.
 
-Makefile:36: warning: overriding recipe for target 'clean'
+Makefile:11: warning: overriding recipe for target 'clean'
 ../lib.mk:55: warning: ignoring old recipe for target 'clean'
 
 Signed-off-by: Shuah Khan <shuahkh@osg.samsung.com>
 ---
- tools/testing/selftests/futex/Makefile | 3 ++-
+ tools/testing/selftests/gpio/Makefile | 3 ++-
  1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/tools/testing/selftests/futex/Makefile b/tools/testing/selftests/futex/Makefile
-index c8095e6..e2fbb89 100644
---- a/tools/testing/selftests/futex/Makefile
-+++ b/tools/testing/selftests/futex/Makefile
-@@ -32,9 +32,10 @@ override define EMIT_TESTS
- 	echo "./run.sh"
- endef
+diff --git a/tools/testing/selftests/gpio/Makefile b/tools/testing/selftests/gpio/Makefile
+index 205e4d1..4f6d9e0 100644
+--- a/tools/testing/selftests/gpio/Makefile
++++ b/tools/testing/selftests/gpio/Makefile
+@@ -7,8 +7,9 @@ include ../lib.mk
+ 
+ all: $(BINARIES)
  
 -clean:
 +override define CLEAN
- 	for DIR in $(SUBDIRS); do		\
- 		BUILD_TARGET=$(OUTPUT)/$$DIR;	\
- 		mkdir $$BUILD_TARGET  -p;	\
- 		make OUTPUT=$$BUILD_TARGET -C $$DIR $@;\
- 	done
+ 	$(RM) $(BINARIES)
 +endef
+ 
+ CFLAGS += -O2 -g -std=gnu99 -Wall -I../../../../usr/include/
+ LDLIBS += -lmount -I/usr/include/libmount
 -- 
 2.9.3
