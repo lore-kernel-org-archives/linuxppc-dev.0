@@ -1,19 +1,40 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <pmladek@suse.com>
+Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w8YCM56JXzDq9d
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Apr 2017 21:18:55 +1000 (AEST)
-Message-Id: <e58e91530039da0d89eb52a2a1ec0bb30518741d.1492772606.git.christophe.leroy@c-s.fr>
-In-Reply-To: <cover.1492772606.git.christophe.leroy@c-s.fr>
-References: <cover.1492772606.git.christophe.leroy@c-s.fr>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH 4/4] powerpc: remove __ilog2()s and use generic ones
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Scott Wood <oss@buserror.net>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Fri, 21 Apr 2017 13:18:52 +0200 (CEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w8ZGM52TtzDq66
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Apr 2017 22:06:35 +1000 (AEST)
+Date: Fri, 21 Apr 2017 14:06:27 +0200
+From: Petr Mladek <pmladek@suse.com>
+To: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Peter Zijlstra <peterz@infradead.org>,
+ Russell King <rmk+kernel@arm.linux.org.uk>,
+ Daniel Thompson <daniel.thompson@linaro.org>,
+ Jiri Kosina <jkosina@suse.com>, Ingo Molnar <mingo@redhat.com>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Chris Metcalf <cmetcalf@ezchip.com>, linux-kernel@vger.kernel.org,
+ x86@kernel.org, linux-arm-kernel@lists.infradead.org,
+ adi-buildroot-devel@lists.sourceforge.net,
+ linux-cris-kernel@axis.com, linux-mips@linux-mips.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
+ Jan Kara <jack@suse.cz>, Ralf Baechle <ralf@linux-mips.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ David Miller <davem@davemloft.net>
+Subject: Re: [PATCH v5 1/4] printk/nmi: generic solution for safe printk in NMI
+Message-ID: <20170421120627.GO3452@pathway.suse.cz>
+References: <1461239325-22779-1-git-send-email-pmladek@suse.com>
+ <1461239325-22779-2-git-send-email-pmladek@suse.com>
+ <20170419131341.76bc7634@gandalf.local.home>
+ <20170420033112.GB542@jagdpanzerIV.localdomain>
+ <20170420131154.GL3452@pathway.suse.cz>
+ <20170421015724.GA586@jagdpanzerIV.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20170421015724.GA586@jagdpanzerIV.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,154 +44,107 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-With the __ilog2() function as defined in
-arch/powerpc/include/asm/bitops.h, GCC will not optimise the code
-in case of constant parameter.
+On Fri 2017-04-21 10:57:25, Sergey Senozhatsky wrote:
+> On (04/20/17 15:11), Petr Mladek wrote:
+> [..]
+> >  void printk_nmi_enter(void)
+> >  {
+> > -	this_cpu_or(printk_context, PRINTK_NMI_CONTEXT_MASK);
+> > +	/*
+> > +	 * The size of the extra per-CPU buffer is limited. Use it
+> > +	 * only when really needed.
+> > +	 */
+> > +	if (this_cpu_read(printk_context) & PRINTK_SAFE_CONTEXT_MASK ||
+> > +	    raw_spin_is_locked(&logbuf_lock)) {
+> > +		this_cpu_or(printk_context, PRINTK_NMI_CONTEXT_MASK);
+> > +	} else {
+> > +		this_cpu_or(printk_context, PRINTK_NMI_DEFERRED_CONTEXT_MASK);
+> > +	}
+> >  }
+> 
+> well... the logbuf_lock can temporarily be locked from another CPU. I'd say
+> that spin_is_locked() has better chances for false positive than
+> this_cpu_read(printk_context). because this_cpu_read(printk_context) depends
+> only on this CPU state, while spin_is_locked() depends on all CPUs. and the
+> idea with this_cpu_read(printk_context) was that we check if the logbuf_lock
+> was locked from this particular CPU.
 
-The generic ilog2() function in include/linux/log2.h is written
-to handle the case of the constant parameter.
+I finally see the point. I confess that I did not think much about
+this way yesterday because it looked too tricky (indirect) and possibly
+error prone.
 
-This patch discards the three __ilog2() functions and
-defines __ilog2() as ilog2()
+> I agree that this_cpu_read(printk_context) covers slightly more than
+> logbuf_lock scope, so we may get positive this_cpu_read(printk_context)
+> with unlocked logbuf_lock, but I don't tend to think that it's a big
+> problem.
 
-For non constant calls, the generated code is doing the same:
-int test__ilog2(unsigned long x)
+PRINTK_SAFE_CONTEXT is set also in call_console_drivers().
+It might take rather long and logbuf_lock is availe. So, it is
+noticeable source of false positives.
+
+Hmm, my version actually checks both the lock and the context.
+It is very deffensive to be always on the safe side.
+
+We could get the best restults with both checks and by using "&&":
+
+void printk_nmi_enter(void)
 {
-	return __ilog2(x);
+	/*
+	 * The size of the extra per-CPU buffer is limited. Use it
+	 * only when the lock for the main log buffer is not
+	 * available.
+	 *
+	 * logbuf_lock might be taken on another CPU. But it must be
+	 * in PRINTK_SAFE context. Reduce false positives by a check
+	 * of the context.
+	 */
+	if (this_cpu_read(printk_context) & PRINTK_SAFE_CONTEXT_MASK ||
+	    raw_spin_is_locked(&logbuf_lock)) {
+		this_cpu_or(printk_context, PRINTK_NMI_CONTEXT_MASK);
+	} else {
+		this_cpu_or(printk_context, PRINTK_NMI_DEFERRED_CONTEXT_MASK);
+	}
 }
 
-int test__ilog2_u32(u32 n)
-{
-	return __ilog2_u32(n);
-}
 
-int test__ilog2_u64(u64 n)
-{
-	return __ilog2_u64(n);
-}
+But after all, I would prefer to keep it simple, strightforward,
+and check only the logbuf_lock:
 
-On PPC32 before the patch:
-00000000 <test__ilog2>:
-   0:	7c 63 00 34 	cntlzw  r3,r3
-   4:	20 63 00 1f 	subfic  r3,r3,31
-   8:	4e 80 00 20 	blr
+	if (raw_spin_is_locked(&logbuf_lock))
+		this_cpu_or(printk_context, PRINTK_NMI_CONTEXT_MASK);
+	else
+		this_cpu_or(printk_context, PRINTK_NMI_DEFERRED_CONTEXT_MASK);
 
-0000000c <test__ilog2_u32>:
-   c:	7c 63 00 34 	cntlzw  r3,r3
-  10:	20 63 00 1f 	subfic  r3,r3,31
-  14:	4e 80 00 20 	blr
 
-On PPC32 after the patch:
-00000000 <test__ilog2>:
-   0:	7c 63 00 34 	cntlzw  r3,r3
-   4:	20 63 00 1f 	subfic  r3,r3,31
-   8:	4e 80 00 20 	blr
+> wouldn't something as simple as below do the trick?
+> // absolutely and completely untested //
+> 
+> 
+> diff --git a/kernel/printk/printk_safe.c b/kernel/printk/printk_safe.c
+> index 033e50a7d706..c7477654c5b1 100644
+> --- a/kernel/printk/printk_safe.c
+> +++ b/kernel/printk/printk_safe.c
+> @@ -303,7 +303,10 @@ static int vprintk_nmi(const char *fmt, va_list args)
+>  {
+>         struct printk_safe_seq_buf *s = this_cpu_ptr(&nmi_print_seq);
+>  
+> -       return printk_safe_log_store(s, fmt, args);
+> +       if (this_cpu_read(printk_context) & PRINTK_SAFE_CONTEXT_MASK)
+> +               return printk_safe_log_store(s, fmt, args);
+> +
+> +       return vprintk_emit(0, LOGLEVEL_SCHED, NULL, 0, fmt, args);
+>  }
 
-0000000c <test__ilog2_u32>:
-   c:	7c 63 00 34 	cntlzw  r3,r3
-  10:	20 63 00 1f 	subfic  r3,r3,31
-  14:	4e 80 00 20 	blr
+It looks simple but some things are missing. It will be used also
+outside panic/oops, so it should queue the irq_work to flush the console.
+Also the serialization of nmi_cpu_backtrace() backtrace calls is
+needed.
 
-On PPC64 before the patch:
-0000000000000000 <.test__ilog2>:
-   0:	7c 63 00 74 	cntlzd  r3,r3
-   4:	20 63 00 3f 	subfic  r3,r3,63
-   8:	7c 63 07 b4 	extsw   r3,r3
-   c:	4e 80 00 20 	blr
+All in all, we could get rid only of the extra
+PRINTK_NMI_DEFERRED_CONTEXT_MASK with this approach. Other than
+that it looks more tricky to me.
 
-0000000000000010 <.test__ilog2_u32>:
-  10:	7c 63 00 34 	cntlzw  r3,r3
-  14:	20 63 00 1f 	subfic  r3,r3,31
-  18:	7c 63 07 b4 	extsw   r3,r3
-  1c:	4e 80 00 20 	blr
+Sigh, I hate problems without the single best solution.
 
-0000000000000020 <.test__ilog2_u64>:
-  20:	7c 63 00 74 	cntlzd  r3,r3
-  24:	20 63 00 3f 	subfic  r3,r3,63
-  28:	7c 63 07 b4 	extsw   r3,r3
-  2c:	4e 80 00 20 	blr
-
-On PPC64 after the patch:
-0000000000000000 <.test__ilog2>:
-   0:	7c 63 00 74 	cntlzd  r3,r3
-   4:	20 63 00 3f 	subfic  r3,r3,63
-   8:	7c 63 07 b4 	extsw   r3,r3
-   c:	4e 80 00 20 	blr
-
-0000000000000010 <.test__ilog2_u32>:
-  10:	7c 63 00 34 	cntlzw  r3,r3
-  14:	20 63 00 1f 	subfic  r3,r3,31
-  18:	7c 63 07 b4 	extsw   r3,r3
-  1c:	4e 80 00 20 	blr
-
-0000000000000020 <.test__ilog2_u64>:
-  20:	7c 63 00 74 	cntlzd  r3,r3
-  24:	20 63 00 3f 	subfic  r3,r3,63
-  28:	7c 63 07 b4 	extsw   r3,r3
-  2c:	4e 80 00 20 	blr
-
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
- arch/powerpc/Kconfig              |  8 --------
- arch/powerpc/include/asm/bitops.h | 27 +--------------------------
- 2 files changed, 1 insertion(+), 34 deletions(-)
-
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 2bfd49098c5e..f231b0f190b5 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -62,14 +62,6 @@ config GENERIC_LOCKBREAK
- 	default y
- 	depends on SMP && PREEMPT
- 
--config ARCH_HAS_ILOG2_U32
--	bool
--	default y
--
--config ARCH_HAS_ILOG2_U64
--	bool
--	default y if 64BIT
--
- config GENERIC_HWEIGHT
- 	bool
- 	default y
-diff --git a/arch/powerpc/include/asm/bitops.h b/arch/powerpc/include/asm/bitops.h
-index d835cd697d6b..b750ffef83c7 100644
---- a/arch/powerpc/include/asm/bitops.h
-+++ b/arch/powerpc/include/asm/bitops.h
-@@ -206,32 +206,7 @@ static __inline__ void __clear_bit_unlock(int nr, volatile unsigned long *addr)
-  * Return the zero-based bit position (LE, not IBM bit numbering) of
-  * the most significant 1-bit in a double word.
-  */
--static __inline__ __attribute__((const))
--int __ilog2(unsigned long x)
--{
--	int lz;
--
--	asm (PPC_CNTLZL "%0,%1" : "=r" (lz) : "r" (x));
--	return BITS_PER_LONG - 1 - lz;
--}
--
--static inline __attribute__((const))
--int __ilog2_u32(u32 n)
--{
--	int bit;
--	asm ("cntlzw %0,%1" : "=r" (bit) : "r" (n));
--	return 31 - bit;
--}
--
--#ifdef __powerpc64__
--static inline __attribute__((const))
--int __ilog2_u64(u64 n)
--{
--	int bit;
--	asm ("cntlzd %0,%1" : "=r" (bit) : "r" (n));
--	return 63 - bit;
--}
--#endif
-+#define __ilog2(x)	ilog2(x)
- 
- #include <asm-generic/bitops/ffz.h>
- 
--- 
-2.12.0
+Best Regards,
+Petr
