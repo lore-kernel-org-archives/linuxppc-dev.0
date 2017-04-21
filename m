@@ -1,40 +1,43 @@
-Return-Path: <pmladek@suse.com>
-Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
+Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w8ZGM52TtzDq66
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Apr 2017 22:06:35 +1000 (AEST)
-Date: Fri, 21 Apr 2017 14:06:27 +0200
-From: Petr Mladek <pmladek@suse.com>
-To: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- Peter Zijlstra <peterz@infradead.org>,
- Russell King <rmk+kernel@arm.linux.org.uk>,
- Daniel Thompson <daniel.thompson@linaro.org>,
- Jiri Kosina <jkosina@suse.com>, Ingo Molnar <mingo@redhat.com>,
- Thomas Gleixner <tglx@linutronix.de>,
- Chris Metcalf <cmetcalf@ezchip.com>, linux-kernel@vger.kernel.org,
- x86@kernel.org, linux-arm-kernel@lists.infradead.org,
- adi-buildroot-devel@lists.sourceforge.net,
- linux-cris-kernel@axis.com, linux-mips@linux-mips.org,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
- Jan Kara <jack@suse.cz>, Ralf Baechle <ralf@linux-mips.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- David Miller <davem@davemloft.net>
-Subject: Re: [PATCH v5 1/4] printk/nmi: generic solution for safe printk in NMI
-Message-ID: <20170421120627.GO3452@pathway.suse.cz>
-References: <1461239325-22779-1-git-send-email-pmladek@suse.com>
- <1461239325-22779-2-git-send-email-pmladek@suse.com>
- <20170419131341.76bc7634@gandalf.local.home>
- <20170420033112.GB542@jagdpanzerIV.localdomain>
- <20170420131154.GL3452@pathway.suse.cz>
- <20170421015724.GA586@jagdpanzerIV.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170421015724.GA586@jagdpanzerIV.localdomain>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w8Zsj5c5kzDq66
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Apr 2017 22:33:45 +1000 (AEST)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v3LCVTMx031387
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Apr 2017 08:33:42 -0400
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 29y0hehr16-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Apr 2017 08:33:42 -0400
+Received: from localhost
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
+ Fri, 21 Apr 2017 22:33:37 +1000
+Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v3LCXRlZ62587030
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Apr 2017 22:33:35 +1000
+Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
+ by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v3LCX3Ya013555
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Apr 2017 22:33:03 +1000
+From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ Masami Hiramatsu <mhiramat@kernel.org>
+Cc: Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>,
+ Ingo Molnar <mingo@kernel.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Subject: [PATCH v4 3/7] kprobes: validate the symbol name provided during
+ probe registration
+Date: Fri, 21 Apr 2017 18:02:33 +0530
+In-Reply-To: <6e14d22994530fb5200c74d1593e73541d3b8028.1492604782.git.naveen.n.rao@linux.vnet.ibm.com>
+References: <6e14d22994530fb5200c74d1593e73541d3b8028.1492604782.git.naveen.n.rao@linux.vnet.ibm.com>
+Message-Id: <20170421123234.6895-1-naveen.n.rao@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,107 +47,99 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri 2017-04-21 10:57:25, Sergey Senozhatsky wrote:
-> On (04/20/17 15:11), Petr Mladek wrote:
-> [..]
-> >  void printk_nmi_enter(void)
-> >  {
-> > -	this_cpu_or(printk_context, PRINTK_NMI_CONTEXT_MASK);
-> > +	/*
-> > +	 * The size of the extra per-CPU buffer is limited. Use it
-> > +	 * only when really needed.
-> > +	 */
-> > +	if (this_cpu_read(printk_context) & PRINTK_SAFE_CONTEXT_MASK ||
-> > +	    raw_spin_is_locked(&logbuf_lock)) {
-> > +		this_cpu_or(printk_context, PRINTK_NMI_CONTEXT_MASK);
-> > +	} else {
-> > +		this_cpu_or(printk_context, PRINTK_NMI_DEFERRED_CONTEXT_MASK);
-> > +	}
-> >  }
-> 
-> well... the logbuf_lock can temporarily be locked from another CPU. I'd say
-> that spin_is_locked() has better chances for false positive than
-> this_cpu_read(printk_context). because this_cpu_read(printk_context) depends
-> only on this CPU state, while spin_is_locked() depends on all CPUs. and the
-> idea with this_cpu_read(printk_context) was that we check if the logbuf_lock
-> was locked from this particular CPU.
+When a kprobe is being registered, we use the symbol_name field to
+lookup the address where the probe should be placed. Since this is a
+user-provided field, let's ensure that the length of the string is
+within expected limits.
 
-I finally see the point. I confess that I did not think much about
-this way yesterday because it looked too tricky (indirect) and possibly
-error prone.
+Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+---
+Masami, Michael,
+Here's a simplified version that should hopefully be fine. I have
+simplified the logic to keep the code compact and simple.
 
-> I agree that this_cpu_read(printk_context) covers slightly more than
-> logbuf_lock scope, so we may get positive this_cpu_read(printk_context)
-> with unlocked logbuf_lock, but I don't tend to think that it's a big
-> problem.
-
-PRINTK_SAFE_CONTEXT is set also in call_console_drivers().
-It might take rather long and logbuf_lock is availe. So, it is
-noticeable source of false positives.
-
-Hmm, my version actually checks both the lock and the context.
-It is very deffensive to be always on the safe side.
-
-We could get the best restults with both checks and by using "&&":
-
-void printk_nmi_enter(void)
-{
-	/*
-	 * The size of the extra per-CPU buffer is limited. Use it
-	 * only when the lock for the main log buffer is not
-	 * available.
-	 *
-	 * logbuf_lock might be taken on another CPU. But it must be
-	 * in PRINTK_SAFE context. Reduce false positives by a check
-	 * of the context.
-	 */
-	if (this_cpu_read(printk_context) & PRINTK_SAFE_CONTEXT_MASK ||
-	    raw_spin_is_locked(&logbuf_lock)) {
-		this_cpu_or(printk_context, PRINTK_NMI_CONTEXT_MASK);
-	} else {
-		this_cpu_or(printk_context, PRINTK_NMI_DEFERRED_CONTEXT_MASK);
-	}
-}
+- Naveen
 
 
-But after all, I would prefer to keep it simple, strightforward,
-and check only the logbuf_lock:
+ include/linux/kprobes.h     |  1 +
+ kernel/kprobes.c            | 30 ++++++++++++++++++++++++++++++
+ kernel/trace/trace_kprobe.c |  4 ++++
+ 3 files changed, 35 insertions(+)
 
-	if (raw_spin_is_locked(&logbuf_lock))
-		this_cpu_or(printk_context, PRINTK_NMI_CONTEXT_MASK);
-	else
-		this_cpu_or(printk_context, PRINTK_NMI_DEFERRED_CONTEXT_MASK);
-
-
-> wouldn't something as simple as below do the trick?
-> // absolutely and completely untested //
-> 
-> 
-> diff --git a/kernel/printk/printk_safe.c b/kernel/printk/printk_safe.c
-> index 033e50a7d706..c7477654c5b1 100644
-> --- a/kernel/printk/printk_safe.c
-> +++ b/kernel/printk/printk_safe.c
-> @@ -303,7 +303,10 @@ static int vprintk_nmi(const char *fmt, va_list args)
->  {
->         struct printk_safe_seq_buf *s = this_cpu_ptr(&nmi_print_seq);
->  
-> -       return printk_safe_log_store(s, fmt, args);
-> +       if (this_cpu_read(printk_context) & PRINTK_SAFE_CONTEXT_MASK)
-> +               return printk_safe_log_store(s, fmt, args);
-> +
-> +       return vprintk_emit(0, LOGLEVEL_SCHED, NULL, 0, fmt, args);
->  }
-
-It looks simple but some things are missing. It will be used also
-outside panic/oops, so it should queue the irq_work to flush the console.
-Also the serialization of nmi_cpu_backtrace() backtrace calls is
-needed.
-
-All in all, we could get rid only of the extra
-PRINTK_NMI_DEFERRED_CONTEXT_MASK with this approach. Other than
-that it looks more tricky to me.
-
-Sigh, I hate problems without the single best solution.
-
-Best Regards,
-Petr
+diff --git a/include/linux/kprobes.h b/include/linux/kprobes.h
+index 1f82a3db00b1..4ee10fef5135 100644
+--- a/include/linux/kprobes.h
++++ b/include/linux/kprobes.h
+@@ -405,6 +405,7 @@ int disable_kprobe(struct kprobe *kp);
+ int enable_kprobe(struct kprobe *kp);
+ 
+ void dump_kprobe(struct kprobe *kp);
++bool is_valid_kprobe_symbol_name(const char *name);
+ 
+ #else /* !CONFIG_KPROBES: */
+ 
+diff --git a/kernel/kprobes.c b/kernel/kprobes.c
+index 6a128f3a7ed1..ff9b1ac72a38 100644
+--- a/kernel/kprobes.c
++++ b/kernel/kprobes.c
+@@ -1383,6 +1383,34 @@ bool within_kprobe_blacklist(unsigned long addr)
+ }
+ 
+ /*
++ * We mainly want to ensure that the provided string is of a reasonable length
++ * and is of the form [<mod_name>:]<sym_name>, so that this is safe to process
++ * further.
++ * We don't worry about invalid characters as those will just prevent
++ * matching existing kallsyms.
++ */
++bool is_valid_kprobe_symbol_name(const char *name)
++{
++	size_t sym_len;
++	const char *s;
++
++	s = strnchr(name, ':', MODULE_NAME_LEN + KSYM_NAME_LEN + 1);
++	if (s) {
++		sym_len = (size_t)(s - name);
++		if (sym_len <= 0  || sym_len >= MODULE_NAME_LEN)
++			return false;
++		s++;
++	} else
++		s = name;
++
++	sym_len = strnlen(s, KSYM_NAME_LEN);
++	if (sym_len <= 0 || sym_len >= KSYM_NAME_LEN)
++		return false;
++
++	return true;
++}
++
++/*
+  * If we have a symbol_name argument, look it up and add the offset field
+  * to it. This way, we can specify a relative address to a symbol.
+  * This returns encoded errors if it fails to look up symbol or invalid
+@@ -1397,6 +1425,8 @@ static kprobe_opcode_t *kprobe_addr(struct kprobe *p)
+ 		goto invalid;
+ 
+ 	if (p->symbol_name) {
++		if (!is_valid_kprobe_symbol_name(p->symbol_name))
++			return ERR_PTR(-EINVAL);
+ 		addr = kprobe_lookup_name(p->symbol_name, p->offset);
+ 		if (!addr)
+ 			return ERR_PTR(-ENOENT);
+diff --git a/kernel/trace/trace_kprobe.c b/kernel/trace/trace_kprobe.c
+index 5f688cc724f0..bf73e5f31128 100644
+--- a/kernel/trace/trace_kprobe.c
++++ b/kernel/trace/trace_kprobe.c
+@@ -704,6 +704,10 @@ static int create_trace_kprobe(int argc, char **argv)
+ 			pr_info("Return probe must be used without offset.\n");
+ 			return -EINVAL;
+ 		}
++		if (!is_valid_kprobe_symbol_name(symbol)) {
++			pr_info("Symbol name is too long.\n");
++			return -EINVAL;
++		}
+ 	}
+ 	argc -= 2; argv += 2;
+ 
+-- 
+2.12.1
