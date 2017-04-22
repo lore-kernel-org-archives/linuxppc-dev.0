@@ -1,25 +1,21 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w93Nr6wQRzDq5b
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Apr 2017 16:58:52 +1000 (AEST)
-Subject: Re: [PATCH v2 3/3] powerpc/mm: Implement CONFIG_DEBUG_RODATA on PPC32
-To: Michael Ellerman <mpe@ellerman.id.au>,
- "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Scott Wood <oss@buserror.net>, Paul Mackerras <paulus@samba.org>
-References: <cover.1492778567.git.christophe.leroy@c-s.fr>
- <97d45054364142af48b8767f9f9e115504d7568b.1492778567.git.christophe.leroy@c-s.fr>
- <1492781365.w4t118903f.astroid@naverao1-tp.none>
- <87fuh1ynxd.fsf@concordia.ellerman.id.au>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-From: christophe leroy <christophe.leroy@c-s.fr>
-Message-ID: <ad2d30c6-d9ba-e188-e6dc-2afbc90af77a@c-s.fr>
-Date: Sat, 22 Apr 2017 08:58:45 +0200
-MIME-Version: 1.0
-In-Reply-To: <87fuh1ynxd.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset=windows-1252; format=flowed
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w94p658gBzDq5b
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Apr 2017 18:02:22 +1000 (AEST)
+Message-ID: <1492848130.25766.185.camel@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc/64s: use
+ ibm,tlbiel-congruence-classes-(hash|radix) dt property
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Cc: "Aneesh Kumar K . V" <aneesh.kumar@linux.vnet.ibm.com>
+Date: Sat, 22 Apr 2017 18:02:10 +1000
+In-Reply-To: <20170422005854.17128-2-npiggin@gmail.com>
+References: <20170422005854.17128-1-npiggin@gmail.com>
+ <20170422005854.17128-2-npiggin@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,73 +25,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Sat, 2017-04-22 at 10:58 +1000, Nicholas Piggin wrote:
+> +static void __init init_mmu_tlb_sets_hash(unsigned long node)
+> +{
+> +       const __be32 *ptr;
+> +
+> +       ptr = of_get_flat_dt_prop(node, "ibm,tlbiel-congruence-classes-hash", NULL);
+> +       if (ptr)
+> +               cur_cpu_spec->tlb_sets_hash = be32_to_cpup(ptr);
+> +}
+> +
+> +static void __init init_mmu_tlb_sets_radix(unsigned long node)
+> +{
+> +       const __be32 *ptr;
+> +
+> +       ptr = of_get_flat_dt_prop(node, "ibm,tlbiel-congruence-classes-radix", NULL);
+> +       if (ptr)
+> +               cur_cpu_spec->tlb_sets_radix = be32_to_cpup(ptr);
+> +}
+>  #else
+>  #define init_mmu_slb_size(node) do { } while(0)
+> +#define init_mmu_hash_sets(node) do { } while(0)
+> +#define init_mmu_radix_sets(node) do { } while(0)
+>  #endif
 
+Why 2 functions ? I would have done one checking both props :-)
 
-Le 22/04/2017 � 08:08, Michael Ellerman a �crit :
-> "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> writes:
->> Excerpts from Christophe Leroy's message of April 21, 2017 18:32:
->>> diff --git a/arch/powerpc/kernel/ftrace.c
->>> b/arch/powerpc/kernel/ftrace.c
->>> index 32509de6ce4c..06d2ac53f471 100644
->>> --- a/arch/powerpc/kernel/ftrace.c
->>> +++ b/arch/powerpc/kernel/ftrace.c
->>> @@ -46,6 +46,7 @@ static int
->>> @@ -67,10 +68,11 @@ ftrace_modify_code(unsigned long ip, unsigned int old, unsigned int new)
->>>  	}
->>>
->>>  	/* replace the text with the new text */
->>> -	if (patch_instruction((unsigned int *)ip, new))
->>> -		return -EPERM;
->>> +	set_kernel_text_rw(ip);
->>> +	err = patch_instruction((unsigned int *)ip, new);
->>> +	set_kernel_text_ro(ip);
->>
->> Is there a reason to not put those inside patch_instruction()?
->
-> Yes and no.
->
-> patch_instruction() is called quite early from apply_feature_fixups(), I
-> haven't looked closely but I suspect the set_kernel_text_rx() routines
-> won't work that early.
->
-> But on the other hand patch_instruction() is used by things other than
-> ftrace, like jump labels, so we probably want the rw/ro setting in there
-> so that we don't have to go and fixup jump labels etc.
->
-> So probably we need a raw_patch_instruction() which does just the
-> patching (what patch_instruction() does now), and can be used early in
-> boot. And then patch_instruction() would have the rw/ro change in it, so
-> that all users of it are OK.
->
-> eg ~=:
->
-> int raw_patch_instruction(unsigned int *addr, unsigned int instr)
-> {
->   ...
-> }
->
-> int patch_instruction(unsigned int *addr, unsigned int instr)
-> {
-> 	int err;
->
-> 	set_kernel_text_rw(ip);
-> 	err = raw_patch_instruction((unsigned int *)ip, new);
-> 	set_kernel_text_ro(ip);
->
-> 	return err;
-> }
->
+Anothe thing to do is remove the assembly TLB flush from cpu_setup_power.S.
 
-Shouldn't we then also have some kind of protection against parallel use 
-of patch_instruction() like a spin_lock_irqsave(), or is it garantied 
-not to happen for other reasons ?
+That happens too early anyway and do it later, at MMU init.
 
-Otherwise, we might end up with one instance setting back the kernel 
-text to RO while the other one has just put it RW and is about to patch 
-the instruction.
+In fact, I wonder ... a lot of the stuff in there still requires us to more
+or less know the PVR of the CPU. We could move the call to after we've done
+the early DT parsing I reckon.
 
-Christophe
+That way we can use arch level to set things like LPCR appropriately.
 
----
-L'absence de virus dans ce courrier �lectronique a �t� v�rifi�e par le logiciel antivirus Avast.
-https://www.avast.com/antivirus
+Cheers,
+Ben.
