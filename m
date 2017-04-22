@@ -1,24 +1,58 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <michaele@au1.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w92Gm03PjzDq5b
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Apr 2017 16:08:32 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Christophe Leroy <christophe.leroy@c-s.fr>, Scott Wood <oss@buserror.net>,
- Paul Mackerras <paulus@samba.org>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v2 3/3] powerpc/mm: Implement CONFIG_DEBUG_RODATA on PPC32
-In-Reply-To: <1492781365.w4t118903f.astroid@naverao1-tp.none>
-References: <cover.1492778567.git.christophe.leroy@c-s.fr>
- <97d45054364142af48b8767f9f9e115504d7568b.1492778567.git.christophe.leroy@c-s.fr>
- <1492781365.w4t118903f.astroid@naverao1-tp.none>
-Date: Sat, 22 Apr 2017 16:08:30 +1000
-Message-ID: <87fuh1ynxd.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w92K130sQzDq5b
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Apr 2017 16:10:29 +1000 (AEST)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v3M68irX081541
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Apr 2017 02:10:26 -0400
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 29ygy2w5nr-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Apr 2017 02:10:26 -0400
+Received: from localhost
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <michaele@au1.ibm.com>;
+ Sat, 22 Apr 2017 16:10:23 +1000
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v3M6ACOJ62914782
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Apr 2017 16:10:20 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v3M69j8h029500
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Apr 2017 16:09:47 +1000
+From: Michael Ellerman <michaele@au1.ibm.com>
+To: paulmck@linux.vnet.ibm.com, Paolo Bonzini <pbonzini@redhat.com>
+Cc: mingo@kernel.org, kvm@vger.kernel.org, peterz@infradead.org,
+ fweisbec@gmail.com, jiangshanlai@gmail.com, oleg@redhat.com,
+ kvm-ppc@vger.kernel.org, linux-kernel@vger.kernel.org,
+ dhowells@redhat.com, edumazet@google.com,
+ "paulus\@samba.org" <paulus@samba.org>, rostedt@goodmis.org,
+ akpm@linux-foundation.org, dipankar@in.ibm.com,
+ mathieu.desnoyers@efficios.com, tglx@linutronix.de,
+ "linuxppc-dev\@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ bobby.prani@gmail.com, josh@joshtriplett.org
+Subject: Re: powerpc KVM build break in linux-next (was Re: [PATCH
+ tip/core/rcu 40/40] srcu: Parallelize callback handling)
+In-Reply-To: <20170421125135.GW3956@linux.vnet.ibm.com>
+References: <20170412174003.GA23207@linux.vnet.ibm.com>
+ <1492018825-25634-40-git-send-email-paulmck@linux.vnet.ibm.com>
+ <871ssn692a.fsf@concordia.ellerman.id.au>
+ <24c85d26-bb4b-892d-5837-6d02af570e0e@redhat.com>
+ <20170421003834.GA14351@linux.vnet.ibm.com>
+ <87zifatu3a.fsf@concordia.ellerman.id.au>
+ <20170421041754.GV3956@linux.vnet.ibm.com>
+ <ca07b47e-8141-1691-169d-16c99d03902a@redhat.com>
+ <20170421125135.GW3956@linux.vnet.ibm.com>
+Date: Sat, 22 Apr 2017 16:09:21 +1000
 MIME-Version: 1.0
 Content-Type: text/plain
+Message-Id: <87d1c5ynvy.fsf@concordia.ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,57 +62,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-"Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> writes:
-> Excerpts from Christophe Leroy's message of April 21, 2017 18:32:
->> diff --git a/arch/powerpc/kernel/ftrace.c 
->> b/arch/powerpc/kernel/ftrace.c
->> index 32509de6ce4c..06d2ac53f471 100644
->> --- a/arch/powerpc/kernel/ftrace.c
->> +++ b/arch/powerpc/kernel/ftrace.c
->> @@ -46,6 +46,7 @@ static int
->> @@ -67,10 +68,11 @@ ftrace_modify_code(unsigned long ip, unsigned int old, unsigned int new)
->>  	}
+"Paul E. McKenney" <paulmck@linux.vnet.ibm.com> writes:
+> On Fri, Apr 21, 2017 at 09:27:59AM +0200, Paolo Bonzini wrote:
+>> On 21/04/2017 06:17, Paul E. McKenney wrote:
+>> >> Thanks, this looks perfect to me, and if you're happy to put it on top
+>> >> of your tree that would limit the breakage to a smaller history window,
+>> >> so that would be ideal.
+>> >>
+>> >> Tested-by: Michael Ellerman <mpe@ellerman.id.au>
+>> > Thank you, Michael!
+>> > 
+>> > Paolo, does this look good to you?  My upstream maintainer will be much
+>> > more likely to take this with your ack.  ;-)
 >> 
->>  	/* replace the text with the new text */
->> -	if (patch_instruction((unsigned int *)ip, new))
->> -		return -EPERM;
->> +	set_kernel_text_rw(ip);
->> +	err = patch_instruction((unsigned int *)ip, new);
->> +	set_kernel_text_ro(ip);
+>> Sure,
+>> 
+>> Acked-by: Paolo Bonzini <pbonzini@redhat.com>
+>> 
+>> since I don't expect conflicts between whoever applies this patch and
+>> the KVM tree.
 >
-> Is there a reason to not put those inside patch_instruction()?
+> Applied, thank you!
 
-Yes and no.
-
-patch_instruction() is called quite early from apply_feature_fixups(), I
-haven't looked closely but I suspect the set_kernel_text_rx() routines
-won't work that early.
-
-But on the other hand patch_instruction() is used by things other than
-ftrace, like jump labels, so we probably want the rw/ro setting in there
-so that we don't have to go and fixup jump labels etc.
-
-So probably we need a raw_patch_instruction() which does just the
-patching (what patch_instruction() does now), and can be used early in
-boot. And then patch_instruction() would have the rw/ro change in it, so
-that all users of it are OK.
-
-eg ~=:
-
-int raw_patch_instruction(unsigned int *addr, unsigned int instr)
-{
-  ...
-}
-
-int patch_instruction(unsigned int *addr, unsigned int instr)
-{
-	int err;
-
-	set_kernel_text_rw(ip);
-	err = raw_patch_instruction((unsigned int *)ip, new);
-	set_kernel_text_ro(ip);
-
-	return err;
-}
+Thanks all.
 
 cheers
