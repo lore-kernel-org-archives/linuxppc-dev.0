@@ -1,22 +1,22 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w91zZ6kY3zDq5b
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Apr 2017 15:55:22 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w92Gm03PjzDq5b
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Apr 2017 16:08:32 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
- Masami Hiramatsu <mhiramat@kernel.org>
-Cc: Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>,
- Ingo Molnar <mingo@kernel.org>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v4 3/7] kprobes: validate the symbol name provided during
- probe registration
-In-Reply-To: <20170421123234.6895-1-naveen.n.rao@linux.vnet.ibm.com>
-References: <6e14d22994530fb5200c74d1593e73541d3b8028.1492604782.git.naveen.n.rao@linux.vnet.ibm.com>
- <20170421123234.6895-1-naveen.n.rao@linux.vnet.ibm.com>
-Date: Sat, 22 Apr 2017 15:55:21 +1000
-Message-ID: <87inlxyoja.fsf@concordia.ellerman.id.au>
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Christophe Leroy <christophe.leroy@c-s.fr>, Scott Wood <oss@buserror.net>,
+ Paul Mackerras <paulus@samba.org>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v2 3/3] powerpc/mm: Implement CONFIG_DEBUG_RODATA on PPC32
+In-Reply-To: <1492781365.w4t118903f.astroid@naverao1-tp.none>
+References: <cover.1492778567.git.christophe.leroy@c-s.fr>
+ <97d45054364142af48b8767f9f9e115504d7568b.1492778567.git.christophe.leroy@c-s.fr>
+ <1492781365.w4t118903f.astroid@naverao1-tp.none>
+Date: Sat, 22 Apr 2017 16:08:30 +1000
+Message-ID: <87fuh1ynxd.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -29,25 +29,56 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> writes:
+> Excerpts from Christophe Leroy's message of April 21, 2017 18:32:
+>> diff --git a/arch/powerpc/kernel/ftrace.c 
+>> b/arch/powerpc/kernel/ftrace.c
+>> index 32509de6ce4c..06d2ac53f471 100644
+>> --- a/arch/powerpc/kernel/ftrace.c
+>> +++ b/arch/powerpc/kernel/ftrace.c
+>> @@ -46,6 +46,7 @@ static int
+>> @@ -67,10 +68,11 @@ ftrace_modify_code(unsigned long ip, unsigned int old, unsigned int new)
+>>  	}
+>> 
+>>  	/* replace the text with the new text */
+>> -	if (patch_instruction((unsigned int *)ip, new))
+>> -		return -EPERM;
+>> +	set_kernel_text_rw(ip);
+>> +	err = patch_instruction((unsigned int *)ip, new);
+>> +	set_kernel_text_ro(ip);
+>
+> Is there a reason to not put those inside patch_instruction()?
 
-> When a kprobe is being registered, we use the symbol_name field to
-> lookup the address where the probe should be placed. Since this is a
-> user-provided field, let's ensure that the length of the string is
-> within expected limits.
+Yes and no.
 
-What are we actually trying to protect against here?
+patch_instruction() is called quite early from apply_feature_fixups(), I
+haven't looked closely but I suspect the set_kernel_text_rx() routines
+won't work that early.
 
-If you ignore powerpc for a moment, kprobe_lookup_name() is just
-kallsyms_lookup_name().
+But on the other hand patch_instruction() is used by things other than
+ftrace, like jump labels, so we probably want the rw/ro setting in there
+so that we don't have to go and fixup jump labels etc.
 
-All kallsyms_lookup_name() does with name is strcmp() it against a
-legitimate symbol name which is at most KSYM_NAME_LEN.
+So probably we need a raw_patch_instruction() which does just the
+patching (what patch_instruction() does now), and can be used early in
+boot. And then patch_instruction() would have the rw/ro change in it, so
+that all users of it are OK.
 
-So I don't think any of this validation helps in that case?
+eg ~=:
 
-In the powerpc version of kprobe_lookup_name() we do need to do some
-string juggling, for which it helps to know the input is sane. But I
-think we should just make that code more robust by checking the input
-before we do anything with it.
+int raw_patch_instruction(unsigned int *addr, unsigned int instr)
+{
+  ...
+}
+
+int patch_instruction(unsigned int *addr, unsigned int instr)
+{
+	int err;
+
+	set_kernel_text_rw(ip);
+	err = raw_patch_instruction((unsigned int *)ip, new);
+	set_kernel_text_ro(ip);
+
+	return err;
+}
 
 cheers
