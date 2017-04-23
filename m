@@ -1,29 +1,26 @@
-Return-Path: <tipbot@zytor.com>
-Received: from terminus.zytor.com (terminus.zytor.com [65.50.211.136])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3w9lQX01QszDq8V
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 23 Apr 2017 20:02:43 +1000 (AEST)
-Date: Sun, 23 Apr 2017 02:36:23 -0700
-Sender: tip tree robot <tipbot@zytor.com>
-From: "tip-bot for Paul E. McKenney" <tipbot@zytor.com>
-Message-ID: <tip-77e5849688670280b173bb9e0544e9da7b2acc36@git.kernel.org>
-Cc: linuxppc-dev@lists.ozlabs.org, will.deacon@arm.com, hpa@zytor.com,
- josh@joshtriplett.org, peterz@infradead.org,
- paulmck@linux.vnet.ibm.com, benh@kernel.crashing.org, mingo@kernel.org,
- boqun.feng@linux.vnet.ibm.com, tglx@linutronix.de, paulus@samba.org,
- mpe@ellerman.id.au
-Reply-To: hpa@zytor.com, josh@joshtriplett.org, peterz@infradead.org,
- paulmck@linux.vnet.ibm.com, will.deacon@arm.com,
- linuxppc-dev@lists.ozlabs.org, benh@kernel.crashing.org,
- linux-kernel@vger.kernel.org, mingo@kernel.org,
- boqun.feng@linux.vnet.ibm.com, mpe@ellerman.id.au, paulus@samba.org,
- tglx@linutronix.de
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:core/rcu] rcu: Make arch select smp_mb__after_unlock_lock()
- strength
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3w9lxs2Y2gzDq8W
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 23 Apr 2017 20:26:25 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: christophe leroy <christophe.leroy@c-s.fr>,
+ "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Scott Wood <oss@buserror.net>, Paul Mackerras <paulus@samba.org>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v2 3/3] powerpc/mm: Implement CONFIG_DEBUG_RODATA on PPC32
+In-Reply-To: <ad2d30c6-d9ba-e188-e6dc-2afbc90af77a@c-s.fr>
+References: <cover.1492778567.git.christophe.leroy@c-s.fr>
+ <97d45054364142af48b8767f9f9e115504d7568b.1492778567.git.christophe.leroy@c-s.fr>
+ <1492781365.w4t118903f.astroid@naverao1-tp.none>
+ <87fuh1ynxd.fsf@concordia.ellerman.id.au>
+ <ad2d30c6-d9ba-e188-e6dc-2afbc90af77a@c-s.fr>
+Date: Sun, 23 Apr 2017 20:26:20 +1000
+Message-ID: <87bmrna08j.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,81 +30,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Commit-ID:  77e5849688670280b173bb9e0544e9da7b2acc36
-Gitweb:     http://git.kernel.org/tip/77e5849688670280b173bb9e0544e9da7b2acc36
-Author:     Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-AuthorDate: Sat, 14 Jan 2017 13:32:50 -0800
-Committer:  Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-CommitDate: Tue, 18 Apr 2017 11:20:15 -0700
+christophe leroy <christophe.leroy@c-s.fr> writes:
 
-rcu: Make arch select smp_mb__after_unlock_lock() strength
+> Le 22/04/2017 =C3=A0 08:08, Michael Ellerman a =C3=A9crit :
+>> "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> writes:
+>>> Excerpts from Christophe Leroy's message of April 21, 2017 18:32:
+>>>> diff --git a/arch/powerpc/kernel/ftrace.c
+>>>> b/arch/powerpc/kernel/ftrace.c
+>>>> index 32509de6ce4c..06d2ac53f471 100644
+>>>> --- a/arch/powerpc/kernel/ftrace.c
+>>>> +++ b/arch/powerpc/kernel/ftrace.c
+>>>> @@ -46,6 +46,7 @@ static int
+>>>> @@ -67,10 +68,11 @@ ftrace_modify_code(unsigned long ip, unsigned int =
+old, unsigned int new)
+>>>>  	}
+>>>>
+>>>>  	/* replace the text with the new text */
+>>>> -	if (patch_instruction((unsigned int *)ip, new))
+>>>> -		return -EPERM;
+>>>> +	set_kernel_text_rw(ip);
+>>>> +	err =3D patch_instruction((unsigned int *)ip, new);
+>>>> +	set_kernel_text_ro(ip);
+>>>
+>>> Is there a reason to not put those inside patch_instruction()?
+>>
+>> Yes and no.
+>>
+>> patch_instruction() is called quite early from apply_feature_fixups(), I
+>> haven't looked closely but I suspect the set_kernel_text_rx() routines
+>> won't work that early.
+>>
+>> But on the other hand patch_instruction() is used by things other than
+>> ftrace, like jump labels, so we probably want the rw/ro setting in there
+>> so that we don't have to go and fixup jump labels etc.
+>>
+>> So probably we need a raw_patch_instruction() which does just the
+>> patching (what patch_instruction() does now), and can be used early in
+>> boot. And then patch_instruction() would have the rw/ro change in it, so
+>> that all users of it are OK.
+>>
+>> eg ~=3D:
+>>
+>> int raw_patch_instruction(unsigned int *addr, unsigned int instr)
+>> {
+>>   ...
+>> }
+>>
+>> int patch_instruction(unsigned int *addr, unsigned int instr)
+>> {
+>> 	int err;
+>>
+>> 	set_kernel_text_rw(ip);
+>> 	err =3D raw_patch_instruction((unsigned int *)ip, new);
+>> 	set_kernel_text_ro(ip);
+>>
+>> 	return err;
+>> }
+>
+> Shouldn't we then also have some kind of protection against parallel use=
+=20
+> of patch_instruction() like a spin_lock_irqsave(), or is it garantied=20
+> not to happen for other reasons ?
+>
+> Otherwise, we might end up with one instance setting back the kernel=20
+> text to RO while the other one has just put it RW and is about to patch=20
+> the instruction.
 
-The definition of smp_mb__after_unlock_lock() is currently smp_mb()
-for CONFIG_PPC and a no-op otherwise.  It would be better to instead
-provide an architecture-selectable Kconfig option, and select the
-strength of smp_mb__after_unlock_lock() based on that option.  This
-commit therefore creates ARCH_WEAK_RELEASE_ACQUIRE, has PPC select it,
-and bases the definition of smp_mb__after_unlock_lock() on this new
-ARCH_WEAK_RELEASE_ACQUIRE Kconfig option.
+Yes it'd need some locking for sure.
 
-Reported-by: Ingo Molnar <mingo@kernel.org>
-Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Will Deacon <will.deacon@arm.com>
-Cc: Boqun Feng <boqun.feng@linux.vnet.ibm.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Acked-by: Michael Ellerman <mpe@ellerman.id.au>
-Cc: <linuxppc-dev@lists.ozlabs.org>
-Reviewed-by: Josh Triplett <josh@joshtriplett.org>
----
- arch/Kconfig             | 3 +++
- arch/powerpc/Kconfig     | 1 +
- include/linux/rcupdate.h | 6 +++---
- 3 files changed, 7 insertions(+), 3 deletions(-)
+"Locking left as an exercise for the reader." ;)
 
-diff --git a/arch/Kconfig b/arch/Kconfig
-index cd211a1..adefaf3 100644
---- a/arch/Kconfig
-+++ b/arch/Kconfig
-@@ -320,6 +320,9 @@ config HAVE_CMPXCHG_LOCAL
- config HAVE_CMPXCHG_DOUBLE
- 	bool
- 
-+config ARCH_WEAK_RELEASE_ACQUIRE
-+	bool
-+
- config ARCH_WANT_IPC_PARSE_VERSION
- 	bool
- 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 97a8bc8..7a5c9b7 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -99,6 +99,7 @@ config PPC
- 	select ARCH_USE_BUILTIN_BSWAP
- 	select ARCH_USE_CMPXCHG_LOCKREF		if PPC64
- 	select ARCH_WANT_IPC_PARSE_VERSION
-+	select ARCH_WEAK_RELEASE_ACQUIRE
- 	select BINFMT_ELF
- 	select BUILDTIME_EXTABLE_SORT
- 	select CLONE_BACKWARDS
-diff --git a/include/linux/rcupdate.h b/include/linux/rcupdate.h
-index de88b33..e6146d0 100644
---- a/include/linux/rcupdate.h
-+++ b/include/linux/rcupdate.h
-@@ -1127,11 +1127,11 @@ do { \
-  * if the UNLOCK and LOCK are executed by the same CPU or if the
-  * UNLOCK and LOCK operate on the same lock variable.
-  */
--#ifdef CONFIG_PPC
-+#ifdef CONFIG_ARCH_WEAK_RELEASE_ACQUIRE
- #define smp_mb__after_unlock_lock()	smp_mb()  /* Full ordering for lock. */
--#else /* #ifdef CONFIG_PPC */
-+#else /* #ifdef CONFIG_ARCH_WEAK_RELEASE_ACQUIRE */
- #define smp_mb__after_unlock_lock()	do { } while (0)
--#endif /* #else #ifdef CONFIG_PPC */
-+#endif /* #else #ifdef CONFIG_ARCH_WEAK_RELEASE_ACQUIRE */
- 
- 
- #endif /* __LINUX_RCUPDATE_H */
+cheers
