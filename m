@@ -1,36 +1,46 @@
-Return-Path: <David.Laight@ACULAB.COM>
-Received: from smtp-out6.electric.net (smtp-out6.electric.net
- [192.162.217.190])
+Return-Path: <srs0=adkq=4a=linux.vnet.ibm.com=sukadev@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wBYCM1RHfzDq66
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Apr 2017 03:25:51 +1000 (AEST)
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3wBYCM0Ql7z8sxx
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Apr 2017 03:25:51 +1000 (AEST)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wBWFn6lb1zDq7W
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Apr 2017 01:57:49 +1000 (AEST)
-From: David Laight <David.Laight@ACULAB.COM>
-To: 'Michael Ellerman' <mpe@ellerman.id.au>, Shuah Khan
- <shuahkh@osg.samsung.com>, "shuah@kernel.org" <shuah@kernel.org>,
- "bamvor.zhangjian@linaro.org" <bamvor.zhangjian@linaro.org>,
- "benh@kernel.crashing.org" <benh@kernel.crashing.org>, "paulus@samba.org"
- <paulus@samba.org>, "dvhart@infradead.org" <dvhart@infradead.org>
-CC: "linux-kselftest@vger.kernel.org" <linux-kselftest@vger.kernel.org>,
- "rkrcmar@redhat.com" <rkrcmar@redhat.com>, "dsafonov@virtuozzo.com"
- <dsafonov@virtuozzo.com>, "dave.hansen@linux.intel.com"
- <dave.hansen@linux.intel.com>, Shuah Khan <shuahkh@osg.samsung.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "emilio.lopez@collabora.co.uk" <emilio.lopez@collabora.co.uk>,
- "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>,
- "viro@zeniv.linux.org.uk" <viro@zeniv.linux.org.uk>, "luto@kernel.org"
- <luto@kernel.org>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>, "mingo@kernel.org" <mingo@kernel.org>
-Subject: RE: [PATCH 8/8] selftests: x86: override clean in lib.mk to fix
- warnings
-Date: Mon, 24 Apr 2017 15:57:34 +0000
-Message-ID: <063D6719AE5E284EB5DD2968C1650D6DCFFD9941@AcuExch.aculab.com>
-References: <cover.1492815938.git.shuahkh@osg.samsung.com>
- <31b94c5cb9a8f71fd3888b648f32c0bd91e4a9bd.1492815938.git.shuahkh@osg.samsung.com>
- <87o9vpyp6h.fsf@concordia.ellerman.id.au>
-In-Reply-To: <87o9vpyp6h.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset="Windows-1252"
+ by ozlabs.org (Postfix) with ESMTPS id 3wBYCL3Mrrz9sDb
+ for <linuxppc-dev@ozlabs.org>; Tue, 25 Apr 2017 03:25:50 +1000 (AEST)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v3OHNoxZ140248
+ for <linuxppc-dev@ozlabs.org>; Mon, 24 Apr 2017 13:25:45 -0400
+Received: from e16.ny.us.ibm.com (e16.ny.us.ibm.com [129.33.205.206])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2a1jn1ttds-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Mon, 24 Apr 2017 13:25:44 -0400
+Received: from localhost
+ by e16.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
+ Mon, 24 Apr 2017 13:25:43 -0400
+Date: Mon, 24 Apr 2017 10:25:27 -0700
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, michael.neuling@au1.ibm.com,
+ stewart@linux.vnet.ibm.com, apopple@au1.ibm.com, hbabu@us.ibm.com,
+ oohall@gmail.com, bsingharora@gmail.com, linuxppc-dev@ozlabs.org,
+ linux-kernel@vger.kernel.org, aneesh.kumar@linux.vnet.ibm.com
+Subject: Re: [PATCH v4 05/11] VAS: Define helpers for access MMIO regions
+References: <1490937224-29149-1-git-send-email-sukadev@linux.vnet.ibm.com>
+ <1490937224-29149-6-git-send-email-sukadev@linux.vnet.ibm.com>
+ <1493015287.25766.213.camel@kernel.crashing.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <1493015287.25766.213.camel@kernel.crashing.org>
+Message-Id: <20170424172527.GA15532@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,42 +50,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Linuxppc-dev Michael Ellerman
-> Shuah Khan <shuahkh@osg.samsung.com> writes:
+Benjamin Herrenschmidt [benh@kernel.crashing.org] wrote:
+> On Thu, 2017-03-30 at 22:13 -0700, Sukadev Bhattiprolu wrote:
+> > +static void *map_mmio_region(char *name, uint64_t start, int len)
+> > +{
+> > +=A0=A0=A0=A0=A0=A0=A0void *map;
+> > +
+> > +=A0=A0=A0=A0=A0=A0=A0if (!request_mem_region(start, len, name)) {
+> > +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0pr_devel("%s(): request_m=
+em_region(0x%llx, %d) failed\n",
+> > +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=
+=A0=A0=A0=A0=A0=A0=A0=A0__func__, start, len);
+> > +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0return NULL;
+> > +=A0=A0=A0=A0=A0=A0=A0}
+> > +
+> > +=A0=A0=A0=A0=A0=A0=A0map =3D __ioremap(start, len, pgprot_val(pgprot_c=
+ached(__pgprot(0))));
+> > +=A0=A0=A0=A0=A0=A0=A0if (!map) {
+> > +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0pr_devel("%s(): ioremap(0=
+x%llx, %d) failed\n", __func__, start,
+> > +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=
+=A0=A0=A0=A0=A0=A0=A0=A0len);
+> > +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0return NULL;
+> > +=A0=A0=A0=A0=A0=A0=A0}
+> > +
+> > +=A0=A0=A0=A0=A0=A0=A0return map;
+> > +}
 >=20
-> > Add override for lib.mk clean to fix the following warnings from clean
-> > target run.
-> >
-> > Makefile:44: warning: overriding recipe for target 'clean'
-> > ../lib.mk:55: warning: ignoring old recipe for target 'clean'
-> >
-> > Signed-off-by: Shuah Khan <shuahkh@osg.samsung.com>
-> > ---
-> >  tools/testing/selftests/x86/Makefile | 3 ++-
-> >  1 file changed, 2 insertions(+), 1 deletion(-)
-> >
-> > diff --git a/tools/testing/selftests/x86/Makefile b/tools/testing/selft=
-ests/x86/Makefile
-> > index 38e0a9c..4d27550 100644
-> > --- a/tools/testing/selftests/x86/Makefile
-> > +++ b/tools/testing/selftests/x86/Makefile
-> > @@ -40,8 +40,9 @@ all_32: $(BINARIES_32)
-> >
-> >  all_64: $(BINARIES_64)
-> >
-> > -clean:
-> > +override define CLEAN
-> >  	$(RM) $(BINARIES_32) $(BINARIES_64)
-> > +endef
+> That's very wrong. I assume this never worked right ?
+
+Untl recently, only tested on simics and has been working there. On the
+hardware, hitting a crash on the first mmio write...
 >=20
-> Simpler as:
+> MMIO regions must be mapped non-cachable. Only the paste region
+
+which maybe due to this :-) Should I change to pgprot_noncached() for the
+MMIO writes?
+
+> requires being mapped cachable. Ask Aneesh for a cleaner way of
+> doing it too while at it.
+
+Ok.
+
 >=20
-> EXTRA_CLEAN :=3D $(BINARIES_32) $(BINARIES_64)
+> > +/*
+> > + * Unmap the MMIO regions for a window.
+> > + */
+> > +static void unmap_wc_paste_kaddr(struct vas_window *window)
+> > +{
+> > +=A0=A0=A0=A0=A0=A0=A0int len;
+>=20
+> Don't use "wc"... that usually means "write combine".
 
-Actually for builds that insist on crapping all over the source tree I've u=
-sed:
+Ok.
 
-clean:
-	rm -rf `cat .cvsignore 2>/dev/null`
+Thanks,
 
-	David
+Sukadev
