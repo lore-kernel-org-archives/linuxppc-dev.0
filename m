@@ -1,22 +1,26 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-it0-x234.google.com (mail-it0-x234.google.com
+ [IPv6:2607:f8b0:4001:c0b::234])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wBDsS4JCNzDq5W
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Apr 2017 15:09:16 +1000 (AEST)
-Message-ID: <1493010542.25766.201.camel@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc/powernv: Fix opal entry/exit MSR_RI coverage
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Nicholas Piggin <npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wBF464MfRzDq5W
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Apr 2017 15:18:30 +1000 (AEST)
+Received: by mail-it0-x234.google.com with SMTP id 70so44212873ita.0
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 23 Apr 2017 22:18:30 -0700 (PDT)
+Date: Mon, 24 Apr 2017 15:18:07 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>,
  Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
-Date: Mon, 24 Apr 2017 15:09:02 +1000
-In-Reply-To: <20170424145500.7a3cb11b@roar.ozlabs.ibm.com>
+Subject: Re: [PATCH] powerpc/powernv: Fix opal entry/exit MSR_RI coverage
+Message-ID: <20170424151807.7e12b7cb@roar.ozlabs.ibm.com>
+In-Reply-To: <1493010542.25766.201.camel@kernel.crashing.org>
 References: <20170330121004.11991-1-npiggin@gmail.com>
  <1492998468.25766.195.camel@kernel.crashing.org>
  <20170424145500.7a3cb11b@roar.ozlabs.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ <1493010542.25766.201.camel@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,28 +30,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2017-04-24 at 14:55 +1000, Nicholas Piggin wrote:
-> On Mon, 24 Apr 2017 11:47:48 +1000
-> > Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
-> 
-> > On Thu, 2017-03-30 at 22:10 +1000, Nicholas Piggin wrote:
-> > > There are some windows in opal entry/exit that can not recover from a
-> > > re-entrant interrupt (e.g., machine check) due to using SRR registers,
-> > > but they currently do not have MSR_RI clear.
+On Mon, 24 Apr 2017 15:09:02 +1000
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+
+> On Mon, 2017-04-24 at 14:55 +1000, Nicholas Piggin wrote:
+> > On Mon, 24 Apr 2017 11:47:48 +1000  
+> > > Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:  
+> >   
+> > > On Thu, 2017-03-30 at 22:10 +1000, Nicholas Piggin wrote:  
+> > > > There are some windows in opal entry/exit that can not recover from a
+> > > > re-entrant interrupt (e.g., machine check) due to using SRR registers,
+> > > > but they currently do not have MSR_RI clear.
+> > > > 
+> > > > These were found by machine check injection coverage tests using the
+> > > > powerpc system simulator (Mambo).    
 > > > 
-> > > These were found by machine check injection coverage tests using the
-> > > powerpc system simulator (Mambo).  
+> > > So you make us enter/exit OPAL with RI off with your patch.  
 > > 
-> > So you make us enter/exit OPAL with RI off with your patch.
+> > It should hrfid to opal with MSR_RI set. It seems to be doing the right
+> > thing when stepping through it with the simulator.  
 > 
-> It should hrfid to opal with MSR_RI set. It seems to be doing the right
-> thing when stepping through it with the simulator.
+> Ok, it's me mis-reading it...
+> 
+> I am not fan of changing FIXUP_ENDIAN but I suppose we don't have much
+> choice. This will slow down OPAL entry/exit further...maybe we should
+> use HSRR0/1 instead ? That way we don't have to touch RI ...
 
-Ok, it's me mis-reading it...
-
-I am not fan of changing FIXUP_ENDIAN but I suppose we don't have much
-choice. This will slow down OPAL entry/exit further...maybe we should
-use HSRR0/1 instead ? That way we don't have to touch RI ...
-
-Cheers,
-Ben.
+I'll see if I can make that work.
