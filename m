@@ -1,27 +1,36 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <David.Laight@ACULAB.COM>
+Received: from smtp-out4.electric.net (smtp-out4.electric.net
+ [192.162.216.186])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wBTKj6wbWzDqL9
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Apr 2017 00:31:05 +1000 (AEST)
-Subject: Re: [PATCH v2 3/3] powerpc/mm: Implement CONFIG_DEBUG_RODATA on PPC32
-To: Michael Ellerman <mpe@ellerman.id.au>,
- "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Scott Wood <oss@buserror.net>, Paul Mackerras <paulus@samba.org>
-References: <cover.1492778567.git.christophe.leroy@c-s.fr>
- <97d45054364142af48b8767f9f9e115504d7568b.1492778567.git.christophe.leroy@c-s.fr>
- <1492781365.w4t118903f.astroid@naverao1-tp.none>
- <87fuh1ynxd.fsf@concordia.ellerman.id.au>
- <ad2d30c6-d9ba-e188-e6dc-2afbc90af77a@c-s.fr>
- <87bmrna08j.fsf@concordia.ellerman.id.au>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-From: Christophe LEROY <christophe.leroy@c-s.fr>
-Message-ID: <f66cbe74-b3ce-e471-ad14-ecb729fe7601@c-s.fr>
-Date: Mon, 24 Apr 2017 16:31:01 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wBVzr5w4PzDq66
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Apr 2017 01:45:43 +1000 (AEST)
+From: David Laight <David.Laight@ACULAB.COM>
+To: 'Shuah Khan' <shuahkh@osg.samsung.com>, "shuah@kernel.org"
+ <shuah@kernel.org>, "bamvor.zhangjian@linaro.org"
+ <bamvor.zhangjian@linaro.org>, "benh@kernel.crashing.org"
+ <benh@kernel.crashing.org>, "paulus@samba.org" <paulus@samba.org>,
+ "mpe@ellerman.id.au" <mpe@ellerman.id.au>, "dvhart@infradead.org"
+ <dvhart@infradead.org>
+CC: "linux-kselftest@vger.kernel.org" <linux-kselftest@vger.kernel.org>,
+ "rkrcmar@redhat.com" <rkrcmar@redhat.com>, "dsafonov@virtuozzo.com"
+ <dsafonov@virtuozzo.com>, "dave.hansen@linux.intel.com"
+ <dave.hansen@linux.intel.com>, "linux-kernel@vger.kernel.org"
+ <linux-kernel@vger.kernel.org>, "emilio.lopez@collabora.co.uk"
+ <emilio.lopez@collabora.co.uk>, "linux-gpio@vger.kernel.org"
+ <linux-gpio@vger.kernel.org>, "viro@zeniv.linux.org.uk"
+ <viro@zeniv.linux.org.uk>, "luto@kernel.org" <luto@kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "mingo@kernel.org" <mingo@kernel.org>
+Subject: RE: [PATCH 2/8] selftests: lib.mk: define CLEAN macro to allow
+ Makefiles to override clean
+Date: Mon, 24 Apr 2017 15:45:26 +0000
+Message-ID: <063D6719AE5E284EB5DD2968C1650D6DCFFD98E2@AcuExch.aculab.com>
+References: <cover.1492815938.git.shuahkh@osg.samsung.com>
+ <b39e21f8c47318d82be999aae310bdf6bcfc9bb9.1492815938.git.shuahkh@osg.samsung.com>
+In-Reply-To: <b39e21f8c47318d82be999aae310bdf6bcfc9bb9.1492815938.git.shuahkh@osg.samsung.com>
+Content-Type: text/plain; charset="Windows-1252"
 MIME-Version: 1.0
-In-Reply-To: <87bmrna08j.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,92 +40,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+From: Shuah Khan
+> Sent: 22 April 2017 00:15
+> Define CLEAN macro to allow Makefiles to override common clean target
+> in lib.mk. This will help fix the following failures:
+>=20
+> warning: overriding recipe for target 'clean'
+> ../lib.mk:55: warning: ignoring old recipe for target 'clean'
+>=20
+> Signed-off-by: Shuah Khan <shuahkh@osg.samsung.com>
+> ---
+>  tools/testing/selftests/lib.mk | 6 +++++-
+>  1 file changed, 5 insertions(+), 1 deletion(-)
+>=20
+> diff --git a/tools/testing/selftests/lib.mk b/tools/testing/selftests/lib=
+.mk
+> index 775c589..959273c 100644
+> --- a/tools/testing/selftests/lib.mk
+> +++ b/tools/testing/selftests/lib.mk
+> @@ -51,8 +51,12 @@ endef
+>  emit_tests:
+>  	$(EMIT_TESTS)
+>=20
+> -clean:
+> +define CLEAN
+>  	$(RM) -r $(TEST_GEN_PROGS) $(TEST_GEN_PROGS_EXTENDED) $(TEST_GEN_FILES)=
+ $(EXTRA_CLEAN)
+> +endef
+> +
+> +clean:
+> +	$(CLEAN)
 
+If might be easier to do something like:
 
-Le 23/04/2017 à 12:26, Michael Ellerman a écrit :
-> christophe leroy <christophe.leroy@c-s.fr> writes:
->
->> Le 22/04/2017 à 08:08, Michael Ellerman a écrit :
->>> "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> writes:
->>>> Excerpts from Christophe Leroy's message of April 21, 2017 18:32:
->>>>> diff --git a/arch/powerpc/kernel/ftrace.c
->>>>> b/arch/powerpc/kernel/ftrace.c
->>>>> index 32509de6ce4c..06d2ac53f471 100644
->>>>> --- a/arch/powerpc/kernel/ftrace.c
->>>>> +++ b/arch/powerpc/kernel/ftrace.c
->>>>> @@ -46,6 +46,7 @@ static int
->>>>> @@ -67,10 +68,11 @@ ftrace_modify_code(unsigned long ip, unsigned int old, unsigned int new)
->>>>>  	}
->>>>>
->>>>>  	/* replace the text with the new text */
->>>>> -	if (patch_instruction((unsigned int *)ip, new))
->>>>> -		return -EPERM;
->>>>> +	set_kernel_text_rw(ip);
->>>>> +	err = patch_instruction((unsigned int *)ip, new);
->>>>> +	set_kernel_text_ro(ip);
->>>>
->>>> Is there a reason to not put those inside patch_instruction()?
->>>
->>> Yes and no.
->>>
->>> patch_instruction() is called quite early from apply_feature_fixups(), I
->>> haven't looked closely but I suspect the set_kernel_text_rx() routines
->>> won't work that early.
->>>
->>> But on the other hand patch_instruction() is used by things other than
->>> ftrace, like jump labels, so we probably want the rw/ro setting in there
->>> so that we don't have to go and fixup jump labels etc.
->>>
->>> So probably we need a raw_patch_instruction() which does just the
->>> patching (what patch_instruction() does now), and can be used early in
->>> boot. And then patch_instruction() would have the rw/ro change in it, so
->>> that all users of it are OK.
->>>
->>> eg ~=:
->>>
->>> int raw_patch_instruction(unsigned int *addr, unsigned int instr)
->>> {
->>>   ...
->>> }
->>>
->>> int patch_instruction(unsigned int *addr, unsigned int instr)
->>> {
->>> 	int err;
->>>
->>> 	set_kernel_text_rw(ip);
->>> 	err = raw_patch_instruction((unsigned int *)ip, new);
->>> 	set_kernel_text_ro(ip);
->>>
->>> 	return err;
->>> }
->>
->> Shouldn't we then also have some kind of protection against parallel use
->> of patch_instruction() like a spin_lock_irqsave(), or is it garantied
->> not to happen for other reasons ?
->>
->> Otherwise, we might end up with one instance setting back the kernel
->> text to RO while the other one has just put it RW and is about to patch
->> the instruction.
->
-> Yes it'd need some locking for sure.
->
-> "Locking left as an exercise for the reader." ;)
->
-> cheers
->
+ifneq($(NO_CLEAN),y)
+clean:
+	$(RM) -r $(TEST_GEN_PROGS) $(TEST_GEN_PROGS_EXTENDED) $(TEST_GEN_FILES) $(=
+EXTRA_CLEAN)
+endif
 
-Not so easy indeed as patch_instruction() is called from many higher 
-level functions like patch_branch() which are themselves called from 
-other functions like do_features_fixup() which are called during init 
-but also when loading a module for instance.
-It is therefore not easy to implement it via a raw_patch_instruction() 
-as proposed.
-
-So I took another approach, taken from x86: a static bool tells whether 
-kernel text has been put in RO yet or not. Until this, 
-set_kernel_text_ro/rw() return without doing anything.
-
-As for the locking, I put a spin_lock_irqsave() as I was not sure 
-whether patch_instruction() can be called during interrupts or not.
-
-Christophe
+	David
