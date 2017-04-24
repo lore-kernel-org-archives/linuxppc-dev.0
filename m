@@ -1,15 +1,17 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wBhLb2Q2NzDqFG
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Apr 2017 08:47:35 +1000 (AEST)
-In-Reply-To: <1492994114-13797-1-git-send-email-mpe@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wBhLc35TyzDqBS
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Apr 2017 08:47:36 +1000 (AEST)
+In-Reply-To: <20170419063826.1678-1-david@gibson.dropbear.id.au>
+To: David Gibson <david@gibson.dropbear.id.au>, paulus@samba.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: powerpc/xmon: Deindent the SLB dumping logic
-Message-Id: <3wBhLb0qjcz9s8W@ozlabs.org>
-Date: Tue, 25 Apr 2017 08:47:34 +1000 (AEST)
+Cc: jasowang@redhat.com, linuxppc-dev@lists.ozlabs.org, thuth@redhat.com,
+ David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: [RFC] arch/powerpc: Turn off irqs in switch_mm()
+Message-Id: <3wBhLc21L4z9s8Y@ozlabs.org>
+Date: Tue, 25 Apr 2017 08:47:35 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,16 +21,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2017-04-24 at 00:35:14 UTC, Michael Ellerman wrote:
-> Currently the code that dumps SLB entries uses a double-nested if. This
-> means the actual dumping logic is a bit squashed. Deindent it by using
-> continue.
+On Wed, 2017-04-19 at 06:38:26 UTC, David Gibson wrote:
+> There seems to be a mismatch in expectations between the powerpc arch code
+> and the generic (and x86) code in terms of the irq state when switch_mm()
+> is called.
 > 
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-> Reviewed-by: Rashmica Gupta <rashmica.g@gmail.com>
+> powerpc expects irqs to already be (soft) disabled when switch_mm() is
+> called, as made clear in the commit message of 9c1e105 "powerpc: Allow
+> perf_counters to access user memory at interrupt time".
+> 
+> That seems to be true when it's called from the schedule, but not for
+> use_mm().  This becomes clear when looking at the x86 code paths for
+> switch_mm().  There, switch_mm() itself disable irqs, with a
+> switch_mm_irqs_off() variant which expects that to be already done.
+> 
+> This patch addresses the problem, making the powerpc code mirror the x86
+> code.
+> 
+> Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
 
-Applied to powerpc next.
+Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/856736466806ceb72c7402eb0f06be
+https://git.kernel.org/powerpc/c/9765ad134a00a01cbcc69c78ff6def
 
 cheers
