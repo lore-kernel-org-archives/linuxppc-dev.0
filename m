@@ -2,17 +2,14 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wBhLZ2dv0zDqFc
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Apr 2017 08:47:34 +1000 (AEST)
-In-Reply-To: <63c796a86e56ae64e88ba1fc55ca864789c9b22e.1492606062.git.naveen.n.rao@linux.vnet.ibm.com>
-To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wBhLb2Q2NzDqFG
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Apr 2017 08:47:35 +1000 (AEST)
+In-Reply-To: <1492994114-13797-1-git-send-email-mpe@ellerman.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Masami Hiramatsu <mhiramat@kernel.org>, Ingo Molnar <mingo@kernel.org>
-Subject: Re: [v4,
- 3/6] kprobes: Skip preparing optprobe if the probe is ftrace-based
-Message-Id: <3wBhLZ0lKsz9s8S@ozlabs.org>
-Date: Tue, 25 Apr 2017 08:47:33 +1000 (AEST)
+Subject: Re: powerpc/xmon: Deindent the SLB dumping logic
+Message-Id: <3wBhLb0qjcz9s8W@ozlabs.org>
+Date: Tue, 25 Apr 2017 08:47:34 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,17 +19,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2017-04-19 at 12:52:25 UTC, "Naveen N. Rao" wrote:
-> From: Masami Hiramatsu <mhiramat@kernel.org>
+On Mon, 2017-04-24 at 00:35:14 UTC, Michael Ellerman wrote:
+> Currently the code that dumps SLB entries uses a double-nested if. This
+> means the actual dumping logic is a bit squashed. Deindent it by using
+> continue.
 > 
-> Skip preparing optprobe if the probe is ftrace-based, since anyway, it
-> must not be optimized (or already optimized by ftrace).
-> 
-> Tested-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
-> Signed-off-by: Masami Hiramatsu <mhiramat@kernel.org>
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> Reviewed-by: Rashmica Gupta <rashmica.g@gmail.com>
 
-Applied to powerpc next, thanks.
+Applied to powerpc next.
 
-https://git.kernel.org/powerpc/c/a460246c70d1ac25a0717112e7a167
+https://git.kernel.org/powerpc/c/856736466806ceb72c7402eb0f06be
 
 cheers
