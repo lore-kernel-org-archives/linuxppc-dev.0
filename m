@@ -1,45 +1,29 @@
-Return-Path: <sergey.senozhatsky.work@gmail.com>
-Received: from mail-io0-x241.google.com (mail-io0-x241.google.com
- [IPv6:2607:f8b0:4001:c06::241])
+Return-Path: <npiggin@gmail.com>
+Received: from mail-io0-x22c.google.com (mail-io0-x22c.google.com
+ [IPv6:2607:f8b0:4001:c06::22c])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wB93p5W5WzDq7h
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Apr 2017 12:17:58 +1000 (AEST)
-Received: by mail-io0-x241.google.com with SMTP id k87so44288376ioi.0
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 23 Apr 2017 19:17:58 -0700 (PDT)
-Date: Mon, 24 Apr 2017 11:17:47 +0900
-From: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>
-To: Petr Mladek <pmladek@suse.com>
-Cc: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>,
- Steven Rostedt <rostedt@goodmis.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- Peter Zijlstra <peterz@infradead.org>,
- Russell King <rmk+kernel@arm.linux.org.uk>,
- Daniel Thompson <daniel.thompson@linaro.org>,
- Jiri Kosina <jkosina@suse.com>, Ingo Molnar <mingo@redhat.com>,
- Thomas Gleixner <tglx@linutronix.de>,
- Chris Metcalf <cmetcalf@ezchip.com>, linux-kernel@vger.kernel.org,
- x86@kernel.org, linux-arm-kernel@lists.infradead.org,
- adi-buildroot-devel@lists.sourceforge.net,
- linux-cris-kernel@axis.com, linux-mips@linux-mips.org,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
- Jan Kara <jack@suse.cz>, Ralf Baechle <ralf@linux-mips.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- David Miller <davem@davemloft.net>
-Subject: Re: [PATCH v5 1/4] printk/nmi: generic solution for safe printk in NMI
-Message-ID: <20170424021747.GA630@jagdpanzerIV.localdomain>
-References: <1461239325-22779-1-git-send-email-pmladek@suse.com>
- <1461239325-22779-2-git-send-email-pmladek@suse.com>
- <20170419131341.76bc7634@gandalf.local.home>
- <20170420033112.GB542@jagdpanzerIV.localdomain>
- <20170420131154.GL3452@pathway.suse.cz>
- <20170421015724.GA586@jagdpanzerIV.localdomain>
- <20170421120627.GO3452@pathway.suse.cz>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wBCqn0ddszDq66
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Apr 2017 14:22:44 +1000 (AEST)
+Received: by mail-io0-x22c.google.com with SMTP id a103so176455599ioj.1
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 23 Apr 2017 21:22:44 -0700 (PDT)
+Date: Mon, 24 Apr 2017 14:22:18 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] powerpc/64s: use
+ ibm,tlbiel-congruence-classes-(hash|radix) dt property
+Message-ID: <20170424141954.3b400f30@roar.ozlabs.ibm.com>
+In-Reply-To: <1492992803.25766.193.camel@kernel.crashing.org>
+References: <20170422005854.17128-1-npiggin@gmail.com>
+ <20170422005854.17128-2-npiggin@gmail.com>
+ <1492848130.25766.185.camel@kernel.crashing.org>
+ <20170423091428.16fc298f@roar.ozlabs.ibm.com>
+ <1492907951.25766.191.camel@kernel.crashing.org>
+ <20170423195755.43e36953@roar.ozlabs.ibm.com>
+ <1492992803.25766.193.camel@kernel.crashing.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170421120627.GO3452@pathway.suse.cz>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,71 +33,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On (04/21/17 14:06), Petr Mladek wrote:
-[..]
-> > I agree that this_cpu_read(printk_context) covers slightly more than
-> > logbuf_lock scope, so we may get positive this_cpu_read(printk_context)
-> > with unlocked logbuf_lock, but I don't tend to think that it's a big
-> > problem.
+On Mon, 24 Apr 2017 10:13:23 +1000
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+
+> On Sun, 2017-04-23 at 19:57 +1000, Nicholas Piggin wrote:
+> > On Sun, 23 Apr 2017 10:39:11 +1000
+> > Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+> >   
+> > > On Sun, 2017-04-23 at 09:14 +1000, Nicholas Piggin wrote:  
+> > > > I think we were going to take another look at moving the setup
+> > > > code
+> > > > later, but I think that might wait until 4.13.    
+> > > 
+> > > Except without that we won't boot a post-P9 CPU right ? So we'll
+> > > end up
+> > > having to chase distros to backport it :-( Oh well...  
+> > 
+> > Okay, well what if we just move the TLB flushing to somewhere like
+> > early_init_mmu(_secondary) for power CPUs first?
+> > 
+> > Non-local tlbie does not seem to have this requirement, so would it
+> > make it more robust just to execute that once during boot with the
+> > primary thread?  
 > 
-> PRINTK_SAFE_CONTEXT is set also in call_console_drivers().
-> It might take rather long and logbuf_lock is availe. So, it is
-> noticeable source of false positives.
-
-yes, agree.
-
-probably we need additional printk_safe annotations for
-		"logbuf_lock is locked from _this_ CPU"
-
-false positives there can be very painful.
-
-[..]
-> 	if (raw_spin_is_locked(&logbuf_lock))
-> 		this_cpu_or(printk_context, PRINTK_NMI_CONTEXT_MASK);
-> 	else
-> 		this_cpu_or(printk_context, PRINTK_NMI_DEFERRED_CONTEXT_MASK);
-
-well, if everyone is fine with logbuf_lock access from every CPU from every
-NMI then I won't object either. but may be it makes sense to reduce the
-possibility of false positives. Steven is loosing critically important logs,
-after all.
-
-
-by the way,
-does this `nmi_print_seq' bypass even fix anything for Steven? it sort of
-can, in theory, but just in theory. so may be we need direct message flush
-from NMI handler (printk->console_unlock), which will be a really big problem.
-
-logbuf might not be big enough for 4890096 messages (Steven's report
-mentions "Lost 4890096 message(s)!"). we are counting on the fact that
-in case of `nmi_print_seq' bypass some other CPU will call console_unlock()
-and print pending logbuf messages, but this is not guaranteed and the
-messages can be dropped even from logbuf.
-
-I don't know,
-should we try to queue printk_deferred irq_work for all online CPUs from
-vprintk_nmi() when it bypasses printk_safe_log_store()? in order to minimize
-possibilities of logbuf overflow. printk_deferred() will queue work on
-vprintk_nmi() CPU, sure, but we don't know how many messages we are going
-to add to logbuf from NMI.
-
-
-> > @@ -303,7 +303,10 @@ static int vprintk_nmi(const char *fmt, va_list args)
-> >  {
-> >         struct printk_safe_seq_buf *s = this_cpu_ptr(&nmi_print_seq);
-> >  
-> > -       return printk_safe_log_store(s, fmt, args);
-> > +       if (this_cpu_read(printk_context) & PRINTK_SAFE_CONTEXT_MASK)
-> > +               return printk_safe_log_store(s, fmt, args);
-> > +
-> > +       return vprintk_emit(0, LOGLEVEL_SCHED, NULL, 0, fmt, args);
-> >  }
+> I wouldn't do a broadcast before we have LPCR setup... but for no
+> obvious reason. Also I'm not sure our boot time cleanup does things
+> properly vs hash & radix. I think we really need 2 passes.
 > 
-> It looks simple but some things are missing. It will be used also
-> outside panic/oops, so it should queue the irq_work to flush the console.
+> Oh well..
+> 
+> My main worry is the fact that on future chip we won't be setting up
+> LPCR properly. We should at least assume an unknown chip is P9, is that
+> what you do with your cpu-features patches ?
 
-you are right. I thought about moving irq_work to vprintk_emit(), but
-completely forgot about it. without that missing bit the proposed two-liner
-is not complete.
+cpu-features patches set up LPCR based on ISAv3 compatible MMU property
+(among other things). In case that does not match, we currently don't do
+anything graceful.
 
-	-ss
+Actually those patches I think are missing the TLB flush though, which
+I will add as a per-cpu local flush in the MMU setup path.
