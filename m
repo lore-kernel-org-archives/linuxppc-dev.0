@@ -1,33 +1,40 @@
-Return-Path: <srs0=pwla=4a=kernel.crashing.org=benh@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <shuah@kernel.org>
+Received: from resqmta-po-03v.sys.comcast.net (resqmta-po-03v.sys.comcast.net
+ [IPv6:2001:558:fe16:19:96:114:154:162])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wBj3W1HDTzDq5b
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Apr 2017 09:19:35 +1000 (AEST)
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3wBj3W0kkxz8t6N
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Apr 2017 09:19:35 +1000 (AEST)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3wBj3V2qJ0z9s8Q
- for <linuxppc-dev@ozlabs.org>; Tue, 25 Apr 2017 09:19:34 +1000 (AEST)
-Message-ID: <1493075940.25766.244.camel@kernel.crashing.org>
-Subject: Re: [PATCH v4 05/11] VAS: Define helpers for access MMIO regions
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, michael.neuling@au1.ibm.com,
- stewart@linux.vnet.ibm.com, apopple@au1.ibm.com, hbabu@us.ibm.com,
- oohall@gmail.com, bsingharora@gmail.com, linuxppc-dev@ozlabs.org,
- linux-kernel@vger.kernel.org, aneesh.kumar@linux.vnet.ibm.com
-Date: Tue, 25 Apr 2017 09:19:00 +1000
-In-Reply-To: <20170424172527.GA15532@us.ibm.com>
-References: <1490937224-29149-1-git-send-email-sukadev@linux.vnet.ibm.com>
- <1490937224-29149-6-git-send-email-sukadev@linux.vnet.ibm.com>
- <1493015287.25766.213.camel@kernel.crashing.org>
- <20170424172527.GA15532@us.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wBcW60YqBzDq66
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Apr 2017 05:54:41 +1000 (AEST)
+Reply-To: shuah@kernel.org
+Subject: Re: [PATCH 2/8] selftests: lib.mk: define CLEAN macro to allow
+ Makefiles to override clean
+References: <cover.1492815938.git.shuahkh@osg.samsung.com>
+ <b39e21f8c47318d82be999aae310bdf6bcfc9bb9.1492815938.git.shuahkh@osg.samsung.com>
+ <063D6719AE5E284EB5DD2968C1650D6DCFFD98E2@AcuExch.aculab.com>
+To: David Laight <David.Laight@ACULAB.COM>,
+ 'Shuah Khan' <shuahkh@osg.samsung.com>,
+ "bamvor.zhangjian@linaro.org" <bamvor.zhangjian@linaro.org>,
+ "benh@kernel.crashing.org" <benh@kernel.crashing.org>,
+ "paulus@samba.org" <paulus@samba.org>,
+ "mpe@ellerman.id.au" <mpe@ellerman.id.au>,
+ "dvhart@infradead.org" <dvhart@infradead.org>
+Cc: "linux-kselftest@vger.kernel.org" <linux-kselftest@vger.kernel.org>,
+ "rkrcmar@redhat.com" <rkrcmar@redhat.com>,
+ "dsafonov@virtuozzo.com" <dsafonov@virtuozzo.com>,
+ "dave.hansen@linux.intel.com" <dave.hansen@linux.intel.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "emilio.lopez@collabora.co.uk" <emilio.lopez@collabora.co.uk>,
+ "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>,
+ "viro@zeniv.linux.org.uk" <viro@zeniv.linux.org.uk>,
+ "luto@kernel.org" <luto@kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "mingo@kernel.org" <mingo@kernel.org>, Shuah Khan <shuah@kernel.org>
+From: Shuah Khan <shuah@kernel.org>
+Message-ID: <8845c13f-eaeb-86a1-1ac8-d7c52e934ef4@kernel.org>
+Date: Mon, 24 Apr 2017 13:46:23 -0600
+MIME-Version: 1.0
+In-Reply-To: <063D6719AE5E284EB5DD2968C1650D6DCFFD98E2@AcuExch.aculab.com>
+Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,11 +44,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2017-04-24 at 10:25 -0700, Sukadev Bhattiprolu wrote:
-> which maybe due to this :-) Should I change to pgprot_noncached() for
-> the MMIO writes?
+On 04/24/2017 09:45 AM, David Laight wrote:
+> From: Shuah Khan
+>> Sent: 22 April 2017 00:15
+>> Define CLEAN macro to allow Makefiles to override common clean target
+>> in lib.mk. This will help fix the following failures:
+>>
+>> warning: overriding recipe for target 'clean'
+>> ../lib.mk:55: warning: ignoring old recipe for target 'clean'
+>>
+>> Signed-off-by: Shuah Khan <shuahkh@osg.samsung.com>
+>> ---
+>>  tools/testing/selftests/lib.mk | 6 +++++-
+>>  1 file changed, 5 insertions(+), 1 deletion(-)
+>>
+>> diff --git a/tools/testing/selftests/lib.mk b/tools/testing/selftests/lib.mk
+>> index 775c589..959273c 100644
+>> --- a/tools/testing/selftests/lib.mk
+>> +++ b/tools/testing/selftests/lib.mk
+>> @@ -51,8 +51,12 @@ endef
+>>  emit_tests:
+>>  	$(EMIT_TESTS)
+>>
+>> -clean:
+>> +define CLEAN
+>>  	$(RM) -r $(TEST_GEN_PROGS) $(TEST_GEN_PROGS_EXTENDED) $(TEST_GEN_FILES) $(EXTRA_CLEAN)
+>> +endef
+>> +
+>> +clean:
+>> +	$(CLEAN)
+> 
+> If might be easier to do something like:
+> 
+> ifneq($(NO_CLEAN),y)
+> clean:
+> 	$(RM) -r $(TEST_GEN_PROGS) $(TEST_GEN_PROGS_EXTENDED) $(TEST_GEN_FILES) $(EXTRA_CLEAN)
+> endif
+> 
+> 	David
+> 
 
-Just use normal ioremap().
+I am not sure that it is easier. Defining a macro would work well
+in this case to override and also works well with what we are doing
+for other overrides we already have such as EMIT_TESTS.
 
-> > requires being mapped cachable. Ask Aneesh for a cleaner way of
-> > doing it too while at it.
+thanks,
+-- Shuah
