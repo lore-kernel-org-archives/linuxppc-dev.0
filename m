@@ -1,20 +1,21 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wBLKS2rn2zDqFx
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Apr 2017 19:15:24 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wBLMx65c3zDqCC
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Apr 2017 19:17:33 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Christophe Leroy <christophe.leroy@c-s.fr>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Scott Wood <oss@buserror.net>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] powerpc/mm: Only read faulting instruction when necessary
- in do_page_fault()
-In-Reply-To: <20170424082832.C0E8C6EAF5@localhost.localdomain>
-References: <20170424082832.C0E8C6EAF5@localhost.localdomain>
-Date: Mon, 24 Apr 2017 19:15:20 +1000
-Message-ID: <87d1c2rwt3.fsf@concordia.ellerman.id.au>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [PATCH] powerpc/64s: use ibm,
+ tlbiel-congruence-classes-(hash|radix) dt property
+In-Reply-To: <8737cy2ozz.fsf@skywalker.in.ibm.com>
+References: <20170422005854.17128-1-npiggin@gmail.com>
+ <20170422005854.17128-2-npiggin@gmail.com>
+ <8737cy2ozz.fsf@skywalker.in.ibm.com>
+Date: Mon, 24 Apr 2017 19:17:33 +1000
+Message-ID: <87a876rwpe.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,39 +27,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Christophe Leroy <christophe.leroy@c-s.fr> writes:
+"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> writes:
+> Nicholas Piggin <npiggin@gmail.com> writes:
+>> tlbiel instruction with IS!=0 on POWER7 and later Book3s CPUs invalidate
+>> TLBs belonging to a specified congruence class. In order to operate on
+>> the entire TLB, all congruence classes must be specified, requiring a
+>> software loop.
+...
+>
+> This may need a rebase if mpe is going to take https://lists.ozlabs.org/pipermail/linuxppc-dev/2017-April/157130.html
 
-> diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
-> index 400f2d0d42f8..3d506589236c 100644
-> --- a/arch/powerpc/mm/fault.c
-> +++ b/arch/powerpc/mm/fault.c
-> @@ -356,8 +348,22 @@ int do_page_fault(struct pt_regs *regs, unsigned long address,
->  		 * between the last mapped region and the stack will
->  		 * expand the stack rather than segfaulting.
->  		 */
-> -		if (address + 2048 < uregs->gpr[1] && !store_updates_sp(inst))
-> -			goto bad_area;
-> +		if (address + 2048 < uregs->gpr[1]) {
-> +			if (!inst) {
-
-That looks like it could lead to an infinite loop, if the instruction
-that caused the fault has been overwritten with NULL by another thread.
-
-Or did I miss something? (I only read the diff)
-
-> +				/*
-> +				 * We want to do this outside mmap_sem, because
-> +				 * reading code around nip can result in fault,
-> +				 * which will cause a deadlock when called with
-> +				 * mmap_sem held
-> +				 */
-> +				up_read(&mm->mmap_sem);
-> +				__get_user(inst,
-> +					   (unsigned int __user *)regs->nip);
-> +				if (!store_updates_sp(inst))
-> +					goto bad_area_nosemaphore;
-> +				goto retry;
-> +			}
-
+I would but it says "Not yet tested" :)
 
 cheers
