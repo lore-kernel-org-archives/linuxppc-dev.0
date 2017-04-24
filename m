@@ -1,20 +1,19 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wBhLP48FLzDq66
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Apr 2017 08:47:25 +1000 (AEST)
-In-Reply-To: <1492475079-10740-1-git-send-email-tyreld@linux.vnet.ibm.com>
-To: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wBhLQ3yJQzDqC2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Apr 2017 08:47:26 +1000 (AEST)
+In-Reply-To: <77e96021f60d0cebd75bb8c5968e179c32781016.1492604782.git.naveen.n.rao@linux.vnet.ibm.com>
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
+ Ingo Molnar <mingo@kernel.org>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: sachinp@linux.vnet.ibm.com, devicetree@vger.kernel.org,
- sudeep.karkadanagesha@arm.com, stable@vger.kernel.org, robh+dt@kernel.org,
- Tyrel Datwyler <tyreld@linux.vnet.ibm.com>, bharata@linux.vnet.ibm.com,
- nfont@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [2/2] powerpc/sysfs: fix reference leak of cpu device_nodes
- present at boot
-Message-Id: <3wBhLP3Qv3z9s8W@ozlabs.org>
-Date: Tue, 25 Apr 2017 08:47:25 +1000 (AEST)
+Cc: linuxppc-dev@lists.ozlabs.org, Masami Hiramatsu <mhiramat@kernel.org>,
+ linux-kernel@vger.kernel.org
+Subject: Re: [v3,
+ 2/7] powerpc: kprobes: fix handling of function offsets on ABIv2
+Message-Id: <3wBhLQ2Vy4z9s8Y@ozlabs.org>
+Date: Tue, 25 Apr 2017 08:47:26 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,24 +23,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2017-04-18 at 00:24:39 UTC, Tyrel Datwyler wrote:
-> For cpus present at boot each logical cpu acquires a reference to the
-> associated device node of the core. This happens in register_cpu() which
-> is called by topology_init(). The result of this is that we end up with
-> a reference held by each thread of the core. However, these references
-> are never freed if the cpu core is dlpar removed.
+On Wed, 2017-04-19 at 12:51:01 UTC, "Naveen N. Rao" wrote:
+> commit 239aeba76409 ("perf powerpc: Fix kprobe and kretprobe handling
+> with kallsyms on ppc64le") changed how we use the offset field in struct
+> kprobe on ABIv2. perf now offsets from the GEP (Global entry point) if an
+> offset is specified and otherwise chooses the LEP (Local entry point).
 > 
-> This patch fixes the reference leaks by acquiring and releasing the
-> references in the cpu hotplug callbacks un/register_cpu_online().
-> With this patch symmetric reference counting is observed with both cpus
-> present at boot, and those dlpar added after boot.
+> Fix the same in kernel for kprobe API users. We do this by extending
+> kprobe_lookup_name() to accept an additional parameter to indicate the
+> offset specified with the kprobe registration. If offset is 0, we return
+> the local function entry and return the global entry point otherwise.
 > 
-> Cc: stable@vger.kernel.org
-> fixes: f86e4718f24b ("driver/core: cpu: initialize of_node in cpu's device struture")
-> Signed-off-by: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+> With:
+> 	# cd /sys/kernel/debug/tracing/
+> 	# echo "p _do_fork" >> kprobe_events
+> 	# echo "p _do_fork+0x10" >> kprobe_events
+> 
+> before this patch:
+> 	# cat ../kprobes/list
+> 	c0000000000d0748  k  _do_fork+0x8    [DISABLED]
+> 	c0000000000d0758  k  _do_fork+0x18    [DISABLED]
+> 	c0000000000412b0  k  kretprobe_trampoline+0x0    [OPTIMIZED]
+> 
+> and after:
+> 	# cat ../kprobes/list
+> 	c0000000000d04c8  k  _do_fork+0x8    [DISABLED]
+> 	c0000000000d04d0  k  _do_fork+0x10    [DISABLED]
+> 	c0000000000412b0  k  kretprobe_trampoline+0x0    [OPTIMIZED]
+> 
+> Acked-by: Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>
+> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/e76ca27790a514590af782f83f6eae
+https://git.kernel.org/powerpc/c/290e3070762ac80e5fc4087d8c4de7
 
 cheers
