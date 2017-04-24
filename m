@@ -1,25 +1,20 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wBhGs5nsZzDq66
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Apr 2017 08:44:21 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Kees Cook <keescook@chromium.org>
-Cc: Balbir Singh <bsingharora@gmail.com>,
- "linuxppc-dev\@ozlabs.org" <linuxppc-dev@ozlabs.org>,
- Bhupesh Sharma <bhsharma@redhat.com>,
- "kernel-hardening\@lists.openwall.com" <kernel-hardening@lists.openwall.com>
-Subject: Re: [kernel-hardening] Re: [PATCH v2] powerpc/mm: Add support for
- runtime configuration of ASLR limits
-In-Reply-To: <CAGXu5jLgCGKfyjP=yW4A_E6vCCtuiKdLeb1f80K6cyxpEA2Y=Q@mail.gmail.com>
-References: <1492698980-19510-1-git-send-email-mpe@ellerman.id.au>
- <1492995750.2418.4.camel@gmail.com> <8737cxswuk.fsf@concordia.ellerman.id.au>
- <CAGXu5jLgCGKfyjP=yW4A_E6vCCtuiKdLeb1f80K6cyxpEA2Y=Q@mail.gmail.com>
-Date: Tue, 25 Apr 2017 08:44:18 +1000
-Message-ID: <87a8752zp9.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wBhLM3Tq5zDq66
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Apr 2017 08:47:23 +1000 (AEST)
+In-Reply-To: <53bcae5a711eab803c9c3210110e8a464df34202.1488961018.git.naveen.n.rao@linux.vnet.ibm.com>
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
+ Arnaldo Carvalho de Melo <acme@kernel.org>
+From: Michael Ellerman <patch-notifications@ellerman.id.au>
+Cc: linux-kernel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>,
+ Masami Hiramatsu <mhiramat@kernel.org>, linuxppc-dev@lists.ozlabs.org,
+ Ingo Molnar <mingo@redhat.com>
+Subject: Re: [v5,
+ 2/5] powerpc: kretprobes: override default function entry offset
+Message-Id: <3wBhLM2dXMz9s8S@ozlabs.org>
+Date: Tue, 25 Apr 2017 08:47:23 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,41 +24,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Kees Cook <keescook@chromium.org> writes:
-> On Mon, Apr 24, 2017 at 7:29 AM, Michael Ellerman <mpe@ellerman.id.au> wrote:
->> Balbir Singh <bsingharora@gmail.com> writes:
->>>> diff --git a/arch/powerpc/mm/mmap.c b/arch/powerpc/mm/mmap.c
->>>> index a5d9ef59debe..6141cfff634e 100644
->>>> --- a/arch/powerpc/mm/mmap.c
->>>> +++ b/arch/powerpc/mm/mmap.c
->>>> @@ -59,13 +59,14 @@ static inline int mmap_is_legacy(void)
->>>>
->>>>  unsigned long arch_mmap_rnd(void)
->>>>  {
->>>> -    unsigned long rnd;
->>>> +    unsigned long shift, rnd;
->>>>
->>>> -    /* 8MB for 32bit, 1GB for 64bit */
->>>> +    shift = mmap_rnd_bits;
->>>> +#ifdef CONFIG_COMPAT
->>>>      if (is_32bit_task())
->>>> -            rnd = get_random_long() % (1<<(23-PAGE_SHIFT));
->>>> -    else
->>>> -            rnd = get_random_long() % (1UL<<(30-PAGE_SHIFT));
->>>> +            shift = mmap_rnd_compat_bits;
->>>> +#endif
->>>> +    rnd = get_random_long() % (1 << shift);
->>>
->>> Nitpick, 1 should be 1UL?
->
-> Nice catch!
->
->> No, shift can only be 29 at most IIRC?
->
-> The largest value in the kconfigs is 33?
+On Wed, 2017-03-08 at 08:26:07 UTC, "Naveen N. Rao" wrote:
+> With ABIv2, we offset 8 bytes into a function to get at the local entry
+> point.
+> 
+> Acked-by: Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>
+> Acked-by: Michael Ellerman <mpe@ellerman.id.au>
+> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+> Acked-by: Michael Ellerman <mpe@ellerman.id.au>
 
-Yeah you're right, for the 4K page kernel it can be 33.
+Applied to powerpc next, thanks.
 
-Will fix.
+https://git.kernel.org/powerpc/c/a64e3f35a45f4a84148d0ba30a3c75
 
 cheers
