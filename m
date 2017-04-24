@@ -1,46 +1,36 @@
-Return-Path: <srs0=adkq=4a=linux.vnet.ibm.com=sukadev@ozlabs.org>
+Return-Path: <srs0=cylr=4a=google.com=keescook@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wBYCM1RHfzDq66
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Apr 2017 03:25:51 +1000 (AEST)
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3wBYCM0Ql7z8sxx
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Apr 2017 03:25:51 +1000 (AEST)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wBYtJ3cfnzDq7W
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Apr 2017 03:56:08 +1000 (AEST)
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3wBYtJ2Rttz8t08
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Apr 2017 03:56:08 +1000 (AEST)
+Received: from mail-io0-x235.google.com (mail-io0-x235.google.com
+ [IPv6:2607:f8b0:4001:c06::235])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3wBYCL3Mrrz9sDb
- for <linuxppc-dev@ozlabs.org>; Tue, 25 Apr 2017 03:25:50 +1000 (AEST)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v3OHNoxZ140248
- for <linuxppc-dev@ozlabs.org>; Mon, 24 Apr 2017 13:25:45 -0400
-Received: from e16.ny.us.ibm.com (e16.ny.us.ibm.com [129.33.205.206])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2a1jn1ttds-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Mon, 24 Apr 2017 13:25:44 -0400
-Received: from localhost
- by e16.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Mon, 24 Apr 2017 13:25:43 -0400
-Date: Mon, 24 Apr 2017 10:25:27 -0700
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, michael.neuling@au1.ibm.com,
- stewart@linux.vnet.ibm.com, apopple@au1.ibm.com, hbabu@us.ibm.com,
- oohall@gmail.com, bsingharora@gmail.com, linuxppc-dev@ozlabs.org,
- linux-kernel@vger.kernel.org, aneesh.kumar@linux.vnet.ibm.com
-Subject: Re: [PATCH v4 05/11] VAS: Define helpers for access MMIO regions
-References: <1490937224-29149-1-git-send-email-sukadev@linux.vnet.ibm.com>
- <1490937224-29149-6-git-send-email-sukadev@linux.vnet.ibm.com>
- <1493015287.25766.213.camel@kernel.crashing.org>
+ by ozlabs.org (Postfix) with ESMTPS id 3wBYtH0n8Fz9sMN
+ for <linuxppc-dev@ozlabs.org>; Tue, 25 Apr 2017 03:56:06 +1000 (AEST)
+Received: by mail-io0-x235.google.com with SMTP id k87so200896977ioi.0
+ for <linuxppc-dev@ozlabs.org>; Mon, 24 Apr 2017 10:56:06 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <1493015287.25766.213.camel@kernel.crashing.org>
-Message-Id: <20170424172527.GA15532@us.ibm.com>
+Sender: keescook@google.com
+In-Reply-To: <8737cxswuk.fsf@concordia.ellerman.id.au>
+References: <1492698980-19510-1-git-send-email-mpe@ellerman.id.au>
+ <1492995750.2418.4.camel@gmail.com> <8737cxswuk.fsf@concordia.ellerman.id.au>
+From: Kees Cook <keescook@chromium.org>
+Date: Mon, 24 Apr 2017 10:56:04 -0700
+Message-ID: <CAGXu5jLgCGKfyjP=yW4A_E6vCCtuiKdLeb1f80K6cyxpEA2Y=Q@mail.gmail.com>
+Subject: Re: [kernel-hardening] Re: [PATCH v2] powerpc/mm: Add support for
+ runtime configuration of ASLR limits
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Balbir Singh <bsingharora@gmail.com>,
+ "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+ Bhupesh Sharma <bhsharma@redhat.com>,
+ "kernel-hardening@lists.openwall.com" <kernel-hardening@lists.openwall.com>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,60 +40,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt [benh@kernel.crashing.org] wrote:
-> On Thu, 2017-03-30 at 22:13 -0700, Sukadev Bhattiprolu wrote:
-> > +static void *map_mmio_region(char *name, uint64_t start, int len)
-> > +{
-> > +=A0=A0=A0=A0=A0=A0=A0void *map;
-> > +
-> > +=A0=A0=A0=A0=A0=A0=A0if (!request_mem_region(start, len, name)) {
-> > +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0pr_devel("%s(): request_m=
-em_region(0x%llx, %d) failed\n",
-> > +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=
-=A0=A0=A0=A0=A0=A0=A0=A0__func__, start, len);
-> > +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0return NULL;
-> > +=A0=A0=A0=A0=A0=A0=A0}
-> > +
-> > +=A0=A0=A0=A0=A0=A0=A0map =3D __ioremap(start, len, pgprot_val(pgprot_c=
-ached(__pgprot(0))));
-> > +=A0=A0=A0=A0=A0=A0=A0if (!map) {
-> > +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0pr_devel("%s(): ioremap(0=
-x%llx, %d) failed\n", __func__, start,
-> > +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=
-=A0=A0=A0=A0=A0=A0=A0=A0len);
-> > +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0return NULL;
-> > +=A0=A0=A0=A0=A0=A0=A0}
-> > +
-> > +=A0=A0=A0=A0=A0=A0=A0return map;
-> > +}
->=20
-> That's very wrong. I assume this never worked right ?
+On Mon, Apr 24, 2017 at 7:29 AM, Michael Ellerman <mpe@ellerman.id.au> wrote:
+> Balbir Singh <bsingharora@gmail.com> writes:
+>
+>> On Fri, 2017-04-21 at 00:36 +1000, Michael Ellerman wrote:
+>>> Add powerpc support for mmap_rnd_bits and mmap_rnd_compat_bits, which are two
+>>> sysctls that allow a user to configure the number of bits of randomness used for
+>>> ASLR.
+> ...
+>>
+>> Could we please suggest that this should not be sent to stable or back-ported
+>> as the 128T default is new?
+>
+> I'm not sure I follow. I didn't tag it for stable. Do you mean we should
+> explicitly mark it as not-for-stable?
+>
+> If someone sends it to stable@vger I'll be pinged before it goes in and
+> nak it, if someone wants to backport it (incorrectly) to their own tree
+> then good luck to them :)
+>
+>>> diff --git a/arch/powerpc/mm/mmap.c b/arch/powerpc/mm/mmap.c
+>>> index a5d9ef59debe..6141cfff634e 100644
+>>> --- a/arch/powerpc/mm/mmap.c
+>>> +++ b/arch/powerpc/mm/mmap.c
+>>> @@ -59,13 +59,14 @@ static inline int mmap_is_legacy(void)
+>>>
+>>>  unsigned long arch_mmap_rnd(void)
+>>>  {
+>>> -    unsigned long rnd;
+>>> +    unsigned long shift, rnd;
+>>>
+>>> -    /* 8MB for 32bit, 1GB for 64bit */
+>>> +    shift = mmap_rnd_bits;
+>>> +#ifdef CONFIG_COMPAT
+>>>      if (is_32bit_task())
+>>> -            rnd = get_random_long() % (1<<(23-PAGE_SHIFT));
+>>> -    else
+>>> -            rnd = get_random_long() % (1UL<<(30-PAGE_SHIFT));
+>>> +            shift = mmap_rnd_compat_bits;
+>>> +#endif
+>>> +    rnd = get_random_long() % (1 << shift);
+>>
+>> Nitpick, 1 should be 1UL?
 
-Untl recently, only tested on simics and has been working there. On the
-hardware, hitting a crash on the first mmio write...
->=20
-> MMIO regions must be mapped non-cachable. Only the paste region
+Nice catch!
 
-which maybe due to this :-) Should I change to pgprot_noncached() for the
-MMIO writes?
+> No, shift can only be 29 at most IIRC?
 
-> requires being mapped cachable. Ask Aneesh for a cleaner way of
-> doing it too while at it.
+The largest value in the kconfigs is 33?
 
-Ok.
+> But it's a bit fragile, so I'll change it.
 
->=20
-> > +/*
-> > + * Unmap the MMIO regions for a window.
-> > + */
-> > +static void unmap_wc_paste_kaddr(struct vas_window *window)
-> > +{
-> > +=A0=A0=A0=A0=A0=A0=A0int len;
->=20
-> Don't use "wc"... that usually means "write combine".
+Thanks!
 
-Ok.
+-Kees
 
-Thanks,
-
-Sukadev
+-- 
+Kees Cook
+Pixel Security
