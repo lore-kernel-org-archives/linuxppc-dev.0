@@ -1,20 +1,45 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <sergey.senozhatsky.work@gmail.com>
+Received: from mail-io0-x241.google.com (mail-io0-x241.google.com
+ [IPv6:2607:f8b0:4001:c06::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wB8Pj5W32zDqH6
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Apr 2017 11:48:25 +1000 (AEST)
-Message-ID: <1492998468.25766.195.camel@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc/powernv: Fix opal entry/exit MSR_RI coverage
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
-Cc: Michael Ellerman <mpe@ellerman.id.au>, Mahesh Salgaonkar
- <mahesh@linux.vnet.ibm.com>
-Date: Mon, 24 Apr 2017 11:47:48 +1000
-In-Reply-To: <20170330121004.11991-1-npiggin@gmail.com>
-References: <20170330121004.11991-1-npiggin@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wB93p5W5WzDq7h
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Apr 2017 12:17:58 +1000 (AEST)
+Received: by mail-io0-x241.google.com with SMTP id k87so44288376ioi.0
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 23 Apr 2017 19:17:58 -0700 (PDT)
+Date: Mon, 24 Apr 2017 11:17:47 +0900
+From: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>
+To: Petr Mladek <pmladek@suse.com>
+Cc: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>,
+ Steven Rostedt <rostedt@goodmis.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Peter Zijlstra <peterz@infradead.org>,
+ Russell King <rmk+kernel@arm.linux.org.uk>,
+ Daniel Thompson <daniel.thompson@linaro.org>,
+ Jiri Kosina <jkosina@suse.com>, Ingo Molnar <mingo@redhat.com>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Chris Metcalf <cmetcalf@ezchip.com>, linux-kernel@vger.kernel.org,
+ x86@kernel.org, linux-arm-kernel@lists.infradead.org,
+ adi-buildroot-devel@lists.sourceforge.net,
+ linux-cris-kernel@axis.com, linux-mips@linux-mips.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
+ Jan Kara <jack@suse.cz>, Ralf Baechle <ralf@linux-mips.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ David Miller <davem@davemloft.net>
+Subject: Re: [PATCH v5 1/4] printk/nmi: generic solution for safe printk in NMI
+Message-ID: <20170424021747.GA630@jagdpanzerIV.localdomain>
+References: <1461239325-22779-1-git-send-email-pmladek@suse.com>
+ <1461239325-22779-2-git-send-email-pmladek@suse.com>
+ <20170419131341.76bc7634@gandalf.local.home>
+ <20170420033112.GB542@jagdpanzerIV.localdomain>
+ <20170420131154.GL3452@pathway.suse.cz>
+ <20170421015724.GA586@jagdpanzerIV.localdomain>
+ <20170421120627.GO3452@pathway.suse.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20170421120627.GO3452@pathway.suse.cz>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,124 +49,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2017-03-30 at 22:10 +1000, Nicholas Piggin wrote:
-> There are some windows in opal entry/exit that can not recover from a
-> re-entrant interrupt (e.g., machine check) due to using SRR registers,
-> but they currently do not have MSR_RI clear.
+On (04/21/17 14:06), Petr Mladek wrote:
+[..]
+> > I agree that this_cpu_read(printk_context) covers slightly more than
+> > logbuf_lock scope, so we may get positive this_cpu_read(printk_context)
+> > with unlocked logbuf_lock, but I don't tend to think that it's a big
+> > problem.
 > 
-> These were found by machine check injection coverage tests using the
-> powerpc system simulator (Mambo).
+> PRINTK_SAFE_CONTEXT is set also in call_console_drivers().
+> It might take rather long and logbuf_lock is availe. So, it is
+> noticeable source of false positives.
 
-So you make us enter/exit OPAL with RI off with your patch.
+yes, agree.
 
-OPAL currently won't re-enable it (which is a problem... we need to
-deal with MCEs happening while in OPAL, especially the ones with
-the special recovery table).
+probably we need additional printk_safe annotations for
+		"logbuf_lock is locked from _this_ CPU"
 
-So if we do that we need to make OPAL turn it back on. In that case
-I would suggest making OPAL also turn it back off, thus avoiding
-touching FIXUP_ENDIAN...
+false positives there can be very painful.
 
-Ben.
+[..]
+> 	if (raw_spin_is_locked(&logbuf_lock))
+> 		this_cpu_or(printk_context, PRINTK_NMI_CONTEXT_MASK);
+> 	else
+> 		this_cpu_or(printk_context, PRINTK_NMI_DEFERRED_CONTEXT_MASK);
 
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-> ---
->  arch/powerpc/boot/ppc_asm.h                    | 12 +++++++-----
->  arch/powerpc/include/asm/ppc_asm.h             | 10 ++++++----
->  arch/powerpc/platforms/powernv/opal-wrappers.S | 15 +++++++++------
->  3 files changed, 22 insertions(+), 15 deletions(-)
+well, if everyone is fine with logbuf_lock access from every CPU from every
+NMI then I won't object either. but may be it makes sense to reduce the
+possibility of false positives. Steven is loosing critically important logs,
+after all.
+
+
+by the way,
+does this `nmi_print_seq' bypass even fix anything for Steven? it sort of
+can, in theory, but just in theory. so may be we need direct message flush
+from NMI handler (printk->console_unlock), which will be a really big problem.
+
+logbuf might not be big enough for 4890096 messages (Steven's report
+mentions "Lost 4890096 message(s)!"). we are counting on the fact that
+in case of `nmi_print_seq' bypass some other CPU will call console_unlock()
+and print pending logbuf messages, but this is not guaranteed and the
+messages can be dropped even from logbuf.
+
+I don't know,
+should we try to queue printk_deferred irq_work for all online CPUs from
+vprintk_nmi() when it bypasses printk_safe_log_store()? in order to minimize
+possibilities of logbuf overflow. printk_deferred() will queue work on
+vprintk_nmi() CPU, sure, but we don't know how many messages we are going
+to add to logbuf from NMI.
+
+
+> > @@ -303,7 +303,10 @@ static int vprintk_nmi(const char *fmt, va_list args)
+> >  {
+> >         struct printk_safe_seq_buf *s = this_cpu_ptr(&nmi_print_seq);
+> >  
+> > -       return printk_safe_log_store(s, fmt, args);
+> > +       if (this_cpu_read(printk_context) & PRINTK_SAFE_CONTEXT_MASK)
+> > +               return printk_safe_log_store(s, fmt, args);
+> > +
+> > +       return vprintk_emit(0, LOGLEVEL_SCHED, NULL, 0, fmt, args);
+> >  }
 > 
-> diff --git a/arch/powerpc/boot/ppc_asm.h b/arch/powerpc/boot/ppc_asm.h
-> index b03373d8b386..68e388ee94fe 100644
-> --- a/arch/powerpc/boot/ppc_asm.h
-> +++ b/arch/powerpc/boot/ppc_asm.h
-> @@ -67,13 +67,15 @@
-> >  #define MSR_LE		0x0000000000000001
->  
-> >  #define FIXUP_ENDIAN						   \
-> > > -	tdi   0, 0, 0x48; /* Reverse endian of b . + 8		*/ \
-> > > > -	b     $+36;	  /* Skip trampoline if endian is good	*/ \
-> > > -	.long 0x05009f42; /* bcl 20,31,$+4			*/ \
-> > > -	.long 0xa602487d; /* mflr r10				*/ \
-> > > -	.long 0x1c004a39; /* addi r10,r10,28			*/ \
-> > > > +	tdi   0,0,0x48;	  /* Reverse endian of b . + 8		*/ \
-> > > > +	b     $+44;	  /* Skip trampoline if endian is good	*/ \
-> > >  	.long 0xa600607d; /* mfmsr r11				*/ \
-> > >  	.long 0x01006b69; /* xori r11,r11,1			*/ \
-> > > +	.long 0x00004039; /* li r10,0				*/ \
-> > > +	.long 0x6401417d; /* mtmsrd r10,1			*/ \
-> > > +	.long 0x05009f42; /* bcl 20,31,$+4			*/ \
-> > > +	.long 0xa602487d; /* mflr r10				*/ \
-> > > +	.long 0x14004a39; /* addi r10,r10,20			*/ \
-> > >  	.long 0xa6035a7d; /* mtsrr0 r10				*/ \
-> > >  	.long 0xa6037b7d; /* mtsrr1 r11				*/ \
-> > >  	.long 0x2400004c  /* rfid				*/
-> diff --git a/arch/powerpc/include/asm/ppc_asm.h b/arch/powerpc/include/asm/ppc_asm.h
-> index 359c44341761..9d47cba1da3f 100644
-> --- a/arch/powerpc/include/asm/ppc_asm.h
-> +++ b/arch/powerpc/include/asm/ppc_asm.h
-> @@ -770,12 +770,14 @@ END_FTR_SECTION_IFCLR(CPU_FTR_601)
->  #else
-> >  #define FIXUP_ENDIAN						   \
-> > > >  	tdi   0,0,0x48;	  /* Reverse endian of b . + 8		*/ \
-> > > > -	b     $+36;	  /* Skip trampoline if endian is good	*/ \
-> > > -	.long 0x05009f42; /* bcl 20,31,$+4			*/ \
-> > > -	.long 0xa602487d; /* mflr r10				*/ \
-> > > -	.long 0x1c004a39; /* addi r10,r10,28			*/ \
-> > > > +	b     $+44;	  /* Skip trampoline if endian is good	*/ \
-> > >  	.long 0xa600607d; /* mfmsr r11				*/ \
-> > >  	.long 0x01006b69; /* xori r11,r11,1			*/ \
-> > > +	.long 0x00004039; /* li r10,0				*/ \
-> > > +	.long 0x6401417d; /* mtmsrd r10,1			*/ \
-> > > +	.long 0x05009f42; /* bcl 20,31,$+4			*/ \
-> > > +	.long 0xa602487d; /* mflr r10				*/ \
-> > > +	.long 0x14004a39; /* addi r10,r10,20			*/ \
-> > >  	.long 0xa6035a7d; /* mtsrr0 r10				*/ \
-> > >  	.long 0xa6037b7d; /* mtsrr1 r11				*/ \
-> > >  	.long 0x2400004c  /* rfid				*/
-> diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
-> index da8a0f7a035c..458109b1c291 100644
-> --- a/arch/powerpc/platforms/powernv/opal-wrappers.S
-> +++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
-> > @@ -67,15 +67,14 @@ END_FTR_SECTION(0, 1);						\
-> >  	OPAL_BRANCH(opal_tracepoint_entry) \
-> > > >  	mfcr	r11;			\
-> > > >  	stw	r11,8(r1);		\
-> > > > -	li	r11,0;			\
-> > > > -	ori	r11,r11,MSR_EE;		\
-> > > >  	std	r12,PACASAVEDMSR(r13);	\
-> > > > -	andc	r12,r12,r11;		\
-> > > > -	mtmsrd	r12,1;			\
-> > >  	LOAD_REG_ADDR(r11,opal_return);	\
-> > > >  	mtlr	r11;			\
-> > > -	li	r11,MSR_DR|MSR_IR|MSR_LE;\
-> > > > > +	lis	r11,MSR_EE@h;		\
-> > > +	ori	r11,r11,MSR_DR|MSR_IR|MSR_LE;\
-> > > >  	andc	r12,r12,r11;		\
-> > > > +	li	r11,0;			\
-> > > > +	mtmsrd	r11,1; /* EE=0 RI=0 */	\
-> > > >  	mtspr	SPRN_HSRR1,r12;		\
-> > >  	LOAD_REG_ADDR(r11,opal);	\
-> > > >  	ld	r12,8(r11);		\
-> @@ -95,9 +94,11 @@ opal_return:
-> > >  	lwz	r4,8(r1);
-> > >  	ld	r5,PPC_LR_STKOFF(r1);
-> > >  	ld	r6,PACASAVEDMSR(r13);
-> > > +	mtcr	r4;
-> > > +	li	r4,0;
-> > > +	mtmsrd	r4,1; /* EE=0 RI=0 */
-> > >  	mtspr	SPRN_SRR0,r5;
-> > >  	mtspr	SPRN_SRR1,r6;
-> > > -	mtcr	r4;
-> >  	rfid
->  
->  opal_real_call:
-> @@ -108,6 +109,8 @@ opal_real_call:
-> > >  	mtlr	r11
-> > >  	li	r11,MSR_LE
-> > >  	andc	r12,r12,r11
-> > > +	li	r11,0;
-> > > +	mtmsrd	r11,1; /* EE=0 RI=0 */
-> > >  	mtspr	SPRN_HSRR1,r12
-> >  	LOAD_REG_ADDR(r11,opal)
-> > >  	ld	r12,8(r11)
+> It looks simple but some things are missing. It will be used also
+> outside panic/oops, so it should queue the irq_work to flush the console.
+
+you are right. I thought about moving irq_work to vprintk_emit(), but
+completely forgot about it. without that missing bit the proposed two-liner
+is not complete.
+
+	-ss
