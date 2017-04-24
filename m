@@ -1,21 +1,22 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wBTCr6Mb5zDq7h
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Apr 2017 00:26:00 +1000 (AEST)
-Message-Id: <c958c51cdc884f9db8ac86a3f3909a696c8e2572.1493041713.git.christophe.leroy@c-s.fr>
-In-Reply-To: <cover.1493041713.git.christophe.leroy@c-s.fr>
-References: <cover.1493041713.git.christophe.leroy@c-s.fr>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v3 2/3] powerpc/mm: Fix kernel RAM protection after freeing
- unused memory on PPC32
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Scott Wood <oss@buserror.net>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Mon, 24 Apr 2017 16:25:48 +0200 (CEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wBTHW3sf1zDqH7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Apr 2017 00:29:11 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Balbir Singh <bsingharora@gmail.com>, linuxppc-dev@ozlabs.org
+Cc: bhsharma@redhat.com, keescook@chromium.org,
+ kernel-hardening@lists.openwall.com
+Subject: Re: [kernel-hardening] Re: [PATCH v2] powerpc/mm: Add support for
+ runtime configuration of ASLR limits
+In-Reply-To: <1492995750.2418.4.camel@gmail.com>
+References: <1492698980-19510-1-git-send-email-mpe@ellerman.id.au>
+ <1492995750.2418.4.camel@gmail.com>
+Date: Tue, 25 Apr 2017 00:29:07 +1000
+Message-ID: <8737cxswuk.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,107 +26,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-As seen below, allthough the init sections have been freed, the
-associated memory area is still marked as executable in the
-page tables.
+Balbir Singh <bsingharora@gmail.com> writes:
 
-~ dmesg
-[    5.860093] Freeing unused kernel memory: 592K (c0570000 - c0604000)
+> On Fri, 2017-04-21 at 00:36 +1000, Michael Ellerman wrote:
+>> Add powerpc support for mmap_rnd_bits and mmap_rnd_compat_bits, which are two
+>> sysctls that allow a user to configure the number of bits of randomness used for
+>> ASLR.
+...
+>
+> Could we please suggest that this should not be sent to stable or back-ported
+> as the 128T default is new?
 
-~ cat /sys/kernel/debug/kernel_page_tables
----[ Start of kernel VM ]---
-0xc0000000-0xc0497fff        4704K  rw  X  present dirty accessed shared
-0xc0498000-0xc056ffff         864K  rw     present dirty accessed shared
-0xc0570000-0xc059ffff         192K  rw  X  present dirty accessed shared
-0xc05a0000-0xc7ffffff      125312K  rw     present dirty accessed shared
----[ vmalloc() Area ]---
+I'm not sure I follow. I didn't tag it for stable. Do you mean we should
+explicitly mark it as not-for-stable?
 
-This patch fixes that.
+If someone sends it to stable@vger I'll be pinged before it goes in and
+nak it, if someone wants to backport it (incorrectly) to their own tree
+then good luck to them :)
 
-The implementation is done by reusing the change_page_attr()
-function implemented for CONFIG_DEBUG_PAGEALLOC
+>> diff --git a/arch/powerpc/mm/mmap.c b/arch/powerpc/mm/mmap.c
+>> index a5d9ef59debe..6141cfff634e 100644
+>> --- a/arch/powerpc/mm/mmap.c
+>> +++ b/arch/powerpc/mm/mmap.c
+>> @@ -59,13 +59,14 @@ static inline int mmap_is_legacy(void)
+>>  
+>>  unsigned long arch_mmap_rnd(void)
+>>  {
+>> -	unsigned long rnd;
+>> +	unsigned long shift, rnd;
+>>  
+>> -	/* 8MB for 32bit, 1GB for 64bit */
+>> +	shift = mmap_rnd_bits;
+>> +#ifdef CONFIG_COMPAT
+>>  	if (is_32bit_task())
+>> -		rnd = get_random_long() % (1<<(23-PAGE_SHIFT));
+>> -	else
+>> -		rnd = get_random_long() % (1UL<<(30-PAGE_SHIFT));
+>> +		shift = mmap_rnd_compat_bits;
+>> +#endif
+>> +	rnd = get_random_long() % (1 << shift);
+>
+> Nitpick, 1 should be 1UL?
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
- v2: No change
- v3: No change
+No, shift can only be 29 at most IIRC?
 
- arch/powerpc/mm/mem.c        |  1 +
- arch/powerpc/mm/mmu_decl.h   |  3 +++
- arch/powerpc/mm/pgtable_32.c | 13 ++++++++++---
- 3 files changed, 14 insertions(+), 3 deletions(-)
+But it's a bit fragile, so I'll change it.
 
-diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
-index 9ee536ec0739..f261dac36a68 100644
---- a/arch/powerpc/mm/mem.c
-+++ b/arch/powerpc/mm/mem.c
-@@ -401,6 +401,7 @@ void free_initmem(void)
- {
- 	ppc_md.progress = ppc_printk_progress;
- 	free_initmem_default(POISON_FREE_INITMEM);
-+	remap_init_ram();
- }
- 
- #ifdef CONFIG_BLK_DEV_INITRD
-diff --git a/arch/powerpc/mm/mmu_decl.h b/arch/powerpc/mm/mmu_decl.h
-index f988db655e5b..718fa45310be 100644
---- a/arch/powerpc/mm/mmu_decl.h
-+++ b/arch/powerpc/mm/mmu_decl.h
-@@ -95,6 +95,7 @@ extern void _tlbia(void);
- 
- extern void mapin_ram(void);
- extern int map_page(unsigned long va, phys_addr_t pa, int flags);
-+void remap_init_ram(void);
- extern void setbat(int index, unsigned long virt, phys_addr_t phys,
- 		   unsigned int size, pgprot_t prot);
- 
-@@ -106,6 +107,8 @@ struct hash_pte;
- extern struct hash_pte *Hash, *Hash_end;
- extern unsigned long Hash_size, Hash_mask;
- 
-+#else
-+static inline void remap_init_ram(void) {}
- #endif /* CONFIG_PPC32 */
- 
- extern unsigned long ioremap_bot;
-diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
-index 8e8940fad12f..31728f3cdd20 100644
---- a/arch/powerpc/mm/pgtable_32.c
-+++ b/arch/powerpc/mm/pgtable_32.c
-@@ -323,8 +323,6 @@ get_pteptr(struct mm_struct *mm, unsigned long addr, pte_t **ptep, pmd_t **pmdp)
-         return(retval);
- }
- 
--#ifdef CONFIG_DEBUG_PAGEALLOC
--
- static int __change_page_attr_noflush(struct page *page, pgprot_t prot)
- {
- 	pte_t *kpte;
-@@ -347,7 +345,7 @@ static int __change_page_attr_noflush(struct page *page, pgprot_t prot)
- /*
-  * Change the page attributes of an page in the linear mapping.
-  *
-- * THIS CONFLICTS WITH BAT MAPPINGS, DEBUG USE ONLY
-+ * THIS DOES NOTHING WITH BAT MAPPINGS, DEBUG USE ONLY
-  */
- static int change_page_attr(struct page *page, int numpages, pgprot_t prot)
- {
-@@ -368,7 +366,16 @@ static int change_page_attr(struct page *page, int numpages, pgprot_t prot)
- 	return err;
- }
- 
-+void remap_init_ram(void)
-+{
-+	struct page *page = virt_to_page(_sinittext);
-+	unsigned long numpages = PFN_UP((unsigned long)_einittext) -
-+				 PFN_DOWN((unsigned long)_sinittext);
-+
-+	change_page_attr(page, numpages, PAGE_KERNEL);
-+}
- 
-+#ifdef CONFIG_DEBUG_PAGEALLOC
- void __kernel_map_pages(struct page *page, int numpages, int enable)
- {
- 	if (PageHighMem(page))
--- 
-2.12.0
+cheers
