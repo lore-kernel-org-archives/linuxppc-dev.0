@@ -2,17 +2,19 @@ Return-Path: <christophe.leroy@c-s.fr>
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wBTCb3GwqzDq5W
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Apr 2017 00:25:47 +1000 (AEST)
-Message-Id: <cover.1493041713.git.christophe.leroy@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wBTCd1QFMzDq66
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Apr 2017 00:25:49 +1000 (AEST)
+Message-Id: <cfc3d72a9ad0c771edfffba50b77068f8dbc119d.1493041713.git.christophe.leroy@c-s.fr>
+In-Reply-To: <cover.1493041713.git.christophe.leroy@c-s.fr>
+References: <cover.1493041713.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Date: Mon, 24 Apr 2017 15:48:33 +0200
-Subject: [PATCH v3 0/3] powerpc/mm: Fix kernel protection and implement
- CONFIG_DEBUG_RODATA on PPC32
+Subject: [PATCH v3 1/3] powerpc/mm: Ensure change_page_attr() doesn't
+ invalidate pinned TLBs
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  Scott Wood <oss@buserror.net>
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Date: Mon, 24 Apr 2017 16:25:45 +0200 (CEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,32 +24,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch set implements CONFIG_DEBUG_RODATA on Powerpc32
-after fixing a few issues related to kernel code page protection.
+__change_page_attr() uses flush_tlb_page().
+flush_tlb_page() uses tlbie instruction, which also invalidates
+pinned TLBs, which is not what we expect.
 
-Changes in v2:
-  Instead of making the entire kernel RW to patch code in ftrace,
-  we now only change the rights on the page to be modified
+This patch modifies the implementation to use flush_tlb_kernel_range()
+instead. This will make use of tlbia which will preserve pinned TLBs.
 
-Changes in v3:
-  Changing the rights is performed in patch_instruction() instead of
-  being done only in ftrace, so that other functionnalities like
-  jump_label also works.
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ v2: No change
+ v3: No change
 
-Christophe Leroy (3):
-  powerpc/mm: Ensure change_page_attr() doesn't invalidate pinned TLBs
-  powerpc/mm: Fix kernel RAM protection after freeing unused memory on
-    PPC32
-  powerpc/mm: Implement CONFIG_DEBUG_RODATA on PPC32
+ arch/powerpc/mm/pgtable_32.c | 10 ++++++----
+ 1 file changed, 6 insertions(+), 4 deletions(-)
 
- arch/powerpc/Kconfig.debug         | 11 ++++++
- arch/powerpc/include/asm/pgtable.h |  8 +++++
- arch/powerpc/lib/code-patching.c   |  9 +++++
- arch/powerpc/mm/init_32.c          |  3 +-
- arch/powerpc/mm/mem.c              |  1 +
- arch/powerpc/mm/mmu_decl.h         |  3 ++
- arch/powerpc/mm/pgtable_32.c       | 69 ++++++++++++++++++++++++++++++++++----
- 7 files changed, 96 insertions(+), 8 deletions(-)
-
+diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
+index a65c0b4c0669..8e8940fad12f 100644
+--- a/arch/powerpc/mm/pgtable_32.c
++++ b/arch/powerpc/mm/pgtable_32.c
+@@ -325,7 +325,7 @@ get_pteptr(struct mm_struct *mm, unsigned long addr, pte_t **ptep, pmd_t **pmdp)
+ 
+ #ifdef CONFIG_DEBUG_PAGEALLOC
+ 
+-static int __change_page_attr(struct page *page, pgprot_t prot)
++static int __change_page_attr_noflush(struct page *page, pgprot_t prot)
+ {
+ 	pte_t *kpte;
+ 	pmd_t *kpmd;
+@@ -339,8 +339,6 @@ static int __change_page_attr(struct page *page, pgprot_t prot)
+ 	if (!get_pteptr(&init_mm, address, &kpte, &kpmd))
+ 		return -EINVAL;
+ 	__set_pte_at(&init_mm, address, kpte, mk_pte(page, prot), 0);
+-	wmb();
+-	flush_tlb_page(NULL, address);
+ 	pte_unmap(kpte);
+ 
+ 	return 0;
+@@ -355,13 +353,17 @@ static int change_page_attr(struct page *page, int numpages, pgprot_t prot)
+ {
+ 	int i, err = 0;
+ 	unsigned long flags;
++	struct page *start = page;
+ 
+ 	local_irq_save(flags);
+ 	for (i = 0; i < numpages; i++, page++) {
+-		err = __change_page_attr(page, prot);
++		err = __change_page_attr_noflush(page, prot);
+ 		if (err)
+ 			break;
+ 	}
++	wmb();
++	flush_tlb_kernel_range((unsigned long)page_address(start),
++			       (unsigned long)page_address(page));
+ 	local_irq_restore(flags);
+ 	return err;
+ }
 -- 
 2.12.0
