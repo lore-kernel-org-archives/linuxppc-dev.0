@@ -1,41 +1,34 @@
-Return-Path: <shuah@kernel.org>
-Received: from resqmta-po-02v.sys.comcast.net (resqmta-po-02v.sys.comcast.net
- [IPv6:2001:558:fe16:19:96:114:154:161])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <srs0=wnro=4b=gmail.com=bsingharora@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wBcYm0HHDzDq66
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Apr 2017 05:56:59 +1000 (AEST)
-Reply-To: shuah@kernel.org
-Subject: Re: [PATCH 8/8] selftests: x86: override clean in lib.mk to fix
- warnings
-References: <cover.1492815938.git.shuahkh@osg.samsung.com>
- <31b94c5cb9a8f71fd3888b648f32c0bd91e4a9bd.1492815938.git.shuahkh@osg.samsung.com>
- <87o9vpyp6h.fsf@concordia.ellerman.id.au>
- <063D6719AE5E284EB5DD2968C1650D6DCFFD9941@AcuExch.aculab.com>
-To: David Laight <David.Laight@ACULAB.COM>,
- 'Michael Ellerman' <mpe@ellerman.id.au>, Shuah Khan
- <shuahkh@osg.samsung.com>,
- "bamvor.zhangjian@linaro.org" <bamvor.zhangjian@linaro.org>,
- "benh@kernel.crashing.org" <benh@kernel.crashing.org>,
- "paulus@samba.org" <paulus@samba.org>,
- "dvhart@infradead.org" <dvhart@infradead.org>
-Cc: "linux-kselftest@vger.kernel.org" <linux-kselftest@vger.kernel.org>,
- "rkrcmar@redhat.com" <rkrcmar@redhat.com>,
- "dsafonov@virtuozzo.com" <dsafonov@virtuozzo.com>,
- "dave.hansen@linux.intel.com" <dave.hansen@linux.intel.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "emilio.lopez@collabora.co.uk" <emilio.lopez@collabora.co.uk>,
- "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>,
- "viro@zeniv.linux.org.uk" <viro@zeniv.linux.org.uk>,
- "luto@kernel.org" <luto@kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "mingo@kernel.org" <mingo@kernel.org>, Shuah Khan <shuah@kernel.org>
-From: Shuah Khan <shuah@kernel.org>
-Message-ID: <83d77bfe-6219-950e-82e0-4601a8ed010c@kernel.org>
-Date: Mon, 24 Apr 2017 13:48:41 -0600
-MIME-Version: 1.0
-In-Reply-To: <063D6719AE5E284EB5DD2968C1650D6DCFFD9941@AcuExch.aculab.com>
-Content-Type: text/plain; charset=windows-1252
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wBlCr3wQ1zDqC6
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Apr 2017 10:56:56 +1000 (AEST)
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3wBlCr38rPz8sxx
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Apr 2017 10:56:56 +1000 (AEST)
+Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
+ [IPv6:2607:f8b0:400e:c00::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3wBlCq6b28z9s7f
+ for <linuxppc-dev@ozlabs.org>; Tue, 25 Apr 2017 10:56:55 +1000 (AEST)
+Received: by mail-pf0-x243.google.com with SMTP id v14so5843305pfd.3
+ for <linuxppc-dev@ozlabs.org>; Mon, 24 Apr 2017 17:56:55 -0700 (PDT)
+Message-ID: <1493081807.21623.7.camel@gmail.com>
+Subject: Re: [kernel-hardening] Re: [PATCH v2] powerpc/mm: Add support for
+ runtime configuration of ASLR limits
+From: Balbir Singh <bsingharora@gmail.com>
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
+Cc: bhsharma@redhat.com, keescook@chromium.org,
+ kernel-hardening@lists.openwall.com
+Date: Tue, 25 Apr 2017 10:56:47 +1000
+In-Reply-To: <8737cxswuk.fsf@concordia.ellerman.id.au>
+References: <1492698980-19510-1-git-send-email-mpe@ellerman.id.au>
+ <1492995750.2418.4.camel@gmail.com>
+ <8737cxswuk.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,47 +38,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/24/2017 09:57 AM, David Laight wrote:
-> From: Linuxppc-dev Michael Ellerman
->> Shuah Khan <shuahkh@osg.samsung.com> writes:
->>
->>> Add override for lib.mk clean to fix the following warnings from clean
->>> target run.
->>>
->>> Makefile:44: warning: overriding recipe for target 'clean'
->>> ../lib.mk:55: warning: ignoring old recipe for target 'clean'
->>>
->>> Signed-off-by: Shuah Khan <shuahkh@osg.samsung.com>
->>> ---
->>>  tools/testing/selftests/x86/Makefile | 3 ++-
->>>  1 file changed, 2 insertions(+), 1 deletion(-)
->>>
->>> diff --git a/tools/testing/selftests/x86/Makefile b/tools/testing/selftests/x86/Makefile
->>> index 38e0a9c..4d27550 100644
->>> --- a/tools/testing/selftests/x86/Makefile
->>> +++ b/tools/testing/selftests/x86/Makefile
->>> @@ -40,8 +40,9 @@ all_32: $(BINARIES_32)
->>>
->>>  all_64: $(BINARIES_64)
->>>
->>> -clean:
->>> +override define CLEAN
->>>  	$(RM) $(BINARIES_32) $(BINARIES_64)
->>> +endef
->>
->> Simpler as:
->>
->> EXTRA_CLEAN := $(BINARIES_32) $(BINARIES_64)
+On Tue, 2017-04-25 at 00:29 +1000, Michael Ellerman wrote:
+> Balbir Singh <bsingharora@gmail.com> writes:
 > 
-> Actually for builds that insist on crapping all over the source tree I've used:
+> > On Fri, 2017-04-21 at 00:36 +1000, Michael Ellerman wrote:
+> > > Add powerpc support for mmap_rnd_bits and mmap_rnd_compat_bits, which are two
+> > > sysctls that allow a user to configure the number of bits of randomness used for
+> > > ASLR.
 > 
-> clean:
-> 	rm -rf `cat .cvsignore 2>/dev/null`
+> ...
+> > 
+> > Could we please suggest that this should not be sent to stable or back-ported
+> > as the 128T default is new?
 > 
-> 	David
+> I'm not sure I follow. I didn't tag it for stable. Do you mean we should
+> explicitly mark it as not-for-stable?
+> 
 
-This will have to be done as a separate change. The warnings I am fixing
-are related to common clean target in lib.mk and the need to override.
+Yeah.. I am concerned someone might backport it without looking at
+the dependencies :)
 
-thanks,
--- Shuah
+> If someone sends it to stable@vger I'll be pinged before it goes in and
+> nak it, if someone wants to backport it (incorrectly) to their own tree
+> then good luck to them :)
+
+Fair enough
+
+<snip>
+
+> > > +	rnd = get_random_long() % (1 << shift);
+> > 
+> > Nitpick, 1 should be 1UL?
+> 
+> No, shift can only be 29 at most IIRC?
+> 
+> But it's a bit fragile, so I'll change it.
+> 
+> cheers
+
+Cheers and I agree with Kees, a lot of the arch_mmap_rnd() code is beginning
+to look similar :)
+
+Balbir Singh
