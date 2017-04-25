@@ -1,41 +1,33 @@
-Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <srs0=fmze=4b=google.com=keescook@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wC7RP3XvSzDq5b
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Apr 2017 02:08:17 +1000 (AEST)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v3PG3kUH133799
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Apr 2017 12:08:15 -0400
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2a206mej0h-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Apr 2017 12:08:14 -0400
-Received: from localhost
- by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Wed, 26 Apr 2017 02:08:09 +1000
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v3PG7xjh66388012
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Apr 2017 02:08:07 +1000
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v3PG7WdR016579
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Apr 2017 02:07:32 +1000
-From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wC7S80qNPzDqKJ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Apr 2017 02:08:56 +1000 (AEST)
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3wC7S80Fytz8tbM
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Apr 2017 02:08:56 +1000 (AEST)
+Received: from mail-io0-x229.google.com (mail-io0-x229.google.com
+ [IPv6:2607:f8b0:4001:c06::229])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3wC7S73p9bz9s8c
+ for <linuxppc-dev@ozlabs.org>; Wed, 26 Apr 2017 02:08:55 +1000 (AEST)
+Received: by mail-io0-x229.google.com with SMTP id a103so217660878ioj.1
+ for <linuxppc-dev@ozlabs.org>; Tue, 25 Apr 2017 09:08:55 -0700 (PDT)
+MIME-Version: 1.0
+Sender: keescook@google.com
+In-Reply-To: <1493122181-20921-1-git-send-email-mpe@ellerman.id.au>
+References: <1493122181-20921-1-git-send-email-mpe@ellerman.id.au>
+From: Kees Cook <keescook@chromium.org>
+Date: Tue, 25 Apr 2017 09:08:51 -0700
+Message-ID: <CAGXu5jLdkXZzfzESwxf5pFzXAGNAF9OmZjrF0kVX9fwYdWSo7g@mail.gmail.com>
+Subject: Re: [PATCH] powerpc/mm: Fix possible out-of-bounds shift in
+ arch_mmap_rnd()
 To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Masami Hiramatsu <mhiramat@kernel.org>,
- David Laight <David.Laight@ACULAB.COM>, Paul Clarke <pc@us.ibm.com>,
- Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc/kprobes: refactor kprobe_lookup_name for safer string
- operations
-Date: Tue, 25 Apr 2017 21:37:11 +0530
-Message-Id: <20170425160711.15332-1-naveen.n.rao@linux.vnet.ibm.com>
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+ Bhupesh Sharma <bhsharma@redhat.com>, Balbir Singh <bsingharora@gmail.com>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,83 +37,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Use safer string manipulation functions when dealing with a
-user-provided string in kprobe_lookup_name().
+On Tue, Apr 25, 2017 at 5:09 AM, Michael Ellerman <mpe@ellerman.id.au> wrote:
+> The recent patch to add runtime configuration of the ASLR limits added a bug in
+> arch_mmap_rnd() where we may shift an integer (32-bits) by up to 33 bits,
+> leading to undefined behaviour.
+>
+> In practice it exhibits as every process seg faulting instantly, presumably
+> because the rnd value hasn't been restricited by the modulus at all. We didn't
+> notice because it only happens under certain kernel configurations and if the
+> number of bits is actually set to a large value.
+>
+> Fix it by switching to unsigned long.
+>
+> Fixes: 9fea59bd7ca5 ("powerpc/mm: Add support for runtime configuration of ASLR limits")
+> Reported-by: Balbir Singh <bsingharora@gmail.com>
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> ---
+>  arch/powerpc/mm/mmap.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/arch/powerpc/mm/mmap.c b/arch/powerpc/mm/mmap.c
+> index 005aa8a44915..9dbd2a733d6b 100644
+> --- a/arch/powerpc/mm/mmap.c
+> +++ b/arch/powerpc/mm/mmap.c
+> @@ -66,7 +66,7 @@ unsigned long arch_mmap_rnd(void)
+>         if (is_32bit_task())
+>                 shift = mmap_rnd_compat_bits;
+>  #endif
+> -       rnd = get_random_long() % (1 << shift);
+> +       rnd = get_random_long() % (1ul << shift);
+>
+>         return rnd << PAGE_SHIFT;
+>  }
+> --
+> 2.7.4
 
-Reported-by: David Laight <David.Laight@ACULAB.COM>
-Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
----
- arch/powerpc/kernel/kprobes.c | 47 ++++++++++++++++++-------------------------
- 1 file changed, 20 insertions(+), 27 deletions(-)
+Reviewed-by: Kees Cook <keescook@chromium.org>
 
-diff --git a/arch/powerpc/kernel/kprobes.c b/arch/powerpc/kernel/kprobes.c
-index 160ae0fa7d0d..5a17e6467be9 100644
---- a/arch/powerpc/kernel/kprobes.c
-+++ b/arch/powerpc/kernel/kprobes.c
-@@ -53,7 +53,7 @@ bool arch_within_kprobe_blacklist(unsigned long addr)
- 
- kprobe_opcode_t *kprobe_lookup_name(const char *name, unsigned int offset)
- {
--	kprobe_opcode_t *addr;
-+	kprobe_opcode_t *addr = NULL;
- 
- #ifdef PPC64_ELF_ABI_v2
- 	/* PPC64 ABIv2 needs local entry point */
-@@ -85,36 +85,29 @@ kprobe_opcode_t *kprobe_lookup_name(const char *name, unsigned int offset)
- 	 * Also handle <module:symbol> format.
- 	 */
- 	char dot_name[MODULE_NAME_LEN + 1 + KSYM_NAME_LEN];
--	const char *modsym;
- 	bool dot_appended = false;
--	if ((modsym = strchr(name, ':')) != NULL) {
--		modsym++;
--		if (*modsym != '\0' && *modsym != '.') {
--			/* Convert to <module:.symbol> */
--			strncpy(dot_name, name, modsym - name);
--			dot_name[modsym - name] = '.';
--			dot_name[modsym - name + 1] = '\0';
--			strncat(dot_name, modsym,
--				sizeof(dot_name) - (modsym - name) - 2);
--			dot_appended = true;
--		} else {
--			dot_name[0] = '\0';
--			strncat(dot_name, name, sizeof(dot_name) - 1);
--		}
--	} else if (name[0] != '.') {
--		dot_name[0] = '.';
--		dot_name[1] = '\0';
--		strncat(dot_name, name, KSYM_NAME_LEN - 2);
-+	const char *c;
-+	ssize_t ret = 0;
-+	int len = 0;
-+
-+	if ((c = strnchr(name, MODULE_NAME_LEN, ':')) != NULL) {
-+		c++;
-+		len = c - name;
-+		memcpy(dot_name, name, len);
-+	} else
-+		c = name;
-+
-+	if (*c != '\0' && *c != '.') {
-+		dot_name[len++] = '.';
- 		dot_appended = true;
--	} else {
--		dot_name[0] = '\0';
--		strncat(dot_name, name, KSYM_NAME_LEN - 1);
- 	}
--	addr = (kprobe_opcode_t *)kallsyms_lookup_name(dot_name);
--	if (!addr && dot_appended) {
--		/* Let's try the original non-dot symbol lookup	*/
-+	ret = strscpy(dot_name + len, c, KSYM_NAME_LEN);
-+	if (ret >= 0)
-+		addr = (kprobe_opcode_t *)kallsyms_lookup_name(dot_name);
-+
-+	/* Fallback to the original non-dot symbol lookup */
-+	if (!addr && dot_appended)
- 		addr = (kprobe_opcode_t *)kallsyms_lookup_name(name);
--	}
- #else
- 	addr = (kprobe_opcode_t *)kallsyms_lookup_name(name);
- #endif
+-Kees
+
+
 -- 
-2.12.1
+Kees Cook
+Pixel Security
