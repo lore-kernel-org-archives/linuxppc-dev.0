@@ -1,26 +1,52 @@
-Return-Path: <mhiramat@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <srs0=fxbt=4b=linux.vnet.ibm.com=mahesh@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wBpMQ62DrzDqC6
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Apr 2017 13:18:42 +1000 (AEST)
-Date: Tue, 25 Apr 2017 12:18:31 +0900
-From: Masami Hiramatsu <mhiramat@kernel.org>
-To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-Cc: Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Ingo Molnar
- <mingo@kernel.org>, Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH v3 3/7] kprobes: validate the symbol name length
-Message-Id: <20170425121831.2868474af583522facd73981@kernel.org>
-In-Reply-To: <1492962128.c0nhtlqdo4.astroid@naverao1-tp.none>
-References: <cover.1492604782.git.naveen.n.rao@linux.vnet.ibm.com>
- <6e14d22994530fb5200c74d1593e73541d3b8028.1492604782.git.naveen.n.rao@linux.vnet.ibm.com>
- <20170419233750.8552f5de8ce1ed1398807284@kernel.org>
- <1492619420.q0fv2gslsy.astroid@naverao1-tp.none>
- <20170421224236.d1c53002f0b3c4750fd6f664@kernel.org>
- <1492962128.c0nhtlqdo4.astroid@naverao1-tp.none>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wBrN40LdLzDq7Z
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Apr 2017 14:49:24 +1000 (AEST)
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3wBrN36rWQz8t08
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Apr 2017 14:49:23 +1000 (AEST)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3wBrN3323Vz9s2G
+ for <linuxppc-dev@ozlabs.org>; Tue, 25 Apr 2017 14:49:23 +1000 (AEST)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v3P4nILs056841
+ for <linuxppc-dev@ozlabs.org>; Tue, 25 Apr 2017 00:49:21 -0400
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2a1jvgh4r7-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Tue, 25 Apr 2017 00:49:20 -0400
+Received: from localhost
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
+ Tue, 25 Apr 2017 14:49:10 +1000
+Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v3P4mxmg7143816
+ for <linuxppc-dev@ozlabs.org>; Tue, 25 Apr 2017 14:49:07 +1000
+Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
+ by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v3P4mZI0022955
+ for <linuxppc-dev@ozlabs.org>; Tue, 25 Apr 2017 14:48:35 +1000
+Subject: Re: [PATCH v2] powerpc/book3s: mce: Move add_taint() later in virtual
+ mode.
+To: Michael Ellerman <mpe@ellerman.id.au>, Daniel Axtens <dja@axtens.net>,
+ linuxppc-dev <linuxppc-dev@ozlabs.org>
+References: <149253349689.12722.1516352063236500616.stgit@jupiter.in.ibm.com>
+ <874lxjbak1.fsf@possimpible.ozlabs.ibm.com>
+ <87r30mtnc2.fsf@concordia.ellerman.id.au>
+From: Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com>
+Date: Tue, 25 Apr 2017 10:18:12 +0530
+MIME-Version: 1.0
+In-Reply-To: <87r30mtnc2.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset=windows-1252
+Message-Id: <113b0cd7-d845-41a6-2bae-2dde75b6ca8f@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,68 +56,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 23 Apr 2017 15:44:32 +0000
-"Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
-
-> >> >> +bool is_valid_kprobe_symbol_name(const char *name)
-> >> > 
-> >> > This just check the length of symbol_name buffer, and can contain
-> >> > some invalid chars.
-> >> 
-> >> Yes, I kept the function name generic incase we would like to do more 
-> >> validation in future, plus it's shorter than 
-> >> is_valid_kprobe_symbol_name_len() ;-)
-> > 
-> > OK, if this is enough general, we'd better define this in
-> > kernel/kallsyms.c or in kallsyms.h. Of course the function
-> > should be called is_valid_symbol_name(). :-)
+On 04/21/2017 09:37 AM, Michael Ellerman wrote:
+> Daniel Axtens <dja@axtens.net> writes:
+>>> diff --git a/arch/powerpc/kernel/mce.c b/arch/powerpc/kernel/mce.c
+>>> index a1475e6..b23b323 100644
+>>> --- a/arch/powerpc/kernel/mce.c
+>>> +++ b/arch/powerpc/kernel/mce.c
+>>> @@ -221,6 +221,8 @@ static void machine_check_process_queued_event(struct irq_work *work)
+>>>  {
+>>>  	int index;
+>>>  
+>>> +	add_taint(TAINT_MACHINE_CHECK, LOCKDEP_NOW_UNRELIABLE);
+>>> +
+>> This bit makes sense...
+>>
+>>> diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+>>> index ff365f9..af97e81 100644
+>>> --- a/arch/powerpc/kernel/traps.c
+>>> +++ b/arch/powerpc/kernel/traps.c
+>>> @@ -741,6 +739,8 @@ void machine_check_exception(struct pt_regs *regs)
+>>>  
+>>>  	__this_cpu_inc(irq_stat.mce_exceptions);
+>>>  
+>>> +	add_taint(TAINT_MACHINE_CHECK, LOCKDEP_NOW_UNRELIABLE);
+>>> +
+>>
+>> But this bit I'm not sure about.
+>>
+>> Isn't machine_check_exception called from asm in
+>> kernel/exceptions-64s.S? As in, it's called really early/in real mode?
 > 
-> I actually think this should be done in kprobes itself. The primary 
-> intent is to perform such validation right when we first obtain the 
-> input from the user. In this case, however, kallsyms_lookup_name() is 
-> also an exported symbol, so I do think some validation there would be 
-> good to have as well.
+> It is called from there, in asm, but not from real mode AFAICS.
+> 
+> There's a call from machine_check_common(), we're already in virtual
+> mode there.
+> 
+> The other call is from unrecover_mce(), and both places that call that
+> do so via rfid, using PACAKMSR, which should turn on virtual mode.
+> 
+> 
+> But none of that really matters. The fundamental issue here is we can't
+> recursively call OPAL, that's what matters.
+> 
+> So if we were in OPAL and take an MCE, then we must not call OPAL again
+> from the MCE handler.
+> 
+> This fixes one case where we know that can happen, but AFAICS we are not
+> protected in general from it.
+> 
+> For example if we take an MCE in OPAL, decide it's not recoverable and
+> go to unrecover_mce(), that will call machine_check_exception() which
+> can then call OPAL via printk.
+> 
+> Or maybe there's a check in there somewhere that makes it OK, but it's
+> not clear to me.
 
-IMHO, it is natural that kallsyms will know what is valid symbols.
-Providing validation function by kprobes means kprobes also knows
-that, and I concerns that may lead a double standard.
+There is no check, but for non-recoverable MCE in OPAL we print mce
+event, go down to panic path and reboot. Hence we are fine. For
+recoverable mce error in opal we would never end up in
+machine_check_exception().
 
 Thanks,
-
-> >> >> +{
-> >> >> +	size_t sym_len;
-> >> >> +	char *s;
-> >> >> +
-> >> >> +	s = strchr(name, ':');
-> >> 
-> >> Hmm.. this should be strnchr(). I re-factored the code that moved the 
-> >> strnlen() above this below. I'll fix this.
-> >> 
-> >> >> +	if (s) {
-> >> >> +		sym_len = strnlen(s+1, KSYM_NAME_LEN);
-> >> > 
-> >> > If you use strnlen() here, you just need to ensure sym_len < KSYM_NAME_LEN.
-> >> 
-> >> Hmm.. not sure I follow. Are you saying the check for sym_len <= 0 is 
-> >> not needed?
-> > 
-> > You can check sym_len != 0, but anyway, here we concern about
-> > "longer" string (for performance reason), we can focus on
-> > such case.
-> > (BTW, could you also check the name != NULL at first?)
-> > 
-> > So, what I think it can be;
-> > 
-> > if (strnlen(s+1, KSYM_NAME_LEN) == KSYM_NAME_LEN ||
-> >     (size_t)(s - name) >= MODULE_NAME_LEN)
-> > 	return false;
-> 
-> Sure, thanks. I clearly need to refactor this code better!
-> 
-> - Naveen
-> 
-> 
-
-
--- 
-Masami Hiramatsu <mhiramat@kernel.org>
+-Mahesh.
