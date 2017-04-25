@@ -1,34 +1,23 @@
-Return-Path: <srs0=wnro=4b=gmail.com=bsingharora@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wBlCr3wQ1zDqC6
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Apr 2017 10:56:56 +1000 (AEST)
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3wBlCr38rPz8sxx
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Apr 2017 10:56:56 +1000 (AEST)
-Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
- [IPv6:2607:f8b0:400e:c00::243])
+Return-Path: <oss@buserror.net>
+Received: from host.buserror.net (host.buserror.net [209.198.135.123])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3wBlCq6b28z9s7f
- for <linuxppc-dev@ozlabs.org>; Tue, 25 Apr 2017 10:56:55 +1000 (AEST)
-Received: by mail-pf0-x243.google.com with SMTP id v14so5843305pfd.3
- for <linuxppc-dev@ozlabs.org>; Mon, 24 Apr 2017 17:56:55 -0700 (PDT)
-Message-ID: <1493081807.21623.7.camel@gmail.com>
-Subject: Re: [kernel-hardening] Re: [PATCH v2] powerpc/mm: Add support for
- runtime configuration of ASLR limits
-From: Balbir Singh <bsingharora@gmail.com>
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
-Cc: bhsharma@redhat.com, keescook@chromium.org,
- kernel-hardening@lists.openwall.com
-Date: Tue, 25 Apr 2017 10:56:47 +1000
-In-Reply-To: <8737cxswuk.fsf@concordia.ellerman.id.au>
-References: <1492698980-19510-1-git-send-email-mpe@ellerman.id.au>
- <1492995750.2418.4.camel@gmail.com>
- <8737cxswuk.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wBlqc1LN7zDqCC
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Apr 2017 11:24:28 +1000 (AEST)
+Date: Mon, 24 Apr 2017 20:24:13 -0500
+From: Scott Wood <oss@buserror.net>
+To: Liu Hailong <liu.hailong6@zte.com.cn>
+Cc: benh@kernel.crashing.org, zhong.weidong@zte.com.cn,
+ linux-kernel@vger.kernel.org, liu.song11@zte.com.cn,
+ huang.jian@zte.com.cn, jiang.xuexin@zte.com.cn,
+ jiang.biao2@zte.com.cn, linuxppc-dev@lists.ozlabs.org
+Message-ID: <20170425012413.gaobi3atq7noa5v7@home.buserror.net>
+References: <1486434952-2093-1-git-send-email-liu.hailong6@zte.com.cn>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1486434952-2093-1-git-send-email-liu.hailong6@zte.com.cn>
+Subject: Re: Powerpc64: Fixup oops when debug programs with
+ CONFIG_RELOCATABLE=y
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,45 +27,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2017-04-25 at 00:29 +1000, Michael Ellerman wrote:
-> Balbir Singh <bsingharora@gmail.com> writes:
+On Tue, Feb 07, 2017 at 10:35:52AM +0800, Liu Hailong wrote:
+> From: LiuHailong <liu.hailong6@zte.com.cn>
 > 
-> > On Fri, 2017-04-21 at 00:36 +1000, Michael Ellerman wrote:
-> > > Add powerpc support for mmap_rnd_bits and mmap_rnd_compat_bits, which are two
-> > > sysctls that allow a user to configure the number of bits of randomness used for
-> > > ASLR.
+> Debug interrupts can be taken during regular program or a standard
+> interrupt, the EA of the instruction causing the interrupt will be
+> kept in DSRR0.
+> Kernel will check if this value is between [interrupt_base_book3e,
+> __end_interrupts].
+> However, when the kernel build with CONFIG_RELOCATABLE, it can't get
+> EA of those lables by LOAD_REG_IMMEDIATE(r14,interrupt_base_book3e)
+> and LOAD_REG_IMMEDIATE(r15,__end_interrupts),then it cases problems
+> later.
+> At the same time, r2(toc) are not usable here, so LOAD_REG_ADDR()
+> dosen't work neither. So we use the *name@got* to get the EV of two
+> lables directly.
+> This patch can fix the problem and remove the oops when we gdb a
+> program with single-step.
 > 
-> ...
-> > 
-> > Could we please suggest that this should not be sent to stable or back-ported
-> > as the 128T default is new?
+> Test programs test.c shows as follows:
+> #include <fcntl.h>
+> #include <stdio.h>
+> int main(int argc, char *argv[])
+> {
+> 	if (access("/proc/sys/kernel/perf_event_paranoid", F_OK) == -1)
+> 		printf("Kernel doesn't have perf_event support\n");
+> }
 > 
-> I'm not sure I follow. I didn't tag it for stable. Do you mean we should
-> explicitly mark it as not-for-stable?
+> Steps to reproduce the bug, for example:
+>  1) ./gdb ./test
+>  2) (gdb) b access
+>  3) (gdb) r
+>  4) (gdb) s
 > 
+> Then will trigger the oops, it looks like:
+> (gdb) s
+> Single stepping Oops: Exception in kernel mode, sig: 5 [#2]
+> PREEMPT CoreNet Generic
+> Modules linked in:
+> CPU: 0 PID: 1135 Comm: test Tainted: G    D    Linux (none) 4.9.5 #79
+> task: c000000079199580 ti: c00000007ffc4000 task.ti: c000000074064000
+> NIP: c00000000001a1e4 LR: 000000001000103c CTR: 000000001000100c
+> REGS: c00000007ffc7cf0 TRAP: 0d08   Tainted: G   D  (Linux (none) 4.9.5)
+> MSR: 0000000080021000 <CE,ME>  CR: 24000442  XER: 00000000
+> SOFTE: 1
 
-Yeah.. I am concerned someone might backport it without looking at
-the dependencies :)
+I apologize for not getting to this earlier...
 
-> If someone sends it to stable@vger I'll be pinged before it goes in and
-> nak it, if someone wants to backport it (incorrectly) to their own tree
-> then good luck to them :)
+Does it really produce an oops, rather than a hang?  It looks like
+without this fix, flow would go to kernel_dbg_exc which is a
+branch-to-self.  Do you have other changes in your tree that affected
+this?
 
-Fair enough
+If so, have you tested the patch on an unmodified top-of-tree kernel?  I
+can't test this at the moment as I don't currently have hardware and QEMU
+doesn't emulate the booke debug registers.
 
-<snip>
+That said, the patch looks correct, and the bug is even worse if it's a
+hang rather than merely noisily killing the debugged process.  It should
+go to stable for 4.4+ (when support for relocatable e500 was added) and
+probably to Linus this week (though I'd feel more comfortable knowing it
+got testing on the current tree).  OTOH, I believe this bug will only
+trigger if a relocation actually happened, which on e500 is an unusual
+case outside of a kdump crash kernel, since the kernel is normally loaded
+at zero.  But maybe you've got a different use case for relocatable?
 
-> > > +	rnd = get_random_long() % (1 << shift);
-> > 
-> > Nitpick, 1 should be 1UL?
-> 
-> No, shift can only be 29 at most IIRC?
-> 
-> But it's a bit fragile, so I'll change it.
-> 
-> cheers
-
-Cheers and I agree with Kees, a lot of the arch_mmap_rnd() code is beginning
-to look similar :)
-
-Balbir Singh
+-Scott
