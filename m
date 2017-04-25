@@ -1,32 +1,26 @@
-Return-Path: <clg@kaod.org>
-Received: from 20.mo6.mail-out.ovh.net (20.mo6.mail-out.ovh.net
- [178.32.124.17])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <arndbergmann@gmail.com>
+Received: from mail-oi0-x230.google.com (mail-oi0-x230.google.com
+ [IPv6:2607:f8b0:4003:c06::230])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wCB2X1S8GzDq5b
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Apr 2017 04:05:23 +1000 (AEST)
-Received: from player696.ha.ovh.net (b6.ovh.net [213.186.33.56])
- by mo6.mail-out.ovh.net (Postfix) with ESMTP id 20115CE6C5
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Apr 2017 16:29:07 +0200 (CEST)
-Subject: Re: [PATCH] hwmon: (ibmpowernv) Add min/max attributes and current
- sensors
-To: Michael Ellerman <mpe@ellerman.id.au>,
- Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
- Jean Delvare <jdelvare@suse.com>, Guenter Roeck <linux@roeck-us.net>,
- Paul Mackerras <paulus@samba.org>
-References: <1492749112-32465-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
- <d4e170f4-b8a0-480a-3095-779cf27650f3@kaod.org>
- <66e927c1-ceec-679d-8eaf-c6686b24b3a7@linux.vnet.ibm.com>
- <87a879ynrn.fsf@concordia.ellerman.id.au>
-Cc: linux-hwmon@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, svaidy@linux.vnet.ibm.com,
- ego@linux.vnet.ibm.com, akshay.adiga@linux.vnet.ibm.com, andrew@aj.id.au
-From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
-Message-ID: <79e166e2-ed4b-7386-c07f-b02d68f133b5@kaod.org>
-Date: Tue, 25 Apr 2017 16:28:52 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wCBqq54LFzDq5W
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Apr 2017 04:41:11 +1000 (AEST)
+Received: by mail-oi0-x230.google.com with SMTP id x184so183578714oia.1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Apr 2017 11:41:11 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <87a879ynrn.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset=utf-8
+Sender: arndbergmann@gmail.com
+In-Reply-To: <58ff8298.11c7620a.8183e.652d@mx.google.com>
+References: <58ff8298.11c7620a.8183e.652d@mx.google.com>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Tue, 25 Apr 2017 20:41:09 +0200
+Message-ID: <CAK8P3a33mtCFYJnEs0zLh_Rst9aNQhiHUM=R+6BUOnFgo1HDog@mail.gmail.com>
+Subject: Re: stable-rc build: 0 warnings 2 failures
+ (stable-rc/v4.4.63-29-ge636782)
+To: "Olof's autobuilder" <build@lixom.net>
+Cc: Olof Johansson <olof@lixom.net>, kernel-build-reports@lists.linaro.org,
+ gregkh <gregkh@linuxfoundation.org>, "Oliver O'Halloran" <oohall@gmail.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,38 +30,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/22/2017 08:11 AM, Michael Ellerman wrote:
-> Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com> writes:
->> On 04/21/2017 05:17 PM, Cédric Le Goater wrote:
->>> On 04/21/2017 06:31 AM, Shilpasri G Bhat wrote:
->>>> diff --git a/drivers/hwmon/ibmpowernv.c b/drivers/hwmon/ibmpowernv.c
->>>> index 6d2e660..1f329fa8 100644
->>>> --- a/drivers/hwmon/ibmpowernv.c
->>>> +++ b/drivers/hwmon/ibmpowernv.c
->>>> @@ -65,7 +66,8 @@ enum sensors {
->>>>  	{"fan", "ibm,opal-sensor-cooling-fan"},
->>>>  	{"temp", "ibm,opal-sensor-amb-temp"},
->>>>  	{"in", "ibm,opal-sensor-power-supply"},
->>>> -	{"power", "ibm,opal-sensor-power"}
->>>> +	{"power", "ibm,opal-sensor-power"},
->>>> +	{"curr"}, /* Follows newer device tree compatible ibm,opal-sensor */
->>>
->>> why isn't there a compatible string ? 
->>
->> Skiboot exports "ibm,opal-sensor" as compatible string for all the inband
->> sensors. Now if I define that as the compatible string here, then all the
->> sensors would get identified as "curr" type of sensor by the driver.
-> 
-> So fix it in skiboot?
+On Tue, Apr 25, 2017 at 7:08 PM, Olof's autobuilder <build@lixom.net> wrote:
+>
+> Failed defconfigs:
+>         powerpc.pasemi_defconfig
+>         powerpc.ppc64_defconfig
+>
+> -------------------------------------------------------------------------------
+>
+> Errors:
+>
+> /work/build/batch/arch/powerpc/kernel/misc_64.S:72: Error: .localentry expression for `flush_icache_range' does not evaluate to a constant
 
+This is a regression in 4.4-stable-rc, caused by the backport of commit
+8f5f525d5b83f7d7 ("powerpc/64: Fix flush_(d|i)cache_range() called from
+modules").
 
-After a memory refresh, this table is to maintain compatibility with 
-the support of the FSP sensors in old firmware. These have peculiar
-device node names and properties.  
+The patch was also backported into v4.9-stable-rc, but did not cause
+problems there. The fixes tag suggests that the patch is needed on
+every version from 3.16 up, but apparently the fix needs to be a little
+different compared to newer kernels.
 
-So What the code is doing looks correct. But, you should also modify 
-the 'enum sensors' to include a CURRENT value.
-
-Thanks,
-
-C.
+        Arnd
