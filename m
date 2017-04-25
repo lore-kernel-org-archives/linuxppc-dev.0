@@ -1,20 +1,18 @@
-Return-Path: <mpe@ellerman.id.au>
+Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wC0Cn2WHdzDq5b
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Apr 2017 20:42:45 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wC28F1Sq1zDq5b
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Apr 2017 22:09:49 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Denis Kirjanov <kda@linux-powerpc.org>, linuxppc-dev@ozlabs.org
-Cc: paulus@ozlabs.org, Denis Kirjanov <kda@linux-powerpc.org>
-Subject: Re: [PATCH] kvm: powerpc: book3s: use local_paca instead of get_paca
-In-Reply-To: <CAOJe8K1qyg4KwMPoniJMvk1-EJmQRvGh8Efn934WGGASzf03ug@mail.gmail.com>
-References: <1490784937-10593-1-git-send-email-kda@linux-powerpc.org>
- <CAOJe8K1qyg4KwMPoniJMvk1-EJmQRvGh8Efn934WGGASzf03ug@mail.gmail.com>
-Date: Tue, 25 Apr 2017 20:42:41 +1000
-Message-ID: <877f283h0e.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+To: linuxppc-dev@ozlabs.org
+Cc: bhsharma@redhat.com,
+	keescook@chromium.org,
+	bsingharora@gmail.com
+Subject: [PATCH] powerpc/mm: Fix possible out-of-bounds shift in
+ arch_mmap_rnd()
+Date: Tue, 25 Apr 2017 22:09:41 +1000
+Message-Id: <1493122181-20921-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,25 +22,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Denis Kirjanov <kda@linux-powerpc.org> writes:
+The recent patch to add runtime configuration of the ASLR limits added a bug in
+arch_mmap_rnd() where we may shift an integer (32-bits) by up to 33 bits,
+leading to undefined behaviour.
 
-> On 3/29/17, Denis Kirjanov <kda@linux-powerpc.org> wrote:
->> with CONFIG_DEBUG_PREEMPT get_paca produces the following warning
->> in kvmppc_book3s_init_hv since we are getting into the
->> smp_processor_id debugging code
->>
->> There is no real issue with the xics_phys field.
->> If paca->kvm_hstate.xics_phys is non-zero on one cpu, it will be
->> non-zero on them all.  Therefore this is not fixing any actual
->> problem, just the warning.
->
-> Hey Michael,
->
-> are you going to take the patch?
+In practice it exhibits as every process seg faulting instantly, presumably
+because the rnd value hasn't been restricited by the modulus at all. We didn't
+notice because it only happens under certain kernel configurations and if the
+number of bits is actually set to a large value.
 
-It's in KVM code, so technically Paul should take it.
+Fix it by switching to unsigned long.
 
-I'll see if it is likely to conflict with anything in his tree and if
-not I'll merge it.
+Fixes: 9fea59bd7ca5 ("powerpc/mm: Add support for runtime configuration of ASLR limits")
+Reported-by: Balbir Singh <bsingharora@gmail.com>
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/mm/mmap.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-cheers
+diff --git a/arch/powerpc/mm/mmap.c b/arch/powerpc/mm/mmap.c
+index 005aa8a44915..9dbd2a733d6b 100644
+--- a/arch/powerpc/mm/mmap.c
++++ b/arch/powerpc/mm/mmap.c
+@@ -66,7 +66,7 @@ unsigned long arch_mmap_rnd(void)
+ 	if (is_32bit_task())
+ 		shift = mmap_rnd_compat_bits;
+ #endif
+-	rnd = get_random_long() % (1 << shift);
++	rnd = get_random_long() % (1ul << shift);
+ 
+ 	return rnd << PAGE_SHIFT;
+ }
+-- 
+2.7.4
