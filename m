@@ -1,45 +1,32 @@
-Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <clg@kaod.org>
+Received: from 20.mo6.mail-out.ovh.net (20.mo6.mail-out.ovh.net
+ [178.32.124.17])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wC9174WVbzDq5b
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Apr 2017 03:19:07 +1000 (AEST)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v3PHJ2j1120103
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Apr 2017 13:19:03 -0400
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2a22cehk6a-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Apr 2017 13:19:02 -0400
-Received: from localhost
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Wed, 26 Apr 2017 03:18:45 +1000
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v3PHIaol5767462
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Apr 2017 03:18:44 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v3PHI6od025602
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Apr 2017 03:18:06 +1000
-Date: Tue, 25 Apr 2017 17:17:49 +0000
-From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-Subject: RE: [PATCH] kallsyms: optimize kallsyms_lookup_name() for a few cases
-To: David Laight <David.Laight@ACULAB.COM>, Michael Ellerman
- <mpe@ellerman.id.au>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Masami Hiramatsu <mhiramat@kernel.org>, Paul Clarke <pc@us.ibm.com>
-References: <20170425161822.18764-1-naveen.n.rao@linux.vnet.ibm.com>
- <063D6719AE5E284EB5DD2968C1650D6DCFFDB161@AcuExch.aculab.com>
-In-Reply-To: <063D6719AE5E284EB5DD2968C1650D6DCFFDB161@AcuExch.aculab.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wCB2X1S8GzDq5b
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Apr 2017 04:05:23 +1000 (AEST)
+Received: from player696.ha.ovh.net (b6.ovh.net [213.186.33.56])
+ by mo6.mail-out.ovh.net (Postfix) with ESMTP id 20115CE6C5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Apr 2017 16:29:07 +0200 (CEST)
+Subject: Re: [PATCH] hwmon: (ibmpowernv) Add min/max attributes and current
+ sensors
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
+ Jean Delvare <jdelvare@suse.com>, Guenter Roeck <linux@roeck-us.net>,
+ Paul Mackerras <paulus@samba.org>
+References: <1492749112-32465-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+ <d4e170f4-b8a0-480a-3095-779cf27650f3@kaod.org>
+ <66e927c1-ceec-679d-8eaf-c6686b24b3a7@linux.vnet.ibm.com>
+ <87a879ynrn.fsf@concordia.ellerman.id.au>
+Cc: linux-hwmon@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, svaidy@linux.vnet.ibm.com,
+ ego@linux.vnet.ibm.com, akshay.adiga@linux.vnet.ibm.com, andrew@aj.id.au
+From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
+Message-ID: <79e166e2-ed4b-7386-c07f-b02d68f133b5@kaod.org>
+Date: Tue, 25 Apr 2017 16:28:52 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <1493140505.ixalh10597.astroid@naverao1-tp.none>
+In-Reply-To: <87a879ynrn.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,31 +36,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Excerpts from David Laight's message of April 25, 2017 22:06:
-> From: Naveen N. Rao
->> Sent: 25 April 2017 17:18
->> 1. Fail early for invalid/zero length symbols.
->> 2. Detect names of the form <mod:name> and skip checking for kernel
->> symbols in that case.
->>=20
->> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
->> ---
->> Masami, Michael,
->> I have added two very simple checks here, which I felt is good to have,
->> rather than the elaborate checks in the previous version. Given the
->> change in module code to use strnchr(), the checks are now safe and
->> further tests are not probably not that useful.
-> ...
->> +	if (strnchr(name, MODULE_NAME_LEN, ':'))
->> +		return module_kallsyms_lookup_name(name);
->=20
-> Should that be MODULE_NAME_LEN - 1 ?
+On 04/22/2017 08:11 AM, Michael Ellerman wrote:
+> Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com> writes:
+>> On 04/21/2017 05:17 PM, Cédric Le Goater wrote:
+>>> On 04/21/2017 06:31 AM, Shilpasri G Bhat wrote:
+>>>> diff --git a/drivers/hwmon/ibmpowernv.c b/drivers/hwmon/ibmpowernv.c
+>>>> index 6d2e660..1f329fa8 100644
+>>>> --- a/drivers/hwmon/ibmpowernv.c
+>>>> +++ b/drivers/hwmon/ibmpowernv.c
+>>>> @@ -65,7 +66,8 @@ enum sensors {
+>>>>  	{"fan", "ibm,opal-sensor-cooling-fan"},
+>>>>  	{"temp", "ibm,opal-sensor-amb-temp"},
+>>>>  	{"in", "ibm,opal-sensor-power-supply"},
+>>>> -	{"power", "ibm,opal-sensor-power"}
+>>>> +	{"power", "ibm,opal-sensor-power"},
+>>>> +	{"curr"}, /* Follows newer device tree compatible ibm,opal-sensor */
+>>>
+>>> why isn't there a compatible string ? 
+>>
+>> Skiboot exports "ibm,opal-sensor" as compatible string for all the inband
+>> sensors. Now if I define that as the compatible string here, then all the
+>> sensors would get identified as "curr" type of sensor by the driver.
+> 
+> So fix it in skiboot?
 
-The ':' character _follows_ the module name, which can itself be upto=20
-MODULE_NAME_LEN - 1 characters. So, we should look for it till=20
-MODULE_NAME_LEN.
 
-Thanks for the review,
-- Naveen
+After a memory refresh, this table is to maintain compatibility with 
+the support of the FSP sensors in old firmware. These have peculiar
+device node names and properties.  
 
-=
+So What the code is doing looks correct. But, you should also modify 
+the 'enum sensors' to include a CURRENT value.
+
+Thanks,
+
+C.
