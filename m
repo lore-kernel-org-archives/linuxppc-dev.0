@@ -1,39 +1,39 @@
 Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wC7hV0MtyzDq5b
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Apr 2017 02:19:37 +1000 (AEST)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v3PGIxUd140373
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Apr 2017 12:19:24 -0400
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2a24a4gpuu-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wC82Z2fD3zDq5b
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Apr 2017 02:35:18 +1000 (AEST)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v3PGXsx2020383
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Apr 2017 12:35:13 -0400
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2a244n25vj-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Apr 2017 12:19:24 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Apr 2017 12:35:13 -0400
 Received: from localhost
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Wed, 26 Apr 2017 02:19:22 +1000
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v3PGJBAC1376584
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Apr 2017 02:19:19 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v3PGIfIO018065
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Apr 2017 02:18:42 +1000
+ Wed, 26 Apr 2017 02:35:10 +1000
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v3PGYx9Q38928428
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Apr 2017 02:35:07 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v3PGYTFo013668
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Apr 2017 02:34:30 +1000
 From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Masami Hiramatsu <mhiramat@kernel.org>, Paul Clarke <pc@us.ibm.com>,
- David Laight <David.Laight@ACULAB.COM>, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] kallsyms: optimize kallsyms_lookup_name() for a few cases
-Date: Tue, 25 Apr 2017 21:48:22 +0530
-Message-Id: <20170425161822.18764-1-naveen.n.rao@linux.vnet.ibm.com>
+Cc: Anton Blanchard <anton@samba.org>,
+ Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>,
+ Masami Hiramatsu <mhiramat@kernel.org>, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 0/4] powerpc: build out kprobes blacklist
+Date: Tue, 25 Apr 2017 22:04:05 +0530
+Message-Id: <cover.1493137432.git.naveen.n.rao@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,39 +43,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-1. Fail early for invalid/zero length symbols.
-2. Detect names of the form <mod:name> and skip checking for kernel
-symbols in that case.
+This is the second in the series of patches to build out an appropriate
+kprobes blacklist. This series blacklists system_call() and functions
+involved when handling the trap itself. Not everything is covered, but
+this is the first set of functions that I have tested with. More
+patches to follow once I expand my tests.
 
-Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
----
-Masami, Michael,
-I have added two very simple checks here, which I felt is good to have,
-rather than the elaborate checks in the previous version. Given the
-change in module code to use strnchr(), the checks are now safe and
-further tests are not probably not that useful.
+I have converted many labels into private -- these are labels that I
+felt are not necessary to read stack traces. If any of those are
+important to have, please let me know.
 
 - Naveen
 
- kernel/kallsyms.c | 6 ++++++
- 1 file changed, 6 insertions(+)
+Naveen N. Rao (4):
+  powerpc/kprobes: cleanup system_call_common and blacklist it from
+    kprobes
+  powerpc/kprobes: un-blacklist system_call() from kprobes
+  powerpc/kprobes: blacklist functions invoked on a trap
+  powerpc/kprobes: blacklist functions involved when returning from
+    exception
 
-diff --git a/kernel/kallsyms.c b/kernel/kallsyms.c
-index 6a3b249a2ae1..d134b060564f 100644
---- a/kernel/kallsyms.c
-+++ b/kernel/kallsyms.c
-@@ -205,6 +205,12 @@ unsigned long kallsyms_lookup_name(const char *name)
- 	unsigned long i;
- 	unsigned int off;
- 
-+	if (!name || *name == '\0')
-+		return false;
-+
-+	if (strnchr(name, MODULE_NAME_LEN, ':'))
-+		return module_kallsyms_lookup_name(name);
-+
- 	for (i = 0, off = 0; i < kallsyms_num_syms; i++) {
- 		off = kallsyms_expand_symbol(off, namebuf, ARRAY_SIZE(namebuf));
- 
+ arch/powerpc/kernel/entry_64.S       | 94 +++++++++++++++++++-----------------
+ arch/powerpc/kernel/exceptions-64s.S |  1 +
+ arch/powerpc/kernel/time.c           |  3 ++
+ arch/powerpc/kernel/traps.c          |  3 ++
+ arch/powerpc/platforms/pseries/dtl.c |  2 +
+ 5 files changed, 60 insertions(+), 43 deletions(-)
+
 -- 
 2.12.1
