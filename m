@@ -1,49 +1,25 @@
-Return-Path: <srs0=v3ub=4c=au1.ibm.com=andrew.donnellan@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <dyoung@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wCW9x50JTzDqBJ
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Apr 2017 16:57:57 +1000 (AEST)
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3wCW9x49S8z8svW
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Apr 2017 16:57:57 +1000 (AEST)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3wCW9x19HRz9s78
- for <linuxppc-dev@ozlabs.org>; Wed, 26 Apr 2017 16:57:56 +1000 (AEST)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v3Q6rnY2122790
- for <linuxppc-dev@ozlabs.org>; Wed, 26 Apr 2017 02:57:48 -0400
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2a2ebxt7rx-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Wed, 26 Apr 2017 02:57:45 -0400
-Received: from localhost
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
- Wed, 26 Apr 2017 16:57:04 +1000
-Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v3Q6uqk962783712
- for <linuxppc-dev@ozlabs.org>; Wed, 26 Apr 2017 16:57:00 +1000
-Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
- by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v3Q6uSNf019308
- for <linuxppc-dev@ozlabs.org>; Wed, 26 Apr 2017 16:56:28 +1000
-Subject: Re: [PATCH] cxl: Prevent IRQ storm
-To: "Alastair D'Silva" <alastair@au1.ibm.com>, linuxppc-dev@ozlabs.org
-References: <20170426064053.12009-1-alastair@au1.ibm.com>
-Cc: frederic.barrat@fr.ibm.com, "Alastair D'Silva" <alastair@d-silva.org>
-From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Date: Wed, 26 Apr 2017 16:56:03 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wCWTY5V3BzDqBJ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Apr 2017 17:11:29 +1000 (AEST)
+Date: Wed, 26 Apr 2017 15:11:14 +0800
+From: Dave Young <dyoung@redhat.com>
+To: Xunlei Pang <xlpang@redhat.com>
+Cc: linux-kernel@vger.kernel.org, kexec@lists.infradead.org,
+ Baoquan He <bhe@redhat.com>, Petr Tesarik <ptesarik@suse.cz>,
+ Eric Biederman <ebiederm@xmission.com>,
+ Hari Bathini <hbathini@linux.vnet.ibm.com>,
+ akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v4 2/3] powerpc/fadump: Use the correct
+ VMCOREINFO_NOTE_SIZE for phdr
+Message-ID: <20170426071114.GC5381@dhcp-128-65.nay.redhat.com>
+References: <1492688374-27903-1-git-send-email-xlpang@redhat.com>
+ <1492688374-27903-2-git-send-email-xlpang@redhat.com>
 MIME-Version: 1.0
-In-Reply-To: <20170426064053.12009-1-alastair@au1.ibm.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Message-Id: <359475c3-196a-7c95-eaaa-9a2212396af7@au1.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1492688374-27903-2-git-send-email-xlpang@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -53,48 +29,90 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 26/04/17 16:40, Alastair D'Silva wrote:
-> From: Alastair D'Silva <alastair@d-silva.org>
->
-> In some situations, a faulty AFU slice may create an interrupt storm,
-> rendering the machine unusable. Since these interrupts are informational
-> only, present the interrupt once, then mask it off to prevent it from
-> being retriggered until the card is reset.
->
-> Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
-
-Reviewed-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-
+Ccing ppc list
+On 04/20/17 at 07:39pm, Xunlei Pang wrote:
+> vmcoreinfo_max_size stands for the vmcoreinfo_data, the
+> correct one we should use is vmcoreinfo_note whose total
+> size is VMCOREINFO_NOTE_SIZE.
+> 
+> Like explained in commit 77019967f06b ("kdump: fix exported
+> size of vmcoreinfo note"), it should not affect the actual
+> function, but we better fix it, also this change should be
+> safe and backward compatible.
+> 
+> After this, we can get rid of variable vmcoreinfo_max_size,
+> let's use the corresponding macros directly, fewer variables
+> means more safety for vmcoreinfo operation.
+> 
+> Cc: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+> Cc: Hari Bathini <hbathini@linux.vnet.ibm.com>
+> Signed-off-by: Xunlei Pang <xlpang@redhat.com>
 > ---
->  drivers/misc/cxl/native.c | 6 +++++-
->  1 file changed, 5 insertions(+), 1 deletion(-)
->
-> diff --git a/drivers/misc/cxl/native.c b/drivers/misc/cxl/native.c
-> index 7ae7105..4e8010f 100644
-> --- a/drivers/misc/cxl/native.c
-> +++ b/drivers/misc/cxl/native.c
-> @@ -996,7 +996,7 @@ static void native_irq_wait(struct cxl_context *ctx)
->  static irqreturn_t native_slice_irq_err(int irq, void *data)
->  {
->  	struct cxl_afu *afu = data;
-> -	u64 fir_slice, errstat, serr, afu_debug, afu_error, dsisr;
-> +	u64 fir_slice, errstat, serr, afu_debug, afu_error, dsisr, irq_mask;
->
->  	/*
->  	 * slice err interrupt is only used with full PSL (no XSL)
-> @@ -1014,6 +1014,10 @@ static irqreturn_t native_slice_irq_err(int irq, void *data)
->  	dev_crit(&afu->dev, "AFU_ERR_An: 0x%.16llx\n", afu_error);
->  	dev_crit(&afu->dev, "PSL_DSISR_An: 0x%.16llx\n", dsisr);
->
-> +	/* mask off the IRQ so it won't retrigger until the card is reset */
-> +	irq_mask = (serr & 0xff80000000000000ULL) >> 32;
-> +	serr |= irq_mask;
-> +
->  	cxl_p1n_write(afu, CXL_PSL_SERR_An, serr);
->
->  	return IRQ_HANDLED;
->
+> v3->v4:
+> -Rebased on the latest linux-next
+> 
+>  arch/powerpc/kernel/fadump.c | 3 +--
+>  include/linux/crash_core.h   | 1 -
+>  kernel/crash_core.c          | 3 +--
+>  3 files changed, 2 insertions(+), 5 deletions(-)
+> 
+> diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
+> index 466569e..7bd6cd0 100644
+> --- a/arch/powerpc/kernel/fadump.c
+> +++ b/arch/powerpc/kernel/fadump.c
+> @@ -893,8 +893,7 @@ static int fadump_create_elfcore_headers(char *bufp)
+>  
+>  	phdr->p_paddr	= fadump_relocate(paddr_vmcoreinfo_note());
+>  	phdr->p_offset	= phdr->p_paddr;
+> -	phdr->p_memsz	= vmcoreinfo_max_size;
+> -	phdr->p_filesz	= vmcoreinfo_max_size;
+> +	phdr->p_memsz	= phdr->p_filesz = VMCOREINFO_NOTE_SIZE;
+>  
+>  	/* Increment number of program headers. */
+>  	(elf->e_phnum)++;
+> diff --git a/include/linux/crash_core.h b/include/linux/crash_core.h
+> index ba283a2..7d6bc7b 100644
+> --- a/include/linux/crash_core.h
+> +++ b/include/linux/crash_core.h
+> @@ -55,7 +55,6 @@
+>  
+>  extern u32 *vmcoreinfo_note;
+>  extern size_t vmcoreinfo_size;
+> -extern size_t vmcoreinfo_max_size;
+>  
+>  Elf_Word *append_elf_note(Elf_Word *buf, char *name, unsigned int type,
+>  			  void *data, size_t data_len);
+> diff --git a/kernel/crash_core.c b/kernel/crash_core.c
+> index 0321f04..43cdb00 100644
+> --- a/kernel/crash_core.c
+> +++ b/kernel/crash_core.c
+> @@ -16,7 +16,6 @@
+>  /* vmcoreinfo stuff */
+>  static unsigned char *vmcoreinfo_data;
+>  size_t vmcoreinfo_size;
+> -size_t vmcoreinfo_max_size = VMCOREINFO_BYTES;
+>  u32 *vmcoreinfo_note;
+>  
+>  /*
+> @@ -343,7 +342,7 @@ void vmcoreinfo_append_str(const char *fmt, ...)
+>  	r = vscnprintf(buf, sizeof(buf), fmt, args);
+>  	va_end(args);
+>  
+> -	r = min(r, vmcoreinfo_max_size - vmcoreinfo_size);
+> +	r = min(r, VMCOREINFO_BYTES - vmcoreinfo_size);
+>  
+>  	memcpy(&vmcoreinfo_data[vmcoreinfo_size], buf, r);
+>  
+> -- 
+> 1.8.3.1
+> 
+> 
+> _______________________________________________
+> kexec mailing list
+> kexec@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/kexec
 
--- 
-Andrew Donnellan              OzLabs, ADL Canberra
-andrew.donnellan@au1.ibm.com  IBM Australia Limited
+Reviewed-by: Dave Young <dyoung@redhat.com>
+
+Thanks
+Dave
