@@ -1,26 +1,42 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
- [IPv6:2607:f8b0:400e:c05::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <srs0=/4kh=4c=linux.vnet.ibm.com=fbarrat@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wCYJ96YrtzDqBN
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Apr 2017 18:33:29 +1000 (AEST)
-Received: by mail-pg0-x242.google.com with SMTP id v1so9152137pgv.3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Apr 2017 01:33:29 -0700 (PDT)
-Date: Wed, 26 Apr 2017 18:29:48 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc/64s: use
- ibm,tlbiel-congruence-classes-(hash|radix) dt property
-Message-ID: <20170426182948.1810998d@roar.ozlabs.ibm.com>
-In-Reply-To: <8737cy2ozz.fsf@skywalker.in.ibm.com>
-References: <20170422005854.17128-1-npiggin@gmail.com>
- <20170422005854.17128-2-npiggin@gmail.com>
- <8737cy2ozz.fsf@skywalker.in.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wCZQp05f2zDq9m
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Apr 2017 19:24:18 +1000 (AEST)
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3wCZQn6dZ0z8wVL
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Apr 2017 19:24:17 +1000 (AEST)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3wCZQn3V9yz9s89
+ for <linuxppc-dev@ozlabs.org>; Wed, 26 Apr 2017 19:24:17 +1000 (AEST)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v3Q9Ne4s117088
+ for <linuxppc-dev@ozlabs.org>; Wed, 26 Apr 2017 05:24:15 -0400
+Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2a2ebw96e0-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Wed, 26 Apr 2017 05:24:15 -0400
+Received: from localhost
+ by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
+ Wed, 26 Apr 2017 10:24:12 +0100
+Subject: Re: [PATCH] cxl: Prevent IRQ storm
+To: "Alastair D'Silva" <alastair@au1.ibm.com>, linuxppc-dev@ozlabs.org
+References: <20170426064053.12009-1-alastair@au1.ibm.com>
+Cc: "Alastair D'Silva" <alastair@d-silva.org>, andrew.donnellan@au1.ibm.com,
+ frederic.barrat@fr.ibm.com
+From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+Date: Wed, 26 Apr 2017 11:23:42 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+In-Reply-To: <20170426064053.12009-1-alastair@au1.ibm.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Message-Id: <2354ad5d-e41f-555e-f129-157444973e1c@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,186 +46,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 24 Apr 2017 13:53:12 +0530
-"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> wrote:
-
-> Nicholas Piggin <npiggin@gmail.com> writes:
-> 
-> > tlbiel instruction with IS!=0 on POWER7 and later Book3s CPUs invalidate
-> > TLBs belonging to a specified congruence class. In order to operate on
-> > the entire TLB, all congruence classes must be specified, requiring a
-> > software loop.
-> >
-> > This dt property specifies the number of classes that must be operated
-> > on. Use this to set tlbiel loop counts. If the property does not exist,
-> > fall back to hard coded values based on the cpu table.
-> >
-> > Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-> >  	return 0;  
-> .....
-> .....
-> 
-> > diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-> > index d2f0afeae5a0..08ec2f431eff 100644
-> > --- a/arch/powerpc/kernel/prom.c
-> > +++ b/arch/powerpc/kernel/prom.c
-> > @@ -236,8 +236,27 @@ static void __init init_mmu_slb_size(unsigned long node)
-> >  	if (slb_size_ptr)
-> >  		mmu_slb_size = be32_to_cpup(slb_size_ptr);
-> >  }
-> > +static void __init init_mmu_tlb_sets_hash(unsigned long node)
-> > +{
-> > +	const __be32 *ptr;
-> > +
-> > +	ptr = of_get_flat_dt_prop(node, "ibm,tlbiel-congruence-classes-hash", NULL);
-> > +	if (ptr)
-> > +		cur_cpu_spec->tlb_sets_hash = be32_to_cpup(ptr);
-> > +}
-> > +
-> > +static void __init init_mmu_tlb_sets_radix(unsigned long node)
-> > +{
-> > +	const __be32 *ptr;
-> > +
-> > +	ptr = of_get_flat_dt_prop(node, "ibm,tlbiel-congruence-classes-radix", NULL);
-> > +	if (ptr)
-> > +		cur_cpu_spec->tlb_sets_radix = be32_to_cpup(ptr);
-> > +}
-> >  #else
-> >  #define init_mmu_slb_size(node) do { } while(0)
-> > +#define init_mmu_hash_sets(node) do { } while(0)
-> > +#define init_mmu_radix_sets(node) do { } while(0)
-> >  #endif
-> >
-> >  static struct feature_property {
-> > @@ -385,6 +404,8 @@ static int __init early_init_dt_scan_cpus(unsigned long node,
-> >  	check_cpu_feature_properties(node);
-> >  	check_cpu_pa_features(node);
-> >  	init_mmu_slb_size(node);
-> > +	init_mmu_tlb_sets_hash(node);
-> > +	init_mmu_tlb_sets_radix(node);
-> >  
-> 
-> 
-> I thought cpu features patch series had a generic mechanism to parse all
-> these based on dt_cpu_feature_match_table[] ?
-
-It could in theory. We could have a feature node for this set-wise
-invalidation behaviour, and make a custom property of that feature
-to give the number of sets to loop over.
-
-At the moment Ben preferred each feature to be just a "binary" (present
-or absent), with the accompanying metadata just being for the
-compatibility bits. But this is a policy decision, and we may reconsider
-it as we start adding extra cpu-features for future hardware.
-
-For these numbers I think it's okay to add this way for now.
 
 
-> > diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-> > index fadb75abfe37..2211cda5de90 100644
-> > --- a/arch/powerpc/kvm/book3s_hv.c
-> > +++ b/arch/powerpc/kvm/book3s_hv.c
-> > @@ -3430,14 +3430,7 @@ static int kvmppc_core_init_vm_hv(struct kvm *kvm)
-> >  	 * Work out how many sets the TLB has, for the use of
-> >  	 * the TLB invalidation loop in book3s_hv_rmhandlers.S.
-> >  	 */
-> > -	if (kvm_is_radix(kvm))
-> > -		kvm->arch.tlb_sets = POWER9_TLB_SETS_RADIX;	/* 128 */
-> > -	else if (cpu_has_feature(CPU_FTR_ARCH_300))
-> > -		kvm->arch.tlb_sets = POWER9_TLB_SETS_HASH;	/* 256 */
-> > -	else if (cpu_has_feature(CPU_FTR_ARCH_207S))
-> > -		kvm->arch.tlb_sets = POWER8_TLB_SETS;		/* 512 */
-> > -	else
-> > -		kvm->arch.tlb_sets = POWER7_TLB_SETS;		/* 128 */
-> > +	kvm->arch.tlb_sets = cur_cpu_spec->tlb_sets;  
-> 
-> 
-> This should be based on guest mode right ? ie, we need to set
-> kvm->arch.tlb_sets based on the mode kvm guest is running ?
+Le 26/04/2017 à 08:40, Alastair D'Silva a écrit :
+> From: Alastair D'Silva <alastair@d-silva.org>
+>
+> In some situations, a faulty AFU slice may create an interrupt storm,
+> rendering the machine unusable. Since these interrupts are informational
+> only, present the interrupt once, then mask it off to prevent it from
+> being retriggered until the card is reset.
+>
+> Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
+> ---
 
-You mean radix vs hash? Yes... Well, that's a reasonable assumption for
-the behaviour of a CPU that supports guest mode != host mode, right? I'll
-make the change.
+Patch looks good, thanks!
+It doesn't apply cleanly on the 'next' tree due to the capi2 patchset 
+though, so you should probably rebase on that tree. The bits have 
+changed a bit on PSL9, but the approach still works (error type reported 
+in the first byte, and the corresponding masking bits are still 
+right-shifted by 32).
 
-> >  	/*
-> >  	 * Track that we now have a HV mode VM active. This blocks secondary
-> > diff --git a/arch/powerpc/kvm/book3s_hv_ras.c b/arch/powerpc/kvm/book3s_hv_ras.c
-> > index 7ef0993214f3..f62798ce304b 100644
-> > --- a/arch/powerpc/kvm/book3s_hv_ras.c
-> > +++ b/arch/powerpc/kvm/book3s_hv_ras.c
-> > @@ -87,8 +87,7 @@ static long kvmppc_realmode_mc_power7(struct kvm_vcpu *vcpu)
-> >  				   DSISR_MC_SLB_PARITY | DSISR_MC_DERAT_MULTI);
-> >  		}
-> >  		if (dsisr & DSISR_MC_TLB_MULTI) {
-> > -			if (cur_cpu_spec && cur_cpu_spec->flush_tlb)
-> > -				cur_cpu_spec->flush_tlb(TLB_INVAL_SCOPE_LPID);
-> > +			machine_check_flush_tlb(TLB_INVAL_SCOPE_LPID);
-> >  			dsisr &= ~DSISR_MC_TLB_MULTI;
-> >  		}
-> >  		/* Any other errors we don't understand? */
-> > @@ -105,8 +104,7 @@ static long kvmppc_realmode_mc_power7(struct kvm_vcpu *vcpu)
-> >  		reload_slb(vcpu);
-> >  		break;
-> >  	case SRR1_MC_IFETCH_TLBMULTI:
-> > -		if (cur_cpu_spec && cur_cpu_spec->flush_tlb)
-> > -			cur_cpu_spec->flush_tlb(TLB_INVAL_SCOPE_LPID);
-> > +		machine_check_flush_tlb(TLB_INVAL_SCOPE_LPID);
-> >  		break;
-> >  	default:
-> >  		handled = 0;
-> > diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
-> > index ec84b31c6c86..a7c771170993 100644
-> > --- a/arch/powerpc/mm/init_64.c
-> > +++ b/arch/powerpc/mm/init_64.c
-> > @@ -405,9 +405,15 @@ void __init mmu_early_init_devtree(void)
-> >  	if (!(mfmsr() & MSR_HV))
-> >  		early_check_vec5();
-> >
-> > -	if (early_radix_enabled())
-> > +	if (early_radix_enabled()) {
-> > +		cur_cpu_spec->tlb_sets = cur_cpu_spec->tlb_sets_radix;
-> >  		radix__early_init_devtree();
-> > -	else
-> > +	} else {
-> > +		cur_cpu_spec->tlb_sets = cur_cpu_spec->tlb_sets_hash;
-> >  		hash__early_init_devtree();
-> > +	}
-> > +	/* This should not happen, but fall back to 1 set */
-> > +	if (!cur_cpu_spec->tlb_sets)
-> > +		cur_cpu_spec->tlb_sets = 1;
-> >  }
-> >  #endif /* CONFIG_PPC_STD_MMU_64 */
-> > diff --git a/arch/powerpc/mm/tlb-radix.c b/arch/powerpc/mm/tlb-radix.c
-> > index b68b5219cf45..76c8ed7549a7 100644
-> > --- a/arch/powerpc/mm/tlb-radix.c
-> > +++ b/arch/powerpc/mm/tlb-radix.c
-> > @@ -38,15 +38,16 @@ static inline void __tlbiel_pid(unsigned long pid, int set,
-> >  		     : : "r"(rb), "i"(r), "i"(prs), "i"(ric), "r"(rs) : "memory");
-> >  }
-> >
-> > -/*
-> > - * We use 128 set in radix mode and 256 set in hpt mode.
-> > - */
-> >  static inline void _tlbiel_pid(unsigned long pid, unsigned long ric)
-> >  {
-> >  	int set;
-> >
-> >  	asm volatile("ptesync": : :"memory");
-> > -	for (set = 0; set < POWER9_TLB_SETS_RADIX ; set++) {
-> > +	/*
-> > +	 * tlbiel with IS != 0 operates on a specified congruence class,
-> > +	 * requiring a loop to invalidate the entire TLB (see ISA).
-> > +	 */
-> > +	for (set = 0; set < cur_cpu_spec->tlb_sets; set++) {
-> >  		__tlbiel_pid(pid, set, ric);
-> >  	}
-> >  	asm volatile("ptesync": : :"memory");
-> > -- 
-> > 2.11.0  
-> 
-> This may need a rebase if mpe is going to take https://lists.ozlabs.org/pipermail/linuxppc-dev/2017-April/157130.html
+   Fred
 
-Yeah shouldn't be much problem.
-
-Thanks,
-Nick
+>  drivers/misc/cxl/native.c | 6 +++++-
+>  1 file changed, 5 insertions(+), 1 deletion(-)
+>
+> diff --git a/drivers/misc/cxl/native.c b/drivers/misc/cxl/native.c
+> index 7ae7105..4e8010f 100644
+> --- a/drivers/misc/cxl/native.c
+> +++ b/drivers/misc/cxl/native.c
+> @@ -996,7 +996,7 @@ static void native_irq_wait(struct cxl_context *ctx)
+>  static irqreturn_t native_slice_irq_err(int irq, void *data)
+>  {
+>  	struct cxl_afu *afu = data;
+> -	u64 fir_slice, errstat, serr, afu_debug, afu_error, dsisr;
+> +	u64 fir_slice, errstat, serr, afu_debug, afu_error, dsisr, irq_mask;
+>
+>  	/*
+>  	 * slice err interrupt is only used with full PSL (no XSL)
+> @@ -1014,6 +1014,10 @@ static irqreturn_t native_slice_irq_err(int irq, void *data)
+>  	dev_crit(&afu->dev, "AFU_ERR_An: 0x%.16llx\n", afu_error);
+>  	dev_crit(&afu->dev, "PSL_DSISR_An: 0x%.16llx\n", dsisr);
+>
+> +	/* mask off the IRQ so it won't retrigger until the card is reset */
+> +	irq_mask = (serr & 0xff80000000000000ULL) >> 32;
+> +	serr |= irq_mask;
+> +
+>  	cxl_p1n_write(afu, CXL_PSL_SERR_An, serr);
+>
+>  	return IRQ_HANDLED;
+>
