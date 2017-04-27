@@ -1,44 +1,17 @@
-Return-Path: <hbathini@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <matthew.weber@rockwellcollins.com>
+Received: from ch3vs02.rockwellcollins.com (ch3vs02.rockwellcollins.com
+ [205.175.226.29])
+ (using TLSv1 with cipher DHE-RSA-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wDPzt6b41zDq72
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Apr 2017 04:07:22 +1000 (AEST)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v3RI3UM6120312
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Apr 2017 14:07:11 -0400
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2a3jbd1jtf-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Apr 2017 14:07:11 -0400
-Received: from localhost
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <hbathini@linux.vnet.ibm.com>;
- Fri, 28 Apr 2017 04:07:08 +1000
-Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v3RI6vAj49152074
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Apr 2017 04:07:05 +1000
-Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
- by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v3RI6WLO025899
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Apr 2017 04:06:33 +1000
-Subject: Re: [PATCH] powerpc/pseries hotplug: prevent the reserved mem from
- removing
-To: Pingfan Liu <piliu@redhat.com>, linuxppc-dev@lists.ozlabs.org
-References: <1493278988-26169-1-git-send-email-piliu@redhat.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Michael Ellerman <mpe@ellerman.id.au>, kernelfans@gmail.com
-From: Hari Bathini <hbathini@linux.vnet.ibm.com>
-Date: Thu, 27 Apr 2017 23:36:08 +0530
-MIME-Version: 1.0
-In-Reply-To: <1493278988-26169-1-git-send-email-piliu@redhat.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Message-Id: <e07eb5d7-2c8f-1eb5-8ba5-109bb6262f12@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wDQ3P16pxzDq72
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Apr 2017 04:10:23 +1000 (AEST)
+From: Matt Weber <matthew.weber@rockwellcollins.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Matt Weber <matthew.weber@rockwellcollins.com>,
+ Ronak Desai <ronak.desai@rockwellcollins.com>
+Subject: [PATCH 1/1] powerpc/traps : Updated MC for E6500 L1D cache err
+Date: Thu, 27 Apr 2017 12:59:40 -0500
+Message-Id: <1493315980-28480-1-git-send-email-matthew.weber@rockwellcollins.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,31 +21,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Pingfan,
+This patch updates the machine check handler of Linux kernel to
+handle the e6500 architecture case. In e6500 core, L1 Data Cache Write
+Shadow Mode (DCWS) register is not implemented but L1 data cache always
+runs in write shadow mode. So, on L1 data cache parity errors, hardware
+will automatically invalidate the data cache but will still log a
+machine check interrupt.
 
+Signed-off-by: Ronak Desai <ronak.desai@rockwellcollins.com>
+Signed-off-by: Matthew Weber <matthew.weber@rockwellcollins.com>
+---
+ arch/powerpc/include/asm/reg_booke.h |  1 +
+ arch/powerpc/kernel/traps.c          | 12 ++++++++++--
+ 2 files changed, 11 insertions(+), 2 deletions(-)
 
-On Thursday 27 April 2017 01:13 PM, Pingfan Liu wrote:
-> E.g after fadump reserves mem regions, these regions should not be removed
-> before fadump explicitly free them.
-> Signed-off-by: Pingfan Liu <piliu@redhat.com>
-> ---
->   arch/powerpc/platforms/pseries/hotplug-memory.c | 5 +++--
->   1 file changed, 3 insertions(+), 2 deletions(-)
->
-> diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/powerpc/platforms/pseries/hotplug-memory.c
-> index e104c71..201be23 100644
-> --- a/arch/powerpc/platforms/pseries/hotplug-memory.c
-> +++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
-> @@ -346,6 +346,8 @@ static int pseries_remove_memblock(unsigned long base, unsigned int memblock_siz
->
->   	if (!pfn_valid(start_pfn))
->   		goto out;
-> +	if (memblock_is_reserved(base))
-> +		return -EINVAL;
-
-I think memblock reserved regions are not hot removed even without this 
-patch.
-So, can you elaborate on when/why this patch is needed?
-
-Thanks
-Hari
+diff --git a/arch/powerpc/include/asm/reg_booke.h b/arch/powerpc/include/asm/reg_booke.h
+index 737e012..c811128 100644
+--- a/arch/powerpc/include/asm/reg_booke.h
++++ b/arch/powerpc/include/asm/reg_booke.h
+@@ -196,6 +196,7 @@
+ #define SPRN_DEAR	0x03D	/* Data Error Address Register */
+ #define SPRN_ESR	0x03E	/* Exception Syndrome Register */
+ #define SPRN_PIR	0x11E	/* Processor Identification Register */
++#define SPRN_PVR	0x11F	/* Processor Version Register */
+ #define SPRN_DBSR	0x130	/* Debug Status Register */
+ #define SPRN_DBCR0	0x134	/* Debug Control Register 0 */
+ #define SPRN_DBCR1	0x135	/* Debug Control Register 1 */
+diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+index 76f6045..d5bc3ab 100644
+--- a/arch/powerpc/kernel/traps.c
++++ b/arch/powerpc/kernel/traps.c
+@@ -504,6 +504,7 @@ int machine_check_47x(struct pt_regs *regs)
+ int machine_check_e500mc(struct pt_regs *regs)
+ {
+ 	unsigned long mcsr = mfspr(SPRN_MCSR);
++	unsigned long pvr = mfspr(SPRN_PVR);
+ 	unsigned long reason = mcsr;
+ 	int recoverable = 1;
+ 
+@@ -545,8 +546,15 @@ int machine_check_e500mc(struct pt_regs *regs)
+ 		 * may still get logged and cause a machine check.  We should
+ 		 * only treat the non-write shadow case as non-recoverable.
+ 		 */
+-		if (!(mfspr(SPRN_L1CSR2) & L1CSR2_DCWS))
+-			recoverable = 0;
++		/* On e6500 core, L1 DCWS (Data cache write shadow mode) bit is
++		 * not implemented but L1 data cache is by default configured
++		 * to run in write shadow mode. Hence on data cache parity errors
++		 * HW will automatically invalidate the L1 Data Cache.
++		 */
++		if (PVR_VER(pvr) != PVR_VER_E6500) {
++			if (!(mfspr(SPRN_L1CSR2) & L1CSR2_DCWS))
++				recoverable = 0;
++		}
+ 	}
+ 
+ 	if (reason & MCSR_L2MMU_MHIT) {
+-- 
+1.9.1
