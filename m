@@ -1,46 +1,42 @@
-Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <pmladek@suse.com>
+Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wDGfM08BbzDq72
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Apr 2017 22:36:42 +1000 (AEST)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v3RCY1u1095645
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Apr 2017 08:36:32 -0400
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2a3fk6kgpq-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Apr 2017 08:36:32 -0400
-Received: from localhost
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Thu, 27 Apr 2017 22:36:29 +1000
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v3RCaJKM62783652
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Apr 2017 22:36:27 +1000
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v3RCZrok022593
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Apr 2017 22:35:53 +1000
-Date: Thu, 27 Apr 2017 18:05:36 +0530
-From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Anton Blanchard <anton@samba.org>,
- Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>,
- Masami Hiramatsu <mhiramat@kernel.org>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v2 2/3] powerpc/kprobes: un-blacklist system_call() from
- kprobes
-References: <cover.1493274843.git.naveen.n.rao@linux.vnet.ibm.com>
- <e15c0617dbf4ff85d3e8f91b7a3ef8e2071b581d.1493274843.git.naveen.n.rao@linux.vnet.ibm.com>
- <87d1by17b0.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wDJ1b5WS6zDq72
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Apr 2017 23:38:26 +1000 (AEST)
+Date: Thu, 27 Apr 2017 15:38:19 +0200
+From: Petr Mladek <pmladek@suse.com>
+To: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>,
+ Steven Rostedt <rostedt@goodmis.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+ Peter Zijlstra <peterz@infradead.org>,
+ Russell King <rmk+kernel@arm.linux.org.uk>,
+ Daniel Thompson <daniel.thompson@linaro.org>,
+ Jiri Kosina <jkosina@suse.com>, Ingo Molnar <mingo@redhat.com>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Chris Metcalf <cmetcalf@ezchip.com>, linux-kernel@vger.kernel.org,
+ x86@kernel.org, linux-arm-kernel@lists.infradead.org,
+ adi-buildroot-devel@lists.sourceforge.net,
+ linux-cris-kernel@axis.com, linux-mips@linux-mips.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
+ Jan Kara <jack@suse.cz>, Ralf Baechle <ralf@linux-mips.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ David Miller <davem@davemloft.net>
+Subject: Re: [PATCH v5 1/4] printk/nmi: generic solution for safe printk in NMI
+Message-ID: <20170427133819.GW3452@pathway.suse.cz>
+References: <1461239325-22779-1-git-send-email-pmladek@suse.com>
+ <1461239325-22779-2-git-send-email-pmladek@suse.com>
+ <20170419131341.76bc7634@gandalf.local.home>
+ <20170420033112.GB542@jagdpanzerIV.localdomain>
+ <20170420131154.GL3452@pathway.suse.cz>
+ <20170421015724.GA586@jagdpanzerIV.localdomain>
+ <20170421120627.GO3452@pathway.suse.cz>
+ <20170424021747.GA630@jagdpanzerIV.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <87d1by17b0.fsf@concordia.ellerman.id.au>
-Message-Id: <20170427123536.GB3313@naverao1-tp.localdomain>
+In-Reply-To: <20170424021747.GA630@jagdpanzerIV.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,84 +46,86 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2017/04/27 08:19PM, Michael Ellerman wrote:
-> "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> writes:
+On Mon 2017-04-24 11:17:47, Sergey Senozhatsky wrote:
+> On (04/21/17 14:06), Petr Mladek wrote:
+> [..]
+> > > I agree that this_cpu_read(printk_context) covers slightly more than
+> > > logbuf_lock scope, so we may get positive this_cpu_read(printk_context)
+> > > with unlocked logbuf_lock, but I don't tend to think that it's a big
+> > > problem.
+> > 
+> > PRINTK_SAFE_CONTEXT is set also in call_console_drivers().
+> > It might take rather long and logbuf_lock is availe. So, it is
+> > noticeable source of false positives.
 > 
-> > It is actually safe to probe system_call() in entry_64.S, but only till
-> > .Lsyscall_exit. To allow this, convert .Lsyscall_exit to a non-local
-> > symbol __system_call() and blacklist that symbol, rather than
-> > system_call().
+> yes, agree.
 > 
-> I'm not sure I like this. The reason we made it a local symbol in the
-> first place is because it made backtraces look odd:
+> probably we need additional printk_safe annotations for
+> 		"logbuf_lock is locked from _this_ CPU"
 > 
->   commit 4c3b21686111e0ac6018469dacbc5549f9915cf8
->   Author:     Michael Ellerman <mpe@ellerman.id.au>
->   AuthorDate: Fri Dec 5 21:16:59 2014 +1100
->   
->   powerpc/kernel: Make syscall_exit a local label
->   
->   Currently when we back trace something that is in a syscall we see
->   something like this:
->   
->   [c000000000000000] [c000000000000000] SyS_read+0x6c/0x110
->   [c000000000000000] [c000000000000000] syscall_exit+0x0/0x98
->   
->   Although it's entirely correct, seeing syscall_exit at the bottom can be
->   confusing - we were exiting from a syscall and then called SyS_read() ?
->   
->   If we instead change syscall_exit to be a local label we get something
->   more intuitive:
->   
->   [c0000001fa46fde0] [c00000000026719c] SyS_read+0x6c/0x110
->   [c0000001fa46fe30] [c000000000009264] system_call+0x38/0xd0
->   
->   ie. we were handling a system call, and it was SyS_read().
+> false positives there can be very painful.
+> 
+> [..]
+> > 	if (raw_spin_is_locked(&logbuf_lock))
+> > 		this_cpu_or(printk_context, PRINTK_NMI_CONTEXT_MASK);
+> > 	else
+> > 		this_cpu_or(printk_context, PRINTK_NMI_DEFERRED_CONTEXT_MASK);
+> 
+> well, if everyone is fine with logbuf_lock access from every CPU from every
+> NMI then I won't object either. but may be it makes sense to reduce the
+> possibility of false positives. Steven is loosing critically important logs,
+> after all.
 > 
 > 
-> I think you know that, although you didn't mention it in the change log,
-> because you've called the new symbol __system_call. But that is not a
-> great name either because that's not what it does.
+> by the way,
+> does this `nmi_print_seq' bypass even fix anything for Steven?
 
-Yes, you're right. I used __system_call since I felt that it won't cause 
-confusion like syscall_exit did. I agree it's not a great name, but we 
-need _some_ label other than system_call if we want to allow probing at 
-this point.
+I think that this is the most important question.
 
-Also, if I'm reading this right, there is no other place to probe if we 
-want to capture all system call entries.
-
-So, I felt this would be good to have.
-
-> 
-> > diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-> > index 380361c0bb6a..e030ce34dd66 100644
-> > --- a/arch/powerpc/kernel/entry_64.S
-> > +++ b/arch/powerpc/kernel/entry_64.S
-> > @@ -176,7 +176,7 @@ system_call:			/* label this so stack traces look sane */
-> >  	mtctr   r12
-> >  	bctrl			/* Call handler */
-> >  
-> > -.Lsyscall_exit:
-> > +__system_call:
-> >  	std	r3,RESULT(r1)
-> >  	CURRENT_THREAD_INFO(r12, r1)
->   
-> Why can't we kprobe the std and the rotate to current thread info?
-> 
-> Is the real no-probe point just here, prior to the clearing of MSR_RI ?
-> 
-> 	ld	r8,_MSR(r1)
-> #ifdef CONFIG_PPC_BOOK3S
-> 	/* No MSR:RI on BookE */
-
-We can probe at all those places, just not once MSR_RI is unset. So, the 
-no-probe point is just *after* the mtmsrd.
-
-However, for kprobe blacklisting, the granularity is at a function level 
-(or ASM labels). As such, we will have to blacklist all of 
-syscall_exit/__system_call.
+Steven, does the patch from
+https://lkml.kernel.org/r/20170420131154.GL3452@pathway.suse.cz
+help you to see the debug messages, please?
 
 
-Regards,
-Naveen
+> it sort of
+> can, in theory, but just in theory. so may be we need direct message flush
+> from NMI handler (printk->console_unlock), which will be a really big problem.
+
+I thought about it a lot and got scared where this might go.
+We need to balance the usefulness and the complexity of the solution.
+
+It took one year to discover this regression. Before it was
+suggested to avoid calling printk() in NMI context at all.
+Now, we are trying to fix printk() to handle MBs of messages
+in NMI context.
+
+If my proposed patch solves the problem for Steven, I would still
+like to get similar solution in. It is not that complex and helps
+to bypass the limited per-CPU buffer in most cases. I always thought
+that 8kB might be not enough in some cases.
+
+Note that my patch is very defensive. It uses the main log buffer
+only when it is really safe. It has higher potential for unneeded
+fallback but if it works for Steven (really existing usecase), ...
+
+On the other hand, I would prefer to avoid any much more complex
+solution until we have a real reports that they are needed.
+
+Also we need to look for alternatives. There is a chance
+to create crashdump and get the ftrace messages from it.
+Also this might be scenario when we might need to suggest
+the early_printk() patchset from Peter Zijlstra.
+
+
+> logbuf might not be big enough for 4890096 messages (Steven's report
+> mentions "Lost 4890096 message(s)!"). we are counting on the fact that
+> in case of `nmi_print_seq' bypass some other CPU will call console_unlock()
+> and print pending logbuf messages, but this is not guaranteed and the
+> messages can be dropped even from logbuf.
+
+Yup. I tested the patch here and I needed to increase the main log buffer
+size to see all ftrace messages. Fortunately, it was possible to use a really
+huge global buffer. But it is not realistic to use huge per-CPU ones.
+
+Best Regards,
+Petr
