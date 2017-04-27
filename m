@@ -1,42 +1,19 @@
-Return-Path: <pmladek@suse.com>
-Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
+Return-Path: <srs0=wh99=4d=kernel.crashing.org=benh@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wDJ1b5WS6zDq72
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Apr 2017 23:38:26 +1000 (AEST)
-Date: Thu, 27 Apr 2017 15:38:19 +0200
-From: Petr Mladek <pmladek@suse.com>
-To: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>,
- Steven Rostedt <rostedt@goodmis.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
- Peter Zijlstra <peterz@infradead.org>,
- Russell King <rmk+kernel@arm.linux.org.uk>,
- Daniel Thompson <daniel.thompson@linaro.org>,
- Jiri Kosina <jkosina@suse.com>, Ingo Molnar <mingo@redhat.com>,
- Thomas Gleixner <tglx@linutronix.de>,
- Chris Metcalf <cmetcalf@ezchip.com>, linux-kernel@vger.kernel.org,
- x86@kernel.org, linux-arm-kernel@lists.infradead.org,
- adi-buildroot-devel@lists.sourceforge.net,
- linux-cris-kernel@axis.com, linux-mips@linux-mips.org,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
- Jan Kara <jack@suse.cz>, Ralf Baechle <ralf@linux-mips.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- David Miller <davem@davemloft.net>
-Subject: Re: [PATCH v5 1/4] printk/nmi: generic solution for safe printk in NMI
-Message-ID: <20170427133819.GW3452@pathway.suse.cz>
-References: <1461239325-22779-1-git-send-email-pmladek@suse.com>
- <1461239325-22779-2-git-send-email-pmladek@suse.com>
- <20170419131341.76bc7634@gandalf.local.home>
- <20170420033112.GB542@jagdpanzerIV.localdomain>
- <20170420131154.GL3452@pathway.suse.cz>
- <20170421015724.GA586@jagdpanzerIV.localdomain>
- <20170421120627.GO3452@pathway.suse.cz>
- <20170424021747.GA630@jagdpanzerIV.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170424021747.GA630@jagdpanzerIV.localdomain>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wDJRp1cRQzDqBQ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Apr 2017 23:57:42 +1000 (AEST)
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3wDJRn6VMqz8sv9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Apr 2017 23:57:41 +1000 (AEST)
+Message-ID: <1493301446.25766.276.camel@kernel.crashing.org>
+Subject: [PATCH] powerpc/xive: Fix/improve verbose debug output
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linuxppc-dev@ozlabs.org
+Date: Thu, 27 Apr 2017 15:57:26 +0200
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,86 +23,117 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon 2017-04-24 11:17:47, Sergey Senozhatsky wrote:
-> On (04/21/17 14:06), Petr Mladek wrote:
-> [..]
-> > > I agree that this_cpu_read(printk_context) covers slightly more than
-> > > logbuf_lock scope, so we may get positive this_cpu_read(printk_context)
-> > > with unlocked logbuf_lock, but I don't tend to think that it's a big
-> > > problem.
-> > 
-> > PRINTK_SAFE_CONTEXT is set also in call_console_drivers().
-> > It might take rather long and logbuf_lock is availe. So, it is
-> > noticeable source of false positives.
-> 
-> yes, agree.
-> 
-> probably we need additional printk_safe annotations for
-> 		"logbuf_lock is locked from _this_ CPU"
-> 
-> false positives there can be very painful.
-> 
-> [..]
-> > 	if (raw_spin_is_locked(&logbuf_lock))
-> > 		this_cpu_or(printk_context, PRINTK_NMI_CONTEXT_MASK);
-> > 	else
-> > 		this_cpu_or(printk_context, PRINTK_NMI_DEFERRED_CONTEXT_MASK);
-> 
-> well, if everyone is fine with logbuf_lock access from every CPU from every
-> NMI then I won't object either. but may be it makes sense to reduce the
-> possibility of false positives. Steven is loosing critically important logs,
-> after all.
-> 
-> 
-> by the way,
-> does this `nmi_print_seq' bypass even fix anything for Steven?
+The existing verbose debug code doesn't build when enabled.
 
-I think that this is the most important question.
+This fixes it and generally improves the output to make it
+more useful.
 
-Steven, does the patch from
-https://lkml.kernel.org/r/20170420131154.GL3452@pathway.suse.cz
-help you to see the debug messages, please?
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
+ arch/powerpc/sysdev/xive/common.c | 37 ++++++++++++++++++++++++++-----------
+ 1 file changed, 26 insertions(+), 11 deletions(-)
 
-
-> it sort of
-> can, in theory, but just in theory. so may be we need direct message flush
-> from NMI handler (printk->console_unlock), which will be a really big problem.
-
-I thought about it a lot and got scared where this might go.
-We need to balance the usefulness and the complexity of the solution.
-
-It took one year to discover this regression. Before it was
-suggested to avoid calling printk() in NMI context at all.
-Now, we are trying to fix printk() to handle MBs of messages
-in NMI context.
-
-If my proposed patch solves the problem for Steven, I would still
-like to get similar solution in. It is not that complex and helps
-to bypass the limited per-CPU buffer in most cases. I always thought
-that 8kB might be not enough in some cases.
-
-Note that my patch is very defensive. It uses the main log buffer
-only when it is really safe. It has higher potential for unneeded
-fallback but if it works for Steven (really existing usecase), ...
-
-On the other hand, I would prefer to avoid any much more complex
-solution until we have a real reports that they are needed.
-
-Also we need to look for alternatives. There is a chance
-to create crashdump and get the ftrace messages from it.
-Also this might be scenario when we might need to suggest
-the early_printk() patchset from Peter Zijlstra.
-
-
-> logbuf might not be big enough for 4890096 messages (Steven's report
-> mentions "Lost 4890096 message(s)!"). we are counting on the fact that
-> in case of `nmi_print_seq' bypass some other CPU will call console_unlock()
-> and print pending logbuf messages, but this is not guaranteed and the
-> messages can be dropped even from logbuf.
-
-Yup. I tested the patch here and I needed to increase the main log buffer
-size to see all ftrace messages. Fortunately, it was possible to use a really
-huge global buffer. But it is not realistic to use huge per-CPU ones.
-
-Best Regards,
-Petr
+diff --git a/arch/powerpc/sysdev/xive/common.c b/arch/powerpc/sysdev/xive/common.c
+index 6a98efb..2305aa9 100644
+--- a/arch/powerpc/sysdev/xive/common.c
++++ b/arch/powerpc/sysdev/xive/common.c
+@@ -143,7 +143,6 @@ static u32 xive_scan_interrupts(struct xive_cpu *xc, bool just_peek)
+ 		struct xive_q *q;
+ 
+ 		prio = ffs(xc->pending_prio) - 1;
+-		DBG_VERBOSE("scan_irq: trying prio %d\n", prio);
+ 
+ 		/* Try to fetch */
+ 		irq = xive_read_eq(&xc->queue[prio], just_peek);
+@@ -171,12 +170,18 @@ static u32 xive_scan_interrupts(struct xive_cpu *xc, bool just_peek)
+ 	}
+ 
+ 	/* If nothing was found, set CPPR to 0xff */
+-	if (irq == 0)
++	if (irq == 0) {
+ 		prio = 0xff;
++		DBG_VERBOSE("scan_irq(%d): nothing found\n", just_peek);
++	} else {
++		DBG_VERBOSE("scan_irq(%d): found irq %d prio %d\n",
++			    just_peek, irq, prio);
++	}
+ 
+ 	/* Update HW CPPR to match if necessary */
+ 	if (prio != xc->cppr) {
+-		DBG_VERBOSE("scan_irq: adjusting CPPR to %d\n", prio);
++		DBG_VERBOSE("scan_irq(%d): adjusting CPPR %d->%d\n",
++			    just_peek, xc->cppr, prio);
+ 		xc->cppr = prio;
+ 		out_8(xive_tima + xive_tima_offset + TM_CPPR, prio);
+ 	}
+@@ -260,7 +265,7 @@ static unsigned int xive_get_irq(void)
+ 	/* Scan our queue(s) for interrupts */
+ 	irq = xive_scan_interrupts(xc, false);
+ 
+-	DBG_VERBOSE("get_irq: got irq 0x%x, new pending=0x%02x\n",
++	DBG_VERBOSE("get_irq: got irq %d new pending=0x%02x\n",
+ 	    irq, xc->pending_prio);
+ 
+ 	/* Return pending interrupt if any */
+@@ -282,7 +287,7 @@ static unsigned int xive_get_irq(void)
+ static void xive_do_queue_eoi(struct xive_cpu *xc)
+ {
+ 	if (xive_scan_interrupts(xc, true) != 0) {
+-		DBG_VERBOSE("eoi: pending=0x%02x\n", xc->pending_prio);
++		DBG_VERBOSE("eoi_irq: more pending !\n");
+ 		force_external_irq_replay();
+ 	}
+ }
+@@ -327,11 +332,13 @@ void xive_do_source_eoi(u32 hw_irq, struct xive_irq_data *xd)
+ 			in_be64(xd->eoi_mmio);
+ 		else {
+ 			eoi_val = xive_poke_esb(xd, XIVE_ESB_SET_PQ_00);
+-			DBG_VERBOSE("eoi_val=%x\n", offset, eoi_val);
++			DBG_VERBOSE("hwirq 0x%x eoi_val=%x\n", hw_irq, eoi_val);
+ 
+ 			/* Re-trigger if needed */
+-			if ((eoi_val & XIVE_ESB_VAL_Q) && xd->trig_mmio)
++			if ((eoi_val & XIVE_ESB_VAL_Q) && xd->trig_mmio) {
++				DBG_VERBOSE(" -> eoi retrigger !\n");
+ 				out_be64(xd->trig_mmio, 0);
++			}
+ 		}
+ 	}
+ }
+@@ -380,10 +387,15 @@ static void xive_do_source_set_mask(struct xive_irq_data *xd,
+ 	if (mask) {
+ 		val = xive_poke_esb(xd, XIVE_ESB_SET_PQ_01);
+ 		xd->saved_p = !!(val & XIVE_ESB_VAL_P);
+-	} else if (xd->saved_p)
+-		xive_poke_esb(xd, XIVE_ESB_SET_PQ_10);
+-	else
+-		xive_poke_esb(xd, XIVE_ESB_SET_PQ_00);
++		DBG_VERBOSE("masking val=%llx, sp=%d\n",
++			    val, xd->saved_p);
++	} else {
++		DBG_VERBOSE("unmasking sp=%d\n", xd->saved_p);
++		if (xd->saved_p)
++			xive_poke_esb(xd, XIVE_ESB_SET_PQ_10);
++		else
++			xive_poke_esb(xd, XIVE_ESB_SET_PQ_00);
++	}
+ }
+ 
+ /*
+@@ -526,6 +538,7 @@ static unsigned int xive_irq_startup(struct irq_data *d)
+ 
+ 	pr_devel("xive_irq_startup: irq %d [0x%x] data @%p\n",
+ 		 d->irq, hw_irq, d);
++	pr_devel("  eoi_mmio=%p trig_mmio=%p\n", xd->eoi_mmio, xd->trig_mmio);
+ 
+ #ifdef CONFIG_PCI_MSI
+ 	/*
+@@ -754,6 +767,8 @@ static int xive_irq_retrigger(struct irq_data *d)
+ 	if (WARN_ON(xd->flags & XIVE_IRQ_FLAG_LSI))
+ 		return 0;
+ 
++	DBG_VERBOSE("retrigger irq %d\n", d->irq);
++
+ 	/*
+ 	 * To perform a retrigger, we first set the PQ bits to
+ 	 * 11, then perform an EOI.
