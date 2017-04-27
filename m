@@ -1,23 +1,46 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wDGLF04vWzDq72
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Apr 2017 22:22:45 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Paul Mackerras <paulus@ozlabs.org>
-Cc: linuxppc-dev@ozlabs.org, kvm-ppc@vger.kernel.org, kvm@vger.kernel.org,
- benh@kernel.crashing.org
-Subject: Re: [PATCH v3] KVM: PPC: Book3S HV: Native usage of the XIVE
- interrupt controller
-In-Reply-To: <20170427101230.GA22113@fergus.ozlabs.ibm.com>
-References: <1493172450-19636-1-git-send-email-mpe@ellerman.id.au>
- <20170426121330.GA12057@fergus.ozlabs.ibm.com>
- <20170427101230.GA22113@fergus.ozlabs.ibm.com>
-Date: Thu, 27 Apr 2017 22:22:41 +1000
-Message-ID: <874lxa11m6.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wDGfM08BbzDq72
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Apr 2017 22:36:42 +1000 (AEST)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v3RCY1u1095645
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Apr 2017 08:36:32 -0400
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2a3fk6kgpq-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Apr 2017 08:36:32 -0400
+Received: from localhost
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
+ Thu, 27 Apr 2017 22:36:29 +1000
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v3RCaJKM62783652
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Apr 2017 22:36:27 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v3RCZrok022593
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Apr 2017 22:35:53 +1000
+Date: Thu, 27 Apr 2017 18:05:36 +0530
+From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Anton Blanchard <anton@samba.org>,
+ Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>,
+ Masami Hiramatsu <mhiramat@kernel.org>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v2 2/3] powerpc/kprobes: un-blacklist system_call() from
+ kprobes
+References: <cover.1493274843.git.naveen.n.rao@linux.vnet.ibm.com>
+ <e15c0617dbf4ff85d3e8f91b7a3ef8e2071b581d.1493274843.git.naveen.n.rao@linux.vnet.ibm.com>
+ <87d1by17b0.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <87d1by17b0.fsf@concordia.ellerman.id.au>
+Message-Id: <20170427123536.GB3313@naverao1-tp.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,15 +50,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Paul Mackerras <paulus@ozlabs.org> writes:
+On 2017/04/27 08:19PM, Michael Ellerman wrote:
+> "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> writes:
+> 
+> > It is actually safe to probe system_call() in entry_64.S, but only till
+> > .Lsyscall_exit. To allow this, convert .Lsyscall_exit to a non-local
+> > symbol __system_call() and blacklist that symbol, rather than
+> > system_call().
+> 
+> I'm not sure I like this. The reason we made it a local symbol in the
+> first place is because it made backtraces look odd:
+> 
+>   commit 4c3b21686111e0ac6018469dacbc5549f9915cf8
+>   Author:     Michael Ellerman <mpe@ellerman.id.au>
+>   AuthorDate: Fri Dec 5 21:16:59 2014 +1100
+>   
+>   powerpc/kernel: Make syscall_exit a local label
+>   
+>   Currently when we back trace something that is in a syscall we see
+>   something like this:
+>   
+>   [c000000000000000] [c000000000000000] SyS_read+0x6c/0x110
+>   [c000000000000000] [c000000000000000] syscall_exit+0x0/0x98
+>   
+>   Although it's entirely correct, seeing syscall_exit at the bottom can be
+>   confusing - we were exiting from a syscall and then called SyS_read() ?
+>   
+>   If we instead change syscall_exit to be a local label we get something
+>   more intuitive:
+>   
+>   [c0000001fa46fde0] [c00000000026719c] SyS_read+0x6c/0x110
+>   [c0000001fa46fe30] [c000000000009264] system_call+0x38/0xd0
+>   
+>   ie. we were handling a system call, and it was SyS_read().
+> 
+> 
+> I think you know that, although you didn't mention it in the change log,
+> because you've called the new symbol __system_call. But that is not a
+> great name either because that's not what it does.
 
-> To get this to compile for all my test configs takes this additional
-> patch.  I test-build configs with PR KVM and not HV (both modular and
-> built-in) and a config with HV enabled but CONFIG_KVM_XICS=n.  Please
-> squash this into your topic branch.
+Yes, you're right. I used __system_call since I felt that it won't cause 
+confusion like syscall_exit did. I agree it's not a great name, but we 
+need _some_ label other than system_call if we want to allow probing at 
+this point.
 
-Thanks, squashed and pushed as:
+Also, if I'm reading this right, there is no other place to probe if we 
+want to capture all system call entries.
 
-5af50993850a ("KVM: PPC: Book3S HV: Native usage of the XIVE interrupt controller")
+So, I felt this would be good to have.
 
-cheers
+> 
+> > diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
+> > index 380361c0bb6a..e030ce34dd66 100644
+> > --- a/arch/powerpc/kernel/entry_64.S
+> > +++ b/arch/powerpc/kernel/entry_64.S
+> > @@ -176,7 +176,7 @@ system_call:			/* label this so stack traces look sane */
+> >  	mtctr   r12
+> >  	bctrl			/* Call handler */
+> >  
+> > -.Lsyscall_exit:
+> > +__system_call:
+> >  	std	r3,RESULT(r1)
+> >  	CURRENT_THREAD_INFO(r12, r1)
+>   
+> Why can't we kprobe the std and the rotate to current thread info?
+> 
+> Is the real no-probe point just here, prior to the clearing of MSR_RI ?
+> 
+> 	ld	r8,_MSR(r1)
+> #ifdef CONFIG_PPC_BOOK3S
+> 	/* No MSR:RI on BookE */
+
+We can probe at all those places, just not once MSR_RI is unset. So, the 
+no-probe point is just *after* the mtmsrd.
+
+However, for kprobe blacklisting, the granularity is at a function level 
+(or ASM labels). As such, we will have to blacklist all of 
+syscall_exit/__system_call.
+
+
+Regards,
+Naveen
