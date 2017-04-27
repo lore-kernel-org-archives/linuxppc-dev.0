@@ -1,50 +1,44 @@
-Return-Path: <srs0=6oba=4d=au1.ibm.com=alastair@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wD4GW0276zDqBN
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Apr 2017 14:48:51 +1000 (AEST)
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3wD4GV6gxRz8sWc
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Apr 2017 14:48:50 +1000 (AEST)
+Return-Path: <vaibhav@linux.vnet.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3wD4GV3DRJz9s3T
- for <linuxppc-dev@ozlabs.org>; Thu, 27 Apr 2017 14:48:50 +1000 (AEST)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wD54T0kSlzDqC2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Apr 2017 15:25:12 +1000 (AEST)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v3R4mlBG051076
- for <linuxppc-dev@ozlabs.org>; Thu, 27 Apr 2017 00:48:49 -0400
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2a34vxhfdw-1
+ v3R5OF0u146725
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Apr 2017 01:25:04 -0400
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2a2xcmbcqy-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Thu, 27 Apr 2017 00:48:48 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Apr 2017 01:25:04 -0400
 Received: from localhost
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <alastair@au1.ibm.com>;
- Thu, 27 Apr 2017 14:48:44 +1000
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v3R4mW6258065044
- for <linuxppc-dev@ozlabs.org>; Thu, 27 Apr 2017 14:48:40 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v3R4m7fB002329
- for <linuxppc-dev@ozlabs.org>; Thu, 27 Apr 2017 14:48:07 +1000
-Subject: Re: [PATCH v2] cxl: Prevent IRQ storm
-From: "Alastair D'Silva" <alastair@au1.ibm.com>
-To: Andrew Donnellan <andrew.donnellan@au1.ibm.com>, linuxppc-dev@ozlabs.org
-Cc: frederic.barrat@fr.ibm.com
-Date: Thu, 27 Apr 2017 14:47:43 +1000
-In-Reply-To: <19926571-7158-0ad8-4bf4-aa20abf23092@au1.ibm.com>
-References: <20170427013721.2138-1-alastair@au1.ibm.com>
- <19926571-7158-0ad8-4bf4-aa20abf23092@au1.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Message-Id: <1493268463.3426.23.camel@au1.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <vaibhav@linux.vnet.ibm.com>;
+ Thu, 27 Apr 2017 15:25:00 +1000
+Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v3R5OomP66191386
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Apr 2017 15:24:58 +1000
+Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
+ by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v3R5OPgl027308
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Apr 2017 15:24:26 +1000
+From: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>,
+ Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ Ian Munsie <imunsie@au1.ibm.com>,
+ Christophe Lombard <christophe_lombard@fr.ibm.com>,
+ Philippe Bergheaud <philippe.bergheaud@fr.ibm.com>,
+ Greg Kurz <gkurz@linux.vnet.ibm.com>,
+ "Alastair D'Silva" <alastair@au1.ibm.com>, stable@vger.kernel.org
+Subject: [PATCH-RESEND v4] cxl: Force context lock during EEH flow
+Date: Thu, 27 Apr 2017 10:53:25 +0530
+Message-Id: <20170427052325.11818-1-vaibhav@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -54,41 +48,113 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2017-04-27 at 14:41 +1000, Andrew Donnellan wrote:
-On 27/04/17 11:37, Alastair D'Silva wrote:
-> > From: Alastair D'Silva <alastair@d-silva.org>
-> > 
-> > In some situations, a faulty AFU slice may create an interrupt
-> > storm,
-> > rendering the machine unusable. Since these interrupts are
-> > informational
-> > only, present the interrupt once, then mask it off to prevent it
-> > from
-> > being retriggered until the card is reset.
-> > 
-> > Changelog:
-> > v2
-> > 	Rebase against linux-next
-> 
-> The patch changelog shouldn't be part of the commit message - it
-> should 
-> go under a "---" line after the sign-off so it doesn't get included
-> in 
-> the final commit.
-> 
-> Also now that I've taken a second look, I think the summary line of
-> the 
-> commit message could be more descriptive, something like:
-> 
-> "cxl: mask slice error interrupt after first occurrence"
-> 
-> or something to that effect?
-> 
+During an eeh event when the cxl card is fenced and card sysfs attr
+perst_reloads_same_image is set following warning message is seen in the
+kernel logs:
 
-Ok
+ [   60.622727] Adapter context unlocked with 0 active contexts
+ [   60.622762] ------------[ cut here ]------------
+ [   60.622771] WARNING: CPU: 12 PID: 627 at
+ ../drivers/misc/cxl/main.c:325 cxl_adapter_context_unlock+0x60/0x80 [cxl]
 
+Even though this warning is harmless, it clutters the kernel log
+during an eeh event. This warning is triggered as the EEH callback
+cxl_pci_error_detected doesn't obtain a context-lock before forcibly
+detaching all active context and when context-lock is released during
+call to cxl_configure_adapter from cxl_pci_slot_reset, a warning in
+cxl_adapter_context_unlock is triggered.
+
+To fix this warning, we acquire the adapter context-lock via
+cxl_adapter_context_lock() in the eeh callback
+cxl_pci_error_detected() once all the virtual AFU PHBs are notified
+and their contexts detached. The context-lock is released in
+cxl_pci_slot_reset() after the adapter is successfully reconfigured
+and before the we call the slot_reset callback on slice attached
+device-drivers.
+
+Cc: stable@vger.kernel.org
+Fixes: 70b565bbdb91("cxl: Prevent adapter reset if an active context exists")
+Reported-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Signed-off-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+Acked-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+Reviewed-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
+Tested-by: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
+---
+Change-Log:
+
+Resend
+- Added Acks and Sign-offs.
+
+v3..v4
+- Moved the call to context-unlock from cxl_pci_resume to
+cxl_pci_slot_reset to let cxlflash module activate its master context
+during slot reset. (Fred)
+
+v2..v3
+- As discussed with Fred removed function
+cxl_adapter_context_force_lock() which may potentially expose the code
+to deadlock in the future.
+-  Other details of changes in cxl_pci_error_detected() to fix an
+earlier issue of eeh callbacks not being passed on to all slices, is
+being reworked as a separate patch.
+
+v2..v1
+- Moved the call to cxl_adapter_context_force_lock() from
+cxl_pci_error_detected() to cxl_remove. (Fred)
+---
+ drivers/misc/cxl/pci.c | 19 +++++++++++++++++--
+ 1 file changed, 17 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
+index b27ea98..dd9a128 100644
+--- a/drivers/misc/cxl/pci.c
++++ b/drivers/misc/cxl/pci.c
+@@ -1496,8 +1496,6 @@ static int cxl_configure_adapter(struct cxl *adapter, struct pci_dev *dev)
+ 	if ((rc = cxl_native_register_psl_err_irq(adapter)))
+ 		goto err;
+ 
+-	/* Release the context lock as adapter is configured */
+-	cxl_adapter_context_unlock(adapter);
+ 	return 0;
+ 
+ err:
+@@ -1596,6 +1594,9 @@ static struct cxl *cxl_pci_init_adapter(struct pci_dev *dev)
+ 	if ((rc = cxl_sysfs_adapter_add(adapter)))
+ 		goto err_put1;
+ 
++	/* Release the context lock as adapter is configured */
++	cxl_adapter_context_unlock(adapter);
++
+ 	return adapter;
+ 
+ err_put1:
+@@ -1895,6 +1896,13 @@ static pci_ers_result_t cxl_pci_error_detected(struct pci_dev *pdev,
+ 		cxl_ops->afu_deactivate_mode(afu, afu->current_mode);
+ 		pci_deconfigure_afu(afu);
+ 	}
++
++	/* should take the context lock here */
++	if (cxl_adapter_context_lock(adapter) != 0)
++		dev_warn(&adapter->dev,
++			 "Couldn't take context lock with %d active-contexts\n",
++			 atomic_read(&adapter->contexts_num));
++
+ 	cxl_deconfigure_adapter(adapter);
+ 
+ 	return result;
+@@ -1913,6 +1921,13 @@ static pci_ers_result_t cxl_pci_slot_reset(struct pci_dev *pdev)
+ 	if (cxl_configure_adapter(adapter, pdev))
+ 		goto err;
+ 
++	/*
++	 * Unlock context activation for the adapter. Ideally this should be
++	 * done in cxl_pci_resume but cxlflash module tries to activate the
++	 * master context as part of slot_reset callback.
++	 */
++	cxl_adapter_context_unlock(adapter);
++
+ 	for (i = 0; i < adapter->slices; i++) {
+ 		afu = adapter->afu[i];
+ 
 -- 
-Alastair D'Silva
-Open Source Developer
-Linux Technology Centre, IBM Australia
-mob: 0423 762 819
+2.9.3
