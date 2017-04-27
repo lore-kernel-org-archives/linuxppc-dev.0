@@ -2,15 +2,15 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wDCsF13M2zDqBJ
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Apr 2017 20:30:57 +1000 (AEST)
-In-Reply-To: <1493204267-5752-1-git-send-email-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wDCsG0JYrzDqCC
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Apr 2017 20:30:58 +1000 (AEST)
+In-Reply-To: <1493213240-5260-1-git-send-email-mpe@ellerman.id.au>
 To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: aneesh.kumar@linux.vnet.ibm.com, npiggin@gmail.com, ego@linux.vnet.ibm.com
-Subject: Re: powerpc/powernv: Fix oops on P9 DD1 in cause_ipi()
-Message-Id: <3wDCsF059Pz9sNY@ozlabs.org>
-Date: Thu, 27 Apr 2017 20:30:56 +1000 (AEST)
+Cc: aneesh.kumar@linux.vnet.ibm.com, anton@samba.org
+Subject: Re: [v2,1/2] powerpc/mm/radix: Optimise Page Walk Cache flush
+Message-Id: <3wDCsF6P2Sz9sNZ@ozlabs.org>
+Date: Thu, 27 Apr 2017 20:30:57 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,32 +20,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2017-04-26 at 10:57:47 UTC, Michael Ellerman wrote:
-> Recently we merged the native xive support for Power9, and then separately some
-> reworks for doorbell IPI support. In isolation both series were OK, but the
-> merged result had a bug in one case.
+On Wed, 2017-04-26 at 13:27:19 UTC, Michael Ellerman wrote:
+> Currently we implement flushing of the page walk cache (PWC) by calling
+> _tlbiel_pid() with a RIC (Radix Invalidation Control) value of 1 which says to
+> only flush the PWC.
 > 
-> On P9 DD1 we use pnv_p9_dd1_cause_ipi() which tries to use doorbells, and then
-> falls back to the interrupt controller. However the fallback is implemented by
-> calling icp_ops->cause_ipi. But now that xive support is merged we might be
-> using xive, in which case icp_ops is not initialised, it's a xics specific
-> structure. This leads to an oops such as:
+> But _tlbiel_pid() loops over each set (congruence class) of the TLB, which is
+> not necessary when we're just flushing the PWC.
 > 
->   Unable to handle kernel paging request for data at address 0x00000028
->   Oops: Kernel access of bad area, sig: 11 [#1]
->   NIP pnv_p9_dd1_cause_ipi+0x74/0xe0
->   LR smp_muxed_ipi_message_pass+0x54/0x70
+> In fact the set argument is ignored for a PWC flush, so essentially we're just
+> flushing the PWC 127 extra times for no benefit.
 > 
-> To fix it, rather than using icp_ops which might be NULL, have both xics and
-> xive set smp_ops->cause_ipi, and then in the powernv code we save that as
-> ic_cause_ipi before overriding smp_ops->cause_ipi. For paranoia add a WARN_ON()
-> to check if somehow smp_ops->cause_ipi is NULL.
+> Fix it by adding tlbiel_pwc() which just does a single flush of the PWC.
 > 
-> Fixes: b866cc2199d6 ("powerpc: Change the doorbell IPI calling convention")
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> [mpe: Split out of combined patch, drop _ in name, rewrite change log]
 > Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
-Applied to powerpc next.
+Series applied to powerpc next.
 
-https://git.kernel.org/powerpc/c/45b21cfeb22087795f0b49397fbe52
+https://git.kernel.org/powerpc/c/5a9853946c2e7a5ef9ef5302ecada6
 
 cheers
