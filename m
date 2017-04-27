@@ -1,15 +1,15 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wDCsD2RVlzDq72
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Apr 2017 20:30:56 +1000 (AEST)
-In-Reply-To: <596f97422c48baa55b3e197ada4d9faa17a5b66b.1493128546.git.naveen.n.rao@linux.vnet.ibm.com>
-To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wDCsF13M2zDqBJ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Apr 2017 20:30:57 +1000 (AEST)
+In-Reply-To: <1493204267-5752-1-git-send-email-mpe@ellerman.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org, Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [REBASED,v4,1/2] powerpc: split ftrace bits into a separate file
-Message-Id: <3wDCsD14bkz9sNX@ozlabs.org>
+Cc: aneesh.kumar@linux.vnet.ibm.com, npiggin@gmail.com, ego@linux.vnet.ibm.com
+Subject: Re: powerpc/powernv: Fix oops on P9 DD1 in cause_ipi()
+Message-Id: <3wDCsF059Pz9sNY@ozlabs.org>
 Date: Thu, 27 Apr 2017 20:30:56 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -20,19 +20,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2017-04-25 at 13:55:53 UTC, "Naveen N. Rao" wrote:
-> entry_*.S now includes a lot more than just kernel entry/exit code. As a
-> first step at cleaning this up, let's split out the ftrace bits into
-> separate files. Also move all related tracing code into a new trace/
-> subdirectory.
+On Wed, 2017-04-26 at 10:57:47 UTC, Michael Ellerman wrote:
+> Recently we merged the native xive support for Power9, and then separately some
+> reworks for doorbell IPI support. In isolation both series were OK, but the
+> merged result had a bug in one case.
 > 
-> No functional changes.
+> On P9 DD1 we use pnv_p9_dd1_cause_ipi() which tries to use doorbells, and then
+> falls back to the interrupt controller. However the fallback is implemented by
+> calling icp_ops->cause_ipi. But now that xive support is merged we might be
+> using xive, in which case icp_ops is not initialised, it's a xics specific
+> structure. This leads to an oops such as:
 > 
-> Suggested-by: Michael Ellerman <mpe@ellerman.id.au>
-> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+>   Unable to handle kernel paging request for data at address 0x00000028
+>   Oops: Kernel access of bad area, sig: 11 [#1]
+>   NIP pnv_p9_dd1_cause_ipi+0x74/0xe0
+>   LR smp_muxed_ipi_message_pass+0x54/0x70
+> 
+> To fix it, rather than using icp_ops which might be NULL, have both xics and
+> xive set smp_ops->cause_ipi, and then in the powernv code we save that as
+> ic_cause_ipi before overriding smp_ops->cause_ipi. For paranoia add a WARN_ON()
+> to check if somehow smp_ops->cause_ipi is NULL.
+> 
+> Fixes: b866cc2199d6 ("powerpc: Change the doorbell IPI calling convention")
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
-Series applied to powerpc next, thanks.
+Applied to powerpc next.
 
-https://git.kernel.org/powerpc/c/4781f015d35ce2e83632b6a938093b
+https://git.kernel.org/powerpc/c/45b21cfeb22087795f0b49397fbe52
 
 cheers
