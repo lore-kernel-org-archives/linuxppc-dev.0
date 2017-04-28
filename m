@@ -1,21 +1,42 @@
-Return-Path: <matthew.brown.dev@gmail.com>
-Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
- [IPv6:2607:f8b0:400e:c00::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <shilpa.bhat@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wDjmw5ywZzDqFS
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Apr 2017 15:58:56 +1000 (AEST)
-Received: by mail-pf0-x244.google.com with SMTP id i4so2349388pfc.2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Apr 2017 22:58:56 -0700 (PDT)
-From: Matt Brown <matthew.brown.dev@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: dja@axtens.net
-Subject: [v5 2/2] raid6/altivec: Add vpermxor implementation for raid6 Q
- syndrome
-Date: Fri, 28 Apr 2017 15:58:09 +1000
-Message-Id: <20170428055809.2675-2-matthew.brown.dev@gmail.com>
-In-Reply-To: <20170428055809.2675-1-matthew.brown.dev@gmail.com>
-References: <20170428055809.2675-1-matthew.brown.dev@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wDjpg1sHqzDqG4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Apr 2017 16:00:26 +1000 (AEST)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v3S5xN09030252
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Apr 2017 02:00:09 -0400
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2a3j0m4b2t-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Apr 2017 02:00:08 -0400
+Received: from localhost
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <shilpa.bhat@linux.vnet.ibm.com>;
+ Fri, 28 Apr 2017 16:00:05 +1000
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v3S5xsLK2883912
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Apr 2017 16:00:02 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v3S5xTKm018107
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Apr 2017 15:59:29 +1000
+From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+To: jdelvare@suse.com, linux@roeck-us.net, paulus@samba.org, mpe@ellerman.id.au
+Cc: linux-hwmon@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, svaidy@linux.vnet.ibm.com,
+ ego@linux.vnet.ibm.com, akshay.adiga@linux.vnet.ibm.com,
+ andrew@aj.id.au, clg@kaod.org,
+ Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Subject: [PATCH V2] hwmon: (ibmpowernv) Add min/max attributes and current
+ sensors
+Date: Fri, 28 Apr 2017 11:29:05 +0530
+Message-Id: <1493359145-6143-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,256 +46,188 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The raid6 Q syndrome check has been optimised using the vpermxor
-instruction. This instruction was made available with POWER8, ISA version
-2.07. It allows for both vperm and vxor instructions to be done in a single
-instruction. This has been tested for correctness on a ppc64le vm with a
-basic RAID6 setup containing 5 drives.
+Add support for adding min/max values for the inband sensors copied by
+OCC to main memory. And also add current(mA) sensors to the list.
 
-The performance benchmarks are from the raid6test in the /lib/raid6/test
-directory. These results are from an IBM Firestone machine with ppc64le
-architecture. The benchmark results show a 35% speed increase over the best
-existing algorithm for powerpc (altivec). The raid6test has also been run
-on a big-endian ppc64 vm to ensure it also works for big-endian
-architectures.
-
-Performance benchmarks:
-		raid6: altivecx4 gen() 18773 MB/s
-		raid6: altivecx8 gen() 19438 MB/s
-
-		raid6: vpermxor4 gen() 25112 MB/s
-		raid6: vpermxor8 gen() 26279 MB/s
-
-Signed-off-by: Matt Brown <matthew.brown.dev@gmail.com>
+Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
 ---
-Changelog
-v5
-	- moved altivec.uc fix into other patch in series
----
- include/linux/raid/pq.h |   4 ++
- lib/raid6/Makefile      |  27 ++++++++++++-
- lib/raid6/algos.c       |   4 ++
- lib/raid6/test/Makefile |  14 ++++++-
- lib/raid6/vpermxor.uc   | 104 ++++++++++++++++++++++++++++++++++++++++++++++++
- 5 files changed, 151 insertions(+), 2 deletions(-)
- create mode 100644 lib/raid6/vpermxor.uc
+Changes from V1:
+- Add functions to get min and max attribute strings
+- Add function 'populate_sensor' to fill in the 'struct sensor_data'
+  for each sensor.
 
-diff --git a/include/linux/raid/pq.h b/include/linux/raid/pq.h
-index 4d57bba..3df9aa6 100644
---- a/include/linux/raid/pq.h
-+++ b/include/linux/raid/pq.h
-@@ -107,6 +107,10 @@ extern const struct raid6_calls raid6_avx512x2;
- extern const struct raid6_calls raid6_avx512x4;
- extern const struct raid6_calls raid6_tilegx8;
- extern const struct raid6_calls raid6_s390vx8;
-+extern const struct raid6_calls raid6_vpermxor1;
-+extern const struct raid6_calls raid6_vpermxor2;
-+extern const struct raid6_calls raid6_vpermxor4;
-+extern const struct raid6_calls raid6_vpermxor8;
+ drivers/hwmon/ibmpowernv.c | 96 +++++++++++++++++++++++++++++++++++++---------
+ 1 file changed, 77 insertions(+), 19 deletions(-)
+
+diff --git a/drivers/hwmon/ibmpowernv.c b/drivers/hwmon/ibmpowernv.c
+index 6d2e660..d59262c 100644
+--- a/drivers/hwmon/ibmpowernv.c
++++ b/drivers/hwmon/ibmpowernv.c
+@@ -50,6 +50,7 @@ enum sensors {
+ 	TEMP,
+ 	POWER_SUPPLY,
+ 	POWER_INPUT,
++	CURRENT,
+ 	MAX_SENSOR_TYPE,
+ };
  
- struct raid6_recov_calls {
- 	void (*data2)(int, size_t, int, int, void **);
-diff --git a/lib/raid6/Makefile b/lib/raid6/Makefile
-index 3057011..db095a7 100644
---- a/lib/raid6/Makefile
-+++ b/lib/raid6/Makefile
-@@ -4,7 +4,8 @@ raid6_pq-y	+= algos.o recov.o tables.o int1.o int2.o int4.o \
- 		   int8.o int16.o int32.o
+@@ -65,7 +66,8 @@ enum sensors {
+ 	{"fan", "ibm,opal-sensor-cooling-fan"},
+ 	{"temp", "ibm,opal-sensor-amb-temp"},
+ 	{"in", "ibm,opal-sensor-power-supply"},
+-	{"power", "ibm,opal-sensor-power"}
++	{"power", "ibm,opal-sensor-power"},
++	{"curr"}, /* Follows newer device tree compatible ibm,opal-sensor */
+ };
  
- raid6_pq-$(CONFIG_X86) += recov_ssse3.o recov_avx2.o mmx.o sse1.o sse2.o avx2.o avx512.o recov_avx512.o
--raid6_pq-$(CONFIG_ALTIVEC) += altivec1.o altivec2.o altivec4.o altivec8.o
-+raid6_pq-$(CONFIG_ALTIVEC) += altivec1.o altivec2.o altivec4.o altivec8.o \
-+                              vpermxor1.o vpermxor2.o vpermxor4.o vpermxor8.o
- raid6_pq-$(CONFIG_KERNEL_MODE_NEON) += neon.o neon1.o neon2.o neon4.o neon8.o
- raid6_pq-$(CONFIG_TILEGX) += tilegx8.o
- raid6_pq-$(CONFIG_S390) += s390vx8.o recov_s390xc.o
-@@ -88,6 +89,30 @@ $(obj)/altivec8.c:   UNROLL := 8
- $(obj)/altivec8.c:   $(src)/altivec.uc $(src)/unroll.awk FORCE
- 	$(call if_changed,unroll)
+ struct sensor_data {
+@@ -287,6 +289,7 @@ static int populate_attr_groups(struct platform_device *pdev)
+ 	opal = of_find_node_by_path("/ibm,opal/sensors");
+ 	for_each_child_of_node(opal, np) {
+ 		const char *label;
++		int len;
  
-+CFLAGS_vpermxor1.o += $(altivec_flags)
-+targets += vpermxor1.c
-+$(obj)/vpermxor1.c: UNROLL := 1
-+$(obj)/vpermxor1.c: $(src)/vpermxor.uc $(src)/unroll.awk FORCE
-+	$(call if_changed,unroll)
-+
-+CFLAGS_vpermxor2.o += $(altivec_flags)
-+targets += vpermxor2.c
-+$(obj)/vpermxor2.c: UNROLL := 2
-+$(obj)/vpermxor2.c: $(src)/vpermxor.uc $(src)/unroll.awk FORCE
-+	$(call if_changed,unroll)
-+
-+CFLAGS_vpermxor4.o += $(altivec_flags)
-+targets += vpermxor4.c
-+$(obj)/vpermxor4.c: UNROLL := 4
-+$(obj)/vpermxor4.c: $(src)/vpermxor.uc $(src)/unroll.awk FORCE
-+	$(call if_changed,unroll)
-+
-+CFLAGS_vpermxor8.o += $(altivec_flags)
-+targets += vpermxor8.c
-+$(obj)/vpermxor8.c: UNROLL := 8
-+$(obj)/vpermxor8.c: $(src)/vpermxor.uc $(src)/unroll.awk FORCE
-+	$(call if_changed,unroll)
-+
- CFLAGS_neon1.o += $(NEON_FLAGS)
- targets += neon1.c
- $(obj)/neon1.c:   UNROLL := 1
-diff --git a/lib/raid6/algos.c b/lib/raid6/algos.c
-index 7857049..edd4f69 100644
---- a/lib/raid6/algos.c
-+++ b/lib/raid6/algos.c
-@@ -74,6 +74,10 @@ const struct raid6_calls * const raid6_algos[] = {
- 	&raid6_altivec2,
- 	&raid6_altivec4,
- 	&raid6_altivec8,
-+	&raid6_vpermxor1,
-+	&raid6_vpermxor2,
-+	&raid6_vpermxor4,
-+	&raid6_vpermxor8,
- #endif
- #if defined(CONFIG_TILEGX)
- 	&raid6_tilegx8,
-diff --git a/lib/raid6/test/Makefile b/lib/raid6/test/Makefile
-index 2c7b60e..9c333e9 100644
---- a/lib/raid6/test/Makefile
-+++ b/lib/raid6/test/Makefile
-@@ -97,6 +97,18 @@ altivec4.c: altivec.uc ../unroll.awk
- altivec8.c: altivec.uc ../unroll.awk
- 	$(AWK) ../unroll.awk -vN=8 < altivec.uc > $@
+ 		if (np->name == NULL)
+ 			continue;
+@@ -298,10 +301,14 @@ static int populate_attr_groups(struct platform_device *pdev)
+ 		sensor_groups[type].attr_count++;
  
-+vpermxor1.c: vpermxor.uc ../unroll.awk
-+	$(AWK) ../unroll.awk -vN=1 < vpermxor.uc > $@
-+
-+vpermxor2.c: vpermxor.uc ../unroll.awk
-+	$(AWK) ../unroll.awk -vN=2 < vpermxor.uc > $@
-+
-+vpermxor4.c: vpermxor.uc ../unroll.awk
-+	$(AWK) ../unroll.awk -vN=4 < vpermxor.uc > $@
-+
-+vpermxor8.c: vpermxor.uc ../unroll.awk
-+	$(AWK) ../unroll.awk -vN=8 < vpermxor.uc > $@
-+
- int1.c: int.uc ../unroll.awk
- 	$(AWK) ../unroll.awk -vN=1 < int.uc > $@
+ 		/*
+-		 * add a new attribute for labels
++		 * add attributes for labels, min and max
+ 		 */
+ 		if (!of_property_read_string(np, "label", &label))
+ 			sensor_groups[type].attr_count++;
++		if (of_find_property(np, "sensor-data-min", &len))
++			sensor_groups[type].attr_count++;
++		if (of_find_property(np, "sensor-data-max", &len))
++			sensor_groups[type].attr_count++;
+ 	}
  
-@@ -122,7 +134,7 @@ tables.c: mktables
- 	./mktables > tables.c
+ 	of_node_put(opal);
+@@ -337,6 +344,49 @@ static void create_hwmon_attr(struct sensor_data *sdata, const char *attr_name,
+ 	sdata->dev_attr.show = show;
+ }
  
- clean:
--	rm -f *.o *.a mktables mktables.c *.uc int*.c altivec*.c neon*.c tables.c raid6test
-+	rm -f *.o *.a mktables mktables.c *.uc int*.c altivec*.c vpermxor*.c neon*.c tables.c raid6test
- 	rm -f tilegx*.c
- 
- spotless: clean
-diff --git a/lib/raid6/vpermxor.uc b/lib/raid6/vpermxor.uc
-new file mode 100644
-index 0000000..31a324d
---- /dev/null
-+++ b/lib/raid6/vpermxor.uc
-@@ -0,0 +1,104 @@
-+/*
-+ * Copyright 2017, Matt Brown, IBM Corp.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
-+ *
-+ * vpermxor$#.c
-+ *
-+ * Based on H. Peter Anvin's paper - The mathematics of RAID-6
-+ *
-+ * $#-way unrolled portable integer math RAID-6 instruction set
-+ * This file is postprocessed using unroll.awk
-+ *
-+ * vpermxor$#.c makes use of the vpermxor opcode to optimise the RAID6 Q
-+ * syndrome calculations.
-+ * This can be run on systems which have both Altivec and the vpermxor opcode.
-+ *
-+ * This instruction was introduced in POWER8 - ISA v2.07.
-+ */
-+
-+#include <linux/raid/pq.h>
-+#ifdef CONFIG_ALTIVEC
-+
-+#include <altivec.h>
-+#ifdef __KERNEL__
-+#include <asm/cputable.h>
-+#include <asm/switch_to.h>
-+#endif
-+
-+typedef vector unsigned char unative_t;
-+#define NSIZE sizeof(unative_t)
-+
-+static const vector unsigned char gf_low = {0x1e, 0x1c, 0x1a, 0x18, 0x16, 0x14,
-+					    0x12, 0x10, 0x0e, 0x0c, 0x0a, 0x08,
-+					    0x06, 0x04, 0x02,0x00};
-+static const vector unsigned char gf_high = {0xfd, 0xdd, 0xbd, 0x9d, 0x7d, 0x5d,
-+					     0x3d, 0x1d, 0xe0, 0xc0, 0xa0, 0x80,
-+					     0x60, 0x40, 0x20, 0x00};
-+
-+static void noinline raid6_vpermxor$#_gen_syndrome_real(int disks, size_t bytes,
-+							void **ptrs)
++static void populate_sensor(struct sensor_data *sdata, int od, int hd, int sid,
++			    const char *attr_name, enum sensors type,
++			    const struct attribute_group *pgroup,
++			    ssize_t (*show)(struct device *dev,
++					    struct device_attribute *attr,
++					    char *buf))
 +{
-+	u8 **dptr = (u8 **)ptrs;
-+	u8 *p, *q;
-+	int d, z, z0;
-+	unative_t wp$$, wq$$, wd$$;
++	sdata->id = sid;
++	sdata->type = type;
++	sdata->opal_index = od;
++	sdata->hwmon_index = hd;
++	create_hwmon_attr(sdata, attr_name, show);
++	pgroup->attrs[sensor_groups[type].attr_count++] = &sdata->dev_attr.attr;
++}
 +
-+	z0 = disks - 3;		/* Highest data disk */
-+	p = dptr[z0+1];		/* XOR parity */
-+	q = dptr[z0+2];		/* RS syndrome */
-+
-+	for (d = 0; d < bytes; d += NSIZE*$#) {
-+		wp$$ = wq$$ = *(unative_t *)&dptr[z0][d+$$*NSIZE];
-+
-+		for (z = z0-1; z>=0; z--) {
-+			wd$$ = *(unative_t *)&dptr[z][d+$$*NSIZE];
-+			/* P syndrome */
-+			wp$$ = vec_xor(wp$$, wd$$);
-+
-+			/*Q syndrome */
-+			asm("vpermxor %0,%1,%2,%3":"=v"(wq$$):"v"(gf_high), "v"(gf_low), "v"(wq$$));
-+			wq$$ = vec_xor(wq$$, wd$$);
-+		}
-+		*(unative_t *)&p[d+NSIZE*$$] = wp$$;
-+		*(unative_t *)&q[d+NSIZE*$$] = wq$$;
++static char *get_max_attr(enum sensors type)
++{
++	switch (type) {
++	case POWER_INPUT:
++		return "input_highest";
++	case TEMP:
++		return "max";
++	default:
++		break;
 +	}
++
++	return "highest";
 +}
 +
-+static void raid6_vpermxor$#_gen_syndrome(int disks, size_t bytes, void **ptrs)
++static char *get_min_attr(enum sensors type)
 +{
-+	preempt_disable();
-+	enable_kernel_altivec();
++	switch (type) {
++	case POWER_INPUT:
++		return "input_lowest";
++	case TEMP:
++		return "min";
++	default:
++		break;
++	}
 +
-+	raid6_vpermxor$#_gen_syndrome_real(disks, bytes, ptrs);
-+
-+	disable_kernel_altivec();
-+	preempt_enable();
++	return "lowest";
 +}
 +
-+int raid6_have_altivec_vpermxor(void);
-+#if $# == 1
-+int raid6_have_altivec_vpermxor(void)
-+{
-+	/* Check if CPU has both altivec and the vpermxor instruction*/
-+# ifdef __KERNEL__
-+	return (cpu_has_feature(CPU_FTR_ALTIVEC_COMP) &&
-+		cpu_has_feature(CPU_FTR_ARCH_207S));
-+# else
-+	return 1;
-+#endif
-+
-+}
-+#endif
-+
-+const struct raid6_calls raid6_vpermxor$# = {
-+	raid6_vpermxor$#_gen_syndrome,
-+	NULL,
-+	raid6_have_altivec_vpermxor,
-+	"vpermxor$#",
-+	0
-+};
-+#endif
+ /*
+  * Iterate through the device tree for each child of 'sensors' node, create
+  * a sysfs attribute file, the file is named by translating the DT node name
+@@ -365,6 +415,7 @@ static int create_device_attrs(struct platform_device *pdev)
+ 	for_each_child_of_node(opal, np) {
+ 		const char *attr_name;
+ 		u32 opal_index;
++		u32 hwmon_index;
+ 		const char *label;
+ 
+ 		if (np->name == NULL)
+@@ -386,9 +437,6 @@ static int create_device_attrs(struct platform_device *pdev)
+ 			continue;
+ 		}
+ 
+-		sdata[count].id = sensor_id;
+-		sdata[count].type = type;
+-
+ 		/*
+ 		 * If we can not parse the node name, it means we are
+ 		 * running on a newer device tree. We can just forget
+@@ -401,14 +449,12 @@ static int create_device_attrs(struct platform_device *pdev)
+ 			opal_index = INVALID_INDEX;
+ 		}
+ 
+-		sdata[count].opal_index = opal_index;
+-		sdata[count].hwmon_index =
+-			get_sensor_hwmon_index(&sdata[count], sdata, count);
+-
+-		create_hwmon_attr(&sdata[count], attr_name, show_sensor);
+-
+-		pgroups[type]->attrs[sensor_groups[type].attr_count++] =
+-				&sdata[count++].dev_attr.attr;
++		hwmon_index = get_sensor_hwmon_index(&sdata[count], sdata,
++						     count);
++		populate_sensor(&sdata[count], opal_index, hwmon_index,
++				sensor_id, attr_name, type, pgroups[type],
++				show_sensor);
++		count++;
+ 
+ 		if (!of_property_read_string(np, "label", &label)) {
+ 			/*
+@@ -417,16 +463,28 @@ static int create_device_attrs(struct platform_device *pdev)
+ 			 * attribute. They are related to the same
+ 			 * sensor.
+ 			 */
+-			sdata[count].type = type;
+-			sdata[count].opal_index = sdata[count - 1].opal_index;
+-			sdata[count].hwmon_index = sdata[count - 1].hwmon_index;
+ 
+ 			make_sensor_label(np, &sdata[count], label);
++			populate_sensor(&sdata[count], opal_index, hwmon_index,
++					sensor_id, "label", type, pgroups[type],
++					show_label);
++			count++;
++		}
+ 
+-			create_hwmon_attr(&sdata[count], "label", show_label);
++		if (!of_property_read_u32(np, "sensor-data-max", &sensor_id)) {
++			attr_name = get_max_attr(type);
++			populate_sensor(&sdata[count], opal_index, hwmon_index,
++					sensor_id, attr_name, type,
++					pgroups[type], show_sensor);
++			count++;
++		}
+ 
+-			pgroups[type]->attrs[sensor_groups[type].attr_count++] =
+-				&sdata[count++].dev_attr.attr;
++		if (!of_property_read_u32(np, "sensor-data-min", &sensor_id)) {
++			attr_name = get_min_attr(type);
++			populate_sensor(&sdata[count], opal_index, hwmon_index,
++					sensor_id, attr_name, type,
++					pgroups[type], show_sensor);
++			count++;
+ 		}
+ 	}
+ 
 -- 
-2.9.3
+1.8.3.1
