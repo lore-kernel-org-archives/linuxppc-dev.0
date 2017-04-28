@@ -1,24 +1,44 @@
-Return-Path: <linux@roeck-us.net>
-Received: from bh-25.webhostbox.net (bh-25.webhostbox.net [208.91.199.152])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <pmladek@suse.com>
+Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wDvnB53HPzDq7Z
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Apr 2017 23:29:50 +1000 (AEST)
-Subject: Re: [PATCH V2] hwmon: (ibmpowernv) Add min/max attributes and current
- sensors
-To: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, jdelvare@suse.com,
- paulus@samba.org, mpe@ellerman.id.au
-References: <1493359145-6143-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
-Cc: linux-hwmon@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, svaidy@linux.vnet.ibm.com,
- ego@linux.vnet.ibm.com, akshay.adiga@linux.vnet.ibm.com, andrew@aj.id.au,
- clg@kaod.org
-From: Guenter Roeck <linux@roeck-us.net>
-Message-ID: <8f9e7f79-e9ab-e0a6-d5c6-b805b42da2e5@roeck-us.net>
-Date: Fri, 28 Apr 2017 06:29:42 -0700
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wDw675CpmzDq7Z
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Apr 2017 23:44:30 +1000 (AEST)
+Date: Fri, 28 Apr 2017 15:44:23 +0200
+From: Petr Mladek <pmladek@suse.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>,
+ Steven Rostedt <rostedt@goodmis.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Russell King <rmk+kernel@arm.linux.org.uk>,
+ Daniel Thompson <daniel.thompson@linaro.org>,
+ Jiri Kosina <jkosina@suse.com>, Ingo Molnar <mingo@redhat.com>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Chris Metcalf <cmetcalf@ezchip.com>, linux-kernel@vger.kernel.org,
+ x86@kernel.org, linux-arm-kernel@lists.infradead.org,
+ adi-buildroot-devel@lists.sourceforge.net,
+ linux-cris-kernel@axis.com, linux-mips@linux-mips.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
+ Jan Kara <jack@suse.cz>, Ralf Baechle <ralf@linux-mips.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ David Miller <davem@davemloft.net>
+Subject: Re: [PATCH v5 1/4] printk/nmi: generic solution for safe printk in NMI
+Message-ID: <20170428134423.GB3452@pathway.suse.cz>
+References: <1461239325-22779-1-git-send-email-pmladek@suse.com>
+ <1461239325-22779-2-git-send-email-pmladek@suse.com>
+ <20170419131341.76bc7634@gandalf.local.home>
+ <20170420033112.GB542@jagdpanzerIV.localdomain>
+ <20170420131154.GL3452@pathway.suse.cz>
+ <20170421015724.GA586@jagdpanzerIV.localdomain>
+ <20170421120627.GO3452@pathway.suse.cz>
+ <20170424021747.GA630@jagdpanzerIV.localdomain>
+ <20170427133819.GW3452@pathway.suse.cz>
+ <20170428090226.qqoe6qbewjeo57kd@hirez.programming.kicks-ass.net>
 MIME-Version: 1.0
-In-Reply-To: <1493359145-6143-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20170428090226.qqoe6qbewjeo57kd@hirez.programming.kicks-ass.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,204 +48,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/27/2017 10:59 PM, Shilpasri G Bhat wrote:
-> Add support for adding min/max values for the inband sensors copied by
-> OCC to main memory. And also add current(mA) sensors to the list.
->
-> Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-> ---
-> Changes from V1:
-> - Add functions to get min and max attribute strings
-> - Add function 'populate_sensor' to fill in the 'struct sensor_data'
->   for each sensor.
->
->  drivers/hwmon/ibmpowernv.c | 96 +++++++++++++++++++++++++++++++++++++---------
->  1 file changed, 77 insertions(+), 19 deletions(-)
->
-> diff --git a/drivers/hwmon/ibmpowernv.c b/drivers/hwmon/ibmpowernv.c
-> index 6d2e660..d59262c 100644
-> --- a/drivers/hwmon/ibmpowernv.c
-> +++ b/drivers/hwmon/ibmpowernv.c
-> @@ -50,6 +50,7 @@ enum sensors {
->  	TEMP,
->  	POWER_SUPPLY,
->  	POWER_INPUT,
-> +	CURRENT,
->  	MAX_SENSOR_TYPE,
->  };
->
-> @@ -65,7 +66,8 @@ enum sensors {
->  	{"fan", "ibm,opal-sensor-cooling-fan"},
->  	{"temp", "ibm,opal-sensor-amb-temp"},
->  	{"in", "ibm,opal-sensor-power-supply"},
-> -	{"power", "ibm,opal-sensor-power"}
-> +	{"power", "ibm,opal-sensor-power"},
-> +	{"curr"}, /* Follows newer device tree compatible ibm,opal-sensor */
+On Fri 2017-04-28 11:02:26, Peter Zijlstra wrote:
+> On Thu, Apr 27, 2017 at 03:38:19PM +0200, Petr Mladek wrote:
+> > Also we need to look for alternatives. There is a chance
+> > to create crashdump and get the ftrace messages from it.
+> > Also this might be scenario when we might need to suggest
+> > the early_printk() patchset from Peter Zijlstra.
+> 
+> I'd be happy to repost those. I still carry them in my tree.
 
-Following up on a previous e-mail, this really _is_ odd. Any chance to fix it
-in the firmware and have current sensors return "ibm,opal-sensor-current" ?
+You do not need to if they are still the same as
+https://lkml.kernel.org/r/20161018170830.405990950@infradead.org
 
->  };
->
->  struct sensor_data {
-> @@ -287,6 +289,7 @@ static int populate_attr_groups(struct platform_device *pdev)
->  	opal = of_find_node_by_path("/ibm,opal/sensors");
->  	for_each_child_of_node(opal, np) {
->  		const char *label;
-> +		int len;
->
->  		if (np->name == NULL)
->  			continue;
-> @@ -298,10 +301,14 @@ static int populate_attr_groups(struct platform_device *pdev)
->  		sensor_groups[type].attr_count++;
->
->  		/*
-> -		 * add a new attribute for labels
-> +		 * add attributes for labels, min and max
->  		 */
->  		if (!of_property_read_string(np, "label", &label))
->  			sensor_groups[type].attr_count++;
-> +		if (of_find_property(np, "sensor-data-min", &len))
-> +			sensor_groups[type].attr_count++;
-> +		if (of_find_property(np, "sensor-data-max", &len))
-> +			sensor_groups[type].attr_count++;
->  	}
->
->  	of_node_put(opal);
-> @@ -337,6 +344,49 @@ static void create_hwmon_attr(struct sensor_data *sdata, const char *attr_name,
->  	sdata->dev_attr.show = show;
->  }
->
-> +static void populate_sensor(struct sensor_data *sdata, int od, int hd, int sid,
-> +			    const char *attr_name, enum sensors type,
-> +			    const struct attribute_group *pgroup,
-> +			    ssize_t (*show)(struct device *dev,
-> +					    struct device_attribute *attr,
-> +					    char *buf))
-> +{
-> +	sdata->id = sid;
-> +	sdata->type = type;
-> +	sdata->opal_index = od;
-> +	sdata->hwmon_index = hd;
-> +	create_hwmon_attr(sdata, attr_name, show);
-> +	pgroup->attrs[sensor_groups[type].attr_count++] = &sdata->dev_attr.attr;
-> +}
-> +
-> +static char *get_max_attr(enum sensors type)
-> +{
-> +	switch (type) {
-> +	case POWER_INPUT:
-> +		return "input_highest";
-> +	case TEMP:
-> +		return "max";
-> +	default:
-> +		break;
-> +	}
-> +
-> +	return "highest";
+I rather do not promise anything but I would like to look at them
+within next few weeks (after the merge window).
 
-This is a bit confusing. Why not 'return "highest";' in the default case above ?
-
-Also, is this correct for type == POWER_SUPPLY, ie is it "highest" vs. "max" ?
-
-Kind of odd that the firmware reports "highest/lowest" in some cases
-and "max/min" in others. Guess there is nothing we can do about that,
-just a note.
-
-> +}
-> +
-> +static char *get_min_attr(enum sensors type)
-> +{
-> +	switch (type) {
-> +	case POWER_INPUT:
-> +		return "input_lowest";
-> +	case TEMP:
-> +		return "min";
-> +	default:
-> +		break;
-> +	}
-> +
-> +	return "lowest";
-
-Same here.
-
-> +}
-> +
->  /*
->   * Iterate through the device tree for each child of 'sensors' node, create
->   * a sysfs attribute file, the file is named by translating the DT node name
-> @@ -365,6 +415,7 @@ static int create_device_attrs(struct platform_device *pdev)
->  	for_each_child_of_node(opal, np) {
->  		const char *attr_name;
->  		u32 opal_index;
-> +		u32 hwmon_index;
->  		const char *label;
->
->  		if (np->name == NULL)
-> @@ -386,9 +437,6 @@ static int create_device_attrs(struct platform_device *pdev)
->  			continue;
->  		}
->
-> -		sdata[count].id = sensor_id;
-> -		sdata[count].type = type;
-> -
->  		/*
->  		 * If we can not parse the node name, it means we are
->  		 * running on a newer device tree. We can just forget
-> @@ -401,14 +449,12 @@ static int create_device_attrs(struct platform_device *pdev)
->  			opal_index = INVALID_INDEX;
->  		}
->
-> -		sdata[count].opal_index = opal_index;
-> -		sdata[count].hwmon_index =
-> -			get_sensor_hwmon_index(&sdata[count], sdata, count);
-> -
-> -		create_hwmon_attr(&sdata[count], attr_name, show_sensor);
-> -
-> -		pgroups[type]->attrs[sensor_groups[type].attr_count++] =
-> -				&sdata[count++].dev_attr.attr;
-> +		hwmon_index = get_sensor_hwmon_index(&sdata[count], sdata,
-> +						     count);
-> +		populate_sensor(&sdata[count], opal_index, hwmon_index,
-> +				sensor_id, attr_name, type, pgroups[type],
-> +				show_sensor);
-> +		count++;
->
->  		if (!of_property_read_string(np, "label", &label)) {
->  			/*
-> @@ -417,16 +463,28 @@ static int create_device_attrs(struct platform_device *pdev)
->  			 * attribute. They are related to the same
->  			 * sensor.
->  			 */
-> -			sdata[count].type = type;
-> -			sdata[count].opal_index = sdata[count - 1].opal_index;
-> -			sdata[count].hwmon_index = sdata[count - 1].hwmon_index;
->
->  			make_sensor_label(np, &sdata[count], label);
-> +			populate_sensor(&sdata[count], opal_index, hwmon_index,
-> +					sensor_id, "label", type, pgroups[type],
-> +					show_label);
-> +			count++;
-> +		}
->
-> -			create_hwmon_attr(&sdata[count], "label", show_label);
-> +		if (!of_property_read_u32(np, "sensor-data-max", &sensor_id)) {
-> +			attr_name = get_max_attr(type);
-> +			populate_sensor(&sdata[count], opal_index, hwmon_index,
-> +					sensor_id, attr_name, type,
-> +					pgroups[type], show_sensor);
-> +			count++;
-> +		}
->
-> -			pgroups[type]->attrs[sensor_groups[type].attr_count++] =
-> -				&sdata[count++].dev_attr.attr;
-> +		if (!of_property_read_u32(np, "sensor-data-min", &sensor_id)) {
-> +			attr_name = get_min_attr(type);
-> +			populate_sensor(&sdata[count], opal_index, hwmon_index,
-> +					sensor_id, attr_name, type,
-> +					pgroups[type], show_sensor);
-> +			count++;
->  		}
->  	}
->
->
+Best Regards,
+Petr
