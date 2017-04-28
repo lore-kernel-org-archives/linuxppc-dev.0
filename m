@@ -1,23 +1,43 @@
-Return-Path: <shuahkh@osg.samsung.com>
-Received: from osg.samsung.com
- (ec2-52-27-115-49.us-west-2.compute.amazonaws.com [52.27.115.49])
- by lists.ozlabs.org (Postfix) with ESMTP id 3wDWCH2Q0FzDqBH
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Apr 2017 08:02:34 +1000 (AEST)
-Subject: Re: [PATCH 0/8] Fix clean target warnings
-To: shuah@kernel.org, bamvor.zhangjian@linaro.org, benh@kernel.crashing.org,
- paulus@samba.org, mpe@ellerman.id.au, dvhart@infradead.org
-References: <cover.1492815938.git.shuahkh@osg.samsung.com>
-Cc: viro@zeniv.linux.org.uk, emilio.lopez@collabora.co.uk, mingo@kernel.org,
- luto@kernel.org, dave.hansen@linux.intel.com, dsafonov@virtuozzo.com,
- rkrcmar@redhat.com, linux-kselftest@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-gpio@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, Shuah Khan <shuahkh@osg.samsung.com>
-From: Shuah Khan <shuahkh@osg.samsung.com>
-Message-ID: <831a9104-b186-bae7-be87-5f4adb664dcd@osg.samsung.com>
-Date: Thu, 27 Apr 2017 16:02:29 -0600
+Return-Path: <sergey.senozhatsky.work@gmail.com>
+Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
+ [IPv6:2607:f8b0:400e:c00::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wDbjX1sMrzDqBN
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Apr 2017 11:25:36 +1000 (AEST)
+Received: by mail-pf0-x244.google.com with SMTP id 194so1285258pfv.0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Apr 2017 18:25:36 -0700 (PDT)
+Date: Fri, 28 Apr 2017 10:25:30 +0900
+From: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>
+To: Petr Mladek <pmladek@suse.com>
+Cc: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>,
+ Steven Rostedt <rostedt@goodmis.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Peter Zijlstra <peterz@infradead.org>,
+ Russell King <rmk+kernel@arm.linux.org.uk>,
+ Daniel Thompson <daniel.thompson@linaro.org>,
+ Jiri Kosina <jkosina@suse.com>, Ingo Molnar <mingo@redhat.com>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Chris Metcalf <cmetcalf@ezchip.com>, linux-kernel@vger.kernel.org,
+ x86@kernel.org, linux-arm-kernel@lists.infradead.org,
+ adi-buildroot-devel@lists.sourceforge.net,
+ linux-cris-kernel@axis.com, linux-mips@linux-mips.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
+ Jan Kara <jack@suse.cz>, Ralf Baechle <ralf@linux-mips.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ David Miller <davem@davemloft.net>
+Subject: Re: [PATCH v5 1/4] printk/nmi: generic solution for safe printk in NMI
+Message-ID: <20170428012530.GA383@jagdpanzerIV.localdomain>
+References: <1461239325-22779-1-git-send-email-pmladek@suse.com>
+ <1461239325-22779-2-git-send-email-pmladek@suse.com>
+ <20170419131341.76bc7634@gandalf.local.home>
+ <20170420033112.GB542@jagdpanzerIV.localdomain>
+ <20170420131154.GL3452@pathway.suse.cz>
 MIME-Version: 1.0
-In-Reply-To: <cover.1492815938.git.shuahkh@osg.samsung.com>
-Content-Type: text/plain; charset=windows-1252
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20170420131154.GL3452@pathway.suse.cz>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,35 +47,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/21/2017 05:14 PM, Shuah Khan wrote:
-> This patch series consists of changes to lib.mk to allow overriding
-> common clean target from Makefiles. This fixes warnings when clean
-> overriding and ignoring warnings. Also fixes splice clean target
-> removing a script that runs the test from its clean target.
-> 
-> Shuah Khan (8):
->   selftests: splice: fix clean target to not remove
->     default_file_splice_read.sh
->   selftests: lib.mk: define CLEAN macro to allow Makefiles to override
->     clean
 
-Applied with amended change log and Michael's ack to linux-kselftest next
+On (04/20/17 15:11), Petr Mladek wrote:
+[..]
+>  void printk_nmi_enter(void)
+>  {
+> -	this_cpu_or(printk_context, PRINTK_NMI_CONTEXT_MASK);
+> +	/*
+> +	 * The size of the extra per-CPU buffer is limited. Use it
+> +	 * only when really needed.
+> +	 */
+> +	if (this_cpu_read(printk_context) & PRINTK_SAFE_CONTEXT_MASK ||
+> +	    raw_spin_is_locked(&logbuf_lock)) {
 
->   selftests: futex: override clean in lib.mk to fix warnings
->   selftests: gpio: override clean in lib.mk to fix warnings
->   selftests: powerpc: override clean in lib.mk to fix warnings
-
-Applied all of the above to linux-kseltftest next
-
->   selftests: splice: override clean in lib.mk to fix warnings
->   selftests: sync: override clean in lib.mk to fix warnings
->   selftests: x86: override clean in lib.mk to fix warnings
-
-Applied v2s addressing Michael's comments to linux-kselftest next
-x86 fix also addresses not being able to build ldt_gdt
-
-make -C tools/testing/selftests/x86 ldt_gdt
+can we please have && here?
 
 
-thanks,
--- Shuah
+[..]
+> diff --git a/lib/nmi_backtrace.c b/lib/nmi_backtrace.c
+> index 4e8a30d1c22f..0bc0a3535a8a 100644
+> --- a/lib/nmi_backtrace.c
+> +++ b/lib/nmi_backtrace.c
+> @@ -86,9 +86,11 @@ void nmi_trigger_cpumask_backtrace(const cpumask_t *mask,
+>  
+>  bool nmi_cpu_backtrace(struct pt_regs *regs)
+>  {
+> +	static arch_spinlock_t lock = __ARCH_SPIN_LOCK_UNLOCKED;
+>  	int cpu = smp_processor_id();
+>  
+>  	if (cpumask_test_cpu(cpu, to_cpumask(backtrace_mask))) {
+> +		arch_spin_lock(&lock);
+>  		if (regs && cpu_in_idle(instruction_pointer(regs))) {
+>  			pr_warn("NMI backtrace for cpu %d skipped: idling at pc %#lx\n",
+>  				cpu, instruction_pointer(regs));
+> @@ -99,6 +101,7 @@ bool nmi_cpu_backtrace(struct pt_regs *regs)
+>  			else
+>  				dump_stack();
+>  		}
+> +		arch_spin_unlock(&lock);
+>  		cpumask_clear_cpu(cpu, to_cpumask(backtrace_mask));
+>  		return true;
+>  	}
+
+can the nmi_backtrace part be a patch on its own?
+
+	-ss
