@@ -1,18 +1,24 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
+ [IPv6:2607:f8b0:400e:c05::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wDk5F41TXzDq7Z
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Apr 2017 16:13:05 +1000 (AEST)
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v2] powerpc/mm: Only read faulting instruction when necessary
- in do_page_fault()
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Scott Wood <oss@buserror.net>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Message-Id: <20170428061301.27B826E713@localhost.localdomain>
-Date: Fri, 28 Apr 2017 08:13:01 +0200 (CEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wDkFL1JlhzDq7Z
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Apr 2017 16:20:06 +1000 (AEST)
+Received: by mail-pg0-x242.google.com with SMTP id v20so1352576pgn.0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Apr 2017 23:20:06 -0700 (PDT)
+Date: Fri, 28 Apr 2017 16:19:56 +1000
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: David Gibson <david@gibson.dropbear.id.au>, Paul Mackerras
+ <paulus@samba.org>
+Subject: Re: [PATCH kernel] powerpc/powernv: Fix iommu table size
+ calculation hook for small tables
+Message-ID: <20170428161956.402c2148@aik.ozlabs.ibm.com>
+In-Reply-To: <20170413070527.16989-1-aik@ozlabs.ru>
+References: <20170413070527.16989-1-aik@ozlabs.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,88 +28,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Commit a7a9dcd882a67 ("powerpc: Avoid taking a data miss on every
-userspace instruction miss") has shown that limiting the read of
-faulting instruction to likely cases improves performance.
+On Thu, 13 Apr 2017 17:05:27 +1000
+Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
 
-This patch goes further into this direction by limiting the read
-of the faulting instruction to the only cases where it is definitly
-needed.
+> When the userspace requests a small TCE table (which takes less than
+> the system page size) and more than 1 TCE level, the existing code
+> returns a single page size which is a bug as each additional TCE level
+> requires at least one page and this is what
+> pnv_pci_ioda2_table_alloc_pages() does. And we end up seeing
+> WARN_ON(!ret && ((*ptbl)->it_allocated_size != table_size))
+> in drivers/vfio/vfio_iommu_spapr_tce.c.
+> 
+> This replaces incorrect _ALIGN_UP() (which aligns zero up to zero) with
+> max_t() to fix the bug.
+> 
+> Besides removing WARN_ON(), there should be no other changes in
+> behaviour.
 
-On an MPC885, with the same benchmark app as in the commit referred
-above, we see a reduction of 4000 dTLB misses (approx 3%):
+Ping?
 
-Before the patch:
- Performance counter stats for './fault 500' (10 runs):
 
-         720495838      cpu-cycles                                                    ( +-  0.04% )
-            141769      dTLB-load-misses                                              ( +-  0.02% )
-             52722      iTLB-load-misses                                              ( +-  0.01% )
-             19611      faults                                                        ( +-  0.02% )
+> 
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> ---
+>  arch/powerpc/platforms/powernv/pci-ioda.c | 3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
+> 
+> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+> index 6d0da5dfc955..a0d046adcf45 100644
+> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
+> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+> @@ -2538,7 +2538,8 @@ static unsigned long pnv_pci_ioda2_get_table_size(__u32 page_shift,
+>  
+>  		tce_table_size /= direct_table_size;
+>  		tce_table_size <<= 3;
+> -		tce_table_size = _ALIGN_UP(tce_table_size, direct_table_size);
+> +		tce_table_size = max_t(unsigned long,
+> +				tce_table_size, direct_table_size);
+>  	}
+>  
+>  	return bytes;
 
-       5.750535176 seconds time elapsed                                          ( +-  0.16% )
 
-With the patch:
- Performance counter stats for './fault 500' (10 runs):
 
-         717669123      cpu-cycles                                                    ( +-  0.02% )
-            137344      dTLB-load-misses                                              ( +-  0.03% )
-             52731      iTLB-load-misses                                              ( +-  0.01% )
-             19614      faults                                                        ( +-  0.03% )
-
-       5.728423115 seconds time elapsed                                          ( +-  0.14% )
-
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
- v2: Changes 'if (cond1) if (cond2)' by 'if (cond1 && cond2)'
-
- In case the instruction we read has value 0, store_update_sp() will
- return false, so it will bail out.
-
- This patch applies after the serie "powerpc/mm: some cleanup of do_page_fault()"
-
- arch/powerpc/mm/fault.c | 22 ++++++++++++----------
- 1 file changed, 12 insertions(+), 10 deletions(-)
-
-diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
-index 400f2d0d42f8..2ec82a279d28 100644
---- a/arch/powerpc/mm/fault.c
-+++ b/arch/powerpc/mm/fault.c
-@@ -280,14 +280,6 @@ int do_page_fault(struct pt_regs *regs, unsigned long address,
- 
- 	perf_sw_event(PERF_COUNT_SW_PAGE_FAULTS, 1, regs, address);
- 
--	/*
--	 * We want to do this outside mmap_sem, because reading code around nip
--	 * can result in fault, which will cause a deadlock when called with
--	 * mmap_sem held
--	 */
--	if (is_write && is_user)
--		__get_user(inst, (unsigned int __user *)regs->nip);
--
- 	if (is_user)
- 		flags |= FAULT_FLAG_USER;
- 
-@@ -356,8 +348,18 @@ int do_page_fault(struct pt_regs *regs, unsigned long address,
- 		 * between the last mapped region and the stack will
- 		 * expand the stack rather than segfaulting.
- 		 */
--		if (address + 2048 < uregs->gpr[1] && !store_updates_sp(inst))
--			goto bad_area;
-+		if (address + 2048 < uregs->gpr[1] && !inst) {
-+			/*
-+			 * We want to do this outside mmap_sem, because reading
-+			 * code around nip can result in fault, which will cause
-+			 * a deadlock when called with mmap_sem held
-+			 */
-+			up_read(&mm->mmap_sem);
-+			__get_user(inst, (unsigned int __user *)regs->nip);
-+			if (!store_updates_sp(inst))
-+				goto bad_area_nosemaphore;
-+			goto retry;
-+		}
- 	}
- 	if (expand_stack(vma, address))
- 		goto bad_area;
--- 
-2.12.0
+--
+Alexey
