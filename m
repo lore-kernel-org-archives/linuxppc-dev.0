@@ -1,45 +1,43 @@
-Return-Path: <srs0=xgkb=4e=linux.vnet.ibm.com=khandual@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <SRS0=N7JN=4E=goodmis.org=rostedt@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wDx1l14s0zDq7Z
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Apr 2017 00:25:47 +1000 (AEST)
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3wDx1l0W33z8sg1
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Apr 2017 00:25:47 +1000 (AEST)
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3wDx1k3ssFz9s8G
- for <linuxppc-dev@ozlabs.org>; Sat, 29 Apr 2017 00:25:46 +1000 (AEST)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v3SEKepl128420
- for <linuxppc-dev@ozlabs.org>; Fri, 28 Apr 2017 10:25:44 -0400
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2a416kajkf-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Fri, 28 Apr 2017 10:25:43 -0400
-Received: from localhost
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Sat, 29 Apr 2017 00:25:37 +1000
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v3SEPRKs61079666
- for <linuxppc-dev@ozlabs.org>; Sat, 29 Apr 2017 00:25:35 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v3SEOwGb025269
- for <linuxppc-dev@ozlabs.org>; Sat, 29 Apr 2017 00:24:58 +1000
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-To: linuxppc-dev@ozlabs.org
-Cc: aneesh.kumar@linux.vnet.ibm.com, mpe@ellerman.id.au
-Subject: [PATCH] powerpc/mm: Fix mapped range information print during boot
-Date: Fri, 28 Apr 2017 19:54:45 +0530
-Message-Id: <20170428142445.17615-1-khandual@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wDxVw5kVCzDq7Z
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Apr 2017 00:47:36 +1000 (AEST)
+Date: Fri, 28 Apr 2017 10:47:28 -0400
+From: Steven Rostedt <rostedt@goodmis.org>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Petr Mladek <pmladek@suse.com>, Sergey Senozhatsky
+ <sergey.senozhatsky.work@gmail.com>, Andrew Morton
+ <akpm@linux-foundation.org>, Russell King <rmk+kernel@arm.linux.org.uk>,
+ Daniel Thompson <daniel.thompson@linaro.org>, Jiri Kosina
+ <jkosina@suse.com>, Ingo Molnar <mingo@redhat.com>, Thomas Gleixner
+ <tglx@linutronix.de>, Chris Metcalf <cmetcalf@ezchip.com>,
+ linux-kernel@vger.kernel.org, x86@kernel.org,
+ linux-arm-kernel@lists.infradead.org,
+ adi-buildroot-devel@lists.sourceforge.net, linux-cris-kernel@axis.com,
+ linux-mips@linux-mips.org, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
+ sparclinux@vger.kernel.org, Jan Kara <jack@suse.cz>, Ralf Baechle
+ <ralf@linux-mips.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>, David Miller
+ <davem@davemloft.net>
+Subject: Re: [PATCH v5 1/4] printk/nmi: generic solution for safe printk in NMI
+Message-ID: <20170428104728.07ac38e0@gandalf.local.home>
+In-Reply-To: <20170428135810.gljrbuwgrypu5jkn@hirez.programming.kicks-ass.net>
+References: <1461239325-22779-2-git-send-email-pmladek@suse.com>
+ <20170419131341.76bc7634@gandalf.local.home>
+ <20170420033112.GB542@jagdpanzerIV.localdomain>
+ <20170420131154.GL3452@pathway.suse.cz>
+ <20170421015724.GA586@jagdpanzerIV.localdomain>
+ <20170421120627.GO3452@pathway.suse.cz>
+ <20170424021747.GA630@jagdpanzerIV.localdomain>
+ <20170427133819.GW3452@pathway.suse.cz>
+ <20170428090226.qqoe6qbewjeo57kd@hirez.programming.kicks-ass.net>
+ <20170428134423.GB3452@pathway.suse.cz>
+ <20170428135810.gljrbuwgrypu5jkn@hirez.programming.kicks-ass.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,39 +47,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is a trivial fix patch regarding mapped ranges in radix MMU
-environment during boot. No functional change.
+On Fri, 28 Apr 2017 15:58:10 +0200
+Peter Zijlstra <peterz@infradead.org> wrote:
 
-Before the patch:
+> On Fri, Apr 28, 2017 at 03:44:23PM +0200, Petr Mladek wrote:
+> > On Fri 2017-04-28 11:02:26, Peter Zijlstra wrote:  
+> > > On Thu, Apr 27, 2017 at 03:38:19PM +0200, Petr Mladek wrote:  
+> > > > Also we need to look for alternatives. There is a chance
+> > > > to create crashdump and get the ftrace messages from it.
+> > > > Also this might be scenario when we might need to suggest
+> > > > the early_printk() patchset from Peter Zijlstra.  
+> > > 
+> > > I'd be happy to repost those. I still carry them in my tree.  
+> > 
+> > You do not need to if they are still the same as
+> > https://lkml.kernel.org/r/20161018170830.405990950@infradead.org  
+> 
+> More or less, I think I fixed an intermediate compile fail reported by
+> you and the 0-day thing and I wrote a few comments in the last patch.
+> 
+> They live here fwiw:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/peterz/queue.git debug/tmp
+> 
+> > I rather do not promise anything but I would like to look at them
+> > within next few weeks (after the merge window).  
+> 
+> Sure, I'll post them again during/after the merge window.
 
-$dmesg | grep Mapped
-[    0.000000] Mapped range 0x0 - 0x2000000000 with 0x40000000
-[    0.000000] Mapped range 0x200000000000 - 0x202000000000 with 0x40000000
+BTW, this is what I ended up using to get the debug information I
+needed.
 
-After the patch:
-
-$dmesg | grep Mapped
-[    0.000000] Mapped range 0x0000000000000000 - 0x0000002000000000 with 1024 MB
-[    0.000000] Mapped range 0x0000200000000000 - 0x0000202000000000 with 1024 MB
-
-Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
----
- arch/powerpc/mm/pgtable-radix.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/mm/pgtable-radix.c b/arch/powerpc/mm/pgtable-radix.c
-index c28165d..802ead4 100644
---- a/arch/powerpc/mm/pgtable-radix.c
-+++ b/arch/powerpc/mm/pgtable-radix.c
-@@ -115,7 +115,8 @@ static inline void __meminit print_mapping(unsigned long start,
- 	if (end <= start)
- 		return;
- 
--	pr_info("Mapped range 0x%lx - 0x%lx with 0x%lx\n", start, end, size);
-+	pr_info("Mapped range 0x%016lx - 0x%016lx with %lu MB\n",
-+			start, end, (unsigned long) (size >> 20));
- }
- 
- static int __meminit create_physical_mapping(unsigned long start,
--- 
-2.9.3
+-- Steve
