@@ -1,16 +1,20 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <horia.geanta@nxp.com>
+Received: from EUR01-VE1-obe.outbound.protection.outlook.com
+ (mail-ve1eur01on0070.outbound.protection.outlook.com [104.47.1.70])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wDrdS0LPNzDq7Z
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Apr 2017 21:07:56 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org
-Cc: npiggin@gmail.com
-Subject: [PATCH v2] powerpc/xmon: Wait for secondaries before IPI'ing on
- system reset
-Date: Fri, 28 Apr 2017 21:07:49 +1000
-Message-Id: <1493377669-7658-1-git-send-email-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wDrfG4w32zDqG5
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Apr 2017 21:08:38 +1000 (AEST)
+From: =?iso-8859-2?Q?Horia_Geant=E3?= <horia.geanta@nxp.com>
+To: Martin Hicks <mort@bork.org>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>, "linux-crypto@vger.kernel.org"
+ <linux-crypto@vger.kernel.org>
+Subject: Re: [PATCH] crypto: talitos: Extend max key length for SHA384/512-HMAC
+Date: Fri, 28 Apr 2017 11:08:31 +0000
+Message-ID: <VI1PR0401MB259114A07C3644B4552A0A9998130@VI1PR0401MB2591.eurprd04.prod.outlook.com>
+References: <20170427154046.GA5041@darwin.bork.org>
+Content-Type: text/plain; charset="iso-8859-2"
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,86 +24,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Nicholas Piggin <npiggin@gmail.com>
-
-An externally triggered system reset (e.g., via QEMU nmi command, or pseries
-reset button) can cause system reset interrupts on all CPUs. In case this causes
-xmon to be entered, it is undesirable for the primary (first) CPU into xmon to
-trigger an NMI IPI to others, because this may cause a nested system reset
-interrupt.
-
-So spin for a time waiting for secondaries to join xmon before performing the
-NMI IPI, similarly to what the crash dump code does.
-
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-[mpe: Only do it when we come in from system reset, not via sysrq etc.]
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/xmon/xmon.c | 34 ++++++++++++++++++++++++++--------
- 1 file changed, 26 insertions(+), 8 deletions(-)
-
-v2: Only wait before sending the IPI if we came from a system reset. Otherwise
-    any entry into xmon, from eg. sysrq, will pause before entering which is
-    undesirable.
-
-diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
-index 682506821bba..5c184b059a3d 100644
---- a/arch/powerpc/xmon/xmon.c
-+++ b/arch/powerpc/xmon/xmon.c
-@@ -430,6 +430,21 @@ static inline int unrecoverable_excp(struct pt_regs *regs)
- #endif
- }
- 
-+static bool wait_for_other_cpus(int ncpus)
-+{
-+	unsigned long timeout;
-+
-+	/* We wait for 2s, which is a metric "little while" */
-+	for (timeout = 20000; timeout != 0; --timeout) {
-+		if (cpumask_weight(&cpus_in_xmon) >= ncpus)
-+			return true;
-+		udelay(100);
-+		barrier();
-+	}
-+
-+	return false;
-+}
-+
- static int xmon_core(struct pt_regs *regs, int fromipi)
- {
- 	int cmd = 0;
-@@ -440,7 +455,6 @@ static int xmon_core(struct pt_regs *regs, int fromipi)
- #ifdef CONFIG_SMP
- 	int cpu;
- 	int secondary;
--	unsigned long timeout;
- #endif
- 
- 	local_irq_save(flags);
-@@ -527,13 +541,17 @@ static int xmon_core(struct pt_regs *regs, int fromipi)
- 		xmon_owner = cpu;
- 		mb();
- 		if (ncpus > 1) {
--			smp_send_debugger_break();
--			/* wait for other cpus to come in */
--			for (timeout = 100000000; timeout != 0; --timeout) {
--				if (cpumask_weight(&cpus_in_xmon) >= ncpus)
--					break;
--				barrier();
--			}
-+			/*
-+			 * A system reset (trap == 0x100) can be triggered on
-+			 * all CPUs, so when we come in via 0x100 try waiting
-+			 * for the other CPUs to come in before we send the
-+			 * debugger break (IPI). This is similar to
-+			 * crash_kexec_secondary().
-+			 */
-+			if (TRAP(regs) != 0x100 || !wait_for_other_cpus(ncpus))
-+				smp_send_debugger_break();
-+
-+			wait_for_other_cpus(ncpus);
- 		}
- 		remove_bpts();
- 		disable_surveillance();
--- 
-2.7.4
+On 4/27/2017 6:46 PM, Martin Hicks wrote:=0A=
+> =0A=
+> The max keysize for both of these is 128, not 96.  Before, with keysizes=
+=0A=
+> over 96, the memcpy in ahash_setkey() would overwrite memory beyond the=
+=0A=
+> key field.=0A=
+> =0A=
+While here, what about aead_setkey()?=0A=
+AFAICT, TALITOS_MAX_KEY_SIZE value has been incorrect since forever; it=0A=
+does not cover the maximum values of encryption key + authentication key=0A=
+for authenc algorithms.=0A=
+=0A=
+So, based on algorithms currently registered, I think this should be:=0A=
+#define TALITOS_MAX_KEY_SIZE		(AES_MAX_KEY_SIZE + \=0A=
+					 SHA512_BLOCK_SIZE)=0A=
+=0A=
+=0A=
+> Signed-off-by: Martin Hicks <mort@bork.org>=0A=
+Cc: stable@vger.kernel.org # 3.6+=0A=
+Fixes: 357fb60502ede ("crypto: talitos - add sha224, sha384 and sha512=0A=
+to existing AEAD algorithms")=0A=
+=0A=
+> ---=0A=
+>  drivers/crypto/talitos.c |    2 +-=0A=
+>  1 file changed, 1 insertion(+), 1 deletion(-)=0A=
+> =0A=
+> diff --git a/drivers/crypto/talitos.c b/drivers/crypto/talitos.c=0A=
+> index 0bba6a1..97dc85e 100644=0A=
+> --- a/drivers/crypto/talitos.c=0A=
+> +++ b/drivers/crypto/talitos.c=0A=
+> @@ -816,7 +816,7 @@ static void talitos_unregister_rng(struct device *dev=
+)=0A=
+>   * HMAC_SNOOP_NO_AFEA (HSNA) instead of type IPSEC_ESP=0A=
+>   */=0A=
+>  #define TALITOS_CRA_PRIORITY_AEAD_HSNA	(TALITOS_CRA_PRIORITY - 1)=0A=
+> -#define TALITOS_MAX_KEY_SIZE		96=0A=
+> +#define TALITOS_MAX_KEY_SIZE		SHA512_BLOCK_SIZE /* SHA512 has the larges=
+t keysize input */=0A=
+>  #define TALITOS_MAX_IV_LENGTH		16 /* max of AES_BLOCK_SIZE, DES3_EDE_BLO=
+CK_SIZE */=0A=
+>  =0A=
+>  struct talitos_ctx {=0A=
+> =0A=
+=0A=
