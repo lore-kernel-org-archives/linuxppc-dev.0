@@ -1,20 +1,29 @@
-Return-Path: <oss@buserror.net>
-Received: from host.buserror.net (host.buserror.net [209.198.135.123])
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pf0-x230.google.com (mail-pf0-x230.google.com
+ [IPv6:2607:f8b0:400e:c00::230])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wFz4f4lhwzDqCL
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 30 Apr 2017 17:01:54 +1000 (AEST)
-Date: Sun, 30 Apr 2017 02:01:44 -0500
-From: Scott Wood <oss@buserror.net>
-To: Matt Weber <matthew.weber@rockwellcollins.com>
-Cc: linuxppc-dev@lists.ozlabs.org,
- Ronak Desai <ronak.desai@rockwellcollins.com>
-Message-ID: <20170430070144.5ofjqykho5fmf2ah@home.buserror.net>
-References: <1493315980-28480-1-git-send-email-matthew.weber@rockwellcollins.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wG4MK1J9gzDqCv
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 30 Apr 2017 20:59:57 +1000 (AEST)
+Received: by mail-pf0-x230.google.com with SMTP id q20so11802193pfg.0
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 30 Apr 2017 03:59:57 -0700 (PDT)
+Date: Sun, 30 Apr 2017 20:59:37 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] powerpc/64s: use
+ ibm,tlbiel-congruence-classes-(hash|radix) dt property
+Message-ID: <20170430205937.47b49a1e@roar.ozlabs.ibm.com>
+In-Reply-To: <1492992803.25766.193.camel@kernel.crashing.org>
+References: <20170422005854.17128-1-npiggin@gmail.com>
+ <20170422005854.17128-2-npiggin@gmail.com>
+ <1492848130.25766.185.camel@kernel.crashing.org>
+ <20170423091428.16fc298f@roar.ozlabs.ibm.com>
+ <1492907951.25766.191.camel@kernel.crashing.org>
+ <20170423195755.43e36953@roar.ozlabs.ibm.com>
+ <1492992803.25766.193.camel@kernel.crashing.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1493315980-28480-1-git-send-email-matthew.weber@rockwellcollins.com>
-Subject: Re: [1/1] powerpc/traps : Updated MC for E6500 L1D cache err
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,54 +33,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Apr 27, 2017 at 12:59:40PM -0500, Matt Weber wrote:
-> This patch updates the machine check handler of Linux kernel to
-> handle the e6500 architecture case. In e6500 core, L1 Data Cache Write
-> Shadow Mode (DCWS) register is not implemented but L1 data cache always
-> runs in write shadow mode. So, on L1 data cache parity errors, hardware
-> will automatically invalidate the data cache but will still log a
-> machine check interrupt.
+On Mon, 24 Apr 2017 10:13:23 +1000
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+
+> On Sun, 2017-04-23 at 19:57 +1000, Nicholas Piggin wrote:
+> > On Sun, 23 Apr 2017 10:39:11 +1000
+> > Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+> >   
+> > > On Sun, 2017-04-23 at 09:14 +1000, Nicholas Piggin wrote:  
+> > > > I think we were going to take another look at moving the setup
+> > > > code
+> > > > later, but I think that might wait until 4.13.    
+> > > 
+> > > Except without that we won't boot a post-P9 CPU right ? So we'll
+> > > end up
+> > > having to chase distros to backport it :-( Oh well...  
+> > 
+> > Okay, well what if we just move the TLB flushing to somewhere like
+> > early_init_mmu(_secondary) for power CPUs first?
+> > 
+> > Non-local tlbie does not seem to have this requirement, so would it
+> > make it more robust just to execute that once during boot with the
+> > primary thread?  
 > 
-> Signed-off-by: Ronak Desai <ronak.desai@rockwellcollins.com>
-> Signed-off-by: Matthew Weber <matthew.weber@rockwellcollins.com>
-> ---
->  arch/powerpc/include/asm/reg_booke.h |  1 +
->  arch/powerpc/kernel/traps.c          | 12 ++++++++++--
->  2 files changed, 11 insertions(+), 2 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/reg_booke.h b/arch/powerpc/include/asm/reg_booke.h
-> index 737e012..c811128 100644
-> --- a/arch/powerpc/include/asm/reg_booke.h
-> +++ b/arch/powerpc/include/asm/reg_booke.h
-> @@ -196,6 +196,7 @@
->  #define SPRN_DEAR	0x03D	/* Data Error Address Register */
->  #define SPRN_ESR	0x03E	/* Exception Syndrome Register */
->  #define SPRN_PIR	0x11E	/* Processor Identification Register */
-> +#define SPRN_PVR	0x11F	/* Processor Version Register */
->  #define SPRN_DBSR	0x130	/* Debug Status Register */
->  #define SPRN_DBCR0	0x134	/* Debug Control Register 0 */
->  #define SPRN_DBCR1	0x135	/* Debug Control Register 1 */
+> I wouldn't do a broadcast before we have LPCR setup... but for no
+> obvious reason. Also I'm not sure our boot time cleanup does things
+> properly vs hash & radix. I think we really need 2 passes.
 
-This is already defined in asm/reg.h
+I'm just trying to look at the best thing to do for this. In fact we
+already do broadcast tlbie before all CPUs have their LPCR and other
+MMU related registers all set up properly (e.g., in update_hid_for_radix
+/ hash and radix_init_pgtable).
 
-> @@ -545,8 +546,15 @@ int machine_check_e500mc(struct pt_regs *regs)
->  		 * may still get logged and cause a machine check.  We should
->  		 * only treat the non-write shadow case as non-recoverable.
->  		 */
-> -		if (!(mfspr(SPRN_L1CSR2) & L1CSR2_DCWS))
-> -			recoverable = 0;
-> +		/* On e6500 core, L1 DCWS (Data cache write shadow mode) bit is
-> +		 * not implemented but L1 data cache is by default configured
-> +		 * to run in write shadow mode. Hence on data cache parity errors
-> +		 * HW will automatically invalidate the L1 Data Cache.
-> +		 */
+I was looking at doing a local TLB flush for appropriate machine and MMU
+mode right at the end of early_init_mmu/early_init_mmu_secondary, so
+after all registers are set, but before relocation is switched on.
 
-Please wrap at under 80 columns.
+Would that be preferable for you? For the next release at least we would
+just leave in existing earlier flushes too, I guess.
 
-"default" implies it can be changed, so:
-s/is by default configured to run in write shadow mode/always runs in
-write shadow mode/
-
-Otherwise looks good.
-
--Scott
+Thanks,
+Nick
