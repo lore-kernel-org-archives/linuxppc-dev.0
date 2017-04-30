@@ -1,22 +1,21 @@
-Return-Path: <karim.eshapa@gmail.com>
-Received: from mail-wr0-x241.google.com (mail-wr0-x241.google.com
- [IPv6:2a00:1450:400c:c0c::241])
+Return-Path: <oss@buserror.net>
+Received: from host.buserror.net (host.buserror.net [209.198.135.123])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wFqHb12kBzDqBH
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 30 Apr 2017 11:10:50 +1000 (AEST)
-Received: by mail-wr0-x241.google.com with SMTP id 6so10723801wrb.1
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Apr 2017 18:10:50 -0700 (PDT)
-From: Karim Eshapa <karim.eshapa@gmail.com>
-To: oss@buserror.net
-Cc: claudiu.manoil@nxp.com, roy.pledge@nxp.com, colin.king@canonical.com,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
- linux-kernel@vger.kernel.org, Karim Eshapa <karim.eshapa@gmail.com>
-Subject: RE:drivers:soc:fsl:qbman:qman.c: unsigned long jiffies value
-Date: Sun, 30 Apr 2017 03:09:26 +0200
-Message-Id: <1493514566-12920-1-git-send-email-karim.eshapa@gmail.com>
-In-Reply-To: <1493508775.25397.26.camel@buserror.net>
-References: <1493508775.25397.26.camel@buserror.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wFynS0XWRzDqC5
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 30 Apr 2017 16:48:44 +1000 (AEST)
+Date: Sun, 30 Apr 2017 01:48:26 -0500
+From: Scott Wood <oss@buserror.net>
+To: Christophe Leroy <christophe.leroy@c-s.fr>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Message-ID: <20170430064826.fags33gcyvpqigah@home.buserror.net>
+References: <20170309094204.ACF5567992@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20170309094204.ACF5567992@localhost.localdomain>
+Subject: Re: powerpc/8xx: Adding support of IRQ in MPC8xx GPIO
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,82 +25,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 29 Apr 2017 18:32:55 -0500, Scott Wood wrote:
->On Sat, 2017-04-29 at 22:43 +0200, Karim Eshapa wrote:
->
->> unsigned long jiffies value sorry for that.
->>
-> You mean unsigned long msecs?
->
+On Thu, Mar 09, 2017 at 10:42:04AM +0100, Christophe Leroy wrote:
+> This patch allows the use of IRQ to notify the change of GPIO status
+> on MPC8xx CPM IO ports. This then allows to associate IRQs to GPIOs
+> in the Device Tree.
+> 
+> Ex:
+> 	CPM1_PIO_C: gpio-controller@960 {
+> 		#gpio-cells = <2>;
+> 		compatible = "fsl,cpm1-pario-bank-c";
+> 		reg = <0x960 0x10>;
+> 		interrupts = <1 2 6 9 10 11 14 15 23 24 26 31>;
+> 		interrupts-mask = <0x0fff>;
+> 		interrupt-parent = <&CPM_PIC>;
+> 		gpio-controller;
+> 	};
+> 
+> The property 'interrupts-mask' defines which of the 16 GPIOs have
+> the associated interrupts defined in the 'interrupts' property.
 
-Yes, I mean usecs. 
+Binding?  Should also be named something like "fsl,cpm1-gpio-irq-mask",
 
->>
->> Signed-off-by: Karim Eshapa <karim.eshapa@gmail.com>
->> ---
->>  drivers/soc/fsl/qbman/qman.c | 2 +-
->>  1 file changed, 1 insertion(+), 1 deletion(-)
->>
->> diff --git a/drivers/soc/fsl/qbman/qman.c b/drivers/soc/fsl/qbman/qman.c
->> index e0df4d1..6e1a44a 100644
->> --- a/drivers/soc/fsl/qbman/qman.c
->> +++ b/drivers/soc/fsl/qbman/qman.c
->> @@ -1084,7 +1084,7 @@ static int drain_mr_fqrni(struct qm_portal *p)
->>                * entries well before the ring has been fully consumed, so
->>                * we're being *really* paranoid here.
->>                */
->> -             unsigned int udel_time = jiffies_to_usecs(10000);
->> +             unsigned long udel_time = jiffies_to_usecs(10000);
->>  
->>               usleep_range(udel_time/2, udel_time);
->>               msg = qm_mr_current(p);
+>  static int cpm1_gpio16_dir_out(struct gpio_chip *gc, unsigned int gpio, int val)
+>  {
+>  	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
+> @@ -618,6 +633,7 @@ int cpm1_gpiochip_add16(struct device_node *np)
+>  	struct cpm1_gpio16_chip *cpm1_gc;
+>  	struct of_mm_gpio_chip *mm_gc;
+>  	struct gpio_chip *gc;
+> +	u16 mask;
+>  
+>  	cpm1_gc = kzalloc(sizeof(*cpm1_gc), GFP_KERNEL);
+>  	if (!cpm1_gc)
 
->If unsigned int isn't big enough, then unsigned long won't be either on 32-
->bit.  With such a long delay why not use msleep()?
->
+> @@ -625,6 +641,14 @@ int cpm1_gpiochip_add16(struct device_node *np)
+>  
+>  	spin_lock_init(&cpm1_gc->lock);
+>  
+> +	if (!of_property_read_u16(np, "interrupts-mask", &mask)) {
+> +		int i, j;
+> +
+> +		for (i = 0, j = 0; i < 16; i++)
+> +			if (mask & (1 << (15 - i)))
+> +				cpm1_gc->irq[i] = irq_of_parse_and_map(np, j++);
+> +	}
 
-I agree with you in long int.
-After looking at Documentation/timers/timers-howto.txt I think
-the msleep() is better as we actually have long delay.
-may be we can use jiffies_to_msecs() with msleep() in case of we still have 
-this large jiffies difference.
+Do we really need to use MSB-first bit numbering here?
 
->As for the previous patch[1], you're halving the minimum timeout which may not
->be correct.
->
->
-
-For the minimum timeout, I've read the following comments.
-
-		 /*
-                  * if MR was full and h/w had other FQRNI entries to produce, we
-                  * need to allow it time to produce those entries once the
-                  * existing entries are consumed. A worst-case situation
-                  * (fully-loaded system) means h/w sequencers may have to do 3-4
-                  * other things before servicing the portal's MR pump, each of
-                  * which (if slow) may take ~50 qman cycles (which is ~200
-                  * processor cycles). So rounding up and then multiplying this
-                  * worst-case estimate by a factor of 10, just to be
-                  * ultra-paranoid, goes as high as 10,000 cycles. NB, we consume
-                  * one entry at a time, so h/w has an opportunity to produce new
-                  * entries well before the ring has been fully consumed, so
-                  * we're being *really* paranoid here.
-		  */
-		  u64 now, then = jiffies;
-		
-		do {
-	                now = jiffies;
-                 } while ((then + 10000) > now);  
-
-He needs to guarantee certain action so, he made a very large factor of saftey
-therefore I've used sleep in range with approximate delay. But we still need 
-the driver owner to define appropriate value to put.
-
->[1] When fixing a patch you've already posted that hasn't yet been applied,
->send a replacement (v2) patch rather than a separate fix.
->
-
-Thanks so much, I'm just newbies :)
-
-
-Karim   
+-Scott
