@@ -1,18 +1,18 @@
 Return-Path: <roy.pledge@nxp.com>
-Received: from NAM03-DM3-obe.outbound.protection.outlook.com
- (mail-dm3nam03on0076.outbound.protection.outlook.com [104.47.41.76])
+Received: from NAM02-SN1-obe.outbound.protection.outlook.com
+ (mail-sn1nam02on0053.outbound.protection.outlook.com [104.47.36.53])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wGyJS3pLtzDqCL
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wGyJS3pMCzDqCd
  for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 May 2017 07:30:32 +1000 (AEST)
 From: Roy Pledge <roy.pledge@nxp.com>
 To: <linuxppc-dev@lists.ozlabs.org>, <linux-arm-kernel@lists.infradead.org>,
  <linux-kernel@vger.kernel.org>, <oss@buserror.net>, <robin.murphy@arm.com>
 CC: <madalin.bucur@nxp.com>, <roy.pledge@nxp.com>, Claudiu Manoil
- <claudiu.manoil@nxp.com>, Stuart Yoder <stuart.yoder@nxp.com>
-Subject: [PATCH v3 11/11] fsl/soc/qbman: Enable FSL_LAYERSCAPE config on ARM
-Date: Mon, 1 May 2017 17:30:13 -0400
-Message-ID: <1493674213-963-12-git-send-email-roy.pledge@nxp.com>
+ <claudiu.manoil@nxp.com>
+Subject: [PATCH v3 10/11] soc/fsl/qbman: Add missing headers on ARM
+Date: Mon, 1 May 2017 17:30:12 -0400
+Message-ID: <1493674213-963-11-git-send-email-roy.pledge@nxp.com>
 In-Reply-To: <1493674213-963-1-git-send-email-roy.pledge@nxp.com>
 References: <1493674213-963-1-git-send-email-roy.pledge@nxp.com>
 Reply-To: <roy.pledge@nxp.com>
@@ -27,28 +27,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Madalin Bucur <madalin.bucur@nxp.com>
+From: Claudiu Manoil <claudiu.manoil@nxp.com>
 
-Signed-off-by: Madalin Bucur <madalin.bucur@nxp.com>
+Unlike PPC builds, ARM builds need following headers
+explicitly:
++#include <linux/io.h>		for ioread32be()
++#include <linux/delay.h>		for udelay()
+
 Signed-off-by: Claudiu Manoil <claudiu.manoil@nxp.com>
-[Stuart: changed to use ARCH_LAYERSCAPE]
-Signed-off-by: Stuart Yoder <stuart.yoder@nxp.com>
 Signed-off-by: Roy Pledge <roy.pledge@nxp.com>
 ---
- drivers/soc/fsl/qbman/Kconfig | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/soc/fsl/qbman/dpaa_sys.h | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/drivers/soc/fsl/qbman/Kconfig b/drivers/soc/fsl/qbman/Kconfig
-index 757033c..fb4e6bf 100644
---- a/drivers/soc/fsl/qbman/Kconfig
-+++ b/drivers/soc/fsl/qbman/Kconfig
-@@ -1,6 +1,6 @@
- menuconfig FSL_DPAA
- 	bool "Freescale DPAA 1.x support"
--	depends on FSL_SOC_BOOKE
-+	depends on (FSL_SOC_BOOKE || ARCH_LAYERSCAPE)
- 	select GENERIC_ALLOCATOR
- 	help
- 	  The Freescale Data Path Acceleration Architecture (DPAA) is a set of
+diff --git a/drivers/soc/fsl/qbman/dpaa_sys.h b/drivers/soc/fsl/qbman/dpaa_sys.h
+index 81a9a5e..9925013 100644
+--- a/drivers/soc/fsl/qbman/dpaa_sys.h
++++ b/drivers/soc/fsl/qbman/dpaa_sys.h
+@@ -44,6 +44,8 @@
+ #include <linux/prefetch.h>
+ #include <linux/genalloc.h>
+ #include <asm/cacheflush.h>
++#include <linux/io.h>
++#include <linux/delay.h>
+ 
+ /* For 2-element tables related to cache-inhibited and cache-enabled mappings */
+ #define DPAA_PORTAL_CE 0
 -- 
 2.7.4
