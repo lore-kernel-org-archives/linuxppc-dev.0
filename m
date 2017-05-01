@@ -1,19 +1,18 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wGTdl66SXzDqBN
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 May 2017 12:58:51 +1000 (AEST)
-In-Reply-To: <20170322042156.11756-3-aik@ozlabs.ru>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wGTdm0x3PzDqBN
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 May 2017 12:58:52 +1000 (AEST)
+In-Reply-To: <20170322042156.11756-4-aik@ozlabs.ru>
 To: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 Cc: kvm@vger.kernel.org, Alexey Kardashevskiy <aik@ozlabs.ru>,
  kvm-ppc@vger.kernel.org, Alex Williamson <alex.williamson@redhat.com>,
  Paul Mackerras <paulus@samba.org>, David Gibson <david@gibson.dropbear.id.au>
 Subject: Re: [kernel, v11,
- 02/10] powerpc/powernv/iommu: Add real mode version of
- iommu_table_ops::exchange()
-Message-Id: <3wGTdl4qlgz9sNC@ozlabs.org>
+ 03/10] powerpc/iommu/vfio_spapr_tce: Cleanup iommu_table disposal
+Message-Id: <3wGTdm05J0z9sND@ozlabs.org>
 Date: Mon,  1 May 2017 12:58:51 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -24,26 +23,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2017-03-22 at 04:21:48 UTC, Alexey Kardashevskiy wrote:
-> In real mode, TCE tables are invalidated using special
-> cache-inhibited store instructions which are not available in
-> virtual mode
+On Wed, 2017-03-22 at 04:21:49 UTC, Alexey Kardashevskiy wrote:
+> At the moment iommu_table can be disposed by either calling
+> iommu_table_free() directly or it_ops::free(); the only implementation
+> of free() is in IODA2 - pnv_ioda2_table_free() - and it calls
+> iommu_table_free() anyway.
 > 
-> This defines and implements exchange_rm() callback. This does not
-> define set_rm/clear_rm/flush_rm callbacks as there is no user for those -
-> exchange/exchange_rm are only to be used by KVM for VFIO.
+> As we are going to have reference counting on tables, we need an unified
+> way of disposing tables.
 > 
-> The exchange_rm callback is defined for IODA1/IODA2 powernv platforms.
+> This moves it_ops::free() call into iommu_free_table() and makes use
+> of the latter. The free() callback now handles only platform-specific
+> data.
 > 
-> This replaces list_for_each_entry_rcu with its lockless version as
-> from now on pnv_pci_ioda2_tce_invalidate() can be called in
-> the real mode too.
+> As from now on the iommu_free_table() calls it_ops->free(), we need
+> to have it_ops initialized before calling iommu_free_table() so this
+> moves this initialization in pnv_pci_ioda2_create_table().
+> 
+> This should cause no behavioral change.
 > 
 > Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 > Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
+> Acked-by: Alex Williamson <alex.williamson@redhat.com>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/a540aa56ba3d29084f28710c8b93cc
+https://git.kernel.org/powerpc/c/11edf116e3a6352cfee6b1437d4160
 
 cheers
