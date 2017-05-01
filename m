@@ -1,23 +1,17 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
- [IPv6:2607:f8b0:400e:c00::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <matthew.weber@rockwellcollins.com>
+Received: from secvs02.rockwellcollins.com (secvs02.rockwellcollins.com
+ [205.175.225.241])
+ (using TLSv1 with cipher DHE-RSA-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wGjgt2HfzzDqH7
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 May 2017 22:01:30 +1000 (AEST)
-Received: by mail-pf0-x244.google.com with SMTP id v14so27486756pfd.3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 01 May 2017 05:01:30 -0700 (PDT)
-From: Nicholas Piggin <npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wGmbn5V8vzDq7Z
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 May 2017 00:13:07 +1000 (AEST)
+From: Matt Weber <matthew.weber@rockwellcollins.com>
 To: linuxppc-dev@lists.ozlabs.org
-Cc: Nicholas Piggin <npiggin@gmail.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH 2/2] powerpc/64s: Fix OPAL_CALL non-maskable interrupt
- reentrancy
-Date: Mon,  1 May 2017 22:01:10 +1000
-Message-Id: <20170501120110.21888-3-npiggin@gmail.com>
-In-Reply-To: <20170501120110.21888-1-npiggin@gmail.com>
-References: <20170501120110.21888-1-npiggin@gmail.com>
+Cc: Matt Weber <matthew.weber@rockwellcollins.com>,
+ Ronak Desai <ronak.desai@rockwellcollins.com>
+Subject: [PATCH 1/1] powerpc/traps : Updated MC for E6500 L1D cache err
+Date: Mon,  1 May 2017 08:56:03 -0500
+Message-Id: <1493646963-51940-1-git-send-email-matthew.weber@rockwellcollins.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,33 +21,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-OPAL_CALL uses SRR[01] with MSR_RI=1, which gets corrupted if there
-is an interleaving system reset or machine check interrupt.
+This patch updates the machine check handler of Linux kernel to
+handle the e6500 architecture case. In e6500 core, L1 Data Cache Write
+Shadow Mode (DCWS) register is not implemented but L1 data cache always
+runs in write shadow mode. So, on L1 data cache parity errors, hardware
+will automatically invalidate the data cache but will still log a
+machine check interrupt.
 
-Use HSRR[01] instead, which does not require MSR_RI=0.
-
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+Signed-off-by: Ronak Desai <ronak.desai@rockwellcollins.com>
+Signed-off-by: Matthew Weber <matthew.weber@rockwellcollins.com>
 ---
- arch/powerpc/platforms/powernv/opal-wrappers.S | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ arch/powerpc/kernel/traps.c | 12 ++++++++++--
+ 1 file changed, 10 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
-index f620572f891f..4ca6c26a56d5 100644
---- a/arch/powerpc/platforms/powernv/opal-wrappers.S
-+++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
-@@ -99,10 +99,10 @@ opal_return:
- 	lwz	r4,8(r1);
- 	ld	r5,PPC_LR_STKOFF(r1);
- 	ld	r6,PACASAVEDMSR(r13);
--	mtspr	SPRN_SRR0,r5;
--	mtspr	SPRN_SRR1,r6;
- 	mtcr	r4;
--	rfid
-+	mtspr	SPRN_HSRR0,r5;
-+	mtspr	SPRN_HSRR1,r6;
-+	hrfid
+diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+index 76f6045..f656277 100644
+--- a/arch/powerpc/kernel/traps.c
++++ b/arch/powerpc/kernel/traps.c
+@@ -504,6 +504,7 @@ int machine_check_47x(struct pt_regs *regs)
+ int machine_check_e500mc(struct pt_regs *regs)
+ {
+ 	unsigned long mcsr = mfspr(SPRN_MCSR);
++	unsigned long pvr = mfspr(SPRN_PVR);
+ 	unsigned long reason = mcsr;
+ 	int recoverable = 1;
  
- opal_real_call:
- 	mfcr	r11
+@@ -545,8 +546,15 @@ int machine_check_e500mc(struct pt_regs *regs)
+ 		 * may still get logged and cause a machine check.  We should
+ 		 * only treat the non-write shadow case as non-recoverable.
+ 		 */
+-		if (!(mfspr(SPRN_L1CSR2) & L1CSR2_DCWS))
+-			recoverable = 0;
++		/* On e6500 core, L1 DCWS (Data cache write shadow mode) bit
++		 * is not implemented but L1 data cache always runs in write
++		 * shadow mode. Hence on data cache parity errors HW will
++		 * automatically invalidate the L1 Data Cache.
++		 */
++		if (PVR_VER(pvr) != PVR_VER_E6500) {
++			if (!(mfspr(SPRN_L1CSR2) & L1CSR2_DCWS))
++				recoverable = 0;
++		}
+ 	}
+ 
+ 	if (reason & MCSR_L2MMU_MHIT) {
 -- 
-2.11.0
+1.9.1
