@@ -2,15 +2,18 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wGTdl1tBTzDqBN
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wGTdl40tPzDqBP
  for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 May 2017 12:58:51 +1000 (AEST)
-In-Reply-To: <20170320063149.3068-2-npiggin@gmail.com>
-To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <20170322042156.11756-2-aik@ozlabs.ru>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [1/2] powerpc/pasemi: do not process external or decrementer
- interrupts from sreset
-Message-Id: <3wGTdl0j43z9sDB@ozlabs.org>
+Cc: kvm@vger.kernel.org, Alexey Kardashevskiy <aik@ozlabs.ru>,
+ kvm-ppc@vger.kernel.org, Alex Williamson <alex.williamson@redhat.com>,
+ Paul Mackerras <paulus@samba.org>, David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: [kernel, v11,
+ 01/10] powerpc/mmu: Add real mode support for IOMMU preregistered
+ memory
+Message-Id: <3wGTdl2zlQz9sN9@ozlabs.org>
 Date: Mon,  1 May 2017 12:58:51 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -21,34 +24,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2017-03-20 at 06:31:48 UTC, Nicholas Piggin wrote:
-> PA Semi will wake from low power state at the system reset interrupt,
-> with the event encoded in SRR1, rather than waking at the interrupt
-> vector that corresponds to that event.
+On Wed, 2017-03-22 at 04:21:47 UTC, Alexey Kardashevskiy wrote:
+> This makes mm_iommu_lookup() able to work in realmode by replacing
+> list_for_each_entry_rcu() (which can do debug stuff which can fail in
+> real mode) with list_for_each_entry_lockless().
 > 
-> The system reset handler for this platform decodes SRR1 event reason
-> and calls the interrupt handler to process it directly from the system
-> reset handlre.
+> This adds realmode version of mm_iommu_ua_to_hpa() which adds
+> explicit vmalloc'd-to-linear address conversion.
+> Unlike mm_iommu_ua_to_hpa(), mm_iommu_ua_to_hpa_rm() can fail.
 > 
-> A subsequent change will treat the system reset interrupt as a Linux NMI
-> with its own per-CPU stack, and this will no longer work. Remove the
-> external and decrementer handlers from the system reset handler.
+> This changes mm_iommu_preregistered() to receive @mm as in real mode
+> @current does not always have a correct pointer.
 > 
-> - The external exception remains raised and will fire again at the
->   EE interrupt vector when system reset returns.
+> This adds realmode version of mm_iommu_lookup() which receives @mm
+> (for the same reason as for mm_iommu_preregistered()) and uses
+> lockless version of list_for_each_entry_rcu().
 > 
-> - The decrementer is set to 1 so it will be raised again and fire when
->   the system reset returns.
-> 
-> It is possible to branch to an idle handler from the system reset
-> interrupt (like POWER does), then restore a normal stack and restore
-> this optimisation. But simplicity wins for now.
-> 
-> Tested-by: Christian Zigotzky <chzigotzky@xenosoft.de>
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 
-Series applied to powerpc next, thanks.
+Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/461e96a3374892d551fe270a975f33
+https://git.kernel.org/powerpc/c/6b5c19c55266f6efd10ffac0e9f9f2
 
 cheers
