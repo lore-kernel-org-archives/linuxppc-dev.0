@@ -1,24 +1,23 @@
 Return-Path: <roy.pledge@nxp.com>
-Received: from EUR01-VE1-obe.outbound.protection.outlook.com
- (mail-ve1eur01on0043.outbound.protection.outlook.com [104.47.1.43])
+Received: from NAM03-CO1-obe.outbound.protection.outlook.com
+ (mail-co1nam03on0069.outbound.protection.outlook.com [104.47.40.69])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wGtz92vLGzDq5W
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 May 2017 05:00:20 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wGyJK1XywzDq5W
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 May 2017 07:30:24 +1000 (AEST)
 From: Roy Pledge <roy.pledge@nxp.com>
-To: Scott Wood <oss@buserror.net>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>, "linux-arm-kernel@lists.infradead.org"
- <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org"
- <linux-kernel@vger.kernel.org>, "robin.murphy@arm.com" <robin.murphy@arm.com>
-CC: Madalin-Cristian Bucur <madalin.bucur@nxp.com>
-Subject: Re: [PATCH v2 07/11] soc/fsl/qbman: Rework ioremap() calls for ARM/PPC
-Date: Mon, 1 May 2017 19:00:14 +0000
-Message-ID: <VI1PR04MB3216F7EC8657711225E30AAC86140@VI1PR04MB3216.eurprd04.prod.outlook.com>
-References: <1492634930-10765-1-git-send-email-roy.pledge@nxp.com>
- <1492634930-10765-8-git-send-email-roy.pledge@nxp.com>
- <1492998461.25397.16.camel@buserror.net>
-Content-Type: text/plain; charset="us-ascii"
+To: <linuxppc-dev@lists.ozlabs.org>, <linux-arm-kernel@lists.infradead.org>,
+ <linux-kernel@vger.kernel.org>, <oss@buserror.net>, <robin.murphy@arm.com>
+CC: <madalin.bucur@nxp.com>, <roy.pledge@nxp.com>
+Subject: [PATCH v3 01/11] soc/fsl/qbman: Use shared-dma-pool for BMan private
+ memory allocations
+Date: Mon, 1 May 2017 17:30:03 -0400
+Message-ID: <1493674213-963-2-git-send-email-roy.pledge@nxp.com>
+In-Reply-To: <1493674213-963-1-git-send-email-roy.pledge@nxp.com>
+References: <1493674213-963-1-git-send-email-roy.pledge@nxp.com>
+Reply-To: <roy.pledge@nxp.com>
 MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,58 +27,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 4/23/2017 9:47 PM, Scott Wood wrote:=0A=
-> On Wed, 2017-04-19 at 16:48 -0400, Roy Pledge wrote:=0A=
->> Rework ioremap() for PPC and ARM. The PPC devices require a=0A=
->> non-coherent mapping while ARM will work with a non-cachable/write=0A=
->> combine mapping.=0A=
->>=0A=
->> Signed-off-by: Roy Pledge <roy.pledge@nxp.com>=0A=
->> ---=0A=
->>  drivers/soc/fsl/qbman/bman_portal.c | 16 +++++++++++++---=0A=
->>  drivers/soc/fsl/qbman/qman_portal.c | 16 +++++++++++++---=0A=
->>  2 files changed, 26 insertions(+), 6 deletions(-)=0A=
->>=0A=
->> diff --git a/drivers/soc/fsl/qbman/bman_portal.c=0A=
->> b/drivers/soc/fsl/qbman/bman_portal.c=0A=
->> index 8354d4d..a661f30 100644=0A=
->> --- a/drivers/soc/fsl/qbman/bman_portal.c=0A=
->> +++ b/drivers/soc/fsl/qbman/bman_portal.c=0A=
->> @@ -125,7 +125,18 @@ static int bman_portal_probe(struct platform_device=
-=0A=
->> *pdev)=0A=
->>  	}=0A=
->>  	pcfg->irq =3D irq;=0A=
->>  =0A=
->> -	va =3D ioremap_prot(addr_phys[0]->start, resource_size(addr_phys[0]),=
-=0A=
->> 0);=0A=
->> +#ifdef CONFIG_PPC=0A=
->> +	/* PPC requires a cacheable/non-coherent mapping of the portal */=0A=
->> +	va =3D ioremap_prot(addr_phys[0]->start, resource_size(addr_phys[0]),=
-=0A=
->> +			  (pgprot_val(PAGE_KERNEL) & ~_PAGE_COHERENT));=0A=
->> +#else=0A=
->> +	/*=0A=
->> +	 * For ARM we can use write combine mapping.  A cacheable/non=0A=
->> shareable=0A=
->> +	 * mapping will perform better but equires additional platform=0A=
->> +	 * support which is not currently available=0A=
->> +	 */=0A=
-> s/equires/requires/=0A=
->=0A=
-> Would be nice to describe the platform support that is required.=0A=
-Thanks for your feedback Scott, going to try to get a v3 of this set=0A=
-ASAP. I think I will remove the=0A=
-above statement for now.  We did send patches for do non-shareable=0A=
-support on DPAA2 and there was significant feedback so I'm in the=0A=
-process of discussing the issue with SOC architects here.  We will=0A=
-follow up with ARM folks on this eventually but I'd like to get the=0A=
-basic DPAA1 support in before adding the more advanced features.=0A=
-=0A=
-Roy=0A=
->=0A=
-> -Scott=0A=
->=0A=
->=0A=
-=0A=
+Use the shared-memory-pool mechanism for free buffer proxy record
+area allocation.
+
+Signed-off-by: Roy Pledge <roy.pledge@nxp.com>
+---
+ drivers/soc/fsl/qbman/bman_ccsr.c | 35 ++++++++++++++++++++++++++++++++++-
+ drivers/soc/fsl/qbman/bman_priv.h |  3 +++
+ 2 files changed, 37 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/soc/fsl/qbman/bman_ccsr.c b/drivers/soc/fsl/qbman/bman_ccsr.c
+index a8e8389..f126dbd 100644
+--- a/drivers/soc/fsl/qbman/bman_ccsr.c
++++ b/drivers/soc/fsl/qbman/bman_ccsr.c
+@@ -170,10 +170,11 @@ static int fsl_bman_probe(struct platform_device *pdev)
+ {
+ 	int ret, err_irq;
+ 	struct device *dev = &pdev->dev;
+-	struct device_node *node = dev->of_node;
++	struct device_node *mem_node, *node = dev->of_node;
+ 	struct resource *res;
+ 	u16 id, bm_pool_cnt;
+ 	u8 major, minor;
++	u64 size;
+ 
+ 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+ 	if (!res) {
+@@ -201,6 +202,38 @@ static int fsl_bman_probe(struct platform_device *pdev)
+ 		return -ENODEV;
+ 	}
+ 
++	/*
++	 * If FBPR memory wasn't defined using the qbman compatiable string
++	 * try using the of_reserved_mem_device method
++	 */
++	if (!fbpr_a) {
++		ret = of_reserved_mem_device_init(dev);
++		if (ret) {
++			dev_err(dev, "of_reserved_mem_device_init() failed 0x%x\n",
++				ret);
++			return -ENODEV;
++		}
++		mem_node = of_parse_phandle(dev->of_node, "memory-region", 0);
++		if (mem_node) {
++			ret = of_property_read_u64(mem_node, "size", &size);
++			if (ret) {
++				dev_err(dev, "FBPR: of_address_to_resource fails 0x%x\n",
++					ret);
++				return -ENODEV;
++			}
++			fbpr_sz = size;
++		} else {
++			dev_err(dev, "No memory-region found for FBPR\n");
++			return -ENODEV;
++		}
++		if (!dma_zalloc_coherent(dev, fbpr_sz, &fbpr_a, 0)) {
++			dev_err(dev, "Alloc FBPR memory failed\n");
++			return -ENODEV;
++		}
++	}
++
++	dev_dbg(dev, "Allocated FBPR 0x%llx 0x%zx\n", fbpr_a, fbpr_sz);
++
+ 	bm_set_memory(fbpr_a, fbpr_sz);
+ 
+ 	err_irq = platform_get_irq(pdev, 0);
+diff --git a/drivers/soc/fsl/qbman/bman_priv.h b/drivers/soc/fsl/qbman/bman_priv.h
+index f6896a2..765a4bf 100644
+--- a/drivers/soc/fsl/qbman/bman_priv.h
++++ b/drivers/soc/fsl/qbman/bman_priv.h
+@@ -33,6 +33,9 @@
+ #include "dpaa_sys.h"
+ 
+ #include <soc/fsl/bman.h>
++#include <linux/dma-contiguous.h>
++#include <linux/of_address.h>
++#include <linux/dma-mapping.h>
+ 
+ /* Portal processing (interrupt) sources */
+ #define BM_PIRQ_RCRI	0x00000002	/* RCR Ring (below threshold) */
+-- 
+2.7.4
