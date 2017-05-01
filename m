@@ -1,23 +1,24 @@
-Return-Path: <oss@buserror.net>
-Received: from host.buserror.net (host.buserror.net [209.198.135.123])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <roy.pledge@nxp.com>
+Received: from EUR01-VE1-obe.outbound.protection.outlook.com
+ (mail-ve1eur01on0043.outbound.protection.outlook.com [104.47.1.43])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wGsyc4zWjzDq5W
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 May 2017 04:14:48 +1000 (AEST)
-Message-ID: <1493662461.25397.29.camel@buserror.net>
-From: Scott Wood <oss@buserror.net>
-To: christophe leroy <christophe.leroy@c-s.fr>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
- <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Date: Mon, 01 May 2017 13:14:21 -0500
-In-Reply-To: <b0129071-0b09-a357-d262-19cf335f8224@c-s.fr>
-References: <20170309094204.ACF5567992@localhost.localdomain>
- <20170430064826.fags33gcyvpqigah@home.buserror.net>
- <b0129071-0b09-a357-d262-19cf335f8224@c-s.fr>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Subject: Re: powerpc/8xx: Adding support of IRQ in MPC8xx GPIO
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wGtz92vLGzDq5W
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 May 2017 05:00:20 +1000 (AEST)
+From: Roy Pledge <roy.pledge@nxp.com>
+To: Scott Wood <oss@buserror.net>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>, "linux-arm-kernel@lists.infradead.org"
+ <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org"
+ <linux-kernel@vger.kernel.org>, "robin.murphy@arm.com" <robin.murphy@arm.com>
+CC: Madalin-Cristian Bucur <madalin.bucur@nxp.com>
+Subject: Re: [PATCH v2 07/11] soc/fsl/qbman: Rework ioremap() calls for ARM/PPC
+Date: Mon, 1 May 2017 19:00:14 +0000
+Message-ID: <VI1PR04MB3216F7EC8657711225E30AAC86140@VI1PR04MB3216.eurprd04.prod.outlook.com>
+References: <1492634930-10765-1-git-send-email-roy.pledge@nxp.com>
+ <1492634930-10765-8-git-send-email-roy.pledge@nxp.com>
+ <1492998461.25397.16.camel@buserror.net>
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,31 +28,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2017-05-01 at 09:46 +0200, christophe leroy wrote:
-> 
-> Le 30/04/2017 à 08:48, Scott Wood a écrit :
-> > On Thu, Mar 09, 2017 at 10:42:04AM +0100, Christophe Leroy wrote:
-> > > 
-> > > @@ -625,6 +641,14 @@ int cpm1_gpiochip_add16(struct device_node *np)
-> > > 
-> > >  	spin_lock_init(&cpm1_gc->lock);
-> > > 
-> > > +	if (!of_property_read_u16(np, "interrupts-mask", &mask)) {
-> > > +		int i, j;
-> > > +
-> > > +		for (i = 0, j = 0; i < 16; i++)
-> > > +			if (mask & (1 << (15 - i)))
-> > > +				cpm1_gc->irq[i] =
-> > > irq_of_parse_and_map(np, j++);
-> > > +	}
-> > 
-> > Do we really need to use MSB-first bit numbering here?
-> 
-> Well, I think it is better to keep the GPIOs in the same order as in the 
-> CPM1 registers, like everywhere else in that driver, isn't it ?
-> 
-> The registers have GPIO 0 in the MSB and GPIO15 in the LSB.
-
-OK, if there's a specific register this is reflecting that's reasonable.
-
--Scott
+On 4/23/2017 9:47 PM, Scott Wood wrote:=0A=
+> On Wed, 2017-04-19 at 16:48 -0400, Roy Pledge wrote:=0A=
+>> Rework ioremap() for PPC and ARM. The PPC devices require a=0A=
+>> non-coherent mapping while ARM will work with a non-cachable/write=0A=
+>> combine mapping.=0A=
+>>=0A=
+>> Signed-off-by: Roy Pledge <roy.pledge@nxp.com>=0A=
+>> ---=0A=
+>>  drivers/soc/fsl/qbman/bman_portal.c | 16 +++++++++++++---=0A=
+>>  drivers/soc/fsl/qbman/qman_portal.c | 16 +++++++++++++---=0A=
+>>  2 files changed, 26 insertions(+), 6 deletions(-)=0A=
+>>=0A=
+>> diff --git a/drivers/soc/fsl/qbman/bman_portal.c=0A=
+>> b/drivers/soc/fsl/qbman/bman_portal.c=0A=
+>> index 8354d4d..a661f30 100644=0A=
+>> --- a/drivers/soc/fsl/qbman/bman_portal.c=0A=
+>> +++ b/drivers/soc/fsl/qbman/bman_portal.c=0A=
+>> @@ -125,7 +125,18 @@ static int bman_portal_probe(struct platform_device=
+=0A=
+>> *pdev)=0A=
+>>  	}=0A=
+>>  	pcfg->irq =3D irq;=0A=
+>>  =0A=
+>> -	va =3D ioremap_prot(addr_phys[0]->start, resource_size(addr_phys[0]),=
+=0A=
+>> 0);=0A=
+>> +#ifdef CONFIG_PPC=0A=
+>> +	/* PPC requires a cacheable/non-coherent mapping of the portal */=0A=
+>> +	va =3D ioremap_prot(addr_phys[0]->start, resource_size(addr_phys[0]),=
+=0A=
+>> +			  (pgprot_val(PAGE_KERNEL) & ~_PAGE_COHERENT));=0A=
+>> +#else=0A=
+>> +	/*=0A=
+>> +	 * For ARM we can use write combine mapping.  A cacheable/non=0A=
+>> shareable=0A=
+>> +	 * mapping will perform better but equires additional platform=0A=
+>> +	 * support which is not currently available=0A=
+>> +	 */=0A=
+> s/equires/requires/=0A=
+>=0A=
+> Would be nice to describe the platform support that is required.=0A=
+Thanks for your feedback Scott, going to try to get a v3 of this set=0A=
+ASAP. I think I will remove the=0A=
+above statement for now.  We did send patches for do non-shareable=0A=
+support on DPAA2 and there was significant feedback so I'm in the=0A=
+process of discussing the issue with SOC architects here.  We will=0A=
+follow up with ARM folks on this eventually but I'd like to get the=0A=
+basic DPAA1 support in before adding the more advanced features.=0A=
+=0A=
+Roy=0A=
+>=0A=
+> -Scott=0A=
+>=0A=
+>=0A=
+=0A=
