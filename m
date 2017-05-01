@@ -1,21 +1,21 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
- [IPv6:2607:f8b0:400e:c05::241])
+Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
+ [IPv6:2607:f8b0:400e:c00::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wGjgp5xXZzDqFH
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 May 2017 22:01:26 +1000 (AEST)
-Received: by mail-pg0-x241.google.com with SMTP id c2so5323520pga.2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 01 May 2017 05:01:26 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wGjgt2HfzzDqH7
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 May 2017 22:01:30 +1000 (AEST)
+Received: by mail-pf0-x244.google.com with SMTP id v14so27486756pfd.3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 01 May 2017 05:01:30 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Nicholas Piggin <npiggin@gmail.com>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH 1/2] powerpc/64s: Fix FIXUP_ENDIAN non-maskable interrupt
+Subject: [PATCH 2/2] powerpc/64s: Fix OPAL_CALL non-maskable interrupt
  reentrancy
-Date: Mon,  1 May 2017 22:01:09 +1000
-Message-Id: <20170501120110.21888-2-npiggin@gmail.com>
+Date: Mon,  1 May 2017 22:01:10 +1000
+Message-Id: <20170501120110.21888-3-npiggin@gmail.com>
 In-Reply-To: <20170501120110.21888-1-npiggin@gmail.com>
 References: <20170501120110.21888-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,68 +27,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-FIXUP_ENDIAN uses SRR[01] with MSR_RI=1, which gets corrupted if there
+OPAL_CALL uses SRR[01] with MSR_RI=1, which gets corrupted if there
 is an interleaving system reset or machine check interrupt.
 
-Set MSR_RI=0 before setting SRRs. The rfid will restore MSR.
+Use HSRR[01] instead, which does not require MSR_RI=0.
 
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/boot/ppc_asm.h        | 12 +++++++-----
- arch/powerpc/include/asm/ppc_asm.h | 11 +++++++----
- 2 files changed, 14 insertions(+), 9 deletions(-)
+ arch/powerpc/platforms/powernv/opal-wrappers.S | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/boot/ppc_asm.h b/arch/powerpc/boot/ppc_asm.h
-index b03373d8b386..68e388ee94fe 100644
---- a/arch/powerpc/boot/ppc_asm.h
-+++ b/arch/powerpc/boot/ppc_asm.h
-@@ -67,13 +67,15 @@
- #define MSR_LE		0x0000000000000001
+diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
+index f620572f891f..4ca6c26a56d5 100644
+--- a/arch/powerpc/platforms/powernv/opal-wrappers.S
++++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
+@@ -99,10 +99,10 @@ opal_return:
+ 	lwz	r4,8(r1);
+ 	ld	r5,PPC_LR_STKOFF(r1);
+ 	ld	r6,PACASAVEDMSR(r13);
+-	mtspr	SPRN_SRR0,r5;
+-	mtspr	SPRN_SRR1,r6;
+ 	mtcr	r4;
+-	rfid
++	mtspr	SPRN_HSRR0,r5;
++	mtspr	SPRN_HSRR1,r6;
++	hrfid
  
- #define FIXUP_ENDIAN						   \
--	tdi   0, 0, 0x48; /* Reverse endian of b . + 8		*/ \
--	b     $+36;	  /* Skip trampoline if endian is good	*/ \
--	.long 0x05009f42; /* bcl 20,31,$+4			*/ \
--	.long 0xa602487d; /* mflr r10				*/ \
--	.long 0x1c004a39; /* addi r10,r10,28			*/ \
-+	tdi   0,0,0x48;	  /* Reverse endian of b . + 8		*/ \
-+	b     $+44;	  /* Skip trampoline if endian is good	*/ \
- 	.long 0xa600607d; /* mfmsr r11				*/ \
- 	.long 0x01006b69; /* xori r11,r11,1			*/ \
-+	.long 0x00004039; /* li r10,0				*/ \
-+	.long 0x6401417d; /* mtmsrd r10,1			*/ \
-+	.long 0x05009f42; /* bcl 20,31,$+4			*/ \
-+	.long 0xa602487d; /* mflr r10				*/ \
-+	.long 0x14004a39; /* addi r10,r10,20			*/ \
- 	.long 0xa6035a7d; /* mtsrr0 r10				*/ \
- 	.long 0xa6037b7d; /* mtsrr1 r11				*/ \
- 	.long 0x2400004c  /* rfid				*/
-diff --git a/arch/powerpc/include/asm/ppc_asm.h b/arch/powerpc/include/asm/ppc_asm.h
-index 359c44341761..6baeeb9acd0d 100644
---- a/arch/powerpc/include/asm/ppc_asm.h
-+++ b/arch/powerpc/include/asm/ppc_asm.h
-@@ -770,15 +770,18 @@ END_FTR_SECTION_IFCLR(CPU_FTR_601)
- #else
- #define FIXUP_ENDIAN						   \
- 	tdi   0,0,0x48;	  /* Reverse endian of b . + 8		*/ \
--	b     $+36;	  /* Skip trampoline if endian is good	*/ \
--	.long 0x05009f42; /* bcl 20,31,$+4			*/ \
--	.long 0xa602487d; /* mflr r10				*/ \
--	.long 0x1c004a39; /* addi r10,r10,28			*/ \
-+	b     $+44;	  /* Skip trampoline if endian is good	*/ \
- 	.long 0xa600607d; /* mfmsr r11				*/ \
- 	.long 0x01006b69; /* xori r11,r11,1			*/ \
-+	.long 0x00004039; /* li r10,0				*/ \
-+	.long 0x6401417d; /* mtmsrd r10,1			*/ \
-+	.long 0x05009f42; /* bcl 20,31,$+4			*/ \
-+	.long 0xa602487d; /* mflr r10				*/ \
-+	.long 0x14004a39; /* addi r10,r10,20			*/ \
- 	.long 0xa6035a7d; /* mtsrr0 r10				*/ \
- 	.long 0xa6037b7d; /* mtsrr1 r11				*/ \
- 	.long 0x2400004c  /* rfid				*/
-+
- #endif /* !CONFIG_PPC_BOOK3E */
- 
- #endif /*  __ASSEMBLY__ */
+ opal_real_call:
+ 	mfcr	r11
 -- 
 2.11.0
