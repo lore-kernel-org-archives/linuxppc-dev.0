@@ -1,19 +1,16 @@
-Return-Path: <davem@davemloft.net>
-Received: from shards.monkeyblade.net (unknown [184.105.139.130])
- by lists.ozlabs.org (Postfix) with ESMTP id 3wGTSw0JrkzDqGr
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 May 2017 12:51:10 +1000 (AEST)
-Date: Sun, 30 Apr 2017 22:50:56 -0400 (EDT)
-Message-Id: <20170430.225056.522551868142970014.davem@davemloft.net>
-To: swood@redhat.com
-Cc: Yuval.Mintz@cavium.com, ariel.elior@cavium.com,
- everest-linux-l2@cavium.com, netdev@vger.kernel.org, edumazet@google.com,
- mschmidt@redhat.com, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH net] bnx2x: Align RX buffers
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20170429001741.14563-1-swood@redhat.com>
-References: <20170429001741.14563-1-swood@redhat.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wGTdk2QjLzDqBN
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 May 2017 12:58:50 +1000 (AEST)
+In-Reply-To: <20161126032612.13559-2-npiggin@gmail.com>
+To: Nicholas Piggin <npiggin@gmail.com>
+From: Michael Ellerman <patch-notifications@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [1/4] powerpc: use the new post-link pass to check relocations
+Message-Id: <3wGTdk1gTfz9sDF@ozlabs.org>
+Date: Mon,  1 May 2017 12:58:50 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,22 +20,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Scott Wood <swood@redhat.com>
-Date: Fri, 28 Apr 2017 19:17:41 -0500
-
-> The bnx2x driver is not providing proper alignment on the receive buffers it
-> passes to build_skb(), causing skb_shared_info to be misaligned.
-> skb_shared_info contains an atomic, and while PPC normally supports
-> unaligned accesses, it does not support unaligned atomics.
+On Sat, 2016-11-26 at 03:26:09 UTC, Nicholas Piggin wrote:
+> Currently powerpc has to introduce a dependency on its default
+> build target zImage in order to run a relocation check pass
+> over the linked vmlinux. This is deficient because the check
+> is not run if the plain vmlinux target is built, or if one of
+> the other boot targets is built.
 > 
-> Aligning the size of rx buffers will ensure that page_frag_alloc() returns
-> aligned addresses.
+> Switch to using the kbuild post-link pass in order to run this
+> check. In future powerpc will use this to do more complicated
+> operations, but initially using it for something simple is a
+> good first step.
 > 
-> This can be reproduced on PPC by setting the network MTU to 1450 (or other
-> non-multiple-of-4) and then generating sufficient inbound network traffic
-> (one or two large "wget"s usually does it), producing the following oops:
- ...
-> Fixes: d46d132cc021 ("bnx2x: use netdev_alloc_frag()")
-> Signed-off-by: Scott Wood <swood@redhat.com>
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 
-Applied, thanks.
+Applied to powerpc next, thanks.
+
+https://git.kernel.org/powerpc/c/f188d0524d7e09f7ec801df9761dc1
+
+cheers
