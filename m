@@ -1,24 +1,19 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wHKd42n80zDq9m
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 May 2017 22:01:12 +1000 (AEST)
-Subject: Re: [PATCH v2] powerpc/mm: Only read faulting instruction when
- necessary in do_page_fault()
-To: Nicholas Piggin <npiggin@gmail.com>
-References: <20170428061301.27B826E713@localhost.localdomain>
- <20170501130023.3c10e00d@roar.ozlabs.ibm.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Scott Wood <oss@buserror.net>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-From: Christophe LEROY <christophe.leroy@c-s.fr>
-Message-ID: <3955deea-141f-cbc9-2180-918ef165b823@c-s.fr>
-Date: Tue, 2 May 2017 14:01:08 +0200
+Return-Path: <schindele@nentec.de>
+Received: from dmz-mail.nentec.de (gate.nentec.de [213.218.23.37])
+ by lists.ozlabs.org (Postfix) with SMTP id 3wHLYs2WcQzDq9m
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 May 2017 22:43:27 +1000 (AEST)
+From: Juergen Schindele <schindele@nentec.de>
+To: Scott Wood <oss@buserror.net>
+Reply-To: schindele@nentec.de
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: Re: Freescale mpc8315 IRQ0 setup
+Date: Tue, 02 May 2017 14:43:08 +0200
+Message-ID: <1715435.xdU3769208@sherry>
+In-Reply-To: <20170430065543.iamwy5yvk7tcpmc7@home.buserror.net>
+References: <2666241.ms6yMRjznt@sherry>
+ <20170430065543.iamwy5yvk7tcpmc7@home.buserror.net>
 MIME-Version: 1.0
-In-Reply-To: <20170501130023.3c10e00d@roar.ozlabs.ibm.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Type: multipart/mixed; boundary="nextPart5576059.gOoqe1dKmm"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,110 +23,78 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+This is a multi-part message in MIME format.
+
+--nextPart5576059.gOoqe1dKmm
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="iso-8859-1"
+
+Dear Scott,
+sorry for the delay but i am not very familiar with the formating.
+I passed the patch trough checkpatch.pl and there was no more error.
+pease find patch in attached file.
+Thanks
+--=20
+i. A.
+J=FCrgen Schindele
+Softwareentwicklung
+
+PSI Nentec GmbH
+Greschbachstra=DFe 12
+76229 Karlsruhe
+Deutschland
+Telefon: +49 721 94249-51
+Telefax: +49 721 94249-10
+schindele@nentec.de
+www.nentec.de
+
+Gesch=E4ftsf=FChrung: Klaus Becker, Wolfgang Fischer
+Sitz der Gesellschaft: Karlsruhe
+Handelsregister: Amtsgericht Mannheim HRB 107658
+
+Diese E-Mail enth=E4lt vertrauliche oder rechtlich gesch=FCtzte Informa=
+tionen.=20
+Wenn Sie nicht der vorgesehene Empf=E4nger sind, informieren Sie bitte =
+sofort=20
+den Absender und l=F6schen Sie diese E-Mail. Das unbefugte Kopieren die=
+ser E-
+Mail oder die unbefugte Weitergabe der enthaltenen Informationen ist ni=
+cht=20
+gestattet.
+
+The information contained in this message is confidential or protected =
+by law.=20
+If you are not the intended recipient, please contact the sender and de=
+lete=20
+this message. Any unauthorised copying of this message or unauthorised=20=
+
+distribution of the information contained herein is prohibited. 
+--nextPart5576059.gOoqe1dKmm
+Content-Disposition: attachment; filename="ipic.patch"
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/x-patch; charset="UTF-8"; name="ipic.patch"
+
+[PATCH] configure "EDGE" capabilities for IRQ0 (like IRQ1-7)
+Signed-off-by: Jurgen Schindele <schindele@nentec.de>
+--- linux-a/arch/powerpc/sysdev/ipic.c        2017-04-04 15:28:11.201308780 +0200
++++ linux-b/arch/powerpc/sysdev/ipic.c        2016-12-11 20:17:54.000000000 +0100
+@@ -315,7 +315,6 @@ static struct ipic_info ipic_info[] = {
+                .prio_mask = 7,
+        },
+        [48] = {
+-               .ack    = IPIC_SEPNR,
+                .mask   = IPIC_SEMSR,
+                .prio   = IPIC_SMPRR_A,
+                .force  = IPIC_SEFCR,
+@@ -618,7 +617,7 @@ static int ipic_set_irq_type(struct irq_
+        /* ipic supports only edge mode on external interrupts */
+        if ((flow_type & IRQ_TYPE_EDGE_FALLING) && !ipic_info[src].ack) {
+                printk(KERN_ERR "ipic: edge sense not supported on internal "
+-                               "interrupts %d\n", src);
++				"interrupts\n");
+                return -EINVAL;
+
+        }
 
 
-Le 01/05/2017 à 05:00, Nicholas Piggin a écrit :
-> On Fri, 28 Apr 2017 08:13:01 +0200 (CEST)
-> Christophe Leroy <christophe.leroy@c-s.fr> wrote:
->
->> Commit a7a9dcd882a67 ("powerpc: Avoid taking a data miss on every
->> userspace instruction miss") has shown that limiting the read of
->> faulting instruction to likely cases improves performance.
->>
->> This patch goes further into this direction by limiting the read
->> of the faulting instruction to the only cases where it is definitly
->> needed.
->>
->> On an MPC885, with the same benchmark app as in the commit referred
->> above, we see a reduction of 4000 dTLB misses (approx 3%):
->>
->> Before the patch:
->>  Performance counter stats for './fault 500' (10 runs):
->>
->>          720495838      cpu-cycles                                                    ( +-  0.04% )
->>             141769      dTLB-load-misses                                              ( +-  0.02% )
->>              52722      iTLB-load-misses                                              ( +-  0.01% )
->>              19611      faults                                                        ( +-  0.02% )
->>
->>        5.750535176 seconds time elapsed                                          ( +-  0.16% )
->>
->> With the patch:
->>  Performance counter stats for './fault 500' (10 runs):
->>
->>          717669123      cpu-cycles                                                    ( +-  0.02% )
->>             137344      dTLB-load-misses                                              ( +-  0.03% )
->>              52731      iTLB-load-misses                                              ( +-  0.01% )
->>              19614      faults                                                        ( +-  0.03% )
->>
->>        5.728423115 seconds time elapsed                                          ( +-  0.14% )
->>
->> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
->> ---
->>  v2: Changes 'if (cond1) if (cond2)' by 'if (cond1 && cond2)'
->>
->>  In case the instruction we read has value 0, store_update_sp() will
->>  return false, so it will bail out.
->>
->>  This patch applies after the serie "powerpc/mm: some cleanup of do_page_fault()"
->>
->>  arch/powerpc/mm/fault.c | 22 ++++++++++++----------
->>  1 file changed, 12 insertions(+), 10 deletions(-)
->>
->> diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
->> index 400f2d0d42f8..2ec82a279d28 100644
->> --- a/arch/powerpc/mm/fault.c
->> +++ b/arch/powerpc/mm/fault.c
->> @@ -280,14 +280,6 @@ int do_page_fault(struct pt_regs *regs, unsigned long address,
->>
->>  	perf_sw_event(PERF_COUNT_SW_PAGE_FAULTS, 1, regs, address);
->>
->> -	/*
->> -	 * We want to do this outside mmap_sem, because reading code around nip
->> -	 * can result in fault, which will cause a deadlock when called with
->> -	 * mmap_sem held
->> -	 */
->> -	if (is_write && is_user)
->> -		__get_user(inst, (unsigned int __user *)regs->nip);
->> -
->>  	if (is_user)
->>  		flags |= FAULT_FLAG_USER;
->>
->> @@ -356,8 +348,18 @@ int do_page_fault(struct pt_regs *regs, unsigned long address,
->>  		 * between the last mapped region and the stack will
->>  		 * expand the stack rather than segfaulting.
->>  		 */
->> -		if (address + 2048 < uregs->gpr[1] && !store_updates_sp(inst))
->> -			goto bad_area;
->> +		if (address + 2048 < uregs->gpr[1] && !inst) {
->> +			/*
->> +			 * We want to do this outside mmap_sem, because reading
->> +			 * code around nip can result in fault, which will cause
->> +			 * a deadlock when called with mmap_sem held
->> +			 */
->> +			up_read(&mm->mmap_sem);
->> +			__get_user(inst, (unsigned int __user *)regs->nip);
->> +			if (!store_updates_sp(inst))
->> +				goto bad_area_nosemaphore;
->> +			goto retry;
->> +		}
->
-> Yes, nice patch. I wonder if you can do __get_user first as non-faulting to
-> avoid retaking the mmap_sem and retrying? Along the lines of:
->
-> +               nip = (unsigned int __user *)regs->nip;
-> +               pagefault_disable();
-> +               if (unlikely(__get_user_inatomic(inst, nip))) {
-> +                       pagefault_enable();
-> +                       up_read(&mm->mmap_sem);
-> +                       if (get_user(inst, nip)) {
->                            ...
->                            goto retry;
->
-> The user instruction should practically always have a Linux pte, so a
-> fault there should be exceedingly rare, I think?
-
-Thanks Nick.
-I have submitted a new version of the patch taking your suggestion into 
-accout.
-
-Christophe
+--nextPart5576059.gOoqe1dKmm--
