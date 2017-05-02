@@ -1,55 +1,42 @@
-Return-Path: <srs0=inet=4i=linux.vnet.ibm.com=mahesh@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Return-Path: <srs0=sp/h=4i=linux.vnet.ibm.com=fbarrat@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wHB6V24DNzDqBQ
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 May 2017 16:22:42 +1000 (AEST)
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3wHB6V1N3kz8sxx
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 May 2017 16:22:42 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wHDqH28ZSzDqBQ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 May 2017 18:24:43 +1000 (AEST)
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3wHDqH1YPYz8sxs
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 May 2017 18:24:43 +1000 (AEST)
 Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3wHB6T4ZRzz9sDB
- for <linuxppc-dev@ozlabs.org>; Tue,  2 May 2017 16:22:41 +1000 (AEST)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v426IpTX073047
- for <linuxppc-dev@ozlabs.org>; Tue, 2 May 2017 02:22:39 -0400
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2a6frwmben-1
+ by ozlabs.org (Postfix) with ESMTPS id 3wHDqG3vWKz9sDF
+ for <linuxppc-dev@ozlabs.org>; Tue,  2 May 2017 18:24:42 +1000 (AEST)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v428JXKJ101141
+ for <linuxppc-dev@ozlabs.org>; Tue, 2 May 2017 04:24:40 -0400
+Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2a6n89mvwf-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Tue, 02 May 2017 02:22:38 -0400
+ for <linuxppc-dev@ozlabs.org>; Tue, 02 May 2017 04:24:39 -0400
 Received: from localhost
- by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
- Tue, 2 May 2017 16:22:36 +1000
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v426MQkQ1966366
- for <linuxppc-dev@ozlabs.org>; Tue, 2 May 2017 16:22:34 +1000
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v426LuVP023182
- for <linuxppc-dev@ozlabs.org>; Tue, 2 May 2017 16:21:57 +1000
-Date: Tue, 2 May 2017 11:51:32 +0530
-From: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
-To: Daniel Axtens <dja@axtens.net>
-Cc: Michael Ellerman <mpe@ellerman.id.au>,
- linuxppc-dev <linuxppc-dev@ozlabs.org>
-Subject: Re: [PATCH v2] powerpc/book3s: mce: Move add_taint() later in
- virtual mode.
-Reply-To: mahesh@linux.vnet.ibm.com
-References: <149253349689.12722.1516352063236500616.stgit@jupiter.in.ibm.com>
- <874lxjbak1.fsf@possimpible.ozlabs.ibm.com>
- <87r30mtnc2.fsf@concordia.ellerman.id.au>
- <87y3ug1u1t.fsf@possimpible.ozlabs.ibm.com>
+ for <linuxppc-dev@ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
+ Tue, 2 May 2017 09:24:38 +0100
+Subject: Re: [PATCH v4] cxl: mask slice error interrupts after first occurrence
+To: "Alastair D'Silva" <alastair@au1.ibm.com>, linuxppc-dev@ozlabs.org
+References: <20170501005331.20131-3-alastair@au1.ibm.com>
+Cc: "Alastair D'Silva" <alastair@d-silva.org>, vaibhav@linux.vnet.ibm.com,
+ andrew.donnellan@au1.ibm.com, frederic.barrat@fr.ibm.com
+From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+Date: Tue, 2 May 2017 10:24:08 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <87y3ug1u1t.fsf@possimpible.ozlabs.ibm.com>
-Message-Id: <20170502062132.GA30664@in.ibm.com>
+In-Reply-To: <20170501005331.20131-3-alastair@au1.ibm.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Message-Id: <63a4754d-6070-cfce-1f9c-5306d46a6436@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -59,154 +46,118 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2017-05-02 01:22:06 Tue, Daniel Axtens wrote:
-> Michael Ellerman <mpe@ellerman.id.au> writes:
-> 
-> > Daniel Axtens <dja@axtens.net> writes:
-> >>> diff --git a/arch/powerpc/kernel/mce.c b/arch/powerpc/kernel/mce.c
-> >>> index a1475e6..b23b323 100644
-> >>> --- a/arch/powerpc/kernel/mce.c
-> >>> +++ b/arch/powerpc/kernel/mce.c
-> >>> @@ -221,6 +221,8 @@ static void machine_check_process_queued_event(struct irq_work *work)
-> >>>  {
-> >>>  	int index;
-> >>>  
-> >>> +	add_taint(TAINT_MACHINE_CHECK, LOCKDEP_NOW_UNRELIABLE);
-> >>> +
-> >> This bit makes sense...
-> >>
-> >>> diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-> >>> index ff365f9..af97e81 100644
-> >>> --- a/arch/powerpc/kernel/traps.c
-> >>> +++ b/arch/powerpc/kernel/traps.c
-> >>> @@ -741,6 +739,8 @@ void machine_check_exception(struct pt_regs *regs)
-> >>>  
-> >>>  	__this_cpu_inc(irq_stat.mce_exceptions);
-> >>>  
-> >>> +	add_taint(TAINT_MACHINE_CHECK, LOCKDEP_NOW_UNRELIABLE);
-> >>> +
-> >>
-> >> But this bit I'm not sure about.
-> >>
-> >> Isn't machine_check_exception called from asm in
-> >> kernel/exceptions-64s.S? As in, it's called really early/in real mode?
-> >
-> > It is called from there, in asm, but not from real mode AFAICS.
-> >
-> > There's a call from machine_check_common(), we're already in virtual
-> > mode there.
-> >
-> > The other call is from unrecover_mce(), and both places that call that
-> > do so via rfid, using PACAKMSR, which should turn on virtual mode.
-> >
-> >
-> > But none of that really matters. The fundamental issue here is we can't
-> > recursively call OPAL, that's what matters.
-> 
-> Ah right, yes. Every time I think I understand MCEs, it is made plain to
-> me that I do not. I have been trying to compose a coherent reply for
-> over an hour and every time I think I have got somewhere I find a
-> massive issue in my understanding. But here goes!
-> 
-> > So if we were in OPAL and take an MCE, then we must not call OPAL again
-> > from the MCE handler.
-> 
-> If I'm correctly understanding the code, this includes the non-early
-> handlers (ppc_md.machine_check_exception) as well as the early handlers
-> (ppc_md.machine_check_early). Is that right?
 
-Yes, the early handler runs in real mode and non-early handler gets called
-in virtual mode. The early handler tries to recover from soft errors and
-generates an MCE event. There are following scenarios where above handler's
-get called depending on whether error have been recovered or not:
 
-1. MCE in kernel/OPAL
-	- Call ppc_md.machine_check_early() handler in real mode
-	  - Try to recover from soft errors and generate event.
-	  - if Recovered:
-	    - queue the event for work queue to print later
-	    - Go back to kernel/OPAL code
-	  - else if not recovered
-	    - Switch to virtual mode
-	    - call ppc_md.machine_check_exception()
-	      - print event and panic
+Le 01/05/2017 à 02:53, Alastair D'Silva a écrit :
+> From: Alastair D'Silva <alastair@d-silva.org>
+>
+> In some situations, a faulty AFU slice may create an interrupt storm of
+> slice errors, rendering the machine unusable. Since these interrupts are
+> informational only, present the interrupt once, then mask it off to
+> prevent it from being retriggered until the AFU is reset.
+>
+> Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
+> ---
 
-2. MCE in userspace
-	- Call ppc_md.machine_check_early() handler in real mode
-          - Try to recover from soft errors and generate event.
-	- Switch to virtual mode
-	- call ppc_md.machine_check_exception()
-          - Print event.
-	  - if recovered:
-	    - Return from interrupt.
-	  - else if not recovered:
-	    - Kill the process
-	    - Return from interrupt.
-> 
-> So the only place we're safe to do prints is in the 'bottom half' on the
-> other side of the work queue?
-> 
-> > This fixes one case where we know that can happen, but AFAICS we are not
-> > protected in general from it.
-> >
-> > For example if we take an MCE in OPAL, decide it's not recoverable and
-> > go to unrecover_mce(), that will call machine_check_exception() which
-> > can then call OPAL via printk.
-> 
-> (Assuming I understand the code, we probably won't get that far because
-> we'll attempt an opal reboot and a panic in opal_machine_check - but
-> carrying on...)
-> 
-> I think I see what you mean: even without any tainting, panic() will
-> printk(), which will take us back to OPAL.
-> 
-> I *think* we can fix this with a tweak to opal_machine_check. It pulls
-> the event off the work-queue and prints it, but I now think it
-> shouldn't; it just try to recover. If it can't recover it should proceed
-> to do the opal_cec_reboot2. That might fail on a BMC system or an early
-> firmware level, leaving the machine hosed, but it was about to panic
-> anyway.
-> 
-> We can then leave popping the event and printing it to the bottom
-> half/work queue.
-> 
-> ... assuming I have understood it correctly. Thoughts?
-> 
-> > Or maybe there's a check in there somewhere that makes it OK, but it's
-> > not clear to me.
-> 
-> More immediately, what I'm confused by (amongst many other things!) -
-> and maybe Mahesh you can enlighten me - is this: what situation is
-> caught by this add_taint() in machine_check_exception? If we're about to
-> die, tainting the kernel is probably not the most useful thing to do. As
-> I understand it, if we're not about to die, we'll print out the taint in
-> the 'bottom half'/work queue side. Is this right?
 
-machine_check_exception() gets called for unrecovered MCE in kernel/OPAL, and
-MCE in userspace. For MCE in kernel and userspace, we are safe to call
-add_taint from machine_check_exception() even if it calls OPAL for printk.
+Thanks!
 
-Now for MCE in OPAL, there are two cases:
-1. Recovered MCE:
-   - MCE handler queue's up the event to print it later
-   - Return to currently executing OPAL routine.
-   - When scheduled, work queue calls the add_taint and prints the event.
-   - machine_check_exception() never gets called.
+Acked-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
 
-   Not calling add_taint() (or anything that could make OPAL call) from MCE
-   handler prevents OPAL stack corruption. This makes MCE handler to
-   safely return to currently executing OPAL routine.
 
-2. Unrecovered MCE:
-   - Can't return to currently executing OPAL routine.
-   - kernel needs to print the event and call panic.
-   - Switch to virtual mode and call machine_check_exception()
-   - machine_check_exception() calls add_taint() and panic()
 
-Now for case (2), kernel needs to panic. Since MCE handler will never go back
-to currently executing OPAL routine, we should be now safe to call add_taint()
-or new OPAL call. Kernel can now print event and head to panic or call
-opal_cec_reboot2().
-
-Thanks,
--Mahesh.
+> Changelog:
+> v4:
+> 	Fix duplicate/missing entries in aggregate macros
+> 	Minor textual changes
+> v3
+>         Add CXL_PSL_SERR_An_IRQS, CXL_PSL_SERR_An_IRQ_MASKS macros
+>         Explicitly reenable masked interrupts after reset
+>         Issue an info line that subsequent interrupts will be masked
+> v2
+>         Rebase against linux-next
+> ---
+>  drivers/misc/cxl/cxl.h    | 18 ++++++++++++++++++
+>  drivers/misc/cxl/native.c | 19 +++++++++++++++++--
+>  2 files changed, 35 insertions(+), 2 deletions(-)
+>
+> diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
+> index 452e209..c8568ea 100644
+> --- a/drivers/misc/cxl/cxl.h
+> +++ b/drivers/misc/cxl/cxl.h
+> @@ -228,6 +228,24 @@ static const cxl_p2n_reg_t CXL_PSL_WED_An     = {0x0A0};
+>  #define CXL_PSL_SERR_An_llcmdto	(1ull << (63-6))
+>  #define CXL_PSL_SERR_An_afupar	(1ull << (63-7))
+>  #define CXL_PSL_SERR_An_afudup	(1ull << (63-8))
+> +#define CXL_PSL_SERR_An_IRQS	( \
+> +	CXL_PSL_SERR_An_afuto | CXL_PSL_SERR_An_afudis | CXL_PSL_SERR_An_afuov | \
+> +	CXL_PSL_SERR_An_badsrc | CXL_PSL_SERR_An_badctx | CXL_PSL_SERR_An_llcmdis | \
+> +	CXL_PSL_SERR_An_llcmdto | CXL_PSL_SERR_An_afupar | CXL_PSL_SERR_An_afudup)
+> +#define CXL_PSL_SERR_An_afuto_mask	(1ull << (63-32))
+> +#define CXL_PSL_SERR_An_afudis_mask	(1ull << (63-33))
+> +#define CXL_PSL_SERR_An_afuov_mask	(1ull << (63-34))
+> +#define CXL_PSL_SERR_An_badsrc_mask	(1ull << (63-35))
+> +#define CXL_PSL_SERR_An_badctx_mask	(1ull << (63-36))
+> +#define CXL_PSL_SERR_An_llcmdis_mask	(1ull << (63-37))
+> +#define CXL_PSL_SERR_An_llcmdto_mask	(1ull << (63-38))
+> +#define CXL_PSL_SERR_An_afupar_mask	(1ull << (63-39))
+> +#define CXL_PSL_SERR_An_afudup_mask	(1ull << (63-40))
+> +#define CXL_PSL_SERR_An_IRQ_MASKS	( \
+> +	CXL_PSL_SERR_An_afuto_mask | CXL_PSL_SERR_An_afudis_mask | CXL_PSL_SERR_An_afuov_mask | \
+> +	CXL_PSL_SERR_An_badsrc_mask | CXL_PSL_SERR_An_badctx_mask | CXL_PSL_SERR_An_llcmdis_mask | \
+> +	CXL_PSL_SERR_An_llcmdto_mask | CXL_PSL_SERR_An_afupar_mask | CXL_PSL_SERR_An_afudup_mask)
+> +
+>  #define CXL_PSL_SERR_An_AE	(1ull << (63-30))
+>
+>  /****** CXL_PSL_SCNTL_An ****************************************************/
+> diff --git a/drivers/misc/cxl/native.c b/drivers/misc/cxl/native.c
+> index 194c58e..290950b 100644
+> --- a/drivers/misc/cxl/native.c
+> +++ b/drivers/misc/cxl/native.c
+> @@ -95,12 +95,23 @@ int cxl_afu_disable(struct cxl_afu *afu)
+>  /* This will disable as well as reset */
+>  static int native_afu_reset(struct cxl_afu *afu)
+>  {
+> +	int rc;
+> +	u64 serr;
+> +
+>  	pr_devel("AFU reset request\n");
+>
+> -	return afu_control(afu, CXL_AFU_Cntl_An_RA, 0,
+> +	rc = afu_control(afu, CXL_AFU_Cntl_An_RA, 0,
+>  			   CXL_AFU_Cntl_An_RS_Complete | CXL_AFU_Cntl_An_ES_Disabled,
+>  			   CXL_AFU_Cntl_An_RS_MASK | CXL_AFU_Cntl_An_ES_MASK,
+>  			   false);
+> +
+> +	/* Re-enable any masked interrupts */
+> +	serr = cxl_p1n_read(afu, CXL_PSL_SERR_An);
+> +	serr &= ~CXL_PSL_SERR_An_IRQ_MASKS;
+> +	cxl_p1n_write(afu, CXL_PSL_SERR_An, serr);
+> +
+> +
+> +	return rc;
+>  }
+>
+>  static int native_afu_check_and_enable(struct cxl_afu *afu)
+> @@ -1205,7 +1216,7 @@ static irqreturn_t native_slice_irq_err(int irq, void *data)
+>  {
+>  	struct cxl_afu *afu = data;
+>  	u64 errstat, serr, afu_error, dsisr;
+> -	u64 fir_slice, afu_debug;
+> +	u64 fir_slice, afu_debug, irq_mask;
+>
+>  	/*
+>  	 * slice err interrupt is only used with full PSL (no XSL)
+> @@ -1226,7 +1237,11 @@ static irqreturn_t native_slice_irq_err(int irq, void *data)
+>  	dev_crit(&afu->dev, "AFU_ERR_An: 0x%.16llx\n", afu_error);
+>  	dev_crit(&afu->dev, "PSL_DSISR_An: 0x%.16llx\n", dsisr);
+>
+> +	/* mask off the IRQ so it won't retrigger until the AFU is reset */
+> +	irq_mask = (serr & CXL_PSL_SERR_An_IRQS) >> 32;
+> +	serr |= irq_mask;
+>  	cxl_p1n_write(afu, CXL_PSL_SERR_An, serr);
+> +	dev_info(&afu->dev, "Further such interrupts will be masked until the AFU is reset\n");
+>
+>  	return IRQ_HANDLED;
+>  }
+>
