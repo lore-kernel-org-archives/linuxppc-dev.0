@@ -2,8 +2,8 @@ Return-Path: <msuchanek@suse.de>
 Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
  (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wHQsH0N4HzDq9m
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 May 2017 01:57:07 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wHQsJ22shzDq9m
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 May 2017 01:57:08 +1000 (AEST)
 From: Michal Suchanek <msuchanek@suse.de>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
@@ -12,10 +12,12 @@ To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Michal Suchanek <msuchanek@suse.de>, Vlastimil Babka <vbabka@suse.cz>,
  Michal Hocko <mhocko@suse.cz>, linuxppc-dev@lists.ozlabs.org,
  linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH v4 RFT 1/2] powerpc/fadump: reduce memory consumption for
- capture kernel
-Date: Tue,  2 May 2017 17:56:10 +0200
-Message-Id: <20170502155611.6789-1-msuchanek@suse.de>
+Subject: [PATCH v4 RFT 2/2] powerpc/fadump: update documentation about
+ 'fadump_append=' parameter
+Date: Tue,  2 May 2017 17:56:11 +0200
+Message-Id: <20170502155611.6789-2-msuchanek@suse.de>
+In-Reply-To: <20170502155611.6789-1-msuchanek@suse.de>
+References: <20170502155611.6789-1-msuchanek@suse.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,92 +27,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-With fadump (dump capture) kernel booting like a regular kernel, it almost
-needs the same amount of memory to boot as the production kernel, which is
-unwarranted for a dump capture kernel. But with no option to disable some
-of the unnecessary subsystems in fadump kernel, that much memory is wasted
-on fadump, depriving the production kernel of that memory.
+With the introduction of 'fadump_append=' parameter to pass additional
+parameters to fadump (capture) kernel, update documentation about it.
 
-Introduce kernel parameter 'fadump_append=' that would take regular kernel
-parameters to be appended when fadump is active.
-This 'fadump_append=' parameter can be leveraged to pass parameters like
-nr_cpus=1, cgroup_disable=memory and numa=off, to disable unwarranted
-resources/subsystems.
-
-Also, ensure the log "Firmware-assisted dump is active" is printed early
-in the boot process to put the subsequent fadump messages in context.
-
-Suggested-by: Michael Ellerman <mpe@ellerman.id.au>
 Signed-off-by: Hari Bathini <hbathini@linux.vnet.ibm.com>
 Signed-off-by: Michal Suchanek <msuchanek@suse.de>
 ---
-v4:
- - use space separated arguments instead of comma separated
- - do not append parameters when fadummp is disabled
----
- arch/powerpc/kernel/fadump.c | 27 ++++++++++++++++++++++++---
- 1 file changed, 24 insertions(+), 3 deletions(-)
+ Documentation/powerpc/firmware-assisted-dump.txt | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
-index ebf2e9c..e0c728a 100644
---- a/arch/powerpc/kernel/fadump.c
-+++ b/arch/powerpc/kernel/fadump.c
-@@ -79,8 +79,10 @@ int __init early_init_dt_scan_fw_dump(unsigned long node,
- 	 * dump data waiting for us.
- 	 */
- 	fdm_active = of_get_flat_dt_prop(node, "ibm,kernel-dump", NULL);
--	if (fdm_active)
-+	if (fdm_active) {
-+		pr_info("Firmware-assisted dump is active.\n");
- 		fw_dump.dump_active = 1;
-+	}
+diff --git a/Documentation/powerpc/firmware-assisted-dump.txt b/Documentation/powerpc/firmware-assisted-dump.txt
+index 9cabaf8..99ab8f4 100644
+--- a/Documentation/powerpc/firmware-assisted-dump.txt
++++ b/Documentation/powerpc/firmware-assisted-dump.txt
+@@ -162,7 +162,11 @@ How to enable firmware-assisted dump (fadump):
  
- 	/* Get the sizes required to store dump data for the firmware provided
- 	 * dump sections.
-@@ -263,8 +265,12 @@ int __init fadump_reserve_mem(void)
- {
- 	unsigned long base, size, memory_boundary;
+ 1. Set config option CONFIG_FA_DUMP=y and build kernel.
+ 2. Boot into linux kernel with 'fadump=on' kernel cmdline option.
+-3. Optionally, user can also set 'crashkernel=' kernel cmdline
++3. A user can pass additional kernel parameters as a comma separated list
++   through 'fadump_append=' parameter, to be be appended when fadump is active.
++   This can be used to pass parameters like nr_cpus=1, numa=off to reduce
++   memory consumption during dump capture.
++4. Optionally, user can also set 'fadump_reserve_mem=' kernel cmdline
+    to specify size of the memory to reserve for boot memory dump
+    preservation.
  
--	if (!fw_dump.fadump_enabled)
-+	if (!fw_dump.fadump_enabled) {
-+		if (fw_dump.dump_active)
-+			pr_warn("Firmware-assisted dump was active but kernel"
-+				" booted with fadump disabled!\n");
- 		return 0;
-+	}
+@@ -172,6 +176,8 @@ NOTE: 1. 'fadump_reserve_mem=' parameter has been deprecated. Instead
+       2. If firmware-assisted dump fails to reserve memory then it
+          will fallback to existing kdump mechanism if 'crashkernel='
+          option is set at kernel cmdline.
++      3. 'fadump_append=' parameter con be quoted to append multiple arguments
++         as in 'fadump_append="nr_cpus=8 numa=off"'
  
- 	if (!fw_dump.fadump_supported) {
- 		printk(KERN_INFO "Firmware-assisted dump is not supported on"
-@@ -304,7 +310,6 @@ int __init fadump_reserve_mem(void)
- 		memory_boundary = memblock_end_of_DRAM();
- 
- 	if (fw_dump.dump_active) {
--		printk(KERN_INFO "Firmware-assisted dump is active.\n");
- 		/*
- 		 * If last boot has crashed then reserve all the memory
- 		 * above boot_memory_size so that we don't touch it until
-@@ -363,6 +368,22 @@ unsigned long __init arch_reserved_kernel_pages(void)
- 	return memblock_reserved_size() / PAGE_SIZE;
- }
- 
-+/* Look for fadump_append= cmdline option. */
-+static int __init early_fadump_append_param(char *p)
-+{
-+	if (!p)
-+		return 1;
-+
-+	if (fw_dump.fadump_enabled && fw_dump.dump_active) {
-+	pr_info("enforcing additional parameters (%s) passed through "
-+		"'fadump_append=' parameter\n", p);
-+		parse_early_options(p);
-+	}
-+
-+	return 0;
-+}
-+early_param("fadump_append", early_fadump_append_param);
-+
- /* Look for fadump= cmdline option. */
- static int __init early_fadump_param(char *p)
- {
+ Sysfs/debugfs files:
+ ------------
 -- 
 2.10.2
