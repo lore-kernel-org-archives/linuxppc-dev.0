@@ -1,29 +1,22 @@
-Return-Path: <fbarrat@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wJ0t65HCtzDqJn
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 May 2017 00:29:50 +1000 (AEST)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v43ETTNZ137401
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 3 May 2017 10:29:38 -0400
-Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2a7eqeyre5-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 03 May 2017 10:29:36 -0400
-Received: from localhost
- by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
- Wed, 3 May 2017 15:29:13 +0100
-From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-To: alistair@popple.id.au, aneesh.kumar@linux.vnet.ibm.com,
- bsingharora@gmail.com, linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
-Subject: [RFC 0/2] powerpc/mm: Mark memory contexts requiring global TLBIs
-Date: Wed,  3 May 2017 16:29:04 +0200
-Message-Id: <20170503142906.29220-1-fbarrat@linux.vnet.ibm.com>
+Return-Path: <davem@davemloft.net>
+Received: from shards.monkeyblade.net (shards.monkeyblade.net
+ [184.105.139.130])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3wJ0zc0JxqzDqBH
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 May 2017 00:34:33 +1000 (AEST)
+Date: Wed, 03 May 2017 10:34:28 -0400 (EDT)
+Message-Id: <20170503.103428.1598887340082574002.davem@davemloft.net>
+To: pasha.tatashin@oracle.com
+Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
+ linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, borntraeger@de.ibm.com,
+ heiko.carstens@de.ibm.com, willy@infradead.org
+Subject: Re: [v2 3/5] mm: add "zero" argument to vmemmap allocators
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1490383192-981017-4-git-send-email-pasha.tatashin@oracle.com>
+References: <1490383192-981017-1-git-send-email-pasha.tatashin@oracle.com>
+ <1490383192-981017-4-git-send-email-pasha.tatashin@oracle.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,36 +26,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-capi2 and opencapi require the TLB invalidations being sent for
-addresses used on the cxl adapter or opencapi device to be global, as
-there's a translation cache in the PSL (for capi2) or NPU (for
-opencapi). The CAPP (for PSL) and NPU snoop the power bus.
+From: Pavel Tatashin <pasha.tatashin@oracle.com>
+Date: Fri, 24 Mar 2017 15:19:50 -0400
 
-This is not new: for the hash memory model, as soon as the cxl driver
-is active, all local TLBIs become global. We need a similar mechanism
-for the radix memory model. This patch tries to improve things a bit
-by flagging the contexts requiring global TLBIs, therefore limiting
-the "upgrade" and not affecting contexts not used by the card.
+> Allow clients to request non-zeroed memory from vmemmap allocator.
+> The following two public function have a new boolean argument called zero:
+> 
+> __vmemmap_alloc_block_buf()
+> vmemmap_alloc_block()
+> 
+> When zero is true, memory that is allocated by memblock allocator is zeroed
+> (the current behavior), when argument is false, the memory is not zeroed.
+> 
+> This change allows for optimizations where client knows when it is better
+> to zero memory: may be later when other CPUs are started, or may be client
+> is going to set every byte in the allocated memory, so no need to zero
+> memory beforehand.
+> 
+> Signed-off-by: Pavel Tatashin <pasha.tatashin@oracle.com>
+> Reviewed-by: Shannon Nelson <shannon.nelson@oracle.com>
 
-Alistair: for nvlink2, it is my understanding that all the required
-invalidations are already in place through software mmio/ATSD, i.e. this
-patch is not useful for you.
+I think when you add a new argument that can adjust behavior, you
+should add the new argument but retain exactly the current behavior in
+the existing calls.
 
-Submitting as an RFC, since I don't get to touch mmu.h everyday and
-would like to probe people's reaction.
+Then later you can piece by piece change behavior, and document properly
+in the commit message what is happening and why the transformation is
+legal.
 
+Here, you are adding the new boolean to __earlyonly_bootmem_alloc() and
+then making sparse_mem_maps_populate_node() pass false, which changes
+behavior such that it doesn't get zero'd memory any more.
 
-
-Frederic Barrat (2):
-  powerpc/mm: Add marker for contexts requiring global TLB invalidations
-  cxl: Mark context requiring global TLBIs
-
- arch/powerpc/include/asm/book3s/64/mmu.h |  9 +++++++++
- arch/powerpc/include/asm/tlb.h           | 10 ++++++++--
- arch/powerpc/mm/mmu_context_book3s64.c   |  1 +
- drivers/misc/cxl/api.c                   |  5 ++++-
- drivers/misc/cxl/file.c                  |  5 ++++-
- 5 files changed, 26 insertions(+), 4 deletions(-)
-
--- 
-2.11.0
+Please make one change at a time.  Otherwise review and bisection is
+going to be difficult.
