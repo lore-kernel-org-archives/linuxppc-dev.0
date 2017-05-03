@@ -2,17 +2,16 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wJCHG0vFxzDqBH
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 May 2017 08:18:50 +1000 (AEST)
-In-Reply-To: <1469171795-9879-1-git-send-email-andrew.donnellan@au1.ibm.com>
-To: Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wJCHH1yLszDqBH
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 May 2017 08:18:51 +1000 (AEST)
+In-Reply-To: <20161019031600.17933-8-npiggin@gmail.com>
+To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: gwshan@linux.vnet.ibm.com, imunsie@au1.ibm.com
-Subject: Re: powerpc/powernv: document cxl dependency on special case in
- pnv_eeh_reset()
-Message-Id: <3wJCHG05KZz9rxm@ozlabs.org>
-Date: Thu,  4 May 2017 08:18:49 +1000 (AEST)
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+ Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [7/7] powerpc/64: allow CONFIG_RELOCATABLE if COMPILE_TEST
+Message-Id: <3wJCHH1LqQz9s03@ozlabs.org>
+Date: Thu,  4 May 2017 08:18:51 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,21 +21,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2016-07-22 at 07:16:35 UTC, Andrew Donnellan wrote:
-> pnv_eeh_reset() has special handling for PEs whose primary bus is the root
-> bus or the bus immediately underneath the root port.
+On Wed, 2016-10-19 at 03:16:00 UTC, Nicholas Piggin wrote:
+> This is cruft to work around allmodconfig build breakage.
 > 
-> The cxl bi-modal card support added in b0b5e5918ad1 ("cxl: Add
-> cxl_check_and_switch_mode() API to switch bi-modal cards") relies on this
-> behaviour when hot-resetting the CAPI adapter following a mode switch.
-> Document this in pnv_eeh_reset() so we don't accidentally break it.
-> 
-> Suggested-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
-> Signed-off-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-> Reviewed-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/b7da1230532984fc00962b2c8be94a
+https://git.kernel.org/powerpc/c/084a275e4c9477c432b05e872c3a29
 
 cheers
