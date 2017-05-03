@@ -1,15 +1,16 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wJCHK0nh9zDqBH
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 May 2017 08:18:53 +1000 (AEST)
-In-Reply-To: <1487313082-21316-1-git-send-email-mpe@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wJCHL4B2hzDqCf
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 May 2017 08:18:54 +1000 (AEST)
+In-Reply-To: <20170316030440.32320-1-mikey@neuling.org>
+To: Michael Neuling <mikey@neuling.org>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: powerpc/mpc52xx: Don't select user-visible RTAS_PROC
-Message-Id: <3wJCHJ6kKYz9s0g@ozlabs.org>
-Date: Thu,  4 May 2017 08:18:52 +1000 (AEST)
+Cc: mikey@neuling.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: powerpc: Teach oops about radix vectors
+Message-Id: <3wJCHL2Sc3z9rxm@ozlabs.org>
+Date: Thu,  4 May 2017 08:18:53 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,17 +20,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2017-02-17 at 06:31:22 UTC, Michael Ellerman wrote:
-> Otherwise we might select it when its dependenices aren't enabled,
-> leading to a build break.
+On Thu, 2017-03-16 at 03:04:40 UTC, Michael Neuling wrote:
+> Currently if we oops caused by an 0x380 or 0x480 exception, we get a
+> print which assumes SLB problems. With radix, these vectors have
+> different meanings.
 > 
-> It's default y anyway, so will be on unless someone disables it
-> manually.
+> This patch updates the oops message to reflect these different
+> meanings.
 > 
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> Signed-off-by: Michael Neuling <mikey@neuling.org>
 
-Applied to powerpc next.
+Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/0cc68bfad45b47167c9d99cf560b50
+https://git.kernel.org/powerpc/c/8915bcd68b2547c819b8a2a33c0981
 
 cheers
