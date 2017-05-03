@@ -1,23 +1,50 @@
-Return-Path: <mpe@ellerman.id.au>
+Return-Path: <srs0=u5mw=4j=linux.vnet.ibm.com=khandual@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wHvTw65jzzDqCL
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 May 2017 20:27:00 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
-Cc: "Aneesh Kumar K . V" <aneesh.kumar@linux.vnet.ibm.com>,
- Anton Blanchard <anton@samba.org>
-Subject: Re: [RFC][PATCH] powerpc/64s: Leave IRQs hard enabled over context
- switch
-In-Reply-To: <1493800107.25766.352.camel@kernel.crashing.org>
-References: <20170503073414.18776-1-npiggin@gmail.com>
- <1493800107.25766.352.camel@kernel.crashing.org>
-Date: Wed, 03 May 2017 20:26:59 +1000
-Message-ID: <87k25yutfw.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wHwNJ6FRJzDqCd
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 May 2017 21:07:12 +1000 (AEST)
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3wHwNJ5HS5z8sxm
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 May 2017 21:07:12 +1000 (AEST)
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3wHwNJ0sfWz9rvt
+ for <linuxppc-dev@ozlabs.org>; Wed,  3 May 2017 21:07:11 +1000 (AEST)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v43B3nhw069587
+ for <linuxppc-dev@ozlabs.org>; Wed, 3 May 2017 07:07:05 -0400
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2a7duq8hjt-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Wed, 03 May 2017 07:07:05 -0400
+Received: from localhost
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
+ Wed, 3 May 2017 21:07:02 +1000
+Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v43B6p0c66257066
+ for <linuxppc-dev@ozlabs.org>; Wed, 3 May 2017 21:06:59 +1000
+Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
+ by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v43B6QgQ014316
+ for <linuxppc-dev@ozlabs.org>; Wed, 3 May 2017 21:06:27 +1000
+Subject: Re: [PATCH] powerpc/mm: Fix mapped range information print during boot
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
+References: <20170428142445.17615-1-khandual@linux.vnet.ibm.com>
+ <87o9vauvyk.fsf@concordia.ellerman.id.au>
+Cc: aneesh.kumar@linux.vnet.ibm.com
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Date: Wed, 3 May 2017 16:36:08 +0530
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+In-Reply-To: <87o9vauvyk.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset=windows-1252
+Message-Id: <e896f10a-5196-1a59-4bae-c3236758797e@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,42 +54,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+On 05/03/2017 03:02 PM, Michael Ellerman wrote:
+> Anshuman Khandual <khandual@linux.vnet.ibm.com> writes:
+> 
+>> This is a trivial fix patch regarding mapped ranges in radix MMU
+>> environment during boot. No functional change.
+>>
+>> Before the patch:
+>>
+>> $dmesg | grep Mapped
+>> [    0.000000] Mapped range 0x0 - 0x2000000000 with 0x40000000
+>> [    0.000000] Mapped range 0x200000000000 - 0x202000000000 with 0x40000000
+>>
+>> After the patch:
+>>
+>> $dmesg | grep Mapped
+>> [    0.000000] Mapped range 0x0000000000000000 - 0x0000002000000000 with 1024 MB
+>> [    0.000000] Mapped range 0x0000200000000000 - 0x0000202000000000 with 1024 MB
+> 
+> It's a bit better, how about this instead?
 
-> On Wed, 2017-05-03 at 17:34 +1000, Nicholas Piggin wrote:
->> Extending the soft IRQ disable to cover PMU interrupts will allow this
->> hard disable to be removed from hash based kernels too, but they will
->> still have to soft-disable PMU interrupts.
->>=20
->> - Q1: Can we do this? It gives nice profiles of context switch code
->> =C2=A0 rather than assigning it all to local_irq_enable.
->
-> Probably ok with radix yes.
->
->> - Q2: What is the unrecoverable SLB miss on exception entry? Is there
->> =C2=A0 anywhere we access the kernel stack with RI disabled? Something e=
-lse?
->
-> Not sure what you mean by Q2, but the original problem is an occurrence
-> of what we call the 'megabug' which hit us in different forms over the
-> years, and happens when we get a kernel stack SLB entry wrong.
->
-> Normally, the segment containing the current kernel stack is always
-> bolted in the SLB in a specific slot. If we accidentally lose that
-> "bolt", we can end up faulting it into the wrong slot, thus making it
-> possible for it to get evicted later on etc...
->
-> That in turns hits the exception return path which accesses the kernel
-> stack after clearing RI and setting SRR0/1 to the return values.
-
-Couldn't we avoid the whole problem by just having two bolted slots for
-the stack, meaning we could have the current and next stack bolted at
-all times.
-
-That would mean we'd be using 4 slots for bolted entries, which is one
-more than 3 - but it might be a good trade off.
-
-Or we could make the SLB insertion algorithm smarter so that we could
-later free the slot that was used for previous kernel stack.
-
-cheers
+Yeah this is better, I had tried to fix it in place.
