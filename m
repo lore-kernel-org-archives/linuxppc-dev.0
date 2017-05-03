@@ -1,21 +1,21 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
- [IPv6:2607:f8b0:400e:c00::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wHqfp6D0lzDqBH
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 May 2017 17:34:26 +1000 (AEST)
-Received: by mail-pf0-x241.google.com with SMTP id v14so3054777pfd.3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 03 May 2017 00:34:26 -0700 (PDT)
-From: Nicholas Piggin <npiggin@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Nicholas Piggin <npiggin@gmail.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- "Aneesh Kumar K . V" <aneesh.kumar@linux.vnet.ibm.com>,
- Anton Blanchard <anton@samba.org>, Paul Mackerras <paulus@ozlabs.org>
-Subject: [RFC][PATCH] powerpc/64s: Leave IRQs hard enabled over context switch
-Date: Wed,  3 May 2017 17:34:14 +1000
-Message-Id: <20170503073414.18776-1-npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wHrsF0BTYzDqBH
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 May 2017 18:28:32 +1000 (AEST)
+Message-ID: <1493800107.25766.352.camel@kernel.crashing.org>
+Subject: Re: [RFC][PATCH] powerpc/64s: Leave IRQs hard enabled over context
+ switch
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Cc: "Aneesh Kumar K . V" <aneesh.kumar@linux.vnet.ibm.com>, Anton Blanchard
+ <anton@samba.org>, Paul Mackerras <paulus@ozlabs.org>
+Date: Wed, 03 May 2017 10:28:27 +0200
+In-Reply-To: <20170503073414.18776-1-npiggin@gmail.com>
+References: <20170503073414.18776-1-npiggin@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,54 +25,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Commit 4387e9ff25 ("[POWERPC] Fix PMU + soft interrupt disable bug")
-hard disabled interrupts over the low level context switch, because
-the SLB management can't cope with a PMU interrupt accesing the stack
-in that window.
+On Wed, 2017-05-03 at 17:34 +1000, Nicholas Piggin wrote:
+> Extending the soft IRQ disable to cover PMU interrupts will allow this
+> hard disable to be removed from hash based kernels too, but they will
+> still have to soft-disable PMU interrupts.
+> 
+> - Q1: Can we do this? It gives nice profiles of context switch code
+>   rather than assigning it all to local_irq_enable.
 
-Radix based kernel mapping does not use the SLB so it does not require
-interrupts disabled here. This is worth a % or so in context switch
-performance, and also allows the low level context switch code to be
-profiled.
+Probably ok with radix yes.
 
-Extending the soft IRQ disable to cover PMU interrupts will allow this
-hard disable to be removed from hash based kernels too, but they will
-still have to soft-disable PMU interrupts.
+> - Q2: What is the unrecoverable SLB miss on exception entry? Is there
+>   anywhere we access the kernel stack with RI disabled? Something else?
 
-- Q1: Can we do this? It gives nice profiles of context switch code
-  rather than assigning it all to local_irq_enable.
+Not sure what you mean by Q2, but the original problem is an occurrence
+of what we call the 'megabug' which hit us in different forms over the
+years, and happens when we get a kernel stack SLB entry wrong.
 
-- Q2: What is the unrecoverable SLB miss on exception entry? Is there
-  anywhere we access the kernel stack with RI disabled? Something else?
+Normally, the segment containing the current kernel stack is always
+bolted in the SLB in a specific slot. If we accidentally lose that
+"bolt", we can end up faulting it into the wrong slot, thus making it
+possible for it to get evicted later on etc...
 
----
- arch/powerpc/kernel/process.c | 14 ++++++++------
- 1 file changed, 8 insertions(+), 6 deletions(-)
+That in turns hits the exception return path which accesses the kernel
+stack after clearing RI and setting SRR0/1 to the return values.
 
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index d645da302bf2..915ec20a18a9 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -1176,12 +1176,14 @@ struct task_struct *__switch_to(struct task_struct *prev,
- 
- 	__switch_to_tm(prev, new);
- 
--	/*
--	 * We can't take a PMU exception inside _switch() since there is a
--	 * window where the kernel stack SLB and the kernel stack are out
--	 * of sync. Hard disable here.
--	 */
--	hard_irq_disable();
-+	if (!radix_enabled()) {
-+		/*
-+		 * We can't take a PMU exception inside _switch() since there
-+		 * is a window where the kernel stack SLB and the kernel stack
-+		 * are out of sync. Hard disable here.
-+		 */
-+		hard_irq_disable();
-+	}
- 
- 	/*
- 	 * Call restore_sprs() before calling _switch(). If we move it after
--- 
-2.11.0
+Cheers,
+Ben.
