@@ -1,26 +1,19 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
- [IPv6:2607:f8b0:400e:c00::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wHsxt5QqNzDqCf
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 May 2017 19:17:38 +1000 (AEST)
-Received: by mail-pf0-x242.google.com with SMTP id d1so385063pfe.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 03 May 2017 02:17:38 -0700 (PDT)
-Date: Wed, 3 May 2017 19:17:21 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc-dev@lists.ozlabs.org, "Aneesh Kumar K . V"
- <aneesh.kumar@linux.vnet.ibm.com>, Anton Blanchard  <anton@samba.org>, Paul
- Mackerras <paulus@ozlabs.org>
-Subject: Re: [RFC][PATCH] powerpc/64s: Leave IRQs hard enabled over context
- switch
-Message-ID: <20170503191721.2c55930c@roar.ozlabs.ibm.com>
-In-Reply-To: <1493800107.25766.352.camel@kernel.crashing.org>
-References: <20170503073414.18776-1-npiggin@gmail.com>
- <1493800107.25766.352.camel@kernel.crashing.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wHtHD3qzqzDqBH
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 May 2017 19:32:40 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Anshuman Khandual <khandual@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org
+Cc: aneesh.kumar@linux.vnet.ibm.com
+Subject: Re: [PATCH] powerpc/mm: Fix mapped range information print during boot
+In-Reply-To: <20170428142445.17615-1-khandual@linux.vnet.ibm.com>
+References: <20170428142445.17615-1-khandual@linux.vnet.ibm.com>
+Date: Wed, 03 May 2017 19:32:35 +1000
+Message-ID: <87o9vauvyk.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,41 +23,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 03 May 2017 10:28:27 +0200
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+Anshuman Khandual <khandual@linux.vnet.ibm.com> writes:
 
-> On Wed, 2017-05-03 at 17:34 +1000, Nicholas Piggin wrote:
-> > Extending the soft IRQ disable to cover PMU interrupts will allow this
-> > hard disable to be removed from hash based kernels too, but they will
-> > still have to soft-disable PMU interrupts.
-> > 
-> > - Q1: Can we do this? It gives nice profiles of context switch code
-> >   rather than assigning it all to local_irq_enable.  
-> 
-> Probably ok with radix yes.
+> This is a trivial fix patch regarding mapped ranges in radix MMU
+> environment during boot. No functional change.
+>
+> Before the patch:
+>
+> $dmesg | grep Mapped
+> [    0.000000] Mapped range 0x0 - 0x2000000000 with 0x40000000
+> [    0.000000] Mapped range 0x200000000000 - 0x202000000000 with 0x40000000
+>
+> After the patch:
+>
+> $dmesg | grep Mapped
+> [    0.000000] Mapped range 0x0000000000000000 - 0x0000002000000000 with 1024 MB
+> [    0.000000] Mapped range 0x0000200000000000 - 0x0000202000000000 with 1024 MB
 
-Cool.
+It's a bit better, how about this instead?
 
-> > - Q2: What is the unrecoverable SLB miss on exception entry? Is there
-> >   anywhere we access the kernel stack with RI disabled? Something else?  
-> 
-> Not sure what you mean by Q2, but the original problem is an occurrence
-> of what we call the 'megabug' which hit us in different forms over the
-> years, and happens when we get a kernel stack SLB entry wrong.
-> 
-> Normally, the segment containing the current kernel stack is always
-> bolted in the SLB in a specific slot. If we accidentally lose that
-> "bolt", we can end up faulting it into the wrong slot, thus making it
-> possible for it to get evicted later on etc...
-> 
-> That in turns hits the exception return path which accesses the kernel
-> stack after clearing RI and setting SRR0/1 to the return values.
+diff --git a/arch/powerpc/mm/pgtable-radix.c b/arch/powerpc/mm/pgtable-radix.c
+index c28165d8970b..519cfef569d1 100644
+--- a/arch/powerpc/mm/pgtable-radix.c
++++ b/arch/powerpc/mm/pgtable-radix.c
+@@ -8,9 +8,14 @@
+  * as published by the Free Software Foundation; either version
+  * 2 of the License, or (at your option) any later version.
+  */
++
++#define pr_fmt(fmt) "radix-mmu: " fmt
++
++#include <linux/kernel.h>
+ #include <linux/sched/mm.h>
+ #include <linux/memblock.h>
+ #include <linux/of_fdt.h>
++#include <linux/string_helpers.h>
+ 
+ #include <asm/pgtable.h>
+ #include <asm/pgalloc.h>
+@@ -112,10 +117,14 @@ static inline void __meminit print_mapping(unsigned long start,
+ 					   unsigned long end,
+ 					   unsigned long size)
+ {
++	char buf[10];
++
+ 	if (end <= start)
+ 		return;
+ 
+-	pr_info("Mapped range 0x%lx - 0x%lx with 0x%lx\n", start, end, size);
++	string_get_size(size, 1, STRING_UNITS_2, buf, sizeof(buf));
++
++	pr_info("Mapped 0x%016lx-0x%016lx with %s pages\n", start, end, buf);
+ }
+ 
+ static int __meminit create_physical_mapping(unsigned long start,
 
-This is exactly my question. The original patch said there was an
-unrecoverable SLB miss at exception entry. Either I missed that or
-it has since been removed. The stack access at exit would do it. I
-didn't want to change anything for hash, just wondering where the
-bug was (subject line got truncated but is supposed to say "for radix").
 
-Thanks,
-Nick
+cheers
