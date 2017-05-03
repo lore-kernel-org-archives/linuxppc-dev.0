@@ -1,22 +1,20 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Return-Path: <paulus@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wHd5614pmzDqBJ
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 May 2017 09:38:02 +1000 (AEST)
-Date: Wed, 3 May 2017 09:38:01 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Joerg Roedel <jroedel@suse.de>
-Cc: Paul Gortmaker <paul.gortmaker@windriver.com>,
- <linux-kernel@vger.kernel.org>, <linux-next@vger.kernel.org>, Scott Wood
- <oss@buserror.net>, <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [PATCH -next] soc/qbman: fix implicit header dependency now
- causing build fails
-Message-ID: <20170503093801.7c8fb4b4@canb.auug.org.au>
-In-Reply-To: <20170502222112.16720-1-paul.gortmaker@windriver.com>
-References: <20170502222112.16720-1-paul.gortmaker@windriver.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wHds26gh0zDqBJ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 May 2017 10:12:38 +1000 (AEST)
+Date: Wed, 3 May 2017 10:12:34 +1000
+From: Paul Mackerras <paulus@ozlabs.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@ozlabs.org, benh@kernel.crashing.org, anton@samba.org
+Subject: Re: [RFC PATCH 4.8] powerpc/slb: Force a full SLB flush when we
+ insert for a bad EA
+Message-ID: <20170503001234.GA10465@fergus.ozlabs.ibm.com>
+References: <1493294546-18466-1-git-send-email-mpe@ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1493294546-18466-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,57 +24,109 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi all,
-
-On Tue, 2 May 2017 18:21:12 -0400 Paul Gortmaker <paul.gortmaker@windriver.com> wrote:
->
-> In commit 461a6946b1f9 ("iommu: Remove pci.h include from
-> trace/events/iommu.h") that header shuffle uncovered an implicit
-> include in this driver, manifesting as:
+On Thu, Apr 27, 2017 at 10:02:26PM +1000, Michael Ellerman wrote:
+> The SLB miss handler calls slb_allocate_realmode() in order to create an
+> SLB entry for the faulting address. At the very start of that function
+> we check that the faulting Effective Address (EA) is less than
+> PGTABLE_RANGE (ignoring the region), ie. is it an address which could
+> possibly fit in the virtual address space.
 > 
->     CC      drivers/soc/fsl/qbman/qman_portal.o
->     drivers/soc/fsl/qbman/qman_portal.c: In function 'qman_portal_probe':
->     drivers/soc/fsl/qbman/qman_portal.c:299:2: error: implicit declaration of function 'dma_set_mask'
->     drivers/soc/fsl/qbman/qman_portal.c:299:2: error: implicit declaration of function 'DMA_BIT_MASK'
->         if (dma_set_mask(dev, DMA_BIT_MASK(40))) {
->         ^
+> For an EA which fails that test, we branch out of line (to label 8), but
+> we still go on to create an SLB entry for the address. The SLB entry we
+> create has a VSID of 0, which means it will never match anything in the
+> hash table and so can't actually translate to a physical address.
 > 
-> on the corenet32_smp_defconfig (and 64 bit respectively.)  The above
-> commit was singled out via git bisect.
+> However that SLB entry will be inserted in the SLB, and so needs to be
+> managed properly like any other SLB entry. In particular we need to
+> insert the SLB entry in the SLB cache, so that it will be flushed when
+> the process is descheduled.
 > 
-> The header it was implictly relying on getting was dma-mapping.h - so
-> we explicitly add it here.
+> And that is where the bugs begin. The first bug is that slb_finish_load()
+> uses cr7 to decide if it should insert the SLB entry into the SLB cache.
+> When we come from the invalid EA case we don't set cr7, it just has some
+> junk value from userspace. So we may or may not insert the SLB entry in
+> the SLB cache. If we fail to insert it, we may then incorrectly leave it
+> in the SLB when the process is descheduled.
 > 
-> Fixes: 461a6946b1f9 ("iommu: Remove pci.h include from trace/events/iommu.h")
-> Cc: Joerg Roedel <jroedel@suse.de>
-> Cc: Scott Wood <oss@buserror.net>
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
+> The second bug is that even if we do happen to add the entry to the SLB
+> cache, we do not have enough bits in the SLB cache to remember the full
+> ESID value for very large EAs.
+> 
+> For example if a process branches to 0x788c545a18000000, that results in
+> a 256MB SLB entry with an ESID of 0x788c545a1. But each entry in the SLB
+> cache is only 32-bits, meaning we truncate the ESID to 0x88c545a1. This
+> has the same effect as the first bug, we incorrectly leave the SLB entry
+> in the SLB when the process is descheduled.
+> 
+> When a process accesses an invalid EA it results in a SEGV signal being
+> sent to the process, which typically results in the process being
+> killed. Process death isn't instantaneous however, the process may catch
+> the SEGV signal and continue somehow, or the kernel may start writing a
+> core dump for the process, either of which means it's possible for the
+> process to be preempted while its processing the SEGV but before it's
+> been killed.
+> 
+> If that happens, when the process is scheduled back onto the CPU we will
+> allocate a new SLB entry for the NIP, which will insert a second entry
+> into the SLB for the bad EA. Because we never flushed the original
+> entry, due to either bug one or two, we now have two SLB entries that
+> match the same EA.
+> 
+> If another access is made to that EA, either by the process continuing
+> after catching the SEGV, or by a second process accessing the same bad
+> EA on the same CPU, we will trigger an SLB multi-hit machine check
+> exception. This has been observed happening in the wild.
+> 
+> The fix is when we hit the invalid EA case, we mark the SLB cache as
+> being full. This causes us to not insert the truncated ESID into the SLB
+> cache, and means when the process is switched out we will flush the
+> entire SLB. Note that this works both for the original fault and for a
+> subsequent call to slb_allocate_realmode() from switch_slb().
+> 
+> Because we mark the SLB cache as full, it doesn't really matter what
+> value is in cr7, but rather than leaving it as something random we set
+> it to indicate the address was a kernel address. That also skips the
+> attempt to insert it in the SLB cache which is a nice side effect.
+> 
+> Another way to fix the bug would be to make the entries in the SLB cache
+> wider, so that we don't truncate the ESID. However this would be a more
+> intrusive change as it alters the size and layout of the paca.
+> 
+> This bug was fixed in upstream by commit f0f558b131db ("powerpc/mm:
+> Preserve CFAR value on SLB miss caused by access to bogus address"),
+> which changed the way we handle a bad EA entirely removing this bug in
+> the process.
+> 
+> Cc: stable@vger.kernel.org
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 > ---
->  drivers/soc/fsl/qbman/qman_portal.c | 2 ++
->  1 file changed, 2 insertions(+)
+>  arch/powerpc/mm/slb_low.S | 10 ++++++++++
+>  1 file changed, 10 insertions(+)
 > 
-> diff --git a/drivers/soc/fsl/qbman/qman_portal.c b/drivers/soc/fsl/qbman/qman_portal.c
-> index adbaa30d3c5a..4a6a8ae5e0aa 100644
-> --- a/drivers/soc/fsl/qbman/qman_portal.c
-> +++ b/drivers/soc/fsl/qbman/qman_portal.c
-> @@ -30,6 +30,8 @@
+> diff --git a/arch/powerpc/mm/slb_low.S b/arch/powerpc/mm/slb_low.S
+> index dfdb90cb4403..1348c4862b08 100644
+> --- a/arch/powerpc/mm/slb_low.S
+> +++ b/arch/powerpc/mm/slb_low.S
+> @@ -174,6 +174,16 @@ END_MMU_FTR_SECTION_IFSET(MMU_FTR_1T_SEGMENT)
+>  	b	slb_finish_load
 >  
->  #include "qman_priv.h"
->  
-> +#include <linux/dma-mapping.h>
-> +
->  struct qman_portal *qman_dma_portal;
->  EXPORT_SYMBOL(qman_dma_portal);
->  
+>  8:	/* invalid EA */
+> +	/*
+> +	 * It's possible the bad EA is too large to fit in the SLB cache, which
+> +	 * would mean we'd fail to invalidate it on context switch. So mark the
+> +	 * SLB cache as full so we force a full flush. We also set cr7+eq to
+> +	 * mark the address as a kernel address, so slb_finish_load() skips
+> +	 * trying to insert it into the SLB cache.
+> +	 */
+> +	li	r9,SLB_CACHE_ENTRIES + 1
+> +	sth	r9,PACASLBCACHEPTR(r13)
+> +	crset	4*cr7+eq
+>  	li	r10,0			/* BAD_VSID */
+>  	li	r9,0			/* BAD_VSID */
+>  	li	r11,SLB_VSID_USER	/* flags don't much matter */
 > -- 
-> 2.11.0
+> 2.7.4
 
-Thanks, Paul, I was just getting around to looking into that build
-failure.  I will add this to linux-next as a merge fix patch for the
-merge of the iommu tree until Joerg gets around to including it in his
-tree.
+Looks reasonable.
 
--- 
-Cheers,
-Stephen Rothwell
+Reviewed-by: Paul Mackerras <paulus@ozlabs.org>
