@@ -1,16 +1,15 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wJCHH1yLszDqBH
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 May 2017 08:18:51 +1000 (AEST)
-In-Reply-To: <20161019031600.17933-8-npiggin@gmail.com>
-To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wJCHJ2FRTzDqBH
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 May 2017 08:18:52 +1000 (AEST)
+In-Reply-To: <1487152194-19382-1-git-send-email-mpe@ellerman.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
- Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [7/7] powerpc/64: allow CONFIG_RELOCATABLE if COMPILE_TEST
-Message-Id: <3wJCHH1LqQz9s03@ozlabs.org>
+Cc: dja@axtens.net
+Subject: Re: powerpc: Document irq enable/disable toggle in migrate_irqs()
+Message-Id: <3wJCHJ0Q4Xz9s0Z@ozlabs.org>
 Date: Thu,  4 May 2017 08:18:51 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -21,13 +20,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2016-10-19 at 03:16:00 UTC, Nicholas Piggin wrote:
-> This is cruft to work around allmodconfig build breakage.
+On Wed, 2017-02-15 at 09:49:54 UTC, Michael Ellerman wrote:
+> This code is undocumented and unclear, and we've already had one patch
+> sent to remove it because it's "paradoxical and unnecessary". So
+> document it to save our future selves from puzzling over it.
 > 
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
-Applied to powerpc next, thanks.
+Applied to powerpc next.
 
-https://git.kernel.org/powerpc/c/084a275e4c9477c432b05e872c3a29
+https://git.kernel.org/powerpc/c/687b8f24f14db842c8c3f8cb8b24c9
 
 cheers
