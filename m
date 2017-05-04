@@ -1,45 +1,45 @@
 Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wJMhd6NvkzDqKQ
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 May 2017 14:37:53 +1000 (AEST)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v444Xvtt009951
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 May 2017 00:37:43 -0400
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wJMhj1rHKzDqFT
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 May 2017 14:37:57 +1000 (AEST)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v444XxWR043303
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 May 2017 00:37:46 -0400
 Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2a7rubs9jy-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2a7dbjh4wb-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 May 2017 00:37:43 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 May 2017 00:37:46 -0400
 Received: from localhost
  by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Thu, 4 May 2017 14:37:40 +1000
+ Thu, 4 May 2017 14:37:44 +1000
 Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v444bUFM6816052
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 May 2017 14:37:38 +1000
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v444bX2l59572406
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 May 2017 14:37:41 +1000
 Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
  by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v444b5SM009404
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 May 2017 14:37:06 +1000
+ v444b80v009452
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 May 2017 14:37:08 +1000
 From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
 Cc: Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>,
  Masami Hiramatsu <mhiramat@kernel.org>,
  Steven Rostedt <rostedt@goodmis.org>,
  Anton Blanchard <anton@samba.org>, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 5/8] powerpc/ftrace: Eliminate duplicate stack setup for
- ftrace_graph_caller()
-Date: Thu,  4 May 2017 10:06:18 +0530
+Subject: [PATCH 6/8] powerpc/ftrace: Add support for
+ HAVE_FUNCTION_GRAPH_FP_TEST for -mprofile-kernel
+Date: Thu,  4 May 2017 10:06:19 +0530
 In-Reply-To: <cover.1493831558.git.naveen.n.rao@linux.vnet.ibm.com>
 References: <cover.1493831558.git.naveen.n.rao@linux.vnet.ibm.com>
 In-Reply-To: <cover.1493831558.git.naveen.n.rao@linux.vnet.ibm.com>
 References: <cover.1493831558.git.naveen.n.rao@linux.vnet.ibm.com>
-Message-Id: <1c7bc9c395beda00b8e86785c0624a82cf5ae458.1493831558.git.naveen.n.rao@linux.vnet.ibm.com>
+Message-Id: <95e111668b446bb766fb79160b6ebd250c499e37.1493831558.git.naveen.n.rao@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,139 +49,91 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently, ftrace_graph_caller() sets up a separate stack frame to save
-some state before calling into prepare_ftrace_return(). Eliminate this
-by calling into ftrace_graph_caller() right after the ftrace handler.
-
-We make a few changes to accommodate this:
-1. Currently, due to where it is present, ftrace_graph_caller() is not
-invoked if the NIP is modified by the ftrace handler, indicating either
-a livepatched function or a jprobe'd function. To achieve the same
-behavior, we now save/compare against original NIP if function graph is
-enabled, in addition to CONFIG_LIVEPATCH.
-
-2. We use r14 for saving the original NIP and r15 for storing the
-possibly modified NIP. r15 is later used to determine if the function
-has been livepatched.
-
-3. To re-use the same stack frame setup/teardown code, we have
-ftrace_graph_caller() save the modified LR in pt_regs.
+This is very handy to catch potential crashes due to unexpected
+interactions of function_graph tracer with weird things like
+jprobes.
 
 Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
 ---
- arch/powerpc/kernel/trace/ftrace_64_mprofile.S | 70 ++++++++------------------
- 1 file changed, 21 insertions(+), 49 deletions(-)
+ arch/powerpc/include/asm/asm-prototypes.h      | 3 ++-
+ arch/powerpc/include/asm/ftrace.h              | 3 +++
+ arch/powerpc/kernel/trace/ftrace.c             | 4 ++--
+ arch/powerpc/kernel/trace/ftrace_64.S          | 1 +
+ arch/powerpc/kernel/trace/ftrace_64_mprofile.S | 1 +
+ 5 files changed, 9 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/kernel/trace/ftrace_64_mprofile.S b/arch/powerpc/kernel/trace/ftrace_64_mprofile.S
-index b1bad68ea6db..981b99dc3029 100644
---- a/arch/powerpc/kernel/trace/ftrace_64_mprofile.S
-+++ b/arch/powerpc/kernel/trace/ftrace_64_mprofile.S
-@@ -72,9 +72,10 @@ _GLOBAL(ftrace_caller)
- 	addi	r3,r3,function_trace_op@toc@l
- 	ld	r5,0(r3)
+diff --git a/arch/powerpc/include/asm/asm-prototypes.h b/arch/powerpc/include/asm/asm-prototypes.h
+index 7330150bfe34..14964ab80a53 100644
+--- a/arch/powerpc/include/asm/asm-prototypes.h
++++ b/arch/powerpc/include/asm/asm-prototypes.h
+@@ -124,6 +124,7 @@ extern int __ucmpdi2(u64, u64);
  
--#ifdef CONFIG_LIVEPATCH
-+#if defined(CONFIG_FUNCTION_GRAPH_TRACER) || defined(CONFIG_LIVEPATCH)
- 	mr	r14,r7		/* remember old NIP */
- #endif
-+
- 	/* Calculate ip from nip-4 into r3 for call below */
- 	subi    r3, r7, MCOUNT_INSN_SIZE
+ /* tracing */
+ void _mcount(void);
+-unsigned long prepare_ftrace_return(unsigned long parent, unsigned long ip);
++unsigned long prepare_ftrace_return(unsigned long parent, unsigned long ip,
++					unsigned long fp);
  
-@@ -97,10 +98,19 @@ ftrace_call:
+ #endif /* _ASM_POWERPC_ASM_PROTOTYPES_H */
+diff --git a/arch/powerpc/include/asm/ftrace.h b/arch/powerpc/include/asm/ftrace.h
+index 686c5f70eb84..2b89043b0c61 100644
+--- a/arch/powerpc/include/asm/ftrace.h
++++ b/arch/powerpc/include/asm/ftrace.h
+@@ -6,6 +6,9 @@
+ #ifdef CONFIG_FUNCTION_TRACER
+ #define MCOUNT_ADDR		((unsigned long)(_mcount))
+ #define MCOUNT_INSN_SIZE	4 /* sizeof mcount call */
++#ifdef CONFIG_MPROFILE_KERNEL
++#define HAVE_FUNCTION_GRAPH_FP_TEST
++#endif
+ 
+ #ifdef __ASSEMBLY__
+ 
+diff --git a/arch/powerpc/kernel/trace/ftrace.c b/arch/powerpc/kernel/trace/ftrace.c
+index 32509de6ce4c..7e3e099cdfe4 100644
+--- a/arch/powerpc/kernel/trace/ftrace.c
++++ b/arch/powerpc/kernel/trace/ftrace.c
+@@ -572,7 +572,7 @@ int ftrace_disable_ftrace_graph_caller(void)
+  * Hook the return address and push it in the stack of return addrs
+  * in current thread info. Return the address we want to divert to.
+  */
+-unsigned long prepare_ftrace_return(unsigned long parent, unsigned long ip)
++unsigned long prepare_ftrace_return(unsigned long parent, unsigned long ip, unsigned long fp)
+ {
+ 	struct ftrace_graph_ent trace;
+ 	unsigned long return_hooker;
+@@ -592,7 +592,7 @@ unsigned long prepare_ftrace_return(unsigned long parent, unsigned long ip)
+ 	if (!ftrace_graph_entry(&trace))
+ 		goto out;
+ 
+-	if (ftrace_push_return_trace(parent, ip, &trace.depth, 0,
++	if (ftrace_push_return_trace(parent, ip, &trace.depth, fp,
+ 				     NULL) == -EBUSY)
+ 		goto out;
+ 
+diff --git a/arch/powerpc/kernel/trace/ftrace_64.S b/arch/powerpc/kernel/trace/ftrace_64.S
+index e5ccea19821e..57ab4f73a5c4 100644
+--- a/arch/powerpc/kernel/trace/ftrace_64.S
++++ b/arch/powerpc/kernel/trace/ftrace_64.S
+@@ -68,6 +68,7 @@ _GLOBAL(return_to_handler)
+ 	 */
+ 	ld	r2, PACATOC(r13)
+ 
++	addi	r3, r1, 112
+ 	bl	ftrace_return_to_handler
  	nop
  
- 	/* Load ctr with the possibly modified NIP */
--	ld	r3, _NIP(r1)
--	mtctr	r3
-+	ld	r15, _NIP(r1)
-+
-+#ifdef CONFIG_FUNCTION_GRAPH_TRACER
-+.globl ftrace_graph_call
-+ftrace_graph_call:
-+	b	ftrace_graph_stub
-+_GLOBAL(ftrace_graph_stub)
-+#endif
-+
-+	mtctr	r15
-+
- #ifdef CONFIG_LIVEPATCH
--	cmpd	r14,r3		/* has NIP been altered? */
-+	cmpd	r14, r15		/* has NIP been altered? */
- #endif
+diff --git a/arch/powerpc/kernel/trace/ftrace_64_mprofile.S b/arch/powerpc/kernel/trace/ftrace_64_mprofile.S
+index 981b99dc3029..fb6910e48f22 100644
+--- a/arch/powerpc/kernel/trace/ftrace_64_mprofile.S
++++ b/arch/powerpc/kernel/trace/ftrace_64_mprofile.S
+@@ -241,6 +241,7 @@ _GLOBAL(ftrace_graph_caller)
  
- 	/* Restore gprs */
-@@ -124,13 +134,6 @@ ftrace_call:
- 	bne-	livepatch_handler
- #endif
- 
--#ifdef CONFIG_FUNCTION_GRAPH_TRACER
--.globl ftrace_graph_call
--ftrace_graph_call:
--	b	ftrace_graph_stub
--_GLOBAL(ftrace_graph_stub)
--#endif
--
- 	bctr			/* jump after _mcount site */
- 
- _GLOBAL(ftrace_stub)
-@@ -233,50 +236,19 @@ livepatch_handler:
- 
- #ifdef CONFIG_FUNCTION_GRAPH_TRACER
- _GLOBAL(ftrace_graph_caller)
--	stdu	r1, -112(r1)
--	/* with -mprofile-kernel, parameter regs are still alive at _mcount */
--	std	r10, 104(r1)
--	std	r9, 96(r1)
--	std	r8, 88(r1)
--	std	r7, 80(r1)
--	std	r6, 72(r1)
--	std	r5, 64(r1)
--	std	r4, 56(r1)
--	std	r3, 48(r1)
-+	cmpd	r14, r15			/* has NIP been altered? */
-+	bne-	ftrace_graph_stub
- 
--	/* Save callee's TOC in the ABI compliant location */
--	std	r2, 24(r1)
--	ld	r2, PACATOC(r13)	/* get kernel TOC in r2 */
--
--	mfctr	r4		/* ftrace_caller has moved local addr here */
--	std	r4, 40(r1)
--	mflr	r3		/* ftrace_caller has restored LR from stack */
--	subi	r4, r4, MCOUNT_INSN_SIZE
-+	ld	r3, _LINK(r1)
-+	subi	r4, r14, MCOUNT_INSN_SIZE	/* load saved original NIP */
+ 	ld	r3, _LINK(r1)
+ 	subi	r4, r14, MCOUNT_INSN_SIZE	/* load saved original NIP */
++	addi	r5, r1, SWITCH_FRAME_SIZE
  
  	bl	prepare_ftrace_return
  	nop
- 
- 	/*
- 	 * prepare_ftrace_return gives us the address we divert to.
--	 * Change the LR to this.
-+	 * We save it in pt_regs to be used when we go back.
- 	 */
--	mtlr	r3
--
--	ld	r0, 40(r1)
--	mtctr	r0
--	ld	r10, 104(r1)
--	ld	r9, 96(r1)
--	ld	r8, 88(r1)
--	ld	r7, 80(r1)
--	ld	r6, 72(r1)
--	ld	r5, 64(r1)
--	ld	r4, 56(r1)
--	ld	r3, 48(r1)
--
--	/* Restore callee's TOC */
--	ld	r2, 24(r1)
--
--	addi	r1, r1, 112
--	mflr	r0
--	bctr
-+	std	r3, _LINK(r1)
-+	b	ftrace_graph_stub
- #endif /* CONFIG_FUNCTION_GRAPH_TRACER */
 -- 
 2.12.2
