@@ -1,22 +1,22 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mathieu.malaterre@gmail.com>
+Received: from mail-ua0-x22d.google.com (mail-ua0-x22d.google.com
+ [IPv6:2607:f8b0:400c:c08::22d])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wJVSF2vRTzDqBJ
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 May 2017 19:42:37 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Frederic Barrat <fbarrat@linux.vnet.ibm.com>, alistair@popple.id.au,
- aneesh.kumar@linux.vnet.ibm.com, bsingharora@gmail.com,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [RFC 1/2] powerpc/mm: Add marker for contexts requiring global
- TLB invalidations
-In-Reply-To: <20170503142906.29220-2-fbarrat@linux.vnet.ibm.com>
-References: <20170503142906.29220-1-fbarrat@linux.vnet.ibm.com>
- <20170503142906.29220-2-fbarrat@linux.vnet.ibm.com>
-Date: Thu, 04 May 2017 19:42:35 +1000
-Message-ID: <87efw5yn3o.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wJVdK6cdTzDqBJ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 May 2017 19:50:29 +1000 (AEST)
+Received: by mail-ua0-x22d.google.com with SMTP id z47so4795565uaz.0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 May 2017 02:50:29 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain
+From: Mathieu Malaterre <mathieu.malaterre@gmail.com>
+Date: Thu, 4 May 2017 11:50:06 +0200
+Message-ID: <CA+7wUsyo5HEVrNFGaH0WGB5WTatX7R7t_s2XhcbZ3kSDsAh2hA@mail.gmail.com>
+Subject: WARNING: CPU: 0 PID: 1 at
+ /build/linux-dp17Ba/linux-4.9.18/arch/powerpc/lib/feature-fixups.c:208
+ check_features+0x38/0x7c
+To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: "Linux User #330250" <linuxuser330250@gmx.net>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,84 +26,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Frederic Barrat <fbarrat@linux.vnet.ibm.com> writes:
+Hi all,
 
-> Introduce a new 'flags' attribute per context and define its first bit
-> to be a marker requiring all TLBIs for that context to be broadcasted
-> globally. Once that marker is set on a context, it cannot be removed.
->
-> Such a marker is useful for memory contexts used by devices behind the
-> NPU and CAPP/PSL. The NPU and the PSL keep their own
-> translation cache so they need to see all the TLBIs for those
-> contexts.
->
-> Signed-off-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/include/asm/book3s/64/mmu.h |  9 +++++++++
->  arch/powerpc/include/asm/tlb.h           | 10 ++++++++--
->  arch/powerpc/mm/mmu_context_book3s64.c   |  1 +
->  3 files changed, 18 insertions(+), 2 deletions(-)
->
-> diff --git a/arch/powerpc/include/asm/book3s/64/mmu.h b/arch/powerpc/include/asm/book3s/64/mmu.h
-> index 77529a3e3811..7b640ab1cbeb 100644
-> --- a/arch/powerpc/include/asm/book3s/64/mmu.h
-> +++ b/arch/powerpc/include/asm/book3s/64/mmu.h
-> @@ -78,8 +78,12 @@ struct spinlock;
->  /* Maximum possible number of NPUs in a system. */
->  #define NV_MAX_NPUS 8
->  
-> +/* Bits definition for the context flags */
-> +#define MM_CONTEXT_GLOBAL_TLBI	1	/* TLBI must be global */
+Does this dmesg output speaks to anyone here (smp kernel):
 
-I think I'd prefer MM_GLOBAL_TLBIE, it's shorter and tlbie is the name
-of the instruction so is something people can search for.
 
-> @@ -164,5 +168,10 @@ extern void radix_init_pseries(void);
->  static inline void radix_init_pseries(void) { };
->  #endif
->  
-> +static inline void mm_context_set_global_tlbi(mm_context_t *ctx)
-> +{
-> +	set_bit(MM_CONTEXT_GLOBAL_TLBI, &ctx->flags);
-> +}
+[    4.767389] ------------[ cut here ]------------
+[    4.774668] WARNING: CPU: 0 PID: 1 at
+/build/linux-dp17Ba/linux-4.9.18/arch/powerpc/lib/feature-fixups.c:208
+check_features+0x38/0x7c
+[    4.782256] Modules linked in:
+[    4.789766] CPU: 0 PID: 1 Comm: swapper Not tainted 4.9.0-2-powerpc
+#1 Debian 4.9.18-1
+[    4.797441] task: df4db1a0 task.stack: df4dc000
+[    4.805089] NIP: c0776484 LR: c0776484 CTR: 00000000
+[    4.812736] REGS: df4dddd0 TRAP: 0700   Not tainted
+(4.9.0-2-powerpc Debian 4.9.18-1)
+[    4.820485] MSR: 00029032 <EE,ME,IR,DR,RI>
+[    4.820622]   CR: 242ff422  XER: 00000000
+[ 4.828326]
+[    4.828326] GPR00: c0776484 df4dde80 df4db1a0 0000002c 00000004
+000000ff ffffffff 000000ff
+[    4.828326] GPR08: 000000ff c085271c c085271c 00000000 222ff444
+00000000 c00047ec 00000000
+[    4.828326] GPR16: 00000000 00000000 00000000 00000000 00000000
+00000000 00000000 c0860000
+[    4.828326] GPR24: c076ecdc c07d2e80 c0766720 c07b2310 00000000
+c085f5b0 c0860000 c07b0000
+NIP [c0776484] check_features+0x38/0x7c
+[    4.875135] LR [c0776484] check_features+0x38/0x7c
+[    4.882958] Call Trace:
+[    4.890751] [df4dde80] [c0776484] check_features+0x38/0x7c (unreliable)
+[    4.898650] [df4dde90] [c0004154] do_one_initcall+0x4c/0x188
+[    4.906477] [df4ddf00] [c076f578] kernel_init_freeable+0x164/0x200
+[    4.914269] [df4ddf30] [c0004810] kernel_init+0x24/0x134
+[    4.921942] [df4ddf40] [c0016500] ret_from_kernel_thread+0x5c/0x64
+[    4.929536] Instruction dump:
+[    4.937046] bfc10008 90010014 3fc0c086 811ef028 3fe0c07b 80ff349c
+8108000c 7f883800
+41be0014 3c60c06b 38632f34 4be5f601 <0fe00000> 815ef028 3bff349c 813f0004
+[    4.952413] ---[ end trace de3271b83777a44e ]---
 
-set_bit() and test_bit() are non-atomic, and unordered vs other loads
-and stores.
 
-So the caller will need to be careful they have a barrier between this
-and whatever it is they do that creates mappings that might need to be
-invalidated.
+>From a non smp kernel:
 
-Similarly on the read side we should have a barrier between the store
-that makes the PTE invalid and the load of the flag.
 
-Which makes me think cxl_ctx_in_use() is buggy :/, hmm. But it's late so
-hopefully I'm wrong :D
+[    0.000000] Total memory = 512MB; using 1024kB for hash table (at cff00000)
+[    0.000000] Linux version 4.9.0-2-powerpc
+(debian-kernel@lists.debian.org) (gcc version 6.3.0 20170321 (Debian
+6.3.0-11) ) #1 Debian 4.9.18-1 (2017-03-30)
+[    0.000000] Found initrd at 0xc0c40000:0xc19744bc
+[    0.000000] Found UniNorth memory controller & host bridge @
+0xf8000000 revision: 0x11
+[    0.000000] Mapped at 0xff7c0000
+[    0.000000] Found a Keylargo mac-io controller, rev: 3, mapped at 0xff740000
+[    0.000000] PowerMac motherboard: PowerMac G4 Silver
+[    0.000000] Using PowerMac machine description
 
-> diff --git a/arch/powerpc/include/asm/tlb.h b/arch/powerpc/include/asm/tlb.h
-> index 609557569f65..bd18ed083011 100644
-> --- a/arch/powerpc/include/asm/tlb.h
-> +++ b/arch/powerpc/include/asm/tlb.h
-> @@ -71,8 +71,14 @@ static inline int mm_is_core_local(struct mm_struct *mm)
->  
->  static inline int mm_is_thread_local(struct mm_struct *mm)
->  {
-> -	return cpumask_equal(mm_cpumask(mm),
-> -			      cpumask_of(smp_processor_id()));
-> +	int rc;
-> +
-> +	rc = cpumask_equal(mm_cpumask(mm),
-> +			cpumask_of(smp_processor_id()));
-> +#ifdef CONFIG_PPC_BOOK3S_64
-> +	rc = rc && !test_bit(MM_CONTEXT_GLOBAL_TLBI, &mm->context.flags);
-> +#endif
 
-The ifdef's a bit ugly, but I guess it's not worth putting it in a
-static inline.
-
-I'd be interested to see the generated code for this, and for the
-reverse, ie. putting the test_bit() first, and doing an early return if
-it's true. That way once the bit is set we can just skip the cpumask
-comparison.
-
-cheers
+Thanks
