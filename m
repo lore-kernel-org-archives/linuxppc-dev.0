@@ -1,44 +1,23 @@
-Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <karim.eshapa@gmail.com>
+Received: from mail-wm0-x241.google.com (mail-wm0-x241.google.com
+ [IPv6:2a00:1450:400c:c09::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wJMhq4fmnzDqJX
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 May 2017 14:38:03 +1000 (AEST)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v444XvIl041588
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 May 2017 00:37:50 -0400
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2a7vc32bda-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 May 2017 00:37:50 -0400
-Received: from localhost
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Thu, 4 May 2017 14:37:47 +1000
-Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v444bbIK2818414
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 May 2017 14:37:45 +1000
-Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
- by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v444bCI4009613
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 May 2017 14:37:13 +1000
-From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>,
- Masami Hiramatsu <mhiramat@kernel.org>,
- Steven Rostedt <rostedt@goodmis.org>,
- Anton Blanchard <anton@samba.org>, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 8/8] powerpc/xmon: Disable function_graph tracing while in xmon
-Date: Thu,  4 May 2017 10:06:21 +0530
-In-Reply-To: <cover.1493831558.git.naveen.n.rao@linux.vnet.ibm.com>
-References: <cover.1493831558.git.naveen.n.rao@linux.vnet.ibm.com>
-In-Reply-To: <cover.1493831558.git.naveen.n.rao@linux.vnet.ibm.com>
-References: <cover.1493831558.git.naveen.n.rao@linux.vnet.ibm.com>
-Message-Id: <cbc1c6d7ed20f905c2d5c914f69c8ba013a17c3b.1493831558.git.naveen.n.rao@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wJN8p6kzfzDqCv
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 May 2017 14:58:50 +1000 (AEST)
+Received: by mail-wm0-x241.google.com with SMTP id z129so785886wmb.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 03 May 2017 21:58:50 -0700 (PDT)
+From: Karim Eshapa <karim.eshapa@gmail.com>
+To: oss@buserror.net
+Cc: claudiu.manoil@nxp.com, roy.pledge@nxp.com, colin.king@canonical.com,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
+ linux-kernel@vger.kernel.org, Karim Eshapa <karim.eshapa@gmail.com>
+Subject: [PATCH v2] drivers:soc:fsl:qbman:qman.c: Sleep instead of stuck
+ hacking jiffies.
+Date: Thu,  4 May 2017 06:58:37 +0200
+Message-Id: <1493873917-7484-1-git-send-email-karim.eshapa@gmail.com>
+In-Reply-To: <1493508775.25397.26.camel@buserror.net>
+References: <1493508775.25397.26.camel@buserror.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,44 +27,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-HAVE_FUNCTION_GRAPH_FP_TEST reveals another area (apart from jprobes)
-that conflicts with the function_graph tracer: xmon. This is due to the
-use of longjmp() in various places in xmon.
+Avoid stuck and hacking jiffies for a long time and using msleep()
+for certatin numeber of cylces without the factor of safety
+but using the the long delay considering the factor of safety
+with the while loop such that after msleep for a short period
+of time we check the  msg if it's OK, breaking the big loop delay.
 
-To address this, pause function_graph tracing while in xmon.
-
-Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+Signed-off-by: Karim Eshapa <karim.eshapa@gmail.com>
 ---
- arch/powerpc/xmon/xmon.c | 3 +++
- 1 file changed, 3 insertions(+)
+ drivers/soc/fsl/qbman/qman.c | 47 ++++++++++++++++++++++----------------------
+ 1 file changed, 24 insertions(+), 23 deletions(-)
 
-diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
-index da5619847517..22db68347ff6 100644
---- a/arch/powerpc/xmon/xmon.c
-+++ b/arch/powerpc/xmon/xmon.c
-@@ -28,6 +28,7 @@
- #include <linux/bug.h>
- #include <linux/nmi.h>
- #include <linux/ctype.h>
-+#include <linux/ftrace.h>
- 
- #include <asm/debugfs.h>
- #include <asm/ptrace.h>
-@@ -459,6 +460,7 @@ static int xmon_core(struct pt_regs *regs, int fromipi)
- 
- 	local_irq_save(flags);
- 	hard_irq_disable();
-+	pause_graph_tracing();
- 
- 	bp = in_breakpoint_table(regs->nip, &offset);
- 	if (bp != NULL) {
-@@ -655,6 +657,7 @@ static int xmon_core(struct pt_regs *regs, int fromipi)
- 
- 	touch_nmi_watchdog();
- 	local_irq_restore(flags);
-+	unpause_graph_tracing();
- 
- 	return cmd != 'X' && cmd != EOF;
- }
+diff --git a/drivers/soc/fsl/qbman/qman.c b/drivers/soc/fsl/qbman/qman.c
+index 6f509f6..4f99298 100644
+--- a/drivers/soc/fsl/qbman/qman.c
++++ b/drivers/soc/fsl/qbman/qman.c
+@@ -1067,32 +1067,33 @@ static irqreturn_t portal_isr(int irq, void *ptr)
+ static int drain_mr_fqrni(struct qm_portal *p)
+ {
+ 	const union qm_mr_entry *msg;
++	unsigned long stop;
++	unsigned int timeout = jiffies_to_msecs(1000);
+ loop:
+ 	msg = qm_mr_current(p);
+-	if (!msg) {
+-		/*
+-		 * if MR was full and h/w had other FQRNI entries to produce, we
+-		 * need to allow it time to produce those entries once the
+-		 * existing entries are consumed. A worst-case situation
+-		 * (fully-loaded system) means h/w sequencers may have to do 3-4
+-		 * other things before servicing the portal's MR pump, each of
+-		 * which (if slow) may take ~50 qman cycles (which is ~200
+-		 * processor cycles). So rounding up and then multiplying this
+-		 * worst-case estimate by a factor of 10, just to be
+-		 * ultra-paranoid, goes as high as 10,000 cycles. NB, we consume
+-		 * one entry at a time, so h/w has an opportunity to produce new
+-		 * entries well before the ring has been fully consumed, so
+-		 * we're being *really* paranoid here.
+-		 */
+-		u64 now, then = jiffies;
+-
+-		do {
+-			now = jiffies;
+-		} while ((then + 10000) > now);
++	stop = jiffies + 10000;
++	/*
++	 * if MR was full and h/w had other FQRNI entries to produce, we
++	 * need to allow it time to produce those entries once the
++	 * existing entries are consumed. A worst-case situation
++	 * (fully-loaded system) means h/w sequencers may have to do 3-4
++	 * other things before servicing the portal's MR pump, each of
++	 * which (if slow) may take ~50 qman cycles (which is ~200
++	 * processor cycles). So rounding up and then multiplying this
++	 * worst-case estimate by a factor of 10, just to be
++	 * ultra-paranoid, goes as high as 10,000 cycles. NB, we consume
++	 * one entry at a time, so h/w has an opportunity to produce new
++	 * entries well before the ring has been fully consumed, so
++	 * we're being *really* paranoid here.
++	 */
++	do {
++		if (msg)
++			break;
++		msleep(timeout);
+ 		msg = qm_mr_current(p);
+-		if (!msg)
+-			return 0;
+-	}
++	} while (time_before(jiffies, stop));
++	if (!msg)
++		return 0;
+ 	if ((msg->verb & QM_MR_VERB_TYPE_MASK) != QM_MR_VERB_FQRNI) {
+ 		/* We aren't draining anything but FQRNIs */
+ 		pr_err("Found verb 0x%x in MR\n", msg->verb);
 -- 
-2.12.2
+2.7.4
