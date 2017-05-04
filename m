@@ -1,44 +1,25 @@
-Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wJNBm4cs3zDqFt
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 May 2017 15:00:32 +1000 (AEST)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v444xNGC053667
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 May 2017 01:00:30 -0400
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2a7wnug6mf-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 May 2017 01:00:29 -0400
-Received: from localhost
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Thu, 4 May 2017 15:00:27 +1000
-Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v4450G5952560076
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 May 2017 15:00:24 +1000
-Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
- by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v444xqhs021372
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 May 2017 14:59:52 +1000
-Date: Thu, 4 May 2017 10:29:34 +0530
-From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-To: Anton Blanchard <anton@samba.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wJPbP6PfBzDqCd
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 May 2017 16:03:29 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
 Cc: Anton Blanchard <anton@samba.org>,
  Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>,
- Masami Hiramatsu <mhiramat@kernel.org>, linuxppc-dev@lists.ozlabs.org,
- Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH v2 0/3] powerpc: build out kprobes blacklist
+ Masami Hiramatsu <mhiramat@kernel.org>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v2 2/3] powerpc/kprobes: un-blacklist system_call() from
+ kprobes
+In-Reply-To: <20170427123536.GB3313@naverao1-tp.localdomain>
 References: <cover.1493274843.git.naveen.n.rao@linux.vnet.ibm.com>
+ <e15c0617dbf4ff85d3e8f91b7a3ef8e2071b581d.1493274843.git.naveen.n.rao@linux.vnet.ibm.com>
+ <87d1by17b0.fsf@concordia.ellerman.id.au>
+ <20170427123536.GB3313@naverao1-tp.localdomain>
+Date: Thu, 04 May 2017 16:03:26 +1000
+Message-ID: <87k25xyx8x.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <cover.1493274843.git.naveen.n.rao@linux.vnet.ibm.com>
-Message-Id: <20170504045934.GB9733@naverao1-tp.localdomain>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,28 +29,100 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2017/04/27 02:06PM, Naveen N. Rao wrote:
-> v2 changes:
-> - Patches 3 and 4 from the previous series have been merged.
-> - Updated to no longer blacklist functions involved with stolen time
->   accounting.
-> 
-> v1:
-> https://www.mail-archive.com/linuxppc-dev@lists.ozlabs.org/msg117514.html
-> --
-> This is the second in the series of patches to build out an appropriate
-> kprobes blacklist. This series blacklists system_call() and functions
-> involved when handling the trap itself. Not everything is covered, but
-> this is the first set of functions that I have tested with. More
-> patches to follow once I expand my tests.
-> 
-> I have converted many labels into private -- these are labels that I
-> felt are not necessary to read stack traces. If any of those are
-> important to have, please let me know.
+"Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> writes:
 
-Hi Anton,
-Can you please take a look at this series and let me know if you any 
-concerns, especially around some of the labels that I have made private?
+> On 2017/04/27 08:19PM, Michael Ellerman wrote:
+>> "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> writes:
+>> 
+>> > It is actually safe to probe system_call() in entry_64.S, but only till
+>> > .Lsyscall_exit. To allow this, convert .Lsyscall_exit to a non-local
+>> > symbol __system_call() and blacklist that symbol, rather than
+>> > system_call().
+>> 
+>> I'm not sure I like this. The reason we made it a local symbol in the
+>> first place is because it made backtraces look odd:
+>> 
+>>   commit 4c3b21686111e0ac6018469dacbc5549f9915cf8
+>>   Author:     Michael Ellerman <mpe@ellerman.id.au>
+>>   AuthorDate: Fri Dec 5 21:16:59 2014 +1100
+>>   
+>>   powerpc/kernel: Make syscall_exit a local label
+>>   
+>>   Currently when we back trace something that is in a syscall we see
+>>   something like this:
+>>   
+>>   [c000000000000000] [c000000000000000] SyS_read+0x6c/0x110
+>>   [c000000000000000] [c000000000000000] syscall_exit+0x0/0x98
+>>   
+>>   Although it's entirely correct, seeing syscall_exit at the bottom can be
+>>   confusing - we were exiting from a syscall and then called SyS_read() ?
+>>   
+>>   If we instead change syscall_exit to be a local label we get something
+>>   more intuitive:
+>>   
+>>   [c0000001fa46fde0] [c00000000026719c] SyS_read+0x6c/0x110
+>>   [c0000001fa46fe30] [c000000000009264] system_call+0x38/0xd0
+>>   
+>>   ie. we were handling a system call, and it was SyS_read().
+>> 
+>> 
+>> I think you know that, although you didn't mention it in the change log,
+>> because you've called the new symbol __system_call. But that is not a
+>> great name either because that's not what it does.
+>
+> Yes, you're right. I used __system_call since I felt that it won't cause 
+> confusion like syscall_exit did. I agree it's not a great name, but we 
+> need _some_ label other than system_call if we want to allow probing at 
+> this point.
+>
+> Also, if I'm reading this right, there is no other place to probe if we 
+> want to capture all system call entries.
+>
+> So, I felt this would be good to have.
+>
+>> 
+>> > diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
+>> > index 380361c0bb6a..e030ce34dd66 100644
+>> > --- a/arch/powerpc/kernel/entry_64.S
+>> > +++ b/arch/powerpc/kernel/entry_64.S
+>> > @@ -176,7 +176,7 @@ system_call:			/* label this so stack traces look sane */
+>> >  	mtctr   r12
+>> >  	bctrl			/* Call handler */
+>> >  
+>> > -.Lsyscall_exit:
+>> > +__system_call:
+>> >  	std	r3,RESULT(r1)
+>> >  	CURRENT_THREAD_INFO(r12, r1)
+>>   
+>> Why can't we kprobe the std and the rotate to current thread info?
+>> 
+>> Is the real no-probe point just here, prior to the clearing of MSR_RI ?
+>> 
+>> 	ld	r8,_MSR(r1)
+>> #ifdef CONFIG_PPC_BOOK3S
+>> 	/* No MSR:RI on BookE */
+>
+> We can probe at all those places, just not once MSR_RI is unset. So, the 
+> no-probe point is just *after* the mtmsrd.
+>
+> However, for kprobe blacklisting, the granularity is at a function level 
+> (or ASM labels). As such, we will have to blacklist all of 
+> syscall_exit/__system_call.
 
-Thanks,
-Naveen
+Would this work?
+
+diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
+index 767ef6d68c9e..8d0fa4a2262a 100644
+--- a/arch/powerpc/kernel/entry_64.S
++++ b/arch/powerpc/kernel/entry_64.S
+@@ -207,6 +207,7 @@ system_call:			/* label this so stack traces look sane */
+ 	mtmsrd	r11,1
+ #endif /* CONFIG_PPC_BOOK3E */
+ 
++syscall_exit:
+ 	ld	r9,TI_FLAGS(r12)
+ 	li	r11,-MAX_ERRNO
+ 	andi.	r0,r9,(_TIF_SYSCALL_DOTRACE|_TIF_SINGLESTEP|_TIF_USER_WORK_MASK|_TIF_PERSYSCALL_MASK)
+
+
+cheers
