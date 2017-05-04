@@ -1,22 +1,27 @@
-Return-Path: <mathieu.malaterre@gmail.com>
-Received: from mail-ua0-x22d.google.com (mail-ua0-x22d.google.com
- [IPv6:2607:f8b0:400c:c08::22d])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wJVdK6cdTzDqBJ
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 May 2017 19:50:29 +1000 (AEST)
-Received: by mail-ua0-x22d.google.com with SMTP id z47so4795565uaz.0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 May 2017 02:50:29 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wJVgz2T60zDqCL
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 May 2017 19:52:47 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+Cc: Anton Blanchard <anton@samba.org>,
+ Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>,
+ Masami Hiramatsu <mhiramat@kernel.org>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v2 2/3] powerpc/kprobes: un-blacklist system_call() from
+ kprobes
+In-Reply-To: <20170504072807.GC9733@naverao1-tp.localdomain>
+References: <cover.1493274843.git.naveen.n.rao@linux.vnet.ibm.com>
+ <e15c0617dbf4ff85d3e8f91b7a3ef8e2071b581d.1493274843.git.naveen.n.rao@linux.vnet.ibm.com>
+ <87d1by17b0.fsf@concordia.ellerman.id.au>
+ <20170427123536.GB3313@naverao1-tp.localdomain>
+ <87k25xyx8x.fsf@concordia.ellerman.id.au>
+ <20170504072807.GC9733@naverao1-tp.localdomain>
+Date: Thu, 04 May 2017 19:52:46 +1000
+Message-ID: <87bmr9ymmp.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-From: Mathieu Malaterre <mathieu.malaterre@gmail.com>
-Date: Thu, 4 May 2017 11:50:06 +0200
-Message-ID: <CA+7wUsyo5HEVrNFGaH0WGB5WTatX7R7t_s2XhcbZ3kSDsAh2hA@mail.gmail.com>
-Subject: WARNING: CPU: 0 PID: 1 at
- /build/linux-dp17Ba/linux-4.9.18/arch/powerpc/lib/feature-fixups.c:208
- check_features+0x38/0x7c
-To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Cc: "Linux User #330250" <linuxuser330250@gmx.net>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,62 +31,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi all,
+"Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> writes:
+> On 2017/05/04 04:03PM, Michael Ellerman wrote:
+>> Would this work?
+>> 
+>> diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
+>> index 767ef6d68c9e..8d0fa4a2262a 100644
+>> --- a/arch/powerpc/kernel/entry_64.S
+>> +++ b/arch/powerpc/kernel/entry_64.S
+>> @@ -207,6 +207,7 @@ system_call:			/* label this so stack traces look sane */
+>>  	mtmsrd	r11,1
+>>  #endif /* CONFIG_PPC_BOOK3E */
+>> 
+>> +syscall_exit:
+>>  	ld	r9,TI_FLAGS(r12)
+>>  	li	r11,-MAX_ERRNO
+>>  	andi.	r0,r9,(_TIF_SYSCALL_DOTRACE|_TIF_SINGLESTEP|_TIF_USER_WORK_MASK|_TIF_PERSYSCALL_MASK)
+>
+> Ah, nice. I previously incorrectly assumed that syscall_exit was not 
+> desirable throughout this function. Your earlier patch was only about 
+> what label showed up while _inside_ a syscall.
 
-Does this dmesg output speaks to anyone here (smp kernel):
+Yep. When you're somewhere in a syscall the LR on the stack points to
+the instruction following the bctrl that called the syscall handler, so
+as long as the label preceeding that is system_call then the backtrace
+should look good.
 
+We could even just have a nop after the bctrl and then the label, but
+that would be a bit gross.
 
-[    4.767389] ------------[ cut here ]------------
-[    4.774668] WARNING: CPU: 0 PID: 1 at
-/build/linux-dp17Ba/linux-4.9.18/arch/powerpc/lib/feature-fixups.c:208
-check_features+0x38/0x7c
-[    4.782256] Modules linked in:
-[    4.789766] CPU: 0 PID: 1 Comm: swapper Not tainted 4.9.0-2-powerpc
-#1 Debian 4.9.18-1
-[    4.797441] task: df4db1a0 task.stack: df4dc000
-[    4.805089] NIP: c0776484 LR: c0776484 CTR: 00000000
-[    4.812736] REGS: df4dddd0 TRAP: 0700   Not tainted
-(4.9.0-2-powerpc Debian 4.9.18-1)
-[    4.820485] MSR: 00029032 <EE,ME,IR,DR,RI>
-[    4.820622]   CR: 242ff422  XER: 00000000
-[ 4.828326]
-[    4.828326] GPR00: c0776484 df4dde80 df4db1a0 0000002c 00000004
-000000ff ffffffff 000000ff
-[    4.828326] GPR08: 000000ff c085271c c085271c 00000000 222ff444
-00000000 c00047ec 00000000
-[    4.828326] GPR16: 00000000 00000000 00000000 00000000 00000000
-00000000 00000000 c0860000
-[    4.828326] GPR24: c076ecdc c07d2e80 c0766720 c07b2310 00000000
-c085f5b0 c0860000 c07b0000
-NIP [c0776484] check_features+0x38/0x7c
-[    4.875135] LR [c0776484] check_features+0x38/0x7c
-[    4.882958] Call Trace:
-[    4.890751] [df4dde80] [c0776484] check_features+0x38/0x7c (unreliable)
-[    4.898650] [df4dde90] [c0004154] do_one_initcall+0x4c/0x188
-[    4.906477] [df4ddf00] [c076f578] kernel_init_freeable+0x164/0x200
-[    4.914269] [df4ddf30] [c0004810] kernel_init+0x24/0x134
-[    4.921942] [df4ddf40] [c0016500] ret_from_kernel_thread+0x5c/0x64
-[    4.929536] Instruction dump:
-[    4.937046] bfc10008 90010014 3fc0c086 811ef028 3fe0c07b 80ff349c
-8108000c 7f883800
-41be0014 3c60c06b 38632f34 4be5f601 <0fe00000> 815ef028 3bff349c 813f0004
-[    4.952413] ---[ end trace de3271b83777a44e ]---
+> So, syscall_exit post handling of a syscall is fine.
+>
+> This patch looks fine to me. I will test with this change and get back.
 
+Thanks.
 
->From a non smp kernel:
-
-
-[    0.000000] Total memory = 512MB; using 1024kB for hash table (at cff00000)
-[    0.000000] Linux version 4.9.0-2-powerpc
-(debian-kernel@lists.debian.org) (gcc version 6.3.0 20170321 (Debian
-6.3.0-11) ) #1 Debian 4.9.18-1 (2017-03-30)
-[    0.000000] Found initrd at 0xc0c40000:0xc19744bc
-[    0.000000] Found UniNorth memory controller & host bridge @
-0xf8000000 revision: 0x11
-[    0.000000] Mapped at 0xff7c0000
-[    0.000000] Found a Keylargo mac-io controller, rev: 3, mapped at 0xff740000
-[    0.000000] PowerMac motherboard: PowerMac G4 Silver
-[    0.000000] Using PowerMac machine description
-
-
-Thanks
+cheers
