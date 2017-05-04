@@ -1,19 +1,37 @@
-Return-Path: <schindele@nentec.de>
-Received: from dmz-mail.nentec.de (gate.nentec.de [213.218.23.37])
- by lists.ozlabs.org (Postfix) with SMTP id 3wJdfS0hGmzDqCL
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 May 2017 01:06:54 +1000 (AEST)
-From: Juergen Schindele <schindele@nentec.de>
-To: Scott Wood <oss@buserror.net>
-Reply-To: schindele@nentec.de
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: Re: Freescale mpc8315 IRQ0 setup
-Date: Thu, 04 May 2017 17:06:37 +0200
-Message-ID: <41499955.CTp69um5pn@sherry>
-In-Reply-To: <1493782174.25397.31.camel@buserror.net>
-References: <2666241.ms6yMRjznt@sherry> <1715435.xdU3769208@sherry>
- <1493782174.25397.31.camel@buserror.net>
+Return-Path: <pc@us.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wJdfY0yljzDqFW
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 May 2017 01:07:00 +1000 (AEST)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v44F3tAP143313
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 May 2017 11:06:55 -0400
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2a7ux5dr74-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 May 2017 11:06:54 -0400
+Received: from localhost
+ by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <pc@us.ibm.com>;
+ Thu, 4 May 2017 09:06:53 -0600
+Reply-To: pc@us.ibm.com
+Subject: Re: [PATCH v2] powerpc/kprobes: refactor kprobe_lookup_name for safer
+ string operations
+References: <20170504102452.9701-1-naveen.n.rao@linux.vnet.ibm.com>
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>
+Cc: David Laight <David.Laight@ACULAB.COM>, linuxppc-dev@lists.ozlabs.org,
+ Masami Hiramatsu <mhiramat@kernel.org>
+From: Paul Clarke <pc@us.ibm.com>
+Date: Thu, 4 May 2017 10:06:49 -0500
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="nextPart1512970.igoxXhXBEB"
+In-Reply-To: <20170504102452.9701-1-naveen.n.rao@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=windows-1252
+Message-Id: <0895bcf8-f06b-98b8-265c-bc5bcc2057f1@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,99 +41,78 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+On 05/04/2017 05:24 AM, Naveen N. Rao wrote:
+> Use safer string manipulation functions when dealing with a
+> user-provided string in kprobe_lookup_name().
+> 
+> Reported-by: David Laight <David.Laight@ACULAB.COM>
+> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+> ---
+> Changed to ignore return value of 0 from strscpy(), as suggested by
+> Masami.
+> 
+> - Naveen
+> 
+>  arch/powerpc/kernel/kprobes.c | 47 ++++++++++++++++++-------------------------
+>  1 file changed, 20 insertions(+), 27 deletions(-)
+> 
+> diff --git a/arch/powerpc/kernel/kprobes.c b/arch/powerpc/kernel/kprobes.c
+> index 160ae0fa7d0d..255d28d31ca1 100644
+> --- a/arch/powerpc/kernel/kprobes.c
+> +++ b/arch/powerpc/kernel/kprobes.c
+> @@ -53,7 +53,7 @@ bool arch_within_kprobe_blacklist(unsigned long addr)
+> 
+>  kprobe_opcode_t *kprobe_lookup_name(const char *name, unsigned int offset)
+>  {
+> -	kprobe_opcode_t *addr;
+> +	kprobe_opcode_t *addr = NULL;
+> 
+>  #ifdef PPC64_ELF_ABI_v2
+>  	/* PPC64 ABIv2 needs local entry point */
+> @@ -85,36 +85,29 @@ kprobe_opcode_t *kprobe_lookup_name(const char *name, unsigned int offset)
+>  	 * Also handle <module:symbol> format.
+>  	 */
+>  	char dot_name[MODULE_NAME_LEN + 1 + KSYM_NAME_LEN];
+> -	const char *modsym;
+>  	bool dot_appended = false;
+> -	if ((modsym = strchr(name, ':')) != NULL) {
+> -		modsym++;
+> -		if (*modsym != '\0' && *modsym != '.') {
+> -			/* Convert to <module:.symbol> */
+> -			strncpy(dot_name, name, modsym - name);
+> -			dot_name[modsym - name] = '.';
+> -			dot_name[modsym - name + 1] = '\0';
+> -			strncat(dot_name, modsym,
+> -				sizeof(dot_name) - (modsym - name) - 2);
+> -			dot_appended = true;
+> -		} else {
+> -			dot_name[0] = '\0';
+> -			strncat(dot_name, name, sizeof(dot_name) - 1);
+> -		}
+> -	} else if (name[0] != '.') {
+> -		dot_name[0] = '.';
+> -		dot_name[1] = '\0';
+> -		strncat(dot_name, name, KSYM_NAME_LEN - 2);
+> +	const char *c;
+> +	ssize_t ret = 0;
+> +	int len = 0;
+> +
+> +	if ((c = strnchr(name, MODULE_NAME_LEN, ':')) != NULL) {
 
---nextPart1512970.igoxXhXBEB
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="iso-8859-1"
+Shouldn't this be MODULE_NAME_LEN + 1, since the ':' can come after a module name of length MODULE_NAME_LEN?
 
-Am Dienstag, 2. Mai 2017, 22:29:34 schrieb Scott Wood:
-> On Tue, 2017-05-02 at 14:43 +0200, Juergen Schindele wrote:
-> > Dear Scott,
-> > sorry for the delay but i am not very familiar with the formating.
-> > I passed the patch trough checkpatch.pl and there was no more error=
-.
-> > pease find patch in attached file.
-> > Thanks
->=20
-> Documentation/process/submitting-patches.rst explains the way to form=
-at and
-> submit kernel patches.
->=20
-> Also, why the unrelated change to a print statement in ipic_set_irq_t=
-ype()?
->=20
-> -Scott
-The second diff is not completely unrelated because when i was investig=
-ating=20
-the problem i saw only a message "edge sense not supported" but you don=
-t
-know on which interrupt he is complaining about. So i added this to fin=
-d out=20
-who the suspect is.
+> +		c++;
+> +		len = c - name;
+> +		memcpy(dot_name, name, len);
+> +	} else
+> +		c = name;
+> +
+> +	if (*c != '\0' && *c != '.') {
+> +		dot_name[len++] = '.';
+>  		dot_appended = true;
+> -	} else {
+> -		dot_name[0] = '\0';
+> -		strncat(dot_name, name, KSYM_NAME_LEN - 1);
+>  	}
 
-Corrected patch
---=20
-i. A.
-J=FCrgen Schindele
-Softwareentwicklung
-
-PSI Nentec GmbH
-Greschbachstra=DFe 12
-76229 Karlsruhe
-Deutschland
-Telefon: +49 721 94249-51
-Telefax: +49 721 94249-10
-schindele@nentec.de
-www.nentec.de
-
-Gesch=E4ftsf=FChrung: Klaus Becker, Wolfgang Fischer
-Sitz der Gesellschaft: Karlsruhe
-Handelsregister: Amtsgericht Mannheim HRB 107658
-
-Diese E-Mail enth=E4lt vertrauliche oder rechtlich gesch=FCtzte Informa=
-tionen.=20
-Wenn Sie nicht der vorgesehene Empf=E4nger sind, informieren Sie bitte =
-sofort=20
-den Absender und l=F6schen Sie diese E-Mail. Das unbefugte Kopieren die=
-ser E-
-Mail oder die unbefugte Weitergabe der enthaltenen Informationen ist ni=
-cht=20
-gestattet.
-
-The information contained in this message is confidential or protected =
-by law.=20
-If you are not the intended recipient, please contact the sender and de=
-lete=20
-this message. Any unauthorised copying of this message or unauthorised=20=
-
-distribution of the information contained herein is prohibited. 
---nextPart1512970.igoxXhXBEB
-Content-Disposition: attachment; filename="ipic.patch"
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/x-patch; charset="UTF-8"; name="ipic.patch"
-
-[PATCH] configure "EDGE" capabilities for IRQ0 (like IRQ1-7)
-Signed-off-by: Jurgen Schindele <schindele@nentec.de>
-
---- a/arch/powerpc/sysdev/ipic.c	2016-12-11 20:17:54.000000000 +0100
-+++ b/arch/powerpc/sysdev/ipic.c	2017-04-04 15:28:11.201308780 +0200
-@@ -315,6 +315,7 @@ static struct ipic_info ipic_info[] = {
- 		.prio_mask = 7,
- 	},
- 	[48] = {
-+		.ack	= IPIC_SEPNR,
- 		.mask	= IPIC_SEMSR,
- 		.prio	= IPIC_SMPRR_A,
- 		.force	= IPIC_SEFCR,
-@@ -617,7 +618,7 @@ static int ipic_set_irq_type(struct irq_
- 	/* ipic supports only edge mode on external interrupts */
- 	if ((flow_type & IRQ_TYPE_EDGE_FALLING) && !ipic_info[src].ack) {
- 		printk(KERN_ERR "ipic: edge sense not supported on internal "
--				"interrupts\n");
-+				"interrupts %d\n", src);
- 		return -EINVAL;
-
- 	}
-
---nextPart1512970.igoxXhXBEB--
+PC
