@@ -3,45 +3,39 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wJMfX5G6szDqBJ
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 May 2017 14:36:04 +1000 (AEST)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wJMhK1MDDzDqCf
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 May 2017 14:37:37 +1000 (AEST)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v444XxFK138500
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 May 2017 00:35:56 -0400
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2a73gxftsj-1
+ v444XtA9088411
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 May 2017 00:37:24 -0400
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2a7ux4k96h-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 May 2017 00:35:56 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 May 2017 00:37:24 -0400
 Received: from localhost
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Thu, 4 May 2017 14:35:53 +1000
+ Thu, 4 May 2017 14:37:21 +1000
 Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v444ZgSA64553078
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 May 2017 14:35:50 +1000
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v444bACH1311160
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 May 2017 14:37:18 +1000
 Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
  by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v444ZIKf005878
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 May 2017 14:35:18 +1000
-Date: Thu, 4 May 2017 10:05:00 +0530
+ v444ajHh008694
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 May 2017 14:36:46 +1000
 From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>,
- Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>,
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>,
  Masami Hiramatsu <mhiramat@kernel.org>,
+ Steven Rostedt <rostedt@goodmis.org>,
  Anton Blanchard <anton@samba.org>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 1/8] powerpc/kprobes: Pause function_graph tracing during
- jprobes handling
-References: <cover.1493831558.git.naveen.n.rao@linux.vnet.ibm.com>
- <92bb3fa1bd428d8f556f9a90ff97752c2e8f8dfa.1493831558.git.naveen.n.rao@linux.vnet.ibm.com>
- <20170503155819.0cbd04e5@gandalf.local.home>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170503155819.0cbd04e5@gandalf.local.home>
-Message-Id: <20170504043500.GA9733@naverao1-tp.localdomain>
+Subject: [PATCH 0/8] powerpc: Various fixes and enhancements for kprobes and
+ ftrace
+Date: Thu,  4 May 2017 10:06:13 +0530
+Message-Id: <cover.1493831558.git.naveen.n.rao@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,29 +45,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-[Copying linuxppc-dev list which I missed cc'ing initially]
+[Reposting this as I missed copying the distribution list in my
+previous posting. For those who were copied previously, sorry for the spam]
 
-On 2017/05/03 03:58PM, Steven Rostedt wrote:
-> On Wed,  3 May 2017 23:43:41 +0530
-> "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
-> 
-> > This fixes a crash when function_graph and jprobes are used together.
-> > This is essentially commit 237d28db036e ("ftrace/jprobes/x86: Fix
-> > conflict between jprobes and function graph tracing"), but for powerpc.
-> > 
-> > Jprobes breaks function_graph tracing since the jprobe hook needs to use
-> > jprobe_return(), which never returns back to the hook, but instead to
-> > the original jprobe'd function. The solution is to momentarily pause
-> > function_graph tracing before invoking the jprobe hook and re-enable it
-> > when returning back to the original jprobe'd function.
-> 
-> I wonder if any of this code could be made arch agnostic?
+This series initially started out as a fix for a single bug I found:
+kernel Oops when jprobes is used with the function_graph tracer. Though
+that particular bug turned out to be a solved problem on other
+architectures (as seen in patch 1), my investigation revealed quite a
+few other bugs as well as scope for optimizing our ftrace handlers.
 
-I don't see a way to do that as the jprobe handlers are all 
-arch-specific.
+This series includes all the fixes and enhancements I have made so far.
+There are a few more bugs and fixes that I will be coding up and sending
+across in a day or two.
 
-> 
-> Anyway, Acked-by: Steven Rostedt (VMware) <rostedt@goodmis.org>
+This series has been run through ftrace selftests.
 
-Thanks,
 - Naveen
+
+Naveen N. Rao (8):
+  powerpc/kprobes: Pause function_graph tracing during jprobes handling
+  powerpc/ftrace: Pass the correct stack pointer for
+    DYNAMIC_FTRACE_WITH_REGS
+  powerpc/ftrace: Remove redundant saving of LR in ftrace[_graph]_caller
+  powerpc/kprobes_on_ftrace: Skip livepatch_handler() for jprobes
+  powerpc/ftrace: Eliminate duplicate stack setup for
+    ftrace_graph_caller()
+  powerpc/ftrace: Add support for HAVE_FUNCTION_GRAPH_FP_TEST for
+    -mprofile-kernel
+  powerpc/livepatch: Clarify location of mcount call site
+  powerpc/xmon: Disable function_graph tracing while in xmon
+
+ arch/powerpc/include/asm/asm-prototypes.h      |   3 +-
+ arch/powerpc/include/asm/ftrace.h              |   3 +
+ arch/powerpc/include/asm/livepatch.h           |   4 +-
+ arch/powerpc/kernel/kprobes.c                  |  15 +++-
+ arch/powerpc/kernel/trace/ftrace.c             |   4 +-
+ arch/powerpc/kernel/trace/ftrace_64.S          |   1 +
+ arch/powerpc/kernel/trace/ftrace_64_mprofile.S | 105 +++++++++++--------------
+ arch/powerpc/xmon/xmon.c                       |   3 +
+ 8 files changed, 70 insertions(+), 68 deletions(-)
+
+-- 
+2.12.2
