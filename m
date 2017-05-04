@@ -1,25 +1,48 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
- [IPv6:2607:f8b0:400e:c05::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wJRQT3TMBzDqBJ
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 May 2017 17:25:53 +1000 (AEST)
-Received: by mail-pg0-x242.google.com with SMTP id s62so1115834pgc.0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 May 2017 00:25:53 -0700 (PDT)
-Message-ID: <1493882745.7934.3.camel@gmail.com>
-Subject: Re: [RFC 1/2] powerpc/mm: Add marker for contexts requiring global
- TLB invalidations
-From: Balbir Singh <bsingharora@gmail.com>
-To: Frederic Barrat <fbarrat@linux.vnet.ibm.com>, alistair@popple.id.au,
- aneesh.kumar@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
- mpe@ellerman.id.au
-Date: Thu, 04 May 2017 17:25:45 +1000
-In-Reply-To: <20170503142906.29220-2-fbarrat@linux.vnet.ibm.com>
-References: <20170503142906.29220-1-fbarrat@linux.vnet.ibm.com>
- <20170503142906.29220-2-fbarrat@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wJRVN24mCzDqBJ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 May 2017 17:29:16 +1000 (AEST)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v447SxL3084616
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 May 2017 03:29:03 -0400
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2a7j170huc-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 May 2017 03:29:03 -0400
+Received: from localhost
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
+ Thu, 4 May 2017 17:28:59 +1000
+Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v447SopD66846942
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 May 2017 17:28:58 +1000
+Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
+ by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v447SQNQ018716
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 May 2017 17:28:26 +1000
+Date: Thu, 4 May 2017 12:58:07 +0530
+From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Anton Blanchard <anton@samba.org>,
+ Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>,
+ Masami Hiramatsu <mhiramat@kernel.org>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v2 2/3] powerpc/kprobes: un-blacklist system_call() from
+ kprobes
+References: <cover.1493274843.git.naveen.n.rao@linux.vnet.ibm.com>
+ <e15c0617dbf4ff85d3e8f91b7a3ef8e2071b581d.1493274843.git.naveen.n.rao@linux.vnet.ibm.com>
+ <87d1by17b0.fsf@concordia.ellerman.id.au>
+ <20170427123536.GB3313@naverao1-tp.localdomain>
+ <87k25xyx8x.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <87k25xyx8x.fsf@concordia.ellerman.id.au>
+Message-Id: <20170504072807.GC9733@naverao1-tp.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,70 +52,108 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2017-05-03 at 16:29 +0200, Frederic Barrat wrote:
-> Introduce a new 'flags' attribute per context and define its first bit
-> to be a marker requiring all TLBIs for that context to be broadcasted
-> globally. Once that marker is set on a context, it cannot be removed.
+On 2017/05/04 04:03PM, Michael Ellerman wrote:
+> "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> writes:
 > 
-> Such a marker is useful for memory contexts used by devices behind the
-> NPU and CAPP/PSL. The NPU and the PSL keep their own
-> translation cache so they need to see all the TLBIs for those
-> contexts.
+> > On 2017/04/27 08:19PM, Michael Ellerman wrote:
+> >> "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> writes:
+> >> 
+> >> > It is actually safe to probe system_call() in entry_64.S, but only till
+> >> > .Lsyscall_exit. To allow this, convert .Lsyscall_exit to a non-local
+> >> > symbol __system_call() and blacklist that symbol, rather than
+> >> > system_call().
+> >> 
+> >> I'm not sure I like this. The reason we made it a local symbol in the
+> >> first place is because it made backtraces look odd:
+> >> 
+> >>   commit 4c3b21686111e0ac6018469dacbc5549f9915cf8
+> >>   Author:     Michael Ellerman <mpe@ellerman.id.au>
+> >>   AuthorDate: Fri Dec 5 21:16:59 2014 +1100
+> >>   
+> >>   powerpc/kernel: Make syscall_exit a local label
+> >>   
+> >>   Currently when we back trace something that is in a syscall we see
+> >>   something like this:
+> >>   
+> >>   [c000000000000000] [c000000000000000] SyS_read+0x6c/0x110
+> >>   [c000000000000000] [c000000000000000] syscall_exit+0x0/0x98
+> >>   
+> >>   Although it's entirely correct, seeing syscall_exit at the bottom can be
+> >>   confusing - we were exiting from a syscall and then called SyS_read() ?
+> >>   
+> >>   If we instead change syscall_exit to be a local label we get something
+> >>   more intuitive:
+> >>   
+> >>   [c0000001fa46fde0] [c00000000026719c] SyS_read+0x6c/0x110
+> >>   [c0000001fa46fe30] [c000000000009264] system_call+0x38/0xd0
+> >>   
+> >>   ie. we were handling a system call, and it was SyS_read().
+> >> 
+> >> 
+> >> I think you know that, although you didn't mention it in the change log,
+> >> because you've called the new symbol __system_call. But that is not a
+> >> great name either because that's not what it does.
+> >
+> > Yes, you're right. I used __system_call since I felt that it won't cause 
+> > confusion like syscall_exit did. I agree it's not a great name, but we 
+> > need _some_ label other than system_call if we want to allow probing at 
+> > this point.
+> >
+> > Also, if I'm reading this right, there is no other place to probe if we 
+> > want to capture all system call entries.
+> >
+> > So, I felt this would be good to have.
+> >
+> >> 
+> >> > diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
+> >> > index 380361c0bb6a..e030ce34dd66 100644
+> >> > --- a/arch/powerpc/kernel/entry_64.S
+> >> > +++ b/arch/powerpc/kernel/entry_64.S
+> >> > @@ -176,7 +176,7 @@ system_call:			/* label this so stack traces look sane */
+> >> >  	mtctr   r12
+> >> >  	bctrl			/* Call handler */
+> >> >  
+> >> > -.Lsyscall_exit:
+> >> > +__system_call:
+> >> >  	std	r3,RESULT(r1)
+> >> >  	CURRENT_THREAD_INFO(r12, r1)
+> >>   
+> >> Why can't we kprobe the std and the rotate to current thread info?
+> >> 
+> >> Is the real no-probe point just here, prior to the clearing of MSR_RI ?
+> >> 
+> >> 	ld	r8,_MSR(r1)
+> >> #ifdef CONFIG_PPC_BOOK3S
+> >> 	/* No MSR:RI on BookE */
+> >
+> > We can probe at all those places, just not once MSR_RI is unset. So, the 
+> > no-probe point is just *after* the mtmsrd.
+> >
+> > However, for kprobe blacklisting, the granularity is at a function level 
+> > (or ASM labels). As such, we will have to blacklist all of 
+> > syscall_exit/__system_call.
 > 
-> Signed-off-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/include/asm/book3s/64/mmu.h |  9 +++++++++
->  arch/powerpc/include/asm/tlb.h           | 10 ++++++++--
->  arch/powerpc/mm/mmu_context_book3s64.c   |  1 +
->  3 files changed, 18 insertions(+), 2 deletions(-)
+> Would this work?
 > 
-> diff --git a/arch/powerpc/include/asm/book3s/64/mmu.h b/arch/powerpc/include/asm/book3s/64/mmu.h
-> index 77529a3e3811..7b640ab1cbeb 100644
-> --- a/arch/powerpc/include/asm/book3s/64/mmu.h
-> +++ b/arch/powerpc/include/asm/book3s/64/mmu.h
-> @@ -78,8 +78,12 @@ struct spinlock;
->  /* Maximum possible number of NPUs in a system. */
->  #define NV_MAX_NPUS 8
->  
-> +/* Bits definition for the context flags */
-> +#define MM_CONTEXT_GLOBAL_TLBI	1	/* TLBI must be global */
-> +
->  typedef struct {
->  	mm_context_id_t id;
-> +	unsigned long flags;
+> diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
+> index 767ef6d68c9e..8d0fa4a2262a 100644
+> --- a/arch/powerpc/kernel/entry_64.S
+> +++ b/arch/powerpc/kernel/entry_64.S
+> @@ -207,6 +207,7 @@ system_call:			/* label this so stack traces look sane */
+>  	mtmsrd	r11,1
+>  #endif /* CONFIG_PPC_BOOK3E */
+> 
+> +syscall_exit:
+>  	ld	r9,TI_FLAGS(r12)
+>  	li	r11,-MAX_ERRNO
+>  	andi.	r0,r9,(_TIF_SYSCALL_DOTRACE|_TIF_SINGLESTEP|_TIF_USER_WORK_MASK|_TIF_PERSYSCALL_MASK)
 
-Should these flags be under #ifdef PPC_BOOK3S_64 as well? Not sure.
+Ah, nice. I previously incorrectly assumed that syscall_exit was not 
+desirable throughout this function. Your earlier patch was only about 
+what label showed up while _inside_ a syscall. So, syscall_exit post 
+handling of a syscall is fine.
 
->  	u16 user_psize;		/* page size index */
->  
->  	/* NPU NMMU context */
-> @@ -164,5 +168,10 @@ extern void radix_init_pseries(void);
->  static inline void radix_init_pseries(void) { };
->  #endif
->  
-> +static inline void mm_context_set_global_tlbi(mm_context_t *ctx)
-> +{
-> +	set_bit(MM_CONTEXT_GLOBAL_TLBI, &ctx->flags);
-> +}
-> +
->  #endif /* __ASSEMBLY__ */
->  #endif /* _ASM_POWERPC_BOOK3S_64_MMU_H_ */
-> diff --git a/arch/powerpc/include/asm/tlb.h b/arch/powerpc/include/asm/tlb.h
-> index 609557569f65..bd18ed083011 100644
-> --- a/arch/powerpc/include/asm/tlb.h
-> +++ b/arch/powerpc/include/asm/tlb.h
-> @@ -71,8 +71,14 @@ static inline int mm_is_core_local(struct mm_struct *mm)
->  
->  static inline int mm_is_thread_local(struct mm_struct *mm)
->  {
-> -	return cpumask_equal(mm_cpumask(mm),
-> -			      cpumask_of(smp_processor_id()));
-> +	int rc;
-> +
-> +	rc = cpumask_equal(mm_cpumask(mm),
-> +			cpumask_of(smp_processor_id()));
-> +#ifdef CONFIG_PPC_BOOK3S_64
-> +	rc = rc && !test_bit(MM_CONTEXT_GLOBAL_TLBI, &mm->context.flags);
-> +#endif
+This patch looks fine to me. I will test with this change and get back.
 
-Acked-by: Balbir Singh <bsingharora@gmail.com>
+Thanks,
+Naveen
