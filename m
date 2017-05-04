@@ -1,24 +1,42 @@
-Return-Path: <David.Laight@ACULAB.COM>
-Received: from smtp-out6.electric.net (smtp-out6.electric.net
- [192.162.217.186])
+Return-Path: <anju@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wJZVv451SzDqBJ
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 May 2017 22:45:10 +1000 (AEST)
-From: David Laight <David.Laight@ACULAB.COM>
-To: "'Naveen N. Rao'" <naveen.n.rao@linux.vnet.ibm.com>, Michael Ellerman
- <mpe@ellerman.id.au>
-CC: Paul Clarke <pc@us.ibm.com>, Ananth N Mavinakayanahalli
- <ananth@linux.vnet.ibm.com>, Masami Hiramatsu <mhiramat@kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Subject: RE: [PATCH v2] powerpc/kprobes: refactor kprobe_lookup_name for
- safer string operations
-Date: Thu, 4 May 2017 12:45:00 +0000
-Message-ID: <063D6719AE5E284EB5DD2968C1650D6DCFFE5478@AcuExch.aculab.com>
-References: <20170504102452.9701-1-naveen.n.rao@linux.vnet.ibm.com>
-In-Reply-To: <20170504102452.9701-1-naveen.n.rao@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="Windows-1252"
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wJcdY0H6RzDqBJ
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 May 2017 00:21:04 +1000 (AEST)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v44EJC4m099579
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 May 2017 10:20:59 -0400
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2a85m4h6vf-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 May 2017 10:20:59 -0400
+Received: from localhost
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <anju@linux.vnet.ibm.com>;
+ Fri, 5 May 2017 00:20:55 +1000
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v44EKkfg55967850
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 5 May 2017 00:20:54 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v44EKFmh012079
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 5 May 2017 00:20:16 +1000
+From: Anju T Sudhakar <anju@linux.vnet.ibm.com>
+To: mpe@ellerman.id.au
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ ego@linux.vnet.ibm.com, bsingharora@gmail.com, anton@samba.org,
+ sukadev@linux.vnet.ibm.com, mikey@neuling.org,
+ stewart@linux.vnet.ibm.com, dja@axtens.net, eranian@google.com,
+ hemant@linux.vnet.ibm.com, maddy@linux.vnet.ibm.com,
+ anju@linux.vnet.ibm.com
+Subject: [PATCH v8 00/10] IMC Instrumentation Support
+Date: Thu,  4 May 2017 19:49:46 +0530
+Message-Id: <1493907596-11425-1-git-send-email-anju@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,80 +46,280 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Naveen N. Rao [mailto:naveen.n.rao@linux.vnet.ibm.com]
-> Sent: 04 May 2017 11:25
-> Use safer string manipulation functions when dealing with a
-> user-provided string in kprobe_lookup_name().
->=20
-> Reported-by: David Laight <David.Laight@ACULAB.COM>
-> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
-> ---
-> Changed to ignore return value of 0 from strscpy(), as suggested by
-> Masami.
+Power9 has In-Memory-Collection (IMC) infrastructure which contains
+various Performance Monitoring Units (PMUs) at Nest level (these are
+on-chip but off-core), Core level and Thread level.
 
-let's see what this code looks like;
+The Nest PMU counters are handled by a Nest IMC microcode which runs
+in the OCC (On-Chip Controller) complex. The microcode collects the
+counter data and moves the nest IMC counter data to memory.
 
->  	char dot_name[MODULE_NAME_LEN + 1 + KSYM_NAME_LEN];
->  	bool dot_appended =3D false;
-> +	const char *c;
-> +	ssize_t ret =3D 0;
-> +	int len =3D 0;
-> +
-> +	if ((c =3D strnchr(name, MODULE_NAME_LEN, ':')) !=3D NULL) {
+The Core and Thread IMC PMU counters are handled in the core. Core
+level PMU counters give us the IMC counters' data per core and thread
+level PMU counters give us the IMC counters' data per CPU thread.
 
-I don't like unnecessary assignments in conditionals.
+This patchset enables the nest IMC, core IMC and thread IMC
+PMUs and is based on the initial work done by Madhavan Srinivasan.
+"Nest Instrumentation Support" :
+https://lists.ozlabs.org/pipermail/linuxppc-dev/2015-August/132078.html
 
-> +		c++;
-> +		len =3D c - name;
-> +		memcpy(dot_name, name, len);
-> +	} else
-> +		c =3D name;
-> +
-> +	if (*c !=3D '\0' && *c !=3D '.') {
-> +		dot_name[len++] =3D '.';
->  		dot_appended =3D true;
+v1 for this patchset can be found here :
+https://lwn.net/Articles/705475/
 
-If you don't append a dot, then you can always just lookup
-the original string.
+Nest events:
+Per-chip nest instrumentation provides various per-chip metrics
+such as memory, powerbus, Xlink and Alink bandwidth.
 
->  	}
-> +	ret =3D strscpy(dot_name + len, c, KSYM_NAME_LEN);
-> +	if (ret > 0)
-> +		addr =3D (kprobe_opcode_t *)kallsyms_lookup_name(dot_name);
+Core events:
+Per-core IMC instrumentation provides various per-core metrics
+such as non-idle cycles, non-idle instructions, various cache and
+memory related metrics etc.
 
-I'm not sure you need 'ret' here at all.
+Thread events:
+All the events for thread level are same as core level with the
+difference being in the domain. These are per-cpu metrics.
 
-> +	/* Fallback to the original non-dot symbol lookup */
-> +	if (!addr && dot_appended)
->  		addr =3D (kprobe_opcode_t *)kallsyms_lookup_name(name);
+PMU Events' Information:
+OPAL obtains the IMC PMU and event information from the IMC Catalog
+and passes on to the kernel via the device tree. The events' information
+contains :
+ - Event name
+ - Event Offset
+ - Event description
+and, maybe :
+ - Event scale
+ - Event unit
 
-We can bikeshed this function to death:
+Some PMUs may have a common scale and unit values for all their
+supported events. For those cases, the scale and unit properties for
+those events must be inherited from the PMU.
 
-	/* The function name must start with a '.'.
-	 * If it doesn't then we insert one. */
-	c =3D strnchr(name, MODULE_NAME_LEN, ':');
-	if (c && c[1] && c[1] !=3D '.') {
-		/* Insert a '.' after the ':' */
-		c++;
-		len =3D c - name;
-		memcpy(dot_name, name, len);
-	} else {
-		if (name[0] =3D=3D '.')
-			goto check_name:
-		/* Insert a '.' before name */
-		c =3D name;
-		len =3D 0;
-	}
+The event offset in the memory is where the counter data gets
+accumulated.
 
-	dot_name[len++] =3D '.';
-	if (strscpy(dot_name + len, c, KSYM_NAME_LEN) > 0) {
-		addr =3D (kprobe_opcode_t *)kallsyms_lookup_name(dot_name);
-		if (addr)
-			return addr;
-	}
-	/* Symbol with extra '.' not found, fallback to original name */
+The OPAL-side patches are posted upstream :
+https://lists.ozlabs.org/pipermail/skiboot/2017-May/007167.html
 
-check_name:
-	return (kprobe_opcode_t *)kallsyms_lookup_name(name);
+The kernel discovers the IMC counters information in the device tree
+at the "imc-counters" device node which has a compatible field
+"ibm,opal-in-memory-counters".
 
-	David
+Parsing of the Events' information:
+To parse the IMC PMUs and events information, the kernel has to
+discover the "imc-counters" node and walk through the pmu and event
+nodes.
+
+Here is an excerpt of the dt showing the imc-counters with
+mcs0 (nest), core and thread node:
+https://github.com/open-power/ima-catalog/blob/master/81E00612.4E0100.dts
+
+
+/dts-v1/;
+
+[...]
+
+/dts-v1/;
+
+/ {
+        name = "";
+        compatible = "ibm,opal-in-memory-counters";
+        #address-cells = <0x1>;
+        #size-cells = <0x1>;
+        imc-nest-offset = <0x320000>;
+        imc-nest-size = <0x30000>;
+        version-id = "";
+
+        NEST_MCS: nest-mcs-events {
+                #address-cells = <0x1>;
+                #size-cells = <0x1>;
+
+                event@0 {
+                        event-name = "RRTO_QFULL_NO_DISP" ;
+                        reg = <0x0 0x8>;
+                        desc = "RRTO not dispatched in MCS0 due to capacity - pulses once for each time a valid RRTO op is not dispatched due to a command list full condition" ;
+                };
+                event@8 {
+                        event-name = "WRTO_QFULL_NO_DISP" ;
+                        reg = <0x8 0x8>;
+                        desc = "WRTO not dispatched in MCS0 due to capacity - pulses once for each time a valid WRTO op is not dispatched due to a command list full condition" ;
+                };
+		[...]
+	mcs0 {
+                compatible = "ibm,imc-counters-nest";
+                events-prefix = "PM_MCS0_";
+                unit = "";
+                scale = "";
+                reg = <0x118 0x8>;
+                events = < &NEST_MCS >;
+        };
+
+        mcs1 {
+                compatible = "ibm,imc-counters-nest";
+                events-prefix = "PM_MCS1_";
+                unit = "";
+                scale = "";
+                reg = <0x198 0x8>;
+                events = < &NEST_MCS >;
+        };
+	[...]
+CORE_EVENTS: core-events {
+                #address-cells = <0x1>;
+                #size-cells = <0x1>;
+
+                event@e0 {
+                        event-name = "0THRD_NON_IDLE_PCYC" ;
+                        reg = <0xe0 0x8>;
+                        desc = "The number of processor cycles when all threads are idle" ;
+                };
+                event@120 {
+                        event-name = "1THRD_NON_IDLE_PCYC" ;
+                        reg = <0x120 0x8>;
+                        desc = "The number of processor cycles when exactly one SMT thread is executing non-idle code" ;
+                };
+		[...]
+       core {
+                compatible = "ibm,imc-counters-core";
+                events-prefix = "CPM_";
+                unit = "";
+                scale = "";
+                reg = <0x0 0x8>;
+                events = < &CORE_EVENTS >;
+        };
+
+        thread {
+                compatible = "ibm,imc-counters-core";
+                events-prefix = "CPM_";
+                unit = "";
+                scale = "";
+                reg = <0x0 0x8>;
+                events = < &CORE_EVENTS >;
+        };
+};
+
+>From the device tree, the kernel parses the PMUs and their events'
+information.
+
+After parsing the IMC PMUs and their events, the PMUs and their
+attributes are registered in the kernel.
+
+This patchset (patches 9 and 10) configure the thread level IMC PMUs
+to count for tasks, which give us the thread level metric values per
+task.
+
+Example Usage :
+ # perf list
+
+  [...]
+  nest_mcs0/PM_MCS_DOWN_128B_DATA_XFER_MC0/           [Kernel PMU event]
+  nest_mcs0/PM_MCS_DOWN_128B_DATA_XFER_MC0_LAST_SAMPLE/ [Kernel PMU event]
+  [...]
+  core_imc/CPM_NON_IDLE_INST/                        [Kernel PMU event]
+  core_imc/CPM_NON_IDLE_PCYC/                        [Kernel PMU event]
+  [...]
+  thread_imc/CPM_NON_IDLE_INST/                      [Kernel PMU event]
+  thread_imc/CPM_NON_IDLE_PCYC/                      [Kernel PMU event]
+
+To see per chip data for nest_mcs0/PM_MCS_DOWN_128B_DATA_XFER_MC0/ :
+ # perf stat -e "nest_mcs0/PM_MCS_DOWN_128B_DATA_XFER_MC0/" -a --per-socket
+
+To see non-idle instructions for core 0 :
+ # ./perf stat -e "core_imc/CPM_NON_IDLE_INST/" -C 0 -I 1000
+
+To see non-idle instructions for a "make" :
+ # ./perf stat -e "thread_imc/CPM_NON_IDLE_PCYC/" make
+
+Comments/feedback/suggestions are welcome.
+
+
+TODO:
+1)Add a sysfs interface to disable the Core imc (both for ldbar and pdbar)
+
+
+Changelog:
+
+v7 -> v8:
+ - opal-call API for nest and core is changed.
+   OPAL_NEST_IMC_COUNTERS_CONTROL and
+   OPAL_CORE_IMC_COUNTERS_CONTROL  is replaced with
+   OPAL_IMC_COUNTERS_INIT, OPAL_IMC_COUNTERS_START and
+   OPAL_IMC_COUNTERS_STOP.
+ - thread_ima doesn't have CPUMASK_ATTR, hence added a
+   fix in patch 09/10, which will swap the IMC_EVENT_ATTR
+   slot with IMC_CPUMASK_ATTR.
+
+v6 -> v7:
+ - Updated the commit message and code comments.
+ - Changed the counter init code to disable the
+   nest/core counters by default and enable only 
+   when it is used.
+ - Updated the pmu-setup code to register the
+   PMUs which doesn't have events.
+ - replaced imc_event_info_val() to imc_event_prop_update()
+ - Updated the imc_pmu_setup() code, by checking for the "value"
+   of compatible property instead of merely checking for compatible.
+ - removed imc_get_domain().
+ - init_imc_pmu() and imc_pmu_setup() are made  __init.
+ - update_max_val() is invoked immediately after updating the offset value.
+v5 -> v6:
+ - merged few patches for the readability and code flow
+ - Updated the commit message and code comments.
+ - updated cpuhotplug code and added checks for perf migration context
+ - Added READ_ONCE() when reading the counter data.
+ - replaced of_property_read_u32() with of_get_address() for "reg" property read
+ - replaced UNKNOWN_DOMAIN with IMC_DOMAIN_UNKNOWN
+ v4 -> v5:
+ - Updated opal call numbers
+ - Added a patch to disable Core-IMC device using shutdown callback
+ - Added patch to support cpuhotplug for thread-imc
+ - Added patch to disable and enable core imc engine in cpuhot plug path
+ v3 -> v4 :
+ - Changed the events parser code to discover the PMU and events because
+   of the changed format of the IMC DTS file (Patch 3).
+ - Implemented the two TODOs to include core and thread IMC support with
+   this patchset (Patches 7 through 10).
+ - Changed the CPU hotplug code of Nest IMC PMUs to include a new state
+   CPUHP_AP_PERF_POWERPC_NEST_ONLINE (Patch 6).
+ v2 -> v3 :
+ - Changed all references for IMA (In-Memory Accumulation) to IMC (In-Memory
+   Collection).
+ v1 -> v2 :
+ - Account for the cases where a PMU can have a common scale and unit
+   values for all its supported events (Patch 3/6).
+ - Fixed a Build error (for maple_defconfig) by enabling imc_pmu.o
+   only for CONFIG_PPC_POWERNV=y (Patch 4/6)
+ - Read from the "event-name" property instead of "name" for an event
+   node (Patch 3/6).
+
+Anju T Sudhakar (6):
+  powerpc/powernv: Autoload IMC device driver module
+  powerpc/powernv: Detect supported IMC units and its events
+  powerpc/perf: IMC pmu cpumask and cpuhotplug support
+  powerpc/powernv: Thread IMC events detection
+  powerpc/perf: Thread IMC PMU functions
+  powerpc/perf: Thread imc cpuhotplug support
+
+Hemant Kumar (4):
+  powerpc/powernv: Data structure and macros definitions for IMC
+  powerpc/perf: Add generic IMC pmu groupand event functions
+  powerpc/powernv: Core IMC events detection
+  powerpc/perf: PMU functions for Core IMC and hotplugging
+
+ 
+arch/powerpc/include/asm/imc-pmu.h             |  118 +++
+ arch/powerpc/include/asm/opal-api.h            |   12 +-
+ arch/powerpc/include/asm/opal.h                |    4 +
+ arch/powerpc/perf/Makefile                     |    3 +
+ arch/powerpc/perf/imc-pmu.c                    | 1098 ++++++++++++++++++++++++
+ arch/powerpc/platforms/powernv/Kconfig         |   10 +
+ arch/powerpc/platforms/powernv/Makefile        |    1 +
+ arch/powerpc/platforms/powernv/opal-imc.c      |  607 +++++++++++++
+ arch/powerpc/platforms/powernv/opal-wrappers.S |    3 +
+ arch/powerpc/platforms/powernv/opal.c          |   18 +
+ include/linux/cpuhotplug.h                     |    3 +
+ 11 files changed, 1876 insertions(+), 1 deletion(-)
+ create mode 100644 arch/powerpc/include/asm/imc-pmu.h
+ create mode 100644 arch/powerpc/perf/imc-pmu.c
+ create mode 100644 arch/powerpc/platforms/powernv/opal-imc.c
+
+-- 
+2.7.4
