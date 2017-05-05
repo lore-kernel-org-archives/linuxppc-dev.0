@@ -2,16 +2,16 @@ Return-Path: <pasha.tatashin@oracle.com>
 Received: from userp1040.oracle.com (userp1040.oracle.com [156.151.31.81])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wKJBb2BYbzDqFJ
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wKJBb25lxzDqCv
  for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 May 2017 03:03:35 +1000 (AEST)
 From: Pavel Tatashin <pasha.tatashin@oracle.com>
 To: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
  linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
  linux-s390@vger.kernel.org, borntraeger@de.ibm.com,
  heiko.carstens@de.ibm.com, davem@davemloft.net
-Subject: [v3 4/9] mm: do not zero vmemmap_buf
-Date: Fri,  5 May 2017 13:03:11 -0400
-Message-Id: <1494003796-748672-5-git-send-email-pasha.tatashin@oracle.com>
+Subject: [v3 1/9] sparc64: simplify vmemmap_populate
+Date: Fri,  5 May 2017 13:03:08 -0400
+Message-Id: <1494003796-748672-2-git-send-email-pasha.tatashin@oracle.com>
 In-Reply-To: <1494003796-748672-1-git-send-email-pasha.tatashin@oracle.com>
 References: <1494003796-748672-1-git-send-email-pasha.tatashin@oracle.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -23,30 +23,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-alloc_block_buf() can either use external allocator by calling
-vmemmap_alloc_block() or when available use pre-allocated vmemmap_buf
-to do allocation. In either case, alloc_block_buf() knows when to zero
-memory based on the "zero" argument.  This is why it is not needed to
-zero vmemmap_buf beforehand. Let clients of alloc_block_buf() to
-decide whether that is needed.
+Remove duplicating code, by using common functions
+vmemmap_pud_populate and vmemmap_pgd_populate functions.
 
 Signed-off-by: Pavel Tatashin <pasha.tatashin@oracle.com>
+Reviewed-by: Shannon Nelson <shannon.nelson@oracle.com>
 ---
- mm/sparse-vmemmap.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ arch/sparc/mm/init_64.c |   23 ++++++-----------------
+ 1 files changed, 6 insertions(+), 17 deletions(-)
 
-diff --git a/mm/sparse-vmemmap.c b/mm/sparse-vmemmap.c
-index 5d255b0..1e9508b 100644
---- a/mm/sparse-vmemmap.c
-+++ b/mm/sparse-vmemmap.c
-@@ -305,7 +305,7 @@ void __init sparse_mem_maps_populate_node(struct page **map_map,
+diff --git a/arch/sparc/mm/init_64.c b/arch/sparc/mm/init_64.c
+index 0cda653..14cc1fc 100644
+--- a/arch/sparc/mm/init_64.c
++++ b/arch/sparc/mm/init_64.c
+@@ -2530,30 +2530,19 @@ int __meminit vmemmap_populate(unsigned long vstart, unsigned long vend,
+ 	vstart = vstart & PMD_MASK;
+ 	vend = ALIGN(vend, PMD_SIZE);
+ 	for (; vstart < vend; vstart += PMD_SIZE) {
+-		pgd_t *pgd = pgd_offset_k(vstart);
++		pgd_t *pgd = vmemmap_pgd_populate(vstart, node);
+ 		unsigned long pte;
+ 		pud_t *pud;
+ 		pmd_t *pmd;
  
- 	size = ALIGN(size, PMD_SIZE);
- 	vmemmap_buf_start = __earlyonly_bootmem_alloc(nodeid, size
--			* map_count, PMD_SIZE, __pa(MAX_DMA_ADDRESS), true);
-+			* map_count, PMD_SIZE, __pa(MAX_DMA_ADDRESS), false);
+-		if (pgd_none(*pgd)) {
+-			pud_t *new = vmemmap_alloc_block(PAGE_SIZE, node);
++		if (!pgd)
++			return -ENOMEM;
  
- 	if (vmemmap_buf_start) {
- 		vmemmap_buf = vmemmap_buf_start;
+-			if (!new)
+-				return -ENOMEM;
+-			pgd_populate(&init_mm, pgd, new);
+-		}
+-
+-		pud = pud_offset(pgd, vstart);
+-		if (pud_none(*pud)) {
+-			pmd_t *new = vmemmap_alloc_block(PAGE_SIZE, node);
+-
+-			if (!new)
+-				return -ENOMEM;
+-			pud_populate(&init_mm, pud, new);
+-		}
++		pud = vmemmap_pud_populate(pgd, vstart, node);
++		if (!pud)
++			return -ENOMEM;
+ 
+ 		pmd = pmd_offset(pud, vstart);
+-
+ 		pte = pmd_val(*pmd);
+ 		if (!(pte & _PAGE_VALID)) {
+ 			void *block = vmemmap_alloc_block(PMD_SIZE, node);
 -- 
 1.7.1
