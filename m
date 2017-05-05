@@ -1,28 +1,51 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
- [IPv6:2607:f8b0:400e:c05::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <srs0=eibx=4l=linux.vnet.ibm.com=mahesh@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wK2Md6t9wzDq5W
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 May 2017 16:40:29 +1000 (AEST)
-Received: by mail-pg0-x244.google.com with SMTP id u187so1179400pgb.1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 May 2017 23:40:29 -0700 (PDT)
-Date: Fri, 5 May 2017 16:40:12 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Abdul Haleem <abdhalee@linux.vnet.ibm.com>
-Cc: sachinp <sachinp@linux.vnet.ibm.com>, Stephen Rothwell
- <sfr@canb.auug.org.au>, ego <ego@linux.vnet.ibm.com>, linux-kernel
- <linux-kernel@vger.kernel.org>, mahesh@linux.vnet.ibm.com, linuxppc-dev
- <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [linux-next][bisected 1945bc45] build brakes for PowerPC BE
- configuration on LPAR
-Message-ID: <20170505164012.5f228dc1@roar.ozlabs.ibm.com>
-In-Reply-To: <1493957410.7355.29.camel@abdul.in.ibm.com>
-References: <1493889859.7355.17.camel@abdul.in.ibm.com>
- <20170504204112.130d7735@roar.ozlabs.ibm.com>
- <1493957410.7355.29.camel@abdul.in.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wK2gD1rCjzDq5W
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 May 2017 16:54:00 +1000 (AEST)
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3wK2gD15Ltz8svH
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 May 2017 16:54:00 +1000 (AEST)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3wK2gC4lZGz9s8V
+ for <linuxppc-dev@ozlabs.org>; Fri,  5 May 2017 16:53:59 +1000 (AEST)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v456rsHS054700
+ for <linuxppc-dev@ozlabs.org>; Fri, 5 May 2017 02:53:55 -0400
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2a8ecjw4wr-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Fri, 05 May 2017 02:53:55 -0400
+Received: from localhost
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
+ Fri, 5 May 2017 16:53:10 +1000
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v456r0iY47382528
+ for <linuxppc-dev@ozlabs.org>; Fri, 5 May 2017 16:53:08 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v456qZoo024614
+ for <linuxppc-dev@ozlabs.org>; Fri, 5 May 2017 16:52:35 +1000
+Subject: Re: [PATCH 1/2] powerpc/fadump: avoid duplicates in crash memory
+ ranges
+To: Hari Bathini <hbathini@linux.vnet.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>
+References: <149392041651.10802.10097444663269312695.stgit@hbathini.in.ibm.com>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Pingfan Liu <piliu@redhat.com>
+From: Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com>
+Date: Fri, 5 May 2017 12:22:17 +0530
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+In-Reply-To: <149392041651.10802.10097444663269312695.stgit@hbathini.in.ibm.com>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <4018f229-ce85-494a-6c70-967d9d33f932@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,92 +55,91 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 05 May 2017 09:40:10 +0530
-Abdul Haleem <abdhalee@linux.vnet.ibm.com> wrote:
+On 05/04/2017 11:23 PM, Hari Bathini wrote:
+> fadump sets up crash memory ranges to be used for creating PT_LOAD
+> program headers in elfcore header. Memory chunk RMA_START through
+> boot memory area size is added as the first memory range because
+> firmware, at the time of crash, moves this memory chunk to different
+> location specified during fadump registration making it necessary to
+> create a separate program header for it with the correct offset.
+> This memory chunk is skipped while setting up the remaining memory
+> ranges. But currently, there is possibility that some of this memory
+> may have duplicate entries like when it is hot-removed and added
+> again. Ensure that no two memory ranges represent the same memory.
+> 
+> When 5 lmbs are hot-removed and then hot-plugged before registering
+> fadump, here is how the program headers in /proc/vmcore exported by
+> fadump look like
 
-> On Thu, 2017-05-04 at 20:41 +1000, Nicholas Piggin wrote:
-> > On Thu, 04 May 2017 14:54:19 +0530
-> > Abdul Haleem <abdhalee@linux.vnet.ibm.com> wrote:
-> >   
-> > > Hi,
-> > > 
-> > > linux-next build fails on BE config with next-20170424 onwards
-> > > 
-> > > the patch https://lkml.org/lkml/2017/4/20/994  fixes a similar issue
-> > > with kvm guest build failure.
-> > > 
-> > > arch/powerpc/kernel/exceptions-64s.S: Assembler messages:
-> > > arch/powerpc/kernel/exceptions-64s.S:395: Error: operand out of range
-> > > (0xffffffffffff8280 is not between 0x0000000000000000 and
-> > > 0x000000000000ffff)
-> > > make[1]: *** [arch/powerpc/kernel/head_64.o] Error 1
-> > > 
-> > > Bisection resulted with the below bad commit.
-> > > 
-> > > commit 1945bc4549e5cb1f9aa873ec29191aa54dc851d
-> > > Author: Nicholas Piggin <npiggin@gmail.com>
-> > > Date:   Wed Apr 19 23:05:47 2017 +1000
-> > > 
-> > >     powerpc/64s: Fix POWER9 machine check handler from stop state
-> > > 
-> > >     Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
-> > >     Reviewed-by: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
-> > >     Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-> > >     Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-> > > 
-> > >  arch/powerpc/include/asm/reg.h       |  1 +
-> > >  arch/powerpc/kernel/exceptions-64s.S | 79 ++++++++++++++++++++++++++++++++++++++++++++-----------------------------------
-> > >  arch/powerpc/kernel/idle_book3s.S    | 25 +++++++++++++++++++++++++
-> > >  3 files changed, 70 insertions(+), 35 deletions(-)
-> > > 
-> > > the BE configuration file is attached.
-> > >   
-> > 
-> > Thanks for the report. I wouldn't reproduce it with this config. I
-> > suspect the following patch should fix it, can you test?
-> > 
-> > powerpc/64s: Fix unnecessary machine check handler relocation branch
-> > 
-> > Similarly to 2563a70c3b ("powerpc/64s: Remove unnecessary relocation
-> > branch from idle handler"), the machine check handler has a BRANCH_TO
-> > from relocated to relocated code, which is unnecessary.
-> > 
-> > It has also caused build errors with some toolchains:
-> > 
-> >   arch/powerpc/kernel/exceptions-64s.S: Assembler messages:
-> >   arch/powerpc/kernel/exceptions-64s.S:395: Error: operand out of range
-> >   (0xffffffffffff8280 is not between 0x0000000000000000 and
-> >   0x000000000000ffff)
-> > 
-> > Fixes: 1945bc4549 ("powerpc/64s: Fix POWER9 machine check handler from stop state")
-> > Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-> > ---
-> >  arch/powerpc/kernel/exceptions-64s.S | 4 +---
-> >  1 file changed, 1 insertion(+), 3 deletions(-)
-> > 
-> > diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-> > index 3840a7700285..ef72065f684c 100644
-> > --- a/arch/powerpc/kernel/exceptions-64s.S
-> > +++ b/arch/powerpc/kernel/exceptions-64s.S
-> > @@ -391,9 +391,7 @@ EXC_COMMON_BEGIN(machine_check_handle_early)
-> >  	 */
-> >  	BEGIN_FTR_SECTION
-> >  	rlwinm.	r11,r12,47-31,30,31
-> > -	beq-	4f
-> > -	BRANCH_TO_COMMON(r10, machine_check_idle_common)
-> > -4:
-> > +	bne	machine_check_idle_common
-> >  	END_FTR_SECTION_IFSET(CPU_FTR_HVMODE | CPU_FTR_ARCH_206)
-> >  #endif
-> >   
-> 
-> Machine Builds and boots fine, Thanks for the patch :-)
-> 
-> Reported-and-tested-by : Abdul Haleem <abdhalee@linux.vnet.ibm.com>
-> 
+We should also make sure that fadump registration fails with proper
+error if user don't put back those lmbs creating holes below the boot
+memory size.
 
-Okay, thanks for testing. I've tested the MCE-from-idle wakeup path in
-the simulator with this patch and that still seems to work fine.
+But for this patch
+
+Reviewed-by: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
 
 Thanks,
-Nick
+-Mahesh.
+
+> 
+> without this change:
+> 
+>   Program Headers:
+>     Type           Offset             VirtAddr           PhysAddr
+>                    FileSiz            MemSiz              Flags  Align
+>     NOTE           0x0000000000010000 0x0000000000000000 0x0000000000000000
+>                    0x0000000000001894 0x0000000000001894         0
+>     LOAD           0x0000000000021020 0xc000000000000000 0x0000000000000000
+>                    0x0000000040000000 0x0000000040000000  RWE    0
+>     LOAD           0x0000000040031020 0xc000000000000000 0x0000000000000000
+>                    0x0000000010000000 0x0000000010000000  RWE    0
+>     LOAD           0x0000000050040000 0xc000000010000000 0x0000000010000000
+>                    0x0000000050000000 0x0000000050000000  RWE    0
+>     LOAD           0x00000000a0040000 0xc000000060000000 0x0000000060000000
+>                    0x000000019ffe0000 0x000000019ffe0000  RWE    0
+> 
+> and with this change:
+> 
+>   Program Headers:
+>     Type           Offset             VirtAddr           PhysAddr
+>                    FileSiz            MemSiz              Flags  Align
+>     NOTE           0x0000000000010000 0x0000000000000000 0x0000000000000000
+>                    0x0000000000001894 0x0000000000001894         0
+>     LOAD           0x0000000000021020 0xc000000000000000 0x0000000000000000
+>                    0x0000000040000000 0x0000000040000000  RWE    0
+>     LOAD           0x0000000040030000 0xc000000040000000 0x0000000040000000
+>                    0x0000000020000000 0x0000000020000000  RWE    0
+>     LOAD           0x0000000060030000 0xc000000060000000 0x0000000060000000
+>                    0x000000019ffe0000 0x000000019ffe0000  RWE    0
+> 
+> Signed-off-by: Hari Bathini <hbathini@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/kernel/fadump.c |   13 +++++++++++--
+>  1 file changed, 11 insertions(+), 2 deletions(-)
+> 
+> diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
+> index 8ff0dd4..03563c6 100644
+> --- a/arch/powerpc/kernel/fadump.c
+> +++ b/arch/powerpc/kernel/fadump.c
+> @@ -844,8 +844,17 @@ static void fadump_setup_crash_memory_ranges(void)
+>  	for_each_memblock(memory, reg) {
+>  		start = (unsigned long long)reg->base;
+>  		end = start + (unsigned long long)reg->size;
+> -		if (start == RMA_START && end >= fw_dump.boot_memory_size)
+> -			start = fw_dump.boot_memory_size;
+> +
+> +		/*
+> +		 * skip the first memory chunk (RMA_START through
+> +		 * boot_memory_size) that is already added.
+> +		 */
+> +		if (start < fw_dump.boot_memory_size && start >= RMA_START) {
+> +			if (end > fw_dump.boot_memory_size)
+> +				start = fw_dump.boot_memory_size;
+> +			else
+> +				continue;
+> +		}
+> 
+>  		/* add this range excluding the reserved dump area. */
+>  		fadump_exclude_reserved_area(start, end);
+> 
