@@ -2,16 +2,18 @@ Return-Path: <pasha.tatashin@oracle.com>
 Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wKJBb0hlLzDqCd
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 May 2017 03:03:34 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wKJBb6LnZzDqFR
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 May 2017 03:03:35 +1000 (AEST)
 From: Pavel Tatashin <pasha.tatashin@oracle.com>
 To: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
  linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
  linux-s390@vger.kernel.org, borntraeger@de.ibm.com,
  heiko.carstens@de.ibm.com, davem@davemloft.net
-Subject: [v3 0/9] parallelized "struct page" zeroing
-Date: Fri,  5 May 2017 13:03:07 -0400
-Message-Id: <1494003796-748672-1-git-send-email-pasha.tatashin@oracle.com>
+Subject: [v3 8/9] powerpc: teach platforms not to zero struct pages memory
+Date: Fri,  5 May 2017 13:03:15 -0400
+Message-Id: <1494003796-748672-9-git-send-email-pasha.tatashin@oracle.com>
+In-Reply-To: <1494003796-748672-1-git-send-email-pasha.tatashin@oracle.com>
+References: <1494003796-748672-1-git-send-email-pasha.tatashin@oracle.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,60 +23,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Changelog:
-	v2 - v3
-	- Addressed David's comments about one change per patch:
-		* Splited changes to platforms into 4 patches
-		* Made "do not zero vmemmap_buf" as a separate patch
-	v1 - v2
-	- Per request, added s390 to deferred "struct page" zeroing
-	- Collected performance data on x86 which proofs the importance to
-	  keep memset() as prefetch (see below).
+If we are using deferred struct page initialization feature, most of
+"struct page"es are getting initialized after other CPUs are started, and
+hence we are benefiting from doing this job in parallel. However, we are
+still zeroing all the memory that is allocated for "struct pages" using the
+boot CPU.  This patch solves this problem, by deferring zeroing "struct
+pages" to only when they are initialized on PowerPC platforms.
 
-When deferred struct page initialization feature is enabled, we get a
-performance gain of initializing vmemmap in parallel after other CPUs are
-started. However, we still zero the memory for vmemmap using one boot CPU.
-This patch-set fixes the memset-zeroing limitation by deferring it as well.
+Signed-off-by: Pavel Tatashin <pasha.tatashin@oracle.com>
+Reviewed-by: Shannon Nelson <shannon.nelson@oracle.com>
+---
+ arch/powerpc/mm/init_64.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Performance gain on SPARC with 32T:
-base:	https://hastebin.com/ozanelatat.go
-fix:	https://hastebin.com/utonawukof.go
-
-As you can see without the fix it takes: 97.89s to boot
-With the fix it takes: 46.91 to boot.
-
-Performance gain on x86 with 1T:
-base:	https://hastebin.com/uvifasohon.pas
-fix:	https://hastebin.com/anodiqaguj.pas
-
-On Intel we save 10.66s/T while on SPARC we save 1.59s/T. Intel has
-twice as many pages, and also fewer nodes than SPARC (sparc 32 nodes, vs.
-intel 8 nodes).
-
-It takes one thread 11.25s to zero vmemmap on Intel for 1T, so it should
-take additional 11.25 / 8 = 1.4s  (this machine has 8 nodes) per node to
-initialize the memory, but it takes only additional 0.456s per node, which
-means on Intel we also benefit from having memset() and initializing all
-other fields in one place.
-
-Pavel Tatashin (9):
-  sparc64: simplify vmemmap_populate
-  mm: defining memblock_virt_alloc_try_nid_raw
-  mm: add "zero" argument to vmemmap allocators
-  mm: do not zero vmemmap_buf
-  mm: zero struct pages during initialization
-  sparc64: teach sparc not to zero struct pages memory
-  x86: teach x86 not to zero struct pages memory
-  powerpc: teach platforms not to zero struct pages memory
-  s390: teach platforms not to zero struct pages memory
-
- arch/powerpc/mm/init_64.c |    4 +-
- arch/s390/mm/vmem.c       |    5 ++-
- arch/sparc/mm/init_64.c   |   26 +++++++----------------
- arch/x86/mm/init_64.c     |    3 +-
- include/linux/bootmem.h   |    3 ++
- include/linux/mm.h        |   15 +++++++++++--
- mm/memblock.c             |   46 ++++++++++++++++++++++++++++++++++++------
- mm/page_alloc.c           |    3 ++
- mm/sparse-vmemmap.c       |   48 +++++++++++++++++++++++++++++---------------
- 9 files changed, 103 insertions(+), 50 deletions(-)
+diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
+index d42c6b3..c381bd7 100644
+--- a/arch/powerpc/mm/init_64.c
++++ b/arch/powerpc/mm/init_64.c
+@@ -181,7 +181,7 @@ int __meminit vmemmap_populate(unsigned long start, unsigned long end, int node)
+ 		if (vmemmap_populated(start, page_size))
+ 			continue;
+ 
+-		p = vmemmap_alloc_block(page_size, node, true);
++		p = vmemmap_alloc_block(page_size, node, VMEMMAP_ZERO);
+ 		if (!p)
+ 			return -ENOMEM;
+ 
+-- 
+1.7.1
