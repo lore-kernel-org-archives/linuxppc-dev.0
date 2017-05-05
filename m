@@ -1,17 +1,17 @@
 Return-Path: <pasha.tatashin@oracle.com>
-Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
+Received: from userp1040.oracle.com (userp1040.oracle.com [156.151.31.81])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wKJBb0kKWzDqCf
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 May 2017 03:03:34 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wKJBb244nzDqCt
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 May 2017 03:03:35 +1000 (AEST)
 From: Pavel Tatashin <pasha.tatashin@oracle.com>
 To: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
  linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
  linux-s390@vger.kernel.org, borntraeger@de.ibm.com,
  heiko.carstens@de.ibm.com, davem@davemloft.net
-Subject: [v3 2/9] mm: defining memblock_virt_alloc_try_nid_raw
-Date: Fri,  5 May 2017 13:03:09 -0400
-Message-Id: <1494003796-748672-3-git-send-email-pasha.tatashin@oracle.com>
+Subject: [v3 5/9] mm: zero struct pages during initialization
+Date: Fri,  5 May 2017 13:03:12 -0400
+Message-Id: <1494003796-748672-6-git-send-email-pasha.tatashin@oracle.com>
 In-Reply-To: <1494003796-748672-1-git-send-email-pasha.tatashin@oracle.com>
 References: <1494003796-748672-1-git-send-email-pasha.tatashin@oracle.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -23,129 +23,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-A new version of memblock_virt_alloc_* allocations:
-- Does not zero the allocated memory
-- Does not panic if request cannot be satisfied
+When deferred struct page initialization is enabled, do not expect that
+the memory that was allocated for struct pages was zeroed by the
+allocator. Zero it when "struct pages" are initialized.
+
+Also, a defined boolean VMEMMAP_ZERO is provided to tell platforms whether
+they should zero memory or can deffer it.
 
 Signed-off-by: Pavel Tatashin <pasha.tatashin@oracle.com>
 Reviewed-by: Shannon Nelson <shannon.nelson@oracle.com>
 ---
- include/linux/bootmem.h |    3 +++
- mm/memblock.c           |   46 +++++++++++++++++++++++++++++++++++++++-------
- 2 files changed, 42 insertions(+), 7 deletions(-)
+ include/linux/mm.h |    9 +++++++++
+ mm/page_alloc.c    |    3 +++
+ 2 files changed, 12 insertions(+), 0 deletions(-)
 
-diff --git a/include/linux/bootmem.h b/include/linux/bootmem.h
-index 962164d..4e0f08b 100644
---- a/include/linux/bootmem.h
-+++ b/include/linux/bootmem.h
-@@ -160,6 +160,9 @@ extern int reserve_bootmem_node(pg_data_t *pgdat,
- #define BOOTMEM_ALLOC_ANYWHERE		(~(phys_addr_t)0)
- 
- /* FIXME: Move to memblock.h at a point where we remove nobootmem.c */
-+void *memblock_virt_alloc_try_nid_raw(phys_addr_t size, phys_addr_t align,
-+				      phys_addr_t min_addr,
-+				      phys_addr_t max_addr, int nid);
- void *memblock_virt_alloc_try_nid_nopanic(phys_addr_t size,
- 		phys_addr_t align, phys_addr_t min_addr,
- 		phys_addr_t max_addr, int nid);
-diff --git a/mm/memblock.c b/mm/memblock.c
-index 696f06d..7fdc555 100644
---- a/mm/memblock.c
-+++ b/mm/memblock.c
-@@ -1271,7 +1271,7 @@ phys_addr_t __init memblock_alloc_try_nid(phys_addr_t size, phys_addr_t align, i
- static void * __init memblock_virt_alloc_internal(
- 				phys_addr_t size, phys_addr_t align,
- 				phys_addr_t min_addr, phys_addr_t max_addr,
--				int nid)
-+				int nid, bool zero)
- {
- 	phys_addr_t alloc;
- 	void *ptr;
-@@ -1322,7 +1322,8 @@ phys_addr_t __init memblock_alloc_try_nid(phys_addr_t size, phys_addr_t align, i
- 	return NULL;
- done:
- 	ptr = phys_to_virt(alloc);
--	memset(ptr, 0, size);
-+	if (zero)
-+		memset(ptr, 0, size);
- 
- 	/*
- 	 * The min_count is set to 0 so that bootmem allocated blocks
-@@ -1336,6 +1337,37 @@ phys_addr_t __init memblock_alloc_try_nid(phys_addr_t size, phys_addr_t align, i
- }
- 
- /**
-+ * memblock_virt_alloc_try_nid_raw - allocate boot memory block without zeroing
-+ * memory and without panicking
-+ * @size: size of memory block to be allocated in bytes
-+ * @align: alignment of the region and block's size
-+ * @min_addr: the lower bound of the memory region from where the allocation
-+ *	  is preferred (phys address)
-+ * @max_addr: the upper bound of the memory region from where the allocation
-+ *	      is preferred (phys address), or %BOOTMEM_ALLOC_ACCESSIBLE to
-+ *	      allocate only from memory limited by memblock.current_limit value
-+ * @nid: nid of the free area to find, %NUMA_NO_NODE for any node
-+ *
-+ * Public function, provides additional debug information (including caller
-+ * info), if enabled. Does not zero allocated memory, does not panic if request
-+ * cannot be satisfied.
-+ *
-+ * RETURNS:
-+ * Virtual address of allocated memory block on success, NULL on failure.
+diff --git a/include/linux/mm.h b/include/linux/mm.h
+index 4375015..1c481fc 100644
+--- a/include/linux/mm.h
++++ b/include/linux/mm.h
+@@ -2419,6 +2419,15 @@ int vmemmap_populate_basepages(unsigned long start, unsigned long end,
+ #ifdef CONFIG_MEMORY_HOTPLUG
+ void vmemmap_free(unsigned long start, unsigned long end);
+ #endif
++/*
++ * Don't zero "struct page"es during early boot, and zero only when they are
++ * initialized in parallel.
 + */
-+void * __init memblock_virt_alloc_try_nid_raw(
-+			phys_addr_t size, phys_addr_t align,
-+			phys_addr_t min_addr, phys_addr_t max_addr,
-+			int nid)
-+{
-+	memblock_dbg("%s: %llu bytes align=0x%llx nid=%d from=0x%llx max_addr=0x%llx %pF\n",
-+		     __func__, (u64)size, (u64)align, nid, (u64)min_addr,
-+		     (u64)max_addr, (void *)_RET_IP_);
-+	return memblock_virt_alloc_internal(size, align,
-+					   min_addr, max_addr, nid, false);
-+}
-+
-+/**
-  * memblock_virt_alloc_try_nid_nopanic - allocate boot memory block
-  * @size: size of memory block to be allocated in bytes
-  * @align: alignment of the region and block's size
-@@ -1346,8 +1378,8 @@ phys_addr_t __init memblock_alloc_try_nid(phys_addr_t size, phys_addr_t align, i
-  *	      allocate only from memory limited by memblock.current_limit value
-  * @nid: nid of the free area to find, %NUMA_NO_NODE for any node
-  *
-- * Public version of _memblock_virt_alloc_try_nid_nopanic() which provides
-- * additional debug information (including caller info), if enabled.
-+ * Public function, provides additional debug information (including caller
-+ * info), if enabled. This function zeroes the allocated memory.
-  *
-  * RETURNS:
-  * Virtual address of allocated memory block on success, NULL on failure.
-@@ -1361,7 +1393,7 @@ phys_addr_t __init memblock_alloc_try_nid(phys_addr_t size, phys_addr_t align, i
- 		     __func__, (u64)size, (u64)align, nid, (u64)min_addr,
- 		     (u64)max_addr, (void *)_RET_IP_);
- 	return memblock_virt_alloc_internal(size, align, min_addr,
--					     max_addr, nid);
-+					     max_addr, nid, true);
- }
++#ifdef CONFIG_DEFERRED_STRUCT_PAGE_INIT
++#define VMEMMAP_ZERO	false
++#else
++#define VMEMMAP_ZERO	true
++#endif
+ void register_page_bootmem_memmap(unsigned long section_nr, struct page *map,
+ 				  unsigned long size);
  
- /**
-@@ -1375,7 +1407,7 @@ phys_addr_t __init memblock_alloc_try_nid(phys_addr_t size, phys_addr_t align, i
-  *	      allocate only from memory limited by memblock.current_limit value
-  * @nid: nid of the free area to find, %NUMA_NO_NODE for any node
-  *
-- * Public panicking version of _memblock_virt_alloc_try_nid_nopanic()
-+ * Public panicking version of memblock_virt_alloc_try_nid_nopanic()
-  * which provides debug information (including caller info), if enabled,
-  * and panics if the request can not be satisfied.
-  *
-@@ -1393,7 +1425,7 @@ phys_addr_t __init memblock_alloc_try_nid(phys_addr_t size, phys_addr_t align, i
- 		     __func__, (u64)size, (u64)align, nid, (u64)min_addr,
- 		     (u64)max_addr, (void *)_RET_IP_);
- 	ptr = memblock_virt_alloc_internal(size, align,
--					   min_addr, max_addr, nid);
-+					   min_addr, max_addr, nid, true);
- 	if (ptr)
- 		return ptr;
- 
+diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+index 2c25de4..e736c6a 100644
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -1159,6 +1159,9 @@ static void free_one_page(struct zone *zone,
+ static void __meminit __init_single_page(struct page *page, unsigned long pfn,
+ 				unsigned long zone, int nid)
+ {
++#ifdef CONFIG_DEFERRED_STRUCT_PAGE_INIT
++	memset(page, 0, sizeof(struct page));
++#endif
+ 	set_page_links(page, zone, nid, pfn);
+ 	init_page_count(page);
+ 	page_mapcount_reset(page);
 -- 
 1.7.1
