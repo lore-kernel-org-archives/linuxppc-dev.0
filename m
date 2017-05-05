@@ -1,32 +1,49 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <linus971@gmail.com>
+Received: from mail-io0-x244.google.com (mail-io0-x244.google.com
+ [IPv6:2607:f8b0:4001:c06::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wKKjv3C30zDqCL
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 May 2017 04:12:19 +1000 (AEST)
-Message-ID: <1494007913.25766.411.camel@kernel.crashing.org>
-Subject: Re: [PATCH] crypto: vmx: Remove dubiously licensed crypto code
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Michal =?ISO-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>, Paulo Flabiano
- Smorigo <pfsmorigo@linux.vnet.ibm.com>
-Cc: "Leonidas S. Barbosa" <leosilva@linux.vnet.ibm.com>, Herbert Xu
- <herbert@gondor.apana.org.au>, Geert Uytterhoeven
- <geert+renesas@glider.be>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- Tyrel Datwyler <tyreld@linux.vnet.ibm.com>, appro@openssl.org,
- Mauro Carvalho Chehab <mchehab@kernel.org>,
- linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>,
- linux-crypto@vger.kernel.org
-Date: Fri, 05 May 2017 20:11:53 +0200
-In-Reply-To: <20170505155241.2274f347@kitsune.suse.cz>
-References: <20170329125639.14288-1-msuchanek@suse.de>
- <20170329145135.GA28057@kroah.com>
- <20170329171327.38d4fdd6@kitsune.suse.cz>
- <7ec54553-610c-a5dc-d4d9-3c83f6a161d9@linux.vnet.ibm.com>
- <8591ac8ff6ef6fa9c4bd264017ac360d@linux.vnet.ibm.com>
- <20170505155241.2274f347@kitsune.suse.cz>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wKLVs6tr7zDqCd
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 May 2017 04:47:49 +1000 (AEST)
+Received: by mail-io0-x244.google.com with SMTP id 12so3339249iol.1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 May 2017 11:47:49 -0700 (PDT)
+MIME-Version: 1.0
+Sender: linus971@gmail.com
+In-Reply-To: <87k25vh23u.fsf@concordia.ellerman.id.au>
+References: <87k25vh23u.fsf@concordia.ellerman.id.au>
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Fri, 5 May 2017 11:47:47 -0700
+Message-ID: <CA+55aFzFm5HcFc20WgFOhm7HM6UZFe+-TVFZfi0kOrHgPLC8Jw@mail.gmail.com>
+Subject: Re: [GIT PULL] Please pull powerpc/linux.git powerpc-4.12-1 tag
+To: Michael Ellerman <mpe@ellerman.id.au>, Paolo Bonzini <pbonzini@redhat.com>,
+ =?UTF-8?B?UmFkaW0gS3LEjW3DocWZ?= <rkrcmar@redhat.com>
+Cc: aik@ozlabs.ru, alastair@d-silva.org,
+ Alex Williamson <alex.williamson@redhat.com>, alistair@popple.id.au,
+ ananth@linux.vnet.ibm.com, Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ "Aneesh Kumar K. V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Anton Blanchard <anton@samba.org>, Ben Hutchings <ben@decadent.org.uk>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Balbir Singh <bsingharora@gmail.com>, cascardo@canonical.com,
+ Christophe Leroy <christophe.leroy@c-s.fr>, clombard@linux.vnet.ibm.com,
+ david@gibson.dropbear.id.au, ego@linux.vnet.ibm.com,
+ fbarrat@linux.vnet.ibm.com, Geert Uytterhoeven <geert@linux-m68k.org>,
+ gpiccoli@linux.vnet.ibm.com, gwshan@linux.vnet.ibm.com,
+ hamish.martin@alliedtelesis.co.nz, hbathini@linux.vnet.ibm.com,
+ khandual@linux.vnet.ibm.com, Laurent Dufour <ldufour@linux.vnet.ibm.com>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ ppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ maddy@linux.vnet.ibm.com, mahesh@linux.vnet.ibm.com,
+ matthew.brown.dev@gmail.com, tcharding <me@tobin.cc>,
+ Masami Hiramatsu <mhiramat@kernel.org>, Michael Neuling <mikey@neuling.org>,
+ mrochs@linux.vnet.ibm.com,
+ naveen.n.rao@linux.vnet.ibm.com, Nick Piggin <npiggin@gmail.com>,
+ "Oliver O'Halloran" <oohall@gmail.com>, Peter Zijlstra <peterz@infradead.org>,
+ rashmica.g@gmail.com,
+ Rob Herring <robh@kernel.org>, ruscur@russell.cc, sukadev@linux.vnet.ibm.com,
+ tyreld@linux.vnet.ibm.com, vaibhav jain <vaibhav@linux.vnet.ibm.com>,
+ vipin@linux.vnet.ibm.com, xinhui.pan@linux.vnet.ibm.com,
+ yang.shi@windriver.com, Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,23 +53,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2017-05-05 at 15:52 +0200, Michal Suchánek wrote:
-> 
-> So you have an e-mail message from one of the authors of the code.
-> Andy Polyakov wrote most of the code but there are probably other
-> contributors who never gave explicit consent for using their code
-> outside of OpenSSL.
+On Fri, May 5, 2017 at 6:20 AM, Michael Ellerman <mpe@ellerman.id.au> wrote:
+>
+> Also due to a screw-up on my part, we need a hunk added when you merge
+> the powerpc tree with the KVM tree:
+>
+> diff --git a/arch/powerpc/kvm/book3s_xive.c b/arch/powerpc/kvm/book3s_xive.c
+> index 7807ee17af4b..ffe1da95033a 100644
+> --- a/arch/powerpc/kvm/book3s_xive.c
+> +++ b/arch/powerpc/kvm/book3s_xive.c
+> @@ -24,6 +24,7 @@
+>  #include <asm/xive.h>
+>  #include <asm/xive-regs.h>
+>  #include <asm/debug.h>
+> +#include <asm/debugfs.h>
+>  #include <asm/time.h>
+>  #include <asm/opal.h>
+>
+> I haven't seen a pull request from Paolo yet, so possibly you'll need
+> to add that later when you merge the KVM tree.
 
-The only contributions to that file in OpenSSL that isn't from Andy
-are a whitespace fix and the addition of the licence :-)
+Ok. I won't catch this in my allmodconfig build due to the
+ppc-specific nature of it, so I'll probably forget about this and not
+catch it.
 
-If that makes you feel better we could undo the whitespace fix :-)
+Paolo, Radim, can you try to remind me about this conflict when you
+send the KVM pull request?
 
-I've checked the other PowerPC related files in there and the situation
-is identical (aes-ppc.pl does have also a spelling fix in comments).
+Also:
 
-At this point, it's pretty clear that this code is authored solely by
-Andy who gave permission to use it.
+>   - Larger virtual address space on 64-bit server CPUs. By default we
+>     use a 128TB virtual address space, but a process can request access
+>     to the full 512TB by passing a hint to mmap().
 
-Cheers,
-Ben.
+I'm assuming/hoping this uses the same logic as the upcoming 47+ bit
+5-level page table x86 support? Sounds like it, but I didn't check the
+code.
+
+See "x86/mm: Allow to have userspace mappings above 47-bits" which
+hasn't been merged yet, but has been discussed on linux-mm, for
+example.
+
+Thanks,
+
+                Linus
