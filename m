@@ -3,10 +3,10 @@ Received: from mail-wr0-x242.google.com (mail-wr0-x242.google.com
  [IPv6:2a00:1450:400c:c0c::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wK4Dz6p73zDqJX
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 May 2017 18:04:51 +1000 (AEST)
-Received: by mail-wr0-x242.google.com with SMTP id w50so3588909wrc.0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 May 2017 01:04:51 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wK4GR70HNzDqKK
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 May 2017 18:06:07 +1000 (AEST)
+Received: by mail-wr0-x242.google.com with SMTP id v42so3582399wrc.3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 May 2017 01:06:07 -0700 (PDT)
 From: Karim Eshapa <karim.eshapa@gmail.com>
 To: oss@buserror.net
 Cc: claudiu.manoil@nxp.com, roy.pledge@nxp.com, colin.king@canonical.com,
@@ -14,8 +14,8 @@ Cc: claudiu.manoil@nxp.com, roy.pledge@nxp.com, colin.king@canonical.com,
  linux-kernel@vger.kernel.org, Karim Eshapa <karim.eshapa@gmail.com>
 Subject: [PATCH] drivers:soc:fsl:qbman:qman.c: Change a comment for an entry
  check inside drain_mr_fqrni function
-Date: Fri,  5 May 2017 10:04:39 +0200
-Message-Id: <1493971480-14864-1-git-send-email-karim.eshapa@gmail.com>
+Date: Fri,  5 May 2017 10:05:56 +0200
+Message-Id: <1493971556-14918-1-git-send-email-karim.eshapa@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
