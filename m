@@ -1,24 +1,43 @@
-Return-Path: <srs0=3xnc=4l=buserror.net=oss@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <andrew.donnellan@au1.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wK38m6qgwzDq5W
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 May 2017 17:16:08 +1000 (AEST)
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3wK38m6F4fz8tc2
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 May 2017 17:16:08 +1000 (AEST)
-Received: from host.buserror.net (host.buserror.net [209.198.135.123])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3wK38m3p2Dz9s9c
- for <linuxppc-dev@ozlabs.org>; Fri,  5 May 2017 17:16:08 +1000 (AEST)
-From: Scott Wood <oss@buserror.net>
-To: linuxppc-dev@ozlabs.org
-Cc: Scott Wood <oss@buserror.net>,
- "Aneesh Kumar K . V" <aneesh.kumar@linux.vnet.ibm.com>
-Date: Fri,  5 May 2017 01:31:45 -0500
-Message-Id: <20170505063145.21631-1-oss@buserror.net>
-Subject: [PATCH] powerpc/64e: Don't place the stack beyond TASK_SIZE
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wK3Ny0lpFzDq5W
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 May 2017 17:26:41 +1000 (AEST)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v457PQQL016205
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 5 May 2017 03:26:31 -0400
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2a8f9uvc06-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 May 2017 03:26:21 -0400
+Received: from localhost
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
+ Fri, 5 May 2017 17:15:14 +1000
+Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v457F4ZU1048994
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 5 May 2017 17:15:12 +1000
+Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
+ by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v457Eemh008568
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 5 May 2017 17:14:40 +1000
+Subject: Re: [PATCH] cxl: Unlock on error in probe
+To: Dan Carpenter <dan.carpenter@oracle.com>, Ian Munsie <imunsie@au1.ibm.com>,
+ Christophe Lombard <clombard@linux.vnet.ibm.com>
+References: <20170505053622.0670F124037@b01ledav002.gho.pok.ibm.com>
+Cc: kernel-janitors@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Date: Fri, 5 May 2017 17:14:15 +1000
+MIME-Version: 1.0
+In-Reply-To: <20170505053622.0670F124037@b01ledav002.gho.pok.ibm.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Message-Id: <a4c0a3f6-f631-0998-ddd0-ca2efd4f1bfd@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,42 +47,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Commit f4ea6dcb08ea ("powerpc/mm: Enable mappings above 128TB") increased
-the task size on book3s, and introduced a mechanism to dynamically
-control whether a task uses these larger addresses.  While the change to
-the task size itself was ifdef-protected to only apply on book3s, the
-change to STACK_TOP_USER64 was not.  On book3e, this had the effect of
-trying to use addresses up to 128TiB for the stack despite a 64TiB task
-size limit -- which broke 64-bit userspace producing the following errors:
+On 05/05/17 15:34, Dan Carpenter wrote:
+> We should unlock if get_cxl_adapter() fails.
+>
+> Fixes: 594ff7d067ca ("cxl: Support to flash a new image on the adapter from a guest")
+> Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
+>
+> diff --git a/drivers/misc/cxl/flash.c b/drivers/misc/cxl/flash.c
+> index 7c61c70ba3f6..37475abea3e6 100644
+> --- a/drivers/misc/cxl/flash.c
+> +++ b/drivers/misc/cxl/flash.c
+> @@ -401,8 +401,10 @@ static int device_open(struct inode *inode, struct file *file)
+>  	if (down_interruptible(&sem) != 0)
+>  		return -EPERM;
+>
+> -	if (!(adapter = get_cxl_adapter(adapter_num)))
+> -		return -ENODEV;
+> +	if (!(adapter = get_cxl_adapter(adapter_num))) {
+> +		rc = -ENODEV;
+> +		goto err_unlock;
+> +	}
+>
+>  	file->private_data = adapter;
+>  	continue_token = 0;
+> @@ -446,6 +448,8 @@ static int device_open(struct inode *inode, struct file *file)
+>  		free_page((unsigned long) le);
+>  err:
+>  	put_device(&adapter->dev);
+> +err_unlock:
+> +	up(&sem);
+>
+>  	return rc;
+>  }
 
-Starting init: /sbin/init exists but couldn't execute it (error -14)
-Starting init: /bin/sh exists but couldn't execute it (error -14)
-Kernel panic - not syncing: No working init found.  Try passing init= option to kernel. See Linux Documentation/admin-guide/init.rst for guidance.
+sem is a global and it looks like it's intended to be held after 
+device_open() returns and only released in device_close(), so this looks 
+wrong.
 
-Fixes: f4ea6dcb08ea ("powerpc/mm: Enable mappings above 128TB")
-Cc: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-Signed-off-by: Scott Wood <oss@buserror.net>
----
- arch/powerpc/include/asm/processor.h | 5 +++++
- 1 file changed, 5 insertions(+)
-
-diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
-index a4b1d8d6b793..a2123f291ab0 100644
---- a/arch/powerpc/include/asm/processor.h
-+++ b/arch/powerpc/include/asm/processor.h
-@@ -151,8 +151,13 @@ void release_thread(struct task_struct *);
- 
- #ifdef __powerpc64__
- 
-+#ifdef CONFIG_PPC_BOOK3S_64
- /* Limit stack to 128TB */
- #define STACK_TOP_USER64 TASK_SIZE_128TB
-+#else
-+#define STACK_TOP_USER64 TASK_SIZE_USER64
-+#endif
-+
- #define STACK_TOP_USER32 TASK_SIZE_USER32
- 
- #define STACK_TOP (is_32bit_task() ? \
 -- 
-2.11.0
+Andrew Donnellan              OzLabs, ADL Canberra
+andrew.donnellan@au1.ibm.com  IBM Australia Limited
