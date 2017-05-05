@@ -1,21 +1,31 @@
-Return-Path: <karim.eshapa@gmail.com>
-Received: from mail-wr0-x242.google.com (mail-wr0-x242.google.com
- [IPv6:2a00:1450:400c:c0c::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <srs0=gp/1=4l=redhat.com=piliu@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wK4GR70HNzDqKK
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 May 2017 18:06:07 +1000 (AEST)
-Received: by mail-wr0-x242.google.com with SMTP id v42so3582399wrc.3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 May 2017 01:06:07 -0700 (PDT)
-From: Karim Eshapa <karim.eshapa@gmail.com>
-To: oss@buserror.net
-Cc: claudiu.manoil@nxp.com, roy.pledge@nxp.com, colin.king@canonical.com,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
- linux-kernel@vger.kernel.org, Karim Eshapa <karim.eshapa@gmail.com>
-Subject: [PATCH] drivers:soc:fsl:qbman:qman.c: Change a comment for an entry
- check inside drain_mr_fqrni function
-Date: Fri,  5 May 2017 10:05:56 +0200
-Message-Id: <1493971556-14918-1-git-send-email-karim.eshapa@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wK9554ywbzDqCL
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 May 2017 21:43:21 +1000 (AEST)
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3wK9553yqxz8tdd
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 May 2017 21:43:21 +1000 (AEST)
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3wK95509lNz9s7s
+ for <linuxppc-dev@ozlabs.org>; Fri,  5 May 2017 21:43:21 +1000 (AEST)
+Date: Fri, 5 May 2017 07:43:18 -0400 (EDT)
+From: Pingfan Liu <piliu@redhat.com>
+To: Hari Bathini <hbathini@linux.vnet.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>,
+ linuxppc-dev <linuxppc-dev@ozlabs.org>,
+ Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
+Message-ID: <935304973.5269011.1493984598730.JavaMail.zimbra@redhat.com>
+In-Reply-To: <149392044508.10802.11008391107873058533.stgit@hbathini.in.ibm.com>
+References: <149392041651.10802.10097444663269312695.stgit@hbathini.in.ibm.com>
+ <149392044508.10802.11008391107873058533.stgit@hbathini.in.ibm.com>
+Subject: Re: [PATCH 2/2] powerpc/fadump: avoid holes in boot memory area
+ when fadump is registered
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,50 +35,101 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Change the comment for an entry check inside function
-drain_mr_fqrni() with sleep for sufficient period
-of time instead of long time proccessor cycles.
 
-Signed-off-by: Karim Eshapa <karim.eshapa@gmail.com>
----
- drivers/soc/fsl/qbman/qman.c | 25 +++++++++++++------------
- 1 file changed, 13 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/soc/fsl/qbman/qman.c b/drivers/soc/fsl/qbman/qman.c
-index 18d391e..636a7d7 100644
---- a/drivers/soc/fsl/qbman/qman.c
-+++ b/drivers/soc/fsl/qbman/qman.c
-@@ -1071,18 +1071,19 @@ static int drain_mr_fqrni(struct qm_portal *p)
- 	msg = qm_mr_current(p);
- 	if (!msg) {
- 		/*
--		 * if MR was full and h/w had other FQRNI entries to produce, we
--		 * need to allow it time to produce those entries once the
--		 * existing entries are consumed. A worst-case situation
--		 * (fully-loaded system) means h/w sequencers may have to do 3-4
--		 * other things before servicing the portal's MR pump, each of
--		 * which (if slow) may take ~50 qman cycles (which is ~200
--		 * processor cycles). So rounding up and then multiplying this
--		 * worst-case estimate by a factor of 10, just to be
--		 * ultra-paranoid, goes as high as 10,000 cycles. NB, we consume
--		 * one entry at a time, so h/w has an opportunity to produce new
--		 * entries well before the ring has been fully consumed, so
--		 * we're being *really* paranoid here.
-+		 * if MR was full and h/w had other FQRNI entries to
-+		 * produce, we need to allow it time to produce those
-+		 * entries once the existing entries are consumed.
-+		 * A worst-case situation (fully-loaded system) means
-+		 * h/w sequencers may have to do 3-4 other things
-+		 * before servicing the portal's MR pump, each of
-+		 * which (if slow) may take ~50 qman cycles
-+		 * (which is ~200 processor cycles). So sleep with
-+		 * 1 ms would be very efficient, after this period
-+		 * we can check if there is something produced.
-+		 * NB, we consume one entry at a time, so h/w has
-+		 * an opportunity to produce new entries well before
-+		 * the ring has been fully consumed.
- 		 */
- 		msleep(1);
- 		msg = qm_mr_current(p);
--- 
-2.7.4
+
+
+----- Original Message -----
+> From: "Hari Bathini" <hbathini@linux.vnet.ibm.com>
+> To: "Michael Ellerman" <mpe@ellerman.id.au>
+> Cc: "linuxppc-dev" <linuxppc-dev@ozlabs.org>, "Pingfan Liu" <piliu@redhat.com>, "Mahesh J Salgaonkar"
+> <mahesh@linux.vnet.ibm.com>
+> Sent: Friday, May 5, 2017 1:54:05 AM
+> Subject: [PATCH 2/2] powerpc/fadump: avoid holes in boot memory area when fadump is registered
+> 
+> To register fadump, boot memory area - the size of low memory chunk that
+> is required for a kernel to boot successfully when booted with restricted
+> memory, is assumed to have no holes. But this memory area is currently
+
+The continuous is required by fadump code, not by the firmware itself, right?
+
+Thanks and regards,
+Pingfan
+
+> not protected from hot-remove operations. So, fadump could fail to
+> re-register after a memory hot-remove operation, if memory is removed
+> from boot memory area. To avoid this, ensure that memory from boot
+> memory area is not hot-removed when fadump is registered.
+> 
+> Signed-off-by: Hari Bathini <hbathini@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/include/asm/fadump.h               |    1 +
+>  arch/powerpc/kernel/fadump.c                    |   12 ++++++++++++
+>  arch/powerpc/platforms/pseries/hotplug-memory.c |    7 +++++++
+>  3 files changed, 20 insertions(+)
+> 
+> diff --git a/arch/powerpc/include/asm/fadump.h
+> b/arch/powerpc/include/asm/fadump.h
+> index 0031806..609fccc 100644
+> --- a/arch/powerpc/include/asm/fadump.h
+> +++ b/arch/powerpc/include/asm/fadump.h
+> @@ -198,6 +198,7 @@ struct fad_crash_memory_ranges {
+>  	unsigned long long	size;
+>  };
+>  
+> +extern int is_fadump_boot_memory_area(u64 addr, ulong size);
+>  extern int early_init_dt_scan_fw_dump(unsigned long node,
+>  		const char *uname, int depth, void *data);
+>  extern int fadump_reserve_mem(void);
+> diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
+> index 03563c6..ea7dfdc 100644
+> --- a/arch/powerpc/kernel/fadump.c
+> +++ b/arch/powerpc/kernel/fadump.c
+> @@ -114,6 +114,18 @@ int __init early_init_dt_scan_fw_dump(unsigned long
+> node,
+>  	return 1;
+>  }
+>  
+> +/*
+> + * If fadump is registered, check if the memory provided
+> + * falls within boot memory area.
+> + */
+> +int is_fadump_boot_memory_area(u64 addr, ulong size)
+> +{
+> +	if (!fw_dump.dump_registered)
+> +		return 0;
+> +
+> +	return (addr + size) > RMA_START && addr <= fw_dump.boot_memory_size;
+> +}
+> +
+>  int is_fadump_active(void)
+>  {
+>  	return fw_dump.dump_active;
+> diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c
+> b/arch/powerpc/platforms/pseries/hotplug-memory.c
+> index e104c71..a186b8e 100644
+> --- a/arch/powerpc/platforms/pseries/hotplug-memory.c
+> +++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
+> @@ -22,6 +22,7 @@
+>  #include <asm/machdep.h>
+>  #include <asm/prom.h>
+>  #include <asm/sparsemem.h>
+> +#include <asm/fadump.h>
+>  #include "pseries.h"
+>  
+>  static bool rtas_hp_event;
+> @@ -406,6 +407,12 @@ static bool lmb_is_removable(struct of_drconf_cell *lmb)
+>  	scns_per_block = block_sz / MIN_MEMORY_BLOCK_SIZE;
+>  	phys_addr = lmb->base_addr;
+>  
+> +#ifdef CONFIG_FA_DUMP
+> +	/* Don't hot-remove memory that falls in fadump boot memory area */
+> +	if (is_fadump_boot_memory_area(phys_addr, block_sz))
+> +		return false;
+> +#endif
+> +
+>  	for (i = 0; i < scns_per_block; i++) {
+>  		pfn = PFN_DOWN(phys_addr);
+>  		if (!pfn_present(pfn))
+> 
+> 
