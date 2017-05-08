@@ -1,25 +1,16 @@
-Return-Path: <yao.jin@linux.intel.com>
-Received: from mga03.intel.com (mga03.intel.com [134.134.136.65])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mikey@neuling.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wLkRg1Sy7zDqFW
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 May 2017 10:49:50 +1000 (AEST)
-Subject: Re: [PATCH v6 2/7] perf/x86/intel: Record branch type
-From: "Jin, Yao" <yao.jin@linux.intel.com>
-To: Jiri Olsa <jolsa@redhat.com>
-Cc: acme@kernel.org, jolsa@kernel.org, peterz@infradead.org,
- mingo@redhat.com, alexander.shishkin@linux.intel.com,
- Linux-kernel@vger.kernel.org, ak@linux.intel.com, kan.liang@intel.com,
- yao.jin@intel.com, linuxppc-dev@lists.ozlabs.org
-References: <1492690075-17243-1-git-send-email-yao.jin@linux.intel.com>
- <1492690075-17243-3-git-send-email-yao.jin@linux.intel.com>
- <20170423135559.GA23073@krava>
- <f6ede1eb-e015-5821-f00d-bbbc3ff3f317@linux.intel.com>
-Message-ID: <c1b593af-ab19-c82d-6b7f-5cd930d83254@linux.intel.com>
-Date: Mon, 8 May 2017 08:49:44 +0800
-MIME-Version: 1.0
-In-Reply-To: <f6ede1eb-e015-5821-f00d-bbbc3ff3f317@linux.intel.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wLslJ5mjDzDqFW
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 May 2017 16:18:52 +1000 (AEST)
+From: Michael Neuling <mikey@neuling.org>
+To: mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org,
+	mikey@neuling.org
+Subject: [PATCH] powerpc/tm: Fix comment
+Date: Mon,  8 May 2017 16:18:31 +1000
+Message-Id: <20170508061831.4335-1-mikey@neuling.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,68 +20,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Update to real function name.
 
+Signed-off-by: Michael Neuling <mikey@neuling.org>
+---
+ arch/powerpc/kernel/tm.S | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-On 4/24/2017 8:47 AM, Jin, Yao wrote:
->
->
-> On 4/23/2017 9:55 PM, Jiri Olsa wrote:
->> On Thu, Apr 20, 2017 at 08:07:50PM +0800, Jin Yao wrote:
->>
->> SNIP
->>
->>>   +#define X86_BR_TYPE_MAP_MAX    16
->>> +
->>> +static int
->>> +common_branch_type(int type)
->>> +{
->>> +    int i, mask;
->>> +    const int branch_map[X86_BR_TYPE_MAP_MAX] = {
->>> +        PERF_BR_CALL,        /* X86_BR_CALL */
->>> +        PERF_BR_RET,        /* X86_BR_RET */
->>> +        PERF_BR_SYSCALL,    /* X86_BR_SYSCALL */
->>> +        PERF_BR_SYSRET,        /* X86_BR_SYSRET */
->>> +        PERF_BR_INT,        /* X86_BR_INT */
->>> +        PERF_BR_IRET,        /* X86_BR_IRET */
->>> +        PERF_BR_JCC,        /* X86_BR_JCC */
->>> +        PERF_BR_JMP,        /* X86_BR_JMP */
->>> +        PERF_BR_IRQ,        /* X86_BR_IRQ */
->>> +        PERF_BR_IND_CALL,    /* X86_BR_IND_CALL */
->>> +        PERF_BR_NONE,        /* X86_BR_ABORT */
->>> +        PERF_BR_NONE,        /* X86_BR_IN_TX */
->>> +        PERF_BR_NONE,        /* X86_BR_NO_TX */
->>> +        PERF_BR_CALL,        /* X86_BR_ZERO_CALL */
->>> +        PERF_BR_NONE,        /* X86_BR_CALL_STACK */
->>> +        PERF_BR_IND_JMP,    /* X86_BR_IND_JMP */
->>> +    };
->>> +
->>> +    type >>= 2; /* skip X86_BR_USER and X86_BR_KERNEL */
->>> +    mask = ~(~0 << 1);
->> is that a fancy way to get 1 into the mask? what do I miss?
->>
->>> +
->>> +    for (i = 0; i < X86_BR_TYPE_MAP_MAX; i++) {
->>> +        if (type & mask)
->>> +            return branch_map[i];
->> I wonder some bit search would be faster in here, but maybe not big deal
->>
->> jirka
->
-> I just think the branch_map[] doesn't contain many entries (16 entries 
-> here), so maybe checking 1 bit one time should be acceptable. I just 
-> want to keep the code simple.
->
-> But if the number of entries is more (e.g. 64), maybe it'd better 
-> check 2 or 4 bits one time.
->
-> Thanks
-> Jin Yao
->
-
-Hi,
-
-Is this explanation OK? Since for tools part, it's Acked-by: Jiri Olsa. 
-I just want to know  if the kernel part is OK either?
-
-Thanks
-Jin Yao
+diff --git a/arch/powerpc/kernel/tm.S b/arch/powerpc/kernel/tm.S
+index 3a2d04134d..c4ba37822b 100644
+--- a/arch/powerpc/kernel/tm.S
++++ b/arch/powerpc/kernel/tm.S
+@@ -313,8 +313,8 @@ dont_backup_fp:
+ 	blr
+ 
+ 
+-	/* void tm_recheckpoint(struct thread_struct *thread,
+-	 *			unsigned long orig_msr)
++	/* void __tm_recheckpoint(struct thread_struct *thread,
++	 *			  unsigned long orig_msr)
+ 	 *	- Restore the checkpointed register state saved by tm_reclaim
+ 	 *	  when we switch_to a process.
+ 	 *
+-- 
+2.11.0
