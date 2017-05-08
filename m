@@ -1,46 +1,20 @@
-Return-Path: <abdhalee@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <horia.geanta@nxp.com>
+Received: from NAM03-DM3-obe.outbound.protection.outlook.com
+ (mail-dm3nam03on0040.outbound.protection.outlook.com [104.47.41.40])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wLwDD3xBszDqFx
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 May 2017 18:10:36 +1000 (AEST)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v4884RW3093268
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 8 May 2017 04:10:28 -0400
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2aakg44uyp-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 08 May 2017 04:10:23 -0400
-Received: from localhost
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <abdhalee@linux.vnet.ibm.com>;
- Mon, 8 May 2017 17:15:05 +1000
-Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v487E2cq25100392
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 8 May 2017 17:14:10 +1000
-Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
- by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v487Db8Q030718
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 8 May 2017 17:13:38 +1000
-Subject: Re: [linux-next][bock] WARNING: CPU: 22 PID: 0 at
- block/blk-core.c:2655 .blk_update_request+0x4f8/0x500
-From: Abdul Haleem <abdhalee@linux.vnet.ibm.com>
-To: Jens Axboe <axboe@kernel.dk>
-Cc: linux-block <linux-block@vger.kernel.org>, sachinp
- <sachinp@linux.vnet.ibm.com>, Stephen Rothwell <sfr@canb.auug.org.au>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, linux-kernel
- <linux-kernel@vger.kernel.org>
-Date: Mon, 08 May 2017 12:43:19 +0530
-In-Reply-To: <15a0a50a-d57d-736b-634c-4d0131ec5af3@kernel.dk>
-References: <1493965539.7355.44.camel@abdul.in.ibm.com>
- <15a0a50a-d57d-736b-634c-4d0131ec5af3@kernel.dk>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wLx6Q2qSQzDqG3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 May 2017 18:50:38 +1000 (AEST)
+From: =?UTF-8?q?Horia=20Geant=C4=83?= <horia.geanta@nxp.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
+ <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+CC: Nicholas Piggin <npiggin@gmail.com>, Mircea Pop <mircea.pop@nxp.com>,
+ <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>
+Subject: [PATCH] powerpc: fix distclean with Makefile.postlink
+Date: Mon, 8 May 2017 11:50:16 +0300
+Message-ID: <20170508085016.32601-1-horia.geanta@nxp.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Message-Id: <1494227599.2983.2.camel@abdul.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,26 +24,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2017-05-05 at 08:02 -0600, Jens Axboe wrote:
-> On 05/05/2017 12:25 AM, Abdul Haleem wrote:
-> > Hi,
-> > 
-> > 4.11.0 Linus mainline booted with Warnings on PowerPC.
-> > 
-> > We did not see this on next-20170407 but on next-20170410 and later.
-> 
-> Have you tried current Linus -git? Both of the -next versions you list
-> are rather old.
-> 
+Makefile.postlink always includes include/config/auto.conf, however
+this file is not present in a clean kernel tree, causing make to fail:
 
-Hi Jens, 
+arch/powerpc/Makefile.postlink:10: include/config/auto.conf: No such file or directory
+make[1]: *** No rule to make target `include/config/auto.conf'.  Stop.
+make: *** [vmlinuxclean] Error 2
 
-Warning is still seen with next-20170505 and also with today's mainline.
+Change the inclusion such that file not being found does not trigger
+an error.
 
-It was first seen on next-20170410, so the last good was next-20170407.
+Fixes: f188d0524d7e ("powerpc: Use the new post-link pass to check relocations")
+Reported-by: Mircea Pop <mircea.pop@nxp.com>
+Signed-off-by: Horia Geantă <horia.geanta@nxp.com>
+---
+ arch/powerpc/Makefile.postlink | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
+diff --git a/arch/powerpc/Makefile.postlink b/arch/powerpc/Makefile.postlink
+index 3c22d64b2de9..eccfcc88afae 100644
+--- a/arch/powerpc/Makefile.postlink
++++ b/arch/powerpc/Makefile.postlink
+@@ -7,7 +7,7 @@
+ PHONY := __archpost
+ __archpost:
+ 
+-include include/config/auto.conf
++-include include/config/auto.conf
+ include scripts/Kbuild.include
+ 
+ quiet_cmd_relocs_check = CHKREL  $@
 -- 
-Regard's
-
-Abdul Haleem
-IBM Linux Technology Centre
+2.12.0.264.gd6db3f216544
