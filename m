@@ -1,21 +1,25 @@
-Return-Path: <elfring@users.sourceforge.net>
-Received: from mout.web.de (mout.web.de [212.227.15.4])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <yao.jin@linux.intel.com>
+Received: from mga03.intel.com (mga03.intel.com [134.134.136.65])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wLT1L4F2MzDqFW
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 May 2017 00:44:38 +1000 (AEST)
-To: linuxppc-dev@lists.ozlabs.org,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Christophe Leroy <christophe.leroy@c-s.fr>,
- Michael Ellerman <mpe@ellerman.id.au>, Oliver O'Halloran <oohall@gmail.com>,
- Paul Mackerras <paulus@samba.org>, Rashmica Gupta <rashmica.g@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
-From: SF Markus Elfring <elfring@users.sourceforge.net>
-Subject: [PATCH] powerpc/mm: Use seq_putc() in two functions
-Message-ID: <98cb37ed-adee-3e13-8501-baa500c27951@users.sourceforge.net>
-Date: Sun, 7 May 2017 16:38:36 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wLkRg1Sy7zDqFW
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 May 2017 10:49:50 +1000 (AEST)
+Subject: Re: [PATCH v6 2/7] perf/x86/intel: Record branch type
+From: "Jin, Yao" <yao.jin@linux.intel.com>
+To: Jiri Olsa <jolsa@redhat.com>
+Cc: acme@kernel.org, jolsa@kernel.org, peterz@infradead.org,
+ mingo@redhat.com, alexander.shishkin@linux.intel.com,
+ Linux-kernel@vger.kernel.org, ak@linux.intel.com, kan.liang@intel.com,
+ yao.jin@intel.com, linuxppc-dev@lists.ozlabs.org
+References: <1492690075-17243-1-git-send-email-yao.jin@linux.intel.com>
+ <1492690075-17243-3-git-send-email-yao.jin@linux.intel.com>
+ <20170423135559.GA23073@krava>
+ <f6ede1eb-e015-5821-f00d-bbbc3ff3f317@linux.intel.com>
+Message-ID: <c1b593af-ab19-c82d-6b7f-5cd930d83254@linux.intel.com>
+Date: Mon, 8 May 2017 08:49:44 +0800
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+In-Reply-To: <f6ede1eb-e015-5821-f00d-bbbc3ff3f317@linux.intel.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,45 +29,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Markus Elfring <elfring@users.sourceforge.net>
-Date: Sun, 7 May 2017 16:32:04 +0200
 
-Two single characters (line breaks) should be put into a sequence.
-Thus use the corresponding function "seq_putc".
 
-This issue was detected by using the Coccinelle software.
+On 4/24/2017 8:47 AM, Jin, Yao wrote:
+>
+>
+> On 4/23/2017 9:55 PM, Jiri Olsa wrote:
+>> On Thu, Apr 20, 2017 at 08:07:50PM +0800, Jin Yao wrote:
+>>
+>> SNIP
+>>
+>>>   +#define X86_BR_TYPE_MAP_MAX    16
+>>> +
+>>> +static int
+>>> +common_branch_type(int type)
+>>> +{
+>>> +    int i, mask;
+>>> +    const int branch_map[X86_BR_TYPE_MAP_MAX] = {
+>>> +        PERF_BR_CALL,        /* X86_BR_CALL */
+>>> +        PERF_BR_RET,        /* X86_BR_RET */
+>>> +        PERF_BR_SYSCALL,    /* X86_BR_SYSCALL */
+>>> +        PERF_BR_SYSRET,        /* X86_BR_SYSRET */
+>>> +        PERF_BR_INT,        /* X86_BR_INT */
+>>> +        PERF_BR_IRET,        /* X86_BR_IRET */
+>>> +        PERF_BR_JCC,        /* X86_BR_JCC */
+>>> +        PERF_BR_JMP,        /* X86_BR_JMP */
+>>> +        PERF_BR_IRQ,        /* X86_BR_IRQ */
+>>> +        PERF_BR_IND_CALL,    /* X86_BR_IND_CALL */
+>>> +        PERF_BR_NONE,        /* X86_BR_ABORT */
+>>> +        PERF_BR_NONE,        /* X86_BR_IN_TX */
+>>> +        PERF_BR_NONE,        /* X86_BR_NO_TX */
+>>> +        PERF_BR_CALL,        /* X86_BR_ZERO_CALL */
+>>> +        PERF_BR_NONE,        /* X86_BR_CALL_STACK */
+>>> +        PERF_BR_IND_JMP,    /* X86_BR_IND_JMP */
+>>> +    };
+>>> +
+>>> +    type >>= 2; /* skip X86_BR_USER and X86_BR_KERNEL */
+>>> +    mask = ~(~0 << 1);
+>> is that a fancy way to get 1 into the mask? what do I miss?
+>>
+>>> +
+>>> +    for (i = 0; i < X86_BR_TYPE_MAP_MAX; i++) {
+>>> +        if (type & mask)
+>>> +            return branch_map[i];
+>> I wonder some bit search would be faster in here, but maybe not big deal
+>>
+>> jirka
+>
+> I just think the branch_map[] doesn't contain many entries (16 entries 
+> here), so maybe checking 1 bit one time should be acceptable. I just 
+> want to keep the code simple.
+>
+> But if the number of entries is more (e.g. 64), maybe it'd better 
+> check 2 or 4 bits one time.
+>
+> Thanks
+> Jin Yao
+>
 
-Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
----
- arch/powerpc/mm/dump_hashpagetable.c   | 2 +-
- arch/powerpc/mm/dump_linuxpagetables.c | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+Hi,
 
-diff --git a/arch/powerpc/mm/dump_hashpagetable.c b/arch/powerpc/mm/dump_hashpagetable.c
-index c6b900f54c07..31d248c82f95 100644
---- a/arch/powerpc/mm/dump_hashpagetable.c
-+++ b/arch/powerpc/mm/dump_hashpagetable.c
-@@ -205,7 +205,7 @@ static void dump_hpte_info(struct pg_state *st, unsigned long ea, u64 v, u64 r,
- 	aps_index = calculate_pagesize(st, aps, "actual");
- 	if (aps_index != 2)
- 		seq_printf(st->seq, "LP enc: %lx", lp);
--	seq_puts(st->seq, "\n");
-+	seq_putc(st->seq, '\n');
- }
- 
- 
-diff --git a/arch/powerpc/mm/dump_linuxpagetables.c b/arch/powerpc/mm/dump_linuxpagetables.c
-index d659345a98d6..5c08de16339d 100644
---- a/arch/powerpc/mm/dump_linuxpagetables.c
-+++ b/arch/powerpc/mm/dump_linuxpagetables.c
-@@ -349,7 +349,7 @@ static void note_page(struct pg_state *st, unsigned long addr,
- 					  st->current_flags,
- 					  pg_level[st->level].num);
- 
--			seq_puts(st->seq, "\n");
-+			seq_putc(st->seq, '\n');
- 		}
- 
- 		/*
--- 
-2.12.2
+Is this explanation OK? Since for tools part, it's Acked-by: Jiri Olsa. 
+I just want to know  if the kernel part is OK either?
+
+Thanks
+Jin Yao
