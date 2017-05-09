@@ -1,23 +1,18 @@
-Return-Path: <pasha.tatashin@oracle.com>
-Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <msuchanek@suse.de>
+Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wMpTT0Z5rzDqKS
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 May 2017 04:55:07 +1000 (AEST)
-Subject: Re: [v3 0/9] parallelized "struct page" zeroing
-To: Michal Hocko <mhocko@kernel.org>
-Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
- linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, borntraeger@de.ibm.com,
- heiko.carstens@de.ibm.com, davem@davemloft.net
-References: <1494003796-748672-1-git-send-email-pasha.tatashin@oracle.com>
- <20170509181234.GA4397@dhcp22.suse.cz>
-From: Pasha Tatashin <pasha.tatashin@oracle.com>
-Message-ID: <fae4a92c-e78c-32cb-606a-8e5087acb13f@oracle.com>
-Date: Tue, 9 May 2017 14:54:50 -0400
-MIME-Version: 1.0
-In-Reply-To: <20170509181234.GA4397@dhcp22.suse.cz>
-Content-Type: text/plain; charset=utf-8; format=flowed
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wMpvx3tQ1zDqKT
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 May 2017 05:14:37 +1000 (AEST)
+From: Michal Suchanek <msuchanek@suse.de>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Benjamin Tissoires <benjamin.tissoires@redhat.com>,
+ Michal Suchanek <msuchanek@suse.de>, linux-input@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] macintosh: move mac_hid driver to input/mouse.
+Date: Tue,  9 May 2017 21:14:18 +0200
+Message-Id: <20170509191418.10144-1-msuchanek@suse.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,60 +22,108 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Michal,
+There is nothing mac-specific about this driver. Non-mac hardware with
+suboptimal built-in pointer devices exists.
 
-> I like the idea of postponing the zeroing from the allocation to the
-> init time. To be honest the improvement looks much larger than I would
-> expect (Btw. this should be a part of the changelog rather than a
-> outside link).
+This makes it possible to use this emulation not only on x86 and ppc
+notebooks but also on arm and mips.
 
-The improvements are larger, because this time was never measured, as 
-Linux does not have early boot time stamps. I added them for x86 and 
-SPARC to emasure the performance. I am pushing those changes through 
-separate patchsets.
+Signed-off-by: Michal Suchanek <msuchanek@suse.de>
+---
+ drivers/input/mouse/Kconfig                  | 20 ++++++++++++++++++++
+ drivers/input/mouse/Makefile                 |  1 +
+ drivers/{macintosh => input/mouse}/mac_hid.c |  0
+ drivers/macintosh/Kconfig                    | 17 -----------------
+ drivers/macintosh/Makefile                   |  1 -
+ 5 files changed, 21 insertions(+), 18 deletions(-)
+ rename drivers/{macintosh => input/mouse}/mac_hid.c (100%)
 
-> 
-> The implementation just looks too large to what I would expect. E.g. do
-> we really need to add zero argument to the large part of the memblock
-> API? Wouldn't it be easier to simply export memblock_virt_alloc_internal
-> (or its tiny wrapper memblock_virt_alloc_core) and move the zeroing
-> outside to its 2 callers? A completely untested scratched version at the
-> end of the email.
-
-I am OK, with this change. But, I do not really see a difference between:
-
-memblock_virt_alloc_raw()
-and
-memblock_virt_alloc_core()
-
-In both cases we use memblock_virt_alloc_internal(), but the only 
-difference is that in my case we tell memblock_virt_alloc_internal() to 
-zero the pages if needed, and in your case the other two callers are 
-zeroing it. I like moving memblock_dbg() inside 
-memblock_virt_alloc_internal()
-
-> 
-> Also it seems that this is not 100% correct either as it only cares
-> about VMEMMAP while DEFERRED_STRUCT_PAGE_INIT might be enabled also for
-> SPARSEMEM. This would suggest that we would zero out pages twice,
-> right?
-
-Thank you, I will check this combination before sending out the next patch.
-
-> 
-> A similar concern would go to the memory hotplug patch which will
-> fall back to the slab/page allocator IIRC. On the other hand
-> __init_single_page is shared with the hotplug code so again we would
-> initialize 2 times.
-
-Correct, when memory it hotplugged, to gain the benefit of this fix, and 
-also not to regress by actually double zeroing "struct pages" we should 
-not zero it out. However, I do not really have means to test it.
-
-> 
-> So I suspect more changes are needed. I will have a closer look tomorrow.
-
-Thank you for reviewing this work. I will wait for your comments before 
-sending out updated patches.
-
-Pasha
+diff --git a/drivers/input/mouse/Kconfig b/drivers/input/mouse/Kconfig
+index 89ebb8f39fee..5533fd3a113f 100644
+--- a/drivers/input/mouse/Kconfig
++++ b/drivers/input/mouse/Kconfig
+@@ -12,6 +12,26 @@ menuconfig INPUT_MOUSE
+ 
+ if INPUT_MOUSE
+ 
++config MAC_EMUMOUSEBTN
++	tristate "Support for mouse button 2+3 emulation"
++	depends on SYSCTL && INPUT
++	help
++	  This provides generic support for emulating the 2nd and 3rd mouse
++	  button with keypresses.  If you say Y here, the emulation is still
++	  disabled by default.  The emulation is controlled by these sysctl
++	  entries:
++	  /proc/sys/dev/mac_hid/mouse_button_emulation
++	  /proc/sys/dev/mac_hid/mouse_button2_keycode
++	  /proc/sys/dev/mac_hid/mouse_button3_keycode
++
++	  If you have an Apple machine with a 1-button mouse, say Y here.
++
++	  This emulation can be useful on notebooks with suboptimal touchpad
++	  hardware as well.
++
++	  To compile this driver as a module, choose M here: the
++	  module will be called mac_hid.
++
+ config MOUSE_PS2
+ 	tristate "PS/2 mouse"
+ 	default y
+diff --git a/drivers/input/mouse/Makefile b/drivers/input/mouse/Makefile
+index 56bf0ad877c6..dfaad1dd8857 100644
+--- a/drivers/input/mouse/Makefile
++++ b/drivers/input/mouse/Makefile
+@@ -4,6 +4,7 @@
+ 
+ # Each configuration option enables a list of files.
+ 
++obj-$(CONFIG_MAC_EMUMOUSEBTN)		+= mac_hid.o
+ obj-$(CONFIG_MOUSE_AMIGA)		+= amimouse.o
+ obj-$(CONFIG_MOUSE_APPLETOUCH)		+= appletouch.o
+ obj-$(CONFIG_MOUSE_ATARI)		+= atarimouse.o
+diff --git a/drivers/macintosh/mac_hid.c b/drivers/input/mouse/mac_hid.c
+similarity index 100%
+rename from drivers/macintosh/mac_hid.c
+rename to drivers/input/mouse/mac_hid.c
+diff --git a/drivers/macintosh/Kconfig b/drivers/macintosh/Kconfig
+index 97a420c11eed..011df09c5167 100644
+--- a/drivers/macintosh/Kconfig
++++ b/drivers/macintosh/Kconfig
+@@ -159,23 +159,6 @@ config INPUT_ADBHID
+ 
+ 	  If unsure, say Y.
+ 
+-config MAC_EMUMOUSEBTN
+-	tristate "Support for mouse button 2+3 emulation"
+-	depends on SYSCTL && INPUT
+-	help
+-	  This provides generic support for emulating the 2nd and 3rd mouse
+-	  button with keypresses.  If you say Y here, the emulation is still
+-	  disabled by default.  The emulation is controlled by these sysctl
+-	  entries:
+-	  /proc/sys/dev/mac_hid/mouse_button_emulation
+-	  /proc/sys/dev/mac_hid/mouse_button2_keycode
+-	  /proc/sys/dev/mac_hid/mouse_button3_keycode
+-
+-	  If you have an Apple machine with a 1-button mouse, say Y here.
+-
+-	  To compile this driver as a module, choose M here: the
+-	  module will be called mac_hid.
+-
+ config THERM_WINDTUNNEL
+ 	tristate "Support for thermal management on Windtunnel G4s"
+ 	depends on I2C && I2C_POWERMAC && PPC_PMAC && !PPC_PMAC64
+diff --git a/drivers/macintosh/Makefile b/drivers/macintosh/Makefile
+index 516eb65bcacc..ab8b1e74d160 100644
+--- a/drivers/macintosh/Makefile
++++ b/drivers/macintosh/Makefile
+@@ -7,7 +7,6 @@
+ obj-$(CONFIG_PPC_PMAC)		+= macio_asic.o macio_sysfs.o
+ 
+ obj-$(CONFIG_PMAC_MEDIABAY)	+= mediabay.o
+-obj-$(CONFIG_MAC_EMUMOUSEBTN)	+= mac_hid.o
+ obj-$(CONFIG_INPUT_ADBHID)	+= adbhid.o
+ obj-$(CONFIG_ANSLCD)		+= ans-lcd.o
+ 
+-- 
+2.10.2
