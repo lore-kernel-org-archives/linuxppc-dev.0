@@ -1,29 +1,30 @@
-Return-Path: <paulus@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <hch@lst.de>
+Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wMYSn53fDzDqJv
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 May 2017 19:08:41 +1000 (AEST)
-Date: Tue, 9 May 2017 19:08:38 +1000
-From: Paul Mackerras <paulus@ozlabs.org>
-To: Christian Zigotzky <chzigotzky@xenosoft.de>
-Cc: "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: P.A. Semi: "PR" KVM configure error after KVM changes for 4.12
-Message-ID: <20170509090838.GC28688@fergus.ozlabs.ibm.com>
-References: <d38b72b2-b2b7-97a9-41a5-72651faa0937@xenosoft.de>
- <32d4e529-c0ef-3a97-05c0-6b9933d18e92@xenosoft.de>
- <c992819c-ee60-c3e6-bc12-761f3aee3998@xenosoft.de>
- <1f331c00-1833-340b-2725-81c85f4a2a28@xenosoft.de>
- <03ce35a5-6996-6d9e-0a39-3cc21f7cd291@xenosoft.de>
- <3ffbd423-be9f-dc37-4e81-9097bf8a34fb@xenosoft.de>
- <68fca557-87c8-5c60-208d-5b57da1152c5@xenosoft.de>
- <1c52e1a2-580a-474c-a09d-21c879f97419@xenosoft.de>
- <9c66da5e-1a89-8948-d100-3996f194aca3@xenosoft.de>
- <69e6beec-e909-4ca8-64e4-d8f45627af97@xenosoft.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wMYTt62HszDqNM
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 May 2017 19:09:38 +1000 (AEST)
+Date: Tue, 9 May 2017 11:03:16 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: Jens Axboe <axboe@kernel.dk>
+Cc: Abdul Haleem <abdhalee@linux.vnet.ibm.com>,
+ linux-block <linux-block@vger.kernel.org>,
+ sachinp <sachinp@linux.vnet.ibm.com>,
+ Stephen Rothwell <sfr@canb.auug.org.au>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ linux-kernel <linux-kernel@vger.kernel.org>,
+ "Martin K. Petersen" <martin.petersen@oracle.com>,
+ Christoph Hellwig <hch@lst.de>
+Subject: Re: [linux-next][bock] WARNING: CPU: 22 PID: 0 at
+ block/blk-core.c:2655 .blk_update_request+0x4f8/0x500
+Message-ID: <20170509090316.GA2378@lst.de>
+References: <1493965539.7355.44.camel@abdul.in.ibm.com>
+ <15a0a50a-d57d-736b-634c-4d0131ec5af3@kernel.dk>
+ <1494227599.2983.2.camel@abdul.in.ibm.com>
+ <f1a1ced1-6f3c-8fec-2e2d-4db4c09e31fc@kernel.dk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <69e6beec-e909-4ca8-64e4-d8f45627af97@xenosoft.de>
+In-Reply-To: <f1a1ced1-6f3c-8fec-2e2d-4db4c09e31fc@kernel.dk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,29 +34,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, May 09, 2017 at 10:42:51AM +0200, Christian Zigotzky wrote:
-> Hi All,
-> 
-> After the first batch of KVM changes for 4.12 merge window I get the
-> following error message if I want to configure the Linux kernel with KVM PR
-> support on my P.A. Semi board.
-> 
-> warning: (KVM_BOOK3S_64) selects SPAPR_TCE_IOMMU which has unmet direct
-> dependencies (IOMMU_SUPPORT && (PPC_POWERNV || PPC_PSERIES))
-> 
-> Did you change the system requirements for KVM? Does it only work on IBM
-> pSeries machines now?
+On Mon, May 08, 2017 at 08:00:41AM -0600, Jens Axboe wrote:
+> Christoph, Martin - any ideas? Trace from Abdul below.
 
-That probably came in with Alexey Kardashevskiy's patches to
-accelerate the TCE (IOMMU) hypercalls.  There was no deliberate
-intention to restrict PR KVM to IBM machines.  I'll fix it.
+Btw, what page size does the system have?
 
-However, I expect that at least for now we will not support PCI
-pass-through on machines other than IBM pSeries, because the KVM vfio
-code needs some specific services from the iommu layer which are
-platform-dependent and probably not implemented on other platforms
-(maple, pasemi, powermac).  If you have been using PCI pass-through
-successfully in the past with PR KVM then please let me know and we'll
-look at what is needed to keep it working.
+> 
+> WARNING: CPU: 12 PID: 0 at block/blk-core.c:2651 .blk_update_request+0x4cc/0x4e0
 
-Paul.
+Any knowledge from tracing or printk on what command is complete?
+Both req_op type and SCSI command?
