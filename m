@@ -1,25 +1,31 @@
-Return-Path: <jolsa@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <srs0=15w2=4p=gmail.com=bsingharora@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wMXXS6svtzDqJv
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 May 2017 18:26:48 +1000 (AEST)
-Date: Tue, 9 May 2017 10:26:44 +0200
-From: Jiri Olsa <jolsa@redhat.com>
-To: "Jin, Yao" <yao.jin@linux.intel.com>
-Cc: acme@kernel.org, jolsa@kernel.org, peterz@infradead.org,
- mingo@redhat.com, alexander.shishkin@linux.intel.com,
- Linux-kernel@vger.kernel.org, ak@linux.intel.com,
- kan.liang@intel.com, yao.jin@intel.com, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v6 2/7] perf/x86/intel: Record branch type
-Message-ID: <20170509082644.GB22125@krava>
-References: <1492690075-17243-1-git-send-email-yao.jin@linux.intel.com>
- <1492690075-17243-3-git-send-email-yao.jin@linux.intel.com>
- <20170423135559.GA23073@krava>
- <f6ede1eb-e015-5821-f00d-bbbc3ff3f317@linux.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <f6ede1eb-e015-5821-f00d-bbbc3ff3f317@linux.intel.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wMXvg01hkzDqJ7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 May 2017 18:43:26 +1000 (AEST)
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3wMXvf6Y6mz8tD8
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 May 2017 18:43:26 +1000 (AEST)
+Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
+ [IPv6:2607:f8b0:400e:c00::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3wMXvf0NrVz9s3T
+ for <linuxppc-dev@ozlabs.org>; Tue,  9 May 2017 18:43:26 +1000 (AEST)
+Received: by mail-pf0-x244.google.com with SMTP id v14so12965559pfd.3
+ for <linuxppc-dev@ozlabs.org>; Tue, 09 May 2017 01:43:25 -0700 (PDT)
+Message-ID: <1494319398.14525.3.camel@gmail.com>
+Subject: Re: [PATCH] powerpc/mm/book3s/64: Rework page table geometry for
+ lower memory usage
+From: Balbir Singh <bsingharora@gmail.com>
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
+Cc: aneesh.kumar@linux.vnet.ibm.com, paulus@samba.org
+Date: Tue, 09 May 2017 18:43:18 +1000
+In-Reply-To: <1494317148-18554-1-git-send-email-mpe@ellerman.id.au>
+References: <1494317148-18554-1-git-send-email-mpe@ellerman.id.au>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,61 +35,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Apr 24, 2017 at 08:47:14AM +0800, Jin, Yao wrote:
+On Tue, 2017-05-09 at 18:05 +1000, Michael Ellerman wrote:
+> Recently in commit f6eedbba7a26 ("powerpc/mm/hash: Increase VA range to 128TB")
+> we increased the virtual address space for user processes to 128TB by default,
+> and up to 512TB if user space opts in.
 > 
+> This obviously required expanding the range of the Linux page tables. For Book3s
+> 64-bit using hash and with PAGE_SIZE=64K, we increased the PGD to 2^15 entries.
+> This meant we could cover the full address range, while still being able to
+> insert a 16G hugepage at the PGD level and a 16M hugepage in the PMD.
 > 
-> On 4/23/2017 9:55 PM, Jiri Olsa wrote:
-> > On Thu, Apr 20, 2017 at 08:07:50PM +0800, Jin Yao wrote:
-> > 
-> > SNIP
-> > 
-> > > +#define X86_BR_TYPE_MAP_MAX	16
-> > > +
-> > > +static int
-> > > +common_branch_type(int type)
-> > > +{
-> > > +	int i, mask;
-> > > +	const int branch_map[X86_BR_TYPE_MAP_MAX] = {
-> > > +		PERF_BR_CALL,		/* X86_BR_CALL */
-> > > +		PERF_BR_RET,		/* X86_BR_RET */
-> > > +		PERF_BR_SYSCALL,	/* X86_BR_SYSCALL */
-> > > +		PERF_BR_SYSRET,		/* X86_BR_SYSRET */
-> > > +		PERF_BR_INT,		/* X86_BR_INT */
-> > > +		PERF_BR_IRET,		/* X86_BR_IRET */
-> > > +		PERF_BR_JCC,		/* X86_BR_JCC */
-> > > +		PERF_BR_JMP,		/* X86_BR_JMP */
-> > > +		PERF_BR_IRQ,		/* X86_BR_IRQ */
-> > > +		PERF_BR_IND_CALL,	/* X86_BR_IND_CALL */
-> > > +		PERF_BR_NONE,		/* X86_BR_ABORT */
-> > > +		PERF_BR_NONE,		/* X86_BR_IN_TX */
-> > > +		PERF_BR_NONE,		/* X86_BR_NO_TX */
-> > > +		PERF_BR_CALL,		/* X86_BR_ZERO_CALL */
-> > > +		PERF_BR_NONE,		/* X86_BR_CALL_STACK */
-> > > +		PERF_BR_IND_JMP,	/* X86_BR_IND_JMP */
-> > > +	};
-> > > +
-> > > +	type >>= 2; /* skip X86_BR_USER and X86_BR_KERNEL */
-> > > +	mask = ~(~0 << 1);
-> > is that a fancy way to get 1 into the mask? what do I miss?
-
-you did not comment on this one
-
-> > 
-> > > +
-> > > +	for (i = 0; i < X86_BR_TYPE_MAP_MAX; i++) {
-> > > +		if (type & mask)
-> > > +			return branch_map[i];
-> > I wonder some bit search would be faster in here, but maybe not big deal
-> > 
-> > jirka
+> The downside of that geometry is that it uses a lot of memory for the PGD, and
+> in particular makes the PGD a 4-page allocation, which means it's much more
+> likely to fail under memory pressure.
 > 
-> I just think the branch_map[] doesn't contain many entries (16 entries
-> here), so maybe checking 1 bit one time should be acceptable. I just want to
-> keep the code simple.
+> Instead we can make the PMD larger, so that a single PUD entry maps 16G,
+> allowing the 16G hugepages to sit at that level in the tree. We're then able to
+> split the remaining bits between the PUG and PGD. We make the PGD slightly
+> larger as that results in lower memory usage for typical programs.
 > 
-> But if the number of entries is more (e.g. 64), maybe it'd better check 2 or
-> 4 bits one time.
+> When THP is enabled the PMD actually doubles in size, to 2^11 entries, or 2^14
+> bytes, which is large but still < PAGE_SIZE.
+> 
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> ---
 
-ook
-
-jirka
+Reviewed-by: Balbir Singh <bsingharora@gmail.com>
