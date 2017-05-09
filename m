@@ -1,27 +1,16 @@
-Return-Path: <jolsa@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wMf7p6KS4zDqK8
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 May 2017 22:39:18 +1000 (AEST)
-Date: Tue, 9 May 2017 14:39:13 +0200
-From: Jiri Olsa <jolsa@redhat.com>
-To: "Jin, Yao" <yao.jin@linux.intel.com>
-Cc: acme@kernel.org, jolsa@kernel.org, peterz@infradead.org,
- mingo@redhat.com, alexander.shishkin@linux.intel.com,
- Linux-kernel@vger.kernel.org, ak@linux.intel.com,
- kan.liang@intel.com, yao.jin@intel.com, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v6 2/7] perf/x86/intel: Record branch type
-Message-ID: <20170509123913.GC9983@krava>
-References: <1492690075-17243-1-git-send-email-yao.jin@linux.intel.com>
- <1492690075-17243-3-git-send-email-yao.jin@linux.intel.com>
- <20170423135559.GA23073@krava>
- <f6ede1eb-e015-5821-f00d-bbbc3ff3f317@linux.intel.com>
- <20170509082644.GB22125@krava>
- <0e0b5c46-23ee-64dc-7ab3-2e8016d6a160@linux.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <0e0b5c46-23ee-64dc-7ab3-2e8016d6a160@linux.intel.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wMgbT6p3LzDqKK
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 May 2017 23:44:53 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: linuxppc-dev@ozlabs.org
+Cc: npiggin@gmail.com
+Subject: [PATCH 1/3] of/fdt: introduce of_scan_flat_dt_subnodes and
+ of_get_flat_dt_phandle
+Date: Tue,  9 May 2017 23:44:30 +1000
+Message-Id: <1494337472-23419-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,52 +20,100 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, May 09, 2017 at 07:57:11PM +0800, Jin, Yao wrote:
+From: Nicholas Piggin <npiggin@gmail.com>
 
-SNIP
+Introduce primitives for FDT parsing. These will be used for powerpc
+cpufeatures node scanning, which has quite complex structure but should
+be processed early.
 
-> > > > > +
-> > > > > +	type >>= 2; /* skip X86_BR_USER and X86_BR_KERNEL */
-> > > > > +	mask = ~(~0 << 1);
-> > > > is that a fancy way to get 1 into the mask? what do I miss?
-> > you did not comment on this one
-> 
-> Sorry, I misunderstood that this comment and the next comment had the same
-> meaning.
-> 
-> In the previous version, I used the switch/case to convert from X86_BR to
-> PERF_BR. I got a comment from community that it'd better use a lookup table
-> for conversion.
-> 
-> Since each bit in type represents a X86_BR type so I use a mask (0x1) to
-> filter the bit. Yes, it looks I can also directly set 0x1 to mask.
-> 
-> I write the code "mask = ~(~0 << 1)" according to my coding habits. If you
-> think I should change the code to "mask = 0x1", that's OK  :)
+Cc: devicetree@vger.kernel.org
+Acked-by: Rob Herring <robh@kernel.org>
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ drivers/of/fdt.c       | 38 ++++++++++++++++++++++++++++++++++++++
+ include/linux/of_fdt.h |  6 ++++++
+ 2 files changed, 44 insertions(+)
 
-im ok with that.. was just wondering for the reason
-I guess compiler will make it single constant assignment anyway
-
-> 
-> > > > > +
-> > > > > +	for (i = 0; i < X86_BR_TYPE_MAP_MAX; i++) {
-> > > > > +		if (type & mask)
-> > > > > +			return branch_map[i];
-> > > > I wonder some bit search would be faster in here, but maybe not big deal
-> > > > 
-> > > > jirka
-> > > I just think the branch_map[] doesn't contain many entries (16 entries
-> > > here), so maybe checking 1 bit one time should be acceptable. I just want to
-> > > keep the code simple.
-> > > 
-> > > But if the number of entries is more (e.g. 64), maybe it'd better check 2 or
-> > > 4 bits one time.
-> > ook
-> > 
-> > jirka
-> Sorry, what's the meaning of ook? Does it mean "OK"?
-
-just means ok ;-)
-
-thanks,
-jirka
+diff --git a/drivers/of/fdt.c b/drivers/of/fdt.c
+index e5ce4b59e162..961ca97072a9 100644
+--- a/drivers/of/fdt.c
++++ b/drivers/of/fdt.c
+@@ -754,6 +754,36 @@ int __init of_scan_flat_dt(int (*it)(unsigned long node,
+ }
+ 
+ /**
++ * of_scan_flat_dt_subnodes - scan sub-nodes of a node call callback on each.
++ * @it: callback function
++ * @data: context data pointer
++ *
++ * This function is used to scan sub-nodes of a node.
++ */
++int __init of_scan_flat_dt_subnodes(unsigned long parent,
++				    int (*it)(unsigned long node,
++					      const char *uname,
++					      void *data),
++				    void *data)
++{
++	const void *blob = initial_boot_params;
++	int node;
++
++	fdt_for_each_subnode(node, blob, parent) {
++		const char *pathp;
++		int rc;
++
++		pathp = fdt_get_name(blob, node, NULL);
++		if (*pathp == '/')
++			pathp = kbasename(pathp);
++		rc = it(node, pathp, data);
++		if (rc)
++			return rc;
++	}
++	return 0;
++}
++
++/**
+  * of_get_flat_dt_subnode_by_name - get the subnode by given name
+  *
+  * @node: the parent node
+@@ -812,6 +842,14 @@ int __init of_flat_dt_match(unsigned long node, const char *const *compat)
+ 	return of_fdt_match(initial_boot_params, node, compat);
+ }
+ 
++/**
++ * of_get_flat_dt_prop - Given a node in the flat blob, return the phandle
++ */
++uint32_t __init of_get_flat_dt_phandle(unsigned long node)
++{
++	return fdt_get_phandle(initial_boot_params, node);
++}
++
+ struct fdt_scan_status {
+ 	const char *name;
+ 	int namelen;
+diff --git a/include/linux/of_fdt.h b/include/linux/of_fdt.h
+index 271b3fdf0070..1dfbfd0d8040 100644
+--- a/include/linux/of_fdt.h
++++ b/include/linux/of_fdt.h
+@@ -54,6 +54,11 @@ extern char __dtb_end[];
+ extern int of_scan_flat_dt(int (*it)(unsigned long node, const char *uname,
+ 				     int depth, void *data),
+ 			   void *data);
++extern int of_scan_flat_dt_subnodes(unsigned long node,
++				    int (*it)(unsigned long node,
++					      const char *uname,
++					      void *data),
++				    void *data);
+ extern int of_get_flat_dt_subnode_by_name(unsigned long node,
+ 					  const char *uname);
+ extern const void *of_get_flat_dt_prop(unsigned long node, const char *name,
+@@ -62,6 +67,7 @@ extern int of_flat_dt_is_compatible(unsigned long node, const char *name);
+ extern int of_flat_dt_match(unsigned long node, const char *const *matches);
+ extern unsigned long of_get_flat_dt_root(void);
+ extern int of_get_flat_dt_size(void);
++extern uint32_t of_get_flat_dt_phandle(unsigned long node);
+ 
+ extern int early_init_dt_scan_chosen(unsigned long node, const char *uname,
+ 				     int depth, void *data);
+-- 
+2.7.4
