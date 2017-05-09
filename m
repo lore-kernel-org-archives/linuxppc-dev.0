@@ -1,18 +1,21 @@
-Return-Path: <msuchanek@suse.de>
-Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wMpvx3tQ1zDqKT
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 May 2017 05:14:37 +1000 (AEST)
-From: Michal Suchanek <msuchanek@suse.de>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Benjamin Tissoires <benjamin.tissoires@redhat.com>,
- Michal Suchanek <msuchanek@suse.de>, linux-input@vger.kernel.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] macintosh: move mac_hid driver to input/mouse.
-Date: Tue,  9 May 2017 21:14:18 +0200
-Message-Id: <20170509191418.10144-1-msuchanek@suse.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wMsXm1KZdzDqKk
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 May 2017 07:13:12 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Scott Wood <oss@buserror.net>, linuxppc-dev@ozlabs.org
+Cc: "Aneesh Kumar K . V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: Re: [PATCH] powerpc/64e: Don't place the stack beyond TASK_SIZE
+In-Reply-To: <1494258757.3694.1.camel@buserror.net>
+References: <20170505063145.21631-1-oss@buserror.net>
+ <87zien7841.fsf@concordia.ellerman.id.au>
+ <1494258757.3694.1.camel@buserror.net>
+Date: Wed, 10 May 2017 07:13:08 +1000
+Message-ID: <87r2zx7mzf.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,108 +25,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-There is nothing mac-specific about this driver. Non-mac hardware with
-suboptimal built-in pointer devices exists.
+Scott Wood <oss@buserror.net> writes:
 
-This makes it possible to use this emulation not only on x86 and ppc
-notebooks but also on arm and mips.
+> On Tue, 2017-05-09 at 00:09 +1000, Michael Ellerman wrote:
+>> Scott Wood <oss@buserror.net> writes:
+>>=20
+>> > Commit f4ea6dcb08ea ("powerpc/mm: Enable mappings above 128TB") increa=
+sed
+>> > the task size on book3s, and introduced a mechanism to dynamically
+>> > control whether a task uses these larger addresses.=C2=A0=C2=A0While t=
+he change to
+>> > the task size itself was ifdef-protected to only apply on book3s, the
+>> > change to STACK_TOP_USER64 was not.=C2=A0=C2=A0On book3e, this had the=
+ effect of
+>> > trying to use addresses up to 128TiB for the stack despite a 64TiB task
+>> > size limit -- which broke 64-bit userspace producing the following err=
+ors:
+>> >=20
+>> > Starting init: /sbin/init exists but couldn't execute it (error -14)
+>> > Starting init: /bin/sh exists but couldn't execute it (error -14)
+>> > Kernel panic - not syncing: No working init found.=C2=A0=C2=A0Try pass=
+ing init=3D
+>> > option to kernel. See Linux Documentation/admin-guide/init.rst for
+>> > guidance.
+>>=20
+>> For some reason I am not seeing this on my p5020ds?
+>>=20
+>> I just checked, it's definitely booting:
+>>=20
+>> =C2=A0 [=C2=A0=C2=A0=C2=A0=C2=A00.000000] Linux version 4.11.0-gcc5-g13e=
+0988 (kerkins@alpine1-p1)
+>> (gcc version 5.2.1 20151001 (GCC) ) #1 SMP Mon May 8 05:33:22 AEST 2017
+>> =C2=A0 [=C2=A0=C2=A0=C2=A0=C2=A00.000000] Using CoreNet Generic machine =
+description
+>> =C2=A0 ...
+>> =C2=A0 [=C2=A0=C2=A0=C2=A0=C2=A03.216940] systemd[1]: Detected architect=
+ure ppc64.
+>> =C2=A0 ...
+>> =C2=A0 Debian GNU/Linux stretch/sid p5020ds ttyS0
+>> =C2=A0=C2=A0
+>> =C2=A0 p5020ds login:
+>>=20
+>>=20
+>> Anyway patch looks good, I'll pull it in with the rest of your tree.
+>
+> Are you using a 64-bit userspace?
 
-Signed-off-by: Michal Suchanek <msuchanek@suse.de>
----
- drivers/input/mouse/Kconfig                  | 20 ++++++++++++++++++++
- drivers/input/mouse/Makefile                 |  1 +
- drivers/{macintosh => input/mouse}/mac_hid.c |  0
- drivers/macintosh/Kconfig                    | 17 -----------------
- drivers/macintosh/Makefile                   |  1 -
- 5 files changed, 21 insertions(+), 18 deletions(-)
- rename drivers/{macintosh => input/mouse}/mac_hid.c (100%)
+Ah of course. It's debian so it's mostly 32-bit. I'd forgotten 32-bit
+userspace was a thing! :)
 
-diff --git a/drivers/input/mouse/Kconfig b/drivers/input/mouse/Kconfig
-index 89ebb8f39fee..5533fd3a113f 100644
---- a/drivers/input/mouse/Kconfig
-+++ b/drivers/input/mouse/Kconfig
-@@ -12,6 +12,26 @@ menuconfig INPUT_MOUSE
- 
- if INPUT_MOUSE
- 
-+config MAC_EMUMOUSEBTN
-+	tristate "Support for mouse button 2+3 emulation"
-+	depends on SYSCTL && INPUT
-+	help
-+	  This provides generic support for emulating the 2nd and 3rd mouse
-+	  button with keypresses.  If you say Y here, the emulation is still
-+	  disabled by default.  The emulation is controlled by these sysctl
-+	  entries:
-+	  /proc/sys/dev/mac_hid/mouse_button_emulation
-+	  /proc/sys/dev/mac_hid/mouse_button2_keycode
-+	  /proc/sys/dev/mac_hid/mouse_button3_keycode
-+
-+	  If you have an Apple machine with a 1-button mouse, say Y here.
-+
-+	  This emulation can be useful on notebooks with suboptimal touchpad
-+	  hardware as well.
-+
-+	  To compile this driver as a module, choose M here: the
-+	  module will be called mac_hid.
-+
- config MOUSE_PS2
- 	tristate "PS/2 mouse"
- 	default y
-diff --git a/drivers/input/mouse/Makefile b/drivers/input/mouse/Makefile
-index 56bf0ad877c6..dfaad1dd8857 100644
---- a/drivers/input/mouse/Makefile
-+++ b/drivers/input/mouse/Makefile
-@@ -4,6 +4,7 @@
- 
- # Each configuration option enables a list of files.
- 
-+obj-$(CONFIG_MAC_EMUMOUSEBTN)		+= mac_hid.o
- obj-$(CONFIG_MOUSE_AMIGA)		+= amimouse.o
- obj-$(CONFIG_MOUSE_APPLETOUCH)		+= appletouch.o
- obj-$(CONFIG_MOUSE_ATARI)		+= atarimouse.o
-diff --git a/drivers/macintosh/mac_hid.c b/drivers/input/mouse/mac_hid.c
-similarity index 100%
-rename from drivers/macintosh/mac_hid.c
-rename to drivers/input/mouse/mac_hid.c
-diff --git a/drivers/macintosh/Kconfig b/drivers/macintosh/Kconfig
-index 97a420c11eed..011df09c5167 100644
---- a/drivers/macintosh/Kconfig
-+++ b/drivers/macintosh/Kconfig
-@@ -159,23 +159,6 @@ config INPUT_ADBHID
- 
- 	  If unsure, say Y.
- 
--config MAC_EMUMOUSEBTN
--	tristate "Support for mouse button 2+3 emulation"
--	depends on SYSCTL && INPUT
--	help
--	  This provides generic support for emulating the 2nd and 3rd mouse
--	  button with keypresses.  If you say Y here, the emulation is still
--	  disabled by default.  The emulation is controlled by these sysctl
--	  entries:
--	  /proc/sys/dev/mac_hid/mouse_button_emulation
--	  /proc/sys/dev/mac_hid/mouse_button2_keycode
--	  /proc/sys/dev/mac_hid/mouse_button3_keycode
--
--	  If you have an Apple machine with a 1-button mouse, say Y here.
--
--	  To compile this driver as a module, choose M here: the
--	  module will be called mac_hid.
--
- config THERM_WINDTUNNEL
- 	tristate "Support for thermal management on Windtunnel G4s"
- 	depends on I2C && I2C_POWERMAC && PPC_PMAC && !PPC_PMAC64
-diff --git a/drivers/macintosh/Makefile b/drivers/macintosh/Makefile
-index 516eb65bcacc..ab8b1e74d160 100644
---- a/drivers/macintosh/Makefile
-+++ b/drivers/macintosh/Makefile
-@@ -7,7 +7,6 @@
- obj-$(CONFIG_PPC_PMAC)		+= macio_asic.o macio_sysfs.o
- 
- obj-$(CONFIG_PMAC_MEDIABAY)	+= mediabay.o
--obj-$(CONFIG_MAC_EMUMOUSEBTN)	+= mac_hid.o
- obj-$(CONFIG_INPUT_ADBHID)	+= adbhid.o
- obj-$(CONFIG_ANSLCD)		+= ans-lcd.o
- 
--- 
-2.10.2
+I'll fix my tests to run some 64-bit binaries.
+
+cheers
