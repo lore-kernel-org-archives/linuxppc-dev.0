@@ -1,31 +1,38 @@
-Return-Path: <srs0=15w2=4p=gmail.com=bsingharora@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <chzigotzky@xenosoft.de>
+Received: from mo6-p00-ob.smtp.rzone.de (mo6-p00-ob.smtp.rzone.de
+ [IPv6:2a01:238:20a:202:5300::6])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wMXvg01hkzDqJ7
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 May 2017 18:43:26 +1000 (AEST)
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3wMXvf6Y6mz8tD8
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 May 2017 18:43:26 +1000 (AEST)
-Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
- [IPv6:2607:f8b0:400e:c00::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3wMXvf0NrVz9s3T
- for <linuxppc-dev@ozlabs.org>; Tue,  9 May 2017 18:43:26 +1000 (AEST)
-Received: by mail-pf0-x244.google.com with SMTP id v14so12965559pfd.3
- for <linuxppc-dev@ozlabs.org>; Tue, 09 May 2017 01:43:25 -0700 (PDT)
-Message-ID: <1494319398.14525.3.camel@gmail.com>
-Subject: Re: [PATCH] powerpc/mm/book3s/64: Rework page table geometry for
- lower memory usage
-From: Balbir Singh <bsingharora@gmail.com>
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
-Cc: aneesh.kumar@linux.vnet.ibm.com, paulus@samba.org
-Date: Tue, 09 May 2017 18:43:18 +1000
-In-Reply-To: <1494317148-18554-1-git-send-email-mpe@ellerman.id.au>
-References: <1494317148-18554-1-git-send-email-mpe@ellerman.id.au>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wMY2F6cmSzDqJv
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 May 2017 18:49:09 +1000 (AEST)
+Subject: P.A. Semi: "PR" KVM configure error after KVM changes for 4.12
+To: "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>,
+ linuxppc-dev@lists.ozlabs.org
+References: <86E27593-C6C2-4BBA-995E-95A97BB8CB12@xenosoft.de>
+ <ac5f236e-c503-320f-b240-1d4c1d8916b3@xenosoft.de>
+ <a914cbc1-6b5a-be45-bb33-8133dc5c5ba0@xenosoft.de>
+ <1f53280e-7525-bd48-56e0-21744b16d76d@xenosoft.de>
+ <eecee02c-04d5-0a06-2949-bfb11aa72bbd@xenosoft.de>
+ <151de9a6-4167-2ea5-01ef-cdb639b96961@xenosoft.de>
+ <2CA07D5E-BC02-4852-ADD0-10D8128A48AD@xenosoft.de>
+ <6D82E7E7-AC2A-465F-9CA0-14C5D572B493@xenosoft.de>
+ <3b9e052f-2247-0d62-9594-ed1efdac9d63@xenosoft.de>
+ <8fb787e3-edd0-e7ae-fb8b-5b785422226b@xenosoft.de>
+ <d38b72b2-b2b7-97a9-41a5-72651faa0937@xenosoft.de>
+ <32d4e529-c0ef-3a97-05c0-6b9933d18e92@xenosoft.de>
+ <c992819c-ee60-c3e6-bc12-761f3aee3998@xenosoft.de>
+ <1f331c00-1833-340b-2725-81c85f4a2a28@xenosoft.de>
+ <03ce35a5-6996-6d9e-0a39-3cc21f7cd291@xenosoft.de>
+ <3ffbd423-be9f-dc37-4e81-9097bf8a34fb@xenosoft.de>
+ <68fca557-87c8-5c60-208d-5b57da1152c5@xenosoft.de>
+ <1c52e1a2-580a-474c-a09d-21c879f97419@xenosoft.de>
+ <9c66da5e-1a89-8948-d100-3996f194aca3@xenosoft.de>
+From: Christian Zigotzky <chzigotzky@xenosoft.de>
+Message-ID: <69e6beec-e909-4ca8-64e4-d8f45627af97@xenosoft.de>
+Date: Tue, 9 May 2017 10:42:51 +0200
+MIME-Version: 1.0
+In-Reply-To: <9c66da5e-1a89-8948-d100-3996f194aca3@xenosoft.de>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,29 +42,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2017-05-09 at 18:05 +1000, Michael Ellerman wrote:
-> Recently in commit f6eedbba7a26 ("powerpc/mm/hash: Increase VA range to 128TB")
-> we increased the virtual address space for user processes to 128TB by default,
-> and up to 512TB if user space opts in.
-> 
-> This obviously required expanding the range of the Linux page tables. For Book3s
-> 64-bit using hash and with PAGE_SIZE=64K, we increased the PGD to 2^15 entries.
-> This meant we could cover the full address range, while still being able to
-> insert a 16G hugepage at the PGD level and a 16M hugepage in the PMD.
-> 
-> The downside of that geometry is that it uses a lot of memory for the PGD, and
-> in particular makes the PGD a 4-page allocation, which means it's much more
-> likely to fail under memory pressure.
-> 
-> Instead we can make the PMD larger, so that a single PUD entry maps 16G,
-> allowing the 16G hugepages to sit at that level in the tree. We're then able to
-> split the remaining bits between the PUG and PGD. We make the PGD slightly
-> larger as that results in lower memory usage for typical programs.
-> 
-> When THP is enabled the PMD actually doubles in size, to 2^11 entries, or 2^14
-> bytes, which is large but still < PAGE_SIZE.
-> 
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-> ---
+Hi All,
 
-Reviewed-by: Balbir Singh <bsingharora@gmail.com>
+After the first batch of KVM changes for 4.12 merge window I get the 
+following error message if I want to configure the Linux kernel with KVM 
+PR support on my P.A. Semi board.
+
+warning: (KVM_BOOK3S_64) selects SPAPR_TCE_IOMMU which has unmet direct 
+dependencies (IOMMU_SUPPORT && (PPC_POWERNV || PPC_PSERIES))
+
+Did you change the system requirements for KVM? Does it only work on IBM 
+pSeries machines now?
+
+Before the changes, I successfully compiled the Git version of kernel 
+4.12 with KVM PR support. I successfully tested it with Mac-on-Linux/KVM PR.
+
+Cheers,
+
+Christian
