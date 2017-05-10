@@ -1,24 +1,30 @@
-Return-Path: <mhocko@kernel.org>
-Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
+Return-Path: <hch@lst.de>
+Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wN76023G4zDqKq
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 May 2017 17:24:24 +1000 (AEST)
-Date: Wed, 10 May 2017 09:24:19 +0200
-From: Michal Hocko <mhocko@kernel.org>
-To: Pasha Tatashin <pasha.tatashin@oracle.com>
-Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
- linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, borntraeger@de.ibm.com,
- heiko.carstens@de.ibm.com, davem@davemloft.net
-Subject: Re: [v3 0/9] parallelized "struct page" zeroing
-Message-ID: <20170510072419.GC31466@dhcp22.suse.cz>
-References: <1494003796-748672-1-git-send-email-pasha.tatashin@oracle.com>
- <20170509181234.GA4397@dhcp22.suse.cz>
- <fae4a92c-e78c-32cb-606a-8e5087acb13f@oracle.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wN7qL23L4zDqKs
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 May 2017 17:56:45 +1000 (AEST)
+Date: Wed, 10 May 2017 09:56:42 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: Abdul Haleem <abdhalee@linux.vnet.ibm.com>
+Cc: Jens Axboe <axboe@kernel.dk>, hch@lst.de,
+ sachinp <sachinp@linux.vnet.ibm.com>,
+ Stephen Rothwell <sfr@canb.auug.org.au>,
+ "Martin K. Petersen" <martin.petersen@oracle.com>,
+ linux-kernel <linux-kernel@vger.kernel.org>,
+ linux-block <linux-block@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [linux-next][bock] [bisected c20cfc27a] WARNING: CPU: 22 PID:
+ 0 at block/blk-core.c:2655 .blk_update_request+0x4f8/0x500
+Message-ID: <20170510075642.GA10943@lst.de>
+References: <1493965539.7355.44.camel@abdul.in.ibm.com>
+ <15a0a50a-d57d-736b-634c-4d0131ec5af3@kernel.dk>
+ <1494227599.2983.2.camel@abdul.in.ibm.com>
+ <f1a1ced1-6f3c-8fec-2e2d-4db4c09e31fc@kernel.dk>
+ <1494343101.11532.4.camel@abdul.in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <fae4a92c-e78c-32cb-606a-8e5087acb13f@oracle.com>
+In-Reply-To: <1494343101.11532.4.camel@abdul.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,56 +34,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue 09-05-17 14:54:50, Pasha Tatashin wrote:
-[...]
-> >The implementation just looks too large to what I would expect. E.g. do
-> >we really need to add zero argument to the large part of the memblock
-> >API? Wouldn't it be easier to simply export memblock_virt_alloc_internal
-> >(or its tiny wrapper memblock_virt_alloc_core) and move the zeroing
-> >outside to its 2 callers? A completely untested scratched version at the
-> >end of the email.
+On Tue, May 09, 2017 at 08:48:21PM +0530, Abdul Haleem wrote:
+> A bisection for the above suspects resulted a bad commit;
 > 
-> I am OK, with this change. But, I do not really see a difference between:
+> c20cfc27a47307e811346f85959cf3cc07ae42f9 is the first bad commit
+> commit c20cfc27a47307e811346f85959cf3cc07ae42f9
+> Author: Christoph Hellwig <hch@lst.de>
+> Date:   Wed Apr 5 19:21:07 2017 +0200
 > 
-> memblock_virt_alloc_raw()
-> and
-> memblock_virt_alloc_core()
-> 
-> In both cases we use memblock_virt_alloc_internal(), but the only difference
-> is that in my case we tell memblock_virt_alloc_internal() to zero the pages
-> if needed, and in your case the other two callers are zeroing it. I like
-> moving memblock_dbg() inside memblock_virt_alloc_internal()
+>     block: stop using blkdev_issue_write_same for zeroing
 
-Well, I didn't object to this particular part. I was mostly concerned
-about
-http://lkml.kernel.org/r/1494003796-748672-4-git-send-email-pasha.tatashin@oracle.com
-and the "zero" argument for other functions. I guess we can do without
-that. I _think_ that we should simply _always_ initialize the page at the
-__init_single_page time rather than during the allocation. That would
-require dropping __GFP_ZERO for non-memblock allocations. Or do you
-think we could regress for single threaded initialization?
+And this effectively switches us to use the write_zeroes for SCSI.
 
-> >Also it seems that this is not 100% correct either as it only cares
-> >about VMEMMAP while DEFERRED_STRUCT_PAGE_INIT might be enabled also for
-> >SPARSEMEM. This would suggest that we would zero out pages twice,
-> >right?
-> 
-> Thank you, I will check this combination before sending out the next patch.
-> 
-> >
-> >A similar concern would go to the memory hotplug patch which will
-> >fall back to the slab/page allocator IIRC. On the other hand
-> >__init_single_page is shared with the hotplug code so again we would
-> >initialize 2 times.
-> 
-> Correct, when memory it hotplugged, to gain the benefit of this fix, and
-> also not to regress by actually double zeroing "struct pages" we should not
-> zero it out. However, I do not really have means to test it.
 
-It should be pretty easy to test with kvm, but I can help with testing
-on the real HW as well.
 
-Thanks!
--- 
-Michal Hocko
-SUSE Labs
+>     
+>     We'll always use the WRITE ZEROES code for zeroing now.
+>     
+>     Signed-off-by: Christoph Hellwig <hch@lst.de>
+>     Reviewed-by: Martin K. Petersen <martin.petersen@oracle.com>
+>     Reviewed-by: Hannes Reinecke <hare@suse.com>
+>     Signed-off-by: Jens Axboe <axboe@fb.com>
+> 
+> 
+> @Christoph FYI, the machine configured with 64K page size
+> > 
+> > WARNING: CPU: 12 PID: 0 at block/blk-core.c:2651 .blk_update_request+0x4cc/0x4e0
+
+Can you decode which warning this is?  Is it:
+
+	WARN_ON_ONCE(req->rq_flags & RQF_SPECIAL_PAYLOAD);
+
+?  In which case your setup did a partial completion of a WRITE SAME
+command, which is perfectly legal according to SCSI, but a bit unusual.
