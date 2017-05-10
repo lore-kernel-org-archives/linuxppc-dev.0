@@ -1,23 +1,18 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wN4Mv3rzPzDqKm
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 May 2017 15:21:15 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wN6WT6HpjzDqFR
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 May 2017 16:57:57 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Daniel Axtens <dja@axtens.net>, Anju T Sudhakar <anju@linux.vnet.ibm.com>,
- Thomas Gleixner <tglx@linutronix.de>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
-Subject: Re: [PATCH v8 05/10] powerpc/perf: IMC pmu cpumask and cpuhotplug
- support
-In-Reply-To: <87shkfqvx6.fsf@possimpible.ozlabs.ibm.com>
-References: <1493907596-11425-1-git-send-email-anju@linux.vnet.ibm.com>
- <1493907596-11425-6-git-send-email-anju@linux.vnet.ibm.com>
- <87shkfqvx6.fsf@possimpible.ozlabs.ibm.com>
-Date: Wed, 10 May 2017 15:21:15 +1000
-Message-ID: <87lgq570dw.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+To: linuxppc-dev@ozlabs.org
+Cc: jeyu@redhat.com,
+	rusty@rustcorp.com.au,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH] powerpc/modules: If mprofile-kernel is enabled add it to
+ vermagic
+Date: Wed, 10 May 2017 16:57:49 +1000
+Message-Id: <1494399469-17833-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,26 +22,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Daniel Axtens <dja@axtens.net> writes:
->>  include/linux/cpuhotplug.h                     |   1 +
-...
->> diff --git a/include/linux/cpuhotplug.h b/include/linux/cpuhotplug.h
->> index 62d240e..51dff54 100644
->> --- a/include/linux/cpuhotplug.h
->> +++ b/include/linux/cpuhotplug.h
->> @@ -137,6 +137,7 @@ enum cpuhp_state {
->> 	CPUHP_AP_PERF_ARM_CCN_ONLINE,
->> 	CPUHP_AP_PERF_ARM_L2X0_ONLINE,
->> 	CPUHP_AP_PERF_ARM_QCOM_L2_ONLINE,
->> +	CPUHP_AP_PERF_POWERPC_NEST_ONLINE,
->> 	CPUHP_AP_WORKQUEUE_ONLINE,
->> 	CPUHP_AP_RCUTREE_ONLINE,
->> 	CPUHP_AP_ONLINE_DYN,
+On powerpc we can build the kernel with two different ABIs for mcount(), which
+is used by ftrace. Kernels built with one ABI do not know how to load modules
+built with the other ABI. The new style ABI is called "mprofile-kernel", for
+want of a better name.
 
-> Who owns this? get_maintainer.pl doesn't give me anything helpful
-> here... Do we need an Ack from anyone?
+Currently if we build a module using the old style ABI, and the kernel with
+mprofile-kernel, when we load the module we'll oops something like:
 
-Presumably Thomas Gleixner (who I added to Cc), though I don't know if
-he wants to ack every change to it.
+  # insmod autofs4-no-mprofile-kernel.ko
+  ftrace-powerpc: Unexpected instruction f8810028 around bl _mcount
+  ------------[ cut here ]------------
+  WARNING: CPU: 6 PID: 3759 at ../kernel/trace/ftrace.c:2024 ftrace_bug+0x2b8/0x3c0
+  CPU: 6 PID: 3759 Comm: insmod Not tainted 4.11.0-rc3-gcc-5.4.1-00017-g5a61ef74f269 #11
+  ...
+  NIP [c0000000001eaa48] ftrace_bug+0x2b8/0x3c0
+  LR [c0000000001eaff8] ftrace_process_locs+0x4a8/0x590
+  Call Trace:
+    alloc_pages_current+0xc4/0x1d0 (unreliable)
+    ftrace_process_locs+0x4a8/0x590
+    load_module+0x1c8c/0x28f0
+    SyS_finit_module+0x110/0x140
+    system_call+0x38/0xfc
+  ...
+  ftrace failed to modify
+  [<d000000002a31024>] 0xd000000002a31024
+   actual:   35:65:00:48
 
-cheers
+We can avoid this by including in the vermagic whether the kernel/module was
+built with mprofile-kernel. Which results in:
+
+  # insmod autofs4-pg.ko
+  autofs4: version magic
+  '4.11.0-rc3-gcc-5.4.1-00017-g5a61ef74f269 SMP mod_unload modversions '
+  should be
+  '4.11.0-rc3-gcc-5.4.1-00017-g5a61ef74f269-dirty SMP mod_unload modversions mprofile-kernel'
+  insmod: ERROR: could not insert module autofs4-pg.ko: Invalid module format
+
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/include/asm/module.h | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/arch/powerpc/include/asm/module.h b/arch/powerpc/include/asm/module.h
+index 53885512b8d3..6c0132c7212f 100644
+--- a/arch/powerpc/include/asm/module.h
++++ b/arch/powerpc/include/asm/module.h
+@@ -14,6 +14,10 @@
+ #include <asm-generic/module.h>
+ 
+ 
++#ifdef CC_USING_MPROFILE_KERNEL
++#define MODULE_ARCH_VERMAGIC	"mprofile-kernel"
++#endif
++
+ #ifndef __powerpc64__
+ /*
+  * Thanks to Paul M for explaining this.
+-- 
+2.7.4
