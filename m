@@ -1,25 +1,27 @@
-Return-Path: <msuchanek@suse.de>
-Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
+Return-Path: <pasha.tatashin@oracle.com>
+Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wNKB00WGtzDqd9
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 May 2017 00:58:32 +1000 (AEST)
-Date: Wed, 10 May 2017 16:58:27 +0200
-From: Michal =?UTF-8?B?U3VjaMOhbmVr?= <msuchanek@suse.de>
-To: Hari Bathini <hbathini@linux.vnet.ibm.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
- <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, Jonathan Corbet
- <corbet@lwn.net>, Vlastimil Babka <vbabka@suse.cz>, Michal Hocko
- <mhocko@suse.cz>, linuxppc-dev@lists.ozlabs.org, linux-doc@vger.kernel.org,
- linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v4 RFT 1/2] powerpc/fadump: reduce memory consumption
- for capture kernel
-Message-ID: <20170510165827.5a2e1022@kitsune.suse.cz>
-In-Reply-To: <765ca86f-b6c5-190e-b3a9-91282e199baf@linux.vnet.ibm.com>
-References: <20170502155611.6789-1-msuchanek@suse.de>
- <765ca86f-b6c5-190e-b3a9-91282e199baf@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wNKFv65RNzDqL4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 May 2017 01:01:55 +1000 (AEST)
+Subject: Re: [v3 0/9] parallelized "struct page" zeroing
+To: Michal Hocko <mhocko@kernel.org>
+Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
+ linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, borntraeger@de.ibm.com,
+ heiko.carstens@de.ibm.com, davem@davemloft.net
+References: <1494003796-748672-1-git-send-email-pasha.tatashin@oracle.com>
+ <20170509181234.GA4397@dhcp22.suse.cz>
+ <fae4a92c-e78c-32cb-606a-8e5087acb13f@oracle.com>
+ <20170510072419.GC31466@dhcp22.suse.cz>
+ <3f5f1416-aa91-a2ff-cc89-b97fcaa3e4db@oracle.com>
+ <20170510145726.GM31466@dhcp22.suse.cz>
+From: Pasha Tatashin <pasha.tatashin@oracle.com>
+Message-ID: <ab667486-54a0-a36e-6797-b5f7b83c10f7@oracle.com>
+Date: Wed, 10 May 2017 11:01:40 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+In-Reply-To: <20170510145726.GM31466@dhcp22.suse.cz>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,113 +31,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 3 May 2017 12:43:33 +0530
-Hari Bathini <hbathini@linux.vnet.ibm.com> wrote:
 
-> On Tuesday 02 May 2017 09:26 PM, Michal Suchanek wrote:
-> > With fadump (dump capture) kernel booting like a regular kernel, it
-> > almost needs the same amount of memory to boot as the production
-> > kernel, which is unwarranted for a dump capture kernel. But with no
-> > option to disable some of the unnecessary subsystems in fadump
-> > kernel, that much memory is wasted on fadump, depriving the
-> > production kernel of that memory.
-> >
-> > Introduce kernel parameter 'fadump_append=' that would take regular
-> > kernel parameters to be appended when fadump is active.
-> > This 'fadump_append=' parameter can be leveraged to pass parameters
-> > like nr_cpus=1, cgroup_disable=memory and numa=off, to disable
-> > unwarranted resources/subsystems.
-> >
-> > Also, ensure the log "Firmware-assisted dump is active" is printed
-> > early in the boot process to put the subsequent fadump messages in
-> > context.
-> >
-> > Suggested-by: Michael Ellerman <mpe@ellerman.id.au>
-> > Signed-off-by: Hari Bathini <hbathini@linux.vnet.ibm.com>
-> > Signed-off-by: Michal Suchanek <msuchanek@suse.de>
-> > ---
-> > v4:
-> >   - use space separated arguments instead of comma separated
-> >   - do not append parameters when fadummp is disabled
-> > ---
-> >   arch/powerpc/kernel/fadump.c | 27 ++++++++++++++++++++++++---
-> >   1 file changed, 24 insertions(+), 3 deletions(-)
-> >
-> > diff --git a/arch/powerpc/kernel/fadump.c
-> > b/arch/powerpc/kernel/fadump.c index ebf2e9c..e0c728a 100644
-> > --- a/arch/powerpc/kernel/fadump.c
-> > +++ b/arch/powerpc/kernel/fadump.c
-> > @@ -79,8 +79,10 @@ int __init early_init_dt_scan_fw_dump(unsigned
-> > long node,
-> >   	 * dump data waiting for us.
-> >   	 */
-> >   	fdm_active = of_get_flat_dt_prop(node, "ibm,kernel-dump",
-> > NULL);
-> > -	if (fdm_active)
-> > +	if (fdm_active) {
-> > +		pr_info("Firmware-assisted dump is active.\n");
-> >   		fw_dump.dump_active = 1;
-> > +	}
-> >
-> >   	/* Get the sizes required to store dump data for the
-> > firmware provided
-> >   	 * dump sections.
-> > @@ -263,8 +265,12 @@ int __init fadump_reserve_mem(void)
-> >   {
-> >   	unsigned long base, size, memory_boundary;
-> >
-> > -	if (!fw_dump.fadump_enabled)
-> > +	if (!fw_dump.fadump_enabled) {
-> > +		if (fw_dump.dump_active)
-> > +			pr_warn("Firmware-assisted dump was active
-> > but kernel"
-> > +				" booted with fadump disabled!\n");
-> >   		return 0;
-> > +	}
-> >
-> >   	if (!fw_dump.fadump_supported) {
-> >   		printk(KERN_INFO "Firmware-assisted dump is not
-> > supported on" @@ -304,7 +310,6 @@ int __init
-> > fadump_reserve_mem(void) memory_boundary = memblock_end_of_DRAM();
-> >
-> >   	if (fw_dump.dump_active) {
-> > -		printk(KERN_INFO "Firmware-assisted dump is
-> > active.\n"); /*
-> >   		 * If last boot has crashed then reserve all the
-> > memory
-> >   		 * above boot_memory_size so that we don't touch
-> > it until @@ -363,6 +368,22 @@ unsigned long __init
-> > arch_reserved_kernel_pages(void) return memblock_reserved_size() /
-> > PAGE_SIZE; }
-> >
-> > +/* Look for fadump_append= cmdline option. */
-> > +static int __init early_fadump_append_param(char *p)
-> > +{
-> > +	if (!p)
-> > +		return 1;
-> > +
-> > +	if (fw_dump.fadump_enabled && fw_dump.dump_active) {
-> > +	pr_info("enforcing additional parameters (%s) passed
-> > through "
-> > +		"'fadump_append=' parameter\n", p);
-> > +		parse_early_options(p);  
+
+On 05/10/2017 10:57 AM, Michal Hocko wrote:
+> On Wed 10-05-17 09:42:22, Pasha Tatashin wrote:
+>>>
+>>> Well, I didn't object to this particular part. I was mostly concerned
+>>> about
+>>> http://lkml.kernel.org/r/1494003796-748672-4-git-send-email-pasha.tatashin@oracle.com
+>>> and the "zero" argument for other functions. I guess we can do without
+>>> that. I _think_ that we should simply _always_ initialize the page at the
+>>> __init_single_page time rather than during the allocation. That would
+>>> require dropping __GFP_ZERO for non-memblock allocations. Or do you
+>>> think we could regress for single threaded initialization?
+>>>
+>>
+>> Hi Michal,
+>>
+>> Thats exactly right, I am worried that we will regress when there is no
+>> parallelized initialization of "struct pages" if we force unconditionally do
+>> memset() in __init_single_page(). The overhead of calling memset() on a
+>> smaller chunks (64-bytes) may cause the regression, this is why I opted only
+>> for parallelized case to zero this metadata. This way, we are guaranteed to
+>> see great improvements from this change without having regressions on
+>> platforms and builds that do not support parallelized initialization of
+>> "struct pages".
 > 
-> While testing this on a system with yaboot bootloader, it seems that
-> parsing a parameter with syntax like fadump_append="nr_cpus=1
-> numa=off" is not resulting in the intended way..
+> Have you measured that? I do not think it would be super hard to
+> measure. I would be quite surprised if this added much if anything at
+> all as the whole struct page should be in the cache line already. We do
+> set reference count and other struct members. Almost nobody should be
+> looking at our page at this time and stealing the cache line. On the
+> other hand a large memcpy will basically wipe everything away from the
+> cpu cache. Or am I missing something?
+> 
 
-Since yaboot arguments are quoted you will probably want something like
+Perhaps you are right, and I will measure on x86. But, I suspect hit can 
+become unacceptable on some platfoms: there is an overhead of calling a 
+function, even if it is leaf-optimized, and there is an overhead in 
+memset() to check for alignments of size and address, types of setting 
+(zeroing vs. non-zeroing), etc., that adds up quickly.
 
-append = "quiet splash somearg1 somearg2 fadump_append=\"nr_cpus=1
-numa=off\""
-
-in yaboot.conf
-
-Looking at the yaboot parser it seems to handle quoting of quotes so
-unlike your parser that does not handle quoting of commas it allows
-passing arbitrary arguments to both the normal kernel and the fadump
-kernel. 
-
-Thanks
-
-Michal
+Pasha
