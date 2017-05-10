@@ -1,18 +1,24 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mhocko@kernel.org>
+Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wN6WT6HpjzDqFR
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 May 2017 16:57:57 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org
-Cc: jeyu@redhat.com,
-	rusty@rustcorp.com.au,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH] powerpc/modules: If mprofile-kernel is enabled add it to
- vermagic
-Date: Wed, 10 May 2017 16:57:49 +1000
-Message-Id: <1494399469-17833-1-git-send-email-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wN76023G4zDqKq
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 May 2017 17:24:24 +1000 (AEST)
+Date: Wed, 10 May 2017 09:24:19 +0200
+From: Michal Hocko <mhocko@kernel.org>
+To: Pasha Tatashin <pasha.tatashin@oracle.com>
+Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
+ linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, borntraeger@de.ibm.com,
+ heiko.carstens@de.ibm.com, davem@davemloft.net
+Subject: Re: [v3 0/9] parallelized "struct page" zeroing
+Message-ID: <20170510072419.GC31466@dhcp22.suse.cz>
+References: <1494003796-748672-1-git-send-email-pasha.tatashin@oracle.com>
+ <20170509181234.GA4397@dhcp22.suse.cz>
+ <fae4a92c-e78c-32cb-606a-8e5087acb13f@oracle.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <fae4a92c-e78c-32cb-606a-8e5087acb13f@oracle.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,62 +28,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On powerpc we can build the kernel with two different ABIs for mcount(), which
-is used by ftrace. Kernels built with one ABI do not know how to load modules
-built with the other ABI. The new style ABI is called "mprofile-kernel", for
-want of a better name.
+On Tue 09-05-17 14:54:50, Pasha Tatashin wrote:
+[...]
+> >The implementation just looks too large to what I would expect. E.g. do
+> >we really need to add zero argument to the large part of the memblock
+> >API? Wouldn't it be easier to simply export memblock_virt_alloc_internal
+> >(or its tiny wrapper memblock_virt_alloc_core) and move the zeroing
+> >outside to its 2 callers? A completely untested scratched version at the
+> >end of the email.
+> 
+> I am OK, with this change. But, I do not really see a difference between:
+> 
+> memblock_virt_alloc_raw()
+> and
+> memblock_virt_alloc_core()
+> 
+> In both cases we use memblock_virt_alloc_internal(), but the only difference
+> is that in my case we tell memblock_virt_alloc_internal() to zero the pages
+> if needed, and in your case the other two callers are zeroing it. I like
+> moving memblock_dbg() inside memblock_virt_alloc_internal()
 
-Currently if we build a module using the old style ABI, and the kernel with
-mprofile-kernel, when we load the module we'll oops something like:
+Well, I didn't object to this particular part. I was mostly concerned
+about
+http://lkml.kernel.org/r/1494003796-748672-4-git-send-email-pasha.tatashin@oracle.com
+and the "zero" argument for other functions. I guess we can do without
+that. I _think_ that we should simply _always_ initialize the page at the
+__init_single_page time rather than during the allocation. That would
+require dropping __GFP_ZERO for non-memblock allocations. Or do you
+think we could regress for single threaded initialization?
 
-  # insmod autofs4-no-mprofile-kernel.ko
-  ftrace-powerpc: Unexpected instruction f8810028 around bl _mcount
-  ------------[ cut here ]------------
-  WARNING: CPU: 6 PID: 3759 at ../kernel/trace/ftrace.c:2024 ftrace_bug+0x2b8/0x3c0
-  CPU: 6 PID: 3759 Comm: insmod Not tainted 4.11.0-rc3-gcc-5.4.1-00017-g5a61ef74f269 #11
-  ...
-  NIP [c0000000001eaa48] ftrace_bug+0x2b8/0x3c0
-  LR [c0000000001eaff8] ftrace_process_locs+0x4a8/0x590
-  Call Trace:
-    alloc_pages_current+0xc4/0x1d0 (unreliable)
-    ftrace_process_locs+0x4a8/0x590
-    load_module+0x1c8c/0x28f0
-    SyS_finit_module+0x110/0x140
-    system_call+0x38/0xfc
-  ...
-  ftrace failed to modify
-  [<d000000002a31024>] 0xd000000002a31024
-   actual:   35:65:00:48
+> >Also it seems that this is not 100% correct either as it only cares
+> >about VMEMMAP while DEFERRED_STRUCT_PAGE_INIT might be enabled also for
+> >SPARSEMEM. This would suggest that we would zero out pages twice,
+> >right?
+> 
+> Thank you, I will check this combination before sending out the next patch.
+> 
+> >
+> >A similar concern would go to the memory hotplug patch which will
+> >fall back to the slab/page allocator IIRC. On the other hand
+> >__init_single_page is shared with the hotplug code so again we would
+> >initialize 2 times.
+> 
+> Correct, when memory it hotplugged, to gain the benefit of this fix, and
+> also not to regress by actually double zeroing "struct pages" we should not
+> zero it out. However, I do not really have means to test it.
 
-We can avoid this by including in the vermagic whether the kernel/module was
-built with mprofile-kernel. Which results in:
+It should be pretty easy to test with kvm, but I can help with testing
+on the real HW as well.
 
-  # insmod autofs4-pg.ko
-  autofs4: version magic
-  '4.11.0-rc3-gcc-5.4.1-00017-g5a61ef74f269 SMP mod_unload modversions '
-  should be
-  '4.11.0-rc3-gcc-5.4.1-00017-g5a61ef74f269-dirty SMP mod_unload modversions mprofile-kernel'
-  insmod: ERROR: could not insert module autofs4-pg.ko: Invalid module format
-
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/include/asm/module.h | 4 ++++
- 1 file changed, 4 insertions(+)
-
-diff --git a/arch/powerpc/include/asm/module.h b/arch/powerpc/include/asm/module.h
-index 53885512b8d3..6c0132c7212f 100644
---- a/arch/powerpc/include/asm/module.h
-+++ b/arch/powerpc/include/asm/module.h
-@@ -14,6 +14,10 @@
- #include <asm-generic/module.h>
- 
- 
-+#ifdef CC_USING_MPROFILE_KERNEL
-+#define MODULE_ARCH_VERMAGIC	"mprofile-kernel"
-+#endif
-+
- #ifndef __powerpc64__
- /*
-  * Thanks to Paul M for explaining this.
+Thanks!
 -- 
-2.7.4
+Michal Hocko
+SUSE Labs
