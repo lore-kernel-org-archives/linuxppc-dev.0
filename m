@@ -1,23 +1,23 @@
-Return-Path: <msuchanek@suse.de>
-Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wNCYN2TPPzDqKy
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 May 2017 20:44:55 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wNFDQ08DyzDqL0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 May 2017 22:00:22 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Daniel Axtens <dja@axtens.net>, Daniel Micay <danielmicay@gmail.com>,
+ Kees Cook <keescook@chromium.org>, kernel-hardening@lists.openwall.com,
+ linuxppc-dev@lists.ozlabs.org
+Cc: Daniel Micay <danielmicay@gmail.com>, andrew.donnellan@au1.ibm.com
+Subject: Re: [kernel-hardening] [PATCH] add the option of fortified string.h
+ functions
+In-Reply-To: <87pofjqlj3.fsf@possimpible.ozlabs.ibm.com>
+References: <20170504142435.10175-1-danielmicay@gmail.com>
+ <87pofjqlj3.fsf@possimpible.ozlabs.ibm.com>
+Date: Wed, 10 May 2017 22:00:18 +1000
+Message-ID: <877f1okjl9.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII;
- format=flowed
-Date: Wed, 10 May 2017 12:44:51 +0200
-From: =?UTF-8?Q?Michal_Such=C3=A1nek?= <msuchanek@suse.de>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Benjamin Tissoires
- <benjamin.tissoires@redhat.com>, linux-input@vger.kernel.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] macintosh: move mac_hid driver to input/mouse.
-In-Reply-To: <20170510004327.GA32584@dtor-ws>
-References: <20170509191418.10144-1-msuchanek@suse.de>
- <20170510004327.GA32584@dtor-ws>
-Message-ID: <16983da3879599981b28ed3ac57c8ee3@suse.de>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,35 +27,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2017-05-10 02:43, Dmitry Torokhov wrote:
-> Hi Michal,
-> 
-> On Tue, May 09, 2017 at 09:14:18PM +0200, Michal Suchanek wrote:
->> There is nothing mac-specific about this driver. Non-mac hardware with
->> suboptimal built-in pointer devices exists.
->> 
->> This makes it possible to use this emulation not only on x86 and ppc
->> notebooks but also on arm and mips.
-> 
-> I'd rather we did not promote from drivers/macintosh to other 
-> platforms,
-> but rather removed it. The same functionality can be done from
-> userspace.
+Daniel Axtens <dja@axtens.net> writes:
 
-Why do we even have drivers/input? What in there cannot be done in 
-userspace? We can just remove everything but uinput, right?
+> Hi Daniel and ppc people,
+>
+> (ppc people: this does some compile and run time bounds checking on
+> string functions. It's cool - currently it picks up a lot of random
+> things so it will require some more work across the tree, but hopefully
+> it will eventually hit mainline.)
 
-> 
-> What hardware do you believe would benefit from this and why?
+Cool! 
 
-Many notebooks have built-in touchpad that has only two buttons, no or 
-limited multitouch and is not built in a way that allows pressing both 
-buttons together to trigger the X11 middle button emulation.
+> Once those were added, I needed to disable fortification in prom_init.c,
+> as we apparently can't have new symbols there. (I don't understand that
+> file so I haven't dug into it.)
 
-This is a facility that exists in the kernel already and allows mapping 
-the missing button(s) to keys near the touchpad. Easy, works with 
-anything that uses the Linux input events (ie does not depend on X11).
+We can refer to new symbols from there, we just have a script to check
+we don't refer to anything new inadvertently.
 
-Thanks
+prom_init() is sort of a shim that runs before the kernel, except it's
+linked with the kernel, but ideally wouldn't be, but we never bothered
+actually making it separate. O_o
 
-Michal
+> We also have problems with the feature fixup tests leading to a panic on
+> boot. It relates to getting what I think are asm labels(?) and how we
+> address them. I have just disabled fortify here for now; I think the
+> code could be rewritten to take the labels as unsigned char *, but I
+> haven't dug into it.
+
+OK, yeah it's using asm labels to compare the patched code vs the
+expected result. Can probably be fixed by making them char[] like we do
+for other things like __start_interrupts etc.
+
+cheers
