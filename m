@@ -1,31 +1,24 @@
-Return-Path: <hch@lst.de>
-Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wNP5p3z0jzDqLN
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 May 2017 03:55:10 +1000 (AEST)
-Date: Wed, 10 May 2017 19:55:06 +0200
-From: Christoph Hellwig <hch@lst.de>
-To: Abdul Haleem <abdhalee@linux.vnet.ibm.com>
-Cc: Christoph Hellwig <hch@lst.de>, Jens Axboe <axboe@kernel.dk>,
- sachinp <sachinp@linux.vnet.ibm.com>,
- "Martin K. Petersen" <martin.petersen@oracle.com>,
- Stephen Rothwell <sfr@canb.auug.org.au>,
- linux-kernel <linux-kernel@vger.kernel.org>,
- linux-block <linux-block@vger.kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [linux-next][bock] [bisected c20cfc27a] WARNING: CPU: 22 PID:
- 0 at block/blk-core.c:2655 .blk_update_request+0x4f8/0x500
-Message-ID: <20170510175506.GA5084@lst.de>
-References: <1493965539.7355.44.camel@abdul.in.ibm.com>
- <15a0a50a-d57d-736b-634c-4d0131ec5af3@kernel.dk>
- <1494227599.2983.2.camel@abdul.in.ibm.com>
- <f1a1ced1-6f3c-8fec-2e2d-4db4c09e31fc@kernel.dk>
- <1494343101.11532.4.camel@abdul.in.ibm.com> <20170510075642.GA10943@lst.de>
- <1494409780.11532.14.camel@abdul.in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1494409780.11532.14.camel@abdul.in.ibm.com>
+Return-Path: <davem@davemloft.net>
+Received: from shards.monkeyblade.net (shards.monkeyblade.net
+ [184.105.139.130])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3wNPD668dzzDqLP
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 May 2017 04:00:31 +1000 (AEST)
+Date: Wed, 10 May 2017 14:00:26 -0400 (EDT)
+Message-Id: <20170510.140026.1367439672848112283.davem@davemloft.net>
+To: willy@infradead.org
+Cc: mhocko@kernel.org, pasha.tatashin@oracle.com,
+ linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
+ linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, borntraeger@de.ibm.com,
+ heiko.carstens@de.ibm.com
+Subject: Re: [v3 0/9] parallelized "struct page" zeroing
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20170510171703.GC1590@bombadil.infradead.org>
+References: <20170510145726.GM31466@dhcp22.suse.cz>
+ <20170510.111943.1940354761418085760.davem@davemloft.net>
+ <20170510171703.GC1590@bombadil.infradead.org>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,53 +28,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Abdul,
+From: Matthew Wilcox <willy@infradead.org>
+Date: Wed, 10 May 2017 10:17:03 -0700
 
-can you test the patch below?  I'll try to create a way to inject
-short WRITE SAME commands using qemu next, but I thought I'd give
-you a chance to try it as well.
+> On Wed, May 10, 2017 at 11:19:43AM -0400, David Miller wrote:
+>> From: Michal Hocko <mhocko@kernel.org>
+>> Date: Wed, 10 May 2017 16:57:26 +0200
+>> 
+>> > Have you measured that? I do not think it would be super hard to
+>> > measure. I would be quite surprised if this added much if anything at
+>> > all as the whole struct page should be in the cache line already. We do
+>> > set reference count and other struct members. Almost nobody should be
+>> > looking at our page at this time and stealing the cache line. On the
+>> > other hand a large memcpy will basically wipe everything away from the
+>> > cpu cache. Or am I missing something?
+>> 
+>> I guess it might be clearer if you understand what the block
+>> initializing stores do on sparc64.  There are no memory accesses at
+>> all.
+>> 
+>> The cpu just zeros out the cache line, that's it.
+>> 
+>> No L3 cache line is allocated.  So this "wipe everything" behavior
+>> will not happen in the L3.
+> 
+> There's either something wrong with your explanation or my reading
+> skills :-)
+> 
+> "There are no memory accesses"
+> "No L3 cache line is allocated"
+> 
+> You can have one or the other ... either the CPU sends a cacheline-sized
+> write of zeroes to memory without allocating an L3 cache line (maybe
+> using the store buffer?), or the CPU allocates an L3 cache line and sets
+> its contents to zeroes, probably putting it in the last way of the set
+> so it's the first thing to be evicted if not touched.
 
----
-diff --git a/block/blk-core.c b/block/blk-core.c
-index c580b0138a7f..c7068520794b 100644
---- a/block/blk-core.c
-+++ b/block/blk-core.c
-@@ -2644,8 +2644,6 @@ bool blk_update_request(struct request *req, int error, unsigned int nr_bytes)
- 		return false;
- 	}
- 
--	WARN_ON_ONCE(req->rq_flags & RQF_SPECIAL_PAYLOAD);
--
- 	req->__data_len -= total_bytes;
- 
- 	/* update sector only for requests with clear definition of sector */
-@@ -2658,17 +2656,19 @@ bool blk_update_request(struct request *req, int error, unsigned int nr_bytes)
- 		req->cmd_flags |= req->bio->bi_opf & REQ_FAILFAST_MASK;
- 	}
- 
--	/*
--	 * If total number of sectors is less than the first segment
--	 * size, something has gone terribly wrong.
--	 */
--	if (blk_rq_bytes(req) < blk_rq_cur_bytes(req)) {
--		blk_dump_rq_flags(req, "request botched");
--		req->__data_len = blk_rq_cur_bytes(req);
--	}
-+	if (!(req->rq_flags & RQF_SPECIAL_PAYLOAD)) {
-+		/*
-+		 * If total number of sectors is less than the first segment
-+		 * size, something has gone terribly wrong.
-+		 */
-+		if (blk_rq_bytes(req) < blk_rq_cur_bytes(req)) {
-+			blk_dump_rq_flags(req, "request botched");
-+			req->__data_len = blk_rq_cur_bytes(req);
-+		}
- 
--	/* recalculate the number of segments */
--	blk_recalc_rq_segments(req);
-+		/* recalculate the number of segments */
-+		blk_recalc_rq_segments(req);
-+	}
- 
- 	return true;
- }
+There is no conflict in what I said.
+
+Only an L2 cache line is allocated and cleared.  L3 is left alone.
