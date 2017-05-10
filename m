@@ -1,26 +1,22 @@
-Return-Path: <willy@infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org [65.50.211.133])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wNTST2GgqzDqLX
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 May 2017 07:11:37 +1000 (AEST)
-Date: Wed, 10 May 2017 14:11:31 -0700
-From: Matthew Wilcox <willy@infradead.org>
-To: David Miller <davem@davemloft.net>
-Cc: mhocko@kernel.org, pasha.tatashin@oracle.com,
- linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
- linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, borntraeger@de.ibm.com,
- heiko.carstens@de.ibm.com
-Subject: Re: [v3 0/9] parallelized "struct page" zeroing
-Message-ID: <20170510211131.GD1590@bombadil.infradead.org>
-References: <20170510145726.GM31466@dhcp22.suse.cz>
- <20170510.111943.1940354761418085760.davem@davemloft.net>
- <20170510171703.GC1590@bombadil.infradead.org>
- <20170510.140026.1367439672848112283.davem@davemloft.net>
+Return-Path: <robers97@gmail.com>
+Received: from mail-qt0-x243.google.com (mail-qt0-x243.google.com
+ [IPv6:2607:f8b0:400d:c0d::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wNQnq1JJqzDqLV
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 May 2017 05:11:27 +1000 (AEST)
+Received: by mail-qt0-x243.google.com with SMTP id j13so62807qta.3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 May 2017 12:11:27 -0700 (PDT)
+Date: Wed, 10 May 2017 14:11:21 -0500
+From: Steven Roberts <robers97@gmail.com>
+To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, benh@kernel.crashing.org, mpe@ellerman.id.au
+Subject: Re: [v8,12/12] powerpc: rewrite local_t using soft_irq
+Message-ID: <20170510191121.GB25540@oc1783850105.ibm.com>
+References: <1492391857-8606-13-git-send-email-maddy@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170510.140026.1367439672848112283.davem@davemloft.net>
+In-Reply-To: <1492391857-8606-13-git-send-email-maddy@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,35 +26,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, May 10, 2017 at 02:00:26PM -0400, David Miller wrote:
-> From: Matthew Wilcox <willy@infradead.org>
-> Date: Wed, 10 May 2017 10:17:03 -0700
-> > On Wed, May 10, 2017 at 11:19:43AM -0400, David Miller wrote:
-> >> I guess it might be clearer if you understand what the block
-> >> initializing stores do on sparc64.  There are no memory accesses at
-> >> all.
-> >> 
-> >> The cpu just zeros out the cache line, that's it.
-> >> 
-> >> No L3 cache line is allocated.  So this "wipe everything" behavior
-> >> will not happen in the L3.
-> > 
-> > There's either something wrong with your explanation or my reading
-> > skills :-)
-> > 
-> > "There are no memory accesses"
-> > "No L3 cache line is allocated"
-> > 
-> > You can have one or the other ... either the CPU sends a cacheline-sized
-> > write of zeroes to memory without allocating an L3 cache line (maybe
-> > using the store buffer?), or the CPU allocates an L3 cache line and sets
-> > its contents to zeroes, probably putting it in the last way of the set
-> > so it's the first thing to be evicted if not touched.
-> 
-> There is no conflict in what I said.
-> 
-> Only an L2 cache line is allocated and cleared.  L3 is left alone.
+On Mon, Apr 17, 2017 at 06:47:37AM +0530, Madhavan Srinivasan wrote:
+> Local atomic operations are fast and highly reentrant per CPU counters.
+> Used for percpu variable updates. Local atomic operations only guarantee
+> variable modification atomicity wrt the CPU which owns the data and
+> these needs to be executed in a preemption safe way.
+>
+> Here is the design of this patch. Since local_* operations
+> are only need to be atomic to interrupts (IIUC), we have two options.
+> Either replay the "op" if interrupted or replay the interrupt after
+> the "op". Initial patchset posted was based on implementing local_* operation
+> based on CR5 which replay's the "op". Patchset had issues in case of
+> rewinding the address pointor from an array. This make the slow path
+> really slow. Since CR5 based implementation proposed using __ex_table to find
+> the rewind addressr, this rasied concerns about size of __ex_table and vmlinux.
+>
+> https://lists.ozlabs.org/pipermail/linuxppc-dev/2014-December/123115.html
+>
+> +static __inline__ int local_add_unless(local_t *l, long a, long u)
+> +{
+> +     long t;
+> +     unsigned long flags;
+> +
+> +     powerpc_local_irq_pmu_save(flags);
+> +     __asm__ __volatile__ (
+> +     PPC_LL" %0,0(%1)\n\
+> +     cmpw    0,%0,%3 \n\
 
-I thought SPARC had inclusive caches.  So allocating an L2 cacheline
-would necessitate allocating an L3 cacheline.  Or is this an exception
-to the normal order of things?
+Loading a long work here and comparing a single word.  Replace cmpw with PPC_LCMP.
+> +     beq-    2f \n\
+> +     add     %0,%2,%0 \n"
+> +     PPC_STL" %0,0(%1) \n"
+> +"       subf %0,%2,%0 \n\
+> +2:"
+> +        : "=&r" (t)
+> +        : "r" (&(l->a.counter)), "r" (a), "r" (u)
+> +        : "cc", "memory");
+> +        powerpc_local_irq_pmu_restore(flags);
+> +
+> +     return t != u;
+> +}
+> +
+> +#define local_inc_not_zero(l) local_add_unless((l), 1, 0)
+> +
+> +#define local_sub_and_test(a, l)     (local_sub_return((a), (l)) == 0)
+> +#define local_dec_and_test(l)                (local_dec_return((l)) == 0)
+> +
+> +/*
+> + * Atomically test *l and decrement if it is greater than 0.
+> + * The function returns the old value of *l minus 1.
+> + */
+> +static __inline__ long local_dec_if_positive(local_t *l)
+> +{
+> +     long t;
+> +     unsigned long flags;
+> +
+> +     powerpc_local_irq_pmu_save(flags);
+> +     __asm__ __volatile__(
+> +     PPC_LL" %0,0(%1)\n\
+> +     cmpwi   %0,1\n\
+
+Same issue here.  Replace cmpwi with PPC_LCMPI.
+
+> +     addi    %0,%0,-1\n\
+> +     blt-    2f\n"
+> +     PPC_STL "%0,0(%1)\n"
+> +     "\n\
+> +2:"  : "=&b" (t)
+> +     : "r" (&(l->a.counter))
+> +     : "cc", "memory");
+> +     powerpc_local_irq_pmu_restore(flags);
+> +
+> +     return t;
+> +}
+> +
