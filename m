@@ -1,21 +1,28 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <yao.jin@linux.intel.com>
+Received: from mga03.intel.com (mga03.intel.com [134.134.136.65])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wMsXm1KZdzDqKk
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 May 2017 07:13:12 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Scott Wood <oss@buserror.net>, linuxppc-dev@ozlabs.org
-Cc: "Aneesh Kumar K . V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: [PATCH] powerpc/64e: Don't place the stack beyond TASK_SIZE
-In-Reply-To: <1494258757.3694.1.camel@buserror.net>
-References: <20170505063145.21631-1-oss@buserror.net>
- <87zien7841.fsf@concordia.ellerman.id.au>
- <1494258757.3694.1.camel@buserror.net>
-Date: Wed, 10 May 2017 07:13:08 +1000
-Message-ID: <87r2zx7mzf.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wMxfq5ZfZzDqKk
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 May 2017 10:18:43 +1000 (AEST)
+Subject: Re: [PATCH v6 2/7] perf/x86/intel: Record branch type
+To: Jiri Olsa <jolsa@redhat.com>
+Cc: acme@kernel.org, jolsa@kernel.org, peterz@infradead.org,
+ mingo@redhat.com, alexander.shishkin@linux.intel.com,
+ Linux-kernel@vger.kernel.org, ak@linux.intel.com, kan.liang@intel.com,
+ yao.jin@intel.com, linuxppc-dev@lists.ozlabs.org
+References: <1492690075-17243-1-git-send-email-yao.jin@linux.intel.com>
+ <1492690075-17243-3-git-send-email-yao.jin@linux.intel.com>
+ <20170423135559.GA23073@krava>
+ <f6ede1eb-e015-5821-f00d-bbbc3ff3f317@linux.intel.com>
+ <20170509082644.GB22125@krava>
+ <0e0b5c46-23ee-64dc-7ab3-2e8016d6a160@linux.intel.com>
+ <20170509123913.GC9983@krava>
+From: "Jin, Yao" <yao.jin@linux.intel.com>
+Message-ID: <29d920f3-3491-2be2-f9f7-795e23217621@linux.intel.com>
+Date: Wed, 10 May 2017 08:18:37 +0800
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20170509123913.GC9983@krava>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,55 +32,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Scott Wood <oss@buserror.net> writes:
 
-> On Tue, 2017-05-09 at 00:09 +1000, Michael Ellerman wrote:
->> Scott Wood <oss@buserror.net> writes:
->>=20
->> > Commit f4ea6dcb08ea ("powerpc/mm: Enable mappings above 128TB") increa=
-sed
->> > the task size on book3s, and introduced a mechanism to dynamically
->> > control whether a task uses these larger addresses.=C2=A0=C2=A0While t=
-he change to
->> > the task size itself was ifdef-protected to only apply on book3s, the
->> > change to STACK_TOP_USER64 was not.=C2=A0=C2=A0On book3e, this had the=
- effect of
->> > trying to use addresses up to 128TiB for the stack despite a 64TiB task
->> > size limit -- which broke 64-bit userspace producing the following err=
-ors:
->> >=20
->> > Starting init: /sbin/init exists but couldn't execute it (error -14)
->> > Starting init: /bin/sh exists but couldn't execute it (error -14)
->> > Kernel panic - not syncing: No working init found.=C2=A0=C2=A0Try pass=
-ing init=3D
->> > option to kernel. See Linux Documentation/admin-guide/init.rst for
->> > guidance.
->>=20
->> For some reason I am not seeing this on my p5020ds?
->>=20
->> I just checked, it's definitely booting:
->>=20
->> =C2=A0 [=C2=A0=C2=A0=C2=A0=C2=A00.000000] Linux version 4.11.0-gcc5-g13e=
-0988 (kerkins@alpine1-p1)
->> (gcc version 5.2.1 20151001 (GCC) ) #1 SMP Mon May 8 05:33:22 AEST 2017
->> =C2=A0 [=C2=A0=C2=A0=C2=A0=C2=A00.000000] Using CoreNet Generic machine =
-description
->> =C2=A0 ...
->> =C2=A0 [=C2=A0=C2=A0=C2=A0=C2=A03.216940] systemd[1]: Detected architect=
-ure ppc64.
->> =C2=A0 ...
->> =C2=A0 Debian GNU/Linux stretch/sid p5020ds ttyS0
->> =C2=A0=C2=A0
->> =C2=A0 p5020ds login:
->>=20
->>=20
->> Anyway patch looks good, I'll pull it in with the rest of your tree.
+
+On 5/9/2017 8:39 PM, Jiri Olsa wrote:
+> On Tue, May 09, 2017 at 07:57:11PM +0800, Jin, Yao wrote:
 >
-> Are you using a 64-bit userspace?
+> SNIP
+>
+>>>>>> +
+>>>>>> +	type >>= 2; /* skip X86_BR_USER and X86_BR_KERNEL */
+>>>>>> +	mask = ~(~0 << 1);
+>>>>> is that a fancy way to get 1 into the mask? what do I miss?
+>>> you did not comment on this one
+>> Sorry, I misunderstood that this comment and the next comment had the same
+>> meaning.
+>>
+>> In the previous version, I used the switch/case to convert from X86_BR to
+>> PERF_BR. I got a comment from community that it'd better use a lookup table
+>> for conversion.
+>>
+>> Since each bit in type represents a X86_BR type so I use a mask (0x1) to
+>> filter the bit. Yes, it looks I can also directly set 0x1 to mask.
+>>
+>> I write the code "mask = ~(~0 << 1)" according to my coding habits. If you
+>> think I should change the code to "mask = 0x1", that's OK  :)
+> im ok with that.. was just wondering for the reason
+> I guess compiler will make it single constant assignment anyway
 
-Ah of course. It's debian so it's mostly 32-bit. I'd forgotten 32-bit
-userspace was a thing! :)
+I think so.  The compiler should be clever enough for this optimization.
+>>>>>> +
+>>>>>> +	for (i = 0; i < X86_BR_TYPE_MAP_MAX; i++) {
+>>>>>> +		if (type & mask)
+>>>>>> +			return branch_map[i];
+>>>>> I wonder some bit search would be faster in here, but maybe not big deal
+>>>>>
+>>>>> jirka
+>>>> I just think the branch_map[] doesn't contain many entries (16 entries
+>>>> here), so maybe checking 1 bit one time should be acceptable. I just want to
+>>>> keep the code simple.
+>>>>
+>>>> But if the number of entries is more (e.g. 64), maybe it'd better check 2 or
+>>>> 4 bits one time.
+>>> ook
+>>>
+>>> jirka
+>> Sorry, what's the meaning of ook? Does it mean "OK"?
+> just means ok ;-)
+>
+> thanks,
+> jirka
 
-I'll fix my tests to run some 64-bit binaries.
+Thanks so much!
 
-cheers
+Jin Yao
