@@ -1,30 +1,26 @@
-Return-Path: <srs0=l4vm=4q=suse.de=msuchanek@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wNLZq2QnDzDqJv
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 May 2017 02:01:39 +1000 (AEST)
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3wNLZp5tmpz8tnb
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 May 2017 02:01:38 +1000 (AEST)
-Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3wNLZn55cwz9s9c
- for <linuxppc-dev@ozlabs.org>; Thu, 11 May 2017 02:01:37 +1000 (AEST)
-Date: Wed, 10 May 2017 18:01:32 +0200
-From: Michal =?UTF-8?B?U3VjaMOhbmVr?= <msuchanek@suse.de>
-To: Hari Bathini <hbathini@linux.vnet.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev
- <linuxppc-dev@ozlabs.org>, Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
-Subject: Re: [PATCH v5 2/2] powerpc/fadump: update documentation about
- 'fadump_append=' parameter
-Message-ID: <20170510180132.1fa0c1ec@kitsune.suse.cz>
-In-Reply-To: <149383576571.1694.13692135068122879322.stgit@hbathini.in.ibm.com>
-References: <149383572199.1694.10940679065871920087.stgit@hbathini.in.ibm.com>
- <149383576571.1694.13692135068122879322.stgit@hbathini.in.ibm.com>
+Return-Path: <willy@infradead.org>
+Received: from bombadil.infradead.org (bombadil.infradead.org [65.50.211.133])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wNNFx1md9zDqLN
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 May 2017 03:17:09 +1000 (AEST)
+Date: Wed, 10 May 2017 10:17:03 -0700
+From: Matthew Wilcox <willy@infradead.org>
+To: David Miller <davem@davemloft.net>
+Cc: mhocko@kernel.org, pasha.tatashin@oracle.com,
+ linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
+ linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, borntraeger@de.ibm.com,
+ heiko.carstens@de.ibm.com
+Subject: Re: [v3 0/9] parallelized "struct page" zeroing
+Message-ID: <20170510171703.GC1590@bombadil.infradead.org>
+References: <20170510072419.GC31466@dhcp22.suse.cz>
+ <3f5f1416-aa91-a2ff-cc89-b97fcaa3e4db@oracle.com>
+ <20170510145726.GM31466@dhcp22.suse.cz>
+ <20170510.111943.1940354761418085760.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20170510.111943.1940354761418085760.davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,94 +30,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello,
-
-On Wed, 03 May 2017 23:52:52 +0530
-Hari Bathini <hbathini@linux.vnet.ibm.com> wrote:
-
-> With the introduction of 'fadump_append=' parameter to pass additional
-> parameters to fadump (capture) kernel, update documentation about it.
+On Wed, May 10, 2017 at 11:19:43AM -0400, David Miller wrote:
+> From: Michal Hocko <mhocko@kernel.org>
+> Date: Wed, 10 May 2017 16:57:26 +0200
 > 
-> Signed-off-by: Hari Bathini <hbathini@linux.vnet.ibm.com>
-> ---
+> > Have you measured that? I do not think it would be super hard to
+> > measure. I would be quite surprised if this added much if anything at
+> > all as the whole struct page should be in the cache line already. We do
+> > set reference count and other struct members. Almost nobody should be
+> > looking at our page at this time and stealing the cache line. On the
+> > other hand a large memcpy will basically wipe everything away from the
+> > cpu cache. Or am I missing something?
 > 
-> Changes from v4:
-> * Based on top of patchset that includes
->   https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git/commit/?h=akpm&id=05f383cdfba8793240e73f9a9fbff4e25d66003f
+> I guess it might be clearer if you understand what the block
+> initializing stores do on sparc64.  There are no memory accesses at
+> all.
 > 
+> The cpu just zeros out the cache line, that's it.
 > 
->  Documentation/powerpc/firmware-assisted-dump.txt |   10 +++++++++-
->  1 file changed, 9 insertions(+), 1 deletion(-)
-> 
-> diff --git a/Documentation/powerpc/firmware-assisted-dump.txt
-> b/Documentation/powerpc/firmware-assisted-dump.txt index
-> 8394bc8..6327193 100644 ---
-> a/Documentation/powerpc/firmware-assisted-dump.txt +++
-> b/Documentation/powerpc/firmware-assisted-dump.txt @@ -162,7 +162,15
-> @@ How to enable firmware-assisted dump (fadump): 
->  1. Set config option CONFIG_FA_DUMP=y and build kernel.
->  2. Boot into linux kernel with 'fadump=on' kernel cmdline option.
-> -3. Optionally, user can also set 'crashkernel=' kernel cmdline
-> +3. A user can pass additional command line parameters as a comma
-> +   separated list through 'fadump_append=' parameter, to be enforced
-> +   when fadump is active. For example, if parameters like nr_cpus=1,
-> +   numa=off & udev.children-max=2 are to be enforced when fadump is
-> +   active, 'fadump_append=nr_cpus=1,numa=off,udev.children-max=2'
-> +   can be passed in command line, which will be replaced with
-> +   "nr_cpus=1 numa=off udev.children-max=2" when fadump is active.
-> +   This helps in reducing memory consumption during dump capture.
-> +4. Optionally, user can also set 'crashkernel=' kernel cmdline
->     to specify size of the memory to reserve for boot memory dump
->     preservation.
->  
-> 
+> No L3 cache line is allocated.  So this "wipe everything" behavior
+> will not happen in the L3.
 
-Writing your own deficient parser for comma separated arguments when
-perfectly fine parser for space separated quoted arguments exists in
-the kernel and the bootloader does not seem like a good idea to me.
+There's either something wrong with your explanation or my reading
+skills :-)
 
-I also do not see how this addresses 
+"There are no memory accesses"
+"No L3 cache line is allocated"
 
-On Wed, 26 Apr 2017 20:32:55 +1000
-Michael Ellerman <mpe@ellerman.id.au> wrote:
+You can have one or the other ... either the CPU sends a cacheline-sized
+write of zeroes to memory without allocating an L3 cache line (maybe
+using the store buffer?), or the CPU allocates an L3 cache line and sets
+its contents to zeroes, probably putting it in the last way of the set
+so it's the first thing to be evicted if not touched.
 
-> Hari Bathini <hbathini@linux.vnet.ibm.com> writes:
-> 
-> > diff --git a/arch/powerpc/kernel/fadump.c
-> > b/arch/powerpc/kernel/fadump.c index 8ff0dd4..87edc7b 100644
-> > --- a/arch/powerpc/kernel/fadump.c
-> > +++ b/arch/powerpc/kernel/fadump.c
-> > @@ -338,6 +343,36 @@ unsigned long __init
-> > arch_reserved_kernel_pages(void) return memblock_reserved_size() /
-> > PAGE_SIZE; }
-> >  
-> > +static void __init parse_fadump_append_params(const char *p)
-> > +{
-> > +	static char fadump_cmdline[COMMAND_LINE_SIZE] __initdata;
-> > +	char *token;
-> > +
-> > +	strlcpy(fadump_cmdline, p, COMMAND_LINE_SIZE);
-> > +	token = strchr(fadump_cmdline, ',');
-> > +	while (token) {
-> > +		*token = ' ';
-> > +		token = strchr(token, ',');
-> > +	}
-> > +
-> > +	pr_info("enforcing additional parameters (%s) passed
-> > through "
-> > +		"'fadump_append=' parameter\n", fadump_cmdline);
-> > +	parse_early_options(fadump_cmdline);  
-> 
-> Using parse_early_options() means it only works for parameters defined
-> with early_param() or __setup() doesn't it?
-> 
-> That might be OK but at least you need to clearly document it.
-
-which was your gripe with v4 of the patchset. Unfortunately the flags
-in Documentation/kernel-parameters.txt do not include a flag that
-denotes parameters available with parse_early_options - unless it is
-the KNL flag and is quite bitrotten.
-
-Thanks
-
-Michal
+Or there's some magic in the memory bus protocol where the CPU gets to
+tell the DRAM "hey, clear these cache lines".  Although that's also a
+memory access of sorts ...
