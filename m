@@ -1,20 +1,24 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
- [IPv6:2607:f8b0:400e:c00::242])
+Return-Path: <linus971@gmail.com>
+Received: from mail-it0-x230.google.com (mail-it0-x230.google.com
+ [IPv6:2607:f8b0:4001:c0b::230])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wP0l529lvzDqZl
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 May 2017 03:41:05 +1000 (AEST)
-Received: by mail-pf0-x242.google.com with SMTP id w69so4012906pfk.1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 May 2017 10:41:05 -0700 (PDT)
-From: Nicholas Piggin <npiggin@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Nicholas Piggin <npiggin@gmail.com>
-Subject: [PATCH 3/3] powerpc: link warning for orphan sections
-Date: Fri, 12 May 2017 03:40:40 +1000
-Message-Id: <20170511174040.19728-4-npiggin@gmail.com>
-In-Reply-To: <20170511174040.19728-1-npiggin@gmail.com>
-References: <20170511174040.19728-1-npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wP2D71S25zDqKx
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 May 2017 04:47:51 +1000 (AEST)
+Received: by mail-it0-x230.google.com with SMTP id g126so25258493ith.0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 May 2017 11:47:51 -0700 (PDT)
+MIME-Version: 1.0
+Sender: linus971@gmail.com
+In-Reply-To: <20170511165727.17847-1-npiggin@gmail.com>
+References: <20170511165727.17847-1-npiggin@gmail.com>
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Thu, 11 May 2017 11:47:47 -0700
+Message-ID: <CA+55aFzS9ENQnRoTbLMd_nFwwjuU+s9yj0tZcLSYDDjnwqTKrg@mail.gmail.com>
+Subject: Re: [PATCH] spin loop primitives for busy waiting
+To: Nicholas Piggin <npiggin@gmail.com>
+Cc: "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>,
+ ppc-dev <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,111 +28,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add --orphan-handling=warn to final link flags. This ensures we can
-handle all sections explicitly. This would have caught subtle breakage
-such as 7de3b27bac47da9de08409df1d69664acbb72197 at build-time.
+On Thu, May 11, 2017 at 9:57 AM, Nicholas Piggin <npiggin@gmail.com> wrote:
+>
+> If you find this acceptable, I'd like to start wiring in the powerpc
+> and adding the annotations to some important core spin loops (there's
+> not too many really). I'm hoping if you take this patch during this
+> merge window, I'll be able to start sending small patches to maintainers
+> for the next window. Unless you have a better suggestion for how to
+> deal with this.
 
-Also bring existing orphan sections into the fold:
-- .text.hot and .text.unlikely are compiler generated sections.
-- .sdata2, .dynsbss, .plt are used by PPC32
-- We previously did not specify DWARF_DEBUG or STABS_DEBUG
-- DWARF_DEBUG did not include all DWARF sections that can be emitted
-- A number of sections are unused and can be discarded.
+This looks fine to me as an interface, and yes, I guess I can just
+take this scaffolding as-is.
 
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
----
- arch/powerpc/Makefile             |  1 +
- arch/powerpc/kernel/vmlinux.lds.S | 16 ++++++++++++++--
- include/asm-generic/vmlinux.lds.h | 12 ++++++++++++
- 3 files changed, 27 insertions(+), 2 deletions(-)
+The one question I have is about "spin_on_cond()": since you
+explicitly document that the "no spinning" case is expected to be the
+default, I really think that the default implementation should be
+along the lines if
 
-diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-index eaa1865e4a8d..8d4ed73d5490 100644
---- a/arch/powerpc/Makefile
-+++ b/arch/powerpc/Makefile
-@@ -98,6 +98,7 @@ endif
- LDFLAGS_vmlinux-y := -Bstatic
- LDFLAGS_vmlinux-$(CONFIG_RELOCATABLE) := -pie
- LDFLAGS_vmlinux	:= $(LDFLAGS_vmlinux-y)
-+LDFLAGS_vmlinux += $(call ld-option,--orphan-handling=warn)
- 
- ifeq ($(CONFIG_PPC64),y)
- ifeq ($(call cc-option-yn,-mcmodel=medium),y)
-diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
-index 5aa434e84605..24a37e49d7fe 100644
---- a/arch/powerpc/kernel/vmlinux.lds.S
-+++ b/arch/powerpc/kernel/vmlinux.lds.S
-@@ -86,7 +86,7 @@ SECTIONS
- 		ALIGN_FUNCTION();
- #endif
- 		/* careful! __ftr_alt_* sections need to be close to .text */
--		*(.text .fixup __ftr_alt_* .ref.text)
-+		*(.text.hot .text .text.fixup .text.unlikely .fixup __ftr_alt_* .ref.text);
- 		SCHED_TEXT
- 		CPUIDLE_TEXT
- 		LOCK_TEXT
-@@ -253,7 +253,9 @@ SECTIONS
- 	.data : AT(ADDR(.data) - LOAD_OFFSET) {
- 		DATA_DATA
- 		*(.sdata)
-+		*(.sdata2)
- 		*(.got.plt) *(.got)
-+		*(.plt)
- 	}
- #else
- 	.data : AT(ADDR(.data) - LOAD_OFFSET) {
-@@ -316,6 +318,16 @@ SECTIONS
- 	_end = . ;
- 	PROVIDE32 (end = .);
- 
--	/* Sections to be discarded. */
-+	STABS_DEBUG
-+
-+	DWARF_DEBUG
-+
- 	DISCARDS
-+	/DISCARD/ : {
-+		*(*.EMB.apuinfo)
-+		*(.glink .iplt .plt .rela* .comment)
-+		*(.gnu.version*)
-+		*(.gnu.attributes)
-+		*(.eh_frame)
-+	}
- }
-diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
-index 3558f4eb1a86..b38ac26a82b3 100644
---- a/include/asm-generic/vmlinux.lds.h
-+++ b/include/asm-generic/vmlinux.lds.h
-@@ -596,6 +596,7 @@
- #define SBSS(sbss_align)						\
- 	. = ALIGN(sbss_align);						\
- 	.sbss : AT(ADDR(.sbss) - LOAD_OFFSET) {				\
-+		*(.dynsbss)						\
- 		*(.sbss)						\
- 		*(.scommon)						\
- 	}
-@@ -642,11 +643,22 @@
- 		.debug_str      0 : { *(.debug_str) }			\
- 		.debug_loc      0 : { *(.debug_loc) }			\
- 		.debug_macinfo  0 : { *(.debug_macinfo) }		\
-+		.debug_pubtypes 0 : { *(.debug_pubtypes) }		\
-+		/* DWARF 3 */						\
-+		.debug_ranges	0 : { *(.debug_ranges) }		\
- 		/* SGI/MIPS DWARF 2 extensions */			\
- 		.debug_weaknames 0 : { *(.debug_weaknames) }		\
- 		.debug_funcnames 0 : { *(.debug_funcnames) }		\
- 		.debug_typenames 0 : { *(.debug_typenames) }		\
- 		.debug_varnames  0 : { *(.debug_varnames) }		\
-+		/* GNU DWARF 2 extensions */				\
-+		.debug_gnu_pubnames 0 : { *(.debug_gnu_pubnames) }	\
-+		.debug_gnu_pubtypes 0 : { *(.debug_gnu_pubtypes) }	\
-+		/* DWARF 4 */						\
-+		.debug_types	0 : { *(.debug_types) }			\
-+		/* DWARF 5 */						\
-+		.debug_macro	0 : { *(.debug_macro) }			\
-+		.debug_addr	0 : { *(.debug_addr) }
- 
- 		/* Stabs debugging sections.  */
- #define STABS_DEBUG							\
--- 
-2.11.0
+  #define spin_on_cond(cond) do { \
+    if (unlikely(!(cond))) { \
+        spin_begin(); do spin_cpu_relax(); while (!(cond)); spin_end(); \
+    } \
+  } while (0)
+
+which will actually result in better code generation even if
+spin_begin/end() are no-ops, and just generally optimizes for the
+right behavior (ie do the spinning out-of-line, since by definition it
+cannot be performance-critical after the first iteration).
+
+So it's better even when you don't really have the begin/end overhead,
+but that version of "spin_on_cond()" is then likely to work _much_
+better if you actually do have it, when your version would seem to be
+entirely unacceptable.
+
+Hmm?
+
+In fact, do you even want to make that "spin_on_cond()" version
+conditional? I don't see how an architecture can really improve on it.
+If an architecture wants to use things like "wait on this particular
+variable", then that generic "cond" version is too generic an
+interface anyway.
+
+                  Linus
