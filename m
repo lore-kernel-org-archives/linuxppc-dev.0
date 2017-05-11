@@ -1,19 +1,32 @@
-Return-Path: <schindele@nentec.de>
-Received: from dmz-mail.nentec.de (gate.nentec.de [213.218.23.37])
- by lists.ozlabs.org (Postfix) with SMTP id 3wNsxR3SQ3zDqMX
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 May 2017 22:34:33 +1000 (AEST)
-From: Juergen Schindele <schindele@nentec.de>
-To: Scott Wood <oss@buserror.net>
-Reply-To: schindele@nentec.de
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] Freescale mpc8315 interrupt chip
-Date: Thu, 11 May 2017 14:34:19 +0200
-Message-ID: <3052456.ktpuaNmngy@sherry>
-In-Reply-To: <1493931328.25397.35.camel@buserror.net>
-References: <2666241.ms6yMRjznt@sherry> <41499955.CTp69um5pn@sherry>
- <1493931328.25397.35.camel@buserror.net>
+Return-Path: <srs0=txaz=4r=suse.de=msuchanek@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wNtt25Y2lzDqNB
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 May 2017 23:16:42 +1000 (AEST)
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3wNtt24jRtz8t1T
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 May 2017 23:16:42 +1000 (AEST)
+Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3wNtt16W0cz9sDC
+ for <linuxppc-dev@ozlabs.org>; Thu, 11 May 2017 23:16:41 +1000 (AEST)
+Date: Thu, 11 May 2017 15:16:37 +0200
+From: Michal =?UTF-8?B?U3VjaMOhbmVr?= <msuchanek@suse.de>
+To: Hari Bathini <hbathini@linux.vnet.ibm.com>
+Cc: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>, linuxppc-dev
+ <linuxppc-dev@ozlabs.org>
+Subject: Re: [PATCH v5 2/2] powerpc/fadump: update documentation about
+ 'fadump_append=' parameter
+Message-ID: <20170511151637.19d4a23f@kitsune.suse.cz>
+In-Reply-To: <e1485f4d-f346-fea6-ee2a-9c7a6b2f6587@linux.vnet.ibm.com>
+References: <149383572199.1694.10940679065871920087.stgit@hbathini.in.ibm.com>
+ <149383576571.1694.13692135068122879322.stgit@hbathini.in.ibm.com>
+ <20170510180132.1fa0c1ec@kitsune.suse.cz>
+ <e1485f4d-f346-fea6-ee2a-9c7a6b2f6587@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,160 +36,90 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Next try to submit two patches for Freescale mpc8315.
+On Thu, 11 May 2017 02:00:11 +0530
+Hari Bathini <hbathini@linux.vnet.ibm.com> wrote:
 
-first one
------------------------------------------------------------------------=
-------------
-powerpc/ipic: Configure "EDGE" capabilities for IRQ0 too (like IRQ1-7)
-Signed-off-by: Jurgen Schindele <schindele@nentec.de>
-
-The external IRQ0 has the same capabilities as the other IRQ1-7 and is
-handeled by the same register IPIC_SEPNR. When this register for "ack"
-is not setup in "ipic_info" you can not configure this IRQ for
-IRQ_TYPE_EDGE_FALLING. This is probably due to the non-continued number=
-
-of IRQ0 in the Freescale hwirq number mapping.
-
---- linux-4.11/arch/powerpc/sysdev/ipic.c.orig  2017-05-11 13:40:43.874=
-801534=20
-+0200
-+++ linux-4.11/arch/powerpc/sysdev/ipic.c       2017-05-11 14:05:06.336=
-610289=20
-+0200
-@@ -315,6 +315,7 @@ static struct ipic_info ipic_info[] =3D {
-                .prio_mask =3D 7,
-        },
-        [48] =3D {
-+               .ack    =3D IPIC_SEPNR,
-                .mask   =3D IPIC_SEMSR,
-                .prio   =3D IPIC_SMPRR_A,
-                .force  =3D IPIC_SEFCR,
-
-second one
------------------------------------------------------------------------=
-------------------
-powerpc/ipic: Precise ERR printk when "ipic_set_irq_type" fails
-Signed-off-by: Jurgen Schindele <schindele@nentec.de>
-
-When you setup an interrupt of a certain type on this interrupt-control=
-er
-which is not supported on this hardware you will get an error log but y=
-ou
-dont know which interrupt was the cause.
-With this patch you are able to localize the source of failure.
-
---- linux-4.11/arch/powerpc/sysdev/ipic.c.orig  2017-05-11 14:08:07.098=
-824986=20
-+0200
-+++ linux-4.11/arch/powerpc/sysdev/ipic.c       2017-05-11 14:10:51.010=
-934755=20
-+0200
-@@ -611,14 +611,14 @@ static int ipic_set_irq_type(struct irq_
-        /* ipic supports only low assertion and high-to-low change sens=
-es
-         */
-        if (!(flow_type & (IRQ_TYPE_LEVEL_LOW | IRQ_TYPE_EDGE_FALLING))=
-) {
--               printk(KERN_ERR "ipic: sense type 0x%x not supported\n"=
-,
--                       flow_type);
-+               printk(KERN_ERR "ipic: sense type 0x%x not supported on=
- "
-+                       "interrupt %d\n", flow_type, src);
-                return -EINVAL;
-        }
-        /* ipic supports only edge mode on external interrupts */
-        if ((flow_type & IRQ_TYPE_EDGE_FALLING) && !ipic_info[src].ack)=
- {
-                printk(KERN_ERR "ipic: edge sense not supported on inte=
-rnal "
--                               "interrupts\n");
-+                               "interrupt %d\n", src);
-                return -EINVAL;
-
-        }
-
-I hope i respected all patch requirements ;-)
-Am Donnerstag, 4. Mai 2017, 15:55:28 schrieb Scott Wood:
-> On Thu, 2017-05-04 at 17:06 +0200, Juergen Schindele wrote:
-> > Am Dienstag, 2. Mai 2017, 22:29:34 schrieb Scott Wood:
-> > > On Tue, 2017-05-02 at 14:43 +0200, Juergen Schindele wrote:
-> > > > Dear Scott,
-> > > > sorry for the delay but i am not very familiar with the formati=
-ng.
-> > > > I passed the patch trough checkpatch.pl and there was no more e=
-rror.
-> > > > pease find patch in attached file.
-> > > > Thanks
-> > >=20
-> > > Documentation/process/submitting-patches.rst explains the way to =
-format
-> > > and
-> > > submit kernel patches.
-> > >=20
-> > > Also, why the unrelated change to a print statement in
-> > > ipic_set_irq_type()?
-> > >=20
-> > > -Scott
-> >=20
-> > The second diff is not completely unrelated because when i was
-> > investigating=20
-> > the problem i saw only a message "edge sense not supported" but you=
- dont
-> > know on which interrupt he is complaining about. So i added this to=
- find
-> > out=20
-> > who the suspect is.
+> Hello Michal,
 >=20
-> That's fine but it's still fixing a different problem than "irq0 setu=
-p" and
-> should be a separate patch.
+> On Wednesday 10 May 2017 09:31 PM, Michal Such=C3=A1nek wrote:
+> > Hello,
+> >
+> > On Wed, 03 May 2017 23:52:52 +0530
+> > Hari Bathini <hbathini@linux.vnet.ibm.com> wrote:
+> > =20
+> >> With the introduction of 'fadump_append=3D' parameter to pass
+> >> additional parameters to fadump (capture) kernel, update
+> >> documentation about it.
+> >>
+> >> Signed-off-by: Hari Bathini <hbathini@linux.vnet.ibm.com>
+> >> ---
+> >>
+> >> Changes from v4:
+> >> * Based on top of patchset that includes
+> >>    https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git=
+/commit/?h=3Dakpm&id=3D05f383cdfba8793240e73f9a9fbff4e25d66003f
+> >>
+> >>
+> >>   Documentation/powerpc/firmware-assisted-dump.txt |   10
+> >> +++++++++- 1 file changed, 9 insertions(+), 1 deletion(-)
+> >>
+> >> diff --git a/Documentation/powerpc/firmware-assisted-dump.txt
+> >> b/Documentation/powerpc/firmware-assisted-dump.txt index
+> >> 8394bc8..6327193 100644 ---
+> >> a/Documentation/powerpc/firmware-assisted-dump.txt +++
+> >> b/Documentation/powerpc/firmware-assisted-dump.txt @@ -162,7
+> >> +162,15 @@ How to enable firmware-assisted dump (fadump):
+> >>   1. Set config option CONFIG_FA_DUMP=3Dy and build kernel.
+> >>   2. Boot into linux kernel with 'fadump=3Don' kernel cmdline option.
+> >> -3. Optionally, user can also set 'crashkernel=3D' kernel cmdline
+> >> +3. A user can pass additional command line parameters as a comma
+> >> +   separated list through 'fadump_append=3D' parameter, to be
+> >> enforced
+> >> +   when fadump is active. For example, if parameters like
+> >> nr_cpus=3D1,
+> >> +   numa=3Doff & udev.children-max=3D2 are to be enforced when fadump
+> >> is
+> >> +   active, 'fadump_append=3Dnr_cpus=3D1,numa=3Doff,udev.children-max=
+=3D2'
+> >> +   can be passed in command line, which will be replaced with
+> >> +   "nr_cpus=3D1 numa=3Doff udev.children-max=3D2" when fadump is acti=
+ve.
+> >> +   This helps in reducing memory consumption during dump capture.
+> >> +4. Optionally, user can also set 'crashkernel=3D' kernel cmdline
+> >>      to specify size of the memory to reserve for boot memory dump
+> >>      preservation.
+> >>  =20
+> >> =20
+> > Writing your own deficient parser for comma separated arguments when
+> > perfectly fine parser for space separated quoted arguments exists in
+> > the kernel and the bootloader does not seem like a good idea to
+> > me. =20
 >=20
-> > Corrected patch
 >=20
-> Again, please read Documentation/process/submitting-patches.rst.  Pat=
-ches
-> should be inline, not attached.  The subject line should be something=
- like
-> "powerpc/ipic: Configure "EDGE" capabilities for IRQ0 (like IRQ1-7)" =
-and
-> there should be more description in the body of the changelog.
+> Couple of things that prompted me for v5 are:
+>    1. Using parse_early_options() limits the kind of parameters
+>       that can be passed to fadump capture kernel. Passing parameters
+>       like systemd.unit=3D & udev.childern.max=3D has no effect with v4.=
+=20
+> Updating
+>       boot_command_line parameter, when fadump is active, seems a
+> better alternative.
 >=20
-> -Scott
-Thanks for your hints
---=20
-i. A.
-J=FCrgen Schindele
-Softwareentwicklung
+>    2. Passing space-separated quoted arguments is not working
+>       as intended with lilo. Updating bootloader with the below
+>       entry in /etc/lilo.conf file results in a missing append
+>       entry in /etc/yaboot.conf file.
+>=20
+>         append =3D "quiet sysrq=3D1 insmod=3Dsym53c8xx insmod=3Dipr=20
+> crashkernel=3D512M-:256M fadump_append=3D\"nr_cpus=3D1 numa=3Doff=20
+> udev.children-max=3D2\""
 
-PSI Nentec GmbH
-Greschbachstra=DFe 12
-76229 Karlsruhe
-Deutschland
-Telefon: +49 721 94249-51
-Telefax: +49 721 94249-10
-schindele@nentec.de
-www.nentec.de
+Meaning that a script that emulates LILO semantics on top of yaboot
+which is completely capable of passing qouted space separated arguments
+fails. IMHO it is more reasonable to fix the script or whatever
+adaptation layer or use yaboot directly than working around bug in said
+script by introducing a new argument parser in the kernel.
 
-Gesch=E4ftsf=FChrung: Klaus Becker, Wolfgang Fischer
-Sitz der Gesellschaft: Karlsruhe
-Handelsregister: Amtsgericht Mannheim HRB 107658
+Thanks
 
-Diese E-Mail enth=E4lt vertrauliche oder rechtlich gesch=FCtzte Informa=
-tionen.=20
-Wenn Sie nicht der vorgesehene Empf=E4nger sind, informieren Sie bitte =
-sofort=20
-den Absender und l=F6schen Sie diese E-Mail. Das unbefugte Kopieren die=
-ser E-
-Mail oder die unbefugte Weitergabe der enthaltenen Informationen ist ni=
-cht=20
-gestattet.
-
-The information contained in this message is confidential or protected =
-by law.=20
-If you are not the intended recipient, please contact the sender and de=
-lete=20
-this message. Any unauthorised copying of this message or unauthorised=20=
-
-distribution of the information contained herein is prohibited. 
+Michal
