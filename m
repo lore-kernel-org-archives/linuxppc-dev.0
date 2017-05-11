@@ -2,49 +2,51 @@ Return-Path: <srs0=ltoi=4r=linux.vnet.ibm.com=mahesh@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wNjXY2G5XzDqLg
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 May 2017 16:15:57 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wNjY22XSqzDqbB
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 May 2017 16:16:22 +1000 (AEST)
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3wNjXY1dXbz8t1b
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 May 2017 16:15:57 +1000 (AEST)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3wNjY21xSGz8t1b
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 May 2017 16:16:22 +1000 (AEST)
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3wNjXX57K9z9sCZ
- for <linuxppc-dev@ozlabs.org>; Thu, 11 May 2017 16:15:55 +1000 (AEST)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v4B694xN131598
- for <linuxppc-dev@ozlabs.org>; Thu, 11 May 2017 02:15:53 -0400
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2ac7me1cd2-1
+ by ozlabs.org (Postfix) with ESMTPS id 3wNjY15HPwz9sCZ
+ for <linuxppc-dev@ozlabs.org>; Thu, 11 May 2017 16:16:21 +1000 (AEST)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v4B69Bdw153252
+ for <linuxppc-dev@ozlabs.org>; Thu, 11 May 2017 02:16:19 -0400
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2acf1afwrs-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Thu, 11 May 2017 02:15:53 -0400
+ for <linuxppc-dev@ozlabs.org>; Thu, 11 May 2017 02:16:19 -0400
 Received: from localhost
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
- Thu, 11 May 2017 16:15:50 +1000
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v4B6FfLs32637038
- for <linuxppc-dev@ozlabs.org>; Thu, 11 May 2017 16:15:49 +1000
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v4B6FA7Z029587
- for <linuxppc-dev@ozlabs.org>; Thu, 11 May 2017 16:15:10 +1000
-Subject: [PATCH v9 0/3] KVM: PPC: Add FWNMI support for KVM guests on POWER
+ Thu, 11 May 2017 16:16:16 +1000
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v4B6G5uX4981096
+ for <linuxppc-dev@ozlabs.org>; Thu, 11 May 2017 16:16:13 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v4B6FYXg014150
+ for <linuxppc-dev@ozlabs.org>; Thu, 11 May 2017 16:15:35 +1000
+Subject: [PATCH v9 1/3] KVM: PPC: Add new capability to control MCE behaviour
 From: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
 To: gleb@kernel.org, agraf@suse.de, kvm-ppc@vger.kernel.org,
  linuxppc-dev <linuxppc-dev@ozlabs.org>,
  Paul Mackerras <paulus@samba.org>, pbonzini@redhat.com
 Cc: Michael Ellerman <mpe@ellerman.id.au>, kvm@vger.kernel.org,
  david@gibson.dropbear.id.au
-Date: Thu, 11 May 2017 11:44:52 +0530
+Date: Thu, 11 May 2017 11:45:22 +0530
+In-Reply-To: <149448323691.12206.11861424815113458031.stgit@jupiter.in.ibm.com>
+References: <149448323691.12206.11861424815113458031.stgit@jupiter.in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Message-Id: <149448323691.12206.11861424815113458031.stgit@jupiter.in.ibm.com>
+Message-Id: <149448332189.12206.5811614133100561669.stgit@jupiter.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -56,79 +58,115 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Aravinda Prasad <aravinda@linux.vnet.ibm.com>
 
-This series of patches add FWNMI support for KVM guests
-on POWER.
+This patch introduces a new KVM capability to control
+how KVM behaves on machine check exception (MCE).
+Without this capability, KVM redirects machine check
+exceptions to guest's 0x200 vector, if the address in
+error belongs to the guest. With this capability KVM
+causes a guest exit with NMI exit reason.
 
-Memory errors such as bit flips that cannot be corrected
-by hardware is passed on to the kernel for handling
-by raising machine check exception (an NMI). Upon such
-machine check exceptions, if the address in error belongs
-to the guest, the error is passed on to the guest
-kernel for handling. However, for guest kernels that
-have issued "ibm,nmi-register" call, QEMU should build
-an error log and pass on the error log to the guest-
-kernel registered machine check handler routine.
+The new capability is required to avoid problems if
+a new kernel/KVM is used with an old QEMU for guests
+that don't issue "ibm,nmi-register". As old QEMU does
+not understand the NMI exit type, it treats it as a
+fatal error. However, the guest could have handled
+the machine check error if the exception was delivered
+to guest's 0x200 interrupt vector instead of NMI exit
+in case of old QEMU.
 
-This patch series adds the functionality to pass on the
-machine check exception to the guest kernel by
-giving control to QEMU. QEMU builds the error log
-and invokes the guest-kernel registered handler.
-
-QEMU part can be found at:
-http://lists.nongnu.org/archive/html/qemu-ppc/2015-12/msg00199.html
-
-Change Log v9:
-  - Rebase to latest upstream.
-
-Change Log v8:
-  - export symbol machine_check_print_event_info() and directly call it
-    from kvmppc_handle_exit_hv().
-
-Change Log v7:
-  - Move the FWNMI capability inside #ifdef CONFIG_PPC_BOOK3S_64 block.
-  - Split 2nd patch into two, one that adds mce hook and other that touches
-    kvm code.
-
-Change Log v6:
-  - Deliver all MCE errors (handled/unhandled) for FWNMI capable guest.
-  - Use kvm_run->flags to pass NMI disposition status.
-
-Change Log v5:
-  - Added capability documentation. No functionality/code change.
-
-Change Log v4:
-  - Allow host-side handling of the machine check exception before
-    passing on the exception to the guest.
-
-Change Log v3:
-  - Split the patch into 2. First patch introduces the
-    new capability while the second one enhances KVM to
-    redirect MCE.
-  - Fix access width bug
-
-Change Log v2:
-  - Added KVM capability
+Signed-off-by: Aravinda Prasad <aravinda@linux.vnet.ibm.com>
+Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
+Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
 ---
+ Documentation/virtual/kvm/api.txt   |   11 +++++++++++
+ arch/powerpc/include/asm/kvm_host.h |    1 +
+ arch/powerpc/kernel/asm-offsets.c   |    1 +
+ arch/powerpc/kvm/powerpc.c          |    9 +++++++++
+ include/uapi/linux/kvm.h            |    1 +
+ 5 files changed, 23 insertions(+)
 
-Aravinda Prasad (2):
-      KVM: PPC: Add new capability to control MCE behaviour
-      KVM: PPC: Exit guest upon MCE when FWNMI capability is enabled
-
-Mahesh Salgaonkar (1):
-      powerpc/book3s: EXPORT_SYMBOL machine_check_print_event_info
-
-
- Documentation/virtual/kvm/api.txt       |   11 +++++++
- arch/powerpc/include/asm/kvm_host.h     |    3 ++
- arch/powerpc/include/uapi/asm/kvm.h     |    6 ++++
- arch/powerpc/kernel/asm-offsets.c       |    1 +
- arch/powerpc/kernel/mce.c               |    1 +
- arch/powerpc/kvm/book3s_hv.c            |   23 ++++++++------
- arch/powerpc/kvm/book3s_hv_ras.c        |   18 ++++++++++-
- arch/powerpc/kvm/book3s_hv_rmhandlers.S |   52 ++++++++++++++++++-------------
- arch/powerpc/kvm/powerpc.c              |    9 +++++
- include/uapi/linux/kvm.h                |    1 +
- 10 files changed, 93 insertions(+), 32 deletions(-)
-
---
-Signature
+diff --git a/Documentation/virtual/kvm/api.txt b/Documentation/virtual/kvm/api.txt
+index 4029943..3cdf203 100644
+--- a/Documentation/virtual/kvm/api.txt
++++ b/Documentation/virtual/kvm/api.txt
+@@ -3996,6 +3996,17 @@ Parameters: none
+ Allow use of adapter-interruption suppression.
+ Returns: 0 on success; -EBUSY if a VCPU has already been created.
+ 
++7.11 KVM_CAP_PPC_FWNMI
++
++Architectures: ppc
++Parameters: none
++
++With this capability a machine check exception in the guest address
++space will cause KVM to exit the guest with NMI exit reason. This
++enables QEMU to build error log and branch to guest kernel registered
++machine check handling routine. Without this capability KVM will
++branch to guests' 0x200 interrupt vector.
++
+ 8. Other capabilities.
+ ----------------------
+ 
+diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
+index 77c6082..fad522d 100644
+--- a/arch/powerpc/include/asm/kvm_host.h
++++ b/arch/powerpc/include/asm/kvm_host.h
+@@ -284,6 +284,7 @@ struct kvm_arch {
+ 	struct dentry *debugfs_dir;
+ 	struct dentry *htab_dentry;
+ 	struct kvm_resize_hpt *resize_hpt; /* protected by kvm->lock */
++	u8 fwnmi_enabled;
+ #endif /* CONFIG_KVM_BOOK3S_HV_POSSIBLE */
+ #ifdef CONFIG_KVM_BOOK3S_PR_POSSIBLE
+ 	struct mutex hpt_mutex;
+diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
+index 439c257..6f742af 100644
+--- a/arch/powerpc/kernel/asm-offsets.c
++++ b/arch/powerpc/kernel/asm-offsets.c
+@@ -485,6 +485,7 @@ int main(void)
+ 	OFFSET(KVM_ENABLED_HCALLS, kvm, arch.enabled_hcalls);
+ 	OFFSET(KVM_VRMA_SLB_V, kvm, arch.vrma_slb_v);
+ 	OFFSET(KVM_RADIX, kvm, arch.radix);
++	OFFSET(KVM_FWNMI, kvm, arch.fwnmi_enabled);
+ 	OFFSET(VCPU_DSISR, kvm_vcpu, arch.shregs.dsisr);
+ 	OFFSET(VCPU_DAR, kvm_vcpu, arch.shregs.dar);
+ 	OFFSET(VCPU_VPA, kvm_vcpu, arch.vpa.pinned_addr);
+diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
+index 1ee22a9..3400477 100644
+--- a/arch/powerpc/kvm/powerpc.c
++++ b/arch/powerpc/kvm/powerpc.c
+@@ -616,6 +616,9 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
+ 		/* Disable this on POWER9 until code handles new HPTE format */
+ 		r = !!hv_enabled && !cpu_has_feature(CPU_FTR_ARCH_300);
+ 		break;
++	case KVM_CAP_PPC_FWNMI:
++		r = 1;
++		break;
+ #endif
+ 	case KVM_CAP_PPC_HTM:
+ 		r = cpu_has_feature(CPU_FTR_TM_COMP) &&
+@@ -1529,6 +1532,12 @@ static int kvm_vcpu_ioctl_enable_cap(struct kvm_vcpu *vcpu,
+ 		break;
+ 	}
+ #endif /* CONFIG_KVM_XICS */
++#ifdef CONFIG_PPC_BOOK3S_64
++	case KVM_CAP_PPC_FWNMI:
++		r = 0;
++		vcpu->kvm->arch.fwnmi_enabled = true;
++		break;
++#endif /* CONFIG_PPC_BOOK3S_64 */
+ 	default:
+ 		r = -EINVAL;
+ 		break;
+diff --git a/include/uapi/linux/kvm.h b/include/uapi/linux/kvm.h
+index 577429a..89bc145 100644
+--- a/include/uapi/linux/kvm.h
++++ b/include/uapi/linux/kvm.h
+@@ -895,6 +895,7 @@ struct kvm_ppc_resize_hpt {
+ #define KVM_CAP_SPAPR_TCE_VFIO 142
+ #define KVM_CAP_X86_GUEST_MWAIT 143
+ #define KVM_CAP_ARM_USER_IRQ 144
++#define KVM_CAP_PPC_FWNMI 145
+ 
+ #ifdef KVM_CAP_IRQ_ROUTING
+ 
