@@ -1,25 +1,29 @@
-Return-Path: <mhocko@kernel.org>
-Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
+Return-Path: <tglx@linutronix.de>
+Received: from Galois.linutronix.de (Galois.linutronix.de
+ [IPv6:2a01:7a0:2:106d:700::1])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wNlzD4nW4zDqML
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 May 2017 18:05:44 +1000 (AEST)
-Date: Thu, 11 May 2017 10:05:38 +0200
-From: Michal Hocko <mhocko@kernel.org>
-To: David Miller <davem@davemloft.net>
-Cc: pasha.tatashin@oracle.com, linux-kernel@vger.kernel.org,
- sparclinux@vger.kernel.org, linux-mm@kvack.org,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- borntraeger@de.ibm.com, heiko.carstens@de.ibm.com
-Subject: Re: [v3 0/9] parallelized "struct page" zeroing
-Message-ID: <20170511080537.GE26782@dhcp22.suse.cz>
-References: <20170510072419.GC31466@dhcp22.suse.cz>
- <3f5f1416-aa91-a2ff-cc89-b97fcaa3e4db@oracle.com>
- <20170510145726.GM31466@dhcp22.suse.cz>
- <20170510.111943.1940354761418085760.davem@davemloft.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wNmkD3sgBzDqLg
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 May 2017 18:39:32 +1000 (AEST)
+Date: Thu, 11 May 2017 10:39:10 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+cc: Anju T Sudhakar <anju@linux.vnet.ibm.com>, stewart@linux.vnet.ibm.com,
+ ego@linux.vnet.ibm.com, mikey@neuling.org, maddy@linux.vnet.ibm.com,
+ Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>,
+ eranian@google.com, hemant@linux.vnet.ibm.com,
+ Anton Blanchard <anton@samba.org>, sukadev@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, dja@axtens.net
+Subject: Re: [PATCH v8 05/10] powerpc/perf: IMC pmu cpumask and cpuhotplug
+ support
+In-Reply-To: <20170511094022.38a32f2e@canb.auug.org.au>
+Message-ID: <alpine.DEB.2.20.1705111033500.1758@nanos>
+References: <1493907596-11425-1-git-send-email-anju@linux.vnet.ibm.com>
+ <1493907596-11425-6-git-send-email-anju@linux.vnet.ibm.com>
+ <alpine.DEB.2.20.1705101116380.1979@nanos>
+ <20170511094022.38a32f2e@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170510.111943.1940354761418085760.davem@davemloft.net>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,34 +33,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed 10-05-17 11:19:43, David S. Miller wrote:
-> From: Michal Hocko <mhocko@kernel.org>
-> Date: Wed, 10 May 2017 16:57:26 +0200
-> 
-> > Have you measured that? I do not think it would be super hard to
-> > measure. I would be quite surprised if this added much if anything at
-> > all as the whole struct page should be in the cache line already. We do
-> > set reference count and other struct members. Almost nobody should be
-> > looking at our page at this time and stealing the cache line. On the
-> > other hand a large memcpy will basically wipe everything away from the
-> > cpu cache. Or am I missing something?
-> 
-> I guess it might be clearer if you understand what the block
-> initializing stores do on sparc64.  There are no memory accesses at
-> all.
-> 
-> The cpu just zeros out the cache line, that's it.
-> 
-> No L3 cache line is allocated.  So this "wipe everything" behavior
-> will not happen in the L3.
+On Thu, 11 May 2017, Stephen Rothwell wrote:
 
-OK, good to know. My undestanding of sparc64 is close to zero.
+> Hi,
+> 
+> On Wed, 10 May 2017 14:09:53 +0200 (CEST) Thomas Gleixner <tglx@linutronix.de> wrote:
+> >
+> > > +static void nest_change_cpu_context(int old_cpu, int new_cpu)
+> > > +{
+> > > +	int i;
+> > > +
+> > > +	for (i = 0;
+> > > +	     (per_nest_pmu_arr[i] != NULL) && (i < IMC_MAX_PMUS); i++)
+> > > +		perf_pmu_migrate_context(&per_nest_pmu_arr[i]->pmu,
+> > > +							old_cpu, new_cpu);  
+> > 
+> > Bah, this is horrible to read.
+> > 
+> > 	struct imc_pmu **pn = per_nest_pmu_arr;
+> > 	int i;
+> > 
+> > 	for (i = 0; *pn && i < IMC_MAX_PMUS; i++, pn++)
+> > 		perf_pmu_migrate_context(&(*pn)->pmu, old_cpu, new_cpu);
+> 
+> (Just a bit of bike shedding ...)
+> 
+> Or even (since "i" is not used any more):
+> 
+> 	struct imc_pmu **pn;
+> 
+> 	for (pn = per_nest_pmu_arr;
+> 	     pn < &per_nest_pmu_arr[IMC_MAX_PMUS] && *pn;
+> 	     pn++)
+> 		perf_pmu_migrate_context(&(*pn)->pmu, old_cpu, new_cpu);
 
-Anyway, do you agree that doing the struct page initialization along
-with other writes to it shouldn't add a measurable overhead comparing
-to pre-zeroing of larger block of struct pages?  We already have an
-exclusive cache line and doing one 64B write along with few other stores
-should be basically the same.
--- 
-Michal Hocko
-SUSE Labs
+Which is equally unreadable as the original code I complained about. Is that
+a corporate preference?
+
+Thanks,
+
+	tglx
