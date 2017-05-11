@@ -1,50 +1,24 @@
-Return-Path: <srs0=8qzd=4r=linux.vnet.ibm.com=hbathini@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
+ [IPv6:2607:f8b0:400e:c00::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wP32z4N4szDqfm
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 May 2017 05:24:59 +1000 (AEST)
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3wP32z3sKbz8sx7
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 May 2017 05:24:59 +1000 (AEST)
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3wP32y6ppnz9s3s
- for <linuxppc-dev@ozlabs.org>; Fri, 12 May 2017 05:24:58 +1000 (AEST)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v4BJO6hK140470
- for <linuxppc-dev@ozlabs.org>; Thu, 11 May 2017 15:24:56 -0400
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2actxtfxpn-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Thu, 11 May 2017 15:24:56 -0400
-Received: from localhost
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <hbathini@linux.vnet.ibm.com>;
- Fri, 12 May 2017 05:24:53 +1000
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v4BJOg7t5177776
- for <linuxppc-dev@ozlabs.org>; Fri, 12 May 2017 05:24:50 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v4BJOGFs026608
- for <linuxppc-dev@ozlabs.org>; Fri, 12 May 2017 05:24:17 +1000
-Subject: [PATCH v2 3/3] powerpc/fadump: provide a helpful error message
-From: Hari Bathini <hbathini@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Pingfan Liu <piliu@redhat.com>,
- Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
-Date: Fri, 12 May 2017 00:53:58 +0530
-In-Reply-To: <149453053109.32468.3382678673815454269.stgit@hbathini.in.ibm.com>
-References: <149453053109.32468.3382678673815454269.stgit@hbathini.in.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wP3592xhLzDqdy
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 May 2017 05:26:53 +1000 (AEST)
+Received: by mail-pf0-x241.google.com with SMTP id n23so3184822pfb.3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 May 2017 12:26:53 -0700 (PDT)
+Date: Fri, 12 May 2017 05:26:35 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>, ppc-dev
+ <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [PATCH] spin loop primitives for busy waiting
+Message-ID: <20170512052613.55817b1a@roar.ozlabs.ibm.com>
+In-Reply-To: <CA+55aFzS9ENQnRoTbLMd_nFwwjuU+s9yj0tZcLSYDDjnwqTKrg@mail.gmail.com>
+References: <20170511165727.17847-1-npiggin@gmail.com>
+ <CA+55aFzS9ENQnRoTbLMd_nFwwjuU+s9yj0tZcLSYDDjnwqTKrg@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Message-Id: <149453062910.32468.5568998057663345872.stgit@hbathini.in.ibm.com>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -54,70 +28,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-fadump fails to register when there are holes in boot memory area.
-Provide a helpful error message to the user in such case.
+On Thu, 11 May 2017 11:47:47 -0700
+Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-Signed-off-by: Hari Bathini <hbathini@linux.vnet.ibm.com>
----
+> On Thu, May 11, 2017 at 9:57 AM, Nicholas Piggin <npiggin@gmail.com> wrote:
+> >
+> > If you find this acceptable, I'd like to start wiring in the powerpc
+> > and adding the annotations to some important core spin loops (there's
+> > not too many really). I'm hoping if you take this patch during this
+> > merge window, I'll be able to start sending small patches to maintainers
+> > for the next window. Unless you have a better suggestion for how to
+> > deal with this.  
+> 
+> This looks fine to me as an interface, and yes, I guess I can just
+> take this scaffolding as-is.
+> 
+> The one question I have is about "spin_on_cond()": since you
+> explicitly document that the "no spinning" case is expected to be the
+> default, I really think that the default implementation should be
+> along the lines if
+> 
+>   #define spin_on_cond(cond) do { \
+>     if (unlikely(!(cond))) { \
+>         spin_begin(); do spin_cpu_relax(); while (!(cond)); spin_end(); \
+>     } \
+>   } while (0)
+> 
+> which will actually result in better code generation even if
+> spin_begin/end() are no-ops, and just generally optimizes for the
+> right behavior (ie do the spinning out-of-line, since by definition it
+> cannot be performance-critical after the first iteration).
+> 
+> So it's better even when you don't really have the begin/end overhead,
+> but that version of "spin_on_cond()" is then likely to work _much_
+> better if you actually do have it, when your version would seem to be
+> entirely unacceptable.
+> 
+> Hmm?
 
-Changes since v1:
-* Introducing this patch to provide better error message on failure.
+I agree completely. But might it depend on architecture and so
+just be something they could do themselves?
 
+> In fact, do you even want to make that "spin_on_cond()" version
+> conditional? I don't see how an architecture can really improve on it.
+> If an architecture wants to use things like "wait on this particular
+> variable", then that generic "cond" version is too generic an
+> interface anyway.
 
- arch/powerpc/kernel/fadump.c |   36 ++++++++++++++++++++++++++++++++++++
- 1 file changed, 36 insertions(+)
+So what I want is to be able to have architectures control the entire
+loop, and you can do some interesting things with goto labels and
+coding branches how you want them.
 
-diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
-index 4ba7db9..b1aaa8d 100644
---- a/arch/powerpc/kernel/fadump.c
-+++ b/arch/powerpc/kernel/fadump.c
-@@ -130,6 +130,38 @@ int is_fadump_active(void)
- 	return fw_dump.dump_active;
- }
- 
-+/*
-+ * Returns 1, if there are no holes in boot memory area,
-+ * 0 otherwise.
-+ */
-+static int is_boot_memory_area_contiguous(void)
-+{
-+	struct memblock_region *reg;
-+	unsigned long tstart, tend;
-+	unsigned long start_pfn = PHYS_PFN(RMA_START);
-+	unsigned long end_pfn = PHYS_PFN(RMA_START + fw_dump.boot_memory_size);
-+	unsigned int ret = 0;
-+
-+	for_each_memblock(memory, reg) {
-+		tstart = max(start_pfn, memblock_region_memory_base_pfn(reg));
-+		tend = min(end_pfn, memblock_region_memory_end_pfn(reg));
-+		if (tstart < tend) {
-+			/* Memory hole from start_pfn to tstart */
-+			if (tstart > start_pfn)
-+				break;
-+
-+			if (tend == end_pfn) {
-+				ret = 1;
-+				break;
-+			}
-+
-+			start_pfn = tend + 1;
-+		}
-+	}
-+
-+	return ret;
-+}
-+
- /* Print firmware assisted dump configurations for debugging purpose. */
- static void fadump_show_config(void)
- {
-@@ -414,6 +446,10 @@ static void register_fw_dump(struct fadump_mem_struct *fdm)
- 			" dump. Hardware Error(%d).\n", rc);
- 		break;
- 	case -3:
-+		if (!is_boot_memory_area_contiguous())
-+			pr_err("Can't have holes in boot memory area while "
-+			       "registering fadump\n");
-+
- 		printk(KERN_ERR "Failed to register firmware-assisted kernel"
- 			" dump. Parameter Error(%d).\n", rc);
- 		break;
+That was my motivation for doing the previous weird spin_do {} spin_while()
+interface. But since you didn't like it, and I realized that kind of
+control probably only matters for a very small subset of spin loops
+(e.g., bit spinlock/seqlock, some idle loops in the scheduler, etc. that
+do just tend to spin on a quite simple condition).
+
+For example, if you sent the branch prediction to statically predict
+the loop exits, then instead of taking a branch miss the first thing
+you do when your lock gets freed, you will be doing useful instructions.
+
+I haven't verified and done enough analysis yet to know if that's going
+to be worthwhile yet, but I thought for some of those simple spins, it's
+a nicer interface than the begin/relax/end.
+
+Thanks,
+Nick
