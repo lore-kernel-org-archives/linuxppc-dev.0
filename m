@@ -1,18 +1,18 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
- [IPv6:2607:f8b0:400e:c05::242])
+Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
+ [IPv6:2607:f8b0:400e:c05::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wNyRJ34fhzDqZb
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 May 2017 01:57:16 +1000 (AEST)
-Received: by mail-pg0-x242.google.com with SMTP id s62so4058044pgc.0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 May 2017 08:57:16 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wNyRM6HJyzDqZX
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 May 2017 01:57:19 +1000 (AEST)
+Received: by mail-pg0-x241.google.com with SMTP id u187so4042166pgb.1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 May 2017 08:57:19 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Nicholas Piggin <npiggin@gmail.com>
-Subject: [PATCH 2/5] powerpc/64: do not link crtsavres.o in vmlinux
-Date: Fri, 12 May 2017 01:56:49 +1000
-Message-Id: <20170511155652.8287-3-npiggin@gmail.com>
+Subject: [PATCH 3/5] powerpc/64: do not link crtsaveres.o in boot
+Date: Fri, 12 May 2017 01:56:50 +1000
+Message-Id: <20170511155652.8287-4-npiggin@gmail.com>
 In-Reply-To: <20170511155652.8287-1-npiggin@gmail.com>
 References: <20170511155652.8287-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,34 +24,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The 64-bit linker creates save/restore functions on demand with final
-links, so vmlinux does not require crtsavres.o.
-
-Make crtsavres.o extra-y on 64-bit (it is still required by modules).
+crtsaveres.S is empty with 64-bit builds already, so just don't
+build and link it to match the vmlinux build.
 
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/lib/Makefile | 8 ++++++--
- 1 file changed, 6 insertions(+), 2 deletions(-)
+ arch/powerpc/boot/Makefile    | 3 ++-
+ arch/powerpc/boot/crtsavres.S | 8 ++++----
+ 2 files changed, 6 insertions(+), 5 deletions(-)
 
-diff --git a/arch/powerpc/lib/Makefile b/arch/powerpc/lib/Makefile
-index ed7dfce331e0..0ca405a27ac1 100644
---- a/arch/powerpc/lib/Makefile
-+++ b/arch/powerpc/lib/Makefile
-@@ -9,8 +9,12 @@ ccflags-$(CONFIG_PPC64)	:= $(NO_MINIMAL_TOC)
- CFLAGS_REMOVE_code-patching.o = $(CC_FLAGS_FTRACE)
- CFLAGS_REMOVE_feature-fixups.o = $(CC_FLAGS_FTRACE)
+diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
+index e82f333cc84a..305d4d6b0ce0 100644
+--- a/arch/powerpc/boot/Makefile
++++ b/arch/powerpc/boot/Makefile
+@@ -95,13 +95,14 @@ libfdtheader := fdt.h libfdt.h libfdt_internal.h
+ $(addprefix $(obj)/,$(libfdt) libfdt-wrapper.o simpleboot.o epapr.o opal.o): \
+ 	$(addprefix $(obj)/,$(libfdtheader))
  
--obj-y += string.o alloc.o crtsavres.o code-patching.o \
--	 feature-fixups.o
-+obj-y += string.o alloc.o code-patching.o feature-fixups.o
+-src-wlib-y := string.S crt0.S crtsavres.S stdio.c decompress.c main.c \
++src-wlib-y := string.S crt0.S stdio.c decompress.c main.c \
+ 		$(libfdt) libfdt-wrapper.c \
+ 		ns16550.c serial.c simple_alloc.c div64.S util.S \
+ 		elf_util.c $(zlib-y) devtree.c stdlib.c \
+ 		oflib.c ofconsole.c cuboot.c mpsc.c cpm-serial.c \
+ 		uartlite.c mpc52xx-psc.c opal.c
+ src-wlib-$(CONFIG_PPC64_BOOT_WRAPPER) +=  opal-calls.S
++src-wlib-$(CONFIG_PPC32) += crtsavres.S
+ src-wlib-$(CONFIG_40x) += 4xx.c planetcore.c
+ src-wlib-$(CONFIG_44x) += 4xx.c ebony.c bamboo.c
+ src-wlib-$(CONFIG_8xx) += mpc8xx.c planetcore.c fsl-soc.c
+diff --git a/arch/powerpc/boot/crtsavres.S b/arch/powerpc/boot/crtsavres.S
+index f3d9b35c07d4..085fb2b9a8b8 100644
+--- a/arch/powerpc/boot/crtsavres.S
++++ b/arch/powerpc/boot/crtsavres.S
+@@ -37,12 +37,13 @@
+  *    the executable file might be covered by the GNU General Public License.
+  */
+ 
++#ifdef __powerpc64__
++#error "On PPC64, FPR save/restore functions are provided by the linker."
++#endif
 +
-+# 64-bit linker creates .sfpr on demand for final link (vmlinux),
-+# so it is only needed for modules.
-+obj-$(CONFIG_PPC32) += crtsavres.o
-+extra-$(CONFIG_PPC64) += crtsavres.o
+ 	.file	"crtsavres.S"
+ 	.section ".text"
  
- obj-$(CONFIG_PPC32)	+= div64.o copy_32.o
- 
+-/* On PowerPC64 Linux, these functions are provided by the linker.  */
+-#ifndef __powerpc64__
+-
+ #define _GLOBAL(name) \
+ 	.type name,@function; \
+ 	.globl name; \
+@@ -230,4 +231,3 @@ _GLOBAL(_rest32gpr_31_x)
+ 	mtlr	0
+ 	mr	1,11
+ 	blr
+-#endif
 -- 
 2.11.0
