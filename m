@@ -1,27 +1,23 @@
-Return-Path: <srs0=1k7u=4s=gmail.com=bsingharora@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wPJcS1cG6zDqbx
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 May 2017 15:36:24 +1000 (AEST)
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3wPJcS0vflz8t3p
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 May 2017 15:36:24 +1000 (AEST)
-Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
- [IPv6:2607:f8b0:400e:c00::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3wPJcR0yqPz9s7B
- for <linuxppc-dev@ozlabs.org>; Fri, 12 May 2017 15:36:23 +1000 (AEST)
-Received: by mail-pf0-x243.google.com with SMTP id u26so5767363pfd.2
- for <linuxppc-dev@ozlabs.org>; Thu, 11 May 2017 22:36:23 -0700 (PDT)
-From: Balbir Singh <bsingharora@gmail.com>
-To: mpe@ellerman.id.au
-Cc: linuxppc-dev@ozlabs.org,
-	Balbir Singh <bsingharora@gmail.com>
-Subject: [PATCH] powerpc/configs: Turn CONFIG_RELOCATABLE on by default
-Date: Fri, 12 May 2017 15:36:09 +1000
-Message-Id: <20170512053609.32514-1-bsingharora@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wPJfM329zzDqL8
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 May 2017 15:38:03 +1000 (AEST)
+Subject: Re: [PATCH 3/3] powerpc/8xx: xmon compile fix
+To: Nicholas Piggin <npiggin@gmail.com>
+References: <20170511151522.4772-1-npiggin@gmail.com>
+ <20170511151522.4772-3-npiggin@gmail.com>
+ <b84f2d89-fc2f-d25f-1871-8fcd7b133fcf@c-s.fr>
+ <fdb9e787-e397-a46e-467c-066d51d73131@c-s.fr>
+ <20170512104707.5393eaa1@roar.ozlabs.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Scott Wood <oss@buserror.net>
+From: Christophe LEROY <christophe.leroy@c-s.fr>
+Message-ID: <9e378829-ec48-4f4f-1b29-2e9d9ae2d5ed@c-s.fr>
+Date: Fri, 12 May 2017 07:37:58 +0200
+MIME-Version: 1.0
+In-Reply-To: <20170512104707.5393eaa1@roar.ozlabs.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,54 +27,78 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On powernv/pseries and ppc64 defconfigs
 
-Most distros will want it on by default and I've missed
-turning it on during developer testing. Having it on ensures
-we are testing our patches with the config enabled.
 
-Signed-off-by: Balbir Singh <bsingharora@gmail.com>
----
- arch/powerpc/configs/powernv_defconfig | 1 +
- arch/powerpc/configs/ppc64_defconfig   | 1 +
- arch/powerpc/configs/pseries_defconfig | 1 +
- 3 files changed, 3 insertions(+)
+Le 12/05/2017 à 02:47, Nicholas Piggin a écrit :
+> On Thu, 11 May 2017 20:52:56 +0200
+> christophe leroy <christophe.leroy@c-s.fr> wrote:
+>
+>> Le 11/05/2017 à 19:14, christophe leroy a écrit :
+>>>
+>>>
+>>> Le 11/05/2017 à 17:15, Nicholas Piggin a écrit :
+>>>> Cc: Scott Wood <oss@buserror.net>
+>>>> Cc: Christophe Leroy <christophe.leroy@c-s.fr>
+>>>> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+>>>> ---
+>>>>  arch/powerpc/xmon/xmon.c | 5 ++++-
+>>>>  1 file changed, 4 insertions(+), 1 deletion(-)
+>>>>
+>>>> diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
+>>>> index f11f65634aab..ec420b0e6e88 100644
+>>>> --- a/arch/powerpc/xmon/xmon.c
+>>>> +++ b/arch/powerpc/xmon/xmon.c
+>>>> @@ -1242,10 +1242,13 @@ bpt_cmds(void)
+>>>>  {
+>>>>      int cmd;
+>>>>      unsigned long a;
+>>>> -    int mode, i;
+>>>> +    int i;
+>>>>      struct bpt *bp;
+>>>> +#ifndef CONFIG_8xx
+>>>
+>>> Would be better to use CONFIG_PPC_8xx
+>>>
+>>> As stated in arch/powerpc/platform/Kconfig.cputype, CONFIG_8xx is temp
+>>> to handle compat with arch/ppc, and we are trying to get rid of it
+>>
+>> I had the same comment in https://patchwork.ozlabs.org/patch/700354/
+>> I also suggested to move the relevant declarations inside the switch()
+>
+> How's this one?
 
-diff --git a/arch/powerpc/configs/powernv_defconfig b/arch/powerpc/configs/powernv_defconfig
-index 0695ce0..eca7189 100644
---- a/arch/powerpc/configs/powernv_defconfig
-+++ b/arch/powerpc/configs/powernv_defconfig
-@@ -52,6 +52,7 @@ CONFIG_PPC_TRANSACTIONAL_MEM=y
- CONFIG_HOTPLUG_CPU=y
- CONFIG_KEXEC=y
- CONFIG_KEXEC_FILE=y
-+CONFIG_RELOCATABLE=y
- CONFIG_IRQ_ALL_CPUS=y
- CONFIG_NUMA=y
- CONFIG_MEMORY_HOTPLUG=y
-diff --git a/arch/powerpc/configs/ppc64_defconfig b/arch/powerpc/configs/ppc64_defconfig
-index 5175028..ba30841 100644
---- a/arch/powerpc/configs/ppc64_defconfig
-+++ b/arch/powerpc/configs/ppc64_defconfig
-@@ -49,6 +49,7 @@ CONFIG_BINFMT_MISC=m
- CONFIG_PPC_TRANSACTIONAL_MEM=y
- CONFIG_KEXEC=y
- CONFIG_KEXEC_FILE=y
-+CONFIG_RELOCATABLE=y
- CONFIG_CRASH_DUMP=y
- CONFIG_IRQ_ALL_CPUS=y
- CONFIG_MEMORY_HOTREMOVE=y
-diff --git a/arch/powerpc/configs/pseries_defconfig b/arch/powerpc/configs/pseries_defconfig
-index 1a61aa2..54954b6 100644
---- a/arch/powerpc/configs/pseries_defconfig
-+++ b/arch/powerpc/configs/pseries_defconfig
-@@ -55,6 +55,7 @@ CONFIG_BINFMT_MISC=m
- CONFIG_PPC_TRANSACTIONAL_MEM=y
- CONFIG_KEXEC=y
- CONFIG_KEXEC_FILE=y
-+CONFIG_RELOCATABLE=y
- CONFIG_IRQ_ALL_CPUS=y
- CONFIG_MEMORY_HOTPLUG=y
- CONFIG_MEMORY_HOTREMOVE=y
--- 
-2.9.3
+Looks good.
+
+Christophe
+
+>
+> ---
+>  arch/powerpc/xmon/xmon.c | 10 ++++++----
+>  1 file changed, 6 insertions(+), 4 deletions(-)
+>
+> diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
+> index f11f65634aab..438fdb0fb142 100644
+> --- a/arch/powerpc/xmon/xmon.c
+> +++ b/arch/powerpc/xmon/xmon.c
+> @@ -1242,14 +1242,16 @@ bpt_cmds(void)
+>  {
+>  	int cmd;
+>  	unsigned long a;
+> -	int mode, i;
+> +	int i;
+>  	struct bpt *bp;
+> -	const char badaddr[] = "Only kernel addresses are permitted "
+> -		"for breakpoints\n";
+>
+>  	cmd = inchar();
+>  	switch (cmd) {
+> -#ifndef CONFIG_8xx
+> +#ifndef CONFIG_PPC_8xx
+> +	int mode;
+> +	const char badaddr[] = "Only kernel addresses are permitted "
+> +		"for breakpoints\n";
+> +
+>  	case 'd':	/* bd - hardware data breakpoint */
+>  		mode = 7;
+>  		cmd = inchar();
+>
