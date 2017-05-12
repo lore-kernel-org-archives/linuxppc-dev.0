@@ -1,23 +1,34 @@
-Return-Path: <cyrilbur@gmail.com>
-Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
- [IPv6:2607:f8b0:400e:c00::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <srs0=dgwm=4s=suse.de=msuchanek@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wPYjF2m1gzDqKs
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 May 2017 01:26:25 +1000 (AEST)
-Received: by mail-pf0-x243.google.com with SMTP id w69so7417583pfk.1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 May 2017 08:26:25 -0700 (PDT)
-Message-ID: <1494602774.21781.3.camel@gmail.com>
-Subject: Re: [PATCH 1/2] powerpc/tm: Fix FP and VMX register corruption
-From: Cyril Bur <cyrilbur@gmail.com>
-To: Michael Neuling <mikey@neuling.org>, mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org, Breno Leitao <brenohl@br.ibm.com>,
- Gustavo Bueno Romero <gromero@br.ibm.com>
-Date: Sat, 13 May 2017 01:26:14 +1000
-In-Reply-To: <20170508071627.21851-1-mikey@neuling.org>
-References: <20170508071627.21851-1-mikey@neuling.org>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wPZ3k6tnszDqbX
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 May 2017 01:42:26 +1000 (AEST)
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3wPZ3k4yqvz8tT6
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 May 2017 01:42:26 +1000 (AEST)
+Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3wPZ3j6t6Yz9s78
+ for <linuxppc-dev@ozlabs.org>; Sat, 13 May 2017 01:42:25 +1000 (AEST)
+Date: Fri, 12 May 2017 17:42:09 +0200
+From: Michal =?UTF-8?B?U3VjaMOhbmVr?= <msuchanek@suse.de>
+To: Hari Bathini <hbathini@linux.vnet.ibm.com>
+Cc: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>, linuxppc-dev
+ <linuxppc-dev@ozlabs.org>
+Subject: Re: [PATCH v5 2/2] powerpc/fadump: update documentation about
+ 'fadump_append=' parameter
+Message-ID: <20170512174209.67ccfd45@kitsune.suse.cz>
+In-Reply-To: <b1c1c890-fac0-dede-4b80-0fc12f1e95e7@linux.vnet.ibm.com>
+References: <149383572199.1694.10940679065871920087.stgit@hbathini.in.ibm.com>
+ <149383576571.1694.13692135068122879322.stgit@hbathini.in.ibm.com>
+ <20170510180132.1fa0c1ec@kitsune.suse.cz>
+ <e1485f4d-f346-fea6-ee2a-9c7a6b2f6587@linux.vnet.ibm.com>
+ <20170511151637.19d4a23f@kitsune.suse.cz>
+ <b1c1c890-fac0-dede-4b80-0fc12f1e95e7@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,82 +38,108 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2017-05-08 at 17:16 +1000, Michael Neuling wrote:
-> In this commit:
->   commit dc3106690b20305c3df06b42456fe386dd632ac9
->   Author: Cyril Bur <cyrilbur@gmail.com>
->   powerpc: tm: Always use fp_state and vr_state to store live registers
-> 
-> A section of code was removed that copied the current state to
-> checkpointed state.  This should not have been removed.
-> 
+On Fri, 12 May 2017 15:15:33 +0530
+Hari Bathini <hbathini@linux.vnet.ibm.com> wrote:
 
--[space]
+> On Thursday 11 May 2017 06:46 PM, Michal Such=C3=A1nek wrote:
+> > On Thu, 11 May 2017 02:00:11 +0530
+> > Hari Bathini <hbathini@linux.vnet.ibm.com> wrote:
+> > =20
+> >> Hello Michal,
+> >>
+> >> On Wednesday 10 May 2017 09:31 PM, Michal Such=C3=A1nek wrote: =20
+> >>> Hello,
+> >>>
+> >>> On Wed, 03 May 2017 23:52:52 +0530
+> >>> Hari Bathini <hbathini@linux.vnet.ibm.com> wrote:
+> >>>    =20
+> >>>> With the introduction of 'fadump_append=3D' parameter to pass
+> >>>> additional parameters to fadump (capture) kernel, update
+> >>>> documentation about it.
+> >>>>
+> >>>> Signed-off-by: Hari Bathini <hbathini@linux.vnet.ibm.com>
+> >>>> ---
+> >>>>
+> >>>> Changes from v4:
+> >>>> * Based on top of patchset that includes
+> >>>>     https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.=
+git/commit/?h=3Dakpm&id=3D05f383cdfba8793240e73f9a9fbff4e25d66003f
+> >>>>
+> >>>>
+> >>>>    Documentation/powerpc/firmware-assisted-dump.txt |   10
+> >>>> +++++++++- 1 file changed, 9 insertions(+), 1 deletion(-)
+> >>>>
+> >>>> diff --git a/Documentation/powerpc/firmware-assisted-dump.txt
+> >>>> b/Documentation/powerpc/firmware-assisted-dump.txt index
+> >>>> 8394bc8..6327193 100644 ---
+> >>>> a/Documentation/powerpc/firmware-assisted-dump.txt +++
+> >>>> b/Documentation/powerpc/firmware-assisted-dump.txt @@ -162,7
+> >>>> +162,15 @@ How to enable firmware-assisted dump (fadump):
+> >>>>    1. Set config option CONFIG_FA_DUMP=3Dy and build kernel.
+> >>>>    2. Boot into linux kernel with 'fadump=3Don' kernel cmdline
+> >>>> option. -3. Optionally, user can also set 'crashkernel=3D' kernel
+> >>>> cmdline +3. A user can pass additional command line parameters
+> >>>> as a comma
+> >>>> +   separated list through 'fadump_append=3D' parameter, to be
+> >>>> enforced
+> >>>> +   when fadump is active. For example, if parameters like
+> >>>> nr_cpus=3D1,
+> >>>> +   numa=3Doff & udev.children-max=3D2 are to be enforced when fadump
+> >>>> is
+> >>>> +   active,
+> >>>> 'fadump_append=3Dnr_cpus=3D1,numa=3Doff,udev.children-max=3D2'
+> >>>> +   can be passed in command line, which will be replaced with
+> >>>> +   "nr_cpus=3D1 numa=3Doff udev.children-max=3D2" when fadump is
+> >>>> active.
+> >>>> +   This helps in reducing memory consumption during dump
+> >>>> capture. +4. Optionally, user can also set 'crashkernel=3D' kernel
+> >>>> cmdline to specify size of the memory to reserve for boot memory
+> >>>> dump preservation.
+> >>>>   =20
+> >>>>    =20
+> >>> Writing your own deficient parser for comma separated arguments
+> >>> when perfectly fine parser for space separated quoted arguments
+> >>> exists in the kernel and the bootloader does not seem like a good
+> >>> idea to me. =20
+> >>
+> >> Couple of things that prompted me for v5 are:
+> >>     1. Using parse_early_options() limits the kind of parameters
+> >>        that can be passed to fadump capture kernel. Passing
+> >> parameters like systemd.unit=3D & udev.childern.max=3D has no effect
+> >> with v4. Updating
+> >>        boot_command_line parameter, when fadump is active, seems a
+> >> better alternative.
+> >>
+> >>     2. Passing space-separated quoted arguments is not working
+> >>        as intended with lilo. Updating bootloader with the below
+> >>        entry in /etc/lilo.conf file results in a missing append
+> >>        entry in /etc/yaboot.conf file.
+> >>
+> >>          append =3D "quiet sysrq=3D1 insmod=3Dsym53c8xx insmod=3Dipr
+> >> crashkernel=3D512M-:256M fadump_append=3D\"nr_cpus=3D1 numa=3Doff
+> >> udev.children-max=3D2\"" =20
+> > Meaning that a script that emulates LILO semantics on top of yaboot
+> > which is completely capable of passing qouted space separated
+> > arguments fails. IMHO it is more reasonable to fix the script or
+> > whatever adaptation layer or use yaboot directly than working
+> > around bug in said script by introducing a new argument parser in
+> > the kernel.
+> >
+> > =20
+>=20
+> Hmmm.. while trying to implement space-separated parameter list with
+> quotes as syntax for fadump_append parameter, noticed that it can
+> make implemenation
+> more vulnerable. Here are some problems I am facing while
+> implementing this..
 
-> When an FP unavailable is taken inside a transaction, we need to abort
-> the transaction. This is because at the time of the tbegin, the FP
-> state is bogus so the state stored in the checkpointed registers is
-> incorrect. To fix this, we treclaim (to get the checkpointed GPRs) and
-> then copy the thread_struct FP live state into the checkpointed
-> state. We then trecheckpoint so that the FP state is correctly
-> restored into the CPU.
-> 
-> The coping of the FP registers from live to checkpointed is what was
-> missing.
-> 
-> This simplifies the logic slightly from the original patch.
-> tm_reclaim_thread() will now always write the checkpointed FP
-> state. Either the checkpointed FP statte will be written as part of
+How so?
 
-state
+presumably you can reuse parse_args even if you do not register with
+early_param and call it yourself. Then your parsing of fadump_append is
+as vulnerable as parsing any other kernel argument since it is using
+same parser.
 
-> the actual treclaim (in tm.S), or it'll be a copy of the live
-> state. Which one we use is based on MSR[FP] from userspace.
-> 
-> Similarly for VMX.
-> 
-> CC: <stable@vger.kernel.org> # 4.9+
-> Signed-off-by: Michael Neuling <mikey@neuling.org>
+Thanks
 
-Reviewed-by: cyrilbur@gmail.com
-
-> ---
->  arch/powerpc/kernel/process.c | 19 +++++++++++++++++++
->  1 file changed, 19 insertions(+)
-> 
-> diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-> index d645da302b..6305353237 100644
-> --- a/arch/powerpc/kernel/process.c
-> +++ b/arch/powerpc/kernel/process.c
-> @@ -864,6 +864,25 @@ static void tm_reclaim_thread(struct thread_struct *thr,
->  	if (!MSR_TM_SUSPENDED(mfmsr()))
->  		return;
->  
-> +	/*
-> +	 * If we are in a transaction and FP is off then we can't have
-> +	 * used FP inside that transaction. Hence the checkpointed
-> +	 * state is the same as the live state. We need to copy the
-> +	 * live state to the checkpointed state so that when the
-> +	 * transaction is restored, the checkpointed state is correct
-> +	 * and the aborted transaction sees the correct state.  We use
-
--[space]
-
-> +	 * ckpt_regs.msr here as that's what tm_reclaim will use to
-> +	 * determine if it's going to write the checkpointed state or
-> +	 * not. So either this will write the checkpointed registers,
-> +	 * or reclaim will.  Similarly for VMX.
-
--[space]
-
-> +	 */
-> +	if ((thr->ckpt_regs.msr & MSR_FP) == 0)
-> +		memcpy(&thr->ckfp_state, &thr->fp_state,
-> +		       sizeof(struct thread_fp_state));
-> +	if ((thr->ckpt_regs.msr & MSR_VEC) == 0)
-> +		memcpy(&thr->ckvr_state, &thr->vr_state,
-> +		       sizeof(struct thread_vr_state));
-> +
->  	giveup_all(container_of(thr, struct task_struct, thread));
->  
->  	tm_reclaim(thr, thr->ckpt_regs.msr, cause);
+Michal
