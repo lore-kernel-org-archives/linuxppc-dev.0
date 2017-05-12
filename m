@@ -1,10 +1,10 @@
 Return-Path: <davem@davemloft.net>
 Received: from shards.monkeyblade.net (shards.monkeyblade.net
  [184.105.139.130])
- by lists.ozlabs.org (Postfix) with ESMTP id 3wPbj15WvqzDqcM
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 May 2017 02:56:19 +1000 (AEST)
-Date: Fri, 12 May 2017 12:56:16 -0400 (EDT)
-Message-Id: <20170512.125616.2184259340380386583.davem@davemloft.net>
+ by lists.ozlabs.org (Postfix) with ESMTP id 3wPbjz0JVqzDqgq
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 May 2017 02:57:11 +1000 (AEST)
+Date: Fri, 12 May 2017 12:57:08 -0400 (EDT)
+Message-Id: <20170512.125708.475573831936972365.davem@davemloft.net>
 To: pasha.tatashin@oracle.com
 Cc: mhocko@kernel.org, linux-kernel@vger.kernel.org,
  sparclinux@vger.kernel.org, linux-mm@kvack.org,
@@ -12,10 +12,10 @@ Cc: mhocko@kernel.org, linux-kernel@vger.kernel.org,
  borntraeger@de.ibm.com, heiko.carstens@de.ibm.com
 Subject: Re: [v3 0/9] parallelized "struct page" zeroing
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <9088ad7e-8b3b-8eba-2fdf-7b0e36e4582e@oracle.com>
-References: <20170510145726.GM31466@dhcp22.suse.cz>
- <ab667486-54a0-a36e-6797-b5f7b83c10f7@oracle.com>
+In-Reply-To: <65b8a658-76d1-0617-ece8-ff7a3c1c4046@oracle.com>
+References: <ab667486-54a0-a36e-6797-b5f7b83c10f7@oracle.com>
  <9088ad7e-8b3b-8eba-2fdf-7b0e36e4582e@oracle.com>
+ <65b8a658-76d1-0617-ece8-ff7a3c1c4046@oracle.com>
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,24 +28,17 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 From: Pasha Tatashin <pasha.tatashin@oracle.com>
-Date: Thu, 11 May 2017 16:47:05 -0400
+Date: Thu, 11 May 2017 16:59:33 -0400
 
-> So, moving memset() into __init_single_page() benefits Intel. I am
-> actually surprised why memset() is so slow on intel when it is called
-> from memblock. But, hurts SPARC, I guess these membars at the end of
-> memset() kills the performance.
+> We should either keep memset() only for deferred struct pages as what
+> I have in my patches.
+> 
+> Another option is to add a new function struct_page_clear() which
+> would default to memset() and to something else on platforms that
+> decide to optimize it.
+> 
+> On SPARC it would call STBIs, and we would do one membar call after
+> all "struct pages" are initialized.
 
-Perhaps an x86 expert can chime in, but it might be the case that past
-a certain size, the microcode for the enhanced stosb uses non-temporal
-stores or something like that.
-
-As for sparc64, yes we can get really killed by the transactional cost
-of memset because of the membars.
-
-But I wonder, for a single page struct, if we even use the special
-stores and thus eat the membar cost.  struct page is only 64 bytes,
-and the cutoff in the Niagara4 bzero implementation is "64 + (64 - 8)"
-so indeed the initializing stores will not even be used.
-
-So sparc64 will only use initializing stores and do the membars if
-at least 2 pages are cleared at a time.
+No membars will be performed for single individual page struct clear,
+the cutoff to use the STBI is larger than that.
