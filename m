@@ -1,26 +1,23 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
- [IPv6:2607:f8b0:400e:c00::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wPZND5KVmzDqcp
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 May 2017 01:56:44 +1000 (AEST)
-Received: by mail-pf0-x242.google.com with SMTP id a23so7509629pfe.0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 May 2017 08:56:44 -0700 (PDT)
-Date: Sat, 13 May 2017 01:56:27 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: David Laight <David.Laight@ACULAB.COM>
-Cc: 'Linus Torvalds' <torvalds@linux-foundation.org>,
- "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>, ppc-dev
- <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [PATCH] spin loop primitives for busy waiting
-Message-ID: <20170513015627.36a19cc5@roar.ozlabs.ibm.com>
-In-Reply-To: <063D6719AE5E284EB5DD2968C1650D6DCFFE9D65@AcuExch.aculab.com>
-References: <20170511165727.17847-1-npiggin@gmail.com>
- <CA+55aFzS9ENQnRoTbLMd_nFwwjuU+s9yj0tZcLSYDDjnwqTKrg@mail.gmail.com>
- <063D6719AE5E284EB5DD2968C1650D6DCFFE9D65@AcuExch.aculab.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Return-Path: <davem@davemloft.net>
+Received: from shards.monkeyblade.net (shards.monkeyblade.net
+ [184.105.139.130])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3wPbj15WvqzDqcM
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 May 2017 02:56:19 +1000 (AEST)
+Date: Fri, 12 May 2017 12:56:16 -0400 (EDT)
+Message-Id: <20170512.125616.2184259340380386583.davem@davemloft.net>
+To: pasha.tatashin@oracle.com
+Cc: mhocko@kernel.org, linux-kernel@vger.kernel.org,
+ sparclinux@vger.kernel.org, linux-mm@kvack.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ borntraeger@de.ibm.com, heiko.carstens@de.ibm.com
+Subject: Re: [v3 0/9] parallelized "struct page" zeroing
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <9088ad7e-8b3b-8eba-2fdf-7b0e36e4582e@oracle.com>
+References: <20170510145726.GM31466@dhcp22.suse.cz>
+ <ab667486-54a0-a36e-6797-b5f7b83c10f7@oracle.com>
+ <9088ad7e-8b3b-8eba-2fdf-7b0e36e4582e@oracle.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,72 +27,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 12 May 2017 12:58:12 +0000
-David Laight <David.Laight@ACULAB.COM> wrote:
+From: Pasha Tatashin <pasha.tatashin@oracle.com>
+Date: Thu, 11 May 2017 16:47:05 -0400
 
-> From: Linus Torvalds
-> > Sent: 11 May 2017 19:48  
-> ...
-> > The one question I have is about "spin_on_cond()": since you
-> > explicitly document that the "no spinning" case is expected to be the
-> > default, I really think that the default implementation should be
-> > along the lines if
-> > 
-> >   #define spin_on_cond(cond) do { \
-> >     if (unlikely(!(cond))) { \
-> >         spin_begin(); do spin_cpu_relax(); while (!(cond)); spin_end(); \
-> >     } \
-> >   } while (0)
-> > 
-> > which will actually result in better code generation even if
-> > spin_begin/end() are no-ops, and just generally optimizes for the
-> > right behavior (ie do the spinning out-of-line, since by definition it
-> > cannot be performance-critical after the first iteration).  
-> 
-> At least some versions of gcc convert while (cond) do {body}
-> into if (cond) do {body} while (cond) even when 'cond'
-> is a non-trivial expression and 'body' is trivial.
-> The code-bloat is silly.
-> No point enforcing the 'optimisation' here.
+> So, moving memset() into __init_single_page() benefits Intel. I am
+> actually surprised why memset() is so slow on intel when it is called
+> from memblock. But, hurts SPARC, I guess these membars at the end of
+> memset() kills the performance.
 
-The point is for something like this:
+Perhaps an x86 expert can chime in, but it might be the case that past
+a certain size, the microcode for the enhanced stosb uses non-temporal
+stores or something like that.
 
-static inline unsigned __read_seqcount_begin(const seqcount_t *s)
-{
-        unsigned ret;
+As for sparc64, yes we can get really killed by the transactional cost
+of memset because of the membars.
 
-repeat:
-        ret = READ_ONCE(s->sequence);
-        if (unlikely(ret & 1)) {
-                cpu_relax();
-                goto repeat;
-        }
-        return ret;
-}
+But I wonder, for a single page struct, if we even use the special
+stores and thus eat the membar cost.  struct page is only 64 bytes,
+and the cutoff in the Niagara4 bzero implementation is "64 + (64 - 8)"
+so indeed the initializing stores will not even be used.
 
-to be coded as:
-
-static inline unsigned __read_seqcount_begin(const seqcount_t *s)
-{
-        unsigned ret;
-
-	spin_on_cond( !((ret = READ_ONCE(s->sequence)) & 1) );
-
-        return ret;
-}
-
-That's about as complex as you'd want to go with this, but I think
-it's a reasonable case.
-
-Now for x86, you would want these to fall out to the same code
-generated. For powerpc, you do not want those spin_begin(); spin_end();
-
-You are right there's a bit of code bloat there. It gets moved out
-of line, but gcc still isn't all that smart about it though, and
-it doesn't fold the tests back nicely if I go with Linus's suggestion,
-so it doesn't work so well as generic implementation.
-
-For powerpc we have to live with it I think.
-
-Thanks,
-Nick
+So sparc64 will only use initializing stores and do the membars if
+at least 2 pages are cleared at a time.
