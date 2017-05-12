@@ -1,29 +1,36 @@
-Return-Path: <srs0=kxbk=4s=redhat.com=jeyu@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <ego@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wPLwS2kwnzDqc8
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 May 2017 17:20:24 +1000 (AEST)
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3wPLwS25dWz8vxD
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 May 2017 17:20:24 +1000 (AEST)
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3wPLwR6nRtz9s82
- for <linuxppc-dev@ozlabs.org>; Fri, 12 May 2017 17:20:23 +1000 (AEST)
-Date: Fri, 12 May 2017 00:20:14 -0700
-From: Jessica Yu <jeyu@redhat.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@ozlabs.org, rusty@rustcorp.com.au,
- linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] powerpc/modules: If mprofile-kernel is enabled add it to
- vermagic
-Message-ID: <20170512072012.lbiuoqexbai75ypy@jeyu>
-References: <1494399469-17833-1-git-send-email-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wPPZC6d79zDqc6
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 May 2017 19:19:47 +1000 (AEST)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v4C9Egpu046749
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 May 2017 05:19:39 -0400
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2acwgr15rp-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 May 2017 05:19:39 -0400
+Received: from localhost
+ by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ego@linux.vnet.ibm.com>;
+ Fri, 12 May 2017 03:19:38 -0600
+Date: Fri, 12 May 2017 14:49:33 +0530
+From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+To: Nicholas Piggin <npiggin@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Gautham R . Shenoy" <ego@linux.vnet.ibm.com>
+Subject: Re: [PATCH 1/3] powerpc/powernv: Fix CPU_HOTPLUG=n idle.c compile
+ error
+Reply-To: ego@linux.vnet.ibm.com
+References: <20170511151522.4772-1-npiggin@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
-In-Reply-To: <1494399469-17833-1-git-send-email-mpe@ellerman.id.au>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20170511151522.4772-1-npiggin@gmail.com>
+Message-Id: <20170512091933.GA13320@in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,69 +40,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-+++ Michael Ellerman [10/05/17 16:57 +1000]:
->On powerpc we can build the kernel with two different ABIs for mcount(), which
->is used by ftrace. Kernels built with one ABI do not know how to load modules
->built with the other ABI. The new style ABI is called "mprofile-kernel", for
->want of a better name.
->
->Currently if we build a module using the old style ABI, and the kernel with
->mprofile-kernel, when we load the module we'll oops something like:
->
->  # insmod autofs4-no-mprofile-kernel.ko
->  ftrace-powerpc: Unexpected instruction f8810028 around bl _mcount
->  ------------[ cut here ]------------
->  WARNING: CPU: 6 PID: 3759 at ../kernel/trace/ftrace.c:2024 ftrace_bug+0x2b8/0x3c0
->  CPU: 6 PID: 3759 Comm: insmod Not tainted 4.11.0-rc3-gcc-5.4.1-00017-g5a61ef74f269 #11
->  ...
->  NIP [c0000000001eaa48] ftrace_bug+0x2b8/0x3c0
->  LR [c0000000001eaff8] ftrace_process_locs+0x4a8/0x590
->  Call Trace:
->    alloc_pages_current+0xc4/0x1d0 (unreliable)
->    ftrace_process_locs+0x4a8/0x590
->    load_module+0x1c8c/0x28f0
->    SyS_finit_module+0x110/0x140
->    system_call+0x38/0xfc
->  ...
->  ftrace failed to modify
->  [<d000000002a31024>] 0xd000000002a31024
->   actual:   35:65:00:48
->
->We can avoid this by including in the vermagic whether the kernel/module was
->built with mprofile-kernel. Which results in:
->
->  # insmod autofs4-pg.ko
->  autofs4: version magic
->  '4.11.0-rc3-gcc-5.4.1-00017-g5a61ef74f269 SMP mod_unload modversions '
->  should be
->  '4.11.0-rc3-gcc-5.4.1-00017-g5a61ef74f269-dirty SMP mod_unload modversions mprofile-kernel'
->  insmod: ERROR: could not insert module autofs4-pg.ko: Invalid module format
->
->Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+Hi Nick,
+On Fri, May 12, 2017 at 01:15:20AM +1000, Nicholas Piggin wrote:
+> Fixes: a7cd88da97 ("powerpc/powernv: Move CPU-Offline idle state invocation from smp.c to idle.c")
+> Cc: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> ---
+>  arch/powerpc/platforms/powernv/idle.c | 2 ++
+>  1 file changed, 2 insertions(+)
+> 
+> diff --git a/arch/powerpc/platforms/powernv/idle.c b/arch/powerpc/platforms/powernv/idle.c
+> index 445f30a2c5ef..0c21747ed7e0 100644
+> --- a/arch/powerpc/platforms/powernv/idle.c
+> +++ b/arch/powerpc/platforms/powernv/idle.c
+> @@ -261,6 +261,7 @@ static u64 pnv_deepest_stop_psscr_val;
+>  static u64 pnv_deepest_stop_psscr_mask;
+>  static bool deepest_stop_found;
+> 
+> +#ifdef CONFIG_HOTPLUG_CPU
+>  /*
+>   * pnv_cpu_offline: A function that puts the CPU into the deepest
+>   * available platform idle state on a CPU-Offline.
+> @@ -293,6 +294,7 @@ unsigned long pnv_cpu_offline(unsigned int cpu)
+> 
+>  	return srr1;
+>  }
+> +#endif
 
-Looks good to me:
+Looks like the updated verison of "powerpc/powernv: Move CPU-Offline
+idle state invocation from smp.c to idle.c"
+(https://lkml.org/lkml/2017/3/30/235) wasn't picked.
 
-Acked-by: Jessica Yu <jeyu@redhat.com>
+Thanks for catching this!
+Acked-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
 
->---
-> arch/powerpc/include/asm/module.h | 4 ++++
-> 1 file changed, 4 insertions(+)
->
->diff --git a/arch/powerpc/include/asm/module.h b/arch/powerpc/include/asm/module.h
->index 53885512b8d3..6c0132c7212f 100644
->--- a/arch/powerpc/include/asm/module.h
->+++ b/arch/powerpc/include/asm/module.h
->@@ -14,6 +14,10 @@
-> #include <asm-generic/module.h>
->
->
->+#ifdef CC_USING_MPROFILE_KERNEL
->+#define MODULE_ARCH_VERMAGIC	"mprofile-kernel"
->+#endif
->+
-> #ifndef __powerpc64__
-> /*
->  * Thanks to Paul M for explaining this.
->-- 
->2.7.4
->
+> 
+>  /*
+>   * Power ISA 3.0 idle initialization.
+> -- 
+> 2.11.0
+> 
+
+--
+Thanks and Regards
+gautham.
