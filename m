@@ -1,23 +1,29 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+Return-Path: <srs0=kxbk=4s=redhat.com=jeyu@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wPLwS2kwnzDqc8
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 May 2017 17:20:24 +1000 (AEST)
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3wPLwS25dWz8vxD
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 May 2017 17:20:24 +1000 (AEST)
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wPJfM329zzDqL8
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 May 2017 15:38:03 +1000 (AEST)
-Subject: Re: [PATCH 3/3] powerpc/8xx: xmon compile fix
-To: Nicholas Piggin <npiggin@gmail.com>
-References: <20170511151522.4772-1-npiggin@gmail.com>
- <20170511151522.4772-3-npiggin@gmail.com>
- <b84f2d89-fc2f-d25f-1871-8fcd7b133fcf@c-s.fr>
- <fdb9e787-e397-a46e-467c-066d51d73131@c-s.fr>
- <20170512104707.5393eaa1@roar.ozlabs.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, Scott Wood <oss@buserror.net>
-From: Christophe LEROY <christophe.leroy@c-s.fr>
-Message-ID: <9e378829-ec48-4f4f-1b29-2e9d9ae2d5ed@c-s.fr>
-Date: Fri, 12 May 2017 07:37:58 +0200
+ by ozlabs.org (Postfix) with ESMTPS id 3wPLwR6nRtz9s82
+ for <linuxppc-dev@ozlabs.org>; Fri, 12 May 2017 17:20:23 +1000 (AEST)
+Date: Fri, 12 May 2017 00:20:14 -0700
+From: Jessica Yu <jeyu@redhat.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@ozlabs.org, rusty@rustcorp.com.au,
+ linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] powerpc/modules: If mprofile-kernel is enabled add it to
+ vermagic
+Message-ID: <20170512072012.lbiuoqexbai75ypy@jeyu>
+References: <1494399469-17833-1-git-send-email-mpe@ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <20170512104707.5393eaa1@roar.ozlabs.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset=us-ascii; format=flowed
+In-Reply-To: <1494399469-17833-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,78 +33,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-
-Le 12/05/2017 à 02:47, Nicholas Piggin a écrit :
-> On Thu, 11 May 2017 20:52:56 +0200
-> christophe leroy <christophe.leroy@c-s.fr> wrote:
++++ Michael Ellerman [10/05/17 16:57 +1000]:
+>On powerpc we can build the kernel with two different ABIs for mcount(), which
+>is used by ftrace. Kernels built with one ABI do not know how to load modules
+>built with the other ABI. The new style ABI is called "mprofile-kernel", for
+>want of a better name.
 >
->> Le 11/05/2017 à 19:14, christophe leroy a écrit :
->>>
->>>
->>> Le 11/05/2017 à 17:15, Nicholas Piggin a écrit :
->>>> Cc: Scott Wood <oss@buserror.net>
->>>> Cc: Christophe Leroy <christophe.leroy@c-s.fr>
->>>> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
->>>> ---
->>>>  arch/powerpc/xmon/xmon.c | 5 ++++-
->>>>  1 file changed, 4 insertions(+), 1 deletion(-)
->>>>
->>>> diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
->>>> index f11f65634aab..ec420b0e6e88 100644
->>>> --- a/arch/powerpc/xmon/xmon.c
->>>> +++ b/arch/powerpc/xmon/xmon.c
->>>> @@ -1242,10 +1242,13 @@ bpt_cmds(void)
->>>>  {
->>>>      int cmd;
->>>>      unsigned long a;
->>>> -    int mode, i;
->>>> +    int i;
->>>>      struct bpt *bp;
->>>> +#ifndef CONFIG_8xx
->>>
->>> Would be better to use CONFIG_PPC_8xx
->>>
->>> As stated in arch/powerpc/platform/Kconfig.cputype, CONFIG_8xx is temp
->>> to handle compat with arch/ppc, and we are trying to get rid of it
->>
->> I had the same comment in https://patchwork.ozlabs.org/patch/700354/
->> I also suggested to move the relevant declarations inside the switch()
+>Currently if we build a module using the old style ABI, and the kernel with
+>mprofile-kernel, when we load the module we'll oops something like:
 >
-> How's this one?
+>  # insmod autofs4-no-mprofile-kernel.ko
+>  ftrace-powerpc: Unexpected instruction f8810028 around bl _mcount
+>  ------------[ cut here ]------------
+>  WARNING: CPU: 6 PID: 3759 at ../kernel/trace/ftrace.c:2024 ftrace_bug+0x2b8/0x3c0
+>  CPU: 6 PID: 3759 Comm: insmod Not tainted 4.11.0-rc3-gcc-5.4.1-00017-g5a61ef74f269 #11
+>  ...
+>  NIP [c0000000001eaa48] ftrace_bug+0x2b8/0x3c0
+>  LR [c0000000001eaff8] ftrace_process_locs+0x4a8/0x590
+>  Call Trace:
+>    alloc_pages_current+0xc4/0x1d0 (unreliable)
+>    ftrace_process_locs+0x4a8/0x590
+>    load_module+0x1c8c/0x28f0
+>    SyS_finit_module+0x110/0x140
+>    system_call+0x38/0xfc
+>  ...
+>  ftrace failed to modify
+>  [<d000000002a31024>] 0xd000000002a31024
+>   actual:   35:65:00:48
+>
+>We can avoid this by including in the vermagic whether the kernel/module was
+>built with mprofile-kernel. Which results in:
+>
+>  # insmod autofs4-pg.ko
+>  autofs4: version magic
+>  '4.11.0-rc3-gcc-5.4.1-00017-g5a61ef74f269 SMP mod_unload modversions '
+>  should be
+>  '4.11.0-rc3-gcc-5.4.1-00017-g5a61ef74f269-dirty SMP mod_unload modversions mprofile-kernel'
+>  insmod: ERROR: could not insert module autofs4-pg.ko: Invalid module format
+>
+>Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
-Looks good.
+Looks good to me:
 
-Christophe
+Acked-by: Jessica Yu <jeyu@redhat.com>
 
+>---
+> arch/powerpc/include/asm/module.h | 4 ++++
+> 1 file changed, 4 insertions(+)
 >
-> ---
->  arch/powerpc/xmon/xmon.c | 10 ++++++----
->  1 file changed, 6 insertions(+), 4 deletions(-)
+>diff --git a/arch/powerpc/include/asm/module.h b/arch/powerpc/include/asm/module.h
+>index 53885512b8d3..6c0132c7212f 100644
+>--- a/arch/powerpc/include/asm/module.h
+>+++ b/arch/powerpc/include/asm/module.h
+>@@ -14,6 +14,10 @@
+> #include <asm-generic/module.h>
 >
-> diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
-> index f11f65634aab..438fdb0fb142 100644
-> --- a/arch/powerpc/xmon/xmon.c
-> +++ b/arch/powerpc/xmon/xmon.c
-> @@ -1242,14 +1242,16 @@ bpt_cmds(void)
->  {
->  	int cmd;
->  	unsigned long a;
-> -	int mode, i;
-> +	int i;
->  	struct bpt *bp;
-> -	const char badaddr[] = "Only kernel addresses are permitted "
-> -		"for breakpoints\n";
 >
->  	cmd = inchar();
->  	switch (cmd) {
-> -#ifndef CONFIG_8xx
-> +#ifndef CONFIG_PPC_8xx
-> +	int mode;
-> +	const char badaddr[] = "Only kernel addresses are permitted "
-> +		"for breakpoints\n";
-> +
->  	case 'd':	/* bd - hardware data breakpoint */
->  		mode = 7;
->  		cmd = inchar();
+>+#ifdef CC_USING_MPROFILE_KERNEL
+>+#define MODULE_ARCH_VERMAGIC	"mprofile-kernel"
+>+#endif
+>+
+> #ifndef __powerpc64__
+> /*
+>  * Thanks to Paul M for explaining this.
+>-- 
+>2.7.4
 >
