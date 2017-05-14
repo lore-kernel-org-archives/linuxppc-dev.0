@@ -1,20 +1,22 @@
-Return-Path: <colin.king@canonical.com>
-Received: from youngberry.canonical.com (youngberry.canonical.com
- [91.189.89.112]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <tglx@linutronix.de>
+Received: from Galois.linutronix.de (Galois.linutronix.de
+ [IPv6:2a01:7a0:2:106d:700::1])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wQq9b2qp8zDqM1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 May 2017 02:36:50 +1000 (AEST)
-From: Colin King <colin.king@canonical.com>
-To: Li Yang <leoli@freescale.com>, Felipe Balbi <balbi@kernel.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-usb@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-Cc: kernel-janitors@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH] fsl_udc_core: fix spelling mistake: "Dectected" -> "Detected"
-Date: Sun, 14 May 2017 17:36:41 +0100
-Message-Id: <20170514163641.6113-1-colin.king@canonical.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wQsrw6ybTzDqKh
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 May 2017 04:37:36 +1000 (AEST)
+Message-Id: <20170514183613.160312642@linutronix.de>
+Date: Sun, 14 May 2017 20:27:25 +0200
+From: Thomas Gleixner <tglx@linutronix.de>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>,
+ Steven Rostedt <rostedt@goodmis.org>, Mark Rutland <mark.rutland@arm.com>,
+ "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+ Viresh Kumar <viresh.kumar@linaro.org>, linuxppc-dev@lists.ozlabs.org
+Subject: [patch 09/18] cpufreq/pasemi: Adjust system_state check
+References: <20170514182716.347236777@linutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset=ISO-8859-15
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,27 +26,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Colin Ian King <colin.king@canonical.com>
+To enable smp_processor_id() and might_sleep() debug checks earlier, it's
+required to add system states between SYSTEM_BOOTING and SYSTEM_RUNNING.
 
-Trivial fix to spelling mistake in seq_printf text
+Adjust the system_state check in pas_cpufreq_cpu_exit() to handle the extra
+states.
 
-Signed-off-by: Colin Ian King <colin.king@canonical.com>
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linuxppc-dev@lists.ozlabs.org
 ---
- drivers/usb/gadget/udc/fsl_udc_core.c | 2 +-
+ drivers/cpufreq/pasemi-cpufreq.c |    2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/usb/gadget/udc/fsl_udc_core.c b/drivers/usb/gadget/udc/fsl_udc_core.c
-index 6f2f71c054be..63ab3d50f3f6 100644
---- a/drivers/usb/gadget/udc/fsl_udc_core.c
-+++ b/drivers/usb/gadget/udc/fsl_udc_core.c
-@@ -2067,7 +2067,7 @@ static int fsl_proc_read(struct seq_file *m, void *v)
- 			"Sleep Enable: %d SOF Received Enable: %d "
- 			"Reset Enable: %d\n"
- 			"System Error Enable: %d "
--			"Port Change Dectected Enable: %d\n"
-+			"Port Change Detected Enable: %d\n"
- 			"USB Error Intr Enable: %d USB Intr Enable: %d\n\n",
- 			(tmp_reg & USB_INTR_DEVICE_SUSPEND) ? 1 : 0,
- 			(tmp_reg & USB_INTR_SOF_EN) ? 1 : 0,
--- 
-2.11.0
+--- a/drivers/cpufreq/pasemi-cpufreq.c
++++ b/drivers/cpufreq/pasemi-cpufreq.c
+@@ -226,7 +226,7 @@ static int pas_cpufreq_cpu_exit(struct c
+ 	 * We don't support CPU hotplug. Don't unmap after the system
+ 	 * has already made it to a running state.
+ 	 */
+-	if (system_state != SYSTEM_BOOTING)
++	if (system_state >= SYSTEM_RUNNING)
+ 		return 0;
+ 
+ 	if (sdcasr_mapbase)
