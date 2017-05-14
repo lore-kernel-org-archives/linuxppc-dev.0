@@ -1,48 +1,24 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <linux@roeck-us.net>
+Received: from bh-25.webhostbox.net (bh-25.webhostbox.net [208.91.199.152])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wQWdH742xzDqbd
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 May 2017 14:56:19 +1000 (AEST)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v4E4rhS1115439
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 May 2017 00:56:16 -0400
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2ae3rmq3sq-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 May 2017 00:56:15 -0400
-Received: from localhost
- by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Sun, 14 May 2017 14:56:12 +1000
-Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v4E4u2qM61669488
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 May 2017 14:56:10 +1000
-Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
- by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v4E4tcak026758
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 May 2017 14:55:38 +1000
-Subject: Re: [PATCH 2/2] v1 powerpc/powernv: Enable removal of memory for in
- memory tracing
-To: Rashmica Gupta <rashmica.g@gmail.com>, Anton Blanchard <anton@samba.org>,
- linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au, npiggin@gmail.com,
- bsingharora@gmail.com, oohall@gmail.com
-References: <20170428054227.9176-1-rashmica.g@gmail.com>
- <20170428054227.9176-2-rashmica.g@gmail.com>
- <c3b65fe7-37b2-6a87-1d81-966196b4ce20@linux.vnet.ibm.com>
- <1498ebd3-1239-9e5b-847c-920546443638@gmail.com>
- <2f338864-db39-2c01-1df4-ef5619ff1118@linux.vnet.ibm.com>
- <ecf639df-387d-0862-9713-fceb829f3fa4@gmail.com>
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Date: Sun, 14 May 2017 10:25:10 +0530
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wQp4n3n7NzDqJ7
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 May 2017 01:47:37 +1000 (AEST)
+Subject: Re: [PATCH V4] hwmon: (ibmpowernv) Add highest/lowest attributes to
+ sensors
+To: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, jdelvare@suse.com,
+ paulus@samba.org, mpe@ellerman.id.au
+References: <1494084436-32445-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+Cc: linux-hwmon@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, svaidy@linux.vnet.ibm.com,
+ ego@linux.vnet.ibm.com, akshay.adiga@linux.vnet.ibm.com, andrew@aj.id.au,
+ clg@kaod.org
+From: Guenter Roeck <linux@roeck-us.net>
+Message-ID: <64f13726-7f7b-5a4e-bb65-ef3cf3b970e3@roeck-us.net>
+Date: Sun, 14 May 2017 08:47:31 -0700
 MIME-Version: 1.0
-In-Reply-To: <ecf639df-387d-0862-9713-fceb829f3fa4@gmail.com>
-Content-Type: text/plain; charset=windows-1252
-Message-Id: <0d871c8a-caec-272a-260d-9407198a48a4@linux.vnet.ibm.com>
+In-Reply-To: <1494084436-32445-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,540 +28,131 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/09/2017 12:36 PM, Rashmica Gupta wrote:
-> Sorry for the late reply, I somehow missed this.
-> 
-> 
-> On 03/05/17 21:56, Anshuman Khandual wrote:
->> On 05/03/2017 09:22 AM, Rashmica Gupta wrote:
->>> On 28/04/17 19:52, Anshuman Khandual wrote:
->>>> On 04/28/2017 11:12 AM, Rashmica Gupta wrote:
->>>>> Some powerpc hardware features may want to gain access to a chunk of
->>>> What kind of features ? Please add specifics.
->>>>
->>>>> undisturbed real memory.  This update provides a means to unplug said
->>>>> memory
->>>> Undisturbed ? Meaning part of memblock and currently inside the buddy
->>>> allocator which we are trying to hot unplug out ?
->>>>
->>>>> from the kernel with a set of debugfs calls.  By writing an integer
->>>>> containing
->>>>>    the size of memory to be unplugged into
->>>> Does the size has some constraints like aligned with memblock section
->>>> size ? LMB size ? page block size ? etc. Please add the details.
->>> Will do.
->>>
->>>>> /sys/kernel/debug/powerpc/memtrace/enable, the code will remove that
->>>>> much
->>>>> memory from the end of each available chip's memory space (ie each
->>>>> memory node).
->>>> <size> amount (I guess bytes in this case) of memory will be removed
->>>> from the end of the NUMA node ? Whats the guarantee that they would be
->>>> free at that time and not being pinned by some process ? If its not
->>>> guaranteed to be freed, then interface description should state that
->>>> clearly.
->>> We start looking from the end of the NUMA node but of course there is no
->>> guarantee
->>> that we will always be able to find some memory there that we are able
->>> to remove.
->>
->> Okay. Do we have interface for giving this memory back to the buddy
->> allocator again when we are done with HW tracing ? If not we need to
->> add one.
-> 
-> Not at the moment. Last time I spoke to Anton he said something along
-> the lines
-> of it not being too important as if you are getting the hardware traces
-> for debugging
-> purposes you are probably not worried about a bit of memory being out of
-> action.
-> 
-> However I can't see why having an interface to online the memory would
-> be a bad thing,
-> so I'll look into it.
+On 05/06/2017 08:27 AM, Shilpasri G Bhat wrote:
+> OCC provides historical minimum and maximum value for the sensor
+> readings. This patch exports them as highest and lowest attributes
+> for the inband sensors copied by OCC to main memory.
+>
+> Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+> ---
+> Changes from V3:
+> - Removed extra variable 'hwmon_index'
+> - Retain the initialization of sensor_data for *_input attribute in
+>   create_device_attrs(), otherwise all the sensors from different
+>   classes will numbered continuously.
+>
+>  drivers/hwmon/ibmpowernv.c | 69 +++++++++++++++++++++++++++++++++++++++++-----
+>  1 file changed, 62 insertions(+), 7 deletions(-)
+>
+> diff --git a/drivers/hwmon/ibmpowernv.c b/drivers/hwmon/ibmpowernv.c
+> index 6d2e660..862b832 100644
+> --- a/drivers/hwmon/ibmpowernv.c
+> +++ b/drivers/hwmon/ibmpowernv.c
+> @@ -287,6 +287,7 @@ static int populate_attr_groups(struct platform_device *pdev)
+>  	opal = of_find_node_by_path("/ibm,opal/sensors");
+>  	for_each_child_of_node(opal, np) {
+>  		const char *label;
+> +		int len;
+>
+>  		if (np->name == NULL)
+>  			continue;
+> @@ -298,10 +299,14 @@ static int populate_attr_groups(struct platform_device *pdev)
+>  		sensor_groups[type].attr_count++;
+>
+>  		/*
+> -		 * add a new attribute for labels
+> +		 * add attributes for labels, min and max
+>  		 */
+>  		if (!of_property_read_string(np, "label", &label))
+>  			sensor_groups[type].attr_count++;
+> +		if (of_find_property(np, "sensor-data-min", &len))
+> +			sensor_groups[type].attr_count++;
+> +		if (of_find_property(np, "sensor-data-max", &len))
+> +			sensor_groups[type].attr_count++;
 
-Yes, the interface to put them back into buddy is important even if the
-amount of memory is very less for tracing. Just need to trigger hotplug
-and online procedure to put it back.
+len isn't used, so you can just pass NULL and avoid the unnecessary variable.
 
-> 
->>>>> In addition, the means to read out the contents of the unplugged
->>>>> memory is also
->>>>> provided by reading out the
->>>>> /sys/kernel/debug/powerpc/memtrace/<chip-id>/trace
->>>>> file.
->>>> All of the debugfs file interfaces added here should be documented some
->>>> where in detail.
->>>>
->>>>> Signed-off-by: Anton Blanchard <anton@samba.org>
->>>>> Signed-off-by: Rashmica Gupta <rashmica.g@gmail.com>
->>>>>
->>>>> ---
->>>>> This requires the 'Wire up hpte_removebolted for powernv' patch.
->>>>>
->>>>> RFC -> v1: Added in two missing locks. Replaced the open-coded
->>>>> flush_memory_region() with the existing
->>>>> flush_inval_dcache_range(start, end).
->>>>>
->>>>> memtrace_offline_pages() is open-coded because offline_pages is
->>>>> designed to be
->>>>> called through the sysfs interface - not directly.
->>>>>
->>>>> We could move the offlining of pages to userspace, which removes some
->>>>> of this
->>>>> open-coding. This would then require passing info to the kernel such
->>>>> that it
->>>>> can then remove the memory that has been offlined. This could be done
->>>>> using
->>>>> notifiers, but this isn't simple due to locking (remove_memory needs
->>>>> mem_hotplug_begin() which the sysfs interface already has). This
->>>>> could also be
->>>>> done through the debugfs interface (similar to what is done here).
->>>>> Either way,
->>>>> this would require the process that needs the memory to have
->>>>> open-coded code
->>>>> which it shouldn't really be involved with.
->>>>>
->>>>> As the current remove_memory() function requires the memory to
->>>>> already be
->>>>> offlined, it makes sense to keep the offlining and removal of memory
->>>>> functionality grouped together so that a process can simply make one
->>>>> request to
->>>>> unplug some memory. Ideally there would be a kernel function we could
->>>>> call that
->>>>> would offline the memory and then remove it.
->>>>>
->>>>>
->>>>>    arch/powerpc/platforms/powernv/memtrace.c | 276
->>>>> ++++++++++++++++++++++++++++++
->>>>>    1 file changed, 276 insertions(+)
->>>>>    create mode 100644 arch/powerpc/platforms/powernv/memtrace.c
->>>>>
->>>>> diff --git a/arch/powerpc/platforms/powernv/memtrace.c
->>>>> b/arch/powerpc/platforms/powernv/memtrace.c
->>>>> new file mode 100644
->>>>> index 0000000..86184b1
->>>>> --- /dev/null
->>>>> +++ b/arch/powerpc/platforms/powernv/memtrace.c
->>>>> @@ -0,0 +1,276 @@
->>>>> +/*
->>>>> + * This program is free software; you can redistribute it and/or
->>>>> modify
->>>>> + * it under the terms of the GNU General Public License as
->>>>> published by
->>>>> + * the Free Software Foundation; either version 2 of the License, or
->>>>> + * (at your option) any later version.
->>>>> + *
->>>>> + * This program is distributed in the hope that it will be useful,
->>>>> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
->>>>> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
->>>>> + * GNU General Public License for more details.
->>>>> + *
->>>>> + * Copyright (C) IBM Corporation, 2014
->>>>> + *
->>>>> + * Author: Anton Blanchard <anton@au.ibm.com>
->>>>> + */
->>>>> +
->>>>> +#define pr_fmt(fmt) "powernv-memtrace: " fmt
->>>>> +
->>>>> +#include <linux/bitops.h>
->>>>> +#include <linux/string.h>
->>>>> +#include <linux/memblock.h>
->>>>> +#include <linux/init.h>
->>>>> +#include <linux/moduleparam.h>
->>>>> +#include <linux/fs.h>
->>>>> +#include <linux/debugfs.h>
->>>>> +#include <linux/slab.h>
->>>>> +#include <linux/memory.h>
->>>>> +#include <linux/memory_hotplug.h>
->>>>> +#include <asm/machdep.h>
->>>>> +#include <asm/debugfs.h>
->>>>> +#include <asm/cacheflush.h>
->>>>> +
->>>>> +struct memtrace_entry {
->>>>> +    void *mem;
->>>>> +    u64 start;
->>>>> +    u64 size;
->>>>> +    u32 nid;
->>>>> +    struct dentry *dir;
->>>>> +    char name[16];
->>>>> +};
->>>> Little bit of description about the structure here will help.
->>> Something like 'this enables us to keep track of the memory removed from
->>> each node'?
->> Right, something like that.
->>
->>>>> +
->>>>> +static struct memtrace_entry *memtrace_array;
->>>>> +static unsigned int memtrace_array_nr;
->>>>> +
->>>>> +static ssize_t memtrace_read(struct file *filp, char __user *ubuf,
->>>>> +                 size_t count, loff_t *ppos)
->>>>> +{
->>>>> +    struct memtrace_entry *ent = filp->private_data;
->>>>> +
->>>>> +    return simple_read_from_buffer(ubuf, count, ppos, ent->mem,
->>>>> ent->size);
->>>>> +}
->>>>> +
->>>>> +static bool valid_memtrace_range(struct memtrace_entry *dev,
->>>>> +                 unsigned long start, unsigned long size)
->>>>> +{
->>>>> +    if ((dev->start <= start) &&
->>>> Switch the position of start and dev->start above. Will make
->>>> it easy while reading.
->>>>
->>>>> +        ((start + size) <= (dev->start + dev->size)))
->>>>> +        return true;
->>>>> +
->>>>> +    return false;
->>>>> +}
->>>>> +
->>>>> +static int memtrace_mmap(struct file *filp, struct vm_area_struct
->>>>> *vma)
->>>>> +{
->>>>> +    unsigned long size = vma->vm_end - vma->vm_start;
->>>>> +    struct memtrace_entry *dev = filp->private_data;
->>>>> +
->>>>> +    if (!valid_memtrace_range(dev, vma->vm_pgoff << PAGE_SHIFT,
->>>>> size))
->>>>> +        return -EINVAL;
->>>>> +
->>>>> +    vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
->>>> Why we do this ? Its coming from real RAM not IO memory. Then the page
->>>> protection still needs changes ?
->>> Once the memory is removed from the kernel mappings we want to mark
->>> it as
->>> uncachable.
->> Got it but why ? Uncachable marking are for pages which will be mapped
->> to IO ranges which should not be cached just to prevent the possibility
->> of stale data.
->>>>> +
->>>>> +    if (io_remap_pfn_range(vma, vma->vm_start,
->>>>> +                   vma->vm_pgoff + (dev->start >> PAGE_SHIFT),
->>>>> +                   size, vma->vm_page_prot))
->>>> You can just call remap_pfn_rang() instead though they are all the
->>>> same.
->>>> There is nothing I/O here should be explicit.
->>> Good point.
->>>
->>>>> +        return -EAGAIN;
->>>>> +
->>>>> +    return 0;
->>>>> +}
->>>>> +
->>>>> +static const struct file_operations memtrace_fops = {
->>>>> +    .llseek = default_llseek,
->>>>> +    .read    = memtrace_read,
->>>>> +    .mmap    = memtrace_mmap,
->>>>> +    .open    = simple_open,
->>>>> +};
->>>>> +
->>>>> +static int check_memblock_online(struct memory_block *mem, void *arg)
->>>>> +{
->>>>> +    if (mem->state != MEM_ONLINE)
->>>>> +        return -1;
->>>>> +
->>>>> +    return 0;
->>>>> +}
->>>>> +
->>>>> +static int change_memblock_state(struct memory_block *mem, void *arg)
->>>>> +{
->>>>> +    unsigned long state = (unsigned long)arg;
->>>>> +
->>>>> +    mem->state = state;
->>>>> +    return 0;
->>>>> +}
->>>>> +
->>>>> +static bool memtrace_offline_pages(u32 nid, u64 start_pfn, u64
->>>>> nr_pages)
->>>>> +{
->>>>> +    u64 end_pfn = start_pfn + nr_pages - 1;
->>>>> +
->>>>> +    if (walk_memory_range(start_pfn, end_pfn, NULL,
->>>>> +        check_memblock_online))
->>>>> +        return false;
->>>>> +
->>>>> +    walk_memory_range(start_pfn, end_pfn, (void *)MEM_GOING_OFFLINE,
->>>>> +              change_memblock_state);
->>>>> +
->>>> walk_memory_range() might be expensive, cant we just change the state
->>>> to MEM_GOING_OFFLINE while checking the state for MEM_ONLINE during
->>>> the first loop and bail out if any of the memblock is not in MEM_ONLINE
->>>> in the first place.
->>> Good idea.
->>>
->>>>> +    mem_hotplug_begin();
->>>>> +    if (offline_pages(start_pfn, nr_pages)) {
->>>>> +        walk_memory_range(start_pfn, end_pfn, (void *)MEM_ONLINE,
->>>>> +                  change_memblock_state);
->>>>> +        mem_hotplug_done();
->>>> Right, this can remain as is. If we fail to offline pages, mark the
->>>> memory blocks as MEM_ONLINE again.
->>>>
->>>>> +        return false;
->>>>> +    }
->>>>> +
->>>>> +    walk_memory_range(start_pfn, end_pfn, (void *)MEM_OFFLINE,
->>>>> +              change_memblock_state);
->>>>> +    mem_hotplug_done();
->>>> Right.
->>>>
->>>>> +
->>>>> +    /* Clear the dcache to remove any references to the memory */
->>>>> +    flush_inval_dcache_range((u64)__va(start_pfn << PAGE_SHIFT),
->>>>> +                   (u64)__va(end_pfn << PAGE_SHIFT));
->>>> I am wondering why this is required now when we dont do anything for
->>>> cache flushing calls from core VM. If its really required now then
->>>> it also should be required during memory hot unplug operations in
->>>> general as well.
->>> I could not see if this was being done when removing memory so figured
->>> that it was better to put it in than not do it.
->> Looking at the definitions I had pointed out before which gets
->> called from core VM, powerpc does not need to do anything specific
->> for cache invalidation or flushing. But I am not really sure on
->> this. So let it be.
->>
->>>> /*
->>>>    * No cache flushing is required when address mappings are changed,
->>>>    * because the caches on PowerPCs are physically addressed.
->>>>    */
->>>> #define flush_cache_all()            do { } while (0)
->>>> #define flush_cache_mm(mm)            do { } while (0)
->>>> #define flush_cache_dup_mm(mm)            do { } while (0)
->>>> #define flush_cache_range(vma, start, end)    do { } while (0)
->>>> #define flush_cache_page(vma, vmaddr, pfn)    do { } while (0)
->>>> #define flush_icache_page(vma, page)        do { } while (0)
->>>> #define flush_cache_vmap(start, end)        do { } while (0)
->>>> #define flush_cache_vunmap(start, end)        do { } while (0)
->>>>
->>>>
->>>>> +
->>>>> +    /* Now remove memory from the mappings */
->>>>> +    lock_device_hotplug();
->>>>> +    remove_memory(nid, start_pfn << PAGE_SHIFT, nr_pages <<
->>>>> PAGE_SHIFT);
->>>>> +    unlock_device_hotplug();
->>>> Right. Now we have successfully taken down the memory.
->>>>
->>>>> +
->>>>> +    return true;
->>>>> +}
->>>>> +
->>>>> +static u64 memtrace_alloc_node(u32 nid, u64 size)
->>>>> +{
->>>>> +    u64 start_pfn, end_pfn, nr_pages;
->>>>> +    u64 base_pfn;
->>>>> +
->>>>> +    if (!NODE_DATA(nid) || !node_spanned_pages(nid))
->>>>> +        return 0;
->>>> Why NODE_DATA check is required here ? Each node should have one
->>>> allocated and initialized by now, else we have bigger problems.
->>>> Is there any specific reason to check for spanned pages instead
->>>> of present/managed pages.
->>> Anton wrote this check, so will need to confirm with him. I assume
->>> we check node_spanned_pages() rather than node_present_pages()
->>> because in arch/powerpc/mm/numa.c we set node_spanned_pages() and
->>> not node_present_pages()?
->> I guess any thing is okay but NODE_DATA() seems redundant though.
-> 
-> Agreed.
-> 
->>
->> struct pglist_data {
->>          ..........................
->>     unsigned long node_present_pages; /* total number of physical
->> pages */
->>     unsigned long node_spanned_pages; /* total size of physical page
->>                          range, including holes */
->>
->> }
->>
->>>>> +
->>>>> +    start_pfn = node_start_pfn(nid);
->>>>> +    end_pfn = node_end_pfn(nid);
->>>>> +    nr_pages = size >> PAGE_SHIFT;
->>>>> +
->>>>> +    /* Trace memory needs to be aligned to the size */
->>>>> +    end_pfn = round_down(end_pfn - nr_pages, nr_pages);
->>>>> +
->>>>> +    for (base_pfn = end_pfn; base_pfn > start_pfn; base_pfn -=
->>>>> nr_pages) {
->>>>> +        if (memtrace_offline_pages(nid, base_pfn, nr_pages) == true)
->>>>> +            return base_pfn << PAGE_SHIFT;
->>>>> +    }
->>>>> +
->>>>> +    return 0;
->>>>> +}
->>>>> +
->>>>> +static int memtrace_init_regions_runtime(u64 size)
->>>>> +{
->>>>> +    u64 m;
->>>>> +    u32 nid;
->>>>> +
->>>>> +    memtrace_array = kzalloc(sizeof(struct memtrace_entry) *
->>>>> +                num_online_nodes(), GFP_KERNEL);
->>>>> +    if (!memtrace_array) {
->>>>> +        pr_err("Failed to allocate memtrace_array\n");
->>>>> +        return -EINVAL;
->>>>> +    }
->>>>> +
->>>>> +    for_each_online_node(nid) {
->>>>> +        m = memtrace_alloc_node(nid, size);
->>>>> +        /*
->>>>> +         * A node might not have any local memory, so warn but
->>>>> +         * continue on.
->>>>> +         */
->>>>> +        if (!m) {
->>>>> +            pr_err("Failed to allocate trace memory on node %d\n",
->>>>> +                 nid);
->>>>> +        } else {
->>>>> +            pr_info("Allocated trace memory on node %d at
->>>>> 0x%016llx\n",
->>>>> +                 nid, m);
->>>>> +
->>>>> +            memtrace_array[memtrace_array_nr].start = m;
->>>>> +            memtrace_array[memtrace_array_nr].size = size;
->>>>> +            memtrace_array[memtrace_array_nr].nid = nid;
->>>>> +            memtrace_array_nr++;
->>>>> +        }
->>>>> +    }
->>>>> +    return 0;
->>>>> +}
->>>> All the pr_info() and pr_err() prints should have a "memtrace :"
->>>> before the
->>>> actual string to make it clear that its coming from this feature.
->>>>
->>> Good point!
->>>>> +
->>>>> +static struct dentry *memtrace_debugfs_dir;
->>>>> +
->>>>> +static int memtrace_init_debugfs(void)
->>>>> +{
->>>>> +    int ret = 0;
->>>>> +    int i;
->>>>> +
->>>>> +    for (i = 0; i < memtrace_array_nr; i++) {
->>>>> +        struct dentry *dir;
->>>>> +        struct memtrace_entry *ent = &memtrace_array[i];
->>>>> +
->>>>> +        ent->mem = ioremap(ent->start, ent->size);
->>>>> +        /* Warn but continue on */
->>>>> +        if (!ent->mem) {
->>>>> +            pr_err("Failed to map trace memory at 0x%llx\n",
->>>>> +                 ent->start);
->>>>> +            ret = -1;
->>>>> +            continue;
->>>>> +        }
->>>>> +
->>>>> +        snprintf(ent->name, 16, "%08x", ent->nid);
->>>>> +        dir = debugfs_create_dir(ent->name, memtrace_debugfs_dir);
->>>>> +        if (!dir)
->>>>> +            return -1;
->>>>> +
->>>>> +        ent->dir = dir;
->>>>> +        debugfs_create_file("trace", 0400, dir, ent, &memtrace_fops);
->>>>> +        debugfs_create_x64("start", 0400, dir, &ent->start);
->>>>> +        debugfs_create_x64("size", 0400, dir, &ent->size);
->>>>> +        debugfs_create_u32("node", 0400, dir, &ent->nid);
->>>>> +    }
->>>> Oh okay, its creating all the four files. Please create corresponding
->>>> to each of the files some where. Documentation/ABI/testing lists the
->>>> actual system ABI on /sys/ not the sys/kernel/debug/ ones I guess.
->>> I'm not exactly sure what you are saying here... Seeing that there is
->>> documentation about debugfs files in Documentation/ABI/testing, I'll
->>> follow suit
->>> and put it there.
->> I meant the same.
->>
->>>>> +
->>>>> +    return ret;
->>>>> +}
->>>>> +
->>>>> +static u64 memtrace_size;
->>>>> +
->>>>> +static int memtrace_enable_set(void *data, u64 val)
->>>>> +{
->>>>> +    if (memtrace_size)
->>>>> +        return -EINVAL;
->>>>> +
->>>>> +    if (!val)
->>>>> +        return -EINVAL;
->>>>> +
->>>>> +    /* Make sure size is aligned to a memory block */
->>>>> +    if (val & (memory_block_size_bytes()-1))
->>>> As I have mentioned earlier, this should be mentioned in the interface
->>>> description some where.
->>>>
->>>>> +        return -EINVAL;
->>>>> +
->>>>> +    if (memtrace_init_regions_runtime(val))
->>>>> +        return -EINVAL;
->>>>> +
->>>>> +    if (memtrace_init_debugfs())
->>>>> +        return -EINVAL;
->>>>> +
->>>>> +    memtrace_size = val;
->>>>> +
->>>>> +    return 0;
->>>>> +}
->>>>> +
->>>>> +static int memtrace_enable_get(void *data, u64 *val)
->>>>> +{
->>>>> +    *val = memtrace_size;
->>>>> +    return 0;
->>>>> +}
->>>>> +
->>>>> +DEFINE_SIMPLE_ATTRIBUTE(memtrace_init_fops, memtrace_enable_get,
->>>>> memtrace_enable_set, "0x%016llx\n");
->>>>> +
->>>>> +static int memtrace_init(void)
->>>>> +{
->>>>> +    memtrace_debugfs_dir = debugfs_create_dir("memtrace",
->>>>> powerpc_debugfs_root);
->>>>> +    if (!memtrace_debugfs_dir)
->>>>> +        return -1;
->>>>> +
->>>>> +    debugfs_create_file("enable", 0600, memtrace_debugfs_dir,
->>>>> +                NULL, &memtrace_init_fops);
->>>>> +
->>>>> +    return 0;
->>>>> +}
->>>>> +machine_device_initcall(powernv, memtrace_init);
->>>>> +
->>>>>
->>>> BTW how we start the tracing process for the trace to be collected
->>>> in the
->>>> interface before we can read them ? This interface does not seem to
->>>> have
->>>> a handler. When it directs the HW to start collecting the traces ?
->>>>
->>>> debugfs_create_x64("start", 0400, dir, &ent->start);
->>>>
->>>>
->>> I think you're asking 'what is actually going to call this code and do
->>> the tracing'?
->> No, when you call this interface, where is the routine to start the
->> actual tracing invoking appropriate platform functions or HW
->> instructions ? I dont see such a function associated with 'start'
->> interface mentioned above.
-> 
-> Essentially,
-> DEFINE_SIMPLE_ATTRIBUTE(memtrace_init_fops, memtrace_enable_get,
-> memtrace_enable_set, "0x%016llx\n");
-> 
-> means that when a number is written to the memtrace/enable file, the
-> number is
-> read as a u64 and passed to memtrace_enable_set()
-
-Right, then we create the following interfaces for each entry of the memory
-trace. By now all the memory ranges are ioremapped.
-
-+		debugfs_create_file("trace", 0400, dir, ent, &memtrace_fops);
-+		debugfs_create_x64("start", 0400, dir, &ent->start);
-+		debugfs_create_x64("size", 0400, dir, &ent->size);
-+		debugfs_create_u32("node", 0400, dir, &ent->nid);
-
-Then what really starts the HW trace ? where we tell the HW to start tracing
-and put the trace details in the memory buffer allocated and ioremapped ?
-IIUC just making the memory ioremapped() wont start the trace automatically.
+>  	}
+>
+>  	of_node_put(opal);
+> @@ -337,6 +342,41 @@ static void create_hwmon_attr(struct sensor_data *sdata, const char *attr_name,
+>  	sdata->dev_attr.show = show;
+>  }
+>
+> +static void populate_sensor(struct sensor_data *sdata, int od, int hd, int sid,
+> +			    const char *attr_name, enum sensors type,
+> +			    const struct attribute_group *pgroup,
+> +			    ssize_t (*show)(struct device *dev,
+> +					    struct device_attribute *attr,
+> +					    char *buf))
+> +{
+> +	sdata->id = sid;
+> +	sdata->type = type;
+> +	sdata->opal_index = od;
+> +	sdata->hwmon_index = hd;
+> +	create_hwmon_attr(sdata, attr_name, show);
+> +	pgroup->attrs[sensor_groups[type].attr_count++] = &sdata->dev_attr.attr;
+> +}
+> +
+> +static char *get_max_attr(enum sensors type)
+> +{
+> +	switch (type) {
+> +	case POWER_INPUT:
+> +		return "input_highest";
+> +	default:
+> +		return "highest";
+> +	}
+> +}
+> +
+> +static char *get_min_attr(enum sensors type)
+> +{
+> +	switch (type) {
+> +	case POWER_INPUT:
+> +		return "input_lowest";
+> +	default:
+> +		return "lowest";
+> +	}
+> +}
+> +
+>  /*
+>   * Iterate through the device tree for each child of 'sensors' node, create
+>   * a sysfs attribute file, the file is named by translating the DT node name
+> @@ -417,16 +457,31 @@ static int create_device_attrs(struct platform_device *pdev)
+>  			 * attribute. They are related to the same
+>  			 * sensor.
+>  			 */
+> -			sdata[count].type = type;
+> -			sdata[count].opal_index = sdata[count - 1].opal_index;
+> -			sdata[count].hwmon_index = sdata[count - 1].hwmon_index;
+>
+>  			make_sensor_label(np, &sdata[count], label);
+> +			populate_sensor(&sdata[count], opal_index,
+> +					sdata[count - 1].hwmon_index,
+> +					sensor_id, "label", type, pgroups[type],
+> +					show_label);
+> +			count++;
+> +		}
+>
+> -			create_hwmon_attr(&sdata[count], "label", show_label);
+> +		if (!of_property_read_u32(np, "sensor-data-max", &sensor_id)) {
+> +			attr_name = get_max_attr(type);
+> +			populate_sensor(&sdata[count], opal_index,
+> +					sdata[count - 1].hwmon_index,
+> +					sensor_id, attr_name, type,
+> +					pgroups[type], show_sensor);
+> +			count++;
+> +		}
+>
+> -			pgroups[type]->attrs[sensor_groups[type].attr_count++] =
+> -				&sdata[count++].dev_attr.attr;
+> +		if (!of_property_read_u32(np, "sensor-data-min", &sensor_id)) {
+> +			attr_name = get_min_attr(type);
+> +			populate_sensor(&sdata[count], opal_index,
+> +					sdata[count - 1].hwmon_index,
+> +					sensor_id, attr_name, type,
+> +					pgroups[type], show_sensor);
+> +			count++;
+>  		}
+>  	}
+>
+>
