@@ -1,21 +1,48 @@
-Return-Path: <fengguang.wu@intel.com>
-Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
+Return-Path: <khandual@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wQGnZ47HfzDqbC
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 May 2017 05:17:36 +1000 (AEST)
-Date: Sun, 14 May 2017 03:17:14 +0800
-From: kbuild test robot <lkp@intel.com>
-To: Pavel Tatashin <pasha.tatashin@oracle.com>
-Cc: kbuild-all@01.org, linux-kernel@vger.kernel.org,
- sparclinux@vger.kernel.org, linux-mm@kvack.org,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- borntraeger@de.ibm.com, heiko.carstens@de.ibm.com, davem@davemloft.net
-Subject: Re: [v3 3/9] mm: add "zero" argument to vmemmap allocators
-Message-ID: <201705140357.WwR1wL7w%fengguang.wu@intel.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wQWdH742xzDqbd
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 May 2017 14:56:19 +1000 (AEST)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v4E4rhS1115439
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 May 2017 00:56:16 -0400
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2ae3rmq3sq-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 May 2017 00:56:15 -0400
+Received: from localhost
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
+ Sun, 14 May 2017 14:56:12 +1000
+Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v4E4u2qM61669488
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 May 2017 14:56:10 +1000
+Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
+ by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v4E4tcak026758
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 May 2017 14:55:38 +1000
+Subject: Re: [PATCH 2/2] v1 powerpc/powernv: Enable removal of memory for in
+ memory tracing
+To: Rashmica Gupta <rashmica.g@gmail.com>, Anton Blanchard <anton@samba.org>,
+ linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au, npiggin@gmail.com,
+ bsingharora@gmail.com, oohall@gmail.com
+References: <20170428054227.9176-1-rashmica.g@gmail.com>
+ <20170428054227.9176-2-rashmica.g@gmail.com>
+ <c3b65fe7-37b2-6a87-1d81-966196b4ce20@linux.vnet.ibm.com>
+ <1498ebd3-1239-9e5b-847c-920546443638@gmail.com>
+ <2f338864-db39-2c01-1df4-ef5619ff1118@linux.vnet.ibm.com>
+ <ecf639df-387d-0862-9713-fceb829f3fa4@gmail.com>
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Date: Sun, 14 May 2017 10:25:10 +0530
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="HlL+5n6rz5pIUxbD"
-In-Reply-To: <1494003796-748672-4-git-send-email-pasha.tatashin@oracle.com>
+In-Reply-To: <ecf639df-387d-0862-9713-fceb829f3fa4@gmail.com>
+Content-Type: text/plain; charset=windows-1252
+Message-Id: <0d871c8a-caec-272a-260d-9407198a48a4@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,386 +52,540 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 05/09/2017 12:36 PM, Rashmica Gupta wrote:
+> Sorry for the late reply, I somehow missed this.
+> 
+> 
+> On 03/05/17 21:56, Anshuman Khandual wrote:
+>> On 05/03/2017 09:22 AM, Rashmica Gupta wrote:
+>>> On 28/04/17 19:52, Anshuman Khandual wrote:
+>>>> On 04/28/2017 11:12 AM, Rashmica Gupta wrote:
+>>>>> Some powerpc hardware features may want to gain access to a chunk of
+>>>> What kind of features ? Please add specifics.
+>>>>
+>>>>> undisturbed real memory.  This update provides a means to unplug said
+>>>>> memory
+>>>> Undisturbed ? Meaning part of memblock and currently inside the buddy
+>>>> allocator which we are trying to hot unplug out ?
+>>>>
+>>>>> from the kernel with a set of debugfs calls.  By writing an integer
+>>>>> containing
+>>>>>    the size of memory to be unplugged into
+>>>> Does the size has some constraints like aligned with memblock section
+>>>> size ? LMB size ? page block size ? etc. Please add the details.
+>>> Will do.
+>>>
+>>>>> /sys/kernel/debug/powerpc/memtrace/enable, the code will remove that
+>>>>> much
+>>>>> memory from the end of each available chip's memory space (ie each
+>>>>> memory node).
+>>>> <size> amount (I guess bytes in this case) of memory will be removed
+>>>> from the end of the NUMA node ? Whats the guarantee that they would be
+>>>> free at that time and not being pinned by some process ? If its not
+>>>> guaranteed to be freed, then interface description should state that
+>>>> clearly.
+>>> We start looking from the end of the NUMA node but of course there is no
+>>> guarantee
+>>> that we will always be able to find some memory there that we are able
+>>> to remove.
+>>
+>> Okay. Do we have interface for giving this memory back to the buddy
+>> allocator again when we are done with HW tracing ? If not we need to
+>> add one.
+> 
+> Not at the moment. Last time I spoke to Anton he said something along
+> the lines
+> of it not being too important as if you are getting the hardware traces
+> for debugging
+> purposes you are probably not worried about a bit of memory being out of
+> action.
+> 
+> However I can't see why having an interface to online the memory would
+> be a bad thing,
+> so I'll look into it.
 
---HlL+5n6rz5pIUxbD
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Yes, the interface to put them back into buddy is important even if the
+amount of memory is very less for tracing. Just need to trigger hotplug
+and online procedure to put it back.
 
-Hi Pavel,
+> 
+>>>>> In addition, the means to read out the contents of the unplugged
+>>>>> memory is also
+>>>>> provided by reading out the
+>>>>> /sys/kernel/debug/powerpc/memtrace/<chip-id>/trace
+>>>>> file.
+>>>> All of the debugfs file interfaces added here should be documented some
+>>>> where in detail.
+>>>>
+>>>>> Signed-off-by: Anton Blanchard <anton@samba.org>
+>>>>> Signed-off-by: Rashmica Gupta <rashmica.g@gmail.com>
+>>>>>
+>>>>> ---
+>>>>> This requires the 'Wire up hpte_removebolted for powernv' patch.
+>>>>>
+>>>>> RFC -> v1: Added in two missing locks. Replaced the open-coded
+>>>>> flush_memory_region() with the existing
+>>>>> flush_inval_dcache_range(start, end).
+>>>>>
+>>>>> memtrace_offline_pages() is open-coded because offline_pages is
+>>>>> designed to be
+>>>>> called through the sysfs interface - not directly.
+>>>>>
+>>>>> We could move the offlining of pages to userspace, which removes some
+>>>>> of this
+>>>>> open-coding. This would then require passing info to the kernel such
+>>>>> that it
+>>>>> can then remove the memory that has been offlined. This could be done
+>>>>> using
+>>>>> notifiers, but this isn't simple due to locking (remove_memory needs
+>>>>> mem_hotplug_begin() which the sysfs interface already has). This
+>>>>> could also be
+>>>>> done through the debugfs interface (similar to what is done here).
+>>>>> Either way,
+>>>>> this would require the process that needs the memory to have
+>>>>> open-coded code
+>>>>> which it shouldn't really be involved with.
+>>>>>
+>>>>> As the current remove_memory() function requires the memory to
+>>>>> already be
+>>>>> offlined, it makes sense to keep the offlining and removal of memory
+>>>>> functionality grouped together so that a process can simply make one
+>>>>> request to
+>>>>> unplug some memory. Ideally there would be a kernel function we could
+>>>>> call that
+>>>>> would offline the memory and then remove it.
+>>>>>
+>>>>>
+>>>>>    arch/powerpc/platforms/powernv/memtrace.c | 276
+>>>>> ++++++++++++++++++++++++++++++
+>>>>>    1 file changed, 276 insertions(+)
+>>>>>    create mode 100644 arch/powerpc/platforms/powernv/memtrace.c
+>>>>>
+>>>>> diff --git a/arch/powerpc/platforms/powernv/memtrace.c
+>>>>> b/arch/powerpc/platforms/powernv/memtrace.c
+>>>>> new file mode 100644
+>>>>> index 0000000..86184b1
+>>>>> --- /dev/null
+>>>>> +++ b/arch/powerpc/platforms/powernv/memtrace.c
+>>>>> @@ -0,0 +1,276 @@
+>>>>> +/*
+>>>>> + * This program is free software; you can redistribute it and/or
+>>>>> modify
+>>>>> + * it under the terms of the GNU General Public License as
+>>>>> published by
+>>>>> + * the Free Software Foundation; either version 2 of the License, or
+>>>>> + * (at your option) any later version.
+>>>>> + *
+>>>>> + * This program is distributed in the hope that it will be useful,
+>>>>> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+>>>>> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+>>>>> + * GNU General Public License for more details.
+>>>>> + *
+>>>>> + * Copyright (C) IBM Corporation, 2014
+>>>>> + *
+>>>>> + * Author: Anton Blanchard <anton@au.ibm.com>
+>>>>> + */
+>>>>> +
+>>>>> +#define pr_fmt(fmt) "powernv-memtrace: " fmt
+>>>>> +
+>>>>> +#include <linux/bitops.h>
+>>>>> +#include <linux/string.h>
+>>>>> +#include <linux/memblock.h>
+>>>>> +#include <linux/init.h>
+>>>>> +#include <linux/moduleparam.h>
+>>>>> +#include <linux/fs.h>
+>>>>> +#include <linux/debugfs.h>
+>>>>> +#include <linux/slab.h>
+>>>>> +#include <linux/memory.h>
+>>>>> +#include <linux/memory_hotplug.h>
+>>>>> +#include <asm/machdep.h>
+>>>>> +#include <asm/debugfs.h>
+>>>>> +#include <asm/cacheflush.h>
+>>>>> +
+>>>>> +struct memtrace_entry {
+>>>>> +    void *mem;
+>>>>> +    u64 start;
+>>>>> +    u64 size;
+>>>>> +    u32 nid;
+>>>>> +    struct dentry *dir;
+>>>>> +    char name[16];
+>>>>> +};
+>>>> Little bit of description about the structure here will help.
+>>> Something like 'this enables us to keep track of the memory removed from
+>>> each node'?
+>> Right, something like that.
+>>
+>>>>> +
+>>>>> +static struct memtrace_entry *memtrace_array;
+>>>>> +static unsigned int memtrace_array_nr;
+>>>>> +
+>>>>> +static ssize_t memtrace_read(struct file *filp, char __user *ubuf,
+>>>>> +                 size_t count, loff_t *ppos)
+>>>>> +{
+>>>>> +    struct memtrace_entry *ent = filp->private_data;
+>>>>> +
+>>>>> +    return simple_read_from_buffer(ubuf, count, ppos, ent->mem,
+>>>>> ent->size);
+>>>>> +}
+>>>>> +
+>>>>> +static bool valid_memtrace_range(struct memtrace_entry *dev,
+>>>>> +                 unsigned long start, unsigned long size)
+>>>>> +{
+>>>>> +    if ((dev->start <= start) &&
+>>>> Switch the position of start and dev->start above. Will make
+>>>> it easy while reading.
+>>>>
+>>>>> +        ((start + size) <= (dev->start + dev->size)))
+>>>>> +        return true;
+>>>>> +
+>>>>> +    return false;
+>>>>> +}
+>>>>> +
+>>>>> +static int memtrace_mmap(struct file *filp, struct vm_area_struct
+>>>>> *vma)
+>>>>> +{
+>>>>> +    unsigned long size = vma->vm_end - vma->vm_start;
+>>>>> +    struct memtrace_entry *dev = filp->private_data;
+>>>>> +
+>>>>> +    if (!valid_memtrace_range(dev, vma->vm_pgoff << PAGE_SHIFT,
+>>>>> size))
+>>>>> +        return -EINVAL;
+>>>>> +
+>>>>> +    vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
+>>>> Why we do this ? Its coming from real RAM not IO memory. Then the page
+>>>> protection still needs changes ?
+>>> Once the memory is removed from the kernel mappings we want to mark
+>>> it as
+>>> uncachable.
+>> Got it but why ? Uncachable marking are for pages which will be mapped
+>> to IO ranges which should not be cached just to prevent the possibility
+>> of stale data.
+>>>>> +
+>>>>> +    if (io_remap_pfn_range(vma, vma->vm_start,
+>>>>> +                   vma->vm_pgoff + (dev->start >> PAGE_SHIFT),
+>>>>> +                   size, vma->vm_page_prot))
+>>>> You can just call remap_pfn_rang() instead though they are all the
+>>>> same.
+>>>> There is nothing I/O here should be explicit.
+>>> Good point.
+>>>
+>>>>> +        return -EAGAIN;
+>>>>> +
+>>>>> +    return 0;
+>>>>> +}
+>>>>> +
+>>>>> +static const struct file_operations memtrace_fops = {
+>>>>> +    .llseek = default_llseek,
+>>>>> +    .read    = memtrace_read,
+>>>>> +    .mmap    = memtrace_mmap,
+>>>>> +    .open    = simple_open,
+>>>>> +};
+>>>>> +
+>>>>> +static int check_memblock_online(struct memory_block *mem, void *arg)
+>>>>> +{
+>>>>> +    if (mem->state != MEM_ONLINE)
+>>>>> +        return -1;
+>>>>> +
+>>>>> +    return 0;
+>>>>> +}
+>>>>> +
+>>>>> +static int change_memblock_state(struct memory_block *mem, void *arg)
+>>>>> +{
+>>>>> +    unsigned long state = (unsigned long)arg;
+>>>>> +
+>>>>> +    mem->state = state;
+>>>>> +    return 0;
+>>>>> +}
+>>>>> +
+>>>>> +static bool memtrace_offline_pages(u32 nid, u64 start_pfn, u64
+>>>>> nr_pages)
+>>>>> +{
+>>>>> +    u64 end_pfn = start_pfn + nr_pages - 1;
+>>>>> +
+>>>>> +    if (walk_memory_range(start_pfn, end_pfn, NULL,
+>>>>> +        check_memblock_online))
+>>>>> +        return false;
+>>>>> +
+>>>>> +    walk_memory_range(start_pfn, end_pfn, (void *)MEM_GOING_OFFLINE,
+>>>>> +              change_memblock_state);
+>>>>> +
+>>>> walk_memory_range() might be expensive, cant we just change the state
+>>>> to MEM_GOING_OFFLINE while checking the state for MEM_ONLINE during
+>>>> the first loop and bail out if any of the memblock is not in MEM_ONLINE
+>>>> in the first place.
+>>> Good idea.
+>>>
+>>>>> +    mem_hotplug_begin();
+>>>>> +    if (offline_pages(start_pfn, nr_pages)) {
+>>>>> +        walk_memory_range(start_pfn, end_pfn, (void *)MEM_ONLINE,
+>>>>> +                  change_memblock_state);
+>>>>> +        mem_hotplug_done();
+>>>> Right, this can remain as is. If we fail to offline pages, mark the
+>>>> memory blocks as MEM_ONLINE again.
+>>>>
+>>>>> +        return false;
+>>>>> +    }
+>>>>> +
+>>>>> +    walk_memory_range(start_pfn, end_pfn, (void *)MEM_OFFLINE,
+>>>>> +              change_memblock_state);
+>>>>> +    mem_hotplug_done();
+>>>> Right.
+>>>>
+>>>>> +
+>>>>> +    /* Clear the dcache to remove any references to the memory */
+>>>>> +    flush_inval_dcache_range((u64)__va(start_pfn << PAGE_SHIFT),
+>>>>> +                   (u64)__va(end_pfn << PAGE_SHIFT));
+>>>> I am wondering why this is required now when we dont do anything for
+>>>> cache flushing calls from core VM. If its really required now then
+>>>> it also should be required during memory hot unplug operations in
+>>>> general as well.
+>>> I could not see if this was being done when removing memory so figured
+>>> that it was better to put it in than not do it.
+>> Looking at the definitions I had pointed out before which gets
+>> called from core VM, powerpc does not need to do anything specific
+>> for cache invalidation or flushing. But I am not really sure on
+>> this. So let it be.
+>>
+>>>> /*
+>>>>    * No cache flushing is required when address mappings are changed,
+>>>>    * because the caches on PowerPCs are physically addressed.
+>>>>    */
+>>>> #define flush_cache_all()            do { } while (0)
+>>>> #define flush_cache_mm(mm)            do { } while (0)
+>>>> #define flush_cache_dup_mm(mm)            do { } while (0)
+>>>> #define flush_cache_range(vma, start, end)    do { } while (0)
+>>>> #define flush_cache_page(vma, vmaddr, pfn)    do { } while (0)
+>>>> #define flush_icache_page(vma, page)        do { } while (0)
+>>>> #define flush_cache_vmap(start, end)        do { } while (0)
+>>>> #define flush_cache_vunmap(start, end)        do { } while (0)
+>>>>
+>>>>
+>>>>> +
+>>>>> +    /* Now remove memory from the mappings */
+>>>>> +    lock_device_hotplug();
+>>>>> +    remove_memory(nid, start_pfn << PAGE_SHIFT, nr_pages <<
+>>>>> PAGE_SHIFT);
+>>>>> +    unlock_device_hotplug();
+>>>> Right. Now we have successfully taken down the memory.
+>>>>
+>>>>> +
+>>>>> +    return true;
+>>>>> +}
+>>>>> +
+>>>>> +static u64 memtrace_alloc_node(u32 nid, u64 size)
+>>>>> +{
+>>>>> +    u64 start_pfn, end_pfn, nr_pages;
+>>>>> +    u64 base_pfn;
+>>>>> +
+>>>>> +    if (!NODE_DATA(nid) || !node_spanned_pages(nid))
+>>>>> +        return 0;
+>>>> Why NODE_DATA check is required here ? Each node should have one
+>>>> allocated and initialized by now, else we have bigger problems.
+>>>> Is there any specific reason to check for spanned pages instead
+>>>> of present/managed pages.
+>>> Anton wrote this check, so will need to confirm with him. I assume
+>>> we check node_spanned_pages() rather than node_present_pages()
+>>> because in arch/powerpc/mm/numa.c we set node_spanned_pages() and
+>>> not node_present_pages()?
+>> I guess any thing is okay but NODE_DATA() seems redundant though.
+> 
+> Agreed.
+> 
+>>
+>> struct pglist_data {
+>>          ..........................
+>>     unsigned long node_present_pages; /* total number of physical
+>> pages */
+>>     unsigned long node_spanned_pages; /* total size of physical page
+>>                          range, including holes */
+>>
+>> }
+>>
+>>>>> +
+>>>>> +    start_pfn = node_start_pfn(nid);
+>>>>> +    end_pfn = node_end_pfn(nid);
+>>>>> +    nr_pages = size >> PAGE_SHIFT;
+>>>>> +
+>>>>> +    /* Trace memory needs to be aligned to the size */
+>>>>> +    end_pfn = round_down(end_pfn - nr_pages, nr_pages);
+>>>>> +
+>>>>> +    for (base_pfn = end_pfn; base_pfn > start_pfn; base_pfn -=
+>>>>> nr_pages) {
+>>>>> +        if (memtrace_offline_pages(nid, base_pfn, nr_pages) == true)
+>>>>> +            return base_pfn << PAGE_SHIFT;
+>>>>> +    }
+>>>>> +
+>>>>> +    return 0;
+>>>>> +}
+>>>>> +
+>>>>> +static int memtrace_init_regions_runtime(u64 size)
+>>>>> +{
+>>>>> +    u64 m;
+>>>>> +    u32 nid;
+>>>>> +
+>>>>> +    memtrace_array = kzalloc(sizeof(struct memtrace_entry) *
+>>>>> +                num_online_nodes(), GFP_KERNEL);
+>>>>> +    if (!memtrace_array) {
+>>>>> +        pr_err("Failed to allocate memtrace_array\n");
+>>>>> +        return -EINVAL;
+>>>>> +    }
+>>>>> +
+>>>>> +    for_each_online_node(nid) {
+>>>>> +        m = memtrace_alloc_node(nid, size);
+>>>>> +        /*
+>>>>> +         * A node might not have any local memory, so warn but
+>>>>> +         * continue on.
+>>>>> +         */
+>>>>> +        if (!m) {
+>>>>> +            pr_err("Failed to allocate trace memory on node %d\n",
+>>>>> +                 nid);
+>>>>> +        } else {
+>>>>> +            pr_info("Allocated trace memory on node %d at
+>>>>> 0x%016llx\n",
+>>>>> +                 nid, m);
+>>>>> +
+>>>>> +            memtrace_array[memtrace_array_nr].start = m;
+>>>>> +            memtrace_array[memtrace_array_nr].size = size;
+>>>>> +            memtrace_array[memtrace_array_nr].nid = nid;
+>>>>> +            memtrace_array_nr++;
+>>>>> +        }
+>>>>> +    }
+>>>>> +    return 0;
+>>>>> +}
+>>>> All the pr_info() and pr_err() prints should have a "memtrace :"
+>>>> before the
+>>>> actual string to make it clear that its coming from this feature.
+>>>>
+>>> Good point!
+>>>>> +
+>>>>> +static struct dentry *memtrace_debugfs_dir;
+>>>>> +
+>>>>> +static int memtrace_init_debugfs(void)
+>>>>> +{
+>>>>> +    int ret = 0;
+>>>>> +    int i;
+>>>>> +
+>>>>> +    for (i = 0; i < memtrace_array_nr; i++) {
+>>>>> +        struct dentry *dir;
+>>>>> +        struct memtrace_entry *ent = &memtrace_array[i];
+>>>>> +
+>>>>> +        ent->mem = ioremap(ent->start, ent->size);
+>>>>> +        /* Warn but continue on */
+>>>>> +        if (!ent->mem) {
+>>>>> +            pr_err("Failed to map trace memory at 0x%llx\n",
+>>>>> +                 ent->start);
+>>>>> +            ret = -1;
+>>>>> +            continue;
+>>>>> +        }
+>>>>> +
+>>>>> +        snprintf(ent->name, 16, "%08x", ent->nid);
+>>>>> +        dir = debugfs_create_dir(ent->name, memtrace_debugfs_dir);
+>>>>> +        if (!dir)
+>>>>> +            return -1;
+>>>>> +
+>>>>> +        ent->dir = dir;
+>>>>> +        debugfs_create_file("trace", 0400, dir, ent, &memtrace_fops);
+>>>>> +        debugfs_create_x64("start", 0400, dir, &ent->start);
+>>>>> +        debugfs_create_x64("size", 0400, dir, &ent->size);
+>>>>> +        debugfs_create_u32("node", 0400, dir, &ent->nid);
+>>>>> +    }
+>>>> Oh okay, its creating all the four files. Please create corresponding
+>>>> to each of the files some where. Documentation/ABI/testing lists the
+>>>> actual system ABI on /sys/ not the sys/kernel/debug/ ones I guess.
+>>> I'm not exactly sure what you are saying here... Seeing that there is
+>>> documentation about debugfs files in Documentation/ABI/testing, I'll
+>>> follow suit
+>>> and put it there.
+>> I meant the same.
+>>
+>>>>> +
+>>>>> +    return ret;
+>>>>> +}
+>>>>> +
+>>>>> +static u64 memtrace_size;
+>>>>> +
+>>>>> +static int memtrace_enable_set(void *data, u64 val)
+>>>>> +{
+>>>>> +    if (memtrace_size)
+>>>>> +        return -EINVAL;
+>>>>> +
+>>>>> +    if (!val)
+>>>>> +        return -EINVAL;
+>>>>> +
+>>>>> +    /* Make sure size is aligned to a memory block */
+>>>>> +    if (val & (memory_block_size_bytes()-1))
+>>>> As I have mentioned earlier, this should be mentioned in the interface
+>>>> description some where.
+>>>>
+>>>>> +        return -EINVAL;
+>>>>> +
+>>>>> +    if (memtrace_init_regions_runtime(val))
+>>>>> +        return -EINVAL;
+>>>>> +
+>>>>> +    if (memtrace_init_debugfs())
+>>>>> +        return -EINVAL;
+>>>>> +
+>>>>> +    memtrace_size = val;
+>>>>> +
+>>>>> +    return 0;
+>>>>> +}
+>>>>> +
+>>>>> +static int memtrace_enable_get(void *data, u64 *val)
+>>>>> +{
+>>>>> +    *val = memtrace_size;
+>>>>> +    return 0;
+>>>>> +}
+>>>>> +
+>>>>> +DEFINE_SIMPLE_ATTRIBUTE(memtrace_init_fops, memtrace_enable_get,
+>>>>> memtrace_enable_set, "0x%016llx\n");
+>>>>> +
+>>>>> +static int memtrace_init(void)
+>>>>> +{
+>>>>> +    memtrace_debugfs_dir = debugfs_create_dir("memtrace",
+>>>>> powerpc_debugfs_root);
+>>>>> +    if (!memtrace_debugfs_dir)
+>>>>> +        return -1;
+>>>>> +
+>>>>> +    debugfs_create_file("enable", 0600, memtrace_debugfs_dir,
+>>>>> +                NULL, &memtrace_init_fops);
+>>>>> +
+>>>>> +    return 0;
+>>>>> +}
+>>>>> +machine_device_initcall(powernv, memtrace_init);
+>>>>> +
+>>>>>
+>>>> BTW how we start the tracing process for the trace to be collected
+>>>> in the
+>>>> interface before we can read them ? This interface does not seem to
+>>>> have
+>>>> a handler. When it directs the HW to start collecting the traces ?
+>>>>
+>>>> debugfs_create_x64("start", 0400, dir, &ent->start);
+>>>>
+>>>>
+>>> I think you're asking 'what is actually going to call this code and do
+>>> the tracing'?
+>> No, when you call this interface, where is the routine to start the
+>> actual tracing invoking appropriate platform functions or HW
+>> instructions ? I dont see such a function associated with 'start'
+>> interface mentioned above.
+> 
+> Essentially,
+> DEFINE_SIMPLE_ATTRIBUTE(memtrace_init_fops, memtrace_enable_get,
+> memtrace_enable_set, "0x%016llx\n");
+> 
+> means that when a number is written to the memtrace/enable file, the
+> number is
+> read as a u64 and passed to memtrace_enable_set()
 
-[auto build test ERROR on mmotm/master]
-[also build test ERROR on next-20170512]
-[if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
+Right, then we create the following interfaces for each entry of the memory
+trace. By now all the memory ranges are ioremapped.
 
-url:    https://github.com/0day-ci/linux/commits/Pavel-Tatashin/parallelized-struct-page-zeroing/20170507-061412
-base:   git://git.cmpxchg.org/linux-mmotm.git master
-config: ia64-gensparse_defconfig (attached as .config)
-compiler: ia64-linux-gcc (GCC) 6.2.0
-reproduce:
-        wget https://raw.githubusercontent.com/01org/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
-        chmod +x ~/bin/make.cross
-        # save the attached .config to linux build tree
-        make.cross ARCH=ia64 
++		debugfs_create_file("trace", 0400, dir, ent, &memtrace_fops);
++		debugfs_create_x64("start", 0400, dir, &ent->start);
++		debugfs_create_x64("size", 0400, dir, &ent->size);
++		debugfs_create_u32("node", 0400, dir, &ent->nid);
 
-All error/warnings (new ones prefixed by >>):
-
-   mm/sparse-vmemmap.c: In function '__earlyonly_bootmem_alloc':
->> mm/sparse-vmemmap.c:45:14: error: implicit declaration of function 'memblock_virt_alloc_try_nid_raw' [-Werror=implicit-function-declaration]
-     void *mem = memblock_virt_alloc_try_nid_raw(size, align, goal,
-                 ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
->> mm/sparse-vmemmap.c:45:14: warning: initialization makes pointer from integer without a cast [-Wint-conversion]
-   cc1: some warnings being treated as errors
-
-vim +/memblock_virt_alloc_try_nid_raw +45 mm/sparse-vmemmap.c
-
-    39	static void * __ref __earlyonly_bootmem_alloc(int node,
-    40					unsigned long size,
-    41					unsigned long align,
-    42					unsigned long goal,
-    43					bool zero)
-    44	{
-  > 45		void *mem = memblock_virt_alloc_try_nid_raw(size, align, goal,
-    46							    BOOTMEM_ALLOC_ACCESSIBLE,
-    47							    node);
-    48		if (!mem) {
-
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
-
---HlL+5n6rz5pIUxbD
-Content-Type: application/gzip
-Content-Disposition: attachment; filename=".config.gz"
-Content-Transfer-Encoding: base64
-
-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
-
---HlL+5n6rz5pIUxbD--
+Then what really starts the HW trace ? where we tell the HW to start tracing
+and put the trace details in the memory buffer allocated and ioremapped ?
+IIUC just making the memory ioremapped() wont start the trace automatically.
