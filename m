@@ -1,43 +1,33 @@
-Return-Path: <will.deacon@arm.com>
-Received: from foss.arm.com (foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 3wRLhM62vgzDqKX
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 May 2017 23:16:51 +1000 (AEST)
-Date: Mon, 15 May 2017 14:16:45 +0100
-From: Will Deacon <will.deacon@arm.com>
-To: Jiri Slaby <jslaby@suse.cz>
-Cc: tglx@linutronix.de, linux-kernel@vger.kernel.org,
- Richard Henderson <rth@twiddle.net>,
- Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
- Matt Turner <mattst88@gmail.com>, Vineet Gupta <vgupta@synopsys.com>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Richard Kuo <rkuo@codeaurora.org>, Tony Luck <tony.luck@intel.com>,
- Fenghua Yu <fenghua.yu@intel.com>, Michal Simek <monstr@monstr.eu>,
- Ralf Baechle <ralf@linux-mips.org>, Jonas Bonn <jonas@southpole.se>,
- Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
- Stafford Horne <shorne@gmail.com>,
- "James E.J. Bottomley" <jejb@parisc-linux.org>,
- Helge Deller <deller@gmx.de>,
+Return-Path: <ivan@de.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wRLVF4vhnzDqcM
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 May 2017 23:08:05 +1000 (AEST)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v4FD46vT187421
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 May 2017 09:08:03 -0400
+Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2afbmxv87v-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 May 2017 09:08:01 -0400
+Received: from localhost
+ by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ivan@de.ibm.com>;
+ Mon, 15 May 2017 14:08:00 +0100
+From: Ivan Mikhaylov <ivan@de.ibm.com>
+To: Alistair Popple <alistair@popple.id.au>,
+ Matt Porter <mporter@kernel.crashing.org>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>,
- "David S. Miller" <davem@davemloft.net>,
- Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
- Chris Zankel <chris@zankel.net>, Max Filippov <jcmvbkbc@gmail.com>,
- Arnd Bergmann <arnd@arndb.de>, x86@kernel.org,
- linux-alpha@vger.kernel.org, linux-snps-arc@lists.infradead.org,
- linux-arm-kernel@lists.infradead.org, linux-hexagon@vger.kernel.org,
- linux-ia64@vger.kernel.org, linux-mips@linux-mips.org,
- openrisc@lists.librecores.org, linux-parisc@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
- linux-xtensa@linux-xtensa.org, linux-arch@vger.kernel.org
-Subject: Re: [PATCH 1/1] futex: remove duplicated code
-Message-ID: <20170515131644.GA3605@arm.com>
-References: <20170515130742.18357-1-jslaby@suse.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170515130742.18357-1-jslaby@suse.cz>
+ Joel Stanley <joel@ozlabs.au.ibm.com>, Paul Mackerras <paulus@samba.org>,
+ Michael Ellerman <mpe@ellerman.id.au>
+Subject: [PATCH 0/4] Support for the FSP2 476fpe board in arch/powerpc
+Date: Mon, 15 May 2017 16:07:50 +0300
+Message-Id: <20170515130754.59363-1-ivan@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,31 +37,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Jiri,
+This adds support for the FSP2 (476fpe) board. This includes code in
+arch/powerpc/platforms/44x for board initialization. Only uImage is
+supported by now. Also there was some problem with whole watchdog TCR
+rewrite which causing unexpected very early panic and fixed by 4 patch.
+dts and defconfig for common usage included as well. Tested on FSP2 board
+with uboot and initramfs image.
 
-On Mon, May 15, 2017 at 03:07:42PM +0200, Jiri Slaby wrote:
-> There is code duplicated over all architecture's headers for
-> futex_atomic_op_inuser. Namely op decoding, access_ok check for uaddr,
-> and comparison of the result.
-> 
-> Remove this duplication and leave up to the arches only the needed
-> assembly which is now in arch_futex_atomic_op_inuser.
-> 
-> Note that s390 removed access_ok check in d12a29703 ("s390/uaccess:
-> remove pointless access_ok() checks") as access_ok there returns true.
-> We introduce it back to the helper for the sake of simplicity (it gets
-> optimized away anyway).
+Ivan Mikhaylov (4):
+  arch/powerpc/44x/fsp2: platform support for fsp2(476fpe) board
+  arch/powerpc/44x/fsp2: add device tree for fsp2 board
+  arch/powerpc/44x/fsp2: add defconfig for fsp2 board
+  arch/powerpc/44x/fsp2: wdt tcr update instead of whole rewrite
 
-Whilst I think this is a good idea, the code in question actually results
-in undefined behaviour per the C spec and is reported by UBSAN. See my
-patch fixing arm64 here (which I'd forgotten about):
-
-https://www.spinics.net/lists/linux-arch/msg38564.html
-
-But, as stated in the thread above, I think we should go a step further
-and remove FUTEX_OP_{OR,ANDN,XOR,OPARG_SHIFT} altogether. They don't
-appear to be used by userspace, and this whole thing is a total mess.
-
-Any thoughts?
-
-Will
+ arch/powerpc/boot/dts/fsp2.dts          |  608 +++++++++++++++++++++++++++++++
+ arch/powerpc/configs/44x/fsp2_defconfig |  126 +++++++
+ arch/powerpc/kernel/time.c              |   16 +
+ arch/powerpc/platforms/44x/Kconfig      |   12 +
+ arch/powerpc/platforms/44x/Makefile     |    1 +
+ arch/powerpc/platforms/44x/fsp2.c       |   62 ++++
+ 6 files changed, 825 insertions(+), 0 deletions(-)
+ create mode 100644 arch/powerpc/boot/dts/fsp2.dts
+ create mode 100644 arch/powerpc/configs/44x/fsp2_defconfig
+ create mode 100644 arch/powerpc/platforms/44x/fsp2.c
