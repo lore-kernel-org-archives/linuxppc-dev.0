@@ -1,20 +1,18 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wR7ps71GrzDqLL
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 May 2017 15:06:45 +1000 (AEST)
-In-Reply-To: <20170504204112.130d7735@roar.ozlabs.ibm.com>
-To: Nicholas Piggin <npiggin@gmail.com>,
- Abdul Haleem <abdhalee@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wR7pv1Z7fzDqLK
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 May 2017 15:06:47 +1000 (AEST)
+In-Reply-To: <20170508085016.32601-1-horia.geanta@nxp.com>
+To: =?utf-8?q?Horia_Geant=C4=83?= <horia.geanta@nxp.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: sachinp <sachinp@linux.vnet.ibm.com>,
- Stephen Rothwell <sfr@canb.auug.org.au>, ego <ego@linux.vnet.ibm.com>,
- linux-kernel <linux-kernel@vger.kernel.org>, mahesh@linux.vnet.ibm.com,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [linux-next, bisected,
- 1945bc45] build brakes for PowerPC BE configuration on LPAR
-Message-Id: <3wR7ps3BjQz9s86@ozlabs.org>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Nicholas Piggin <npiggin@gmail.com>, Mircea Pop <mircea.pop@nxp.com>
+Subject: Re: powerpc: fix distclean with Makefile.postlink
+Message-Id: <3wR7ps4vtfz9s75@ozlabs.org>
 Date: Mon, 15 May 2017 15:06:45 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -25,46 +23,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2017-05-04 at 10:41:12 UTC, Nicholas Piggin wrote:
-> On Thu, 04 May 2017 14:54:19 +0530
-> Abdul Haleem <abdhalee@linux.vnet.ibm.com> wrote:
+On Mon, 2017-05-08 at 08:50:16 UTC, =?utf-8?q?Horia_Geant=C4=83?= wrote:
+> Makefile.postlink always includes include/config/auto.conf, however
+> this file is not present in a clean kernel tree, causing make to fail:
 > 
-> > Hi,
-> > 
-> > linux-next build fails on BE config with next-20170424 onwards
-> > 
-> > the patch https://lkml.org/lkml/2017/4/20/994  fixes a similar issue
-> > with kvm guest build failure.
-> > 
-> > arch/powerpc/kernel/exceptions-64s.S: Assembler messages:
-> > arch/powerpc/kernel/exceptions-64s.S:395: Error: operand out of range
-> > (0xffffffffffff8280 is not between 0x0000000000000000 and
-> > 0x000000000000ffff)
-> > make[1]: *** [arch/powerpc/kernel/head_64.o] Error 1
-> > 
-> > Bisection resulted with the below bad commit.
-> > 
-> > commit 1945bc4549e5cb1f9aa873ec29191aa54dc851d
-> > Author: Nicholas Piggin <npiggin@gmail.com>
-> > Date:   Wed Apr 19 23:05:47 2017 +1000
-> > 
-> >     powerpc/64s: Fix POWER9 machine check handler from stop state
-> > 
-> >     Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
-> >     Reviewed-by: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
-> >     Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-> >     Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-> > 
-> >  arch/powerpc/include/asm/reg.h       |  1 +
-> >  arch/powerpc/kernel/exceptions-64s.S | 79 ++++++++++++++++++++++++++++++++++++++++++++-----------------------------------
-> >  arch/powerpc/kernel/idle_book3s.S    | 25 +++++++++++++++++++++++++
-> >  3 files changed, 70 insertions(+), 35 deletions(-)
-> > 
-> > the BE configuration file is attached.
-> > 
+> arch/powerpc/Makefile.postlink:10: include/config/auto.conf: No such file or directory
+> make[1]: *** No rule to make target `include/config/auto.conf'.  Stop.
+> make: *** [vmlinuxclean] Error 2
+> 
+> Change the inclusion such that file not being found does not trigger
+> an error.
+> 
+> Fixes: f188d0524d7e ("powerpc: Use the new post-link pass to check relocations")
+> Reported-by: Mircea Pop <mircea.pop@nxp.com>
+> Signed-off-by: Horia Geantă <horia.geanta@nxp.com>
+> Tested-by: Justin M. Forbes <jforbes@fedoraproject.org>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/6102c005a71b4a7a6433d43b887662
+https://git.kernel.org/powerpc/c/24e0bfbf63bac18495b0ad76115269
 
 cheers
