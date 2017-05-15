@@ -1,20 +1,24 @@
-Return-Path: <breno.debian@gmail.com>
-Received: from mail-qk0-f179.google.com (mail-qk0-f179.google.com
- [209.85.220.179])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mhocko@kernel.org>
+Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wRVlM5jyHzDqMh
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 May 2017 05:19:59 +1000 (AEST)
-Received: by mail-qk0-f179.google.com with SMTP id u75so107077113qka.3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 May 2017 12:19:59 -0700 (PDT)
-Date: Mon, 15 May 2017 16:19:50 -0300
-From: Breno Leitao <leitao@debian.org>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: gromero@br.ibm.com
-Subject: kernel BUG at mm/usercopy.c:72!
-Message-ID: <20170515191949.GA13641@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wRW8b49F0zDqNs
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 May 2017 05:38:23 +1000 (AEST)
+Date: Mon, 15 May 2017 21:38:18 +0200
+From: Michal Hocko <mhocko@kernel.org>
+To: Pasha Tatashin <pasha.tatashin@oracle.com>
+Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
+ linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, borntraeger@de.ibm.com,
+ heiko.carstens@de.ibm.com, davem@davemloft.net
+Subject: Re: [v3 0/9] parallelized "struct page" zeroing
+Message-ID: <20170515193817.GC7551@dhcp22.suse.cz>
+References: <1494003796-748672-1-git-send-email-pasha.tatashin@oracle.com>
+ <20170509181234.GA4397@dhcp22.suse.cz>
+ <e19b241d-be27-3c9a-8984-2fb20211e2e1@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <e19b241d-be27-3c9a-8984-2fb20211e2e1@oracle.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,55 +28,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello,
+On Mon 15-05-17 14:12:10, Pasha Tatashin wrote:
+> Hi Michal,
+> 
+> After looking at your suggested memblock_virt_alloc_core() change again, I
+> decided to keep what I have. I do not want to inline
+> memblock_virt_alloc_internal(), because it is not a performance critical
+> path, and by inlining it we will unnecessarily increase the text size on all
+> platforms.
 
-Kernel 4.12-rc1 is showing a bug when I try it on a POWER8 virtual
-machine. Justing SSHing into the machine causes this issue.
+I do not insist but I would really _prefer_ if the bool zero argument
+didn't proliferate all over the memblock API.
+ 
+> Also, because it will be very hard to make sure that no platform regresses
+> by making memset() default in _memblock_virt_alloc_core() (as I already
+> showed last week at least sun4v SPARC64 will require special changes in
+> order for this to work), I decided to make it available only for "deferred
+> struct page init" case. As, what is already in the patch.
 
-	[23.138124] usercopy: kernel memory overwrite attempt detected to d000000003d80030 (mm_struct) (560 bytes)
-	[23.138195] ------------[ cut here ]------------
-	[23.138229] kernel BUG at mm/usercopy.c:72!
-	[23.138252] Oops: Exception in kernel mode, sig: 5 [#3]
-	[23.138280] SMP NR_CPUS=2048 
-	[23.138280] NUMA 
-	[23.138302] pSeries
-	[23.138330] Modules linked in:
-	[23.138354] CPU: 4 PID: 2215 Comm: sshd Tainted: G      D         4.12.0-rc1+ #9
-	[23.138395] task: c0000001e272dc00 task.stack: c0000001e27b0000
-	[23.138430] NIP: c000000000342358 LR: c000000000342354 CTR: c0000000006eb060
-	[23.138472] REGS: c0000001e27b3a00 TRAP: 0700   Tainted: G      D          (4.12.0-rc1+)
-	[23.138513] MSR: 8000000000029033 <SF,EE,ME,IR,DR,RI,LE>
-	[23.138517]   CR: 28004222  XER: 20000000
-	[23.138565] CFAR: c000000000b34500 SOFTE: 1 
-	[23.138565] GPR00: c000000000342354 c0000001e27b3c80 c00000000142a000 000000000000005e 
-	[23.138565] GPR04: c0000001ffe0ade8 c0000001ffe21bf8 2920283536302062 79746573290d0a74 
-	[23.138565] GPR08: 0000000000000007 c000000000f61864 00000001feeb0000 3064206f74206465 
-	[23.138565] GPR12: 0000000000004400 c00000000fb42600 0000000000000015 00000000545bdc40 
-	[23.138565] GPR16: 00000000545c49c8 000001000b4b8890 00007ffff78c26f0 00000000545cf000 
-	[23.138565] GPR20: 00000000546109c8 000000000000c7e8 0000000054610010 00007ffff78c22e8 
-	[23.138565] GPR24: 00000000545c8c40 c0000000ff6bcef0 c0000000001e5220 0000000000000230 
-	[23.138565] GPR28: d000000003d80260 0000000000000000 0000000000000230 d000000003d80030 
-	[23.138920] NIP [c000000000342358] __check_object_size+0x88/0x2d0
-	[23.138956] LR [c000000000342354] __check_object_size+0x84/0x2d0
-	[23.138990] Call Trace:
-	[23.139006] [c0000001e27b3c80] [c000000000342354] __check_object_size+0x84/0x2d0 (unreliable)
-	[23.139056] [c0000001e27b3d00] [c0000000009f5ba8] bpf_prog_create_from_user+0xa8/0x1a0
-	[23.139099] [c0000001e27b3d60] [c0000000001e5d30] do_seccomp+0x120/0x720
-	[23.139136] [c0000001e27b3dd0] [c0000000000fd53c] SyS_prctl+0x2ac/0x6b0
-	[23.139172] [c0000001e27b3e30] [c00000000000af84] system_call+0x38/0xe0
-	[23.139218] Instruction dump:
-	[23.139240] 60000000 60420000 3c82ff94 3ca2ff9d 38841788 38a5e868 3c62ff95 7fc8f378 
-	[23.139283] 7fe6fb78 386310c0 487f2169 60000000 <0fe00000> 60420000 2ba30010 409d018c 
-	[23.139328] ---[ end trace 1a1dc952a4b7c4af ]---
-	
-I found that kernel 4.11 does not have this issue. I also found that, if
-I revert 517e1fbeb65f5eade8d14f46ac365db6c75aea9b, I do not see the
-problem.
+I do not think this is the right approach. Your measurements just show
+that sparc could have a more optimized memset for small sizes. If you
+keep the same memset only for the parallel initialization then you
+just hide this fact. I wouldn't worry about other architectures. All
+sane architectures should simply work reasonably well when touching a
+single or only few cache lines at the same time. If some arches really
+suffer from small memsets then the initialization should be driven by a
+specific ARCH_WANT_LARGE_PAGEBLOCK_INIT rather than making this depend
+on DEFERRED_INIT. Or if you are too worried then make it opt-in and make
+it depend on ARCH_WANT_PER_PAGE_INIT and make it enabled for x86 and
+sparc after memset optimization.
 
-On the other side, if I cherry-pick commit
-517e1fbeb65f5eade8d14f46ac365db6c75aea9b into 4.11, I start seeing the
-same issue also on 4.11.
-
-FWIW I am using the following .config file[1].
-
-[1] http://paste.ubuntu.com/24582478/
+-- 
+Michal Hocko
+SUSE Labs
