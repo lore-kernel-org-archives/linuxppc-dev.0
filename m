@@ -1,17 +1,26 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <viresh.kumar@linaro.org>
+Received: from mail-pf0-x22a.google.com (mail-pf0-x22a.google.com
+ [IPv6:2607:f8b0:400e:c00::22a])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wR7pw40rBzDqLL
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 May 2017 15:06:48 +1000 (AEST)
-In-Reply-To: <1494317148-18554-1-git-send-email-mpe@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
-From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: paulus@samba.org, aneesh.kumar@linux.vnet.ibm.com
-Subject: Re: powerpc/mm/book3s/64: Rework page table geometry for lower memory
- usage
-Message-Id: <3wR7pt2l3Cz9s8J@ozlabs.org>
-Date: Mon, 15 May 2017 15:06:46 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wR8By4PnRzDqLb
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 May 2017 15:24:08 +1000 (AEST)
+Received: by mail-pf0-x22a.google.com with SMTP id n23so52070807pfb.2
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 May 2017 22:24:08 -0700 (PDT)
+Date: Mon, 15 May 2017 10:54:03 +0530
+From: Viresh Kumar <viresh.kumar@linaro.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>,
+ Ingo Molnar <mingo@kernel.org>, Steven Rostedt <rostedt@goodmis.org>,
+ Mark Rutland <mark.rutland@arm.com>,
+ "Rafael J. Wysocki" <rjw@rjwysocki.net>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [patch 09/18] cpufreq/pasemi: Adjust system_state check
+Message-ID: <20170515052403.GX17481@vireshk-i7>
+References: <20170514182716.347236777@linutronix.de>
+ <20170514183613.160312642@linutronix.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20170514183613.160312642@linutronix.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,34 +30,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2017-05-09 at 08:05:48 UTC, Michael Ellerman wrote:
-> Recently in commit f6eedbba7a26 ("powerpc/mm/hash: Increase VA range to 128TB")
-> we increased the virtual address space for user processes to 128TB by default,
-> and up to 512TB if user space opts in.
+On 14-05-17, 20:27, Thomas Gleixner wrote:
+> To enable smp_processor_id() and might_sleep() debug checks earlier, it's
+> required to add system states between SYSTEM_BOOTING and SYSTEM_RUNNING.
 > 
-> This obviously required expanding the range of the Linux page tables. For Book3s
-> 64-bit using hash and with PAGE_SIZE=64K, we increased the PGD to 2^15 entries.
-> This meant we could cover the full address range, while still being able to
-> insert a 16G hugepage at the PGD level and a 16M hugepage in the PMD.
+> Adjust the system_state check in pas_cpufreq_cpu_exit() to handle the extra
+> states.
 > 
-> The downside of that geometry is that it uses a lot of memory for the PGD, and
-> in particular makes the PGD a 4-page allocation, which means it's much more
-> likely to fail under memory pressure.
+> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> Cc: Viresh Kumar <viresh.kumar@linaro.org>
+> Cc: linuxppc-dev@lists.ozlabs.org
+> ---
+>  drivers/cpufreq/pasemi-cpufreq.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 > 
-> Instead we can make the PMD larger, so that a single PUD entry maps 16G,
-> allowing the 16G hugepages to sit at that level in the tree. We're then able to
-> split the remaining bits between the PUG and PGD. We make the PGD slightly
-> larger as that results in lower memory usage for typical programs.
-> 
-> When THP is enabled the PMD actually doubles in size, to 2^11 entries, or 2^14
-> bytes, which is large but still < PAGE_SIZE.
-> 
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-> Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-> Reviewed-by: Balbir Singh <bsingharora@gmail.com>
+> --- a/drivers/cpufreq/pasemi-cpufreq.c
+> +++ b/drivers/cpufreq/pasemi-cpufreq.c
+> @@ -226,7 +226,7 @@ static int pas_cpufreq_cpu_exit(struct c
+>  	 * We don't support CPU hotplug. Don't unmap after the system
+>  	 * has already made it to a running state.
+>  	 */
+> -	if (system_state != SYSTEM_BOOTING)
+> +	if (system_state >= SYSTEM_RUNNING)
+>  		return 0;
+>  
+>  	if (sdcasr_mapbase)
 
-Applied to powerpc next.
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-https://git.kernel.org/powerpc/c/ba95b5d0359609b4ec8010f77c40ab
-
-cheers
+-- 
+viresh
