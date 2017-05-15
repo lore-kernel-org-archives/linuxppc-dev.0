@@ -1,26 +1,57 @@
-Return-Path: <viresh.kumar@linaro.org>
-Received: from mail-pf0-x22a.google.com (mail-pf0-x22a.google.com
- [IPv6:2607:f8b0:400e:c00::22a])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <srs0=48ts=4v=linux.vnet.ibm.com=hbathini@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wR8By4PnRzDqLb
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 May 2017 15:24:08 +1000 (AEST)
-Received: by mail-pf0-x22a.google.com with SMTP id n23so52070807pfb.2
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 May 2017 22:24:08 -0700 (PDT)
-Date: Mon, 15 May 2017 10:54:03 +0530
-From: Viresh Kumar <viresh.kumar@linaro.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>,
- Ingo Molnar <mingo@kernel.org>, Steven Rostedt <rostedt@goodmis.org>,
- Mark Rutland <mark.rutland@arm.com>,
- "Rafael J. Wysocki" <rjw@rjwysocki.net>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [patch 09/18] cpufreq/pasemi: Adjust system_state check
-Message-ID: <20170515052403.GX17481@vireshk-i7>
-References: <20170514182716.347236777@linutronix.de>
- <20170514183613.160312642@linutronix.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wRC1844BZzDqMV
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 May 2017 17:30:52 +1000 (AEST)
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3wRC183Rlqz8sxK
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 May 2017 17:30:52 +1000 (AEST)
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3wRC176c2Jz9s7h
+ for <linuxppc-dev@ozlabs.org>; Mon, 15 May 2017 17:30:51 +1000 (AEST)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v4F7Sqoo032807
+ for <linuxppc-dev@ozlabs.org>; Mon, 15 May 2017 03:30:46 -0400
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2aee5j6uyh-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Mon, 15 May 2017 03:30:45 -0400
+Received: from localhost
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <hbathini@linux.vnet.ibm.com>;
+ Mon, 15 May 2017 17:30:42 +1000
+Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v4F7UX4651118254
+ for <linuxppc-dev@ozlabs.org>; Mon, 15 May 2017 17:30:41 +1000
+Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
+ by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v4F7U9rn021992
+ for <linuxppc-dev@ozlabs.org>; Mon, 15 May 2017 17:30:09 +1000
+Subject: Re: [PATCH v5 2/2] powerpc/fadump: update documentation about
+ 'fadump_append=' parameter
+To: =?UTF-8?Q?Michal_Such=c3=a1nek?= <msuchanek@suse.de>
+References: <149383572199.1694.10940679065871920087.stgit@hbathini.in.ibm.com>
+ <149383576571.1694.13692135068122879322.stgit@hbathini.in.ibm.com>
+ <20170510180132.1fa0c1ec@kitsune.suse.cz>
+ <e1485f4d-f346-fea6-ee2a-9c7a6b2f6587@linux.vnet.ibm.com>
+ <20170511151637.19d4a23f@kitsune.suse.cz>
+ <b1c1c890-fac0-dede-4b80-0fc12f1e95e7@linux.vnet.ibm.com>
+ <20170512174209.67ccfd45@kitsune.suse.cz>
+Cc: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>,
+ linuxppc-dev <linuxppc-dev@ozlabs.org>
+From: Hari Bathini <hbathini@linux.vnet.ibm.com>
+Date: Mon, 15 May 2017 12:59:46 +0530
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170514183613.160312642@linutronix.de>
+In-Reply-To: <20170512174209.67ccfd45@kitsune.suse.cz>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <b6a968fe-378e-1273-a996-43c716f276bd@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,34 +61,108 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 14-05-17, 20:27, Thomas Gleixner wrote:
-> To enable smp_processor_id() and might_sleep() debug checks earlier, it's
-> required to add system states between SYSTEM_BOOTING and SYSTEM_RUNNING.
-> 
-> Adjust the system_state check in pas_cpufreq_cpu_exit() to handle the extra
-> states.
-> 
-> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-> Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> Cc: linuxppc-dev@lists.ozlabs.org
-> ---
->  drivers/cpufreq/pasemi-cpufreq.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> --- a/drivers/cpufreq/pasemi-cpufreq.c
-> +++ b/drivers/cpufreq/pasemi-cpufreq.c
-> @@ -226,7 +226,7 @@ static int pas_cpufreq_cpu_exit(struct c
->  	 * We don't support CPU hotplug. Don't unmap after the system
->  	 * has already made it to a running state.
->  	 */
-> -	if (system_state != SYSTEM_BOOTING)
-> +	if (system_state >= SYSTEM_RUNNING)
->  		return 0;
->  
->  	if (sdcasr_mapbase)
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
--- 
-viresh
+On Friday 12 May 2017 09:12 PM, Michal Suchánek wrote:
+> On Fri, 12 May 2017 15:15:33 +0530
+> Hari Bathini <hbathini@linux.vnet.ibm.com> wrote:
+>
+>> On Thursday 11 May 2017 06:46 PM, Michal Suchánek wrote:
+>>> On Thu, 11 May 2017 02:00:11 +0530
+>>> Hari Bathini <hbathini@linux.vnet.ibm.com> wrote:
+>>>   
+>>>> Hello Michal,
+>>>>
+>>>> On Wednesday 10 May 2017 09:31 PM, Michal Suchánek wrote:
+>>>>> Hello,
+>>>>>
+>>>>> On Wed, 03 May 2017 23:52:52 +0530
+>>>>> Hari Bathini <hbathini@linux.vnet.ibm.com> wrote:
+>>>>>      
+>>>>>> With the introduction of 'fadump_append=' parameter to pass
+>>>>>> additional parameters to fadump (capture) kernel, update
+>>>>>> documentation about it.
+>>>>>>
+>>>>>> Signed-off-by: Hari Bathini <hbathini@linux.vnet.ibm.com>
+>>>>>> ---
+>>>>>>
+>>>>>> Changes from v4:
+>>>>>> * Based on top of patchset that includes
+>>>>>>      https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git/commit/?h=akpm&id=05f383cdfba8793240e73f9a9fbff4e25d66003f
+>>>>>>
+>>>>>>
+>>>>>>     Documentation/powerpc/firmware-assisted-dump.txt |   10
+>>>>>> +++++++++- 1 file changed, 9 insertions(+), 1 deletion(-)
+>>>>>>
+>>>>>> diff --git a/Documentation/powerpc/firmware-assisted-dump.txt
+>>>>>> b/Documentation/powerpc/firmware-assisted-dump.txt index
+>>>>>> 8394bc8..6327193 100644 ---
+>>>>>> a/Documentation/powerpc/firmware-assisted-dump.txt +++
+>>>>>> b/Documentation/powerpc/firmware-assisted-dump.txt @@ -162,7
+>>>>>> +162,15 @@ How to enable firmware-assisted dump (fadump):
+>>>>>>     1. Set config option CONFIG_FA_DUMP=y and build kernel.
+>>>>>>     2. Boot into linux kernel with 'fadump=on' kernel cmdline
+>>>>>> option. -3. Optionally, user can also set 'crashkernel=' kernel
+>>>>>> cmdline +3. A user can pass additional command line parameters
+>>>>>> as a comma
+>>>>>> +   separated list through 'fadump_append=' parameter, to be
+>>>>>> enforced
+>>>>>> +   when fadump is active. For example, if parameters like
+>>>>>> nr_cpus=1,
+>>>>>> +   numa=off & udev.children-max=2 are to be enforced when fadump
+>>>>>> is
+>>>>>> +   active,
+>>>>>> 'fadump_append=nr_cpus=1,numa=off,udev.children-max=2'
+>>>>>> +   can be passed in command line, which will be replaced with
+>>>>>> +   "nr_cpus=1 numa=off udev.children-max=2" when fadump is
+>>>>>> active.
+>>>>>> +   This helps in reducing memory consumption during dump
+>>>>>> capture. +4. Optionally, user can also set 'crashkernel=' kernel
+>>>>>> cmdline to specify size of the memory to reserve for boot memory
+>>>>>> dump preservation.
+>>>>>>     
+>>>>>>      
+>>>>> Writing your own deficient parser for comma separated arguments
+>>>>> when perfectly fine parser for space separated quoted arguments
+>>>>> exists in the kernel and the bootloader does not seem like a good
+>>>>> idea to me.
+>>>> Couple of things that prompted me for v5 are:
+>>>>      1. Using parse_early_options() limits the kind of parameters
+>>>>         that can be passed to fadump capture kernel. Passing
+>>>> parameters like systemd.unit= & udev.childern.max= has no effect
+>>>> with v4. Updating
+>>>>         boot_command_line parameter, when fadump is active, seems a
+>>>> better alternative.
+>>>>
+>>>>      2. Passing space-separated quoted arguments is not working
+>>>>         as intended with lilo. Updating bootloader with the below
+>>>>         entry in /etc/lilo.conf file results in a missing append
+>>>>         entry in /etc/yaboot.conf file.
+>>>>
+>>>>           append = "quiet sysrq=1 insmod=sym53c8xx insmod=ipr
+>>>> crashkernel=512M-:256M fadump_append=\"nr_cpus=1 numa=off
+>>>> udev.children-max=2\""
+>>> Meaning that a script that emulates LILO semantics on top of yaboot
+>>> which is completely capable of passing qouted space separated
+>>> arguments fails. IMHO it is more reasonable to fix the script or
+>>> whatever adaptation layer or use yaboot directly than working
+>>> around bug in said script by introducing a new argument parser in
+>>> the kernel.
+>>>
+>>>   
+>> Hmmm.. while trying to implement space-separated parameter list with
+>> quotes as syntax for fadump_append parameter, noticed that it can
+>> make implemenation
+>> more vulnerable. Here are some problems I am facing while
+>> implementing this..
+> How so?
+>
+> presumably you can reuse parse_args even if you do not register with
+> early_param and call it yourself. Then your parsing of fadump_append is
+
+
+I wasn't aware of that. Thanks for pointing it out, Michal.
+Will try to use parse_args and get back.
+
+Thanks
+Hari
