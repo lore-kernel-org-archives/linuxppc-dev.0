@@ -2,20 +2,18 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wRFQh30dmzDqMV
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 May 2017 19:19:40 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wRFWP476pzDqMV
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 May 2017 19:23:45 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>,
- Steven Rostedt <rostedt@goodmis.org>, Mark Rutland <mark.rutland@arm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [patch 06/18] powerpc: Adjust system_state check
-In-Reply-To: <20170514183612.922744553@linutronix.de>
-References: <20170514182716.347236777@linutronix.de>
- <20170514183612.922744553@linutronix.de>
-Date: Mon, 15 May 2017 19:19:39 +1000
-Message-ID: <877f1ibhp0.fsf@concordia.ellerman.id.au>
+To: Cyril Bur <cyrilbur@gmail.com>, Michael Neuling <mikey@neuling.org>
+Cc: linuxppc-dev@lists.ozlabs.org, Breno Leitao <brenohl@br.ibm.com>,
+ Gustavo Bueno Romero <gromero@br.ibm.com>
+Subject: Re: [PATCH 1/2] powerpc/tm: Fix FP and VMX register corruption
+In-Reply-To: <1494602774.21781.3.camel@gmail.com>
+References: <20170508071627.21851-1-mikey@neuling.org>
+ <1494602774.21781.3.camel@gmail.com>
+Date: Mon, 15 May 2017 19:23:44 +1000
+Message-ID: <874lwmbhi7.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,23 +25,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Thomas Gleixner <tglx@linutronix.de> writes:
+Cyril Bur <cyrilbur@gmail.com> writes:
 
-> To enable smp_processor_id() and might_sleep() debug checks earlier, it's
-> required to add system states between SYSTEM_BOOTING and SYSTEM_RUNNING.
+> On Mon, 2017-05-08 at 17:16 +1000, Michael Neuling wrote:
+>> In this commit:
+>>   commit dc3106690b20305c3df06b42456fe386dd632ac9
+>>   Author: Cyril Bur <cyrilbur@gmail.com>
+>>   powerpc: tm: Always use fp_state and vr_state to store live registers
+>> 
+>> A section of code was removed that copied the current state to
+>> checkpointed state.  This should not have been removed.
+>> 
 >
-> Adjust the system_state check in smp_generic_cpu_bootable() to handle the
-> extra states.
+> -[space]
 >
-> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Paul Mackerras <paulus@samba.org>
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Cc: linuxppc-dev@lists.ozlabs.org
-> ---
->  arch/powerpc/kernel/smp.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>> When an FP unavailable is taken inside a transaction, we need to abort
+>> the transaction. This is because at the time of the tbegin, the FP
+>> state is bogus so the state stored in the checkpointed registers is
+>> incorrect. To fix this, we treclaim (to get the checkpointed GPRs) and
+>> then copy the thread_struct FP live state into the checkpointed
+>> state. We then trecheckpoint so that the FP state is correctly
+>> restored into the CPU.
+>> 
+>> The coping of the FP registers from live to checkpointed is what was
+          ^
+Missed the actual spelling error.
 
-Acked-by: Michael Ellerman <mpe@ellerman.id.au>
+8D
 
 cheers
