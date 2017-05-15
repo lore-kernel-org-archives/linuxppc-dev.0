@@ -1,22 +1,36 @@
-Return-Path: <mpe@ellerman.id.au>
+Return-Path: <srs0=rcyb=4v=suse.de=msuchanek@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wRFXq5w7KzDqbY
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 May 2017 19:24:59 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Jessica Yu <jeyu@redhat.com>
-Cc: linuxppc-dev@ozlabs.org, rusty@rustcorp.com.au,
- linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] powerpc/modules: If mprofile-kernel is enabled add it to
- vermagic
-In-Reply-To: <20170512072012.lbiuoqexbai75ypy@jeyu>
-References: <1494399469-17833-1-git-send-email-mpe@ellerman.id.au>
- <20170512072012.lbiuoqexbai75ypy@jeyu>
-Date: Mon, 15 May 2017 19:24:58 +1000
-Message-ID: <871srqbhg5.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wRFdp0TBszDqMh
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 May 2017 19:29:18 +1000 (AEST)
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3wRFdn6xkyz8t7b
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 May 2017 19:29:17 +1000 (AEST)
+Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3wRFdn1m3Nz9s4s
+ for <linuxppc-dev@ozlabs.org>; Mon, 15 May 2017 19:29:17 +1000 (AEST)
+Date: Mon, 15 May 2017 11:29:01 +0200
+From: Michal =?UTF-8?B?U3VjaMOhbmVr?= <msuchanek@suse.de>
+To: Hari Bathini <hbathini@linux.vnet.ibm.com>
+Cc: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>, linuxppc-dev
+ <linuxppc-dev@ozlabs.org>
+Subject: Re: [PATCH v5 2/2] powerpc/fadump: update documentation about
+ 'fadump_append=' parameter
+Message-ID: <20170515112901.67d32e76@kitsune.suse.cz>
+In-Reply-To: <b6a968fe-378e-1273-a996-43c716f276bd@linux.vnet.ibm.com>
+References: <149383572199.1694.10940679065871920087.stgit@hbathini.in.ibm.com>
+ <149383576571.1694.13692135068122879322.stgit@hbathini.in.ibm.com>
+ <20170510180132.1fa0c1ec@kitsune.suse.cz>
+ <e1485f4d-f346-fea6-ee2a-9c7a6b2f6587@linux.vnet.ibm.com>
+ <20170511151637.19d4a23f@kitsune.suse.cz>
+ <b1c1c890-fac0-dede-4b80-0fc12f1e95e7@linux.vnet.ibm.com>
+ <20170512174209.67ccfd45@kitsune.suse.cz>
+ <b6a968fe-378e-1273-a996-43c716f276bd@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,52 +40,141 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Jessica Yu <jeyu@redhat.com> writes:
+Hello,
 
-> +++ Michael Ellerman [10/05/17 16:57 +1000]:
->>On powerpc we can build the kernel with two different ABIs for mcount(), which
->>is used by ftrace. Kernels built with one ABI do not know how to load modules
->>built with the other ABI. The new style ABI is called "mprofile-kernel", for
->>want of a better name.
->>
->>Currently if we build a module using the old style ABI, and the kernel with
->>mprofile-kernel, when we load the module we'll oops something like:
->>
->>  # insmod autofs4-no-mprofile-kernel.ko
->>  ftrace-powerpc: Unexpected instruction f8810028 around bl _mcount
->>  ------------[ cut here ]------------
->>  WARNING: CPU: 6 PID: 3759 at ../kernel/trace/ftrace.c:2024 ftrace_bug+0x2b8/0x3c0
->>  CPU: 6 PID: 3759 Comm: insmod Not tainted 4.11.0-rc3-gcc-5.4.1-00017-g5a61ef74f269 #11
->>  ...
->>  NIP [c0000000001eaa48] ftrace_bug+0x2b8/0x3c0
->>  LR [c0000000001eaff8] ftrace_process_locs+0x4a8/0x590
->>  Call Trace:
->>    alloc_pages_current+0xc4/0x1d0 (unreliable)
->>    ftrace_process_locs+0x4a8/0x590
->>    load_module+0x1c8c/0x28f0
->>    SyS_finit_module+0x110/0x140
->>    system_call+0x38/0xfc
->>  ...
->>  ftrace failed to modify
->>  [<d000000002a31024>] 0xd000000002a31024
->>   actual:   35:65:00:48
->>
->>We can avoid this by including in the vermagic whether the kernel/module was
->>built with mprofile-kernel. Which results in:
->>
->>  # insmod autofs4-pg.ko
->>  autofs4: version magic
->>  '4.11.0-rc3-gcc-5.4.1-00017-g5a61ef74f269 SMP mod_unload modversions '
->>  should be
->>  '4.11.0-rc3-gcc-5.4.1-00017-g5a61ef74f269-dirty SMP mod_unload modversions mprofile-kernel'
->>  insmod: ERROR: could not insert module autofs4-pg.ko: Invalid module format
->>
->>Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
->
-> Looks good to me:
->
-> Acked-by: Jessica Yu <jeyu@redhat.com>
+On Mon, 15 May 2017 12:59:46 +0530
+Hari Bathini <hbathini@linux.vnet.ibm.com> wrote:
 
-Thanks.
+> On Friday 12 May 2017 09:12 PM, Michal Such=C3=A1nek wrote:
+> > On Fri, 12 May 2017 15:15:33 +0530
+> > Hari Bathini <hbathini@linux.vnet.ibm.com> wrote:
+> > =20
+> >> On Thursday 11 May 2017 06:46 PM, Michal Such=C3=A1nek wrote: =20
+> >>> On Thu, 11 May 2017 02:00:11 +0530
+> >>> Hari Bathini <hbathini@linux.vnet.ibm.com> wrote:
+> >>>    =20
+> >>>> Hello Michal,
+> >>>>
+> >>>> On Wednesday 10 May 2017 09:31 PM, Michal Such=C3=A1nek wrote: =20
+> >>>>> Hello,
+> >>>>>
+> >>>>> On Wed, 03 May 2017 23:52:52 +0530
+> >>>>> Hari Bathini <hbathini@linux.vnet.ibm.com> wrote:
+> >>>>>       =20
+> >>>>>> With the introduction of 'fadump_append=3D' parameter to pass
+> >>>>>> additional parameters to fadump (capture) kernel, update
+> >>>>>> documentation about it.
+> >>>>>>
+> >>>>>> Signed-off-by: Hari Bathini <hbathini@linux.vnet.ibm.com>
+> >>>>>> ---
+> >>>>>>
+> >>>>>> Changes from v4:
+> >>>>>> * Based on top of patchset that includes
+> >>>>>>      https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-ne=
+xt.git/commit/?h=3Dakpm&id=3D05f383cdfba8793240e73f9a9fbff4e25d66003f
+> >>>>>>
+> >>>>>>
+> >>>>>>     Documentation/powerpc/firmware-assisted-dump.txt |   10
+> >>>>>> +++++++++- 1 file changed, 9 insertions(+), 1 deletion(-)
+> >>>>>>
+> >>>>>> diff --git a/Documentation/powerpc/firmware-assisted-dump.txt
+> >>>>>> b/Documentation/powerpc/firmware-assisted-dump.txt index
+> >>>>>> 8394bc8..6327193 100644 ---
+> >>>>>> a/Documentation/powerpc/firmware-assisted-dump.txt +++
+> >>>>>> b/Documentation/powerpc/firmware-assisted-dump.txt @@ -162,7
+> >>>>>> +162,15 @@ How to enable firmware-assisted dump (fadump):
+> >>>>>>     1. Set config option CONFIG_FA_DUMP=3Dy and build kernel.
+> >>>>>>     2. Boot into linux kernel with 'fadump=3Don' kernel cmdline
+> >>>>>> option. -3. Optionally, user can also set 'crashkernel=3D' kernel
+> >>>>>> cmdline +3. A user can pass additional command line parameters
+> >>>>>> as a comma
+> >>>>>> +   separated list through 'fadump_append=3D' parameter, to be
+> >>>>>> enforced
+> >>>>>> +   when fadump is active. For example, if parameters like
+> >>>>>> nr_cpus=3D1,
+> >>>>>> +   numa=3Doff & udev.children-max=3D2 are to be enforced when
+> >>>>>> fadump is
+> >>>>>> +   active,
+> >>>>>> 'fadump_append=3Dnr_cpus=3D1,numa=3Doff,udev.children-max=3D2'
+> >>>>>> +   can be passed in command line, which will be replaced with
+> >>>>>> +   "nr_cpus=3D1 numa=3Doff udev.children-max=3D2" when fadump is
+> >>>>>> active.
+> >>>>>> +   This helps in reducing memory consumption during dump
+> >>>>>> capture. +4. Optionally, user can also set 'crashkernel=3D'
+> >>>>>> kernel cmdline to specify size of the memory to reserve for
+> >>>>>> boot memory dump preservation.
+> >>>>>>    =20
+> >>>>>>       =20
+> >>>>> Writing your own deficient parser for comma separated arguments
+> >>>>> when perfectly fine parser for space separated quoted arguments
+> >>>>> exists in the kernel and the bootloader does not seem like a
+> >>>>> good idea to me. =20
+> >>>> Couple of things that prompted me for v5 are:
+> >>>>      1. Using parse_early_options() limits the kind of parameters
+> >>>>         that can be passed to fadump capture kernel. Passing
+> >>>> parameters like systemd.unit=3D & udev.childern.max=3D has no effect
+> >>>> with v4. Updating
+> >>>>         boot_command_line parameter, when fadump is active,
+> >>>> seems a better alternative.
+> >>>>
+> >>>>      2. Passing space-separated quoted arguments is not working
+> >>>>         as intended with lilo. Updating bootloader with the below
+> >>>>         entry in /etc/lilo.conf file results in a missing append
+> >>>>         entry in /etc/yaboot.conf file.
+> >>>>
+> >>>>           append =3D "quiet sysrq=3D1 insmod=3Dsym53c8xx insmod=3Dipr
+> >>>> crashkernel=3D512M-:256M fadump_append=3D\"nr_cpus=3D1 numa=3Doff
+> >>>> udev.children-max=3D2\"" =20
+> >>> Meaning that a script that emulates LILO semantics on top of
+> >>> yaboot which is completely capable of passing qouted space
+> >>> separated arguments fails. IMHO it is more reasonable to fix the
+> >>> script or whatever adaptation layer or use yaboot directly than
+> >>> working around bug in said script by introducing a new argument
+> >>> parser in the kernel.
+> >>>
+> >>>    =20
+> >> Hmmm.. while trying to implement space-separated parameter list
+> >> with quotes as syntax for fadump_append parameter, noticed that it
+> >> can make implemenation
+> >> more vulnerable. Here are some problems I am facing while
+> >> implementing this.. =20
+> > How so?
+> >
+> > presumably you can reuse parse_args even if you do not register with
+> > early_param and call it yourself. Then your parsing of
+> > fadump_append is =20
+>=20
+>=20
+> I wasn't aware of that. Thanks for pointing it out, Michal.
+> Will try to use parse_args and get back.
+>=20
 
-cheers
+I was thinking a bit more about the uses of the commandline and how
+fadump_append potentially breaks it.
+
+The first thing that should be addressed and is the special -- argument
+which denotes the start of init arguments that are not to be parsed by
+the kernel. Incidentally the initial implementation using early_param
+happened to handles that without issue. parse_args surely handles that
+so adding a hook somewhere should give you location of that argument
+(if any). And interesting thing that can happen is passing an -- inside
+the fadump_append argument. It should be handled (or not) in some way
+or other and the handling documented.
+
+The second thing that breaks is reusing content of /proc/cmdline in
+kexec calls for passing arguments to the loaded kernel. It works
+flawlessly passing the same arguments the currently running kernel was
+started with unless fadump_append argument handler appends content of
+the fadump_append argument to actual commandline that appears there. So
+this would be an argument against modifying the commandline. You could
+argue using fadump and kexec together is an exotic use case but I would
+expect that the very machines that require fadump_append to reduce dump
+memory requirement benefit from using kexec for reboots because the BIOS
+probing the hardware takes quite a while as well. If rewriting the
+commandline is desired then this side effect of recursively adding the
+content of fadump_append on kexecs which reuse /proc/cmdline should be
+documented.
+
+Thanks
+
+Michal
