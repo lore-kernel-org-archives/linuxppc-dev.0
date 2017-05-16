@@ -3,32 +3,29 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wRsLT2MSnzDqFV
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 May 2017 19:18:09 +1000 (AEST)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v4G9EGZu140057
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 May 2017 05:18:05 -0400
-Received: from e13.ny.us.ibm.com (e13.ny.us.ibm.com [129.33.205.203])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2aft10v1f9-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wRsSy4xPnzDqLJ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 May 2017 19:23:46 +1000 (AEST)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v4G9Nc8A149728
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 May 2017 05:23:41 -0400
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2afr988qt2-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 May 2017 05:18:05 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 May 2017 05:23:41 -0400
 Received: from localhost
- by e13.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Tue, 16 May 2017 05:18:04 -0400
+ Tue, 16 May 2017 03:23:39 -0600
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: akpm@linux-foundation.org, mpe@ellerman.id.au,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>
+To: akpm@linux-foundation.org, mpe@ellerman.id.au
 Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH v2 2/2] powerpc/mm/hugetlb: Add support for 1G huge pages
-Date: Tue, 16 May 2017 14:47:44 +0530
-In-Reply-To: <1494926264-22463-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-References: <1494926264-22463-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Message-Id: <1494926264-22463-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH v2 0/9] HugeTLB migration support for PPC64
+Date: Tue, 16 May 2017 14:53:23 +0530
+Message-Id: <1494926612-23928-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,69 +35,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-POWER9 supports hugepages of size 2M and 1G in radix MMU mode. This patch
-enables the usage of 1G page size for hugetlbfs. This also update the helper
-such we can do 1G page allocation at runtime.
+HugeTLB migration support for PPC64
 
-We still don't enable 1G page size on DD1 version. This is to avoid doing
-workaround mentioned in commit: 6d3a0379ebdc8 (powerpc/mm: Add
-radix__tlb_flush_pte_p9_dd1()
+Changes from V1:
+* Added Reviewed-by:
+* Drop follow_huge_addr from powerpc
 
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/book3s/64/hugetlb.h | 10 ++++++++++
- arch/powerpc/mm/hugetlbpage.c                |  7 +++++--
- arch/powerpc/platforms/Kconfig.cputype       |  1 +
- 3 files changed, 16 insertions(+), 2 deletions(-)
+Aneesh Kumar K.V (8):
+  mm/hugetlb/migration: Use set_huge_pte_at instead of set_pte_at
+  mm/follow_page_mask: Split follow_page_mask to smaller functions.
+  mm/hugetlb: export hugetlb_entry_migration helper
+  mm/hugetlb: Move default definition of hugepd_t earlier in the header
+  mm/follow_page_mask: Add support for hugepage directory entry
+  powerpc/hugetlb: Add follow_huge_pd implementation for ppc64.
+  powerpc/mm/hugetlb: Remove follow_huge_addr for powerpc
+  powerpc/hugetlb: Enable hugetlb migration for ppc64
 
-diff --git a/arch/powerpc/include/asm/book3s/64/hugetlb.h b/arch/powerpc/include/asm/book3s/64/hugetlb.h
-index 6666cd366596..5c28bd6f2ae1 100644
---- a/arch/powerpc/include/asm/book3s/64/hugetlb.h
-+++ b/arch/powerpc/include/asm/book3s/64/hugetlb.h
-@@ -50,4 +50,14 @@ static inline pte_t arch_make_huge_pte(pte_t entry, struct vm_area_struct *vma,
- 	else
- 		return entry;
- }
-+
-+#ifdef CONFIG_ARCH_HAS_GIGANTIC_PAGE
-+static inline bool gigantic_page_supported(void)
-+{
-+	if (radix_enabled())
-+		return true;
-+	return false;
-+}
-+#endif
-+
- #endif
-diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
-index a4f33de4008e..80f6d2ed551a 100644
---- a/arch/powerpc/mm/hugetlbpage.c
-+++ b/arch/powerpc/mm/hugetlbpage.c
-@@ -763,8 +763,11 @@ static int __init add_huge_page_size(unsigned long long size)
- 	 * Hash: 16M and 16G
- 	 */
- 	if (radix_enabled()) {
--		if (mmu_psize != MMU_PAGE_2M)
--			return -EINVAL;
-+		if (mmu_psize != MMU_PAGE_2M) {
-+			if (cpu_has_feature(CPU_FTR_POWER9_DD1) ||
-+			    (mmu_psize != MMU_PAGE_1G))
-+				return -EINVAL;
-+		}
- 	} else {
- 		if (mmu_psize != MMU_PAGE_16M && mmu_psize != MMU_PAGE_16G)
- 			return -EINVAL;
-diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
-index 684e886eaae4..80175000042d 100644
---- a/arch/powerpc/platforms/Kconfig.cputype
-+++ b/arch/powerpc/platforms/Kconfig.cputype
-@@ -344,6 +344,7 @@ config PPC_STD_MMU_64
- config PPC_RADIX_MMU
- 	bool "Radix MMU Support"
- 	depends on PPC_BOOK3S_64
-+	select ARCH_HAS_GIGANTIC_PAGE if MEMORY_ISOLATION && COMPACTION && CMA
- 	default y
- 	help
- 	  Enable support for the Power ISA 3.0 Radix style MMU. Currently this
+Anshuman Khandual (1):
+  mm/follow_page_mask: Add support for hugetlb pgd entries.
+
+ arch/powerpc/mm/hugetlbpage.c          |  81 ++++++--------
+ arch/powerpc/platforms/Kconfig.cputype |   5 +
+ include/linux/hugetlb.h                |  56 ++++++----
+ mm/gup.c                               | 186 +++++++++++++++++++++++----------
+ mm/hugetlb.c                           |  25 ++++-
+ mm/migrate.c                           |  21 ++--
+ 6 files changed, 230 insertions(+), 144 deletions(-)
+
 -- 
 2.7.4
