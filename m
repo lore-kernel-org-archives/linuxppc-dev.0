@@ -1,26 +1,20 @@
-Return-Path: <joel.stan@gmail.com>
-Received: from mail-yw0-x244.google.com (mail-yw0-x244.google.com
- [IPv6:2607:f8b0:4002:c05::244])
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
+ [IPv6:2607:f8b0:400e:c05::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wRgTl4N9dzDqMc
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 May 2017 11:53:47 +1000 (AEST)
-Received: by mail-yw0-x244.google.com with SMTP id 203so7025400ywe.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 May 2017 18:53:47 -0700 (PDT)
-MIME-Version: 1.0
-Sender: joel.stan@gmail.com
-In-Reply-To: <20170515130754.59363-1-ivan@de.ibm.com>
-References: <20170515130754.59363-1-ivan@de.ibm.com>
-From: Joel Stanley <joel@jms.id.au>
-Date: Tue, 16 May 2017 11:23:23 +0930
-Message-ID: <CACPK8XcQazPbTMxtc5aE=eM+a_aLR5jjfMr55oZcGmifg=0X5w@mail.gmail.com>
-Subject: Re: [PATCH 0/4] Support for the FSP2 476fpe board in arch/powerpc
-To: Ivan Mikhaylov <ivan@de.ibm.com>
-Cc: Alistair Popple <alistair@popple.id.au>,
- Matt Porter <mporter@kernel.crashing.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wRk3J3TTPzDqMc
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 May 2017 13:49:32 +1000 (AEST)
+Received: by mail-pg0-x242.google.com with SMTP id h64so14916735pge.3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 May 2017 20:49:32 -0700 (PDT)
+From: Balbir Singh <bsingharora@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org,
+	mpe@ellerman.id.au
+Cc: naveen.n.rao@linux.vnet.ibm.com, ananth@linux.vnet.ibm.com,
+ Balbir Singh <bsingharora@gmail.com>
+Subject: [RFC 0/2] Consolidate patch_instruction
+Date: Tue, 16 May 2017 13:49:11 +1000
+Message-Id: <20170516034913.21163-1-bsingharora@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,37 +24,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hey Ivan,
+patch_instruction is enhanced in this RFC to support
+patching via a different virtual address (text_poke_area).
+The mapping of text_poke_area->addr is RW and not RWX.
+This way the mapping allows write for patching and then we tear
+down the mapping. The downside is that we introduce a spinlock
+which serializes our patching to one patch at a time.
 
-Please use joel@jms.id.au when you cc me on patches. That other
-address won't work for most people.
+In this patchset we also consolidate instruction changes
+in kprobes to use patch_instruction().
 
-Cheers,
+Balbir Singh (2):
+  powerpc/lib/code-patching: Enhance code patching
+  powerpc/kprobes: Move kprobes over to patch_instruction
 
-Joel
+ arch/powerpc/kernel/kprobes.c    |  4 +-
+ arch/powerpc/lib/code-patching.c | 88 ++++++++++++++++++++++++++++++++++++++--
+ 2 files changed, 86 insertions(+), 6 deletions(-)
 
-On Mon, May 15, 2017 at 10:37 PM, Ivan Mikhaylov <ivan@de.ibm.com> wrote:
-> This adds support for the FSP2 (476fpe) board. This includes code in
-> arch/powerpc/platforms/44x for board initialization. Only uImage is
-> supported by now. Also there was some problem with whole watchdog TCR
-> rewrite which causing unexpected very early panic and fixed by 4 patch.
-> dts and defconfig for common usage included as well. Tested on FSP2 board
-> with uboot and initramfs image.
->
-> Ivan Mikhaylov (4):
->   arch/powerpc/44x/fsp2: platform support for fsp2(476fpe) board
->   arch/powerpc/44x/fsp2: add device tree for fsp2 board
->   arch/powerpc/44x/fsp2: add defconfig for fsp2 board
->   arch/powerpc/44x/fsp2: wdt tcr update instead of whole rewrite
->
->  arch/powerpc/boot/dts/fsp2.dts          |  608 +++++++++++++++++++++++++++++++
->  arch/powerpc/configs/44x/fsp2_defconfig |  126 +++++++
->  arch/powerpc/kernel/time.c              |   16 +
->  arch/powerpc/platforms/44x/Kconfig      |   12 +
->  arch/powerpc/platforms/44x/Makefile     |    1 +
->  arch/powerpc/platforms/44x/fsp2.c       |   62 ++++
->  6 files changed, 825 insertions(+), 0 deletions(-)
->  create mode 100644 arch/powerpc/boot/dts/fsp2.dts
->  create mode 100644 arch/powerpc/configs/44x/fsp2_defconfig
->  create mode 100644 arch/powerpc/platforms/44x/fsp2.c
->
+-- 
+2.9.3
