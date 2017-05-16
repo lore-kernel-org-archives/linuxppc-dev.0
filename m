@@ -3,21 +3,21 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wRrkB36hRzDqM1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wRrkB4pT8zDqMK
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 May 2017 18:50:10 +1000 (AEST)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v4G8mlOw055338
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 May 2017 04:50:05 -0400
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v4G8moue039546
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 May 2017 04:50:01 -0400
 Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2aft10tu0a-1
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2afvpgm7qj-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 May 2017 04:50:05 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 May 2017 04:50:01 -0400
 Received: from localhost
  by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <ego@linux.vnet.ibm.com>;
- Tue, 16 May 2017 02:50:04 -0600
+ Tue, 16 May 2017 02:50:00 -0600
 From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 To: Nicholas Piggin <npiggin@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>,
  Michael Neuling <mikey@neuling.org>,
@@ -27,13 +27,14 @@ To: Nicholas Piggin <npiggin@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
  "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-Subject: [PATCH 1/6] powernv:idle: Correctly initialize core_idle_state_ptr
-Date: Tue, 16 May 2017 14:19:43 +0530
+Subject: [PATCH 4/6] powernv:idle: Restore SPRs for deep idle states via stop
+ API.
+Date: Tue, 16 May 2017 14:19:46 +0530
 In-Reply-To: <cover.1494585671.git.ego@linux.vnet.ibm.com>
 References: <cover.1494585671.git.ego@linux.vnet.ibm.com>
 In-Reply-To: <cover.1494585671.git.ego@linux.vnet.ibm.com>
 References: <cover.1494585671.git.ego@linux.vnet.ibm.com>
-Message-Id: <f6c49fcf42b78c0b8bdad17d6e659679c0288cd9.1494585671.git.ego@linux.vnet.ibm.com>
+Message-Id: <f17d276f44899f8d88023b3b8503f34dc57bf205.1494585671.git.ego@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,76 +44,164 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+From: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
 
-The lower 8 bits of core_idle_state_ptr tracks the number of non-idle
-threads in the core. This is supposed to be initialized to bit-map
-corresponding to the threads_per_core. However, currently it is
-initialized to PNV_CORE_IDLE_THREAD_BITS (0xFF). This is correct for
-POWER8 which has 8 threads per core, but not for POWER9 which has 4
-threads per core.
+Some of the SPR values (HID0, MSR, SPRG0) don't change during the run
+time of a booted kernel, once they have been initialized.
 
-As a result, on POWER9, core_idle_state_ptr gets initialized to
-0xFF. In case when all the threads of the core are idle, the bits
-corresponding tracking the idle-threads are non-zero. As a result, the
-idle entry/exit code fails to save/restore per-core hypervisor state
-since it assumes that there are threads in the cores which are still
-active.
+The contents of these SPRs are lost when the CPUs enter deep stop
+states. So instead saving and restoring SPRs from the kernel, use the
+stop-api provided by the firmware by which the firmware can restore
+the contents of these SPRs to their initialized values after wakeup
+from a deep stop state.
 
-Fix this by correctly initializing the lower bits of the
-core_idle_state_ptr on the basis of threads_per_core.
+Apart from these, program the PSSCR value to that of the deepest stop
+state via the stop-api. This will be used to indicate to the
+underlying firmware as to what stop state to put the threads that have
+been woken up by a special-wakeup.
 
+And while we are at programming SPRs via stop-api, ensure that HID1,
+HID4 and HID5 registers which are only available on POWER8 are not
+requested to be restored by the firware on POWER9.
+
+Signed-off-by: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
 Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
 ---
- arch/powerpc/platforms/powernv/idle.c | 29 +++++++++++++++++++----------
- 1 file changed, 19 insertions(+), 10 deletions(-)
+ arch/powerpc/platforms/powernv/idle.c | 83 ++++++++++++++++++++++-------------
+ 1 file changed, 52 insertions(+), 31 deletions(-)
 
 diff --git a/arch/powerpc/platforms/powernv/idle.c b/arch/powerpc/platforms/powernv/idle.c
-index 445f30a..84eb9bc 100644
+index 84eb9bc..4deac0d 100644
 --- a/arch/powerpc/platforms/powernv/idle.c
 +++ b/arch/powerpc/platforms/powernv/idle.c
-@@ -96,15 +96,24 @@ static void pnv_alloc_idle_core_states(void)
- 	u32 *core_idle_state;
+@@ -30,8 +30,33 @@
+ /* Power ISA 3.0 allows for stop states 0x0 - 0xF */
+ #define MAX_STOP_STATE	0xF
  
- 	/*
--	 * core_idle_state - First 8 bits track the idle state of each thread
--	 * of the core. The 8th bit is the lock bit. Initially all thread bits
--	 * are set. They are cleared when the thread enters deep idle state
--	 * like sleep and winkle. Initially the lock bit is cleared.
--	 * The lock bit has 2 purposes
--	 * a. While the first thread is restoring core state, it prevents
--	 * other threads in the core from switching to process context.
--	 * b. While the last thread in the core is saving the core state, it
--	 * prevents a different thread from waking up.
-+	 * core_idle_state - The lower 8 bits track the idle state of
-+	 * each thread of the core.
-+	 *
-+	 * The most significant bit is the lock bit.
-+	 *
-+	 * Initially all the bits corresponding to threads_per_core
-+	 * are set. They are cleared when the thread enters deep idle
-+	 * state like sleep and winkle/stop.
-+	 *
-+	 * Initially the lock bit is cleared.  The lock bit has 2
-+	 * purposes:
-+	 * 	a. While the first thread in the core waking up from
-+	 * 	   idle is restoring core state, it prevents other
-+	 * 	   threads in the core from switching to process
-+	 * 	   context.
-+	 * 	b. While the last thread in the core is saving the
-+	 *	   core state, it prevents a different thread from
-+	 *	   waking up.
- 	 */
- 	for (i = 0; i < nr_cores; i++) {
- 		int first_cpu = i * threads_per_core;
-@@ -112,7 +121,7 @@ static void pnv_alloc_idle_core_states(void)
- 		size_t paca_ptr_array_size;
++#define P9_STOP_SPR_MSR 2000
++#define P9_STOP_SPR_PSSCR      855
++
+ static u32 supported_cpuidle_states;
  
- 		core_idle_state = kmalloc_node(sizeof(u32), GFP_KERNEL, node);
--		*core_idle_state = PNV_CORE_IDLE_THREAD_BITS;
-+		*core_idle_state = (1 << threads_per_core) - 1;
- 		paca_ptr_array_size = (threads_per_core *
- 				       sizeof(struct paca_struct *));
++/*
++ * The default stop state that will be used by ppc_md.power_save
++ * function on platforms that support stop instruction.
++ */
++static u64 pnv_default_stop_val;
++static u64 pnv_default_stop_mask;
++static bool default_stop_found;
++
++/*
++ * First deep stop state. Used to figure out when to save/restore
++ * hypervisor context.
++ */
++u64 pnv_first_deep_stop_state = MAX_STOP_STATE;
++
++/*
++ * psscr value and mask of the deepest stop idle state.
++ * Used when a cpu is offlined.
++ */
++static u64 pnv_deepest_stop_psscr_val;
++static u64 pnv_deepest_stop_psscr_mask;
++static bool deepest_stop_found;
++
+ static int pnv_save_sprs_for_deep_states(void)
+ {
+ 	int cpu;
+@@ -48,6 +73,8 @@ static int pnv_save_sprs_for_deep_states(void)
+ 	uint64_t hid4_val = mfspr(SPRN_HID4);
+ 	uint64_t hid5_val = mfspr(SPRN_HID5);
+ 	uint64_t hmeer_val = mfspr(SPRN_HMEER);
++	uint64_t msr_val = MSR_IDLE;
++	uint64_t psscr_val = pnv_deepest_stop_psscr_val;
  
+ 	for_each_possible_cpu(cpu) {
+ 		uint64_t pir = get_hard_smp_processor_id(cpu);
+@@ -61,6 +88,18 @@ static int pnv_save_sprs_for_deep_states(void)
+ 		if (rc != 0)
+ 			return rc;
+ 
++		if (cpu_has_feature(CPU_FTR_ARCH_300)) {
++			rc = opal_slw_set_reg(pir, P9_STOP_SPR_MSR, msr_val);
++			if (rc)
++				return rc;
++
++			rc = opal_slw_set_reg(pir,
++					      P9_STOP_SPR_PSSCR, psscr_val);
++
++			if (rc)
++				return rc;
++		}
++
+ 		/* HIDs are per core registers */
+ 		if (cpu_thread_in_core(cpu) == 0) {
+ 
+@@ -72,17 +111,21 @@ static int pnv_save_sprs_for_deep_states(void)
+ 			if (rc != 0)
+ 				return rc;
+ 
+-			rc = opal_slw_set_reg(pir, SPRN_HID1, hid1_val);
+-			if (rc != 0)
+-				return rc;
++			/* Only p8 needs to set extra HID regiters */
++			if (!cpu_has_feature(CPU_FTR_ARCH_300)) {
+ 
+-			rc = opal_slw_set_reg(pir, SPRN_HID4, hid4_val);
+-			if (rc != 0)
+-				return rc;
++				rc = opal_slw_set_reg(pir, SPRN_HID1, hid1_val);
++				if (rc != 0)
++					return rc;
+ 
+-			rc = opal_slw_set_reg(pir, SPRN_HID5, hid5_val);
+-			if (rc != 0)
+-				return rc;
++				rc = opal_slw_set_reg(pir, SPRN_HID4, hid4_val);
++				if (rc != 0)
++					return rc;
++
++				rc = opal_slw_set_reg(pir, SPRN_HID5, hid5_val);
++				if (rc != 0)
++					return rc;
++			}
+ 		}
+ 	}
+ 
+@@ -241,14 +284,6 @@ static DEVICE_ATTR(fastsleep_workaround_applyonce, 0600,
+ 			store_fastsleep_workaround_applyonce);
+ 
+ /*
+- * The default stop state that will be used by ppc_md.power_save
+- * function on platforms that support stop instruction.
+- */
+-static u64 pnv_default_stop_val;
+-static u64 pnv_default_stop_mask;
+-static bool default_stop_found;
+-
+-/*
+  * Used for ppc_md.power_save which needs a function with no parameters
+  */
+ static void power9_idle(void)
+@@ -257,20 +292,6 @@ static void power9_idle(void)
+ }
+ 
+ /*
+- * First deep stop state. Used to figure out when to save/restore
+- * hypervisor context.
+- */
+-u64 pnv_first_deep_stop_state = MAX_STOP_STATE;
+-
+-/*
+- * psscr value and mask of the deepest stop idle state.
+- * Used when a cpu is offlined.
+- */
+-static u64 pnv_deepest_stop_psscr_val;
+-static u64 pnv_deepest_stop_psscr_mask;
+-static bool deepest_stop_found;
+-
+-/*
+  * pnv_cpu_offline: A function that puts the CPU into the deepest
+  * available platform idle state on a CPU-Offline.
+  */
 -- 
 1.8.3.1
