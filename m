@@ -1,29 +1,20 @@
-Return-Path: <arndbergmann@gmail.com>
-Received: from mail-oi0-x242.google.com (mail-oi0-x242.google.com
- [IPv6:2607:f8b0:4003:c06::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wRw0D74SXzDqb7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 May 2017 21:17:32 +1000 (AEST)
-Received: by mail-oi0-x242.google.com with SMTP id h4so2822519oib.0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 May 2017 04:17:32 -0700 (PDT)
-MIME-Version: 1.0
-Sender: arndbergmann@gmail.com
-In-Reply-To: <1494932559.3971.18.camel@abdul.in.ibm.com>
-References: <1494932559.3971.18.camel@abdul.in.ibm.com>
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Tue, 16 May 2017 13:17:29 +0200
-Message-ID: <CAK8P3a1e+Rgv2emmTgewm-YJ6j2H7xJzM_+Mz8J3OKWCpbsD6g@mail.gmail.com>
-Subject: Re: Mainline build brakes on powerpc with error :
- fs/xfs/xfs_iomap.c:1152: undefined reference to `.put_dax
-To: Abdul Haleem <abdhalee@linux.vnet.ibm.com>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- linux-xfs <linux-xfs@vger.kernel.org>,
- sachinp <sachinp@linux.vnet.ibm.com>,
- linux-kernel <linux-kernel@vger.kernel.org>,
- "Darrick J. Wong" <darrick.wong@oracle.com>,
- Dan Williams <dan.j.williams@intel.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wRw5d46cFzDqHq
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 May 2017 21:22:13 +1000 (AEST)
+Message-ID: <1494933722.21847.47.camel@kernel.crashing.org>
+Subject: Re: [PATCH 1/3] powerpc: Add __hard_irqs_disabled()
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>, paulus@samba.org,
+ mpe@ellerman.id.au, Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+Date: Tue, 16 May 2017 21:22:02 +1000
+In-Reply-To: <1494926782-25700-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+References: <1494926782-25700-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,22 +24,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, May 16, 2017 at 1:02 PM, Abdul Haleem
-<abdhalee@linux.vnet.ibm.com> wrote:
-> Hi,
->
-> Today's mainline 4.12-rc1 fails to build for the attached configuration
-> file on Power7 box with below errors.
->
-> $ make
-> fs/built-in.o: In function `xfs_file_iomap_end':
-> fs/xfs/xfs_iomap.c:1152: undefined reference to `.put_dax'
-> fs/built-in.o: In function `xfs_file_iomap_begin':
-> fs/xfs/xfs_iomap.c:1071: undefined reference to `.dax_get_by_host'
->
-> Also reproducible on latest linux-next, and the last successful build
-> was at next-20170510.
+On Tue, 2017-05-16 at 14:56 +0530, Aneesh Kumar K.V wrote:
+>  
+> +static inline bool __hard_irqs_disabled(void)
+> +{
+> +       unsigned long flags = mfmsr();
+> +       return (flags & MSR_EE) == 0;
+> +}
+> +
 
-This should be fixed by https://patchwork.kernel.org/patch/9725515/
+Reading the MSR has a cost. Can't we rely on paca->irq_happened being
+non-0 ?
 
-  Arnd
+(If you are paranoid, add a test of msr as well and warn if there's
+a mismatch ...)
+
+Cheers,
+Ben.
