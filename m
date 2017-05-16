@@ -1,21 +1,26 @@
-Return-Path: <oss@buserror.net>
-Received: from host.buserror.net (host.buserror.net [209.198.135.123])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mhocko@kernel.org>
+Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wRmXg0lVbzDqLJ
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 May 2017 15:41:39 +1000 (AEST)
-Message-ID: <1494913288.29095.7.camel@buserror.net>
-From: Scott Wood <oss@buserror.net>
-To: roy.pledge@nxp.com, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
- robin.murphy@arm.com
-Cc: madalin.bucur@nxp.com
-Date: Tue, 16 May 2017 00:41:28 -0500
-In-Reply-To: <1493674213-963-1-git-send-email-roy.pledge@nxp.com>
-References: <1493674213-963-1-git-send-email-roy.pledge@nxp.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Subject: Re: [PATCH v3 00/11] soc/fsl/qbman: Enable QBMan on ARM Platforms
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wRrQ05KGHzDqL3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 May 2017 18:36:08 +1000 (AEST)
+Date: Tue, 16 May 2017 10:36:02 +0200
+From: Michal Hocko <mhocko@kernel.org>
+To: Pasha Tatashin <pasha.tatashin@oracle.com>
+Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
+ linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, borntraeger@de.ibm.com,
+ heiko.carstens@de.ibm.com, davem@davemloft.net
+Subject: Re: [v3 0/9] parallelized "struct page" zeroing
+Message-ID: <20170516083601.GB2481@dhcp22.suse.cz>
+References: <1494003796-748672-1-git-send-email-pasha.tatashin@oracle.com>
+ <20170509181234.GA4397@dhcp22.suse.cz>
+ <e19b241d-be27-3c9a-8984-2fb20211e2e1@oracle.com>
+ <20170515193817.GC7551@dhcp22.suse.cz>
+ <9b3d68aa-d2b6-2b02-4e75-f8372cbeb041@oracle.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <9b3d68aa-d2b6-2b02-4e75-f8372cbeb041@oracle.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,40 +30,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2017-05-01 at 17:30 -0400, Roy Pledge wrote:
-> This patch series enables DPAA1 QBMan devices for ARM and
-> ARM64 architectures. This allows the LS1043A and LS1046A to use
-> QBMan functionality.
+On Mon 15-05-17 16:44:26, Pasha Tatashin wrote:
+> On 05/15/2017 03:38 PM, Michal Hocko wrote:
+> >I do not think this is the right approach. Your measurements just show
+> >that sparc could have a more optimized memset for small sizes. If you
+> >keep the same memset only for the parallel initialization then you
+> >just hide this fact. I wouldn't worry about other architectures. All
+> >sane architectures should simply work reasonably well when touching a
+> >single or only few cache lines at the same time. If some arches really
+> >suffer from small memsets then the initialization should be driven by a
+> >specific ARCH_WANT_LARGE_PAGEBLOCK_INIT rather than making this depend
+> >on DEFERRED_INIT. Or if you are too worried then make it opt-in and make
+> >it depend on ARCH_WANT_PER_PAGE_INIT and make it enabled for x86 and
+> >sparc after memset optimization.
 > 
-> Changes since v2:
-> Fixed some misspellings
-> Added 'no-map' constraint to device tree bindings
-> Described ordering contraint on regions in the device tree
-> Removed confusing comment regarding non-shareable mappings
-> Added warning if old reserved-memory technique is used on ARM
+> OK, I will think about this.
 > 
-> Changes since v1:
-> Reworked private memory allocations to use shared-dma-pool on ARM platforms
-> 
-> Claudiu Manoil (2):
->   soc/fsl/qbman: Drop L1_CACHE_BYTES compile time check
->   soc/fsl/qbman: Add missing headers on ARM
-> 
-> Madalin Bucur (4):
->   soc/fsl/qbman: Drop set/clear_bits usage
->   soc/fsl/qbman: add QMAN_REV32
->   soc/fsl/qbman: different register offsets on ARM
->   fsl/soc/qbman: Enable FSL_LAYERSCAPE config on ARM
-> 
-> Roy Pledge (4):
->   soc/fsl/qbman: Use shared-dma-pool for BMan private memory allocations
->   soc/fsl/qbman: Use shared-dma-pool for QMan private memory allocations
->   dt-bindings: soc/fsl: Update reserved memory binding for QBMan
->   soc/fsl/qbman: Rework ioremap() calls for ARM/PPC
-> 
-> Valentin Rothberg (1):
->   soc/fsl/qbman: Fix ARM32 typo
+> I do not really like adding new configs because they tend to clutter the
+> code. This is why,
 
-Acked-by: Scott Wood <oss@buserror.net>
+Yes I hate adding new (arch) config options as well. And I still believe
+we do not need any here either...
 
--Scott
+> I wanted to rely on already existing config that I know benefits all
+> platforms that use it.
+
+I wouldn't be so sure about this. If any other platform has a similar
+issues with small memset as sparc then the overhead is just papered over
+by parallel initialization.
+
+> Eventually,
+> "CONFIG_DEFERRED_STRUCT_PAGE_INIT" is going to become the default
+> everywhere, as there should not be a drawback of using it even on small
+> machines.
+
+Maybe and I would highly appreciate that.
+-- 
+Michal Hocko
+SUSE Labs
