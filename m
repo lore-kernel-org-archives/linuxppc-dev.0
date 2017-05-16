@@ -1,25 +1,26 @@
-Return-Path: <pasha.tatashin@oracle.com>
-Received: from userp1040.oracle.com (userp1040.oracle.com [156.151.31.81])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <joel.stan@gmail.com>
+Received: from mail-yw0-x244.google.com (mail-yw0-x244.google.com
+ [IPv6:2607:f8b0:4002:c05::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wRdjW5lLTzDqMY
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 May 2017 10:33:50 +1000 (AEST)
-Subject: Re: [v3 9/9] s390: teach platforms not to zero struct pages memory
-To: Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
- linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, borntraeger@de.ibm.com, davem@davemloft.net
-References: <1494003796-748672-1-git-send-email-pasha.tatashin@oracle.com>
- <1494003796-748672-10-git-send-email-pasha.tatashin@oracle.com>
- <20170508113624.GA4876@osiris>
- <0669a945-4540-096e-799a-2d2b3c18abaa@oracle.com>
- <20170515231716.GA3314@osiris>
-From: Pasha Tatashin <pasha.tatashin@oracle.com>
-Message-ID: <a3a14b28-8389-33e4-3a84-e4db4bfdd17e@oracle.com>
-Date: Mon, 15 May 2017 20:33:29 -0400
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wRgTl4N9dzDqMc
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 May 2017 11:53:47 +1000 (AEST)
+Received: by mail-yw0-x244.google.com with SMTP id 203so7025400ywe.0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 May 2017 18:53:47 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <20170515231716.GA3314@osiris>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Sender: joel.stan@gmail.com
+In-Reply-To: <20170515130754.59363-1-ivan@de.ibm.com>
+References: <20170515130754.59363-1-ivan@de.ibm.com>
+From: Joel Stanley <joel@jms.id.au>
+Date: Tue, 16 May 2017 11:23:23 +0930
+Message-ID: <CACPK8XcQazPbTMxtc5aE=eM+a_aLR5jjfMr55oZcGmifg=0X5w@mail.gmail.com>
+Subject: Re: [PATCH 0/4] Support for the FSP2 476fpe board in arch/powerpc
+To: Ivan Mikhaylov <ivan@de.ibm.com>
+Cc: Alistair Popple <alistair@popple.id.au>,
+ Matt Porter <mporter@kernel.crashing.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,46 +30,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Ah OK, I will include the change.
+Hey Ivan,
 
-Thank you,
-Pasha
+Please use joel@jms.id.au when you cc me on patches. That other
+address won't work for most people.
 
-On 05/15/2017 07:17 PM, Heiko Carstens wrote:
-> Hello Pasha,
-> 
->> Thank you for looking at this patch. I am worried to make the proposed
->> change, because, as I understand in this case we allocate memory not for
->> "struct page"s but for table that hold them. So, we will change the behavior
->> from the current one, where this table is allocated zeroed, but now it won't
->> be zeroed.
-> 
-> The page table, if needed, is allocated and populated a couple of lines
-> above. See the vmem_pte_alloc() call. So my request to include the hunk
-> below is still valid ;)
-> 
->>> If you add the hunk below then this is
->>>
->>> Acked-by: Heiko Carstens <heiko.carstens@de.ibm.com>
->>>
->>> diff --git a/arch/s390/mm/vmem.c b/arch/s390/mm/vmem.c
->>> index ffe9ba1aec8b..bf88a8b9c24d 100644
->>> --- a/arch/s390/mm/vmem.c
->>> +++ b/arch/s390/mm/vmem.c
->>> @@ -272,7 +272,7 @@ int __meminit vmemmap_populate(unsigned long start, unsigned long end, int node)
->>>   		if (pte_none(*pt_dir)) {
->>>   			void *new_page;
->>> -			new_page = vmemmap_alloc_block(PAGE_SIZE, node, true);
->>> +			new_page = vmemmap_alloc_block(PAGE_SIZE, node, VMEMMAP_ZERO);
->>>   			if (!new_page)
->>>   				goto out;
->>>   			pte_val(*pt_dir) = __pa(new_page) | pgt_prot;
->>>
->>
-> 
-> --
-> To unsubscribe, send a message with 'unsubscribe linux-mm' in
-> the body to majordomo@kvack.org.  For more info on Linux MM,
-> see: http://www.linux-mm.org/ .
-> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
-> 
+Cheers,
+
+Joel
+
+On Mon, May 15, 2017 at 10:37 PM, Ivan Mikhaylov <ivan@de.ibm.com> wrote:
+> This adds support for the FSP2 (476fpe) board. This includes code in
+> arch/powerpc/platforms/44x for board initialization. Only uImage is
+> supported by now. Also there was some problem with whole watchdog TCR
+> rewrite which causing unexpected very early panic and fixed by 4 patch.
+> dts and defconfig for common usage included as well. Tested on FSP2 board
+> with uboot and initramfs image.
+>
+> Ivan Mikhaylov (4):
+>   arch/powerpc/44x/fsp2: platform support for fsp2(476fpe) board
+>   arch/powerpc/44x/fsp2: add device tree for fsp2 board
+>   arch/powerpc/44x/fsp2: add defconfig for fsp2 board
+>   arch/powerpc/44x/fsp2: wdt tcr update instead of whole rewrite
+>
+>  arch/powerpc/boot/dts/fsp2.dts          |  608 +++++++++++++++++++++++++++++++
+>  arch/powerpc/configs/44x/fsp2_defconfig |  126 +++++++
+>  arch/powerpc/kernel/time.c              |   16 +
+>  arch/powerpc/platforms/44x/Kconfig      |   12 +
+>  arch/powerpc/platforms/44x/Makefile     |    1 +
+>  arch/powerpc/platforms/44x/fsp2.c       |   62 ++++
+>  6 files changed, 825 insertions(+), 0 deletions(-)
+>  create mode 100644 arch/powerpc/boot/dts/fsp2.dts
+>  create mode 100644 arch/powerpc/configs/44x/fsp2_defconfig
+>  create mode 100644 arch/powerpc/platforms/44x/fsp2.c
+>
