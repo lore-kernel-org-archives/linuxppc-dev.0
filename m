@@ -1,19 +1,28 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <arndbergmann@gmail.com>
+Received: from mail-oi0-x242.google.com (mail-oi0-x242.google.com
+ [IPv6:2607:f8b0:4003:c06::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wS83z6Nn0zDqNs
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 May 2017 06:21:35 +1000 (AEST)
-Date: Tue, 16 May 2017 22:20:15 +0200
-Message-ID: <20170516222015.Horde.fwWhnIwI59SuB64Du97wdg2@messagerie.c-s.fr>
-From: LEROY Christophe <christophe.leroy@c-s.fr>
-To: Balbir Singh <bsingharora@gmail.com>
-Cc: naveen.n.rao@linux.vnet.ibm.com, mpe@ellerman.id.au,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [RFC 0/2] Consolidate patch_instruction
-In-Reply-To: <20170516034913.21163-1-bsingharora@gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed; DelSp=Yes
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wS89t2GV8zDqG2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 May 2017 06:26:42 +1000 (AEST)
+Received: by mail-oi0-x242.google.com with SMTP id h4so5193121oib.0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 May 2017 13:26:42 -0700 (PDT)
 MIME-Version: 1.0
+Sender: arndbergmann@gmail.com
+In-Reply-To: <20170516155132.GA1494@lst.de>
+References: <20170516114812.10660-1-hch@lst.de>
+ <CAK8P3a1FoR_usw7du3ZRMF+PPhJ712EpArL_e1bLVNs7BYBu-w@mail.gmail.com>
+ <20170516155132.GA1494@lst.de>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Tue, 16 May 2017 22:26:39 +0200
+Message-ID: <CAK8P3a3_Rjz9gTmayN1w8HrFHWY+wakeFgQSYRTAADJzF6zKJA@mail.gmail.com>
+Subject: Re: RFC: better timer interface
+To: Christoph Hellwig <hch@lst.de>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Tejun Heo <tj@kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Mark Gross <mark.gross@intel.com>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ linux-s390 <linux-s390@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,33 +32,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Balbir Singh <bsingharora@gmail.com> a =C3=A9crit=C2=A0:
-
-> patch_instruction is enhanced in this RFC to support
-> patching via a different virtual address (text_poke_area).
-> The mapping of text_poke_area->addr is RW and not RWX.
-> This way the mapping allows write for patching and then we tear
-> down the mapping. The downside is that we introduce a spinlock
-> which serializes our patching to one patch at a time.
-
-Very nice patch, would fit great with my patch for impmementing=20=20
-CONFIG_DEBUG_RODATA=20(https://patchwork.ozlabs.org/patch/754289 ).
-Would avoid having to set the text area back to RW for patching
-
-Christophe
-
+On Tue, May 16, 2017 at 5:51 PM, Christoph Hellwig <hch@lst.de> wrote:
+> On Tue, May 16, 2017 at 05:45:07PM +0200, Arnd Bergmann wrote:
+>> This looks really nice, but what is the long-term plan for the interface?
+>> Do you expect that we will eventually change all 700+ users of timer_list
+>> to the new type, or do we keep both variants around indefinitely to avoid
+>> having to do mass-conversions?
 >
-> In this patchset we also consolidate instruction changes
-> in kprobes to use patch_instruction().
+> I think we should eventually move everyone over, but it might take
+> some time.
+
+Ok.
+
+>> If we are going to touch them all in the end, we might want to think
+>> about other changes that could be useful here. The main one I have
+>> in mind would be moving away from 'jiffies + timeout' as the interface,
+>> and instead passing a relative number of milliseconds (or seconds)
+>> into a mod_timer() variant. This is what most drivers want anyway,
+>> and if we have both changes (callback argument and expiration
+>> time) in place, we modernize the API one driver at a time with both
+>> changes at once.
 >
-> Balbir Singh (2):
->   powerpc/lib/code-patching: Enhance code patching
->   powerpc/kprobes: Move kprobes over to patch_instruction
->
->  arch/powerpc/kernel/kprobes.c    |  4 +-
->  arch/powerpc/lib/code-patching.c | 88=20=20
->=20++++++++++++++++++++++++++++++++++++++--
->  2 files changed, 86 insertions(+), 6 deletions(-)
->
-> --
-> 2.9.3
+> Yes, that sounds useful to me as well.  As you said it's an independent
+> but somewhat related change.  I can add it to my series, but I'll
+> need a suggestions for a good and short name.  That already was the
+> hardest part for the setup side :)
+
+If we keep the unusual *_timer() naming (rather than timer_*() as hrtimer
+has), we could use one of
+
+a) start_timer(struct timer_list *timer, unsigned long ms);
+b) restart_timer(struct timer_list *timer, unsigned long ms);
+c) mod_timer_ms(struct timer_list *timer, unsigned long ms);
+    mod_timer_sec(struct timer_list *timer, unsigned long sec);
+
+The first is slightly shorter but conflicts with three files that use
+the same name for a local function name. The third one fits
+well with the existing interfaces and provides both millisecond
+and second versions, I'd probably go with that.
+
+We could consider even passing a default interval as another
+argument to prepare_timer(), and using that in add_timer(),
+but that would in those cases that have a constant interval
+(maybe about half of the users from) and would be a bit surprising
+to readers that are only familiar with the existing interfaces.
+
+One final option would be a larger-scale replacement of
+the API by mirroring the hrtimer style where possible while
+staying compatible with the existing calls, e.g. timer_prepare(),
+timer_add_expires(), timer_start(), ...
+
+       Arnd
