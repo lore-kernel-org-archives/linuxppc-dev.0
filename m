@@ -3,33 +3,32 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wRsTB2zNpzDqcb
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 May 2017 19:23:58 +1000 (AEST)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v4G9NkCG124316
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 May 2017 05:23:56 -0400
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2afxgagnun-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wRsTF6MRGzDqdb
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 May 2017 19:24:01 +1000 (AEST)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v4G9NZlH042223
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 May 2017 05:23:59 -0400
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2afx2a1xa9-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 May 2017 05:23:55 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 May 2017 05:23:59 -0400
 Received: from localhost
- by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Tue, 16 May 2017 03:23:54 -0600
+ Tue, 16 May 2017 03:23:57 -0600
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: akpm@linux-foundation.org, mpe@ellerman.id.au
 Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>,
- "Aneesh Kumar K . V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH v2 4/9] mm/follow_page_mask: Add support for hugetlb pgd
- entries.
-Date: Tue, 16 May 2017 14:53:27 +0530
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH v2 5/9] mm/hugetlb: Move default definition of hugepd_t
+ earlier in the header
+Date: Tue, 16 May 2017 14:53:28 +0530
 In-Reply-To: <1494926612-23928-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1494926612-23928-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Message-Id: <1494926612-23928-5-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Message-Id: <1494926612-23928-6-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,78 +38,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+This enable to use the hugepd_t type early. No functional change in this patch.
 
-ppc64 supports pgd hugetlb entries. Add code to handle hugetlb pgd entries to
-follow_page_mask so that ppc64 can switch to it to handle hugetlbe entries.
-
-Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- include/linux/hugetlb.h | 4 ++++
- mm/gup.c                | 7 +++++++
- mm/hugetlb.c            | 9 +++++++++
- 3 files changed, 20 insertions(+)
+ include/linux/hugetlb.h | 47 ++++++++++++++++++++++++-----------------------
+ 1 file changed, 24 insertions(+), 23 deletions(-)
 
 diff --git a/include/linux/hugetlb.h b/include/linux/hugetlb.h
-index fddf6cf403d5..edab98f0a7b8 100644
+index edab98f0a7b8..f66c1d4e0d1f 100644
 --- a/include/linux/hugetlb.h
 +++ b/include/linux/hugetlb.h
-@@ -121,6 +121,9 @@ struct page *follow_huge_pmd(struct mm_struct *mm, unsigned long address,
- 				pmd_t *pmd, int flags);
- struct page *follow_huge_pud(struct mm_struct *mm, unsigned long address,
- 				pud_t *pud, int flags);
-+struct page *follow_huge_pgd(struct mm_struct *mm, unsigned long address,
-+			     pgd_t *pgd, int flags);
-+
- int pmd_huge(pmd_t pmd);
- int pud_huge(pud_t pud);
- unsigned long hugetlb_change_protection(struct vm_area_struct *vma,
-@@ -150,6 +153,7 @@ static inline void hugetlb_show_meminfo(void)
- }
- #define follow_huge_pmd(mm, addr, pmd, flags)	NULL
- #define follow_huge_pud(mm, addr, pud, flags)	NULL
-+#define follow_huge_pgd(mm, addr, pgd, flags)	NULL
- #define prepare_hugepage_range(file, addr, len)	(-EINVAL)
- #define pmd_huge(x)	0
- #define pud_huge(x)	0
-diff --git a/mm/gup.c b/mm/gup.c
-index 73d46f9f7b81..65255389620a 100644
---- a/mm/gup.c
-+++ b/mm/gup.c
-@@ -357,6 +357,13 @@ struct page *follow_page_mask(struct vm_area_struct *vma,
- 	if (pgd_none(*pgd) || unlikely(pgd_bad(*pgd)))
- 		return no_page_table(vma, flags);
+@@ -14,6 +14,30 @@ struct ctl_table;
+ struct user_struct;
+ struct mmu_gather;
  
-+	if (pgd_huge(*pgd)) {
-+		page = follow_huge_pgd(mm, address, pgd, flags);
-+		if (page)
-+			return page;
-+		return no_page_table(vma, flags);
-+	}
-+
- 	return follow_p4d_mask(vma, address, pgd, flags, page_mask);
- }
- 
-diff --git a/mm/hugetlb.c b/mm/hugetlb.c
-index 25e2ee888a90..a12d3cab04fe 100644
---- a/mm/hugetlb.c
-+++ b/mm/hugetlb.c
-@@ -4687,6 +4687,15 @@ follow_huge_pud(struct mm_struct *mm, unsigned long address,
- 	return pte_page(*(pte_t *)pud) + ((address & ~PUD_MASK) >> PAGE_SHIFT);
- }
- 
-+struct page * __weak
-+follow_huge_pgd(struct mm_struct *mm, unsigned long address, pgd_t *pgd, int flags)
++#ifndef is_hugepd
++/*
++ * Some architectures requires a hugepage directory format that is
++ * required to support multiple hugepage sizes. For example
++ * a4fe3ce76 "powerpc/mm: Allow more flexible layouts for hugepage pagetables"
++ * introduced the same on powerpc. This allows for a more flexible hugepage
++ * pagetable layout.
++ */
++typedef struct { unsigned long pd; } hugepd_t;
++#define is_hugepd(hugepd) (0)
++#define __hugepd(x) ((hugepd_t) { (x) })
++static inline int gup_huge_pd(hugepd_t hugepd, unsigned long addr,
++			      unsigned pdshift, unsigned long end,
++			      int write, struct page **pages, int *nr)
 +{
-+	if (flags & FOLL_GET)
-+		return NULL;
-+
-+	return pte_page(*(pte_t *)pgd) + ((address & ~PGDIR_MASK) >> PAGE_SHIFT);
++	return 0;
 +}
++#else
++extern int gup_huge_pd(hugepd_t hugepd, unsigned long addr,
++		       unsigned pdshift, unsigned long end,
++		       int write, struct page **pages, int *nr);
++#endif
 +
- #ifdef CONFIG_MEMORY_FAILURE
++
+ #ifdef CONFIG_HUGETLB_PAGE
  
- /*
+ #include <linux/mempolicy.h>
+@@ -222,29 +246,6 @@ static inline int pud_write(pud_t pud)
+ }
+ #endif
+ 
+-#ifndef is_hugepd
+-/*
+- * Some architectures requires a hugepage directory format that is
+- * required to support multiple hugepage sizes. For example
+- * a4fe3ce76 "powerpc/mm: Allow more flexible layouts for hugepage pagetables"
+- * introduced the same on powerpc. This allows for a more flexible hugepage
+- * pagetable layout.
+- */
+-typedef struct { unsigned long pd; } hugepd_t;
+-#define is_hugepd(hugepd) (0)
+-#define __hugepd(x) ((hugepd_t) { (x) })
+-static inline int gup_huge_pd(hugepd_t hugepd, unsigned long addr,
+-			      unsigned pdshift, unsigned long end,
+-			      int write, struct page **pages, int *nr)
+-{
+-	return 0;
+-}
+-#else
+-extern int gup_huge_pd(hugepd_t hugepd, unsigned long addr,
+-		       unsigned pdshift, unsigned long end,
+-		       int write, struct page **pages, int *nr);
+-#endif
+-
+ #define HUGETLB_ANON_FILE "anon_hugepage"
+ 
+ enum {
 -- 
 2.7.4
