@@ -1,21 +1,17 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wRw6c2X3mzDqd0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 May 2017 21:23:04 +1000 (AEST)
-Message-ID: <1494933772.21847.48.camel@kernel.crashing.org>
-Subject: Re: [PATCH 2/3] powerpc/mm: Rename find_linux_pte_or_hugepte
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>, paulus@samba.org,
- mpe@ellerman.id.au, Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-Date: Tue, 16 May 2017 21:22:52 +1000
-In-Reply-To: <1494926782-25700-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-References: <1494926782-25700-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1494926782-25700-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+Return-Path: <BATV+d8c56d9a67374e13c9b4+5014+infradead.org+hch@bombadil.srs.infradead.org>
+Received: from bombadil.infradead.org (bombadil.infradead.org [65.50.211.133])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wRwgp4pYbzDqZJ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 May 2017 21:48:22 +1000 (AEST)
+From: Christoph Hellwig <hch@lst.de>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Mark Gross <mark.gross@intel.com>, Tejun Heo <tj@kernel.org>,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+Subject: RFC: better timer interface
+Date: Tue, 16 May 2017 13:48:03 +0200
+Message-Id: <20170516114812.10660-1-hch@lst.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,17 +21,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2017-05-16 at 14:56 +0530, Aneesh Kumar K.V wrote:
-> +static inline pte_t *find_linux_pte(pgd_t *pgdir, unsigned long ea,
-> +                                   bool *is_thp, unsigned *hshift)
-> +{
-> +       VM_WARN((!arch_irqs_disabled() && !__hard_irqs_disabled()) ,
-> +               "%s called with irq enabled\n", __func__);
-> +       return __find_linux_pte(pgdir, ea, is_thp, hshift);
-> +}
-> +
+Hi all,
 
-When is arch_irqs_disabled() not sufficient ?
+this series attempts to provide a "modern" timer interface where the
+callback gets the timer_list structure as an argument so that it
+can use container_of instead of having to cast to/from unsigned long
+all the time (or even worse use function pointer casts, we have quite
+a few of those as well).
 
-Cheers,
-Ben.
+For that it steals another bit from the cpu mask to add a modern flag,
+and if that flag is set the different new function prototype is used.
+Last but least new helpers to initialize these modern timers are added.
+Instead of having a larger number of initialization macros we simply
+pass the timer flags to them.
