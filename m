@@ -1,35 +1,32 @@
-Return-Path: <ego@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wRrkQ0NMWzDqc2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 May 2017 18:50:21 +1000 (AEST)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wRsLQ4WNczDqFV
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 May 2017 19:18:06 +1000 (AEST)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v4G8mkgk027094
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 May 2017 04:50:11 -0400
-Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2afwhj21vf-1
+ v4G9Drip096834
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 May 2017 05:18:04 -0400
+Received: from e13.ny.us.ibm.com (e13.ny.us.ibm.com [129.33.205.203])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2afxgaget3-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 May 2017 04:50:11 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 May 2017 05:18:03 -0400
 Received: from localhost
- by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e13.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ego@linux.vnet.ibm.com>;
- Tue, 16 May 2017 04:50:08 -0400
-From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-To: Nicholas Piggin <npiggin@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>,
- Michael Neuling <mikey@neuling.org>,
- Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
- Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
- Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-Subject: [PATCH 0/6] Enable support for deep-stop states on POWER9
-Date: Tue, 16 May 2017 14:19:42 +0530
-Message-Id: <cover.1494585671.git.ego@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Tue, 16 May 2017 05:18:02 -0400
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: akpm@linux-foundation.org, mpe@ellerman.id.au,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH v2 1/2] mm/hugetlb: Cleanup ARCH_HAS_GIGANTIC_PAGE
+Date: Tue, 16 May 2017 14:47:43 +0530
+Message-Id: <1494926264-22463-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,61 +36,113 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+This moves the #ifdef in C code to a Kconfig dependency. Also we move the
+gigantic_page_supported() function to be arch specific. This gives arch to
+conditionally enable runtime allocation of gigantic huge page. Architectures
+like ppc64 supports different gigantic huge page size (16G and 1G) based on the
+translation mode selected. This provides an opportunity for ppc64 to enable
+runtime allocation only w.r.t 1G hugepage.
 
-Hi,
+No functional change in this patch.
 
-This patch series contains some of the fixes required for enabling
-support for deep stop states such as STOP4 and STOP11 via CPU-Hotplug.
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+---
+ arch/arm64/Kconfig               | 2 +-
+ arch/arm64/include/asm/hugetlb.h | 4 ++++
+ arch/s390/Kconfig                | 2 +-
+ arch/s390/include/asm/hugetlb.h  | 3 +++
+ arch/x86/Kconfig                 | 2 +-
+ mm/hugetlb.c                     | 7 ++-----
+ 6 files changed, 12 insertions(+), 8 deletions(-)
 
-These fixes mainly ensure that some of the hypervisor resources which
-are lost during the deep stop state are correctly restored on a
-wakeup.
-
-There are 6 patches in the series.
-
-Patch 1 correctly initializes the core_idle_state_ptr based on the
-threads_per_core. core_idle_state_ptr is used to determine if a thread
-is the last thread entering a deep stop state or a first thread waking
-up from deep stop state in order to save/restore per-core resources.
-
-Patch 2 decouples restoring timebase from restoring hypervisor
-resources, as there are stop states which lose hypervisor state but
-not the timebase.
-
-Patch 3 saves the LPCR value before executing deep stop and restores
-it back to the saved value on the wakeup from stop.
-
-Patch 4 programs the restoration of some of one-time initialized SPRs
-via the stop-api.
-
-Patch 5 provides a workaround for a hardware issue on POWER9 DD1 chips
-where the PLS value cannot be relied upon on a wakeup from deep stop.
-
-Patch 6 fixes the cpuidle-powernv initialization code to allow deep
-states that don't lose timebase.
-
-These patches are based on the Linux upstream and have been tested
-with the corresponding skiboot patches in
-https://lists.ozlabs.org/pipermail/skiboot/2017-May/007183.html to get
-STOP4 working via CPU-Hotplug.
-
-Akshay Adiga (1):
-  powernv:idle: Restore SPRs for deep idle states via stop API.
-
-Gautham R. Shenoy (5):
-  powernv:idle: Correctly initialize core_idle_state_ptr
-  powernv:idle: Decouple Timebase restore & Per-core SPRs restore
-  powernv:idle: Restore LPCR on wakeup from deep-stop
-  powernv:idle: Use Requested Level for restoring state on P9 DD1
-  cpuidle-powernv: Allow Deep stop states that don't stop time
-
- arch/powerpc/include/asm/paca.h       |   2 +
- arch/powerpc/kernel/asm-offsets.c     |   1 +
- arch/powerpc/kernel/idle_book3s.S     |  33 +++++++---
- arch/powerpc/platforms/powernv/idle.c | 112 +++++++++++++++++++++-------------
- drivers/cpuidle/cpuidle-powernv.c     |  16 +++--
- 5 files changed, 110 insertions(+), 54 deletions(-)
-
+diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
+index 3741859765cf..1f8c1f73aada 100644
+--- a/arch/arm64/Kconfig
++++ b/arch/arm64/Kconfig
+@@ -11,7 +11,7 @@ config ARM64
+ 	select ARCH_HAS_ACPI_TABLE_UPGRADE if ACPI
+ 	select ARCH_HAS_ELF_RANDOMIZE
+ 	select ARCH_HAS_GCOV_PROFILE_ALL
+-	select ARCH_HAS_GIGANTIC_PAGE
++	select ARCH_HAS_GIGANTIC_PAGE if MEMORY_ISOLATION && COMPACTION && CMA
+ 	select ARCH_HAS_KCOV
+ 	select ARCH_HAS_SET_MEMORY
+ 	select ARCH_HAS_SG_CHAIN
+diff --git a/arch/arm64/include/asm/hugetlb.h b/arch/arm64/include/asm/hugetlb.h
+index bbc1e35aa601..793bd73b0d07 100644
+--- a/arch/arm64/include/asm/hugetlb.h
++++ b/arch/arm64/include/asm/hugetlb.h
+@@ -83,4 +83,8 @@ extern void huge_ptep_set_wrprotect(struct mm_struct *mm,
+ extern void huge_ptep_clear_flush(struct vm_area_struct *vma,
+ 				  unsigned long addr, pte_t *ptep);
+ 
++#ifdef CONFIG_ARCH_HAS_GIGANTIC_PAGE
++static inline bool gigantic_page_supported(void) { return true; }
++#endif
++
+ #endif /* __ASM_HUGETLB_H */
+diff --git a/arch/s390/Kconfig b/arch/s390/Kconfig
+index a2dcef0aacc7..a41bbf420dda 100644
+--- a/arch/s390/Kconfig
++++ b/arch/s390/Kconfig
+@@ -67,7 +67,7 @@ config S390
+ 	select ARCH_HAS_DEVMEM_IS_ALLOWED
+ 	select ARCH_HAS_ELF_RANDOMIZE
+ 	select ARCH_HAS_GCOV_PROFILE_ALL
+-	select ARCH_HAS_GIGANTIC_PAGE
++	select ARCH_HAS_GIGANTIC_PAGE if MEMORY_ISOLATION && COMPACTION && CMA
+ 	select ARCH_HAS_KCOV
+ 	select ARCH_HAS_SET_MEMORY
+ 	select ARCH_HAS_SG_CHAIN
+diff --git a/arch/s390/include/asm/hugetlb.h b/arch/s390/include/asm/hugetlb.h
+index cd546a245c68..89057b2cc8fe 100644
+--- a/arch/s390/include/asm/hugetlb.h
++++ b/arch/s390/include/asm/hugetlb.h
+@@ -112,4 +112,7 @@ static inline pte_t huge_pte_modify(pte_t pte, pgprot_t newprot)
+ 	return pte_modify(pte, newprot);
+ }
+ 
++#ifdef CONFIG_ARCH_HAS_GIGANTIC_PAGE
++static inline bool gigantic_page_supported(void) { return true; }
++#endif
+ #endif /* _ASM_S390_HUGETLB_H */
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index cc98d5a294ee..30a6328136ac 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -22,7 +22,7 @@ config X86_64
+ 	def_bool y
+ 	depends on 64BIT
+ 	# Options that are inherently 64-bit kernel only:
+-	select ARCH_HAS_GIGANTIC_PAGE
++	select ARCH_HAS_GIGANTIC_PAGE if MEMORY_ISOLATION && COMPACTION && CMA
+ 	select ARCH_SUPPORTS_INT128
+ 	select ARCH_USE_CMPXCHG_LOCKREF
+ 	select HAVE_ARCH_SOFT_DIRTY
+diff --git a/mm/hugetlb.c b/mm/hugetlb.c
+index 3d0aab9ee80d..ce090186b992 100644
+--- a/mm/hugetlb.c
++++ b/mm/hugetlb.c
+@@ -1024,9 +1024,7 @@ static int hstate_next_node_to_free(struct hstate *h, nodemask_t *nodes_allowed)
+ 		((node = hstate_next_node_to_free(hs, mask)) || 1);	\
+ 		nr_nodes--)
+ 
+-#if defined(CONFIG_ARCH_HAS_GIGANTIC_PAGE) && \
+-	((defined(CONFIG_MEMORY_ISOLATION) && defined(CONFIG_COMPACTION)) || \
+-	defined(CONFIG_CMA))
++#ifdef CONFIG_ARCH_HAS_GIGANTIC_PAGE
+ static void destroy_compound_gigantic_page(struct page *page,
+ 					unsigned int order)
+ {
+@@ -1158,8 +1156,7 @@ static int alloc_fresh_gigantic_page(struct hstate *h,
+ 	return 0;
+ }
+ 
+-static inline bool gigantic_page_supported(void) { return true; }
+-#else
++#else /* !CONFIG_ARCH_HAS_GIGANTIC_PAGE */
+ static inline bool gigantic_page_supported(void) { return false; }
+ static inline void free_gigantic_page(struct page *page, unsigned int order) { }
+ static inline void destroy_compound_gigantic_page(struct page *page,
 -- 
-1.8.3.1
+2.7.4
