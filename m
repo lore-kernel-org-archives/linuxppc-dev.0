@@ -1,24 +1,22 @@
-Return-Path: <tglx@linutronix.de>
-Received: from Galois.linutronix.de (Galois.linutronix.de
- [IPv6:2a01:7a0:2:106d:700::1])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wS65q62YlzDqZY
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 May 2017 04:53:03 +1000 (AEST)
-Message-Id: <20170516184735.359536998@linutronix.de>
-Date: Tue, 16 May 2017 20:42:37 +0200
-From: Thomas Gleixner <tglx@linutronix.de>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>,
- Steven Rostedt <rostedt@goodmis.org>, Mark Rutland <mark.rutland@arm.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
-Subject: [patch V2 06/17] powerpc: Adjust system_state check
-References: <20170516184231.564888231@linutronix.de>
+Return-Path: <rdunlap@infradead.org>
+Received: from bombadil.infradead.org (bombadil.infradead.org [65.50.211.133])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wS6vh48q7zDqZJ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 May 2017 05:29:20 +1000 (AEST)
+Subject: Re: [PATCH 2/9] timers: provide a "modern" variant of timers
+To: Christoph Hellwig <hch@lst.de>, Thomas Gleixner <tglx@linutronix.de>
+Cc: Mark Gross <mark.gross@intel.com>, Tejun Heo <tj@kernel.org>,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+References: <20170516114812.10660-1-hch@lst.de>
+ <20170516114812.10660-3-hch@lst.de>
+From: Randy Dunlap <rdunlap@infradead.org>
+Message-ID: <cba2a61d-00cd-f4a1-d7ce-e7249a60fee8@infradead.org>
+Date: Tue, 16 May 2017 12:29:16 -0700
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-15
+In-Reply-To: <20170516114812.10660-3-hch@lst.de>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,29 +26,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-To enable smp_processor_id() and might_sleep() debug checks earlier, it's
-required to add system states between SYSTEM_BOOTING and SYSTEM_RUNNING.
+On 05/16/17 04:48, Christoph Hellwig wrote:
 
-Adjust the system_state check in smp_generic_cpu_bootable() to handle the
-extra states.
+> diff --git a/include/linux/timer.h b/include/linux/timer.h
+> index e6789b8757d5..87afe52c8349 100644
+> --- a/include/linux/timer.h
+> +++ b/include/linux/timer.h
+		\
+> @@ -126,6 +146,32 @@ static inline void init_timer_on_stack_key(struct timer_list *timer,
+>  	init_timer_on_stack_key((_timer), (_flags), NULL, NULL)
+>  #endif
+>  
+> +/**
+> + * prepare_timer - initialize a timer before first use
+> + * @timer:	timer structure to prepare
+> + * @func:	callback to be called when the timer expires
+> + * @flags	%TIMER_* flags that control timer behavior
 
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Acked-by: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@lists.ozlabs.org
----
- arch/powerpc/kernel/smp.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+missing ':' on @flags:
 
---- a/arch/powerpc/kernel/smp.c
-+++ b/arch/powerpc/kernel/smp.c
-@@ -97,7 +97,7 @@ int smp_generic_cpu_bootable(unsigned in
- 	/* Special case - we inhibit secondary thread startup
- 	 * during boot if the user requests it.
- 	 */
--	if (system_state == SYSTEM_BOOTING && cpu_has_feature(CPU_FTR_SMT)) {
-+	if (system_state < SYSTEM_RUNNING && cpu_has_feature(CPU_FTR_SMT)) {
- 		if (!smt_enabled_at_boot && cpu_thread_in_core(nr) != 0)
- 			return 0;
- 		if (smt_enabled_at_boot
+> + *
+> + * This function initializes a timer_list structure so that it can
+> + * be used (by calling add_timer() or mod_timer()).
+> + */
+> +static inline void prepare_timer(struct timer_list *timer,
+> +		void (*func)(struct timer_list *timer), u32 flags)
+> +{
+
+
+
+-- 
+~Randy
