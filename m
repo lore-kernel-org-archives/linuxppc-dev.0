@@ -1,19 +1,43 @@
-Return-Path: <BATV+d8c56d9a67374e13c9b4+5014+infradead.org+hch@bombadil.srs.infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org [65.50.211.133])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wRwhP4h9QzDqbW
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 May 2017 21:48:53 +1000 (AEST)
-From: Christoph Hellwig <hch@lst.de>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Mark Gross <mark.gross@intel.com>, Tejun Heo <tj@kernel.org>,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- linux-kernel@vger.kernel.org
-Subject: [PATCH 9/9] timers: remove old timer initialization macros
-Date: Tue, 16 May 2017 13:48:12 +0200
-Message-Id: <20170516114812.10660-10-hch@lst.de>
-In-Reply-To: <20170516114812.10660-1-hch@lst.de>
-References: <20170516114812.10660-1-hch@lst.de>
+Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wRz4b0mctzDqFJ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 May 2017 23:36:30 +1000 (AEST)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v4GDYj9x066544
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 May 2017 09:36:28 -0400
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2afx2ae472-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 May 2017 09:36:28 -0400
+Received: from localhost
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
+ Tue, 16 May 2017 23:36:25 +1000
+Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v4GDaEUh61014256
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 May 2017 23:36:22 +1000
+Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
+ by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v4GDZosf008895
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 May 2017 23:35:50 +1000
+Date: Tue, 16 May 2017 19:05:32 +0530
+From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+To: Balbir Singh <bsingharora@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au,
+ ananth@linux.vnet.ibm.com
+Subject: Re: [RFC 2/2] powerpc/kprobes: Move kprobes over to patch_instruction
+References: <20170516034913.21163-1-bsingharora@gmail.com>
+ <20170516034913.21163-3-bsingharora@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20170516034913.21163-3-bsingharora@gmail.com>
+Message-Id: <20170516133532.GA19390@naverao1-tp.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,53 +47,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Signed-off-by: Christoph Hellwig <hch@lst.de>
----
- include/linux/timer.h | 22 +++-------------------
- 1 file changed, 3 insertions(+), 19 deletions(-)
+On 2017/05/16 01:49PM, Balbir Singh wrote:
+> arch_arm/disarm_probe use direct assignment for copying
+> instructions, replace them with patch_instruction
 
-diff --git a/include/linux/timer.h b/include/linux/timer.h
-index 87afe52c8349..9c6694d3f66a 100644
---- a/include/linux/timer.h
-+++ b/include/linux/timer.h
-@@ -80,35 +80,19 @@ struct timer_list {
- 	struct timer_list _name = INIT_TIMER(_func, _expires, _flags)
- 
- /*
-- * Don't use the macros below, use DECLARE_TIMER and INIT_TIMER with their
-+ * Don't use the macro below, use DECLARE_TIMER and INIT_TIMER with their
-  * improved callback signature above.
-  */
--#define __TIMER_INITIALIZER(_function, _expires, _data, _flags) { \
-+#define DEFINE_TIMER(_name, _function, _expires, _data)		\
-+	struct timer_list _name = {				\
- 		.entry = { .next = TIMER_ENTRY_STATIC },	\
- 		.function = (_function),			\
- 		.expires = (_expires),				\
- 		.data = (_data),				\
--		.flags = (_flags),				\
- 		__TIMER_LOCKDEP_MAP_INITIALIZER(		\
- 			__FILE__ ":" __stringify(__LINE__))	\
- 	}
- 
--#define TIMER_INITIALIZER(_function, _expires, _data)		\
--	__TIMER_INITIALIZER((_function), (_expires), (_data), 0)
--
--#define TIMER_PINNED_INITIALIZER(_function, _expires, _data)	\
--	__TIMER_INITIALIZER((_function), (_expires), (_data), TIMER_PINNED)
--
--#define TIMER_DEFERRED_INITIALIZER(_function, _expires, _data)	\
--	__TIMER_INITIALIZER((_function), (_expires), (_data), TIMER_DEFERRABLE)
--
--#define TIMER_PINNED_DEFERRED_INITIALIZER(_function, _expires, _data)	\
--	__TIMER_INITIALIZER((_function), (_expires), (_data), TIMER_DEFERRABLE | TIMER_PINNED)
--
--#define DEFINE_TIMER(_name, _function, _expires, _data)		\
--	struct timer_list _name =				\
--		TIMER_INITIALIZER(_function, _expires, _data)
--
- void init_timer_key(struct timer_list *timer, unsigned int flags,
- 		    const char *name, struct lock_class_key *key);
- 
--- 
-2.11.0
+Thanks for doing this!
+
+We will also have to convert optprobes and ftrace to use 
+patch_instruction, but that can be done once the basic infrastructure is 
+in.
+
+Regards,
+Naveen
