@@ -1,27 +1,36 @@
-Return-Path: <labbott@redhat.com>
-Received: from mail-qk0-f178.google.com (mail-qk0-f178.google.com
- [209.85.220.178])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wS0P52xcpzDqb3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 May 2017 00:35:53 +1000 (AEST)
-Received: by mail-qk0-f178.google.com with SMTP id u75so130913142qka.3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 May 2017 07:35:53 -0700 (PDT)
-Subject: Re: kernel BUG at mm/usercopy.c:72!
-To: Kees Cook <keescook@chromium.org>, Michael Ellerman <mpe@ellerman.id.au>
-Cc: Breno Leitao <leitao@debian.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- gromero@br.ibm.com, Anshuman Khandual <khandual@linux.vnet.ibm.com>,
- Balbir Singh <bsingharora@gmail.com>
-References: <20170515191949.GA13641@gmail.com>
- <878tlxoy62.fsf@concordia.ellerman.id.au>
- <CAGXu5jK86RkgsWFdtSuGoZzuRZt4cqJcU4YSTjn=irv0Pbu3Rw@mail.gmail.com>
-From: Laura Abbott <labbott@redhat.com>
-Message-ID: <ffdbeb27-0395-ef91-3b66-dc2f4f89e751@redhat.com>
-Date: Tue, 16 May 2017 07:35:47 -0700
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wS1b869DlzDqPb
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 May 2017 01:29:40 +1000 (AEST)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v4GFOcDD094390
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 May 2017 11:29:36 -0400
+Received: from e16.ny.us.ibm.com (e16.ny.us.ibm.com [129.33.205.206])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2ag1dyj7m3-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 May 2017 11:29:35 -0400
+Received: from localhost
+ by e16.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Tue, 16 May 2017 11:29:35 -0400
+Subject: Re: [PATCH v2 1/2] mm/hugetlb: Cleanup ARCH_HAS_GIGANTIC_PAGE
+To: Anshuman Khandual <khandual@linux.vnet.ibm.com>, akpm@linux-foundation.org,
+ mpe@ellerman.id.au
+References: <1494926264-22463-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <87c68117-3163-b092-ec51-1d618fc42b85@linux.vnet.ibm.com>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Date: Tue, 16 May 2017 20:59:12 +0530
 MIME-Version: 1.0
-In-Reply-To: <CAGXu5jK86RkgsWFdtSuGoZzuRZt4cqJcU4YSTjn=irv0Pbu3Rw@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8
+In-Reply-To: <87c68117-3163-b092-ec51-1d618fc42b85@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Message-Id: <87aedd86-08ea-6ece-4192-36c9659939d4@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,82 +40,101 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/16/2017 07:32 AM, Kees Cook wrote:
-> On Tue, May 16, 2017 at 4:09 AM, Michael Ellerman <mpe@ellerman.id.au> wrote:
->> [Cc'ing the relevant folks]
->>
->> Breno Leitao <leitao@debian.org> writes:
->>> Hello,
->>>
->>> Kernel 4.12-rc1 is showing a bug when I try it on a POWER8 virtual
->>> machine. Justing SSHing into the machine causes this issue.
->>>
->>>       [23.138124] usercopy: kernel memory overwrite attempt detected to d000000003d80030 (mm_struct) (560 bytes)
->>>       [23.138195] ------------[ cut here ]------------
->>>       [23.138229] kernel BUG at mm/usercopy.c:72!
->>>       [23.138252] Oops: Exception in kernel mode, sig: 5 [#3]
->>>       [23.138280] SMP NR_CPUS=2048
->>>       [23.138280] NUMA
->>>       [23.138302] pSeries
->>>       [23.138330] Modules linked in:
->>>       [23.138354] CPU: 4 PID: 2215 Comm: sshd Tainted: G      D         4.12.0-rc1+ #9
->>>       [23.138395] task: c0000001e272dc00 task.stack: c0000001e27b0000
->>>       [23.138430] NIP: c000000000342358 LR: c000000000342354 CTR: c0000000006eb060
->>>       [23.138472] REGS: c0000001e27b3a00 TRAP: 0700   Tainted: G      D          (4.12.0-rc1+)
->>>       [23.138513] MSR: 8000000000029033 <SF,EE,ME,IR,DR,RI,LE>
->>>       [23.138517]   CR: 28004222  XER: 20000000
->>>       [23.138565] CFAR: c000000000b34500 SOFTE: 1
->>>       [23.138565] GPR00: c000000000342354 c0000001e27b3c80 c00000000142a000 000000000000005e
->>>       [23.138565] GPR04: c0000001ffe0ade8 c0000001ffe21bf8 2920283536302062 79746573290d0a74
->>>       [23.138565] GPR08: 0000000000000007 c000000000f61864 00000001feeb0000 3064206f74206465
->>>       [23.138565] GPR12: 0000000000004400 c00000000fb42600 0000000000000015 00000000545bdc40
->>>       [23.138565] GPR16: 00000000545c49c8 000001000b4b8890 00007ffff78c26f0 00000000545cf000
->>>       [23.138565] GPR20: 00000000546109c8 000000000000c7e8 0000000054610010 00007ffff78c22e8
->>>       [23.138565] GPR24: 00000000545c8c40 c0000000ff6bcef0 c0000000001e5220 0000000000000230
->>>       [23.138565] GPR28: d000000003d80260 0000000000000000 0000000000000230 d000000003d80030
->>>       [23.138920] NIP [c000000000342358] __check_object_size+0x88/0x2d0
->>>       [23.138956] LR [c000000000342354] __check_object_size+0x84/0x2d0
->>>       [23.138990] Call Trace:
->>>       [23.139006] [c0000001e27b3c80] [c000000000342354] __check_object_size+0x84/0x2d0 (unreliable)
->>>       [23.139056] [c0000001e27b3d00] [c0000000009f5ba8] bpf_prog_create_from_user+0xa8/0x1a0
->>>       [23.139099] [c0000001e27b3d60] [c0000000001e5d30] do_seccomp+0x120/0x720
->>>       [23.139136] [c0000001e27b3dd0] [c0000000000fd53c] SyS_prctl+0x2ac/0x6b0
->>>       [23.139172] [c0000001e27b3e30] [c00000000000af84] system_call+0x38/0xe0
->>>       [23.139218] Instruction dump:
->>>       [23.139240] 60000000 60420000 3c82ff94 3ca2ff9d 38841788 38a5e868 3c62ff95 7fc8f378
->>>       [23.139283] 7fe6fb78 386310c0 487f2169 60000000 <0fe00000> 60420000 2ba30010 409d018c
->>>       [23.139328] ---[ end trace 1a1dc952a4b7c4af ]---
->>>
->>> I found that kernel 4.11 does not have this issue. I also found that, if
->>> I revert 517e1fbeb65f5eade8d14f46ac365db6c75aea9b, I do not see the
->>> problem.
->>>
->>> On the other side, if I cherry-pick commit
->>> 517e1fbeb65f5eade8d14f46ac365db6c75aea9b into 4.11, I start seeing the
->>> same issue also on 4.11.
->>
->> Yeah it looks like powerpc also suffers from the same bug that arm64
->> used to, ie. virt_addr_valid() will return true for some vmalloc
->> addresses.
->>
->> virt_addr_valid() is used pretty widely, I'm not sure if we can just fix
->> it without other fallout. I'll dig a bit more tomorrow if no one beats
->> me to it.
->>
->> Kees, depending on how that turns out we may ask you to revert
->> 517e1fbeb65f ("mm/usercopy: Drop extra is_vmalloc_or_module() check").
-> 
-> That's fine by me. Let me know what you think would be best.
-> 
-> Laura, I don't see much harm in putting this back in place. It seems
-> like it's just a matter of efficiency to have it removed?
-> 
-> -Kees
-> 
 
-Yes, there shouldn't be any harm if we need to bring it back.
-Perhaps I should submit a follow on patch to rename virt_addr_valid to
-virt_addr_valid_except_where_it_isnt.
 
-Thanks,
-Laura
+On Tuesday 16 May 2017 03:52 PM, Anshuman Khandual wrote:
+> On 05/16/2017 02:47 PM, Aneesh Kumar K.V wrote:
+>> This moves the #ifdef in C code to a Kconfig dependency. Also we move the
+>> gigantic_page_supported() function to be arch specific. This gives arch to
+>> conditionally enable runtime allocation of gigantic huge page. Architectures
+>> like ppc64 supports different gigantic huge page size (16G and 1G) based on the
+>> translation mode selected. This provides an opportunity for ppc64 to enable
+>> runtime allocation only w.r.t 1G hugepage.
+>
+> Right.
+>
+>>
+>> No functional change in this patch.
+>>
+>> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+>> ---
+>>  arch/arm64/Kconfig               | 2 +-
+>>  arch/arm64/include/asm/hugetlb.h | 4 ++++
+>>  arch/s390/Kconfig                | 2 +-
+>>  arch/s390/include/asm/hugetlb.h  | 3 +++
+>>  arch/x86/Kconfig                 | 2 +-
+>>  mm/hugetlb.c                     | 7 ++-----
+>>  6 files changed, 12 insertions(+), 8 deletions(-)
+>>
+>> diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
+>> index 3741859765cf..1f8c1f73aada 100644
+>> --- a/arch/arm64/Kconfig
+>> +++ b/arch/arm64/Kconfig
+>> @@ -11,7 +11,7 @@ config ARM64
+>>  	select ARCH_HAS_ACPI_TABLE_UPGRADE if ACPI
+>>  	select ARCH_HAS_ELF_RANDOMIZE
+>>  	select ARCH_HAS_GCOV_PROFILE_ALL
+>> -	select ARCH_HAS_GIGANTIC_PAGE
+>> +	select ARCH_HAS_GIGANTIC_PAGE if MEMORY_ISOLATION && COMPACTION && CMA
+>>  	select ARCH_HAS_KCOV
+>>  	select ARCH_HAS_SET_MEMORY
+>>  	select ARCH_HAS_SG_CHAIN
+>> diff --git a/arch/arm64/include/asm/hugetlb.h b/arch/arm64/include/asm/hugetlb.h
+>> index bbc1e35aa601..793bd73b0d07 100644
+>> --- a/arch/arm64/include/asm/hugetlb.h
+>> +++ b/arch/arm64/include/asm/hugetlb.h
+>> @@ -83,4 +83,8 @@ extern void huge_ptep_set_wrprotect(struct mm_struct *mm,
+>>  extern void huge_ptep_clear_flush(struct vm_area_struct *vma,
+>>  				  unsigned long addr, pte_t *ptep);
+>>
+>> +#ifdef CONFIG_ARCH_HAS_GIGANTIC_PAGE
+>> +static inline bool gigantic_page_supported(void) { return true; }
+>> +#endif
+>> +
+>>  #endif /* __ASM_HUGETLB_H */
+>> diff --git a/arch/s390/Kconfig b/arch/s390/Kconfig
+>> index a2dcef0aacc7..a41bbf420dda 100644
+>> --- a/arch/s390/Kconfig
+>> +++ b/arch/s390/Kconfig
+>> @@ -67,7 +67,7 @@ config S390
+>>  	select ARCH_HAS_DEVMEM_IS_ALLOWED
+>>  	select ARCH_HAS_ELF_RANDOMIZE
+>>  	select ARCH_HAS_GCOV_PROFILE_ALL
+>> -	select ARCH_HAS_GIGANTIC_PAGE
+>> +	select ARCH_HAS_GIGANTIC_PAGE if MEMORY_ISOLATION && COMPACTION && CMA
+>>  	select ARCH_HAS_KCOV
+>>  	select ARCH_HAS_SET_MEMORY
+>>  	select ARCH_HAS_SG_CHAIN
+>> diff --git a/arch/s390/include/asm/hugetlb.h b/arch/s390/include/asm/hugetlb.h
+>> index cd546a245c68..89057b2cc8fe 100644
+>> --- a/arch/s390/include/asm/hugetlb.h
+>> +++ b/arch/s390/include/asm/hugetlb.h
+>> @@ -112,4 +112,7 @@ static inline pte_t huge_pte_modify(pte_t pte, pgprot_t newprot)
+>>  	return pte_modify(pte, newprot);
+>>  }
+>>
+>> +#ifdef CONFIG_ARCH_HAS_GIGANTIC_PAGE
+>> +static inline bool gigantic_page_supported(void) { return true; }
+>> +#endif
+>>  #endif /* _ASM_S390_HUGETLB_H */
+>> diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+>> index cc98d5a294ee..30a6328136ac 100644
+>> --- a/arch/x86/Kconfig
+>> +++ b/arch/x86/Kconfig
+>> @@ -22,7 +22,7 @@ config X86_64
+>>  	def_bool y
+>>  	depends on 64BIT
+>>  	# Options that are inherently 64-bit kernel only:
+>> -	select ARCH_HAS_GIGANTIC_PAGE
+>> +	select ARCH_HAS_GIGANTIC_PAGE if MEMORY_ISOLATION && COMPACTION && CMA
+>>  	select ARCH_SUPPORTS_INT128
+>>  	select ARCH_USE_CMPXCHG_LOCKREF
+>>  	select HAVE_ARCH_SOFT_DIRTY
+>
+> Should not we define gigantic_page_supported() function for X86 as well
+> like the other two archs above ?
+>
+
+yes. Will update the patch.
+
+-aneesh
