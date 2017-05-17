@@ -1,34 +1,23 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wSLsv4bQLzDqb7
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 May 2017 14:28:35 +1000 (AEST)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v4H4SSV8043567
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 May 2017 00:28:29 -0400
-Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2agdbdw5qh-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 May 2017 00:28:28 -0400
-Received: from localhost
- by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Tue, 16 May 2017 22:28:27 -0600
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: akpm@linux-foundation.org, mpe@ellerman.id.au,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH v3 2/2] powerpc/mm/hugetlb: Add support for 1G huge pages
-Date: Wed, 17 May 2017 09:58:12 +0530
-In-Reply-To: <1494995292-4443-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-References: <1494995292-4443-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Message-Id: <1494995292-4443-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wSMWv0pWDzDqJk
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 May 2017 14:58:02 +1000 (AEST)
+Message-ID: <1494997069.3092.5.camel@kernel.crashing.org>
+Subject: Re: [PATCH 2/3] powerpc/mm: Rename find_linux_pte_or_hugepte
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>, paulus@samba.org,
+ mpe@ellerman.id.au, Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+Date: Wed, 17 May 2017 14:57:49 +1000
+In-Reply-To: <87wp9g17tt.fsf@skywalker.in.ibm.com>
+References: <1494926782-25700-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1494926782-25700-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1494933772.21847.48.camel@kernel.crashing.org>
+ <87wp9g17tt.fsf@skywalker.in.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,69 +27,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-POWER9 supports hugepages of size 2M and 1G in radix MMU mode. This patch
-enables the usage of 1G page size for hugetlbfs. This also update the helper
-such we can do 1G page allocation at runtime.
+On Wed, 2017-05-17 at 08:57 +0530, Aneesh Kumar K.V wrote:
+> Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+> 
+> > On Tue, 2017-05-16 at 14:56 +0530, Aneesh Kumar K.V wrote:
+> > > +static inline pte_t *find_linux_pte(pgd_t *pgdir, unsigned long ea,
+> > > +                                   bool *is_thp, unsigned *hshift)
+> > > +{
+> > > +       VM_WARN((!arch_irqs_disabled() && !__hard_irqs_disabled()) ,
+> > > +               "%s called with irq enabled\n", __func__);
+> > > +       return __find_linux_pte(pgdir, ea, is_thp, hshift);
+> > > +}
+> > > +
+> > 
+> > When is arch_irqs_disabled() not sufficient ?
+> 
+> We can do lockless page table walk in interrupt handlers where we find
+> MSR_EE = 0. 
 
-We still don't enable 1G page size on DD1 version. This is to avoid doing
-workaround mentioned in commit: 6d3a0379ebdc8 (powerpc/mm: Add
-radix__tlb_flush_pte_p9_dd1()
+Such as ?
 
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/book3s/64/hugetlb.h | 10 ++++++++++
- arch/powerpc/mm/hugetlbpage.c                |  7 +++++--
- arch/powerpc/platforms/Kconfig.cputype       |  1 +
- 3 files changed, 16 insertions(+), 2 deletions(-)
+> I was not sure we mark softenabled 0 there. What I wanted to
+> indicate in the patch is that we are safe with either softenable = 0 or MSR_EE = 0
 
-diff --git a/arch/powerpc/include/asm/book3s/64/hugetlb.h b/arch/powerpc/include/asm/book3s/64/hugetlb.h
-index 6666cd366596..5c28bd6f2ae1 100644
---- a/arch/powerpc/include/asm/book3s/64/hugetlb.h
-+++ b/arch/powerpc/include/asm/book3s/64/hugetlb.h
-@@ -50,4 +50,14 @@ static inline pte_t arch_make_huge_pte(pte_t entry, struct vm_area_struct *vma,
- 	else
- 		return entry;
- }
-+
-+#ifdef CONFIG_ARCH_HAS_GIGANTIC_PAGE
-+static inline bool gigantic_page_supported(void)
-+{
-+	if (radix_enabled())
-+		return true;
-+	return false;
-+}
-+#endif
-+
- #endif
-diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
-index a4f33de4008e..80f6d2ed551a 100644
---- a/arch/powerpc/mm/hugetlbpage.c
-+++ b/arch/powerpc/mm/hugetlbpage.c
-@@ -763,8 +763,11 @@ static int __init add_huge_page_size(unsigned long long size)
- 	 * Hash: 16M and 16G
- 	 */
- 	if (radix_enabled()) {
--		if (mmu_psize != MMU_PAGE_2M)
--			return -EINVAL;
-+		if (mmu_psize != MMU_PAGE_2M) {
-+			if (cpu_has_feature(CPU_FTR_POWER9_DD1) ||
-+			    (mmu_psize != MMU_PAGE_1G))
-+				return -EINVAL;
-+		}
- 	} else {
- 		if (mmu_psize != MMU_PAGE_16M && mmu_psize != MMU_PAGE_16G)
- 			return -EINVAL;
-diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
-index 684e886eaae4..b76ef6637016 100644
---- a/arch/powerpc/platforms/Kconfig.cputype
-+++ b/arch/powerpc/platforms/Kconfig.cputype
-@@ -344,6 +344,7 @@ config PPC_STD_MMU_64
- config PPC_RADIX_MMU
- 	bool "Radix MMU Support"
- 	depends on PPC_BOOK3S_64
-+	select ARCH_HAS_GIGANTIC_PAGE if (MEMORY_ISOLATION && COMPACTION) || CMA
- 	default y
- 	help
- 	  Enable support for the Power ISA 3.0 Radix style MMU. Currently this
--- 
-2.7.4
+Reading the MSR is expensive...
+
+Can you find a case where we are hard disabled and not soft disable in
+C code ? I can't think of one off-hand ... I know we have some asm that
+can do that very temporarily but I wouldn't think we have anything at
+runtime.
+
+Talking of which, we have this in irq.c:
+
+
+#ifdef CONFIG_TRACE_IRQFLAGS
+	else {
+		/*
+		 * We should already be hard disabled here. We had bugs
+		 * where that wasn't the case so let's dbl check it and
+		 * warn if we are wrong. Only do that when IRQ tracing
+		 * is enabled as mfmsr() can be costly.
+		 */
+		if (WARN_ON(mfmsr() & MSR_EE))
+			__hard_irq_disable();
+	}
+#endif
+
+I think we should move that to a new CONFIG_PPC_DEBUG_LAZY_IRQ because
+distros are likely to have CONFIG_TRACE_IRQFLAGS these days no ?
+
+Also we could add additional checks, such as MSR_EE matching paca-
+>irq_happened or the above you mentioned, ie, WARN if we find case
+where IRQs are hard disabled but soft enabled.
+
+If we find these, I think we should fix them.
+
+Cheers,
+Ben.
