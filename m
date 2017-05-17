@@ -1,48 +1,22 @@
-Return-Path: <benh@au1.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mhiramat@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wSDkq0vynzDqNw
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 May 2017 09:52:02 +1000 (AEST)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v4GNmlpx111737
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 May 2017 19:51:57 -0400
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2ag7ewhbf2-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 May 2017 19:51:57 -0400
-Received: from localhost
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <benh@au1.ibm.com>;
- Wed, 17 May 2017 09:51:54 +1000
-Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v4GNpi0v57802934
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 May 2017 09:51:52 +1000
-Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
- by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v4GNpJAH026012
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 May 2017 09:51:19 +1000
-Subject: Re: [v3 0/9] parallelized "struct page" zeroing
-From: Benjamin Herrenschmidt <benh@au1.ibm.com>
-Reply-To: benh@au1.ibm.com
-To: David Miller <davem@davemloft.net>, pasha.tatashin@oracle.com
-Cc: linux-s390@vger.kernel.org, borntraeger@de.ibm.com,
- heiko.carstens@de.ibm.com, linux-kernel@vger.kernel.org,
- mhocko@kernel.org, linux-mm@kvack.org, sparclinux@vger.kernel.org,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wSGXC11GwzDqPj
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 May 2017 11:12:59 +1000 (AEST)
+Date: Wed, 17 May 2017 10:12:48 +0900
+From: Masami Hiramatsu <mhiramat@kernel.org>
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, Ananth N Mavinakayanahalli
+ <ananth@linux.vnet.ibm.com>, Masami Hiramatsu <mhiramat@kernel.org>,
  linuxppc-dev@lists.ozlabs.org
-Date: Wed, 17 May 2017 09:50:57 +1000
-In-Reply-To: <20170512.133742.2144484253675877904.davem@davemloft.net>
-References: <65b8a658-76d1-0617-ece8-ff7a3c1c4046@oracle.com>
- <20170512.125708.475573831936972365.davem@davemloft.net>
- <6da8d4a6-3332-8331-c329-b05efd88a70d@oracle.com>
- <20170512.133742.2144484253675877904.davem@davemloft.net>
-Content-Type: text/plain; charset="UTF-8"
+Subject: Re: [PATCH 1/2] powerpc/jprobes: Save and restore the parameter
+ save area
+Message-Id: <20170517101248.7b3d2a5f38fff1a765df9687@kernel.org>
+In-Reply-To: <0572aa31dd57bef6f158ac97d0b666a0c545356a.1494871248.git.naveen.n.rao@linux.vnet.ibm.com>
+References: <0572aa31dd57bef6f158ac97d0b666a0c545356a.1494871248.git.naveen.n.rao@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Message-Id: <1494978657.21847.74.camel@au1.ibm.com>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,31 +26,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2017-05-12 at 13:37 -0400, David Miller wrote:
-> > Right now it is larger, but what I suggested is to add a new optimized
-> > routine just for this case, which would do STBI for 64-bytes but
-> > without membar (do membar at the end of memmap_init_zone() and
-> > deferred_init_memmap()
-> > 
-> > #define struct_page_clear(page)                                 \
-> >          __asm__ __volatile__(                                   \
-> >          "stxa   %%g0, [%0]%2\n"                                 \
-> >          "stxa   %%xg0, [%0 + %1]%2\n"                           \
-> >          : /* No output */                                       \
-> >          : "r" (page), "r" (0x20), "i"(ASI_BLK_INIT_QUAD_LDD_P))
-> > 
-> > And insert it into __init_single_page() instead of memset()
-> > 
-> > The final result is 4.01s/T which is even faster compared to current
-> > 4.97s/T
-> 
-> Ok, indeed, that would work.
+On Mon, 15 May 2017 23:35:03 +0530
+"Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
+> diff --git a/arch/powerpc/include/asm/kprobes.h b/arch/powerpc/include/asm/kprobes.h
+> index a83821f33ea3..b6960ef213ac 100644
+> --- a/arch/powerpc/include/asm/kprobes.h
+> +++ b/arch/powerpc/include/asm/kprobes.h
+> @@ -61,6 +61,15 @@ extern kprobe_opcode_t optprobe_template_end[];
+>  #define MAX_OPTINSN_SIZE	(optprobe_template_end - optprobe_template_entry)
+>  #define RELATIVEJUMP_SIZE	sizeof(kprobe_opcode_t)	/* 4 bytes */
+>  
+> +/* Save upto 16 parameters along with the stack frame header */
+> +#define MAX_STACK_SIZE		(STACK_FRAME_PARM_SAVE + (16 * sizeof(unsigned long)))
+> +#define MIN_STACK_SIZE(ADDR)					       \
+> +	(((MAX_STACK_SIZE) < (((unsigned long)current_thread_info()) + \
+> +			      THREAD_SIZE - (unsigned long)(ADDR)))    \
+> +	 ? (MAX_STACK_SIZE)					       \
+> +	 : (((unsigned long)current_thread_info()) +		       \
+> +	    THREAD_SIZE - (unsigned long)(ADDR)))
 
-On ppc64, that might not. We have a dcbz instruction that clears an
-entire cache line at once. That's what we use for memset's and page
-clearing. However, 64 bytes is half a cache line on modern processors
-so we can't use it with that semantic and would have to fallback to the
-slower stores.
+Could you add CUR_STACK_SIZE(addr) as x86 does instead of repeating similar code?
 
-Cheers,
-Ben.
+Thank you,
+
+
+-- 
+Masami Hiramatsu <mhiramat@kernel.org>
