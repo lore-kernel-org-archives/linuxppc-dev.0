@@ -1,21 +1,39 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <stewart@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wSQMG4mL1zDqYC
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 May 2017 17:05:46 +1000 (AEST)
-Date: Wed, 17 May 2017 09:04:26 +0200
-Message-ID: <20170517090426.Horde.eql6xxQwhPON3qTdB7H6SA6@messagerie.c-s.fr>
-From: LEROY Christophe <christophe.leroy@c-s.fr>
-To: Balbir Singh <bsingharora@gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au,
- naveen.n.rao@linux.vnet.ibm.com
-Subject: Re: [RFC 0/2] Consolidate patch_instruction
-References: <20170516222015.Horde.fwWhnIwI59SuB64Du97wdg2@messagerie.c-s.fr>
- <1494987032.30802.6.camel@gmail.com>
-In-Reply-To: <1494987032.30802.6.camel@gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed; DelSp=Yes
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wSRW26RKSzDqMl
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 May 2017 17:57:34 +1000 (AEST)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v4H7nEVR106371
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 May 2017 03:57:31 -0400
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2aggdewqcd-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 May 2017 03:57:30 -0400
+Received: from localhost
+ by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <stewart@linux.vnet.ibm.com>;
+ Wed, 17 May 2017 01:57:30 -0600
+From: Stewart Smith <stewart@linux.vnet.ibm.com>
+To: Anju T Sudhakar <anju@linux.vnet.ibm.com>, mpe@ellerman.id.au
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ ego@linux.vnet.ibm.com, bsingharora@gmail.com, anton@samba.org,
+ sukadev@linux.vnet.ibm.com, mikey@neuling.org, dja@axtens.net,
+ eranian@google.com, hemant@linux.vnet.ibm.com,
+ maddy@linux.vnet.ibm.com, anju@linux.vnet.ibm.com
+Subject: Re: [PATCH v8 07/10] powerpc/perf: PMU functions for Core IMC and
+ hotplugging
+In-Reply-To: <1493907596-11425-8-git-send-email-anju@linux.vnet.ibm.com>
+References: <1493907596-11425-1-git-send-email-anju@linux.vnet.ibm.com>
+ <1493907596-11425-8-git-send-email-anju@linux.vnet.ibm.com>
+Date: Wed, 17 May 2017 17:57:22 +1000
 MIME-Version: 1.0
+Content-Type: text/plain
+Message-Id: <87wp9fdifx.fsf@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,33 +43,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Balbir Singh <bsingharora@gmail.com> a =C3=A9crit=C2=A0:
-
-> On Tue, 2017-05-16 at 22:20 +0200, LEROY Christophe wrote:
->> Balbir Singh <bsingharora@gmail.com> a =C3=A9crit=C2=A0:
->>
->> > patch_instruction is enhanced in this RFC to support
->> > patching via a different virtual address (text_poke_area).
->> > The mapping of text_poke_area->addr is RW and not RWX.
->> > This way the mapping allows write for patching and then we tear
->> > down the mapping. The downside is that we introduce a spinlock
->> > which serializes our patching to one patch at a time.
->>
->> Very nice patch, would fit great with my patch for impmementing
->> CONFIG_DEBUG_RODATA (https://patchwork.ozlabs.org/patch/754289 ).
->> Would avoid having to set the text area back to RW for patching
->>
+Anju T Sudhakar <anju@linux.vnet.ibm.com> writes:
+> --- a/arch/powerpc/include/asm/imc-pmu.h
+> +++ b/arch/powerpc/include/asm/imc-pmu.h
+> @@ -24,6 +24,7 @@
+>   */
+>  #define IMC_MAX_CHIPS			32
+>  #define IMC_MAX_PMUS			32
+> +#define IMC_MAX_CORES			32
 >
-> Awesome! It seems like you have some of the work for CONFIG_STRICT_KERNEL=
-_RWX
-> any reason why this is under CONFIG_DEBUG_RODATA? But I think there is
-> reuse capability across the future patches and the current set.
+>  /*
+>   * This macro is used for memory buffer allocation of
+> @@ -38,6 +39,11 @@
+>  #define IMC_NEST_MAX_PAGES		64
 >
+>  /*
+> + * IMC Core engine expects 8K bytes of memory for counter collection.
+> + */
+> +#define IMC_CORE_COUNTER_MEM		8192
 
-Indeed it looks the same, see https://patchwork.kernel.org/patch/9554881
+Any reason for this not to be in the device tree?
 
-Christophe
+This is the size of memory that Linux needs to give OPAL, so the size of
+that should probably come from OPAL rather than Linux.
 
+Otherwise, if in the future, we had a counter with an offset greater
+than 8192 in, we'd have no way to detect that and we'd fail silently by
+overwriting memory.
 
-> Cheers,
-> Balbir  Singh.
+-- 
+Stewart Smith
+OPAL Architect, IBM.
