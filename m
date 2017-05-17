@@ -1,22 +1,50 @@
-Return-Path: <pmladek@suse.com>
-Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
+Return-Path: <srs0=xbvl=4x=linux.vnet.ibm.com=hbathini@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wSY6G3pcSzDqb4
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 May 2017 22:09:57 +1000 (AEST)
-Date: Wed, 17 May 2017 14:09:52 +0200
-From: Petr Mladek <pmladek@suse.com>
-To: Christoph Hellwig <hch@lst.de>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Mark Gross <mark.gross@intel.com>,
- Tejun Heo <tj@kernel.org>, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/9] kthread: remove unused macros
-Message-ID: <20170517120952.GB7297@pathway.suse.cz>
-References: <20170516114812.10660-1-hch@lst.de>
- <20170516114812.10660-4-hch@lst.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wSY7v3wSxzDqb4
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 May 2017 22:11:23 +1000 (AEST)
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3wSY7v39d6z8t8V
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 May 2017 22:11:23 +1000 (AEST)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3wSY7v0688z9s82
+ for <linuxppc-dev@ozlabs.org>; Wed, 17 May 2017 22:11:22 +1000 (AEST)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v4HC8oQM025974
+ for <linuxppc-dev@ozlabs.org>; Wed, 17 May 2017 08:11:17 -0400
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2agp1sgtj8-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Wed, 17 May 2017 08:11:17 -0400
+Received: from localhost
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <hbathini@linux.vnet.ibm.com>;
+ Wed, 17 May 2017 22:11:13 +1000
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v4HCB3VJ55181526
+ for <linuxppc-dev@ozlabs.org>; Wed, 17 May 2017 22:11:11 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v4HCAbf5021982
+ for <linuxppc-dev@ozlabs.org>; Wed, 17 May 2017 22:10:37 +1000
+Subject: Re: [PATCH v2] powerpc/fadump: set an upper limit for boot memory size
+To: Michael Ellerman <mpe@ellerman.id.au>
+References: <148793853573.16182.16113694193326906522.stgit@hbathini.in.ibm.com>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
+ Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
+From: Hari Bathini <hbathini@linux.vnet.ibm.com>
+Date: Wed, 17 May 2017 17:40:16 +0530
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170516114812.10660-4-hch@lst.de>
+In-Reply-To: <148793853573.16182.16113694193326906522.stgit@hbathini.in.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <72e3dcde-5730-59ed-a24d-b1bfc79a8b9a@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,106 +54,111 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue 2017-05-16 13:48:06, Christoph Hellwig wrote:
-> KTHREAD_DELAYED_WORK_INIT and DEFINE_KTHREAD_DELAYED_WORK are unused
-> and are using a timer helper that's about to go away.
-
-A patch using this API is flying around, see
-https://lkml.kernel.org/r/1476715742-14924-1-git-send-email-pmladek@suse.com
-And I have one more, for hung_task.c, in the drawer.
-
-I admit that I got sidetracked and did not push these conversions
-last months. But the conversions are useful and I want to continue
-or find a trainee that might continue.
-
-I wanted to make your life easier, took inspiration from the
-workqueues conversion and prepared the patch below. It is tested
-with the above mentioned API user.
-
-Please, let me known if you would prefer another approach.
-I do not want to complicate development of the new timer API.
+Hi Michael,
 
 
->From fcac2f124c0c4a5af0c803b4adef50cd2aef88e1 Mon Sep 17 00:00:00 2001
-From: Petr Mladek <pmladek@suse.com>
-Date: Wed, 17 May 2017 14:00:19 +0200
-Subject: [PATCH] kthread_worker: switch to modern timers
+On Friday 24 February 2017 05:54 PM, Hari Bathini wrote:
+> By default, 5% of system RAM is reserved for preserving boot memory.
+> Alternatively, a user can specify the amount of memory to reserve.
+> See Documentation/powerpc/firmware-assisted-dump.txt for details. In
+> addition to the memory reserved for preserving boot memory, some more
+> memory is reserved, to save HPTE region, CPU state data and ELF core
+> headers.
+>
+> Memory Reservation during first kernel looks like below:
+>
+>    Low memory                                        Top of memory
+>    0      boot memory size                                       |
+>    |           |                       |<--Reserved dump area -->|
+>    V           V                       |   Permanent Reservation V
+>    +-----------+----------/ /----------+---+----+-----------+----+
+>    |           |                       |CPU|HPTE|  DUMP     |ELF |
+>    +-----------+----------/ /----------+---+----+-----------+----+
+>          |                                           ^
+>          |                                           |
+>          \                                           /
+>           -------------------------------------------
+>            Boot memory content gets transferred to
+>            reserved area by firmware at the time of
+>            crash
+>
+> This implicitly means that the sum of the sizes of boot memory, CPU
+> state data, HPTE region, DUMP preserving area and ELF core headers
+> can't be greater than the total memory size. But currently, a user is
+> allowed to specify any value as boot memory size. So, the above rule
+> is violated when a boot memory size around 50% of the total available
+> memory is specified. As the kernel is not handling this currently, it
+> may lead to undefined behavior. Fix it by setting an upper limit for
+> boot memory size to 25% of the total available memory. Also, instead
+> of using memblock_end_of_DRAM(), which doesn't take the holes, if any,
+> in the memory layout into account, use memblock_phys_mem_size() to
+> calculate the percentage of total available memory.
+>
+> Signed-off-by: Hari Bathini <hbathini@linux.vnet.ibm.com>
+> ---
+>
+> This patch is based on top of the patchset to reuse-crashkernel-parameter-
+> for-fadump (http://patchwork.ozlabs.org/patch/711522).
 
-Suggested-by: Christoph Hellwig <hch@lst.de>
-Signed-off-by: Petr Mladek <pmladek@suse.com>
----
- include/linux/kthread.h | 11 ++++-------
- kernel/kthread.c        |  9 ++++-----
- 2 files changed, 8 insertions(+), 12 deletions(-)
+The above mentioned patch-set is upstream.
+Can you please review this patch.
 
-diff --git a/include/linux/kthread.h b/include/linux/kthread.h
-index 4fec8b775895..8c62c36eb32a 100644
---- a/include/linux/kthread.h
-+++ b/include/linux/kthread.h
-@@ -75,7 +75,7 @@ struct task_struct *kthread_create_on_cpu(int (*threadfn)(void *data),
-  */
- struct kthread_work;
- typedef void (*kthread_work_func_t)(struct kthread_work *work);
--void kthread_delayed_work_timer_fn(unsigned long __data);
-+void kthread_delayed_work_timer_fn(struct timer_list *timer);
- 
- enum {
- 	KTW_FREEZABLE		= 1 << 0,	/* freeze during suspend */
-@@ -116,9 +116,8 @@ struct kthread_delayed_work {
- 
- #define KTHREAD_DELAYED_WORK_INIT(dwork, fn) {				\
- 	.work = KTHREAD_WORK_INIT((dwork).work, (fn)),			\
--	.timer = __TIMER_INITIALIZER(kthread_delayed_work_timer_fn,	\
--				     0, (unsigned long)&(dwork),	\
--				     TIMER_IRQSAFE),			\
-+	.timer = INIT_TIMER(kthread_delayed_work_timer_fn,		\
-+			    0, TIMER_IRQSAFE),				\
- 	}
- 
- #define DEFINE_KTHREAD_WORKER(worker)					\
-@@ -163,9 +162,7 @@ extern void __kthread_init_worker(struct kthread_worker *worker,
- #define kthread_init_delayed_work(dwork, fn)				\
- 	do {								\
- 		kthread_init_work(&(dwork)->work, (fn));		\
--		__setup_timer(&(dwork)->timer,				\
--			      kthread_delayed_work_timer_fn,		\
--			      (unsigned long)(dwork),			\
-+		prepare_timer(&(dwork)->timer, delayed_work_timer_fn,	\
- 			      TIMER_IRQSAFE);				\
- 	} while (0)
- 
-diff --git a/kernel/kthread.c b/kernel/kthread.c
-index 26db528c1d88..369e72ec7e48 100644
---- a/kernel/kthread.c
-+++ b/kernel/kthread.c
-@@ -797,15 +797,15 @@ bool kthread_queue_work(struct kthread_worker *worker,
- /**
-  * kthread_delayed_work_timer_fn - callback that queues the associated kthread
-  *	delayed work when the timer expires.
-- * @__data: pointer to the data associated with the timer
-+ * @timer: pointer to timer_list in the associated data structure
-  *
-  * The format of the function is defined by struct timer_list.
-  * It should have been called from irqsafe timer with irq already off.
-  */
--void kthread_delayed_work_timer_fn(unsigned long __data)
-+void kthread_delayed_work_timer_fn(struct timer_list *timer)
- {
- 	struct kthread_delayed_work *dwork =
--		(struct kthread_delayed_work *)__data;
-+		container_of(timer, struct kthread_delayed_work, timer);
- 	struct kthread_work *work = &dwork->work;
- 	struct kthread_worker *worker = work->worker;
- 
-@@ -836,8 +836,7 @@ void __kthread_queue_delayed_work(struct kthread_worker *worker,
- 	struct timer_list *timer = &dwork->timer;
- 	struct kthread_work *work = &dwork->work;
- 
--	WARN_ON_ONCE(timer->function != kthread_delayed_work_timer_fn ||
--		     timer->data != (unsigned long)dwork);
-+	WARN_ON_ONCE(timer->func != kthread_delayed_work_timer_fn);
- 
- 	/*
- 	 * If @delay is 0, queue @dwork->work immediately.  This is for
--- 
-1.8.5.6
+Thanks
+Hari
+
+> Changes from v1:
+> * Using memblock_phys_mem_size() instead of memblock_end_of_DRAM() to
+>    get system RAM size.
+>
+>
+>   arch/powerpc/include/asm/fadump.h |    3 +++
+>   arch/powerpc/kernel/fadump.c      |   16 +++++++++++++++-
+>   2 files changed, 18 insertions(+), 1 deletion(-)
+>
+> diff --git a/arch/powerpc/include/asm/fadump.h b/arch/powerpc/include/asm/fadump.h
+> index 60b9108..a3de219 100644
+> --- a/arch/powerpc/include/asm/fadump.h
+> +++ b/arch/powerpc/include/asm/fadump.h
+> @@ -43,6 +43,9 @@
+>   #define MIN_BOOT_MEM	(((RMA_END < (0x1UL << 28)) ? (0x1UL << 28) : RMA_END) \
+>   			+ (0x1UL << 26))
+>
+> +/* The upper limit percentage for user specified boot memory size (25%) */
+> +#define MAX_BOOT_MEM_RATIO			4
+> +
+>   #define memblock_num_regions(memblock_type)	(memblock.memblock_type.cnt)
+>
+>   /* Firmware provided dump sections */
+> diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
+> index e013f8f..21d5404 100644
+> --- a/arch/powerpc/kernel/fadump.c
+> +++ b/arch/powerpc/kernel/fadump.c
+> @@ -221,12 +221,26 @@ static inline unsigned long fadump_calculate_reserve_size(void)
+>   	ret = parse_crashkernel(boot_command_line, memblock_phys_mem_size(),
+>   				&size, &base);
+>   	if (ret == 0 && size > 0) {
+> +		unsigned long max_size;
+> +
+>   		fw_dump.reserve_bootvar = (unsigned long)size;
+> +
+> +		/*
+> +		 * Adjust if the boot memory size specified is above
+> +		 * the upper limit.
+> +		 */
+> +		max_size = memblock_phys_mem_size() / MAX_BOOT_MEM_RATIO;
+> +		if (fw_dump.reserve_bootvar > max_size) {
+> +			fw_dump.reserve_bootvar = max_size;
+> +			pr_info("Adjusted boot memory size to %luMB\n",
+> +				(fw_dump.reserve_bootvar >> 20));
+> +		}
+> +
+>   		return fw_dump.reserve_bootvar;
+>   	}
+>
+>   	/* divide by 20 to get 5% of value */
+> -	size = memblock_end_of_DRAM() / 20;
+> +	size = memblock_phys_mem_size() / 20;
+>
+>   	/* round it down in multiples of 256 */
+>   	size = size & ~0x0FFFFFFFUL;
+>
