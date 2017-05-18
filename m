@@ -1,46 +1,26 @@
-Return-Path: <abdhalee@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <pavel@ucw.cz>
+Received: from atrey.karlin.mff.cuni.cz (atrey.karlin.mff.cuni.cz
+ [195.113.26.193])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wT5bD5YlSzDqNB
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 May 2017 19:33:28 +1000 (AEST)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v4I9QR7B024671
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 May 2017 05:33:22 -0400
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2ah87fadmx-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 May 2017 05:33:22 -0400
-Received: from localhost
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <abdhalee@linux.vnet.ibm.com>;
- Thu, 18 May 2017 19:33:19 +1000
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v4I9X9216816186
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 May 2017 19:33:17 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v4I9WbLF012880
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 May 2017 19:32:37 +1000
-Subject: Re: Mainline build brakes on powerpc with error :
- fs/xfs/xfs_iomap.c:1152: undefined reference to `.put_dax
-From: Abdul Haleem <abdhalee@linux.vnet.ibm.com>
-To: Arnd Bergmann <arnd@arndb.de>, dan.j.williams@intel.com
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, linux-xfs
- <linux-xfs@vger.kernel.org>, sachinp <sachinp@linux.vnet.ibm.com>,
- linux-kernel <linux-kernel@vger.kernel.org>, "Darrick J. Wong"
- <darrick.wong@oracle.com>, Dan Williams <dan.j.williams@intel.com>
-Date: Thu, 18 May 2017 15:02:24 +0530
-In-Reply-To: <CAK8P3a1e+Rgv2emmTgewm-YJ6j2H7xJzM_+Mz8J3OKWCpbsD6g@mail.gmail.com>
-References: <1494932559.3971.18.camel@abdul.in.ibm.com>
- <CAK8P3a1e+Rgv2emmTgewm-YJ6j2H7xJzM_+Mz8J3OKWCpbsD6g@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Message-Id: <1495099944.22101.6.camel@abdul>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wT5wM0Qq6zDqZR
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 May 2017 19:48:18 +1000 (AEST)
+Date: Thu, 18 May 2017 11:48:13 +0200
+From: Pavel Machek <pavel@denx.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: sr@denx.de, jwboyer@linux.vnet.ibm.com, robh+dt@kernel.org,
+ mark.rutland@arm.com, benh@kernel.crashing.org, paulus@samba.org,
+ mpe@ellerman.id.au, devicetree@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ trivial@kernel.org, Andrew Morton <akpm@osdl.org>
+Subject: Re: [PATCH] powerpc/sequoia: fix NAND partitions not to overlap
+Message-ID: <20170518094813.GA12038@amd>
+References: <20170402100535.GA18340@amd> <20170517120613.GA583@amd>
+ <20170517143717.ad818a2282378fc7a38af1ff@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="FL5UXtIhxfXey3p5"
+In-Reply-To: <20170517143717.ad818a2282378fc7a38af1ff@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,38 +30,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2017-05-16 at 13:17 +0200, Arnd Bergmann wrote:
-> On Tue, May 16, 2017 at 1:02 PM, Abdul Haleem
-> <abdhalee@linux.vnet.ibm.com> wrote:
-> > Hi,
-> >
-> > Today's mainline 4.12-rc1 fails to build for the attached configuration
-> > file on Power7 box with below errors.
-> >
-> > $ make
-> > fs/built-in.o: In function `xfs_file_iomap_end':
-> > fs/xfs/xfs_iomap.c:1152: undefined reference to `.put_dax'
-> > fs/built-in.o: In function `xfs_file_iomap_begin':
-> > fs/xfs/xfs_iomap.c:1071: undefined reference to `.dax_get_by_host'
-> >
-> > Also reproducible on latest linux-next, and the last successful build
-> > was at next-20170510.
-> 
-> This should be fixed by https://patchwork.kernel.org/patch/9725515/
-> 
->   Arnd
-> 
 
-Arnd,
+--FL5UXtIhxfXey3p5
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-With the given patch, kernel build and boot is fine on ppc.
+On Wed 2017-05-17 14:37:17, Andrew Morton wrote:
+> On Wed, 17 May 2017 14:06:13 +0200 Pavel Machek <pavel@denx.de> wrote:
+>=20
+> > On Sun 2017-04-02 12:05:36, Pavel Machek wrote:
+> > > Fix overlapping NAND partitions.
+> > >=20
+> > > Signed-off-by: Pavel Machek <pavel@ucw.cz>
+> >=20
+> > Ping? Two partitions at same place are bad news...
+>=20
+> Please expand on "bad news"?  What are the runtime effects of this
+> change?  Decisions about which kernel(s) to patch depend on this info.
 
-Thanks Dan, for the patch!
+Well... two partitions at same place. If you use one, you will corrupt
+information on the other one.
 
-Tested-by : Abdul Haleem <abdhalee@linux.vnet.ibm.com>
+OTOH this moves partition around (so that they don't overlap) so it is
+probably not stable candidate.
 
--- 
-Regard's
+I guess this is not huge issue; people using these boards probably
+have custom dts changes, anyway...
 
-Abdul Haleem
-IBM Linux Technology Centre
+Best regards,
+
+									Pavel
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
+
+--FL5UXtIhxfXey3p5
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iEYEARECAAYFAlkdbd0ACgkQMOfwapXb+vKSwgCdEH0np4PeA0yHxMf1KJy8HJ7I
+fE8AoKN4cfbkO+bYmOOzY/msQyboWBPW
+=p+oE
+-----END PGP SIGNATURE-----
+
+--FL5UXtIhxfXey3p5--
