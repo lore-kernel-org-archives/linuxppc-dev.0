@@ -1,26 +1,21 @@
-Return-Path: <hch@lst.de>
-Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
+Return-Path: <chrisp@alliedtelesis.co.nz>
+Received: from gate2.alliedtelesis.co.nz (gate2.alliedtelesis.co.nz
+ [202.36.163.20])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wT46f3YPfzDqk9
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 May 2017 18:27:06 +1000 (AEST)
-Date: Thu, 18 May 2017 10:27:03 +0200
-From: Christoph Hellwig <hch@lst.de>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Christoph Hellwig <hch@lst.de>, Thomas Gleixner <tglx@linutronix.de>,
- Tejun Heo <tj@kernel.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Mark Gross <mark.gross@intel.com>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- linux-s390 <linux-s390@vger.kernel.org>
-Subject: Re: RFC: better timer interface
-Message-ID: <20170518082703.GD3812@lst.de>
-References: <20170516114812.10660-1-hch@lst.de>
- <CAK8P3a1FoR_usw7du3ZRMF+PPhJ712EpArL_e1bLVNs7BYBu-w@mail.gmail.com>
- <20170516155132.GA1494@lst.de>
- <CAK8P3a3_Rjz9gTmayN1w8HrFHWY+wakeFgQSYRTAADJzF6zKJA@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CAK8P3a3_Rjz9gTmayN1w8HrFHWY+wakeFgQSYRTAADJzF6zKJA@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wT4QX5yJ0zDqLs
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 May 2017 18:40:52 +1000 (AEST)
+From: Chris Packham <chris.packham@alliedtelesis.co.nz>
+To: bp@alien8.de,
+	mchehab@kernel.org,
+	linux-edac@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ mpe@ellerman.id.au, Chris Packham <chris.packham@alliedtelesis.co.nz>
+Subject: [PATCH v2 2/3] EDAC: mv64x60: Fix pdata->name
+Date: Thu, 18 May 2017 20:31:34 +1200
+Message-Id: <20170518083135.28048-3-chris.packham@alliedtelesis.co.nz>
+In-Reply-To: <20170518083135.28048-1-chris.packham@alliedtelesis.co.nz>
+References: <20170518083135.28048-1-chris.packham@alliedtelesis.co.nz>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,34 +25,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, May 16, 2017 at 10:26:39PM +0200, Arnd Bergmann wrote:
-> If we keep the unusual *_timer() naming (rather than timer_*() as hrtimer
-> has), we could use one of
-> 
-> a) start_timer(struct timer_list *timer, unsigned long ms);
-> b) restart_timer(struct timer_list *timer, unsigned long ms);
-> c) mod_timer_ms(struct timer_list *timer, unsigned long ms);
->     mod_timer_sec(struct timer_list *timer, unsigned long sec);
-> 
-> The first is slightly shorter but conflicts with three files that use
-> the same name for a local function name. The third one fits
-> well with the existing interfaces and provides both millisecond
-> and second versions, I'd probably go with that.
+Change this from mpc85xx_pci_err to mv64x60_pci_err.  The former is
+likely a hangover from when this driver was created.
 
-Yeah, I'd take c) as well.  I'll give it a spin.
+Signed-off-by: Chris Packham <chris.packham@alliedtelesis.co.nz>
+---
+ drivers/edac/mv64x60_edac.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-> We could consider even passing a default interval as another
-> argument to prepare_timer(), and using that in add_timer(),
-> but that would in those cases that have a constant interval
-> (maybe about half of the users from) and would be a bit surprising
-> to readers that are only familiar with the existing interfaces.
-
-That seems rather ugly to me.
-
-> One final option would be a larger-scale replacement of
-> the API by mirroring the hrtimer style where possible while
-> staying compatible with the existing calls, e.g. timer_prepare(),
-> timer_add_expires(), timer_start(), ...
-
-I'd chose timer_* for an entirely new API, but at this point this
-seems a bit too much churn to me.
+diff --git a/drivers/edac/mv64x60_edac.c b/drivers/edac/mv64x60_edac.c
+index 454e1e26ee7c..ddc5082f7577 100644
+--- a/drivers/edac/mv64x60_edac.c
++++ b/drivers/edac/mv64x60_edac.c
+@@ -116,7 +116,7 @@ static int mv64x60_pci_err_probe(struct platform_device *pdev)
+ 	pdata = pci->pvt_info;
+ 
+ 	pdata->pci_hose = pdev->id;
+-	pdata->name = "mpc85xx_pci_err";
++	pdata->name = "mv64x60_pci_err";
+ 	platform_set_drvdata(pdev, pci);
+ 	pci->dev = &pdev->dev;
+ 	pci->dev_name = dev_name(&pdev->dev);
+-- 
+2.11.0.24.ge6920cf
