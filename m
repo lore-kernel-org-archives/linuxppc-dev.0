@@ -1,19 +1,16 @@
-Return-Path: <mpe@ellerman.id.au>
+Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wT6Ys3KT3zDqgp
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 May 2017 20:17:21 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wT71C1jYdzDqLq
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 May 2017 20:37:35 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Breno Leitao <leitao@debian.org>, linuxppc-dev@lists.ozlabs.org
-Cc: gromero@br.ibm.com
-Subject: Re: kernel BUG at mm/usercopy.c:72!
-In-Reply-To: <20170515191949.GA13641@gmail.com>
-References: <20170515191949.GA13641@gmail.com>
-Date: Thu, 18 May 2017 20:17:20 +1000
-Message-ID: <87zieajwpb.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+To: linuxppc-dev@ozlabs.org
+Cc: paulus@samba.org, keescook@chromium.org, leitao@debian.org,
+ labbott@redhat.com, bsingharora@gmail.com, khandual@linux.vnet.ibm.com
+Subject: [PATCH] powerpc/mm: Fix virt_addr_valid() etc. on 64-bit hash
+Date: Thu, 18 May 2017 20:37:31 +1000
+Message-Id: <1495103851-14916-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,16 +20,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Breno Leitao <leitao@debian.org> writes:
+virt_addr_valid() is supposed to tell you if it's OK to call virt_to_page() on
+an address. What this means in practice is that it should only return true for
+addresses in the linear mapping which are backed by a valid PFN.
 
-> Hello,
->
-> Kernel 4.12-rc1 is showing a bug when I try it on a POWER8 virtual
-> machine. Justing SSHing into the machine causes this issue.
+We are failing to properly check that the address is in the linear mapping,
+because virt_to_pfn() will return a valid looking PFN for more or less any
+address. That bug is actually caused by __pa(), used in virt_to_pfn().
 
-Can you try this?
+eg: __pa(0xc000000000010000) = 0x10000  # Good
+    __pa(0xd000000000010000) = 0x10000  # Bad!
+    __pa(0x0000000000010000) = 0x10000  # Bad!
 
-cheers
+This started happening after commit bdbc29c19b26 ("powerpc: Work around gcc
+miscompilation of __pa() on 64-bit") (Aug 2013), where we changed the definition
+of __pa() to work around a GCC bug. Prior to that we subtracted PAGE_OFFSET from
+the value passed to __pa(), meaning __pa() of a 0xd or 0x0 address would give
+you something bogus back.
+
+Until we can verify if that GCC bug is no longer an issue, or come up with
+another solution, this commit does the minimal fix to make virt_addr_valid()
+work, by explicitly checking that the address is in the linear mapping region.
+
+Fixes: bdbc29c19b26 ("powerpc: Work around gcc miscompilation of __pa() on 64-bit")
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/include/asm/page.h | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
 
 diff --git a/arch/powerpc/include/asm/page.h b/arch/powerpc/include/asm/page.h
 index 2a32483c7b6c..8da5d4c1cab2 100644
@@ -58,3 +72,5 @@ index 2a32483c7b6c..8da5d4c1cab2 100644
  
  /*
   * On Book-E parts we need __va to parse the device tree and we can't
+-- 
+2.7.4
