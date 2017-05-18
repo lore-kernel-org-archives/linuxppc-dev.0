@@ -1,16 +1,28 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-qt0-x22f.google.com (mail-qt0-x22f.google.com
+ [IPv6:2607:f8b0:400d:c0d::22f])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wT71C1jYdzDqLq
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 May 2017 20:37:35 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org
-Cc: paulus@samba.org, keescook@chromium.org, leitao@debian.org,
- labbott@redhat.com, bsingharora@gmail.com, khandual@linux.vnet.ibm.com
-Subject: [PATCH] powerpc/mm: Fix virt_addr_valid() etc. on 64-bit hash
-Date: Thu, 18 May 2017 20:37:31 +1000
-Message-Id: <1495103851-14916-1-git-send-email-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wT7Tb5DSvzDqLp
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 May 2017 20:58:43 +1000 (AEST)
+Received: by mail-qt0-x22f.google.com with SMTP id f55so30679068qta.3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 May 2017 03:58:43 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <8737c2lbbi.fsf@concordia.ellerman.id.au>
+References: <20170515191949.GA13641@gmail.com>
+ <878tlxoy62.fsf@concordia.ellerman.id.au>
+ <CAGXu5jK86RkgsWFdtSuGoZzuRZt4cqJcU4YSTjn=irv0Pbu3Rw@mail.gmail.com>
+ <8737c2lbbi.fsf@concordia.ellerman.id.au>
+From: Balbir Singh <bsingharora@gmail.com>
+Date: Thu, 18 May 2017 20:58:40 +1000
+Message-ID: <CAKTCnz=Hp21KGBRj3OUGwuMQe1z9MRrR2+iYDGKQ7+khOAz=Ag@mail.gmail.com>
+Subject: Re: kernel BUG at mm/usercopy.c:72!
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Kees Cook <keescook@chromium.org>, Breno Leitao <leitao@debian.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Laura Abbott <labbott@redhat.com>, gromero@br.ibm.com,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,57 +32,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-virt_addr_valid() is supposed to tell you if it's OK to call virt_to_page() on
-an address. What this means in practice is that it should only return true for
-addresses in the linear mapping which are backed by a valid PFN.
+On Thu, May 18, 2017 at 8:16 PM, Michael Ellerman <mpe@ellerman.id.au> wrote:
+> Kees Cook <keescook@chromium.org> writes:
+>> On Tue, May 16, 2017 at 4:09 AM, Michael Ellerman <mpe@ellerman.id.au> wrote:
+>>> Yeah it looks like powerpc also suffers from the same bug that arm64
+>>> used to, ie. virt_addr_valid() will return true for some vmalloc
+>>> addresses.
+>>>
+>>> virt_addr_valid() is used pretty widely, I'm not sure if we can just fix
+>>> it without other fallout. I'll dig a bit more tomorrow if no one beats
+>>> me to it.
+>>>
+>>> Kees, depending on how that turns out we may ask you to revert
+>>> 517e1fbeb65f ("mm/usercopy: Drop extra is_vmalloc_or_module() check").
+>>
+>> That's fine by me. Let me know what you think would be best.
+>
+> Oh man, what a mess.
+>
+> I think we can do a small fix for this in powerpc code for 4.12, will
+> post it soon for Breno to test - I still can't reproduce locally.
 
-We are failing to properly check that the address is in the linear mapping,
-because virt_to_pfn() will return a valid looking PFN for more or less any
-address. That bug is actually caused by __pa(), used in virt_to_pfn().
+To reproduce locally you'd need an alias'd 0xd000..<addr> mapped to a
+0xc000..<addr> (due to the assumptions in __pa()) and with
+virt_to_page(addr) have PageSlab(page) set, I guess. I guess with very
+few modules, a whole lot of 0xd000... space is unused, but if we had a
+bunch of modules and ended up with an 0xd000<addr> range aliased as
+PageSlab you would probably run into it more easily.
 
-eg: __pa(0xc000000000010000) = 0x10000  # Good
-    __pa(0xd000000000010000) = 0x10000  # Bad!
-    __pa(0x0000000000010000) = 0x10000  # Bad!
-
-This started happening after commit bdbc29c19b26 ("powerpc: Work around gcc
-miscompilation of __pa() on 64-bit") (Aug 2013), where we changed the definition
-of __pa() to work around a GCC bug. Prior to that we subtracted PAGE_OFFSET from
-the value passed to __pa(), meaning __pa() of a 0xd or 0x0 address would give
-you something bogus back.
-
-Until we can verify if that GCC bug is no longer an issue, or come up with
-another solution, this commit does the minimal fix to make virt_addr_valid()
-work, by explicitly checking that the address is in the linear mapping region.
-
-Fixes: bdbc29c19b26 ("powerpc: Work around gcc miscompilation of __pa() on 64-bit")
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/include/asm/page.h | 12 ++++++++++++
- 1 file changed, 12 insertions(+)
-
-diff --git a/arch/powerpc/include/asm/page.h b/arch/powerpc/include/asm/page.h
-index 2a32483c7b6c..8da5d4c1cab2 100644
---- a/arch/powerpc/include/asm/page.h
-+++ b/arch/powerpc/include/asm/page.h
-@@ -132,7 +132,19 @@ extern long long virt_phys_offset;
- #define virt_to_pfn(kaddr)	(__pa(kaddr) >> PAGE_SHIFT)
- #define virt_to_page(kaddr)	pfn_to_page(virt_to_pfn(kaddr))
- #define pfn_to_kaddr(pfn)	__va((pfn) << PAGE_SHIFT)
-+
-+#ifdef CONFIG_PPC_BOOK3S_64
-+/*
-+ * On hash the vmalloc and other regions alias to the kernel region when passed
-+ * through __pa(), which virt_to_pfn() uses. That means virt_addr_valid() can
-+ * return true for some vmalloc addresses, which is incorrect. So explicitly
-+ * check that the address is in the kernel region.
-+ */
-+#define virt_addr_valid(kaddr) (REGION_ID(kaddr) == KERNEL_REGION_ID && \
-+				pfn_valid(virt_to_pfn(kaddr)))
-+#else
- #define virt_addr_valid(kaddr)	pfn_valid(virt_to_pfn(kaddr))
-+#endif
- 
- /*
-  * On Book-E parts we need __va to parse the device tree and we can't
--- 
-2.7.4
+Balbir Singh
