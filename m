@@ -2,20 +2,18 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wT00556w6zDqPj
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 May 2017 15:21:09 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wT01f74lrzDqQJ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 May 2017 15:22:30 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- akpm@linux-foundation.org, Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: [PATCH v3 2/2] powerpc/mm/hugetlb: Add support for 1G huge pages
-In-Reply-To: <1494995292-4443-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-References: <1494995292-4443-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1494995292-4443-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Date: Thu, 18 May 2017 15:21:09 +1000
-Message-ID: <87fug2loze.fsf@concordia.ellerman.id.au>
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+Cc: Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>,
+ Masami Hiramatsu <mhiramat@kernel.org>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 1/2] powerpc/jprobes: Save and restore the parameter save
+ area
+In-Reply-To: <0572aa31dd57bef6f158ac97d0b666a0c545356a.1494871248.git.naveen.n.rao@linux.vnet.ibm.com>
+References: <0572aa31dd57bef6f158ac97d0b666a0c545356a.1494871248.git.naveen.n.rao@linux.vnet.ibm.com>
+Date: Thu, 18 May 2017 15:22:30 +1000
+Message-ID: <87d1b6lox5.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,84 +25,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> writes:
+"Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> writes:
 
-> POWER9 supports hugepages of size 2M and 1G in radix MMU mode. This patch
-> enables the usage of 1G page size for hugetlbfs. This also update the helper
-> such we can do 1G page allocation at runtime.
+> As pointed out in x86 setjmp_pre_handler(), we need to save and restore
+> the parameter save area since the jprobe hook might overwrite it. Since
+> there is no easy way to identify the size of the parameter save area,
+> we choose to save/restore a fixed 16 [double]word-sized area including
+> the stack frame header.
 >
-> We still don't enable 1G page size on DD1 version. This is to avoid doing
-> workaround mentioned in commit: 6d3a0379ebdc8 (powerpc/mm: Add
-> radix__tlb_flush_pte_p9_dd1()
+> We introduce STACK_FRAME_PARM_SAVE to encode the offset of the parameter
+> save area from the stack frame pointer. Remove the similarly named
+> PARAMETER_SAVE_AREA_OFFSET in ptrace.c as those are currently not used
+> anywhere.
 >
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
 > ---
->  arch/powerpc/include/asm/book3s/64/hugetlb.h | 10 ++++++++++
->  arch/powerpc/mm/hugetlbpage.c                |  7 +++++--
->  arch/powerpc/platforms/Kconfig.cputype       |  1 +
->  3 files changed, 16 insertions(+), 2 deletions(-)
+> Michael,
+> I've set the limit to 16 parameters as being a "reasonable" number, but
+> we could very well make this 24 or 32 if we want to be sure. Let me
+> know what you prefer.
 
-I think this patch is OK, but it's very confusing because it doesn't
-mention that it's only talking about *generic* gigantic page support.
-
-We have existing support for gigantic pages on powerpc, on several
-platforms. This patch appears to break that, but I think doesn't in
-practice?
-
-So can you make it a bit clearer in the commit message, and the code,
-that this is only about enabling the generic gigantic page support, and
-is unrelated to the arch-specific gigantic page support.
+That sounds incredibly fragile. Are we really just guessing at the size
+required? What happens if we under estimate, do we crash, silently
+corrupt data .. ?
 
 cheers
-
-> diff --git a/arch/powerpc/include/asm/book3s/64/hugetlb.h b/arch/powerpc/include/asm/book3s/64/hugetlb.h
-> index 6666cd366596..5c28bd6f2ae1 100644
-> --- a/arch/powerpc/include/asm/book3s/64/hugetlb.h
-> +++ b/arch/powerpc/include/asm/book3s/64/hugetlb.h
-> @@ -50,4 +50,14 @@ static inline pte_t arch_make_huge_pte(pte_t entry, struct vm_area_struct *vma,
->  	else
->  		return entry;
->  }
-> +
-> +#ifdef CONFIG_ARCH_HAS_GIGANTIC_PAGE
-> +static inline bool gigantic_page_supported(void)
-> +{
-> +	if (radix_enabled())
-> +		return true;
-> +	return false;
-> +}
-> +#endif
-> +
->  #endif
-> diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
-> index a4f33de4008e..80f6d2ed551a 100644
-> --- a/arch/powerpc/mm/hugetlbpage.c
-> +++ b/arch/powerpc/mm/hugetlbpage.c
-> @@ -763,8 +763,11 @@ static int __init add_huge_page_size(unsigned long long size)
->  	 * Hash: 16M and 16G
->  	 */
->  	if (radix_enabled()) {
-> -		if (mmu_psize != MMU_PAGE_2M)
-> -			return -EINVAL;
-> +		if (mmu_psize != MMU_PAGE_2M) {
-> +			if (cpu_has_feature(CPU_FTR_POWER9_DD1) ||
-> +			    (mmu_psize != MMU_PAGE_1G))
-> +				return -EINVAL;
-> +		}
->  	} else {
->  		if (mmu_psize != MMU_PAGE_16M && mmu_psize != MMU_PAGE_16G)
->  			return -EINVAL;
-> diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
-> index 684e886eaae4..b76ef6637016 100644
-> --- a/arch/powerpc/platforms/Kconfig.cputype
-> +++ b/arch/powerpc/platforms/Kconfig.cputype
-> @@ -344,6 +344,7 @@ config PPC_STD_MMU_64
->  config PPC_RADIX_MMU
->  	bool "Radix MMU Support"
->  	depends on PPC_BOOK3S_64
-> +	select ARCH_HAS_GIGANTIC_PAGE if (MEMORY_ISOLATION && COMPACTION) || CMA
->  	default y
->  	help
->  	  Enable support for the Power ISA 3.0 Radix style MMU. Currently this
-> -- 
-> 2.7.4
