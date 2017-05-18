@@ -1,39 +1,45 @@
-Return-Path: <nfont@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wTJ8m55fszDqc4
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 May 2017 03:29:44 +1000 (AEST)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v4IHSkGp093402
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 May 2017 13:29:41 -0400
-Received: from e15.ny.us.ibm.com (e15.ny.us.ibm.com [129.33.205.205])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2ahcctbvkd-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 May 2017 13:29:41 -0400
-Received: from localhost
- by e15.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
- Thu, 18 May 2017 13:29:40 -0400
-Subject: Re: [PATCH net-next] ibmvnic: fix missing unlock on error in
- __ibmvnic_reset()
-To: Wei Yongjun <weiyj.lk@gmail.com>,
+Return-Path: <will.deacon@arm.com>
+Received: from foss.arm.com (foss.arm.com [217.140.101.70])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3wTJ9L1MBrzDqgT
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 May 2017 03:30:13 +1000 (AEST)
+Date: Thu, 18 May 2017 18:30:10 +0100
+From: Will Deacon <will.deacon@arm.com>
+To: Jiri Slaby <jslaby@suse.cz>
+Cc: tglx@linutronix.de, linux-kernel@vger.kernel.org,
+ Richard Henderson <rth@twiddle.net>,
+ Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+ Matt Turner <mattst88@gmail.com>, Vineet Gupta <vgupta@synopsys.com>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Richard Kuo <rkuo@codeaurora.org>, Tony Luck <tony.luck@intel.com>,
+ Fenghua Yu <fenghua.yu@intel.com>, Michal Simek <monstr@monstr.eu>,
+ Ralf Baechle <ralf@linux-mips.org>, Jonas Bonn <jonas@southpole.se>,
+ Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
+ Stafford Horne <shorne@gmail.com>,
+ "James E.J. Bottomley" <jejb@parisc-linux.org>,
+ Helge Deller <deller@gmx.de>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Thomas Falcon <tlfalcon@linux.vnet.ibm.com>,
- John Allen <jallen@linux.vnet.ibm.com>
-Cc: Wei Yongjun <weiyongjun1@huawei.com>, linuxppc-dev@lists.ozlabs.org,
- netdev@vger.kernel.org
-References: <20170518152452.8606-1-weiyj.lk@gmail.com>
-From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
-Date: Thu, 18 May 2017 12:29:36 -0500
+ Paul Mackerras <paulus@samba.org>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>,
+ "David S. Miller" <davem@davemloft.net>,
+ Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+ Chris Zankel <chris@zankel.net>, Max Filippov <jcmvbkbc@gmail.com>,
+ Arnd Bergmann <arnd@arndb.de>, x86@kernel.org,
+ linux-alpha@vger.kernel.org, linux-snps-arc@lists.infradead.org,
+ linux-arm-kernel@lists.infradead.org, linux-hexagon@vger.kernel.org,
+ linux-ia64@vger.kernel.org, linux-mips@linux-mips.org,
+ openrisc@lists.librecores.org, linux-parisc@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
+ linux-xtensa@linux-xtensa.org, linux-arch@vger.kernel.org
+Subject: Re: [PATCH 1/1] futex: remove duplicated code
+Message-ID: <20170518173010.GK21359@arm.com>
+References: <20170515130742.18357-1-jslaby@suse.cz>
+ <20170515131644.GA3605@arm.com>
+ <14580dfc-9721-38ab-a1e0-6b4aba13b406@suse.cz>
 MIME-Version: 1.0
-In-Reply-To: <20170518152452.8606-1-weiyj.lk@gmail.com>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <2a9bde84-eb86-c964-7be8-2018eae45d7b@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <14580dfc-9721-38ab-a1e0-6b4aba13b406@suse.cz>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,30 +49,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/18/2017 10:24 AM, Wei Yongjun wrote:
-> From: Wei Yongjun <weiyongjun1@huawei.com>
+On Wed, May 17, 2017 at 10:01:29AM +0200, Jiri Slaby wrote:
+> On 05/15/2017, 03:16 PM, Will Deacon wrote:
+> > Whilst I think this is a good idea, the code in question actually results
+> > in undefined behaviour per the C spec and is reported by UBSAN.
 > 
-> Add the missing unlock before return from function __ibmvnic_reset()
-> in the error handling case.
+> Hi, yes, I know -- this patch was the 1st from the series of 3 which I
+> sent a long time ago to fix that up too. But I remember your patch, so I
+> sent only this one this time.
 > 
-> Fixes: ed651a10875f ("ibmvnic: Updated reset handling")
-> Signed-off-by: Wei Yongjun <weiyongjun1@huawei.com>
+> > See my
+> > patch fixing arm64 here (which I'd forgotten about):
+> > 
+> > https://www.spinics.net/lists/linux-arch/msg38564.html
+> > 
+> > But, as stated in the thread above, I think we should go a step further
+> > and remove FUTEX_OP_{OR,ANDN,XOR,OPARG_SHIFT} altogether. They don't
+> > appear to be used by userspace, and this whole thing is a total mess.
+> > 
+> > Any thoughts?
+> 
+> Ok, I am all for that. I think the only question is who is going to do
+> the work and submit it :)? Do I understand correctly to eliminate all
+> these functions and the path into the kernel? But won't this break API
+> -- are there really no users of this interface?
 
-Reviewed-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+That's the million-dollar question, really. I don't know of any code using
+it, and I couldn't find any when I looked (also nothing reported by Debian
+Codesearch afaict), but I was hoping linux-arch might have some thoughts
+on this too.
 
-> ---
->  drivers/net/ethernet/ibm/ibmvnic.c | 1 +
->  1 file changed, 1 insertion(+)
-> 
-> diff --git a/drivers/net/ethernet/ibm/ibmvnic.c b/drivers/net/ethernet/ibm/ibmvnic.c
-> index 4f2d329..27f7933 100644
-> --- a/drivers/net/ethernet/ibm/ibmvnic.c
-> +++ b/drivers/net/ethernet/ibm/ibmvnic.c
-> @@ -1313,6 +1313,7 @@ static void __ibmvnic_reset(struct work_struct *work)
-> 
->  	if (rc) {
->  		free_all_rwi(adapter);
-> +		mutex_unlock(&adapter->reset_lock);
->  		return;
->  	}
-> 
+For now, I'll queue my arm64 patch before I forget about it again!
+
+Will
