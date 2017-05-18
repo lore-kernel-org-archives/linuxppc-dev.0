@@ -2,22 +2,16 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wT6Xj4wrYzDqbW
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 May 2017 20:16:21 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wT6Ys3KT3zDqgp
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 May 2017 20:17:21 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Kees Cook <keescook@chromium.org>
-Cc: Breno Leitao <leitao@debian.org>,
- "linuxppc-dev\@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Laura Abbott <labbott@redhat.com>, gromero@br.ibm.com,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>,
- Balbir Singh <bsingharora@gmail.com>
+To: Breno Leitao <leitao@debian.org>, linuxppc-dev@lists.ozlabs.org
+Cc: gromero@br.ibm.com
 Subject: Re: kernel BUG at mm/usercopy.c:72!
-In-Reply-To: <CAGXu5jK86RkgsWFdtSuGoZzuRZt4cqJcU4YSTjn=irv0Pbu3Rw@mail.gmail.com>
+In-Reply-To: <20170515191949.GA13641@gmail.com>
 References: <20170515191949.GA13641@gmail.com>
- <878tlxoy62.fsf@concordia.ellerman.id.au>
- <CAGXu5jK86RkgsWFdtSuGoZzuRZt4cqJcU4YSTjn=irv0Pbu3Rw@mail.gmail.com>
-Date: Thu, 18 May 2017 20:16:17 +1000
-Message-ID: <8737c2lbbi.fsf@concordia.ellerman.id.au>
+Date: Thu, 18 May 2017 20:17:20 +1000
+Message-ID: <87zieajwpb.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -29,24 +23,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Kees Cook <keescook@chromium.org> writes:
-> On Tue, May 16, 2017 at 4:09 AM, Michael Ellerman <mpe@ellerman.id.au> wrote:
->> Yeah it looks like powerpc also suffers from the same bug that arm64
->> used to, ie. virt_addr_valid() will return true for some vmalloc
->> addresses.
->>
->> virt_addr_valid() is used pretty widely, I'm not sure if we can just fix
->> it without other fallout. I'll dig a bit more tomorrow if no one beats
->> me to it.
->>
->> Kees, depending on how that turns out we may ask you to revert
->> 517e1fbeb65f ("mm/usercopy: Drop extra is_vmalloc_or_module() check").
+Breno Leitao <leitao@debian.org> writes:
+
+> Hello,
 >
-> That's fine by me. Let me know what you think would be best.
+> Kernel 4.12-rc1 is showing a bug when I try it on a POWER8 virtual
+> machine. Justing SSHing into the machine causes this issue.
 
-Oh man, what a mess.
-
-I think we can do a small fix for this in powerpc code for 4.12, will
-post it soon for Breno to test - I still can't reproduce locally.
+Can you try this?
 
 cheers
+
+diff --git a/arch/powerpc/include/asm/page.h b/arch/powerpc/include/asm/page.h
+index 2a32483c7b6c..8da5d4c1cab2 100644
+--- a/arch/powerpc/include/asm/page.h
++++ b/arch/powerpc/include/asm/page.h
+@@ -132,7 +132,19 @@ extern long long virt_phys_offset;
+ #define virt_to_pfn(kaddr)	(__pa(kaddr) >> PAGE_SHIFT)
+ #define virt_to_page(kaddr)	pfn_to_page(virt_to_pfn(kaddr))
+ #define pfn_to_kaddr(pfn)	__va((pfn) << PAGE_SHIFT)
++
++#ifdef CONFIG_PPC_BOOK3S_64
++/*
++ * On hash the vmalloc and other regions alias to the kernel region when passed
++ * through __pa(), which virt_to_pfn() uses. That means virt_addr_valid() can
++ * return true for some vmalloc addresses, which is incorrect. So explicitly
++ * check that the address is in the kernel region.
++ */
++#define virt_addr_valid(kaddr) (REGION_ID(kaddr) == KERNEL_REGION_ID && \
++				pfn_valid(virt_to_pfn(kaddr)))
++#else
+ #define virt_addr_valid(kaddr)	pfn_valid(virt_to_pfn(kaddr))
++#endif
+ 
+ /*
+  * On Book-E parts we need __va to parse the device tree and we can't
