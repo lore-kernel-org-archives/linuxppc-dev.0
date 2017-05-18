@@ -1,22 +1,31 @@
-Return-Path: <pbonzini@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <srs0=8ybw=4y=gmail.com=breno.debian@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wTKwG1DwZzDqcL
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 May 2017 04:49:01 +1000 (AEST)
-Subject: Re: [PATCH] perf: libdw support for powerpc
-To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>, kvm@vger.kernel.org,
- linux-kernel@vger.kernel.org
-Cc: acme@kernel.org, Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
-References: <20170518170018.10507-1-pbonzini@redhat.com>
- <1495131092.c1jiws8vlt.astroid@naverao1-tp.none>
-From: Paolo Bonzini <pbonzini@redhat.com>
-Message-ID: <be48f6fe-0f0e-8667-0ad0-65e00904f008@redhat.com>
-Date: Thu, 18 May 2017 20:48:55 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wTLFt5MRvzDqcM
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 May 2017 05:04:18 +1000 (AEST)
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3wTLFt4pbmz8tBf
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 May 2017 05:04:18 +1000 (AEST)
+Received: from mail-qk0-f193.google.com (mail-qk0-f193.google.com
+ [209.85.220.193])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3wTLFt1DNLz9s5j
+ for <linuxppc-dev@ozlabs.org>; Fri, 19 May 2017 05:04:17 +1000 (AEST)
+Received: by mail-qk0-f193.google.com with SMTP id k74so7288828qke.2
+ for <linuxppc-dev@ozlabs.org>; Thu, 18 May 2017 12:04:17 -0700 (PDT)
+Date: Thu, 18 May 2017 16:04:11 -0300
+From: Breno Leitao <leitao@debian.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, keescook@chromium.org,
+ labbott@redhat.com, bsingharora@gmail.com, khandual@linux.vnet.ibm.com
+Subject: Re: [PATCH] powerpc/mm: Fix virt_addr_valid() etc. on 64-bit hash
+Message-ID: <20170518190410.GA19855@gmail.com>
+References: <1495103851-14916-1-git-send-email-mpe@ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <1495131092.c1jiws8vlt.astroid@naverao1-tp.none>
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1495103851-14916-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,53 +35,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-
-On 18/05/2017 20:19, Naveen N. Rao wrote:
-> Paolo Bonzini wrote:
->> The ARM and x86 architectures already use libdw, and it is useful to
->> have as much common code for the unwinder as possible.  Porting PPC
->> to libdw only needs an architecture-specific hook to move the register
->> state from perf to libdw.
+On Thu, May 18, 2017 at 08:37:31PM +1000, Michael Ellerman wrote:
+> virt_addr_valid() is supposed to tell you if it's OK to call virt_to_page() on
+> an address. What this means in practice is that it should only return true for
+> addresses in the linear mapping which are backed by a valid PFN.
 > 
-> Thanks. Ravi has had a similar patch locally, but from what I
-> understand, there are issues with libdw based unwinding on powerpc64. I
-> gave this a quick test and I don't see the user-space call trace being
-> unwinded properly with libdw.
-
-I don't see that problem:
-
--   99,98%     0,00%  dd       libc-2.17.so                    [.] generic_start_main.isra.0
-     generic_start_main.isra.0
-   - main
-      - 99,97% iread
-         - 97,82% sys_read
-            - 96,97% extract_entropy_user
-                 89,44% powernv_get_random_long
-                 4,63% sha_transform
-                 2,07% extract_buf
-           1,15% _raw_spin_lock_irqsave
-           0,51% extract_buf
-
-(This is "perf record dd if=/dev/urandom of=/dev/null bs=512").
-
-Can you copy the contents of tools/perf/.config-detected here?
-
->> diff --git a/tools/perf/arch/powerpc/util/unwind-libdw.c
->> b/tools/perf/arch/powerpc/util/unwind-libdw.c
->> new file mode 100644
->> index 0000000..c61e1d8
->> --- /dev/null
->> +++ b/tools/perf/arch/powerpc/util/unwind-libdw.c
->> @@ -0,0 +1,73 @@
->> +#include <elfutils/libdwfl.h>
->> +#include "../../util/util.h"
->> +#include "../../util/unwind-libdw.h"
->> +#include "../../util/perf_regs.h"
+> We are failing to properly check that the address is in the linear mapping,
+> because virt_to_pfn() will return a valid looking PFN for more or less any
+> address. That bug is actually caused by __pa(), used in virt_to_pfn().
 > 
-> As an aside, we also need to include "event.h", without which there are
-> a few compile errors.
+> eg: __pa(0xc000000000010000) = 0x10000  # Good
+>     __pa(0xd000000000010000) = 0x10000  # Bad!
+>     __pa(0x0000000000010000) = 0x10000  # Bad!
+> 
+> This started happening after commit bdbc29c19b26 ("powerpc: Work around gcc
+> miscompilation of __pa() on 64-bit") (Aug 2013), where we changed the definition
+> of __pa() to work around a GCC bug. Prior to that we subtracted PAGE_OFFSET from
+> the value passed to __pa(), meaning __pa() of a 0xd or 0x0 address would give
+> you something bogus back.
+> 
+> Until we can verify if that GCC bug is no longer an issue, or come up with
+> another solution, this commit does the minimal fix to make virt_addr_valid()
+> work, by explicitly checking that the address is in the linear mapping region.
+> 
+> Fixes: bdbc29c19b26 ("powerpc: Work around gcc miscompilation of __pa() on 64-bit")
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
-Oops, I was compiling this on 4.11.  Sorry.
-
-Paolo
+Tested-by: Breno Leitao <breno.leitao@gmail.com>
