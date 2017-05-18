@@ -1,27 +1,31 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-qt0-x22f.google.com (mail-qt0-x22f.google.com
- [IPv6:2607:f8b0:400d:c0d::22f])
+Return-Path: <arndbergmann@gmail.com>
+Received: from mail-oi0-x241.google.com (mail-oi0-x241.google.com
+ [IPv6:2607:f8b0:4003:c06::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wT7Tb5DSvzDqLp
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 May 2017 20:58:43 +1000 (AEST)
-Received: by mail-qt0-x22f.google.com with SMTP id f55so30679068qta.3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 May 2017 03:58:43 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wT7gr2VcvzDqMK
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 May 2017 21:07:36 +1000 (AEST)
+Received: by mail-oi0-x241.google.com with SMTP id w10so6773509oif.1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 May 2017 04:07:36 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <8737c2lbbi.fsf@concordia.ellerman.id.au>
-References: <20170515191949.GA13641@gmail.com>
- <878tlxoy62.fsf@concordia.ellerman.id.au>
- <CAGXu5jK86RkgsWFdtSuGoZzuRZt4cqJcU4YSTjn=irv0Pbu3Rw@mail.gmail.com>
- <8737c2lbbi.fsf@concordia.ellerman.id.au>
-From: Balbir Singh <bsingharora@gmail.com>
-Date: Thu, 18 May 2017 20:58:40 +1000
-Message-ID: <CAKTCnz=Hp21KGBRj3OUGwuMQe1z9MRrR2+iYDGKQ7+khOAz=Ag@mail.gmail.com>
-Subject: Re: kernel BUG at mm/usercopy.c:72!
+Sender: arndbergmann@gmail.com
+In-Reply-To: <87a86alo9q.fsf@concordia.ellerman.id.au>
+References: <20170512042002.18524-1-chris.packham@alliedtelesis.co.nz>
+ <20170512042002.18524-4-chris.packham@alliedtelesis.co.nz>
+ <20170517181021.yfctrok7f25d5bu5@pd.tnic>
+ <87a86alo9q.fsf@concordia.ellerman.id.au>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Thu, 18 May 2017 13:07:33 +0200
+Message-ID: <CAK8P3a0xvL1jfY1+93mnkmBTu-ew+hybFaH57KuRC69RpZJqPg@mail.gmail.com>
+Subject: Re: [PATCH 3/3] EDAC: mv64x60: replace in_le32/out_le32 with
+ ioread32/iowrite32
 To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Kees Cook <keescook@chromium.org>, Breno Leitao <leitao@debian.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Laura Abbott <labbott@redhat.com>, gromero@br.ibm.com,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Cc: Borislav Petkov <bp@alien8.de>,
+ Chris Packham <chris.packham@alliedtelesis.co.nz>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Mauro Carvalho Chehab <mchehab@kernel.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ linux-edac@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -32,32 +36,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, May 18, 2017 at 8:16 PM, Michael Ellerman <mpe@ellerman.id.au> wrote:
-> Kees Cook <keescook@chromium.org> writes:
->> On Tue, May 16, 2017 at 4:09 AM, Michael Ellerman <mpe@ellerman.id.au> wrote:
->>> Yeah it looks like powerpc also suffers from the same bug that arm64
->>> used to, ie. virt_addr_valid() will return true for some vmalloc
->>> addresses.
->>>
->>> virt_addr_valid() is used pretty widely, I'm not sure if we can just fix
->>> it without other fallout. I'll dig a bit more tomorrow if no one beats
->>> me to it.
->>>
->>> Kees, depending on how that turns out we may ask you to revert
->>> 517e1fbeb65f ("mm/usercopy: Drop extra is_vmalloc_or_module() check").
+On Thu, May 18, 2017 at 7:36 AM, Michael Ellerman <mpe@ellerman.id.au> wrote:
+> Borislav Petkov <bp@alien8.de> writes:
+>
+>> Top-posting so that the PPC list can see the whole patch below.
 >>
->> That's fine by me. Let me know what you think would be best.
+>> Since I don't know PPC, let me add PPC ML to CC for a confirmation this
+>> change is correct.
+>>
+>> Which brings me to the tangential: this driver is from 2006-ish and
+>> is for some "Marvell MV64x60 Memory Controller kernel module for PPC
+>> platforms". If you're going to touch it, then you should test on the PPC
+>> hardware too, so that you don't break the driver there.
+>>
+>> Unless that hardware is obsolete now and we don't care and, and ..?
+>>
+>> Maybe someone has some insights...
 >
-> Oh man, what a mess.
+> Not really sorry.
 >
-> I think we can do a small fix for this in powerpc code for 4.12, will
-> post it soon for Breno to test - I still can't reproduce locally.
+> I don't have one of those boards, so I can't test. Maybe someone else on
+> the list does?
+>
+> I'd err on the side of the PPC hardware being obsolete and no one really
+> caring. If the driver is helpful on ARM then we may as well use it
+> there, if we can also avoid breaking it on PPC then great.
 
-To reproduce locally you'd need an alias'd 0xd000..<addr> mapped to a
-0xc000..<addr> (due to the assumptions in __pa()) and with
-virt_to_page(addr) have PageSlab(page) set, I guess. I guess with very
-few modules, a whole lot of 0xd000... space is unused, but if we had a
-bunch of modules and ended up with an 0xd000<addr> range aliased as
-PageSlab you would probably run into it more easily.
+I never had one myself, but tried to figure out what is still there to be
+supported. In 2014, we removed one platform (PrPMC2800) that was
+obsolete. There were eight boards that didn't make the cut from
+arch/ppc32 to arch/powerpc. The C2K is the last one and it was
+added in 2008 with this comment:
 
-Balbir Singh
+    Support for the C2K cPCI Single Board Computer from GEFanuc
+    (PowerPC MPC7448 with a Marvell MV64460 chipset).
+    All features of the board are not supported yet, but the board
+    boots, flash works, all Ethernet ports are working and PCI
+    devices are all found (USB and SATA on PCI1 do not work yet).
+
+    Part 3 of 5: driver for the board.  At this time it is very generic
+    and similar to its original, the driver for the prpmc2800.
+
+The original submitter never followed up on it and neither the
+board code not the DTS was ever updated to include additional
+features, so I assume it only got worse from there.
+
+According to https://www.abaco.com/products/c2ka-compactpci-sbc
+the end-of-life date for the product was in 2015, presumably 10 years
+after it got introduced.
+
+This is definitely obsolete by now, and given the missing features
+I would assume that nobody is running mainline kernels on it and
+it can be removed.
+
+For other related system controllers, there is a good overview on
+https://www.linux-mips.org/wiki/Marvell_system_controllers
+Apparently some of the older chips are still used in MIPS systems,
+aside from the newer ARM SoC designs.
+
+       Arnd
