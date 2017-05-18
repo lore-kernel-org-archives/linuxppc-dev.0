@@ -1,33 +1,43 @@
-Return-Path: <srs0=jr4t=4y=gmail.com=bsingharora@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wTJqw1F96zDqcD
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 May 2017 04:00:11 +1000 (AEST)
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3wTJqt4Nb8z8wWT
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 May 2017 04:00:10 +1000 (AEST)
-Received: from mail-qk0-x243.google.com (mail-qk0-x243.google.com
- [IPv6:2607:f8b0:400d:c09::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3wTJqs4F5fz9s03
- for <linuxppc-dev@ozlabs.org>; Fri, 19 May 2017 04:00:09 +1000 (AEST)
-Received: by mail-qk0-x243.google.com with SMTP id k74so7053155qke.2
- for <linuxppc-dev@ozlabs.org>; Thu, 18 May 2017 11:00:09 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wTKHZ5m7GzDqcD
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 May 2017 04:20:42 +1000 (AEST)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v4IIDe5q026827
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 May 2017 14:20:39 -0400
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2ahgb1s7hn-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 May 2017 14:20:39 -0400
+Received: from localhost
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
+ Fri, 19 May 2017 04:20:36 +1000
+Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v4IIKRGE64028870
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 May 2017 04:20:35 +1000
+Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
+ by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v4IIK2vS002518
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 May 2017 04:20:03 +1000
+Date: Thu, 18 May 2017 18:19:45 +0000
+From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+Subject: Re: [PATCH] perf: libdw support for powerpc
+To: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, Paolo Bonzini
+ <pbonzini@redhat.com>
+Cc: acme@kernel.org, Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
+References: <20170518170018.10507-1-pbonzini@redhat.com>
+In-Reply-To: <20170518170018.10507-1-pbonzini@redhat.com>
 MIME-Version: 1.0
-In-Reply-To: <1495103851-14916-1-git-send-email-mpe@ellerman.id.au>
-References: <1495103851-14916-1-git-send-email-mpe@ellerman.id.au>
-From: Balbir Singh <bsingharora@gmail.com>
-Date: Fri, 19 May 2017 04:00:06 +1000
-Message-ID: <CAKTCnzna2SFRhwd=fHEX_XevEHr+yZ6ar3UExr_gpXusFMYpXg@mail.gmail.com>
-Subject: Re: [PATCH] powerpc/mm: Fix virt_addr_valid() etc. on 64-bit hash
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
- Kees Cook <keescook@chromium.org>, Breno Leitao <leitao@debian.org>,
- Laura Abbott <labbott@redhat.com>,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <1495131092.c1jiws8vlt.astroid@naverao1-tp.none>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,62 +47,192 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, May 18, 2017 at 8:37 PM, Michael Ellerman <mpe@ellerman.id.au> wrote:
-> virt_addr_valid() is supposed to tell you if it's OK to call virt_to_page() on
-> an address. What this means in practice is that it should only return true for
-> addresses in the linear mapping which are backed by a valid PFN.
->
-> We are failing to properly check that the address is in the linear mapping,
-> because virt_to_pfn() will return a valid looking PFN for more or less any
-> address. That bug is actually caused by __pa(), used in virt_to_pfn().
->
-> eg: __pa(0xc000000000010000) = 0x10000  # Good
->     __pa(0xd000000000010000) = 0x10000  # Bad!
->     __pa(0x0000000000010000) = 0x10000  # Bad!
->
+Paolo Bonzini wrote:
+> The ARM and x86 architectures already use libdw, and it is useful to
+> have as much common code for the unwinder as possible.  Porting PPC
+> to libdw only needs an architecture-specific hook to move the register
+> state from perf to libdw.
 
-I fixed something similar in skiboot and KVM, I should have audited this space
-as well.
+Thanks. Ravi has had a similar patch locally, but from what I=20
+understand, there are issues with libdw based unwinding on powerpc64. I=20
+gave this a quick test and I don't see the user-space call trace being=20
+unwinded properly with libdw.
 
-> This started happening after commit bdbc29c19b26 ("powerpc: Work around gcc
-> miscompilation of __pa() on 64-bit") (Aug 2013), where we changed the definition
-> of __pa() to work around a GCC bug. Prior to that we subtracted PAGE_OFFSET from
-> the value passed to __pa(), meaning __pa() of a 0xd or 0x0 address would give
-> you something bogus back.
->
-> Until we can verify if that GCC bug is no longer an issue, or come up with
-> another solution, this commit does the minimal fix to make virt_addr_valid()
-> work, by explicitly checking that the address is in the linear mapping region.
->
-> Fixes: bdbc29c19b26 ("powerpc: Work around gcc miscompilation of __pa() on 64-bit")
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+With the same perf.data, with libunwind:
+
+bswap 19286 134866.199717:     321955 cycles:=20
+        c0000000000b5e60 [unknown] ([unknown])
+                   b31bc pSeries_lpar_hpte_invalidate (/boot/vmlinux)
+                   76f10 flush_hash_page (/boot/vmlinux)
+                   7ddec hpte_need_flush (/boot/vmlinux)
+                  2d9f64 ptep_clear_flush (/boot/vmlinux)
+                  2c24dc wp_page_copy (/boot/vmlinux)
+                  2c5c44 do_wp_page (/boot/vmlinux)
+                  2cabcc __handle_mm_fault (/boot/vmlinux)
+                  2cbbe8 handle_mm_fault (/boot/vmlinux)
+                   71074 do_page_fault (/boot/vmlinux)
+                   1b078 handle_page_fault (/boot/vmlinux)
+                    9958 _dl_map_object_from_fd (/lib/powerpc64le-linux-gnu=
+/ld-2.24.so)
+                    e70c _dl_map_object (/lib/powerpc64le-linux-gnu/ld-2.24=
+.so)
+                   18da4 openaux (/lib/powerpc64le-linux-gnu/ld-2.24.so)
+                   1c068 _dl_catch_error (/lib/powerpc64le-linux-gnu/ld-2.2=
+4.so)
+                   19430 _dl_map_object_deps (/lib/powerpc64le-linux-gnu/ld=
+-2.24.so)
+                    41dc dl_main (/lib/powerpc64le-linux-gnu/ld-2.24.so)
+                   29954 _dl_sysdep_start (/lib/powerpc64le-linux-gnu/ld-2.=
+24.so)
+                    1be0 _dl_start_final (/lib/powerpc64le-linux-gnu/ld-2.2=
+4.so)
+                    6080 _dl_start (/lib/powerpc64le-linux-gnu/ld-2.24.so)
+                    1398 _start (/lib/powerpc64le-linux-gnu/ld-2.24.so)
+
+... and with libdw:
+
+bswap 19286 134866.199717:     321955 cycles:=20
+        c0000000000b5e60 [unknown] ([unknown])
+                   b31bc pSeries_lpar_hpte_invalidate (/boot/vmlinux)
+                   76f10 flush_hash_page (/boot/vmlinux)
+		   7ddec hpte_need_flush (/boot/vmlinux)
+                  2d9f64 ptep_clear_flush (/boot/vmlinux)
+                  2c24dc wp_page_copy (/boot/vmlinux)
+                  2c5c44 do_wp_page (/boot/vmlinux)
+                  2cabcc __handle_mm_fault (/boot/vmlinux)
+                  2cbbe8 handle_mm_fault (/boot/vmlinux)
+		   71074 do_page_fault (/boot/vmlinux)
+                   1b078 handle_page_fault (/boot/vmlinux)
+
+Ravi is OOO currently can will have more to say on this once he is back=20
+next week.
+
+
+>=20
+> Signed-off-by: Paolo Bonzini <pbonzini@redhat.com>
 > ---
->  arch/powerpc/include/asm/page.h | 12 ++++++++++++
->  1 file changed, 12 insertions(+)
->
-> diff --git a/arch/powerpc/include/asm/page.h b/arch/powerpc/include/asm/page.h
-> index 2a32483c7b6c..8da5d4c1cab2 100644
-> --- a/arch/powerpc/include/asm/page.h
-> +++ b/arch/powerpc/include/asm/page.h
-> @@ -132,7 +132,19 @@ extern long long virt_phys_offset;
->  #define virt_to_pfn(kaddr)     (__pa(kaddr) >> PAGE_SHIFT)
->  #define virt_to_page(kaddr)    pfn_to_page(virt_to_pfn(kaddr))
->  #define pfn_to_kaddr(pfn)      __va((pfn) << PAGE_SHIFT)
+>  tools/perf/Makefile.config                  |  2 +-
+>  tools/perf/arch/powerpc/util/Build          |  2 +
+>  tools/perf/arch/powerpc/util/unwind-libdw.c | 73 +++++++++++++++++++++++=
+++++++
+>  3 files changed, 76 insertions(+), 1 deletion(-)
+>  create mode 100644 tools/perf/arch/powerpc/util/unwind-libdw.c
+>=20
+> diff --git a/tools/perf/Makefile.config b/tools/perf/Makefile.config
+> index f67ae83..342c57c 100644
+> --- a/tools/perf/Makefile.config
+> +++ b/tools/perf/Makefile.config
+> @@ -61,7 +61,7 @@ endif
+>  # Disable it on all other architectures in case libdw unwind
+>  # support is detected in system. Add supported architectures
+>  # to the check.
+> -ifneq ($(ARCH),$(filter $(ARCH),x86 arm))
+> +ifneq ($(ARCH),$(filter $(ARCH),x86 arm powerpc))
+>    NO_LIBDW_DWARF_UNWIND :=3D 1
+>  endif
+> =20
+> diff --git a/tools/perf/arch/powerpc/util/Build b/tools/perf/arch/powerpc=
+/util/Build
+> index 90ad64b..2e65953 100644
+> --- a/tools/perf/arch/powerpc/util/Build
+> +++ b/tools/perf/arch/powerpc/util/Build
+> @@ -5,4 +5,6 @@ libperf-y +=3D perf_regs.o
+> =20
+>  libperf-$(CONFIG_DWARF) +=3D dwarf-regs.o
+>  libperf-$(CONFIG_DWARF) +=3D skip-callchain-idx.o
 > +
-> +#ifdef CONFIG_PPC_BOOK3S_64
-> +/*
-> + * On hash the vmalloc and other regions alias to the kernel region when passed
-> + * through __pa(), which virt_to_pfn() uses. That means virt_addr_valid() can
-> + * return true for some vmalloc addresses, which is incorrect. So explicitly
-> + * check that the address is in the kernel region.
-> + */
-> +#define virt_addr_valid(kaddr) (REGION_ID(kaddr) == KERNEL_REGION_ID && \
-> +                               pfn_valid(virt_to_pfn(kaddr)))
-> +#else
->  #define virt_addr_valid(kaddr) pfn_valid(virt_to_pfn(kaddr))
-> +#endif
->
+>  libperf-$(CONFIG_LIBUNWIND) +=3D unwind-libunwind.o
+> +libperf-$(CONFIG_LIBDW_DWARF_UNWIND) +=3D unwind-libdw.o
+> diff --git a/tools/perf/arch/powerpc/util/unwind-libdw.c b/tools/perf/arc=
+h/powerpc/util/unwind-libdw.c
+> new file mode 100644
+> index 0000000..c61e1d8
+> --- /dev/null
+> +++ b/tools/perf/arch/powerpc/util/unwind-libdw.c
+> @@ -0,0 +1,73 @@
+> +#include <elfutils/libdwfl.h>
+> +#include "../../util/util.h"
+> +#include "../../util/unwind-libdw.h"
+> +#include "../../util/perf_regs.h"
 
-Looks good to me
+As an aside, we also need to include "event.h", without which there are=20
+a few compile errors.
 
-Reviewed-by: Balbir Singh <bsingharora@gmail.com>
+
+- Naveen
+
+> +
+> +/* See backends/ppc_initreg.c and backends/ppc_regs.c in elfutils.  */
+> +static const int special_regs[3][2] =3D {
+> +	{ 65, PERF_REG_POWERPC_LINK },
+> +	{ 101, PERF_REG_POWERPC_XER },
+> +	{ 109, PERF_REG_POWERPC_CTR },
+> +};
+> +
+> +bool libdw__arch_set_initial_registers(Dwfl_Thread *thread, void *arg)
+> +{
+> +	struct unwind_info *ui =3D arg;
+> +	struct regs_dump *user_regs =3D &ui->sample->user_regs;
+> +	Dwarf_Word dwarf_regs[32], dwarf_nip;
+> +	size_t i;
+> +
+> +#define REG(r) ({						\
+> +	Dwarf_Word val =3D 0;					\
+> +	perf_reg_value(&val, user_regs, PERF_REG_POWERPC_##r);	\
+> +	val;							\
+> +})
+> +
+> +	dwarf_regs[0]  =3D REG(R0);
+> +	dwarf_regs[1]  =3D REG(R1);
+> +	dwarf_regs[2]  =3D REG(R2);
+> +	dwarf_regs[3]  =3D REG(R3);
+> +	dwarf_regs[4]  =3D REG(R4);
+> +	dwarf_regs[5]  =3D REG(R5);
+> +	dwarf_regs[6]  =3D REG(R6);
+> +	dwarf_regs[7]  =3D REG(R7);
+> +	dwarf_regs[8]  =3D REG(R8);
+> +	dwarf_regs[9]  =3D REG(R9);
+> +	dwarf_regs[10] =3D REG(R10);
+> +	dwarf_regs[11] =3D REG(R11);
+> +	dwarf_regs[12] =3D REG(R12);
+> +	dwarf_regs[13] =3D REG(R13);
+> +	dwarf_regs[14] =3D REG(R14);
+> +	dwarf_regs[15] =3D REG(R15);
+> +	dwarf_regs[16] =3D REG(R16);
+> +	dwarf_regs[17] =3D REG(R17);
+> +	dwarf_regs[18] =3D REG(R18);
+> +	dwarf_regs[19] =3D REG(R19);
+> +	dwarf_regs[20] =3D REG(R20);
+> +	dwarf_regs[21] =3D REG(R21);
+> +	dwarf_regs[22] =3D REG(R22);
+> +	dwarf_regs[23] =3D REG(R23);
+> +	dwarf_regs[24] =3D REG(R24);
+> +	dwarf_regs[25] =3D REG(R25);
+> +	dwarf_regs[26] =3D REG(R26);
+> +	dwarf_regs[27] =3D REG(R27);
+> +	dwarf_regs[28] =3D REG(R28);
+> +	dwarf_regs[29] =3D REG(R29);
+> +	dwarf_regs[30] =3D REG(R30);
+> +	dwarf_regs[31] =3D REG(R31);
+> +	if (!dwfl_thread_state_registers(thread, 0, 32, dwarf_regs))
+> +		return false;
+> +
+> +	dwarf_nip =3D REG(NIP);
+> +	dwfl_thread_state_register_pc(thread, dwarf_nip);
+> +	for (i =3D 0; i < ARRAY_SIZE(special_regs); i++) {
+> +		Dwarf_Word val =3D 0;
+> +		perf_reg_value(&val, user_regs, special_regs[i][1]);
+> +		if (!dwfl_thread_state_registers(thread,
+> +						 special_regs[i][0], 1,
+> +						 &val))
+> +			return false;
+> +	}
+> +
+> +	return true;
+> +}
+> --=20
+> 1.8.3.1
+>=20
+>=20
+>=20
+=
