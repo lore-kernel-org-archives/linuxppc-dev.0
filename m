@@ -2,22 +2,20 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wSzkL6zDtzDqNm
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 May 2017 15:09:14 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wT00556w6zDqPj
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 May 2017 15:21:09 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Laura Abbott <labbott@redhat.com>, Kees Cook <keescook@chromium.org>
-Cc: Breno Leitao <leitao@debian.org>,
- "linuxppc-dev\@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- gromero@br.ibm.com, Anshuman Khandual <khandual@linux.vnet.ibm.com>,
- Balbir Singh <bsingharora@gmail.com>
-Subject: Re: kernel BUG at mm/usercopy.c:72!
-In-Reply-To: <ffdbeb27-0395-ef91-3b66-dc2f4f89e751@redhat.com>
-References: <20170515191949.GA13641@gmail.com>
- <878tlxoy62.fsf@concordia.ellerman.id.au>
- <CAGXu5jK86RkgsWFdtSuGoZzuRZt4cqJcU4YSTjn=irv0Pbu3Rw@mail.gmail.com>
- <ffdbeb27-0395-ef91-3b66-dc2f4f89e751@redhat.com>
-Date: Thu, 18 May 2017 15:09:12 +1000
-Message-ID: <87k25elpjb.fsf@concordia.ellerman.id.au>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ akpm@linux-foundation.org, Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: Re: [PATCH v3 2/2] powerpc/mm/hugetlb: Add support for 1G huge pages
+In-Reply-To: <1494995292-4443-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+References: <1494995292-4443-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1494995292-4443-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Date: Thu, 18 May 2017 15:21:09 +1000
+Message-ID: <87fug2loze.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -29,86 +27,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Laura Abbott <labbott@redhat.com> writes:
+"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> writes:
 
-> On 05/16/2017 07:32 AM, Kees Cook wrote:
->> On Tue, May 16, 2017 at 4:09 AM, Michael Ellerman <mpe@ellerman.id.au> wrote:
->>> [Cc'ing the relevant folks]
->>>
->>> Breno Leitao <leitao@debian.org> writes:
->>>> Hello,
->>>>
->>>> Kernel 4.12-rc1 is showing a bug when I try it on a POWER8 virtual
->>>> machine. Justing SSHing into the machine causes this issue.
->>>>
->>>>       [23.138124] usercopy: kernel memory overwrite attempt detected to d000000003d80030 (mm_struct) (560 bytes)
->>>>       [23.138195] ------------[ cut here ]------------
->>>>       [23.138229] kernel BUG at mm/usercopy.c:72!
->>>>       [23.138252] Oops: Exception in kernel mode, sig: 5 [#3]
->>>>       [23.138280] SMP NR_CPUS=2048
->>>>       [23.138280] NUMA
->>>>       [23.138302] pSeries
->>>>       [23.138330] Modules linked in:
->>>>       [23.138354] CPU: 4 PID: 2215 Comm: sshd Tainted: G      D         4.12.0-rc1+ #9
->>>>       [23.138395] task: c0000001e272dc00 task.stack: c0000001e27b0000
->>>>       [23.138430] NIP: c000000000342358 LR: c000000000342354 CTR: c0000000006eb060
->>>>       [23.138472] REGS: c0000001e27b3a00 TRAP: 0700   Tainted: G      D          (4.12.0-rc1+)
->>>>       [23.138513] MSR: 8000000000029033 <SF,EE,ME,IR,DR,RI,LE>
->>>>       [23.138517]   CR: 28004222  XER: 20000000
->>>>       [23.138565] CFAR: c000000000b34500 SOFTE: 1
->>>>       [23.138565] GPR00: c000000000342354 c0000001e27b3c80 c00000000142a000 000000000000005e
->>>>       [23.138565] GPR04: c0000001ffe0ade8 c0000001ffe21bf8 2920283536302062 79746573290d0a74
->>>>       [23.138565] GPR08: 0000000000000007 c000000000f61864 00000001feeb0000 3064206f74206465
->>>>       [23.138565] GPR12: 0000000000004400 c00000000fb42600 0000000000000015 00000000545bdc40
->>>>       [23.138565] GPR16: 00000000545c49c8 000001000b4b8890 00007ffff78c26f0 00000000545cf000
->>>>       [23.138565] GPR20: 00000000546109c8 000000000000c7e8 0000000054610010 00007ffff78c22e8
->>>>       [23.138565] GPR24: 00000000545c8c40 c0000000ff6bcef0 c0000000001e5220 0000000000000230
->>>>       [23.138565] GPR28: d000000003d80260 0000000000000000 0000000000000230 d000000003d80030
->>>>       [23.138920] NIP [c000000000342358] __check_object_size+0x88/0x2d0
->>>>       [23.138956] LR [c000000000342354] __check_object_size+0x84/0x2d0
->>>>       [23.138990] Call Trace:
->>>>       [23.139006] [c0000001e27b3c80] [c000000000342354] __check_object_size+0x84/0x2d0 (unreliable)
->>>>       [23.139056] [c0000001e27b3d00] [c0000000009f5ba8] bpf_prog_create_from_user+0xa8/0x1a0
->>>>       [23.139099] [c0000001e27b3d60] [c0000000001e5d30] do_seccomp+0x120/0x720
->>>>       [23.139136] [c0000001e27b3dd0] [c0000000000fd53c] SyS_prctl+0x2ac/0x6b0
->>>>       [23.139172] [c0000001e27b3e30] [c00000000000af84] system_call+0x38/0xe0
->>>>       [23.139218] Instruction dump:
->>>>       [23.139240] 60000000 60420000 3c82ff94 3ca2ff9d 38841788 38a5e868 3c62ff95 7fc8f378
->>>>       [23.139283] 7fe6fb78 386310c0 487f2169 60000000 <0fe00000> 60420000 2ba30010 409d018c
->>>>       [23.139328] ---[ end trace 1a1dc952a4b7c4af ]---
->>>>
->>>> I found that kernel 4.11 does not have this issue. I also found that, if
->>>> I revert 517e1fbeb65f5eade8d14f46ac365db6c75aea9b, I do not see the
->>>> problem.
->>>>
->>>> On the other side, if I cherry-pick commit
->>>> 517e1fbeb65f5eade8d14f46ac365db6c75aea9b into 4.11, I start seeing the
->>>> same issue also on 4.11.
->>>
->>> Yeah it looks like powerpc also suffers from the same bug that arm64
->>> used to, ie. virt_addr_valid() will return true for some vmalloc
->>> addresses.
->>>
->>> virt_addr_valid() is used pretty widely, I'm not sure if we can just fix
->>> it without other fallout. I'll dig a bit more tomorrow if no one beats
->>> me to it.
->>>
->>> Kees, depending on how that turns out we may ask you to revert
->>> 517e1fbeb65f ("mm/usercopy: Drop extra is_vmalloc_or_module() check").
->> 
->> That's fine by me. Let me know what you think would be best.
->> 
->> Laura, I don't see much harm in putting this back in place. It seems
->> like it's just a matter of efficiency to have it removed?
+> POWER9 supports hugepages of size 2M and 1G in radix MMU mode. This patch
+> enables the usage of 1G page size for hugetlbfs. This also update the helper
+> such we can do 1G page allocation at runtime.
 >
-> Yes, there shouldn't be any harm if we need to bring it back.
-> Perhaps I should submit a follow on patch to rename virt_addr_valid to
-> virt_addr_valid_except_where_it_isnt.
+> We still don't enable 1G page size on DD1 version. This is to avoid doing
+> workaround mentioned in commit: 6d3a0379ebdc8 (powerpc/mm: Add
+> radix__tlb_flush_pte_p9_dd1()
+>
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/include/asm/book3s/64/hugetlb.h | 10 ++++++++++
+>  arch/powerpc/mm/hugetlbpage.c                |  7 +++++--
+>  arch/powerpc/platforms/Kconfig.cputype       |  1 +
+>  3 files changed, 16 insertions(+), 2 deletions(-)
 
-I suspect there's lots of history here.
+I think this patch is OK, but it's very confusing because it doesn't
+mention that it's only talking about *generic* gigantic page support.
 
-virt_addr_valid() is also hardly used, there's only a few 10's of
-callers, vs hundreds for virt_to_page(). Which is scary as hell given
-the latter is only safe if the former returns true.
+We have existing support for gigantic pages on powerpc, on several
+platforms. This patch appears to break that, but I think doesn't in
+practice?
+
+So can you make it a bit clearer in the commit message, and the code,
+that this is only about enabling the generic gigantic page support, and
+is unrelated to the arch-specific gigantic page support.
 
 cheers
+
+> diff --git a/arch/powerpc/include/asm/book3s/64/hugetlb.h b/arch/powerpc/include/asm/book3s/64/hugetlb.h
+> index 6666cd366596..5c28bd6f2ae1 100644
+> --- a/arch/powerpc/include/asm/book3s/64/hugetlb.h
+> +++ b/arch/powerpc/include/asm/book3s/64/hugetlb.h
+> @@ -50,4 +50,14 @@ static inline pte_t arch_make_huge_pte(pte_t entry, struct vm_area_struct *vma,
+>  	else
+>  		return entry;
+>  }
+> +
+> +#ifdef CONFIG_ARCH_HAS_GIGANTIC_PAGE
+> +static inline bool gigantic_page_supported(void)
+> +{
+> +	if (radix_enabled())
+> +		return true;
+> +	return false;
+> +}
+> +#endif
+> +
+>  #endif
+> diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
+> index a4f33de4008e..80f6d2ed551a 100644
+> --- a/arch/powerpc/mm/hugetlbpage.c
+> +++ b/arch/powerpc/mm/hugetlbpage.c
+> @@ -763,8 +763,11 @@ static int __init add_huge_page_size(unsigned long long size)
+>  	 * Hash: 16M and 16G
+>  	 */
+>  	if (radix_enabled()) {
+> -		if (mmu_psize != MMU_PAGE_2M)
+> -			return -EINVAL;
+> +		if (mmu_psize != MMU_PAGE_2M) {
+> +			if (cpu_has_feature(CPU_FTR_POWER9_DD1) ||
+> +			    (mmu_psize != MMU_PAGE_1G))
+> +				return -EINVAL;
+> +		}
+>  	} else {
+>  		if (mmu_psize != MMU_PAGE_16M && mmu_psize != MMU_PAGE_16G)
+>  			return -EINVAL;
+> diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
+> index 684e886eaae4..b76ef6637016 100644
+> --- a/arch/powerpc/platforms/Kconfig.cputype
+> +++ b/arch/powerpc/platforms/Kconfig.cputype
+> @@ -344,6 +344,7 @@ config PPC_STD_MMU_64
+>  config PPC_RADIX_MMU
+>  	bool "Radix MMU Support"
+>  	depends on PPC_BOOK3S_64
+> +	select ARCH_HAS_GIGANTIC_PAGE if (MEMORY_ISOLATION && COMPACTION) || CMA
+>  	default y
+>  	help
+>  	  Enable support for the Power ISA 3.0 Radix style MMU. Currently this
+> -- 
+> 2.7.4
