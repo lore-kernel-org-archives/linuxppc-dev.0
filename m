@@ -1,16 +1,30 @@
-Return-Path: <alistair@popple.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
+ [IPv6:2607:f8b0:400e:c05::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wV0jP5q4bzDqdr
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 May 2017 06:56:57 +1000 (AEST)
-From: Alistair Popple <alistair@popple.id.au>
-To: linuxppc-dev
-Cc: mpe@ellerman.id.au, sbaskaran@nvidia.com, shailendras@nvidia.com,
- Alistair Popple <alistair@popple.id.au>
-Subject: [PATCH] powernv/npu-dma.c: Fix opal_npu_destroy_context call
-Date: Sat, 20 May 2017 06:56:35 +1000
-Message-Id: <1495227395-13721-1-git-send-email-alistair@popple.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wV3Jq4TMBzDqdv
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 May 2017 08:54:19 +1000 (AEST)
+Received: by mail-pg0-x241.google.com with SMTP id h64so11029115pge.3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 May 2017 15:54:19 -0700 (PDT)
+Date: Sat, 20 May 2017 08:53:57 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Don Zickus <dzickus@redhat.com>
+Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
+ adi-buildroot-devel@lists.sourceforge.net, linux-am33-list@redhat.com,
+ sparclinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ uobergfe@redhat.com
+Subject: Re: [RFC] arch hardlockup detector interfaces improvement
+Message-ID: <20170520085357.245c62af@roar.ozlabs.ibm.com>
+In-Reply-To: <20170519194345.gfwtuprrolk7sgwm@redhat.com>
+References: <20170518155026.23799-1-npiggin@gmail.com>
+ <20170518163028.tf2llimuo4l4l5nv@redhat.com>
+ <20170519090731.1e49cd0d@roar.ozlabs.ibm.com>
+ <20170519131753.sccuu7mksjertzni@redhat.com>
+ <20170520005306.13172dc7@roar.ozlabs.ibm.com>
+ <20170519194345.gfwtuprrolk7sgwm@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,41 +34,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-opal_npu_destroy_context() should be called with the NPU PHB, not the
-PCIe PHB.
+On Fri, 19 May 2017 15:43:45 -0400
+Don Zickus <dzickus@redhat.com> wrote:
 
-Signed-off-by: Alistair Popple <alistair@popple.id.au>
----
- arch/powerpc/platforms/powernv/npu-dma.c | 5 ++---
- 1 file changed, 2 insertions(+), 3 deletions(-)
+> On Sat, May 20, 2017 at 12:53:06AM +1000, Nicholas Piggin wrote:
+> > > I am curious to know what IBM thinks there.  Currently the HARDLOCKUP
+> > > detector sits on top of perf.  I get the impression, you are removing that
+> > > dependency.  Is that a permanent thing or are you thinking of switching back
+> > > and forth depending on if SOFTLOCKUP is enabled or not?  
+> > 
+> > We want to get away from perf permanently.
+> > 
+> > The PMU interrupts are not specially non-maskable from a hardware
+> > POV, everything gets masked when you turn off interrupts in hardware.
+> > powerpc arch code implements a software disable layer, and PMU
+> > interrupts are differentiated there by being allowed to run even
+> > under local_irq_disable();
+> > 
+> > We have a few issues with using perf for it. We disable it by
+> > default because using it for that breaks another PMU feature.
+> > 
+> > But PMU interupts are not special, so it would be possible to e.g.,
+> > take the timer interrupt before soft disable and have it touch the
+> > watchdog if it fires while under local_irq_disable(). That give
+> > exact same kind of pseudo-NMI as perf interrupts, without using PMU.
+> > 
+> > Further, we now want to introduce a local_pmu_disable() type of
+> > interface that extends this soft disable layer to perf interrupts
+> > as well for some cases. Once we start doing that, more code will
+> > be exempt from the hardlockup watchdog, whereas a watchdog specific
+> > hook from the timer interrupt would still cover it.  
+> 
+> Interesting.  Thanks for that info.
+> 
+> Do you think you can split the patch in half for me?  You are shuffling code
+> around and making subtle changes in the shuffled code.  It is hard to double
+> check everything.  Namely watchdog_nmi_reconfigure and watchdog_update_cpus
+> suddenly appear.
+> 
+> The first patch would be straight code movement, the second the real
+> changes.  I almost don't care if you throw in the LOCKUP->SOFTLOCKUP changes
+> in the first patch either.
+> 
+> I am really interested in the subtle changes to make sure you covered the
+> various race conditions that we have uncovered over the years.
 
-diff --git a/arch/powerpc/platforms/powernv/npu-dma.c b/arch/powerpc/platforms/powernv/npu-dma.c
-index 067defe..78fa939 100644
---- a/arch/powerpc/platforms/powernv/npu-dma.c
-+++ b/arch/powerpc/platforms/powernv/npu-dma.c
-@@ -714,7 +714,7 @@ static void pnv_npu2_release_context(struct kref *kref)
- void pnv_npu2_destroy_context(struct npu_context *npu_context,
- 			struct pci_dev *gpdev)
- {
--	struct pnv_phb *nphb, *phb;
-+	struct pnv_phb *nphb;
- 	struct npu *npu;
- 	struct pci_dev *npdev = pnv_pci_get_npu_dev(gpdev, 0);
- 	struct device_node *nvlink_dn;
-@@ -728,13 +728,12 @@ void pnv_npu2_destroy_context(struct npu_context *npu_context,
- 
- 	nphb = pci_bus_to_host(npdev->bus)->private_data;
- 	npu = &nphb->npu;
--	phb = pci_bus_to_host(gpdev->bus)->private_data;
- 	nvlink_dn = of_parse_phandle(npdev->dev.of_node, "ibm,nvlink", 0);
- 	if (WARN_ON(of_property_read_u32(nvlink_dn, "ibm,npu-link-index",
- 							&nvlink_index)))
- 		return;
- 	npu_context->npdev[npu->index][nvlink_index] = NULL;
--	opal_npu_destroy_context(phb->opal_id, npu_context->mm->context.id,
-+	opal_npu_destroy_context(nphb->opal_id, npu_context->mm->context.id,
- 				PCI_DEVID(gpdev->bus->number, gpdev->devfn));
- 	kref_put(&npu_context->kref, pnv_npu2_release_context);
- }
--- 
-2.1.4
+Yes that makes sense, I'll do that.
+
+> I also would like to see a sample of the watchdog_nmi_reconfigure() you had
+> in mind.  Usually we hide all the nmi stuff underneath the watchdog
+> functions.  But those are threaded, which is what you are trying to avoid,
+> so the placement of the function makes sense but looks odd.
+
+I'm just calling it after any sysctl changes or suspend/resume etc, and
+the lockup detector I have basically just shuts down everything and
+then re-starts with the new parameters (could be made much fancier but
+I didn't see a need.
+
+I will split out this patch and re-post to you with the powerpc patch in
+the series that you can take a look at.
+
+Thanks,
+Nick
