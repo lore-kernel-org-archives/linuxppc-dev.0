@@ -1,24 +1,29 @@
-Return-Path: <dzickus@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <David.Laight@ACULAB.COM>
+Received: from smtp-out6.electric.net (smtp-out6.electric.net
+ [192.162.217.182])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wTpWp63szzDqLT
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 May 2017 23:17:58 +1000 (AEST)
-Date: Fri, 19 May 2017 09:17:53 -0400
-From: Don Zickus <dzickus@redhat.com>
-To: Nicholas Piggin <npiggin@gmail.com>
-Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
- adi-buildroot-devel@lists.sourceforge.net,
- linux-am33-list@redhat.com, sparclinux@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, uobergfe@redhat.com
-Subject: Re: [RFC] arch hardlockup detector interfaces improvement
-Message-ID: <20170519131753.sccuu7mksjertzni@redhat.com>
-References: <20170518155026.23799-1-npiggin@gmail.com>
- <20170518163028.tf2llimuo4l4l5nv@redhat.com>
- <20170519090731.1e49cd0d@roar.ozlabs.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wTqTj2fFCzDqbx
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 May 2017 00:01:12 +1000 (AEST)
+From: David Laight <David.Laight@ACULAB.COM>
+To: 'Arnd Bergmann' <arnd@arndb.de>, Chris Packham
+ <Chris.Packham@alliedtelesis.co.nz>
+CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "mchehab@kernel.org" <mchehab@kernel.org>, Borislav Petkov <bp@alien8.de>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linux-edac@vger.kernel.org" <linux-edac@vger.kernel.org>
+Subject: RE: [PATCH 3/3] EDAC: mv64x60: replace in_le32/out_le32 with
+ ioread32/iowrite32
+Date: Fri, 19 May 2017 14:01:04 +0000
+Message-ID: <063D6719AE5E284EB5DD2968C1650D6DCFFFAB9B@AcuExch.aculab.com>
+References: <20170512042002.18524-1-chris.packham@alliedtelesis.co.nz>
+ <20170512042002.18524-4-chris.packham@alliedtelesis.co.nz>
+ <20170517181021.yfctrok7f25d5bu5@pd.tnic>
+ <7c7bfec63342409ebd58913836a0739a@svr-chch-ex1.atlnz.lc>
+ <CAK8P3a0BFBJhDmS5r3O_x8d8Ws18vxresaULPBoN3JX49_LT3g@mail.gmail.com>
+In-Reply-To: <CAK8P3a0BFBJhDmS5r3O_x8d8Ws18vxresaULPBoN3JX49_LT3g@mail.gmail.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170519090731.1e49cd0d@roar.ozlabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,49 +33,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, May 19, 2017 at 09:07:31AM +1000, Nicholas Piggin wrote:
-> On Thu, 18 May 2017 12:30:28 -0400
-> Don Zickus <dzickus@redhat.com> wrote:
-> 
-> > (adding Uli)
-> > 
-> > On Fri, May 19, 2017 at 01:50:26AM +1000, Nicholas Piggin wrote:
-> > > I'd like to make it easier for architectures that have their own NMI /
-> > > hard lockup detector to reuse various configuration interfaces that are
-> > > provided by generic detectors (cmdline, sysctl, suspend/resume calls).
-> > > 
-> > > I'd also like to remove the dependency of arch hard lockup detectors
-> > > on the softlockup detector. The reason being these watchdogs can be
-> > > very small (sparc's is like a page of core code that does not use any
-> > > big subsystem like kthreads or timers).
-> > > 
-> > > So I do this by adding a separate CONFIG_SOFTLOCKUP_DETECTOR, and
-> > > juggling around what goes under config options. HAVE_NMI_WATCHDOG
-> > > continues to be the config for arch to override the hard lockup
-> > > detector, which is expanded to cover a few more cases.  
-> > 
-> > Basically you are trying to remove the heavy HARDLOCKUP pieces to minimize
-> > the SOFTLOCKUP piece and use your own NMI detector, right?
-> > 
-> > I am guessing you would then disable SOFTLOCKUP to remove all the kthread
-> > and timer stuff but continue to use the generic infrastructure to help
-> > manager your own NMI detector?
-> 
-> Yes that's right.
-> 
-> > A lot of the code is just re-organizing things and adding an explicit
-> > ifdef on SOFTLOCKUP, which seems fine to me.
-> > 
-> > I just need to spend some time on some of your #else clauses to see what
-> > functionality is dropped when you use your approach.
-> 
-> Okay, appreciated. I can trim down cc lists and send you my powerpc
-> WIP if you'd like to have a look.
-
-I am curious to know what IBM thinks there.  Currently the HARDLOCKUP
-detector sits on top of perf.  I get the impression, you are removing that
-dependency.  Is that a permanent thing or are you thinking of switching back
-and forth depending on if SOFTLOCKUP is enabled or not?
-
-Cheers,
-Don
+RnJvbTogQXJuZCBCZXJnbWFubg0KPiBTZW50OiAxNyBNYXkgMjAxNyAyMjo0MA0KPiANCj4gT24g
+V2VkLCBNYXkgMTcsIDIwMTcgYXQgMTE6MTYgUE0sIENocmlzIFBhY2toYW0NCj4gPENocmlzLlBh
+Y2toYW1AYWxsaWVkdGVsZXNpcy5jby5uej4gd3JvdGU6DQo+ID4gT24gMTgvMDUvMTcgMDY6MTgs
+IEJvcmlzbGF2IFBldGtvdiB3cm90ZToNCj4gPiBPbmUgdGhpbmcgSSB3b3VsZCBsaWtlIGNvbmZp
+cm1hdGlvbiBvbiBpcyBpcyBpbl9sZTMyIC0+IGlvcmVhZDMyIHRoZQ0KPiA+IGNvcnJlY3QgY2hh
+bmdlPyBJIHRvc3NlZCB1cCBiZXR3ZWVuIGlvcmVhZDMyIGFuZCByZWFkbC4gTG9va2luZyBhdA0K
+PiA+IG12NjQzeHhfZXRoLmMgd2hpY2ggc3VwcG9ydHMgYm90aCB0aGUgTVY2NDNYWCBhbmQgT3Jp
+b24gaXQncyB1c2luZyByZWFkbA0KPiA+IHNvIHBlcmhhcHMgSSBzaG91bGQgYmUgdXNpbmcgdGhh
+dC4NCj4gDQo+IFRoZXJlIGlzIG5vIGVhc3kgYW5zd2VyOiBvbiBwb3dlcnBjLCByZWFkbCBpcyB1
+c2VkIGZvciBQQ0ksDQo+IHdoaWxlIGluX2xlMzIgaXMgdXNlZCBmb3Igb24tY2hpcCBkZXZpY2Vz
+LCBzbyBpbl9sZTMyIGlzIHRoZQ0KPiByaWdodCBvbmUgaW4gcHJpbmNpcGxlLiBUaGUgbWFpbiBk
+aWZmZXJlbmNlIGlzIHRoYXQgcmVhZGwgY2FuDQo+IHdvcmsgd2l0aCBDT05GSUdfRUVIIG9uIHBz
+ZXJpZXMsIGJ1dCBpbl9sZTMyIGlzIGNoZWFwZXIuDQo+IA0KPiBPbiBBUk0gYW5kIG1vc3Qgb3Ro
+ZXIgYXJjaGl0ZWN0dXJlcywgcmVhZGwgaXMgdXNlZCBmb3IgYm90aA0KPiBQQ0kgYW5kIG9uLWNo
+aXAgZGV2aWNlcywgc28gdGhhdCdzIHdoYXQgcG9ydGFibGUgY29kZSB0ZW5kcw0KPiB0byB1c2Uu
+DQo+IA0KPiBpb3JlYWQzMiBpcyByZXF1aXJlZCB0byBiZWhhdmUgdGhlIHNhbWUgd2F5IGFzIHJl
+YWRsDQo+IG9uIGFsbCBfX2lvbWVtIHBvaW50ZXJzIHJldHVybmVkIGZyb20gaW9yZW1hcCgpLCBi
+dXQNCj4gaXMgYW4gZXh0ZXJuIGZ1bmN0aW9uIG9uIHBvd2VycGMgYW5kIGNhbiBiZSBtb3JlDQo+
+IGV4cGVuc2l2ZSB3aGVuIENPTkZJR19HRU5FUklDX0lPTUFQIGlzIHNldC4NCg0KV2hhdCBhYm91
+dCB4ODY/DQpJc24ndCBpb3JlYWQzMigpIGFuIGV4dGVybiBmdW5jdGlvbiB0aGF0IGNoZWNrcyBm
+b3IgJ2lvJyBhZGRyZXNzZXMNCnRoYW4gbmVlZCAnaW5iJyAoZXRjKSBpbnN0cnVjdGlvbnMgcmF0
+aGVyIHRoYW4gbWVtb3J5IG9uZXMuDQpJZiB3ZSBrbm93IGEgUENJIHNsYXZlIGlzbid0ICdpbycg
+c2hvdWxkIGJlIGJlIHVzaW5nIGlvcmVhZDMyKCkgb3IgcmVhZGwoKT8NCkRvbid0IHNvbWUgYXJj
+aGl0ZWN0dXJlcyBoYXZlIGRpZmZlcmVudCBlbmZvcmNlZCBiYXJyaWVycyBpbiBib3RoIHRoZXNl
+Pw0KDQoJRGF2aWQNCg0KDQoNCg==
