@@ -3,39 +3,36 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wTkH02gVSzDqbF
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 May 2017 20:06:36 +1000 (AEST)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wTkQm0QtrzDqMM
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 May 2017 20:13:19 +1000 (AEST)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v4JA4kU1008833
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 May 2017 06:06:30 -0400
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2ahr3j10c4-1
+ v4JA8qhW136494
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 May 2017 06:13:17 -0400
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2ahwrajx5y-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 May 2017 06:06:30 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 May 2017 06:13:16 -0400
 Received: from localhost
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <vaibhav@linux.vnet.ibm.com>;
- Fri, 19 May 2017 20:06:27 +1000
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v4JA6G4M63504470
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 May 2017 20:06:24 +1000
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v4JA5i6B028964
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 May 2017 20:05:45 +1000
+ Fri, 19 May 2017 20:13:14 +1000
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v4JAD3P553477498
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 May 2017 20:13:11 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v4JACci6007527
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 May 2017 20:12:38 +1000
 From: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Alessandro Zummo <a.zummo@towertech.it>,
- Alexandre Belloni <alexandre.belloni@free-electrons.com>
-Cc: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- rtc-linux@googlegroups.com
-Subject: [PATCH] rtc/tpo: Handle disabled TPO in opal_get_tpo_time()
-Date: Fri, 19 May 2017 15:35:09 +0530
-Message-Id: <20170519100509.7807-1-vaibhav@linux.vnet.ibm.com>
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Cc: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] rtc/tpo: Implement rtc_class_ops.alarm_irq_enable callback
+Date: Fri, 19 May 2017 15:42:00 +0530
+Message-Id: <20170519101200.9287-1-vaibhav@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,50 +42,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On PowerNV platform when Timed-Power-On(TPO) is disabled, read of
-stored TPO yields value with all date components set to '0' inside
-opal_get_tpo_time(). The function opal_to_tm() then converts it to an
-offset from year 1900 yielding alarm-time == "1900-00-01
-00:00:00". This causes problems with __rtc_read_alarm() that
-expecting an offset from "1970-00-01 00:00:00" and returned alarm-time
-results in a -ve value for time64_t. Which ultimately results in this
-error reported in kernel logs with a seemingly garbage value:
+Provide an implementation of the callback
+rtc_class_ops.alarm_irq_enable callback for rtc-opal driver. This
+callback is called when the wake alarm is disabled via the command:
 
-"rtc rtc0: invalid alarm value: -2-1--1041528741
-2005511117:71582844:32"
+'echo 0 > /sys/class/rtc/rtc0/wakealarm'
 
-We fix this by explicitly handling the case of all alarm date-time
-components being '0' inside opal_get_tpo_time() and returning -ENOENT
-in such a case. This signals generic rtc that no alarm is set and it
-bails out from the alarm initialization flow without reporting the
-above error.
+Without this the Timed-Power-On(TPO) config remains set even when its
+disabled by the above command and the FSP will force machine boot at
+previously configured time.
 
+The callback is implemented as function opal_tpo_alarm_irq_enable()
+which calls opal_set_tpo_time() with alarm.enabled == 0. A branch has
+been added to opal_set_tpo_time() to handle this case by passing y_m_d
+== h_m_s_ms == 0 to opal as arguments for opal_tpo_write() call.
+
+Patch-based-on: https://patchwork.ozlabs.org/patch/764559/
 Signed-off-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
-Reported-by: Steve Best <sbest@redhat.com>
 ---
- drivers/rtc/rtc-opal.c | 10 ++++++++++
- 1 file changed, 10 insertions(+)
+Corresponding opal side changes posted at
+https://patchwork.ozlabs.org/patch/764555/ "fsp/tpo: Provide support
+for disabling TPO alarm"
+---
+ drivers/rtc/rtc-opal.c | 22 +++++++++++++++++++++-
+ 1 file changed, 21 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/rtc/rtc-opal.c b/drivers/rtc/rtc-opal.c
-index ea20f62..2d84e2a 100644
+index 2d84e2a..e2a946c 100644
 --- a/drivers/rtc/rtc-opal.c
 +++ b/drivers/rtc/rtc-opal.c
-@@ -142,6 +142,16 @@ static int opal_get_tpo_time(struct device *dev, struct rtc_wkalrm *alarm)
+@@ -167,7 +167,14 @@ static int opal_set_tpo_time(struct device *dev, struct rtc_wkalrm *alarm)
+ 	u32 y_m_d = 0;
+ 	int token, rc;
  
- 	y_m_d = be32_to_cpu(__y_m_d);
- 	h_m_s_ms = ((u64)be32_to_cpu(__h_m) << 32);
-+
-+	/* check if no alarm is set */
-+	if (y_m_d == 0 && h_m_s_ms == 0) {
-+		pr_debug("No alarm is set\n");
-+		rc = -ENOENT;
-+		goto exit;
-+	} else {
+-	tm_to_opal(&alarm->time, &y_m_d, &h_m_s_ms);
++	/* if alarm is enabled */
++	if (alarm->enabled) {
++		tm_to_opal(&alarm->time, &y_m_d, &h_m_s_ms);
 +		pr_debug("Alarm set to %x %llx\n", y_m_d, h_m_s_ms);
-+	}
 +
- 	opal_to_tm(y_m_d, h_m_s_ms, &alarm->time);
++	} else {
++		pr_debug("Alarm getting disabled\n");
++	}
  
- exit:
+ 	token = opal_async_get_token_interruptible();
+ 	if (token < 0) {
+@@ -200,6 +207,18 @@ static int opal_set_tpo_time(struct device *dev, struct rtc_wkalrm *alarm)
+ 	return rc;
+ }
+ 
++int opal_tpo_alarm_irq_enable(struct device *dev, unsigned int enabled)
++{
++	struct rtc_wkalrm alarm = { .enabled = 0 };
++
++	/*
++	 * TPO is automatically enabled when opal_set_tpo_time() is called with
++	 * non-zero rtc-time. We only handle disable case which needs to be
++	 * explicitly told to opal.
++	 */
++	return enabled ? 0 : opal_set_tpo_time(dev, &alarm);
++}
++
+ static struct rtc_class_ops opal_rtc_ops = {
+ 	.read_time	= opal_get_rtc_time,
+ 	.set_time	= opal_set_rtc_time,
+@@ -215,6 +234,7 @@ static int opal_rtc_probe(struct platform_device *pdev)
+ 		device_set_wakeup_capable(&pdev->dev, true);
+ 		opal_rtc_ops.read_alarm	= opal_get_tpo_time;
+ 		opal_rtc_ops.set_alarm = opal_set_tpo_time;
++		opal_rtc_ops.alarm_irq_enable = opal_tpo_alarm_irq_enable;
+ 	}
+ 
+ 	rtc = devm_rtc_device_register(&pdev->dev, DRVNAME, &opal_rtc_ops,
 -- 
 2.9.3
