@@ -1,20 +1,27 @@
-Return-Path: <mikey@neuling.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <paolo.bonzini@gmail.com>
+Received: from mail-wm0-x244.google.com (mail-wm0-x244.google.com
+ [IPv6:2a00:1450:400c:c09::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wTcfW04qCzDqCd
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 May 2017 15:53:07 +1000 (AEST)
-Message-ID: <1495173186.8495.46.camel@neuling.org>
-Subject: Re: [PATCH] selftests/powerpc: Fix TM resched DSCR test with some
- compilers
-From: Michael Neuling <mikey@neuling.org>
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
-Cc: sam.bobroff@au1.ibm.com
-Date: Fri, 19 May 2017 15:53:06 +1000
-In-Reply-To: <1495157865-12924-1-git-send-email-mpe@ellerman.id.au>
-References: <1495157865-12924-1-git-send-email-mpe@ellerman.id.au>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wTgx2104zzDqcl
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 May 2017 18:20:54 +1000 (AEST)
+Received: by mail-wm0-x244.google.com with SMTP id k15so15339175wmh.3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 May 2017 01:20:53 -0700 (PDT)
+Sender: Paolo Bonzini <paolo.bonzini@gmail.com>
+Subject: Re: [PATCH] perf: libdw support for powerpc
+From: Paolo Bonzini <pbonzini@redhat.com>
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>, kvm@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+Cc: acme@kernel.org, Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
+References: <20170518170018.10507-1-pbonzini@redhat.com>
+ <1495131092.c1jiws8vlt.astroid@naverao1-tp.none>
+ <be48f6fe-0f0e-8667-0ad0-65e00904f008@redhat.com>
+Message-ID: <24a6080b-c0bb-9965-013c-60b4368c649c@redhat.com>
+Date: Fri, 19 May 2017 10:20:48 +0200
+MIME-Version: 1.0
+In-Reply-To: <be48f6fe-0f0e-8667-0ad0-65e00904f008@redhat.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,51 +31,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2017-05-19 at 11:37 +1000, Michael Ellerman wrote:
-> The tm-resched-dscr test has started failing sometimes, depending on
-> what compiler it's built with, eg:
->=20
-> =C2=A0 test: tm_resched_dscr
-> =C2=A0 Check DSCR TM context switch: tm-resched-dscr: tm-resched-dscr.c:7=
-6:
-> test_body: Assertion `rv' failed.
-> =C2=A0 !! child died by signal 6
->=20
-> When it fails we see that the compiler doesn't initialise rv to 1 before
-> entering the inline asm block. Although that's counter intuitive, it
-> is allowed because we tell the compiler that the inline asm will write
-> to rv (using "=3Dr"), meaning the original value is irrelevant.
->=20
-> Marking it as a read/write parameter would presumably work, but it seems
-> simpler to fix it by setting the initial value of rv in the inline asm.
->=20
-> Fixes: 96d016108640 ("powerpc: Correct DSCR during TM context switch")
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
-Thanks.
 
-Acked-by: Michael Neuling <mikey@neuling.org>
+On 18/05/2017 20:48, Paolo Bonzini wrote:
+> 
+> 
+> On 18/05/2017 20:19, Naveen N. Rao wrote:
+>> Paolo Bonzini wrote:
+>>> The ARM and x86 architectures already use libdw, and it is useful to
+>>> have as much common code for the unwinder as possible.  Porting PPC
+>>> to libdw only needs an architecture-specific hook to move the register
+>>> state from perf to libdw.
+>>
+>> Thanks. Ravi has had a similar patch locally, but from what I
+>> understand, there are issues with libdw based unwinding on powerpc64. I
+>> gave this a quick test and I don't see the user-space call trace being
+>> unwinded properly with libdw.
+> 
+> I don't see that problem:
+> 
+> -   99,98%     0,00%  dd       libc-2.17.so                    [.] generic_start_main.isra.0
+>      generic_start_main.isra.0
+>    - main
+>       - 99,97% iread
+>          - 97,82% sys_read
+>             - 96,97% extract_entropy_user
+>                  89,44% powernv_get_random_long
+>                  4,63% sha_transform
+>                  2,07% extract_buf
+>            1,15% _raw_spin_lock_irqsave
+>            0,51% extract_buf
+> 
+> (This is "perf record dd if=/dev/urandom of=/dev/null bs=512").
+> 
+> Can you copy the contents of tools/perf/.config-detected here?
 
-> ---
-> =C2=A0tools/testing/selftests/powerpc/tm/tm-resched-dscr.c | 2 +-
-> =C2=A01 file changed, 1 insertion(+), 1 deletion(-)
->=20
-> diff --git a/tools/testing/selftests/powerpc/tm/tm-resched-dscr.c
-> b/tools/testing/selftests/powerpc/tm/tm-resched-dscr.c
-> index d9c49f41515e..e79ccd6aada1 100644
-> --- a/tools/testing/selftests/powerpc/tm/tm-resched-dscr.c
-> +++ b/tools/testing/selftests/powerpc/tm/tm-resched-dscr.c
-> @@ -42,12 +42,12 @@ int test_body(void)
-> =C2=A0	printf("Check DSCR TM context switch: ");
-> =C2=A0	fflush(stdout);
-> =C2=A0	for (;;) {
-> -		rv =3D 1;
-> =C2=A0		asm __volatile__ (
-> =C2=A0			/* set a known value into the DSCR */
-> =C2=A0			"ld=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A03, %[dscr1];"
-> =C2=A0			"mtspr=C2=A0=C2=A0=C2=A0%[sprn_dscr], 3;"
-> =C2=A0
-> +			"li=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0%[rv], 1;"
-> =C2=A0			/* start and suspend a transaction */
-> =C2=A0			"tbegin.;"
-> =C2=A0			"beq=C2=A0=C2=A0=C2=A0=C2=A0=C2=A01f;"
+FWIW it works fine for me here with latest Linus tree and your suggested
+change to fix compilation:
+
+--- a/tools/perf/arch/powerpc/util/unwind-libdw.c
++++ b/tools/perf/arch/powerpc/util/unwind-libdw.c
+@@ -1,7 +1,7 @@
+ #include <elfutils/libdwfl.h>
+-#include "../../util/util.h"
+ #include "../../util/unwind-libdw.h"
+ #include "../../util/perf_regs.h"
++#include "../../util/event.h"
+
+ /* See backends/ppc_initreg.c and backends/ppc_regs.c in elfutils.  */
+ static const int special_regs[3][2] = {
+
+Thanks,
+
+Paolo
