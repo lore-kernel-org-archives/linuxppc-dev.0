@@ -1,35 +1,20 @@
-Return-Path: <ksiva@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wTjV26l63zDqcf
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 May 2017 19:31:06 +1000 (AEST)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v4J91HRv005515
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 May 2017 05:31:01 -0400
-Received: from e13.ny.us.ibm.com (e13.ny.us.ibm.com [129.33.205.203])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2ahrwmw9nn-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 May 2017 05:31:00 -0400
-Received: from localhost
- by e13.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ksiva@linux.vnet.ibm.com>;
- Fri, 19 May 2017 05:30:59 -0400
-From: Sivakumar Krishnasamy <ksiva@linux.vnet.ibm.com>
-To: netdev@vger.kernel.org
-Cc: tlfalcon@linux.vnet.ibm.com, benh@kernel.crashing.org, paulus@samba.org,
- mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, brking@linux.vnet.ibm.com,
- seroyer@linux.vnet.ibm.com, bryantly@linux.vnet.ibm.com,
- Sivakumar Krishnasamy <ksiva@linux.vnet.ibm.com>
-Subject: [PATCH net-next v2] ibmveth: Support to enable LSO/CSO for Trunk VEA.
-Date: Fri, 19 May 2017 05:30:38 -0400
-In-Reply-To: <1491559079-10855-1-git-send-email-ksiva@linux.vnet.ibm.com>
-References: <1491559079-10855-1-git-send-email-ksiva@linux.vnet.ibm.com>
-Message-Id: <1495186238-19058-1-git-send-email-ksiva@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wTjcY2R5szDqdr
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 May 2017 19:36:45 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: bsingharora@gmail.com, ego@linux.vnet.ibm.com, jeyu@redhat.com,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, mikey@neuling.org,
+ naveen.n.rao@linux.vnet.ibm.com
+Subject: [GIT PULL] Please pull powerpc/linux.git powerpc-4.12-3 tag
+Date: Fri, 19 May 2017 19:36:42 +1000
+Message-ID: <87bmqp6vdh.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="=-=-=";
+ micalg=pgp-sha1; protocol="application/pgp-signature"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,289 +24,87 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Current largesend and checksum offload feature in ibmveth driver,
- - Source VM sends the TCP packets with ip_summed field set as
-   CHECKSUM_PARTIAL and TCP pseudo header checksum is placed in
-   checksum field
- - CHECKSUM_PARTIAL flag in SKB will enable ibmveth driver to mark
-   "no checksum" and "checksum good" bits in transmit buffer descriptor
-   before the packet is delivered to pseries PowerVM Hypervisor
- - If ibmveth has largesend capability enabled, transmit buffer descriptors
-   are market accordingly before packet is delivered to Hypervisor
-   (along with mss value for packets with length > MSS)
- - Destination VM's ibmveth driver receives the packet with "checksum good"
-   bit set and so, SKB's ip_summed field is set with CHECKSUM_UNNECESSARY
- - If "largesend" bit was on, mss value is copied from receive descriptor
-   into SKB's gso_size and other flags are appropriately set for
-   packets > MSS size
- - The packet is now successfully delivered up the stack in destination VM
+--=-=-=
+Content-Type: text/plain
 
-The offloads described above works fine for TCP communication among VMs in
-the same pseries server ( VM A <=> PowerVM Hypervisor <=> VM B )
+Hi Linus,
 
-We are now enabling support for OVS in pseries PowerVM environment. One of
-our requirements is to have ibmveth driver configured in "Trunk" mode, when
-they are used with OVS. This is because, PowerVM Hypervisor will no more
-bridge the packets between VMs, instead the packets are delivered to
-IO Server which hosts OVS to bridge them between VMs or to external
-networks (flow shown below),
-  VM A <=> PowerVM Hypervisor <=> IO Server(OVS) <=> PowerVM Hypervisor
-                                                                   <=> VM B
-In "IO server" the packet is received by inbound Trunk ibmveth and then
-delivered to OVS, which is then bridged to outbound Trunk ibmveth (shown
-below),
-        Inbound Trunk ibmveth <=> OVS <=> Outbound Trunk ibmveth
+Please pull some powerpc fixes for 4.12:
 
-In this model, we hit the following issues which impacted the VM
-communication performance,
+The following changes since commit 2ea659a9ef488125eb46da6eb571de5eae5c43f6:
 
- - Issue 1: ibmveth doesn't support largesend and checksum offload features
-   when configured as "Trunk". Driver has explicit checks to prevent
-   enabling these offloads.
+  Linux 4.12-rc1 (2017-05-13 13:19:49 -0700)
 
- - Issue 2: SYN packet drops seen at destination VM. When the packet
-   originates, it has CHECKSUM_PARTIAL flag set and as it gets delivered to
-   IO server's inbound Trunk ibmveth, on validating "checksum good" bits
-   in ibmveth receive routine, SKB's ip_summed field is set with
-   CHECKSUM_UNNECESSARY flag. This packet is then bridged by OVS (or Linux
-   Bridge) and delivered to outbound Trunk ibmveth. At this point the
-   outbound ibmveth transmit routine will not set "no checksum" and
-   "checksum good" bits in transmit buffer descriptor, as it does so only
-   when the ip_summed field is CHECKSUM_PARTIAL. When this packet gets
-   delivered to destination VM, TCP layer receives the packet with checksum
-   value of 0 and with no checksum related flags in ip_summed field. This
-   leads to packet drops. So, TCP connections never goes through fine.
+are available in the git repository at:
 
- - Issue 3: First packet of a TCP connection will be dropped, if there is
-   no OVS flow cached in datapath. OVS while trying to identify the flow,
-   computes the checksum. The computed checksum will be invalid at the
-   receiving end, as ibmveth transmit routine zeroes out the pseudo
-   checksum value in the packet. This leads to packet drop.
+  git://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git tags/powerpc-4.12-3
 
- - Issue 4: ibmveth driver doesn't have support for SKB's with frag_list.
-   When Physical NIC has GRO enabled and when OVS bridges these packets,
-   OVS vport send code will end up calling dev_queue_xmit, which in turn
-   calls validate_xmit_skb.
-   In validate_xmit_skb routine, the larger packets will get segmented into
-   MSS sized segments, if SKB has a frag_list and if the driver to which
-   they are delivered to doesn't support NETIF_F_FRAGLIST feature.
+for you to fetch changes up to e41e53cd4fe331d0d1f06f8e4ed7e2cc63ee2c34:
 
-This patch addresses the above four issues, thereby enabling end to end
-largesend and checksum offload support for better performance.
+  powerpc/mm: Fix virt_addr_valid() etc. on 64-bit hash (2017-05-19 13:04:35 +1000)
 
- - Fix for Issue 1 : Remove checks which prevent enabling TCP largesend and
-   checksum offloads.
- - Fix for Issue 2 : When ibmveth receives a packet with "checksum good"
-   bit set and if its configured in Trunk mode, set appropriate SKB fields
-   using skb_partial_csum_set (ip_summed field is set with
-   CHECKSUM_PARTIAL)
- - Fix for Issue 3: Recompute the pseudo header checksum before sending the
-   SKB up the stack.
- - Fix for Issue 4: Linearize the SKBs with frag_list. Though we end up
-   allocating buffers and copying data, this fix gives
-   upto 4X throughput increase.
+----------------------------------------------------------------
+powerpc fixes for 4.12 #3
 
-Note: All these fixes need to be dropped together as fixing just one of
-them will lead to other issues immediately (especially for Issues 1,2 & 3).
+The headline is a fix for FP/VMX register corruption when using transactional
+memory, and a new selftest to go with it.
 
-Signed-off-by: Sivakumar Krishnasamy <ksiva@linux.vnet.ibm.com>
----
- drivers/net/ethernet/ibm/ibmveth.c | 107 ++++++++++++++++++++++++++++++-------
- drivers/net/ethernet/ibm/ibmveth.h |   1 +
- 2 files changed, 90 insertions(+), 18 deletions(-)
+Then there's the virt_addr_valid() fix, currently HARDENDED_USERCOPY is tripping
+on that causing some machines to crash.
 
-diff --git a/drivers/net/ethernet/ibm/ibmveth.c b/drivers/net/ethernet/ibm/ibmveth.c
-index 72ab7b6..9a74c4e 100644
---- a/drivers/net/ethernet/ibm/ibmveth.c
-+++ b/drivers/net/ethernet/ibm/ibmveth.c
-@@ -46,6 +46,8 @@
- #include <asm/vio.h>
- #include <asm/iommu.h>
- #include <asm/firmware.h>
-+#include <net/tcp.h>
-+#include <net/ip6_checksum.h>
- 
- #include "ibmveth.h"
- 
-@@ -808,8 +810,7 @@ static int ibmveth_set_csum_offload(struct net_device *dev, u32 data)
- 
- 	ret = h_illan_attributes(adapter->vdev->unit_address, 0, 0, &ret_attr);
- 
--	if (ret == H_SUCCESS && !(ret_attr & IBMVETH_ILLAN_ACTIVE_TRUNK) &&
--	    !(ret_attr & IBMVETH_ILLAN_TRUNK_PRI_MASK) &&
-+	if (ret == H_SUCCESS &&
- 	    (ret_attr & IBMVETH_ILLAN_PADDED_PKT_CSUM)) {
- 		ret4 = h_illan_attributes(adapter->vdev->unit_address, clr_attr,
- 					 set_attr, &ret_attr);
-@@ -1040,6 +1041,15 @@ static netdev_tx_t ibmveth_start_xmit(struct sk_buff *skb,
- 	dma_addr_t dma_addr;
- 	unsigned long mss = 0;
- 
-+	/* veth doesn't handle frag_list, so linearize the skb.
-+	 * When GRO is enabled SKB's can have frag_list.
-+	 */
-+	if (adapter->is_active_trunk &&
-+	    skb_has_frag_list(skb) && __skb_linearize(skb)) {
-+		netdev->stats.tx_dropped++;
-+		goto out;
-+	}
-+
- 	/*
- 	 * veth handles a maximum of 6 segments including the header, so
- 	 * we have to linearize the skb if there are more than this.
-@@ -1064,9 +1074,6 @@ static netdev_tx_t ibmveth_start_xmit(struct sk_buff *skb,
- 
- 	desc_flags = IBMVETH_BUF_VALID;
- 
--	if (skb_is_gso(skb) && adapter->fw_large_send_support)
--		desc_flags |= IBMVETH_BUF_LRG_SND;
--
- 	if (skb->ip_summed == CHECKSUM_PARTIAL) {
- 		unsigned char *buf = skb_transport_header(skb) +
- 						skb->csum_offset;
-@@ -1076,6 +1083,9 @@ static netdev_tx_t ibmveth_start_xmit(struct sk_buff *skb,
- 		/* Need to zero out the checksum */
- 		buf[0] = 0;
- 		buf[1] = 0;
-+
-+		if (skb_is_gso(skb) && adapter->fw_large_send_support)
-+			desc_flags |= IBMVETH_BUF_LRG_SND;
- 	}
- 
- retry_bounce:
-@@ -1128,7 +1138,7 @@ retry_bounce:
- 		descs[i+1].fields.address = dma_addr;
- 	}
- 
--	if (skb_is_gso(skb)) {
-+	if (skb->ip_summed == CHECKSUM_PARTIAL && skb_is_gso(skb)) {
- 		if (adapter->fw_large_send_support) {
- 			mss = (unsigned long)skb_shinfo(skb)->gso_size;
- 			adapter->tx_large_packets++;
-@@ -1232,6 +1242,71 @@ static void ibmveth_rx_mss_helper(struct sk_buff *skb, u16 mss, int lrg_pkt)
- 	}
- }
- 
-+static void ibmveth_rx_csum_helper(struct sk_buff *skb,
-+				   struct ibmveth_adapter *adapter)
-+{
-+	struct iphdr *iph = NULL;
-+	struct ipv6hdr *iph6 = NULL;
-+	__be16 skb_proto = 0;
-+	u16 iphlen = 0;
-+	u16 iph_proto = 0;
-+	u16 tcphdrlen = 0;
-+
-+	skb_proto = be16_to_cpu(skb->protocol);
-+
-+	if (skb_proto == ETH_P_IP) {
-+		iph = (struct iphdr *)skb->data;
-+
-+		/* If the IP checksum is not offloaded and if the packet
-+		 *  is large send, the checksum must be rebuilt.
-+		 */
-+		if (iph->check == 0xffff) {
-+			iph->check = 0;
-+			iph->check = ip_fast_csum((unsigned char *)iph,
-+						  iph->ihl);
-+		}
-+
-+		iphlen = iph->ihl * 4;
-+		iph_proto = iph->protocol;
-+	} else if (skb_proto == ETH_P_IPV6) {
-+		iph6 = (struct ipv6hdr *)skb->data;
-+		iphlen = sizeof(struct ipv6hdr);
-+		iph_proto = iph6->nexthdr;
-+	}
-+
-+	/* In OVS environment, when a flow is not cached, specifically for a
-+	 * new TCP connection, the first packet information is passed up
-+	 * the user space for finding a flow. During this process, OVS computes
-+	 * checksum on the first packet when CHECKSUM_PARTIAL flag is set.
-+	 *
-+	 * Given that we zeroed out TCP checksum field in transmit path
-+	 * (refer ibmveth_start_xmit routine) as we set "no checksum bit",
-+	 * OVS computed checksum will be incorrect w/o TCP pseudo checksum
-+	 * in the packet. This leads to OVS dropping the packet and hence
-+	 * TCP retransmissions are seen.
-+	 *
-+	 * So, re-compute TCP pseudo header checksum.
-+	 */
-+	if (iph_proto == IPPROTO_TCP && adapter->is_active_trunk) {
-+		struct tcphdr *tcph = (struct tcphdr *)(skb->data + iphlen);
-+
-+		tcphdrlen = skb->len - iphlen;
-+
-+		/* Recompute TCP pseudo header checksum */
-+		if (skb_proto == ETH_P_IP)
-+			tcph->check = ~csum_tcpudp_magic(iph->saddr,
-+					iph->daddr, tcphdrlen, iph_proto, 0);
-+		else if (skb_proto == ETH_P_IPV6)
-+			tcph->check = ~csum_ipv6_magic(&iph6->saddr,
-+					&iph6->daddr, tcphdrlen, iph_proto, 0);
-+
-+		/* Setup SKB fields for checksum offload */
-+		skb_partial_csum_set(skb, iphlen,
-+				     offsetof(struct tcphdr, check));
-+		skb_reset_network_header(skb);
-+	}
-+}
-+
- static int ibmveth_poll(struct napi_struct *napi, int budget)
- {
- 	struct ibmveth_adapter *adapter =
-@@ -1239,7 +1314,6 @@ static int ibmveth_poll(struct napi_struct *napi, int budget)
- 	struct net_device *netdev = adapter->netdev;
- 	int frames_processed = 0;
- 	unsigned long lpar_rc;
--	struct iphdr *iph;
- 	u16 mss = 0;
- 
- restart_poll:
-@@ -1297,17 +1371,7 @@ restart_poll:
- 
- 			if (csum_good) {
- 				skb->ip_summed = CHECKSUM_UNNECESSARY;
--				if (be16_to_cpu(skb->protocol) == ETH_P_IP) {
--					iph = (struct iphdr *)skb->data;
--
--					/* If the IP checksum is not offloaded and if the packet
--					 *  is large send, the checksum must be rebuilt.
--					 */
--					if (iph->check == 0xffff) {
--						iph->check = 0;
--						iph->check = ip_fast_csum((unsigned char *)iph, iph->ihl);
--					}
--				}
-+				ibmveth_rx_csum_helper(skb, adapter);
- 			}
- 
- 			if (length > netdev->mtu + ETH_HLEN) {
-@@ -1626,6 +1690,13 @@ static int ibmveth_probe(struct vio_dev *dev, const struct vio_device_id *id)
- 		netdev->hw_features |= NETIF_F_TSO;
- 	}
- 
-+	adapter->is_active_trunk = false;
-+	if (ret == H_SUCCESS && (ret_attr & IBMVETH_ILLAN_ACTIVE_TRUNK)) {
-+		adapter->is_active_trunk = true;
-+		netdev->hw_features |= NETIF_F_FRAGLIST;
-+		netdev->features |= NETIF_F_FRAGLIST;
-+	}
-+
- 	netdev->min_mtu = IBMVETH_MIN_MTU;
- 	netdev->max_mtu = ETH_MAX_MTU;
- 
-diff --git a/drivers/net/ethernet/ibm/ibmveth.h b/drivers/net/ethernet/ibm/ibmveth.h
-index ed8780c..01c587f 100644
---- a/drivers/net/ethernet/ibm/ibmveth.h
-+++ b/drivers/net/ethernet/ibm/ibmveth.h
-@@ -156,6 +156,7 @@ struct ibmveth_adapter {
-     int pool_config;
-     int rx_csum;
-     int large_send;
-+    bool is_active_trunk;
-     void *bounce_buffer;
-     dma_addr_t bounce_buffer_dma;
- 
--- 
-2.7.4
+A few other fairly minor fixes for long tail things, and a couple of fixes for
+code we just merged.
+
+Thanks to:
+  Breno Leitao, Gautham R. Shenoy, Michael Neuling, Naveen N. Rao. Nicholas
+  Piggin, Paul Mackerras.
+
+----------------------------------------------------------------
+Gautham R. Shenoy (1):
+      powerpc/powernv: Set NAPSTATELOST after recovering paca on P9 DD1
+
+Michael Ellerman (3):
+      powerpc/modules: If mprofile-kernel is enabled add it to vermagic
+      powerpc/mm: Fix crash in page table dump with huge pages
+      powerpc/mm: Fix virt_addr_valid() etc. on 64-bit hash
+
+Michael Neuling (2):
+      powerpc/tm: Fix FP and VMX register corruption
+      selftests/powerpc: Test TM and VMX register state
+
+Naveen N. Rao (1):
+      powerpc/kprobes: Fix handling of instruction emulation on probe re-entry
+
+ arch/powerpc/include/asm/module.h                  |   4 +
+ arch/powerpc/include/asm/page.h                    |  12 +++
+ arch/powerpc/kernel/idle_book3s.S                  |   2 +-
+ arch/powerpc/kernel/kprobes.c                      |   3 +-
+ arch/powerpc/kernel/process.c                      |  19 ++++
+ arch/powerpc/mm/dump_linuxpagetables.c             |   7 +-
+ tools/testing/selftests/powerpc/tm/.gitignore      |   1 +
+ tools/testing/selftests/powerpc/tm/Makefile        |   4 +-
+ .../testing/selftests/powerpc/tm/tm-vmx-unavail.c  | 118 +++++++++++++++++++++
+ 9 files changed, 164 insertions(+), 6 deletions(-)
+ create mode 100644 tools/testing/selftests/powerpc/tm/tm-vmx-unavail.c
+
+--=-=-=
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJZHryqAAoJEFHr6jzI4aWAeX0QAIdWkao59zyzxGGrIOcxsP1Y
+ukT+i0WeAxUK1egNy6JK2U/OTYTz7BueutMShfsHz6nxyBRJKVZyhjWlbF4WRnFM
+UlWWV5vsoe/VC+vk9IZFUkWWs3znXiccG27St0QcyEIbnC66fhAnbgUCGOtLZu8F
+z6LxzxfyM5NmmW8oSiL6zDGLQ6iOErnKPWUj3TaPDGlpV7v2zTL9mpKEY5S5vB6r
+EKAD0BlhpkrmvFtrnC0G3efg0JSLNkq6F3cGnuS0vHYLimYC4CGeQEaQ9MQX2Fe0
+GejOTnx/DkdhVg8vRnqax630iX6pGfMiRfCUcuOmqsT0SyAY2JVagfap9h/I/c0/
+O8xvFcIVJTeirxbtcDbqU55cHmKzb+eVskGnWNnmIGsLqbVmkOppNzmcta3DHvtu
+GyUBYeYaLWHQvMf45g/DqeiKybha/0GlqOqI6NAwLTnSXk7eNZ5PZGz6/UPWHpPN
+HKIJUd+ndYOnK1v06OCkdSnRFDndsw8JinVnLnspDp9B1CSeYgolz3xvaD3ecN72
+cRaBlnUtETmApt7sfVUGm0+lNM2lSyZT3+1OGZQx7DkYqopOwVaDghqBCVxoDDs7
+Sgx1n3Rzt/EXU0PFQ6Twsybtq21ZWmW1553zRRMsGQSiLaMNmO2ylbBtuHwe2qlt
+939sOHFrtqV9DJ2wKmzk
+=r/F8
+-----END PGP SIGNATURE-----
+--=-=-=--
