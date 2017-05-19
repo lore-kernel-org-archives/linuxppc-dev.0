@@ -1,28 +1,34 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
- [IPv6:2607:f8b0:400e:c00::242])
+Return-Path: <arndbergmann@gmail.com>
+Received: from mail-oi0-x244.google.com (mail-oi0-x244.google.com
+ [IPv6:2607:f8b0:4003:c06::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wTrdz00bWzDqf0
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 May 2017 00:53:26 +1000 (AEST)
-Received: by mail-pf0-x242.google.com with SMTP id f27so9818123pfe.0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 May 2017 07:53:26 -0700 (PDT)
-Date: Sat, 20 May 2017 00:53:06 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Don Zickus <dzickus@redhat.com>
-Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
- adi-buildroot-devel@lists.sourceforge.net, linux-am33-list@redhat.com,
- sparclinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- uobergfe@redhat.com
-Subject: Re: [RFC] arch hardlockup detector interfaces improvement
-Message-ID: <20170520005306.13172dc7@roar.ozlabs.ibm.com>
-In-Reply-To: <20170519131753.sccuu7mksjertzni@redhat.com>
-References: <20170518155026.23799-1-npiggin@gmail.com>
- <20170518163028.tf2llimuo4l4l5nv@redhat.com>
- <20170519090731.1e49cd0d@roar.ozlabs.ibm.com>
- <20170519131753.sccuu7mksjertzni@redhat.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wTsLT236lzDqf9
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 May 2017 01:25:05 +1000 (AEST)
+Received: by mail-oi0-x244.google.com with SMTP id w10so12892559oif.1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 May 2017 08:25:05 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Sender: arndbergmann@gmail.com
+In-Reply-To: <063D6719AE5E284EB5DD2968C1650D6DCFFFAB9B@AcuExch.aculab.com>
+References: <20170512042002.18524-1-chris.packham@alliedtelesis.co.nz>
+ <20170512042002.18524-4-chris.packham@alliedtelesis.co.nz>
+ <20170517181021.yfctrok7f25d5bu5@pd.tnic>
+ <7c7bfec63342409ebd58913836a0739a@svr-chch-ex1.atlnz.lc>
+ <CAK8P3a0BFBJhDmS5r3O_x8d8Ws18vxresaULPBoN3JX49_LT3g@mail.gmail.com>
+ <063D6719AE5E284EB5DD2968C1650D6DCFFFAB9B@AcuExch.aculab.com>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Fri, 19 May 2017 17:25:01 +0200
+Message-ID: <CAK8P3a1W=29h+Qw=s_qEYCLC5F2bN=5W1C+xbnHo0Ebw7fxhxA@mail.gmail.com>
+Subject: Re: [PATCH 3/3] EDAC: mv64x60: replace in_le32/out_le32 with
+ ioread32/iowrite32
+To: David Laight <David.Laight@aculab.com>
+Cc: Chris Packham <Chris.Packham@alliedtelesis.co.nz>,
+ Borislav Petkov <bp@alien8.de>,
+ "mchehab@kernel.org" <mchehab@kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linux-edac@vger.kernel.org" <linux-edac@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,74 +38,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 19 May 2017 09:17:53 -0400
-Don Zickus <dzickus@redhat.com> wrote:
+On Fri, May 19, 2017 at 4:01 PM, David Laight <David.Laight@aculab.com> wrote:
+> From: Arnd Bergmann
+>> Sent: 17 May 2017 22:40
+>>
+>> On Wed, May 17, 2017 at 11:16 PM, Chris Packham
+>> <Chris.Packham@alliedtelesis.co.nz> wrote:
+>> > On 18/05/17 06:18, Borislav Petkov wrote:
+>> > One thing I would like confirmation on is is in_le32 -> ioread32 the
+>> > correct change? I tossed up between ioread32 and readl. Looking at
+>> > mv643xx_eth.c which supports both the MV643XX and Orion it's using readl
+>> > so perhaps I should be using that.
+>>
+>> There is no easy answer: on powerpc, readl is used for PCI,
+>> while in_le32 is used for on-chip devices, so in_le32 is the
+>> right one in principle. The main difference is that readl can
+>> work with CONFIG_EEH on pseries, but in_le32 is cheaper.
+>>
+>> On ARM and most other architectures, readl is used for both
+>> PCI and on-chip devices, so that's what portable code tends
+>> to use.
+>>
+>> ioread32 is required to behave the same way as readl
+>> on all __iomem pointers returned from ioremap(), but
+>> is an extern function on powerpc and can be more
+>> expensive when CONFIG_GENERIC_IOMAP is set.
+>
+> What about x86?
+> Isn't ioread32() an extern function that checks for 'io' addresses
+> than need 'inb' (etc) instructions rather than memory ones.
 
-> On Fri, May 19, 2017 at 09:07:31AM +1000, Nicholas Piggin wrote:
-> > On Thu, 18 May 2017 12:30:28 -0400
-> > Don Zickus <dzickus@redhat.com> wrote:
-> >   
-> > > (adding Uli)
-> > > 
-> > > On Fri, May 19, 2017 at 01:50:26AM +1000, Nicholas Piggin wrote:  
-> > > > I'd like to make it easier for architectures that have their own NMI /
-> > > > hard lockup detector to reuse various configuration interfaces that are
-> > > > provided by generic detectors (cmdline, sysctl, suspend/resume calls).
-> > > > 
-> > > > I'd also like to remove the dependency of arch hard lockup detectors
-> > > > on the softlockup detector. The reason being these watchdogs can be
-> > > > very small (sparc's is like a page of core code that does not use any
-> > > > big subsystem like kthreads or timers).
-> > > > 
-> > > > So I do this by adding a separate CONFIG_SOFTLOCKUP_DETECTOR, and
-> > > > juggling around what goes under config options. HAVE_NMI_WATCHDOG
-> > > > continues to be the config for arch to override the hard lockup
-> > > > detector, which is expanded to cover a few more cases.    
-> > > 
-> > > Basically you are trying to remove the heavy HARDLOCKUP pieces to minimize
-> > > the SOFTLOCKUP piece and use your own NMI detector, right?
-> > > 
-> > > I am guessing you would then disable SOFTLOCKUP to remove all the kthread
-> > > and timer stuff but continue to use the generic infrastructure to help
-> > > manager your own NMI detector?  
-> > 
-> > Yes that's right.
-> >   
-> > > A lot of the code is just re-organizing things and adding an explicit
-> > > ifdef on SOFTLOCKUP, which seems fine to me.
-> > > 
-> > > I just need to spend some time on some of your #else clauses to see what
-> > > functionality is dropped when you use your approach.  
-> > 
-> > Okay, appreciated. I can trim down cc lists and send you my powerpc
-> > WIP if you'd like to have a look.  
-> 
-> I am curious to know what IBM thinks there.  Currently the HARDLOCKUP
-> detector sits on top of perf.  I get the impression, you are removing that
-> dependency.  Is that a permanent thing or are you thinking of switching back
-> and forth depending on if SOFTLOCKUP is enabled or not?
+Right, x86 uses CONFIG_GENERIC_IOMAP and has that
+extra check.
 
-We want to get away from perf permanently.
+> If we know a PCI slave isn't 'io' should be be using ioread32() or readl()?
 
-The PMU interrupts are not specially non-maskable from a hardware
-POV, everything gets masked when you turn off interrupts in hardware.
-powerpc arch code implements a software disable layer, and PMU
-interrupts are differentiated there by being allowed to run even
-under local_irq_disable();
+Generally speaking yes, though on most architectures that don't
+use CONFIG_GENERIC_IOMAP there is no practical difference.
 
-We have a few issues with using perf for it. We disable it by
-default because using it for that breaks another PMU feature.
+> Don't some architectures have different enforced barriers in both these?
 
-But PMU interupts are not special, so it would be possible to e.g.,
-take the timer interrupt before soft disable and have it touch the
-watchdog if it fires while under local_irq_disable(). That give
-exact same kind of pseudo-NMI as perf interrupts, without using PMU.
+I'm not aware of any architecture that always adds barriers to ioread32
+compared to readl, though I guess that may be a reasonable
+implementation depending on the architecture. PowerPC doesn't do
+it, though one could argue that it would be required to guarantee
+non-posted I/O accesses on PCI I/O space that gets mapped with
+pci_iomap(). On ARM, no extra barrier is needed because the difference
+is in the page table flags.
 
-Further, we now want to introduce a local_pmu_disable() type of
-interface that extends this soft disable layer to perf interrupts
-as well for some cases. Once we start doing that, more code will
-be exempt from the hardlockup watchdog, whereas a watchdog specific
-hook from the timer interrupt would still cover it.
-
-Thanks,
-Nick
+       Arnd
