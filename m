@@ -1,25 +1,20 @@
-Return-Path: <mpe@ellerman.id.au>
+Return-Path: <mikey@neuling.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wTcc00y3QzDqFT
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 May 2017 15:50:56 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Pavel Machek <pavel@denx.de>, Andrew Morton <akpm@linux-foundation.org>
-Cc: sr@denx.de, jwboyer@linux.vnet.ibm.com, robh+dt@kernel.org,
- mark.rutland@arm.com, benh@kernel.crashing.org, paulus@samba.org,
- devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, trivial@kernel.org,
- Andrew Morton <akpm@osdl.org>
-Subject: Re: [PATCH] powerpc/sequoia: fix NAND partitions not to overlap
-In-Reply-To: <20170518094813.GA12038@amd>
-References: <20170402100535.GA18340@amd> <20170517120613.GA583@amd>
- <20170517143717.ad818a2282378fc7a38af1ff@linux-foundation.org>
- <20170518094813.GA12038@amd>
-Date: Fri, 19 May 2017 15:50:55 +1000
-Message-ID: <87efvl75ts.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wTcfW04qCzDqCd
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 May 2017 15:53:07 +1000 (AEST)
+Message-ID: <1495173186.8495.46.camel@neuling.org>
+Subject: Re: [PATCH] selftests/powerpc: Fix TM resched DSCR test with some
+ compilers
+From: Michael Neuling <mikey@neuling.org>
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
+Cc: sam.bobroff@au1.ibm.com
+Date: Fri, 19 May 2017 15:53:06 +1000
+In-Reply-To: <1495157865-12924-1-git-send-email-mpe@ellerman.id.au>
+References: <1495157865-12924-1-git-send-email-mpe@ellerman.id.au>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,32 +24,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Pavel Machek <pavel@denx.de> writes:
+On Fri, 2017-05-19 at 11:37 +1000, Michael Ellerman wrote:
+> The tm-resched-dscr test has started failing sometimes, depending on
+> what compiler it's built with, eg:
+>=20
+> =C2=A0 test: tm_resched_dscr
+> =C2=A0 Check DSCR TM context switch: tm-resched-dscr: tm-resched-dscr.c:7=
+6:
+> test_body: Assertion `rv' failed.
+> =C2=A0 !! child died by signal 6
+>=20
+> When it fails we see that the compiler doesn't initialise rv to 1 before
+> entering the inline asm block. Although that's counter intuitive, it
+> is allowed because we tell the compiler that the inline asm will write
+> to rv (using "=3Dr"), meaning the original value is irrelevant.
+>=20
+> Marking it as a read/write parameter would presumably work, but it seems
+> simpler to fix it by setting the initial value of rv in the inline asm.
+>=20
+> Fixes: 96d016108640 ("powerpc: Correct DSCR during TM context switch")
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
-> On Wed 2017-05-17 14:37:17, Andrew Morton wrote:
->> On Wed, 17 May 2017 14:06:13 +0200 Pavel Machek <pavel@denx.de> wrote:
->> 
->> > On Sun 2017-04-02 12:05:36, Pavel Machek wrote:
->> > > Fix overlapping NAND partitions.
->> > > 
->> > > Signed-off-by: Pavel Machek <pavel@ucw.cz>
->> > 
->> > Ping? Two partitions at same place are bad news...
->> 
->> Please expand on "bad news"?  What are the runtime effects of this
->> change?  Decisions about which kernel(s) to patch depend on this info.
->
-> Well... two partitions at same place. If you use one, you will corrupt
-> information on the other one.
->
-> OTOH this moves partition around (so that they don't overlap) so it is
-> probably not stable candidate.
->
-> I guess this is not huge issue; people using these boards probably
-> have custom dts changes, anyway...
+Thanks.
 
-Or no one's even using it anymore.
+Acked-by: Michael Neuling <mikey@neuling.org>
 
-I can take this via powerpc, I won't mark it for stable etc.
-
-cheers
+> ---
+> =C2=A0tools/testing/selftests/powerpc/tm/tm-resched-dscr.c | 2 +-
+> =C2=A01 file changed, 1 insertion(+), 1 deletion(-)
+>=20
+> diff --git a/tools/testing/selftests/powerpc/tm/tm-resched-dscr.c
+> b/tools/testing/selftests/powerpc/tm/tm-resched-dscr.c
+> index d9c49f41515e..e79ccd6aada1 100644
+> --- a/tools/testing/selftests/powerpc/tm/tm-resched-dscr.c
+> +++ b/tools/testing/selftests/powerpc/tm/tm-resched-dscr.c
+> @@ -42,12 +42,12 @@ int test_body(void)
+> =C2=A0	printf("Check DSCR TM context switch: ");
+> =C2=A0	fflush(stdout);
+> =C2=A0	for (;;) {
+> -		rv =3D 1;
+> =C2=A0		asm __volatile__ (
+> =C2=A0			/* set a known value into the DSCR */
+> =C2=A0			"ld=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A03, %[dscr1];"
+> =C2=A0			"mtspr=C2=A0=C2=A0=C2=A0%[sprn_dscr], 3;"
+> =C2=A0
+> +			"li=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0%[rv], 1;"
+> =C2=A0			/* start and suspend a transaction */
+> =C2=A0			"tbegin.;"
+> =C2=A0			"beq=C2=A0=C2=A0=C2=A0=C2=A0=C2=A01f;"
