@@ -1,40 +1,26 @@
-Return-Path: <vaibhav@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <dzickus@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wTvFp50tkzDqd7
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 May 2017 02:51:10 +1000 (AEST)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v4JGi5Bw077993
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 May 2017 12:51:06 -0400
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2ahr3jj3bd-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 May 2017 12:51:06 -0400
-Received: from localhost
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <vaibhav@linux.vnet.ibm.com>;
- Sat, 20 May 2017 02:51:03 +1000
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v4JGoqkc2032126
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 May 2017 02:51:00 +1000
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v4JGoQvj021945
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 May 2017 02:50:27 +1000
-From: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
-To: Alessandro Zummo <a.zummo@towertech.it>,
- Alexandre Belloni <alexandre.belloni@free-electrons.com>
-Cc: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>, rtc-linux@googlegroups.com,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] drivers/rtc/interface.c: Validate alarm-time before handling
- rollover
-Date: Fri, 19 May 2017 22:18:55 +0530
-Message-Id: <20170519164855.11747-1-vaibhav@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wTz533WNWzDqdg
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 May 2017 05:43:51 +1000 (AEST)
+Date: Fri, 19 May 2017 15:43:45 -0400
+From: Don Zickus <dzickus@redhat.com>
+To: Nicholas Piggin <npiggin@gmail.com>
+Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
+ adi-buildroot-devel@lists.sourceforge.net,
+ linux-am33-list@redhat.com, sparclinux@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, uobergfe@redhat.com
+Subject: Re: [RFC] arch hardlockup detector interfaces improvement
+Message-ID: <20170519194345.gfwtuprrolk7sgwm@redhat.com>
+References: <20170518155026.23799-1-npiggin@gmail.com>
+ <20170518163028.tf2llimuo4l4l5nv@redhat.com>
+ <20170519090731.1e49cd0d@roar.ozlabs.ibm.com>
+ <20170519131753.sccuu7mksjertzni@redhat.com>
+ <20170520005306.13172dc7@roar.ozlabs.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20170520005306.13172dc7@roar.ozlabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,65 +30,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In function __rtc_read_alarm() its possible for an alarm time-stamp to
-be invalid even after replacing missing components with current
-time-stamp. The condition 'alarm->time.tm_year < 70' will trigger this
-case and will cause the call to 'rtc_tm_to_time64(&alarm->time)'
-return a negative value for variable t_alm.
+On Sat, May 20, 2017 at 12:53:06AM +1000, Nicholas Piggin wrote:
+> > I am curious to know what IBM thinks there.  Currently the HARDLOCKUP
+> > detector sits on top of perf.  I get the impression, you are removing that
+> > dependency.  Is that a permanent thing or are you thinking of switching back
+> > and forth depending on if SOFTLOCKUP is enabled or not?
+> 
+> We want to get away from perf permanently.
+> 
+> The PMU interrupts are not specially non-maskable from a hardware
+> POV, everything gets masked when you turn off interrupts in hardware.
+> powerpc arch code implements a software disable layer, and PMU
+> interrupts are differentiated there by being allowed to run even
+> under local_irq_disable();
+> 
+> We have a few issues with using perf for it. We disable it by
+> default because using it for that breaks another PMU feature.
+> 
+> But PMU interupts are not special, so it would be possible to e.g.,
+> take the timer interrupt before soft disable and have it touch the
+> watchdog if it fires while under local_irq_disable(). That give
+> exact same kind of pseudo-NMI as perf interrupts, without using PMU.
+> 
+> Further, we now want to introduce a local_pmu_disable() type of
+> interface that extends this soft disable layer to perf interrupts
+> as well for some cases. Once we start doing that, more code will
+> be exempt from the hardlockup watchdog, whereas a watchdog specific
+> hook from the timer interrupt would still cover it.
 
-While handling alarm rollover this negative t_alm (assumed to seconds
-offset from '1970-01-01 00:00:00') is converted back to rtc_time via
-rtc_time64_to_tm() which results in this error log with seemingly
-garbage values:
+Interesting.  Thanks for that info.
 
-"rtc rtc0: invalid alarm value: -2-1--1041528741
-2005511117:71582844:32"
+Do you think you can split the patch in half for me?  You are shuffling code
+around and making subtle changes in the shuffled code.  It is hard to double
+check everything.  Namely watchdog_nmi_reconfigure and watchdog_update_cpus
+suddenly appear.
 
-This error was generated when the rtc driver (rtc-opal in this case)
-returned an alarm time-stamp of '00-00-00 00:00:00' to indicate that
-the alarm is disabled. Though I have submitted a separate fix for the
-rtc-opal driver, this issue may potentially impact other
-existing/future rtc drivers.
+The first patch would be straight code movement, the second the real
+changes.  I almost don't care if you throw in the LOCKUP->SOFTLOCKUP changes
+in the first patch either.
 
-To fix this issue the patch validates the alarm time-stamp just after
-filling up the missing datetime components and if rtc_valid_tm() still
-reports it to be invalid then bails out of the function without
-handling the rollover.
+I am really interested in the subtle changes to make sure you covered the
+various race conditions that we have uncovered over the years.
 
-Reported-by: Steve Best <sbest@redhat.com>
-Signed-off-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
----
- drivers/rtc/interface.c | 9 ++++++++-
- 1 file changed, 8 insertions(+), 1 deletion(-)
+I also would like to see a sample of the watchdog_nmi_reconfigure() you had
+in mind.  Usually we hide all the nmi stuff underneath the watchdog
+functions.  But those are threaded, which is what you are trying to avoid,
+so the placement of the function makes sense but looks odd.
 
-diff --git a/drivers/rtc/interface.c b/drivers/rtc/interface.c
-index fc0fa75..8cec9a0 100644
---- a/drivers/rtc/interface.c
-+++ b/drivers/rtc/interface.c
-@@ -227,6 +227,13 @@ int __rtc_read_alarm(struct rtc_device *rtc, struct rtc_wkalrm *alarm)
- 			missing = year;
- 	}
- 
-+	/* Can't proceed if alarm is still invalid after replacing
-+	 * missing fields.
-+	 */
-+	err = rtc_valid_tm(&alarm->time);
-+	if (err)
-+		goto done;
-+
- 	/* with luck, no rollover is needed */
- 	t_now = rtc_tm_to_time64(&now);
- 	t_alm = rtc_tm_to_time64(&alarm->time);
-@@ -278,9 +285,9 @@ int __rtc_read_alarm(struct rtc_device *rtc, struct rtc_wkalrm *alarm)
- 		dev_warn(&rtc->dev, "alarm rollover not handled\n");
- 	}
- 
--done:
- 	err = rtc_valid_tm(&alarm->time);
- 
-+done:
- 	if (err) {
- 		dev_warn(&rtc->dev, "invalid alarm value: %d-%d-%d %d:%d:%d\n",
- 			alarm->time.tm_year + 1900, alarm->time.tm_mon + 1,
--- 
-2.9.3
+Thanks!
+
+Cheers,
+Don
