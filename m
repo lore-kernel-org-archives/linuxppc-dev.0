@@ -1,17 +1,16 @@
-Return-Path: <michael@ozlabs.org>
+Return-Path: <anton@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wTVzy0kD2zDq7Z
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 May 2017 11:37:50 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org
-Cc: mikey@neuling.org,
-	sam.bobroff@au1.ibm.com
-Subject: [PATCH] selftests/powerpc: Fix TM resched DSCR test with some
- compilers
-Date: Fri, 19 May 2017 11:37:45 +1000
-Message-Id: <1495157865-12924-1-git-send-email-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wTcWF102nzDqcd
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 May 2017 15:46:49 +1000 (AEST)
+From: Anton Blanchard <anton@ozlabs.org>
+To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ npiggin@gmail.com
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc: Add HAVE_IRQ_TIME_ACCOUNTING
+Date: Fri, 19 May 2017 15:46:41 +1000
+Message-Id: <20170519054641.12406-1-anton@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,44 +20,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The tm-resched-dscr test has started failing sometimes, depending on
-what compiler it's built with, eg:
+From: Anton Blanchard <anton@samba.org>
 
-  test: tm_resched_dscr
-  Check DSCR TM context switch: tm-resched-dscr: tm-resched-dscr.c:76: test_body: Assertion `rv' failed.
-  !! child died by signal 6
+Allow us to enable IRQ_TIME_ACCOUNTING. Even though we currently
+use VIRT_CPU_ACCOUNTING_NATIVE, that option is quite heavy
+weight and IRQ_TIME_ACCOUNTING might be better in some cases.
 
-When it fails we see that the compiler doesn't initialise rv to 1 before
-entering the inline asm block. Although that's counter intuitive, it
-is allowed because we tell the compiler that the inline asm will write
-to rv (using "=r"), meaning the original value is irrelevant.
-
-Marking it as a read/write parameter would presumably work, but it seems
-simpler to fix it by setting the initial value of rv in the inline asm.
-
-Fixes: 96d016108640 ("powerpc: Correct DSCR during TM context switch")
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
- tools/testing/selftests/powerpc/tm/tm-resched-dscr.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/Kconfig | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/tools/testing/selftests/powerpc/tm/tm-resched-dscr.c b/tools/testing/selftests/powerpc/tm/tm-resched-dscr.c
-index d9c49f41515e..e79ccd6aada1 100644
---- a/tools/testing/selftests/powerpc/tm/tm-resched-dscr.c
-+++ b/tools/testing/selftests/powerpc/tm/tm-resched-dscr.c
-@@ -42,12 +42,12 @@ int test_body(void)
- 	printf("Check DSCR TM context switch: ");
- 	fflush(stdout);
- 	for (;;) {
--		rv = 1;
- 		asm __volatile__ (
- 			/* set a known value into the DSCR */
- 			"ld      3, %[dscr1];"
- 			"mtspr   %[sprn_dscr], 3;"
- 
-+			"li      %[rv], 1;"
- 			/* start and suspend a transaction */
- 			"tbegin.;"
- 			"beq     1f;"
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index f7c8f9972f61..d090275ace44 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -208,6 +208,7 @@ config PPC
+ 	select HAVE_REGS_AND_STACK_ACCESS_API
+ 	select HAVE_SYSCALL_TRACEPOINTS
+ 	select HAVE_VIRT_CPU_ACCOUNTING
++	select HAVE_IRQ_TIME_ACCOUNTING
+ 	select IRQ_DOMAIN
+ 	select IRQ_FORCED_THREADING
+ 	select MODULES_USE_ELF_RELA
 -- 
-2.7.4
+2.11.0
