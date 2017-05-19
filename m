@@ -1,24 +1,41 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <vaibhav@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wTkDZ2kcczDqbF
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 May 2017 20:04:30 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Pavel Machek <pavel@denx.de>, Andrew Morton <akpm@linux-foundation.org>
-Cc: mark.rutland@arm.com, devicetree@vger.kernel.org, trivial@kernel.org,
- linux-kernel@vger.kernel.org, robh+dt@kernel.org, paulus@samba.org,
- Andrew Morton <akpm@osdl.org>, jwboyer@linux.vnet.ibm.com, sr@denx.de,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] powerpc/sequoia: fix NAND partitions not to overlap
-In-Reply-To: <87efvl75ts.fsf@concordia.ellerman.id.au>
-References: <20170402100535.GA18340@amd> <20170517120613.GA583@amd>
- <20170517143717.ad818a2282378fc7a38af1ff@linux-foundation.org>
- <20170518094813.GA12038@amd> <87efvl75ts.fsf@concordia.ellerman.id.au>
-Date: Fri, 19 May 2017 20:04:29 +1000
-Message-ID: <87zie95fiq.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wTkH02gVSzDqbF
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 May 2017 20:06:36 +1000 (AEST)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v4JA4kU1008833
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 May 2017 06:06:30 -0400
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2ahr3j10c4-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 May 2017 06:06:30 -0400
+Received: from localhost
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <vaibhav@linux.vnet.ibm.com>;
+ Fri, 19 May 2017 20:06:27 +1000
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v4JA6G4M63504470
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 May 2017 20:06:24 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v4JA5i6B028964
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 May 2017 20:05:45 +1000
+From: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Alessandro Zummo <a.zummo@towertech.it>,
+ Alexandre Belloni <alexandre.belloni@free-electrons.com>
+Cc: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ rtc-linux@googlegroups.com
+Subject: [PATCH] rtc/tpo: Handle disabled TPO in opal_get_tpo_time()
+Date: Fri, 19 May 2017 15:35:09 +0530
+Message-Id: <20170519100509.7807-1-vaibhav@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,53 +45,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michael Ellerman <mpe@ellerman.id.au> writes:
+On PowerNV platform when Timed-Power-On(TPO) is disabled, read of
+stored TPO yields value with all date components set to '0' inside
+opal_get_tpo_time(). The function opal_to_tm() then converts it to an
+offset from year 1900 yielding alarm-time == "1900-00-01
+00:00:00". This causes problems with __rtc_read_alarm() that
+expecting an offset from "1970-00-01 00:00:00" and returned alarm-time
+results in a -ve value for time64_t. Which ultimately results in this
+error reported in kernel logs with a seemingly garbage value:
 
-> Pavel Machek <pavel@denx.de> writes:
->
->> On Wed 2017-05-17 14:37:17, Andrew Morton wrote:
->>> On Wed, 17 May 2017 14:06:13 +0200 Pavel Machek <pavel@denx.de> wrote:
->>> 
->>> > On Sun 2017-04-02 12:05:36, Pavel Machek wrote:
->>> > > Fix overlapping NAND partitions.
->>> > > 
->>> > > Signed-off-by: Pavel Machek <pavel@ucw.cz>
->>> > 
->>> > Ping? Two partitions at same place are bad news...
->>> 
->>> Please expand on "bad news"?  What are the runtime effects of this
->>> change?  Decisions about which kernel(s) to patch depend on this info.
->>
->> Well... two partitions at same place. If you use one, you will corrupt
->> information on the other one.
->>
->> OTOH this moves partition around (so that they don't overlap) so it is
->> probably not stable candidate.
->>
->> I guess this is not huge issue; people using these boards probably
->> have custom dts changes, anyway...
->
-> Or no one's even using it anymore.
->
-> I can take this via powerpc, I won't mark it for stable etc.
+"rtc rtc0: invalid alarm value: -2-1--1041528741
+2005511117:71582844:32"
 
-It became:
+We fix this by explicitly handling the case of all alarm date-time
+components being '0' inside opal_get_tpo_time() and returning -ENOENT
+in such a case. This signals generic rtc that no alarm is set and it
+bails out from the alarm initialization flow without reporting the
+above error.
 
-    Author:     Pavel Machek <pavel@denx.de>
+Signed-off-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+Reported-by: Steve Best <sbest@redhat.com>
+---
+ drivers/rtc/rtc-opal.c | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
 
-    powerpc/sequoia: Fix NAND partitions not to overlap
-    
-    Currently the DTS defines two partitions at the same addresses, if you
-    use one, you will corrupt information on the other one. Fix it by
-    shifting the second partition.
-    
-    Signed-off-by: Pavel Machek <pavel@ucw.cz>
-    [mpe: Reconstruct change log from email thread]
-    Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-
-
-Minor nit, your From: address doesn't match your Signed-off-by: address,
-which trips my "check patch is signed-off-by author" script. I can
-just ignore it, but I think it's preferable if they match.
-
-cheers
+diff --git a/drivers/rtc/rtc-opal.c b/drivers/rtc/rtc-opal.c
+index ea20f62..2d84e2a 100644
+--- a/drivers/rtc/rtc-opal.c
++++ b/drivers/rtc/rtc-opal.c
+@@ -142,6 +142,16 @@ static int opal_get_tpo_time(struct device *dev, struct rtc_wkalrm *alarm)
+ 
+ 	y_m_d = be32_to_cpu(__y_m_d);
+ 	h_m_s_ms = ((u64)be32_to_cpu(__h_m) << 32);
++
++	/* check if no alarm is set */
++	if (y_m_d == 0 && h_m_s_ms == 0) {
++		pr_debug("No alarm is set\n");
++		rc = -ENOENT;
++		goto exit;
++	} else {
++		pr_debug("Alarm set to %x %llx\n", y_m_d, h_m_s_ms);
++	}
++
+ 	opal_to_tm(y_m_d, h_m_s_ms, &alarm->time);
+ 
+ exit:
+-- 
+2.9.3
