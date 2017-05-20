@@ -1,23 +1,32 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
- [IPv6:2607:f8b0:400e:c00::241])
+Return-Path: <k.kozlowski.k@gmail.com>
+Received: from mail-wm0-f65.google.com (mail-wm0-f65.google.com [74.125.82.65])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wVBmK3MVKzDqdg
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 May 2017 14:30:09 +1000 (AEST)
-Received: by mail-pf0-x241.google.com with SMTP id f27so11417841pfe.0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 May 2017 21:30:08 -0700 (PDT)
-From: Nicholas Piggin <npiggin@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Nicholas Piggin <npiggin@gmail.com>, tuliom@linux.vnet.ibm.com,
- Michael Ellerman <mpe@ellerman.id.au>, benh@ozlabs.au.ibm.com,
- Peter Bergner <bergner@us.ibm.com>,
- Michael Neuling <michael.neuling@au1.ibm.com>,
- Steve Munroe <sjmunroe@us.ibm.com>, Bill Schmidt <wschmidt@us.ibm.com>
-Subject: [PATCH] powerpc: add PPC_FEATURE userspace bits for SCV and DARN
- instructions
-Date: Sat, 20 May 2017 14:29:49 +1000
-Message-Id: <20170520042949.29359-1-npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wVXqZ64BPzDqbC
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 21 May 2017 04:04:10 +1000 (AEST)
+Received: by mail-wm0-f65.google.com with SMTP id k15so22596699wmh.3
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 May 2017 11:04:10 -0700 (PDT)
+Date: Sat, 20 May 2017 20:04:03 +0200
+From: Krzysztof Kozlowski <krzk@kernel.org>
+To: Masahiro Yamada <yamada.masahiro@socionext.com>
+Cc: alsa-devel@alsa-project.org, Jaroslav Kysela <perex@perex.cz>,
+ Takashi Iwai <tiwai@suse.com>, Fabio Estevam <fabio.estevam@nxp.com>,
+ patches@opensource.wolfsonmicro.com, Sangbeom Kim <sbkim73@samsung.com>,
+ Sylwester Nawrocki <s.nawrocki@samsung.com>,
+ Timur Tabi <timur@tabi.org>, Mark Brown <broonie@kernel.org>,
+ Support Opensource <support.opensource@diasemi.com>,
+ linux-kernel@vger.kernel.org, Xiubo Li <Xiubo.Lee@gmail.com>,
+ Liam Girdwood <lgirdwood@gmail.com>, Lars-Peter Clausen <lars@metafoo.de>,
+ linux-arm-kernel@lists.infradead.org,
+ linux-mediatek@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
+ Matthias Brugger <matthias.bgg@gmail.com>,
+ Nicolin Chen <nicoleotsuka@gmail.com>
+Subject: Re: [PATCH] ASoC: remove NULL pointer check for clk_disable_unprepare
+Message-ID: <20170520180403.mqwfrcjsyukv3phr@kozik-lap>
+References: <1495302158-30951-1-git-send-email-yamada.masahiro@socionext.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <1495302158-30951-1-git-send-email-yamada.masahiro@socionext.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,48 +36,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Providing "scv" support to userspace requires kernel support, so it
-must be advertised as independently to the base ISA 3 instruction set.
+On Sun, May 21, 2017 at 02:42:38AM +0900, Masahiro Yamada wrote:
+> After long term efforts of fixing non-common clock implementations,
+> clk_disable() is a no-op for a NULL pointer input, and this is now
+> tree-wide consistent.
+> 
+> All clock consumers can safely call clk_disable(_unprepare) without
+> NULL pointer check.
+> 
+> Signed-off-by: Masahiro Yamada <yamada.masahiro@socionext.com>
+> ---
+> 
+>  sound/soc/codecs/adau17x1.c                | 3 +--
+>  sound/soc/codecs/da7213.c                  | 3 +--
+>  sound/soc/codecs/da7218.c                  | 3 +--
+>  sound/soc/codecs/da7219-aad.c              | 5 ++---
+>  sound/soc/codecs/da7219.c                  | 3 +--
+>  sound/soc/codecs/es8328.c                  | 3 +--
+>  sound/soc/codecs/wm8731.c                  | 3 +--
+>  sound/soc/davinci/davinci-evm.c            | 3 +--
+>  sound/soc/fsl/imx-audmux.c                 | 6 ++----
+>  sound/soc/intel/boards/bytcr_rt5640.c      | 2 +-
+>  sound/soc/intel/boards/cht_bsw_rt5645.c    | 3 +--
+>  sound/soc/mediatek/mt8173/mt8173-afe-pcm.c | 6 ++----
+>  sound/soc/samsung/i2s.c                    | 3 +--
+>  13 files changed, 16 insertions(+), 30 deletions(-)
+> 
 
-The darn instruction relies on firmware enablement, so it has been
-decided to split this out from the core ISA 3 feature as well.
+(...)
 
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
----
-These uapi changes have been agreed by powerpc toolchain and firmware
-teams. I believe this completes our anticipated requirements for user
-feature advertisement for ISA v3.0B.
+> diff --git a/sound/soc/samsung/i2s.c b/sound/soc/samsung/i2s.c
+> index af3ba4d..3a06acd 100644
+> --- a/sound/soc/samsung/i2s.c
+> +++ b/sound/soc/samsung/i2s.c
+> @@ -1122,8 +1122,7 @@ static int i2s_runtime_suspend(struct device *dev)
+>  	i2s->suspend_i2scon = readl(i2s->addr + I2SCON);
+>  	i2s->suspend_i2spsr = readl(i2s->addr + I2SPSR);
+>  
+> -	if (i2s->op_clk)
+> -		clk_disable_unprepare(i2s->op_clk);
+> +	clk_disable_unprepare(i2s->op_clk);
+>  	clk_disable_unprepare(i2s->clk);
 
- arch/powerpc/include/uapi/asm/cputable.h | 2 ++
- arch/powerpc/kernel/cputable.c           | 3 ++-
- 2 files changed, 4 insertions(+), 1 deletion(-)
+I think the check in i2s_runtime_resume() should be removed then as well
+to keep it symmetrical. Otherwise it looks suspicious.
 
-diff --git a/arch/powerpc/include/uapi/asm/cputable.h b/arch/powerpc/include/uapi/asm/cputable.h
-index 3e7ce86d5c13..4d877144f377 100644
---- a/arch/powerpc/include/uapi/asm/cputable.h
-+++ b/arch/powerpc/include/uapi/asm/cputable.h
-@@ -46,6 +46,8 @@
- #define PPC_FEATURE2_HTM_NOSC		0x01000000
- #define PPC_FEATURE2_ARCH_3_00		0x00800000 /* ISA 3.00 */
- #define PPC_FEATURE2_HAS_IEEE128	0x00400000 /* VSX IEEE Binary Float 128-bit */
-+#define PPC_FEATURE2_DARN		0x00200000 /* darn random number insn */
-+#define PPC_FEATURE2_SCV		0x00100000 /* scv syscall */
- 
- /*
-  * IMPORTANT!
-diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
-index 9b3e88b1a9c8..6f849832a669 100644
---- a/arch/powerpc/kernel/cputable.c
-+++ b/arch/powerpc/kernel/cputable.c
-@@ -124,7 +124,8 @@ extern void __restore_cpu_e6500(void);
- #define COMMON_USER_POWER9	COMMON_USER_POWER8
- #define COMMON_USER2_POWER9	(COMMON_USER2_POWER8 | \
- 				 PPC_FEATURE2_ARCH_3_00 | \
--				 PPC_FEATURE2_HAS_IEEE128)
-+				 PPC_FEATURE2_HAS_IEEE128 | \
-+				 PPC_FEATURE2_DARN )
- 
- #ifdef CONFIG_PPC_BOOK3E_64
- #define COMMON_USER_BOOKE	(COMMON_USER_PPC64 | PPC_FEATURE_BOOKE)
--- 
-2.11.0
+Best regards,
+Krzysztof
