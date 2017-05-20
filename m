@@ -1,30 +1,23 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
- [IPv6:2607:f8b0:400e:c05::241])
+Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
+ [IPv6:2607:f8b0:400e:c00::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wV3Jq4TMBzDqdv
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 May 2017 08:54:19 +1000 (AEST)
-Received: by mail-pg0-x241.google.com with SMTP id h64so11029115pge.3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 May 2017 15:54:19 -0700 (PDT)
-Date: Sat, 20 May 2017 08:53:57 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wVBmK3MVKzDqdg
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 May 2017 14:30:09 +1000 (AEST)
+Received: by mail-pf0-x241.google.com with SMTP id f27so11417841pfe.0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 May 2017 21:30:08 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
-To: Don Zickus <dzickus@redhat.com>
-Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
- adi-buildroot-devel@lists.sourceforge.net, linux-am33-list@redhat.com,
- sparclinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- uobergfe@redhat.com
-Subject: Re: [RFC] arch hardlockup detector interfaces improvement
-Message-ID: <20170520085357.245c62af@roar.ozlabs.ibm.com>
-In-Reply-To: <20170519194345.gfwtuprrolk7sgwm@redhat.com>
-References: <20170518155026.23799-1-npiggin@gmail.com>
- <20170518163028.tf2llimuo4l4l5nv@redhat.com>
- <20170519090731.1e49cd0d@roar.ozlabs.ibm.com>
- <20170519131753.sccuu7mksjertzni@redhat.com>
- <20170520005306.13172dc7@roar.ozlabs.ibm.com>
- <20170519194345.gfwtuprrolk7sgwm@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Nicholas Piggin <npiggin@gmail.com>, tuliom@linux.vnet.ibm.com,
+ Michael Ellerman <mpe@ellerman.id.au>, benh@ozlabs.au.ibm.com,
+ Peter Bergner <bergner@us.ibm.com>,
+ Michael Neuling <michael.neuling@au1.ibm.com>,
+ Steve Munroe <sjmunroe@us.ibm.com>, Bill Schmidt <wschmidt@us.ibm.com>
+Subject: [PATCH] powerpc: add PPC_FEATURE userspace bits for SCV and DARN
+ instructions
+Date: Sat, 20 May 2017 14:29:49 +1000
+Message-Id: <20170520042949.29359-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,65 +27,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 19 May 2017 15:43:45 -0400
-Don Zickus <dzickus@redhat.com> wrote:
+Providing "scv" support to userspace requires kernel support, so it
+must be advertised as independently to the base ISA 3 instruction set.
 
-> On Sat, May 20, 2017 at 12:53:06AM +1000, Nicholas Piggin wrote:
-> > > I am curious to know what IBM thinks there.  Currently the HARDLOCKUP
-> > > detector sits on top of perf.  I get the impression, you are removing that
-> > > dependency.  Is that a permanent thing or are you thinking of switching back
-> > > and forth depending on if SOFTLOCKUP is enabled or not?  
-> > 
-> > We want to get away from perf permanently.
-> > 
-> > The PMU interrupts are not specially non-maskable from a hardware
-> > POV, everything gets masked when you turn off interrupts in hardware.
-> > powerpc arch code implements a software disable layer, and PMU
-> > interrupts are differentiated there by being allowed to run even
-> > under local_irq_disable();
-> > 
-> > We have a few issues with using perf for it. We disable it by
-> > default because using it for that breaks another PMU feature.
-> > 
-> > But PMU interupts are not special, so it would be possible to e.g.,
-> > take the timer interrupt before soft disable and have it touch the
-> > watchdog if it fires while under local_irq_disable(). That give
-> > exact same kind of pseudo-NMI as perf interrupts, without using PMU.
-> > 
-> > Further, we now want to introduce a local_pmu_disable() type of
-> > interface that extends this soft disable layer to perf interrupts
-> > as well for some cases. Once we start doing that, more code will
-> > be exempt from the hardlockup watchdog, whereas a watchdog specific
-> > hook from the timer interrupt would still cover it.  
-> 
-> Interesting.  Thanks for that info.
-> 
-> Do you think you can split the patch in half for me?  You are shuffling code
-> around and making subtle changes in the shuffled code.  It is hard to double
-> check everything.  Namely watchdog_nmi_reconfigure and watchdog_update_cpus
-> suddenly appear.
-> 
-> The first patch would be straight code movement, the second the real
-> changes.  I almost don't care if you throw in the LOCKUP->SOFTLOCKUP changes
-> in the first patch either.
-> 
-> I am really interested in the subtle changes to make sure you covered the
-> various race conditions that we have uncovered over the years.
+The darn instruction relies on firmware enablement, so it has been
+decided to split this out from the core ISA 3 feature as well.
 
-Yes that makes sense, I'll do that.
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+---
+These uapi changes have been agreed by powerpc toolchain and firmware
+teams. I believe this completes our anticipated requirements for user
+feature advertisement for ISA v3.0B.
 
-> I also would like to see a sample of the watchdog_nmi_reconfigure() you had
-> in mind.  Usually we hide all the nmi stuff underneath the watchdog
-> functions.  But those are threaded, which is what you are trying to avoid,
-> so the placement of the function makes sense but looks odd.
+ arch/powerpc/include/uapi/asm/cputable.h | 2 ++
+ arch/powerpc/kernel/cputable.c           | 3 ++-
+ 2 files changed, 4 insertions(+), 1 deletion(-)
 
-I'm just calling it after any sysctl changes or suspend/resume etc, and
-the lockup detector I have basically just shuts down everything and
-then re-starts with the new parameters (could be made much fancier but
-I didn't see a need.
-
-I will split out this patch and re-post to you with the powerpc patch in
-the series that you can take a look at.
-
-Thanks,
-Nick
+diff --git a/arch/powerpc/include/uapi/asm/cputable.h b/arch/powerpc/include/uapi/asm/cputable.h
+index 3e7ce86d5c13..4d877144f377 100644
+--- a/arch/powerpc/include/uapi/asm/cputable.h
++++ b/arch/powerpc/include/uapi/asm/cputable.h
+@@ -46,6 +46,8 @@
+ #define PPC_FEATURE2_HTM_NOSC		0x01000000
+ #define PPC_FEATURE2_ARCH_3_00		0x00800000 /* ISA 3.00 */
+ #define PPC_FEATURE2_HAS_IEEE128	0x00400000 /* VSX IEEE Binary Float 128-bit */
++#define PPC_FEATURE2_DARN		0x00200000 /* darn random number insn */
++#define PPC_FEATURE2_SCV		0x00100000 /* scv syscall */
+ 
+ /*
+  * IMPORTANT!
+diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
+index 9b3e88b1a9c8..6f849832a669 100644
+--- a/arch/powerpc/kernel/cputable.c
++++ b/arch/powerpc/kernel/cputable.c
+@@ -124,7 +124,8 @@ extern void __restore_cpu_e6500(void);
+ #define COMMON_USER_POWER9	COMMON_USER_POWER8
+ #define COMMON_USER2_POWER9	(COMMON_USER2_POWER8 | \
+ 				 PPC_FEATURE2_ARCH_3_00 | \
+-				 PPC_FEATURE2_HAS_IEEE128)
++				 PPC_FEATURE2_HAS_IEEE128 | \
++				 PPC_FEATURE2_DARN )
+ 
+ #ifdef CONFIG_PPC_BOOK3E_64
+ #define COMMON_USER_BOOKE	(COMMON_USER_PPC64 | PPC_FEATURE_BOOKE)
+-- 
+2.11.0
