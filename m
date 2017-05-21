@@ -1,27 +1,31 @@
-Return-Path: <hch@lst.de>
-Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <arndbergmann@gmail.com>
+Received: from mail-oi0-x244.google.com (mail-oi0-x244.google.com
+ [IPv6:2607:f8b0:4003:c06::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wVt386WHTzDqFT
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 21 May 2017 17:00:20 +1000 (AEST)
-Date: Sun, 21 May 2017 09:00:17 +0200
-From: Christoph Hellwig <hch@lst.de>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Christoph Hellwig <hch@lst.de>, Thomas Gleixner <tglx@linutronix.de>,
- Mark Gross <mark.gross@intel.com>, Tejun Heo <tj@kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- linux-s390 <linux-s390@vger.kernel.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/9] timers: provide a "modern" variant of timers
-Message-ID: <20170521070017.GA13082@lst.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wW1Ls5GqYzDqKX
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 21 May 2017 22:29:25 +1000 (AEST)
+Received: by mail-oi0-x244.google.com with SMTP id w138so18868885oiw.3
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 21 May 2017 05:29:24 -0700 (PDT)
+MIME-Version: 1.0
+Sender: arndbergmann@gmail.com
+In-Reply-To: <20170521070017.GA13082@lst.de>
 References: <20170516114812.10660-1-hch@lst.de>
  <20170516114812.10660-3-hch@lst.de>
  <CAK8P3a106wR4h_muGGF7S7uh5UrH-OcJObMfVgk22P9brP5Bjg@mail.gmail.com>
  <20170518082448.GB3812@lst.de> <20170518084136.GA5331@lst.de>
  <CAK8P3a2ddbr=ck+G+80vGkVQ+L3snWkT1bbj2+1T6UJhm+_mrQ@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CAK8P3a2ddbr=ck+G+80vGkVQ+L3snWkT1bbj2+1T6UJhm+_mrQ@mail.gmail.com>
+ <20170521070017.GA13082@lst.de>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Sun, 21 May 2017 14:29:21 +0200
+Message-ID: <CAK8P3a004SX_cAc1hcbx4wdRMEhmzp=w1wasiRy3UvexskQ5dA@mail.gmail.com>
+Subject: Re: [PATCH 2/9] timers: provide a "modern" variant of timers
+To: Christoph Hellwig <hch@lst.de>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Mark Gross <mark.gross@intel.com>,
+ Tejun Heo <tj@kernel.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ linux-s390 <linux-s390@vger.kernel.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,11 +35,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, May 18, 2017 at 10:57:31AM +0200, Arnd Bergmann wrote:
-> How expensive would it be to add another field to timer_list and
-> just have both pointers?
+On Sun, May 21, 2017 at 9:00 AM, Christoph Hellwig <hch@lst.de> wrote:
+> On Thu, May 18, 2017 at 10:57:31AM +0200, Arnd Bergmann wrote:
+>> How expensive would it be to add another field to timer_list and
+>> just have both pointers?
+>
+> That would add 4/8 bytes to every structure containing a timer,
+> so I'd rather avoid it if possible.
 
-That would add 4/8 bytes to every structure containing a timer,
-so I'd rather avoid it if possible.  But one option might be to
-inflict this onto users of outdated compilers and use the union
-for modern ones.
+I didn't expect too many timers to be in allocated structures at the same
+time on most systems, but I haven't researched this at all.
+
+We should probably update the comment about the cacheline alignment
+though: when most users embed the timer_list in some other structure,
+it's not valid at all, and forcing timer_list to be cacheline aligned would
+waste way more space than an extra field.
+
+>  But one option might be to inflict this onto users of outdated compilers
+> and use the union for modern ones.
+
+Good idea, this sounds better than the alternatives at least. The
+remaining users of those old compilers certainly don't care that much
+about micro-optimizing the kernel anyway.
+
+       Arnd
