@@ -1,18 +1,19 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
- [IPv6:2607:f8b0:400e:c00::244])
+Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
+ [IPv6:2607:f8b0:400e:c00::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wW2P42nyNzDqMl
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 21 May 2017 23:16:24 +1000 (AEST)
-Received: by mail-pf0-x244.google.com with SMTP id u26so14498572pfd.2
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 21 May 2017 06:16:24 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wW2P65QVfzDqNY
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 21 May 2017 23:16:26 +1000 (AEST)
+Received: by mail-pf0-x241.google.com with SMTP id w69so14494328pfk.1
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 21 May 2017 06:16:26 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Nicholas Piggin <npiggin@gmail.com>
-Subject: [PATCH 4/9] powerpc/64s: SLB miss handler avoid r3 save/restore
-Date: Sun, 21 May 2017 23:15:45 +1000
-Message-Id: <20170521131550.25813-5-npiggin@gmail.com>
+Subject: [PATCH 5/9] powerpc/64s: paca add EX_SIZE definition for exception
+ save areas
+Date: Sun, 21 May 2017 23:15:46 +1000
+Message-Id: <20170521131550.25813-6-npiggin@gmail.com>
 In-Reply-To: <20170521131550.25813-1-npiggin@gmail.com>
 References: <20170521131550.25813-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,133 +25,103 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The SLB miss handler uses r3 for the faulting address but r12 is
-mostly able to be freed up to save r3 in. It just requires SRR1
-be reloaded again on error.
-
-It would be more conventional to use r12 for SRR1 (and use r11 to
-save r3), but slb_allocate_realmode clobbers r11 and not r12.
-
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/kernel/exceptions-64s.S | 34 ++++++++++++++++++----------------
- 1 file changed, 18 insertions(+), 16 deletions(-)
+ arch/powerpc/include/asm/exception-64s.h | 30 +++++++++++++++++++-----------
+ arch/powerpc/include/asm/paca.h          | 12 ++++++++----
+ 2 files changed, 27 insertions(+), 15 deletions(-)
 
-diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-index 486e205cc762..6ba4c4c6ae69 100644
---- a/arch/powerpc/kernel/exceptions-64s.S
-+++ b/arch/powerpc/kernel/exceptions-64s.S
-@@ -507,9 +507,9 @@ EXC_REAL_BEGIN(data_access_slb, 0x380, 0x80)
- 	SET_SCRATCH0(r13)
- 	EXCEPTION_PROLOG_0(PACA_EXSLB)
- 	EXCEPTION_PROLOG_1(PACA_EXSLB, KVMTEST_PR, 0x380)
--	std	r3,PACA_EXSLB+EX_R3(r13)
-+	mr	r12,r3	/* save r3 */
- 	mfspr	r3,SPRN_DAR
--	mfspr	r12,SPRN_SRR1
-+	mfspr	r11,SPRN_SRR1
- 	crset	4*cr6+eq
- #ifndef CONFIG_RELOCATABLE
- 	b	slb_miss_realmode
-@@ -530,9 +530,9 @@ EXC_VIRT_BEGIN(data_access_slb, 0x4380, 0x80)
- 	SET_SCRATCH0(r13)
- 	EXCEPTION_PROLOG_0(PACA_EXSLB)
- 	EXCEPTION_PROLOG_1(PACA_EXSLB, NOTEST, 0x380)
--	std	r3,PACA_EXSLB+EX_R3(r13)
-+	mr	r12,r3	/* save r3 */
- 	mfspr	r3,SPRN_DAR
--	mfspr	r12,SPRN_SRR1
-+	mfspr	r11,SPRN_SRR1
- 	crset	4*cr6+eq
- #ifndef CONFIG_RELOCATABLE
- 	b	slb_miss_realmode
-@@ -575,9 +575,9 @@ EXC_REAL_BEGIN(instruction_access_slb, 0x480, 0x80)
- 	SET_SCRATCH0(r13)
- 	EXCEPTION_PROLOG_0(PACA_EXSLB)
- 	EXCEPTION_PROLOG_1(PACA_EXSLB, KVMTEST_PR, 0x480)
--	std	r3,PACA_EXSLB+EX_R3(r13)
-+	mr	r12,r3	/* save r3 */
- 	mfspr	r3,SPRN_SRR0		/* SRR0 is faulting address */
--	mfspr	r12,SPRN_SRR1
-+	mfspr	r11,SPRN_SRR1
- 	crclr	4*cr6+eq
- #ifndef CONFIG_RELOCATABLE
- 	b	slb_miss_realmode
-@@ -593,9 +593,9 @@ EXC_VIRT_BEGIN(instruction_access_slb, 0x4480, 0x80)
- 	SET_SCRATCH0(r13)
- 	EXCEPTION_PROLOG_0(PACA_EXSLB)
- 	EXCEPTION_PROLOG_1(PACA_EXSLB, NOTEST, 0x480)
--	std	r3,PACA_EXSLB+EX_R3(r13)
-+	mr	r12,r3	/* save r3 */
- 	mfspr	r3,SPRN_SRR0		/* SRR0 is faulting address */
--	mfspr	r12,SPRN_SRR1
-+	mfspr	r11,SPRN_SRR1
- 	crclr	4*cr6+eq
- #ifndef CONFIG_RELOCATABLE
- 	b	slb_miss_realmode
-@@ -613,10 +613,10 @@ TRAMP_KVM(PACA_EXSLB, 0x480)
- EXC_COMMON_BEGIN(slb_miss_realmode)
- 	/*
- 	 * r13 points to the PACA, r9 contains the saved CR,
--	 * r12 contain the saved SRR1, SRR0 is still ready for return
-+	 * r12 contains the saved r3,
-+	 * r11 contain the saved SRR1, SRR0 is still ready for return
- 	 * r3 has the faulting address
- 	 * r9 - r13 are saved in paca->exslb.
--	 * r3 is saved in paca->slb_r3
-  	 * cr6.eq is set for a D-SLB miss, clear for a I-SLB miss
- 	 * We assume we aren't going to take any exceptions during this
- 	 * procedure.
-@@ -625,6 +625,9 @@ EXC_COMMON_BEGIN(slb_miss_realmode)
- 	stw	r9,PACA_EXSLB+EX_CCR(r13)	/* save CR in exc. frame */
- 	std	r10,PACA_EXSLB+EX_LR(r13)	/* save LR */
+diff --git a/arch/powerpc/include/asm/exception-64s.h b/arch/powerpc/include/asm/exception-64s.h
+index 183d73b6ed99..3edcad24684f 100644
+--- a/arch/powerpc/include/asm/exception-64s.h
++++ b/arch/powerpc/include/asm/exception-64s.h
+@@ -24,18 +24,8 @@
+  *  as published by the Free Software Foundation; either version
+  *  2 of the License, or (at your option) any later version.
+  */
+-/*
+- * The following macros define the code that appears as
+- * the prologue to each of the exception handlers.  They
+- * are split into two parts to allow a single kernel binary
+- * to be used for pSeries and iSeries.
+- *
+- * We make as much of the exception code common between native
+- * exception handlers (including pSeries LPAR) and iSeries LPAR
+- * implementations as possible.
+- */
+-#include <asm/head-64.h>
  
-+	andi.	r11,r11,MSR_RI	/* check for unrecoverable exception */
-+	beq-	2f
++/* PACA save area offsets (exgen, exmc, etc) */
+ #define EX_R9		0
+ #define EX_R10		8
+ #define EX_R11		16
+@@ -51,6 +41,22 @@
+ #define EX_PPR		88	/* SMT thread status register (priority) */
+ #define EX_CTR		96
+ 
++#define EX_SIZE		13	/* size in u64 units */
 +
- 	crset	4*cr0+eq
++#ifdef __ASSEMBLY__
++
++/*
++ * The following macros define the code that appears as
++ * the prologue to each of the exception handlers.  They
++ * are split into two parts to allow a single kernel binary
++ * to be used for pSeries and iSeries.
++ *
++ * We make as much of the exception code common between native
++ * exception handlers (including pSeries LPAR) and iSeries LPAR
++ * implementations as possible.
++ */
++#include <asm/head-64.h>
++
+ #ifdef CONFIG_RELOCATABLE
+ #define __EXCEPTION_RELON_PROLOG_PSERIES_1(label, h)			\
+ 	mfspr	r11,SPRN_##h##SRR0;	/* save SRR0 */			\
+@@ -608,4 +614,6 @@ END_FTR_SECTION_IFSET(CPU_FTR_CAN_NAP)
+ #define FINISH_NAP
+ #endif
+ 
++#endif /*__ASSEMBLY__ */
++
+ #endif	/* _ASM_POWERPC_EXCEPTION_H */
+diff --git a/arch/powerpc/include/asm/paca.h b/arch/powerpc/include/asm/paca.h
+index 1c09f8fe2ee8..8ea0907975a4 100644
+--- a/arch/powerpc/include/asm/paca.h
++++ b/arch/powerpc/include/asm/paca.h
+@@ -21,7 +21,11 @@
+ #include <asm/lppaca.h>
+ #include <asm/mmu.h>
+ #include <asm/page.h>
++#ifdef CONFIG_PPC_BOOK3E
+ #include <asm/exception-64e.h>
++#else
++#include <asm/exception-64s.h>
++#endif
+ #ifdef CONFIG_KVM_BOOK3S_64_HANDLER
+ #include <asm/kvm_book3s_asm.h>
+ #endif
+@@ -98,8 +102,8 @@ struct paca_struct {
+ 	 * Now, starting in cacheline 2, the exception save areas
+ 	 */
+ 	/* used for most interrupts/exceptions */
+-	u64 exgen[13] __attribute__((aligned(0x80)));
+-	u64 exslb[13];		/* used for SLB/segment table misses
++	u64 exgen[EX_SIZE] __attribute__((aligned(0x80)));
++	u64 exslb[EX_SIZE];	/* used for SLB/segment table misses
+  				 * on the linear mapping */
+ 	/* SLB related definitions */
+ 	u16 vmalloc_sllp;
+@@ -181,8 +185,8 @@ struct paca_struct {
+ 
  #ifdef CONFIG_PPC_STD_MMU_64
- BEGIN_MMU_FTR_SECTION
-@@ -638,9 +641,6 @@ END_MMU_FTR_SECTION_IFCLR(MMU_FTR_TYPE_RADIX)
- 
- 	beq-	8f		/* if bad address, make full stack frame */
- 
--	andi.	r10,r12,MSR_RI	/* check for unrecoverable exception */
--	beq-	2f
--
- 	/* All done -- return from exception. */
- 
- .machine	push
-@@ -652,7 +652,7 @@ END_MMU_FTR_SECTION_IFCLR(MMU_FTR_TYPE_RADIX)
- 
- 	RESTORE_CTR(r9, PACA_EXSLB)
- 	RESTORE_PPR_PACA(PACA_EXSLB, r9)
--	ld	r3,PACA_EXSLB+EX_R3(r13)
-+	mr	r3,r12
- 	ld	r9,PACA_EXSLB+EX_R9(r13)
- 	ld	r10,PACA_EXSLB+EX_R10(r13)
- 	ld	r11,PACA_EXSLB+EX_R11(r13)
-@@ -662,8 +662,9 @@ END_MMU_FTR_SECTION_IFCLR(MMU_FTR_TYPE_RADIX)
- 	b	.	/* prevent speculative execution */
- 
- 2:	std     r3,PACA_EXSLB+EX_DAR(r13)
--	ld	r3,PACA_EXSLB+EX_R3(r13)
-+	mr	r3,r12
- 	mfspr	r11,SPRN_SRR0
-+	mfspr	r12,SPRN_SRR1
- 	LOAD_HANDLER(r10,unrecov_slb)
- 	mtspr	SPRN_SRR0,r10
- 	ld	r10,PACAKMSR(r13)
-@@ -672,8 +673,9 @@ END_MMU_FTR_SECTION_IFCLR(MMU_FTR_TYPE_RADIX)
- 	b	.
- 
- 8:	std     r3,PACA_EXSLB+EX_DAR(r13)
--	ld	r3,PACA_EXSLB+EX_R3(r13)
-+	mr	r3,r12
- 	mfspr	r11,SPRN_SRR0
-+	mfspr	r12,SPRN_SRR1
- 	LOAD_HANDLER(r10,bad_addr_slb)
- 	mtspr	SPRN_SRR0,r10
- 	ld	r10,PACAKMSR(r13)
+ 	/* Non-maskable exceptions that are not performance critical */
+-	u64 exnmi[13];		/* used for system reset (nmi) */
+-	u64 exmc[13];		/* used for machine checks */
++	u64 exnmi[EX_SIZE];	/* used for system reset (nmi) */
++	u64 exmc[EX_SIZE];	/* used for machine checks */
+ #endif
+ #ifdef CONFIG_PPC_BOOK3S_64
+ 	/* Exclusive stacks for system reset and machine check exception. */
 -- 
 2.11.0
