@@ -1,32 +1,31 @@
-Return-Path: <srs0=zkj/=44=suse.de=msuchanek@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <arndbergmann@gmail.com>
+Received: from mail-oi0-x244.google.com (mail-oi0-x244.google.com
+ [IPv6:2607:f8b0:4003:c06::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wWbCw2Mx0zDqLl
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 May 2017 20:55:24 +1000 (AEST)
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3wWbCw1lJdz8wT6
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 May 2017 20:55:24 +1000 (AEST)
-Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3wWbCv5lHPz9s4q
- for <linuxppc-dev@ozlabs.org>; Mon, 22 May 2017 20:55:23 +1000 (AEST)
-Date: Mon, 22 May 2017 12:55:19 +0200
-From: Michal =?UTF-8?B?U3VjaMOhbmVr?= <msuchanek@suse.de>
-To: Hari Bathini <hbathini@linux.vnet.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, Prarit Bhargava
- <prarit@redhat.com>, linuxppc-dev <linuxppc-dev@ozlabs.org>, Ankit Kumar
- <ankit@linux.vnet.ibm.com>, Dave Young <dyoung@redhat.com>, Mahesh J
- Salgaonkar <mahesh@linux.vnet.ibm.com>
-Subject: Re: [PATCH 2/2] powerpc/fadump: update about offset where fadump is
- reserved
-Message-ID: <20170522125519.158e9a68@kitsune.suse.cz>
-In-Reply-To: <149544568763.16888.16656118217496342159.stgit@hbathini.in.ibm.com>
-References: <149544566391.16888.187413825827689513.stgit@hbathini.in.ibm.com>
- <149544568763.16888.16656118217496342159.stgit@hbathini.in.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wWbvw0CQkzDqKg
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 May 2017 21:26:36 +1000 (AEST)
+Received: by mail-oi0-x244.google.com with SMTP id h4so22165572oib.0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 May 2017 04:26:35 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Sender: arndbergmann@gmail.com
+In-Reply-To: <alpine.DEB.2.20.1705211959370.3023@nanos>
+References: <20170516114812.10660-1-hch@lst.de>
+ <CAK8P3a1FoR_usw7du3ZRMF+PPhJ712EpArL_e1bLVNs7BYBu-w@mail.gmail.com>
+ <20170516155132.GA1494@lst.de>
+ <CAK8P3a3_Rjz9gTmayN1w8HrFHWY+wakeFgQSYRTAADJzF6zKJA@mail.gmail.com>
+ <alpine.DEB.2.20.1705211859410.3023@nanos>
+ <alpine.DEB.2.20.1705211959370.3023@nanos>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Mon, 22 May 2017 13:26:33 +0200
+Message-ID: <CAK8P3a1YWvZ-mN06eH=p0N01CWkw9=_u8PFH0xyMzyOxLm7pDA@mail.gmail.com>
+Subject: Re: RFC: better timer interface
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Christoph Hellwig <hch@lst.de>, Tejun Heo <tj@kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Mark Gross <mark.gross@intel.com>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ linux-s390 <linux-s390@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,44 +35,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 22 May 2017 15:04:47 +0530
-Hari Bathini <hbathini@linux.vnet.ibm.com> wrote:
+On Sun, May 21, 2017 at 8:14 PM, Thomas Gleixner <tglx@linutronix.de> wrote:
+> On Sun, 21 May 2017, Thomas Gleixner wrote:
+>> On Tue, 16 May 2017, Arnd Bergmann wrote:
+>> > On Tue, May 16, 2017 at 5:51 PM, Christoph Hellwig <hch@lst.de> wrote:
+>> > > Yes, that sounds useful to me as well.  As you said it's an independent
+>> > > but somewhat related change.  I can add it to my series, but I'll
+>> > > need a suggestions for a good and short name.  That already was the
+>> > > hardest part for the setup side :)
+>> >
+>> > If we keep the unusual *_timer() naming (rather than timer_*() as hrtimer
+>> > has), we could use one of
+>> >
+>> > a) start_timer(struct timer_list *timer, unsigned long ms);
+>> > b) restart_timer(struct timer_list *timer, unsigned long ms);
+>> > c) mod_timer_ms(struct timer_list *timer, unsigned long ms);
+>> >     mod_timer_sec(struct timer_list *timer, unsigned long sec);
+>>
+>> Please make new functions prefixed with timer_ and get rid of that old
+>> interface completely. It's horrible.
+>>
+>> timer_init()
+>> timer_start(timer, ms, abs)
+>
+> I'm not even sure, whether we need absolute timer wheel timers at
+> all, because most use cases are relative to now.
+>
+> But it's easy enough to provide them. All we need for that is something
+> like
+>
+>         unsigned long time_msec;
+>
+> which gets incremented every tick by the appropriate amount of
+> milliseconds.
+>
+> Having that would also allow to replace all the
+>
+>        end = jiffies + msec_to_jiffies(xxx);
+>
+>        while (time_before(jiffies, end))
+>              ....
+>
+> constructs with a milliseconds based machinery. So we can remove all
+> *_to_jiffies() interfaces over time.
 
-> With commit f6e6bedb7731 ("powerpc/fadump: Reserve memory at an offset
-> closer to bottom of RAM"), memory for fadump is no longer reserved at
-> the top of RAM. But there are still a few places which say so. Change
-> them appropriately.
-> 
-> Signed-off-by: Hari Bathini <hbathini@linux.vnet.ibm.com>
-> ---
->  Documentation/powerpc/firmware-assisted-dump.txt |    4 ++--
->  arch/powerpc/kernel/fadump.c                     |    4 ++--
->  2 files changed, 4 insertions(+), 4 deletions(-)
-> 
-> diff --git a/Documentation/powerpc/firmware-assisted-dump.txt
-> b/Documentation/powerpc/firmware-assisted-dump.txt index
-> 9cabaf8..bdd344a 100644 ---
-> a/Documentation/powerpc/firmware-assisted-dump.txt +++
-> b/Documentation/powerpc/firmware-assisted-dump.txt @@ -61,8 +61,8 @@
-> as follows: boot successfully. For syntax of crashkernel= parameter,
->           refer to Documentation/kdump/kdump.txt. If any offset is
->           provided in crashkernel= parameter, it will be ignored
-> -         as fadump reserves memory at end of RAM for boot memory
-> -         dump preservation in case of a crash.
-> +         as fadump uses a predefined offset to reserve memory
-> +         for boot memory dump preservation in case of a crash.
+A lot of those users could probably just ktime_get()/ktime_before() here,
+as they would by definition not be performance critical.
 
-What is the reason for fadump to prefer a random offset calculated by
-the kernel over a random offset supplied by the user?
+I don't see a way to just tk->tkr_mono.base but with a ktime_get_coarse()
+we could just return the ktime_t of the last tick and not even need a seqlock
+on 64-bit architectures, or have to introduce a new API.
 
-Since the random offset calculated by the kernel was recently adjusted
-to counter issues with fadump registration maybe it would be reasonable
-to allow the user to supply a custom random offset and override the
-kernel-calculated random offset if they want to do so.
-
-PS 'random' meaning in no relationship to actual system topology that
-would warrant this offset to be in any way better than any other.
-
-Thanks
-
-Michal
+        Arnd
