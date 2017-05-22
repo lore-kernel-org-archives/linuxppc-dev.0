@@ -1,22 +1,32 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <srs0=zkj/=44=suse.de=msuchanek@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wWZ5P5Dq5zDqL4
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 May 2017 20:04:41 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Daniel Axtens <dja@axtens.net>, kernel-hardening@lists.openwall.com,
- linuxppc-dev@lists.ozlabs.org
-Cc: Daniel Micay <danielmicay@gmail.com>, Kees Cook <keescook@chromium.org>,
- Daniel Axtens <dja@axtens.net>
-Subject: Re: [kernel-hardening] [PATCH 1/2] powerpc: Don't fortify prom_init
-In-Reply-To: <20170522013233.21780-2-dja@axtens.net>
-References: <20170522013233.21780-1-dja@axtens.net>
- <20170522013233.21780-2-dja@axtens.net>
-Date: Mon, 22 May 2017 20:04:40 +1000
-Message-ID: <87d1b1ryvb.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wWbCw2Mx0zDqLl
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 May 2017 20:55:24 +1000 (AEST)
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3wWbCw1lJdz8wT6
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 May 2017 20:55:24 +1000 (AEST)
+Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3wWbCv5lHPz9s4q
+ for <linuxppc-dev@ozlabs.org>; Mon, 22 May 2017 20:55:23 +1000 (AEST)
+Date: Mon, 22 May 2017 12:55:19 +0200
+From: Michal =?UTF-8?B?U3VjaMOhbmVr?= <msuchanek@suse.de>
+To: Hari Bathini <hbathini@linux.vnet.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, Prarit Bhargava
+ <prarit@redhat.com>, linuxppc-dev <linuxppc-dev@ozlabs.org>, Ankit Kumar
+ <ankit@linux.vnet.ibm.com>, Dave Young <dyoung@redhat.com>, Mahesh J
+ Salgaonkar <mahesh@linux.vnet.ibm.com>
+Subject: Re: [PATCH 2/2] powerpc/fadump: update about offset where fadump is
+ reserved
+Message-ID: <20170522125519.158e9a68@kitsune.suse.cz>
+In-Reply-To: <149544568763.16888.16656118217496342159.stgit@hbathini.in.ibm.com>
+References: <149544566391.16888.187413825827689513.stgit@hbathini.in.ibm.com>
+ <149544568763.16888.16656118217496342159.stgit@hbathini.in.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,44 +36,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Daniel Axtens <dja@axtens.net> writes:
-> prom_init is a bit special; in theory it should be able to be
-> linked separately to the kernel. To keep this from getting too
-> complex, the symbols that prom_init.c uses are checked.
->
-> Fortification adds symbols, and it gets quite messy as it includes
-> things like panic(). So just don't fortify prom_init.c for now.
+On Mon, 22 May 2017 15:04:47 +0530
+Hari Bathini <hbathini@linux.vnet.ibm.com> wrote:
 
-Calling panic() at that point is unlikely to work well.
-
-> Cc: Kees Cook <keescook@chromium.org>
-> Cc: Daniel Micay <danielmicay@gmail.com>
-> Signed-off-by: Daniel Axtens <dja@axtens.net>
->
+> With commit f6e6bedb7731 ("powerpc/fadump: Reserve memory at an offset
+> closer to bottom of RAM"), memory for fadump is no longer reserved at
+> the top of RAM. But there are still a few places which say so. Change
+> them appropriately.
+> 
+> Signed-off-by: Hari Bathini <hbathini@linux.vnet.ibm.com>
 > ---
->
-> This will need to go in before the main fortify support, but it
-> doesn't make any sense in the absence of fortify. I think it would
-> make most sense for Kees to queue this up with the main fortify patch,
-> with an Ack from mpe?
+>  Documentation/powerpc/firmware-assisted-dump.txt |    4 ++--
+>  arch/powerpc/kernel/fadump.c                     |    4 ++--
+>  2 files changed, 4 insertions(+), 4 deletions(-)
+> 
+> diff --git a/Documentation/powerpc/firmware-assisted-dump.txt
+> b/Documentation/powerpc/firmware-assisted-dump.txt index
+> 9cabaf8..bdd344a 100644 ---
+> a/Documentation/powerpc/firmware-assisted-dump.txt +++
+> b/Documentation/powerpc/firmware-assisted-dump.txt @@ -61,8 +61,8 @@
+> as follows: boot successfully. For syntax of crashkernel= parameter,
+>           refer to Documentation/kdump/kdump.txt. If any offset is
+>           provided in crashkernel= parameter, it will be ignored
+> -         as fadump reserves memory at end of RAM for boot memory
+> -         dump preservation in case of a crash.
+> +         as fadump uses a predefined offset to reserve memory
+> +         for boot memory dump preservation in case of a crash.
 
-Yeah that's fine by me.
+What is the reason for fadump to prefer a random offset calculated by
+the kernel over a random offset supplied by the user?
 
-> diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
-> index dd8a04f3053a..613f79f03877 100644
-> --- a/arch/powerpc/kernel/prom_init.c
-> +++ b/arch/powerpc/kernel/prom_init.c
-> @@ -15,6 +15,9 @@
->  
->  #undef DEBUG_PROM
->  
-> +/* we cannot use FORTIFY as it brings in new symbols */
-> +#define __NO_FORTIFY
-> +
->  #include <stdarg.h>
->  #include <linux/kernel.h>
->  #include <linux/string.h>
+Since the random offset calculated by the kernel was recently adjusted
+to counter issues with fadump registration maybe it would be reasonable
+to allow the user to supply a custom random offset and override the
+kernel-calculated random offset if they want to do so.
 
-Acked-by: Michael Ellerman <mpe@ellerman.id.au>
+PS 'random' meaning in no relationship to actual system topology that
+would warrant this offset to be in any way better than any other.
 
-cheers
+Thanks
+
+Michal
