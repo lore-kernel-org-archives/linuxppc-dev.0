@@ -1,56 +1,29 @@
-Return-Path: <srs0=ejaj=44=linux.vnet.ibm.com=hbathini@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <tglx@linutronix.de>
+Received: from Galois.linutronix.de (Galois.linutronix.de
+ [IPv6:2a01:7a0:2:106d:700::1])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wWnwP1cX1zDqLH
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 May 2017 04:57:41 +1000 (AEST)
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3wWnwP104gz8t8V
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 May 2017 04:57:41 +1000 (AEST)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3wWnwN52hcz9s0m
- for <linuxppc-dev@ozlabs.org>; Tue, 23 May 2017 04:57:40 +1000 (AEST)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v4MIXnFQ079904
- for <linuxppc-dev@ozlabs.org>; Mon, 22 May 2017 14:57:36 -0400
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2am3vpc6jb-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Mon, 22 May 2017 14:57:36 -0400
-Received: from localhost
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <hbathini@linux.vnet.ibm.com>;
- Tue, 23 May 2017 04:57:33 +1000
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v4MIvN1247054874
- for <linuxppc-dev@ozlabs.org>; Tue, 23 May 2017 04:57:31 +1000
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v4MIupNt009852
- for <linuxppc-dev@ozlabs.org>; Tue, 23 May 2017 04:56:51 +1000
-Subject: Re: [PATCH 2/2] powerpc/fadump: update about offset where fadump is
- reserved
-To: =?UTF-8?Q?Michal_Such=c3=a1nek?= <msuchanek@suse.de>
-Cc: Prarit Bhargava <prarit@redhat.com>,
- Ankit Kumar <ankit@linux.vnet.ibm.com>,
- linuxppc-dev <linuxppc-dev@ozlabs.org>,
- Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>,
- Dave Young <dyoung@redhat.com>
-References: <149544566391.16888.187413825827689513.stgit@hbathini.in.ibm.com>
- <149544568763.16888.16656118217496342159.stgit@hbathini.in.ibm.com>
- <20170522125519.158e9a68@kitsune.suse.cz>
-From: Hari Bathini <hbathini@linux.vnet.ibm.com>
-Date: Tue, 23 May 2017 00:26:35 +0530
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wWpJ500TBzDqLN
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 May 2017 05:14:44 +1000 (AEST)
+Date: Mon, 22 May 2017 21:14:36 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Arnd Bergmann <arnd@arndb.de>
+cc: Christoph Hellwig <hch@lst.de>, Tejun Heo <tj@kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Mark Gross <mark.gross@intel.com>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ linux-s390 <linux-s390@vger.kernel.org>
+Subject: Re: RFC: better timer interface
+In-Reply-To: <CAK8P3a0uF-=7Ot16YpsyuZHVaoE1rLR6q7w5r4+uXkaVdPHT4A@mail.gmail.com>
+Message-ID: <alpine.DEB.2.20.1705222106390.2407@nanos>
+References: <20170516114812.10660-1-hch@lst.de>
+ <CAK8P3a1FoR_usw7du3ZRMF+PPhJ712EpArL_e1bLVNs7BYBu-w@mail.gmail.com>
+ <20170516155132.GA1494@lst.de>
+ <CAK8P3a3_Rjz9gTmayN1w8HrFHWY+wakeFgQSYRTAADJzF6zKJA@mail.gmail.com>
+ <alpine.DEB.2.20.1705211859410.3023@nanos>
+ <CAK8P3a0uF-=7Ot16YpsyuZHVaoE1rLR6q7w5r4+uXkaVdPHT4A@mail.gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <20170522125519.158e9a68@kitsune.suse.cz>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <0edc1c7b-bdc9-f157-ed56-f69ea11ba177@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -60,48 +33,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Mon, 22 May 2017, Arnd Bergmann wrote:
+> On Sun, May 21, 2017 at 7:13 PM, Thomas Gleixner <tglx@linutronix.de> wrote:
+> I agree, one of the above is good enough, if we do the large-scale API
+> replacement. Having both ms and sec variants would be for convenience
+> to avoid having lots of open-coded  '*MSEC_PER_SEC) multiplications.
 
-Hi Michal,
+Right, but that _sec variant is just a wrapper around the _ms functionality.
 
-Thanks for the review..
+> We still need at least three variants of timer_init, for statically initialized
+> timers, dynamic allocation and on-stack allocation, as before.
 
-On Monday 22 May 2017 04:25 PM, Michal Suchánek wrote:
-> On Mon, 22 May 2017 15:04:47 +0530
-> Hari Bathini <hbathini@linux.vnet.ibm.com> wrote:
->
->> With commit f6e6bedb7731 ("powerpc/fadump: Reserve memory at an offset
->> closer to bottom of RAM"), memory for fadump is no longer reserved at
->> the top of RAM. But there are still a few places which say so. Change
->> them appropriately.
->>
->> Signed-off-by: Hari Bathini <hbathini@linux.vnet.ibm.com>
->> ---
->>   Documentation/powerpc/firmware-assisted-dump.txt |    4 ++--
->>   arch/powerpc/kernel/fadump.c                     |    4 ++--
->>   2 files changed, 4 insertions(+), 4 deletions(-)
->>
->> diff --git a/Documentation/powerpc/firmware-assisted-dump.txt
->> b/Documentation/powerpc/firmware-assisted-dump.txt index
->> 9cabaf8..bdd344a 100644 ---
->> a/Documentation/powerpc/firmware-assisted-dump.txt +++
->> b/Documentation/powerpc/firmware-assisted-dump.txt @@ -61,8 +61,8 @@
->> as follows: boot successfully. For syntax of crashkernel= parameter,
->>            refer to Documentation/kdump/kdump.txt. If any offset is
->>            provided in crashkernel= parameter, it will be ignored
->> -         as fadump reserves memory at end of RAM for boot memory
->> -         dump preservation in case of a crash.
->> +         as fadump uses a predefined offset to reserve memory
->> +         for boot memory dump preservation in case of a crash.
-> What is the reason for fadump to prefer a random offset calculated by
-> the kernel over a random offset supplied by the user?
->
+Again, that's variants. What I wanted to avoid is that mod_ restart_ start_
+whatever distinction. It's pointless.
 
-An offset provided by user needs multiple checks failing which can be 
-tricky.
-While implementation is still possible, it makes the code complicated for no
-practical gain as commit f6e6bedb7731 is already calculating the best 
-possible
-offset..
+> For the 'abs' argument, I'd probably leave that out until we find code
+> that actually needs it and that can't use hrtimer as easily.
 
-Thanks
-Hari
+> For timer_start_on(), that would be a replacement of add_timer_on(),
+> which only has seven callers today:
+
+> arch/x86/kernel/apic/x2apic_uv_x.c:             add_timer_on(timer, cpu);
+> drivers/tty/metag_da.c: add_timer_on(poll_timer, 0);
+> drivers/tty/mips_ejtag_fdc.c:
+> add_timer_on(&priv->poll_timer, dev->cpu);
+> drivers/tty/mips_ejtag_fdc.c:
+> add_timer_on(&priv->poll_timer, dev->cpu);
+> kernel/time/clocksource.c:      add_timer_on(&watchdog_timer, next_cpu);
+> kernel/time/clocksource.c:      add_timer_on(&watchdog_timer,
+> cpumask_first(cpu_online_mask));
+> kernel/workqueue.c:             add_timer_on(timer, cpu);
+> 
+> If hrtimer isn't already a better interface for those, we can probably
+> convert them all to the new API at once.
+
+Some of them certainly can be converted. Though I'm starting to worry about
+massive hrtimer usage, which can really become a burden because the expiry
+functions run from hard interrupt context. We already have this horrible
+construct of hrtimer -> tasklet -> real function, which is used to get the
+hrtimer expiry out into softirq context.
+
+We have similar issue in RT, where we need to move out everything which is
+not hard irq safe to softirq context. I'm working on a solution there which
+is less ugly than what we have now in RT. It's moving non irq safe timers
+onto a different time base, e.g. MONOTONIC_SOFT, which merily wakes the
+softirq when the first queued timer expires and let that one sort out the
+expiry of those timers. It's WIP and should be available soon.
+
+Thanks,
+
+	tglx
