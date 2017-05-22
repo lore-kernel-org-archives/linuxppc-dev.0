@@ -1,23 +1,19 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
- [IPv6:2607:f8b0:400e:c00::242])
+Return-Path: <dja@axtens.net>
+Received: from mail-qt0-x241.google.com (mail-qt0-x241.google.com
+ [IPv6:2607:f8b0:400d:c0d::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wWKKZ3FH6zDqLK
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 May 2017 10:29:21 +1000 (AEST)
-Received: by mail-pf0-x242.google.com with SMTP id n23so16044954pfb.3
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 21 May 2017 17:29:21 -0700 (PDT)
-Date: Mon, 22 May 2017 10:29:05 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Benjamin Herrenschmidt <benh@au1.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, Anton Blanchard <anton@samba.org>
-Subject: Re: [RFC][PATCH] powerpc/64s: stop using r14 register
-Message-ID: <20170522102905.32a5645f@roar.ozlabs.ibm.com>
-In-Reply-To: <1495404559.3092.140.camel@au1.ibm.com>
-References: <20170521140011.17548-1-npiggin@gmail.com>
- <1495404559.3092.140.camel@au1.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wWLkz0W4CzDqJv
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 May 2017 11:32:58 +1000 (AEST)
+Received: by mail-qt0-x241.google.com with SMTP id j13so16485449qta.3
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 21 May 2017 18:32:57 -0700 (PDT)
+From: Daniel Axtens <dja@axtens.net>
+To: kernel-hardening@lists.openwall.com,
+	linuxppc-dev@lists.ozlabs.org
+Cc: Daniel Axtens <dja@axtens.net>
+Subject: [PATCH 0/2] powerpc: fortify support
+Date: Mon, 22 May 2017 11:32:31 +1000
+Message-Id: <20170522013233.21780-1-dja@axtens.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,33 +23,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 22 May 2017 08:09:19 +1000
-Benjamin Herrenschmidt <benh@au1.ibm.com> wrote:
+This series provides arch-specific support for Daniel Micay's
+fortified string functions on powerpc.
 
-> On Mon, 2017-05-22 at 00:00 +1000, Nicholas Piggin wrote:
-> > I'd like to take over the r14 register for use as a per-cpu kernel
-> > register similar to the way r13 is used for the paca.  
-> 
-> Why not use r13 instead ? We don't need to access the PACA that often
-> from C code, I thought we could flip them...
+Fortified string functions provied some compile and run time bounds
+checking on commonly used string functions.
 
-It ended up being a bit too tricky to do it that way. We can't get
-directly to per-CPU data from the per-cpu data offset in exception
-entry code for a number of reasons. So we end up having to load the
-paca first.
+It's cool - currently it picks up a lot of random things so it will
+require some more work across the tree, but hopefully it will
+eventually hit mainline. These patches make powerpc ready for when it
+does.
 
-I looked at swapping r13 from paca to per-cpu offset at the same
-time the stack is set up, so paca is used for early save areas then
-per-cpu is used in C code. In practice it ended up getting too
-tricky and fragile dealing with nested interrupts, machine checks,
-etc.
+They've been tested on pseries.
 
-I think it's something we might slowly work towards (consolidating
-back to one fixed register), but as things are it didn't work well.
+I think patch 1 should probably go through Kees to line up with the
+fortify patch itself, but patch 2 can apply to powerpc as is. But up
+to you, mpe.
 
-It's easy to drop the fixed r14 in future if we can. None of the
-incidental asm users of r14 were complicating them by moving them
-to another register.
+Regards,
+Daniel
 
-Thanks,
-Nick
+Daniel Axtens (2):
+  powerpc: Don't fortify prom_init
+  powerpc: Make feature-fixup tests fortify-safe
+
+ arch/powerpc/kernel/prom_init.c   |   3 +
+ arch/powerpc/lib/feature-fixups.c | 180 +++++++++++++++++++-------------------
+ 2 files changed, 93 insertions(+), 90 deletions(-)
+
+-- 
+2.11.0
