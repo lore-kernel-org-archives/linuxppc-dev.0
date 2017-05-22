@@ -1,21 +1,25 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wWVZg37NCzDq5j
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 May 2017 17:26:19 +1000 (AEST)
-Subject: Re: [PATCH] powerpc/64: Use tick accounting by default
-To: Anton Blanchard <anton@ozlabs.org>, benh@kernel.crashing.org,
- paulus@samba.org, mpe@ellerman.id.au, npiggin@gmail.com, mikey@neuling.org,
- cyrilbur@gmail.com
-References: <20170519144112.15649-1-anton@ozlabs.org>
-Cc: linuxppc-dev@lists.ozlabs.org
-From: Christophe LEROY <christophe.leroy@c-s.fr>
-Message-ID: <dee9e3a7-af89-b217-ad0f-ee07d7237050@c-s.fr>
-Date: Mon, 22 May 2017 09:26:14 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wWXxY4vVqzDqLk
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 May 2017 19:12:49 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Pavel Machek <pavel@denx.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>, mark.rutland@arm.com,
+ devicetree@vger.kernel.org, trivial@kernel.org, linux-kernel@vger.kernel.org,
+ robh+dt@kernel.org, paulus@samba.org, Andrew Morton <akpm@osdl.org>,
+ jwboyer@linux.vnet.ibm.com, sr@denx.de, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] powerpc/sequoia: fix NAND partitions not to overlap
+In-Reply-To: <20170519111837.GB3940@amd>
+References: <20170402100535.GA18340@amd> <20170517120613.GA583@amd>
+ <20170517143717.ad818a2282378fc7a38af1ff@linux-foundation.org>
+ <20170518094813.GA12038@amd> <87efvl75ts.fsf@concordia.ellerman.id.au>
+ <87zie95fiq.fsf@concordia.ellerman.id.au> <20170519111837.GB3940@amd>
+Date: Mon, 22 May 2017 19:12:48 +1000
+Message-ID: <87fufxs19r.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <20170519144112.15649-1-anton@ozlabs.org>
-Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,51 +29,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Pavel Machek <pavel@denx.de> writes:
 
+> Hi!
+>
+>> >>> > > Signed-off-by: Pavel Machek <pavel@ucw.cz>
+>> >>> > 
+>> >>> > Ping? Two partitions at same place are bad news...
+>> >>> 
+>> >>> Please expand on "bad news"?  What are the runtime effects of this
+>> >>> change?  Decisions about which kernel(s) to patch depend on this info.
+>> >>
+>> >> Well... two partitions at same place. If you use one, you will corrupt
+>> >> information on the other one.
+>> >>
+>> >> OTOH this moves partition around (so that they don't overlap) so it is
+>> >> probably not stable candidate.
+>> >>
+>> >> I guess this is not huge issue; people using these boards probably
+>> >> have custom dts changes, anyway...
+>> >
+>> > Or no one's even using it anymore.
+>> >
+>> > I can take this via powerpc, I won't mark it for stable etc.
+>> 
+>> It became:
+>> 
+>>     Author:     Pavel Machek <pavel@denx.de>
+>> 
+>>     powerpc/sequoia: Fix NAND partitions not to overlap
+>>     
+>>     Currently the DTS defines two partitions at the same addresses, if you
+>>     use one, you will corrupt information on the other one. Fix it by
+>>     shifting the second partition.
+>>     
+>>     Signed-off-by: Pavel Machek <pavel@ucw.cz>
+>>     [mpe: Reconstruct change log from email thread]
+>>     Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+>> 
+>> 
+>> Minor nit, your From: address doesn't match your Signed-off-by: address,
+>> which trips my "check patch is signed-off-by author" script. I can
+>> just ignore it, but I think it's preferable if they match.
+>
+> Sorry about that (I have automatic scripts changing From:). It is
+> still me, but I guess denx should get the credit here, so you can use.
+>
+> Signed-off-by: Pavel Machek <pavel@denx.de>
 
-Le 19/05/2017 à 16:41, Anton Blanchard a écrit :
-> From: Anton Blanchard <anton@samba.org>
->
-> ppc64 is the only architecture that turns on VIRT_CPU_ACCOUNTING_NATIVE
-> by default. The overhead of this option is extremely high - a context
-> switch microbenchmark using sched_yield() is almost 20% slower.
->
-> To get finer grained user/hardirq/softirq statitics, the
-> IRQ_TIME_ACCOUNTING option can be used instead, which has much lower
-> overhead.
+Sure, done.
 
-Does IRQ_TIME_ACCOUNTING allow the same granularity as 
-VIRT_CPU_ACCOUNTING_NATIVE ?
-I've quickly looked into the source, it seems that this option still 
-accounts based on time ticks.
-On a hardware doing mainly VoIP handling, the processes run a few ms 
-every 20 ms. With TICK_CPU_ACCOUNTING and a 10ms tick, the processes 
-either appear with 50% CPU or almost 0%.
-Would it be more precise with IRQ_TIME_ACCOUNTING ?
-
-Christophe
-
->
-> As such, disable this option by default. If a user really wants it,
-> they can still enable it manually.
->
-> Signed-off-by: Anton Blanchard <anton@samba.org>
-> ---
->  init/Kconfig | 3 +--
->  1 file changed, 1 insertion(+), 2 deletions(-)
->
-> diff --git a/init/Kconfig b/init/Kconfig
-> index 1d3475fc9496..a5c30acc1ede 100644
-> --- a/init/Kconfig
-> +++ b/init/Kconfig
-> @@ -342,8 +342,7 @@ config VIRT_CPU_ACCOUNTING
->
->  choice
->  	prompt "Cputime accounting"
-> -	default TICK_CPU_ACCOUNTING if !PPC64
-> -	default VIRT_CPU_ACCOUNTING_NATIVE if PPC64
-> +	default TICK_CPU_ACCOUNTING
->
->  # Kind of a stub config for the pure tick based cputime accounting
->  config TICK_CPU_ACCOUNTING
->
+cheers
