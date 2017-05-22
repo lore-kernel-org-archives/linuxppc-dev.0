@@ -1,22 +1,19 @@
-Return-Path: <dja@axtens.net>
-Received: from mail-qk0-x243.google.com (mail-qk0-x243.google.com
- [IPv6:2607:f8b0:400d:c09::243])
+Return-Path: <oohall@gmail.com>
+Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
+ [IPv6:2607:f8b0:400e:c00::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wWLlK6Wr4zDqZV
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 May 2017 11:33:17 +1000 (AEST)
-Received: by mail-qk0-x243.google.com with SMTP id u75so17196009qka.1
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 21 May 2017 18:33:17 -0700 (PDT)
-From: Daniel Axtens <dja@axtens.net>
-To: kernel-hardening@lists.openwall.com,
-	linuxppc-dev@lists.ozlabs.org
-Cc: Daniel Axtens <dja@axtens.net>, Kees Cook <keescook@chromium.org>,
- Daniel Micay <danielmicay@gmail.com>
-Subject: [PATCH 2/2] powerpc: Make feature-fixup tests fortify-safe
-Date: Mon, 22 May 2017 11:32:33 +1000
-Message-Id: <20170522013233.21780-3-dja@axtens.net>
-In-Reply-To: <20170522013233.21780-1-dja@axtens.net>
-References: <20170522013233.21780-1-dja@axtens.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wWPv93T7hzDqL5
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 May 2017 13:55:17 +1000 (AEST)
+Received: by mail-pf0-x243.google.com with SMTP id w69so16941581pfk.1
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 21 May 2017 20:55:17 -0700 (PDT)
+From: Oliver O'Halloran <oohall@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: kvm-ppc@vger.kernel.org, Oliver O'Halloran <oohall@gmail.com>,
+ Paul Mackerras <paulus@samba.org>, Michael Neuling <mikey@neuling.org>
+Subject: [PATCH] KVM: PPC: hypervisor large decrementer support
+Date: Mon, 22 May 2017 13:55:03 +1000
+Message-Id: <20170522035503.14790-1-oohall@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,326 +23,274 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Testing the fortified string functions[1] would cause a kernel
-panic on boot in test_feature_fixups() due to a buffer overflow
-in memcmp.
+Power ISAv3 extends the width of the decrementer register from 32 bits.
+The enlarged register width is implementation dependent, but reads from
+these registers are automatically sign extended to produce a 64 bit
+output when operating in large mode. The HDEC always operates in large
+mode while the DEC register can be operated in 32bit mode or large mode
+depending on the setting of the LPCR.LD bit.
 
-This boils down to things like this:
+Currently the hypervisor assumes that reads from the DEC and HDEC
+register produce a 32 bit result which it sign extends to 64 bits using
+the extsw instruction. This behaviour can result in the guest DEC
+register value being corrupted by the hypervisor when the guest is
+operating in LD mode since the results of the extsw instruction only
+depends on the value of bit 31 in the register to be sign extended.
 
-  extern unsigned int ftr_fixup_test1;
-  extern unsigned int ftr_fixup_test1_orig;
+This patch adds the GET_DEC() and GET_HDEC() assembly macros for reading
+from the decrementer registers. These macros will return the current
+decrementer value as a 64 bit quantity regardless of the Host CPU or
+guest decrementer operating mode. Additionally this patch corrects
+several uses of decrementer values that assume a 32 bit register width.
 
-  check(memcmp(&ftr_fixup_test1, &ftr_fixup_test1_orig, size) == 0);
-
-We know that these are asm labels so it is safe to read up to
-'size' bytes at those addresses.
-
-However, because we have passed the address of a single unsigned
-int to memcmp, the compiler believes the underlying object is in
-fact a single unsigned int. So if size > sizeof(unsigned int),
-there will be a panic at runtime.
-
-We can fix this by changing the types: instead of calling the asm
-labels unsigned ints, call them unsigned int[]s. Therefore the
-size isn't incorrectly determined at compile time and we get a
-regular unsafe memcmp and no panic.
-
-[1] http://openwall.com/lists/kernel-hardening/2017/05/09/2
-
-Suggested-by: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Kees Cook <keescook@chromium.org>
-Cc: Daniel Micay <danielmicay@gmail.com>
-Signed-off-by: Daniel Axtens <dja@axtens.net>
+Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Michael Neuling <mikey@neuling.org>
 ---
- arch/powerpc/lib/feature-fixups.c | 180 +++++++++++++++++++-------------------
- 1 file changed, 90 insertions(+), 90 deletions(-)
+ arch/powerpc/include/asm/exception-64s.h | 29 ++++++++++++++++++++++++
+ arch/powerpc/include/asm/kvm_host.h      |  2 +-
+ arch/powerpc/include/asm/kvm_ppc.h       |  2 +-
+ arch/powerpc/include/uapi/asm/kvm.h      |  2 +-
+ arch/powerpc/kvm/book3s_hv_interrupts.S  |  3 +--
+ arch/powerpc/kvm/book3s_hv_rmhandlers.S  | 38 ++++++++++++++++++--------------
+ arch/powerpc/kvm/emulate.c               |  6 ++---
+ 7 files changed, 57 insertions(+), 25 deletions(-)
 
-diff --git a/arch/powerpc/lib/feature-fixups.c b/arch/powerpc/lib/feature-fixups.c
-index f3917705c686..41cf5ae273cf 100644
---- a/arch/powerpc/lib/feature-fixups.c
-+++ b/arch/powerpc/lib/feature-fixups.c
-@@ -233,192 +233,192 @@ static long calc_offset(struct fixup_entry *entry, unsigned int *p)
- 
- static void test_basic_patching(void)
- {
--	extern unsigned int ftr_fixup_test1;
--	extern unsigned int end_ftr_fixup_test1;
--	extern unsigned int ftr_fixup_test1_orig;
--	extern unsigned int ftr_fixup_test1_expected;
--	int size = &end_ftr_fixup_test1 - &ftr_fixup_test1;
-+	extern unsigned int ftr_fixup_test1[];
-+	extern unsigned int end_ftr_fixup_test1[];
-+	extern unsigned int ftr_fixup_test1_orig[];
-+	extern unsigned int ftr_fixup_test1_expected[];
-+	int size = end_ftr_fixup_test1 - ftr_fixup_test1;
- 
- 	fixup.value = fixup.mask = 8;
--	fixup.start_off = calc_offset(&fixup, &ftr_fixup_test1 + 1);
--	fixup.end_off = calc_offset(&fixup, &ftr_fixup_test1 + 2);
-+	fixup.start_off = calc_offset(&fixup, ftr_fixup_test1 + 1);
-+	fixup.end_off = calc_offset(&fixup, ftr_fixup_test1 + 2);
- 	fixup.alt_start_off = fixup.alt_end_off = 0;
- 
- 	/* Sanity check */
--	check(memcmp(&ftr_fixup_test1, &ftr_fixup_test1_orig, size) == 0);
-+	check(memcmp(ftr_fixup_test1, ftr_fixup_test1_orig, size) == 0);
- 
- 	/* Check we don't patch if the value matches */
- 	patch_feature_section(8, &fixup);
--	check(memcmp(&ftr_fixup_test1, &ftr_fixup_test1_orig, size) == 0);
-+	check(memcmp(ftr_fixup_test1, ftr_fixup_test1_orig, size) == 0);
- 
- 	/* Check we do patch if the value doesn't match */
- 	patch_feature_section(0, &fixup);
--	check(memcmp(&ftr_fixup_test1, &ftr_fixup_test1_expected, size) == 0);
-+	check(memcmp(ftr_fixup_test1, ftr_fixup_test1_expected, size) == 0);
- 
- 	/* Check we do patch if the mask doesn't match */
--	memcpy(&ftr_fixup_test1, &ftr_fixup_test1_orig, size);
--	check(memcmp(&ftr_fixup_test1, &ftr_fixup_test1_orig, size) == 0);
-+	memcpy(ftr_fixup_test1, ftr_fixup_test1_orig, size);
-+	check(memcmp(ftr_fixup_test1, ftr_fixup_test1_orig, size) == 0);
- 	patch_feature_section(~8, &fixup);
--	check(memcmp(&ftr_fixup_test1, &ftr_fixup_test1_expected, size) == 0);
-+	check(memcmp(ftr_fixup_test1, ftr_fixup_test1_expected, size) == 0);
- }
- 
- static void test_alternative_patching(void)
- {
--	extern unsigned int ftr_fixup_test2;
--	extern unsigned int end_ftr_fixup_test2;
--	extern unsigned int ftr_fixup_test2_orig;
--	extern unsigned int ftr_fixup_test2_alt;
--	extern unsigned int ftr_fixup_test2_expected;
--	int size = &end_ftr_fixup_test2 - &ftr_fixup_test2;
-+	extern unsigned int ftr_fixup_test2[];
-+	extern unsigned int end_ftr_fixup_test2[];
-+	extern unsigned int ftr_fixup_test2_orig[];
-+	extern unsigned int ftr_fixup_test2_alt[];
-+	extern unsigned int ftr_fixup_test2_expected[];
-+	int size = end_ftr_fixup_test2 - ftr_fixup_test2;
- 
- 	fixup.value = fixup.mask = 0xF;
--	fixup.start_off = calc_offset(&fixup, &ftr_fixup_test2 + 1);
--	fixup.end_off = calc_offset(&fixup, &ftr_fixup_test2 + 2);
--	fixup.alt_start_off = calc_offset(&fixup, &ftr_fixup_test2_alt);
--	fixup.alt_end_off = calc_offset(&fixup, &ftr_fixup_test2_alt + 1);
-+	fixup.start_off = calc_offset(&fixup, ftr_fixup_test2 + 1);
-+	fixup.end_off = calc_offset(&fixup, ftr_fixup_test2 + 2);
-+	fixup.alt_start_off = calc_offset(&fixup, ftr_fixup_test2_alt);
-+	fixup.alt_end_off = calc_offset(&fixup, ftr_fixup_test2_alt + 1);
- 
- 	/* Sanity check */
--	check(memcmp(&ftr_fixup_test2, &ftr_fixup_test2_orig, size) == 0);
-+	check(memcmp(ftr_fixup_test2, ftr_fixup_test2_orig, size) == 0);
- 
- 	/* Check we don't patch if the value matches */
- 	patch_feature_section(0xF, &fixup);
--	check(memcmp(&ftr_fixup_test2, &ftr_fixup_test2_orig, size) == 0);
-+	check(memcmp(ftr_fixup_test2, ftr_fixup_test2_orig, size) == 0);
- 
- 	/* Check we do patch if the value doesn't match */
- 	patch_feature_section(0, &fixup);
--	check(memcmp(&ftr_fixup_test2, &ftr_fixup_test2_expected, size) == 0);
-+	check(memcmp(ftr_fixup_test2, ftr_fixup_test2_expected, size) == 0);
- 
- 	/* Check we do patch if the mask doesn't match */
--	memcpy(&ftr_fixup_test2, &ftr_fixup_test2_orig, size);
--	check(memcmp(&ftr_fixup_test2, &ftr_fixup_test2_orig, size) == 0);
-+	memcpy(ftr_fixup_test2, ftr_fixup_test2_orig, size);
-+	check(memcmp(ftr_fixup_test2, ftr_fixup_test2_orig, size) == 0);
- 	patch_feature_section(~0xF, &fixup);
--	check(memcmp(&ftr_fixup_test2, &ftr_fixup_test2_expected, size) == 0);
-+	check(memcmp(ftr_fixup_test2, ftr_fixup_test2_expected, size) == 0);
- }
- 
- static void test_alternative_case_too_big(void)
- {
--	extern unsigned int ftr_fixup_test3;
--	extern unsigned int end_ftr_fixup_test3;
--	extern unsigned int ftr_fixup_test3_orig;
--	extern unsigned int ftr_fixup_test3_alt;
--	int size = &end_ftr_fixup_test3 - &ftr_fixup_test3;
-+	extern unsigned int ftr_fixup_test3[];
-+	extern unsigned int end_ftr_fixup_test3[];
-+	extern unsigned int ftr_fixup_test3_orig[];
-+	extern unsigned int ftr_fixup_test3_alt[];
-+	int size = end_ftr_fixup_test3 - ftr_fixup_test3;
- 
- 	fixup.value = fixup.mask = 0xC;
--	fixup.start_off = calc_offset(&fixup, &ftr_fixup_test3 + 1);
--	fixup.end_off = calc_offset(&fixup, &ftr_fixup_test3 + 2);
--	fixup.alt_start_off = calc_offset(&fixup, &ftr_fixup_test3_alt);
--	fixup.alt_end_off = calc_offset(&fixup, &ftr_fixup_test3_alt + 2);
-+	fixup.start_off = calc_offset(&fixup, ftr_fixup_test3 + 1);
-+	fixup.end_off = calc_offset(&fixup, ftr_fixup_test3 + 2);
-+	fixup.alt_start_off = calc_offset(&fixup, ftr_fixup_test3_alt);
-+	fixup.alt_end_off = calc_offset(&fixup, ftr_fixup_test3_alt + 2);
- 
- 	/* Sanity check */
--	check(memcmp(&ftr_fixup_test3, &ftr_fixup_test3_orig, size) == 0);
-+	check(memcmp(ftr_fixup_test3, ftr_fixup_test3_orig, size) == 0);
- 
- 	/* Expect nothing to be patched, and the error returned to us */
- 	check(patch_feature_section(0xF, &fixup) == 1);
--	check(memcmp(&ftr_fixup_test3, &ftr_fixup_test3_orig, size) == 0);
-+	check(memcmp(ftr_fixup_test3, ftr_fixup_test3_orig, size) == 0);
- 	check(patch_feature_section(0, &fixup) == 1);
--	check(memcmp(&ftr_fixup_test3, &ftr_fixup_test3_orig, size) == 0);
-+	check(memcmp(ftr_fixup_test3, ftr_fixup_test3_orig, size) == 0);
- 	check(patch_feature_section(~0xF, &fixup) == 1);
--	check(memcmp(&ftr_fixup_test3, &ftr_fixup_test3_orig, size) == 0);
-+	check(memcmp(ftr_fixup_test3, ftr_fixup_test3_orig, size) == 0);
- }
- 
- static void test_alternative_case_too_small(void)
- {
--	extern unsigned int ftr_fixup_test4;
--	extern unsigned int end_ftr_fixup_test4;
--	extern unsigned int ftr_fixup_test4_orig;
--	extern unsigned int ftr_fixup_test4_alt;
--	extern unsigned int ftr_fixup_test4_expected;
--	int size = &end_ftr_fixup_test4 - &ftr_fixup_test4;
-+	extern unsigned int ftr_fixup_test4[];
-+	extern unsigned int end_ftr_fixup_test4[];
-+	extern unsigned int ftr_fixup_test4_orig[];
-+	extern unsigned int ftr_fixup_test4_alt[];
-+	extern unsigned int ftr_fixup_test4_expected[];
-+	int size = end_ftr_fixup_test4 - ftr_fixup_test4;
- 	unsigned long flag;
- 
- 	/* Check a high-bit flag */
- 	flag = 1UL << ((sizeof(unsigned long) - 1) * 8);
- 	fixup.value = fixup.mask = flag;
--	fixup.start_off = calc_offset(&fixup, &ftr_fixup_test4 + 1);
--	fixup.end_off = calc_offset(&fixup, &ftr_fixup_test4 + 5);
--	fixup.alt_start_off = calc_offset(&fixup, &ftr_fixup_test4_alt);
--	fixup.alt_end_off = calc_offset(&fixup, &ftr_fixup_test4_alt + 2);
-+	fixup.start_off = calc_offset(&fixup, ftr_fixup_test4 + 1);
-+	fixup.end_off = calc_offset(&fixup, ftr_fixup_test4 + 5);
-+	fixup.alt_start_off = calc_offset(&fixup, ftr_fixup_test4_alt);
-+	fixup.alt_end_off = calc_offset(&fixup, ftr_fixup_test4_alt + 2);
- 
- 	/* Sanity check */
--	check(memcmp(&ftr_fixup_test4, &ftr_fixup_test4_orig, size) == 0);
-+	check(memcmp(ftr_fixup_test4, ftr_fixup_test4_orig, size) == 0);
- 
- 	/* Check we don't patch if the value matches */
- 	patch_feature_section(flag, &fixup);
--	check(memcmp(&ftr_fixup_test4, &ftr_fixup_test4_orig, size) == 0);
-+	check(memcmp(ftr_fixup_test4, ftr_fixup_test4_orig, size) == 0);
- 
- 	/* Check we do patch if the value doesn't match */
- 	patch_feature_section(0, &fixup);
--	check(memcmp(&ftr_fixup_test4, &ftr_fixup_test4_expected, size) == 0);
-+	check(memcmp(ftr_fixup_test4, ftr_fixup_test4_expected, size) == 0);
- 
- 	/* Check we do patch if the mask doesn't match */
--	memcpy(&ftr_fixup_test4, &ftr_fixup_test4_orig, size);
--	check(memcmp(&ftr_fixup_test4, &ftr_fixup_test4_orig, size) == 0);
-+	memcpy(ftr_fixup_test4, ftr_fixup_test4_orig, size);
-+	check(memcmp(ftr_fixup_test4, ftr_fixup_test4_orig, size) == 0);
- 	patch_feature_section(~flag, &fixup);
--	check(memcmp(&ftr_fixup_test4, &ftr_fixup_test4_expected, size) == 0);
-+	check(memcmp(ftr_fixup_test4, ftr_fixup_test4_expected, size) == 0);
- }
- 
- static void test_alternative_case_with_branch(void)
- {
--	extern unsigned int ftr_fixup_test5;
--	extern unsigned int end_ftr_fixup_test5;
--	extern unsigned int ftr_fixup_test5_expected;
--	int size = &end_ftr_fixup_test5 - &ftr_fixup_test5;
-+	extern unsigned int ftr_fixup_test5[];
-+	extern unsigned int end_ftr_fixup_test5[];
-+	extern unsigned int ftr_fixup_test5_expected[];
-+	int size = end_ftr_fixup_test5 - ftr_fixup_test5;
- 
--	check(memcmp(&ftr_fixup_test5, &ftr_fixup_test5_expected, size) == 0);
-+	check(memcmp(ftr_fixup_test5, ftr_fixup_test5_expected, size) == 0);
- }
- 
- static void test_alternative_case_with_external_branch(void)
- {
--	extern unsigned int ftr_fixup_test6;
--	extern unsigned int end_ftr_fixup_test6;
--	extern unsigned int ftr_fixup_test6_expected;
--	int size = &end_ftr_fixup_test6 - &ftr_fixup_test6;
-+	extern unsigned int ftr_fixup_test6[];
-+	extern unsigned int end_ftr_fixup_test6[];
-+	extern unsigned int ftr_fixup_test6_expected[];
-+	int size = end_ftr_fixup_test6 - ftr_fixup_test6;
- 
--	check(memcmp(&ftr_fixup_test6, &ftr_fixup_test6_expected, size) == 0);
-+	check(memcmp(ftr_fixup_test6, ftr_fixup_test6_expected, size) == 0);
- }
- 
- static void test_cpu_macros(void)
- {
--	extern u8 ftr_fixup_test_FTR_macros;
--	extern u8 ftr_fixup_test_FTR_macros_expected;
--	unsigned long size = &ftr_fixup_test_FTR_macros_expected -
--			     &ftr_fixup_test_FTR_macros;
-+	extern u8 ftr_fixup_test_FTR_macros[];
-+	extern u8 ftr_fixup_test_FTR_macros_expected[];
-+	unsigned long size = ftr_fixup_test_FTR_macros_expected -
-+			     ftr_fixup_test_FTR_macros;
- 
- 	/* The fixups have already been done for us during boot */
--	check(memcmp(&ftr_fixup_test_FTR_macros,
--		     &ftr_fixup_test_FTR_macros_expected, size) == 0);
-+	check(memcmp(ftr_fixup_test_FTR_macros,
-+		     ftr_fixup_test_FTR_macros_expected, size) == 0);
- }
- 
- static void test_fw_macros(void)
- {
- #ifdef CONFIG_PPC64
--	extern u8 ftr_fixup_test_FW_FTR_macros;
--	extern u8 ftr_fixup_test_FW_FTR_macros_expected;
--	unsigned long size = &ftr_fixup_test_FW_FTR_macros_expected -
--			     &ftr_fixup_test_FW_FTR_macros;
-+	extern u8 ftr_fixup_test_FW_FTR_macros[];
-+	extern u8 ftr_fixup_test_FW_FTR_macros_expected[];
-+	unsigned long size = ftr_fixup_test_FW_FTR_macros_expected -
-+			     ftr_fixup_test_FW_FTR_macros;
- 
- 	/* The fixups have already been done for us during boot */
--	check(memcmp(&ftr_fixup_test_FW_FTR_macros,
--		     &ftr_fixup_test_FW_FTR_macros_expected, size) == 0);
-+	check(memcmp(ftr_fixup_test_FW_FTR_macros,
-+		     ftr_fixup_test_FW_FTR_macros_expected, size) == 0);
+diff --git a/arch/powerpc/include/asm/exception-64s.h b/arch/powerpc/include/asm/exception-64s.h
+index 93ae809fe5ea..4fa303bf6d5b 100644
+--- a/arch/powerpc/include/asm/exception-64s.h
++++ b/arch/powerpc/include/asm/exception-64s.h
+@@ -545,4 +545,33 @@ END_FTR_SECTION_IFSET(CPU_FTR_CAN_NAP)
+ #define FINISH_NAP
  #endif
- }
  
- static void test_lwsync_macros(void)
- {
--	extern u8 lwsync_fixup_test;
--	extern u8 end_lwsync_fixup_test;
--	extern u8 lwsync_fixup_test_expected_LWSYNC;
--	extern u8 lwsync_fixup_test_expected_SYNC;
--	unsigned long size = &end_lwsync_fixup_test -
--			     &lwsync_fixup_test;
-+	extern u8 lwsync_fixup_test[];
-+	extern u8 end_lwsync_fixup_test[];
-+	extern u8 lwsync_fixup_test_expected_LWSYNC[];
-+	extern u8 lwsync_fixup_test_expected_SYNC[];
-+	unsigned long size = end_lwsync_fixup_test -
-+			     lwsync_fixup_test;
++/*
++ * On ISAv3 processors the DEC register can be extended from 32 bits to 64 by
++ * setting the LD flag the LPCR. The decrementer value is a signed quantity so
++ * sign exension is required when operating in 32 bit mode. The GET_DEC() and
++ * GET_HDEC() handle this sign extension and yield a 64 bit result independent
++ * of the LD mode.
++ *
++ * NB: It's possible run with LD mode disabled on ISAv3 so GET_DEC() does not
++ *     use a CPU_FEATURE section. A feature section is used for GET_HDEC because
++ *     it has no mode bit. It is always 64 bits for ISAv3 processors.
++ */
++
++#define IS_LD_ENABLED(reg)                 \
++	mfspr  reg,SPRN_LPCR;              \
++	andis. reg,reg,(LPCR_LD >> 16);
++
++#define GET_DEC(reg)                       \
++	IS_LD_ENABLED(reg);                \
++	mfspr reg, SPRN_DEC;               \
++	bne 99f;                           \
++	extsw reg, reg;                    \
++99:
++
++#define GET_HDEC(reg) \
++	mfspr reg, SPRN_HDEC;           \
++BEGIN_FTR_SECTION                       \
++	extsw reg, reg;                 \
++END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_300)
++
+ #endif	/* _ASM_POWERPC_EXCEPTION_H */
+diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
+index ec35af34a3fb..ddea233e2cce 100644
+--- a/arch/powerpc/include/asm/kvm_host.h
++++ b/arch/powerpc/include/asm/kvm_host.h
+@@ -520,7 +520,7 @@ struct kvm_vcpu_arch {
+ 	ulong mcsrr0;
+ 	ulong mcsrr1;
+ 	ulong mcsr;
+-	u32 dec;
++	u64 dec;
+ #ifdef CONFIG_BOOKE
+ 	u32 decar;
+ #endif
+diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
+index 2544edabe7f3..4de0102930e9 100644
+--- a/arch/powerpc/include/asm/kvm_ppc.h
++++ b/arch/powerpc/include/asm/kvm_ppc.h
+@@ -94,7 +94,7 @@ extern int kvmppc_emulate_instruction(struct kvm_run *run,
+ extern int kvmppc_emulate_loadstore(struct kvm_vcpu *vcpu);
+ extern int kvmppc_emulate_mmio(struct kvm_run *run, struct kvm_vcpu *vcpu);
+ extern void kvmppc_emulate_dec(struct kvm_vcpu *vcpu);
+-extern u32 kvmppc_get_dec(struct kvm_vcpu *vcpu, u64 tb);
++extern u64 kvmppc_get_dec(struct kvm_vcpu *vcpu, u64 tb);
+ extern void kvmppc_decrementer_func(struct kvm_vcpu *vcpu);
+ extern int kvmppc_sanity_check(struct kvm_vcpu *vcpu);
+ extern int kvmppc_subarch_vcpu_init(struct kvm_vcpu *vcpu);
+diff --git a/arch/powerpc/include/uapi/asm/kvm.h b/arch/powerpc/include/uapi/asm/kvm.h
+index c93cf35ce379..2dd92e841127 100644
+--- a/arch/powerpc/include/uapi/asm/kvm.h
++++ b/arch/powerpc/include/uapi/asm/kvm.h
+@@ -215,7 +215,7 @@ struct kvm_sregs {
+ 			__u32 tsr;	/* KVM_SREGS_E_UPDATE_TSR */
+ 			__u32 tcr;
+ 			__u32 decar;
+-			__u32 dec;	/* KVM_SREGS_E_UPDATE_DEC */
++			__u64 dec;	/* KVM_SREGS_E_UPDATE_DEC */
  
- 	/* The fixups have already been done for us during boot */
- 	if (cur_cpu_spec->cpu_features & CPU_FTR_LWSYNC) {
--		check(memcmp(&lwsync_fixup_test,
--			     &lwsync_fixup_test_expected_LWSYNC, size) == 0);
-+		check(memcmp(lwsync_fixup_test,
-+			     lwsync_fixup_test_expected_LWSYNC, size) == 0);
- 	} else {
--		check(memcmp(&lwsync_fixup_test,
--			     &lwsync_fixup_test_expected_SYNC, size) == 0);
-+		check(memcmp(lwsync_fixup_test,
-+			     lwsync_fixup_test_expected_SYNC, size) == 0);
+ 			/*
+ 			 * Userspace can read TB directly, but the
+diff --git a/arch/powerpc/kvm/book3s_hv_interrupts.S b/arch/powerpc/kvm/book3s_hv_interrupts.S
+index 0fdc4a28970b..b408f72385e4 100644
+--- a/arch/powerpc/kvm/book3s_hv_interrupts.S
++++ b/arch/powerpc/kvm/book3s_hv_interrupts.S
+@@ -121,10 +121,9 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
+ 	 * Put whatever is in the decrementer into the
+ 	 * hypervisor decrementer.
+ 	 */
+-	mfspr	r8,SPRN_DEC
++	GET_DEC(r8)
+ 	mftb	r7
+ 	mtspr	SPRN_HDEC,r8
+-	extsw	r8,r8
+ 	add	r8,r8,r7
+ 	std	r8,HSTATE_DECEXP(r13)
+ 
+diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+index e571ad277398..718e5581494e 100644
+--- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
++++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+@@ -183,6 +183,10 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
+ kvmppc_primary_no_guest:
+ 	/* We handle this much like a ceded vcpu */
+ 	/* put the HDEC into the DEC, since HDEC interrupts don't wake us */
++
++	/* XXX: ISA v3 only says the HDEC is at least as large as the DEC, but
++	 *      this code assumes we can fit HDEC in DEC. This is probably
++	 *      not an issue in practice, but... */
+ 	mfspr	r3, SPRN_HDEC
+ 	mtspr	SPRN_DEC, r3
+ 	/*
+@@ -249,9 +253,9 @@ kvm_novcpu_wakeup:
+ 	bge	kvm_novcpu_exit
+ 
+ 	/* See if our timeslice has expired (HDEC is negative) */
+-	mfspr	r0, SPRN_HDEC
++	GET_HDEC(r0);
+ 	li	r12, BOOK3S_INTERRUPT_HV_DECREMENTER
+-	cmpwi	r0, 0
++	cmpdi	r0, 0
+ 	blt	kvm_novcpu_exit
+ 
+ 	/* Got an IPI but other vcpus aren't yet exiting, must be a latecomer */
+@@ -340,8 +344,9 @@ kvm_secondary_got_guest:
+ 	lbz	r4, HSTATE_PTID(r13)
+ 	cmpwi	r4, 0
+ 	bne	63f
+-	lis	r6, 0x7fff
+-	ori	r6, r6, 0xffff
++
++	LOAD_REG_ADDR(r6, decrementer_max);
++	ld	r6,0(r6);
+ 	mtspr	SPRN_HDEC, r6
+ 	/* and set per-LPAR registers, if doing dynamic micro-threading */
+ 	ld	r6, HSTATE_SPLIT_MODE(r13)
+@@ -897,7 +902,7 @@ END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_207S)
+ 	mftb	r7
+ 	subf	r3,r7,r8
+ 	mtspr	SPRN_DEC,r3
+-	stw	r3,VCPU_DEC(r4)
++	std	r3,VCPU_DEC(r4)
+ 
+ 	ld	r5, VCPU_SPRG0(r4)
+ 	ld	r6, VCPU_SPRG1(r4)
+@@ -953,8 +958,8 @@ END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_207S)
+ 	isync
+ 
+ 	/* Check if HDEC expires soon */
+-	mfspr	r3, SPRN_HDEC
+-	cmpwi	r3, 512		/* 1 microsecond */
++	GET_HDEC(r3)
++	cmpdi	r3, 512		/* 1 microsecond */
+ 	blt	hdec_soon
+ 
+ #ifdef CONFIG_KVM_XICS
+@@ -990,8 +995,9 @@ deliver_guest_interrupt:
+ 	beq	5f
+ 	li	r0, BOOK3S_INTERRUPT_EXTERNAL
+ 	bne	cr1, 12f
+-	mfspr	r0, SPRN_DEC
+-	cmpwi	r0, 0
++
++	GET_DEC(r0)
++	cmpdi	r0, 0
+ 	li	r0, BOOK3S_INTERRUPT_DECREMENTER
+ 	bge	5f
+ 
+@@ -1206,8 +1212,8 @@ END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
+ 	/* See if this is a leftover HDEC interrupt */
+ 	cmpwi	r12,BOOK3S_INTERRUPT_HV_DECREMENTER
+ 	bne	2f
+-	mfspr	r3,SPRN_HDEC
+-	cmpwi	r3,0
++	GET_HDEC(r3);
++	cmpdi	r3,0
+ 	mr	r4,r9
+ 	bge	fast_guest_return
+ 2:
+@@ -1326,9 +1332,8 @@ mc_cont:
+ 	mtspr	SPRN_SPURR,r4
+ 
+ 	/* Save DEC */
+-	mfspr	r5,SPRN_DEC
++	GET_DEC(r5);
+ 	mftb	r6
+-	extsw	r5,r5
+ 	add	r5,r5,r6
+ 	/* r5 is a guest timebase value here, convert to host TB */
+ 	ld	r3,HSTATE_KVM_VCORE(r13)
+@@ -2250,15 +2255,14 @@ _GLOBAL(kvmppc_h_cede)		/* r3 = vcpu pointer, r11 = msr, r13 = paca */
+ 	 * no later than the end of our timeslice (HDEC interrupts
+ 	 * don't wake us from nap).
+ 	 */
+-	mfspr	r3, SPRN_DEC
+-	mfspr	r4, SPRN_HDEC
++	GET_DEC(r3);
++	GET_HDEC(r4);
+ 	mftb	r5
+-	cmpw	r3, r4
++	cmpd	r3, r4
+ 	ble	67f
+ 	mtspr	SPRN_DEC, r4
+ 67:
+ 	/* save expiry time of guest decrementer */
+-	extsw	r3, r3
+ 	add	r3, r3, r5
+ 	ld	r4, HSTATE_KVM_VCPU(r13)
+ 	ld	r5, HSTATE_KVM_VCORE(r13)
+diff --git a/arch/powerpc/kvm/emulate.c b/arch/powerpc/kvm/emulate.c
+index 5cc2e7af3a7b..5d065c04f2d5 100644
+--- a/arch/powerpc/kvm/emulate.c
++++ b/arch/powerpc/kvm/emulate.c
+@@ -39,7 +39,7 @@ void kvmppc_emulate_dec(struct kvm_vcpu *vcpu)
+ 	unsigned long dec_nsec;
+ 	unsigned long long dec_time;
+ 
+-	pr_debug("mtDEC: %x\n", vcpu->arch.dec);
++	pr_debug("mtDEC: %llx\n", vcpu->arch.dec);
+ 	hrtimer_try_to_cancel(&vcpu->arch.dec_timer);
+ 
+ #ifdef CONFIG_PPC_BOOK3S
+@@ -47,7 +47,7 @@ void kvmppc_emulate_dec(struct kvm_vcpu *vcpu)
+ 	kvmppc_core_dequeue_dec(vcpu);
+ 
+ 	/* POWER4+ triggers a dec interrupt if the value is < 0 */
+-	if (vcpu->arch.dec & 0x80000000) {
++	if ((s64) vcpu->arch.dec < 0) {
+ 		kvmppc_core_queue_dec(vcpu);
+ 		return;
  	}
+@@ -78,7 +78,7 @@ void kvmppc_emulate_dec(struct kvm_vcpu *vcpu)
+ 	vcpu->arch.dec_jiffies = get_tb();
  }
+ 
+-u32 kvmppc_get_dec(struct kvm_vcpu *vcpu, u64 tb)
++u64 kvmppc_get_dec(struct kvm_vcpu *vcpu, u64 tb)
+ {
+ 	u64 jd = tb - vcpu->arch.dec_jiffies;
  
 -- 
-2.11.0
+2.9.3
