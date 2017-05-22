@@ -1,25 +1,27 @@
 Return-Path: <javier@dowhile0.org>
-Received: from mail-it0-x22b.google.com (mail-it0-x22b.google.com
- [IPv6:2607:f8b0:4001:c0b::22b])
+Received: from mail-it0-x230.google.com (mail-it0-x230.google.com
+ [IPv6:2607:f8b0:4001:c0b::230])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wWlg16y1qzDqLv
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 May 2017 03:15:57 +1000 (AEST)
-Received: by mail-it0-x22b.google.com with SMTP id r63so1484990itc.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 May 2017 10:15:57 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wWpr94cd7zDqLk
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 May 2017 05:39:05 +1000 (AEST)
+Received: by mail-it0-x230.google.com with SMTP id g126so3897101ith.0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 May 2017 12:39:05 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <CAL_JsqKj_f-jY3wi78QyAAov=a9-ReaT9qU=ytwSp+5RL0eutg@mail.gmail.com>
+In-Reply-To: <CAMuHMdVaY6J04TL=cEBVkCx=qhQuvbprxXt4VCjh_oEedRYnzg@mail.gmail.com>
 References: <20170522140208.24652-1-javier@dowhile0.org>
  <CAMuHMdXbhkGGFC80-39Axzv=BdEXyBNuPuHCSWW3eXWDB=SQ+w@mail.gmail.com>
  <CAL_JsqL2P=C+xRyL-BCC=RtFah4BRf8BHSvWNPZ+6r2ioSk_Yw@mail.gmail.com>
  <CABxcv==xw7UxF1Ey+hDhGb_wzgAcFR9JLm6iuirvYSTTvSxb0A@mail.gmail.com>
  <CAL_JsqKj_f-jY3wi78QyAAov=a9-ReaT9qU=ytwSp+5RL0eutg@mail.gmail.com>
+ <CABxcv==8R5_tG8-rsp-9UdS_5N7X8QXkd0OFnN63Ct7L2jFvhA@mail.gmail.com>
+ <CAMuHMdVaY6J04TL=cEBVkCx=qhQuvbprxXt4VCjh_oEedRYnzg@mail.gmail.com>
 From: Javier Martinez Canillas <javier@dowhile0.org>
-Date: Mon, 22 May 2017 19:15:54 +0200
-Message-ID: <CABxcv==8R5_tG8-rsp-9UdS_5N7X8QXkd0OFnN63Ct7L2jFvhA@mail.gmail.com>
+Date: Mon, 22 May 2017 21:39:02 +0200
+Message-ID: <CABxcv=m+WDzzHy182msOW9U5TCk=bRtbsq89V9cerxSrVYNYUQ@mail.gmail.com>
 Subject: Re: [PATCH v4 00/20] eeprom: at24: Add OF device ID table
-To: Rob Herring <robh@kernel.org>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>,
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Rob Herring <robh@kernel.org>,
  "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
  Mark Rutland <mark.rutland@arm.com>,
  Andrew Lunn <andrew@lunn.ch>, Wolfram Sang <wsa@the-dreams.de>,
@@ -65,110 +67,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello Rob,
+Hello Geert,
 
-Thanks a lot for your feedback.
-
-On Mon, May 22, 2017 at 6:52 PM, Rob Herring <robh@kernel.org> wrote:
-> On Mon, May 22, 2017 at 9:46 AM, Javier Martinez Canillas
+On Mon, May 22, 2017 at 9:30 PM, Geert Uytterhoeven
+<geert@linux-m68k.org> wrote:
+> Hi Javier,
+>
+> On Mon, May 22, 2017 at 7:15 PM, Javier Martinez Canillas
 > <javier@dowhile0.org> wrote:
-
-[snip]
-
->>>> | >
->>>> | >     at24@50 {
->>>> | > -           compatible = "at24,24c02";
->>>> | > +           compatible = "at24,24c02", "atmel,24c02";
->>>> |
->>>> | I think you can just drop the at24 compatibles. A new kernel doesn't
->>>> | need it. An old kernel ignores the manufacturer. I checked that u-boot
->>>> | only matches on "atmel,*", so okay there. Don't know about the *BSDs. I
->>>> | couldn't find anything.
->>>>
->>>> I think you misunderstood what Rob means.
->>>>
->>>> In the case above it makes sense to drop the first compatible, as "at24" is
->>>> not a manufacturer, but refers to ATMEL's "AT24" line of i2c FLASH ROMs.
->>>>
->>>> However, in cases where a real vendor/part combo is specified, like on
->>>> r8a7791-koelsch.dts:
->>>>
->>>> -               compatible = "renesas,24c02";
->>>> +               compatible = "atmel,24c02";
->>>>
->>>> you do want to keep the real vendor/part combo, i.e.
->>>>
->>>>      compatible = "renesas,24c02", "atmel,24c02";
+>>>> I also wonder why this is really needed if AFAIU "renesas,24c02" is
+>>>> compatible with "atmel,24c02". IOW, the driver doesn't need to
+>>>> differentiate between the two since the devices are the same and will
+>>>> always match using "atmel,24c02".
 >>>
->>> Yes, Geert is correct.
->>>
+>>> It is needed, so that when a difference is found, it can be handled
+>>> without updating the DT.
 >>
->> Sorry for misunderstanding your previous comment...
->>
->> How this should be documented in the DT binding? Should I include
->> "renesas" as a valid manufacturer or only list the used
->> <vendor,device> pairs (i.e: "renesas,24c02")?
+>> Yes, I understand this. What I tried to ask is if there could really
+>> be a difference for the same chip type between different vendors, or
+>> is just that people were using other manufacturers in the compatible
+>> string as a consequence of the DT binding doc and the I2C core
+>> ignoring the vendor prefix.
 >
-> However you are handling any of the vendors. I'll have to go look.
->
-
-The current DT binding is quite lax when describing this. From
-Documentation/devicetree/bindings/eeprom/eeprom.txt:
-
-----------------------------------
-EEPROMs (I2C)
-
-Required properties:
-
-  - compatible : should be "<manufacturer>,<type>", like these:
-
-"atmel,24c00", "atmel,24c01", "atmel,24c02", "atmel,24c04",
-"atmel,24c08", "atmel,24c16", "atmel,24c32", "atmel,24c64",
-"atmel,24c128", "atmel,24c256", "atmel,24c512", "atmel,24c1024"
-
-"catalyst,24c32"
-
-"microchip,24c128"
-
-"ramtron,24c64"
-
-"renesas,r1ex24002"
-
-If there is no specific driver for <manufacturer>, a generic
-driver based on <type> is selected. Possible types are:
-"24c00", "24c01", "24c02", "24c04", "24c08", "24c16", "24c32", "24c64",
-"24c128", "24c256", "24c512", "24c1024", "spd"
-
-  - reg : the I2C address of the EEPROM
-----------------------------------
-
-I think though that this is one of the cases where the Linux I2C
-subsystem matching logic is leaking into the DT binding doc, since the
-manufacturer prefix is ignored by the I2C core (the I2C device ID
-table is used to match and to report a MODALIAS).
-
-But I'll keep the description generic as it is now and only mention
-the atmel variants (at and at24) as deprecated then.
-
->> I also wonder why this is really needed if AFAIU "renesas,24c02" is
->> compatible with "atmel,24c02". IOW, the driver doesn't need to
->> differentiate between the two since the devices are the same and will
->> always match using "atmel,24c02".
->
-> It is needed, so that when a difference is found, it can be handled
-> without updating the DT.
+> The devices from different vendors are not the same. They contain FLASH
+> ROM of a specific size, and glue logic to expose an i2c slave
+> interface providing
+> an AT24-compatible command set.  They should behave similar within
+> the limits of the AT24 "spec".  But the actual implementation may be different.
 >
 
-Yes, I understand this. What I tried to ask is if there could really
-be a difference for the same chip type between different vendors, or
-is just that people were using other manufacturers in the compatible
-string as a consequence of the DT binding doc and the I2C core
-ignoring the vendor prefix.
+I see, really appreciate your explanation. I'm not familiar with these
+devices and driver but the patch-series are needed in order to make
+sure that no regressions will happen once the I2C core reports a
+proper OF modalias.
 
-I don't mind though, I will leave the manufacturers that are different
-than the atmel variants in the mainline DTS as you and Geert asked.
+>> I don't mind though, I will leave the manufacturers that are different
+>> than the atmel variants in the mainline DTS as you and Geert asked.
+>
+> OK, thanks!
+>
 
-> Rob
+Thanks a lot for your feedback!
+
+> Gr{oetje,eeting}s,
+>
+>                         Geert
+>
+> --
 
 Best regards,
 Javier
