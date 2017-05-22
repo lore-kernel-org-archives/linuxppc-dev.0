@@ -1,26 +1,59 @@
 Return-Path: <javier@dowhile0.org>
-Received: from mail-wr0-x243.google.com (mail-wr0-x243.google.com
- [IPv6:2a00:1450:400c:c0c::243])
+Received: from mail-io0-x244.google.com (mail-io0-x244.google.com
+ [IPv6:2607:f8b0:4001:c06::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wWgNR4f7QzDq5W
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 May 2017 00:03:03 +1000 (AEST)
-Received: by mail-wr0-x243.google.com with SMTP id v42so7049220wrc.3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 May 2017 07:03:03 -0700 (PDT)
-From: Javier Martinez Canillas <javier@dowhile0.org>
-To: linux-kernel@vger.kernel.org
-Cc: Wolfram Sang <wsa@the-dreams.de>, Rob Herring <robh@kernel.org>,
- Javier Martinez Canillas <javier@dowhile0.org>, devicetree@vger.kernel.org,
- Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Rob Herring <robh+dt@kernel.org>,
- Mark Rutland <mark.rutland@arm.com>, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v4 20/20] powerpc/44x: Add generic compatible string for I2C
- EEPROM
-Date: Mon, 22 May 2017 16:02:08 +0200
-Message-Id: <20170522140208.24652-21-javier@dowhile0.org>
-In-Reply-To: <20170522140208.24652-1-javier@dowhile0.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wWhLF3JHjzDqL2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 May 2017 00:46:12 +1000 (AEST)
+Received: by mail-io0-x244.google.com with SMTP id 12so13506455iol.1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 May 2017 07:46:12 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <CAL_JsqL2P=C+xRyL-BCC=RtFah4BRf8BHSvWNPZ+6r2ioSk_Yw@mail.gmail.com>
 References: <20170522140208.24652-1-javier@dowhile0.org>
+ <CAMuHMdXbhkGGFC80-39Axzv=BdEXyBNuPuHCSWW3eXWDB=SQ+w@mail.gmail.com>
+ <CAL_JsqL2P=C+xRyL-BCC=RtFah4BRf8BHSvWNPZ+6r2ioSk_Yw@mail.gmail.com>
+From: Javier Martinez Canillas <javier@dowhile0.org>
+Date: Mon, 22 May 2017 16:46:09 +0200
+Message-ID: <CABxcv==xw7UxF1Ey+hDhGb_wzgAcFR9JLm6iuirvYSTTvSxb0A@mail.gmail.com>
+Subject: Re: [PATCH v4 00/20] eeprom: at24: Add OF device ID table
+To: Rob Herring <robh@kernel.org>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Mark Rutland <mark.rutland@arm.com>,
+ Andrew Lunn <andrew@lunn.ch>, Wolfram Sang <wsa@the-dreams.de>,
+ Tony Lindgren <tony@atomide.com>,
+ Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>,
+ Russell King <linux@armlinux.org.uk>,
+ Masahiro Yamada <yamada.masahiro@socionext.com>,
+ Paul Mackerras <paulus@samba.org>, Linux I2C <linux-i2c@vger.kernel.org>,
+ Hongtao Jia <hongtao.jia@nxp.com>, David Lechner <david@lechnology.com>,
+ Herbert Xu <herbert@gondor.apana.org.au>,
+ =?UTF-8?Q?Horia_Geant=C4=83?= <horia.geanta@nxp.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Magnus Damm <magnus.damm@gmail.com>,
+ Michal Simek <michal.simek@xilinx.com>,
+ Andy Shevchenko <andy.shevchenko@gmail.com>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Jason Cooper <jason@lakedaemon.net>,
+ Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ Mark Jackson <mpfj@newflow.co.uk>,
+ Sekhar Nori <nsekhar@ti.com>, Joachim Eastwood <manabian@gmail.com>,
+ Stuart Yoder <stuart.yoder@nxp.com>,
+ Scott Wood <oss@buserror.net>, Simon Horman <horms@verge.net.au>,
+ Santosh Shilimkar <ssantosh@kernel.org>,
+ Gregory Clement <gregory.clement@free-electrons.com>,
+ "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
+ Sascha Hauer <kernel@pengutronix.de>,
+ =?UTF-8?Q?S=C3=B6ren_Brinkmann?= <soren.brinkmann@xilinx.com>,
+ Florian Larysch <fl@n621.de>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Li Yang <leoyang.li@nxp.com>,
+ Linux-Renesas <linux-renesas-soc@vger.kernel.org>,
+ Dinh Nguyen <dinguyen@kernel.org>,
+ =?UTF-8?Q?Beno=C3=AEt_Cousson?= <bcousson@baylibre.com>,
+ Fabio Estevam <fabio.estevam@nxp.com>, Shawn Guo <shawnguo@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,43 +63,88 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The at24 driver allows to register I2C EEPROM chips using different vendor
-and devices, but the I2C subsystem does not take the vendor into account
-when matching using the I2C table since it only has device entries.
+Hello Geert and Rob,
 
-But when matching using an OF table, both the vendor and device has to be
-taken into account so the driver defines only a set of compatible strings
-using the "atmel" vendor as a generic fallback for compatible I2C devices.
+On Mon, May 22, 2017 at 4:26 PM, Rob Herring <robh@kernel.org> wrote:
+> On Mon, May 22, 2017 at 9:23 AM, Geert Uytterhoeven
+> <geert@linux-m68k.org> wrote:
+>> Hi Javier,
+>>
+>> On Mon, May 22, 2017 at 4:01 PM, Javier Martinez Canillas
+>> <javier@dowhile0.org> wrote:
+>>> This series is a follow-up to patch [0] that added an OF device ID table
+>>> to the at24 EEPROM driver. As you suggested [1], this version instead of
+>>> adding entries for every used <vendor,device> tuple, only adds a single
+>>> entry for each chip type using the "atmel" vendor as a generic fallback.
+>>>
+>>> This is a re-spin that addresses some issues pointed out by Rob Herring.
+>>>
+>>> The first patch documents in the DT binding what's the correct vendor to
+>>> use and what are the ones that are being deprecated. The second one adds
+>>> the OF device ID table for the at24 driver and the next patches use this
+>>> vendor in the compatible string to each DTS that defines a compatible I2C
+>>> EEPROM device node.
+>>>
+>>> Patches can be applied independently since the DTS changes without driver
+>>> changes are no-op and the OF table won't be used without the DTS changes.
+>>>
+>>> [0]: https://lkml.org/lkml/2017/3/14/589
+>>> [1]: https://lkml.org/lkml/2017/3/15/99
+>>>
+>>> Best regards,
+>>> Javier
+>>>
+>>> Changes in v4:
+>>> - Document the manufacturers that have been deprecated (Rob Herring).
+>>> - Only use the atmel manufacturer in the compatible string instead of
+>>>   keeping the deprecated ones (Rob Herring).
+>>
+>> I think you're referring to this (https://lkml.org/lkml/2017/4/19/1136)?
+>>
+>> | > --- a/arch/arm/boot/dts/am335x-baltos.dtsi
+>> | > +++ b/arch/arm/boot/dts/am335x-baltos.dtsi
+>> | > @@ -255,7 +255,7 @@
+>> | >     };
+>> | >
+>> | >     at24@50 {
+>> | > -           compatible = "at24,24c02";
+>> | > +           compatible = "at24,24c02", "atmel,24c02";
+>> |
+>> | I think you can just drop the at24 compatibles. A new kernel doesn't
+>> | need it. An old kernel ignores the manufacturer. I checked that u-boot
+>> | only matches on "atmel,*", so okay there. Don't know about the *BSDs. I
+>> | couldn't find anything.
+>>
+>> I think you misunderstood what Rob means.
+>>
+>> In the case above it makes sense to drop the first compatible, as "at24" is
+>> not a manufacturer, but refers to ATMEL's "AT24" line of i2c FLASH ROMs.
+>>
+>> However, in cases where a real vendor/part combo is specified, like on
+>> r8a7791-koelsch.dts:
+>>
+>> -               compatible = "renesas,24c02";
+>> +               compatible = "atmel,24c02";
+>>
+>> you do want to keep the real vendor/part combo, i.e.
+>>
+>>      compatible = "renesas,24c02", "atmel,24c02";
+>
+> Yes, Geert is correct.
+>
 
-So add this generic fallback to the device node compatible string to make
-the device to match the driver using the OF device ID table.
+Sorry for misunderstanding your previous comment...
 
-Signed-off-by: Javier Martinez Canillas <javier@dowhile0.org>
+How this should be documented in the DT binding? Should I include
+"renesas" as a valid manufacturer or only list the used
+<vendor,device> pairs (i.e: "renesas,24c02")?
 
----
+I also wonder why this is really needed if AFAIU "renesas,24c02" is
+compatible with "atmel,24c02". IOW, the driver doesn't need to
+differentiate between the two since the devices are the same and will
+always match using "atmel,24c02".
 
-Changes in v4:
-- Only use the atmel manufacturer in the compatible string instead of
-  keeping the deprecated ones (Rob Herring).
+> Rob
 
-Changes in v3: None
-Changes in v2: None
-
- arch/powerpc/boot/dts/warp.dts | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/boot/dts/warp.dts b/arch/powerpc/boot/dts/warp.dts
-index e576ee85c42f..ea9053ef4819 100644
---- a/arch/powerpc/boot/dts/warp.dts
-+++ b/arch/powerpc/boot/dts/warp.dts
-@@ -238,7 +238,7 @@
- 
- 				/* This will create 52 and 53 */
- 				at24@52 {
--					compatible = "at,24c04";
-+					compatible = "atmel,24c04";
- 					reg = <0x52>;
- 				};
- 			};
--- 
-2.9.3
+Best regards,
+Javier
