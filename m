@@ -1,29 +1,56 @@
-Return-Path: <arndbergmann@gmail.com>
-Received: from mail-oi0-x244.google.com (mail-oi0-x244.google.com
- [IPv6:2607:f8b0:4003:c06::244])
+Return-Path: <geert.uytterhoeven@gmail.com>
+Received: from mail-io0-x243.google.com (mail-io0-x243.google.com
+ [IPv6:2607:f8b0:4001:c06::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wWfj73JvlzDqLj
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 May 2017 23:32:27 +1000 (AEST)
-Received: by mail-oi0-x244.google.com with SMTP id m17so22684530oik.2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 May 2017 06:32:27 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wWgrH2dFvzDqLj
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 May 2017 00:23:43 +1000 (AEST)
+Received: by mail-io0-x243.google.com with SMTP id o12so13484410iod.2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 May 2017 07:23:43 -0700 (PDT)
 MIME-Version: 1.0
-Sender: arndbergmann@gmail.com
-In-Reply-To: <alpine.DEB.2.20.1705211859410.3023@nanos>
-References: <20170516114812.10660-1-hch@lst.de>
- <CAK8P3a1FoR_usw7du3ZRMF+PPhJ712EpArL_e1bLVNs7BYBu-w@mail.gmail.com>
- <20170516155132.GA1494@lst.de>
- <CAK8P3a3_Rjz9gTmayN1w8HrFHWY+wakeFgQSYRTAADJzF6zKJA@mail.gmail.com>
- <alpine.DEB.2.20.1705211859410.3023@nanos>
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Mon, 22 May 2017 15:32:24 +0200
-Message-ID: <CAK8P3a0uF-=7Ot16YpsyuZHVaoE1rLR6q7w5r4+uXkaVdPHT4A@mail.gmail.com>
-Subject: Re: RFC: better timer interface
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Christoph Hellwig <hch@lst.de>, Tejun Heo <tj@kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Mark Gross <mark.gross@intel.com>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- linux-s390 <linux-s390@vger.kernel.org>
+Sender: geert.uytterhoeven@gmail.com
+In-Reply-To: <20170522140208.24652-1-javier@dowhile0.org>
+References: <20170522140208.24652-1-javier@dowhile0.org>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Mon, 22 May 2017 16:23:39 +0200
+Message-ID: <CAMuHMdXbhkGGFC80-39Axzv=BdEXyBNuPuHCSWW3eXWDB=SQ+w@mail.gmail.com>
+Subject: Re: [PATCH v4 00/20] eeprom: at24: Add OF device ID table
+To: Javier Martinez Canillas <javier@dowhile0.org>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Mark Rutland <mark.rutland@arm.com>,
+ Andrew Lunn <andrew@lunn.ch>, Wolfram Sang <wsa@the-dreams.de>,
+ Tony Lindgren <tony@atomide.com>,
+ Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>,
+ Russell King <linux@armlinux.org.uk>,
+ Masahiro Yamada <yamada.masahiro@socionext.com>,
+ Paul Mackerras <paulus@samba.org>, Linux I2C <linux-i2c@vger.kernel.org>,
+ Hongtao Jia <hongtao.jia@nxp.com>, David Lechner <david@lechnology.com>,
+ Rob Herring <robh@kernel.org>, Herbert Xu <herbert@gondor.apana.org.au>,
+ =?UTF-8?Q?Horia_Geant=C4=83?= <horia.geanta@nxp.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Magnus Damm <magnus.damm@gmail.com>,
+ Michal Simek <michal.simek@xilinx.com>,
+ Andy Shevchenko <andy.shevchenko@gmail.com>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Jason Cooper <jason@lakedaemon.net>,
+ Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ Mark Jackson <mpfj@newflow.co.uk>,
+ Sekhar Nori <nsekhar@ti.com>, Joachim Eastwood <manabian@gmail.com>,
+ Stuart Yoder <stuart.yoder@nxp.com>,
+ Scott Wood <oss@buserror.net>, Simon Horman <horms@verge.net.au>,
+ Santosh Shilimkar <ssantosh@kernel.org>,
+ Gregory Clement <gregory.clement@free-electrons.com>,
+ "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
+ Sascha Hauer <kernel@pengutronix.de>,
+ =?UTF-8?Q?S=C3=B6ren_Brinkmann?= <soren.brinkmann@xilinx.com>,
+ Florian Larysch <fl@n621.de>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Li Yang <leoyang.li@nxp.com>,
+ Linux-Renesas <linux-renesas-soc@vger.kernel.org>,
+ Dinh Nguyen <dinguyen@kernel.org>, Rob Herring <robh+dt@kernel.org>,
+ =?UTF-8?Q?Beno=C3=AEt_Cousson?= <bcousson@baylibre.com>,
+ Fabio Estevam <fabio.estevam@nxp.com>, Shawn Guo <shawnguo@kernel.org>
 Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -34,60 +61,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, May 21, 2017 at 7:13 PM, Thomas Gleixner <tglx@linutronix.de> wrote:
-> On Tue, 16 May 2017, Arnd Bergmann wrote:
->> On Tue, May 16, 2017 at 5:51 PM, Christoph Hellwig <hch@lst.de> wrote:
->> > Yes, that sounds useful to me as well.  As you said it's an independent
->> > but somewhat related change.  I can add it to my series, but I'll
->> > need a suggestions for a good and short name.  That already was the
->> > hardest part for the setup side :)
->>
->> If we keep the unusual *_timer() naming (rather than timer_*() as hrtimer
->> has), we could use one of
->>
->> a) start_timer(struct timer_list *timer, unsigned long ms);
->> b) restart_timer(struct timer_list *timer, unsigned long ms);
->> c) mod_timer_ms(struct timer_list *timer, unsigned long ms);
->>     mod_timer_sec(struct timer_list *timer, unsigned long sec);
+Hi Javier,
+
+On Mon, May 22, 2017 at 4:01 PM, Javier Martinez Canillas
+<javier@dowhile0.org> wrote:
+> This series is a follow-up to patch [0] that added an OF device ID table
+> to the at24 EEPROM driver. As you suggested [1], this version instead of
+> adding entries for every used <vendor,device> tuple, only adds a single
+> entry for each chip type using the "atmel" vendor as a generic fallback.
 >
-> Please make new functions prefixed with timer_ and get rid of that old
-> interface completely. It's horrible.
+> This is a re-spin that addresses some issues pointed out by Rob Herring.
 >
-> timer_init()
-> timer_start(timer, ms, abs)
-> timer_start_on(timer, ms, abs, cpu)
-> timer_cancel(timer, sync)
+> The first patch documents in the DT binding what's the correct vendor to
+> use and what are the ones that are being deprecated. The second one adds
+> the OF device ID table for the at24 driver and the next patches use this
+> vendor in the compatible string to each DTS that defines a compatible I2C
+> EEPROM device node.
 >
-> Is all what's required to make up a new milliseconds based interface.
+> Patches can be applied independently since the DTS changes without driver
+> changes are no-op and the OF table won't be used without the DTS changes.
 >
-> We really do not need all that mod/restart/ whatever variants. Where is the
-> point of those?
+> [0]: https://lkml.org/lkml/2017/3/14/589
+> [1]: https://lkml.org/lkml/2017/3/15/99
+>
+> Best regards,
+> Javier
+>
+> Changes in v4:
+> - Document the manufacturers that have been deprecated (Rob Herring).
+> - Only use the atmel manufacturer in the compatible string instead of
+>   keeping the deprecated ones (Rob Herring).
 
-I agree, one of the above is good enough, if we do the large-scale API
-replacement. Having both ms and sec variants would be for convenience
-to avoid having lots of open-coded  '*MSEC_PER_SEC) multiplications.
+I think you're referring to this (https://lkml.org/lkml/2017/4/19/1136)?
 
-We still need at least three variants of timer_init, for statically initialized
-timers, dynamic allocation and on-stack allocation, as before.
+| > --- a/arch/arm/boot/dts/am335x-baltos.dtsi
+| > +++ b/arch/arm/boot/dts/am335x-baltos.dtsi
+| > @@ -255,7 +255,7 @@
+| >     };
+| >
+| >     at24@50 {
+| > -           compatible = "at24,24c02";
+| > +           compatible = "at24,24c02", "atmel,24c02";
+|
+| I think you can just drop the at24 compatibles. A new kernel doesn't
+| need it. An old kernel ignores the manufacturer. I checked that u-boot
+| only matches on "atmel,*", so okay there. Don't know about the *BSDs. I
+| couldn't find anything.
 
-For the 'abs' argument, I'd probably leave that out until we find code
-that actually needs it and that can't use hrtimer as easily.
+I think you misunderstood what Rob means.
 
-For timer_start_on(), that would be a replacement of add_timer_on(),
-which only has seven callers today:
+In the case above it makes sense to drop the first compatible, as "at24" is
+not a manufacturer, but refers to ATMEL's "AT24" line of i2c FLASH ROMs.
 
-arch/x86/kernel/apic/x2apic_uv_x.c:             add_timer_on(timer, cpu);
-drivers/tty/metag_da.c: add_timer_on(poll_timer, 0);
-drivers/tty/mips_ejtag_fdc.c:
-add_timer_on(&priv->poll_timer, dev->cpu);
-drivers/tty/mips_ejtag_fdc.c:
-add_timer_on(&priv->poll_timer, dev->cpu);
-kernel/time/clocksource.c:      add_timer_on(&watchdog_timer, next_cpu);
-kernel/time/clocksource.c:      add_timer_on(&watchdog_timer,
-cpumask_first(cpu_online_mask));
-kernel/workqueue.c:             add_timer_on(timer, cpu);
+However, in cases where a real vendor/part combo is specified, like on
+r8a7791-koelsch.dts:
 
-If hrtimer isn't already a better interface for those, we can probably
-convert them all to the new API at once.
+-               compatible = "renesas,24c02";
++               compatible = "atmel,24c02";
 
-       Arnd
+you do want to keep the real vendor/part combo, i.e.
+
+     compatible = "renesas,24c02", "atmel,24c02";
+
+like in v3, which is what I gave my Reviewed-by for.
+
+Thanks!
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
