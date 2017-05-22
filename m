@@ -1,22 +1,28 @@
-Return-Path: <geert.uytterhoeven@gmail.com>
-Received: from mail-io0-x243.google.com (mail-io0-x243.google.com
- [IPv6:2607:f8b0:4001:c06::243])
+Return-Path: <robh@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wWgvX2cnjzDqLj
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 May 2017 00:26:32 +1000 (AEST)
+Received: from mail-yw0-f181.google.com (mail-yw0-f181.google.com
+ [209.85.161.181])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wWgrH2dFvzDqLj
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 May 2017 00:23:43 +1000 (AEST)
-Received: by mail-io0-x243.google.com with SMTP id o12so13484410iod.2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 May 2017 07:23:43 -0700 (PDT)
+ by mail.kernel.org (Postfix) with ESMTPSA id 71BE923A0A
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 May 2017 14:26:30 +0000 (UTC)
+Received: by mail-yw0-f181.google.com with SMTP id p73so49826468ywp.0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 May 2017 07:26:30 -0700 (PDT)
 MIME-Version: 1.0
-Sender: geert.uytterhoeven@gmail.com
-In-Reply-To: <20170522140208.24652-1-javier@dowhile0.org>
+In-Reply-To: <CAMuHMdXbhkGGFC80-39Axzv=BdEXyBNuPuHCSWW3eXWDB=SQ+w@mail.gmail.com>
 References: <20170522140208.24652-1-javier@dowhile0.org>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Mon, 22 May 2017 16:23:39 +0200
-Message-ID: <CAMuHMdXbhkGGFC80-39Axzv=BdEXyBNuPuHCSWW3eXWDB=SQ+w@mail.gmail.com>
+ <CAMuHMdXbhkGGFC80-39Axzv=BdEXyBNuPuHCSWW3eXWDB=SQ+w@mail.gmail.com>
+From: Rob Herring <robh@kernel.org>
+Date: Mon, 22 May 2017 09:26:08 -0500
+Message-ID: <CAL_JsqL2P=C+xRyL-BCC=RtFah4BRf8BHSvWNPZ+6r2ioSk_Yw@mail.gmail.com>
 Subject: Re: [PATCH v4 00/20] eeprom: at24: Add OF device ID table
-To: Javier Martinez Canillas <javier@dowhile0.org>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Javier Martinez Canillas <javier@dowhile0.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
  Mark Rutland <mark.rutland@arm.com>,
  Andrew Lunn <andrew@lunn.ch>, Wolfram Sang <wsa@the-dreams.de>,
  Tony Lindgren <tony@atomide.com>,
@@ -25,7 +31,7 @@ Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
  Masahiro Yamada <yamada.masahiro@socionext.com>,
  Paul Mackerras <paulus@samba.org>, Linux I2C <linux-i2c@vger.kernel.org>,
  Hongtao Jia <hongtao.jia@nxp.com>, David Lechner <david@lechnology.com>,
- Rob Herring <robh@kernel.org>, Herbert Xu <herbert@gondor.apana.org.au>,
+ Herbert Xu <herbert@gondor.apana.org.au>,
  =?UTF-8?Q?Horia_Geant=C4=83?= <horia.geanta@nxp.com>,
  Michael Ellerman <mpe@ellerman.id.au>, Magnus Damm <magnus.damm@gmail.com>,
  Michal Simek <michal.simek@xilinx.com>,
@@ -48,7 +54,7 @@ Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
  Li Yang <leoyang.li@nxp.com>,
  Linux-Renesas <linux-renesas-soc@vger.kernel.org>,
- Dinh Nguyen <dinguyen@kernel.org>, Rob Herring <robh+dt@kernel.org>,
+ Dinh Nguyen <dinguyen@kernel.org>,
  =?UTF-8?Q?Beno=C3=AEt_Cousson?= <bcousson@baylibre.com>,
  Fabio Estevam <fabio.estevam@nxp.com>, Shawn Guo <shawnguo@kernel.org>
 Content-Type: text/plain; charset="UTF-8"
@@ -61,79 +67,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Javier,
-
-On Mon, May 22, 2017 at 4:01 PM, Javier Martinez Canillas
-<javier@dowhile0.org> wrote:
-> This series is a follow-up to patch [0] that added an OF device ID table
-> to the at24 EEPROM driver. As you suggested [1], this version instead of
-> adding entries for every used <vendor,device> tuple, only adds a single
-> entry for each chip type using the "atmel" vendor as a generic fallback.
+On Mon, May 22, 2017 at 9:23 AM, Geert Uytterhoeven
+<geert@linux-m68k.org> wrote:
+> Hi Javier,
 >
-> This is a re-spin that addresses some issues pointed out by Rob Herring.
+> On Mon, May 22, 2017 at 4:01 PM, Javier Martinez Canillas
+> <javier@dowhile0.org> wrote:
+>> This series is a follow-up to patch [0] that added an OF device ID table
+>> to the at24 EEPROM driver. As you suggested [1], this version instead of
+>> adding entries for every used <vendor,device> tuple, only adds a single
+>> entry for each chip type using the "atmel" vendor as a generic fallback.
+>>
+>> This is a re-spin that addresses some issues pointed out by Rob Herring.
+>>
+>> The first patch documents in the DT binding what's the correct vendor to
+>> use and what are the ones that are being deprecated. The second one adds
+>> the OF device ID table for the at24 driver and the next patches use this
+>> vendor in the compatible string to each DTS that defines a compatible I2C
+>> EEPROM device node.
+>>
+>> Patches can be applied independently since the DTS changes without driver
+>> changes are no-op and the OF table won't be used without the DTS changes.
+>>
+>> [0]: https://lkml.org/lkml/2017/3/14/589
+>> [1]: https://lkml.org/lkml/2017/3/15/99
+>>
+>> Best regards,
+>> Javier
+>>
+>> Changes in v4:
+>> - Document the manufacturers that have been deprecated (Rob Herring).
+>> - Only use the atmel manufacturer in the compatible string instead of
+>>   keeping the deprecated ones (Rob Herring).
 >
-> The first patch documents in the DT binding what's the correct vendor to
-> use and what are the ones that are being deprecated. The second one adds
-> the OF device ID table for the at24 driver and the next patches use this
-> vendor in the compatible string to each DTS that defines a compatible I2C
-> EEPROM device node.
+> I think you're referring to this (https://lkml.org/lkml/2017/4/19/1136)?
 >
-> Patches can be applied independently since the DTS changes without driver
-> changes are no-op and the OF table won't be used without the DTS changes.
+> | > --- a/arch/arm/boot/dts/am335x-baltos.dtsi
+> | > +++ b/arch/arm/boot/dts/am335x-baltos.dtsi
+> | > @@ -255,7 +255,7 @@
+> | >     };
+> | >
+> | >     at24@50 {
+> | > -           compatible = "at24,24c02";
+> | > +           compatible = "at24,24c02", "atmel,24c02";
+> |
+> | I think you can just drop the at24 compatibles. A new kernel doesn't
+> | need it. An old kernel ignores the manufacturer. I checked that u-boot
+> | only matches on "atmel,*", so okay there. Don't know about the *BSDs. I
+> | couldn't find anything.
 >
-> [0]: https://lkml.org/lkml/2017/3/14/589
-> [1]: https://lkml.org/lkml/2017/3/15/99
+> I think you misunderstood what Rob means.
 >
-> Best regards,
-> Javier
+> In the case above it makes sense to drop the first compatible, as "at24" is
+> not a manufacturer, but refers to ATMEL's "AT24" line of i2c FLASH ROMs.
 >
-> Changes in v4:
-> - Document the manufacturers that have been deprecated (Rob Herring).
-> - Only use the atmel manufacturer in the compatible string instead of
->   keeping the deprecated ones (Rob Herring).
+> However, in cases where a real vendor/part combo is specified, like on
+> r8a7791-koelsch.dts:
+>
+> -               compatible = "renesas,24c02";
+> +               compatible = "atmel,24c02";
+>
+> you do want to keep the real vendor/part combo, i.e.
+>
+>      compatible = "renesas,24c02", "atmel,24c02";
 
-I think you're referring to this (https://lkml.org/lkml/2017/4/19/1136)?
+Yes, Geert is correct.
 
-| > --- a/arch/arm/boot/dts/am335x-baltos.dtsi
-| > +++ b/arch/arm/boot/dts/am335x-baltos.dtsi
-| > @@ -255,7 +255,7 @@
-| >     };
-| >
-| >     at24@50 {
-| > -           compatible = "at24,24c02";
-| > +           compatible = "at24,24c02", "atmel,24c02";
-|
-| I think you can just drop the at24 compatibles. A new kernel doesn't
-| need it. An old kernel ignores the manufacturer. I checked that u-boot
-| only matches on "atmel,*", so okay there. Don't know about the *BSDs. I
-| couldn't find anything.
-
-I think you misunderstood what Rob means.
-
-In the case above it makes sense to drop the first compatible, as "at24" is
-not a manufacturer, but refers to ATMEL's "AT24" line of i2c FLASH ROMs.
-
-However, in cases where a real vendor/part combo is specified, like on
-r8a7791-koelsch.dts:
-
--               compatible = "renesas,24c02";
-+               compatible = "atmel,24c02";
-
-you do want to keep the real vendor/part combo, i.e.
-
-     compatible = "renesas,24c02", "atmel,24c02";
-
-like in v3, which is what I gave my Reviewed-by for.
-
-Thanks!
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+Rob
