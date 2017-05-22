@@ -1,22 +1,21 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wWRdx2DgXzDqZq
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 May 2017 15:13:57 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Guenter Roeck <linux@roeck-us.net>, Michal Hocko <mhocko@suse.com>
-Cc: linux-kernel@vger.kernel.org, Pavel Tatashin <pasha.tatashin@oracle.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- Stephen Rothwell <sfr@canb.auug.org.au>,
- linuxppc-dev@lists.ozlabs.org <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: Widespread crashes in -next, bisected to 'mm: drop HASH_ADAPT'
-In-Reply-To: <20170519164622.GA28873@roeck-us.net>
-References: <20170519164622.GA28873@roeck-us.net>
-Date: Mon, 22 May 2017 15:13:52 +1000
-Message-ID: <87o9ulscbz.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wWVZg37NCzDq5j
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 May 2017 17:26:19 +1000 (AEST)
+Subject: Re: [PATCH] powerpc/64: Use tick accounting by default
+To: Anton Blanchard <anton@ozlabs.org>, benh@kernel.crashing.org,
+ paulus@samba.org, mpe@ellerman.id.au, npiggin@gmail.com, mikey@neuling.org,
+ cyrilbur@gmail.com
+References: <20170519144112.15649-1-anton@ozlabs.org>
+Cc: linuxppc-dev@lists.ozlabs.org
+From: Christophe LEROY <christophe.leroy@c-s.fr>
+Message-ID: <dee9e3a7-af89-b217-ad0f-ee07d7237050@c-s.fr>
+Date: Mon, 22 May 2017 09:26:14 +0200
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <20170519144112.15649-1-anton@ozlabs.org>
+Content-Type: text/plain; charset=windows-1252; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,21 +25,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Guenter Roeck <linux@roeck-us.net> writes:
 
-> Hi,
->
-> my qemu tests of next-20170519 show the following results:
-> 	total: 122 pass: 30 fail: 92
->
-> I won't bother listing all of the failures; they are available at
-> http://kerneltests.org/builders. I bisected one (openrisc, because
-> it gives me some console output before dying). It points to
-> 'mm: drop HASH_ADAPT' as the culprit. Bisect log is attached.
->
-> A quick glance suggests that 64 bit kernels pass and 32 bit kernels fail.
-> 32-bit x86 images fail and should provide an easy test case.
 
-Yep, 32-bit PPC is also broken. Bisects to this commit.
+Le 19/05/2017 à 16:41, Anton Blanchard a écrit :
+> From: Anton Blanchard <anton@samba.org>
+>
+> ppc64 is the only architecture that turns on VIRT_CPU_ACCOUNTING_NATIVE
+> by default. The overhead of this option is extremely high - a context
+> switch microbenchmark using sched_yield() is almost 20% slower.
+>
+> To get finer grained user/hardirq/softirq statitics, the
+> IRQ_TIME_ACCOUNTING option can be used instead, which has much lower
+> overhead.
 
-cheers
+Does IRQ_TIME_ACCOUNTING allow the same granularity as 
+VIRT_CPU_ACCOUNTING_NATIVE ?
+I've quickly looked into the source, it seems that this option still 
+accounts based on time ticks.
+On a hardware doing mainly VoIP handling, the processes run a few ms 
+every 20 ms. With TICK_CPU_ACCOUNTING and a 10ms tick, the processes 
+either appear with 50% CPU or almost 0%.
+Would it be more precise with IRQ_TIME_ACCOUNTING ?
+
+Christophe
+
+>
+> As such, disable this option by default. If a user really wants it,
+> they can still enable it manually.
+>
+> Signed-off-by: Anton Blanchard <anton@samba.org>
+> ---
+>  init/Kconfig | 3 +--
+>  1 file changed, 1 insertion(+), 2 deletions(-)
+>
+> diff --git a/init/Kconfig b/init/Kconfig
+> index 1d3475fc9496..a5c30acc1ede 100644
+> --- a/init/Kconfig
+> +++ b/init/Kconfig
+> @@ -342,8 +342,7 @@ config VIRT_CPU_ACCOUNTING
+>
+>  choice
+>  	prompt "Cputime accounting"
+> -	default TICK_CPU_ACCOUNTING if !PPC64
+> -	default VIRT_CPU_ACCOUNTING_NATIVE if PPC64
+> +	default TICK_CPU_ACCOUNTING
+>
+>  # Kind of a stub config for the pure tick based cputime accounting
+>  config TICK_CPU_ACCOUNTING
+>
