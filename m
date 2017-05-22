@@ -1,22 +1,23 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
+ [IPv6:2607:f8b0:400e:c00::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wWGLZ1WlZzDqLm
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 May 2017 08:15:01 +1000 (AEST)
-Message-ID: <1495404881.3092.141.camel@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: add PPC_FEATURE userspace bits for SCV and
- DARN instructions
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
-Cc: benh@ozlabs.au.ibm.com, tuliom@linux.vnet.ibm.com, Steve Munroe
- <sjmunroe@us.ibm.com>, Bill Schmidt <wschmidt@us.ibm.com>, Peter Bergner
- <bergner@us.ibm.com>, Michael Neuling <michael.neuling@au1.ibm.com>
-Date: Mon, 22 May 2017 08:14:41 +1000
-In-Reply-To: <20170520042949.29359-1-npiggin@gmail.com>
-References: <20170520042949.29359-1-npiggin@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wWKKZ3FH6zDqLK
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 May 2017 10:29:21 +1000 (AEST)
+Received: by mail-pf0-x242.google.com with SMTP id n23so16044954pfb.3
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 21 May 2017 17:29:21 -0700 (PDT)
+Date: Mon, 22 May 2017 10:29:05 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Benjamin Herrenschmidt <benh@au1.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Anton Blanchard <anton@samba.org>
+Subject: Re: [RFC][PATCH] powerpc/64s: stop using r14 register
+Message-ID: <20170522102905.32a5645f@roar.ozlabs.ibm.com>
+In-Reply-To: <1495404559.3092.140.camel@au1.ibm.com>
+References: <20170521140011.17548-1-npiggin@gmail.com>
+ <1495404559.3092.140.camel@au1.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,50 +27,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 2017-05-20 at 14:29 +1000, Nicholas Piggin wrote:
-> Providing "scv" support to userspace requires kernel support, so it
-> must be advertised as independently to the base ISA 3 instruction set.
-> 
-> The darn instruction relies on firmware enablement, so it has been
-> decided to split this out from the core ISA 3 feature as well.
-> 
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+On Mon, 22 May 2017 08:09:19 +1000
+Benjamin Herrenschmidt <benh@au1.ibm.com> wrote:
 
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> On Mon, 2017-05-22 at 00:00 +1000, Nicholas Piggin wrote:
+> > I'd like to take over the r14 register for use as a per-cpu kernel
+> > register similar to the way r13 is used for the paca.  
+> 
+> Why not use r13 instead ? We don't need to access the PACA that often
+> from C code, I thought we could flip them...
 
-> ---
-> These uapi changes have been agreed by powerpc toolchain and firmware
-> teams. I believe this completes our anticipated requirements for user
-> feature advertisement for ISA v3.0B.
-> 
->  arch/powerpc/include/uapi/asm/cputable.h | 2 ++
->  arch/powerpc/kernel/cputable.c           | 3 ++-
->  2 files changed, 4 insertions(+), 1 deletion(-)
-> 
-> diff --git a/arch/powerpc/include/uapi/asm/cputable.h b/arch/powerpc/include/uapi/asm/cputable.h
-> index 3e7ce86d5c13..4d877144f377 100644
-> --- a/arch/powerpc/include/uapi/asm/cputable.h
-> +++ b/arch/powerpc/include/uapi/asm/cputable.h
-> @@ -46,6 +46,8 @@
->  #define PPC_FEATURE2_HTM_NOSC		0x01000000
->  #define PPC_FEATURE2_ARCH_3_00		0x00800000 /* ISA 3.00 */
->  #define PPC_FEATURE2_HAS_IEEE128	0x00400000 /* VSX IEEE Binary Float 128-bit */
-> +#define PPC_FEATURE2_DARN		0x00200000 /* darn random number insn */
-> +#define PPC_FEATURE2_SCV		0x00100000 /* scv syscall */
->  
->  /*
->   * IMPORTANT!
-> diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
-> index 9b3e88b1a9c8..6f849832a669 100644
-> --- a/arch/powerpc/kernel/cputable.c
-> +++ b/arch/powerpc/kernel/cputable.c
-> @@ -124,7 +124,8 @@ extern void __restore_cpu_e6500(void);
->  #define COMMON_USER_POWER9	COMMON_USER_POWER8
->  #define COMMON_USER2_POWER9	(COMMON_USER2_POWER8 | \
->  				 PPC_FEATURE2_ARCH_3_00 | \
-> -				 PPC_FEATURE2_HAS_IEEE128)
-> +				 PPC_FEATURE2_HAS_IEEE128 | \
-> +				 PPC_FEATURE2_DARN )
->  
->  #ifdef CONFIG_PPC_BOOK3E_64
->  #define COMMON_USER_BOOKE	(COMMON_USER_PPC64 | PPC_FEATURE_BOOKE)
+It ended up being a bit too tricky to do it that way. We can't get
+directly to per-CPU data from the per-cpu data offset in exception
+entry code for a number of reasons. So we end up having to load the
+paca first.
+
+I looked at swapping r13 from paca to per-cpu offset at the same
+time the stack is set up, so paca is used for early save areas then
+per-cpu is used in C code. In practice it ended up getting too
+tricky and fragile dealing with nested interrupts, machine checks,
+etc.
+
+I think it's something we might slowly work towards (consolidating
+back to one fixed register), but as things are it didn't work well.
+
+It's easy to drop the fixed r14 in future if we can. None of the
+incidental asm users of r14 were complicating them by moving them
+to another register.
+
+Thanks,
+Nick
