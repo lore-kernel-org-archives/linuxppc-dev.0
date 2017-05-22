@@ -1,63 +1,34 @@
-Return-Path: <geert.uytterhoeven@gmail.com>
-Received: from mail-io0-x243.google.com (mail-io0-x243.google.com
- [IPv6:2607:f8b0:4001:c06::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mwb@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wWpf95YrXzDqLf
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 May 2017 05:30:25 +1000 (AEST)
-Received: by mail-io0-x243.google.com with SMTP id 12so14255550iol.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 May 2017 12:30:25 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wWrJ24QWQzDqPj
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 May 2017 06:44:50 +1000 (AEST)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v4MKhf7R086959
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 May 2017 16:44:43 -0400
+Received: from e15.ny.us.ibm.com (e15.ny.us.ibm.com [129.33.205.205])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2am4n9nvjm-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 May 2017 16:44:43 -0400
+Received: from localhost
+ by e15.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
+ Mon, 22 May 2017 16:44:43 -0400
+To: paulus@samba.org, Michael Ellerman <mpe@ellerman.id.au>,
+ nfont@linux.vnet.ibm.com, sahilmehta17@gmail.com,
+ jallen@linux.vnet.ibm.com, mwb@linux.vnet.ibm.com,
+ alastair@d-silva.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+From: Michael Bringmann <mwb@linux.vnet.ibm.com>
+Subject: [PATCH] powerpc/hotplug-mem: Fix aa_index match bug for hotplug
+Date: Mon, 22 May 2017 15:44:37 -0500
 MIME-Version: 1.0
-Sender: geert.uytterhoeven@gmail.com
-In-Reply-To: <CABxcv==8R5_tG8-rsp-9UdS_5N7X8QXkd0OFnN63Ct7L2jFvhA@mail.gmail.com>
-References: <20170522140208.24652-1-javier@dowhile0.org>
- <CAMuHMdXbhkGGFC80-39Axzv=BdEXyBNuPuHCSWW3eXWDB=SQ+w@mail.gmail.com>
- <CAL_JsqL2P=C+xRyL-BCC=RtFah4BRf8BHSvWNPZ+6r2ioSk_Yw@mail.gmail.com>
- <CABxcv==xw7UxF1Ey+hDhGb_wzgAcFR9JLm6iuirvYSTTvSxb0A@mail.gmail.com>
- <CAL_JsqKj_f-jY3wi78QyAAov=a9-ReaT9qU=ytwSp+5RL0eutg@mail.gmail.com>
- <CABxcv==8R5_tG8-rsp-9UdS_5N7X8QXkd0OFnN63Ct7L2jFvhA@mail.gmail.com>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Mon, 22 May 2017 21:30:22 +0200
-Message-ID: <CAMuHMdVaY6J04TL=cEBVkCx=qhQuvbprxXt4VCjh_oEedRYnzg@mail.gmail.com>
-Subject: Re: [PATCH v4 00/20] eeprom: at24: Add OF device ID table
-To: Javier Martinez Canillas <javier@dowhile0.org>
-Cc: Rob Herring <robh@kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Mark Rutland <mark.rutland@arm.com>,
- Andrew Lunn <andrew@lunn.ch>, Wolfram Sang <wsa@the-dreams.de>,
- Tony Lindgren <tony@atomide.com>,
- Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>,
- Russell King <linux@armlinux.org.uk>,
- Masahiro Yamada <yamada.masahiro@socionext.com>,
- Paul Mackerras <paulus@samba.org>, Linux I2C <linux-i2c@vger.kernel.org>,
- Hongtao Jia <hongtao.jia@nxp.com>, David Lechner <david@lechnology.com>,
- Herbert Xu <herbert@gondor.apana.org.au>,
- =?UTF-8?Q?Horia_Geant=C4=83?= <horia.geanta@nxp.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Magnus Damm <magnus.damm@gmail.com>,
- Michal Simek <michal.simek@xilinx.com>,
- Andy Shevchenko <andy.shevchenko@gmail.com>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Jason Cooper <jason@lakedaemon.net>,
- Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- Mark Jackson <mpfj@newflow.co.uk>,
- Sekhar Nori <nsekhar@ti.com>, Joachim Eastwood <manabian@gmail.com>,
- Stuart Yoder <stuart.yoder@nxp.com>,
- Scott Wood <oss@buserror.net>, Simon Horman <horms@verge.net.au>,
- Santosh Shilimkar <ssantosh@kernel.org>,
- Gregory Clement <gregory.clement@free-electrons.com>,
- "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
- Sascha Hauer <kernel@pengutronix.de>,
- =?UTF-8?Q?S=C3=B6ren_Brinkmann?= <soren.brinkmann@xilinx.com>,
- Florian Larysch <fl@n621.de>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Li Yang <leoyang.li@nxp.com>,
- Linux-Renesas <linux-renesas-soc@vger.kernel.org>,
- Dinh Nguyen <dinguyen@kernel.org>,
- =?UTF-8?Q?Beno=C3=AEt_Cousson?= <bcousson@baylibre.com>,
- Fabio Estevam <fabio.estevam@nxp.com>, Shawn Guo <shawnguo@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8
+Message-Id: <b284d6be-ff37-4e5c-7357-446b4e1ea8ad@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -67,42 +38,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Javier,
 
-On Mon, May 22, 2017 at 7:15 PM, Javier Martinez Canillas
-<javier@dowhile0.org> wrote:
->>> I also wonder why this is really needed if AFAIU "renesas,24c02" is
->>> compatible with "atmel,24c02". IOW, the driver doesn't need to
->>> differentiate between the two since the devices are the same and will
->>> always match using "atmel,24c02".
->>
->> It is needed, so that when a difference is found, it can be handled
->> without updating the DT.
->
-> Yes, I understand this. What I tried to ask is if there could really
-> be a difference for the same chip type between different vendors, or
-> is just that people were using other manufacturers in the compatible
-> string as a consequence of the DT binding doc and the I2C core
-> ignoring the vendor prefix.
+When adding or removing memory, the aa_index (affinity value) for the
+memblock must also be converted to match the endianness of the rest
+of the 'ibm,dynamic-memory' property.  Otherwise, subsequent retrieval
+of the attribute will likely lead to non-existent nodes, followed by
+using the default node in the code inappropriately.
 
-The devices from different vendors are not the same. They contain FLASH
-ROM of a specific size, and glue logic to expose an i2c slave
-interface providing
-an AT24-compatible command set.  They should behave similar within
-the limits of the AT24 "spec".  But the actual implementation may be different.
+Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
+---
+ arch/powerpc/platforms/pseries/hotplug-memory.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
-> I don't mind though, I will leave the manufacturers that are different
-> than the atmel variants in the mainline DTS as you and Geert asked.
-
-OK, thanks!
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/powerpc/platforms/pseries/hotplug-memory.c
+index e104c71..1fb162b 100644
+--- a/arch/powerpc/platforms/pseries/hotplug-memory.c
++++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
+@@ -124,6 +124,7 @@ static struct property *dlpar_clone_drconf_property(struct device_node *dn)
+ 	for (i = 0; i < num_lmbs; i++) {
+ 		lmbs[i].base_addr = be64_to_cpu(lmbs[i].base_addr);
+ 		lmbs[i].drc_index = be32_to_cpu(lmbs[i].drc_index);
++		lmbs[i].aa_index = be32_to_cpu(lmbs[i].aa_index);
+ 		lmbs[i].flags = be32_to_cpu(lmbs[i].flags);
+ 	}
+ 
+@@ -147,6 +148,7 @@ static void dlpar_update_drconf_property(struct device_node *dn,
+ 	for (i = 0; i < num_lmbs; i++) {
+ 		lmbs[i].base_addr = cpu_to_be64(lmbs[i].base_addr);
+ 		lmbs[i].drc_index = cpu_to_be32(lmbs[i].drc_index);
++		lmbs[i].aa_index = cpu_to_be32(lmbs[i].aa_index);
+ 		lmbs[i].flags = cpu_to_be32(lmbs[i].flags);
+ 	}
