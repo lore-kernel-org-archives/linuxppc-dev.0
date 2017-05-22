@@ -1,25 +1,51 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <srs0=ejaj=44=linux.vnet.ibm.com=hbathini@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wWXxY4vVqzDqLk
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 May 2017 19:12:49 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Pavel Machek <pavel@denx.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>, mark.rutland@arm.com,
- devicetree@vger.kernel.org, trivial@kernel.org, linux-kernel@vger.kernel.org,
- robh+dt@kernel.org, paulus@samba.org, Andrew Morton <akpm@osdl.org>,
- jwboyer@linux.vnet.ibm.com, sr@denx.de, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] powerpc/sequoia: fix NAND partitions not to overlap
-In-Reply-To: <20170519111837.GB3940@amd>
-References: <20170402100535.GA18340@amd> <20170517120613.GA583@amd>
- <20170517143717.ad818a2282378fc7a38af1ff@linux-foundation.org>
- <20170518094813.GA12038@amd> <87efvl75ts.fsf@concordia.ellerman.id.au>
- <87zie95fiq.fsf@concordia.ellerman.id.au> <20170519111837.GB3940@amd>
-Date: Mon, 22 May 2017 19:12:48 +1000
-Message-ID: <87fufxs19r.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wWYRb5jxxzDqMY
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 May 2017 19:35:23 +1000 (AEST)
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3wWYRb54B9z8wTg
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 May 2017 19:35:23 +1000 (AEST)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3wWYRb1vK4z9s7h
+ for <linuxppc-dev@ozlabs.org>; Mon, 22 May 2017 19:35:23 +1000 (AEST)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v4M9Sm2L035426
+ for <linuxppc-dev@ozlabs.org>; Mon, 22 May 2017 05:35:21 -0400
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2akmunj1tv-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Mon, 22 May 2017 05:35:21 -0400
+Received: from localhost
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <hbathini@linux.vnet.ibm.com>;
+ Mon, 22 May 2017 19:35:18 +1000
+Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v4M9Z6rB63045654
+ for <linuxppc-dev@ozlabs.org>; Mon, 22 May 2017 19:35:14 +1000
+Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
+ by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v4M9YgHB010635
+ for <linuxppc-dev@ozlabs.org>; Mon, 22 May 2017 19:34:42 +1000
+Subject: [PATCH 1/2] powerpc/fadump: add a warning when
+ 'fadump_reserve_mem=' is used
+From: Hari Bathini <hbathini@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Prarit Bhargava <prarit@redhat.com>,
+ linuxppc-dev <linuxppc-dev@ozlabs.org>,
+ Ankit Kumar <ankit@linux.vnet.ibm.com>, Dave Young <dyoung@redhat.com>,
+ Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
+Date: Mon, 22 May 2017 15:04:23 +0530
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset="utf-8"
+Message-Id: <149544566391.16888.187413825827689513.stgit@hbathini.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,54 +55,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Pavel Machek <pavel@denx.de> writes:
+With commit 11550dc0a00b ("powerpc/fadump: reuse crashkernel parameter
+for fadump memory reservation"), 'fadump_reserve_mem=' parameter is
+deprecated in favor of 'crashkernel=' parameter. Add a warning if
+'fadump_reserve_mem=' is still used.
 
-> Hi!
->
->> >>> > > Signed-off-by: Pavel Machek <pavel@ucw.cz>
->> >>> > 
->> >>> > Ping? Two partitions at same place are bad news...
->> >>> 
->> >>> Please expand on "bad news"?  What are the runtime effects of this
->> >>> change?  Decisions about which kernel(s) to patch depend on this info.
->> >>
->> >> Well... two partitions at same place. If you use one, you will corrupt
->> >> information on the other one.
->> >>
->> >> OTOH this moves partition around (so that they don't overlap) so it is
->> >> probably not stable candidate.
->> >>
->> >> I guess this is not huge issue; people using these boards probably
->> >> have custom dts changes, anyway...
->> >
->> > Or no one's even using it anymore.
->> >
->> > I can take this via powerpc, I won't mark it for stable etc.
->> 
->> It became:
->> 
->>     Author:     Pavel Machek <pavel@denx.de>
->> 
->>     powerpc/sequoia: Fix NAND partitions not to overlap
->>     
->>     Currently the DTS defines two partitions at the same addresses, if you
->>     use one, you will corrupt information on the other one. Fix it by
->>     shifting the second partition.
->>     
->>     Signed-off-by: Pavel Machek <pavel@ucw.cz>
->>     [mpe: Reconstruct change log from email thread]
->>     Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
->> 
->> 
->> Minor nit, your From: address doesn't match your Signed-off-by: address,
->> which trips my "check patch is signed-off-by author" script. I can
->> just ignore it, but I think it's preferable if they match.
->
-> Sorry about that (I have automatic scripts changing From:). It is
-> still me, but I guess denx should get the credit here, so you can use.
->
-> Signed-off-by: Pavel Machek <pavel@denx.de>
+Suggested-by: Prarit Bhargava <prarit@redhat.com>
+Signed-off-by: Hari Bathini <hbathini@linux.vnet.ibm.com>
+---
+ arch/powerpc/kernel/fadump.c |   27 +++++++++++++++++++++++++++
+ 1 file changed, 27 insertions(+)
 
-Sure, done.
-
-cheers
+diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
+index 466569e..c0db844 100644
+--- a/arch/powerpc/kernel/fadump.c
++++ b/arch/powerpc/kernel/fadump.c
+@@ -212,6 +212,10 @@ static inline unsigned long fadump_calculate_reserve_size(void)
+ 	int ret;
+ 	unsigned long long base, size;
+ 
++	if (fw_dump.reserve_bootvar)
++		pr_warn("'fadump_reserve_mem=' parameter is deprecated in "
++			"favor of 'crashkernel=' parameter.\n");
++
+ 	/*
+ 	 * Check if the size is specified through crashkernel= cmdline
+ 	 * option. If yes, then use that but ignore base as fadump
+@@ -220,8 +224,18 @@ static inline unsigned long fadump_calculate_reserve_size(void)
+ 	ret = parse_crashkernel(boot_command_line, memblock_phys_mem_size(),
+ 				&size, &base);
+ 	if (ret == 0 && size > 0) {
++		if (fw_dump.reserve_bootvar)
++			pr_info("Using 'crashkernel=' parameter for"
++				" memory reservation.\n");
++
+ 		fw_dump.reserve_bootvar = (unsigned long)size;
+ 		return fw_dump.reserve_bootvar;
++	} else if (fw_dump.reserve_bootvar) {
++		/*
++		 * 'fadump_reserve_mem=' is being used to reserve memory
++		 * for firmware-assisted dump.
++		 */
++		return fw_dump.reserve_bootvar;
+ 	}
+ 
+ 	/* divide by 20 to get 5% of value */
+@@ -377,6 +391,19 @@ static int __init early_fadump_param(char *p)
+ }
+ early_param("fadump", early_fadump_param);
+ 
++/*
++ * Look for fadump_reserve_mem= cmdline option
++ * TODO: Remove references to 'fadump_reserve_mem=' parameter,
++ *       the sooner 'crashkernel=' parameter is accustomed to.
++ */
++static int __init early_fadump_reserve_mem(char *p)
++{
++	if (p)
++		fw_dump.reserve_bootvar = memparse(p, &p);
++	return 0;
++}
++early_param("fadump_reserve_mem", early_fadump_reserve_mem);
++
+ static void register_fw_dump(struct fadump_mem_struct *fdm)
+ {
+ 	int rc;
