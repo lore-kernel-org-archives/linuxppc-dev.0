@@ -1,31 +1,48 @@
-Return-Path: <javier@dowhile0.org>
-Received: from mail-it0-x243.google.com (mail-it0-x243.google.com
- [IPv6:2607:f8b0:4001:c0b::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mwb@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wXH2r548XzDqFT
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 May 2017 23:49:56 +1000 (AEST)
-Received: by mail-it0-x243.google.com with SMTP id d68so17096423ita.1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 May 2017 06:49:56 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wXJxR49DzzDqZv
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 May 2017 01:15:23 +1000 (AEST)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v4NF9Ggv048758
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 May 2017 11:15:18 -0400
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2amq8w97xm-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 May 2017 11:15:18 -0400
+Received: from localhost
+ by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
+ Tue, 23 May 2017 09:15:17 -0600
+To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+From: Michael Bringmann <mwb@linux.vnet.ibm.com>
+Subject: [PATCH 0/2] powerpc/dlpar: Correct display of hot-add/hot-remove CPUs
+ and memory
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Reza Arbab <arbab@linux.vnet.ibm.com>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Bharata B Rao <bharata@linux.vnet.ibm.com>,
+ Balbir Singh <bsingharora@gmail.com>,
+ Nathan Fontenot <nfont@linux.vnet.ibm.com>,
+ Michael Bringmann <mwb@linux.vnet.ibm.com>,
+ Shailendra Singh <shailendras@nvidia.com>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ John Allen <jallen@linux.vnet.ibm.com>,
+ Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
+ Sahil Mehta <sahilmehta17@gmail.com>,
+ Rashmica Gupta <rashmicy@gmail.com>, Ingo Molnar <mingo@kernel.org>,
+ Thomas Gleixner <tglx@linutronix.de>
+Date: Tue, 23 May 2017 10:15:11 -0500
 MIME-Version: 1.0
-In-Reply-To: <CAL_JsqLGC9sh9jhwtCHu1NE2z85cZh0CVXuMc9aohzCoxE_4fg@mail.gmail.com>
-References: <20170522140208.24652-1-javier@dowhile0.org>
- <20170522140208.24652-20-javier@dowhile0.org>
- <CAL_JsqLGC9sh9jhwtCHu1NE2z85cZh0CVXuMc9aohzCoxE_4fg@mail.gmail.com>
-From: Javier Martinez Canillas <javier@dowhile0.org>
-Date: Tue, 23 May 2017 15:49:51 +0200
-Message-ID: <CABxcv=nARWUrqSM=vsyrkPygKabcDGP4nTGdQFEEoBWaVLR5dg@mail.gmail.com>
-Subject: Re: [PATCH v4 19/20] powerpc/83xx: Add generic compatible string for
- I2C EEPROM
-To: Rob Herring <robh@kernel.org>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Wolfram Sang <wsa@the-dreams.de>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Mark Rutland <mark.rutland@arm.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8
+Message-Id: <790af26b-7055-7997-2080-f967aef2d26d@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,59 +52,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello Rob,
 
-On Tue, May 23, 2017 at 3:42 PM, Rob Herring <robh@kernel.org> wrote:
-> On Mon, May 22, 2017 at 9:02 AM, Javier Martinez Canillas
-> <javier@dowhile0.org> wrote:
->> The at24 driver allows to register I2C EEPROM chips using different vendor
->> and devices, but the I2C subsystem does not take the vendor into account
->> when matching using the I2C table since it only has device entries.
->>
->> But when matching using an OF table, both the vendor and device has to be
->> taken into account so the driver defines only a set of compatible strings
->> using the "atmel" vendor as a generic fallback for compatible I2C devices.
->>
->> So add this generic fallback to the device node compatible string to make
->> the device to match the driver using the OF device ID table.
->>
->> Signed-off-by: Javier Martinez Canillas <javier@dowhile0.org>
->>
->> ---
->>
->> Changes in v4:
->> - Only use the atmel manufacturer in the compatible string instead of
->>   keeping the deprecated ones (Rob Herring).
->>
->> Changes in v3: None
->> Changes in v2: None
->>
->>  arch/powerpc/boot/dts/mpc8308_p1m.dts  | 2 +-
->>  arch/powerpc/boot/dts/mpc8349emitx.dts | 4 ++--
->>  arch/powerpc/boot/dts/mpc8377_rdb.dts  | 2 +-
->>  arch/powerpc/boot/dts/mpc8377_wlan.dts | 2 +-
->>  arch/powerpc/boot/dts/mpc8378_rdb.dts  | 2 +-
->>  arch/powerpc/boot/dts/mpc8379_rdb.dts  | 2 +-
->>  6 files changed, 7 insertions(+), 7 deletions(-)
->>
->> diff --git a/arch/powerpc/boot/dts/mpc8308_p1m.dts b/arch/powerpc/boot/dts/mpc8308_p1m.dts
->> index 57f86cdf9f36..702ab4fc5b4a 100644
->> --- a/arch/powerpc/boot/dts/mpc8308_p1m.dts
->> +++ b/arch/powerpc/boot/dts/mpc8308_p1m.dts
->> @@ -123,7 +123,7 @@
->>                         interrupt-parent = <&ipic>;
->>                         dfsrr;
->>                         fram@50 {
->> -                               compatible = "ramtron,24c64";
->> +                               compatible = "atmel,24c64";
->
-> This should be '"ramtron,24c64", "atmel,24c64"'
->
+powerpc/numa: Correct the currently broken capability to set the
+topology for shared CPUs in LPARs.  At boot time for shared CPU
+lpars, the topology for each shared CPU is set to node zero, however,
+this is now updated correctly using the Virtual Processor Home Node
+(VPHN) capabilities information provided by the pHyp. The VPHN handling
+in Linux is disabled, if PRRN handling is present.
 
-Yes, I (hopefully) fixed all the occurrences in the v5 that I posted
-today, you are cc'ed on that series too.
+powerpc/hotplug-memory: Removing or adding memory via the PowerPC
+hotplug interface shows anomalies in the association between memory
+and nodes.  The code was updated to better take advantage of defined
+nodes in order to associate memory to nodes not needed at boot time,
+but relevant to dynamically added memory.
 
-Again, sorry for misunderstanding your comment on v3.
+Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
 
-Best regards,
-Javier
+Michael Bringmann (2):
+  powerpc/numa: Update CPU topology when VPHN enabled
+  powerpc/hotplug-memory: Fix hot-add memory node assoc
+---
