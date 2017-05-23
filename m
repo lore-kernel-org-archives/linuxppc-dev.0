@@ -1,42 +1,20 @@
-Return-Path: <mwb@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <matthew.brown.dev@gmail.com>
+Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
+ [IPv6:2607:f8b0:400e:c00::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wXVvq5h80zDqbs
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 May 2017 08:44:39 +1000 (AEST)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v4NMeBEo119646
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 May 2017 18:44:29 -0400
-Received: from e13.ny.us.ibm.com (e13.ny.us.ibm.com [129.33.205.203])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2amvav3m4g-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 May 2017 18:44:29 -0400
-Received: from localhost
- by e13.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
- Tue, 23 May 2017 18:44:28 -0400
-Subject: Re: [Patch 2/2]: powerpc/hotplug/mm: Fix hot-add memory node assoc
-To: Reza Arbab <arbab@linux.vnet.ibm.com>
-References: <3bb44d92-b2ff-e197-4bdf-ec6d588d6dab@linux.vnet.ibm.com>
- <20170523155251.bqwc5mc4jpgzkqlm@arbab-laptop.localdomain>
- <1c1d70e3-4e45-b035-0e75-1b0f531c111b@linux.vnet.ibm.com>
- <20170523214922.bns675oqzqj4pkhc@arbab-laptop.localdomain>
-Cc: Balbir Singh <bsingharora@gmail.com>,
- Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
- linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Bharata B Rao <bharata@linux.vnet.ib>,
- Shailendra Singh <shailendras@nvidia.com>,
- Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org
-From: Michael Bringmann <mwb@linux.vnet.ibm.com>
-Date: Tue, 23 May 2017 17:44:23 -0500
-MIME-Version: 1.0
-In-Reply-To: <20170523214922.bns675oqzqj4pkhc@arbab-laptop.localdomain>
-Content-Type: text/plain; charset=windows-1252
-Message-Id: <ee96df3d-ad0f-c4dc-e7d5-290018ec8afd@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wXXGv46vbzDqbf
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 May 2017 09:46:15 +1000 (AEST)
+Received: by mail-pf0-x242.google.com with SMTP id w69so30583339pfk.1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 May 2017 16:46:15 -0700 (PDT)
+From: Matt Brown <matthew.brown.dev@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: mpe@ellerman.id.au,
+	anton@samba.org
+Subject: [PATCH] powerpc/lib: Split xor_vmx file to guarantee instruction
+ ordering
+Date: Wed, 24 May 2017 09:45:59 +1000
+Message-Id: <20170523234559.28080-1-matthew.brown.dev@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,58 +24,260 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+The xor_vmx.c file is used for the RAID5 xor operations. In these functions
+altivec is enabled to run the operation and then disabled. However due to
+compiler instruction reordering, altivec instructions are being run before
+enable_altivec() and after disable_altivec().
 
+This patch splits the non-altivec code into xor_vmx_glue.c which calls the
+altivec functions in xor_vmx.c. By compiling xor_vmx_glue.c without
+-maltivec we can guarantee that altivec instruction will not be reordered
+outside of the enable/disable block.
 
-On 05/23/2017 04:49 PM, Reza Arbab wrote:
-> On Tue, May 23, 2017 at 03:05:08PM -0500, Michael Bringmann wrote:
->> On 05/23/2017 10:52 AM, Reza Arbab wrote:
->>> On Tue, May 23, 2017 at 10:15:44AM -0500, Michael Bringmann wrote:
->>>> +static void setup_nodes(void)
->>>> +{
->>>> +    int i, l = 32 /* MAX_NUMNODES */;
->>>> +
->>>> +    for (i = 0; i < l; i++) {
->>>> +        if (!node_possible(i)) {
->>>> +            setup_node_data(i, 0, 0);
->>>> +            node_set(i, node_possible_map);
->>>> +        }
->>>> +    }
->>>> +}
->>>
->>> This seems to be a workaround for 3af229f2071f ("powerpc/numa: Reset node_possible_map to only node_online_map").
->>
->> They may be related, but that commit is not a replacement.  The above patch ensures that
->> there are enough of the nodes initialized at startup to allow for memory hot-add into a
->> node that was not used at boot.  (See 'setup_node_data' function in 'numa.c'.)  That and
->> recording that the node was initialized.
-> 
-> Is it really necessary to preinitialize these empty nodes using setup_node_data()? When you do memory hotadd into a node that was not used at boot, the node data already gets set up by
-> 
-> add_memory
->  add_memory_resource
->    hotadd_new_pgdat
->      arch_alloc_nodedata <-- allocs the pg_data_t
->      ...
->      free_area_init_node <-- sets NODE_DATA(nid)->node_id, etc.
-> 
-> Removing setup_node_data() from that loop leaves only the call to node_set(). If 3af229f2071f (which reduces node_possible_map) was reverted, you wouldn't need to do that either.
+Signed-off-by: Matt Brown <matthew.brown.dev@gmail.com>
+---
+ arch/powerpc/lib/Makefile       |  2 +-
+ arch/powerpc/lib/xor_vmx.c      | 53 ++++++++---------------------------
+ arch/powerpc/lib/xor_vmx.h      | 20 +++++++++++++
+ arch/powerpc/lib/xor_vmx_glue.c | 62 +++++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 94 insertions(+), 43 deletions(-)
+ create mode 100644 arch/powerpc/lib/xor_vmx.h
+ create mode 100644 arch/powerpc/lib/xor_vmx_glue.c
 
-With or without 3af229f2071f, we would still need to add something, somewhere to add new
-bits to the 'node_possible_map'.  That is not being done.
-
-> 
->> I didn't see where any part of commit 3af229f2071f would touch the 'node_possible_map'
->> which is needed by 'numa.c' and 'workqueue.c'.  The nodemask created and updated by
->> 'mem_cgroup_may_update_nodemask()' does not appear to be the same mask.
-> 
-> Are you sure you're looking at 3af229f2071f? It only adds one line of code; the reduction of node_possible_map.
-> 
-
+diff --git a/arch/powerpc/lib/Makefile b/arch/powerpc/lib/Makefile
+index 309361e8..a448464 100644
+--- a/arch/powerpc/lib/Makefile
++++ b/arch/powerpc/lib/Makefile
+@@ -31,7 +31,7 @@ obj-$(CONFIG_PPC_LIB_RHEAP) += rheap.o
+ 
+ obj-$(CONFIG_FTR_FIXUP_SELFTEST) += feature-fixups-test.o
+ 
+-obj-$(CONFIG_ALTIVEC)	+= xor_vmx.o
++obj-$(CONFIG_ALTIVEC)	+= xor_vmx.o xor_vmx_glue.o
+ CFLAGS_xor_vmx.o += -maltivec $(call cc-option,-mabi=altivec)
+ 
+ obj-$(CONFIG_PPC64) += $(obj64-y)
+diff --git a/arch/powerpc/lib/xor_vmx.c b/arch/powerpc/lib/xor_vmx.c
+index f9de69a..4df240a 100644
+--- a/arch/powerpc/lib/xor_vmx.c
++++ b/arch/powerpc/lib/xor_vmx.c
+@@ -29,10 +29,7 @@
+ #define vector __attribute__((vector_size(16)))
+ #endif
+ 
+-#include <linux/preempt.h>
+-#include <linux/export.h>
+-#include <linux/sched.h>
+-#include <asm/switch_to.h>
++#include "xor_vmx.h"
+ 
+ typedef vector signed char unative_t;
+ 
+@@ -64,16 +61,13 @@ typedef vector signed char unative_t;
+ 		V1##_3 = vec_xor(V1##_3, V2##_3);	\
+ 	} while (0)
+ 
+-void xor_altivec_2(unsigned long bytes, unsigned long *v1_in,
+-		   unsigned long *v2_in)
++void __xor_altivec_2(unsigned long bytes, unsigned long *v1_in,
++		     unsigned long *v2_in)
+ {
+ 	DEFINE(v1);
+ 	DEFINE(v2);
+ 	unsigned long lines = bytes / (sizeof(unative_t)) / 4;
+ 
+-	preempt_disable();
+-	enable_kernel_altivec();
+-
+ 	do {
+ 		LOAD(v1);
+ 		LOAD(v2);
+@@ -83,23 +77,16 @@ void xor_altivec_2(unsigned long bytes, unsigned long *v1_in,
+ 		v1 += 4;
+ 		v2 += 4;
+ 	} while (--lines > 0);
+-
+-	disable_kernel_altivec();
+-	preempt_enable();
+ }
+-EXPORT_SYMBOL(xor_altivec_2);
+ 
+-void xor_altivec_3(unsigned long bytes, unsigned long *v1_in,
+-		   unsigned long *v2_in, unsigned long *v3_in)
++void __xor_altivec_3(unsigned long bytes, unsigned long *v1_in,
++		     unsigned long *v2_in, unsigned long *v3_in)
+ {
+ 	DEFINE(v1);
+ 	DEFINE(v2);
+ 	DEFINE(v3);
+ 	unsigned long lines = bytes / (sizeof(unative_t)) / 4;
+ 
+-	preempt_disable();
+-	enable_kernel_altivec();
+-
+ 	do {
+ 		LOAD(v1);
+ 		LOAD(v2);
+@@ -112,15 +99,11 @@ void xor_altivec_3(unsigned long bytes, unsigned long *v1_in,
+ 		v2 += 4;
+ 		v3 += 4;
+ 	} while (--lines > 0);
+-
+-	disable_kernel_altivec();
+-	preempt_enable();
+ }
+-EXPORT_SYMBOL(xor_altivec_3);
+ 
+-void xor_altivec_4(unsigned long bytes, unsigned long *v1_in,
+-		   unsigned long *v2_in, unsigned long *v3_in,
+-		   unsigned long *v4_in)
++void __xor_altivec_4(unsigned long bytes, unsigned long *v1_in,
++		     unsigned long *v2_in, unsigned long *v3_in,
++		     unsigned long *v4_in)
+ {
+ 	DEFINE(v1);
+ 	DEFINE(v2);
+@@ -128,9 +111,6 @@ void xor_altivec_4(unsigned long bytes, unsigned long *v1_in,
+ 	DEFINE(v4);
+ 	unsigned long lines = bytes / (sizeof(unative_t)) / 4;
+ 
+-	preempt_disable();
+-	enable_kernel_altivec();
+-
+ 	do {
+ 		LOAD(v1);
+ 		LOAD(v2);
+@@ -146,15 +126,11 @@ void xor_altivec_4(unsigned long bytes, unsigned long *v1_in,
+ 		v3 += 4;
+ 		v4 += 4;
+ 	} while (--lines > 0);
+-
+-	disable_kernel_altivec();
+-	preempt_enable();
+ }
+-EXPORT_SYMBOL(xor_altivec_4);
+ 
+-void xor_altivec_5(unsigned long bytes, unsigned long *v1_in,
+-		   unsigned long *v2_in, unsigned long *v3_in,
+-		   unsigned long *v4_in, unsigned long *v5_in)
++void __xor_altivec_5(unsigned long bytes, unsigned long *v1_in,
++		     unsigned long *v2_in, unsigned long *v3_in,
++		     unsigned long *v4_in, unsigned long *v5_in)
+ {
+ 	DEFINE(v1);
+ 	DEFINE(v2);
+@@ -163,9 +139,6 @@ void xor_altivec_5(unsigned long bytes, unsigned long *v1_in,
+ 	DEFINE(v5);
+ 	unsigned long lines = bytes / (sizeof(unative_t)) / 4;
+ 
+-	preempt_disable();
+-	enable_kernel_altivec();
+-
+ 	do {
+ 		LOAD(v1);
+ 		LOAD(v2);
+@@ -184,8 +157,4 @@ void xor_altivec_5(unsigned long bytes, unsigned long *v1_in,
+ 		v4 += 4;
+ 		v5 += 4;
+ 	} while (--lines > 0);
+-
+-	disable_kernel_altivec();
+-	preempt_enable();
+ }
+-EXPORT_SYMBOL(xor_altivec_5);
+diff --git a/arch/powerpc/lib/xor_vmx.h b/arch/powerpc/lib/xor_vmx.h
+new file mode 100644
+index 0000000..4414a24
+--- /dev/null
++++ b/arch/powerpc/lib/xor_vmx.h
+@@ -0,0 +1,20 @@
++/*
++ * Simple interface to link xor_vmx.c and xor_vmx_glue.c
++ *
++ * Seperating these file ensures that no altivec instructions are run 
++ * outside of the enable/disable altivec block.
++ */
++
++void __xor_altivec_2(unsigned long bytes, unsigned long *v1_in,
++			     unsigned long *v2_in);
++
++void __xor_altivec_3(unsigned long bytes, unsigned long *v1_in,
++			     unsigned long *v2_in, unsigned long *v3_in);
++
++void __xor_altivec_4(unsigned long bytes, unsigned long *v1_in,
++			     unsigned long *v2_in, unsigned long *v3_in,
++			     unsigned long *v4_in);
++
++void __xor_altivec_5(unsigned long bytes, unsigned long *v1_in,
++			     unsigned long *v2_in, unsigned long *v3_in,
++			     unsigned long *v4_in, unsigned long *v5_in);
+diff --git a/arch/powerpc/lib/xor_vmx_glue.c b/arch/powerpc/lib/xor_vmx_glue.c
+new file mode 100644
+index 0000000..6521fe5
+--- /dev/null
++++ b/arch/powerpc/lib/xor_vmx_glue.c
+@@ -0,0 +1,62 @@
++/*
++ * Altivec XOR operations
++ *
++ * Copyright 2017 IBM Corp.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ */
++
++#include <linux/preempt.h>
++#include <linux/export.h>
++#include <linux/sched.h>
++#include <asm/switch_to.h>
++#include "xor_vmx.h"
++
++void xor_altivec_2(unsigned long bytes, unsigned long *v1_in,
++		   unsigned long *v2_in)
++{
++	preempt_disable();
++	enable_kernel_altivec();
++	__xor_altivec_2(bytes, v1_in, v2_in);
++	disable_kernel_altivec();
++	preempt_enable();
++}
++EXPORT_SYMBOL(xor_altivec_2);
++
++void xor_altivec_3(unsigned long bytes,  unsigned long *v1_in,
++		   unsigned long *v2_in, unsigned long *v3_in)
++{
++	preempt_disable();
++	enable_kernel_altivec();
++	__xor_altivec_3(bytes, v1_in, v2_in, v3_in);
++	disable_kernel_altivec();
++	preempt_enable();
++}
++EXPORT_SYMBOL(xor_altivec_3);
++
++void xor_altivec_4(unsigned long bytes,  unsigned long *v1_in,
++		   unsigned long *v2_in, unsigned long *v3_in,
++		   unsigned long *v4_in)
++{
++	preempt_disable();
++	enable_kernel_altivec();
++	__xor_altivec_4(bytes, v1_in, v2_in, v3_in, v4_in);
++	disable_kernel_altivec();
++	preempt_enable();
++}
++EXPORT_SYMBOL(xor_altivec_4);
++
++void xor_altivec_5(unsigned long bytes,  unsigned long *v1_in,
++		   unsigned long *v2_in, unsigned long *v3_in,
++		   unsigned long *v4_in, unsigned long *v5_in)
++{
++	preempt_disable();
++	enable_kernel_altivec();
++	__xor_altivec_5(bytes, v1_in, v2_in, v3_in, v4_in, v5_in);
++	disable_kernel_altivec();
++	preempt_enable();
++}
++EXPORT_SYMBOL(xor_altivec_5);
 -- 
-Michael W. Bringmann
-Linux Technology Center
-IBM Corporation
-Tie-Line  363-5196
-External: (512) 286-5196
-Cell:       (512) 466-0650
-mwb@linux.vnet.ibm.com
+2.9.3
