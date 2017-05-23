@@ -1,24 +1,49 @@
-Return-Path: <oohall@gmail.com>
-Received: from mail-qk0-x243.google.com (mail-qk0-x243.google.com
- [IPv6:2607:f8b0:400d:c09::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <srs0=85op=45=linux.vnet.ibm.com=hbathini@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wX5Yd4P09zDqbd
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 May 2017 16:42:29 +1000 (AEST)
-Received: by mail-qk0-x243.google.com with SMTP id y128so21856445qka.3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 May 2017 23:42:29 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wX79L5Q02zDqZp
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 May 2017 17:55:02 +1000 (AEST)
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3wX79L4myNz8wSY
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 May 2017 17:55:02 +1000 (AEST)
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3wX79L0qfZz9sP0
+ for <linuxppc-dev@ozlabs.org>; Tue, 23 May 2017 17:55:01 +1000 (AEST)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v4N7Sk9t002939
+ for <linuxppc-dev@ozlabs.org>; Tue, 23 May 2017 03:55:00 -0400
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2am9y6gdmy-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Tue, 23 May 2017 03:54:59 -0400
+Received: from localhost
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <hbathini@linux.vnet.ibm.com>;
+ Tue, 23 May 2017 17:54:56 +1000
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v4N7sjLd4063536
+ for <linuxppc-dev@ozlabs.org>; Tue, 23 May 2017 17:54:53 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v4N7sEOX012522
+ for <linuxppc-dev@ozlabs.org>; Tue, 23 May 2017 17:54:14 +1000
+Subject: [PATCH] powerpc/fadump: add reschedule point while releasing memory
+From: Hari Bathini <hbathini@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
+ Ankit Kumar <ankit@linux.vnet.ibm.com>,
+ Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
+Date: Tue, 23 May 2017 13:24:03 +0530
 MIME-Version: 1.0
-In-Reply-To: <87efvgqk08.fsf@skywalker.in.ibm.com>
-References: <20170523040524.13717-1-oohall@gmail.com>
- <20170523040524.13717-4-oohall@gmail.com>
- <87efvgqk08.fsf@skywalker.in.ibm.com>
-From: "Oliver O'Halloran" <oohall@gmail.com>
-Date: Tue, 23 May 2017 16:42:23 +1000
-Message-ID: <CAOSf1CEbTVXRq0GZKrAUwrXAdPuOUVDdyZfMAJyGUhH7AOkOOQ@mail.gmail.com>
-Subject: Re: [PATCH 4/6] powerpc/mm: Add devmap support for ppc64
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Linux MM <linux-mm@kvack.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="utf-8"
+Message-Id: <149552604332.732.5139791860101612990.stgit@hbathini.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,264 +53,97 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, May 23, 2017 at 2:23 PM, Aneesh Kumar K.V
-<aneesh.kumar@linux.vnet.ibm.com> wrote:
-> Oliver O'Halloran <oohall@gmail.com> writes:
->
->> Add support for the devmap bit on PTEs and PMDs for PPC64 Book3S.  This
->> is used to differentiate device backed memory from transparent huge
->> pages since they are handled in more or less the same manner by the core
->> mm code.
->>
->> Cc: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
->> Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
->> ---
->> v1 -> v2: Properly differentiate THP and PMD Devmap entries. The
->> mm core assumes that pmd_trans_huge() and pmd_devmap() are mutually
->> exclusive and v1 had pmd_trans_huge() being true on a devmap pmd.
->>
->> Aneesh, this has been fleshed out substantially since v1. Can you
->> re-review it? Also no explicit gup support is required in this patch
->> since devmap support was added generic GUP as a part of making x86 use
->> the generic version.
->> ---
->>  arch/powerpc/include/asm/book3s/64/hash-64k.h |  2 +-
->>  arch/powerpc/include/asm/book3s/64/pgtable.h  | 37 ++++++++++++++++++++++++++-
->>  arch/powerpc/include/asm/book3s/64/radix.h    |  2 +-
->>  arch/powerpc/mm/hugetlbpage.c                 |  2 +-
->>  arch/powerpc/mm/pgtable-book3s64.c            |  4 +--
->>  arch/powerpc/mm/pgtable-hash64.c              |  4 ++-
->>  arch/powerpc/mm/pgtable-radix.c               |  3 ++-
->>  arch/powerpc/mm/pgtable_64.c                  |  2 +-
->>  8 files changed, 47 insertions(+), 9 deletions(-)
->>
->> diff --git a/arch/powerpc/include/asm/book3s/64/hash-64k.h b/arch/powerpc/include/asm/book3s/64/hash-64k.h
->> index 9732837aaae8..eaaf613c5347 100644
->> --- a/arch/powerpc/include/asm/book3s/64/hash-64k.h
->> +++ b/arch/powerpc/include/asm/book3s/64/hash-64k.h
->> @@ -180,7 +180,7 @@ static inline void mark_hpte_slot_valid(unsigned char *hpte_slot_array,
->>   */
->>  static inline int hash__pmd_trans_huge(pmd_t pmd)
->>  {
->> -     return !!((pmd_val(pmd) & (_PAGE_PTE | H_PAGE_THP_HUGE)) ==
->> +     return !!((pmd_val(pmd) & (_PAGE_PTE | H_PAGE_THP_HUGE | _PAGE_DEVMAP)) ==
->>                 (_PAGE_PTE | H_PAGE_THP_HUGE));
->>  }
->
-> _PAGE_DEVMAP is not really needed here. We will set H_PAGE_THP_HUGE only
-> for thp hugepage w.r.t hash. But putting it here also makes it clear
-> that devmap entries are not considered trans huge.
+Around 95% of memory is reserved by fadump/capture kernel. All this
+memory is freed, one page at a time, on writing '1' to the node
+/sys/kernel/fadump_release_mem. On systems with large memory, this
+can take a long time to complete, leading to soft lockup warning
+messages. To avoid this, add reschedule points at regular intervals.
 
-Good point. I'll remove it.
+Suggested-by: Michael Ellerman <mpe@ellerman.id.au>
+Signed-off-by: Hari Bathini <hbathini@linux.vnet.ibm.com>
+---
+ arch/powerpc/kernel/fadump.c |   60 ++++++++++++++++++++++++++++++++++--------
+ 1 file changed, 49 insertions(+), 11 deletions(-)
 
->>
->> diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
->> index 85bc9875c3be..24634e92dd0b 100644
->> --- a/arch/powerpc/include/asm/book3s/64/pgtable.h
->> +++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
->> @@ -79,6 +79,9 @@
->>
->>  #define _PAGE_SOFT_DIRTY     _RPAGE_SW3 /* software: software dirty tracking */
->>  #define _PAGE_SPECIAL                _RPAGE_SW2 /* software: special page */
->> +#define _PAGE_DEVMAP         _RPAGE_SW1
->> +#define __HAVE_ARCH_PTE_DEVMAP
->> +
->>  /*
->>   * Drivers request for cache inhibited pte mapping using _PAGE_NO_CACHE
->>   * Instead of fixing all of them, add an alternate define which
->> @@ -599,6 +602,16 @@ static inline pte_t pte_mkhuge(pte_t pte)
->>       return pte;
->>  }
->>
->> +static inline pte_t pte_mkdevmap(pte_t pte)
->> +{
->> +     return __pte(pte_val(pte) | _PAGE_SPECIAL|_PAGE_DEVMAP);
->> +}
->> +
->> +static inline int pte_devmap(pte_t pte)
->> +{
->> +     return !!(pte_raw(pte) & cpu_to_be64(_PAGE_DEVMAP));
->> +}
->> +
->>  static inline pte_t pte_modify(pte_t pte, pgprot_t newprot)
->>  {
->>       /* FIXME!! check whether this need to be a conditional */
->> @@ -963,6 +976,9 @@ static inline pte_t *pmdp_ptep(pmd_t *pmd)
->>  #define pmd_mk_savedwrite(pmd)       pte_pmd(pte_mk_savedwrite(pmd_pte(pmd)))
->>  #define pmd_clear_savedwrite(pmd)    pte_pmd(pte_clear_savedwrite(pmd_pte(pmd)))
->>
->> +#define pud_pfn(...) (0)
->> +#define pgd_pfn(...) (0)
->> +
->>  #ifdef CONFIG_HAVE_ARCH_SOFT_DIRTY
->>  #define pmd_soft_dirty(pmd)    pte_soft_dirty(pmd_pte(pmd))
->>  #define pmd_mksoft_dirty(pmd)  pte_pmd(pte_mksoft_dirty(pmd_pte(pmd)))
->> @@ -1137,7 +1153,6 @@ static inline int pmd_move_must_withdraw(struct spinlock *new_pmd_ptl,
->>       return true;
->>  }
->>
->> -
->>  #define arch_needs_pgtable_deposit arch_needs_pgtable_deposit
->>  static inline bool arch_needs_pgtable_deposit(void)
->>  {
->> @@ -1146,6 +1161,26 @@ static inline bool arch_needs_pgtable_deposit(void)
->>       return true;
->>  }
->>
->> +static inline pmd_t pmd_mkdevmap(pmd_t pmd)
->> +{
->> +     return pte_pmd(pte_mkdevmap(pmd_pte(pmd)));
->> +}
->
->
-> We avoided setting _PAGE_SPECIAL on pmd entries. This will set that, we
-> may want to check if it is ok.  IIRC, we overloaded _PAGE_SPECIAL at some point to indicate thp splitting. But good to double check.
-
-I took a cursory look in arch/powerpc/ and mm/ for usages and didn't
-see any usages of _PAGE_SPECIAL for pmds. There's no good reason to
-set the flag though so I'll remove it.
-
->> +
->> +static inline int pmd_devmap(pmd_t pmd)
->> +{
->> +     return pte_devmap(pmd_pte(pmd));
->> +}
->> +
->> +static inline int pud_devmap(pud_t pud)
->> +{
->> +     return 0;
->> +}
->> +
->> +static inline int pgd_devmap(pgd_t pgd)
->> +{
->> +     return 0;
->> +}
->> +
->>  #endif /* CONFIG_TRANSPARENT_HUGEPAGE */
->>  #endif /* __ASSEMBLY__ */
->>  #endif /* _ASM_POWERPC_BOOK3S_64_PGTABLE_H_ */
->> diff --git a/arch/powerpc/include/asm/book3s/64/radix.h b/arch/powerpc/include/asm/book3s/64/radix.h
->> index ac16d1943022..ba43754e96d2 100644
->> --- a/arch/powerpc/include/asm/book3s/64/radix.h
->> +++ b/arch/powerpc/include/asm/book3s/64/radix.h
->> @@ -252,7 +252,7 @@ static inline int radix__pgd_bad(pgd_t pgd)
->>
->>  static inline int radix__pmd_trans_huge(pmd_t pmd)
->>  {
->> -     return !!(pmd_val(pmd) & _PAGE_PTE);
->> +     return (pmd_val(pmd) & (_PAGE_PTE | _PAGE_DEVMAP)) == _PAGE_PTE;
->>  }
->>
->>  static inline pmd_t radix__pmd_mkhuge(pmd_t pmd)
->> diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
->> index a4f33de4008e..d9958af5c98e 100644
->> --- a/arch/powerpc/mm/hugetlbpage.c
->> +++ b/arch/powerpc/mm/hugetlbpage.c
->> @@ -963,7 +963,7 @@ pte_t *__find_linux_pte_or_hugepte(pgd_t *pgdir, unsigned long ea,
->>                       if (pmd_none(pmd))
->>                               return NULL;
->>
->> -                     if (pmd_trans_huge(pmd)) {
->> +                     if (pmd_trans_huge(pmd) || pmd_devmap(pmd)) {
->>                               if (is_thp)
->>                                       *is_thp = true;
->>                               ret_pte = (pte_t *) pmdp;
->
->
-> Is that correct ? Do we want pmd_devmap to have is_thp set ?
-
-I think so, is_thp is used to differentiate between explicit and
-transparent hugepages in the hash fault handler. The management and
-fault handling of pmd devmap pages and thp is the same (by design)
-while hugepages seem to have their own requirements. Most users of
-find_linux_pte_or_hugepte() don't look at is_thp either so it should
-be safe.
-
->> diff --git a/arch/powerpc/mm/pgtable-book3s64.c b/arch/powerpc/mm/pgtable-book3s64.c
->> index 5fcb3dd74c13..31eed8fa8e99 100644
->> --- a/arch/powerpc/mm/pgtable-book3s64.c
->> +++ b/arch/powerpc/mm/pgtable-book3s64.c
->> @@ -32,7 +32,7 @@ int pmdp_set_access_flags(struct vm_area_struct *vma, unsigned long address,
->>  {
->>       int changed;
->>  #ifdef CONFIG_DEBUG_VM
->> -     WARN_ON(!pmd_trans_huge(*pmdp));
->> +     WARN_ON(!pmd_trans_huge(*pmdp) && !pmd_devmap(*pmdp));
->>       assert_spin_locked(&vma->vm_mm->page_table_lock);
->>  #endif
->>       changed = !pmd_same(*(pmdp), entry);
->> @@ -59,7 +59,7 @@ void set_pmd_at(struct mm_struct *mm, unsigned long addr,
->>  #ifdef CONFIG_DEBUG_VM
->>       WARN_ON(pte_present(pmd_pte(*pmdp)) && !pte_protnone(pmd_pte(*pmdp)));
->>       assert_spin_locked(&mm->page_table_lock);
->> -     WARN_ON(!pmd_trans_huge(pmd));
->> +     WARN_ON(!(pmd_trans_huge(pmd) || pmd_devmap(pmd)));
->>  #endif
->>       trace_hugepage_set_pmd(addr, pmd_val(pmd));
->>       return set_pte_at(mm, addr, pmdp_ptep(pmdp), pmd_pte(pmd));
->> diff --git a/arch/powerpc/mm/pgtable-hash64.c b/arch/powerpc/mm/pgtable-hash64.c
->> index 8b85a14b08ea..7456cde4dbce 100644
->> --- a/arch/powerpc/mm/pgtable-hash64.c
->> +++ b/arch/powerpc/mm/pgtable-hash64.c
->> @@ -109,7 +109,7 @@ unsigned long hash__pmd_hugepage_update(struct mm_struct *mm, unsigned long addr
->>       unsigned long old;
->>
->>  #ifdef CONFIG_DEBUG_VM
->> -     WARN_ON(!pmd_trans_huge(*pmdp));
->> +     WARN_ON(!hash__pmd_trans_huge(*pmdp) && !pmd_devmap(*pmdp));
->>       assert_spin_locked(&mm->page_table_lock);
->>  #endif
->>
->> @@ -141,6 +141,7 @@ pmd_t hash__pmdp_collapse_flush(struct vm_area_struct *vma, unsigned long addres
->>
->>       VM_BUG_ON(address & ~HPAGE_PMD_MASK);
->>       VM_BUG_ON(pmd_trans_huge(*pmdp));
->> +     VM_BUG_ON(pmd_devmap(*pmdp));
->>
->>       pmd = *pmdp;
->>       pmd_clear(pmdp);
->> @@ -221,6 +222,7 @@ void hash__pmdp_huge_split_prepare(struct vm_area_struct *vma,
->>  {
->>       VM_BUG_ON(address & ~HPAGE_PMD_MASK);
->>       VM_BUG_ON(REGION_ID(address) != USER_REGION_ID);
->> +     VM_BUG_ON(pmd_devmap(*pmdp));
->>
->>       /*
->>        * We can't mark the pmd none here, because that will cause a race
->> diff --git a/arch/powerpc/mm/pgtable-radix.c b/arch/powerpc/mm/pgtable-radix.c
->> index c28165d8970b..69e28dda81f2 100644
->> --- a/arch/powerpc/mm/pgtable-radix.c
->> +++ b/arch/powerpc/mm/pgtable-radix.c
->> @@ -683,7 +683,7 @@ unsigned long radix__pmd_hugepage_update(struct mm_struct *mm, unsigned long add
->>       unsigned long old;
->>
->>  #ifdef CONFIG_DEBUG_VM
->> -     WARN_ON(!radix__pmd_trans_huge(*pmdp));
->> +     WARN_ON(!radix__pmd_trans_huge(*pmdp) && !pmd_devmap(*pmdp));
->>       assert_spin_locked(&mm->page_table_lock);
->>  #endif
->>
->> @@ -701,6 +701,7 @@ pmd_t radix__pmdp_collapse_flush(struct vm_area_struct *vma, unsigned long addre
->>
->>       VM_BUG_ON(address & ~HPAGE_PMD_MASK);
->>       VM_BUG_ON(radix__pmd_trans_huge(*pmdp));
->> +     VM_BUG_ON(pmd_devmap(*pmdp));
->>       /*
->>        * khugepaged calls this for normal pmd
->>        */
->> diff --git a/arch/powerpc/mm/pgtable_64.c b/arch/powerpc/mm/pgtable_64.c
->> index db93cf747a03..aefde9bd3110 100644
->> --- a/arch/powerpc/mm/pgtable_64.c
->> +++ b/arch/powerpc/mm/pgtable_64.c
->> @@ -323,7 +323,7 @@ struct page *pud_page(pud_t pud)
->>   */
->>  struct page *pmd_page(pmd_t pmd)
->>  {
->> -     if (pmd_trans_huge(pmd) || pmd_huge(pmd))
->> +     if (pmd_trans_huge(pmd) || pmd_huge(pmd) || pmd_devmap(pmd))
->>               return pte_page(pmd_pte(pmd));
->>       return virt_to_page(pmd_page_vaddr(pmd));
->>  }
->> --
->> 2.9.3
->
+diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
+index 466569e..0babefc 100644
+--- a/arch/powerpc/kernel/fadump.c
++++ b/arch/powerpc/kernel/fadump.c
+@@ -1046,28 +1046,66 @@ void fadump_cleanup(void)
+ 	}
+ }
+ 
++/* Time to wait before a reschedule point */
++#define RELEASE_TIME_LIMIT			500	/* in milliseconds */
++
++/* Release memory in batches of 'N' pages each */
++#define RELEASE_PAGES_BATCH			(1 << 22)
++
++static void fadump_free_reserved_memory(unsigned long start, unsigned long end)
++{
++	unsigned long pfn, start_pfn, end_pfn;
++	unsigned int remaining = end > start ? (end - start) >> PAGE_SHIFT : 0;
++	unsigned long time_limit = jiffies +
++					msecs_to_jiffies(RELEASE_TIME_LIMIT);
++
++	while (remaining) {
++		/* A reschedule point for every 'X' milliseconds */
++		if (time_after_eq(jiffies, time_limit)) {
++			cond_resched();
++			time_limit = jiffies +
++					msecs_to_jiffies(RELEASE_TIME_LIMIT);
++		}
++
++		/* release memory in batches of 'N' pages */
++		start_pfn = start >> PAGE_SHIFT;
++		if (remaining > RELEASE_PAGES_BATCH) {
++			end_pfn = start_pfn + RELEASE_PAGES_BATCH;
++			remaining -= RELEASE_PAGES_BATCH;
++		} else {
++			end_pfn = end >> PAGE_SHIFT;
++			remaining = 0;
++		}
++
++		for (pfn = start_pfn; pfn < end_pfn; pfn++)
++			free_reserved_page(pfn_to_page(pfn));
++
++		start = end_pfn << PAGE_SHIFT;
++	}
++}
++
+ /*
+  * Release the memory that was reserved in early boot to preserve the memory
+  * contents. The released memory will be available for general use.
+  */
+ static void fadump_release_memory(unsigned long begin, unsigned long end)
+ {
+-	unsigned long addr;
+ 	unsigned long ra_start, ra_end;
+ 
+ 	ra_start = fw_dump.reserve_dump_area_start;
+ 	ra_end = ra_start + fw_dump.reserve_dump_area_size;
+ 
+-	for (addr = begin; addr < end; addr += PAGE_SIZE) {
+-		/*
+-		 * exclude the dump reserve area. Will reuse it for next
+-		 * fadump registration.
+-		 */
+-		if (addr <= ra_end && ((addr + PAGE_SIZE) > ra_start))
+-			continue;
+-
+-		free_reserved_page(pfn_to_page(addr >> PAGE_SHIFT));
+-	}
++	/*
++	 * exclude the dump reserve area. Will reuse it for next
++	 * fadump registration.
++	 */
++	if (begin < ra_end && end > ra_start) {
++		if (begin < ra_start)
++			fadump_free_reserved_memory(begin, ra_start);
++		if (end > ra_end)
++			fadump_free_reserved_memory(ra_end, end);
++	} else
++		fadump_free_reserved_memory(begin, end);
+ }
+ 
+ static void fadump_invalidate_release_mem(void)
