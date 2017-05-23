@@ -1,32 +1,44 @@
-Return-Path: <tglx@linutronix.de>
-Received: from Galois.linutronix.de (Galois.linutronix.de
- [IPv6:2a01:7a0:2:106d:700::1])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <javier@dowhile0.org>
+Received: from mail-wm0-x243.google.com (mail-wm0-x243.google.com
+ [IPv6:2a00:1450:400c:c09::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wXFzv03sBzDqLS
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 May 2017 23:02:18 +1000 (AEST)
-Date: Tue, 23 May 2017 15:02:05 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: David Laight <David.Laight@ACULAB.COM>
-cc: Arnd Bergmann <arnd@arndb.de>, linux-s390 <linux-s390@vger.kernel.org>,
- Mark Gross <mark.gross@intel.com>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Tejun Heo <tj@kernel.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Christoph Hellwig <hch@lst.de>
-Subject: RE: RFC: better timer interface
-In-Reply-To: <063D6719AE5E284EB5DD2968C1650D6DCFFFD977@AcuExch.aculab.com>
-Message-ID: <alpine.DEB.2.20.1705231500320.2740@nanos>
-References: <20170516114812.10660-1-hch@lst.de>
- <CAK8P3a1FoR_usw7du3ZRMF+PPhJ712EpArL_e1bLVNs7BYBu-w@mail.gmail.com>
- <20170516155132.GA1494@lst.de>
- <CAK8P3a3_Rjz9gTmayN1w8HrFHWY+wakeFgQSYRTAADJzF6zKJA@mail.gmail.com>
- <alpine.DEB.2.20.1705211859410.3023@nanos>
- <alpine.DEB.2.20.1705211959370.3023@nanos>
- <063D6719AE5E284EB5DD2968C1650D6DCFFFD8B2@AcuExch.aculab.com>
- <alpine.DEB.2.20.1705231358220.2740@nanos>
- <063D6719AE5E284EB5DD2968C1650D6DCFFFD977@AcuExch.aculab.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wXGjd1b87zDqLC
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 May 2017 23:35:00 +1000 (AEST)
+Received: by mail-wm0-x243.google.com with SMTP id k15so38239191wmh.3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 May 2017 06:35:00 -0700 (PDT)
+From: Javier Martinez Canillas <javier@dowhile0.org>
+To: linux-kernel@vger.kernel.org
+Cc: Wolfram Sang <wsa@the-dreams.de>, Rob Herring <robh@kernel.org>,
+ Javier Martinez Canillas <javier@dowhile0.org>,
+ =?UTF-8?q?Beno=C3=AEt=20Cousson?= <bcousson@baylibre.com>,
+ Stuart Yoder <stuart.yoder@nxp.com>, Sascha Hauer <kernel@pengutronix.de>,
+ Gregory Clement <gregory.clement@free-electrons.com>,
+ =?UTF-8?q?S=C3=B6ren=20Brinkmann?= <soren.brinkmann@xilinx.com>,
+ David Lechner <david@lechnology.com>, Rob Herring <robh+dt@kernel.org>,
+ linux-i2c@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>,
+ Mark Jackson <mpfj@newflow.co.uk>, Fabio Estevam <fabio.estevam@nxp.com>,
+ Simon Horman <horms@verge.net.au>, Michal Simek <michal.simek@xilinx.com>,
+ Andy Shevchenko <andy.shevchenko@gmail.com>, Li Yang <leoyang.li@nxp.com>,
+ Shawn Guo <shawnguo@kernel.org>, Will Deacon <will.deacon@arm.com>,
+ Florian Larysch <fl@n621.de>, Magnus Damm <magnus.damm@gmail.com>,
+ devicetree@vger.kernel.org,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Sekhar Nori <nsekhar@ti.com>, Scott Wood <oss@buserror.net>,
+ Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>,
+ Andrew Lunn <andrew@lunn.ch>, Joachim Eastwood <manabian@gmail.com>,
+ Herbert Xu <herbert@gondor.apana.org.au>, linux-omap@vger.kernel.org,
+ Russell King <linux@armlinux.org.uk>, linux-arm-kernel@lists.infradead.org,
+ Masahiro Yamada <yamada.masahiro@socionext.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Jason Cooper <jason@lakedaemon.net>,
+ Santosh Shilimkar <ssantosh@kernel.org>, linux-renesas-soc@vger.kernel.org,
+ Hongtao Jia <hongtao.jia@nxp.com>, Tony Lindgren <tony@atomide.com>,
+ Paul Mackerras <paulus@samba.org>, Mark Rutland <mark.rutland@arm.com>,
+ Dinh Nguyen <dinguyen@kernel.org>, linuxppc-dev@lists.ozlabs.org,
+ =?UTF-8?q?Horia=20Geant=C4=83?= <horia.geanta@nxp.com>
+Subject: [PATCH v5 00/20] eeprom: at24: Add OF device ID table
+Date: Tue, 23 May 2017 15:34:28 +0200
+Message-Id: <20170523133448.4794-1-javier@dowhile0.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,33 +48,177 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 23 May 2017, David Laight wrote:
-> From: Thomas Gleixner
-> > Sent: 23 May 2017 12:59
-> > On Tue, 23 May 2017, David Laight wrote:
-> > 
-> > > From: Thomas Gleixner
-> > > > Sent: 21 May 2017 19:15
-> > > ...
-> > > > > timer_start(timer, ms, abs)
-> > > >
-> > > > I'm not even sure, whether we need absolute timer wheel timers at
-> > > > all, because most use cases are relative to now.
-> > >
-> > > Posix requires absolute timers for some userspace calls
-> > > (annoying because the code often wants relative).
-> > 
-> > Posix is completely irrelevant here. These timers are purely kernel
-> > internal.
-> 
-> Somehow pthread_cond_timedwait() has to be implemented.
-> Doing so without kernel timers that use absolute 'wall clock' time is tricky.
+Hello Wolfram,
 
-Oh well. The timer wheel timers are NOT used to implement any posix
-interface. That's all handled by hrtimers and they are not debated here.
+This series is a follow-up to patch [0] that added an OF device ID table
+to the at24 EEPROM driver. As you suggested [1], this version instead of
+adding entries for every used <vendor,device> tuple, only adds a single
+entry for each chip type using the "atmel" vendor as a generic fallback.
 
-So still nothing to see here.
+The first patch documents in the DT binding what's the correct vendor to
+use and what are the ones that are being deprecated. The second one adds
+the OF device ID table for the at24 driver and the next patches use this
+vendor in the compatible string to each DTS that defines a compatible I2C
+EEPROM device node.
 
-Thanks,
+Patches can be applied independently since the DTS changes without driver
+changes are no-op and the OF table won't be used without the DTS changes.
 
-	tglx
+[0]: https://lkml.org/lkml/2017/3/14/589
+[1]: https://lkml.org/lkml/2017/3/15/99
+
+Best regards,
+Javier
+
+Changes in v5:
+- Only deprecate the atmel variants at25 and at (Geert Uytterhoeven).
+- Only replace atmel variant but keep other EEPROM vendors (Geert Uytterhoeven).
+- Only replace atmel variant but keep other EEPROM vendors (Geert Uytterhoeven).
+- Only replace atmel variant but keep other EEPROM vendors (Geert Uytterhoeven).
+- Only replace atmel variant but keep other EEPROM vendors (Geert Uytterhoeven).
+- Only replace atmel variant but keep other EEPROM vendors (Geert Uytterhoeven).
+- Only replace atmel variant but keep other EEPROM vendors (Geert Uytterhoeven).
+- Only replace atmel variant but keep other EEPROM vendors (Geert Uytterhoeven).
+- Only replace atmel variant but keep other EEPROM vendors (Geert Uytterhoeven).
+- Only replace atmel variant but keep other EEPROM vendors (Geert Uytterhoeven).
+
+Changes in v4:
+- Document the manufacturers that have been deprecated (Rob Herring).
+- Only use the atmel manufacturer in the compatible string instead of
+  keeping the deprecated ones (Rob Herring).
+- Only use the atmel manufacturer in the compatible string instead of
+  keeping the deprecated ones (Rob Herring).
+- Only use the atmel manufacturer in the compatible string instead of
+  keeping the deprecated ones (Rob Herring).
+- Only use the atmel manufacturer in the compatible string instead of
+  keeping the deprecated ones (Rob Herring).
+- Only use the atmel manufacturer in the compatible string instead of
+  keeping the deprecated ones (Rob Herring).
+- Only use the atmel manufacturer in the compatible string instead of
+  keeping the deprecated ones (Rob Herring).
+- Only use the atmel manufacturer in the compatible string instead of
+  keeping the deprecated ones (Rob Herring).
+- Only use the atmel manufacturer in the compatible string instead of
+  keeping the deprecated ones (Rob Herring).
+- Only use the atmel manufacturer in the compatible string instead of
+  keeping the deprecated ones (Rob Herring).
+- Only use the atmel manufacturer in the compatible string instead of
+  keeping the deprecated ones (Rob Herring).
+- Only use the atmel manufacturer in the compatible string instead of
+  keeping the deprecated ones (Rob Herring).
+- Only use the atmel manufacturer in the compatible string instead of
+  keeping the deprecated ones (Rob Herring).
+- Only use the atmel manufacturer in the compatible string instead of
+  keeping the deprecated ones (Rob Herring).
+- Only use the atmel manufacturer in the compatible string instead of
+  keeping the deprecated ones (Rob Herring).
+- Only use the atmel manufacturer in the compatible string instead of
+  keeping the deprecated ones (Rob Herring).
+- Only use the atmel manufacturer in the compatible string instead of
+  keeping the deprecated ones (Rob Herring).
+- Only use the atmel manufacturer in the compatible string instead of
+  keeping the deprecated ones (Rob Herring).
+- Only use the atmel manufacturer in the compatible string instead of
+  keeping the deprecated ones (Rob Herring).
+
+Changes in v3:
+- Fix wrong .data values for "atmel,24c02" and "atmel,24c64" entries.
+- Add Geert Uytterhoeven reviewed-by tag.
+- Add Geert Uytterhoeven reviewed-by tag.
+
+Changes in v2:
+- Only add a single OF device ID entry for each device type (Wolfram Sang).
+
+Javier Martinez Canillas (20):
+  dt-bindings: i2c: eeprom: Document vendor to be used and deprecated
+    ones
+  eeprom: at24: Add OF device ID table
+  ARM: dts: omap: Add generic compatible string for I2C EEPROM
+  ARM: dts: turris-omnia: Add generic compatible string for I2C EEPROM
+  ARM: dts: efm32: Add generic compatible string for I2C EEPROM
+  ARM: dts: imx: Add generic compatible string for I2C EEPROM
+  ARM: dts: keystone: Add generic compatible string for I2C EEPROM
+  ARM: dts: lpc18xx: Add generic compatible string for I2C EEPROM
+  ARM: dts: r7s72100: Add generic compatible string for I2C EEPROM
+  ARM: dts: koelsch: Add generic compatible string for I2C EEPROM
+  ARM: dts: socfpga: Add generic compatible string for I2C EEPROM
+  ARM: dts: uniphier: Add generic compatible string for I2C EEPROM
+  ARM: dts: zynq: Add generic compatible string for I2C EEPROM
+  arm64: dts: ls1043a: Add generic compatible string for I2C EEPROM
+  arm64: zynqmp: Add generic compatible string for I2C EEPROM
+  powerpc/5200: Add generic compatible string for I2C EEPROM
+  powerpc/fsl: Add generic compatible string for I2C EEPROM
+  powerpc/512x: Add generic compatible string for I2C EEPROM
+  powerpc/83xx: Add generic compatible string for I2C EEPROM
+  powerpc/44x: Add generic compatible string for I2C EEPROM
+
+ .../devicetree/bindings/eeprom/eeprom.txt          |  6 +-
+ arch/arm/boot/dts/am335x-baltos.dtsi               |  2 +-
+ arch/arm/boot/dts/am335x-base0033.dts              |  2 +-
+ arch/arm/boot/dts/am335x-bone-common.dtsi          | 10 ++--
+ arch/arm/boot/dts/am335x-nano.dts                  |  2 +-
+ arch/arm/boot/dts/am335x-pepper.dts                |  2 +-
+ arch/arm/boot/dts/am335x-shc.dts                   |  2 +-
+ arch/arm/boot/dts/am335x-sl50.dts                  |  2 +-
+ arch/arm/boot/dts/am437x-idk-evm.dts               |  2 +-
+ arch/arm/boot/dts/am437x-sk-evm.dts                |  2 +-
+ arch/arm/boot/dts/am43x-epos-evm.dts               |  2 +-
+ arch/arm/boot/dts/am57xx-beagle-x15-common.dtsi    |  2 +-
+ arch/arm/boot/dts/armada-385-turris-omnia.dts      |  2 +-
+ arch/arm/boot/dts/efm32gg-dk3750.dts               |  2 +-
+ arch/arm/boot/dts/imx27-phytec-phycard-s-som.dtsi  |  2 +-
+ arch/arm/boot/dts/imx27-phytec-phycore-som.dtsi    |  2 +-
+ arch/arm/boot/dts/imx28-evk.dts                    |  2 +-
+ arch/arm/boot/dts/imx53-tqma53.dtsi                |  2 +-
+ arch/arm/boot/dts/imx6q-cm-fx6.dts                 |  2 +-
+ arch/arm/boot/dts/imx6q-utilite-pro.dts            |  2 +-
+ arch/arm/boot/dts/keystone-k2e-evm.dts             |  2 +-
+ arch/arm/boot/dts/keystone-k2hk-evm.dts            |  2 +-
+ arch/arm/boot/dts/keystone-k2l-evm.dts             |  2 +-
+ arch/arm/boot/dts/lpc4337-ciaa.dts                 |  6 +-
+ arch/arm/boot/dts/lpc4350-hitex-eval.dts           |  2 +-
+ arch/arm/boot/dts/lpc4357-ea4357-devkit.dts        |  2 +-
+ arch/arm/boot/dts/omap3-cm-t3x.dtsi                |  2 +-
+ arch/arm/boot/dts/omap3-gta04.dtsi                 |  2 +-
+ arch/arm/boot/dts/omap3-sb-t35.dtsi                |  2 +-
+ arch/arm/boot/dts/omap4-var-som-om44.dtsi          |  2 +-
+ arch/arm/boot/dts/omap5-cm-t54.dts                 |  2 +-
+ arch/arm/boot/dts/omap5-sbc-t54.dts                |  2 +-
+ arch/arm/boot/dts/r7s72100-genmai.dts              |  2 +-
+ arch/arm/boot/dts/r8a7791-koelsch.dts              |  2 +-
+ arch/arm/boot/dts/socfpga_cyclone5_vining_fpga.dts |  2 +-
+ arch/arm/boot/dts/uniphier-pro4-ace.dts            |  2 +-
+ arch/arm/boot/dts/uniphier-pro4-sanji.dts          |  2 +-
+ arch/arm/boot/dts/uniphier-pxs2-gentil.dts         |  2 +-
+ arch/arm/boot/dts/zynq-zc702.dts                   |  2 +-
+ arch/arm/boot/dts/zynq-zc706.dts                   |  2 +-
+ arch/arm64/boot/dts/freescale/fsl-ls1043a-rdb.dts  |  4 +-
+ arch/arm64/boot/dts/xilinx/zynqmp-ep108.dts        |  4 +-
+ arch/powerpc/boot/dts/digsy_mtc.dts                |  2 +-
+ arch/powerpc/boot/dts/fsl/b4qds.dtsi               |  8 +--
+ arch/powerpc/boot/dts/fsl/c293pcie.dts             |  2 +-
+ arch/powerpc/boot/dts/fsl/p1010rdb.dtsi            |  2 +-
+ arch/powerpc/boot/dts/fsl/p1023rdb.dts             |  2 +-
+ arch/powerpc/boot/dts/fsl/p2041rdb.dts             |  4 +-
+ arch/powerpc/boot/dts/fsl/p3041ds.dts              |  4 +-
+ arch/powerpc/boot/dts/fsl/p4080ds.dts              |  4 +-
+ arch/powerpc/boot/dts/fsl/p5020ds.dts              |  4 +-
+ arch/powerpc/boot/dts/fsl/p5040ds.dts              |  4 +-
+ arch/powerpc/boot/dts/fsl/t208xqds.dtsi            |  8 +--
+ arch/powerpc/boot/dts/fsl/t4240qds.dts             | 12 ++--
+ arch/powerpc/boot/dts/fsl/t4240rdb.dts             |  6 +-
+ arch/powerpc/boot/dts/mpc5121ads.dts               |  2 +-
+ arch/powerpc/boot/dts/mpc8308_p1m.dts              |  2 +-
+ arch/powerpc/boot/dts/mpc8349emitx.dts             |  4 +-
+ arch/powerpc/boot/dts/mpc8377_rdb.dts              |  2 +-
+ arch/powerpc/boot/dts/mpc8377_wlan.dts             |  2 +-
+ arch/powerpc/boot/dts/mpc8378_rdb.dts              |  2 +-
+ arch/powerpc/boot/dts/mpc8379_rdb.dts              |  2 +-
+ arch/powerpc/boot/dts/pcm030.dts                   |  2 +-
+ arch/powerpc/boot/dts/pcm032.dts                   |  2 +-
+ arch/powerpc/boot/dts/warp.dts                     |  2 +-
+ drivers/misc/eeprom/at24.c                         | 65 +++++++++++++++++++++-
+ 66 files changed, 160 insertions(+), 93 deletions(-)
+
+-- 
+2.9.3
