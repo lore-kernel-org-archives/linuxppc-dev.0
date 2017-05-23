@@ -1,21 +1,24 @@
-Return-Path: <oohall@gmail.com>
-Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
- [IPv6:2607:f8b0:400e:c00::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wX24v1FMzzDqb6
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 May 2017 14:05:51 +1000 (AEST)
-Received: by mail-pf0-x242.google.com with SMTP id w69so24482978pfk.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 May 2017 21:05:51 -0700 (PDT)
-From: Oliver O'Halloran <oohall@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: linux-mm@kvack.org,
-	Oliver O'Halloran <oohall@gmail.com>
-Subject: [PATCH 6/6] powerpc/mm: Enable ZONE_DEVICE on powerpc
-Date: Tue, 23 May 2017 14:05:24 +1000
-Message-Id: <20170523040524.13717-6-oohall@gmail.com>
-In-Reply-To: <20170523040524.13717-1-oohall@gmail.com>
-References: <20170523040524.13717-1-oohall@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wX29X1tkLzDqZl
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 May 2017 14:09:52 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Ivan Mikhaylov <ivan@de.ibm.com>, Alistair Popple <alistair@popple.id.au>,
+ Matt Porter <mporter@kernel.crashing.org>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Joel Stanley <joel@jms.id.au>, Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH 4/4] arch/powerpc/44x/fsp2: wdt tcr update instead of
+ whole rewrite
+In-Reply-To: <20170519154705.10504-1-ivan@de.ibm.com>
+References: <87wp9d5ekz.fsf@concordia.ellerman.id.au>
+ <20170519154705.10504-1-ivan@de.ibm.com>
+Date: Tue, 23 May 2017 14:09:46 +1000
+Message-ID: <87lgpo8b91.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,25 +28,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Flip the switch. Running around and screaming "IT'S ALIVE" is optional,
-but recommended.
+Ivan Mikhaylov <ivan@de.ibm.com> writes:
+>
+> From my point of view it's possible. I've checked docu and on idea
+> it should be possible cause WP is only affecting watchdog ping time.
 
-Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
----
- arch/powerpc/Kconfig | 1 +
- 1 file changed, 1 insertion(+)
+The question is, is there any chance that leaving those bits set on
+another platform will cause a problem?
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index f7c8f9972f61..bf3365c34244 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -138,6 +138,7 @@ config PPC
- 	select ARCH_HAS_SG_CHAIN
- 	select ARCH_HAS_TICK_BROADCAST		if GENERIC_CLOCKEVENTS_BROADCAST
- 	select ARCH_HAS_UBSAN_SANITIZE_ALL
-+	select ARCH_HAS_ZONE_DEVICE		if PPC64
- 	select ARCH_HAVE_NMI_SAFE_CMPXCHG
- 	select ARCH_MIGHT_HAVE_PC_PARPORT
- 	select ARCH_MIGHT_HAVE_PC_SERIO
--- 
-2.9.3
+ie. on existing machines we always clear those bits, is it OK that we
+will now start leaving those bits with whatever value they had.
+
+cheers
