@@ -1,16 +1,16 @@
-Return-Path: <jk@ozlabs.org>
+Return-Path: <mikey@neuling.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wXjhG2Hx0zDqZS
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 May 2017 16:50:22 +1000 (AEST)
-From: Jeremy Kerr <jk@ozlabs.org>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Sombat Tragolgosol <sombat3960@gmail.com>, Jeremy Kerr <jk@ozlabs.org>,
- "Aneesh Kumar K . V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH] powerpc/spufs: Fix hash faults for kernel regions
-Date: Wed, 24 May 2017 16:49:59 +1000
-Message-Id: <1495608599-16819-1-git-send-email-jk@ozlabs.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wXjzX5pMczDqbs
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 May 2017 17:03:36 +1000 (AEST)
+From: Michael Neuling <mikey@neuling.org>
+To: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org, anton@samba.org,
+ aneesh.kumar@linux.vnet.ibm.com, mikey@neuling.org,
+ Greg Johnson <gwj@google.com>
+Subject: [PATCH] powerpc: Fix booting P9 hash with CONFIG_PPC_RADIX_MMU=N
+Date: Wed, 24 May 2017 17:03:26 +1000
+Message-Id: <20170524070326.13531-1-mikey@neuling.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,38 +20,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Change ac29c64089b7 swapped _PAGE_USER for _PAGE_PRIVILEGED, and
-introduced check_pte_access() which denied kernel access to
-non-_PAGE_PRIVILEGED pages.
+Currently if you disable CONFIG_PPC_RADIX_MMU you'll crash on boot on
+a P9. This is because we still set MMU_FTR_TYPE_RADIX via
+ibm,pa-features and MMU_FTR_TYPE_RADIX is what's used for code patching
+in much of the asm code (ie. slb_miss_realmode)
 
-However, it didn't add _PAGE_PRIVILEGED to the hash fault handler for
-spufs' kernel accesses, so the DMAs required to establish SPE memory
-no longer work.
+This patch fixes the problem by stopping MMU_FTR_TYPE_RADIX from being
+set from ibm.pa-features.
 
-This change adds _PAGE_PRIVILEGED to the hash fault handler for
-kernel accesses.
+We may eventually end up removing the CONFIG_PPC_RADIX_MMU option
+completely but until then this fixes the issue.
 
-Signed-off-by: Jeremy Kerr <jk@ozlabs.org>
-Reported-by: Sombat Tragolgosol <sombat3960@gmail.com>
-CC: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+Signed-off-by: Michael Neuling <mikey@neuling.org>
 ---
- arch/powerpc/platforms/cell/spu_base.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ arch/powerpc/kernel/prom.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/arch/powerpc/platforms/cell/spu_base.c b/arch/powerpc/platforms/cell/spu_base.c
-index 96c2b8a..0c45cdb 100644
---- a/arch/powerpc/platforms/cell/spu_base.c
-+++ b/arch/powerpc/platforms/cell/spu_base.c
-@@ -197,7 +197,9 @@ static int __spu_trap_data_map(struct spu *spu, unsigned long ea, u64 dsisr)
- 	    (REGION_ID(ea) != USER_REGION_ID)) {
- 
- 		spin_unlock(&spu->register_lock);
--		ret = hash_page(ea, _PAGE_PRESENT | _PAGE_READ, 0x300, dsisr);
-+		ret = hash_page(ea,
-+				_PAGE_PRESENT | _PAGE_READ | _PAGE_PRIVILEGED,
-+				0x300, dsisr);
- 		spin_lock(&spu->register_lock);
- 
- 		if (!ret) {
+diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+index 40c4887c27..f830562974 100644
+--- a/arch/powerpc/kernel/prom.c
++++ b/arch/powerpc/kernel/prom.c
+@@ -161,7 +161,9 @@ static struct ibm_pa_feature {
+ 	{ .pabyte = 0,  .pabit = 3, .cpu_features  = CPU_FTR_CTRL },
+ 	{ .pabyte = 0,  .pabit = 6, .cpu_features  = CPU_FTR_NOEXECUTE },
+ 	{ .pabyte = 1,  .pabit = 2, .mmu_features  = MMU_FTR_CI_LARGE_PAGE },
++#ifdef CONFIG_PPC_RADIX_MMU
+ 	{ .pabyte = 40, .pabit = 0, .mmu_features  = MMU_FTR_TYPE_RADIX },
++#endif
+ 	{ .pabyte = 1,  .pabit = 1, .invert = 1, .cpu_features = CPU_FTR_NODSISRALIGN },
+ 	{ .pabyte = 5,  .pabit = 0, .cpu_features  = CPU_FTR_REAL_LE,
+ 				    .cpu_user_ftrs = PPC_FEATURE_TRUE_LE },
 -- 
-2.7.4
+2.11.0
