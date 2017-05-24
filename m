@@ -1,19 +1,26 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <tglx@linutronix.de>
+Received: from Galois.linutronix.de (Galois.linutronix.de
+ [IPv6:2a01:7a0:2:106d:700::1])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wXlGw0423zDqcR
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 May 2017 18:01:59 +1000 (AEST)
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH] powerpc: sysdev: simple_gpio: fix Oops in gpio save_regs
- function
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Scott Wood <oss@buserror.net>, Linus Walleij <linus.walleij@linaro.org>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-gpio@vger.kernel.org, stable@vger.kernel.org
-Message-Id: <20170524080156.1C4936EB78@pc13941vm.idsi0.si.c-s.fr>
-Date: Wed, 24 May 2017 10:01:55 +0200 (CEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wXlqT06KHzDqcd
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 May 2017 18:26:45 +1000 (AEST)
+Message-Id: <20170524081547.809616236@linutronix.de>
+Date: Wed, 24 May 2017 10:15:21 +0200
+From: Thomas Gleixner <tglx@linutronix.de>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>,
+ Steven Rostedt <rostedt@goodmis.org>,
+ Sebastian Siewior <bigeasy@linutronix.de>,
+ Paul McKenney <paulmck@linux.vnet.ibm.com>, kvm@vger.kernel.org,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>, kvm-ppc@vger.kernel.org,
+ Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
+ Alexander Graf <agraf@suse.com>
+Subject: [patch V3 10/32] KVM/PPC/Book3S HV: Use
+ cpuhp_setup_state_nocalls_cpuslocked()
+References: <20170524081511.203800767@linutronix.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-15
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,32 +30,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-of_mm_gpiochip_add_data() generates an Oops for NULL pointer dereference.
+From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 
-of_mm_gpiochip_add_data() calls mm_gc->save_regs() before
-setting the data, therefore ->save_regs() cannot use gpiochip_get_data()
+kvmppc_alloc_host_rm_ops() holds get_online_cpus() while invoking
+cpuhp_setup_state_nocalls().
 
-Fixes: 937daafca774b ("powerpc: simple-gpio: use gpiochip data pointer")
-Cc: stable@vger.kernel.org
+cpuhp_setup_state_nocalls() invokes get_online_cpus() as well. This is
+correct, but prevents the conversion of the hotplug locking to a percpu
+rwsem.
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+Use cpuhp_setup_state_nocalls_cpuslocked() to avoid the nested
+call. Convert *_online_cpus() to the new interfaces while at it.
+
+Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Cc: kvm@vger.kernel.org
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+Cc: kvm-ppc@vger.kernel.org
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: Alexander Graf <agraf@suse.com>
+
 ---
- arch/powerpc/sysdev/simple_gpio.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ arch/powerpc/kvm/book3s_hv.c |   14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
 
-diff --git a/arch/powerpc/sysdev/simple_gpio.c b/arch/powerpc/sysdev/simple_gpio.c
-index ef470b470b04..6afddae2fb47 100644
---- a/arch/powerpc/sysdev/simple_gpio.c
-+++ b/arch/powerpc/sysdev/simple_gpio.c
-@@ -75,7 +75,8 @@ static int u8_gpio_dir_out(struct gpio_chip *gc, unsigned int gpio, int val)
+--- a/arch/powerpc/kvm/book3s_hv.c
++++ b/arch/powerpc/kvm/book3s_hv.c
+@@ -3317,7 +3317,7 @@ void kvmppc_alloc_host_rm_ops(void)
+ 		return;
+ 	}
  
- static void u8_gpio_save_regs(struct of_mm_gpio_chip *mm_gc)
- {
--	struct u8_gpio_chip *u8_gc = gpiochip_get_data(&mm_gc->gc);
-+	struct u8_gpio_chip *u8_gc =
-+		container_of(mm_gc, struct u8_gpio_chip, mm_gc);
+-	get_online_cpus();
++	cpus_read_lock();
  
- 	u8_gc->data = in_8(mm_gc->regs);
+ 	for (cpu = 0; cpu < nr_cpu_ids; cpu += threads_per_core) {
+ 		if (!cpu_online(cpu))
+@@ -3339,17 +3339,17 @@ void kvmppc_alloc_host_rm_ops(void)
+ 	l_ops = (unsigned long) ops;
+ 
+ 	if (cmpxchg64((unsigned long *)&kvmppc_host_rm_ops_hv, 0, l_ops)) {
+-		put_online_cpus();
++		cpus_read_unlock();
+ 		kfree(ops->rm_core);
+ 		kfree(ops);
+ 		return;
+ 	}
+ 
+-	cpuhp_setup_state_nocalls(CPUHP_KVM_PPC_BOOK3S_PREPARE,
+-				  "ppc/kvm_book3s:prepare",
+-				  kvmppc_set_host_core,
+-				  kvmppc_clear_host_core);
+-	put_online_cpus();
++	cpuhp_setup_state_nocalls_cpuslocked(CPUHP_KVM_PPC_BOOK3S_PREPARE,
++					     "ppc/kvm_book3s:prepare",
++					     kvmppc_set_host_core,
++					     kvmppc_clear_host_core);
++	cpus_read_unlock();
  }
--- 
-2.12.0
+ 
+ void kvmppc_free_host_rm_ops(void)
