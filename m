@@ -2,15 +2,15 @@ Return-Path: <paulus@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wXnsD6SPVzDqdX
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wXnsD6JnNzDqdW
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 May 2017 19:58:24 +1000 (AEST)
-Date: Wed, 24 May 2017 19:58:19 +1000
+Date: Wed, 24 May 2017 19:57:19 +1000
 From: Paul Mackerras <paulus@ozlabs.org>
 To: linuxppc-dev@ozlabs.org, kvm@vger.kernel.org
 Cc: kvm-ppc@vger.kernel.org
-Subject: [PATCH 2/2] KVM: PPC: Book3S HV: Enable guests to use large
- decrementer mode on POWER9
-Message-ID: <20170524095819.GC18900@fergus.ozlabs.ibm.com>
+Subject: [PATCH 1/2] KVM: PPC: Book3S HV: Cope with host using large
+ decrementer mode
+Message-ID: <20170524095719.GB18900@fergus.ozlabs.ibm.com>
 References: <20170524095531.GA18900@fergus.ozlabs.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -24,138 +24,177 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This allows userspace (e.g. QEMU) to enable large decrementer mode
-for the guest, by setting the LPCR_LD bit in the guest LPCR value.
-With this, the guest exit code saves 64 bits of the guest DEC value
-on exit.  Other places that use the guest DEC value check the LPCR_LD
-bit in the guest LPCR value, and if it is set, omit the 32-bit sign
-extension that would otherwise be done.
+POWER9 introduces a new mode for the decrementer register, called
+large decrementer mode, in which the decrementer counter is 56 bits
+wide rather than 32, and reads sign-extend rather than zero-extending.
 
-This doesn't change the DEC emulation used by PR KVM because PR KVM
-is not supported on POWER9 yet.
+Since KVM code reads and writes the host decrementer value in a few
+places, it needs to be aware of the need to treat the decrementer
+value as a 64-bit quantity, and only do a 32-bit sign extension when
+large decrementer mode is not in effect.  To enable the sign extension
+to be removed in large decrementer mode, we use a CPU feature bit to
+indicate that large decrementer mode is in effect.  This CPU feature
+bit is derived from the ibm,pa-features property in the firmware
+device tree.  This bit is already set by firmware in the device tree
+that the kernel uses when running as a host.  We change the kernel
+timer code to use this bit and enable large decrementer mode whenever
+it is set (even if firmware tells us that the large decrementer mode
+only gives us 32 bits) so that we get the sign extension in hardware.
+
+For now, the guest still uses the decrementer in small decrementer
+(32-bit) mode.
 
 This is partly based on an earlier patch by Oliver O'Halloran.
 
+Cc: stable@vger.kernel.org # v4.10+
 Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
 ---
- arch/powerpc/include/asm/kvm_host.h     |  2 +-
- arch/powerpc/kvm/book3s_hv.c            |  2 ++
- arch/powerpc/kvm/book3s_hv_rmhandlers.S | 28 ++++++++++++++++++++++++----
- arch/powerpc/kvm/emulate.c              |  4 ++--
- 4 files changed, 29 insertions(+), 7 deletions(-)
+ arch/powerpc/include/asm/cputable.h     |  4 +++-
+ arch/powerpc/kernel/prom.c              |  1 +
+ arch/powerpc/kernel/time.c              |  7 ++-----
+ arch/powerpc/kvm/book3s_hv_interrupts.S |  2 ++
+ arch/powerpc/kvm/book3s_hv_rmhandlers.S | 23 +++++++++++++++++------
+ 5 files changed, 25 insertions(+), 12 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
-index 9c51ac4..3f879c8 100644
---- a/arch/powerpc/include/asm/kvm_host.h
-+++ b/arch/powerpc/include/asm/kvm_host.h
-@@ -579,7 +579,7 @@ struct kvm_vcpu_arch {
- 	ulong mcsrr0;
- 	ulong mcsrr1;
- 	ulong mcsr;
--	u32 dec;
-+	ulong dec;
- #ifdef CONFIG_BOOKE
- 	u32 decar;
- #endif
-diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-index 42b7a4f..1f9c0ee 100644
---- a/arch/powerpc/kvm/book3s_hv.c
-+++ b/arch/powerpc/kvm/book3s_hv.c
-@@ -1143,6 +1143,8 @@ static void kvmppc_set_lpcr(struct kvm_vcpu *vcpu, u64 new_lpcr,
- 	mask = LPCR_DPFD | LPCR_ILE | LPCR_TC;
- 	if (cpu_has_feature(CPU_FTR_ARCH_207S))
- 		mask |= LPCR_AIL;
-+	if (cpu_has_feature(CPU_FTR_LARGE_DEC))
-+		mask |= LPCR_LD;
+diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/asm/cputable.h
+index c2d5095..99c3c56 100644
+--- a/arch/powerpc/include/asm/cputable.h
++++ b/arch/powerpc/include/asm/cputable.h
+@@ -216,6 +216,7 @@ enum {
+ #define CPU_FTR_PMAO_BUG		LONG_ASM_CONST(0x1000000000000000)
+ #define CPU_FTR_SUBCORE			LONG_ASM_CONST(0x2000000000000000)
+ #define CPU_FTR_POWER9_DD1		LONG_ASM_CONST(0x4000000000000000)
++#define CPU_FTR_LARGE_DEC		LONG_ASM_CONST(0x8000000000000000)
  
- 	/* Broken 32-bit version of LPCR must not clear top bits */
- 	if (preserve_top32)
+ #ifndef __ASSEMBLY__
+ 
+@@ -496,7 +497,8 @@ enum {
+ 	    (CPU_FTRS_POWER4 | CPU_FTRS_PPC970 | CPU_FTRS_POWER5 | \
+ 	     CPU_FTRS_POWER6 | CPU_FTRS_POWER7 | CPU_FTRS_POWER8E | \
+ 	     CPU_FTRS_POWER8 | CPU_FTRS_POWER8_DD1 | CPU_FTRS_CELL | \
+-	     CPU_FTRS_PA6T | CPU_FTR_VSX | CPU_FTRS_POWER9 | CPU_FTRS_POWER9_DD1)
++	     CPU_FTRS_PA6T | CPU_FTR_VSX | CPU_FTRS_POWER9 | \
++	     CPU_FTRS_POWER9_DD1 | CPU_FTR_LARGE_DEC)
+ #endif
+ #else
+ enum {
+diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+index 40c4887..b315dff 100644
+--- a/arch/powerpc/kernel/prom.c
++++ b/arch/powerpc/kernel/prom.c
+@@ -165,6 +165,7 @@ static struct ibm_pa_feature {
+ 	{ .pabyte = 1,  .pabit = 1, .invert = 1, .cpu_features = CPU_FTR_NODSISRALIGN },
+ 	{ .pabyte = 5,  .pabit = 0, .cpu_features  = CPU_FTR_REAL_LE,
+ 				    .cpu_user_ftrs = PPC_FEATURE_TRUE_LE },
++	{ .pabyte = 24, .pabit = 0, .cpu_features = CPU_FTR_LARGE_DEC },
+ 	/*
+ 	 * If the kernel doesn't support TM (ie CONFIG_PPC_TRANSACTIONAL_MEM=n),
+ 	 * we don't want to turn on TM here, so we use the *_COMP versions
+diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
+index 2b33cfa..5d13f06 100644
+--- a/arch/powerpc/kernel/time.c
++++ b/arch/powerpc/kernel/time.c
+@@ -946,10 +946,7 @@ static void register_decrementer_clockevent(int cpu)
+ 
+ static void enable_large_decrementer(void)
+ {
+-	if (!cpu_has_feature(CPU_FTR_ARCH_300))
+-		return;
+-
+-	if (decrementer_max <= DECREMENTER_DEFAULT_MAX)
++	if (!cpu_has_feature(CPU_FTR_LARGE_DEC))
+ 		return;
+ 
+ 	/*
+@@ -966,7 +963,7 @@ static void __init set_decrementer_max(void)
+ 	u32 bits = 32;
+ 
+ 	/* Prior to ISAv3 the decrementer is always 32 bit */
+-	if (!cpu_has_feature(CPU_FTR_ARCH_300))
++	if (!cpu_has_feature(CPU_FTR_LARGE_DEC))
+ 		return;
+ 
+ 	cpu = of_find_node_by_type(NULL, "cpu");
+diff --git a/arch/powerpc/kvm/book3s_hv_interrupts.S b/arch/powerpc/kvm/book3s_hv_interrupts.S
+index 0fdc4a2..6e1d75f 100644
+--- a/arch/powerpc/kvm/book3s_hv_interrupts.S
++++ b/arch/powerpc/kvm/book3s_hv_interrupts.S
+@@ -124,7 +124,9 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
+ 	mfspr	r8,SPRN_DEC
+ 	mftb	r7
+ 	mtspr	SPRN_HDEC,r8
++BEGIN_FTR_SECTION
+ 	extsw	r8,r8
++END_FTR_SECTION_IFCLR(CPU_FTR_LARGE_DEC)
+ 	add	r8,r8,r7
+ 	std	r8,HSTATE_DECEXP(r13)
+ 
 diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-index bcb5401..e7a2c89 100644
+index bdb3f76..bcb5401 100644
 --- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
 +++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-@@ -916,7 +916,7 @@ ALT_FTR_SECTION_END_IFCLR(CPU_FTR_ARCH_300)
- 	mftb	r7
- 	subf	r3,r7,r8
- 	mtspr	SPRN_DEC,r3
--	stw	r3,VCPU_DEC(r4)
-+	std	r3,VCPU_DEC(r4)
+@@ -214,6 +214,8 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
+ kvmppc_primary_no_guest:
+ 	/* We handle this much like a ceded vcpu */
+ 	/* put the HDEC into the DEC, since HDEC interrupts don't wake us */
++	/* HDEC may be larger than DEC for arch >= v3.00, but since the */
++	/* HDEC value came from DEC in the first place, it will fit */
+ 	mfspr	r3, SPRN_HDEC
+ 	mtspr	SPRN_DEC, r3
+ 	/*
+@@ -295,8 +297,11 @@ kvm_novcpu_wakeup:
  
- 	ld	r5, VCPU_SPRG0(r4)
- 	ld	r6, VCPU_SPRG1(r4)
-@@ -1030,7 +1030,13 @@ kvmppc_cede_reentry:		/* r4 = vcpu, r13 = paca */
- 	li	r0, BOOK3S_INTERRUPT_EXTERNAL
- 	bne	cr1, 12f
- 	mfspr	r0, SPRN_DEC
--	cmpwi	r0, 0
+ 	/* See if our timeslice has expired (HDEC is negative) */
+ 	mfspr	r0, SPRN_HDEC
 +BEGIN_FTR_SECTION
-+	/* On POWER9 check whether the guest has large decrementer enabled */
-+	andis.	r8, r8, LPCR_LD@h
-+	bne	15f
-+END_FTR_SECTION_IFSET(CPU_FTR_ARCH_300)
 +	extsw	r0, r0
-+15:	cmpdi	r0, 0
- 	li	r0, BOOK3S_INTERRUPT_DECREMENTER
- 	bge	5f
++END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_300)
+ 	li	r12, BOOK3S_INTERRUPT_HV_DECREMENTER
+-	cmpwi	r0, 0
++	cmpdi	r0, 0
+ 	blt	kvm_novcpu_exit
  
-@@ -1457,12 +1463,18 @@ mc_cont:
- 	mtspr	SPRN_SPURR,r4
+ 	/* Got an IPI but other vcpus aren't yet exiting, must be a latecomer */
+@@ -390,8 +395,8 @@ kvm_secondary_got_guest:
+ 	lbz	r4, HSTATE_PTID(r13)
+ 	cmpwi	r4, 0
+ 	bne	63f
+-	lis	r6, 0x7fff
+-	ori	r6, r6, 0xffff
++	LOAD_REG_ADDR(r6, decrementer_max)
++	ld	r6, 0(r6)
+ 	mtspr	SPRN_HDEC, r6
+ 	/* and set per-LPAR registers, if doing dynamic micro-threading */
+ 	ld	r6, HSTATE_SPLIT_MODE(r13)
+@@ -968,7 +973,10 @@ ALT_FTR_SECTION_END_IFCLR(CPU_FTR_ARCH_300)
  
- 	/* Save DEC */
-+	ld	r3, HSTATE_KVM_VCORE(r13)
- 	mfspr	r5,SPRN_DEC
- 	mftb	r6
-+	/* On P9, if the guest has large decr enabled, don't sign extend */
+ 	/* Check if HDEC expires soon */
+ 	mfspr	r3, SPRN_HDEC
+-	cmpwi	r3, 512		/* 1 microsecond */
 +BEGIN_FTR_SECTION
-+	ld	r4, VCORE_LPCR(r3)
-+	andis.	r4, r4, LPCR_LD@h
-+	bne	16f
-+END_FTR_SECTION_IFSET(CPU_FTR_ARCH_300)
- 	extsw	r5,r5
--	add	r5,r5,r6
-+16:	add	r5,r5,r6
- 	/* r5 is a guest timebase value here, convert to host TB */
--	ld	r3,HSTATE_KVM_VCORE(r13)
- 	ld	r4,VCORE_TB_OFFSET(r3)
- 	subf	r5,r4,r5
- 	std	r5,VCPU_DEC_EXPIRES(r9)
-@@ -2374,7 +2386,15 @@ END_FTR_SECTION_IFSET(CPU_FTR_TM)
++	extsw	r3, r3
++END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_300)
++	cmpdi	r3, 512		/* 1 microsecond */
+ 	blt	hdec_soon
+ 
+ #ifdef CONFIG_KVM_XICS
+@@ -2366,12 +2374,15 @@ END_FTR_SECTION_IFSET(CPU_FTR_TM)
  	mfspr	r3, SPRN_DEC
  	mfspr	r4, SPRN_HDEC
  	mftb	r5
+-	cmpw	r3, r4
++	extsw	r3, r3
 +BEGIN_FTR_SECTION
-+	/* On P9 check whether the guest has large decrementer mode enabled */
-+	ld	r6, HSTATE_KVM_VCORE(r13)
-+	ld	r6, VCORE_LPCR(r6)
-+	andis.	r6, r6, LPCR_LD@h
-+	bne	68f
-+END_FTR_SECTION_IFSET(CPU_FTR_ARCH_300)
- 	extsw	r3, r3
-+68:
- BEGIN_FTR_SECTION
- 	extsw	r4, r4
- END_FTR_SECTION_IFSET(CPU_FTR_LARGE_DEC)
-diff --git a/arch/powerpc/kvm/emulate.c b/arch/powerpc/kvm/emulate.c
-index c873ffe..4d8b4d6 100644
---- a/arch/powerpc/kvm/emulate.c
-+++ b/arch/powerpc/kvm/emulate.c
-@@ -39,7 +39,7 @@ void kvmppc_emulate_dec(struct kvm_vcpu *vcpu)
- 	unsigned long dec_nsec;
- 	unsigned long long dec_time;
- 
--	pr_debug("mtDEC: %x\n", vcpu->arch.dec);
-+	pr_debug("mtDEC: %lx\n", vcpu->arch.dec);
- 	hrtimer_try_to_cancel(&vcpu->arch.dec_timer);
- 
- #ifdef CONFIG_PPC_BOOK3S
-@@ -109,7 +109,7 @@ static int kvmppc_emulate_mtspr(struct kvm_vcpu *vcpu, int sprn, int rs)
- 	case SPRN_TBWU: break;
- 
- 	case SPRN_DEC:
--		vcpu->arch.dec = spr_val;
-+		vcpu->arch.dec = (u32) spr_val;
- 		kvmppc_emulate_dec(vcpu);
- 		break;
- 
++	extsw	r4, r4
++END_FTR_SECTION_IFSET(CPU_FTR_LARGE_DEC)
++	cmpd	r3, r4
+ 	ble	67f
+ 	mtspr	SPRN_DEC, r4
+ 67:
+ 	/* save expiry time of guest decrementer */
+-	extsw	r3, r3
+ 	add	r3, r3, r5
+ 	ld	r4, HSTATE_KVM_VCPU(r13)
+ 	ld	r5, HSTATE_KVM_VCORE(r13)
 -- 
 2.7.4
