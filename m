@@ -3,40 +3,39 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wXmWF233BzDqcj
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 May 2017 18:57:45 +1000 (AEST)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wXmbg0YXKzDqcF
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 May 2017 19:01:34 +1000 (AEST)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v4O8iDMr068726
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 May 2017 04:57:35 -0400
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2an22kbwc0-1
+ v4O9174N103806
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 May 2017 05:01:26 -0400
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2amy2w1rqp-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 May 2017 04:57:34 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 May 2017 05:01:15 -0400
 Received: from localhost
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Wed, 24 May 2017 18:57:31 +1000
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v4O8vMaG62980202
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 May 2017 18:57:30 +1000
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v4O8uuAe000662
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 May 2017 18:56:56 +1000
+ Wed, 24 May 2017 18:59:42 +1000
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v4O8xWLJ6554022
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 May 2017 18:59:40 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v4O8x638004970
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 May 2017 18:59:06 +1000
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Michael Neuling <mikey@neuling.org>, mpe@ellerman.id.au,
- linuxppc-dev@lists.ozlabs.org, anton@samba.org, mikey@neuling.org,
- Greg Johnson <gwj@google.com>
-Subject: Re: [PATCH] powerpc: Fix booting P9 hash with CONFIG_PPC_RADIX_MMU=N
-In-Reply-To: <20170524070326.13531-1-mikey@neuling.org>
-References: <20170524070326.13531-1-mikey@neuling.org>
-Date: Wed, 24 May 2017 14:26:38 +0530
+To: Jeremy Kerr <jk@ozlabs.org>, linuxppc-dev@lists.ozlabs.org
+Cc: Sombat Tragolgosol <sombat3960@gmail.com>, Jeremy Kerr <jk@ozlabs.org>
+Subject: Re: [PATCH] powerpc/spufs: Fix hash faults for kernel regions
+In-Reply-To: <1495608599-16819-1-git-send-email-jk@ozlabs.org>
+References: <1495608599-16819-1-git-send-email-jk@ozlabs.org>
+Date: Wed, 24 May 2017 14:28:49 +0530
 MIME-Version: 1.0
 Content-Type: text/plain
-Message-Id: <87bmqir5tl.fsf@skywalker.in.ibm.com>
+Message-Id: <8760gqr5py.fsf@skywalker.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,53 +45,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michael Neuling <mikey@neuling.org> writes:
+Jeremy Kerr <jk@ozlabs.org> writes:
 
-> Currently if you disable CONFIG_PPC_RADIX_MMU you'll crash on boot on
-> a P9. This is because we still set MMU_FTR_TYPE_RADIX via
-> ibm,pa-features and MMU_FTR_TYPE_RADIX is what's used for code patching
-> in much of the asm code (ie. slb_miss_realmode)
+> Change ac29c64089b7 swapped _PAGE_USER for _PAGE_PRIVILEGED, and
+> introduced check_pte_access() which denied kernel access to
+> non-_PAGE_PRIVILEGED pages.
 >
-> This patch fixes the problem by stopping MMU_FTR_TYPE_RADIX from being
-> set from ibm.pa-features.
+> However, it didn't add _PAGE_PRIVILEGED to the hash fault handler for
+> spufs' kernel accesses, so the DMAs required to establish SPE memory
+> no longer work.
 >
-> We may eventually end up removing the CONFIG_PPC_RADIX_MMU option
-> completely but until then this fixes the issue.
+> This change adds _PAGE_PRIVILEGED to the hash fault handler for
+> kernel accesses.
 >
-> Signed-off-by: Michael Neuling <mikey@neuling.org>
+> Signed-off-by: Jeremy Kerr <jk@ozlabs.org>
+> Reported-by: Sombat Tragolgosol <sombat3960@gmail.com>
+> CC: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+
+Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+
 > ---
->  arch/powerpc/kernel/prom.c | 2 ++
->  1 file changed, 2 insertions(+)
+>  arch/powerpc/platforms/cell/spu_base.c | 4 +++-
+>  1 file changed, 3 insertions(+), 1 deletion(-)
 >
-> diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-> index 40c4887c27..f830562974 100644
-> --- a/arch/powerpc/kernel/prom.c
-> +++ b/arch/powerpc/kernel/prom.c
-> @@ -161,7 +161,9 @@ static struct ibm_pa_feature {
->  	{ .pabyte = 0,  .pabit = 3, .cpu_features  = CPU_FTR_CTRL },
->  	{ .pabyte = 0,  .pabit = 6, .cpu_features  = CPU_FTR_NOEXECUTE },
->  	{ .pabyte = 1,  .pabit = 2, .mmu_features  = MMU_FTR_CI_LARGE_PAGE },
-> +#ifdef CONFIG_PPC_RADIX_MMU
->  	{ .pabyte = 40, .pabit = 0, .mmu_features  = MMU_FTR_TYPE_RADIX },
-> +#endif
->  	{ .pabyte = 1,  .pabit = 1, .invert = 1, .cpu_features = CPU_FTR_NODSISRALIGN },
->  	{ .pabyte = 5,  .pabit = 0, .cpu_features  = CPU_FTR_REAL_LE,
->  				    .cpu_user_ftrs = PPC_FEATURE_TRUE_LE },
+> diff --git a/arch/powerpc/platforms/cell/spu_base.c b/arch/powerpc/platforms/cell/spu_base.c
+> index 96c2b8a..0c45cdb 100644
+> --- a/arch/powerpc/platforms/cell/spu_base.c
+> +++ b/arch/powerpc/platforms/cell/spu_base.c
+> @@ -197,7 +197,9 @@ static int __spu_trap_data_map(struct spu *spu, unsigned long ea, u64 dsisr)
+>  	    (REGION_ID(ea) != USER_REGION_ID)) {
+>
+>  		spin_unlock(&spu->register_lock);
+> -		ret = hash_page(ea, _PAGE_PRESENT | _PAGE_READ, 0x300, dsisr);
+> +		ret = hash_page(ea,
+> +				_PAGE_PRESENT | _PAGE_READ | _PAGE_PRIVILEGED,
+> +				0x300, dsisr);
+>  		spin_lock(&spu->register_lock);
+>
+>  		if (!ret) {
 > -- 
-> 2.11.0
-
-Instead can we do that feature removal in mmu_early_init_devtree. ie, something like
-
-diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
-index 8f6f2a173e47..8f43f3827bac 100644
---- a/arch/powerpc/mm/init_64.c
-+++ b/arch/powerpc/mm/init_64.c
-@@ -394,7 +394,7 @@ void __init mmu_early_init_devtree(void)
- {
- 	/* Disable radix mode based on kernel command line. */
- 	/* We don't yet have the machinery to do radix as a guest. */
--	if (disable_radix || !(mfmsr() & MSR_HV))
-+	if (!IS_ENABLED(CONFIG_PPC_RADIX_MMU) || disable_radix || !(mfmsr() & MSR_HV))
- 		cur_cpu_spec->mmu_features &= ~MMU_FTR_TYPE_RADIX;
- 
- 	/*
+> 2.7.4
