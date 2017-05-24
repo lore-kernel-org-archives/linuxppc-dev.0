@@ -1,21 +1,44 @@
-Return-Path: <msuchanek@suse.de>
-Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
+Return-Path: <mwb@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wY1ch5kHVzDqdL
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 May 2017 04:48:20 +1000 (AEST)
-From: Michal Suchanek <msuchanek@suse.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
- Hari Bathini <hbathini@linux.vnet.ibm.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- Michal Suchanek <msuchanek@suse.de>, Daniel Axtens <dja@axtens.net>,
- Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] powerpc/fadump: return error when fadump registration fails
-Date: Wed, 24 May 2017 20:48:12 +0200
-Message-Id: <20170524184812.5122-1-msuchanek@suse.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wY87H0drBzDqcj
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 May 2017 09:41:45 +1000 (AEST)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v4ONd2L0050520
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 May 2017 19:41:40 -0400
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2anh76nwvu-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 May 2017 19:41:40 -0400
+Received: from localhost
+ by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
+ Wed, 24 May 2017 17:41:39 -0600
+Subject: Re: [Patch 2/2]: powerpc/hotplug/mm: Fix hot-add memory node assoc
+To: Reza Arbab <arbab@linux.vnet.ibm.com>
+References: <3bb44d92-b2ff-e197-4bdf-ec6d588d6dab@linux.vnet.ibm.com>
+ <20170523155251.bqwc5mc4jpgzkqlm@arbab-laptop.localdomain>
+ <1c1d70e3-4e45-b035-0e75-1b0f531c111b@linux.vnet.ibm.com>
+ <20170523214922.bns675oqzqj4pkhc@arbab-laptop.localdomain>
+ <ee96df3d-ad0f-c4dc-e7d5-290018ec8afd@linux.vnet.ibm.com>
+ <20170524143645.vaunm2i7fbb6c2zk@arbab-laptop.localdomain>
+Cc: Balbir Singh <bsingharora@gmail.com>,
+ Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
+ linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Bharata B Rao <bharata@linux.vnet.ib>,
+ Shailendra Singh <shailendras@nvidia.com>,
+ Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org
+From: Michael Bringmann <mwb@linux.vnet.ibm.com>
+Date: Wed, 24 May 2017 18:41:34 -0500
+MIME-Version: 1.0
+In-Reply-To: <20170524143645.vaunm2i7fbb6c2zk@arbab-laptop.localdomain>
+Content-Type: text/plain; charset=windows-1252
+Message-Id: <d6be479a-a61c-a79e-1249-c7190123073c@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,111 +48,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
- - log an error message when registration fails and no error code listed
- in the switch is returned
- - translate the hv error code to posix error code and return it from
- fw_register
- - return the posix error code from fw_register to the process writing
- to sysfs
- - return EEXIST on re-registration
- - return success on deregistration when fadump is not registered
+I will get a log based on the latest 4.12 kernel to show what happens
+one way or the other, with this patch removed.
 
-Signed-off-by: Michal Suchanek <msuchanek@suse.de>
----
- arch/powerpc/kernel/fadump.c | 22 +++++++++++++++-------
- 1 file changed, 15 insertions(+), 7 deletions(-)
+On 05/24/2017 09:36 AM, Reza Arbab wrote:
+> On Tue, May 23, 2017 at 05:44:23PM -0500, Michael Bringmann wrote:
+>> On 05/23/2017 04:49 PM, Reza Arbab wrote:
+>>> On Tue, May 23, 2017 at 03:05:08PM -0500, Michael Bringmann wrote:
+>>>> On 05/23/2017 10:52 AM, Reza Arbab wrote:
+>>>>> On Tue, May 23, 2017 at 10:15:44AM -0500, Michael Bringmann wrote:
+>>>>>> +static void setup_nodes(void)
+>>>>>> +{
+>>>>>> +    int i, l = 32 /* MAX_NUMNODES */;
+>>>>>> +
+>>>>>> +    for (i = 0; i < l; i++) {
+>>>>>> +        if (!node_possible(i)) {
+>>>>>> +            setup_node_data(i, 0, 0);
+>>>>>> +            node_set(i, node_possible_map);
+>>>>>> +        }
+>>>>>> +    }
+>>>>>> +}
+>>>>>
+>>>>> This seems to be a workaround for 3af229f2071f ("powerpc/numa: Reset node_possible_map to only node_online_map").
+>>>>
+>>>> They may be related, but that commit is not a replacement.  The above patch ensures that
+>>>> there are enough of the nodes initialized at startup to allow for memory hot-add into a
+>>>> node that was not used at boot.  (See 'setup_node_data' function in 'numa.c'.)  That and
+>>>> recording that the node was initialized.
+>>>
+>>> Is it really necessary to preinitialize these empty nodes using setup_node_data()? When you do memory hotadd into a node that was not used at boot, the node data already gets set up by
+>>>
+>>> add_memory
+>>>  add_memory_resource
+>>>    hotadd_new_pgdat
+>>>      arch_alloc_nodedata <-- allocs the pg_data_t
+>>>      ...
+>>>      free_area_init_node <-- sets NODE_DATA(nid)->node_id, etc.
+>>>
+>>> Removing setup_node_data() from that loop leaves only the call to node_set(). If 3af229f2071f (which reduces node_possible_map) was reverted, you wouldn't need to do that either.
+>>
+>> With or without 3af229f2071f, we would still need to add something, somewhere to add new
+>> bits to the 'node_possible_map'.  That is not being done.
+> 
+> Without 3af229f2071f, those bits would already BE set in node_possible_map. You wouldn't have to do anything.
+> 
 
-diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
-index 2fa582092d42..01bc4e56e52f 100644
---- a/arch/powerpc/kernel/fadump.c
-+++ b/arch/powerpc/kernel/fadump.c
-@@ -398,9 +398,9 @@ static int __init early_fadump_param(char *p)
- }
- early_param("fadump", early_fadump_param);
- 
--static void register_fw_dump(struct fadump_mem_struct *fdm)
-+static int register_fw_dump(struct fadump_mem_struct *fdm)
- {
--	int rc;
-+	int rc, err;
- 	unsigned int wait_time;
- 
- 	pr_debug("Registering for firmware-assisted kernel dump...\n");
-@@ -417,7 +417,12 @@ static void register_fw_dump(struct fadump_mem_struct *fdm)
- 
- 	} while (wait_time);
- 
-+	err = -EIO;
- 	switch (rc) {
-+	default:
-+		printk(KERN_ERR "Failed to register firmware-assisted kernel"
-+			" dump. Unknown Error(%d).\n", rc);
-+		break;
- 	case -1:
- 		printk(KERN_ERR "Failed to register firmware-assisted kernel"
- 			" dump. Hardware Error(%d).\n", rc);
-@@ -425,18 +430,22 @@ static void register_fw_dump(struct fadump_mem_struct *fdm)
- 	case -3:
- 		printk(KERN_ERR "Failed to register firmware-assisted kernel"
- 			" dump. Parameter Error(%d).\n", rc);
-+		err = -EINVAL;
- 		break;
- 	case -9:
- 		printk(KERN_ERR "firmware-assisted kernel dump is already "
- 			" registered.");
- 		fw_dump.dump_registered = 1;
-+		err = -EEXIST;
- 		break;
- 	case 0:
- 		printk(KERN_INFO "firmware-assisted kernel dump registration"
- 			" is successful\n");
- 		fw_dump.dump_registered = 1;
-+		err = 0;
- 		break;
- 	}
-+	return err;
- }
- 
- void crash_fadump(struct pt_regs *regs, const char *str)
-@@ -977,7 +986,7 @@ static unsigned long init_fadump_header(unsigned long addr)
- 	return addr;
- }
- 
--static void register_fadump(void)
-+static int register_fadump(void)
- {
- 	unsigned long addr;
- 	void *vaddr;
-@@ -1000,7 +1009,7 @@ static void register_fadump(void)
- 	fadump_create_elfcore_headers(vaddr);
- 
- 	/* register the future kernel dump with firmware. */
--	register_fw_dump(&fdm);
-+	return register_fw_dump(&fdm);
- }
- 
- static int fadump_unregister_dump(struct fadump_mem_struct *fdm)
-@@ -1182,7 +1191,6 @@ static ssize_t fadump_register_store(struct kobject *kobj,
- 	switch (buf[0]) {
- 	case '0':
- 		if (fw_dump.dump_registered == 0) {
--			ret = -EINVAL;
- 			goto unlock_out;
- 		}
- 		/* Un-register Firmware-assisted dump */
-@@ -1190,11 +1198,11 @@ static ssize_t fadump_register_store(struct kobject *kobj,
- 		break;
- 	case '1':
- 		if (fw_dump.dump_registered == 1) {
--			ret = -EINVAL;
-+			ret = -EEXIST;
- 			goto unlock_out;
- 		}
- 		/* Register Firmware-assisted dump */
--		register_fadump();
-+		ret = register_fadump();
- 		break;
- 	default:
- 		ret = -EINVAL;
 -- 
-2.10.2
+Michael W. Bringmann
+Linux Technology Center
+IBM Corporation
+Tie-Line  363-5196
+External: (512) 286-5196
+Cell:       (512) 466-0650
+mwb@linux.vnet.ibm.com
