@@ -1,21 +1,23 @@
 Return-Path: <bsingharora@gmail.com>
-Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
- [IPv6:2607:f8b0:400e:c00::242])
+Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
+ [IPv6:2607:f8b0:400e:c00::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wYFLq35qvzDqf2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 May 2017 13:37:07 +1000 (AEST)
-Received: by mail-pf0-x242.google.com with SMTP id w69so36267470pfk.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 May 2017 20:37:07 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wYFLv0MWmzDqf2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 May 2017 13:37:11 +1000 (AEST)
+Received: by mail-pf0-x241.google.com with SMTP id u26so36287753pfd.2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 May 2017 20:37:10 -0700 (PDT)
 From: Balbir Singh <bsingharora@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org,
 	mpe@ellerman.id.au
 Cc: naveen.n.rao@linux.vnet.ibm.com, ananth@linux.vnet.ibm.com,
  christophe.leroy@c-s.fr, paulus@samba.org, rashmica.g@gmail.com,
  Balbir Singh <bsingharora@gmail.com>
-Subject: [PATCH v1 0/8] Enable STRICT_KERNEL_RWX
-Date: Thu, 25 May 2017 13:36:42 +1000
-Message-Id: <20170525033650.10891-1-bsingharora@gmail.com>
+Subject: [PATCH v1 1/8] powerpc/lib/code-patching: Enhance code patching
+Date: Thu, 25 May 2017 13:36:43 +1000
+Message-Id: <20170525033650.10891-2-bsingharora@gmail.com>
+In-Reply-To: <20170525033650.10891-1-bsingharora@gmail.com>
+References: <20170525033650.10891-1-bsingharora@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,44 +27,138 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Enable STRICT_KERNEL_RWX for PPC64/BOOK3S
+Today our patching happens via direct copy and
+patch_instruction. The patching code is well
+contained in the sense that copying bits are limited.
 
-These patches enable RX mappings of kernel text.
-rodata is mapped RX as well as a trade-off, there
-are more details in the patch description
+While considering implementation of CONFIG_STRICT_RWX,
+the first requirement is to a create another mapping
+that will allow for patching. We create the window using
+text_poke_area, allocated via get_vm_area(), which might
+be an overkill. We can do per-cpu stuff as well. The
+downside of these patches that patch_instruction is
+now synchornized using a lock. Other arches do similar
+things, but use fixmaps. The reason for not using
+fixmaps is to make use of any randomization in the
+future. The code also relies on set_pte_at and pte_clear
+to do the appropriate tlb flushing.
 
-As a prerequisite for R/O text, patch_instruction
-is moved over to using a separate mapping that
-allows write to kernel text. xmon/ftrace/kprobes
-have been moved over to work with patch_instruction
+Signed-off-by: Balbir Singh <bsingharora@gmail.com>
+---
+ arch/powerpc/lib/code-patching.c | 88 ++++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 84 insertions(+), 4 deletions(-)
 
-There are a few bug fixes, the updatepp and updateboltedpp
-did not use flags as described in PAPR and the ptdump
-utility ignored the first PFN
-
-Balbir Singh (8):
-  powerpc/lib/code-patching: Enhance code patching
-  powerpc/kprobes: Move kprobes over to patch_instruction
-  powerpc/xmon: Add patch_instruction supporf for xmon
-  powerpc/vmlinux.lds: Align __init_begin to 16M
-  powerpc/platform/pseries/lpar: Fix updatepp and updateboltedpp
-  powerpc/mm/hash: Implement mark_rodata_ro() for hash
-  powerpc/Kconfig: Enable STRICT_KERNEL_RWX
-  powerpc/mm/ptdump: Dump the first entry of the linear mapping as well
-
- arch/powerpc/Kconfig                       |  1 +
- arch/powerpc/include/asm/book3s/64/hash.h  |  3 +
- arch/powerpc/include/asm/book3s/64/radix.h |  4 ++
- arch/powerpc/kernel/kprobes.c              |  4 +-
- arch/powerpc/kernel/vmlinux.lds.S          | 10 +++-
- arch/powerpc/lib/code-patching.c           | 88 ++++++++++++++++++++++++++++--
- arch/powerpc/mm/dump_hashpagetable.c       |  2 +-
- arch/powerpc/mm/pgtable-hash64.c           | 35 ++++++++++++
- arch/powerpc/mm/pgtable-radix.c            |  7 +++
- arch/powerpc/mm/pgtable_64.c               |  9 +++
- arch/powerpc/platforms/pseries/lpar.c      | 13 ++++-
- arch/powerpc/xmon/xmon.c                   |  7 ++-
- 12 files changed, 170 insertions(+), 13 deletions(-)
-
+diff --git a/arch/powerpc/lib/code-patching.c b/arch/powerpc/lib/code-patching.c
+index 500b0f6..0a16b2f 100644
+--- a/arch/powerpc/lib/code-patching.c
++++ b/arch/powerpc/lib/code-patching.c
+@@ -16,19 +16,98 @@
+ #include <asm/code-patching.h>
+ #include <linux/uaccess.h>
+ #include <linux/kprobes.h>
++#include <asm/pgtable.h>
++#include <asm/tlbflush.h>
+ 
++struct vm_struct *text_poke_area;
++static DEFINE_RAW_SPINLOCK(text_poke_lock);
+ 
+-int patch_instruction(unsigned int *addr, unsigned int instr)
++/*
++ * This is an early_initcall and early_initcalls happen at the right time
++ * for us, after slab is enabled and before we mark ro pages R/O. In the
++ * future if get_vm_area is randomized, this will be more flexible than
++ * fixmap
++ */
++static int __init setup_text_poke_area(void)
+ {
++	text_poke_area = get_vm_area(PAGE_SIZE, VM_ALLOC);
++	if (!text_poke_area) {
++		WARN_ONCE(1, "could not create area for mapping kernel addrs"
++				" which allow for patching kernel code\n");
++		return 0;
++	}
++	pr_info("text_poke area ready...\n");
++	raw_spin_lock_init(&text_poke_lock);
++	return 0;
++}
++
++/*
++ * This can be called for kernel text or a module.
++ */
++static int kernel_map_addr(void *addr)
++{
++	unsigned long pfn;
+ 	int err;
+ 
+-	__put_user_size(instr, addr, 4, err);
++	if (is_vmalloc_addr(addr))
++		pfn = vmalloc_to_pfn(addr);
++	else
++		pfn = __pa_symbol(addr) >> PAGE_SHIFT;
++
++	err = map_kernel_page((unsigned long)text_poke_area->addr,
++			(pfn << PAGE_SHIFT), _PAGE_KERNEL_RW | _PAGE_PRESENT);
++	pr_devel("Mapped addr %p with pfn %lx\n", text_poke_area->addr, pfn);
+ 	if (err)
+-		return err;
+-	asm ("dcbst 0, %0; sync; icbi 0,%0; sync; isync" : : "r" (addr));
++		return -1;
+ 	return 0;
+ }
+ 
++static inline void kernel_unmap_addr(void *addr)
++{
++	pte_t *pte;
++	unsigned long kaddr = (unsigned long)addr;
++
++	pte = pte_offset_kernel(pmd_offset(pud_offset(pgd_offset_k(kaddr),
++				kaddr), kaddr), kaddr);
++	pr_devel("clearing mm %p, pte %p, kaddr %lx\n", &init_mm, pte, kaddr);
++	pte_clear(&init_mm, kaddr, pte);
++}
++
++int patch_instruction(unsigned int *addr, unsigned int instr)
++{
++	int err;
++	unsigned int *dest = NULL;
++	unsigned long flags;
++	unsigned long kaddr = (unsigned long)addr;
++
++	/*
++	 * During early early boot patch_instruction is called
++	 * when text_poke_area is not ready, but we still need
++	 * to allow patching. We just do the plain old patching
++	 */
++	if (!text_poke_area) {
++		__put_user_size(instr, addr, 4, err);
++		asm ("dcbst 0, %0; sync; icbi 0,%0; sync; isync" :: "r" (addr));
++		return 0;
++	}
++
++	raw_spin_lock_irqsave(&text_poke_lock, flags);
++	if (kernel_map_addr(addr)) {
++		err = -1;
++		goto out;
++	}
++
++	dest = (unsigned int *)(text_poke_area->addr) +
++		((kaddr & ~PAGE_MASK) / sizeof(unsigned int));
++	__put_user_size(instr, dest, 4, err);
++	asm ("dcbst 0, %0; sync; icbi 0,%0; sync; isync" :: "r" (dest));
++	kernel_unmap_addr(text_poke_area->addr);
++out:
++	raw_spin_unlock_irqrestore(&text_poke_lock, flags);
++	return err;
++}
++NOKPROBE_SYMBOL(patch_instruction);
++
+ int patch_branch(unsigned int *addr, unsigned long target, int flags)
+ {
+ 	return patch_instruction(addr, create_branch(addr, target, flags));
+@@ -514,3 +593,4 @@ static int __init test_code_patching(void)
+ late_initcall(test_code_patching);
+ 
+ #endif /* CONFIG_CODE_PATCHING_SELFTEST */
++early_initcall(setup_text_poke_area);
 -- 
 2.9.3
