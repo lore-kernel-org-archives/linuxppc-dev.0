@@ -3,19 +3,19 @@ Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
  [IPv6:2607:f8b0:400e:c00::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wYFLy3q2HzDqfv
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 May 2017 13:37:14 +1000 (AEST)
-Received: by mail-pf0-x243.google.com with SMTP id u26so36288033pfd.2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 May 2017 20:37:14 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wYFM20cjCzDqgW
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 May 2017 13:37:18 +1000 (AEST)
+Received: by mail-pf0-x243.google.com with SMTP id f27so36298338pfe.0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 May 2017 20:37:17 -0700 (PDT)
 From: Balbir Singh <bsingharora@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org,
 	mpe@ellerman.id.au
 Cc: naveen.n.rao@linux.vnet.ibm.com, ananth@linux.vnet.ibm.com,
  christophe.leroy@c-s.fr, paulus@samba.org, rashmica.g@gmail.com,
  Balbir Singh <bsingharora@gmail.com>
-Subject: [PATCH v1 2/8] powerpc/kprobes: Move kprobes over to patch_instruction
-Date: Thu, 25 May 2017 13:36:44 +1000
-Message-Id: <20170525033650.10891-3-bsingharora@gmail.com>
+Subject: [PATCH v1 3/8] powerpc/xmon: Add patch_instruction supporf for xmon
+Date: Thu, 25 May 2017 13:36:45 +1000
+Message-Id: <20170525033650.10891-4-bsingharora@gmail.com>
 In-Reply-To: <20170525033650.10891-1-bsingharora@gmail.com>
 References: <20170525033650.10891-1-bsingharora@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,35 +27,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-arch_arm/disarm_probe use direct assignment for copying
-instructions, replace them with patch_instruction
+Move from mwrite() to patch_instruction() for xmon for
+breakpoint addition and removal.
 
 Signed-off-by: Balbir Singh <bsingharora@gmail.com>
 ---
- arch/powerpc/kernel/kprobes.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ arch/powerpc/xmon/xmon.c | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/kernel/kprobes.c b/arch/powerpc/kernel/kprobes.c
-index 160ae0f..5e1fa86 100644
---- a/arch/powerpc/kernel/kprobes.c
-+++ b/arch/powerpc/kernel/kprobes.c
-@@ -158,7 +158,7 @@ NOKPROBE_SYMBOL(arch_prepare_kprobe);
+diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
+index f11f656..0952014 100644
+--- a/arch/powerpc/xmon/xmon.c
++++ b/arch/powerpc/xmon/xmon.c
+@@ -53,6 +53,7 @@
+ #include <asm/xive.h>
+ #include <asm/opal.h>
+ #include <asm/firmware.h>
++#include <asm/code-patching.h>
  
- void arch_arm_kprobe(struct kprobe *p)
- {
--	*p->addr = BREAKPOINT_INSTRUCTION;
-+	patch_instruction(p->addr, BREAKPOINT_INSTRUCTION);
- 	flush_icache_range((unsigned long) p->addr,
- 			   (unsigned long) p->addr + sizeof(kprobe_opcode_t));
- }
-@@ -166,7 +166,7 @@ NOKPROBE_SYMBOL(arch_arm_kprobe);
- 
- void arch_disarm_kprobe(struct kprobe *p)
- {
--	*p->addr = p->opcode;
-+	patch_instruction(p->addr, BREAKPOINT_INSTRUCTION);
- 	flush_icache_range((unsigned long) p->addr,
- 			   (unsigned long) p->addr + sizeof(kprobe_opcode_t));
- }
+ #ifdef CONFIG_PPC64
+ #include <asm/hvcall.h>
+@@ -837,7 +838,8 @@ static void insert_bpts(void)
+ 		store_inst(&bp->instr[0]);
+ 		if (bp->enabled & BP_CIABR)
+ 			continue;
+-		if (mwrite(bp->address, &bpinstr, 4) != 4) {
++		if (patch_instruction((unsigned int *)bp->address,
++							bpinstr) != 0) {
+ 			printf("Couldn't write instruction at %lx, "
+ 			       "disabling breakpoint there\n", bp->address);
+ 			bp->enabled &= ~BP_TRAP;
+@@ -874,7 +876,8 @@ static void remove_bpts(void)
+ 			continue;
+ 		if (mread(bp->address, &instr, 4) == 4
+ 		    && instr == bpinstr
+-		    && mwrite(bp->address, &bp->instr, 4) != 4)
++		    && patch_instruction(
++			(unsigned int *)bp->address, bp->instr[0]) != 0)
+ 			printf("Couldn't remove breakpoint at %lx\n",
+ 			       bp->address);
+ 		else
 -- 
 2.9.3
