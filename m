@@ -1,24 +1,24 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
- [IPv6:2607:f8b0:400e:c00::242])
+Return-Path: <matthew.brown.dev@gmail.com>
+Received: from mail-yw0-x231.google.com (mail-yw0-x231.google.com
+ [IPv6:2607:f8b0:4002:c05::231])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wYFMP34kSzDqfv
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 May 2017 13:37:37 +1000 (AEST)
-Received: by mail-pf0-x242.google.com with SMTP id u26so36289850pfd.2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 May 2017 20:37:37 -0700 (PDT)
-From: Balbir Singh <bsingharora@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org,
-	mpe@ellerman.id.au
-Cc: naveen.n.rao@linux.vnet.ibm.com, ananth@linux.vnet.ibm.com,
- christophe.leroy@c-s.fr, paulus@samba.org, rashmica.g@gmail.com,
- Balbir Singh <bsingharora@gmail.com>
-Subject: [PATCH v1 8/8] powerpc/mm/ptdump: Dump the first entry of the linear
- mapping as well
-Date: Thu, 25 May 2017 13:36:50 +1000
-Message-Id: <20170525033650.10891-9-bsingharora@gmail.com>
-In-Reply-To: <20170525033650.10891-1-bsingharora@gmail.com>
-References: <20170525033650.10891-1-bsingharora@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wYH5w2wtrzDqfr
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 May 2017 14:56:03 +1000 (AEST)
+Received: by mail-yw0-x231.google.com with SMTP id p73so87578642ywp.0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 May 2017 21:56:03 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <0a79517a-c9eb-6eca-4048-de20d4543114@us.ibm.com>
+References: <20170523234559.28080-1-matthew.brown.dev@gmail.com>
+ <0a79517a-c9eb-6eca-4048-de20d4543114@us.ibm.com>
+From: Matt Brown <matthew.brown.dev@gmail.com>
+Date: Thu, 25 May 2017 14:56:00 +1000
+Message-ID: <CAPoR37YQ-9Q=HacFVrWDg_aS=rPhWhB_SuuevdZDCA2Vu=AVyg@mail.gmail.com>
+Subject: Re: [PATCH] powerpc/lib: Split xor_vmx file to guarantee instruction
+ ordering
+To: pc@us.ibm.com
+Cc: linuxppc-dev@lists.ozlabs.org, Anton Blanchard <anton@samba.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,25 +28,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The check in hpte_find() should be < and not <= for PAGE_OFFSET
+On Wed, May 24, 2017 at 11:36 PM, Paul Clarke <pc@us.ibm.com> wrote:
+> On 05/23/2017 06:45 PM, Matt Brown wrote:
+>> The xor_vmx.c file is used for the RAID5 xor operations. In these functions
+>> altivec is enabled to run the operation and then disabled. However due to
+>> compiler instruction reordering, altivec instructions are being run before
+>> enable_altivec() and after disable_altivec().
+>
+> If altivec instructions can be reordered after disable_altivec(), then disable_altivec() is broken, I'd think.
+>
+> Could it be because the isync in mtmsr_isync() is after the mtmsr?
+>
+> disable_kernel_altivec
+> - msr_check_and_clear
+>   - __msr_check_and_clear
+>     - mtmsr_isync
 
-Signed-off-by: Balbir Singh <bsingharora@gmail.com>
----
- arch/powerpc/mm/dump_hashpagetable.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+So it turns out the enable / disable functions don't actually enable
+or disable the use of vector instructions.
+If we have marked the file to be compiled with altivec the compiler
+has free reign to reorder the vector instructions wherever it likes.
+Including reordering it before or after the enable/disable_altivec
+commands.
 
-diff --git a/arch/powerpc/mm/dump_hashpagetable.c b/arch/powerpc/mm/dump_hashpagetable.c
-index c6b900f..b1c144b 100644
---- a/arch/powerpc/mm/dump_hashpagetable.c
-+++ b/arch/powerpc/mm/dump_hashpagetable.c
-@@ -335,7 +335,7 @@ static unsigned long hpte_find(struct pg_state *st, unsigned long ea, int psize)
- 	unsigned long rpn, lp_bits;
- 	int base_psize = 0, actual_psize = 0;
- 
--	if (ea <= PAGE_OFFSET)
-+	if (ea < PAGE_OFFSET)
- 		return -1;
- 
- 	/* Look in primary table */
--- 
-2.9.3
+The enable_kernel_altivec and disable_kernel_altivec functions are
+mainly there to empty and restore the vector registers which could
+have been used in user-space. So those functions work as intended,
+although not particularly intuitive.
+
+Splitting the files and only compiling the xor_vmx.c file with altivec
+will guarantee that there are no vector instructions in the
+xor_vmx_glue.c file, and that no vector instructions are outside of
+the enable/disable block.
+
+
+- Matt Brown
+
+>
+> PC
+>
