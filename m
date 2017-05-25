@@ -1,49 +1,31 @@
-Return-Path: <abdhalee@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <kda@linux-powerpc.org>
+Received: from mail-pf0-x234.google.com (mail-pf0-x234.google.com
+ [IPv6:2607:f8b0:400e:c00::234])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wYR3m64kFzDqjQ
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 May 2017 20:54:44 +1000 (AEST)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v4PArc43110337
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 May 2017 06:54:40 -0400
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2anq28qje1-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 May 2017 06:54:40 -0400
-Received: from localhost
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <abdhalee@linux.vnet.ibm.com>;
- Thu, 25 May 2017 20:54:36 +1000
-Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v4PAsQWJ29491332
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 May 2017 20:54:34 +1000
-Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
- by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v4PAs1IS002438
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 May 2017 20:54:02 +1000
-Subject: Re: [PowerPC][next-20170324][kselftest] kernel Oops when running
- tm/tm-signal-context-chk-vsx
-From: Abdul Haleem <abdhalee@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Cyril Bur <cyrilbur@gmail.com>, sachinp <sachinp@linux.vnet.ibm.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, linux-kernel
- <linux-kernel@vger.kernel.org>
-Date: Thu, 25 May 2017 16:23:39 +0530
-In-Reply-To: <87mva2a2yb.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wYSDP4D35zDqjr
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 May 2017 21:47:16 +1000 (AEST)
+Received: by mail-pf0-x234.google.com with SMTP id 9so165062706pfj.1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 May 2017 04:47:15 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <1495709619.27765.11.camel@abdul.in.ibm.com>
 References: <1490612559.8344.15.camel@abdul.in.ibm.com>
  <871sthbu12.fsf@concordia.ellerman.id.au>
  <1491209923.7788.9.camel@abdul.in.ibm.com>
  <1491210231.7788.12.camel@abdul.in.ibm.com>
  <1495521199.9020.13.camel@abdul.in.ibm.com>
  <87mva2a2yb.fsf@concordia.ellerman.id.au>
+ <1495709619.27765.11.camel@abdul.in.ibm.com>
+From: Denis Kirjanov <kda@linux-powerpc.org>
+Date: Thu, 25 May 2017 14:47:13 +0300
+Message-ID: <CAOJe8K11QpxvKgcUVtPxO6dd_qKTFp8gbPdpaseiCGeUXs2gow@mail.gmail.com>
+Subject: Re: [PowerPC][next-20170324][kselftest] kernel Oops when running
+ tm/tm-signal-context-chk-vsx
+To: Abdul Haleem <abdhalee@linux.vnet.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, sachinp <sachinp@linux.vnet.ibm.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Cyril Bur <cyrilbur@gmail.com>,
+ linux-kernel <linux-kernel@vger.kernel.org>
 Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Message-Id: <1495709619.27765.11.camel@abdul.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -53,84 +35,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2017-05-24 at 21:50 +1000, Michael Ellerman wrote:
-> Abdul Haleem <abdhalee@linux.vnet.ibm.com> writes:
-> > Hi Cyril,
-> >
-> > I see a similar trace, but with 'tm-signal-stack' test for mainline
-> > kernel 4.12.0-rc1 on PowerVM LPAR.
-> 
-> I can't reproduce this here.
-It is not reproducible all the times.
-> 
-> Can you please retest on rc2.
+[  283.516559] Kernel BUG at c00000000191c160 [verbose debug info unavailable]
+[  283.516573] Unexpected TM Bad Thing exception at c00000000191c160
+(msr 0x2a03030)
+cpu 0x19: Vector: 700 (Program Check) at [c0000007d1a37920]
+    pc: c00000000191c160: fast_exception_return+0xac/0xb4
+    lr: c000000001925ed4: .arch_local_irq_restore.part.10+0x74/0xa0
+    sp: c0000007d1a37ba0
+   msr: 9000000302a03030
+  current = 0xc0000007d094c000
+  paca    = 0xc00000000fffd980	 softe: 0	 irq_happened: 0x01
+    pid   = 7804, comm = tm-signal-conte
+Linux version 4.12.0-rc2 (root@power.oil.ru) (gcc version 4.8.3
+20140911 (Red Hat 4.8.3-9) (GCC) ) #31 SMP PREEMPT Thu May 25 07:22:54
+EDT 2017
+WARNING: exception is not recoverable, can't continue
+enter ? for help
+[link register   ] c000000001925ed4 .arch_local_irq_restore.part.10+0x74/0xa0
+[c0000007d1a37ba0] c000000001925ea0
+.arch_local_irq_restore.part.10+0x40/0xa0 (unreliable)
+[c0000007d1a37c10] c000000001a565f0 .lock_acquire+0x100/0x340
+[c0000007d1a37cf0] c000000001b8fb44 .__might_fault+0x74/0xb0
+[c0000007d1a37d60] c00000000193cd60 .sys_rt_sigreturn+0x9e0/0xb70
+[c0000007d1a37e30] c00000000191b9ec system_call+0x38/0xfc
+--- Exception: c01 (System Call) at 0000000010001c38
+SP (7fffddb2dd60) is in userspace
 
-With rc2, I see a similar call trace for the test
-'tm_signal_context_chk_fpu'
-
-I tried running tm-signal-stack alone, but no luck.
-> 
-> Also please include the exact version of the test (it prints it), and
-> what toolchain you built it with.
-
-test: tm_signal_context_chk_fpu
-tags: git_version:v4.12-rc2-62-g2426125
-success: tm_signal_context_chk_fpu
-
-toolchain : gcc version 5.2.1
-
-
-latest trace:
-[ 1953.024563] Bad kernel stack pointer 7fffe0a1ddc0 at c00000000000b660
-[ 1953.024582] Oops: Bad kernel stack pointer, sig: 6 [#1]
-[ 1953.024585] SMP NR_CPUS=2048 
-[ 1953.024585] NUMA 
-[ 1953.024587] pSeries
-[ 1953.024590] Modules linked in: rtc_generic vmx_crypto pseries_rng
-autofs4
-[ 1953.024597] CPU: 14 PID: 27145 Comm: tm-signal-conte Not tainted
-4.12.0-rc2-00062-g2426125-dirty #1
-[ 1953.024601] task: c0000007699f8600 task.stack: c00000076a24c000
-[ 1953.024603] NIP: c00000000000b660 LR: 0000000010001aac CTR:
-0000000000000000
-[ 1953.024608] REGS: c00000000ebdbd40 TRAP: 0700   Not tainted
-(4.12.0-rc2-00062-g2426125-dirty)
-[ 1953.024610] MSR: 8000000102a03031 <SF,VEC,VSX,FP,ME,IR,DR,LE,TM[E]>
-[ 1953.024615]   CR: 42000822  XER: 00000000
-[ 1953.024618] CFAR: c00000000000b5b4 SOFTE: 0 
-               GPR00: 0000000000000025 00007fffe0a1ddc0 0000000010028200
-0000000000000000 
-               GPR04: 000000000000000a 0000000000000000 0000000000000000
-0000000000000000 
-               GPR08: 00000000000000f8 0000000000000000 0000000000000000
-0000000000000000 
-               GPR12: 0000000000000000 00007fff8878c440 ffffffffffffffff
-fffffffffffffffe 
-               GPR16: fffffffffffffffd fffffffffffffffc fffffffffffffffb
-fffffffffffffffa 
-               GPR20: fffffffffffffff9 fffffffffffffff8 fffffffffffffff7
-fffffffffffffff6 
-               GPR24: fffffffffffffff5 fffffffffffffff4 fffffffffffffff3
-fffffffffffffff2 
-               GPR28: fffffffffffffff1 fffffffffffffff0 ffffffffffffffef
-ffffffffffffffee 
-[ 1953.024652] NIP [c00000000000b660] fast_exception_return+0x90/0x98
-[ 1953.024655] LR [0000000010001aac] 0x10001aac
-[ 1953.024657] Call Trace:
-[ 1953.024658] Instruction dump:
-[ 1953.024661] 7c40e3a6 e9a100d8 7c7b03a6 e84101a0 7c4ff120 e8410170
-7c5a03a6 e8010070 
-[ 1953.024666] e8410080 e8610088 e8810090 e8210078 <4c000024> 48000000
-e8610178 88ed02bb 
-[ 1953.024671] ---[ end trace 3e1eeb3cfb1260c1 ]---
-
-> 
-> cheers
-> 
-
-
--- 
-Regard's
-
-Abdul Haleem
-IBM Linux Technology Centre
+>
+>
+>
+>
