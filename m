@@ -1,23 +1,20 @@
-Return-Path: <msuchanek@suse.de>
-Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
+ [IPv6:2607:f8b0:400e:c00::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wYLT54DPtzDqfv
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 May 2017 17:27:53 +1000 (AEST)
-From: Michal Suchanek <msuchanek@suse.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
- Hari Bathini <hbathini@linux.vnet.ibm.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- Michal Suchanek <msuchanek@suse.de>, Daniel Axtens <dja@axtens.net>,
- Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] powerpc/fadump: return error when fadump registration fails
-Date: Thu, 25 May 2017 09:27:44 +0200
-Message-Id: <20170525072744.18374-1-msuchanek@suse.de>
-In-Reply-To: <201705251543.gd6iZ3OM%fengguang.wu@intel.com>
-References: <201705251543.gd6iZ3OM%fengguang.wu@intel.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wYLV61kn9zDqhn
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 May 2017 17:28:46 +1000 (AEST)
+Received: by mail-pf0-x244.google.com with SMTP id w69so37482750pfk.1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 May 2017 00:28:46 -0700 (PDT)
+From: Balbir Singh <bsingharora@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org,
+	mpe@ellerman.id.au
+Cc: paulus@samba.org,
+	Balbir Singh <bsingharora@gmail.com>
+Subject: [PATCH v2] powerpc/mm: convert tlbie to tlbiel when no batch is active
+Date: Thu, 25 May 2017 17:28:32 +1000
+Message-Id: <20170525072832.30803-1-bsingharora@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,121 +24,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
- - log an error message when registration fails and no error code listed
- in the switch is returned
- - translate the hv error code to posix error code and return it from
- fw_register
- - return the posix error code from fw_register to the process writing
- to sysfs
- - return EEXIST on re-registration
- - return success on deregistration when fadump is not registered
- - return ENODEV when no memory is reserved for fadump
+Do the checks that __flush_tlb_pending() does and check if
+a local flush will do when batch->active is false inside of
+hpte_need_flush(). I've checked the changes with tlbie tracing,
+I see local flushes as applicable now and I've also run
+some basic ltp testcases on top of these changes on a powernv
+machine.
 
-Signed-off-by: Michal Suchanek <msuchanek@suse.de>
+Signed-off-by: Balbir Singh <bsingharora@gmail.com>
 ---
- arch/powerpc/kernel/fadump.c | 24 ++++++++++++++++--------
- 1 file changed, 16 insertions(+), 8 deletions(-)
+ arch/powerpc/mm/tlb_hash64.c | 9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
 
-diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
-index 2fa582092d42..5a649d76a785 100644
---- a/arch/powerpc/kernel/fadump.c
-+++ b/arch/powerpc/kernel/fadump.c
-@@ -398,9 +398,9 @@ static int __init early_fadump_param(char *p)
- }
- early_param("fadump", early_fadump_param);
+diff --git a/arch/powerpc/mm/tlb_hash64.c b/arch/powerpc/mm/tlb_hash64.c
+index 4517aa4..b655c3b 100644
+--- a/arch/powerpc/mm/tlb_hash64.c
++++ b/arch/powerpc/mm/tlb_hash64.c
+@@ -93,12 +93,13 @@ void hpte_need_flush(struct mm_struct *mm, unsigned long addr,
  
--static void register_fw_dump(struct fadump_mem_struct *fdm)
-+static int register_fw_dump(struct fadump_mem_struct *fdm)
- {
--	int rc;
-+	int rc, err;
- 	unsigned int wait_time;
- 
- 	pr_debug("Registering for firmware-assisted kernel dump...\n");
-@@ -417,7 +417,12 @@ static void register_fw_dump(struct fadump_mem_struct *fdm)
- 
- 	} while (wait_time);
- 
-+	err = -EIO;
- 	switch (rc) {
-+	default:
-+		printk(KERN_ERR "Failed to register firmware-assisted kernel"
-+			" dump. Unknown Error(%d).\n", rc);
-+		break;
- 	case -1:
- 		printk(KERN_ERR "Failed to register firmware-assisted kernel"
- 			" dump. Hardware Error(%d).\n", rc);
-@@ -425,18 +430,22 @@ static void register_fw_dump(struct fadump_mem_struct *fdm)
- 	case -3:
- 		printk(KERN_ERR "Failed to register firmware-assisted kernel"
- 			" dump. Parameter Error(%d).\n", rc);
-+		err = -EINVAL;
- 		break;
- 	case -9:
- 		printk(KERN_ERR "firmware-assisted kernel dump is already "
- 			" registered.");
- 		fw_dump.dump_registered = 1;
-+		err = -EEXIST;
- 		break;
- 	case 0:
- 		printk(KERN_INFO "firmware-assisted kernel dump registration"
- 			" is successful\n");
- 		fw_dump.dump_registered = 1;
-+		err = 0;
- 		break;
- 	}
-+	return err;
- }
- 
- void crash_fadump(struct pt_regs *regs, const char *str)
-@@ -977,7 +986,7 @@ static unsigned long init_fadump_header(unsigned long addr)
- 	return addr;
- }
- 
--static void register_fadump(void)
-+static int register_fadump(void)
- {
- 	unsigned long addr;
- 	void *vaddr;
-@@ -987,7 +996,7 @@ static void register_fadump(void)
- 	 * assisted dump.
+ 	/*
+ 	 * Check if we have an active batch on this CPU. If not, just
+-	 * flush now and return. For now, we don global invalidates
+-	 * in that case, might be worth testing the mm cpu mask though
+-	 * and decide to use local invalidates instead...
++	 * flush now and return.
  	 */
- 	if (!fw_dump.reserve_dump_area_size)
--		return;
-+		return -ENODEV
- 
- 	fadump_setup_crash_memory_ranges();
- 
-@@ -1000,7 +1009,7 @@ static void register_fadump(void)
- 	fadump_create_elfcore_headers(vaddr);
- 
- 	/* register the future kernel dump with firmware. */
--	register_fw_dump(&fdm);
-+	return register_fw_dump(&fdm);
- }
- 
- static int fadump_unregister_dump(struct fadump_mem_struct *fdm)
-@@ -1182,7 +1191,6 @@ static ssize_t fadump_register_store(struct kobject *kobj,
- 	switch (buf[0]) {
- 	case '0':
- 		if (fw_dump.dump_registered == 0) {
--			ret = -EINVAL;
- 			goto unlock_out;
- 		}
- 		/* Un-register Firmware-assisted dump */
-@@ -1190,11 +1198,11 @@ static ssize_t fadump_register_store(struct kobject *kobj,
- 		break;
- 	case '1':
- 		if (fw_dump.dump_registered == 1) {
--			ret = -EINVAL;
-+			ret = -EEXIST;
- 			goto unlock_out;
- 		}
- 		/* Register Firmware-assisted dump */
--		register_fadump();
-+		ret = register_fadump();
- 		break;
- 	default:
- 		ret = -EINVAL;
+ 	if (!batch->active) {
+-		flush_hash_page(vpn, rpte, psize, ssize, 0);
++		int local = 0;
++		if (mm_is_thread_local(mm))
++			local = 1;
++		flush_hash_page(vpn, rpte, psize, ssize, local);
+ 		put_cpu_var(ppc64_tlb_batch);
+ 		return;
+ 	}
 -- 
-2.10.2
+2.9.3
