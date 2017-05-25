@@ -1,22 +1,21 @@
 Return-Path: <bsingharora@gmail.com>
-Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
- [IPv6:2607:f8b0:400e:c00::244])
+Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
+ [IPv6:2607:f8b0:400e:c00::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wYFM9352JzDqfw
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 May 2017 13:37:25 +1000 (AEST)
-Received: by mail-pf0-x244.google.com with SMTP id u26so36288984pfd.2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 May 2017 20:37:25 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wYFMF07yyzDqgR
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 May 2017 13:37:29 +1000 (AEST)
+Received: by mail-pf0-x241.google.com with SMTP id u26so36289261pfd.2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 May 2017 20:37:28 -0700 (PDT)
 From: Balbir Singh <bsingharora@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org,
 	mpe@ellerman.id.au
 Cc: naveen.n.rao@linux.vnet.ibm.com, ananth@linux.vnet.ibm.com,
  christophe.leroy@c-s.fr, paulus@samba.org, rashmica.g@gmail.com,
  Balbir Singh <bsingharora@gmail.com>
-Subject: [PATCH v1 5/8] powerpc/platform/pseries/lpar: Fix updatepp and
- updateboltedpp
-Date: Thu, 25 May 2017 13:36:47 +1000
-Message-Id: <20170525033650.10891-6-bsingharora@gmail.com>
+Subject: [PATCH v1 6/8] powerpc/mm/hash: Implement mark_rodata_ro() for hash
+Date: Thu, 25 May 2017 13:36:48 +1000
+Message-Id: <20170525033650.10891-7-bsingharora@gmail.com>
 In-Reply-To: <20170525033650.10891-1-bsingharora@gmail.com>
 References: <20170525033650.10891-1-bsingharora@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,52 +27,135 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-PAPR has pp0 in bit 55, currently we assumed that bit
-pp0 is bit 0 (all bits in IBM order). This patch fixes
-the pp0 bits for both these routines that use H_PROTECT
+With hash we update the bolted pte to mark it read-only. We rely
+on the MMU_FTR_KERNEL_RO to generate the correct permissions
+for read-only text. The radix implementation just prints a warning
+in this implementation
 
 Signed-off-by: Balbir Singh <bsingharora@gmail.com>
 ---
- arch/powerpc/platforms/pseries/lpar.c | 13 +++++++++++--
- 1 file changed, 11 insertions(+), 2 deletions(-)
+ arch/powerpc/include/asm/book3s/64/hash.h  |  3 +++
+ arch/powerpc/include/asm/book3s/64/radix.h |  4 ++++
+ arch/powerpc/mm/pgtable-hash64.c           | 35 ++++++++++++++++++++++++++++++
+ arch/powerpc/mm/pgtable-radix.c            |  7 ++++++
+ arch/powerpc/mm/pgtable_64.c               |  9 ++++++++
+ 5 files changed, 58 insertions(+)
 
-diff --git a/arch/powerpc/platforms/pseries/lpar.c b/arch/powerpc/platforms/pseries/lpar.c
-index 6541d0b..83db643 100644
---- a/arch/powerpc/platforms/pseries/lpar.c
-+++ b/arch/powerpc/platforms/pseries/lpar.c
-@@ -301,7 +301,7 @@ static long pSeries_lpar_hpte_updatepp(unsigned long slot,
- 				       int ssize, unsigned long inv_flags)
+diff --git a/arch/powerpc/include/asm/book3s/64/hash.h b/arch/powerpc/include/asm/book3s/64/hash.h
+index 4e957b0..0ce513f 100644
+--- a/arch/powerpc/include/asm/book3s/64/hash.h
++++ b/arch/powerpc/include/asm/book3s/64/hash.h
+@@ -89,6 +89,9 @@ static inline int hash__pgd_bad(pgd_t pgd)
  {
- 	unsigned long lpar_rc;
--	unsigned long flags = (newpp & 7) | H_AVPN;
-+	unsigned long flags;
- 	unsigned long want_v;
+ 	return (pgd_val(pgd) == 0);
+ }
++#ifdef CONFIG_STRICT_KERNEL_RWX
++extern void hash__mark_rodata_ro(void);
++#endif
  
- 	want_v = hpte_encode_avpn(vpn, psize, ssize);
-@@ -309,6 +309,11 @@ static long pSeries_lpar_hpte_updatepp(unsigned long slot,
- 	pr_devel("    update: avpnv=%016lx, hash=%016lx, f=%lx, psize: %d ...",
- 		 want_v, slot, flags, psize);
+ extern void hpte_need_flush(struct mm_struct *mm, unsigned long addr,
+ 			    pte_t *ptep, unsigned long pte, int huge);
+diff --git a/arch/powerpc/include/asm/book3s/64/radix.h b/arch/powerpc/include/asm/book3s/64/radix.h
+index ac16d19..368cb54 100644
+--- a/arch/powerpc/include/asm/book3s/64/radix.h
++++ b/arch/powerpc/include/asm/book3s/64/radix.h
+@@ -116,6 +116,10 @@
+ #define RADIX_PUD_TABLE_SIZE	(sizeof(pud_t) << RADIX_PUD_INDEX_SIZE)
+ #define RADIX_PGD_TABLE_SIZE	(sizeof(pgd_t) << RADIX_PGD_INDEX_SIZE)
  
-+	/*
-+	 * Move pp0 and set the mask, pp0 is bit 55
-+	 * We ignore the keys for now.
-+	 */
-+	flags = ((newpp & HPTE_R_PP0) >> 55) | (newpp & 7) | H_AVPN;
- 	lpar_rc = plpar_pte_protect(flags, slot, want_v);
++#ifdef CONFIG_STRICT_KERNEL_RWX
++extern void radix__mark_rodata_ro(void);
++#endif
++
+ static inline unsigned long __radix_pte_update(pte_t *ptep, unsigned long clr,
+ 					       unsigned long set)
+ {
+diff --git a/arch/powerpc/mm/pgtable-hash64.c b/arch/powerpc/mm/pgtable-hash64.c
+index 8b85a14..dda808b 100644
+--- a/arch/powerpc/mm/pgtable-hash64.c
++++ b/arch/powerpc/mm/pgtable-hash64.c
+@@ -11,8 +11,12 @@
  
- 	if (lpar_rc == H_NOT_FOUND) {
-@@ -379,7 +384,11 @@ static void pSeries_lpar_hpte_updateboltedpp(unsigned long newpp,
- 	slot = pSeries_lpar_hpte_find(vpn, psize, ssize);
- 	BUG_ON(slot == -1);
+ #include <linux/sched.h>
+ #include <linux/mm_types.h>
++#include <linux/mm.h>
  
--	flags = newpp & 7;
-+	/*
-+	 * Move pp0 and set the mask, pp0 is bit 55
-+	 * We ignore the keys for now.
-+	 */
-+	flags = ((newpp & HPTE_R_PP0) >> 55) | (newpp & 7);
- 	lpar_rc = plpar_pte_protect(flags, slot, 0);
+ #include <asm/pgalloc.h>
++#include <asm/pgtable.h>
++#include <asm/sections.h>
++#include <asm/mmu.h>
+ #include <asm/tlb.h>
  
- 	BUG_ON(lpar_rc != H_SUCCESS);
+ #include "mmu_decl.h"
+@@ -342,3 +346,34 @@ int hash__has_transparent_hugepage(void)
+ 	return 1;
+ }
+ #endif /* CONFIG_TRANSPARENT_HUGEPAGE */
++
++#ifdef CONFIG_STRICT_KERNEL_RWX
++void hash__mark_rodata_ro(void)
++{
++	unsigned long start = (unsigned long)_stext;
++	unsigned long end = (unsigned long)__init_begin;
++	unsigned long idx;
++	unsigned int step, shift;
++	unsigned long newpp = PP_RXXX;
++
++	if (!mmu_has_feature(MMU_FTR_KERNEL_RO)) {
++		pr_info("R/O rodata not supported\n");
++		return;
++	}
++
++	shift = mmu_psize_defs[mmu_linear_psize].shift;
++	step = 1 << shift;
++
++	start = ((start + step - 1) >> shift) << shift;
++	end = (end >> shift) << shift;
++
++	pr_devel("marking ro start %lx, end %lx, step %x\n",
++			start, end, step);
++
++	for (idx = start; idx < end; idx += step)
++		/* Not sure if we can do much with the return value */
++		mmu_hash_ops.hpte_updateboltedpp(newpp, idx, mmu_linear_psize,
++							mmu_kernel_ssize);
++
++}
++#endif
+diff --git a/arch/powerpc/mm/pgtable-radix.c b/arch/powerpc/mm/pgtable-radix.c
+index c28165d..8f42309 100644
+--- a/arch/powerpc/mm/pgtable-radix.c
++++ b/arch/powerpc/mm/pgtable-radix.c
+@@ -108,6 +108,13 @@ int radix__map_kernel_page(unsigned long ea, unsigned long pa,
+ 	return 0;
+ }
+ 
++#ifdef CONFIG_STRICT_KERNEL_RWX
++void radix__mark_rodata_ro(void)
++{
++	pr_warn("Not yet implemented for radix\n");
++}
++#endif
++
+ static inline void __meminit print_mapping(unsigned long start,
+ 					   unsigned long end,
+ 					   unsigned long size)
+diff --git a/arch/powerpc/mm/pgtable_64.c b/arch/powerpc/mm/pgtable_64.c
+index db93cf7..a769e4f 100644
+--- a/arch/powerpc/mm/pgtable_64.c
++++ b/arch/powerpc/mm/pgtable_64.c
+@@ -479,3 +479,12 @@ void mmu_partition_table_set_entry(unsigned int lpid, unsigned long dw0,
+ }
+ EXPORT_SYMBOL_GPL(mmu_partition_table_set_entry);
+ #endif /* CONFIG_PPC_BOOK3S_64 */
++
++#ifdef CONFIG_STRICT_KERNEL_RWX
++void mark_rodata_ro(void)
++{
++	if (radix_enabled())
++		return radix__mark_rodata_ro();
++	return hash__mark_rodata_ro();
++}
++#endif
 -- 
 2.9.3
