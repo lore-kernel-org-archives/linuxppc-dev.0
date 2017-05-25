@@ -1,20 +1,17 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wYVLH2GmczDqjF
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 May 2017 23:22:31 +1000 (AEST)
-In-Reply-To: <20170520042949.29359-1-npiggin@gmail.com>
-To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wYVLJ248MzDqk3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 May 2017 23:22:32 +1000 (AEST)
+In-Reply-To: <1495608599-16819-1-git-send-email-jk@ozlabs.org>
+To: Jeremy Kerr <jk@ozlabs.org>, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: benh@ozlabs.au.ibm.com, tuliom@linux.vnet.ibm.com,
- Steve Munroe <sjmunroe@us.ibm.com>, Nicholas Piggin <npiggin@gmail.com>,
- Bill Schmidt <wschmidt@us.ibm.com>, Peter Bergner <bergner@us.ibm.com>,
- Michael Neuling <michael.neuling@au1.ibm.com>
-Subject: Re: powerpc: add PPC_FEATURE userspace bits for SCV and DARN
- instructions
-Message-Id: <3wYVLH13PDz9s8Y@ozlabs.org>
-Date: Thu, 25 May 2017 23:22:30 +1000 (AEST)
+Cc: "Aneesh Kumar K . V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Sombat Tragolgosol <sombat3960@gmail.com>, Jeremy Kerr <jk@ozlabs.org>
+Subject: Re: powerpc/spufs: Fix hash faults for kernel regions
+Message-Id: <3wYVLJ04Xkz9s9Y@ozlabs.org>
+Date: Thu, 25 May 2017 23:22:31 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,18 +21,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 2017-05-20 at 04:29:49 UTC, Nicholas Piggin wrote:
-> Providing "scv" support to userspace requires kernel support, so it
-> must be advertised as independently to the base ISA 3 instruction set.
+On Wed, 2017-05-24 at 06:49:59 UTC, Jeremy Kerr wrote:
+> Change ac29c64089b7 swapped _PAGE_USER for _PAGE_PRIVILEGED, and
+> introduced check_pte_access() which denied kernel access to
+> non-_PAGE_PRIVILEGED pages.
 > 
-> The darn instruction relies on firmware enablement, so it has been
-> decided to split this out from the core ISA 3 feature as well.
+> However, it didn't add _PAGE_PRIVILEGED to the hash fault handler for
+> spufs' kernel accesses, so the DMAs required to establish SPE memory
+> no longer work.
 > 
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-> Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> This change adds _PAGE_PRIVILEGED to the hash fault handler for
+> kernel accesses.
+> 
+> Signed-off-by: Jeremy Kerr <jk@ozlabs.org>
+> Reported-by: Sombat Tragolgosol <sombat3960@gmail.com>
+> CC: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 
 Applied to powerpc fixes, thanks.
 
-https://git.kernel.org/powerpc/c/a4700a26107241cc7b9ac8528b2c67
+https://git.kernel.org/powerpc/c/d75e4919cc0b6fbcbc8d6654ef66d8
 
 cheers
