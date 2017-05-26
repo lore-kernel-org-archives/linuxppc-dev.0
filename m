@@ -1,27 +1,27 @@
-Return-Path: <David.Laight@ACULAB.COM>
-Received: from smtp-out4.electric.net (smtp-out4.electric.net
- [192.162.216.192])
+Return-Path: <pasha.tatashin@oracle.com>
+Received: from userp1040.oracle.com (userp1040.oracle.com [156.151.31.81])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wZBFQ2fNFzDqVD
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 May 2017 02:20:41 +1000 (AEST)
-From: David Laight <David.Laight@ACULAB.COM>
-To: 'Michael Ellerman' <mpe@ellerman.id.au>, Nicholas Piggin
- <npiggin@gmail.com>, christophe leroy <christophe.leroy@c-s.fr>
-CC: Scott Wood <oss@buserror.net>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>
-Subject: RE: [PATCH 3/3] powerpc/8xx: xmon compile fix
-Date: Fri, 26 May 2017 16:20:33 +0000
-Message-ID: <063D6719AE5E284EB5DD2968C1650D6DD0000223@AcuExch.aculab.com>
-References: <20170511151522.4772-1-npiggin@gmail.com>
- <20170511151522.4772-3-npiggin@gmail.com>
- <b84f2d89-fc2f-d25f-1871-8fcd7b133fcf@c-s.fr>
- <fdb9e787-e397-a46e-467c-066d51d73131@c-s.fr>
- <20170512104707.5393eaa1@roar.ozlabs.ibm.com>
- <87o9ug84ia.fsf@concordia.ellerman.id.au>
-In-Reply-To: <87o9ug84ia.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wZBps6M24zDqVH
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 May 2017 02:46:12 +1000 (AEST)
+Subject: Re: [v3 0/9] parallelized "struct page" zeroing
+To: Michal Hocko <mhocko@kernel.org>
+Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
+ linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, borntraeger@de.ibm.com,
+ heiko.carstens@de.ibm.com, davem@davemloft.net
+References: <1494003796-748672-1-git-send-email-pasha.tatashin@oracle.com>
+ <20170509181234.GA4397@dhcp22.suse.cz>
+ <e19b241d-be27-3c9a-8984-2fb20211e2e1@oracle.com>
+ <20170515193817.GC7551@dhcp22.suse.cz>
+ <9b3d68aa-d2b6-2b02-4e75-f8372cbeb041@oracle.com>
+ <20170516083601.GB2481@dhcp22.suse.cz>
+From: Pasha Tatashin <pasha.tatashin@oracle.com>
+Message-ID: <07a6772b-711d-4fdc-f688-db76f1ec4c45@oracle.com>
+Date: Fri, 26 May 2017 12:45:55 -0400
 MIME-Version: 1.0
+In-Reply-To: <20170516083601.GB2481@dhcp22.suse.cz>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,24 +31,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-RnJvbTogIE1pY2hhZWwgRWxsZXJtYW4NCj4gU2VudDogMjYgTWF5IDIwMTcgMDg6MjQNCj4gTmlj
-aG9sYXMgUGlnZ2luIDxucGlnZ2luQGdtYWlsLmNvbT4gd3JpdGVzOg0KPiA+IGRpZmYgLS1naXQg
-YS9hcmNoL3Bvd2VycGMveG1vbi94bW9uLmMgYi9hcmNoL3Bvd2VycGMveG1vbi94bW9uLmMNCj4g
-PiBpbmRleCBmMTFmNjU2MzRhYWIuLjQzOGZkYjBmYjE0MiAxMDA2NDQNCj4gPiAtLS0gYS9hcmNo
-L3Bvd2VycGMveG1vbi94bW9uLmMNCj4gPiArKysgYi9hcmNoL3Bvd2VycGMveG1vbi94bW9uLmMN
-Cj4gPiBAQCAtMTI0MiwxNCArMTI0MiwxNiBAQCBicHRfY21kcyh2b2lkKQ0KPiA+ICB7DQo+ID4g
-IAlpbnQgY21kOw0KPiA+ICAJdW5zaWduZWQgbG9uZyBhOw0KPiA+IC0JaW50IG1vZGUsIGk7DQo+
-ID4gKwlpbnQgaTsNCj4gPiAgCXN0cnVjdCBicHQgKmJwOw0KPiA+IC0JY29uc3QgY2hhciBiYWRh
-ZGRyW10gPSAiT25seSBrZXJuZWwgYWRkcmVzc2VzIGFyZSBwZXJtaXR0ZWQgIg0KPiA+IC0JCSJm
-b3IgYnJlYWtwb2ludHNcbiI7DQo+ID4NCj4gPiAgCWNtZCA9IGluY2hhcigpOw0KPiA+ICAJc3dp
-dGNoIChjbWQpIHsNCj4gPiAtI2lmbmRlZiBDT05GSUdfOHh4DQo+ID4gKyNpZm5kZWYgQ09ORklH
-X1BQQ184eHgNCj4gPiArCWludCBtb2RlOw0KPiA+ICsJY29uc3QgY2hhciBiYWRhZGRyW10gPSAi
-T25seSBrZXJuZWwgYWRkcmVzc2VzIGFyZSBwZXJtaXR0ZWQgIg0KPiA+ICsJCSJmb3IgYnJlYWtw
-b2ludHNcbiI7DQo+ID4gKw0KPiA+ICAJY2FzZSAnZCc6CS8qIGJkIC0gaGFyZHdhcmUgZGF0YSBi
-cmVha3BvaW50ICovDQo+ID4gIAkJbW9kZSA9IDc7DQo+ID4gIAkJY21kID0gaW5jaGFyKCk7DQo+
-IA0KPiBHQ0MgNyByZWplY3RzIHRoaXM6DQo+IA0KPiAgIGFyY2gvcG93ZXJwYy94bW9uL3htb24u
-YzogSW4gZnVuY3Rpb24gYnB0X2NtZHM6DQo+ICAgYXJjaC9wb3dlcnBjL3htb24veG1vbi5jOjEy
-NTI6MTM6IGVycm9yOiBzdGF0ZW1lbnQgd2lsbCBuZXZlciBiZSBleGVjdXRlZCBbLVdlcnJvcj1z
-d2l0Y2gtDQo+IHVucmVhY2hhYmxlXQ0KPiAgICAgY29uc3QgY2hhciBiYWRhZGRyW10gPSAiT25s
-eSBrZXJuZWwgYWRkcmVzc2VzIGFyZSBwZXJtaXR0ZWQgZm9yIGJyZWFrcG9pbnRzXG4iOw0KPiAg
-ICAgICAgICAgICAgICBefn5+fn5+DQoNClRyeSAnc3RhdGljJyA/DQoNCglEYXZpZA0KDQo=
+Hi Michal,
+
+I have considered your proposals:
+
+1. Making memset(0) unconditional inside __init_single_page() is not 
+going to work because it slows down SPARC, and ppc64. On SPARC even the 
+BSTI optimization that I have proposed earlier won't work, because after 
+consulting with other engineers I was told that stores (without loads!) 
+after BSTI without membar are unsafe
+
+2. Adding ARCH_WANT_LARGE_PAGEBLOCK_INIT is not going to solve the 
+problem, because while arch might want a large memset(), it still wants 
+to get the benefit of parallelized struct page initialization.
+
+3. Another approach that have I considered is moving memset() above 
+__init_single_page() and do it in a larger chunks. However, this 
+solution is also not going to work, because inside the loops, there are 
+cases where "struct page"s are skipped, so every single page is checked:
+early_pfn_valid(pfn), early_pfn_in_nid(), and also mirroed_kernelcore cases.
+
+> I wouldn't be so sure about this. If any other platform has a similar
+> issues with small memset as sparc then the overhead is just papered over
+> by parallel initialization.
+
+That is true, and that is fine, because parallelization gives an order 
+of magnitude better improvements compared to trade of slower single 
+thread performance. Remember, this will happen during boot and memory 
+hotplug only, and not something that will eat up computing resources 
+during runtime.
+
+So, at the moment I cannot really find a better solution compared to 
+what I have proposed: do memset() inside __init_single_page() only when 
+deferred initialization is enabled.
+
+Pasha
