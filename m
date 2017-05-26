@@ -1,20 +1,24 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <arndbergmann@gmail.com>
+Received: from mail-oi0-x243.google.com (mail-oi0-x243.google.com
+ [IPv6:2607:f8b0:4003:c06::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wYzsB3DhMzDqT2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 May 2017 18:32:30 +1000 (AEST)
-Date: Fri, 26 May 2017 18:32:29 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: ppc-dev <linuxppc-dev@lists.ozlabs.org>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>
-Subject: [PATCH] powerpc: use uapi/asm-generic/sockios.h
-Message-ID: <20170526183229.193ef0eb@canb.auug.org.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wZ1mP22QBzDqTf
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 May 2017 19:58:29 +1000 (AEST)
+Received: by mail-oi0-x243.google.com with SMTP id h4so938113oib.0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 May 2017 02:58:29 -0700 (PDT)
+MIME-Version: 1.0
+Sender: arndbergmann@gmail.com
 In-Reply-To: <20170526161946.7bf423c4@canb.auug.org.au>
 References: <20170526161946.7bf423c4@canb.auug.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Fri, 26 May 2017 11:58:26 +0200
+Message-ID: <CAK8P3a0QRgn2ZGQFkxwZwrpmzbQD9xtM7xg3C=eX8u=mbn9ptQ@mail.gmail.com>
+Subject: Re: [PATCH] powerpc: use the asm-genric versions of some uapi includes
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Michael Ellerman <mpe@ellerman.id.au>,
+ ppc-dev <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,59 +28,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi all,
+On Fri, May 26, 2017 at 8:19 AM, Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+> These are completely obvious as all they do is include the asm-generic
+> versions.
+>
+> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 
-The arch version is identical except for comments and white space.
+I think I had a patch series to do those some 10 years ago and never
+submitted it ;-)
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- arch/powerpc/include/uapi/asm/Kbuild    |  1 +
- arch/powerpc/include/uapi/asm/sockios.h | 20 --------------------
- 2 files changed, 1 insertion(+), 20 deletions(-)
- delete mode 100644 arch/powerpc/include/uapi/asm/sockios.h
+Acked-by: Arnd Bergmann <arnd@arndb.de>
 
-This follows on from my previous "powerpc: use the asm-genric versions
-of some uapi includes".
+asm/sockios.h is identical to the asm-generic version, so we can do
+the same there.
 
-diff --git a/arch/powerpc/include/uapi/asm/Kbuild b/arch/powerpc/include/uapi/asm/Kbuild
-index 9aba4af4122e..0d960ef78a9a 100644
---- a/arch/powerpc/include/uapi/asm/Kbuild
-+++ b/arch/powerpc/include/uapi/asm/Kbuild
-@@ -4,4 +4,5 @@ include include/uapi/asm-generic/Kbuild.asm
- generic-y += param.h
- generic-y += poll.h
- generic-y += resource.h
-+generic-y += sockios.h
- generic-y += statfs.h
-diff --git a/arch/powerpc/include/uapi/asm/sockios.h b/arch/powerpc/include/uapi/asm/sockios.h
-deleted file mode 100644
-index 55cef7675a31..000000000000
---- a/arch/powerpc/include/uapi/asm/sockios.h
-+++ /dev/null
-@@ -1,20 +0,0 @@
--#ifndef _ASM_POWERPC_SOCKIOS_H
--#define _ASM_POWERPC_SOCKIOS_H
--
--/*
-- * This program is free software; you can redistribute it and/or
-- * modify it under the terms of the GNU General Public License
-- * as published by the Free Software Foundation; either version
-- * 2 of the License, or (at your option) any later version.
-- */
--
--/* Socket-level I/O control calls. */
--#define FIOSETOWN 	0x8901
--#define SIOCSPGRP	0x8902
--#define FIOGETOWN	0x8903
--#define SIOCGPGRP	0x8904
--#define SIOCATMARK	0x8905
--#define SIOCGSTAMP	0x8906		/* Get stamp (timeval) */
--#define SIOCGSTAMPNS	0x8907		/* Get stamp (timespec) */
--
--#endif	/* _ASM_POWERPC_SOCKIOS_H */
--- 
-2.11.0
+asm/swab.h is functionally identical, the asm-generic version
+also has a workaround for non-gcc compilers.
 
--- 
-Cheers,
-Stephen Rothwell
+asm/socket.h would also be easy to change so we mostly use
+asm-generic, the generic version already has a special case
+for powerpc.
