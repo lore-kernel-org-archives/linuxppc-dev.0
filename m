@@ -1,41 +1,47 @@
 Return-Path: <mwb@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wZJqS1xygzDqR4
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 May 2017 07:17:08 +1000 (AEST)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wZK6M6myXzDqMN
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 May 2017 07:30:03 +1000 (AEST)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v4QLDjUt093815
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 May 2017 17:17:05 -0400
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2apqggaau9-1
+ v4QLSkVx053312
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 May 2017 17:29:55 -0400
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2apuc01x9f-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 May 2017 17:17:04 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 May 2017 17:29:54 -0400
 Received: from localhost
- by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
- Fri, 26 May 2017 15:17:04 -0600
+ Fri, 26 May 2017 15:29:54 -0600
 In-Reply-To: <20170526210950.33630.84620.stgit@ltcalpine2-lp20.aus.stglabs.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  Reza Arbab <arbab@linux.vnet.ibm.com>,
  Thomas Gleixner <tglx@linutronix.de>,
- Bharata B Rao <bharata@linux.vnet.ib>,
+ Bharata B Rao <bharata@linux.vnet.ibm.com>,
  Balbir Singh <bsingharora@gmail.com>,
  Michael Bringmann <mwb@linux.vnet.ibm.com>,
  Shailendra Singh <shailendras@nvidia.com>,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+ Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
+ Nathan Fontenot <nfont@linux.vnet.ibm.com>,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ John Allen <jallen@linux.vnet.ibm.com>,
+ Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
+ Sahil Mehta <sahilmehta17@gmail.com>,
+ Rashmica Gupta <rashmicy@gmail.com>, Ingo Molnar <mingo@kernel.org>
 From: Michael Bringmann <mwb@linux.vnet.ibm.com>
-Subject: [PATCH V4 2/2] powerpc/hotplug/mm: Fix hot-add memory node assoc
-Date: Fri, 26 May 2017 16:16:56 -0500
+Subject: [PATCH V4 1/2] powerpc/numa: Update CPU topology when VPHN enabled
+Date: Fri, 26 May 2017 16:29:45 -0500
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Message-Id: <14c5edf9-9a76-cac3-cc21-54f1ee2bd0b6@linux.vnet.ibm.com>
+Message-Id: <89d48cc9-d730-b299-c81e-83d77e22100d@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,34 +52,105 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-Removing or adding memory via the PowerPC hotplug interface currently
-dumps newly added processors or memory into default node 0, instead of
-into the node that would be calculated based upon the VPHN affinity
-tables.  The code was updated to ensure that all nodes found at boot
-are still available to subsequent DLPAR hotplug-memory operations,
-even if they are not needed at boot time.
+powerpc/numa: Correct the currently broken capability to set the
+topology for shared CPUs in LPARs.  At boot time for shared CPU
+lpars, the topology for each shared CPU is set to node zero, however,
+this is now updated correctly using the Virtual Processor Home Node
+(VPHN) capabilities information provided by the pHyp. The VPHN handling
+in Linux is disabled, if PRRN handling is present.
 
 Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
 ---
+Changes in V4:
+ -- Fix conditional compile bug.
 ---
- arch/powerpc/mm/numa.c |    7 -------
- 1 file changed, 7 deletions(-)
+ arch/powerpc/mm/numa.c                 |   19 ++++++++++++++++++-
+ arch/powerpc/platforms/pseries/dlpar.c |    2 ++
+ 2 files changed, 20 insertions(+), 1 deletion(-)
 
 diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-index afcee3f..49d5222 100644
+index 371792e..afcee3f 100644
 --- a/arch/powerpc/mm/numa.c
 +++ b/arch/powerpc/mm/numa.c
-@@ -905,13 +905,6 @@ void __init initmem_init(void)
+@@ -29,6 +29,7 @@
+ #include <linux/seq_file.h>
+ #include <linux/uaccess.h>
+ #include <linux/slab.h>
++#include <linux/sched.h>
+ #include <asm/cputhreads.h>
+ #include <asm/sparsemem.h>
+ #include <asm/prom.h>
+@@ -1153,6 +1154,8 @@ struct topology_update_data {
+ static int vphn_enabled;
+ static int prrn_enabled;
+ static void reset_topology_timer(void);
++static int topology_inited;
++static int topology_update_needed;
  
- 	memblock_dump_all();
+ /*
+  * Store the current values of the associativity change counters in the
+@@ -1321,8 +1324,11 @@ int arch_update_cpu_topology(void)
+ 	struct device *dev;
+ 	int weight, new_nid, i = 0;
  
--	/*
--	 * Reduce the possible NUMA nodes to the online NUMA nodes,
--	 * since we do not support node hotplug. This ensures that  we
--	 * lower the maximum NUMA node ID to what is actually present.
--	 */
--	nodes_and(node_possible_map, node_possible_map, node_online_map);
--
- 	for_each_online_node(nid) {
- 		unsigned long start_pfn, end_pfn;
+-	if (!prrn_enabled && !vphn_enabled)
++	if (!prrn_enabled && !vphn_enabled) {
++		if (!topology_inited)
++			topology_update_needed = 1;
+ 		return 0;
++	}
  
+ 	weight = cpumask_weight(&cpu_associativity_changes_mask);
+ 	if (!weight)
+@@ -1361,6 +1367,8 @@ int arch_update_cpu_topology(void)
+ 			cpumask_andnot(&cpu_associativity_changes_mask,
+ 					&cpu_associativity_changes_mask,
+ 					cpu_sibling_mask(cpu));
++			pr_info("Assoc chg gives same node %d for cpu%d\n",
++					new_nid, cpu);
+ 			cpu = cpu_last_thread_sibling(cpu);
+ 			continue;
+ 		}
+@@ -1377,6 +1385,9 @@ int arch_update_cpu_topology(void)
+ 		cpu = cpu_last_thread_sibling(cpu);
+ 	}
+ 
++	if (i)
++		updates[i-1].next = NULL;
++
+ 	pr_debug("Topology update for the following CPUs:\n");
+ 	if (cpumask_weight(&updated_cpus)) {
+ 		for (ud = &updates[0]; ud; ud = ud->next) {
+@@ -1423,6 +1434,7 @@ int arch_update_cpu_topology(void)
+ 
+ out:
+ 	kfree(updates);
++	topology_update_needed = 0;
+ 	return changed;
+ }
+ 
+@@ -1600,6 +1612,11 @@ static int topology_update_init(void)
+ 	if (!proc_create("powerpc/topology_updates", 0644, NULL, &topology_ops))
+ 		return -ENOMEM;
+ 
++	topology_inited = 1;
++	if (topology_update_needed)
++		bitmap_fill(cpumask_bits(&cpu_associativity_changes_mask),
++					nr_cpumask_bits);
++
+ 	return 0;
+ }
+ device_initcall(topology_update_init);
+diff --git a/arch/powerpc/platforms/pseries/dlpar.c b/arch/powerpc/platforms/pseries/dlpar.c
+index bda18d8..5106263 100644
+--- a/arch/powerpc/platforms/pseries/dlpar.c
++++ b/arch/powerpc/platforms/pseries/dlpar.c
+@@ -592,6 +592,8 @@ static ssize_t dlpar_show(struct class *class, struct class_attribute *attr,
+ 
+ static int __init pseries_dlpar_init(void)
+ {
++	arch_update_cpu_topology();
++
+ 	pseries_hp_wq = alloc_workqueue("pseries hotplug workqueue",
+ 					WQ_UNBOUND, 1);
+ 	return sysfs_create_file(kernel_kobj, &class_attr_dlpar.attr);
