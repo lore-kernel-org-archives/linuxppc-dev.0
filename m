@@ -1,38 +1,20 @@
-Return-Path: <maddy@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <sfr@canb.auug.org.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wYzLx26KqzDqSp
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 May 2017 18:09:45 +1000 (AEST)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v4Q88b6l078635
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 May 2017 04:09:35 -0400
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2apa6sdg55-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 May 2017 04:09:35 -0400
-Received: from localhost
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
- Fri, 26 May 2017 18:09:32 +1000
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v4Q89JPt3145992
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 May 2017 18:09:27 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v4Q88lZl003644
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 May 2017 18:08:47 +1000
-From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-To: mpe@ellerman.id.au
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Subject: [PATCH] powerpc/perf: Fix Power9 test_adder field
-Date: Fri, 26 May 2017 13:38:27 +0530
-Message-Id: <1495786107-341-1-git-send-email-maddy@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wYzsB3DhMzDqT2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 May 2017 18:32:30 +1000 (AEST)
+Date: Fri, 26 May 2017 18:32:29 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: ppc-dev <linuxppc-dev@lists.ozlabs.org>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>
+Subject: [PATCH] powerpc: use uapi/asm-generic/sockios.h
+Message-ID: <20170526183229.193ef0eb@canb.auug.org.au>
+In-Reply-To: <20170526161946.7bf423c4@canb.auug.org.au>
+References: <20170526161946.7bf423c4@canb.auug.org.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,39 +24,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Commit 8d911904f3ce4 ('powerpc/perf: Add restrictions to PMC5 in power9 DD1')
-was added to restrict the use of PMC5 in Power9 DD1. Intend is to diable
-the use of PMC5 using raw event code. Commit instead of updating "power9_isa207_pmu"
-structure, updated "power9_pmu" structure. Patch to fix the same.
+Hi all,
 
-Fixes: 8d911904f3ce4 ('powerpc/perf: Add restrictions to PMC5 in power9 DD1')
-Reported-by: Shriya <shriyak@linux.vnet.ibm.com>
-Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+The arch version is identical except for comments and white space.
+
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
- arch/powerpc/perf/power9-pmu.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ arch/powerpc/include/uapi/asm/Kbuild    |  1 +
+ arch/powerpc/include/uapi/asm/sockios.h | 20 --------------------
+ 2 files changed, 1 insertion(+), 20 deletions(-)
+ delete mode 100644 arch/powerpc/include/uapi/asm/sockios.h
 
-diff --git a/arch/powerpc/perf/power9-pmu.c b/arch/powerpc/perf/power9-pmu.c
-index 018f8e90ac35..bb28e1a41257 100644
---- a/arch/powerpc/perf/power9-pmu.c
-+++ b/arch/powerpc/perf/power9-pmu.c
-@@ -402,7 +402,7 @@ static struct power_pmu power9_isa207_pmu = {
- 	.name			= "POWER9",
- 	.n_counter		= MAX_PMU_COUNTERS,
- 	.add_fields		= ISA207_ADD_FIELDS,
--	.test_adder		= ISA207_TEST_ADDER,
-+	.test_adder		= P9_DD1_TEST_ADDER,
- 	.compute_mmcr		= isa207_compute_mmcr,
- 	.config_bhrb		= power9_config_bhrb,
- 	.bhrb_filter_map	= power9_bhrb_filter_map,
-@@ -421,7 +421,7 @@ static struct power_pmu power9_pmu = {
- 	.name			= "POWER9",
- 	.n_counter		= MAX_PMU_COUNTERS,
- 	.add_fields		= ISA207_ADD_FIELDS,
--	.test_adder		= P9_DD1_TEST_ADDER,
-+	.test_adder		= ISA207_TEST_ADDER,
- 	.compute_mmcr		= isa207_compute_mmcr,
- 	.config_bhrb		= power9_config_bhrb,
- 	.bhrb_filter_map	= power9_bhrb_filter_map,
+This follows on from my previous "powerpc: use the asm-genric versions
+of some uapi includes".
+
+diff --git a/arch/powerpc/include/uapi/asm/Kbuild b/arch/powerpc/include/uapi/asm/Kbuild
+index 9aba4af4122e..0d960ef78a9a 100644
+--- a/arch/powerpc/include/uapi/asm/Kbuild
++++ b/arch/powerpc/include/uapi/asm/Kbuild
+@@ -4,4 +4,5 @@ include include/uapi/asm-generic/Kbuild.asm
+ generic-y += param.h
+ generic-y += poll.h
+ generic-y += resource.h
++generic-y += sockios.h
+ generic-y += statfs.h
+diff --git a/arch/powerpc/include/uapi/asm/sockios.h b/arch/powerpc/include/uapi/asm/sockios.h
+deleted file mode 100644
+index 55cef7675a31..000000000000
+--- a/arch/powerpc/include/uapi/asm/sockios.h
++++ /dev/null
+@@ -1,20 +0,0 @@
+-#ifndef _ASM_POWERPC_SOCKIOS_H
+-#define _ASM_POWERPC_SOCKIOS_H
+-
+-/*
+- * This program is free software; you can redistribute it and/or
+- * modify it under the terms of the GNU General Public License
+- * as published by the Free Software Foundation; either version
+- * 2 of the License, or (at your option) any later version.
+- */
+-
+-/* Socket-level I/O control calls. */
+-#define FIOSETOWN 	0x8901
+-#define SIOCSPGRP	0x8902
+-#define FIOGETOWN	0x8903
+-#define SIOCGPGRP	0x8904
+-#define SIOCATMARK	0x8905
+-#define SIOCGSTAMP	0x8906		/* Get stamp (timeval) */
+-#define SIOCGSTAMPNS	0x8907		/* Get stamp (timespec) */
+-
+-#endif	/* _ASM_POWERPC_SOCKIOS_H */
 -- 
-2.7.4
+2.11.0
+
+-- 
+Cheers,
+Stephen Rothwell
