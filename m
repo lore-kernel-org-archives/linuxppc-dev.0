@@ -1,20 +1,25 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wYt4n3M2YzDqNL
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 May 2017 14:12:09 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wYw082sdHzDqQT
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 May 2017 15:38:16 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Matt Brown <matthew.brown.dev@gmail.com>, pc@us.ibm.com
-Cc: linuxppc-dev@lists.ozlabs.org, Anton Blanchard <anton@samba.org>
-Subject: Re: [PATCH] powerpc/lib: Split xor_vmx file to guarantee instruction
- ordering
-In-Reply-To: <CAPoR37YQ-9Q=HacFVrWDg_aS=rPhWhB_SuuevdZDCA2Vu=AVyg@mail.gmail.com>
-References: <20170523234559.28080-1-matthew.brown.dev@gmail.com>
- <0a79517a-c9eb-6eca-4048-de20d4543114@us.ibm.com>
- <CAPoR37YQ-9Q=HacFVrWDg_aS=rPhWhB_SuuevdZDCA2Vu=AVyg@mail.gmail.com>
-Date: Fri, 26 May 2017 14:12:09 +1000
-Message-ID: <87wp948deu.fsf@concordia.ellerman.id.au>
+To: Michael Bringmann <mwb@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Reza Arbab <arbab@linux.vnet.ibm.com>,
+ Thomas Gleixner <tglx@linutronix.de>, Bharata B Rao <bharata@linux.vnet.ib>,
+ Balbir Singh <bsingharora@gmail.com>,
+ Michael Bringmann <mwb@linux.vnet.ibm.com>,
+ Shailendra Singh <shailendras@nvidia.com>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Subject: Re: [PATCH V2 2/2]: powerpc/hotplug/mm: Fix hot-add memory node assoc
+In-Reply-To: <9b006866-5a8e-dc05-d603-bfe8eb02eef2@linux.vnet.ibm.com>
+References: <9b006866-5a8e-dc05-d603-bfe8eb02eef2@linux.vnet.ibm.com>
+Date: Fri, 26 May 2017 15:38:15 +1000
+Message-ID: <87tw4889fc.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,45 +31,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Matt Brown <matthew.brown.dev@gmail.com> writes:
+Michael Bringmann <mwb@linux.vnet.ibm.com> writes:
 
-> On Wed, May 24, 2017 at 11:36 PM, Paul Clarke <pc@us.ibm.com> wrote:
->> On 05/23/2017 06:45 PM, Matt Brown wrote:
->>> The xor_vmx.c file is used for the RAID5 xor operations. In these functions
->>> altivec is enabled to run the operation and then disabled. However due to
->>> compiler instruction reordering, altivec instructions are being run before
->>> enable_altivec() and after disable_altivec().
->>
->> If altivec instructions can be reordered after disable_altivec(), then disable_altivec() is broken, I'd think.
->>
->> Could it be because the isync in mtmsr_isync() is after the mtmsr?
->>
->> disable_kernel_altivec
->> - msr_check_and_clear
->>   - __msr_check_and_clear
->>     - mtmsr_isync
->
-> So it turns out the enable / disable functions don't actually enable
-> or disable the use of vector instructions.
-> If we have marked the file to be compiled with altivec the compiler
-> has free reign to reorder the vector instructions wherever it likes.
-> Including reordering it before or after the enable/disable_altivec
-> commands.
+> Removing or adding memory via the PowerPC hotplug interface shows
+> anomalies in the association between memory and nodes.
 
-That's true. Though it's not that the compiler is reordering vector
-instructions, it's that it's generating them directly to save/restore
-vector arguments.
+What anomalies? Please describe the actual problem you're seeing, with
+details, and why you think this is the correct fix.
 
-In enable_kernel_altivec() we have a mtmsr() which is implemented with
-inline asm, with a "memory" clobber, so that is effectively a full
-compiler barrier. ie. the compiler will not reorder code across that.
-
-> The enable_kernel_altivec and disable_kernel_altivec functions are
-> mainly there to empty and restore the vector registers which could
-> have been used in user-space. So those functions work as intended,
-> although not particularly intuitive.
-
-Yeah, perhaps "allow" would be better. In fact the whole API is a bit
-crap and we need to rework it.
+This is a revert of 3af229f2071f ("powerpc/numa: Reset node_possible_map
+to only node_online_map"), so please explain why all the things
+mentioned in the change log for that commit are either wrong or no
+longer true.
 
 cheers
