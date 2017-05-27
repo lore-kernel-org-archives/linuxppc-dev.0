@@ -1,21 +1,21 @@
-Return-Path: <bhumirks@gmail.com>
-Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
- [IPv6:2607:f8b0:400e:c05::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <msuchanek@suse.de>
+Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wZzy12rWHzDqND
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 28 May 2017 09:40:08 +1000 (AEST)
-Received: by mail-pg0-x244.google.com with SMTP id u187so2570016pgb.1
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 May 2017 16:40:08 -0700 (PDT)
-From: Bhumika Goyal <bhumirks@gmail.com>
-To: julia.lawall@lip6.fr, johannes@sipsolutions.net, perex@perex.cz,
- tiwai@suse.com, clemens@ladisch.de, lgirdwood@gmail.com,
- broonie@kernel.org, linuxppc-dev@lists.ozlabs.org,
- alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org
-Cc: Bhumika Goyal <bhumirks@gmail.com>
-Subject: [PATCH] ALSA: declare snd_kcontrol_new structures as const
-Date: Sat, 27 May 2017 20:16:15 +0530
-Message-Id: <1495896375-30855-1-git-send-email-bhumirks@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wb02F6jwszDq5W
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 28 May 2017 09:43:49 +1000 (AEST)
+From: Michal Suchanek <msuchanek@suse.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
+ Hari Bathini <hbathini@linux.vnet.ibm.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Michal Suchanek <msuchanek@suse.de>,
+ Colin Ian King <colin.king@canonical.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Subject: [PATCH v2] powerpc/fadump: return error when fadump registration fails
+Date: Sat, 27 May 2017 17:46:15 +0200
+Message-Id: <20170527154615.29684-1-msuchanek@suse.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,573 +25,123 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Declare snd_kcontrol_new structures as const as they are only passed an
-argument to the function snd_ctl_new1. This argument is of type const,
-so snd_kcontrol_new structures having this property can be made const.
-Done using Coccinelle:
+ - log an error message when registration fails and no error code listed
+ in the switch is returned
+ - translate the hv error code to posix error code and return it from
+ fw_register
+ - return the posix error code from fw_register to the process writing
+ to sysfs
+ - return EEXIST on re-registration
+ - return success on deregistration when fadump is not registered
+ - return ENODEV when no memory is reserved for fadump
 
-@r disable optional_qualifier@
-identifier x;
-position p;
-@@
-static struct snd_kcontrol_new x@p={...};
-
-@ok@
-identifier r.x;
-position p;
-@@
-snd_ctl_new1(&x@p,...)
-
-@bad@
-position p != {r.p,ok.p};
-identifier r.x;
-@@
-x@p
-
-@depends on !bad disable optional_qualifier@
-identifier r.x;
-@@
-+const
-struct snd_kcontrol_new x;
-
-Cross compiled these files:
-sound/aoa/codecs/tas.c - powerpc
-sound/mips/{hal2.c/sgio2audio.c} - mips
-sound/ppc/{awacs.c/beep.c/tumbler.c} - powerpc
-sound/soc/sh/siu_dai.c - sh
-Could not find an architecture to compile sound/sh/aica.c.
-
-Signed-off-by: Bhumika Goyal <bhumirks@gmail.com>
+Signed-off-by: Michal Suchanek <msuchanek@suse.de>
 ---
- sound/aoa/codecs/tas.c              | 14 +++++++-------
- sound/aoa/fabrics/layout.c          |  8 ++++----
- sound/core/ctljack.c                |  2 +-
- sound/drivers/vx/vx_mixer.c         | 24 ++++++++++++------------
- sound/firewire/bebob/bebob_maudio.c |  8 ++++----
- sound/mips/hal2.c                   |  4 ++--
- sound/mips/sgio2audio.c             | 14 +++++++-------
- sound/pcmcia/vx/vxp_mixer.c         |  4 ++--
- sound/ppc/awacs.c                   |  4 ++--
- sound/ppc/beep.c                    |  2 +-
- sound/ppc/tumbler.c                 |  8 ++++----
- sound/sh/aica.c                     |  4 ++--
- sound/soc/sh/siu_dai.c              |  4 ++--
- sound/usb/mixer_quirks.c            |  2 +-
- 14 files changed, 51 insertions(+), 51 deletions(-)
+v2: fix return in register_fadump()
+---
+ arch/powerpc/kernel/fadump.c | 24 ++++++++++++++++--------
+ 1 file changed, 16 insertions(+), 8 deletions(-)
 
-diff --git a/sound/aoa/codecs/tas.c b/sound/aoa/codecs/tas.c
-index 78ed1ff..733b636 100644
---- a/sound/aoa/codecs/tas.c
-+++ b/sound/aoa/codecs/tas.c
-@@ -271,7 +271,7 @@ static int tas_snd_vol_put(struct snd_kcontrol *kcontrol,
- 	return 1;
+diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
+index 2fa582092d42..83421e0a774b 100644
+--- a/arch/powerpc/kernel/fadump.c
++++ b/arch/powerpc/kernel/fadump.c
+@@ -398,9 +398,9 @@ static int __init early_fadump_param(char *p)
+ }
+ early_param("fadump", early_fadump_param);
+ 
+-static void register_fw_dump(struct fadump_mem_struct *fdm)
++static int register_fw_dump(struct fadump_mem_struct *fdm)
+ {
+-	int rc;
++	int rc, err;
+ 	unsigned int wait_time;
+ 
+ 	pr_debug("Registering for firmware-assisted kernel dump...\n");
+@@ -417,7 +417,12 @@ static void register_fw_dump(struct fadump_mem_struct *fdm)
+ 
+ 	} while (wait_time);
+ 
++	err = -EIO;
+ 	switch (rc) {
++	default:
++		printk(KERN_ERR "Failed to register firmware-assisted kernel"
++			" dump. Unknown Error(%d).\n", rc);
++		break;
+ 	case -1:
+ 		printk(KERN_ERR "Failed to register firmware-assisted kernel"
+ 			" dump. Hardware Error(%d).\n", rc);
+@@ -425,18 +430,22 @@ static void register_fw_dump(struct fadump_mem_struct *fdm)
+ 	case -3:
+ 		printk(KERN_ERR "Failed to register firmware-assisted kernel"
+ 			" dump. Parameter Error(%d).\n", rc);
++		err = -EINVAL;
+ 		break;
+ 	case -9:
+ 		printk(KERN_ERR "firmware-assisted kernel dump is already "
+ 			" registered.");
+ 		fw_dump.dump_registered = 1;
++		err = -EEXIST;
+ 		break;
+ 	case 0:
+ 		printk(KERN_INFO "firmware-assisted kernel dump registration"
+ 			" is successful\n");
+ 		fw_dump.dump_registered = 1;
++		err = 0;
+ 		break;
+ 	}
++	return err;
  }
  
--static struct snd_kcontrol_new volume_control = {
-+static const struct snd_kcontrol_new volume_control = {
- 	.iface = SNDRV_CTL_ELEM_IFACE_MIXER,
- 	.name = "Master Playback Volume",
- 	.access = SNDRV_CTL_ELEM_ACCESS_READWRITE,
-@@ -314,7 +314,7 @@ static int tas_snd_mute_put(struct snd_kcontrol *kcontrol,
- 	return 1;
+ void crash_fadump(struct pt_regs *regs, const char *str)
+@@ -977,7 +986,7 @@ static unsigned long init_fadump_header(unsigned long addr)
+ 	return addr;
  }
  
--static struct snd_kcontrol_new mute_control = {
-+static const struct snd_kcontrol_new mute_control = {
- 	.iface = SNDRV_CTL_ELEM_IFACE_MIXER,
- 	.name = "Master Playback Switch",
- 	.access = SNDRV_CTL_ELEM_ACCESS_READWRITE,
-@@ -426,7 +426,7 @@ static int tas_snd_drc_range_put(struct snd_kcontrol *kcontrol,
- 	return 1;
+-static void register_fadump(void)
++static int register_fadump(void)
+ {
+ 	unsigned long addr;
+ 	void *vaddr;
+@@ -987,7 +996,7 @@ static void register_fadump(void)
+ 	 * assisted dump.
+ 	 */
+ 	if (!fw_dump.reserve_dump_area_size)
+-		return;
++		return -ENODEV;
+ 
+ 	fadump_setup_crash_memory_ranges();
+ 
+@@ -1000,7 +1009,7 @@ static void register_fadump(void)
+ 	fadump_create_elfcore_headers(vaddr);
+ 
+ 	/* register the future kernel dump with firmware. */
+-	register_fw_dump(&fdm);
++	return register_fw_dump(&fdm);
  }
  
--static struct snd_kcontrol_new drc_range_control = {
-+static const struct snd_kcontrol_new drc_range_control = {
- 	.iface = SNDRV_CTL_ELEM_IFACE_MIXER,
- 	.name = "DRC Range",
- 	.access = SNDRV_CTL_ELEM_ACCESS_READWRITE,
-@@ -466,7 +466,7 @@ static int tas_snd_drc_switch_put(struct snd_kcontrol *kcontrol,
- 	return 1;
- }
- 
--static struct snd_kcontrol_new drc_switch_control = {
-+static const struct snd_kcontrol_new drc_switch_control = {
- 	.iface = SNDRV_CTL_ELEM_IFACE_MIXER,
- 	.name = "DRC Range Switch",
- 	.access = SNDRV_CTL_ELEM_ACCESS_READWRITE,
-@@ -524,7 +524,7 @@ static int tas_snd_capture_source_put(struct snd_kcontrol *kcontrol,
- 	return 1;
- }
- 
--static struct snd_kcontrol_new capture_source_control = {
-+static const struct snd_kcontrol_new capture_source_control = {
- 	.iface = SNDRV_CTL_ELEM_IFACE_MIXER,
- 	/* If we name this 'Input Source', it properly shows up in
- 	 * alsamixer as a selection, * but it's shown under the
-@@ -586,7 +586,7 @@ static int tas_snd_treble_put(struct snd_kcontrol *kcontrol,
- 	return 1;
- }
- 
--static struct snd_kcontrol_new treble_control = {
-+static const struct snd_kcontrol_new treble_control = {
- 	.iface = SNDRV_CTL_ELEM_IFACE_MIXER,
- 	.name = "Treble",
- 	.access = SNDRV_CTL_ELEM_ACCESS_READWRITE,
-@@ -637,7 +637,7 @@ static int tas_snd_bass_put(struct snd_kcontrol *kcontrol,
- 	return 1;
- }
- 
--static struct snd_kcontrol_new bass_control = {
-+static const struct snd_kcontrol_new bass_control = {
- 	.iface = SNDRV_CTL_ELEM_IFACE_MIXER,
- 	.name = "Bass",
- 	.access = SNDRV_CTL_ELEM_ACCESS_READWRITE,
-diff --git a/sound/aoa/fabrics/layout.c b/sound/aoa/fabrics/layout.c
-index a0c4a5d..1eddf8f 100644
---- a/sound/aoa/fabrics/layout.c
-+++ b/sound/aoa/fabrics/layout.c
-@@ -707,7 +707,7 @@ static int detect_choice_put(struct snd_kcontrol *kcontrol,
- 	return 1;
- }
- 
--static struct snd_kcontrol_new headphone_detect_choice = {
-+static const struct snd_kcontrol_new headphone_detect_choice = {
- 	.iface = SNDRV_CTL_ELEM_IFACE_MIXER,
- 	.name = "Headphone Detect Autoswitch",
- 	.info = control_info,
-@@ -717,7 +717,7 @@ static struct snd_kcontrol_new headphone_detect_choice = {
- 	.private_value = 0,
- };
- 
--static struct snd_kcontrol_new lineout_detect_choice = {
-+static const struct snd_kcontrol_new lineout_detect_choice = {
- 	.iface = SNDRV_CTL_ELEM_IFACE_MIXER,
- 	.name = "Line-Out Detect Autoswitch",
- 	.info = control_info,
-@@ -749,7 +749,7 @@ static int detected_get(struct snd_kcontrol *kcontrol,
- 	return 0;
- }
- 
--static struct snd_kcontrol_new headphone_detected = {
-+static const struct snd_kcontrol_new headphone_detected = {
- 	.iface = SNDRV_CTL_ELEM_IFACE_MIXER,
- 	.name = "Headphone Detected",
- 	.info = control_info,
-@@ -758,7 +758,7 @@ static struct snd_kcontrol_new headphone_detected = {
- 	.private_value = 0,
- };
- 
--static struct snd_kcontrol_new lineout_detected = {
-+static const struct snd_kcontrol_new lineout_detected = {
- 	.iface = SNDRV_CTL_ELEM_IFACE_MIXER,
- 	.name = "Line-Out Detected",
- 	.info = control_info,
-diff --git a/sound/core/ctljack.c b/sound/core/ctljack.c
-index 84a3cd6..0249d5e 100644
---- a/sound/core/ctljack.c
-+++ b/sound/core/ctljack.c
-@@ -23,7 +23,7 @@ static int jack_detect_kctl_get(struct snd_kcontrol *kcontrol,
- 	return 0;
- }
- 
--static struct snd_kcontrol_new jack_detect_kctl = {
-+static const struct snd_kcontrol_new jack_detect_kctl = {
- 	/* name is filled later */
- 	.iface = SNDRV_CTL_ELEM_IFACE_CARD,
- 	.access = SNDRV_CTL_ELEM_ACCESS_READ,
-diff --git a/sound/drivers/vx/vx_mixer.c b/sound/drivers/vx/vx_mixer.c
-index be9477e..98a41ac 100644
---- a/sound/drivers/vx/vx_mixer.c
-+++ b/sound/drivers/vx/vx_mixer.c
-@@ -455,7 +455,7 @@ static int vx_output_level_put(struct snd_kcontrol *kcontrol, struct snd_ctl_ele
- 	return 0;
- }
- 
--static struct snd_kcontrol_new vx_control_output_level = {
-+static const struct snd_kcontrol_new vx_control_output_level = {
- 	.iface =	SNDRV_CTL_ELEM_IFACE_MIXER,
- 	.access =	(SNDRV_CTL_ELEM_ACCESS_READWRITE |
- 			 SNDRV_CTL_ELEM_ACCESS_TLV_READ),
-@@ -514,7 +514,7 @@ static int vx_audio_src_put(struct snd_kcontrol *kcontrol, struct snd_ctl_elem_v
- 	return 0;
- }
- 
--static struct snd_kcontrol_new vx_control_audio_src = {
-+static const struct snd_kcontrol_new vx_control_audio_src = {
- 	.iface =	SNDRV_CTL_ELEM_IFACE_MIXER,
- 	.name =		"Capture Source",
- 	.info =		vx_audio_src_info,
-@@ -558,7 +558,7 @@ static int vx_clock_mode_put(struct snd_kcontrol *kcontrol, struct snd_ctl_elem_
- 	return 0;
- }
- 
--static struct snd_kcontrol_new vx_control_clock_mode = {
-+static const struct snd_kcontrol_new vx_control_clock_mode = {
- 	.iface =	SNDRV_CTL_ELEM_IFACE_MIXER,
- 	.name =		"Clock Mode",
- 	.info =		vx_clock_mode_info,
-@@ -717,7 +717,7 @@ static int vx_monitor_sw_put(struct snd_kcontrol *kcontrol, struct snd_ctl_elem_
- 
- static const DECLARE_TLV_DB_SCALE(db_scale_audio_gain, -10975, 25, 0);
- 
--static struct snd_kcontrol_new vx_control_audio_gain = {
-+static const struct snd_kcontrol_new vx_control_audio_gain = {
- 	.iface =	SNDRV_CTL_ELEM_IFACE_MIXER,
- 	.access =	(SNDRV_CTL_ELEM_ACCESS_READWRITE |
- 			 SNDRV_CTL_ELEM_ACCESS_TLV_READ),
-@@ -727,14 +727,14 @@ static struct snd_kcontrol_new vx_control_audio_gain = {
- 	.put =          vx_audio_gain_put,
- 	.tlv = { .p = db_scale_audio_gain },
- };
--static struct snd_kcontrol_new vx_control_output_switch = {
-+static const struct snd_kcontrol_new vx_control_output_switch = {
- 	.iface =	SNDRV_CTL_ELEM_IFACE_MIXER,
- 	.name =         "PCM Playback Switch",
- 	.info =         vx_audio_sw_info,
- 	.get =          vx_audio_sw_get,
- 	.put =          vx_audio_sw_put
- };
--static struct snd_kcontrol_new vx_control_monitor_gain = {
-+static const struct snd_kcontrol_new vx_control_monitor_gain = {
- 	.iface =	SNDRV_CTL_ELEM_IFACE_MIXER,
- 	.name =         "Monitoring Volume",
- 	.access =	(SNDRV_CTL_ELEM_ACCESS_READWRITE |
-@@ -744,7 +744,7 @@ static struct snd_kcontrol_new vx_control_monitor_gain = {
- 	.put =          vx_audio_monitor_put,
- 	.tlv = { .p = db_scale_audio_gain },
- };
--static struct snd_kcontrol_new vx_control_monitor_switch = {
-+static const struct snd_kcontrol_new vx_control_monitor_switch = {
- 	.iface =	SNDRV_CTL_ELEM_IFACE_MIXER,
- 	.name =         "Monitoring Switch",
- 	.info =         vx_audio_sw_info,	/* shared */
-@@ -805,7 +805,7 @@ static int vx_iec958_put(struct snd_kcontrol *kcontrol, struct snd_ctl_elem_valu
- 	return 0;
- }
- 
--static struct snd_kcontrol_new vx_control_iec958_mask = {
-+static const struct snd_kcontrol_new vx_control_iec958_mask = {
- 	.access =	SNDRV_CTL_ELEM_ACCESS_READ,
- 	.iface =	SNDRV_CTL_ELEM_IFACE_PCM,
- 	.name =		SNDRV_CTL_NAME_IEC958("",PLAYBACK,MASK),
-@@ -813,7 +813,7 @@ static struct snd_kcontrol_new vx_control_iec958_mask = {
- 	.get =		vx_iec958_mask_get,
- };
- 
--static struct snd_kcontrol_new vx_control_iec958 = {
-+static const struct snd_kcontrol_new vx_control_iec958 = {
- 	.iface =	SNDRV_CTL_ELEM_IFACE_PCM,
- 	.name =         SNDRV_CTL_NAME_IEC958("",PLAYBACK,DEFAULT),
- 	.info =         vx_iec958_info,
-@@ -878,7 +878,7 @@ static int vx_saturation_get(struct snd_kcontrol *kcontrol, struct snd_ctl_elem_
- 	return 0;
- }
- 
--static struct snd_kcontrol_new vx_control_vu_meter = {
-+static const struct snd_kcontrol_new vx_control_vu_meter = {
- 	.iface =	SNDRV_CTL_ELEM_IFACE_MIXER,
- 	.access =	SNDRV_CTL_ELEM_ACCESS_READ | SNDRV_CTL_ELEM_ACCESS_VOLATILE,
- 	/* name will be filled later */
-@@ -886,7 +886,7 @@ static struct snd_kcontrol_new vx_control_vu_meter = {
- 	.get =		vx_vu_meter_get,
- };
- 
--static struct snd_kcontrol_new vx_control_peak_meter = {
-+static const struct snd_kcontrol_new vx_control_peak_meter = {
- 	.iface =	SNDRV_CTL_ELEM_IFACE_MIXER,
- 	.access =	SNDRV_CTL_ELEM_ACCESS_READ | SNDRV_CTL_ELEM_ACCESS_VOLATILE,
- 	/* name will be filled later */
-@@ -894,7 +894,7 @@ static struct snd_kcontrol_new vx_control_peak_meter = {
- 	.get =		vx_peak_meter_get,
- };
- 
--static struct snd_kcontrol_new vx_control_saturation = {
-+static const struct snd_kcontrol_new vx_control_saturation = {
- 	.iface =	SNDRV_CTL_ELEM_IFACE_MIXER,
- 	.name =		"Input Saturation",
- 	.access =	SNDRV_CTL_ELEM_ACCESS_READ | SNDRV_CTL_ELEM_ACCESS_VOLATILE,
-diff --git a/sound/firewire/bebob/bebob_maudio.c b/sound/firewire/bebob/bebob_maudio.c
-index 07e5abd..d10208f 100644
---- a/sound/firewire/bebob/bebob_maudio.c
-+++ b/sound/firewire/bebob/bebob_maudio.c
-@@ -396,7 +396,7 @@ static int special_clk_ctl_put(struct snd_kcontrol *kctl,
- 
- 	return err;
- }
--static struct snd_kcontrol_new special_clk_ctl = {
-+static const struct snd_kcontrol_new special_clk_ctl = {
- 	.name	= "Clock Source",
- 	.iface	= SNDRV_CTL_ELEM_IFACE_MIXER,
- 	.access	= SNDRV_CTL_ELEM_ACCESS_READWRITE,
-@@ -429,7 +429,7 @@ static int special_sync_ctl_get(struct snd_kcontrol *kctl,
- 
- 	return 0;
- }
--static struct snd_kcontrol_new special_sync_ctl = {
-+static const struct snd_kcontrol_new special_sync_ctl = {
- 	.name	= "Sync Status",
- 	.iface	= SNDRV_CTL_ELEM_IFACE_MIXER,
- 	.access	= SNDRV_CTL_ELEM_ACCESS_READ,
-@@ -521,7 +521,7 @@ static int special_dig_in_iface_ctl_set(struct snd_kcontrol *kctl,
- 	mutex_unlock(&bebob->mutex);
- 	return err;
- }
--static struct snd_kcontrol_new special_dig_in_iface_ctl = {
-+static const struct snd_kcontrol_new special_dig_in_iface_ctl = {
- 	.name	= "Digital Input Interface",
- 	.iface	= SNDRV_CTL_ELEM_IFACE_MIXER,
- 	.access	= SNDRV_CTL_ELEM_ACCESS_READWRITE,
-@@ -577,7 +577,7 @@ static int special_dig_out_iface_ctl_set(struct snd_kcontrol *kctl,
- 	mutex_unlock(&bebob->mutex);
- 	return err;
- }
--static struct snd_kcontrol_new special_dig_out_iface_ctl = {
-+static const struct snd_kcontrol_new special_dig_out_iface_ctl = {
- 	.name	= "Digital Output Interface",
- 	.iface	= SNDRV_CTL_ELEM_IFACE_MIXER,
- 	.access	= SNDRV_CTL_ELEM_ACCESS_READWRITE,
-diff --git a/sound/mips/hal2.c b/sound/mips/hal2.c
-index 00fc924..ba1ba3c 100644
---- a/sound/mips/hal2.c
-+++ b/sound/mips/hal2.c
-@@ -264,7 +264,7 @@ static int hal2_gain_put(struct snd_kcontrol *kcontrol,
- 	return old != new;
- }
- 
--static struct snd_kcontrol_new hal2_ctrl_headphone = {
-+static const struct snd_kcontrol_new hal2_ctrl_headphone = {
- 	.iface          = SNDRV_CTL_ELEM_IFACE_MIXER,
- 	.name           = "Headphone Playback Volume",
- 	.access         = SNDRV_CTL_ELEM_ACCESS_READWRITE,
-@@ -274,7 +274,7 @@ static struct snd_kcontrol_new hal2_ctrl_headphone = {
- 	.put            = hal2_gain_put,
- };
- 
--static struct snd_kcontrol_new hal2_ctrl_mic = {
-+static const struct snd_kcontrol_new hal2_ctrl_mic = {
- 	.iface          = SNDRV_CTL_ELEM_IFACE_MIXER,
- 	.name           = "Mic Capture Volume",
- 	.access         = SNDRV_CTL_ELEM_ACCESS_READWRITE,
-diff --git a/sound/mips/sgio2audio.c b/sound/mips/sgio2audio.c
-index f07aa39..0ebc1c3 100644
---- a/sound/mips/sgio2audio.c
-+++ b/sound/mips/sgio2audio.c
-@@ -230,7 +230,7 @@ static int sgio2audio_source_put(struct snd_kcontrol *kcontrol,
- }
- 
- /* dac1/pcm0 mixer control */
--static struct snd_kcontrol_new sgio2audio_ctrl_pcm0 = {
-+static const struct snd_kcontrol_new sgio2audio_ctrl_pcm0 = {
- 	.iface          = SNDRV_CTL_ELEM_IFACE_MIXER,
- 	.name           = "PCM Playback Volume",
- 	.index          = 0,
-@@ -242,7 +242,7 @@ static struct snd_kcontrol_new sgio2audio_ctrl_pcm0 = {
- };
- 
- /* dac2/pcm1 mixer control */
--static struct snd_kcontrol_new sgio2audio_ctrl_pcm1 = {
-+static const struct snd_kcontrol_new sgio2audio_ctrl_pcm1 = {
- 	.iface          = SNDRV_CTL_ELEM_IFACE_MIXER,
- 	.name           = "PCM Playback Volume",
- 	.index          = 1,
-@@ -254,7 +254,7 @@ static struct snd_kcontrol_new sgio2audio_ctrl_pcm1 = {
- };
- 
- /* record level mixer control */
--static struct snd_kcontrol_new sgio2audio_ctrl_reclevel = {
-+static const struct snd_kcontrol_new sgio2audio_ctrl_reclevel = {
- 	.iface          = SNDRV_CTL_ELEM_IFACE_MIXER,
- 	.name           = "Capture Volume",
- 	.access         = SNDRV_CTL_ELEM_ACCESS_READWRITE,
-@@ -265,7 +265,7 @@ static struct snd_kcontrol_new sgio2audio_ctrl_reclevel = {
- };
- 
- /* record level source control */
--static struct snd_kcontrol_new sgio2audio_ctrl_recsource = {
-+static const struct snd_kcontrol_new sgio2audio_ctrl_recsource = {
- 	.iface          = SNDRV_CTL_ELEM_IFACE_MIXER,
- 	.name           = "Capture Source",
- 	.access         = SNDRV_CTL_ELEM_ACCESS_READWRITE,
-@@ -275,7 +275,7 @@ static struct snd_kcontrol_new sgio2audio_ctrl_recsource = {
- };
- 
- /* line mixer control */
--static struct snd_kcontrol_new sgio2audio_ctrl_line = {
-+static const struct snd_kcontrol_new sgio2audio_ctrl_line = {
- 	.iface          = SNDRV_CTL_ELEM_IFACE_MIXER,
- 	.name           = "Line Playback Volume",
- 	.index          = 0,
-@@ -287,7 +287,7 @@ static struct snd_kcontrol_new sgio2audio_ctrl_line = {
- };
- 
- /* cd mixer control */
--static struct snd_kcontrol_new sgio2audio_ctrl_cd = {
-+static const struct snd_kcontrol_new sgio2audio_ctrl_cd = {
- 	.iface          = SNDRV_CTL_ELEM_IFACE_MIXER,
- 	.name           = "Line Playback Volume",
- 	.index          = 1,
-@@ -299,7 +299,7 @@ static struct snd_kcontrol_new sgio2audio_ctrl_cd = {
- };
- 
- /* mic mixer control */
--static struct snd_kcontrol_new sgio2audio_ctrl_mic = {
-+static const struct snd_kcontrol_new sgio2audio_ctrl_mic = {
- 	.iface          = SNDRV_CTL_ELEM_IFACE_MIXER,
- 	.name           = "Mic Playback Volume",
- 	.access         = SNDRV_CTL_ELEM_ACCESS_READWRITE,
-diff --git a/sound/pcmcia/vx/vxp_mixer.c b/sound/pcmcia/vx/vxp_mixer.c
-index a4a6642..425315c 100644
---- a/sound/pcmcia/vx/vxp_mixer.c
-+++ b/sound/pcmcia/vx/vxp_mixer.c
-@@ -69,7 +69,7 @@ static int vx_mic_level_put(struct snd_kcontrol *kcontrol, struct snd_ctl_elem_v
- 
- static const DECLARE_TLV_DB_SCALE(db_scale_mic, -21, 3, 0);
- 
--static struct snd_kcontrol_new vx_control_mic_level = {
-+static const struct snd_kcontrol_new vx_control_mic_level = {
- 	.iface =	SNDRV_CTL_ELEM_IFACE_MIXER,
- 	.access =	(SNDRV_CTL_ELEM_ACCESS_READWRITE |
- 			 SNDRV_CTL_ELEM_ACCESS_TLV_READ),
-@@ -109,7 +109,7 @@ static int vx_mic_boost_put(struct snd_kcontrol *kcontrol, struct snd_ctl_elem_v
- 	return 0;
- }
- 
--static struct snd_kcontrol_new vx_control_mic_boost = {
-+static const struct snd_kcontrol_new vx_control_mic_boost = {
- 	.iface =	SNDRV_CTL_ELEM_IFACE_MIXER,
- 	.name =		"Mic Boost",
- 	.info =		vx_mic_boost_info,
-diff --git a/sound/ppc/awacs.c b/sound/ppc/awacs.c
-index 1468e4b..d1e4ef1 100644
---- a/sound/ppc/awacs.c
-+++ b/sound/ppc/awacs.c
-@@ -514,7 +514,7 @@ static struct snd_kcontrol_new snd_pmac_awacs_amp_vol[] = {
- 	},
- };
- 
--static struct snd_kcontrol_new snd_pmac_awacs_amp_hp_sw = {
-+static const struct snd_kcontrol_new snd_pmac_awacs_amp_hp_sw = {
- 	.iface = SNDRV_CTL_ELEM_IFACE_MIXER,
- 	.name = "Headphone Playback Switch",
- 	.info = snd_pmac_boolean_stereo_info,
-@@ -523,7 +523,7 @@ static struct snd_kcontrol_new snd_pmac_awacs_amp_hp_sw = {
- 	.private_value = AMP_CH_HD,
- };
- 
--static struct snd_kcontrol_new snd_pmac_awacs_amp_spk_sw = {
-+static const struct snd_kcontrol_new snd_pmac_awacs_amp_spk_sw = {
- 	.iface = SNDRV_CTL_ELEM_IFACE_MIXER,
- 	.name = "Speaker Playback Switch",
- 	.info = snd_pmac_boolean_stereo_info,
-diff --git a/sound/ppc/beep.c b/sound/ppc/beep.c
-index d3524f9..f19eb3e 100644
---- a/sound/ppc/beep.c
-+++ b/sound/ppc/beep.c
-@@ -206,7 +206,7 @@ static int snd_pmac_put_beep(struct snd_kcontrol *kcontrol,
- 	return oval != chip->beep->volume;
- }
- 
--static struct snd_kcontrol_new snd_pmac_beep_mixer = {
-+static const struct snd_kcontrol_new snd_pmac_beep_mixer = {
- 	.iface = SNDRV_CTL_ELEM_IFACE_MIXER,
- 	.name = "Beep Playback Volume",
- 	.info = snd_pmac_info_beep,
-diff --git a/sound/ppc/tumbler.c b/sound/ppc/tumbler.c
-index 58ee808..0779a29 100644
---- a/sound/ppc/tumbler.c
-+++ b/sound/ppc/tumbler.c
-@@ -897,7 +897,7 @@ static struct snd_kcontrol_new snapper_mixers[] = {
- 	},
- };
- 
--static struct snd_kcontrol_new tumbler_hp_sw = {
-+static const struct snd_kcontrol_new tumbler_hp_sw = {
- 	.iface = SNDRV_CTL_ELEM_IFACE_MIXER,
- 	.name = "Headphone Playback Switch",
- 	.info = snd_pmac_boolean_mono_info,
-@@ -905,7 +905,7 @@ static struct snd_kcontrol_new tumbler_hp_sw = {
- 	.put = tumbler_put_mute_switch,
- 	.private_value = TUMBLER_MUTE_HP,
- };
--static struct snd_kcontrol_new tumbler_speaker_sw = {
-+static const struct snd_kcontrol_new tumbler_speaker_sw = {
- 	.iface = SNDRV_CTL_ELEM_IFACE_MIXER,
- 	.name = "Speaker Playback Switch",
- 	.info = snd_pmac_boolean_mono_info,
-@@ -913,7 +913,7 @@ static struct snd_kcontrol_new tumbler_speaker_sw = {
- 	.put = tumbler_put_mute_switch,
- 	.private_value = TUMBLER_MUTE_AMP,
- };
--static struct snd_kcontrol_new tumbler_lineout_sw = {
-+static const struct snd_kcontrol_new tumbler_lineout_sw = {
- 	.iface = SNDRV_CTL_ELEM_IFACE_MIXER,
- 	.name = "Line Out Playback Switch",
- 	.info = snd_pmac_boolean_mono_info,
-@@ -921,7 +921,7 @@ static struct snd_kcontrol_new tumbler_lineout_sw = {
- 	.put = tumbler_put_mute_switch,
- 	.private_value = TUMBLER_MUTE_LINE,
- };
--static struct snd_kcontrol_new tumbler_drc_sw = {
-+static const struct snd_kcontrol_new tumbler_drc_sw = {
- 	.iface = SNDRV_CTL_ELEM_IFACE_MIXER,
- 	.name = "DRC Switch",
- 	.info = snd_pmac_boolean_mono_info,
-diff --git a/sound/sh/aica.c b/sound/sh/aica.c
-index fbbc252..ab4802d 100644
---- a/sound/sh/aica.c
-+++ b/sound/sh/aica.c
-@@ -535,7 +535,7 @@ static int aica_pcmvolume_put(struct snd_kcontrol *kcontrol,
- 	return 1;
- }
- 
--static struct snd_kcontrol_new snd_aica_pcmswitch_control = {
-+static const struct snd_kcontrol_new snd_aica_pcmswitch_control = {
- 	.iface = SNDRV_CTL_ELEM_IFACE_MIXER,
- 	.name = "PCM Playback Switch",
- 	.index = 0,
-@@ -544,7 +544,7 @@ static struct snd_kcontrol_new snd_aica_pcmswitch_control = {
- 	.put = aica_pcmswitch_put
- };
- 
--static struct snd_kcontrol_new snd_aica_pcmvolume_control = {
-+static const struct snd_kcontrol_new snd_aica_pcmvolume_control = {
- 	.iface = SNDRV_CTL_ELEM_IFACE_MIXER,
- 	.name = "PCM Playback Volume",
- 	.index = 0,
-diff --git a/sound/soc/sh/siu_dai.c b/sound/soc/sh/siu_dai.c
-index 76b2ab8..4a22aad 100644
---- a/sound/soc/sh/siu_dai.c
-+++ b/sound/soc/sh/siu_dai.c
-@@ -441,7 +441,7 @@ static int siu_dai_put_volume(struct snd_kcontrol *kctrl,
- 	return 0;
- }
- 
--static struct snd_kcontrol_new playback_controls = {
-+static const struct snd_kcontrol_new playback_controls = {
- 	.iface		= SNDRV_CTL_ELEM_IFACE_MIXER,
- 	.name		= "PCM Playback Volume",
- 	.index		= 0,
-@@ -451,7 +451,7 @@ static struct snd_kcontrol_new playback_controls = {
- 	.private_value	= VOLUME_PLAYBACK,
- };
- 
--static struct snd_kcontrol_new capture_controls = {
-+static const struct snd_kcontrol_new capture_controls = {
- 	.iface		= SNDRV_CTL_ELEM_IFACE_MIXER,
- 	.name		= "PCM Capture Volume",
- 	.index		= 0,
-diff --git a/sound/usb/mixer_quirks.c b/sound/usb/mixer_quirks.c
-index 4fa0053..e3d1dec 100644
---- a/sound/usb/mixer_quirks.c
-+++ b/sound/usb/mixer_quirks.c
-@@ -362,7 +362,7 @@ static int snd_audigy2nx_led_resume(struct usb_mixer_elem_list *list)
- }
- 
- /* name and private_value are set dynamically */
--static struct snd_kcontrol_new snd_audigy2nx_control = {
-+static const struct snd_kcontrol_new snd_audigy2nx_control = {
- 	.iface = SNDRV_CTL_ELEM_IFACE_MIXER,
- 	.info = snd_audigy2nx_led_info,
- 	.get = snd_audigy2nx_led_get,
+ static int fadump_unregister_dump(struct fadump_mem_struct *fdm)
+@@ -1182,7 +1191,6 @@ static ssize_t fadump_register_store(struct kobject *kobj,
+ 	switch (buf[0]) {
+ 	case '0':
+ 		if (fw_dump.dump_registered == 0) {
+-			ret = -EINVAL;
+ 			goto unlock_out;
+ 		}
+ 		/* Un-register Firmware-assisted dump */
+@@ -1190,11 +1198,11 @@ static ssize_t fadump_register_store(struct kobject *kobj,
+ 		break;
+ 	case '1':
+ 		if (fw_dump.dump_registered == 1) {
+-			ret = -EINVAL;
++			ret = -EEXIST;
+ 			goto unlock_out;
+ 		}
+ 		/* Register Firmware-assisted dump */
+-		register_fadump();
++		ret = register_fadump();
+ 		break;
+ 	default:
+ 		ret = -EINVAL;
 -- 
-2.7.4
+2.10.2
