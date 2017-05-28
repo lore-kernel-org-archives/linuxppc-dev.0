@@ -1,25 +1,22 @@
-Return-Path: <dmitry.torokhov@gmail.com>
-Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
- [IPv6:2607:f8b0:400e:c00::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wbSGB3xlWzDq5W
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 May 2017 03:55:46 +1000 (AEST)
-Received: by mail-pf0-x242.google.com with SMTP id w69so9864559pfk.1
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 28 May 2017 10:55:46 -0700 (PDT)
-Date: Sun, 28 May 2017 10:55:40 -0700
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Michal Suchanek <msuchanek@suse.de>
-Cc: Benjamin Tissoires <benjamin.tissoires@redhat.com>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- linux-input@vger.kernel.org
-Subject: Re: [PATCH] macintosh: move mac_hid driver to input/mouse.
-Message-ID: <20170528175540.GA8094@dtor-ws>
-References: <20170509191418.10144-1-msuchanek@suse.de>
- <20170510004327.GA32584@dtor-ws> <20170528114758.52b619f2@neko>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wbSMS2gVTzDq5W
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 May 2017 04:00:19 +1000 (AEST)
+Subject: Re: [PATCH v1 1/8] powerpc/lib/code-patching: Enhance code patching
+To: Balbir Singh <bsingharora@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+ mpe@ellerman.id.au
+References: <20170525033650.10891-1-bsingharora@gmail.com>
+ <20170525033650.10891-2-bsingharora@gmail.com>
+Cc: naveen.n.rao@linux.vnet.ibm.com, ananth@linux.vnet.ibm.com,
+ paulus@samba.org, rashmica.g@gmail.com
+From: christophe leroy <christophe.leroy@c-s.fr>
+Message-ID: <d7801b1e-6cb9-1504-03d5-8b7a0a5d04db@c-s.fr>
+Date: Sun, 28 May 2017 20:00:13 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170528114758.52b619f2@neko>
+In-Reply-To: <20170525033650.10891-2-bsingharora@gmail.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,78 +26,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, May 28, 2017 at 11:47:58AM +0200, Michal Suchanek wrote:
-> On Tue, 9 May 2017 17:43:27 -0700
-> Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
-> 
-> > Hi Michal,
-> > 
-> > On Tue, May 09, 2017 at 09:14:18PM +0200, Michal Suchanek wrote:
-> > > There is nothing mac-specific about this driver. Non-mac hardware
-> > > with suboptimal built-in pointer devices exists.
-> > > 
-> > > This makes it possible to use this emulation not only on x86 and ppc
-> > > notebooks but also on arm and mips.  
-> > 
-> > I'd rather we did not promote from drivers/macintosh to other
-> > platforms, but rather removed it. The same functionality can be done
-> > from userspace.
-> 
-> What is the status of this?
 
-The same as in above paragraph.
 
-> 
-> Do you reply to every patch to drivers/input that is not the the core
-> infrastructure that you would rather drop the driver because it can be
-> done is in userspace?
-> 
-> It sure can be done. Remove everything but the bus drivers and uinput
-> from drivers/input and the rest can be done in userspace.
-> 
-> The question is who does it?
-> 
-> Are you saying that you will implement the userspace equivalent?
+Le 25/05/2017 à 05:36, Balbir Singh a écrit :
+> Today our patching happens via direct copy and
+> patch_instruction. The patching code is well
+> contained in the sense that copying bits are limited.
+>
+> While considering implementation of CONFIG_STRICT_RWX,
+> the first requirement is to a create another mapping
+> that will allow for patching. We create the window using
+> text_poke_area, allocated via get_vm_area(), which might
+> be an overkill. We can do per-cpu stuff as well. The
+> downside of these patches that patch_instruction is
+> now synchornized using a lock. Other arches do similar
+> things, but use fixmaps. The reason for not using
+> fixmaps is to make use of any randomization in the
+> future. The code also relies on set_pte_at and pte_clear
+> to do the appropriate tlb flushing.
+>
+> Signed-off-by: Balbir Singh <bsingharora@gmail.com>
+> ---
+>  arch/powerpc/lib/code-patching.c | 88 ++++++++++++++++++++++++++++++++++++++--
+>  1 file changed, 84 insertions(+), 4 deletions(-)
+>
 
-No, I spend my time mostly with the kernel.
+[...]
 
-> 
-> If not then please do your job as maintainer and accept trivial patches
-> for perfectly working drivers we have now.
+> +static int kernel_map_addr(void *addr)
+> +{
+> +	unsigned long pfn;
+>  	int err;
+>
+> -	__put_user_size(instr, addr, 4, err);
+> +	if (is_vmalloc_addr(addr))
+> +		pfn = vmalloc_to_pfn(addr);
+> +	else
+> +		pfn = __pa_symbol(addr) >> PAGE_SHIFT;
+> +
+> +	err = map_kernel_page((unsigned long)text_poke_area->addr,
+> +			(pfn << PAGE_SHIFT), _PAGE_KERNEL_RW | _PAGE_PRESENT);
 
-I am doing my job as a maintainer right now. The driver might have been
-beneficial 15 years ago, when we did not have better options, but I
-would rather not continue expanding it's use.
 
-The main problem with the driver is that the functionality it is not
-easily discoverable by end users. And once you plumb it through
-userspace to present users with options you might as well handle it all
-in userspace.
 
-> 
-> If you want to move drivers/input into userspace I am not against it
-> but I am not willing to do that for you either.
+Why not use PAGE_KERNEL instead of _PAGE_KERNEL_RW | _PAGE_PRESENT ?
 
-Then we are at impasse.
+ From asm/pte-common.h :
 
-> 
-> > 
-> > What hardware do you believe would benefit from this and why?
-> 
-> Any touchpad hardware where you cannot press two buttons at once to
-> emulate the third button due to hardware design. And any touchpad
-> hardware on which some of the buttons are broken when it comes to it.
-> 
-> It is built into a notebook and works fine for moving the cursor but
-> due to lack of usable buttons you still need a mouse to use the
-> notebook.
+#define PAGE_KERNEL	__pgprot(_PAGE_BASE | _PAGE_KERNEL_RW)
+#define _PAGE_BASE	(_PAGE_BASE_NC)
+#define _PAGE_BASE_NC	(_PAGE_PRESENT | _PAGE_ACCESSED | _PAGE_PSIZE)
 
-Have you tried simply redefining keymap of your keyboard to emit
-BTN_RIGHT/BTN_MIDDLE? Both atkbd and HID keyboards support keymap
-updates from userspace/udev/hwdb and if there is a driver that does not
-support it I will take patches fixing that.
+Also, in pte-common.h, maybe the following defines could/should be 
+reworked once you serie applied, shouldn't it ?
 
-Thanks.
+/* Protection used for kernel text. We want the debuggers to be able to
+  * set breakpoints anywhere, so don't write protect the kernel text
+  * on platforms where such control is possible.
+  */
+#if defined(CONFIG_KGDB) || defined(CONFIG_XMON) || 
+defined(CONFIG_BDI_SWITCH) ||\
+	defined(CONFIG_KPROBES) || defined(CONFIG_DYNAMIC_FTRACE)
+#define PAGE_KERNEL_TEXT	PAGE_KERNEL_X
+#else
+#define PAGE_KERNEL_TEXT	PAGE_KERNEL_ROX
+#endif
 
--- 
-Dmitry
+
+Christophe
+
+---
+L'absence de virus dans ce courrier électronique a été vérifiée par le logiciel antivirus Avast.
+https://www.avast.com/antivirus
