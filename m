@@ -1,24 +1,24 @@
 Return-Path: <bsingharora@gmail.com>
-Received: from mail-pf0-x231.google.com (mail-pf0-x231.google.com
- [IPv6:2607:f8b0:400e:c00::231])
+Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
+ [IPv6:2607:f8b0:400e:c00::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wbZqL3vH2zDq5j
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 May 2017 08:51:26 +1000 (AEST)
-Received: by mail-pf0-x231.google.com with SMTP id e193so39673116pfh.0
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 28 May 2017 15:51:26 -0700 (PDT)
-Message-ID: <1496011846.21894.7.camel@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wbb0Y2yS8zDq5j
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 May 2017 08:59:25 +1000 (AEST)
+Received: by mail-pf0-x242.google.com with SMTP id u26so10272991pfd.2
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 28 May 2017 15:59:24 -0700 (PDT)
+Message-ID: <1496012325.21894.9.camel@gmail.com>
 Subject: Re: [PATCH v1 1/8] powerpc/lib/code-patching: Enhance code patching
 From: Balbir Singh <bsingharora@gmail.com>
 To: christophe leroy <christophe.leroy@c-s.fr>,
  linuxppc-dev@lists.ozlabs.org,  mpe@ellerman.id.au
 Cc: naveen.n.rao@linux.vnet.ibm.com, ananth@linux.vnet.ibm.com,
  paulus@samba.org, rashmica.g@gmail.com
-Date: Mon, 29 May 2017 08:50:46 +1000
-In-Reply-To: <72ff9a8a-dad8-55f3-01b0-29b24298bed0@c-s.fr>
+Date: Mon, 29 May 2017 08:58:45 +1000
+In-Reply-To: <58bd28a3-f9bf-4c27-8f5b-32377f3d5f9f@c-s.fr>
 References: <20170525033650.10891-1-bsingharora@gmail.com>
  <20170525033650.10891-2-bsingharora@gmail.com>
- <72ff9a8a-dad8-55f3-01b0-29b24298bed0@c-s.fr>
+ <58bd28a3-f9bf-4c27-8f5b-32377f3d5f9f@c-s.fr>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -30,7 +30,7 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 2017-05-28 at 17:59 +0200, christophe leroy wrote:
+On Sun, 2017-05-28 at 16:29 +0200, christophe leroy wrote:
 > 
 > Le 25/05/2017 à 05:36, Balbir Singh a écrit :
 > > Today our patching happens via direct copy and
@@ -48,42 +48,38 @@ On Sun, 2017-05-28 at 17:59 +0200, christophe leroy wrote:
 > > fixmaps is to make use of any randomization in the
 > > future. The code also relies on set_pte_at and pte_clear
 > > to do the appropriate tlb flushing.
+> > 
+> > Signed-off-by: Balbir Singh <bsingharora@gmail.com>
 > 
-> Isn't it overkill to remap the text in another area ?
->
-> Among the 6 arches implementing CONFIG_STRICT_KERNEL_RWX (arm, arm64, 
-> parisc, s390, x86/32, x86/64):
-> - arm, x86/32 and x86/64 set text RW during the modification
-
-x86 uses set_fixmap() in text_poke(), am I missing something?
-
-> - s390 seems to uses a special instruction which bypassed write protection
-> - parisc doesn't seem to implement any function which modifies kernel text.
+> [...]
 > 
-> Therefore it seems only arm64 does it via another mapping.
-> Wouldn't it be lighter to just unprotect memory during the modification 
-> as done on arm and x86 ?
+> > +static int kernel_map_addr(void *addr)
+> > +{
+> > +	unsigned long pfn;
+> >  	int err;
+> > 
+> > -	__put_user_size(instr, addr, 4, err);
+> > +	if (is_vmalloc_addr(addr))
+> > +		pfn = vmalloc_to_pfn(addr);
+> > +	else
+> > +		pfn = __pa_symbol(addr) >> PAGE_SHIFT;
+> > +
+> > +	err = map_kernel_page((unsigned long)text_poke_area->addr,
+> > +			(pfn << PAGE_SHIFT), _PAGE_KERNEL_RW | _PAGE_PRESENT);
 > 
-
-I am not sure if the trade-off is quite that simple, for security I thought
-
-1. It would be better to randomize text_poke_area(), which is why I dynamically
-allocated it. If we start randomizing get_vm_area(), we get the benefit
-2. text_poke_aread() is RW and the normal text is RX, for any attack
-to succeed, it would need to find text_poke_area() at the time of patching,
-patch the kernel in that small window and use the normal mapping for
-execution
-
-Generally patch_instruction() is not fast path except for ftrace, tracing.
-In my tests I did not find the slow down noticable
-
-> Or another alternative could be to disable DMMU and do the write at 
-> physical address ?
->
-
-This would be worse off, I think, but we were discussing doing something
-like that xmon. But for other cases, I think  it opens up a bigger window.
-
+> map_kernel_page() doesn't exist on powerpc32, so compilation fails.
+> 
+> However a similar function exists and is called map_page()
+> 
+> Maybe the below modification could help (not tested yet)
+> 
 > Christophe
+>
 
-Balbir Singh
+Thanks, I'll try and get a compile, as an alternative how about
+
+#ifdef CONFIG_PPC32
+#define map_kernel_page map_page
+#endif
+
+Balbir Singh.
