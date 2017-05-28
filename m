@@ -1,23 +1,24 @@
-Return-Path: <hadess@hadess.net>
-Received: from slow1-d.mail.gandi.net (slow1-d.mail.gandi.net [217.70.178.86])
- by lists.ozlabs.org (Postfix) with ESMTP id 3wbLkl3RqTzDq5W
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 28 May 2017 23:46:39 +1000 (AEST)
-Received: from relay6-d.mail.gandi.net (relay6-d.mail.gandi.net
- [217.70.183.198])
- by slow1-d.mail.gandi.net (Postfix) with ESMTP id C6FA847A486
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 28 May 2017 15:26:37 +0200 (CEST)
-Message-ID: <1495977983.2423.18.camel@hadess.net>
-Subject: Re: [PATCH] macintosh: move mac_hid driver to input/mouse.
-From: Bastien Nocera <hadess@hadess.net>
-To: Michal Suchanek <msuchanek@suse.de>, Dmitry Torokhov
- <dmitry.torokhov@gmail.com>
-Cc: Benjamin Tissoires <benjamin.tissoires@redhat.com>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- linux-input@vger.kernel.org
-Date: Sun, 28 May 2017 15:26:23 +0200
-In-Reply-To: <20170528114758.52b619f2@neko>
-References: <20170509191418.10144-1-msuchanek@suse.de>
- <20170510004327.GA32584@dtor-ws> <20170528114758.52b619f2@neko>
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
+ [IPv6:2607:f8b0:400e:c05::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wbZ2G5mmZzDq5j
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 May 2017 08:15:50 +1000 (AEST)
+Received: by mail-pg0-x243.google.com with SMTP id h64so4484033pge.3
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 28 May 2017 15:15:50 -0700 (PDT)
+Message-ID: <1496009710.21894.5.camel@gmail.com>
+Subject: Re: [PATCH v1 1/8] powerpc/lib/code-patching: Enhance code patching
+From: Balbir Singh <bsingharora@gmail.com>
+To: christophe leroy <christophe.leroy@c-s.fr>,
+ linuxppc-dev@lists.ozlabs.org,  mpe@ellerman.id.au
+Cc: naveen.n.rao@linux.vnet.ibm.com, ananth@linux.vnet.ibm.com,
+ paulus@samba.org, rashmica.g@gmail.com
+Date: Mon, 29 May 2017 08:15:10 +1000
+In-Reply-To: <d7801b1e-6cb9-1504-03d5-8b7a0a5d04db@c-s.fr>
+References: <20170525033650.10891-1-bsingharora@gmail.com>
+ <20170525033650.10891-2-bsingharora@gmail.com>
+ <d7801b1e-6cb9-1504-03d5-8b7a0a5d04db@c-s.fr>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -29,45 +30,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 2017-05-28 at 11:47 +0200, Michal Suchanek wrote:
-> On Tue, 9 May 2017 17:43:27 -0700
-> Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
+On Sun, 2017-05-28 at 20:00 +0200, christophe leroy wrote:
 > 
-> > Hi Michal,
+> Le 25/05/2017 à 05:36, Balbir Singh a écrit :
+> > Today our patching happens via direct copy and
+> > patch_instruction. The patching code is well
+> > contained in the sense that copying bits are limited.
 > > 
-> > On Tue, May 09, 2017 at 09:14:18PM +0200, Michal Suchanek wrote:
-> > > There is nothing mac-specific about this driver. Non-mac hardware
-> > > with suboptimal built-in pointer devices exists.
-> > > 
-> > > This makes it possible to use this emulation not only on x86 and
-> > > ppc
-> > > notebooks but also on arm and mips.  
+> > While considering implementation of CONFIG_STRICT_RWX,
+> > the first requirement is to a create another mapping
+> > that will allow for patching. We create the window using
+> > text_poke_area, allocated via get_vm_area(), which might
+> > be an overkill. We can do per-cpu stuff as well. The
+> > downside of these patches that patch_instruction is
+> > now synchornized using a lock. Other arches do similar
+> > things, but use fixmaps. The reason for not using
+> > fixmaps is to make use of any randomization in the
+> > future. The code also relies on set_pte_at and pte_clear
+> > to do the appropriate tlb flushing.
 > > 
-> > I'd rather we did not promote from drivers/macintosh to other
-> > platforms, but rather removed it. The same functionality can be
-> > done
-> > from userspace.
+> > Signed-off-by: Balbir Singh <bsingharora@gmail.com>
+> > ---
+> >  arch/powerpc/lib/code-patching.c | 88 ++++++++++++++++++++++++++++++++++++++--
+> >  1 file changed, 84 insertions(+), 4 deletions(-)
+> > 
 > 
-> What is the status of this?
+> [...]
 > 
-> Do you reply to every patch to drivers/input that is not the the core
-> infrastructure that you would rather drop the driver because it can
-> be
-> done is in userspace?
+> > +static int kernel_map_addr(void *addr)
+> > +{
+> > +	unsigned long pfn;
+> >  	int err;
+> > 
+> > -	__put_user_size(instr, addr, 4, err);
+> > +	if (is_vmalloc_addr(addr))
+> > +		pfn = vmalloc_to_pfn(addr);
+> > +	else
+> > +		pfn = __pa_symbol(addr) >> PAGE_SHIFT;
+> > +
+> > +	err = map_kernel_page((unsigned long)text_poke_area->addr,
+> > +			(pfn << PAGE_SHIFT), _PAGE_KERNEL_RW | _PAGE_PRESENT);
 > 
-> It sure can be done. Remove everything but the bus drivers and uinput
-> from drivers/input and the rest can be done in userspace.
 > 
-> The question is who does it?
 > 
-> Are you saying that you will implement the userspace equivalent?
-> 
-> If not then please do your job as maintainer and accept trivial
-> patches
-> for perfectly working drivers we have now.
-> 
-> If you want to move drivers/input into userspace I am not against it
-> but I am not willing to do that for you either.
+> Why not use PAGE_KERNEL instead of _PAGE_KERNEL_RW | _PAGE_PRESENT ?
+>
 
-I'd advise you to take it down a notch. We don't go yelling at each
-other on this mailing-list.
+Will do
+ 
+>  From asm/pte-common.h :
+> 
+> #define PAGE_KERNEL	__pgprot(_PAGE_BASE | _PAGE_KERNEL_RW)
+> #define _PAGE_BASE	(_PAGE_BASE_NC)
+> #define _PAGE_BASE_NC	(_PAGE_PRESENT | _PAGE_ACCESSED | _PAGE_PSIZE)
+> 
+> Also, in pte-common.h, maybe the following defines could/should be 
+> reworked once you serie applied, shouldn't it ?
+> 
+> /* Protection used for kernel text. We want the debuggers to be able to
+>   * set breakpoints anywhere, so don't write protect the kernel text
+>   * on platforms where such control is possible.
+>   */
+> #if defined(CONFIG_KGDB) || defined(CONFIG_XMON) || 
+> defined(CONFIG_BDI_SWITCH) ||\
+> 	defined(CONFIG_KPROBES) || defined(CONFIG_DYNAMIC_FTRACE)
+> #define PAGE_KERNEL_TEXT	PAGE_KERNEL_X
+> #else
+> #define PAGE_KERNEL_TEXT	PAGE_KERNEL_ROX
+> #endif
+
+Yes, I did see them and I want to rework them.
+
+Thanks,
+Balbir Singh.
