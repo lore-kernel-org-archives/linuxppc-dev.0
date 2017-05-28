@@ -2,20 +2,21 @@ Return-Path: <msuchanek@suse.de>
 Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
  (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wb02F6jwszDq5W
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 28 May 2017 09:43:49 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wbFRT72wkzDqBQ
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 28 May 2017 19:48:05 +1000 (AEST)
+Date: Sun, 28 May 2017 11:47:58 +0200
 From: Michal Suchanek <msuchanek@suse.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
- Hari Bathini <hbathini@linux.vnet.ibm.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- Michal Suchanek <msuchanek@suse.de>,
- Colin Ian King <colin.king@canonical.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Subject: [PATCH v2] powerpc/fadump: return error when fadump registration fails
-Date: Sat, 27 May 2017 17:46:15 +0200
-Message-Id: <20170527154615.29684-1-msuchanek@suse.de>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Benjamin Tissoires <benjamin.tissoires@redhat.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ linux-input@vger.kernel.org
+Subject: Re: [PATCH] macintosh: move mac_hid driver to input/mouse.
+Message-ID: <20170528114758.52b619f2@neko>
+In-Reply-To: <20170510004327.GA32584@dtor-ws>
+References: <20170509191418.10144-1-msuchanek@suse.de>
+ <20170510004327.GA32584@dtor-ws>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,123 +26,165 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
- - log an error message when registration fails and no error code listed
- in the switch is returned
- - translate the hv error code to posix error code and return it from
- fw_register
- - return the posix error code from fw_register to the process writing
- to sysfs
- - return EEXIST on re-registration
- - return success on deregistration when fadump is not registered
- - return ENODEV when no memory is reserved for fadump
+On Tue, 9 May 2017 17:43:27 -0700
+Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
 
-Signed-off-by: Michal Suchanek <msuchanek@suse.de>
----
-v2: fix return in register_fadump()
----
- arch/powerpc/kernel/fadump.c | 24 ++++++++++++++++--------
- 1 file changed, 16 insertions(+), 8 deletions(-)
+> Hi Michal,
+> 
+> On Tue, May 09, 2017 at 09:14:18PM +0200, Michal Suchanek wrote:
+> > There is nothing mac-specific about this driver. Non-mac hardware
+> > with suboptimal built-in pointer devices exists.
+> > 
+> > This makes it possible to use this emulation not only on x86 and ppc
+> > notebooks but also on arm and mips.  
+> 
+> I'd rather we did not promote from drivers/macintosh to other
+> platforms, but rather removed it. The same functionality can be done
+> from userspace.
 
-diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
-index 2fa582092d42..83421e0a774b 100644
---- a/arch/powerpc/kernel/fadump.c
-+++ b/arch/powerpc/kernel/fadump.c
-@@ -398,9 +398,9 @@ static int __init early_fadump_param(char *p)
- }
- early_param("fadump", early_fadump_param);
- 
--static void register_fw_dump(struct fadump_mem_struct *fdm)
-+static int register_fw_dump(struct fadump_mem_struct *fdm)
- {
--	int rc;
-+	int rc, err;
- 	unsigned int wait_time;
- 
- 	pr_debug("Registering for firmware-assisted kernel dump...\n");
-@@ -417,7 +417,12 @@ static void register_fw_dump(struct fadump_mem_struct *fdm)
- 
- 	} while (wait_time);
- 
-+	err = -EIO;
- 	switch (rc) {
-+	default:
-+		printk(KERN_ERR "Failed to register firmware-assisted kernel"
-+			" dump. Unknown Error(%d).\n", rc);
-+		break;
- 	case -1:
- 		printk(KERN_ERR "Failed to register firmware-assisted kernel"
- 			" dump. Hardware Error(%d).\n", rc);
-@@ -425,18 +430,22 @@ static void register_fw_dump(struct fadump_mem_struct *fdm)
- 	case -3:
- 		printk(KERN_ERR "Failed to register firmware-assisted kernel"
- 			" dump. Parameter Error(%d).\n", rc);
-+		err = -EINVAL;
- 		break;
- 	case -9:
- 		printk(KERN_ERR "firmware-assisted kernel dump is already "
- 			" registered.");
- 		fw_dump.dump_registered = 1;
-+		err = -EEXIST;
- 		break;
- 	case 0:
- 		printk(KERN_INFO "firmware-assisted kernel dump registration"
- 			" is successful\n");
- 		fw_dump.dump_registered = 1;
-+		err = 0;
- 		break;
- 	}
-+	return err;
- }
- 
- void crash_fadump(struct pt_regs *regs, const char *str)
-@@ -977,7 +986,7 @@ static unsigned long init_fadump_header(unsigned long addr)
- 	return addr;
- }
- 
--static void register_fadump(void)
-+static int register_fadump(void)
- {
- 	unsigned long addr;
- 	void *vaddr;
-@@ -987,7 +996,7 @@ static void register_fadump(void)
- 	 * assisted dump.
- 	 */
- 	if (!fw_dump.reserve_dump_area_size)
--		return;
-+		return -ENODEV;
- 
- 	fadump_setup_crash_memory_ranges();
- 
-@@ -1000,7 +1009,7 @@ static void register_fadump(void)
- 	fadump_create_elfcore_headers(vaddr);
- 
- 	/* register the future kernel dump with firmware. */
--	register_fw_dump(&fdm);
-+	return register_fw_dump(&fdm);
- }
- 
- static int fadump_unregister_dump(struct fadump_mem_struct *fdm)
-@@ -1182,7 +1191,6 @@ static ssize_t fadump_register_store(struct kobject *kobj,
- 	switch (buf[0]) {
- 	case '0':
- 		if (fw_dump.dump_registered == 0) {
--			ret = -EINVAL;
- 			goto unlock_out;
- 		}
- 		/* Un-register Firmware-assisted dump */
-@@ -1190,11 +1198,11 @@ static ssize_t fadump_register_store(struct kobject *kobj,
- 		break;
- 	case '1':
- 		if (fw_dump.dump_registered == 1) {
--			ret = -EINVAL;
-+			ret = -EEXIST;
- 			goto unlock_out;
- 		}
- 		/* Register Firmware-assisted dump */
--		register_fadump();
-+		ret = register_fadump();
- 		break;
- 	default:
- 		ret = -EINVAL;
--- 
-2.10.2
+What is the status of this?
+
+Do you reply to every patch to drivers/input that is not the the core
+infrastructure that you would rather drop the driver because it can be
+done is in userspace?
+
+It sure can be done. Remove everything but the bus drivers and uinput
+from drivers/input and the rest can be done in userspace.
+
+The question is who does it?
+
+Are you saying that you will implement the userspace equivalent?
+
+If not then please do your job as maintainer and accept trivial patches
+for perfectly working drivers we have now.
+
+If you want to move drivers/input into userspace I am not against it
+but I am not willing to do that for you either.
+
+> 
+> What hardware do you believe would benefit from this and why?
+
+Any touchpad hardware where you cannot press two buttons at once to
+emulate the third button due to hardware design. And any touchpad
+hardware on which some of the buttons are broken when it comes to it.
+
+It is built into a notebook and works fine for moving the cursor but
+due to lack of usable buttons you still need a mouse to use the
+notebook.
+
+Thanks
+
+Michal
+
+> 
+> Thanks.
+> 
+> > 
+> > Signed-off-by: Michal Suchanek <msuchanek@suse.de>
+> > ---
+> >  drivers/input/mouse/Kconfig                  | 20
+> > ++++++++++++++++++++ drivers/input/mouse/Makefile
+> > |  1 + drivers/{macintosh => input/mouse}/mac_hid.c |  0
+> >  drivers/macintosh/Kconfig                    | 17 -----------------
+> >  drivers/macintosh/Makefile                   |  1 -
+> >  5 files changed, 21 insertions(+), 18 deletions(-)
+> >  rename drivers/{macintosh => input/mouse}/mac_hid.c (100%)
+> > 
+> > diff --git a/drivers/input/mouse/Kconfig
+> > b/drivers/input/mouse/Kconfig index 89ebb8f39fee..5533fd3a113f
+> > 100644 --- a/drivers/input/mouse/Kconfig
+> > +++ b/drivers/input/mouse/Kconfig
+> > @@ -12,6 +12,26 @@ menuconfig INPUT_MOUSE
+> >  
+> >  if INPUT_MOUSE
+> >  
+> > +config MAC_EMUMOUSEBTN
+> > +	tristate "Support for mouse button 2+3 emulation"
+> > +	depends on SYSCTL && INPUT
+> > +	help
+> > +	  This provides generic support for emulating the 2nd and
+> > 3rd mouse
+> > +	  button with keypresses.  If you say Y here, the
+> > emulation is still
+> > +	  disabled by default.  The emulation is controlled by
+> > these sysctl
+> > +	  entries:
+> > +	  /proc/sys/dev/mac_hid/mouse_button_emulation
+> > +	  /proc/sys/dev/mac_hid/mouse_button2_keycode
+> > +	  /proc/sys/dev/mac_hid/mouse_button3_keycode
+> > +
+> > +	  If you have an Apple machine with a 1-button mouse, say
+> > Y here. +
+> > +	  This emulation can be useful on notebooks with
+> > suboptimal touchpad
+> > +	  hardware as well.
+> > +
+> > +	  To compile this driver as a module, choose M here: the
+> > +	  module will be called mac_hid.
+> > +
+> >  config MOUSE_PS2
+> >  	tristate "PS/2 mouse"
+> >  	default y
+> > diff --git a/drivers/input/mouse/Makefile
+> > b/drivers/input/mouse/Makefile index 56bf0ad877c6..dfaad1dd8857
+> > 100644 --- a/drivers/input/mouse/Makefile
+> > +++ b/drivers/input/mouse/Makefile
+> > @@ -4,6 +4,7 @@
+> >  
+> >  # Each configuration option enables a list of files.
+> >  
+> > +obj-$(CONFIG_MAC_EMUMOUSEBTN)		+= mac_hid.o
+> >  obj-$(CONFIG_MOUSE_AMIGA)		+= amimouse.o
+> >  obj-$(CONFIG_MOUSE_APPLETOUCH)		+= appletouch.o
+> >  obj-$(CONFIG_MOUSE_ATARI)		+= atarimouse.o
+> > diff --git a/drivers/macintosh/mac_hid.c
+> > b/drivers/input/mouse/mac_hid.c similarity index 100%
+> > rename from drivers/macintosh/mac_hid.c
+> > rename to drivers/input/mouse/mac_hid.c
+> > diff --git a/drivers/macintosh/Kconfig b/drivers/macintosh/Kconfig
+> > index 97a420c11eed..011df09c5167 100644
+> > --- a/drivers/macintosh/Kconfig
+> > +++ b/drivers/macintosh/Kconfig
+> > @@ -159,23 +159,6 @@ config INPUT_ADBHID
+> >  
+> >  	  If unsure, say Y.
+> >  
+> > -config MAC_EMUMOUSEBTN
+> > -	tristate "Support for mouse button 2+3 emulation"
+> > -	depends on SYSCTL && INPUT
+> > -	help
+> > -	  This provides generic support for emulating the 2nd and
+> > 3rd mouse
+> > -	  button with keypresses.  If you say Y here, the
+> > emulation is still
+> > -	  disabled by default.  The emulation is controlled by
+> > these sysctl
+> > -	  entries:
+> > -	  /proc/sys/dev/mac_hid/mouse_button_emulation
+> > -	  /proc/sys/dev/mac_hid/mouse_button2_keycode
+> > -	  /proc/sys/dev/mac_hid/mouse_button3_keycode
+> > -
+> > -	  If you have an Apple machine with a 1-button mouse, say
+> > Y here. -
+> > -	  To compile this driver as a module, choose M here: the
+> > -	  module will be called mac_hid.
+> > -
+> >  config THERM_WINDTUNNEL
+> >  	tristate "Support for thermal management on Windtunnel G4s"
+> >  	depends on I2C && I2C_POWERMAC && PPC_PMAC && !PPC_PMAC64
+> > diff --git a/drivers/macintosh/Makefile b/drivers/macintosh/Makefile
+> > index 516eb65bcacc..ab8b1e74d160 100644
+> > --- a/drivers/macintosh/Makefile
+> > +++ b/drivers/macintosh/Makefile
+> > @@ -7,7 +7,6 @@
+> >  obj-$(CONFIG_PPC_PMAC)		+= macio_asic.o macio_sysfs.o
+> >  
+> >  obj-$(CONFIG_PMAC_MEDIABAY)	+= mediabay.o
+> > -obj-$(CONFIG_MAC_EMUMOUSEBTN)	+= mac_hid.o
+> >  obj-$(CONFIG_INPUT_ADBHID)	+= adbhid.o
+> >  obj-$(CONFIG_ANSLCD)		+= ans-lcd.o
+> >  
+> > -- 
+> > 2.10.2
+> >   
+> 
