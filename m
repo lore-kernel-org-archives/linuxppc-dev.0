@@ -2,23 +2,22 @@ Return-Path: <christophe.leroy@c-s.fr>
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wbq0w1pDCzDq9m
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 May 2017 18:00:32 +1000 (AEST)
-Subject: Re: [PATCH v1 7/8] powerpc/Kconfig: Enable STRICT_KERNEL_RWX
-To: kbuild test robot <lkp@intel.com>, Balbir Singh <bsingharora@gmail.com>,
- Laura Abbott <labbott@redhat.com>,
- Linus Torvalds <torvalds@linux-foundation.org>
-Cc: paulus@samba.org, kbuild-all@01.org, naveen.n.rao@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org, rashmica.g@gmail.com,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- linux-pm@vger.kernel.org
-References: <201705260000.CDMt1Ieh%fengguang.wu@intel.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wbr713qZmzDqBJ
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 May 2017 18:50:53 +1000 (AEST)
+Subject: Re: [PATCH v1 2/8] powerpc/kprobes: Move kprobes over to
+ patch_instruction
+To: Balbir Singh <bsingharora@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+ mpe@ellerman.id.au
+Cc: naveen.n.rao@linux.vnet.ibm.com, ananth@linux.vnet.ibm.com,
+ paulus@samba.org, rashmica.g@gmail.com
+References: <20170525033650.10891-1-bsingharora@gmail.com>
+ <20170525033650.10891-3-bsingharora@gmail.com>
 From: Christophe LEROY <christophe.leroy@c-s.fr>
-Message-ID: <6dcd8ea3-e953-3319-0e0e-8543018e882f@c-s.fr>
-Date: Mon, 29 May 2017 10:00:18 +0200
+Message-ID: <f5ce15b1-2c50-cad6-36f1-c7e7bc8c4f2d@c-s.fr>
+Date: Mon, 29 May 2017 10:50:34 +0200
 MIME-Version: 1.0
-In-Reply-To: <201705260000.CDMt1Ieh%fengguang.wu@intel.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
+In-Reply-To: <20170525033650.10891-3-bsingharora@gmail.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,77 +29,43 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 
 
-Le 25/05/2017 à 18:45, kbuild test robot a écrit :
-> Hi Balbir,
+Le 25/05/2017 Ã  05:36, Balbir Singh a Ã©crit :
+> arch_arm/disarm_probe use direct assignment for copying
+> instructions, replace them with patch_instruction
 > 
-> [auto build test ERROR on powerpc/next]
-> [also build test ERROR on v4.12-rc2 next-20170525]
-> [if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
+> Signed-off-by: Balbir Singh <bsingharora@gmail.com>
+> ---
+>   arch/powerpc/kernel/kprobes.c | 4 ++--
+>   1 file changed, 2 insertions(+), 2 deletions(-)
 > 
-> url:    https://github.com/0day-ci/linux/commits/Balbir-Singh/Enable-STRICT_KERNEL_RWX/20170525-150234
-> base:   https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git next
-> config: powerpc-allmodconfig (attached as .config)
-> compiler: powerpc64-linux-gnu-gcc (Debian 6.1.1-9) 6.1.1 20160705
-> reproduce:
->          wget https://raw.githubusercontent.com/01org/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
->          chmod +x ~/bin/make.cross
->          # save the attached .config to linux build tree
->          make.cross ARCH=powerpc
-> 
-> All errors (new ones prefixed by >>):
-> 
->>> kernel//power/snapshot.c:40:28: fatal error: asm/set_memory.h: No such file or directory
->      #include <asm/set_memory.h>
+> diff --git a/arch/powerpc/kernel/kprobes.c b/arch/powerpc/kernel/kprobes.c
+> index 160ae0f..5e1fa86 100644
+> --- a/arch/powerpc/kernel/kprobes.c
+> +++ b/arch/powerpc/kernel/kprobes.c
+> @@ -158,7 +158,7 @@ NOKPROBE_SYMBOL(arch_prepare_kprobe);
+>   
+>   void arch_arm_kprobe(struct kprobe *p)
+>   {
+> -	*p->addr = BREAKPOINT_INSTRUCTION;
+> +	patch_instruction(p->addr, BREAKPOINT_INSTRUCTION);
+>   	flush_icache_range((unsigned long) p->addr,
+>   			   (unsigned long) p->addr + sizeof(kprobe_opcode_t));
+>   }
+> @@ -166,7 +166,7 @@ NOKPROBE_SYMBOL(arch_arm_kprobe);
+>   
+>   void arch_disarm_kprobe(struct kprobe *p)
+>   {
+> -	*p->addr = p->opcode;
+> +	patch_instruction(p->addr, BREAKPOINT_INSTRUCTION);
 
-Looks like it is linked to commit 50327ddfb ("kernel/power/snapshot.c: 
-use set_memory.h header").
-https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=50327ddfb
+Shouldn't it be the following instead ?
 
-I believe that inclusion should be conditional to 
-CONFIG_ARCH_HAS_SET_MEMORY, which is not set by powerpc arch, just like 
-in include/linux/filter.c
+patch_instruction(p->addr, p->opcode);
 
 Christophe
 
 
->                                 ^
->     compilation terminated.
-> 
-> vim +40 kernel//power/snapshot.c
-> 
-> 25761b6eb Rafael J. Wysocki    2005-10-30  24  #include <linux/bootmem.h>
-> 38b8d208a Ingo Molnar          2017-02-08  25  #include <linux/nmi.h>
-> 25761b6eb Rafael J. Wysocki    2005-10-30  26  #include <linux/syscalls.h>
-> 25761b6eb Rafael J. Wysocki    2005-10-30  27  #include <linux/console.h>
-> 25761b6eb Rafael J. Wysocki    2005-10-30  28  #include <linux/highmem.h>
-> 846705deb Rafael J. Wysocki    2008-11-26  29  #include <linux/list.h>
-> 5a0e3ad6a Tejun Heo            2010-03-24  30  #include <linux/slab.h>
-> 52f5684c8 Gideon Israel Dsouza 2014-04-07  31  #include <linux/compiler.h>
-> db5976058 Tina Ruchandani      2014-10-30  32  #include <linux/ktime.h>
-> 25761b6eb Rafael J. Wysocki    2005-10-30  33
-> 7c0f6ba68 Linus Torvalds       2016-12-24  34  #include <linux/uaccess.h>
-> 25761b6eb Rafael J. Wysocki    2005-10-30  35  #include <asm/mmu_context.h>
-> 25761b6eb Rafael J. Wysocki    2005-10-30  36  #include <asm/pgtable.h>
-> 25761b6eb Rafael J. Wysocki    2005-10-30  37  #include <asm/tlbflush.h>
-> 25761b6eb Rafael J. Wysocki    2005-10-30  38  #include <asm/io.h>
-> 50327ddfb Laura Abbott         2017-05-08  39  #ifdef CONFIG_STRICT_KERNEL_RWX
-> 50327ddfb Laura Abbott         2017-05-08 @40  #include <asm/set_memory.h>
-> 50327ddfb Laura Abbott         2017-05-08  41  #endif
-> 25761b6eb Rafael J. Wysocki    2005-10-30  42
-> 25761b6eb Rafael J. Wysocki    2005-10-30  43  #include "power.h"
-> 25761b6eb Rafael J. Wysocki    2005-10-30  44
-> 0f5bf6d0a Laura Abbott         2017-02-06  45  #ifdef CONFIG_STRICT_KERNEL_RWX
-> 4c0b6c10f Rafael J. Wysocki    2016-07-10  46  static bool hibernate_restore_protection;
-> 4c0b6c10f Rafael J. Wysocki    2016-07-10  47  static bool hibernate_restore_protection_active;
-> 4c0b6c10f Rafael J. Wysocki    2016-07-10  48
-> 
-> :::::: The code at line 40 was first introduced by commit
-> :::::: 50327ddfbc926e68da1958e4fac51f1106f5e730 kernel/power/snapshot.c: use set_memory.h header
-> 
-> :::::: TO: Laura Abbott <labbott@redhat.com>
-> :::::: CC: Linus Torvalds <torvalds@linux-foundation.org>
-> 
-> ---
-> 0-DAY kernel test infrastructure                Open Source Technology Center
-> https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+>   	flush_icache_range((unsigned long) p->addr,
+>   			   (unsigned long) p->addr + sizeof(kprobe_opcode_t));
+>   }
 > 
