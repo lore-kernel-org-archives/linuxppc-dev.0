@@ -1,24 +1,19 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
+ [IPv6:2607:f8b0:400e:c05::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wbnYZ2v9hzDqBJ
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 May 2017 16:55:14 +1000 (AEST)
-Subject: Re: [PATCH v1 1/8] powerpc/lib/code-patching: Enhance code patching
-To: Balbir Singh <bsingharora@gmail.com>, linuxppc-dev@lists.ozlabs.org,
- mpe@ellerman.id.au
-Cc: naveen.n.rao@linux.vnet.ibm.com, ananth@linux.vnet.ibm.com,
- paulus@samba.org, rashmica.g@gmail.com
-References: <20170525033650.10891-1-bsingharora@gmail.com>
- <20170525033650.10891-2-bsingharora@gmail.com>
- <58bd28a3-f9bf-4c27-8f5b-32377f3d5f9f@c-s.fr>
- <1496012325.21894.9.camel@gmail.com>
-From: Christophe LEROY <christophe.leroy@c-s.fr>
-Message-ID: <1f319400-a68d-ff1c-574f-8fddf9e9e739@c-s.fr>
-Date: Mon, 29 May 2017 08:55:01 +0200
-MIME-Version: 1.0
-In-Reply-To: <1496012325.21894.9.camel@gmail.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wbpY56hpszDq9m
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 May 2017 17:39:53 +1000 (AEST)
+Received: by mail-pg0-x241.google.com with SMTP id s62so5676977pgc.0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 May 2017 00:39:53 -0700 (PDT)
+From: Nicholas Piggin <npiggin@gmail.com>
+To: 
+Cc: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+ Alan Modra <amodra@gmail.com>, Balbir Singh <bsingharora@gmail.com>
+Subject: [PATCH v2] powerpc/64: handle linker stubs in low .text code
+Date: Mon, 29 May 2017 17:39:40 +1000
+Message-Id: <20170529073940.15234-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,66 +23,134 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Very large kernels may require linker stubs for branches from HEAD
+text code. The linker may place these stubs before the HEAD text
+sections, which breaks the assumption that HEAD text is located at 0
+(or the .text section being located at 0x7000/0x8000 on Book3S
+kernels).
 
+Provide an option to create a small section just before the .text
+section with an empty 256 - 4 bytes, and adjust the start of the .text
+section to match. The linker will tend to put stubs in that section
+and not break our relative-to-absolute offset assumptions.
 
-Le 29/05/2017 à 00:58, Balbir Singh a écrit :
-> On Sun, 2017-05-28 at 16:29 +0200, christophe leroy wrote:
->>
->> Le 25/05/2017 à 05:36, Balbir Singh a écrit :
->>> Today our patching happens via direct copy and
->>> patch_instruction. The patching code is well
->>> contained in the sense that copying bits are limited.
->>>
->>> While considering implementation of CONFIG_STRICT_RWX,
->>> the first requirement is to a create another mapping
->>> that will allow for patching. We create the window using
->>> text_poke_area, allocated via get_vm_area(), which might
->>> be an overkill. We can do per-cpu stuff as well. The
->>> downside of these patches that patch_instruction is
->>> now synchornized using a lock. Other arches do similar
->>> things, but use fixmaps. The reason for not using
->>> fixmaps is to make use of any randomization in the
->>> future. The code also relies on set_pte_at and pte_clear
->>> to do the appropriate tlb flushing.
->>>
->>> Signed-off-by: Balbir Singh <bsingharora@gmail.com>
->>
->> [...]
->>
->>> +static int kernel_map_addr(void *addr)
->>> +{
->>> +	unsigned long pfn;
->>>   	int err;
->>>
->>> -	__put_user_size(instr, addr, 4, err);
->>> +	if (is_vmalloc_addr(addr))
->>> +		pfn = vmalloc_to_pfn(addr);
->>> +	else
->>> +		pfn = __pa_symbol(addr) >> PAGE_SHIFT;
->>> +
->>> +	err = map_kernel_page((unsigned long)text_poke_area->addr,
->>> +			(pfn << PAGE_SHIFT), _PAGE_KERNEL_RW | _PAGE_PRESENT);
->>
->> map_kernel_page() doesn't exist on powerpc32, so compilation fails.
->>
->> However a similar function exists and is called map_page()
->>
->> Maybe the below modification could help (not tested yet)
->>
->> Christophe
->>
-> 
-> Thanks, I'll try and get a compile, as an alternative how about
-> 
-> #ifdef CONFIG_PPC32
-> #define map_kernel_page map_page
-> #endif
-> 
+This causes a small waste of space on common kernels, but allows large
+kernels to build and boot. For now, it is an EXPERT config option,
+defaulting to =n, but a reference is provided for it in the build-time
+check for such breakage. This is good enough for allyesconfig and
+custom users / hackers.
 
-My preference goes to renaming the PPC32 function, first because the 
-PPC64 name fits better, second because too many defines kills 
-readability, third because two functions doing the same thing are worth 
-being called the same, and fourth because we surely have opportunity to 
-merge both functions on day.
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+---
+ arch/powerpc/Kconfig               | 11 +++++++++++
+ arch/powerpc/include/asm/head-64.h | 18 ++++++++++++++++++
+ arch/powerpc/kernel/vmlinux.lds.S  |  5 +++++
+ arch/powerpc/tools/head_check.sh   |  7 +++++++
+ 4 files changed, 41 insertions(+)
 
-Christophe
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index f7c8f9972f61..6eb70c96ec5e 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -454,6 +454,17 @@ config PPC_TRANSACTIONAL_MEM
+        ---help---
+          Support user-mode Transactional Memory on POWERPC.
+ 
++config LD_HEAD_STUB_CATCH
++	bool "Reserve 256 bytes to cope with linker stubs in HEAD text" if EXPERT
++	depends on PPC64
++	default n
++	help
++	  Very large kernels can cause linker branch stubs to be generated by
++	  code in head_64.S, which moves the head text sections out of their
++	  specified location. This option can work around the problem.
++
++	  If unsure, say "N".
++
+ config DISABLE_MPROFILE_KERNEL
+ 	bool "Disable use of mprofile-kernel for kernel tracing"
+ 	depends on PPC64 && CPU_LITTLE_ENDIAN
+diff --git a/arch/powerpc/include/asm/head-64.h b/arch/powerpc/include/asm/head-64.h
+index 99c9f01d02df..7ab95798f170 100644
+--- a/arch/powerpc/include/asm/head-64.h
++++ b/arch/powerpc/include/asm/head-64.h
+@@ -63,11 +63,29 @@
+ 	. = 0x0;						\
+ start_##sname:
+ 
++/*
++ * .linker_stub_catch section is used to catch linker stubs from being
++ * inserted in our .text section, above the start_text label (which breaks
++ * the ABS_ADDR calculation). See kernel/vmlinux.lds.S and tools/head_check.sh
++ * for more details. We would prefer to just keep a cacheline (0x80), but
++ * 0x100 seems to be how the linker aligns branch stub groups.
++ */
++#ifdef CONFIG_LD_HEAD_STUB_CATCH
++#define OPEN_TEXT_SECTION(start)				\
++	.section ".linker_stub_catch","ax",@progbits;		\
++linker_stub_catch:						\
++	. = 0x4;						\
++	text_start = (start) + 0x100;				\
++	.section ".text","ax",@progbits;			\
++	.balign 0x100;						\
++start_text:
++#else
+ #define OPEN_TEXT_SECTION(start)				\
+ 	text_start = (start);					\
+ 	.section ".text","ax",@progbits;			\
+ 	. = 0x0;						\
+ start_text:
++#endif
+ 
+ #define ZERO_FIXED_SECTION(sname, start, end)			\
+ 	sname##_start = (start);				\
+diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
+index 5aa434e84605..e69155f0db36 100644
+--- a/arch/powerpc/kernel/vmlinux.lds.S
++++ b/arch/powerpc/kernel/vmlinux.lds.S
+@@ -81,6 +81,11 @@ SECTIONS
+ 	 * section placement to work.
+ 	 */
+ 	.text BLOCK(0) : AT(ADDR(.text) - LOAD_OFFSET) {
++#ifdef CONFIG_LD_HEAD_STUB_CATCH
++		*(.linker_stub_catch);
++		. = . ;
++#endif
++
+ #else
+ 	.text : AT(ADDR(.text) - LOAD_OFFSET) {
+ 		ALIGN_FUNCTION();
+diff --git a/arch/powerpc/tools/head_check.sh b/arch/powerpc/tools/head_check.sh
+index bfde937564f9..ad9e57209aa4 100755
+--- a/arch/powerpc/tools/head_check.sh
++++ b/arch/powerpc/tools/head_check.sh
+@@ -21,6 +21,11 @@
+ # fixed section region (0 - 0x8000ish). Check what code is calling those stubs,
+ # and perhaps change so a direct branch can reach.
+ #
++# A ".linker_stub_catch" section is used to catch some stubs generated by
++# early .text code, which tend to get placed at the start of the section.
++# If there are too many such stubs, they can overflow this section. Expanding
++# it may help (or reducing the number of stub branches).
++#
+ # Linker stubs use the TOC pointer, so even if fixed section code could
+ # tolerate them being inserted into head code, they can't be allowed in low
+ # level entry code (boot, interrupt vectors, etc) until r2 is set up. This
+@@ -50,6 +55,7 @@ start_head_addr=$(cat .tmp_symbols.txt | grep " t start_first_256B$" | cut -d' '
+ 
+ if [ "$start_head_addr" != "$expected_start_head_addr" ]; then
+ 	echo "ERROR: head code starts at $start_head_addr, should be $expected_start_head_addr"
++	echo "ERROR: try to enable LD_HEAD_STUB_CATCH config option"
+ 	echo "ERROR: see comments in arch/powerpc/tools/head_check.sh"
+ 
+ 	exit 1
+@@ -63,6 +69,7 @@ start_text_addr=$(cat .tmp_symbols.txt | grep " t start_text$" | cut -d' ' -f1)
+ 
+ if [ "$start_text_addr" != "$expected_start_text_addr" ]; then
+ 	echo "ERROR: start_text address is $start_text_addr, should be $expected_start_text_addr"
++	echo "ERROR: try to enable LD_HEAD_STUB_CATCH config option"
+ 	echo "ERROR: see comments in arch/powerpc/tools/head_check.sh"
+ 
+ 	exit 1
+-- 
+2.11.0
