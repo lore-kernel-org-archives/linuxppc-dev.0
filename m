@@ -1,25 +1,19 @@
 Return-Path: <bsingharora@gmail.com>
-Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
- [IPv6:2607:f8b0:400e:c00::242])
+Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
+ [IPv6:2607:f8b0:400e:c00::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wc9vB027nzDqCL
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 May 2017 08:11:49 +1000 (AEST)
-Received: by mail-pf0-x242.google.com with SMTP id f27so13624774pfe.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 May 2017 15:11:49 -0700 (PDT)
-Message-ID: <1496095866.21894.11.camel@gmail.com>
-Subject: Re: [PATCH v1 2/8] powerpc/kprobes: Move kprobes over to
- patch_instruction
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wcBHm23tBzDqCL
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 May 2017 08:29:40 +1000 (AEST)
+Received: by mail-pf0-x244.google.com with SMTP id n23so13660309pfb.3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 May 2017 15:29:40 -0700 (PDT)
+Message-ID: <1496096943.21894.13.camel@gmail.com>
+Subject: Re: [PATCH] powerpc/64s: dt_cpu_ftrs boot time setup option
 From: Balbir Singh <bsingharora@gmail.com>
-To: Christophe LEROY <christophe.leroy@c-s.fr>,
- linuxppc-dev@lists.ozlabs.org,  mpe@ellerman.id.au
-Cc: naveen.n.rao@linux.vnet.ibm.com, ananth@linux.vnet.ibm.com,
- paulus@samba.org, rashmica.g@gmail.com
-Date: Tue, 30 May 2017 08:11:06 +1000
-In-Reply-To: <f5ce15b1-2c50-cad6-36f1-c7e7bc8c4f2d@c-s.fr>
-References: <20170525033650.10891-1-bsingharora@gmail.com>
- <20170525033650.10891-3-bsingharora@gmail.com>
- <f5ce15b1-2c50-cad6-36f1-c7e7bc8c4f2d@c-s.fr>
+To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Date: Tue, 30 May 2017 08:29:03 +1000
+In-Reply-To: <20170511112441.30287-1-npiggin@gmail.com>
+References: <20170511112441.30287-1-npiggin@gmail.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -31,42 +25,90 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2017-05-29 at 10:50 +0200, Christophe LEROY wrote:
+On Thu, 2017-05-11 at 21:24 +1000, Nicholas Piggin wrote:
+> Provide a dt_cpu_ftrs= cmdline option to disable the dt_cpu_ftrs CPU
+> feature discovery, and fall back to the "cputable" based version.
 > 
-> Le 25/05/2017 à 05:36, Balbir Singh a écrit :
-> > arch_arm/disarm_probe use direct assignment for copying
-> > instructions, replace them with patch_instruction
-> > 
-> > Signed-off-by: Balbir Singh <bsingharora@gmail.com>
-> > ---
-> >   arch/powerpc/kernel/kprobes.c | 4 ++--
-> >   1 file changed, 2 insertions(+), 2 deletions(-)
-> > 
-> > diff --git a/arch/powerpc/kernel/kprobes.c b/arch/powerpc/kernel/kprobes.c
-> > index 160ae0f..5e1fa86 100644
-> > --- a/arch/powerpc/kernel/kprobes.c
-> > +++ b/arch/powerpc/kernel/kprobes.c
-> > @@ -158,7 +158,7 @@ NOKPROBE_SYMBOL(arch_prepare_kprobe);
-> >   
-> >   void arch_arm_kprobe(struct kprobe *p)
-> >   {
-> > -	*p->addr = BREAKPOINT_INSTRUCTION;
-> > +	patch_instruction(p->addr, BREAKPOINT_INSTRUCTION);
-> >   	flush_icache_range((unsigned long) p->addr,
-> >   			   (unsigned long) p->addr + sizeof(kprobe_opcode_t));
-> >   }
-> > @@ -166,7 +166,7 @@ NOKPROBE_SYMBOL(arch_arm_kprobe);
-> >   
-> >   void arch_disarm_kprobe(struct kprobe *p)
-> >   {
-> > -	*p->addr = p->opcode;
-> > +	patch_instruction(p->addr, BREAKPOINT_INSTRUCTION);
+> Also allow control of advertising unknown features to userspace and
+> with this parameter, and remove the clunky CONFIG option.
 > 
-> Shouldn't it be the following instead ?
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> ---
+>  Documentation/admin-guide/kernel-parameters.txt | 10 ++++++
+>  arch/powerpc/Kconfig                            |  5 ---
+>  arch/powerpc/kernel/dt_cpu_ftrs.c               | 41 +++++++++++++++++++------
+>  3 files changed, 42 insertions(+), 14 deletions(-)
 > 
-> patch_instruction(p->addr, p->opcode);
+> diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
+> index facc20a3f962..7a7c1cc80f9f 100644
+> --- a/Documentation/admin-guide/kernel-parameters.txt
+> +++ b/Documentation/admin-guide/kernel-parameters.txt
+> @@ -867,6 +867,16 @@
+>  
+>  	dscc4.setup=	[NET]
+>  
+> +	dt_cpu_ftrs=	[PPC]
+> +			Format: {"off" | "known"}
+> +			Control how the dt_cpu_ftrs device-tree binding is
+> +			used for CPU feature discovery and setup (if it
+> +			exists).
+> +			off: Do not use it, fall back to legacy cpu table.
+> +			known: Do not pass through unknown features to guests
+> +			or userspace, only those that the kernel is not aware
+> +			of.
+> +
+>  	dump_apple_properties	[X86]
+>  			Dump name and content of EFI device properties on
+>  			x86 Macs.  Useful for driver authors to determine
+> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+> index 5bd868f2e813..c924710e5bc7 100644
+> --- a/arch/powerpc/Kconfig
+> +++ b/arch/powerpc/Kconfig
+> @@ -391,11 +391,6 @@ config PPC_DT_CPU_FTRS
+>  	  firmware provides this binding.
+>  	  If you're not sure say Y.
+>  
+> -config PPC_CPUFEATURES_ENABLE_UNKNOWN
+> -	bool "cpufeatures pass through unknown features to guest/userspace"
+> -	depends on PPC_DT_CPU_FTRS
+> -	default y
+> -
+>  config HIGHMEM
+>  	bool "High memory support"
+>  	depends on PPC32
+> diff --git a/arch/powerpc/kernel/dt_cpu_ftrs.c b/arch/powerpc/kernel/dt_cpu_ftrs.c
+> index fcc7588a96d6..050925b5b451 100644
+> --- a/arch/powerpc/kernel/dt_cpu_ftrs.c
+> +++ b/arch/powerpc/kernel/dt_cpu_ftrs.c
+> @@ -671,12 +671,24 @@ static struct dt_cpu_feature_match __initdata
+>  	{"wait-v3", feat_enable, 0},
+>  };
+>  
+> -/* XXX: how to configure this? Default + boot time? */
+> -#ifdef CONFIG_PPC_CPUFEATURES_ENABLE_UNKNOWN
+> -#define CPU_FEATURE_ENABLE_UNKNOWN 1
+> -#else
+> -#define CPU_FEATURE_ENABLE_UNKNOWN 0
+> -#endif
+> +static bool __initdata using_dt_cpu_ftrs = true;
+> +static bool __initdata dt_cpu_ftrs_enable_unknown = true;
+> +
+> +static int __init dt_cpu_ftrs_parse(char *str)
+> +{
+> +	if (!str)
+> +		return 0;
+> +
+> +	if (!strcmp(str, "off"))
+> +		using_dt_cpu_ftrs = false;
+> +	else if (!strcmp(str, "known"))
+> +		dt_cpu_ftrs_enable_unknown = false;
+> +	else
+> +		return 1;
+> +
+> +	return 0;
+> +}
+> +early_param("dt_cpu_ftrs", dt_cpu_ftrs_parse);
 
-Yes, thanks for catching this!  I'll do a v2 on top of what you
-posted.
+I wouldn't use strcmp with user passed parameters.
 
-Balbir Singh
+Balbir Singh.
