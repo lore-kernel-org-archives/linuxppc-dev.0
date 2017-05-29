@@ -1,16 +1,19 @@
-Return-Path: <michael@ozlabs.org>
+Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wbtF035GwzDq9m
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 May 2017 20:26:12 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wbtKD4198zDq9m
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 May 2017 20:29:52 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org
-Cc: jk@ozlabs.org,
-	viro@zeniv.linux.org.uk
-Subject: [PATCH] powerpc/spufs: Fix coredump of SPU contexts
-Date: Mon, 29 May 2017 20:26:07 +1000
-Message-Id: <1496053567-29357-1-git-send-email-mpe@ellerman.id.au>
+To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Nicholas Piggin <npiggin@gmail.com>, pc@us.ibm.com <pc@us.ibm.com>
+Subject: Re: [PATCH] powerpc/64s: dt_cpu_ftrs boot time setup option
+In-Reply-To: <20170511112441.30287-1-npiggin@gmail.com>
+References: <20170511112441.30287-1-npiggin@gmail.com>
+Date: Mon, 29 May 2017 20:29:49 +1000
+Message-ID: <87h9046jmq.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,35 +23,103 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-If a process dumps core while it has SPU contexts active then we have
-code to also dump information about the SPU contexts.
+Nicholas Piggin <npiggin@gmail.com> writes:
 
-Unfortunately it's been broken for 3 1/2 years, and we didn't notice. In
-commit 7b1f4020d0d1 ("spufs: get rid of dump_emit() wrappers") the nread
-variable was removed and rc used instead. That means when the loop exits
-successfully, rc has the number of bytes read, but it's then used as the
-return value for the function, which should return 0 on success.
+> Provide a dt_cpu_ftrs= cmdline option to disable the dt_cpu_ftrs CPU
+> feature discovery, and fall back to the "cputable" based version.
 
-So fix it by setting rc = 0 before returning in the success case.
+I don't think this works properly.
 
-Fixes: 7b1f4020d0d1 ("spufs: get rid of dump_emit() wrappers")
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/platforms/cell/spufs/coredump.c | 2 ++
- 1 file changed, 2 insertions(+)
+> diff --git a/arch/powerpc/kernel/dt_cpu_ftrs.c b/arch/powerpc/kernel/dt_cpu_ftrs.c
+> index fcc7588a96d6..050925b5b451 100644
+> --- a/arch/powerpc/kernel/dt_cpu_ftrs.c
+> +++ b/arch/powerpc/kernel/dt_cpu_ftrs.c
+> @@ -775,6 +785,16 @@ bool __init dt_cpu_ftrs_in_use(void)
+>  
+>  bool __init dt_cpu_ftrs_init(void *fdt)
+>  {
+> +	if (!using_dt_cpu_ftrs) {
+> +		/*
+> +		 * This should never happen because this runs before
+> +		 * early_praam, however if the init ordering changes,
+> +		 * test if early_param has disabled this.
+> +		 */
+> +		return false;
+> +	}
+> +	using_dt_cpu_ftrs = false;
+> +
+>  	/* Setup and verify the FDT, if it fails we just bail */
+>  	if (!early_init_dt_verify(fdt))
+>  		return false;
+...
+	return true;
 
-diff --git a/arch/powerpc/platforms/cell/spufs/coredump.c b/arch/powerpc/platforms/cell/spufs/coredump.c
-index e5a891ae80ee..84b7ac926ce6 100644
---- a/arch/powerpc/platforms/cell/spufs/coredump.c
-+++ b/arch/powerpc/platforms/cell/spufs/coredump.c
-@@ -175,6 +175,8 @@ static int spufs_arch_write_note(struct spu_context *ctx, int i,
- 	skip = roundup(cprm->pos - total + sz, 4) - cprm->pos;
- 	if (!dump_skip(cprm, skip))
- 		goto Eio;
+Because this runs before early_param(), as you mention,
+dt_cpu_ftrs_init() returns true, which means we skip calling
+identify_cpu().
+
+So although passing dt_cpu_ftrs=off will skip the later logic, it
+doesn't cause us to call identify_cpu() in early_setup() which it
+should.
+
+In practice it works because the base CPU spec that we initialise in
+dt_cpu_ftrs.c is mostly OK, and skiboot also adds the cpu-version
+property which causes us to call identify_cpu() again later, but that's
+all a bit fragile IMHO.
+
+So unfortunately I think we need to add logic in dt_cpu_ftrs_init() to
+look for dt_cpu_ftrs=off on the command line.
+
+The patch below seems to work, but would appreciate more eyes on it.
+
+cheers
+
+diff --git a/arch/powerpc/kernel/dt_cpu_ftrs.c b/arch/powerpc/kernel/dt_cpu_ftrs.c
+index d6f05e4dc328..9a560954498a 100644
+--- a/arch/powerpc/kernel/dt_cpu_ftrs.c
++++ b/arch/powerpc/kernel/dt_cpu_ftrs.c
+@@ -8,6 +8,7 @@
+ #include <linux/export.h>
+ #include <linux/init.h>
+ #include <linux/jump_label.h>
++#include <linux/libfdt.h>
+ #include <linux/memblock.h>
+ #include <linux/printk.h>
+ #include <linux/sched.h>
+@@ -767,6 +770,26 @@ static void __init cpufeatures_setup_finished(void)
+ 		cur_cpu_spec->cpu_features, cur_cpu_spec->mmu_features);
+ }
+ 
++static int __init disabled_on_cmdline(void)
++{
++	unsigned long root, chosen;
++	const char *p;
 +
-+	rc = 0;
- out:
- 	free_page((unsigned long)buf);
- 	return rc;
--- 
-2.7.4
++	root = of_get_flat_dt_root();
++	chosen = of_get_flat_dt_subnode_by_name(root, "chosen");
++	if (chosen == -FDT_ERR_NOTFOUND)
++		return false;
++
++	p = of_get_flat_dt_prop(chosen, "bootargs", NULL);
++	if (!p)
++		return false;
++
++	if (strstr(p, "dt_cpu_ftrs=off"))
++		return true;
++
++	return false;
++}
++
+ static int __init fdt_find_cpu_features(unsigned long node, const char *uname,
+ 					int depth, void *data)
+ {
+@@ -801,6 +826,9 @@ bool __init dt_cpu_ftrs_init(void *fdt)
+ 	if (!of_scan_flat_dt(fdt_find_cpu_features, NULL))
+ 		return false;
+ 
++	if (disabled_on_cmdline())
++		return false;
++
+ 	cpufeatures_setup_cpu();
+ 
+ 	using_dt_cpu_ftrs = true;
