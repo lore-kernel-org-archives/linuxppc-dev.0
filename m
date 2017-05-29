@@ -1,19 +1,19 @@
-Return-Path: <mpe@ellerman.id.au>
+Return-Path: <jk@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wbtKD4198zDq9m
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 May 2017 20:29:52 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
-Cc: Nicholas Piggin <npiggin@gmail.com>, pc@us.ibm.com <pc@us.ibm.com>
-Subject: Re: [PATCH] powerpc/64s: dt_cpu_ftrs boot time setup option
-In-Reply-To: <20170511112441.30287-1-npiggin@gmail.com>
-References: <20170511112441.30287-1-npiggin@gmail.com>
-Date: Mon, 29 May 2017 20:29:49 +1000
-Message-ID: <87h9046jmq.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wbtRq5cB4zDq9m
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 May 2017 20:35:35 +1000 (AEST)
+Subject: Re: [PATCH] powerpc/spufs: Fix coredump of SPU contexts
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
+References: <1496053567-29357-1-git-send-email-mpe@ellerman.id.au>
+Cc: viro@zeniv.linux.org.uk
+From: Jeremy Kerr <jk@ozlabs.org>
+Message-ID: <f0dba496-ecbf-53b1-590c-066fe102537a@ozlabs.org>
+Date: Mon, 29 May 2017 18:35:32 +0800
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <1496053567-29357-1-git-send-email-mpe@ellerman.id.au>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,103 +23,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Nicholas Piggin <npiggin@gmail.com> writes:
+Hi Michael,
 
-> Provide a dt_cpu_ftrs= cmdline option to disable the dt_cpu_ftrs CPU
-> feature discovery, and fall back to the "cputable" based version.
+> So fix it by setting rc = 0 before returning in the success case.
+> 
+> Fixes: 7b1f4020d0d1 ("spufs: get rid of dump_emit() wrappers")
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
-I don't think this works properly.
+Looks good to me, thanks.
 
-> diff --git a/arch/powerpc/kernel/dt_cpu_ftrs.c b/arch/powerpc/kernel/dt_cpu_ftrs.c
-> index fcc7588a96d6..050925b5b451 100644
-> --- a/arch/powerpc/kernel/dt_cpu_ftrs.c
-> +++ b/arch/powerpc/kernel/dt_cpu_ftrs.c
-> @@ -775,6 +785,16 @@ bool __init dt_cpu_ftrs_in_use(void)
->  
->  bool __init dt_cpu_ftrs_init(void *fdt)
->  {
-> +	if (!using_dt_cpu_ftrs) {
-> +		/*
-> +		 * This should never happen because this runs before
-> +		 * early_praam, however if the init ordering changes,
-> +		 * test if early_param has disabled this.
-> +		 */
-> +		return false;
-> +	}
-> +	using_dt_cpu_ftrs = false;
-> +
->  	/* Setup and verify the FDT, if it fails we just bail */
->  	if (!early_init_dt_verify(fdt))
->  		return false;
-...
-	return true;
+Acked-by: Jeremy Kerr <jk@ozlabs.org>
 
-Because this runs before early_param(), as you mention,
-dt_cpu_ftrs_init() returns true, which means we skip calling
-identify_cpu().
+Cheers,
 
-So although passing dt_cpu_ftrs=off will skip the later logic, it
-doesn't cause us to call identify_cpu() in early_setup() which it
-should.
 
-In practice it works because the base CPU spec that we initialise in
-dt_cpu_ftrs.c is mostly OK, and skiboot also adds the cpu-version
-property which causes us to call identify_cpu() again later, but that's
-all a bit fragile IMHO.
-
-So unfortunately I think we need to add logic in dt_cpu_ftrs_init() to
-look for dt_cpu_ftrs=off on the command line.
-
-The patch below seems to work, but would appreciate more eyes on it.
-
-cheers
-
-diff --git a/arch/powerpc/kernel/dt_cpu_ftrs.c b/arch/powerpc/kernel/dt_cpu_ftrs.c
-index d6f05e4dc328..9a560954498a 100644
---- a/arch/powerpc/kernel/dt_cpu_ftrs.c
-+++ b/arch/powerpc/kernel/dt_cpu_ftrs.c
-@@ -8,6 +8,7 @@
- #include <linux/export.h>
- #include <linux/init.h>
- #include <linux/jump_label.h>
-+#include <linux/libfdt.h>
- #include <linux/memblock.h>
- #include <linux/printk.h>
- #include <linux/sched.h>
-@@ -767,6 +770,26 @@ static void __init cpufeatures_setup_finished(void)
- 		cur_cpu_spec->cpu_features, cur_cpu_spec->mmu_features);
- }
- 
-+static int __init disabled_on_cmdline(void)
-+{
-+	unsigned long root, chosen;
-+	const char *p;
-+
-+	root = of_get_flat_dt_root();
-+	chosen = of_get_flat_dt_subnode_by_name(root, "chosen");
-+	if (chosen == -FDT_ERR_NOTFOUND)
-+		return false;
-+
-+	p = of_get_flat_dt_prop(chosen, "bootargs", NULL);
-+	if (!p)
-+		return false;
-+
-+	if (strstr(p, "dt_cpu_ftrs=off"))
-+		return true;
-+
-+	return false;
-+}
-+
- static int __init fdt_find_cpu_features(unsigned long node, const char *uname,
- 					int depth, void *data)
- {
-@@ -801,6 +826,9 @@ bool __init dt_cpu_ftrs_init(void *fdt)
- 	if (!of_scan_flat_dt(fdt_find_cpu_features, NULL))
- 		return false;
- 
-+	if (disabled_on_cmdline())
-+		return false;
-+
- 	cpufeatures_setup_cpu();
- 
- 	using_dt_cpu_ftrs = true;
+Jeremy
