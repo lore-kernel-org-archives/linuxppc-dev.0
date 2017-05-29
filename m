@@ -3,16 +3,17 @@ Received: from gate2.alliedtelesis.co.nz (gate2.alliedtelesis.co.nz
  [202.36.163.20])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wc8nj4x6NzDqCt
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wc8nj4plQzDqCf
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 May 2017 07:22:01 +1000 (AEST)
 From: Chris Packham <chris.packham@alliedtelesis.co.nz>
 To: bp@alien8.de, mchehab@kernel.org, linux-edac@vger.kernel.org,
  mpe@ellerman.id.au
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  Chris Packham <chris.packham@alliedtelesis.co.nz>
-Subject: [PATCH v3 1/3] EDAC: mv64x60: check driver registration success
-Date: Tue, 30 May 2017 09:21:40 +1200
-Message-Id: <20170529212142.25572-2-chris.packham@alliedtelesis.co.nz>
+Subject: [PATCH v3 3/3] EDAC: mv64x60: replace in_le32/out_le32 with
+ readl/writel
+Date: Tue, 30 May 2017 09:21:42 +1200
+Message-Id: <20170529212142.25572-4-chris.packham@alliedtelesis.co.nz>
 In-Reply-To: <20170529212142.25572-1-chris.packham@alliedtelesis.co.nz>
 References: <20170529212142.25572-1-chris.packham@alliedtelesis.co.nz>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,44 +25,253 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Check the return status of platform_driver_register() in
-mv64x60_edac_init(). Only output messages and initialise the
-edac_op_state if the registration is successful.
+To allow this driver to be used on non-powerpc platforms it needs to use
+io accessors suitable for all platforms.
 
 Signed-off-by: Chris Packham <chris.packham@alliedtelesis.co.nz>
 ---
+Changes in v2:
+- use readl/writel as suggested.
 Changes in v3:
-- catch the retval of platform_register_drivers and return early on failure
-  (thanks Borislav).
+- None
 
- drivers/edac/mv64x60_edac.c | 8 ++++++--
- 1 file changed, 6 insertions(+), 2 deletions(-)
+ drivers/edac/mv64x60_edac.c | 84 ++++++++++++++++++++++-----------------------
+ 1 file changed, 42 insertions(+), 42 deletions(-)
 
 diff --git a/drivers/edac/mv64x60_edac.c b/drivers/edac/mv64x60_edac.c
-index 14b7e7b71eaa..172081551a70 100644
+index 4511fbf9fdd1..004b208752bf 100644
 --- a/drivers/edac/mv64x60_edac.c
 +++ b/drivers/edac/mv64x60_edac.c
-@@ -853,7 +853,11 @@ static struct platform_driver * const drivers[] = {
+@@ -32,21 +32,21 @@ static void mv64x60_pci_check(struct edac_pci_ctl_info *pci)
+ 	struct mv64x60_pci_pdata *pdata = pci->pvt_info;
+ 	u32 cause;
  
- static int __init mv64x60_edac_init(void)
- {
--	int ret = 0;
-+	int ret;
-+
-+	ret = platform_register_drivers(drivers, ARRAY_SIZE(drivers));
-+	if (ret)
-+		return ret;
+-	cause = in_le32(pdata->pci_vbase + MV64X60_PCI_ERROR_CAUSE);
++	cause = readl(pdata->pci_vbase + MV64X60_PCI_ERROR_CAUSE);
+ 	if (!cause)
+ 		return;
  
- 	printk(KERN_INFO "Marvell MV64x60 EDAC driver " MV64x60_REVISION "\n");
- 	printk(KERN_INFO "\t(C) 2006-2007 MontaVista Software\n");
-@@ -867,7 +871,7 @@ static int __init mv64x60_edac_init(void)
- 		break;
+ 	printk(KERN_ERR "Error in PCI %d Interface\n", pdata->pci_hose);
+ 	printk(KERN_ERR "Cause register: 0x%08x\n", cause);
+ 	printk(KERN_ERR "Address Low: 0x%08x\n",
+-	       in_le32(pdata->pci_vbase + MV64X60_PCI_ERROR_ADDR_LO));
++	       readl(pdata->pci_vbase + MV64X60_PCI_ERROR_ADDR_LO));
+ 	printk(KERN_ERR "Address High: 0x%08x\n",
+-	       in_le32(pdata->pci_vbase + MV64X60_PCI_ERROR_ADDR_HI));
++	       readl(pdata->pci_vbase + MV64X60_PCI_ERROR_ADDR_HI));
+ 	printk(KERN_ERR "Attribute: 0x%08x\n",
+-	       in_le32(pdata->pci_vbase + MV64X60_PCI_ERROR_ATTR));
++	       readl(pdata->pci_vbase + MV64X60_PCI_ERROR_ATTR));
+ 	printk(KERN_ERR "Command: 0x%08x\n",
+-	       in_le32(pdata->pci_vbase + MV64X60_PCI_ERROR_CMD));
+-	out_le32(pdata->pci_vbase + MV64X60_PCI_ERROR_CAUSE, ~cause);
++	       readl(pdata->pci_vbase + MV64X60_PCI_ERROR_CMD));
++	writel(~cause, pdata->pci_vbase + MV64X60_PCI_ERROR_CAUSE);
+ 
+ 	if (cause & MV64X60_PCI_PE_MASK)
+ 		edac_pci_handle_pe(pci, pci->ctl_name);
+@@ -61,7 +61,7 @@ static irqreturn_t mv64x60_pci_isr(int irq, void *dev_id)
+ 	struct mv64x60_pci_pdata *pdata = pci->pvt_info;
+ 	u32 val;
+ 
+-	val = in_le32(pdata->pci_vbase + MV64X60_PCI_ERROR_CAUSE);
++	val = readl(pdata->pci_vbase + MV64X60_PCI_ERROR_CAUSE);
+ 	if (!val)
+ 		return IRQ_NONE;
+ 
+@@ -93,7 +93,7 @@ static int __init mv64x60_pci_fixup(struct platform_device *pdev)
+ 	if (!pci_serr)
+ 		return -ENOMEM;
+ 
+-	out_le32(pci_serr, in_le32(pci_serr) & ~0x1);
++	writel(readl(pci_serr) & ~0x1, pci_serr);
+ 	iounmap(pci_serr);
+ 
+ 	return 0;
+@@ -161,10 +161,10 @@ static int mv64x60_pci_err_probe(struct platform_device *pdev)
+ 		goto err;
  	}
  
--	return platform_register_drivers(drivers, ARRAY_SIZE(drivers));
-+	return 0;
- }
- module_init(mv64x60_edac_init);
+-	out_le32(pdata->pci_vbase + MV64X60_PCI_ERROR_CAUSE, 0);
+-	out_le32(pdata->pci_vbase + MV64X60_PCI_ERROR_MASK, 0);
+-	out_le32(pdata->pci_vbase + MV64X60_PCI_ERROR_MASK,
+-		 MV64X60_PCIx_ERR_MASK_VAL);
++	writel(0, pdata->pci_vbase + MV64X60_PCI_ERROR_CAUSE);
++	writel(0, pdata->pci_vbase + MV64X60_PCI_ERROR_MASK);
++	writel(MV64X60_PCIx_ERR_MASK_VAL,
++		  pdata->pci_vbase + MV64X60_PCI_ERROR_MASK);
  
+ 	if (edac_pci_add_device(pci, pdata->edac_idx) > 0) {
+ 		edac_dbg(3, "failed edac_pci_add_device()\n");
+@@ -233,23 +233,23 @@ static void mv64x60_sram_check(struct edac_device_ctl_info *edac_dev)
+ 	struct mv64x60_sram_pdata *pdata = edac_dev->pvt_info;
+ 	u32 cause;
+ 
+-	cause = in_le32(pdata->sram_vbase + MV64X60_SRAM_ERR_CAUSE);
++	cause = readl(pdata->sram_vbase + MV64X60_SRAM_ERR_CAUSE);
+ 	if (!cause)
+ 		return;
+ 
+ 	printk(KERN_ERR "Error in internal SRAM\n");
+ 	printk(KERN_ERR "Cause register: 0x%08x\n", cause);
+ 	printk(KERN_ERR "Address Low: 0x%08x\n",
+-	       in_le32(pdata->sram_vbase + MV64X60_SRAM_ERR_ADDR_LO));
++	       readl(pdata->sram_vbase + MV64X60_SRAM_ERR_ADDR_LO));
+ 	printk(KERN_ERR "Address High: 0x%08x\n",
+-	       in_le32(pdata->sram_vbase + MV64X60_SRAM_ERR_ADDR_HI));
++	       readl(pdata->sram_vbase + MV64X60_SRAM_ERR_ADDR_HI));
+ 	printk(KERN_ERR "Data Low: 0x%08x\n",
+-	       in_le32(pdata->sram_vbase + MV64X60_SRAM_ERR_DATA_LO));
++	       readl(pdata->sram_vbase + MV64X60_SRAM_ERR_DATA_LO));
+ 	printk(KERN_ERR "Data High: 0x%08x\n",
+-	       in_le32(pdata->sram_vbase + MV64X60_SRAM_ERR_DATA_HI));
++	       readl(pdata->sram_vbase + MV64X60_SRAM_ERR_DATA_HI));
+ 	printk(KERN_ERR "Parity: 0x%08x\n",
+-	       in_le32(pdata->sram_vbase + MV64X60_SRAM_ERR_PARITY));
+-	out_le32(pdata->sram_vbase + MV64X60_SRAM_ERR_CAUSE, 0);
++	       readl(pdata->sram_vbase + MV64X60_SRAM_ERR_PARITY));
++	writel(0, pdata->sram_vbase + MV64X60_SRAM_ERR_CAUSE);
+ 
+ 	edac_device_handle_ue(edac_dev, 0, 0, edac_dev->ctl_name);
+ }
+@@ -260,7 +260,7 @@ static irqreturn_t mv64x60_sram_isr(int irq, void *dev_id)
+ 	struct mv64x60_sram_pdata *pdata = edac_dev->pvt_info;
+ 	u32 cause;
+ 
+-	cause = in_le32(pdata->sram_vbase + MV64X60_SRAM_ERR_CAUSE);
++	cause = readl(pdata->sram_vbase + MV64X60_SRAM_ERR_CAUSE);
+ 	if (!cause)
+ 		return IRQ_NONE;
+ 
+@@ -322,7 +322,7 @@ static int mv64x60_sram_err_probe(struct platform_device *pdev)
+ 	}
+ 
+ 	/* setup SRAM err registers */
+-	out_le32(pdata->sram_vbase + MV64X60_SRAM_ERR_CAUSE, 0);
++	writel(0, pdata->sram_vbase + MV64X60_SRAM_ERR_CAUSE);
+ 
+ 	edac_dev->mod_name = EDAC_MOD_STR;
+ 	edac_dev->ctl_name = pdata->name;
+@@ -398,7 +398,7 @@ static void mv64x60_cpu_check(struct edac_device_ctl_info *edac_dev)
+ 	struct mv64x60_cpu_pdata *pdata = edac_dev->pvt_info;
+ 	u32 cause;
+ 
+-	cause = in_le32(pdata->cpu_vbase[1] + MV64x60_CPU_ERR_CAUSE) &
++	cause = readl(pdata->cpu_vbase[1] + MV64x60_CPU_ERR_CAUSE) &
+ 	    MV64x60_CPU_CAUSE_MASK;
+ 	if (!cause)
+ 		return;
+@@ -406,16 +406,16 @@ static void mv64x60_cpu_check(struct edac_device_ctl_info *edac_dev)
+ 	printk(KERN_ERR "Error on CPU interface\n");
+ 	printk(KERN_ERR "Cause register: 0x%08x\n", cause);
+ 	printk(KERN_ERR "Address Low: 0x%08x\n",
+-	       in_le32(pdata->cpu_vbase[0] + MV64x60_CPU_ERR_ADDR_LO));
++	       readl(pdata->cpu_vbase[0] + MV64x60_CPU_ERR_ADDR_LO));
+ 	printk(KERN_ERR "Address High: 0x%08x\n",
+-	       in_le32(pdata->cpu_vbase[0] + MV64x60_CPU_ERR_ADDR_HI));
++	       readl(pdata->cpu_vbase[0] + MV64x60_CPU_ERR_ADDR_HI));
+ 	printk(KERN_ERR "Data Low: 0x%08x\n",
+-	       in_le32(pdata->cpu_vbase[1] + MV64x60_CPU_ERR_DATA_LO));
++	       readl(pdata->cpu_vbase[1] + MV64x60_CPU_ERR_DATA_LO));
+ 	printk(KERN_ERR "Data High: 0x%08x\n",
+-	       in_le32(pdata->cpu_vbase[1] + MV64x60_CPU_ERR_DATA_HI));
++	       readl(pdata->cpu_vbase[1] + MV64x60_CPU_ERR_DATA_HI));
+ 	printk(KERN_ERR "Parity: 0x%08x\n",
+-	       in_le32(pdata->cpu_vbase[1] + MV64x60_CPU_ERR_PARITY));
+-	out_le32(pdata->cpu_vbase[1] + MV64x60_CPU_ERR_CAUSE, 0);
++	       readl(pdata->cpu_vbase[1] + MV64x60_CPU_ERR_PARITY));
++	writel(0, pdata->cpu_vbase[1] + MV64x60_CPU_ERR_CAUSE);
+ 
+ 	edac_device_handle_ue(edac_dev, 0, 0, edac_dev->ctl_name);
+ }
+@@ -426,7 +426,7 @@ static irqreturn_t mv64x60_cpu_isr(int irq, void *dev_id)
+ 	struct mv64x60_cpu_pdata *pdata = edac_dev->pvt_info;
+ 	u32 cause;
+ 
+-	cause = in_le32(pdata->cpu_vbase[1] + MV64x60_CPU_ERR_CAUSE) &
++	cause = readl(pdata->cpu_vbase[1] + MV64x60_CPU_ERR_CAUSE) &
+ 	    MV64x60_CPU_CAUSE_MASK;
+ 	if (!cause)
+ 		return IRQ_NONE;
+@@ -515,9 +515,9 @@ static int mv64x60_cpu_err_probe(struct platform_device *pdev)
+ 	}
+ 
+ 	/* setup CPU err registers */
+-	out_le32(pdata->cpu_vbase[1] + MV64x60_CPU_ERR_CAUSE, 0);
+-	out_le32(pdata->cpu_vbase[1] + MV64x60_CPU_ERR_MASK, 0);
+-	out_le32(pdata->cpu_vbase[1] + MV64x60_CPU_ERR_MASK, 0x000000ff);
++	writel(0, pdata->cpu_vbase[1] + MV64x60_CPU_ERR_CAUSE);
++	writel(0, pdata->cpu_vbase[1] + MV64x60_CPU_ERR_MASK);
++	writel(0x000000ff, pdata->cpu_vbase[1] + MV64x60_CPU_ERR_MASK);
+ 
+ 	edac_dev->mod_name = EDAC_MOD_STR;
+ 	edac_dev->ctl_name = pdata->name;
+@@ -596,13 +596,13 @@ static void mv64x60_mc_check(struct mem_ctl_info *mci)
+ 	u32 comp_ecc;
+ 	u32 syndrome;
+ 
+-	reg = in_le32(pdata->mc_vbase + MV64X60_SDRAM_ERR_ADDR);
++	reg = readl(pdata->mc_vbase + MV64X60_SDRAM_ERR_ADDR);
+ 	if (!reg)
+ 		return;
+ 
+ 	err_addr = reg & ~0x3;
+-	sdram_ecc = in_le32(pdata->mc_vbase + MV64X60_SDRAM_ERR_ECC_RCVD);
+-	comp_ecc = in_le32(pdata->mc_vbase + MV64X60_SDRAM_ERR_ECC_CALC);
++	sdram_ecc = readl(pdata->mc_vbase + MV64X60_SDRAM_ERR_ECC_RCVD);
++	comp_ecc = readl(pdata->mc_vbase + MV64X60_SDRAM_ERR_ECC_CALC);
+ 	syndrome = sdram_ecc ^ comp_ecc;
+ 
+ 	/* first bit clear in ECC Err Reg, 1 bit error, correctable by HW */
+@@ -620,7 +620,7 @@ static void mv64x60_mc_check(struct mem_ctl_info *mci)
+ 				     mci->ctl_name, "");
+ 
+ 	/* clear the error */
+-	out_le32(pdata->mc_vbase + MV64X60_SDRAM_ERR_ADDR, 0);
++	writel(0, pdata->mc_vbase + MV64X60_SDRAM_ERR_ADDR);
+ }
+ 
+ static irqreturn_t mv64x60_mc_isr(int irq, void *dev_id)
+@@ -629,7 +629,7 @@ static irqreturn_t mv64x60_mc_isr(int irq, void *dev_id)
+ 	struct mv64x60_mc_pdata *pdata = mci->pvt_info;
+ 	u32 reg;
+ 
+-	reg = in_le32(pdata->mc_vbase + MV64X60_SDRAM_ERR_ADDR);
++	reg = readl(pdata->mc_vbase + MV64X60_SDRAM_ERR_ADDR);
+ 	if (!reg)
+ 		return IRQ_NONE;
+ 
+@@ -664,7 +664,7 @@ static void mv64x60_init_csrows(struct mem_ctl_info *mci,
+ 
+ 	get_total_mem(pdata);
+ 
+-	ctl = in_le32(pdata->mc_vbase + MV64X60_SDRAM_CONFIG);
++	ctl = readl(pdata->mc_vbase + MV64X60_SDRAM_CONFIG);
+ 
+ 	csrow = mci->csrows[0];
+ 	dimm = csrow->channels[0]->dimm;
+@@ -753,7 +753,7 @@ static int mv64x60_mc_err_probe(struct platform_device *pdev)
+ 		goto err;
+ 	}
+ 
+-	ctl = in_le32(pdata->mc_vbase + MV64X60_SDRAM_CONFIG);
++	ctl = readl(pdata->mc_vbase + MV64X60_SDRAM_CONFIG);
+ 	if (!(ctl & MV64X60_SDRAM_ECC)) {
+ 		/* Non-ECC RAM? */
+ 		printk(KERN_WARNING "%s: No ECC DIMMs discovered\n", __func__);
+@@ -779,10 +779,10 @@ static int mv64x60_mc_err_probe(struct platform_device *pdev)
+ 	mv64x60_init_csrows(mci, pdata);
+ 
+ 	/* setup MC registers */
+-	out_le32(pdata->mc_vbase + MV64X60_SDRAM_ERR_ADDR, 0);
+-	ctl = in_le32(pdata->mc_vbase + MV64X60_SDRAM_ERR_ECC_CNTL);
++	writel(0, pdata->mc_vbase + MV64X60_SDRAM_ERR_ADDR);
++	ctl = readl(pdata->mc_vbase + MV64X60_SDRAM_ERR_ECC_CNTL);
+ 	ctl = (ctl & 0xff00ffff) | 0x10000;
+-	out_le32(pdata->mc_vbase + MV64X60_SDRAM_ERR_ECC_CNTL, ctl);
++	writel(ctl, pdata->mc_vbase + MV64X60_SDRAM_ERR_ECC_CNTL);
+ 
+ 	res = edac_mc_add_mc(mci);
+ 	if (res) {
 -- 
 2.13.0
