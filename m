@@ -1,19 +1,24 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
- [IPv6:2607:f8b0:400e:c05::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wbpY56hpszDq9m
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 May 2017 17:39:53 +1000 (AEST)
-Received: by mail-pg0-x241.google.com with SMTP id s62so5676977pgc.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 May 2017 00:39:53 -0700 (PDT)
-From: Nicholas Piggin <npiggin@gmail.com>
-To: 
-Cc: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org,
- Alan Modra <amodra@gmail.com>, Balbir Singh <bsingharora@gmail.com>
-Subject: [PATCH v2] powerpc/64: handle linker stubs in low .text code
-Date: Mon, 29 May 2017 17:39:40 +1000
-Message-Id: <20170529073940.15234-1-npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wbq0w1pDCzDq9m
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 May 2017 18:00:32 +1000 (AEST)
+Subject: Re: [PATCH v1 7/8] powerpc/Kconfig: Enable STRICT_KERNEL_RWX
+To: kbuild test robot <lkp@intel.com>, Balbir Singh <bsingharora@gmail.com>,
+ Laura Abbott <labbott@redhat.com>,
+ Linus Torvalds <torvalds@linux-foundation.org>
+Cc: paulus@samba.org, kbuild-all@01.org, naveen.n.rao@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, rashmica.g@gmail.com,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ linux-pm@vger.kernel.org
+References: <201705260000.CDMt1Ieh%fengguang.wu@intel.com>
+From: Christophe LEROY <christophe.leroy@c-s.fr>
+Message-ID: <6dcd8ea3-e953-3319-0e0e-8543018e882f@c-s.fr>
+Date: Mon, 29 May 2017 10:00:18 +0200
+MIME-Version: 1.0
+In-Reply-To: <201705260000.CDMt1Ieh%fengguang.wu@intel.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,134 +28,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Very large kernels may require linker stubs for branches from HEAD
-text code. The linker may place these stubs before the HEAD text
-sections, which breaks the assumption that HEAD text is located at 0
-(or the .text section being located at 0x7000/0x8000 on Book3S
-kernels).
 
-Provide an option to create a small section just before the .text
-section with an empty 256 - 4 bytes, and adjust the start of the .text
-section to match. The linker will tend to put stubs in that section
-and not break our relative-to-absolute offset assumptions.
 
-This causes a small waste of space on common kernels, but allows large
-kernels to build and boot. For now, it is an EXPERT config option,
-defaulting to =n, but a reference is provided for it in the build-time
-check for such breakage. This is good enough for allyesconfig and
-custom users / hackers.
+Le 25/05/2017 à 18:45, kbuild test robot a écrit :
+> Hi Balbir,
+> 
+> [auto build test ERROR on powerpc/next]
+> [also build test ERROR on v4.12-rc2 next-20170525]
+> [if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
+> 
+> url:    https://github.com/0day-ci/linux/commits/Balbir-Singh/Enable-STRICT_KERNEL_RWX/20170525-150234
+> base:   https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git next
+> config: powerpc-allmodconfig (attached as .config)
+> compiler: powerpc64-linux-gnu-gcc (Debian 6.1.1-9) 6.1.1 20160705
+> reproduce:
+>          wget https://raw.githubusercontent.com/01org/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
+>          chmod +x ~/bin/make.cross
+>          # save the attached .config to linux build tree
+>          make.cross ARCH=powerpc
+> 
+> All errors (new ones prefixed by >>):
+> 
+>>> kernel//power/snapshot.c:40:28: fatal error: asm/set_memory.h: No such file or directory
+>      #include <asm/set_memory.h>
 
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
----
- arch/powerpc/Kconfig               | 11 +++++++++++
- arch/powerpc/include/asm/head-64.h | 18 ++++++++++++++++++
- arch/powerpc/kernel/vmlinux.lds.S  |  5 +++++
- arch/powerpc/tools/head_check.sh   |  7 +++++++
- 4 files changed, 41 insertions(+)
+Looks like it is linked to commit 50327ddfb ("kernel/power/snapshot.c: 
+use set_memory.h header").
+https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=50327ddfb
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index f7c8f9972f61..6eb70c96ec5e 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -454,6 +454,17 @@ config PPC_TRANSACTIONAL_MEM
-        ---help---
-          Support user-mode Transactional Memory on POWERPC.
- 
-+config LD_HEAD_STUB_CATCH
-+	bool "Reserve 256 bytes to cope with linker stubs in HEAD text" if EXPERT
-+	depends on PPC64
-+	default n
-+	help
-+	  Very large kernels can cause linker branch stubs to be generated by
-+	  code in head_64.S, which moves the head text sections out of their
-+	  specified location. This option can work around the problem.
-+
-+	  If unsure, say "N".
-+
- config DISABLE_MPROFILE_KERNEL
- 	bool "Disable use of mprofile-kernel for kernel tracing"
- 	depends on PPC64 && CPU_LITTLE_ENDIAN
-diff --git a/arch/powerpc/include/asm/head-64.h b/arch/powerpc/include/asm/head-64.h
-index 99c9f01d02df..7ab95798f170 100644
---- a/arch/powerpc/include/asm/head-64.h
-+++ b/arch/powerpc/include/asm/head-64.h
-@@ -63,11 +63,29 @@
- 	. = 0x0;						\
- start_##sname:
- 
-+/*
-+ * .linker_stub_catch section is used to catch linker stubs from being
-+ * inserted in our .text section, above the start_text label (which breaks
-+ * the ABS_ADDR calculation). See kernel/vmlinux.lds.S and tools/head_check.sh
-+ * for more details. We would prefer to just keep a cacheline (0x80), but
-+ * 0x100 seems to be how the linker aligns branch stub groups.
-+ */
-+#ifdef CONFIG_LD_HEAD_STUB_CATCH
-+#define OPEN_TEXT_SECTION(start)				\
-+	.section ".linker_stub_catch","ax",@progbits;		\
-+linker_stub_catch:						\
-+	. = 0x4;						\
-+	text_start = (start) + 0x100;				\
-+	.section ".text","ax",@progbits;			\
-+	.balign 0x100;						\
-+start_text:
-+#else
- #define OPEN_TEXT_SECTION(start)				\
- 	text_start = (start);					\
- 	.section ".text","ax",@progbits;			\
- 	. = 0x0;						\
- start_text:
-+#endif
- 
- #define ZERO_FIXED_SECTION(sname, start, end)			\
- 	sname##_start = (start);				\
-diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
-index 5aa434e84605..e69155f0db36 100644
---- a/arch/powerpc/kernel/vmlinux.lds.S
-+++ b/arch/powerpc/kernel/vmlinux.lds.S
-@@ -81,6 +81,11 @@ SECTIONS
- 	 * section placement to work.
- 	 */
- 	.text BLOCK(0) : AT(ADDR(.text) - LOAD_OFFSET) {
-+#ifdef CONFIG_LD_HEAD_STUB_CATCH
-+		*(.linker_stub_catch);
-+		. = . ;
-+#endif
-+
- #else
- 	.text : AT(ADDR(.text) - LOAD_OFFSET) {
- 		ALIGN_FUNCTION();
-diff --git a/arch/powerpc/tools/head_check.sh b/arch/powerpc/tools/head_check.sh
-index bfde937564f9..ad9e57209aa4 100755
---- a/arch/powerpc/tools/head_check.sh
-+++ b/arch/powerpc/tools/head_check.sh
-@@ -21,6 +21,11 @@
- # fixed section region (0 - 0x8000ish). Check what code is calling those stubs,
- # and perhaps change so a direct branch can reach.
- #
-+# A ".linker_stub_catch" section is used to catch some stubs generated by
-+# early .text code, which tend to get placed at the start of the section.
-+# If there are too many such stubs, they can overflow this section. Expanding
-+# it may help (or reducing the number of stub branches).
-+#
- # Linker stubs use the TOC pointer, so even if fixed section code could
- # tolerate them being inserted into head code, they can't be allowed in low
- # level entry code (boot, interrupt vectors, etc) until r2 is set up. This
-@@ -50,6 +55,7 @@ start_head_addr=$(cat .tmp_symbols.txt | grep " t start_first_256B$" | cut -d' '
- 
- if [ "$start_head_addr" != "$expected_start_head_addr" ]; then
- 	echo "ERROR: head code starts at $start_head_addr, should be $expected_start_head_addr"
-+	echo "ERROR: try to enable LD_HEAD_STUB_CATCH config option"
- 	echo "ERROR: see comments in arch/powerpc/tools/head_check.sh"
- 
- 	exit 1
-@@ -63,6 +69,7 @@ start_text_addr=$(cat .tmp_symbols.txt | grep " t start_text$" | cut -d' ' -f1)
- 
- if [ "$start_text_addr" != "$expected_start_text_addr" ]; then
- 	echo "ERROR: start_text address is $start_text_addr, should be $expected_start_text_addr"
-+	echo "ERROR: try to enable LD_HEAD_STUB_CATCH config option"
- 	echo "ERROR: see comments in arch/powerpc/tools/head_check.sh"
- 
- 	exit 1
--- 
-2.11.0
+I believe that inclusion should be conditional to 
+CONFIG_ARCH_HAS_SET_MEMORY, which is not set by powerpc arch, just like 
+in include/linux/filter.c
+
+Christophe
+
+
+>                                 ^
+>     compilation terminated.
+> 
+> vim +40 kernel//power/snapshot.c
+> 
+> 25761b6eb Rafael J. Wysocki    2005-10-30  24  #include <linux/bootmem.h>
+> 38b8d208a Ingo Molnar          2017-02-08  25  #include <linux/nmi.h>
+> 25761b6eb Rafael J. Wysocki    2005-10-30  26  #include <linux/syscalls.h>
+> 25761b6eb Rafael J. Wysocki    2005-10-30  27  #include <linux/console.h>
+> 25761b6eb Rafael J. Wysocki    2005-10-30  28  #include <linux/highmem.h>
+> 846705deb Rafael J. Wysocki    2008-11-26  29  #include <linux/list.h>
+> 5a0e3ad6a Tejun Heo            2010-03-24  30  #include <linux/slab.h>
+> 52f5684c8 Gideon Israel Dsouza 2014-04-07  31  #include <linux/compiler.h>
+> db5976058 Tina Ruchandani      2014-10-30  32  #include <linux/ktime.h>
+> 25761b6eb Rafael J. Wysocki    2005-10-30  33
+> 7c0f6ba68 Linus Torvalds       2016-12-24  34  #include <linux/uaccess.h>
+> 25761b6eb Rafael J. Wysocki    2005-10-30  35  #include <asm/mmu_context.h>
+> 25761b6eb Rafael J. Wysocki    2005-10-30  36  #include <asm/pgtable.h>
+> 25761b6eb Rafael J. Wysocki    2005-10-30  37  #include <asm/tlbflush.h>
+> 25761b6eb Rafael J. Wysocki    2005-10-30  38  #include <asm/io.h>
+> 50327ddfb Laura Abbott         2017-05-08  39  #ifdef CONFIG_STRICT_KERNEL_RWX
+> 50327ddfb Laura Abbott         2017-05-08 @40  #include <asm/set_memory.h>
+> 50327ddfb Laura Abbott         2017-05-08  41  #endif
+> 25761b6eb Rafael J. Wysocki    2005-10-30  42
+> 25761b6eb Rafael J. Wysocki    2005-10-30  43  #include "power.h"
+> 25761b6eb Rafael J. Wysocki    2005-10-30  44
+> 0f5bf6d0a Laura Abbott         2017-02-06  45  #ifdef CONFIG_STRICT_KERNEL_RWX
+> 4c0b6c10f Rafael J. Wysocki    2016-07-10  46  static bool hibernate_restore_protection;
+> 4c0b6c10f Rafael J. Wysocki    2016-07-10  47  static bool hibernate_restore_protection_active;
+> 4c0b6c10f Rafael J. Wysocki    2016-07-10  48
+> 
+> :::::: The code at line 40 was first introduced by commit
+> :::::: 50327ddfbc926e68da1958e4fac51f1106f5e730 kernel/power/snapshot.c: use set_memory.h header
+> 
+> :::::: TO: Laura Abbott <labbott@redhat.com>
+> :::::: CC: Linus Torvalds <torvalds@linux-foundation.org>
+> 
+> ---
+> 0-DAY kernel test infrastructure                Open Source Technology Center
+> https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+> 
