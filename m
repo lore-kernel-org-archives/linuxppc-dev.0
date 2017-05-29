@@ -1,19 +1,20 @@
 Return-Path: <bsingharora@gmail.com>
-Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
- [IPv6:2607:f8b0:400e:c00::244])
+Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
+ [IPv6:2607:f8b0:400e:c00::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wcBHm23tBzDqCL
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 May 2017 08:29:40 +1000 (AEST)
-Received: by mail-pf0-x244.google.com with SMTP id n23so13660309pfb.3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 May 2017 15:29:40 -0700 (PDT)
-Message-ID: <1496096943.21894.13.camel@gmail.com>
-Subject: Re: [PATCH] powerpc/64s: dt_cpu_ftrs boot time setup option
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wcC2M6nw8zDqCf
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 May 2017 09:03:07 +1000 (AEST)
+Received: by mail-pf0-x243.google.com with SMTP id w69so13772737pfk.1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 May 2017 16:03:07 -0700 (PDT)
+Message-ID: <1496098950.21894.15.camel@gmail.com>
+Subject: Re: [PATCH v2] powerpc/64: handle linker stubs in low .text code
 From: Balbir Singh <bsingharora@gmail.com>
-To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
-Date: Tue, 30 May 2017 08:29:03 +1000
-In-Reply-To: <20170511112441.30287-1-npiggin@gmail.com>
-References: <20170511112441.30287-1-npiggin@gmail.com>
+To: Nicholas Piggin <npiggin@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Alan Modra <amodra@gmail.com>
+Date: Tue, 30 May 2017 09:02:30 +1000
+In-Reply-To: <20170529073940.15234-1-npiggin@gmail.com>
+References: <20170529073940.15234-1-npiggin@gmail.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,90 +26,156 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2017-05-11 at 21:24 +1000, Nicholas Piggin wrote:
-> Provide a dt_cpu_ftrs= cmdline option to disable the dt_cpu_ftrs CPU
-> feature discovery, and fall back to the "cputable" based version.
+On Mon, 2017-05-29 at 17:39 +1000, Nicholas Piggin wrote:
+> Very large kernels may require linker stubs for branches from HEAD
+> text code. The linker may place these stubs before the HEAD text
+> sections, which breaks the assumption that HEAD text is located at 0
+> (or the .text section being located at 0x7000/0x8000 on Book3S
+> kernels).
 > 
-> Also allow control of advertising unknown features to userspace and
-> with this parameter, and remove the clunky CONFIG option.
+> Provide an option to create a small section just before the .text
+> section with an empty 256 - 4 bytes, and adjust the start of the .text
+> section to match. The linker will tend to put stubs in that section
+> and not break our relative-to-absolute offset assumptions.
+>
+
+I wonder if the size should be configurable in case more than expected
+number of stubs are created. I've seen at-least 1 with as I was playing
+with linker script alignment of sections.
+ 
+> This causes a small waste of space on common kernels, but allows large
+> kernels to build and boot. For now, it is an EXPERT config option,
+> defaulting to =n, but a reference is provided for it in the build-time
+> check for such breakage. This is good enough for allyesconfig and
+> custom users / hackers.
 > 
 > Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 > ---
->  Documentation/admin-guide/kernel-parameters.txt | 10 ++++++
->  arch/powerpc/Kconfig                            |  5 ---
->  arch/powerpc/kernel/dt_cpu_ftrs.c               | 41 +++++++++++++++++++------
->  3 files changed, 42 insertions(+), 14 deletions(-)
+>  arch/powerpc/Kconfig               | 11 +++++++++++
+>  arch/powerpc/include/asm/head-64.h | 18 ++++++++++++++++++
+>  arch/powerpc/kernel/vmlinux.lds.S  |  5 +++++
+>  arch/powerpc/tools/head_check.sh   |  7 +++++++
+>  4 files changed, 41 insertions(+)
 > 
-> diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
-> index facc20a3f962..7a7c1cc80f9f 100644
-> --- a/Documentation/admin-guide/kernel-parameters.txt
-> +++ b/Documentation/admin-guide/kernel-parameters.txt
-> @@ -867,6 +867,16 @@
->  
->  	dscc4.setup=	[NET]
->  
-> +	dt_cpu_ftrs=	[PPC]
-> +			Format: {"off" | "known"}
-> +			Control how the dt_cpu_ftrs device-tree binding is
-> +			used for CPU feature discovery and setup (if it
-> +			exists).
-> +			off: Do not use it, fall back to legacy cpu table.
-> +			known: Do not pass through unknown features to guests
-> +			or userspace, only those that the kernel is not aware
-> +			of.
-> +
->  	dump_apple_properties	[X86]
->  			Dump name and content of EFI device properties on
->  			x86 Macs.  Useful for driver authors to determine
 > diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-> index 5bd868f2e813..c924710e5bc7 100644
+> index f7c8f9972f61..6eb70c96ec5e 100644
 > --- a/arch/powerpc/Kconfig
 > +++ b/arch/powerpc/Kconfig
-> @@ -391,11 +391,6 @@ config PPC_DT_CPU_FTRS
->  	  firmware provides this binding.
->  	  If you're not sure say Y.
+> @@ -454,6 +454,17 @@ config PPC_TRANSACTIONAL_MEM
+>         ---help---
+>           Support user-mode Transactional Memory on POWERPC.
 >  
-> -config PPC_CPUFEATURES_ENABLE_UNKNOWN
-> -	bool "cpufeatures pass through unknown features to guest/userspace"
-> -	depends on PPC_DT_CPU_FTRS
-> -	default y
-> -
->  config HIGHMEM
->  	bool "High memory support"
->  	depends on PPC32
-> diff --git a/arch/powerpc/kernel/dt_cpu_ftrs.c b/arch/powerpc/kernel/dt_cpu_ftrs.c
-> index fcc7588a96d6..050925b5b451 100644
-> --- a/arch/powerpc/kernel/dt_cpu_ftrs.c
-> +++ b/arch/powerpc/kernel/dt_cpu_ftrs.c
-> @@ -671,12 +671,24 @@ static struct dt_cpu_feature_match __initdata
->  	{"wait-v3", feat_enable, 0},
->  };
->  
-> -/* XXX: how to configure this? Default + boot time? */
-> -#ifdef CONFIG_PPC_CPUFEATURES_ENABLE_UNKNOWN
-> -#define CPU_FEATURE_ENABLE_UNKNOWN 1
-> -#else
-> -#define CPU_FEATURE_ENABLE_UNKNOWN 0
-> -#endif
-> +static bool __initdata using_dt_cpu_ftrs = true;
-> +static bool __initdata dt_cpu_ftrs_enable_unknown = true;
-> +
-> +static int __init dt_cpu_ftrs_parse(char *str)
-> +{
-> +	if (!str)
-> +		return 0;
-> +
-> +	if (!strcmp(str, "off"))
-> +		using_dt_cpu_ftrs = false;
-> +	else if (!strcmp(str, "known"))
-> +		dt_cpu_ftrs_enable_unknown = false;
-> +	else
-> +		return 1;
-> +
-> +	return 0;
-> +}
-> +early_param("dt_cpu_ftrs", dt_cpu_ftrs_parse);
+> +config LD_HEAD_STUB_CATCH
+> +	bool "Reserve 256 bytes to cope with linker stubs in HEAD text" if EXPERT
+> +	depends on PPC64
+> +	default n
+> +	help
+> +	  Very large kernels can cause linker branch stubs to be generated by
+> +	  code in head_64.S, which moves the head text sections out of their
+> +	  specified location. This option can work around the problem.
 
-I wouldn't use strcmp with user passed parameters.
+I think we should also say that this relies on binutils/linker doing the
+right thing, I don't think this is documented, just an observation that
+always works.
+
+> +
+> +	  If unsure, say "N".
+> +
+>  config DISABLE_MPROFILE_KERNEL
+>  	bool "Disable use of mprofile-kernel for kernel tracing"
+>  	depends on PPC64 && CPU_LITTLE_ENDIAN
+> diff --git a/arch/powerpc/include/asm/head-64.h b/arch/powerpc/include/asm/head-64.h
+> index 99c9f01d02df..7ab95798f170 100644
+> --- a/arch/powerpc/include/asm/head-64.h
+> +++ b/arch/powerpc/include/asm/head-64.h
+> @@ -63,11 +63,29 @@
+>  	. = 0x0;						\
+>  start_##sname:
+>  
+> +/*
+> + * .linker_stub_catch section is used to catch linker stubs from being
+> + * inserted in our .text section, above the start_text label (which breaks
+> + * the ABS_ADDR calculation). See kernel/vmlinux.lds.S and tools/head_check.sh
+> + * for more details. We would prefer to just keep a cacheline (0x80), but
+> + * 0x100 seems to be how the linker aligns branch stub groups.
+> + */
+> +#ifdef CONFIG_LD_HEAD_STUB_CATCH
+> +#define OPEN_TEXT_SECTION(start)				\
+> +	.section ".linker_stub_catch","ax",@progbits;		\
+> +linker_stub_catch:						\
+> +	. = 0x4;						\
+
+Start at 4? 
+
+> +	text_start = (start) + 0x100;				\
+> +	.section ".text","ax",@progbits;			\
+> +	.balign 0x100;						\
+> +start_text:
+> +#else
+>  #define OPEN_TEXT_SECTION(start)				\
+>  	text_start = (start);					\
+>  	.section ".text","ax",@progbits;			\
+>  	. = 0x0;						\
+>  start_text:
+> +#endif
+>
+
+I could apply these on linux-next, it does not have the head_check.sh bits.
+I wanted to see what the final vmlinux layout looks like after this. I presume
+start_text would be at 0x8100
+  
+>  #define ZERO_FIXED_SECTION(sname, start, end)			\
+>  	sname##_start = (start);				\
+> diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
+> index 5aa434e84605..e69155f0db36 100644
+> --- a/arch/powerpc/kernel/vmlinux.lds.S
+> +++ b/arch/powerpc/kernel/vmlinux.lds.S
+> @@ -81,6 +81,11 @@ SECTIONS
+>  	 * section placement to work.
+>  	 */
+>  	.text BLOCK(0) : AT(ADDR(.text) - LOAD_OFFSET) {
+> +#ifdef CONFIG_LD_HEAD_STUB_CATCH
+> +		*(.linker_stub_catch);
+> +		. = . ;
+> +#endif
+> +
+>  #else
+>  	.text : AT(ADDR(.text) - LOAD_OFFSET) {
+>  		ALIGN_FUNCTION();
+> diff --git a/arch/powerpc/tools/head_check.sh b/arch/powerpc/tools/head_check.sh
+> index bfde937564f9..ad9e57209aa4 100755
+> --- a/arch/powerpc/tools/head_check.sh
+> +++ b/arch/powerpc/tools/head_check.sh
+> @@ -21,6 +21,11 @@
+>  # fixed section region (0 - 0x8000ish). Check what code is calling those stubs,
+>  # and perhaps change so a direct branch can reach.
+>  #
+> +# A ".linker_stub_catch" section is used to catch some stubs generated by
+> +# early .text code, which tend to get placed at the start of the section.
+> +# If there are too many such stubs, they can overflow this section. Expanding
+> +# it may help (or reducing the number of stub branches).
+> +#
+>  # Linker stubs use the TOC pointer, so even if fixed section code could
+>  # tolerate them being inserted into head code, they can't be allowed in low
+>  # level entry code (boot, interrupt vectors, etc) until r2 is set up. This
+> @@ -50,6 +55,7 @@ start_head_addr=$(cat .tmp_symbols.txt | grep " t start_first_256B$" | cut -d' '
+>  
+>  if [ "$start_head_addr" != "$expected_start_head_addr" ]; then
+>  	echo "ERROR: head code starts at $start_head_addr, should be $expected_start_head_addr"
+> +	echo "ERROR: try to enable LD_HEAD_STUB_CATCH config option"
+>  	echo "ERROR: see comments in arch/powerpc/tools/head_check.sh"
+>  
+>  	exit 1
+> @@ -63,6 +69,7 @@ start_text_addr=$(cat .tmp_symbols.txt | grep " t start_text$" | cut -d' ' -f1)
+>  
+>  if [ "$start_text_addr" != "$expected_start_text_addr" ]; then
+>  	echo "ERROR: start_text address is $start_text_addr, should be $expected_start_text_addr"
+> +	echo "ERROR: try to enable LD_HEAD_STUB_CATCH config option"
+>  	echo "ERROR: see comments in arch/powerpc/tools/head_check.sh"
+>  
+>  	exit 1
+
+Overall, I think this is very useful. I am not sure how to test this and
+what features it would be incompatible with -- kexec/crash dump?
 
 Balbir Singh.
