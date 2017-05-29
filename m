@@ -1,24 +1,20 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <madalin.bucur@nxp.com>
+Received: from NAM02-BL2-obe.outbound.protection.outlook.com
+ (mail-bl2nam02on0074.outbound.protection.outlook.com [104.47.38.74])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wbm6y21hJzDq9m
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 May 2017 15:50:34 +1000 (AEST)
-Subject: Re: [PATCH v1 1/8] powerpc/lib/code-patching: Enhance code patching
-To: Balbir Singh <bsingharora@gmail.com>, linuxppc-dev@lists.ozlabs.org,
- mpe@ellerman.id.au
-Cc: naveen.n.rao@linux.vnet.ibm.com, ananth@linux.vnet.ibm.com,
- paulus@samba.org, rashmica.g@gmail.com
-References: <20170525033650.10891-1-bsingharora@gmail.com>
- <20170525033650.10891-2-bsingharora@gmail.com>
- <72ff9a8a-dad8-55f3-01b0-29b24298bed0@c-s.fr>
- <1496011846.21894.7.camel@gmail.com>
-From: Christophe LEROY <christophe.leroy@c-s.fr>
-Message-ID: <985293e4-50aa-9f71-8b13-7f7e6dd0c2ae@c-s.fr>
-Date: Mon, 29 May 2017 07:50:21 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wbmqf3tvLzDq9m
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 May 2017 16:22:21 +1000 (AEST)
+From: Madalin Bucur <madalin.bucur@nxp.com>
+To: <netdev@vger.kernel.org>, <davem@davemloft.net>
+CC: <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>, Madalin
+ Bucur <madalin.bucur@nxp.com>, Camelia Groza <camelia.groza@nxp.com>
+Subject: [PATCH] Documentation: networking: add DPAA Ethernet document
+Date: Mon, 29 May 2017 09:22:06 +0300
+Message-ID: <1496038926-15315-1-git-send-email-madalin.bucur@nxp.com>
+Reply-To: <madalin.bucur@nxp.com>
 MIME-Version: 1.0
-In-Reply-To: <1496011846.21894.7.camel@gmail.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,43 +24,212 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Signed-off-by: Madalin Bucur <madalin.bucur@nxp.com>
+Signed-off-by: Camelia Groza <camelia.groza@nxp.com>
+---
+ Documentation/networking/dpaa.txt | 194 ++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 194 insertions(+)
+ create mode 100644 Documentation/networking/dpaa.txt
 
-
-Le 29/05/2017 à 00:50, Balbir Singh a écrit :
-> On Sun, 2017-05-28 at 17:59 +0200, christophe leroy wrote:
->>
->> Le 25/05/2017 à 05:36, Balbir Singh a écrit :
->>> Today our patching happens via direct copy and
->>> patch_instruction. The patching code is well
->>> contained in the sense that copying bits are limited.
->>>
->>> While considering implementation of CONFIG_STRICT_RWX,
->>> the first requirement is to a create another mapping
->>> that will allow for patching. We create the window using
->>> text_poke_area, allocated via get_vm_area(), which might
->>> be an overkill. We can do per-cpu stuff as well. The
->>> downside of these patches that patch_instruction is
->>> now synchornized using a lock. Other arches do similar
->>> things, but use fixmaps. The reason for not using
->>> fixmaps is to make use of any randomization in the
->>> future. The code also relies on set_pte_at and pte_clear
->>> to do the appropriate tlb flushing.
->>
->> Isn't it overkill to remap the text in another area ?
->>
->> Among the 6 arches implementing CONFIG_STRICT_KERNEL_RWX (arm, arm64,
->> parisc, s390, x86/32, x86/64):
->> - arm, x86/32 and x86/64 set text RW during the modification
-> 
-> x86 uses set_fixmap() in text_poke(), am I missing something?
-> 
-
-Indeed I looked how it is done in ftrace. On x86 text modifications are 
-done using ftrace_write() which calls probe_kernel_write() which doesn't 
-remap anything. It first calls ftrace_arch_code_modify_prepare() which 
-sets the kernel text to rw.
-
-Indeed you are right, text_poke() remaps via fixmap. However it looks 
-like text_poke() is used only for kgdb and kprobe
-
-Christophe
+diff --git a/Documentation/networking/dpaa.txt b/Documentation/networking/dpaa.txt
+new file mode 100644
+index 0000000..76e016d
+--- /dev/null
++++ b/Documentation/networking/dpaa.txt
+@@ -0,0 +1,194 @@
++The QorIQ DPAA Ethernet Driver
++==============================
++
++Authors:
++Madalin Bucur <madalin.bucur@nxp.com>
++Camelia Groza <camelia.groza@nxp.com>
++
++Contents
++========
++
++	- DPAA Ethernet Overview
++	- DPAA Ethernet Supported SoCs
++	- Configuring DPAA Ethernet in your kernel
++	- DPAA Ethernet Frame Processing
++	- DPAA Ethernet Features
++	- Debugging
++
++DPAA Ethernet Overview
++======================
++
++DPAA stands for Data Path Acceleration Architecture and it is a
++set of networking acceleration IPs that are available on several
++generations of SoCs, both on PowerPC and ARM64.
++
++The Freescale DPAA architecture consists of a series of hardware blocks
++that support Ethernet connectivity. The Ethernet driver depends upon the
++following drivers in the Linux kernel:
++
++ - Peripheral Access Memory Unit (PAMU) (* needed only for PPC platforms)
++    drivers/iommu/fsl_*
++ - Frame Manager (FMan)
++    drivers/net/ethernet/freescale/fman
++ - Queue Manager (QMan), Buffer Manager (BMan)
++    drivers/soc/fsl/qbman
++
++A simplified view of the dpaa_eth interfaces mapped to FMan MACs:
++
++  dpaa_eth       /eth0\     ...       /ethN\
++  driver        |      |             |      |
++  -------------   ----   -----------   ----   -------------
++       -Ports  / Tx  Rx \    ...    / Tx  Rx \
++  FMan        |          |         |          |
++       -MACs  |   MAC0   |         |   MACN   |
++             /   dtsec0   \  ...  /   dtsecN   \ (or tgec)
++            /              \     /              \(or memac)
++  ---------  --------------  ---  --------------  ---------
++      FMan, FMan Port, FMan SP, FMan MURAM drivers
++  ---------------------------------------------------------
++      FMan HW blocks: MURAM, MACs, Ports, SP
++  ---------------------------------------------------------
++
++The dpaa_eth relation to the QMan, BMan and FMan:
++              ________________________________
++  dpaa_eth   /            eth0                \
++  driver    /                                  \
++  ---------   -^-   -^-   -^-   ---    ---------
++  QMan driver / \   / \   / \  \   /  | BMan    |
++             |Rx | |Rx | |Tx | |Tx |  | driver  |
++  ---------  |Dfl| |Err| |Cnf| |FQs|  |         |
++  QMan HW    |FQ | |FQ | |FQs| |   |  |         |
++             /   \ /   \ /   \  \ /   |         |
++  ---------   ---   ---   ---   -v-    ---------
++            |        FMan QMI         |         |
++            | FMan HW       FMan BMI  | BMan HW |
++              -----------------------   --------
++
++where the acronyms used above (and in the code) are:
++DPAA = Data Path Acceleration Architecture
++FMan = DPAA Frame Manager
++QMan = DPAA Queue Manager
++BMan = DPAA Buffers Manager
++QMI = QMan interface in FMan
++BMI = BMan interface in FMan
++FMan SP = FMan Storage Profiles
++MURAM = Multi-user RAM in FMan
++FQ = QMan Frame Queue
++Rx Dfl FQ = default reception FQ
++Rx Err FQ = Rx error frames FQ
++Tx Cnf FQ = Tx confirmation FQs
++Tx FQs = transmission frame queues
++dtsec = datapath three speed Ethernet controller (10/100/1000 Mbps)
++tgec = ten gigabit Ethernet controller (10 Gbps)
++memac = multirate Ethernet MAC (10/100/1000/10000)
++
++DPAA Ethernet Supported SoCs
++============================
++
++The DPAA drivers enable the Ethernet controllers present on the following SoCs:
++
++# PPC
++P1023
++P2041
++P3041
++P4080
++P5020
++P5040
++T1023
++T1024
++T1040
++T1042
++T2080
++T4240
++B4860
++
++# ARM
++LS1043A
++LS1046A
++
++Configuring DPAA Ethernet in your kernel
++========================================
++
++To enable the DPAA Ethernet driver, the following Kconfig options are required:
++
++# common for arch/arm64 and arch/powerpc platforms
++CONFIG_FSL_DPAA=y
++CONFIG_FSL_FMAN=y
++CONFIG_FSL_DPAA_ETH=y
++CONFIG_FSL_XGMAC_MDIO=y
++
++# for arch/powerpc only
++CONFIG_FSL_PAMU=y
++
++# common options needed for the PHYs used on the RDBs
++CONFIG_VITESSE_PHY=y
++CONFIG_REALTEK_PHY=y
++CONFIG_AQUANTIA_PHY=y
++
++DPAA Ethernet Frame Processing
++==============================
++
++On Rx, buffers for the incoming frames are retrieved from one of the three
++existing buffers pools. The driver initializes and seeds these, each with
++buffers of different sizes: 1KB, 2KB and 4KB.
++
++On Tx, all transmitted frames are returned to the driver through Tx
++confirmation frame queues. The driver is then responsible for freeing the
++buffers. In order to do this properly, a backpointer is added to the buffer
++before transmission that points to the skb. When the buffer returns to the
++driver on a confirmation FQ, the skb can be correctly consumed.
++
++DPAA Ethernet Features
++======================
++
++Currently the DPAA Ethernet driver enables the basic features required for
++a Linux Ethernet driver. The support for advanced features will be added
++gradually.
++
++The driver has Rx and Tx checksum offloading for UDP and TCP. Currently the Rx
++checksum offload feature is enabled by default and cannot be controlled through
++ethtool.
++
++The driver has support for multiple prioritized Tx traffic classes. Priorities
++range from 0 (lowest) to 3 (highest). These are mapped to HW workqueues with
++strict priority levels. Each traffic class contains NR_CPU TX queues. By
++default, only one traffic class is enabled and the lowest priority Tx queues
++are used. Higher priority traffic classes can be enabled with the mqprio
++qdisc. For example, all four traffic classes are enabled on an interface with
++the following command. Furthermore, skb priority levels are mapped to traffic
++classes as follows:
++
++	* priorities 0 to 3 - traffic class 0 (low priority)
++	* priorities 4 to 7 - traffic class 1 (medium-low priority)
++	* priorities 8 to 11 - traffic class 2 (medium-high priority)
++	* priorities 12 to 15 - traffic class 3 (high priority)
++
++tc qdisc add dev <int> root handle 1: \
++	 mqprio num_tc 4 map 0 0 0 0 1 1 1 1 2 2 2 2 3 3 3 3 hw 1
++
++Debugging
++=========
++
++The following statistics are exported for each interface through ethtool:
++
++	- interrupt count per CPU
++	- Rx packets count per CPU
++	- Tx packets count per CPU
++	- Tx confirmed packets count per CPU
++	- Tx S/G frames count per CPU
++	- Tx error count per CPU
++	- Rx error count per CPU
++	- Rx error count per type
++	- congestion related statistics:
++		- congestion status
++		- time spent in congestion
++		- number of time the device entered congestion
++		- dropped packets count per cause
++
++The driver also exports the following information in sysfs:
++
++	- the FQ IDs for each FQ type
++	/sys/devices/platform/dpaa-ethernet.0/net/<int>/fqids
++
++	- the IDs of the buffer pools in use
++	/sys/devices/platform/dpaa-ethernet.0/net/<int>/bpids
+-- 
+2.1.0
