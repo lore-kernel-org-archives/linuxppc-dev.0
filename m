@@ -1,23 +1,29 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <linus.walleij@linaro.org>
+Received: from mail-it0-x233.google.com (mail-it0-x233.google.com
+ [IPv6:2607:f8b0:4001:c0b::233])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wbr713qZmzDqBJ
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 May 2017 18:50:53 +1000 (AEST)
-Subject: Re: [PATCH v1 2/8] powerpc/kprobes: Move kprobes over to
- patch_instruction
-To: Balbir Singh <bsingharora@gmail.com>, linuxppc-dev@lists.ozlabs.org,
- mpe@ellerman.id.au
-Cc: naveen.n.rao@linux.vnet.ibm.com, ananth@linux.vnet.ibm.com,
- paulus@samba.org, rashmica.g@gmail.com
-References: <20170525033650.10891-1-bsingharora@gmail.com>
- <20170525033650.10891-3-bsingharora@gmail.com>
-From: Christophe LEROY <christophe.leroy@c-s.fr>
-Message-ID: <f5ce15b1-2c50-cad6-36f1-c7e7bc8c4f2d@c-s.fr>
-Date: Mon, 29 May 2017 10:50:34 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wbs9C5mxYzDq9m
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 May 2017 19:37:51 +1000 (AEST)
+Received: by mail-it0-x233.google.com with SMTP id g126so24218460ith.0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 May 2017 02:37:50 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <20170525033650.10891-3-bsingharora@gmail.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+In-Reply-To: <20170524080156.1C4936EB78@pc13941vm.idsi0.si.c-s.fr>
+References: <20170524080156.1C4936EB78@pc13941vm.idsi0.si.c-s.fr>
+From: Linus Walleij <linus.walleij@linaro.org>
+Date: Mon, 29 May 2017 11:37:48 +0200
+Message-ID: <CACRpkdY4Y=Z7BVpeUxhYNdj815HQORo+TzfhbQATtbRMsurQLA@mail.gmail.com>
+Subject: Re: [PATCH] powerpc: sysdev: simple_gpio: fix Oops in gpio save_regs
+ function
+To: Christophe Leroy <christophe.leroy@c-s.fr>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, Scott Wood <oss@buserror.net>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>,
+ stable <stable@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,45 +33,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Wed, May 24, 2017 at 10:01 AM, Christophe Leroy
+<christophe.leroy@c-s.fr> wrote:
 
+> of_mm_gpiochip_add_data() generates an Oops for NULL pointer dereference.
+>
+> of_mm_gpiochip_add_data() calls mm_gc->save_regs() before
+> setting the data, therefore ->save_regs() cannot use gpiochip_get_data()
+>
+> Fixes: 937daafca774b ("powerpc: simple-gpio: use gpiochip data pointer")
+> Cc: stable@vger.kernel.org
+>
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
-Le 25/05/2017 à 05:36, Balbir Singh a écrit :
-> arch_arm/disarm_probe use direct assignment for copying
-> instructions, replace them with patch_instruction
-> 
-> Signed-off-by: Balbir Singh <bsingharora@gmail.com>
-> ---
->   arch/powerpc/kernel/kprobes.c | 4 ++--
->   1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/arch/powerpc/kernel/kprobes.c b/arch/powerpc/kernel/kprobes.c
-> index 160ae0f..5e1fa86 100644
-> --- a/arch/powerpc/kernel/kprobes.c
-> +++ b/arch/powerpc/kernel/kprobes.c
-> @@ -158,7 +158,7 @@ NOKPROBE_SYMBOL(arch_prepare_kprobe);
->   
->   void arch_arm_kprobe(struct kprobe *p)
->   {
-> -	*p->addr = BREAKPOINT_INSTRUCTION;
-> +	patch_instruction(p->addr, BREAKPOINT_INSTRUCTION);
->   	flush_icache_range((unsigned long) p->addr,
->   			   (unsigned long) p->addr + sizeof(kprobe_opcode_t));
->   }
-> @@ -166,7 +166,7 @@ NOKPROBE_SYMBOL(arch_arm_kprobe);
->   
->   void arch_disarm_kprobe(struct kprobe *p)
->   {
-> -	*p->addr = p->opcode;
-> +	patch_instruction(p->addr, BREAKPOINT_INSTRUCTION);
+Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
 
-Shouldn't it be the following instead ?
+Sorry for any screwups I've caused...
 
-patch_instruction(p->addr, p->opcode);
-
-Christophe
-
-
->   	flush_icache_range((unsigned long) p->addr,
->   			   (unsigned long) p->addr + sizeof(kprobe_opcode_t));
->   }
-> 
+Yours,
+Linus Walleij
