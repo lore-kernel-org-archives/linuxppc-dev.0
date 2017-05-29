@@ -2,26 +2,24 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wbl8f5HtLzDq9m
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 May 2017 15:06:58 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wblTj1cs2zDq9m
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 May 2017 15:21:45 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Rob Landley <rob@landley.net>, Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Abdul Haleem <abdhalee@linux.vnet.ibm.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- linux-kernel <linux-kernel@vger.kernel.org>, linux-input@vger.kernel.org,
- Jiri Kosina <jikos@kernel.org>,
- Benjamin Tissoires <benjamin.tissoires@redhat.com>,
- sachinp <sachinp@linux.vnet.ibm.com>,
- Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [linux-next] PPC Lpar fail to boot with error hid: module
- verification failed: signature and/or required key missing - tainting kernel
-In-Reply-To: <87a7e82d-0af5-7f9e-6bd6-7e28b238e866@landley.net>
-References: <1495700957.9020.43.camel@abdul.in.ibm.com>
- <8760gp9jjl.fsf@concordia.ellerman.id.au>
- <20170526072437.46499fbd@canb.auug.org.au>
- <87a7e82d-0af5-7f9e-6bd6-7e28b238e866@landley.net>
-Date: Mon, 29 May 2017 15:06:58 +1000
-Message-ID: <87r2z86ykt.fsf@concordia.ellerman.id.au>
+To: David Laight <David.Laight@ACULAB.COM>, Nicholas Piggin <npiggin@gmail.com>,
+ christophe leroy <christophe.leroy@c-s.fr>
+Cc: Scott Wood <oss@buserror.net>,
+ "linuxppc-dev\@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Subject: RE: [PATCH 3/3] powerpc/8xx: xmon compile fix
+In-Reply-To: <063D6719AE5E284EB5DD2968C1650D6DD0000223@AcuExch.aculab.com>
+References: <20170511151522.4772-1-npiggin@gmail.com>
+ <20170511151522.4772-3-npiggin@gmail.com>
+ <b84f2d89-fc2f-d25f-1871-8fcd7b133fcf@c-s.fr>
+ <fdb9e787-e397-a46e-467c-066d51d73131@c-s.fr>
+ <20170512104707.5393eaa1@roar.ozlabs.ibm.com>
+ <87o9ug84ia.fsf@concordia.ellerman.id.au>
+ <063D6719AE5E284EB5DD2968C1650D6DD0000223@AcuExch.aculab.com>
+Date: Mon, 29 May 2017 15:21:44 +1000
+Message-ID: <87o9uc6xw7.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -33,44 +31,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Rob Landley <rob@landley.net> writes:
+David Laight <David.Laight@ACULAB.COM> writes:
 
-> On 05/25/2017 04:24 PM, Stephen Rothwell wrote:
->> Hi Michael,
+> From:  Michael Ellerman
+>> Sent: 26 May 2017 08:24
+>> Nicholas Piggin <npiggin@gmail.com> writes:
+>> > diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
+>> > index f11f65634aab..438fdb0fb142 100644
+>> > --- a/arch/powerpc/xmon/xmon.c
+>> > +++ b/arch/powerpc/xmon/xmon.c
+>> > @@ -1242,14 +1242,16 @@ bpt_cmds(void)
+>> >  {
+>> >  	int cmd;
+>> >  	unsigned long a;
+>> > -	int mode, i;
+>> > +	int i;
+>> >  	struct bpt *bp;
+>> > -	const char badaddr[] = "Only kernel addresses are permitted "
+>> > -		"for breakpoints\n";
+>> >
+>> >  	cmd = inchar();
+>> >  	switch (cmd) {
+>> > -#ifndef CONFIG_8xx
+>> > +#ifndef CONFIG_PPC_8xx
+>> > +	int mode;
+>> > +	const char badaddr[] = "Only kernel addresses are permitted "
+>> > +		"for breakpoints\n";
+>> > +
+>> >  	case 'd':	/* bd - hardware data breakpoint */
+>> >  		mode = 7;
+>> >  		cmd = inchar();
 >> 
->> On Thu, 25 May 2017 23:02:06 +1000 Michael Ellerman <mpe@ellerman.id.au> wrote:
->>>
->>> It'll be:
->>>
->>> ee35011fd032 ("initramfs: make initramfs honor CONFIG_DEVTMPFS_MOUNT")
->>
->> And Andrew has asked me to drop that patch from linux-next which will
->> happen today.
+>> GCC 7 rejects this:
+>> 
+>>   arch/powerpc/xmon/xmon.c: In function bpt_cmds:
+>>   arch/powerpc/xmon/xmon.c:1252:13: error: statement will never be executed [-Werror=switch-
+>> unreachable]
+>>     const char badaddr[] = "Only kernel addresses are permitted for breakpoints\n";
+>>                ^~~~~~~
 >
-> What approach do the kernel developers suggest I take here?
+> Try 'static' ?
 
-Well I'm just *a* kernel developer, but rule #1 is don't break userspace.
-
-> I would have thought letting it soak in linux-next for a release so
-> people could fix userspace bugs would be the next step, but this sounds
-> like that's not an option?
-
-You say they're userspace bugs, userspace will say it's a bug that the
-kernel has changed its behaviour.
-
-> Is the behavior the patch implements wrong?
-
-Yes, because it breaks existing setups for no particularly good reason.
-
-If CONFIG_DEVTMPFS_MOUNT had always meant devtmpfs was mounted in the
-initramfs then that would have been fine.
-
-But because it didn't, there are now systems out there that depend on
-the existing behaviour, and changing it is therefore wrong IMHO.
-
-As I said in another mail you can avoid breaking existing setups by
-adding a new config option to control mounting devtmpfs in the
-initramfs. It's a pity to need yet another config option, but such is
-life.
+Yep that works, will rebase this again ... O_o
 
 cheers
