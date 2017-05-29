@@ -1,19 +1,24 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <mopsfelder@gmail.com>
+Received: from mail-qk0-x243.google.com (mail-qk0-x243.google.com
+ [IPv6:2607:f8b0:400d:c09::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wc1250L7fzDqBQ
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 May 2017 01:32:12 +1000 (AEST)
-Message-Id: <79264a0fdaf65642c93b20a8c1df55535674df5a.1496070452.git.christophe.leroy@c-s.fr>
-In-Reply-To: <cover.1496070452.git.christophe.leroy@c-s.fr>
-References: <cover.1496070452.git.christophe.leroy@c-s.fr>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH 7/7] powerpc/mm: Simplify __set_fixmap()
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Scott Wood <oss@buserror.net>, Balbir Singh <bsingharora@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Mon, 29 May 2017 17:32:08 +0200 (CEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wbyF86lRDzDqBJ
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 May 2017 23:26:36 +1000 (AEST)
+Received: by mail-qk0-x243.google.com with SMTP id v195so1175906qka.2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 May 2017 06:26:36 -0700 (PDT)
+From: Murilo Opsfelder Araujo <mopsfelder@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: linux-watchdog@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>,
+ Wim Van Sebroeck <wim@iguana.be>, linuxppc-dev@lists.ozlabs.org,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Murilo Opsfelder Araujo <mopsfelder@gmail.com>
+Subject: [PATCH v2] drivers/watchdog/Kconfig: Update CONFIG_WATCHDOG_RTAS
+ dependencies
+Date: Mon, 29 May 2017 10:26:28 -0300
+Message-Id: <20170529132628.10803-1-mopsfelder@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,78 +28,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-__set_fixmap() uses __fix_to_virt() then does the boundary checks
-by it self. Instead, we can use fix_to_virt() which does the
-verification at build time. For this, we need to use it inline
-so that GCC can see the real value of idx at buildtime.
+drivers/watchdog/wdrtas.c uses symbols defined in arch/powerpc/kernel/rtas.c,
+which are exported iff CONFIG_PPC_RTAS is selected. Building wdrtas.c without
+setting CONFIG_PPC_RTAS throws the following errors:
 
-In the meantime, we remove the 'fixmaps' variable.
-This variable is set but has never been used from the beginning
-(commit 2c419bdeca1d9 ("[POWERPC] Port fixmap from x86 and use
-for kmap_atomic"))
+    ERROR: ".rtas_token" [drivers/watchdog/wdrtas.ko] undefined!
+    ERROR: "rtas_data_buf" [drivers/watchdog/wdrtas.ko] undefined!
+    ERROR: "rtas_data_buf_lock" [drivers/watchdog/wdrtas.ko] undefined!
+    ERROR: ".rtas_get_sensor" [drivers/watchdog/wdrtas.ko] undefined!
+    ERROR: ".rtas_call" [drivers/watchdog/wdrtas.ko] undefined!
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+This was identified during a randconfig build where CONFIG_WATCHDOG_RTAS=m and
+CONFIG_PPC_RTAS was not set. Logs are here:
+
+    http://kisskb.ellerman.id.au/kisskb/buildresult/12982152/
+
+This patch fixes the issue by updating CONFIG_WATCHDOG_RTAS to depend on just
+CONFIG_PPC_RTAS, removing COMPILE_TEST entirely.
+
+Signed-off-by: Murilo Opsfelder Araujo <mopsfelder@gmail.com>
 ---
- arch/powerpc/include/asm/fixmap.h | 10 +++++++---
- arch/powerpc/mm/pgtable_32.c      | 15 ---------------
- 2 files changed, 7 insertions(+), 18 deletions(-)
+ drivers/watchdog/Kconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/include/asm/fixmap.h b/arch/powerpc/include/asm/fixmap.h
-index 4508b322f2cd..6c40dfda5912 100644
---- a/arch/powerpc/include/asm/fixmap.h
-+++ b/arch/powerpc/include/asm/fixmap.h
-@@ -17,6 +17,7 @@
- #ifndef __ASSEMBLY__
- #include <linux/kernel.h>
- #include <asm/page.h>
-+#include <asm/pgtable.h>
- #ifdef CONFIG_HIGHMEM
- #include <linux/threads.h>
- #include <asm/kmap_types.h>
-@@ -62,9 +63,6 @@ enum fixed_addresses {
- 	__end_of_fixed_addresses
- };
+diff --git a/drivers/watchdog/Kconfig b/drivers/watchdog/Kconfig
+index 8b9049d..e6e31a1 100644
+--- a/drivers/watchdog/Kconfig
++++ b/drivers/watchdog/Kconfig
+@@ -1688,7 +1688,7 @@ config MEN_A21_WDT
  
--extern void __set_fixmap (enum fixed_addresses idx,
--					phys_addr_t phys, pgprot_t flags);
--
- #define __FIXADDR_SIZE	(__end_of_fixed_addresses << PAGE_SHIFT)
- #define FIXADDR_START		(FIXADDR_TOP - __FIXADDR_SIZE)
+ config WATCHDOG_RTAS
+ 	tristate "RTAS watchdog"
+-	depends on PPC_RTAS || (PPC64 && COMPILE_TEST)
++	depends on PPC_RTAS
+ 	help
+ 	  This driver adds watchdog support for the RTAS watchdog.
  
-@@ -72,5 +70,11 @@ extern void __set_fixmap (enum fixed_addresses idx,
- 
- #include <asm-generic/fixmap.h>
- 
-+static inline void __set_fixmap(enum fixed_addresses idx,
-+				phys_addr_t phys, pgprot_t flags)
-+{
-+	map_kernel_page(fix_to_virt(idx), phys, pgprot_val(flags));
-+}
-+
- #endif /* !__ASSEMBLY__ */
- #endif
-diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
-index d672904bad0c..69f9b8bb61bf 100644
---- a/arch/powerpc/mm/pgtable_32.c
-+++ b/arch/powerpc/mm/pgtable_32.c
-@@ -408,18 +408,3 @@ void __kernel_map_pages(struct page *page, int numpages, int enable)
- 	change_page_attr(page, numpages, enable ? PAGE_KERNEL : __pgprot(0));
- }
- #endif /* CONFIG_DEBUG_PAGEALLOC */
--
--static int fixmaps;
--
--void __set_fixmap (enum fixed_addresses idx, phys_addr_t phys, pgprot_t flags)
--{
--	unsigned long address = __fix_to_virt(idx);
--
--	if (idx >= __end_of_fixed_addresses) {
--		BUG();
--		return;
--	}
--
--	map_kernel_page(address, phys, pgprot_val(flags));
--	fixmaps++;
--}
 -- 
-2.12.0
+2.9.4
