@@ -1,26 +1,20 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
- [IPv6:2607:f8b0:400e:c00::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <paulus@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wbb0Y2yS8zDq5j
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 May 2017 08:59:25 +1000 (AEST)
-Received: by mail-pf0-x242.google.com with SMTP id u26so10272991pfd.2
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 28 May 2017 15:59:24 -0700 (PDT)
-Message-ID: <1496012325.21894.9.camel@gmail.com>
-Subject: Re: [PATCH v1 1/8] powerpc/lib/code-patching: Enhance code patching
-From: Balbir Singh <bsingharora@gmail.com>
-To: christophe leroy <christophe.leroy@c-s.fr>,
- linuxppc-dev@lists.ozlabs.org,  mpe@ellerman.id.au
-Cc: naveen.n.rao@linux.vnet.ibm.com, ananth@linux.vnet.ibm.com,
- paulus@samba.org, rashmica.g@gmail.com
-Date: Mon, 29 May 2017 08:58:45 +1000
-In-Reply-To: <58bd28a3-f9bf-4c27-8f5b-32377f3d5f9f@c-s.fr>
-References: <20170525033650.10891-1-bsingharora@gmail.com>
- <20170525033650.10891-2-bsingharora@gmail.com>
- <58bd28a3-f9bf-4c27-8f5b-32377f3d5f9f@c-s.fr>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wbcYn3PFqzDq5W
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 May 2017 10:09:49 +1000 (AEST)
+Date: Mon, 29 May 2017 10:09:01 +1000
+From: Paul Mackerras <paulus@ozlabs.org>
+To: linuxppc-dev@ozlabs.org, kvm@vger.kernel.org
+Cc: kvm-ppc@vger.kernel.org
+Subject: [PATCH V2 2/2] KVM: PPC: Book3S HV: Enable guests to use large
+ decrementer mode on POWER9
+Message-ID: <20170529000901.GC8570@fergus.ozlabs.ibm.com>
+References: <20170529000746.GA8570@fergus.ozlabs.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20170529000746.GA8570@fergus.ozlabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,56 +24,138 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 2017-05-28 at 16:29 +0200, christophe leroy wrote:
-> 
-> Le 25/05/2017 à 05:36, Balbir Singh a écrit :
-> > Today our patching happens via direct copy and
-> > patch_instruction. The patching code is well
-> > contained in the sense that copying bits are limited.
-> > 
-> > While considering implementation of CONFIG_STRICT_RWX,
-> > the first requirement is to a create another mapping
-> > that will allow for patching. We create the window using
-> > text_poke_area, allocated via get_vm_area(), which might
-> > be an overkill. We can do per-cpu stuff as well. The
-> > downside of these patches that patch_instruction is
-> > now synchornized using a lock. Other arches do similar
-> > things, but use fixmaps. The reason for not using
-> > fixmaps is to make use of any randomization in the
-> > future. The code also relies on set_pte_at and pte_clear
-> > to do the appropriate tlb flushing.
-> > 
-> > Signed-off-by: Balbir Singh <bsingharora@gmail.com>
-> 
-> [...]
-> 
-> > +static int kernel_map_addr(void *addr)
-> > +{
-> > +	unsigned long pfn;
-> >  	int err;
-> > 
-> > -	__put_user_size(instr, addr, 4, err);
-> > +	if (is_vmalloc_addr(addr))
-> > +		pfn = vmalloc_to_pfn(addr);
-> > +	else
-> > +		pfn = __pa_symbol(addr) >> PAGE_SHIFT;
-> > +
-> > +	err = map_kernel_page((unsigned long)text_poke_area->addr,
-> > +			(pfn << PAGE_SHIFT), _PAGE_KERNEL_RW | _PAGE_PRESENT);
-> 
-> map_kernel_page() doesn't exist on powerpc32, so compilation fails.
-> 
-> However a similar function exists and is called map_page()
-> 
-> Maybe the below modification could help (not tested yet)
-> 
-> Christophe
->
+This allows userspace (e.g. QEMU) to enable large decrementer mode
+for the guest, by setting the LPCR_LD bit in the guest LPCR value.
+With this, the guest exit code saves 64 bits of the guest DEC value
+on exit.  Other places that use the guest DEC value check the LPCR_LD
+bit in the guest LPCR value, and if it is set, omit the 32-bit sign
+extension that would otherwise be done.
 
-Thanks, I'll try and get a compile, as an alternative how about
+This doesn't change the DEC emulation used by PR KVM because PR KVM
+is not supported on POWER9 yet.
 
-#ifdef CONFIG_PPC32
-#define map_kernel_page map_page
-#endif
+This is partly based on an earlier patch by Oliver O'Halloran.
 
-Balbir Singh.
+Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
+---
+ arch/powerpc/include/asm/kvm_host.h     |  2 +-
+ arch/powerpc/kvm/book3s_hv.c            |  2 ++
+ arch/powerpc/kvm/book3s_hv_rmhandlers.S | 28 ++++++++++++++++++++++++----
+ arch/powerpc/kvm/emulate.c              |  4 ++--
+ 4 files changed, 29 insertions(+), 7 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
+index 9c51ac4..3f879c8 100644
+--- a/arch/powerpc/include/asm/kvm_host.h
++++ b/arch/powerpc/include/asm/kvm_host.h
+@@ -579,7 +579,7 @@ struct kvm_vcpu_arch {
+ 	ulong mcsrr0;
+ 	ulong mcsrr1;
+ 	ulong mcsr;
+-	u32 dec;
++	ulong dec;
+ #ifdef CONFIG_BOOKE
+ 	u32 decar;
+ #endif
+diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+index 42b7a4f..1f9c0ee 100644
+--- a/arch/powerpc/kvm/book3s_hv.c
++++ b/arch/powerpc/kvm/book3s_hv.c
+@@ -1143,6 +1143,8 @@ static void kvmppc_set_lpcr(struct kvm_vcpu *vcpu, u64 new_lpcr,
+ 	mask = LPCR_DPFD | LPCR_ILE | LPCR_TC;
+ 	if (cpu_has_feature(CPU_FTR_ARCH_207S))
+ 		mask |= LPCR_AIL;
++	if (cpu_has_feature(CPU_FTR_LARGE_DEC))
++		mask |= LPCR_LD;
+ 
+ 	/* Broken 32-bit version of LPCR must not clear top bits */
+ 	if (preserve_top32)
+diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+index bcb5401..e7a2c89 100644
+--- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
++++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+@@ -916,7 +916,7 @@ ALT_FTR_SECTION_END_IFCLR(CPU_FTR_ARCH_300)
+ 	mftb	r7
+ 	subf	r3,r7,r8
+ 	mtspr	SPRN_DEC,r3
+-	stw	r3,VCPU_DEC(r4)
++	std	r3,VCPU_DEC(r4)
+ 
+ 	ld	r5, VCPU_SPRG0(r4)
+ 	ld	r6, VCPU_SPRG1(r4)
+@@ -1030,7 +1030,13 @@ kvmppc_cede_reentry:		/* r4 = vcpu, r13 = paca */
+ 	li	r0, BOOK3S_INTERRUPT_EXTERNAL
+ 	bne	cr1, 12f
+ 	mfspr	r0, SPRN_DEC
+-	cmpwi	r0, 0
++BEGIN_FTR_SECTION
++	/* On POWER9 check whether the guest has large decrementer enabled */
++	andis.	r8, r8, LPCR_LD@h
++	bne	15f
++END_FTR_SECTION_IFSET(CPU_FTR_ARCH_300)
++	extsw	r0, r0
++15:	cmpdi	r0, 0
+ 	li	r0, BOOK3S_INTERRUPT_DECREMENTER
+ 	bge	5f
+ 
+@@ -1457,12 +1463,18 @@ mc_cont:
+ 	mtspr	SPRN_SPURR,r4
+ 
+ 	/* Save DEC */
++	ld	r3, HSTATE_KVM_VCORE(r13)
+ 	mfspr	r5,SPRN_DEC
+ 	mftb	r6
++	/* On P9, if the guest has large decr enabled, don't sign extend */
++BEGIN_FTR_SECTION
++	ld	r4, VCORE_LPCR(r3)
++	andis.	r4, r4, LPCR_LD@h
++	bne	16f
++END_FTR_SECTION_IFSET(CPU_FTR_ARCH_300)
+ 	extsw	r5,r5
+-	add	r5,r5,r6
++16:	add	r5,r5,r6
+ 	/* r5 is a guest timebase value here, convert to host TB */
+-	ld	r3,HSTATE_KVM_VCORE(r13)
+ 	ld	r4,VCORE_TB_OFFSET(r3)
+ 	subf	r5,r4,r5
+ 	std	r5,VCPU_DEC_EXPIRES(r9)
+@@ -2374,7 +2386,15 @@ END_FTR_SECTION_IFSET(CPU_FTR_TM)
+ 	mfspr	r3, SPRN_DEC
+ 	mfspr	r4, SPRN_HDEC
+ 	mftb	r5
++BEGIN_FTR_SECTION
++	/* On P9 check whether the guest has large decrementer mode enabled */
++	ld	r6, HSTATE_KVM_VCORE(r13)
++	ld	r6, VCORE_LPCR(r6)
++	andis.	r6, r6, LPCR_LD@h
++	bne	68f
++END_FTR_SECTION_IFSET(CPU_FTR_ARCH_300)
+ 	extsw	r3, r3
++68:
+ BEGIN_FTR_SECTION
+ 	extsw	r4, r4
+ END_FTR_SECTION_IFSET(CPU_FTR_LARGE_DEC)
+diff --git a/arch/powerpc/kvm/emulate.c b/arch/powerpc/kvm/emulate.c
+index c873ffe..4d8b4d6 100644
+--- a/arch/powerpc/kvm/emulate.c
++++ b/arch/powerpc/kvm/emulate.c
+@@ -39,7 +39,7 @@ void kvmppc_emulate_dec(struct kvm_vcpu *vcpu)
+ 	unsigned long dec_nsec;
+ 	unsigned long long dec_time;
+ 
+-	pr_debug("mtDEC: %x\n", vcpu->arch.dec);
++	pr_debug("mtDEC: %lx\n", vcpu->arch.dec);
+ 	hrtimer_try_to_cancel(&vcpu->arch.dec_timer);
+ 
+ #ifdef CONFIG_PPC_BOOK3S
+@@ -109,7 +109,7 @@ static int kvmppc_emulate_mtspr(struct kvm_vcpu *vcpu, int sprn, int rs)
+ 	case SPRN_TBWU: break;
+ 
+ 	case SPRN_DEC:
+-		vcpu->arch.dec = spr_val;
++		vcpu->arch.dec = (u32) spr_val;
+ 		kvmppc_emulate_dec(vcpu);
+ 		break;
+ 
+-- 
+2.7.4
