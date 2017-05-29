@@ -1,19 +1,42 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
- [IPv6:2607:f8b0:400e:c05::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <shilpa.bhat@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wbgW041sqzDq7Z
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 May 2017 12:22:36 +1000 (AEST)
-Received: by mail-pg0-x242.google.com with SMTP id s62so4897310pgc.0
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 28 May 2017 19:22:36 -0700 (PDT)
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Nicholas Piggin <npiggin@gmail.com>, linux-arch@vger.kernel.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2] spin loop primitives for busy waiting
-Date: Mon, 29 May 2017 12:22:23 +1000
-Message-Id: <20170529022223.14793-1-npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wbkk51pR8zDq9m
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 May 2017 14:47:25 +1000 (AEST)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v4T4hinW026684
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 May 2017 00:47:16 -0400
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2aqhmjgyw3-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 May 2017 00:47:16 -0400
+Received: from localhost
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <shilpa.bhat@linux.vnet.ibm.com>;
+ Mon, 29 May 2017 14:47:13 +1000
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v4T4l2b328115112
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 May 2017 14:47:10 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v4T4kTJP014395
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 May 2017 14:46:30 +1000
+From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+To: jdelvare@suse.com, linux@roeck-us.net, paulus@samba.org, mpe@ellerman.id.au
+Cc: linux-hwmon@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, svaidy@linux.vnet.ibm.com,
+ ego@linux.vnet.ibm.com, akshay.adiga@linux.vnet.ibm.com,
+ andrew@aj.id.au, clg@kaod.org,
+ Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Subject: [PATCH V5] hwmon: (ibmpowernv) Add highest/lowest attributes to
+ sensors
+Date: Mon, 29 May 2017 10:16:01 +0530
+Message-Id: <1496033161-9244-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,123 +46,117 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Current busy-wait loops are implemented by repeatedly calling cpu_relax()
-to give an arch option for a low-latency option to improve power and/or
-SMT resource contention.
+OCC provides historical minimum and maximum value for the sensor
+readings. This patch exports them as highest and lowest attributes
+for the inband sensors copied by OCC to main memory.
 
-This poses some difficulties for powerpc, which has SMT priority setting
-instructions (priorities determine how ifetch cycles are apportioned).
-powerpc's cpu_relax() is implemented by setting a low priority then
-setting normal priority. This has several problems:
-
- - Changing thread priority can have some execution cost and potential
-   impact to other threads in the core. It's inefficient to execute them
-   every time around a busy-wait loop.
-
- - Depending on implementation details, a `low ; medium` sequence may
-   not have much if any affect. Some software with similar pattern
-   actually inserts a lot of nops between, in order to cause a few fetch
-   cycles with the low priority.
-
- - The busy-wait loop runs with regular priority. This might only be a few
-   fetch cycles, but if there are several threads running such loops, they
-   could cause a noticable impact on a non-idle thread.
-
-Implement spin_begin, spin_end primitives that can be used around busy
-wait loops, which default to no-ops. And spin_cpu_relax which defaults to
-cpu_relax.
-
-This will allow architectures to hook the entry and exit of busy-wait
-loops, and will allow powerpc to set low SMT priority at entry, and
-normal priority at exit.
-
-Suggested-by: Linus Torvalds <torvalds@linux-foundation.org>
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
 ---
+Changes from V4:
+- Got rid of 'len' variable in populate_attr_groups
 
-Since last time:
-- Fixed spin_do_cond with initial test as suggested by Linus.
-- Renamed it to spin_until_cond, which reads a little better.
+ drivers/hwmon/ibmpowernv.c | 68 +++++++++++++++++++++++++++++++++++++++++-----
+ 1 file changed, 61 insertions(+), 7 deletions(-)
 
- include/linux/processor.h | 70 +++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 70 insertions(+)
- create mode 100644 include/linux/processor.h
-
-diff --git a/include/linux/processor.h b/include/linux/processor.h
-new file mode 100644
-index 000000000000..da0c5e56ca02
---- /dev/null
-+++ b/include/linux/processor.h
-@@ -0,0 +1,70 @@
-+/* Misc low level processor primitives */
-+#ifndef _LINUX_PROCESSOR_H
-+#define _LINUX_PROCESSOR_H
+diff --git a/drivers/hwmon/ibmpowernv.c b/drivers/hwmon/ibmpowernv.c
+index 6d2e660..b562323 100644
+--- a/drivers/hwmon/ibmpowernv.c
++++ b/drivers/hwmon/ibmpowernv.c
+@@ -298,10 +298,14 @@ static int populate_attr_groups(struct platform_device *pdev)
+ 		sensor_groups[type].attr_count++;
+ 
+ 		/*
+-		 * add a new attribute for labels
++		 * add attributes for labels, min and max
+ 		 */
+ 		if (!of_property_read_string(np, "label", &label))
+ 			sensor_groups[type].attr_count++;
++		if (of_find_property(np, "sensor-data-min", NULL))
++			sensor_groups[type].attr_count++;
++		if (of_find_property(np, "sensor-data-max", NULL))
++			sensor_groups[type].attr_count++;
+ 	}
+ 
+ 	of_node_put(opal);
+@@ -337,6 +341,41 @@ static void create_hwmon_attr(struct sensor_data *sdata, const char *attr_name,
+ 	sdata->dev_attr.show = show;
+ }
+ 
++static void populate_sensor(struct sensor_data *sdata, int od, int hd, int sid,
++			    const char *attr_name, enum sensors type,
++			    const struct attribute_group *pgroup,
++			    ssize_t (*show)(struct device *dev,
++					    struct device_attribute *attr,
++					    char *buf))
++{
++	sdata->id = sid;
++	sdata->type = type;
++	sdata->opal_index = od;
++	sdata->hwmon_index = hd;
++	create_hwmon_attr(sdata, attr_name, show);
++	pgroup->attrs[sensor_groups[type].attr_count++] = &sdata->dev_attr.attr;
++}
 +
-+#include <asm/processor.h>
++static char *get_max_attr(enum sensors type)
++{
++	switch (type) {
++	case POWER_INPUT:
++		return "input_highest";
++	default:
++		return "highest";
++	}
++}
 +
-+/*
-+ * spin_begin is used before beginning a busy-wait loop, and must be paired
-+ * with spin_end when the loop is exited. spin_cpu_relax must be called
-+ * within the loop.
-+ *
-+ * The loop body should be as small and fast as possible, on the order of
-+ * tens of instructions/cycles as a guide. It should and avoid calling
-+ * cpu_relax, or any "spin" or sleep type of primitive including nested uses
-+ * of these primitives. It should not lock or take any other resource.
-+ * Violations of these guidelies will not cause a bug, but may cause sub
-+ * optimal performance.
-+ *
-+ * These loops are optimized to be used where wait times are expected to be
-+ * less than the cost of a context switch (and associated overhead).
-+ *
-+ * Detection of resource owner and decision to spin or sleep or guest-yield
-+ * (e.g., spin lock holder vcpu preempted, or mutex owner not on CPU) can be
-+ * tested within the loop body.
-+ */
-+#ifndef spin_begin
-+#define spin_begin()
-+#endif
++static char *get_min_attr(enum sensors type)
++{
++	switch (type) {
++	case POWER_INPUT:
++		return "input_lowest";
++	default:
++		return "lowest";
++	}
++}
 +
-+#ifndef spin_cpu_relax
-+#define spin_cpu_relax() cpu_relax()
-+#endif
-+
-+/*
-+ * spin_cpu_yield may be called to yield (undirected) to the hypervisor if
-+ * necessary. This should be used if the wait is expected to take longer
-+ * than context switch overhead, but we can't sleep or do a directed yield.
-+ */
-+#ifndef spin_cpu_yield
-+#define spin_cpu_yield() cpu_relax_yield()
-+#endif
-+
-+#ifndef spin_end
-+#define spin_end()
-+#endif
-+
-+/*
-+ * spin_until_cond can be used to wait for a condition to become true. It
-+ * may be expected that the first iteration will true in the common case
-+ * (no spinning), so that callers should not require a first "likely" test
-+ * for the uncontended case before using this primitive.
-+ *
-+ * Usage and implementation guidelines are the same as for the spin_begin
-+ * primitives, above.
-+ */
-+#ifndef spin_until_cond
-+#define spin_until_cond(cond)					\
-+do {								\
-+	if (unlikely(!(cond))) {				\
-+		spin_begin();					\
-+		do {						\
-+			spin_cpu_relax();			\
-+		} while (!(cond));				\
-+		spin_end();					\
-+	}							\
-+} while (0)
-+
-+#endif
-+
-+#endif /* _LINUX_PROCESSOR_H */
+ /*
+  * Iterate through the device tree for each child of 'sensors' node, create
+  * a sysfs attribute file, the file is named by translating the DT node name
+@@ -417,16 +456,31 @@ static int create_device_attrs(struct platform_device *pdev)
+ 			 * attribute. They are related to the same
+ 			 * sensor.
+ 			 */
+-			sdata[count].type = type;
+-			sdata[count].opal_index = sdata[count - 1].opal_index;
+-			sdata[count].hwmon_index = sdata[count - 1].hwmon_index;
+ 
+ 			make_sensor_label(np, &sdata[count], label);
++			populate_sensor(&sdata[count], opal_index,
++					sdata[count - 1].hwmon_index,
++					sensor_id, "label", type, pgroups[type],
++					show_label);
++			count++;
++		}
+ 
+-			create_hwmon_attr(&sdata[count], "label", show_label);
++		if (!of_property_read_u32(np, "sensor-data-max", &sensor_id)) {
++			attr_name = get_max_attr(type);
++			populate_sensor(&sdata[count], opal_index,
++					sdata[count - 1].hwmon_index,
++					sensor_id, attr_name, type,
++					pgroups[type], show_sensor);
++			count++;
++		}
+ 
+-			pgroups[type]->attrs[sensor_groups[type].attr_count++] =
+-				&sdata[count++].dev_attr.attr;
++		if (!of_property_read_u32(np, "sensor-data-min", &sensor_id)) {
++			attr_name = get_min_attr(type);
++			populate_sensor(&sdata[count], opal_index,
++					sdata[count - 1].hwmon_index,
++					sensor_id, attr_name, type,
++					pgroups[type], show_sensor);
++			count++;
+ 		}
+ 	}
+ 
 -- 
-2.11.0
+1.8.3.1
