@@ -1,20 +1,19 @@
-Return-Path: <madalin.bucur@nxp.com>
-Received: from NAM02-BL2-obe.outbound.protection.outlook.com
- (mail-bl2nam02on0074.outbound.protection.outlook.com [104.47.38.74])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
+ [IPv6:2607:f8b0:400e:c00::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wbmqf3tvLzDq9m
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 May 2017 16:22:21 +1000 (AEST)
-From: Madalin Bucur <madalin.bucur@nxp.com>
-To: <netdev@vger.kernel.org>, <davem@davemloft.net>
-CC: <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>, Madalin
- Bucur <madalin.bucur@nxp.com>, Camelia Groza <camelia.groza@nxp.com>
-Subject: [PATCH] Documentation: networking: add DPAA Ethernet document
-Date: Mon, 29 May 2017 09:22:06 +0300
-Message-ID: <1496038926-15315-1-git-send-email-madalin.bucur@nxp.com>
-Reply-To: <madalin.bucur@nxp.com>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wbmx10ylyzDq9m
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 May 2017 16:27:00 +1000 (AEST)
+Received: by mail-pf0-x241.google.com with SMTP id f27so11194269pfe.0
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 28 May 2017 23:27:00 -0700 (PDT)
+From: Nicholas Piggin <npiggin@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Nicholas Piggin <npiggin@gmail.com>
+Subject: [PATCH] powerpc/64s: machine check handle ifetch from foreign real
+ address for POWER9
+Date: Mon, 29 May 2017 16:26:44 +1000
+Message-Id: <20170529062644.21634-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,212 +23,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Signed-off-by: Madalin Bucur <madalin.bucur@nxp.com>
-Signed-off-by: Camelia Groza <camelia.groza@nxp.com>
----
- Documentation/networking/dpaa.txt | 194 ++++++++++++++++++++++++++++++++++++++
- 1 file changed, 194 insertions(+)
- create mode 100644 Documentation/networking/dpaa.txt
+The i-side 0111b case was missed by 7b9f71f974 ("powerpc/64s: POWER9
+machine check handler").
 
-diff --git a/Documentation/networking/dpaa.txt b/Documentation/networking/dpaa.txt
-new file mode 100644
-index 0000000..76e016d
---- /dev/null
-+++ b/Documentation/networking/dpaa.txt
-@@ -0,0 +1,194 @@
-+The QorIQ DPAA Ethernet Driver
-+==============================
-+
-+Authors:
-+Madalin Bucur <madalin.bucur@nxp.com>
-+Camelia Groza <camelia.groza@nxp.com>
-+
-+Contents
-+========
-+
-+	- DPAA Ethernet Overview
-+	- DPAA Ethernet Supported SoCs
-+	- Configuring DPAA Ethernet in your kernel
-+	- DPAA Ethernet Frame Processing
-+	- DPAA Ethernet Features
-+	- Debugging
-+
-+DPAA Ethernet Overview
-+======================
-+
-+DPAA stands for Data Path Acceleration Architecture and it is a
-+set of networking acceleration IPs that are available on several
-+generations of SoCs, both on PowerPC and ARM64.
-+
-+The Freescale DPAA architecture consists of a series of hardware blocks
-+that support Ethernet connectivity. The Ethernet driver depends upon the
-+following drivers in the Linux kernel:
-+
-+ - Peripheral Access Memory Unit (PAMU) (* needed only for PPC platforms)
-+    drivers/iommu/fsl_*
-+ - Frame Manager (FMan)
-+    drivers/net/ethernet/freescale/fman
-+ - Queue Manager (QMan), Buffer Manager (BMan)
-+    drivers/soc/fsl/qbman
-+
-+A simplified view of the dpaa_eth interfaces mapped to FMan MACs:
-+
-+  dpaa_eth       /eth0\     ...       /ethN\
-+  driver        |      |             |      |
-+  -------------   ----   -----------   ----   -------------
-+       -Ports  / Tx  Rx \    ...    / Tx  Rx \
-+  FMan        |          |         |          |
-+       -MACs  |   MAC0   |         |   MACN   |
-+             /   dtsec0   \  ...  /   dtsecN   \ (or tgec)
-+            /              \     /              \(or memac)
-+  ---------  --------------  ---  --------------  ---------
-+      FMan, FMan Port, FMan SP, FMan MURAM drivers
-+  ---------------------------------------------------------
-+      FMan HW blocks: MURAM, MACs, Ports, SP
-+  ---------------------------------------------------------
-+
-+The dpaa_eth relation to the QMan, BMan and FMan:
-+              ________________________________
-+  dpaa_eth   /            eth0                \
-+  driver    /                                  \
-+  ---------   -^-   -^-   -^-   ---    ---------
-+  QMan driver / \   / \   / \  \   /  | BMan    |
-+             |Rx | |Rx | |Tx | |Tx |  | driver  |
-+  ---------  |Dfl| |Err| |Cnf| |FQs|  |         |
-+  QMan HW    |FQ | |FQ | |FQs| |   |  |         |
-+             /   \ /   \ /   \  \ /   |         |
-+  ---------   ---   ---   ---   -v-    ---------
-+            |        FMan QMI         |         |
-+            | FMan HW       FMan BMI  | BMan HW |
-+              -----------------------   --------
-+
-+where the acronyms used above (and in the code) are:
-+DPAA = Data Path Acceleration Architecture
-+FMan = DPAA Frame Manager
-+QMan = DPAA Queue Manager
-+BMan = DPAA Buffers Manager
-+QMI = QMan interface in FMan
-+BMI = BMan interface in FMan
-+FMan SP = FMan Storage Profiles
-+MURAM = Multi-user RAM in FMan
-+FQ = QMan Frame Queue
-+Rx Dfl FQ = default reception FQ
-+Rx Err FQ = Rx error frames FQ
-+Tx Cnf FQ = Tx confirmation FQs
-+Tx FQs = transmission frame queues
-+dtsec = datapath three speed Ethernet controller (10/100/1000 Mbps)
-+tgec = ten gigabit Ethernet controller (10 Gbps)
-+memac = multirate Ethernet MAC (10/100/1000/10000)
-+
-+DPAA Ethernet Supported SoCs
-+============================
-+
-+The DPAA drivers enable the Ethernet controllers present on the following SoCs:
-+
-+# PPC
-+P1023
-+P2041
-+P3041
-+P4080
-+P5020
-+P5040
-+T1023
-+T1024
-+T1040
-+T1042
-+T2080
-+T4240
-+B4860
-+
-+# ARM
-+LS1043A
-+LS1046A
-+
-+Configuring DPAA Ethernet in your kernel
-+========================================
-+
-+To enable the DPAA Ethernet driver, the following Kconfig options are required:
-+
-+# common for arch/arm64 and arch/powerpc platforms
-+CONFIG_FSL_DPAA=y
-+CONFIG_FSL_FMAN=y
-+CONFIG_FSL_DPAA_ETH=y
-+CONFIG_FSL_XGMAC_MDIO=y
-+
-+# for arch/powerpc only
-+CONFIG_FSL_PAMU=y
-+
-+# common options needed for the PHYs used on the RDBs
-+CONFIG_VITESSE_PHY=y
-+CONFIG_REALTEK_PHY=y
-+CONFIG_AQUANTIA_PHY=y
-+
-+DPAA Ethernet Frame Processing
-+==============================
-+
-+On Rx, buffers for the incoming frames are retrieved from one of the three
-+existing buffers pools. The driver initializes and seeds these, each with
-+buffers of different sizes: 1KB, 2KB and 4KB.
-+
-+On Tx, all transmitted frames are returned to the driver through Tx
-+confirmation frame queues. The driver is then responsible for freeing the
-+buffers. In order to do this properly, a backpointer is added to the buffer
-+before transmission that points to the skb. When the buffer returns to the
-+driver on a confirmation FQ, the skb can be correctly consumed.
-+
-+DPAA Ethernet Features
-+======================
-+
-+Currently the DPAA Ethernet driver enables the basic features required for
-+a Linux Ethernet driver. The support for advanced features will be added
-+gradually.
-+
-+The driver has Rx and Tx checksum offloading for UDP and TCP. Currently the Rx
-+checksum offload feature is enabled by default and cannot be controlled through
-+ethtool.
-+
-+The driver has support for multiple prioritized Tx traffic classes. Priorities
-+range from 0 (lowest) to 3 (highest). These are mapped to HW workqueues with
-+strict priority levels. Each traffic class contains NR_CPU TX queues. By
-+default, only one traffic class is enabled and the lowest priority Tx queues
-+are used. Higher priority traffic classes can be enabled with the mqprio
-+qdisc. For example, all four traffic classes are enabled on an interface with
-+the following command. Furthermore, skb priority levels are mapped to traffic
-+classes as follows:
-+
-+	* priorities 0 to 3 - traffic class 0 (low priority)
-+	* priorities 4 to 7 - traffic class 1 (medium-low priority)
-+	* priorities 8 to 11 - traffic class 2 (medium-high priority)
-+	* priorities 12 to 15 - traffic class 3 (high priority)
-+
-+tc qdisc add dev <int> root handle 1: \
-+	 mqprio num_tc 4 map 0 0 0 0 1 1 1 1 2 2 2 2 3 3 3 3 hw 1
-+
-+Debugging
-+=========
-+
-+The following statistics are exported for each interface through ethtool:
-+
-+	- interrupt count per CPU
-+	- Rx packets count per CPU
-+	- Tx packets count per CPU
-+	- Tx confirmed packets count per CPU
-+	- Tx S/G frames count per CPU
-+	- Tx error count per CPU
-+	- Rx error count per CPU
-+	- Rx error count per type
-+	- congestion related statistics:
-+		- congestion status
-+		- time spent in congestion
-+		- number of time the device entered congestion
-+		- dropped packets count per cause
-+
-+The driver also exports the following information in sysfs:
-+
-+	- the FQ IDs for each FQ type
-+	/sys/devices/platform/dpaa-ethernet.0/net/<int>/fqids
-+
-+	- the IDs of the buffer pools in use
-+	/sys/devices/platform/dpaa-ethernet.0/net/<int>/bpids
+It is possible to trigger this exception by branching to a foreign real
+address (bits [8:12] != 0) with instruction relocation off, and verify
+the exception cause is found after this patch.
+
+Fixes: 7b9f71f974 ("powerpc/64s: POWER9 machine check handler")
+Reported-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+---
+ arch/powerpc/include/asm/mce.h  | 15 ++++++++-------
+ arch/powerpc/kernel/mce.c       |  1 +
+ arch/powerpc/kernel/mce_power.c |  3 +++
+ 3 files changed, 12 insertions(+), 7 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/mce.h b/arch/powerpc/include/asm/mce.h
+index 81eff8631434..190d69a7f701 100644
+--- a/arch/powerpc/include/asm/mce.h
++++ b/arch/powerpc/include/asm/mce.h
+@@ -90,13 +90,14 @@ enum MCE_UserErrorType {
+ enum MCE_RaErrorType {
+ 	MCE_RA_ERROR_INDETERMINATE = 0,
+ 	MCE_RA_ERROR_IFETCH = 1,
+-	MCE_RA_ERROR_PAGE_TABLE_WALK_IFETCH = 2,
+-	MCE_RA_ERROR_PAGE_TABLE_WALK_IFETCH_FOREIGN = 3,
+-	MCE_RA_ERROR_LOAD = 4,
+-	MCE_RA_ERROR_STORE = 5,
+-	MCE_RA_ERROR_PAGE_TABLE_WALK_LOAD_STORE = 6,
+-	MCE_RA_ERROR_PAGE_TABLE_WALK_LOAD_STORE_FOREIGN = 7,
+-	MCE_RA_ERROR_LOAD_STORE_FOREIGN = 8,
++	MCE_RA_ERROR_IFETCH_FOREIGN = 2,
++	MCE_RA_ERROR_PAGE_TABLE_WALK_IFETCH = 3,
++	MCE_RA_ERROR_PAGE_TABLE_WALK_IFETCH_FOREIGN = 4,
++	MCE_RA_ERROR_LOAD = 5,
++	MCE_RA_ERROR_STORE = 6,
++	MCE_RA_ERROR_PAGE_TABLE_WALK_LOAD_STORE = 7,
++	MCE_RA_ERROR_PAGE_TABLE_WALK_LOAD_STORE_FOREIGN = 8,
++	MCE_RA_ERROR_LOAD_STORE_FOREIGN = 9,
+ };
+ 
+ enum MCE_LinkErrorType {
+diff --git a/arch/powerpc/kernel/mce.c b/arch/powerpc/kernel/mce.c
+index 5f9eada3519b..92f185875694 100644
+--- a/arch/powerpc/kernel/mce.c
++++ b/arch/powerpc/kernel/mce.c
+@@ -268,6 +268,7 @@ void machine_check_print_event_info(struct machine_check_event *evt,
+ 	static const char *mc_ra_types[] = {
+ 		"Indeterminate",
+ 		"Instruction fetch (bad)",
++		"Instruction fetch (foreign)",
+ 		"Page table walk ifetch (bad)",
+ 		"Page table walk ifetch (foreign)",
+ 		"Load (bad)",
+diff --git a/arch/powerpc/kernel/mce_power.c b/arch/powerpc/kernel/mce_power.c
+index f913139bb0c2..d24e689e893f 100644
+--- a/arch/powerpc/kernel/mce_power.c
++++ b/arch/powerpc/kernel/mce_power.c
+@@ -236,6 +236,9 @@ static const struct mce_ierror_table mce_p9_ierror_table[] = {
+ { 0x00000000081c0000, 0x0000000000180000, true,
+   MCE_ERROR_TYPE_UE,  MCE_UE_ERROR_PAGE_TABLE_WALK_IFETCH,
+   MCE_INITIATOR_CPU,  MCE_SEV_ERROR_SYNC, },
++{ 0x00000000081c0000, 0x00000000001c0000, true,
++  MCE_ERROR_TYPE_RA,  MCE_RA_ERROR_IFETCH_FOREIGN,
++  MCE_INITIATOR_CPU,  MCE_SEV_ERROR_SYNC, },
+ { 0x00000000081c0000, 0x0000000008000000, true,
+   MCE_ERROR_TYPE_LINK,MCE_LINK_ERROR_IFETCH_TIMEOUT,
+   MCE_INITIATOR_CPU,  MCE_SEV_ERROR_SYNC, },
 -- 
-2.1.0
+2.11.0
