@@ -1,18 +1,28 @@
-Return-Path: <ruscur@russell.cc>
-Received: from out1-smtp.messagingengine.com (out1-smtp.messagingengine.com
- [66.111.4.25])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
+ [IPv6:2607:f8b0:400e:c00::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wcMy84VBFzDq5W
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 May 2017 15:45:04 +1000 (AEST)
-From: Russell Currey <ruscur@russell.cc>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Russell Currey <ruscur@russell.cc>
-Subject: [PATCH 3/3] powerpc/powernv/pci: Add support for PHB4 diagnostics
-Date: Tue, 30 May 2017 15:44:40 +1000
-Message-Id: <20170530054440.9297-3-ruscur@russell.cc>
-In-Reply-To: <20170530054440.9297-1-ruscur@russell.cc>
-References: <20170530054440.9297-1-ruscur@russell.cc>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wcNCM0fjjzDqGr
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 May 2017 15:56:31 +1000 (AEST)
+Received: by mail-pf0-x241.google.com with SMTP id f27so15553593pfe.0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 May 2017 22:56:30 -0700 (PDT)
+Date: Tue, 30 May 2017 15:56:12 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, Michael Neuling
+ <mikey@neuling.org>, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+ Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, Akshay Adiga
+ <akshay.adiga@linux.vnet.ibm.com>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/6] powernv:idle: Correctly initialize core_idle_state_ptr
+Message-ID: <20170530155612.701ca6fc@roar.ozlabs.ibm.com>
+In-Reply-To: <f6c49fcf42b78c0b8bdad17d6e659679c0288cd9.1494585671.git.ego@linux.vnet.ibm.com>
+References: <cover.1494585671.git.ego@linux.vnet.ibm.com>
+ <f6c49fcf42b78c0b8bdad17d6e659679c0288cd9.1494585671.git.ego@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,234 +32,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-As with P7IOC and PHB3, add kernel-side support for decoding and printing
-diagnostic data for PHB4.
+On Tue, 16 May 2017 14:19:43 +0530
+"Gautham R. Shenoy" <ego@linux.vnet.ibm.com> wrote:
 
-Signed-off-by: Russell Currey <ruscur@russell.cc>
----
- arch/powerpc/include/asm/opal-api.h  |  75 ++++++++++++++++++++++++-
- arch/powerpc/platforms/powernv/pci.c | 105 +++++++++++++++++++++++++++++++++++
- 2 files changed, 178 insertions(+), 2 deletions(-)
+> From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+> 
+> The lower 8 bits of core_idle_state_ptr tracks the number of non-idle
+> threads in the core. This is supposed to be initialized to bit-map
+> corresponding to the threads_per_core. However, currently it is
+> initialized to PNV_CORE_IDLE_THREAD_BITS (0xFF). This is correct for
+> POWER8 which has 8 threads per core, but not for POWER9 which has 4
+> threads per core.
+> 
+> As a result, on POWER9, core_idle_state_ptr gets initialized to
+> 0xFF. In case when all the threads of the core are idle, the bits
+> corresponding tracking the idle-threads are non-zero. As a result, the
+> idle entry/exit code fails to save/restore per-core hypervisor state
+> since it assumes that there are threads in the cores which are still
+> active.
+> 
+> Fix this by correctly initializing the lower bits of the
+> core_idle_state_ptr on the basis of threads_per_core.
+> 
+> Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
 
-diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
-index cb3e6242a78c..0b543f0f54f5 100644
---- a/arch/powerpc/include/asm/opal-api.h
-+++ b/arch/powerpc/include/asm/opal-api.h
-@@ -667,12 +667,14 @@ enum {
- 
- enum {
- 	OPAL_PHB_ERROR_DATA_TYPE_P7IOC = 1,
--	OPAL_PHB_ERROR_DATA_TYPE_PHB3 = 2
-+	OPAL_PHB_ERROR_DATA_TYPE_PHB3 = 2,
-+	OPAL_PHB_ERROR_DATA_TYPE_PHB4 = 3
- };
- 
- enum {
- 	OPAL_P7IOC_NUM_PEST_REGS = 128,
--	OPAL_PHB3_NUM_PEST_REGS = 256
-+	OPAL_PHB3_NUM_PEST_REGS = 256,
-+	OPAL_PHB4_NUM_PEST_REGS = 512
- };
- 
- struct OpalIoPhbErrorCommon {
-@@ -802,6 +804,75 @@ struct OpalIoPhb3ErrorData {
- 	__be64 pestB[OPAL_PHB3_NUM_PEST_REGS];
- };
- 
-+struct OpalIoPhb4ErrorData {
-+	struct OpalIoPhbErrorCommon common;
-+
-+	__be32 brdgCtl;
-+
-+	/* PHB4 cfg regs */
-+	__be32 deviceStatus;
-+	__be32 slotStatus;
-+	__be32 linkStatus;
-+	__be32 devCmdStatus;
-+	__be32 devSecStatus;
-+
-+	/* cfg AER regs */
-+	__be32 rootErrorStatus;
-+	__be32 uncorrErrorStatus;
-+	__be32 corrErrorStatus;
-+	__be32 tlpHdr1;
-+	__be32 tlpHdr2;
-+	__be32 tlpHdr3;
-+	__be32 tlpHdr4;
-+	__be32 sourceId;
-+
-+	/* PHB4 ETU Error Regs */
-+	__be64 nFir;				/* 000 */
-+	__be64 nFirMask;			/* 003 */
-+	__be64 nFirWOF;				/* 008 */
-+	__be64 phbPlssr;			/* 120 */
-+	__be64 phbCsr;				/* 110 */
-+	__be64 lemFir;				/* C00 */
-+	__be64 lemErrorMask;			/* C18 */
-+	__be64 lemWOF;				/* C40 */
-+	__be64 phbErrorStatus;			/* C80 */
-+	__be64 phbFirstErrorStatus;		/* C88 */
-+	__be64 phbErrorLog0;			/* CC0 */
-+	__be64 phbErrorLog1;			/* CC8 */
-+	__be64 phbTxeErrorStatus;		/* D00 */
-+	__be64 phbTxeFirstErrorStatus;		/* D08 */
-+	__be64 phbTxeErrorLog0;			/* D40 */
-+	__be64 phbTxeErrorLog1;			/* D48 */
-+	__be64 phbRxeArbErrorStatus;		/* D80 */
-+	__be64 phbRxeArbFirstErrorStatus;	/* D88 */
-+	__be64 phbRxeArbErrorLog0;		/* DC0 */
-+	__be64 phbRxeArbErrorLog1;		/* DC8 */
-+	__be64 phbRxeMrgErrorStatus;		/* E00 */
-+	__be64 phbRxeMrgFirstErrorStatus;	/* E08 */
-+	__be64 phbRxeMrgErrorLog0;		/* E40 */
-+	__be64 phbRxeMrgErrorLog1;		/* E48 */
-+	__be64 phbRxeTceErrorStatus;		/* E80 */
-+	__be64 phbRxeTceFirstErrorStatus;	/* E88 */
-+	__be64 phbRxeTceErrorLog0;		/* EC0 */
-+	__be64 phbRxeTceErrorLog1;		/* EC8 */
-+
-+	/* PHB4 REGB Error Regs */
-+	__be64 phbPblErrorStatus;		/* 1900 */
-+	__be64 phbPblFirstErrorStatus;		/* 1908 */
-+	__be64 phbPblErrorLog0;			/* 1940 */
-+	__be64 phbPblErrorLog1;			/* 1948 */
-+	__be64 phbPcieDlpErrorLog1;		/* 1AA0 */
-+	__be64 phbPcieDlpErrorLog2;		/* 1AA8 */
-+	__be64 phbPcieDlpErrorStatus;		/* 1AB0 */
-+	__be64 phbRegbErrorStatus;		/* 1C00 */
-+	__be64 phbRegbFirstErrorStatus;		/* 1C08 */
-+	__be64 phbRegbErrorLog0;		/* 1C40 */
-+	__be64 phbRegbErrorLog1;		/* 1C48 */
-+
-+	__be64 pestA[OPAL_PHB4_NUM_PEST_REGS];
-+	__be64 pestB[OPAL_PHB4_NUM_PEST_REGS];
-+};
-+
- enum {
- 	OPAL_REINIT_CPUS_HILE_BE	= (1 << 0),
- 	OPAL_REINIT_CPUS_HILE_LE	= (1 << 1),
-diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
-index f2457b2107b9..c3d2c440730d 100644
---- a/arch/powerpc/platforms/powernv/pci.c
-+++ b/arch/powerpc/platforms/powernv/pci.c
-@@ -425,6 +425,108 @@ static void pnv_pci_dump_phb3_diag_data(struct pci_controller *hose,
- 	pnv_pci_dump_pest(data->pestA, data->pestB, OPAL_PHB3_NUM_PEST_REGS);
- }
- 
-+static void pnv_pci_dump_phb4_diag_data(struct pci_controller *hose,
-+					struct OpalIoPhbErrorCommon *common)
-+{
-+	struct OpalIoPhb4ErrorData *data;
-+
-+	data = (struct OpalIoPhb4ErrorData*)common;
-+	pr_info("PHB4 PHB#%d Diag-data (Version: %d)\n",
-+		hose->global_number, be32_to_cpu(common->version));
-+	if (data->brdgCtl)
-+		pr_info("brdgCtl:    %08x\n",
-+			be32_to_cpu(data->brdgCtl));
-+	if (data->deviceStatus || data->slotStatus   ||
-+	    data->linkStatus   || data->devCmdStatus ||
-+	    data->devSecStatus)
-+		pr_info("RootSts:    %08x %08x %08x %08x %08x\n",
-+			be32_to_cpu(data->deviceStatus),
-+			be32_to_cpu(data->slotStatus),
-+			be32_to_cpu(data->linkStatus),
-+			be32_to_cpu(data->devCmdStatus),
-+			be32_to_cpu(data->devSecStatus));
-+	if (data->rootErrorStatus || data->uncorrErrorStatus ||
-+	    data->corrErrorStatus)
-+		pr_info("RootErrSts: %08x %08x %08x\n",
-+			be32_to_cpu(data->rootErrorStatus),
-+			be32_to_cpu(data->uncorrErrorStatus),
-+			be32_to_cpu(data->corrErrorStatus));
-+	if (data->tlpHdr1 || data->tlpHdr2 ||
-+	    data->tlpHdr3 || data->tlpHdr4)
-+		pr_info("RootErrLog: %08x %08x %08x %08x\n",
-+			be32_to_cpu(data->tlpHdr1),
-+			be32_to_cpu(data->tlpHdr2),
-+			be32_to_cpu(data->tlpHdr3),
-+			be32_to_cpu(data->tlpHdr4));
-+	if (data->sourceId)
-+		pr_info("sourceId:   %08x\n", be32_to_cpu(data->sourceId));
-+	if (data->nFir)
-+		pr_info("nFir:       %016llx %016llx %016llx\n",
-+			be64_to_cpu(data->nFir),
-+			be64_to_cpu(data->nFirMask),
-+			be64_to_cpu(data->nFirWOF));
-+	if (data->phbPlssr || data->phbCsr)
-+		pr_info("PhbSts:     %016llx %016llx\n",
-+			be64_to_cpu(data->phbPlssr),
-+			be64_to_cpu(data->phbCsr));
-+	if (data->lemFir)
-+		pr_info("Lem:        %016llx %016llx %016llx\n",
-+			be64_to_cpu(data->lemFir),
-+			be64_to_cpu(data->lemErrorMask),
-+			be64_to_cpu(data->lemWOF));
-+	if (data->phbErrorStatus)
-+		pr_info("PhbErr:     %016llx %016llx %016llx %016llx\n",
-+			be64_to_cpu(data->phbErrorStatus),
-+			be64_to_cpu(data->phbFirstErrorStatus),
-+			be64_to_cpu(data->phbErrorLog0),
-+			be64_to_cpu(data->phbErrorLog1));
-+	if (data->phbTxeErrorStatus)
-+		pr_info("PhbTxeErr:  %016llx %016llx %016llx %016llx\n",
-+			be64_to_cpu(data->phbTxeErrorStatus),
-+			be64_to_cpu(data->phbTxeFirstErrorStatus),
-+			be64_to_cpu(data->phbTxeErrorLog0),
-+			be64_to_cpu(data->phbTxeErrorLog1));
-+	if (data->phbRxeArbErrorStatus)
-+		pr_info("RxeArbErr:  %016llx %016llx %016llx %016llx\n",
-+			be64_to_cpu(data->phbRxeArbErrorStatus),
-+			be64_to_cpu(data->phbRxeArbFirstErrorStatus),
-+			be64_to_cpu(data->phbRxeArbErrorLog0),
-+			be64_to_cpu(data->phbRxeArbErrorLog1));
-+	if (data->phbRxeMrgErrorStatus)
-+		pr_info("RxeMrgErr:  %016llx %016llx %016llx %016llx\n",
-+			be64_to_cpu(data->phbRxeMrgErrorStatus),
-+			be64_to_cpu(data->phbRxeMrgFirstErrorStatus),
-+			be64_to_cpu(data->phbRxeMrgErrorLog0),
-+			be64_to_cpu(data->phbRxeMrgErrorLog1));
-+	if (data->phbRxeTceErrorStatus)
-+		pr_info("RxeTceErr:  %016llx %016llx %016llx %016llx\n",
-+			be64_to_cpu(data->phbRxeTceErrorStatus),
-+			be64_to_cpu(data->phbRxeTceFirstErrorStatus),
-+			be64_to_cpu(data->phbRxeTceErrorLog0),
-+			be64_to_cpu(data->phbRxeTceErrorLog1));
-+
-+	if (data->phbPblErrorStatus)
-+		pr_info("PblErr:     %016llx %016llx %016llx %016llx\n",
-+			be64_to_cpu(data->phbPblErrorStatus),
-+			be64_to_cpu(data->phbPblFirstErrorStatus),
-+			be64_to_cpu(data->phbPblErrorLog0),
-+			be64_to_cpu(data->phbPblErrorLog1));
-+	if (data->phbPcieDlpErrorStatus)
-+		pr_info("PcieDlp:    %016llx %016llx %016llx\n",
-+			be64_to_cpu(data->phbPcieDlpErrorLog1),
-+			be64_to_cpu(data->phbPcieDlpErrorLog2),
-+			be64_to_cpu(data->phbPcieDlpErrorStatus));
-+	if (data->phbRegbErrorStatus)
-+		pr_info("RegbErr:    %016llx %016llx %016llx %016llx\n",
-+			be64_to_cpu(data->phbRegbErrorStatus),
-+			be64_to_cpu(data->phbRegbFirstErrorStatus),
-+			be64_to_cpu(data->phbRegbErrorLog0),
-+			be64_to_cpu(data->phbRegbErrorLog1));
-+
-+
-+	pnv_pci_dump_pest(data->pestA, data->pestB, OPAL_PHB4_NUM_PEST_REGS);
-+}
-+
- void pnv_pci_dump_phb_diag_data(struct pci_controller *hose,
- 				unsigned char *log_buff)
- {
-@@ -441,6 +543,9 @@ void pnv_pci_dump_phb_diag_data(struct pci_controller *hose,
- 	case OPAL_PHB_ERROR_DATA_TYPE_PHB3:
- 		pnv_pci_dump_phb3_diag_data(hose, common);
- 		break;
-+	case OPAL_PHB_ERROR_DATA_TYPE_PHB4:
-+		pnv_pci_dump_phb4_diag_data(hose, common);
-+		break;
- 	default:
- 		pr_warn("%s: Unrecognized ioType %d\n",
- 			__func__, be32_to_cpu(common->ioType));
--- 
-2.13.0
+This looks good to me.
+
+Until this patch series, we can't enable HV state loss idle modes
+on POWER9, is that correct? And after your series does it work?
+
+Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
