@@ -3,43 +3,42 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wcbbj4H6zzDq9m
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 May 2017 00:29:53 +1000 (AEST)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wcbhG4HTbzDq9m
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 May 2017 00:33:50 +1000 (AEST)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v4UESjs1145922
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 May 2017 10:29:48 -0400
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2as03rs670-1
+ v4UESoiB012082
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 May 2017 10:33:42 -0400
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2as8gdpgyw-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 May 2017 10:29:47 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 May 2017 10:33:42 -0400
 Received: from localhost
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Wed, 31 May 2017 00:29:44 +1000
-Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v4UETXSr7668160
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 May 2017 00:29:41 +1000
-Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
- by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v4UET8wp025289
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 May 2017 00:29:09 +1000
-Date: Tue, 30 May 2017 19:58:50 +0530
+ Wed, 31 May 2017 00:33:39 +1000
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v4UEXTkG52559880
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 May 2017 00:33:37 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v4UEX30d025064
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 May 2017 00:33:04 +1000
+Date: Tue, 30 May 2017 20:02:46 +0530
 From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
 To: Balbir Singh <bsingharora@gmail.com>
 Cc: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au,
- ananth@linux.vnet.ibm.com
-Subject: Re: [RFC 2/2] powerpc/kprobes: Move kprobes over to patch_instruction
-References: <20170516034913.21163-1-bsingharora@gmail.com>
- <20170516034913.21163-3-bsingharora@gmail.com>
- <20170516133532.GA19390@naverao1-tp.localdomain>
- <1494985204.30802.4.camel@gmail.com>
+ ananth@linux.vnet.ibm.com, christophe.leroy@c-s.fr, paulus@samba.org,
+ rashmica.g@gmail.com
+Subject: Re: [PATCH v1 0/8] Enable STRICT_KERNEL_RWX
+References: <20170525033650.10891-1-bsingharora@gmail.com>
+ <20170525165733.36b50bbb@firefly.ozlabs.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1494985204.30802.4.camel@gmail.com>
-Message-Id: <20170530142850.GN19390@naverao1-tp.localdomain>
+In-Reply-To: <20170525165733.36b50bbb@firefly.ozlabs.ibm.com>
+Message-Id: <20170530143246.GO19390@naverao1-tp.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,29 +48,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2017/05/17 11:40AM, Balbir Singh wrote:
-> On Tue, 2017-05-16 at 19:05 +0530, Naveen N. Rao wrote:
-> > On 2017/05/16 01:49PM, Balbir Singh wrote:
-> > > arch_arm/disarm_probe use direct assignment for copying
-> > > instructions, replace them with patch_instruction
-> > 
-> > Thanks for doing this!
-> > 
-> > We will also have to convert optprobes and ftrace to use 
-> > patch_instruction, but that can be done once the basic infrastructure is 
-> > in.
-> >
+On 2017/05/25 04:57PM, Balbir Singh wrote:
+> On Thu, 25 May 2017 13:36:42 +1000
+> Balbir Singh <bsingharora@gmail.com> wrote:
 > 
-> I think these patches can go in without even patch 1. I looked quickly at
-> optprobes and ftrace and thought they were already using patch_instruction
-> (ftrace_modify_code() and arch_optimize_kprobes()), are there other paths
-> I missed?
+> > Enable STRICT_KERNEL_RWX for PPC64/BOOK3S
+> > 
+> > These patches enable RX mappings of kernel text.
+> > rodata is mapped RX as well as a trade-off, there
+> > are more details in the patch description
+> > 
+> > As a prerequisite for R/O text, patch_instruction
+> > is moved over to using a separate mapping that
+> > allows write to kernel text. xmon/ftrace/kprobes
+> > have been moved over to work with patch_instruction
+> > 
+> 
+> I think optprobes needs to be moved over as well.
+> I did not realize we have the optprobe_trampoline in
+> text (yikes!!)
 
-[Sorry for the delay...]
-
-Yes, all the patch_*_insns() functions need to be converted since the 
-area they patch comes from .text. There is also a memcpy() where we copy 
-the instruction template in, so perhaps a patch_instructions() helper 
-may be useful too.
+Ah, you noticed. Yes, this is a product of the limited range we have for 
+immediate branches.
 
 - Naveen
