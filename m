@@ -1,13 +1,13 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
- [IPv6:2607:f8b0:400e:c00::242])
+Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
+ [IPv6:2607:f8b0:400e:c00::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wcNgs4GmCzDq5x
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 May 2017 16:17:45 +1000 (AEST)
-Received: by mail-pf0-x242.google.com with SMTP id u26so15652382pfd.2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 May 2017 23:17:45 -0700 (PDT)
-Date: Tue, 30 May 2017 16:17:31 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wcNvV3LGrzDq5W
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 May 2017 16:27:50 +1000 (AEST)
+Received: by mail-pf0-x243.google.com with SMTP id u26so15705377pfd.2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 May 2017 23:27:50 -0700 (PDT)
+Date: Tue, 30 May 2017 16:27:35 +1000
 From: Nicholas Piggin <npiggin@gmail.com>
 To: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 Cc: Michael Ellerman <mpe@ellerman.id.au>, Michael Neuling
@@ -16,11 +16,12 @@ Cc: Michael Ellerman <mpe@ellerman.id.au>, Michael Neuling
  <akshay.adiga@linux.vnet.ibm.com>, Benjamin Herrenschmidt
  <benh@kernel.crashing.org>, linuxppc-dev@lists.ozlabs.org,
  linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/6] powernv:idle: Restore LPCR on wakeup from deep-stop
-Message-ID: <20170530161731.33fec50d@roar.ozlabs.ibm.com>
-In-Reply-To: <147a42823bae78b98b76b91f736c620b886213ae.1494585671.git.ego@linux.vnet.ibm.com>
+Subject: Re: [PATCH 5/6] powernv:idle: Use Requested Level for restoring
+ state on P9 DD1
+Message-ID: <20170530162735.564f863e@roar.ozlabs.ibm.com>
+In-Reply-To: <70ede0d8bdcb14ea676c87f14a26788890a3ba4d.1494585671.git.ego@linux.vnet.ibm.com>
 References: <cover.1494585671.git.ego@linux.vnet.ibm.com>
- <147a42823bae78b98b76b91f736c620b886213ae.1494585671.git.ego@linux.vnet.ibm.com>
+ <70ede0d8bdcb14ea676c87f14a26788890a3ba4d.1494585671.git.ego@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -32,83 +33,100 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 16 May 2017 14:19:45 +0530
+On Tue, 16 May 2017 14:19:47 +0530
 "Gautham R. Shenoy" <ego@linux.vnet.ibm.com> wrote:
 
 > From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 > 
-> On wakeup from a deep stop state which is supposed to lose the
-> hypervisor state, we don't restore the LPCR to the old value but set
-> it to a "sane" value via cur_cpu_spec->cpu_restore().
+> On Power9 DD1 due to a hardware bug the Power-Saving Level Status
+> field (PLS) of the PSSCR for a thread waking up from a deep state can
+> under-report if some other thread in the core is in a shallow stop
+> state. The scenario in which this can manifest is as follows:
 > 
-> The problem is that the "sane" value doesn't include UPRT and the HR
-> bits which are required to run correctly in Radix mode.
+>        1) All the threads of the core are in deep stop.
+>        2) One of the threads is woken up. The PLS for this thread will
+>           correctly reflect that it is waking up from deep stop.
+>        3) The thread that has woken up now executes a shallow stop.
+>        4) When some other thread in the core is woken, its PLS will reflect
+>           the shallow stop state.
 > 
-> Fix this on POWER9 onwards by restoring the LPCR value whatever it was
-> before executing the stop instruction.
+> Thus, the subsequent thread for which the PLS is under-reporting the
+> wakeup state will not restore the hypervisor resources.
+> 
+> Hence, on DD1 systems, use the Requested Level (RL) field as a
+> workaround to restore the contents of the hypervisor resources on the
+> wakeup from the stop state.
 > 
 > Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
 
-Yes I think we need this. I have a plan to rework some of
-that cpu_restore and early CPU init stuff, but for now we
-need this.
-
-Does the OCC restore LPCR properly then we just trash it
-with ->cpu_restore(), or is it always junk?
 
 Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
 
 
 > ---
->  arch/powerpc/kernel/idle_book3s.S | 13 ++++++++++---
->  1 file changed, 10 insertions(+), 3 deletions(-)
+>  arch/powerpc/include/asm/paca.h   |  2 ++
+>  arch/powerpc/kernel/asm-offsets.c |  1 +
+>  arch/powerpc/kernel/idle_book3s.S | 13 ++++++++++++-
+>  3 files changed, 15 insertions(+), 1 deletion(-)
 > 
+> diff --git a/arch/powerpc/include/asm/paca.h b/arch/powerpc/include/asm/paca.h
+> index 1c09f8f..77f60a0 100644
+> --- a/arch/powerpc/include/asm/paca.h
+> +++ b/arch/powerpc/include/asm/paca.h
+> @@ -177,6 +177,8 @@ struct paca_struct {
+>  	 * to the sibling threads' paca.
+>  	 */
+>  	struct paca_struct **thread_sibling_pacas;
+> +	/* The PSSCR value that the kernel requested before going to stop */
+> +	u64 requested_psscr;
+>  #endif
+>  
+>  #ifdef CONFIG_PPC_STD_MMU_64
+> diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
+> index 709e234..e15c178 100644
+> --- a/arch/powerpc/kernel/asm-offsets.c
+> +++ b/arch/powerpc/kernel/asm-offsets.c
+> @@ -742,6 +742,7 @@ int main(void)
+>  	OFFSET(PACA_THREAD_MASK, paca_struct, thread_mask);
+>  	OFFSET(PACA_SUBCORE_SIBLING_MASK, paca_struct, subcore_sibling_mask);
+>  	OFFSET(PACA_SIBLING_PACA_PTRS, paca_struct, thread_sibling_pacas);
+> +	OFFSET(PACA_REQ_PSSCR, paca_struct, requested_psscr);
+>  #endif
+>  
+>  	DEFINE(PPC_DBELL_SERVER, PPC_DBELL_SERVER);
 > diff --git a/arch/powerpc/kernel/idle_book3s.S b/arch/powerpc/kernel/idle_book3s.S
-> index afd029f..6c9920d 100644
+> index 6c9920d..98a6d07 100644
 > --- a/arch/powerpc/kernel/idle_book3s.S
 > +++ b/arch/powerpc/kernel/idle_book3s.S
-> @@ -31,6 +31,7 @@
->   * registers for winkle support.
->   */
->  #define _SDR1	GPR3
-> +#define _PTCR	GPR3
->  #define _RPR	GPR4
->  #define _SPURR	GPR5
->  #define _PURR	GPR6
-> @@ -39,7 +40,7 @@
->  #define _AMOR	GPR9
->  #define _WORT	GPR10
->  #define _WORC	GPR11
-> -#define _PTCR	GPR12
-> +#define _LPCR	GPR12
+> @@ -379,6 +379,7 @@ _GLOBAL(power9_idle_stop)
+>  	mfspr   r5,SPRN_PSSCR
+>  	andc    r5,r5,r4
+>  	or      r3,r3,r5
+> +	std	r3, PACA_REQ_PSSCR(r13)
+>  	mtspr 	SPRN_PSSCR,r3
+>  	LOAD_REG_ADDR(r5,power_enter_stop)
+>  	li	r4,1
+> @@ -498,12 +499,22 @@ pnv_restore_hyp_resource_arch300:
+>  	LOAD_REG_ADDRBASE(r5,pnv_first_deep_stop_state)
+>  	ld	r4,ADDROFF(pnv_first_deep_stop_state)(r5)
 >  
->  #define PSSCR_EC_ESL_MASK_SHIFTED          (PSSCR_EC | PSSCR_ESL) >> 16
->  
-> @@ -55,12 +56,14 @@ save_sprs_to_stack:
->  	 * here since any thread in the core might wake up first
->  	 */
->  BEGIN_FTR_SECTION
-> -	mfspr	r3,SPRN_PTCR
-> -	std	r3,_PTCR(r1)
+> -	mfspr	r5,SPRN_PSSCR
+> +BEGIN_FTR_SECTION_NESTED(71)
+> +	/*
+> +	 * Assume that we are waking up from the state
+> +	 * same as the Requested Level (RL) in the PSSCR
+> +	 * which are Bits 60-63
+> +	 */
+> +	ld	r5,PACA_REQ_PSSCR(r13)
+> +	rldicl  r5,r5,0,60
+> +FTR_SECTION_ELSE_NESTED(71)
 >  	/*
->  	 * Note - SDR1 is dropped in Power ISA v3. Hence not restoring
->  	 * SDR1 here
+>  	 * 0-3 bits correspond to Power-Saving Level Status
+>  	 * which indicates the idle state we are waking up from
 >  	 */
-> +	mfspr	r3,SPRN_PTCR
-> +	std	r3,_PTCR(r1)
-> +	mfspr	r3,SPRN_LPCR
-> +	std	r3,_LPCR(r1)
->  FTR_SECTION_ELSE
->  	mfspr	r3,SPRN_SDR1
->  	std	r3,_SDR1(r1)
-> @@ -813,6 +816,10 @@ no_segments:
->  	mtctr	r12
->  	bctrl
+> +	mfspr	r5, SPRN_PSSCR
+>  	rldicl  r5,r5,4,60
+> +ALT_FTR_SECTION_END_NESTED_IFSET(CPU_FTR_POWER9_DD1, 71)
+>  	cmpd	cr4,r5,r4
+>  	bge	cr4,pnv_wakeup_tb_loss /* returns to caller */
 >  
-> +BEGIN_FTR_SECTION
-> +	ld	r4,_LPCR(r1)
-> +	mtspr	SPRN_LPCR,r4
-> +END_FTR_SECTION_IFSET(CPU_FTR_ARCH_300)
->  hypervisor_state_restored:
->  
->  	mtspr	SPRN_SRR1,r16
