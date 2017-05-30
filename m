@@ -1,40 +1,28 @@
-Return-Path: <andrew.donnellan@au1.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
+ [IPv6:2607:f8b0:400e:c00::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wcNZW2352zDqGx
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 May 2017 16:13:07 +1000 (AEST)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v4U699kH143656
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 May 2017 02:13:02 -0400
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2as03r5ajf-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 May 2017 02:13:01 -0400
-Received: from localhost
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
- Tue, 30 May 2017 16:12:59 +1000
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v4U6Cn6o3998204
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 May 2017 16:12:57 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v4U6COPq008627
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 May 2017 16:12:24 +1000
-Subject: Re: [PATCH 1/3] powerpc/powernv/pci: Reduce spam when dumping PEST
-To: Russell Currey <ruscur@russell.cc>, linuxppc-dev@lists.ozlabs.org
-References: <20170530054637.0D6C4AC0B9@b01ledav006.gho.pok.ibm.com>
-From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Date: Tue, 30 May 2017 16:12:00 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wcNgs4GmCzDq5x
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 May 2017 16:17:45 +1000 (AEST)
+Received: by mail-pf0-x242.google.com with SMTP id u26so15652382pfd.2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 May 2017 23:17:45 -0700 (PDT)
+Date: Tue, 30 May 2017 16:17:31 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, Michael Neuling
+ <mikey@neuling.org>, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+ Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, Akshay Adiga
+ <akshay.adiga@linux.vnet.ibm.com>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/6] powernv:idle: Restore LPCR on wakeup from deep-stop
+Message-ID: <20170530161731.33fec50d@roar.ozlabs.ibm.com>
+In-Reply-To: <147a42823bae78b98b76b91f736c620b886213ae.1494585671.git.ego@linux.vnet.ibm.com>
+References: <cover.1494585671.git.ego@linux.vnet.ibm.com>
+ <147a42823bae78b98b76b91f736c620b886213ae.1494585671.git.ego@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <20170530054637.0D6C4AC0B9@b01ledav006.gho.pok.ibm.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Message-Id: <e5441c6f-d2e4-428a-9b1d-49a15e5be39c@au1.ibm.com>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,91 +32,83 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 30/05/17 15:44, Russell Currey wrote:
-> Dumping the PE State Tables (PEST) can be highly verbose if a number of PEs
-> are affected, especially in the case where the whole PHB is frozen and 512
-> lines get printed.  Check for duplicates when dumping the PEST to reduce
-> useless output.
->
-> For example:
->
->     PE[0f8] A/B: 9700002600000000 80000080d00000f8
->     PE[0f9] A/B: 8000000000000000 0000000000000000
->     PE[..0fe] A/B: as above
->     PE[0ff] A/B: 8440002b00000000 0000000000000000
->
-> instead of:
->
->     PE[0f8] A/B: 9700002600000000 80000080d00000f8
->     PE[0f9] A/B: 8000000000000000 0000000000000000
->     PE[0fa] A/B: 8000000000000000 0000000000000000
->     PE[0fb] A/B: 8000000000000000 0000000000000000
->     PE[0fc] A/B: 8000000000000000 0000000000000000
->     PE[0fd] A/B: 8000000000000000 0000000000000000
->     PE[0fe] A/B: 8000000000000000 0000000000000000
->     PE[0ff] A/B: 8440002b00000000 0000000000000000
->
-> and you can imagine how much worse it can get for 512 PEs.
->
-> Signed-off-by: Russell Currey <ruscur@russell.cc>
+On Tue, 16 May 2017 14:19:45 +0530
+"Gautham R. Shenoy" <ego@linux.vnet.ibm.com> wrote:
 
-Minor comments below
+> From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+> 
+> On wakeup from a deep stop state which is supposed to lose the
+> hypervisor state, we don't restore the LPCR to the old value but set
+> it to a "sane" value via cur_cpu_spec->cpu_restore().
+> 
+> The problem is that the "sane" value doesn't include UPRT and the HR
+> bits which are required to run correctly in Radix mode.
+> 
+> Fix this on POWER9 onwards by restoring the LPCR value whatever it was
+> before executing the stop instruction.
+> 
+> Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
 
-Reviewed-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Yes I think we need this. I have a plan to rework some of
+that cpu_restore and early CPU init stuff, but for now we
+need this.
+
+Does the OCC restore LPCR properly then we just trash it
+with ->cpu_restore(), or is it always junk?
+
+Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
+
 
 > ---
-> This is essentially V2 of a previous patch I submitted, with some changes
-> thanks to feedback from Gavin.
-> ---
->  arch/powerpc/platforms/powernv/pci.c | 50 +++++++++++++++++++++---------------
->  1 file changed, 30 insertions(+), 20 deletions(-)
->
-> diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
-> index 935ccb249a8a..4852ac8d0b4d 100644
-> --- a/arch/powerpc/platforms/powernv/pci.c
-> +++ b/arch/powerpc/platforms/powernv/pci.c
-> @@ -227,11 +227,38 @@ void pnv_teardown_msi_irqs(struct pci_dev *pdev)
->  }
->  #endif /* CONFIG_PCI_MSI */
->
-> +/* Nicely print the contents of the PE State Tables (PEST). */
-> +static void pnv_pci_dump_pest(__be64 pestA[], __be64 pestB[], int pest_size)
-> +{
-> +	__be64 prevA = ULONG_MAX, prevB = ULONG_MAX;
-> +	bool dup = false;
-> +	int i;
-> +
-> +	for (i = 0; i < pest_size; i++) {
-> +		__be64 peA = be64_to_cpu(pestA[i]);
-> +		__be64 peB = be64_to_cpu(pestB[i]);
-> +
-> +		if (peA != prevA || peB != prevB) {
-> +			if (dup) {
-> +				pr_info("PE[..%03x] A/B: as above\n", i-1);
-> +				dup = false;
-> +			}
-> +			prevA = peA;
-> +			prevB = peB;
-> +			if (peA >> 63 || peB >> 63)
-> +				pr_info("PE[%03x] A/B: %016llx %016llx\n",
-> +					i, peA, peB);
-> +		} else if (!dup && (peA >> 63 || peB >> 63)) {
-
-I'd prefer "peA >> 63" to be expressed as "peA & PPC_BIT(0)" but that 
-might just be me?
-
-
-> +			/* Don't need to track zeroes */
-
-This comment is less than clear
-
-> +			dup = true;
-> +		}
-> +	}
-> +}
-> +
-
-
--- 
-Andrew Donnellan              OzLabs, ADL Canberra
-andrew.donnellan@au1.ibm.com  IBM Australia Limited
+>  arch/powerpc/kernel/idle_book3s.S | 13 ++++++++++---
+>  1 file changed, 10 insertions(+), 3 deletions(-)
+> 
+> diff --git a/arch/powerpc/kernel/idle_book3s.S b/arch/powerpc/kernel/idle_book3s.S
+> index afd029f..6c9920d 100644
+> --- a/arch/powerpc/kernel/idle_book3s.S
+> +++ b/arch/powerpc/kernel/idle_book3s.S
+> @@ -31,6 +31,7 @@
+>   * registers for winkle support.
+>   */
+>  #define _SDR1	GPR3
+> +#define _PTCR	GPR3
+>  #define _RPR	GPR4
+>  #define _SPURR	GPR5
+>  #define _PURR	GPR6
+> @@ -39,7 +40,7 @@
+>  #define _AMOR	GPR9
+>  #define _WORT	GPR10
+>  #define _WORC	GPR11
+> -#define _PTCR	GPR12
+> +#define _LPCR	GPR12
+>  
+>  #define PSSCR_EC_ESL_MASK_SHIFTED          (PSSCR_EC | PSSCR_ESL) >> 16
+>  
+> @@ -55,12 +56,14 @@ save_sprs_to_stack:
+>  	 * here since any thread in the core might wake up first
+>  	 */
+>  BEGIN_FTR_SECTION
+> -	mfspr	r3,SPRN_PTCR
+> -	std	r3,_PTCR(r1)
+>  	/*
+>  	 * Note - SDR1 is dropped in Power ISA v3. Hence not restoring
+>  	 * SDR1 here
+>  	 */
+> +	mfspr	r3,SPRN_PTCR
+> +	std	r3,_PTCR(r1)
+> +	mfspr	r3,SPRN_LPCR
+> +	std	r3,_LPCR(r1)
+>  FTR_SECTION_ELSE
+>  	mfspr	r3,SPRN_SDR1
+>  	std	r3,_SDR1(r1)
+> @@ -813,6 +816,10 @@ no_segments:
+>  	mtctr	r12
+>  	bctrl
+>  
+> +BEGIN_FTR_SECTION
+> +	ld	r4,_LPCR(r1)
+> +	mtspr	SPRN_LPCR,r4
+> +END_FTR_SECTION_IFSET(CPU_FTR_ARCH_300)
+>  hypervisor_state_restored:
+>  
+>  	mtspr	SPRN_SRR1,r16
