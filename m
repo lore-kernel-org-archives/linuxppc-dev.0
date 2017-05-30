@@ -1,29 +1,40 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
- [IPv6:2607:f8b0:400e:c00::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <andrew.donnellan@au1.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wcNZG42FzzDq5W
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 May 2017 16:12:54 +1000 (AEST)
-Received: by mail-pf0-x242.google.com with SMTP id n23so15621700pfb.3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 May 2017 23:12:54 -0700 (PDT)
-Date: Tue, 30 May 2017 16:12:38 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, Michael Neuling
- <mikey@neuling.org>, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
- Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, Akshay Adiga
- <akshay.adiga@linux.vnet.ibm.com>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/6] powernv:idle: Decouple Timebase restore & Per-core
- SPRs restore
-Message-ID: <20170530161238.08a8abe3@roar.ozlabs.ibm.com>
-In-Reply-To: <d83df78bd8693f9a9814eb7b1d95537f663e47ea.1494585671.git.ego@linux.vnet.ibm.com>
-References: <cover.1494585671.git.ego@linux.vnet.ibm.com>
- <d83df78bd8693f9a9814eb7b1d95537f663e47ea.1494585671.git.ego@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wcNZW2352zDqGx
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 May 2017 16:13:07 +1000 (AEST)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v4U699kH143656
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 May 2017 02:13:02 -0400
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2as03r5ajf-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 May 2017 02:13:01 -0400
+Received: from localhost
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
+ Tue, 30 May 2017 16:12:59 +1000
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v4U6Cn6o3998204
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 May 2017 16:12:57 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v4U6COPq008627
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 May 2017 16:12:24 +1000
+Subject: Re: [PATCH 1/3] powerpc/powernv/pci: Reduce spam when dumping PEST
+To: Russell Currey <ruscur@russell.cc>, linuxppc-dev@lists.ozlabs.org
+References: <20170530054637.0D6C4AC0B9@b01ledav006.gho.pok.ibm.com>
+From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Date: Tue, 30 May 2017 16:12:00 +1000
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+In-Reply-To: <20170530054637.0D6C4AC0B9@b01ledav006.gho.pok.ibm.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Message-Id: <e5441c6f-d2e4-428a-9b1d-49a15e5be39c@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,65 +44,91 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 16 May 2017 14:19:44 +0530
-"Gautham R. Shenoy" <ego@linux.vnet.ibm.com> wrote:
+On 30/05/17 15:44, Russell Currey wrote:
+> Dumping the PE State Tables (PEST) can be highly verbose if a number of PEs
+> are affected, especially in the case where the whole PHB is frozen and 512
+> lines get printed.  Check for duplicates when dumping the PEST to reduce
+> useless output.
+>
+> For example:
+>
+>     PE[0f8] A/B: 9700002600000000 80000080d00000f8
+>     PE[0f9] A/B: 8000000000000000 0000000000000000
+>     PE[..0fe] A/B: as above
+>     PE[0ff] A/B: 8440002b00000000 0000000000000000
+>
+> instead of:
+>
+>     PE[0f8] A/B: 9700002600000000 80000080d00000f8
+>     PE[0f9] A/B: 8000000000000000 0000000000000000
+>     PE[0fa] A/B: 8000000000000000 0000000000000000
+>     PE[0fb] A/B: 8000000000000000 0000000000000000
+>     PE[0fc] A/B: 8000000000000000 0000000000000000
+>     PE[0fd] A/B: 8000000000000000 0000000000000000
+>     PE[0fe] A/B: 8000000000000000 0000000000000000
+>     PE[0ff] A/B: 8440002b00000000 0000000000000000
+>
+> and you can imagine how much worse it can get for 512 PEs.
+>
+> Signed-off-by: Russell Currey <ruscur@russell.cc>
 
-> From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-> 
-> On POWER8, in case of
->    -  nap: both timebase and hypervisor state is retained.
->    -  fast-sleep: timebase is lost. But the hypervisor state is retained.
->    -  winkle: timebase and hypervisor state is lost.
-> 
-> Hence, the current code for handling exit from a idle state assumes
-> that if the timebase value is retained, then so is the hypervisor
-> state. Thus, the current code doesn't restore per-core hypervisor
-> state in such cases.
-> 
-> But that is no longer the case on POWER9 where we do have stop states
-> in which timebase value is retained, but the hypervisor state is
-> lost. So we have to ensure that the per-core hypervisor state gets
-> restored in such cases.
-> 
-> Fix this by ensuring that even in the case when timebase is retained,
-> we explicitly check if we are waking up from a deep stop that loses
-> per-core hypervisor state (indicated by cr4 being eq or gt), and if
-> this is the case, we restore the per-core hypervisor state.
-> 
-> Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+Minor comments below
+
+Reviewed-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+
 > ---
->  arch/powerpc/kernel/idle_book3s.S | 7 ++++---
->  1 file changed, 4 insertions(+), 3 deletions(-)
-> 
-> diff --git a/arch/powerpc/kernel/idle_book3s.S b/arch/powerpc/kernel/idle_book3s.S
-> index 4898d67..afd029f 100644
-> --- a/arch/powerpc/kernel/idle_book3s.S
-> +++ b/arch/powerpc/kernel/idle_book3s.S
-> @@ -731,13 +731,14 @@ timebase_resync:
->  	 * Use cr3 which indicates that we are waking up with atleast partial
->  	 * hypervisor state loss to determine if TIMEBASE RESYNC is needed.
->  	 */
-> -	ble	cr3,clear_lock
-> +	ble	cr3,.Ltb_resynced
->  	/* Time base re-sync */
->  	bl	opal_resync_timebase;
->  	/*
-> -	 * If waking up from sleep, per core state is not lost, skip to
-> -	 * clear_lock.
-> +	 * If waking up from sleep (POWER8), per core state
-> +	 * is not lost, skip to clear_lock.
->  	 */
-> +.Ltb_resynced:
->  	blt	cr4,clear_lock
->  
->  	/*
+> This is essentially V2 of a previous patch I submitted, with some changes
+> thanks to feedback from Gavin.
+> ---
+>  arch/powerpc/platforms/powernv/pci.c | 50 +++++++++++++++++++++---------------
+>  1 file changed, 30 insertions(+), 20 deletions(-)
+>
+> diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
+> index 935ccb249a8a..4852ac8d0b4d 100644
+> --- a/arch/powerpc/platforms/powernv/pci.c
+> +++ b/arch/powerpc/platforms/powernv/pci.c
+> @@ -227,11 +227,38 @@ void pnv_teardown_msi_irqs(struct pci_dev *pdev)
+>  }
+>  #endif /* CONFIG_PCI_MSI */
+>
+> +/* Nicely print the contents of the PE State Tables (PEST). */
+> +static void pnv_pci_dump_pest(__be64 pestA[], __be64 pestB[], int pest_size)
+> +{
+> +	__be64 prevA = ULONG_MAX, prevB = ULONG_MAX;
+> +	bool dup = false;
+> +	int i;
+> +
+> +	for (i = 0; i < pest_size; i++) {
+> +		__be64 peA = be64_to_cpu(pestA[i]);
+> +		__be64 peB = be64_to_cpu(pestB[i]);
+> +
+> +		if (peA != prevA || peB != prevB) {
+> +			if (dup) {
+> +				pr_info("PE[..%03x] A/B: as above\n", i-1);
+> +				dup = false;
+> +			}
+> +			prevA = peA;
+> +			prevB = peB;
+> +			if (peA >> 63 || peB >> 63)
+> +				pr_info("PE[%03x] A/B: %016llx %016llx\n",
+> +					i, peA, peB);
+> +		} else if (!dup && (peA >> 63 || peB >> 63)) {
 
-It's more that timebase was not lost, rather than resynced.
-Can we just do a 'bgtl cr3,opal_resync_timebase'?
+I'd prefer "peA >> 63" to be expressed as "peA & PPC_BIT(0)" but that 
+might just be me?
 
-I guess cr4 branch will never be true on POWER9... I think
-pnv_wakeup_tb_loss is going to end up clearer being split
-into two between isa 207 and 300. But that can wait until
-after POWER9 is working properly.
 
-Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
+> +			/* Don't need to track zeroes */
+
+This comment is less than clear
+
+> +			dup = true;
+> +		}
+> +	}
+> +}
+> +
+
+
+-- 
+Andrew Donnellan              OzLabs, ADL Canberra
+andrew.donnellan@au1.ibm.com  IBM Australia Limited
