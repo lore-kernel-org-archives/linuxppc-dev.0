@@ -1,29 +1,37 @@
-Return-Path: <pasha.tatashin@oracle.com>
-Received: from userp1040.oracle.com (userp1040.oracle.com [156.151.31.81])
+Return-Path: <nfont@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wcgJg2ZD7zDq5x
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 May 2017 03:17:06 +1000 (AEST)
-Subject: Re: [v3 0/9] parallelized "struct page" zeroing
-To: Michal Hocko <mhocko@kernel.org>
-Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
- linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, borntraeger@de.ibm.com,
- heiko.carstens@de.ibm.com, davem@davemloft.net
-References: <1494003796-748672-1-git-send-email-pasha.tatashin@oracle.com>
- <20170509181234.GA4397@dhcp22.suse.cz>
- <e19b241d-be27-3c9a-8984-2fb20211e2e1@oracle.com>
- <20170515193817.GC7551@dhcp22.suse.cz>
- <9b3d68aa-d2b6-2b02-4e75-f8372cbeb041@oracle.com>
- <20170516083601.GB2481@dhcp22.suse.cz>
- <07a6772b-711d-4fdc-f688-db76f1ec4c45@oracle.com>
- <20170529115358.GJ19725@dhcp22.suse.cz>
-From: Pasha Tatashin <pasha.tatashin@oracle.com>
-Message-ID: <ae992f21-3edf-1ae7-41db-641052e411c7@oracle.com>
-Date: Tue, 30 May 2017 13:16:50 -0400
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wcgkS1D5rzDq9m
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 May 2017 03:36:00 +1000 (AEST)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v4UHYT7j098731
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 May 2017 13:35:51 -0400
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2asc6jb5r2-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 May 2017 13:35:51 -0400
+Received: from localhost
+ by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
+ Tue, 30 May 2017 11:35:50 -0600
+Subject: Re: [PATCH] powerpc/hotplug-mem: Fix aa_index match bug for hotplug
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ Michael Bringmann <mwb@linux.vnet.ibm.com>, paulus@samba.org,
+ sahilmehta17@gmail.com, jallen@linux.vnet.ibm.com,
+ alastair@d-silva.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+References: <b284d6be-ff37-4e5c-7357-446b4e1ea8ad@linux.vnet.ibm.com>
+ <87tw424lmh.fsf@concordia.ellerman.id.au>
+From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+Date: Tue, 30 May 2017 12:35:46 -0500
 MIME-Version: 1.0
-In-Reply-To: <20170529115358.GJ19725@dhcp22.suse.cz>
-Content-Type: text/plain; charset=utf-8; format=flowed
+In-Reply-To: <87tw424lmh.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <b50a28ec-ae33-82f8-eefd-0e20e15c2dfb@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,19 +41,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> Could you be more specific? E.g. how are other stores done in
-> __init_single_page safe then? I am sorry to be dense here but how does
-> the full 64B store differ from other stores done in the same function.
+On 05/30/2017 06:41 AM, Michael Ellerman wrote:
+> Michael Bringmann <mwb@linux.vnet.ibm.com> writes:
+> 
+>> When adding or removing memory, the aa_index (affinity value) for the
+>> memblock must also be converted to match the endianness of the rest
+>> of the 'ibm,dynamic-memory' property.  Otherwise, subsequent retrieval
+>> of the attribute will likely lead to non-existent nodes, followed by
+>> using the default node in the code inappropriately.
+>>
+>> Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
+>>
+>> diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/powerpc/platforms/pseries/hotplug-memory.c
+>> index e104c71..1fb162b 100644
+>> --- a/arch/powerpc/platforms/pseries/hotplug-memory.c
+>> +++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
+>> @@ -124,6 +124,7 @@ static struct property *dlpar_clone_drconf_property(struct device_node *dn)
+>>  	for (i = 0; i < num_lmbs; i++) {
+>>  		lmbs[i].base_addr = be64_to_cpu(lmbs[i].base_addr);
+>>  		lmbs[i].drc_index = be32_to_cpu(lmbs[i].drc_index);
+>> +		lmbs[i].aa_index = be32_to_cpu(lmbs[i].aa_index);
+>>  		lmbs[i].flags = be32_to_cpu(lmbs[i].flags);
+>>  	}
+>>  
+> 
+> AFAICS this code was added in commit 5f97b2a0d176 ("powerpc/pseries:
+> Implement memory hotplug add in the kernel").
+> 
+> So this should probably be marked:
+> 
+>   Fixes: 5f97b2a0d176 ("powerpc/pseries: Implement memory hotplug add in the kernel")
+> 
+> And it seems like a bug we'd want fixed in stable, so:
+> 
+>   Cc: stable@vger.kernel.org # v4.1+
+> 
+> 
+> Am I right?
 
-Hi Michal,
+Yes, that is correct.
 
-It is safe to do regular 8-byte and smaller stores (stx, st, sth, stb) 
-without membar, but they are slower compared to STBI which require a 
-membar before memory can be accessed. So when on SPARC we zero a larger 
-span of memory it is faster to use STBI, and do one membar at the end. 
-This is why for single thread it is faster to zero multiple pages of 
-memory and than initialize only fields that are needed in "struct page". 
-I believe the same is true for ppc64, as they clear the whole cacheline 
-128-bytes at a time with larger memsets.
-
-Pasha
+-Nathan
