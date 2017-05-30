@@ -1,29 +1,15 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
- [IPv6:2607:f8b0:400e:c00::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wcNvV3LGrzDq5W
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 May 2017 16:27:50 +1000 (AEST)
-Received: by mail-pf0-x243.google.com with SMTP id u26so15705377pfd.2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 May 2017 23:27:50 -0700 (PDT)
-Date: Tue, 30 May 2017 16:27:35 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, Michael Neuling
- <mikey@neuling.org>, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
- Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, Akshay Adiga
- <akshay.adiga@linux.vnet.ibm.com>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 5/6] powernv:idle: Use Requested Level for restoring
- state on P9 DD1
-Message-ID: <20170530162735.564f863e@roar.ozlabs.ibm.com>
-In-Reply-To: <70ede0d8bdcb14ea676c87f14a26788890a3ba4d.1494585671.git.ego@linux.vnet.ibm.com>
-References: <cover.1494585671.git.ego@linux.vnet.ibm.com>
- <70ede0d8bdcb14ea676c87f14a26788890a3ba4d.1494585671.git.ego@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wcNvx5JWMzDqHl
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 May 2017 16:28:13 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: linuxppc-dev@ozlabs.org
+Cc: npiggin@gmail.com
+Subject: [PATCH v2] powerpc/64s: Add dt_cpu_ftrs boot time setup option
+Date: Tue, 30 May 2017 16:28:09 +1000
+Message-Id: <1496125689-27900-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,100 +19,175 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 16 May 2017 14:19:47 +0530
-"Gautham R. Shenoy" <ego@linux.vnet.ibm.com> wrote:
+From: Nicholas Piggin <npiggin@gmail.com>
 
-> From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-> 
-> On Power9 DD1 due to a hardware bug the Power-Saving Level Status
-> field (PLS) of the PSSCR for a thread waking up from a deep state can
-> under-report if some other thread in the core is in a shallow stop
-> state. The scenario in which this can manifest is as follows:
-> 
->        1) All the threads of the core are in deep stop.
->        2) One of the threads is woken up. The PLS for this thread will
->           correctly reflect that it is waking up from deep stop.
->        3) The thread that has woken up now executes a shallow stop.
->        4) When some other thread in the core is woken, its PLS will reflect
->           the shallow stop state.
-> 
-> Thus, the subsequent thread for which the PLS is under-reporting the
-> wakeup state will not restore the hypervisor resources.
-> 
-> Hence, on DD1 systems, use the Requested Level (RL) field as a
-> workaround to restore the contents of the hypervisor resources on the
-> wakeup from the stop state.
-> 
-> Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+Provide a dt_cpu_ftrs= cmdline option to disable the dt_cpu_ftrs CPU
+feature discovery, and fall back to the "cputable" based version.
 
+Also allow control of advertising unknown features to userspace and
+with this parameter, and remove the clunky CONFIG option.
 
-Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+[mpe: Add explicit early check of bootargs in dt_cpu_ftrs_init()]
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ Documentation/admin-guide/kernel-parameters.txt | 10 +++++
+ arch/powerpc/Kconfig                            |  5 ---
+ arch/powerpc/kernel/dt_cpu_ftrs.c               | 57 +++++++++++++++++++++----
+ 3 files changed, 58 insertions(+), 14 deletions(-)
 
-
-> ---
->  arch/powerpc/include/asm/paca.h   |  2 ++
->  arch/powerpc/kernel/asm-offsets.c |  1 +
->  arch/powerpc/kernel/idle_book3s.S | 13 ++++++++++++-
->  3 files changed, 15 insertions(+), 1 deletion(-)
-> 
-> diff --git a/arch/powerpc/include/asm/paca.h b/arch/powerpc/include/asm/paca.h
-> index 1c09f8f..77f60a0 100644
-> --- a/arch/powerpc/include/asm/paca.h
-> +++ b/arch/powerpc/include/asm/paca.h
-> @@ -177,6 +177,8 @@ struct paca_struct {
->  	 * to the sibling threads' paca.
->  	 */
->  	struct paca_struct **thread_sibling_pacas;
-> +	/* The PSSCR value that the kernel requested before going to stop */
-> +	u64 requested_psscr;
->  #endif
->  
->  #ifdef CONFIG_PPC_STD_MMU_64
-> diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
-> index 709e234..e15c178 100644
-> --- a/arch/powerpc/kernel/asm-offsets.c
-> +++ b/arch/powerpc/kernel/asm-offsets.c
-> @@ -742,6 +742,7 @@ int main(void)
->  	OFFSET(PACA_THREAD_MASK, paca_struct, thread_mask);
->  	OFFSET(PACA_SUBCORE_SIBLING_MASK, paca_struct, subcore_sibling_mask);
->  	OFFSET(PACA_SIBLING_PACA_PTRS, paca_struct, thread_sibling_pacas);
-> +	OFFSET(PACA_REQ_PSSCR, paca_struct, requested_psscr);
->  #endif
->  
->  	DEFINE(PPC_DBELL_SERVER, PPC_DBELL_SERVER);
-> diff --git a/arch/powerpc/kernel/idle_book3s.S b/arch/powerpc/kernel/idle_book3s.S
-> index 6c9920d..98a6d07 100644
-> --- a/arch/powerpc/kernel/idle_book3s.S
-> +++ b/arch/powerpc/kernel/idle_book3s.S
-> @@ -379,6 +379,7 @@ _GLOBAL(power9_idle_stop)
->  	mfspr   r5,SPRN_PSSCR
->  	andc    r5,r5,r4
->  	or      r3,r3,r5
-> +	std	r3, PACA_REQ_PSSCR(r13)
->  	mtspr 	SPRN_PSSCR,r3
->  	LOAD_REG_ADDR(r5,power_enter_stop)
->  	li	r4,1
-> @@ -498,12 +499,22 @@ pnv_restore_hyp_resource_arch300:
->  	LOAD_REG_ADDRBASE(r5,pnv_first_deep_stop_state)
->  	ld	r4,ADDROFF(pnv_first_deep_stop_state)(r5)
->  
-> -	mfspr	r5,SPRN_PSSCR
-> +BEGIN_FTR_SECTION_NESTED(71)
-> +	/*
-> +	 * Assume that we are waking up from the state
-> +	 * same as the Requested Level (RL) in the PSSCR
-> +	 * which are Bits 60-63
-> +	 */
-> +	ld	r5,PACA_REQ_PSSCR(r13)
-> +	rldicl  r5,r5,0,60
-> +FTR_SECTION_ELSE_NESTED(71)
->  	/*
->  	 * 0-3 bits correspond to Power-Saving Level Status
->  	 * which indicates the idle state we are waking up from
->  	 */
-> +	mfspr	r5, SPRN_PSSCR
->  	rldicl  r5,r5,4,60
-> +ALT_FTR_SECTION_END_NESTED_IFSET(CPU_FTR_POWER9_DD1, 71)
->  	cmpd	cr4,r5,r4
->  	bge	cr4,pnv_wakeup_tb_loss /* returns to caller */
->  
+diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
+index 15f79c27748d..f6d8a70b68c4 100644
+--- a/Documentation/admin-guide/kernel-parameters.txt
++++ b/Documentation/admin-guide/kernel-parameters.txt
+@@ -866,6 +866,16 @@
+ 
+ 	dscc4.setup=	[NET]
+ 
++	dt_cpu_ftrs=	[PPC]
++			Format: {"off" | "known"}
++			Control how the dt_cpu_ftrs device-tree binding is
++			used for CPU feature discovery and setup (if it
++			exists).
++			off: Do not use it, fall back to legacy cpu table.
++			known: Do not pass through unknown features to guests
++			or userspace, only those that the kernel is not aware
++			of.
++
+ 	dump_apple_properties	[X86]
+ 			Dump name and content of EFI device properties on
+ 			x86 Macs.  Useful for driver authors to determine
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index f7c8f9972f61..4a4a05afcaf7 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -391,11 +391,6 @@ config PPC_DT_CPU_FTRS
+ 	  firmware provides this binding.
+ 	  If you're not sure say Y.
+ 
+-config PPC_CPUFEATURES_ENABLE_UNKNOWN
+-	bool "cpufeatures pass through unknown features to guest/userspace"
+-	depends on PPC_DT_CPU_FTRS
+-	default y
+-
+ config HIGHMEM
+ 	bool "High memory support"
+ 	depends on PPC32
+diff --git a/arch/powerpc/kernel/dt_cpu_ftrs.c b/arch/powerpc/kernel/dt_cpu_ftrs.c
+index c92ab2f84257..4c7656dc4e04 100644
+--- a/arch/powerpc/kernel/dt_cpu_ftrs.c
++++ b/arch/powerpc/kernel/dt_cpu_ftrs.c
+@@ -8,6 +8,7 @@
+ #include <linux/export.h>
+ #include <linux/init.h>
+ #include <linux/jump_label.h>
++#include <linux/libfdt.h>
+ #include <linux/memblock.h>
+ #include <linux/printk.h>
+ #include <linux/sched.h>
+@@ -670,12 +671,24 @@ static struct dt_cpu_feature_match __initdata
+ 	{"wait-v3", feat_enable, 0},
+ };
+ 
+-/* XXX: how to configure this? Default + boot time? */
+-#ifdef CONFIG_PPC_CPUFEATURES_ENABLE_UNKNOWN
+-#define CPU_FEATURE_ENABLE_UNKNOWN 1
+-#else
+-#define CPU_FEATURE_ENABLE_UNKNOWN 0
+-#endif
++static bool __initdata using_dt_cpu_ftrs;
++static bool __initdata enable_unknown = true;
++
++static int __init dt_cpu_ftrs_parse(char *str)
++{
++	if (!str)
++		return 0;
++
++	if (!strcmp(str, "off"))
++		using_dt_cpu_ftrs = false;
++	else if (!strcmp(str, "known"))
++		enable_unknown = false;
++	else
++		return 1;
++
++	return 0;
++}
++early_param("dt_cpu_ftrs", dt_cpu_ftrs_parse);
+ 
+ static void __init cpufeatures_setup_start(u32 isa)
+ {
+@@ -706,7 +719,7 @@ static bool __init cpufeatures_process_feature(struct dt_cpu_feature *f)
+ 		}
+ 	}
+ 
+-	if (!known && CPU_FEATURE_ENABLE_UNKNOWN) {
++	if (!known && enable_unknown) {
+ 		if (!feat_try_enable_unknown(f)) {
+ 			pr_info("not enabling: %s (unknown and unsupported by kernel)\n",
+ 				f->name);
+@@ -755,6 +768,26 @@ static void __init cpufeatures_setup_finished(void)
+ 		cur_cpu_spec->cpu_features, cur_cpu_spec->mmu_features);
+ }
+ 
++static int __init disabled_on_cmdline(void)
++{
++	unsigned long root, chosen;
++	const char *p;
++
++	root = of_get_flat_dt_root();
++	chosen = of_get_flat_dt_subnode_by_name(root, "chosen");
++	if (chosen == -FDT_ERR_NOTFOUND)
++		return false;
++
++	p = of_get_flat_dt_prop(chosen, "bootargs", NULL);
++	if (!p)
++		return false;
++
++	if (strstr(p, "dt_cpu_ftrs=off"))
++		return true;
++
++	return false;
++}
++
+ static int __init fdt_find_cpu_features(unsigned long node, const char *uname,
+ 					int depth, void *data)
+ {
+@@ -765,8 +798,6 @@ static int __init fdt_find_cpu_features(unsigned long node, const char *uname,
+ 	return 0;
+ }
+ 
+-static bool __initdata using_dt_cpu_ftrs = false;
+-
+ bool __init dt_cpu_ftrs_in_use(void)
+ {
+ 	return using_dt_cpu_ftrs;
+@@ -774,6 +805,8 @@ bool __init dt_cpu_ftrs_in_use(void)
+ 
+ bool __init dt_cpu_ftrs_init(void *fdt)
+ {
++	using_dt_cpu_ftrs = false;
++
+ 	/* Setup and verify the FDT, if it fails we just bail */
+ 	if (!early_init_dt_verify(fdt))
+ 		return false;
+@@ -781,6 +814,9 @@ bool __init dt_cpu_ftrs_init(void *fdt)
+ 	if (!of_scan_flat_dt(fdt_find_cpu_features, NULL))
+ 		return false;
+ 
++	if (disabled_on_cmdline())
++		return false;
++
+ 	cpufeatures_setup_cpu();
+ 
+ 	using_dt_cpu_ftrs = true;
+@@ -1026,5 +1062,8 @@ static int __init dt_cpu_ftrs_scan_callback(unsigned long node, const char
+ 
+ void __init dt_cpu_ftrs_scan(void)
+ {
++	if (!using_dt_cpu_ftrs)
++		return;
++
+ 	of_scan_flat_dt(dt_cpu_ftrs_scan_callback, NULL);
+ }
+-- 
+2.7.4
