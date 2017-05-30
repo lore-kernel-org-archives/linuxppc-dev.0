@@ -1,19 +1,22 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wcVh12f8mzDq5x
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 May 2017 20:48:17 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wcVl85V8LzDq5x
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 May 2017 20:51:00 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Balbir Singh <bsingharora@gmail.com>
-Cc: linuxppc-dev@ozlabs.org, mikey@neuling.org, paulus@samba.org,
- npiggin@gmail.com
-Subject: Re: [PATCH] powerpc/64: Reclaim CPU_FTR_SUBCORE
-In-Reply-To: <20170530124800.11dbc61b@firefly.ozlabs.ibm.com>
-References: <1496022790-2017-1-git-send-email-mpe@ellerman.id.au>
- <20170530124800.11dbc61b@firefly.ozlabs.ibm.com>
-Date: Tue, 30 May 2017 20:48:16 +1000
-Message-ID: <878tle62of.fsf@concordia.ellerman.id.au>
+To: Christophe Leroy <christophe.leroy@c-s.fr>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Scott Wood <oss@buserror.net>,
+ Balbir Singh <bsingharora@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 1/7] powerpc/mm: rename map_page() to map_kernel_page() on
+ PPC32
+In-Reply-To: <83aadb3163da87ec017ca4a61afcc29520a27eff.1496070452.git.christophe.leroy@c-s.fr>
+References: <cover.1496070452.git.christophe.leroy@c-s.fr>
+ <83aadb3163da87ec017ca4a61afcc29520a27eff.1496070452.git.christophe.leroy@c-s.fr>
+Date: Tue, 30 May 2017 20:50:59 +1000
+Message-ID: <8760gi62jw.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,39 +28,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Balbir Singh <bsingharora@gmail.com> writes:
+Christophe Leroy <christophe.leroy@c-s.fr> writes:
 
-> On Mon, 29 May 2017 11:53:10 +1000
-> Michael Ellerman <mpe@ellerman.id.au> wrote:
->
->> We are running low on CPU feature bits, so we only want to use them when
->> it's really necessary.
->> 
->> CPU_FTR_SUBCORE is only used in one place, and only in C, so we don't
->> need it in order to make asm patching work. It can only be set on
->> "Power8" CPUs, which in practice means POWER8, POWER8E and POWER8NVL.
->> There are no plans to implement it on future CPUs, but if there ever
->> were we could retrofit it then.
->> 
->> Although KVM uses subcores, it never looks at the CPU feature, it either
->> looks at the ISA level or the threads_per_subcore value.
->> 
->> So drop the CPU feature and do a PVR check instead. Drop the device tree
->> "subcore" feature as we no longer support doing anything with it, and we
->> will drop it from skiboot too.
->> 
->> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
->> ---
->
-> Acked-by: Balbir Singh <bsingharora@gmail.com>
->
-> I looked at CPU_FTR_DBELL and its used for initialization and in
-> arch_show_interrupts(), no assembly
+...
 
-But the other criteria is that there is a small set of CPUs where it can
-be enabled, so that the PVR check is not horrible.
+Please tell me why.
 
-I don't think DBELL fits that, I see it enabled for at least Power8,
-Power8E, Power9, e6500, e5500, e500mc.
+You also moved the declaration from mmu_decl.h to book3s/32/pgtable.h,
+but didn't update any includes, presumably we're confident everything
+gets pgtable.h somehow?
 
 cheers
