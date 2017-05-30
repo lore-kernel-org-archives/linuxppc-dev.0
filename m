@@ -1,31 +1,20 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
- [IPv6:2607:f8b0:400e:c00::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wcW9W0H7KzDq5x
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 May 2017 21:10:23 +1000 (AEST)
-Received: by mail-pf0-x243.google.com with SMTP id f27so17184410pfe.0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 May 2017 04:10:22 -0700 (PDT)
-Date: Tue, 30 May 2017 21:10:06 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Gautham R Shenoy <ego@linux.vnet.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, Michael Neuling
- <mikey@neuling.org>, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
- Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, Akshay Adiga
- <akshay.adiga@linux.vnet.ibm.com>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 6/6] cpuidle-powernv: Allow Deep stop states that don't
- stop time
-Message-ID: <20170530211006.49ce9eff@roar.ozlabs.ibm.com>
-In-Reply-To: <20170530105055.GD8563@in.ibm.com>
-References: <cover.1494585671.git.ego@linux.vnet.ibm.com>
- <3429547945465851cfcbf81f6e762037c395c8ac.1494585671.git.ego@linux.vnet.ibm.com>
- <20170530171357.4e0b87a7@roar.ozlabs.ibm.com>
- <20170530105055.GD8563@in.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wcWZB4xD3zDq5x
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 May 2017 21:28:18 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ Russell Currey <ruscur@russell.cc>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 1/3] powerpc/powernv/pci: Reduce spam when dumping PEST
+In-Reply-To: <e5441c6f-d2e4-428a-9b1d-49a15e5be39c@au1.ibm.com>
+References: <20170530054637.0D6C4AC0B9@b01ledav006.gho.pok.ibm.com>
+ <e5441c6f-d2e4-428a-9b1d-49a15e5be39c@au1.ibm.com>
+Date: Tue, 30 May 2017 21:28:15 +1000
+Message-ID: <87wp8y4m9c.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,144 +24,83 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 30 May 2017 16:20:55 +0530
-Gautham R Shenoy <ego@linux.vnet.ibm.com> wrote:
+Andrew Donnellan <andrew.donnellan@au1.ibm.com> writes:
+> On 30/05/17 15:44, Russell Currey wrote:
+>> diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
+>> index 935ccb249a8a..4852ac8d0b4d 100644
+>> --- a/arch/powerpc/platforms/powernv/pci.c
+>> +++ b/arch/powerpc/platforms/powernv/pci.c
+>> @@ -227,11 +227,38 @@ void pnv_teardown_msi_irqs(struct pci_dev *pdev)
+>>  }
+>>  #endif /* CONFIG_PCI_MSI */
+>>
+>> +/* Nicely print the contents of the PE State Tables (PEST). */
+>> +static void pnv_pci_dump_pest(__be64 pestA[], __be64 pestB[], int pest_size)
+>> +{
+>> +	__be64 prevA = ULONG_MAX, prevB = ULONG_MAX;
+>> +	bool dup = false;
+>> +	int i;
+>> +
+>> +	for (i = 0; i < pest_size; i++) {
+>> +		__be64 peA = be64_to_cpu(pestA[i]);
+>> +		__be64 peB = be64_to_cpu(pestB[i]);
+>> +
+>> +		if (peA != prevA || peB != prevB) {
+>> +			if (dup) {
+>> +				pr_info("PE[..%03x] A/B: as above\n", i-1);
+>> +				dup = false;
+>> +			}
+>> +			prevA = peA;
+>> +			prevB = peB;
+>> +			if (peA >> 63 || peB >> 63)
+>> +				pr_info("PE[%03x] A/B: %016llx %016llx\n",
+>> +					i, peA, peB);
+>> +		} else if (!dup && (peA >> 63 || peB >> 63)) {
+>
+> I'd prefer "peA >> 63" to be expressed as "peA & PPC_BIT(0)" but that 
+> might just be me?
 
-> On Tue, May 30, 2017 at 05:13:57PM +1000, Nicholas Piggin wrote:
-> > On Tue, 16 May 2017 14:19:48 +0530
-> > "Gautham R. Shenoy" <ego@linux.vnet.ibm.com> wrote:
-> >   
-> > > From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-> > > 
-> > > The current code in the cpuidle-powernv intialization only allows deep
-> > > stop states (indicated by OPAL_PM_STOP_INST_DEEP) which lose timebase
-> > > (indicated by OPAL_PM_TIMEBASE_STOP). This assumption goes back to
-> > > POWER8 time where deep states used to lose the timebase. However, on
-> > > POWER9, we do have stop states that are deep (they lose hypervisor
-> > > state) but retain the timebase.
-> > > 
-> > > Fix the initialization code in the cpuidle-powernv driver to allow
-> > > such deep states.
-> > > 
-> > > Further, there is a bug in cpuidle-powernv driver with
-> > > CONFIG_TICK_ONESHOT=n where we end up incrementing the nr_idle_states
-> > > even if a platform idle state which loses time base was not added to
-> > > the cpuidle table.
-> > > 
-> > > Fix this by ensuring that the nr_idle_states variable gets incremented
-> > > only when the platform idle state was added to the cpuidle table.  
-> > 
-> > Should this be a separate patch? Stable?  
-> 
-> Ok. Will send it out separately.
+You and a few other people who are also wrong ;)
 
-Looks like mpe has merged this in next now. I just wonder if this
-particular bit would be relevant for POWER8 and therefore be a
-stable candidate? All the POWER9 idle fixes may not be suitable for
-stable.
+Using PPC_BIT() means people have to go and dereference that macro
+before they can grok the code, and when they do look at the macro they
+go "huh, wut is this insanity".
+
+Whereas everyone knows what >> 63 does.
+
+It's true PPC_BIT() might make it clearer when you're comparing the
+documentation to the code, but that happens less often - especially
+because most people can't (easily) get the documentation.
 
 
-> > > Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
-> > > ---
-> > >  drivers/cpuidle/cpuidle-powernv.c | 16 ++++++++++------
-> > >  1 file changed, 10 insertions(+), 6 deletions(-)
-> > > 
-> > > diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
-> > > index 12409a5..45eaf06 100644
-> > > --- a/drivers/cpuidle/cpuidle-powernv.c
-> > > +++ b/drivers/cpuidle/cpuidle-powernv.c
-> > > @@ -354,6 +354,7 @@ static int powernv_add_idle_states(void)
-> > >  
-> > >  	for (i = 0; i < dt_idle_states; i++) {
-> > >  		unsigned int exit_latency, target_residency;
-> > > +		bool stops_timebase = false;
-> > >  		/*
-> > >  		 * If an idle state has exit latency beyond
-> > >  		 * POWERNV_THRESHOLD_LATENCY_NS then don't use it
-> > > @@ -381,6 +382,9 @@ static int powernv_add_idle_states(void)
-> > >  			}
-> > >  		}
-> > >  
-> > > +		if (flags[i] & OPAL_PM_TIMEBASE_STOP)
-> > > +			stops_timebase = true;
-> > > +
-> > >  		/*
-> > >  		 * For nap and fastsleep, use default target_residency
-> > >  		 * values if f/w does not expose it.
-> > > @@ -392,8 +396,7 @@ static int powernv_add_idle_states(void)
-> > >  			add_powernv_state(nr_idle_states, "Nap",
-> > >  					  CPUIDLE_FLAG_NONE, nap_loop,
-> > >  					  target_residency, exit_latency, 0, 0);
-> > > -		} else if ((flags[i] & OPAL_PM_STOP_INST_FAST) &&
-> > > -				!(flags[i] & OPAL_PM_TIMEBASE_STOP)) {
-> > > +		} else if (has_stop_states && !stops_timebase) {
-> > >  			add_powernv_state(nr_idle_states, names[i],
-> > >  					  CPUIDLE_FLAG_NONE, stop_loop,
-> > >  					  target_residency, exit_latency,
-> > > @@ -405,8 +408,8 @@ static int powernv_add_idle_states(void)
-> > >  		 * within this config dependency check.
-> > >  		 */
-> > >  #ifdef CONFIG_TICK_ONESHOT
-> > > -		if (flags[i] & OPAL_PM_SLEEP_ENABLED ||
-> > > -			flags[i] & OPAL_PM_SLEEP_ENABLED_ER1) {
-> > > +		else if (flags[i] & OPAL_PM_SLEEP_ENABLED ||
-> > > +			 flags[i] & OPAL_PM_SLEEP_ENABLED_ER1) {  
-> > 
-> > Hmm, seems okay but readability is isn't the best with the ifdef and
-> > mixing power8 and 9 cases IMO.
-> > 
-> > Particularly with the nice regular POWER9 states, we're not doing much
-> > logic in this loop besides checking for the timebase stop flag, right?
-> > Would it be clearer if it was changed to something like this (untested
-> > quick hack)?  
-> 
-> Yes, this is very much doable. Some comments below.
-> 
-> > 
-> > ---
-> >  drivers/cpuidle/cpuidle-powernv.c | 76 +++++++++++++++++++--------------------
-> >  1 file changed, 37 insertions(+), 39 deletions(-)
-> > 
-> > diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
-> > index 12409a519cc5..77291389f9ac 100644
-> > --- a/drivers/cpuidle/cpuidle-powernv.c
-> > +++ b/drivers/cpuidle/cpuidle-powernv.c
-> > @@ -353,7 +353,9 @@ static int powernv_add_idle_states(void)
-> >  	}
-> > 
-> >  	for (i = 0; i < dt_idle_states; i++) {
-> > +		unsigned int cpuidle_flags = CPUIDLE_FLAG_NONE;
-> >  		unsigned int exit_latency, target_residency;
-> > +
-> >  		/*
-> >  		 * If an idle state has exit latency beyond
-> >  		 * POWERNV_THRESHOLD_LATENCY_NS then don't use it
-> > @@ -371,6 +373,16 @@ static int powernv_add_idle_states(void)
-> >  		else
-> >  			target_residency = 0;
-> > 
-> > +		if (flags[i] & OPAL_PM_TIMEBASE_STOP) {
-> > +			/*
-> > +			 * All cpuidle states with CPUIDLE_FLAG_TIMER_STOP set
-> > +			 * depend on CONFIG_TICK_ONESHOT.
-> > +			 */
-> > +			if (!IS_ENABLED(CONFIG_TICK_ONESHOT))
-> > +				continue;
-> > +			cpuidle_flags = CPUIDLE_FLAG_TIMER_STOP;  
-> 
-> Yes, this can be done. We just need to extend this condition to
-> (flags[i] & OPAL_PM_TIMEBASE_STOP || flags[i] &
-> OPAL_PM_SLEEP_ENABLED).
-> 
-> Even though all the recent versions of OPAL have OPAL_PM_TIMEBASE_STOP
-> set for states which have OPAL_PM_SLEEP_ENABLED, I am not sure if
-> that was always the case and which is why we have the fastsleep case
-> explicitly coded in the kernel.
+Having said that I don't love the use of >> 63 here. Better would be:
 
-Okay that makes sense, thanks for explaining.
+#define PE_MASK	(1ull << 63)	// Name could be better if I knew what this code was doing
 
-Since your patches are now merged, it's a matter of preference,
-if you want to send any cleanup patches you can take any of my
-suggestions.
+if (peA & PE_MASK)
+	...
 
-Thanks for the fixes!
+
+Even better IMHO is to fully flesh out the constant:
+
+#define PE_MASK	0x8000000000000000
+
+Because then if you see the value in a memory dump or reg dump or
+whatever, you can easily match the value up.
+
+
+eg. if you look at a MSR value:
+
+  0x9000000002001002
+
+How quickly can you spot which bit is VEC based on:
+
+  #define __MASK(X)	(1UL<<(X))
+  #define MSR_VEC_LG	25	        /* Enable AltiVec */
+  #define MSR_VEC		__MASK(MSR_VEC_LG)	/* Enable AltiVec */
+
+vs:
+
+  #define MSR_VEC	0x0000000002000000ull	/* Enable AltiVec */
+
+cheers
