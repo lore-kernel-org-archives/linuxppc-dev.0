@@ -1,15 +1,29 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
+ [IPv6:2607:f8b0:400e:c00::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wcNvx5JWMzDqHl
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 May 2017 16:28:13 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org
-Cc: npiggin@gmail.com
-Subject: [PATCH v2] powerpc/64s: Add dt_cpu_ftrs boot time setup option
-Date: Tue, 30 May 2017 16:28:09 +1000
-Message-Id: <1496125689-27900-1-git-send-email-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wcPx06nYkzDq5x
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 May 2017 17:14:12 +1000 (AEST)
+Received: by mail-pf0-x241.google.com with SMTP id f27so15970988pfe.0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 May 2017 00:14:12 -0700 (PDT)
+Date: Tue, 30 May 2017 17:13:57 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, Michael Neuling
+ <mikey@neuling.org>, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+ Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, Akshay Adiga
+ <akshay.adiga@linux.vnet.ibm.com>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 6/6] cpuidle-powernv: Allow Deep stop states that don't
+ stop time
+Message-ID: <20170530171357.4e0b87a7@roar.ozlabs.ibm.com>
+In-Reply-To: <3429547945465851cfcbf81f6e762037c395c8ac.1494585671.git.ego@linux.vnet.ibm.com>
+References: <cover.1494585671.git.ego@linux.vnet.ibm.com>
+ <3429547945465851cfcbf81f6e762037c395c8ac.1494585671.git.ego@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,175 +33,196 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Nicholas Piggin <npiggin@gmail.com>
+On Tue, 16 May 2017 14:19:48 +0530
+"Gautham R. Shenoy" <ego@linux.vnet.ibm.com> wrote:
 
-Provide a dt_cpu_ftrs= cmdline option to disable the dt_cpu_ftrs CPU
-feature discovery, and fall back to the "cputable" based version.
+> From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+> 
+> The current code in the cpuidle-powernv intialization only allows deep
+> stop states (indicated by OPAL_PM_STOP_INST_DEEP) which lose timebase
+> (indicated by OPAL_PM_TIMEBASE_STOP). This assumption goes back to
+> POWER8 time where deep states used to lose the timebase. However, on
+> POWER9, we do have stop states that are deep (they lose hypervisor
+> state) but retain the timebase.
+> 
+> Fix the initialization code in the cpuidle-powernv driver to allow
+> such deep states.
+> 
+> Further, there is a bug in cpuidle-powernv driver with
+> CONFIG_TICK_ONESHOT=n where we end up incrementing the nr_idle_states
+> even if a platform idle state which loses time base was not added to
+> the cpuidle table.
+> 
+> Fix this by ensuring that the nr_idle_states variable gets incremented
+> only when the platform idle state was added to the cpuidle table.
 
-Also allow control of advertising unknown features to userspace and
-with this parameter, and remove the clunky CONFIG option.
+Should this be a separate patch? Stable?
 
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-[mpe: Add explicit early check of bootargs in dt_cpu_ftrs_init()]
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> 
+> Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+> ---
+>  drivers/cpuidle/cpuidle-powernv.c | 16 ++++++++++------
+>  1 file changed, 10 insertions(+), 6 deletions(-)
+> 
+> diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
+> index 12409a5..45eaf06 100644
+> --- a/drivers/cpuidle/cpuidle-powernv.c
+> +++ b/drivers/cpuidle/cpuidle-powernv.c
+> @@ -354,6 +354,7 @@ static int powernv_add_idle_states(void)
+>  
+>  	for (i = 0; i < dt_idle_states; i++) {
+>  		unsigned int exit_latency, target_residency;
+> +		bool stops_timebase = false;
+>  		/*
+>  		 * If an idle state has exit latency beyond
+>  		 * POWERNV_THRESHOLD_LATENCY_NS then don't use it
+> @@ -381,6 +382,9 @@ static int powernv_add_idle_states(void)
+>  			}
+>  		}
+>  
+> +		if (flags[i] & OPAL_PM_TIMEBASE_STOP)
+> +			stops_timebase = true;
+> +
+>  		/*
+>  		 * For nap and fastsleep, use default target_residency
+>  		 * values if f/w does not expose it.
+> @@ -392,8 +396,7 @@ static int powernv_add_idle_states(void)
+>  			add_powernv_state(nr_idle_states, "Nap",
+>  					  CPUIDLE_FLAG_NONE, nap_loop,
+>  					  target_residency, exit_latency, 0, 0);
+> -		} else if ((flags[i] & OPAL_PM_STOP_INST_FAST) &&
+> -				!(flags[i] & OPAL_PM_TIMEBASE_STOP)) {
+> +		} else if (has_stop_states && !stops_timebase) {
+>  			add_powernv_state(nr_idle_states, names[i],
+>  					  CPUIDLE_FLAG_NONE, stop_loop,
+>  					  target_residency, exit_latency,
+> @@ -405,8 +408,8 @@ static int powernv_add_idle_states(void)
+>  		 * within this config dependency check.
+>  		 */
+>  #ifdef CONFIG_TICK_ONESHOT
+> -		if (flags[i] & OPAL_PM_SLEEP_ENABLED ||
+> -			flags[i] & OPAL_PM_SLEEP_ENABLED_ER1) {
+> +		else if (flags[i] & OPAL_PM_SLEEP_ENABLED ||
+> +			 flags[i] & OPAL_PM_SLEEP_ENABLED_ER1) {
+
+Hmm, seems okay but readability is isn't the best with the ifdef and
+mixing power8 and 9 cases IMO.
+
+Particularly with the nice regular POWER9 states, we're not doing much
+logic in this loop besides checking for the timebase stop flag, right?
+Would it be clearer if it was changed to something like this (untested
+quick hack)?
+
 ---
- Documentation/admin-guide/kernel-parameters.txt | 10 +++++
- arch/powerpc/Kconfig                            |  5 ---
- arch/powerpc/kernel/dt_cpu_ftrs.c               | 57 +++++++++++++++++++++----
- 3 files changed, 58 insertions(+), 14 deletions(-)
+ drivers/cpuidle/cpuidle-powernv.c | 76 +++++++++++++++++++--------------------
+ 1 file changed, 37 insertions(+), 39 deletions(-)
 
-diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
-index 15f79c27748d..f6d8a70b68c4 100644
---- a/Documentation/admin-guide/kernel-parameters.txt
-+++ b/Documentation/admin-guide/kernel-parameters.txt
-@@ -866,6 +866,16 @@
- 
- 	dscc4.setup=	[NET]
- 
-+	dt_cpu_ftrs=	[PPC]
-+			Format: {"off" | "known"}
-+			Control how the dt_cpu_ftrs device-tree binding is
-+			used for CPU feature discovery and setup (if it
-+			exists).
-+			off: Do not use it, fall back to legacy cpu table.
-+			known: Do not pass through unknown features to guests
-+			or userspace, only those that the kernel is not aware
-+			of.
-+
- 	dump_apple_properties	[X86]
- 			Dump name and content of EFI device properties on
- 			x86 Macs.  Useful for driver authors to determine
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index f7c8f9972f61..4a4a05afcaf7 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -391,11 +391,6 @@ config PPC_DT_CPU_FTRS
- 	  firmware provides this binding.
- 	  If you're not sure say Y.
- 
--config PPC_CPUFEATURES_ENABLE_UNKNOWN
--	bool "cpufeatures pass through unknown features to guest/userspace"
--	depends on PPC_DT_CPU_FTRS
--	default y
--
- config HIGHMEM
- 	bool "High memory support"
- 	depends on PPC32
-diff --git a/arch/powerpc/kernel/dt_cpu_ftrs.c b/arch/powerpc/kernel/dt_cpu_ftrs.c
-index c92ab2f84257..4c7656dc4e04 100644
---- a/arch/powerpc/kernel/dt_cpu_ftrs.c
-+++ b/arch/powerpc/kernel/dt_cpu_ftrs.c
-@@ -8,6 +8,7 @@
- #include <linux/export.h>
- #include <linux/init.h>
- #include <linux/jump_label.h>
-+#include <linux/libfdt.h>
- #include <linux/memblock.h>
- #include <linux/printk.h>
- #include <linux/sched.h>
-@@ -670,12 +671,24 @@ static struct dt_cpu_feature_match __initdata
- 	{"wait-v3", feat_enable, 0},
- };
- 
--/* XXX: how to configure this? Default + boot time? */
--#ifdef CONFIG_PPC_CPUFEATURES_ENABLE_UNKNOWN
--#define CPU_FEATURE_ENABLE_UNKNOWN 1
--#else
--#define CPU_FEATURE_ENABLE_UNKNOWN 0
--#endif
-+static bool __initdata using_dt_cpu_ftrs;
-+static bool __initdata enable_unknown = true;
-+
-+static int __init dt_cpu_ftrs_parse(char *str)
-+{
-+	if (!str)
-+		return 0;
-+
-+	if (!strcmp(str, "off"))
-+		using_dt_cpu_ftrs = false;
-+	else if (!strcmp(str, "known"))
-+		enable_unknown = false;
-+	else
-+		return 1;
-+
-+	return 0;
-+}
-+early_param("dt_cpu_ftrs", dt_cpu_ftrs_parse);
- 
- static void __init cpufeatures_setup_start(u32 isa)
- {
-@@ -706,7 +719,7 @@ static bool __init cpufeatures_process_feature(struct dt_cpu_feature *f)
- 		}
+diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
+index 12409a519cc5..77291389f9ac 100644
+--- a/drivers/cpuidle/cpuidle-powernv.c
++++ b/drivers/cpuidle/cpuidle-powernv.c
+@@ -353,7 +353,9 @@ static int powernv_add_idle_states(void)
  	}
  
--	if (!known && CPU_FEATURE_ENABLE_UNKNOWN) {
-+	if (!known && enable_unknown) {
- 		if (!feat_try_enable_unknown(f)) {
- 			pr_info("not enabling: %s (unknown and unsupported by kernel)\n",
- 				f->name);
-@@ -755,6 +768,26 @@ static void __init cpufeatures_setup_finished(void)
- 		cur_cpu_spec->cpu_features, cur_cpu_spec->mmu_features);
- }
+ 	for (i = 0; i < dt_idle_states; i++) {
++		unsigned int cpuidle_flags = CPUIDLE_FLAG_NONE;
+ 		unsigned int exit_latency, target_residency;
++
+ 		/*
+ 		 * If an idle state has exit latency beyond
+ 		 * POWERNV_THRESHOLD_LATENCY_NS then don't use it
+@@ -371,6 +373,16 @@ static int powernv_add_idle_states(void)
+ 		else
+ 			target_residency = 0;
  
-+static int __init disabled_on_cmdline(void)
-+{
-+	unsigned long root, chosen;
-+	const char *p;
++		if (flags[i] & OPAL_PM_TIMEBASE_STOP) {
++			/*
++			 * All cpuidle states with CPUIDLE_FLAG_TIMER_STOP set
++			 * depend on CONFIG_TICK_ONESHOT.
++			 */
++			if (!IS_ENABLED(CONFIG_TICK_ONESHOT))
++				continue;
++			cpuidle_flags = CPUIDLE_FLAG_TIMER_STOP;
++		}
 +
-+	root = of_get_flat_dt_root();
-+	chosen = of_get_flat_dt_subnode_by_name(root, "chosen");
-+	if (chosen == -FDT_ERR_NOTFOUND)
-+		return false;
-+
-+	p = of_get_flat_dt_prop(chosen, "bootargs", NULL);
-+	if (!p)
-+		return false;
-+
-+	if (strstr(p, "dt_cpu_ftrs=off"))
-+		return true;
-+
-+	return false;
-+}
-+
- static int __init fdt_find_cpu_features(unsigned long node, const char *uname,
- 					int depth, void *data)
- {
-@@ -765,8 +798,6 @@ static int __init fdt_find_cpu_features(unsigned long node, const char *uname,
- 	return 0;
- }
+ 		if (has_stop_states) {
+ 			int err = validate_psscr_val_mask(&psscr_val[i],
+ 							  &psscr_mask[i],
+@@ -379,50 +391,36 @@ static int powernv_add_idle_states(void)
+ 				report_invalid_psscr_val(psscr_val[i], err);
+ 				continue;
+ 			}
+-		}
  
--static bool __initdata using_dt_cpu_ftrs = false;
+-		/*
+-		 * For nap and fastsleep, use default target_residency
+-		 * values if f/w does not expose it.
+-		 */
+-		if (flags[i] & OPAL_PM_NAP_ENABLED) {
+-			if (!rc)
+-				target_residency = 100;
+-			/* Add NAP state */
+-			add_powernv_state(nr_idle_states, "Nap",
+-					  CPUIDLE_FLAG_NONE, nap_loop,
+-					  target_residency, exit_latency, 0, 0);
+-		} else if ((flags[i] & OPAL_PM_STOP_INST_FAST) &&
+-				!(flags[i] & OPAL_PM_TIMEBASE_STOP)) {
+ 			add_powernv_state(nr_idle_states, names[i],
+-					  CPUIDLE_FLAG_NONE, stop_loop,
+-					  target_residency, exit_latency,
+-					  psscr_val[i], psscr_mask[i]);
+-		}
 -
- bool __init dt_cpu_ftrs_in_use(void)
- {
- 	return using_dt_cpu_ftrs;
-@@ -774,6 +805,8 @@ bool __init dt_cpu_ftrs_in_use(void)
- 
- bool __init dt_cpu_ftrs_init(void *fdt)
- {
-+	using_dt_cpu_ftrs = false;
-+
- 	/* Setup and verify the FDT, if it fails we just bail */
- 	if (!early_init_dt_verify(fdt))
- 		return false;
-@@ -781,6 +814,9 @@ bool __init dt_cpu_ftrs_init(void *fdt)
- 	if (!of_scan_flat_dt(fdt_find_cpu_features, NULL))
- 		return false;
- 
-+	if (disabled_on_cmdline())
-+		return false;
-+
- 	cpufeatures_setup_cpu();
- 
- 	using_dt_cpu_ftrs = true;
-@@ -1026,5 +1062,8 @@ static int __init dt_cpu_ftrs_scan_callback(unsigned long node, const char
- 
- void __init dt_cpu_ftrs_scan(void)
- {
-+	if (!using_dt_cpu_ftrs)
-+		return;
-+
- 	of_scan_flat_dt(dt_cpu_ftrs_scan_callback, NULL);
- }
+-		/*
+-		 * All cpuidle states with CPUIDLE_FLAG_TIMER_STOP set must come
+-		 * within this config dependency check.
+-		 */
+-#ifdef CONFIG_TICK_ONESHOT
+-		if (flags[i] & OPAL_PM_SLEEP_ENABLED ||
+-			flags[i] & OPAL_PM_SLEEP_ENABLED_ER1) {
+-			if (!rc)
+-				target_residency = 300000;
+-			/* Add FASTSLEEP state */
+-			add_powernv_state(nr_idle_states, "FastSleep",
+-					  CPUIDLE_FLAG_TIMER_STOP,
+-					  fastsleep_loop,
+-					  target_residency, exit_latency, 0, 0);
+-		} else if ((flags[i] & OPAL_PM_STOP_INST_DEEP) &&
+-				(flags[i] & OPAL_PM_TIMEBASE_STOP)) {
+-			add_powernv_state(nr_idle_states, names[i],
+-					  CPUIDLE_FLAG_TIMER_STOP, stop_loop,
++					  cpuidle_flags, stop_loop,
+ 					  target_residency, exit_latency,
+ 					  psscr_val[i], psscr_mask[i]);
++			nr_idle_states++;
++		} else {
++			/*
++			 * For nap and fastsleep, use default target_residency
++			 * values if f/w does not expose it.
++			 */
++			if (flags[i] & OPAL_PM_NAP_ENABLED) {
++				if (!rc)
++					target_residency = 100;
++				/* Add NAP state */
++				add_powernv_state(nr_idle_states, "Nap",
++						  cpuidle_flags, nap_loop,
++						  target_residency, exit_latency, 0, 0);
++				nr_idle_states++;
++			} else if (flags[i] & (OPAL_PM_SLEEP_ENABLED |
++						OPAL_PM_SLEEP_ENABLED_ER1)) {
++				if (!rc)
++					target_residency = 300000;
++				/* Add FASTSLEEP state */
++				add_powernv_state(nr_idle_states, "FastSleep",
++						  cpuidle_flags, fastsleep_loop,
++						  target_residency, exit_latency, 0, 0);
++				nr_idle_states++;
++			}
+ 		}
+-#endif
+-		nr_idle_states++;
+ 	}
+ out:
+ 	return nr_idle_states;
 -- 
-2.7.4
+2.11.0
