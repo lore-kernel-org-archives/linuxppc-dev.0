@@ -3,42 +3,39 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wcj5b1tkfzDq5x
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 May 2017 04:37:38 +1000 (AEST)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wcjp50Y7KzDq5x
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 May 2017 05:09:16 +1000 (AEST)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v4UIXmPH145047
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 May 2017 14:37:32 -0400
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2asbb786kw-1
+ v4UJ8YCv135315
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 May 2017 15:09:13 -0400
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2ase5t18ng-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 May 2017 14:37:31 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 May 2017 15:09:12 -0400
 Received: from localhost
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Wed, 31 May 2017 04:37:29 +1000
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v4UIbFTn62849254
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 May 2017 04:37:23 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v4UIanWf023729
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 May 2017 04:36:50 +1000
-Date: Wed, 31 May 2017 00:06:32 +0530
+ Wed, 31 May 2017 05:09:10 +1000
+Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v4UJ8xs164422046
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 May 2017 05:09:07 +1000
+Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
+ by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v4UJ8ZCt027072
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 May 2017 05:08:35 +1000
+Date: Wed, 31 May 2017 00:38:17 +0530
 From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-To: Masami Hiramatsu <mhiramat@kernel.org>
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 2/2] powerpc/jprobes: Validate break handler invocation
- as being due to a jprobe_return()
-References: <0572aa31dd57bef6f158ac97d0b666a0c545356a.1494871248.git.naveen.n.rao@linux.vnet.ibm.com>
- <d6b0691226623b3499d43dff1e31971ea46df9f9.1494871248.git.naveen.n.rao@linux.vnet.ibm.com>
- <20170517102144.2c1ac103bbfda22589fe40de@kernel.org>
+To: Nicholas Piggin <npiggin@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Anton Blanchard <anton@samba.org>
+Subject: Re: [RFC][PATCH] powerpc/64s: stop using r14 register
+References: <20170521140011.17548-1-npiggin@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170517102144.2c1ac103bbfda22589fe40de@kernel.org>
-Message-Id: <20170530183632.GT19390@naverao1-tp.localdomain>
+In-Reply-To: <20170521140011.17548-1-npiggin@gmail.com>
+Message-Id: <20170530190817.GW19390@naverao1-tp.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,68 +45,81 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2017/05/17 10:21AM, Masami Hiramatsu wrote:
-> On Mon, 15 May 2017 23:35:04 +0530
-> "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
+On 2017/05/22 12:00AM, Nicholas Piggin wrote:
+> I'd like to take over the r14 register for use as a per-cpu kernel
+> register similar to the way r13 is used for the paca.
 > 
-> > Fix a circa 2005 FIXME by implementing a check to ensure that we
-> > actually got into the jprobe break handler() due to the trap in
-> > jprobe_return().
-> > 
-> > Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
-> > ---
-> >  arch/powerpc/kernel/kprobes.c | 20 +++++++++-----------
-> >  1 file changed, 9 insertions(+), 11 deletions(-)
-> > 
-> > diff --git a/arch/powerpc/kernel/kprobes.c b/arch/powerpc/kernel/kprobes.c
-> > index 19b053475758..1ebeb8c482db 100644
-> > --- a/arch/powerpc/kernel/kprobes.c
-> > +++ b/arch/powerpc/kernel/kprobes.c
-> > @@ -627,25 +627,23 @@ NOKPROBE_SYMBOL(setjmp_pre_handler);
-> >  
-> >  void __used jprobe_return(void)
-> >  {
-> > -	asm volatile("trap" ::: "memory");
-> > +	asm volatile("jprobe_return_trap:\n"
-> > +		     "trap\n"
-> > +		     ::: "memory");
-> >  }
-> >  NOKPROBE_SYMBOL(jprobe_return);
-> >  
-> > -static void __used jprobe_return_end(void)
-> > -{
-> > -}
-> > -NOKPROBE_SYMBOL(jprobe_return_end);
-> > -
-> >  int longjmp_break_handler(struct kprobe *p, struct pt_regs *regs)
-> >  {
-> >  	struct kprobe_ctlblk *kcb = get_kprobe_ctlblk();
-> >  	unsigned long sp;
-> >  
-> > -	/*
-> > -	 * FIXME - we should ideally be validating that we got here 'cos
-> > -	 * of the "trap" in jprobe_return() above, before restoring the
-> > -	 * saved regs...
-> > -	 */
-> > +	if (regs->nip != ppc_kallsyms_lookup_name("jprobe_return_trap")) {
-> > +		WARN(1, "longjmp_break_handler NIP (0x%lx) does not match jprobe_return_trap (0x%lx)\n",
-> > +				regs->nip, ppc_kallsyms_lookup_name("jprobe_return_trap"));
-> > +		return 0;
+> r14 being the last non-volatile register gcc allocates, appears with
+> about 0.5% the frequency as r31 in (static) instructions. I haven't
+> counted dynamically how many extra spills and fills that removing it
+> causes, but I should. My guess is the memory ops saved by using
+> it as a per-cpu variable will significantly outweigh the cost of
+> losing it as a general use register.
 > 
-> If you don't handle this break, you shouldn't warn it, because
-> program_check_exception() will continue to find how to handle it
-> by notify_die(). IOW, please return silently, or just add a
-> debug message.
+> This part of the patch is pretty mechanical. A couple of places (prom)
+> still have to use it, and I haven't quite understood the KVM code yet.
+> 
+> Question is whether this approach seems okay, and whether we should do
+> the same for 64e.
+> 
+> Thanks,
+> Nick
+> 
+> ---
 
-The only reason this can happen is if we hit a third-party installed 
-trap while executing a jprobe hook. And given that we run with premption 
-disabled, I felt that this is an unlikely scenario.
+[snip]
 
-The reason for adding the check was to guard against issues with looking 
-up the symbol (due to some of the ABI aspects). So, I felt a WARN() 
-would be good to have and to make it obvious.
+> diff --git a/arch/powerpc/net/bpf_jit32.h 
+> b/arch/powerpc/net/bpf_jit32.h
+> index a8cd7e289ecd..52a30db033c1 100644
+> --- a/arch/powerpc/net/bpf_jit32.h
+> +++ b/arch/powerpc/net/bpf_jit32.h
+> @@ -44,9 +44,11 @@
+>   * A register	r4
+>   * X register	r5
+>   * addr param	r6
+> - * r7-r10	scratch
+> - * skb->data	r14
+> - * skb headlen	r15	(skb->len - skb->data_len)
+> + * scratch	r7-r8
+> + * skb headlen	r9	(skb->len - skb->data_len)
+> + * skb->data	r10
+> + * fixed regs	r13-r14
+> + * unused	r15
+>   * m[0]		r16
+>   * m[...]	...
+>   * m[15]	r31
+> @@ -58,8 +60,8 @@
+>  #define r_addr		6
+>  #define r_scratch1	7
+>  #define r_scratch2	8
+> -#define r_D		14
+> -#define r_HL		15
+> +#define r_HL		9
+> +#define r_D		10
 
-I do see your point though. I'm wondering if pr_info() would be better?
+You'll also need changes in the JIT code itself, at least in 
+bpf_jit_build_prologue() and elsewhere -- some code expects r_D and r_HL 
+to be NVRs. It's probably easier to just choose other NVRs here...
 
-Thanks for the review,
+>  #define r_M		16
+> 
+>  #ifndef __ASSEMBLY__
+> diff --git a/arch/powerpc/net/bpf_jit_asm.S b/arch/powerpc/net/bpf_jit_asm.S
+> index 3dd9c43d40c9..5b06152052f6 100644
+> --- a/arch/powerpc/net/bpf_jit_asm.S
+> +++ b/arch/powerpc/net/bpf_jit_asm.S
+> @@ -19,8 +19,8 @@
+>   * r3		skb
+>   * r4,r5	A,X
+>   * r6		*** address parameter to helper ***
+> - * r7-r10	scratch
+> - * r14		skb->data
+> + * r7-r9	scratch
+> + * r10		skb->data
+>   * r15		skb headlen
+>   * r16-31	M[]
+
+This doesn't match the updates to bpf_jit32.h.
+
 - Naveen
