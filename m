@@ -1,24 +1,43 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <ego@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wcVl85V8LzDq5x
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 May 2017 20:51:00 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Christophe Leroy <christophe.leroy@c-s.fr>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wcVlG6xKnzDqGr
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 May 2017 20:51:06 +1000 (AEST)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v4UAoxK5056776
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 May 2017 06:51:02 -0400
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2as76m0auj-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 May 2017 06:51:02 -0400
+Received: from localhost
+ by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ego@linux.vnet.ibm.com>;
+ Tue, 30 May 2017 04:51:01 -0600
+Date: Tue, 30 May 2017 16:20:55 +0530
+From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+To: Nicholas Piggin <npiggin@gmail.com>
+Cc: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Michael Neuling <mikey@neuling.org>,
+ Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+ Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
+ Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Scott Wood <oss@buserror.net>,
- Balbir Singh <bsingharora@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 1/7] powerpc/mm: rename map_page() to map_kernel_page() on
- PPC32
-In-Reply-To: <83aadb3163da87ec017ca4a61afcc29520a27eff.1496070452.git.christophe.leroy@c-s.fr>
-References: <cover.1496070452.git.christophe.leroy@c-s.fr>
- <83aadb3163da87ec017ca4a61afcc29520a27eff.1496070452.git.christophe.leroy@c-s.fr>
-Date: Tue, 30 May 2017 20:50:59 +1000
-Message-ID: <8760gi62jw.fsf@concordia.ellerman.id.au>
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 6/6] cpuidle-powernv: Allow Deep stop states that don't
+ stop time
+Reply-To: ego@linux.vnet.ibm.com
+References: <cover.1494585671.git.ego@linux.vnet.ibm.com>
+ <3429547945465851cfcbf81f6e762037c395c8ac.1494585671.git.ego@linux.vnet.ibm.com>
+ <20170530171357.4e0b87a7@roar.ozlabs.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20170530171357.4e0b87a7@roar.ozlabs.ibm.com>
+Message-Id: <20170530105055.GD8563@in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,14 +47,216 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Christophe Leroy <christophe.leroy@c-s.fr> writes:
+On Tue, May 30, 2017 at 05:13:57PM +1000, Nicholas Piggin wrote:
+> On Tue, 16 May 2017 14:19:48 +0530
+> "Gautham R. Shenoy" <ego@linux.vnet.ibm.com> wrote:
+> 
+> > From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+> > 
+> > The current code in the cpuidle-powernv intialization only allows deep
+> > stop states (indicated by OPAL_PM_STOP_INST_DEEP) which lose timebase
+> > (indicated by OPAL_PM_TIMEBASE_STOP). This assumption goes back to
+> > POWER8 time where deep states used to lose the timebase. However, on
+> > POWER9, we do have stop states that are deep (they lose hypervisor
+> > state) but retain the timebase.
+> > 
+> > Fix the initialization code in the cpuidle-powernv driver to allow
+> > such deep states.
+> > 
+> > Further, there is a bug in cpuidle-powernv driver with
+> > CONFIG_TICK_ONESHOT=n where we end up incrementing the nr_idle_states
+> > even if a platform idle state which loses time base was not added to
+> > the cpuidle table.
+> > 
+> > Fix this by ensuring that the nr_idle_states variable gets incremented
+> > only when the platform idle state was added to the cpuidle table.
+> 
+> Should this be a separate patch? Stable?
 
-...
+Ok. Will send it out separately.
 
-Please tell me why.
+> 
+> > 
+> > Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+> > ---
+> >  drivers/cpuidle/cpuidle-powernv.c | 16 ++++++++++------
+> >  1 file changed, 10 insertions(+), 6 deletions(-)
+> > 
+> > diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
+> > index 12409a5..45eaf06 100644
+> > --- a/drivers/cpuidle/cpuidle-powernv.c
+> > +++ b/drivers/cpuidle/cpuidle-powernv.c
+> > @@ -354,6 +354,7 @@ static int powernv_add_idle_states(void)
+> >  
+> >  	for (i = 0; i < dt_idle_states; i++) {
+> >  		unsigned int exit_latency, target_residency;
+> > +		bool stops_timebase = false;
+> >  		/*
+> >  		 * If an idle state has exit latency beyond
+> >  		 * POWERNV_THRESHOLD_LATENCY_NS then don't use it
+> > @@ -381,6 +382,9 @@ static int powernv_add_idle_states(void)
+> >  			}
+> >  		}
+> >  
+> > +		if (flags[i] & OPAL_PM_TIMEBASE_STOP)
+> > +			stops_timebase = true;
+> > +
+> >  		/*
+> >  		 * For nap and fastsleep, use default target_residency
+> >  		 * values if f/w does not expose it.
+> > @@ -392,8 +396,7 @@ static int powernv_add_idle_states(void)
+> >  			add_powernv_state(nr_idle_states, "Nap",
+> >  					  CPUIDLE_FLAG_NONE, nap_loop,
+> >  					  target_residency, exit_latency, 0, 0);
+> > -		} else if ((flags[i] & OPAL_PM_STOP_INST_FAST) &&
+> > -				!(flags[i] & OPAL_PM_TIMEBASE_STOP)) {
+> > +		} else if (has_stop_states && !stops_timebase) {
+> >  			add_powernv_state(nr_idle_states, names[i],
+> >  					  CPUIDLE_FLAG_NONE, stop_loop,
+> >  					  target_residency, exit_latency,
+> > @@ -405,8 +408,8 @@ static int powernv_add_idle_states(void)
+> >  		 * within this config dependency check.
+> >  		 */
+> >  #ifdef CONFIG_TICK_ONESHOT
+> > -		if (flags[i] & OPAL_PM_SLEEP_ENABLED ||
+> > -			flags[i] & OPAL_PM_SLEEP_ENABLED_ER1) {
+> > +		else if (flags[i] & OPAL_PM_SLEEP_ENABLED ||
+> > +			 flags[i] & OPAL_PM_SLEEP_ENABLED_ER1) {
+> 
+> Hmm, seems okay but readability is isn't the best with the ifdef and
+> mixing power8 and 9 cases IMO.
+> 
+> Particularly with the nice regular POWER9 states, we're not doing much
+> logic in this loop besides checking for the timebase stop flag, right?
+> Would it be clearer if it was changed to something like this (untested
+> quick hack)?
 
-You also moved the declaration from mmu_decl.h to book3s/32/pgtable.h,
-but didn't update any includes, presumably we're confident everything
-gets pgtable.h somehow?
+Yes, this is very much doable. Some comments below.
 
-cheers
+> 
+> ---
+>  drivers/cpuidle/cpuidle-powernv.c | 76 +++++++++++++++++++--------------------
+>  1 file changed, 37 insertions(+), 39 deletions(-)
+> 
+> diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
+> index 12409a519cc5..77291389f9ac 100644
+> --- a/drivers/cpuidle/cpuidle-powernv.c
+> +++ b/drivers/cpuidle/cpuidle-powernv.c
+> @@ -353,7 +353,9 @@ static int powernv_add_idle_states(void)
+>  	}
+> 
+>  	for (i = 0; i < dt_idle_states; i++) {
+> +		unsigned int cpuidle_flags = CPUIDLE_FLAG_NONE;
+>  		unsigned int exit_latency, target_residency;
+> +
+>  		/*
+>  		 * If an idle state has exit latency beyond
+>  		 * POWERNV_THRESHOLD_LATENCY_NS then don't use it
+> @@ -371,6 +373,16 @@ static int powernv_add_idle_states(void)
+>  		else
+>  			target_residency = 0;
+> 
+> +		if (flags[i] & OPAL_PM_TIMEBASE_STOP) {
+> +			/*
+> +			 * All cpuidle states with CPUIDLE_FLAG_TIMER_STOP set
+> +			 * depend on CONFIG_TICK_ONESHOT.
+> +			 */
+> +			if (!IS_ENABLED(CONFIG_TICK_ONESHOT))
+> +				continue;
+> +			cpuidle_flags = CPUIDLE_FLAG_TIMER_STOP;
+
+Yes, this can be done. We just need to extend this condition to
+(flags[i] & OPAL_PM_TIMEBASE_STOP || flags[i] &
+OPAL_PM_SLEEP_ENABLED).
+
+Even though all the recent versions of OPAL have OPAL_PM_TIMEBASE_STOP
+set for states which have OPAL_PM_SLEEP_ENABLED, I am not sure if
+that was always the case and which is why we have the fastsleep case
+explicitly coded in the kernel.
+
+
+
+> +		}
+> +
+>  		if (has_stop_states) {
+>  			int err = validate_psscr_val_mask(&psscr_val[i],
+>  							  &psscr_mask[i],
+> @@ -379,50 +391,36 @@ static int powernv_add_idle_states(void)
+>  				report_invalid_psscr_val(psscr_val[i], err);
+>  				continue;
+>  			}
+> -		}
+> 
+> -		/*
+> -		 * For nap and fastsleep, use default target_residency
+> -		 * values if f/w does not expose it.
+> -		 */
+> -		if (flags[i] & OPAL_PM_NAP_ENABLED) {
+> -			if (!rc)
+> -				target_residency = 100;
+> -			/* Add NAP state */
+> -			add_powernv_state(nr_idle_states, "Nap",
+> -					  CPUIDLE_FLAG_NONE, nap_loop,
+> -					  target_residency, exit_latency, 0, 0);
+> -		} else if ((flags[i] & OPAL_PM_STOP_INST_FAST) &&
+> -				!(flags[i] & OPAL_PM_TIMEBASE_STOP)) {
+>  			add_powernv_state(nr_idle_states, names[i],
+> -					  CPUIDLE_FLAG_NONE, stop_loop,
+> -					  target_residency, exit_latency,
+> -					  psscr_val[i], psscr_mask[i]);
+> -		}
+> -
+> -		/*
+> -		 * All cpuidle states with CPUIDLE_FLAG_TIMER_STOP set must come
+> -		 * within this config dependency check.
+> -		 */
+> -#ifdef CONFIG_TICK_ONESHOT
+> -		if (flags[i] & OPAL_PM_SLEEP_ENABLED ||
+> -			flags[i] & OPAL_PM_SLEEP_ENABLED_ER1) {
+> -			if (!rc)
+> -				target_residency = 300000;
+> -			/* Add FASTSLEEP state */
+> -			add_powernv_state(nr_idle_states, "FastSleep",
+> -					  CPUIDLE_FLAG_TIMER_STOP,
+> -					  fastsleep_loop,
+> -					  target_residency, exit_latency, 0, 0);
+> -		} else if ((flags[i] & OPAL_PM_STOP_INST_DEEP) &&
+> -				(flags[i] & OPAL_PM_TIMEBASE_STOP)) {
+> -			add_powernv_state(nr_idle_states, names[i],
+> -					  CPUIDLE_FLAG_TIMER_STOP, stop_loop,
+> +					  cpuidle_flags, stop_loop,
+>  					  target_residency, exit_latency,
+>  					  psscr_val[i], psscr_mask[i]);
+> +			nr_idle_states++;
+> +		} else {
+> +			/*
+> +			 * For nap and fastsleep, use default target_residency
+> +			 * values if f/w does not expose it.
+> +			 */
+> +			if (flags[i] & OPAL_PM_NAP_ENABLED) {
+> +				if (!rc)
+> +					target_residency = 100;
+> +				/* Add NAP state */
+> +				add_powernv_state(nr_idle_states, "Nap",
+> +						  cpuidle_flags, nap_loop,
+> +						  target_residency, exit_latency, 0, 0);
+> +				nr_idle_states++;
+> +			} else if (flags[i] & (OPAL_PM_SLEEP_ENABLED |
+> +						OPAL_PM_SLEEP_ENABLED_ER1)) {
+> +				if (!rc)
+> +					target_residency = 300000;
+> +				/* Add FASTSLEEP state */
+> +				add_powernv_state(nr_idle_states, "FastSleep",
+> +						  cpuidle_flags, fastsleep_loop,
+> +						  target_residency, exit_latency, 0, 0);
+> +				nr_idle_states++;
+> +			}
+>  		}
+> -#endif
+> -		nr_idle_states++;
+>  	}
+>  out:
+>  	return nr_idle_states;
+> -- 
+> 2.11.0
+> 
