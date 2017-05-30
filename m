@@ -1,43 +1,43 @@
-Return-Path: <nfont@linux.vnet.ibm.com>
+Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wch9C5XP7zDq5x
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 May 2017 03:55:43 +1000 (AEST)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wchby391CzDq5x
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 May 2017 04:15:25 +1000 (AEST)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v4UHsHTv015912
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 May 2017 13:55:38 -0400
-Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2asbaexp57-1
+ v4UI8t9x069395
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 May 2017 14:15:21 -0400
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2ascc6cd3c-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 May 2017 13:55:38 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 May 2017 14:15:20 -0400
 Received: from localhost
- by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
- Tue, 30 May 2017 11:55:37 -0600
-Subject: Re: [PATCH V4 1/2] powerpc/numa: Update CPU topology when VPHN enabled
-To: Michael Bringmann <mwb@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Cc: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- Sahil Mehta <sahilmehta17@gmail.com>, Rashmica Gupta <rashmicy@gmail.com>,
- Reza Arbab <arbab@linux.vnet.ibm.com>, Ingo Molnar <mingo@kernel.org>,
- John Allen <jallen@linux.vnet.ibm.com>, Paul Mackerras <paulus@samba.org>,
- Bharata B Rao <bharata@linux.vnet.ibm.com>,
- Shailendra Singh <shailendras@nvidia.com>,
- Thomas Gleixner <tglx@linutronix.de>,
- Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-References: <89d48cc9-d730-b299-c81e-83d77e22100d@linux.vnet.ibm.com>
-From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
-Date: Tue, 30 May 2017 12:55:31 -0500
+ for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
+ Wed, 31 May 2017 04:15:18 +1000
+Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v4UIF9g1852274
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 May 2017 04:15:17 +1000
+Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
+ by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v4UIEiug021883
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 May 2017 04:14:44 +1000
+Date: Tue, 30 May 2017 23:44:26 +0530
+From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org, Masami Hiramatsu <mhiramat@kernel.org>
+Subject: Re: [PATCH 1/2] powerpc/jprobes: Save and restore the parameter save
+ area
+References: <0572aa31dd57bef6f158ac97d0b666a0c545356a.1494871248.git.naveen.n.rao@linux.vnet.ibm.com>
+ <87d1b6lox5.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <89d48cc9-d730-b299-c81e-83d77e22100d@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <a89026b4-810e-4ad7-9d27-204633281e5b@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <87d1b6lox5.fsf@concordia.ellerman.id.au>
+Message-Id: <20170530181426.GR19390@naverao1-tp.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,129 +47,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/26/2017 04:29 PM, Michael Bringmann wrote:
+On 2017/05/18 03:22PM, Michael Ellerman wrote:
+> "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> writes:
 > 
-> powerpc/numa: Correct the currently broken capability to set the
-> topology for shared CPUs in LPARs.  At boot time for shared CPU
-> lpars, the topology for each shared CPU is set to node zero, however,
-> this is now updated correctly using the Virtual Processor Home Node
-> (VPHN) capabilities information provided by the pHyp. The VPHN handling
-> in Linux is disabled, if PRRN handling is present.
+> > As pointed out in x86 setjmp_pre_handler(), we need to save and restore
+> > the parameter save area since the jprobe hook might overwrite it. Since
+> > there is no easy way to identify the size of the parameter save area,
+> > we choose to save/restore a fixed 16 [double]word-sized area including
+> > the stack frame header.
+> >
+> > We introduce STACK_FRAME_PARM_SAVE to encode the offset of the parameter
+> > save area from the stack frame pointer. Remove the similarly named
+> > PARAMETER_SAVE_AREA_OFFSET in ptrace.c as those are currently not used
+> > anywhere.
+> >
+> > Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+> > ---
+> > Michael,
+> > I've set the limit to 16 parameters as being a "reasonable" number, but
+> > we could very well make this 24 or 32 if we want to be sure. Let me
+> > know what you prefer.
+> 
+> That sounds incredibly fragile. Are we really just guessing at the size
+> required? What happens if we under estimate, do we crash, silently
+> corrupt data .. ?
 
-I'm still not sure this is what we want. Looking at the topology updating
-code, we only enable VPHN if PRRN is not present.
+There is a _chance_ of crashing/corrupting data, yes. The conditions 
+required for that include:
+- a function that takes > 8 parameters, hence requiring parameters to be 
+  passed on the stack
+- the jprobe hook replacing that function having to clobber one of those 
+  parameters passed on the stack.
 
-My understanding of the current situation is that the node for partitions
-with shared cpus are not set. The reason for this is that the device tree
-presented to a partition using shared cpus at boot puts all cpus in node
-zero and then uses the VPHN capability to inform the partition which node
-each cpu really belongs to.
+Assuming C code, I am not sure what conditions could trigger gcc to emit 
+code that may do the latter. However, per the ABI, this is possible as 
+the parameter save area is owned by the callee and the caller can't 
+assume that it'll remain intact.
 
-Additionally, I think this is how DLPAR of shared cpu partitions work.
-After the cpu is DLPAR added we should get a VPHN notification to inform
-us of the true node that the cpu belongs to.
+Given the slim probability, I felt that saving/restoring a fixed amount 
+of stack is sufficient to mitigate this. The other option is to 
+save/restore the entire stack frame, but that may be quite large and 
+just a lot of overhead in most cases.
 
-When the PRRN capability was introduced it was thought to be a follow-on
-to the VPHN capability and so the code to start topology updating only
-enables VPHN if PRRN is not present. I think what we need to do is always
-enable VPHN for shared cpu partitions.
+Thoughts?
 
--Nathan
-
-> 
-> Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
-> ---
-> Changes in V4:
->  -- Fix conditional compile bug.
-> ---
->  arch/powerpc/mm/numa.c                 |   19 ++++++++++++++++++-
->  arch/powerpc/platforms/pseries/dlpar.c |    2 ++
->  2 files changed, 20 insertions(+), 1 deletion(-)
-> 
-> diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-> index 371792e..afcee3f 100644
-> --- a/arch/powerpc/mm/numa.c
-> +++ b/arch/powerpc/mm/numa.c
-> @@ -29,6 +29,7 @@
->  #include <linux/seq_file.h>
->  #include <linux/uaccess.h>
->  #include <linux/slab.h>
-> +#include <linux/sched.h>
->  #include <asm/cputhreads.h>
->  #include <asm/sparsemem.h>
->  #include <asm/prom.h>
-> @@ -1153,6 +1154,8 @@ struct topology_update_data {
->  static int vphn_enabled;
->  static int prrn_enabled;
->  static void reset_topology_timer(void);
-> +static int topology_inited;
-> +static int topology_update_needed;
-> 
->  /*
->   * Store the current values of the associativity change counters in the
-> @@ -1321,8 +1324,11 @@ int arch_update_cpu_topology(void)
->  	struct device *dev;
->  	int weight, new_nid, i = 0;
-> 
-> -	if (!prrn_enabled && !vphn_enabled)
-> +	if (!prrn_enabled && !vphn_enabled) {
-> +		if (!topology_inited)
-> +			topology_update_needed = 1;
->  		return 0;
-> +	}
-> 
->  	weight = cpumask_weight(&cpu_associativity_changes_mask);
->  	if (!weight)
-> @@ -1361,6 +1367,8 @@ int arch_update_cpu_topology(void)
->  			cpumask_andnot(&cpu_associativity_changes_mask,
->  					&cpu_associativity_changes_mask,
->  					cpu_sibling_mask(cpu));
-> +			pr_info("Assoc chg gives same node %d for cpu%d\n",
-> +					new_nid, cpu);
->  			cpu = cpu_last_thread_sibling(cpu);
->  			continue;
->  		}
-> @@ -1377,6 +1385,9 @@ int arch_update_cpu_topology(void)
->  		cpu = cpu_last_thread_sibling(cpu);
->  	}
-> 
-> +	if (i)
-> +		updates[i-1].next = NULL;
-> +
->  	pr_debug("Topology update for the following CPUs:\n");
->  	if (cpumask_weight(&updated_cpus)) {
->  		for (ud = &updates[0]; ud; ud = ud->next) {
-> @@ -1423,6 +1434,7 @@ int arch_update_cpu_topology(void)
-> 
->  out:
->  	kfree(updates);
-> +	topology_update_needed = 0;
->  	return changed;
->  }
-> 
-> @@ -1600,6 +1612,11 @@ static int topology_update_init(void)
->  	if (!proc_create("powerpc/topology_updates", 0644, NULL, &topology_ops))
->  		return -ENOMEM;
-> 
-> +	topology_inited = 1;
-> +	if (topology_update_needed)
-> +		bitmap_fill(cpumask_bits(&cpu_associativity_changes_mask),
-> +					nr_cpumask_bits);
-> +
->  	return 0;
->  }
->  device_initcall(topology_update_init);
-> diff --git a/arch/powerpc/platforms/pseries/dlpar.c b/arch/powerpc/platforms/pseries/dlpar.c
-> index bda18d8..5106263 100644
-> --- a/arch/powerpc/platforms/pseries/dlpar.c
-> +++ b/arch/powerpc/platforms/pseries/dlpar.c
-> @@ -592,6 +592,8 @@ static ssize_t dlpar_show(struct class *class, struct class_attribute *attr,
-> 
->  static int __init pseries_dlpar_init(void)
->  {
-> +	arch_update_cpu_topology();
-> +
->  	pseries_hp_wq = alloc_workqueue("pseries hotplug workqueue",
->  					WQ_UNBOUND, 1);
->  	return sysfs_create_file(kernel_kobj, &class_attr_dlpar.attr);
-> 
+- Naveen
