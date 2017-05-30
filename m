@@ -2,17 +2,18 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wcWZB4xD3zDq5x
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 May 2017 21:28:18 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wcWt06Xs8zDq5x
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 May 2017 21:42:00 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- Russell Currey <ruscur@russell.cc>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 1/3] powerpc/powernv/pci: Reduce spam when dumping PEST
-In-Reply-To: <e5441c6f-d2e4-428a-9b1d-49a15e5be39c@au1.ibm.com>
-References: <20170530054637.0D6C4AC0B9@b01ledav006.gho.pok.ibm.com>
- <e5441c6f-d2e4-428a-9b1d-49a15e5be39c@au1.ibm.com>
-Date: Tue, 30 May 2017 21:28:15 +1000
-Message-ID: <87wp8y4m9c.fsf@concordia.ellerman.id.au>
+To: Michael Bringmann <mwb@linux.vnet.ibm.com>, paulus@samba.org,
+ nfont@linux.vnet.ibm.com, sahilmehta17@gmail.com, jallen@linux.vnet.ibm.com,
+ mwb@linux.vnet.ibm.com, alastair@d-silva.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] powerpc/hotplug-mem: Fix aa_index match bug for hotplug
+In-Reply-To: <b284d6be-ff37-4e5c-7357-446b4e1ea8ad@linux.vnet.ibm.com>
+References: <b284d6be-ff37-4e5c-7357-446b4e1ea8ad@linux.vnet.ibm.com>
+Date: Tue, 30 May 2017 21:41:58 +1000
+Message-ID: <87tw424lmh.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,83 +25,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Andrew Donnellan <andrew.donnellan@au1.ibm.com> writes:
-> On 30/05/17 15:44, Russell Currey wrote:
->> diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
->> index 935ccb249a8a..4852ac8d0b4d 100644
->> --- a/arch/powerpc/platforms/powernv/pci.c
->> +++ b/arch/powerpc/platforms/powernv/pci.c
->> @@ -227,11 +227,38 @@ void pnv_teardown_msi_irqs(struct pci_dev *pdev)
->>  }
->>  #endif /* CONFIG_PCI_MSI */
->>
->> +/* Nicely print the contents of the PE State Tables (PEST). */
->> +static void pnv_pci_dump_pest(__be64 pestA[], __be64 pestB[], int pest_size)
->> +{
->> +	__be64 prevA = ULONG_MAX, prevB = ULONG_MAX;
->> +	bool dup = false;
->> +	int i;
->> +
->> +	for (i = 0; i < pest_size; i++) {
->> +		__be64 peA = be64_to_cpu(pestA[i]);
->> +		__be64 peB = be64_to_cpu(pestB[i]);
->> +
->> +		if (peA != prevA || peB != prevB) {
->> +			if (dup) {
->> +				pr_info("PE[..%03x] A/B: as above\n", i-1);
->> +				dup = false;
->> +			}
->> +			prevA = peA;
->> +			prevB = peB;
->> +			if (peA >> 63 || peB >> 63)
->> +				pr_info("PE[%03x] A/B: %016llx %016llx\n",
->> +					i, peA, peB);
->> +		} else if (!dup && (peA >> 63 || peB >> 63)) {
+Michael Bringmann <mwb@linux.vnet.ibm.com> writes:
+
+> When adding or removing memory, the aa_index (affinity value) for the
+> memblock must also be converted to match the endianness of the rest
+> of the 'ibm,dynamic-memory' property.  Otherwise, subsequent retrieval
+> of the attribute will likely lead to non-existent nodes, followed by
+> using the default node in the code inappropriately.
 >
-> I'd prefer "peA >> 63" to be expressed as "peA & PPC_BIT(0)" but that 
-> might just be me?
+> Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
+>
+> diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/powerpc/platforms/pseries/hotplug-memory.c
+> index e104c71..1fb162b 100644
+> --- a/arch/powerpc/platforms/pseries/hotplug-memory.c
+> +++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
+> @@ -124,6 +124,7 @@ static struct property *dlpar_clone_drconf_property(struct device_node *dn)
+>  	for (i = 0; i < num_lmbs; i++) {
+>  		lmbs[i].base_addr = be64_to_cpu(lmbs[i].base_addr);
+>  		lmbs[i].drc_index = be32_to_cpu(lmbs[i].drc_index);
+> +		lmbs[i].aa_index = be32_to_cpu(lmbs[i].aa_index);
+>  		lmbs[i].flags = be32_to_cpu(lmbs[i].flags);
+>  	}
+>  
 
-You and a few other people who are also wrong ;)
+AFAICS this code was added in commit 5f97b2a0d176 ("powerpc/pseries:
+Implement memory hotplug add in the kernel").
 
-Using PPC_BIT() means people have to go and dereference that macro
-before they can grok the code, and when they do look at the macro they
-go "huh, wut is this insanity".
+So this should probably be marked:
 
-Whereas everyone knows what >> 63 does.
+  Fixes: 5f97b2a0d176 ("powerpc/pseries: Implement memory hotplug add in the kernel")
 
-It's true PPC_BIT() might make it clearer when you're comparing the
-documentation to the code, but that happens less often - especially
-because most people can't (easily) get the documentation.
+And it seems like a bug we'd want fixed in stable, so:
 
-
-Having said that I don't love the use of >> 63 here. Better would be:
-
-#define PE_MASK	(1ull << 63)	// Name could be better if I knew what this code was doing
-
-if (peA & PE_MASK)
-	...
-
-
-Even better IMHO is to fully flesh out the constant:
-
-#define PE_MASK	0x8000000000000000
-
-Because then if you see the value in a memory dump or reg dump or
-whatever, you can easily match the value up.
+  Cc: stable@vger.kernel.org # v4.1+
 
 
-eg. if you look at a MSR value:
-
-  0x9000000002001002
-
-How quickly can you spot which bit is VEC based on:
-
-  #define __MASK(X)	(1UL<<(X))
-  #define MSR_VEC_LG	25	        /* Enable AltiVec */
-  #define MSR_VEC		__MASK(MSR_VEC_LG)	/* Enable AltiVec */
-
-vs:
-
-  #define MSR_VEC	0x0000000002000000ull	/* Enable AltiVec */
+Am I right?
 
 cheers
