@@ -2,23 +2,18 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wcVcX4GHzzDq5x
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 May 2017 20:45:16 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wcVh12f8mzDq5x
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 May 2017 20:48:17 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com>,
- Michal Suchanek <msuchanek@suse.de>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Hari Bathini <hbathini@linux.vnet.ibm.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- Colin Ian King <colin.king@canonical.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2] powerpc/fadump: return error when fadump registration
- fails
-In-Reply-To: <e1caa0a3-50a0-aff3-3687-2ef31841e587@linux.vnet.ibm.com>
-References: <20170527154615.29684-1-msuchanek@suse.de>
- <e1caa0a3-50a0-aff3-3687-2ef31841e587@linux.vnet.ibm.com>
-Date: Tue, 30 May 2017 20:45:13 +1000
-Message-ID: <87bmqa62ti.fsf@concordia.ellerman.id.au>
+To: Balbir Singh <bsingharora@gmail.com>
+Cc: linuxppc-dev@ozlabs.org, mikey@neuling.org, paulus@samba.org,
+ npiggin@gmail.com
+Subject: Re: [PATCH] powerpc/64: Reclaim CPU_FTR_SUBCORE
+In-Reply-To: <20170530124800.11dbc61b@firefly.ozlabs.ibm.com>
+References: <1496022790-2017-1-git-send-email-mpe@ellerman.id.au>
+ <20170530124800.11dbc61b@firefly.ozlabs.ibm.com>
+Date: Tue, 30 May 2017 20:48:16 +1000
+Message-ID: <878tle62of.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -30,32 +25,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com> writes:
+Balbir Singh <bsingharora@gmail.com> writes:
 
-> On 05/27/2017 09:16 PM, Michal Suchanek wrote:
->>  - log an error message when registration fails and no error code listed
->>  in the switch is returned
->>  - translate the hv error code to posix error code and return it from
->>  fw_register
->>  - return the posix error code from fw_register to the process writing
->>  to sysfs
->>  - return EEXIST on re-registration
->>  - return success on deregistration when fadump is not registered
->>  - return ENODEV when no memory is reserved for fadump
+> On Mon, 29 May 2017 11:53:10 +1000
+> Michael Ellerman <mpe@ellerman.id.au> wrote:
 >
-> Why do we need this ?
+>> We are running low on CPU feature bits, so we only want to use them when
+>> it's really necessary.
+>> 
+>> CPU_FTR_SUBCORE is only used in one place, and only in C, so we don't
+>> need it in order to make asm patching work. It can only be set on
+>> "Power8" CPUs, which in practice means POWER8, POWER8E and POWER8NVL.
+>> There are no plans to implement it on future CPUs, but if there ever
+>> were we could retrofit it then.
+>> 
+>> Although KVM uses subcores, it never looks at the CPU feature, it either
+>> looks at the ISA level or the threads_per_subcore value.
+>> 
+>> So drop the CPU feature and do a PVR check instead. Drop the device tree
+>> "subcore" feature as we no longer support doing anything with it, and we
+>> will drop it from skiboot too.
+>> 
+>> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+>> ---
+>
+> Acked-by: Balbir Singh <bsingharora@gmail.com>
+>
+> I looked at CPU_FTR_DBELL and its used for initialization and in
+> arch_show_interrupts(), no assembly
 
-Because that's how we do error handling.
+But the other criteria is that there is a small set of CPUs where it can
+be enabled, so that the PVR check is not horrible.
 
-> Userspace can always read back the fadump registration status from
-> /sys/kernel/fadump_registered (after echo 1 to it) to find out
-> whether fadump registration succeeded or not.
-
-That's a terrible API.
-
-If we followed that example, open() wouldn't return a value, you'd have
-to do another syscall to check if it worked.
-
-I'd appreciate if someone could test this and give me a Tested-by.
+I don't think DBELL fits that, I see it enabled for at least Power8,
+Power8E, Power9, e6500, e5500, e500mc.
 
 cheers
