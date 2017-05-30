@@ -1,22 +1,23 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
- [IPv6:2607:f8b0:400e:c00::243])
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
+ [IPv6:2607:f8b0:400e:c00::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wcC2M6nw8zDqCf
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 May 2017 09:03:07 +1000 (AEST)
-Received: by mail-pf0-x243.google.com with SMTP id w69so13772737pfk.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 May 2017 16:03:07 -0700 (PDT)
-Message-ID: <1496098950.21894.15.camel@gmail.com>
-Subject: Re: [PATCH v2] powerpc/64: handle linker stubs in low .text code
-From: Balbir Singh <bsingharora@gmail.com>
-To: Nicholas Piggin <npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wcDQP1VjszDq5W
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 May 2017 10:05:32 +1000 (AEST)
+Received: by mail-pf0-x242.google.com with SMTP id n23so13969040pfb.3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 May 2017 17:05:32 -0700 (PDT)
+Date: Tue, 30 May 2017 10:05:17 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Balbir Singh <bsingharora@gmail.com>
 Cc: linuxppc-dev@lists.ozlabs.org, Alan Modra <amodra@gmail.com>
-Date: Tue, 30 May 2017 09:02:30 +1000
-In-Reply-To: <20170529073940.15234-1-npiggin@gmail.com>
+Subject: Re: [PATCH v2] powerpc/64: handle linker stubs in low .text code
+Message-ID: <20170530100517.685f1541@roar.ozlabs.ibm.com>
+In-Reply-To: <1496098950.21894.15.camel@gmail.com>
 References: <20170529073940.15234-1-npiggin@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ <1496098950.21894.15.camel@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,156 +27,179 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2017-05-29 at 17:39 +1000, Nicholas Piggin wrote:
-> Very large kernels may require linker stubs for branches from HEAD
-> text code. The linker may place these stubs before the HEAD text
-> sections, which breaks the assumption that HEAD text is located at 0
-> (or the .text section being located at 0x7000/0x8000 on Book3S
-> kernels).
+On Tue, 30 May 2017 09:02:30 +1000
+Balbir Singh <bsingharora@gmail.com> wrote:
+
+> On Mon, 2017-05-29 at 17:39 +1000, Nicholas Piggin wrote:
+> > Very large kernels may require linker stubs for branches from HEAD
+> > text code. The linker may place these stubs before the HEAD text
+> > sections, which breaks the assumption that HEAD text is located at 0
+> > (or the .text section being located at 0x7000/0x8000 on Book3S
+> > kernels).
+> > 
+> > Provide an option to create a small section just before the .text
+> > section with an empty 256 - 4 bytes, and adjust the start of the .text
+> > section to match. The linker will tend to put stubs in that section
+> > and not break our relative-to-absolute offset assumptions.
+> >  
 > 
-> Provide an option to create a small section just before the .text
-> section with an empty 256 - 4 bytes, and adjust the start of the .text
-> section to match. The linker will tend to put stubs in that section
-> and not break our relative-to-absolute offset assumptions.
->
+> I wonder if the size should be configurable in case more than expected
+> number of stubs are created. I've seen at-least 1 with as I was playing
+> with linker script alignment of sections.
 
-I wonder if the size should be configurable in case more than expected
-number of stubs are created. I've seen at-least 1 with as I was playing
-with linker script alignment of sections.
- 
-> This causes a small waste of space on common kernels, but allows large
-> kernels to build and boot. For now, it is an EXPERT config option,
-> defaulting to =n, but a reference is provided for it in the build-time
-> check for such breakage. This is good enough for allyesconfig and
-> custom users / hackers.
+I don't know, is it worth it? If our allyesconfig builds work then we've
+a pretty good idea it's big enough. For kernel hackers there's enough
+error output and comments to work out the problem.
+
+>  
+> > This causes a small waste of space on common kernels, but allows large
+> > kernels to build and boot. For now, it is an EXPERT config option,
+> > defaulting to =n, but a reference is provided for it in the build-time
+> > check for such breakage. This is good enough for allyesconfig and
+> > custom users / hackers.
+> > 
+> > Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> > ---
+> >  arch/powerpc/Kconfig               | 11 +++++++++++
+> >  arch/powerpc/include/asm/head-64.h | 18 ++++++++++++++++++
+> >  arch/powerpc/kernel/vmlinux.lds.S  |  5 +++++
+> >  arch/powerpc/tools/head_check.sh   |  7 +++++++
+> >  4 files changed, 41 insertions(+)
+> > 
+> > diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+> > index f7c8f9972f61..6eb70c96ec5e 100644
+> > --- a/arch/powerpc/Kconfig
+> > +++ b/arch/powerpc/Kconfig
+> > @@ -454,6 +454,17 @@ config PPC_TRANSACTIONAL_MEM
+> >         ---help---
+> >           Support user-mode Transactional Memory on POWERPC.
+> >  
+> > +config LD_HEAD_STUB_CATCH
+> > +	bool "Reserve 256 bytes to cope with linker stubs in HEAD text" if EXPERT
+> > +	depends on PPC64
+> > +	default n
+> > +	help
+> > +	  Very large kernels can cause linker branch stubs to be generated by
+> > +	  code in head_64.S, which moves the head text sections out of their
+> > +	  specified location. This option can work around the problem.  
 > 
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-> ---
->  arch/powerpc/Kconfig               | 11 +++++++++++
->  arch/powerpc/include/asm/head-64.h | 18 ++++++++++++++++++
->  arch/powerpc/kernel/vmlinux.lds.S  |  5 +++++
->  arch/powerpc/tools/head_check.sh   |  7 +++++++
->  4 files changed, 41 insertions(+)
+> I think we should also say that this relies on binutils/linker doing the
+> right thing, I don't think this is documented, just an observation that
+> always works.
 > 
-> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-> index f7c8f9972f61..6eb70c96ec5e 100644
-> --- a/arch/powerpc/Kconfig
-> +++ b/arch/powerpc/Kconfig
-> @@ -454,6 +454,17 @@ config PPC_TRANSACTIONAL_MEM
->         ---help---
->           Support user-mode Transactional Memory on POWERPC.
->  
-> +config LD_HEAD_STUB_CATCH
-> +	bool "Reserve 256 bytes to cope with linker stubs in HEAD text" if EXPERT
-> +	depends on PPC64
-> +	default n
-> +	help
-> +	  Very large kernels can cause linker branch stubs to be generated by
-> +	  code in head_64.S, which moves the head text sections out of their
-> +	  specified location. This option can work around the problem.
+> > +
+> > +	  If unsure, say "N".
+> > +
+> >  config DISABLE_MPROFILE_KERNEL
+> >  	bool "Disable use of mprofile-kernel for kernel tracing"
+> >  	depends on PPC64 && CPU_LITTLE_ENDIAN
+> > diff --git a/arch/powerpc/include/asm/head-64.h b/arch/powerpc/include/asm/head-64.h
+> > index 99c9f01d02df..7ab95798f170 100644
+> > --- a/arch/powerpc/include/asm/head-64.h
+> > +++ b/arch/powerpc/include/asm/head-64.h
+> > @@ -63,11 +63,29 @@
+> >  	. = 0x0;						\
+> >  start_##sname:
+> >  
+> > +/*
+> > + * .linker_stub_catch section is used to catch linker stubs from being
+> > + * inserted in our .text section, above the start_text label (which breaks
+> > + * the ABS_ADDR calculation). See kernel/vmlinux.lds.S and tools/head_check.sh
+> > + * for more details. We would prefer to just keep a cacheline (0x80), but
+> > + * 0x100 seems to be how the linker aligns branch stub groups.
+> > + */
+> > +#ifdef CONFIG_LD_HEAD_STUB_CATCH
+> > +#define OPEN_TEXT_SECTION(start)				\
+> > +	.section ".linker_stub_catch","ax",@progbits;		\
+> > +linker_stub_catch:						\
+> > +	. = 0x4;						\  
+> 
+> Start at 4? 
 
-I think we should also say that this relies on binutils/linker doing the
-right thing, I don't think this is documented, just an observation that
-always works.
+Can't remember why. Might have been needed to encourage the linker to put
+stubs there. Might have been because I was pulling my hair out at 3am one
+day fighting the linker and was trying anything.
 
-> +
-> +	  If unsure, say "N".
-> +
->  config DISABLE_MPROFILE_KERNEL
->  	bool "Disable use of mprofile-kernel for kernel tracing"
->  	depends on PPC64 && CPU_LITTLE_ENDIAN
-> diff --git a/arch/powerpc/include/asm/head-64.h b/arch/powerpc/include/asm/head-64.h
-> index 99c9f01d02df..7ab95798f170 100644
-> --- a/arch/powerpc/include/asm/head-64.h
-> +++ b/arch/powerpc/include/asm/head-64.h
-> @@ -63,11 +63,29 @@
->  	. = 0x0;						\
->  start_##sname:
->  
-> +/*
-> + * .linker_stub_catch section is used to catch linker stubs from being
-> + * inserted in our .text section, above the start_text label (which breaks
-> + * the ABS_ADDR calculation). See kernel/vmlinux.lds.S and tools/head_check.sh
-> + * for more details. We would prefer to just keep a cacheline (0x80), but
-> + * 0x100 seems to be how the linker aligns branch stub groups.
-> + */
-> +#ifdef CONFIG_LD_HEAD_STUB_CATCH
-> +#define OPEN_TEXT_SECTION(start)				\
-> +	.section ".linker_stub_catch","ax",@progbits;		\
-> +linker_stub_catch:						\
-> +	. = 0x4;						\
+> > +	text_start = (start) + 0x100;				\
+> > +	.section ".text","ax",@progbits;			\
+> > +	.balign 0x100;						\
+> > +start_text:
+> > +#else
+> >  #define OPEN_TEXT_SECTION(start)				\
+> >  	text_start = (start);					\
+> >  	.section ".text","ax",@progbits;			\
+> >  	. = 0x0;						\
+> >  start_text:
+> > +#endif
+> >  
+> 
+> I could apply these on linux-next, it does not have the head_check.sh bits.
+> I wanted to see what the final vmlinux layout looks like after this. I presume
+> start_text would be at 0x8100
 
-Start at 4? 
+Yes that's right.
 
-> +	text_start = (start) + 0x100;				\
-> +	.section ".text","ax",@progbits;			\
-> +	.balign 0x100;						\
-> +start_text:
-> +#else
->  #define OPEN_TEXT_SECTION(start)				\
->  	text_start = (start);					\
->  	.section ".text","ax",@progbits;			\
->  	. = 0x0;						\
->  start_text:
-> +#endif
->
+>   
+> >  #define ZERO_FIXED_SECTION(sname, start, end)			\
+> >  	sname##_start = (start);				\
+> > diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
+> > index 5aa434e84605..e69155f0db36 100644
+> > --- a/arch/powerpc/kernel/vmlinux.lds.S
+> > +++ b/arch/powerpc/kernel/vmlinux.lds.S
+> > @@ -81,6 +81,11 @@ SECTIONS
+> >  	 * section placement to work.
+> >  	 */
+> >  	.text BLOCK(0) : AT(ADDR(.text) - LOAD_OFFSET) {
+> > +#ifdef CONFIG_LD_HEAD_STUB_CATCH
+> > +		*(.linker_stub_catch);
+> > +		. = . ;
+> > +#endif
+> > +
+> >  #else
+> >  	.text : AT(ADDR(.text) - LOAD_OFFSET) {
+> >  		ALIGN_FUNCTION();
+> > diff --git a/arch/powerpc/tools/head_check.sh b/arch/powerpc/tools/head_check.sh
+> > index bfde937564f9..ad9e57209aa4 100755
+> > --- a/arch/powerpc/tools/head_check.sh
+> > +++ b/arch/powerpc/tools/head_check.sh
+> > @@ -21,6 +21,11 @@
+> >  # fixed section region (0 - 0x8000ish). Check what code is calling those stubs,
+> >  # and perhaps change so a direct branch can reach.
+> >  #
+> > +# A ".linker_stub_catch" section is used to catch some stubs generated by
+> > +# early .text code, which tend to get placed at the start of the section.
+> > +# If there are too many such stubs, they can overflow this section. Expanding
+> > +# it may help (or reducing the number of stub branches).
+> > +#
+> >  # Linker stubs use the TOC pointer, so even if fixed section code could
+> >  # tolerate them being inserted into head code, they can't be allowed in low
+> >  # level entry code (boot, interrupt vectors, etc) until r2 is set up. This
+> > @@ -50,6 +55,7 @@ start_head_addr=$(cat .tmp_symbols.txt | grep " t start_first_256B$" | cut -d' '
+> >  
+> >  if [ "$start_head_addr" != "$expected_start_head_addr" ]; then
+> >  	echo "ERROR: head code starts at $start_head_addr, should be $expected_start_head_addr"
+> > +	echo "ERROR: try to enable LD_HEAD_STUB_CATCH config option"
+> >  	echo "ERROR: see comments in arch/powerpc/tools/head_check.sh"
+> >  
+> >  	exit 1
+> > @@ -63,6 +69,7 @@ start_text_addr=$(cat .tmp_symbols.txt | grep " t start_text$" | cut -d' ' -f1)
+> >  
+> >  if [ "$start_text_addr" != "$expected_start_text_addr" ]; then
+> >  	echo "ERROR: start_text address is $start_text_addr, should be $expected_start_text_addr"
+> > +	echo "ERROR: try to enable LD_HEAD_STUB_CATCH config option"
+> >  	echo "ERROR: see comments in arch/powerpc/tools/head_check.sh"
+> >  
+> >  	exit 1  
+> 
+> Overall, I think this is very useful. I am not sure how to test this and
+> what features it would be incompatible with -- kexec/crash dump?
 
-I could apply these on linux-next, it does not have the head_check.sh bits.
-I wanted to see what the final vmlinux layout looks like after this. I presume
-start_text would be at 0x8100
-  
->  #define ZERO_FIXED_SECTION(sname, start, end)			\
->  	sname##_start = (start);				\
-> diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
-> index 5aa434e84605..e69155f0db36 100644
-> --- a/arch/powerpc/kernel/vmlinux.lds.S
-> +++ b/arch/powerpc/kernel/vmlinux.lds.S
-> @@ -81,6 +81,11 @@ SECTIONS
->  	 * section placement to work.
->  	 */
->  	.text BLOCK(0) : AT(ADDR(.text) - LOAD_OFFSET) {
-> +#ifdef CONFIG_LD_HEAD_STUB_CATCH
-> +		*(.linker_stub_catch);
-> +		. = . ;
-> +#endif
-> +
->  #else
->  	.text : AT(ADDR(.text) - LOAD_OFFSET) {
->  		ALIGN_FUNCTION();
-> diff --git a/arch/powerpc/tools/head_check.sh b/arch/powerpc/tools/head_check.sh
-> index bfde937564f9..ad9e57209aa4 100755
-> --- a/arch/powerpc/tools/head_check.sh
-> +++ b/arch/powerpc/tools/head_check.sh
-> @@ -21,6 +21,11 @@
->  # fixed section region (0 - 0x8000ish). Check what code is calling those stubs,
->  # and perhaps change so a direct branch can reach.
->  #
-> +# A ".linker_stub_catch" section is used to catch some stubs generated by
-> +# early .text code, which tend to get placed at the start of the section.
-> +# If there are too many such stubs, they can overflow this section. Expanding
-> +# it may help (or reducing the number of stub branches).
-> +#
->  # Linker stubs use the TOC pointer, so even if fixed section code could
->  # tolerate them being inserted into head code, they can't be allowed in low
->  # level entry code (boot, interrupt vectors, etc) until r2 is set up. This
-> @@ -50,6 +55,7 @@ start_head_addr=$(cat .tmp_symbols.txt | grep " t start_first_256B$" | cut -d' '
->  
->  if [ "$start_head_addr" != "$expected_start_head_addr" ]; then
->  	echo "ERROR: head code starts at $start_head_addr, should be $expected_start_head_addr"
-> +	echo "ERROR: try to enable LD_HEAD_STUB_CATCH config option"
->  	echo "ERROR: see comments in arch/powerpc/tools/head_check.sh"
->  
->  	exit 1
-> @@ -63,6 +69,7 @@ start_text_addr=$(cat .tmp_symbols.txt | grep " t start_text$" | cut -d' ' -f1)
->  
->  if [ "$start_text_addr" != "$expected_start_text_addr" ]; then
->  	echo "ERROR: start_text address is $start_text_addr, should be $expected_start_text_addr"
-> +	echo "ERROR: try to enable LD_HEAD_STUB_CATCH config option"
->  	echo "ERROR: see comments in arch/powerpc/tools/head_check.sh"
->  
->  	exit 1
+Well that kernel you built with the branch stub somewhere around 0x8000 that
+locks up early without any messages should now boot with this patch (modulo
+other bugs).
 
-Overall, I think this is very useful. I am not sure how to test this and
-what features it would be incompatible with -- kexec/crash dump?
+I don't think it should be incompatible with kexec or crash dumps. Any reason
+for concern with those?
 
-Balbir Singh.
+Thanks,
+Nick
