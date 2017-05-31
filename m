@@ -1,21 +1,38 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wd1GK59LCzDq5j
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 May 2017 16:46:17 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Hugh Dickins <hughd@google.com>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Cc: Christoph Lameter <cl@linux.com>, linuxppc-dev@lists.ozlabs.org,
- linux-mm@kvack.org
-Subject: Re: 4.12-rc ppc64 4k-page needs costly allocations
-In-Reply-To: <alpine.LSU.2.11.1705301151090.2133@eggly.anvils>
-References: <alpine.LSU.2.11.1705301151090.2133@eggly.anvils>
-Date: Wed, 31 May 2017 16:46:14 +1000
-Message-ID: <87h9014j7t.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wd1TK4zX2zDq5j
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 May 2017 16:55:49 +1000 (AEST)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 3wd1T06T7Pz9ttBh
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 May 2017 08:55:32 +0200 (CEST)
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id vsHhwR4Qszup for <linuxppc-dev@lists.ozlabs.org>;
+ Wed, 31 May 2017 08:55:32 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 3wd1T05z6Jz9ttBn
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 May 2017 08:55:32 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id AC4128B78F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 May 2017 08:55:45 +0200 (CEST)
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id qVl9YdmG9_i1 for <linuxppc-dev@lists.ozlabs.org>;
+ Wed, 31 May 2017 08:55:45 +0200 (CEST)
+Received: from PO15451 (po15451.idsi0.si.c-s.fr [172.25.231.23])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 6C16C8B89E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 May 2017 08:55:45 +0200 (CEST)
+Subject: Re: usercopy in PPC64
+To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+References: <d25be832-2030-4bc8-dbc5-4baebb759279@c-s.fr>
+From: Christophe LEROY <christophe.leroy@c-s.fr>
+Message-ID: <21ab485d-84f9-6803-a2b9-65d3a5928e59@c-s.fr>
+Date: Wed, 31 May 2017 08:55:30 +0200
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <d25be832-2030-4bc8-dbc5-4baebb759279@c-s.fr>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,57 +42,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hugh Dickins <hughd@google.com> writes:
 
-> Since f6eedbba7a26 ("powerpc/mm/hash: Increase VA range to 128TB")
-> I find that swapping loads on ppc64 on G5 with 4k pages are failing:
->
-> SLUB: Unable to allocate memory on node -1, gfp=0x14000c0(GFP_KERNEL)
->   cache: pgtable-2^12, object size: 32768, buffer size: 65536, default order: 4, min order: 4
->   pgtable-2^12 debugging increased min order, use slub_debug=O to disable.
->   node 0: slabs: 209, objs: 209, free: 8
-> gcc: page allocation failure: order:4, mode:0x16040c0(GFP_KERNEL|__GFP_COMP|__GFP_NOTRACK), nodemask=(null)
-> CPU: 1 PID: 6225 Comm: gcc Not tainted 4.12.0-rc2 #1
-> Call Trace:
-> [c00000000090b5c0] [c0000000004f8478] .dump_stack+0xa0/0xcc (unreliable)
-> [c00000000090b650] [c0000000000eb194] .warn_alloc+0xf0/0x178
-> [c00000000090b710] [c0000000000ebc9c] .__alloc_pages_nodemask+0xa04/0xb00
-> [c00000000090b8b0] [c00000000013921c] .new_slab+0x234/0x608
-> [c00000000090b980] [c00000000013b59c] .___slab_alloc.constprop.64+0x3dc/0x564
-> [c00000000090bad0] [c0000000004f5a84] .__slab_alloc.isra.61.constprop.63+0x54/0x70
-> [c00000000090bb70] [c00000000013b864] .kmem_cache_alloc+0x140/0x288
-> [c00000000090bc30] [c00000000004d934] .mm_init.isra.65+0x128/0x1c0
-> [c00000000090bcc0] [c000000000157810] .do_execveat_common.isra.39+0x294/0x690
-> [c00000000090bdb0] [c000000000157e70] .SyS_execve+0x28/0x38
-> [c00000000090be30] [c00000000000a118] system_call+0x38/0xfc
->
-> I did try booting with slub_debug=O as the message suggested, but that
-> made no difference: it still hoped for but failed on order:4 allocations.
->
-> I wanted to try removing CONFIG_SLUB_DEBUG, but didn't succeed in that:
-> it seemed to be a hard requirement for something, but I didn't find what.
->
-> I did try CONFIG_SLAB=y instead of SLUB: that lowers these allocations to
-> the expected order:3, which then results in OOM-killing rather than direct
-> allocation failure, because of the PAGE_ALLOC_COSTLY_ORDER 3 cutoff.  But
-> makes no real difference to the outcome: swapping loads still abort early.
->
-> Relying on order:3 or order:4 allocations is just too optimistic: ppc64
-> with 4k pages would do better not to expect to support a 128TB userspace.
->
-> I tried the obvious partial revert below, but it's not good enough:
-> the system did not boot beyond
->
-> Starting init: /sbin/init exists but couldn't execute it (error -7)
-> Starting init: /bin/sh exists but couldn't execute it (error -7)
-> Kernel panic - not syncing: No working init found. ...
+Le 30/05/2017 à 14:36, Christophe LEROY a écrit :
+> Hi all powerpc64 experts,
+> 
+> While looking at the usercopy efficiency for PPC32, I noticed something 
+> which looks strange.
+> 
+> In asm/uaccess.h, raw_copy_from_user() and raw_copy_to_user() implements 
+> a fast path using get_user() and put_user() for copies of constant size 
+> < 8.
+> 
+> But INLINE_COPY_FROM_USER and INLINE_COPY_TO_USER are only defined for 
+> PPC32, so PPC64 will call __copy_tofrom_user() even for small constant 
+> size copies. Is that wanted ?
+> 
 
-Ouch, sorry.
+I tried and built ppc64_defconfig with and without INLINE_COPY_xxx_USER, 
+I got the following result:
 
-I boot test a G5 with 4K pages, but I don't stress test it much so I
-didn't notice this.
+Without INLINE_COPY_xxx_USER:
+System.map:c0000000009b2000 A _etext
 
-I think making 128TB depend on 64K pages makes sense, Aneesh is going to
-try and do a patch for that.
+With INLINE_COPY_xxx_USER:
+System.map:c0000000009c1000 A _etext
 
-cheers
+So the size increase with inlining is only 0,6%
+Wouldn't it be worth it ?
+
+Christophe
