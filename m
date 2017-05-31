@@ -1,23 +1,19 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <sfr@canb.auug.org.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wcxfP14tpzDq5j
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 May 2017 14:03:25 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Nathan Fontenot <nfont@linux.vnet.ibm.com>,
- Michael Bringmann <mwb@linux.vnet.ibm.com>, paulus@samba.org,
- sahilmehta17@gmail.com, jallen@linux.vnet.ibm.com, alastair@d-silva.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] powerpc/hotplug-mem: Fix aa_index match bug for hotplug
-In-Reply-To: <b50a28ec-ae33-82f8-eefd-0e20e15c2dfb@linux.vnet.ibm.com>
-References: <b284d6be-ff37-4e5c-7357-446b4e1ea8ad@linux.vnet.ibm.com>
- <87tw424lmh.fsf@concordia.ellerman.id.au>
- <b50a28ec-ae33-82f8-eefd-0e20e15c2dfb@linux.vnet.ibm.com>
-Date: Wed, 31 May 2017 14:03:21 +1000
-Message-ID: <87r2z54qra.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wczt22nnqzDq5j
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 May 2017 15:43:38 +1000 (AEST)
+Date: Wed, 31 May 2017 15:43:37 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: David Miller <davem@davemloft.net>, Networking <netdev@vger.kernel.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, PowerPC <linuxppc-dev@lists.ozlabs.org>, Arnd
+ Bergmann <arnd@arndb.de>
+Subject: [PATCH net-next] powerpc: use asm-generic/socket.h as much as possible
+Message-ID: <20170531154337.04ebcb75@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,45 +23,132 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Nathan Fontenot <nfont@linux.vnet.ibm.com> writes:
-> On 05/30/2017 06:41 AM, Michael Ellerman wrote:
->> Michael Bringmann <mwb@linux.vnet.ibm.com> writes:
->>> When adding or removing memory, the aa_index (affinity value) for the
->>> memblock must also be converted to match the endianness of the rest
->>> of the 'ibm,dynamic-memory' property.  Otherwise, subsequent retrieval
->>> of the attribute will likely lead to non-existent nodes, followed by
->>> using the default node in the code inappropriately.
->>>
->>> Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
->>>
->>> diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/powerpc/platforms/pseries/hotplug-memory.c
->>> index e104c71..1fb162b 100644
->>> --- a/arch/powerpc/platforms/pseries/hotplug-memory.c
->>> +++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
->>> @@ -124,6 +124,7 @@ static struct property *dlpar_clone_drconf_property(struct device_node *dn)
->>>  	for (i = 0; i < num_lmbs; i++) {
->>>  		lmbs[i].base_addr = be64_to_cpu(lmbs[i].base_addr);
->>>  		lmbs[i].drc_index = be32_to_cpu(lmbs[i].drc_index);
->>> +		lmbs[i].aa_index = be32_to_cpu(lmbs[i].aa_index);
->>>  		lmbs[i].flags = be32_to_cpu(lmbs[i].flags);
->>>  	}
->>>  
->> 
->> AFAICS this code was added in commit 5f97b2a0d176 ("powerpc/pseries:
->> Implement memory hotplug add in the kernel").
->> 
->> So this should probably be marked:
->> 
->>   Fixes: 5f97b2a0d176 ("powerpc/pseries: Implement memory hotplug add in the kernel")
->> 
->> And it seems like a bug we'd want fixed in stable, so:
->> 
->>   Cc: stable@vger.kernel.org # v4.1+
->> 
->> Am I right?
->
-> Yes, that is correct.
+asm-generic/socket.h already has an exception for the differences that
+powerpc needs, so just include it after defining the differences.
 
-Thanks.
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ arch/powerpc/include/uapi/asm/socket.h | 92 +---------------------------------
+ 1 file changed, 1 insertion(+), 91 deletions(-)
 
-cheers
+Build tested using powerpc allyesconfig, pseries_le_defconfig, 32 bit
+and 64 bit allnoconfig and ppc44x_defconfig builds.
+
+Dave, this is on top of the net-next tree and I am sending it to you
+since it would produce a conflict if it was merged via the powerpc tree.
+
+diff --git a/arch/powerpc/include/uapi/asm/socket.h b/arch/powerpc/include/uapi/asm/socket.h
+index bc4ca72faf99..3c590c7c42c0 100644
+--- a/arch/powerpc/include/uapi/asm/socket.h
++++ b/arch/powerpc/include/uapi/asm/socket.h
+@@ -8,28 +8,6 @@
+  * 2 of the License, or (at your option) any later version.
+  */
+ 
+-#include <asm/sockios.h>
+-
+-/* For setsockopt(2) */
+-#define SOL_SOCKET	1
+-
+-#define SO_DEBUG	1
+-#define SO_REUSEADDR	2
+-#define SO_TYPE		3
+-#define SO_ERROR	4
+-#define SO_DONTROUTE	5
+-#define SO_BROADCAST	6
+-#define SO_SNDBUF	7
+-#define SO_RCVBUF	8
+-#define SO_SNDBUFFORCE	32
+-#define SO_RCVBUFFORCE	33
+-#define SO_KEEPALIVE	9
+-#define SO_OOBINLINE	10
+-#define SO_NO_CHECK	11
+-#define SO_PRIORITY	12
+-#define SO_LINGER	13
+-#define SO_BSDCOMPAT	14
+-#define SO_REUSEPORT	15
+ #define SO_RCVLOWAT	16
+ #define SO_SNDLOWAT	17
+ #define SO_RCVTIMEO	18
+@@ -37,74 +15,6 @@
+ #define SO_PASSCRED	20
+ #define SO_PEERCRED	21
+ 
+-/* Security levels - as per NRL IPv6 - don't actually do anything */
+-#define SO_SECURITY_AUTHENTICATION		22
+-#define SO_SECURITY_ENCRYPTION_TRANSPORT	23
+-#define SO_SECURITY_ENCRYPTION_NETWORK		24
+-
+-#define SO_BINDTODEVICE	25
+-
+-/* Socket filtering */
+-#define SO_ATTACH_FILTER	26
+-#define SO_DETACH_FILTER	27
+-#define SO_GET_FILTER		SO_ATTACH_FILTER
+-
+-#define SO_PEERNAME		28
+-#define SO_TIMESTAMP		29
+-#define SCM_TIMESTAMP		SO_TIMESTAMP
+-
+-#define SO_ACCEPTCONN		30
+-
+-#define SO_PEERSEC		31
+-#define SO_PASSSEC		34
+-#define SO_TIMESTAMPNS		35
+-#define SCM_TIMESTAMPNS		SO_TIMESTAMPNS
+-
+-#define SO_MARK			36
+-
+-#define SO_TIMESTAMPING		37
+-#define SCM_TIMESTAMPING	SO_TIMESTAMPING
+-
+-#define SO_PROTOCOL		38
+-#define SO_DOMAIN		39
+-
+-#define SO_RXQ_OVFL             40
+-
+-#define SO_WIFI_STATUS		41
+-#define SCM_WIFI_STATUS		SO_WIFI_STATUS
+-#define SO_PEEK_OFF		42
+-
+-/* Instruct lower device to use last 4-bytes of skb data as FCS */
+-#define SO_NOFCS		43
+-
+-#define SO_LOCK_FILTER		44
+-
+-#define SO_SELECT_ERR_QUEUE	45
+-
+-#define SO_BUSY_POLL		46
+-
+-#define SO_MAX_PACING_RATE	47
+-
+-#define SO_BPF_EXTENSIONS	48
+-
+-#define SO_INCOMING_CPU		49
+-
+-#define SO_ATTACH_BPF		50
+-#define SO_DETACH_BPF		SO_DETACH_FILTER
+-
+-#define SO_ATTACH_REUSEPORT_CBPF	51
+-#define SO_ATTACH_REUSEPORT_EBPF	52
+-
+-#define SO_CNX_ADVICE		53
+-
+-#define SCM_TIMESTAMPING_OPT_STATS	54
+-
+-#define SO_MEMINFO		55
+-
+-#define SO_INCOMING_NAPI_ID	56
+-
+-#define SO_COOKIE		57
+-
+-#define SCM_TIMESTAMPING_PKTINFO	58
++#include <asm-generic/socket.h>
+ 
+ #endif	/* _ASM_POWERPC_SOCKET_H */
+-- 
+2.11.0
+
+-- 
+Cheers,
+Stephen Rothwell
