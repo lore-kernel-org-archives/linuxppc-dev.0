@@ -1,22 +1,20 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wd5wF0H7TzDq5j
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 May 2017 20:15:57 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Stephen Rothwell <sfr@canb.auug.org.au>, David Miller <davem@davemloft.net>,
- Networking <netdev@vger.kernel.org>
+Return-Path: <alexandre.belloni@free-electrons.com>
+Received: from mail.free-electrons.com (mail.free-electrons.com [62.4.15.54])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3wd6tH6Zp8zDq5j
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 May 2017 20:59:19 +1000 (AEST)
+Date: Wed, 31 May 2017 12:59:06 +0200
+From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+To: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- PowerPC <linuxppc-dev@lists.ozlabs.org>, Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH net-next] powerpc: use asm-generic/socket.h as much as
- possible
-In-Reply-To: <20170531154337.04ebcb75@canb.auug.org.au>
-References: <20170531154337.04ebcb75@canb.auug.org.au>
-Date: Wed, 31 May 2017 20:15:55 +1000
-Message-ID: <878tld49ic.fsf@concordia.ellerman.id.au>
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Alessandro Zummo <a.zummo@towertech.it>,
+ linuxppc-dev@lists.ozlabs.org, rtc-linux@googlegroups.com
+Subject: Re: [PATCH] rtc/tpo: Handle disabled TPO in opal_get_tpo_time()
+Message-ID: <20170531105906.7ldsv6wa5ezmbjre@piout.net>
+References: <20170519100509.7807-1-vaibhav@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20170519100509.7807-1-vaibhav@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,19 +24,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Stephen Rothwell <sfr@canb.auug.org.au> writes:
-
-> asm-generic/socket.h already has an exception for the differences that
-> powerpc needs, so just include it after defining the differences.
->
-> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+On 19/05/2017 at 15:35:09 +0530, Vaibhav Jain wrote:
+> On PowerNV platform when Timed-Power-On(TPO) is disabled, read of
+> stored TPO yields value with all date components set to '0' inside
+> opal_get_tpo_time(). The function opal_to_tm() then converts it to an
+> offset from year 1900 yielding alarm-time == "1900-00-01
+> 00:00:00". This causes problems with __rtc_read_alarm() that
+> expecting an offset from "1970-00-01 00:00:00" and returned alarm-time
+> results in a -ve value for time64_t. Which ultimately results in this
+> error reported in kernel logs with a seemingly garbage value:
+> 
+> "rtc rtc0: invalid alarm value: -2-1--1041528741
+> 2005511117:71582844:32"
+> 
+> We fix this by explicitly handling the case of all alarm date-time
+> components being '0' inside opal_get_tpo_time() and returning -ENOENT
+> in such a case. This signals generic rtc that no alarm is set and it
+> bails out from the alarm initialization flow without reporting the
+> above error.
+> 
+> Signed-off-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+> Reported-by: Steve Best <sbest@redhat.com>
 > ---
->  arch/powerpc/include/uapi/asm/socket.h | 92 +---------------------------------
->  1 file changed, 1 insertion(+), 91 deletions(-)
->
-> Build tested using powerpc allyesconfig, pseries_le_defconfig, 32 bit
-> and 64 bit allnoconfig and ppc44x_defconfig builds.
+>  drivers/rtc/rtc-opal.c | 10 ++++++++++
+>  1 file changed, 10 insertions(+)
+> 
+Applied, thanks.
 
-Did you boot it and test that userspace was happy doing sockety things?
-
-cheers
+-- 
+Alexandre Belloni, Free Electrons
+Embedded Linux and Kernel engineering
+http://free-electrons.com
