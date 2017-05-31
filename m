@@ -1,19 +1,43 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wczt22nnqzDq5j
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 May 2017 15:43:38 +1000 (AEST)
-Date: Wed, 31 May 2017 15:43:37 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: David Miller <davem@davemloft.net>, Networking <netdev@vger.kernel.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, PowerPC <linuxppc-dev@lists.ozlabs.org>, Arnd
- Bergmann <arnd@arndb.de>
-Subject: [PATCH net-next] powerpc: use asm-generic/socket.h as much as possible
-Message-ID: <20170531154337.04ebcb75@canb.auug.org.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wd08l5ZDPzDq5j
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 May 2017 15:56:23 +1000 (AEST)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v4V5rYWk043016
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 May 2017 01:56:19 -0400
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2aspg3uu61-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 May 2017 01:56:18 -0400
+Received: from localhost
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
+ Wed, 31 May 2017 15:56:14 +1000
+Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v4V5u2c87340472
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 May 2017 15:56:10 +1000
+Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
+ by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v4V5tc5b029555
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 May 2017 15:55:38 +1000
+Date: Wed, 31 May 2017 11:25:21 +0530
+From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+To: Nicholas Piggin <npiggin@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Anton Blanchard <anton@samba.org>
+Subject: Re: [RFC][PATCH] powerpc/64s: stop using r14 register
+References: <20170521140011.17548-1-npiggin@gmail.com>
+ <20170530190817.GW19390@naverao1-tp.localdomain>
+ <20170531105335.5a57befe@roar.ozlabs.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20170531105335.5a57befe@roar.ozlabs.ibm.com>
+Message-Id: <20170531055521.GX19390@naverao1-tp.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,132 +47,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-asm-generic/socket.h already has an exception for the differences that
-powerpc needs, so just include it after defining the differences.
+On 2017/05/31 10:53AM, Nicholas Piggin wrote:
+> On Wed, 31 May 2017 00:38:17 +0530
+> "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
+> 
+> > On 2017/05/22 12:00AM, Nicholas Piggin wrote:
+> > > I'd like to take over the r14 register for use as a per-cpu kernel
+> > > register similar to the way r13 is used for the paca.
+> > > 
+> > > r14 being the last non-volatile register gcc allocates, appears with
+> > > about 0.5% the frequency as r31 in (static) instructions. I haven't
+> > > counted dynamically how many extra spills and fills that removing it
+> > > causes, but I should. My guess is the memory ops saved by using
+> > > it as a per-cpu variable will significantly outweigh the cost of
+> > > losing it as a general use register.
+> > > 
+> > > This part of the patch is pretty mechanical. A couple of places (prom)
+> > > still have to use it, and I haven't quite understood the KVM code yet.
+> > > 
+> > > Question is whether this approach seems okay, and whether we should do
+> > > the same for 64e.
+> > > 
+> > > Thanks,
+> > > Nick
+> > > 
+> > > ---  
+> > 
+> > [snip]
+> > 
+> > > diff --git a/arch/powerpc/net/bpf_jit32.h 
+> > > b/arch/powerpc/net/bpf_jit32.h
+> > > index a8cd7e289ecd..52a30db033c1 100644
+> > > --- a/arch/powerpc/net/bpf_jit32.h
+> > > +++ b/arch/powerpc/net/bpf_jit32.h
+> > > @@ -44,9 +44,11 @@
+> > >   * A register	r4
+> > >   * X register	r5
+> > >   * addr param	r6
+> > > - * r7-r10	scratch
+> > > - * skb->data	r14
+> > > - * skb headlen	r15	(skb->len - skb->data_len)
+> > > + * scratch	r7-r8
+> > > + * skb headlen	r9	(skb->len - skb->data_len)
+> > > + * skb->data	r10
+> > > + * fixed regs	r13-r14
+> > > + * unused	r15
+> > >   * m[0]		r16
+> > >   * m[...]	...
+> > >   * m[15]	r31
+> > > @@ -58,8 +60,8 @@
+> > >  #define r_addr		6
+> > >  #define r_scratch1	7
+> > >  #define r_scratch2	8
+> > > -#define r_D		14
+> > > -#define r_HL		15
+> > > +#define r_HL		9
+> > > +#define r_D		10  
+> > 
+> > You'll also need changes in the JIT code itself, at least in 
+> > bpf_jit_build_prologue() and elsewhere -- some code expects r_D and r_HL 
+> > to be NVRs. It's probably easier to just choose other NVRs here...
+> 
+> Thanks for taking a look. We're out of non volatile registers here,
+> however... This is for PPC32 only by the looks, so the patch is not
+> required at all.
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- arch/powerpc/include/uapi/asm/socket.h | 92 +---------------------------------
- 1 file changed, 1 insertion(+), 91 deletions(-)
+Ah, indeed. Good catch.
 
-Build tested using powerpc allyesconfig, pseries_le_defconfig, 32 bit
-and 64 bit allnoconfig and ppc44x_defconfig builds.
-
-Dave, this is on top of the net-next tree and I am sending it to you
-since it would produce a conflict if it was merged via the powerpc tree.
-
-diff --git a/arch/powerpc/include/uapi/asm/socket.h b/arch/powerpc/include/uapi/asm/socket.h
-index bc4ca72faf99..3c590c7c42c0 100644
---- a/arch/powerpc/include/uapi/asm/socket.h
-+++ b/arch/powerpc/include/uapi/asm/socket.h
-@@ -8,28 +8,6 @@
-  * 2 of the License, or (at your option) any later version.
-  */
- 
--#include <asm/sockios.h>
--
--/* For setsockopt(2) */
--#define SOL_SOCKET	1
--
--#define SO_DEBUG	1
--#define SO_REUSEADDR	2
--#define SO_TYPE		3
--#define SO_ERROR	4
--#define SO_DONTROUTE	5
--#define SO_BROADCAST	6
--#define SO_SNDBUF	7
--#define SO_RCVBUF	8
--#define SO_SNDBUFFORCE	32
--#define SO_RCVBUFFORCE	33
--#define SO_KEEPALIVE	9
--#define SO_OOBINLINE	10
--#define SO_NO_CHECK	11
--#define SO_PRIORITY	12
--#define SO_LINGER	13
--#define SO_BSDCOMPAT	14
--#define SO_REUSEPORT	15
- #define SO_RCVLOWAT	16
- #define SO_SNDLOWAT	17
- #define SO_RCVTIMEO	18
-@@ -37,74 +15,6 @@
- #define SO_PASSCRED	20
- #define SO_PEERCRED	21
- 
--/* Security levels - as per NRL IPv6 - don't actually do anything */
--#define SO_SECURITY_AUTHENTICATION		22
--#define SO_SECURITY_ENCRYPTION_TRANSPORT	23
--#define SO_SECURITY_ENCRYPTION_NETWORK		24
--
--#define SO_BINDTODEVICE	25
--
--/* Socket filtering */
--#define SO_ATTACH_FILTER	26
--#define SO_DETACH_FILTER	27
--#define SO_GET_FILTER		SO_ATTACH_FILTER
--
--#define SO_PEERNAME		28
--#define SO_TIMESTAMP		29
--#define SCM_TIMESTAMP		SO_TIMESTAMP
--
--#define SO_ACCEPTCONN		30
--
--#define SO_PEERSEC		31
--#define SO_PASSSEC		34
--#define SO_TIMESTAMPNS		35
--#define SCM_TIMESTAMPNS		SO_TIMESTAMPNS
--
--#define SO_MARK			36
--
--#define SO_TIMESTAMPING		37
--#define SCM_TIMESTAMPING	SO_TIMESTAMPING
--
--#define SO_PROTOCOL		38
--#define SO_DOMAIN		39
--
--#define SO_RXQ_OVFL             40
--
--#define SO_WIFI_STATUS		41
--#define SCM_WIFI_STATUS		SO_WIFI_STATUS
--#define SO_PEEK_OFF		42
--
--/* Instruct lower device to use last 4-bytes of skb data as FCS */
--#define SO_NOFCS		43
--
--#define SO_LOCK_FILTER		44
--
--#define SO_SELECT_ERR_QUEUE	45
--
--#define SO_BUSY_POLL		46
--
--#define SO_MAX_PACING_RATE	47
--
--#define SO_BPF_EXTENSIONS	48
--
--#define SO_INCOMING_CPU		49
--
--#define SO_ATTACH_BPF		50
--#define SO_DETACH_BPF		SO_DETACH_FILTER
--
--#define SO_ATTACH_REUSEPORT_CBPF	51
--#define SO_ATTACH_REUSEPORT_EBPF	52
--
--#define SO_CNX_ADVICE		53
--
--#define SCM_TIMESTAMPING_OPT_STATS	54
--
--#define SO_MEMINFO		55
--
--#define SO_INCOMING_NAPI_ID	56
--
--#define SO_COOKIE		57
--
--#define SCM_TIMESTAMPING_PKTINFO	58
-+#include <asm-generic/socket.h>
- 
- #endif	/* _ASM_POWERPC_SOCKET_H */
--- 
-2.11.0
-
--- 
-Cheers,
-Stephen Rothwell
+- Naveen
