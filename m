@@ -1,20 +1,20 @@
 Return-Path: <alexandre.belloni@free-electrons.com>
 Received: from mail.free-electrons.com (mail.free-electrons.com [62.4.15.54])
- by lists.ozlabs.org (Postfix) with ESMTP id 3wd6tH6Zp8zDq5j
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 May 2017 20:59:19 +1000 (AEST)
-Date: Wed, 31 May 2017 12:59:06 +0200
+ by lists.ozlabs.org (Postfix) with ESMTP id 3wd7296QtLzDqCL
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 May 2017 21:06:09 +1000 (AEST)
+Date: Wed, 31 May 2017 13:05:58 +0200
 From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
 To: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Alessandro Zummo <a.zummo@towertech.it>,
- linuxppc-dev@lists.ozlabs.org, rtc-linux@googlegroups.com
-Subject: Re: [PATCH] rtc/tpo: Handle disabled TPO in opal_get_tpo_time()
-Message-ID: <20170531105906.7ldsv6wa5ezmbjre@piout.net>
-References: <20170519100509.7807-1-vaibhav@linux.vnet.ibm.com>
+Cc: Alessandro Zummo <a.zummo@towertech.it>, rtc-linux@googlegroups.com,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-rtc@vger.kernel.org
+Subject: Re: [PATCH] drivers/rtc/interface.c: Validate alarm-time before
+ handling rollover
+Message-ID: <20170531110558.tcvl42wvaeazmbgp@piout.net>
+References: <20170519164855.11747-1-vaibhav@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170519100509.7807-1-vaibhav@linux.vnet.ibm.com>
+In-Reply-To: <20170519164855.11747-1-vaibhav@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,30 +24,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 19/05/2017 at 15:35:09 +0530, Vaibhav Jain wrote:
-> On PowerNV platform when Timed-Power-On(TPO) is disabled, read of
-> stored TPO yields value with all date components set to '0' inside
-> opal_get_tpo_time(). The function opal_to_tm() then converts it to an
-> offset from year 1900 yielding alarm-time == "1900-00-01
-> 00:00:00". This causes problems with __rtc_read_alarm() that
-> expecting an offset from "1970-00-01 00:00:00" and returned alarm-time
-> results in a -ve value for time64_t. Which ultimately results in this
-> error reported in kernel logs with a seemingly garbage value:
+On 19/05/2017 at 22:18:55 +0530, Vaibhav Jain wrote:
+> In function __rtc_read_alarm() its possible for an alarm time-stamp to
+> be invalid even after replacing missing components with current
+> time-stamp. The condition 'alarm->time.tm_year < 70' will trigger this
+> case and will cause the call to 'rtc_tm_to_time64(&alarm->time)'
+> return a negative value for variable t_alm.
+> 
+> While handling alarm rollover this negative t_alm (assumed to seconds
+> offset from '1970-01-01 00:00:00') is converted back to rtc_time via
+> rtc_time64_to_tm() which results in this error log with seemingly
+> garbage values:
 > 
 > "rtc rtc0: invalid alarm value: -2-1--1041528741
 > 2005511117:71582844:32"
 > 
-> We fix this by explicitly handling the case of all alarm date-time
-> components being '0' inside opal_get_tpo_time() and returning -ENOENT
-> in such a case. This signals generic rtc that no alarm is set and it
-> bails out from the alarm initialization flow without reporting the
-> above error.
+> This error was generated when the rtc driver (rtc-opal in this case)
+> returned an alarm time-stamp of '00-00-00 00:00:00' to indicate that
+> the alarm is disabled. Though I have submitted a separate fix for the
+> rtc-opal driver, this issue may potentially impact other
+> existing/future rtc drivers.
 > 
-> Signed-off-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+> To fix this issue the patch validates the alarm time-stamp just after
+> filling up the missing datetime components and if rtc_valid_tm() still
+> reports it to be invalid then bails out of the function without
+> handling the rollover.
+> 
 > Reported-by: Steve Best <sbest@redhat.com>
+> Signed-off-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
 > ---
->  drivers/rtc/rtc-opal.c | 10 ++++++++++
->  1 file changed, 10 insertions(+)
+>  drivers/rtc/interface.c | 9 ++++++++-
+>  1 file changed, 8 insertions(+), 1 deletion(-)
 > 
 Applied, thanks.
 
