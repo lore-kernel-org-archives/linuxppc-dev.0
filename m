@@ -1,20 +1,23 @@
-Return-Path: <alexandre.belloni@free-electrons.com>
-Received: from mail.free-electrons.com (mail.free-electrons.com [62.4.15.54])
- by lists.ozlabs.org (Postfix) with ESMTP id 3wd7296QtLzDqCL
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 May 2017 21:06:09 +1000 (AEST)
-Date: Wed, 31 May 2017 13:05:58 +0200
-From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
-To: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
-Cc: Alessandro Zummo <a.zummo@towertech.it>, rtc-linux@googlegroups.com,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-rtc@vger.kernel.org
-Subject: Re: [PATCH] drivers/rtc/interface.c: Validate alarm-time before
- handling rollover
-Message-ID: <20170531110558.tcvl42wvaeazmbgp@piout.net>
-References: <20170519164855.11747-1-vaibhav@linux.vnet.ibm.com>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wd72d3r2PzDqJ6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 May 2017 21:06:33 +1000 (AEST)
+Date: Wed, 31 May 2017 21:06:32 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: David Miller <davem@davemloft.net>, Networking <netdev@vger.kernel.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>, PowerPC
+ <linuxppc-dev@lists.ozlabs.org>, Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH net-next] powerpc: use asm-generic/socket.h as much as
+ possible
+Message-ID: <20170531210632.251822b4@canb.auug.org.au>
+In-Reply-To: <878tld49ic.fsf@concordia.ellerman.id.au>
+References: <20170531154337.04ebcb75@canb.auug.org.au>
+ <878tld49ic.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170519164855.11747-1-vaibhav@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,41 +27,85 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 19/05/2017 at 22:18:55 +0530, Vaibhav Jain wrote:
-> In function __rtc_read_alarm() its possible for an alarm time-stamp to
-> be invalid even after replacing missing components with current
-> time-stamp. The condition 'alarm->time.tm_year < 70' will trigger this
-> case and will cause the call to 'rtc_tm_to_time64(&alarm->time)'
-> return a negative value for variable t_alm.
+Hi Michael,
+
+On Wed, 31 May 2017 20:15:55 +1000 Michael Ellerman <mpe@ellerman.id.au> wrote:
+>
+> Stephen Rothwell <sfr@canb.auug.org.au> writes:
 > 
-> While handling alarm rollover this negative t_alm (assumed to seconds
-> offset from '1970-01-01 00:00:00') is converted back to rtc_time via
-> rtc_time64_to_tm() which results in this error log with seemingly
-> garbage values:
+> > asm-generic/socket.h already has an exception for the differences that
+> > powerpc needs, so just include it after defining the differences.
+> >
+> > Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+> > ---
+> >  arch/powerpc/include/uapi/asm/socket.h | 92 +---------------------------------
+> >  1 file changed, 1 insertion(+), 91 deletions(-)
+> >
+> > Build tested using powerpc allyesconfig, pseries_le_defconfig, 32 bit
+> > and 64 bit allnoconfig and ppc44x_defconfig builds.  
 > 
-> "rtc rtc0: invalid alarm value: -2-1--1041528741
-> 2005511117:71582844:32"
-> 
-> This error was generated when the rtc driver (rtc-opal in this case)
-> returned an alarm time-stamp of '00-00-00 00:00:00' to indicate that
-> the alarm is disabled. Though I have submitted a separate fix for the
-> rtc-opal driver, this issue may potentially impact other
-> existing/future rtc drivers.
-> 
-> To fix this issue the patch validates the alarm time-stamp just after
-> filling up the missing datetime components and if rtc_valid_tm() still
-> reports it to be invalid then bails out of the function without
-> handling the rollover.
-> 
-> Reported-by: Steve Best <sbest@redhat.com>
-> Signed-off-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
-> ---
->  drivers/rtc/interface.c | 9 ++++++++-
->  1 file changed, 8 insertions(+), 1 deletion(-)
-> 
-Applied, thanks.
+> Did you boot it and test that userspace was happy doing sockety things?
+
+No, sorry.
+
+The patch was done by inspection, but it is pretty obvious ... here is
+the diff between arch/powerpc/include/uapi/asm/socket.h and
+include/uapi/asm-generic/socket.h before the patch:
+
+--- arch/powerpc/include/uapi/asm/socket.h	2017-05-31 20:56:54.940473709 +1000
++++ include/uapi/asm-generic/socket.h	2017-05-31 10:04:16.716445463 +1000
+@@ -1,12 +1,5 @@
+-#ifndef _ASM_POWERPC_SOCKET_H
+-#define _ASM_POWERPC_SOCKET_H
+-
+-/*
+- * This program is free software; you can redistribute it and/or
+- * modify it under the terms of the GNU General Public License
+- * as published by the Free Software Foundation; either version
+- * 2 of the License, or (at your option) any later version.
+- */
++#ifndef __ASM_GENERIC_SOCKET_H
++#define __ASM_GENERIC_SOCKET_H
+ 
+ #include <asm/sockios.h>
+ 
+@@ -30,12 +23,14 @@
+ #define SO_LINGER	13
+ #define SO_BSDCOMPAT	14
+ #define SO_REUSEPORT	15
+-#define SO_RCVLOWAT	16
+-#define SO_SNDLOWAT	17
+-#define SO_RCVTIMEO	18
+-#define SO_SNDTIMEO	19
+-#define SO_PASSCRED	20
+-#define SO_PEERCRED	21
++#ifndef SO_PASSCRED /* powerpc only differs in these */
++#define SO_PASSCRED	16
++#define SO_PEERCRED	17
++#define SO_RCVLOWAT	18
++#define SO_SNDLOWAT	19
++#define SO_RCVTIMEO	20
++#define SO_SNDTIMEO	21
++#endif
+ 
+ /* Security levels - as per NRL IPv6 - don't actually do anything */
+ #define SO_SECURITY_AUTHENTICATION		22
+@@ -71,7 +66,7 @@
+ #define SO_RXQ_OVFL             40
+ 
+ #define SO_WIFI_STATUS		41
+-#define SCM_WIFI_STATUS		SO_WIFI_STATUS
++#define SCM_WIFI_STATUS	SO_WIFI_STATUS
+ #define SO_PEEK_OFF		42
+ 
+ /* Instruct lower device to use last 4-bytes of skb data as FCS */
+@@ -107,4 +102,4 @@
+ 
+ #define SCM_TIMESTAMPING_PKTINFO	58
+ 
+-#endif	/* _ASM_POWERPC_SOCKET_H */
++#endif /* __ASM_GENERIC_SOCKET_H */
 
 -- 
-Alexandre Belloni, Free Electrons
-Embedded Linux and Kernel engineering
-http://free-electrons.com
+Cheers,
+Stephen Rothwell
