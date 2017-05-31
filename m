@@ -1,43 +1,21 @@
-Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wd08l5ZDPzDq5j
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 May 2017 15:56:23 +1000 (AEST)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v4V5rYWk043016
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 May 2017 01:56:19 -0400
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2aspg3uu61-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 May 2017 01:56:18 -0400
-Received: from localhost
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Wed, 31 May 2017 15:56:14 +1000
-Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v4V5u2c87340472
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 May 2017 15:56:10 +1000
-Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
- by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v4V5tc5b029555
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 May 2017 15:55:38 +1000
-Date: Wed, 31 May 2017 11:25:21 +0530
-From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-To: Nicholas Piggin <npiggin@gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org, Anton Blanchard <anton@samba.org>
-Subject: Re: [RFC][PATCH] powerpc/64s: stop using r14 register
-References: <20170521140011.17548-1-npiggin@gmail.com>
- <20170530190817.GW19390@naverao1-tp.localdomain>
- <20170531105335.5a57befe@roar.ozlabs.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wd1GK59LCzDq5j
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 May 2017 16:46:17 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Hugh Dickins <hughd@google.com>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Cc: Christoph Lameter <cl@linux.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-mm@kvack.org
+Subject: Re: 4.12-rc ppc64 4k-page needs costly allocations
+In-Reply-To: <alpine.LSU.2.11.1705301151090.2133@eggly.anvils>
+References: <alpine.LSU.2.11.1705301151090.2133@eggly.anvils>
+Date: Wed, 31 May 2017 16:46:14 +1000
+Message-ID: <87h9014j7t.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170531105335.5a57befe@roar.ozlabs.ibm.com>
-Message-Id: <20170531055521.GX19390@naverao1-tp.localdomain>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,71 +25,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2017/05/31 10:53AM, Nicholas Piggin wrote:
-> On Wed, 31 May 2017 00:38:17 +0530
-> "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
-> 
-> > On 2017/05/22 12:00AM, Nicholas Piggin wrote:
-> > > I'd like to take over the r14 register for use as a per-cpu kernel
-> > > register similar to the way r13 is used for the paca.
-> > > 
-> > > r14 being the last non-volatile register gcc allocates, appears with
-> > > about 0.5% the frequency as r31 in (static) instructions. I haven't
-> > > counted dynamically how many extra spills and fills that removing it
-> > > causes, but I should. My guess is the memory ops saved by using
-> > > it as a per-cpu variable will significantly outweigh the cost of
-> > > losing it as a general use register.
-> > > 
-> > > This part of the patch is pretty mechanical. A couple of places (prom)
-> > > still have to use it, and I haven't quite understood the KVM code yet.
-> > > 
-> > > Question is whether this approach seems okay, and whether we should do
-> > > the same for 64e.
-> > > 
-> > > Thanks,
-> > > Nick
-> > > 
-> > > ---  
-> > 
-> > [snip]
-> > 
-> > > diff --git a/arch/powerpc/net/bpf_jit32.h 
-> > > b/arch/powerpc/net/bpf_jit32.h
-> > > index a8cd7e289ecd..52a30db033c1 100644
-> > > --- a/arch/powerpc/net/bpf_jit32.h
-> > > +++ b/arch/powerpc/net/bpf_jit32.h
-> > > @@ -44,9 +44,11 @@
-> > >   * A register	r4
-> > >   * X register	r5
-> > >   * addr param	r6
-> > > - * r7-r10	scratch
-> > > - * skb->data	r14
-> > > - * skb headlen	r15	(skb->len - skb->data_len)
-> > > + * scratch	r7-r8
-> > > + * skb headlen	r9	(skb->len - skb->data_len)
-> > > + * skb->data	r10
-> > > + * fixed regs	r13-r14
-> > > + * unused	r15
-> > >   * m[0]		r16
-> > >   * m[...]	...
-> > >   * m[15]	r31
-> > > @@ -58,8 +60,8 @@
-> > >  #define r_addr		6
-> > >  #define r_scratch1	7
-> > >  #define r_scratch2	8
-> > > -#define r_D		14
-> > > -#define r_HL		15
-> > > +#define r_HL		9
-> > > +#define r_D		10  
-> > 
-> > You'll also need changes in the JIT code itself, at least in 
-> > bpf_jit_build_prologue() and elsewhere -- some code expects r_D and r_HL 
-> > to be NVRs. It's probably easier to just choose other NVRs here...
-> 
-> Thanks for taking a look. We're out of non volatile registers here,
-> however... This is for PPC32 only by the looks, so the patch is not
-> required at all.
+Hugh Dickins <hughd@google.com> writes:
 
-Ah, indeed. Good catch.
+> Since f6eedbba7a26 ("powerpc/mm/hash: Increase VA range to 128TB")
+> I find that swapping loads on ppc64 on G5 with 4k pages are failing:
+>
+> SLUB: Unable to allocate memory on node -1, gfp=0x14000c0(GFP_KERNEL)
+>   cache: pgtable-2^12, object size: 32768, buffer size: 65536, default order: 4, min order: 4
+>   pgtable-2^12 debugging increased min order, use slub_debug=O to disable.
+>   node 0: slabs: 209, objs: 209, free: 8
+> gcc: page allocation failure: order:4, mode:0x16040c0(GFP_KERNEL|__GFP_COMP|__GFP_NOTRACK), nodemask=(null)
+> CPU: 1 PID: 6225 Comm: gcc Not tainted 4.12.0-rc2 #1
+> Call Trace:
+> [c00000000090b5c0] [c0000000004f8478] .dump_stack+0xa0/0xcc (unreliable)
+> [c00000000090b650] [c0000000000eb194] .warn_alloc+0xf0/0x178
+> [c00000000090b710] [c0000000000ebc9c] .__alloc_pages_nodemask+0xa04/0xb00
+> [c00000000090b8b0] [c00000000013921c] .new_slab+0x234/0x608
+> [c00000000090b980] [c00000000013b59c] .___slab_alloc.constprop.64+0x3dc/0x564
+> [c00000000090bad0] [c0000000004f5a84] .__slab_alloc.isra.61.constprop.63+0x54/0x70
+> [c00000000090bb70] [c00000000013b864] .kmem_cache_alloc+0x140/0x288
+> [c00000000090bc30] [c00000000004d934] .mm_init.isra.65+0x128/0x1c0
+> [c00000000090bcc0] [c000000000157810] .do_execveat_common.isra.39+0x294/0x690
+> [c00000000090bdb0] [c000000000157e70] .SyS_execve+0x28/0x38
+> [c00000000090be30] [c00000000000a118] system_call+0x38/0xfc
+>
+> I did try booting with slub_debug=O as the message suggested, but that
+> made no difference: it still hoped for but failed on order:4 allocations.
+>
+> I wanted to try removing CONFIG_SLUB_DEBUG, but didn't succeed in that:
+> it seemed to be a hard requirement for something, but I didn't find what.
+>
+> I did try CONFIG_SLAB=y instead of SLUB: that lowers these allocations to
+> the expected order:3, which then results in OOM-killing rather than direct
+> allocation failure, because of the PAGE_ALLOC_COSTLY_ORDER 3 cutoff.  But
+> makes no real difference to the outcome: swapping loads still abort early.
+>
+> Relying on order:3 or order:4 allocations is just too optimistic: ppc64
+> with 4k pages would do better not to expect to support a 128TB userspace.
+>
+> I tried the obvious partial revert below, but it's not good enough:
+> the system did not boot beyond
+>
+> Starting init: /sbin/init exists but couldn't execute it (error -7)
+> Starting init: /bin/sh exists but couldn't execute it (error -7)
+> Kernel panic - not syncing: No working init found. ...
 
-- Naveen
+Ouch, sorry.
+
+I boot test a G5 with 4K pages, but I don't stress test it much so I
+didn't notice this.
+
+I think making 128TB depend on 64K pages makes sense, Aneesh is going to
+try and do a patch for that.
+
+cheers
