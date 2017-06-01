@@ -3,38 +3,38 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wf0Dv0PZ2zDqLM
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Jun 2017 07:03:26 +1000 (AEST)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wf0Dz40vbzDqLV
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Jun 2017 07:03:31 +1000 (AEST)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v51Kwqvq046285
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Jun 2017 17:03:19 -0400
-Received: from e24smtp05.br.ibm.com (e24smtp05.br.ibm.com [32.104.18.26])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2atsv7hgn3-1
+ v51Kwmjv089874
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Jun 2017 17:03:23 -0400
+Received: from e24smtp03.br.ibm.com (e24smtp03.br.ibm.com [32.104.18.24])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2attdr07nn-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 01 Jun 2017 17:03:19 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 01 Jun 2017 17:03:23 -0400
 Received: from localhost
- by e24smtp05.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e24smtp03.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.vnet.ibm.com>;
- Thu, 1 Jun 2017 18:03:16 -0300
+ Thu, 1 Jun 2017 18:03:20 -0300
 Received: from d24av01.br.ibm.com (d24av01.br.ibm.com [9.8.31.91])
- by d24relay03.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v51L3DCM5505160
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Jun 2017 18:03:13 -0300
+ by d24relay04.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v51L3IBK2490802
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Jun 2017 18:03:18 -0300
 Received: from d24av01.br.ibm.com (localhost [127.0.0.1])
  by d24av01.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v51L3D2Y002931
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Jun 2017 18:03:13 -0300
+ v51L3IQo002989
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Jun 2017 18:03:18 -0300
 From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
  Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-Subject: [PATCH 4/8] powerpc-perf/hx-24x7: Don't log failed hcall twice
-Date: Thu,  1 Jun 2017 18:02:23 -0300
+Subject: [PATCH 6/8] powerpc/perf/hv-24x7: Minor improvements
+Date: Thu,  1 Jun 2017 18:02:25 -0300
 In-Reply-To: <1496350947-30951-1-git-send-email-bauerman@linux.vnet.ibm.com>
 References: <1496350947-30951-1-git-send-email-bauerman@linux.vnet.ibm.com>
-Message-Id: <1496350947-30951-5-git-send-email-bauerman@linux.vnet.ibm.com>
+Message-Id: <1496350947-30951-7-git-send-email-bauerman@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,85 +44,86 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-make_24x7_request already calls log_24x7_hcall if it fails, so callers
-don't have to do it again.
+There's an H24x7_DATA_BUFFER_SIZE constant, so use it in init_24x7_request.
 
-In fact, since the latter is now only called from the former, there's no
-need for a separate log_24x7_hcall anymore so remove it.
+There's also an HV_PERF_DOMAIN_MAX constant, so use it in
+h_24x7_event_init. This makes the comment above the check redundant,
+so remove it.
+
+In add_event_to_24x7_request, a statement is terminated with a comma
+instead of a semicolon. Fix it.
+
+In hv-24x7.h, improve comments in struct hv_24x7_result.
 
 Signed-off-by: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
 ---
- arch/powerpc/perf/hv-24x7.c | 35 ++++++++++++-----------------------
- 1 file changed, 12 insertions(+), 23 deletions(-)
+ arch/powerpc/perf/hv-24x7.c |  9 ++++-----
+ arch/powerpc/perf/hv-24x7.h | 11 ++++++++++-
+ 2 files changed, 14 insertions(+), 6 deletions(-)
 
 diff --git a/arch/powerpc/perf/hv-24x7.c b/arch/powerpc/perf/hv-24x7.c
-index 8b1a3e849d23..111c61ea7416 100644
+index 7e47dcdea62a..043cbc78be98 100644
 --- a/arch/powerpc/perf/hv-24x7.c
 +++ b/arch/powerpc/perf/hv-24x7.c
-@@ -1044,21 +1044,6 @@ static const struct attribute_group *attr_groups[] = {
- 	NULL,
- };
+@@ -1049,8 +1049,8 @@ static void init_24x7_request(struct hv_24x7_request_buffer *request_buffer,
+ 			      struct hv_24x7_data_result_buffer *result_buffer)
+ {
  
--static void log_24x7_hcall(struct hv_24x7_request_buffer *request_buffer,
--			   struct hv_24x7_data_result_buffer *result_buffer,
--			   unsigned long ret)
--{
--	struct hv_24x7_request *req;
--
--	req = &request_buffer->requests[0];
--	pr_notice_ratelimited("hcall failed: [%d %#x %#x %d] => "
--			"ret 0x%lx (%ld) detail=0x%x failing ix=%x\n",
--			req->performance_domain, req->data_offset,
--			req->starting_ix, req->starting_lpar_ix, ret, ret,
--			result_buffer->detailed_rc,
--			result_buffer->failing_request_ix);
--}
--
- /*
-  * Start the process for a new H_GET_24x7_DATA hcall.
-  */
-@@ -1091,8 +1076,16 @@ static int make_24x7_request(struct hv_24x7_request_buffer *request_buffer,
- 			virt_to_phys(request_buffer), H24x7_DATA_BUFFER_SIZE,
- 			virt_to_phys(result_buffer),  H24x7_DATA_BUFFER_SIZE);
+-	memset(request_buffer, 0, 4096);
+-	memset(result_buffer, 0, 4096);
++	memset(request_buffer, 0, H24x7_DATA_BUFFER_SIZE);
++	memset(result_buffer, 0, H24x7_DATA_BUFFER_SIZE);
  
--	if (ret)
--		log_24x7_hcall(request_buffer, result_buffer, ret);
-+	if (ret) {
-+		struct hv_24x7_request *req;
-+
-+		req = &request_buffer->requests[0];
-+		pr_notice_ratelimited("hcall failed: [%d %#x %#x %d] => ret 0x%lx (%ld) detail=0x%x failing ix=%x\n",
-+				      req->performance_domain, req->data_offset,
-+				      req->starting_ix, req->starting_lpar_ix,
-+				      ret, ret, result_buffer->detailed_rc,
-+				      result_buffer->failing_request_ix);
-+	}
+ 	request_buffer->interface_version = HV_24X7_IF_VERSION_CURRENT;
+ 	/* memset above set request_buffer->num_requests to 0 */
+@@ -1126,7 +1126,7 @@ static int add_event_to_24x7_request(struct perf_event *event,
+ 	req->performance_domain = event_get_domain(event);
+ 	req->data_size = cpu_to_be16(8);
+ 	req->data_offset = cpu_to_be32(event_get_offset(event));
+-	req->starting_lpar_ix = cpu_to_be16(event_get_lpar(event)),
++	req->starting_lpar_ix = cpu_to_be16(event_get_lpar(event));
+ 	req->max_num_lpars = cpu_to_be16(1);
+ 	req->starting_ix = cpu_to_be16(idx);
+ 	req->max_ix = cpu_to_be16(1);
+@@ -1218,9 +1218,8 @@ static int h_24x7_event_init(struct perf_event *event)
+ 		return -EINVAL;
+ 	}
  
- 	return ret;
- }
-@@ -1163,10 +1156,8 @@ static unsigned long single_24x7_request(struct perf_event *event, u64 *count)
- 		goto out;
+-	/* Domains above 6 are invalid */
+ 	domain = event_get_domain(event);
+-	if (domain > 6) {
++	if (domain > HV_PERF_DOMAIN_MAX) {
+ 		pr_devel("invalid domain %d\n", domain);
+ 		return -EINVAL;
+ 	}
+diff --git a/arch/powerpc/perf/hv-24x7.h b/arch/powerpc/perf/hv-24x7.h
+index 634ef4082cdc..b95909400b2a 100644
+--- a/arch/powerpc/perf/hv-24x7.h
++++ b/arch/powerpc/perf/hv-24x7.h
+@@ -71,6 +71,10 @@ struct hv_24x7_result_element {
+ } __packed;
  
- 	ret = make_24x7_request(request_buffer, result_buffer);
--	if (ret) {
--		log_24x7_hcall(request_buffer, result_buffer, ret);
-+	if (ret)
- 		goto out;
--	}
+ struct hv_24x7_result {
++	/*
++	 * The index of the 24x7 Request Structure in the 24x7 Request Buffer
++	 * used to request this result.
++	 */
+ 	__u8 result_ix;
  
- 	result = result_buffer->results;
+ 	/*
+@@ -81,7 +85,12 @@ struct hv_24x7_result {
+ 	__u8 results_complete;
+ 	__be16 num_elements_returned;
  
-@@ -1428,10 +1419,8 @@ static int h_24x7_event_commit_txn(struct pmu *pmu)
- 	result_buffer = (void *)get_cpu_var(hv_24x7_resb);
- 
- 	ret = make_24x7_request(request_buffer, result_buffer);
--	if (ret) {
--		log_24x7_hcall(request_buffer, result_buffer, ret);
-+	if (ret)
- 		goto put_reqb;
--	}
- 
- 	h24x7hw = &get_cpu_var(hv_24x7_hw);
+-	/* This is a copy of @data_size from the corresponding hv_24x7_request */
++	/*
++	 * This is a copy of @data_size from the corresponding hv_24x7_request
++	 *
++	 * Warning: to obtain the size of each element in @elements you have
++	 * to add the size of the other members of the result_element struct.
++	 */
+ 	__be16 result_element_data_size;
+ 	__u8 reserved[0x2];
  
 -- 
 2.7.4
