@@ -1,42 +1,21 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <rashmica.g@gmail.com>
+Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
+ [IPv6:2607:f8b0:400e:c00::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wdYz574nXzDqBQ
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Jun 2017 14:20:01 +1000 (AEST)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v514JHno018557
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Jun 2017 00:19:58 -0400
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2at7u193y7-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 01 Jun 2017 00:19:58 -0400
-Received: from localhost
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Thu, 1 Jun 2017 14:19:55 +1000
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v514JjIv7799244
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Jun 2017 14:19:53 +1000
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v514JJgc011126
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Jun 2017 14:19:19 +1000
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Hugh Dickins <hughd@google.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, Christoph Lameter <cl@linux.com>,
- linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org
-Subject: Re: 4.12-rc ppc64 4k-page needs costly allocations
-In-Reply-To: <alpine.LSU.2.11.1705301151090.2133@eggly.anvils>
-References: <alpine.LSU.2.11.1705301151090.2133@eggly.anvils>
-Date: Thu, 01 Jun 2017 09:49:02 +0530
-MIME-Version: 1.0
-Content-Type: text/plain
-Message-Id: <87wp8wpcg9.fsf@skywalker.in.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wdbdS47MxzDqBQ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Jun 2017 15:34:52 +1000 (AEST)
+Received: by mail-pf0-x241.google.com with SMTP id w69so6541445pfk.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 May 2017 22:34:52 -0700 (PDT)
+From: Rashmica Gupta <rashmica.g@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au, anton@samba.org,
+ npiggin@gmail.com, bsingharora@gmail.com, oohall@gmail.com,
+ khandual@linux.vnet.ibm.com
+Cc: Rashmica Gupta <rashmica.g@gmail.com>
+Subject: [PATCH v3 1/3] powerpc/powernv: Add config option for removal of
+ memory
+Date: Thu,  1 Jun 2017 15:34:38 +1000
+Message-Id: <20170601053440.28976-1-rashmica.g@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,154 +25,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hugh Dickins <hughd@google.com> writes:
+This patch adds the config option to enable the removal
+of memory from the kernel mappings at runtime. This needs
+to be enabled for the hardware trace macro to work.
 
-> Since f6eedbba7a26 ("powerpc/mm/hash: Increase VA range to 128TB")
-> I find that swapping loads on ppc64 on G5 with 4k pages are failing:
->
-> SLUB: Unable to allocate memory on node -1, gfp=0x14000c0(GFP_KERNEL)
->   cache: pgtable-2^12, object size: 32768, buffer size: 65536, default order: 4, min order: 4
->   pgtable-2^12 debugging increased min order, use slub_debug=O to disable.
->   node 0: slabs: 209, objs: 209, free: 8
-> gcc: page allocation failure: order:4, mode:0x16040c0(GFP_KERNEL|__GFP_COMP|__GFP_NOTRACK), nodemask=(null)
-> CPU: 1 PID: 6225 Comm: gcc Not tainted 4.12.0-rc2 #1
-> Call Trace:
-> [c00000000090b5c0] [c0000000004f8478] .dump_stack+0xa0/0xcc (unreliable)
-> [c00000000090b650] [c0000000000eb194] .warn_alloc+0xf0/0x178
-> [c00000000090b710] [c0000000000ebc9c] .__alloc_pages_nodemask+0xa04/0xb00
-> [c00000000090b8b0] [c00000000013921c] .new_slab+0x234/0x608
-> [c00000000090b980] [c00000000013b59c] .___slab_alloc.constprop.64+0x3dc/0x564
-> [c00000000090bad0] [c0000000004f5a84] .__slab_alloc.isra.61.constprop.63+0x54/0x70
-> [c00000000090bb70] [c00000000013b864] .kmem_cache_alloc+0x140/0x288
-> [c00000000090bc30] [c00000000004d934] .mm_init.isra.65+0x128/0x1c0
-> [c00000000090bcc0] [c000000000157810] .do_execveat_common.isra.39+0x294/0x690
-> [c00000000090bdb0] [c000000000157e70] .SyS_execve+0x28/0x38
-> [c00000000090be30] [c00000000000a118] system_call+0x38/0xfc
->
-> I did try booting with slub_debug=O as the message suggested, but that
-> made no difference: it still hoped for but failed on order:4 allocations.
->
-> I wanted to try removing CONFIG_SLUB_DEBUG, but didn't succeed in that:
-> it seemed to be a hard requirement for something, but I didn't find what.
->
-> I did try CONFIG_SLAB=y instead of SLUB: that lowers these allocations to
-> the expected order:3, which then results in OOM-killing rather than direct
-> allocation failure, because of the PAGE_ALLOC_COSTLY_ORDER 3 cutoff.  But
-> makes no real difference to the outcome: swapping loads still abort early.
->
-> Relying on order:3 or order:4 allocations is just too optimistic: ppc64
-> with 4k pages would do better not to expect to support a 128TB userspace.
->
-> I tried the obvious partial revert below, but it's not good enough:
-> the system did not boot beyond
->
-> Starting init: /sbin/init exists but couldn't execute it (error -7)
-> Starting init: /bin/sh exists but couldn't execute it (error -7)
-> Kernel panic - not syncing: No working init found. ...
->
+Signed-off-by: Rashmica Gupta <rashmica.g@gmail.com>
+---
+v2 -> v3: Better description
 
-Can you try this patch.
+ arch/powerpc/platforms/powernv/Kconfig  | 8 ++++++++
+ arch/powerpc/platforms/powernv/Makefile | 1 +
+ 2 files changed, 9 insertions(+)
 
-commit fc55c0dc8b23446f937c1315aa61e74673de5ee6
-Author: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-Date:   Thu Jun 1 08:06:40 2017 +0530
-
-    powerpc/mm/4k: Limit 4k page size to 64TB
-    
-    Supporting 512TB requires us to do a order 3 allocation for level 1 page
-    table(pgd). Limit 4k to 64TB for now.
-    
-    Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-
-diff --git a/arch/powerpc/include/asm/book3s/64/hash-4k.h b/arch/powerpc/include/asm/book3s/64/hash-4k.h
-index b4b5e6b671ca..0c4e470571ca 100644
---- a/arch/powerpc/include/asm/book3s/64/hash-4k.h
-+++ b/arch/powerpc/include/asm/book3s/64/hash-4k.h
-@@ -8,7 +8,7 @@
- #define H_PTE_INDEX_SIZE  9
- #define H_PMD_INDEX_SIZE  7
- #define H_PUD_INDEX_SIZE  9
--#define H_PGD_INDEX_SIZE  12
-+#define H_PGD_INDEX_SIZE  9
- 
- #ifndef __ASSEMBLY__
- #define H_PTE_TABLE_SIZE	(sizeof(pte_t) << H_PTE_INDEX_SIZE)
-diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
-index a2123f291ab0..5de3271026f1 100644
---- a/arch/powerpc/include/asm/processor.h
-+++ b/arch/powerpc/include/asm/processor.h
-@@ -110,13 +110,15 @@ void release_thread(struct task_struct *);
- #define TASK_SIZE_128TB (0x0000800000000000UL)
- #define TASK_SIZE_512TB (0x0002000000000000UL)
- 
--#ifdef CONFIG_PPC_BOOK3S_64
-+#if defined(CONFIG_PPC_BOOK3S_64) && defined(CONFIG_PPC_64K_PAGES)
- /*
-  * Max value currently used:
-  */
--#define TASK_SIZE_USER64	TASK_SIZE_512TB
-+#define TASK_SIZE_USER64		TASK_SIZE_512TB
-+#define DEFAULT_MAP_WINDOW_USER64	TASK_SIZE_128TB
- #else
--#define TASK_SIZE_USER64	TASK_SIZE_64TB
-+#define TASK_SIZE_USER64		TASK_SIZE_64TB
-+#define DEFAULT_MAP_WINDOW_USER64	TASK_SIZE_64TB
- #endif
- 
- /*
-@@ -132,7 +134,7 @@ void release_thread(struct task_struct *);
-  * space during mmap's.
-  */
- #define TASK_UNMAPPED_BASE_USER32 (PAGE_ALIGN(TASK_SIZE_USER32 / 4))
--#define TASK_UNMAPPED_BASE_USER64 (PAGE_ALIGN(TASK_SIZE_128TB / 4))
-+#define TASK_UNMAPPED_BASE_USER64 (PAGE_ALIGN(DEFAULT_MAP_WINDOW_USER64 / 4))
- 
- #define TASK_UNMAPPED_BASE ((is_32bit_task()) ? \
- 		TASK_UNMAPPED_BASE_USER32 : TASK_UNMAPPED_BASE_USER64 )
-@@ -143,8 +145,8 @@ void release_thread(struct task_struct *);
-  * with 128TB and conditionally enable upto 512TB
-  */
- #ifdef CONFIG_PPC_BOOK3S_64
--#define DEFAULT_MAP_WINDOW	((is_32bit_task()) ? \
--				 TASK_SIZE_USER32 : TASK_SIZE_128TB)
-+#define DEFAULT_MAP_WINDOW	((is_32bit_task()) ?			\
-+				 TASK_SIZE_USER32 : DEFAULT_MAP_WINDOW_USER64)
- #else
- #define DEFAULT_MAP_WINDOW	TASK_SIZE
- #endif
-@@ -153,7 +155,7 @@ void release_thread(struct task_struct *);
- 
- #ifdef CONFIG_PPC_BOOK3S_64
- /* Limit stack to 128TB */
--#define STACK_TOP_USER64 TASK_SIZE_128TB
-+#define STACK_TOP_USER64 DEFAULT_MAP_WINDOW_USER64
- #else
- #define STACK_TOP_USER64 TASK_SIZE_USER64
- #endif
-diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
-index 8389ff5ac002..77062461c469 100644
---- a/arch/powerpc/kernel/setup-common.c
-+++ b/arch/powerpc/kernel/setup-common.c
-@@ -921,7 +921,7 @@ void __init setup_arch(char **cmdline_p)
- 
- #ifdef CONFIG_PPC_MM_SLICES
- #ifdef CONFIG_PPC64
--	init_mm.context.addr_limit = TASK_SIZE_128TB;
-+	init_mm.context.addr_limit = DEFAULT_MAP_WINDOW_USER64;
- #else
- #error	"context.addr_limit not initialized."
- #endif
-diff --git a/arch/powerpc/mm/mmu_context_book3s64.c b/arch/powerpc/mm/mmu_context_book3s64.c
-index c6dca2ae78ef..a3edf813d455 100644
---- a/arch/powerpc/mm/mmu_context_book3s64.c
-+++ b/arch/powerpc/mm/mmu_context_book3s64.c
-@@ -99,7 +99,7 @@ static int hash__init_new_context(struct mm_struct *mm)
- 	 * mm->context.addr_limit. Default to max task size so that we copy the
- 	 * default values to paca which will help us to handle slb miss early.
- 	 */
--	mm->context.addr_limit = TASK_SIZE_128TB;
-+	mm->context.addr_limit = DEFAULT_MAP_WINDOW_USER64;
- 
- 	/*
- 	 * The old code would re-promote on fork, we don't do that when using
- 
+diff --git a/arch/powerpc/platforms/powernv/Kconfig b/arch/powerpc/platforms/powernv/Kconfig
+index 6a6f4ef..92493d6 100644
+--- a/arch/powerpc/platforms/powernv/Kconfig
++++ b/arch/powerpc/platforms/powernv/Kconfig
+@@ -30,3 +30,11 @@ config OPAL_PRD
+ 	help
+ 	  This enables the opal-prd driver, a facility to run processor
+ 	  recovery diagnostics on OpenPower machines
++
++config PPC64_HARDWARE_TRACING
++	bool "Enable removal of RAM from kernel mappings for tracing"
++	help
++	  Enabling this option allows for the removal of memory (RAM)
++	  from the kernel mappings to be used for hardware tracing.
++	depends on MEMORY_HOTREMOVE
++	default n
+diff --git a/arch/powerpc/platforms/powernv/Makefile b/arch/powerpc/platforms/powernv/Makefile
+index b5d98cb..8fb026d 100644
+--- a/arch/powerpc/platforms/powernv/Makefile
++++ b/arch/powerpc/platforms/powernv/Makefile
+@@ -12,3 +12,4 @@ obj-$(CONFIG_PPC_SCOM)	+= opal-xscom.o
+ obj-$(CONFIG_MEMORY_FAILURE)	+= opal-memory-errors.o
+ obj-$(CONFIG_TRACEPOINTS)	+= opal-tracepoints.o
+ obj-$(CONFIG_OPAL_PRD)	+= opal-prd.o
++obj-$(CONFIG_PPC64_HARDWARE_TRACING)	+= memtrace.o
+-- 
+2.9.3
