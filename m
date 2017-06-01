@@ -1,37 +1,38 @@
-Return-Path: <rth7680@gmail.com>
-Received: from mail-qt0-x241.google.com (mail-qt0-x241.google.com
- [IPv6:2607:f8b0:400d:c0d::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <bauerman@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wdz62042FzDqKK
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Jun 2017 06:12:26 +1000 (AEST)
-Received: by mail-qt0-x241.google.com with SMTP id l39so7080548qtb.1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 01 Jun 2017 13:12:25 -0700 (PDT)
-Sender: Richard Henderson <rth7680@gmail.com>
-Subject: Re: [PATCH] tty: add TIOCGPTPEER ioctl
-To: Aleksa Sarai <asarai@suse.de>, Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Jiri Slaby <jslaby@suse.com>, Arnd Bergmann <arnd@arndb.de>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- alpha <linux-alpha@vger.kernel.org>,
- Linux MIPS Mailing List <linux-mips@linux-mips.org>,
- Parisc List <linux-parisc@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Linux-sh list <linux-sh@vger.kernel.org>,
- sparclinux <sparclinux@vger.kernel.org>,
- "linux-xtensa@linux-xtensa.org" <linux-xtensa@linux-xtensa.org>,
- Linux-Arch <linux-arch@vger.kernel.org>,
- Christian Brauner <christian.brauner@ubuntu.com>,
- Valentin Rothberg <vrothberg@suse.com>
-References: <20170601173803.8698-1-asarai@suse.de>
- <CAMuHMdXkaWg70OidDi0_xALbzwZ+o0eEVEzT5U_6HdewBs4WwA@mail.gmail.com>
- <a0671efc-4c4e-bbdc-c9d8-a7bdc22b872a@suse.de>
-From: Richard Henderson <rth@twiddle.net>
-Message-ID: <4e16e83b-8fb7-c9b6-2f06-ee48499a67db@twiddle.net>
-Date: Thu, 1 Jun 2017 13:12:15 -0700
-MIME-Version: 1.0
-In-Reply-To: <a0671efc-4c4e-bbdc-c9d8-a7bdc22b872a@suse.de>
-Content-Type: text/plain; charset=utf-8; format=flowed
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wf0Dh2xtvzDqKL
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Jun 2017 07:03:16 +1000 (AEST)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v51KwpXu048241
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Jun 2017 17:03:10 -0400
+Received: from e24smtp02.br.ibm.com (e24smtp02.br.ibm.com [32.104.18.86])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2ats1a3h3r-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 01 Jun 2017 17:03:10 -0400
+Received: from localhost
+ by e24smtp02.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.vnet.ibm.com>;
+ Thu, 1 Jun 2017 18:03:08 -0300
+Received: from d24av01.br.ibm.com (d24av01.br.ibm.com [9.8.31.91])
+ by d24relay03.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v51L34Mh15728696
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Jun 2017 18:03:05 -0300
+Received: from d24av01.br.ibm.com (localhost [127.0.0.1])
+ by d24av01.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v51L35RD002805
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Jun 2017 18:03:05 -0300
+From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+ Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
+Subject: [PATCH 0/8] Support for 24x7 hcall interface version 2
+Date: Thu,  1 Jun 2017 18:02:19 -0300
+Message-Id: <1496350947-30951-1-git-send-email-bauerman@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,25 +42,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/01/2017 01:00 PM, Aleksa Sarai wrote:
->>> --- a/arch/alpha/include/uapi/asm/ioctls.h
->>> +++ b/arch/alpha/include/uapi/asm/ioctls.h
->>> @@ -94,6 +94,7 @@
->>>   #define TIOCSRS485     _IOWR('T', 0x2F, struct serial_rs485)
->>>   #define TIOCGPTN       _IOR('T',0x30, unsigned int) /* Get Pty Number (of 
->>> pty-mux device) */
->>>   #define TIOCSPTLCK     _IOW('T',0x31, int)  /* Lock/unlock Pty */
->>> +#define TIOCGPTPEER    _IOR('T', 0x41, int) /* Safely open the slave */
->>
->> Shouldn't the list of definitions be kept sorted, by hex number?
->> (everywhere)
-> 
-> Probably. The reason I put it here is because it logically is very similar to 
-> TIOCGPTN and TIOSPTLCK, but I can move it if the hex order is more important 
-> for maintainence.
-> 
+Hello,
 
-Yes please.
+The hypervisor interface to access 24x7 performance counters (which collect
+performance information from system power on to system power off) has been
+extended in POWER9 adding new fields to the request and result element
+structures.
 
+Also, results for some domains now return more than one result element and
+those need to be added to get a total count.
 
-r~
+The first two patches fix bugs in the existing code. The following 4
+patches are code improvements and the last two finally implement support
+for the changes in POWER9 described above.
+
+POWER8 systems only support version 1 of the interface, while POWER9
+systems only support version 2. I tested these patches on POWER8 to verify
+that there are no regressions, and also on POWER9 DD1.
+
+Thiago Jung Bauermann (8):
+  powerpc/perf/hv-24x7: Fix passing of catalog version number
+  powerpc/perf/hv-24x7: Fix off-by-one error in request_buffer check
+  powerpc/perf/hv-24x7: Properly iterate through results
+  powerpc-perf/hx-24x7: Don't log failed hcall twice
+  powerpc/perf/hv-24x7: Fix return value of hcalls
+  powerpc/perf/hv-24x7: Minor improvements
+  powerpc/perf/hv-24x7: Support v2 of the hypervisor API
+  powerpc/perf/hv-24x7: Aggregate result elements on POWER9 SMT8
+
+ arch/powerpc/perf/hv-24x7.c            | 255 +++++++++++++++++++++++++--------
+ arch/powerpc/perf/hv-24x7.h            |  70 +++++++--
+ arch/powerpc/platforms/pseries/Kconfig |   2 +-
+ 3 files changed, 255 insertions(+), 72 deletions(-)
+
+-- 
+2.7.4
