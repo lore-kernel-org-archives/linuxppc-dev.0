@@ -2,15 +2,17 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wdpBy6lx8zDqFJ
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Jun 2017 23:31:06 +1000 (AEST)
-In-Reply-To: <20170511112441.30287-1-npiggin@gmail.com>
-To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wdpBz522yzDqFJ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Jun 2017 23:31:07 +1000 (AEST)
+In-Reply-To: <b284d6be-ff37-4e5c-7357-446b4e1ea8ad@linux.vnet.ibm.com>
+To: Michael Bringmann <mwb@linux.vnet.ibm.com>, paulus@samba.org,
+ nfont@linux.vnet.ibm.com, sahilmehta17@gmail.com, jallen@linux.vnet.ibm.com,
+ mwb@linux.vnet.ibm.com, alastair@d-silva.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: powerpc/64s: dt_cpu_ftrs boot time setup option
-Message-Id: <3wdpBy5jbbz9s8J@ozlabs.org>
-Date: Thu,  1 Jun 2017 23:31:06 +1000 (AEST)
+Subject: Re: powerpc/hotplug-mem: Fix aa_index match bug for hotplug
+Message-Id: <3wdpBz4LPQz9s78@ozlabs.org>
+Date: Thu,  1 Jun 2017 23:31:07 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,17 +22,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2017-05-11 at 11:24:41 UTC, Nicholas Piggin wrote:
-> Provide a dt_cpu_ftrs= cmdline option to disable the dt_cpu_ftrs CPU
-> feature discovery, and fall back to the "cputable" based version.
+On Mon, 2017-05-22 at 20:44:37 UTC, Michael Bringmann wrote:
+> When adding or removing memory, the aa_index (affinity value) for the
+> memblock must also be converted to match the endianness of the rest
+> of the 'ibm,dynamic-memory' property.  Otherwise, subsequent retrieval
+> of the attribute will likely lead to non-existent nodes, followed by
+> using the default node in the code inappropriately.
 > 
-> Also allow control of advertising unknown features to userspace and
-> with this parameter, and remove the clunky CONFIG option.
-> 
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
 
 Applied to powerpc fixes, thanks.
 
-https://git.kernel.org/powerpc/c/a2b05b7aa60e1e9b60faf01dfb1cca
+https://git.kernel.org/powerpc/c/dc421b200f91930c9c6a9586810ff8
 
 cheers
