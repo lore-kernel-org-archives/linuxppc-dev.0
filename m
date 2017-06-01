@@ -1,40 +1,40 @@
 Return-Path: <bauerman@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wf0Dv1Y7lzDqLs
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wf0Dv0PZ2zDqLM
  for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Jun 2017 07:03:26 +1000 (AEST)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v51KwsdU048072
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Jun 2017 17:03:25 -0400
-Received: from e24smtp03.br.ibm.com (e24smtp03.br.ibm.com [32.104.18.24])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2atrp2vgtf-1
+ v51Kwqvq046285
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Jun 2017 17:03:19 -0400
+Received: from e24smtp05.br.ibm.com (e24smtp05.br.ibm.com [32.104.18.26])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2atsv7hgn3-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 01 Jun 2017 17:03:24 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 01 Jun 2017 17:03:19 -0400
 Received: from localhost
- by e24smtp03.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e24smtp05.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.vnet.ibm.com>;
- Thu, 1 Jun 2017 18:03:22 -0300
+ Thu, 1 Jun 2017 18:03:16 -0300
 Received: from d24av01.br.ibm.com (d24av01.br.ibm.com [9.8.31.91])
- by d24relay04.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v51L3KKf065870
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Jun 2017 18:03:20 -0300
+ by d24relay03.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v51L3DCM5505160
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Jun 2017 18:03:13 -0300
 Received: from d24av01.br.ibm.com (localhost [127.0.0.1])
  by d24av01.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v51L3K1d003017
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Jun 2017 18:03:20 -0300
+ v51L3D2Y002931
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Jun 2017 18:03:13 -0300
 From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
  Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-Subject: [PATCH 7/8] powerpc/perf/hv-24x7: Support v2 of the hypervisor API
-Date: Thu,  1 Jun 2017 18:02:26 -0300
+Subject: [PATCH 4/8] powerpc-perf/hx-24x7: Don't log failed hcall twice
+Date: Thu,  1 Jun 2017 18:02:23 -0300
 In-Reply-To: <1496350947-30951-1-git-send-email-bauerman@linux.vnet.ibm.com>
 References: <1496350947-30951-1-git-send-email-bauerman@linux.vnet.ibm.com>
-Message-Id: <1496350947-30951-8-git-send-email-bauerman@linux.vnet.ibm.com>
+Message-Id: <1496350947-30951-5-git-send-email-bauerman@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,385 +44,85 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-POWER9 introduces a new version of the hypervisor API to access the 24x7
-perf counters. The new version changed some of the structures used for
-requests and results.
+make_24x7_request already calls log_24x7_hcall if it fails, so callers
+don't have to do it again.
+
+In fact, since the latter is now only called from the former, there's no
+need for a separate log_24x7_hcall anymore so remove it.
 
 Signed-off-by: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
 ---
- arch/powerpc/perf/hv-24x7.c            | 145 +++++++++++++++++++++++++++------
- arch/powerpc/perf/hv-24x7.h            |  59 ++++++++++++--
- arch/powerpc/platforms/pseries/Kconfig |   2 +-
- 3 files changed, 173 insertions(+), 33 deletions(-)
+ arch/powerpc/perf/hv-24x7.c | 35 ++++++++++++-----------------------
+ 1 file changed, 12 insertions(+), 23 deletions(-)
 
 diff --git a/arch/powerpc/perf/hv-24x7.c b/arch/powerpc/perf/hv-24x7.c
-index 043cbc78be98..95c44f1d2fd2 100644
+index 8b1a3e849d23..111c61ea7416 100644
 --- a/arch/powerpc/perf/hv-24x7.c
 +++ b/arch/powerpc/perf/hv-24x7.c
-@@ -18,6 +18,7 @@
- #include <linux/slab.h>
- #include <linux/vmalloc.h>
- 
-+#include <asm/cputhreads.h>
- #include <asm/firmware.h>
- #include <asm/hvcall.h>
- #include <asm/io.h>
-@@ -27,6 +28,9 @@
- #include "hv-24x7-catalog.h"
- #include "hv-common.h"
- 
-+/* Version of the 24x7 hypervisor API that we should use in this machine. */
-+static int interface_version;
-+
- static bool domain_is_valid(unsigned domain)
- {
- 	switch (domain) {
-@@ -74,7 +78,11 @@ static const char *domain_name(unsigned domain)
- 
- static bool catalog_entry_domain_is_valid(unsigned domain)
- {
--	return is_physical_domain(domain);
-+	/* POWER8 doesn't support virtual domains. */
-+	if (interface_version == 1)
-+		return is_physical_domain(domain);
-+	else
-+		return domain_is_valid(domain);
- }
- 
- /*
-@@ -166,9 +174,12 @@ DEFINE_PER_CPU(struct hv_24x7_hw, hv_24x7_hw);
- DEFINE_PER_CPU(char, hv_24x7_reqb[H24x7_DATA_BUFFER_SIZE]) __aligned(4096);
- DEFINE_PER_CPU(char, hv_24x7_resb[H24x7_DATA_BUFFER_SIZE]) __aligned(4096);
- 
--#define MAX_NUM_REQUESTS	((H24x7_DATA_BUFFER_SIZE -		       \
-+#define MAX_NUM_REQUESTS_V1	((H24x7_DATA_BUFFER_SIZE -		       \
-+					sizeof(struct hv_24x7_request_buffer)) \
-+					/ H24x7_REQUEST_SIZE_V1)
-+#define MAX_NUM_REQUESTS_V2	((H24x7_DATA_BUFFER_SIZE -		       \
- 					sizeof(struct hv_24x7_request_buffer)) \
--					/ sizeof(struct hv_24x7_request))
-+					/ H24x7_REQUEST_SIZE_V2)
- 
- static char *event_name(struct hv_24x7_event_data *ev, int *len)
- {
-@@ -1052,7 +1063,7 @@ static void init_24x7_request(struct hv_24x7_request_buffer *request_buffer,
- 	memset(request_buffer, 0, H24x7_DATA_BUFFER_SIZE);
- 	memset(result_buffer, 0, H24x7_DATA_BUFFER_SIZE);
- 
--	request_buffer->interface_version = HV_24X7_IF_VERSION_CURRENT;
-+	request_buffer->interface_version = interface_version;
- 	/* memset above set request_buffer->num_requests to 0 */
- }
- 
-@@ -1077,7 +1088,7 @@ static int make_24x7_request(struct hv_24x7_request_buffer *request_buffer,
- 	if (ret) {
- 		struct hv_24x7_request *req;
- 
--		req = &request_buffer->requests[0];
-+		req = request_buffer->requests;
- 		pr_notice_ratelimited("hcall failed: [%d %#x %#x %d] => ret 0x%lx (%ld) detail=0x%x failing ix=%x\n",
- 				      req->performance_domain, req->data_offset,
- 				      req->starting_ix, req->starting_lpar_ix,
-@@ -1101,9 +1112,13 @@ static int add_event_to_24x7_request(struct perf_event *event,
- {
- 	u16 idx;
- 	int i;
-+	size_t req_size;
- 	struct hv_24x7_request *req;
- 
--	if (request_buffer->num_requests >= MAX_NUM_REQUESTS) {
-+	if ((request_buffer->interface_version == 1
-+	     && request_buffer->num_requests >= MAX_NUM_REQUESTS_V1)
-+	    || (request_buffer->interface_version > 1
-+		&& request_buffer->num_requests >= MAX_NUM_REQUESTS_V2)) {
- 		pr_devel("Too many requests for 24x7 HCALL %d\n",
- 				request_buffer->num_requests);
- 		return -EINVAL;
-@@ -1120,8 +1135,11 @@ static int add_event_to_24x7_request(struct perf_event *event,
- 		idx = event_get_vcpu(event);
- 	}
- 
-+	req_size = request_buffer->interface_version == 1 ?
-+			   H24x7_REQUEST_SIZE_V1 : H24x7_REQUEST_SIZE_V2;
-+
- 	i = request_buffer->num_requests++;
--	req = &request_buffer->requests[i];
-+	req = (void *) request_buffer->requests + i * req_size;
- 
- 	req->performance_domain = event_get_domain(event);
- 	req->data_size = cpu_to_be16(8);
-@@ -1131,14 +1149,97 @@ static int add_event_to_24x7_request(struct perf_event *event,
- 	req->starting_ix = cpu_to_be16(idx);
- 	req->max_ix = cpu_to_be16(1);
- 
-+	if (request_buffer->interface_version > 1 &&
-+	    req->performance_domain != HV_PERF_DOMAIN_PHYS_CHIP) {
-+		req->starting_thread_group_ix = idx % 2;
-+		req->max_num_thread_groups = 1;
-+	}
-+
- 	return 0;
- }
- 
-+/**
-+ * get_count_from_result - get event count from the given result
-+ *
-+ * @event:	Event associated with @res.
-+ * @resb:	Result buffer containing @res.
-+ * @res:	Result to work on.
-+ * @countp:	Output variable containing the event count.
-+ * @next:	Optional output variable pointing to the next result in @resb.
-+ */
-+static int get_count_from_result(struct perf_event *event,
-+				 struct hv_24x7_data_result_buffer *resb,
-+				 struct hv_24x7_result *res, u64 *countp,
-+				 struct hv_24x7_result **next)
-+{
-+	u16 num_elements = be16_to_cpu(res->num_elements_returned);
-+	u16 data_size = be16_to_cpu(res->result_element_data_size);
-+	unsigned int data_offset;
-+	void *element_data;
-+	int ret = 0;
-+
-+	/*
-+	 * We can bail out early if the result is empty.
-+	 */
-+	if (!num_elements) {
-+		pr_debug("Result of request %hhu is empty, nothing to do\n",
-+			 res->result_ix);
-+
-+		if (next)
-+			*next = (struct hv_24x7_result *) res->elements;
-+
-+		return -ENODATA;
-+	}
-+
-+	/*
-+	 * This code assumes that a result has only one element.
-+	 */
-+	if (num_elements != 1) {
-+		pr_debug("Error: result of request %hhu has %hu elements\n",
-+			 res->result_ix, num_elements);
-+
-+		if (!next)
-+			return -ENOTSUPP;
-+
-+		/*
-+		 * We still need to go through the motions so that we can return
-+		 * a pointer to the next result.
-+		 */
-+		ret = -ENOTSUPP;
-+	}
-+
-+	if (data_size != sizeof(u64)) {
-+		pr_debug("Error: result of request %hhu has data of %hu bytes\n",
-+			 res->result_ix, data_size);
-+
-+		if (!next)
-+			return -ENOTSUPP;
-+
-+		ret = -ENOTSUPP;
-+	}
-+
-+	if (resb->interface_version == 1)
-+		data_offset = offsetof(struct hv_24x7_result_element_v1,
-+				       element_data);
-+	else
-+		data_offset = offsetof(struct hv_24x7_result_element_v2,
-+				       element_data);
-+
-+	element_data = res->elements + data_offset;
-+
-+	if (!ret)
-+		*countp = be64_to_cpu(*((u64 *) element_data));
-+
-+	/* The next result is after the result element. */
-+	if (next)
-+		*next = element_data + data_size;
-+
-+	return ret;
-+}
-+
- static int single_24x7_request(struct perf_event *event, u64 *count)
- {
- 	int ret;
--	u16 num_elements;
--	struct hv_24x7_result *result;
- 	struct hv_24x7_request_buffer *request_buffer;
- 	struct hv_24x7_data_result_buffer *result_buffer;
- 
-@@ -1158,14 +1259,9 @@ static int single_24x7_request(struct perf_event *event, u64 *count)
- 	if (ret)
- 		goto out;
- 
--	result = result_buffer->results;
--
--	/* This code assumes that a result has only one element. */
--	num_elements = be16_to_cpu(result->num_elements_returned);
--	WARN_ON_ONCE(num_elements != 1);
--
- 	/* process result from hcall */
--	*count = be64_to_cpu(result->elements[0].element_data[0]);
-+	ret = get_count_from_result(event, result_buffer,
-+				    result_buffer->results, count, NULL);
- 
- out:
- 	put_cpu_var(hv_24x7_reqb);
-@@ -1425,16 +1521,13 @@ static int h_24x7_event_commit_txn(struct pmu *pmu)
- 	for (i = 0, res = result_buffer->results;
- 	     i < result_buffer->num_results; i++, res = next_res) {
- 		struct perf_event *event = h24x7hw->events[res->result_ix];
--		u16 num_elements = be16_to_cpu(res->num_elements_returned);
--		u16 data_size = be16_to_cpu(res->result_element_data_size);
- 
--		/* This code assumes that a result has only one element. */
--		WARN_ON_ONCE(num_elements != 1);
-+		ret = get_count_from_result(event, result_buffer, res, &count,
-+					    &next_res);
-+		if (ret)
-+			continue;
- 
--		count = be64_to_cpu(res->elements[0].element_data[0]);
- 		update_event_count(event, count);
--
--		next_res = (void *) res->elements[0].element_data + data_size;
- 	}
- 
- 	put_cpu_var(hv_24x7_hw);
-@@ -1486,6 +1579,12 @@ static int hv_24x7_init(void)
- 		return -ENODEV;
- 	}
- 
-+	/* POWER8 only supports v1, while POWER9 only supports v2. */
-+	if (cpu_has_feature(CPU_FTR_ARCH_300))
-+		interface_version = 2;
-+	else
-+		interface_version = 1;
-+
- 	hret = hv_perf_caps_get(&caps);
- 	if (hret) {
- 		pr_debug("could not obtain capabilities, not enabling, rc=%ld\n",
-diff --git a/arch/powerpc/perf/hv-24x7.h b/arch/powerpc/perf/hv-24x7.h
-index b95909400b2a..149af6e9538f 100644
---- a/arch/powerpc/perf/hv-24x7.h
-+++ b/arch/powerpc/perf/hv-24x7.h
-@@ -10,6 +10,9 @@ enum hv_perf_domains {
- 	HV_PERF_DOMAIN_MAX,
+@@ -1044,21 +1044,6 @@ static const struct attribute_group *attr_groups[] = {
+ 	NULL,
  };
  
-+#define H24x7_REQUEST_SIZE_V1	16
-+#define H24x7_REQUEST_SIZE_V2	32
-+
- struct hv_24x7_request {
- 	/* PHYSICAL domains require enabling via phyp/hmc. */
- 	__u8 performance_domain;
-@@ -42,19 +45,47 @@ struct hv_24x7_request {
- 	/* chip, core, or virtual processor based on @performance_domain */
- 	__be16 starting_ix;
- 	__be16 max_ix;
-+
-+	/* The following fields were added in v2 of the 24x7 interface. */
-+
-+	__u8 starting_thread_group_ix;
-+
-+	/* -1 means all thread groups starting at @starting_thread_group_ix */
-+	__u8 max_num_thread_groups;
-+
-+	__u8 reserved2[0xE];
- } __packed;
+-static void log_24x7_hcall(struct hv_24x7_request_buffer *request_buffer,
+-			   struct hv_24x7_data_result_buffer *result_buffer,
+-			   unsigned long ret)
+-{
+-	struct hv_24x7_request *req;
+-
+-	req = &request_buffer->requests[0];
+-	pr_notice_ratelimited("hcall failed: [%d %#x %#x %d] => "
+-			"ret 0x%lx (%ld) detail=0x%x failing ix=%x\n",
+-			req->performance_domain, req->data_offset,
+-			req->starting_ix, req->starting_lpar_ix, ret, ret,
+-			result_buffer->detailed_rc,
+-			result_buffer->failing_request_ix);
+-}
+-
+ /*
+  * Start the process for a new H_GET_24x7_DATA hcall.
+  */
+@@ -1091,8 +1076,16 @@ static int make_24x7_request(struct hv_24x7_request_buffer *request_buffer,
+ 			virt_to_phys(request_buffer), H24x7_DATA_BUFFER_SIZE,
+ 			virt_to_phys(result_buffer),  H24x7_DATA_BUFFER_SIZE);
  
- struct hv_24x7_request_buffer {
- 	/* 0 - ? */
- 	/* 1 - ? */
--#define HV_24X7_IF_VERSION_CURRENT 0x01
- 	__u8 interface_version;
- 	__u8 num_requests;
- 	__u8 reserved[0xE];
--	struct hv_24x7_request requests[1];
-+	struct hv_24x7_request requests[];
-+} __packed;
+-	if (ret)
+-		log_24x7_hcall(request_buffer, result_buffer, ret);
++	if (ret) {
++		struct hv_24x7_request *req;
 +
-+struct hv_24x7_result_element_v1 {
-+	__be16 lpar_ix;
-+
-+	/*
-+	 * represents the core, chip, or virtual processor based on the
-+	 * request's @performance_domain
-+	 */
-+	__be16 domain_ix;
-+
-+	/* -1 if @performance_domain does not refer to a virtual processor */
-+	__be32 lpar_cfg_instance_id;
-+
-+	/* size = @result_element_data_size of containing result. */
-+	__u64 element_data[];
- } __packed;
++		req = &request_buffer->requests[0];
++		pr_notice_ratelimited("hcall failed: [%d %#x %#x %d] => ret 0x%lx (%ld) detail=0x%x failing ix=%x\n",
++				      req->performance_domain, req->data_offset,
++				      req->starting_ix, req->starting_lpar_ix,
++				      ret, ret, result_buffer->detailed_rc,
++				      result_buffer->failing_request_ix);
++	}
  
--struct hv_24x7_result_element {
-+/*
-+ * We need a separate struct for v2 because the offset of @element_data changed
-+ * between versions.
-+ */
-+struct hv_24x7_result_element_v2 {
- 	__be16 lpar_ix;
+ 	return ret;
+ }
+@@ -1163,10 +1156,8 @@ static unsigned long single_24x7_request(struct perf_event *event, u64 *count)
+ 		goto out;
  
- 	/*
-@@ -66,8 +97,12 @@ struct hv_24x7_result_element {
- 	/* -1 if @performance_domain does not refer to a virtual processor */
- 	__be32 lpar_cfg_instance_id;
+ 	ret = make_24x7_request(request_buffer, result_buffer);
+-	if (ret) {
+-		log_24x7_hcall(request_buffer, result_buffer, ret);
++	if (ret)
+ 		goto out;
+-	}
  
-+	__u8 thread_group_ix;
-+
-+	__u8 reserved[7];
-+
- 	/* size = @result_element_data_size of containing result. */
--	__u64 element_data[1];
-+	__u64 element_data[];
- } __packed;
+ 	result = result_buffer->results;
  
- struct hv_24x7_result {
-@@ -94,10 +129,16 @@ struct hv_24x7_result {
- 	__be16 result_element_data_size;
- 	__u8 reserved[0x2];
+@@ -1428,10 +1419,8 @@ static int h_24x7_event_commit_txn(struct pmu *pmu)
+ 	result_buffer = (void *)get_cpu_var(hv_24x7_resb);
  
--	/* WARNING: only valid for first result element due to variable sizes
--	 *          of result elements */
--	/* struct hv_24x7_result_element[@num_elements_returned] */
--	struct hv_24x7_result_element elements[1];
-+	/*
-+	 * Either
-+	 *	struct hv_24x7_result_element_v1[@num_elements_returned]
-+	 * or
-+	 *	struct hv_24x7_result_element_v2[@num_elements_returned]
-+	 *
-+	 * depending on the interface_version field of the
-+	 * struct hv_24x7_data_result_buffer containing this result.
-+	 */
-+	char elements[];
- } __packed;
+ 	ret = make_24x7_request(request_buffer, result_buffer);
+-	if (ret) {
+-		log_24x7_hcall(request_buffer, result_buffer, ret);
++	if (ret)
+ 		goto put_reqb;
+-	}
  
- struct hv_24x7_data_result_buffer {
-@@ -113,7 +154,7 @@ struct hv_24x7_data_result_buffer {
- 	__u8 reserved2[0x8];
- 	/* WARNING: only valid for the first result due to variable sizes of
- 	 *	    results */
--	struct hv_24x7_result results[1]; /* [@num_results] */
-+	struct hv_24x7_result results[]; /* [@num_results] */
- } __packed;
- 
- #endif
-diff --git a/arch/powerpc/platforms/pseries/Kconfig b/arch/powerpc/platforms/pseries/Kconfig
-index 913c54e23eea..3a6dfd14f64b 100644
---- a/arch/powerpc/platforms/pseries/Kconfig
-+++ b/arch/powerpc/platforms/pseries/Kconfig
-@@ -124,7 +124,7 @@ config HV_PERF_CTRS
- 	  Enable access to hypervisor supplied counters in perf. Currently,
- 	  this enables code that uses the hcall GetPerfCounterInfo and 24x7
- 	  interfaces to retrieve counters. GPCI exists on Power 6 and later
--	  systems. 24x7 is available on Power 8 systems.
-+	  systems. 24x7 is available on Power 8 and later systems.
- 
-           If unsure, select Y.
+ 	h24x7hw = &get_cpu_var(hv_24x7_hw);
  
 -- 
 2.7.4
