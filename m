@@ -1,18 +1,20 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wdpBz522yzDqFJ
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Jun 2017 23:31:07 +1000 (AEST)
-In-Reply-To: <b284d6be-ff37-4e5c-7357-446b4e1ea8ad@linux.vnet.ibm.com>
-To: Michael Bringmann <mwb@linux.vnet.ibm.com>, paulus@samba.org,
- nfont@linux.vnet.ibm.com, sahilmehta17@gmail.com, jallen@linux.vnet.ibm.com,
- mwb@linux.vnet.ibm.com, alastair@d-silva.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wdpC049SXzDqFL
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Jun 2017 23:31:08 +1000 (AEST)
+In-Reply-To: <20170524080156.1C4936EB78@pc13941vm.idsi0.si.c-s.fr>
+To: Christophe Leroy <christophe.leroy@c-s.fr>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Scott Wood <oss@buserror.net>,
+ Linus Walleij <linus.walleij@linaro.org>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: powerpc/hotplug-mem: Fix aa_index match bug for hotplug
-Message-Id: <3wdpBz4LPQz9s78@ozlabs.org>
-Date: Thu,  1 Jun 2017 23:31:07 +1000 (AEST)
+Cc: linux-gpio@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Subject: Re: powerpc: sysdev: simple_gpio: fix Oops in gpio save_regs function
+Message-Id: <3wdpC036qdz9sCX@ozlabs.org>
+Date: Thu,  1 Jun 2017 23:31:08 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,17 +24,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2017-05-22 at 20:44:37 UTC, Michael Bringmann wrote:
-> When adding or removing memory, the aa_index (affinity value) for the
-> memblock must also be converted to match the endianness of the rest
-> of the 'ibm,dynamic-memory' property.  Otherwise, subsequent retrieval
-> of the attribute will likely lead to non-existent nodes, followed by
-> using the default node in the code inappropriately.
+On Wed, 2017-05-24 at 08:01:55 UTC, Christophe Leroy wrote:
+> of_mm_gpiochip_add_data() generates an Oops for NULL pointer dereference.
 > 
-> Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
+> of_mm_gpiochip_add_data() calls mm_gc->save_regs() before
+> setting the data, therefore ->save_regs() cannot use gpiochip_get_data()
+> 
+> Fixes: 937daafca774b ("powerpc: simple-gpio: use gpiochip data pointer")
+> Cc: stable@vger.kernel.org
+> 
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
 
 Applied to powerpc fixes, thanks.
 
-https://git.kernel.org/powerpc/c/dc421b200f91930c9c6a9586810ff8
+https://git.kernel.org/powerpc/c/6f553912eedafae13ff20b322a65e4
 
 cheers
