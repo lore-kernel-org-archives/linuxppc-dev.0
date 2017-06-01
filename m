@@ -1,24 +1,22 @@
-Return-Path: <srs0=x7fg=5g=gmail.com=sjitindarsingh@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wdcmf5RKwzDq5x
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Jun 2017 16:26:10 +1000 (AEST)
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3wdcmf4bb4z8sXB
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Jun 2017 16:26:10 +1000 (AEST)
-Message-ID: <1496298363.4414.4.camel@gmail.com>
-Subject: Re: [PATCH V3 2/2] KVM: PPC: Book3S HV: Enable guests to use large
- decrementer mode on POWER9
-From: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
-To: Paul Mackerras <paulus@ozlabs.org>, kvm@vger.kernel.org
-Cc: kvm-ppc@vger.kernel.org, linuxppc-dev@ozlabs.org
-Date: Thu, 01 Jun 2017 16:26:03 +1000
-In-Reply-To: <20170529101218.GC13938@fergus.ozlabs.ibm.com>
-References: <20170529101113.GA13938@fergus.ozlabs.ibm.com>
- <20170529101218.GC13938@fergus.ozlabs.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wddZm4P9JzDqBQ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Jun 2017 17:02:40 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Stephen Rothwell <sfr@canb.auug.org.au>,
+ Linux-Next Mailing List <linux-next@vger.kernel.org>
+Cc: PowerPC <linuxppc-dev@lists.ozlabs.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: Tree for May 31
+In-Reply-To: <8737bk44w8.fsf@concordia.ellerman.id.au>
+References: <20170531153227.7098f0a1@canb.auug.org.au>
+ <8737bk44w8.fsf@concordia.ellerman.id.au>
+Date: Thu, 01 Jun 2017 17:02:39 +1000
+Message-ID: <87zids2nsg.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,163 +26,125 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2017-05-29 at 20:12 +1000, Paul Mackerras wrote:
-> This allows userspace (e.g. QEMU) to enable large decrementer mode
-> for
-> the guest when running on a POWER9 host, by setting the LPCR_LD bit
-> in
-> the guest LPCR value.  With this, the guest exit code saves 64 bits
-> of
-> the guest DEC value on exit.  Other places that use the guest DEC
-> value check the LPCR_LD bit in the guest LPCR value, and if it is
-> set,
-> omit the 32-bit sign extension that would otherwise be done.
-> 
-> This doesn't change the DEC emulation used by PR KVM because PR KVM
-> is not supported on POWER9 yet.
-> 
-> This is partly based on an earlier patch by Oliver O'Halloran.
-> 
-> Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
+Michael Ellerman <mpe@ellerman.id.au> writes:
 
-Tested with a hacked up qemu and upstream guest/host (with these
-patches).
+> Stephen Rothwell <sfr@canb.auug.org.au> writes:
+>
+>> Hi all,
+>>
+>> Changes since 20170530:
+>>
+>> The mfd tree gained a build failure so I used the version from
+>> next-20170530.
+>>
+>> The drivers-x86 tree gained the same build failure as the mfd tree so
+>> I used the version from next-20170530.
+>>
+>> The rtc tree gained a build failure so I used the version from
+>> next-20170530.
+>>
+>> The akpm tree lost a patch that turned up elsewhere.
+>>
+>> Non-merge commits (relative to Linus' tree): 3325
+>>  3598 files changed, 135000 insertions(+), 72065 deletions(-)
+>
+> More or less all my powerpc boxes failed to boot this.
+>
+> All the stack traces point to new_slab():
+>
+>   PID hash table entries: 4096 (order: -1, 32768 bytes)
+>   Memory: 127012480K/134217728K available (12032K kernel code, 1920K rwdata, 2916K rodata, 1088K init, 14065K bss, 487808K reserved, 6717440K cma-reserved)
+>   Unable to handle kernel paging request for data at address 0x000004f0
+>   Faulting instruction address: 0xc00000000033fd48
+>   Oops: Kernel access of bad area, sig: 11 [#1]
+>   SMP NR_CPUS=2048 
+>   NUMA 
+>   PowerNV
+>   Modules linked in:
+>   CPU: 0 PID: 0 Comm: swapper Not tainted 4.12.0-rc3-gccN-next-20170531-gf2882f4 #1
+>   task: c000000000fb1200 task.stack: c000000001104000
+>   NIP: c00000000033fd48 LR: c00000000033fb1c CTR: c0000000002d6ae0
+>   REGS: c000000001107970 TRAP: 0380   Not tainted  (4.12.0-rc3-gccN-next-20170531-gf2882f4)
+>   MSR: 9000000002001033 <SF,HV,VEC,ME,IR,DR,RI,LE>
+>     CR: 22042244  XER: 00000000
+>   CFAR: c00000000033fbfc SOFTE: 0 
+>   GPR00: c00000000033fb1c c000000001107bf0 c000000001108b00 c0000007ffff6180 
+>   GPR04: c000000001139600 0000000000000000 00000007f9880000 0000000000000080 
+>   GPR08: c0000000011cf5d8 00000000000004f0 0000000000000000 c0000007ffff6280 
+>   GPR12: 0000000028042822 c00000000fd40000 0000000000000000 0000000000000000 
+>   GPR16: 0000000000000000 c000000000dc9198 c000000000dc91c8 000000000000006f 
+>   GPR20: 0000000000000001 0000000000002000 00000000014000c0 0000000000000000 
+>   GPR24: 0000000000000201 c0000007f9010000 0000000000000000 0000000080010400 
+>   GPR28: 0000000000000001 0000000000000006 f000000001fe4000 c000000000f15958 
+>   NIP [c00000000033fd48] new_slab+0x318/0x710
+>   LR [c00000000033fb1c] new_slab+0xec/0x710
+>   Call Trace:
+>   [c000000001107bf0] [c00000000033fb1c] new_slab+0xec/0x710 (unreliable)
+>   [c000000001107cc0] [c000000000348cc0] __kmem_cache_create+0x270/0x800
+>   [c000000001107df0] [c000000000ece8b4] create_boot_cache+0xa0/0xe4
+>   [c000000001107e70] [c000000000ed30d0] kmem_cache_init+0x68/0x16c
+>   [c000000001107f00] [c000000000ea0b08] start_kernel+0x2a0/0x554
+>   [c000000001107f90] [c00000000000ad70] start_here_common+0x1c/0x4ac
+>   Instruction dump:
+>   57bd039c 79291f24 7fbd0074 7c68482a 7bbdd182 3bbd0005 60000000 3d230001 
+>   e95e0038 e9299a7a 3929009e 79291f24 <7f6a482a> e93b0080 7fa34800 409e036c 
+>   ---[ end trace 0000000000000000 ]---
+>   
+>   Kernel panic - not syncing: Attempted to kill the idle task!
+>   Rebooting in 10 seconds..
 
-Tested-by: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
+Bisect says:
 
-> ---
->  arch/powerpc/include/asm/kvm_host.h     |  2 +-
->  arch/powerpc/kvm/book3s_hv.c            |  6 ++++++
->  arch/powerpc/kvm/book3s_hv_rmhandlers.S | 29
-> ++++++++++++++++++++++++-----
->  arch/powerpc/kvm/emulate.c              |  4 ++--
->  4 files changed, 33 insertions(+), 8 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/kvm_host.h
-> b/arch/powerpc/include/asm/kvm_host.h
-> index 9c51ac4..3f879c8 100644
-> --- a/arch/powerpc/include/asm/kvm_host.h
-> +++ b/arch/powerpc/include/asm/kvm_host.h
-> @@ -579,7 +579,7 @@ struct kvm_vcpu_arch {
->  	ulong mcsrr0;
->  	ulong mcsrr1;
->  	ulong mcsr;
-> -	u32 dec;
-> +	ulong dec;
->  #ifdef CONFIG_BOOKE
->  	u32 decar;
->  #endif
-> diff --git a/arch/powerpc/kvm/book3s_hv.c
-> b/arch/powerpc/kvm/book3s_hv.c
-> index 42b7a4f..9b2eb66 100644
-> --- a/arch/powerpc/kvm/book3s_hv.c
-> +++ b/arch/powerpc/kvm/book3s_hv.c
-> @@ -1143,6 +1143,12 @@ static void kvmppc_set_lpcr(struct kvm_vcpu
-> *vcpu, u64 new_lpcr,
->  	mask = LPCR_DPFD | LPCR_ILE | LPCR_TC;
->  	if (cpu_has_feature(CPU_FTR_ARCH_207S))
->  		mask |= LPCR_AIL;
-> +	/*
-> +	 * On POWER9, allow userspace to enable large decrementer
-> for the
-> +	 * guest, whether or not the host has it enabled.
-> +	 */
-> +	if (cpu_has_feature(CPU_FTR_ARCH_300))
-> +		mask |= LPCR_LD;
->  
->  	/* Broken 32-bit version of LPCR must not clear top bits */
->  	if (preserve_top32)
-> diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-> b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-> index e390b38..3c901b5 100644
-> --- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-> +++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-> @@ -920,7 +920,7 @@ ALT_FTR_SECTION_END_IFCLR(CPU_FTR_ARCH_300)
->  	mftb	r7
->  	subf	r3,r7,r8
->  	mtspr	SPRN_DEC,r3
-> -	stw	r3,VCPU_DEC(r4)
-> +	std	r3,VCPU_DEC(r4)
->  
->  	ld	r5, VCPU_SPRG0(r4)
->  	ld	r6, VCPU_SPRG1(r4)
-> @@ -1032,7 +1032,13 @@ kvmppc_cede_reentry:		/* r4 =
-> vcpu, r13 = paca */
->  	li	r0, BOOK3S_INTERRUPT_EXTERNAL
->  	bne	cr1, 12f
->  	mfspr	r0, SPRN_DEC
-> -	cmpwi	r0, 0
-> +BEGIN_FTR_SECTION
-> +	/* On POWER9 check whether the guest has large decrementer
-> enabled */
-> +	andis.	r8, r8, LPCR_LD@h
-> +	bne	15f
-> +END_FTR_SECTION_IFSET(CPU_FTR_ARCH_300)
-> +	extsw	r0, r0
-> +15:	cmpdi	r0, 0
->  	li	r0, BOOK3S_INTERRUPT_DECREMENTER
->  	bge	5f
->  
-> @@ -1459,12 +1465,18 @@ mc_cont:
->  	mtspr	SPRN_SPURR,r4
->  
->  	/* Save DEC */
-> +	ld	r3, HSTATE_KVM_VCORE(r13)
->  	mfspr	r5,SPRN_DEC
->  	mftb	r6
-> +	/* On P9, if the guest has large decr enabled, don't sign
-> extend */
-> +BEGIN_FTR_SECTION
-> +	ld	r4, VCORE_LPCR(r3)
-> +	andis.	r4, r4, LPCR_LD@h
-> +	bne	16f
-> +END_FTR_SECTION_IFSET(CPU_FTR_ARCH_300)
->  	extsw	r5,r5
-> -	add	r5,r5,r6
-> +16:	add	r5,r5,r6
->  	/* r5 is a guest timebase value here, convert to host TB */
-> -	ld	r3,HSTATE_KVM_VCORE(r13)
->  	ld	r4,VCORE_TB_OFFSET(r3)
->  	subf	r5,r4,r5
->  	std	r5,VCPU_DEC_EXPIRES(r9)
-> @@ -2376,8 +2388,15 @@ END_FTR_SECTION_IFSET(CPU_FTR_TM)
->  	mfspr	r3, SPRN_DEC
->  	mfspr	r4, SPRN_HDEC
->  	mftb	r5
-> +BEGIN_FTR_SECTION
-> +	/* On P9 check whether the guest has large decrementer mode
-> enabled */
-> +	ld	r6, HSTATE_KVM_VCORE(r13)
-> +	ld	r6, VCORE_LPCR(r6)
-> +	andis.	r6, r6, LPCR_LD@h
-> +	bne	68f
-> +END_FTR_SECTION_IFSET(CPU_FTR_ARCH_300)
->  	extsw	r3, r3
-> -	EXTEND_HDEC(r4)
-> +68:	EXTEND_HDEC(r4)
->  	cmpd	r3, r4
->  	ble	67f
->  	mtspr	SPRN_DEC, r4
-> diff --git a/arch/powerpc/kvm/emulate.c b/arch/powerpc/kvm/emulate.c
-> index c873ffe..4d8b4d6 100644
-> --- a/arch/powerpc/kvm/emulate.c
-> +++ b/arch/powerpc/kvm/emulate.c
-> @@ -39,7 +39,7 @@ void kvmppc_emulate_dec(struct kvm_vcpu *vcpu)
->  	unsigned long dec_nsec;
->  	unsigned long long dec_time;
->  
-> -	pr_debug("mtDEC: %x\n", vcpu->arch.dec);
-> +	pr_debug("mtDEC: %lx\n", vcpu->arch.dec);
->  	hrtimer_try_to_cancel(&vcpu->arch.dec_timer);
->  
->  #ifdef CONFIG_PPC_BOOK3S
-> @@ -109,7 +109,7 @@ static int kvmppc_emulate_mtspr(struct kvm_vcpu
-> *vcpu, int sprn, int rs)
->  	case SPRN_TBWU: break;
->  
->  	case SPRN_DEC:
-> -		vcpu->arch.dec = spr_val;
-> +		vcpu->arch.dec = (u32) spr_val;
->  		kvmppc_emulate_dec(vcpu);
->  		break;
->  
+commit b6bc6724488ac9a149f4ee50d9f036b0fe2420c5
+Author: Johannes Weiner <hannes@cmpxchg.org>
+Date:   Wed May 31 09:17:23 2017 +1000
+
+    mm: vmstat: move slab statistics from zone to node counters
+    
+    Patch series "mm: per-lruvec slab stats"
+    
+    Josef is working on a new approach to balancing slab caches and the page
+    cache.  For this to work, he needs slab cache statistics on the lruvec
+    level.  These patches implement that by adding infrastructure that allows
+    updating and reading generic VM stat items per lruvec, then switches some
+    existing VM accounting sites, including the slab accounting ones, to this
+    new cgroup-aware API.
+    
+    I'll follow up with more patches on this, because there is actually
+    substantial simplification that can be done to the memory controller when
+    we replace private memcg accounting with making the existing VM accounting
+    sites cgroup-aware.  But this is enough for Josef to base his slab reclaim
+    work on, so here goes.
+    
+    This patch (of 5):
+    
+    To re-implement slab cache vs.  page cache balancing, we'll need the slab
+    counters at the lruvec level, which, ever since lru reclaim was moved from
+    the zone to the node, is the intersection of the node, not the zone, and
+    the memcg.
+    
+    We could retain the per-zone counters for when the page allocator dumps
+    its memory information on failures, and have counters on both levels -
+    which on all but NUMA node 0 is usually redundant.  But let's keep it
+    simple for now and just move them.  If anybody complains we can restore
+    the per-zone counters.
+    
+    Link: http://lkml.kernel.org/r/20170530181724.27197-3-hannes@cmpxchg.org
+    Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
+    Cc: Josef Bacik <josef@toxicpanda.com>
+    Cc: Michal Hocko <mhocko@suse.com>
+    Cc: Vladimir Davydov <vdavydov.dev@gmail.com>
+    Cc: Rik van Riel <riel@redhat.com>
+    Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+
+ drivers/base/node.c    | 10 +++++-----
+ include/linux/mmzone.h |  4 ++--
+ mm/page_alloc.c        |  4 ----
+ mm/slab.c              |  8 ++++----
+ mm/slub.c              |  4 ++--
+ mm/vmscan.c            |  2 +-
+ mm/vmstat.c            |  4 ++--
+ 7 files changed, 16 insertions(+), 20 deletions(-)
+
+
+cheers
