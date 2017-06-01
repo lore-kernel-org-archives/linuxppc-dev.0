@@ -1,49 +1,37 @@
-Return-Path: <srs0=hqze=5g=linux.vnet.ibm.com=hbathini@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <rth7680@gmail.com>
+Received: from mail-qt0-x241.google.com (mail-qt0-x241.google.com
+ [IPv6:2607:f8b0:400d:c0d::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wdyQ50tpvzDqKG
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Jun 2017 05:41:17 +1000 (AEST)
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3wdyQ46pNVz8svH
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Jun 2017 05:41:16 +1000 (AEST)
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3wdyQ41zw0z9sNM
- for <linuxppc-dev@ozlabs.org>; Fri,  2 Jun 2017 05:41:16 +1000 (AEST)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v51JcS3p016115
- for <linuxppc-dev@ozlabs.org>; Thu, 1 Jun 2017 15:41:13 -0400
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2ats1a0mhc-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Thu, 01 Jun 2017 15:41:13 -0400
-Received: from localhost
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <hbathini@linux.vnet.ibm.com>;
- Fri, 2 Jun 2017 05:41:10 +1000
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v51Jex6X41287752
- for <linuxppc-dev@ozlabs.org>; Fri, 2 Jun 2017 05:41:07 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v51JeRYN024192
- for <linuxppc-dev@ozlabs.org>; Fri, 2 Jun 2017 05:40:27 +1000
-Subject: [PATCH v2] powerpc/fadump: add reschedule point while releasing memory
-From: Hari Bathini <hbathini@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
- Ankit Kumar <ankit@linux.vnet.ibm.com>,
- Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
-Date: Fri, 02 Jun 2017 01:10:10 +0530
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wdz62042FzDqKK
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Jun 2017 06:12:26 +1000 (AEST)
+Received: by mail-qt0-x241.google.com with SMTP id l39so7080548qtb.1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 01 Jun 2017 13:12:25 -0700 (PDT)
+Sender: Richard Henderson <rth7680@gmail.com>
+Subject: Re: [PATCH] tty: add TIOCGPTPEER ioctl
+To: Aleksa Sarai <asarai@suse.de>, Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Jiri Slaby <jslaby@suse.com>, Arnd Bergmann <arnd@arndb.de>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ alpha <linux-alpha@vger.kernel.org>,
+ Linux MIPS Mailing List <linux-mips@linux-mips.org>,
+ Parisc List <linux-parisc@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Linux-sh list <linux-sh@vger.kernel.org>,
+ sparclinux <sparclinux@vger.kernel.org>,
+ "linux-xtensa@linux-xtensa.org" <linux-xtensa@linux-xtensa.org>,
+ Linux-Arch <linux-arch@vger.kernel.org>,
+ Christian Brauner <christian.brauner@ubuntu.com>,
+ Valentin Rothberg <vrothberg@suse.com>
+References: <20170601173803.8698-1-asarai@suse.de>
+ <CAMuHMdXkaWg70OidDi0_xALbzwZ+o0eEVEzT5U_6HdewBs4WwA@mail.gmail.com>
+ <a0671efc-4c4e-bbdc-c9d8-a7bdc22b872a@suse.de>
+From: Richard Henderson <rth@twiddle.net>
+Message-ID: <4e16e83b-8fb7-c9b6-2f06-ee48499a67db@twiddle.net>
+Date: Thu, 1 Jun 2017 13:12:15 -0700
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Message-Id: <149634598024.11266.1878020879845577140.stgit@hbathini.in.ibm.com>
+In-Reply-To: <a0671efc-4c4e-bbdc-c9d8-a7bdc22b872a@suse.de>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -53,114 +41,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Around 95% of memory is reserved by fadump/capture kernel. All this
-memory is freed, one page at a time, on writing '1' to the node
-/sys/kernel/fadump_release_mem. On systems with large memory, this
-can take a long time to complete, leading to soft lockup warning
-messages. To avoid this, add reschedule points at regular intervals.
+On 06/01/2017 01:00 PM, Aleksa Sarai wrote:
+>>> --- a/arch/alpha/include/uapi/asm/ioctls.h
+>>> +++ b/arch/alpha/include/uapi/asm/ioctls.h
+>>> @@ -94,6 +94,7 @@
+>>>   #define TIOCSRS485     _IOWR('T', 0x2F, struct serial_rs485)
+>>>   #define TIOCGPTN       _IOR('T',0x30, unsigned int) /* Get Pty Number (of 
+>>> pty-mux device) */
+>>>   #define TIOCSPTLCK     _IOW('T',0x31, int)  /* Lock/unlock Pty */
+>>> +#define TIOCGPTPEER    _IOR('T', 0x41, int) /* Safely open the slave */
+>>
+>> Shouldn't the list of definitions be kept sorted, by hex number?
+>> (everywhere)
+> 
+> Probably. The reason I put it here is because it logically is very similar to 
+> TIOCGPTN and TIOSPTLCK, but I can move it if the hex order is more important 
+> for maintainence.
+> 
 
-Also, while memblock_reserve() implicitly takes care of holes in the
-given memory range while reserving memory, those holes need to be
-taken care of while releasing memory as memory is freed one page at
-a time. Add support to skip holes while releasing memory.
-
-Suggested-by: Michael Ellerman <mpe@ellerman.id.au>
-Signed-off-by: Hari Bathini <hbathini@linux.vnet.ibm.com>
----
-
-Changes since v1:
-* Got rid of RELEASE_PAGES_BATCH macro and the corresponding code to
-  simplify the implementation.
-* Introduced support to skip memory holes while releasing memory.
+Yes please.
 
 
- arch/powerpc/kernel/fadump.c |   65 +++++++++++++++++++++++++++++++++++-------
- 1 file changed, 54 insertions(+), 11 deletions(-)
-
-diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
-index 466569e..23aa674 100644
---- a/arch/powerpc/kernel/fadump.c
-+++ b/arch/powerpc/kernel/fadump.c
-@@ -1046,28 +1046,71 @@ void fadump_cleanup(void)
- 	}
- }
- 
-+static void fadump_free_reserved_memory(unsigned long start_pfn,
-+					unsigned long end_pfn)
-+{
-+	unsigned long pfn;
-+	unsigned long time_limit = jiffies + HZ;
-+
-+	pr_info("freeing reserved memory (0x%llx - 0x%llx)\n",
-+		PFN_PHYS(start_pfn), PFN_PHYS(end_pfn));
-+
-+	for (pfn = start_pfn; pfn < end_pfn; pfn++) {
-+		free_reserved_page(pfn_to_page(pfn));
-+
-+		if (time_after(jiffies, time_limit)) {
-+			cond_resched();
-+			time_limit = jiffies + HZ;
-+		}
-+	}
-+}
-+
-+/*
-+ * Skip memory holes and free memory that was actually reserved.
-+ */
-+static void fadump_release_reserved_area(unsigned long start, unsigned long end)
-+{
-+	struct memblock_region *reg;
-+	unsigned long tstart, tend;
-+	unsigned long start_pfn = PHYS_PFN(start);
-+	unsigned long end_pfn = PHYS_PFN(end);
-+
-+	for_each_memblock(memory, reg) {
-+		tstart = max(start_pfn, memblock_region_memory_base_pfn(reg));
-+		tend = min(end_pfn, memblock_region_memory_end_pfn(reg));
-+		if (tstart < tend) {
-+			fadump_free_reserved_memory(tstart, tend);
-+
-+			if (tend == end_pfn)
-+				break;
-+
-+			start_pfn = tend + 1;
-+		}
-+	}
-+}
-+
- /*
-  * Release the memory that was reserved in early boot to preserve the memory
-  * contents. The released memory will be available for general use.
-  */
- static void fadump_release_memory(unsigned long begin, unsigned long end)
- {
--	unsigned long addr;
- 	unsigned long ra_start, ra_end;
- 
- 	ra_start = fw_dump.reserve_dump_area_start;
- 	ra_end = ra_start + fw_dump.reserve_dump_area_size;
- 
--	for (addr = begin; addr < end; addr += PAGE_SIZE) {
--		/*
--		 * exclude the dump reserve area. Will reuse it for next
--		 * fadump registration.
--		 */
--		if (addr <= ra_end && ((addr + PAGE_SIZE) > ra_start))
--			continue;
--
--		free_reserved_page(pfn_to_page(addr >> PAGE_SHIFT));
--	}
-+	/*
-+	 * exclude the dump reserve area. Will reuse it for next
-+	 * fadump registration.
-+	 */
-+	if (begin < ra_end && end > ra_start) {
-+		if (begin < ra_start)
-+			fadump_release_reserved_area(begin, ra_start);
-+		if (end > ra_end)
-+			fadump_release_reserved_area(ra_end, end);
-+	} else
-+		fadump_release_reserved_area(begin, end);
- }
- 
- static void fadump_invalidate_release_mem(void)
+r~
