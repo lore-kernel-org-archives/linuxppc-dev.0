@@ -1,28 +1,31 @@
-Return-Path: <mathieu.malaterre@gmail.com>
-Received: from mail-ua0-x22c.google.com (mail-ua0-x22c.google.com
- [IPv6:2607:f8b0:400c:c08::22c])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <pasha.tatashin@oracle.com>
+Received: from userp1040.oracle.com (userp1040.oracle.com [156.151.31.81])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wdKc9264czDqBJ
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Jun 2017 05:02:49 +1000 (AEST)
-Received: by mail-ua0-x22c.google.com with SMTP id u10so15049320uaf.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 May 2017 12:02:49 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wdY0Q4DGwzDqBQ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Jun 2017 13:36:05 +1000 (AEST)
+Subject: Re: [v3 0/9] parallelized "struct page" zeroing
+To: Michal Hocko <mhocko@kernel.org>
+Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
+ linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, borntraeger@de.ibm.com,
+ heiko.carstens@de.ibm.com, davem@davemloft.net
+References: <1494003796-748672-1-git-send-email-pasha.tatashin@oracle.com>
+ <20170509181234.GA4397@dhcp22.suse.cz>
+ <e19b241d-be27-3c9a-8984-2fb20211e2e1@oracle.com>
+ <20170515193817.GC7551@dhcp22.suse.cz>
+ <9b3d68aa-d2b6-2b02-4e75-f8372cbeb041@oracle.com>
+ <20170516083601.GB2481@dhcp22.suse.cz>
+ <07a6772b-711d-4fdc-f688-db76f1ec4c45@oracle.com>
+ <20170529115358.GJ19725@dhcp22.suse.cz>
+ <ae992f21-3edf-1ae7-41db-641052e411c7@oracle.com>
+ <20170531163131.GY27783@dhcp22.suse.cz>
+From: Pasha Tatashin <pasha.tatashin@oracle.com>
+Message-ID: <2fa60098-d9be-f57d-cb86-3b55cfe915b7@oracle.com>
+Date: Wed, 31 May 2017 23:35:48 -0400
 MIME-Version: 1.0
-Sender: mathieu.malaterre@gmail.com
-In-Reply-To: <alpine.LSU.2.11.1705311112290.1839@eggly.anvils>
-References: <alpine.LSU.2.11.1705301151090.2133@eggly.anvils>
- <87h9014j7t.fsf@concordia.ellerman.id.au>
- <alpine.DEB.2.20.1705310906570.14920@east.gentwo.org>
- <alpine.LSU.2.11.1705311112290.1839@eggly.anvils>
-From: Mathieu Malaterre <malat@debian.org>
-Date: Wed, 31 May 2017 21:02:25 +0200
-Message-ID: <CA+7wUswSJ5-Ck1u9gWbCskBA2NsE9e=u+m0Us-4wBYwDwYxjZA@mail.gmail.com>
-Subject: Re: 4.12-rc ppc64 4k-page needs costly allocations
-To: Hugh Dickins <hughd@google.com>
-Cc: Christoph Lameter <cl@linux.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>, linux-mm@kvack.org
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <20170531163131.GY27783@dhcp22.suse.cz>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,68 +35,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, May 31, 2017 at 8:44 PM, Hugh Dickins <hughd@google.com> wrote:
-> [ Merging two mails into one response ]
->
-> On Wed, 31 May 2017, Christoph Lameter wrote:
->> On Tue, 30 May 2017, Hugh Dickins wrote:
->> > SLUB: Unable to allocate memory on node -1, gfp=0x14000c0(GFP_KERNEL)
->> >   cache: pgtable-2^12, object size: 32768, buffer size: 65536, default order: 4, min order: 4
->> >   pgtable-2^12 debugging increased min order, use slub_debug=O to disable.
->>
->> > I did try booting with slub_debug=O as the message suggested, but that
->> > made no difference: it still hoped for but failed on order:4 allocations.
->>
->> I am curious as to what is going on there. Do you have the output from
->> these failed allocations?
->
-> I thought the relevant output was in my mail.  I did skip the Mem-Info
-> dump, since that just seemed noise in this case: we know memory can get
-> fragmented.  What more output are you looking for?
->
->>
->> > I wanted to try removing CONFIG_SLUB_DEBUG, but didn't succeed in that:
->> > it seemed to be a hard requirement for something, but I didn't find what.
->>
->> CONFIG_SLUB_DEBUG does not enable debugging. It only includes the code to
->> be able to enable it at runtime.
->
-> Yes, I thought so.
->
->>
->> > I did try CONFIG_SLAB=y instead of SLUB: that lowers these allocations to
->> > the expected order:3, which then results in OOM-killing rather than direct
->> > allocation failure, because of the PAGE_ALLOC_COSTLY_ORDER 3 cutoff.  But
->> > makes no real difference to the outcome: swapping loads still abort early.
->>
->> SLAB uses order 3 and SLUB order 4??? That needs to be tracked down.
->>
->> Ahh. Ok debugging increased the object size to an order 4. This should be
->> order 3 without debugging.
->
-> But it was still order 4 when booted with slub_debug=O, which surprised me.
-> And that surprises you too?  If so, then we ought to dig into it further.
->
->>
->> Why are the slab allocators used to create slab caches for large object
->> sizes?
->
-> There may be more optimal ways to allocate, but I expect that when
-> the ppc guys are writing the code to handle both 4k and 64k page sizes,
-> kmem caches offer the best span of possibility without complication.
->
->>
->> > Relying on order:3 or order:4 allocations is just too optimistic: ppc64
->> > with 4k pages would do better not to expect to support a 128TB userspace.
->>
->> I thought you had these huge 64k page sizes?
->
-> ppc64 does support 64k page sizes, and they've been the default for years;
-> but since 4k pages are still supported, I choose to use those (I doubt
-> I could ever get the same load going with 64k pages).
+> OK, so why cannot we make zero_struct_page 8x 8B stores, other arches
+> would do memset. You said it would be slower but would that be
+> measurable? I am sorry to be so persistent here but I would be really
+> happier if this didn't depend on the deferred initialization. If this is
+> absolutely a no-go then I can live with that of course.
 
-4k is pretty much required on ppc64 when it comes to nouveau:
+Hi Michal,
 
-https://bugs.freedesktop.org/show_bug.cgi?id=94757
+This is actually a very good idea. I just did some measurements, and it 
+looks like performance is very good.
 
-2cts
+Here is data from SPARC-M7 with 3312G memory with single thread performance:
+
+Current:
+memset() in memblock allocator takes: 8.83s
+__init_single_page() take: 8.63s
+
+Option 1:
+memset() in __init_single_page() takes: 61.09s (as we discussed because 
+of membar overhead, memset should really be optimized to do STBI only 
+when size is 1 page or bigger).
+
+Option 2:
+
+8 stores (stx) in __init_single_page(): 8.525s!
+
+So, even for single thread performance we can double the initialization 
+speed of "struct page" on SPARC by removing memset() from memblock, and 
+using 8 stx in __init_single_page(). It appears we never miss L1 in 
+__init_single_page() after the initial 8 stx.
+
+I will update patches with memset() on other platforms, and stx on SPARC.
+
+My experimental code looks like this:
+
+static void __meminit __init_single_page(struct page *page, unsigned 
+long pfn, unsigned long zone, int nid)
+{
+         __asm__ __volatile__(
+         "stx    %%g0, [%0 + 0x00]\n"
+         "stx    %%g0, [%0 + 0x08]\n"
+         "stx    %%g0, [%0 + 0x10]\n"
+         "stx    %%g0, [%0 + 0x18]\n"
+         "stx    %%g0, [%0 + 0x20]\n"
+         "stx    %%g0, [%0 + 0x28]\n"
+         "stx    %%g0, [%0 + 0x30]\n"
+         "stx    %%g0, [%0 + 0x38]\n"
+         :
+         :"r"(page));
+         set_page_links(page, zone, nid, pfn);
+         init_page_count(page);
+         page_mapcount_reset(page);
+         page_cpupid_reset_last(page);
+
+         INIT_LIST_HEAD(&page->lru);
+#ifdef WANT_PAGE_VIRTUAL
+         /* The shift won't overflow because ZONE_NORMAL is below 4G. */
+         if (!is_highmem_idx(zone))
+                 set_page_address(page, __va(pfn << PAGE_SHIFT));
+#endif
+}
+
+Thank you,
+Pasha
