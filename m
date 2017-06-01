@@ -2,19 +2,15 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wdpC049SXzDqFL
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Jun 2017 23:31:08 +1000 (AEST)
-In-Reply-To: <20170524080156.1C4936EB78@pc13941vm.idsi0.si.c-s.fr>
-To: Christophe Leroy <christophe.leroy@c-s.fr>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Scott Wood <oss@buserror.net>,
- Linus Walleij <linus.walleij@linaro.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wdpC14Ld2zDqG1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Jun 2017 23:31:09 +1000 (AEST)
+In-Reply-To: <1496022790-2017-1-git-send-email-mpe@ellerman.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: linux-gpio@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Subject: Re: powerpc: sysdev: simple_gpio: fix Oops in gpio save_regs function
-Message-Id: <3wdpC036qdz9sCX@ozlabs.org>
-Date: Thu,  1 Jun 2017 23:31:08 +1000 (AEST)
+Cc: mikey@neuling.org, paulus@samba.org, npiggin@gmail.com
+Subject: Re: powerpc/64: Reclaim CPU_FTR_SUBCORE
+Message-Id: <3wdpC13Z4cz9s8J@ozlabs.org>
+Date: Thu,  1 Jun 2017 23:31:09 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,20 +20,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2017-05-24 at 08:01:55 UTC, Christophe Leroy wrote:
-> of_mm_gpiochip_add_data() generates an Oops for NULL pointer dereference.
+On Mon, 2017-05-29 at 01:53:10 UTC, Michael Ellerman wrote:
+> We are running low on CPU feature bits, so we only want to use them when
+> it's really necessary.
 > 
-> of_mm_gpiochip_add_data() calls mm_gc->save_regs() before
-> setting the data, therefore ->save_regs() cannot use gpiochip_get_data()
+> CPU_FTR_SUBCORE is only used in one place, and only in C, so we don't
+> need it in order to make asm patching work. It can only be set on
+> "Power8" CPUs, which in practice means POWER8, POWER8E and POWER8NVL.
+> There are no plans to implement it on future CPUs, but if there ever
+> were we could retrofit it then.
 > 
-> Fixes: 937daafca774b ("powerpc: simple-gpio: use gpiochip data pointer")
-> Cc: stable@vger.kernel.org
+> Although KVM uses subcores, it never looks at the CPU feature, it either
+> looks at the ISA level or the threads_per_subcore value.
 > 
-> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
-> Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
+> So drop the CPU feature and do a PVR check instead. Drop the device tree
+> "subcore" feature as we no longer support doing anything with it, and we
+> will drop it from skiboot too.
+> 
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> Acked-by: Balbir Singh <bsingharora@gmail.com>
 
-Applied to powerpc fixes, thanks.
+Applied to powerpc fixes.
 
-https://git.kernel.org/powerpc/c/6f553912eedafae13ff20b322a65e4
+https://git.kernel.org/powerpc/c/0e5e7f5e9700661c3ddd95501743fb
 
 cheers
