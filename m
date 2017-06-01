@@ -3,38 +3,39 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wf0Dr35gzzDqLX
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wf0Dr37KczDqLY
  for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Jun 2017 07:03:24 +1000 (AEST)
 Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v51KwnB5047880
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Jun 2017 17:03:19 -0400
+ v51KwmbI047870
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Jun 2017 17:03:13 -0400
 Received: from e24smtp01.br.ibm.com (e24smtp01.br.ibm.com [32.104.18.85])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2atrp2vgqq-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2atrp2vgkg-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 01 Jun 2017 17:03:19 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 01 Jun 2017 17:03:13 -0400
 Received: from localhost
  by e24smtp01.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.vnet.ibm.com>;
- Thu, 1 Jun 2017 18:03:17 -0300
+ Thu, 1 Jun 2017 18:03:10 -0300
 Received: from d24av01.br.ibm.com (d24av01.br.ibm.com [9.8.31.91])
- by d24relay02.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v51L3FYx35389512
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Jun 2017 18:03:15 -0300
+ by d24relay04.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v51L391r65339460
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Jun 2017 18:03:09 -0300
 Received: from d24av01.br.ibm.com (localhost [127.0.0.1])
  by d24av01.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v51L3F74002956
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Jun 2017 18:03:16 -0300
+ v51L39Gp002886
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Jun 2017 18:03:09 -0300
 From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
  Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-Subject: [PATCH 5/8] powerpc/perf/hv-24x7: Fix return value of hcalls
-Date: Thu,  1 Jun 2017 18:02:24 -0300
+Subject: [PATCH 2/8] powerpc/perf/hv-24x7: Fix off-by-one error in
+ request_buffer check
+Date: Thu,  1 Jun 2017 18:02:21 -0300
 In-Reply-To: <1496350947-30951-1-git-send-email-bauerman@linux.vnet.ibm.com>
 References: <1496350947-30951-1-git-send-email-bauerman@linux.vnet.ibm.com>
-Message-Id: <1496350947-30951-6-git-send-email-bauerman@linux.vnet.ibm.com>
+Message-Id: <1496350947-30951-3-git-send-email-bauerman@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,124 +45,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The H_GET_24X7_CATALOG_PAGE hcall can return a signed error code, so fix
-this in the code.
+request_buffer can hold 254 requests, so if it already has that number of
+entries we can't add a new one.
 
-The H_GET_24X7_DATA hcall can return a signed error code, so fix this in
-the code. Also, don't truncate it to 32 bit to use as return value for
-make_24x7_request. In case of error h_24x7_event_commit_txn passes that
-return value to generic code, so it should be a proper errno. The other
-caller of make_24x7_request is single_24x7_request, whose callers don't
-actually care which error code is returned so they are not affected by this
-change.
+Also, define constant to show where the number comes from.
 
-Finally, h_24x7_get_value doesn't use the error code from
-single_24x7_request, so there's no need to store it.
-
+Fixes: e3ee15dc5d19 ("powerpc/perf/hv-24x7: Define add_event_to_24x7_request()")
 Signed-off-by: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
 ---
- arch/powerpc/perf/hv-24x7.c | 28 +++++++++++++---------------
- 1 file changed, 13 insertions(+), 15 deletions(-)
+
+Notes:
+    This patch was already posted before:
+    
+    https://patchwork.ozlabs.org/patch/735948/
+
+ arch/powerpc/perf/hv-24x7.c | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
 diff --git a/arch/powerpc/perf/hv-24x7.c b/arch/powerpc/perf/hv-24x7.c
-index 111c61ea7416..7e47dcdea62a 100644
+index 1354cde7095c..141de0f708f7 100644
 --- a/arch/powerpc/perf/hv-24x7.c
 +++ b/arch/powerpc/perf/hv-24x7.c
-@@ -264,9 +264,8 @@ static void *event_end(struct hv_24x7_event_data *ev, void *end)
- 	return start + nl + dl + ldl;
- }
+@@ -166,6 +166,10 @@ DEFINE_PER_CPU(struct hv_24x7_hw, hv_24x7_hw);
+ DEFINE_PER_CPU(char, hv_24x7_reqb[H24x7_DATA_BUFFER_SIZE]) __aligned(4096);
+ DEFINE_PER_CPU(char, hv_24x7_resb[H24x7_DATA_BUFFER_SIZE]) __aligned(4096);
  
--static unsigned long h_get_24x7_catalog_page_(unsigned long phys_4096,
--					      unsigned long version,
--					      unsigned long index)
-+static long h_get_24x7_catalog_page_(unsigned long phys_4096,
-+				     unsigned long version, unsigned long index)
- {
- 	pr_devel("h_get_24x7_catalog_page(0x%lx, %lu, %lu)",
- 			phys_4096, version, index);
-@@ -277,8 +276,7 @@ static unsigned long h_get_24x7_catalog_page_(unsigned long phys_4096,
- 			phys_4096, version, index);
- }
- 
--static unsigned long h_get_24x7_catalog_page(char page[],
--					     u64 version, u32 index)
-+static long h_get_24x7_catalog_page(char page[], u64 version, u32 index)
- {
- 	return h_get_24x7_catalog_page_(virt_to_phys(page),
- 					version, index);
-@@ -668,7 +666,7 @@ static int create_events_from_catalog(struct attribute ***events_,
- 				      struct attribute ***event_descs_,
- 				      struct attribute ***event_long_descs_)
- {
--	unsigned long hret;
-+	long hret;
- 	size_t catalog_len, catalog_page_len, event_entry_count,
- 	       event_data_len, event_data_offs,
- 	       event_data_bytes, junk_events, event_idx, event_attr_ct, i,
-@@ -907,7 +905,7 @@ static ssize_t catalog_read(struct file *filp, struct kobject *kobj,
- 			    struct bin_attribute *bin_attr, char *buf,
- 			    loff_t offset, size_t count)
- {
--	unsigned long hret;
-+	long hret;
- 	ssize_t ret = 0;
- 	size_t catalog_len = 0, catalog_page_len = 0;
- 	loff_t page_offset = 0;
-@@ -992,7 +990,7 @@ static ssize_t _name##_show(struct device *dev,			\
- 			    struct device_attribute *dev_attr,	\
- 			    char *buf)				\
- {								\
--	unsigned long hret;					\
-+	long hret;						\
- 	ssize_t ret = 0;					\
- 	void *page = kmem_cache_alloc(hv_page_cache, GFP_USER);	\
- 	struct hv_24x7_catalog_page_0 *page_0 = page;		\
-@@ -1065,7 +1063,7 @@ static void init_24x7_request(struct hv_24x7_request_buffer *request_buffer,
- static int make_24x7_request(struct hv_24x7_request_buffer *request_buffer,
- 			     struct hv_24x7_data_result_buffer *result_buffer)
- {
--	unsigned long ret;
-+	long ret;
- 
- 	/*
- 	 * NOTE: Due to variable number of array elements in request and
-@@ -1085,9 +1083,10 @@ static int make_24x7_request(struct hv_24x7_request_buffer *request_buffer,
- 				      req->starting_ix, req->starting_lpar_ix,
- 				      ret, ret, result_buffer->detailed_rc,
- 				      result_buffer->failing_request_ix);
-+		return -EIO;
- 	}
- 
--	return ret;
-+	return 0;
- }
- 
- /*
-@@ -1135,10 +1134,10 @@ static int add_event_to_24x7_request(struct perf_event *event,
- 	return 0;
- }
- 
--static unsigned long single_24x7_request(struct perf_event *event, u64 *count)
-+static int single_24x7_request(struct perf_event *event, u64 *count)
- {
-+	int ret;
- 	u16 num_elements;
--	unsigned long ret;
- 	struct hv_24x7_result *result;
- 	struct hv_24x7_request_buffer *request_buffer;
- 	struct hv_24x7_data_result_buffer *result_buffer;
-@@ -1253,10 +1252,9 @@ static int h_24x7_event_init(struct perf_event *event)
- 
- static u64 h_24x7_get_value(struct perf_event *event)
- {
--	unsigned long ret;
- 	u64 ct;
--	ret = single_24x7_request(event, &ct);
--	if (ret)
++#define MAX_NUM_REQUESTS	((H24x7_DATA_BUFFER_SIZE -		       \
++					sizeof(struct hv_24x7_request_buffer)) \
++					/ sizeof(struct hv_24x7_request))
 +
-+	if (single_24x7_request(event, &ct))
- 		/* We checked this in event init, shouldn't fail here... */
- 		return 0;
+ static char *event_name(struct hv_24x7_event_data *ev, int *len)
+ {
+ 	*len = be16_to_cpu(ev->event_name_len) - 2;
+@@ -1107,7 +1111,7 @@ static int add_event_to_24x7_request(struct perf_event *event,
+ 	int i;
+ 	struct hv_24x7_request *req;
  
+-	if (request_buffer->num_requests > 254) {
++	if (request_buffer->num_requests >= MAX_NUM_REQUESTS) {
+ 		pr_devel("Too many requests for 24x7 HCALL %d\n",
+ 				request_buffer->num_requests);
+ 		return -EINVAL;
 -- 
 2.7.4
