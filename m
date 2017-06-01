@@ -3,32 +3,31 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wdqXV2vpvzDqKq
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Jun 2017 00:31:22 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wdqbX1vbXzDqFR
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Jun 2017 00:34:00 +1000 (AEST)
 Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v51ETvRI109384
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Jun 2017 10:31:16 -0400
+ v51ETvSo109384
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Jun 2017 10:33:58 -0400
 Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2atfwhr2vu-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2atfwhr6xt-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 01 Jun 2017 10:31:16 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 01 Jun 2017 10:33:57 -0400
 Received: from localhost
  by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Thu, 1 Jun 2017 08:31:15 -0600
+ Thu, 1 Jun 2017 08:33:56 -0600
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
+To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ Frederic Barrat <fbarrat@linux.vnet.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Scott Wood <oss@buserror.net>, Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v2 2/2] powerpc/mm/hugetlb: Add support for reserving gigantic
- huge pages via kernel command line
-Date: Thu,  1 Jun 2017 20:00:41 +0530
-In-Reply-To: <1496327441-7368-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-References: <1496327441-7368-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Message-Id: <1496327441-7368-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH v2 2/3] powerpc/mm: Don't send IPI to all cpus on THP updates
+Date: Thu,  1 Jun 2017 20:03:34 +0530
+In-Reply-To: <1496327615-7754-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+References: <1496327615-7754-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Message-Id: <1496327615-7754-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,325 +37,163 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-With commit aa888a74977a8 ("hugetlb: support larger than MAX_ORDER") we added
-support for allocating gigantic hugepages via kernel command line. Switch
-ppc64 arch specific code to use that.
+Now that we made sure that lockless walk of linux page table is mostly limitted
+to current task(current->mm->pgdir) we can update the THP update sequence to
+only send IPI to cpus on which this task has run. This helps in reducing the IPI
+overload on systems with large number of CPUs.
 
-W.r.t FSL support, we now limit our allocation range using BOOTMEM_ALLOC_ACCESSIBLE.
+W.r.t kvm even though kvm is walking page table with vpc->arch.pgdir, it is
+done only on secondary cpus and in that case we have primary cpu added to
+task's mm cpumask. Sending an IPI to primary will force the secondary to do
+a vm exit and hence this mm cpumask usage is safe here.
 
-We use the kernel command line to do reservation of hugetlb pages on powernv
-platforms. On pseries hash mmu mode the supported gigantic huge page size is
-16GB and that can only be allocated with hypervisor assist. For pseries the
-command line option doesn't do the allocation. Instead pseries does gigantic
-hugepage allocation based on hypervisor hint that is specified via
-"ibm,expected#pages" property of the memory node.
+W.r.t CAPI, we still end up walking linux page table with capi context MM. For
+now the pte lookup serialization sends an IPI to all cpus in CPI is in use. We
+can further improve this by adding the CAPI interrupt handling cpu to task
+mm cpumask. That will be done in a later patch.
 
-Cc: Scott Wood <oss@buserror.net>
-Cc: Christophe Leroy <christophe.leroy@c-s.fr>
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/book3s/64/mmu-hash.h |   2 +-
- arch/powerpc/include/asm/hugetlb.h            |  14 --
- arch/powerpc/kernel/setup-common.c            |   7 -
- arch/powerpc/mm/hash_utils_64.c               |   2 +-
- arch/powerpc/mm/hugetlbpage.c                 | 177 +++-----------------------
- arch/powerpc/mm/init_32.c                     |   2 -
- 6 files changed, 22 insertions(+), 182 deletions(-)
+ arch/powerpc/include/asm/book3s/64/pgtable.h |  1 +
+ arch/powerpc/mm/pgtable-book3s64.c           | 32 +++++++++++++++++++++++++++-
+ arch/powerpc/mm/pgtable-hash64.c             |  8 +++----
+ arch/powerpc/mm/pgtable-radix.c              |  8 +++----
+ 4 files changed, 40 insertions(+), 9 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/book3s/64/mmu-hash.h b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
-index 6981a52b3887..67766e60a6b6 100644
---- a/arch/powerpc/include/asm/book3s/64/mmu-hash.h
-+++ b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
-@@ -468,7 +468,7 @@ extern int htab_bolt_mapping(unsigned long vstart, unsigned long vend,
- 			     int psize, int ssize);
- int htab_remove_mapping(unsigned long vstart, unsigned long vend,
- 			int psize, int ssize);
--extern void add_gpage(u64 addr, u64 page_size, unsigned long number_of_pages);
-+extern void pSeries_add_gpage(u64 addr, u64 page_size, unsigned long number_of_pages);
- extern void demote_segment_4k(struct mm_struct *mm, unsigned long addr);
- 
- #ifdef CONFIG_PPC_PSERIES
-diff --git a/arch/powerpc/include/asm/hugetlb.h b/arch/powerpc/include/asm/hugetlb.h
-index 7f4025a6c69e..b8a0fb442c64 100644
---- a/arch/powerpc/include/asm/hugetlb.h
-+++ b/arch/powerpc/include/asm/hugetlb.h
-@@ -218,18 +218,4 @@ static inline pte_t *hugepte_offset(hugepd_t hpd, unsigned long addr,
+diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
+index 85bc9875c3be..d8c3c18e220d 100644
+--- a/arch/powerpc/include/asm/book3s/64/pgtable.h
++++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
+@@ -1145,6 +1145,7 @@ static inline bool arch_needs_pgtable_deposit(void)
+ 		return false;
+ 	return true;
  }
- #endif /* CONFIG_HUGETLB_PAGE */
++extern void serialize_against_pte_lookup(struct mm_struct *mm);
  
--/*
-- * FSL Book3E platforms require special gpage handling - the gpages
-- * are reserved early in the boot process by memblock instead of via
-- * the .dts as on IBM platforms.
-- */
--#if defined(CONFIG_HUGETLB_PAGE) && (defined(CONFIG_PPC_FSL_BOOK3E) || \
--    defined(CONFIG_PPC_8xx))
--extern void __init reserve_hugetlb_gpages(void);
--#else
--static inline void reserve_hugetlb_gpages(void)
--{
--}
--#endif
--
- #endif /* _ASM_POWERPC_HUGETLB_H */
-diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
-index 71dcda91755d..8389ff5ac002 100644
---- a/arch/powerpc/kernel/setup-common.c
-+++ b/arch/powerpc/kernel/setup-common.c
-@@ -912,13 +912,6 @@ void __init setup_arch(char **cmdline_p)
- 	/* Reserve large chunks of memory for use by CMA for KVM. */
- 	kvm_cma_reserve();
+ #endif /* CONFIG_TRANSPARENT_HUGEPAGE */
+ #endif /* __ASSEMBLY__ */
+diff --git a/arch/powerpc/mm/pgtable-book3s64.c b/arch/powerpc/mm/pgtable-book3s64.c
+index 5fcb3dd74c13..2679f57b90e2 100644
+--- a/arch/powerpc/mm/pgtable-book3s64.c
++++ b/arch/powerpc/mm/pgtable-book3s64.c
+@@ -9,6 +9,7 @@
  
--	/*
--	 * Reserve any gigantic pages requested on the command line.
--	 * memblock needs to have been initialized by the time this is
--	 * called since this will reserve memory.
--	 */
--	reserve_hugetlb_gpages();
--
- 	klp_init_thread_info(&init_thread_info);
+ #include <linux/sched.h>
+ #include <linux/mm_types.h>
++#include <misc/cxl-base.h>
  
- 	init_mm.start_code = (unsigned long)_stext;
-diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
-index f2095ce9d4b0..c4b04c4aac86 100644
---- a/arch/powerpc/mm/hash_utils_64.c
-+++ b/arch/powerpc/mm/hash_utils_64.c
-@@ -509,7 +509,7 @@ static int __init htab_dt_scan_hugepage_blocks(unsigned long node,
- 			phys_addr, block_size, expected_pages);
- 	if (phys_addr + (16 * GB) <= memblock_end_of_DRAM()) {
- 		memblock_reserve(phys_addr, block_size * expected_pages);
--		add_gpage(phys_addr, block_size, expected_pages);
-+		pSeries_add_gpage(phys_addr, block_size, expected_pages);
- 	}
- 	return 0;
+ #include <asm/pgalloc.h>
+ #include <asm/tlb.h>
+@@ -64,6 +65,35 @@ void set_pmd_at(struct mm_struct *mm, unsigned long addr,
+ 	trace_hugepage_set_pmd(addr, pmd_val(pmd));
+ 	return set_pte_at(mm, addr, pmdp_ptep(pmdp), pmd_pte(pmd));
  }
-diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
-index 1816b965a142..2bcb7e5b2ab6 100644
---- a/arch/powerpc/mm/hugetlbpage.c
-+++ b/arch/powerpc/mm/hugetlbpage.c
-@@ -35,26 +35,6 @@
- 
- unsigned int HPAGE_SHIFT;
- 
--/*
-- * Tracks gpages after the device tree is scanned and before the
-- * huge_boot_pages list is ready.  On non-Freescale implementations, this is
-- * just used to track 16G pages and so is a single array.  FSL-based
-- * implementations may have more than one gpage size, so we need multiple
-- * arrays
-- */
--#if defined(CONFIG_PPC_FSL_BOOK3E) || defined(CONFIG_PPC_8xx)
--#define MAX_NUMBER_GPAGES	128
--struct psize_gpages {
--	u64 gpage_list[MAX_NUMBER_GPAGES];
--	unsigned int nr_gpages;
--};
--static struct psize_gpages gpage_freearray[MMU_PAGE_COUNT];
--#else
--#define MAX_NUMBER_GPAGES	1024
--static u64 gpage_freearray[MAX_NUMBER_GPAGES];
--static unsigned nr_gpages;
--#endif
--
- #define hugepd_none(hpd)	(hpd_val(hpd) == 0)
- 
- pte_t *huge_pte_offset(struct mm_struct *mm, unsigned long addr)
-@@ -209,145 +189,20 @@ pte_t *huge_pte_alloc(struct mm_struct *mm, unsigned long addr, unsigned long sz
- 	return hugepte_offset(*hpdp, addr, pdshift);
- }
- 
--#if defined(CONFIG_PPC_FSL_BOOK3E) || defined(CONFIG_PPC_8xx)
--/* Build list of addresses of gigantic pages.  This function is used in early
-- * boot before the buddy allocator is setup.
-- */
--void add_gpage(u64 addr, u64 page_size, unsigned long number_of_pages)
--{
--	unsigned int idx = shift_to_mmu_psize(__ffs(page_size));
--	int i;
--
--	if (addr == 0)
--		return;
--
--	gpage_freearray[idx].nr_gpages = number_of_pages;
--
--	for (i = 0; i < number_of_pages; i++) {
--		gpage_freearray[idx].gpage_list[i] = addr;
--		addr += page_size;
--	}
--}
--
--/*
-- * Moves the gigantic page addresses from the temporary list to the
-- * huge_boot_pages list.
-- */
--int alloc_bootmem_huge_page(struct hstate *hstate)
--{
--	struct huge_bootmem_page *m;
--	int idx = shift_to_mmu_psize(huge_page_shift(hstate));
--	int nr_gpages = gpage_freearray[idx].nr_gpages;
--
--	if (nr_gpages == 0)
--		return 0;
--
--#ifdef CONFIG_HIGHMEM
--	/*
--	 * If gpages can be in highmem we can't use the trick of storing the
--	 * data structure in the page; allocate space for this
--	 */
--	m = memblock_virt_alloc(sizeof(struct huge_bootmem_page), 0);
--	m->phys = gpage_freearray[idx].gpage_list[--nr_gpages];
--#else
--	m = phys_to_virt(gpage_freearray[idx].gpage_list[--nr_gpages]);
--#endif
--
--	list_add(&m->list, &huge_boot_pages);
--	gpage_freearray[idx].nr_gpages = nr_gpages;
--	gpage_freearray[idx].gpage_list[nr_gpages] = 0;
--	m->hstate = hstate;
--
--	return 1;
--}
-+#ifdef CONFIG_PPC_BOOK3S_64
- /*
-- * Scan the command line hugepagesz= options for gigantic pages; store those in
-- * a list that we use to allocate the memory once all options are parsed.
-+ * Tracks gpages after the device tree is scanned and before the
-+ * huge_boot_pages list is ready on pSeries.
-  */
--
--unsigned long gpage_npages[MMU_PAGE_COUNT];
--
--static int __init do_gpage_early_setup(char *param, char *val,
--				       const char *unused, void *arg)
--{
--	static phys_addr_t size;
--	unsigned long npages;
--
--	/*
--	 * The hugepagesz and hugepages cmdline options are interleaved.  We
--	 * use the size variable to keep track of whether or not this was done
--	 * properly and skip over instances where it is incorrect.  Other
--	 * command-line parsing code will issue warnings, so we don't need to.
--	 *
--	 */
--	if ((strcmp(param, "default_hugepagesz") == 0) ||
--	    (strcmp(param, "hugepagesz") == 0)) {
--		size = memparse(val, NULL);
--	} else if (strcmp(param, "hugepages") == 0) {
--		if (size != 0) {
--			if (sscanf(val, "%lu", &npages) <= 0)
--				npages = 0;
--			if (npages > MAX_NUMBER_GPAGES) {
--				pr_warn("MMU: %lu pages requested for page "
--#ifdef CONFIG_PHYS_ADDR_T_64BIT
--					"size %llu KB, limiting to "
--#else
--					"size %u KB, limiting to "
--#endif
--					__stringify(MAX_NUMBER_GPAGES) "\n",
--					npages, size / 1024);
--				npages = MAX_NUMBER_GPAGES;
--			}
--			gpage_npages[shift_to_mmu_psize(__ffs(size))] = npages;
--			size = 0;
--		}
--	}
--	return 0;
--}
--
-+#define MAX_NUMBER_GPAGES	1024
-+__initdata static u64 gpage_freearray[MAX_NUMBER_GPAGES];
-+__initdata static unsigned nr_gpages;
- 
- /*
-- * This function allocates physical space for pages that are larger than the
-- * buddy allocator can handle.  We want to allocate these in highmem because
-- * the amount of lowmem is limited.  This means that this function MUST be
-- * called before lowmem_end_addr is set up in MMU_init() in order for the lmb
-- * allocate to grab highmem.
-- */
--void __init reserve_hugetlb_gpages(void)
--{
--	static __initdata char cmdline[COMMAND_LINE_SIZE];
--	phys_addr_t size, base;
--	int i;
--
--	strlcpy(cmdline, boot_command_line, COMMAND_LINE_SIZE);
--	parse_args("hugetlb gpages", cmdline, NULL, 0, 0, 0,
--			NULL, &do_gpage_early_setup);
--
--	/*
--	 * Walk gpage list in reverse, allocating larger page sizes first.
--	 * Skip over unsupported sizes, or sizes that have 0 gpages allocated.
--	 * When we reach the point in the list where pages are no longer
--	 * considered gpages, we're done.
--	 */
--	for (i = MMU_PAGE_COUNT-1; i >= 0; i--) {
--		if (mmu_psize_defs[i].shift == 0 || gpage_npages[i] == 0)
--			continue;
--		else if (mmu_psize_to_shift(i) < (MAX_ORDER + PAGE_SHIFT))
--			break;
--
--		size = (phys_addr_t)(1ULL << mmu_psize_to_shift(i));
--		base = memblock_alloc_base(size * gpage_npages[i], size,
--					   MEMBLOCK_ALLOC_ANYWHERE);
--		add_gpage(base, size, gpage_npages[i]);
--	}
--}
--
--#else /* !PPC_FSL_BOOK3E */
--
--/* Build list of addresses of gigantic pages.  This function is used in early
-+ * Build list of addresses of gigantic pages.  This function is used in early
-  * boot before the buddy allocator is setup.
-  */
--void add_gpage(u64 addr, u64 page_size, unsigned long number_of_pages)
-+void __init pSeries_add_gpage(u64 addr, u64 page_size, unsigned long number_of_pages)
- {
- 	if (!addr)
- 		return;
-@@ -359,10 +214,7 @@ void add_gpage(u64 addr, u64 page_size, unsigned long number_of_pages)
- 	}
- }
- 
--/* Moves the gigantic page addresses from the temporary list to the
-- * huge_boot_pages list.
-- */
--int alloc_bootmem_huge_page(struct hstate *hstate)
-+int __init pSeries_alloc_bootmem_huge_page(struct hstate *hstate)
- {
- 	struct huge_bootmem_page *m;
- 	if (nr_gpages == 0)
-@@ -375,6 +227,17 @@ int alloc_bootmem_huge_page(struct hstate *hstate)
- }
- #endif
- 
 +
-+int __init alloc_bootmem_huge_page(struct hstate *h)
++static void do_nothing(void *unused)
 +{
 +
-+#ifdef CONFIG_PPC_BOOK3S_64
-+	if (firmware_has_feature(FW_FEATURE_LPAR) && !radix_enabled())
-+		return pSeries_alloc_bootmem_huge_page(h);
-+#endif
-+	return __alloc_bootmem_huge_page(h);
++}
++/*
++ * Serialize against find_current_mm_pte which does lock-less
++ * lookup in page tables with local interrupts disabled. For huge pages
++ * it casts pmd_t to pte_t. Since format of pte_t is different from
++ * pmd_t we want to prevent transit from pmd pointing to page table
++ * to pmd pointing to huge page (and back) while interrupts are disabled.
++ * We clear pmd to possibly replace it with page table pointer in
++ * different code paths. So make sure we wait for the parallel
++ * find_current_mm_pte to finish.
++ */
++void serialize_against_pte_lookup(struct mm_struct *mm)
++{
++	smp_mb();
++	/*
++	 * Cxl fault handling requires us to do a lockless page table
++	 * walk while inserting hash page table entry with mm tracked
++	 * in cxl context. Hence we need to do a global flush.
++	 */
++	if (cxl_ctx_in_use())
++		smp_call_function(do_nothing, NULL, 1);
++	else
++		smp_call_function_many(mm_cpumask(mm), do_nothing, NULL, 1);
 +}
 +
- #if defined(CONFIG_PPC_FSL_BOOK3E) || defined(CONFIG_PPC_8xx)
- #define HUGEPD_FREELIST_SIZE \
- 	((PAGE_SIZE - sizeof(struct hugepd_freelist)) / sizeof(pte_t))
-diff --git a/arch/powerpc/mm/init_32.c b/arch/powerpc/mm/init_32.c
-index 8a7c38b8d335..436d9721ab63 100644
---- a/arch/powerpc/mm/init_32.c
-+++ b/arch/powerpc/mm/init_32.c
-@@ -132,8 +132,6 @@ void __init MMU_init(void)
- 	 * Reserve gigantic pages for hugetlb.  This MUST occur before
- 	 * lowmem_end_addr is initialized below.
+ /*
+  * We use this to invalidate a pmdp entry before switching from a
+  * hugepte to regular pmd entry.
+@@ -77,7 +107,7 @@ void pmdp_invalidate(struct vm_area_struct *vma, unsigned long address,
+ 	 * This ensures that generic code that rely on IRQ disabling
+ 	 * to prevent a parallel THP split work as expected.
  	 */
--	reserve_hugetlb_gpages();
--
- 	if (memblock.memory.cnt > 1) {
- #ifndef CONFIG_WII
- 		memblock_enforce_memory_limit(memblock.memory.regions[0].size);
+-	kick_all_cpus_sync();
++	serialize_against_pte_lookup(vma->vm_mm);
+ }
+ 
+ static pmd_t pmd_set_protbits(pmd_t pmd, pgprot_t pgprot)
+diff --git a/arch/powerpc/mm/pgtable-hash64.c b/arch/powerpc/mm/pgtable-hash64.c
+index 8b85a14b08ea..f6313cc29ae4 100644
+--- a/arch/powerpc/mm/pgtable-hash64.c
++++ b/arch/powerpc/mm/pgtable-hash64.c
+@@ -159,7 +159,7 @@ pmd_t hash__pmdp_collapse_flush(struct vm_area_struct *vma, unsigned long addres
+ 	 * by sending an IPI to all the cpus and executing a dummy
+ 	 * function there.
+ 	 */
+-	kick_all_cpus_sync();
++	serialize_against_pte_lookup(vma->vm_mm);
+ 	/*
+ 	 * Now invalidate the hpte entries in the range
+ 	 * covered by pmd. This make sure we take a
+@@ -299,16 +299,16 @@ pmd_t hash__pmdp_huge_get_and_clear(struct mm_struct *mm,
+ 	 */
+ 	memset(pgtable, 0, PTE_FRAG_SIZE);
+ 	/*
+-	 * Serialize against find_linux_pte_or_hugepte which does lock-less
++	 * Serialize against find_current_mm_pte variants which does lock-less
+ 	 * lookup in page tables with local interrupts disabled. For huge pages
+ 	 * it casts pmd_t to pte_t. Since format of pte_t is different from
+ 	 * pmd_t we want to prevent transit from pmd pointing to page table
+ 	 * to pmd pointing to huge page (and back) while interrupts are disabled.
+ 	 * We clear pmd to possibly replace it with page table pointer in
+ 	 * different code paths. So make sure we wait for the parallel
+-	 * find_linux_pte_or_hugepage to finish.
++	 * find_curren_mm_pte to finish.
+ 	 */
+-	kick_all_cpus_sync();
++	serialize_against_pte_lookup(mm);
+ 	return old_pmd;
+ }
+ 
+diff --git a/arch/powerpc/mm/pgtable-radix.c b/arch/powerpc/mm/pgtable-radix.c
+index c28165d8970b..6e3d1518eef3 100644
+--- a/arch/powerpc/mm/pgtable-radix.c
++++ b/arch/powerpc/mm/pgtable-radix.c
+@@ -707,7 +707,7 @@ pmd_t radix__pmdp_collapse_flush(struct vm_area_struct *vma, unsigned long addre
+ 	pmd = *pmdp;
+ 	pmd_clear(pmdp);
+ 	/*FIXME!!  Verify whether we need this kick below */
+-	kick_all_cpus_sync();
++	serialize_against_pte_lookup(vma->vm_mm);
+ 	flush_tlb_range(vma, address, address + HPAGE_PMD_SIZE);
+ 	return pmd;
+ }
+@@ -767,16 +767,16 @@ pmd_t radix__pmdp_huge_get_and_clear(struct mm_struct *mm,
+ 	old = radix__pmd_hugepage_update(mm, addr, pmdp, ~0UL, 0);
+ 	old_pmd = __pmd(old);
+ 	/*
+-	 * Serialize against find_linux_pte_or_hugepte which does lock-less
++	 * Serialize against find_current_mm_pte which does lock-less
+ 	 * lookup in page tables with local interrupts disabled. For huge pages
+ 	 * it casts pmd_t to pte_t. Since format of pte_t is different from
+ 	 * pmd_t we want to prevent transit from pmd pointing to page table
+ 	 * to pmd pointing to huge page (and back) while interrupts are disabled.
+ 	 * We clear pmd to possibly replace it with page table pointer in
+ 	 * different code paths. So make sure we wait for the parallel
+-	 * find_linux_pte_or_hugepage to finish.
++	 * find_current_mm_pte to finish.
+ 	 */
+-	kick_all_cpus_sync();
++	serialize_against_pte_lookup(mm);
+ 	return old_pmd;
+ }
+ 
 -- 
 2.7.4
