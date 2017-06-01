@@ -2,15 +2,15 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wdpC14Ld2zDqG1
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Jun 2017 23:31:09 +1000 (AEST)
-In-Reply-To: <1496022790-2017-1-git-send-email-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wdpC326vLzDqFJ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Jun 2017 23:31:11 +1000 (AEST)
+In-Reply-To: <1496053567-29357-1-git-send-email-mpe@ellerman.id.au>
 To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: mikey@neuling.org, paulus@samba.org, npiggin@gmail.com
-Subject: Re: powerpc/64: Reclaim CPU_FTR_SUBCORE
-Message-Id: <3wdpC13Z4cz9s8J@ozlabs.org>
-Date: Thu,  1 Jun 2017 23:31:09 +1000 (AEST)
+Cc: jk@ozlabs.org, viro@zeniv.linux.org.uk
+Subject: Re: powerpc/spufs: Fix coredump of SPU contexts
+Message-Id: <3wdpC23hz9z9sN1@ozlabs.org>
+Date: Thu,  1 Jun 2017 23:31:10 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,28 +20,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2017-05-29 at 01:53:10 UTC, Michael Ellerman wrote:
-> We are running low on CPU feature bits, so we only want to use them when
-> it's really necessary.
+On Mon, 2017-05-29 at 10:26:07 UTC, Michael Ellerman wrote:
+> If a process dumps core while it has SPU contexts active then we have
+> code to also dump information about the SPU contexts.
 > 
-> CPU_FTR_SUBCORE is only used in one place, and only in C, so we don't
-> need it in order to make asm patching work. It can only be set on
-> "Power8" CPUs, which in practice means POWER8, POWER8E and POWER8NVL.
-> There are no plans to implement it on future CPUs, but if there ever
-> were we could retrofit it then.
+> Unfortunately it's been broken for 3 1/2 years, and we didn't notice. In
+> commit 7b1f4020d0d1 ("spufs: get rid of dump_emit() wrappers") the nread
+> variable was removed and rc used instead. That means when the loop exits
+> successfully, rc has the number of bytes read, but it's then used as the
+> return value for the function, which should return 0 on success.
 > 
-> Although KVM uses subcores, it never looks at the CPU feature, it either
-> looks at the ISA level or the threads_per_subcore value.
+> So fix it by setting rc = 0 before returning in the success case.
 > 
-> So drop the CPU feature and do a PVR check instead. Drop the device tree
-> "subcore" feature as we no longer support doing anything with it, and we
-> will drop it from skiboot too.
-> 
+> Fixes: 7b1f4020d0d1 ("spufs: get rid of dump_emit() wrappers")
 > Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-> Acked-by: Balbir Singh <bsingharora@gmail.com>
+> Acked-by: Jeremy Kerr <jk@ozlabs.org>
 
 Applied to powerpc fixes.
 
-https://git.kernel.org/powerpc/c/0e5e7f5e9700661c3ddd95501743fb
+https://git.kernel.org/powerpc/c/99acc9bede06bbb2662aafff51f5b9
 
 cheers
