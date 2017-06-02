@@ -1,26 +1,24 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <geert.uytterhoeven@gmail.com>
+Received: from mail-it0-x244.google.com (mail-it0-x244.google.com
+ [IPv6:2607:f8b0:4001:c0b::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wfNrY0MzhzDqMS
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Jun 2017 22:32:13 +1000 (AEST)
-Subject: Re: [PATCH 2/5] powerpc/mm: split store_updates_sp() in two parts in
- do_page_fault()
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>,
- Scott Wood <oss@buserror.net>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-References: <cover.1492606297.git.christophe.leroy@c-s.fr>
- <58f17a04cee5726467ef4e283dfbd7da68fa6ab4.1492606298.git.christophe.leroy@c-s.fr>
- <871sr23flh.fsf@concordia.ellerman.id.au>
- <6daf8f4e-9b39-d585-2c64-9b0348fef123@c-s.fr>
- <1496405473.2842.9.camel@kernel.crashing.org>
-From: Christophe LEROY <christophe.leroy@c-s.fr>
-Message-ID: <f7290b3e-0f74-cf29-52fb-5644894e9702@c-s.fr>
-Date: Fri, 2 Jun 2017 14:31:47 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wfP0p0NzTzDqMS
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Jun 2017 22:39:22 +1000 (AEST)
+Received: by mail-it0-x244.google.com with SMTP id d68so10957728ita.1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 02 Jun 2017 05:39:21 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <1496405473.2842.9.camel@kernel.crashing.org>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Sender: geert.uytterhoeven@gmail.com
+In-Reply-To: <20170222190235.92E5F661CEB@gitolite.kernel.org>
+References: <20170222190235.92E5F661CEB@gitolite.kernel.org>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Fri, 2 Jun 2017 14:39:19 +0200
+Message-ID: <CAMuHMdWGZYkM_aQ=vXr5J9-KFGzzWgq3hf+ZRY-n-+8-ghG5nQ@mail.gmail.com>
+Subject: Re: powerpc/opal-irqchip: Use interrupt names if present
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,31 +28,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hi Ben,
 
+On Wed, Feb 22, 2017 at 8:02 PM, Linux Kernel Mailing List
+<linux-kernel@vger.kernel.org> wrote:
+> Web:        https://git.kernel.org/torvalds/c/2717a33d60745f2f72e521cdaedf79b00f66f8ca
+> Commit:     2717a33d60745f2f72e521cdaedf79b00f66f8ca
+> Parent:     470a36a8c014e5cac7bb2df382948597f7ec1b2c
+> Refname:    refs/heads/master
+> Author:     Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> AuthorDate: Mon Feb 6 16:07:36 2017 +1100
+> Committer:  Michael Ellerman <mpe@ellerman.id.au>
+> CommitDate: Thu Feb 9 10:31:37 2017 +1100
+>
+>     powerpc/opal-irqchip: Use interrupt names if present
+>
+>     Recent versions of OPAL can provide names for the various OPAL interrupts,
+>     so let's use them. This also modernises the code that fetches the
+>     interrupt array to use the helpers provided by the generic code instead
+>     of hand-parsing the property.
+>
+>     Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>     [mpe: Free irqs on error, check allocation of names, consolidate error
+>           handling, whitespace.]
+>     Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> ---
+>  arch/powerpc/platforms/powernv/opal-irqchip.c | 55 ++++++++++++++++++++-------
+>  1 file changed, 42 insertions(+), 13 deletions(-)
+>
+> diff --git a/arch/powerpc/platforms/powernv/opal-irqchip.c b/arch/powerpc/platforms/powernv/opal-irqchip.c
+> index 998316bf2dad..ecdcba9d1220 100644
+> --- a/arch/powerpc/platforms/powernv/opal-irqchip.c
+> +++ b/arch/powerpc/platforms/powernv/opal-irqchip.c
+> @@ -183,8 +183,9 @@ void opal_event_shutdown(void)
 
-Le 02/06/2017 à 14:11, Benjamin Herrenschmidt a écrit :
-> On Fri, 2017-06-02 at 11:39 +0200, Christophe LEROY wrote:
->> The difference between get_user() and __get_user() is that get_user()
->> performs an access_ok() in addition.
->>
->> Doesn't access_ok() only checks whether addr is below TASK_SIZE to
->> ensure it is a valid user address ?
-> 
-> Do you have a measurable improvement by skipping that check ? I agree
-> with your reasoning but I'm also paranoid and so I wouldn't change it
-> unless it's really worth it.
-> 
+> +       /* It's not an error for the names to be missing */
+> +       of_property_read_string_array(opal_node, "opal-interrupts-names",
+> +                                     names, opal_irq_count);
 
-No I don't have. Taking into account the patch following this serie 
-which limits even more the calls to get_user(), it is probably not worth 
-it anymore (see https://patchwork.ozlabs.org/patch/757564/)
+Just double-checking, as it's different from the standard "interrupt-names":
+is "opal-interrupts-names" the correct name?
 
-I will then have to resubmit the entire serie (including that additional 
-one), but there is no get_user_inatomic() so will have to either:
-- do the access_ok() verification inside the function
-- get back to v2 (https://patchwork.ozlabs.org/patch/756234/)
-- implement an get_user_inatomic() function
+Gr{oetje,eeting}s,
 
-What would be the best ?
+                        Geert
 
-Christophe
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
