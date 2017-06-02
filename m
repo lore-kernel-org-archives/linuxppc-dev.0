@@ -1,24 +1,17 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x231.google.com (mail-pf0-x231.google.com
- [IPv6:2607:f8b0:400e:c00::231])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wfC142mrkzDqKs
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Jun 2017 15:08:56 +1000 (AEST)
-Received: by mail-pf0-x231.google.com with SMTP id m17so46454842pfg.3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 01 Jun 2017 22:08:56 -0700 (PDT)
-Date: Fri, 2 Jun 2017 15:08:43 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] powerpc/64s: machine check handle ifetch from foreign
- real address for POWER9
-Message-ID: <20170602150843.78db5b20@roar.ozlabs.ibm.com>
-In-Reply-To: <8760gf2i8v.fsf@concordia.ellerman.id.au>
-References: <20170529062644.21634-1-npiggin@gmail.com>
- <8760gf2i8v.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wfC7t5wy8zDqKJ
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Jun 2017 15:14:50 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: linuxppc-dev@ozlabs.org
+Cc: anton@samba.org,
+	npiggin@gmail.com,
+	nish.aravamudan@gmail.com
+Subject: [PATCH] powerpc/numa: Fix percpu allocations to be NUMA aware
+Date: Fri,  2 Jun 2017 15:14:47 +1000
+Message-Id: <1496380487-21699-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,38 +21,117 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 02 Jun 2017 13:14:40 +1000
-Michael Ellerman <mpe@ellerman.id.au> wrote:
+In commit 8c272261194d ("powerpc/numa: Enable USE_PERCPU_NUMA_NODE_ID"), we
+switched to the generic implementation of cpu_to_node(), which uses a percpu
+variable to hold the NUMA node for each CPU.
 
-> Nicholas Piggin <npiggin@gmail.com> writes:
-> 
-> > The i-side 0111b case was missed by 7b9f71f974 ("powerpc/64s: POWER9
-> > machine check handler").
-> >
-> > It is possible to trigger this exception by branching to a foreign real
-> > address (bits [8:12] != 0) with instruction relocation off, and verify
-> > the exception cause is found after this patch.  
-> 
-> Can you define "foreign" for people who aren't reading the chip docs :)
+Unfortunately we neglected to notice that we use cpu_to_node() in the allocation
+of our percpu areas, leading to a chicken and egg problem. In practice what
+happens is when we are setting up the percpu areas, cpu_to_node() reports that
+all CPUs are on node 0, so we allocate all percpu areas on node 0.
 
-Yes I guess we can copy&paste the relevant part. Updated changelog:
+This is visible in the dmesg output, as all pcpu allocs being in group 0:
 
-The i-side 0111b machine check, which is "Instruction Fetch to foreign
-address space", was missed by 7b9f71f974 ("powerpc/64s: POWER9 machine
-check handler").
+  pcpu-alloc: [0] 00 01 02 03 [0] 04 05 06 07
+  pcpu-alloc: [0] 08 09 10 11 [0] 12 13 14 15
+  pcpu-alloc: [0] 16 17 18 19 [0] 20 21 22 23
+  pcpu-alloc: [0] 24 25 26 27 [0] 28 29 30 31
+  pcpu-alloc: [0] 32 33 34 35 [0] 36 37 38 39
+  pcpu-alloc: [0] 40 41 42 43 [0] 44 45 46 47
 
-    The POWER9 processor core considers host real addresses with a
-    nonzero value in RA(8:12) as foreign address space, accessible only
-    by the copy and paste instructions. The copy and paste instruction
-    pair can be used to invoke the Nest accelerators via the Virtual
-    Accelerator Switchboard (VAS).
+To fix it we need an early_cpu_to_node() which can run prior to percpu being
+setup. We already have the numa_cpu_lookup_table we can use, so just plumb it
+in. With the patch dmesg output shows two groups, 0 and 1:
 
-It is an error for any regular load/store or ifetch to go to a foreign
-addresses. When relocation is on, this causes an MMU exception. When
-relocation is off, a machine check exception. It is possible to trigger
-this machine check by branching to a foreign address with MSR[IR]=0.
+  pcpu-alloc: [0] 00 01 02 03 [0] 04 05 06 07
+  pcpu-alloc: [0] 08 09 10 11 [0] 12 13 14 15
+  pcpu-alloc: [0] 16 17 18 19 [0] 20 21 22 23
+  pcpu-alloc: [1] 24 25 26 27 [1] 28 29 30 31
+  pcpu-alloc: [1] 32 33 34 35 [1] 36 37 38 39
+  pcpu-alloc: [1] 40 41 42 43 [1] 44 45 46 47
 
-Any better?
+We can also check the data_offset in the paca of various CPUs, with the fix we
+see:
 
-Thanks,
-Nick
+  CPU 0:  data_offset = 0x0ffe8b0000
+  CPU 24: data_offset = 0x1ffe5b0000
+
+And we can see from dmesg that CPU 24 has an allocation on node 1:
+
+  node   0: [mem 0x0000000000000000-0x0000000fffffffff]
+  node   1: [mem 0x0000001000000000-0x0000001fffffffff]
+
+Cc: stable@vger.kernel.org # v3.16+
+Fixes: 8c272261194d ("powerpc/numa: Enable USE_PERCPU_NUMA_NODE_ID")
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/include/asm/topology.h | 14 ++++++++++++++
+ arch/powerpc/kernel/setup_64.c      | 19 ++++++++++++++-----
+ 2 files changed, 28 insertions(+), 5 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/topology.h b/arch/powerpc/include/asm/topology.h
+index 8b3b46b7b0f2..8f3b2ec09b9e 100644
+--- a/arch/powerpc/include/asm/topology.h
++++ b/arch/powerpc/include/asm/topology.h
+@@ -44,8 +44,22 @@ extern void __init dump_numa_cpu_topology(void);
+ extern int sysfs_add_device_to_node(struct device *dev, int nid);
+ extern void sysfs_remove_device_from_node(struct device *dev, int nid);
+ 
++static inline int early_cpu_to_node(int cpu)
++{
++	int nid;
++
++	nid = numa_cpu_lookup_table[cpu];
++
++	/*
++	 * Some functions, eg. node_distance() don't cope with -1, so instead
++	 * fall back to node 0 if nid is unset (it should be, except bugs).
++	 */
++	return (nid < 0) ? 0 : nid;
++}
+ #else
+ 
++static inline int early_cpu_to_node(int cpu) { return 0; }
++
+ static inline void dump_numa_cpu_topology(void) {}
+ 
+ static inline int sysfs_add_device_to_node(struct device *dev, int nid)
+diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
+index f35ff9dea4fb..a1aa503946d3 100644
+--- a/arch/powerpc/kernel/setup_64.c
++++ b/arch/powerpc/kernel/setup_64.c
+@@ -661,7 +661,7 @@ void __init emergency_stack_init(void)
+ 
+ static void * __init pcpu_fc_alloc(unsigned int cpu, size_t size, size_t align)
+ {
+-	return __alloc_bootmem_node(NODE_DATA(cpu_to_node(cpu)), size, align,
++	return __alloc_bootmem_node(NODE_DATA(early_cpu_to_node(cpu)), size, align,
+ 				    __pa(MAX_DMA_ADDRESS));
+ }
+ 
+@@ -672,10 +672,19 @@ static void __init pcpu_fc_free(void *ptr, size_t size)
+ 
+ static int pcpu_cpu_distance(unsigned int from, unsigned int to)
+ {
+-	if (cpu_to_node(from) == cpu_to_node(to))
+-		return LOCAL_DISTANCE;
+-	else
+-		return REMOTE_DISTANCE;
++#ifndef CONFIG_NUMA
++	return LOCAL_DISTANCE;
++#else
++	int from_nid, to_nid;
++
++	from_nid = early_cpu_to_node(from);
++	to_nid   = early_cpu_to_node(to);
++
++	if (from_nid == -1 || to_nid == -1)
++		return LOCAL_DISTANCE;	/* Or assume remote? */
++
++	return node_distance(from_nid, to_nid);
++#endif
+ }
+ 
+ unsigned long __per_cpu_offset[NR_CPUS] __read_mostly;
+-- 
+2.7.4
