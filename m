@@ -1,20 +1,19 @@
-Return-Path: <anton@samba.org>
-Received: from hr2.samba.org (hr2.samba.org [IPv6:2a01:4f8:192:486::147:1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <leoyang.li@nxp.com>
+Received: from NAM02-CY1-obe.outbound.protection.outlook.com
+ (mail-cys01nam02on0088.outbound.protection.outlook.com [104.47.37.88])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wfdXn6rHszDqKX
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 Jun 2017 08:04:25 +1000 (AEST)
-Date: Sat, 3 Jun 2017 08:04:11 +1000
-From: Anton Blanchard <anton@samba.org>
-To: Breno Leitao <leitao@debian.org>
-Cc: linuxppc-dev@lists.ozlabs.org, Gustavo Romero <gusbromero@gmail.com>
-Subject: Re: [PATCH] powerpc/kernel: improve FP and vector registers
- restoration
-Message-ID: <20170603080411.59df057d@kryten>
-In-Reply-To: <1496439810-11240-1-git-send-email-leitao@debian.org>
-References: <1496439810-11240-1-git-send-email-leitao@debian.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wfgFx6NnBzDqFH
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 Jun 2017 09:21:40 +1000 (AEST)
+From: Li Yang <leoyang.li@nxp.com>
+To: Scott Wood <oss@buserror.net>
+CC: <linuxppc-dev@lists.ozlabs.org>, <linux-arm-kernel@lists.infradead.org>,
+ Li Yang <leoyang.li@nxp.com>
+Subject: [PATCH 1/2] MAINTAINERS: update entry for Freescale SoC drivers
+Date: Fri, 2 Jun 2017 18:20:22 -0500
+Message-ID: <1496445623-22390-1-git-send-email-leoyang.li@nxp.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,50 +23,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Breno,
+Add myself as the maintainer for drivers/fsl/soc/ and fix the scope for
+device tree bindings.
 
-> Currently tsk->thread->load_vec and load_fp are not initialized
-> during a task creation, which set garbage to these variables
-> (non-zero value).
+Signed-off-by: Li Yang <leoyang.li@nxp.com>
+---
+ MAINTAINERS | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
-Nice catch! It seems like we should zero load_tm too though?
-
-Acked-by: Anton Blanchard <anton@samba.org>
-
-Anton
-
-> These variables will be checked later at restore_math() to validate
-> if the FP and vectors are being utilized. Since these values might be
-> non-zero, the restore_math() will continue to save the FP and vectors
-> even if they were never utilized before the userspace application.
-> load_fp and load_vec counters will then overflow and the FP and
-> Altivec will be finally disabled, but before that condition is
-> reached (counter overflow) several context switches restored FP and
-> vector registers without need, causing a performance degradation.
-> 
-> Signed-off-by: Breno Leitao <leitao@debian.org>
-> Signed-off-by: Gustavo Romero <gusbromero@gmail.com>
-> ---
->  arch/powerpc/kernel/process.c | 2 ++
->  1 file changed, 2 insertions(+)
-> 
-> diff --git a/arch/powerpc/kernel/process.c
-> b/arch/powerpc/kernel/process.c index baae104b16c7..a9435397eab8
-> 100644 --- a/arch/powerpc/kernel/process.c
-> +++ b/arch/powerpc/kernel/process.c
-> @@ -1666,6 +1666,7 @@ void start_thread(struct pt_regs *regs,
-> unsigned long start, unsigned long sp) #ifdef CONFIG_VSX
->  	current->thread.used_vsr = 0;
->  #endif
-> +	current->thread.load_fp = 0;
->  	memset(&current->thread.fp_state, 0,
-> sizeof(current->thread.fp_state)); current->thread.fp_save_area =
-> NULL; #ifdef CONFIG_ALTIVEC
-> @@ -1674,6 +1675,7 @@ void start_thread(struct pt_regs *regs,
-> unsigned long start, unsigned long sp) current->thread.vr_save_area =
-> NULL; current->thread.vrsave = 0;
->  	current->thread.used_vr = 0;
-> +	current->thread.load_vec = 0;
->  #endif /* CONFIG_ALTIVEC */
->  #ifdef CONFIG_SPE
->  	memset(current->thread.evr, 0, sizeof(current->thread.evr));
+diff --git a/MAINTAINERS b/MAINTAINERS
+index d24240b..1807d3f 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -5357,11 +5357,11 @@ S:	Maintained
+ F:	drivers/net/ethernet/freescale/dpaa
+ 
+ FREESCALE SOC DRIVERS
+-M:	Scott Wood <oss@buserror.net>
++M:	Li Yang <leoyang.li@nxp.com>
+ L:	linuxppc-dev@lists.ozlabs.org
+ L:	linux-arm-kernel@lists.infradead.org
+ S:	Maintained
+-F:	Documentation/devicetree/bindings/powerpc/fsl/
++F:	Documentation/devicetree/bindings/soc/fsl/
+ F:	drivers/soc/fsl/
+ F:	include/linux/fsl/
+ 
+@@ -7695,6 +7695,7 @@ T:	git git://git.kernel.org/pub/scm/linux/kernel/git/scottwood/linux.git
+ S:	Maintained
+ F:	arch/powerpc/platforms/83xx/
+ F:	arch/powerpc/platforms/85xx/
++F:	Documentation/devicetree/bindings/powerpc/fsl/
+ 
+ LINUX FOR POWERPC PA SEMI PWRFICIENT
+ L:	linuxppc-dev@lists.ozlabs.org
+-- 
+1.9.0
