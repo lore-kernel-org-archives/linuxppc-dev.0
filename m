@@ -1,19 +1,21 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-it0-x243.google.com (mail-it0-x243.google.com
- [IPv6:2607:f8b0:4001:c0b::243])
+Received: from mail-oi0-x243.google.com (mail-oi0-x243.google.com
+ [IPv6:2607:f8b0:4003:c06::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wfGMN32ltzDqL2
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Jun 2017 17:39:59 +1000 (AEST)
-Received: by mail-it0-x243.google.com with SMTP id 67so8867701itx.2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 02 Jun 2017 00:39:59 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wfGMQ4V0dzDqL2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Jun 2017 17:40:02 +1000 (AEST)
+Received: by mail-oi0-x243.google.com with SMTP id w10so10435132oif.1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 02 Jun 2017 00:40:02 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Nicholas Piggin <npiggin@gmail.com>,
 	Anton Blanchard <anton@samba.org>
-Subject: [RFC][PATCH 00/14] syscall, context switch, idle performance stuff
-Date: Fri,  2 Jun 2017 17:39:32 +1000
-Message-Id: <20170602073946.8983-1-npiggin@gmail.com>
+Subject: [PATCH 01/14] powerpc/64s: optimize hypercall/syscall
+Date: Fri,  2 Jun 2017 17:39:33 +1000
+Message-Id: <20170602073946.8983-2-npiggin@gmail.com>
+In-Reply-To: <20170602073946.8983-1-npiggin@gmail.com>
+References: <20170602073946.8983-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,59 +25,222 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+After bc3551257a ("powerpc/64: Allow for relocation-on interrupts from
+guest to host"), a getppid() system call goes from 307 cycles to 358
+cycles (+17%). This is due significantly to the scratch SPR used by the
+hypercall.
 
-I'm sitting on a few performance improvements that I'm hoping to
-try get polished up enough to merge, but it's taking a while, so
-I juts post them out for review because I think most are at the
-stage where they are good enough to start getting some reviews on.
+It turns out there are a some volatile registers common to both system
+call and hypercall (in particular, r12, cr0, ctr), which can be used to
+avoid the SPR and some other overheads for the system call case. This
+brings getppid to 320 cycles (+4%).
 
-After this series, light weight context switch (yield, threads,
-same CPU) improves about 10% on my POWER8 (2.1m -> 2.3m per second
-with powernv_defconfig and tick based time accounting).
+Testing hcall entry performance by running "sc 1" in guest userspace
+before this patch is 854 cycles, afterwards is 826. Also a small win
+there.
 
-Ping-pong context switches improve similarly, particularly when
-you force them to go to nap. I'm still gathering up numbers. I
-haven't been able to get POWER9 numbers yet.
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+---
+ arch/powerpc/kernel/exceptions-64s.S | 134 +++++++++++++++++++++++++----------
+ 1 file changed, 97 insertions(+), 37 deletions(-)
 
-Thanks,
-Nick
-
-Nicholas Piggin (14):
-  powerpc/64s: optimize hypercall/syscall
-  powerpc/64: syscall avoid restore_math call if possible
-  powerpc/64s: idle move soft interrupt mask logic into C code
-  powerpc/64s: process interrupts from system reset wakeup
-  powerpc/64s: msgclr when handling doorbell exceptions
-  powerpc/64s: branch to idle handler with virtual mode offset
-  powerpc/64s: idle avoid SRR usage in idle sleep/wake paths
-  powerpc/64s: idle set polling before enabling irqs
-  powerpc/64s: idle read mostly for common globals
-  powerpc/64: CTRL[RUN] run-latch setting optimisation
-  powerpc/64s: idle no memory barrier after break from idle
-  powerpc/64s: Leave IRQs hard enabled over context switch for radix
-  powerpc/64: context switch can avoid reservation clear
-  powerpc/64: context switch additional hwsync can be avoided
-
- arch/powerpc/include/asm/barrier.h       |   4 +
- arch/powerpc/include/asm/dbell.h         |  13 +++
- arch/powerpc/include/asm/exception-64s.h |  17 ++-
- arch/powerpc/include/asm/hw_irq.h        |   1 +
- arch/powerpc/include/asm/machdep.h       |   1 +
- arch/powerpc/include/asm/ppc-opcode.h    |   3 +
- arch/powerpc/include/asm/processor.h     |   8 +-
- arch/powerpc/kernel/asm-offsets.c        |   1 +
- arch/powerpc/kernel/entry_64.S           |  94 +++++++++------
- arch/powerpc/kernel/exceptions-64s.S     | 191 ++++++++++++++++++++++++-------
- arch/powerpc/kernel/idle_book3s.S        | 135 ++++++----------------
- arch/powerpc/kernel/process.c            |  30 +++--
- arch/powerpc/kvm/book3s_hv_rmhandlers.S  |   8 +-
- arch/powerpc/platforms/powernv/idle.c    | 122 ++++++++++++++++++--
- arch/powerpc/platforms/powernv/subcore.c |   3 +-
- drivers/cpuidle/cpuidle-powernv.c        |  37 +++---
- drivers/cpuidle/cpuidle-pseries.c        |  22 ++--
- kernel/sched/core.c                      |   9 ++
- 18 files changed, 469 insertions(+), 230 deletions(-)
-
+diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+index ae418b85c17c..2f700a15bfa3 100644
+--- a/arch/powerpc/kernel/exceptions-64s.S
++++ b/arch/powerpc/kernel/exceptions-64s.S
+@@ -821,46 +821,80 @@ EXC_VIRT(trap_0b, 0x4b00, 0x100, 0xb00)
+ TRAMP_KVM(PACA_EXGEN, 0xb00)
+ EXC_COMMON(trap_0b_common, 0xb00, unknown_exception)
+ 
++/*
++ * system call / hypercall (0xc00, 0x4c00)
++ *
++ * The system call exception is invoked with "sc 0" and does not alter HV bit.
++ * There is support for kernel code to invoke system calls but there are no
++ * in-tree users.
++ *
++ * The hypercall is invoked with "sc 1" and sets HV=1.
++ *
++ * In HPT, sc 1 always goes to 0xc00 real mode. In RADIX, sc 1 can go to
++ * 0x4c00 virtual mode.
++ *
++ * Call convention:
++ *
++ * syscall register convention is in Documentation/powerpc/syscall64-abi.txt
++ *
++ * For hypercalls, the register convention is as follows:
++ * r0 volatile
++ * r1-2 nonvolatile
++ * r3 volatile parameter and return value for status
++ * r4-r10 volatile input and output value
++ * r11 volatile hypercall number and output value
++ * r12 volatile
++ * r13-r31 nonvolatile
++ * LR nonvolatile
++ * CTR volatile
++ * XER volatile
++ * CR0-1 CR5-7 volatile
++ * CR2-4 nonvolatile
++ * Other registers nonvolatile
++ *
++ * The intersection of volatile registers that don't contain possible
++ * inputs is: r12, cr0, xer, ctr. We may use these as scratch regs
++ * upon entry without saving.
++ */
+ #ifdef CONFIG_KVM_BOOK3S_64_HANDLER
+-	 /*
+-	  * If CONFIG_KVM_BOOK3S_64_HANDLER is set, save the PPR (on systems
+-	  * that support it) before changing to HMT_MEDIUM. That allows the KVM
+-	  * code to save that value into the guest state (it is the guest's PPR
+-	  * value). Otherwise just change to HMT_MEDIUM as userspace has
+-	  * already saved the PPR.
+-	  */
++	/*
++	 * There is a little bit of juggling to get syscall and hcall
++	 * working well. Save r10 in ctr to be restored in case it is a
++	 * hcall.
++	 *
++	 * Userspace syscalls have already saved the PPR, hcalls must save
++	 * it before setting HMT_MEDIUM.
++	 */
+ #define SYSCALL_KVMTEST							\
+-	SET_SCRATCH0(r13);						\
++	mr	r12,r13;						\
+ 	GET_PACA(r13);							\
+-	std	r9,PACA_EXGEN+EX_R9(r13);				\
+-	OPT_GET_SPR(r9, SPRN_PPR, CPU_FTR_HAS_PPR);			\
++	mtctr	r10;							\
++	KVMTEST_PR(0xc00); /* uses r10, branch to do_kvm_0xc00_system_call */ \
+ 	HMT_MEDIUM;							\
+-	std	r10,PACA_EXGEN+EX_R10(r13);				\
+-	OPT_SAVE_REG_TO_PACA(PACA_EXGEN+EX_PPR, r9, CPU_FTR_HAS_PPR);	\
+-	mfcr	r9;							\
+-	KVMTEST_PR(0xc00);						\
+-	GET_SCRATCH0(r13)
++	mr	r9,r12;							\
+ 
+ #else
+ #define SYSCALL_KVMTEST							\
+-	HMT_MEDIUM
++	HMT_MEDIUM;							\
++	mr	r9,r13;							\
++	GET_PACA(r13);
+ #endif
+ 	
+ #define LOAD_SYSCALL_HANDLER(reg)					\
+ 	__LOAD_HANDLER(reg, system_call_common)
+ 
+-/* Syscall routine is used twice, in reloc-off and reloc-on paths */
+-#define SYSCALL_PSERIES_1 					\
++#define SYSCALL_FASTENDIAN_TEST					\
+ BEGIN_FTR_SECTION						\
+ 	cmpdi	r0,0x1ebe ; 					\
+ 	beq-	1f ;						\
+ END_FTR_SECTION_IFSET(CPU_FTR_REAL_LE)				\
+-	mr	r9,r13 ;					\
+-	GET_PACA(r13) ;						\
+-	mfspr	r11,SPRN_SRR0 ;					\
+-0:
+ 
+-#define SYSCALL_PSERIES_2_RFID 					\
++/*
++ * After SYSCALL_KVMTEST, we reach here with PACA in r13, r13 in r9,
++ * and HMT_MEDIUM.
++ */
++#define SYSCALL_REAL	 					\
++	mfspr	r11,SPRN_SRR0 ;					\
+ 	mfspr	r12,SPRN_SRR1 ;					\
+ 	LOAD_SYSCALL_HANDLER(r10) ; 				\
+ 	mtspr	SPRN_SRR0,r10 ; 				\
+@@ -869,11 +903,12 @@ END_FTR_SECTION_IFSET(CPU_FTR_REAL_LE)				\
+ 	rfid ; 							\
+ 	b	. ;	/* prevent speculative execution */
+ 
+-#define SYSCALL_PSERIES_3					\
++#define SYSCALL_FASTENDIAN					\
+ 	/* Fast LE/BE switch system call */			\
+ 1:	mfspr	r12,SPRN_SRR1 ;					\
+ 	xori	r12,r12,MSR_LE ;				\
+ 	mtspr	SPRN_SRR1,r12 ;					\
++	mr	r13,r9 ;					\
+ 	rfid ;		/* return to userspace */		\
+ 	b	. ;	/* prevent speculative execution */
+ 
+@@ -882,16 +917,18 @@ END_FTR_SECTION_IFSET(CPU_FTR_REAL_LE)				\
+ 	 * We can't branch directly so we do it via the CTR which
+ 	 * is volatile across system calls.
+ 	 */
+-#define SYSCALL_PSERIES_2_DIRECT				\
+-	LOAD_SYSCALL_HANDLER(r12) ;				\
+-	mtctr	r12 ;						\
++#define SYSCALL_VIRT						\
++	LOAD_SYSCALL_HANDLER(r10) ;				\
++	mtctr	r10 ;						\
++	mfspr	r11,SPRN_SRR0 ;					\
+ 	mfspr	r12,SPRN_SRR1 ;					\
+ 	li	r10,MSR_RI ;					\
+ 	mtmsrd 	r10,1 ;						\
+ 	bctr ;
+ #else
+ 	/* We can branch directly */
+-#define SYSCALL_PSERIES_2_DIRECT				\
++#define SYSCALL_VIRT						\
++	mfspr	r11,SPRN_SRR0 ;					\
+ 	mfspr	r12,SPRN_SRR1 ;					\
+ 	li	r10,MSR_RI ;					\
+ 	mtmsrd 	r10,1 ;			/* Set RI (EE=0) */	\
+@@ -899,20 +936,43 @@ END_FTR_SECTION_IFSET(CPU_FTR_REAL_LE)				\
+ #endif
+ 
+ EXC_REAL_BEGIN(system_call, 0xc00, 0x100)
+-	SYSCALL_KVMTEST
+-	SYSCALL_PSERIES_1
+-	SYSCALL_PSERIES_2_RFID
+-	SYSCALL_PSERIES_3
++	SYSCALL_KVMTEST /* loads PACA into r13, and saves r13 to r9 */
++	SYSCALL_FASTENDIAN_TEST
++	SYSCALL_REAL
++	SYSCALL_FASTENDIAN
+ EXC_REAL_END(system_call, 0xc00, 0x100)
+ 
+ EXC_VIRT_BEGIN(system_call, 0x4c00, 0x100)
+-	SYSCALL_KVMTEST
+-	SYSCALL_PSERIES_1
+-	SYSCALL_PSERIES_2_DIRECT
+-	SYSCALL_PSERIES_3
++	SYSCALL_KVMTEST /* loads PACA into r13, and saves r13 to r9 */
++	SYSCALL_FASTENDIAN_TEST
++	SYSCALL_VIRT
++	SYSCALL_FASTENDIAN
+ EXC_VIRT_END(system_call, 0x4c00, 0x100)
+ 
+-TRAMP_KVM(PACA_EXGEN, 0xc00)
++#ifdef CONFIG_KVM_BOOK3S_64_HANDLER
++	/*
++	 * This is a hcall, so register convention is as above, with these
++	 * differences:
++	 * r13 = PACA
++	 * r12 = orig r13
++	 * ctr = orig r10
++	 */
++TRAMP_KVM_BEGIN(do_kvm_0xc00)
++	 /*
++	  * Save the PPR (on systems that support it) before changing to
++	  * HMT_MEDIUM. That allows the KVM code to save that value into the
++	  * guest state (it is the guest's PPR value).
++	  */
++	OPT_GET_SPR(r0, SPRN_PPR, CPU_FTR_HAS_PPR)
++	HMT_MEDIUM
++	OPT_SAVE_REG_TO_PACA(PACA_EXGEN+EX_PPR, r0, CPU_FTR_HAS_PPR)
++	mfctr	r10
++	SET_SCRATCH0(r12)
++	std	r9,PACA_EXGEN+EX_R9(r13)
++	mfcr	r9
++	std	r10,PACA_EXGEN+EX_R10(r13)
++	KVM_HANDLER(PACA_EXGEN, EXC_STD, 0xc00)
++#endif
+ 
+ 
+ EXC_REAL(single_step, 0xd00, 0x100)
 -- 
 2.11.0
