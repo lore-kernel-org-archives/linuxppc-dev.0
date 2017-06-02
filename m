@@ -1,20 +1,34 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <arndbergmann@gmail.com>
+Received: from mail-oi0-x243.google.com (mail-oi0-x243.google.com
+ [IPv6:2607:f8b0:4003:c06::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wfKLd4HBMzDqM2
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Jun 2017 19:54:33 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Nicholas Piggin <npiggin@gmail.com>
-Cc: linuxppc-dev@ozlabs.org, anton@samba.org, nish.aravamudan@gmail.com
-Subject: Re: [PATCH] powerpc/numa: Fix percpu allocations to be NUMA aware
-In-Reply-To: <20170602153004.62fd05d1@roar.ozlabs.ibm.com>
-References: <1496380487-21699-1-git-send-email-mpe@ellerman.id.au>
- <20170602153004.62fd05d1@roar.ozlabs.ibm.com>
-Date: Fri, 02 Jun 2017 19:54:32 +1000
-Message-ID: <87y3ta1zqf.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wfKZf4ZmVzDqLy
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Jun 2017 20:04:57 +1000 (AEST)
+Received: by mail-oi0-x243.google.com with SMTP id h4so10985173oib.0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 02 Jun 2017 03:04:57 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain
+Sender: arndbergmann@gmail.com
+In-Reply-To: <20170602084858.4299-2-asarai@suse.de>
+References: <20170602084858.4299-1-asarai@suse.de>
+ <20170602084858.4299-2-asarai@suse.de>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Fri, 2 Jun 2017 12:04:55 +0200
+Message-ID: <CAK8P3a2Q5CwofO96fXyjTVqmm23UKZjd+mOopnvKr_TusLxXpQ@mail.gmail.com>
+Subject: Re: [PATCH v2 1/1] tty: add TIOCGPTPEER ioctl
+To: Aleksa Sarai <asarai@suse.de>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Jiri Slaby <jslaby@suse.com>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ linux-alpha@vger.kernel.org,
+ "open list:RALINK MIPS ARCHITECTURE" <linux-mips@linux-mips.org>,
+ Parisc List <linux-parisc@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, linux-sh@vger.kernel.org,
+ sparclinux <sparclinux@vger.kernel.org>, linux-xtensa@linux-xtensa.org,
+ linux-arch <linux-arch@vger.kernel.org>,
+ Christian Brauner <christian.brauner@ubuntu.com>,
+ Valentin Rothberg <vrothberg@suse.com>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,84 +38,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Nicholas Piggin <npiggin@gmail.com> writes:
-
-> On Fri,  2 Jun 2017 15:14:47 +1000
-> Michael Ellerman <mpe@ellerman.id.au> wrote:
+On Fri, Jun 2, 2017 at 10:48 AM, Aleksa Sarai <asarai@suse.de> wrote:
+> When opening the slave end of a PTY, it is not possible for userspace to
+> safely ensure that /dev/pts/$num is actually a slave (in cases where the
+> mount namespace in which devpts was mounted is controlled by an
+> untrusted process). In addition, there are several unresolvable
+> race conditions if userspace were to attempt to detect attacks through
+> stat(2) and other similar methods [in addition it is not clear how
+> userspace could detect attacks involving FUSE].
 >
->> In commit 8c272261194d ("powerpc/numa: Enable USE_PERCPU_NUMA_NODE_ID"), we
->> switched to the generic implementation of cpu_to_node(), which uses a percpu
->> variable to hold the NUMA node for each CPU.
->> 
->> Unfortunately we neglected to notice that we use cpu_to_node() in the allocation
->> of our percpu areas, leading to a chicken and egg problem. In practice what
->> happens is when we are setting up the percpu areas, cpu_to_node() reports that
->> all CPUs are on node 0, so we allocate all percpu areas on node 0.
->> 
->> This is visible in the dmesg output, as all pcpu allocs being in group 0:
->> 
->>   pcpu-alloc: [0] 00 01 02 03 [0] 04 05 06 07
->>   pcpu-alloc: [0] 08 09 10 11 [0] 12 13 14 15
->>   pcpu-alloc: [0] 16 17 18 19 [0] 20 21 22 23
->>   pcpu-alloc: [0] 24 25 26 27 [0] 28 29 30 31
->>   pcpu-alloc: [0] 32 33 34 35 [0] 36 37 38 39
->>   pcpu-alloc: [0] 40 41 42 43 [0] 44 45 46 47
->> 
->> To fix it we need an early_cpu_to_node() which can run prior to percpu being
->> setup. We already have the numa_cpu_lookup_table we can use, so just plumb it
->> in. With the patch dmesg output shows two groups, 0 and 1:
->> 
->>   pcpu-alloc: [0] 00 01 02 03 [0] 04 05 06 07
->>   pcpu-alloc: [0] 08 09 10 11 [0] 12 13 14 15
->>   pcpu-alloc: [0] 16 17 18 19 [0] 20 21 22 23
->>   pcpu-alloc: [1] 24 25 26 27 [1] 28 29 30 31
->>   pcpu-alloc: [1] 32 33 34 35 [1] 36 37 38 39
->>   pcpu-alloc: [1] 40 41 42 43 [1] 44 45 46 47
->> 
->> We can also check the data_offset in the paca of various CPUs, with the fix we
->> see:
->> 
->>   CPU 0:  data_offset = 0x0ffe8b0000
->>   CPU 24: data_offset = 0x1ffe5b0000
->> 
->> And we can see from dmesg that CPU 24 has an allocation on node 1:
->> 
->>   node   0: [mem 0x0000000000000000-0x0000000fffffffff]
->>   node   1: [mem 0x0000001000000000-0x0000001fffffffff]
->
-> Nice bug :)
+> Resolve this by providing an interface for userpace to safely open the
+> "peer" end of a PTY file descriptor by using the dentry cached by
+> devpts. Since it is not possible to have an open master PTY without
+> having its slave exposed in /dev/pts this interface is safe. This
+> interface currently does not provide a way to get the master pty (since
+> it is not clear whether such an interface is safe or even useful).
 
-Yeah what a shocker.
+This should be added to the compat ioctls as well. There are two ways
+of doing this:
 
-> I wonder what happens if you put a WARN if cpu_to_node is used
-> before it is set up?
+a) like the other ioctls handled by pty_unix98_ioctl(), add it to the
+list in fs/compat_ioctl.c, and check that the list is still up-to-date with
+the current driver (someone else may have missed one)
 
-Yeah we definitely need some way to debug these things.
+b) remove all compat handling for ioctls that are specific to
+pty_unix98_ioctl() and pty_bsd_ioctl() from fs/compat_ioctl.c
+and add compat_ioctl callback pointers to master_pty_ops_bsd
+and ptm_unix98_ops, pointing to the respective ioctl handlers.
 
->> @@ -672,10 +672,19 @@ static void __init pcpu_fc_free(void *ptr, size_t size)
->>  
->>  static int pcpu_cpu_distance(unsigned int from, unsigned int to)
->>  {
->> -	if (cpu_to_node(from) == cpu_to_node(to))
->> -		return LOCAL_DISTANCE;
->> -	else
->> -		return REMOTE_DISTANCE;
->> +#ifndef CONFIG_NUMA
->> +	return LOCAL_DISTANCE;
->> +#else
->> +	int from_nid, to_nid;
->> +
->> +	from_nid = early_cpu_to_node(from);
->> +	to_nid   = early_cpu_to_node(to);
->> +
->> +	if (from_nid == -1 || to_nid == -1)
->> +		return LOCAL_DISTANCE;	/* Or assume remote? */
->> +
->> +	return node_distance(from_nid, to_nid);
->
-> If you made node_distance() return LOCAL_NODE for !NUMA, this
-> should fall out and not require the ifdef?
+I would recommend b) as it avoids the problem in the future,
+but it is a little more upfront work, and should be done as a
+separate preparation patch.
+All the ioctls here are compatible between 32-bit and 64-bit
+user space, so no special translation is needed.
 
-Maybe yeah. This is designed to be minimal for backporting though.
-
-cheers
+      Arnd
