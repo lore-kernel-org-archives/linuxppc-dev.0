@@ -1,50 +1,19 @@
-Return-Path: <srs0=vywd=5h=linux.vnet.ibm.com=hbathini@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-it0-x243.google.com (mail-it0-x243.google.com
+ [IPv6:2607:f8b0:4001:c0b::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wfG9X60WRzDqL2
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Jun 2017 17:31:28 +1000 (AEST)
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3wfG9X5C1rz8t5N
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Jun 2017 17:31:28 +1000 (AEST)
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3wfG9W4yTjz9sD5
- for <linuxppc-dev@ozlabs.org>; Fri,  2 Jun 2017 17:31:27 +1000 (AEST)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v527T4C7034255
- for <linuxppc-dev@ozlabs.org>; Fri, 2 Jun 2017 03:31:24 -0400
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2au1bnp32c-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Fri, 02 Jun 2017 03:31:23 -0400
-Received: from localhost
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <hbathini@linux.vnet.ibm.com>;
- Fri, 2 Jun 2017 17:31:20 +1000
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v527VAKR62128352
- for <linuxppc-dev@ozlabs.org>; Fri, 2 Jun 2017 17:31:18 +1000
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v527Ucf7029554
- for <linuxppc-dev@ozlabs.org>; Fri, 2 Jun 2017 17:30:38 +1000
-Subject: [RESEND PATCH v2] powerpc/fadump: set an upper limit for boot
- memory size
-From: Hari Bathini <hbathini@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
- Ankit Kumar <ankit@linux.vnet.ibm.com>,
- Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
-Date: Fri, 02 Jun 2017 13:00:27 +0530
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Message-Id: <149638860805.20682.16651712989980265609.stgit@hbathini.in.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wfGMN32ltzDqL2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Jun 2017 17:39:59 +1000 (AEST)
+Received: by mail-it0-x243.google.com with SMTP id 67so8867701itx.2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 02 Jun 2017 00:39:59 -0700 (PDT)
+From: Nicholas Piggin <npiggin@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Nicholas Piggin <npiggin@gmail.com>,
+	Anton Blanchard <anton@samba.org>
+Subject: [RFC][PATCH 00/14] syscall, context switch, idle performance stuff
+Date: Fri,  2 Jun 2017 17:39:32 +1000
+Message-Id: <20170602073946.8983-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -54,104 +23,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-By default, 5% of system RAM is reserved for preserving boot memory.
-Alternatively, a user can specify the amount of memory to reserve.
-See Documentation/powerpc/firmware-assisted-dump.txt for details. In
-addition to the memory reserved for preserving boot memory, some more
-memory is reserved, to save HPTE region, CPU state data and ELF core
-headers.
+Hi,
 
-Memory Reservation during first kernel looks like below:
+I'm sitting on a few performance improvements that I'm hoping to
+try get polished up enough to merge, but it's taking a while, so
+I juts post them out for review because I think most are at the
+stage where they are good enough to start getting some reviews on.
 
-  Low memory                                        Top of memory
-  0      boot memory size                                       |
-  |           |                       |<--Reserved dump area -->|
-  V           V                       |   Permanent Reservation V
-  +-----------+----------/ /----------+---+----+-----------+----+
-  |           |                       |CPU|HPTE|  DUMP     |ELF |
-  +-----------+----------/ /----------+---+----+-----------+----+
-        |                                           ^
-        |                                           |
-        \                                           /
-         -------------------------------------------
-          Boot memory content gets transferred to
-          reserved area by firmware at the time of
-          crash
+After this series, light weight context switch (yield, threads,
+same CPU) improves about 10% on my POWER8 (2.1m -> 2.3m per second
+with powernv_defconfig and tick based time accounting).
 
-This implicitly means that the sum of the sizes of boot memory, CPU
-state data, HPTE region, DUMP preserving area and ELF core headers
-can't be greater than the total memory size. But currently, a user is
-allowed to specify any value as boot memory size. So, the above rule
-is violated when a boot memory size around 50% of the total available
-memory is specified. As the kernel is not handling this currently, it
-may lead to undefined behavior. Fix it by setting an upper limit for
-boot memory size to 25% of the total available memory. Also, instead
-of using memblock_end_of_DRAM(), which doesn't take the holes, if any,
-in the memory layout into account, use memblock_phys_mem_size() to
-calculate the percentage of total available memory.
+Ping-pong context switches improve similarly, particularly when
+you force them to go to nap. I'm still gathering up numbers. I
+haven't been able to get POWER9 numbers yet.
 
-Signed-off-by: Hari Bathini <hbathini@linux.vnet.ibm.com>
----
+Thanks,
+Nick
 
-* Rebased on top of below patchset:
-   - http://patchwork.ozlabs.org/patch/765298
-   - http://patchwork.ozlabs.org/patch/765300
+Nicholas Piggin (14):
+  powerpc/64s: optimize hypercall/syscall
+  powerpc/64: syscall avoid restore_math call if possible
+  powerpc/64s: idle move soft interrupt mask logic into C code
+  powerpc/64s: process interrupts from system reset wakeup
+  powerpc/64s: msgclr when handling doorbell exceptions
+  powerpc/64s: branch to idle handler with virtual mode offset
+  powerpc/64s: idle avoid SRR usage in idle sleep/wake paths
+  powerpc/64s: idle set polling before enabling irqs
+  powerpc/64s: idle read mostly for common globals
+  powerpc/64: CTRL[RUN] run-latch setting optimisation
+  powerpc/64s: idle no memory barrier after break from idle
+  powerpc/64s: Leave IRQs hard enabled over context switch for radix
+  powerpc/64: context switch can avoid reservation clear
+  powerpc/64: context switch additional hwsync can be avoided
 
+ arch/powerpc/include/asm/barrier.h       |   4 +
+ arch/powerpc/include/asm/dbell.h         |  13 +++
+ arch/powerpc/include/asm/exception-64s.h |  17 ++-
+ arch/powerpc/include/asm/hw_irq.h        |   1 +
+ arch/powerpc/include/asm/machdep.h       |   1 +
+ arch/powerpc/include/asm/ppc-opcode.h    |   3 +
+ arch/powerpc/include/asm/processor.h     |   8 +-
+ arch/powerpc/kernel/asm-offsets.c        |   1 +
+ arch/powerpc/kernel/entry_64.S           |  94 +++++++++------
+ arch/powerpc/kernel/exceptions-64s.S     | 191 ++++++++++++++++++++++++-------
+ arch/powerpc/kernel/idle_book3s.S        | 135 ++++++----------------
+ arch/powerpc/kernel/process.c            |  30 +++--
+ arch/powerpc/kvm/book3s_hv_rmhandlers.S  |   8 +-
+ arch/powerpc/platforms/powernv/idle.c    | 122 ++++++++++++++++++--
+ arch/powerpc/platforms/powernv/subcore.c |   3 +-
+ drivers/cpuidle/cpuidle-powernv.c        |  37 +++---
+ drivers/cpuidle/cpuidle-pseries.c        |  22 ++--
+ kernel/sched/core.c                      |   9 ++
+ 18 files changed, 469 insertions(+), 230 deletions(-)
 
- arch/powerpc/include/asm/fadump.h |    3 +++
- arch/powerpc/kernel/fadump.c      |   16 +++++++++++++++-
- 2 files changed, 18 insertions(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/include/asm/fadump.h b/arch/powerpc/include/asm/fadump.h
-index 60b9108..a3de219 100644
---- a/arch/powerpc/include/asm/fadump.h
-+++ b/arch/powerpc/include/asm/fadump.h
-@@ -43,6 +43,9 @@
- #define MIN_BOOT_MEM	(((RMA_END < (0x1UL << 28)) ? (0x1UL << 28) : RMA_END) \
- 			+ (0x1UL << 26))
- 
-+/* The upper limit percentage for user specified boot memory size (25%) */
-+#define MAX_BOOT_MEM_RATIO			4
-+
- #define memblock_num_regions(memblock_type)	(memblock.memblock_type.cnt)
- 
- /* Firmware provided dump sections */
-diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
-index 63c4281..1438109 100644
---- a/arch/powerpc/kernel/fadump.c
-+++ b/arch/powerpc/kernel/fadump.c
-@@ -224,11 +224,25 @@ static inline unsigned long fadump_calculate_reserve_size(void)
- 	ret = parse_crashkernel(boot_command_line, memblock_phys_mem_size(),
- 				&size, &base);
- 	if (ret == 0 && size > 0) {
-+		unsigned long max_size;
-+
- 		if (fw_dump.reserve_bootvar)
- 			pr_info("Using 'crashkernel=' parameter for"
- 				" memory reservation.\n");
- 
- 		fw_dump.reserve_bootvar = (unsigned long)size;
-+
-+		/*
-+		 * Adjust if the boot memory size specified is above
-+		 * the upper limit.
-+		 */
-+		max_size = memblock_phys_mem_size() / MAX_BOOT_MEM_RATIO;
-+		if (fw_dump.reserve_bootvar > max_size) {
-+			fw_dump.reserve_bootvar = max_size;
-+			pr_info("Adjusted boot memory size to %luMB\n",
-+				(fw_dump.reserve_bootvar >> 20));
-+		}
-+
- 		return fw_dump.reserve_bootvar;
- 	} else if (fw_dump.reserve_bootvar) {
- 		/*
-@@ -239,7 +253,7 @@ static inline unsigned long fadump_calculate_reserve_size(void)
- 	}
- 
- 	/* divide by 20 to get 5% of value */
--	size = memblock_end_of_DRAM() / 20;
-+	size = memblock_phys_mem_size() / 20;
- 
- 	/* round it down in multiples of 256 */
- 	size = size & ~0x0FFFFFFFUL;
+-- 
+2.11.0
