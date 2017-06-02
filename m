@@ -1,24 +1,20 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wfK1f3NwfzDqLy
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Jun 2017 19:39:50 +1000 (AEST)
-Subject: Re: [PATCH 2/5] powerpc/mm: split store_updates_sp() in two parts in
- do_page_fault()
-To: Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Scott Wood <oss@buserror.net>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-References: <cover.1492606297.git.christophe.leroy@c-s.fr>
- <58f17a04cee5726467ef4e283dfbd7da68fa6ab4.1492606298.git.christophe.leroy@c-s.fr>
- <871sr23flh.fsf@concordia.ellerman.id.au>
-From: Christophe LEROY <christophe.leroy@c-s.fr>
-Message-ID: <6daf8f4e-9b39-d585-2c64-9b0348fef123@c-s.fr>
-Date: Fri, 2 Jun 2017 11:39:23 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wfKLd4HBMzDqM2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Jun 2017 19:54:33 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Nicholas Piggin <npiggin@gmail.com>
+Cc: linuxppc-dev@ozlabs.org, anton@samba.org, nish.aravamudan@gmail.com
+Subject: Re: [PATCH] powerpc/numa: Fix percpu allocations to be NUMA aware
+In-Reply-To: <20170602153004.62fd05d1@roar.ozlabs.ibm.com>
+References: <1496380487-21699-1-git-send-email-mpe@ellerman.id.au>
+ <20170602153004.62fd05d1@roar.ozlabs.ibm.com>
+Date: Fri, 02 Jun 2017 19:54:32 +1000
+Message-ID: <87y3ta1zqf.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <871sr23flh.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,31 +24,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Nicholas Piggin <npiggin@gmail.com> writes:
 
+> On Fri,  2 Jun 2017 15:14:47 +1000
+> Michael Ellerman <mpe@ellerman.id.au> wrote:
+>
+>> In commit 8c272261194d ("powerpc/numa: Enable USE_PERCPU_NUMA_NODE_ID"), we
+>> switched to the generic implementation of cpu_to_node(), which uses a percpu
+>> variable to hold the NUMA node for each CPU.
+>> 
+>> Unfortunately we neglected to notice that we use cpu_to_node() in the allocation
+>> of our percpu areas, leading to a chicken and egg problem. In practice what
+>> happens is when we are setting up the percpu areas, cpu_to_node() reports that
+>> all CPUs are on node 0, so we allocate all percpu areas on node 0.
+>> 
+>> This is visible in the dmesg output, as all pcpu allocs being in group 0:
+>> 
+>>   pcpu-alloc: [0] 00 01 02 03 [0] 04 05 06 07
+>>   pcpu-alloc: [0] 08 09 10 11 [0] 12 13 14 15
+>>   pcpu-alloc: [0] 16 17 18 19 [0] 20 21 22 23
+>>   pcpu-alloc: [0] 24 25 26 27 [0] 28 29 30 31
+>>   pcpu-alloc: [0] 32 33 34 35 [0] 36 37 38 39
+>>   pcpu-alloc: [0] 40 41 42 43 [0] 44 45 46 47
+>> 
+>> To fix it we need an early_cpu_to_node() which can run prior to percpu being
+>> setup. We already have the numa_cpu_lookup_table we can use, so just plumb it
+>> in. With the patch dmesg output shows two groups, 0 and 1:
+>> 
+>>   pcpu-alloc: [0] 00 01 02 03 [0] 04 05 06 07
+>>   pcpu-alloc: [0] 08 09 10 11 [0] 12 13 14 15
+>>   pcpu-alloc: [0] 16 17 18 19 [0] 20 21 22 23
+>>   pcpu-alloc: [1] 24 25 26 27 [1] 28 29 30 31
+>>   pcpu-alloc: [1] 32 33 34 35 [1] 36 37 38 39
+>>   pcpu-alloc: [1] 40 41 42 43 [1] 44 45 46 47
+>> 
+>> We can also check the data_offset in the paca of various CPUs, with the fix we
+>> see:
+>> 
+>>   CPU 0:  data_offset = 0x0ffe8b0000
+>>   CPU 24: data_offset = 0x1ffe5b0000
+>> 
+>> And we can see from dmesg that CPU 24 has an allocation on node 1:
+>> 
+>>   node   0: [mem 0x0000000000000000-0x0000000fffffffff]
+>>   node   1: [mem 0x0000001000000000-0x0000001fffffffff]
+>
+> Nice bug :)
 
-Le 02/06/2017 à 11:26, Michael Ellerman a écrit :
-> Christophe Leroy <christophe.leroy@c-s.fr> writes:
-> 
->> Only the get_user() in store_updates_sp() has to be done outside
->> the mm semaphore. All the comparison can be done within the semaphore,
->> so only when really needed.
->>
->> As we got a DSI exception, the address pointed by regs->nip is
->> obviously valid, otherwise we would have had a instruction exception.
->> So __get_user() can be used instead of get_user()
-> 
-> I don't think that part is true.
-> 
-> You took a DSI so there *was* an instruction at NIP, but since then it
-> may have been unmapped by another thread.
-> 
-> So I don't think you can assume the get_user() will succeed.
-> 
+Yeah what a shocker.
 
-The difference between get_user() and __get_user() is that get_user() 
-performs an access_ok() in addition.
+> I wonder what happens if you put a WARN if cpu_to_node is used
+> before it is set up?
 
-Doesn't access_ok() only checks whether addr is below TASK_SIZE to 
-ensure it is a valid user address ?
+Yeah we definitely need some way to debug these things.
 
-Christophe
+>> @@ -672,10 +672,19 @@ static void __init pcpu_fc_free(void *ptr, size_t size)
+>>  
+>>  static int pcpu_cpu_distance(unsigned int from, unsigned int to)
+>>  {
+>> -	if (cpu_to_node(from) == cpu_to_node(to))
+>> -		return LOCAL_DISTANCE;
+>> -	else
+>> -		return REMOTE_DISTANCE;
+>> +#ifndef CONFIG_NUMA
+>> +	return LOCAL_DISTANCE;
+>> +#else
+>> +	int from_nid, to_nid;
+>> +
+>> +	from_nid = early_cpu_to_node(from);
+>> +	to_nid   = early_cpu_to_node(to);
+>> +
+>> +	if (from_nid == -1 || to_nid == -1)
+>> +		return LOCAL_DISTANCE;	/* Or assume remote? */
+>> +
+>> +	return node_distance(from_nid, to_nid);
+>
+> If you made node_distance() return LOCAL_NODE for !NUMA, this
+> should fall out and not require the ifdef?
+
+Maybe yeah. This is designed to be minimal for backporting though.
+
+cheers
