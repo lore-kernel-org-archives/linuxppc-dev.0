@@ -1,22 +1,23 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-it0-x243.google.com (mail-it0-x243.google.com
- [IPv6:2607:f8b0:4001:c0b::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <yao.jin@linux.intel.com>
+Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wfGNC1lH3zDqLP
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Jun 2017 17:40:43 +1000 (AEST)
-Received: by mail-it0-x243.google.com with SMTP id i206so8918131ita.3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 02 Jun 2017 00:40:43 -0700 (PDT)
-From: Nicholas Piggin <npiggin@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Nicholas Piggin <npiggin@gmail.com>,
-	Anton Blanchard <anton@samba.org>
-Subject: [PATCH 14/14] powerpc/64: context switch additional hwsync can be
- avoided
-Date: Fri,  2 Jun 2017 17:39:46 +1000
-Message-Id: <20170602073946.8983-15-npiggin@gmail.com>
-In-Reply-To: <20170602073946.8983-1-npiggin@gmail.com>
-References: <20170602073946.8983-1-npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wfGsc6Z6xzDqPT
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Jun 2017 18:02:43 +1000 (AEST)
+Subject: Re: [PATCH v6 0/7] perf report: Show branch type
+To: Jiri Olsa <jolsa@redhat.com>
+Cc: acme@kernel.org, jolsa@kernel.org, peterz@infradead.org,
+ mingo@redhat.com, alexander.shishkin@linux.intel.com,
+ Linux-kernel@vger.kernel.org, ak@linux.intel.com, kan.liang@intel.com,
+ yao.jin@intel.com, linuxppc-dev@lists.ozlabs.org
+References: <1492690075-17243-1-git-send-email-yao.jin@linux.intel.com>
+ <20170420093656.GA28272@krava>
+From: "Jin, Yao" <yao.jin@linux.intel.com>
+Message-ID: <94386248-7565-64cf-7e6f-4341531724e7@linux.intel.com>
+Date: Fri, 2 Jun 2017 16:02:38 +0800
+MIME-Version: 1.0
+In-Reply-To: <20170420093656.GA28272@krava>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,83 +27,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The hwsync in the context switch code to prevent MMIO access being
-reordered from the point of view of a single process if it gets
-migrated to a different CPU is not required because there is an hwsync
-performed earlier in the context switch path.
+Hi maintainers,
 
-Comment this so it's clear enough if anything changes on the scheduler
-or the powerpc sides. Remove the hwsync from _switch. This is worth 2-3%
-context switch performance.
+Is this patch series (v6) OK for merging?
 
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
----
- arch/powerpc/include/asm/barrier.h |  4 ++++
- arch/powerpc/kernel/entry_64.S     | 21 +++++++++++++++------
- kernel/sched/core.c                |  3 +++
- 3 files changed, 22 insertions(+), 6 deletions(-)
+Thanks
 
-diff --git a/arch/powerpc/include/asm/barrier.h b/arch/powerpc/include/asm/barrier.h
-index c0deafc212b8..8bbadbd3b3c7 100644
---- a/arch/powerpc/include/asm/barrier.h
-+++ b/arch/powerpc/include/asm/barrier.h
-@@ -74,6 +74,10 @@ do {									\
- 	___p1;								\
- })
- 
-+/*
-+ * This must resolve to hwsync on SMP for the context switch path. See
-+ * _switch.
-+ */
- #define smp_mb__before_spinlock()   smp_mb()
- 
- #include <asm-generic/barrier.h>
-diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-index 012142fe39a4..2b1e57b33757 100644
---- a/arch/powerpc/kernel/entry_64.S
-+++ b/arch/powerpc/kernel/entry_64.S
-@@ -512,13 +512,22 @@ _GLOBAL(_switch)
- 	std	r23,_CCR(r1)
- 	std	r1,KSP(r3)	/* Set old stack pointer */
- 
--#ifdef CONFIG_SMP
--	/* We need a sync somewhere here to make sure that if the
--	 * previous task gets rescheduled on another CPU, it sees all
--	 * stores it has performed on this one.
-+	/*
-+	 * On SMP kernels, care must be taken because a task may be
-+	 * scheduled off CPUx and on to CPUy. Memory ordering must be
-+	 * considered.
-+	 *
-+	 * Cacheable stores on CPUx will be visible when the task is
-+	 * scheduled on CPUy by virtue of smp_store_release(t->on_cpu, 0)
-+	 * pairing with smp_cond_load_acquire(!t->on_cpu) on the other
-+	 * CPU.
-+	 *
-+	 * Uncacheable stores in the case of involuntary preemption must
-+	 * be taken care of. The smp_mb__before_spin_lock() in __schedule()
-+	 * is a hwsync, which orders mmio too. That does not have to be
-+	 * in any particular place within the context switch path, because
-+	 * the context switch path itself does not do any mmio.
- 	 */
--	sync
--#endif /* CONFIG_SMP */
- 
- 	/*
- 	 * The kernel context switch path must contain a spin_lock,
-diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-index 1f0688ad09d7..ff375012d2c6 100644
---- a/kernel/sched/core.c
-+++ b/kernel/sched/core.c
-@@ -3394,6 +3394,9 @@ static void __sched notrace __schedule(bool preempt)
- 	 * Make sure that signal_pending_state()->signal_pending() below
- 	 * can't be reordered with __set_current_state(TASK_INTERRUPTIBLE)
- 	 * done by the caller to avoid the race with signal_wake_up().
-+	 *
-+	 * smp_mb__before_spinlock() must be present for powerpc
-+	 * (see powerpc smp_mb__before_spinlock()).
- 	 */
- 	smp_mb__before_spinlock();
- 	rq_lock(rq, &rf);
--- 
-2.11.0
+Jin Yao
+
+
+On 4/20/2017 5:36 PM, Jiri Olsa wrote:
+> On Thu, Apr 20, 2017 at 08:07:48PM +0800, Jin Yao wrote:
+>> v6:
+>>     Update according to the review comments from
+>>     Jiri Olsa <jolsa@redhat.com>. Major modifications are:
+>>
+>>     1. Move that multiline conditional code inside {} brackets.
+>>
+>>     2. Move branch_type_stat_display() from builtin-report.c to
+>>        branch.c. Move branch_type_str() from callchain.c to
+>>        branch.c.
+>>
+>>     3. Keep the original branch info display order, that is:
+>>        predicted, abort, cycles, iterations
+> for the tools part
+>
+> Acked-by: Jiri Olsa <jolsa@kernel.org>
+>
+> thanks,
+> jirka
