@@ -1,19 +1,19 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-it0-x242.google.com (mail-it0-x242.google.com
- [IPv6:2607:f8b0:4001:c0b::242])
+Received: from mail-it0-x241.google.com (mail-it0-x241.google.com
+ [IPv6:2607:f8b0:4001:c0b::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wfGMv5nQlzDqMG
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Jun 2017 17:40:27 +1000 (AEST)
-Received: by mail-it0-x242.google.com with SMTP id d68so8876870ita.1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 02 Jun 2017 00:40:27 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wfGMy4bBQzDqL4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Jun 2017 17:40:30 +1000 (AEST)
+Received: by mail-it0-x241.google.com with SMTP id 67so8871665itx.2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 02 Jun 2017 00:40:30 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Nicholas Piggin <npiggin@gmail.com>,
 	Anton Blanchard <anton@samba.org>
-Subject: [PATCH 09/14] powerpc/64s: idle read mostly for common globals
-Date: Fri,  2 Jun 2017 17:39:41 +1000
-Message-Id: <20170602073946.8983-10-npiggin@gmail.com>
+Subject: [PATCH 10/14] powerpc/64: CTRL[RUN] run-latch setting optimisation
+Date: Fri,  2 Jun 2017 17:39:42 +1000
+Message-Id: <20170602073946.8983-11-npiggin@gmail.com>
 In-Reply-To: <20170602073946.8983-1-npiggin@gmail.com>
 References: <20170602073946.8983-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,60 +25,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Ensure these don't get put into bouncing cachelines.
+The CTRL register is read-only except bit 63 which is the run
+latch control. This means it can be updated with a mtspr rather
+than mfspr/mtspr.
 
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- drivers/cpuidle/cpuidle-powernv.c | 10 +++++-----
- drivers/cpuidle/cpuidle-pseries.c |  8 ++++----
- 2 files changed, 9 insertions(+), 9 deletions(-)
+ arch/powerpc/kernel/process.c | 12 ++----------
+ 1 file changed, 2 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
-index 0ee4660efb5f..f0247652d91f 100644
---- a/drivers/cpuidle/cpuidle-powernv.c
-+++ b/drivers/cpuidle/cpuidle-powernv.c
-@@ -32,18 +32,18 @@ static struct cpuidle_driver powernv_idle_driver = {
- 	.owner            = THIS_MODULE,
- };
- 
--static int max_idle_state;
--static struct cpuidle_state *cpuidle_state_table;
-+static int max_idle_state __read_mostly;
-+static struct cpuidle_state *cpuidle_state_table __read_mostly;
- 
- struct stop_psscr_table {
- 	u64 val;
- 	u64 mask;
- };
- 
--static struct stop_psscr_table stop_psscr_table[CPUIDLE_STATE_MAX];
-+static struct stop_psscr_table stop_psscr_table[CPUIDLE_STATE_MAX] __read_mostly;
- 
--static u64 snooze_timeout;
--static bool snooze_timeout_en;
-+static u64 snooze_timeout __read_mostly;
-+static bool snooze_timeout_en __read_mostly;
- 
- static int snooze_loop(struct cpuidle_device *dev,
- 			struct cpuidle_driver *drv,
-diff --git a/drivers/cpuidle/cpuidle-pseries.c b/drivers/cpuidle/cpuidle-pseries.c
-index 7b12bb2ea70f..a404f352d284 100644
---- a/drivers/cpuidle/cpuidle-pseries.c
-+++ b/drivers/cpuidle/cpuidle-pseries.c
-@@ -25,10 +25,10 @@ struct cpuidle_driver pseries_idle_driver = {
- 	.owner            = THIS_MODULE,
- };
- 
--static int max_idle_state;
--static struct cpuidle_state *cpuidle_state_table;
--static u64 snooze_timeout;
--static bool snooze_timeout_en;
-+static int max_idle_state __read_mostly;
-+static struct cpuidle_state *cpuidle_state_table __read_mostly;
-+static u64 snooze_timeout __read_mostly;
-+static bool snooze_timeout_en __read_mostly;
- 
- static inline void idle_loop_prolog(unsigned long *in_purr)
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index 5cbb8b1faf7e..633ec9967141 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -1964,12 +1964,8 @@ void show_stack(struct task_struct *tsk, unsigned long *stack)
+ void notrace __ppc64_runlatch_on(void)
  {
+ 	struct thread_info *ti = current_thread_info();
+-	unsigned long ctrl;
+-
+-	ctrl = mfspr(SPRN_CTRLF);
+-	ctrl |= CTRL_RUNLATCH;
+-	mtspr(SPRN_CTRLT, ctrl);
+ 
++	mtspr(SPRN_CTRLT, CTRL_RUNLATCH);
+ 	ti->local_flags |= _TLF_RUNLATCH;
+ }
+ 
+@@ -1977,13 +1973,9 @@ void notrace __ppc64_runlatch_on(void)
+ void notrace __ppc64_runlatch_off(void)
+ {
+ 	struct thread_info *ti = current_thread_info();
+-	unsigned long ctrl;
+ 
+ 	ti->local_flags &= ~_TLF_RUNLATCH;
+-
+-	ctrl = mfspr(SPRN_CTRLF);
+-	ctrl &= ~CTRL_RUNLATCH;
+-	mtspr(SPRN_CTRLT, ctrl);
++	mtspr(SPRN_CTRLT, 0);
+ }
+ #endif /* CONFIG_PPC64 */
+ 
 -- 
 2.11.0
