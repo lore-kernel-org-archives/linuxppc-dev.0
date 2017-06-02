@@ -1,34 +1,25 @@
-Return-Path: <arndbergmann@gmail.com>
-Received: from mail-oi0-x243.google.com (mail-oi0-x243.google.com
- [IPv6:2607:f8b0:4003:c06::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <David.Laight@ACULAB.COM>
+Received: from smtp-out4.electric.net (smtp-out4.electric.net
+ [192.162.216.187])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wfKZf4ZmVzDqLy
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Jun 2017 20:04:57 +1000 (AEST)
-Received: by mail-oi0-x243.google.com with SMTP id h4so10985173oib.0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 02 Jun 2017 03:04:57 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wfMFx6gWnzDqMH
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Jun 2017 21:20:37 +1000 (AEST)
+From: David Laight <David.Laight@ACULAB.COM>
+To: 'Benjamin Herrenschmidt' <benh@kernel.crashing.org>, Frederic Barrat
+ <fbarrat@linux.vnet.ibm.com>, "mpe@ellerman.id.au" <mpe@ellerman.id.au>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "mikey@neuling.org" <mikey@neuling.org>, "brking@linux.vnet.ibm.com"
+ <brking@linux.vnet.ibm.com>, "clsoto@linux.vnet.ibm.com"
+ <clsoto@linux.vnet.ibm.com>
+Subject: RE: [PATCH] powerpc/powernv: Enable PCI peer-to-peer
+Date: Fri, 2 Jun 2017 11:20:24 +0000
+Message-ID: <063D6719AE5E284EB5DD2968C1650D6DD0007A82@AcuExch.aculab.com>
+References: <20170530135818.19291-1-fbarrat@linux.vnet.ibm.com>
+ <1496197542.3354.22.camel@kernel.crashing.org>
+In-Reply-To: <1496197542.3354.22.camel@kernel.crashing.org>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Sender: arndbergmann@gmail.com
-In-Reply-To: <20170602084858.4299-2-asarai@suse.de>
-References: <20170602084858.4299-1-asarai@suse.de>
- <20170602084858.4299-2-asarai@suse.de>
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Fri, 2 Jun 2017 12:04:55 +0200
-Message-ID: <CAK8P3a2Q5CwofO96fXyjTVqmm23UKZjd+mOopnvKr_TusLxXpQ@mail.gmail.com>
-Subject: Re: [PATCH v2 1/1] tty: add TIOCGPTPEER ioctl
-To: Aleksa Sarai <asarai@suse.de>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Jiri Slaby <jslaby@suse.com>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- linux-alpha@vger.kernel.org,
- "open list:RALINK MIPS ARCHITECTURE" <linux-mips@linux-mips.org>,
- Parisc List <linux-parisc@vger.kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, linux-sh@vger.kernel.org,
- sparclinux <sparclinux@vger.kernel.org>, linux-xtensa@linux-xtensa.org,
- linux-arch <linux-arch@vger.kernel.org>,
- Christian Brauner <christian.brauner@ubuntu.com>,
- Valentin Rothberg <vrothberg@suse.com>
-Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,38 +29,10 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Jun 2, 2017 at 10:48 AM, Aleksa Sarai <asarai@suse.de> wrote:
-> When opening the slave end of a PTY, it is not possible for userspace to
-> safely ensure that /dev/pts/$num is actually a slave (in cases where the
-> mount namespace in which devpts was mounted is controlled by an
-> untrusted process). In addition, there are several unresolvable
-> race conditions if userspace were to attempt to detect attacks through
-> stat(2) and other similar methods [in addition it is not clear how
-> userspace could detect attacks involving FUSE].
->
-> Resolve this by providing an interface for userpace to safely open the
-> "peer" end of a PTY file descriptor by using the dentry cached by
-> devpts. Since it is not possible to have an open master PTY without
-> having its slave exposed in /dev/pts this interface is safe. This
-> interface currently does not provide a way to get the master pty (since
-> it is not clear whether such an interface is safe or even useful).
-
-This should be added to the compat ioctls as well. There are two ways
-of doing this:
-
-a) like the other ioctls handled by pty_unix98_ioctl(), add it to the
-list in fs/compat_ioctl.c, and check that the list is still up-to-date with
-the current driver (someone else may have missed one)
-
-b) remove all compat handling for ioctls that are specific to
-pty_unix98_ioctl() and pty_bsd_ioctl() from fs/compat_ioctl.c
-and add compat_ioctl callback pointers to master_pty_ops_bsd
-and ptm_unix98_ops, pointing to the respective ioctl handlers.
-
-I would recommend b) as it avoids the problem in the future,
-but it is a little more upfront work, and should be done as a
-separate preparation patch.
-All the ioctls here are compatible between 32-bit and 64-bit
-user space, so no special translation is needed.
-
-      Arnd
+RnJvbTogQmVuamFtaW4gSGVycmVuc2NobWlkdA0KPiBTZW50OiAzMSBNYXkgMjAxNyAwMzoyNg0K
+Li4uDQo+IFdlIG1pZ2h0IGFsc28gbmVlZCBhIHdheSB0byBwcm92aWRlIHRoZSAiaW5pdGlhdG9y
+IiB3aXRoIHRyYW5zbGF0ZWQgRE1BDQo+IGFkZHJlc3NlcyB0aGF0IGFsbG93IHRvIHRhcmdldCB0
+aGUgcmVjZWl2ZXIuDQoNClJlbGF0ZWQgdG8gdGhhdCBpcyB0aGUgYWJpbGl0eSB0byBhbGxvY2F0
+ZSBtZW1vcnkgdGhhdCB0d28gKG9yIG1vcmUpDQpQQ0llIGRldmljZXMgY2FuIERNQSB0by9mcm9t
+Lg0KVGhhdCBjYW4gYmUgdXNlZnVsIGlmIHBlZXItdG8tcGVlciB0cmFuc2ZlcnMgYXJlIG5vdCBh
+dmFpbGFibGUuDQoNCglEYXZpZA0KDQo=
