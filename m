@@ -1,24 +1,31 @@
-Return-Path: <asarai@suse.de>
-Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
+Return-Path: <clombard@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wfHvD270FzDqM2
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Jun 2017 18:49:12 +1000 (AEST)
-From: Aleksa Sarai <asarai@suse.de>
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Jiri Slaby <jslaby@suse.com>, Arnd Bergmann <arnd@arndb.de>
-Cc: linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org,
- linux-mips@linux-mips.org, linux-parisc@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-sh@vger.kernel.org,
- sparclinux@vger.kernel.org, linux-xtensa@linux-xtensa.org,
- linux-arch@vger.kernel.org, Aleksa Sarai <asarai@suse.de>,
- Christian Brauner <christian.brauner@ubuntu.com>,
- Valentin Rothberg <vrothberg@suse.com>
-Subject: [PATCH v2 1/1] tty: add TIOCGPTPEER ioctl
-Date: Fri,  2 Jun 2017 18:48:58 +1000
-Message-Id: <20170602084858.4299-2-asarai@suse.de>
-In-Reply-To: <20170602084858.4299-1-asarai@suse.de>
-References: <20170602084858.4299-1-asarai@suse.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wfJ8Q67d2zDqLV
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Jun 2017 19:00:38 +1000 (AEST)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v528xNa0046576
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 2 Jun 2017 05:00:30 -0400
+Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2au1hc8sa7-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 02 Jun 2017 05:00:29 -0400
+Received: from localhost
+ by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <clombard@linux.vnet.ibm.com>;
+ Fri, 2 Jun 2017 10:00:27 +0100
+From: Christophe Lombard <clombard@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, fbarrat@linux.vnet.ibm.com,
+ vaibhav@linux.vnet.ibm.com, andrew.donnellan@au1.ibm.com
+Subject: [PATCH] cxl: Export library to support IBM XSL
+Date: Fri,  2 Jun 2017 11:00:22 +0200
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Message-Id: <1496394022-14969-1-git-send-email-clombard@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,265 +35,688 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When opening the slave end of a PTY, it is not possible for userspace to
-safely ensure that /dev/pts/$num is actually a slave (in cases where the
-mount namespace in which devpts was mounted is controlled by an
-untrusted process). In addition, there are several unresolvable
-race conditions if userspace were to attempt to detect attacks through
-stat(2) and other similar methods [in addition it is not clear how
-userspace could detect attacks involving FUSE].
+From: Christophe Lombard <christophe_lombard@fr.ibm.cm>
 
-Resolve this by providing an interface for userpace to safely open the
-"peer" end of a PTY file descriptor by using the dentry cached by
-devpts. Since it is not possible to have an open master PTY without
-having its slave exposed in /dev/pts this interface is safe. This
-interface currently does not provide a way to get the master pty (since
-it is not clear whether such an interface is safe or even useful).
+This patch exports a in-kernel 'library' API which can be called by
+other drivers to help interacting with an IBM XSL on a POWER9 system.
 
-Cc: Christian Brauner <christian.brauner@ubuntu.com>
-Cc: Valentin Rothberg <vrothberg@suse.com>
-Signed-off-by: Aleksa Sarai <asarai@suse.de>
+The XSL (Translation Service Layer) is a stripped down version of the
+PSL (Power Service Layer) used in some cards such as the Mellanox CX5.
+Like the PSL, it implements the CAIA architecture, but has a number
+of differences, mostly in it's implementation dependent registers.
+
+The XSL also uses a special DMA cxl mode, which uses a slightly
+different init sequence for the CAPP and PHB.
+
+Signed-off-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
 ---
- arch/alpha/include/uapi/asm/ioctls.h   |  1 +
- arch/mips/include/uapi/asm/ioctls.h    |  1 +
- arch/parisc/include/uapi/asm/ioctls.h  |  1 +
- arch/powerpc/include/uapi/asm/ioctls.h |  1 +
- arch/sh/include/uapi/asm/ioctls.h      |  1 +
- arch/sparc/include/uapi/asm/ioctls.h   |  3 +-
- arch/xtensa/include/uapi/asm/ioctls.h  |  1 +
- drivers/tty/pty.c                      | 71 ++++++++++++++++++++++++++++++++--
- include/uapi/asm-generic/ioctls.h      |  1 +
- 9 files changed, 76 insertions(+), 5 deletions(-)
+ arch/powerpc/include/asm/opal-api.h |   1 +
+ drivers/misc/cxl/Kconfig            |   5 +
+ drivers/misc/cxl/Makefile           |   2 +-
+ drivers/misc/cxl/cxl.h              |   5 +
+ drivers/misc/cxl/cxllib.c           | 238 ++++++++++++++++++++++++++++++++++++
+ drivers/misc/cxl/fault.c            |  34 +++---
+ drivers/misc/cxl/native.c           |  16 ++-
+ drivers/misc/cxl/pci.c              |  40 +++---
+ include/misc/cxllib.h               | 132 ++++++++++++++++++++
+ 9 files changed, 438 insertions(+), 35 deletions(-)
+ create mode 100644 drivers/misc/cxl/cxllib.c
+ create mode 100644 include/misc/cxllib.h
 
-diff --git a/arch/alpha/include/uapi/asm/ioctls.h b/arch/alpha/include/uapi/asm/ioctls.h
-index f30c94ae1bdb..ff67b8373bf7 100644
---- a/arch/alpha/include/uapi/asm/ioctls.h
-+++ b/arch/alpha/include/uapi/asm/ioctls.h
-@@ -100,6 +100,7 @@
- #define TIOCGPKT	_IOR('T', 0x38, int) /* Get packet mode state */
- #define TIOCGPTLCK	_IOR('T', 0x39, int) /* Get Pty lock state */
- #define TIOCGEXCL	_IOR('T', 0x40, int) /* Get exclusive mode state */
-+#define TIOCGPTPEER	_IOR('T', 0x41, int) /* Safely open the slave */
+diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
+index cb3e624..3e0be78 100644
+--- a/arch/powerpc/include/asm/opal-api.h
++++ b/arch/powerpc/include/asm/opal-api.h
+@@ -877,6 +877,7 @@ enum {
+ 	OPAL_PHB_CAPI_MODE_SNOOP_OFF    = 2,
+ 	OPAL_PHB_CAPI_MODE_SNOOP_ON	= 3,
+ 	OPAL_PHB_CAPI_MODE_DMA		= 4,
++	OPAL_PHB_CAPI_MODE_DMA_TVT1	= 5,
+ };
  
- #define TIOCSERCONFIG	0x5453
- #define TIOCSERGWILD	0x5454
-diff --git a/arch/mips/include/uapi/asm/ioctls.h b/arch/mips/include/uapi/asm/ioctls.h
-index 740219c2c894..68e19b689a00 100644
---- a/arch/mips/include/uapi/asm/ioctls.h
-+++ b/arch/mips/include/uapi/asm/ioctls.h
-@@ -91,6 +91,7 @@
- #define TIOCGPKT	_IOR('T', 0x38, int) /* Get packet mode state */
- #define TIOCGPTLCK	_IOR('T', 0x39, int) /* Get Pty lock state */
- #define TIOCGEXCL	_IOR('T', 0x40, int) /* Get exclusive mode state */
-+#define TIOCGPTPEER	_IOR('T', 0x41, int) /* Safely open the slave */
+ /* OPAL I2C request */
+diff --git a/drivers/misc/cxl/Kconfig b/drivers/misc/cxl/Kconfig
+index b75cf83..93397cb 100644
+--- a/drivers/misc/cxl/Kconfig
++++ b/drivers/misc/cxl/Kconfig
+@@ -11,11 +11,16 @@ config CXL_AFU_DRIVER_OPS
+ 	bool
+ 	default n
  
- /* I hope the range from 0x5480 on is free ... */
- #define TIOCSCTTY	0x5480		/* become controlling tty */
-diff --git a/arch/parisc/include/uapi/asm/ioctls.h b/arch/parisc/include/uapi/asm/ioctls.h
-index b6572f051b67..674c68a5bbd0 100644
---- a/arch/parisc/include/uapi/asm/ioctls.h
-+++ b/arch/parisc/include/uapi/asm/ioctls.h
-@@ -60,6 +60,7 @@
- #define TIOCGPKT	_IOR('T', 0x38, int) /* Get packet mode state */
- #define TIOCGPTLCK	_IOR('T', 0x39, int) /* Get Pty lock state */
- #define TIOCGEXCL	_IOR('T', 0x40, int) /* Get exclusive mode state */
-+#define TIOCGPTPEER	_IOR('T', 0x41, int) /* Safely open the slave */
- 
- #define FIONCLEX	0x5450  /* these numbers need to be adjusted. */
- #define FIOCLEX		0x5451
-diff --git a/arch/powerpc/include/uapi/asm/ioctls.h b/arch/powerpc/include/uapi/asm/ioctls.h
-index 49a25796a61a..bfd609a3e928 100644
---- a/arch/powerpc/include/uapi/asm/ioctls.h
-+++ b/arch/powerpc/include/uapi/asm/ioctls.h
-@@ -100,6 +100,7 @@
- #define TIOCGPKT	_IOR('T', 0x38, int) /* Get packet mode state */
- #define TIOCGPTLCK	_IOR('T', 0x39, int) /* Get Pty lock state */
- #define TIOCGEXCL	_IOR('T', 0x40, int) /* Get exclusive mode state */
-+#define TIOCGPTPEER	_IOR('T', 0x41, int) /* Safely open the slave */
- 
- #define TIOCSERCONFIG	0x5453
- #define TIOCSERGWILD	0x5454
-diff --git a/arch/sh/include/uapi/asm/ioctls.h b/arch/sh/include/uapi/asm/ioctls.h
-index c9903e56ccf4..eec7901e9e65 100644
---- a/arch/sh/include/uapi/asm/ioctls.h
-+++ b/arch/sh/include/uapi/asm/ioctls.h
-@@ -93,6 +93,7 @@
- #define TIOCGPKT	_IOR('T', 0x38, int) /* Get packet mode state */
- #define TIOCGPTLCK	_IOR('T', 0x39, int) /* Get Pty lock state */
- #define TIOCGEXCL	_IOR('T', 0x40, int) /* Get exclusive mode state */
-+#define TIOCGPTPEER	_IOR('T', 0x41, int) /* Safely open the slave */
- 
- #define TIOCSERCONFIG	_IO('T', 83) /* 0x5453 */
- #define TIOCSERGWILD	_IOR('T', 84,  int) /* 0x5454 */
-diff --git a/arch/sparc/include/uapi/asm/ioctls.h b/arch/sparc/include/uapi/asm/ioctls.h
-index 06b3f6c3bb9a..6d27398632ea 100644
---- a/arch/sparc/include/uapi/asm/ioctls.h
-+++ b/arch/sparc/include/uapi/asm/ioctls.h
-@@ -27,7 +27,7 @@
- #define TIOCGRS485	_IOR('T', 0x41, struct serial_rs485)
- #define TIOCSRS485	_IOWR('T', 0x42, struct serial_rs485)
- 
--/* Note that all the ioctls that are not available in Linux have a 
-+/* Note that all the ioctls that are not available in Linux have a
-  * double underscore on the front to: a) avoid some programs to
-  * think we support some ioctls under Linux (autoconfiguration stuff)
-  */
-@@ -88,6 +88,7 @@
- #define TIOCGPTN	_IOR('t', 134, unsigned int) /* Get Pty Number */
- #define TIOCSPTLCK	_IOW('t', 135, int) /* Lock/unlock PTY */
- #define TIOCSIG		_IOW('t', 136, int) /* Generate signal on Pty slave */
-+#define TIOCGPTPEER	_IOR('t', 137, int) /* Safely open the slave */
- 
- /* Little f */
- #define FIOCLEX		_IO('f', 1)
-diff --git a/arch/xtensa/include/uapi/asm/ioctls.h b/arch/xtensa/include/uapi/asm/ioctls.h
-index 518954e74e6d..98b004e24e85 100644
---- a/arch/xtensa/include/uapi/asm/ioctls.h
-+++ b/arch/xtensa/include/uapi/asm/ioctls.h
-@@ -105,6 +105,7 @@
- #define TIOCGPKT	_IOR('T', 0x38, int) /* Get packet mode state */
- #define TIOCGPTLCK	_IOR('T', 0x39, int) /* Get Pty lock state */
- #define TIOCGEXCL	_IOR('T', 0x40, int) /* Get exclusive mode state */
-+#define TIOCGPTPEER	_IOR('T', 0x41, int) /* Safely open the slave */
- 
- #define TIOCSERCONFIG	_IO('T', 83)
- #define TIOCSERGWILD	_IOR('T', 84,  int)
-diff --git a/drivers/tty/pty.c b/drivers/tty/pty.c
-index 65799575c666..19c134ca47bb 100644
---- a/drivers/tty/pty.c
-+++ b/drivers/tty/pty.c
-@@ -24,6 +24,9 @@
- #include <linux/slab.h>
- #include <linux/mutex.h>
- #include <linux/poll.h>
-+#include <linux/mount.h>
-+#include <linux/file.h>
-+#include <linux/ioctl.h>
- 
- #undef TTY_DEBUG_HANGUP
- #ifdef TTY_DEBUG_HANGUP
-@@ -66,8 +69,13 @@ static void pty_close(struct tty_struct *tty, struct file *filp)
- #ifdef CONFIG_UNIX98_PTYS
- 		if (tty->driver == ptm_driver) {
- 			mutex_lock(&devpts_mutex);
--			if (tty->link->driver_data)
--				devpts_pty_kill(tty->link->driver_data);
-+			if (tty->link->driver_data) {
-+				struct path *path = tty->link->driver_data;
++config CXL_LIB
++	bool
++	default n
 +
-+				devpts_pty_kill(path->dentry);
-+				path_put(path);
-+				kfree(path);
+ config CXL
+ 	tristate "Support for IBM Coherent Accelerators (CXL)"
+ 	depends on PPC_POWERNV && PCI_MSI && EEH
+ 	select CXL_BASE
+ 	select CXL_AFU_DRIVER_OPS
++	select CXL_LIB
+ 	default m
+ 	help
+ 	  Select this option to enable driver support for IBM Coherent
+diff --git a/drivers/misc/cxl/Makefile b/drivers/misc/cxl/Makefile
+index c14fd6b..0b5fd74 100644
+--- a/drivers/misc/cxl/Makefile
++++ b/drivers/misc/cxl/Makefile
+@@ -3,7 +3,7 @@ ccflags-$(CONFIG_PPC_WERROR)	+= -Werror
+ 
+ cxl-y				+= main.o file.o irq.o fault.o native.o
+ cxl-y				+= context.o sysfs.o pci.o trace.o
+-cxl-y				+= vphb.o phb.o api.o
++cxl-y				+= vphb.o phb.o api.o cxllib.o
+ cxl-$(CONFIG_PPC_PSERIES)	+= flash.o guest.o of.o hcalls.o
+ cxl-$(CONFIG_DEBUG_FS)		+= debugfs.o
+ obj-$(CONFIG_CXL)		+= cxl.o
+diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
+index c8568ea..2394374 100644
+--- a/drivers/misc/cxl/cxl.h
++++ b/drivers/misc/cxl/cxl.h
+@@ -1018,6 +1018,7 @@ static inline void cxl_debugfs_add_afu_regs_psl8(struct cxl_afu *afu, struct den
+ 
+ void cxl_handle_fault(struct work_struct *work);
+ void cxl_prefault(struct cxl_context *ctx, u64 wed);
++int cxl_handle_page_fault(bool kernel_context, struct mm_struct *mm, u64 dsisr, u64 dar);
+ 
+ struct cxl *get_cxl_adapter(int num);
+ int cxl_alloc_sst(struct cxl_context *ctx);
+@@ -1069,6 +1070,10 @@ int cxl_afu_slbia(struct cxl_afu *afu);
+ int cxl_data_cache_flush(struct cxl *adapter);
+ int cxl_afu_disable(struct cxl_afu *afu);
+ int cxl_psl_purge(struct cxl_afu *afu);
++int cxl_calc_capp_routing(struct pci_dev *dev, u64 *chipid, u32 *phb_index, u64 *capp_unit_id);
++int cxl_slot_is_switched(struct pci_dev *dev);
++int cxl_get_xsl9_dsnctl(u64 capp_unit_id, u64 *reg);
++u64 cxl_calculate_sr(bool master, bool kernel, bool real_mode, bool p9);
+ 
+ void cxl_native_irq_dump_regs_psl9(struct cxl_context *ctx);
+ void cxl_native_irq_dump_regs_psl8(struct cxl_context *ctx);
+diff --git a/drivers/misc/cxl/cxllib.c b/drivers/misc/cxl/cxllib.c
+new file mode 100644
+index 0000000..a98ccb9
+--- /dev/null
++++ b/drivers/misc/cxl/cxllib.c
+@@ -0,0 +1,238 @@
++/*
++ * Copyright 2016 IBM Corp.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ */
++
++#include <linux/hugetlb.h>
++#include <linux/sched/mm.h>
++#include "cxl.h"
++#include <misc/cxllib.h>
++#include <asm/pnv-pci.h>
++
++#define CXL_INVALID_DRA                 ~0ull
++#define CXL_DUMMY_READ_SIZE             128
++#define CXL_DUMMY_READ_ALIGN            8
++#define CXL_CAPI_WINDOW_START           0x2000000000000ull
++#define CXL_CAPI_WINDOW_LOG_SIZE        48
++#define CXL_XSL_CONFIG_CURRENT_VERSION  CXL_XSL_CONFIG_VERSION1
++
++
++bool cxllib_slot_is_supported(struct pci_dev *dev, unsigned long flags)
++{
++	int rc;
++	u32 phb_index;
++	u64 chip_id, capp_unit_id;
++
++	/* Currently none supported */
++	if (flags)
++		return false;
++
++	if (!cpu_has_feature(CPU_FTR_HVMODE))
++		return false;
++
++	if (!cxl_is_power9())
++		return false;
++
++	if (cxl_slot_is_switched(dev))
++		return false;
++
++	/* on p9, some pci slots are not connected to a CAPP unit */
++	rc = cxl_calc_capp_routing(dev, &chip_id, &phb_index, &capp_unit_id);
++	if (rc)
++		return false;
++
++	return true;
++}
++EXPORT_SYMBOL_GPL(cxllib_slot_is_supported);
++
++static DEFINE_MUTEX(dra_mutex);
++static u64 dummy_read_addr = CXL_INVALID_DRA;
++
++int allocate_dummy_read_buf(void)
++{
++	u64 buf, vaddr;
++	size_t buf_size;
++
++	/*
++	 * Dummy read buffer is 128-byte long, aligned on a
++	 * 256-byte boundary and we need the physical address.
++	 */
++	buf_size = CXL_DUMMY_READ_SIZE + (1ull << CXL_DUMMY_READ_ALIGN);
++	buf = (u64) kzalloc(buf_size, GFP_KERNEL);
++	if (!buf)
++		return -ENOMEM;
++
++	vaddr = (buf + (1ull << CXL_DUMMY_READ_ALIGN) - 1) &
++					(~0ull << CXL_DUMMY_READ_ALIGN);
++
++	WARN((vaddr + CXL_DUMMY_READ_SIZE) > (buf + buf_size),
++		"Dummy read buffer alignment issue");
++	dummy_read_addr = virt_to_phys((void *) vaddr);
++	return 0;
++}
++
++int cxllib_get_xsl_config(struct pci_dev *dev, struct cxllib_xsl_config *cfg)
++{
++	int rc;
++	u32 phb_index;
++	u64 chip_id, capp_unit_id;
++
++	if (!cpu_has_feature(CPU_FTR_HVMODE))
++		return -EINVAL;
++
++	mutex_lock(&dra_mutex);
++	if (dummy_read_addr == CXL_INVALID_DRA) {
++		rc = allocate_dummy_read_buf();
++		if (rc) {
++			mutex_unlock(&dra_mutex);
++			return rc;
++		}
++	}
++	mutex_unlock(&dra_mutex);
++
++	rc = cxl_calc_capp_routing(dev, &chip_id, &phb_index, &capp_unit_id);
++	if (rc)
++		return rc;
++
++	rc = cxl_get_xsl9_dsnctl(capp_unit_id, &cfg->dsnctl);
++	if (rc)
++		return rc;
++	if (cpu_has_feature(CPU_FTR_POWER9_DD1)) {
++		/* workaround for DD1 - nbwind = capiind */
++		cfg->dsnctl |= ((u64)0x02 << (63-47));
++	}
++
++	cfg->version  = CXL_XSL_CONFIG_CURRENT_VERSION;
++	cfg->log_bar_size = CXL_CAPI_WINDOW_LOG_SIZE;
++	cfg->bar_addr = CXL_CAPI_WINDOW_START;
++	cfg->dra = dummy_read_addr;
++	return 0;
++}
++EXPORT_SYMBOL_GPL(cxllib_get_xsl_config);
++
++
++int cxllib_switch_phb_mode(struct pci_dev *dev, enum cxllib_mode mode,
++			unsigned long flags)
++{
++	int rc = 0;
++
++	if (!cpu_has_feature(CPU_FTR_HVMODE))
++		return -EINVAL;
++
++	switch (mode) {
++	case CXL_MODE_PCI:
++		/*
++		 * We currently don't support going back to PCI mode
++		 * However, we'll turn the invalidations off, so that
++		 * the CX5 firmware doesn't have to ack them and can do
++		 * things like reset, etc.. with no worries.
++		 * So always return EPERM (can't go back to PCI) or
++		 * EBUSY if we couldn't even turn off snooping
++		 */
++		rc = pnv_phb_to_cxl_mode(dev, OPAL_PHB_CAPI_MODE_SNOOP_OFF);
++		if (rc)
++			rc = -EBUSY;
++		else
++			rc = -EPERM;
++		break;
++	case CXL_MODE_CXL:
++		/* DMA only supported on TVT1 for the time being */
++		if (flags != CXL_MODE_DMA_TVT1)
++			return -EINVAL;
++		rc = pnv_phb_to_cxl_mode(dev, OPAL_PHB_CAPI_MODE_DMA_TVT1);
++		if (rc)
++			return rc;
++		rc = pnv_phb_to_cxl_mode(dev, OPAL_PHB_CAPI_MODE_SNOOP_ON);
++		break;
++	default:
++		rc = -EINVAL;
++	}
++	return rc;
++}
++EXPORT_SYMBOL_GPL(cxllib_switch_phb_mode);
++
++
++int cxllib_set_device_dma(struct pci_dev *dev, unsigned long flags)
++{
++	int rc;
++
++	if (flags)
++		return -EINVAL;
++
++	rc = dma_set_mask(&dev->dev, DMA_BIT_MASK(64));
++	return rc;
++}
++EXPORT_SYMBOL_GPL(cxllib_set_device_dma);
++
++
++int cxllib_get_PE_attributes(struct task_struct *task,
++	     unsigned long translation_mode, struct cxllib_pe_attributes *attr)
++{
++	struct mm_struct *mm = NULL;
++
++	if (translation_mode != CXL_TRANSLATED_MODE &&
++		translation_mode != CXL_REAL_MODE)
++		return -EINVAL;
++
++	attr->sr = cxl_calculate_sr(false /* master */,
++				task == NULL /* kernel ctx */,
++				translation_mode == CXL_REAL_MODE,
++				true /* p9 */);
++	attr->lpid = mfspr(SPRN_LPID);
++	if (task) {
++		mm = get_task_mm(task);
++		if (mm == NULL)
++			return -EINVAL;
++		/*
++		 * Caller is keeping a reference on mm_users for as long
++		 * as XSL uses the memory context
++		 */
++		attr->pid = mm->context.id;
++		mmput(mm);
++	} else {
++		attr->pid = 0;
++	}
++	attr->tid = 0;
++	return 0;
++}
++EXPORT_SYMBOL_GPL(cxllib_get_PE_attributes);
++
++
++int cxllib_handle_fault(struct mm_struct *mm, u64 addr, u64 size, u64 flags)
++{
++	int rc;
++	u64 dar;
++	struct vm_area_struct *vma = NULL;
++	unsigned long page_size;
++
++	down_read(&mm->mmap_sem);
++
++	for (dar = addr; dar < addr + size; dar += page_size) {
++		if (!vma || dar < vma->vm_start || dar > vma->vm_end) {
++			vma = find_vma(mm, addr);
++			if (!vma) {
++				pr_err("Can't find vma for addr %016llx\n", addr);
++				rc = -EFAULT;
++				goto out;
 +			}
- 			mutex_unlock(&devpts_mutex);
- 		}
- #endif
-@@ -440,6 +448,48 @@ static int pty_common_install(struct tty_driver *driver, struct tty_struct *tty,
- 	return retval;
++			/* get the size of the pages allocated */
++			page_size = vma_kernel_pagesize(vma);
++		}
++
++		rc = cxl_handle_page_fault(true, mm, flags, dar);
++		if (rc) {
++			pr_err("_cxl_handle_page_fault failed %d", rc);
++			rc = -EFAULT;
++			goto out;
++		}
++	}
++	rc = 0;
++out:
++	up_read(&mm->mmap_sem);
++	return rc;
++}
++EXPORT_SYMBOL_GPL(cxllib_handle_fault);
+diff --git a/drivers/misc/cxl/fault.c b/drivers/misc/cxl/fault.c
+index 5344448..4f01ddf 100644
+--- a/drivers/misc/cxl/fault.c
++++ b/drivers/misc/cxl/fault.c
+@@ -132,18 +132,17 @@ static int cxl_handle_segment_miss(struct cxl_context *ctx,
+ 	return IRQ_HANDLED;
  }
  
-+/**
-+ *	pty_open_peer - open the peer of a pty
-+ *	@tty: the peer of the pty being opened
-+ *
-+ *	Open the cached dentry in tty->link, providing a safe way for userspace
-+ *	to get the slave end of a pty (where they have the master fd and cannot
-+ *	access or trust the mount namespace /dev/pts was mounted inside).
-+ */
-+static struct file *pty_open_peer(struct tty_struct *tty, int flags)
+-static void cxl_handle_page_fault(struct cxl_context *ctx,
+-				  struct mm_struct *mm, u64 dsisr, u64 dar)
++int cxl_handle_page_fault(bool kernel_context,
++			  struct mm_struct *mm, u64 dsisr, u64 dar)
+ {
+-	unsigned flt = 0;
+-	int result;
+ 	unsigned long access, flags, inv_flags = 0;
++	unsigned int flt = 0;
++	int rc;
+ 
+-	trace_cxl_pte_miss(ctx, dsisr, dar);
+-
+-	if ((result = copro_handle_mm_fault(mm, dar, dsisr, &flt))) {
+-		pr_devel("copro_handle_mm_fault failed: %#x\n", result);
+-		return cxl_ack_ae(ctx);
++	rc = copro_handle_mm_fault(mm, dsisr, dar, &flt);
++	if (rc) {
++		pr_devel("copro_handle_mm_fault failed: %#x\n", rc);
++		return rc;
+ 	}
+ 
+ 	if (!radix_enabled()) {
+@@ -156,7 +155,7 @@ static void cxl_handle_page_fault(struct cxl_context *ctx,
+ 			access |= _PAGE_WRITE;
+ 
+ 		access |= _PAGE_PRIVILEGED;
+-		if ((!ctx->kernel) || (REGION_ID(dar) == USER_REGION_ID))
++		if (!kernel_context || (REGION_ID(dar) == USER_REGION_ID))
+ 			access &= ~_PAGE_PRIVILEGED;
+ 
+ 		if (dsisr & DSISR_NOHPTE)
+@@ -166,8 +165,7 @@ static void cxl_handle_page_fault(struct cxl_context *ctx,
+ 		hash_page_mm(mm, dar, access, 0x300, inv_flags);
+ 		local_irq_restore(flags);
+ 	}
+-	pr_devel("Page fault successfully handled for pe: %i!\n", ctx->pe);
+-	cxl_ops->ack_irq(ctx, CXL_PSL_TFC_An_R, 0);
++	return 0;
+ }
+ 
+ /*
+@@ -254,9 +252,15 @@ void cxl_handle_fault(struct work_struct *fault_work)
+ 
+ 	if (cxl_is_segment_miss(ctx, dsisr))
+ 		cxl_handle_segment_miss(ctx, mm, dar);
+-	else if (cxl_is_page_fault(ctx, dsisr))
+-		cxl_handle_page_fault(ctx, mm, dsisr, dar);
+-	else
++	else if (cxl_is_page_fault(ctx, dsisr)) {
++			trace_cxl_pte_miss(ctx, dsisr, dar);
++			if (cxl_handle_page_fault(ctx->kernel, mm, dsisr, dar)) {
++				cxl_ack_ae(ctx);
++			} else {
++				cxl_ops->ack_irq(ctx, CXL_PSL_TFC_An_R, 0);
++			}
++			pr_devel("Page fault successfully handled for pe: %i!\n", ctx->pe);
++	} else
+ 		WARN(1, "cxl_handle_fault has nothing to handle\n");
+ 
+ 	if (mm)
+diff --git a/drivers/misc/cxl/native.c b/drivers/misc/cxl/native.c
+index 871a2f0..86f66d7 100644
+--- a/drivers/misc/cxl/native.c
++++ b/drivers/misc/cxl/native.c
+@@ -581,17 +581,17 @@ static int activate_afu_directed(struct cxl_afu *afu)
+ #define set_endian(sr) ((sr) &= ~(CXL_PSL_SR_An_LE))
+ #endif
+ 
+-static u64 calculate_sr(struct cxl_context *ctx)
++u64 cxl_calculate_sr(bool master, bool kernel, bool real_mode, bool p9)
+ {
+ 	u64 sr = 0;
+ 
+ 	set_endian(sr);
+-	if (ctx->master)
++	if (master)
+ 		sr |= CXL_PSL_SR_An_MP;
+ 	if (mfspr(SPRN_LPCR) & LPCR_TC)
+ 		sr |= CXL_PSL_SR_An_TC;
+-	if (ctx->kernel) {
+-		if (!ctx->real_mode)
++	if (kernel) {
++		if (!real_mode)
+ 			sr |= CXL_PSL_SR_An_R;
+ 		sr |= (mfmsr() & MSR_SF) | CXL_PSL_SR_An_HV;
+ 	} else {
+@@ -603,7 +603,7 @@ static u64 calculate_sr(struct cxl_context *ctx)
+ 		if (!test_tsk_thread_flag(current, TIF_32BIT))
+ 			sr |= CXL_PSL_SR_An_SF;
+ 	}
+-	if (cxl_is_psl9(ctx->afu)) {
++	if (p9) {
+ 		if (radix_enabled())
+ 			sr |= CXL_PSL_SR_An_XLAT_ror;
+ 		else
+@@ -612,6 +612,12 @@ static u64 calculate_sr(struct cxl_context *ctx)
+ 	return sr;
+ }
+ 
++static u64 calculate_sr(struct cxl_context *ctx)
 +{
-+	if (tty->driver->subtype != PTY_TYPE_MASTER)
-+		return ERR_PTR(-EIO);
-+	return dentry_open(tty->link->driver_data, flags, current_cred());
++	return cxl_calculate_sr(ctx->master, ctx->kernel, ctx->real_mode,
++				cxl_is_psl9(ctx->afu));
 +}
 +
-+static int pty_get_peer(struct tty_struct *tty, int flags)
-+{
-+	int fd = -1;
-+	struct file *filp = NULL;
-+	int retval = -EINVAL;
-+
-+	fd = get_unused_fd_flags(0);
-+	if (fd < 0) {
-+		retval = fd;
-+		goto err;
-+	}
-+
-+	filp = pty_open_peer(tty, flags);
-+	if (IS_ERR(filp)) {
-+		retval = PTR_ERR(filp);
-+		goto err_put;
-+	}
-+
-+	fd_install(fd, filp);
-+	return fd;
-+
-+err_put:
-+	put_unused_fd(fd);
-+err:
-+	return retval;
-+}
-+
- static void pty_cleanup(struct tty_struct *tty)
+ static void update_ivtes_directed(struct cxl_context *ctx)
  {
- 	tty_port_put(tty->port);
-@@ -602,6 +652,8 @@ static int pty_unix98_ioctl(struct tty_struct *tty,
- 		return pty_get_pktmode(tty, (int __user *)arg);
- 	case TIOCGPTN: /* Get PT Number */
- 		return put_user(tty->index, (unsigned int __user *)arg);
-+	case TIOCGPTPEER: /* Open the other end */
-+		return pty_get_peer(tty, (int) arg);
- 	case TIOCSIG:    /* Send signal to other side of pty */
- 		return pty_signal(tty, (int) arg);
- 	}
-@@ -718,6 +770,7 @@ static int ptmx_open(struct inode *inode, struct file *filp)
- {
- 	struct pts_fs_info *fsi;
- 	struct tty_struct *tty;
-+	struct path *pts_path;
- 	struct dentry *dentry;
- 	int retval;
- 	int index;
-@@ -771,16 +824,26 @@ static int ptmx_open(struct inode *inode, struct file *filp)
- 		retval = PTR_ERR(dentry);
- 		goto err_release;
- 	}
--	tty->link->driver_data = dentry;
-+	/* We need to cache a fake path for TIOCGPTPEER. */
-+	pts_path = kmalloc(sizeof(struct path), GFP_KERNEL);
-+	if (!pts_path)
-+		goto err_release;
-+	pts_path->mnt = filp->f_path.mnt;
-+	pts_path->dentry = dentry;
-+	path_get(pts_path);
-+	tty->link->driver_data = pts_path;
- 
- 	retval = ptm_driver->ops->open(tty, filp);
- 	if (retval)
--		goto err_release;
-+		goto err_path_put;
- 
- 	tty_debug_hangup(tty, "opening (count=%d)\n", tty->count);
- 
- 	tty_unlock(tty);
+ 	bool need_update = (ctx->status == STARTED);
+diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
+index 6dc1ee5..132cab1 100644
+--- a/drivers/misc/cxl/pci.c
++++ b/drivers/misc/cxl/pci.c
+@@ -375,7 +375,7 @@ static u64 get_capp_unit_id(struct device_node *np, u32 phb_index)
  	return 0;
-+err_path_put:
-+	path_put(pts_path);
-+	kfree(pts_path);
- err_release:
- 	tty_unlock(tty);
- 	// This will also put-ref the fsi
-diff --git a/include/uapi/asm-generic/ioctls.h b/include/uapi/asm-generic/ioctls.h
-index 143dacbb7d9a..06d5f7ddf84e 100644
---- a/include/uapi/asm-generic/ioctls.h
-+++ b/include/uapi/asm-generic/ioctls.h
-@@ -77,6 +77,7 @@
- #define TIOCGPKT	_IOR('T', 0x38, int) /* Get packet mode state */
- #define TIOCGPTLCK	_IOR('T', 0x39, int) /* Get Pty lock state */
- #define TIOCGEXCL	_IOR('T', 0x40, int) /* Get exclusive mode state */
-+#define TIOCGPTPEER	_IOR('T', 0x41, int) /* Safely open the slave */
+ }
  
- #define FIONCLEX	0x5450
- #define FIOCLEX		0x5451
+-static int calc_capp_routing(struct pci_dev *dev, u64 *chipid,
++int cxl_calc_capp_routing(struct pci_dev *dev, u64 *chipid,
+ 			     u32 *phb_index, u64 *capp_unit_id)
+ {
+ 	int rc;
+@@ -408,17 +408,9 @@ static int calc_capp_routing(struct pci_dev *dev, u64 *chipid,
+ 	return 0;
+ }
+ 
+-static int init_implementation_adapter_regs_psl9(struct cxl *adapter, struct pci_dev *dev)
++int cxl_get_xsl9_dsnctl(u64 capp_unit_id, u64 *reg)
+ {
+-	u64 xsl_dsnctl, psl_fircntl;
+-	u64 chipid;
+-	u32 phb_index;
+-	u64 capp_unit_id;
+-	int rc;
+-
+-	rc = calc_capp_routing(dev, &chipid, &phb_index, &capp_unit_id);
+-	if (rc)
+-		return rc;
++	u64 xsl_dsnctl;
+ 
+ 	/*
+ 	 * CAPI Identifier bits [0:7]
+@@ -454,6 +446,26 @@ static int init_implementation_adapter_regs_psl9(struct cxl *adapter, struct pci
+ 		xsl_dsnctl |= ((u64)0x04 << (63-55));
+ 	}
+ 
++	*reg = xsl_dsnctl;
++	return 0;
++}
++
++static int init_implementation_adapter_regs_psl9(struct cxl *adapter, struct pci_dev *dev)
++{
++	u64 xsl_dsnctl, psl_fircntl;
++	u64 chipid;
++	u32 phb_index;
++	u64 capp_unit_id;
++	int rc;
++
++	rc = cxl_calc_capp_routing(dev, &chipid, &phb_index, &capp_unit_id);
++	if (rc)
++		return rc;
++
++	rc = cxl_get_xsl9_dsnctl(capp_unit_id, &xsl_dsnctl);
++	if (rc)
++		return rc;
++
+ 	cxl_p1_write(adapter, CXL_XSL9_DSNCTL, xsl_dsnctl);
+ 
+ 	/* Set fir_cntl to recommended value for production env */
+@@ -505,7 +517,7 @@ static int init_implementation_adapter_regs_psl8(struct cxl *adapter, struct pci
+ 	u64 capp_unit_id;
+ 	int rc;
+ 
+-	rc = calc_capp_routing(dev, &chipid, &phb_index, &capp_unit_id);
++	rc = cxl_calc_capp_routing(dev, &chipid, &phb_index, &capp_unit_id);
+ 	if (rc)
+ 		return rc;
+ 
+@@ -538,7 +550,7 @@ static int init_implementation_adapter_regs_xsl(struct cxl *adapter, struct pci_
+ 	u64 capp_unit_id;
+ 	int rc;
+ 
+-	rc = calc_capp_routing(dev, &chipid, &phb_index, &capp_unit_id);
++	rc = cxl_calc_capp_routing(dev, &chipid, &phb_index, &capp_unit_id);
+ 	if (rc)
+ 		return rc;
+ 
+@@ -1900,7 +1912,7 @@ static void cxl_pci_remove_adapter(struct cxl *adapter)
+ 
+ #define CXL_MAX_PCIEX_PARENT 2
+ 
+-static int cxl_slot_is_switched(struct pci_dev *dev)
++int cxl_slot_is_switched(struct pci_dev *dev)
+ {
+ 	struct device_node *np;
+ 	int depth = 0;
+diff --git a/include/misc/cxllib.h b/include/misc/cxllib.h
+new file mode 100644
+index 0000000..d2f3358
+--- /dev/null
++++ b/include/misc/cxllib.h
+@@ -0,0 +1,132 @@
++/*
++ * Copyright 2016 IBM Corp.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ */
++
++#ifndef _MISC_CXLLIB_H
++#define _MISC_CXLLIB_H
++
++#include <linux/pci.h>
++#include <asm/reg.h>
++
++/*
++ * cxl driver exports a in-kernel 'library' API which can be called by
++ * other drivers to help interacting with an IBM XSL.
++ */
++
++/*
++ * tells whether capi is supported on the PCIe slot where the
++ * device is seated
++ *
++ * Input:
++ *	dev: device whose slot needs to be checked
++ *	flags: 0 for the time being
++ */
++bool cxllib_slot_is_supported(struct pci_dev *dev, unsigned long flags);
++
++
++/*
++ * Returns the configuration parameters to be used by the XSL or device
++ *
++ * Input:
++ *	dev: device, used to find PHB
++ * Output:
++ *	struct cxllib_xsl_config:
++ *		version
++ *		capi BAR address, i.e. 0x2000000000000-0x2FFFFFFFFFFFF
++ *		capi BAR size
++ *		data send control (XSL_DSNCTL)
++ *		dummy read address (XSL_DRA)
++ */
++#define CXL_XSL_CONFIG_VERSION1		1
++struct cxllib_xsl_config {
++	u32	version;     /* format version for register encoding */
++	u32	log_bar_size;/* log size of the capi_window */
++	u64	bar_addr;    /* address of the start of capi window */
++	u64	dsnctl;      /* matches definition of XSL_DSNCTL */
++	u64	dra;         /* real address that can be used for dummy read */
++};
++
++int cxllib_get_xsl_config(struct pci_dev *dev, struct cxllib_xsl_config *cfg);
++
++
++/*
++ * Activate capi for the pci host bridge associated with the device.
++ * Can be extended to deactivate once we know how to do it.
++ * Device must be ready to accept messages from the CAPP unit and
++ * respond accordingly (TLB invalidates, ...)
++ *
++ * PHB is switched to capi mode through calls to skiboot.
++ * CAPP snooping is activated
++ *
++ * Input:
++ *	dev: device whose PHB should switch mode
++ *	mode: mode to switch to i.e. CAPI or PCI
++ *	flags: options related to the mode
++ */
++enum cxllib_mode {
++	CXL_MODE_CXL,
++	CXL_MODE_PCI,
++};
++
++#define CXL_MODE_NO_DMA       0
++#define CXL_MODE_DMA_TVT0     1
++#define CXL_MODE_DMA_TVT1     2
++
++int cxllib_switch_phb_mode(struct pci_dev *dev, enum cxllib_mode mode,
++			unsigned long flags);
++
++
++/*
++ * Set the device for capi DMA.
++ * Define its dma_ops and dma offset so that allocations will be using TVT#1
++ *
++ * Input:
++ *	dev: device to set
++ *	flags: options. CXL_MODE_DMA_TVT1 should be used
++ */
++int cxllib_set_device_dma(struct pci_dev *dev, unsigned long flags);
++
++
++
++/*
++ * Get the Process Element structure for the given thread
++ *
++ * Input:
++ *	pid: points the struct pid for the given thread (i.e. linux pid)
++ *	translation_mode: whether addresses should be translated
++ */
++struct cxllib_pe_attributes {
++	u64 sr;
++	u32 lpid;
++	u32 tid;
++	u32 pid;
++};
++#define CXL_TRANSLATED_MODE 0
++#define CXL_REAL_MODE 1
++
++int cxllib_get_PE_attributes(struct task_struct *task,
++	     unsigned long translation_mode, struct cxllib_pe_attributes *attr);
++
++
++/*
++ * Handle memory fault.
++ * Fault in all the pages of the specified buffer for the permissions
++ * provided in ‘flags’
++ *
++ * Shouldn't be called from interrupt context
++ *
++ * Input:
++ *	mm: struct mm for the thread faulting the pages
++ *	addr: base address of the buffer to page in
++ *	size: size of the buffer to page in
++ *	flags: permission requested (DSISR_ISSTORE...)
++ */
++int cxllib_handle_fault(struct mm_struct *mm, u64 addr, u64 size, u64 flags);
++
++
++#endif /* _MISC_CXLLIB_H */
 -- 
-2.13.0
+2.7.4
