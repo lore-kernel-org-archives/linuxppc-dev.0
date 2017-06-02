@@ -3,38 +3,28 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wfSqH5hc7zDqJV
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 Jun 2017 01:31:23 +1000 (AEST)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v52FTHI2090929
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 2 Jun 2017 11:31:21 -0400
-Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2au9p0as1c-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wfTpr0w9mzDqJV
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 Jun 2017 02:16:03 +1000 (AEST)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v52GDdYk131333
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 2 Jun 2017 12:15:59 -0400
+Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2att69e32q-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 02 Jun 2017 11:31:20 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 02 Jun 2017 12:15:58 -0400
 Received: from localhost
- by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
- Fri, 2 Jun 2017 16:31:18 +0100
-Subject: Re: [RESEND-PATCH] cxl: Avoid double free_irq() for psl,slice
- interrupts
-To: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>,
- Philippe Bergheaud <philippe.bergheaud@fr.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- Ian Munsie <imunsie@au1.ibm.com>,
- Christophe Lombard <christophe_lombard@fr.ibm.com>,
- Greg Kurz <gkurz@linux.vnet.ibm.com>, "Alastair D'Silva"
- <alastair@au1.ibm.com>, stable@vger.kernel.org
-References: <20170602093555.9205-1-vaibhav@linux.vnet.ibm.com>
+ Fri, 2 Jun 2017 17:15:57 +0100
 From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-Date: Fri, 2 Jun 2017 17:30:49 +0200
-MIME-Version: 1.0
-In-Reply-To: <20170602093555.9205-1-vaibhav@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <693c34cc-9b88-c616-325b-de01e4cb760b@linux.vnet.ibm.com>
+To: andrew.donnellan@au1.ibm.com, linuxppc-dev@lists.ozlabs.org,
+ vaibhav@linux.vnet.ibm.com, clombard@linux.vnet.ibm.com,
+ philippe.bergheaud@fr.ibm.com
+Subject: [PATCH] cxl: Fix error path on bad ioctl
+Date: Fri,  2 Jun 2017 18:15:23 +0200
+Message-Id: <20170602161523.14052-1-fbarrat@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,107 +34,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Fix error path if we can't copy user structure on
+CXL_IOCTL_START_WORK ioctl.
 
+Signed-off-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+Cc: stable@vger.kernel.org
+---
+ drivers/misc/cxl/file.c | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
 
-Le 02/06/2017 à 11:35, Vaibhav Jain a écrit :
-> During an eeh call to cxl_remove can result in double free_irq of
-> psl,slice interrupts. This can happen if perst_reloads_same_image == 1
-> and call to cxl_configure_adapter() fails during slot_reset
-> callback. In such a case we see a kernel oops with following back-trace:
-> 
-> Oops: Kernel access of bad area, sig: 11 [#1]
-> Call Trace:
->    free_irq+0x88/0xd0 (unreliable)
->    cxl_unmap_irq+0x20/0x40 [cxl]
->    cxl_native_release_psl_irq+0x78/0xd8 [cxl]
->    pci_deconfigure_afu+0xac/0x110 [cxl]
->    cxl_remove+0x104/0x210 [cxl]
->    pci_device_remove+0x6c/0x110
->    device_release_driver_internal+0x204/0x2e0
->    pci_stop_bus_device+0xa0/0xd0
->    pci_stop_and_remove_bus_device+0x28/0x40
->    pci_hp_remove_devices+0xb0/0x150
->    pci_hp_remove_devices+0x68/0x150
->    eeh_handle_normal_event+0x140/0x580
->    eeh_handle_event+0x174/0x360
->    eeh_event_handler+0x1e8/0x1f0
-> 
-> This patch fixes the issue of double free_irq by checking that
-> variables that hold the virqs (err_hwirq, serr_hwirq, psl_virq) are
-> not '0' before un-mapping and resetting these variables to '0' when
-> they are un-mapped.
-> 
-> Cc: stable@vger.kernel.org
-> Signed-off-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
-> Reviewed-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-> 
-> ---
-> Re-send:
-> - Added stable to recipients
-> ---
->   drivers/misc/cxl/native.c | 14 +++++++++++---
->   1 file changed, 11 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/misc/cxl/native.c b/drivers/misc/cxl/native.c
-> index 871a2f0..3ed2254 100644
-> --- a/drivers/misc/cxl/native.c
-> +++ b/drivers/misc/cxl/native.c
-> @@ -1302,13 +1302,16 @@ int cxl_native_register_psl_err_irq(struct cxl *adapter)
-> 
->   void cxl_native_release_psl_err_irq(struct cxl *adapter)
->   {
-> -	if (adapter->native->err_virq != irq_find_mapping(NULL, adapter->native->err_hwirq))
-> +	if (adapter->native->err_virq == 0 ||
-> +	    adapter->native->err_virq !=
-> +	    irq_find_mapping(NULL, adapter->native->err_hwirq))
->   		return;
-> 
->   	cxl_p1_write(adapter, CXL_PSL_ErrIVTE, 0x0000000000000000);
->   	cxl_unmap_irq(adapter->native->err_virq, adapter);
->   	cxl_ops->release_one_irq(adapter, adapter->native->err_hwirq);
->   	kfree(adapter->irq_name);
-> +	adapter->native->err_virq = 0;
->   }
-> 
->   int cxl_native_register_serr_irq(struct cxl_afu *afu)
-> @@ -1346,13 +1349,15 @@ int cxl_native_register_serr_irq(struct cxl_afu *afu)
-> 
->   void cxl_native_release_serr_irq(struct cxl_afu *afu)
->   {
-> -	if (afu->serr_virq != irq_find_mapping(NULL, afu->serr_hwirq))
-> +	if (afu->serr_virq == 0 ||
-> +	    afu->serr_virq != irq_find_mapping(NULL, afu->serr_hwirq))
->   		return;
-> 
->   	cxl_p1n_write(afu, CXL_PSL_SERR_An, 0x0000000000000000);
->   	cxl_unmap_irq(afu->serr_virq, afu);
->   	cxl_ops->release_one_irq(afu->adapter, afu->serr_hwirq);
->   	kfree(afu->err_irq_name);
-> +	afu->serr_virq = 0;
->   }
-> 
->   int cxl_native_register_psl_irq(struct cxl_afu *afu)
-> @@ -1375,12 +1380,15 @@ int cxl_native_register_psl_irq(struct cxl_afu *afu)
-> 
->   void cxl_native_release_psl_irq(struct cxl_afu *afu)
->   {
-> -	if (afu->native->psl_virq != irq_find_mapping(NULL, afu->native->psl_hwirq))
-> +	if (afu->native->psl_virq == 0 ||
-> +	    afu->native->psl_virq !=
-> +	    irq_find_mapping(NULL, afu->native->psl_virq))
-
-                                                     ^^^
-Shouldn't it be psl_hwirq?
-
-   Fred
-
->   		return;
-> 
->   	cxl_unmap_irq(afu->native->psl_virq, afu);
->   	cxl_ops->release_one_irq(afu->adapter, afu->native->psl_hwirq);
->   	kfree(afu->psl_irq_name);
-> +	afu->native->psl_virq = 0;
->   }
-> 
->   static void recover_psl_err(struct cxl_afu *afu, u64 errstat)
-> 
+diff --git a/drivers/misc/cxl/file.c b/drivers/misc/cxl/file.c
+index 17b433f1ce23..caa44adfa60e 100644
+--- a/drivers/misc/cxl/file.c
++++ b/drivers/misc/cxl/file.c
+@@ -160,10 +160,8 @@ static long afu_ioctl_start_work(struct cxl_context *ctx,
+ 	/* Do this outside the status_mutex to avoid a circular dependency with
+ 	 * the locking in cxl_mmap_fault() */
+ 	if (copy_from_user(&work, uwork,
+-			   sizeof(struct cxl_ioctl_start_work))) {
+-		rc = -EFAULT;
+-		goto out;
+-	}
++			   sizeof(struct cxl_ioctl_start_work)))
++		return -EFAULT;
+ 
+ 	mutex_lock(&ctx->status_mutex);
+ 	if (ctx->status != OPENED) {
+-- 
+2.11.0
