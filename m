@@ -1,30 +1,50 @@
-Return-Path: <srs0=zqde=5h=gmail.com=npiggin@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <srs0=vywd=5h=linux.vnet.ibm.com=hbathini@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wfCTk3BHCzDq5x
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Jun 2017 15:30:18 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wfG9X60WRzDqL2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Jun 2017 17:31:28 +1000 (AEST)
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3wfCTk0BQRz8vwQ
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Jun 2017 15:30:18 +1000 (AEST)
-Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
- [IPv6:2607:f8b0:400e:c00::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3wfG9X5C1rz8t5N
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Jun 2017 17:31:28 +1000 (AEST)
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3wfCTj3dYgz9s7C
- for <linuxppc-dev@ozlabs.org>; Fri,  2 Jun 2017 15:30:16 +1000 (AEST)
-Received: by mail-pf0-x241.google.com with SMTP id u26so11304964pfd.2
- for <linuxppc-dev@ozlabs.org>; Thu, 01 Jun 2017 22:30:16 -0700 (PDT)
-Date: Fri, 2 Jun 2017 15:30:04 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
+ by ozlabs.org (Postfix) with ESMTPS id 3wfG9W4yTjz9sD5
+ for <linuxppc-dev@ozlabs.org>; Fri,  2 Jun 2017 17:31:27 +1000 (AEST)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v527T4C7034255
+ for <linuxppc-dev@ozlabs.org>; Fri, 2 Jun 2017 03:31:24 -0400
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2au1bnp32c-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Fri, 02 Jun 2017 03:31:23 -0400
+Received: from localhost
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <hbathini@linux.vnet.ibm.com>;
+ Fri, 2 Jun 2017 17:31:20 +1000
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v527VAKR62128352
+ for <linuxppc-dev@ozlabs.org>; Fri, 2 Jun 2017 17:31:18 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v527Ucf7029554
+ for <linuxppc-dev@ozlabs.org>; Fri, 2 Jun 2017 17:30:38 +1000
+Subject: [RESEND PATCH v2] powerpc/fadump: set an upper limit for boot
+ memory size
+From: Hari Bathini <hbathini@linux.vnet.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@ozlabs.org, anton@samba.org, nish.aravamudan@gmail.com
-Subject: Re: [PATCH] powerpc/numa: Fix percpu allocations to be NUMA aware
-Message-ID: <20170602153004.62fd05d1@roar.ozlabs.ibm.com>
-In-Reply-To: <1496380487-21699-1-git-send-email-mpe@ellerman.id.au>
-References: <1496380487-21699-1-git-send-email-mpe@ellerman.id.au>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
+ Ankit Kumar <ankit@linux.vnet.ibm.com>,
+ Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
+Date: Fri, 02 Jun 2017 13:00:27 +0530
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset="utf-8"
+Message-Id: <149638860805.20682.16651712989980265609.stgit@hbathini.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,80 +54,104 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri,  2 Jun 2017 15:14:47 +1000
-Michael Ellerman <mpe@ellerman.id.au> wrote:
+By default, 5% of system RAM is reserved for preserving boot memory.
+Alternatively, a user can specify the amount of memory to reserve.
+See Documentation/powerpc/firmware-assisted-dump.txt for details. In
+addition to the memory reserved for preserving boot memory, some more
+memory is reserved, to save HPTE region, CPU state data and ELF core
+headers.
 
-> In commit 8c272261194d ("powerpc/numa: Enable USE_PERCPU_NUMA_NODE_ID"), we
-> switched to the generic implementation of cpu_to_node(), which uses a percpu
-> variable to hold the NUMA node for each CPU.
-> 
-> Unfortunately we neglected to notice that we use cpu_to_node() in the allocation
-> of our percpu areas, leading to a chicken and egg problem. In practice what
-> happens is when we are setting up the percpu areas, cpu_to_node() reports that
-> all CPUs are on node 0, so we allocate all percpu areas on node 0.
-> 
-> This is visible in the dmesg output, as all pcpu allocs being in group 0:
-> 
->   pcpu-alloc: [0] 00 01 02 03 [0] 04 05 06 07
->   pcpu-alloc: [0] 08 09 10 11 [0] 12 13 14 15
->   pcpu-alloc: [0] 16 17 18 19 [0] 20 21 22 23
->   pcpu-alloc: [0] 24 25 26 27 [0] 28 29 30 31
->   pcpu-alloc: [0] 32 33 34 35 [0] 36 37 38 39
->   pcpu-alloc: [0] 40 41 42 43 [0] 44 45 46 47
-> 
-> To fix it we need an early_cpu_to_node() which can run prior to percpu being
-> setup. We already have the numa_cpu_lookup_table we can use, so just plumb it
-> in. With the patch dmesg output shows two groups, 0 and 1:
-> 
->   pcpu-alloc: [0] 00 01 02 03 [0] 04 05 06 07
->   pcpu-alloc: [0] 08 09 10 11 [0] 12 13 14 15
->   pcpu-alloc: [0] 16 17 18 19 [0] 20 21 22 23
->   pcpu-alloc: [1] 24 25 26 27 [1] 28 29 30 31
->   pcpu-alloc: [1] 32 33 34 35 [1] 36 37 38 39
->   pcpu-alloc: [1] 40 41 42 43 [1] 44 45 46 47
-> 
-> We can also check the data_offset in the paca of various CPUs, with the fix we
-> see:
-> 
->   CPU 0:  data_offset = 0x0ffe8b0000
->   CPU 24: data_offset = 0x1ffe5b0000
-> 
-> And we can see from dmesg that CPU 24 has an allocation on node 1:
-> 
->   node   0: [mem 0x0000000000000000-0x0000000fffffffff]
->   node   1: [mem 0x0000001000000000-0x0000001fffffffff]
+Memory Reservation during first kernel looks like below:
 
-Nice bug :)
+  Low memory                                        Top of memory
+  0      boot memory size                                       |
+  |           |                       |<--Reserved dump area -->|
+  V           V                       |   Permanent Reservation V
+  +-----------+----------/ /----------+---+----+-----------+----+
+  |           |                       |CPU|HPTE|  DUMP     |ELF |
+  +-----------+----------/ /----------+---+----+-----------+----+
+        |                                           ^
+        |                                           |
+        \                                           /
+         -------------------------------------------
+          Boot memory content gets transferred to
+          reserved area by firmware at the time of
+          crash
 
-I wonder what happens if you put a WARN if cpu_to_node is used
-before it is set up?
+This implicitly means that the sum of the sizes of boot memory, CPU
+state data, HPTE region, DUMP preserving area and ELF core headers
+can't be greater than the total memory size. But currently, a user is
+allowed to specify any value as boot memory size. So, the above rule
+is violated when a boot memory size around 50% of the total available
+memory is specified. As the kernel is not handling this currently, it
+may lead to undefined behavior. Fix it by setting an upper limit for
+boot memory size to 25% of the total available memory. Also, instead
+of using memblock_end_of_DRAM(), which doesn't take the holes, if any,
+in the memory layout into account, use memblock_phys_mem_size() to
+calculate the percentage of total available memory.
+
+Signed-off-by: Hari Bathini <hbathini@linux.vnet.ibm.com>
+---
+
+* Rebased on top of below patchset:
+   - http://patchwork.ozlabs.org/patch/765298
+   - http://patchwork.ozlabs.org/patch/765300
 
 
-> @@ -672,10 +672,19 @@ static void __init pcpu_fc_free(void *ptr, size_t size)
->  
->  static int pcpu_cpu_distance(unsigned int from, unsigned int to)
->  {
-> -	if (cpu_to_node(from) == cpu_to_node(to))
-> -		return LOCAL_DISTANCE;
-> -	else
-> -		return REMOTE_DISTANCE;
-> +#ifndef CONFIG_NUMA
-> +	return LOCAL_DISTANCE;
-> +#else
-> +	int from_nid, to_nid;
-> +
-> +	from_nid = early_cpu_to_node(from);
-> +	to_nid   = early_cpu_to_node(to);
-> +
-> +	if (from_nid == -1 || to_nid == -1)
-> +		return LOCAL_DISTANCE;	/* Or assume remote? */
-> +
-> +	return node_distance(from_nid, to_nid);
+ arch/powerpc/include/asm/fadump.h |    3 +++
+ arch/powerpc/kernel/fadump.c      |   16 +++++++++++++++-
+ 2 files changed, 18 insertions(+), 1 deletion(-)
 
-If you made node_distance() return LOCAL_NODE for !NUMA, this
-should fall out and not require the ifdef?
-
-Looks good to me though.
-
-Thanks,
-Nick
+diff --git a/arch/powerpc/include/asm/fadump.h b/arch/powerpc/include/asm/fadump.h
+index 60b9108..a3de219 100644
+--- a/arch/powerpc/include/asm/fadump.h
++++ b/arch/powerpc/include/asm/fadump.h
+@@ -43,6 +43,9 @@
+ #define MIN_BOOT_MEM	(((RMA_END < (0x1UL << 28)) ? (0x1UL << 28) : RMA_END) \
+ 			+ (0x1UL << 26))
+ 
++/* The upper limit percentage for user specified boot memory size (25%) */
++#define MAX_BOOT_MEM_RATIO			4
++
+ #define memblock_num_regions(memblock_type)	(memblock.memblock_type.cnt)
+ 
+ /* Firmware provided dump sections */
+diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
+index 63c4281..1438109 100644
+--- a/arch/powerpc/kernel/fadump.c
++++ b/arch/powerpc/kernel/fadump.c
+@@ -224,11 +224,25 @@ static inline unsigned long fadump_calculate_reserve_size(void)
+ 	ret = parse_crashkernel(boot_command_line, memblock_phys_mem_size(),
+ 				&size, &base);
+ 	if (ret == 0 && size > 0) {
++		unsigned long max_size;
++
+ 		if (fw_dump.reserve_bootvar)
+ 			pr_info("Using 'crashkernel=' parameter for"
+ 				" memory reservation.\n");
+ 
+ 		fw_dump.reserve_bootvar = (unsigned long)size;
++
++		/*
++		 * Adjust if the boot memory size specified is above
++		 * the upper limit.
++		 */
++		max_size = memblock_phys_mem_size() / MAX_BOOT_MEM_RATIO;
++		if (fw_dump.reserve_bootvar > max_size) {
++			fw_dump.reserve_bootvar = max_size;
++			pr_info("Adjusted boot memory size to %luMB\n",
++				(fw_dump.reserve_bootvar >> 20));
++		}
++
+ 		return fw_dump.reserve_bootvar;
+ 	} else if (fw_dump.reserve_bootvar) {
+ 		/*
+@@ -239,7 +253,7 @@ static inline unsigned long fadump_calculate_reserve_size(void)
+ 	}
+ 
+ 	/* divide by 20 to get 5% of value */
+-	size = memblock_end_of_DRAM() / 20;
++	size = memblock_phys_mem_size() / 20;
+ 
+ 	/* round it down in multiples of 256 */
+ 	size = size & ~0x0FFFFFFFUL;
