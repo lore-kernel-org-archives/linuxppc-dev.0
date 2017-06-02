@@ -1,25 +1,25 @@
-Return-Path: <David.Laight@ACULAB.COM>
-Received: from smtp-out4.electric.net (smtp-out4.electric.net
- [192.162.216.187])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wfMFx6gWnzDqMH
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Jun 2017 21:20:37 +1000 (AEST)
-From: David Laight <David.Laight@ACULAB.COM>
-To: 'Benjamin Herrenschmidt' <benh@kernel.crashing.org>, Frederic Barrat
- <fbarrat@linux.vnet.ibm.com>, "mpe@ellerman.id.au" <mpe@ellerman.id.au>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "mikey@neuling.org" <mikey@neuling.org>, "brking@linux.vnet.ibm.com"
- <brking@linux.vnet.ibm.com>, "clsoto@linux.vnet.ibm.com"
- <clsoto@linux.vnet.ibm.com>
-Subject: RE: [PATCH] powerpc/powernv: Enable PCI peer-to-peer
-Date: Fri, 2 Jun 2017 11:20:24 +0000
-Message-ID: <063D6719AE5E284EB5DD2968C1650D6DD0007A82@AcuExch.aculab.com>
-References: <20170530135818.19291-1-fbarrat@linux.vnet.ibm.com>
- <1496197542.3354.22.camel@kernel.crashing.org>
-In-Reply-To: <1496197542.3354.22.camel@kernel.crashing.org>
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wfNVT47rGzDqMN
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Jun 2017 22:16:33 +1000 (AEST)
+Message-ID: <1496405473.2842.9.camel@kernel.crashing.org>
+Subject: Re: [PATCH 2/5] powerpc/mm: split store_updates_sp() in two parts
+ in do_page_fault()
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Christophe LEROY <christophe.leroy@c-s.fr>, Michael Ellerman
+ <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>, Scott Wood
+ <oss@buserror.net>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Date: Fri, 02 Jun 2017 22:11:13 +1000
+In-Reply-To: <6daf8f4e-9b39-d585-2c64-9b0348fef123@c-s.fr>
+References: <cover.1492606297.git.christophe.leroy@c-s.fr>
+ <58f17a04cee5726467ef4e283dfbd7da68fa6ab4.1492606298.git.christophe.leroy@c-s.fr>
+ <871sr23flh.fsf@concordia.ellerman.id.au>
+ <6daf8f4e-9b39-d585-2c64-9b0348fef123@c-s.fr>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,10 +29,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-RnJvbTogQmVuamFtaW4gSGVycmVuc2NobWlkdA0KPiBTZW50OiAzMSBNYXkgMjAxNyAwMzoyNg0K
-Li4uDQo+IFdlIG1pZ2h0IGFsc28gbmVlZCBhIHdheSB0byBwcm92aWRlIHRoZSAiaW5pdGlhdG9y
-IiB3aXRoIHRyYW5zbGF0ZWQgRE1BDQo+IGFkZHJlc3NlcyB0aGF0IGFsbG93IHRvIHRhcmdldCB0
-aGUgcmVjZWl2ZXIuDQoNClJlbGF0ZWQgdG8gdGhhdCBpcyB0aGUgYWJpbGl0eSB0byBhbGxvY2F0
-ZSBtZW1vcnkgdGhhdCB0d28gKG9yIG1vcmUpDQpQQ0llIGRldmljZXMgY2FuIERNQSB0by9mcm9t
-Lg0KVGhhdCBjYW4gYmUgdXNlZnVsIGlmIHBlZXItdG8tcGVlciB0cmFuc2ZlcnMgYXJlIG5vdCBh
-dmFpbGFibGUuDQoNCglEYXZpZA0KDQo=
+On Fri, 2017-06-02 at 11:39 +0200, Christophe LEROY wrote:
+> The difference between get_user() and __get_user() is that get_user() 
+> performs an access_ok() in addition.
+> 
+> Doesn't access_ok() only checks whether addr is below TASK_SIZE to 
+> ensure it is a valid user address ?
+
+Do you have a measurable improvement by skipping that check ? I agree
+with your reasoning but I'm also paranoid and so I wouldn't change it
+unless it's really worth it.
+
+Cheers,
+Ben.
