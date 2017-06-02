@@ -1,19 +1,19 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-oi0-x243.google.com (mail-oi0-x243.google.com
- [IPv6:2607:f8b0:4003:c06::243])
+Received: from mail-oi0-x244.google.com (mail-oi0-x244.google.com
+ [IPv6:2607:f8b0:4003:c06::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wfGMQ4V0dzDqL2
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Jun 2017 17:40:02 +1000 (AEST)
-Received: by mail-oi0-x243.google.com with SMTP id w10so10435132oif.1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 02 Jun 2017 00:40:02 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wfGMT4DgTzDqLH
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Jun 2017 17:40:05 +1000 (AEST)
+Received: by mail-oi0-x244.google.com with SMTP id w138so10418404oiw.3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 02 Jun 2017 00:40:05 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Nicholas Piggin <npiggin@gmail.com>,
 	Anton Blanchard <anton@samba.org>
-Subject: [PATCH 01/14] powerpc/64s: optimize hypercall/syscall
-Date: Fri,  2 Jun 2017 17:39:33 +1000
-Message-Id: <20170602073946.8983-2-npiggin@gmail.com>
+Subject: [PATCH 02/14] powerpc/64: syscall avoid restore_math call if possible
+Date: Fri,  2 Jun 2017 17:39:34 +1000
+Message-Id: <20170602073946.8983-3-npiggin@gmail.com>
 In-Reply-To: <20170602073946.8983-1-npiggin@gmail.com>
 References: <20170602073946.8983-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,222 +25,117 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-After bc3551257a ("powerpc/64: Allow for relocation-on interrupts from
-guest to host"), a getppid() system call goes from 307 cycles to 358
-cycles (+17%). This is due significantly to the scratch SPR used by the
-hypercall.
+The syscall exit code that branches to restore_math is quite
+heavyweight on Book3S, consisting of 2 mtmsr instructions. This
+case can happen even if restore_math decides there is nothing
+to do due to lazy math restore.
 
-It turns out there are a some volatile registers common to both system
-call and hypercall (in particular, r12, cr0, ctr), which can be used to
-avoid the SPR and some other overheads for the system call case. This
-brings getppid to 320 cycles (+4%).
-
-Testing hcall entry performance by running "sc 1" in guest userspace
-before this patch is 854 cycles, afterwards is 826. Also a small win
-there.
+Check for lazy restore before calling restore_math. Move most
+of that case out of line.
 
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/kernel/exceptions-64s.S | 134 +++++++++++++++++++++++++----------
- 1 file changed, 97 insertions(+), 37 deletions(-)
+ arch/powerpc/kernel/entry_64.S | 62 +++++++++++++++++++++++++++++-------------
+ arch/powerpc/kernel/process.c  |  4 +++
+ 2 files changed, 47 insertions(+), 19 deletions(-)
 
-diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-index ae418b85c17c..2f700a15bfa3 100644
---- a/arch/powerpc/kernel/exceptions-64s.S
-+++ b/arch/powerpc/kernel/exceptions-64s.S
-@@ -821,46 +821,80 @@ EXC_VIRT(trap_0b, 0x4b00, 0x100, 0xb00)
- TRAMP_KVM(PACA_EXGEN, 0xb00)
- EXC_COMMON(trap_0b_common, 0xb00, unknown_exception)
+diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
+index bfbad08a1207..019a6322b982 100644
+--- a/arch/powerpc/kernel/entry_64.S
++++ b/arch/powerpc/kernel/entry_64.S
+@@ -210,27 +210,17 @@ system_call:			/* label this so stack traces look sane */
+ 	andi.	r0,r9,(_TIF_SYSCALL_DOTRACE|_TIF_SINGLESTEP|_TIF_USER_WORK_MASK|_TIF_PERSYSCALL_MASK)
+ 	bne-	syscall_exit_work
  
-+/*
-+ * system call / hypercall (0xc00, 0x4c00)
-+ *
-+ * The system call exception is invoked with "sc 0" and does not alter HV bit.
-+ * There is support for kernel code to invoke system calls but there are no
-+ * in-tree users.
-+ *
-+ * The hypercall is invoked with "sc 1" and sets HV=1.
-+ *
-+ * In HPT, sc 1 always goes to 0xc00 real mode. In RADIX, sc 1 can go to
-+ * 0x4c00 virtual mode.
-+ *
-+ * Call convention:
-+ *
-+ * syscall register convention is in Documentation/powerpc/syscall64-abi.txt
-+ *
-+ * For hypercalls, the register convention is as follows:
-+ * r0 volatile
-+ * r1-2 nonvolatile
-+ * r3 volatile parameter and return value for status
-+ * r4-r10 volatile input and output value
-+ * r11 volatile hypercall number and output value
-+ * r12 volatile
-+ * r13-r31 nonvolatile
-+ * LR nonvolatile
-+ * CTR volatile
-+ * XER volatile
-+ * CR0-1 CR5-7 volatile
-+ * CR2-4 nonvolatile
-+ * Other registers nonvolatile
-+ *
-+ * The intersection of volatile registers that don't contain possible
-+ * inputs is: r12, cr0, xer, ctr. We may use these as scratch regs
-+ * upon entry without saving.
-+ */
- #ifdef CONFIG_KVM_BOOK3S_64_HANDLER
--	 /*
--	  * If CONFIG_KVM_BOOK3S_64_HANDLER is set, save the PPR (on systems
--	  * that support it) before changing to HMT_MEDIUM. That allows the KVM
--	  * code to save that value into the guest state (it is the guest's PPR
--	  * value). Otherwise just change to HMT_MEDIUM as userspace has
--	  * already saved the PPR.
--	  */
-+	/*
-+	 * There is a little bit of juggling to get syscall and hcall
-+	 * working well. Save r10 in ctr to be restored in case it is a
-+	 * hcall.
-+	 *
-+	 * Userspace syscalls have already saved the PPR, hcalls must save
-+	 * it before setting HMT_MEDIUM.
-+	 */
- #define SYSCALL_KVMTEST							\
--	SET_SCRATCH0(r13);						\
-+	mr	r12,r13;						\
- 	GET_PACA(r13);							\
--	std	r9,PACA_EXGEN+EX_R9(r13);				\
--	OPT_GET_SPR(r9, SPRN_PPR, CPU_FTR_HAS_PPR);			\
-+	mtctr	r10;							\
-+	KVMTEST_PR(0xc00); /* uses r10, branch to do_kvm_0xc00_system_call */ \
- 	HMT_MEDIUM;							\
--	std	r10,PACA_EXGEN+EX_R10(r13);				\
--	OPT_SAVE_REG_TO_PACA(PACA_EXGEN+EX_PPR, r9, CPU_FTR_HAS_PPR);	\
--	mfcr	r9;							\
--	KVMTEST_PR(0xc00);						\
--	GET_SCRATCH0(r13)
-+	mr	r9,r12;							\
- 
- #else
- #define SYSCALL_KVMTEST							\
--	HMT_MEDIUM
-+	HMT_MEDIUM;							\
-+	mr	r9,r13;							\
-+	GET_PACA(r13);
+-	andi.	r0,r8,MSR_FP
+-	beq 2f
++	/* If MSR_FP and MSR_VEC are set in user msr, then no need to restore */
++	li	r0,MSR_FP
+ #ifdef CONFIG_ALTIVEC
+-	andis.	r0,r8,MSR_VEC@h
+-	bne	3f
++	oris	r0,r0,MSR_VEC@h
  #endif
- 	
- #define LOAD_SYSCALL_HANDLER(reg)					\
- 	__LOAD_HANDLER(reg, system_call_common)
+-2:	addi    r3,r1,STACK_FRAME_OVERHEAD
+-#ifdef CONFIG_PPC_BOOK3S
+-	li	r10,MSR_RI
+-	mtmsrd	r10,1		/* Restore RI */
+-#endif
+-	bl	restore_math
+-#ifdef CONFIG_PPC_BOOK3S
+-	li	r11,0
+-	mtmsrd	r11,1
+-#endif
+-	ld	r8,_MSR(r1)
+-	ld	r3,RESULT(r1)
+-	li	r11,-MAX_ERRNO
++	andc	r7,r8,r0
++	cmpd	r7,r0
++	bne	syscall_restore_math
++.Lsyscall_restore_math_cont:
  
--/* Syscall routine is used twice, in reloc-off and reloc-on paths */
--#define SYSCALL_PSERIES_1 					\
-+#define SYSCALL_FASTENDIAN_TEST					\
- BEGIN_FTR_SECTION						\
- 	cmpdi	r0,0x1ebe ; 					\
- 	beq-	1f ;						\
- END_FTR_SECTION_IFSET(CPU_FTR_REAL_LE)				\
--	mr	r9,r13 ;					\
--	GET_PACA(r13) ;						\
--	mfspr	r11,SPRN_SRR0 ;					\
--0:
- 
--#define SYSCALL_PSERIES_2_RFID 					\
-+/*
-+ * After SYSCALL_KVMTEST, we reach here with PACA in r13, r13 in r9,
-+ * and HMT_MEDIUM.
-+ */
-+#define SYSCALL_REAL	 					\
-+	mfspr	r11,SPRN_SRR0 ;					\
- 	mfspr	r12,SPRN_SRR1 ;					\
- 	LOAD_SYSCALL_HANDLER(r10) ; 				\
- 	mtspr	SPRN_SRR0,r10 ; 				\
-@@ -869,11 +903,12 @@ END_FTR_SECTION_IFSET(CPU_FTR_REAL_LE)				\
- 	rfid ; 							\
- 	b	. ;	/* prevent speculative execution */
- 
--#define SYSCALL_PSERIES_3					\
-+#define SYSCALL_FASTENDIAN					\
- 	/* Fast LE/BE switch system call */			\
- 1:	mfspr	r12,SPRN_SRR1 ;					\
- 	xori	r12,r12,MSR_LE ;				\
- 	mtspr	SPRN_SRR1,r12 ;					\
-+	mr	r13,r9 ;					\
- 	rfid ;		/* return to userspace */		\
- 	b	. ;	/* prevent speculative execution */
- 
-@@ -882,16 +917,18 @@ END_FTR_SECTION_IFSET(CPU_FTR_REAL_LE)				\
- 	 * We can't branch directly so we do it via the CTR which
- 	 * is volatile across system calls.
- 	 */
--#define SYSCALL_PSERIES_2_DIRECT				\
--	LOAD_SYSCALL_HANDLER(r12) ;				\
--	mtctr	r12 ;						\
-+#define SYSCALL_VIRT						\
-+	LOAD_SYSCALL_HANDLER(r10) ;				\
-+	mtctr	r10 ;						\
-+	mfspr	r11,SPRN_SRR0 ;					\
- 	mfspr	r12,SPRN_SRR1 ;					\
- 	li	r10,MSR_RI ;					\
- 	mtmsrd 	r10,1 ;						\
- 	bctr ;
- #else
- 	/* We can branch directly */
--#define SYSCALL_PSERIES_2_DIRECT				\
-+#define SYSCALL_VIRT						\
-+	mfspr	r11,SPRN_SRR0 ;					\
- 	mfspr	r12,SPRN_SRR1 ;					\
- 	li	r10,MSR_RI ;					\
- 	mtmsrd 	r10,1 ;			/* Set RI (EE=0) */	\
-@@ -899,20 +936,43 @@ END_FTR_SECTION_IFSET(CPU_FTR_REAL_LE)				\
- #endif
- 
- EXC_REAL_BEGIN(system_call, 0xc00, 0x100)
--	SYSCALL_KVMTEST
--	SYSCALL_PSERIES_1
--	SYSCALL_PSERIES_2_RFID
--	SYSCALL_PSERIES_3
-+	SYSCALL_KVMTEST /* loads PACA into r13, and saves r13 to r9 */
-+	SYSCALL_FASTENDIAN_TEST
-+	SYSCALL_REAL
-+	SYSCALL_FASTENDIAN
- EXC_REAL_END(system_call, 0xc00, 0x100)
- 
- EXC_VIRT_BEGIN(system_call, 0x4c00, 0x100)
--	SYSCALL_KVMTEST
--	SYSCALL_PSERIES_1
--	SYSCALL_PSERIES_2_DIRECT
--	SYSCALL_PSERIES_3
-+	SYSCALL_KVMTEST /* loads PACA into r13, and saves r13 to r9 */
-+	SYSCALL_FASTENDIAN_TEST
-+	SYSCALL_VIRT
-+	SYSCALL_FASTENDIAN
- EXC_VIRT_END(system_call, 0x4c00, 0x100)
- 
--TRAMP_KVM(PACA_EXGEN, 0xc00)
-+#ifdef CONFIG_KVM_BOOK3S_64_HANDLER
+-3:	cmpld	r3,r11
++	cmpld	r3,r11
+ 	ld	r5,_CCR(r1)
+ 	bge-	syscall_error
+ .Lsyscall_error_cont:
+@@ -263,7 +253,41 @@ syscall_error:
+ 	neg	r3,r3
+ 	std	r5,_CCR(r1)
+ 	b	.Lsyscall_error_cont
+-	
++
++syscall_restore_math:
 +	/*
-+	 * This is a hcall, so register convention is as above, with these
-+	 * differences:
-+	 * r13 = PACA
-+	 * r12 = orig r13
-+	 * ctr = orig r10
++	 * Some initial tests from restore_math to avoid the heavyweight
++	 * C code entry and MSR manipulations.
 +	 */
-+TRAMP_KVM_BEGIN(do_kvm_0xc00)
-+	 /*
-+	  * Save the PPR (on systems that support it) before changing to
-+	  * HMT_MEDIUM. That allows the KVM code to save that value into the
-+	  * guest state (it is the guest's PPR value).
-+	  */
-+	OPT_GET_SPR(r0, SPRN_PPR, CPU_FTR_HAS_PPR)
-+	HMT_MEDIUM
-+	OPT_SAVE_REG_TO_PACA(PACA_EXGEN+EX_PPR, r0, CPU_FTR_HAS_PPR)
-+	mfctr	r10
-+	SET_SCRATCH0(r12)
-+	std	r9,PACA_EXGEN+EX_R9(r13)
-+	mfcr	r9
-+	std	r10,PACA_EXGEN+EX_R10(r13)
-+	KVM_HANDLER(PACA_EXGEN, EXC_STD, 0xc00)
++	LOAD_REG_IMMEDIATE(r0, MSR_TS_MASK)
++	and.	r0,r0,r8
++	bne	1f
++
++	ld	r7,PACACURRENT(r13)
++	lbz	r0,THREAD+THREAD_LOAD_FP(r7)
++#ifdef CONFIG_ALTIVEC
++	lbz	r6,THREAD+THREAD_LOAD_VEC(r7)
++	add	r0,r0,r6
 +#endif
++	cmpdi	r0,0
++	beq	.Lsyscall_restore_math_cont
++
++1:	addi    r3,r1,STACK_FRAME_OVERHEAD
++#ifdef CONFIG_PPC_BOOK3S
++	li	r10,MSR_RI
++	mtmsrd	r10,1		/* Restore RI */
++#endif
++	bl	restore_math
++#ifdef CONFIG_PPC_BOOK3S
++	li	r11,0
++	mtmsrd	r11,1
++#endif
++	/* Restore volatiles, reload MSR from updated one */
++	ld	r8,_MSR(r1)
++	ld	r3,RESULT(r1)
++	li	r11,-MAX_ERRNO
++	b	.Lsyscall_restore_math_cont
++
+ /* Traced system call support */
+ syscall_dotrace:
+ 	bl	save_nvgprs
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index baae104b16c7..5cbb8b1faf7e 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -511,6 +511,10 @@ void restore_math(struct pt_regs *regs)
+ {
+ 	unsigned long msr;
  
- 
- EXC_REAL(single_step, 0xd00, 0x100)
++	/*
++	 * Syscall exit makes a similar initial check before branching
++	 * to restore_math. Keep them in synch.
++	 */
+ 	if (!msr_tm_active(regs->msr) &&
+ 		!current->thread.load_fp && !loadvec(current->thread))
+ 		return;
 -- 
 2.11.0
