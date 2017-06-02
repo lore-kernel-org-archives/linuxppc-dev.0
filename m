@@ -1,19 +1,20 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-oi0-x244.google.com (mail-oi0-x244.google.com
- [IPv6:2607:f8b0:4003:c06::244])
+Received: from mail-oi0-x241.google.com (mail-oi0-x241.google.com
+ [IPv6:2607:f8b0:4003:c06::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wfGMT4DgTzDqLH
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Jun 2017 17:40:05 +1000 (AEST)
-Received: by mail-oi0-x244.google.com with SMTP id w138so10418404oiw.3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 02 Jun 2017 00:40:05 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wfGMY1sj2zDqM5
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Jun 2017 17:40:09 +1000 (AEST)
+Received: by mail-oi0-x241.google.com with SMTP id w138so10418633oiw.3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 02 Jun 2017 00:40:09 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Nicholas Piggin <npiggin@gmail.com>,
 	Anton Blanchard <anton@samba.org>
-Subject: [PATCH 02/14] powerpc/64: syscall avoid restore_math call if possible
-Date: Fri,  2 Jun 2017 17:39:34 +1000
-Message-Id: <20170602073946.8983-3-npiggin@gmail.com>
+Subject: [PATCH 03/14] powerpc/64s: idle move soft interrupt mask logic into C
+ code
+Date: Fri,  2 Jun 2017 17:39:35 +1000
+Message-Id: <20170602073946.8983-4-npiggin@gmail.com>
 In-Reply-To: <20170602073946.8983-1-npiggin@gmail.com>
 References: <20170602073946.8983-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,117 +26,399 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The syscall exit code that branches to restore_math is quite
-heavyweight on Book3S, consisting of 2 mtmsr instructions. This
-case can happen even if restore_math decides there is nothing
-to do due to lazy math restore.
+This simplifies the asm and fixes irq-off tracing over sleep
+instructions.
 
-Check for lazy restore before calling restore_math. Move most
-of that case out of line.
+Also move powersave_nap check for POWER8 into C code, and move
+PSSCR register value calculation for POWER9 into C.
 
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/kernel/entry_64.S | 62 +++++++++++++++++++++++++++++-------------
- arch/powerpc/kernel/process.c  |  4 +++
- 2 files changed, 47 insertions(+), 19 deletions(-)
+ arch/powerpc/include/asm/machdep.h       |   1 +
+ arch/powerpc/include/asm/processor.h     |   8 +--
+ arch/powerpc/kernel/idle_book3s.S        |  84 +++++-----------------
+ arch/powerpc/platforms/powernv/idle.c    | 116 +++++++++++++++++++++++++++----
+ arch/powerpc/platforms/powernv/subcore.c |   3 +-
+ drivers/cpuidle/cpuidle-powernv.c        |  12 ++--
+ 6 files changed, 132 insertions(+), 92 deletions(-)
 
-diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-index bfbad08a1207..019a6322b982 100644
---- a/arch/powerpc/kernel/entry_64.S
-+++ b/arch/powerpc/kernel/entry_64.S
-@@ -210,27 +210,17 @@ system_call:			/* label this so stack traces look sane */
- 	andi.	r0,r9,(_TIF_SYSCALL_DOTRACE|_TIF_SINGLESTEP|_TIF_USER_WORK_MASK|_TIF_PERSYSCALL_MASK)
- 	bne-	syscall_exit_work
+diff --git a/arch/powerpc/include/asm/machdep.h b/arch/powerpc/include/asm/machdep.h
+index f90b22c722e1..cd2fc1cc1cc7 100644
+--- a/arch/powerpc/include/asm/machdep.h
++++ b/arch/powerpc/include/asm/machdep.h
+@@ -226,6 +226,7 @@ struct machdep_calls {
+ extern void e500_idle(void);
+ extern void power4_idle(void);
+ extern void power7_idle(void);
++extern void power9_idle(void);
+ extern void ppc6xx_idle(void);
+ extern void book3e_idle(void);
  
--	andi.	r0,r8,MSR_FP
--	beq 2f
-+	/* If MSR_FP and MSR_VEC are set in user msr, then no need to restore */
-+	li	r0,MSR_FP
- #ifdef CONFIG_ALTIVEC
--	andis.	r0,r8,MSR_VEC@h
--	bne	3f
-+	oris	r0,r0,MSR_VEC@h
- #endif
--2:	addi    r3,r1,STACK_FRAME_OVERHEAD
--#ifdef CONFIG_PPC_BOOK3S
--	li	r10,MSR_RI
--	mtmsrd	r10,1		/* Restore RI */
--#endif
--	bl	restore_math
--#ifdef CONFIG_PPC_BOOK3S
--	li	r11,0
--	mtmsrd	r11,1
--#endif
--	ld	r8,_MSR(r1)
--	ld	r3,RESULT(r1)
--	li	r11,-MAX_ERRNO
-+	andc	r7,r8,r0
-+	cmpd	r7,r0
-+	bne	syscall_restore_math
-+.Lsyscall_restore_math_cont:
+diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
+index a2123f291ab0..7b76b69a452e 100644
+--- a/arch/powerpc/include/asm/processor.h
++++ b/arch/powerpc/include/asm/processor.h
+@@ -481,10 +481,10 @@ extern unsigned long cpuidle_disable;
+ enum idle_boot_override {IDLE_NO_OVERRIDE = 0, IDLE_POWERSAVE_OFF};
  
--3:	cmpld	r3,r11
-+	cmpld	r3,r11
- 	ld	r5,_CCR(r1)
- 	bge-	syscall_error
- .Lsyscall_error_cont:
-@@ -263,7 +253,41 @@ syscall_error:
- 	neg	r3,r3
- 	std	r5,_CCR(r1)
- 	b	.Lsyscall_error_cont
--	
+ extern int powersave_nap;	/* set if nap mode can be used in idle loop */
+-extern unsigned long power7_nap(int check_irq);
+-extern unsigned long power7_sleep(void);
+-extern unsigned long power7_winkle(void);
+-extern unsigned long power9_idle_stop(unsigned long stop_psscr_val,
++extern unsigned long power7_idle_insn(unsigned long type); /* PNV_THREAD_NAP/etc*/
++extern unsigned long power7_idle_type(unsigned long type);
++extern unsigned long power9_idle_stop(unsigned long psscr_val);
++extern unsigned long power9_idle_type(unsigned long stop_psscr_val,
+ 				      unsigned long stop_psscr_mask);
+ 
+ extern void flush_instruction_cache(void);
+diff --git a/arch/powerpc/kernel/idle_book3s.S b/arch/powerpc/kernel/idle_book3s.S
+index 4898d676dcae..c7edb374d1aa 100644
+--- a/arch/powerpc/kernel/idle_book3s.S
++++ b/arch/powerpc/kernel/idle_book3s.S
+@@ -106,13 +106,9 @@ core_idle_lock_held:
+ /*
+  * Pass requested state in r3:
+  *	r3 - PNV_THREAD_NAP/SLEEP/WINKLE in POWER8
+- *	   - Requested STOP state in POWER9
++ *	   - Requested PSSCR value in POWER9
+  *
+- * To check IRQ_HAPPENED in r4
+- * 	0 - don't check
+- * 	1 - check
+- *
+- * Address to 'rfid' to in r5
++ * Address of idle handler to 'rfid' to in r4
+  */
+ pnv_powersave_common:
+ 	/* Use r3 to pass state nap/sleep/winkle */
+@@ -128,30 +124,7 @@ pnv_powersave_common:
+ 	std	r0,_LINK(r1)
+ 	std	r0,_NIP(r1)
+ 
+-	/* Hard disable interrupts */
+-	mfmsr	r9
+-	rldicl	r9,r9,48,1
+-	rotldi	r9,r9,16
+-	mtmsrd	r9,1			/* hard-disable interrupts */
+-
+-	/* Check if something happened while soft-disabled */
+-	lbz	r0,PACAIRQHAPPENED(r13)
+-	andi.	r0,r0,~PACA_IRQ_HARD_DIS@l
+-	beq	1f
+-	cmpwi	cr0,r4,0
+-	beq	1f
+-	addi	r1,r1,INT_FRAME_SIZE
+-	ld	r0,16(r1)
+-	li	r3,0			/* Return 0 (no nap) */
+-	mtlr	r0
+-	blr
+-
+-1:	/* We mark irqs hard disabled as this is the state we'll
+-	 * be in when returning and we need to tell arch_local_irq_restore()
+-	 * about it
+-	 */
+-	li	r0,PACA_IRQ_HARD_DIS
+-	stb	r0,PACAIRQHAPPENED(r13)
++	mfmsr   r9
+ 
+ 	/* We haven't lost state ... yet */
+ 	li	r0,0
+@@ -160,8 +133,8 @@ pnv_powersave_common:
+ 	/* Continue saving state */
+ 	SAVE_GPR(2, r1)
+ 	SAVE_NVGPRS(r1)
+-	mfcr	r4
+-	std	r4,_CCR(r1)
++	mfcr	r5
++	std	r5,_CCR(r1)
+ 	std	r9,_MSR(r1)
+ 	std	r1,PACAR1(r13)
+ 
+@@ -175,7 +148,7 @@ pnv_powersave_common:
+ 	li	r6, MSR_RI
+ 	andc	r6, r9, r6
+ 	mtmsrd	r6, 1		/* clear RI before setting SRR0/1 */
+-	mtspr	SPRN_SRR0, r5
++	mtspr	SPRN_SRR0, r4
+ 	mtspr	SPRN_SRR1, r7
+ 	rfid
+ 
+@@ -319,35 +292,14 @@ lwarx_loop_stop:
+ 
+ 	IDLE_STATE_ENTER_SEQ_NORET(PPC_STOP)
+ 
+-_GLOBAL(power7_idle)
++/*
++ * Entered with MSR[EE]=0 and no soft-masked interrupts pending.
++ * r3 contains desired idle state (PNV_THREAD_NAP/SLEEP/WINKLE).
++ */
++_GLOBAL(power7_idle_insn)
+ 	/* Now check if user or arch enabled NAP mode */
+-	LOAD_REG_ADDRBASE(r3,powersave_nap)
+-	lwz	r4,ADDROFF(powersave_nap)(r3)
+-	cmpwi	0,r4,0
+-	beqlr
+-	li	r3, 1
+-	/* fall through */
+-
+-_GLOBAL(power7_nap)
+-	mr	r4,r3
+-	li	r3,PNV_THREAD_NAP
+-	LOAD_REG_ADDR(r5, pnv_enter_arch207_idle_mode)
+-	b	pnv_powersave_common
+-	/* No return */
+-
+-_GLOBAL(power7_sleep)
+-	li	r3,PNV_THREAD_SLEEP
+-	li	r4,1
+-	LOAD_REG_ADDR(r5, pnv_enter_arch207_idle_mode)
++	LOAD_REG_ADDR(r4, pnv_enter_arch207_idle_mode)
+ 	b	pnv_powersave_common
+-	/* No return */
+-
+-_GLOBAL(power7_winkle)
+-	li	r3,PNV_THREAD_WINKLE
+-	li	r4,1
+-	LOAD_REG_ADDR(r5, pnv_enter_arch207_idle_mode)
+-	b	pnv_powersave_common
+-	/* No return */
+ 
+ #define CHECK_HMI_INTERRUPT						\
+ 	mfspr	r0,SPRN_SRR1;						\
+@@ -369,16 +321,12 @@ ALT_FTR_SECTION_END_NESTED_IFSET(CPU_FTR_ARCH_207S, 66);		\
+ 20:	nop;
+ 
+ /*
+- * r3 - The PSSCR value corresponding to the stop state.
+- * r4 - The PSSCR mask corrresonding to the stop state.
++ * Entered with MSR[EE]=0 and no soft-masked interrupts pending.
++ * r3 contains desired PSSCR register value.
+  */
+ _GLOBAL(power9_idle_stop)
+-	mfspr   r5,SPRN_PSSCR
+-	andc    r5,r5,r4
+-	or      r3,r3,r5
+-	mtspr 	SPRN_PSSCR,r3
+-	LOAD_REG_ADDR(r5,power_enter_stop)
+-	li	r4,1
++	mtspr	SPRN_PSSCR,r3
++	LOAD_REG_ADDR(r4,power_enter_stop)
+ 	b	pnv_powersave_common
+ 	/* No return */
+ 
+diff --git a/arch/powerpc/platforms/powernv/idle.c b/arch/powerpc/platforms/powernv/idle.c
+index 445f30a2c5ef..5886657fd1b6 100644
+--- a/arch/powerpc/platforms/powernv/idle.c
++++ b/arch/powerpc/platforms/powernv/idle.c
+@@ -23,6 +23,7 @@
+ #include <asm/cpuidle.h>
+ #include <asm/code-patching.h>
+ #include <asm/smp.h>
++#include <asm/runlatch.h>
+ 
+ #include "powernv.h"
+ #include "subcore.h"
+@@ -240,14 +241,6 @@ static u64 pnv_default_stop_mask;
+ static bool default_stop_found;
+ 
+ /*
+- * Used for ppc_md.power_save which needs a function with no parameters
+- */
+-static void power9_idle(void)
+-{
+-	power9_idle_stop(pnv_default_stop_val, pnv_default_stop_mask);
+-}
+-
+-/*
+  * First deep stop state. Used to figure out when to save/restore
+  * hypervisor context.
+  */
+@@ -261,6 +254,105 @@ static u64 pnv_deepest_stop_psscr_val;
+ static u64 pnv_deepest_stop_psscr_mask;
+ static bool deepest_stop_found;
+ 
++unsigned long power7_idle_type(unsigned long type)
++{
++	unsigned long srr1;
 +
-+syscall_restore_math:
++	WARN_ON(!irqs_disabled());
++
 +	/*
-+	 * Some initial tests from restore_math to avoid the heavyweight
-+	 * C code entry and MSR manipulations.
++	 * Set up soft-enabled state here. Hard disable and ensure no
++	 * irqs are pending before low-level idle entry. Interrupts are
++	 * effectively enabled after idle is executed, so lockdep is
++	 * told that interrupts are on here.
++	 *
++	 * We don't use prep_irq_for_idle because the idle wakeup code
++	 * actually returns with interrupts hard disabled here.
 +	 */
-+	LOAD_REG_IMMEDIATE(r0, MSR_TS_MASK)
-+	and.	r0,r0,r8
-+	bne	1f
 +
-+	ld	r7,PACACURRENT(r13)
-+	lbz	r0,THREAD+THREAD_LOAD_FP(r7)
-+#ifdef CONFIG_ALTIVEC
-+	lbz	r6,THREAD+THREAD_LOAD_VEC(r7)
-+	add	r0,r0,r6
-+#endif
-+	cmpdi	r0,0
-+	beq	.Lsyscall_restore_math_cont
++	__hard_irq_disable();
++	local_paca->irq_happened |= PACA_IRQ_HARD_DIS;
 +
-+1:	addi    r3,r1,STACK_FRAME_OVERHEAD
-+#ifdef CONFIG_PPC_BOOK3S
-+	li	r10,MSR_RI
-+	mtmsrd	r10,1		/* Restore RI */
-+#endif
-+	bl	restore_math
-+#ifdef CONFIG_PPC_BOOK3S
-+	li	r11,0
-+	mtmsrd	r11,1
-+#endif
-+	/* Restore volatiles, reload MSR from updated one */
-+	ld	r8,_MSR(r1)
-+	ld	r3,RESULT(r1)
-+	li	r11,-MAX_ERRNO
-+	b	.Lsyscall_restore_math_cont
-+
- /* Traced system call support */
- syscall_dotrace:
- 	bl	save_nvgprs
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index baae104b16c7..5cbb8b1faf7e 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -511,6 +511,10 @@ void restore_math(struct pt_regs *regs)
- {
- 	unsigned long msr;
- 
 +	/*
-+	 * Syscall exit makes a similar initial check before branching
-+	 * to restore_math. Keep them in synch.
++	* If anything happened while we were soft-disabled,
++	* we return now and do not enter the low power state.
++	*/
++	if (lazy_irq_pending())
++		return 0;
++
++	/* Tell lockdep we are about to re-enable */
++	trace_hardirqs_on();
++
++	ppc64_runlatch_off();
++	srr1 = power7_idle_insn(type);
++	ppc64_runlatch_on();
++
++	trace_hardirqs_off();
++
++	return srr1;
++}
++
++void power7_idle(void)
++{
++	if (!powersave_nap)
++		return;
++
++	power7_idle_type(PNV_THREAD_NAP);
++}
++
++unsigned long power9_idle_type(unsigned long stop_psscr_val,
++				      unsigned long stop_psscr_mask)
++{
++	unsigned long psscr;
++	unsigned long srr1;
++
++	WARN_ON(!irqs_disabled());
++
++	/*
++	 * Set up soft-enabled state here. Hard disable and ensure no
++	 * irqs are pending before low-level idle entry. Interrupts are
++	 * effectively enabled after idle is executed, so lockdep is
++	 * told that interrupts are on here.
++	 *
++	 * We don't use prep_irq_for_idle because the idle wakeup code
++	 * actually returns with interrupts hard disabled here.
 +	 */
- 	if (!msr_tm_active(regs->msr) &&
- 		!current->thread.load_fp && !loadvec(current->thread))
++
++	__hard_irq_disable();
++	local_paca->irq_happened |= PACA_IRQ_HARD_DIS;
++
++	/*
++	* If anything happened while we were soft-disabled,
++	* we return now and do not enter the low power state.
++	*/
++	if (lazy_irq_pending())
++		return 0;
++
++	/* Tell lockdep we are about to re-enable */
++	trace_hardirqs_on();
++
++	ppc64_runlatch_off();
++
++	psscr = mfspr(SPRN_PSSCR);
++	psscr = (psscr & ~stop_psscr_mask) | stop_psscr_val;
++
++	srr1 = power9_idle_stop(psscr);
++
++	ppc64_runlatch_on();
++
++	trace_hardirqs_off();
++
++	return srr1;
++}
++
++/*
++ * Used for ppc_md.power_save which needs a function with no parameters
++ */
++void power9_idle(void)
++{
++	power9_idle_type(pnv_default_stop_val, pnv_default_stop_mask);
++}
++
+ /*
+  * pnv_cpu_offline: A function that puts the CPU into the deepest
+  * available platform idle state on a CPU-Offline.
+@@ -272,15 +364,15 @@ unsigned long pnv_cpu_offline(unsigned int cpu)
+ 	u32 idle_states = pnv_get_supported_cpuidle_states();
+ 
+ 	if (cpu_has_feature(CPU_FTR_ARCH_300) && deepest_stop_found) {
+-		srr1 = power9_idle_stop(pnv_deepest_stop_psscr_val,
++		srr1 = power9_idle_type(pnv_deepest_stop_psscr_val,
+ 					pnv_deepest_stop_psscr_mask);
+ 	} else if (idle_states & OPAL_PM_WINKLE_ENABLED) {
+-		srr1 = power7_winkle();
++		srr1 = power7_idle_type(PNV_THREAD_WINKLE);
+ 	} else if ((idle_states & OPAL_PM_SLEEP_ENABLED) ||
+ 		   (idle_states & OPAL_PM_SLEEP_ENABLED_ER1)) {
+-		srr1 = power7_sleep();
++		srr1 = power7_idle_type(PNV_THREAD_SLEEP);
+ 	} else if (idle_states & OPAL_PM_NAP_ENABLED) {
+-		srr1 = power7_nap(1);
++		srr1 = power7_idle_type(PNV_THREAD_NAP);
+ 	} else {
+ 		/* This is the fallback method. We emulate snooze */
+ 		while (!generic_check_cpu_restart(cpu)) {
+diff --git a/arch/powerpc/platforms/powernv/subcore.c b/arch/powerpc/platforms/powernv/subcore.c
+index 0babef11136f..d975d78188a9 100644
+--- a/arch/powerpc/platforms/powernv/subcore.c
++++ b/arch/powerpc/platforms/powernv/subcore.c
+@@ -18,6 +18,7 @@
+ #include <linux/stop_machine.h>
+ 
+ #include <asm/cputhreads.h>
++#include <asm/cpuidle.h>
+ #include <asm/kvm_ppc.h>
+ #include <asm/machdep.h>
+ #include <asm/opal.h>
+@@ -182,7 +183,7 @@ static void unsplit_core(void)
+ 	cpu = smp_processor_id();
+ 	if (cpu_thread_in_core(cpu) != 0) {
+ 		while (mfspr(SPRN_HID0) & mask)
+-			power7_nap(0);
++			power7_idle_insn(PNV_THREAD_NAP);
+ 
+ 		per_cpu(split_state, cpu).step = SYNC_STEP_UNSPLIT;
  		return;
+diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
+index 12409a519cc5..150b971c303b 100644
+--- a/drivers/cpuidle/cpuidle-powernv.c
++++ b/drivers/cpuidle/cpuidle-powernv.c
+@@ -73,9 +73,8 @@ static int nap_loop(struct cpuidle_device *dev,
+ 			struct cpuidle_driver *drv,
+ 			int index)
+ {
+-	ppc64_runlatch_off();
+-	power7_idle();
+-	ppc64_runlatch_on();
++	power7_idle_type(PNV_THREAD_NAP);
++
+ 	return index;
+ }
+ 
+@@ -98,7 +97,8 @@ static int fastsleep_loop(struct cpuidle_device *dev,
+ 	new_lpcr &= ~LPCR_PECE1;
+ 
+ 	mtspr(SPRN_LPCR, new_lpcr);
+-	power7_sleep();
++
++	power7_idle_type(PNV_THREAD_SLEEP);
+ 
+ 	mtspr(SPRN_LPCR, old_lpcr);
+ 
+@@ -110,10 +110,8 @@ static int stop_loop(struct cpuidle_device *dev,
+ 		     struct cpuidle_driver *drv,
+ 		     int index)
+ {
+-	ppc64_runlatch_off();
+-	power9_idle_stop(stop_psscr_table[index].val,
++	power9_idle_type(stop_psscr_table[index].val,
+ 			 stop_psscr_table[index].mask);
+-	ppc64_runlatch_on();
+ 	return index;
+ }
+ 
 -- 
 2.11.0
