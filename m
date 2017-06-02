@@ -3,18 +3,18 @@ Received: from mail-it0-x243.google.com (mail-it0-x243.google.com
  [IPv6:2607:f8b0:4001:c0b::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wfGN20h9wzDqLs
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Jun 2017 17:40:34 +1000 (AEST)
-Received: by mail-it0-x243.google.com with SMTP id i206so8916743ita.3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 02 Jun 2017 00:40:33 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wfGN51X8pzDqLV
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Jun 2017 17:40:37 +1000 (AEST)
+Received: by mail-it0-x243.google.com with SMTP id 67so8872422itx.2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 02 Jun 2017 00:40:37 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Nicholas Piggin <npiggin@gmail.com>,
 	Anton Blanchard <anton@samba.org>
-Subject: [PATCH 11/14] powerpc/64s: idle no memory barrier after break from
- idle
-Date: Fri,  2 Jun 2017 17:39:43 +1000
-Message-Id: <20170602073946.8983-12-npiggin@gmail.com>
+Subject: [PATCH 12/14] powerpc/64s: Leave IRQs hard enabled over context
+ switch for radix
+Date: Fri,  2 Jun 2017 17:39:44 +1000
+Message-Id: <20170602073946.8983-13-npiggin@gmail.com>
 In-Reply-To: <20170602073946.8983-1-npiggin@gmail.com>
 References: <20170602073946.8983-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,71 +26,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-A memory barrier is not required after the task wakes up,
-only if we clear the polling flag before waking. The case
-where we have work to do is the important one, so optimise
-for it.
+Commit 4387e9ff25 ("[POWERPC] Fix PMU + soft interrupt disable bug")
+hard disabled interrupts over the low level context switch, because
+the SLB management can't cope with a PMU interrupt accesing the stack
+in that window.
+
+Radix based kernel mapping does not use the SLB so it does not require
+interrupts disabled here. This is worth 1-2% in context switch
+performance.
 
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- drivers/cpuidle/cpuidle-powernv.c | 11 +++++++++--
- drivers/cpuidle/cpuidle-pseries.c | 11 +++++++++--
- 2 files changed, 18 insertions(+), 4 deletions(-)
+ arch/powerpc/kernel/process.c | 14 ++++++++------
+ 1 file changed, 8 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
-index f0247652d91f..c53a8bb40471 100644
---- a/drivers/cpuidle/cpuidle-powernv.c
-+++ b/drivers/cpuidle/cpuidle-powernv.c
-@@ -59,14 +59,21 @@ static int snooze_loop(struct cpuidle_device *dev,
- 	ppc64_runlatch_off();
- 	HMT_very_low();
- 	while (!need_resched()) {
--		if (likely(snooze_timeout_en) && get_tb() > snooze_exit_time)
-+		if (likely(snooze_timeout_en) && get_tb() > snooze_exit_time) {
-+			/*
-+			 * Task has not woken up but we are exiting the polling
-+			 * loop anyway. Require a barrier after polling is
-+			 * cleared to order subsequent test of need_resched().
-+			 */
-+			clear_thread_flag(TIF_POLLING_NRFLAG);
-+			smp_mb();
- 			break;
-+		}
- 	}
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index 633ec9967141..ea1618b62bf8 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -1199,12 +1199,14 @@ struct task_struct *__switch_to(struct task_struct *prev,
  
- 	HMT_medium();
- 	ppc64_runlatch_on();
- 	clear_thread_flag(TIF_POLLING_NRFLAG);
--	smp_mb();
+ 	__switch_to_tm(prev, new);
  
- 	return index;
- }
-diff --git a/drivers/cpuidle/cpuidle-pseries.c b/drivers/cpuidle/cpuidle-pseries.c
-index a404f352d284..e9b3853d93ea 100644
---- a/drivers/cpuidle/cpuidle-pseries.c
-+++ b/drivers/cpuidle/cpuidle-pseries.c
-@@ -71,13 +71,20 @@ static int snooze_loop(struct cpuidle_device *dev,
- 	while (!need_resched()) {
- 		HMT_low();
- 		HMT_very_low();
--		if (snooze_timeout_en && get_tb() > snooze_exit_time)
-+		if (likely(snooze_timeout_en) && get_tb() > snooze_exit_time) {
-+			/*
-+			 * Task has not woken up but we are exiting the polling
-+			 * loop anyway. Require a barrier after polling is
-+			 * cleared to order subsequent test of need_resched().
-+			 */
-+			clear_thread_flag(TIF_POLLING_NRFLAG);
-+			smp_mb();
- 			break;
-+		}
- 	}
+-	/*
+-	 * We can't take a PMU exception inside _switch() since there is a
+-	 * window where the kernel stack SLB and the kernel stack are out
+-	 * of sync. Hard disable here.
+-	 */
+-	hard_irq_disable();
++	if (!radix_enabled()) {
++		/*
++		 * We can't take a PMU exception inside _switch() since there
++		 * is a window where the kernel stack SLB and the kernel stack
++		 * are out of sync. Hard disable here.
++		 */
++		hard_irq_disable();
++	}
  
- 	HMT_medium();
- 	clear_thread_flag(TIF_POLLING_NRFLAG);
--	smp_mb();
- 
- 	idle_loop_epilog(in_purr);
- 
+ 	/*
+ 	 * Call restore_sprs() before calling _switch(). If we move it after
 -- 
 2.11.0
