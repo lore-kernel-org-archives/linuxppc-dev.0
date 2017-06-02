@@ -1,20 +1,19 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-it0-x243.google.com (mail-it0-x243.google.com
- [IPv6:2607:f8b0:4001:c0b::243])
+Received: from mail-it0-x242.google.com (mail-it0-x242.google.com
+ [IPv6:2607:f8b0:4001:c0b::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wfGN51X8pzDqLV
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Jun 2017 17:40:37 +1000 (AEST)
-Received: by mail-it0-x243.google.com with SMTP id 67so8872422itx.2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 02 Jun 2017 00:40:37 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wfGN80jHRzDqL4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Jun 2017 17:40:40 +1000 (AEST)
+Received: by mail-it0-x242.google.com with SMTP id l145so8915026ita.0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 02 Jun 2017 00:40:40 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Nicholas Piggin <npiggin@gmail.com>,
 	Anton Blanchard <anton@samba.org>
-Subject: [PATCH 12/14] powerpc/64s: Leave IRQs hard enabled over context
- switch for radix
-Date: Fri,  2 Jun 2017 17:39:44 +1000
-Message-Id: <20170602073946.8983-13-npiggin@gmail.com>
+Subject: [PATCH 13/14] powerpc/64: context switch can avoid reservation clear
+Date: Fri,  2 Jun 2017 17:39:45 +1000
+Message-Id: <20170602073946.8983-14-npiggin@gmail.com>
 In-Reply-To: <20170602073946.8983-1-npiggin@gmail.com>
 References: <20170602073946.8983-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,44 +25,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Commit 4387e9ff25 ("[POWERPC] Fix PMU + soft interrupt disable bug")
-hard disabled interrupts over the low level context switch, because
-the SLB management can't cope with a PMU interrupt accesing the stack
-in that window.
+There is no need to break reservation in _switch, because we are
+guranteed that context switch path will include a larx/stcx.
 
-Radix based kernel mapping does not use the SLB so it does not require
-interrupts disabled here. This is worth 1-2% in context switch
-performance.
+Comment the guarantee and remove the reservation clear from _switch.
+This is worth 1-2% in context switch performance.
 
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/kernel/process.c | 14 ++++++++------
- 1 file changed, 8 insertions(+), 6 deletions(-)
+ arch/powerpc/kernel/entry_64.S | 11 +++--------
+ kernel/sched/core.c            |  6 ++++++
+ 2 files changed, 9 insertions(+), 8 deletions(-)
 
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index 633ec9967141..ea1618b62bf8 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -1199,12 +1199,14 @@ struct task_struct *__switch_to(struct task_struct *prev,
- 
- 	__switch_to_tm(prev, new);
- 
--	/*
--	 * We can't take a PMU exception inside _switch() since there is a
--	 * window where the kernel stack SLB and the kernel stack are out
--	 * of sync. Hard disable here.
--	 */
--	hard_irq_disable();
-+	if (!radix_enabled()) {
-+		/*
-+		 * We can't take a PMU exception inside _switch() since there
-+		 * is a window where the kernel stack SLB and the kernel stack
-+		 * are out of sync. Hard disable here.
-+		 */
-+		hard_irq_disable();
-+	}
+diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
+index 019a6322b982..012142fe39a4 100644
+--- a/arch/powerpc/kernel/entry_64.S
++++ b/arch/powerpc/kernel/entry_64.S
+@@ -521,15 +521,10 @@ _GLOBAL(_switch)
+ #endif /* CONFIG_SMP */
  
  	/*
- 	 * Call restore_sprs() before calling _switch(). If we move it after
+-	 * If we optimise away the clear of the reservation in system
+-	 * calls because we know the CPU tracks the address of the
+-	 * reservation, then we need to clear it here to cover the
+-	 * case that the kernel context switch path has no larx
+-	 * instructions.
++	 * The kernel context switch path must contain a spin_lock,
++	 * which contains larx/stcx, which will clear any reservation
++	 * of the task being switched.
+ 	 */
+-BEGIN_FTR_SECTION
+-	ldarx	r6,0,r1
+-END_FTR_SECTION_IFSET(CPU_FTR_STCX_CHECKS_ADDRESS)
+ 
+ BEGIN_FTR_SECTION
+ /*
+diff --git a/kernel/sched/core.c b/kernel/sched/core.c
+index 803c3bc274c4..1f0688ad09d7 100644
+--- a/kernel/sched/core.c
++++ b/kernel/sched/core.c
+@@ -2875,6 +2875,12 @@ context_switch(struct rq *rq, struct task_struct *prev,
+ 	rq_unpin_lock(rq, rf);
+ 	spin_release(&rq->lock.dep_map, 1, _THIS_IP_);
+ 
++	/*
++	 * Some architectures require that a spin lock is taken before
++	 * _switch. The rq_lock satisfies this condition. See powerpc
++	 * _switch for details.
++	 */
++
+ 	/* Here we just switch the register state and the stack. */
+ 	switch_to(prev, next, prev);
+ 	barrier();
 -- 
 2.11.0
