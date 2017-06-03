@@ -1,24 +1,22 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
- [IPv6:2607:f8b0:400e:c00::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <asarai@suse.de>
+Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wfssP0Kx1zDqKp
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 Jun 2017 17:19:36 +1000 (AEST)
-Received: by mail-pf0-x242.google.com with SMTP id n23so14920176pfb.3
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 03 Jun 2017 00:19:36 -0700 (PDT)
-From: Balbir Singh <bsingharora@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org,
-	mpe@ellerman.id.au
-Cc: naveen.n.rao@linux.vnet.ibm.com, christophe.leroy@c-s.fr, paulus@samba.org,
- rashmica.g@gmail.com, labbott@redhat.com,
- Balbir Singh <bsingharora@gmail.com>
-Subject: [PATCH v2 9/9] powerpc/mm/ptdump: Dump the first entry of the linear
- mapping as well
-Date: Sat,  3 Jun 2017 17:18:43 +1000
-Message-Id: <20170603071843.11966-10-bsingharora@gmail.com>
-In-Reply-To: <20170603071843.11966-1-bsingharora@gmail.com>
-References: <20170603071843.11966-1-bsingharora@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wg2Yd4p2KzDqFH
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 Jun 2017 23:51:33 +1000 (AEST)
+From: Aleksa Sarai <asarai@suse.de>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Jiri Slaby <jslaby@suse.com>, Arnd Bergmann <arnd@arndb.de>
+Cc: linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org,
+ linux-mips@linux-mips.org, linux-parisc@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-sh@vger.kernel.org,
+ sparclinux@vger.kernel.org, linux-xtensa@linux-xtensa.org,
+ linux-arch@vger.kernel.org,
+ Christian Brauner <christian.brauner@ubuntu.com>,
+ Valentin Rothberg <vrothberg@suse.com>, Aleksa Sarai <asarai@suse.de>
+Subject: [PATCH v3 0/2] tty: add TIOCGPTPEER ioctl
+Date: Sat,  3 Jun 2017 23:51:09 +1000
+Message-Id: <20170603135111.5444-1-asarai@suse.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,25 +26,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The check in hpte_find() should be < and not <= for PAGE_OFFSET
+Changes in v3:
+  * Defined a compat_ioctl callback for all pty ioctls, since they are
+    all 32-bit and 64-bit compatible.
+  * Made TIOCGPTPEER support 32-bit userspace.
 
-Signed-off-by: Balbir Singh <bsingharora@gmail.com>
----
- arch/powerpc/mm/dump_hashpagetable.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Aleksa Sarai (2):
+  tty: add compat_ioctl callbacks
+  tty: add TIOCGPTPEER ioctl
 
-diff --git a/arch/powerpc/mm/dump_hashpagetable.c b/arch/powerpc/mm/dump_hashpagetable.c
-index c6b900f..b1c144b 100644
---- a/arch/powerpc/mm/dump_hashpagetable.c
-+++ b/arch/powerpc/mm/dump_hashpagetable.c
-@@ -335,7 +335,7 @@ static unsigned long hpte_find(struct pg_state *st, unsigned long ea, int psize)
- 	unsigned long rpn, lp_bits;
- 	int base_psize = 0, actual_psize = 0;
- 
--	if (ea <= PAGE_OFFSET)
-+	if (ea < PAGE_OFFSET)
- 		return -1;
- 
- 	/* Look in primary table */
+ Makefile                               |  1 +
+ arch/alpha/include/uapi/asm/ioctls.h   |  1 +
+ arch/mips/include/uapi/asm/ioctls.h    |  1 +
+ arch/parisc/include/uapi/asm/ioctls.h  |  1 +
+ arch/powerpc/include/uapi/asm/ioctls.h |  1 +
+ arch/sh/include/uapi/asm/ioctls.h      |  1 +
+ arch/sparc/include/uapi/asm/ioctls.h   |  3 +-
+ arch/xtensa/include/uapi/asm/ioctls.h  |  1 +
+ drivers/tty/pty.c                      | 93 ++++++++++++++++++++++++++++++++--
+ fs/compat_ioctl.c                      |  6 ---
+ include/uapi/asm-generic/ioctls.h      |  1 +
+ 11 files changed, 99 insertions(+), 11 deletions(-)
+
 -- 
-2.9.3
+2.13.0
