@@ -1,30 +1,21 @@
 Return-Path: <bsingharora@gmail.com>
-Received: from mail-qk0-x241.google.com (mail-qk0-x241.google.com
- [IPv6:2607:f8b0:400d:c09::241])
+Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
+ [IPv6:2607:f8b0:400e:c00::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wfqhv680fzDqFH
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 Jun 2017 15:42:07 +1000 (AEST)
-Received: by mail-qk0-x241.google.com with SMTP id y201so7569126qka.3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 02 Jun 2017 22:42:07 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <6dcd8ea3-e953-3319-0e0e-8543018e882f@c-s.fr>
-References: <201705260000.CDMt1Ieh%fengguang.wu@intel.com>
- <6dcd8ea3-e953-3319-0e0e-8543018e882f@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wfsrj1QtBzDqFH
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 Jun 2017 17:19:01 +1000 (AEST)
+Received: by mail-pf0-x241.google.com with SMTP id u26so14939522pfd.2
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 03 Jun 2017 00:19:00 -0700 (PDT)
 From: Balbir Singh <bsingharora@gmail.com>
-Date: Sat, 3 Jun 2017 15:42:04 +1000
-Message-ID: <CAKTCnzmeRsr8LcrP37A4qWzYv+A3xyNc5XXFQwLgEC08cZGGcg@mail.gmail.com>
-Subject: Re: [PATCH v1 7/8] powerpc/Kconfig: Enable STRICT_KERNEL_RWX
-To: Christophe LEROY <christophe.leroy@c-s.fr>
-Cc: kbuild test robot <lkp@intel.com>, Laura Abbott <labbott@redhat.com>,
- Linus Torvalds <torvalds@linux-foundation.org>,
- Paul Mackerras <paulus@samba.org>, kbuild-all@01.org,
- "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
- "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
- <linuxppc-dev@lists.ozlabs.org>, Rashmica Gupta <rashmica.g@gmail.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- linux-pm@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+To: linuxppc-dev@lists.ozlabs.org,
+	mpe@ellerman.id.au
+Cc: naveen.n.rao@linux.vnet.ibm.com, christophe.leroy@c-s.fr, paulus@samba.org,
+ rashmica.g@gmail.com, labbott@redhat.com,
+ Balbir Singh <bsingharora@gmail.com>
+Subject: [PATCH v2 0/9] Enable STRICT_KERNEL_RWX
+Date: Sat,  3 Jun 2017 17:18:34 +1000
+Message-Id: <20170603071843.11966-1-bsingharora@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,59 +25,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, May 29, 2017 at 6:00 PM, Christophe LEROY
-<christophe.leroy@c-s.fr> wrote:
->
->
-> Le 25/05/2017 =C3=A0 18:45, kbuild test robot a =C3=A9crit :
->>
->> Hi Balbir,
->>
->> [auto build test ERROR on powerpc/next]
->> [also build test ERROR on v4.12-rc2 next-20170525]
->> [if your patch is applied to the wrong git tree, please drop us a note t=
-o
->> help improve the system]
->>
->> url:
->> https://github.com/0day-ci/linux/commits/Balbir-Singh/Enable-STRICT_KERN=
-EL_RWX/20170525-150234
->> base:   https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.gi=
-t
->> next
->> config: powerpc-allmodconfig (attached as .config)
->> compiler: powerpc64-linux-gnu-gcc (Debian 6.1.1-9) 6.1.1 20160705
->> reproduce:
->>          wget
->> https://raw.githubusercontent.com/01org/lkp-tests/master/sbin/make.cross=
- -O
->> ~/bin/make.cross
->>          chmod +x ~/bin/make.cross
->>          # save the attached .config to linux build tree
->>          make.cross ARCH=3Dpowerpc
->>
->> All errors (new ones prefixed by >>):
->>
->>>> kernel//power/snapshot.c:40:28: fatal error: asm/set_memory.h: No such
->>>> file or directory
->>
->>      #include <asm/set_memory.h>
->
->
-> Looks like it is linked to commit 50327ddfb ("kernel/power/snapshot.c: us=
-e
-> set_memory.h header").
-> https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit=
-/?id=3D50327ddfb
->
-> I believe that inclusion should be conditional to
-> CONFIG_ARCH_HAS_SET_MEMORY, which is not set by powerpc arch, just like i=
-n
-> include/linux/filter.c
->
-> Christophe
->
->
-Agreed, it needs to be fixed in kernel/power/sanpshot.c
+Enable STRICT_KERNEL_RWX for PPC64/BOOK3S
 
-Balbir Singh
+These patches enable RX mappings of kernel text.
+rodata is mapped RX as well as a trade-off, there
+are more details in the patch description
+
+As a prerequisite for R/O text, patch_instruction
+is moved over to using a separate mapping that
+allows write to kernel text. xmon/ftrace/kprobes
+have been moved over to work with patch_instruction
+
+There are a few bug fixes, the updatepp and updateboltedpp
+did not use flags as described in PAPR and the ptdump
+utility ignored the first PFN
+
+TODOs:
+	1. Radix support
+	2. 32 bit support
+
+For Radix support, it should be simple, we need to revisit
+the way linear mapping is done for text, avoid any 1G
+maps to make sure we use 2M and then protect at that
+granularity. I will send a follow-up patch to this series
+adding radix support
+
+There are patches for 32 bit support from Christophe Leroy
+at http://patchwork.ozlabs.org/patch/768257/. The patches
+for map_page to map_kernel_page are a pre-requisite.
+Another build failure was reported, because instead
+of using ARCH_HAS_SET_MEMORY as a gate for set_memory.h
+inclusion, some of the infrastructure in the core kernel
+uses CONFIG_STRICT_KERNEL_RWX.
+
+
+Balbir Singh (9):
+  powerpc/lib/code-patching: Enhance code patching
+  powerpc/kprobes: Move kprobes over to patch_instruction
+  powerpc/kprobes/optprobes: Move over to patch_instruction
+  powerpc/xmon: Add patch_instruction supporf for xmon
+  powerpc/vmlinux.lds: Align __init_begin to 16M
+  powerpc/platform/pseries/lpar: Fix updatepp and updateboltedpp
+  powerpc/mm/hash: Implement mark_rodata_ro() for hash
+  powerpc/Kconfig: Enable STRICT_KERNEL_RWX
+  powerpc/mm/ptdump: Dump the first entry of the linear mapping as well
+
+ arch/powerpc/Kconfig                       |   1 +
+ arch/powerpc/include/asm/book3s/64/hash.h  |   3 +
+ arch/powerpc/include/asm/book3s/64/radix.h |   4 +
+ arch/powerpc/kernel/kprobes.c              |   4 +-
+ arch/powerpc/kernel/optprobes.c            |  58 ++++++++-----
+ arch/powerpc/kernel/vmlinux.lds.S          |  10 ++-
+ arch/powerpc/lib/code-patching.c           | 127 ++++++++++++++++++++++++++++-
+ arch/powerpc/mm/dump_hashpagetable.c       |   2 +-
+ arch/powerpc/mm/pgtable-hash64.c           |  35 ++++++++
+ arch/powerpc/mm/pgtable-radix.c            |   7 ++
+ arch/powerpc/mm/pgtable_64.c               |   9 ++
+ arch/powerpc/platforms/pseries/lpar.c      |  13 ++-
+ arch/powerpc/xmon/xmon.c                   |   7 +-
+ 13 files changed, 246 insertions(+), 34 deletions(-)
+
+-- 
+2.9.3
