@@ -1,31 +1,31 @@
 Return-Path: <anju@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3whDhW0tkdzDqLk
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Jun 2017 22:31:38 +1000 (AEST)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3whDhW6MfVzDqLs
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Jun 2017 22:31:39 +1000 (AEST)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v55CStxU129244
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 5 Jun 2017 08:31:35 -0400
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2aw5vfbrrj-1
+ v55CTJlW145719
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 5 Jun 2017 08:31:37 -0400
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2aw3p4924h-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 05 Jun 2017 08:31:35 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 05 Jun 2017 08:31:37 -0400
 Received: from localhost
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <anju@linux.vnet.ibm.com>;
- Mon, 5 Jun 2017 22:31:31 +1000
+ Mon, 5 Jun 2017 22:31:34 +1000
 Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v55CVLGb5964058
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 5 Jun 2017 22:31:29 +1000
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v55CVOiO66060490
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 5 Jun 2017 22:31:32 +1000
 Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
  by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v55CUlbO004873
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 5 Jun 2017 22:30:48 +1000
+ v55CUpdg005048
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 5 Jun 2017 22:30:51 +1000
 From: Anju T Sudhakar <anju@linux.vnet.ibm.com>
 To: mpe@ellerman.id.au
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
@@ -34,12 +34,11 @@ Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  stewart@linux.vnet.ibm.com, dja@axtens.net, eranian@google.com,
  hemant@linux.vnet.ibm.com, maddy@linux.vnet.ibm.com,
  anju@linux.vnet.ibm.com
-Subject: [PATCH v9 01/10] powerpc/powernv: Data structure and macros
- definitions for IMC
-Date: Mon,  5 Jun 2017 18:00:12 +0530
+Subject: [PATCH v9 02/10] powerpc/powernv: Autoload IMC device driver module
+Date: Mon,  5 Jun 2017 18:00:13 +0530
 In-Reply-To: <1496665818-543-1-git-send-email-anju@linux.vnet.ibm.com>
 References: <1496665818-543-1-git-send-email-anju@linux.vnet.ibm.com>
-Message-Id: <1496665818-543-2-git-send-email-anju@linux.vnet.ibm.com>
+Message-Id: <1496665818-543-3-git-send-email-anju@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,123 +48,179 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+Code to create platform device for the IMC counters.
+Paltform devices are created based on the IMC compatibility
+string.
 
-Create a new header file to add the data structures and
-macros needed for In-Memory Collection (IMC) counter support.
+New Config flag "CONFIG_HV_PERF_IMC_CTRS" add to contain the
+IMC counter changes.
 
 Signed-off-by: Anju T Sudhakar <anju@linux.vnet.ibm.com>
 Signed-off-by: Hemant Kumar <hemant@linux.vnet.ibm.com>
 Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/imc-pmu.h | 99 ++++++++++++++++++++++++++++++++++++++
- 1 file changed, 99 insertions(+)
- create mode 100644 arch/powerpc/include/asm/imc-pmu.h
+ arch/powerpc/platforms/powernv/Kconfig    | 10 +++++
+ arch/powerpc/platforms/powernv/Makefile   |  1 +
+ arch/powerpc/platforms/powernv/opal-imc.c | 73 +++++++++++++++++++++++++++++++
+ arch/powerpc/platforms/powernv/opal.c     | 18 ++++++++
+ 4 files changed, 102 insertions(+)
+ create mode 100644 arch/powerpc/platforms/powernv/opal-imc.c
 
-diff --git a/arch/powerpc/include/asm/imc-pmu.h b/arch/powerpc/include/asm/imc-pmu.h
-new file mode 100644
-index 0000000..591186f
---- /dev/null
-+++ b/arch/powerpc/include/asm/imc-pmu.h
-@@ -0,0 +1,99 @@
-+#ifndef PPC_POWERNV_IMC_PMU_DEF_H
-+#define PPC_POWERNV_IMC_PMU_DEF_H
+diff --git a/arch/powerpc/platforms/powernv/Kconfig b/arch/powerpc/platforms/powernv/Kconfig
+index 6a6f4ef..543c6cd 100644
+--- a/arch/powerpc/platforms/powernv/Kconfig
++++ b/arch/powerpc/platforms/powernv/Kconfig
+@@ -30,3 +30,13 @@ config OPAL_PRD
+ 	help
+ 	  This enables the opal-prd driver, a facility to run processor
+ 	  recovery diagnostics on OpenPower machines
 +
++config HV_PERF_IMC_CTRS
++       bool "Hypervisor supplied In Memory Collection PMU events (Nest & Core)"
++       default y
++       depends on PERF_EVENTS && PPC_POWERNV
++       help
++	  Enable access to hypervisor supplied in-memory collection counters
++	  in perf. IMC counters are available from Power9 systems.
++
++          If unsure, select Y.
+diff --git a/arch/powerpc/platforms/powernv/Makefile b/arch/powerpc/platforms/powernv/Makefile
+index b5d98cb..715e531 100644
+--- a/arch/powerpc/platforms/powernv/Makefile
++++ b/arch/powerpc/platforms/powernv/Makefile
+@@ -12,3 +12,4 @@ obj-$(CONFIG_PPC_SCOM)	+= opal-xscom.o
+ obj-$(CONFIG_MEMORY_FAILURE)	+= opal-memory-errors.o
+ obj-$(CONFIG_TRACEPOINTS)	+= opal-tracepoints.o
+ obj-$(CONFIG_OPAL_PRD)	+= opal-prd.o
++obj-$(CONFIG_HV_PERF_IMC_CTRS) += opal-imc.o
+diff --git a/arch/powerpc/platforms/powernv/opal-imc.c b/arch/powerpc/platforms/powernv/opal-imc.c
+new file mode 100644
+index 0000000..5b1045c
+--- /dev/null
++++ b/arch/powerpc/platforms/powernv/opal-imc.c
+@@ -0,0 +1,73 @@
 +/*
-+ * IMC Nest Performance Monitor counter support.
++ * OPAL IMC interface detection driver
++ * Supported on POWERNV platform
 + *
-+ * Copyright (C) 2017 Madhavan Srinivasan, IBM Corporation.
-+ *           (C) 2017 Anju T Sudhakar, IBM Corporation.
-+ *           (C) 2017 Hemant K Shaw, IBM Corporation.
++ * Copyright	(C) 2017 Madhavan Srinivasan, IBM Corporation.
++ *		(C) 2017 Anju T Sudhakar, IBM Corporation.
++ *		(C) 2017 Hemant K Shaw, IBM Corporation.
 + *
 + * This program is free software; you can redistribute it and/or
 + * modify it under the terms of the GNU General Public License
 + * as published by the Free Software Foundation; either version
 + * 2 of the License, or later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
 + */
-+
-+#include <linux/perf_event.h>
-+#include <linux/slab.h>
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/platform_device.h>
++#include <linux/miscdevice.h>
++#include <linux/fs.h>
 +#include <linux/of.h>
-+#include <linux/io.h>
++#include <linux/of_address.h>
++#include <linux/of_platform.h>
++#include <linux/poll.h>
++#include <linux/mm.h>
++#include <linux/slab.h>
++#include <linux/crash_dump.h>
 +#include <asm/opal.h>
++#include <asm/io.h>
++#include <asm/uaccess.h>
++#include <asm/cputable.h>
++#include <asm/imc-pmu.h>
 +
-+/*
-+ * For static allocation of some of the structures.
-+ */
-+#define IMC_MAX_PMUS			32
++static int opal_imc_counters_probe(struct platform_device *pdev)
++{
++	struct device_node *imc_dev = NULL;
 +
-+/*
-+ * This macro is used for memory buffer allocation of
-+ * event names and event string
-+ */
-+#define IMC_MAX_NAME_VAL_LEN		96
++	if (!pdev || !pdev->dev.of_node)
++		return -ENODEV;
 +
-+/*
-+ * Currently Microcode supports a max of 256KB of counter memory
-+ * in the reserved memory region. Max pages to mmap (considering 4K PAGESIZE).
-+ */
-+#define IMC_MAX_PAGES			64
-+
-+/*
-+ *Compatbility macros for IMC devices
-+ */
-+#define IMC_DTB_COMPAT			"ibm,opal-in-memory-counters"
-+#define IMC_DTB_UNIT_COMPAT		"ibm,imc-counters"
-+
-+/*
-+ * Structure to hold memory address information for imc units.
-+ */
-+struct imc_mem_info {
-+	u32 id;
-+	u64 vbase[IMC_MAX_PAGES];
-+};
-+
-+/*
-+ * Place holder for nest pmu events and values.
-+ */
-+struct imc_events {
-+	char *ev_name;
-+	char *ev_value;
-+};
-+
-+#define IMC_FORMAT_ATTR		0
-+#define IMC_CPUMASK_ATTR	1
-+#define IMC_EVENT_ATTR		2
-+#define IMC_NULL_ATTR		3
-+
-+/*
-+ * Device tree parser code detects IMC pmu support and
-+ * registers new IMC pmus. This structure will hold the
-+ * pmu functions, events, counter memory information
-+ * and attrs for each imc pmu and will be referenced at
-+ * the time of pmu registration.
-+ */
-+struct imc_pmu {
-+	struct pmu pmu;
-+	int domain;
 +	/*
-+	 * flag to notify whether the memory is mmaped
-+	 * or allocated by kernel.
++	 * Check whether this is kdump kernel. If yes, just return.
 +	 */
-+	int imc_counter_mmaped;
-+	struct imc_mem_info *mem_info;
-+	struct imc_events *events;
-+	u32 counter_mem_size;
-+	/*
-+	 * Attribute groups for the PMU. Slot 0 used for
-+	 * format attribute, slot 1 used for cpusmask attribute,
-+	 * slot 2 used for event attribute. Slot 3 keep as
-+	 * NULL.
-+	 */
-+	const struct attribute_group *attr_groups[4];
++	if (is_kdump_kernel())
++		return -ENODEV;
++
++	imc_dev = pdev->dev.of_node;
++	if (!imc_dev)
++		return -ENODEV;
++
++	return 0;
++}
++
++static const struct of_device_id opal_imc_match[] = {
++	{ .compatible = IMC_DTB_COMPAT },
++	{},
 +};
 +
-+/*
-+ * Domains for IMC PMUs
-+ */
-+#define IMC_DOMAIN_NEST		1
++static struct platform_driver opal_imc_driver = {
++	.driver = {
++		.name = "opal-imc-counters",
++		.of_match_table = opal_imc_match,
++	},
++	.probe = opal_imc_counters_probe,
++};
 +
-+#endif /* PPC_POWERNV_IMC_PMU_DEF_H */
++MODULE_DEVICE_TABLE(of, opal_imc_match);
++module_platform_driver(opal_imc_driver);
++MODULE_DESCRIPTION("PowerNV OPAL IMC driver");
++MODULE_LICENSE("GPL");
+diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
+index 59684b4..fbdca25 100644
+--- a/arch/powerpc/platforms/powernv/opal.c
++++ b/arch/powerpc/platforms/powernv/opal.c
+@@ -14,6 +14,7 @@
+ #include <linux/printk.h>
+ #include <linux/types.h>
+ #include <linux/of.h>
++#include <linux/of_address.h>
+ #include <linux/of_fdt.h>
+ #include <linux/of_platform.h>
+ #include <linux/interrupt.h>
+@@ -30,6 +31,7 @@
+ #include <asm/opal.h>
+ #include <asm/firmware.h>
+ #include <asm/mce.h>
++#include <asm/imc-pmu.h>
+ 
+ #include "powernv.h"
+ 
+@@ -705,6 +707,17 @@ static void opal_pdev_init(const char *compatible)
+ 		of_platform_device_create(np, NULL, NULL);
+ }
+ 
++#ifdef CONFIG_HV_PERF_IMC_CTRS
++static void __init opal_imc_init_dev(void)
++{
++	struct device_node *np;
++
++	np = of_find_compatible_node(NULL, NULL, IMC_DTB_COMPAT);
++	if (np)
++		of_platform_device_create(np, NULL, NULL);
++}
++#endif
++
+ static int kopald(void *unused)
+ {
+ 	unsigned long timeout = msecs_to_jiffies(opal_heartbeat) + 1;
+@@ -778,6 +791,11 @@ static int __init opal_init(void)
+ 	/* Setup a heatbeat thread if requested by OPAL */
+ 	opal_init_heartbeat();
+ 
++#ifdef CONFIG_HV_PERF_IMC_CTRS
++	/* Detect IMC pmu counters support and create PMUs */
++	opal_imc_init_dev();
++#endif
++
+ 	/* Create leds platform devices */
+ 	leds = of_find_node_by_path("/ibm,opal/leds");
+ 	if (leds) {
 -- 
 2.7.4
