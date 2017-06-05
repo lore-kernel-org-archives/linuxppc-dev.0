@@ -1,19 +1,16 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wh9pl03FyzDqL8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wh9pl5bgzzDqLH
  for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Jun 2017 20:21:51 +1000 (AEST)
-In-Reply-To: <149544566391.16888.187413825827689513.stgit@hbathini.in.ibm.com>
-To: Hari Bathini <hbathini@linux.vnet.ibm.com>
+In-Reply-To: <20170523234559.28080-1-matthew.brown.dev@gmail.com>
+To: Matt Brown <matthew.brown.dev@gmail.com>, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Prarit Bhargava <prarit@redhat.com>, linuxppc-dev <linuxppc-dev@ozlabs.org>,
- Ankit Kumar <ankit@linux.vnet.ibm.com>, Dave Young <dyoung@redhat.com>,
- Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
-Subject: Re: [1/2] powerpc/fadump: add a warning when 'fadump_reserve_mem=' is
- used
-Message-Id: <3wh9pk5sYXz9sDG@ozlabs.org>
-Date: Mon,  5 Jun 2017 20:21:50 +1000 (AEST)
+Cc: anton@samba.org
+Subject: Re: powerpc/lib: Split xor_vmx file to guarantee instruction ordering
+Message-Id: <3wh9pl4vtXz9sN5@ozlabs.org>
+Date: Mon,  5 Jun 2017 20:21:51 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,17 +20,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2017-05-22 at 09:34:23 UTC, Hari Bathini wrote:
-> With commit 11550dc0a00b ("powerpc/fadump: reuse crashkernel parameter
-> for fadump memory reservation"), 'fadump_reserve_mem=' parameter is
-> deprecated in favor of 'crashkernel=' parameter. Add a warning if
-> 'fadump_reserve_mem=' is still used.
+On Tue, 2017-05-23 at 23:45:59 UTC, Matt Brown wrote:
+> The xor_vmx.c file is used for the RAID5 xor operations. In these functions
+> altivec is enabled to run the operation and then disabled. However due to
+> compiler instruction reordering, altivec instructions are being run before
+> enable_altivec() and after disable_altivec().
 > 
-> Suggested-by: Prarit Bhargava <prarit@redhat.com>
-> Signed-off-by: Hari Bathini <hbathini@linux.vnet.ibm.com>
+> This patch splits the non-altivec code into xor_vmx_glue.c which calls the
+> altivec functions in xor_vmx.c. By compiling xor_vmx_glue.c without
+> -maltivec we can guarantee that altivec instruction will not be reordered
+> outside of the enable/disable block.
+> 
+> Signed-off-by: Matt Brown <matthew.brown.dev@gmail.com>
 
-Series applied to powerpc next, thanks.
+Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/81d9eca502fcc360950ef476124626
+https://git.kernel.org/powerpc/c/f718d426d7e42eec6e5d2932f52a51
 
 cheers
