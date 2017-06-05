@@ -1,26 +1,34 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <jingoohan1@gmail.com>
+Received: from mail-qt0-x243.google.com (mail-qt0-x243.google.com
+ [IPv6:2607:f8b0:400d:c0d::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3whMk16GLWzDqKp
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Jun 2017 03:48:24 +1000 (AEST)
-Subject: Re: [PATCH 2/5] powerpc/mm: split store_updates_sp() in two parts in
- do_page_fault()
-To: Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Scott Wood <oss@buserror.net>
-References: <cover.1492606297.git.christophe.leroy@c-s.fr>
- <58f17a04cee5726467ef4e283dfbd7da68fa6ab4.1492606298.git.christophe.leroy@c-s.fr>
- <871sr23flh.fsf@concordia.ellerman.id.au>
- <6daf8f4e-9b39-d585-2c64-9b0348fef123@c-s.fr>
- <87shjer9vx.fsf@concordia.ellerman.id.au>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-From: christophe leroy <christophe.leroy@c-s.fr>
-Message-ID: <97200860-c6da-9d4d-fb53-2aa9c9ca655f@c-s.fr>
-Date: Mon, 5 Jun 2017 19:48:16 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3whV0C14TWzDqKp
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Jun 2017 08:31:06 +1000 (AEST)
+Received: by mail-qt0-x243.google.com with SMTP id w1so19506651qtg.0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 05 Jun 2017 15:31:06 -0700 (PDT)
+From: "Jingoo Han" <jingoohan1@gmail.com>
+To: "'Jisheng Zhang'" <jszhang@marvell.com>,
+	<bhelgaas@google.com>
+Cc: <kishon@ti.com>, <kgene@kernel.org>, <krzk@kernel.org>,
+ <javier@osg.samsung.com>, <hongxing.zhu@nxp.com>, <l.stach@pengutronix.de>,
+ <m-karicheri2@ti.com>, <minghuan.Lian@freescale.com>,
+ <mingkai.hu@freescale.com>, <tie-fei.zang@freescale.com>,
+ <thomas.petazzoni@free-electrons.com>, <niklas.cassel@axis.com>,
+ <jesper.nilsson@axis.com>, <Joao.Pinto@synopsys.com>,
+ <svarbanov@mm-sol.com>, <pratyush.anand@gmail.com>,
+ <linux-omap@vger.kernel.org>, <linux-pci@vger.kernel.org>,
+ <linux-kernel@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
+ <linux-samsung-soc@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
+ <linux-arm-kernel@axis.com>, <linux-arm-msm@vger.kernel.org>
+References: <20170605085346.3732-1-jszhang@marvell.com>
+In-Reply-To: <20170605085346.3732-1-jszhang@marvell.com>
+Subject: Re: [PATCH] PCI: dwc: Constify dw_pcie_host_ops structures
+Date: Mon, 5 Jun 2017 18:30:54 -0400
+Message-ID: <000001d2de4b$65f2f360$31d8da20$@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <87shjer9vx.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain;
+	charset="us-ascii"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,72 +38,204 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Monday, June 5, 2017 4:54 AM, Jisheng Zhang wrote:
+> 
+> The dw_pcie_host_ops structures are never modified. Constify these
+> structures such that these can be write-protected.
+> 
+> Signed-off-by: Jisheng Zhang <jszhang@marvell.com>
 
+Acked-by: Jingoo Han <jingoohan1@gmail.com>
 
-Le 05/06/2017 à 12:45, Michael Ellerman a écrit :
-> Christophe LEROY <christophe.leroy@c-s.fr> writes:
->
->> Le 02/06/2017 à 11:26, Michael Ellerman a écrit :
->>> Christophe Leroy <christophe.leroy@c-s.fr> writes:
->>>
->>>> Only the get_user() in store_updates_sp() has to be done outside
->>>> the mm semaphore. All the comparison can be done within the semaphore,
->>>> so only when really needed.
->>>>
->>>> As we got a DSI exception, the address pointed by regs->nip is
->>>> obviously valid, otherwise we would have had a instruction exception.
->>>> So __get_user() can be used instead of get_user()
->>>
->>> I don't think that part is true.
->>>
->>> You took a DSI so there *was* an instruction at NIP, but since then it
->>> may have been unmapped by another thread.
->>>
->>> So I don't think you can assume the get_user() will succeed.
->>
->> The difference between get_user() and __get_user() is that get_user()
->> performs an access_ok() in addition.
->>
->> Doesn't access_ok() only checks whether addr is below TASK_SIZE to
->> ensure it is a valid user address ?
->
-> Yeah more or less, via some gross macros.
->
-> I was actually not that worried about the switch from get_user() to
-> __get_user(), but rather that you removed the check of the return value.
-> ie.
->
-> -	if (get_user(inst, (unsigned int __user *)regs->nip))
-> -		return 0;
->
-> Became:
->
-> 	if (is_write && user_mode(regs))
-> -		store_update_sp = store_updates_sp(regs);
-> +		__get_user(inst, (unsigned int __user *)regs->nip);
->
->
-> I think dropping the access_ok() probably is alright, because the NIP
-> must (should!) have been in userspace, though as Ben says it's always
-> good to be paranoid.
->
-> But ignoring that the address can fault at all is wrong AFAICS.
+Best regards,
+Jingoo Han
 
-I see what you mean now.
-
-Indeed,
-
--	unsigned int inst;
-
-Became
-
-+	unsigned int inst = 0;
-
-Since __get_user() doesn't modify 'inst' in case of error, 'inst' 
-remains 0, and store_updates_sp(0) return false. That was the idea behind.
-
-Christophe
-
----
-L'absence de virus dans ce courrier électronique a été vérifiée par le logiciel antivirus Avast.
-https://www.avast.com/antivirus
+> ---
+>  drivers/pci/dwc/pci-dra7xx.c           | 2 +-
+>  drivers/pci/dwc/pci-exynos.c           | 2 +-
+>  drivers/pci/dwc/pci-imx6.c             | 2 +-
+>  drivers/pci/dwc/pci-keystone.c         | 2 +-
+>  drivers/pci/dwc/pci-layerscape.c       | 6 +++---
+>  drivers/pci/dwc/pcie-armada8k.c        | 2 +-
+>  drivers/pci/dwc/pcie-artpec6.c         | 2 +-
+>  drivers/pci/dwc/pcie-designware-plat.c | 2 +-
+>  drivers/pci/dwc/pcie-designware.h      | 2 +-
+>  drivers/pci/dwc/pcie-qcom.c            | 2 +-
+>  drivers/pci/dwc/pcie-spear13xx.c       | 2 +-
+>  11 files changed, 13 insertions(+), 13 deletions(-)
+> 
+> diff --git a/drivers/pci/dwc/pci-dra7xx.c b/drivers/pci/dwc/pci-dra7xx.c
+> index 8decf46cf525..e4166032b3c6 100644
+> --- a/drivers/pci/dwc/pci-dra7xx.c
+> +++ b/drivers/pci/dwc/pci-dra7xx.c
+> @@ -208,7 +208,7 @@ static void dra7xx_pcie_host_init(struct pcie_port
+*pp)
+>  	dra7xx_pcie_enable_interrupts(dra7xx);
+>  }
+> 
+> -static struct dw_pcie_host_ops dra7xx_pcie_host_ops = {
+> +static const struct dw_pcie_host_ops dra7xx_pcie_host_ops = {
+>  	.host_init = dra7xx_pcie_host_init,
+>  };
+> 
+> diff --git a/drivers/pci/dwc/pci-exynos.c b/drivers/pci/dwc/pci-exynos.c
+> index 546082ad5a3f..c78c06552590 100644
+> --- a/drivers/pci/dwc/pci-exynos.c
+> +++ b/drivers/pci/dwc/pci-exynos.c
+> @@ -590,7 +590,7 @@ static void exynos_pcie_host_init(struct pcie_port
+*pp)
+>  	exynos_pcie_enable_interrupts(ep);
+>  }
+> 
+> -static struct dw_pcie_host_ops exynos_pcie_host_ops = {
+> +static const struct dw_pcie_host_ops exynos_pcie_host_ops = {
+>  	.rd_own_conf = exynos_pcie_rd_own_conf,
+>  	.wr_own_conf = exynos_pcie_wr_own_conf,
+>  	.host_init = exynos_pcie_host_init,
+> diff --git a/drivers/pci/dwc/pci-imx6.c b/drivers/pci/dwc/pci-imx6.c
+> index a98cba55c7f0..fb4816088a7a 100644
+> --- a/drivers/pci/dwc/pci-imx6.c
+> +++ b/drivers/pci/dwc/pci-imx6.c
+> @@ -602,7 +602,7 @@ static int imx6_pcie_link_up(struct dw_pcie *pci)
+>  			PCIE_PHY_DEBUG_R1_XMLH_LINK_UP;
+>  }
+> 
+> -static struct dw_pcie_host_ops imx6_pcie_host_ops = {
+> +static const struct dw_pcie_host_ops imx6_pcie_host_ops = {
+>  	.host_init = imx6_pcie_host_init,
+>  };
+> 
+> diff --git a/drivers/pci/dwc/pci-keystone.c b/drivers/pci/dwc/pci-
+> keystone.c
+> index fcc9723bad6e..4783cec1f78d 100644
+> --- a/drivers/pci/dwc/pci-keystone.c
+> +++ b/drivers/pci/dwc/pci-keystone.c
+> @@ -291,7 +291,7 @@ static void __init ks_pcie_host_init(struct pcie_port
+> *pp)
+>  			"Asynchronous external abort");
+>  }
+> 
+> -static struct dw_pcie_host_ops keystone_pcie_host_ops = {
+> +static const struct dw_pcie_host_ops keystone_pcie_host_ops = {
+>  	.rd_other_conf = ks_dw_pcie_rd_other_conf,
+>  	.wr_other_conf = ks_dw_pcie_wr_other_conf,
+>  	.host_init = ks_pcie_host_init,
+> diff --git a/drivers/pci/dwc/pci-layerscape.c b/drivers/pci/dwc/pci-
+> layerscape.c
+> index 27d638c4e134..fd861289ad8b 100644
+> --- a/drivers/pci/dwc/pci-layerscape.c
+> +++ b/drivers/pci/dwc/pci-layerscape.c
+> @@ -39,7 +39,7 @@ struct ls_pcie_drvdata {
+>  	u32 lut_offset;
+>  	u32 ltssm_shift;
+>  	u32 lut_dbg;
+> -	struct dw_pcie_host_ops *ops;
+> +	const struct dw_pcie_host_ops *ops;
+>  	const struct dw_pcie_ops *dw_pcie_ops;
+>  };
+> 
+> @@ -185,12 +185,12 @@ static int ls_pcie_msi_host_init(struct pcie_port
+> *pp,
+>  	return 0;
+>  }
+> 
+> -static struct dw_pcie_host_ops ls1021_pcie_host_ops = {
+> +static const struct dw_pcie_host_ops ls1021_pcie_host_ops = {
+>  	.host_init = ls1021_pcie_host_init,
+>  	.msi_host_init = ls_pcie_msi_host_init,
+>  };
+> 
+> -static struct dw_pcie_host_ops ls_pcie_host_ops = {
+> +static const struct dw_pcie_host_ops ls_pcie_host_ops = {
+>  	.host_init = ls_pcie_host_init,
+>  	.msi_host_init = ls_pcie_msi_host_init,
+>  };
+> diff --git a/drivers/pci/dwc/pcie-armada8k.c b/drivers/pci/dwc/pcie-
+> armada8k.c
+> index 495b023042b3..ea8f34af6a85 100644
+> --- a/drivers/pci/dwc/pcie-armada8k.c
+> +++ b/drivers/pci/dwc/pcie-armada8k.c
+> @@ -160,7 +160,7 @@ static irqreturn_t armada8k_pcie_irq_handler(int irq,
+> void *arg)
+>  	return IRQ_HANDLED;
+>  }
+> 
+> -static struct dw_pcie_host_ops armada8k_pcie_host_ops = {
+> +static const struct dw_pcie_host_ops armada8k_pcie_host_ops = {
+>  	.host_init = armada8k_pcie_host_init,
+>  };
+> 
+> diff --git a/drivers/pci/dwc/pcie-artpec6.c b/drivers/pci/dwc/pcie-
+> artpec6.c
+> index 82a04acc42fd..01c6f7823672 100644
+> --- a/drivers/pci/dwc/pcie-artpec6.c
+> +++ b/drivers/pci/dwc/pcie-artpec6.c
+> @@ -184,7 +184,7 @@ static void artpec6_pcie_host_init(struct pcie_port
+> *pp)
+>  	artpec6_pcie_enable_interrupts(artpec6_pcie);
+>  }
+> 
+> -static struct dw_pcie_host_ops artpec6_pcie_host_ops = {
+> +static const struct dw_pcie_host_ops artpec6_pcie_host_ops = {
+>  	.host_init = artpec6_pcie_host_init,
+>  };
+> 
+> diff --git a/drivers/pci/dwc/pcie-designware-plat.c
+> b/drivers/pci/dwc/pcie-designware-plat.c
+> index a9865d91b43c..091b4e7ad059 100644
+> --- a/drivers/pci/dwc/pcie-designware-plat.c
+> +++ b/drivers/pci/dwc/pcie-designware-plat.c
+> @@ -46,7 +46,7 @@ static void dw_plat_pcie_host_init(struct pcie_port *pp)
+>  		dw_pcie_msi_init(pp);
+>  }
+> 
+> -static struct dw_pcie_host_ops dw_plat_pcie_host_ops = {
+> +static const struct dw_pcie_host_ops dw_plat_pcie_host_ops = {
+>  	.host_init = dw_plat_pcie_host_init,
+>  };
+> 
+> diff --git a/drivers/pci/dwc/pcie-designware.h b/drivers/pci/dwc/pcie-
+> designware.h
+> index c6a840575796..b4d2a89f8e58 100644
+> --- a/drivers/pci/dwc/pcie-designware.h
+> +++ b/drivers/pci/dwc/pcie-designware.h
+> @@ -162,7 +162,7 @@ struct pcie_port {
+>  	struct resource		*mem;
+>  	struct resource		*busn;
+>  	int			irq;
+> -	struct dw_pcie_host_ops	*ops;
+> +	const struct dw_pcie_host_ops *ops;
+>  	int			msi_irq;
+>  	struct irq_domain	*irq_domain;
+>  	unsigned long		msi_data;
+> diff --git a/drivers/pci/dwc/pcie-qcom.c b/drivers/pci/dwc/pcie-qcom.c
+> index 96ee527c1ed2..39e8c0095715 100644
+> --- a/drivers/pci/dwc/pcie-qcom.c
+> +++ b/drivers/pci/dwc/pcie-qcom.c
+> @@ -634,7 +634,7 @@ static int qcom_pcie_rd_own_conf(struct pcie_port *pp,
+> int where, int size,
+>  	return dw_pcie_read(pci->dbi_base + where, size, val);
+>  }
+> 
+> -static struct dw_pcie_host_ops qcom_pcie_dw_ops = {
+> +static const struct dw_pcie_host_ops qcom_pcie_dw_ops = {
+>  	.host_init = qcom_pcie_host_init,
+>  	.rd_own_conf = qcom_pcie_rd_own_conf,
+>  };
+> diff --git a/drivers/pci/dwc/pcie-spear13xx.c b/drivers/pci/dwc/pcie-
+> spear13xx.c
+> index 8ff36b3dbbdf..80897291e0fb 100644
+> --- a/drivers/pci/dwc/pcie-spear13xx.c
+> +++ b/drivers/pci/dwc/pcie-spear13xx.c
+> @@ -186,7 +186,7 @@ static void spear13xx_pcie_host_init(struct pcie_port
+> *pp)
+>  	spear13xx_pcie_enable_interrupts(spear13xx_pcie);
+>  }
+> 
+> -static struct dw_pcie_host_ops spear13xx_pcie_host_ops = {
+> +static const struct dw_pcie_host_ops spear13xx_pcie_host_ops = {
+>  	.host_init = spear13xx_pcie_host_init,
+>  };
+> 
+> --
+> 2.11.0
