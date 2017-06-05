@@ -1,34 +1,22 @@
-Return-Path: <jingoohan1@gmail.com>
-Received: from mail-qt0-x243.google.com (mail-qt0-x243.google.com
- [IPv6:2607:f8b0:400d:c0d::243])
+Return-Path: <dja@axtens.net>
+Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
+ [IPv6:2607:f8b0:400e:c00::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3whV0C14TWzDqKp
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Jun 2017 08:31:06 +1000 (AEST)
-Received: by mail-qt0-x243.google.com with SMTP id w1so19506651qtg.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 05 Jun 2017 15:31:06 -0700 (PDT)
-From: "Jingoo Han" <jingoohan1@gmail.com>
-To: "'Jisheng Zhang'" <jszhang@marvell.com>,
-	<bhelgaas@google.com>
-Cc: <kishon@ti.com>, <kgene@kernel.org>, <krzk@kernel.org>,
- <javier@osg.samsung.com>, <hongxing.zhu@nxp.com>, <l.stach@pengutronix.de>,
- <m-karicheri2@ti.com>, <minghuan.Lian@freescale.com>,
- <mingkai.hu@freescale.com>, <tie-fei.zang@freescale.com>,
- <thomas.petazzoni@free-electrons.com>, <niklas.cassel@axis.com>,
- <jesper.nilsson@axis.com>, <Joao.Pinto@synopsys.com>,
- <svarbanov@mm-sol.com>, <pratyush.anand@gmail.com>,
- <linux-omap@vger.kernel.org>, <linux-pci@vger.kernel.org>,
- <linux-kernel@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
- <linux-samsung-soc@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
- <linux-arm-kernel@axis.com>, <linux-arm-msm@vger.kernel.org>
-References: <20170605085346.3732-1-jszhang@marvell.com>
-In-Reply-To: <20170605085346.3732-1-jszhang@marvell.com>
-Subject: Re: [PATCH] PCI: dwc: Constify dw_pcie_host_ops structures
-Date: Mon, 5 Jun 2017 18:30:54 -0400
-Message-ID: <000001d2de4b$65f2f360$31d8da20$@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3whVT01LxLzDqKp
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Jun 2017 08:52:35 +1000 (AEST)
+Received: by mail-pf0-x244.google.com with SMTP id u26so22205899pfd.2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 05 Jun 2017 15:52:35 -0700 (PDT)
+From: Daniel Axtens <dja@axtens.net>
+To: Breno Leitao <leitao@debian.org>, linuxppc-dev@lists.ozlabs.org
+Cc: Anton Blanchard <anton@samba.org>
+Subject: Re: [PATCH] powerpc/kernel: Initialize load_tm on task creation
+In-Reply-To: <1496673659-18499-1-git-send-email-leitao@debian.org>
+References: <1496673659-18499-1-git-send-email-leitao@debian.org>
+Date: Tue, 06 Jun 2017 08:52:28 +1000
+Message-ID: <87k24q11zn.fsf@linkitivity.dja.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,204 +26,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Monday, June 5, 2017 4:54 AM, Jisheng Zhang wrote:
-> 
-> The dw_pcie_host_ops structures are never modified. Constify these
-> structures such that these can be write-protected.
-> 
-> Signed-off-by: Jisheng Zhang <jszhang@marvell.com>
+Hi Breno,
 
-Acked-by: Jingoo Han <jingoohan1@gmail.com>
+Looks good to me.
 
-Best regards,
-Jingoo Han
+> Currently tsk->thread.load_tm is not initialized in the task creation
+> and can contain garbage on a new task.
+>
+> This is an undesired behaviour, since it affects the timing to enable
+> and disable the transactional memory laziness (disabling and enabling
+> the MSR TM bit, which affects TM reclaim and recheckpoint in the
+> scheduling process).
 
+Is there any chance this uninitialised memory will leak something
+interesting/sensitive? (Therefore, should this go to stable?)
+
+Regards,
+Daniel
+
+
+> CC: Anton Blanchard <anton@samba.org>
+> Fixes: 5d176f751ee3c6eededd984ad409bff201f436a7
+> Signed-off-by: Breno Leitao <leitao@debian.org>
 > ---
->  drivers/pci/dwc/pci-dra7xx.c           | 2 +-
->  drivers/pci/dwc/pci-exynos.c           | 2 +-
->  drivers/pci/dwc/pci-imx6.c             | 2 +-
->  drivers/pci/dwc/pci-keystone.c         | 2 +-
->  drivers/pci/dwc/pci-layerscape.c       | 6 +++---
->  drivers/pci/dwc/pcie-armada8k.c        | 2 +-
->  drivers/pci/dwc/pcie-artpec6.c         | 2 +-
->  drivers/pci/dwc/pcie-designware-plat.c | 2 +-
->  drivers/pci/dwc/pcie-designware.h      | 2 +-
->  drivers/pci/dwc/pcie-qcom.c            | 2 +-
->  drivers/pci/dwc/pcie-spear13xx.c       | 2 +-
->  11 files changed, 13 insertions(+), 13 deletions(-)
-> 
-> diff --git a/drivers/pci/dwc/pci-dra7xx.c b/drivers/pci/dwc/pci-dra7xx.c
-> index 8decf46cf525..e4166032b3c6 100644
-> --- a/drivers/pci/dwc/pci-dra7xx.c
-> +++ b/drivers/pci/dwc/pci-dra7xx.c
-> @@ -208,7 +208,7 @@ static void dra7xx_pcie_host_init(struct pcie_port
-*pp)
->  	dra7xx_pcie_enable_interrupts(dra7xx);
+>  arch/powerpc/kernel/process.c | 1 +
+>  1 file changed, 1 insertion(+)
+>
+> diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+> index a9435397eab8..2ad725ef4368 100644
+> --- a/arch/powerpc/kernel/process.c
+> +++ b/arch/powerpc/kernel/process.c
+> @@ -1687,6 +1687,7 @@ void start_thread(struct pt_regs *regs, unsigned long start, unsigned long sp)
+>  	current->thread.tm_tfhar = 0;
+>  	current->thread.tm_texasr = 0;
+>  	current->thread.tm_tfiar = 0;
+> +	current->thread.load_tm = 0;
+>  #endif /* CONFIG_PPC_TRANSACTIONAL_MEM */
 >  }
-> 
-> -static struct dw_pcie_host_ops dra7xx_pcie_host_ops = {
-> +static const struct dw_pcie_host_ops dra7xx_pcie_host_ops = {
->  	.host_init = dra7xx_pcie_host_init,
->  };
-> 
-> diff --git a/drivers/pci/dwc/pci-exynos.c b/drivers/pci/dwc/pci-exynos.c
-> index 546082ad5a3f..c78c06552590 100644
-> --- a/drivers/pci/dwc/pci-exynos.c
-> +++ b/drivers/pci/dwc/pci-exynos.c
-> @@ -590,7 +590,7 @@ static void exynos_pcie_host_init(struct pcie_port
-*pp)
->  	exynos_pcie_enable_interrupts(ep);
->  }
-> 
-> -static struct dw_pcie_host_ops exynos_pcie_host_ops = {
-> +static const struct dw_pcie_host_ops exynos_pcie_host_ops = {
->  	.rd_own_conf = exynos_pcie_rd_own_conf,
->  	.wr_own_conf = exynos_pcie_wr_own_conf,
->  	.host_init = exynos_pcie_host_init,
-> diff --git a/drivers/pci/dwc/pci-imx6.c b/drivers/pci/dwc/pci-imx6.c
-> index a98cba55c7f0..fb4816088a7a 100644
-> --- a/drivers/pci/dwc/pci-imx6.c
-> +++ b/drivers/pci/dwc/pci-imx6.c
-> @@ -602,7 +602,7 @@ static int imx6_pcie_link_up(struct dw_pcie *pci)
->  			PCIE_PHY_DEBUG_R1_XMLH_LINK_UP;
->  }
-> 
-> -static struct dw_pcie_host_ops imx6_pcie_host_ops = {
-> +static const struct dw_pcie_host_ops imx6_pcie_host_ops = {
->  	.host_init = imx6_pcie_host_init,
->  };
-> 
-> diff --git a/drivers/pci/dwc/pci-keystone.c b/drivers/pci/dwc/pci-
-> keystone.c
-> index fcc9723bad6e..4783cec1f78d 100644
-> --- a/drivers/pci/dwc/pci-keystone.c
-> +++ b/drivers/pci/dwc/pci-keystone.c
-> @@ -291,7 +291,7 @@ static void __init ks_pcie_host_init(struct pcie_port
-> *pp)
->  			"Asynchronous external abort");
->  }
-> 
-> -static struct dw_pcie_host_ops keystone_pcie_host_ops = {
-> +static const struct dw_pcie_host_ops keystone_pcie_host_ops = {
->  	.rd_other_conf = ks_dw_pcie_rd_other_conf,
->  	.wr_other_conf = ks_dw_pcie_wr_other_conf,
->  	.host_init = ks_pcie_host_init,
-> diff --git a/drivers/pci/dwc/pci-layerscape.c b/drivers/pci/dwc/pci-
-> layerscape.c
-> index 27d638c4e134..fd861289ad8b 100644
-> --- a/drivers/pci/dwc/pci-layerscape.c
-> +++ b/drivers/pci/dwc/pci-layerscape.c
-> @@ -39,7 +39,7 @@ struct ls_pcie_drvdata {
->  	u32 lut_offset;
->  	u32 ltssm_shift;
->  	u32 lut_dbg;
-> -	struct dw_pcie_host_ops *ops;
-> +	const struct dw_pcie_host_ops *ops;
->  	const struct dw_pcie_ops *dw_pcie_ops;
->  };
-> 
-> @@ -185,12 +185,12 @@ static int ls_pcie_msi_host_init(struct pcie_port
-> *pp,
->  	return 0;
->  }
-> 
-> -static struct dw_pcie_host_ops ls1021_pcie_host_ops = {
-> +static const struct dw_pcie_host_ops ls1021_pcie_host_ops = {
->  	.host_init = ls1021_pcie_host_init,
->  	.msi_host_init = ls_pcie_msi_host_init,
->  };
-> 
-> -static struct dw_pcie_host_ops ls_pcie_host_ops = {
-> +static const struct dw_pcie_host_ops ls_pcie_host_ops = {
->  	.host_init = ls_pcie_host_init,
->  	.msi_host_init = ls_pcie_msi_host_init,
->  };
-> diff --git a/drivers/pci/dwc/pcie-armada8k.c b/drivers/pci/dwc/pcie-
-> armada8k.c
-> index 495b023042b3..ea8f34af6a85 100644
-> --- a/drivers/pci/dwc/pcie-armada8k.c
-> +++ b/drivers/pci/dwc/pcie-armada8k.c
-> @@ -160,7 +160,7 @@ static irqreturn_t armada8k_pcie_irq_handler(int irq,
-> void *arg)
->  	return IRQ_HANDLED;
->  }
-> 
-> -static struct dw_pcie_host_ops armada8k_pcie_host_ops = {
-> +static const struct dw_pcie_host_ops armada8k_pcie_host_ops = {
->  	.host_init = armada8k_pcie_host_init,
->  };
-> 
-> diff --git a/drivers/pci/dwc/pcie-artpec6.c b/drivers/pci/dwc/pcie-
-> artpec6.c
-> index 82a04acc42fd..01c6f7823672 100644
-> --- a/drivers/pci/dwc/pcie-artpec6.c
-> +++ b/drivers/pci/dwc/pcie-artpec6.c
-> @@ -184,7 +184,7 @@ static void artpec6_pcie_host_init(struct pcie_port
-> *pp)
->  	artpec6_pcie_enable_interrupts(artpec6_pcie);
->  }
-> 
-> -static struct dw_pcie_host_ops artpec6_pcie_host_ops = {
-> +static const struct dw_pcie_host_ops artpec6_pcie_host_ops = {
->  	.host_init = artpec6_pcie_host_init,
->  };
-> 
-> diff --git a/drivers/pci/dwc/pcie-designware-plat.c
-> b/drivers/pci/dwc/pcie-designware-plat.c
-> index a9865d91b43c..091b4e7ad059 100644
-> --- a/drivers/pci/dwc/pcie-designware-plat.c
-> +++ b/drivers/pci/dwc/pcie-designware-plat.c
-> @@ -46,7 +46,7 @@ static void dw_plat_pcie_host_init(struct pcie_port *pp)
->  		dw_pcie_msi_init(pp);
->  }
-> 
-> -static struct dw_pcie_host_ops dw_plat_pcie_host_ops = {
-> +static const struct dw_pcie_host_ops dw_plat_pcie_host_ops = {
->  	.host_init = dw_plat_pcie_host_init,
->  };
-> 
-> diff --git a/drivers/pci/dwc/pcie-designware.h b/drivers/pci/dwc/pcie-
-> designware.h
-> index c6a840575796..b4d2a89f8e58 100644
-> --- a/drivers/pci/dwc/pcie-designware.h
-> +++ b/drivers/pci/dwc/pcie-designware.h
-> @@ -162,7 +162,7 @@ struct pcie_port {
->  	struct resource		*mem;
->  	struct resource		*busn;
->  	int			irq;
-> -	struct dw_pcie_host_ops	*ops;
-> +	const struct dw_pcie_host_ops *ops;
->  	int			msi_irq;
->  	struct irq_domain	*irq_domain;
->  	unsigned long		msi_data;
-> diff --git a/drivers/pci/dwc/pcie-qcom.c b/drivers/pci/dwc/pcie-qcom.c
-> index 96ee527c1ed2..39e8c0095715 100644
-> --- a/drivers/pci/dwc/pcie-qcom.c
-> +++ b/drivers/pci/dwc/pcie-qcom.c
-> @@ -634,7 +634,7 @@ static int qcom_pcie_rd_own_conf(struct pcie_port *pp,
-> int where, int size,
->  	return dw_pcie_read(pci->dbi_base + where, size, val);
->  }
-> 
-> -static struct dw_pcie_host_ops qcom_pcie_dw_ops = {
-> +static const struct dw_pcie_host_ops qcom_pcie_dw_ops = {
->  	.host_init = qcom_pcie_host_init,
->  	.rd_own_conf = qcom_pcie_rd_own_conf,
->  };
-> diff --git a/drivers/pci/dwc/pcie-spear13xx.c b/drivers/pci/dwc/pcie-
-> spear13xx.c
-> index 8ff36b3dbbdf..80897291e0fb 100644
-> --- a/drivers/pci/dwc/pcie-spear13xx.c
-> +++ b/drivers/pci/dwc/pcie-spear13xx.c
-> @@ -186,7 +186,7 @@ static void spear13xx_pcie_host_init(struct pcie_port
-> *pp)
->  	spear13xx_pcie_enable_interrupts(spear13xx_pcie);
->  }
-> 
-> -static struct dw_pcie_host_ops spear13xx_pcie_host_ops = {
-> +static const struct dw_pcie_host_ops spear13xx_pcie_host_ops = {
->  	.host_init = spear13xx_pcie_host_init,
->  };
-> 
-> --
+>  EXPORT_SYMBOL(start_thread);
+> -- 
 > 2.11.0
