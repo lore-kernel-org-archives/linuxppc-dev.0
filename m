@@ -1,22 +1,19 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wh9pn3SjSzDqLX
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Jun 2017 20:21:53 +1000 (AEST)
-In-Reply-To: <20170527154615.29684-1-msuchanek@suse.de>
-To: Michal Suchanek <msuchanek@suse.de>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wh9pp3lXZzDqLC
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Jun 2017 20:21:54 +1000 (AEST)
+In-Reply-To: <0e16df19be949fa1adccd8ec7949b164df73e90e.1496070452.git.christophe.leroy@c-s.fr>
+To: Christophe Leroy <christophe.leroy@c-s.fr>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
- Hari Bathini <hbathini@linux.vnet.ibm.com>,
- Andrew Morton <akpm@linux-foundation.org>, Michal Suchanek <msuchanek@suse.de>,
- Colin Ian King <colin.king@canonical.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+ Paul Mackerras <paulus@samba.org>, Scott Wood <oss@buserror.net>,
+ Balbir Singh <bsingharora@gmail.com>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: [v2] powerpc/fadump: return error when fadump registration fails
-Message-Id: <3wh9pn2s7zz9s7M@ozlabs.org>
-Date: Mon,  5 Jun 2017 20:21:53 +1000 (AEST)
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [6/7] powerpc/mm: remove __this_fixmap_does_not_exist()
+Message-Id: <3wh9pp2HFmz9sDC@ozlabs.org>
+Date: Mon,  5 Jun 2017 20:21:54 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,21 +23,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 2017-05-27 at 15:46:15 UTC, Michal Suchanek wrote:
-> - log an error message when registration fails and no error code listed
->  in the switch is returned
->  - translate the hv error code to posix error code and return it from
->  fw_register
->  - return the posix error code from fw_register to the process writing
->  to sysfs
->  - return EEXIST on re-registration
->  - return success on deregistration when fadump is not registered
->  - return ENODEV when no memory is reserved for fadump
+On Mon, 2017-05-29 at 15:32:06 UTC, Christophe Leroy wrote:
+> This function has not been used since commit 9494a1e8428ea
+> ("powerpc: use generic fixmap.h)
 > 
-> Signed-off-by: Michal Suchanek <msuchanek@suse.de>
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/98b8cd7f75643e0a442d7a4c1cef2c
+https://git.kernel.org/powerpc/c/9affa9e228d3ece66ed322909e84cf
 
 cheers
