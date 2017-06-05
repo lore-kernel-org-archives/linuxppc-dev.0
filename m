@@ -2,18 +2,18 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wh9pk1RhYzDqKy
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Jun 2017 20:21:50 +1000 (AEST)
-In-Reply-To: <a0105d18c39c419ed3b30270d0c2f30d10aa1947.1492772606.git.christophe.leroy@c-s.fr>
-To: Christophe Leroy <christophe.leroy@c-s.fr>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Scott Wood <oss@buserror.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wh9pl03FyzDqL8
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Jun 2017 20:21:51 +1000 (AEST)
+In-Reply-To: <149544566391.16888.187413825827689513.stgit@hbathini.in.ibm.com>
+To: Hari Bathini <hbathini@linux.vnet.ibm.com>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [1/4] powerpc: Discard ffs()/__ffs() function and use builtin
- functions instead
-Message-Id: <3wh9pj6YD0z9sD5@ozlabs.org>
-Date: Mon,  5 Jun 2017 20:21:49 +1000 (AEST)
+Cc: Prarit Bhargava <prarit@redhat.com>, linuxppc-dev <linuxppc-dev@ozlabs.org>,
+ Ankit Kumar <ankit@linux.vnet.ibm.com>, Dave Young <dyoung@redhat.com>,
+ Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
+Subject: Re: [1/2] powerpc/fadump: add a warning when 'fadump_reserve_mem=' is
+ used
+Message-Id: <3wh9pk5sYXz9sDG@ozlabs.org>
+Date: Mon,  5 Jun 2017 20:21:50 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,26 +23,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2017-04-21 at 11:18:46 UTC, Christophe Leroy wrote:
-> With the ffs() function as defined in arch/powerpc/include/asm/bitops.h
-> GCC will not optimise the code in case of constant parameter, as shown
-> by the small exemple below.
-...
+On Mon, 2017-05-22 at 09:34:23 UTC, Hari Bathini wrote:
+> With commit 11550dc0a00b ("powerpc/fadump: reuse crashkernel parameter
+> for fadump memory reservation"), 'fadump_reserve_mem=' parameter is
+> deprecated in favor of 'crashkernel=' parameter. Add a warning if
+> 'fadump_reserve_mem=' is still used.
 > 
-> In addition, when reading the generated vmlinux, we can observe
-> that with the builtin functions, GCC sometimes efficiently spreads
-> the instructions within the generated functions while the inline
-> assembly force them to remain grouped together.
-> 
-> __builtin_ffs() is already used in arch/powerpc/include/asm/page_32.h
-> 
-> Those builtins have been in GCC since at least 3.4.6 (see
-> https://gcc.gnu.org/onlinedocs/gcc-3.4.6/gcc/Other-Builtins.html )
-> 
-> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> Suggested-by: Prarit Bhargava <prarit@redhat.com>
+> Signed-off-by: Hari Bathini <hbathini@linux.vnet.ibm.com>
 
 Series applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/f83647d642270f6b9d75736817fb5a
+https://git.kernel.org/powerpc/c/81d9eca502fcc360950ef476124626
 
 cheers
