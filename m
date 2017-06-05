@@ -1,19 +1,25 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <danielmicay@gmail.com>
+Received: from mail-it0-x243.google.com (mail-it0-x243.google.com
+ [IPv6:2607:f8b0:4001:c0b::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3whC2x4fk0zDqGr
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Jun 2017 21:17:29 +1000 (AEST)
-Message-ID: <1496661424.31588.1.camel@kernel.crashing.org>
-Subject: Re: [v2] powerpc: handle simultaneous interrupts at once
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Michael Ellerman <patch-notifications@ellerman.id.au>, Christophe Leroy
- <christophe.leroy@c-s.fr>, Paul Mackerras <paulus@samba.org>, Scott Wood
- <oss@buserror.net>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Date: Mon, 05 Jun 2017 21:17:04 +1000
-In-Reply-To: <3wh9ph0pv2z9s7f@ozlabs.org>
-References: <3wh9ph0pv2z9s7f@ozlabs.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3whDVL5wdZzDqKp
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Jun 2017 22:22:50 +1000 (AEST)
+Received: by mail-it0-x243.google.com with SMTP id d68so21751681ita.1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 05 Jun 2017 05:22:50 -0700 (PDT)
+Message-ID: <1496665366.343.1.camel@gmail.com>
+Subject: Re: [kernel-hardening] [PATCH] powerpc: Increase ELF_ET_DYN_BASE to
+ 1TB for 64-bit applications
+From: Daniel Micay <danielmicay@gmail.com>
+To: Bhupesh Sharma <bhsharma@redhat.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, kernel-hardening@lists.openwall.com
+Cc: bhupesh.linux@gmail.com, Anton Blanchard <anton@samba.org>, Daniel
+ Cashman <dcashman@android.com>, Kees Cook <keescook@chromium.org>, Michael
+ Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>
+Date: Mon, 05 Jun 2017 08:22:46 -0400
+In-Reply-To: <1496642591-1373-1-git-send-email-bhsharma@redhat.com>
+References: <1496642591-1373-1-git-send-email-bhsharma@redhat.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,30 +31,8 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2017-06-05 at 20:21 +1000, Michael Ellerman wrote:
-> On Thu, 2017-03-16 at 08:55:45 UTC, Christophe Leroy wrote:
-> > It often happens to have simultaneous interrupts, for instance
-> > when having double Ethernet attachment. With the current
-> > implementation, we suffer the cost of kernel entry/exit for each
-> > interrupt.
-> > 
-> > This patch introduces a loop in __do_irq() to handle all interrupts
-> > at once before returning.
-> > 
-> > Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
-> 
-> Applied to powerpc next, thanks.
-> 
-> https://git.kernel.org/powerpc/c/45cb08f4791ce6a15c54598b4cb73d
-
-Hrm, I hadn't noticed that patch...
-
-We used to do that and then removed the code for it. There's a cost,
-sometimes noticeable, to an extra call to ppc_md.get_irq.
-
-Why not have your get_irq (or eoi) implementation set a per-cpu
-requesting a new spin of the loop ?
-
-We could move the xive force replay stuff to use the same thing.
-
-Ben.
+Rather than doing this, the base should just be split for an ELF
+interpreter like PaX. It makes sense for a standalone executable to be
+as low in the address space as possible. Doing that ASAP fixes issues
+like this and opens up the possibility of fixing stack mapping ASLR
+entropy on various architectures. It should be a pretty small change.
