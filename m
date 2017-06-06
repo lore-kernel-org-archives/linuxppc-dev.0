@@ -1,12 +1,12 @@
 Return-Path: <ram.n.pai@gmail.com>
-Received: from mail-qt0-x244.google.com (mail-qt0-x244.google.com
- [IPv6:2607:f8b0:400d:c0d::244])
+Received: from mail-qt0-x243.google.com (mail-qt0-x243.google.com
+ [IPv6:2607:f8b0:400d:c0d::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3whYQg0fJBzDqFH
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Jun 2017 11:05:47 +1000 (AEST)
-Received: by mail-qt0-x244.google.com with SMTP id w1so20236572qtg.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 05 Jun 2017 18:05:46 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3whYQh4FJ6zDqFH
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Jun 2017 11:05:48 +1000 (AEST)
+Received: by mail-qt0-x243.google.com with SMTP id s33so12919673qtg.3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 05 Jun 2017 18:05:48 -0700 (PDT)
 Sender: Ram Pai <ram.n.pai@gmail.com>
 From: Ram Pai <linuxram@us.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org,
@@ -15,9 +15,12 @@ Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
  khandual@linux.vnet.ibm.com, aneesh.kumar@linux.vnet.ibm.com,
  bsingharora@gmail.com, dave.hansen@intel.com, hbabu@us.ibm.com,
  linuxram@us.ibm.com
-Subject: [RFC PATCH 0/7 v1] powerpc: Memory Protection Keys
-Date: Mon,  5 Jun 2017 18:05:02 -0700
-Message-Id: <1496711109-4968-1-git-send-email-linuxram@us.ibm.com>
+Subject: [RFC PATCH 1/7 v1]powerpc: Free up four PTE bits to accommodate
+ memory keys
+Date: Mon,  5 Jun 2017 18:05:03 -0700
+Message-Id: <1496711109-4968-2-git-send-email-linuxram@us.ibm.com>
+In-Reply-To: <1496711109-4968-1-git-send-email-linuxram@us.ibm.com>
+References: <1496711109-4968-1-git-send-email-linuxram@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,80 +30,531 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Memory protection keys enable applications to protect its
-address space from inadvertent access or corruption from
-itself.
+Rearrange  PTE   bits to  free  up  bits 3, 4, 5  and  6  for
+memory keys. Bit 3, 4, 5, 6 and 57  shall  be used for memory
+keys.
 
-The overall idea:
+The patch does the following change to the 64K PTE format
 
- A process allocates a   key  and associates it with
- a  address  range  within    its   address   space.
- The process  than  can  dynamically  set read/write 
- permissions on  the   key   without  involving  the 
- kernel. Any  code that  violates   the  permissions
- off the address space; as defined by its associated
- key, will receive a segmentation fault.
+H_PAGE_BUSY moves from bit 3 to bit 7
+H_PAGE_F_SECOND which occupied bit 4 moves to the second part
+	of the pte.
+H_PAGE_F_GIX which  occupied bit 5, 6 and 7 also moves to the
+	second part of the pte.
 
-This patch series enables the feature on PPC64.
-It is enabled on HPTE 64K-page platform.
+The second part of the PTE will hold
+   a (H_PAGE_F_SECOND|H_PAGE_F_GIX)  for  64K page backed pte,
+   and sixteen (H_PAGE_F_SECOND|H_PAGE_F_GIX)  for 4k  backed
+	pte.
 
-ISA3.0 section 5.7.13 describes the detailed specifications.
+the four  bits((H_PAGE_F_SECOND|H_PAGE_F_GIX) that represent a slot
+is initialized to 0xF indicating a invalid slot. if a hashpage does
+get  allocated  to  the  0xF  slot, it is released and not used. In
+other words, even  though  0xF  is  a valid slot we discard it  and
+consider it as invalid slot(HPTE_SOFT_INVALID). This  gives  us  an
+opportunity to  not  depend on a bit in the primary PTE in order to
+determine the validity of a slot.
 
-Testing:
-	This patch series has passed all the protection key
-	tests available in  the selftests directory. Though
-	the test are written  for x86, I  have updated  the
-	tests to  cater  to  powerpc. Will  send  the patch
-	separately, along with documentation updates.
+When  we  release  a  0xF slot we also release a legitimate primary
+slot  and  unmap  that  entry. This  is  to  ensure  that we do get
+a legimate non-0xF slot the next time we retry for a slot.
 
-Thanks-to: Dave Hansen, Aneesh, Paul Mackerras,
-	   Michael Ellermen  :)
+Though treating 0xF slot as invalid reduces the number of available
+slots and make have a effect on the performance, the probabilty
+of hitting a 0xF is extermely low.
 
-Ram Pai (7):
-  Free up four PTE bits to accommadate memory keys
-  Implement sys_pkey_alloc and sys_pkey_free system call.
-  store and restore the key state across context switches.
-  Implementation for sys_mprotect_pkey() system call.
-  Program HPTE key protection bits.
-  Handle exceptions caused by violation of key protection.
-  Deliver SEGV signal on protection key violation.
+Compared  to the current scheme, the above described scheme reduces
+the number of false hash table updates  significantly  and  has the
+added  advantage  of  releasing  four  valuable  PTE bits for other
+purpose.
 
- arch/powerpc/Kconfig                          |  15 ++
- arch/powerpc/include/asm/book3s/64/hash-4k.h  |  12 ++
- arch/powerpc/include/asm/book3s/64/hash-64k.h |  38 ++--
- arch/powerpc/include/asm/book3s/64/hash.h     |   8 +-
- arch/powerpc/include/asm/book3s/64/mmu-hash.h |  10 +
- arch/powerpc/include/asm/book3s/64/mmu.h      |  10 +
- arch/powerpc/include/asm/book3s/64/pgtable.h  |  84 +++++++-
- arch/powerpc/include/asm/mman.h               |  29 +--
- arch/powerpc/include/asm/mmu_context.h        |  12 ++
- arch/powerpc/include/asm/pkeys.h              | 159 +++++++++++++++
- arch/powerpc/include/asm/processor.h          |   5 +
- arch/powerpc/include/asm/reg.h                |  10 +-
- arch/powerpc/include/asm/systbl.h             |   3 +
- arch/powerpc/include/asm/unistd.h             |   6 +-
- arch/powerpc/include/uapi/asm/ptrace.h        |   5 +-
- arch/powerpc/include/uapi/asm/unistd.h        |   3 +
- arch/powerpc/kernel/asm-offsets.c             |   1 +
- arch/powerpc/kernel/exceptions-64s.S          |  10 +-
- arch/powerpc/kernel/process.c                 |  18 ++
- arch/powerpc/kernel/signal_32.c               |  18 +-
- arch/powerpc/kernel/signal_64.c               |  11 ++
- arch/powerpc/kernel/traps.c                   |  49 +++++
- arch/powerpc/mm/Makefile                      |   1 +
- arch/powerpc/mm/dump_linuxpagetables.c        |   3 +-
- arch/powerpc/mm/fault.c                       |  21 +-
- arch/powerpc/mm/hash64_4k.c                   |  12 +-
- arch/powerpc/mm/hash64_64k.c                  |  73 +++----
- arch/powerpc/mm/hash_utils_64.c               |  43 ++++-
- arch/powerpc/mm/hugetlbpage-hash64.c          |  16 +-
- arch/powerpc/mm/mmu_context_book3s64.c        |   5 +
- arch/powerpc/mm/pkeys.c                       | 267 ++++++++++++++++++++++++++
- include/linux/mm.h                            |  32 +--
- include/uapi/asm-generic/mman-common.h        |   2 +-
- 33 files changed, 856 insertions(+), 135 deletions(-)
- create mode 100644 arch/powerpc/include/asm/pkeys.h
- create mode 100644 arch/powerpc/mm/pkeys.c
+This idea was jointly developed by Paul Mackerras, Aneesh, Michael
+Ellermen and myself.
 
+4K PTE format remain unchanged currently.
+
+Signed-off-by: Ram Pai <linuxram@us.ibm.com>
+---
+ arch/powerpc/include/asm/book3s/64/hash-4k.h  | 12 +++++
+ arch/powerpc/include/asm/book3s/64/hash-64k.h | 38 ++++++--------
+ arch/powerpc/include/asm/book3s/64/hash.h     |  8 ++-
+ arch/powerpc/include/asm/book3s/64/mmu-hash.h |  5 ++
+ arch/powerpc/mm/dump_linuxpagetables.c        |  3 +-
+ arch/powerpc/mm/hash64_4k.c                   | 12 ++---
+ arch/powerpc/mm/hash64_64k.c                  | 73 +++++++++------------------
+ arch/powerpc/mm/hash_utils_64.c               | 38 +++++++++++++-
+ arch/powerpc/mm/hugetlbpage-hash64.c          | 16 +++---
+ 9 files changed, 107 insertions(+), 98 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/book3s/64/hash-4k.h b/arch/powerpc/include/asm/book3s/64/hash-4k.h
+index b4b5e6b..223d318 100644
+--- a/arch/powerpc/include/asm/book3s/64/hash-4k.h
++++ b/arch/powerpc/include/asm/book3s/64/hash-4k.h
+@@ -16,6 +16,18 @@
+ #define H_PUD_TABLE_SIZE	(sizeof(pud_t) << H_PUD_INDEX_SIZE)
+ #define H_PGD_TABLE_SIZE	(sizeof(pgd_t) << H_PGD_INDEX_SIZE)
+ 
++
++/*
++ * Only supported by 4k linux page size
++ */
++#define H_PAGE_F_SECOND        _RPAGE_RSV2     /* HPTE is in 2ndary HPTEG */
++#define H_PAGE_F_GIX           (_RPAGE_RSV3 | _RPAGE_RSV4 | _RPAGE_RPN44)
++#define H_PAGE_F_GIX_SHIFT     56
++
++#define H_PAGE_BUSY	_RPAGE_RSV1     /* software: PTE & hash are busy */
++#define H_PAGE_HASHPTE	_RPAGE_RPN43    /* PTE has associated HPTE */
++
++
+ /* PTE flags to conserve for HPTE identification */
+ #define _PAGE_HPTEFLAGS (H_PAGE_BUSY | H_PAGE_HASHPTE | \
+ 			 H_PAGE_F_SECOND | H_PAGE_F_GIX)
+diff --git a/arch/powerpc/include/asm/book3s/64/hash-64k.h b/arch/powerpc/include/asm/book3s/64/hash-64k.h
+index 9732837..87ee22d 100644
+--- a/arch/powerpc/include/asm/book3s/64/hash-64k.h
++++ b/arch/powerpc/include/asm/book3s/64/hash-64k.h
+@@ -10,23 +10,21 @@
+  * 64k aligned address free up few of the lower bits of RPN for us
+  * We steal that here. For more deatils look at pte_pfn/pfn_pte()
+  */
+-#define H_PAGE_COMBO	_RPAGE_RPN0 /* this is a combo 4k page */
+-#define H_PAGE_4K_PFN	_RPAGE_RPN1 /* PFN is for a single 4k page */
++#define H_PAGE_COMBO   _RPAGE_RPN0 /* this is a combo 4k page */
++#define H_PAGE_4K_PFN  _RPAGE_RPN1 /* PFN is for a single 4k page */
++
++#define H_PAGE_BUSY	_RPAGE_RPN44     /* software: PTE & hash are busy */
++#define H_PAGE_HASHPTE	_RPAGE_RPN43    /* PTE has associated HPTE */
++
+ /*
+  * We need to differentiate between explicit huge page and THP huge
+  * page, since THP huge page also need to track real subpage details
+  */
+ #define H_PAGE_THP_HUGE  H_PAGE_4K_PFN
+ 
+-/*
+- * Used to track subpage group valid if H_PAGE_COMBO is set
+- * This overloads H_PAGE_F_GIX and H_PAGE_F_SECOND
+- */
+-#define H_PAGE_COMBO_VALID	(H_PAGE_F_GIX | H_PAGE_F_SECOND)
+-
+ /* PTE flags to conserve for HPTE identification */
+-#define _PAGE_HPTEFLAGS (H_PAGE_BUSY | H_PAGE_F_SECOND | \
+-			 H_PAGE_F_GIX | H_PAGE_HASHPTE | H_PAGE_COMBO)
++#define _PAGE_HPTEFLAGS (H_PAGE_BUSY | H_PAGE_HASHPTE)
++
+ /*
+  * we support 16 fragments per PTE page of 64K size.
+  */
+@@ -54,24 +52,18 @@ static inline real_pte_t __real_pte(pte_t pte, pte_t *ptep)
+ 	unsigned long *hidxp;
+ 
+ 	rpte.pte = pte;
+-	rpte.hidx = 0;
+-	if (pte_val(pte) & H_PAGE_COMBO) {
+-		/*
+-		 * Make sure we order the hidx load against the H_PAGE_COMBO
+-		 * check. The store side ordering is done in __hash_page_4K
+-		 */
+-		smp_rmb();
+-		hidxp = (unsigned long *)(ptep + PTRS_PER_PTE);
+-		rpte.hidx = *hidxp;
+-	}
++	/*
++	 * The store side ordering is done in __hash_page_4K
++	 */
++	smp_rmb();
++	hidxp = (unsigned long *)(ptep + PTRS_PER_PTE);
++	rpte.hidx = *hidxp;
+ 	return rpte;
+ }
+ 
+ static inline unsigned long __rpte_to_hidx(real_pte_t rpte, unsigned long index)
+ {
+-	if ((pte_val(rpte.pte) & H_PAGE_COMBO))
+-		return (rpte.hidx >> (index<<2)) & 0xf;
+-	return (pte_val(rpte.pte) >> H_PAGE_F_GIX_SHIFT) & 0xf;
++	return ((rpte.hidx >> (index<<2)) & 0xfUL);
+ }
+ 
+ #define __rpte_to_pte(r)	((r).pte)
+diff --git a/arch/powerpc/include/asm/book3s/64/hash.h b/arch/powerpc/include/asm/book3s/64/hash.h
+index 4e957b0..7742782 100644
+--- a/arch/powerpc/include/asm/book3s/64/hash.h
++++ b/arch/powerpc/include/asm/book3s/64/hash.h
+@@ -8,11 +8,9 @@
+  *
+  */
+ #define H_PTE_NONE_MASK		_PAGE_HPTEFLAGS
+-#define H_PAGE_F_GIX_SHIFT	56
+-#define H_PAGE_BUSY		_RPAGE_RSV1 /* software: PTE & hash are busy */
+-#define H_PAGE_F_SECOND		_RPAGE_RSV2	/* HPTE is in 2ndary HPTEG */
+-#define H_PAGE_F_GIX		(_RPAGE_RSV3 | _RPAGE_RSV4 | _RPAGE_RPN44)
+-#define H_PAGE_HASHPTE		_RPAGE_RPN43	/* PTE has associated HPTE */
++
++#define INIT_HIDX (~0x0UL)
++#define HPTE_SOFT_INVALID(slot) ((slot & 0xfUL) == 0xfUL)
+ 
+ #ifdef CONFIG_PPC_64K_PAGES
+ #include <asm/book3s/64/hash-64k.h>
+diff --git a/arch/powerpc/include/asm/book3s/64/mmu-hash.h b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
+index 6981a52..cfb8169 100644
+--- a/arch/powerpc/include/asm/book3s/64/mmu-hash.h
++++ b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
+@@ -435,6 +435,11 @@ extern int __hash_page_4K(unsigned long ea, unsigned long access,
+ extern int __hash_page_64K(unsigned long ea, unsigned long access,
+ 			   unsigned long vsid, pte_t *ptep, unsigned long trap,
+ 			   unsigned long flags, int ssize);
++extern unsigned long set_hidx_slot(pte_t *ptep, real_pte_t rpte,
++			unsigned int subpg_index, unsigned long slot);
++extern unsigned long get_hidx_slot(unsigned long vpn, unsigned long shift,
++			int ssize, real_pte_t rpte, unsigned int subpg_index);
++
+ struct mm_struct;
+ unsigned int hash_page_do_lazy_icache(unsigned int pp, pte_t pte, int trap);
+ extern int hash_page_mm(struct mm_struct *mm, unsigned long ea,
+diff --git a/arch/powerpc/mm/dump_linuxpagetables.c b/arch/powerpc/mm/dump_linuxpagetables.c
+index 44fe483..b832ed3 100644
+--- a/arch/powerpc/mm/dump_linuxpagetables.c
++++ b/arch/powerpc/mm/dump_linuxpagetables.c
+@@ -213,7 +213,7 @@ struct flag_info {
+ 		.val	= H_PAGE_4K_PFN,
+ 		.set	= "4K_pfn",
+ 	}, {
+-#endif
++#else
+ 		.mask	= H_PAGE_F_GIX,
+ 		.val	= H_PAGE_F_GIX,
+ 		.set	= "f_gix",
+@@ -224,6 +224,7 @@ struct flag_info {
+ 		.val	= H_PAGE_F_SECOND,
+ 		.set	= "f_second",
+ 	}, {
++#endif /* CONFIG_PPC_64K_PAGES */
+ #endif
+ 		.mask	= _PAGE_SPECIAL,
+ 		.val	= _PAGE_SPECIAL,
+diff --git a/arch/powerpc/mm/hash64_4k.c b/arch/powerpc/mm/hash64_4k.c
+index 6fa450c..5b16416 100644
+--- a/arch/powerpc/mm/hash64_4k.c
++++ b/arch/powerpc/mm/hash64_4k.c
+@@ -20,6 +20,7 @@ int __hash_page_4K(unsigned long ea, unsigned long access, unsigned long vsid,
+ 		   pte_t *ptep, unsigned long trap, unsigned long flags,
+ 		   int ssize, int subpg_prot)
+ {
++	real_pte_t rpte;
+ 	unsigned long hpte_group;
+ 	unsigned long rflags, pa;
+ 	unsigned long old_pte, new_pte;
+@@ -54,6 +55,7 @@ int __hash_page_4K(unsigned long ea, unsigned long access, unsigned long vsid,
+ 	 * need to add in 0x1 if it's a read-only user page
+ 	 */
+ 	rflags = htab_convert_pte_flags(new_pte);
++	rpte = __real_pte(__pte(old_pte), ptep);
+ 
+ 	if (cpu_has_feature(CPU_FTR_NOEXECUTE) &&
+ 	    !cpu_has_feature(CPU_FTR_COHERENT_ICACHE))
+@@ -64,12 +66,7 @@ int __hash_page_4K(unsigned long ea, unsigned long access, unsigned long vsid,
+ 		/*
+ 		 * There MIGHT be an HPTE for this pte
+ 		 */
+-		hash = hpt_hash(vpn, shift, ssize);
+-		if (old_pte & H_PAGE_F_SECOND)
+-			hash = ~hash;
+-		slot = (hash & htab_hash_mask) * HPTES_PER_GROUP;
+-		slot += (old_pte & H_PAGE_F_GIX) >> H_PAGE_F_GIX_SHIFT;
+-
++		slot = get_hidx_slot(vpn, shift, ssize, rpte, 0);
+ 		if (mmu_hash_ops.hpte_updatepp(slot, rflags, vpn, MMU_PAGE_4K,
+ 					       MMU_PAGE_4K, ssize, flags) == -1)
+ 			old_pte &= ~_PAGE_HPTEFLAGS;
+@@ -118,8 +115,7 @@ int __hash_page_4K(unsigned long ea, unsigned long access, unsigned long vsid,
+ 			return -1;
+ 		}
+ 		new_pte = (new_pte & ~_PAGE_HPTEFLAGS) | H_PAGE_HASHPTE;
+-		new_pte |= (slot << H_PAGE_F_GIX_SHIFT) &
+-			(H_PAGE_F_SECOND | H_PAGE_F_GIX);
++		new_pte |= set_hidx_slot(ptep, rpte, 0, slot);
+ 	}
+ 	*ptep = __pte(new_pte & ~H_PAGE_BUSY);
+ 	return 0;
+diff --git a/arch/powerpc/mm/hash64_64k.c b/arch/powerpc/mm/hash64_64k.c
+index 1a68cb1..feb90f1 100644
+--- a/arch/powerpc/mm/hash64_64k.c
++++ b/arch/powerpc/mm/hash64_64k.c
+@@ -15,34 +15,13 @@
+ #include <linux/mm.h>
+ #include <asm/machdep.h>
+ #include <asm/mmu.h>
+-/*
+- * index from 0 - 15
+- */
+-bool __rpte_sub_valid(real_pte_t rpte, unsigned long index)
+-{
+-	unsigned long g_idx;
+-	unsigned long ptev = pte_val(rpte.pte);
+ 
+-	g_idx = (ptev & H_PAGE_COMBO_VALID) >> H_PAGE_F_GIX_SHIFT;
+-	index = index >> 2;
+-	if (g_idx & (0x1 << index))
+-		return true;
+-	else
+-		return false;
+-}
+ /*
+  * index from 0 - 15
+  */
+-static unsigned long mark_subptegroup_valid(unsigned long ptev, unsigned long index)
++bool __rpte_sub_valid(real_pte_t rpte, unsigned long index)
+ {
+-	unsigned long g_idx;
+-
+-	if (!(ptev & H_PAGE_COMBO))
+-		return ptev;
+-	index = index >> 2;
+-	g_idx = 0x1 << index;
+-
+-	return ptev | (g_idx << H_PAGE_F_GIX_SHIFT);
++	return !(HPTE_SOFT_INVALID(rpte.hidx >> (index << 2)));
+ }
+ 
+ int __hash_page_4K(unsigned long ea, unsigned long access, unsigned long vsid,
+@@ -50,10 +29,9 @@ int __hash_page_4K(unsigned long ea, unsigned long access, unsigned long vsid,
+ 		   int ssize, int subpg_prot)
+ {
+ 	real_pte_t rpte;
+-	unsigned long *hidxp;
+ 	unsigned long hpte_group;
+ 	unsigned int subpg_index;
+-	unsigned long rflags, pa, hidx;
++	unsigned long rflags, pa;
+ 	unsigned long old_pte, new_pte, subpg_pte;
+ 	unsigned long vpn, hash, slot;
+ 	unsigned long shift = mmu_psize_defs[MMU_PAGE_4K].shift;
+@@ -116,8 +94,9 @@ int __hash_page_4K(unsigned long ea, unsigned long access, unsigned long vsid,
+ 		 * On hash insert failure we use old pte value and we don't
+ 		 * want slot information there if we have a insert failure.
+ 		 */
+-		old_pte &= ~(H_PAGE_HASHPTE | H_PAGE_F_GIX | H_PAGE_F_SECOND);
+-		new_pte &= ~(H_PAGE_HASHPTE | H_PAGE_F_GIX | H_PAGE_F_SECOND);
++		old_pte &= ~(H_PAGE_HASHPTE);
++		new_pte &= ~(H_PAGE_HASHPTE);
++		rpte.hidx = INIT_HIDX;
+ 		goto htab_insert_hpte;
+ 	}
+ 	/*
+@@ -126,18 +105,12 @@ int __hash_page_4K(unsigned long ea, unsigned long access, unsigned long vsid,
+ 	if (__rpte_sub_valid(rpte, subpg_index)) {
+ 		int ret;
+ 
+-		hash = hpt_hash(vpn, shift, ssize);
+-		hidx = __rpte_to_hidx(rpte, subpg_index);
+-		if (hidx & _PTEIDX_SECONDARY)
+-			hash = ~hash;
+-		slot = (hash & htab_hash_mask) * HPTES_PER_GROUP;
+-		slot += hidx & _PTEIDX_GROUP_IX;
+-
++		slot = get_hidx_slot(vpn, shift, ssize, rpte, subpg_index);
+ 		ret = mmu_hash_ops.hpte_updatepp(slot, rflags, vpn,
+ 						 MMU_PAGE_4K, MMU_PAGE_4K,
+ 						 ssize, flags);
+ 		/*
+-		 *if we failed because typically the HPTE wasn't really here
++		 * if we failed because typically the HPTE wasn't really here
+ 		 * we try an insertion.
+ 		 */
+ 		if (ret == -1)
+@@ -177,8 +150,14 @@ int __hash_page_4K(unsigned long ea, unsigned long access, unsigned long vsid,
+ 						rflags, HPTE_V_SECONDARY,
+ 						MMU_PAGE_4K, MMU_PAGE_4K,
+ 						ssize);
+-		if (slot == -1) {
+-			if (mftb() & 0x1)
++		if (unlikely(HPTE_SOFT_INVALID(slot)))
++			mmu_hash_ops.hpte_invalidate(slot, vpn,
++				MMU_PAGE_4K, MMU_PAGE_4K,
++				ssize, (flags & HPTE_LOCAL_UPDATE));
++
++		if (unlikely(slot == -1 || HPTE_SOFT_INVALID(slot))) {
++			if (HPTE_SOFT_INVALID(slot) || (mftb() & 0x1))
++
+ 				hpte_group = ((hash & htab_hash_mask) *
+ 					      HPTES_PER_GROUP) & ~0x7UL;
+ 			mmu_hash_ops.hpte_remove(hpte_group);
+@@ -204,11 +183,9 @@ int __hash_page_4K(unsigned long ea, unsigned long access, unsigned long vsid,
+ 	 * Since we have H_PAGE_BUSY set on ptep, we can be sure
+ 	 * nobody is undating hidx.
+ 	 */
+-	hidxp = (unsigned long *)(ptep + PTRS_PER_PTE);
+-	rpte.hidx &= ~(0xfUL << (subpg_index << 2));
+-	*hidxp = rpte.hidx  | (slot << (subpg_index << 2));
+-	new_pte = mark_subptegroup_valid(new_pte, subpg_index);
+-	new_pte |=  H_PAGE_HASHPTE;
++	new_pte |= set_hidx_slot(ptep, rpte, subpg_index, slot);
++	new_pte |= H_PAGE_HASHPTE;
++
+ 	/*
+ 	 * check __real_pte for details on matching smp_rmb()
+ 	 */
+@@ -221,6 +198,7 @@ int __hash_page_64K(unsigned long ea, unsigned long access,
+ 		    unsigned long vsid, pte_t *ptep, unsigned long trap,
+ 		    unsigned long flags, int ssize)
+ {
++	real_pte_t rpte;
+ 	unsigned long hpte_group;
+ 	unsigned long rflags, pa;
+ 	unsigned long old_pte, new_pte;
+@@ -257,6 +235,7 @@ int __hash_page_64K(unsigned long ea, unsigned long access,
+ 	} while (!pte_xchg(ptep, __pte(old_pte), __pte(new_pte)));
+ 
+ 	rflags = htab_convert_pte_flags(new_pte);
++	rpte = __real_pte(__pte(old_pte), ptep);
+ 
+ 	if (cpu_has_feature(CPU_FTR_NOEXECUTE) &&
+ 	    !cpu_has_feature(CPU_FTR_COHERENT_ICACHE))
+@@ -267,12 +246,7 @@ int __hash_page_64K(unsigned long ea, unsigned long access,
+ 		/*
+ 		 * There MIGHT be an HPTE for this pte
+ 		 */
+-		hash = hpt_hash(vpn, shift, ssize);
+-		if (old_pte & H_PAGE_F_SECOND)
+-			hash = ~hash;
+-		slot = (hash & htab_hash_mask) * HPTES_PER_GROUP;
+-		slot += (old_pte & H_PAGE_F_GIX) >> H_PAGE_F_GIX_SHIFT;
+-
++		slot = get_hidx_slot(vpn, shift, ssize, rpte, 0);
+ 		if (mmu_hash_ops.hpte_updatepp(slot, rflags, vpn, MMU_PAGE_64K,
+ 					       MMU_PAGE_64K, ssize,
+ 					       flags) == -1)
+@@ -322,9 +296,8 @@ int __hash_page_64K(unsigned long ea, unsigned long access,
+ 					   MMU_PAGE_64K, MMU_PAGE_64K, old_pte);
+ 			return -1;
+ 		}
++		set_hidx_slot(ptep, rpte, 0, slot);
+ 		new_pte = (new_pte & ~_PAGE_HPTEFLAGS) | H_PAGE_HASHPTE;
+-		new_pte |= (slot << H_PAGE_F_GIX_SHIFT) &
+-			(H_PAGE_F_SECOND | H_PAGE_F_GIX);
+ 	}
+ 	*ptep = __pte(new_pte & ~H_PAGE_BUSY);
+ 	return 0;
+diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
+index f2095ce..b405657 100644
+--- a/arch/powerpc/mm/hash_utils_64.c
++++ b/arch/powerpc/mm/hash_utils_64.c
+@@ -975,8 +975,9 @@ void __init hash__early_init_devtree(void)
+ 
+ void __init hash__early_init_mmu(void)
+ {
++#ifndef CONFIG_PPC_64K_PAGES
+ 	/*
+-	 * We have code in __hash_page_64K() and elsewhere, which assumes it can
++	 * We have code in __hash_page_4K() and elsewhere, which assumes it can
+ 	 * do the following:
+ 	 *   new_pte |= (slot << H_PAGE_F_GIX_SHIFT) & (H_PAGE_F_SECOND | H_PAGE_F_GIX);
+ 	 *
+@@ -987,6 +988,7 @@ void __init hash__early_init_mmu(void)
+ 	 * with a BUILD_BUG_ON().
+ 	 */
+ 	BUILD_BUG_ON(H_PAGE_F_SECOND != (1ul  << (H_PAGE_F_GIX_SHIFT + 3)));
++#endif /* CONFIG_PPC_64K_PAGES */
+ 
+ 	htab_init_page_sizes();
+ 
+@@ -1589,6 +1591,40 @@ static inline void tm_flush_hash_page(int local)
+ }
+ #endif
+ 
++#ifdef CONFIG_PPC_64K_PAGES
++unsigned long set_hidx_slot(pte_t *ptep, real_pte_t rpte,
++		unsigned int subpg_index, unsigned long slot)
++{
++	unsigned long *hidxp = (unsigned long *)(ptep + PTRS_PER_PTE);
++
++	rpte.hidx &= ~(0xfUL << (subpg_index << 2));
++	*hidxp = rpte.hidx  | (slot << (subpg_index << 2));
++	return 0x0UL;
++}
++#else /* CONFIG_PPC_64K_PAGES */
++unsigned long set_hidx_slot(pte_t *ptep, real_pte_t rpte,
++		unsigned int subpg_index, unsigned long slot)
++{
++	return (slot << H_PAGE_F_GIX_SHIFT) &
++			(H_PAGE_F_SECOND | H_PAGE_F_GIX);
++}
++#endif /* CONFIG_PPC_64K_PAGES */
++
++unsigned long get_hidx_slot(unsigned long vpn, unsigned long shift,
++			int ssize, real_pte_t rpte, unsigned int subpg_index)
++{
++	unsigned long hash, slot, hidx;
++
++	hash = hpt_hash(vpn, shift, ssize);
++	hidx = __rpte_to_hidx(rpte, subpg_index);
++	if (hidx & _PTEIDX_SECONDARY)
++		hash = ~hash;
++	slot = (hash & htab_hash_mask) * HPTES_PER_GROUP;
++	slot += hidx & _PTEIDX_GROUP_IX;
++	return slot;
++}
++
++
+ /* WARNING: This is called from hash_low_64.S, if you change this prototype,
+  *          do not forget to update the assembly call site !
+  */
+diff --git a/arch/powerpc/mm/hugetlbpage-hash64.c b/arch/powerpc/mm/hugetlbpage-hash64.c
+index a84bb44..25a50eb 100644
+--- a/arch/powerpc/mm/hugetlbpage-hash64.c
++++ b/arch/powerpc/mm/hugetlbpage-hash64.c
+@@ -14,7 +14,7 @@
+ #include <asm/cacheflush.h>
+ #include <asm/machdep.h>
+ 
+-extern long hpte_insert_repeating(unsigned long hash, unsigned long vpn,
++long hpte_insert_repeating(unsigned long hash, unsigned long vpn,
+ 				  unsigned long pa, unsigned long rlags,
+ 				  unsigned long vflags, int psize, int ssize);
+ 
+@@ -22,6 +22,7 @@ int __hash_page_huge(unsigned long ea, unsigned long access, unsigned long vsid,
+ 		     pte_t *ptep, unsigned long trap, unsigned long flags,
+ 		     int ssize, unsigned int shift, unsigned int mmu_psize)
+ {
++	real_pte_t rpte;
+ 	unsigned long vpn;
+ 	unsigned long old_pte, new_pte;
+ 	unsigned long rflags, pa, sz;
+@@ -61,6 +62,7 @@ int __hash_page_huge(unsigned long ea, unsigned long access, unsigned long vsid,
+ 	} while(!pte_xchg(ptep, __pte(old_pte), __pte(new_pte)));
+ 
+ 	rflags = htab_convert_pte_flags(new_pte);
++	rpte = __real_pte(__pte(old_pte), ptep);
+ 
+ 	sz = ((1UL) << shift);
+ 	if (!cpu_has_feature(CPU_FTR_COHERENT_ICACHE))
+@@ -71,14 +73,9 @@ int __hash_page_huge(unsigned long ea, unsigned long access, unsigned long vsid,
+ 	/* Check if pte already has an hpte (case 2) */
+ 	if (unlikely(old_pte & H_PAGE_HASHPTE)) {
+ 		/* There MIGHT be an HPTE for this pte */
+-		unsigned long hash, slot;
+-
+-		hash = hpt_hash(vpn, shift, ssize);
+-		if (old_pte & H_PAGE_F_SECOND)
+-			hash = ~hash;
+-		slot = (hash & htab_hash_mask) * HPTES_PER_GROUP;
+-		slot += (old_pte & H_PAGE_F_GIX) >> H_PAGE_F_GIX_SHIFT;
++		unsigned long slot;
+ 
++		slot = get_hidx_slot(vpn, shift, ssize, rpte, 0);
+ 		if (mmu_hash_ops.hpte_updatepp(slot, rflags, vpn, mmu_psize,
+ 					       mmu_psize, ssize, flags) == -1)
+ 			old_pte &= ~_PAGE_HPTEFLAGS;
+@@ -106,8 +103,7 @@ int __hash_page_huge(unsigned long ea, unsigned long access, unsigned long vsid,
+ 			return -1;
+ 		}
+ 
+-		new_pte |= (slot << H_PAGE_F_GIX_SHIFT) &
+-			(H_PAGE_F_SECOND | H_PAGE_F_GIX);
++		new_pte |= set_hidx_slot(ptep, rpte, 0, slot);
+ 	}
+ 
+ 	/*
 -- 
 1.8.3.1
