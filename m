@@ -1,31 +1,23 @@
-Return-Path: <srs0=k9ms=5l=gmail.com=bsingharora@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3whqYQ51YJzDqLQ
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Jun 2017 21:42:34 +1000 (AEST)
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3whqYQ4YHMz8t6s
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Jun 2017 21:42:34 +1000 (AEST)
-Received: from mail-qt0-x241.google.com (mail-qt0-x241.google.com
- [IPv6:2607:f8b0:400d:c0d::241])
+Return-Path: <mopsfelder@gmail.com>
+Received: from mail-qt0-x242.google.com (mail-qt0-x242.google.com
+ [IPv6:2607:f8b0:400d:c0d::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3whqYP6gHQz9s2P
- for <linuxppc-dev@ozlabs.org>; Tue,  6 Jun 2017 21:42:33 +1000 (AEST)
-Received: by mail-qt0-x241.google.com with SMTP id w1so22654051qtg.0
- for <linuxppc-dev@ozlabs.org>; Tue, 06 Jun 2017 04:42:33 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3whr8k25DszDqLy
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Jun 2017 22:09:42 +1000 (AEST)
+Received: by mail-qt0-x242.google.com with SMTP id w1so22807701qtg.0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 06 Jun 2017 05:09:42 -0700 (PDT)
+From: Murilo Opsfelder Araujo <mopsfelder@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: kvm@vger.kernel.org, Alex Williamson <alex.williamson@redhat.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
+ Murilo Opsfelder Araujo <mopsfelder@gmail.com>
+Subject: [PATCH] include/linux/vfio.h: Guard powerpc-specific functions with
+ CONFIG_VFIO_SPAPR_EEH
+Date: Tue,  6 Jun 2017 09:09:14 -0300
+Message-Id: <20170606120914.15851-1-mopsfelder@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <1496380487-21699-1-git-send-email-mpe@ellerman.id.au>
-References: <1496380487-21699-1-git-send-email-mpe@ellerman.id.au>
-From: Balbir Singh <bsingharora@gmail.com>
-Date: Tue, 6 Jun 2017 21:42:30 +1000
-Message-ID: <CAKTCnznVed64wtCyyJYdwsJbm9O97RKPW19PymiPLrNzEw+TLw@mail.gmail.com>
-Subject: Re: [PATCH] powerpc/numa: Fix percpu allocations to be NUMA aware
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, nish.aravamudan@gmail.com,
- Anton Blanchard <anton@samba.org>, Nicholas Piggin <npiggin@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,81 +27,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Jun 2, 2017 at 3:14 PM, Michael Ellerman <mpe@ellerman.id.au> wrote:
-> In commit 8c272261194d ("powerpc/numa: Enable USE_PERCPU_NUMA_NODE_ID"), we
-> switched to the generic implementation of cpu_to_node(), which uses a percpu
-> variable to hold the NUMA node for each CPU.
->
-> Unfortunately we neglected to notice that we use cpu_to_node() in the allocation
-> of our percpu areas, leading to a chicken and egg problem. In practice what
-> happens is when we are setting up the percpu areas, cpu_to_node() reports that
-> all CPUs are on node 0, so we allocate all percpu areas on node 0.
->
-> This is visible in the dmesg output, as all pcpu allocs being in group 0:
->
->   pcpu-alloc: [0] 00 01 02 03 [0] 04 05 06 07
->   pcpu-alloc: [0] 08 09 10 11 [0] 12 13 14 15
->   pcpu-alloc: [0] 16 17 18 19 [0] 20 21 22 23
->   pcpu-alloc: [0] 24 25 26 27 [0] 28 29 30 31
->   pcpu-alloc: [0] 32 33 34 35 [0] 36 37 38 39
->   pcpu-alloc: [0] 40 41 42 43 [0] 44 45 46 47
->
-> To fix it we need an early_cpu_to_node() which can run prior to percpu being
-> setup. We already have the numa_cpu_lookup_table we can use, so just plumb it
-> in. With the patch dmesg output shows two groups, 0 and 1:
->
->   pcpu-alloc: [0] 00 01 02 03 [0] 04 05 06 07
->   pcpu-alloc: [0] 08 09 10 11 [0] 12 13 14 15
->   pcpu-alloc: [0] 16 17 18 19 [0] 20 21 22 23
->   pcpu-alloc: [1] 24 25 26 27 [1] 28 29 30 31
->   pcpu-alloc: [1] 32 33 34 35 [1] 36 37 38 39
->   pcpu-alloc: [1] 40 41 42 43 [1] 44 45 46 47
->
-> We can also check the data_offset in the paca of various CPUs, with the fix we
-> see:
->
->   CPU 0:  data_offset = 0x0ffe8b0000
->   CPU 24: data_offset = 0x1ffe5b0000
->
-> And we can see from dmesg that CPU 24 has an allocation on node 1:
->
->   node   0: [mem 0x0000000000000000-0x0000000fffffffff]
->   node   1: [mem 0x0000001000000000-0x0000001fffffffff]
->
-> Cc: stable@vger.kernel.org # v3.16+
-> Fixes: 8c272261194d ("powerpc/numa: Enable USE_PERCPU_NUMA_NODE_ID")
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-> ---
->  arch/powerpc/include/asm/topology.h | 14 ++++++++++++++
->  arch/powerpc/kernel/setup_64.c      | 19 ++++++++++++++-----
->  2 files changed, 28 insertions(+), 5 deletions(-)
->
-> diff --git a/arch/powerpc/include/asm/topology.h b/arch/powerpc/include/asm/topology.h
-> index 8b3b46b7b0f2..8f3b2ec09b9e 100644
-> --- a/arch/powerpc/include/asm/topology.h
-> +++ b/arch/powerpc/include/asm/topology.h
-> @@ -44,8 +44,22 @@ extern void __init dump_numa_cpu_topology(void);
->  extern int sysfs_add_device_to_node(struct device *dev, int nid);
->  extern void sysfs_remove_device_from_node(struct device *dev, int nid);
->
-> +static inline int early_cpu_to_node(int cpu)
-> +{
-> +       int nid;
-> +
-> +       nid = numa_cpu_lookup_table[cpu];
-> +
-> +       /*
-> +        * Some functions, eg. node_distance() don't cope with -1, so instead
-> +        * fall back to node 0 if nid is unset (it should be, except bugs).
-> +        */
-> +       return (nid < 0) ? 0 : nid;
-> +}
->  #else
+When CONFIG_EEH=y and CONFIG_VFIO_SPAPR_EEH=n, build fails with the
+following:
 
-Not sure if its entirely related, but I had tried to do
+    drivers/vfio/pci/vfio_pci.o: In function `.vfio_pci_release':
+    vfio_pci.c:(.text+0xa98): undefined reference to `.vfio_spapr_pci_eeh_release'
+    drivers/vfio/pci/vfio_pci.o: In function `.vfio_pci_open':
+    vfio_pci.c:(.text+0x1420): undefined reference to `.vfio_spapr_pci_eeh_open'
 
-https://patchwork.ozlabs.org/patch/683556/
+In this case, vfio_pci.c should use the empty definitions of
+vfio_spapr_pci_eeh_open and vfio_spapr_pci_eeh_release functions.
 
-to setup the mapping earlier, but we would have still missed the pcpu_fc_alloc.
+This patch fixes it by guarding these function definitions with
+CONFIG_VFIO_SPAPR_EEH, the symbol that controls whether vfio_spapr_eeh.c is
+built, which is where the non-empty versions of these functions are.
 
-Balbir
+This issue was found during a randconfig build. Logs are here:
+
+    http://kisskb.ellerman.id.au/kisskb/buildresult/12982362/
+
+Signed-off-by: Murilo Opsfelder Araujo <mopsfelder@gmail.com>
+---
+ include/linux/vfio.h | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/include/linux/vfio.h b/include/linux/vfio.h
+index edf9b2c..0a05d57 100644
+--- a/include/linux/vfio.h
++++ b/include/linux/vfio.h
+@@ -150,7 +150,7 @@ extern int vfio_set_irqs_validate_and_prepare(struct vfio_irq_set *hdr,
+ 					      size_t *data_size);
+ 
+ struct pci_dev;
+-#ifdef CONFIG_EEH
++#ifdef CONFIG_VFIO_SPAPR_EEH
+ extern void vfio_spapr_pci_eeh_open(struct pci_dev *pdev);
+ extern void vfio_spapr_pci_eeh_release(struct pci_dev *pdev);
+ extern long vfio_spapr_iommu_eeh_ioctl(struct iommu_group *group,
+@@ -171,7 +171,7 @@ static inline long vfio_spapr_iommu_eeh_ioctl(struct iommu_group *group,
+ {
+ 	return -ENOTTY;
+ }
+-#endif /* CONFIG_EEH */
++#endif /* CONFIG_VFIO_SPAPR_EEH */
+ 
+ /*
+  * IRQfd - generic
+-- 
+2.9.4
