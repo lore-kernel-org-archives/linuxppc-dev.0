@@ -1,32 +1,39 @@
-Return-Path: <srs0=k9ms=5l=gmail.com=bsingharora@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <fbarrat@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3whh2d0VdQzDqL1
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Jun 2017 16:03:53 +1000 (AEST)
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3whh2c6rfzz8t8v
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Jun 2017 16:03:52 +1000 (AEST)
-Received: from mail-qt0-x242.google.com (mail-qt0-x242.google.com
- [IPv6:2607:f8b0:400d:c0d::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3whh2b6PfBz9s0Z
- for <linuxppc-dev@ozlabs.org>; Tue,  6 Jun 2017 16:03:51 +1000 (AEST)
-Received: by mail-qt0-x242.google.com with SMTP id x58so13980295qtc.2
- for <linuxppc-dev@ozlabs.org>; Mon, 05 Jun 2017 23:03:51 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3whkrP2cD0zDqLN
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Jun 2017 18:10:13 +1000 (AEST)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v5689MjZ103514
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 6 Jun 2017 04:10:03 -0400
+Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2awmfy2cdm-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 06 Jun 2017 04:10:03 -0400
+Received: from localhost
+ by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
+ Tue, 6 Jun 2017 09:10:01 +0100
+Subject: Re: [PATCH v2] cxl: Avoid double free_irq() for psl,slice interrupts
+To: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>,
+ Philippe Bergheaud <philippe.bergheaud@fr.ibm.com>
+Cc: "Alastair D'Silva" <alastair@au1.ibm.com>, stable@vger.kernel.org,
+ Ian Munsie <imunsie@au1.ibm.com>,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org,
+ Christophe Lombard <christophe_lombard@fr.ibm.com>,
+ Greg Kurz <gkurz@linux.vnet.ibm.com>
+References: <20170602165648.18775-1-vaibhav@linux.vnet.ibm.com>
+From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+Date: Tue, 6 Jun 2017 10:09:31 +0200
 MIME-Version: 1.0
-In-Reply-To: <1496728137-19655-1-git-send-email-mpe@ellerman.id.au>
-References: <1496728137-19655-1-git-send-email-mpe@ellerman.id.au>
-From: Balbir Singh <bsingharora@gmail.com>
-Date: Tue, 6 Jun 2017 16:03:49 +1000
-Message-ID: <CAKTCnzmUPUBP_NQjzcUO_z+iVtn_ArwHpzWToGYvQVV-zjoB7w@mail.gmail.com>
-Subject: Re: [PATCH] powerpc/mm/radix: Only add X for pages overlapping kernel
- text
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
- Aneesh Kumar KV <aneesh.kumar@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <20170602165648.18775-1-vaibhav@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <4feb3b9f-d9a6-d6ae-ffff-d96c7a820b25@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,75 +43,114 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jun 6, 2017 at 3:48 PM, Michael Ellerman <mpe@ellerman.id.au> wrote:
-> Currently we map the whole linear mapping with PAGE_KERNEL_X. Instead we
-> should check if the page overlaps the kernel text and only then add
-> PAGE_KERNEL_X.
->
-> Note that we still use 1G pages if they're available, so this will
-> typically still result in a 1G executable page at KERNELBASE. So this fix is
-> primarily useful for catching stray branches to high linear mapping addresses.
->
-> Without this patch, we can execute at 1G in xmon using:
->
->   0:mon> m c000000040000000
->   c000000040000000  00 l
->   c000000040000000  00000000 01006038
->   c000000040000004  00000000 2000804e
->   c000000040000008  00000000 x
->   0:mon> di c000000040000000
->   c000000040000000  38600001      li      r3,1
->   c000000040000004  4e800020      blr
->   0:mon> p c000000040000000
->   return value is 0x1
->
-> After we get a 400 as expected:
->
->   0:mon> p c000000040000000
->   *** 400 exception occurred
->
-> Fixes: 2bfd65e45e87 ("powerpc/mm/radix: Add radix callbacks for early init routines")
-> Cc: stable@vger.kernel.org # v4.7+
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+
+
+Le 02/06/2017 à 18:56, Vaibhav Jain a écrit :
+> During an eeh call to cxl_remove can result in double free_irq of
+> psl,slice interrupts. This can happen if perst_reloads_same_image == 1
+> and call to cxl_configure_adapter() fails during slot_reset
+> callback. In such a case we see a kernel oops with following back-trace:
+> 
+> Oops: Kernel access of bad area, sig: 11 [#1]
+> Call Trace:
+>    free_irq+0x88/0xd0 (unreliable)
+>    cxl_unmap_irq+0x20/0x40 [cxl]
+>    cxl_native_release_psl_irq+0x78/0xd8 [cxl]
+>    pci_deconfigure_afu+0xac/0x110 [cxl]
+>    cxl_remove+0x104/0x210 [cxl]
+>    pci_device_remove+0x6c/0x110
+>    device_release_driver_internal+0x204/0x2e0
+>    pci_stop_bus_device+0xa0/0xd0
+>    pci_stop_and_remove_bus_device+0x28/0x40
+>    pci_hp_remove_devices+0xb0/0x150
+>    pci_hp_remove_devices+0x68/0x150
+>    eeh_handle_normal_event+0x140/0x580
+>    eeh_handle_event+0x174/0x360
+>    eeh_event_handler+0x1e8/0x1f0
+> 
+> This patch fixes the issue of double free_irq by checking that
+> variables that hold the virqs (err_hwirq, serr_hwirq, psl_virq) are
+> not '0' before un-mapping and resetting these variables to '0' when
+> they are un-mapped.
+> 
+> Cc: stable@vger.kernel.org
+> Signed-off-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+> 
 > ---
->  arch/powerpc/mm/pgtable-radix.c | 14 +++++++++++---
->  1 file changed, 11 insertions(+), 3 deletions(-)
->
-> diff --git a/arch/powerpc/mm/pgtable-radix.c b/arch/powerpc/mm/pgtable-radix.c
-> index c28165d8970b..6c062f92b9e4 100644
-> --- a/arch/powerpc/mm/pgtable-radix.c
-> +++ b/arch/powerpc/mm/pgtable-radix.c
-> @@ -19,6 +19,7 @@
->  #include <asm/mmu.h>
->  #include <asm/firmware.h>
->  #include <asm/powernv.h>
-> +#include <asm/sections.h>
->
->  #include <trace/events/thp.h>
->
-> @@ -121,7 +122,8 @@ static inline void __meminit print_mapping(unsigned long start,
->  static int __meminit create_physical_mapping(unsigned long start,
->                                              unsigned long end)
->  {
-> -       unsigned long addr, mapping_size = 0;
-> +       unsigned long vaddr, addr, mapping_size = 0;
-> +       pgprot_t prot;
->
->         start = _ALIGN_UP(start, PAGE_SIZE);
->         for (addr = start; addr < end; addr += mapping_size) {
-> @@ -145,8 +147,14 @@ static int __meminit create_physical_mapping(unsigned long start,
->                         start = addr;
->                 }
->
-> -               rc = radix__map_kernel_page((unsigned long)__va(addr), addr,
-> -                                           PAGE_KERNEL_X, mapping_size);
-> +               vaddr = (unsigned long)__va(addr);
-> +
-> +               if (overlaps_kernel_text(vaddr, vaddr + mapping_size))
-> +                       prot = PAGE_KERNEL_X;
-> +               else
-> +                       prot = PAGE_KERNEL;
 
-Do we need the kvm tmp/trampoline bits like hash?
+Thanks for the correction.
 
-Balbir Singh.
+Acked-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+
+   Fred
+
+
+> Changelog:
+> 
+> v2:
+> - Use psl_hwirq instead of psl_virq to find irq mapping in
+> cxl_native_release_psl_irq as pointed out by Fred.
+> 
+> Re-send:
+> - Added stable to recipients
+> ---
+>   drivers/misc/cxl/native.c | 14 +++++++++++---
+>   1 file changed, 11 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/misc/cxl/native.c b/drivers/misc/cxl/native.c
+> index 871a2f0..8d6ea97 100644
+> --- a/drivers/misc/cxl/native.c
+> +++ b/drivers/misc/cxl/native.c
+> @@ -1302,13 +1302,16 @@ int cxl_native_register_psl_err_irq(struct cxl *adapter)
+> 
+>   void cxl_native_release_psl_err_irq(struct cxl *adapter)
+>   {
+> -	if (adapter->native->err_virq != irq_find_mapping(NULL, adapter->native->err_hwirq))
+> +	if (adapter->native->err_virq == 0 ||
+> +	    adapter->native->err_virq !=
+> +	    irq_find_mapping(NULL, adapter->native->err_hwirq))
+>   		return;
+> 
+>   	cxl_p1_write(adapter, CXL_PSL_ErrIVTE, 0x0000000000000000);
+>   	cxl_unmap_irq(adapter->native->err_virq, adapter);
+>   	cxl_ops->release_one_irq(adapter, adapter->native->err_hwirq);
+>   	kfree(adapter->irq_name);
+> +	adapter->native->err_virq = 0;
+>   }
+> 
+>   int cxl_native_register_serr_irq(struct cxl_afu *afu)
+> @@ -1346,13 +1349,15 @@ int cxl_native_register_serr_irq(struct cxl_afu *afu)
+> 
+>   void cxl_native_release_serr_irq(struct cxl_afu *afu)
+>   {
+> -	if (afu->serr_virq != irq_find_mapping(NULL, afu->serr_hwirq))
+> +	if (afu->serr_virq == 0 ||
+> +	    afu->serr_virq != irq_find_mapping(NULL, afu->serr_hwirq))
+>   		return;
+> 
+>   	cxl_p1n_write(afu, CXL_PSL_SERR_An, 0x0000000000000000);
+>   	cxl_unmap_irq(afu->serr_virq, afu);
+>   	cxl_ops->release_one_irq(afu->adapter, afu->serr_hwirq);
+>   	kfree(afu->err_irq_name);
+> +	afu->serr_virq = 0;
+>   }
+> 
+>   int cxl_native_register_psl_irq(struct cxl_afu *afu)
+> @@ -1375,12 +1380,15 @@ int cxl_native_register_psl_irq(struct cxl_afu *afu)
+> 
+>   void cxl_native_release_psl_irq(struct cxl_afu *afu)
+>   {
+> -	if (afu->native->psl_virq != irq_find_mapping(NULL, afu->native->psl_hwirq))
+> +	if (afu->native->psl_virq == 0 ||
+> +	    afu->native->psl_virq !=
+> +	    irq_find_mapping(NULL, afu->native->psl_hwirq))
+>   		return;
+> 
+>   	cxl_unmap_irq(afu->native->psl_virq, afu);
+>   	cxl_ops->release_one_irq(afu->adapter, afu->native->psl_hwirq);
+>   	kfree(afu->psl_irq_name);
+> +	afu->native->psl_virq = 0;
+>   }
+> 
+>   static void recover_psl_err(struct cxl_afu *afu, u64 errstat)
+> 
