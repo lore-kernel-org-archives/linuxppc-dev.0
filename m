@@ -3,8 +3,8 @@ Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
  [140.211.169.12])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wj1pg36VtzDqLH
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Jun 2017 05:24:43 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wj1pk4CqJzDqL3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Jun 2017 05:24:46 +1000 (AEST)
 From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 To: linux-kernel@vger.kernel.org
 Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
@@ -15,10 +15,10 @@ Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
  Robin Murphy <robin.murphy@arm.com>, Joerg Roedel <jroedel@suse.de>,
  Johan Hovold <johan@kernel.org>, Alexey Kardashevskiy <aik@ozlabs.ru>,
  Krzysztof Kozlowski <krzk@kernel.org>, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 10/16] powerpc: vio: use dev_groups and not dev_attrs for
+Subject: [PATCH 11/16] powerpc: vio_cmo: use dev_groups and not dev_attrs for
  bus_type
-Date: Tue,  6 Jun 2017 21:22:15 +0200
-Message-Id: <20170606192221.1617-11-gregkh@linuxfoundation.org>
+Date: Tue,  6 Jun 2017 21:22:16 +0200
+Message-Id: <20170606192221.1617-12-gregkh@linuxfoundation.org>
 In-Reply-To: <20170606192221.1617-1-gregkh@linuxfoundation.org>
 References: <20170606192221.1617-1-gregkh@linuxfoundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -47,59 +47,85 @@ Cc: Krzysztof Kozlowski <krzk@kernel.org>
 Cc: <linuxppc-dev@lists.ozlabs.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 ---
- arch/powerpc/platforms/pseries/vio.c | 12 +++++++++++-
- 1 file changed, 11 insertions(+), 1 deletion(-)
+ arch/powerpc/platforms/pseries/vio.c | 37 +++++++++++++++++++++---------------
+ 1 file changed, 22 insertions(+), 15 deletions(-)
 
 diff --git a/arch/powerpc/platforms/pseries/vio.c b/arch/powerpc/platforms/pseries/vio.c
-index 28b09fd797ec..fd6595598662 100644
+index fd6595598662..176edf422867 100644
 --- a/arch/powerpc/platforms/pseries/vio.c
 +++ b/arch/powerpc/platforms/pseries/vio.c
-@@ -1537,6 +1537,7 @@ static ssize_t name_show(struct device *dev,
+@@ -948,7 +948,7 @@ static void vio_cmo_bus_init(void)
+ /* sysfs device functions and data structures for CMO */
+ 
+ #define viodev_cmo_rd_attr(name)                                        \
+-static ssize_t viodev_cmo_##name##_show(struct device *dev,             \
++static ssize_t cmo_##name##_show(struct device *dev,                    \
+                                         struct device_attribute *attr,  \
+                                          char *buf)                     \
+ {                                                                       \
+@@ -962,7 +962,7 @@ static ssize_t viodev_cmo_allocs_failed_show(struct device *dev,
+ 	return sprintf(buf, "%d\n", atomic_read(&viodev->cmo.allocs_failed));
+ }
+ 
+-static ssize_t viodev_cmo_allocs_failed_reset(struct device *dev,
++static ssize_t cmo_allocs_failed_store(struct device *dev,
+ 		struct device_attribute *attr, const char *buf, size_t count)
  {
- 	return sprintf(buf, "%s\n", to_vio_dev(dev)->name);
+ 	struct vio_dev *viodev = to_vio_dev(dev);
+@@ -970,7 +970,7 @@ static ssize_t viodev_cmo_allocs_failed_reset(struct device *dev,
+ 	return count;
  }
-+static DEVICE_ATTR_RO(name);
  
- static ssize_t devspec_show(struct device *dev,
- 		struct device_attribute *attr, char *buf)
-@@ -1545,6 +1546,7 @@ static ssize_t devspec_show(struct device *dev,
- 
- 	return sprintf(buf, "%s\n", of_node_full_name(of_node));
- }
-+static DEVICE_ATTR_RO(devspec);
- 
+-static ssize_t viodev_cmo_desired_set(struct device *dev,
++static ssize_t cmo_desired_store(struct device *dev,
+ 		struct device_attribute *attr, const char *buf, size_t count)
+ {
+ 	struct vio_dev *viodev = to_vio_dev(dev);
+@@ -993,18 +993,25 @@ static ssize_t name_show(struct device *, struct device_attribute *, char *);
+ static ssize_t devspec_show(struct device *, struct device_attribute *, char *);
  static ssize_t modalias_show(struct device *dev, struct device_attribute *attr,
- 			     char *buf)
-@@ -1566,6 +1568,7 @@ static ssize_t modalias_show(struct device *dev, struct device_attribute *attr,
- 
- 	return sprintf(buf, "vio:T%sS%s\n", vio_dev->type, cp);
- }
+ 			     char *buf);
+-static struct device_attribute vio_cmo_dev_attrs[] = {
+-	__ATTR_RO(name),
+-	__ATTR_RO(devspec),
+-	__ATTR_RO(modalias),
+-	__ATTR(cmo_desired,       S_IWUSR|S_IRUSR|S_IWGRP|S_IRGRP|S_IROTH,
+-	       viodev_cmo_desired_show, viodev_cmo_desired_set),
+-	__ATTR(cmo_entitled,      S_IRUGO, viodev_cmo_entitled_show,      NULL),
+-	__ATTR(cmo_allocated,     S_IRUGO, viodev_cmo_allocated_show,     NULL),
+-	__ATTR(cmo_allocs_failed, S_IWUSR|S_IRUSR|S_IWGRP|S_IRGRP|S_IROTH,
+-	       viodev_cmo_allocs_failed_show, viodev_cmo_allocs_failed_reset),
+-	__ATTR_NULL
++static DEVICE_ATTR_RO(name);
++static DEVICE_ATTR_RO(devspec);
 +static DEVICE_ATTR_RO(modalias);
- 
- static struct device_attribute vio_dev_attrs[] = {
- 	__ATTR_RO(name),
-@@ -1573,6 +1576,13 @@ static struct device_attribute vio_dev_attrs[] = {
- 	__ATTR_RO(modalias),
- 	__ATTR_NULL
- };
-+static struct attribute *vio_dev_attrs[] = {
++static DEVICE_ATTR_RO(cmo_entitled);
++static DEVICE_ATTR_RO(cmo_allocated);
++static DEVICE_ATTR_RW(cmo_desired);
++static DEVICE_ATTR_RW(cmo_allocs_failed);
++
++static struct attribute *vio_cmo_dev_attrs[] = {
 +	&dev_attr_name.attr,
 +	&dev_attr_devspec.attr,
 +	&dev_attr_modalias.attr,
++	&dev_attr_cmo_entitled.attr,
++	&dev_attr_cmo_allocated.attr,
++	&dev_attr_cmo_desired.attr,
++	&dev_attr_cmo_allocs_failed.attr,
 +	NULL,
-+};
-+ATTRIBUTE_GROUPS(vio_dev);
+ };
++ATTRIBUTE_GROUPS(vio_cmo_dev);
  
- void vio_unregister_device(struct vio_dev *viodev)
+ /* sysfs bus functions and data structures for CMO */
+ 
+@@ -1066,7 +1073,7 @@ ATTRIBUTE_GROUPS(vio_bus);
+ 
+ static void vio_cmo_sysfs_init(void)
  {
-@@ -1608,7 +1618,7 @@ static int vio_hotplug(struct device *dev, struct kobj_uevent_env *env)
- 
- struct bus_type vio_bus_type = {
- 	.name = "vio",
--	.dev_attrs = vio_dev_attrs,
-+	.dev_groups = vio_dev_groups,
- 	.uevent = vio_hotplug,
- 	.match = vio_bus_match,
- 	.probe = vio_bus_probe,
+-	vio_bus_type.dev_attrs = vio_cmo_dev_attrs;
++	vio_bus_type.dev_groups = vio_cmo_dev_groups;
+ 	vio_bus_type.bus_groups = vio_bus_groups;
+ }
+ #else /* CONFIG_PPC_SMLPAR */
 -- 
 2.13.0
