@@ -3,7 +3,7 @@ Received: from gate2.alliedtelesis.co.nz (gate2.alliedtelesis.co.nz
  [IPv6:2001:df5:b000:5::4])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wj7pz272BzDqCv
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wj7pz1GlPzDqBH
  for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Jun 2017 09:55:22 +1000 (AEST)
 From: Chris Packham <chris.packham@alliedtelesis.co.nz>
 To: bp@alien8.de,
@@ -11,11 +11,9 @@ To: bp@alien8.de,
 Cc: mchehab@kernel.org, mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org,
  linux-kernel@vger.kernel.org,
  Chris Packham <chris.packham@alliedtelesis.co.nz>
-Subject: [PATCH v2 3/3] EDAC: cpc925: simplify calculation of total memory
-Date: Wed,  7 Jun 2017 11:55:00 +1200
-Message-Id: <20170606235500.22772-4-chris.packham@alliedtelesis.co.nz>
-In-Reply-To: <20170606235500.22772-1-chris.packham@alliedtelesis.co.nz>
-References: <20170606235500.22772-1-chris.packham@alliedtelesis.co.nz>
+Subject: EDAC: simplify total memory calculation
+Date: Wed,  7 Jun 2017 11:54:57 +1200
+Message-Id: <20170606235500.22772-1-chris.packham@alliedtelesis.co.nz>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,68 +23,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Use of_address_to_resource() and resource_size() instead of manually
-parsing the "reg" property from the "memory" node(s).
+This take the approach used by cell_edac.c to obtain the total memory from
+the devicetree and applies it to mv64x60_edac.c, altera_edac.c and
+cpc925_edac.c which were all manually parsing the reg property. In the case
+of mv64x60 this actually fixes cases where #address/size-cells != 1. For
+altera and cpc925 this is just a cleanup.
 
-Signed-off-by: Chris Packham <chris.packham@alliedtelesis.co.nz>
----
-Changes in v2:
-- New
+Chris Packham (3):
+  EDAC: mv64x60: calculate memory size correctly
+  EDAC: altera: simplify calculation of total memory
+  EDAC: cpc925: simplify calculation of total memory
 
- drivers/edac/cpc925_edac.c | 32 ++++++++++----------------------
- 1 file changed, 10 insertions(+), 22 deletions(-)
+ drivers/edac/altera_edac.c  | 24 ++++++++----------------
+ drivers/edac/cpc925_edac.c  | 32 ++++++++++----------------------
+ drivers/edac/mv64x60_edac.c | 17 +++++++++++------
+ 3 files changed, 29 insertions(+), 44 deletions(-)
 
-diff --git a/drivers/edac/cpc925_edac.c b/drivers/edac/cpc925_edac.c
-index 837b62c4993d..ea347cd7eb92 100644
---- a/drivers/edac/cpc925_edac.c
-+++ b/drivers/edac/cpc925_edac.c
-@@ -24,6 +24,7 @@
- #include <linux/io.h>
- #include <linux/edac.h>
- #include <linux/of.h>
-+#include <linux/of_address.h>
- #include <linux/platform_device.h>
- #include <linux/gfp.h>
- 
-@@ -296,30 +297,17 @@ struct cpc925_dev_info {
- static void get_total_mem(struct cpc925_mc_pdata *pdata)
- {
- 	struct device_node *np = NULL;
--	const unsigned int *reg, *reg_end;
--	int len, sw, aw;
--	unsigned long start, size;
-+	struct resource res;
-+	int ret;
- 
--	np = of_find_node_by_type(NULL, "memory");
--	if (!np)
--		return;
-+	for_each_node_by_type(np, "memory") {
-+		ret = of_address_to_resource(np, 0, &res);
-+		if (ret)
-+			continue;
-+
-+		pdata->total_mem += resource_size(&res);
-+	}
- 
--	aw = of_n_addr_cells(np);
--	sw = of_n_size_cells(np);
--	reg = (const unsigned int *)of_get_property(np, "reg", &len);
--	reg_end = reg + len/4;
--
--	pdata->total_mem = 0;
--	do {
--		start = of_read_number(reg, aw);
--		reg += aw;
--		size = of_read_number(reg, sw);
--		reg += sw;
--		edac_dbg(1, "start 0x%lx, size 0x%lx\n", start, size);
--		pdata->total_mem += size;
--	} while (reg < reg_end);
--
--	of_node_put(np);
- 	edac_dbg(0, "total_mem 0x%lx\n", pdata->total_mem);
- }
- 
 -- 
 2.13.0
