@@ -2,17 +2,27 @@ Return-Path: <christophe.leroy@c-s.fr>
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3whshY73vKzDqLj
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Jun 2017 23:18:53 +1000 (AEST)
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v4] powerpc/mm: Only read faulting instruction when necessary
- in do_page_fault()
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Scott Wood <oss@buserror.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3whsxP5VNKzDqNR
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Jun 2017 23:30:01 +1000 (AEST)
+Subject: Re: [PATCH 2/5] powerpc/mm: split store_updates_sp() in two parts in
+ do_page_fault()
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Scott Wood <oss@buserror.net>
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Message-Id: <20170606131849.8338D68F83@localhost.localdomain>
-Date: Tue,  6 Jun 2017 15:18:49 +0200 (CEST)
+References: <cover.1492606297.git.christophe.leroy@c-s.fr>
+ <58f17a04cee5726467ef4e283dfbd7da68fa6ab4.1492606298.git.christophe.leroy@c-s.fr>
+ <871sr23flh.fsf@concordia.ellerman.id.au>
+ <6daf8f4e-9b39-d585-2c64-9b0348fef123@c-s.fr>
+ <87shjer9vx.fsf@concordia.ellerman.id.au>
+ <97200860-c6da-9d4d-fb53-2aa9c9ca655f@c-s.fr>
+ <87r2yxpeic.fsf@concordia.ellerman.id.au>
+From: Christophe LEROY <christophe.leroy@c-s.fr>
+Message-ID: <7f84df86-37b0-a7a5-9294-92adbacf8f49@c-s.fr>
+Date: Tue, 6 Jun 2017 15:29:57 +0200
+MIME-Version: 1.0
+In-Reply-To: <87r2yxpeic.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,155 +32,102 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Commit a7a9dcd882a67 ("powerpc: Avoid taking a data miss on every
-userspace instruction miss") has shown that limiting the read of
-faulting instruction to likely cases improves performance.
 
-This patch goes further into this direction by limiting the read
-of the faulting instruction to the only cases where it is definitly
-needed.
 
-On an MPC885, with the same benchmark app as in the commit referred
-above, we see a reduction of 4000 dTLB misses (approx 3%):
+Le 06/06/2017 à 13:00, Michael Ellerman a écrit :
+> christophe leroy <christophe.leroy@c-s.fr> writes:
+> 
+>> Le 05/06/2017 à 12:45, Michael Ellerman a écrit :
+>>> Christophe LEROY <christophe.leroy@c-s.fr> writes:
+>>>
+>>>> Le 02/06/2017 à 11:26, Michael Ellerman a écrit :
+>>>>> Christophe Leroy <christophe.leroy@c-s.fr> writes:
+>>>>>
+>>>>>> Only the get_user() in store_updates_sp() has to be done outside
+>>>>>> the mm semaphore. All the comparison can be done within the semaphore,
+>>>>>> so only when really needed.
+>>>>>>
+>>>>>> As we got a DSI exception, the address pointed by regs->nip is
+>>>>>> obviously valid, otherwise we would have had a instruction exception.
+>>>>>> So __get_user() can be used instead of get_user()
+>>>>>
+>>>>> I don't think that part is true.
+>>>>>
+>>>>> You took a DSI so there *was* an instruction at NIP, but since then it
+>>>>> may have been unmapped by another thread.
+>>>>>
+>>>>> So I don't think you can assume the get_user() will succeed.
+>>>>
+>>>> The difference between get_user() and __get_user() is that get_user()
+>>>> performs an access_ok() in addition.
+>>>>
+>>>> Doesn't access_ok() only checks whether addr is below TASK_SIZE to
+>>>> ensure it is a valid user address ?
+>>>
+>>> Yeah more or less, via some gross macros.
+>>>
+>>> I was actually not that worried about the switch from get_user() to
+>>> __get_user(), but rather that you removed the check of the return value.
+>>> ie.
+>>>
+>>> -	if (get_user(inst, (unsigned int __user *)regs->nip))
+>>> -		return 0;
+>>>
+>>> Became:
+>>>
+>>> 	if (is_write && user_mode(regs))
+>>> -		store_update_sp = store_updates_sp(regs);
+>>> +		__get_user(inst, (unsigned int __user *)regs->nip);
+>>>
+>>>
+>>> I think dropping the access_ok() probably is alright, because the NIP
+>>> must (should!) have been in userspace, though as Ben says it's always
+>>> good to be paranoid.
+>>>
+>>> But ignoring that the address can fault at all is wrong AFAICS.
+>>
+>> I see what you mean now.
+>>
+>> Indeed,
+>>
+>> -	unsigned int inst;
+>>
+>> Became
+>>
+>> +	unsigned int inst = 0;
+>>
+>> Since __get_user() doesn't modify 'inst' in case of error, 'inst'
+>> remains 0, and store_updates_sp(0) return false. That was the idea behind.
+> 
+> Ugh. OK, my bad. Though it is a little subtle.
+> 
+> How about:
+> 
+> @@ -286,10 +290,13 @@ int do_page_fault(struct pt_regs *regs, unsigned long address,
+>          /*
+>           * We want to do this outside mmap_sem, because reading code around nip
+>           * can result in fault, which will cause a deadlock when called with
+> -        * mmap_sem held
+> +        * mmap_sem held. We don't need to check if get_user() fails, if it does
+> +        * it won't modify inst, and an inst of 0 will return false from
+> +        * store_updates_sp().
+>           */
+> +       inst = 0;
+>          if (is_write && is_user)
+> -               store_update_sp = store_updates_sp(regs);
+> +               get_user(inst, (unsigned int __user *)regs->nip);
+>   
+>          if (is_user)
+>                  flags |= FAULT_FLAG_USER;
+> 
+> 
+> Then this one can go in.
+> 
 
-Before the patch:
- Performance counter stats for './fault 500' (10 runs):
+I just submitted v4 version of the patch "powerpc/mm: Only read faulting 
+instruction when necessary in do_page_fault()", skipping this step and 
+going directly to the final solution.
+The new approach has been to keep everything inside store_updates_sp() 
+function and just move the call.
 
-         720495838      cpu-cycles		( +-  0.04% )
-            141769      dTLB-load-misses	( +-  0.02% )
-             52722      iTLB-load-misses	( +-  0.01% )
-             19611      faults			( +-  0.02% )
-
-       5.750535176 seconds time elapsed		( +-  0.16% )
-
-With the patch:
- Performance counter stats for './fault 500' (10 runs):
-
-         717669123      cpu-cycles		( +-  0.02% )
-            137344      dTLB-load-misses	( +-  0.03% )
-             52731      iTLB-load-misses	( +-  0.01% )
-             19614      faults			( +-  0.03% )
-
-       5.728423115 seconds time elapsed		( +-  0.14% )
-
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
- v4: Rebased on top of powerpc/next (f718d426d7e42e) and doing access_ok() verification before __get_user_xxx()
-
- v3: Do a first try with pagefault disabled before releasing the semaphore
-
- v2: Changes 'if (cond1) if (cond2)' by 'if (cond1 && cond2)'
-
- arch/powerpc/mm/fault.c | 60 +++++++++++++++++++++++++++++++++++--------------
- 1 file changed, 43 insertions(+), 17 deletions(-)
-
-diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
-index 4c422632047b..add2166d2459 100644
---- a/arch/powerpc/mm/fault.c
-+++ b/arch/powerpc/mm/fault.c
-@@ -72,26 +72,50 @@ static inline int notify_page_fault(struct pt_regs *regs)
- /*
-  * Check whether the instruction at regs->nip is a store using
-  * an update addressing form which will update r1.
-+ * If no, returns 0 with mmap_sem released
-+ * If yes, returns 1 if mmap_sem hasn't been released
-+ * If yes, returns 2 if mmap_sem has been released
-  */
- static int store_updates_sp(struct pt_regs *regs)
- {
- 	unsigned int inst;
-+	unsigned int __user *nip = (unsigned int __user *)regs->nip;
-+	int ret;
-+	bool is_mm_locked = true;
-+
-+	/*
-+	 * We want to do this outside mmap_sem, because reading code around nip
-+	 * can result in fault, which will cause a deadlock when called with
-+	 * mmap_sem held. However, we do a first try with pagefault disabled as
-+	 * a fault here is very unlikely.
-+	 */
-+	if (!access_ok(VERIFY_READ, nip, sizeof(inst)))
-+		goto failed;
-+
-+	pagefault_disable();
-+	ret = __get_user_inatomic(inst, nip);
-+	pagefault_enable();
-+	if (ret) {
-+		up_read(&current->mm->mmap_sem);
-+		is_mm_locked = false;
-+		if (__get_user(inst, nip))
-+			goto failed;
-+	}
- 
--	if (get_user(inst, (unsigned int __user *)regs->nip))
--		return 0;
- 	/* check for 1 in the rA field */
- 	if (((inst >> 16) & 0x1f) != 1)
--		return 0;
-+		goto failed;
- 	/* check major opcode */
- 	switch (inst >> 26) {
-+	case 62:	/* std or stdu */
-+		if ((inst & 3) == 0)
-+			break;
- 	case 37:	/* stwu */
- 	case 39:	/* stbu */
- 	case 45:	/* sthu */
- 	case 53:	/* stfsu */
- 	case 55:	/* stfdu */
--		return 1;
--	case 62:	/* std or stdu */
--		return (inst & 3) == 1;
-+		return is_mm_locked ? 1 : 2;
- 	case 31:
- 		/* check minor opcode */
- 		switch ((inst >> 1) & 0x3ff) {
-@@ -101,9 +125,13 @@ static int store_updates_sp(struct pt_regs *regs)
- 		case 439:	/* sthux */
- 		case 695:	/* stfsux */
- 		case 759:	/* stfdux */
--			return 1;
-+			return is_mm_locked ? 1 : 2;
- 		}
- 	}
-+failed:
-+	if (is_mm_locked)
-+		up_read(&current->mm->mmap_sem);
-+
- 	return 0;
- }
- /*
-@@ -283,14 +311,6 @@ int do_page_fault(struct pt_regs *regs, unsigned long address,
- 
- 	perf_sw_event(PERF_COUNT_SW_PAGE_FAULTS, 1, regs, address);
- 
--	/*
--	 * We want to do this outside mmap_sem, because reading code around nip
--	 * can result in fault, which will cause a deadlock when called with
--	 * mmap_sem held
--	 */
--	if (is_write && is_user)
--		store_update_sp = store_updates_sp(regs);
--
- 	if (is_user)
- 		flags |= FAULT_FLAG_USER;
- 
-@@ -359,8 +379,14 @@ int do_page_fault(struct pt_regs *regs, unsigned long address,
- 		 * between the last mapped region and the stack will
- 		 * expand the stack rather than segfaulting.
- 		 */
--		if (address + 2048 < uregs->gpr[1] && !store_update_sp)
--			goto bad_area;
-+		if (is_write && is_user && address + 2048 < uregs->gpr[1] &&
-+		    !store_update_sp) {
-+			store_update_sp = store_updates_sp(regs);
-+			if (store_update_sp == 2)
-+				goto retry;
-+			if (store_update_sp == 0)
-+				goto bad_area_nosemaphore;
-+		}
- 	}
- 	if (expand_stack(vma, address))
- 		goto bad_area;
--- 
-2.12.0
+Christophe
