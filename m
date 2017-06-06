@@ -1,17 +1,18 @@
-Return-Path: <1363017608@qq.com>
-Received: from smtpbg12.qq.com (SMTPBG12.QQ.COM [183.60.61.233])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3whr5X0Z54zDqLy
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Jun 2017 22:06:54 +1000 (AEST)
-From: "=?gb18030?B?zrTAtLK7ysfDzg==?=" <1363017608@qq.com>
-To: "=?gb18030?B?bGludXhwcGMtZGV2?=" <linuxppc-dev@lists.ozlabs.org>
-Subject: power server power consumption problem
-Mime-Version: 1.0
-Content-Type: multipart/related; type="multipart/alternative";
- boundary="----=_NextPart_5936991C_0BC612F0_13A95197"
-Date: Tue, 6 Jun 2017 19:59:24 +0800
-Message-ID: <tencent_14A522610506039258ACD095@qq.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3whshY73vKzDqLj
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Jun 2017 23:18:53 +1000 (AEST)
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH v4] powerpc/mm: Only read faulting instruction when necessary
+ in do_page_fault()
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Scott Wood <oss@buserror.net>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Message-Id: <20170606131849.8338D68F83@localhost.localdomain>
+Date: Tue,  6 Jun 2017 15:18:49 +0200 (CEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,239 +22,155 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+Commit a7a9dcd882a67 ("powerpc: Avoid taking a data miss on every
+userspace instruction miss") has shown that limiting the read of
+faulting instruction to likely cases improves performance.
 
-------=_NextPart_5936991C_0BC612F0_13A95197
-Content-Type: multipart/alternative;
-	boundary="----=_NextPart_5936991C_0BC612F0_3AEC1EB6";
+This patch goes further into this direction by limiting the read
+of the faulting instruction to the only cases where it is definitly
+needed.
 
-------=_NextPart_5936991C_0BC612F0_3AEC1EB6
-Content-Type: text/plain;
-	charset="gb18030"
-Content-Transfer-Encoding: base64
+On an MPC885, with the same benchmark app as in the commit referred
+above, we see a reduction of 4000 dTLB misses (approx 3%):
 
-SSB1c2UgaXBtaXRvb2wgbWVhc3VyaW5nIHBvd2VyIHNlcnZlciBwb3dlciBjb25zdW1wdGlv
-biwgZ2V0dGluZyB0aGUgZm9sbG93aW5nIHJlc3VsdHMgd2l0aG91dCB0b3RhbCBwb3dlciBj
-b25zdW1wdGlvbiBhcyB0aGUgZm9sbG93aW5nIHBpY3R1cmUsIGRvIEkgYWRkIGFsbCBwb3dl
-ciB2YWx1ZXMgYXMgdG90YWwgcG93ZXIgY29uc3VtcHRpb24/IEkgYW0gZWFnZXIgdG8gcmVj
-ZWl2ZSBzb21lb25lJ3MgcmVwbGF5oaNUaGFua3Ohow==
+Before the patch:
+ Performance counter stats for './fault 500' (10 runs):
 
-------=_NextPart_5936991C_0BC612F0_3AEC1EB6
-Content-Type: text/html;
-	charset="gb18030"
-Content-Transfer-Encoding: base64
+         720495838      cpu-cycles		( +-  0.04% )
+            141769      dTLB-load-misses	( +-  0.02% )
+             52722      iTLB-load-misses	( +-  0.01% )
+             19611      faults			( +-  0.02% )
 
-PGRpdj48YnI+PC9kaXY+PGRpdj5JIHVzZSBpcG1pdG9vbCBtZWFzdXJpbmcgcG93ZXIgc2Vy
-dmVyIHBvd2VyIGNvbnN1bXB0aW9uLCBnZXR0aW5nIHRoZSBmb2xsb3dpbmcgcmVzdWx0cyB3
-aXRob3V0IHRvdGFsIHBvd2VyIGNvbnN1bXB0aW9uIGFzIHRoZSBmb2xsb3dpbmcgcGljdHVy
-ZSwgZG8gSSBhZGQgYWxsIHBvd2VyIHZhbHVlcyBhcyB0b3RhbCBwb3dlciBjb25zdW1wdGlv
-bj8gSSBhbSBlYWdlciB0byByZWNlaXZlIHNvbWVvbmUncyByZXBsYXmho1RoYW5rc6GjPHNw
-YW4gc3R5bGU9ImNvbG9yOiByZ2IoMzMsIDMzLCAzMyk7IGZvbnQtZmFtaWx5OiBpbmhlcml0
-OyBmb250LXNpemU6IDI5cHg7IHdoaXRlLXNwYWNlOiBwcmUtd3JhcDsiPjwvc3Bhbj48L2Rp
-dj48ZGl2Pjxicj48L2Rpdj48ZGl2PjxpbWcgc3JjPSJjaWQ6MzUwQkZCMTdAMTZERDJFNTYu
-MUM5OTM2NTkiPjwvZGl2Pg==
+       5.750535176 seconds time elapsed		( +-  0.16% )
 
-------=_NextPart_5936991C_0BC612F0_3AEC1EB6--
+With the patch:
+ Performance counter stats for './fault 500' (10 runs):
 
-------=_NextPart_5936991C_0BC612F0_13A95197
-Content-Type: image/jpeg;
-	name="350BFB17@16DD2E56.1C993659.jpg"
-Content-Transfer-Encoding: base64
-Content-ID: <350BFB17@16DD2E56.1C993659>
+         717669123      cpu-cycles		( +-  0.02% )
+            137344      dTLB-load-misses	( +-  0.03% )
+             52731      iTLB-load-misses	( +-  0.01% )
+             19614      faults			( +-  0.03% )
 
-iVBORw0KGgoAAAANSUhEUgAAAUsAAACeCAYAAAC7Myi2AAAgAElEQVR4Ae19u5LjuBLlmY1r
-13jrqMZlRXQba7cpaxzKrPsL8qUPmJkPkHz+wm1TdGYdmW3vxlRHNO2Ws96tH6iNxIsACICQ
-REkUlRXRLRLPzAMgmQCBw1/+9//9fx8A8PEB/P6//idd8t/DIVBgva+A5Ryb5uGUZ4WPRuAx
-+8svbCyP7imcgRFgBB4Qgf/xgDqzyowAI8AIHI0AG8ujIeMMjAAj8IgI5BvLssLhcBD/qvIR
-obpnnUtUqu3262JARWjt6oBh+8MlyuyqXKz3pj8f9msMiYqpjcbMYGUTLnsM2nxGUL7IQSDf
-WFJpzRbz2QzLOqfo89JQZx52YJ8nz7G57cHY1UMahM7Dx3og6Tjxe7Y1qrGczTDfDv32psFm
-PnR/iJc5ZJ9oNnPMZjPMrtGZj+08k0pPD+qQkY+Fd5VPtXsqrlvSeSHHGcvz6host22IDocK
-Y3R09WAMGaiy2qOs1WCdLYFKdaZ6KQcwDWLxb45t02C7ufDTqVhjrzwgko29l8G6KheEBk1T
-oAi67g1+DP38viDiAxhLNT1Yt9N0M/WgQaimfyZMKxOLU97VflWgWOmpUmsQxZOkrIWHSwZl
-WZeoyPNSA35dyaWCvPpiUxv7qed6ga6XmNBd69n5LbEoa2zMHp0amy1QLgK9qVxjhRq7S3co
-6sn1Dg1ItrwObD+wHMc31g4ifK/6Q4VKtZONZ7TMnj4h2v7YftZpl/wAW86D7zVZ/bpa+GWe
-0l/8Mo64t2Wp/CWBlCyRPh9r26RIsj8VL9S/5XKQ6C/FC4qmAXXtUo9ZakN72SLV7qk4kDnQ
-toPswUAOAG0don9//x+x35L2XIb/ldXHYb/+KDrxxcd6fwjEyfCqlOWV1eFjvy5U2ak4mb5Y
-7630SqZi/bE/VB+lLYMOE7+Hj2PrI7l0HqO7LhP4SMkNxHRvMezoQWX7OBK2Venh7mJkZLN1
-P/K6IwvVezgE/u0/1kWrQ7zugIyxdjCYyjyiLwT7VKBMpWdHfhHupk+1lxun9AvKkNDd6KHT
-FB/rSo+LrizumJHxbpgup++X8ua2C5V1uiwuTlY5sbbt6Yem3crqY79X4zrY5/FBaf2xYPIH
-6gnGJduoD+d4/ACepXys1JuNeEqYh0yxQFnU2KkZZL2rUWhfPBVnCghcFAWKegcq0jw5HLfm
-+PqapkH71FNPIF1Pscba8QIb7GqdvpWvo3sb1b2isilUPfWN+PSktVN7GNlR3Wv5xHbXNwus
-1z0LFGLaT1P9dk2z2dLywLmb0yPtIDwJ6Wk0NP9SnkVXnyNCPJwG6We91RcQjpJI12CzVH0/
-IEuoqKP6S6iAnLBTZent85G2TchEbU1jn8ZZU9eIzMlFCaJf+GMhUXY8KtJG8Qy9MQMZS1qX
-CNTlDwYbhFRcoCgKEmCLikqsV8B27i3Qp8qMxDVkzcsFiuIFZO1pOtzWQ7VahuhwgFge0EZf
-yBnRPaKDMRDNxn1Z1vxwHjalUHAjHgyxonR4sX7BTq9z7hbqLW8F86TSCUO/NKhoXQkFFiXN
-xkMNGcqYCItgnchxXlSqvlTcKbVSu81rlHu13ONP8fz6OnUc2V86+Y8IOFmWRJ/3y7THdEw0
-ylO8gFaamh05Oy8oyXAqo2EcH5qGG+8hVlhGeF8bZRQRSjKQsQwVTdZNeVE62jYIqTidPuc3
-t8xYfZS/KLBYFGjIQ6B0RQHxhKP61Q4A+cJFvXg55w2qqs/2Il3jLL1O16NNA9FsLKNqXhL1
-eYdqQOxXKIoV9oc9VkWB1f5w/i6EGNZpNU6PTdWXiju1RvWgk2/TG6wqa+uRX9+pdQyR71RZ
-Un3eL9MefzGZRRoaVzSraPCDHsx6jBVrVKtG7NaQeA70MjPVRjE5e8IvZyybHeqGXhhICcpF
-aZ4kSMVZAptpuwrT7jwgX4rQwHbfhp9SHz3pS6xWwI+mxg4VqlJNNZoNNs0Klf16uKR4S8ij
-L6nsEmtTpvSSbY+uWJRmueHo4rMzyKk32f16qTx0ZWjn5uVTdmFewkg7eKlOufX7RLIv5fQz
-4fV4D/WUYDS4TdvJ2Q60wQjUlyrqonGnytLb509pW5q5lChJJvI/mgJlGfawyU6E/jrtbiXq
-xKXayMp37OW/js2Qn57WcrbYk0GjTPS0WuopXipO1iC8pQO9Yad7GthL1LReWa2xLuht8hyz
-jSUNrbU0WzQLcuWPqU+uQ64KtRZKUwNrqlEv53jZ73FYqbrIoCytemOX9LbOWFWZn4ySNE5u
-mRTe2ie9xDDQEzYmnwinjl9jt6Ql1AK03pf3R15pu0MB9DaTWon0oyYOtYPtSgcrSZSpxAr2
-CaT6UipOCUHGoT6ITfumnwXls9KD3rRqhahvatzc+mpan7vZ3+myRPs8qRxq20wd9bRbz9rk
-tiEbfyCEWbjdZaXBOGrTaBtlChtKdtTbcPXmtPP2OPCWKv4GNf62KSePeFvmvxGn+ukNmP+W
-+Ypy5ch+uzTlR6Xart2RcF47RHXhdvB2NQyF87Fvw716I2+fo+0YGjsP3rb5nqWYooXM7XXD
-xGbvH3JPp6xZeZ3XFePOapNT7jsTmsU9E4FiXWGxW4pZi1wGs6diZxb+gNnzjeWYwBmJ4R4T
-JCzL1BGgY6Dzo5SkKSpoGUxNn9tlsKOK4cQKAeaz5K7ACDACjEAGApd7G55ROSdhBBgBRuBe
-EGBjeS8tdVE51Tlh/YL3onVx4fePwID9RZ03v4eul2Es3UP1mjrMJkAYtPHVAXldj3uEb9Ca
-BipMb+62NiYPVPKYi3FOXdjbiByhJTY5feU/r6/45/OTkxvPX/Dx+jv+9ILdRPLu9ctrNG0q
-LlQWhzECIQQyjKXMJjYu6yN1xI3YbgwMlXtemHOCYI5tUZ1/quQ8ieK5ywXKYzc2x0u7jxja
-9FtsDJ3cfFugstlilBZltQZqvbc2rdr3d+DzU8gqvuPtPZ2XYxmBayCQbSxjwkTplXw6J/8M
-bazATniDzcYm4QjRvsWmBeTZaHom10N2vR2VP0Qz15HHDZDkAEts6vZkg5tignd0lMw68ik2
-BvvH4OikE+gEVJ7+xiA+fcY/r6/4zzPw+VdtPJ/w5+/kOVr/vjzLgoX3KdMDT/hDpaP80jON
-xAGQHqcuM8+DzdOGU3UQUMQxYqYYeLDK9GqMRuM7pV414GxjaXuc87rE3pxaoTPOKxQ7eZ56
-vgVWfSw4QdUle47c/V9gXa3Q0PE84rI0RxHpzGmAYFQc8pcsNy7h7hx1ufeOLRZYlY3hyZzN
-PRaliGyLUp4jJ/liR7WCWacUqL1roxO1GbC0DKqJilx8f38Hnn4V3uVnMmS/KWP4/o7veMef
-f3/FL1/Vv28/hSEUBvHnNxH+759U8Dv+UunEfSru+YswyG/f/1blfgM+fwbVzX9DIxAbt3Y9
-0mERpNhZY8/Oe53rbGPpeJCRNaouvVJL59SNSygoiB1aVpdVs5TT/gDtlD4XSsaKvDzJEnQF
-qjUS35KH2IsaMhoJtaYZJcmXbdox2gxd1ha5R67iT094/fUJb8pwvtK0/P2/eIvk/2Q8z0iC
-jODPz78pA/mOP7+9RevKKIqTxBCwxgklcWj0RJ7WUF50eS8mX2Z49qZ0ce43cNSVFvqJtsz8
-NVtzaZ+xbgMzrmjNMvZ0sc5ti5KE91hDUK1VCxQ7Or8qqdZ20DRQL4Zqzam9Jrn1PDF8sN9J
-791IwgtlFARxwV7SnAVw8rJO5JY6eYViO8fc6Exn2xtsZhrXPFXf/isXJj89PeH72zd8//Ib
-PllrlTRlFp5kXnH9qX6+4a/3Z/zx9An/vH4S6b9++wrpofZn5xRHIhAbt1RMUQrW9GK1RrlZ
-ZtESHln7IMmzPctgbZeiVwpWpgL9tTHD+HJlqjXB/1gQJ77ijySKM8VCk5J/MnERb0B412qH
-gOb/pM+D9K1Dvb/jDc94fX4HTcm/v9M1pJfpT5lpGn72nzW1//u78ChfeRp+NqrRAmLjljI0
-Wyzn8/YTMdFCbhtxnrH0ZL/4ml2AdkozmZCHeF2qNcnPJwiI9S6BZY2CiIQ9XKZ3GzGUpKii
-edP8n/TBNsG+HpspdMCht9/tG/DvyuO0k5n1TDvw2GtlgEW29//i+7H5OX0+Aslx2xZTL5eo
-z6ZAbMsb+uo8YynorVovYnFxB1rSThXqA0dVscXSvG6VVGv04S2aEQojarn+RDtFL3XM/s3F
-7rxP+oqXGt7HxKjuohSM0EM31KjKow+pkRdtPijn84qeIK02WOKFDoR3aUoRU2bg86ffxRvx
-P56s+blK9PWNvEPvbXgq7uc3fP1Nvwn/gld6OcRrlgbyYS9S49auqRYvBen9iP2e2E5xy2s+
-G35L9EdTt1x7xLKPXX00ArMgN0XgMfvLeZ7lTRuMK2cEGAFG4HoIsGd5Pay5JkaAEbhjBNiz
-vOPGY9EZAUbgegiwsbwe1lwTI8AI3DECbCzvuPGGE11uBbI+Wjhc0VzSBBEYsL9MiqJNbbpu
-X+WrrUJtwLCdwWzy1scdB/rwelJKavy2vizVbiJnUokbRcr+4BCT2KQJh7z2Y4q2GzUfV5uN
-QLZnaTac06Zr+lzsJf+uTNHmkmwsgUozFfUoeWU5e6S5SXSXhs0lTZjNJMVe3wOIKdpu0nxc
-6REI5BnLpkZNh+HphPWiQO1wFLpemfAwhGu9x568ikOFSm0id7yPbCE9ijaoKUCITs32aDrH
-61w528Erv529MZvba2y2Us9sEUVCLecC633I2JIHpsMTOhxX6W1TB2nY6GRTS6BCJ6t2tSY5
-iYvLFG1xbCYRkxybWkM1RjtjV8ff9jfPWIoOX2BR0umUGrsfrdCuV6aozxZ0OJ7IFObYNnRI
-fo7ZyUcBbYo2XW+ITs31aFr6NpnHlXOG3YtiNiciDuukD6UmhiTNZqRr7P/Vcu566eJkWSEd
-+msZT4oYDZs8drow9EvUbySNXUp2pmhLoXPvcemxKbWTDsQkKNqI1acgksJ6Z3h6UKyxLmu0
-XpnyIoqCzhvSaW38aKTxOYqBKEbRZvUZmxJMBKdooDpyAia/PuCvnnzG4xRsRlaFocuInEm6
-OKscI4MVdi+XcRo2+mTrDLuFXgOugOUs72gpU7TdS/MfJ2dqbIqSWkM5CYo20GF4rFCQ9XP+
-5AK/E0QGsjWpTlTWTYqiTRQQoVPzPERo+jbK48dpQXQ4sX/P1EfoySvSbEY6Xeg3ImeaLk4X
-FNFBR4/6N0XDRv1BGsjZkpSQU6t9PU9+ioQp2kbd4OcLp8eZLskem9OjaJMeQ4f82nnJIRnM
-acp9kz/tJerKbYPnx9lpvDjxqYhzXmJRvUWBxaJAs9yIa5rWCwJkXe89/6Zo2MSyxhYb0wX0
-Wm4PFxNTtN1zj+iX3RtjjjPyEBRtxDpkPu2g8KJFf1qzvPZfigZKsSOtrY2E5Vp/jZFeRpRo
-48hrotUG34M+RqEEXdwxxYw1bR8Nm8e8ZHZSZOnDFG1ZMN1TotTYtPQYO0VbNlO6pZNzSdRn
-L/s9DisVTANp84K9WeB3kl/wRtJA7Wm/JNVCHu+yNXi+nIL53Yjs6kBx5uX4SRLLtdtVIeni
-xFYrfxpyUrl3kEl8zKzAYX+A7hKiLVoq9bASiqLts6JoA31aAuqDZZrVnCjaPilCYB2nShMU
-bc+fxAfL/gBgs56H477hK30+94sWhynaNBLD/6bHZlufpGg7EEVb7jp3m/niV0ykcXGI76EC
-WlekdUamaLuH1rq9jI/ZXzK3Dt2+eVgCRoARYARuiQB7lrdEn+tmBBiBu0GAPcu7aSoWlBFg
-BG6JABvLW6LPdTMCjMDdIMDG8m6a6pKCyhMU1s6qS1bGZd89AgP2F8EjobfxjRuYfmP5ABRt
-xbr96mM22QdTtKme7VG0hXDJoGljirZxGwqWDug3lnpIaGaECVK0NZs56DvX9I3ro/6c00uS
-iizb2B5V0XgTdyjavA3rgqKtabBtj/QElWGKtiAsHDgiBPKM5aQp2oZqDX2s79Ep2jw86Rvj
-8L6v7iWhW6ZoC4AypSCmaANc6rM7pGgbrEMyRVsXSolJDrsSU7R10ZtOCFO0YRIUbef0SKZo
-g+HLCOHoUXOFkjhhTNHmwDGZG68f1ET3SDSO5k++MCIuS6ZoM6BkXkSoz9rcEXoz//y1TQPl
-x7WFnX4VkfOxKdpaOEtiJNnO0wZVJWeKtha3SV75488em0zRdoMmT9FA+XGXFO+RKdo0rgHC
-ZR0V/GWKtiAskwn0x59Nn8gUbVdu5hQNVJKi7RJyPjhFG1H+LkoUtWRdOg5hpmg7Dq87SJ0a
-m5b4TNFmgXHZyzQNVIqiDbQ30HxPQtLNCQq35IJcSpsHpmgTsEhO0G0fLZsNIVO02WhM7Do9
-NltlmaKtxYKvRorAY1JujbQx7kCsx+wvefss76D5WERGgBFgBC6JAFO0XRJdLpsRYAQmgwB7
-lpNpSlaEEWAELokAG8tLostlMwKMwGQQYGM5maY8R5EBKbfOEYPz3gkCA/aXKVK0HYhmS/8z
-22xk29oUZ4fDHpIXkQC18lDeveKtC9F46bhUdwnl82RJZT8tztUjq7qbyHmadqflcjGR/UK3
-O22yXGOv+8rhgBwmJqZoO60lONf1EMjzLBNUZGQo92WN+WwmaM5msw2KNX0Ht8FmTmFL1Kix
-pPj5BoYEzSnTi0vp7+S7PC2aSxSyBCrLKIxIzpQol4lrsBXtq9tdfxmyREUfijT9QZGr9Hwa
-mSnaLtNKXOpwCOQZS6c+TUVGB+Fp83GDpW0EyTAuT97N7dTUf2PLQqnV9GBdtV6w9lhtb0eH
-mQpcT6n1Hkssyhob8xHxGpstUC5sEgBTSOJCy/kI9G211x/kBv3iJY0ZU7Qlus8UopLjTyuo
-xmFnfOr42/6eYCw1FVkD0GF4/4D8VfWxZDH1FliVTevpCkOepohyvccZdi9quSCgX/Oj8RhT
-TMWJCy3nDj+aAg7hCuUSpAINfhi3O6RDovibRBVYWcss7QPGF4YeqAUIt9QfU7Sl0Ln3uPT4
-k9pJR4eYh5wZ6IhUzzOWESoyGvVpfyGhqVPmwTpumMhDUU6+PVbNskPr1OFPTFFEBQgfTH6t
-n3oqGoMgjNtpcjZNA+ll0ecY1JSe6vHOURsZeqq5TbReYtFTcFqeOMDgIzx8vV69wG42Q9Zk
-gynabtOcl641Nf5E3a2hHDNFW56xdNYJZ5hl9fyeFji1zN58x9C3KRlj3rEObzbCUzVq24wp
-MTUjcgr6Nvo0R/FCy7piSk/Gk4xo+xfRoU0wsiu59FLqT4+Y9WoypjssMl7yuBRtb/j69IRP
-lpavX17x8ar+fXm2Yk68/PmGv94BPH3CP6rc/wxQ7InSTD+bHktaU9vhIIo2NChWa/Qsbevc
-N/nNM5Yx0cgb0t5XLM1Ywn05bYPnx2mZFdWa7T13DZtOnPmrylwsCjTLDRqqu+ifpmaWPsJk
-0pC6ZK8BMZmiLQDKhIL8MWaPv4egaAO98ChQOQuy9DZ0ZM+HFEVUkr6txq4usTbfiJVsOvXO
-9gKP7dAToG8rK287kGxzYsAmBid3q5Ber83FjCnaju1Ro0+fGn+W8JOnaKMvI86xx/6wUmrT
-lpK5eTO9Um5ZeTgANDXVb87F2qPOQ1lpexFtM7rEX5oiKkXfFoozL8dPEnUC9G31EpsFrUm2
-ALSUdkssX+jTwpY/Tl987AONKdpaMCd3lR5/rbpM0dZiwVcjRYAW2GlzpN4rOVIxWayRIPCY
-/eW8NcuRNB2LwQgwAozApRFgirZLI8zlMwKMwCQQYM9yEs3ISjACjMClEWBjeWmEuXxGgBGY
-BAKPYSzpBI6zvWkSbTegEvIEhdkhNWDJXNQUERiwv9zR2Ow3lopurN06Scf0jjieeGJfCdO+
-nVjYJbJNnoYtAVpId6dP0GDSxx3tY5DxMpmiLY4Nx4wDgX5jqeQ0R9noqJ5zNG94ReK0b8PX
-dVaJzpHGy9PFnSXrkJlp36ShYKMjjXNsmwbbjdwl6xKT5NHaMUXbkA3EZV0CgTxj2dSo6TA8
-kbItCtS1fRrD9SLE6Q3hWtNGdfIuKlSV9DLckx0xddK0b6UqSxDOdqbWriytNyzrWpi8Piel
-my9PTl9+TcOmNmMr8g1XTqrHr5vKsUg1HBIKnzhX5Q9R0PniXPO+XGOFGvJg02m0dkzRds0G
-u0FdwfHgy6HGYWdc++luc59nLEGnTgosyhKLosbuRyus60UootcFHeBpsBEeR4mimQvyjYK8
-0jZr+CpAi2YnpJMi2quZ1yX2lkV0ZbGo1qiAYoViJ/POt8BKEBTLkt18eWS1tkzy2j7WF6Ok
-Ihq2NEVbvyxjo2+TehuWpED75dDaMUVbt0dNJyQ2HmwNpSNw/xRtxHu+q1Gs10C9a9nOO/Rm
-iuiVCBsFy4jkaBRchj7riI2Tfe0fuLfjvGtRrmYv6cgCmAEs8tE5b1lAOl8eWa0oKUYXl6Ck
-SlK0dXQIy+Lq5YFy7VtPV0PbpzwJ8yzT7ZSSjynaUujcb5zXR4hDwCVWaQ3lmCna/pXdAnQY
-HisUHRJX+cLHKach9jF7qu7EnnUj1jP1gXMqqdm25aUMcipOTIOtg85UYk0+cI8O9ln3Vgp5
-5dcnjEUtHjqoFih2snha1tgRQZVYB35RU/KULOOibyvXK2A7b8/0a70Frd1GYkHrNzbLjI8V
-AJei7Ru+f/kNn4hCTf0RRdugFGqCou0ZfwiKNkkG9/XbV/z7p66RfwdFQPcLXageD3RPFG3E
-80oUbZtL8UPoik//zZyGUwWS8NVwOuo6nZccaorcSaQTZ/ymaN+KNSr6jIV+ueDXc4RX6kgy
-tA5UuC+LNhZ9FG2XkMVRdsCbjiesjKKnexatHVO0DdgwIyzK6xPOw/MhKNqI3qxZobI36JUV
-OU5n/OXTvpk39FRbkmotIU5Mh3NY5pKUVAmKtkvIklD93KhiUXYY3ok96jxaO6ZoO7ddRpc/
-OR5aaSdP0eZTmEHQcb1gf4axidK+NTU29UHs8ySI69oldPNlEbRhbVtEr/x8QodlNHlGRIqS
-Sq5Drgpa1qD3YLRm0S5aDC9LhrgnJZHcntu52wZUlK8DtUMfQxuYou2kVriPTKnxYGvAFG02
-Gnw9SgRogZ0p2kbZNKMU6jH7yxFrlqNsNRaKEWAEGIGrIMAUbVeBmSthBBiBe0eAPct7b0GW
-nxFgBK6CABvLq8DMlTACjMC9I8DG8t5bcBD55QkKewfYIMVyIRNFYMD+Ingk1v3HoEeAZL+x
-DNFxmTNsl9KAGuM4ii/6BKsgrRDkHSrvxeW8lP4jLzeEtUXR5tLrVYKApU8jpmjrQ4jjb41A
-v7EkCZ1TJZenInPJJPIovgSQV5bz1o13s/pTFG10yqrYtGQnne/Kh6VmirYwLhw6HgTyjKUj
-r0dFJijF9liHaMOStEwx7/E0ii9HRHHjyRmUJTaduHPKtC4Ylw2xKdroTLh1DLXZbFD7R90C
-0jBFWwCUKQUFx5+voLIJ903RZitlU5Hp8BBtWJqWyfUeLTo1OmBvnWihGnIovrQk7a8tZ0yW
-KVKmtQhc58qjaPMrLRcovfb0k9A9U7SFUJlKWGz82fpJx+X+KdpiVGSWrh3asBQtU4CAweTX
-Xoh6EpllxxyKr5icCVkmR5lmtclVLj1s3TpLVFXpUeW5KZw7pmhz4JjMjddHpk3RRmuB802C
-sCxCG+Z7FDYtkx+ne4YOP5LiS2RPyanL1fVoWYjkckKUaVq9a/12KNpMxeQpVCi2cwSOj5tU
-+oIp2jQSE/2NjT9Sd3oUbSc0ovYSdVZNUyYAKsLbBRSFmc2onkXxpeuI/cZkmRJlWkz3S4UH
-ZgiyqnZKlU3myhRtl2qlcZQbG38k3UNQtKWaIUXLlKRTO5fiKyBUShaiKW5KrFbAj6bGDhWq
-UrGq3xllWkDziwaFKdpOMJSOlEzR5sAxhZvk+GsVnDxFW6uqf5WmZQrReGlWtFBcL8WXX71z
-n5JlKpRpjsJXuIlQtNGbcZoWrPY4rLQYNZazHgZspmjTYE3wNzX+bHWZos1Gg69HiYBcX8Ry
-3s87OUr5WajrIvCY/eWEfZbXbRaujRFgBBiBMSDAFG1jaAWWgRFgBEaPAHuWo28iFpARYATG
-gAAbyzG0AsvACDACo0eAjeXom+gaAsrtPkzRdg2sp1DHgP2FTuqN9Cy431L9xjJEx2XOIPrF
-DXNvU3ztc0fwDeQcRtv7LCXZRjZpgkXdltKUKdpS6HDcGBDoN5Yk5ZWpz+hTuLPZDPNtcxxG
-V5bzOOGmlTreRi5pwmwmKf36nq9M0Tat/jFFbfKMpaO5R302OEWbU9kZN56ctrdj3P7YdIIp
-2k4HvkBRqBNQohC56Z+OrKb+mKIthc4E4oLjz9eLxuMBBzM+/fjb3p9gLG3qMy38gBRtusiz
-f205XW9n2axQiek9U7SdDXOnAHl8dFHqiAKLshA0ezok9MsUbSFUphIWG3+2ftJxYYo2AA4t
-U4CAwVC02fgde80UbccidoH0DTbzGXYL/VmQCljOYPEBx+tkirY4NvccMxGKtjzP0lkLnGHW
-6fnHULSpVvcpm4boDCk5/foUP2ZDFG3lAkXxAuKgKxcFXJYjmpLrgX/AfkXTTHtKGdF9CH3u
-sgyJ12I3U5+WoM+CHND3os6laHvD16cnfLL0f/3yio9X9e/LsxVz4uXPN/z1DuDpE/5R5f5n
-gGJPlGb62SLjTyhOFG1oUKzWWd9ruhVYecbyVOlStEx+3Kl15Obz69N0cUzRlotgXjp6CDVb
-bGqd3Fs71sH+L1O0+YhM6z42/khLpmjboW7oezqyzctFCWIlF39JijaZZND/kxRRTNE2KNZU
-WFFiYTnf1Pb5f0zRlo/VnaRMjr9WB6Zoo7dbhAdNkZftVqAQDZumaBOftTV7TSTVV5277tVi
-b12lKKKYos0CKv+S9rUG24g+WFbgsD/AMBTgrEMAAAiKSURBVLRR2/fRpTNFWz72d5cyNf5s
-ZZiizUaDr0eJAL2JpBcxTNE2yuYZnVCP2V8uu2Y5ukZmgRgBRoAROA0Bpmg7DTfOxQgwAg+G
-AHuWD9bgrC4jwAichgAby9Nw41yMACPwYAiwsXywBg+rK4+a5RI8hcvg0MdBYMD+8mgUbTZd
-1+Gwhxx0BGh78uVAp2D0AfkQnZqOS/W4UD6zfSWV8fQ4W7e+UyimlhvIaeq+ykWgbU270z7L
-Nfb2qacMK8wUbVdpOK7kDATyPEvnGKGk3NKGg4zJvqwxn+njbRsUa9qELM8Iz8QnUOlTqDPM
-5hs6USj/nDK9OJ0m9Ovkc2UJJT83LE5F1lPyleXskeYC0Q22c93m9Ku3HZWoxHFwHTdHXe7R
-90xjirYLNBEXOSgCecbSqdI+vkbfjm6wtI0g5MZSJ8vFbmxZqBI1PVhXEJ6s7c3a3k7Hi3U9
-pb6Bfbw6npxBWZTs1skXWc+90cXVXn9girbj+8sEcwT7vK+nGoed8emnu839CcbSoj4T54Cb
-1lu8ug6WLKZuposzXr7zEDMADXRRYGUts8QfMPRAZYq2gUC/02KYog3wD8cf05QOndrBOjrX
-U4iTb49Vs8R8Yyb3InOH7i1FEcV0cT2Ah6L1EoueaktmodZg2p76ArsZU7SFUHyYsNT4EyDI
-WRVxWfpjeUwY/StLGFp/G9pLObXM3nwRyrQgRVQtvWI/LguUnkQpOf36BF1cDUEXVy1Q7MSS
-r6CL2xF5lSAgeQEg6c+cmmuat+uHRUR3J8MlbtSZXiLMqIluSBrTjahKyrzepgeCS9H2Dd+/
-/IZPRKGm/oiibVAKNUHR9ow/BEWbJIP7+u0r/v1T18i/gyIQ6/NUCVG0NYqibbOEIawaVIDz
-CzthGm5VWu9Qn+NdWkVd/NKXU1O0UcV+3KWF8evTskySLk4aUpcDNAAwU7QFQJlQUKzPk4qP
-QdFWY7MtUDkLsvQ29BhKrit0iBRFFNPFHd8AZeWR+co2JzZ8YozSOyVkwaF15VSVTNGWQucu
-41Ljz1Jo8hRttLVmjj32B03IRVtK5ubN9Eq93S0PB0nTpqfzYu1R5yHEaHvRpVzwNEUU08VZ
-PTbnsl5iIz4b0SZuKfSWWL7scThYr/XrJWbeunKbU10xRVsHkukEpMdfqydTtLVY8NVIEaAF
-dqZoG2njjFCsx+wv561ZjrAZWSRGgBFgBC6BAFO0XQJVLpMRYAQmhwB7lpNrUlaIEWAELoEA
-G8tLoMplMgKMwOQQYGM5uSY9RSF5giKDHOiUwjnP5BAYsL/QmXFn6+F4wco2lmVl0a1p5VJU
-ZBSn02n9KSxnD6Z96N4mw9Dl8O/NEbCp6w6HCjk7a5mG7ebNxgKcgUCWsSRDWWGJmaZhW8J8
-D1x84laHz4agTCtR7UvUNv0XHT3OMbJnAMFZj0CgWKMqNqY/zDsHE8JlMQ1bGBcOvQ8EMoxl
-iUXp0a6JUy8hBT0qslCSvrBygbKpsdPHnSl9Q9+i1idGaQrQernmtIhy59fGA9YkxLJC1xNy
-4yS1W6DMPlkfNd5pD2qeTdax1zd91vvpM/55lWe9P//6pFB8wp+/v+Lj1fr35VnGPX8R4fJs
-+BP+UOnEfSoOAJ0pb8v8HX/q6h617W6ltz1b9GecRiY1tqPxJuFNLvqNpTBeuTRsxx5tC+hM
-B+6LFarIAlpZ7UHsJNLL9YhlixWKnWTCmW+BlSAhpsNEa1TEu2k84CWwXkOfMUmWGRCRgzwE
-MvvI9/d34OlXfH56wmcyZL8pY/j+ju94x59/f8UvX9W/bz+B5y+SPOPnNxEuSS7e8ZdKJ+5T
-cSr/2/e/VbnfgM+fRd2eBnx7UQQeiaLNAtKsXeppcQZlmpW9/5K8ltkSzYqOzClvTz9pOnRq
-PrFsDTqeTH/NjwYQbD66ygIv2joSK85Ssbb3lqnz828YAXUufGOx4IcTytCnJ7z++oQ3ZThf
-n56A9//iLZLnk/E8Iwkygj8//6YM5Dv+/PYWrSujKE5yCgIPRdFmAURngGf0omahAlNUZFa+
-4y7lZyhkHvnmrVrvMCfqsihNGVnIiAdMBngO7PcHyNPo8vx6e1y5j/rsOOkfJzW1TYWC6Nf0
-KklCeaZhS4Az9Sh/bGpaQtJ7MhRtN6dh89ZByTib6bQinzXrmYkeJzxWnb7Bqmqn4e5LKp0m
-Y/Qnqpt+lHyIHUXYyjRs0+8WMQ0fg6KNprYn0K4JI1tiYaa+QLkoFZFtDFG5vrjXU3yRzFoH
-pRdLjbeeWVa9H8MSa5bWGmhB83HDIXlimQkVph91gqF0QGEaNgeOqd88EkWboN8Sb5l1q9I0
-tgYKPRfX4fYvfbjqxZr6EgtbBlUXeYA7+uBY1RZm5fPp1ESZS8EI16b3r8jIwqYNo2l+6zlG
-y/TL4XuJQLmGoN6jdWXDspdBscc0bA/ag5ii7UEbfopqy7VHLPXnbKeoI+s0HAKP2V/6tw4N
-hzCXxAgwAozA3SLAFG1323QsOCPACFwTAfYsr4k218UIMAJ3i0Dep3DvVj0W/CIIfCRK/SUR
-x1GMwB0jkO9ZWgxDzs6eO1b+cUSXm+7pRJQ5S/84yrOmjMAgCOQbS6pObQjP2QN+rnREfHHP
-A9sm7ujqQW8TW+IO8/CxHkjmqCcd+TQJTkVVnoiab212klPL4nyMwGMicJyxHAlGtiHK5VK8
-tuj0iWAi+wgZKJe4g/jnFAsS7Sd1TifNsW0abDftntCL6GERsJJs1v79i1THhTIC94jAAMZS
-nuZYr2kjeZf4Yu+HaZRilE3Ku9qvChSGTKMllxUeZ1mbI49LfbrIp2jT5BvJ+pTs1ikjmZym
-rdpouF6g6yUmdNf1dn4l5d3GHEyvsdnS6aaOEABt/oZHV9cpb4CAogDqHRqQbA2Ig4T/GAFG
-wEXg/wP/z3IzkemVfQAAAABJRU5ErkJggp==
+       5.728423115 seconds time elapsed		( +-  0.14% )
 
-------=_NextPart_5936991C_0BC612F0_13A95197--
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ v4: Rebased on top of powerpc/next (f718d426d7e42e) and doing access_ok() verification before __get_user_xxx()
+
+ v3: Do a first try with pagefault disabled before releasing the semaphore
+
+ v2: Changes 'if (cond1) if (cond2)' by 'if (cond1 && cond2)'
+
+ arch/powerpc/mm/fault.c | 60 +++++++++++++++++++++++++++++++++++--------------
+ 1 file changed, 43 insertions(+), 17 deletions(-)
+
+diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
+index 4c422632047b..add2166d2459 100644
+--- a/arch/powerpc/mm/fault.c
++++ b/arch/powerpc/mm/fault.c
+@@ -72,26 +72,50 @@ static inline int notify_page_fault(struct pt_regs *regs)
+ /*
+  * Check whether the instruction at regs->nip is a store using
+  * an update addressing form which will update r1.
++ * If no, returns 0 with mmap_sem released
++ * If yes, returns 1 if mmap_sem hasn't been released
++ * If yes, returns 2 if mmap_sem has been released
+  */
+ static int store_updates_sp(struct pt_regs *regs)
+ {
+ 	unsigned int inst;
++	unsigned int __user *nip = (unsigned int __user *)regs->nip;
++	int ret;
++	bool is_mm_locked = true;
++
++	/*
++	 * We want to do this outside mmap_sem, because reading code around nip
++	 * can result in fault, which will cause a deadlock when called with
++	 * mmap_sem held. However, we do a first try with pagefault disabled as
++	 * a fault here is very unlikely.
++	 */
++	if (!access_ok(VERIFY_READ, nip, sizeof(inst)))
++		goto failed;
++
++	pagefault_disable();
++	ret = __get_user_inatomic(inst, nip);
++	pagefault_enable();
++	if (ret) {
++		up_read(&current->mm->mmap_sem);
++		is_mm_locked = false;
++		if (__get_user(inst, nip))
++			goto failed;
++	}
+ 
+-	if (get_user(inst, (unsigned int __user *)regs->nip))
+-		return 0;
+ 	/* check for 1 in the rA field */
+ 	if (((inst >> 16) & 0x1f) != 1)
+-		return 0;
++		goto failed;
+ 	/* check major opcode */
+ 	switch (inst >> 26) {
++	case 62:	/* std or stdu */
++		if ((inst & 3) == 0)
++			break;
+ 	case 37:	/* stwu */
+ 	case 39:	/* stbu */
+ 	case 45:	/* sthu */
+ 	case 53:	/* stfsu */
+ 	case 55:	/* stfdu */
+-		return 1;
+-	case 62:	/* std or stdu */
+-		return (inst & 3) == 1;
++		return is_mm_locked ? 1 : 2;
+ 	case 31:
+ 		/* check minor opcode */
+ 		switch ((inst >> 1) & 0x3ff) {
+@@ -101,9 +125,13 @@ static int store_updates_sp(struct pt_regs *regs)
+ 		case 439:	/* sthux */
+ 		case 695:	/* stfsux */
+ 		case 759:	/* stfdux */
+-			return 1;
++			return is_mm_locked ? 1 : 2;
+ 		}
+ 	}
++failed:
++	if (is_mm_locked)
++		up_read(&current->mm->mmap_sem);
++
+ 	return 0;
+ }
+ /*
+@@ -283,14 +311,6 @@ int do_page_fault(struct pt_regs *regs, unsigned long address,
+ 
+ 	perf_sw_event(PERF_COUNT_SW_PAGE_FAULTS, 1, regs, address);
+ 
+-	/*
+-	 * We want to do this outside mmap_sem, because reading code around nip
+-	 * can result in fault, which will cause a deadlock when called with
+-	 * mmap_sem held
+-	 */
+-	if (is_write && is_user)
+-		store_update_sp = store_updates_sp(regs);
+-
+ 	if (is_user)
+ 		flags |= FAULT_FLAG_USER;
+ 
+@@ -359,8 +379,14 @@ int do_page_fault(struct pt_regs *regs, unsigned long address,
+ 		 * between the last mapped region and the stack will
+ 		 * expand the stack rather than segfaulting.
+ 		 */
+-		if (address + 2048 < uregs->gpr[1] && !store_update_sp)
+-			goto bad_area;
++		if (is_write && is_user && address + 2048 < uregs->gpr[1] &&
++		    !store_update_sp) {
++			store_update_sp = store_updates_sp(regs);
++			if (store_update_sp == 2)
++				goto retry;
++			if (store_update_sp == 0)
++				goto bad_area_nosemaphore;
++		}
+ 	}
+ 	if (expand_stack(vma, address))
+ 		goto bad_area;
+-- 
+2.12.0
