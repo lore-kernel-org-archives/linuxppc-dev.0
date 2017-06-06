@@ -3,10 +3,10 @@ Received: from mail-qt0-x243.google.com (mail-qt0-x243.google.com
  [IPv6:2607:f8b0:400d:c0d::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3whYQh4FJ6zDqFH
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Jun 2017 11:05:48 +1000 (AEST)
-Received: by mail-qt0-x243.google.com with SMTP id s33so12919673qtg.3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 05 Jun 2017 18:05:48 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3whYQk0ZDCzDqFH
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Jun 2017 11:05:50 +1000 (AEST)
+Received: by mail-qt0-x243.google.com with SMTP id w1so20236854qtg.0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 05 Jun 2017 18:05:49 -0700 (PDT)
 Sender: Ram Pai <ram.n.pai@gmail.com>
 From: Ram Pai <linuxram@us.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org,
@@ -15,10 +15,10 @@ Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
  khandual@linux.vnet.ibm.com, aneesh.kumar@linux.vnet.ibm.com,
  bsingharora@gmail.com, dave.hansen@intel.com, hbabu@us.ibm.com,
  linuxram@us.ibm.com
-Subject: [RFC PATCH 1/7 v1]powerpc: Free up four PTE bits to accommodate
- memory keys
-Date: Mon,  5 Jun 2017 18:05:03 -0700
-Message-Id: <1496711109-4968-2-git-send-email-linuxram@us.ibm.com>
+Subject: [RFC PATCH 2/7 v1]powerpc: Implement sys_pkey_alloc and sys_pkey_free
+ system call.
+Date: Mon,  5 Jun 2017 18:05:04 -0700
+Message-Id: <1496711109-4968-3-git-send-email-linuxram@us.ibm.com>
 In-Reply-To: <1496711109-4968-1-git-send-email-linuxram@us.ibm.com>
 References: <1496711109-4968-1-git-send-email-linuxram@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -30,531 +30,508 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Rearrange  PTE   bits to  free  up  bits 3, 4, 5  and  6  for
-memory keys. Bit 3, 4, 5, 6 and 57  shall  be used for memory
-keys.
+Sys_pkey_alloc() allocates and returns available pkey
+Sys_pkey_free()  frees up the key.
 
-The patch does the following change to the 64K PTE format
-
-H_PAGE_BUSY moves from bit 3 to bit 7
-H_PAGE_F_SECOND which occupied bit 4 moves to the second part
-	of the pte.
-H_PAGE_F_GIX which  occupied bit 5, 6 and 7 also moves to the
-	second part of the pte.
-
-The second part of the PTE will hold
-   a (H_PAGE_F_SECOND|H_PAGE_F_GIX)  for  64K page backed pte,
-   and sixteen (H_PAGE_F_SECOND|H_PAGE_F_GIX)  for 4k  backed
-	pte.
-
-the four  bits((H_PAGE_F_SECOND|H_PAGE_F_GIX) that represent a slot
-is initialized to 0xF indicating a invalid slot. if a hashpage does
-get  allocated  to  the  0xF  slot, it is released and not used. In
-other words, even  though  0xF  is  a valid slot we discard it  and
-consider it as invalid slot(HPTE_SOFT_INVALID). This  gives  us  an
-opportunity to  not  depend on a bit in the primary PTE in order to
-determine the validity of a slot.
-
-When  we  release  a  0xF slot we also release a legitimate primary
-slot  and  unmap  that  entry. This  is  to  ensure  that we do get
-a legimate non-0xF slot the next time we retry for a slot.
-
-Though treating 0xF slot as invalid reduces the number of available
-slots and make have a effect on the performance, the probabilty
-of hitting a 0xF is extermely low.
-
-Compared  to the current scheme, the above described scheme reduces
-the number of false hash table updates  significantly  and  has the
-added  advantage  of  releasing  four  valuable  PTE bits for other
-purpose.
-
-This idea was jointly developed by Paul Mackerras, Aneesh, Michael
-Ellermen and myself.
-
-4K PTE format remain unchanged currently.
+Total 32 keys are supported on powerpc. However key 0,1 and 31
+are reserved. So effectively we have 29 keys.
 
 Signed-off-by: Ram Pai <linuxram@us.ibm.com>
 ---
- arch/powerpc/include/asm/book3s/64/hash-4k.h  | 12 +++++
- arch/powerpc/include/asm/book3s/64/hash-64k.h | 38 ++++++--------
- arch/powerpc/include/asm/book3s/64/hash.h     |  8 ++-
- arch/powerpc/include/asm/book3s/64/mmu-hash.h |  5 ++
- arch/powerpc/mm/dump_linuxpagetables.c        |  3 +-
- arch/powerpc/mm/hash64_4k.c                   | 12 ++---
- arch/powerpc/mm/hash64_64k.c                  | 73 +++++++++------------------
- arch/powerpc/mm/hash_utils_64.c               | 38 +++++++++++++-
- arch/powerpc/mm/hugetlbpage-hash64.c          | 16 +++---
- 9 files changed, 107 insertions(+), 98 deletions(-)
+ arch/powerpc/Kconfig                         |  15 ++++
+ arch/powerpc/include/asm/book3s/64/mmu.h     |  10 +++
+ arch/powerpc/include/asm/book3s/64/pgtable.h |  62 ++++++++++++++
+ arch/powerpc/include/asm/pkeys.h             | 124 +++++++++++++++++++++++++++
+ arch/powerpc/include/asm/systbl.h            |   2 +
+ arch/powerpc/include/asm/unistd.h            |   4 +-
+ arch/powerpc/include/uapi/asm/unistd.h       |   2 +
+ arch/powerpc/mm/Makefile                     |   1 +
+ arch/powerpc/mm/mmu_context_book3s64.c       |   5 ++
+ arch/powerpc/mm/pkeys.c                      |  88 +++++++++++++++++++
+ include/linux/mm.h                           |  31 ++++---
+ include/uapi/asm-generic/mman-common.h       |   2 +-
+ 12 files changed, 331 insertions(+), 15 deletions(-)
+ create mode 100644 arch/powerpc/include/asm/pkeys.h
+ create mode 100644 arch/powerpc/mm/pkeys.c
 
-diff --git a/arch/powerpc/include/asm/book3s/64/hash-4k.h b/arch/powerpc/include/asm/book3s/64/hash-4k.h
-index b4b5e6b..223d318 100644
---- a/arch/powerpc/include/asm/book3s/64/hash-4k.h
-+++ b/arch/powerpc/include/asm/book3s/64/hash-4k.h
-@@ -16,6 +16,18 @@
- #define H_PUD_TABLE_SIZE	(sizeof(pud_t) << H_PUD_INDEX_SIZE)
- #define H_PGD_TABLE_SIZE	(sizeof(pgd_t) << H_PGD_INDEX_SIZE)
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index f7c8f99..b6960617 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -871,6 +871,21 @@ config SECCOMP
  
+ 	  If unsure, say Y. Only embedded should say N here.
+ 
++config PPC64_MEMORY_PROTECTION_KEYS
++	prompt "PowerPC Memory Protection Keys"
++	def_bool y
++	# Note: only available in 64-bit mode
++	depends on PPC64 && PPC_64K_PAGES
++	select ARCH_USES_HIGH_VMA_FLAGS
++	select ARCH_HAS_PKEYS
++	---help---
++	  Memory Protection Keys provides a mechanism for enforcing
++	  page-based protections, but without requiring modification of the
++	  page tables when an application changes protection domains.
++
++	  For details, see Documentation/powerpc/protection-keys.txt
++
++	  If unsure, say y.
+ endmenu
+ 
+ config ISA_DMA_API
+diff --git a/arch/powerpc/include/asm/book3s/64/mmu.h b/arch/powerpc/include/asm/book3s/64/mmu.h
+index 77529a3..0c0a2a8 100644
+--- a/arch/powerpc/include/asm/book3s/64/mmu.h
++++ b/arch/powerpc/include/asm/book3s/64/mmu.h
+@@ -108,6 +108,16 @@ struct patb_entry {
+ #ifdef CONFIG_SPAPR_TCE_IOMMU
+ 	struct list_head iommu_group_mem_list;
+ #endif
++
++#ifdef CONFIG_PPC64_MEMORY_PROTECTION_KEYS
++	/*
++	 * Each bit represents one protection key.
++	 * bit set   -> key allocated
++	 * bit unset -> key available for allocation
++	 */
++	u32 pkey_allocation_map;
++	s16 execute_only_pkey; /* key holding execute-only protection */
++#endif
+ } mm_context_t;
+ 
+ /*
+diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
+index 85bc987..87e9a89 100644
+--- a/arch/powerpc/include/asm/book3s/64/pgtable.h
++++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
+@@ -428,6 +428,68 @@ static inline void huge_ptep_set_wrprotect(struct mm_struct *mm,
+ 		pte_update(mm, addr, ptep, 0, _PAGE_PRIVILEGED, 1);
+ }
+ 
++
++#ifdef CONFIG_PPC64_MEMORY_PROTECTION_KEYS
++
++#include <asm/reg.h>
++static inline u64 read_amr(void)
++{
++	return mfspr(SPRN_AMR);
++}
++static inline void write_amr(u64 value)
++{
++	mtspr(SPRN_AMR, value);
++}
++static inline u64 read_iamr(void)
++{
++	return mfspr(SPRN_IAMR);
++}
++static inline void write_iamr(u64 value)
++{
++	mtspr(SPRN_IAMR, value);
++}
++static inline u64 read_uamor(void)
++{
++	return mfspr(SPRN_UAMOR);
++}
++static inline void write_uamor(u64 value)
++{
++	mtspr(SPRN_UAMOR, value);
++}
++
++#else /* CONFIG_PPC64_MEMORY_PROTECTION_KEYS */
++
++static inline u64 read_amr(void)
++{
++	WARN(1, "%s called with MEMORY PROTECTION KEYS disabled\n", __func__);
++	return -1;
++}
++static inline void write_amr(u64 value)
++{
++	WARN(1, "%s called with MEMORY PROTECTION KEYS disabled\n", __func__);
++}
++static inline u64 read_uamor(void)
++{
++	WARN(1, "%s called with MEMORY PROTECTION KEYS disabled\n", __func__);
++	return -1;
++}
++static inline void write_uamor(u64 value)
++{
++	WARN(1, "%s called with MEMORY PROTECTION KEYS disabled\n", __func__);
++}
++static inline u64 read_iamr(void)
++{
++	WARN(1, "%s called with MEMORY PROTECTION KEYS disabled\n", __func__);
++	return -1;
++}
++static inline void write_iamr(u64 value)
++{
++	WARN(1, "%s called with MEMORY PROTECTION KEYS disabled\n", __func__);
++}
++
++#endif /* CONFIG_PPC64_MEMORY_PROTECTION_KEYS */
++
++
+ #define __HAVE_ARCH_PTEP_GET_AND_CLEAR
+ static inline pte_t ptep_get_and_clear(struct mm_struct *mm,
+ 				       unsigned long addr, pte_t *ptep)
+diff --git a/arch/powerpc/include/asm/pkeys.h b/arch/powerpc/include/asm/pkeys.h
+new file mode 100644
+index 0000000..7bc8746
+--- /dev/null
++++ b/arch/powerpc/include/asm/pkeys.h
+@@ -0,0 +1,124 @@
++#ifndef _ASM_PPC64_PKEYS_H
++#define _ASM_PPC64_PKEYS_H
++
++
++#define arch_max_pkey()  32
++
++#define AMR_AD_BIT 0x1UL
++#define AMR_WD_BIT 0x2UL
++#define IAMR_EX_BIT 0x1UL
++#define AMR_BITS_PER_PKEY 2
++#define ARCH_VM_PKEY_FLAGS (VM_PKEY_BIT0 | \
++			VM_PKEY_BIT1 | \
++			VM_PKEY_BIT2 | \
++			VM_PKEY_BIT3 | \
++			VM_PKEY_BIT4)
 +
 +/*
-+ * Only supported by 4k linux page size
++ * Bits are in BE format.
++ * NOTE: key 31, 1, 0 are not used.
++ * key 0 is used by default. It give read/write/execute permission.
++ * key 31 is reserved by the hypervisor.
++ * key 1 is recommended to be not used.
++ * PowerISA(3.0) page 1015, programming note.
 + */
-+#define H_PAGE_F_SECOND        _RPAGE_RSV2     /* HPTE is in 2ndary HPTEG */
-+#define H_PAGE_F_GIX           (_RPAGE_RSV3 | _RPAGE_RSV4 | _RPAGE_RPN44)
-+#define H_PAGE_F_GIX_SHIFT     56
++#define PKEY_INITIAL_ALLOCAION  0xc0000001
 +
-+#define H_PAGE_BUSY	_RPAGE_RSV1     /* software: PTE & hash are busy */
-+#define H_PAGE_HASHPTE	_RPAGE_RPN43    /* PTE has associated HPTE */
++#define pkeybit_mask(pkey) (0x1 << (arch_max_pkey() - pkey - 1))
 +
++#define mm_pkey_allocation_map(mm)	(mm->context.pkey_allocation_map)
 +
- /* PTE flags to conserve for HPTE identification */
- #define _PAGE_HPTEFLAGS (H_PAGE_BUSY | H_PAGE_HASHPTE | \
- 			 H_PAGE_F_SECOND | H_PAGE_F_GIX)
-diff --git a/arch/powerpc/include/asm/book3s/64/hash-64k.h b/arch/powerpc/include/asm/book3s/64/hash-64k.h
-index 9732837..87ee22d 100644
---- a/arch/powerpc/include/asm/book3s/64/hash-64k.h
-+++ b/arch/powerpc/include/asm/book3s/64/hash-64k.h
-@@ -10,23 +10,21 @@
-  * 64k aligned address free up few of the lower bits of RPN for us
-  * We steal that here. For more deatils look at pte_pfn/pfn_pte()
-  */
--#define H_PAGE_COMBO	_RPAGE_RPN0 /* this is a combo 4k page */
--#define H_PAGE_4K_PFN	_RPAGE_RPN1 /* PFN is for a single 4k page */
-+#define H_PAGE_COMBO   _RPAGE_RPN0 /* this is a combo 4k page */
-+#define H_PAGE_4K_PFN  _RPAGE_RPN1 /* PFN is for a single 4k page */
++#define mm_set_pkey_allocated(mm, pkey) {	\
++	mm_pkey_allocation_map(mm) |= pkeybit_mask(pkey); \
++}
 +
-+#define H_PAGE_BUSY	_RPAGE_RPN44     /* software: PTE & hash are busy */
-+#define H_PAGE_HASHPTE	_RPAGE_RPN43    /* PTE has associated HPTE */
++#define mm_set_pkey_free(mm, pkey) {	\
++	mm_pkey_allocation_map(mm) &= ~pkeybit_mask(pkey);	\
++}
 +
- /*
-  * We need to differentiate between explicit huge page and THP huge
-  * page, since THP huge page also need to track real subpage details
-  */
- #define H_PAGE_THP_HUGE  H_PAGE_4K_PFN
- 
--/*
-- * Used to track subpage group valid if H_PAGE_COMBO is set
-- * This overloads H_PAGE_F_GIX and H_PAGE_F_SECOND
-- */
--#define H_PAGE_COMBO_VALID	(H_PAGE_F_GIX | H_PAGE_F_SECOND)
--
- /* PTE flags to conserve for HPTE identification */
--#define _PAGE_HPTEFLAGS (H_PAGE_BUSY | H_PAGE_F_SECOND | \
--			 H_PAGE_F_GIX | H_PAGE_HASHPTE | H_PAGE_COMBO)
-+#define _PAGE_HPTEFLAGS (H_PAGE_BUSY | H_PAGE_HASHPTE)
++#define mm_set_pkey_is_allocated(mm, pkey)	\
++	(mm_pkey_allocation_map(mm) & pkeybit_mask(pkey))
 +
- /*
-  * we support 16 fragments per PTE page of 64K size.
-  */
-@@ -54,24 +52,18 @@ static inline real_pte_t __real_pte(pte_t pte, pte_t *ptep)
- 	unsigned long *hidxp;
- 
- 	rpte.pte = pte;
--	rpte.hidx = 0;
--	if (pte_val(pte) & H_PAGE_COMBO) {
--		/*
--		 * Make sure we order the hidx load against the H_PAGE_COMBO
--		 * check. The store side ordering is done in __hash_page_4K
--		 */
--		smp_rmb();
--		hidxp = (unsigned long *)(ptep + PTRS_PER_PTE);
--		rpte.hidx = *hidxp;
--	}
++#define mm_set_pkey_is_reserved(mm, pkey) (PKEY_INITIAL_ALLOCAION & \
++					pkeybit_mask(pkey))
++
++static inline bool mm_pkey_is_allocated(struct mm_struct *mm, int pkey)
++{
++	/* a reserved key is never considered as 'explicitly allocated' */
++	return (!mm_set_pkey_is_reserved(mm, pkey) &&
++		mm_set_pkey_is_allocated(mm, pkey));
++}
++
++/*
++ * Returns a positive, 5-bit key on success, or -1 on failure.
++ */
++static inline int mm_pkey_alloc(struct mm_struct *mm)
++{
 +	/*
-+	 * The store side ordering is done in __hash_page_4K
++	 * Note: this is the one and only place we make sure
++	 * that the pkey is valid as far as the hardware is
++	 * concerned.  The rest of the kernel trusts that
++	 * only good, valid pkeys come out of here.
 +	 */
-+	smp_rmb();
-+	hidxp = (unsigned long *)(ptep + PTRS_PER_PTE);
-+	rpte.hidx = *hidxp;
- 	return rpte;
- }
- 
- static inline unsigned long __rpte_to_hidx(real_pte_t rpte, unsigned long index)
- {
--	if ((pte_val(rpte.pte) & H_PAGE_COMBO))
--		return (rpte.hidx >> (index<<2)) & 0xf;
--	return (pte_val(rpte.pte) >> H_PAGE_F_GIX_SHIFT) & 0xf;
-+	return ((rpte.hidx >> (index<<2)) & 0xfUL);
- }
- 
- #define __rpte_to_pte(r)	((r).pte)
-diff --git a/arch/powerpc/include/asm/book3s/64/hash.h b/arch/powerpc/include/asm/book3s/64/hash.h
-index 4e957b0..7742782 100644
---- a/arch/powerpc/include/asm/book3s/64/hash.h
-+++ b/arch/powerpc/include/asm/book3s/64/hash.h
-@@ -8,11 +8,9 @@
-  *
-  */
- #define H_PTE_NONE_MASK		_PAGE_HPTEFLAGS
--#define H_PAGE_F_GIX_SHIFT	56
--#define H_PAGE_BUSY		_RPAGE_RSV1 /* software: PTE & hash are busy */
--#define H_PAGE_F_SECOND		_RPAGE_RSV2	/* HPTE is in 2ndary HPTEG */
--#define H_PAGE_F_GIX		(_RPAGE_RSV3 | _RPAGE_RSV4 | _RPAGE_RPN44)
--#define H_PAGE_HASHPTE		_RPAGE_RPN43	/* PTE has associated HPTE */
++	u32 all_pkeys_mask = (u32)(~(0x0));
++	int ret;
 +
-+#define INIT_HIDX (~0x0UL)
-+#define HPTE_SOFT_INVALID(slot) ((slot & 0xfUL) == 0xfUL)
- 
- #ifdef CONFIG_PPC_64K_PAGES
- #include <asm/book3s/64/hash-64k.h>
-diff --git a/arch/powerpc/include/asm/book3s/64/mmu-hash.h b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
-index 6981a52..cfb8169 100644
---- a/arch/powerpc/include/asm/book3s/64/mmu-hash.h
-+++ b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
-@@ -435,6 +435,11 @@ extern int __hash_page_4K(unsigned long ea, unsigned long access,
- extern int __hash_page_64K(unsigned long ea, unsigned long access,
- 			   unsigned long vsid, pte_t *ptep, unsigned long trap,
- 			   unsigned long flags, int ssize);
-+extern unsigned long set_hidx_slot(pte_t *ptep, real_pte_t rpte,
-+			unsigned int subpg_index, unsigned long slot);
-+extern unsigned long get_hidx_slot(unsigned long vpn, unsigned long shift,
-+			int ssize, real_pte_t rpte, unsigned int subpg_index);
++	/*
++	 * Are we out of pkeys?  We must handle this specially
++	 * because ffz() behavior is undefined if there are no
++	 * zeros.
++	 */
++	if (mm_pkey_allocation_map(mm) == all_pkeys_mask)
++		return -1;
 +
- struct mm_struct;
- unsigned int hash_page_do_lazy_icache(unsigned int pp, pte_t pte, int trap);
- extern int hash_page_mm(struct mm_struct *mm, unsigned long ea,
-diff --git a/arch/powerpc/mm/dump_linuxpagetables.c b/arch/powerpc/mm/dump_linuxpagetables.c
-index 44fe483..b832ed3 100644
---- a/arch/powerpc/mm/dump_linuxpagetables.c
-+++ b/arch/powerpc/mm/dump_linuxpagetables.c
-@@ -213,7 +213,7 @@ struct flag_info {
- 		.val	= H_PAGE_4K_PFN,
- 		.set	= "4K_pfn",
- 	}, {
--#endif
-+#else
- 		.mask	= H_PAGE_F_GIX,
- 		.val	= H_PAGE_F_GIX,
- 		.set	= "f_gix",
-@@ -224,6 +224,7 @@ struct flag_info {
- 		.val	= H_PAGE_F_SECOND,
- 		.set	= "f_second",
- 	}, {
-+#endif /* CONFIG_PPC_64K_PAGES */
- #endif
- 		.mask	= _PAGE_SPECIAL,
- 		.val	= _PAGE_SPECIAL,
-diff --git a/arch/powerpc/mm/hash64_4k.c b/arch/powerpc/mm/hash64_4k.c
-index 6fa450c..5b16416 100644
---- a/arch/powerpc/mm/hash64_4k.c
-+++ b/arch/powerpc/mm/hash64_4k.c
-@@ -20,6 +20,7 @@ int __hash_page_4K(unsigned long ea, unsigned long access, unsigned long vsid,
- 		   pte_t *ptep, unsigned long trap, unsigned long flags,
- 		   int ssize, int subpg_prot)
- {
-+	real_pte_t rpte;
- 	unsigned long hpte_group;
- 	unsigned long rflags, pa;
- 	unsigned long old_pte, new_pte;
-@@ -54,6 +55,7 @@ int __hash_page_4K(unsigned long ea, unsigned long access, unsigned long vsid,
- 	 * need to add in 0x1 if it's a read-only user page
- 	 */
- 	rflags = htab_convert_pte_flags(new_pte);
-+	rpte = __real_pte(__pte(old_pte), ptep);
++	ret = arch_max_pkey() -
++		ffz((u32)mm_pkey_allocation_map(mm))
++		- 1;
++	mm_set_pkey_allocated(mm, ret);
++	return ret;
++}
++
++static inline int mm_pkey_free(struct mm_struct *mm, int pkey)
++{
++	if (!mm_pkey_is_allocated(mm, pkey))
++		return -EINVAL;
++
++	mm_set_pkey_free(mm, pkey);
++
++	return 0;
++}
++
++/*
++ * Try to dedicate one of the protection keys to be used as an
++ * execute-only protection key.
++ */
++extern int __execute_only_pkey(struct mm_struct *mm);
++static inline int execute_only_pkey(struct mm_struct *mm)
++{
++	return __execute_only_pkey(mm);
++}
++
++extern int __arch_override_mprotect_pkey(struct vm_area_struct *vma,
++		int prot, int pkey);
++static inline int arch_override_mprotect_pkey(struct vm_area_struct *vma,
++		int prot, int pkey)
++{
++	return __arch_override_mprotect_pkey(vma, prot, pkey);
++}
++
++extern int __arch_set_user_pkey_access(struct task_struct *tsk, int pkey,
++		unsigned long init_val);
++static inline int arch_set_user_pkey_access(struct task_struct *tsk, int pkey,
++		unsigned long init_val)
++{
++	return __arch_set_user_pkey_access(tsk, pkey, init_val);
++}
++
++static inline pkey_mm_init(struct mm_struct *mm)
++{
++	mm_pkey_allocation_map(mm) = PKEY_INITIAL_ALLOCAION;
++	/* -1 means unallocated or invalid */
++	mm->context.execute_only_pkey = -1;
++}
++
++#endif /*_ASM_PPC64_PKEYS_H */
+diff --git a/arch/powerpc/include/asm/systbl.h b/arch/powerpc/include/asm/systbl.h
+index 1c94708..22dd776 100644
+--- a/arch/powerpc/include/asm/systbl.h
++++ b/arch/powerpc/include/asm/systbl.h
+@@ -388,3 +388,5 @@
+ COMPAT_SYS_SPU(pwritev2)
+ SYSCALL(kexec_file_load)
+ SYSCALL(statx)
++SYSCALL(pkey_alloc)
++SYSCALL(pkey_free)
+diff --git a/arch/powerpc/include/asm/unistd.h b/arch/powerpc/include/asm/unistd.h
+index 9ba11db..e0273bc 100644
+--- a/arch/powerpc/include/asm/unistd.h
++++ b/arch/powerpc/include/asm/unistd.h
+@@ -12,13 +12,11 @@
+ #include <uapi/asm/unistd.h>
  
- 	if (cpu_has_feature(CPU_FTR_NOEXECUTE) &&
- 	    !cpu_has_feature(CPU_FTR_COHERENT_ICACHE))
-@@ -64,12 +66,7 @@ int __hash_page_4K(unsigned long ea, unsigned long access, unsigned long vsid,
- 		/*
- 		 * There MIGHT be an HPTE for this pte
- 		 */
--		hash = hpt_hash(vpn, shift, ssize);
--		if (old_pte & H_PAGE_F_SECOND)
--			hash = ~hash;
--		slot = (hash & htab_hash_mask) * HPTES_PER_GROUP;
--		slot += (old_pte & H_PAGE_F_GIX) >> H_PAGE_F_GIX_SHIFT;
--
-+		slot = get_hidx_slot(vpn, shift, ssize, rpte, 0);
- 		if (mmu_hash_ops.hpte_updatepp(slot, rflags, vpn, MMU_PAGE_4K,
- 					       MMU_PAGE_4K, ssize, flags) == -1)
- 			old_pte &= ~_PAGE_HPTEFLAGS;
-@@ -118,8 +115,7 @@ int __hash_page_4K(unsigned long ea, unsigned long access, unsigned long vsid,
- 			return -1;
- 		}
- 		new_pte = (new_pte & ~_PAGE_HPTEFLAGS) | H_PAGE_HASHPTE;
--		new_pte |= (slot << H_PAGE_F_GIX_SHIFT) &
--			(H_PAGE_F_SECOND | H_PAGE_F_GIX);
-+		new_pte |= set_hidx_slot(ptep, rpte, 0, slot);
- 	}
- 	*ptep = __pte(new_pte & ~H_PAGE_BUSY);
- 	return 0;
-diff --git a/arch/powerpc/mm/hash64_64k.c b/arch/powerpc/mm/hash64_64k.c
-index 1a68cb1..feb90f1 100644
---- a/arch/powerpc/mm/hash64_64k.c
-+++ b/arch/powerpc/mm/hash64_64k.c
-@@ -15,34 +15,13 @@
+ 
+-#define NR_syscalls		384
++#define NR_syscalls		386
+ 
+ #define __NR__exit __NR_exit
+ 
+ #define __IGNORE_pkey_mprotect
+-#define __IGNORE_pkey_alloc
+-#define __IGNORE_pkey_free
+ 
+ #ifndef __ASSEMBLY__
+ 
+diff --git a/arch/powerpc/include/uapi/asm/unistd.h b/arch/powerpc/include/uapi/asm/unistd.h
+index b85f142..7993a07 100644
+--- a/arch/powerpc/include/uapi/asm/unistd.h
++++ b/arch/powerpc/include/uapi/asm/unistd.h
+@@ -394,5 +394,7 @@
+ #define __NR_pwritev2		381
+ #define __NR_kexec_file_load	382
+ #define __NR_statx		383
++#define __NR_pkey_alloc		384
++#define __NR_pkey_free		385
+ 
+ #endif /* _UAPI_ASM_POWERPC_UNISTD_H_ */
+diff --git a/arch/powerpc/mm/Makefile b/arch/powerpc/mm/Makefile
+index 7414034..8cc2ff1 100644
+--- a/arch/powerpc/mm/Makefile
++++ b/arch/powerpc/mm/Makefile
+@@ -45,3 +45,4 @@ obj-$(CONFIG_PPC_COPRO_BASE)	+= copro_fault.o
+ obj-$(CONFIG_SPAPR_TCE_IOMMU)	+= mmu_context_iommu.o
+ obj-$(CONFIG_PPC_PTDUMP)	+= dump_linuxpagetables.o
+ obj-$(CONFIG_PPC_HTDUMP)	+= dump_hashpagetable.o
++obj-$(CONFIG_PPC64_MEMORY_PROTECTION_KEYS)	+= pkeys.o
+diff --git a/arch/powerpc/mm/mmu_context_book3s64.c b/arch/powerpc/mm/mmu_context_book3s64.c
+index c6dca2a..2da9931 100644
+--- a/arch/powerpc/mm/mmu_context_book3s64.c
++++ b/arch/powerpc/mm/mmu_context_book3s64.c
+@@ -16,6 +16,7 @@
+ #include <linux/string.h>
+ #include <linux/types.h>
  #include <linux/mm.h>
- #include <asm/machdep.h>
- #include <asm/mmu.h>
--/*
-- * index from 0 - 15
-- */
--bool __rpte_sub_valid(real_pte_t rpte, unsigned long index)
--{
--	unsigned long g_idx;
--	unsigned long ptev = pte_val(rpte.pte);
++#include <linux/pkeys.h>
+ #include <linux/spinlock.h>
+ #include <linux/idr.h>
+ #include <linux/export.h>
+@@ -120,6 +121,10 @@ static int hash__init_new_context(struct mm_struct *mm)
  
--	g_idx = (ptev & H_PAGE_COMBO_VALID) >> H_PAGE_F_GIX_SHIFT;
--	index = index >> 2;
--	if (g_idx & (0x1 << index))
--		return true;
--	else
--		return false;
--}
- /*
-  * index from 0 - 15
-  */
--static unsigned long mark_subptegroup_valid(unsigned long ptev, unsigned long index)
-+bool __rpte_sub_valid(real_pte_t rpte, unsigned long index)
- {
--	unsigned long g_idx;
--
--	if (!(ptev & H_PAGE_COMBO))
--		return ptev;
--	index = index >> 2;
--	g_idx = 0x1 << index;
--
--	return ptev | (g_idx << H_PAGE_F_GIX_SHIFT);
-+	return !(HPTE_SOFT_INVALID(rpte.hidx >> (index << 2)));
+ 	subpage_prot_init_new_context(mm);
+ 
++#ifdef CONFIG_PPC64_MEMORY_PROTECTION_KEYS
++	pkey_mm_init(mm);
++#endif /* CONFIG_PPC64_MEMORY_PROTECTION_KEYS */
++
+ 	return index;
  }
  
- int __hash_page_4K(unsigned long ea, unsigned long access, unsigned long vsid,
-@@ -50,10 +29,9 @@ int __hash_page_4K(unsigned long ea, unsigned long access, unsigned long vsid,
- 		   int ssize, int subpg_prot)
- {
- 	real_pte_t rpte;
--	unsigned long *hidxp;
- 	unsigned long hpte_group;
- 	unsigned int subpg_index;
--	unsigned long rflags, pa, hidx;
-+	unsigned long rflags, pa;
- 	unsigned long old_pte, new_pte, subpg_pte;
- 	unsigned long vpn, hash, slot;
- 	unsigned long shift = mmu_psize_defs[MMU_PAGE_4K].shift;
-@@ -116,8 +94,9 @@ int __hash_page_4K(unsigned long ea, unsigned long access, unsigned long vsid,
- 		 * On hash insert failure we use old pte value and we don't
- 		 * want slot information there if we have a insert failure.
- 		 */
--		old_pte &= ~(H_PAGE_HASHPTE | H_PAGE_F_GIX | H_PAGE_F_SECOND);
--		new_pte &= ~(H_PAGE_HASHPTE | H_PAGE_F_GIX | H_PAGE_F_SECOND);
-+		old_pte &= ~(H_PAGE_HASHPTE);
-+		new_pte &= ~(H_PAGE_HASHPTE);
-+		rpte.hidx = INIT_HIDX;
- 		goto htab_insert_hpte;
- 	}
- 	/*
-@@ -126,18 +105,12 @@ int __hash_page_4K(unsigned long ea, unsigned long access, unsigned long vsid,
- 	if (__rpte_sub_valid(rpte, subpg_index)) {
- 		int ret;
- 
--		hash = hpt_hash(vpn, shift, ssize);
--		hidx = __rpte_to_hidx(rpte, subpg_index);
--		if (hidx & _PTEIDX_SECONDARY)
--			hash = ~hash;
--		slot = (hash & htab_hash_mask) * HPTES_PER_GROUP;
--		slot += hidx & _PTEIDX_GROUP_IX;
--
-+		slot = get_hidx_slot(vpn, shift, ssize, rpte, subpg_index);
- 		ret = mmu_hash_ops.hpte_updatepp(slot, rflags, vpn,
- 						 MMU_PAGE_4K, MMU_PAGE_4K,
- 						 ssize, flags);
- 		/*
--		 *if we failed because typically the HPTE wasn't really here
-+		 * if we failed because typically the HPTE wasn't really here
- 		 * we try an insertion.
- 		 */
- 		if (ret == -1)
-@@ -177,8 +150,14 @@ int __hash_page_4K(unsigned long ea, unsigned long access, unsigned long vsid,
- 						rflags, HPTE_V_SECONDARY,
- 						MMU_PAGE_4K, MMU_PAGE_4K,
- 						ssize);
--		if (slot == -1) {
--			if (mftb() & 0x1)
-+		if (unlikely(HPTE_SOFT_INVALID(slot)))
-+			mmu_hash_ops.hpte_invalidate(slot, vpn,
-+				MMU_PAGE_4K, MMU_PAGE_4K,
-+				ssize, (flags & HPTE_LOCAL_UPDATE));
+diff --git a/arch/powerpc/mm/pkeys.c b/arch/powerpc/mm/pkeys.c
+new file mode 100644
+index 0000000..b97366e
+--- /dev/null
++++ b/arch/powerpc/mm/pkeys.c
+@@ -0,0 +1,88 @@
++/*
++ * PowerPC Memory Protection Keys management
++ * Copyright (c) 2015, Intel Corporation.
++ * Copyright (c) 2017, IBM Corporation.
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms and conditions of the GNU General Public License,
++ * version 2, as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
++ * more details.
++ */
++#include <linux/pkeys.h>                /* PKEY_*                       */
++#include <uapi/asm-generic/mman-common.h>
 +
-+		if (unlikely(slot == -1 || HPTE_SOFT_INVALID(slot))) {
-+			if (HPTE_SOFT_INVALID(slot) || (mftb() & 0x1))
 +
- 				hpte_group = ((hash & htab_hash_mask) *
- 					      HPTES_PER_GROUP) & ~0x7UL;
- 			mmu_hash_ops.hpte_remove(hpte_group);
-@@ -204,11 +183,9 @@ int __hash_page_4K(unsigned long ea, unsigned long access, unsigned long vsid,
- 	 * Since we have H_PAGE_BUSY set on ptep, we can be sure
- 	 * nobody is undating hidx.
- 	 */
--	hidxp = (unsigned long *)(ptep + PTRS_PER_PTE);
--	rpte.hidx &= ~(0xfUL << (subpg_index << 2));
--	*hidxp = rpte.hidx  | (slot << (subpg_index << 2));
--	new_pte = mark_subptegroup_valid(new_pte, subpg_index);
--	new_pte |=  H_PAGE_HASHPTE;
-+	new_pte |= set_hidx_slot(ptep, rpte, subpg_index, slot);
-+	new_pte |= H_PAGE_HASHPTE;
-+
- 	/*
- 	 * check __real_pte for details on matching smp_rmb()
- 	 */
-@@ -221,6 +198,7 @@ int __hash_page_64K(unsigned long ea, unsigned long access,
- 		    unsigned long vsid, pte_t *ptep, unsigned long trap,
- 		    unsigned long flags, int ssize)
- {
-+	real_pte_t rpte;
- 	unsigned long hpte_group;
- 	unsigned long rflags, pa;
- 	unsigned long old_pte, new_pte;
-@@ -257,6 +235,7 @@ int __hash_page_64K(unsigned long ea, unsigned long access,
- 	} while (!pte_xchg(ptep, __pte(old_pte), __pte(new_pte)));
- 
- 	rflags = htab_convert_pte_flags(new_pte);
-+	rpte = __real_pte(__pte(old_pte), ptep);
- 
- 	if (cpu_has_feature(CPU_FTR_NOEXECUTE) &&
- 	    !cpu_has_feature(CPU_FTR_COHERENT_ICACHE))
-@@ -267,12 +246,7 @@ int __hash_page_64K(unsigned long ea, unsigned long access,
- 		/*
- 		 * There MIGHT be an HPTE for this pte
- 		 */
--		hash = hpt_hash(vpn, shift, ssize);
--		if (old_pte & H_PAGE_F_SECOND)
--			hash = ~hash;
--		slot = (hash & htab_hash_mask) * HPTES_PER_GROUP;
--		slot += (old_pte & H_PAGE_F_GIX) >> H_PAGE_F_GIX_SHIFT;
--
-+		slot = get_hidx_slot(vpn, shift, ssize, rpte, 0);
- 		if (mmu_hash_ops.hpte_updatepp(slot, rflags, vpn, MMU_PAGE_64K,
- 					       MMU_PAGE_64K, ssize,
- 					       flags) == -1)
-@@ -322,9 +296,8 @@ int __hash_page_64K(unsigned long ea, unsigned long access,
- 					   MMU_PAGE_64K, MMU_PAGE_64K, old_pte);
- 			return -1;
- 		}
-+		set_hidx_slot(ptep, rpte, 0, slot);
- 		new_pte = (new_pte & ~_PAGE_HPTEFLAGS) | H_PAGE_HASHPTE;
--		new_pte |= (slot << H_PAGE_F_GIX_SHIFT) &
--			(H_PAGE_F_SECOND | H_PAGE_F_GIX);
- 	}
- 	*ptep = __pte(new_pte & ~H_PAGE_BUSY);
- 	return 0;
-diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
-index f2095ce..b405657 100644
---- a/arch/powerpc/mm/hash_utils_64.c
-+++ b/arch/powerpc/mm/hash_utils_64.c
-@@ -975,8 +975,9 @@ void __init hash__early_init_devtree(void)
- 
- void __init hash__early_init_mmu(void)
- {
-+#ifndef CONFIG_PPC_64K_PAGES
- 	/*
--	 * We have code in __hash_page_64K() and elsewhere, which assumes it can
-+	 * We have code in __hash_page_4K() and elsewhere, which assumes it can
- 	 * do the following:
- 	 *   new_pte |= (slot << H_PAGE_F_GIX_SHIFT) & (H_PAGE_F_SECOND | H_PAGE_F_GIX);
- 	 *
-@@ -987,6 +988,7 @@ void __init hash__early_init_mmu(void)
- 	 * with a BUILD_BUG_ON().
- 	 */
- 	BUILD_BUG_ON(H_PAGE_F_SECOND != (1ul  << (H_PAGE_F_GIX_SHIFT + 3)));
-+#endif /* CONFIG_PPC_64K_PAGES */
- 
- 	htab_init_page_sizes();
- 
-@@ -1589,6 +1591,40 @@ static inline void tm_flush_hash_page(int local)
- }
- #endif
- 
-+#ifdef CONFIG_PPC_64K_PAGES
-+unsigned long set_hidx_slot(pte_t *ptep, real_pte_t rpte,
-+		unsigned int subpg_index, unsigned long slot)
++/*
++ * set the access right in AMR IAMR and UAMOR register
++ * for @pkey to that specified in @init_val.
++ */
++int __arch_set_user_pkey_access(struct task_struct *tsk, int pkey,
++		unsigned long init_val)
 +{
-+	unsigned long *hidxp = (unsigned long *)(ptep + PTRS_PER_PTE);
++	u64 old_amr, old_uamor, old_iamr;
++	int pkey_shift = (arch_max_pkey()-pkey-1) * AMR_BITS_PER_PKEY;
++	u64 new_amr_bits = 0x0ul;
++	u64 new_iamr_bits = 0x0ul;
++	u64 new_uamor_bits = 0x3ul;
 +
-+	rpte.hidx &= ~(0xfUL << (subpg_index << 2));
-+	*hidxp = rpte.hidx  | (slot << (subpg_index << 2));
-+	return 0x0UL;
-+}
-+#else /* CONFIG_PPC_64K_PAGES */
-+unsigned long set_hidx_slot(pte_t *ptep, real_pte_t rpte,
-+		unsigned int subpg_index, unsigned long slot)
-+{
-+	return (slot << H_PAGE_F_GIX_SHIFT) &
-+			(H_PAGE_F_SECOND | H_PAGE_F_GIX);
-+}
-+#endif /* CONFIG_PPC_64K_PAGES */
++	/* Set the bits we need in AMR:  */
++	if (init_val & PKEY_DISABLE_ACCESS)
++		new_amr_bits |= AMR_AD_BIT;
++	if (init_val & PKEY_DISABLE_WRITE)
++		new_amr_bits |= AMR_WD_BIT;
 +
-+unsigned long get_hidx_slot(unsigned long vpn, unsigned long shift,
-+			int ssize, real_pte_t rpte, unsigned int subpg_index)
-+{
-+	unsigned long hash, slot, hidx;
++	/*
++	 * By default execute is disabled.
++	 * To enable execute, PKEY_ENABLE_EXECUTE
++	 * needs to be specified.
++	 */
++	if ((init_val & PKEY_DISABLE_EXECUTE))
++		new_iamr_bits |= IAMR_EX_BIT;
 +
-+	hash = hpt_hash(vpn, shift, ssize);
-+	hidx = __rpte_to_hidx(rpte, subpg_index);
-+	if (hidx & _PTEIDX_SECONDARY)
-+		hash = ~hash;
-+	slot = (hash & htab_hash_mask) * HPTES_PER_GROUP;
-+	slot += hidx & _PTEIDX_GROUP_IX;
-+	return slot;
++	/* Shift the bits in to the correct place in AMR for pkey: */
++	new_amr_bits	<<= pkey_shift;
++	new_iamr_bits	<<= pkey_shift;
++	new_uamor_bits	<<= pkey_shift;
++
++	/* Get old AMR and mask off any old bits in place: */
++	old_amr	= read_amr();
++	old_amr	&= ~((u64)(AMR_AD_BIT|AMR_WD_BIT) << pkey_shift);
++
++	old_iamr = read_iamr();
++	old_iamr &= ~(0x3ul << pkey_shift);
++
++	old_uamor = read_uamor();
++	old_uamor &= ~(0x3ul << pkey_shift);
++
++	/* Write old part along with new part: */
++	write_amr(old_amr | new_amr_bits);
++	write_iamr(old_iamr | new_iamr_bits);
++	write_uamor(old_uamor | new_uamor_bits);
++
++	return 0;
 +}
 +
++int __execute_only_pkey(struct mm_struct *mm)
++{
++	return -1;
++}
 +
- /* WARNING: This is called from hash_low_64.S, if you change this prototype,
-  *          do not forget to update the assembly call site !
-  */
-diff --git a/arch/powerpc/mm/hugetlbpage-hash64.c b/arch/powerpc/mm/hugetlbpage-hash64.c
-index a84bb44..25a50eb 100644
---- a/arch/powerpc/mm/hugetlbpage-hash64.c
-+++ b/arch/powerpc/mm/hugetlbpage-hash64.c
-@@ -14,7 +14,7 @@
- #include <asm/cacheflush.h>
- #include <asm/machdep.h>
++/*
++ * This should only be called for *plain* mprotect calls.
++ */
++int __arch_override_mprotect_pkey(struct vm_area_struct *vma, int prot,
++		int pkey)
++{
++	/*
++	 * Is this an mprotect_pkey() call?  If so, never
++	 * override the value that came from the user.
++	 */
++	if (pkey != -1)
++		return pkey;
++
++	return 0;
++}
+diff --git a/include/linux/mm.h b/include/linux/mm.h
+index 7cb17c6..34ddac7 100644
+--- a/include/linux/mm.h
++++ b/include/linux/mm.h
+@@ -204,26 +204,35 @@ extern int overcommit_kbytes_handler(struct ctl_table *, int, void __user *,
+ #define VM_MERGEABLE	0x80000000	/* KSM may merge identical pages */
  
--extern long hpte_insert_repeating(unsigned long hash, unsigned long vpn,
-+long hpte_insert_repeating(unsigned long hash, unsigned long vpn,
- 				  unsigned long pa, unsigned long rlags,
- 				  unsigned long vflags, int psize, int ssize);
+ #ifdef CONFIG_ARCH_USES_HIGH_VMA_FLAGS
+-#define VM_HIGH_ARCH_BIT_0	32	/* bit only usable on 64-bit architectures */
+-#define VM_HIGH_ARCH_BIT_1	33	/* bit only usable on 64-bit architectures */
+-#define VM_HIGH_ARCH_BIT_2	34	/* bit only usable on 64-bit architectures */
+-#define VM_HIGH_ARCH_BIT_3	35	/* bit only usable on 64-bit architectures */
++#define VM_HIGH_ARCH_BIT_0	32	/* bit only usable on 64-bit arch */
++#define VM_HIGH_ARCH_BIT_1	33	/* bit only usable on 64-bit arch */
++#define VM_HIGH_ARCH_BIT_2	34	/* bit only usable on 64-bit arch */
++#define VM_HIGH_ARCH_BIT_3	35	/* bit only usable on 64-bit arch */
++#define VM_HIGH_ARCH_BIT_4	36	/* bit only usable on 64-bit arch */
+ #define VM_HIGH_ARCH_0	BIT(VM_HIGH_ARCH_BIT_0)
+ #define VM_HIGH_ARCH_1	BIT(VM_HIGH_ARCH_BIT_1)
+ #define VM_HIGH_ARCH_2	BIT(VM_HIGH_ARCH_BIT_2)
+ #define VM_HIGH_ARCH_3	BIT(VM_HIGH_ARCH_BIT_3)
++#define VM_HIGH_ARCH_4	BIT(VM_HIGH_ARCH_BIT_4)
+ #endif /* CONFIG_ARCH_USES_HIGH_VMA_FLAGS */
  
-@@ -22,6 +22,7 @@ int __hash_page_huge(unsigned long ea, unsigned long access, unsigned long vsid,
- 		     pte_t *ptep, unsigned long trap, unsigned long flags,
- 		     int ssize, unsigned int shift, unsigned int mmu_psize)
- {
-+	real_pte_t rpte;
- 	unsigned long vpn;
- 	unsigned long old_pte, new_pte;
- 	unsigned long rflags, pa, sz;
-@@ -61,6 +62,7 @@ int __hash_page_huge(unsigned long ea, unsigned long access, unsigned long vsid,
- 	} while(!pte_xchg(ptep, __pte(old_pte), __pte(new_pte)));
- 
- 	rflags = htab_convert_pte_flags(new_pte);
-+	rpte = __real_pte(__pte(old_pte), ptep);
- 
- 	sz = ((1UL) << shift);
- 	if (!cpu_has_feature(CPU_FTR_COHERENT_ICACHE))
-@@ -71,14 +73,9 @@ int __hash_page_huge(unsigned long ea, unsigned long access, unsigned long vsid,
- 	/* Check if pte already has an hpte (case 2) */
- 	if (unlikely(old_pte & H_PAGE_HASHPTE)) {
- 		/* There MIGHT be an HPTE for this pte */
--		unsigned long hash, slot;
+ #if defined(CONFIG_X86)
+ # define VM_PAT		VM_ARCH_1	/* PAT reserves whole VMA at once (x86) */
+-#if defined (CONFIG_X86_INTEL_MEMORY_PROTECTION_KEYS)
+-# define VM_PKEY_SHIFT	VM_HIGH_ARCH_BIT_0
+-# define VM_PKEY_BIT0	VM_HIGH_ARCH_0	/* A protection key is a 4-bit value */
+-# define VM_PKEY_BIT1	VM_HIGH_ARCH_1
+-# define VM_PKEY_BIT2	VM_HIGH_ARCH_2
+-# define VM_PKEY_BIT3	VM_HIGH_ARCH_3
+-#endif
++#if defined(CONFIG_X86_INTEL_MEMORY_PROTECTION_KEYS) \
++	|| defined(CONFIG_PPC64_MEMORY_PROTECTION_KEYS)
++#define VM_PKEY_SHIFT	VM_HIGH_ARCH_BIT_0
++#define VM_PKEY_BIT0	VM_HIGH_ARCH_0	/* A protection key is a 5-bit value */
++#define VM_PKEY_BIT1	VM_HIGH_ARCH_1
++#define VM_PKEY_BIT2	VM_HIGH_ARCH_2
++#define VM_PKEY_BIT3	VM_HIGH_ARCH_3
++#endif /* CONFIG_PPC64_MEMORY_PROTECTION_KEYS */
+ #elif defined(CONFIG_PPC)
++#define VM_PKEY_BIT0	VM_HIGH_ARCH_0	/* A protection key is a 5-bit value */
++#define VM_PKEY_BIT1	VM_HIGH_ARCH_1
++#define VM_PKEY_BIT2	VM_HIGH_ARCH_2
++#define VM_PKEY_BIT3	VM_HIGH_ARCH_3
++#define VM_PKEY_BIT4	VM_HIGH_ARCH_4  /* intel does not use this bit */
++					/* but reserved for future expansion */
+ # define VM_SAO		VM_ARCH_1	/* Strong Access Ordering (powerpc) */
+ #elif defined(CONFIG_PARISC)
+ # define VM_GROWSUP	VM_ARCH_1
+diff --git a/include/uapi/asm-generic/mman-common.h b/include/uapi/asm-generic/mman-common.h
+index 8c27db0..b13ecc6 100644
+--- a/include/uapi/asm-generic/mman-common.h
++++ b/include/uapi/asm-generic/mman-common.h
+@@ -76,5 +76,5 @@
+ #define PKEY_DISABLE_WRITE	0x2
+ #define PKEY_ACCESS_MASK	(PKEY_DISABLE_ACCESS |\
+ 				 PKEY_DISABLE_WRITE)
 -
--		hash = hpt_hash(vpn, shift, ssize);
--		if (old_pte & H_PAGE_F_SECOND)
--			hash = ~hash;
--		slot = (hash & htab_hash_mask) * HPTES_PER_GROUP;
--		slot += (old_pte & H_PAGE_F_GIX) >> H_PAGE_F_GIX_SHIFT;
-+		unsigned long slot;
- 
-+		slot = get_hidx_slot(vpn, shift, ssize, rpte, 0);
- 		if (mmu_hash_ops.hpte_updatepp(slot, rflags, vpn, mmu_psize,
- 					       mmu_psize, ssize, flags) == -1)
- 			old_pte &= ~_PAGE_HPTEFLAGS;
-@@ -106,8 +103,7 @@ int __hash_page_huge(unsigned long ea, unsigned long access, unsigned long vsid,
- 			return -1;
- 		}
- 
--		new_pte |= (slot << H_PAGE_F_GIX_SHIFT) &
--			(H_PAGE_F_SECOND | H_PAGE_F_GIX);
-+		new_pte |= set_hidx_slot(ptep, rpte, 0, slot);
- 	}
- 
- 	/*
++#define PKEY_DISABLE_EXECUTE	0x4
+ #endif /* __ASM_GENERIC_MMAN_COMMON_H */
 -- 
 1.8.3.1
