@@ -1,28 +1,19 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <gregkh@linuxfoundation.org>
+Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
+ [140.211.169.12])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3whsxP5VNKzDqNR
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Jun 2017 23:30:01 +1000 (AEST)
-Subject: Re: [PATCH 2/5] powerpc/mm: split store_updates_sp() in two parts in
- do_page_fault()
-To: Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Scott Wood <oss@buserror.net>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-References: <cover.1492606297.git.christophe.leroy@c-s.fr>
- <58f17a04cee5726467ef4e283dfbd7da68fa6ab4.1492606298.git.christophe.leroy@c-s.fr>
- <871sr23flh.fsf@concordia.ellerman.id.au>
- <6daf8f4e-9b39-d585-2c64-9b0348fef123@c-s.fr>
- <87shjer9vx.fsf@concordia.ellerman.id.au>
- <97200860-c6da-9d4d-fb53-2aa9c9ca655f@c-s.fr>
- <87r2yxpeic.fsf@concordia.ellerman.id.au>
-From: Christophe LEROY <christophe.leroy@c-s.fr>
-Message-ID: <7f84df86-37b0-a7a5-9294-92adbacf8f49@c-s.fr>
-Date: Tue, 6 Jun 2017 15:29:57 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3whszv65yQzDqLK
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Jun 2017 23:32:11 +1000 (AEST)
+Date: Tue, 6 Jun 2017 15:32:03 +0200
+From: Greg KH <gregkh@linuxfoundation.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] driver core: remove CLASS_ATTR usage
+Message-ID: <20170606133203.GA7518@kroah.com>
 MIME-Version: 1.0
-In-Reply-To: <87r2yxpeic.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,102 +23,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 
+There was only 2 remaining users of CLASS_ATTR() so let's finally get
+rid of them and force everyone to use the correct RW/RO/WO versions
+instead.
 
-Le 06/06/2017 à 13:00, Michael Ellerman a écrit :
-> christophe leroy <christophe.leroy@c-s.fr> writes:
-> 
->> Le 05/06/2017 à 12:45, Michael Ellerman a écrit :
->>> Christophe LEROY <christophe.leroy@c-s.fr> writes:
->>>
->>>> Le 02/06/2017 à 11:26, Michael Ellerman a écrit :
->>>>> Christophe Leroy <christophe.leroy@c-s.fr> writes:
->>>>>
->>>>>> Only the get_user() in store_updates_sp() has to be done outside
->>>>>> the mm semaphore. All the comparison can be done within the semaphore,
->>>>>> so only when really needed.
->>>>>>
->>>>>> As we got a DSI exception, the address pointed by regs->nip is
->>>>>> obviously valid, otherwise we would have had a instruction exception.
->>>>>> So __get_user() can be used instead of get_user()
->>>>>
->>>>> I don't think that part is true.
->>>>>
->>>>> You took a DSI so there *was* an instruction at NIP, but since then it
->>>>> may have been unmapped by another thread.
->>>>>
->>>>> So I don't think you can assume the get_user() will succeed.
->>>>
->>>> The difference between get_user() and __get_user() is that get_user()
->>>> performs an access_ok() in addition.
->>>>
->>>> Doesn't access_ok() only checks whether addr is below TASK_SIZE to
->>>> ensure it is a valid user address ?
->>>
->>> Yeah more or less, via some gross macros.
->>>
->>> I was actually not that worried about the switch from get_user() to
->>> __get_user(), but rather that you removed the check of the return value.
->>> ie.
->>>
->>> -	if (get_user(inst, (unsigned int __user *)regs->nip))
->>> -		return 0;
->>>
->>> Became:
->>>
->>> 	if (is_write && user_mode(regs))
->>> -		store_update_sp = store_updates_sp(regs);
->>> +		__get_user(inst, (unsigned int __user *)regs->nip);
->>>
->>>
->>> I think dropping the access_ok() probably is alright, because the NIP
->>> must (should!) have been in userspace, though as Ben says it's always
->>> good to be paranoid.
->>>
->>> But ignoring that the address can fault at all is wrong AFAICS.
->>
->> I see what you mean now.
->>
->> Indeed,
->>
->> -	unsigned int inst;
->>
->> Became
->>
->> +	unsigned int inst = 0;
->>
->> Since __get_user() doesn't modify 'inst' in case of error, 'inst'
->> remains 0, and store_updates_sp(0) return false. That was the idea behind.
-> 
-> Ugh. OK, my bad. Though it is a little subtle.
-> 
-> How about:
-> 
-> @@ -286,10 +290,13 @@ int do_page_fault(struct pt_regs *regs, unsigned long address,
->          /*
->           * We want to do this outside mmap_sem, because reading code around nip
->           * can result in fault, which will cause a deadlock when called with
-> -        * mmap_sem held
-> +        * mmap_sem held. We don't need to check if get_user() fails, if it does
-> +        * it won't modify inst, and an inst of 0 will return false from
-> +        * store_updates_sp().
->           */
-> +       inst = 0;
->          if (is_write && is_user)
-> -               store_update_sp = store_updates_sp(regs);
-> +               get_user(inst, (unsigned int __user *)regs->nip);
->   
->          if (is_user)
->                  flags |= FAULT_FLAG_USER;
-> 
-> 
-> Then this one can go in.
-> 
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+---
 
-I just submitted v4 version of the patch "powerpc/mm: Only read faulting 
-instruction when necessary in do_page_fault()", skipping this step and 
-going directly to the final solution.
-The new approach has been to keep everything inside store_updates_sp() 
-function and just move the call.
+PPC maintainers, can I take this in my driver core tree?  I'm doing some
+cleanups of device.h and this was one of the simpler ones at the moment.
 
-Christophe
+thanks,
+
+greg k-h
+
+ arch/powerpc/platforms/pseries/dlpar.c    |    2 +-
+ arch/powerpc/platforms/pseries/mobility.c |    7 ++++---
+ include/linux/device.h                    |    2 --
+ 3 files changed, 5 insertions(+), 6 deletions(-)
+
+--- a/arch/powerpc/platforms/pseries/dlpar.c
++++ b/arch/powerpc/platforms/pseries/dlpar.c
+@@ -588,7 +588,7 @@ static ssize_t dlpar_show(struct class *
+ 	return sprintf(buf, "%s\n", "memory,cpu");
+ }
+ 
+-static CLASS_ATTR(dlpar, S_IWUSR | S_IRUSR, dlpar_show, dlpar_store);
++static CLASS_ATTR_RW(dlpar);
+ 
+ static int __init pseries_dlpar_init(void)
+ {
+--- a/arch/powerpc/platforms/pseries/mobility.c
++++ b/arch/powerpc/platforms/pseries/mobility.c
+@@ -349,8 +349,9 @@ void post_mobility_fixup(void)
+ 	return;
+ }
+ 
+-static ssize_t migrate_store(struct class *class, struct class_attribute *attr,
+-			     const char *buf, size_t count)
++static ssize_t migration_store(struct class *class,
++			       struct class_attribute *attr, const char *buf,
++			       size_t count)
+ {
+ 	u64 streamid;
+ 	int rc;
+@@ -380,7 +381,7 @@ static ssize_t migrate_store(struct clas
+  */
+ #define MIGRATION_API_VERSION	1
+ 
+-static CLASS_ATTR(migration, S_IWUSR, NULL, migrate_store);
++static CLASS_ATTR_WO(migration);
+ static CLASS_ATTR_STRING(api_version, S_IRUGO, __stringify(MIGRATION_API_VERSION));
+ 
+ static int __init mobility_sysfs_init(void)
+--- a/include/linux/device.h
++++ b/include/linux/device.h
+@@ -465,8 +465,6 @@ struct class_attribute {
+ 			const char *buf, size_t count);
+ };
+ 
+-#define CLASS_ATTR(_name, _mode, _show, _store) \
+-	struct class_attribute class_attr_##_name = __ATTR(_name, _mode, _show, _store)
+ #define CLASS_ATTR_RW(_name) \
+ 	struct class_attribute class_attr_##_name = __ATTR_RW(_name)
+ #define CLASS_ATTR_RO(_name) \
