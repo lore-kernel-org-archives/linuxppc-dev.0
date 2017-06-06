@@ -1,30 +1,27 @@
-Return-Path: <srs0=ydrv=5l=gmail.com=npiggin@ozlabs.org>
+Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3whpC33Py0zDqLy
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Jun 2017 20:41:35 +1000 (AEST)
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3whpC32zT0z8t7F
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Jun 2017 20:41:35 +1000 (AEST)
-Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
- [IPv6:2607:f8b0:400e:c05::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3whpC26Lbfz9s0g
- for <linuxppc-dev@ozlabs.org>; Tue,  6 Jun 2017 20:41:34 +1000 (AEST)
-Received: by mail-pg0-x243.google.com with SMTP id v14so9108143pgn.1
- for <linuxppc-dev@ozlabs.org>; Tue, 06 Jun 2017 03:41:34 -0700 (PDT)
-Date: Tue, 6 Jun 2017 20:41:12 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH v2] powerpc/numa: Fix percpu allocations to be NUMA aware
-Message-ID: <20170606204112.300af2f1@roar.ozlabs.ibm.com>
-In-Reply-To: <1496744637-24585-1-git-send-email-mpe@ellerman.id.au>
-References: <1496744637-24585-1-git-send-email-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3whpct386dzDqMH
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Jun 2017 21:00:30 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: christophe leroy <christophe.leroy@c-s.fr>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Scott Wood <oss@buserror.net>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 2/5] powerpc/mm: split store_updates_sp() in two parts in
+ do_page_fault()
+In-Reply-To: <97200860-c6da-9d4d-fb53-2aa9c9ca655f@c-s.fr>
+References: <cover.1492606297.git.christophe.leroy@c-s.fr>
+ <58f17a04cee5726467ef4e283dfbd7da68fa6ab4.1492606298.git.christophe.leroy@c-s.fr>
+ <871sr23flh.fsf@concordia.ellerman.id.au>
+ <6daf8f4e-9b39-d585-2c64-9b0348fef123@c-s.fr>
+ <87shjer9vx.fsf@concordia.ellerman.id.au>
+ <97200860-c6da-9d4d-fb53-2aa9c9ca655f@c-s.fr>
+Date: Tue, 06 Jun 2017 21:00:27 +1000
+Message-ID: <87r2yxpeic.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,53 +31,95 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue,  6 Jun 2017 20:23:57 +1000
-Michael Ellerman <mpe@ellerman.id.au> wrote:
+christophe leroy <christophe.leroy@c-s.fr> writes:
 
-> In commit 8c272261194d ("powerpc/numa: Enable USE_PERCPU_NUMA_NODE_ID"), we
-> switched to the generic implementation of cpu_to_node(), which uses a percpu
-> variable to hold the NUMA node for each CPU.
-> 
-> Unfortunately we neglected to notice that we use cpu_to_node() in the allocation
-> of our percpu areas, leading to a chicken and egg problem. In practice what
-> happens is when we are setting up the percpu areas, cpu_to_node() reports that
-> all CPUs are on node 0, so we allocate all percpu areas on node 0.
-> 
-> This is visible in the dmesg output, as all pcpu allocs being in group 0:
-> 
->   pcpu-alloc: [0] 00 01 02 03 [0] 04 05 06 07
->   pcpu-alloc: [0] 08 09 10 11 [0] 12 13 14 15
->   pcpu-alloc: [0] 16 17 18 19 [0] 20 21 22 23
->   pcpu-alloc: [0] 24 25 26 27 [0] 28 29 30 31
->   pcpu-alloc: [0] 32 33 34 35 [0] 36 37 38 39
->   pcpu-alloc: [0] 40 41 42 43 [0] 44 45 46 47
-> 
-> To fix it we need an early_cpu_to_node() which can run prior to percpu being
-> setup. We already have the numa_cpu_lookup_table we can use, so just plumb it
-> in. With the patch dmesg output shows two groups, 0 and 1:
-> 
->   pcpu-alloc: [0] 00 01 02 03 [0] 04 05 06 07
->   pcpu-alloc: [0] 08 09 10 11 [0] 12 13 14 15
->   pcpu-alloc: [0] 16 17 18 19 [0] 20 21 22 23
->   pcpu-alloc: [1] 24 25 26 27 [1] 28 29 30 31
->   pcpu-alloc: [1] 32 33 34 35 [1] 36 37 38 39
->   pcpu-alloc: [1] 40 41 42 43 [1] 44 45 46 47
-> 
-> We can also check the data_offset in the paca of various CPUs, with the fix we
-> see:
-> 
->   CPU 0:  data_offset = 0x0ffe8b0000
->   CPU 24: data_offset = 0x1ffe5b0000
-> 
-> And we can see from dmesg that CPU 24 has an allocation on node 1:
-> 
->   node   0: [mem 0x0000000000000000-0x0000000fffffffff]
->   node   1: [mem 0x0000001000000000-0x0000001fffffffff]
-> 
-> Cc: stable@vger.kernel.org # v3.16+
-> Fixes: 8c272261194d ("powerpc/numa: Enable USE_PERCPU_NUMA_NODE_ID")
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> Le 05/06/2017 =C3=A0 12:45, Michael Ellerman a =C3=A9crit :
+>> Christophe LEROY <christophe.leroy@c-s.fr> writes:
+>>
+>>> Le 02/06/2017 =C3=A0 11:26, Michael Ellerman a =C3=A9crit :
+>>>> Christophe Leroy <christophe.leroy@c-s.fr> writes:
+>>>>
+>>>>> Only the get_user() in store_updates_sp() has to be done outside
+>>>>> the mm semaphore. All the comparison can be done within the semaphore,
+>>>>> so only when really needed.
+>>>>>
+>>>>> As we got a DSI exception, the address pointed by regs->nip is
+>>>>> obviously valid, otherwise we would have had a instruction exception.
+>>>>> So __get_user() can be used instead of get_user()
+>>>>
+>>>> I don't think that part is true.
+>>>>
+>>>> You took a DSI so there *was* an instruction at NIP, but since then it
+>>>> may have been unmapped by another thread.
+>>>>
+>>>> So I don't think you can assume the get_user() will succeed.
+>>>
+>>> The difference between get_user() and __get_user() is that get_user()
+>>> performs an access_ok() in addition.
+>>>
+>>> Doesn't access_ok() only checks whether addr is below TASK_SIZE to
+>>> ensure it is a valid user address ?
+>>
+>> Yeah more or less, via some gross macros.
+>>
+>> I was actually not that worried about the switch from get_user() to
+>> __get_user(), but rather that you removed the check of the return value.
+>> ie.
+>>
+>> -	if (get_user(inst, (unsigned int __user *)regs->nip))
+>> -		return 0;
+>>
+>> Became:
+>>
+>> 	if (is_write && user_mode(regs))
+>> -		store_update_sp =3D store_updates_sp(regs);
+>> +		__get_user(inst, (unsigned int __user *)regs->nip);
+>>
+>>
+>> I think dropping the access_ok() probably is alright, because the NIP
+>> must (should!) have been in userspace, though as Ben says it's always
+>> good to be paranoid.
+>>
+>> But ignoring that the address can fault at all is wrong AFAICS.
+>
+> I see what you mean now.
+>
+> Indeed,
+>
+> -	unsigned int inst;
+>
+> Became
+>
+> +	unsigned int inst =3D 0;
+>
+> Since __get_user() doesn't modify 'inst' in case of error, 'inst'=20
+> remains 0, and store_updates_sp(0) return false. That was the idea behind.
 
-Looks good.
+Ugh. OK, my bad. Though it is a little subtle.
 
-Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
+How about:
+
+@@ -286,10 +290,13 @@ int do_page_fault(struct pt_regs *regs, unsigned long=
+ address,
+        /*
+         * We want to do this outside mmap_sem, because reading code around=
+ nip
+         * can result in fault, which will cause a deadlock when called with
+-        * mmap_sem held
++        * mmap_sem held. We don't need to check if get_user() fails, if it=
+ does
++        * it won't modify inst, and an inst of 0 will return false from
++        * store_updates_sp().
+         */
++       inst =3D 0;
+        if (is_write && is_user)
+-               store_update_sp =3D store_updates_sp(regs);
++               get_user(inst, (unsigned int __user *)regs->nip);
+=20
+        if (is_user)
+                flags |=3D FAULT_FLAG_USER;
+
+
+Then this one can go in.
+
+cheers
