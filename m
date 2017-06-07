@@ -1,25 +1,20 @@
-Return-Path: <gregkh@linuxfoundation.org>
-Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
- [140.211.169.12])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wjPdM5ZQ2zDqKm
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Jun 2017 20:17:59 +1000 (AEST)
-Date: Wed, 7 Jun 2017 12:17:51 +0200
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To: linux-kernel@vger.kernel.org
-Cc: Geoff Levand <geoff@infradead.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 08/16] powerpc: ps3: use dev_groups and not dev_attrs for
- bus_type
-Message-ID: <20170607101751.GA25319@kroah.com>
-References: <20170606192221.1617-1-gregkh@linuxfoundation.org>
- <20170606192221.1617-9-gregkh@linuxfoundation.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wjPpW1nm6zDq5b
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Jun 2017 20:25:55 +1000 (AEST)
+Subject: Re: [PATCH v2 1/9] powerpc/lib/code-patching: Enhance code patching
+To: Balbir Singh <bsingharora@gmail.com>
+Cc: paulus@samba.org, kbuild-all@01.org, naveen.n.rao@linux.vnet.ibm.com,
+ labbott@redhat.com, linuxppc-dev@lists.ozlabs.org, rashmica.g@gmail.com
+References: <201706040706.WevfghQQ%fengguang.wu@intel.com>
+From: Christophe LEROY <christophe.leroy@c-s.fr>
+Message-ID: <9c856cc0-4a3d-c59f-5215-63437187a289@c-s.fr>
+Date: Wed, 7 Jun 2017 12:25:47 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170606192221.1617-9-gregkh@linuxfoundation.org>
+In-Reply-To: <201706040706.WevfghQQ%fengguang.wu@intel.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,45 +24,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jun 06, 2017 at 09:22:13PM +0200, Greg Kroah-Hartman wrote:
-> The dev_attrs field has long been "depreciated" and is finally being
-> removed, so move the driver to use the "correct" dev_groups field
-> instead for struct bus_type.
-> 
-> Cc: Geoff Levand <geoff@infradead.org>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Paul Mackerras <paulus@samba.org>
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Cc: <linuxppc-dev@lists.ozlabs.org>
-> Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Hi Balbir
+
+Le 04/06/2017 à 01:45, kbuild test robot a écrit :
+> Hi Balbir,
+>
+> [auto build test ERROR on powerpc/next]
+> [also build test ERROR on v4.12-rc3 next-20170602]
+> [if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
+>
+> url:    https://github.com/0day-ci/linux/commits/Balbir-Singh/Enable-STRICT_KERNEL_RWX/20170603-161759
+> base:   https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git next
+> config: powerpc-kilauea_defconfig (attached as .config)
+> compiler: powerpc-linux-gnu-gcc (Debian 6.1.1-9) 6.1.1 20160705
+> reproduce:
+>          wget https://raw.githubusercontent.com/01org/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
+>          chmod +x ~/bin/make.cross
+>          # save the attached .config to linux build tree
+>          make.cross ARCH=powerpc
+>
+> All errors (new ones prefixed by >>):
+>
+>     arch/powerpc/lib/code-patching.c: In function 'kernel_map_addr':
+>>> arch/powerpc/lib/code-patching.c:93:8: error: implicit declaration of function 'map_kernel_page' [-Werror=implicit-function-declaration]
+>       err = map_kernel_page(
+>             ^~~~~~~~~~~~~~~
+>     cc1: all warnings being treated as errors
+
+You should probably include my patch (the one renaming map_page() to 
+map_kernel_page() ) in as first patch in your serie in order to get a 
+clean serie and avoid such reports from the robot.
+
+Christophe
+
+>
+> vim +/map_kernel_page +93 arch/powerpc/lib/code-patching.c
+>
+>      87	
+>      88		if (is_vmalloc_addr(addr))
+>      89			pfn = vmalloc_to_pfn(addr);
+>      90		else
+>      91			pfn = __pa_symbol(addr) >> PAGE_SHIFT;
+>      92	
+>    > 93		err = map_kernel_page(
+>      94				(unsigned long)__this_cpu_read(text_poke_area)->addr,
+>      95				(pfn << PAGE_SHIFT), _PAGE_KERNEL_RW | _PAGE_PRESENT);
+>      96		pr_devel("Mapped addr %p with pfn %lx\n",
+>
 > ---
->  arch/powerpc/platforms/ps3/system-bus.c | 10 ++++++----
->  1 file changed, 6 insertions(+), 4 deletions(-)
-> 
-> diff --git a/arch/powerpc/platforms/ps3/system-bus.c b/arch/powerpc/platforms/ps3/system-bus.c
-> index 2d2e5f80a3d3..3e98b4ea3df9 100644
-> --- a/arch/powerpc/platforms/ps3/system-bus.c
-> +++ b/arch/powerpc/platforms/ps3/system-bus.c
-> @@ -471,11 +471,13 @@ static ssize_t modalias_show(struct device *_dev, struct device_attribute *a,
->  
->  	return (len >= PAGE_SIZE) ? (PAGE_SIZE - 1) : len;
->  }
-> +static DEVICE_ATTR_RO(modalias);
->  
-> -static struct device_attribute ps3_system_bus_dev_attrs[] = {
-> -	__ATTR_RO(modalias),
-> -	__ATTR_NULL,
-> +static struct attribute *ps3_system_bus_dev_attrs[] = {
-> +	&dev_attr_modalias.attr,
-> +	NULL,
->  };
-> +ATTRIBUTE_GROUPS(ps3_system_bus);
-
-This should be:
-ATTRIBUTE_GROUPS(ps3_system_bus_dev);
-
-I've fixed it up and am now running it through 0-day.
-
-thanks,
-
-greg k-h
+> 0-DAY kernel test infrastructure                Open Source Technology Center
+> https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
