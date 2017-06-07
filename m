@@ -1,74 +1,22 @@
-Return-Path: <mbringm@us.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <wburos@gmail.com>
+Received: from mail-qt0-x229.google.com (mail-qt0-x229.google.com
+ [IPv6:2607:f8b0:400d:c0d::229])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wjZxQ0GB2zDqKY
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Jun 2017 03:17:29 +1000 (AEST)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v57HDdqR134870
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 7 Jun 2017 13:17:27 -0400
-Received: from e14.ny.us.ibm.com (e14.ny.us.ibm.com [129.33.205.204])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2axmtsttn7-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 07 Jun 2017 13:17:26 -0400
-Received: from localhost
- by e14.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <mbringm@us.ibm.com>;
- Wed, 7 Jun 2017 13:17:25 -0400
-Received: from b01ledav001.gho.pok.ibm.com (b01ledav001.gho.pok.ibm.com
- [9.57.199.106])
- by b01cxnp23033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v57HHUE9000388
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 7 Jun 2017 17:17:30 GMT
-Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 178AD2803A
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Jun 2017 13:17:17 -0400 (EDT)
-Received: from d50lp03.ny.us.ibm.com (unknown [146.89.104.211])
- by b01ledav001.gho.pok.ibm.com (Postfix) with ESMTPS id 0BB562803D
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Jun 2017 13:17:17 -0400 (EDT)
-Received: from localhost
- by d50lp03.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <mbringm@us.ibm.com>;
- Wed, 7 Jun 2017 13:17:22 -0400
-Received: from localhost
- by smtp.notes.na.collabserv.com with smtp.notes.na.collabserv.com ESMTP
- for <linuxppc-dev@lists.ozlabs.org> from <mbringm@us.ibm.com>;
- Wed, 7 Jun 2017 17:17:19 -0000
-Subject: Re: [Patch 2/2]: powerpc/hotplug/mm: Fix hot-add memory node assoc
-In-Reply-To: <87tw3sdmpj.fsf@concordia.ellerman.id.au>
-From: "Michael Bringmann" <mbringm@us.ibm.com>
-To: mpe@ellerman.id.au
-Cc: aneesh.kumar@linux.vnet.ibm.com, arbab@linux.vnet.ibm.com,
- bharata@linux.vnet.ibm.com, bigeasy@linutronix.de,
- bsingharora@gmail.com, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, mwb@linux.vnet.ibm.com,
- paulus@samba.org, shailendras@nvidia.com, tglx@linutronix.de
-Date: Wed, 7 Jun 2017 17:17:12 +0000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wjcsD4tY7zDqL2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Jun 2017 04:44:00 +1000 (AEST)
+Received: by mail-qt0-x229.google.com with SMTP id u19so16493289qta.3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 07 Jun 2017 11:44:00 -0700 (PDT)
 MIME-Version: 1.0
-References: <87tw3sdmpj.fsf@concordia.ellerman.id.au>,
- <3bb44d92-b2ff-e197-4bdf-ec6d588d6dab@linux.vnet.ibm.com>
- <20170523155251.bqwc5mc4jpgzkqlm@arbab-laptop.localdomain>
- <1c1d70e3-4e45-b035-0e75-1b0f531c111b@linux.vnet.ibm.com>
- <20170523214922.bns675oqzqj4pkhc@arbab-laptop.localdomain>
- <ee96df3d-ad0f-c4dc-e7d5-290018ec8afd@linux.vnet.ibm.com>
- <87poeya4dt.fsf@concordia.ellerman.id.au>
- <8e2417d8-d108-2949-40f2-997d53a3f367@linux.vnet.ibm.com>
- <87a861a25y.fsf@concordia.ellerman.id.au>
- <20170525151011.m4ae4ipxbqsj3mn7@arbab-laptop.localdomain>
- <87zie08ekt.fsf@concordia.ellerman.id.au>
- <20170526143147.z4lmtrs7vowucbkf@arbab-laptop.localdomain>
- <87lgpg6xe2.fsf@concordia.ellerman.id.au>
- <54877b2b-8446-20f6-e316-25af809ae11f@linux.vnet.ibm.com>
- <87tw402go0.fsf@concordia.ellerman.id.au>
- <54ebacf1-1249-cc6a-80a5-b293e581f401@linux.vnet.ibm.com>
- <8760g9qwfd.fsf@concordia.ellerman.id.au>
- <ba7d7010-44ed-cc20-661c-2078f0f522b7@linux.vnet.ibm.com>
-Content-Type: multipart/mixed; boundary="=_mixed 005EF57400258138_="
-Message-Id: <OF6E9620DC.CBCED065-ON00258138.005EBBE2-00258138.005EF57F@notes.na.collabserv.com>
+In-Reply-To: <20170607160015.GA13031@drishya.in.ibm.com>
+References: <tencent_14A522610506039258ACD095@qq.com>
+ <20170607160015.GA13031@drishya.in.ibm.com>
+From: Bill Buros <wburos@gmail.com>
+Date: Wed, 7 Jun 2017 13:43:57 -0500
+Message-ID: <CAC-nz1vCnL9PVeY-qne2WCdMtfQD37y4ikwLm1cOau9dnud9jA@mail.gmail.com>
+Subject: Re: power server power consumption problem
+To: linuxppc-dev@lists.ozlabs.org
+Content-Type: multipart/alternative; boundary="001a1148b6a26d616c0551631e8c"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -78,1447 +26,152 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+--001a1148b6a26d616c0551631e8c
+Content-Type: text/plain; charset="UTF-8"
 
---=_mixed 005EF57400258138_=
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/html; charset=UTF-8
+>From a peer..     Rafael Peria de Sene...
 
-<div class=3D"socmaildefaultfont" dir=3D"ltr" style=3D"font-family:Arial, H=
-elvetica, sans-serif;font-size:10.5pt" ><div dir=3D"ltr" >Here is the infor=
-mation from 2 different kernels.&nbsp; I have not been able to retrieve</di=
-v>
-<div dir=3D"ltr" >the information matching yesterday's attachments, yet, as=
- those dumps were</div>
-<div dir=3D"ltr" >acquired in April.</div>
-<div dir=3D"ltr" >&nbsp;</div>
-<div dir=3D"ltr" >Attached please find 2 dumps of similar material from ker=
-nels running with my</div>
-<div dir=3D"ltr" >current patches (Linux 4.4, Linux 4.12).</div>
-<div dir=3D"ltr" ><div class=3D"socmaildefaultfont" dir=3D"ltr" style=3D"fo=
-nt-family:Arial;font-size:10.5pt" ><div class=3D"socmaildefaultfont" dir=3D=
-"ltr" style=3D"font-family:Arial;font-size:10.5pt" ><div dir=3D"ltr" style=
-=3D"margin-top: 20px;" ><div style=3D"font-size: 12pt; font-weight: bold; f=
-ont-family: sans-serif;" ><font size=3D"2" face=3D"Default Sans Serif,Verda=
-na,Arial,Helvetica,sans-serif" ><font color=3D"#7c7c5f" >MICHAEL W. BRINGMA=
-NN</font></font></div>
-<div style=3D"font-size: 12pt; font-weight: bold; font-family: sans-serif;"=
- ><font size=3D"2" face=3D"Default Sans Serif,Verdana,Arial,Helvetica,sans-=
-serif" ><font color=3D"#7c7c5f" ><span style=3D"font-size:0.857em;" >Linux =
-Technology Center</span></font></font></div>
-<div style=3D"font-size: 12pt; font-weight: bold; font-family: sans-serif;"=
- ><font size=3D"2" face=3D"Default Sans Serif,Verdana,Arial,Helvetica,sans-=
-serif" ><font color=3D"#7c7c5f" ><span style=3D"font-size:0.857em;" >IBM Co=
-rporation</span></font></font></div>
-<div style=3D"font-size: 8pt; font-family: sans-serif; margin-top: 10px;" >=
-<div><font size=3D"2" face=3D"Default Sans Serif,Verdana,Arial,Helvetica,sa=
-ns-serif" ><span style=3D"font-weight: bold;" ><font color=3D"#336699" >Tie=
--Line: </font></span>363-5196</font></div>
-<div><font size=3D"2" face=3D"Default Sans Serif,Verdana,Arial,Helvetica,sa=
-ns-serif" ><span style=3D"font-weight: bold;" ><font color=3D"#336699" >Ext=
- Phone: </font></span>1-512-286-5196</font></div>
-<div><div><font size=3D"2" face=3D"Default Sans Serif,Verdana,Arial,Helveti=
-ca,sans-serif" ><span style=3D"font-weight: bold;" ><font color=3D"#336699"=
- >Cell Phone: </font></span>(512) 466-0650</font></div></div>
-<div><font size=3D"2" face=3D"Default Sans Serif,Verdana,Arial,Helvetica,sa=
-ns-serif" ><span style=3D"font-weight: bold;" ><font color=3D"#336699" >E-m=
-ail: </font></span><a href=3D"mailto:mbringm@us.ibm.com" style=3D"" ><font =
-color=3D"#555555" >mbringm@us.ibm.com</font></a></font></div></div></div></=
-div></div></div>
-<div dir=3D"ltr" >&nbsp;</div>
-<div dir=3D"ltr" >&nbsp;</div>
-<blockquote data-history-content-modified=3D"1" dir=3D"ltr" style=3D"border=
--left:solid #aaaaaa 2px; margin-left:5px; padding-left:5px; direction:ltr; =
-margin-right:0px" >----- Original message -----<br>From: Michael Ellerman &=
-lt;mpe@ellerman.id.au&gt;<br>To: Michael Bringmann &lt;mwb@linux.vnet.ibm.c=
-om&gt;, Reza Arbab &lt;arbab@linux.vnet.ibm.com&gt;<br>Cc: Balbir Singh &lt=
-;bsingharora@gmail.com&gt;, linux-kernel@vger.kernel.org, Paul Mackerras &l=
-t;paulus@samba.org&gt;, "Aneesh Kumar K.V" &lt;aneesh.kumar@linux.vnet.ibm.=
-com&gt;, Bharata B Rao &lt;bharata@linux.vnet.ibm.com&gt;, Shailendra Singh=
- &lt;shailendras@nvidia.com&gt;, Thomas Gleixner &lt;tglx@linutronix.de&gt;=
-, linuxppc-dev@lists.ozlabs.org, Sebastian Andrzej Siewior &lt;bigeasy@linu=
-tronix.de&gt;, Michael Bringmann from Kernel Team &lt;mbringm@us.ibm.com&gt=
-;<br>Subject: Re: [Patch 2/2]: powerpc/hotplug/mm: Fix hot-add memory node =
-assoc<br>Date: Wed, Jun 7, 2017 7:08 AM<br>&nbsp;
-<div><font size=3D"2" face=3D"Default Monospace,Courier New,Courier,monospa=
-ce" >Michael Bringmann &lt;mwb@linux.vnet.ibm.com&gt; writes:<br><br>&gt; O=
-n 06/06/2017 04:48 AM, Michael Ellerman wrote:<br>&gt;&gt; Michael Bringman=
-n &lt;mwb@linux.vnet.ibm.com&gt; writes:<br>&gt;&gt;&gt; On 06/01/2017 04:3=
-6 AM, Michael Ellerman wrote:<br>&gt;&gt;&gt;&gt; Do you actually see menti=
-on of nodes 0 and 8 in the dmesg?<br>&gt;&gt;&gt;<br>&gt;&gt;&gt; When the =
-'numa.c' code is built with debug messages, and the system was<br>&gt;&gt;&=
-gt; given that configuration by pHyp, yes, I did.<br>&gt;&gt;&gt;<br>&gt;&g=
-t;&gt;&gt; What does it say?<br>&gt;&gt;&gt;<br>&gt;&gt;&gt; The debug mess=
-age for each core thread would be something like,<br>&gt;&gt;&gt;<br>&gt;&g=
-t;&gt; &nbsp; &nbsp; removing cpu 64 from node 0<br>&gt;&gt;&gt; &nbsp; &nb=
-sp; adding cpu 64 to node 8<br>&gt;&gt;&gt;<br>&gt;&gt;&gt; repeated for al=
-l 8 threads of the CPU, and usually with the messages<br>&gt;&gt;&gt; for a=
-ll of the CPUs coming out intermixed on the console/dmesg log.<br>&gt;&gt;<=
-br>&gt;&gt; OK. I meant what do you see at boot.<br>&gt;<br>&gt; Here is an=
- example with nodes 0,2,6,7, node 0 starts out empty:<br>&gt;<br>&gt; [ &nb=
-sp; &nbsp;0.000000] Initmem setup node 0<br>&gt; [ &nbsp; &nbsp;0.000000] &=
-nbsp; NODE=5FDATA [mem 0x3bff7d6300-0x3bff7dffff]<br>&gt; [ &nbsp; &nbsp;0.=
-000000] &nbsp; &nbsp; NODE=5FDATA(0) on node 7<br>&gt; [ &nbsp; &nbsp;0.000=
-000] Initmem setup node 2 [mem 0x00000000-0x13ffffffff]<br>&gt; [ &nbsp; &n=
-bsp;0.000000] &nbsp; NODE=5FDATA [mem 0x13ffff6300-0x13ffffffff]<br>&gt; [ =
-&nbsp; &nbsp;0.000000] Initmem setup node 6 [mem 0x1400000000-0x34afffffff]=
-<br>&gt; [ &nbsp; &nbsp;0.000000] &nbsp; NODE=5FDATA [mem 0x34afff6300-0x34=
-afffffff]<br>&gt; [ &nbsp; &nbsp;0.000000] Initmem setup node 7 [mem 0x34b0=
-000000-0x3bffffffff]<br>&gt; [ &nbsp; &nbsp;0.000000] &nbsp; NODE=5FDATA [m=
-em 0x3bff7cc600-0x3bff7d62ff]<br>&gt;<br>&gt; [ &nbsp; &nbsp;0.000000] Zone=
- ranges:<br>&gt; [ &nbsp; &nbsp;0.000000] &nbsp; DMA &nbsp; &nbsp; &nbsp;[m=
-em 0x0000000000000000-0x0000003bffffffff]<br>&gt; [ &nbsp; &nbsp;0.000000] =
-&nbsp; DMA32 &nbsp; &nbsp;empty<br>&gt; [ &nbsp; &nbsp;0.000000] &nbsp; Nor=
-mal &nbsp; empty<br>&gt; [ &nbsp; &nbsp;0.000000] Movable zone start for ea=
-ch node<br>&gt; [ &nbsp; &nbsp;0.000000] Early memory node ranges<br>&gt; [=
- &nbsp; &nbsp;0.000000] &nbsp; node &nbsp; 2: [mem 0x0000000000000000-0x000=
-00013ffffffff]<br>&gt; [ &nbsp; &nbsp;0.000000] &nbsp; node &nbsp; 6: [mem =
-0x0000001400000000-0x00000034afffffff]<br>&gt; [ &nbsp; &nbsp;0.000000] &nb=
-sp; node &nbsp; 7: [mem 0x00000034b0000000-0x0000003bffffffff]<br>&gt; [ &n=
-bsp; &nbsp;0.000000] Could not find start=5Fpfn for node 0<br>&gt; [ &nbsp;=
- &nbsp;0.000000] Initmem setup node 0 [mem 0x0000000000000000-0x00000000000=
-00000]<br>&gt; [ &nbsp; &nbsp;0.000000] Initmem setup node 2 [mem 0x0000000=
-000000000-0x00000013ffffffff]<br>&gt; [ &nbsp; &nbsp;0.000000] Initmem setu=
-p node 6 [mem 0x0000001400000000-0x00000034afffffff]<br>&gt; [ &nbsp; &nbsp=
-;0.000000] Initmem setup node 7 [mem 0x00000034b0000000-0x0000003bffffffff]=
-<br>&gt; [ &nbsp; &nbsp;0.000000] percpu: Embedded 3 pages/cpu @c000003bf80=
-00000 s155672 r0 d40936 u262144<br>&gt; [ &nbsp; &nbsp;0.000000] Built 4 zo=
-nelists in Node order, mobility grouping on. &nbsp;Total pages: 3928320<br>=
-&gt;<br>&gt; and,<br>&gt;<br>&gt; [root@ltcalpine2-lp20 ~]# numactl --hardw=
-are<br>&gt; available: 4 nodes (0,2,6-7)<br>&gt; node 0 cpus:<br>&gt; node =
-0 size: 0 MB<br>&gt; node 0 free: 0 MB<br>&gt; node 2 cpus: 16 17 18 19 20 =
-21 22 23 32 33 34 35 36 37 38 39 56 57 58 59 60 61 62 63<br>&gt; node 2 siz=
-e: 81792 MB<br>&gt; node 2 free: 81033 MB<br>&gt; node 6 cpus: 0 1 2 3 4 5 =
-6 7 8 9 10 11 12 13 14 15 24 25 26 27 28 29 30 31 40 41 42 43 44 45 46 47<b=
-r>&gt; node 6 size: 133743 MB<br>&gt; node 6 free: 133097 MB<br>&gt; node 7=
- cpus: 48 49 50 51 52 53 54 55<br>&gt; node 7 size: 29877 MB<br>&gt; node 7=
- free: 29599 MB<br>&gt; node distances:<br>&gt; node &nbsp; 0 &nbsp; 2 &nbs=
-p; 6 &nbsp; 7<br>&gt; &nbsp; 0: &nbsp;10 &nbsp;40 &nbsp;40 &nbsp;40<br>&gt;=
- &nbsp; 2: &nbsp;40 &nbsp;10 &nbsp;40 &nbsp;40<br>&gt; &nbsp; 6: &nbsp;40 &=
-nbsp;40 &nbsp;10 &nbsp;20<br>&gt; &nbsp; 7: &nbsp;40 &nbsp;40 &nbsp;20 &nbs=
-p;10<br>&gt; [root@ltcalpine2-lp20 ~]#<br><br>What kernel is that running?<=
-br><br>And can you show me the full ibm,dynamic-memory and lookup-arrays<br=
->properties for that system?<br><br>cheers</font><br>&nbsp;</div></blockquo=
-te>
-<div dir=3D"ltr" >&nbsp;</div></div>
-<BR>
+At Unicamp we developed a power monitor based on IPMI output to monitor our
+Minsky usage.
 
---=_mixed 005EF57400258138_=
-Content-Type: text/plain; name="1.linux4.12-3nodes.txt"
-Content-Disposition: attachment; filename="1.linux4.12-3nodes.txt"
+Take a look at http://177.220.10.134/powergraph
+
+
+
+On Wed, Jun 7, 2017 at 11:00 AM, Vaidyanathan Srinivasan <
+svaidy@linux.vnet.ibm.com> wrote:
+
+> * ?????????? <1363017608@qq.com> [2017-06-06 19:59:24]:
+>
+> > I use ipmitool measuring power server power consumption, getting the
+> following results without total power consumption as the following picture,
+> do I add all power values as total power consumption? I am eager to receive
+> someone's replay??Thanks?
+>
+> The total system power is already aggregates as provided under ipmi
+> dcmi command.
+>
+> You can read it like:
+>
+> Inband: (within system)
+>
+> root@ubuntu:~# ipmitool dcmi power reading
+>
+>     Instantaneous power reading:                   485 Watts
+>     Minimum during sampling period:                485 Watts
+>     Maximum during sampling period:                486 Watts
+>     Average power reading over sample period:      485 Watts
+>     IPMI timestamp:                           Wed Jun  7 15:53:08 2017
+>     Sampling period:                          00000010 Seconds.
+>     Power reading state is:                   activated
+>
+> Out-of-band: (Over BMC network)
+>
+> [sv@drishya] ~ % ipmitool -I lanplus -H bmc -U bmc-user -P bmc-pw  dcmi
+> power reading
+>
+>     Instantaneous power reading:                   486 Watts
+>     Minimum during sampling period:                483 Watts
+>     Maximum during sampling period:                486 Watts
+>     Average power reading over sample period:      484 Watts
+>     IPMI timestamp:                           Wed Jun  7 15:54:11 2017
+>     Sampling period:                          00000010 Seconds.
+>     Power reading state is:                   activated
+>
+>
+> You do get component power consumption from IPMI SDR, you can get
+> those from inband or out-of-band. But you need not manually add it up.
+> On-Chip-Controller (OCC) does the power aggregation already and
+> exports it through DCMI power reading.
+>
+> --Vaidy
+>
+>
+
+--001a1148b6a26d616c0551631e8c
+Content-Type: text/html; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-=0ARed Hat Enterprise Linux Server 7.3 (Maipo)=0AKernel 4.12.0-rc3.wi91275=
-=5F054c=5F060106.ppc64le+ on an ppc64le=0A=0Altcalpine2-lp20 login: root=0A=
-Password: =0ALast login: Wed Jun  7 11:03:12 from oc1554177480.austin.ibm.c=
-om=0A[root@ltcalpine2-lp20 ~]# numactl -H=0Aavailable: 3 nodes (0,2-3)=0Ano=
-de 0 cpus:=0Anode 0 size: 0 MB=0Anode 0 free: 0 MB=0Anode 2 cpus: 0 1 2 3 4=
- 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 3=
-1 32 33 34 35 36 37 38 39 48 49 50 51 52 53 54 55=0Anode 2 size: 188668 MB=
-=0Anode 2 free: 187903 MB=0Anode 3 cpus: 40 41 42 43 44 45 46 47 56 57 58 5=
-9 60 61 62 63=0Anode 3 size: 56261 MB=0Anode 3 free: 55324 MB=0Anode distan=
-ces:=0Anode   0   2   3 =0A  0:  10  40  40 =0A  2:  40  10  20 =0A  3:  40=
-  20  10 =0A[root@ltcalpine2-lp20 ~]# cd /proc/device-tree/ibm,dynamic-reco=
-nfiguration-memory=0A[root@ltcalpine2-lp20 ibm,dynamic-reconfiguration-memo=
-ry]# lsprop ibm,dynamic-memory=0Aibm,dynamic-memory=0A		 0000059e 00000000 =
-20000000 80000002=0A		 00000000 00000001 00000008 00000000=0A		 30000000 80=
-000003 00000000 00000001=0A		 00000008 00000000 40000000 80000004=0A		 0000=
-0000 00000001 00000008 00000000=0A		 50000000 80000005 00000000 00000001=0A=
-		 00000008 00000000 60000000 80000006=0A		 00000000 00000001 00000008 0000=
-0000=0A		 [34516 bytes total]=0A[root@ltcalpine2-lp20 ibm,dynamic-reconfigu=
-ration-memory]# lsprop ibm,associativity-lookup-arrays=0Aibm,associativity-=
-lookup-arrays=0A		 00000003 00000004 00000000 00000000=0A		 00000000 000000=
-00 00000000 00000001=0A		 00000002 00000002 00000000 00000001=0A		 00000003=
- 00000003=0A[root@ltcalpine2-lp20 ibm,dynamic-reconfiguration-memory]# cat =
-~/dmesg.log=0A[    0.000000] Linux version 4.12.0-rc3.wi91275=5F054c=5F0601=
-06.ppc64le+ (root@ltcalpine2-lp20.aus.stglabs.ibm.com) (gcc version 4.8.5 2=
-0150623 (Red Hat 4.8.5-11) (GCC) ) #28 SMP Tue Jun 6 16:05:01 EDT 2017=0A[ =
-   0.000000] Found initrd at 0xc00000000ce00000:0xc00000000eeb4b12=0A[    0=
-.000000] Using pSeries machine description=0A[    0.000000] bootconsole [ud=
-bg0] enabled=0A[    0.000000] Partition configured for 256 cpus.=0A[    0.0=
-00000] CPU maps initialized for 8 threads per core=0A[    0.000000]  (threa=
-d shift is 3)=0A[    0.000000] Freed 4784128 bytes for unused pacas=0A[    =
-0.000000] -----------------------------------------------------=0A[    0.00=
-0000] ppc64=5Fpft=5Fsize    =3D 0x20=0A[    0.000000] phys=5Fmem=5Fsize    =
- =3D 0x3c00000000=0A[    0.000000] dcache=5Fbsize      =3D 0x80=0A[    0.00=
-0000] icache=5Fbsize      =3D 0x80=0A[    0.000000] cpu=5Ffeatures      =3D=
- 0x27fc7aec18500249=0A[    0.000000]   possible        =3D 0x7fffffff185006=
-49=0A[    0.000000]   always          =3D 0x0000000018100040=0A[    0.00000=
-0] cpu=5Fuser=5Ffeatures =3D 0xdc0065c2 0xef000000=0A[    0.000000] mmu=5Ff=
-eatures      =3D 0x7c006001=0A[    0.000000] firmware=5Ffeatures =3D 0x0000=
-0003c45bfc57=0A[    0.000000] htab=5Fhash=5Fmask    =3D 0x1ffffff=0A[    0.=
-000000] -----------------------------------------------------=0A[    0.0000=
-00] numa:   NODE=5FDATA [mem 0x3bff7d5f00-0x3bff7dffff]=0A[    0.000000] nu=
-ma:     NODE=5FDATA(0) on node 3=0A[    0.000000] numa:   NODE=5FDATA [mem =
-0x2e1fff5f00-0x2e1fffffff]=0A[    0.000000] numa:   NODE=5FDATA [mem 0x3bff=
-7cbe00-0x3bff7d5eff]=0A[    0.000000] Section 15357 and 15359 (node 3) have=
- a circular dependency on usemap and pgdat allocations=0A[    0.000000] PPC=
-64 nvram contains 15360 bytes=0A[    0.000000] Top of RAM: 0x3c00000000, To=
-tal RAM: 0x3c00000000=0A[    0.000000] Memory hole size: 0MB=0A[    0.00000=
-0] Zone ranges:=0A[    0.000000]   DMA      [mem 0x0000000000000000-0x00000=
-03bffffffff]=0A[    0.000000]   DMA32    empty=0A[    0.000000]   Normal   =
-empty=0A[    0.000000] Movable zone start for each node=0A[    0.000000] Ea=
-rly memory node ranges=0A[    0.000000]   node   2: [mem 0x0000000000000000=
--0x0000002e1fffffff]=0A[    0.000000]   node   3: [mem 0x0000002e20000000-0=
-x0000003bffffffff]=0A[    0.000000] Could not find start=5Fpfn for node 0=
-=0A[    0.000000] Initmem setup node 0 [mem 0x0000000000000000-0x0000000000=
-000000]=0A[    0.000000] On node 0 totalpages: 0=0A[    0.000000] Initmem s=
-etup node 2 [mem 0x0000000000000000-0x0000002e1fffffff]=0A[    0.000000] On=
- node 2 totalpages: 3022848=0A[    0.000000]   DMA zone: 2952 pages used fo=
-r memmap=0A[    0.000000]   DMA zone: 0 pages reserved=0A[    0.000000]   D=
-MA zone: 3022848 pages, LIFO batch:1=0A[    0.000000] Initmem setup node 3 =
-[mem 0x0000002e20000000-0x0000003bffffffff]=0A[    0.000000] On node 3 tota=
-lpages: 909312=0A[    0.000000]   DMA zone: 888 pages used for memmap=0A[  =
-  0.000000]   DMA zone: 0 pages reserved=0A[    0.000000]   DMA zone: 90931=
-2 pages, LIFO batch:1=0A[root@ltcalpine2-lp20 ibm,dynamic-reconfiguration-m=
-emory]#=0A=0A
+<div dir=3D"ltr">From a peer.. =C2=A0 =C2=A0 Rafael Peria de Sene... =C2=A0=
+=C2=A0<div><br></div><div>
 
---=_mixed 005EF57400258138_=
-Content-Type: text/plain; name="2.linux4.4-4nodes.txt"
-Content-Disposition: attachment; filename="2.linux4.4-4nodes.txt"
-Content-Transfer-Encoding: quoted-printable
 
-=0AWelcome to SUSE Linux Enterprise Server 12 SP3 Beta2 (ppc64le) - Kernel =
-4.4.63-2.1.wi91275.sp3.055a=5F27-default (hvc0).=0A=0A=0Altcalpine2-lp9 log=
-in: root=0APassword: =0ALast login: Mon Jun  5 11:43:45 from 9.53.92.157=0A=
-ltcalpine2-lp9:=C3=9F # numactl -H=0Aavailable: 4 nodes (0-1,6-7)=0Anode 0 =
-cpus:=0Anode 0 size: 20512 MB=0Anode 0 free: 20371 MB=0Anode 1 cpus:=0Anode=
- 1 size: 2815 MB=0Anode 1 free: 2706 MB=0Anode 6 cpus: 0 1 2 3 4 5 6 7=0Ano=
-de 6 size: 134783 MB=0Anode 6 free: 134068 MB=0Anode 7 cpus:=0Anode 7 size:=
- 87210 MB=0Anode 7 free: 87102 MB=0Anode distances:=0Anode   0   1   6   7 =
-=0A  0:  10  20  40  40 =0A  1:  20  10  40  40 =0A  6:  40  40  10  20 =0A=
-  7:  40  40  20  10 =0Altcalpine2-lp9:~ # cd =0Altcalpine2-lp9:~ # cd /pro=
-c/device-tree/ibm,dynamic-reconfiguration-memory=0Altcalpine2-lp9:/proc/dev=
-ice-tree/ibm,dynamic-reconfiguration-memory # ls=0Aibm,associativity-lookup=
--arrays  ibm,memory-flags-mask         linux,phandle=0Aibm,dynamic-memory  =
-             ibm,memory-preservation-time  name=0Aibm,lmb-size             =
-        ibm,phandle=0Altcalpine2-lp9:/proc/device-tree/ibm,dynamic-reconfig=
-uration-memory # lsprop ibm,associativity-lookup-arrays=0Aibm,associativity=
--lookup-arrays=0A		 00000004 00000004 00000000 00000000 00000000 00000000=
-=0A		 00000000 00000000 00000001 00000001 00000000 00000003=0A		 00000006 0=
-0000006 00000000 00000003 00000007 00000007=0Altcalpine2-lp9:/proc/device-t=
-ree/ibm,dynamic-reconfiguration-memory # lsprop ibm,dynamic-memory=0Aibm,dy=
-namic-memory=0A		 0000059e 00000000 20000000 80000002=0A		 00000000 0000000=
-0 00000008 00000000=0A		 30000000 80000003 00000000 00000000=0A		 00000008 =
-00000000 40000000 80000004=0A		 00000000 00000000 00000008 00000000=0A		 50=
-000000 80000005 00000000 00000000=0A		 00000008 00000000 60000000 80000006=
-=0A		 00000000 00000000 00000008 00000000=0A		 70000000 80000007 00000000 0=
-0000000=0A		 00000008 00000000 80000000 80000008=0A		 00000000 00000000 000=
-00008 00000000=0A		 90000000 80000009 00000000 00000000=0A		 00000008 00000=
-000 a0000000 8000000a=0A		 00000000 00000000 00000008 00000000=0A		 b000000=
-0 8000000b 00000000 00000000=0A		 00000008 00000000 c0000000 8000000c=0A		 =
-00000000 00000000 00000008 00000000=0A		 d0000000 8000000d 00000000 0000000=
-0=0A		 00000008 00000000 e0000000 8000000e=0A		 00000000 00000000 00000008 =
-00000000=0A		 f0000000 8000000f 00000000 00000000=0A		 00000008 00000001 00=
-000000 80000010=0A		 00000000 00000000 00000008 00000001=0A		 10000000 8000=
-0011 00000000 00000000=0A		 00000008 00000001 20000000 80000012=0A		 000000=
-00 00000000 00000008 00000001=0A		 30000000 80000013 00000000 00000000=0A		=
- 00000008 00000001 40000000 80000014=0A		 00000000 00000000 00000008 000000=
-01=0A		 50000000 80000015 00000000 00000000=0A		 00000008 00000001 60000000=
- 80000016=0A		 00000000 00000000 00000008 00000001=0A		 70000000 80000017 0=
-0000000 00000000=0A		 00000008 00000001 80000000 80000018=0A		 00000000 000=
-00000 00000008 00000001=0A		 90000000 80000019 00000000 00000000=0A		 00000=
-008 00000001 a0000000 8000001a=0A		 00000000 00000000 00000008 00000001=0A	=
-	 b0000000 8000001b 00000000 00000000=0A		 00000008 00000001 c0000000 80000=
-01c=0A		 00000000 00000000 00000008 00000001=0A		 d0000000 8000001d 0000000=
-0 00000000=0A		 00000008 00000001 e0000000 8000001e=0A		 00000000 00000000 =
-00000008 00000001=0A		 f0000000 8000001f 00000000 00000000=0A		 00000008 00=
-000002 00000000 80000020=0A		 00000000 00000000 00000008 00000002=0A		 1000=
-0000 80000021 00000000 00000000=0A		 00000008 00000002 20000000 80000022=0A=
-		 00000000 00000000 00000008 00000002=0A		 30000000 80000023 00000000 0000=
-0000=0A		 00000008 00000002 40000000 80000024=0A		 00000000 00000000 000000=
-08 00000002=0A		 50000000 80000025 00000000 00000000=0A		 00000008 00000002=
- 60000000 80000026=0A		 00000000 00000000 00000008 00000002=0A		 70000000 8=
-0000027 00000000 00000000=0A		 00000008 00000002 80000000 80000028=0A		 000=
-00000 00000000 00000008 00000002=0A		 90000000 80000029 00000000 00000000=
-=0A		 00000008 00000002 a0000000 8000002a=0A		 00000000 00000000 00000008 0=
-0000002=0A		 b0000000 8000002b 00000000 00000000=0A		 00000008 00000002 c00=
-00000 8000002c=0A		 00000000 00000000 00000008 00000002=0A		 d0000000 80000=
-02d 00000000 00000000=0A		 00000008 00000002 e0000000 8000002e=0A		 0000000=
-0 00000000 00000008 00000002=0A		 f0000000 8000002f 00000000 00000000=0A		 =
-00000008 00000003 00000000 80000030=0A		 00000000 00000000 00000008 0000000=
-3=0A		 10000000 80000031 00000000 00000000=0A		 00000008 00000003 20000000 =
-80000032=0A		 00000000 00000000 00000008 00000003=0A		 30000000 80000033 00=
-000000 00000000=0A		 00000008 00000003 40000000 80000034=0A		 00000000 0000=
-0000 00000008 00000003=0A		 50000000 80000035 00000000 00000000=0A		 000000=
-08 00000003 60000000 80000036=0A		 00000000 00000000 00000008 00000003=0A		=
- 70000000 80000037 00000000 00000000=0A		 00000008 00000003 80000000 800000=
-38=0A		 00000000 00000000 00000008 00000003=0A		 90000000 80000039 00000000=
- 00000000=0A		 00000008 00000003 a0000000 8000003a=0A		 00000000 00000000 0=
-0000008 00000003=0A		 b0000000 8000003b 00000000 00000000=0A		 00000008 000=
-00003 c0000000 8000003c=0A		 00000000 00000000 00000008 00000003=0A		 d0000=
-000 8000003d 00000000 00000000=0A		 00000008 00000003 e0000000 8000003e=0A	=
-	 00000000 00000000 00000008 00000003=0A		 f0000000 8000003f 00000000 00000=
-000=0A		 00000008 00000004 00000000 80000040=0A		 00000000 00000000 0000000=
-8 00000004=0A		 10000000 80000041 00000000 00000000=0A		 00000008 00000004 =
-20000000 80000042=0A		 00000000 00000000 00000008 00000004=0A		 30000000 80=
-000043 00000000 00000000=0A		 00000008 00000004 40000000 80000044=0A		 0000=
-0000 00000000 00000008 00000004=0A		 50000000 80000045 00000000 00000000=0A=
-		 00000008 00000004 60000000 80000046=0A		 00000000 00000000 00000008 0000=
-0004=0A		 70000000 80000047 00000000 00000000=0A		 00000008 00000004 800000=
-00 80000048=0A		 00000000 00000000 00000008 00000004=0A		 90000000 80000049=
- 00000000 00000000=0A		 00000008 00000004 a0000000 8000004a=0A		 00000000 0=
-0000000 00000008 00000004=0A		 b0000000 8000004b 00000000 00000000=0A		 000=
-00008 00000004 c0000000 8000004c=0A		 00000000 00000000 00000008 00000004=
-=0A		 d0000000 8000004d 00000000 00000000=0A		 00000008 00000004 e0000000 8=
-000004e=0A		 00000000 00000000 00000008 00000004=0A		 f0000000 8000004f 000=
-00000 00000000=0A		 00000008 00000005 00000000 80000050=0A		 00000000 00000=
-000 00000008 00000005=0A		 10000000 80000051 00000000 00000001=0A		 0000000=
-8 00000005 20000000 80000052=0A		 00000000 00000001 00000008 00000005=0A		 =
-30000000 80000053 00000000 00000001=0A		 00000008 00000005 40000000 8000005=
-4=0A		 00000000 00000001 00000008 00000005=0A		 50000000 80000055 00000000 =
-00000001=0A		 00000008 00000005 60000000 80000056=0A		 00000000 00000001 00=
-000008 00000005=0A		 70000000 80000057 00000000 00000001=0A		 00000008 0000=
-0005 80000000 80000058=0A		 00000000 00000001 00000008 00000005=0A		 900000=
-00 80000059 00000000 00000001=0A		 00000008 00000005 a0000000 8000005a=0A		=
- 00000000 00000001 00000008 00000005=0A		 b0000000 8000005b 00000000 000000=
-01=0A		 00000008 00000005 c0000000 8000005c=0A		 00000000 00000002 00000008=
- 00000005=0A		 d0000000 8000005d 00000000 00000002=0A		 00000008 00000005 e=
-0000000 8000005e=0A		 00000000 00000002 00000008 00000005=0A		 f0000000 800=
-0005f 00000000 00000002=0A		 00000008 00000006 00000000 80000060=0A		 00000=
-000 00000002 00000008 00000006=0A		 10000000 80000061 00000000 00000002=0A	=
-	 00000008 00000006 20000000 80000062=0A		 00000000 00000002 00000008 00000=
-006=0A		 30000000 80000063 00000000 00000002=0A		 00000008 00000006 4000000=
-0 80000064=0A		 00000000 00000002 00000008 00000006=0A		 50000000 80000065 =
-00000000 00000002=0A		 00000008 00000006 60000000 80000066=0A		 00000000 00=
-000002 00000008 00000006=0A		 70000000 80000067 00000000 00000002=0A		 0000=
-0008 00000006 80000000 80000068=0A		 00000000 00000002 00000008 00000006=0A=
-		 90000000 80000069 00000000 00000002=0A		 00000008 00000006 a0000000 8000=
-006a=0A		 00000000 00000002 00000008 00000006=0A		 b0000000 8000006b 000000=
-00 00000002=0A		 00000008 00000006 c0000000 8000006c=0A		 00000000 00000002=
- 00000008 00000006=0A		 d0000000 8000006d 00000000 00000002=0A		 00000008 0=
-0000006 e0000000 8000006e=0A		 00000000 00000002 00000008 00000006=0A		 f00=
-00000 8000006f 00000000 00000002=0A		 00000008 00000007 00000000 80000070=
-=0A		 00000000 00000002 00000008 00000007=0A		 10000000 80000071 00000000 0=
-0000002=0A		 00000008 00000007 20000000 80000072=0A		 00000000 00000002 000=
-00008 00000007=0A		 30000000 80000073 00000000 00000002=0A		 00000008 00000=
-007 40000000 80000074=0A		 00000000 00000002 00000008 00000007=0A		 5000000=
-0 80000075 00000000 00000002=0A		 00000008 00000007 60000000 80000076=0A		 =
-00000000 00000002 00000008 00000007=0A		 70000000 80000077 00000000 0000000=
-2=0A		 00000008 00000007 80000000 80000078=0A		 00000000 00000002 00000008 =
-00000007=0A		 90000000 80000079 00000000 00000002=0A		 00000008 00000007 a0=
-000000 8000007a=0A		 00000000 00000002 00000008 00000007=0A		 b0000000 8000=
-007b 00000000 00000002=0A		 00000008 00000007 c0000000 8000007c=0A		 000000=
-00 00000002 00000008 00000007=0A		 d0000000 8000007d 00000000 00000002=0A		=
- 00000008 00000007 e0000000 8000007e=0A		 00000000 00000002 00000008 000000=
-07=0A		 f0000000 8000007f 00000000 00000002=0A		 00000008 00000008 00000000=
- 80000080=0A		 00000000 00000002 00000008 00000008=0A		 10000000 80000081 0=
-0000000 00000002=0A		 00000008 00000008 20000000 80000082=0A		 00000000 000=
-00002 00000008 00000008=0A		 30000000 80000083 00000000 00000002=0A		 00000=
-008 00000008 40000000 80000084=0A		 00000000 00000002 00000008 00000008=0A	=
-	 50000000 80000085 00000000 00000002=0A		 00000008 00000008 60000000 80000=
-086=0A		 00000000 00000002 00000008 00000008=0A		 70000000 80000087 0000000=
-0 00000002=0A		 00000008 00000008 80000000 80000088=0A		 00000000 00000002 =
-00000008 00000008=0A		 90000000 80000089 00000000 00000002=0A		 00000008 00=
-000008 a0000000 8000008a=0A		 00000000 00000002 00000008 00000008=0A		 b000=
-0000 8000008b 00000000 00000002=0A		 00000008 00000008 c0000000 8000008c=0A=
-		 00000000 00000002 00000008 00000008=0A		 d0000000 8000008d 00000000 0000=
-0002=0A		 00000008 00000008 e0000000 8000008e=0A		 00000000 00000002 000000=
-08 00000008=0A		 f0000000 8000008f 00000000 00000002=0A		 00000008 00000009=
- 00000000 80000090=0A		 00000000 00000002 00000008 00000009=0A		 10000000 8=
-0000091 00000000 00000002=0A		 00000008 00000009 20000000 80000092=0A		 000=
-00000 00000002 00000008 00000009=0A		 30000000 80000093 00000000 00000002=
-=0A		 00000008 00000009 40000000 80000094=0A		 00000000 00000002 00000008 0=
-0000009=0A		 50000000 80000095 00000000 00000002=0A		 00000008 00000009 600=
-00000 80000096=0A		 00000000 00000002 00000008 00000009=0A		 70000000 80000=
-097 00000000 00000002=0A		 00000008 00000009 80000000 80000098=0A		 0000000=
-0 00000002 00000008 00000009=0A		 90000000 80000099 00000000 00000002=0A		 =
-00000008 00000009 a0000000 8000009a=0A		 00000000 00000002 00000008 0000000=
-9=0A		 b0000000 8000009b 00000000 00000002=0A		 00000008 00000009 c0000000 =
-8000009c=0A		 00000000 00000002 00000008 00000009=0A		 d0000000 8000009d 00=
-000000 00000002=0A		 00000008 00000009 e0000000 8000009e=0A		 00000000 0000=
-0002 00000008 00000009=0A		 f0000000 8000009f 00000000 00000002=0A		 000000=
-08 0000000a 00000000 800000a0=0A		 00000000 00000002 00000008 0000000a=0A		=
- 10000000 800000a1 00000000 00000002=0A		 00000008 0000000a 20000000 800000=
-a2=0A		 00000000 00000002 00000008 0000000a=0A		 30000000 800000a3 00000000=
- 00000002=0A		 00000008 0000000a 40000000 800000a4=0A		 00000000 00000002 0=
-0000008 0000000a=0A		 50000000 800000a5 00000000 00000002=0A		 00000008 000=
-0000a 60000000 800000a6=0A		 00000000 00000002 00000008 0000000a=0A		 70000=
-000 800000a7 00000000 00000002=0A		 00000008 0000000a 80000000 800000a8=0A	=
-	 00000000 00000002 00000008 0000000a=0A		 90000000 800000a9 00000000 00000=
-002=0A		 00000008 0000000a a0000000 800000aa=0A		 00000000 00000002 0000000=
-8 0000000a=0A		 b0000000 800000ab 00000000 00000002=0A		 00000008 0000000a =
-c0000000 800000ac=0A		 00000000 00000002 00000008 0000000a=0A		 d0000000 80=
-0000ad 00000000 00000002=0A		 00000008 0000000a e0000000 800000ae=0A		 0000=
-0000 00000002 00000008 0000000a=0A		 f0000000 800000af 00000000 00000002=0A=
-		 00000008 0000000b 00000000 800000b0=0A		 00000000 00000002 00000008 0000=
-000b=0A		 10000000 800000b1 00000000 00000002=0A		 00000008 0000000b 200000=
-00 800000b2=0A		 00000000 00000002 00000008 0000000b=0A		 30000000 800000b3=
- 00000000 00000002=0A		 00000008 0000000b 40000000 800000b4=0A		 00000000 0=
-0000002 00000008 0000000b=0A		 50000000 800000b5 00000000 00000002=0A		 000=
-00008 0000000b 60000000 800000b6=0A		 00000000 00000002 00000008 0000000b=
-=0A		 70000000 800000b7 00000000 00000002=0A		 00000008 0000000b 80000000 8=
-00000b8=0A		 00000000 00000002 00000008 0000000b=0A		 90000000 800000b9 000=
-00000 00000002=0A		 00000008 0000000b a0000000 800000ba=0A		 00000000 00000=
-002 00000008 0000000b=0A		 b0000000 800000bb 00000000 00000002=0A		 0000000=
-8 0000000b c0000000 800000bc=0A		 00000000 00000002 00000008 0000000b=0A		 =
-d0000000 800000bd 00000000 00000002=0A		 00000008 0000000b e0000000 800000b=
-e=0A		 00000000 00000002 00000008 0000000b=0A		 f0000000 800000bf 00000000 =
-00000002=0A		 00000008 0000000c 00000000 800000c0=0A		 00000000 00000002 00=
-000008 0000000c=0A		 10000000 800000c1 00000000 00000002=0A		 00000008 0000=
-000c 20000000 800000c2=0A		 00000000 00000002 00000008 0000000c=0A		 300000=
-00 800000c3 00000000 00000002=0A		 00000008 0000000c 40000000 800000c4=0A		=
- 00000000 00000002 00000008 0000000c=0A		 50000000 800000c5 00000000 000000=
-02=0A		 00000008 0000000c 60000000 800000c6=0A		 00000000 00000002 00000008=
- 0000000c=0A		 70000000 800000c7 00000000 00000002=0A		 00000008 0000000c 8=
-0000000 800000c8=0A		 00000000 00000002 00000008 0000000c=0A		 90000000 800=
-000c9 00000000 00000002=0A		 00000008 0000000c a0000000 800000ca=0A		 00000=
-000 00000002 00000008 0000000c=0A		 b0000000 800000cb 00000000 00000002=0A	=
-	 00000008 0000000c c0000000 800000cc=0A		 00000000 00000002 00000008 00000=
-00c=0A		 d0000000 800000cd 00000000 00000002=0A		 00000008 0000000c e000000=
-0 800000ce=0A		 00000000 00000002 00000008 0000000c=0A		 f0000000 800000cf =
-00000000 00000002=0A		 00000008 0000000d 00000000 800000d0=0A		 00000000 00=
-000002 00000008 0000000d=0A		 10000000 800000d1 00000000 00000002=0A		 0000=
-0008 0000000d 20000000 800000d2=0A		 00000000 00000002 00000008 0000000d=0A=
-		 30000000 800000d3 00000000 00000002=0A		 00000008 0000000d 40000000 8000=
-00d4=0A		 00000000 00000002 00000008 0000000d=0A		 50000000 800000d5 000000=
-00 00000002=0A		 00000008 0000000d 60000000 800000d6=0A		 00000000 00000002=
- 00000008 0000000d=0A		 70000000 800000d7 00000000 00000002=0A		 00000008 0=
-000000d 80000000 800000d8=0A		 00000000 00000002 00000008 0000000d=0A		 900=
-00000 800000d9 00000000 00000002=0A		 00000008 0000000d a0000000 800000da=
-=0A		 00000000 00000002 00000008 0000000d=0A		 b0000000 800000db 00000000 0=
-0000002=0A		 00000008 0000000d c0000000 800000dc=0A		 00000000 00000002 000=
-00008 0000000d=0A		 d0000000 800000dd 00000000 00000002=0A		 00000008 00000=
-00d e0000000 800000de=0A		 00000000 00000002 00000008 0000000d=0A		 f000000=
-0 800000df 00000000 00000002=0A		 00000008 0000000e 00000000 800000e0=0A		 =
-00000000 00000002 00000008 0000000e=0A		 10000000 800000e1 00000000 0000000=
-2=0A		 00000008 0000000e 20000000 800000e2=0A		 00000000 00000002 00000008 =
-0000000e=0A		 30000000 800000e3 00000000 00000002=0A		 00000008 0000000e 40=
-000000 800000e4=0A		 00000000 00000002 00000008 0000000e=0A		 50000000 8000=
-00e5 00000000 00000002=0A		 00000008 0000000e 60000000 800000e6=0A		 000000=
-00 00000002 00000008 0000000e=0A		 70000000 800000e7 00000000 00000002=0A		=
- 00000008 0000000e 80000000 800000e8=0A		 00000000 00000002 00000008 000000=
-0e=0A		 90000000 800000e9 00000000 00000002=0A		 00000008 0000000e a0000000=
- 800000ea=0A		 00000000 00000002 00000008 0000000e=0A		 b0000000 800000eb 0=
-0000000 00000002=0A		 00000008 0000000e c0000000 800000ec=0A		 00000000 000=
-00002 00000008 0000000e=0A		 d0000000 800000ed 00000000 00000002=0A		 00000=
-008 0000000e e0000000 800000ee=0A		 00000000 00000002 00000008 0000000e=0A	=
-	 f0000000 800000ef 00000000 00000002=0A		 00000008 0000000f 00000000 80000=
-0f0=0A		 00000000 00000002 00000008 0000000f=0A		 10000000 800000f1 0000000=
-0 00000002=0A		 00000008 0000000f 20000000 800000f2=0A		 00000000 00000002 =
-00000008 0000000f=0A		 30000000 800000f3 00000000 00000002=0A		 00000008 00=
-00000f 40000000 800000f4=0A		 00000000 00000002 00000008 0000000f=0A		 5000=
-0000 800000f5 00000000 00000002=0A		 00000008 0000000f 60000000 800000f6=0A=
-		 00000000 00000002 00000008 0000000f=0A		 70000000 800000f7 00000000 0000=
-0002=0A		 00000008 0000000f 80000000 800000f8=0A		 00000000 00000002 000000=
-08 0000000f=0A		 90000000 800000f9 00000000 00000002=0A		 00000008 0000000f=
- a0000000 800000fa=0A		 00000000 00000002 00000008 0000000f=0A		 b0000000 8=
-00000fb 00000000 00000002=0A		 00000008 0000000f c0000000 800000fc=0A		 000=
-00000 00000002 00000008 0000000f=0A		 d0000000 800000fd 00000000 00000002=
-=0A		 00000008 0000000f e0000000 800000fe=0A		 00000000 00000002 00000008 0=
-000000f=0A		 f0000000 800000ff 00000000 00000002=0A		 00000008 00000010 000=
-00000 80000100=0A		 00000000 00000002 00000008 00000010=0A		 10000000 80000=
-101 00000000 00000002=0A		 00000008 00000010 20000000 80000102=0A		 0000000=
-0 00000002 00000008 00000010=0A		 30000000 80000103 00000000 00000002=0A		 =
-00000008 00000010 40000000 80000104=0A		 00000000 00000002 00000008 0000001=
-0=0A		 50000000 80000105 00000000 00000002=0A		 00000008 00000010 60000000 =
-80000106=0A		 00000000 00000002 00000008 00000010=0A		 70000000 80000107 00=
-000000 00000002=0A		 00000008 00000010 80000000 80000108=0A		 00000000 0000=
-0002 00000008 00000010=0A		 90000000 80000109 00000000 00000002=0A		 000000=
-08 00000010 a0000000 8000010a=0A		 00000000 00000002 00000008 00000010=0A		=
- b0000000 8000010b 00000000 00000002=0A		 00000008 00000010 c0000000 800001=
-0c=0A		 00000000 00000002 00000008 00000010=0A		 d0000000 8000010d 00000000=
- 00000002=0A		 00000008 00000010 e0000000 8000010e=0A		 00000000 00000002 0=
-0000008 00000010=0A		 f0000000 8000010f 00000000 00000002=0A		 00000008 000=
-00011 00000000 80000110=0A		 00000000 00000002 00000008 00000011=0A		 10000=
-000 80000111 00000000 00000002=0A		 00000008 00000011 20000000 80000112=0A	=
-	 00000000 00000002 00000008 00000011=0A		 30000000 80000113 00000000 00000=
-002=0A		 00000008 00000011 40000000 80000114=0A		 00000000 00000002 0000000=
-8 00000011=0A		 50000000 80000115 00000000 00000002=0A		 00000008 00000011 =
-60000000 80000116=0A		 00000000 00000002 00000008 00000011=0A		 70000000 80=
-000117 00000000 00000002=0A		 00000008 00000011 80000000 80000118=0A		 0000=
-0000 00000002 00000008 00000011=0A		 90000000 80000119 00000000 00000002=0A=
-		 00000008 00000011 a0000000 8000011a=0A		 00000000 00000002 00000008 0000=
-0011=0A		 b0000000 8000011b 00000000 00000002=0A		 00000008 00000011 c00000=
-00 8000011c=0A		 00000000 00000002 00000008 00000011=0A		 d0000000 8000011d=
- 00000000 00000002=0A		 00000008 00000011 e0000000 8000011e=0A		 00000000 0=
-0000002 00000008 00000011=0A		 f0000000 8000011f 00000000 00000002=0A		 000=
-00008 00000012 00000000 80000120=0A		 00000000 00000002 00000008 00000012=
-=0A		 10000000 80000121 00000000 00000002=0A		 00000008 00000012 20000000 8=
-0000122=0A		 00000000 00000002 00000008 00000012=0A		 30000000 80000123 000=
-00000 00000002=0A		 00000008 00000012 40000000 80000124=0A		 00000000 00000=
-002 00000008 00000012=0A		 50000000 80000125 00000000 00000002=0A		 0000000=
-8 00000012 60000000 80000126=0A		 00000000 00000002 00000008 00000012=0A		 =
-70000000 80000127 00000000 00000002=0A		 00000008 00000012 80000000 8000012=
-8=0A		 00000000 00000002 00000008 00000012=0A		 90000000 80000129 00000000 =
-00000002=0A		 00000008 00000012 a0000000 8000012a=0A		 00000000 00000002 00=
-000008 00000012=0A		 b0000000 8000012b 00000000 00000002=0A		 00000008 0000=
-0012 c0000000 8000012c=0A		 00000000 00000002 00000008 00000012=0A		 d00000=
-00 8000012d 00000000 00000002=0A		 00000008 00000012 e0000000 8000012e=0A		=
- 00000000 00000002 00000008 00000012=0A		 f0000000 8000012f 00000000 000000=
-02=0A		 00000008 00000013 00000000 80000130=0A		 00000000 00000002 00000008=
- 00000013=0A		 10000000 80000131 00000000 00000002=0A		 00000008 00000013 2=
-0000000 80000132=0A		 00000000 00000002 00000008 00000013=0A		 30000000 800=
-00133 00000000 00000002=0A		 00000008 00000013 40000000 80000134=0A		 00000=
-000 00000002 00000008 00000013=0A		 50000000 80000135 00000000 00000002=0A	=
-	 00000008 00000013 60000000 80000136=0A		 00000000 00000002 00000008 00000=
-013=0A		 70000000 80000137 00000000 00000002=0A		 00000008 00000013 8000000=
-0 80000138=0A		 00000000 00000002 00000008 00000013=0A		 90000000 80000139 =
-00000000 00000002=0A		 00000008 00000013 a0000000 8000013a=0A		 00000000 00=
-000002 00000008 00000013=0A		 b0000000 8000013b 00000000 00000002=0A		 0000=
-0008 00000013 c0000000 8000013c=0A		 00000000 00000002 00000008 00000013=0A=
-		 d0000000 8000013d 00000000 00000002=0A		 00000008 00000013 e0000000 8000=
-013e=0A		 00000000 00000002 00000008 00000013=0A		 f0000000 8000013f 000000=
-00 00000002=0A		 00000008 00000014 00000000 80000140=0A		 00000000 00000002=
- 00000008 00000014=0A		 10000000 80000141 00000000 00000002=0A		 00000008 0=
-0000014 20000000 80000142=0A		 00000000 00000002 00000008 00000014=0A		 300=
-00000 80000143 00000000 00000002=0A		 00000008 00000014 40000000 80000144=
-=0A		 00000000 00000002 00000008 00000014=0A		 50000000 80000145 00000000 0=
-0000002=0A		 00000008 00000014 60000000 80000146=0A		 00000000 00000002 000=
-00008 00000014=0A		 70000000 80000147 00000000 00000002=0A		 00000008 00000=
-014 80000000 80000148=0A		 00000000 00000002 00000008 00000014=0A		 9000000=
-0 80000149 00000000 00000002=0A		 00000008 00000014 a0000000 8000014a=0A		 =
-00000000 00000002 00000008 00000014=0A		 b0000000 8000014b 00000000 0000000=
-2=0A		 00000008 00000014 c0000000 8000014c=0A		 00000000 00000002 00000008 =
-00000014=0A		 d0000000 8000014d 00000000 00000002=0A		 00000008 00000014 e0=
-000000 8000014e=0A		 00000000 00000002 00000008 00000014=0A		 f0000000 8000=
-014f 00000000 00000002=0A		 00000008 00000015 00000000 80000150=0A		 000000=
-00 00000002 00000008 00000015=0A		 10000000 80000151 00000000 00000002=0A		=
- 00000008 00000015 20000000 80000152=0A		 00000000 00000002 00000008 000000=
-15=0A		 30000000 80000153 00000000 00000002=0A		 00000008 00000015 40000000=
- 80000154=0A		 00000000 00000002 00000008 00000015=0A		 50000000 80000155 0=
-0000000 00000002=0A		 00000008 00000015 60000000 80000156=0A		 00000000 000=
-00002 00000008 00000015=0A		 70000000 80000157 00000000 00000002=0A		 00000=
-008 00000015 80000000 80000158=0A		 00000000 00000002 00000008 00000015=0A	=
-	 90000000 80000159 00000000 00000002=0A		 00000008 00000015 a0000000 80000=
-15a=0A		 00000000 00000002 00000008 00000015=0A		 b0000000 8000015b 0000000=
-0 00000002=0A		 00000008 00000015 c0000000 8000015c=0A		 00000000 00000002 =
-00000008 00000015=0A		 d0000000 8000015d 00000000 00000002=0A		 00000008 00=
-000015 e0000000 8000015e=0A		 00000000 00000002 00000008 00000015=0A		 f000=
-0000 8000015f 00000000 00000002=0A		 00000008 00000016 00000000 80000160=0A=
-		 00000000 00000002 00000008 00000016=0A		 10000000 80000161 00000000 0000=
-0002=0A		 00000008 00000016 20000000 80000162=0A		 00000000 00000002 000000=
-08 00000016=0A		 30000000 80000163 00000000 00000002=0A		 00000008 00000016=
- 40000000 80000164=0A		 00000000 00000002 00000008 00000016=0A		 50000000 8=
-0000165 00000000 00000002=0A		 00000008 00000016 60000000 80000166=0A		 000=
-00000 00000002 00000008 00000016=0A		 70000000 80000167 00000000 00000002=
-=0A		 00000008 00000016 80000000 80000168=0A		 00000000 00000002 00000008 0=
-0000016=0A		 90000000 80000169 00000000 00000002=0A		 00000008 00000016 a00=
-00000 8000016a=0A		 00000000 00000002 00000008 00000016=0A		 b0000000 80000=
-16b 00000000 00000002=0A		 00000008 00000016 c0000000 8000016c=0A		 0000000=
-0 00000002 00000008 00000016=0A		 d0000000 8000016d 00000000 00000002=0A		 =
-00000008 00000016 e0000000 8000016e=0A		 00000000 00000002 00000008 0000001=
-6=0A		 f0000000 8000016f 00000000 00000002=0A		 00000008 00000017 00000000 =
-80000170=0A		 00000000 00000002 00000008 00000017=0A		 10000000 80000171 00=
-000000 00000002=0A		 00000008 00000017 20000000 80000172=0A		 00000000 0000=
-0002 00000008 00000017=0A		 30000000 80000173 00000000 00000002=0A		 000000=
-08 00000017 40000000 80000174=0A		 00000000 00000002 00000008 00000017=0A		=
- 50000000 80000175 00000000 00000002=0A		 00000008 00000017 60000000 800001=
-76=0A		 00000000 00000002 00000008 00000017=0A		 70000000 80000177 00000000=
- 00000002=0A		 00000008 00000017 80000000 80000178=0A		 00000000 00000002 0=
-0000008 00000017=0A		 90000000 80000179 00000000 00000002=0A		 00000008 000=
-00017 a0000000 8000017a=0A		 00000000 00000002 00000008 00000017=0A		 b0000=
-000 8000017b 00000000 00000002=0A		 00000008 00000017 c0000000 8000017c=0A	=
-	 00000000 00000002 00000008 00000017=0A		 d0000000 8000017d 00000000 00000=
-002=0A		 00000008 00000017 e0000000 8000017e=0A		 00000000 00000002 0000000=
-8 00000017=0A		 f0000000 8000017f 00000000 00000002=0A		 00000008 00000018 =
-00000000 80000180=0A		 00000000 00000002 00000008 00000018=0A		 10000000 80=
-000181 00000000 00000002=0A		 00000008 00000018 20000000 80000182=0A		 0000=
-0000 00000002 00000008 00000018=0A		 30000000 80000183 00000000 00000002=0A=
-		 00000008 00000018 40000000 80000184=0A		 00000000 00000002 00000008 0000=
-0018=0A		 50000000 80000185 00000000 00000002=0A		 00000008 00000018 600000=
-00 80000186=0A		 00000000 00000002 00000008 00000018=0A		 70000000 80000187=
- 00000000 00000002=0A		 00000008 00000018 80000000 80000188=0A		 00000000 0=
-0000002 00000008 00000018=0A		 90000000 80000189 00000000 00000002=0A		 000=
-00008 00000018 a0000000 8000018a=0A		 00000000 00000002 00000008 00000018=
-=0A		 b0000000 8000018b 00000000 00000002=0A		 00000008 00000018 c0000000 8=
-000018c=0A		 00000000 00000002 00000008 00000018=0A		 d0000000 8000018d 000=
-00000 00000002=0A		 00000008 00000018 e0000000 8000018e=0A		 00000000 00000=
-002 00000008 00000018=0A		 f0000000 8000018f 00000000 00000002=0A		 0000000=
-8 00000019 00000000 80000190=0A		 00000000 00000002 00000008 00000019=0A		 =
-10000000 80000191 00000000 00000002=0A		 00000008 00000019 20000000 8000019=
-2=0A		 00000000 00000002 00000008 00000019=0A		 30000000 80000193 00000000 =
-00000002=0A		 00000008 00000019 40000000 80000194=0A		 00000000 00000002 00=
-000008 00000019=0A		 50000000 80000195 00000000 00000002=0A		 00000008 0000=
-0019 60000000 80000196=0A		 00000000 00000002 00000008 00000019=0A		 700000=
-00 80000197 00000000 00000002=0A		 00000008 00000019 80000000 80000198=0A		=
- 00000000 00000002 00000008 00000019=0A		 90000000 80000199 00000000 000000=
-02=0A		 00000008 00000019 a0000000 8000019a=0A		 00000000 00000002 00000008=
- 00000019=0A		 b0000000 8000019b 00000000 00000002=0A		 00000008 00000019 c=
-0000000 8000019c=0A		 00000000 00000002 00000008 00000019=0A		 d0000000 800=
-0019d 00000000 00000002=0A		 00000008 00000019 e0000000 8000019e=0A		 00000=
-000 00000002 00000008 00000019=0A		 f0000000 8000019f 00000000 00000002=0A	=
-	 00000008 0000001a 00000000 800001a0=0A		 00000000 00000002 00000008 00000=
-01a=0A		 10000000 800001a1 00000000 00000002=0A		 00000008 0000001a 2000000=
-0 800001a2=0A		 00000000 00000002 00000008 0000001a=0A		 30000000 800001a3 =
-00000000 00000002=0A		 00000008 0000001a 40000000 800001a4=0A		 00000000 00=
-000002 00000008 0000001a=0A		 50000000 800001a5 00000000 00000002=0A		 0000=
-0008 0000001a 60000000 800001a6=0A		 00000000 00000002 00000008 0000001a=0A=
-		 70000000 800001a7 00000000 00000002=0A		 00000008 0000001a 80000000 8000=
-01a8=0A		 00000000 00000002 00000008 0000001a=0A		 90000000 800001a9 000000=
-00 00000002=0A		 00000008 0000001a a0000000 800001aa=0A		 00000000 00000002=
- 00000008 0000001a=0A		 b0000000 800001ab 00000000 00000002=0A		 00000008 0=
-000001a c0000000 800001ac=0A		 00000000 00000002 00000008 0000001a=0A		 d00=
-00000 800001ad 00000000 00000002=0A		 00000008 0000001a e0000000 800001ae=
-=0A		 00000000 00000002 00000008 0000001a=0A		 f0000000 800001af 00000000 0=
-0000002=0A		 00000008 0000001b 00000000 800001b0=0A		 00000000 00000002 000=
-00008 0000001b=0A		 10000000 800001b1 00000000 00000002=0A		 00000008 00000=
-01b 20000000 800001b2=0A		 00000000 00000002 00000008 0000001b=0A		 3000000=
-0 800001b3 00000000 00000002=0A		 00000008 0000001b 40000000 800001b4=0A		 =
-00000000 00000002 00000008 0000001b=0A		 50000000 800001b5 00000000 0000000=
-2=0A		 00000008 0000001b 60000000 800001b6=0A		 00000000 00000002 00000008 =
-0000001b=0A		 70000000 800001b7 00000000 00000002=0A		 00000008 0000001b 80=
-000000 800001b8=0A		 00000000 00000002 00000008 0000001b=0A		 90000000 8000=
-01b9 00000000 00000002=0A		 00000008 0000001b a0000000 800001ba=0A		 000000=
-00 00000002 00000008 0000001b=0A		 b0000000 800001bb 00000000 00000002=0A		=
- 00000008 0000001b c0000000 800001bc=0A		 00000000 00000002 00000008 000000=
-1b=0A		 d0000000 800001bd 00000000 00000002=0A		 00000008 0000001b e0000000=
- 800001be=0A		 00000000 00000002 00000008 0000001b=0A		 f0000000 800001bf 0=
-0000000 00000002=0A		 00000008 0000001c 00000000 800001c0=0A		 00000000 000=
-00002 00000008 0000001c=0A		 10000000 800001c1 00000000 00000002=0A		 00000=
-008 0000001c 20000000 800001c2=0A		 00000000 00000002 00000008 0000001c=0A	=
-	 30000000 800001c3 00000000 00000002=0A		 00000008 0000001c 40000000 80000=
-1c4=0A		 00000000 00000002 00000008 0000001c=0A		 50000000 800001c5 0000000=
-0 00000002=0A		 00000008 0000001c 60000000 800001c6=0A		 00000000 00000002 =
-00000008 0000001c=0A		 70000000 800001c7 00000000 00000002=0A		 00000008 00=
-00001c 80000000 800001c8=0A		 00000000 00000002 00000008 0000001c=0A		 9000=
-0000 800001c9 00000000 00000002=0A		 00000008 0000001c a0000000 800001ca=0A=
-		 00000000 00000002 00000008 0000001c=0A		 b0000000 800001cb 00000000 0000=
-0002=0A		 00000008 0000001c c0000000 800001cc=0A		 00000000 00000002 000000=
-08 0000001c=0A		 d0000000 800001cd 00000000 00000002=0A		 00000008 0000001c=
- e0000000 800001ce=0A		 00000000 00000002 00000008 0000001c=0A		 f0000000 8=
-00001cf 00000000 00000002=0A		 00000008 0000001d 00000000 800001d0=0A		 000=
-00000 00000002 00000008 0000001d=0A		 10000000 800001d1 00000000 00000002=
-=0A		 00000008 0000001d 20000000 800001d2=0A		 00000000 00000002 00000008 0=
-000001d=0A		 30000000 800001d3 00000000 00000002=0A		 00000008 0000001d 400=
-00000 800001d4=0A		 00000000 00000002 00000008 0000001d=0A		 50000000 80000=
-1d5 00000000 00000002=0A		 00000008 0000001d 60000000 800001d6=0A		 0000000=
-0 00000002 00000008 0000001d=0A		 70000000 800001d7 00000000 00000002=0A		 =
-00000008 0000001d 80000000 800001d8=0A		 00000000 00000002 00000008 0000001=
-d=0A		 90000000 800001d9 00000000 00000002=0A		 00000008 0000001d a0000000 =
-800001da=0A		 00000000 00000002 00000008 0000001d=0A		 b0000000 800001db 00=
-000000 00000002=0A		 00000008 0000001d c0000000 800001dc=0A		 00000000 0000=
-0002 00000008 0000001d=0A		 d0000000 800001dd 00000000 00000002=0A		 000000=
-08 0000001d e0000000 800001de=0A		 00000000 00000002 00000008 0000001d=0A		=
- f0000000 800001df 00000000 00000002=0A		 00000008 0000001e 00000000 800001=
-e0=0A		 00000000 00000002 00000008 0000001e=0A		 10000000 800001e1 00000000=
- 00000002=0A		 00000008 0000001e 20000000 800001e2=0A		 00000000 00000002 0=
-0000008 0000001e=0A		 30000000 800001e3 00000000 00000002=0A		 00000008 000=
-0001e 40000000 800001e4=0A		 00000000 00000002 00000008 0000001e=0A		 50000=
-000 800001e5 00000000 00000002=0A		 00000008 0000001e 60000000 800001e6=0A	=
-	 00000000 00000002 00000008 0000001e=0A		 70000000 800001e7 00000000 00000=
-002=0A		 00000008 0000001e 80000000 800001e8=0A		 00000000 00000002 0000000=
-8 0000001e=0A		 90000000 800001e9 00000000 00000002=0A		 00000008 0000001e =
-a0000000 800001ea=0A		 00000000 00000002 00000008 0000001e=0A		 b0000000 80=
-0001eb 00000000 00000002=0A		 00000008 0000001e c0000000 800001ec=0A		 0000=
-0000 00000002 00000008 0000001e=0A		 d0000000 800001ed 00000000 00000002=0A=
-		 00000008 0000001e e0000000 800001ee=0A		 00000000 00000002 00000008 0000=
-001e=0A		 f0000000 800001ef 00000000 00000002=0A		 00000008 0000001f 000000=
-00 800001f0=0A		 00000000 00000002 00000008 0000001f=0A		 10000000 800001f1=
- 00000000 00000002=0A		 00000008 0000001f 20000000 800001f2=0A		 00000000 0=
-0000002 00000008 0000001f=0A		 30000000 800001f3 00000000 00000002=0A		 000=
-00008 0000001f 40000000 800001f4=0A		 00000000 00000002 00000008 0000001f=
-=0A		 50000000 800001f5 00000000 00000002=0A		 00000008 0000001f 60000000 8=
-00001f6=0A		 00000000 00000002 00000008 0000001f=0A		 70000000 800001f7 000=
-00000 00000002=0A		 00000008 0000001f 80000000 800001f8=0A		 00000000 00000=
-002 00000008 0000001f=0A		 90000000 800001f9 00000000 00000002=0A		 0000000=
-8 0000001f a0000000 800001fa=0A		 00000000 00000002 00000008 0000001f=0A		 =
-b0000000 800001fb 00000000 00000002=0A		 00000008 0000001f c0000000 800001f=
-c=0A		 00000000 00000002 00000008 0000001f=0A		 d0000000 800001fd 00000000 =
-00000002=0A		 00000008 0000001f e0000000 800001fe=0A		 00000000 00000002 00=
-000008 0000001f=0A		 f0000000 800001ff 00000000 00000002=0A		 00000008 0000=
-0020 00000000 80000200=0A		 00000000 00000002 00000008 00000020=0A		 100000=
-00 80000201 00000000 00000002=0A		 00000008 00000020 20000000 80000202=0A		=
- 00000000 00000002 00000008 00000020=0A		 30000000 80000203 00000000 000000=
-02=0A		 00000008 00000020 40000000 80000204=0A		 00000000 00000002 00000008=
- 00000020=0A		 50000000 80000205 00000000 00000002=0A		 00000008 00000020 6=
-0000000 80000206=0A		 00000000 00000002 00000008 00000020=0A		 70000000 800=
-00207 00000000 00000002=0A		 00000008 00000020 80000000 80000208=0A		 00000=
-000 00000002 00000008 00000020=0A		 90000000 80000209 00000000 00000002=0A	=
-	 00000008 00000020 a0000000 8000020a=0A		 00000000 00000002 00000008 00000=
-020=0A		 b0000000 8000020b 00000000 00000002=0A		 00000008 00000020 c000000=
-0 8000020c=0A		 00000000 00000002 00000008 00000020=0A		 d0000000 8000020d =
-00000000 00000002=0A		 00000008 00000020 e0000000 8000020e=0A		 00000000 00=
-000002 00000008 00000020=0A		 f0000000 8000020f 00000000 00000002=0A		 0000=
-0008 00000021 00000000 80000210=0A		 00000000 00000002 00000008 00000021=0A=
-		 10000000 80000211 00000000 00000002=0A		 00000008 00000021 20000000 8000=
-0212=0A		 00000000 00000002 00000008 00000021=0A		 30000000 80000213 000000=
-00 00000002=0A		 00000008 00000021 40000000 80000214=0A		 00000000 00000002=
- 00000008 00000021=0A		 50000000 80000215 00000000 00000002=0A		 00000008 0=
-0000021 60000000 80000216=0A		 00000000 00000002 00000008 00000021=0A		 700=
-00000 80000217 00000000 00000002=0A		 00000008 00000021 80000000 80000218=
-=0A		 00000000 00000002 00000008 00000021=0A		 90000000 80000219 00000000 0=
-0000002=0A		 00000008 00000021 a0000000 8000021a=0A		 00000000 00000002 000=
-00008 00000021=0A		 b0000000 8000021b 00000000 00000002=0A		 00000008 00000=
-021 c0000000 8000021c=0A		 00000000 00000002 00000008 00000021=0A		 d000000=
-0 8000021d 00000000 00000002=0A		 00000008 00000021 e0000000 8000021e=0A		 =
-00000000 00000002 00000008 00000021=0A		 f0000000 8000021f 00000000 0000000=
-2=0A		 00000008 00000022 00000000 80000220=0A		 00000000 00000002 00000008 =
-00000022=0A		 10000000 80000221 00000000 00000002=0A		 00000008 00000022 20=
-000000 80000222=0A		 00000000 00000002 00000008 00000022=0A		 30000000 8000=
-0223 00000000 00000002=0A		 00000008 00000022 40000000 80000224=0A		 000000=
-00 00000002 00000008 00000022=0A		 50000000 80000225 00000000 00000002=0A		=
- 00000008 00000022 60000000 80000226=0A		 00000000 00000002 00000008 000000=
-22=0A		 70000000 80000227 00000000 00000002=0A		 00000008 00000022 80000000=
- 80000228=0A		 00000000 00000002 00000008 00000022=0A		 90000000 80000229 0=
-0000000 00000002=0A		 00000008 00000022 a0000000 8000022a=0A		 00000000 000=
-00002 00000008 00000022=0A		 b0000000 8000022b 00000000 00000002=0A		 00000=
-008 00000022 c0000000 8000022c=0A		 00000000 00000002 00000008 00000022=0A	=
-	 d0000000 8000022d 00000000 00000002=0A		 00000008 00000022 e0000000 80000=
-22e=0A		 00000000 00000002 00000008 00000022=0A		 f0000000 8000022f 0000000=
-0 00000002=0A		 00000008 00000023 00000000 80000230=0A		 00000000 00000002 =
-00000008 00000023=0A		 10000000 80000231 00000000 00000002=0A		 00000008 00=
-000023 20000000 80000232=0A		 00000000 00000002 00000008 00000023=0A		 3000=
-0000 80000233 00000000 00000002=0A		 00000008 00000023 40000000 80000234=0A=
-		 00000000 00000002 00000008 00000023=0A		 50000000 80000235 00000000 0000=
-0002=0A		 00000008 00000023 60000000 80000236=0A		 00000000 00000002 000000=
-08 00000023=0A		 70000000 80000237 00000000 00000002=0A		 00000008 00000023=
- 80000000 80000238=0A		 00000000 00000002 00000008 00000023=0A		 90000000 8=
-0000239 00000000 00000002=0A		 00000008 00000023 a0000000 8000023a=0A		 000=
-00000 00000002 00000008 00000023=0A		 b0000000 8000023b 00000000 00000002=
-=0A		 00000008 00000023 c0000000 8000023c=0A		 00000000 00000002 00000008 0=
-0000023=0A		 d0000000 8000023d 00000000 00000002=0A		 00000008 00000023 e00=
-00000 8000023e=0A		 00000000 00000002 00000008 00000023=0A		 f0000000 80000=
-23f 00000000 00000002=0A		 00000008 00000024 00000000 80000240=0A		 0000000=
-0 00000002 00000008 00000024=0A		 10000000 80000241 00000000 00000002=0A		 =
-00000008 00000024 20000000 80000242=0A		 00000000 00000002 00000008 0000002=
-4=0A		 30000000 80000243 00000000 00000002=0A		 00000008 00000024 40000000 =
-80000244=0A		 00000000 00000002 00000008 00000024=0A		 50000000 80000245 00=
-000000 00000002=0A		 00000008 00000024 60000000 80000246=0A		 00000000 0000=
-0002 00000008 00000024=0A		 70000000 80000247 00000000 00000002=0A		 000000=
-08 00000024 80000000 80000248=0A		 00000000 00000002 00000008 00000024=0A		=
- 90000000 80000249 00000000 00000002=0A		 00000008 00000024 a0000000 800002=
-4a=0A		 00000000 00000002 00000008 00000024=0A		 b0000000 8000024b 00000000=
- 00000002=0A		 00000008 00000024 c0000000 8000024c=0A		 00000000 00000002 0=
-0000008 00000024=0A		 d0000000 8000024d 00000000 00000002=0A		 00000008 000=
-00024 e0000000 8000024e=0A		 00000000 00000002 00000008 00000024=0A		 f0000=
-000 8000024f 00000000 00000002=0A		 00000008 00000025 00000000 80000250=0A	=
-	 00000000 00000002 00000008 00000025=0A		 10000000 80000251 00000000 00000=
-002=0A		 00000008 00000025 20000000 80000252=0A		 00000000 00000002 0000000=
-8 00000025=0A		 30000000 80000253 00000000 00000002=0A		 00000008 00000025 =
-40000000 80000254=0A		 00000000 00000002 00000008 00000025=0A		 50000000 80=
-000255 00000000 00000002=0A		 00000008 00000025 60000000 80000256=0A		 0000=
-0000 00000002 00000008 00000025=0A		 70000000 80000257 00000000 00000002=0A=
-		 00000008 00000025 80000000 80000258=0A		 00000000 00000002 00000008 0000=
-0025=0A		 90000000 80000259 00000000 00000002=0A		 00000008 00000025 a00000=
-00 8000025a=0A		 00000000 00000002 00000008 00000025=0A		 b0000000 8000025b=
- 00000000 00000002=0A		 00000008 00000025 c0000000 8000025c=0A		 00000000 0=
-0000002 00000008 00000025=0A		 d0000000 8000025d 00000000 00000002=0A		 000=
-00008 00000025 e0000000 8000025e=0A		 00000000 00000002 00000008 00000025=
-=0A		 f0000000 8000025f 00000000 00000002=0A		 00000008 00000026 00000000 8=
-0000260=0A		 00000000 00000002 00000008 00000026=0A		 10000000 80000261 000=
-00000 00000002=0A		 00000008 00000026 20000000 80000262=0A		 00000000 00000=
-002 00000008 00000026=0A		 30000000 80000263 00000000 00000002=0A		 0000000=
-8 00000026 40000000 80000264=0A		 00000000 00000002 00000008 00000026=0A		 =
-50000000 80000265 00000000 00000002=0A		 00000008 00000026 60000000 8000026=
-6=0A		 00000000 00000002 00000008 00000026=0A		 70000000 80000267 00000000 =
-00000002=0A		 00000008 00000026 80000000 80000268=0A		 00000000 00000002 00=
-000008 00000026=0A		 90000000 80000269 00000000 00000002=0A		 00000008 0000=
-0026 a0000000 8000026a=0A		 00000000 00000002 00000008 00000026=0A		 b00000=
-00 8000026b 00000000 00000003=0A		 00000008 00000026 c0000000 8000026c=0A		=
- 00000000 00000003 00000008 00000026=0A		 d0000000 8000026d 00000000 000000=
-03=0A		 00000008 00000026 e0000000 8000026e=0A		 00000000 00000003 00000008=
- 00000026=0A		 f0000000 8000026f 00000000 00000003=0A		 00000008 00000027 0=
-0000000 80000270=0A		 00000000 00000003 00000008 00000027=0A		 10000000 800=
-00271 00000000 00000003=0A		 00000008 00000027 20000000 80000272=0A		 00000=
-000 00000003 00000008 00000027=0A		 30000000 80000273 00000000 00000003=0A	=
-	 00000008 00000027 40000000 80000274=0A		 00000000 00000003 00000008 00000=
-027=0A		 50000000 80000275 00000000 00000003=0A		 00000008 00000027 6000000=
-0 80000276=0A		 00000000 00000003 00000008 00000027=0A		 70000000 80000277 =
-00000000 00000003=0A		 00000008 00000027 80000000 80000278=0A		 00000000 00=
-000003 00000008 00000027=0A		 90000000 80000279 00000000 00000003=0A		 0000=
-0008 00000027 a0000000 8000027a=0A		 00000000 00000003 00000008 00000027=0A=
-		 b0000000 8000027b 00000000 00000003=0A		 00000008 00000027 c0000000 8000=
-027c=0A		 00000000 00000003 00000008 00000027=0A		 d0000000 8000027d 000000=
-00 00000003=0A		 00000008 00000027 e0000000 8000027e=0A		 00000000 00000003=
- 00000008 00000027=0A		 f0000000 8000027f 00000000 00000003=0A		 00000008 0=
-0000028 00000000 80000280=0A		 00000000 00000003 00000008 00000028=0A		 100=
-00000 80000281 00000000 00000003=0A		 00000008 00000028 20000000 80000282=
-=0A		 00000000 00000003 00000008 00000028=0A		 30000000 80000283 00000000 0=
-0000003=0A		 00000008 00000028 40000000 80000284=0A		 00000000 00000003 000=
-00008 00000028=0A		 50000000 80000285 00000000 00000003=0A		 00000008 00000=
-028 60000000 80000286=0A		 00000000 00000003 00000008 00000028=0A		 7000000=
-0 80000287 00000000 00000003=0A		 00000008 00000028 80000000 80000288=0A		 =
-00000000 00000003 00000008 00000028=0A		 90000000 80000289 00000000 0000000=
-3=0A		 00000008 00000028 a0000000 8000028a=0A		 00000000 00000003 00000008 =
-00000028=0A		 b0000000 8000028b 00000000 00000003=0A		 00000008 00000028 c0=
-000000 8000028c=0A		 00000000 00000003 00000008 00000028=0A		 d0000000 8000=
-028d 00000000 00000003=0A		 00000008 00000028 e0000000 8000028e=0A		 000000=
-00 00000003 00000008 00000028=0A		 f0000000 8000028f 00000000 00000003=0A		=
- 00000008 00000029 00000000 80000290=0A		 00000000 00000003 00000008 000000=
-29=0A		 10000000 80000291 00000000 00000003=0A		 00000008 00000029 20000000=
- 80000292=0A		 00000000 00000003 00000008 00000029=0A		 30000000 80000293 0=
-0000000 00000003=0A		 00000008 00000029 40000000 80000294=0A		 00000000 000=
-00003 00000008 00000029=0A		 50000000 80000295 00000000 00000003=0A		 00000=
-008 00000029 60000000 80000296=0A		 00000000 00000003 00000008 00000029=0A	=
-	 70000000 80000297 00000000 00000003=0A		 00000008 00000029 80000000 80000=
-298=0A		 00000000 00000003 00000008 00000029=0A		 90000000 80000299 0000000=
-0 00000003=0A		 00000008 00000029 a0000000 8000029a=0A		 00000000 00000003 =
-00000008 00000029=0A		 b0000000 8000029b 00000000 00000003=0A		 00000008 00=
-000029 c0000000 8000029c=0A		 00000000 00000003 00000008 00000029=0A		 d000=
-0000 8000029d 00000000 00000003=0A		 00000008 00000029 e0000000 8000029e=0A=
-		 00000000 00000003 00000008 00000029=0A		 f0000000 8000029f 00000000 0000=
-0003=0A		 00000008 0000002a 00000000 800002a0=0A		 00000000 00000003 000000=
-08 0000002a=0A		 10000000 800002a1 00000000 00000003=0A		 00000008 0000002a=
- 20000000 800002a2=0A		 00000000 00000003 00000008 0000002a=0A		 30000000 8=
-00002a3 00000000 00000003=0A		 00000008 0000002a 40000000 800002a4=0A		 000=
-00000 00000003 00000008 0000002a=0A		 50000000 800002a5 00000000 00000003=
-=0A		 00000008 0000002a 60000000 800002a6=0A		 00000000 00000003 00000008 0=
-000002a=0A		 70000000 800002a7 00000000 00000003=0A		 00000008 0000002a 800=
-00000 800002a8=0A		 00000000 00000003 00000008 0000002a=0A		 90000000 80000=
-2a9 00000000 00000003=0A		 00000008 0000002a a0000000 800002aa=0A		 0000000=
-0 00000003 00000008 0000002a=0A		 b0000000 800002ab 00000000 00000003=0A		 =
-00000008 0000002a c0000000 800002ac=0A		 00000000 00000003 00000008 0000002=
-a=0A		 d0000000 800002ad 00000000 00000003=0A		 00000008 0000002a e0000000 =
-800002ae=0A		 00000000 00000003 00000008 0000002a=0A		 f0000000 800002af 00=
-000000 00000003=0A		 00000008 0000002b 00000000 800002b0=0A		 00000000 0000=
-0003 00000008 0000002b=0A		 10000000 800002b1 00000000 00000003=0A		 000000=
-08 0000002b 20000000 800002b2=0A		 00000000 00000003 00000008 0000002b=0A		=
- 30000000 800002b3 00000000 00000003=0A		 00000008 0000002b 40000000 800002=
-b4=0A		 00000000 00000003 00000008 0000002b=0A		 50000000 800002b5 00000000=
- 00000003=0A		 00000008 0000002b 60000000 800002b6=0A		 00000000 00000003 0=
-0000008 0000002b=0A		 70000000 800002b7 00000000 00000003=0A		 00000008 000=
-0002b 80000000 800002b8=0A		 00000000 00000003 00000008 0000002b=0A		 90000=
-000 800002b9 00000000 00000003=0A		 00000008 0000002b a0000000 800002ba=0A	=
-	 00000000 00000003 00000008 0000002b=0A		 b0000000 800002bb 00000000 00000=
-003=0A		 00000008 0000002b c0000000 800002bc=0A		 00000000 00000003 0000000=
-8 0000002b=0A		 d0000000 800002bd 00000000 00000003=0A		 00000008 0000002b =
-e0000000 800002be=0A		 00000000 00000003 00000008 0000002b=0A		 f0000000 80=
-0002bf 00000000 00000003=0A		 00000008 0000002c 00000000 800002c0=0A		 0000=
-0000 00000003 00000008 0000002c=0A		 10000000 800002c1 00000000 00000003=0A=
-		 00000008 0000002c 20000000 800002c2=0A		 00000000 00000003 00000008 0000=
-002c=0A		 30000000 800002c3 00000000 00000003=0A		 00000008 0000002c 400000=
-00 800002c4=0A		 00000000 00000003 00000008 0000002c=0A		 50000000 800002c5=
- 00000000 00000003=0A		 00000008 0000002c 60000000 800002c6=0A		 00000000 0=
-0000003 00000008 0000002c=0A		 70000000 800002c7 00000000 00000003=0A		 000=
-00008 0000002c 80000000 800002c8=0A		 00000000 00000003 00000008 0000002c=
-=0A		 90000000 800002c9 00000000 00000003=0A		 00000008 0000002c a0000000 8=
-00002ca=0A		 00000000 00000003 00000008 0000002c=0A		 b0000000 800002cb 000=
-00000 00000003=0A		 00000008 0000002c c0000000 800002cc=0A		 00000000 00000=
-003 00000008 0000002c=0A		 d0000000 800002cd 00000000 00000003=0A		 0000000=
-8 0000002c e0000000 800002ce=0A		 00000000 00000003 00000008 0000002c=0A		 =
-f0000000 800002cf 00000000 00000003=0A		 00000008 0000002d 00000000 800002d=
-0=0A		 00000000 00000003 00000008 0000002d=0A		 10000000 800002d1 00000000 =
-00000003=0A		 00000008 0000002d 20000000 800002d2=0A		 00000000 00000003 00=
-000008 0000002d=0A		 30000000 800002d3 00000000 00000003=0A		 00000008 0000=
-002d 40000000 800002d4=0A		 00000000 00000003 00000008 0000002d=0A		 500000=
-00 800002d5 00000000 00000003=0A		 00000008 0000002d 60000000 800002d6=0A		=
- 00000000 00000003 00000008 0000002d=0A		 70000000 800002d7 00000000 000000=
-03=0A		 00000008 0000002d 80000000 800002d8=0A		 00000000 00000003 00000008=
- 0000002d=0A		 90000000 800002d9 00000000 00000003=0A		 00000008 0000002d a=
-0000000 800002da=0A		 00000000 00000003 00000008 0000002d=0A		 b0000000 800=
-002db 00000000 00000003=0A		 00000008 0000002d c0000000 800002dc=0A		 00000=
-000 00000003 00000008 0000002d=0A		 d0000000 800002dd 00000000 00000003=0A	=
-	 00000008 0000002d e0000000 800002de=0A		 00000000 00000003 00000008 00000=
-02d=0A		 f0000000 800002df 00000000 00000003=0A		 00000008 0000002e 0000000=
-0 800002e0=0A		 00000000 00000003 00000008 0000002e=0A		 10000000 800002e1 =
-00000000 00000003=0A		 00000008 0000002e 20000000 800002e2=0A		 00000000 00=
-000003 00000008 0000002e=0A		 30000000 800002e3 00000000 00000003=0A		 0000=
-0008 0000002e 40000000 800002e4=0A		 00000000 00000003 00000008 0000002e=0A=
-		 50000000 800002e5 00000000 00000003=0A		 00000008 0000002e 60000000 8000=
-02e6=0A		 00000000 00000003 00000008 0000002e=0A		 70000000 800002e7 000000=
-00 00000003=0A		 00000008 0000002e 80000000 800002e8=0A		 00000000 00000003=
- 00000008 0000002e=0A		 90000000 800002e9 00000000 00000003=0A		 00000008 0=
-000002e a0000000 800002ea=0A		 00000000 00000003 00000008 0000002e=0A		 b00=
-00000 800002eb 00000000 00000003=0A		 00000008 0000002e c0000000 800002ec=
-=0A		 00000000 00000003 00000008 0000002e=0A		 d0000000 800002ed 00000000 0=
-0000003=0A		 00000008 0000002e e0000000 800002ee=0A		 00000000 00000003 000=
-00008 0000002e=0A		 f0000000 800002ef 00000000 00000003=0A		 00000008 00000=
-02f 00000000 800002f0=0A		 00000000 00000003 00000008 0000002f=0A		 1000000=
-0 800002f1 00000000 00000003=0A		 00000008 0000002f 20000000 800002f2=0A		 =
-00000000 00000003 00000008 0000002f=0A		 30000000 800002f3 00000000 0000000=
-3=0A		 00000008 0000002f 40000000 800002f4=0A		 00000000 00000003 00000008 =
-0000002f=0A		 50000000 800002f5 00000000 00000003=0A		 00000008 0000002f 60=
-000000 800002f6=0A		 00000000 00000003 00000008 0000002f=0A		 70000000 8000=
-02f7 00000000 00000003=0A		 00000008 0000002f 80000000 800002f8=0A		 000000=
-00 00000003 00000008 0000002f=0A		 90000000 800002f9 00000000 00000003=0A		=
- 00000008 0000002f a0000000 800002fa=0A		 00000000 00000003 00000008 000000=
-2f=0A		 b0000000 800002fb 00000000 00000003=0A		 00000008 0000002f c0000000=
- 800002fc=0A		 00000000 00000003 00000008 0000002f=0A		 d0000000 800002fd 0=
-0000000 00000003=0A		 00000008 0000002f e0000000 800002fe=0A		 00000000 000=
-00003 00000008 0000002f=0A		 f0000000 800002ff 00000000 00000003=0A		 00000=
-008 00000030 00000000 80000300=0A		 00000000 00000003 00000008 00000030=0A	=
-	 10000000 80000301 00000000 00000003=0A		 00000008 00000030 20000000 80000=
-302=0A		 00000000 00000003 00000008 00000030=0A		 30000000 80000303 0000000=
-0 00000003=0A		 00000008 00000030 40000000 80000304=0A		 00000000 00000003 =
-00000008 00000030=0A		 50000000 80000305 00000000 00000003=0A		 00000008 00=
-000030 60000000 80000306=0A		 00000000 00000003 00000008 00000030=0A		 7000=
-0000 80000307 00000000 00000003=0A		 00000008 00000030 80000000 80000308=0A=
-		 00000000 00000003 00000008 00000030=0A		 90000000 80000309 00000000 0000=
-0003=0A		 00000008 00000030 a0000000 8000030a=0A		 00000000 00000003 000000=
-08 00000030=0A		 b0000000 8000030b 00000000 00000003=0A		 00000008 00000030=
- c0000000 8000030c=0A		 00000000 00000003 00000008 00000030=0A		 d0000000 8=
-000030d 00000000 00000003=0A		 00000008 00000030 e0000000 8000030e=0A		 000=
-00000 00000003 00000008 00000030=0A		 f0000000 8000030f 00000000 00000003=
-=0A		 00000008 00000031 00000000 80000310=0A		 00000000 00000003 00000008 0=
-0000031=0A		 10000000 80000311 00000000 00000003=0A		 00000008 00000031 200=
-00000 80000312=0A		 00000000 00000003 00000008 00000031=0A		 30000000 80000=
-313 00000000 00000003=0A		 00000008 00000031 40000000 80000314=0A		 0000000=
-0 00000003 00000008 00000031=0A		 50000000 80000315 00000000 00000003=0A		 =
-00000008 00000031 60000000 80000316=0A		 00000000 00000003 00000008 0000003=
-1=0A		 70000000 80000317 00000000 00000003=0A		 00000008 00000031 80000000 =
-80000318=0A		 00000000 00000003 00000008 00000031=0A		 90000000 80000319 00=
-000000 00000003=0A		 00000008 00000031 a0000000 8000031a=0A		 00000000 0000=
-0003 00000008 00000031=0A		 b0000000 8000031b 00000000 00000003=0A		 000000=
-08 00000031 c0000000 8000031c=0A		 00000000 00000003 00000008 00000031=0A		=
- d0000000 8000031d 00000000 00000003=0A		 00000008 00000031 e0000000 800003=
-1e=0A		 00000000 00000003 00000008 00000031=0A		 f0000000 8000031f 00000000=
- 00000003=0A		 00000008 00000032 00000000 80000320=0A		 00000000 00000003 0=
-0000008 00000032=0A		 10000000 80000321 00000000 00000003=0A		 00000008 000=
-00032 20000000 80000322=0A		 00000000 00000003 00000008 00000032=0A		 30000=
-000 80000323 00000000 00000003=0A		 00000008 00000032 40000000 80000324=0A	=
-	 00000000 00000003 00000008 00000032=0A		 50000000 80000325 00000000 00000=
-003=0A		 00000008 00000032 60000000 80000326=0A		 00000000 00000003 0000000=
-8 00000032=0A		 70000000 80000327 00000000 00000003=0A		 00000008 00000032 =
-80000000 80000328=0A		 00000000 00000003 00000008 00000032=0A		 90000000 80=
-000329 00000000 00000003=0A		 00000008 00000032 a0000000 8000032a=0A		 0000=
-0000 00000003 00000008 00000032=0A		 b0000000 8000032b 00000000 00000003=0A=
-		 00000008 00000032 c0000000 8000032c=0A		 00000000 00000003 00000008 0000=
-0032=0A		 d0000000 8000032d 00000000 00000003=0A		 00000008 00000032 e00000=
-00 8000032e=0A		 00000000 00000003 00000008 00000032=0A		 f0000000 8000032f=
- 00000000 00000003=0A		 00000008 00000033 00000000 80000330=0A		 00000000 0=
-0000003 00000008 00000033=0A		 10000000 80000331 00000000 00000003=0A		 000=
-00008 00000033 20000000 80000332=0A		 00000000 00000003 00000008 00000033=
-=0A		 30000000 80000333 00000000 00000003=0A		 00000008 00000033 40000000 8=
-0000334=0A		 00000000 00000003 00000008 00000033=0A		 50000000 80000335 000=
-00000 00000003=0A		 00000008 00000033 60000000 80000336=0A		 00000000 00000=
-003 00000008 00000033=0A		 70000000 80000337 00000000 00000003=0A		 0000000=
-8 00000033 80000000 80000338=0A		 00000000 00000003 00000008 00000033=0A		 =
-90000000 80000339 00000000 00000003=0A		 00000008 00000033 a0000000 8000033=
-a=0A		 00000000 00000003 00000008 00000033=0A		 b0000000 8000033b 00000000 =
-00000003=0A		 00000008 00000033 c0000000 8000033c=0A		 00000000 00000003 00=
-000008 00000033=0A		 d0000000 8000033d 00000000 00000003=0A		 00000008 0000=
-0033 e0000000 8000033e=0A		 00000000 00000003 00000008 00000033=0A		 f00000=
-00 8000033f 00000000 00000003=0A		 00000008 00000034 00000000 80000340=0A		=
- 00000000 00000003 00000008 00000034=0A		 10000000 80000341 00000000 000000=
-03=0A		 00000008 00000034 20000000 80000342=0A		 00000000 00000003 00000008=
- 00000034=0A		 30000000 80000343 00000000 00000003=0A		 00000008 00000034 4=
-0000000 80000344=0A		 00000000 00000003 00000008 00000034=0A		 50000000 800=
-00345 00000000 00000003=0A		 00000008 00000034 60000000 80000346=0A		 00000=
-000 00000003 00000008 00000034=0A		 70000000 80000347 00000000 00000003=0A	=
-	 00000008 00000034 80000000 80000348=0A		 00000000 00000003 00000008 00000=
-034=0A		 90000000 80000349 00000000 00000003=0A		 00000008 00000034 a000000=
-0 8000034a=0A		 00000000 00000003 00000008 00000034=0A		 b0000000 8000034b =
-00000000 00000003=0A		 00000008 00000034 c0000000 8000034c=0A		 00000000 00=
-000003 00000008 00000034=0A		 d0000000 8000034d 00000000 00000003=0A		 0000=
-0008 00000034 e0000000 8000034e=0A		 00000000 00000003 00000008 00000034=0A=
-		 f0000000 8000034f 00000000 00000003=0A		 00000008 00000035 00000000 8000=
-0350=0A		 00000000 00000003 00000008 00000035=0A		 10000000 80000351 000000=
-00 00000003=0A		 00000008 00000035 20000000 80000352=0A		 00000000 00000003=
- 00000008 00000035=0A		 30000000 80000353 00000000 00000003=0A		 00000008 0=
-0000035 40000000 80000354=0A		 00000000 00000003 00000008 00000035=0A		 500=
-00000 80000355 00000000 00000003=0A		 00000008 00000035 60000000 80000356=
-=0A		 00000000 00000003 00000008 00000035=0A		 70000000 80000357 00000000 0=
-0000003=0A		 00000008 00000035 80000000 80000358=0A		 00000000 00000003 000=
-00008 00000035=0A		 90000000 80000359 00000000 00000003=0A		 00000008 00000=
-035 a0000000 8000035a=0A		 00000000 00000003 00000008 00000035=0A		 b000000=
-0 8000035b 00000000 00000003=0A		 00000008 00000035 c0000000 8000035c=0A		 =
-00000000 00000003 00000008 00000035=0A		 d0000000 8000035d 00000000 0000000=
-3=0A		 00000008 00000035 e0000000 8000035e=0A		 00000000 00000003 00000008 =
-00000035=0A		 f0000000 8000035f 00000000 00000003=0A		 00000008 00000036 00=
-000000 80000360=0A		 00000000 00000003 00000008 00000036=0A		 10000000 8000=
-0361 00000000 00000003=0A		 00000008 00000036 20000000 80000362=0A		 000000=
-00 00000003 00000008 00000036=0A		 30000000 80000363 00000000 00000003=0A		=
- 00000008 00000036 40000000 80000364=0A		 00000000 00000003 00000008 000000=
-36=0A		 50000000 80000365 00000000 00000003=0A		 00000008 00000036 60000000=
- 80000366=0A		 00000000 00000003 00000008 00000036=0A		 70000000 80000367 0=
-0000000 00000003=0A		 00000008 00000036 80000000 80000368=0A		 00000000 000=
-00003 00000008 00000036=0A		 90000000 80000369 00000000 00000003=0A		 00000=
-008 00000036 a0000000 8000036a=0A		 00000000 00000003 00000008 00000036=0A	=
-	 b0000000 8000036b 00000000 00000003=0A		 00000008 00000036 c0000000 80000=
-36c=0A		 00000000 00000003 00000008 00000036=0A		 d0000000 8000036d 0000000=
-0 00000003=0A		 00000008 00000036 e0000000 8000036e=0A		 00000000 00000003 =
-00000008 00000036=0A		 f0000000 8000036f 00000000 00000003=0A		 00000008 00=
-000037 00000000 80000370=0A		 00000000 00000003 00000008 00000037=0A		 1000=
-0000 80000371 00000000 00000003=0A		 00000008 00000037 20000000 80000372=0A=
-		 00000000 00000003 00000008 00000037=0A		 30000000 80000373 00000000 0000=
-0003=0A		 00000008 00000037 40000000 80000374=0A		 00000000 00000003 000000=
-08 00000037=0A		 50000000 80000375 00000000 00000003=0A		 00000008 00000037=
- 60000000 80000376=0A		 00000000 00000003 00000008 00000037=0A		 70000000 8=
-0000377 00000000 00000003=0A		 00000008 00000037 80000000 80000378=0A		 000=
-00000 00000003 00000008 00000037=0A		 90000000 80000379 00000000 00000003=
-=0A		 00000008 00000037 a0000000 8000037a=0A		 00000000 00000003 00000008 0=
-0000037=0A		 b0000000 8000037b 00000000 00000003=0A		 00000008 00000037 c00=
-00000 8000037c=0A		 00000000 00000003 00000008 00000037=0A		 d0000000 80000=
-37d 00000000 00000003=0A		 00000008 00000037 e0000000 8000037e=0A		 0000000=
-0 00000003 00000008 00000037=0A		 f0000000 8000037f 00000000 00000003=0A		 =
-00000008 00000038 00000000 80000380=0A		 00000000 00000003 00000008 0000003=
-8=0A		 10000000 80000381 00000000 00000003=0A		 00000008 00000038 20000000 =
-80000382=0A		 00000000 00000003 00000008 00000038=0A		 30000000 80000383 00=
-000000 00000003=0A		 00000008 00000038 40000000 80000384=0A		 00000000 0000=
-0003 00000008 00000038=0A		 50000000 80000385 00000000 00000003=0A		 000000=
-08 00000038 60000000 80000386=0A		 00000000 00000003 00000008 00000038=0A		=
- 70000000 80000387 00000000 00000003=0A		 00000008 00000038 80000000 800003=
-88=0A		 00000000 00000003 00000008 00000038=0A		 90000000 80000389 00000000=
- 00000003=0A		 00000008 00000038 a0000000 8000038a=0A		 00000000 00000003 0=
-0000008 00000038=0A		 b0000000 8000038b 00000000 00000003=0A		 00000008 000=
-00038 c0000000 8000038c=0A		 00000000 00000003 00000008 00000038=0A		 d0000=
-000 8000038d 00000000 00000003=0A		 00000008 00000038 e0000000 8000038e=0A	=
-	 00000000 00000003 00000008 00000038=0A		 f0000000 8000038f 00000000 00000=
-003=0A		 00000008 00000039 00000000 80000390=0A		 00000000 00000003 0000000=
-8 00000039=0A		 10000000 80000391 00000000 00000003=0A		 00000008 00000039 =
-20000000 80000392=0A		 00000000 00000003 00000008 00000039=0A		 30000000 80=
-000393 00000000 00000003=0A		 00000008 00000039 40000000 80000394=0A		 0000=
-0000 00000003 00000008 00000039=0A		 50000000 80000395 00000000 00000003=0A=
-		 00000008 00000039 60000000 80000396=0A		 00000000 00000003 00000008 0000=
-0039=0A		 70000000 80000397 00000000 00000003=0A		 00000008 00000039 800000=
-00 80000398=0A		 00000000 00000003 00000008 00000039=0A		 90000000 80000399=
- 00000000 00000003=0A		 00000008 00000039 a0000000 8000039a=0A		 00000000 0=
-0000003 00000008 00000039=0A		 b0000000 8000039b 00000000 00000003=0A		 000=
-00008 00000039 c0000000 8000039c=0A		 00000000 00000003 00000008 00000039=
-=0A		 d0000000 8000039d 00000000 00000003=0A		 00000008 00000039 e0000000 8=
-000039e=0A		 00000000 00000003 00000008 00000039=0A		 f0000000 8000039f 000=
-00000 00000003=0A		 00000008 0000003a 00000000 800003a0=0A		 00000000 00000=
-003 00000008 0000003a=0A		 10000000 800003a1 00000000 00000003=0A		 0000000=
-8 0000003a 20000000 800003a2=0A		 00000000 00000003 00000008 0000003a=0A		 =
-30000000 800003a3 00000000 00000003=0A		 00000008 0000003a 40000000 800003a=
-4=0A		 00000000 00000003 00000008 0000003a=0A		 50000000 800003a5 00000000 =
-00000003=0A		 00000008 0000003a 60000000 800003a6=0A		 00000000 00000003 00=
-000008 0000003a=0A		 70000000 800003a7 00000000 00000003=0A		 00000008 0000=
-003a 80000000 800003a8=0A		 00000000 00000003 00000008 0000003a=0A		 900000=
-00 800003a9 00000000 00000003=0A		 00000008 0000003a a0000000 800003aa=0A		=
- 00000000 00000003 00000008 0000003a=0A		 b0000000 800003ab 00000000 000000=
-03=0A		 00000008 0000003a c0000000 800003ac=0A		 00000000 00000003 00000008=
- 0000003a=0A		 d0000000 800003ad 00000000 00000003=0A		 00000008 0000003a e=
-0000000 800003ae=0A		 00000000 00000003 00000008 0000003a=0A		 f0000000 800=
-003af 00000000 00000003=0A		 00000008 0000003b 00000000 800003b0=0A		 00000=
-000 00000003 00000008 0000003b=0A		 10000000 800003b1 00000000 00000003=0A	=
-	 00000008 0000003b 20000000 800003b2=0A		 00000000 00000003 00000008 00000=
-03b=0A		 30000000 800003b3 00000000 00000003=0A		 00000008 0000003b 4000000=
-0 800003b4=0A		 00000000 00000003 00000008 0000003b=0A		 50000000 800003b5 =
-00000000 00000003=0A		 00000008 0000003b 60000000 800003b6=0A		 00000000 00=
-000003 00000008 0000003b=0A		 70000000 800003b7 00000000 00000003=0A		 0000=
-0008 0000003b 80000000 800003b8=0A		 00000000 00000003 00000008 0000003b=0A=
-		 90000000 800003b9 00000000 00000003=0A		 00000008 0000003b a0000000 8000=
-03ba=0A		 00000000 00000003 00000008 0000003b=0A		 b0000000 800003bb 000000=
-00 00000003=0A		 00000008 0000003b c0000000 800003bc=0A		 00000000 00000003=
- 00000008 0000003b=0A		 d0000000 800003bd 00000000 00000003=0A		 00000008 0=
-000003b e0000000 800003be=0A		 00000000 00000003 00000008 0000003b=0A		 f00=
-00000 800003bf 00000000 00000003=0A		 00000008 0000003c 00000000 800003c0=
-=0A		 00000000 ffffffff 00000000 0000003c=0A		 10000000 800003c1 00000000 f=
-fffffff=0A		 00000000 0000003c 20000000 800003c2=0A		 00000000 ffffffff 000=
-00000 0000003c=0A		 30000000 800003c3 00000000 ffffffff=0A		 00000000 00000=
-03c 40000000 800003c4=0A		 00000000 ffffffff 00000000 0000003c=0A		 5000000=
-0 800003c5 00000000 ffffffff=0A		 00000000 0000003c 60000000 800003c6=0A		 =
-00000000 ffffffff 00000000 0000003c=0A		 70000000 800003c7 00000000 fffffff=
-f=0A		 00000000 0000003c 80000000 800003c8=0A		 00000000 ffffffff 00000000 =
-0000003c=0A		 90000000 800003c9 00000000 ffffffff=0A		 00000000 0000003c a0=
-000000 800003ca=0A		 00000000 ffffffff 00000000 0000003c=0A		 b0000000 8000=
-03cb 00000000 ffffffff=0A		 00000000 0000003c c0000000 800003cc=0A		 000000=
-00 ffffffff 00000000 0000003c=0A		 d0000000 800003cd 00000000 ffffffff=0A		=
- 00000000 0000003c e0000000 800003ce=0A		 00000000 ffffffff 00000000 000000=
-3c=0A		 f0000000 800003cf 00000000 ffffffff=0A		 00000000 0000003d 00000000=
- 800003d0=0A		 00000000 ffffffff 00000000 0000003d=0A		 10000000 800003d1 0=
-0000000 ffffffff=0A		 00000000 0000003d 20000000 800003d2=0A		 00000000 fff=
-fffff 00000000 0000003d=0A		 30000000 800003d3 00000000 ffffffff=0A		 00000=
-000 0000003d 40000000 800003d4=0A		 00000000 ffffffff 00000000 0000003d=0A	=
-	 50000000 800003d5 00000000 ffffffff=0A		 00000000 0000003d 60000000 80000=
-3d6=0A		 00000000 ffffffff 00000000 0000003d=0A		 70000000 800003d7 0000000=
-0 ffffffff=0A		 00000000 0000003d 80000000 800003d8=0A		 00000000 ffffffff =
-00000000 0000003d=0A		 90000000 800003d9 00000000 ffffffff=0A		 00000000 00=
-00003d a0000000 800003da=0A		 00000000 ffffffff 00000000 0000003d=0A		 b000=
-0000 800003db 00000000 ffffffff=0A		 00000000 0000003d c0000000 800003dc=0A=
-		 00000000 ffffffff 00000000 0000003d=0A		 d0000000 800003dd 00000000 ffff=
-ffff=0A		 00000000 0000003d e0000000 800003de=0A		 00000000 ffffffff 000000=
-00 0000003d=0A		 f0000000 800003df 00000000 ffffffff=0A		 00000000 0000003e=
- 00000000 800003e0=0A		 00000000 ffffffff 00000000 0000003e=0A		 10000000 8=
-00003e1 00000000 ffffffff=0A		 00000000 0000003e 20000000 800003e2=0A		 000=
-00000 ffffffff 00000000 0000003e=0A		 30000000 800003e3 00000000 ffffffff=
-=0A		 00000000 0000003e 40000000 800003e4=0A		 00000000 ffffffff 00000000 0=
-000003e=0A		 50000000 800003e5 00000000 ffffffff=0A		 00000000 0000003e 600=
-00000 800003e6=0A		 00000000 ffffffff 00000000 0000003e=0A		 70000000 80000=
-3e7 00000000 ffffffff=0A		 00000000 0000003e 80000000 800003e8=0A		 0000000=
-0 ffffffff 00000000 0000003e=0A		 90000000 800003e9 00000000 ffffffff=0A		 =
-00000000 0000003e a0000000 800003ea=0A		 00000000 ffffffff 00000000 0000003=
-e=0A		 b0000000 800003eb 00000000 ffffffff=0A		 00000000 0000003e c0000000 =
-800003ec=0A		 00000000 ffffffff 00000000 0000003e=0A		 d0000000 800003ed 00=
-000000 ffffffff=0A		 00000000 0000003e e0000000 800003ee=0A		 00000000 ffff=
-ffff 00000000 0000003e=0A		 f0000000 800003ef 00000000 ffffffff=0A		 000000=
-00 0000003f 00000000 800003f0=0A		 00000000 ffffffff 00000000 0000003f=0A		=
- 10000000 800003f1 00000000 ffffffff=0A		 00000000 0000003f 20000000 800003=
-f2=0A		 00000000 ffffffff 00000000 0000003f=0A		 30000000 800003f3 00000000=
- ffffffff=0A		 00000000 0000003f 40000000 800003f4=0A		 00000000 ffffffff 0=
-0000000 0000003f=0A		 50000000 800003f5 00000000 ffffffff=0A		 00000000 000=
-0003f 60000000 800003f6=0A		 00000000 ffffffff 00000000 0000003f=0A		 70000=
-000 800003f7 00000000 ffffffff=0A		 00000000 0000003f 80000000 800003f8=0A	=
-	 00000000 ffffffff 00000000 0000003f=0A		 90000000 800003f9 00000000 fffff=
-fff=0A		 00000000 0000003f a0000000 800003fa=0A		 00000000 ffffffff 0000000=
-0 0000003f=0A		 b0000000 800003fb 00000000 ffffffff=0A		 00000000 0000003f =
-c0000000 800003fc=0A		 00000000 ffffffff 00000000 0000003f=0A		 d0000000 80=
-0003fd 00000000 ffffffff=0A		 00000000 0000003f e0000000 800003fe=0A		 0000=
-0000 ffffffff 00000000 0000003f=0A		 f0000000 800003ff 00000000 ffffffff=0A=
-		 00000000 00000040 00000000 80000400=0A		 00000000 ffffffff 00000000 0000=
-0040=0A		 10000000 80000401 00000000 ffffffff=0A		 00000000 00000040 200000=
-00 80000402=0A		 00000000 ffffffff 00000000 00000040=0A		 30000000 80000403=
- 00000000 ffffffff=0A		 00000000 00000040 40000000 80000404=0A		 00000000 f=
-fffffff 00000000 00000040=0A		 50000000 80000405 00000000 ffffffff=0A		 000=
-00000 00000040 60000000 80000406=0A		 00000000 ffffffff 00000000 00000040=
-=0A		 70000000 80000407 00000000 ffffffff=0A		 00000000 00000040 80000000 8=
-0000408=0A		 00000000 ffffffff 00000000 00000040=0A		 90000000 80000409 000=
-00000 ffffffff=0A		 00000000 00000040 a0000000 8000040a=0A		 00000000 fffff=
-fff 00000000 00000040=0A		 b0000000 8000040b 00000000 ffffffff=0A		 0000000=
-0 00000040 c0000000 8000040c=0A		 00000000 ffffffff 00000000 00000040=0A		 =
-d0000000 8000040d 00000000 ffffffff=0A		 00000000 00000040 e0000000 8000040=
-e=0A		 00000000 ffffffff 00000000 00000040=0A		 f0000000 8000040f 00000000 =
-ffffffff=0A		 00000000 00000041 00000000 80000410=0A		 00000000 ffffffff 00=
-000000 00000041=0A		 10000000 80000411 00000000 ffffffff=0A		 00000000 0000=
-0041 20000000 80000412=0A		 00000000 ffffffff 00000000 00000041=0A		 300000=
-00 80000413 00000000 ffffffff=0A		 00000000 00000041 40000000 80000414=0A		=
- 00000000 ffffffff 00000000 00000041=0A		 50000000 80000415 00000000 ffffff=
-ff=0A		 00000000 00000041 60000000 80000416=0A		 00000000 ffffffff 00000000=
- 00000041=0A		 70000000 80000417 00000000 ffffffff=0A		 00000000 00000041 8=
-0000000 80000418=0A		 00000000 ffffffff 00000000 00000041=0A		 90000000 800=
-00419 00000000 ffffffff=0A		 00000000 00000041 a0000000 8000041a=0A		 00000=
-000 ffffffff 00000000 00000041=0A		 b0000000 8000041b 00000000 ffffffff=0A	=
-	 00000000 00000041 c0000000 8000041c=0A		 00000000 ffffffff 00000000 00000=
-041=0A		 d0000000 8000041d 00000000 ffffffff=0A		 00000000 00000041 e000000=
-0 8000041e=0A		 00000000 ffffffff 00000000 00000041=0A		 f0000000 8000041f =
-00000000 ffffffff=0A		 00000000 00000042 00000000 80000420=0A		 00000000 ff=
-ffffff 00000000 00000042=0A		 10000000 80000421 00000000 ffffffff=0A		 0000=
-0000 00000042 20000000 80000422=0A		 00000000 ffffffff 00000000 00000042=0A=
-		 30000000 80000423 00000000 ffffffff=0A		 00000000 00000042 40000000 8000=
-0424=0A		 00000000 ffffffff 00000000 00000042=0A		 50000000 80000425 000000=
-00 ffffffff=0A		 00000000 00000042 60000000 80000426=0A		 00000000 ffffffff=
- 00000000 00000042=0A		 70000000 80000427 00000000 ffffffff=0A		 00000000 0=
-0000042 80000000 80000428=0A		 00000000 ffffffff 00000000 00000042=0A		 900=
-00000 80000429 00000000 ffffffff=0A		 00000000 00000042 a0000000 8000042a=
-=0A		 00000000 ffffffff 00000000 00000042=0A		 b0000000 8000042b 00000000 f=
-fffffff=0A		 00000000 00000042 c0000000 8000042c=0A		 00000000 ffffffff 000=
-00000 00000042=0A		 d0000000 8000042d 00000000 ffffffff=0A		 00000000 00000=
-042 e0000000 8000042e=0A		 00000000 ffffffff 00000000 00000042=0A		 f000000=
-0 8000042f 00000000 ffffffff=0A		 00000000 00000043 00000000 80000430=0A		 =
-00000000 ffffffff 00000000 00000043=0A		 10000000 80000431 00000000 fffffff=
-f=0A		 00000000 00000043 20000000 80000432=0A		 00000000 ffffffff 00000000 =
-00000043=0A		 30000000 80000433 00000000 ffffffff=0A		 00000000 00000043 40=
-000000 80000434=0A		 00000000 ffffffff 00000000 00000043=0A		 50000000 8000=
-0435 00000000 ffffffff=0A		 00000000 00000043 60000000 80000436=0A		 000000=
-00 ffffffff 00000000 00000043=0A		 70000000 80000437 00000000 ffffffff=0A		=
- 00000000 00000043 80000000 80000438=0A		 00000000 ffffffff 00000000 000000=
-43=0A		 90000000 80000439 00000000 ffffffff=0A		 00000000 00000043 a0000000=
- 8000043a=0A		 00000000 ffffffff 00000000 00000043=0A		 b0000000 8000043b 0=
-0000000 ffffffff=0A		 00000000 00000043 c0000000 8000043c=0A		 00000000 fff=
-fffff 00000000 00000043=0A		 d0000000 8000043d 00000000 ffffffff=0A		 00000=
-000 00000043 e0000000 8000043e=0A		 00000000 ffffffff 00000000 00000043=0A	=
-	 f0000000 8000043f 00000000 ffffffff=0A		 00000000 00000044 00000000 80000=
-440=0A		 00000000 ffffffff 00000000 00000044=0A		 10000000 80000441 0000000=
-0 ffffffff=0A		 00000000 00000044 20000000 80000442=0A		 00000000 ffffffff =
-00000000 00000044=0A		 30000000 80000443 00000000 ffffffff=0A		 00000000 00=
-000044 40000000 80000444=0A		 00000000 ffffffff 00000000 00000044=0A		 5000=
-0000 80000445 00000000 ffffffff=0A		 00000000 00000044 60000000 80000446=0A=
-		 00000000 ffffffff 00000000 00000044=0A		 70000000 80000447 00000000 ffff=
-ffff=0A		 00000000 00000044 80000000 80000448=0A		 00000000 ffffffff 000000=
-00 00000044=0A		 90000000 80000449 00000000 ffffffff=0A		 00000000 00000044=
- a0000000 8000044a=0A		 00000000 ffffffff 00000000 00000044=0A		 b0000000 8=
-000044b 00000000 ffffffff=0A		 00000000 00000044 c0000000 8000044c=0A		 000=
-00000 ffffffff 00000000 00000044=0A		 d0000000 8000044d 00000000 ffffffff=
-=0A		 00000000 00000044 e0000000 8000044e=0A		 00000000 ffffffff 00000000 0=
-0000044=0A		 f0000000 8000044f 00000000 ffffffff=0A		 00000000 00000045 000=
-00000 80000450=0A		 00000000 ffffffff 00000000 00000045=0A		 10000000 80000=
-451 00000000 ffffffff=0A		 00000000 00000045 20000000 80000452=0A		 0000000=
-0 ffffffff 00000000 00000045=0A		 30000000 80000453 00000000 ffffffff=0A		 =
-00000000 00000045 40000000 80000454=0A		 00000000 ffffffff 00000000 0000004=
-5=0A		 50000000 80000455 00000000 ffffffff=0A		 00000000 00000045 60000000 =
-80000456=0A		 00000000 ffffffff 00000000 00000045=0A		 70000000 80000457 00=
-000000 ffffffff=0A		 00000000 00000045 80000000 80000458=0A		 00000000 ffff=
-ffff 00000000 00000045=0A		 90000000 80000459 00000000 ffffffff=0A		 000000=
-00 00000045 a0000000 8000045a=0A		 00000000 ffffffff 00000000 00000045=0A		=
- b0000000 8000045b 00000000 ffffffff=0A		 00000000 00000045 c0000000 800004=
-5c=0A		 00000000 ffffffff 00000000 00000045=0A		 d0000000 8000045d 00000000=
- ffffffff=0A		 00000000 00000045 e0000000 8000045e=0A		 00000000 ffffffff 0=
-0000000 00000045=0A		 f0000000 8000045f 00000000 ffffffff=0A		 00000000 000=
-00046 00000000 80000460=0A		 00000000 ffffffff 00000000 00000046=0A		 10000=
-000 80000461 00000000 ffffffff=0A		 00000000 00000046 20000000 80000462=0A	=
-	 00000000 ffffffff 00000000 00000046=0A		 30000000 80000463 00000000 fffff=
-fff=0A		 00000000 00000046 40000000 80000464=0A		 00000000 ffffffff 0000000=
-0 00000046=0A		 50000000 80000465 00000000 ffffffff=0A		 00000000 00000046 =
-60000000 80000466=0A		 00000000 ffffffff 00000000 00000046=0A		 70000000 80=
-000467 00000000 ffffffff=0A		 00000000 00000046 80000000 80000468=0A		 0000=
-0000 ffffffff 00000000 00000046=0A		 90000000 80000469 00000000 ffffffff=0A=
-		 00000000 00000046 a0000000 8000046a=0A		 00000000 ffffffff 00000000 0000=
-0046=0A		 b0000000 8000046b 00000000 ffffffff=0A		 00000000 00000046 c00000=
-00 8000046c=0A		 00000000 ffffffff 00000000 00000046=0A		 d0000000 8000046d=
- 00000000 ffffffff=0A		 00000000 00000046 e0000000 8000046e=0A		 00000000 f=
-fffffff 00000000 00000046=0A		 f0000000 8000046f 00000000 ffffffff=0A		 000=
-00000 00000047 00000000 80000470=0A		 00000000 ffffffff 00000000 00000047=
-=0A		 10000000 80000471 00000000 ffffffff=0A		 00000000 00000047 20000000 8=
-0000472=0A		 00000000 ffffffff 00000000 00000047=0A		 30000000 80000473 000=
-00000 ffffffff=0A		 00000000 00000047 40000000 80000474=0A		 00000000 fffff=
-fff 00000000 00000047=0A		 50000000 80000475 00000000 ffffffff=0A		 0000000=
-0 00000047 60000000 80000476=0A		 00000000 ffffffff 00000000 00000047=0A		 =
-70000000 80000477 00000000 ffffffff=0A		 00000000 00000047 80000000 8000047=
-8=0A		 00000000 ffffffff 00000000 00000047=0A		 90000000 80000479 00000000 =
-ffffffff=0A		 00000000 00000047 a0000000 8000047a=0A		 00000000 ffffffff 00=
-000000 00000047=0A		 b0000000 8000047b 00000000 ffffffff=0A		 00000000 0000=
-0047 c0000000 8000047c=0A		 00000000 ffffffff 00000000 00000047=0A		 d00000=
-00 8000047d 00000000 ffffffff=0A		 00000000 00000047 e0000000 8000047e=0A		=
- 00000000 ffffffff 00000000 00000047=0A		 f0000000 8000047f 00000000 ffffff=
-ff=0A		 00000000 00000048 00000000 80000480=0A		 00000000 ffffffff 00000000=
- 00000048=0A		 10000000 80000481 00000000 ffffffff=0A		 00000000 00000048 2=
-0000000 80000482=0A		 00000000 ffffffff 00000000 00000048=0A		 30000000 800=
-00483 00000000 ffffffff=0A		 00000000 00000048 40000000 80000484=0A		 00000=
-000 ffffffff 00000000 00000048=0A		 50000000 80000485 00000000 ffffffff=0A	=
-	 00000000 00000048 60000000 80000486=0A		 00000000 ffffffff 00000000 00000=
-048=0A		 70000000 80000487 00000000 ffffffff=0A		 00000000 00000048 8000000=
-0 80000488=0A		 00000000 ffffffff 00000000 00000048=0A		 90000000 80000489 =
-00000000 ffffffff=0A		 00000000 00000048 a0000000 8000048a=0A		 00000000 ff=
-ffffff 00000000 00000048=0A		 b0000000 8000048b 00000000 ffffffff=0A		 0000=
-0000 00000048 c0000000 8000048c=0A		 00000000 ffffffff 00000000 00000048=0A=
-		 d0000000 8000048d 00000000 ffffffff=0A		 00000000 00000048 e0000000 8000=
-048e=0A		 00000000 ffffffff 00000000 00000048=0A		 f0000000 8000048f 000000=
-00 ffffffff=0A		 00000000 00000049 00000000 80000490=0A		 00000000 ffffffff=
- 00000000 00000049=0A		 10000000 80000491 00000000 ffffffff=0A		 00000000 0=
-0000049 20000000 80000492=0A		 00000000 ffffffff 00000000 00000049=0A		 300=
-00000 80000493 00000000 ffffffff=0A		 00000000 00000049 40000000 80000494=
-=0A		 00000000 ffffffff 00000000 00000049=0A		 50000000 80000495 00000000 f=
-fffffff=0A		 00000000 00000049 60000000 80000496=0A		 00000000 ffffffff 000=
-00000 00000049=0A		 70000000 80000497 00000000 ffffffff=0A		 00000000 00000=
-049 80000000 80000498=0A		 00000000 ffffffff 00000000 00000049=0A		 9000000=
-0 80000499 00000000 ffffffff=0A		 00000000 00000049 a0000000 8000049a=0A		 =
-00000000 ffffffff 00000000 00000049=0A		 b0000000 8000049b 00000000 fffffff=
-f=0A		 00000000 00000049 c0000000 8000049c=0A		 00000000 ffffffff 00000000 =
-00000049=0A		 d0000000 8000049d 00000000 ffffffff=0A		 00000000 00000049 e0=
-000000 8000049e=0A		 00000000 ffffffff 00000000 00000049=0A		 f0000000 8000=
-049f 00000000 ffffffff=0A		 00000000 0000004a 00000000 800004a0=0A		 000000=
-00 ffffffff 00000000 0000004a=0A		 10000000 800004a1 00000000 ffffffff=0A		=
- 00000000 0000004a 20000000 800004a2=0A		 00000000 ffffffff 00000000 000000=
-4a=0A		 30000000 800004a3 00000000 ffffffff=0A		 00000000 0000004a 40000000=
- 800004a4=0A		 00000000 ffffffff 00000000 0000004a=0A		 50000000 800004a5 0=
-0000000 ffffffff=0A		 00000000 0000004a 60000000 800004a6=0A		 00000000 fff=
-fffff 00000000 0000004a=0A		 70000000 800004a7 00000000 ffffffff=0A		 00000=
-000 0000004a 80000000 800004a8=0A		 00000000 ffffffff 00000000 0000004a=0A	=
-	 90000000 800004a9 00000000 ffffffff=0A		 00000000 0000004a a0000000 80000=
-4aa=0A		 00000000 ffffffff 00000000 0000004a=0A		 b0000000 800004ab 0000000=
-0 ffffffff=0A		 00000000 0000004a c0000000 800004ac=0A		 00000000 ffffffff =
-00000000 0000004a=0A		 d0000000 800004ad 00000000 ffffffff=0A		 00000000 00=
-00004a e0000000 800004ae=0A		 00000000 ffffffff 00000000 0000004a=0A		 f000=
-0000 800004af 00000000 ffffffff=0A		 00000000 0000004b 00000000 800004b0=0A=
-		 00000000 ffffffff 00000000 0000004b=0A		 10000000 800004b1 00000000 ffff=
-ffff=0A		 00000000 0000004b 20000000 800004b2=0A		 00000000 ffffffff 000000=
-00 0000004b=0A		 30000000 800004b3 00000000 ffffffff=0A		 00000000 0000004b=
- 40000000 800004b4=0A		 00000000 ffffffff 00000000 0000004b=0A		 50000000 8=
-00004b5 00000000 ffffffff=0A		 00000000 0000004b 60000000 800004b6=0A		 000=
-00000 ffffffff 00000000 0000004b=0A		 70000000 800004b7 00000000 ffffffff=
-=0A		 00000000 0000004b 80000000 800004b8=0A		 00000000 ffffffff 00000000 0=
-000004b=0A		 90000000 800004b9 00000000 ffffffff=0A		 00000000 0000004b a00=
-00000 800004ba=0A		 00000000 ffffffff 00000000 0000004b=0A		 b0000000 80000=
-4bb 00000000 ffffffff=0A		 00000000 0000004b c0000000 800004bc=0A		 0000000=
-0 ffffffff 00000000 0000004b=0A		 d0000000 800004bd 00000000 ffffffff=0A		 =
-00000000 0000004b e0000000 800004be=0A		 00000000 ffffffff 00000000 0000004=
-b=0A		 f0000000 800004bf 00000000 ffffffff=0A		 00000000 0000004c 00000000 =
-800004c0=0A		 00000000 ffffffff 00000000 0000004c=0A		 10000000 800004c1 00=
-000000 ffffffff=0A		 00000000 0000004c 20000000 800004c2=0A		 00000000 ffff=
-ffff 00000000 0000004c=0A		 30000000 800004c3 00000000 ffffffff=0A		 000000=
-00 0000004c 40000000 800004c4=0A		 00000000 ffffffff 00000000 0000004c=0A		=
- 50000000 800004c5 00000000 ffffffff=0A		 00000000 0000004c 60000000 800004=
-c6=0A		 00000000 ffffffff 00000000 0000004c=0A		 70000000 800004c7 00000000=
- ffffffff=0A		 00000000 0000004c 80000000 800004c8=0A		 00000000 ffffffff 0=
-0000000 0000004c=0A		 90000000 800004c9 00000000 ffffffff=0A		 00000000 000=
-0004c a0000000 800004ca=0A		 00000000 ffffffff 00000000 0000004c=0A		 b0000=
-000 800004cb 00000000 ffffffff=0A		 00000000 0000004c c0000000 800004cc=0A	=
-	 00000000 ffffffff 00000000 0000004c=0A		 d0000000 800004cd 00000000 fffff=
-fff=0A		 00000000 0000004c e0000000 800004ce=0A		 00000000 ffffffff 0000000=
-0 0000004c=0A		 f0000000 800004cf 00000000 ffffffff=0A		 00000000 0000004d =
-00000000 800004d0=0A		 00000000 ffffffff 00000000 0000004d=0A		 10000000 80=
-0004d1 00000000 ffffffff=0A		 00000000 0000004d 20000000 800004d2=0A		 0000=
-0000 ffffffff 00000000 0000004d=0A		 30000000 800004d3 00000000 ffffffff=0A=
-		 00000000 0000004d 40000000 800004d4=0A		 00000000 ffffffff 00000000 0000=
-004d=0A		 50000000 800004d5 00000000 ffffffff=0A		 00000000 0000004d 600000=
-00 800004d6=0A		 00000000 ffffffff 00000000 0000004d=0A		 70000000 800004d7=
- 00000000 ffffffff=0A		 00000000 0000004d 80000000 800004d8=0A		 00000000 f=
-fffffff 00000000 0000004d=0A		 90000000 800004d9 00000000 ffffffff=0A		 000=
-00000 0000004d a0000000 800004da=0A		 00000000 ffffffff 00000000 0000004d=
-=0A		 b0000000 800004db 00000000 ffffffff=0A		 00000000 0000004d c0000000 8=
-00004dc=0A		 00000000 ffffffff 00000000 0000004d=0A		 d0000000 800004dd 000=
-00000 ffffffff=0A		 00000000 0000004d e0000000 800004de=0A		 00000000 fffff=
-fff 00000000 0000004d=0A		 f0000000 800004df 00000000 ffffffff=0A		 0000000=
-0 0000004e 00000000 800004e0=0A		 00000000 ffffffff 00000000 0000004e=0A		 =
-10000000 800004e1 00000000 ffffffff=0A		 00000000 0000004e 20000000 800004e=
-2=0A		 00000000 ffffffff 00000000 0000004e=0A		 30000000 800004e3 00000000 =
-ffffffff=0A		 00000000 0000004e 40000000 800004e4=0A		 00000000 ffffffff 00=
-000000 0000004e=0A		 50000000 800004e5 00000000 ffffffff=0A		 00000000 0000=
-004e 60000000 800004e6=0A		 00000000 ffffffff 00000000 0000004e=0A		 700000=
-00 800004e7 00000000 ffffffff=0A		 00000000 0000004e 80000000 800004e8=0A		=
- 00000000 ffffffff 00000000 0000004e=0A		 90000000 800004e9 00000000 ffffff=
-ff=0A		 00000000 0000004e a0000000 800004ea=0A		 00000000 ffffffff 00000000=
- 0000004e=0A		 b0000000 800004eb 00000000 ffffffff=0A		 00000000 0000004e c=
-0000000 800004ec=0A		 00000000 ffffffff 00000000 0000004e=0A		 d0000000 800=
-004ed 00000000 ffffffff=0A		 00000000 0000004e e0000000 800004ee=0A		 00000=
-000 ffffffff 00000000 0000004e=0A		 f0000000 800004ef 00000000 ffffffff=0A	=
-	 00000000 0000004f 00000000 800004f0=0A		 00000000 ffffffff 00000000 00000=
-04f=0A		 10000000 800004f1 00000000 ffffffff=0A		 00000000 0000004f 2000000=
-0 800004f2=0A		 00000000 ffffffff 00000000 0000004f=0A		 30000000 800004f3 =
-00000000 ffffffff=0A		 00000000 0000004f 40000000 800004f4=0A		 00000000 ff=
-ffffff 00000000 0000004f=0A		 50000000 800004f5 00000000 ffffffff=0A		 0000=
-0000 0000004f 60000000 800004f6=0A		 00000000 ffffffff 00000000 0000004f=0A=
-		 70000000 800004f7 00000000 ffffffff=0A		 00000000 0000004f 80000000 8000=
-04f8=0A		 00000000 ffffffff 00000000 0000004f=0A		 90000000 800004f9 000000=
-00 ffffffff=0A		 00000000 0000004f a0000000 800004fa=0A		 00000000 ffffffff=
- 00000000 0000004f=0A		 b0000000 800004fb 00000000 ffffffff=0A		 00000000 0=
-000004f c0000000 800004fc=0A		 00000000 ffffffff 00000000 0000004f=0A		 d00=
-00000 800004fd 00000000 ffffffff=0A		 00000000 0000004f e0000000 800004fe=
-=0A		 00000000 ffffffff 00000000 0000004f=0A		 f0000000 800004ff 00000000 f=
-fffffff=0A		 00000000 00000050 00000000 80000500=0A		 00000000 ffffffff 000=
-00000 00000050=0A		 10000000 80000501 00000000 ffffffff=0A		 00000000 00000=
-050 20000000 80000502=0A		 00000000 ffffffff 00000000 00000050=0A		 3000000=
-0 80000503 00000000 ffffffff=0A		 00000000 00000050 40000000 80000504=0A		 =
-00000000 ffffffff 00000000 00000050=0A		 50000000 80000505 00000000 fffffff=
-f=0A		 00000000 00000050 60000000 80000506=0A		 00000000 ffffffff 00000000 =
-00000050=0A		 70000000 80000507 00000000 ffffffff=0A		 00000000 00000050 80=
-000000 80000508=0A		 00000000 ffffffff 00000000 00000050=0A		 90000000 8000=
-0509 00000000 ffffffff=0A		 00000000 00000050 a0000000 8000050a=0A		 000000=
-00 ffffffff 00000000 00000050=0A		 b0000000 8000050b 00000000 ffffffff=0A		=
- 00000000 00000050 c0000000 8000050c=0A		 00000000 ffffffff 00000000 000000=
-50=0A		 d0000000 8000050d 00000000 ffffffff=0A		 00000000 00000050 e0000000=
- 8000050e=0A		 00000000 ffffffff 00000000 00000050=0A		 f0000000 8000050f 0=
-0000000 ffffffff=0A		 00000000 00000051 00000000 80000510=0A		 00000000 fff=
-fffff 00000000 00000051=0A		 10000000 80000511 00000000 ffffffff=0A		 00000=
-000 00000051 20000000 80000512=0A		 00000000 ffffffff 00000000 00000051=0A	=
-	 30000000 80000513 00000000 ffffffff=0A		 00000000 00000051 40000000 80000=
-514=0A		 00000000 ffffffff 00000000 00000051=0A		 50000000 80000515 0000000=
-0 ffffffff=0A		 00000000 00000051 60000000 80000516=0A		 00000000 ffffffff =
-00000000 00000051=0A		 70000000 80000517 00000000 ffffffff=0A		 00000000 00=
-000051 80000000 80000518=0A		 00000000 ffffffff 00000000 00000051=0A		 9000=
-0000 80000519 00000000 ffffffff=0A		 00000000 00000051 a0000000 8000051a=0A=
-		 00000000 ffffffff 00000000 00000051=0A		 b0000000 8000051b 00000000 ffff=
-ffff=0A		 00000000 00000051 c0000000 8000051c=0A		 00000000 ffffffff 000000=
-00 00000051=0A		 d0000000 8000051d 00000000 ffffffff=0A		 00000000 00000051=
- e0000000 8000051e=0A		 00000000 ffffffff 00000000 00000051=0A		 f0000000 8=
-000051f 00000000 ffffffff=0A		 00000000 00000052 00000000 80000520=0A		 000=
-00000 ffffffff 00000000 00000052=0A		 10000000 80000521 00000000 ffffffff=
-=0A		 00000000 00000052 20000000 80000522=0A		 00000000 ffffffff 00000000 0=
-0000052=0A		 30000000 80000523 00000000 ffffffff=0A		 00000000 00000052 400=
-00000 80000524=0A		 00000000 ffffffff 00000000 00000052=0A		 50000000 80000=
-525 00000000 ffffffff=0A		 00000000 00000052 60000000 80000526=0A		 0000000=
-0 ffffffff 00000000 00000052=0A		 70000000 80000527 00000000 ffffffff=0A		 =
-00000000 00000052 80000000 80000528=0A		 00000000 ffffffff 00000000 0000005=
-2=0A		 90000000 80000529 00000000 ffffffff=0A		 00000000 00000052 a0000000 =
-8000052a=0A		 00000000 ffffffff 00000000 00000052=0A		 b0000000 8000052b 00=
-000000 ffffffff=0A		 00000000 00000052 c0000000 8000052c=0A		 00000000 ffff=
-ffff 00000000 00000052=0A		 d0000000 8000052d 00000000 ffffffff=0A		 000000=
-00 00000052 e0000000 8000052e=0A		 00000000 ffffffff 00000000 00000052=0A		=
- f0000000 8000052f 00000000 ffffffff=0A		 00000000 00000053 00000000 800005=
-30=0A		 00000000 ffffffff 00000000 00000053=0A		 10000000 80000531 00000000=
- ffffffff=0A		 00000000 00000053 20000000 80000532=0A		 00000000 ffffffff 0=
-0000000 00000053=0A		 30000000 80000533 00000000 ffffffff=0A		 00000000 000=
-00053 40000000 80000534=0A		 00000000 ffffffff 00000000 00000053=0A		 50000=
-000 80000535 00000000 ffffffff=0A		 00000000 00000053 60000000 80000536=0A	=
-	 00000000 ffffffff 00000000 00000053=0A		 70000000 80000537 00000000 fffff=
-fff=0A		 00000000 00000053 80000000 80000538=0A		 00000000 ffffffff 0000000=
-0 00000053=0A		 90000000 80000539 00000000 ffffffff=0A		 00000000 00000053 =
-a0000000 8000053a=0A		 00000000 ffffffff 00000000 00000053=0A		 b0000000 80=
-00053b 00000000 ffffffff=0A		 00000000 00000053 c0000000 8000053c=0A		 0000=
-0000 ffffffff 00000000 00000053=0A		 d0000000 8000053d 00000000 ffffffff=0A=
-		 00000000 00000053 e0000000 8000053e=0A		 00000000 ffffffff 00000000 0000=
-0053=0A		 f0000000 8000053f 00000000 ffffffff=0A		 00000000 00000054 000000=
-00 80000540=0A		 00000000 ffffffff 00000000 00000054=0A		 10000000 80000541=
- 00000000 ffffffff=0A		 00000000 00000054 20000000 80000542=0A		 00000000 f=
-fffffff 00000000 00000054=0A		 30000000 80000543 00000000 ffffffff=0A		 000=
-00000 00000054 40000000 80000544=0A		 00000000 ffffffff 00000000 00000054=
-=0A		 50000000 80000545 00000000 ffffffff=0A		 00000000 00000054 60000000 8=
-0000546=0A		 00000000 ffffffff 00000000 00000054=0A		 70000000 80000547 000=
-00000 ffffffff=0A		 00000000 00000054 80000000 80000548=0A		 00000000 fffff=
-fff 00000000 00000054=0A		 90000000 80000549 00000000 ffffffff=0A		 0000000=
-0 00000054 a0000000 8000054a=0A		 00000000 ffffffff 00000000 00000054=0A		 =
-b0000000 8000054b 00000000 ffffffff=0A		 00000000 00000054 c0000000 8000054=
-c=0A		 00000000 ffffffff 00000000 00000054=0A		 d0000000 8000054d 00000000 =
-ffffffff=0A		 00000000 00000054 e0000000 8000054e=0A		 00000000 ffffffff 00=
-000000 00000054=0A		 f0000000 8000054f 00000000 ffffffff=0A		 00000000 0000=
-0055 00000000 80000550=0A		 00000000 ffffffff 00000000 00000055=0A		 100000=
-00 80000551 00000000 ffffffff=0A		 00000000 00000055 20000000 80000552=0A		=
- 00000000 ffffffff 00000000 00000055=0A		 30000000 80000553 00000000 ffffff=
-ff=0A		 00000000 00000055 40000000 80000554=0A		 00000000 ffffffff 00000000=
- 00000055=0A		 50000000 80000555 00000000 ffffffff=0A		 00000000 00000055 6=
-0000000 80000556=0A		 00000000 ffffffff 00000000 00000055=0A		 70000000 800=
-00557 00000000 ffffffff=0A		 00000000 00000055 80000000 80000558=0A		 00000=
-000 ffffffff 00000000 00000055=0A		 90000000 80000559 00000000 ffffffff=0A	=
-	 00000000 00000055 a0000000 8000055a=0A		 00000000 ffffffff 00000000 00000=
-055=0A		 b0000000 8000055b 00000000 ffffffff=0A		 00000000 00000055 c000000=
-0 8000055c=0A		 00000000 ffffffff 00000000 00000055=0A		 d0000000 8000055d =
-00000000 ffffffff=0A		 00000000 00000055 e0000000 8000055e=0A		 00000000 ff=
-ffffff 00000000 00000055=0A		 f0000000 8000055f 00000000 ffffffff=0A		 0000=
-0000 00000056 00000000 80000560=0A		 00000000 ffffffff 00000000 00000056=0A=
-		 10000000 80000561 00000000 ffffffff=0A		 00000000 00000056 20000000 8000=
-0562=0A		 00000000 ffffffff 00000000 00000056=0A		 30000000 80000563 000000=
-00 ffffffff=0A		 00000000 00000056 40000000 80000564=0A		 00000000 ffffffff=
- 00000000 00000056=0A		 50000000 80000565 00000000 ffffffff=0A		 00000000 0=
-0000056 60000000 80000566=0A		 00000000 ffffffff 00000000 00000056=0A		 700=
-00000 80000567 00000000 ffffffff=0A		 00000000 00000056 80000000 80000568=
-=0A		 00000000 ffffffff 00000000 00000056=0A		 90000000 80000569 00000000 f=
-fffffff=0A		 00000000 00000056 a0000000 8000056a=0A		 00000000 ffffffff 000=
-00000 00000056=0A		 b0000000 8000056b 00000000 ffffffff=0A		 00000000 00000=
-056 c0000000 8000056c=0A		 00000000 ffffffff 00000000 00000056=0A		 d000000=
-0 8000056d 00000000 ffffffff=0A		 00000000 00000056 e0000000 8000056e=0A		 =
-00000000 ffffffff 00000000 00000056=0A		 f0000000 8000056f 00000000 fffffff=
-f=0A		 00000000 00000057 00000000 80000570=0A		 00000000 ffffffff 00000000 =
-00000057=0A		 10000000 80000571 00000000 ffffffff=0A		 00000000 00000057 20=
-000000 80000572=0A		 00000000 ffffffff 00000000 00000057=0A		 30000000 8000=
-0573 00000000 ffffffff=0A		 00000000 00000057 40000000 80000574=0A		 000000=
-00 ffffffff 00000000 00000057=0A		 50000000 80000575 00000000 ffffffff=0A		=
- 00000000 00000057 60000000 80000576=0A		 00000000 ffffffff 00000000 000000=
-57=0A		 70000000 80000577 00000000 ffffffff=0A		 00000000 00000057 80000000=
- 80000578=0A		 00000000 ffffffff 00000000 00000057=0A		 90000000 80000579 0=
-0000000 ffffffff=0A		 00000000 00000057 a0000000 8000057a=0A		 00000000 fff=
-fffff 00000000 00000057=0A		 b0000000 8000057b 00000000 ffffffff=0A		 00000=
-000 00000057 c0000000 8000057c=0A		 00000000 ffffffff 00000000 00000057=0A	=
-	 d0000000 8000057d 00000000 ffffffff=0A		 00000000 00000057 e0000000 80000=
-57e=0A		 00000000 ffffffff 00000000 00000057=0A		 f0000000 8000057f 0000000=
-0 ffffffff=0A		 00000000 00000058 00000000 80000580=0A		 00000000 ffffffff =
-00000000 00000058=0A		 10000000 80000581 00000000 ffffffff=0A		 00000000 00=
-000058 20000000 80000582=0A		 00000000 ffffffff 00000000 00000058=0A		 3000=
-0000 80000583 00000000 ffffffff=0A		 00000000 00000058 40000000 80000584=0A=
-		 00000000 ffffffff 00000000 00000058=0A		 50000000 80000585 00000000 ffff=
-ffff=0A		 00000000 00000058 60000000 80000586=0A		 00000000 ffffffff 000000=
-00 00000058=0A		 70000000 80000587 00000000 ffffffff=0A		 00000000 00000058=
- 80000000 80000588=0A		 00000000 ffffffff 00000000 00000058=0A		 90000000 8=
-0000589 00000000 ffffffff=0A		 00000000 00000058 a0000000 8000058a=0A		 000=
-00000 ffffffff 00000000 00000058=0A		 b0000000 8000058b 00000000 ffffffff=
-=0A		 00000000 00000058 c0000000 8000058c=0A		 00000000 ffffffff 00000000 0=
-0000058=0A		 d0000000 8000058d 00000000 ffffffff=0A		 00000000 00000058 e00=
-00000 8000058e=0A		 00000000 ffffffff 00000000 00000058=0A		 f0000000 80000=
-58f 00000000 ffffffff=0A		 00000000 00000059 00000000 80000590=0A		 0000000=
-0 ffffffff 00000000 00000059=0A		 10000000 80000591 00000000 ffffffff=0A		 =
-00000000 00000059 20000000 80000592=0A		 00000000 ffffffff 00000000 0000005=
-9=0A		 30000000 80000593 00000000 ffffffff=0A		 00000000 00000059 40000000 =
-80000594=0A		 00000000 ffffffff 00000000 00000059=0A		 50000000 80000595 00=
-000000 ffffffff=0A		 00000000 00000059 60000000 80000596=0A		 00000000 ffff=
-ffff 00000000 00000059=0A		 70000000 80000597 00000000 ffffffff=0A		 000000=
-00 00000059 80000000 80000598=0A		 00000000 ffffffff 00000000 00000059=0A		=
- 90000000 80000599 00000000 ffffffff=0A		 00000000 00000059 a0000000 800005=
-9a=0A		 00000000 ffffffff 00000000 00000059=0A		 b0000000 8000059b 00000000=
- ffffffff=0A		 00000000 00000059 c0000000 8000059c=0A		 00000000 ffffffff 0=
-0000000 00000059=0A		 d0000000 8000059d 00000000 ffffffff=0A		 00000000 000=
-00059 e0000000 8000059e=0A		 00000000 ffffffff 00000000 00000059=0A		 f0000=
-000 8000059f 00000000 ffffffff=0A		 00000000=0Altcalpine2-lp9:/proc/device-=
-tree/ibm,dynamic-reconfiguration-memory # =0Altcalpine2-lp9:/proc/device-tr=
-ee/ibm,dynamic-reconfiguration-memory # cat ~/dmesg.log=0A[    0.000000] Li=
-nux version 4.4.63-2.1.wi91275.sp3.055a=5F27-default (geeko@buildhost) (gcc=
- version 4.8.5 (SUSE Linux) ) #1 SMP Tue May 2 10:56:31 EDT 2017 (27e2849)=
-=0A[    0.000000] Node 0 Memory: 0x0-0x510000000=0A[    0.000000] Node 1 Me=
-mory: 0x510000000-0x5c0000000=0A[    0.000000] Node 6 Memory: 0x5c0000000-0=
-x26b0000000=0A[    0.000000] Node 7 Memory: 0x26b0000000-0x3c00000000=0A[  =
-  0.000000] numa: Initmem setup node 0 [mem 0x00000000-0x50fffffff]=0A[    =
-0.000000] numa:   NODE=5FDATA [mem 0x50fff6100-0x50fffffff]=0A[    0.000000=
-] numa: Initmem setup node 1 [mem 0x510000000-0x5bfffffff]=0A[    0.000000]=
- numa:   NODE=5FDATA [mem 0x5bfff6100-0x5bfffffff]=0A[    0.000000] numa: I=
-nitmem setup node 6 [mem 0x5c0000000-0x26afffffff]=0A[    0.000000] numa:  =
- NODE=5FDATA [mem 0x26afff6100-0x26afffffff]=0A[    0.000000] numa: Initmem=
- setup node 7 [mem 0x26b0000000-0x3bffffffff]=0A[    0.000000] numa:   NODE=
-=5FDATA [mem 0x3bffbe2100-0x3bffbebfff]=0A[    0.000000] Section 15357 and =
-15359 (node 7) have a circular dependency on usemap and pgdat allocations=
-=0A[    0.000000] PPC64 nvram contains 15360 bytes=0A[    0.000000] Top of =
-RAM: 0x3c00000000, Total RAM: 0x3c00000000=0A[    0.000000] Memory hole siz=
-e: 0MB=0A[    0.000000] Zone ranges:=0A[    0.000000]   DMA      [mem 0x000=
-0000000000000-0x0000003bffffffff]=0A[    0.000000]   DMA32    empty=0A[    =
-0.000000]   Normal   empty=0A[    0.000000] Movable zone start for each nod=
-e=0A[    0.000000] Early memory node ranges=0A[    0.000000]   node   0: [m=
-em 0x0000000000000000-0x000000050fffffff]=0A[    0.000000]   node   1: [mem=
- 0x0000000510000000-0x00000005bfffffff]=0A[    0.000000]   node   6: [mem 0=
-x00000005c0000000-0x00000026afffffff]=0A[    0.000000]   node   7: [mem 0x0=
-0000026b0000000-0x0000003bffffffff]=0A[    0.000000] Initmem setup node 0 [=
-mem 0x0000000000000000-0x000000050fffffff]=0A[    0.000000] On node 0 total=
-pages: 331776=0A[    0.000000]   DMA zone: 324 pages used for memmap=0A[   =
- 0.000000]   DMA zone: 0 pages reserved=0A[    0.000000]   DMA zone: 331776=
- pages, LIFO batch:1=0A[    0.000000] Initmem setup node 1 [mem 0x000000051=
-0000000-0x00000005bfffffff]=0A[    0.000000] On node 1 totalpages: 45056=0A=
-[    0.000000]   DMA zone: 44 pages used for memmap=0A[    0.000000]   DMA =
-zone: 0 pages reserved=0A[    0.000000]   DMA zone: 45056 pages, LIFO batch=
-:1=0A[    0.000000] Initmem setup node 6 [mem 0x00000005c0000000-0x00000026=
-afffffff]=0A[    0.000000] On node 6 totalpages: 2158592=0A[    0.000000]  =
- DMA zone: 2108 pages used for memmap=0A[    0.000000]   DMA zone: 0 pages =
-reserved=0A[    0.000000]   DMA zone: 2158592 pages, LIFO batch:1=0A[    0.=
-000000] Initmem setup node 7 [mem 0x00000026b0000000-0x0000003bffffffff]=0A=
-[    0.000000] On node 7 totalpages: 1396736=0A[    0.000000]   DMA zone: 1=
-364 pages used for memmap=0A[    0.000000]   DMA zone: 0 pages reserved=0A[=
-    0.000000]   DMA zone: 1396736 pages, LIFO batch:1=0Altcalpine2-lp9:/pro=
-c/device-tree/ibm,dynamic-reconfiguration-memory #=0A=0A
 
---=_mixed 005EF57400258138_=--
+
+
+
+
+<p class=3D"gmail-p1">At Unicamp we developed a power monitor based on IPMI=
+ output to monitor our Minsky usage.=C2=A0</p><p class=3D"gmail-p1">Take a =
+look at <a href=3D"http://177.220.10.134/powergraph"><span class=3D"gmail-s=
+1">http://177.220.10.134/powergraph</span></a></p></div><div class=3D"gmail=
+_extra"><br></div><div class=3D"gmail_extra"><br></div><div class=3D"gmail_=
+extra"><br><div class=3D"gmail_quote">On Wed, Jun 7, 2017 at 11:00 AM, Vaid=
+yanathan Srinivasan <span dir=3D"ltr">&lt;<a href=3D"mailto:svaidy@linux.vn=
+et.ibm.com" target=3D"_blank">svaidy@linux.vnet.ibm.com</a>&gt;</span> wrot=
+e:<br><blockquote class=3D"gmail_quote" style=3D"margin:0 0 0 .8ex;border-l=
+eft:1px #ccc solid;padding-left:1ex">* ?????????? &lt;<a href=3D"mailto:136=
+3017608@qq.com">1363017608@qq.com</a>&gt; [2017-06-06 19:59:24]:<br>
+<br>
+&gt; I use ipmitool measuring power server power consumption, getting the f=
+ollowing results without total power consumption as the following picture, =
+do I add all power values as total power consumption? I am eager to receive=
+ someone&#39;s replay??Thanks?<br>
+<br>
+The total system power is already aggregates as provided under ipmi<br>
+dcmi command.<br>
+<br>
+You can read it like:<br>
+<br>
+Inband: (within system)<br>
+<br>
+root@ubuntu:~# ipmitool dcmi power reading<br>
+<br>
+=C2=A0 =C2=A0 Instantaneous power reading:=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0485 Watts<br>
+=C2=A0 =C2=A0 Minimum during sampling period:=C2=A0 =C2=A0 =C2=A0 =C2=A0 =
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 485 Watts<br>
+=C2=A0 =C2=A0 Maximum during sampling period:=C2=A0 =C2=A0 =C2=A0 =C2=A0 =
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 486 Watts<br>
+=C2=A0 =C2=A0 Average power reading over sample period:=C2=A0 =C2=A0 =C2=A0=
+ 485 Watts<br>
+=C2=A0 =C2=A0 IPMI timestamp:=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0Wed Jun=C2=A0 7 15:53:0=
+8 2017<br>
+=C2=A0 =C2=A0 Sampling period:=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 00000010 Seconds.<br>
+=C2=A0 =C2=A0 Power reading state is:=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0activated<br>
+<br>
+Out-of-band: (Over BMC network)<br>
+<br>
+[sv@drishya] ~ % ipmitool -I lanplus -H bmc -U bmc-user -P bmc-pw=C2=A0 dcm=
+i power reading<br>
+<br>
+=C2=A0 =C2=A0 Instantaneous power reading:=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0486 Watts<br>
+=C2=A0 =C2=A0 Minimum during sampling period:=C2=A0 =C2=A0 =C2=A0 =C2=A0 =
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 483 Watts<br>
+=C2=A0 =C2=A0 Maximum during sampling period:=C2=A0 =C2=A0 =C2=A0 =C2=A0 =
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 486 Watts<br>
+=C2=A0 =C2=A0 Average power reading over sample period:=C2=A0 =C2=A0 =C2=A0=
+ 484 Watts<br>
+=C2=A0 =C2=A0 IPMI timestamp:=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0Wed Jun=C2=A0 7 15:54:1=
+1 2017<br>
+=C2=A0 =C2=A0 Sampling period:=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 00000010 Seconds.<br>
+=C2=A0 =C2=A0 Power reading state is:=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0activated<br>
+<br>
+<br>
+You do get component power consumption from IPMI SDR, you can get<br>
+those from inband or out-of-band. But you need not manually add it up.<br>
+On-Chip-Controller (OCC) does the power aggregation already and<br>
+exports it through DCMI power reading.<br>
+<br>
+--Vaidy<br>
+<br>
+</blockquote></div><br></div></div>
+
+--001a1148b6a26d616c0551631e8c--
