@@ -1,34 +1,20 @@
-Return-Path: <robherring2@gmail.com>
-Received: from mail-ot0-f193.google.com (mail-ot0-f193.google.com
- [74.125.82.193])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wjk9P2C6TzDqMp
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Jun 2017 08:43:21 +1000 (AEST)
-Received: by mail-ot0-f193.google.com with SMTP id i31so2206178ota.3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 07 Jun 2017 15:43:21 -0700 (PDT)
-Date: Wed, 7 Jun 2017 17:43:18 -0500
-From: Rob Herring <robh@kernel.org>
-To: Geert Uytterhoeven <geert+renesas@glider.be>
-Cc: David Airlie <airlied@linux.ie>, Mark Rutland <mark.rutland@arm.com>,
- Carlo Caione <carlo@caione.org>, Kevin Hilman <khilman@baylibre.com>,
- Chanho Min <chanho.min@lge.com>, Catalin Marinas <catalin.marinas@arm.com>,
- Will Deacon <will.deacon@arm.com>,
- Neil Armstrong <narmstrong@baylibre.com>,
+Return-Path: <w@1wt.eu>
+Received: from 1wt.eu (wtarreau.pck.nerim.net [62.212.114.60])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3wjkn141rkzDqKs
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Jun 2017 09:10:45 +1000 (AEST)
+From: Willy Tarreau <w@1wt.eu>
+To: linux-kernel@vger.kernel.org, stable@vger.kernel.org, linux@roeck-us.net
+Cc: Larry Finger <Larry.Finger@lwfinger.net>,
+ Nicholas Piggin <npiggin@gmail.com>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- dri-devel@lists.freedesktop.org, linux-amlogic@lists.infradead.org,
- devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v3 6/6] dt-bindings: net: btusb: DT fix
- s/interrupt-name/interrupt-names/
-Message-ID: <20170607224318.wswmmhdwmqtvvqob@rob-hp-laptop>
-References: <1496407129-13527-1-git-send-email-geert+renesas@glider.be>
- <1496407129-13527-7-git-send-email-geert+renesas@glider.be>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1496407129-13527-7-git-send-email-geert+renesas@glider.be>
+ Paul Mackerras <paulus@samba.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
+ Linus Torvalds <torvalds@linux-foundation.org>, Willy Tarreau <w@1wt.eu>
+Subject: [PATCH 3.10 078/250] powerpc: Fix build warning on 32-bit PPC
+Date: Thu,  8 Jun 2017 00:57:44 +0200
+Message-Id: <1496876436-32402-79-git-send-email-w@1wt.eu>
+In-Reply-To: <1496876436-32402-1-git-send-email-w@1wt.eu>
+References: <1496876436-32402-1-git-send-email-w@1wt.eu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,14 +24,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Jun 02, 2017 at 02:38:49PM +0200, Geert Uytterhoeven wrote:
-> Fixes: fd913ef7ce619467 ("Bluetooth: btusb: Add out-of-band wakeup support")
-> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
-> ---
-> v3:
->   - New.
-> ---
->  Documentation/devicetree/bindings/net/btusb.txt | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+From: Larry Finger <Larry.Finger@lwfinger.net>
 
-Acked-by: Rob Herring <robh@kernel.org>
+commit 8ae679c4bc2ea2d16d92620da8e3e9332fa4039f upstream.
+
+I am getting the following warning when I build kernel 4.9-git on my
+PowerBook G4 with a 32-bit PPC processor:
+
+    AS      arch/powerpc/kernel/misc_32.o
+  arch/powerpc/kernel/misc_32.S:299:7: warning: "CONFIG_FSL_BOOKE" is not defined [-Wundef]
+
+This problem is evident after commit 989cea5c14be ("kbuild: prevent
+lib-ksyms.o rebuilds"); however, this change in kbuild only exposes an
+error that has been in the code since 2005 when this source file was
+created.  That was with commit 9994a33865f4 ("powerpc: Introduce
+entry_{32,64}.S, misc_{32,64}.S, systbl.S").
+
+The offending line does not make a lot of sense.  This error does not
+seem to cause any errors in the executable, thus I am not recommending
+that it be applied to any stable versions.
+
+Thanks to Nicholas Piggin for suggesting this solution.
+
+Fixes: 9994a33865f4 ("powerpc: Introduce entry_{32,64}.S, misc_{32,64}.S, systbl.S")
+Signed-off-by: Larry Finger <Larry.Finger@lwfinger.net>
+Cc: Nicholas Piggin <npiggin@gmail.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Willy Tarreau <w@1wt.eu>
+---
+ arch/powerpc/kernel/misc_32.S | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/kernel/misc_32.S b/arch/powerpc/kernel/misc_32.S
+index e469f30..ad8573f 100644
+--- a/arch/powerpc/kernel/misc_32.S
++++ b/arch/powerpc/kernel/misc_32.S
+@@ -295,7 +295,7 @@ _GLOBAL(flush_instruction_cache)
+ 	lis	r3, KERNELBASE@h
+ 	iccci	0,r3
+ #endif
+-#elif CONFIG_FSL_BOOKE
++#elif defined(CONFIG_FSL_BOOKE)
+ BEGIN_FTR_SECTION
+ 	mfspr   r3,SPRN_L1CSR0
+ 	ori     r3,r3,L1CSR0_CFI|L1CSR0_CLFC
+-- 
+2.8.0.rc2.1.gbe9624a
