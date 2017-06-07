@@ -1,20 +1,29 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <bhupesh.linux@gmail.com>
+Received: from mail-qt0-x231.google.com (mail-qt0-x231.google.com
+ [IPv6:2607:f8b0:400d:c0d::231])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wjPpW1nm6zDq5b
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Jun 2017 20:25:55 +1000 (AEST)
-Subject: Re: [PATCH v2 1/9] powerpc/lib/code-patching: Enhance code patching
-To: Balbir Singh <bsingharora@gmail.com>
-Cc: paulus@samba.org, kbuild-all@01.org, naveen.n.rao@linux.vnet.ibm.com,
- labbott@redhat.com, linuxppc-dev@lists.ozlabs.org, rashmica.g@gmail.com
-References: <201706040706.WevfghQQ%fengguang.wu@intel.com>
-From: Christophe LEROY <christophe.leroy@c-s.fr>
-Message-ID: <9c856cc0-4a3d-c59f-5215-63437187a289@c-s.fr>
-Date: Wed, 7 Jun 2017 12:25:47 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wjQ0l5gxrzDqKm
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Jun 2017 20:34:47 +1000 (AEST)
+Received: by mail-qt0-x231.google.com with SMTP id c10so4697950qtd.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 07 Jun 2017 03:34:47 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <201706040706.WevfghQQ%fengguang.wu@intel.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
+In-Reply-To: <87d1agp2m6.fsf@concordia.ellerman.id.au>
+References: <1496642591-1373-1-git-send-email-bhsharma@redhat.com>
+ <1496665366.343.1.camel@gmail.com> <87d1agp2m6.fsf@concordia.ellerman.id.au>
+From: Bhupesh SHARMA <bhupesh.linux@gmail.com>
+Date: Wed, 7 Jun 2017 16:04:43 +0530
+Message-ID: <CAFTCetQr+TAAfBi1+gOzSP_uk2sFo4g+W9=bWOxYpLYzZe7Z7A@mail.gmail.com>
+Subject: Re: [kernel-hardening] [PATCH] powerpc: Increase ELF_ET_DYN_BASE to
+ 1TB for 64-bit applications
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Daniel Micay <danielmicay@gmail.com>, Bhupesh Sharma <bhsharma@redhat.com>,
+ "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
+ <linuxppc-dev@lists.ozlabs.org>, linux-kernel@vger.kernel.org,
+ kernel-hardening@lists.openwall.com, Anton Blanchard <anton@samba.org>,
+ Daniel Cashman <dcashman@android.com>, Kees Cook <keescook@chromium.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,53 +33,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Balbir
+On Wed, Jun 7, 2017 at 2:59 PM, Michael Ellerman <mpe@ellerman.id.au> wrote:
+> Daniel Micay <danielmicay@gmail.com> writes:
+>
+>> Rather than doing this, the base should just be split for an ELF
+>> interpreter like PaX.
+>
+> I don't quite parse that, I think you mean PaX uses a different base for
+> an ELF interpreter vs a regular ET_DYN?
 
-Le 04/06/2017 à 01:45, kbuild test robot a écrit :
-> Hi Balbir,
->
-> [auto build test ERROR on powerpc/next]
-> [also build test ERROR on v4.12-rc3 next-20170602]
-> [if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
->
-> url:    https://github.com/0day-ci/linux/commits/Balbir-Singh/Enable-STRICT_KERNEL_RWX/20170603-161759
-> base:   https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git next
-> config: powerpc-kilauea_defconfig (attached as .config)
-> compiler: powerpc-linux-gnu-gcc (Debian 6.1.1-9) 6.1.1 20160705
-> reproduce:
->          wget https://raw.githubusercontent.com/01org/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
->          chmod +x ~/bin/make.cross
->          # save the attached .config to linux build tree
->          make.cross ARCH=powerpc
->
-> All errors (new ones prefixed by >>):
->
->     arch/powerpc/lib/code-patching.c: In function 'kernel_map_addr':
->>> arch/powerpc/lib/code-patching.c:93:8: error: implicit declaration of function 'map_kernel_page' [-Werror=implicit-function-declaration]
->       err = map_kernel_page(
->             ^~~~~~~~~~~~~~~
->     cc1: all warnings being treated as errors
+I am also not very conversant with PaX. AFAIU, we can use the
+following methods to print the shared object dependencies instead of
+ldd:
 
-You should probably include my patch (the one renaming map_page() to 
-map_kernel_page() ) in as first patch in your serie in order to get a 
-clean serie and avoid such reports from the robot.
+1. One can load the binary directly with LD_TRACE_LOADED_OBJECTS=1.
 
-Christophe
+So, instead of:
 
+# /lib64/ld-2.24.so ./large-bss-test-app
+Segmentation fault (core dumped)
+
+One can do:
+# LD_TRACE_LOADED_OBJECTS=1 ./large-bss-test-app
+        linux-vdso64.so.1 (0x00007fffa67a0000)
+        libc.so.6 => /lib64/libc.so.6 (0x00007fffa6590000)
+        /lib64/ld64.so.2 (0x00007fffa67c0000)
+
+2. There are other utils like pax-utils etc that we can use.
+
+But, we generally cannot force a user to not use ldd to determine the
+shared object dependencies, especially when all the documentation
+points to it and it works well on the other archs like x86 and arm64.
+
+> That would be cool. How do you know that it's an ELF interpreter you're
+> loading? Is it just something that's PIE but doesn't request an
+> interpreter?
 >
-> vim +/map_kernel_page +93 arch/powerpc/lib/code-patching.c
+> Is the PaX code somewhere I can look at?
 >
->      87	
->      88		if (is_vmalloc_addr(addr))
->      89			pfn = vmalloc_to_pfn(addr);
->      90		else
->      91			pfn = __pa_symbol(addr) >> PAGE_SHIFT;
->      92	
->    > 93		err = map_kernel_page(
->      94				(unsigned long)__this_cpu_read(text_poke_area)->addr,
->      95				(pfn << PAGE_SHIFT), _PAGE_KERNEL_RW | _PAGE_PRESENT);
->      96		pr_devel("Mapped addr %p with pfn %lx\n",
+>> It makes sense for a standalone executable to be as low in the address
+>> space as possible.
 >
-> ---
-> 0-DAY kernel test infrastructure                Open Source Technology Center
-> https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+> More or less. There are performance reasons why 1T could be good for us,
+> but I want to see some performance numbers to justify that change. And
+> it does mean you have a bit less address space to play with.
+
+Do you have any specific performance test(s) in mind which I can run
+to see how the 1TB impacts them? I am trying to run ltp after this
+change and will be able to share the results shortly, but I am not
+sure it provides the right data to validate such a change.
+
+Regards,
+Bhupesh
