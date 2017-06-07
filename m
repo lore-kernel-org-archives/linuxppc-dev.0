@@ -1,38 +1,29 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
- [IPv6:2607:f8b0:400e:c00::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <gregkh@linuxfoundation.org>
+Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
+ [140.211.169.12])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wjLjb294CzDqBQ
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Jun 2017 18:06:27 +1000 (AEST)
-Received: by mail-pf0-x244.google.com with SMTP id y7so870785pfd.3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 07 Jun 2017 01:06:27 -0700 (PDT)
-Message-ID: <1496822777.18257.6.camel@gmail.com>
-Subject: Re: [Patch 2/2]: powerpc/hotplug/mm: Fix hot-add memory node assoc
-From: Balbir Singh <bsingharora@gmail.com>
-To: Reza Arbab <arbab@linux.vnet.ibm.com>, Michael Ellerman
- <mpe@ellerman.id.au>
-Cc: Michael Bringmann <mwb@linux.vnet.ibm.com>,
- linux-kernel@vger.kernel.org,  Paul Mackerras <paulus@samba.org>, "Aneesh
- Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>, Bharata B Rao
- <bharata@linux.vnet.ibm.com>, Shailendra Singh <shailendras@nvidia.com>,
- Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
- Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-Date: Wed, 07 Jun 2017 18:06:17 +1000
-In-Reply-To: <20170601213310.uzal6zihfbxazysx@arbab-laptop.localdomain>
-References: <ee96df3d-ad0f-c4dc-e7d5-290018ec8afd@linux.vnet.ibm.com>
- <87poeya4dt.fsf@concordia.ellerman.id.au>
- <8e2417d8-d108-2949-40f2-997d53a3f367@linux.vnet.ibm.com>
- <87a861a25y.fsf@concordia.ellerman.id.au>
- <20170525151011.m4ae4ipxbqsj3mn7@arbab-laptop.localdomain>
- <87zie08ekt.fsf@concordia.ellerman.id.au>
- <20170526143147.z4lmtrs7vowucbkf@arbab-laptop.localdomain>
- <87lgpg6xe2.fsf@concordia.ellerman.id.au>
- <54877b2b-8446-20f6-e316-25af809ae11f@linux.vnet.ibm.com>
- <87tw402go0.fsf@concordia.ellerman.id.au>
- <20170601213310.uzal6zihfbxazysx@arbab-laptop.localdomain>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wjMt64hfPzDqKm
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Jun 2017 18:58:54 +1000 (AEST)
+Date: Wed, 7 Jun 2017 10:58:46 +0200
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: linux-kernel@vger.kernel.org
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Vineet Gupta <vgupta@synopsys.com>,
+ Bart Van Assche <bart.vanassche@sandisk.com>,
+ Robin Murphy <robin.murphy@arm.com>, Joerg Roedel <jroedel@suse.de>,
+ Johan Hovold <johan@kernel.org>, Alexey Kardashevskiy <aik@ozlabs.ru>,
+ Krzysztof Kozlowski <krzk@kernel.org>, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 10/16 v2] powerpc: vio: use dev_groups and not dev_attrs for
+ bus_type
+Message-ID: <20170607085846.GA16199@kroah.com>
+References: <20170606192221.1617-1-gregkh@linuxfoundation.org>
+ <20170606192221.1617-11-gregkh@linuxfoundation.org>
+ <20170606193058.GA2497@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20170606193058.GA2497@kroah.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,56 +33,80 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2017-06-01 at 16:33 -0500, Reza Arbab wrote:
-> On Thu, Jun 01, 2017 at 07:36:31PM +1000, Michael Ellerman wrote:
-> > I don't think that's what the patch does. It just marks 32 (!?) nodes 
-> > as online. Or if you're talking about reverting 3af229f2071f that 
-> > leaves you with 256 possible nodes. Both of which are wasteful.
-> 
-> To be clear, with Balbir's set the latter is no longer wasteful.
-> 
-> > The right fix is to make sure any nodes which are present at boot 
-> > remain in the possible map, even if they don't have memory/CPUs 
-> > assigned at boot.
-> 
-> I'm still hoping 3af229f2071f could indeed be reverted some day, but 
-> until then the following would follow your suggestion for our GPU nodes.  
-> What do you think?
-> 
-> --- a/arch/powerpc/mm/numa.c
-> +++ b/arch/powerpc/mm/numa.c
-> @@ -895,6 +895,7 @@ static void __init setup_node_data(int nid, u64 start_pfn, u64 end_pfn)
->  void __init initmem_init(void)
->  {
->  	int nid, cpu;
-> +	struct device_node *dn;
->  
->  	max_low_pfn = memblock_end_of_DRAM() >> PAGE_SHIFT;
->  	max_pfn = max_low_pfn;
-> @@ -911,6 +912,18 @@ void __init initmem_init(void)
->  	 */
->  	nodes_and(node_possible_map, node_possible_map, node_online_map);
->  
-> +	/*
-> +	 * Consider an ibm,coherent-device-memory node possible. Even though
-> +	 * it is not online at boot, it may be hotplugged later.
-> +	 */
-> +	for_each_compatible_node(dn, NULL, "ibm,coherent-device-memory") {
-> +		nid = of_node_to_nid_single(dn);
-> +		if (nid < 0)
-> +			continue;
-> +
-> +		node_set(nid, node_possible_map);
-> +	}
-> +
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 
-I think it looks reasonable, although I'd really like to set a limit
-in firmware on the number of nodes and fix memcg hotplug correctly in
-the medium term.
+The dev_attrs field has long been "depreciated" and is finally being
+removed, so move the driver to use the "correct" dev_groups field
+instead for struct bus_type.
 
-Balbir Singh.
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Vineet Gupta <vgupta@synopsys.com>
+Cc: Bart Van Assche <bart.vanassche@sandisk.com>
+Cc: Robin Murphy <robin.murphy@arm.com>
+Cc: Joerg Roedel <jroedel@suse.de>
+Cc: Johan Hovold <johan@kernel.org>
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>
+Cc: Krzysztof Kozlowski <krzk@kernel.org>
+Cc: <linuxppc-dev@lists.ozlabs.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+---
 
->  	for_each_online_node(nid) {
->  		unsigned long start_pfn, end_pfn;
->  
-> 
+v2 - actually remove the old attribute list
+
+ arch/powerpc/platforms/pseries/vio.c | 16 ++++++++++------
+ 1 file changed, 10 insertions(+), 6 deletions(-)
+
+diff --git a/arch/powerpc/platforms/pseries/vio.c b/arch/powerpc/platforms/pseries/vio.c
+index 28b09fd797ec..b4f679e3ca3a 100644
+--- a/arch/powerpc/platforms/pseries/vio.c
++++ b/arch/powerpc/platforms/pseries/vio.c
+@@ -1537,6 +1537,7 @@ static ssize_t name_show(struct device *dev,
+ {
+ 	return sprintf(buf, "%s\n", to_vio_dev(dev)->name);
+ }
++static DEVICE_ATTR_RO(name);
+ 
+ static ssize_t devspec_show(struct device *dev,
+ 		struct device_attribute *attr, char *buf)
+@@ -1545,6 +1546,7 @@ static ssize_t devspec_show(struct device *dev,
+ 
+ 	return sprintf(buf, "%s\n", of_node_full_name(of_node));
+ }
++static DEVICE_ATTR_RO(devspec);
+ 
+ static ssize_t modalias_show(struct device *dev, struct device_attribute *attr,
+ 			     char *buf)
+@@ -1566,13 +1568,15 @@ static ssize_t modalias_show(struct device *dev, struct device_attribute *attr,
+ 
+ 	return sprintf(buf, "vio:T%sS%s\n", vio_dev->type, cp);
+ }
++static DEVICE_ATTR_RO(modalias);
+ 
+-static struct device_attribute vio_dev_attrs[] = {
+-	__ATTR_RO(name),
+-	__ATTR_RO(devspec),
+-	__ATTR_RO(modalias),
+-	__ATTR_NULL
++static struct attribute *vio_dev_attrs[] = {
++	&dev_attr_name.attr,
++	&dev_attr_devspec.attr,
++	&dev_attr_modalias.attr,
++	NULL,
+ };
++ATTRIBUTE_GROUPS(vio_dev);
+ 
+ void vio_unregister_device(struct vio_dev *viodev)
+ {
+@@ -1608,7 +1612,7 @@ static int vio_hotplug(struct device *dev, struct kobj_uevent_env *env)
+ 
+ struct bus_type vio_bus_type = {
+ 	.name = "vio",
+-	.dev_attrs = vio_dev_attrs,
++	.dev_groups = vio_dev_groups,
+ 	.uevent = vio_hotplug,
+ 	.match = vio_bus_match,
+ 	.probe = vio_bus_probe,
+-- 
+2.13.0
