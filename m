@@ -1,22 +1,27 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-qt0-x231.google.com (mail-qt0-x231.google.com
+ [IPv6:2607:f8b0:400d:c0d::231])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wjQKc6QZTzDqKY
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Jun 2017 20:49:24 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Murilo Opsfelder Araujo <mopsfelder@gmail.com>,
- linux-kernel@vger.kernel.org
-Cc: kvm@vger.kernel.org, Alex Williamson <alex.williamson@redhat.com>,
- linuxppc-dev@lists.ozlabs.org, Murilo Opsfelder Araujo <mopsfelder@gmail.com>
-Subject: Re: [PATCH] include/linux/vfio.h: Guard powerpc-specific functions
- with CONFIG_VFIO_SPAPR_EEH
-In-Reply-To: <20170606120914.15851-1-mopsfelder@gmail.com>
-References: <20170606120914.15851-1-mopsfelder@gmail.com>
-Date: Wed, 07 Jun 2017 20:49:23 +1000
-Message-ID: <87a85kf4y4.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wjQg268R6zDqKY
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Jun 2017 21:04:30 +1000 (AEST)
+Received: by mail-qt0-x231.google.com with SMTP id u19so5015931qta.3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 07 Jun 2017 04:04:30 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <9c856cc0-4a3d-c59f-5215-63437187a289@c-s.fr>
+References: <201706040706.WevfghQQ%fengguang.wu@intel.com>
+ <9c856cc0-4a3d-c59f-5215-63437187a289@c-s.fr>
+From: Balbir Singh <bsingharora@gmail.com>
+Date: Wed, 7 Jun 2017 21:04:27 +1000
+Message-ID: <CAKTCnz=xfSCZLP6cUpuqiGje37JeT3Pu56Kdb1U2r+voukPK5w@mail.gmail.com>
+Subject: Re: [PATCH v2 1/9] powerpc/lib/code-patching: Enhance code patching
+To: Christophe LEROY <christophe.leroy@c-s.fr>
+Cc: Paul Mackerras <paulus@samba.org>, kbuild-all@01.org,
+ "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
+ Laura Abbott <labbott@redhat.com>,
+ "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
+ <linuxppc-dev@lists.ozlabs.org>, Rashmica Gupta <rashmica.g@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,34 +31,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Murilo Opsfelder Araujo <mopsfelder@gmail.com> writes:
+On Wed, Jun 7, 2017 at 8:25 PM, Christophe LEROY
+<christophe.leroy@c-s.fr> wrote:
+> Hi Balbir
+>
+> Le 04/06/2017 =C3=A0 01:45, kbuild test robot a =C3=A9crit :
+>>
+>> Hi Balbir,
+>>
+>> [auto build test ERROR on powerpc/next]
+>> [also build test ERROR on v4.12-rc3 next-20170602]
+>> [if your patch is applied to the wrong git tree, please drop us a note t=
+o
+>> help improve the system]
+>>
+>> url:
+>> https://github.com/0day-ci/linux/commits/Balbir-Singh/Enable-STRICT_KERN=
+EL_RWX/20170603-161759
+>> base:   https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.gi=
+t
+>> next
+>> config: powerpc-kilauea_defconfig (attached as .config)
+>> compiler: powerpc-linux-gnu-gcc (Debian 6.1.1-9) 6.1.1 20160705
+>> reproduce:
+>>          wget
+>> https://raw.githubusercontent.com/01org/lkp-tests/master/sbin/make.cross=
+ -O
+>> ~/bin/make.cross
+>>          chmod +x ~/bin/make.cross
+>>          # save the attached .config to linux build tree
+>>          make.cross ARCH=3Dpowerpc
+>>
+>> All errors (new ones prefixed by >>):
+>>
+>>     arch/powerpc/lib/code-patching.c: In function 'kernel_map_addr':
+>>>>
+>>>> arch/powerpc/lib/code-patching.c:93:8: error: implicit declaration of
+>>>> function 'map_kernel_page' [-Werror=3Dimplicit-function-declaration]
+>>
+>>       err =3D map_kernel_page(
+>>             ^~~~~~~~~~~~~~~
+>>     cc1: all warnings being treated as errors
+>
+>
+> You should probably include my patch (the one renaming map_page() to
+> map_kernel_page() ) in as first patch in your serie in order to get a cle=
+an
+> serie and avoid such reports from the robot.
+>
+> Christophe
 
-> When CONFIG_EEH=y and CONFIG_VFIO_SPAPR_EEH=n, build fails with the
-> following:
->
->     drivers/vfio/pci/vfio_pci.o: In function `.vfio_pci_release':
->     vfio_pci.c:(.text+0xa98): undefined reference to `.vfio_spapr_pci_eeh_release'
->     drivers/vfio/pci/vfio_pci.o: In function `.vfio_pci_open':
->     vfio_pci.c:(.text+0x1420): undefined reference to `.vfio_spapr_pci_eeh_open'
->
-> In this case, vfio_pci.c should use the empty definitions of
-> vfio_spapr_pci_eeh_open and vfio_spapr_pci_eeh_release functions.
->
-> This patch fixes it by guarding these function definitions with
-> CONFIG_VFIO_SPAPR_EEH, the symbol that controls whether vfio_spapr_eeh.c is
-> built, which is where the non-empty versions of these functions are.
->
-> This issue was found during a randconfig build. Logs are here:
->
->     http://kisskb.ellerman.id.au/kisskb/buildresult/12982362/
->
-> Signed-off-by: Murilo Opsfelder Araujo <mopsfelder@gmail.com>
-> ---
->  include/linux/vfio.h | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
+Thanks for the suggestion, I did in my cover letter mention the
+pre-requisite is your patch. I'll keep that in mind if there is a v4,
+otherwise, we'll need to pull in your patch first and then apply this
+series.
 
-Acked-by: Michael Ellerman <mpe@ellerman.id.au>
-
-Alex I assume you will take this, thanks.
-
-cheers
+Balbir Singh.
