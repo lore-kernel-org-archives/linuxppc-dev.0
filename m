@@ -1,29 +1,41 @@
-Return-Path: <bhupesh.linux@gmail.com>
-Received: from mail-qt0-x231.google.com (mail-qt0-x231.google.com
- [IPv6:2607:f8b0:400d:c0d::231])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <anju@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wjQ0l5gxrzDqKm
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Jun 2017 20:34:47 +1000 (AEST)
-Received: by mail-qt0-x231.google.com with SMTP id c10so4697950qtd.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 07 Jun 2017 03:34:47 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wjQ1B43y2zDqLf
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Jun 2017 20:35:10 +1000 (AEST)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v57AYL2l138105
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 7 Jun 2017 06:35:08 -0400
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2axf12j6ga-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 07 Jun 2017 06:35:07 -0400
+Received: from localhost
+ by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <anju@linux.vnet.ibm.com>;
+ Wed, 7 Jun 2017 04:35:06 -0600
+Subject: Re: [PATCH v9 07/10] powerpc/perf: PMU functions for Core IMC and
+ hotplugging
+From: Anju T Sudhakar <anju@linux.vnet.ibm.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: mpe@ellerman.id.au, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, ego@linux.vnet.ibm.com,
+ bsingharora@gmail.com, anton@samba.org, sukadev@linux.vnet.ibm.com,
+ mikey@neuling.org, stewart@linux.vnet.ibm.com, dja@axtens.net,
+ eranian@google.com, hemant@linux.vnet.ibm.com, maddy@linux.vnet.ibm.com
+References: <1496665922-702-1-git-send-email-anju@linux.vnet.ibm.com>
+ <1496665922-702-2-git-send-email-anju@linux.vnet.ibm.com>
+ <alpine.DEB.2.20.1706061135490.1885@nanos>
+ <692e037d-5367-208f-ac6f-8fd43e1643ba@linux.vnet.ibm.com>
+Date: Wed, 7 Jun 2017 16:04:57 +0530
 MIME-Version: 1.0
-In-Reply-To: <87d1agp2m6.fsf@concordia.ellerman.id.au>
-References: <1496642591-1373-1-git-send-email-bhsharma@redhat.com>
- <1496665366.343.1.camel@gmail.com> <87d1agp2m6.fsf@concordia.ellerman.id.au>
-From: Bhupesh SHARMA <bhupesh.linux@gmail.com>
-Date: Wed, 7 Jun 2017 16:04:43 +0530
-Message-ID: <CAFTCetQr+TAAfBi1+gOzSP_uk2sFo4g+W9=bWOxYpLYzZe7Z7A@mail.gmail.com>
-Subject: Re: [kernel-hardening] [PATCH] powerpc: Increase ELF_ET_DYN_BASE to
- 1TB for 64-bit applications
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Daniel Micay <danielmicay@gmail.com>, Bhupesh Sharma <bhsharma@redhat.com>,
- "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
- <linuxppc-dev@lists.ozlabs.org>, linux-kernel@vger.kernel.org,
- kernel-hardening@lists.openwall.com, Anton Blanchard <anton@samba.org>,
- Daniel Cashman <dcashman@android.com>, Kees Cook <keescook@chromium.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <692e037d-5367-208f-ac6f-8fd43e1643ba@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <81a85e3c-2c29-a0d5-3ae6-3e72e1090447@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,55 +45,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jun 7, 2017 at 2:59 PM, Michael Ellerman <mpe@ellerman.id.au> wrote:
-> Daniel Micay <danielmicay@gmail.com> writes:
+
+
+On Wednesday 07 June 2017 11:14 AM, Anju T Sudhakar wrote:
+> Hi Thomas,
 >
->> Rather than doing this, the base should just be split for an ELF
->> interpreter like PaX.
+> On Tuesday 06 June 2017 03:39 PM, Thomas Gleixner wrote:
+>> On Mon, 5 Jun 2017, Anju T Sudhakar wrote:
+>>> +static void cleanup_all_core_imc_memory(struct imc_pmu *pmu_ptr)
+>>> +{
+>>> +    struct imc_mem_info *ptr = pmu_ptr->mem_info;
+>>> +
+>>> +    if (!ptr)
+>>> +        return;
+>> That's pointless.
 >
-> I don't quite parse that, I think you mean PaX uses a different base for
-> an ELF interpreter vs a regular ET_DYN?
-
-I am also not very conversant with PaX. AFAIU, we can use the
-following methods to print the shared object dependencies instead of
-ldd:
-
-1. One can load the binary directly with LD_TRACE_LOADED_OBJECTS=1.
-
-So, instead of:
-
-# /lib64/ld-2.24.so ./large-bss-test-app
-Segmentation fault (core dumped)
-
-One can do:
-# LD_TRACE_LOADED_OBJECTS=1 ./large-bss-test-app
-        linux-vdso64.so.1 (0x00007fffa67a0000)
-        libc.so.6 => /lib64/libc.so.6 (0x00007fffa6590000)
-        /lib64/ld64.so.2 (0x00007fffa67c0000)
-
-2. There are other utils like pax-utils etc that we can use.
-
-But, we generally cannot force a user to not use ldd to determine the
-shared object dependencies, especially when all the documentation
-points to it and it works well on the other archs like x86 and arm64.
-
-> That would be cool. How do you know that it's an ELF interpreter you're
-> loading? Is it just something that's PIE but doesn't request an
-> interpreter?
+> No, it is not.  We may end up here from imc_mem_init() when the memory 
+> allocation for
+> pmu_ptr->mem_info fails. So in that case we can just return from here, 
+> and kfree wont be
+> called with a NULL pointer.
 >
-> Is the PaX code somewhere I can look at?
->
->> It makes sense for a standalone executable to be as low in the address
->> space as possible.
->
-> More or less. There are performance reasons why 1T could be good for us,
-> but I want to see some performance numbers to justify that change. And
-> it does mean you have a bit less address space to play with.
+>>> +    for (; ptr; ptr++) {
+>>        for (ptr = pmu_ptr->mem_info; ptr; ptr++) {
+>>
+>> will do the right thing.
 
-Do you have any specific performance test(s) in mind which I can run
-to see how the 1TB impacts them? I am trying to run ltp after this
-change and will be able to share the results shortly, but I am not
-sure it provides the right data to validate such a change.
+Sorry, replied too soon on this. You are right, with this we can remove 
+the if (!ptr) check.
+thanks.
+>>
+>>> +        if (ptr->vbase[0] != 0)
+>>> +            free_pages(ptr->vbase[0], 0);
+>>> +    }
+>> and kfree can be called with a NULL pointer.
+>>
+
+Yes right.
 
 Regards,
-Bhupesh
+Anju
