@@ -1,25 +1,23 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wjNYd1rdNzDqKm
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Jun 2017 19:29:41 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Daniel Micay <danielmicay@gmail.com>, Bhupesh Sharma <bhsharma@redhat.com>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- kernel-hardening@lists.openwall.com
-Cc: bhupesh.linux@gmail.com, Anton Blanchard <anton@samba.org>,
- Daniel Cashman <dcashman@android.com>, Kees Cook <keescook@chromium.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [kernel-hardening] [PATCH] powerpc: Increase ELF_ET_DYN_BASE to
- 1TB for 64-bit applications
-In-Reply-To: <1496665366.343.1.camel@gmail.com>
-References: <1496642591-1373-1-git-send-email-bhsharma@redhat.com>
- <1496665366.343.1.camel@gmail.com>
-Date: Wed, 07 Jun 2017 19:29:37 +1000
-Message-ID: <87d1agp2m6.fsf@concordia.ellerman.id.au>
+Return-Path: <bp@alien8.de>
+Received: from mail.skyhub.de (mail.skyhub.de [5.9.137.197])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3wjP6K2GfxzDqKm
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Jun 2017 19:54:33 +1000 (AEST)
+Date: Wed, 7 Jun 2017 11:54:17 +0200
+From: Borislav Petkov <bp@alien8.de>
+To: Chris Packham <Chris.Packham@alliedtelesis.co.nz>
+Cc: "mchehab@kernel.org" <mchehab@kernel.org>,
+ "linux-edac@vger.kernel.org" <linux-edac@vger.kernel.org>,
+ "mpe@ellerman.id.au" <mpe@ellerman.id.au>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [PATCH v3 1/3] EDAC: mv64x60: check driver registration success
+Message-ID: <20170607095417.qorkbwm5u5saplb2@pd.tnic>
+References: <20170529212142.25572-1-chris.packham@alliedtelesis.co.nz>
+ <20170529212142.25572-2-chris.packham@alliedtelesis.co.nz>
+ <7b51ad125caf4d4c97157187510626cc@svr-chch-ex1.atlnz.lc>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <7b51ad125caf4d4c97157187510626cc@svr-chch-ex1.atlnz.lc>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,25 +27,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Daniel Micay <danielmicay@gmail.com> writes:
+On Wed, Jun 07, 2017 at 05:29:55AM +0000, Chris Packham wrote:
+> What do you think?
 
-> Rather than doing this, the base should just be split for an ELF
-> interpreter like PaX.
+Just send me a fix ontop, moving the edac_op_state assignment before the
+platform_register_drivers() call and write in the commit message why
+we're doing that.
 
-I don't quite parse that, I think you mean PaX uses a different base for
-an ELF interpreter vs a regular ET_DYN?
+Thanks.
 
-That would be cool. How do you know that it's an ELF interpreter you're
-loading? Is it just something that's PIE but doesn't request an
-interpreter?
+-- 
+Regards/Gruss,
+    Boris.
 
-Is the PaX code somewhere I can look at?
-
-> It makes sense for a standalone executable to be as low in the address
-> space as possible.
-
-More or less. There are performance reasons why 1T could be good for us,
-but I want to see some performance numbers to justify that change. And
-it does mean you have a bit less address space to play with.
-
-cheers
+Good mailing practices for 400: avoid top-posting and trim the reply.
