@@ -2,19 +2,23 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wjRXM6WP0zDq5b
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Jun 2017 21:43:47 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wjRkT4Sw1zDqKm
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Jun 2017 21:52:33 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Frederic Barrat <fbarrat@linux.vnet.ibm.com>, andrew.donnellan@au1.ibm.com,
- linuxppc-dev@lists.ozlabs.org, vaibhav@linux.vnet.ibm.com,
- clombard@linux.vnet.ibm.com, philippe.bergheaud@fr.ibm.com
-Subject: Re: [PATCH] cxl: Fix error path on bad ioctl
-In-Reply-To: <cd5831d7-9f74-928a-b5c8-a6e5622c8099@linux.vnet.ibm.com>
-References: <20170602161523.14052-1-fbarrat@linux.vnet.ibm.com>
- <878tl5qxpw.fsf@concordia.ellerman.id.au>
- <cd5831d7-9f74-928a-b5c8-a6e5622c8099@linux.vnet.ibm.com>
-Date: Wed, 07 Jun 2017 21:43:44 +1000
-Message-ID: <874lvsf2fj.fsf@concordia.ellerman.id.au>
+To: Balbir Singh <bsingharora@gmail.com>,
+ Christophe LEROY <christophe.leroy@c-s.fr>
+Cc: Paul Mackerras <paulus@samba.org>, kbuild-all@01.org,
+ "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
+ Laura Abbott <labbott@redhat.com>,
+ "open list\:LINUX FOR POWERPC \(32-BIT AND 64-BIT\)"
+ <linuxppc-dev@lists.ozlabs.org>, Rashmica Gupta <rashmica.g@gmail.com>
+Subject: Re: [PATCH v2 1/9] powerpc/lib/code-patching: Enhance code patching
+In-Reply-To: <CAKTCnz=xfSCZLP6cUpuqiGje37JeT3Pu56Kdb1U2r+voukPK5w@mail.gmail.com>
+References: <201706040706.WevfghQQ%fengguang.wu@intel.com>
+ <9c856cc0-4a3d-c59f-5215-63437187a289@c-s.fr>
+ <CAKTCnz=xfSCZLP6cUpuqiGje37JeT3Pu56Kdb1U2r+voukPK5w@mail.gmail.com>
+Date: Wed, 07 Jun 2017 21:52:32 +1000
+Message-ID: <871sqwf20v.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,28 +30,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Frederic Barrat <fbarrat@linux.vnet.ibm.com> writes:
-
-> Le 06/06/2017 =C3=A0 11:20, Michael Ellerman a =C3=A9crit :
->> Frederic Barrat <fbarrat@linux.vnet.ibm.com> writes:
->>=20
->>> Fix error path if we can't copy user structure on
->>> CXL_IOCTL_START_WORK ioctl.
->>=20
->> To be clear the error is that returning via the out label will unlock
->> cxl->status_mutex, which has not been locked.
->>=20
->> Please spell it out for me :)
->>=20
->> This should be:
->>=20
->>    Fixes: 0712dc7e73e5 ("cxl: Fix issues when unmapping contexts")
->>=20
->> Am I right?
+Balbir Singh <bsingharora@gmail.com> writes:
+> On Wed, Jun 7, 2017 at 8:25 PM, Christophe LEROY
+> <christophe.leroy@c-s.fr> wrote:
+>> Le 04/06/2017 =C3=A0 01:45, kbuild test robot a =C3=A9crit :
+>>> [auto build test ERROR on powerpc/next]
+>>> [also build test ERROR on v4.12-rc3 next-20170602]
+>>> [if your patch is applied to the wrong git tree, please drop us a note =
+to
+>>> help improve the system]
+>>>
+>>> url:
+>>> https://github.com/0day-ci/linux/commits/Balbir-Singh/Enable-STRICT_KER=
+NEL_RWX/20170603-161759
+>>> base:   https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.g=
+it
+>>> next
+>>> config: powerpc-kilauea_defconfig (attached as .config)
+>>> compiler: powerpc-linux-gnu-gcc (Debian 6.1.1-9) 6.1.1 20160705
+>>> reproduce:
+>>>          wget
+>>> https://raw.githubusercontent.com/01org/lkp-tests/master/sbin/make.cros=
+s -O
+>>> ~/bin/make.cross
+>>>          chmod +x ~/bin/make.cross
+>>>          # save the attached .config to linux build tree
+>>>          make.cross ARCH=3Dpowerpc
+>>>
+>>> All errors (new ones prefixed by >>):
+>>>
+>>>     arch/powerpc/lib/code-patching.c: In function 'kernel_map_addr':
+>>>>>
+>>>>> arch/powerpc/lib/code-patching.c:93:8: error: implicit declaration of
+>>>>> function 'map_kernel_page' [-Werror=3Dimplicit-function-declaration]
+>>>
+>>>       err =3D map_kernel_page(
+>>>             ^~~~~~~~~~~~~~~
+>>>     cc1: all warnings being treated as errors
+>>
+>>
+>> You should probably include my patch (the one renaming map_page() to
+>> map_kernel_page() ) in as first patch in your serie in order to get a cl=
+ean
+>> serie and avoid such reports from the robot.
 >
-> That's correct. I'm about to send a v2 to address Vaibhav's comment and=20
-> I'll fix the above as well.
+> Thanks for the suggestion, I did in my cover letter mention the
+> pre-requisite is your patch.
 
-Thanks.
+The kbuild robot can't read cover letters :)
+
+> I'll keep that in mind if there is a v4,
+> otherwise, we'll need to pull in your patch first and then apply this
+> series.
+
+It'll probably be in my next tomorrow anyway.
 
 cheers
