@@ -1,29 +1,26 @@
-Return-Path: <gregkh@linuxfoundation.org>
-Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
- [140.211.169.12])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
+ [IPv6:2607:f8b0:400e:c05::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wjHbR2lTwzDqMN
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Jun 2017 15:45:55 +1000 (AEST)
-Date: Wed, 7 Jun 2017 07:45:46 +0200
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Vineet Gupta <vgupta@synopsys.com>,
- Bart Van Assche <bart.vanassche@sandisk.com>,
- Robin Murphy <robin.murphy@arm.com>, Joerg Roedel <jroedel@suse.de>,
- Johan Hovold <johan@kernel.org>, Alexey Kardashevskiy <aik@ozlabs.ru>,
- Krzysztof Kozlowski <krzk@kernel.org>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 10/16] powerpc: vio: use dev_groups and not dev_attrs for
- bus_type
-Message-ID: <20170607054546.GB7111@kroah.com>
-References: <20170606192221.1617-1-gregkh@linuxfoundation.org>
- <20170606192221.1617-11-gregkh@linuxfoundation.org>
- <20170606193058.GA2497@kroah.com>
- <1496790281.31588.33.camel@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <1496790281.31588.33.camel@kernel.crashing.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wjHbp08M4zDqLT
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Jun 2017 15:46:14 +1000 (AEST)
+Received: by mail-pg0-x241.google.com with SMTP id v14so462039pgn.1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 06 Jun 2017 22:46:13 -0700 (PDT)
+Message-ID: <1496814365.18257.3.camel@gmail.com>
+Subject: Re: [PATCH v3 3/9] powerpc/kprobes/optprobes: Move over to
+ patch_instruction
+From: Balbir Singh <bsingharora@gmail.com>
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au,
+ christophe.leroy@c-s.fr,  paulus@samba.org
+Date: Wed, 07 Jun 2017 15:46:05 +1000
+In-Reply-To: <20170606191249.GG19390@naverao1-tp.localdomain>
+References: <20170606042945.24997-1-bsingharora@gmail.com>
+ <20170606042945.24997-4-bsingharora@gmail.com>
+ <20170606191249.GG19390@naverao1-tp.localdomain>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,22 +30,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jun 07, 2017 at 09:04:41AM +1000, Benjamin Herrenschmidt wrote:
-> On Tue, 2017-06-06 at 21:30 +0200, Greg Kroah-Hartman wrote:
-> > >   
-> > >   static struct device_attribute vio_dev_attrs[] = {
-> > >        __ATTR_RO(name),
-> > > @@ -1573,6 +1576,13 @@ static struct device_attribute vio_dev_attrs[] = {
-> > >        __ATTR_RO(modalias),
-> > >        __ATTR_NULL
-> > >   };
-> > > +static struct attribute *vio_dev_attrs[] = {
+On Wed, 2017-06-07 at 00:42 +0530, Naveen N. Rao wrote:
+> On 2017/06/06 02:29PM, Balbir Singh wrote:
+> > With text moving to read-only migrate optprobes to using
+> > the patch_instruction infrastructure. Without this optprobes
+> > will fail and complain.
 > > 
-> > Hm, this feels wrong, odd that 0-day passed it.  I should be deleting
-> > the above vio_dev_attrs field as well.  Is powerpc really a dead
-> > platform?  :)
+<snip>
+> > +	/* We can optimize this via patch_instruction_window later */
 > 
-> Haha, not yet no, and the above is actually still quite actively
-> in use as it's part of our hypervisor virtual IO infrastructure.
+> This probably needs a TODO just so it's clear. I do think this would be 
+> good to add since we copy many instructions while setting up the 
+> optprobe, so this is quite slow as it exists today.
 
-Ok, let me fix this, right after I emailed 0-day sent me the build error :)
+I made it read like a TODO, with a TOOD:
+
+> 
+> > +	size = (TMPL_END_IDX * sizeof(kprobe_opcode_t)) / sizeof(int);
+> 
+> That's just TMPL_END_IDX.
+>
+
+The entire kprobe_opcode_t and int types thing is a bit messy. The size
+calculation assumes nothing for now in terms of sizes, but I guess the
+patch_instruction does. Another TODO?
+
+Thanks for the review
+Balbir Singh.
