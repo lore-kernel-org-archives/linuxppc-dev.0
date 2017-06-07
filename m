@@ -1,24 +1,27 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
- [IPv6:2607:f8b0:400e:c00::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wjHcz5xfkzDqPN
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Jun 2017 15:47:15 +1000 (AEST)
-Received: by mail-pf0-x244.google.com with SMTP id f27so522801pfe.0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 06 Jun 2017 22:47:15 -0700 (PDT)
-Message-ID: <1496814428.18257.4.camel@gmail.com>
-Subject: Re: [PATCH v3 2/9] powerpc/kprobes: Move kprobes over to
- patch_instruction
-From: Balbir Singh <bsingharora@gmail.com>
-To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au,
- christophe.leroy@c-s.fr,  paulus@samba.org
-Date: Wed, 07 Jun 2017 15:47:08 +1000
-In-Reply-To: <20170606190529.GF19390@naverao1-tp.localdomain>
-References: <20170606042945.24997-1-bsingharora@gmail.com>
- <20170606042945.24997-3-bsingharora@gmail.com>
- <20170606190529.GF19390@naverao1-tp.localdomain>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wjHqx04vVzDqKm
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Jun 2017 15:56:44 +1000 (AEST)
+Message-ID: <1496814981.2034.5.camel@kernel.crashing.org>
+Subject: Re: [PATCH 10/16] powerpc: vio: use dev_groups and not dev_attrs
+ for bus_type
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>, Michael
+ Ellerman <mpe@ellerman.id.au>, Vineet Gupta <vgupta@synopsys.com>, Bart Van
+ Assche <bart.vanassche@sandisk.com>,
+ Robin Murphy <robin.murphy@arm.com>, Joerg Roedel <jroedel@suse.de>,
+ Johan Hovold <johan@kernel.org>, Alexey Kardashevskiy <aik@ozlabs.ru>,
+ Krzysztof Kozlowski <krzk@kernel.org>, linuxppc-dev@lists.ozlabs.org
+Date: Wed, 07 Jun 2017 15:56:21 +1000
+In-Reply-To: <20170607054546.GB7111@kroah.com>
+References: <20170606192221.1617-1-gregkh@linuxfoundation.org>
+ <20170606192221.1617-11-gregkh@linuxfoundation.org>
+ <20170606193058.GA2497@kroah.com>
+ <1496790281.31588.33.camel@kernel.crashing.org>
+ <20170607054546.GB7111@kroah.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -30,34 +33,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2017-06-07 at 00:35 +0530, Naveen N. Rao wrote:
-> Hi Balbir,
+On Wed, 2017-06-07 at 07:45 +0200, Greg Kroah-Hartman wrote:
+> On Wed, Jun 07, 2017 at 09:04:41AM +1000, Benjamin Herrenschmidt wrote:
+> > On Tue, 2017-06-06 at 21:30 +0200, Greg Kroah-Hartman wrote:
+> > > >   
+> > > >   static struct device_attribute vio_dev_attrs[] = {
+> > > >        __ATTR_RO(name),
+> > > > @@ -1573,6 +1576,13 @@ static struct device_attribute vio_dev_attrs[] = {
+> > > >        __ATTR_RO(modalias),
+> > > >        __ATTR_NULL
+> > > >   };
+> > > > +static struct attribute *vio_dev_attrs[] = {
+> > > 
+> > > Hm, this feels wrong, odd that 0-day passed it.  I should be deleting
+> > > the above vio_dev_attrs field as well.  Is powerpc really a dead
+> > > platform?  :)
+> > 
+> > Haha, not yet no, and the above is actually still quite actively
+> > in use as it's part of our hypervisor virtual IO infrastructure.
 > 
-> On 2017/06/06 02:29PM, Balbir Singh wrote:
-> > arch_arm/disarm_probe use direct assignment for copying
-> > instructions, replace them with patch_instruction
-> > 
-> > Signed-off-by: Balbir Singh <bsingharora@gmail.com>
-> > ---
-> >  arch/powerpc/kernel/kprobes.c | 4 ++--
-> >  1 file changed, 2 insertions(+), 2 deletions(-)
-> > 
-> > diff --git a/arch/powerpc/kernel/kprobes.c b/arch/powerpc/kernel/kprobes.c
-> > index fc43435..b49f8f0 100644
-> > --- a/arch/powerpc/kernel/kprobes.c
-> > +++ b/arch/powerpc/kernel/kprobes.c
-> > @@ -158,7 +158,7 @@ NOKPROBE_SYMBOL(arch_prepare_kprobe);
-> > 
-> >  void arch_arm_kprobe(struct kprobe *p)
-> >  {
-> > -	*p->addr = BREAKPOINT_INSTRUCTION;
-> > +	patch_instruction(p->addr, BREAKPOINT_INSTRUCTION);
-> >  	flush_icache_range((unsigned long) p->addr,
-> >  			   (unsigned long) p->addr + sizeof(kprobe_opcode_t));
-> 
-> Do we still need flush_icache_range() after patch_instruction()?
->
+> Ok, let me fix this, right after I emailed 0-day sent me the build error :)
 
-Good catch! No, we don't
+Thanks !
 
-Balbir Singh. 
+Cheers,
+Ben.
