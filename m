@@ -1,43 +1,46 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wjS5517przDqNq
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Jun 2017 22:08:41 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Michael Bringmann <mwb@linux.vnet.ibm.com>,
- Reza Arbab <arbab@linux.vnet.ibm.com>
-Cc: Balbir Singh <bsingharora@gmail.com>, linux-kernel@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Bharata B Rao <bharata@linux.vnet.ibm.com>,
- Shailendra Singh <shailendras@nvidia.com>,
- Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
- Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
- Michael Bringmann from Kernel Team <mbringm@us.ibm.com>
-Subject: Re: [Patch 2/2]: powerpc/hotplug/mm: Fix hot-add memory node assoc
-In-Reply-To: <ba7d7010-44ed-cc20-661c-2078f0f522b7@linux.vnet.ibm.com>
-References: <3bb44d92-b2ff-e197-4bdf-ec6d588d6dab@linux.vnet.ibm.com>
- <20170523155251.bqwc5mc4jpgzkqlm@arbab-laptop.localdomain>
- <1c1d70e3-4e45-b035-0e75-1b0f531c111b@linux.vnet.ibm.com>
- <20170523214922.bns675oqzqj4pkhc@arbab-laptop.localdomain>
- <ee96df3d-ad0f-c4dc-e7d5-290018ec8afd@linux.vnet.ibm.com>
- <87poeya4dt.fsf@concordia.ellerman.id.au>
- <8e2417d8-d108-2949-40f2-997d53a3f367@linux.vnet.ibm.com>
- <87a861a25y.fsf@concordia.ellerman.id.au>
- <20170525151011.m4ae4ipxbqsj3mn7@arbab-laptop.localdomain>
- <87zie08ekt.fsf@concordia.ellerman.id.au>
- <20170526143147.z4lmtrs7vowucbkf@arbab-laptop.localdomain>
- <87lgpg6xe2.fsf@concordia.ellerman.id.au>
- <54877b2b-8446-20f6-e316-25af809ae11f@linux.vnet.ibm.com>
- <87tw402go0.fsf@concordia.ellerman.id.au>
- <54ebacf1-1249-cc6a-80a5-b293e581f401@linux.vnet.ibm.com>
- <8760g9qwfd.fsf@concordia.ellerman.id.au>
- <ba7d7010-44ed-cc20-661c-2078f0f522b7@linux.vnet.ibm.com>
-Date: Wed, 07 Jun 2017 22:08:40 +1000
-Message-ID: <87tw3sdmpj.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wjW3y2NxvzDqKY
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Jun 2017 00:22:54 +1000 (AEST)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v57EIsUx034752
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 7 Jun 2017 10:22:51 -0400
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2axgbh18mt-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 07 Jun 2017 10:22:51 -0400
+Received: from localhost
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
+ Thu, 8 Jun 2017 00:22:48 +1000
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v57EMcMw62718112
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 8 Jun 2017 00:22:46 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v57EMCQW001966
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 8 Jun 2017 00:22:12 +1000
+Date: Wed, 7 Jun 2017 19:42:52 +0530
+From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+To: Balbir Singh <bsingharora@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au, christophe.leroy@c-s.fr,
+ paulus@samba.org
+Subject: Re: [PATCH v3 3/9] powerpc/kprobes/optprobes: Move over to
+ patch_instruction
+References: <20170606042945.24997-1-bsingharora@gmail.com>
+ <20170606042945.24997-4-bsingharora@gmail.com>
+ <20170606191249.GG19390@naverao1-tp.localdomain>
+ <1496814365.18257.3.camel@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1496814365.18257.3.camel@gmail.com>
+Message-Id: <20170607141252.GH19390@naverao1-tp.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,84 +50,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michael Bringmann <mwb@linux.vnet.ibm.com> writes:
+On 2017/06/07 03:46PM, Balbir Singh wrote:
+> On Wed, 2017-06-07 at 00:42 +0530, Naveen N. Rao wrote:
+> > On 2017/06/06 02:29PM, Balbir Singh wrote:
+> > > With text moving to read-only migrate optprobes to using
+> > > the patch_instruction infrastructure. Without this optprobes
+> > > will fail and complain.
+> > > 
+> <snip>
+> > > +	/* We can optimize this via patch_instruction_window later */
+> > 
+> > This probably needs a TODO just so it's clear. I do think this would be 
+> > good to add since we copy many instructions while setting up the 
+> > optprobe, so this is quite slow as it exists today.
+> 
+> I made it read like a TODO, with a TOOD:
 
-> On 06/06/2017 04:48 AM, Michael Ellerman wrote:
->> Michael Bringmann <mwb@linux.vnet.ibm.com> writes:
->>> On 06/01/2017 04:36 AM, Michael Ellerman wrote:
->>>> Do you actually see mention of nodes 0 and 8 in the dmesg?
->>>
->>> When the 'numa.c' code is built with debug messages, and the system was
->>> given that configuration by pHyp, yes, I did.
->>>
->>>> What does it say?
->>>
->>> The debug message for each core thread would be something like,
->>>
->>>     removing cpu 64 from node 0
->>>     adding cpu 64 to node 8
->>>
->>> repeated for all 8 threads of the CPU, and usually with the messages
->>> for all of the CPUs coming out intermixed on the console/dmesg log.
->> 
->> OK. I meant what do you see at boot.
->
-> Here is an example with nodes 0,2,6,7, node 0 starts out empty:
->
-> [    0.000000] Initmem setup node 0
-> [    0.000000]   NODE_DATA [mem 0x3bff7d6300-0x3bff7dffff]
-> [    0.000000]     NODE_DATA(0) on node 7
-> [    0.000000] Initmem setup node 2 [mem 0x00000000-0x13ffffffff]
-> [    0.000000]   NODE_DATA [mem 0x13ffff6300-0x13ffffffff]
-> [    0.000000] Initmem setup node 6 [mem 0x1400000000-0x34afffffff]
-> [    0.000000]   NODE_DATA [mem 0x34afff6300-0x34afffffff]
-> [    0.000000] Initmem setup node 7 [mem 0x34b0000000-0x3bffffffff]
-> [    0.000000]   NODE_DATA [mem 0x3bff7cc600-0x3bff7d62ff]
->
-> [    0.000000] Zone ranges:
-> [    0.000000]   DMA      [mem 0x0000000000000000-0x0000003bffffffff]
-> [    0.000000]   DMA32    empty
-> [    0.000000]   Normal   empty
-> [    0.000000] Movable zone start for each node
-> [    0.000000] Early memory node ranges
-> [    0.000000]   node   2: [mem 0x0000000000000000-0x00000013ffffffff]
-> [    0.000000]   node   6: [mem 0x0000001400000000-0x00000034afffffff]
-> [    0.000000]   node   7: [mem 0x00000034b0000000-0x0000003bffffffff]
-> [    0.000000] Could not find start_pfn for node 0
-> [    0.000000] Initmem setup node 0 [mem 0x0000000000000000-0x0000000000000000]
-> [    0.000000] Initmem setup node 2 [mem 0x0000000000000000-0x00000013ffffffff]
-> [    0.000000] Initmem setup node 6 [mem 0x0000001400000000-0x00000034afffffff]
-> [    0.000000] Initmem setup node 7 [mem 0x00000034b0000000-0x0000003bffffffff]
-> [    0.000000] percpu: Embedded 3 pages/cpu @c000003bf8000000 s155672 r0 d40936 u262144
-> [    0.000000] Built 4 zonelists in Node order, mobility grouping on.  Total pages: 3928320
->
-> and,
->
-> [root@ltcalpine2-lp20 ~]# numactl --hardware
-> available: 4 nodes (0,2,6-7)
-> node 0 cpus:
-> node 0 size: 0 MB
-> node 0 free: 0 MB
-> node 2 cpus: 16 17 18 19 20 21 22 23 32 33 34 35 36 37 38 39 56 57 58 59 60 61 62 63
-> node 2 size: 81792 MB
-> node 2 free: 81033 MB
-> node 6 cpus: 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 24 25 26 27 28 29 30 31 40 41 42 43 44 45 46 47
-> node 6 size: 133743 MB
-> node 6 free: 133097 MB
-> node 7 cpus: 48 49 50 51 52 53 54 55
-> node 7 size: 29877 MB
-> node 7 free: 29599 MB
-> node distances:
-> node   0   2   6   7
->   0:  10  40  40  40
->   2:  40  10  40  40
->   6:  40  40  10  20
->   7:  40  40  20  10
-> [root@ltcalpine2-lp20 ~]#
+Yes, just a nit that it would be good to have an explicit 'TODO:' there, 
+without which it looks like any other comment...
 
-What kernel is that running?
+But, thinking about this more, we could probably simplify this by having 
+optprobes set things up in a local buffer before copying it into the 
+instruction slot. That will also make it easier for the subsequent 
+support to patch many instructions at once.
 
-And can you show me the full ibm,dynamic-memory and lookup-arrays
-properties for that system?
+> 
+> > 
+> > > +	size = (TMPL_END_IDX * sizeof(kprobe_opcode_t)) / sizeof(int);
+> > 
+> > That's just TMPL_END_IDX.
+> >
+> 
+> The entire kprobe_opcode_t and int types thing is a bit messy. The size
 
-cheers
+Right - it's an artifact of kprobes generic infrastructure. For powerpc, 
+it's always an integer.
+
+> calculation assumes nothing for now in terms of sizes, but I guess the
+> patch_instruction does. Another TODO?
+
+Not sure I follow...
+
+
+- Naveen
