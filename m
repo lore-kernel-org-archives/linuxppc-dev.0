@@ -2,8 +2,8 @@ Return-Path: <BATV+eb06f239ea6f59aeb59b+5037+infradead.org+hch@bombadil.srs.infr
 Received: from bombadil.infradead.org (bombadil.infradead.org [65.50.211.133])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
  bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wk5pV0lZrzDqLB
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Jun 2017 23:28:18 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wk5pb02DpzDqLK
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Jun 2017 23:28:23 +1000 (AEST)
 From: Christoph Hellwig <hch@lst.de>
 To: x86@kernel.org, linux-arm-kernel@lists.infradead.org,
  xen-devel@lists.xenproject.org, linux-c6x-dev@linux-c6x.org,
@@ -16,9 +16,9 @@ To: x86@kernel.org, linux-arm-kernel@lists.infradead.org,
  linux-samsung-soc@vger.kernel.org, iommu@lists.linux-foundation.org,
  netdev@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 29/44] dma-noop: remove dma_supported and mapping_error methods
-Date: Thu,  8 Jun 2017 15:25:54 +0200
-Message-Id: <20170608132609.32662-30-hch@lst.de>
+Subject: [PATCH 30/44] dma-virt: remove dma_supported and mapping_error methods
+Date: Thu,  8 Jun 2017 15:25:55 +0200
+Message-Id: <20170608132609.32662-31-hch@lst.de>
 In-Reply-To: <20170608132609.32662-1-hch@lst.de>
 References: <20170608132609.32662-1-hch@lst.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -34,36 +34,35 @@ These just duplicate the default behavior if no method is provided.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- lib/dma-noop.c | 12 ------------
+ lib/dma-virt.c | 12 ------------
  1 file changed, 12 deletions(-)
 
-diff --git a/lib/dma-noop.c b/lib/dma-noop.c
-index de26c8b68f34..643a074f139d 100644
---- a/lib/dma-noop.c
-+++ b/lib/dma-noop.c
-@@ -54,23 +54,11 @@ static int dma_noop_map_sg(struct device *dev, struct scatterlist *sgl, int nent
+diff --git a/lib/dma-virt.c b/lib/dma-virt.c
+index dcd4df1f7174..5c4f11329721 100644
+--- a/lib/dma-virt.c
++++ b/lib/dma-virt.c
+@@ -51,22 +51,10 @@ static int dma_virt_map_sg(struct device *dev, struct scatterlist *sgl,
  	return nents;
  }
  
--static int dma_noop_mapping_error(struct device *dev, dma_addr_t dma_addr)
+-static int dma_virt_mapping_error(struct device *dev, dma_addr_t dma_addr)
 -{
--	return 0;
+-	return false;
 -}
 -
--static int dma_noop_supported(struct device *dev, u64 mask)
+-static int dma_virt_supported(struct device *dev, u64 mask)
 -{
--	return 1;
+-	return true;
 -}
 -
- const struct dma_map_ops dma_noop_ops = {
- 	.alloc			= dma_noop_alloc,
- 	.free			= dma_noop_free,
- 	.map_page		= dma_noop_map_page,
- 	.map_sg			= dma_noop_map_sg,
--	.mapping_error		= dma_noop_mapping_error,
--	.dma_supported		= dma_noop_supported,
+ const struct dma_map_ops dma_virt_ops = {
+ 	.alloc			= dma_virt_alloc,
+ 	.free			= dma_virt_free,
+ 	.map_page		= dma_virt_map_page,
+ 	.map_sg			= dma_virt_map_sg,
+-	.mapping_error		= dma_virt_mapping_error,
+-	.dma_supported		= dma_virt_supported,
  };
- 
- EXPORT_SYMBOL(dma_noop_ops);
+ EXPORT_SYMBOL(dma_virt_ops);
 -- 
 2.11.0
