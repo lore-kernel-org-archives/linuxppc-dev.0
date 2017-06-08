@@ -1,16 +1,18 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wjsMY27RqzDqPd
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wjsMY4C9LzDqRD
  for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Jun 2017 14:07:37 +1000 (AEST)
-In-Reply-To: <20170529062644.21634-1-npiggin@gmail.com>
-To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <83aadb3163da87ec017ca4a61afcc29520a27eff.1496070452.git.christophe.leroy@c-s.fr>
+To: Christophe Leroy <christophe.leroy@c-s.fr>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Scott Wood <oss@buserror.net>,
+ Balbir Singh <bsingharora@gmail.com>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: powerpc/64s: machine check handle ifetch from foreign real
- address for POWER9
-Message-Id: <3wjsMY1LKcz9s8Y@ozlabs.org>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [1/7] powerpc/mm: rename map_page() to map_kernel_page() on PPC32
+Message-Id: <3wjsMY3KlWz9sDB@ozlabs.org>
 Date: Thu,  8 Jun 2017 14:07:37 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -21,20 +23,12 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2017-05-29 at 06:26:44 UTC, Nicholas Piggin wrote:
-> The i-side 0111b case was missed by 7b9f71f974 ("powerpc/64s: POWER9
-> machine check handler").
-> 
-> It is possible to trigger this exception by branching to a foreign real
-> address (bits [8:12] != 0) with instruction relocation off, and verify
-> the exception cause is found after this patch.
-> 
-> Fixes: 7b9f71f974 ("powerpc/64s: POWER9 machine check handler")
-> Reported-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+On Mon, 2017-05-29 at 15:31:56 UTC, Christophe Leroy wrote:
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> Acked-by: Balbir Singh <bsingharora@gmail.com>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/90df4bfb4d9e00a1ab6885900b808b
+https://git.kernel.org/powerpc/c/4386c096c2ffa1b3232d701e9d7ff8
 
 cheers
