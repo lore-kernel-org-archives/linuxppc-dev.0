@@ -1,43 +1,30 @@
-Return-Path: <vaibhav@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wjvVb0n9JzDqFH
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Jun 2017 15:43:50 +1000 (AEST)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v585hmka009896
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 8 Jun 2017 01:43:48 -0400
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2axxrvvj05-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 08 Jun 2017 01:43:47 -0400
-Received: from localhost
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <vaibhav@linux.vnet.ibm.com>;
- Thu, 8 Jun 2017 15:43:40 +1000
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v585hbFf15466720
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 8 Jun 2017 15:43:37 +1000
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v585hSZl002701
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 8 Jun 2017 15:43:29 +1000
-From: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
-To: Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au,
- andrew.donnellan@au1.ibm.com, clombard@linux.vnet.ibm.com,
- philippe.bergheaud@fr.ibm.com
-Subject: Re: [PATCH v2] cxl: Fix error path on bad ioctl
-In-Reply-To: <20170606094341.14629-1-fbarrat@linux.vnet.ibm.com>
-References: <20170606094341.14629-1-fbarrat@linux.vnet.ibm.com>
-Date: Thu, 08 Jun 2017 11:13:27 +0530
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wjvWL1SjCzDqNs
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Jun 2017 15:44:30 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Hugh Dickins <hughd@google.com>
+Cc: Hugh Dickins <hughd@google.com>, Christoph Lameter <cl@linux.com>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org
+Subject: Re: 4.12-rc ppc64 4k-page needs costly allocations
+In-Reply-To: <alpine.LSU.2.11.1706012045240.4854@eggly.anvils>
+References: <alpine.LSU.2.11.1705301151090.2133@eggly.anvils>
+ <87h9014j7t.fsf@concordia.ellerman.id.au>
+ <alpine.DEB.2.20.1705310906570.14920@east.gentwo.org>
+ <alpine.LSU.2.11.1705311112290.1839@eggly.anvils>
+ <alpine.DEB.2.20.1706011027310.8835@east.gentwo.org>
+ <alpine.LSU.2.11.1706011002130.3014@eggly.anvils>
+ <alpine.DEB.2.20.1706011306560.11993@east.gentwo.org>
+ <alpine.LSU.2.11.1706011128490.3622@eggly.anvils>
+ <878tlb2igt.fsf@concordia.ellerman.id.au>
+ <alpine.LSU.2.11.1706012045240.4854@eggly.anvils>
+Date: Thu, 08 Jun 2017 15:44:29 +1000
+Message-ID: <87efuvdoea.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
-Message-Id: <87tw3rxce8.fsf@vajain21.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,22 +34,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Fred,
-
-Thanks for addressing the review comments.
-
-Frederic Barrat <fbarrat@linux.vnet.ibm.com> writes:
-
-> Fix error path if we can't copy user structure on CXL_IOCTL_START_WORK
-> ioctl. We shouldn't unlock the context status mutex as it was not
-> locked (yet).
+Hugh Dickins <hughd@google.com> writes:
+> On Fri, 2 Jun 2017, Michael Ellerman wrote:
+>> Hugh Dickins <hughd@google.com> writes:
+>> > On Thu, 1 Jun 2017, Christoph Lameter wrote:
+>> >> 
+>> >> Ok so debugging was off but the slab cache has a ctor callback which
+>> >> mandates that the free pointer cannot use the free object space when
+>> >> the object is not in use. Thus the size of the object must be increased to
+>> >> accomodate the freepointer.
+>> >
+>> > Thanks a lot for working that out.  Makes sense, fully understood now,
+>> > nothing to worry about (though makes one wonder whether it's efficient
+>> > to use ctors on high-alignment caches; or whether an internal "zero-me"
+>> > ctor would be useful).
+>> 
+>> Or should we just be using kmem_cache_zalloc() when we allocate from
+>> those slabs?
+>> 
+>> Given all the ctor's do is memset to 0.
 >
-> Signed-off-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-> Cc: stable@vger.kernel.org
-> Fixes: 0712dc7e73e5 ("cxl: Fix issues when unmapping contexts")
-> ---
-> Changelog:
-> v2: change sizeof() parameter (Vaibhav)
->     tweak commit message and add 'Fixes:' (mpe)
+> I'm not sure.  From a memory-utilization point of view, with SLUB,
+> using kmem_cache_zalloc() there would certainly be better.
+>
+> But you may be forgetting that the constructor is applied only when a
+> new slab of objects is allocated, not each time an object is allocated
+> from that slab (and the user of those objects agrees to free objects
+> back to the cache in a reusable state: zeroed in this case).
 
-Reviewed-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+Ah yes, I was "forgetting" that :) - ie. didn't know it.
+
+> So from a cpu-utilization point of view, it's better to use the ctor:
+> it's saving you lots of redundant memsets.
+
+OK. Presumably we guarantee (somewhere) that the page tables are zeroed
+before we free them, which is a natural result of tearing down all
+mappings?
+
+But then I see other arches (x86, arm64 at least), which don't use a
+constructor, and use __GPF_ZERO (via PGALLOC_GFP) at allocation time.
+
+eg. arm64:
+
+	pgd_cache = kmem_cache_create("pgd_cache", PGD_SIZE, PGD_SIZE,
+				      SLAB_PANIC, NULL);
+        ...
+	return kmem_cache_alloc(pgd_cache, PGALLOC_GFP);
+
+
+So that's a bit puzzling.
+
+cheers
