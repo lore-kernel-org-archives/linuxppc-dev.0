@@ -2,7 +2,7 @@ Return-Path: <BATV+eb06f239ea6f59aeb59b+5037+infradead.org+hch@bombadil.srs.infr
 Received: from bombadil.infradead.org (bombadil.infradead.org [65.50.211.133])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
  bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wk5pL4dd6zDqLy
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wk5pL3xTqzDqLx
  for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Jun 2017 23:28:10 +1000 (AEST)
 From: Christoph Hellwig <hch@lst.de>
 To: x86@kernel.org, linux-arm-kernel@lists.infradead.org,
@@ -16,9 +16,9 @@ To: x86@kernel.org, linux-arm-kernel@lists.infradead.org,
  linux-samsung-soc@vger.kernel.org, iommu@lists.linux-foundation.org,
  netdev@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 27/44] sparc: remove leon_dma_ops
-Date: Thu,  8 Jun 2017 15:25:52 +0200
-Message-Id: <20170608132609.32662-28-hch@lst.de>
+Subject: [PATCH 26/44] dma-mapping: remove DMA_ERROR_CODE
+Date: Thu,  8 Jun 2017 15:25:51 +0200
+Message-Id: <20170608132609.32662-27-hch@lst.de>
 In-Reply-To: <20170608132609.32662-1-hch@lst.de>
 References: <20170608132609.32662-1-hch@lst.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -30,60 +30,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We can just use pci32_dma_ops.
-
-Btw, given that leon is 32-bit and appears to be PCI based, do even need
-the special case for it in get_arch_dma_ops at all?
+And update the documentation - dma_mapping_error has been supported
+everywhere for a long time.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- arch/sparc/include/asm/dma-mapping.h | 3 +--
- arch/sparc/kernel/ioport.c           | 5 +----
- 2 files changed, 2 insertions(+), 6 deletions(-)
+ Documentation/DMA-API-HOWTO.txt | 31 +++++--------------------------
+ include/linux/dma-mapping.h     |  5 -----
+ 2 files changed, 5 insertions(+), 31 deletions(-)
 
-diff --git a/arch/sparc/include/asm/dma-mapping.h b/arch/sparc/include/asm/dma-mapping.h
-index b8e8dfcd065d..98da9f92c318 100644
---- a/arch/sparc/include/asm/dma-mapping.h
-+++ b/arch/sparc/include/asm/dma-mapping.h
-@@ -17,7 +17,6 @@ static inline void dma_cache_sync(struct device *dev, void *vaddr, size_t size,
- }
+diff --git a/Documentation/DMA-API-HOWTO.txt b/Documentation/DMA-API-HOWTO.txt
+index 979228bc9035..4ed388356898 100644
+--- a/Documentation/DMA-API-HOWTO.txt
++++ b/Documentation/DMA-API-HOWTO.txt
+@@ -550,32 +550,11 @@ and to unmap it:
+ 	dma_unmap_single(dev, dma_handle, size, direction);
  
- extern const struct dma_map_ops *dma_ops;
--extern const struct dma_map_ops *leon_dma_ops;
- extern const struct dma_map_ops pci32_dma_ops;
- 
- extern struct bus_type pci_bus_type;
-@@ -26,7 +25,7 @@ static inline const struct dma_map_ops *get_arch_dma_ops(struct bus_type *bus)
- {
- #ifdef CONFIG_SPARC_LEON
- 	if (sparc_cpu_model == sparc_leon)
--		return leon_dma_ops;
-+		return &pci32_dma_ops;
- #endif
- #if defined(CONFIG_SPARC32) && defined(CONFIG_PCI)
- 	if (bus == &pci_bus_type)
-diff --git a/arch/sparc/kernel/ioport.c b/arch/sparc/kernel/ioport.c
-index cf20033a1458..dd081d557609 100644
---- a/arch/sparc/kernel/ioport.c
-+++ b/arch/sparc/kernel/ioport.c
-@@ -637,6 +637,7 @@ static void pci32_sync_sg_for_device(struct device *device, struct scatterlist *
- 	}
- }
- 
-+/* note: leon re-uses pci32_dma_ops */
- const struct dma_map_ops pci32_dma_ops = {
- 	.alloc			= pci32_alloc_coherent,
- 	.free			= pci32_free_coherent,
-@@ -651,10 +652,6 @@ const struct dma_map_ops pci32_dma_ops = {
- };
- EXPORT_SYMBOL(pci32_dma_ops);
- 
--/* leon re-uses pci32_dma_ops */
--const struct dma_map_ops *leon_dma_ops = &pci32_dma_ops;
--EXPORT_SYMBOL(leon_dma_ops);
+ You should call dma_mapping_error() as dma_map_single() could fail and return
+-error. Not all DMA implementations support the dma_mapping_error() interface.
+-However, it is a good practice to call dma_mapping_error() interface, which
+-will invoke the generic mapping error check interface. Doing so will ensure
+-that the mapping code will work correctly on all DMA implementations without
+-any dependency on the specifics of the underlying implementation. Using the
+-returned address without checking for errors could result in failures ranging
+-from panics to silent data corruption. A couple of examples of incorrect ways
+-to check for errors that make assumptions about the underlying DMA
+-implementation are as follows and these are applicable to dma_map_page() as
+-well.
 -
- const struct dma_map_ops *dma_ops = &sbus_dma_ops;
- EXPORT_SYMBOL(dma_ops);
+-Incorrect example 1:
+-	dma_addr_t dma_handle;
+-
+-	dma_handle = dma_map_single(dev, addr, size, direction);
+-	if ((dma_handle & 0xffff != 0) || (dma_handle >= 0x1000000)) {
+-		goto map_error;
+-	}
+-
+-Incorrect example 2:
+-	dma_addr_t dma_handle;
+-
+-	dma_handle = dma_map_single(dev, addr, size, direction);
+-	if (dma_handle == DMA_ERROR_CODE) {
+-		goto map_error;
+-	}
++error.  Doing so will ensure that the mapping code will work correctly on all
++DMA implementations without any dependency on the specifics of the underlying
++implementation. Using the returned address without checking for errors could
++result in failures ranging from panics to silent data corruption.  The same
++applies to dma_map_page() as well.
  
+ You should call dma_unmap_single() when the DMA activity is finished, e.g.,
+ from the interrupt which told you that the DMA transfer is done.
+diff --git a/include/linux/dma-mapping.h b/include/linux/dma-mapping.h
+index 4f3eecedca2d..a57875309bfd 100644
+--- a/include/linux/dma-mapping.h
++++ b/include/linux/dma-mapping.h
+@@ -546,12 +546,7 @@ static inline int dma_mapping_error(struct device *dev, dma_addr_t dma_addr)
+ 
+ 	if (get_dma_ops(dev)->mapping_error)
+ 		return get_dma_ops(dev)->mapping_error(dev, dma_addr);
+-
+-#ifdef DMA_ERROR_CODE
+-	return dma_addr == DMA_ERROR_CODE;
+-#else
+ 	return 0;
+-#endif
+ }
+ 
+ #ifndef HAVE_ARCH_DMA_SUPPORTED
 -- 
 2.11.0
