@@ -1,26 +1,29 @@
-Return-Path: <BATV+eb06f239ea6f59aeb59b+5037+infradead.org+hch@bombadil.srs.infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org [65.50.211.133])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wk5qb4bJGzDqLy
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Jun 2017 23:29:15 +1000 (AEST)
-From: Christoph Hellwig <hch@lst.de>
-To: x86@kernel.org, linux-arm-kernel@lists.infradead.org,
- xen-devel@lists.xenproject.org, linux-c6x-dev@linux-c6x.org,
- linux-hexagon@vger.kernel.org, linux-ia64@vger.kernel.org,
- linux-mips@linux-mips.org, openrisc@lists.librecores.org,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
- linux-xtensa@linux-xtensa.org, dmaengine@vger.kernel.org,
- linux-tegra@vger.kernel.org, dri-devel@lists.freedesktop.org,
- linux-samsung-soc@vger.kernel.org, iommu@lists.linux-foundation.org,
- netdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 44/44] powerpc: merge __dma_set_mask into dma_set_mask
-Date: Thu,  8 Jun 2017 15:26:09 +0200
-Message-Id: <20170608132609.32662-45-hch@lst.de>
-In-Reply-To: <20170608132609.32662-1-hch@lst.de>
-References: <20170608132609.32662-1-hch@lst.de>
+Return-Path: <gregkh@linuxfoundation.org>
+Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
+ [140.211.169.12])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wk63R55zLzDqLt
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Jun 2017 23:39:31 +1000 (AEST)
+Date: Thu, 8 Jun 2017 15:39:23 +0200
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linux-kernel@vger.kernel.org,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Vineet Gupta <vgupta@synopsys.com>,
+ Bart Van Assche <bart.vanassche@sandisk.com>,
+ Robin Murphy <robin.murphy@arm.com>, Joerg Roedel <jroedel@suse.de>,
+ Johan Hovold <johan@kernel.org>, Alexey Kardashevskiy <aik@ozlabs.ru>,
+ Krzysztof Kozlowski <krzk@kernel.org>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 11/16] powerpc: vio_cmo: use dev_groups and not dev_attrs
+ for bus_type
+Message-ID: <20170608133923.GA17811@kroah.com>
+References: <20170606192221.1617-1-gregkh@linuxfoundation.org>
+ <20170606192221.1617-12-gregkh@linuxfoundation.org>
+ <87y3t2d3o5.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <87y3t2d3o5.fsf@concordia.ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,54 +33,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Signed-off-by: Christoph Hellwig <hch@lst.de>
----
- arch/powerpc/include/asm/dma-mapping.h |  1 -
- arch/powerpc/kernel/dma.c              | 13 ++++---------
- 2 files changed, 4 insertions(+), 10 deletions(-)
+On Thu, Jun 08, 2017 at 11:12:10PM +1000, Michael Ellerman wrote:
+> Greg Kroah-Hartman <gregkh@linuxfoundation.org> writes:
+> 
+> > The dev_attrs field has long been "depreciated" and is finally being
+> > removed, so move the driver to use the "correct" dev_groups field
+> > instead for struct bus_type.
+> >
+> > Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> > Cc: Paul Mackerras <paulus@samba.org>
+> > Cc: Michael Ellerman <mpe@ellerman.id.au>
+> > Cc: Vineet Gupta <vgupta@synopsys.com>
+> > Cc: Bart Van Assche <bart.vanassche@sandisk.com>
+> > Cc: Robin Murphy <robin.murphy@arm.com>
+> > Cc: Joerg Roedel <jroedel@suse.de>
+> > Cc: Johan Hovold <johan@kernel.org>
+> > Cc: Alexey Kardashevskiy <aik@ozlabs.ru>
+> > Cc: Krzysztof Kozlowski <krzk@kernel.org>
+> > Cc: <linuxppc-dev@lists.ozlabs.org>
+> > Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> > ---
+> >  arch/powerpc/platforms/pseries/vio.c | 37 +++++++++++++++++++++---------------
+> >  1 file changed, 22 insertions(+), 15 deletions(-)
+> 
+> This one needed a bit more work to get building, the incremental diff is
+> below. We need a forward declaration of name, devspec and modalias,
+> which is a bit weird, but that's how the code is currently structured.
+> And there's dev and bus attributes with the same name, so that needed an
+> added "bus".
+> 
+> I booted v2 of patch 10 and this one and everything looks identical to
+> upstream.
 
-diff --git a/arch/powerpc/include/asm/dma-mapping.h b/arch/powerpc/include/asm/dma-mapping.h
-index 73aedbe6c977..eaece3d3e225 100644
---- a/arch/powerpc/include/asm/dma-mapping.h
-+++ b/arch/powerpc/include/asm/dma-mapping.h
-@@ -112,7 +112,6 @@ static inline void set_dma_offset(struct device *dev, dma_addr_t off)
- #define HAVE_ARCH_DMA_SET_MASK 1
- extern int dma_set_mask(struct device *dev, u64 dma_mask);
- 
--extern int __dma_set_mask(struct device *dev, u64 dma_mask);
- extern u64 __dma_get_required_mask(struct device *dev);
- 
- static inline bool dma_capable(struct device *dev, dma_addr_t addr, size_t size)
-diff --git a/arch/powerpc/kernel/dma.c b/arch/powerpc/kernel/dma.c
-index 466c9f07b288..4194bbbbdb10 100644
---- a/arch/powerpc/kernel/dma.c
-+++ b/arch/powerpc/kernel/dma.c
-@@ -314,14 +314,6 @@ EXPORT_SYMBOL(dma_set_coherent_mask);
- 
- #define PREALLOC_DMA_DEBUG_ENTRIES (1 << 16)
- 
--int __dma_set_mask(struct device *dev, u64 dma_mask)
--{
--	if (!dev->dma_mask || !dma_supported(dev, dma_mask))
--		return -EIO;
--	*dev->dma_mask = dma_mask;
--	return 0;
--}
--
- int dma_set_mask(struct device *dev, u64 dma_mask)
- {
- 	if (ppc_md.dma_set_mask)
-@@ -334,7 +326,10 @@ int dma_set_mask(struct device *dev, u64 dma_mask)
- 			return phb->controller_ops.dma_set_mask(pdev, dma_mask);
- 	}
- 
--	return __dma_set_mask(dev, dma_mask);
-+	if (!dev->dma_mask || !dma_supported(dev, dma_mask))
-+		return -EIO;
-+	*dev->dma_mask = dma_mask;
-+	return 0;
- }
- EXPORT_SYMBOL(dma_set_mask);
- 
--- 
-2.11.0
+Ah, many thanks, this was on my todo list to fix up today.
+
+But you renamed the sysfs files when you added "bus" to the function
+names, are you sure you want to do that?  I don't mind, but if you
+happen to have userspace tools that look at those files, they just broke
+:(
+
+thanks,
+
+greg k-h
