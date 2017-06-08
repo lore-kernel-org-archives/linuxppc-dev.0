@@ -2,8 +2,8 @@ Return-Path: <BATV+eb06f239ea6f59aeb59b+5037+infradead.org+hch@bombadil.srs.infr
 Received: from bombadil.infradead.org (bombadil.infradead.org [65.50.211.133])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
  bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wk5pL3xTqzDqLx
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Jun 2017 23:28:10 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wk5pS3WqfzDqLQ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Jun 2017 23:28:16 +1000 (AEST)
 From: Christoph Hellwig <hch@lst.de>
 To: x86@kernel.org, linux-arm-kernel@lists.infradead.org,
  xen-devel@lists.xenproject.org, linux-c6x-dev@linux-c6x.org,
@@ -16,9 +16,10 @@ To: x86@kernel.org, linux-arm-kernel@lists.infradead.org,
  linux-samsung-soc@vger.kernel.org, iommu@lists.linux-foundation.org,
  netdev@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 26/44] dma-mapping: remove DMA_ERROR_CODE
-Date: Thu,  8 Jun 2017 15:25:51 +0200
-Message-Id: <20170608132609.32662-27-hch@lst.de>
+Subject: [PATCH 28/44] sparc: remove arch specific dma_supported
+ implementations
+Date: Thu,  8 Jun 2017 15:25:53 +0200
+Message-Id: <20170608132609.32662-29-hch@lst.de>
 In-Reply-To: <20170608132609.32662-1-hch@lst.de>
 References: <20170608132609.32662-1-hch@lst.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -30,73 +31,182 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-And update the documentation - dma_mapping_error has been supported
-everywhere for a long time.
+Usually dma_supported decisions are done by the dma_map_ops instance.
+Switch sparc to that model by providing a ->dma_supported instance for
+sbus that always returns false, and implementations tailored to the sun4u
+and sun4v cases for sparc64, and leave it unimplemented for PCI on
+sparc32, which means always supported.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- Documentation/DMA-API-HOWTO.txt | 31 +++++--------------------------
- include/linux/dma-mapping.h     |  5 -----
- 2 files changed, 5 insertions(+), 31 deletions(-)
+ arch/sparc/include/asm/dma-mapping.h |  3 ---
+ arch/sparc/kernel/iommu.c            | 40 +++++++++++++++---------------------
+ arch/sparc/kernel/ioport.c           | 22 ++++++--------------
+ arch/sparc/kernel/pci_sun4v.c        | 17 +++++++++++++++
+ 4 files changed, 39 insertions(+), 43 deletions(-)
 
-diff --git a/Documentation/DMA-API-HOWTO.txt b/Documentation/DMA-API-HOWTO.txt
-index 979228bc9035..4ed388356898 100644
---- a/Documentation/DMA-API-HOWTO.txt
-+++ b/Documentation/DMA-API-HOWTO.txt
-@@ -550,32 +550,11 @@ and to unmap it:
- 	dma_unmap_single(dev, dma_handle, size, direction);
+diff --git a/arch/sparc/include/asm/dma-mapping.h b/arch/sparc/include/asm/dma-mapping.h
+index 98da9f92c318..60bf1633d554 100644
+--- a/arch/sparc/include/asm/dma-mapping.h
++++ b/arch/sparc/include/asm/dma-mapping.h
+@@ -5,9 +5,6 @@
+ #include <linux/mm.h>
+ #include <linux/dma-debug.h>
  
- You should call dma_mapping_error() as dma_map_single() could fail and return
--error. Not all DMA implementations support the dma_mapping_error() interface.
--However, it is a good practice to call dma_mapping_error() interface, which
--will invoke the generic mapping error check interface. Doing so will ensure
--that the mapping code will work correctly on all DMA implementations without
--any dependency on the specifics of the underlying implementation. Using the
--returned address without checking for errors could result in failures ranging
--from panics to silent data corruption. A couple of examples of incorrect ways
--to check for errors that make assumptions about the underlying DMA
--implementation are as follows and these are applicable to dma_map_page() as
--well.
+-#define HAVE_ARCH_DMA_SUPPORTED 1
+-int dma_supported(struct device *dev, u64 mask);
 -
--Incorrect example 1:
--	dma_addr_t dma_handle;
--
--	dma_handle = dma_map_single(dev, addr, size, direction);
--	if ((dma_handle & 0xffff != 0) || (dma_handle >= 0x1000000)) {
--		goto map_error;
--	}
--
--Incorrect example 2:
--	dma_addr_t dma_handle;
--
--	dma_handle = dma_map_single(dev, addr, size, direction);
--	if (dma_handle == DMA_ERROR_CODE) {
--		goto map_error;
--	}
-+error.  Doing so will ensure that the mapping code will work correctly on all
-+DMA implementations without any dependency on the specifics of the underlying
-+implementation. Using the returned address without checking for errors could
-+result in failures ranging from panics to silent data corruption.  The same
-+applies to dma_map_page() as well.
- 
- You should call dma_unmap_single() when the DMA activity is finished, e.g.,
- from the interrupt which told you that the DMA transfer is done.
-diff --git a/include/linux/dma-mapping.h b/include/linux/dma-mapping.h
-index 4f3eecedca2d..a57875309bfd 100644
---- a/include/linux/dma-mapping.h
-+++ b/include/linux/dma-mapping.h
-@@ -546,12 +546,7 @@ static inline int dma_mapping_error(struct device *dev, dma_addr_t dma_addr)
- 
- 	if (get_dma_ops(dev)->mapping_error)
- 		return get_dma_ops(dev)->mapping_error(dev, dma_addr);
--
--#ifdef DMA_ERROR_CODE
--	return dma_addr == DMA_ERROR_CODE;
--#else
- 	return 0;
--#endif
+ static inline void dma_cache_sync(struct device *dev, void *vaddr, size_t size,
+ 				  enum dma_data_direction dir)
+ {
+diff --git a/arch/sparc/kernel/iommu.c b/arch/sparc/kernel/iommu.c
+index dafa316d978d..fcbcc031f615 100644
+--- a/arch/sparc/kernel/iommu.c
++++ b/arch/sparc/kernel/iommu.c
+@@ -746,6 +746,21 @@ static int dma_4u_mapping_error(struct device *dev, dma_addr_t dma_addr)
+ 	return dma_addr == SPARC_MAPPING_ERROR;
  }
  
- #ifndef HAVE_ARCH_DMA_SUPPORTED
++static int dma_4u_supported(struct device *dev, u64 device_mask)
++{
++	struct iommu *iommu = dev->archdata.iommu;
++
++	if (device_mask > DMA_BIT_MASK(32))
++		return 0;
++	if ((device_mask & iommu->dma_addr_mask) == iommu->dma_addr_mask)
++		return 1;
++#ifdef CONFIG_PCI
++	if (dev_is_pci(dev))
++		return pci64_dma_supported(to_pci_dev(dev), device_mask);
++#endif
++	return 0;
++}
++
+ static const struct dma_map_ops sun4u_dma_ops = {
+ 	.alloc			= dma_4u_alloc_coherent,
+ 	.free			= dma_4u_free_coherent,
+@@ -755,32 +770,9 @@ static const struct dma_map_ops sun4u_dma_ops = {
+ 	.unmap_sg		= dma_4u_unmap_sg,
+ 	.sync_single_for_cpu	= dma_4u_sync_single_for_cpu,
+ 	.sync_sg_for_cpu	= dma_4u_sync_sg_for_cpu,
++	.dma_supported		= dma_4u_supported,
+ 	.mapping_error		= dma_4u_mapping_error,
+ };
+ 
+ const struct dma_map_ops *dma_ops = &sun4u_dma_ops;
+ EXPORT_SYMBOL(dma_ops);
+-
+-int dma_supported(struct device *dev, u64 device_mask)
+-{
+-	struct iommu *iommu = dev->archdata.iommu;
+-	u64 dma_addr_mask = iommu->dma_addr_mask;
+-
+-	if (device_mask > DMA_BIT_MASK(32)) {
+-		if (iommu->atu)
+-			dma_addr_mask = iommu->atu->dma_addr_mask;
+-		else
+-			return 0;
+-	}
+-
+-	if ((device_mask & dma_addr_mask) == dma_addr_mask)
+-		return 1;
+-
+-#ifdef CONFIG_PCI
+-	if (dev_is_pci(dev))
+-		return pci64_dma_supported(to_pci_dev(dev), device_mask);
+-#endif
+-
+-	return 0;
+-}
+-EXPORT_SYMBOL(dma_supported);
+diff --git a/arch/sparc/kernel/ioport.c b/arch/sparc/kernel/ioport.c
+index dd081d557609..12894f259bea 100644
+--- a/arch/sparc/kernel/ioport.c
++++ b/arch/sparc/kernel/ioport.c
+@@ -401,6 +401,11 @@ static void sbus_sync_sg_for_device(struct device *dev, struct scatterlist *sg,
+ 	BUG();
+ }
+ 
++static int sbus_dma_supported(struct device *dev, u64 mask)
++{
++	return 0;
++}
++
+ static const struct dma_map_ops sbus_dma_ops = {
+ 	.alloc			= sbus_alloc_coherent,
+ 	.free			= sbus_free_coherent,
+@@ -410,6 +415,7 @@ static const struct dma_map_ops sbus_dma_ops = {
+ 	.unmap_sg		= sbus_unmap_sg,
+ 	.sync_sg_for_cpu	= sbus_sync_sg_for_cpu,
+ 	.sync_sg_for_device	= sbus_sync_sg_for_device,
++	.dma_supported		= sbus_dma_supported,
+ };
+ 
+ static int __init sparc_register_ioport(void)
+@@ -655,22 +661,6 @@ EXPORT_SYMBOL(pci32_dma_ops);
+ const struct dma_map_ops *dma_ops = &sbus_dma_ops;
+ EXPORT_SYMBOL(dma_ops);
+ 
+-
+-/*
+- * Return whether the given PCI device DMA address mask can be
+- * supported properly.  For example, if your device can only drive the
+- * low 24-bits during PCI bus mastering, then you would pass
+- * 0x00ffffff as the mask to this function.
+- */
+-int dma_supported(struct device *dev, u64 mask)
+-{
+-	if (dev_is_pci(dev))
+-		return 1;
+-
+-	return 0;
+-}
+-EXPORT_SYMBOL(dma_supported);
+-
+ #ifdef CONFIG_PROC_FS
+ 
+ static int sparc_io_proc_show(struct seq_file *m, void *v)
+diff --git a/arch/sparc/kernel/pci_sun4v.c b/arch/sparc/kernel/pci_sun4v.c
+index 8e2a56f4c03a..24f21c726dfa 100644
+--- a/arch/sparc/kernel/pci_sun4v.c
++++ b/arch/sparc/kernel/pci_sun4v.c
+@@ -24,6 +24,7 @@
+ 
+ #include "pci_impl.h"
+ #include "iommu_common.h"
++#include "kernel.h"
+ 
+ #include "pci_sun4v.h"
+ 
+@@ -669,6 +670,21 @@ static void dma_4v_unmap_sg(struct device *dev, struct scatterlist *sglist,
+ 	local_irq_restore(flags);
+ }
+ 
++static int dma_4v_supported(struct device *dev, u64 device_mask)
++{
++	struct iommu *iommu = dev->archdata.iommu;
++	u64 dma_addr_mask;
++
++	if (device_mask > DMA_BIT_MASK(32) && iommu->atu)
++		dma_addr_mask = iommu->atu->dma_addr_mask;
++	else
++		dma_addr_mask = iommu->dma_addr_mask;
++
++	if ((device_mask & dma_addr_mask) == dma_addr_mask)
++		return 1;
++	return pci64_dma_supported(to_pci_dev(dev), device_mask);
++}
++
+ static int dma_4v_mapping_error(struct device *dev, dma_addr_t dma_addr)
+ {
+ 	return dma_addr == SPARC_MAPPING_ERROR;
+@@ -681,6 +697,7 @@ static const struct dma_map_ops sun4v_dma_ops = {
+ 	.unmap_page			= dma_4v_unmap_page,
+ 	.map_sg				= dma_4v_map_sg,
+ 	.unmap_sg			= dma_4v_unmap_sg,
++	.dma_supported			= dma_4v_supported,
+ 	.mapping_error			= dma_4v_mapping_error,
+ };
+ 
 -- 
 2.11.0
