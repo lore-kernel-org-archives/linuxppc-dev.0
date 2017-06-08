@@ -3,42 +3,41 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wkGxf4lQHzDqPk
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Jun 2017 06:20:06 +1000 (AEST)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wkGxm3tZfzDqR7
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Jun 2017 06:20:12 +1000 (AEST)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v58KDmHl136540
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 8 Jun 2017 16:20:04 -0400
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2ayde1g7j8-1
+ v58KHLnR020047
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 8 Jun 2017 16:20:10 -0400
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2ay8hknneu-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 08 Jun 2017 16:20:04 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 08 Jun 2017 16:20:10 -0400
 Received: from localhost
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
- Fri, 9 Jun 2017 06:20:01 +1000
-Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
+ Fri, 9 Jun 2017 06:20:07 +1000
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
  by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v58KJp8G1049026
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 9 Jun 2017 06:19:59 +1000
-Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
- by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v58KJQkF024212
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 9 Jun 2017 06:19:27 +1000
+ v58KK5oH31785018
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 9 Jun 2017 06:20:05 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v58KK4Yh032371
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 9 Jun 2017 06:20:05 +1000
 From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 To: mpe@ellerman.id.au
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  stewart@linux.vnet.ibm.com, eranian@google.com,
  benh@kernel.crashing.org, paulus@samba.org, sukadev@linux.vnet.ibm.com,
  ego@linux.vnet.ibm.com, mikey@neuling.org, dja@axtens.net,
- anton@samba.org, Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
- Anju T Sudhakar <anju@linux.vnet.ibm.com>,
- Hemant Kumar <hemant@linux.vnet.ibm.com>
-Subject: [PATCH v10 01/10] powerpc/powernv: Data structure and macros
- definitions for IMC
-Date: Fri,  9 Jun 2017 01:48:45 +0530
-Message-Id: <1496953125-15795-1-git-send-email-maddy@linux.vnet.ibm.com>
+ anton@samba.org, Anju T Sudhakar <anju@linux.vnet.ibm.com>,
+ Hemant Kumar <hemant@linux.vnet.ibm.com>,
+ Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+Subject: [PATCH v10 02/10] powerpc/powernv: Autoload IMC device driver module
+Date: Fri,  9 Jun 2017 01:49:46 +0530
+Message-Id: <1496953186-15980-1-git-send-email-maddy@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,121 +47,181 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Create a new header file to add the data structures and
-macros needed for In-Memory Collection (IMC) counter support.
+From: Anju T Sudhakar <anju@linux.vnet.ibm.com>
+
+Code to create platform device for the IMC counters.
+Paltform devices are created based on the IMC compatibility
+string.
+
+New Config flag "CONFIG_HV_PERF_IMC_CTRS" add to contain the
+IMC counter changes.
 
 Signed-off-by: Anju T Sudhakar <anju@linux.vnet.ibm.com>
 Signed-off-by: Hemant Kumar <hemant@linux.vnet.ibm.com>
 Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/imc-pmu.h | 99 ++++++++++++++++++++++++++++++++++++++
- 1 file changed, 99 insertions(+)
- create mode 100644 arch/powerpc/include/asm/imc-pmu.h
+ arch/powerpc/platforms/powernv/Kconfig    | 10 +++++
+ arch/powerpc/platforms/powernv/Makefile   |  1 +
+ arch/powerpc/platforms/powernv/opal-imc.c | 73 +++++++++++++++++++++++++++++++
+ arch/powerpc/platforms/powernv/opal.c     | 18 ++++++++
+ 4 files changed, 102 insertions(+)
+ create mode 100644 arch/powerpc/platforms/powernv/opal-imc.c
 
-diff --git a/arch/powerpc/include/asm/imc-pmu.h b/arch/powerpc/include/asm/imc-pmu.h
-new file mode 100644
-index 000000000000..ffaea0b9c13e
---- /dev/null
-+++ b/arch/powerpc/include/asm/imc-pmu.h
-@@ -0,0 +1,99 @@
-+#ifndef PPC_POWERNV_IMC_PMU_DEF_H
-+#define PPC_POWERNV_IMC_PMU_DEF_H
+diff --git a/arch/powerpc/platforms/powernv/Kconfig b/arch/powerpc/platforms/powernv/Kconfig
+index 6a6f4ef46b9e..543c6cd5e8d3 100644
+--- a/arch/powerpc/platforms/powernv/Kconfig
++++ b/arch/powerpc/platforms/powernv/Kconfig
+@@ -30,3 +30,13 @@ config OPAL_PRD
+ 	help
+ 	  This enables the opal-prd driver, a facility to run processor
+ 	  recovery diagnostics on OpenPower machines
 +
++config HV_PERF_IMC_CTRS
++       bool "Hypervisor supplied In Memory Collection PMU events (Nest & Core)"
++       default y
++       depends on PERF_EVENTS && PPC_POWERNV
++       help
++	  Enable access to hypervisor supplied in-memory collection counters
++	  in perf. IMC counters are available from Power9 systems.
++
++          If unsure, select Y.
+diff --git a/arch/powerpc/platforms/powernv/Makefile b/arch/powerpc/platforms/powernv/Makefile
+index b5d98cb3f482..715e531f6711 100644
+--- a/arch/powerpc/platforms/powernv/Makefile
++++ b/arch/powerpc/platforms/powernv/Makefile
+@@ -12,3 +12,4 @@ obj-$(CONFIG_PPC_SCOM)	+= opal-xscom.o
+ obj-$(CONFIG_MEMORY_FAILURE)	+= opal-memory-errors.o
+ obj-$(CONFIG_TRACEPOINTS)	+= opal-tracepoints.o
+ obj-$(CONFIG_OPAL_PRD)	+= opal-prd.o
++obj-$(CONFIG_HV_PERF_IMC_CTRS) += opal-imc.o
+diff --git a/arch/powerpc/platforms/powernv/opal-imc.c b/arch/powerpc/platforms/powernv/opal-imc.c
+new file mode 100644
+index 000000000000..5b1045c81af4
+--- /dev/null
++++ b/arch/powerpc/platforms/powernv/opal-imc.c
+@@ -0,0 +1,73 @@
 +/*
-+ * IMC Nest Performance Monitor counter support.
++ * OPAL IMC interface detection driver
++ * Supported on POWERNV platform
 + *
-+ * Copyright (C) 2017 Madhavan Srinivasan, IBM Corporation.
-+ *           (C) 2017 Anju T Sudhakar, IBM Corporation.
-+ *           (C) 2017 Hemant K Shaw, IBM Corporation.
++ * Copyright	(C) 2017 Madhavan Srinivasan, IBM Corporation.
++ *		(C) 2017 Anju T Sudhakar, IBM Corporation.
++ *		(C) 2017 Hemant K Shaw, IBM Corporation.
 + *
 + * This program is free software; you can redistribute it and/or
 + * modify it under the terms of the GNU General Public License
 + * as published by the Free Software Foundation; either version
 + * 2 of the License, or later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
 + */
-+
-+#include <linux/perf_event.h>
-+#include <linux/slab.h>
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/platform_device.h>
++#include <linux/miscdevice.h>
++#include <linux/fs.h>
 +#include <linux/of.h>
-+#include <linux/io.h>
++#include <linux/of_address.h>
++#include <linux/of_platform.h>
++#include <linux/poll.h>
++#include <linux/mm.h>
++#include <linux/slab.h>
++#include <linux/crash_dump.h>
 +#include <asm/opal.h>
++#include <asm/io.h>
++#include <asm/uaccess.h>
++#include <asm/cputable.h>
++#include <asm/imc-pmu.h>
 +
-+/*
-+ * For static allocation of some of the structures.
-+ */
-+#define IMC_MAX_PMUS			32
++static int opal_imc_counters_probe(struct platform_device *pdev)
++{
++	struct device_node *imc_dev = NULL;
 +
-+/*
-+ * This macro is used for memory buffer allocation of
-+ * event names and event string
-+ */
-+#define IMC_MAX_NAME_VAL_LEN		96
++	if (!pdev || !pdev->dev.of_node)
++		return -ENODEV;
 +
-+/*
-+ * Currently Microcode supports a max of 256KB of counter memory
-+ * in the reserved memory region. Max pages to mmap (considering 4K PAGESIZE).
-+ */
-+#define IMC_MAX_PAGES			64
-+
-+/*
-+ *Compatbility macros for IMC devices
-+ */
-+#define IMC_DTB_COMPAT			"ibm,opal-in-memory-counters"
-+#define IMC_DTB_UNIT_COMPAT		"ibm,imc-counters"
-+
-+/*
-+ * Structure to hold memory address information for imc units.
-+ */
-+struct imc_mem_info {
-+	u32 id;
-+	u64 *vbase[IMC_MAX_PAGES];
-+};
-+
-+/*
-+ * Place holder for nest pmu events and values.
-+ */
-+struct imc_events {
-+	char *ev_name;
-+	char *ev_value;
-+};
-+
-+#define IMC_FORMAT_ATTR		0
-+#define IMC_CPUMASK_ATTR	1
-+#define IMC_EVENT_ATTR		2
-+#define IMC_NULL_ATTR		3
-+
-+/*
-+ * Device tree parser code detects IMC pmu support and
-+ * registers new IMC pmus. This structure will hold the
-+ * pmu functions, events, counter memory information
-+ * and attrs for each imc pmu and will be referenced at
-+ * the time of pmu registration.
-+ */
-+struct imc_pmu {
-+	struct pmu pmu;
-+	int domain;
 +	/*
-+	 * flag to notify whether the memory is mmaped
-+	 * or allocated by kernel.
++	 * Check whether this is kdump kernel. If yes, just return.
 +	 */
-+	int imc_counter_mmaped;
-+	struct imc_mem_info *mem_info;
-+	struct imc_events *events;
-+	u32 counter_mem_size;
-+	/*
-+	 * Attribute groups for the PMU. Slot 0 used for
-+	 * format attribute, slot 1 used for cpusmask attribute,
-+	 * slot 2 used for event attribute. Slot 3 keep as
-+	 * NULL.
-+	 */
-+	const struct attribute_group *attr_groups[4];
++	if (is_kdump_kernel())
++		return -ENODEV;
++
++	imc_dev = pdev->dev.of_node;
++	if (!imc_dev)
++		return -ENODEV;
++
++	return 0;
++}
++
++static const struct of_device_id opal_imc_match[] = {
++	{ .compatible = IMC_DTB_COMPAT },
++	{},
 +};
 +
-+/*
-+ * Domains for IMC PMUs
-+ */
-+#define IMC_DOMAIN_NEST		1
++static struct platform_driver opal_imc_driver = {
++	.driver = {
++		.name = "opal-imc-counters",
++		.of_match_table = opal_imc_match,
++	},
++	.probe = opal_imc_counters_probe,
++};
 +
-+#endif /* PPC_POWERNV_IMC_PMU_DEF_H */
++MODULE_DEVICE_TABLE(of, opal_imc_match);
++module_platform_driver(opal_imc_driver);
++MODULE_DESCRIPTION("PowerNV OPAL IMC driver");
++MODULE_LICENSE("GPL");
+diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
+index 59684b4af4d1..fbdca259ea76 100644
+--- a/arch/powerpc/platforms/powernv/opal.c
++++ b/arch/powerpc/platforms/powernv/opal.c
+@@ -14,6 +14,7 @@
+ #include <linux/printk.h>
+ #include <linux/types.h>
+ #include <linux/of.h>
++#include <linux/of_address.h>
+ #include <linux/of_fdt.h>
+ #include <linux/of_platform.h>
+ #include <linux/interrupt.h>
+@@ -30,6 +31,7 @@
+ #include <asm/opal.h>
+ #include <asm/firmware.h>
+ #include <asm/mce.h>
++#include <asm/imc-pmu.h>
+ 
+ #include "powernv.h"
+ 
+@@ -705,6 +707,17 @@ static void opal_pdev_init(const char *compatible)
+ 		of_platform_device_create(np, NULL, NULL);
+ }
+ 
++#ifdef CONFIG_HV_PERF_IMC_CTRS
++static void __init opal_imc_init_dev(void)
++{
++	struct device_node *np;
++
++	np = of_find_compatible_node(NULL, NULL, IMC_DTB_COMPAT);
++	if (np)
++		of_platform_device_create(np, NULL, NULL);
++}
++#endif
++
+ static int kopald(void *unused)
+ {
+ 	unsigned long timeout = msecs_to_jiffies(opal_heartbeat) + 1;
+@@ -778,6 +791,11 @@ static int __init opal_init(void)
+ 	/* Setup a heatbeat thread if requested by OPAL */
+ 	opal_init_heartbeat();
+ 
++#ifdef CONFIG_HV_PERF_IMC_CTRS
++	/* Detect IMC pmu counters support and create PMUs */
++	opal_imc_init_dev();
++#endif
++
+ 	/* Create leds platform devices */
+ 	leds = of_find_node_by_path("/ibm,opal/leds");
+ 	if (leds) {
 -- 
 2.7.4
