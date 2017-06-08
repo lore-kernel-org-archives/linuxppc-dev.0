@@ -1,17 +1,26 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
+ [IPv6:2607:f8b0:400e:c05::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wjt8K4Dy2zDq5W
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Jun 2017 14:42:57 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: linux-input@vger.kernel.org,
-	dmitry.torokhov@gmail.com
-Cc: linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org
-Subject: [RESEND PATCH] input/joystick/analog: Use get_cycles() on PPC
-Date: Thu,  8 Jun 2017 14:42:53 +1000
-Message-Id: <1496896973-13848-1-git-send-email-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wjvJY0X7vzDqFH
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Jun 2017 15:35:09 +1000 (AEST)
+Received: by mail-pg0-x241.google.com with SMTP id f127so3455291pgc.2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 07 Jun 2017 22:35:08 -0700 (PDT)
+Subject: Re: [PATCH] include/linux/vfio.h: Guard powerpc-specific functions
+ with CONFIG_VFIO_SPAPR_EEH
+To: kbuild test robot <lkp@intel.com>,
+ Murilo Opsfelder Araujo <mopsfelder@gmail.com>
+Cc: kbuild-all@01.org, linux-kernel@vger.kernel.org, kvm@vger.kernel.org,
+ Alex Williamson <alex.williamson@redhat.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
+References: <201706080005.vXjRK5G3%fengguang.wu@intel.com>
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+Message-ID: <a0d62075-cb00-c69b-7f39-95a3b53f4061@ozlabs.ru>
+Date: Thu, 8 Jun 2017 15:35:00 +1000
+MIME-Version: 1.0
+In-Reply-To: <201706080005.vXjRK5G3%fengguang.wu@intel.com>
+Content-Type: text/plain; charset=koi8-r
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,30 +30,89 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The analog joystick driver spits a warning at us:
+Hi,
 
-  drivers/input/joystick/analog.c:176:2: warning: #warning Precise timer
-  not defined for this architecture.
+How did you manage to have CONFIG_EEH=y and CONFIG_VFIO_SPAPR_EEH=n? "make
+oldconfig" fixes this to CONFIG_VFIO_SPAPR_EEH=y.
 
-PPC has get_cycles() so use that.
 
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- drivers/input/joystick/analog.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/input/joystick/analog.c b/drivers/input/joystick/analog.c
-index 3d8ff09eba57..06962b63f3a6 100644
---- a/drivers/input/joystick/analog.c
-+++ b/drivers/input/joystick/analog.c
-@@ -163,7 +163,7 @@ static unsigned int get_time_pit(void)
- #define GET_TIME(x)	do { x = (unsigned int)rdtsc(); } while (0)
- #define DELTA(x,y)	((y)-(x))
- #define TIME_NAME	"TSC"
--#elif defined(__alpha__) || defined(CONFIG_MN10300) || defined(CONFIG_ARM) || defined(CONFIG_ARM64) || defined(CONFIG_TILE)
-+#elif defined(__alpha__) || defined(CONFIG_MN10300) || defined(CONFIG_ARM) || defined(CONFIG_ARM64) || defined(CONFIG_TILE) || defined(CONFIG_PPC)
- #define GET_TIME(x)	do { x = get_cycles(); } while (0)
- #define DELTA(x,y)	((y)-(x))
- #define TIME_NAME	"get_cycles"
+On 08/06/17 02:31, kbuild test robot wrote:
+> Hi Murilo,
+> 
+> [auto build test ERROR on linus/master]
+> [also build test ERROR on v4.12-rc4 next-20170607]
+> [if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
+> 
+> url:    https://github.com/0day-ci/linux/commits/Murilo-Opsfelder-Araujo/include-linux-vfio-h-Guard-powerpc-specific-functions-with-CONFIG_VFIO_SPAPR_EEH/20170607-000643
+> config: powerpc-allmodconfig (attached as .config)
+> compiler: powerpc64-linux-gnu-gcc (Debian 6.1.1-9) 6.1.1 20160705
+> reproduce:
+>         wget https://raw.githubusercontent.com/01org/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
+>         chmod +x ~/bin/make.cross
+>         # save the attached .config to linux build tree
+>         make.cross ARCH=powerpc 
+> 
+> All errors (new ones prefixed by >>):
+> 
+>>> drivers/vfio/vfio_spapr_eeh.c:22:6: error: redefinition of 'vfio_spapr_pci_eeh_open'
+>     void vfio_spapr_pci_eeh_open(struct pci_dev *pdev)
+>          ^~~~~~~~~~~~~~~~~~~~~~~
+>    In file included from drivers/vfio/vfio_spapr_eeh.c:14:0:
+>    include/linux/vfio.h:160:20: note: previous definition of 'vfio_spapr_pci_eeh_open' was here
+>     static inline void vfio_spapr_pci_eeh_open(struct pci_dev *pdev)
+>                        ^~~~~~~~~~~~~~~~~~~~~~~
+>>> drivers/vfio/vfio_spapr_eeh.c:28:6: error: redefinition of 'vfio_spapr_pci_eeh_release'
+>     void vfio_spapr_pci_eeh_release(struct pci_dev *pdev)
+>          ^~~~~~~~~~~~~~~~~~~~~~~~~~
+>    In file included from drivers/vfio/vfio_spapr_eeh.c:14:0:
+>    include/linux/vfio.h:164:20: note: previous definition of 'vfio_spapr_pci_eeh_release' was here
+>     static inline void vfio_spapr_pci_eeh_release(struct pci_dev *pdev)
+>                        ^~~~~~~~~~~~~~~~~~~~~~~~~~
+>>> drivers/vfio/vfio_spapr_eeh.c:34:6: error: redefinition of 'vfio_spapr_iommu_eeh_ioctl'
+>     long vfio_spapr_iommu_eeh_ioctl(struct iommu_group *group,
+>          ^~~~~~~~~~~~~~~~~~~~~~~~~~
+>    In file included from drivers/vfio/vfio_spapr_eeh.c:14:0:
+>    include/linux/vfio.h:168:20: note: previous definition of 'vfio_spapr_iommu_eeh_ioctl' was here
+>     static inline long vfio_spapr_iommu_eeh_ioctl(struct iommu_group *group,
+>                        ^~~~~~~~~~~~~~~~~~~~~~~~~~
+> 
+> vim +/vfio_spapr_pci_eeh_open +22 drivers/vfio/vfio_spapr_eeh.c
+> 
+> 1b69be5e Gavin Shan           2014-06-10  16  
+> 89a2edd6 Alexey Kardashevskiy 2014-08-08  17  #define DRIVER_VERSION	"0.1"
+> 89a2edd6 Alexey Kardashevskiy 2014-08-08  18  #define DRIVER_AUTHOR	"Gavin Shan, IBM Corporation"
+> 89a2edd6 Alexey Kardashevskiy 2014-08-08  19  #define DRIVER_DESC	"VFIO IOMMU SPAPR EEH"
+> 89a2edd6 Alexey Kardashevskiy 2014-08-08  20  
+> 1b69be5e Gavin Shan           2014-06-10  21  /* We might build address mapping here for "fast" path later */
+> 9b936c96 Alexey Kardashevskiy 2014-08-08 @22  void vfio_spapr_pci_eeh_open(struct pci_dev *pdev)
+> 1b69be5e Gavin Shan           2014-06-10  23  {
+> 9b936c96 Alexey Kardashevskiy 2014-08-08  24  	eeh_dev_open(pdev);
+> 1b69be5e Gavin Shan           2014-06-10  25  }
+> 92d18a68 Gavin Shan           2014-08-08  26  EXPORT_SYMBOL_GPL(vfio_spapr_pci_eeh_open);
+> 1b69be5e Gavin Shan           2014-06-10  27  
+> 1b69be5e Gavin Shan           2014-06-10 @28  void vfio_spapr_pci_eeh_release(struct pci_dev *pdev)
+> 1b69be5e Gavin Shan           2014-06-10  29  {
+> 1b69be5e Gavin Shan           2014-06-10  30  	eeh_dev_release(pdev);
+> 1b69be5e Gavin Shan           2014-06-10  31  }
+> 92d18a68 Gavin Shan           2014-08-08  32  EXPORT_SYMBOL_GPL(vfio_spapr_pci_eeh_release);
+> 1b69be5e Gavin Shan           2014-06-10  33  
+> 1b69be5e Gavin Shan           2014-06-10 @34  long vfio_spapr_iommu_eeh_ioctl(struct iommu_group *group,
+> 1b69be5e Gavin Shan           2014-06-10  35  				unsigned int cmd, unsigned long arg)
+> 1b69be5e Gavin Shan           2014-06-10  36  {
+> 1b69be5e Gavin Shan           2014-06-10  37  	struct eeh_pe *pe;
+> 
+> :::::: The code at line 22 was first introduced by commit
+> :::::: 9b936c960f22954bfb89f2fefd8f96916bb42908 drivers/vfio: Enable VFIO if EEH is not supported
+> 
+> :::::: TO: Alexey Kardashevskiy <aik@ozlabs.ru>
+> :::::: CC: Alex Williamson <alex.williamson@redhat.com>
+> 
+> ---
+> 0-DAY kernel test infrastructure                Open Source Technology Center
+> https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+> 
+
+
 -- 
-2.7.4
+Alexey
