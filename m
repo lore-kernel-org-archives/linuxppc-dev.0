@@ -1,23 +1,35 @@
-Return-Path: <mhiramat@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <srs0=sx90=5n=infradead.org=peterz@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wk68h6sY1zDqN2
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Jun 2017 23:44:04 +1000 (AEST)
-Date: Thu, 8 Jun 2017 22:43:54 +0900
-From: Masami Hiramatsu <mhiramat@kernel.org>
-To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, Ananth N Mavinakayanahalli
- <ananth@linux.vnet.ibm.com>, Masami Hiramatsu <mhiramat@kernel.org>, Steven
- Rostedt <rostedt@goodmis.org>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v2 1/4] powerpc/kprobes: Pause function_graph tracing
- during jprobes handling
-Message-Id: <20170608224354.495446a0cf6144b67816aa46@kernel.org>
-In-Reply-To: <309db8dc9b7d60b1264d277bd815403fbd2d6545.1496309487.git.naveen.n.rao@linux.vnet.ibm.com>
-References: <cover.1496309487.git.naveen.n.rao@linux.vnet.ibm.com>
- <309db8dc9b7d60b1264d277bd815403fbd2d6545.1496309487.git.naveen.n.rao@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wk6Dr0QL8zDqM3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Jun 2017 23:47:40 +1000 (AEST)
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3wk6Dq672qz8t4Y
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Jun 2017 23:47:39 +1000 (AEST)
+Date: Thu, 8 Jun 2017 15:47:29 +0200
+From: Peter Zijlstra <peterz@infradead.org>
+To: Nicholas Piggin <npiggin@gmail.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, torvalds@linux-foundation.org,
+ will.deacon@arm.com, oleg@redhat.com, paulmck@linux.vnet.ibm.com,
+ benh@kernel.crashing.org, linux-kernel@vger.kernel.org,
+ mingo@kernel.org, stern@rowland.harvard.edu,
+ linuxppc-dev <linuxppc-dev@ozlabs.org>
+Subject: Re: [RFC][PATCH 5/5] powerpc: Remove SYNC from _switch
+Message-ID: <20170608134729.4rwykawnrijtr2yh@hirez.programming.kicks-ass.net>
+References: <20170607161501.819948352@infradead.org>
+ <20170607162013.905320602@infradead.org>
+ <20170608103244.1b4b24c9@roar.ozlabs.ibm.com>
+ <20170608065400.zhfao5lba6i3s7j6@hirez.programming.kicks-ass.net>
+ <20170608172938.62b30475@roar.ozlabs.ibm.com>
+ <20170608075720.kc2p3tybghzbmrz3@hirez.programming.kicks-ass.net>
+ <877f0mere1.fsf@concordia.ellerman.id.au>
+ <20170608200015.7f92965a@roar.ozlabs.ibm.com>
+ <20170608124540.olt2rv3nbnd45pxr@hirez.programming.kicks-ass.net>
+ <20170608231813.7fdac022@roar.ozlabs.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20170608231813.7fdac022@roar.ozlabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,65 +39,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu,  1 Jun 2017 16:18:15 +0530
-"Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
+On Thu, Jun 08, 2017 at 11:18:13PM +1000, Nicholas Piggin wrote:
+> I guess I see your point... okay, will constrain the comment to powerpc
+> context switch and primitives code. Any fundamental change to such
+> scheduler barriers I guess would require at least a glance over arch
+> switch code :)
 
-> This fixes a crash when function_graph and jprobes are used together.
-> This is essentially commit 237d28db036e ("ftrace/jprobes/x86: Fix
-> conflict between jprobes and function graph tracing"), but for powerpc.
-> 
-> Jprobes breaks function_graph tracing since the jprobe hook needs to use
-> jprobe_return(), which never returns back to the hook, but instead to
-> the original jprobe'd function. The solution is to momentarily pause
-> function_graph tracing before invoking the jprobe hook and re-enable it
-> when returning back to the original jprobe'd function.
-> 
-> Fixes: 6794c78243bfd ("powerpc64: port of the function graph tracer")
-> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+Just so.
 
-Acked-by: Masami Hiramatsu <mhiramat@kernel.org>
+> My plan is to send the powerpc sync removal patch for hopefully 4.13
+> merge. I'm pretty sure it will be equally happy with your patches.
+> Unless you can see any problems with it? More eyes would be welcome.
 
-Thanks!
-
-> ---
-> v2: No changes since v1.
-> 
->  arch/powerpc/kernel/kprobes.c | 11 +++++++++++
->  1 file changed, 11 insertions(+)
-> 
-> diff --git a/arch/powerpc/kernel/kprobes.c b/arch/powerpc/kernel/kprobes.c
-> index e1fb95385a9e..0554d6e66194 100644
-> --- a/arch/powerpc/kernel/kprobes.c
-> +++ b/arch/powerpc/kernel/kprobes.c
-> @@ -610,6 +610,15 @@ int setjmp_pre_handler(struct kprobe *p, struct pt_regs *regs)
->  	regs->gpr[2] = (unsigned long)(((func_descr_t *)jp->entry)->toc);
->  #endif
->  
-> +	/*
-> +	 * jprobes use jprobe_return() which skips the normal return
-> +	 * path of the function, and this messes up the accounting of the
-> +	 * function graph tracer.
-> +	 *
-> +	 * Pause function graph tracing while performing the jprobe function.
-> +	 */
-> +	pause_graph_tracing();
-> +
->  	return 1;
->  }
->  NOKPROBE_SYMBOL(setjmp_pre_handler);
-> @@ -635,6 +644,8 @@ int longjmp_break_handler(struct kprobe *p, struct pt_regs *regs)
->  	 * saved regs...
->  	 */
->  	memcpy(regs, &kcb->jprobe_saved_regs, sizeof(struct pt_regs));
-> +	/* It's OK to start function graph tracing again */
-> +	unpause_graph_tracing();
->  	preempt_enable_no_resched();
->  	return 1;
->  }
-> -- 
-> 2.12.2
-> 
-
-
--- 
-Masami Hiramatsu <mhiramat@kernel.org>
+Feel free to Cc me. I don't see a problem with removing that SYNC now,
+I'll rebase my patches on top.
