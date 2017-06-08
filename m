@@ -2,14 +2,14 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wjsJs5hNGzDqFH
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Jun 2017 14:05:17 +1000 (AEST)
-In-Reply-To: <1496439810-11240-1-git-send-email-leitao@debian.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wjsJt0rjFzDqL3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Jun 2017 14:05:18 +1000 (AEST)
+In-Reply-To: <1496673659-18499-1-git-send-email-leitao@debian.org>
 To: Breno Leitao <leitao@debian.org>, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Breno Leitao <leitao@debian.org>, Gustavo Romero <gusbromero@gmail.com>
-Subject: Re: powerpc/kernel: improve FP and vector registers restoration
-Message-Id: <3wjsJs4LQLz9sCX@ozlabs.org>
+Cc: Anton Blanchard <anton@samba.org>
+Subject: Re: powerpc/kernel: Initialize load_tm on task creation
+Message-Id: <3wjsJs5hyFz9s8N@ozlabs.org>
 Date: Thu,  8 Jun 2017 14:05:17 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -20,25 +20,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2017-06-02 at 21:43:30 UTC, Breno Leitao wrote:
-> Currently tsk->thread->load_vec and load_fp are not initialized during a
-> task creation, which set garbage to these variables (non-zero value).
+On Mon, 2017-06-05 at 14:40:59 UTC, Breno Leitao wrote:
+> Currently tsk->thread.load_tm is not initialized in the task creation
+> and can contain garbage on a new task.
 > 
-> These variables will be checked later at restore_math() to validate if the
-> FP and vectors are being utilized. Since these values might be non-zero,
-> the restore_math() will continue to save the FP and vectors even if they
-> were never utilized before the userspace application. load_fp and load_vec
-> counters will then overflow and the FP and Altivec will be finally
-> disabled, but before that condition is reached (counter overflow) several
-> context switches restored FP and vector registers without need, causing a
-> performance degradation.
+> This is an undesired behaviour, since it affects the timing to enable
+> and disable the transactional memory laziness (disabling and enabling
+> the MSR TM bit, which affects TM reclaim and recheckpoint in the
+> scheduling process).
 > 
+> CC: Anton Blanchard <anton@samba.org>
+> Fixes: 5d176f751ee3c6eededd984ad409bff201f436a7
 > Signed-off-by: Breno Leitao <leitao@debian.org>
-> Signed-off-by: Gustavo Romero <gusbromero@gmail.com>
-> Acked-by: Anton Blanchard <anton@samba.org>
 
 Applied to powerpc fixes, thanks.
 
-https://git.kernel.org/powerpc/c/1195892c091a15cc862f4e202482a3
+https://git.kernel.org/powerpc/c/7f22ced4377628074e2ac25f41a88f
 
 cheers
