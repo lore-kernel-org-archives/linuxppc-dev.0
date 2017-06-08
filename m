@@ -1,26 +1,21 @@
-Return-Path: <mopsfelder@gmail.com>
-Received: from mail-qt0-x244.google.com (mail-qt0-x244.google.com
- [IPv6:2607:f8b0:400d:c0d::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mikey@neuling.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wjm2N6qybzDqCt
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Jun 2017 10:07:24 +1000 (AEST)
-Received: by mail-qt0-x244.google.com with SMTP id w1so4793006qtg.0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 07 Jun 2017 17:07:24 -0700 (PDT)
-From: Murilo Opsfelder Araujo <mopsfelder@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: kvm@vger.kernel.org, Alex Williamson <alex.williamson@redhat.com>,
- Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
- kbuild test robot <lkp@intel.com>, kbuild-all@01.org,
- Murilo Opsfelder Araujo <mopsfelder@gmail.com>
-Subject: [PATCH v2] include/linux/vfio.h: Guard powerpc-specific functions
- with CONFIG_VFIO_SPAPR_EEH
-Date: Wed,  7 Jun 2017 21:06:14 -0300
-Message-Id: <20170608000614.6481-1-mopsfelder@gmail.com>
-In-Reply-To: <20170606120914.15851-1-mopsfelder@gmail.com>
-References: <20170606120914.15851-1-mopsfelder@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wjmrp60F4zDqKs
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Jun 2017 10:44:10 +1000 (AEST)
+Message-ID: <1496882650.31524.14.camel@neuling.org>
+Subject: Re: [PATCH] powernv: Properly mask POWER9 DD1 PVR for different
+ chip types
+From: Michael Neuling <mikey@neuling.org>
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
+Cc: benh@kernel.crashing.org, paulus@samba.org, sam.bobroff@au1.ibm.com
+Date: Thu, 08 Jun 2017 10:44:10 +1000
+In-Reply-To: <87efuwp8ef.fsf@concordia.ellerman.id.au>
+References: <20170607041145.3581-1-mikey@neuling.org>
+ <87efuwp8ef.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,57 +25,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When CONFIG_EEH=y and CONFIG_VFIO_SPAPR_EEH=n, build fails with the
-following:
+On Wed, 2017-06-07 at 17:24 +1000, Michael Ellerman wrote:
+> Michael Neuling <mikey@neuling.org> writes:
+>=20
+> > Bits 48:51 in the PVR for POWER9 represent different chip types (scale
+> > up vs out and 12 vs 24 core). Current chips have 0 here, but could be
+> > non-zero in the future.
+> >=20
+> > This changes the POWER9 DD1 mask to correctly ignore these bits 48:51.
+> >=20
+> > Signed-off-by: Michael Neuling <mikey@neuling.org>
+> > ---
+> > =C2=A0arch/powerpc/kernel/cputable.c | 4 ++--
+> > =C2=A01 file changed, 2 insertions(+), 2 deletions(-)
+>=20
+> Presumably we should backport this?
 
-    drivers/vfio/pci/vfio_pci.o: In function `.vfio_pci_release':
-    vfio_pci.c:(.text+0xa98): undefined reference to `.vfio_spapr_pci_eeh_release'
-    drivers/vfio/pci/vfio_pci.o: In function `.vfio_pci_open':
-    vfio_pci.c:(.text+0x1420): undefined reference to `.vfio_spapr_pci_eeh_open'
+Actually, we need to scrap this patch.
 
-In this case, vfio_pci.c should use the empty definitions of
-vfio_spapr_pci_eeh_open and vfio_spapr_pci_eeh_release functions.
+Looks like the scale up version will be marked as DD1, but it won't need th=
+ese
+workarounds. So we need it to match on the other POWER9 entry.
 
-This patch fixes it by guarding these function definitions with
-CONFIG_VFIO_SPAPR_EEH, the symbol that controls whether vfio_spapr_eeh.c is
-built, which is where the non-empty versions of these functions are. We need to
-make use of IS_ENABLED() macro because CONFIG_VFIO_SPAPR_EEH is a tristate
-option.
+Mikey
 
-This issue was found during a randconfig build. Logs are here:
-
-    http://kisskb.ellerman.id.au/kisskb/buildresult/12982362/
-
-Signed-off-by: Murilo Opsfelder Araujo <mopsfelder@gmail.com>
----
-v1..v2:
-- Make use of IS_ENABLED() macro because CONFIG_VFIO_SPAPR_EEH is a tristate
-  option (fix http://www.spinics.net/lists/kvm/msg151032.html).
-
- include/linux/vfio.h | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/include/linux/vfio.h b/include/linux/vfio.h
-index edf9b2c..92232f73 100644
---- a/include/linux/vfio.h
-+++ b/include/linux/vfio.h
-@@ -150,7 +150,7 @@ extern int vfio_set_irqs_validate_and_prepare(struct vfio_irq_set *hdr,
- 					      size_t *data_size);
- 
- struct pci_dev;
--#ifdef CONFIG_EEH
-+#if IS_ENABLED(CONFIG_VFIO_SPAPR_EEH)
- extern void vfio_spapr_pci_eeh_open(struct pci_dev *pdev);
- extern void vfio_spapr_pci_eeh_release(struct pci_dev *pdev);
- extern long vfio_spapr_iommu_eeh_ioctl(struct iommu_group *group,
-@@ -171,7 +171,7 @@ static inline long vfio_spapr_iommu_eeh_ioctl(struct iommu_group *group,
- {
- 	return -ENOTTY;
- }
--#endif /* CONFIG_EEH */
-+#endif /* CONFIG_VFIO_SPAPR_EEH */
- 
- /*
-  * IRQfd - generic
--- 
-2.9.4
+>=20
+> cheers
+>=20
+> > diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputa=
+ble.c
+> > index 9b3e88b1a9..89dcd94237 100644
+> > --- a/arch/powerpc/kernel/cputable.c
+> > +++ b/arch/powerpc/kernel/cputable.c
+> > @@ -526,8 +526,8 @@ static struct cpu_spec __initdata cpu_specs[] =3D {
+> > =C2=A0		.machine_check_early	=3D
+> > __machine_check_early_realmode_p8,
+> > =C2=A0		.platform		=3D "power8",
+> > =C2=A0	},
+> > -	{	/* Power9 DD1*/
+> > -		.pvr_mask		=3D 0xffffff00,
+> > +	{	/* Power9 DD1. Bits 48:51 represent chip type so mask
+> > these */
+> > +		.pvr_mask		=3D 0xffff0f00,
+> > =C2=A0		.pvr_value		=3D 0x004e0100,
+> > =C2=A0		.cpu_name		=3D "POWER9 (raw)",
+> > =C2=A0		.cpu_features		=3D CPU_FTRS_POWER9_DD1,
+> > --=C2=A0
+> > 2.11.0
+>=20
+>=20
