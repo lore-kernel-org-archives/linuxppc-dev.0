@@ -1,35 +1,27 @@
-Return-Path: <srs0=sx90=5n=infradead.org=peterz@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wk6Dr0QL8zDqM3
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Jun 2017 23:47:40 +1000 (AEST)
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3wk6Dq672qz8t4Y
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Jun 2017 23:47:39 +1000 (AEST)
-Date: Thu, 8 Jun 2017 15:47:29 +0200
-From: Peter Zijlstra <peterz@infradead.org>
-To: Nicholas Piggin <npiggin@gmail.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, torvalds@linux-foundation.org,
- will.deacon@arm.com, oleg@redhat.com, paulmck@linux.vnet.ibm.com,
- benh@kernel.crashing.org, linux-kernel@vger.kernel.org,
- mingo@kernel.org, stern@rowland.harvard.edu,
- linuxppc-dev <linuxppc-dev@ozlabs.org>
-Subject: Re: [RFC][PATCH 5/5] powerpc: Remove SYNC from _switch
-Message-ID: <20170608134729.4rwykawnrijtr2yh@hirez.programming.kicks-ass.net>
-References: <20170607161501.819948352@infradead.org>
- <20170607162013.905320602@infradead.org>
- <20170608103244.1b4b24c9@roar.ozlabs.ibm.com>
- <20170608065400.zhfao5lba6i3s7j6@hirez.programming.kicks-ass.net>
- <20170608172938.62b30475@roar.ozlabs.ibm.com>
- <20170608075720.kc2p3tybghzbmrz3@hirez.programming.kicks-ass.net>
- <877f0mere1.fsf@concordia.ellerman.id.au>
- <20170608200015.7f92965a@roar.ozlabs.ibm.com>
- <20170608124540.olt2rv3nbnd45pxr@hirez.programming.kicks-ass.net>
- <20170608231813.7fdac022@roar.ozlabs.ibm.com>
+Return-Path: <robin.murphy@arm.com>
+Received: from foss.arm.com (foss.arm.com [217.140.101.70])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3wk6VC5fhVzDqLq
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Jun 2017 23:59:15 +1000 (AEST)
+Subject: Re: [PATCH 06/44] iommu/dma: don't rely on DMA_ERROR_CODE
+To: Christoph Hellwig <hch@lst.de>, x86@kernel.org,
+ linux-arm-kernel@lists.infradead.org, xen-devel@lists.xenproject.org,
+ linux-c6x-dev@linux-c6x.org, linux-hexagon@vger.kernel.org,
+ linux-ia64@vger.kernel.org, linux-mips@linux-mips.org,
+ openrisc@lists.librecores.org, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
+ sparclinux@vger.kernel.org, linux-xtensa@linux-xtensa.org,
+ dmaengine@vger.kernel.org, linux-tegra@vger.kernel.org,
+ dri-devel@lists.freedesktop.org, linux-samsung-soc@vger.kernel.org,
+ iommu@lists.linux-foundation.org, netdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+References: <20170608132609.32662-1-hch@lst.de>
+ <20170608132609.32662-7-hch@lst.de>
+From: Robin Murphy <robin.murphy@arm.com>
+Message-ID: <0bfb0841-f054-78de-628d-a0955336bcb4@arm.com>
+Date: Thu, 8 Jun 2017 14:59:07 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170608231813.7fdac022@roar.ozlabs.ibm.com>
+In-Reply-To: <20170608132609.32662-7-hch@lst.de>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,17 +31,101 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jun 08, 2017 at 11:18:13PM +1000, Nicholas Piggin wrote:
-> I guess I see your point... okay, will constrain the comment to powerpc
-> context switch and primitives code. Any fundamental change to such
-> scheduler barriers I guess would require at least a glance over arch
-> switch code :)
+Hi Christoph,
 
-Just so.
+On 08/06/17 14:25, Christoph Hellwig wrote:
+> DMA_ERROR_CODE is not a public API and will go away soon.  dma dma-iommu
+> driver already implements a proper ->mapping_error method, so it's only
+> using the value internally.  Add a new local define using the value
+> that arm64 which is the only current user of dma-iommu.
 
-> My plan is to send the powerpc sync removal patch for hopefully 4.13
-> merge. I'm pretty sure it will be equally happy with your patches.
-> Unless you can see any problems with it? More eyes would be welcome.
+It would be fine to just use 0, since dma-iommu already makes sure that
+that will never be allocated for a valid DMA address.
 
-Feel free to Cc me. I don't see a problem with removing that SYNC now,
-I'll rebase my patches on top.
+Otherwise, looks good!
+
+Robin.
+
+> Signed-off-by: Christoph Hellwig <hch@lst.de>
+> ---
+>  drivers/iommu/dma-iommu.c | 18 ++++++++++--------
+>  1 file changed, 10 insertions(+), 8 deletions(-)
+> 
+> diff --git a/drivers/iommu/dma-iommu.c b/drivers/iommu/dma-iommu.c
+> index 62618e77bedc..638aea814b94 100644
+> --- a/drivers/iommu/dma-iommu.c
+> +++ b/drivers/iommu/dma-iommu.c
+> @@ -31,6 +31,8 @@
+>  #include <linux/scatterlist.h>
+>  #include <linux/vmalloc.h>
+>  
+> +#define IOMMU_MAPPING_ERROR	(~(dma_addr_t)0)
+> +
+>  struct iommu_dma_msi_page {
+>  	struct list_head	list;
+>  	dma_addr_t		iova;
+> @@ -500,7 +502,7 @@ void iommu_dma_free(struct device *dev, struct page **pages, size_t size,
+>  {
+>  	__iommu_dma_unmap(iommu_get_domain_for_dev(dev), *handle, size);
+>  	__iommu_dma_free_pages(pages, PAGE_ALIGN(size) >> PAGE_SHIFT);
+> -	*handle = DMA_ERROR_CODE;
+> +	*handle = IOMMU_MAPPING_ERROR;
+>  }
+>  
+>  /**
+> @@ -533,7 +535,7 @@ struct page **iommu_dma_alloc(struct device *dev, size_t size, gfp_t gfp,
+>  	dma_addr_t iova;
+>  	unsigned int count, min_size, alloc_sizes = domain->pgsize_bitmap;
+>  
+> -	*handle = DMA_ERROR_CODE;
+> +	*handle = IOMMU_MAPPING_ERROR;
+>  
+>  	min_size = alloc_sizes & -alloc_sizes;
+>  	if (min_size < PAGE_SIZE) {
+> @@ -627,11 +629,11 @@ static dma_addr_t __iommu_dma_map(struct device *dev, phys_addr_t phys,
+>  
+>  	iova = iommu_dma_alloc_iova(domain, size, dma_get_mask(dev), dev);
+>  	if (!iova)
+> -		return DMA_ERROR_CODE;
+> +		return IOMMU_MAPPING_ERROR;
+>  
+>  	if (iommu_map(domain, iova, phys - iova_off, size, prot)) {
+>  		iommu_dma_free_iova(cookie, iova, size);
+> -		return DMA_ERROR_CODE;
+> +		return IOMMU_MAPPING_ERROR;
+>  	}
+>  	return iova + iova_off;
+>  }
+> @@ -671,7 +673,7 @@ static int __finalise_sg(struct device *dev, struct scatterlist *sg, int nents,
+>  
+>  		s->offset += s_iova_off;
+>  		s->length = s_length;
+> -		sg_dma_address(s) = DMA_ERROR_CODE;
+> +		sg_dma_address(s) = IOMMU_MAPPING_ERROR;
+>  		sg_dma_len(s) = 0;
+>  
+>  		/*
+> @@ -714,11 +716,11 @@ static void __invalidate_sg(struct scatterlist *sg, int nents)
+>  	int i;
+>  
+>  	for_each_sg(sg, s, nents, i) {
+> -		if (sg_dma_address(s) != DMA_ERROR_CODE)
+> +		if (sg_dma_address(s) != IOMMU_MAPPING_ERROR)
+>  			s->offset += sg_dma_address(s);
+>  		if (sg_dma_len(s))
+>  			s->length = sg_dma_len(s);
+> -		sg_dma_address(s) = DMA_ERROR_CODE;
+> +		sg_dma_address(s) = IOMMU_MAPPING_ERROR;
+>  		sg_dma_len(s) = 0;
+>  	}
+>  }
+> @@ -836,7 +838,7 @@ void iommu_dma_unmap_resource(struct device *dev, dma_addr_t handle,
+>  
+>  int iommu_dma_mapping_error(struct device *dev, dma_addr_t dma_addr)
+>  {
+> -	return dma_addr == DMA_ERROR_CODE;
+> +	return dma_addr == IOMMU_MAPPING_ERROR;
+>  }
+>  
+>  static struct iommu_dma_msi_page *iommu_dma_get_msi_page(struct device *dev,
+> 
