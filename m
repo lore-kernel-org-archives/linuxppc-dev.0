@@ -1,27 +1,23 @@
-Return-Path: <robin.murphy@arm.com>
-Received: from foss.arm.com (foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 3wk6VC5fhVzDqLq
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Jun 2017 23:59:15 +1000 (AEST)
-Subject: Re: [PATCH 06/44] iommu/dma: don't rely on DMA_ERROR_CODE
-To: Christoph Hellwig <hch@lst.de>, x86@kernel.org,
- linux-arm-kernel@lists.infradead.org, xen-devel@lists.xenproject.org,
- linux-c6x-dev@linux-c6x.org, linux-hexagon@vger.kernel.org,
- linux-ia64@vger.kernel.org, linux-mips@linux-mips.org,
- openrisc@lists.librecores.org, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
- sparclinux@vger.kernel.org, linux-xtensa@linux-xtensa.org,
- dmaengine@vger.kernel.org, linux-tegra@vger.kernel.org,
- dri-devel@lists.freedesktop.org, linux-samsung-soc@vger.kernel.org,
- iommu@lists.linux-foundation.org, netdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-References: <20170608132609.32662-1-hch@lst.de>
- <20170608132609.32662-7-hch@lst.de>
-From: Robin Murphy <robin.murphy@arm.com>
-Message-ID: <0bfb0841-f054-78de-628d-a0955336bcb4@arm.com>
-Date: Thu, 8 Jun 2017 14:59:07 +0100
-MIME-Version: 1.0
-In-Reply-To: <20170608132609.32662-7-hch@lst.de>
-Content-Type: text/plain; charset=utf-8
+Return-Path: <mhiramat@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wk6VS5tmgzDqN8
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Jun 2017 23:59:28 +1000 (AEST)
+Date: Thu, 8 Jun 2017 22:59:23 +0900
+From: Masami Hiramatsu <mhiramat@kernel.org>
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, Ananth N Mavinakayanahalli
+ <ananth@linux.vnet.ibm.com>, Masami Hiramatsu <mhiramat@kernel.org>, Steven
+ Rostedt <rostedt@goodmis.org>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v2 3/4] powerpc/kprobes_on_ftrace: Skip
+ livepatch_handler() for jprobes
+Message-Id: <20170608225923.9f2c4e0c3602169d40304178@kernel.org>
+In-Reply-To: <354168131ffd13a9109172f616255fe1e0983387.1496309487.git.naveen.n.rao@linux.vnet.ibm.com>
+References: <cover.1496309487.git.naveen.n.rao@linux.vnet.ibm.com>
+ <354168131ffd13a9109172f616255fe1e0983387.1496309487.git.naveen.n.rao@linux.vnet.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,101 +27,120 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Christoph,
+On Thu,  1 Jun 2017 16:18:17 +0530
+"Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
 
-On 08/06/17 14:25, Christoph Hellwig wrote:
-> DMA_ERROR_CODE is not a public API and will go away soon.  dma dma-iommu
-> driver already implements a proper ->mapping_error method, so it's only
-> using the value internally.  Add a new local define using the value
-> that arm64 which is the only current user of dma-iommu.
+> ftrace_caller() depends on a modified regs->nip to detect if a certain
+> function has been livepatched. However, with KPROBES_ON_FTRACE, it is
+> possible for regs->nip to have been modified by the kprobes pre_handler
+> (jprobes, for instance). In this case, we do not want to invoke the
+> livepatch_handler so as not to consume the livepatch stack.
+> 
+> To distinguish between the two (kprobes and livepatch), we check if
+> there is an active kprobe on the current function. If there is, then we
+> know for sure that it must have modified the NIP as we don't support
+> livepatching a kprobe'd function. In this case, we simply skip the
+> livepatch_handler and branch to the new NIP. Otherwise, the
+> livepatch_handler is invoked.
 
-It would be fine to just use 0, since dma-iommu already makes sure that
-that will never be allocated for a valid DMA address.
+OK, this logic seems good to me, but I weould like to leave it for
+PPC64 maintainer too.
 
-Otherwise, looks good!
+Reviewed-by: Masami Hiramatsu <mhiramat@kernel.org>
 
-Robin.
-
-> Signed-off-by: Christoph Hellwig <hch@lst.de>
+Thanks!
+> 
+> Fixes: ead514d5fb30a ("powerpc/kprobes: Add support for
+> KPROBES_ON_FTRACE")
+> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
 > ---
->  drivers/iommu/dma-iommu.c | 18 ++++++++++--------
->  1 file changed, 10 insertions(+), 8 deletions(-)
+> v2: Changed to use current_kprobe->addr to determine jprobe vs.
+> livepatch.
 > 
-> diff --git a/drivers/iommu/dma-iommu.c b/drivers/iommu/dma-iommu.c
-> index 62618e77bedc..638aea814b94 100644
-> --- a/drivers/iommu/dma-iommu.c
-> +++ b/drivers/iommu/dma-iommu.c
-> @@ -31,6 +31,8 @@
->  #include <linux/scatterlist.h>
->  #include <linux/vmalloc.h>
+>  arch/powerpc/include/asm/kprobes.h             |  1 +
+>  arch/powerpc/kernel/kprobes.c                  |  6 +++++
+>  arch/powerpc/kernel/trace/ftrace_64_mprofile.S | 32 ++++++++++++++++++++++----
+>  3 files changed, 35 insertions(+), 4 deletions(-)
+> 
+> diff --git a/arch/powerpc/include/asm/kprobes.h b/arch/powerpc/include/asm/kprobes.h
+> index a83821f33ea3..8814a7249ceb 100644
+> --- a/arch/powerpc/include/asm/kprobes.h
+> +++ b/arch/powerpc/include/asm/kprobes.h
+> @@ -103,6 +103,7 @@ extern int kprobe_exceptions_notify(struct notifier_block *self,
+>  extern int kprobe_fault_handler(struct pt_regs *regs, int trapnr);
+>  extern int kprobe_handler(struct pt_regs *regs);
+>  extern int kprobe_post_handler(struct pt_regs *regs);
+> +extern int is_current_kprobe_addr(unsigned long addr);
+>  #ifdef CONFIG_KPROBES_ON_FTRACE
+>  extern int skip_singlestep(struct kprobe *p, struct pt_regs *regs,
+>  			   struct kprobe_ctlblk *kcb);
+> diff --git a/arch/powerpc/kernel/kprobes.c b/arch/powerpc/kernel/kprobes.c
+> index 0554d6e66194..ec9d94c82fbd 100644
+> --- a/arch/powerpc/kernel/kprobes.c
+> +++ b/arch/powerpc/kernel/kprobes.c
+> @@ -43,6 +43,12 @@ DEFINE_PER_CPU(struct kprobe_ctlblk, kprobe_ctlblk);
 >  
-> +#define IOMMU_MAPPING_ERROR	(~(dma_addr_t)0)
+>  struct kretprobe_blackpoint kretprobe_blacklist[] = {{NULL, NULL}};
+>  
+> +int is_current_kprobe_addr(unsigned long addr)
+> +{
+> +	struct kprobe *p = kprobe_running();
+> +	return (p && (unsigned long)p->addr == addr) ? 1 : 0;
+> +}
 > +
->  struct iommu_dma_msi_page {
->  	struct list_head	list;
->  	dma_addr_t		iova;
-> @@ -500,7 +502,7 @@ void iommu_dma_free(struct device *dev, struct page **pages, size_t size,
+>  bool arch_within_kprobe_blacklist(unsigned long addr)
 >  {
->  	__iommu_dma_unmap(iommu_get_domain_for_dev(dev), *handle, size);
->  	__iommu_dma_free_pages(pages, PAGE_ALIGN(size) >> PAGE_SHIFT);
-> -	*handle = DMA_ERROR_CODE;
-> +	*handle = IOMMU_MAPPING_ERROR;
->  }
+>  	return  (addr >= (unsigned long)__kprobes_text_start &&
+> diff --git a/arch/powerpc/kernel/trace/ftrace_64_mprofile.S b/arch/powerpc/kernel/trace/ftrace_64_mprofile.S
+> index fa0921410fa4..e6837e85ec28 100644
+> --- a/arch/powerpc/kernel/trace/ftrace_64_mprofile.S
+> +++ b/arch/powerpc/kernel/trace/ftrace_64_mprofile.S
+> @@ -99,13 +99,37 @@ ftrace_call:
+>  	bl	ftrace_stub
+>  	nop
 >  
->  /**
-> @@ -533,7 +535,7 @@ struct page **iommu_dma_alloc(struct device *dev, size_t size, gfp_t gfp,
->  	dma_addr_t iova;
->  	unsigned int count, min_size, alloc_sizes = domain->pgsize_bitmap;
+> -	/* Load ctr with the possibly modified NIP */
+> -	ld	r3, _NIP(r1)
+> -	mtctr	r3
+> +	/* Load the possibly modified NIP */
+> +	ld	r15, _NIP(r1)
+> +
+>  #ifdef CONFIG_LIVEPATCH
+> -	cmpd	r14,r3		/* has NIP been altered? */
+> +	cmpd	r14, r15		/* has NIP been altered? */
+> +#endif
+> +
+> +#if defined(CONFIG_LIVEPATCH) && defined(CONFIG_KPROBES_ON_FTRACE)
+> +	beq	1f
+> +
+> +	/* Check if there is an active kprobe on us */
+> +	subi	r3, r14, 4
+> +	bl	is_current_kprobe_addr
+> +	nop
+> +
+> +	/*
+> +	 * If r3 == 1, then this is a kprobe/jprobe.
+> +	 * else, this is livepatched function.
+> +	 *
+> +	 * The subsequent conditional branch for livepatch_handler
+> +	 * will use the result of this compare. For kprobe/jprobe,
+> +	 * we just need to branch to the new NIP, so nothing special
+> +	 * is needed.
+> +	 */
+> +	cmpdi	r3, 1
+> +1:
+>  #endif
 >  
-> -	*handle = DMA_ERROR_CODE;
-> +	*handle = IOMMU_MAPPING_ERROR;
->  
->  	min_size = alloc_sizes & -alloc_sizes;
->  	if (min_size < PAGE_SIZE) {
-> @@ -627,11 +629,11 @@ static dma_addr_t __iommu_dma_map(struct device *dev, phys_addr_t phys,
->  
->  	iova = iommu_dma_alloc_iova(domain, size, dma_get_mask(dev), dev);
->  	if (!iova)
-> -		return DMA_ERROR_CODE;
-> +		return IOMMU_MAPPING_ERROR;
->  
->  	if (iommu_map(domain, iova, phys - iova_off, size, prot)) {
->  		iommu_dma_free_iova(cookie, iova, size);
-> -		return DMA_ERROR_CODE;
-> +		return IOMMU_MAPPING_ERROR;
->  	}
->  	return iova + iova_off;
->  }
-> @@ -671,7 +673,7 @@ static int __finalise_sg(struct device *dev, struct scatterlist *sg, int nents,
->  
->  		s->offset += s_iova_off;
->  		s->length = s_length;
-> -		sg_dma_address(s) = DMA_ERROR_CODE;
-> +		sg_dma_address(s) = IOMMU_MAPPING_ERROR;
->  		sg_dma_len(s) = 0;
->  
->  		/*
-> @@ -714,11 +716,11 @@ static void __invalidate_sg(struct scatterlist *sg, int nents)
->  	int i;
->  
->  	for_each_sg(sg, s, nents, i) {
-> -		if (sg_dma_address(s) != DMA_ERROR_CODE)
-> +		if (sg_dma_address(s) != IOMMU_MAPPING_ERROR)
->  			s->offset += sg_dma_address(s);
->  		if (sg_dma_len(s))
->  			s->length = sg_dma_len(s);
-> -		sg_dma_address(s) = DMA_ERROR_CODE;
-> +		sg_dma_address(s) = IOMMU_MAPPING_ERROR;
->  		sg_dma_len(s) = 0;
->  	}
->  }
-> @@ -836,7 +838,7 @@ void iommu_dma_unmap_resource(struct device *dev, dma_addr_t handle,
->  
->  int iommu_dma_mapping_error(struct device *dev, dma_addr_t dma_addr)
->  {
-> -	return dma_addr == DMA_ERROR_CODE;
-> +	return dma_addr == IOMMU_MAPPING_ERROR;
->  }
->  
->  static struct iommu_dma_msi_page *iommu_dma_get_msi_page(struct device *dev,
+> +	/* Load CTR with the possibly modified NIP */
+> +	mtctr	r15
+> +
+>  	/* Restore gprs */
+>  	REST_GPR(0,r1)
+>  	REST_10GPRS(2,r1)
+> -- 
+> 2.12.2
 > 
+
+
+-- 
+Masami Hiramatsu <mhiramat@kernel.org>
