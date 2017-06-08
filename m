@@ -1,19 +1,19 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
- [IPv6:2607:f8b0:400e:c05::243])
+Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
+ [IPv6:2607:f8b0:400e:c05::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wk8fJ1RSTzDqNQ
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Jun 2017 01:36:24 +1000 (AEST)
-Received: by mail-pg0-x243.google.com with SMTP id v18so4951049pgb.3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 08 Jun 2017 08:36:24 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wk8fM1dkkzDqP3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Jun 2017 01:36:27 +1000 (AEST)
+Received: by mail-pg0-x242.google.com with SMTP id v18so4951224pgb.3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 08 Jun 2017 08:36:27 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
-Cc: Nicholas Piggin <npiggin@gmail.com>
-Subject: [PATCH 2/4] powerpc/64: context switch avoid reservation-clearing
- instruction
-Date: Fri,  9 Jun 2017 01:36:07 +1000
-Message-Id: <20170608153609.19217-2-npiggin@gmail.com>
+Cc: Nicholas Piggin <npiggin@gmail.com>, Peter Zijlstra <peterz@infradead.org>
+Subject: [PATCH 3/4] powerpc/64: context switch an hwsync instruction can be
+ avoided
+Date: Fri,  9 Jun 2017 01:36:08 +1000
+Message-Id: <20170608153609.19217-3-npiggin@gmail.com>
 In-Reply-To: <20170608153609.19217-1-npiggin@gmail.com>
 References: <20170608153609.19217-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,58 +25,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-There is no need to break reservation in _switch, because we are
-guranteed that context switch path will include a larx/stcx.
+The hwsync in the context switch code to prevent MMIO access being
+reordered from the point of view of a single process if it gets
+migrated to a different CPU is not required because there is an hwsync
+performed earlier in the context switch path.
 
-Comment the guarantee and remove the reservation clear from _switch.
+Comment this so it's clear enough if anything changes on the scheduler
+or the powerpc sides. Remove the hwsync from _switch.
 
-This is worth 1-2% in context switch performance.
+This improves context switch performance by 2-3% on POWER8.
 
+Cc: Peter Zijlstra <peterz@infradead.org>
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/kernel/entry_64.S | 11 +++--------
- kernel/sched/core.c            |  6 ++++++
- 2 files changed, 9 insertions(+), 8 deletions(-)
+ arch/powerpc/include/asm/barrier.h |  5 +++++
+ arch/powerpc/kernel/entry_64.S     | 23 +++++++++++++++++------
+ 2 files changed, 22 insertions(+), 6 deletions(-)
 
+diff --git a/arch/powerpc/include/asm/barrier.h b/arch/powerpc/include/asm/barrier.h
+index c0deafc212b8..25d42bd3f114 100644
+--- a/arch/powerpc/include/asm/barrier.h
++++ b/arch/powerpc/include/asm/barrier.h
+@@ -74,6 +74,11 @@ do {									\
+ 	___p1;								\
+ })
+ 
++/*
++ * This must resolve to hwsync on SMP for the context switch path.
++ * See _switch, and core scheduler context switch memory ordering
++ * comments.
++ */
+ #define smp_mb__before_spinlock()   smp_mb()
+ 
+ #include <asm-generic/barrier.h>
 diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-index 91f9fdc2d027..273a35926534 100644
+index 273a35926534..fb143859cc68 100644
 --- a/arch/powerpc/kernel/entry_64.S
 +++ b/arch/powerpc/kernel/entry_64.S
-@@ -521,15 +521,10 @@ _GLOBAL(_switch)
- #endif /* CONFIG_SMP */
+@@ -512,13 +512,24 @@ _GLOBAL(_switch)
+ 	std	r23,_CCR(r1)
+ 	std	r1,KSP(r3)	/* Set old stack pointer */
+ 
+-#ifdef CONFIG_SMP
+-	/* We need a sync somewhere here to make sure that if the
+-	 * previous task gets rescheduled on another CPU, it sees all
+-	 * stores it has performed on this one.
++	/*
++	 * On SMP kernels, care must be taken because a task may be
++	 * scheduled off CPUx and on to CPUy. Memory ordering must be
++	 * considered.
++	 *
++	 * Cacheable stores on CPUx will be visible when the task is
++	 * scheduled on CPUy by virtue of the core scheduler barriers
++	 * (see "Notes on Program-Order guarantees on SMP systems." in
++	 * kernel/sched/core.c).
++	 *
++	 * Uncacheable stores in the case of involuntary preemption must
++	 * be taken care of. The smp_mb__before_spin_lock() in __schedule()
++	 * is implemented as hwsync on powerpc, which orders MMIO too. So
++	 * long as there is an hwsync in the context switch path, it will
++	 * be executed on the source CPU after the task has performed
++	 * all MMIO ops on that CPU, and on the destination CPU before the
++	 * task performs any MMIO ops there.
+ 	 */
+-	sync
+-#endif /* CONFIG_SMP */
  
  	/*
--	 * If we optimise away the clear of the reservation in system
--	 * calls because we know the CPU tracks the address of the
--	 * reservation, then we need to clear it here to cover the
--	 * case that the kernel context switch path has no larx
--	 * instructions.
-+	 * The kernel context switch path must contain a spin_lock,
-+	 * which contains larx/stcx, which will clear any reservation
-+	 * of the task being switched.
- 	 */
--BEGIN_FTR_SECTION
--	ldarx	r6,0,r1
--END_FTR_SECTION_IFSET(CPU_FTR_STCX_CHECKS_ADDRESS)
- 
- BEGIN_FTR_SECTION
- /*
-diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-index 803c3bc274c4..1f0688ad09d7 100644
---- a/kernel/sched/core.c
-+++ b/kernel/sched/core.c
-@@ -2875,6 +2875,12 @@ context_switch(struct rq *rq, struct task_struct *prev,
- 	rq_unpin_lock(rq, rf);
- 	spin_release(&rq->lock.dep_map, 1, _THIS_IP_);
- 
-+	/*
-+	 * Some architectures require that a spin lock is taken before
-+	 * _switch. The rq_lock satisfies this condition. See powerpc
-+	 * _switch for details.
-+	 */
-+
- 	/* Here we just switch the register state and the stack. */
- 	switch_to(prev, next, prev);
- 	barrier();
+ 	 * The kernel context switch path must contain a spin_lock,
 -- 
 2.11.0
