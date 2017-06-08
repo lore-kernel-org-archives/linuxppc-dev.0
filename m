@@ -1,18 +1,16 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wjsMY4C9LzDqRD
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wjsMY6jKmzDqRD
  for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Jun 2017 14:07:37 +1000 (AEST)
-In-Reply-To: <83aadb3163da87ec017ca4a61afcc29520a27eff.1496070452.git.christophe.leroy@c-s.fr>
-To: Christophe Leroy <christophe.leroy@c-s.fr>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Scott Wood <oss@buserror.net>,
- Balbir Singh <bsingharora@gmail.com>
+In-Reply-To: <1496445623-22390-1-git-send-email-leoyang.li@nxp.com>
+To: Yang Li <leoyang.li@nxp.com>, Scott Wood <oss@buserror.net>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [1/7] powerpc/mm: rename map_page() to map_kernel_page() on PPC32
-Message-Id: <3wjsMY3KlWz9sDB@ozlabs.org>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
+ Li Yang <leoyang.li@nxp.com>
+Subject: Re: [1/2] MAINTAINERS: update entry for Freescale SoC drivers
+Message-Id: <3wjsMY52Jpz9sD5@ozlabs.org>
 Date: Thu,  8 Jun 2017 14:07:37 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -23,12 +21,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2017-05-29 at 15:31:56 UTC, Christophe Leroy wrote:
-> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
-> Acked-by: Balbir Singh <bsingharora@gmail.com>
+On Fri, 2017-06-02 at 23:20:22 UTC, Yang Li wrote:
+> Add myself as the maintainer for drivers/fsl/soc/ and fix the scope for
+> device tree bindings.
+> 
+> Signed-off-by: Li Yang <leoyang.li@nxp.com>
+> Acked-by: Scott Wood <oss@buserror.net>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/4386c096c2ffa1b3232d701e9d7ff8
+https://git.kernel.org/powerpc/c/c67ec7010132a4d948686eeab8a23a
 
 cheers
