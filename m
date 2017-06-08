@@ -3,29 +3,29 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wjpK72KBLzDqLR
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Jun 2017 11:50:19 +1000 (AEST)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wjpKH1NMKzDqLt
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Jun 2017 11:50:26 +1000 (AEST)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v581mpVY126819
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 7 Jun 2017 21:50:16 -0400
+ v581mnf5064379
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 7 Jun 2017 21:50:24 -0400
 Received: from e24smtp04.br.ibm.com (e24smtp04.br.ibm.com [32.104.18.25])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2axw2xg9yx-1
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2axvhjhe0d-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 07 Jun 2017 21:50:16 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 07 Jun 2017 21:50:24 -0400
 Received: from localhost
  by e24smtp04.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.vnet.ibm.com>;
- Wed, 7 Jun 2017 22:50:14 -0300
+ Wed, 7 Jun 2017 22:50:22 -0300
 Received: from d24av03.br.ibm.com (d24av03.br.ibm.com [9.8.31.95])
- by d24relay03.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v581o9rC25559166
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 7 Jun 2017 22:50:09 -0300
+ by d24relay04.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v581oJmO51904516
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 7 Jun 2017 22:50:20 -0300
 Received: from d24av03.br.ibm.com (localhost [127.0.0.1])
  by d24av03.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v581o8Ln028815
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 7 Jun 2017 22:50:09 -0300
+ v581oK39028980
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 7 Jun 2017 22:50:21 -0300
 From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
 To: linux-security-module@vger.kernel.org
 Cc: linux-ima-devel@lists.sourceforge.net, keyrings@vger.kernel.org,
@@ -40,12 +40,11 @@ Cc: linux-ima-devel@lists.sourceforge.net, keyrings@vger.kernel.org,
  "David S. Miller" <davem@davemloft.net>,
  "AKASHI, Takahiro" <takahiro.akashi@linaro.org>,
  Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-Subject: [PATCH v2 3/6] ima: Log the same audit cause whenever a file has no
- signature
-Date: Wed,  7 Jun 2017 22:49:12 -0300
+Subject: [PATCH v2 4/6] integrity: Introduce struct evm_hmac_xattr
+Date: Wed,  7 Jun 2017 22:49:13 -0300
 In-Reply-To: <1496886555-10082-1-git-send-email-bauerman@linux.vnet.ibm.com>
 References: <1496886555-10082-1-git-send-email-bauerman@linux.vnet.ibm.com>
-Message-Id: <1496886555-10082-4-git-send-email-bauerman@linux.vnet.ibm.com>
+Message-Id: <1496886555-10082-5-git-send-email-bauerman@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -55,30 +54,145 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-If the file doesn't have an xattr, ima_appraise_measurement sets cause to
-"missing-hash" while if there's an xattr but it's a digest instead of a
-signature it sets cause to "IMA-signature-required".
+Even though struct evm_ima_xattr_data includes a fixed-size array to hold a
+SHA1 digest, most of the code ignores the array and uses the struct to mean
+"type indicator followed by data of unspecified size" and tracks the real
+size of what the struct represents in a separate length variable.
 
-Fix it by setting cause to "IMA-signature-required" in both cases.
+The only exception to that is the EVM code, which correctly uses the
+definition of struct evm_ima_xattr_data.
+
+This patch makes this explicit in the code by removing the length
+specification from the array in struct evm_ima_xattr_data. It also changes
+the name of the element from digest to data, since in most places the array
+doesn't hold a digest.
+
+A separate struct evm_hmac_xattr is introduced, with the original
+definition of evm_ima_xattr_data to be used in the places that actually
+expect that definition.
 
 Signed-off-by: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
 ---
- security/integrity/ima/ima_appraise.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ security/integrity/evm/evm.h          | 5 +++++
+ security/integrity/evm/evm_crypto.c   | 2 +-
+ security/integrity/evm/evm_main.c     | 8 ++++----
+ security/integrity/ima/ima_appraise.c | 7 ++++---
+ security/integrity/integrity.h        | 2 +-
+ 5 files changed, 15 insertions(+), 9 deletions(-)
 
+diff --git a/security/integrity/evm/evm.h b/security/integrity/evm/evm.h
+index f5f12727771a..e1081cf2f9c5 100644
+--- a/security/integrity/evm/evm.h
++++ b/security/integrity/evm/evm.h
+@@ -24,6 +24,11 @@
+ #define EVM_INIT_HMAC	0x0001
+ #define EVM_INIT_X509	0x0002
+ 
++struct evm_hmac_xattr {
++	u8 type;	/* Should be EVM_XATTR_HMAC. */
++	u8 digest[SHA1_DIGEST_SIZE];
++} __packed;
++
+ extern int evm_initialized;
+ extern char *evm_hmac;
+ extern char *evm_hash;
+diff --git a/security/integrity/evm/evm_crypto.c b/security/integrity/evm/evm_crypto.c
+index d7f282d75cc1..08dde59f3128 100644
+--- a/security/integrity/evm/evm_crypto.c
++++ b/security/integrity/evm/evm_crypto.c
+@@ -252,7 +252,7 @@ int evm_update_evmxattr(struct dentry *dentry, const char *xattr_name,
+ 			const char *xattr_value, size_t xattr_value_len)
+ {
+ 	struct inode *inode = d_backing_inode(dentry);
+-	struct evm_ima_xattr_data xattr_data;
++	struct evm_hmac_xattr xattr_data;
+ 	int rc = 0;
+ 
+ 	rc = evm_calc_hmac(dentry, xattr_name, xattr_value,
+diff --git a/security/integrity/evm/evm_main.c b/security/integrity/evm/evm_main.c
+index 063d38aef64e..b7c1e11a915e 100644
+--- a/security/integrity/evm/evm_main.c
++++ b/security/integrity/evm/evm_main.c
+@@ -116,7 +116,7 @@ static enum integrity_status evm_verify_hmac(struct dentry *dentry,
+ 					     struct integrity_iint_cache *iint)
+ {
+ 	struct evm_ima_xattr_data *xattr_data = NULL;
+-	struct evm_ima_xattr_data calc;
++	struct evm_hmac_xattr calc;
+ 	enum integrity_status evm_status = INTEGRITY_PASS;
+ 	int rc, xattr_len;
+ 
+@@ -147,7 +147,7 @@ static enum integrity_status evm_verify_hmac(struct dentry *dentry,
+ 	/* check value type */
+ 	switch (xattr_data->type) {
+ 	case EVM_XATTR_HMAC:
+-		if (xattr_len != sizeof(struct evm_ima_xattr_data)) {
++		if (xattr_len != sizeof(struct evm_hmac_xattr)) {
+ 			evm_status = INTEGRITY_FAIL;
+ 			goto out;
+ 		}
+@@ -155,7 +155,7 @@ static enum integrity_status evm_verify_hmac(struct dentry *dentry,
+ 				   xattr_value_len, calc.digest);
+ 		if (rc)
+ 			break;
+-		rc = crypto_memneq(xattr_data->digest, calc.digest,
++		rc = crypto_memneq(xattr_data->data, calc.digest,
+ 			    sizeof(calc.digest));
+ 		if (rc)
+ 			rc = -EINVAL;
+@@ -467,7 +467,7 @@ int evm_inode_init_security(struct inode *inode,
+ 				 const struct xattr *lsm_xattr,
+ 				 struct xattr *evm_xattr)
+ {
+-	struct evm_ima_xattr_data *xattr_data;
++	struct evm_hmac_xattr *xattr_data;
+ 	int rc;
+ 
+ 	if (!evm_initialized || !evm_protected_xattr(lsm_xattr->name))
 diff --git a/security/integrity/ima/ima_appraise.c b/security/integrity/ima/ima_appraise.c
-index ea36a4f134f4..809ba70fbbbf 100644
+index 809ba70fbbbf..87d2b601cf8e 100644
 --- a/security/integrity/ima/ima_appraise.c
 +++ b/security/integrity/ima/ima_appraise.c
-@@ -217,7 +217,8 @@ int ima_appraise_measurement(enum ima_hooks func,
- 		if (rc && rc != -ENODATA)
- 			goto out;
+@@ -156,7 +156,8 @@ enum hash_algo ima_get_hash_algo(struct evm_ima_xattr_data *xattr_value,
+ 		return sig->hash_algo;
+ 		break;
+ 	case IMA_XATTR_DIGEST_NG:
+-		ret = xattr_value->digest[0];
++		/* first byte contains algorithm id */
++		ret = xattr_value->data[0];
+ 		if (ret < HASH_ALGO__LAST)
+ 			return ret;
+ 		break;
+@@ -164,7 +165,7 @@ enum hash_algo ima_get_hash_algo(struct evm_ima_xattr_data *xattr_value,
+ 		/* this is for backward compatibility */
+ 		if (xattr_len == 21) {
+ 			unsigned int zero = 0;
+-			if (!memcmp(&xattr_value->digest[16], &zero, 4))
++			if (!memcmp(&xattr_value->data[16], &zero, 4))
+ 				return HASH_ALGO_MD5;
+ 			else
+ 				return HASH_ALGO_SHA1;
+@@ -253,7 +254,7 @@ int ima_appraise_measurement(enum ima_hooks func,
+ 			/* xattr length may be longer. md5 hash in previous
+ 			   version occupied 20 bytes in xattr, instead of 16
+ 			 */
+-			rc = memcmp(&xattr_value->digest[hash_start],
++			rc = memcmp(&xattr_value->data[hash_start],
+ 				    iint->ima_hash->digest,
+ 				    iint->ima_hash->length);
+ 		else
+diff --git a/security/integrity/integrity.h b/security/integrity/integrity.h
+index a53e7e4ab06c..874211aba6e9 100644
+--- a/security/integrity/integrity.h
++++ b/security/integrity/integrity.h
+@@ -63,7 +63,7 @@ enum evm_ima_xattr_type {
  
--		cause = "missing-hash";
-+		cause = iint->flags & IMA_DIGSIG_REQUIRED ?
-+				"IMA-signature-required" : "missing-hash";
- 		status = INTEGRITY_NOLABEL;
- 		if (opened & FILE_CREATED)
- 			iint->flags |= IMA_NEW_FILE;
+ struct evm_ima_xattr_data {
+ 	u8 type;
+-	u8 digest[SHA1_DIGEST_SIZE];
++	u8 data[];
+ } __packed;
+ 
+ #define IMA_MAX_DIGEST_SIZE	64
 -- 
 2.7.4
