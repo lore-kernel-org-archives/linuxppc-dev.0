@@ -1,25 +1,19 @@
-Return-Path: <mpe@ellerman.id.au>
+Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wkKcg2PvszDqMG
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Jun 2017 08:20:35 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Michael Bringmann <mwb@linux.vnet.ibm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Nathan Fontenot <nfont@linux.vnet.ibm.com>,
- Sahil Mehta <sahilmehta17@gmail.com>, John Allen <jallen@linux.vnet.ibm.com>,
- Michael Bringmann <mwb@linux.vnet.ibm.com>,
- Alastair D'Silva <alastair@d-silva.org>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Subject: Re: Resend [PATCH] powerpc/hotplug-mem: Fix aa_index match bug for
- hotplug
-In-Reply-To: <fa73f943-a8c7-f74b-fca8-20b7e53212ed@linux.vnet.ibm.com>
-References: <fa73f943-a8c7-f74b-fca8-20b7e53212ed@linux.vnet.ibm.com>
-Date: Fri, 09 Jun 2017 08:20:34 +1000
-Message-ID: <87tw3qi0jx.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wkKx138k3zDqN0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Jun 2017 08:34:45 +1000 (AEST)
+In-Reply-To: <1496327704-8197-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ benh@kernel.crashing.org, paulus@samba.org, Hugh Dickins <hughd@google.com>
+From: Michael Ellerman <patch-notifications@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: Re: powerpc/mm/4k: Limit 4k page size config to 64TB virtual address
+ space
+Message-Id: <3wkKx12R72z9s7B@ozlabs.org>
+Date: Fri,  9 Jun 2017 08:34:45 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,24 +23,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michael Bringmann <mwb@linux.vnet.ibm.com> writes:
+On Thu, 2017-06-01 at 14:35:04 UTC, "Aneesh Kumar K.V" wrote:
+> Supporting 512TB requires us to do a order 3 allocation for level 1 page
+> table(pgd). This results in page allocation failures with certain workloads.
+> For now limit 4k linux page size config to 64TB.
+> 
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 
-> When adding or removing memory, the aa_index (affinity value) for the
-> memblock must also be converted to match the endianness of the rest
-> of the 'ibm,dynamic-memory' property.  Otherwise, subsequent retrieval
-> of the attribute will likely lead to non-existent nodes, followed by
-> using the default node in the code inappropriately.
->
-> Note: This is a bug that we would likely want to see fixed in stable
->       circa v4.1+.
+Applied to powerpc fixes, thanks.
 
-I merged this a week ago:
-
-https://lists.ozlabs.org/pipermail/linuxppc-dev/2017-June/158426.html
-
-It was annotated:
-
-Fixes: 5f97b2a0d176 ("powerpc/pseries: Implement memory hotplug add in the kernel")
-Cc: stable@vger.kernel.org # v4.1+
+https://git.kernel.org/powerpc/c/92d9dfda8b547cc292af27e11e11c9
 
 cheers
