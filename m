@@ -3,43 +3,41 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wkH2t6kBvzDqVF
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Jun 2017 06:24:38 +1000 (AEST)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v58KNlX5140120
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 8 Jun 2017 16:24:35 -0400
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2axxd7hn4n-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wkH3f5c7XzDqVh
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Jun 2017 06:25:18 +1000 (AEST)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v58KNo2E068514
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 8 Jun 2017 16:25:16 -0400
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2aycvr1n73-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 08 Jun 2017 16:24:35 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 08 Jun 2017 16:25:15 -0400
 Received: from localhost
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
- Fri, 9 Jun 2017 06:24:32 +1000
-Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v58KOL3E56164414
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 9 Jun 2017 06:24:29 +1000
-Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
- by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v58KNt3r029639
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 9 Jun 2017 06:23:57 +1000
+ Fri, 9 Jun 2017 06:25:11 +1000
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v58KP3l73998164
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 9 Jun 2017 06:25:03 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v58KP16A023116
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 9 Jun 2017 06:25:01 +1000
 From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 To: mpe@ellerman.id.au
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  stewart@linux.vnet.ibm.com, eranian@google.com,
  benh@kernel.crashing.org, paulus@samba.org, sukadev@linux.vnet.ibm.com,
  ego@linux.vnet.ibm.com, mikey@neuling.org, dja@axtens.net,
- anton@samba.org, tglx@linutronix.de,
- Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
+ anton@samba.org, Anju T Sudhakar <anju@linux.vnet.ibm.com>,
  Hemant Kumar <hemant@linux.vnet.ibm.com>,
- Anju T Sudhakar <anju@linux.vnet.ibm.com>
-Subject: [PATCH v10 07/10] powerpc/perf: PMU functions for Core IMC and
- hotplugging
-Date: Fri,  9 Jun 2017 01:53:20 +0530
-Message-Id: <1496953400-16739-1-git-send-email-maddy@linux.vnet.ibm.com>
+ Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+Subject: [PATCH v10 09/10] powerpc/perf: Thread IMC PMU functions
+Date: Fri,  9 Jun 2017 01:54:42 +0530
+Message-Id: <1496953482-17017-1-git-send-email-maddy@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,287 +47,155 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Code to add PMU function to initialize a core IMC event. It also
-adds cpumask initialization function for core IMC PMU. For
-initialization, memory is allocated per core where the data
-for core IMC counters will be accumulated. The base address for this
-page is sent to OPAL via an OPAL call which initializes various SCOMs
-related to Core IMC initialization. Upon any errors, the pages are
-free'ed and core IMC counters are disabled using the same OPAL call.
+From: Anju T Sudhakar <anju@linux.vnet.ibm.com>
 
-For CPU hotplugging, a cpumask is initialized which contains an online
-CPU from each core. If a cpu goes offline, we check whether that cpu
-belongs to the core imc cpumask, if yes, then, we migrate the PMU
-context to any other online cpu (if available) in that core. If a cpu
-comes back online, then this cpu will be added to the core imc cpumask
-only if there was no other cpu from that core in the previous cpumask.
+Code to add PMU functions required for event initialization,
+read, update, add, del etc. for thread IMC PMU. Thread IMC PMUs are used
+for per-task monitoring.
 
-To register the hotplug functions for core_imc, a new state
-CPUHP_AP_PERF_POWERPC_CORE_IMC_ONLINE is added to the list of existing
-states.
+For each CPU, a page of memory is allocated and is kept static i.e.,
+these pages will exist till the machine shuts down. The base address of
+this page is assigned to the ldbar of that cpu. As soon as we do that,
+the thread IMC counters start running for that cpu and the data of these
+counters are assigned to the page allocated. But we use this for
+per-task monitoring. Whenever we start monitoring a task, the event is
+added is onto the task. At that point, we read the initial value of the
+event. Whenever, we stop monitoring the task, the final value is taken
+and the difference is the event data.
 
-Patch also adds OPAL device shutdown callback. Needed to disable the
-IMC core engine to handle kexec.
+Now, a task can move to a different cpu. Suppose a task X is moving from
+cpu A to cpu B. When the task is scheduled out of A, we get an
+event_del for A, and hence, the event data is updated. And, we stop
+updating the X's event data. As soon as X moves on to B, event_add is
+called for B, and we again update the event_data. And this is how it
+keeps on updating the event data even when the task is scheduled on to
+different cpus.
 
-Signed-off-by: Hemant Kumar <hemant@linux.vnet.ibm.com>
 Signed-off-by: Anju T Sudhakar <anju@linux.vnet.ibm.com>
+Signed-off-by: Hemant Kumar <hemant@linux.vnet.ibm.com>
 Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/imc-pmu.h        |   1 +
- arch/powerpc/include/asm/opal-api.h       |   1 +
- arch/powerpc/perf/imc-pmu.c               | 265 +++++++++++++++++++++++++++++-
- arch/powerpc/platforms/powernv/opal-imc.c |   7 +
- include/linux/cpuhotplug.h                |   1 +
- 5 files changed, 269 insertions(+), 6 deletions(-)
+ arch/powerpc/include/asm/imc-pmu.h        |   4 +
+ arch/powerpc/perf/imc-pmu.c               | 219 +++++++++++++++++++++++++++++-
+ arch/powerpc/platforms/powernv/opal-imc.c |   2 +
+ 3 files changed, 218 insertions(+), 7 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/imc-pmu.h b/arch/powerpc/include/asm/imc-pmu.h
-index 0f018b6510c0..88bc7ef6cc1e 100644
+index 6659846c21ab..56b2ace565f4 100644
 --- a/arch/powerpc/include/asm/imc-pmu.h
 +++ b/arch/powerpc/include/asm/imc-pmu.h
-@@ -99,5 +99,6 @@ struct imc_pmu {
+@@ -43,6 +43,9 @@
+ #define IMC_DTB_COMPAT			"ibm,opal-in-memory-counters"
+ #define IMC_DTB_UNIT_COMPAT		"ibm,imc-counters"
  
- extern struct imc_pmu *per_nest_pmu_arr[IMC_MAX_PMUS];
++#define THREAD_IMC_LDBAR_MASK           0x0003ffffffffe000
++#define THREAD_IMC_ENABLE               0x8000000000000000
++
+ /*
+  * Structure to hold memory address information for imc units.
+  */
+@@ -102,4 +105,5 @@ extern struct imc_pmu *per_nest_pmu_arr[IMC_MAX_PMUS];
  extern struct imc_pmu *core_imc_pmu;
-+extern int imc_control(unsigned long type, bool operation);
+ extern int imc_control(unsigned long type, bool operation);
  extern int __init init_imc_pmu(struct imc_events *events, int idx, struct imc_pmu *pmu_ptr);
++void thread_imc_disable(void);
  #endif /* PPC_POWERNV_IMC_PMU_DEF_H */
-diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
-index 7056b977df53..7a58617490cf 100644
---- a/arch/powerpc/include/asm/opal-api.h
-+++ b/arch/powerpc/include/asm/opal-api.h
-@@ -1018,6 +1018,7 @@ enum {
- /* Argument to OPAL_IMC_COUNTERS_*  */
- enum {
- 	OPAL_IMC_COUNTERS_NEST = 1,
-+	OPAL_IMC_COUNTERS_CORE = 2,
- };
- 
- #endif /* __ASSEMBLY__ */
 diff --git a/arch/powerpc/perf/imc-pmu.c b/arch/powerpc/perf/imc-pmu.c
-index 08b363ac35ac..cdee29b92945 100644
+index e15a8df3d3b7..ca8c0b8e157a 100644
 --- a/arch/powerpc/perf/imc-pmu.c
 +++ b/arch/powerpc/perf/imc-pmu.c
-@@ -1,5 +1,5 @@
- /*
-- * Nest Performance Monitor counter support.
-+ * IMC Performance Monitor counter support.
-  *
-  * Copyright (C) 2017 Madhavan Srinivasan, IBM Corporation.
-  *           (C) 2017 Anju T Sudhakar, IBM Corporation.
-@@ -24,11 +24,15 @@ extern u64 core_max_offset;
+@@ -18,6 +18,9 @@
+ #include <asm/smp.h>
+ #include <linux/string.h>
  
- struct imc_pmu *per_nest_pmu_arr[IMC_MAX_PMUS];
- static cpumask_t nest_imc_cpumask;
-+static cpumask_t core_imc_cpumask;
- static int nest_imc_cpumask_initialized;
- 
- static atomic_t nest_events;
-+static atomic_t core_events;
- /* Used to avoid races in calling enable/disable nest-pmu units */
- static DEFINE_MUTEX(imc_nest_reserve);
-+/* Used to avoid races in calling enable/disable nest-pmu units */
-+static DEFINE_MUTEX(imc_core_reserve);
- 
- static struct cpumask imc_result_mask;
++/* Maintains base address for all the cpus */
++static DEFINE_PER_CPU(u64 *, thread_imc_mem);
++
+ /* Needed for sanity check */
+ extern u64 nest_max_offset;
+ extern u64 core_max_offset;
+@@ -39,6 +42,7 @@ static struct cpumask imc_result_mask;
  static DEFINE_MUTEX(imc_control_mutex);
-@@ -56,9 +60,15 @@ static ssize_t imc_pmu_cpumask_get_attr(struct device *dev,
- 					struct device_attribute *attr,
- 					char *buf)
+ 
+ struct imc_pmu *core_imc_pmu;
++static int thread_imc_mem_size;
+ 
+ struct imc_pmu *imc_event_to_pmu(struct perf_event *event)
  {
-+	struct pmu *pmu = dev_get_drvdata(dev);
- 	cpumask_t *active_mask;
- 
--	active_mask = &nest_imc_cpumask;
-+	if (!strncmp(pmu->name, "nest_", strlen("nest_")))
-+		active_mask = &nest_imc_cpumask;
-+	else if (!strncmp(pmu->name, "core_", strlen("core_")))
-+		active_mask = &core_imc_cpumask;
-+	else
-+		return 0;
- 	return cpumap_print_to_pagebuf(true, buf, active_mask);
+@@ -317,18 +321,59 @@ bool is_core_imc_mem_inited(int cpu)
  }
  
-@@ -107,6 +117,9 @@ int imc_control(unsigned long type, bool operation)
- 	case OPAL_IMC_COUNTERS_NEST:
- 		imc_domain_mask = &nest_imc_cpumask;
- 		break;
-+	case OPAL_IMC_COUNTERS_CORE:
-+		imc_domain_mask = &core_imc_cpumask;
-+		break;
- 	default:
- 		res = -EINVAL;
- 		goto out;
-@@ -223,6 +236,160 @@ static void nest_imc_counters_release(struct perf_event *event)
- 	}
- }
- 
-+static void cleanup_all_core_imc_memory(struct imc_pmu *pmu_ptr)
-+{
-+	struct imc_mem_info *ptr;
-+
-+	for (ptr = pmu_ptr->mem_info; ptr; ptr++) {
-+		if (ptr->vbase[0])
-+			free_pages((u64)ptr->vbase[0], 0);
-+	}
-+
-+	kfree(pmu_ptr->mem_info);
-+}
-+
-+static void core_imc_counters_release(struct perf_event *event)
-+{
-+	int rc;
-+	/*
-+	 * See if we need to disable the IMC PMU.
-+	 * If no events are currently in use, then we have to take a
-+	 * mutex to ensure that we don't race with another task doing
-+	 * enable or disable the core counters.
-+	 */
-+	if (atomic_dec_return(&core_events) == 0) {
-+		mutex_lock(&imc_core_reserve);
-+		rc = imc_control(OPAL_IMC_COUNTERS_CORE, false);
-+		mutex_unlock(&imc_core_reserve);
-+		if (rc)
-+			pr_err("IMC: Disable counters failed\n");
-+	}
-+}
-+
-+/*
-+ * core_imc_mem_init : Initializes memory for the current core.
-+ *
-+ * Uses alloc_pages_exact_nid() and uses the returned address as an argument to
-+ * an opal call to configure the pdbar. The address sent as an argument is
-+ * converted to physical address before the opal call is made. This is the
-+ * base address at which the core imc counters are populated.
+ /*
+- * imc_mem_init : Function to support memory allocation for core imc.
++ * Allocates a page of memory for each of the online cpus, and, writes the
++ * physical base address of that page to the LDBAR for that cpu. This starts
++ * the thread IMC counters.
 + */
-+static int  __meminit core_imc_mem_init(int cpu, int size)
++static int thread_imc_mem_alloc(int cpu_id, int size)
 +{
-+	int phys_id, rc = 0, core_id = (cpu / threads_per_core);
-+	struct imc_mem_info *mem_info;
++	u64 ldbar_value, *local_mem;
++	int phys_id = topology_physical_package_id(cpu_id);
 +
-+	/*
-+	 * alloc_pages_exact_nid() will allocate memory for core in the
-+	 * local node only.
-+	 */
-+	phys_id = topology_physical_package_id(cpu);
-+	mem_info = &core_imc_pmu->mem_info[core_id];
-+	mem_info->id = core_id;
-+	mem_info->vbase[0] = alloc_pages_exact_nid(phys_id,
++	if (per_cpu(thread_imc_mem, cpu_id) != NULL)
++		return 0;
++
++	local_mem = alloc_pages_exact_nid(phys_id,
 +				(size_t)size, GFP_KERNEL | __GFP_ZERO);
-+
-+	if (!mem_info->vbase[0])
++	if (!local_mem)
 +		return -ENOMEM;
 +
-+	rc = opal_imc_counters_init(OPAL_IMC_COUNTERS_CORE,
-+				(u64)virt_to_phys((void *)mem_info->vbase[0]),
-+				get_hard_smp_processor_id(cpu));
-+	if (rc) {
-+		free_pages((u64)mem_info->vbase[0], get_order(size));
-+		mem_info->vbase[0] = NULL;
-+	}
++	per_cpu(thread_imc_mem, cpu_id) = local_mem;
 +
-+	return rc;
-+}
++	ldbar_value = ((u64)local_mem & (u64)THREAD_IMC_LDBAR_MASK) |
++						(u64)THREAD_IMC_ENABLE;
 +
-+bool is_core_imc_mem_inited(int cpu)
-+{
-+	struct imc_mem_info *mem_info;
-+	int core_id = (cpu / threads_per_core);
-+
-+	mem_info = &core_imc_pmu->mem_info[core_id];
-+	if ((mem_info->id == core_id) && (mem_info->vbase[0] != NULL))
-+		return true;
-+
-+	return false;
++	mtspr(SPRN_LDBAR, ldbar_value);
++	return 0;
 +}
 +
 +/*
-+ * imc_mem_init : Function to support memory allocation for core imc.
-+ */
-+static int imc_mem_init(struct imc_pmu *pmu_ptr)
-+{
-+	int nr_cores;
-+
-+	if (pmu_ptr->imc_counter_mmaped)
-+		return 0;
-+	nr_cores = num_present_cpus() / threads_per_core;
-+	pmu_ptr->mem_info = kzalloc((sizeof(struct imc_mem_info) * nr_cores), GFP_KERNEL);
-+	if (!pmu_ptr->mem_info)
-+		return -ENOMEM;
-+	return 0;
-+}
-+
-+static int ppc_core_imc_cpu_online(unsigned int cpu)
-+{
-+	const struct cpumask *l_cpumask;
-+	static struct cpumask tmp_mask;
-+	int ret = 0;
-+
-+	/* Get the cpumask for this core */
-+	l_cpumask = cpu_sibling_mask(cpu);
-+
-+	/* If a cpu for this core is already set, then, don't do anything */
-+	if (cpumask_and(&tmp_mask, l_cpumask, &core_imc_cpumask))
-+		return 0;
-+
-+	if (!is_core_imc_mem_inited(cpu)) {
-+		ret = core_imc_mem_init(cpu, core_imc_pmu->counter_mem_size);
-+		if (ret) {
-+			pr_info("core_imc memory allocation for cpu %d failed\n", cpu);
-+			return ret;
-+		}
-+	} else {
-+		opal_imc_counters_stop(OPAL_IMC_COUNTERS_CORE);
-+	}
-+
-+	/* set the cpu in the mask, and change the context */
-+	cpumask_set_cpu(cpu, &core_imc_cpumask);
-+	return 0;
-+}
-+
-+static int ppc_core_imc_cpu_offline(unsigned int cpu)
-+{
-+	unsigned int ncpu;
-+
-+	/*
-+	 * clear this cpu out of the mask, if not present in the mask,
-+	 * don't bother doing anything.
-+	 */
-+	if (!cpumask_test_and_clear_cpu(cpu, &core_imc_cpumask))
-+		return 0;
-+
-+	/* Find any online cpu in that core except the current "cpu" */
-+	ncpu = cpumask_any_but(cpu_sibling_mask(cpu), cpu);
-+
-+	if (ncpu >= 0 && ncpu < nr_cpu_ids) {
-+		cpumask_set_cpu(ncpu, &core_imc_cpumask);
-+		perf_pmu_migrate_context(&core_imc_pmu->pmu, cpu, ncpu);
-+	} else {
-+		opal_imc_counters_stop(OPAL_IMC_COUNTERS_CORE);
-+	}
-+	return 0;
-+}
-+
-+static int core_imc_pmu_cpumask_init(void)
-+{
-+	return cpuhp_setup_state(CPUHP_AP_PERF_POWERPC_CORE_IMC_ONLINE,
-+				 "perf/powerpc/imc_core:online",
-+				 ppc_core_imc_cpu_online,
-+				 ppc_core_imc_cpu_offline);
-+}
-+
- static int nest_imc_event_init(struct perf_event *event)
++ * imc_mem_init : Function to support memory allocation for core and thread imc.
+  */
+ static int imc_mem_init(struct imc_pmu *pmu_ptr)
  {
- 	int chip_id, rc;
-@@ -292,6 +459,68 @@ static int nest_imc_event_init(struct perf_event *event)
+-	int nr_cores;
++	int nr_cores, cpu, res;
+ 
+ 	if (pmu_ptr->imc_counter_mmaped)
+ 		return 0;
+-	nr_cores = num_present_cpus() / threads_per_core;
+-	pmu_ptr->mem_info = kzalloc((sizeof(struct imc_mem_info) * nr_cores), GFP_KERNEL);
+-	if (!pmu_ptr->mem_info)
+-		return -ENOMEM;
++	switch (pmu_ptr->domain) {
++	case IMC_DOMAIN_CORE:
++		nr_cores = num_present_cpus() / threads_per_core;
++		pmu_ptr->mem_info = kzalloc((sizeof(struct imc_mem_info) * nr_cores), GFP_KERNEL);
++		if (!pmu_ptr->mem_info)
++			return -ENOMEM;
++		break;
++	case IMC_DOMAIN_THREAD:
++		thread_imc_mem_size = pmu_ptr->counter_mem_size;
++		for_each_online_cpu(cpu) {
++			res = thread_imc_mem_alloc(cpu, pmu_ptr->counter_mem_size);
++			if (res)
++				return res;
++		}
++		break;
++	default:
++		return -EINVAL;
++	}
  	return 0;
  }
  
-+static int core_imc_event_init(struct perf_event *event)
+@@ -522,6 +567,75 @@ static int core_imc_event_init(struct perf_event *event)
+ 	return 0;
+ }
+ 
++static int thread_imc_event_init(struct perf_event *event)
 +{
-+	int core_id, rc;
-+	u64 config = event->attr.config;
-+	struct imc_mem_info *pcmi;
-+	struct imc_pmu *pmu;
++	int rc;
++	struct task_struct *target;
 +
 +	if (event->attr.type != event->pmu->type)
 +		return -ENOENT;
@@ -338,34 +204,21 @@ index 08b363ac35ac..cdee29b92945 100644
 +	if (event->hw.sample_period)
 +		return -EINVAL;
 +
-+	/* unsupported modes and filters */
-+	if (event->attr.exclude_user   ||
-+	    event->attr.exclude_kernel ||
-+	    event->attr.exclude_hv     ||
-+	    event->attr.exclude_idle   ||
-+	    event->attr.exclude_host   ||
-+	    event->attr.exclude_guest)
-+		return -EINVAL;
-+
-+	if (event->cpu < 0)
-+		return -EINVAL;
-+
 +	event->hw.idx = -1;
 +
 +	/* Sanity check for config (event offset) */
-+	if (config > core_max_offset)
++	if (event->attr.config > thread_max_offset)
++		return -EINVAL;
++
++	target = event->hw.target;
++
++	if (!target)
 +		return -EINVAL;
 +
 +	if (!is_core_imc_mem_inited(event->cpu))
 +		return -ENODEV;
 +
-+	pmu = imc_event_to_pmu(event);
-+	core_id = event->cpu / threads_per_core;
-+	pcmi = &pmu->mem_info[core_id];
-+	if ((pcmi->id != core_id) || (!pcmi->vbase[0]))
-+		return -ENODEV;
-+
-+	event->hw.event_base = (u64)pcmi->vbase[0] + config;
++	event->pmu->task_ctx_nr = perf_sw_context;
 +	/*
 +	 * Core pmu units are enabled only when it is used.
 +	 * See if this is triggered for the first time.
@@ -386,101 +239,163 @@ index 08b363ac35ac..cdee29b92945 100644
 +	return 0;
 +}
 +
++static void thread_imc_read_counter(struct perf_event *event)
++{
++	u64 *addr, data;
++
++	addr = per_cpu(thread_imc_mem, smp_processor_id()) + event->attr.config;
++	data = __be64_to_cpu(READ_ONCE(*addr));
++	local64_set(&event->hw.prev_count, data);
++}
++
++static void thread_imc_perf_event_update(struct perf_event *event)
++{
++	u64 counter_prev, counter_new, final_count, *addr;
++
++	addr = per_cpu(thread_imc_mem, smp_processor_id()) + event->attr.config;
++	counter_prev = local64_read(&event->hw.prev_count);
++	counter_new = __be64_to_cpu(READ_ONCE(*addr));
++	final_count = counter_new - counter_prev;
++
++	local64_set(&event->hw.prev_count, counter_new);
++	local64_add(final_count, &event->count);
++}
++
  static void imc_read_counter(struct perf_event *event)
  {
  	u64 *addr, data;
-@@ -360,7 +589,11 @@ static int update_pmu_ops(struct imc_pmu *pmu)
- 		return -EINVAL;
- 
- 	pmu->pmu.task_ctx_nr = perf_invalid_context;
--	pmu->pmu.event_init = nest_imc_event_init;
-+	if (pmu->domain == IMC_DOMAIN_NEST) {
-+		pmu->pmu.event_init = nest_imc_event_init;
-+	} else if (pmu->domain == IMC_DOMAIN_CORE) {
-+		pmu->pmu.event_init = core_imc_event_init;
-+	}
- 	pmu->pmu.add = imc_event_add;
- 	pmu->pmu.del = imc_event_stop;
- 	pmu->pmu.start = imc_event_start;
-@@ -445,12 +678,27 @@ int __init init_imc_pmu(struct imc_events *events, int idx,
- {
- 	int ret = -ENODEV;
- 
-+	ret = imc_mem_init(pmu_ptr);
-+	if (ret)
-+		goto err_free;
-+
- 	/* Add cpumask and register for hotplug notification */
--	if (!nest_imc_cpumask_initialized) {
--		ret = nest_pmu_cpumask_init();
-+	switch (pmu_ptr->domain) {
-+	case IMC_DOMAIN_NEST:
-+		if (!nest_imc_cpumask_initialized) {
-+			ret = nest_pmu_cpumask_init();
-+			if (ret)
-+				return ret;
-+			nest_imc_cpumask_initialized = 1;
-+		}
-+		break;
-+	case IMC_DOMAIN_CORE:
-+		ret = core_imc_pmu_cpumask_init();
- 		if (ret)
- 			return ret;
--		nest_imc_cpumask_initialized = 1;
-+		break;
-+	default:
-+		return -1;  /* Unknown domain */
- 	}
- 	ret = update_events_in_group(events, idx, pmu_ptr);
- 	if (ret)
-@@ -476,6 +724,11 @@ int __init init_imc_pmu(struct imc_events *events, int idx,
- 			kfree(pmu_ptr->attr_groups[IMC_EVENT_ATTR]->attrs);
- 		kfree(pmu_ptr->attr_groups[IMC_EVENT_ATTR]);
- 	}
-+	/* For core_imc, we have allocated memory, we need to free it */
-+	if (pmu_ptr->domain == IMC_DOMAIN_CORE) {
-+		cleanup_all_core_imc_memory(pmu_ptr);
-+		cpuhp_remove_state(CPUHP_AP_PERF_POWERPC_CORE_IMC_ONLINE);
-+	}
- 
- 	return ret;
- }
-diff --git a/arch/powerpc/platforms/powernv/opal-imc.c b/arch/powerpc/platforms/powernv/opal-imc.c
-index be6158a098dd..a3f48866ec12 100644
---- a/arch/powerpc/platforms/powernv/opal-imc.c
-+++ b/arch/powerpc/platforms/powernv/opal-imc.c
-@@ -531,6 +531,12 @@ static int opal_imc_counters_probe(struct platform_device *pdev)
+@@ -583,6 +697,53 @@ static int imc_event_add(struct perf_event *event, int flags)
  	return 0;
  }
  
-+static void opal_imc_counters_shutdown(struct platform_device *pdev)
++static void thread_imc_event_start(struct perf_event *event, int flags)
 +{
-+	/* Disable the IMC Core functions */
-+	imc_control(OPAL_IMC_COUNTERS_CORE, false);
++	thread_imc_read_counter(event);
 +}
 +
- static const struct of_device_id opal_imc_match[] = {
- 	{ .compatible = IMC_DTB_COMPAT },
- 	{},
-@@ -542,6 +548,7 @@ static struct platform_driver opal_imc_driver = {
- 		.of_match_table = opal_imc_match,
- 	},
- 	.probe = opal_imc_counters_probe,
-+	.shutdown = opal_imc_counters_shutdown,
- };
++static void thread_imc_event_stop(struct perf_event *event, int flags)
++{
++	thread_imc_perf_event_update(event);
++}
++
++static void thread_imc_event_del(struct perf_event *event, int flags)
++{
++	thread_imc_perf_event_update(event);
++}
++
++static int thread_imc_event_add(struct perf_event *event, int flags)
++{
++	thread_imc_event_start(event, flags);
++
++	return 0;
++}
++
++static void thread_imc_pmu_start_txn(struct pmu *pmu,
++				     unsigned int txn_flags)
++{
++	if (txn_flags & ~PERF_PMU_TXN_ADD)
++		return;
++	perf_pmu_disable(pmu);
++}
++
++static void thread_imc_pmu_cancel_txn(struct pmu *pmu)
++{
++	perf_pmu_enable(pmu);
++}
++
++static int thread_imc_pmu_commit_txn(struct pmu *pmu)
++{
++	perf_pmu_enable(pmu);
++	return 0;
++}
++
++static void thread_imc_pmu_sched_task(struct perf_event_context *ctx,
++				  bool sched_in)
++{
++	return;
++}
++
+ /* update_pmu_ops : Populate the appropriate operations for "pmu" */
+ static int update_pmu_ops(struct imc_pmu *pmu)
+ {
+@@ -603,7 +764,26 @@ static int update_pmu_ops(struct imc_pmu *pmu)
+ 	pmu->attr_groups[IMC_CPUMASK_ATTR] = &imc_pmu_cpumask_attr_group;
+ 	pmu->attr_groups[IMC_FORMAT_ATTR] = &imc_format_group;
+ 	pmu->pmu.attr_groups = pmu->attr_groups;
+-
++	if (pmu->domain == IMC_DOMAIN_THREAD) {
++		pmu->pmu.event_init = thread_imc_event_init;
++		pmu->pmu.start = thread_imc_event_start;
++		pmu->pmu.add = thread_imc_event_add;
++		pmu->pmu.del = thread_imc_event_del;
++		pmu->pmu.stop = thread_imc_event_stop;
++		pmu->pmu.read = thread_imc_perf_event_update;
++		pmu->pmu.start_txn = thread_imc_pmu_start_txn;
++		pmu->pmu.cancel_txn = thread_imc_pmu_cancel_txn;
++		pmu->pmu.commit_txn = thread_imc_pmu_commit_txn;
++		pmu->pmu.sched_task = thread_imc_pmu_sched_task;
++
++		/*
++		 * Since thread_imc does not have any CPUMASK attr,
++		 * this may drop the "events" attr all together.
++		 * So swap the IMC_EVENT_ATTR slot with IMC_CPUMASK_ATTR.
++		 */
++		pmu->attr_groups[IMC_CPUMASK_ATTR] = pmu->attr_groups[IMC_EVENT_ATTR];
++		pmu->attr_groups[IMC_EVENT_ATTR] = NULL;
++	}
+ 	return 0;
+ }
  
- MODULE_DEVICE_TABLE(of, opal_imc_match);
-diff --git a/include/linux/cpuhotplug.h b/include/linux/cpuhotplug.h
-index dca7f2b07f93..e145fffec093 100644
---- a/include/linux/cpuhotplug.h
-+++ b/include/linux/cpuhotplug.h
-@@ -140,6 +140,7 @@ enum cpuhp_state {
- 	CPUHP_AP_PERF_ARM_QCOM_L2_ONLINE,
- 	CPUHP_AP_PERF_ARM_QCOM_L3_ONLINE,
- 	CPUHP_AP_PERF_POWERPC_NEST_IMC_ONLINE,
-+	CPUHP_AP_PERF_POWERPC_CORE_IMC_ONLINE,
- 	CPUHP_AP_WORKQUEUE_ONLINE,
- 	CPUHP_AP_RCUTREE_ONLINE,
- 	CPUHP_AP_ONLINE_DYN,
+@@ -664,6 +844,27 @@ static int update_events_in_group(struct imc_events *events,
+ 	return 0;
+ }
+ 
++static void thread_imc_ldbar_disable(void *dummy)
++{
++	/* LDBAR spr is a per-thread */
++	mtspr(SPRN_LDBAR, 0);
++}
++
++void thread_imc_disable(void)
++{
++	on_each_cpu(thread_imc_ldbar_disable, NULL, 1);
++}
++
++static void cleanup_all_thread_imc_memory(void)
++{
++	int i;
++
++	for_each_online_cpu(i) {
++		if (per_cpu(thread_imc_mem, cpu))
++			free_pages(per_cpu(thread_imc_mem, cpu), 0);
++	}
++}
++
+ /*
+  * init_imc_pmu : Setup and register the IMC pmu device.
+  *
+@@ -731,5 +932,9 @@ int __init init_imc_pmu(struct imc_events *events, int idx,
+ 		cpuhp_remove_state(CPUHP_AP_PERF_POWERPC_CORE_IMC_ONLINE);
+ 	}
+ 
++	/* For thread_imc, we have allocated memory, we need to free it */
++	if (pmu_ptr->domain == IMC_DOMAIN_THREAD)
++		cleanup_all_thread_imc_memory();
++
+ 	return ret;
+ }
+diff --git a/arch/powerpc/platforms/powernv/opal-imc.c b/arch/powerpc/platforms/powernv/opal-imc.c
+index 5fa008cb1b93..2e89096fec0c 100644
+--- a/arch/powerpc/platforms/powernv/opal-imc.c
++++ b/arch/powerpc/platforms/powernv/opal-imc.c
+@@ -542,6 +542,8 @@ static void opal_imc_counters_shutdown(struct platform_device *pdev)
+ {
+ 	/* Disable the IMC Core functions */
+ 	imc_control(OPAL_IMC_COUNTERS_CORE, false);
++	/* Disable the IMC Thread functions */
++	thread_imc_disable();
+ }
+ 
+ static const struct of_device_id opal_imc_match[] = {
 -- 
 2.7.4
