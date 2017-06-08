@@ -1,28 +1,29 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <peter.hutterer@who-t.net>
+Received: from mail.clearchain.com (leo.clearchain.com [199.73.29.74])
+ (using TLSv1 with cipher DHE-RSA-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wkLLW3Lz4zDqNV
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Jun 2017 08:53:23 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: linux-kernel@vger.kernel.org,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Vineet Gupta <vgupta@synopsys.com>,
- Bart Van Assche <bart.vanassche@sandisk.com>,
- Robin Murphy <robin.murphy@arm.com>, Joerg Roedel <jroedel@suse.de>,
- Johan Hovold <johan@kernel.org>, Alexey Kardashevskiy <aik@ozlabs.ru>,
- Krzysztof Kozlowski <krzk@kernel.org>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 11/16] powerpc: vio_cmo: use dev_groups and not dev_attrs
- for bus_type
-In-Reply-To: <20170608133923.GA17811@kroah.com>
-References: <20170606192221.1617-1-gregkh@linuxfoundation.org>
- <20170606192221.1617-12-gregkh@linuxfoundation.org>
- <87y3t2d3o5.fsf@concordia.ellerman.id.au> <20170608133923.GA17811@kroah.com>
-Date: Fri, 09 Jun 2017 08:53:22 +1000
-Message-ID: <87r2yuhz19.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wkLgR3vDVzDqNj
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Jun 2017 09:08:01 +1000 (AEST)
+Date: Fri, 9 Jun 2017 09:07:52 +1000
+From: Peter Hutterer <peter.hutterer@who-t.net>
+To: Michal =?iso-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>
+Cc: Benjamin Tissoires <benjamin.tissoires@redhat.com>,
+ Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ linux-input@vger.kernel.org
+Subject: Re: [PATCH] macintosh: move mac_hid driver to input/mouse.
+Message-ID: <20170608230752.GA4254@jelly>
+References: <20170509191418.10144-1-msuchanek@suse.de>
+ <20170510004327.GA32584@dtor-ws> <20170528114758.52b619f2@neko>
+ <20170528175540.GA8094@dtor-ws>
+ <20170607185351.5fcd91df@kitsune.suse.cz>
+ <20170607171622.GE13116@dtor-ws>
+ <20170607211737.01888f04@kitsune.suse.cz>
+ <20170607231303.GB29224@jelly>
+ <20170608151842.71b59dad@kitsune.suse.cz>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <20170608151842.71b59dad@kitsune.suse.cz>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,55 +33,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Greg Kroah-Hartman <gregkh@linuxfoundation.org> writes:
+On Thu, Jun 08, 2017 at 03:18:42PM +0200, Michal Suchánek wrote:
+> This is what evtest reports about my keyboard:
+> 
+> Select the device event number [0-12]: 2
+> Input driver version is 1.0.1
+> Input device ID: bus 0x3 vendor 0x413c product 0x2107 version 0x111
+> Input device name: "DELL Dell USB Entry Keyboard"
+> Supported events:
+>   Event type 0 (EV_SYN)
+>   Event type 1 (EV_KEY)
+>     Event code 1 (KEY_ESC)
+>     Event code 2 (KEY_1)
+>     Event code 3 (KEY_2)
+>     Event code 4 (KEY_3)
+> ...
+>     Event code 193 (KEY_F23)
+>     Event code 194 (KEY_F24)
+>     Event code 240 (KEY_UNKNOWN)
+>     Event code 272 (BTN_LEFT)
+>     Event code 273 (BTN_RIGHT)
+>     Event code 274 (BTN_MIDDLE)
+>   Event type 4 (EV_MSC)
+>     Event code 4 (MSC_SCAN)
+>   Event type 17 (EV_LED)
+>     Event code 0 (LED_NUML) state 1
+>     Event code 1 (LED_CAPSL) state 0
+>     Event code 2 (LED_SCROLLL) state 0
+>     Event code 3 (LED_COMPOSE) state 0
+>     Event code 4 (LED_KANA) state 0
+> Key repeat handling:
+>   Repeat type 20 (EV_REP)
+>     Repeat code 0 (REP_DELAY)
+>       Value    250
+>     Repeat code 1 (REP_PERIOD)
+>       Value     33
+> Properties:
 
-> On Thu, Jun 08, 2017 at 11:12:10PM +1000, Michael Ellerman wrote:
->> Greg Kroah-Hartman <gregkh@linuxfoundation.org> writes:
->> 
->> > The dev_attrs field has long been "depreciated" and is finally being
->> > removed, so move the driver to use the "correct" dev_groups field
->> > instead for struct bus_type.
->> >
->> > Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
->> > Cc: Paul Mackerras <paulus@samba.org>
->> > Cc: Michael Ellerman <mpe@ellerman.id.au>
->> > Cc: Vineet Gupta <vgupta@synopsys.com>
->> > Cc: Bart Van Assche <bart.vanassche@sandisk.com>
->> > Cc: Robin Murphy <robin.murphy@arm.com>
->> > Cc: Joerg Roedel <jroedel@suse.de>
->> > Cc: Johan Hovold <johan@kernel.org>
->> > Cc: Alexey Kardashevskiy <aik@ozlabs.ru>
->> > Cc: Krzysztof Kozlowski <krzk@kernel.org>
->> > Cc: <linuxppc-dev@lists.ozlabs.org>
->> > Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
->> > ---
->> >  arch/powerpc/platforms/pseries/vio.c | 37 +++++++++++++++++++++---------------
->> >  1 file changed, 22 insertions(+), 15 deletions(-)
->> 
->> This one needed a bit more work to get building, the incremental diff is
->> below. We need a forward declaration of name, devspec and modalias,
->> which is a bit weird, but that's how the code is currently structured.
->> And there's dev and bus attributes with the same name, so that needed an
->> added "bus".
->> 
->> I booted v2 of patch 10 and this one and everything looks identical to
->> upstream.
->
-> Ah, many thanks, this was on my todo list to fix up today.
->
-> But you renamed the sysfs files when you added "bus" to the function
-> names, are you sure you want to do that?  I don't mind, but if you
-> happen to have userspace tools that look at those files, they just broke
-> :(
+looks like it's not tagged as ID_INPUT_MOUSE by the default udev rules
+because for that we need x/y axes (either relative for real mice or absolute
+ones for the VMWare USB mouse). This keyboard only has buttons though. So it
+gets ID_INPUT_KEYBOARD for the keys, but no ID_INPUT_MOUSE.
 
-Ugh crap, no that won't work.
+Google isn't overly forthcoming on "DELL Dell USB Entry Keyboard" but the
+few pictures I can find all point to a keyboard that doesn't have any
+physical mouse buttons at all. Does yours have buttons? Can you post a
+picture of it somewhere?
 
-I didn't see it when I tested because my machine doesn't have the CMO
-feature enabled.
-
-I guess we have to open code some of the BUS_ATTR_RO() etc. so we can
-avoid the name clash.
-
-I'll try and get it fixed later today.
-
-cheers
+Cheers,
+   Peter
