@@ -1,29 +1,23 @@
-Return-Path: <gregkh@linuxfoundation.org>
-Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
- [140.211.169.12])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mhiramat@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wk63R55zLzDqLt
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Jun 2017 23:39:31 +1000 (AEST)
-Date: Thu, 8 Jun 2017 15:39:23 +0200
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linux-kernel@vger.kernel.org,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Vineet Gupta <vgupta@synopsys.com>,
- Bart Van Assche <bart.vanassche@sandisk.com>,
- Robin Murphy <robin.murphy@arm.com>, Joerg Roedel <jroedel@suse.de>,
- Johan Hovold <johan@kernel.org>, Alexey Kardashevskiy <aik@ozlabs.ru>,
- Krzysztof Kozlowski <krzk@kernel.org>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 11/16] powerpc: vio_cmo: use dev_groups and not dev_attrs
- for bus_type
-Message-ID: <20170608133923.GA17811@kroah.com>
-References: <20170606192221.1617-1-gregkh@linuxfoundation.org>
- <20170606192221.1617-12-gregkh@linuxfoundation.org>
- <87y3t2d3o5.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <87y3t2d3o5.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wk68h6sY1zDqN2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Jun 2017 23:44:04 +1000 (AEST)
+Date: Thu, 8 Jun 2017 22:43:54 +0900
+From: Masami Hiramatsu <mhiramat@kernel.org>
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, Ananth N Mavinakayanahalli
+ <ananth@linux.vnet.ibm.com>, Masami Hiramatsu <mhiramat@kernel.org>, Steven
+ Rostedt <rostedt@goodmis.org>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v2 1/4] powerpc/kprobes: Pause function_graph tracing
+ during jprobes handling
+Message-Id: <20170608224354.495446a0cf6144b67816aa46@kernel.org>
+In-Reply-To: <309db8dc9b7d60b1264d277bd815403fbd2d6545.1496309487.git.naveen.n.rao@linux.vnet.ibm.com>
+References: <cover.1496309487.git.naveen.n.rao@linux.vnet.ibm.com>
+ <309db8dc9b7d60b1264d277bd815403fbd2d6545.1496309487.git.naveen.n.rao@linux.vnet.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,45 +27,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jun 08, 2017 at 11:12:10PM +1000, Michael Ellerman wrote:
-> Greg Kroah-Hartman <gregkh@linuxfoundation.org> writes:
+On Thu,  1 Jun 2017 16:18:15 +0530
+"Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
+
+> This fixes a crash when function_graph and jprobes are used together.
+> This is essentially commit 237d28db036e ("ftrace/jprobes/x86: Fix
+> conflict between jprobes and function graph tracing"), but for powerpc.
 > 
-> > The dev_attrs field has long been "depreciated" and is finally being
-> > removed, so move the driver to use the "correct" dev_groups field
-> > instead for struct bus_type.
-> >
-> > Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> > Cc: Paul Mackerras <paulus@samba.org>
-> > Cc: Michael Ellerman <mpe@ellerman.id.au>
-> > Cc: Vineet Gupta <vgupta@synopsys.com>
-> > Cc: Bart Van Assche <bart.vanassche@sandisk.com>
-> > Cc: Robin Murphy <robin.murphy@arm.com>
-> > Cc: Joerg Roedel <jroedel@suse.de>
-> > Cc: Johan Hovold <johan@kernel.org>
-> > Cc: Alexey Kardashevskiy <aik@ozlabs.ru>
-> > Cc: Krzysztof Kozlowski <krzk@kernel.org>
-> > Cc: <linuxppc-dev@lists.ozlabs.org>
-> > Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-> > ---
-> >  arch/powerpc/platforms/pseries/vio.c | 37 +++++++++++++++++++++---------------
-> >  1 file changed, 22 insertions(+), 15 deletions(-)
+> Jprobes breaks function_graph tracing since the jprobe hook needs to use
+> jprobe_return(), which never returns back to the hook, but instead to
+> the original jprobe'd function. The solution is to momentarily pause
+> function_graph tracing before invoking the jprobe hook and re-enable it
+> when returning back to the original jprobe'd function.
 > 
-> This one needed a bit more work to get building, the incremental diff is
-> below. We need a forward declaration of name, devspec and modalias,
-> which is a bit weird, but that's how the code is currently structured.
-> And there's dev and bus attributes with the same name, so that needed an
-> added "bus".
+> Fixes: 6794c78243bfd ("powerpc64: port of the function graph tracer")
+> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+
+Acked-by: Masami Hiramatsu <mhiramat@kernel.org>
+
+Thanks!
+
+> ---
+> v2: No changes since v1.
 > 
-> I booted v2 of patch 10 and this one and everything looks identical to
-> upstream.
+>  arch/powerpc/kernel/kprobes.c | 11 +++++++++++
+>  1 file changed, 11 insertions(+)
+> 
+> diff --git a/arch/powerpc/kernel/kprobes.c b/arch/powerpc/kernel/kprobes.c
+> index e1fb95385a9e..0554d6e66194 100644
+> --- a/arch/powerpc/kernel/kprobes.c
+> +++ b/arch/powerpc/kernel/kprobes.c
+> @@ -610,6 +610,15 @@ int setjmp_pre_handler(struct kprobe *p, struct pt_regs *regs)
+>  	regs->gpr[2] = (unsigned long)(((func_descr_t *)jp->entry)->toc);
+>  #endif
+>  
+> +	/*
+> +	 * jprobes use jprobe_return() which skips the normal return
+> +	 * path of the function, and this messes up the accounting of the
+> +	 * function graph tracer.
+> +	 *
+> +	 * Pause function graph tracing while performing the jprobe function.
+> +	 */
+> +	pause_graph_tracing();
+> +
+>  	return 1;
+>  }
+>  NOKPROBE_SYMBOL(setjmp_pre_handler);
+> @@ -635,6 +644,8 @@ int longjmp_break_handler(struct kprobe *p, struct pt_regs *regs)
+>  	 * saved regs...
+>  	 */
+>  	memcpy(regs, &kcb->jprobe_saved_regs, sizeof(struct pt_regs));
+> +	/* It's OK to start function graph tracing again */
+> +	unpause_graph_tracing();
+>  	preempt_enable_no_resched();
+>  	return 1;
+>  }
+> -- 
+> 2.12.2
+> 
 
-Ah, many thanks, this was on my todo list to fix up today.
 
-But you renamed the sysfs files when you added "bus" to the function
-names, are you sure you want to do that?  I don't mind, but if you
-happen to have userspace tools that look at those files, they just broke
-:(
-
-thanks,
-
-greg k-h
+-- 
+Masami Hiramatsu <mhiramat@kernel.org>
