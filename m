@@ -2,8 +2,8 @@ Return-Path: <BATV+eb06f239ea6f59aeb59b+5037+infradead.org+hch@bombadil.srs.infr
 Received: from bombadil.infradead.org (bombadil.infradead.org [65.50.211.133])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
  bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wk5nf2Q19zDqLV
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Jun 2017 23:27:34 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wk5nn6mKRzDqLK
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Jun 2017 23:27:41 +1000 (AEST)
 From: Christoph Hellwig <hch@lst.de>
 To: x86@kernel.org, linux-arm-kernel@lists.infradead.org,
  xen-devel@lists.xenproject.org, linux-c6x-dev@linux-c6x.org,
@@ -16,9 +16,9 @@ To: x86@kernel.org, linux-arm-kernel@lists.infradead.org,
  linux-samsung-soc@vger.kernel.org, iommu@lists.linux-foundation.org,
  netdev@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 16/44] arm64: remove DMA_ERROR_CODE
-Date: Thu,  8 Jun 2017 15:25:41 +0200
-Message-Id: <20170608132609.32662-17-hch@lst.de>
+Subject: [PATCH 18/44] iommu/amd: implement ->mapping_error
+Date: Thu,  8 Jun 2017 15:25:43 +0200
+Message-Id: <20170608132609.32662-19-hch@lst.de>
 In-Reply-To: <20170608132609.32662-1-hch@lst.de>
 References: <20170608132609.32662-1-hch@lst.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -30,50 +30,90 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The dma alloc interface returns an error by return NULL, and the
-mapping interfaces rely on the mapping_error method, which the dummy
-ops already implement correctly.
-
-Thus remove the DMA_ERROR_CODE define.
+DMA_ERROR_CODE is going to go away, so don't rely on it.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- arch/arm64/include/asm/dma-mapping.h | 1 -
- arch/arm64/mm/dma-mapping.c          | 3 +--
- 2 files changed, 1 insertion(+), 3 deletions(-)
+ drivers/iommu/amd_iommu.c | 18 +++++++++++++-----
+ 1 file changed, 13 insertions(+), 5 deletions(-)
 
-diff --git a/arch/arm64/include/asm/dma-mapping.h b/arch/arm64/include/asm/dma-mapping.h
-index 5392dbeffa45..cf8fc8f05580 100644
---- a/arch/arm64/include/asm/dma-mapping.h
-+++ b/arch/arm64/include/asm/dma-mapping.h
-@@ -24,7 +24,6 @@
- #include <xen/xen.h>
- #include <asm/xen/hypervisor.h>
+diff --git a/drivers/iommu/amd_iommu.c b/drivers/iommu/amd_iommu.c
+index 63cacf5d6cf2..d41280e869de 100644
+--- a/drivers/iommu/amd_iommu.c
++++ b/drivers/iommu/amd_iommu.c
+@@ -54,6 +54,8 @@
+ #include "amd_iommu_types.h"
+ #include "irq_remapping.h"
  
--#define DMA_ERROR_CODE	(~(dma_addr_t)0)
- extern const struct dma_map_ops dummy_dma_ops;
++#define AMD_IOMMU_MAPPING_ERROR	0
++
+ #define CMD_SET_TYPE(cmd, t) ((cmd)->data[1] |= ((t) << 28))
  
- static inline const struct dma_map_ops *get_arch_dma_ops(struct bus_type *bus)
-diff --git a/arch/arm64/mm/dma-mapping.c b/arch/arm64/mm/dma-mapping.c
-index 3216e098c058..147fbb907a2f 100644
---- a/arch/arm64/mm/dma-mapping.c
-+++ b/arch/arm64/mm/dma-mapping.c
-@@ -184,7 +184,6 @@ static void *__dma_alloc(struct device *dev, size_t size,
- no_map:
- 	__dma_free_coherent(dev, size, ptr, *dma_handle, attrs);
- no_mem:
--	*dma_handle = DMA_ERROR_CODE;
- 	return NULL;
- }
+ #define LOOP_TIMEOUT	100000
+@@ -2394,7 +2396,7 @@ static dma_addr_t __map_single(struct device *dev,
+ 	paddr &= PAGE_MASK;
  
-@@ -487,7 +486,7 @@ static dma_addr_t __dummy_map_page(struct device *dev, struct page *page,
- 				   enum dma_data_direction dir,
- 				   unsigned long attrs)
- {
+ 	address = dma_ops_alloc_iova(dev, dma_dom, pages, dma_mask);
+-	if (address == DMA_ERROR_CODE)
++	if (address == AMD_IOMMU_MAPPING_ERROR)
+ 		goto out;
+ 
+ 	prot = dir2prot(direction);
+@@ -2431,7 +2433,7 @@ static dma_addr_t __map_single(struct device *dev,
+ 
+ 	dma_ops_free_iova(dma_dom, address, pages);
+ 
 -	return DMA_ERROR_CODE;
-+	return 0;
++	return AMD_IOMMU_MAPPING_ERROR;
  }
  
- static void __dummy_unmap_page(struct device *dev, dma_addr_t dev_addr,
+ /*
+@@ -2483,7 +2485,7 @@ static dma_addr_t map_page(struct device *dev, struct page *page,
+ 	if (PTR_ERR(domain) == -EINVAL)
+ 		return (dma_addr_t)paddr;
+ 	else if (IS_ERR(domain))
+-		return DMA_ERROR_CODE;
++		return AMD_IOMMU_MAPPING_ERROR;
+ 
+ 	dma_mask = *dev->dma_mask;
+ 	dma_dom = to_dma_ops_domain(domain);
+@@ -2560,7 +2562,7 @@ static int map_sg(struct device *dev, struct scatterlist *sglist,
+ 	npages = sg_num_pages(dev, sglist, nelems);
+ 
+ 	address = dma_ops_alloc_iova(dev, dma_dom, npages, dma_mask);
+-	if (address == DMA_ERROR_CODE)
++	if (address == AMD_IOMMU_MAPPING_ERROR)
+ 		goto out_err;
+ 
+ 	prot = dir2prot(direction);
+@@ -2683,7 +2685,7 @@ static void *alloc_coherent(struct device *dev, size_t size,
+ 	*dma_addr = __map_single(dev, dma_dom, page_to_phys(page),
+ 				 size, DMA_BIDIRECTIONAL, dma_mask);
+ 
+-	if (*dma_addr == DMA_ERROR_CODE)
++	if (*dma_addr == AMD_IOMMU_MAPPING_ERROR)
+ 		goto out_free;
+ 
+ 	return page_address(page);
+@@ -2732,6 +2734,11 @@ static int amd_iommu_dma_supported(struct device *dev, u64 mask)
+ 	return check_device(dev);
+ }
+ 
++static int amd_iommu_mapping_error(struct device *dev, dma_addr_t dma_addr)
++{
++	return dma_addr == AMD_IOMMU_MAPPING_ERROR;
++}
++
+ static const struct dma_map_ops amd_iommu_dma_ops = {
+ 	.alloc		= alloc_coherent,
+ 	.free		= free_coherent,
+@@ -2740,6 +2747,7 @@ static const struct dma_map_ops amd_iommu_dma_ops = {
+ 	.map_sg		= map_sg,
+ 	.unmap_sg	= unmap_sg,
+ 	.dma_supported	= amd_iommu_dma_supported,
++	.mapping_error	= amd_iommu_mapping_error,
+ };
+ 
+ static int init_reserved_iova_ranges(void)
 -- 
 2.11.0
