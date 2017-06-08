@@ -1,20 +1,20 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
- [IPv6:2607:f8b0:400e:c00::242])
+Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
+ [IPv6:2607:f8b0:400e:c00::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wk8fQ2mqMzDqQ7
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Jun 2017 01:36:30 +1000 (AEST)
-Received: by mail-pf0-x242.google.com with SMTP id y7so5530721pfd.3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 08 Jun 2017 08:36:30 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wk8zf3mlvzDq5b
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Jun 2017 01:51:26 +1000 (AEST)
+Received: by mail-pf0-x243.google.com with SMTP id f27so5592019pfe.0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 08 Jun 2017 08:51:26 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
-Cc: Nicholas Piggin <npiggin@gmail.com>
-Subject: [PATCH 4/4] powerpc/64s: context switch avoid cpabort
-Date: Fri,  9 Jun 2017 01:36:09 +1000
-Message-Id: <20170608153609.19217-4-npiggin@gmail.com>
-In-Reply-To: <20170608153609.19217-1-npiggin@gmail.com>
-References: <20170608153609.19217-1-npiggin@gmail.com>
+Cc: Nicholas Piggin <npiggin@gmail.com>,
+ "Gautham R . Shenoy" <ego@linux.vnet.ibm.com>,
+ "Shreyas B . Prabhu" <shreyas@linux.vnet.ibm.com>
+Subject: [PATCH 00/14] idle performance improvements
+Date: Fri,  9 Jun 2017 01:50:59 +1000
+Message-Id: <20170608155113.21300-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,123 +24,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The ISA v3.0B copy-paste facility only requires cpabort when switching
-to a process that has foreign real addresses mapped (direct access to
-accelerators), to clear a potential copy buffer filled by a previous
-thread. There is no accelerator driver implemented yet, so cpabort can
-be removed. It can be be re-added when a driver is implemented.
+These patches improve performance of idle sleep and wake. The
+first patches rework the lazy-irq handling of idle code a bit
+to make it simpler first.
 
-POWER9 DD1 requires the copy buffer to always be cleared on context
-switch, but if accelerators are not in use, then an unpaired copy from
-a dummy region is sufficient to clear data out of the copy buffer.
+Any review would be welcome. I've tested this with some
+performance and simple correctness tests on POWER8, POWER9,
+and with KVM on POWER8, so it's about ready to review now
+I hope.
 
-This increases context switch performance by about 5% on POWER9.
+Thanks,
+Nick
 
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
----
- arch/powerpc/include/asm/ppc-opcode.h |  8 ++++----
- arch/powerpc/kernel/entry_64.S        |  9 ---------
- arch/powerpc/kernel/process.c         | 27 ++++++++++++++++++++++++++-
- 3 files changed, 30 insertions(+), 14 deletions(-)
+Nicholas Piggin (14):
+  powerpc/64s: idle move soft interrupt mask logic into C code
+  powerpc/64s: idle hotplug lazy-irq simplification
+  powerpc/64s: idle provide a default idle for POWER9
+  powerpc/64s: idle process interrupts from system reset wakeup
+  powerpc/64s: msgclr when handling doorbell exceptions
+  powerpc/64s: interrupt replay balance the return branch predictor
+  powerpc/64s: idle branch to handler with virtual mode offset
+  powerpc/64s: idle avoid SRR usage in idle sleep/wake paths
+  powerpc/64s: idle hmi wakeup is unlikely
+  powerpc/64s: cpuidle set polling before enabling irqs
+  powerpc/64s: cpuidle read mostly for common globals
+  powerpc/64s: cpuidle no memory barrier after break from idle
+  powerpc/64: runlatch CTRL[RUN] set optimisation
+  powerpc/64s: idle runlatch switch is done with MSR[EE]=0
 
-diff --git a/arch/powerpc/include/asm/ppc-opcode.h b/arch/powerpc/include/asm/ppc-opcode.h
-index 3a8d278e7421..3b6bbf5a8683 100644
---- a/arch/powerpc/include/asm/ppc-opcode.h
-+++ b/arch/powerpc/include/asm/ppc-opcode.h
-@@ -189,8 +189,7 @@
- /* sorted alphabetically */
- #define PPC_INST_BHRBE			0x7c00025c
- #define PPC_INST_CLRBHRB		0x7c00035c
--#define PPC_INST_COPY			0x7c00060c
--#define PPC_INST_COPY_FIRST		0x7c20060c
-+#define PPC_INST_COPY			0x7c20060c
- #define PPC_INST_CP_ABORT		0x7c00068c
- #define PPC_INST_DCBA			0x7c0005ec
- #define PPC_INST_DCBA_MASK		0xfc0007fe
-@@ -223,8 +222,7 @@
- #define PPC_INST_MSGSNDP		0x7c00011c
- #define PPC_INST_MTTMR			0x7c0003dc
- #define PPC_INST_NOP			0x60000000
--#define PPC_INST_PASTE			0x7c00070c
--#define PPC_INST_PASTE_LAST		0x7c20070d
-+#define PPC_INST_PASTE			0x7c20070d
- #define PPC_INST_POPCNTB		0x7c0000f4
- #define PPC_INST_POPCNTB_MASK		0xfc0007fe
- #define PPC_INST_POPCNTD		0x7c0003f4
-@@ -392,6 +390,8 @@
- 
- /* Deal with instructions that older assemblers aren't aware of */
- #define	PPC_CP_ABORT		stringify_in_c(.long PPC_INST_CP_ABORT)
-+#define	PPC_COPY(a, b)		stringify_in_c(.long PPC_INST_COPY | \
-+					___PPC_RA(a) | ___PPC_RB(b))
- #define	PPC_DCBAL(a, b)		stringify_in_c(.long PPC_INST_DCBAL | \
- 					__PPC_RA(a) | __PPC_RB(b))
- #define	PPC_DCBZL(a, b)		stringify_in_c(.long PPC_INST_DCBZL | \
-diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-index fb143859cc68..da9486e2fd89 100644
---- a/arch/powerpc/kernel/entry_64.S
-+++ b/arch/powerpc/kernel/entry_64.S
-@@ -536,15 +536,6 @@ _GLOBAL(_switch)
- 	 * which contains larx/stcx, which will clear any reservation
- 	 * of the task being switched.
- 	 */
--
--BEGIN_FTR_SECTION
--/*
-- * A cp_abort (copy paste abort) here ensures that when context switching, a
-- * copy from one process can't leak into the paste of another.
-- */
--	PPC_CP_ABORT
--END_FTR_SECTION_IFSET(CPU_FTR_ARCH_300)
--
- #ifdef CONFIG_PPC_BOOK3S
- /* Cancel all explict user streams as they will have no use after context
-  * switch and will stop the HW from creating streams itself
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index 45faa9a32a01..6273b5d5baec 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -1137,6 +1137,11 @@ static inline void restore_sprs(struct thread_struct *old_thread,
- #endif
- }
- 
-+#ifdef CONFIG_PPC_BOOK3S_64
-+#define CP_SIZE 128
-+static const u8 dummy_copy_buffer[CP_SIZE] __attribute__((aligned(CP_SIZE)));
-+#endif
-+
- struct task_struct *__switch_to(struct task_struct *prev,
- 	struct task_struct *new)
- {
-@@ -1226,8 +1231,28 @@ struct task_struct *__switch_to(struct task_struct *prev,
- 		batch->active = 1;
- 	}
- 
--	if (current_thread_info()->task->thread.regs)
-+	if (current_thread_info()->task->thread.regs) {
- 		restore_math(current_thread_info()->task->thread.regs);
-+
-+		/*
-+		 * The copy-paste buffer can only store into foreign real
-+		 * addresses, so unprivileged processes can not see the
-+		 * data or use it in any way unless they have foreign real
-+		 * mappings. We don't have a VAS driver that allocates those
-+		 * yet, so no cpabort is required.
-+		 */
-+		if (cpu_has_feature(CPU_FTR_POWER9_DD1)) {
-+			/*
-+			 * DD1 allows paste into normal system memory, so we
-+			 * do an unpaired copy here to clear the buffer and
-+			 * prevent a covert channel being set up.
-+			 *
-+			 * cpabort is not used because it is quite expensive.
-+			 */
-+			asm volatile(PPC_COPY(%0, %1)
-+					: : "r"(dummy_copy_buffer), "r"(0));
-+		}
-+	}
- #endif /* CONFIG_PPC_STD_MMU_64 */
- 
- 	return last;
+ arch/powerpc/include/asm/dbell.h         |  13 +++
+ arch/powerpc/include/asm/exception-64s.h |  17 +++-
+ arch/powerpc/include/asm/hw_irq.h        |   1 +
+ arch/powerpc/include/asm/machdep.h       |   1 +
+ arch/powerpc/include/asm/ppc-opcode.h    |   3 +
+ arch/powerpc/include/asm/processor.h     |  10 +--
+ arch/powerpc/kernel/asm-offsets.c        |   1 +
+ arch/powerpc/kernel/exceptions-64s.S     |  62 ++++++++++++--
+ arch/powerpc/kernel/idle_book3s.S        | 137 +++++++++----------------------
+ arch/powerpc/kernel/irq.c                |   3 +-
+ arch/powerpc/kernel/process.c            |  12 +--
+ arch/powerpc/kvm/book3s_hv_rmhandlers.S  |   8 +-
+ arch/powerpc/platforms/powernv/idle.c    | 104 +++++++++++++++++++----
+ arch/powerpc/platforms/powernv/smp.c     |  31 ++++---
+ arch/powerpc/platforms/powernv/subcore.c |   3 +-
+ drivers/cpuidle/cpuidle-powernv.c        |  37 +++++----
+ drivers/cpuidle/cpuidle-pseries.c        |  22 +++--
+ 17 files changed, 288 insertions(+), 177 deletions(-)
+
 -- 
 2.11.0
