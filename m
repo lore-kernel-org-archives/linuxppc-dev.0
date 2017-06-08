@@ -1,19 +1,18 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
- [IPv6:2607:f8b0:400e:c05::242])
+Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
+ [IPv6:2607:f8b0:400e:c00::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wk8fM1dkkzDqP3
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Jun 2017 01:36:27 +1000 (AEST)
-Received: by mail-pg0-x242.google.com with SMTP id v18so4951224pgb.3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 08 Jun 2017 08:36:27 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wk8fQ2mqMzDqQ7
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Jun 2017 01:36:30 +1000 (AEST)
+Received: by mail-pf0-x242.google.com with SMTP id y7so5530721pfd.3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 08 Jun 2017 08:36:30 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
-Cc: Nicholas Piggin <npiggin@gmail.com>, Peter Zijlstra <peterz@infradead.org>
-Subject: [PATCH 3/4] powerpc/64: context switch an hwsync instruction can be
- avoided
-Date: Fri,  9 Jun 2017 01:36:08 +1000
-Message-Id: <20170608153609.19217-3-npiggin@gmail.com>
+Cc: Nicholas Piggin <npiggin@gmail.com>
+Subject: [PATCH 4/4] powerpc/64s: context switch avoid cpabort
+Date: Fri,  9 Jun 2017 01:36:09 +1000
+Message-Id: <20170608153609.19217-4-npiggin@gmail.com>
 In-Reply-To: <20170608153609.19217-1-npiggin@gmail.com>
 References: <20170608153609.19217-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,73 +24,123 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The hwsync in the context switch code to prevent MMIO access being
-reordered from the point of view of a single process if it gets
-migrated to a different CPU is not required because there is an hwsync
-performed earlier in the context switch path.
+The ISA v3.0B copy-paste facility only requires cpabort when switching
+to a process that has foreign real addresses mapped (direct access to
+accelerators), to clear a potential copy buffer filled by a previous
+thread. There is no accelerator driver implemented yet, so cpabort can
+be removed. It can be be re-added when a driver is implemented.
 
-Comment this so it's clear enough if anything changes on the scheduler
-or the powerpc sides. Remove the hwsync from _switch.
+POWER9 DD1 requires the copy buffer to always be cleared on context
+switch, but if accelerators are not in use, then an unpaired copy from
+a dummy region is sufficient to clear data out of the copy buffer.
 
-This improves context switch performance by 2-3% on POWER8.
+This increases context switch performance by about 5% on POWER9.
 
-Cc: Peter Zijlstra <peterz@infradead.org>
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/include/asm/barrier.h |  5 +++++
- arch/powerpc/kernel/entry_64.S     | 23 +++++++++++++++++------
- 2 files changed, 22 insertions(+), 6 deletions(-)
+ arch/powerpc/include/asm/ppc-opcode.h |  8 ++++----
+ arch/powerpc/kernel/entry_64.S        |  9 ---------
+ arch/powerpc/kernel/process.c         | 27 ++++++++++++++++++++++++++-
+ 3 files changed, 30 insertions(+), 14 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/barrier.h b/arch/powerpc/include/asm/barrier.h
-index c0deafc212b8..25d42bd3f114 100644
---- a/arch/powerpc/include/asm/barrier.h
-+++ b/arch/powerpc/include/asm/barrier.h
-@@ -74,6 +74,11 @@ do {									\
- 	___p1;								\
- })
+diff --git a/arch/powerpc/include/asm/ppc-opcode.h b/arch/powerpc/include/asm/ppc-opcode.h
+index 3a8d278e7421..3b6bbf5a8683 100644
+--- a/arch/powerpc/include/asm/ppc-opcode.h
++++ b/arch/powerpc/include/asm/ppc-opcode.h
+@@ -189,8 +189,7 @@
+ /* sorted alphabetically */
+ #define PPC_INST_BHRBE			0x7c00025c
+ #define PPC_INST_CLRBHRB		0x7c00035c
+-#define PPC_INST_COPY			0x7c00060c
+-#define PPC_INST_COPY_FIRST		0x7c20060c
++#define PPC_INST_COPY			0x7c20060c
+ #define PPC_INST_CP_ABORT		0x7c00068c
+ #define PPC_INST_DCBA			0x7c0005ec
+ #define PPC_INST_DCBA_MASK		0xfc0007fe
+@@ -223,8 +222,7 @@
+ #define PPC_INST_MSGSNDP		0x7c00011c
+ #define PPC_INST_MTTMR			0x7c0003dc
+ #define PPC_INST_NOP			0x60000000
+-#define PPC_INST_PASTE			0x7c00070c
+-#define PPC_INST_PASTE_LAST		0x7c20070d
++#define PPC_INST_PASTE			0x7c20070d
+ #define PPC_INST_POPCNTB		0x7c0000f4
+ #define PPC_INST_POPCNTB_MASK		0xfc0007fe
+ #define PPC_INST_POPCNTD		0x7c0003f4
+@@ -392,6 +390,8 @@
  
-+/*
-+ * This must resolve to hwsync on SMP for the context switch path.
-+ * See _switch, and core scheduler context switch memory ordering
-+ * comments.
-+ */
- #define smp_mb__before_spinlock()   smp_mb()
- 
- #include <asm-generic/barrier.h>
+ /* Deal with instructions that older assemblers aren't aware of */
+ #define	PPC_CP_ABORT		stringify_in_c(.long PPC_INST_CP_ABORT)
++#define	PPC_COPY(a, b)		stringify_in_c(.long PPC_INST_COPY | \
++					___PPC_RA(a) | ___PPC_RB(b))
+ #define	PPC_DCBAL(a, b)		stringify_in_c(.long PPC_INST_DCBAL | \
+ 					__PPC_RA(a) | __PPC_RB(b))
+ #define	PPC_DCBZL(a, b)		stringify_in_c(.long PPC_INST_DCBZL | \
 diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-index 273a35926534..fb143859cc68 100644
+index fb143859cc68..da9486e2fd89 100644
 --- a/arch/powerpc/kernel/entry_64.S
 +++ b/arch/powerpc/kernel/entry_64.S
-@@ -512,13 +512,24 @@ _GLOBAL(_switch)
- 	std	r23,_CCR(r1)
- 	std	r1,KSP(r3)	/* Set old stack pointer */
- 
--#ifdef CONFIG_SMP
--	/* We need a sync somewhere here to make sure that if the
--	 * previous task gets rescheduled on another CPU, it sees all
--	 * stores it has performed on this one.
-+	/*
-+	 * On SMP kernels, care must be taken because a task may be
-+	 * scheduled off CPUx and on to CPUy. Memory ordering must be
-+	 * considered.
-+	 *
-+	 * Cacheable stores on CPUx will be visible when the task is
-+	 * scheduled on CPUy by virtue of the core scheduler barriers
-+	 * (see "Notes on Program-Order guarantees on SMP systems." in
-+	 * kernel/sched/core.c).
-+	 *
-+	 * Uncacheable stores in the case of involuntary preemption must
-+	 * be taken care of. The smp_mb__before_spin_lock() in __schedule()
-+	 * is implemented as hwsync on powerpc, which orders MMIO too. So
-+	 * long as there is an hwsync in the context switch path, it will
-+	 * be executed on the source CPU after the task has performed
-+	 * all MMIO ops on that CPU, and on the destination CPU before the
-+	 * task performs any MMIO ops there.
+@@ -536,15 +536,6 @@ _GLOBAL(_switch)
+ 	 * which contains larx/stcx, which will clear any reservation
+ 	 * of the task being switched.
  	 */
--	sync
--#endif /* CONFIG_SMP */
+-
+-BEGIN_FTR_SECTION
+-/*
+- * A cp_abort (copy paste abort) here ensures that when context switching, a
+- * copy from one process can't leak into the paste of another.
+- */
+-	PPC_CP_ABORT
+-END_FTR_SECTION_IFSET(CPU_FTR_ARCH_300)
+-
+ #ifdef CONFIG_PPC_BOOK3S
+ /* Cancel all explict user streams as they will have no use after context
+  * switch and will stop the HW from creating streams itself
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index 45faa9a32a01..6273b5d5baec 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -1137,6 +1137,11 @@ static inline void restore_sprs(struct thread_struct *old_thread,
+ #endif
+ }
  
- 	/*
- 	 * The kernel context switch path must contain a spin_lock,
++#ifdef CONFIG_PPC_BOOK3S_64
++#define CP_SIZE 128
++static const u8 dummy_copy_buffer[CP_SIZE] __attribute__((aligned(CP_SIZE)));
++#endif
++
+ struct task_struct *__switch_to(struct task_struct *prev,
+ 	struct task_struct *new)
+ {
+@@ -1226,8 +1231,28 @@ struct task_struct *__switch_to(struct task_struct *prev,
+ 		batch->active = 1;
+ 	}
+ 
+-	if (current_thread_info()->task->thread.regs)
++	if (current_thread_info()->task->thread.regs) {
+ 		restore_math(current_thread_info()->task->thread.regs);
++
++		/*
++		 * The copy-paste buffer can only store into foreign real
++		 * addresses, so unprivileged processes can not see the
++		 * data or use it in any way unless they have foreign real
++		 * mappings. We don't have a VAS driver that allocates those
++		 * yet, so no cpabort is required.
++		 */
++		if (cpu_has_feature(CPU_FTR_POWER9_DD1)) {
++			/*
++			 * DD1 allows paste into normal system memory, so we
++			 * do an unpaired copy here to clear the buffer and
++			 * prevent a covert channel being set up.
++			 *
++			 * cpabort is not used because it is quite expensive.
++			 */
++			asm volatile(PPC_COPY(%0, %1)
++					: : "r"(dummy_copy_buffer), "r"(0));
++		}
++	}
+ #endif /* CONFIG_PPC_STD_MMU_64 */
+ 
+ 	return last;
 -- 
 2.11.0
