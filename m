@@ -1,29 +1,24 @@
-Return-Path: <mopsfelder@gmail.com>
-Received: from mail-qt0-x242.google.com (mail-qt0-x242.google.com
- [IPv6:2607:f8b0:400d:c0d::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <SRS0=5Jap=5N=goodmis.org=rostedt@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wk8ZQ38jzzDqLs
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Jun 2017 01:33:02 +1000 (AEST)
-Received: by mail-qt0-x242.google.com with SMTP id o21so8913458qtb.1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 08 Jun 2017 08:33:02 -0700 (PDT)
-Subject: Re: [PATCH] include/linux/vfio.h: Guard powerpc-specific functions
- with CONFIG_VFIO_SPAPR_EEH
-To: Alexey Kardashevskiy <aik@ozlabs.ru>,
- Michael Ellerman <mpe@ellerman.id.au>, kbuild test robot <lkp@intel.com>
-Cc: kbuild-all@01.org, linux-kernel@vger.kernel.org, kvm@vger.kernel.org,
- Alex Williamson <alex.williamson@redhat.com>, linuxppc-dev@lists.ozlabs.org
-References: <201706080005.vXjRK5G3%fengguang.wu@intel.com>
- <a0d62075-cb00-c69b-7f39-95a3b53f4061@ozlabs.ru>
- <871squemf2.fsf@concordia.ellerman.id.au>
- <e426fff2-ad3e-64c6-7c6b-2c37c16c00c1@gmail.com>
- <dc26bfd2-9ba6-b3bd-afa9-ed0d801757b7@ozlabs.ru>
-From: =?UTF-8?Q?Murilo_Opsfelder_Ara=c3=bajo?= <mopsfelder@gmail.com>
-Message-ID: <edf52bc1-977d-27bc-de8d-a5721e1c3f59@gmail.com>
-Date: Thu, 8 Jun 2017 12:32:54 -0300
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wk8Zj1twqzDqNt
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Jun 2017 01:33:17 +1000 (AEST)
+Date: Thu, 8 Jun 2017 11:33:13 -0400
+From: Steven Rostedt <rostedt@goodmis.org>
+To: Masami Hiramatsu <mhiramat@kernel.org>
+Cc: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>, Michael Ellerman
+ <mpe@ellerman.id.au>, Ananth N Mavinakayanahalli
+ <ananth@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v2 1/4] powerpc/kprobes: Pause function_graph tracing
+ during jprobes handling
+Message-ID: <20170608113313.1d882344@gandalf.local.home>
+In-Reply-To: <20170608224354.495446a0cf6144b67816aa46@kernel.org>
+References: <cover.1496309487.git.naveen.n.rao@linux.vnet.ibm.com>
+ <309db8dc9b7d60b1264d277bd815403fbd2d6545.1496309487.git.naveen.n.rao@linux.vnet.ibm.com>
+ <20170608224354.495446a0cf6144b67816aa46@kernel.org>
 MIME-Version: 1.0
-In-Reply-To: <dc26bfd2-9ba6-b3bd-afa9-ed0d801757b7@ozlabs.ru>
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,29 +28,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/08/2017 10:10 AM, Alexey Kardashevskiy wrote:
-[...]
-> The config you attached in the first mail has CONFIG_VFIO_SPAPR_EEH=m, here
-> is my confusion. The config from the link below does not have KVM_BOOK3S_64
-> which selects SPAPR_TCE_IOMMU and which in turn selects VFIO_IOMMU_SPAPR_TCE.
+On Thu, 8 Jun 2017 22:43:54 +0900
+Masami Hiramatsu <mhiramat@kernel.org> wrote:
+
+> On Thu,  1 Jun 2017 16:18:15 +0530
+> "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
 > 
-> So
-> https://github.com/0day-ci/linux/commit/36ed1ddb05e132aa3cfbb610f0f8402a0774da12
-> looks correct.
+> > This fixes a crash when function_graph and jprobes are used together.
+> > This is essentially commit 237d28db036e ("ftrace/jprobes/x86: Fix
+> > conflict between jprobes and function graph tracing"), but for powerpc.
+> > 
+> > Jprobes breaks function_graph tracing since the jprobe hook needs to use
+> > jprobe_return(), which never returns back to the hook, but instead to
+> > the original jprobe'd function. The solution is to momentarily pause
+> > function_graph tracing before invoking the jprobe hook and re-enable it
+> > when returning back to the original jprobe'd function.
+> > 
+> > Fixes: 6794c78243bfd ("powerpc64: port of the function graph tracer")
+> > Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>  
+> 
+> Acked-by: Masami Hiramatsu <mhiramat@kernel.org>
 
-It wasn't me that attached the .config.gz, it was this 0dayci robot.
+For what it's worth...
 
-When CONFIG_VFIO_SPAPR_EEH=m, there is no definition of it in autoconf.h, only
-CONFIG_VFIO_SPAPR_EEH_MODULE is defined:
+Acked-by: Steven Rostedt (VMware) <rostedt@goodmis.org>
 
-    $ grep 'VFIO_SPAPR_EEH' ./include/generated/autoconf.h
-    #define CONFIG_VFIO_SPAPR_EEH_MODULE 1
+-- Steve
 
-In this case, `#ifdef CONFIG_VFIO_SPAPR_EEH` will be false. That's why my v1
-patch failed with the 0dayci .config and robot reported back.
-
-This was addressed in my v2 patch using the IS_ENABLED() macro, which checks for
-both CONFIG_<name> and CONFIG_<name>_MODULE definitions.
-
--- 
-Murilo
+> 
+> Thanks!
+> 
+> > ---
+> > v2: No changes since v1.
+> > 
+> >  arch/powerpc/kernel/kprobes.c | 11 +++++++++++
+> >  1 file changed, 11 insertions(+)
+> > 
+> > diff --git a/arch/powerpc/kernel/kprobes.c b/arch/powerpc/kernel/kprobes.c
+> > index e1fb95385a9e..0554d6e66194 100644
+> > --- a/arch/powerpc/kernel/kprobes.c
+> > +++ b/arch/powerpc/kernel/kprobes.c
+> > @@ -610,6 +610,15 @@ int setjmp_pre_handler(struct kprobe *p, struct pt_regs *regs)
+> >  	regs->gpr[2] = (unsigned long)(((func_descr_t *)jp->entry)->toc);
+> >  #endif
+> >  
+> > +	/*
+> > +	 * jprobes use jprobe_return() which skips the normal return
+> > +	 * path of the function, and this messes up the accounting of the
+> > +	 * function graph tracer.
+> > +	 *
+> > +	 * Pause function graph tracing while performing the jprobe function.
+> > +	 */
+> > +	pause_graph_tracing();
+> > +
+> >  	return 1;
+> >  }
+> >  NOKPROBE_SYMBOL(setjmp_pre_handler);
+> > @@ -635,6 +644,8 @@ int longjmp_break_handler(struct kprobe *p, struct pt_regs *regs)
+> >  	 * saved regs...
+> >  	 */
+> >  	memcpy(regs, &kcb->jprobe_saved_regs, sizeof(struct pt_regs));
+> > +	/* It's OK to start function graph tracing again */
+> > +	unpause_graph_tracing();
+> >  	preempt_enable_no_resched();
+> >  	return 1;
+> >  }
+> > -- 
+> > 2.12.2
+> >   
+> 
+> 
