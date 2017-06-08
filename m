@@ -2,8 +2,8 @@ Return-Path: <BATV+eb06f239ea6f59aeb59b+5037+infradead.org+hch@bombadil.srs.infr
 Received: from bombadil.infradead.org (bombadil.infradead.org [65.50.211.133])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
  bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wk5mZ0yn0zDqMW
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Jun 2017 23:26:38 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wk5ml1Jd3zDqLb
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Jun 2017 23:26:47 +1000 (AEST)
 From: Christoph Hellwig <hch@lst.de>
 To: x86@kernel.org, linux-arm-kernel@lists.infradead.org,
  xen-devel@lists.xenproject.org, linux-c6x-dev@linux-c6x.org,
@@ -16,9 +16,9 @@ To: x86@kernel.org, linux-arm-kernel@lists.infradead.org,
  linux-samsung-soc@vger.kernel.org, iommu@lists.linux-foundation.org,
  netdev@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 04/44] drm/exynos: don't use DMA_ERROR_CODE
-Date: Thu,  8 Jun 2017 15:25:29 +0200
-Message-Id: <20170608132609.32662-5-hch@lst.de>
+Subject: [PATCH 05/44] drm/armada: don't abuse DMA_ERROR_CODE
+Date: Thu,  8 Jun 2017 15:25:30 +0200
+Message-Id: <20170608132609.32662-6-hch@lst.de>
 In-Reply-To: <20170608132609.32662-1-hch@lst.de>
 References: <20170608132609.32662-1-hch@lst.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -30,32 +30,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DMA_ERROR_CODE already isn't a valid API to user for drivers and will
-go away soon.  exynos_drm_fb_dma_addr uses it a an error return when
-the passed in index is invalid, but the callers never check for it
-but instead pass the address straight to the hardware.
-
-Add a WARN_ON instead and just return 0.
+dev_addr isn't even a dma_addr_t, and DMA_ERROR_CODE has never been
+a valid driver API.  Add a bool mapped flag instead.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- drivers/gpu/drm/exynos/exynos_drm_fb.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/gpu/drm/armada/armada_fb.c  | 2 +-
+ drivers/gpu/drm/armada/armada_gem.c | 5 ++---
+ drivers/gpu/drm/armada/armada_gem.h | 1 +
+ 3 files changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/gpu/drm/exynos/exynos_drm_fb.c b/drivers/gpu/drm/exynos/exynos_drm_fb.c
-index c77a5aced81a..d48fd7c918f8 100644
---- a/drivers/gpu/drm/exynos/exynos_drm_fb.c
-+++ b/drivers/gpu/drm/exynos/exynos_drm_fb.c
-@@ -181,8 +181,8 @@ dma_addr_t exynos_drm_fb_dma_addr(struct drm_framebuffer *fb, int index)
- {
- 	struct exynos_drm_fb *exynos_fb = to_exynos_fb(fb);
+diff --git a/drivers/gpu/drm/armada/armada_fb.c b/drivers/gpu/drm/armada/armada_fb.c
+index 2a7eb6817c36..92e6b08ea64a 100644
+--- a/drivers/gpu/drm/armada/armada_fb.c
++++ b/drivers/gpu/drm/armada/armada_fb.c
+@@ -133,7 +133,7 @@ static struct drm_framebuffer *armada_fb_create(struct drm_device *dev,
+ 	}
  
--	if (index >= MAX_FB_BUFFER)
--		return DMA_ERROR_CODE;
-+	if (WARN_ON_ONCE(index >= MAX_FB_BUFFER))
-+		return 0;
+ 	/* Framebuffer objects must have a valid device address for scanout */
+-	if (obj->dev_addr == DMA_ERROR_CODE) {
++	if (!obj->mapped) {
+ 		ret = -EINVAL;
+ 		goto err_unref;
+ 	}
+diff --git a/drivers/gpu/drm/armada/armada_gem.c b/drivers/gpu/drm/armada/armada_gem.c
+index d6c2a5d190eb..a76ca21d063b 100644
+--- a/drivers/gpu/drm/armada/armada_gem.c
++++ b/drivers/gpu/drm/armada/armada_gem.c
+@@ -175,6 +175,7 @@ armada_gem_linear_back(struct drm_device *dev, struct armada_gem_object *obj)
  
- 	return exynos_fb->dma_addr[index];
+ 		obj->phys_addr = obj->linear->start;
+ 		obj->dev_addr = obj->linear->start;
++		obj->mapped = true;
+ 	}
+ 
+ 	DRM_DEBUG_DRIVER("obj %p phys %#llx dev %#llx\n", obj,
+@@ -205,7 +206,6 @@ armada_gem_alloc_private_object(struct drm_device *dev, size_t size)
+ 		return NULL;
+ 
+ 	drm_gem_private_object_init(dev, &obj->obj, size);
+-	obj->dev_addr = DMA_ERROR_CODE;
+ 
+ 	DRM_DEBUG_DRIVER("alloc private obj %p size %zu\n", obj, size);
+ 
+@@ -229,8 +229,6 @@ static struct armada_gem_object *armada_gem_alloc_object(struct drm_device *dev,
+ 		return NULL;
+ 	}
+ 
+-	obj->dev_addr = DMA_ERROR_CODE;
+-
+ 	mapping = obj->obj.filp->f_mapping;
+ 	mapping_set_gfp_mask(mapping, GFP_HIGHUSER | __GFP_RECLAIMABLE);
+ 
+@@ -610,5 +608,6 @@ int armada_gem_map_import(struct armada_gem_object *dobj)
+ 		return -EINVAL;
+ 	}
+ 	dobj->dev_addr = sg_dma_address(dobj->sgt->sgl);
++	dobj->mapped = true;
+ 	return 0;
  }
+diff --git a/drivers/gpu/drm/armada/armada_gem.h b/drivers/gpu/drm/armada/armada_gem.h
+index b88d2b9853c7..6e524e0676bb 100644
+--- a/drivers/gpu/drm/armada/armada_gem.h
++++ b/drivers/gpu/drm/armada/armada_gem.h
+@@ -16,6 +16,7 @@ struct armada_gem_object {
+ 	void			*addr;
+ 	phys_addr_t		phys_addr;
+ 	resource_size_t		dev_addr;
++	bool			mapped;
+ 	struct drm_mm_node	*linear;	/* for linear backed */
+ 	struct page		*page;		/* for page backed */
+ 	struct sg_table		*sgt;		/* for imported */
 -- 
 2.11.0
