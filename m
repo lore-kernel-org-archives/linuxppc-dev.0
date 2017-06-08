@@ -1,24 +1,18 @@
-Return-Path: <SRS0=5Jap=5N=goodmis.org=rostedt@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
+ [IPv6:2607:f8b0:400e:c00::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wk8Zj1twqzDqNt
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Jun 2017 01:33:17 +1000 (AEST)
-Date: Thu, 8 Jun 2017 11:33:13 -0400
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Masami Hiramatsu <mhiramat@kernel.org>
-Cc: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>, Michael Ellerman
- <mpe@ellerman.id.au>, Ananth N Mavinakayanahalli
- <ananth@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v2 1/4] powerpc/kprobes: Pause function_graph tracing
- during jprobes handling
-Message-ID: <20170608113313.1d882344@gandalf.local.home>
-In-Reply-To: <20170608224354.495446a0cf6144b67816aa46@kernel.org>
-References: <cover.1496309487.git.naveen.n.rao@linux.vnet.ibm.com>
- <309db8dc9b7d60b1264d277bd815403fbd2d6545.1496309487.git.naveen.n.rao@linux.vnet.ibm.com>
- <20170608224354.495446a0cf6144b67816aa46@kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wk8d7378wzDqNZ
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Jun 2017 01:35:23 +1000 (AEST)
+Received: by mail-pf0-x244.google.com with SMTP id u1so5526810pfg.1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 08 Jun 2017 08:35:23 -0700 (PDT)
+From: Nicholas Piggin <npiggin@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Nicholas Piggin <npiggin@gmail.com>
+Subject: [PATCH 1/2] powerpc/64s: syscall optimize hypercall/syscall entry
+Date: Fri,  9 Jun 2017 01:35:04 +1000
+Message-Id: <20170608153505.18857-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,73 +22,224 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 8 Jun 2017 22:43:54 +0900
-Masami Hiramatsu <mhiramat@kernel.org> wrote:
+After bc3551257a ("powerpc/64: Allow for relocation-on interrupts from
+guest to host"), a getppid() system call goes from 307 cycles to 358
+cycles (+17%) on POWER8. This is due significantly to the scratch SPR
+used by the hypercall check.
 
-> On Thu,  1 Jun 2017 16:18:15 +0530
-> "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
-> 
-> > This fixes a crash when function_graph and jprobes are used together.
-> > This is essentially commit 237d28db036e ("ftrace/jprobes/x86: Fix
-> > conflict between jprobes and function graph tracing"), but for powerpc.
-> > 
-> > Jprobes breaks function_graph tracing since the jprobe hook needs to use
-> > jprobe_return(), which never returns back to the hook, but instead to
-> > the original jprobe'd function. The solution is to momentarily pause
-> > function_graph tracing before invoking the jprobe hook and re-enable it
-> > when returning back to the original jprobe'd function.
-> > 
-> > Fixes: 6794c78243bfd ("powerpc64: port of the function graph tracer")
-> > Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>  
-> 
-> Acked-by: Masami Hiramatsu <mhiramat@kernel.org>
+It turns out there are a some volatile registers common to both system
+call and hypercall (in particular, r12, cr0, ctr), which can be used to
+avoid the SPR and some other overheads. This brings getppid to 320 cycles
+(+4%).
 
-For what it's worth...
+Testing hcall entry performance by running "sc 1" in guest userspace
+before this patch is 854 cycles, afterwards is 826. Also a small win
+there.
 
-Acked-by: Steven Rostedt (VMware) <rostedt@goodmis.org>
+POWER9 syscall is improved by about the same amount, hcall not tested.
 
--- Steve
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+---
+ arch/powerpc/kernel/exceptions-64s.S | 134 +++++++++++++++++++++++++----------
+ 1 file changed, 97 insertions(+), 37 deletions(-)
 
-> 
-> Thanks!
-> 
-> > ---
-> > v2: No changes since v1.
-> > 
-> >  arch/powerpc/kernel/kprobes.c | 11 +++++++++++
-> >  1 file changed, 11 insertions(+)
-> > 
-> > diff --git a/arch/powerpc/kernel/kprobes.c b/arch/powerpc/kernel/kprobes.c
-> > index e1fb95385a9e..0554d6e66194 100644
-> > --- a/arch/powerpc/kernel/kprobes.c
-> > +++ b/arch/powerpc/kernel/kprobes.c
-> > @@ -610,6 +610,15 @@ int setjmp_pre_handler(struct kprobe *p, struct pt_regs *regs)
-> >  	regs->gpr[2] = (unsigned long)(((func_descr_t *)jp->entry)->toc);
-> >  #endif
-> >  
-> > +	/*
-> > +	 * jprobes use jprobe_return() which skips the normal return
-> > +	 * path of the function, and this messes up the accounting of the
-> > +	 * function graph tracer.
-> > +	 *
-> > +	 * Pause function graph tracing while performing the jprobe function.
-> > +	 */
-> > +	pause_graph_tracing();
-> > +
-> >  	return 1;
-> >  }
-> >  NOKPROBE_SYMBOL(setjmp_pre_handler);
-> > @@ -635,6 +644,8 @@ int longjmp_break_handler(struct kprobe *p, struct pt_regs *regs)
-> >  	 * saved regs...
-> >  	 */
-> >  	memcpy(regs, &kcb->jprobe_saved_regs, sizeof(struct pt_regs));
-> > +	/* It's OK to start function graph tracing again */
-> > +	unpause_graph_tracing();
-> >  	preempt_enable_no_resched();
-> >  	return 1;
-> >  }
-> > -- 
-> > 2.12.2
-> >   
-> 
-> 
+diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+index ae418b85c17c..2f700a15bfa3 100644
+--- a/arch/powerpc/kernel/exceptions-64s.S
++++ b/arch/powerpc/kernel/exceptions-64s.S
+@@ -821,46 +821,80 @@ EXC_VIRT(trap_0b, 0x4b00, 0x100, 0xb00)
+ TRAMP_KVM(PACA_EXGEN, 0xb00)
+ EXC_COMMON(trap_0b_common, 0xb00, unknown_exception)
+ 
++/*
++ * system call / hypercall (0xc00, 0x4c00)
++ *
++ * The system call exception is invoked with "sc 0" and does not alter HV bit.
++ * There is support for kernel code to invoke system calls but there are no
++ * in-tree users.
++ *
++ * The hypercall is invoked with "sc 1" and sets HV=1.
++ *
++ * In HPT, sc 1 always goes to 0xc00 real mode. In RADIX, sc 1 can go to
++ * 0x4c00 virtual mode.
++ *
++ * Call convention:
++ *
++ * syscall register convention is in Documentation/powerpc/syscall64-abi.txt
++ *
++ * For hypercalls, the register convention is as follows:
++ * r0 volatile
++ * r1-2 nonvolatile
++ * r3 volatile parameter and return value for status
++ * r4-r10 volatile input and output value
++ * r11 volatile hypercall number and output value
++ * r12 volatile
++ * r13-r31 nonvolatile
++ * LR nonvolatile
++ * CTR volatile
++ * XER volatile
++ * CR0-1 CR5-7 volatile
++ * CR2-4 nonvolatile
++ * Other registers nonvolatile
++ *
++ * The intersection of volatile registers that don't contain possible
++ * inputs is: r12, cr0, xer, ctr. We may use these as scratch regs
++ * upon entry without saving.
++ */
+ #ifdef CONFIG_KVM_BOOK3S_64_HANDLER
+-	 /*
+-	  * If CONFIG_KVM_BOOK3S_64_HANDLER is set, save the PPR (on systems
+-	  * that support it) before changing to HMT_MEDIUM. That allows the KVM
+-	  * code to save that value into the guest state (it is the guest's PPR
+-	  * value). Otherwise just change to HMT_MEDIUM as userspace has
+-	  * already saved the PPR.
+-	  */
++	/*
++	 * There is a little bit of juggling to get syscall and hcall
++	 * working well. Save r10 in ctr to be restored in case it is a
++	 * hcall.
++	 *
++	 * Userspace syscalls have already saved the PPR, hcalls must save
++	 * it before setting HMT_MEDIUM.
++	 */
+ #define SYSCALL_KVMTEST							\
+-	SET_SCRATCH0(r13);						\
++	mr	r12,r13;						\
+ 	GET_PACA(r13);							\
+-	std	r9,PACA_EXGEN+EX_R9(r13);				\
+-	OPT_GET_SPR(r9, SPRN_PPR, CPU_FTR_HAS_PPR);			\
++	mtctr	r10;							\
++	KVMTEST_PR(0xc00); /* uses r10, branch to do_kvm_0xc00_system_call */ \
+ 	HMT_MEDIUM;							\
+-	std	r10,PACA_EXGEN+EX_R10(r13);				\
+-	OPT_SAVE_REG_TO_PACA(PACA_EXGEN+EX_PPR, r9, CPU_FTR_HAS_PPR);	\
+-	mfcr	r9;							\
+-	KVMTEST_PR(0xc00);						\
+-	GET_SCRATCH0(r13)
++	mr	r9,r12;							\
+ 
+ #else
+ #define SYSCALL_KVMTEST							\
+-	HMT_MEDIUM
++	HMT_MEDIUM;							\
++	mr	r9,r13;							\
++	GET_PACA(r13);
+ #endif
+ 	
+ #define LOAD_SYSCALL_HANDLER(reg)					\
+ 	__LOAD_HANDLER(reg, system_call_common)
+ 
+-/* Syscall routine is used twice, in reloc-off and reloc-on paths */
+-#define SYSCALL_PSERIES_1 					\
++#define SYSCALL_FASTENDIAN_TEST					\
+ BEGIN_FTR_SECTION						\
+ 	cmpdi	r0,0x1ebe ; 					\
+ 	beq-	1f ;						\
+ END_FTR_SECTION_IFSET(CPU_FTR_REAL_LE)				\
+-	mr	r9,r13 ;					\
+-	GET_PACA(r13) ;						\
+-	mfspr	r11,SPRN_SRR0 ;					\
+-0:
+ 
+-#define SYSCALL_PSERIES_2_RFID 					\
++/*
++ * After SYSCALL_KVMTEST, we reach here with PACA in r13, r13 in r9,
++ * and HMT_MEDIUM.
++ */
++#define SYSCALL_REAL	 					\
++	mfspr	r11,SPRN_SRR0 ;					\
+ 	mfspr	r12,SPRN_SRR1 ;					\
+ 	LOAD_SYSCALL_HANDLER(r10) ; 				\
+ 	mtspr	SPRN_SRR0,r10 ; 				\
+@@ -869,11 +903,12 @@ END_FTR_SECTION_IFSET(CPU_FTR_REAL_LE)				\
+ 	rfid ; 							\
+ 	b	. ;	/* prevent speculative execution */
+ 
+-#define SYSCALL_PSERIES_3					\
++#define SYSCALL_FASTENDIAN					\
+ 	/* Fast LE/BE switch system call */			\
+ 1:	mfspr	r12,SPRN_SRR1 ;					\
+ 	xori	r12,r12,MSR_LE ;				\
+ 	mtspr	SPRN_SRR1,r12 ;					\
++	mr	r13,r9 ;					\
+ 	rfid ;		/* return to userspace */		\
+ 	b	. ;	/* prevent speculative execution */
+ 
+@@ -882,16 +917,18 @@ END_FTR_SECTION_IFSET(CPU_FTR_REAL_LE)				\
+ 	 * We can't branch directly so we do it via the CTR which
+ 	 * is volatile across system calls.
+ 	 */
+-#define SYSCALL_PSERIES_2_DIRECT				\
+-	LOAD_SYSCALL_HANDLER(r12) ;				\
+-	mtctr	r12 ;						\
++#define SYSCALL_VIRT						\
++	LOAD_SYSCALL_HANDLER(r10) ;				\
++	mtctr	r10 ;						\
++	mfspr	r11,SPRN_SRR0 ;					\
+ 	mfspr	r12,SPRN_SRR1 ;					\
+ 	li	r10,MSR_RI ;					\
+ 	mtmsrd 	r10,1 ;						\
+ 	bctr ;
+ #else
+ 	/* We can branch directly */
+-#define SYSCALL_PSERIES_2_DIRECT				\
++#define SYSCALL_VIRT						\
++	mfspr	r11,SPRN_SRR0 ;					\
+ 	mfspr	r12,SPRN_SRR1 ;					\
+ 	li	r10,MSR_RI ;					\
+ 	mtmsrd 	r10,1 ;			/* Set RI (EE=0) */	\
+@@ -899,20 +936,43 @@ END_FTR_SECTION_IFSET(CPU_FTR_REAL_LE)				\
+ #endif
+ 
+ EXC_REAL_BEGIN(system_call, 0xc00, 0x100)
+-	SYSCALL_KVMTEST
+-	SYSCALL_PSERIES_1
+-	SYSCALL_PSERIES_2_RFID
+-	SYSCALL_PSERIES_3
++	SYSCALL_KVMTEST /* loads PACA into r13, and saves r13 to r9 */
++	SYSCALL_FASTENDIAN_TEST
++	SYSCALL_REAL
++	SYSCALL_FASTENDIAN
+ EXC_REAL_END(system_call, 0xc00, 0x100)
+ 
+ EXC_VIRT_BEGIN(system_call, 0x4c00, 0x100)
+-	SYSCALL_KVMTEST
+-	SYSCALL_PSERIES_1
+-	SYSCALL_PSERIES_2_DIRECT
+-	SYSCALL_PSERIES_3
++	SYSCALL_KVMTEST /* loads PACA into r13, and saves r13 to r9 */
++	SYSCALL_FASTENDIAN_TEST
++	SYSCALL_VIRT
++	SYSCALL_FASTENDIAN
+ EXC_VIRT_END(system_call, 0x4c00, 0x100)
+ 
+-TRAMP_KVM(PACA_EXGEN, 0xc00)
++#ifdef CONFIG_KVM_BOOK3S_64_HANDLER
++	/*
++	 * This is a hcall, so register convention is as above, with these
++	 * differences:
++	 * r13 = PACA
++	 * r12 = orig r13
++	 * ctr = orig r10
++	 */
++TRAMP_KVM_BEGIN(do_kvm_0xc00)
++	 /*
++	  * Save the PPR (on systems that support it) before changing to
++	  * HMT_MEDIUM. That allows the KVM code to save that value into the
++	  * guest state (it is the guest's PPR value).
++	  */
++	OPT_GET_SPR(r0, SPRN_PPR, CPU_FTR_HAS_PPR)
++	HMT_MEDIUM
++	OPT_SAVE_REG_TO_PACA(PACA_EXGEN+EX_PPR, r0, CPU_FTR_HAS_PPR)
++	mfctr	r10
++	SET_SCRATCH0(r12)
++	std	r9,PACA_EXGEN+EX_R9(r13)
++	mfcr	r9
++	std	r10,PACA_EXGEN+EX_R10(r13)
++	KVM_HANDLER(PACA_EXGEN, EXC_STD, 0xc00)
++#endif
+ 
+ 
+ EXC_REAL(single_step, 0xd00, 0x100)
+-- 
+2.11.0
