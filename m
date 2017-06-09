@@ -1,29 +1,22 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wkfzm0C0jzDqLJ
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Jun 2017 21:23:16 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wkgG304T8zDqLJ
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Jun 2017 21:35:39 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: linux-kernel@vger.kernel.org,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Vineet Gupta <vgupta@synopsys.com>,
- Bart Van Assche <bart.vanassche@sandisk.com>,
- Robin Murphy <robin.murphy@arm.com>, Joerg Roedel <jroedel@suse.de>,
- Johan Hovold <johan@kernel.org>, Alexey Kardashevskiy <aik@ozlabs.ru>,
- Krzysztof Kozlowski <krzk@kernel.org>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 11/16] powerpc: vio_cmo: use dev_groups and not dev_attrs
- for bus_type
-In-Reply-To: <20170609054402.GA12563@kroah.com>
-References: <20170606192221.1617-1-gregkh@linuxfoundation.org>
- <20170606192221.1617-12-gregkh@linuxfoundation.org>
- <87y3t2d3o5.fsf@concordia.ellerman.id.au> <20170608133923.GA17811@kroah.com>
- <87r2yuhz19.fsf@concordia.ellerman.id.au> <20170609054402.GA12563@kroah.com>
-Date: Fri, 09 Jun 2017 21:23:10 +1000
-Message-ID: <87a85hiew1.fsf@concordia.ellerman.id.au>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: aneesh.kumar@linux.vnet.ibm.com, anton@samba.org, christophe.leroy@c-s.fr,
+ fbarrat@linux.vnet.ibm.com, jk@ozlabs.org, leitao@debian.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ maddy@linux.vnet.ibm.com, mwb@linux.vnet.ibm.com, npiggin@gmail.com,
+ vaibhav@linux.vnet.ibm.com
+Subject: [GIT PULL] Please pull powerpc/linux.git powerpc-4.12-5 tag
+Date: Fri, 09 Jun 2017 21:35:37 +1000
+Message-ID: <877f0lieba.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: multipart/signed; boundary="=-=-=";
+ micalg=pgp-sha1; protocol="application/pgp-signature"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,155 +26,108 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Greg Kroah-Hartman <gregkh@linuxfoundation.org> writes:
+--=-=-=
+Content-Type: text/plain
 
-> On Fri, Jun 09, 2017 at 08:53:22AM +1000, Michael Ellerman wrote:
->> Greg Kroah-Hartman <gregkh@linuxfoundation.org> writes:
->> 
->> > On Thu, Jun 08, 2017 at 11:12:10PM +1000, Michael Ellerman wrote:
->> >> Greg Kroah-Hartman <gregkh@linuxfoundation.org> writes:
->> >> 
->> >> > The dev_attrs field has long been "depreciated" and is finally being
->> >> > removed, so move the driver to use the "correct" dev_groups field
->> >> > instead for struct bus_type.
->> >> >
->> >> > Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
->> >> > Cc: Paul Mackerras <paulus@samba.org>
->> >> > Cc: Michael Ellerman <mpe@ellerman.id.au>
->> >> > Cc: Vineet Gupta <vgupta@synopsys.com>
->> >> > Cc: Bart Van Assche <bart.vanassche@sandisk.com>
->> >> > Cc: Robin Murphy <robin.murphy@arm.com>
->> >> > Cc: Joerg Roedel <jroedel@suse.de>
->> >> > Cc: Johan Hovold <johan@kernel.org>
->> >> > Cc: Alexey Kardashevskiy <aik@ozlabs.ru>
->> >> > Cc: Krzysztof Kozlowski <krzk@kernel.org>
->> >> > Cc: <linuxppc-dev@lists.ozlabs.org>
->> >> > Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
->> >> > ---
->> >> >  arch/powerpc/platforms/pseries/vio.c | 37 +++++++++++++++++++++---------------
->> >> >  1 file changed, 22 insertions(+), 15 deletions(-)
->> >> 
->> >> This one needed a bit more work to get building, the incremental diff is
->> >> below. We need a forward declaration of name, devspec and modalias,
->> >> which is a bit weird, but that's how the code is currently structured.
->> >> And there's dev and bus attributes with the same name, so that needed an
->> >> added "bus".
->> >> 
->> >> I booted v2 of patch 10 and this one and everything looks identical to
->> >> upstream.
->> >
->> > Ah, many thanks, this was on my todo list to fix up today.
->> >
->> > But you renamed the sysfs files when you added "bus" to the function
->> > names, are you sure you want to do that?  I don't mind, but if you
->> > happen to have userspace tools that look at those files, they just broke
->> > :(
->> 
->> Ugh crap, no that won't work.
->> 
->> I didn't see it when I tested because my machine doesn't have the CMO
->> feature enabled.
->> 
->> I guess we have to open code some of the BUS_ATTR_RO() etc. so we can
->> avoid the name clash.
->
-> Or split it into multiple files, I've solved this that way in the past.
-> You shouldn't have to "open code" BUS_ATTR_RO().
+Hi Linus,
 
-It just requires one use of __ATTR(), which seems simpler than splitting
-the file in two.
+Please pull some more powerpc fixes for 4.12:
 
-Here's a new incremental diff against your patch.
+The following changes since commit a4700a26107241cc7b9ac8528b2c6714ff99983d:
 
-I confirmed none of the cmo names changed, result after is:
+  powerpc: Add PPC_FEATURE userspace bits for SCV and DARN instructions (2017-05-25 23:07:45 +1000)
 
-./devices/vio/cmo_desired
-./devices/vio/cmo_allocated
-./devices/vio/cmo_entitled
-./devices/vio/cmo_allocs_failed
-./devices/vio/71000000/cmo_desired
-./devices/vio/71000000/cmo_allocated
-./devices/vio/71000000/cmo_entitled
-./devices/vio/71000000/cmo_allocs_failed
-./devices/vio/30000000/cmo_desired
-./devices/vio/30000000/cmo_allocated
-./devices/vio/30000000/cmo_entitled
-./devices/vio/30000000/cmo_allocs_failed
-./devices/vio/2000/cmo_desired
-./devices/vio/2000/cmo_allocated
-./devices/vio/2000/cmo_entitled
-./devices/vio/2000/cmo_allocs_failed
-./bus/vio/cmo_high
-./bus/vio/cmo_spare
-./bus/vio/cmo_reserve_size
-./bus/vio/cmo_desired
-./bus/vio/cmo_entitled
-./bus/vio/cmo_excess_free
-./bus/vio/cmo_excess_size
-./bus/vio/cmo_min
-./bus/vio/cmo_curr
+are available in the git repository at:
 
+  git://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git tags/powerpc-4.12-5
 
-cheers
+for you to fetch changes up to c6ee9619e2edd9912316f7e2eaf9ffa14fafe9f9:
 
+  powerpc/book3s64: Move PPC_DT_CPU_FTRs and enable it by default (2017-06-08 20:42:57 +1000)
 
-diff --git a/arch/powerpc/platforms/pseries/vio.c b/arch/powerpc/platforms/pseries/vio.c
-index 738196fd7e57..117beb9e8786 100644
---- a/arch/powerpc/platforms/pseries/vio.c
-+++ b/arch/powerpc/platforms/pseries/vio.c
-@@ -955,7 +955,7 @@ static ssize_t cmo_##name##_show(struct device *dev,                    \
- 	return sprintf(buf, "%lu\n", to_vio_dev(dev)->cmo.name);        \
- }
- 
--static ssize_t viodev_cmo_allocs_failed_show(struct device *dev,
-+static ssize_t cmo_allocs_failed_show(struct device *dev,
- 		struct device_attribute *attr, char *buf)
- {
- 	struct vio_dev *viodev = to_vio_dev(dev);
-@@ -993,9 +993,11 @@ static ssize_t name_show(struct device *, struct device_attribute *, char *);
- static ssize_t devspec_show(struct device *, struct device_attribute *, char *);
- static ssize_t modalias_show(struct device *dev, struct device_attribute *attr,
- 			     char *buf);
--static DEVICE_ATTR_RO(name);
--static DEVICE_ATTR_RO(devspec);
--static DEVICE_ATTR_RO(modalias);
-+
-+static struct device_attribute dev_attr_name;
-+static struct device_attribute dev_attr_devspec;
-+static struct device_attribute dev_attr_modalias;
-+
- static DEVICE_ATTR_RO(cmo_entitled);
- static DEVICE_ATTR_RO(cmo_allocated);
- static DEVICE_ATTR_RW(cmo_desired);
-@@ -1016,11 +1018,12 @@ ATTRIBUTE_GROUPS(vio_cmo_dev);
- /* sysfs bus functions and data structures for CMO */
- 
- #define viobus_cmo_rd_attr(name)                                        \
--static ssize_t cmo_##name##_show(struct bus_type *bt, char *buf)        \
-+static ssize_t cmo_bus_##name##_show(struct bus_type *bt, char *buf)    \
- {                                                                       \
- 	return sprintf(buf, "%lu\n", vio_cmo.name);                     \
- }                                                                       \
--static BUS_ATTR_RO(cmo_##name)
-+static struct bus_attribute bus_attr_cmo_bus_##name =			\
-+	__ATTR(cmo_##name, S_IRUGO, cmo_bus_##name##_show, NULL)
- 
- #define viobus_cmo_pool_rd_attr(name, var)                              \
- static ssize_t                                                          \
-@@ -1058,11 +1061,11 @@ static ssize_t cmo_high_store(struct bus_type *bt, const char *buf,
- static BUS_ATTR_RW(cmo_high);
- 
- static struct attribute *vio_bus_attrs[] = {
--	&bus_attr_cmo_entitled.attr,
--	&bus_attr_cmo_spare.attr,
--	&bus_attr_cmo_min.attr,
--	&bus_attr_cmo_desired.attr,
--	&bus_attr_cmo_curr.attr,
-+	&bus_attr_cmo_bus_entitled.attr,
-+	&bus_attr_cmo_bus_spare.attr,
-+	&bus_attr_cmo_bus_min.attr,
-+	&bus_attr_cmo_bus_desired.attr,
-+	&bus_attr_cmo_bus_curr.attr,
- 	&bus_attr_cmo_high.attr,
- 	&bus_attr_cmo_reserve_size.attr,
- 	&bus_attr_cmo_excess_size.attr,
+----------------------------------------------------------------
+powerpc fixes for 4.12 #5
+
+Mostly fairly minor, of note are:
+ - Fix percpu allocations to be NUMA aware
+ - Limit 4k page size config to 64TB virtual address space
+ - Avoid needlessly restoring FP and vector registers
+
+Thanks to:
+  Aneesh Kumar K.V, Breno Leitao, Christophe Leroy, Frederic Barrat, Madhavan
+  Srinivasan, Michael Bringmann, Nicholas Piggin, Vaibhav Jain.
+
+----------------------------------------------------------------
+Aneesh Kumar K.V (1):
+      powerpc/mm/4k: Limit 4k page size config to 64TB virtual address space
+
+Breno Leitao (2):
+      powerpc/kernel: Fix FP and vector register restoration
+      powerpc/kernel: Initialize load_tm on task creation
+
+Christophe Leroy (1):
+      powerpc/sysdev/simple_gpio: Fix oops in gpio save_regs function
+
+Frederic Barrat (1):
+      cxl: Fix error path on bad ioctl
+
+Madhavan Srinivasan (1):
+      powerpc/perf: Fix Power9 test_adder fields
+
+Michael Bringmann (1):
+      powerpc/hotplug-mem: Fix missing endian conversion of aa_index
+
+Michael Ellerman (4):
+      powerpc/spufs: Fix coredump of SPU contexts
+      powerpc/64: Reclaim CPU_FTR_SUBCORE
+      powerpc/numa: Fix percpu allocations to be NUMA aware
+      powerpc/book3s64: Move PPC_DT_CPU_FTRs and enable it by default
+
+Nicholas Piggin (1):
+      powerpc/64s: Add dt_cpu_ftrs boot time setup option
+
+Vaibhav Jain (1):
+      cxl: Avoid double free_irq() for psl,slice interrupts
+
+ Documentation/admin-guide/kernel-parameters.txt |  9 ++++
+ arch/powerpc/Kconfig                            | 16 -------
+ arch/powerpc/include/asm/book3s/64/hash-4k.h    |  2 +-
+ arch/powerpc/include/asm/cputable.h             |  3 +-
+ arch/powerpc/include/asm/processor.h            | 25 +++++------
+ arch/powerpc/include/asm/topology.h             | 14 ++++++
+ arch/powerpc/kernel/dt_cpu_ftrs.c               | 58 ++++++++++++++++++++-----
+ arch/powerpc/kernel/process.c                   |  3 ++
+ arch/powerpc/kernel/setup-common.c              |  2 +-
+ arch/powerpc/kernel/setup_64.c                  |  4 +-
+ arch/powerpc/mm/mmu_context_book3s64.c          |  2 +-
+ arch/powerpc/perf/power9-pmu.c                  |  4 +-
+ arch/powerpc/platforms/Kconfig                  | 11 +++++
+ arch/powerpc/platforms/cell/spufs/coredump.c    |  2 +
+ arch/powerpc/platforms/powernv/subcore.c        |  8 +++-
+ arch/powerpc/platforms/pseries/hotplug-memory.c |  2 +
+ arch/powerpc/sysdev/simple_gpio.c               |  3 +-
+ drivers/misc/cxl/file.c                         |  7 +--
+ drivers/misc/cxl/native.c                       | 14 ++++--
+ 19 files changed, 131 insertions(+), 58 deletions(-)
+
+--=-=-=
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJZOogJAAoJEFHr6jzI4aWA59wQALI8Eh3FkpjmdGbm31qEYT0s
+i49hX5+GOrbU+qSNFXK9avyqWnT1mcf8n4/yGWr8BoIGrDje/ZLWwiA+xzJ56gpw
+nyilWvxGI7KWv3egVmQI950Wy09sEd3tJ8yHlLKLypKkWmwY6REq9CgHBtOCs+sW
+o30E5qFJ/oluwJEQ/Pew2Fgcx6hd4HTOaINDOgSgnmzg2gtvo27BCmYHd5R45dDR
+zaPK8/Hls7H1+RN6V4rQibFBOYH5Hw7f8oU0jSssk6HMwYKk82AXq0xjivEQo6hs
+xAg3UrUw+5WFSyEexu339Q7NuLk1sq3R3tgelXBOqyQht5OXLvBuxb3qvr0KybTu
+2d4UYNd41j0Wwv6YMpeilYQ5dNiDDznH7Arr9HPR7f3nO1giTUFWcMsLNBISla//
+5JWrzAPNZVUH7WSlkJj3FrlKvq2UgALV3biP6/LXTYZoU449fX2MB7br5HNh5xts
+tfiu8pRwH72/5+334Irq/YBLgdMUTJrmJJ11fhV08RG8Acqil79q60Dku/tJRhiy
+ppk2J3bRhn1xXEnlFt1GskxPJBe7o2ijwreRTEbo/z1e6YwqPFwUApUX3zJNXLNI
+LNDc/AR/ifiVNHCKV81vOlVGoJ9qqQujId90R/G6HWWK4xUlxOURizTb9Wx1GH+a
+IYZhWTkapimAAoD824VR
+=jWY4
+-----END PGP SIGNATURE-----
+--=-=-=--
