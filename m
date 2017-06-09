@@ -3,17 +3,26 @@ Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
  [140.211.169.12])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wkbtm69cTzDqSC
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Jun 2017 19:03:44 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wkcPn338FzDqLH
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Jun 2017 19:27:09 +1000 (AEST)
+Date: Fri, 9 Jun 2017 11:26:59 +0200
 From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To: linux-kernel@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Jiri Slaby <jslaby@suse.com>, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 04/11] TTY: hvc: convert to use DRIVER_ATTR_RW
-Date: Fri,  9 Jun 2017 11:03:07 +0200
-Message-Id: <20170609090314.13991-4-gregkh@linuxfoundation.org>
-In-Reply-To: <20170609090314.13991-1-gregkh@linuxfoundation.org>
-References: <20170609090314.13991-1-gregkh@linuxfoundation.org>
+To: Aleksa Sarai <asarai@suse.de>
+Cc: Jiri Slaby <jslaby@suse.com>, Arnd Bergmann <arnd@arndb.de>,
+ linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org,
+ linux-mips@linux-mips.org, linux-parisc@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-sh@vger.kernel.org,
+ sparclinux@vger.kernel.org, linux-xtensa@linux-xtensa.org,
+ linux-arch@vger.kernel.org,
+ Christian Brauner <christian.brauner@ubuntu.com>,
+ Valentin Rothberg <vrothberg@suse.com>
+Subject: Re: [PATCH v4 2/2] tty: add TIOCGPTPEER ioctl
+Message-ID: <20170609092659.GA26933@kroah.com>
+References: <20170603141515.9529-1-asarai@suse.de>
+ <20170603141515.9529-3-asarai@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20170603141515.9529-3-asarai@suse.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,45 +32,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We are trying to get rid of DRIVER_ATTR(), and the hvc driver's
-attribute can be trivially changed to use DRIVER_ATTR_RW().
+On Sun, Jun 04, 2017 at 12:15:15AM +1000, Aleksa Sarai wrote:
+> When opening the slave end of a PTY, it is not possible for userspace to
+> safely ensure that /dev/pts/$num is actually a slave (in cases where the
+> mount namespace in which devpts was mounted is controlled by an
+> untrusted process). In addition, there are several unresolvable
+> race conditions if userspace were to attempt to detect attacks through
+> stat(2) and other similar methods [in addition it is not clear how
+> userspace could detect attacks involving FUSE].
+> 
+> Resolve this by providing an interface for userpace to safely open the
+> "peer" end of a PTY file descriptor by using the dentry cached by
+> devpts. Since it is not possible to have an open master PTY without
+> having its slave exposed in /dev/pts this interface is safe. This
+> interface currently does not provide a way to get the master pty (since
+> it is not clear whether such an interface is safe or even useful).
+> 
+> Cc: Christian Brauner <christian.brauner@ubuntu.com>
+> Cc: Valentin Rothberg <vrothberg@suse.com>
+> Signed-off-by: Aleksa Sarai <asarai@suse.de>
 
-Cc: Jiri Slaby <jslaby@suse.com>
-Cc: <linuxppc-dev@lists.ozlabs.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
----
- drivers/tty/hvc/hvcs.c | 7 +++----
- 1 file changed, 3 insertions(+), 4 deletions(-)
+Is this going to be documented anywhere?  Is there a man page update
+that also goes along with this?  What userspace program wants to use
+this?
 
-diff --git a/drivers/tty/hvc/hvcs.c b/drivers/tty/hvc/hvcs.c
-index 99bb875178d7..096ea5f511bd 100644
---- a/drivers/tty/hvc/hvcs.c
-+++ b/drivers/tty/hvc/hvcs.c
-@@ -484,13 +484,13 @@ static struct attribute_group hvcs_attr_group = {
- 	.attrs = hvcs_attrs,
- };
- 
--static ssize_t hvcs_rescan_show(struct device_driver *ddp, char *buf)
-+static ssize_t rescan_show(struct device_driver *ddp, char *buf)
- {
- 	/* A 1 means it is updating, a 0 means it is done updating */
- 	return snprintf(buf, PAGE_SIZE, "%d\n", hvcs_rescan_status);
- }
- 
--static ssize_t hvcs_rescan_store(struct device_driver *ddp, const char * buf,
-+static ssize_t rescan_store(struct device_driver *ddp, const char * buf,
- 		size_t count)
- {
- 	if ((simple_strtol(buf, NULL, 0) != 1)
-@@ -505,8 +505,7 @@ static ssize_t hvcs_rescan_store(struct device_driver *ddp, const char * buf,
- 	return count;
- }
- 
--static DRIVER_ATTR(rescan,
--	S_IRUGO | S_IWUSR, hvcs_rescan_show, hvcs_rescan_store);
-+static DRIVER_ATTR_RW(rescan);
- 
- static void hvcs_kick(void)
- {
--- 
-2.13.1
+I'm not objecting to this, I just want to know that people will use
+this, and that they can find out information about it if they want to.
+
+thanks,
+
+greg k-h
