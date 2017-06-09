@@ -1,53 +1,71 @@
-Return-Path: <bauerman@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <arndbergmann@gmail.com>
+Received: from mail-ot0-x243.google.com (mail-ot0-x243.google.com
+ [IPv6:2607:f8b0:4003:c0f::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wkwDB1MWPzDqLJ
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Jun 2017 07:19:53 +1000 (AEST)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v59LJE7s140469
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 9 Jun 2017 17:19:51 -0400
-Received: from e24smtp04.br.ibm.com (e24smtp04.br.ibm.com [32.104.18.25])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2ayv5gubrv-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 09 Jun 2017 17:19:51 -0400
-Received: from localhost
- by e24smtp04.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.vnet.ibm.com>;
- Fri, 9 Jun 2017 18:19:48 -0300
-Received: from d24av01.br.ibm.com (d24av01.br.ibm.com [9.8.31.91])
- by d24relay02.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v59LJiIX19726506
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 9 Jun 2017 18:19:47 -0300
-Received: from d24av01.br.ibm.com (localhost [127.0.0.1])
- by d24av01.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v59LJbXN032463
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 9 Jun 2017 18:19:38 -0300
-References: <1496886555-10082-1-git-send-email-bauerman@linux.vnet.ibm.com>
- <87d1adihhk.fsf@concordia.ellerman.id.au>
-From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linux-security-module@vger.kernel.org, Jessica Yu <jeyu@redhat.com>,
- linuxppc-dev@lists.ozlabs.org, Rusty Russell <rusty@rustcorp.com.au>,
- linux-kernel@vger.kernel.org, "David S. Miller" <davem@davemloft.net>,
- David Howells <dhowells@redhat.com>,
- "AKASHI\, Takahiro" <takahiro.akashi@linaro.org>,
- keyrings@vger.kernel.org, linux-crypto@vger.kernel.org,
- James Morris <james.l.morris@oracle.com>,
- Dmitry Kasatkin <dmitry.kasatkin@gmail.com>,
- linux-ima-devel@lists.sourceforge.net,
- Herbert Xu <herbert@gondor.apana.org.au>,
- Mimi Zohar <zohar@linux.vnet.ibm.com>,
- David Woodhouse <dwmw2@infradead.org>, "Serge E. Hallyn" <serge@hallyn.com>
-Subject: Re: [PATCH v2 0/6] Appended signatures support for IMA appraisal
-In-reply-to: <87d1adihhk.fsf@concordia.ellerman.id.au>
-Date: Fri, 09 Jun 2017 18:19:19 -0300
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wktRq4dX7zDqLJ
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Jun 2017 05:59:51 +1000 (AEST)
+Received: by mail-ot0-x243.google.com with SMTP id i31so6660646ota.3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 09 Jun 2017 12:59:51 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain
-Message-Id: <87efusyi3s.fsf@linux.vnet.ibm.com>
+Sender: arndbergmann@gmail.com
+In-Reply-To: <20170608160836.12196-1-krzk@kernel.org>
+References: <20170608160836.12196-1-krzk@kernel.org>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Fri, 9 Jun 2017 21:59:48 +0200
+Message-ID: <CAK8P3a3bUeC3H2oNfdBedVY4UTCe8OgKbWmv46d5xfu8tC7tAg@mail.gmail.com>
+Subject: Re: [PATCH 00/35] defconfig: Cleanup from old entries
+To: Krzysztof Kozlowski <krzk@kernel.org>
+Cc: Richard Henderson <rth@twiddle.net>,
+ Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+ Matt Turner <mattst88@gmail.com>, Vineet Gupta <vgupta@synopsys.com>,
+ Russell King <linux@armlinux.org.uk>,
+ =?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= <kernel@pengutronix.de>,
+ Kukjin Kim <kgene@kernel.org>, Shawn Guo <shawnguo@kernel.org>,
+ Fabio Estevam <fabio.estevam@nxp.com>, Joachim Eastwood <manabian@gmail.com>,
+ Liviu Dudau <liviu.dudau@arm.com>, Sudeep Holla <sudeep.holla@arm.com>,
+ Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
+ Aaro Koskinen <aaro.koskinen@iki.fi>, Tony Lindgren <tony@atomide.com>,
+ Maxime Ripard <maxime.ripard@free-electrons.com>,
+ Chen-Yu Tsai <wens@csie.org>, Steven Miao <realmz6@gmail.com>,
+ Mark Salter <msalter@redhat.com>,
+ Aurelien Jacquiot <a-jacquiot@ti.com>, Mikael Starvik <starvik@axis.com>,
+ Jesper Nilsson <jesper.nilsson@axis.com>, Richard Kuo <rkuo@codeaurora.org>,
+ Geert Uytterhoeven <geert@linux-m68k.org>, Michal Simek <monstr@monstr.eu>,
+ Ralf Baechle <ralf@linux-mips.org>, Florian Fainelli <f.fainelli@gmail.com>,
+ bcm-kernel-feedback-list <bcm-kernel-feedback-list@broadcom.com>,
+ David Howells <dhowells@redhat.com>,
+ Ley Foon Tan <lftan@altera.com>, Jonas Bonn <jonas@southpole.se>,
+ Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
+ Stafford Horne <shorne@gmail.com>,
+ "James E.J. Bottomley" <jejb@parisc-linux.org>, Helge Deller <deller@gmx.de>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, Chen Liqin <liqin.linux@gmail.com>,
+ Lennox Wu <lennox.wu@gmail.com>, Yoshinori Sato <ysato@users.sourceforge.jp>,
+ Rich Felker <dalias@libc.org>, "David S. Miller" <davem@davemloft.net>,
+ Chris Metcalf <cmetcalf@mellanox.com>, Jeff Dike <jdike@addtoit.com>,
+ Richard Weinberger <richard@nod.at>, Guan Xuetao <gxt@mprc.pku.edu.cn>,
+ Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+ "H. Peter Anvin" <hpa@zytor.com>,
+ "the arch/x86 maintainers" <x86@kernel.org>, linux-alpha@vger.kernel.org,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ "open list:SYNOPSYS ARC ARCHITECTURE" <linux-snps-arc@lists.infradead.org>,
+ Linux ARM <linux-arm-kernel@lists.infradead.org>,
+ "moderated list:ARM/SAMSUNG EXYNOS ARM ARCHITECTURES"
+ <linux-samsung-soc@vger.kernel.org>, linux-omap@vger.kernel.org,
+ adi-buildroot-devel@lists.sourceforge.net, linux-c6x-dev@linux-c6x.org,
+ linux-cris-kernel@axis.com, linux-hexagon@vger.kernel.org,
+ linux-m68k@lists.linux-m68k.org,
+ "open list:RALINK MIPS ARCHITECTURE" <linux-mips@linux-mips.org>,
+ linux-am33-list@redhat.com,
+ "moderated list:NIOS2 ARCHITECTURE" <nios2-dev@lists.rocketboards.org>,
+ openrisc@lists.librecores.org, Parisc List <linux-parisc@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ linux-sh@vger.kernel.org, sparclinux <sparclinux@vger.kernel.org>,
+ user-mode-linux-devel@lists.sourceforge.net,
+ user-mode-linux-user@lists.sourceforge.net
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -57,25 +75,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-Michael Ellerman <mpe@ellerman.id.au> writes:
-
-> Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com> writes:
+On Thu, Jun 8, 2017 at 6:08 PM, Krzysztof Kozlowski <krzk@kernel.org> wrote:
+> Hi,
 >
->> On the OpenPOWER platform, secure boot and trusted boot are being
->> implemented using IMA for taking measurements and verifying signatures.
+> While cleaning Samsung ARM defconfigs with savedefconfig, I encountered
+> similar obsolete entries in other files.
 >
-> I still want you to implement arch_kexec_kernel_verify_sig() as well :)
+> Except the ARM, no dependencies.
+> For ARM, the rest of patches depend on the first change (otherwise
+> it might not apply cleanly).
 
-Yes, I will implement it! We are still working on loading the public
-keys for kernel signing from the firmware into a kernel keyring, so
-there's not much point in implementing arch_kexec_kernel_verify_sig
-without having that first.
+Great work!
 
-The same problem also affects IMA: even with these patches, new code
-still neededs to be added to make IMA use the platform keys for kernel
-signature verification.
+I looked at all the ARM patches, and everything looks good to me (the
+changlog linewrapping may be suboptimal for readability in some cases,
+if I had to say anything negative ;-) ).
 
--- 
-Thiago Jung Bauermann
-IBM Linux Technology Center
+Please add my Acked-by to the ARM patches and send a pull request.
+
+        Arnd
