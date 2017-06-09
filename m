@@ -1,21 +1,53 @@
-Return-Path: <gregkh@linuxfoundation.org>
-Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
- [140.211.169.12])
+Return-Path: <bauerman@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wkr086r7tzDqLT
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Jun 2017 04:09:12 +1000 (AEST)
-Subject: patch "powerpc: ibmebus: use dev_groups and not dev_attrs for
- bus_type" added to driver-core-next
-To: gregkh@linuxfoundation.org, bart.vanassche@sandisk.com,
- benh@kernel.crashing.org, johan@kernel.org, lars@metafoo.de,
- linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au, paulus@samba.org,
- robh@kernel.org, robin.murphy@arm.com
-From: <gregkh@linuxfoundation.org>
-Date: Fri, 09 Jun 2017 20:08:18 +0200
-Message-ID: <1497031698156220@kroah.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wkwDB1MWPzDqLJ
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Jun 2017 07:19:53 +1000 (AEST)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v59LJE7s140469
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 9 Jun 2017 17:19:51 -0400
+Received: from e24smtp04.br.ibm.com (e24smtp04.br.ibm.com [32.104.18.25])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2ayv5gubrv-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 09 Jun 2017 17:19:51 -0400
+Received: from localhost
+ by e24smtp04.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.vnet.ibm.com>;
+ Fri, 9 Jun 2017 18:19:48 -0300
+Received: from d24av01.br.ibm.com (d24av01.br.ibm.com [9.8.31.91])
+ by d24relay02.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v59LJiIX19726506
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 9 Jun 2017 18:19:47 -0300
+Received: from d24av01.br.ibm.com (localhost [127.0.0.1])
+ by d24av01.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v59LJbXN032463
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 9 Jun 2017 18:19:38 -0300
+References: <1496886555-10082-1-git-send-email-bauerman@linux.vnet.ibm.com>
+ <87d1adihhk.fsf@concordia.ellerman.id.au>
+From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linux-security-module@vger.kernel.org, Jessica Yu <jeyu@redhat.com>,
+ linuxppc-dev@lists.ozlabs.org, Rusty Russell <rusty@rustcorp.com.au>,
+ linux-kernel@vger.kernel.org, "David S. Miller" <davem@davemloft.net>,
+ David Howells <dhowells@redhat.com>,
+ "AKASHI\, Takahiro" <takahiro.akashi@linaro.org>,
+ keyrings@vger.kernel.org, linux-crypto@vger.kernel.org,
+ James Morris <james.l.morris@oracle.com>,
+ Dmitry Kasatkin <dmitry.kasatkin@gmail.com>,
+ linux-ima-devel@lists.sourceforge.net,
+ Herbert Xu <herbert@gondor.apana.org.au>,
+ Mimi Zohar <zohar@linux.vnet.ibm.com>,
+ David Woodhouse <dwmw2@infradead.org>, "Serge E. Hallyn" <serge@hallyn.com>
+Subject: Re: [PATCH v2 0/6] Appended signatures support for IMA appraisal
+In-reply-to: <87d1adihhk.fsf@concordia.ellerman.id.au>
+Date: Fri, 09 Jun 2017 18:19:19 -0300
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ANSI_X3.4-1968
+Content-Type: text/plain
+Message-Id: <87efusyi3s.fsf@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,94 +58,24 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-This is a note to let you know that I've just added the patch titled
+Michael Ellerman <mpe@ellerman.id.au> writes:
 
-    powerpc: ibmebus: use dev_groups and not dev_attrs for bus_type
+> Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com> writes:
+>
+>> On the OpenPOWER platform, secure boot and trusted boot are being
+>> implemented using IMA for taking measurements and verifying signatures.
+>
+> I still want you to implement arch_kexec_kernel_verify_sig() as well :)
 
-to my driver-core git tree which can be found at
-    git://git.kernel.org/pub/scm/linux/kernel/git/gregkh/driver-core.git
-in the driver-core-next branch.
+Yes, I will implement it! We are still working on loading the public
+keys for kernel signing from the firmware into a kernel keyring, so
+there's not much point in implementing arch_kexec_kernel_verify_sig
+without having that first.
 
-The patch will show up in the next release of the linux-next tree
-(usually sometime within the next 24 hours during the week.)
+The same problem also affects IMA: even with these patches, new code
+still neededs to be added to make IMA use the platform keys for kernel
+signature verification.
 
-The patch will also be merged in the next major kernel release
-during the merge window.
-
-If you have any questions about this process, please let me know.
-
-
->From 823a44ac23d107b8450f413e32d83c9ed82410ff Mon Sep 17 00:00:00 2001
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Date: Tue, 6 Jun 2017 14:17:22 +0200
-Subject: powerpc: ibmebus: use dev_groups and not dev_attrs for bus_type
-
-The dev_attrs field has long been "depreciated" and is finally being
-removed, so move the driver to use the "correct" dev_groups field
-instead for struct bus_type.
-
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Bart Van Assche <bart.vanassche@sandisk.com>
-Cc: Johan Hovold <johan@kernel.org>
-Cc: Robin Murphy <robin.murphy@arm.com>
-Cc: Rob Herring <robh@kernel.org>
-Cc: Lars-Peter Clausen <lars@metafoo.de>
-Cc: <linuxppc-dev@lists.ozlabs.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
----
- arch/powerpc/platforms/pseries/ibmebus.c | 16 ++++++++++------
- 1 file changed, 10 insertions(+), 6 deletions(-)
-
-diff --git a/arch/powerpc/platforms/pseries/ibmebus.c b/arch/powerpc/platforms/pseries/ibmebus.c
-index b363e439ddb9..52146b1356d2 100644
---- a/arch/powerpc/platforms/pseries/ibmebus.c
-+++ b/arch/powerpc/platforms/pseries/ibmebus.c
-@@ -397,6 +397,7 @@ static ssize_t devspec_show(struct device *dev,
- 	ofdev = to_platform_device(dev);
- 	return sprintf(buf, "%s\n", ofdev->dev.of_node->full_name);
- }
-+static DEVICE_ATTR_RO(devspec);
- 
- static ssize_t name_show(struct device *dev,
- 				struct device_attribute *attr, char *buf)
-@@ -406,19 +407,22 @@ static ssize_t name_show(struct device *dev,
- 	ofdev = to_platform_device(dev);
- 	return sprintf(buf, "%s\n", ofdev->dev.of_node->name);
- }
-+static DEVICE_ATTR_RO(name);
- 
- static ssize_t modalias_show(struct device *dev,
- 				struct device_attribute *attr, char *buf)
- {
- 	return of_device_modalias(dev, buf, PAGE_SIZE);
- }
-+static DEVICE_ATTR_RO(modalias);
- 
--static struct device_attribute ibmebus_bus_device_attrs[] = {
--	__ATTR_RO(devspec),
--	__ATTR_RO(name),
--	__ATTR_RO(modalias),
--	__ATTR_NULL
-+static struct attribute *ibmebus_bus_device_attrs[] = {
-+	&dev_attr_devspec.attr,
-+	&dev_attr_name.attr,
-+	&dev_attr_modalias.attr,
-+	NULL,
- };
-+ATTRIBUTE_GROUPS(ibmebus_bus_device);
- 
- struct bus_type ibmebus_bus_type = {
- 	.name      = "ibmebus",
-@@ -428,7 +432,7 @@ struct bus_type ibmebus_bus_type = {
- 	.probe     = ibmebus_bus_device_probe,
- 	.remove    = ibmebus_bus_device_remove,
- 	.shutdown  = ibmebus_bus_device_shutdown,
--	.dev_attrs = ibmebus_bus_device_attrs,
-+	.dev_groups = ibmebus_bus_device_groups,
- };
- EXPORT_SYMBOL(ibmebus_bus_type);
- 
 -- 
-2.13.1
+Thiago Jung Bauermann
+IBM Linux Technology Center
