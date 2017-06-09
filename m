@@ -1,36 +1,19 @@
-Return-Path: <fbarrat@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <gregkh@linuxfoundation.org>
+Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
+ [140.211.169.12])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wknS04cjTzDqS3
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Jun 2017 02:14:40 +1000 (AEST)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v59GDjkF094398
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 9 Jun 2017 12:14:37 -0400
-Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2aysj4s40d-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 09 Jun 2017 12:14:37 -0400
-Received: from localhost
- by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
- Fri, 9 Jun 2017 17:14:35 +0100
-Subject: Re: [PATCH v2 3/3] powerpc/mm/cxl: Add the fault handling cpu to mm
- cpumask
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org
-References: <1496327615-7754-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1496327615-7754-3-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-Date: Fri, 9 Jun 2017 18:14:30 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wkr013NVDzDq9m
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Jun 2017 04:09:04 +1000 (AEST)
+Subject: patch "macintosh: use dev_groups and not dev_attrs for bus_type"
+ added to driver-core-next
+To: gregkh@linuxfoundation.org, benh@kernel.crashing.org,
+ linuxppc-dev@lists.ozlabs.org
+From: <gregkh@linuxfoundation.org>
+Date: Fri, 09 Jun 2017 20:08:17 +0200
+Message-ID: <149703169774236@kroah.com>
 MIME-Version: 1.0
-In-Reply-To: <1496327615-7754-3-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <cdf6cea5-5723-c13d-282e-d6a6ddbdd299@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ANSI_X3.4-1968
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,65 +24,117 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
+This is a note to let you know that I've just added the patch titled
 
-Le 01/06/2017 à 16:33, Aneesh Kumar K.V a écrit :
-> We use mm cpumask for serializing against lockless page table walk. Anybody
-> who is doing a lockless page table walk is expected to disable irq and only
-> cpus in mm cpumask is expected do the lockless walk. This ensure that
-> a THP split can send IPI to only cpus in the mm cpumask, to make sure there
-> are no parallel lockless page table walk.
-> 
-> Add the CAPI fault handling cpu to the mm cpumask so that we can do the lockless
-> page table walk while inserting hash page table entries.
-> 
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-> ---
+    macintosh: use dev_groups and not dev_attrs for bus_type
 
+to my driver-core git tree which can be found at
+    git://git.kernel.org/pub/scm/linux/kernel/git/gregkh/driver-core.git
+in the driver-core-next branch.
 
-Reviewed-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+The patch will show up in the next release of the linux-next tree
+(usually sometime within the next 24 hours during the week.)
 
+The patch will also be merged in the next major kernel release
+during the merge window.
+
+If you have any questions about this process, please let me know.
 
 
->   arch/powerpc/mm/pgtable-book3s64.c | 10 +---------
->   drivers/misc/cxl/fault.c           |  6 ++++++
->   2 files changed, 7 insertions(+), 9 deletions(-)
-> 
-> diff --git a/arch/powerpc/mm/pgtable-book3s64.c b/arch/powerpc/mm/pgtable-book3s64.c
-> index 2679f57b90e2..6a50ab23f722 100644
-> --- a/arch/powerpc/mm/pgtable-book3s64.c
-> +++ b/arch/powerpc/mm/pgtable-book3s64.c
-> @@ -83,15 +83,7 @@ static void do_nothing(void *unused)
->   void serialize_against_pte_lookup(struct mm_struct *mm)
->   {
->   	smp_mb();
-> -	/*
-> -	 * Cxl fault handling requires us to do a lockless page table
-> -	 * walk while inserting hash page table entry with mm tracked
-> -	 * in cxl context. Hence we need to do a global flush.
-> -	 */
-> -	if (cxl_ctx_in_use())
-> -		smp_call_function(do_nothing, NULL, 1);
-> -	else
-> -		smp_call_function_many(mm_cpumask(mm), do_nothing, NULL, 1);
-> +	smp_call_function_many(mm_cpumask(mm), do_nothing, NULL, 1);
->   }
-> 
->   /*
-> diff --git a/drivers/misc/cxl/fault.c b/drivers/misc/cxl/fault.c
-> index 5344448f514e..02efaaa7cbd1 100644
-> --- a/drivers/misc/cxl/fault.c
-> +++ b/drivers/misc/cxl/fault.c
-> @@ -140,6 +140,12 @@ static void cxl_handle_page_fault(struct cxl_context *ctx,
->   	unsigned long access, flags, inv_flags = 0;
-> 
->   	trace_cxl_pte_miss(ctx, dsisr, dar);
-> +	/*
-> +	 * Add the fault handling cpu to task mm cpumask so that we
-> +	 * can do a safe lockless page table walk when inserting the
-> +	 * hash page table entry.
-> +	 */
-> +	cpumask_set_cpu(smp_processor_id(), mm_cpumask(mm));
-> 
->   	if ((result = copro_handle_mm_fault(mm, dar, dsisr, &flt))) {
->   		pr_devel("copro_handle_mm_fault failed: %#x\n", result);
-> 
+>From 60bb70aa761ca4090a718926f8299364a0c61ae0 Mon Sep 17 00:00:00 2001
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Date: Tue, 6 Jun 2017 14:17:12 +0200
+Subject: macintosh: use dev_groups and not dev_attrs for bus_type
+
+The dev_attrs field has long been "depreciated" and is finally being
+removed, so move the driver to use the "correct" dev_groups field
+instead for struct bus_type.
+
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: <linuxppc-dev@lists.ozlabs.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+---
+ drivers/macintosh/macio_asic.c  |  4 ++--
+ drivers/macintosh/macio_sysfs.c | 29 +++++++++++++++++++++--------
+ 2 files changed, 23 insertions(+), 10 deletions(-)
+
+diff --git a/drivers/macintosh/macio_asic.c b/drivers/macintosh/macio_asic.c
+index f757cef293f8..62f541f968f6 100644
+--- a/drivers/macintosh/macio_asic.c
++++ b/drivers/macintosh/macio_asic.c
+@@ -133,7 +133,7 @@ static int macio_device_resume(struct device * dev)
+ 	return 0;
+ }
+ 
+-extern struct device_attribute macio_dev_attrs[];
++extern const struct attribute_group *macio_dev_groups[];
+ 
+ struct bus_type macio_bus_type = {
+        .name	= "macio",
+@@ -144,7 +144,7 @@ struct bus_type macio_bus_type = {
+        .shutdown = macio_device_shutdown,
+        .suspend	= macio_device_suspend,
+        .resume	= macio_device_resume,
+-       .dev_attrs = macio_dev_attrs,
++       .dev_groups = macio_dev_groups,
+ };
+ 
+ static int __init macio_bus_driver_init(void)
+diff --git a/drivers/macintosh/macio_sysfs.c b/drivers/macintosh/macio_sysfs.c
+index 0b1f9c76c68d..2445274f7e4b 100644
+--- a/drivers/macintosh/macio_sysfs.c
++++ b/drivers/macintosh/macio_sysfs.c
+@@ -10,7 +10,8 @@ field##_show (struct device *dev, struct device_attribute *attr,	\
+ {									\
+ 	struct macio_dev *mdev = to_macio_device (dev);			\
+ 	return sprintf (buf, format_string, mdev->ofdev.dev.of_node->field); \
+-}
++}									\
++static DEVICE_ATTR_RO(field);
+ 
+ static ssize_t
+ compatible_show (struct device *dev, struct device_attribute *attr, char *buf)
+@@ -37,6 +38,7 @@ compatible_show (struct device *dev, struct device_attribute *attr, char *buf)
+ 
+ 	return length;
+ }
++static DEVICE_ATTR_RO(compatible);
+ 
+ static ssize_t modalias_show (struct device *dev, struct device_attribute *attr,
+ 			      char *buf)
+@@ -52,15 +54,26 @@ static ssize_t devspec_show(struct device *dev,
+ 	ofdev = to_platform_device(dev);
+ 	return sprintf(buf, "%s\n", ofdev->dev.of_node->full_name);
+ }
++static DEVICE_ATTR_RO(modalias);
++static DEVICE_ATTR_RO(devspec);
+ 
+ macio_config_of_attr (name, "%s\n");
+ macio_config_of_attr (type, "%s\n");
+ 
+-struct device_attribute macio_dev_attrs[] = {
+-	__ATTR_RO(name),
+-	__ATTR_RO(type),
+-	__ATTR_RO(compatible),
+-	__ATTR_RO(modalias),
+-	__ATTR_RO(devspec),
+-	__ATTR_NULL
++static struct attribute *macio_dev_attrs[] = {
++	&dev_attr_name.attr,
++	&dev_attr_type.attr,
++	&dev_attr_compatible.attr,
++	&dev_attr_modalias.attr,
++	&dev_attr_devspec.attr,
++	NULL,
++};
++
++static const struct attribute_group macio_dev_group = {
++	.attrs = macio_dev_attrs,
++};
++
++const struct attribute_group *macio_dev_groups[] = {
++	&macio_dev_group,
++	NULL,
+ };
+-- 
+2.13.1
