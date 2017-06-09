@@ -1,42 +1,25 @@
-Return-Path: <geert.uytterhoeven@gmail.com>
-Received: from mail-it0-x243.google.com (mail-it0-x243.google.com
- [IPv6:2607:f8b0:4001:c0b::243])
+Return-Path: <paolo.bonzini@gmail.com>
+Received: from mail-wr0-x242.google.com (mail-wr0-x242.google.com
+ [IPv6:2a00:1450:400c:c0c::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wkhG562PjzDqLJ
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Jun 2017 22:20:45 +1000 (AEST)
-Received: by mail-it0-x243.google.com with SMTP id 201so4111689itu.1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 09 Jun 2017 05:20:45 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wkhTT33FqzDqL9
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Jun 2017 22:30:37 +1000 (AEST)
+Received: by mail-wr0-x242.google.com with SMTP id u101so6498750wrc.1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 09 Jun 2017 05:30:37 -0700 (PDT)
+Sender: Paolo Bonzini <paolo.bonzini@gmail.com>
+Subject: Re: [PATCH v2] perf: libdw support for powerpc [ping]
+From: Paolo Bonzini <pbonzini@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: acme@kernel.org, "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
+ Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
+References: <1496312681-20133-1-git-send-email-pbonzini@redhat.com>
+Message-ID: <a44cf3bd-e868-a8d5-4518-2bea76be7f8f@redhat.com>
+Date: Fri, 9 Jun 2017 14:30:31 +0200
 MIME-Version: 1.0
-Sender: geert.uytterhoeven@gmail.com
-In-Reply-To: <20170608132609.32662-34-hch@lst.de>
-References: <20170608132609.32662-1-hch@lst.de>
- <20170608132609.32662-34-hch@lst.de>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Fri, 9 Jun 2017 14:20:42 +0200
-Message-ID: <CAMuHMdUPeFJJtz8eJkQEAR-2w9oHt-fXeGHvvKFLfU2A4YyviQ@mail.gmail.com>
-Subject: Re: [PATCH 33/44] openrisc: remove arch-specific dma_supported
- implementation
-To: Christoph Hellwig <hch@lst.de>
-Cc: "the arch/x86 maintainers" <x86@kernel.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- xen-devel@lists.xenproject.org, linux-c6x-dev@linux-c6x.org,
- "open list:QUALCOMM HEXAGON..." <linux-hexagon@vger.kernel.org>,
- "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
- Linux MIPS Mailing List <linux-mips@linux-mips.org>,
- openrisc@lists.librecores.org,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- linux-s390 <linux-s390@vger.kernel.org>,
- Linux-sh list <linux-sh@vger.kernel.org>,
- sparclinux <sparclinux@vger.kernel.org>,
- "linux-xtensa@linux-xtensa.org" <linux-xtensa@linux-xtensa.org>,
- dmaengine@vger.kernel.org, linux-tegra@vger.kernel.org,
- DRI Development <dri-devel@lists.freedesktop.org>,
- "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>,
- iommu@lists.linux-foundation.org,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <1496312681-20133-1-git-send-email-pbonzini@redhat.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,27 +29,142 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Christoph,
 
-On Thu, Jun 8, 2017 at 3:25 PM, Christoph Hellwig <hch@lst.de> wrote:
-> This implementation is simply bogus - hexagon only has a simple
 
-openrisc?
-
-> direct mapped DMA implementation and thus doesn't care about the
-> address.
->
-> Signed-off-by: Christoph Hellwig <hch@lst.de>
+On 01/06/2017 12:24, Paolo Bonzini wrote:
+> Porting PPC to libdw only needs an architecture-specific hook to move
+> the register state from perf to libdw.
+> 
+> The ARM and x86 architectures already use libdw, and it is useful to
+> have as much common code for the unwinder as possible.  Mark Wielaard
+> has contributed a frame-based unwinder to libdw, so that unwinding works
+> even for binaries that do not have CFI information.  In addition,
+> libunwind is always preferred to libdw by the build machinery so this
+> cannot introduce regressions on machines that have both libunwind and
+> libdw installed.
+> 
+> Cc: acme@kernel.org
+> Cc: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+> Cc: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
+> Cc: linuxppc-dev@lists.ozlabs.org
+> Signed-off-by: Paolo Bonzini <pbonzini@redhat.com>
 > ---
->  arch/openrisc/include/asm/dma-mapping.h | 7 -------
+> 	v1->v2: fix for 4.11->4.12 changes
 
-Gr{oetje,eeting}s,
+Ravi, Naveen, any reviews?
 
-                        Geert
+Thanks,
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+Paolo
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+> 
+>  tools/perf/Makefile.config                  |  2 +-
+>  tools/perf/arch/powerpc/util/Build          |  2 +
+>  tools/perf/arch/powerpc/util/unwind-libdw.c | 73 +++++++++++++++++++++++++++++
+>  3 files changed, 76 insertions(+), 1 deletion(-)
+>  create mode 100644 tools/perf/arch/powerpc/util/unwind-libdw.c
+> 
+> diff --git a/tools/perf/Makefile.config b/tools/perf/Makefile.config
+> index 8354d04b392f..e7b04a729417 100644
+> --- a/tools/perf/Makefile.config
+> +++ b/tools/perf/Makefile.config
+> @@ -61,7 +61,7 @@ endif
+>  # Disable it on all other architectures in case libdw unwind
+>  # support is detected in system. Add supported architectures
+>  # to the check.
+> -ifneq ($(ARCH),$(filter $(ARCH),x86 arm))
+> +ifneq ($(ARCH),$(filter $(ARCH),x86 arm powerpc))
+>    NO_LIBDW_DWARF_UNWIND := 1
+>  endif
+>  
+> diff --git a/tools/perf/arch/powerpc/util/Build b/tools/perf/arch/powerpc/util/Build
+> index 90ad64b231cd..2e6595310420 100644
+> --- a/tools/perf/arch/powerpc/util/Build
+> +++ b/tools/perf/arch/powerpc/util/Build
+> @@ -5,4 +5,6 @@ libperf-y += perf_regs.o
+>  
+>  libperf-$(CONFIG_DWARF) += dwarf-regs.o
+>  libperf-$(CONFIG_DWARF) += skip-callchain-idx.o
+> +
+>  libperf-$(CONFIG_LIBUNWIND) += unwind-libunwind.o
+> +libperf-$(CONFIG_LIBDW_DWARF_UNWIND) += unwind-libdw.o
+> diff --git a/tools/perf/arch/powerpc/util/unwind-libdw.c b/tools/perf/arch/powerpc/util/unwind-libdw.c
+> new file mode 100644
+> index 000000000000..3a24b3c43273
+> --- /dev/null
+> +++ b/tools/perf/arch/powerpc/util/unwind-libdw.c
+> @@ -0,0 +1,73 @@
+> +#include <elfutils/libdwfl.h>
+> +#include "../../util/unwind-libdw.h"
+> +#include "../../util/perf_regs.h"
+> +#include "../../util/event.h"
+> +
+> +/* See backends/ppc_initreg.c and backends/ppc_regs.c in elfutils.  */
+> +static const int special_regs[3][2] = {
+> +	{ 65, PERF_REG_POWERPC_LINK },
+> +	{ 101, PERF_REG_POWERPC_XER },
+> +	{ 109, PERF_REG_POWERPC_CTR },
+> +};
+> +
+> +bool libdw__arch_set_initial_registers(Dwfl_Thread *thread, void *arg)
+> +{
+> +	struct unwind_info *ui = arg;
+> +	struct regs_dump *user_regs = &ui->sample->user_regs;
+> +	Dwarf_Word dwarf_regs[32], dwarf_nip;
+> +	size_t i;
+> +
+> +#define REG(r) ({						\
+> +	Dwarf_Word val = 0;					\
+> +	perf_reg_value(&val, user_regs, PERF_REG_POWERPC_##r);	\
+> +	val;							\
+> +})
+> +
+> +	dwarf_regs[0]  = REG(R0);
+> +	dwarf_regs[1]  = REG(R1);
+> +	dwarf_regs[2]  = REG(R2);
+> +	dwarf_regs[3]  = REG(R3);
+> +	dwarf_regs[4]  = REG(R4);
+> +	dwarf_regs[5]  = REG(R5);
+> +	dwarf_regs[6]  = REG(R6);
+> +	dwarf_regs[7]  = REG(R7);
+> +	dwarf_regs[8]  = REG(R8);
+> +	dwarf_regs[9]  = REG(R9);
+> +	dwarf_regs[10] = REG(R10);
+> +	dwarf_regs[11] = REG(R11);
+> +	dwarf_regs[12] = REG(R12);
+> +	dwarf_regs[13] = REG(R13);
+> +	dwarf_regs[14] = REG(R14);
+> +	dwarf_regs[15] = REG(R15);
+> +	dwarf_regs[16] = REG(R16);
+> +	dwarf_regs[17] = REG(R17);
+> +	dwarf_regs[18] = REG(R18);
+> +	dwarf_regs[19] = REG(R19);
+> +	dwarf_regs[20] = REG(R20);
+> +	dwarf_regs[21] = REG(R21);
+> +	dwarf_regs[22] = REG(R22);
+> +	dwarf_regs[23] = REG(R23);
+> +	dwarf_regs[24] = REG(R24);
+> +	dwarf_regs[25] = REG(R25);
+> +	dwarf_regs[26] = REG(R26);
+> +	dwarf_regs[27] = REG(R27);
+> +	dwarf_regs[28] = REG(R28);
+> +	dwarf_regs[29] = REG(R29);
+> +	dwarf_regs[30] = REG(R30);
+> +	dwarf_regs[31] = REG(R31);
+> +	if (!dwfl_thread_state_registers(thread, 0, 32, dwarf_regs))
+> +		return false;
+> +
+> +	dwarf_nip = REG(NIP);
+> +	dwfl_thread_state_register_pc(thread, dwarf_nip);
+> +	for (i = 0; i < ARRAY_SIZE(special_regs); i++) {
+> +		Dwarf_Word val = 0;
+> +		perf_reg_value(&val, user_regs, special_regs[i][1]);
+> +		if (!dwfl_thread_state_registers(thread,
+> +						 special_regs[i][0], 1,
+> +						 &val))
+> +			return false;
+> +	}
+> +
+> +	return true;
+> +}
+> 
