@@ -1,21 +1,20 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
- [IPv6:2607:f8b0:400e:c00::242])
+Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
+ [IPv6:2607:f8b0:400e:c05::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wmChQ2X8LzDqLd
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Jun 2017 10:00:22 +1000 (AEST)
-Received: by mail-pf0-x242.google.com with SMTP id y7so14693507pfd.3
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 11 Jun 2017 17:00:22 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wmChT6PjtzDqLC
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Jun 2017 10:00:25 +1000 (AEST)
+Received: by mail-pg0-x242.google.com with SMTP id v18so12745165pgb.3
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 11 Jun 2017 17:00:25 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Nicholas Piggin <npiggin@gmail.com>,
  "Gautham R . Shenoy" <ego@linux.vnet.ibm.com>,
  "Shreyas B . Prabhu" <shreyas@linux.vnet.ibm.com>
-Subject: [PATCH 04/14] powerpc/64s: idle process interrupts from system reset
- wakeup
-Date: Mon, 12 Jun 2017 09:58:25 +1000
-Message-Id: <20170611235835.7400-5-npiggin@gmail.com>
+Subject: [PATCH 05/14] powerpc/64s: msgclr when handling doorbell exceptions
+Date: Mon, 12 Jun 2017 09:58:26 +1000
+Message-Id: <20170611235835.7400-6-npiggin@gmail.com>
 In-Reply-To: <20170611235835.7400-1-npiggin@gmail.com>
 References: <20170611235835.7400-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,125 +26,130 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When the CPU wakes from low power state, it begins at the system reset
-interrupt with the exception that caused the wakeup encoded in SRR1.
+msgsnd doorbell exceptions are cleared when the doorbell interrupt is
+taken. However if a doorbell exception causes a system reset interrupt
+wake from power saving state, the message is not cleared. Processing
+the doorbell from the system reset interrupt requires msgclr to avoid
+taking the exception again.
 
-Today, powernv idle wakeup ignores the wakeup reason (except a special
-case for HMI), and the regular interrupt corresponding to the
-exception will fire after the idle wakeup exits.
+Testing this plus the previous wakup direct patch gives:
 
-Change this to replay the interrupt from the idle wakeup before
-interrupts are hard-enabled.
+                                original         wakeup direct     msgclr
+Different threads, same core:   315k/s           264k/s            345k/s
+Different cores:                235k/s           242k/s            242k/s
 
-Test on POWER8 of context_switch selftests benchmark with polling idle
-disabled (e.g., always nap, giving cross-CPU IPIs) gives the following
-results:
-
-                                original         wakeup direct
-Different threads, same core:   315k/s           264k/s
-Different cores:                235k/s           242k/s
-
-There is a slowdown for doorbell IPI (same core) case because system
-reset wakeup does not clear the message and the doorbell interrupt
-fires again needlessly.
+Net speedup is +10% for same core, and +3% for different core.
 
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/include/asm/hw_irq.h     |  2 ++
- arch/powerpc/kernel/irq.c             | 25 +++++++++++++++++++++++++
- arch/powerpc/platforms/powernv/idle.c | 10 ++++++++--
- 3 files changed, 35 insertions(+), 2 deletions(-)
+ arch/powerpc/include/asm/dbell.h      | 13 +++++++++++++
+ arch/powerpc/include/asm/ppc-opcode.h |  3 +++
+ arch/powerpc/kernel/asm-offsets.c     |  1 +
+ arch/powerpc/kernel/exceptions-64s.S  | 23 +++++++++++++++++++++--
+ 4 files changed, 38 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/hw_irq.h b/arch/powerpc/include/asm/hw_irq.h
-index f06112cf8734..8366bdc69988 100644
---- a/arch/powerpc/include/asm/hw_irq.h
-+++ b/arch/powerpc/include/asm/hw_irq.h
-@@ -32,6 +32,7 @@
- #ifndef __ASSEMBLY__
- 
- extern void __replay_interrupt(unsigned int vector);
-+extern void __replay_wakeup_interrupt(unsigned long srr1);
- 
- extern void timer_interrupt(struct pt_regs *);
- extern void performance_monitor_exception(struct pt_regs *regs);
-@@ -130,6 +131,7 @@ static inline bool arch_irq_disabled_regs(struct pt_regs *regs)
- 
- extern bool prep_irq_for_idle(void);
- extern bool prep_irq_for_idle_irqsoff(void);
-+extern void irq_set_pending_from_srr1(unsigned long srr1);
- 
- #define fini_irq_for_idle_irqsoff() trace_hardirqs_off();
- 
-diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-index be32cec28107..d8a85768c8ec 100644
---- a/arch/powerpc/kernel/irq.c
-+++ b/arch/powerpc/kernel/irq.c
-@@ -348,6 +348,7 @@ bool prep_irq_for_idle(void)
- 	return true;
+diff --git a/arch/powerpc/include/asm/dbell.h b/arch/powerpc/include/asm/dbell.h
+index f70cbfe0ec04..9f2ae0d25e15 100644
+--- a/arch/powerpc/include/asm/dbell.h
++++ b/arch/powerpc/include/asm/dbell.h
+@@ -56,6 +56,19 @@ static inline void ppc_msgsync(void)
+ 				: : "i" (CPU_FTR_HVMODE|CPU_FTR_ARCH_300));
  }
  
-+#ifdef CONFIG_PPC_BOOK3S
- /*
-  * This is for idle sequences that return with IRQs off, but the
-  * idle state itself wakes on interrupt. Tell the irq tracer that
-@@ -379,6 +380,30 @@ bool prep_irq_for_idle_irqsoff(void)
- }
- 
- /*
-+ * Take the SRR1 wakeup reason, index into this table to find the
-+ * appropriate irq_happened bit.
-+ */
-+static const u8 srr1_to_irq[0x10] = {
-+	0, 0, 0,
-+	PACA_IRQ_DBELL,
-+	0,
-+	PACA_IRQ_DBELL,
-+	PACA_IRQ_DEC,
-+	0,
-+	PACA_IRQ_EE,
-+	PACA_IRQ_EE,
-+	PACA_IRQ_HMI,
-+	0, 0, 0, 0, 0 };
-+
-+void irq_set_pending_from_srr1(unsigned long srr1)
++static inline void _ppc_msgclr(u32 msg)
 +{
-+	unsigned int idx = (srr1 >> 18) & SRR1_WAKEMASK_P8;
-+
-+	local_paca->irq_happened |= srr1_to_irq[idx];
++	__asm__ __volatile__ (ASM_FTR_IFSET(PPC_MSGCLR(%1), PPC_MSGCLRP(%1), %0)
++				: : "i" (CPU_FTR_HVMODE), "r" (msg));
 +}
-+#endif /* CONFIG_PPC_BOOK3S */
++
++static inline void ppc_msgclr(enum ppc_dbell type)
++{
++	u32 msg = PPC_DBELL_TYPE(type);
++
++	_ppc_msgclr(msg);
++}
++
+ #else /* CONFIG_PPC_BOOK3S */
+ 
+ #define PPC_DBELL_MSGTYPE		PPC_DBELL
+diff --git a/arch/powerpc/include/asm/ppc-opcode.h b/arch/powerpc/include/asm/ppc-opcode.h
+index 3a8d278e7421..3b29c54e51fa 100644
+--- a/arch/powerpc/include/asm/ppc-opcode.h
++++ b/arch/powerpc/include/asm/ppc-opcode.h
+@@ -221,6 +221,7 @@
+ #define PPC_INST_MSGCLR			0x7c0001dc
+ #define PPC_INST_MSGSYNC		0x7c0006ec
+ #define PPC_INST_MSGSNDP		0x7c00011c
++#define PPC_INST_MSGCLRP		0x7c00015c
+ #define PPC_INST_MTTMR			0x7c0003dc
+ #define PPC_INST_NOP			0x60000000
+ #define PPC_INST_PASTE			0x7c00070c
+@@ -409,6 +410,8 @@
+ 					___PPC_RB(b))
+ #define PPC_MSGSNDP(b)		stringify_in_c(.long PPC_INST_MSGSNDP | \
+ 					___PPC_RB(b))
++#define PPC_MSGCLRP(b)		stringify_in_c(.long PPC_INST_MSGCLRP | \
++					___PPC_RB(b))
+ #define PPC_POPCNTB(a, s)	stringify_in_c(.long PPC_INST_POPCNTB | \
+ 					__PPC_RA(a) | __PPC_RS(s))
+ #define PPC_POPCNTD(a, s)	stringify_in_c(.long PPC_INST_POPCNTD | \
+diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
+index e15c178ba079..9624851ca276 100644
+--- a/arch/powerpc/kernel/asm-offsets.c
++++ b/arch/powerpc/kernel/asm-offsets.c
+@@ -746,6 +746,7 @@ int main(void)
+ #endif
+ 
+ 	DEFINE(PPC_DBELL_SERVER, PPC_DBELL_SERVER);
++	DEFINE(PPC_DBELL_MSGTYPE, PPC_DBELL_MSGTYPE);
+ 
+ #ifdef CONFIG_PPC_8xx
+ 	DEFINE(VIRT_IMMR_BASE, (u64)__fix_to_virt(FIX_IMMR_BASE));
+diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+index ae418b85c17c..a04ee0d7f88e 100644
+--- a/arch/powerpc/kernel/exceptions-64s.S
++++ b/arch/powerpc/kernel/exceptions-64s.S
+@@ -1552,6 +1552,25 @@ END_FTR_SECTION_IFSET(CPU_FTR_CFAR)
+ 	b	1b
+ 
+ /*
++ * When doorbell is triggered from system reset wakeup, the message is
++ * not cleared, so it would fire again when EE is enabled.
++ *
++ * When coming from local_irq_enable, there may be the same problem if
++ * we were hard disabled.
++ *
++ * Execute msgclr to clear pending exceptions before handling it.
++ */
++h_doorbell_common_msgclr:
++	LOAD_REG_IMMEDIATE(r3, PPC_DBELL_MSGTYPE << (63-36))
++	PPC_MSGCLR(3)
++	b 	h_doorbell_common
++
++doorbell_super_common_msgclr:
++	LOAD_REG_IMMEDIATE(r3, PPC_DBELL_MSGTYPE << (63-36))
++	PPC_MSGCLRP(3)
++	b 	doorbell_super_common
 +
 +/*
-  * Force a replay of the external interrupt handler on this CPU.
-  */
- void force_external_irq_replay(void)
-diff --git a/arch/powerpc/platforms/powernv/idle.c b/arch/powerpc/platforms/powernv/idle.c
-index e327e1585ddc..ee416e016387 100644
---- a/arch/powerpc/platforms/powernv/idle.c
-+++ b/arch/powerpc/platforms/powernv/idle.c
-@@ -302,7 +302,10 @@ static unsigned long __power7_idle_type(unsigned long type)
- 
- void power7_idle_type(unsigned long type)
- {
--	__power7_idle_type(type);
-+	unsigned long srr1;
-+
-+	srr1 = __power7_idle_type(type);
-+	irq_set_pending_from_srr1(srr1);
- }
- 
- void power7_idle(void)
-@@ -337,7 +340,10 @@ static unsigned long __power9_idle_type(unsigned long stop_psscr_val,
- void power9_idle_type(unsigned long stop_psscr_val,
- 				      unsigned long stop_psscr_mask)
- {
--	__power9_idle_type(stop_psscr_val, stop_psscr_mask);
-+	unsigned long srr1;
-+
-+	srr1 = __power9_idle_type(stop_psscr_val, stop_psscr_mask);
-+	irq_set_pending_from_srr1(srr1);
- }
- 
- /*
+  * Called from arch_local_irq_enable when an interrupt needs
+  * to be resent. r3 contains 0x500, 0x900, 0xa00 or 0xe80 to indicate
+  * which kind of interrupt. MSR:EE is already off. We generate a
+@@ -1576,13 +1595,13 @@ _GLOBAL(__replay_interrupt)
+ 	beq	hardware_interrupt_common
+ BEGIN_FTR_SECTION
+ 	cmpwi	r3,0xe80
+-	beq	h_doorbell_common
++	beq	h_doorbell_common_msgclr
+ 	cmpwi	r3,0xea0
+ 	beq	h_virt_irq_common
+ 	cmpwi	r3,0xe60
+ 	beq	hmi_exception_common
+ FTR_SECTION_ELSE
+ 	cmpwi	r3,0xa00
+-	beq	doorbell_super_common
++	beq	doorbell_super_common_msgclr
+ ALT_FTR_SECTION_END_IFSET(CPU_FTR_HVMODE)
+ 	blr
 -- 
 2.11.0
