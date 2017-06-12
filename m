@@ -3,17 +3,17 @@ Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
  [140.211.169.12])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wmZkz2JkqzDqL3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jun 2017 00:18:51 +1000 (AEST)
-Subject: patch "powerpc: vio: use dev_groups and not dev_attrs for bus_type"
- added to driver-core-testing
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wmZl21S62zDqLB
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jun 2017 00:18:54 +1000 (AEST)
+Subject: patch "powerpc: vio_cmo: use dev_groups and not dev_attrs for
+ bus_type" added to driver-core-testing
 To: gregkh@linuxfoundation.org, aik@ozlabs.ru, bart.vanassche@sandisk.com,
  benh@kernel.crashing.org, johan@kernel.org, jroedel@suse.de, krzk@kernel.org,
  linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au, paulus@samba.org,
  robin.murphy@arm.com, vgupta@synopsys.com
 From: <gregkh@linuxfoundation.org>
-Date: Mon, 12 Jun 2017 16:18:43 +0200
-Message-ID: <149727712318419@kroah.com>
+Date: Mon, 12 Jun 2017 16:18:45 +0200
+Message-ID: <149727712530136@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ANSI_X3.4-1968
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,7 +28,7 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 This is a note to let you know that I've just added the patch titled
 
-    powerpc: vio: use dev_groups and not dev_attrs for bus_type
+    powerpc: vio_cmo: use dev_groups and not dev_attrs for bus_type
 
 to my driver-core git tree which can be found at
     git://git.kernel.org/pub/scm/linux/kernel/git/gregkh/driver-core.git
@@ -43,10 +43,10 @@ after it passes testing, and the merge window is open.
 If you have any questions about this process, please let me know.
 
 
->From 451e3f1a740d2b453c7358a07421d427315483e6 Mon Sep 17 00:00:00 2001
+>From 205a1ee15d924df412cb8bdefafafc5b53b21153 Mon Sep 17 00:00:00 2001
 From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Date: Tue, 6 Jun 2017 14:26:12 +0200
-Subject: powerpc: vio: use dev_groups and not dev_attrs for bus_type
+Date: Tue, 6 Jun 2017 14:17:27 +0200
+Subject: powerpc: vio_cmo: use dev_groups and not dev_attrs for bus_type
 
 The dev_attrs field has long been "depreciated" and is finally being
 removed, so move the driver to use the "correct" dev_groups field
@@ -65,58 +65,123 @@ Cc: <linuxppc-dev@lists.ozlabs.org>
 Acked-by: Michael Ellerman <mpe@ellerman.id.au>
 Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 ---
- arch/powerpc/platforms/pseries/vio.c | 16 ++++++++++------
- 1 file changed, 10 insertions(+), 6 deletions(-)
+ arch/powerpc/platforms/pseries/vio.c | 56 +++++++++++++++++++++---------------
+ 1 file changed, 33 insertions(+), 23 deletions(-)
 
 diff --git a/arch/powerpc/platforms/pseries/vio.c b/arch/powerpc/platforms/pseries/vio.c
-index 28b09fd797ec..b4f679e3ca3a 100644
+index b4f679e3ca3a..117beb9e8786 100644
 --- a/arch/powerpc/platforms/pseries/vio.c
 +++ b/arch/powerpc/platforms/pseries/vio.c
-@@ -1537,6 +1537,7 @@ static ssize_t name_show(struct device *dev,
- {
- 	return sprintf(buf, "%s\n", to_vio_dev(dev)->name);
- }
-+static DEVICE_ATTR_RO(name);
+@@ -948,21 +948,21 @@ static void vio_cmo_bus_init(void)
+ /* sysfs device functions and data structures for CMO */
  
- static ssize_t devspec_show(struct device *dev,
+ #define viodev_cmo_rd_attr(name)                                        \
+-static ssize_t viodev_cmo_##name##_show(struct device *dev,             \
++static ssize_t cmo_##name##_show(struct device *dev,                    \
+                                         struct device_attribute *attr,  \
+                                          char *buf)                     \
+ {                                                                       \
+ 	return sprintf(buf, "%lu\n", to_vio_dev(dev)->cmo.name);        \
+ }
+ 
+-static ssize_t viodev_cmo_allocs_failed_show(struct device *dev,
++static ssize_t cmo_allocs_failed_show(struct device *dev,
  		struct device_attribute *attr, char *buf)
-@@ -1545,6 +1546,7 @@ static ssize_t devspec_show(struct device *dev,
- 
- 	return sprintf(buf, "%s\n", of_node_full_name(of_node));
+ {
+ 	struct vio_dev *viodev = to_vio_dev(dev);
+ 	return sprintf(buf, "%d\n", atomic_read(&viodev->cmo.allocs_failed));
  }
-+static DEVICE_ATTR_RO(devspec);
  
+-static ssize_t viodev_cmo_allocs_failed_reset(struct device *dev,
++static ssize_t cmo_allocs_failed_store(struct device *dev,
+ 		struct device_attribute *attr, const char *buf, size_t count)
+ {
+ 	struct vio_dev *viodev = to_vio_dev(dev);
+@@ -970,7 +970,7 @@ static ssize_t viodev_cmo_allocs_failed_reset(struct device *dev,
+ 	return count;
+ }
+ 
+-static ssize_t viodev_cmo_desired_set(struct device *dev,
++static ssize_t cmo_desired_store(struct device *dev,
+ 		struct device_attribute *attr, const char *buf, size_t count)
+ {
+ 	struct vio_dev *viodev = to_vio_dev(dev);
+@@ -993,27 +993,37 @@ static ssize_t name_show(struct device *, struct device_attribute *, char *);
+ static ssize_t devspec_show(struct device *, struct device_attribute *, char *);
  static ssize_t modalias_show(struct device *dev, struct device_attribute *attr,
- 			     char *buf)
-@@ -1566,13 +1568,15 @@ static ssize_t modalias_show(struct device *dev, struct device_attribute *attr,
- 
- 	return sprintf(buf, "vio:T%sS%s\n", vio_dev->type, cp);
- }
-+static DEVICE_ATTR_RO(modalias);
- 
--static struct device_attribute vio_dev_attrs[] = {
+ 			     char *buf);
+-static struct device_attribute vio_cmo_dev_attrs[] = {
 -	__ATTR_RO(name),
 -	__ATTR_RO(devspec),
 -	__ATTR_RO(modalias),
+-	__ATTR(cmo_desired,       S_IWUSR|S_IRUSR|S_IWGRP|S_IRGRP|S_IROTH,
+-	       viodev_cmo_desired_show, viodev_cmo_desired_set),
+-	__ATTR(cmo_entitled,      S_IRUGO, viodev_cmo_entitled_show,      NULL),
+-	__ATTR(cmo_allocated,     S_IRUGO, viodev_cmo_allocated_show,     NULL),
+-	__ATTR(cmo_allocs_failed, S_IWUSR|S_IRUSR|S_IWGRP|S_IRGRP|S_IROTH,
+-	       viodev_cmo_allocs_failed_show, viodev_cmo_allocs_failed_reset),
 -	__ATTR_NULL
-+static struct attribute *vio_dev_attrs[] = {
++
++static struct device_attribute dev_attr_name;
++static struct device_attribute dev_attr_devspec;
++static struct device_attribute dev_attr_modalias;
++
++static DEVICE_ATTR_RO(cmo_entitled);
++static DEVICE_ATTR_RO(cmo_allocated);
++static DEVICE_ATTR_RW(cmo_desired);
++static DEVICE_ATTR_RW(cmo_allocs_failed);
++
++static struct attribute *vio_cmo_dev_attrs[] = {
 +	&dev_attr_name.attr,
 +	&dev_attr_devspec.attr,
 +	&dev_attr_modalias.attr,
++	&dev_attr_cmo_entitled.attr,
++	&dev_attr_cmo_allocated.attr,
++	&dev_attr_cmo_desired.attr,
++	&dev_attr_cmo_allocs_failed.attr,
 +	NULL,
  };
-+ATTRIBUTE_GROUPS(vio_dev);
++ATTRIBUTE_GROUPS(vio_cmo_dev);
  
- void vio_unregister_device(struct vio_dev *viodev)
+ /* sysfs bus functions and data structures for CMO */
+ 
+ #define viobus_cmo_rd_attr(name)                                        \
+-static ssize_t cmo_##name##_show(struct bus_type *bt, char *buf)        \
++static ssize_t cmo_bus_##name##_show(struct bus_type *bt, char *buf)    \
+ {                                                                       \
+ 	return sprintf(buf, "%lu\n", vio_cmo.name);                     \
+ }                                                                       \
+-static BUS_ATTR_RO(cmo_##name)
++static struct bus_attribute bus_attr_cmo_bus_##name =			\
++	__ATTR(cmo_##name, S_IRUGO, cmo_bus_##name##_show, NULL)
+ 
+ #define viobus_cmo_pool_rd_attr(name, var)                              \
+ static ssize_t                                                          \
+@@ -1051,11 +1061,11 @@ static ssize_t cmo_high_store(struct bus_type *bt, const char *buf,
+ static BUS_ATTR_RW(cmo_high);
+ 
+ static struct attribute *vio_bus_attrs[] = {
+-	&bus_attr_cmo_entitled.attr,
+-	&bus_attr_cmo_spare.attr,
+-	&bus_attr_cmo_min.attr,
+-	&bus_attr_cmo_desired.attr,
+-	&bus_attr_cmo_curr.attr,
++	&bus_attr_cmo_bus_entitled.attr,
++	&bus_attr_cmo_bus_spare.attr,
++	&bus_attr_cmo_bus_min.attr,
++	&bus_attr_cmo_bus_desired.attr,
++	&bus_attr_cmo_bus_curr.attr,
+ 	&bus_attr_cmo_high.attr,
+ 	&bus_attr_cmo_reserve_size.attr,
+ 	&bus_attr_cmo_excess_size.attr,
+@@ -1066,7 +1076,7 @@ ATTRIBUTE_GROUPS(vio_bus);
+ 
+ static void vio_cmo_sysfs_init(void)
  {
-@@ -1608,7 +1612,7 @@ static int vio_hotplug(struct device *dev, struct kobj_uevent_env *env)
- 
- struct bus_type vio_bus_type = {
- 	.name = "vio",
--	.dev_attrs = vio_dev_attrs,
-+	.dev_groups = vio_dev_groups,
- 	.uevent = vio_hotplug,
- 	.match = vio_bus_match,
- 	.probe = vio_bus_probe,
+-	vio_bus_type.dev_attrs = vio_cmo_dev_attrs;
++	vio_bus_type.dev_groups = vio_cmo_dev_groups;
+ 	vio_bus_type.bus_groups = vio_bus_groups;
+ }
+ #else /* CONFIG_PPC_SMLPAR */
 -- 
 2.13.1
