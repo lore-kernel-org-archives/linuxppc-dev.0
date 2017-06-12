@@ -1,32 +1,32 @@
-Return-Path: <clombard@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <msuchanek@suse.de>
+Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wmXh130ZgzDqL2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Jun 2017 22:46:09 +1000 (AEST)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v5CCi09M111629
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Jun 2017 08:46:06 -0400
-Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2b1pk8cv3n-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Jun 2017 08:46:06 -0400
-Received: from localhost
- by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <clombard@linux.vnet.ibm.com>;
- Mon, 12 Jun 2017 13:46:03 +0100
-From: Christophe Lombard <clombard@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, fbarrat@linux.vnet.ibm.com,
- vaibhav@linux.vnet.ibm.com, andrew.donnellan@au1.ibm.com
-Subject: [PATCH V2] cxl: Fixes for Coherent Accelerator Interface Architecture
- 2.0
-Date: Mon, 12 Jun 2017 14:45:59 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wmYbs4pVTzDqL2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Jun 2017 23:27:37 +1000 (AEST)
+Date: Mon, 12 Jun 2017 15:27:33 +0200
+From: Michal =?UTF-8?B?U3VjaMOhbmVr?= <msuchanek@suse.de>
+To: Peter Hutterer <peter.hutterer@who-t.net>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Benjamin Tissoires
+ <benjamin.tissoires@redhat.com>, Dmitry Torokhov
+ <dmitry.torokhov@gmail.com>, lkml <linux-kernel@vger.kernel.org>,
+ "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>
+Subject: Re: [PATCH] macintosh: move mac_hid driver to input/mouse.
+Message-ID: <20170612152733.1a14dbd7@kitsune.suse.cz>
+In-Reply-To: <20170612134007.2e5e2772@kitsune.suse.cz>
+References: <20170528114758.52b619f2@neko> <20170528175540.GA8094@dtor-ws>
+ <20170607185351.5fcd91df@kitsune.suse.cz>
+ <20170607171622.GE13116@dtor-ws>
+ <20170607211737.01888f04@kitsune.suse.cz>
+ <20170607231303.GB29224@jelly>
+ <20170608151842.71b59dad@kitsune.suse.cz>
+ <20170608230752.GA4254@jelly>
+ <CAKdAkRSho0vBDZ5az+JJ=x7_c1paZb=C6=bVKp4sqNEHB7twvA@mail.gmail.com>
+ <20170609133953.1e7221a8@kitsune.suse.cz>
+ <20170610020021.GA10528@m72e.redhat.com>
+ <20170612134007.2e5e2772@kitsune.suse.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Message-Id: <1497271559-28123-1-git-send-email-clombard@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,291 +36,175 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-A previous set of patches "cxl: Add support for Coherent Accelerator
-Interface Architecture 2.0" has introduced a new support for the CAPI
-cards. These patches have been tested on Simulation environment and
-quite a bit of them have been tested on real hardware.
+On Mon, 12 Jun 2017 13:40:07 +0200
+Michal Such=C3=A1nek <msuchanek@suse.de> wrote:
 
-This patch brings new fixes after a series of tests carried out on
-new equipment.
+> On Sat, 10 Jun 2017 12:00:22 +1000
+> Peter Hutterer <peter.hutterer@who-t.net> wrote:
+>=20
+> > On Fri, Jun 09, 2017 at 01:39:53PM +0200, Michal Such=C3=A1nek wrote: =
+=20
+> > > On Thu, 8 Jun 2017 16:18:28 -0700
+> > > Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
+> > >    =20
+> > > > On Thu, Jun 8, 2017 at 4:07 PM, Peter Hutterer
+> > > > <peter.hutterer@who-t.net> wrote:   =20
+> > > > > On Thu, Jun 08, 2017 at 03:18:42PM +0200, Michal Such=C3=A1nek
+> > > > > wrote:     =20
+> > > > >> This is what evtest reports about my keyboard:
+> > > > >>
+> > > > >> Select the device event number [0-12]: 2
+> > > > >> Input driver version is 1.0.1
+> > > > >> Input device ID: bus 0x3 vendor 0x413c product 0x2107 version
+> > > > >> 0x111 Input device name: "DELL Dell USB Entry Keyboard"
+> > > > >> Supported events:
+> > > > >>   Event type 0 (EV_SYN)
+> > > > >>   Event type 1 (EV_KEY)
+> > > > >>     Event code 1 (KEY_ESC)
+> > > > >>     Event code 2 (KEY_1)
+> > > > >>     Event code 3 (KEY_2)
+> > > > >>     Event code 4 (KEY_3)
+> > > > >> ...
+> > > > >>     Event code 193 (KEY_F23)
+> > > > >>     Event code 194 (KEY_F24)
+> > > > >>     Event code 240 (KEY_UNKNOWN)
+> > > > >>     Event code 272 (BTN_LEFT)
+> > > > >>     Event code 273 (BTN_RIGHT)
+> > > > >>     Event code 274 (BTN_MIDDLE)
+> > > > >>   Event type 4 (EV_MSC)
+> > > > >>     Event code 4 (MSC_SCAN)
+> > > > >>   Event type 17 (EV_LED)
+> > > > >>     Event code 0 (LED_NUML) state 1
+> > > > >>     Event code 1 (LED_CAPSL) state 0
+> > > > >>     Event code 2 (LED_SCROLLL) state 0
+> > > > >>     Event code 3 (LED_COMPOSE) state 0
+> > > > >>     Event code 4 (LED_KANA) state 0
+> > > > >> Key repeat handling:
+> > > > >>   Repeat type 20 (EV_REP)
+> > > > >>     Repeat code 0 (REP_DELAY)
+> > > > >>       Value    250
+> > > > >>     Repeat code 1 (REP_PERIOD)
+> > > > >>       Value     33
+> > > > >> Properties:     =20
+> > > > >
+> > > > > looks like it's not tagged as ID_INPUT_MOUSE by the default
+> > > > > udev rules because for that we need x/y axes (either relative
+> > > > > for real mice or absolute ones for the VMWare USB mouse). This
+> > > > > keyboard only has buttons though. So it gets ID_INPUT_KEYBOARD
+> > > > > for the keys, but no ID_INPUT_MOUSE.
+> > > > >
+> > > > > Google isn't overly forthcoming on "DELL Dell USB Entry
+> > > > > Keyboard" but the few pictures I can find all point to a
+> > > > > keyboard that doesn't have any physical mouse buttons at all.
+> > > > > Does yours have buttons? Can you post a picture of it
+> > > > > somewhere?=20
+> > > >=20
+> > > > Michal is using udev/hwdb to replace some of the keys on his
+> > > > keyboard to generate BTN_RIGHT/BTN_MIDDLE trying to achive the
+> > > > same end result as with mac_hid. It is not the default keyboard
+> > > > behavior. Having another custom udev rule to mark the device as
+> > > > ID_INPUT_MOUSE is a fair requirement in this case I think.
+> > > >    =20
+> > >=20
+> > > Which is done in different place, and uses device matching with
+> > > completely different patterns. So for this to work reasonably
+> > > either
+> > >=20
+> > >  - all devices should have all capabilities by default
+> > >  - the capabilities should be detected based on the events
+> > > actually available on the device
+> > >=20
+> > > And if my keyboard actually claimed to have relative axis because
+> > > of some great firmware engineering on the manufacturer's part and
+> > > I found how to remove them in hwdb it would not take effect
+> > > either.   =20
+> >=20
+> > https://github.com/systemd/systemd/blob/master/rules/50-udev-default.ru=
+les.in
+> > calls input-id which sets the ID_INPUT_* tags. If you modify the
+> > capabilities after that happens, you need to call input-id again to
+> > get updated udev properties. =20
+>=20
+> rules/50-udev-default.rules.in:SUBSYSTEM=3D=3D"usb",
+> ENV{DEVTYPE}=3D=3D"usb_device", IMPORT{builtin}=3D"usb_id",
+> IMPORT{builtin}=3D"hwdb --subsystem=3Dusb"
+> rules/50-udev-default.rules.in:SUBSYSTEM=3D=3D"input", ENV{ID_INPUT}=3D=
+=3D"",
+> IMPORT{builtin}=3D"input_id"
+> rules/50-udev-default.rules.in:ENV{MODALIAS}!=3D"",
+> IMPORT{builtin}=3D"hwdb --subsystem=3D$env{SUBSYSTEM}"
+> rules/60-evdev.rules:IMPORT{builtin}=3D"hwdb --subsystem=3Dinput
+> --lookup-prefix=3Devdev:", \
+> rules/60-evdev.rules:ENV{ID_INPUT_KEY}=3D=3D"?*", DRIVERS=3D=3D"atkbd", \
+> rules/60-evdev.rules:  IMPORT{builtin}=3D"hwdb
+> 'evdev:atkbd:$attr{[dmi/id]modalias}'", \
+> rules/60-evdev.rules:KERNELS=3D=3D"input*", IMPORT{builtin}=3D"hwdb
+> 'evdev:name:$attr{name}:phys:$attr{phys}:ev:$attr{capabilities/ev}:$attr{=
+[dmi/id]modalias}'",
+> \ rules/60-evdev.rules:KERNELS=3D=3D"input*", IMPORT{builtin}=3D"hwdb
+> 'evdev:name:$attr{name}:$attr{[dmi/id]modalias}'", \
+> rules/60-persistent-input.rules:ENV{ID_INPUT_KEYBOARD}=3D=3D"?*",
+> ENV{.INPUT_CLASS}=3D"kbd"
+> rules/60-persistent-input.rules:ENV{ID_INPUT_MOUSE}=3D=3D"?*",
+> ENV{.INPUT_CLASS}=3D"mouse"
+> rules/60-persistent-input.rules:ENV{ID_INPUT_TOUCHPAD}=3D=3D"?*",
+> ENV{.INPUT_CLASS}=3D"mouse"
+> rules/60-persistent-input.rules:ENV{ID_INPUT_TABLET}=3D=3D"?*",
+> ENV{.INPUT_CLASS}=3D"mouse"
+> rules/60-persistent-input.rules:ENV{ID_INPUT_JOYSTICK}=3D=3D"?*",
+> ENV{.INPUT_CLASS}=3D"joystick" rules/60-sensor.rules:
+> IMPORT{builtin}=3D"hwdb
+> 'sensor:modalias:$attr{modalias}:$attr{[dmi/id]modalias}'", \
+> rules/60-sensor.rules:SUBSYSTEM=3D=3D"input",
+> ENV{ID_INPUT_ACCELEROMETER}=3D=3D"1", SUBSYSTEMS=3D=3D"acpi", \
+> rules/60-sensor.rules:  IMPORT{builtin}=3D"hwdb
+> 'sensor:modalias:acpi:$attr{hid}:$attr{[dmi/id]modalias}'", \
+> rules/60-sensor.rules:SUBSYSTEM=3D=3D"input",
+> ENV{ID_INPUT_ACCELEROMETER}=3D=3D"1", SUBSYSTEMS=3D=3D"platform", \
+> rules/60-sensor.rules:  IMPORT{builtin}=3D"hwdb
+> 'sensor:modalias:platform:$id:$attr{[dmi/id]modalias}'", \
+> rules/70-mouse.rules:ENV{ID_INPUT_MOUSE}=3D=3D"", GOTO=3D"mouse_end"
+> rules/70-mouse.rules:        IMPORT{builtin}=3D"hwdb
+> 'mouse:$env{ID_BUS}:v$attr{id/vendor}p$attr{id/product}:name:$attr{name}:=
+'",
+> \ rules/70-mouse.rules:        IMPORT{builtin}=3D"hwdb
+> 'mouse:$env{ID_BUS}:v$attr{id/vendor}p$attr{id/product}:name:$attr{name}:=
+'",
+> \ rules/70-mouse.rules:        IMPORT{builtin}=3D"hwdb
+> 'mouse:ps2::name:$attr{device/name}:'", \
+> rules/70-touchpad.rules:ENV{ID_INPUT}=3D=3D"", GOTO=3D"touchpad_end"
+> rules/70-touchpad.rules:ENV{ID_INPUT_TOUCHPAD}=3D=3D"",
+> GOTO=3D"touchpad_end" rules/70-touchpad.rules:
+> IMPORT{builtin}=3D"hwdb
+> 'touchpad:$env{ID_BUS}:v$attr{id/vendor}p$attr{id/product}:name:$attr{nam=
+e}:'",
+> \
+>=20
+> Looking at the occurences of hwdb and ID_INPUT moving the call to
+> input_id from rules/50-udev-default.rules to a
+> separate file 60-input-id.rules would make it possible to put fixups
+> in 60-evdev.rules hwdb calls and the 60-persistent-input.rules that
+> depend on the settings would come after as well as the mouse and
+> touchpad-specific rules.
 
-Changelog[v2]
- - Rebase to latest upstream.
- - Update cxl_is_page_fault() to handle the checkout response status.
- - Add comments.
----
- drivers/misc/cxl/context.c |  6 +++---
- drivers/misc/cxl/cxl.h     | 17 ++++-------------
- drivers/misc/cxl/fault.c   | 19 ++++++++++++-------
- drivers/misc/cxl/main.c    | 16 ++++++++++++----
- drivers/misc/cxl/native.c  | 26 ++++++++++++++------------
- drivers/misc/cxl/pci.c     | 11 ++++-------
- 6 files changed, 49 insertions(+), 46 deletions(-)
+Oh man, there is no end of special-casing.=20
 
-diff --git a/drivers/misc/cxl/context.c b/drivers/misc/cxl/context.c
-index 4472ce1..8c32040 100644
---- a/drivers/misc/cxl/context.c
-+++ b/drivers/misc/cxl/context.c
-@@ -45,7 +45,7 @@ int cxl_context_init(struct cxl_context *ctx, struct cxl_afu *afu, bool master)
- 	mutex_init(&ctx->mapping_lock);
- 	ctx->mapping = NULL;
- 
--	if (cxl_is_psl8(afu)) {
-+	if (cxl_is_power8()) {
- 		spin_lock_init(&ctx->sste_lock);
- 
- 		/*
-@@ -189,7 +189,7 @@ int cxl_context_iomap(struct cxl_context *ctx, struct vm_area_struct *vma)
- 		if (start + len > ctx->afu->adapter->ps_size)
- 			return -EINVAL;
- 
--		if (cxl_is_psl9(ctx->afu)) {
-+		if (cxl_is_power9()) {
- 			/*
- 			 * Make sure there is a valid problem state
- 			 * area space for this AFU.
-@@ -324,7 +324,7 @@ static void reclaim_ctx(struct rcu_head *rcu)
- {
- 	struct cxl_context *ctx = container_of(rcu, struct cxl_context, rcu);
- 
--	if (cxl_is_psl8(ctx->afu))
-+	if (cxl_is_power8())
- 		free_page((u64)ctx->sstp);
- 	if (ctx->ff_page)
- 		__free_page(ctx->ff_page);
-diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
-index c8568ea..d516353 100644
---- a/drivers/misc/cxl/cxl.h
-+++ b/drivers/misc/cxl/cxl.h
-@@ -844,24 +844,15 @@ static inline bool cxl_is_power8(void)
- 
- static inline bool cxl_is_power9(void)
- {
--	/* intermediate solution */
--	if (!cxl_is_power8() &&
--	   (cpu_has_feature(CPU_FTRS_POWER9) ||
--	    cpu_has_feature(CPU_FTR_POWER9_DD1)))
-+	if (pvr_version_is(PVR_POWER9))
- 		return true;
- 	return false;
- }
- 
--static inline bool cxl_is_psl8(struct cxl_afu *afu)
-+static inline bool cxl_is_power9_dd1(void)
- {
--	if (afu->adapter->caia_major == 1)
--		return true;
--	return false;
--}
--
--static inline bool cxl_is_psl9(struct cxl_afu *afu)
--{
--	if (afu->adapter->caia_major == 2)
-+	if ((pvr_version_is(PVR_POWER9)) &&
-+	    cpu_has_feature(CPU_FTR_POWER9_DD1))
- 		return true;
- 	return false;
- }
-diff --git a/drivers/misc/cxl/fault.c b/drivers/misc/cxl/fault.c
-index 5344448..a6e6a18 100644
---- a/drivers/misc/cxl/fault.c
-+++ b/drivers/misc/cxl/fault.c
-@@ -187,7 +187,7 @@ static struct mm_struct *get_mem_context(struct cxl_context *ctx)
- 
- static bool cxl_is_segment_miss(struct cxl_context *ctx, u64 dsisr)
- {
--	if ((cxl_is_psl8(ctx->afu)) && (dsisr & CXL_PSL_DSISR_An_DS))
-+	if ((cxl_is_power8() && (dsisr & CXL_PSL_DSISR_An_DS)))
- 		return true;
- 
- 	return false;
-@@ -195,15 +195,20 @@ static bool cxl_is_segment_miss(struct cxl_context *ctx, u64 dsisr)
- 
- static bool cxl_is_page_fault(struct cxl_context *ctx, u64 dsisr)
- {
--	if ((cxl_is_psl8(ctx->afu)) && (dsisr & CXL_PSL_DSISR_An_DM))
-+	u64 crs; /* Translation Checkout Response Status */
-+
-+	if ((cxl_is_power8()) && (dsisr & CXL_PSL_DSISR_An_DM))
- 		return true;
- 
--	if ((cxl_is_psl9(ctx->afu)) &&
--	   ((dsisr & CXL_PSL9_DSISR_An_CO_MASK) &
--		(CXL_PSL9_DSISR_An_PF_SLR | CXL_PSL9_DSISR_An_PF_RGC |
--		 CXL_PSL9_DSISR_An_PF_RGP | CXL_PSL9_DSISR_An_PF_HRH |
--		 CXL_PSL9_DSISR_An_PF_STEG)))
-+	if (cxl_is_power9()) {
-+		crs = (dsisr & CXL_PSL9_DSISR_An_CO_MASK);
-+		if ((crs == CXL_PSL9_DSISR_An_PF_SLR) ||
-+		    (crs == CXL_PSL9_DSISR_An_PF_RGC) ||
-+		    (crs == CXL_PSL9_DSISR_An_PF_RGP) ||
-+		    (crs == CXL_PSL9_DSISR_An_PF_HRH) ||
-+		    (crs == CXL_PSL9_DSISR_An_PF_STEG))
- 		return true;
-+	}
- 
- 	return false;
- }
-diff --git a/drivers/misc/cxl/main.c b/drivers/misc/cxl/main.c
-index 1703655..d2d50e3 100644
---- a/drivers/misc/cxl/main.c
-+++ b/drivers/misc/cxl/main.c
-@@ -329,8 +329,14 @@ static int __init init_cxl(void)
- 
- 	cxl_debugfs_init();
- 
--	if ((rc = register_cxl_calls(&cxl_calls)))
--		goto err;
-+	/*
-+	 * we don't register the callbacks on P9. slb callack is only
-+	 * used for the PSL8 MMU and CX4.
-+	 */
-+	if (cxl_is_power8()) {
-+		if ((rc = register_cxl_calls(&cxl_calls)))
-+			goto err;
-+	}
- 
- 	if (cpu_has_feature(CPU_FTR_HVMODE)) {
- 		cxl_ops = &cxl_native_ops;
-@@ -347,7 +353,8 @@ static int __init init_cxl(void)
- 
- 	return 0;
- err1:
--	unregister_cxl_calls(&cxl_calls);
-+	if (cxl_is_power8())
-+		unregister_cxl_calls(&cxl_calls);
- err:
- 	cxl_debugfs_exit();
- 	cxl_file_exit();
-@@ -366,7 +373,8 @@ static void exit_cxl(void)
- 
- 	cxl_debugfs_exit();
- 	cxl_file_exit();
--	unregister_cxl_calls(&cxl_calls);
-+	if (cxl_is_power8())
-+		unregister_cxl_calls(&cxl_calls);
- 	idr_destroy(&cxl_adapter_idr);
- }
- 
-diff --git a/drivers/misc/cxl/native.c b/drivers/misc/cxl/native.c
-index 8d6ea97..3a7725e 100644
---- a/drivers/misc/cxl/native.c
-+++ b/drivers/misc/cxl/native.c
-@@ -105,11 +105,13 @@ static int native_afu_reset(struct cxl_afu *afu)
- 			   CXL_AFU_Cntl_An_RS_MASK | CXL_AFU_Cntl_An_ES_MASK,
- 			   false);
- 
--	/* Re-enable any masked interrupts */
--	serr = cxl_p1n_read(afu, CXL_PSL_SERR_An);
--	serr &= ~CXL_PSL_SERR_An_IRQ_MASKS;
--	cxl_p1n_write(afu, CXL_PSL_SERR_An, serr);
--
-+	if (afu->current_mode == 0) {
-+		/* Re-enable any masked interrupts when the AFU is not
-+		 * activated */
-+		serr = cxl_p1n_read(afu, CXL_PSL_SERR_An);
-+		serr &= ~CXL_PSL_SERR_An_IRQ_MASKS;
-+		cxl_p1n_write(afu, CXL_PSL_SERR_An, serr);
-+	}
- 
- 	return rc;
- }
-@@ -139,9 +141,9 @@ int cxl_psl_purge(struct cxl_afu *afu)
- 
- 	pr_devel("PSL purge request\n");
- 
--	if (cxl_is_psl8(afu))
-+	if (cxl_is_power8())
- 		trans_fault = CXL_PSL_DSISR_TRANS;
--	if (cxl_is_psl9(afu))
-+	if (cxl_is_power9())
- 		trans_fault = CXL_PSL9_DSISR_An_TF;
- 
- 	if (!cxl_ops->link_ok(afu->adapter, afu)) {
-@@ -603,7 +605,7 @@ static u64 calculate_sr(struct cxl_context *ctx)
- 		if (!test_tsk_thread_flag(current, TIF_32BIT))
- 			sr |= CXL_PSL_SR_An_SF;
- 	}
--	if (cxl_is_psl9(ctx->afu)) {
-+	if (cxl_is_power9()) {
- 		if (radix_enabled())
- 			sr |= CXL_PSL_SR_An_XLAT_ror;
- 		else
-@@ -1117,10 +1119,10 @@ static irqreturn_t native_handle_psl_slice_error(struct cxl_context *ctx,
- 
- static bool cxl_is_translation_fault(struct cxl_afu *afu, u64 dsisr)
- {
--	if ((cxl_is_psl8(afu)) && (dsisr & CXL_PSL_DSISR_TRANS))
-+	if ((cxl_is_power8()) && (dsisr & CXL_PSL_DSISR_TRANS))
- 		return true;
- 
--	if ((cxl_is_psl9(afu)) && (dsisr & CXL_PSL9_DSISR_An_TF))
-+	if ((cxl_is_power9()) && (dsisr & CXL_PSL9_DSISR_An_TF))
- 		return true;
- 
- 	return false;
-@@ -1194,10 +1196,10 @@ static void native_irq_wait(struct cxl_context *ctx)
- 		if (ph != ctx->pe)
- 			return;
- 		dsisr = cxl_p2n_read(ctx->afu, CXL_PSL_DSISR_An);
--		if (cxl_is_psl8(ctx->afu) &&
-+		if (cxl_is_power8() &&
- 		   ((dsisr & CXL_PSL_DSISR_PENDING) == 0))
- 			return;
--		if (cxl_is_psl9(ctx->afu) &&
-+		if (cxl_is_power9() &&
- 		   ((dsisr & CXL_PSL9_DSISR_PENDING) == 0))
- 			return;
- 		/*
-diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
-index 6dc1ee5..1eb9859 100644
---- a/drivers/misc/cxl/pci.c
-+++ b/drivers/misc/cxl/pci.c
-@@ -436,7 +436,7 @@ static int init_implementation_adapter_regs_psl9(struct cxl *adapter, struct pci
- 	/* nMMU_ID Defaults to: b’000001001’*/
- 	xsl_dsnctl |= ((u64)0x09 << (63-28));
- 
--	if (cxl_is_power9() && !cpu_has_feature(CPU_FTR_POWER9_DD1)) {
-+	if (!(cxl_is_power9_dd1())) {
- 		/*
- 		 * Used to identify CAPI packets which should be sorted into
- 		 * the Non-Blocking queues by the PHB. This field should match
-@@ -491,7 +491,7 @@ static int init_implementation_adapter_regs_psl9(struct cxl *adapter, struct pci
- 	cxl_p1_write(adapter, CXL_PSL9_APCDEDTYPE, 0x40000003FFFF0000ULL);
- 
- 	/* Disable vc dd1 fix */
--	if ((cxl_is_power9() && cpu_has_feature(CPU_FTR_POWER9_DD1)))
-+	if (cxl_is_power9_dd1())
- 		cxl_p1_write(adapter, CXL_PSL9_GP_CT, 0x0400000000000001ULL);
- 
- 	return 0;
-@@ -1439,8 +1439,7 @@ int cxl_pci_reset(struct cxl *adapter)
- 	 * The adapter is about to be reset, so ignore errors.
- 	 * Not supported on P9 DD1
- 	 */
--	if ((cxl_is_power8()) ||
--	    ((cxl_is_power9() && !cpu_has_feature(CPU_FTR_POWER9_DD1))))
-+	if ((cxl_is_power8()) || (!(cxl_is_power9_dd1())))
- 		cxl_data_cache_flush(adapter);
- 
- 	/* pcie_warm_reset requests a fundamental pci reset which includes a
-@@ -1750,7 +1749,6 @@ static const struct cxl_service_layer_ops psl9_ops = {
- 	.debugfs_add_adapter_regs = cxl_debugfs_add_adapter_regs_psl9,
- 	.debugfs_add_afu_regs = cxl_debugfs_add_afu_regs_psl9,
- 	.psl_irq_dump_registers = cxl_native_irq_dump_regs_psl9,
--	.err_irq_dump_registers = cxl_native_err_irq_dump_regs,
- 	.debugfs_stop_trace = cxl_stop_trace_psl9,
- 	.write_timebase_ctrl = write_timebase_ctrl_psl9,
- 	.timebase_read = timebase_read_psl9,
-@@ -1889,8 +1887,7 @@ static void cxl_pci_remove_adapter(struct cxl *adapter)
- 	 * Flush adapter datacache as its about to be removed.
- 	 * Not supported on P9 DD1.
- 	 */
--	if ((cxl_is_power8()) ||
--	    ((cxl_is_power9() && !cpu_has_feature(CPU_FTR_POWER9_DD1))))
-+	if ((cxl_is_power8()) || (!(cxl_is_power9_dd1())))
- 		cxl_data_cache_flush(adapter);
- 
- 	cxl_deconfigure_adapter(adapter);
--- 
-2.7.4
+When I assign a device
+E: ID_INPUT=3D1
+E: ID_INPUT_KEY=3D1
+E: ID_INPUT_KEYBOARD=3D1
+E: ID_INPUT_MOUSE=3D1
+it gets keyboard and pointer capabilities. When I replace
+ID_INPUT_MOUSE with ID_INPUT_TABLET_PAD which would be logical class
+for device with buttons and no axis it gets tablet-pad capability but
+loses keyboard capability. I suppose this is not documented anywhere,
+right? ID_INPUT_TABLET* actually means ID_INPUT_WACOM_TABLET* and will
+not work for non-wacom devices.
+
+Is there no support for non-wacom tablets?
+
+Thanks
+
+Michal
+
+>=20
