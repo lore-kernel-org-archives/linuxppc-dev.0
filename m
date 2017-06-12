@@ -1,36 +1,37 @@
-Return-Path: <davem@davemloft.net>
-Received: from shards.monkeyblade.net (shards.monkeyblade.net
- [184.105.139.130])
+Return-Path: <ego@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wmbdc67xQzDqL2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jun 2017 00:59:15 +1000 (AEST)
-Date: Mon, 12 Jun 2017 10:59:05 -0400 (EDT)
-Message-Id: <20170612.105905.1031273319008486521.davem@davemloft.net>
-To: yuval.shaia@oracle.com
-Cc: michael.chan@broadcom.com, f.fainelli@gmail.com,
- siva.kallam@broadcom.com, prashant@broadcom.com, madalin.bucur@nxp.com,
- leoli@freescale.com, sebastian.hesselbarth@gmail.com,
- sergei.shtylyov@cogentembedded.com, grygorii.strashko@ti.com,
- w-kwok2@ti.com, m-karicheri2@ti.com, andrew@lunn.ch,
- woojung.huh@microchip.com, UNGLinuxDriver@microchip.com,
- vivien.didelot@savoirfairelinux.com, arnd@arndb.de, tremyfr@gmail.com,
- jarod@redhat.com, horms+renesas@verge.net.au,
- kazuya.mizuguchi.ks@renesas.com, dan.carpenter@oracle.com,
- niklas.soderlund+renesas@ragnatech.se, johan@kernel.org,
- masaru.nagai.vx@renesas.com, geert+renesas@glider.be,
- laurent.pinchart@ideasonboard.com, chris.brandt@renesas.com,
- ivan.khoronzhuk@linaro.org, mugunthanvnm@ti.com, netdev@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
- linux-renesas-soc@vger.kernel.org, linux-omap@vger.kernel.org,
- linux-usb@vger.kernel.org
-Subject: Re: [PATCH v2] net: phy: Make phy_ethtool_ksettings_get return void
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20170612.102525.1159274040679939960.davem@davemloft.net>
-References: <20170612141508.29229-1-yuval.shaia@oracle.com>
- <20170612.102525.1159274040679939960.davem@davemloft.net>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=iso-8859-7
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wmbkX5V1TzDqL2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jun 2017 01:03:32 +1000 (AEST)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v5CEwuvB027895
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Jun 2017 11:03:30 -0400
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2b1qp57r19-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Jun 2017 11:03:30 -0400
+Received: from localhost
+ by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ego@linux.vnet.ibm.com>;
+ Mon, 12 Jun 2017 09:03:29 -0600
+Date: Mon, 12 Jun 2017 20:33:22 +0530
+From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+To: Nicholas Piggin <npiggin@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Gautham R . Shenoy" <ego@linux.vnet.ibm.com>,
+ "Shreyas B . Prabhu" <shreyas@linux.vnet.ibm.com>
+Subject: Re: [PATCH 09/14] powerpc/64s: idle hmi wakeup is unlikely
+Reply-To: ego@linux.vnet.ibm.com
+References: <20170611235835.7400-1-npiggin@gmail.com>
+ <20170611235835.7400-10-npiggin@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20170611235835.7400-10-npiggin@gmail.com>
+Message-Id: <20170612150322.GF10921@in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,26 +41,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-RnJvbTogRGF2aWQgTWlsbGVyIDxkYXZlbUBkYXZlbWxvZnQubmV0Pg0KRGF0ZTogTW9uLCAxMiBK
-dW4gMjAxNyAxMDoyNToyNSAtMDQwMCAoRURUKQ0KDQo+IEZyb206IFl1dmFsIFNoYWlhIDx5dXZh
-bC5zaGFpYUBvcmFjbGUuY29tPg0KPiBEYXRlOiBNb24sIDEyIEp1biAyMDE3IDE3OjE1OjA4ICsw
-MzAwDQo+IA0KPj4gTWFrZSByZXR1cm4gdmFsdWUgdm9pZCBzaW5jZSBmdW5jdGlvbiBuZXZlciBy
-ZXR1cm4gbWVhbmluZ2Z1bGwgdmFsdWUNCj4+IA0KPj4gU2lnbmVkLW9mZi1ieTogWXV2YWwgU2hh
-aWEgPHl1dmFsLnNoYWlhQG9yYWNsZS5jb20+DQo+PiBBY2tlZC1ieTogU2VyZ2VpIFNodHlseW92
-IDxzZXJnZWkuc2h0eWx5b3ZAY29nZW50ZW1iZWRkZWQuY29tPg0KPj4gLS0tDQo+PiB2MCAtPnYx
-Og0KPj4gCSogVGhlc2UgZmlsZXMgd2VyZSBtaXNzaW5nIGluIHYwDQo+PiAJCSogZHJpdmVycy9u
-ZXQvZXRoZXJuZXQvcmVuZXNhcy9yYXZiX21haW4uYw0KPj4gCQkqIGRyaXZlcnMvbmV0L2V0aGVy
-bmV0L3JlbmVzYXMvc2hfZXRoLmMNCj4+IAkJKiBkcml2ZXJzL25ldC9ldGhlcm5ldC90aS9uZXRj
-cF9ldGhzcy5jDQo+PiAJKiBBZGQgQWNrZWQtYnk6IFNlcmdlaSBTaHR5bHlvdg0KPj4gdjEgLT4g
-djI6DQo+PiAJKiBBZGp1c3QgdG8gbmV0LW5leHQgdHJlZQ0KPiANCj4gQXBwbGllZCwgdGhhbmsg
-eW91Lg0KDQpSZXZlcnRlZCwgcGxlYXNlIHRlc3QgeW91ciBidWlsZCBwcm9wZXJseToNCg0KZHJp
-dmVycy9uZXQvZXRoZXJuZXQvYXBtL3hnZW5lL3hnZW5lX2VuZXRfZXRodG9vbC5jOiBJbiBmdW5j
-dGlvbiCheGdlbmVfZ2V0X2xpbmtfa3NldHRpbmdzojoNCmRyaXZlcnMvbmV0L2V0aGVybmV0L2Fw
-bS94Z2VuZS94Z2VuZV9lbmV0X2V0aHRvb2wuYzoxMzQ6MTA6IGVycm9yOiB2b2lkIHZhbHVlIG5v
-dCBpZ25vcmVkIGFzIGl0IG91Z2h0IHRvIGJlDQogICByZXR1cm4gcGh5X2V0aHRvb2xfa3NldHRp
-bmdzX2dldChwaHlkZXYsIGNtZCk7DQogICAgICAgICAgXg0KZHJpdmVycy9uZXQvZXRoZXJuZXQv
-YXBtL3hnZW5lL3hnZW5lX2VuZXRfZXRodG9vbC5jOjE0MDoxMTogZXJyb3I6IHZvaWQgdmFsdWUg
-bm90IGlnbm9yZWQgYXMgaXQgb3VnaHQgdG8gYmUNCiAgICByZXR1cm4gcGh5X2V0aHRvb2xfa3Nl
-dHRpbmdzX2dldChwaHlkZXYsIGNtZCk7DQogICAgICAgICAgIF4NCnNjcmlwdHMvTWFrZWZpbGUu
-YnVpbGQ6MzAyOiByZWNpcGUgZm9yIHRhcmdldCAnZHJpdmVycy9uZXQvZXRoZXJuZXQvYXBtL3hn
-ZW5lL3hnZW5lX2VuZXRfZXRodG9vbC5vJyBmYWlsZWQNCg==
+On Mon, Jun 12, 2017 at 09:58:30AM +1000, Nicholas Piggin wrote:
+> In a busy system, idle wakeups can be expected from IPIs and device
+> interrupts.
+> 
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+
+Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/kernel/idle_book3s.S | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/arch/powerpc/kernel/idle_book3s.S b/arch/powerpc/kernel/idle_book3s.S
+> index 6305d4d7a268..32b76fb28352 100644
+> --- a/arch/powerpc/kernel/idle_book3s.S
+> +++ b/arch/powerpc/kernel/idle_book3s.S
+> @@ -306,7 +306,7 @@ FTR_SECTION_ELSE_NESTED(66);						\
+>  	rlwinm	r0,r12,45-31,0xe;  /* P7 wake reason field is 3 bits */	\
+>  ALT_FTR_SECTION_END_NESTED_IFSET(CPU_FTR_ARCH_207S, 66);		\
+>  	cmpwi	r0,0xa;			/* Hypervisor maintenance ? */	\
+> -	bne	20f;							\
+> +	bne+	20f;							\
+>  	/* Invoke opal call to handle hmi */				\
+>  	ld	r2,PACATOC(r13);					\
+>  	ld	r1,PACAR1(r13);						\
+> -- 
+> 2.11.0
+> 
