@@ -1,35 +1,18 @@
-Return-Path: <davem@davemloft.net>
-Received: from shards.monkeyblade.net (shards.monkeyblade.net
- [184.105.139.130])
+Return-Path: <gregkh@linuxfoundation.org>
+Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
+ [140.211.169.12])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wmZ7T237hzDqL2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Jun 2017 23:51:32 +1000 (AEST)
-Date: Mon, 12 Jun 2017 09:51:21 -0400 (EDT)
-Message-Id: <20170612.095121.1880452682603577061.davem@davemloft.net>
-To: yuval.shaia@oracle.com
-Cc: michael.chan@broadcom.com, f.fainelli@gmail.com,
- siva.kallam@broadcom.com, prashant@broadcom.com, madalin.bucur@nxp.com,
- leoli@freescale.com, sebastian.hesselbarth@gmail.com,
- sergei.shtylyov@cogentembedded.com, grygorii.strashko@ti.com,
- w-kwok2@ti.com, m-karicheri2@ti.com, andrew@lunn.ch,
- woojung.huh@microchip.com, UNGLinuxDriver@microchip.com,
- vivien.didelot@savoirfairelinux.com, arnd@arndb.de, tremyfr@gmail.com,
- jarod@redhat.com, horms+renesas@verge.net.au,
- kazuya.mizuguchi.ks@renesas.com, dan.carpenter@oracle.com,
- niklas.soderlund+renesas@ragnatech.se, johan@kernel.org,
- masaru.nagai.vx@renesas.com, geert+renesas@glider.be,
- laurent.pinchart@ideasonboard.com, chris.brandt@renesas.com,
- ivan.khoronzhuk@linaro.org, mugunthanvnm@ti.com, netdev@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
- linux-renesas-soc@vger.kernel.org, linux-omap@vger.kernel.org,
- linux-usb@vger.kernel.org
-Subject: Re: [PATCH v1] net/phy: Make phy_ethtool_ksettings_get return void
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20170612074233.8688-1-yuval.shaia@oracle.com>
-References: <20170612074233.8688-1-yuval.shaia@oracle.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wmZgB6MsvzDqL2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jun 2017 00:15:34 +1000 (AEST)
+Subject: patch "TTY: hvc: convert to use DRIVER_ATTR_RW" added to
+ driver-core-testing
+To: gregkh@linuxfoundation.org,jslaby@suse.com,linuxppc-dev@lists.ozlabs.org
+From: <gregkh@linuxfoundation.org>
+Date: Mon, 12 Jun 2017 16:15:22 +0200
+Message-ID: <149727692217130@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ANSI_X3.4-1968
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,22 +22,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Yuval Shaia <yuval.shaia@oracle.com>
-Date: Mon, 12 Jun 2017 10:42:33 +0300
 
-> Make return value void since function never return meaningfull value
-> 
-> Signed-off-by: Yuval Shaia <yuval.shaia@oracle.com>
-> Acked-by: Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>
-> ---
-> Re-sending since last time forgot to add netdev-list
-> v0 ->v1:
-> 	* These files were missing in v0
-> 		* drivers/net/ethernet/renesas/ravb_main.c
-> 		* drivers/net/ethernet/renesas/sh_eth.c
-> 		* drivers/net/ethernet/ti/netcp_ethss.c
-> 	* Add Acked-by: Sergei Shtylyov
+This is a note to let you know that I've just added the patch titled
 
-This doesn't apply cleanly to net-next at all.
+    TTY: hvc: convert to use DRIVER_ATTR_RW
 
-Please respin against an uptodate net-next tree, thank you.
+to my driver-core git tree which can be found at
+    git://git.kernel.org/pub/scm/linux/kernel/git/gregkh/driver-core.git
+in the driver-core-testing branch.
+
+The patch will show up in the next release of the linux-next tree
+(usually sometime within the next 24 hours during the week.)
+
+The patch will be merged to the driver-core-next branch sometime soon,
+after it passes testing, and the merge window is open.
+
+If you have any questions about this process, please let me know.
+
+
+>From 4e70a6fe6dc5d78939d9e155db3bd6cef28ec310 Mon Sep 17 00:00:00 2001
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Date: Fri, 9 Jun 2017 11:03:07 +0200
+Subject: TTY: hvc: convert to use DRIVER_ATTR_RW
+
+We are trying to get rid of DRIVER_ATTR(), and the hvc driver's
+attribute can be trivially changed to use DRIVER_ATTR_RW().
+
+Cc: Jiri Slaby <jslaby@suse.com>
+Cc: <linuxppc-dev@lists.ozlabs.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+---
+ drivers/tty/hvc/hvcs.c | 7 +++----
+ 1 file changed, 3 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/tty/hvc/hvcs.c b/drivers/tty/hvc/hvcs.c
+index 99bb875178d7..096ea5f511bd 100644
+--- a/drivers/tty/hvc/hvcs.c
++++ b/drivers/tty/hvc/hvcs.c
+@@ -484,13 +484,13 @@ static struct attribute_group hvcs_attr_group = {
+ 	.attrs = hvcs_attrs,
+ };
+ 
+-static ssize_t hvcs_rescan_show(struct device_driver *ddp, char *buf)
++static ssize_t rescan_show(struct device_driver *ddp, char *buf)
+ {
+ 	/* A 1 means it is updating, a 0 means it is done updating */
+ 	return snprintf(buf, PAGE_SIZE, "%d\n", hvcs_rescan_status);
+ }
+ 
+-static ssize_t hvcs_rescan_store(struct device_driver *ddp, const char * buf,
++static ssize_t rescan_store(struct device_driver *ddp, const char * buf,
+ 		size_t count)
+ {
+ 	if ((simple_strtol(buf, NULL, 0) != 1)
+@@ -505,8 +505,7 @@ static ssize_t hvcs_rescan_store(struct device_driver *ddp, const char * buf,
+ 	return count;
+ }
+ 
+-static DRIVER_ATTR(rescan,
+-	S_IRUGO | S_IWUSR, hvcs_rescan_show, hvcs_rescan_store);
++static DRIVER_ATTR_RW(rescan);
+ 
+ static void hvcs_kick(void)
+ {
+-- 
+2.13.1
