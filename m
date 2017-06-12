@@ -1,48 +1,27 @@
-Return-Path: <clombard@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <joe@perches.com>
+Received: from smtprelay.hostedemail.com (smtprelay0105.hostedemail.com
+ [216.40.44.105])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wmQFZ1TTZzDq5b
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Jun 2017 17:56:18 +1000 (AEST)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v5C7rbkg037506
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Jun 2017 03:56:16 -0400
-Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2b1m27g1p7-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Jun 2017 03:56:15 -0400
-Received: from localhost
- by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <clombard@linux.vnet.ibm.com>;
- Mon, 12 Jun 2017 08:56:13 +0100
-Received: from d06av24.portsmouth.uk.ibm.com (d06av24.portsmouth.uk.ibm.com
- [9.149.105.60])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v5C7u9nF15991294
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Jun 2017 07:56:09 GMT
-Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 20F4842047
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Jun 2017 08:54:01 +0100 (BST)
-Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id C55924203F
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Jun 2017 08:54:00 +0100 (BST)
-Received: from [9.164.161.1] (unknown [9.164.161.1])
- by d06av24.portsmouth.uk.ibm.com (Postfix) with ESMTP
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Jun 2017 08:54:00 +0100 (BST)
-Subject: Re: [PATCH] cxl: Fixes for Coherent Accelerator Interface
- Architecture 2.0
-To: linuxppc-dev@lists.ozlabs.org
-References: <1497002949-8803-1-git-send-email-clombard@linux.vnet.ibm.com>
- <0161a33c-362c-5f5c-1856-257da20c8e85@linux.vnet.ibm.com>
-From: christophe lombard <clombard@linux.vnet.ibm.com>
-Date: Mon, 12 Jun 2017 09:56:08 +0200
-MIME-Version: 1.0
-In-Reply-To: <0161a33c-362c-5f5c-1856-257da20c8e85@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <489c76ef-b1c2-3a8e-4bb9-76261f328312@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wmQm85sl8zDqL2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Jun 2017 18:19:20 +1000 (AEST)
+Received: from smtprelay.hostedemail.com (10.5.19.251.rfc1918.com
+ [10.5.19.251])
+ by smtpgrave05.hostedemail.com (Postfix) with ESMTP id 0C77218017FD8
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Jun 2017 08:12:59 +0000 (UTC)
+Message-ID: <1497255172.3254.14.camel@perches.com>
+Subject: Re: [next-20170609][bisected 4d72ba0] WARNING: CPU: 8 PID: 11043 at
+ lib/vsprintf.c:1945 set_precision
+From: Joe Perches <joe@perches.com>
+To: Abdul Haleem <abdhalee@linux.vnet.ibm.com>, Rasmus Villemoes
+ <linux@rasmusvillemoes.dk>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, linux-kernel
+ <linux-kernel@vger.kernel.org>, sachinp <sachinp@linux.vnet.ibm.com>
+Date: Mon, 12 Jun 2017 01:12:52 -0700
+In-Reply-To: <1497253993.15415.25.camel@abdul.in.ibm.com>
+References: <1497253993.15415.25.camel@abdul.in.ibm.com>
+Content-Type: text/plain; charset="ISO-8859-1"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,330 +31,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Le 09/06/2017 à 18:12, Frederic Barrat a écrit :
-> Salut Christophe,
->
-> It looks pretty good, but checkpatch complains about 1 or 2 items 
-> worth fixing.
->
-> 2 small remarks below.
->
->
-> Le 09/06/2017 à 12:09, Christophe Lombard a écrit :
->> A previous set of patches "cxl: Add support for Coherent Accelerator
->> Interface Architecture 2.0" has introduced a new support for the CAPI
->> cards. These patches have been tested on Simulation environment and
->> quite a bit of them have been tested on real hardware.
->>
->> This patch brings new fixes after a series of tests carried out on
->> new equipment.
->> ---
->>   drivers/misc/cxl/context.c |  6 +++---
->>   drivers/misc/cxl/cxl.h     | 17 ++++-------------
->>   drivers/misc/cxl/fault.c   | 19 ++++++++++++-------
->>   drivers/misc/cxl/main.c    | 12 ++++++++----
->>   drivers/misc/cxl/native.c  | 26 ++++++++++++++------------
->>   drivers/misc/cxl/pci.c     | 11 ++++-------
->>   6 files changed, 45 insertions(+), 46 deletions(-)
->>
->> diff --git a/drivers/misc/cxl/context.c b/drivers/misc/cxl/context.c
->> index 4472ce1..8c32040 100644
->> --- a/drivers/misc/cxl/context.c
->> +++ b/drivers/misc/cxl/context.c
->> @@ -45,7 +45,7 @@ int cxl_context_init(struct cxl_context *ctx, 
->> struct cxl_afu *afu, bool master)
->>       mutex_init(&ctx->mapping_lock);
->>       ctx->mapping = NULL;
->>
->> -    if (cxl_is_psl8(afu)) {
->> +    if (cxl_is_power8()) {
->>           spin_lock_init(&ctx->sste_lock);
->>
->>           /*
->> @@ -189,7 +189,7 @@ int cxl_context_iomap(struct cxl_context *ctx, 
->> struct vm_area_struct *vma)
->>           if (start + len > ctx->afu->adapter->ps_size)
->>               return -EINVAL;
->>
->> -        if (cxl_is_psl9(ctx->afu)) {
->> +        if (cxl_is_power9()) {
->>               /*
->>                * Make sure there is a valid problem state
->>                * area space for this AFU.
->> @@ -324,7 +324,7 @@ static void reclaim_ctx(struct rcu_head *rcu)
->>   {
->>       struct cxl_context *ctx = container_of(rcu, struct cxl_context, 
->> rcu);
->>
->> -    if (cxl_is_psl8(ctx->afu))
->> +    if (cxl_is_power8())
->>           free_page((u64)ctx->sstp);
->>       if (ctx->ff_page)
->>           __free_page(ctx->ff_page);
->> diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
->> index c8568ea..d516353 100644
->> --- a/drivers/misc/cxl/cxl.h
->> +++ b/drivers/misc/cxl/cxl.h
->> @@ -844,24 +844,15 @@ static inline bool cxl_is_power8(void)
->>
->>   static inline bool cxl_is_power9(void)
->>   {
->> -    /* intermediate solution */
->> -    if (!cxl_is_power8() &&
->> -       (cpu_has_feature(CPU_FTRS_POWER9) ||
->> -        cpu_has_feature(CPU_FTR_POWER9_DD1)))
->> +    if (pvr_version_is(PVR_POWER9))
->>           return true;
->>       return false;
->>   }
->>
->> -static inline bool cxl_is_psl8(struct cxl_afu *afu)
->> +static inline bool cxl_is_power9_dd1(void)
->>   {
->> -    if (afu->adapter->caia_major == 1)
->> -        return true;
->> -    return false;
->> -}
->> -
->> -static inline bool cxl_is_psl9(struct cxl_afu *afu)
->> -{
->> -    if (afu->adapter->caia_major == 2)
->> +    if ((pvr_version_is(PVR_POWER9)) &&
->> +        cpu_has_feature(CPU_FTR_POWER9_DD1))
->>           return true;
->>       return false;
->>   }
->> diff --git a/drivers/misc/cxl/fault.c b/drivers/misc/cxl/fault.c
->> index 5344448..866ff191 100644
->> --- a/drivers/misc/cxl/fault.c
->> +++ b/drivers/misc/cxl/fault.c
->> @@ -187,7 +187,7 @@ static struct mm_struct *get_mem_context(struct 
->> cxl_context *ctx)
->>
->>   static bool cxl_is_segment_miss(struct cxl_context *ctx, u64 dsisr)
->>   {
->> -    if ((cxl_is_psl8(ctx->afu)) && (dsisr & CXL_PSL_DSISR_An_DS))
->> +    if ((cxl_is_power8() && (dsisr & CXL_PSL_DSISR_An_DS)))
->>           return true;
->>
->>       return false;
->> @@ -195,15 +195,20 @@ static bool cxl_is_segment_miss(struct 
->> cxl_context *ctx, u64 dsisr)
->>
->>   static bool cxl_is_page_fault(struct cxl_context *ctx, u64 dsisr)
->>   {
->> -    if ((cxl_is_psl8(ctx->afu)) && (dsisr & CXL_PSL_DSISR_An_DM))
->> +    u64 crs;
->> +
->> +    if ((cxl_is_power8()) && (dsisr & CXL_PSL_DSISR_An_DM))
->>           return true;
->>
->> -    if ((cxl_is_psl9(ctx->afu)) &&
->> -       ((dsisr & CXL_PSL9_DSISR_An_CO_MASK) &
->> -        (CXL_PSL9_DSISR_An_PF_SLR | CXL_PSL9_DSISR_An_PF_RGC |
->> -         CXL_PSL9_DSISR_An_PF_RGP | CXL_PSL9_DSISR_An_PF_HRH |
->> -         CXL_PSL9_DSISR_An_PF_STEG)))
->> +    if (cxl_is_power9()) {
->> +        crs = (dsisr & CXL_PSL9_DSISR_An_CO_MASK);
->> +        if ((crs & CXL_PSL9_DSISR_An_PF_SLR) ||
->> +            (crs & CXL_PSL9_DSISR_An_PF_RGC) ||
->> +            (crs & CXL_PSL9_DSISR_An_PF_RGP) ||
->> +            (crs & CXL_PSL9_DSISR_An_PF_HRH) ||
->> +            (crs & CXL_PSL9_DSISR_An_PF_STEG))
->>           return true;
->> +    }
->>
->>       return false;
->>   }
->> diff --git a/drivers/misc/cxl/main.c b/drivers/misc/cxl/main.c
->> index 1703655..40c2b05 100644
->> --- a/drivers/misc/cxl/main.c
->> +++ b/drivers/misc/cxl/main.c
->> @@ -329,8 +329,10 @@ static int __init init_cxl(void)
->>
->>       cxl_debugfs_init();
->>
->> -    if ((rc = register_cxl_calls(&cxl_calls)))
->> -        goto err;
->> +    if (cxl_is_power8()) {
->> +        if ((rc = register_cxl_calls(&cxl_calls)))
->> +            goto err;
->> +    }
->
->
->
-> I would add a comment to explain why we don't register the callbacks 
-> on p9 (i.e. slb callack is only for the PSL8 MMU and the others are 
-> dead code for CX4, which I'd like to remove once the CX5 patch is in).
->
->
+On Mon, 2017-06-12 at 13:23 +0530, Abdul Haleem wrote:
+> Hi Rasmus,
+> 
+> With commit (4d72ba0-lib/vsprintf.c: warn about too large precisions..)
+> 
+> WARN_ONCE is being triggered while running trinity 
+> $ git clone https://github.com/kernelslacker/trinity.git
+> $ cd trinity;./configure;make 
+> $ ./trinity --dangerous
+> 
+> Machine : Power 8 PowerVM LPAR
+> gcc : version 5.2.1
+> config : attached
+> 
+> 
+> In file lib/vsprintf.c at line 1945:
+> set_precision(struct printf_spec *spec, int prec)
+> {
+>     spec->precision = prec;
+>     if (WARN_ONCE(spec->precision != prec, "precision %d too large",
+> prec)) {
+>         spec->precision = clamp(prec, 0, PRECISION_MAX);
+>     }
+> }
 
-okay
+Presumably there should be a PATH_MAX maximum check added
+to the strlen(name) in get_fs_type.
 
->>
->>       if (cpu_has_feature(CPU_FTR_HVMODE)) {
->>           cxl_ops = &cxl_native_ops;
->> @@ -347,7 +349,8 @@ static int __init init_cxl(void)
->>
->>       return 0;
->>   err1:
->> -    unregister_cxl_calls(&cxl_calls);
->> +    if (cxl_is_power8())
->> +        unregister_cxl_calls(&cxl_calls);
->>   err:
->>       cxl_debugfs_exit();
->>       cxl_file_exit();
->> @@ -366,7 +369,8 @@ static void exit_cxl(void)
->>
->>       cxl_debugfs_exit();
->>       cxl_file_exit();
->> -    unregister_cxl_calls(&cxl_calls);
->> +    if (cxl_is_power8())
->> +        unregister_cxl_calls(&cxl_calls);
->>       idr_destroy(&cxl_adapter_idr);
->>   }
->>
->> diff --git a/drivers/misc/cxl/native.c b/drivers/misc/cxl/native.c
->> index 871a2f0..6ed0bf4 100644
->> --- a/drivers/misc/cxl/native.c
->> +++ b/drivers/misc/cxl/native.c
->> @@ -105,11 +105,13 @@ static int native_afu_reset(struct cxl_afu *afu)
->>                  CXL_AFU_Cntl_An_RS_MASK | CXL_AFU_Cntl_An_ES_MASK,
->>                  false);
->>
->> -    /* Re-enable any masked interrupts */
->> -    serr = cxl_p1n_read(afu, CXL_PSL_SERR_An);
->> -    serr &= ~CXL_PSL_SERR_An_IRQ_MASKS;
->> -    cxl_p1n_write(afu, CXL_PSL_SERR_An, serr);
->> -
->> +    if (afu->current_mode == 0) {
->> +        /* Re-enable any masked interrupts when the AFU is not
->> +         * activated */
->> +        serr = cxl_p1n_read(afu, CXL_PSL_SERR_An);
->> +        serr &= ~CXL_PSL_SERR_An_IRQ_MASKS;
->> +        cxl_p1n_write(afu, CXL_PSL_SERR_An, serr);
->> +    }
->
->
-> What happens when the AFU is activated? Is that something we missed 
-> before, or a different behavior on P9?
->
->
+fs/filesystems.c:271
 
-In most of the cases, native_afu_reset() is called when the AFU is not 
-activated, except when we attach a process
-for a dedicated AFU (P8 and P9). In this case, it's not necessary to 
-re-enable interrupts and the IVTE value, used to
-report this interrupt (field 48:63 - errivte_slice - PSL_SERR_An) is 
-always configured.
+struct file_system_type *get_fs_type(const char *name)
+{
+	struct file_system_type *fs;
+	const char *dot = strchr(name, '.');
+	int len = dot ? dot - name : strlen(name);
 
->
->>
->>       return rc;
->>   }
->> @@ -139,9 +141,9 @@ int cxl_psl_purge(struct cxl_afu *afu)
->>
->>       pr_devel("PSL purge request\n");
->>
->> -    if (cxl_is_psl8(afu))
->> +    if (cxl_is_power8())
->>           trans_fault = CXL_PSL_DSISR_TRANS;
->> -    if (cxl_is_psl9(afu))
->> +    if (cxl_is_power9())
->>           trans_fault = CXL_PSL9_DSISR_An_TF;
->>
->>       if (!cxl_ops->link_ok(afu->adapter, afu)) {
->> @@ -603,7 +605,7 @@ static u64 calculate_sr(struct cxl_context *ctx)
->>           if (!test_tsk_thread_flag(current, TIF_32BIT))
->>               sr |= CXL_PSL_SR_An_SF;
->>       }
->> -    if (cxl_is_psl9(ctx->afu)) {
->> +    if (cxl_is_power9()) {
->>           if (radix_enabled())
->>               sr |= CXL_PSL_SR_An_XLAT_ror;
->>           else
->> @@ -1117,10 +1119,10 @@ static irqreturn_t 
->> native_handle_psl_slice_error(struct cxl_context *ctx,
->>
->>   static bool cxl_is_translation_fault(struct cxl_afu *afu, u64 dsisr)
->>   {
->> -    if ((cxl_is_psl8(afu)) && (dsisr & CXL_PSL_DSISR_TRANS))
->> +    if ((cxl_is_power8()) && (dsisr & CXL_PSL_DSISR_TRANS))
->>           return true;
->>
->> -    if ((cxl_is_psl9(afu)) && (dsisr & CXL_PSL9_DSISR_An_TF))
->> +    if ((cxl_is_power9()) && (dsisr & CXL_PSL9_DSISR_An_TF))
->>           return true;
->>
->>       return false;
->> @@ -1194,10 +1196,10 @@ static void native_irq_wait(struct 
->> cxl_context *ctx)
->>           if (ph != ctx->pe)
->>               return;
->>           dsisr = cxl_p2n_read(ctx->afu, CXL_PSL_DSISR_An);
->> -        if (cxl_is_psl8(ctx->afu) &&
->> +        if (cxl_is_power8() &&
->>              ((dsisr & CXL_PSL_DSISR_PENDING) == 0))
->>               return;
->> -        if (cxl_is_psl9(ctx->afu) &&
->> +        if (cxl_is_power9() &&
->>              ((dsisr & CXL_PSL9_DSISR_PENDING) == 0))
->>               return;
->>           /*
->> diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
->> index 6dc1ee5..1eb9859 100644
->> --- a/drivers/misc/cxl/pci.c
->> +++ b/drivers/misc/cxl/pci.c
->> @@ -436,7 +436,7 @@ static int 
->> init_implementation_adapter_regs_psl9(struct cxl *adapter, struct pci
->>       /* nMMU_ID Defaults to: b’000001001’*/
->>       xsl_dsnctl |= ((u64)0x09 << (63-28));
->>
->> -    if (cxl_is_power9() && !cpu_has_feature(CPU_FTR_POWER9_DD1)) {
->> +    if (!(cxl_is_power9_dd1())) {
->>           /*
->>            * Used to identify CAPI packets which should be sorted into
->>            * the Non-Blocking queues by the PHB. This field should match
->> @@ -491,7 +491,7 @@ static int 
->> init_implementation_adapter_regs_psl9(struct cxl *adapter, struct pci
->>       cxl_p1_write(adapter, CXL_PSL9_APCDEDTYPE, 0x40000003FFFF0000ULL);
->>
->>       /* Disable vc dd1 fix */
->> -    if ((cxl_is_power9() && cpu_has_feature(CPU_FTR_POWER9_DD1)))
->> +    if (cxl_is_power9_dd1())
->>           cxl_p1_write(adapter, CXL_PSL9_GP_CT, 0x0400000000000001ULL);
->>
->>       return 0;
->> @@ -1439,8 +1439,7 @@ int cxl_pci_reset(struct cxl *adapter)
->>        * The adapter is about to be reset, so ignore errors.
->>        * Not supported on P9 DD1
->>        */
->> -    if ((cxl_is_power8()) ||
->> -        ((cxl_is_power9() && !cpu_has_feature(CPU_FTR_POWER9_DD1))))
->> +    if ((cxl_is_power8()) || (!(cxl_is_power9_dd1())))
->>           cxl_data_cache_flush(adapter);
->>
->>       /* pcie_warm_reset requests a fundamental pci reset which 
->> includes a
->> @@ -1750,7 +1749,6 @@ static const struct cxl_service_layer_ops 
->> psl9_ops = {
->>       .debugfs_add_adapter_regs = cxl_debugfs_add_adapter_regs_psl9,
->>       .debugfs_add_afu_regs = cxl_debugfs_add_afu_regs_psl9,
->>       .psl_irq_dump_registers = cxl_native_irq_dump_regs_psl9,
->> -    .err_irq_dump_registers = cxl_native_err_irq_dump_regs,
->>       .debugfs_stop_trace = cxl_stop_trace_psl9,
->>       .write_timebase_ctrl = write_timebase_ctrl_psl9,
->>       .timebase_read = timebase_read_psl9,
->> @@ -1889,8 +1887,7 @@ static void cxl_pci_remove_adapter(struct cxl 
->> *adapter)
->>        * Flush adapter datacache as its about to be removed.
->>        * Not supported on P9 DD1.
->>        */
->> -    if ((cxl_is_power8()) ||
->> -        ((cxl_is_power9() && !cpu_has_feature(CPU_FTR_POWER9_DD1))))
->> +    if ((cxl_is_power8()) || (!(cxl_is_power9_dd1())))
->>           cxl_data_cache_flush(adapter);
->>
->>       cxl_deconfigure_adapter(adapter);
->>
->
+	fs = __get_fs_type(name, len);
+	if (!fs && (request_module("fs-%.*s", len, name) == 0))
+		fs = __get_fs_type(name, len);
