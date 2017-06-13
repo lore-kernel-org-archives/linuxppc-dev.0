@@ -1,46 +1,27 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
+ [IPv6:2607:f8b0:400e:c05::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wn5xs6WqvzDqL3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jun 2017 20:45:05 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Michael Bringmann <mwb@linux.vnet.ibm.com>,
- Reza Arbab <arbab@linux.vnet.ibm.com>
-Cc: Balbir Singh <bsingharora@gmail.com>, linux-kernel@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Bharata B Rao <bharata@linux.vnet.ibm.com>,
- Shailendra Singh <shailendras@nvidia.com>,
- Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
- Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
- Michael Bringmann from Kernel Team <mbringm@us.ibm.com>
-Subject: Re: RESEND Re: [Patch 2/2]: powerpc/hotplug/mm: Fix hot-add memory
- node assoc
-In-Reply-To: <d0027ac9-48cb-2d31-ce26-a29c0fc0a32c@linux.vnet.ibm.com>
-References: <3bb44d92-b2ff-e197-4bdf-ec6d588d6dab@linux.vnet.ibm.com>
- <20170523155251.bqwc5mc4jpgzkqlm@arbab-laptop.localdomain>
- <1c1d70e3-4e45-b035-0e75-1b0f531c111b@linux.vnet.ibm.com>
- <20170523214922.bns675oqzqj4pkhc@arbab-laptop.localdomain>
- <ee96df3d-ad0f-c4dc-e7d5-290018ec8afd@linux.vnet.ibm.com>
- <87poeya4dt.fsf@concordia.ellerman.id.au>
- <8e2417d8-d108-2949-40f2-997d53a3f367@linux.vnet.ibm.com>
- <87a861a25y.fsf@concordia.ellerman.id.au>
- <20170525151011.m4ae4ipxbqsj3mn7@arbab-laptop.localdomain>
- <87zie08ekt.fsf@concordia.ellerman.id.au>
- <20170526143147.z4lmtrs7vowucbkf@arbab-laptop.localdomain>
- <87lgpg6xe2.fsf@concordia.ellerman.id.au>
- <54877b2b-8446-20f6-e316-25af809ae11f@linux.vnet.ibm.com>
- <87tw402go0.fsf@concordia.ellerman.id.au>
- <54ebacf1-1249-cc6a-80a5-b293e581f401@linux.vnet.ibm.com>
- <8760g9qwfd.fsf@concordia.ellerman.id.au>
- <ba7d7010-44ed-cc20-661c-2078f0f522b7@linux.vnet.ibm.com>
- <87tw3sdmpj.fsf@concordia.ellerman.id.au>
- <d0027ac9-48cb-2d31-ce26-a29c0fc0a32c@linux.vnet.ibm.com>
-Date: Tue, 13 Jun 2017 20:45:04 +1000
-Message-ID: <87o9tsgo9b.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wn5ys33tSzDqPv
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jun 2017 20:45:57 +1000 (AEST)
+Received: by mail-pg0-x243.google.com with SMTP id a70so17957847pge.0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jun 2017 03:45:57 -0700 (PDT)
+Date: Tue, 13 Jun 2017 20:45:38 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, "Shreyas B . Prabhu"
+ <shreyas@linux.vnet.ibm.com>, Vaidyanathan Srinivasan
+ <svaidy@linux.vnet.ibm.com>
+Subject: Re: [PATCH 08/14] powerpc/64s: idle avoid SRR usage in idle
+ sleep/wake paths
+Message-ID: <20170613204538.779ebc40@roar.ozlabs.ibm.com>
+In-Reply-To: <20170613102553.GJ10921@in.ibm.com>
+References: <20170611235835.7400-1-npiggin@gmail.com>
+ <20170611235835.7400-9-npiggin@gmail.com>
+ <20170613102553.GJ10921@in.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,42 +31,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michael Bringmann <mwb@linux.vnet.ibm.com> writes:
+On Tue, 13 Jun 2017 15:55:53 +0530
+Gautham R Shenoy <ego@linux.vnet.ibm.com> wrote:
 
-> Here is the information from 2 different kernels.  I have not been able to retrieve
-> the information matching yesterday's attachments, yet, as those dumps were
-> acquired in April.
->  
-> Attached please find 2 dumps of similar material from kernels running with my
-> current patches (Linux 4.4, Linux 4.12).
+> Hi Nick,
+> 
+> On Mon, Jun 12, 2017 at 09:58:29AM +1000, Nicholas Piggin wrote:
+> > Idle code now always runs at the 0xc... effective address whether
+> > in real or virtual mode. This means rfid can be ditched, along
+> > with a lot of SRR manipulations.
+> > 
+> > In the wakeup path, carry SRR1 around in r12. Use mtmsrd to change
+> > MSR states as required.
+> > 
+> > This also balances the return prediction for the idle call, by
+> > doing blr rather than rfid to return to the idle caller.
+> > 
+> > On POWER9, 2-process context switch on different cores, with snooze
+> > disabled, increases performance by 2%.
+> > ---
+> >  arch/powerpc/kernel/exceptions-64s.S    |  1 +
+> >  arch/powerpc/kernel/idle_book3s.S       | 57 +++++++++++++++------------------
+> >  arch/powerpc/kvm/book3s_hv_rmhandlers.S |  8 ++++-
+> >  3 files changed, 33 insertions(+), 33 deletions(-)
+> > 
+> > diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+> > index fec7c933d095..c3d0aef089a7 100644
+> > --- a/arch/powerpc/kernel/idle_book3s.S
+> > +++ b/arch/powerpc/kernel/idle_book3s.S
+> > @@ -148,12 +147,8 @@ pnv_powersave_common:
+> >  	 * the MMU context to the guest.
+> >  	 */
+> >  	LOAD_REG_IMMEDIATE(r7, MSR_IDLE)
+> > -	li	r6, MSR_RI
+> > -	andc	r6, r9, r6
+> > -	mtmsrd	r6, 1		/* clear RI before setting SRR0/1 */
+> > -	mtspr	SPRN_SRR0, r4
+> > -	mtspr	SPRN_SRR1, r7
+> > -	rfid
+> > +	mtmsrd	r7,0
+> > +	bctr  
+> 
+> So at this point we need to transition from virtual to real mode as
+> the comment in pnv_enter_arch207_idle_mode expects us to. Which is
+> being performed by mtmsrd here. Then we jump to the function via
+> bctr. So, in this patch we are using two instructions to modify the
+> MSR and the PC, while earlier the rfid would update these atomically.
+> 
+> Does forgoing atomicity have any risk? I am asking this because
+> historically we have modified IR/DR bits in the MSR via rfid
+> mechanism.
 
-OK thanks.
+I believe it's not a problem. Actually the ISA has a note about using
+it in this way, p.1181 of ISA v3.0B, the programming note suggests
+using mtmsrd rather than rfid to enable IR.
 
-I'd actually like to see the dmesg output from a kernel *without* your
-patches.
+I've tested on POWER8 and 9 and not had any problems with it. Interesting
+question though.
 
-Looking at the device tree properties:
+One thing I wonder about is that ERAT installs real mode entries, so
+using mtmsrd to transition from real to virtual mode will require 2
+I-ERAT entries for these nearby instruction addresses. Then if you did
+a branch to a distant address, that would require another I-ERAT. On
+the other hand if you do an rfid to switch MSR and branch to distant
+address at the same time, it should only require 2 I-ERAT entries. So
+you may see better microbenchmark performance of the first case, but
+the latter may end up being slower on real work.
 
-ltcalpine2-lp9:/proc/device-tree/ibm,dynamic-reconfiguration-memory # lsprop ibm,associativity-lookup-arrays
-ibm,associativity-lookup-arrays
-		 00000004 = 4 arrays
-                 00000004 = of 4 entries each
-                 00000000 00000000 00000000 00000000
-		 00000000 00000000 00000001 00000001
-                 00000000 00000003 00000006 00000006
-                 00000000 00000003 00000007 00000007
+I've decided that probably the kernel is compact enough that we aren't
+likely to cause more ERAT footprint by doing this. It would be
+interesting to do a proper analysis of this, but I haven't got around
+to it yet.
 
-
-Which does tell us that nodes 0, 1, 6 and 7 exist.
-
-So your idea of looking at that and setting any node found in there
-online should work.
-
-My only worry is that behaviour appears to be completely undocumented in
-PAPR, ie. PAPR explicitly says that property only needs to contain
-values for LMBs present at boot.
-
-But possibly we can talk to the PowerVM/PAPR guys and have that changed
-so that it becomes something we can rely on.
-
-cheers
+Thanks,
+Nick
