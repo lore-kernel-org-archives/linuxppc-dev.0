@@ -3,37 +3,40 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wnHXB1ynDzDqL5
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jun 2017 03:56:57 +1000 (AEST)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wnHXD2k62zDqL5
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jun 2017 03:57:00 +1000 (AEST)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v5DHroDi082446
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jun 2017 13:56:54 -0400
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2b2kbucgyx-1
+ v5DHrvi1020013
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jun 2017 13:56:57 -0400
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2b2ksrk4ve-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jun 2017 13:56:53 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jun 2017 13:56:57 -0400
 Received: from localhost
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <shilpa.bhat@linux.vnet.ibm.com>;
- Wed, 14 Jun 2017 03:56:50 +1000
+ Wed, 14 Jun 2017 03:56:54 +1000
 Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v5DHumxr66322494
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jun 2017 03:56:48 +1000
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v5DHuqmp2949504
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jun 2017 03:56:52 +1000
 Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
  by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v5DHueHQ001169
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jun 2017 03:56:40 +1000
+ v5DHuhPT001263
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jun 2017 03:56:44 +1000
 From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org, cyrilbur@gmail.com
 Cc: linux-kernel@vger.kernel.org, benh@kernel.crashing.org, paulus@samba.org,
  mpe@ellerman.id.au, svaidy@linux.vnet.ibm.com, ego@linux.vnet.ibm.com,
  Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH V2 0/2] Add support for OCC command/response interface
-Date: Tue, 13 Jun 2017 23:26:39 +0530
-Message-Id: <1497376601-23604-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+Subject: [PATCH V2 1/2] powerpc/powernv: Get a unique token for async
+ completions
+Date: Tue, 13 Jun 2017 23:26:40 +0530
+In-Reply-To: <1497376601-23604-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+References: <1497376601-23604-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+Message-Id: <1497376601-23604-2-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,26 +46,87 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In P9, OCC(On Chip Controller) can be sent commands inband via shared
-memory based command response interface.  This patch adds a platform
-driver to support the OCC command-response interface.
+This patch adds support to get a unique token for async completion
+requests. This will be used for creating non-repititive request
+handles for consecutive requests in OPAL-OCC command/response
+interface.
 
-The skiboot patch for the interface is posted here:
-https://lists.ozlabs.org/pipermail/skiboot/2017-June/007705.html
+Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+---
+No changes from V1
 
-Shilpasri G Bhat (2):
-  powerpc/powernv: Get a unique token for async completions
-  powerpc/powernv : Add support for OPAL-OCC command/response interface
+ arch/powerpc/include/asm/opal.h             |  1 +
+ arch/powerpc/platforms/powernv/opal-async.c | 46 +++++++++++++++++++++++++++++
+ 2 files changed, 47 insertions(+)
 
- arch/powerpc/include/asm/opal-api.h            |  41 +++-
- arch/powerpc/include/asm/opal.h                |   4 +
- arch/powerpc/platforms/powernv/Makefile        |   2 +-
- arch/powerpc/platforms/powernv/opal-async.c    |  46 ++++
- arch/powerpc/platforms/powernv/opal-occ.c      | 314 +++++++++++++++++++++++++
- arch/powerpc/platforms/powernv/opal-wrappers.S |   1 +
- arch/powerpc/platforms/powernv/opal.c          |   8 +
- 7 files changed, 414 insertions(+), 2 deletions(-)
- create mode 100644 arch/powerpc/platforms/powernv/opal-occ.c
-
+diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
+index 588fb1c..03ed493 100644
+--- a/arch/powerpc/include/asm/opal.h
++++ b/arch/powerpc/include/asm/opal.h
+@@ -293,6 +293,7 @@ extern int opal_message_notifier_unregister(enum opal_msg_type msg_type,
+ 
+ extern int __opal_async_get_token(void);
+ extern int opal_async_get_token_interruptible(void);
++extern int opal_async_get_unique_token_interruptible(int last_token);
+ extern int __opal_async_release_token(int token);
+ extern int opal_async_release_token(int token);
+ extern int opal_async_wait_response(uint64_t token, struct opal_msg *msg);
+diff --git a/arch/powerpc/platforms/powernv/opal-async.c b/arch/powerpc/platforms/powernv/opal-async.c
+index 83bebee..8caeea2 100644
+--- a/arch/powerpc/platforms/powernv/opal-async.c
++++ b/arch/powerpc/platforms/powernv/opal-async.c
+@@ -73,6 +73,52 @@ int opal_async_get_token_interruptible(void)
+ }
+ EXPORT_SYMBOL_GPL(opal_async_get_token_interruptible);
+ 
++static int __opal_async_get_new_token(int last_token)
++{
++	unsigned long flags;
++	int token;
++
++	spin_lock_irqsave(&opal_async_comp_lock, flags);
++	token = find_next_bit(opal_async_complete_map, opal_max_async_tokens,
++			      last_token + 1);
++	if (token >= opal_max_async_tokens) {
++		token = find_first_bit(opal_async_complete_map,
++				       opal_max_async_tokens);
++		if (token >= opal_max_async_tokens || token == last_token) {
++			token = -EBUSY;
++			goto out;
++		}
++	}
++
++	pr_debug("%s token = %d\n", __func__, token);
++	if (__test_and_set_bit(token, opal_async_token_map)) {
++		token = -EBUSY;
++		goto out;
++	}
++
++	__clear_bit(token, opal_async_complete_map);
++
++out:
++	spin_unlock_irqrestore(&opal_async_comp_lock, flags);
++	return token;
++}
++
++int opal_async_get_unique_token_interruptible(int last_token)
++{
++	int token;
++
++	/* Wait until a token is available */
++	if (down_interruptible(&opal_async_sem))
++		return -ERESTARTSYS;
++
++	token = __opal_async_get_new_token(last_token);
++	if (token < 0)
++		up(&opal_async_sem);
++
++	return token;
++}
++EXPORT_SYMBOL_GPL(opal_async_get_unique_token_interruptible);
++
+ int __opal_async_release_token(int token)
+ {
+ 	unsigned long flags;
 -- 
 1.8.3.1
