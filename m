@@ -1,21 +1,23 @@
-Return-Path: <agust@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
+ [IPv6:2607:f8b0:400e:c00::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wn9Dd5VxPzDqNd
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jun 2017 23:13:05 +1000 (AEST)
-Date: Tue, 13 Jun 2017 15:04:00 +0200
-From: Anatolij Gustschin <agust@denx.de>
-To: Masahiro Yamada <yamada.masahiro@socionext.com>, Michael Ellerman
- <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
- <paulus@samba.org>, devicetree@vger.kernel.org,
- linux-kernel@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Mark
- Rutland <mark.rutland@arm.com>
-Subject: Re: [PATCH] powerpc: dts: use #include "..." to include local DT
-Message-ID: <20170613150400.3958162c@crub>
-In-Reply-To: <1495602744-18874-1-git-send-email-yamada.masahiro@socionext.com>
-References: <1495602744-18874-1-git-send-email-yamada.masahiro@socionext.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wn9bC6wrGzDqMF
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jun 2017 23:29:11 +1000 (AEST)
+Received: by mail-pf0-x241.google.com with SMTP id d5so9260875pfe.1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jun 2017 06:29:11 -0700 (PDT)
+Date: Tue, 13 Jun 2017 23:28:51 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: "Gautham R . Shenoy" <ego@linux.vnet.ibm.com>, "Vaidyanathan Srinivasan"
+ <svaidy@linux.vnet.ibm.com>
+Subject: Re: [PATCH 03/13] powerpc/64s: idle process interrupts from system
+ reset wakeup
+Message-ID: <20170613232851.37195c34@roar.ozlabs.ibm.com>
+In-Reply-To: <20170613130557.26315-4-npiggin@gmail.com>
+References: <20170613130557.26315-1-npiggin@gmail.com>
+ <20170613130557.26315-4-npiggin@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,18 +29,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+On Tue, 13 Jun 2017 23:05:47 +1000
+Nicholas Piggin <npiggin@gmail.com> wrote:
 
-On Wed, 24 May 2017 14:12:24 +0900
-Masahiro Yamada yamada.masahiro@socionext.com wrote:
+> diff --git a/arch/powerpc/include/asm/hw_irq.h b/arch/powerpc/include/asm/hw_irq.h
+> index f06112cf8734..8366bdc69988 100644
+> --- a/arch/powerpc/include/asm/hw_irq.h
+> +++ b/arch/powerpc/include/asm/hw_irq.h
+> @@ -32,6 +32,7 @@
+>  #ifndef __ASSEMBLY__
+>  
+>  extern void __replay_interrupt(unsigned int vector);
+> +extern void __replay_wakeup_interrupt(unsigned long srr1);
+>  
+>  extern void timer_interrupt(struct pt_regs *);
+>  extern void performance_monitor_exception(struct pt_regs *regs);
 
->Most of DT files in PowerPC use #include "..." to make pre-processor
->include DT in the same directory, but we have 3 exceptional files
->that use #include <...> for that.
->
->Fix them to remove -I$(srctree)/arch/$(SRCARCH)/boot/dts path from
->dtc_cpp_flags.
->
->Signed-off-by: Masahiro Yamada <yamada.masahiro@socionext.com>
+Oops, just noticed this remnant from an earlier version. Please
+ignore this hunk.
 
-Tested-by: Anatolij Gustschin <agust@denx.de>
+Thanks,
+Nick
