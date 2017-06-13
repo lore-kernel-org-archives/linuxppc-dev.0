@@ -1,27 +1,23 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
- [IPv6:2607:f8b0:400e:c00::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mark@klomp.org>
+Received: from gnu.wildebeest.org (wildebeest.demon.nl [212.238.236.112])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wn7XM1g51zDqL3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jun 2017 21:56:35 +1000 (AEST)
-Received: by mail-pf0-x243.google.com with SMTP id y7so20992556pfd.3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jun 2017 04:56:35 -0700 (PDT)
-Date: Tue, 13 Jun 2017 21:56:20 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: svaidy@linux.vnet.ibm.com, "Gautham R . Shenoy"
- <ego@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org, "Shreyas B .
- Prabhu" <shreyas@linux.vnet.ibm.com>
-Subject: Re: [PATCH 13/14] powerpc/64: runlatch CTRL[RUN] set optimisation
-Message-ID: <20170613215620.16831c69@roar.ozlabs.ibm.com>
-In-Reply-To: <87zidcgq50.fsf@concordia.ellerman.id.au>
-References: <20170611235835.7400-1-npiggin@gmail.com>
- <20170611235835.7400-14-npiggin@gmail.com>
- <20170612171138.GB4340@drishya.in.ibm.com>
- <87zidcgq50.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wn7Rp4HsyzDqL3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jun 2017 21:52:38 +1000 (AEST)
+Message-ID: <1497354282.3755.201.camel@klomp.org>
+Subject: Re: [PATCH v2] perf: libdw support for powerpc [ping]
+From: Mark Wielaard <mark@klomp.org>
+To: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
+Cc: Paolo Bonzini <pbonzini@redhat.com>, linux-kernel@vger.kernel.org,
+ acme@kernel.org, "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
+Date: Tue, 13 Jun 2017 13:44:42 +0200
+In-Reply-To: <593E81ED.8060606@linux.vnet.ibm.com>
+References: <1496312681-20133-1-git-send-email-pbonzini@redhat.com>
+ <a44cf3bd-e868-a8d5-4518-2bea76be7f8f@redhat.com>
+ <593E81ED.8060606@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,46 +27,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 13 Jun 2017 20:04:27 +1000
-Michael Ellerman <mpe@ellerman.id.au> wrote:
+Hi Ravi,
 
-> Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com> writes:
-> > * Nicholas Piggin <npiggin@gmail.com> [2017-06-12 09:58:34]:
-> >  
-> >> The CTRL register is read-only except bit 63 which is the run latch
-> >> control. This means it can be updated with a mtspr rather than
-> >> mfspr/mtspr.
-> >> 
-> >> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>  
-> >  
-> >> diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-> >> index baae104b16c7..a44ea034c226 100644
-> >> --- a/arch/powerpc/kernel/process.c
-> >> +++ b/arch/powerpc/kernel/process.c
-> >> @@ -1973,13 +1969,9 @@ void notrace __ppc64_runlatch_on(void)
-> >>  void notrace __ppc64_runlatch_off(void)
-> >>  {
-> >>  	struct thread_info *ti = current_thread_info();
-> >> -	unsigned long ctrl;
-> >> 
-> >>  	ti->local_flags &= ~_TLF_RUNLATCH;
-> >> -
-> >> -	ctrl = mfspr(SPRN_CTRLF);
-> >> -	ctrl &= ~CTRL_RUNLATCH;
-> >> -	mtspr(SPRN_CTRLT, ctrl);
-> >> +	mtspr(SPRN_CTRLT, 0);  
-> >
-> > Good idea.  Writing to CTRL register can change only the RUN field.
-> > Was this any different in older generations?  
-> 
-> No AFAICS back to 2.02.
-> 
-> > Anton and Ben kept the mfspr/mtspr part in earlier updates to this
-> > routine.  
-> 
-> Doing the read/modify write is forward compatible vs a new writable
-> field, whereas writing the whole register with a known value is not.
+On Mon, 2017-06-12 at 17:28 +0530, Ravi Bangoria wrote:
+> So, I tested this patch along with Mark's patch[1] on elfutils an looks
+> like it's not working. Steps on what I did:
+>=20
+> After applying Mark's patch on upstream elfutils:
+>=20
+>   $ aclocal
+>   $ autoheader
+>   $ autoconf
+>   $ automake --add-missing
+>   $ ./configure
+>   $ make
+>   $ make install DESTDIR=3D/home/ravi/elfutils-git
+>=20
+> After applying your patch on upstream perf:
+>=20
+>   $ make
+>   $ ./perf record --call-graph=3Ddwarf ls
+>   $ LD_LIBRARY_PATH=3D/home/ravi/elfutils-git/usr/local/lib:\
+>     /home/ravi/elfutils-git/usr/local/lib/elfutils/:$LD_LIBRARY_PATH \
+>     ./perf script
+>=20
+>     ls 44159  1800.878468:     191408 cycles:u:
+>=20
+>     ls 44159  1800.878673:     419356 cycles:u:
+>                        8a97c hpte_need_flush (/usr/lib/debug/lib/modules/=
+4.11.0-3.el7.ppc64le/vmlinux)
+>                        835f4 flush_hash_page (/usr/lib/debug/lib/modules/=
+4.11.0-3.el7.ppc64le/vmlinux)
+>                        8acec hpte_need_flush (/usr/lib/debug/lib/modules/=
+4.11.0-3.el7.ppc64le/vmlinux)
+>                       3468f4 ptep_clear_flush (/usr/lib/debug/lib/modules=
+/4.11.0-3.el7.ppc64le/vmlinux)
+>                       328b10 wp_page_copy (/usr/lib/debug/lib/modules/4.1=
+1.0-3.el7.ppc64le/vmlinux)
+>                       32ebe4 do_wp_page (/usr/lib/debug/lib/modules/4.11.=
+0-3.el7.ppc64le/vmlinux)
+>                       33434c __handle_mm_fault (/usr/lib/debug/lib/module=
+s/4.11.0-3.el7.ppc64le/vmlinux)
+>                       335040 handle_mm_fault (/usr/lib/debug/lib/modules/=
+4.11.0-3.el7.ppc64le/vmlinux)
+>                        7bf94 do_page_fault (/usr/lib/debug/lib/modules/4.=
+11.0-3.el7.ppc64le/vmlinux)
+>                        1a4f8 handle_page_fault (/usr/lib/debug/lib/module=
+s/4.11.0-3.el7.ppc64le/vmlinux)
+>=20
+>     ls 44159  1800.878961:     430876 cycles:u:
+>=20
+>     ls 44159  1800.879195:     423785 cycles:u:
+>=20
+>     ls 44159  1800.879360:     427359 cycles:u:
+>=20
+> Here I don't see userspace callchain getting unwound. Please let me know
+> if I'm doing anything wrong.
 
-Can we call that an incompatible arch change and not worry about
-it? ISA says we may expect TS (read-only) field to expand, but I
-guess they could shoehorn something else in there.
+I see the same on very short runs. But when doing a slightly longer run,
+even just using ls -lahR, which does some more work, then I do see user
+backtraces. They are still missing for some of the early samples though.
+It is as if there is a stack/memory address mismatch when the probe is
+"too early" in ld.so.
+
+Could you do a test run on some program that does some more work to see
+if you never get any user stack traces, or if you only not get them for
+some specific probes?
+
+Thanks,
+
+Mark
