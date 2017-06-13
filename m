@@ -1,42 +1,41 @@
-Return-Path: <kamalesh@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <yuval.shaia@oracle.com>
+Received: from userp1040.oracle.com (userp1040.oracle.com [156.151.31.81])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wn0mL6028zDqQB
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jun 2017 16:51:30 +1000 (AEST)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v5D6n9eY160630
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jun 2017 02:51:28 -0400
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2b28fw7667-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jun 2017 02:51:27 -0400
-Received: from localhost
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <kamalesh@linux.vnet.ibm.com>;
- Tue, 13 Jun 2017 16:51:24 +1000
-Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v5D6pEqC5702136
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jun 2017 16:51:22 +1000
-Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
- by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v5D6on01001023
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jun 2017 16:50:50 +1000
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Balbir Singh <bsingharora@gmail.com>,
- Josh Poimboeuf <jpoimboe@redhat.com>, Jessica Yu <jeyu@kernel.org>,
- live-patching@vger.kernel.org
-Subject: [PATCH] powerpc/modules: Introduce new stub code for SHN_LIVEPATCH
- symbols
-Date: Tue, 13 Jun 2017 12:20:19 +0530
-Message-Id: <1497336619-17954-1-git-send-email-kamalesh@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wn1Cp1pCWzDqKv
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jun 2017 17:11:49 +1000 (AEST)
+From: Yuval Shaia <yuval.shaia@oracle.com>
+To: isubramanian@apm.com, kchudgar@apm.com, qnguyen@apm.com,
+ michael.chan@broadcom.com, f.fainelli@gmail.com,
+ bcm-kernel-feedback-list@broadcom.com, siva.kallam@broadcom.com,
+ prashant@broadcom.com, madalin.bucur@nxp.com, leoli@freescale.com,
+ yisen.zhuang@huawei.com, salil.mehta@huawei.com,
+ sebastian.hesselbarth@gmail.com, nbd@openwrt.org, blogic@openwrt.org,
+ matthias.bgg@gmail.com, sergei.shtylyov@cogentembedded.com,
+ peppe.cavallaro@st.com, alexandre.torgue@st.com,
+ grygorii.strashko@ti.com, w-kwok2@ti.com, m-karicheri2@ti.com,
+ andrew@lunn.ch, woojung.huh@microchip.com,
+ UNGLinuxDriver@microchip.com, gregkh@linuxfoundation.org,
+ vivien.didelot@savoirfairelinux.com, davem@davemloft.net,
+ arnd@arndb.de, tremyfr@gmail.com, edumazet@google.com,
+ yuval.shaia@oracle.com, yamada.masahiro@socionext.com,
+ jarod@redhat.com, yankejian@huawei.com, lipeng321@huawei.com,
+ huangdaode@hisilicon.com, xieqianqian@huawei.com,
+ horms+renesas@verge.net.au, kazuya.mizuguchi.ks@renesas.com,
+ johan@kernel.org, dan.carpenter@oracle.com,
+ niklas.soderlund+renesas@ragnatech.se, masaru.nagai.vx@renesas.com,
+ erosca@de.adit-jv.com, geert+renesas@glider.be,
+ chris.brandt@renesas.com, ivan.khoronzhuk@linaro.org,
+ mugunthanvnm@ti.com, mihaela.muraru21@gmail.com, tklauser@distanz.ch,
+ julia.lawall@lip6.fr, mpkofron@gmail.com, bhumirks@gmail.com,
+ stephen@networkplumber.org, netdev@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
+ linux-mediatek@lists.infradead.org, linux-renesas-soc@vger.kernel.org,
+ linux-omap@vger.kernel.org, linux-usb@vger.kernel.org,
+ devel@driverdev.osuosl.org
+Subject: [PATCH v3] net: phy: Make phy_ethtool_ksettings_get return void
+Date: Tue, 13 Jun 2017 10:09:46 +0300
+Message-Id: <20170613070946.3605-1-yuval.shaia@oracle.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,173 +45,468 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-R_PPC64_REL24 relocation type is used for a function call, where the
-function symbol address is resolved and stub code (a.k.a trampoline)
-is constructed to jump into the global entry of the function. The
-caller is responsible for setting up the TOC of the called function
-before branching and NOP is expected after every branch, which gets
-replaced with an instruction to restore the callers TOC from the
-stack on return.
+Make return value void since function never return meaningfull value
 
-SHN_LIVEPATCH symbols with R_PPC64_REL24 relocation type might not
-adhere to nop instruction after a branch. The reason being called
-function was local to the callee and the instruction sequence
-generated does not stores and restores the TOC value onto the stack
-of the calling function, which is right instead uses the localentry
-(function entry + 0x8) to jump into the function and returns without
-the need for store/restoring the TOC, as both of the functions were
-in the same compilation unit.
-
-When such functions become global because they are livepatched and
-every call to the function, re-directs the callee to the patched
-version in the module. Every branch from the livepatch module, to
-previously local function turns out to jump into the kernel code
-but with the code, sequence remains that of the localentry. This
-leads to error while trying to access the function with assumption.
-
-insmod: ERROR: could not insert module ./kpatch-meminfo-string.ko: Invalid module format
-
-Jun 13 02:10:47 ubuntu kernel: [   37.774292] module_64: kpatch_meminfo_string: REL24 -1152921504749690968 out of range!
-
-SHN_LIVEPATCH symbols + R_PPC64_REL24 type relocation should be handled
-by introducing a new stub code sequence, instead of regular stub code.
-Where stub takes care of storing and restoring the Link Register/TOC
-onto the stack of the livepatched function and restores them upon
-return from the called function.
-
-Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Balbir Singh <bsingharora@gmail.com>
-Cc: Josh Poimboeuf <jpoimboe@redhat.com>
-Cc: Jessica Yu <jeyu@kernel.org>
-Cc: live-patching@vger.kernel.org
+Signed-off-by: Yuval Shaia <yuval.shaia@oracle.com>
+Acked-by: Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>
 ---
- arch/powerpc/kernel/module_64.c | 55 ++++++++++++++++++++++++++++++++---------
- 1 file changed, 44 insertions(+), 11 deletions(-)
+v0 ->v1:
+	* These files were missing in v0
+		* drivers/net/ethernet/renesas/ravb_main.c
+		* drivers/net/ethernet/renesas/sh_eth.c
+		* drivers/net/ethernet/ti/netcp_ethss.c
+	* Add Acked-by: Sergei Shtylyov
 
-diff --git a/arch/powerpc/kernel/module_64.c b/arch/powerpc/kernel/module_64.c
-index 0b0f896..52ded0f 100644
---- a/arch/powerpc/kernel/module_64.c
-+++ b/arch/powerpc/kernel/module_64.c
-@@ -102,10 +102,16 @@ static unsigned int local_entry_offset(const Elf64_Sym *sym)
-    jump, actually, to reset r2 (TOC+0x8000). */
- struct ppc64_stub_entry
- {
--	/* 28 byte jump instruction sequence (7 instructions). We only
--	 * need 6 instructions on ABIv2 but we always allocate 7 so
--	 * so we don't have to modify the trampoline load instruction. */
--	u32 jump[7];
-+	/* 28 byte jump instruction sequence (7 instructions) and only
-+	 * 6 instructions are needed on ABIv2 to create trampoline.
-+	 * Trampoline for livepatch symbol needs extra 7 instructions
-+	 * to save and restore LR, TOC values.
-+	 *
-+	 * To accommodate extra instructions required for livepatch
-+	 * entry, we allocate 15 instructions so we don't have to
-+	 * modify the trampoline load instruction.
-+	 */
-+	u32 jump[15];
- 	/* Used by ftrace to identify stubs */
- 	u32 magic;
- 	/* Data for the above code */
-@@ -131,7 +137,7 @@ static u32 ppc64_stub_insns[] = {
- 	0x396b0000,			/* addi    r11,r11, <low> */
- 	/* Save current r2 value in magic place on the stack. */
- 	0xf8410000|R2_STACK_OFFSET,	/* std     r2,R2_STACK_OFFSET(r1) */
--	0xe98b0020,			/* ld      r12,32(r11) */
-+	0xe98b0040,			/* ld      r12,64(r11) */
- #ifdef PPC64_ELF_ABI_v1
- 	/* Set up new r2 from function descriptor */
- 	0xe84b0028,			/* ld      r2,40(r11) */
-@@ -140,6 +146,24 @@ static u32 ppc64_stub_insns[] = {
- 	0x4e800420			/* bctr */
- };
+v1 -> v2:
+	* Adjust to net-next tree
+
+v2 -> v3:
+	* These files were missing in v1
+		* drivers/net/ethernet/apm/xgene-v2/ethtool.c
+		* drivers/net/ethernet/apm/xgene/xgene_enet_ethtool.c
+		* drivers/net/ethernet/broadcom/b44.c
+		* drivers/net/ethernet/broadcom/bcm63xx_enet.c
+		* drivers/net/ethernet/hisilicon/hns/hns_ethtool.c
+		* drivers/net/ethernet/mediatek/mtk_eth_soc.c
+		* drivers/net/ethernet/stmicro/stmmac/stmmac_ethtool.c
+		* drivers/net/ethernet/ti/cpsw.c
+		* drivers/staging/netlogic/xlr_net.c
+---
+ drivers/net/ethernet/apm/xgene-v2/ethtool.c          |  4 +++-
+ drivers/net/ethernet/apm/xgene/xgene_enet_ethtool.c  |  8 ++++++--
+ drivers/net/ethernet/broadcom/b44.c                  |  4 +++-
+ drivers/net/ethernet/broadcom/bcm63xx_enet.c         |  5 ++++-
+ drivers/net/ethernet/broadcom/genet/bcmgenet.c       |  4 +++-
+ drivers/net/ethernet/broadcom/tg3.c                  |  4 +++-
+ drivers/net/ethernet/freescale/dpaa/dpaa_ethtool.c   |  6 ++----
+ drivers/net/ethernet/freescale/ucc_geth_ethtool.c    |  4 +++-
+ drivers/net/ethernet/hisilicon/hns/hns_ethtool.c     |  2 +-
+ drivers/net/ethernet/marvell/mv643xx_eth.c           |  5 ++---
+ drivers/net/ethernet/mediatek/mtk_eth_soc.c          |  4 +++-
+ drivers/net/ethernet/renesas/ravb_main.c             | 14 +++++++-------
+ drivers/net/ethernet/renesas/sh_eth.c                |  5 ++---
+ drivers/net/ethernet/stmicro/stmmac/stmmac_ethtool.c |  5 ++---
+ drivers/net/ethernet/ti/cpsw.c                       |  8 ++++----
+ drivers/net/ethernet/ti/netcp_ethss.c                |  8 +++-----
+ drivers/net/phy/phy.c                                | 10 +++++-----
+ drivers/net/usb/lan78xx.c                            |  2 +-
+ drivers/staging/netlogic/xlr_net.c                   |  5 ++++-
+ include/linux/phy.h                                  |  4 ++--
+ net/dsa/slave.c                                      |  9 +++++----
+ 21 files changed, 68 insertions(+), 52 deletions(-)
+
+diff --git a/drivers/net/ethernet/apm/xgene-v2/ethtool.c b/drivers/net/ethernet/apm/xgene-v2/ethtool.c
+index b6666e4..d31ad82 100644
+--- a/drivers/net/ethernet/apm/xgene-v2/ethtool.c
++++ b/drivers/net/ethernet/apm/xgene-v2/ethtool.c
+@@ -157,7 +157,9 @@ static int xge_get_link_ksettings(struct net_device *ndev,
+ 	if (!phydev)
+ 		return -ENODEV;
  
-+static u32 ppc64_klp_stub_insns[] = {
-+	0x3d620000,                     /* addis   r11,r2, <high>	*/
-+	0x396b0000,                     /* addi    r11,r11, <low>	*/
-+	0x7c0802a6,                     /* mflr    r0			*/
-+	0xf8010010,                     /* std     r0,16(r1)		*/
-+	/* Save current r2 value in magic place on the stack. */
-+	0xf8410000|R2_STACK_OFFSET,     /* std     r2,R2_STACK_OFFSET(r1) */
-+	0xe98b0040,			/* ld	   r12,64(r11)		*/
-+	0xf821ffe1,                     /* stdu    r1,-32(r1)		*/
-+	0x7d8903a6,                     /* mtctr   r12			*/
-+	0x4e800421,                     /* bctrl			*/
-+	0x38210020,                     /* addi    r1,r1,32		*/
-+	0xe8010010,                     /* ld      r0,16(r1)		*/
-+	0xe8410000|R2_STACK_OFFSET,     /* ld      r2,R2_STACK_OFFSET(r1) */
-+	0x7c0803a6,                     /* mtlr    r0			*/
-+	0x4e800020                      /* blr				*/
-+};
+-	return phy_ethtool_ksettings_get(phydev, cmd);
++	phy_ethtool_ksettings_get(phydev, cmd);
 +
- #ifdef CONFIG_DYNAMIC_FTRACE
- int module_trampoline_target(struct module *mod, unsigned long addr,
- 			     unsigned long *target)
-@@ -392,11 +416,16 @@ static inline unsigned long my_r2(const Elf64_Shdr *sechdrs, struct module *me)
- static inline int create_stub(const Elf64_Shdr *sechdrs,
- 			      struct ppc64_stub_entry *entry,
- 			      unsigned long addr,
--			      struct module *me)
-+			      struct module *me, int klp_symbol)
- {
- 	long reladdr;
++	return 0;
+ }
  
--	memcpy(entry->jump, ppc64_stub_insns, sizeof(ppc64_stub_insns));
-+	memset(entry, 0, sizeof(*entry));
-+	if (klp_symbol)
-+		memcpy(entry->jump, ppc64_klp_stub_insns,
-+				sizeof(ppc64_klp_stub_insns));
-+	else
-+		memcpy(entry->jump, ppc64_stub_insns, sizeof(ppc64_stub_insns));
+ static int xge_set_link_ksettings(struct net_device *ndev,
+diff --git a/drivers/net/ethernet/apm/xgene/xgene_enet_ethtool.c b/drivers/net/ethernet/apm/xgene/xgene_enet_ethtool.c
+index 559963b..4f50f11 100644
+--- a/drivers/net/ethernet/apm/xgene/xgene_enet_ethtool.c
++++ b/drivers/net/ethernet/apm/xgene/xgene_enet_ethtool.c
+@@ -131,13 +131,17 @@ static int xgene_get_link_ksettings(struct net_device *ndev,
+ 		if (phydev == NULL)
+ 			return -ENODEV;
  
- 	/* Stub uses address relative to r2. */
- 	reladdr = (unsigned long)entry - my_r2(sechdrs, me);
-@@ -419,7 +448,7 @@ static inline int create_stub(const Elf64_Shdr *sechdrs,
-    stub to set up the TOC ptr (r2) for the function. */
- static unsigned long stub_for_addr(const Elf64_Shdr *sechdrs,
- 				   unsigned long addr,
--				   struct module *me)
-+				   struct module *me, int klp_symbol)
- {
- 	struct ppc64_stub_entry *stubs;
- 	unsigned int i, num_stubs;
-@@ -435,7 +464,7 @@ static unsigned long stub_for_addr(const Elf64_Shdr *sechdrs,
- 			return (unsigned long)&stubs[i];
+-		return phy_ethtool_ksettings_get(phydev, cmd);
++		phy_ethtool_ksettings_get(phydev, cmd);
++
++		return 0;
+ 	} else if (pdata->phy_mode == PHY_INTERFACE_MODE_SGMII) {
+ 		if (pdata->mdio_driver) {
+ 			if (!phydev)
+ 				return -ENODEV;
+ 
+-			return phy_ethtool_ksettings_get(phydev, cmd);
++			phy_ethtool_ksettings_get(phydev, cmd);
++
++			return 0;
+ 		}
+ 
+ 		supported = SUPPORTED_1000baseT_Full | SUPPORTED_Autoneg |
+diff --git a/drivers/net/ethernet/broadcom/b44.c b/drivers/net/ethernet/broadcom/b44.c
+index 5b95bb4..f411936 100644
+--- a/drivers/net/ethernet/broadcom/b44.c
++++ b/drivers/net/ethernet/broadcom/b44.c
+@@ -1836,7 +1836,9 @@ static int b44_get_link_ksettings(struct net_device *dev,
+ 
+ 	if (bp->flags & B44_FLAG_EXTERNAL_PHY) {
+ 		BUG_ON(!dev->phydev);
+-		return phy_ethtool_ksettings_get(dev->phydev, cmd);
++		phy_ethtool_ksettings_get(dev->phydev, cmd);
++
++		return 0;
  	}
  
--	if (!create_stub(sechdrs, &stubs[i], addr, me))
-+	if (!create_stub(sechdrs, &stubs[i], addr, me, klp_symbol))
- 		return 0;
+ 	supported = (SUPPORTED_Autoneg);
+diff --git a/drivers/net/ethernet/broadcom/bcm63xx_enet.c b/drivers/net/ethernet/broadcom/bcm63xx_enet.c
+index 50d88d3..ea3c906 100644
+--- a/drivers/net/ethernet/broadcom/bcm63xx_enet.c
++++ b/drivers/net/ethernet/broadcom/bcm63xx_enet.c
+@@ -1453,7 +1453,10 @@ static int bcm_enet_get_link_ksettings(struct net_device *dev,
+ 	if (priv->has_phy) {
+ 		if (!dev->phydev)
+ 			return -ENODEV;
+-		return phy_ethtool_ksettings_get(dev->phydev, cmd);
++
++		phy_ethtool_ksettings_get(dev->phydev, cmd);
++
++		return 0;
+ 	} else {
+ 		cmd->base.autoneg = 0;
+ 		cmd->base.speed = (priv->force_speed_100) ?
+diff --git a/drivers/net/ethernet/broadcom/genet/bcmgenet.c b/drivers/net/ethernet/broadcom/genet/bcmgenet.c
+index a205a9f..daca1c9 100644
+--- a/drivers/net/ethernet/broadcom/genet/bcmgenet.c
++++ b/drivers/net/ethernet/broadcom/genet/bcmgenet.c
+@@ -477,7 +477,9 @@ static int bcmgenet_get_link_ksettings(struct net_device *dev,
+ 	if (!priv->phydev)
+ 		return -ENODEV;
  
- 	return (unsigned long)&stubs[i];
-@@ -615,13 +644,17 @@ int apply_relocate_add(Elf64_Shdr *sechdrs,
- 			/* FIXME: Handle weak symbols here --RR */
- 			if (sym->st_shndx == SHN_UNDEF) {
- 				/* External: go via stub */
--				value = stub_for_addr(sechdrs, value, me);
-+				value = stub_for_addr(sechdrs, value, me, 0);
- 				if (!value)
- 					return -ENOENT;
- 				if (!restore_r2((u32 *)location + 1, me))
- 					return -ENOEXEC;
- 
- 				squash_toc_save_inst(strtab + sym->st_name, value);
-+			} else if (sym->st_shndx == SHN_LIVEPATCH) {
-+				value = stub_for_addr(sechdrs, value, me, 1);
-+				if (!value)
-+					return -ENOENT;
- 			} else
- 				value += local_entry_offset(sym);
- 
-@@ -775,7 +808,7 @@ static unsigned long create_ftrace_stub(const Elf64_Shdr *sechdrs, struct module
- #else
- static unsigned long create_ftrace_stub(const Elf64_Shdr *sechdrs, struct module *me)
- {
--	return stub_for_addr(sechdrs, (unsigned long)ftrace_caller, me);
-+	return stub_for_addr(sechdrs, (unsigned long)ftrace_caller, me, 0);
+-	return phy_ethtool_ksettings_get(priv->phydev, cmd);
++	phy_ethtool_ksettings_get(priv->phydev, cmd);
++
++	return 0;
  }
- #endif
  
+ static int bcmgenet_set_link_ksettings(struct net_device *dev,
+diff --git a/drivers/net/ethernet/broadcom/tg3.c b/drivers/net/ethernet/broadcom/tg3.c
+index 537d571..d600c41 100644
+--- a/drivers/net/ethernet/broadcom/tg3.c
++++ b/drivers/net/ethernet/broadcom/tg3.c
+@@ -12097,7 +12097,9 @@ static int tg3_get_link_ksettings(struct net_device *dev,
+ 		if (!(tp->phy_flags & TG3_PHYFLG_IS_CONNECTED))
+ 			return -EAGAIN;
+ 		phydev = mdiobus_get_phy(tp->mdio_bus, tp->phy_addr);
+-		return phy_ethtool_ksettings_get(phydev, cmd);
++		phy_ethtool_ksettings_get(phydev, cmd);
++
++		return 0;
+ 	}
+ 
+ 	supported = (SUPPORTED_Autoneg);
+diff --git a/drivers/net/ethernet/freescale/dpaa/dpaa_ethtool.c b/drivers/net/ethernet/freescale/dpaa/dpaa_ethtool.c
+index 15571e2..aad825088 100644
+--- a/drivers/net/ethernet/freescale/dpaa/dpaa_ethtool.c
++++ b/drivers/net/ethernet/freescale/dpaa/dpaa_ethtool.c
+@@ -75,16 +75,14 @@ static char dpaa_stats_global[][ETH_GSTRING_LEN] = {
+ static int dpaa_get_link_ksettings(struct net_device *net_dev,
+ 				   struct ethtool_link_ksettings *cmd)
+ {
+-	int err;
+-
+ 	if (!net_dev->phydev) {
+ 		netdev_dbg(net_dev, "phy device not initialized\n");
+ 		return 0;
+ 	}
+ 
+-	err = phy_ethtool_ksettings_get(net_dev->phydev, cmd);
++	phy_ethtool_ksettings_get(net_dev->phydev, cmd);
+ 
+-	return err;
++	return 0;
+ }
+ 
+ static int dpaa_set_link_ksettings(struct net_device *net_dev,
+diff --git a/drivers/net/ethernet/freescale/ucc_geth_ethtool.c b/drivers/net/ethernet/freescale/ucc_geth_ethtool.c
+index b642990..4df282e 100644
+--- a/drivers/net/ethernet/freescale/ucc_geth_ethtool.c
++++ b/drivers/net/ethernet/freescale/ucc_geth_ethtool.c
+@@ -113,7 +113,9 @@ uec_get_ksettings(struct net_device *netdev, struct ethtool_link_ksettings *cmd)
+ 	if (!phydev)
+ 		return -ENODEV;
+ 
+-	return phy_ethtool_ksettings_get(phydev, cmd);
++	phy_ethtool_ksettings_get(phydev, cmd);
++
++	return 0;
+ }
+ 
+ static int
+diff --git a/drivers/net/ethernet/hisilicon/hns/hns_ethtool.c b/drivers/net/ethernet/hisilicon/hns/hns_ethtool.c
+index b8fab14..af1b15c 100644
+--- a/drivers/net/ethernet/hisilicon/hns/hns_ethtool.c
++++ b/drivers/net/ethernet/hisilicon/hns/hns_ethtool.c
+@@ -150,7 +150,7 @@ static int hns_nic_get_link_ksettings(struct net_device *net_dev,
+ 	cmd->base.duplex = duplex;
+ 
+ 	if (net_dev->phydev)
+-		(void)phy_ethtool_ksettings_get(net_dev->phydev, cmd);
++		phy_ethtool_ksettings_get(net_dev->phydev, cmd);
+ 
+ 	link_stat = hns_nic_get_link(net_dev);
+ 	if (!link_stat) {
+diff --git a/drivers/net/ethernet/marvell/mv643xx_eth.c b/drivers/net/ethernet/marvell/mv643xx_eth.c
+index 25642de..5794d98 100644
+--- a/drivers/net/ethernet/marvell/mv643xx_eth.c
++++ b/drivers/net/ethernet/marvell/mv643xx_eth.c
+@@ -1501,10 +1501,9 @@ mv643xx_eth_get_link_ksettings_phy(struct mv643xx_eth_private *mp,
+ 				   struct ethtool_link_ksettings *cmd)
+ {
+ 	struct net_device *dev = mp->dev;
+-	int err;
+ 	u32 supported, advertising;
+ 
+-	err = phy_ethtool_ksettings_get(dev->phydev, cmd);
++	phy_ethtool_ksettings_get(dev->phydev, cmd);
+ 
+ 	/*
+ 	 * The MAC does not support 1000baseT_Half.
+@@ -1520,7 +1519,7 @@ mv643xx_eth_get_link_ksettings_phy(struct mv643xx_eth_private *mp,
+ 	ethtool_convert_legacy_u32_to_link_mode(cmd->link_modes.advertising,
+ 						advertising);
+ 
+-	return err;
++	return 0;
+ }
+ 
+ static int
+diff --git a/drivers/net/ethernet/mediatek/mtk_eth_soc.c b/drivers/net/ethernet/mediatek/mtk_eth_soc.c
+index 16f9755..962975d 100644
+--- a/drivers/net/ethernet/mediatek/mtk_eth_soc.c
++++ b/drivers/net/ethernet/mediatek/mtk_eth_soc.c
+@@ -2056,7 +2056,9 @@ static int mtk_get_link_ksettings(struct net_device *ndev,
+ 	if (unlikely(test_bit(MTK_RESETTING, &mac->hw->state)))
+ 		return -EBUSY;
+ 
+-	return phy_ethtool_ksettings_get(ndev->phydev, cmd);
++	phy_ethtool_ksettings_get(ndev->phydev, cmd);
++
++	return 0;
+ }
+ 
+ static int mtk_set_link_ksettings(struct net_device *ndev,
+diff --git a/drivers/net/ethernet/renesas/ravb_main.c b/drivers/net/ethernet/renesas/ravb_main.c
+index 784782d..5931e85 100644
+--- a/drivers/net/ethernet/renesas/ravb_main.c
++++ b/drivers/net/ethernet/renesas/ravb_main.c
+@@ -1076,16 +1076,16 @@ static int ravb_get_link_ksettings(struct net_device *ndev,
+ 				   struct ethtool_link_ksettings *cmd)
+ {
+ 	struct ravb_private *priv = netdev_priv(ndev);
+-	int error = -ENODEV;
+ 	unsigned long flags;
+ 
+-	if (ndev->phydev) {
+-		spin_lock_irqsave(&priv->lock, flags);
+-		error = phy_ethtool_ksettings_get(ndev->phydev, cmd);
+-		spin_unlock_irqrestore(&priv->lock, flags);
+-	}
++	if (!ndev->phydev)
++		return -ENODEV;
+ 
+-	return error;
++	spin_lock_irqsave(&priv->lock, flags);
++	phy_ethtool_ksettings_get(ndev->phydev, cmd);
++	spin_unlock_irqrestore(&priv->lock, flags);
++
++	return 0;
+ }
+ 
+ static int ravb_set_link_ksettings(struct net_device *ndev,
+diff --git a/drivers/net/ethernet/renesas/sh_eth.c b/drivers/net/ethernet/renesas/sh_eth.c
+index 2d686cc..b2f0cea 100644
+--- a/drivers/net/ethernet/renesas/sh_eth.c
++++ b/drivers/net/ethernet/renesas/sh_eth.c
+@@ -1915,16 +1915,15 @@ static int sh_eth_get_link_ksettings(struct net_device *ndev,
+ {
+ 	struct sh_eth_private *mdp = netdev_priv(ndev);
+ 	unsigned long flags;
+-	int ret;
+ 
+ 	if (!ndev->phydev)
+ 		return -ENODEV;
+ 
+ 	spin_lock_irqsave(&mdp->lock, flags);
+-	ret = phy_ethtool_ksettings_get(ndev->phydev, cmd);
++	phy_ethtool_ksettings_get(ndev->phydev, cmd);
+ 	spin_unlock_irqrestore(&mdp->lock, flags);
+ 
+-	return ret;
++	return 0;
+ }
+ 
+ static int sh_eth_set_link_ksettings(struct net_device *ndev,
+diff --git a/drivers/net/ethernet/stmicro/stmmac/stmmac_ethtool.c b/drivers/net/ethernet/stmicro/stmmac/stmmac_ethtool.c
+index 16808e4..743170d 100644
+--- a/drivers/net/ethernet/stmicro/stmmac/stmmac_ethtool.c
++++ b/drivers/net/ethernet/stmicro/stmmac/stmmac_ethtool.c
+@@ -273,7 +273,6 @@ static int stmmac_ethtool_get_link_ksettings(struct net_device *dev,
+ {
+ 	struct stmmac_priv *priv = netdev_priv(dev);
+ 	struct phy_device *phy = dev->phydev;
+-	int rc;
+ 
+ 	if (priv->hw->pcs & STMMAC_PCS_RGMII ||
+ 	    priv->hw->pcs & STMMAC_PCS_SGMII) {
+@@ -364,8 +363,8 @@ static int stmmac_ethtool_get_link_ksettings(struct net_device *dev,
+ 		"link speed / duplex setting\n", dev->name);
+ 		return -EBUSY;
+ 	}
+-	rc = phy_ethtool_ksettings_get(phy, cmd);
+-	return rc;
++	phy_ethtool_ksettings_get(phy, cmd);
++	return 0;
+ }
+ 
+ static int
+diff --git a/drivers/net/ethernet/ti/cpsw.c b/drivers/net/ethernet/ti/cpsw.c
+index b6a0d92..b7a0f5e 100644
+--- a/drivers/net/ethernet/ti/cpsw.c
++++ b/drivers/net/ethernet/ti/cpsw.c
+@@ -2170,11 +2170,11 @@ static int cpsw_get_link_ksettings(struct net_device *ndev,
+ 	struct cpsw_common *cpsw = priv->cpsw;
+ 	int slave_no = cpsw_slave_index(cpsw, priv);
+ 
+-	if (cpsw->slaves[slave_no].phy)
+-		return phy_ethtool_ksettings_get(cpsw->slaves[slave_no].phy,
+-						 ecmd);
+-	else
++	if (!cpsw->slaves[slave_no].phy)
+ 		return -EOPNOTSUPP;
++
++	phy_ethtool_ksettings_get(cpsw->slaves[slave_no].phy, ecmd);
++	return 0;
+ }
+ 
+ static int cpsw_set_link_ksettings(struct net_device *ndev,
+diff --git a/drivers/net/ethernet/ti/netcp_ethss.c b/drivers/net/ethernet/ti/netcp_ethss.c
+index dd92950..0847a8f 100644
+--- a/drivers/net/ethernet/ti/netcp_ethss.c
++++ b/drivers/net/ethernet/ti/netcp_ethss.c
+@@ -1927,7 +1927,6 @@ static int keystone_get_link_ksettings(struct net_device *ndev,
+ 	struct netcp_intf *netcp = netdev_priv(ndev);
+ 	struct phy_device *phy = ndev->phydev;
+ 	struct gbe_intf *gbe_intf;
+-	int ret;
+ 
+ 	if (!phy)
+ 		return -EINVAL;
+@@ -1939,11 +1938,10 @@ static int keystone_get_link_ksettings(struct net_device *ndev,
+ 	if (!gbe_intf->slave)
+ 		return -EINVAL;
+ 
+-	ret = phy_ethtool_ksettings_get(phy, cmd);
+-	if (!ret)
+-		cmd->base.port = gbe_intf->slave->phy_port_t;
++	phy_ethtool_ksettings_get(phy, cmd);
++	cmd->base.port = gbe_intf->slave->phy_port_t;
+ 
+-	return ret;
++	return 0;
+ }
+ 
+ static int keystone_set_link_ksettings(struct net_device *ndev,
+diff --git a/drivers/net/phy/phy.c b/drivers/net/phy/phy.c
+index 14fc5bc..edcdf0d 100644
+--- a/drivers/net/phy/phy.c
++++ b/drivers/net/phy/phy.c
+@@ -509,8 +509,8 @@ int phy_ethtool_ksettings_set(struct phy_device *phydev,
+ }
+ EXPORT_SYMBOL(phy_ethtool_ksettings_set);
+ 
+-int phy_ethtool_ksettings_get(struct phy_device *phydev,
+-			      struct ethtool_link_ksettings *cmd)
++void phy_ethtool_ksettings_get(struct phy_device *phydev,
++			       struct ethtool_link_ksettings *cmd)
+ {
+ 	ethtool_convert_legacy_u32_to_link_mode(cmd->link_modes.supported,
+ 						phydev->supported);
+@@ -532,8 +532,6 @@ int phy_ethtool_ksettings_get(struct phy_device *phydev,
+ 	cmd->base.autoneg = phydev->autoneg;
+ 	cmd->base.eth_tp_mdix_ctrl = phydev->mdix_ctrl;
+ 	cmd->base.eth_tp_mdix = phydev->mdix;
+-
+-	return 0;
+ }
+ EXPORT_SYMBOL(phy_ethtool_ksettings_get);
+ 
+@@ -1449,7 +1447,9 @@ int phy_ethtool_get_link_ksettings(struct net_device *ndev,
+ 	if (!phydev)
+ 		return -ENODEV;
+ 
+-	return phy_ethtool_ksettings_get(phydev, cmd);
++	phy_ethtool_ksettings_get(phydev, cmd);
++
++	return 0;
+ }
+ EXPORT_SYMBOL(phy_ethtool_get_link_ksettings);
+ 
+diff --git a/drivers/net/usb/lan78xx.c b/drivers/net/usb/lan78xx.c
+index 9eff97a..5833f7e 100644
+--- a/drivers/net/usb/lan78xx.c
++++ b/drivers/net/usb/lan78xx.c
+@@ -1490,7 +1490,7 @@ static int lan78xx_get_link_ksettings(struct net_device *net,
+ 	if (ret < 0)
+ 		return ret;
+ 
+-	ret = phy_ethtool_ksettings_get(phydev, cmd);
++	phy_ethtool_ksettings_get(phydev, cmd);
+ 
+ 	usb_autopm_put_interface(dev->intf);
+ 
+diff --git a/drivers/staging/netlogic/xlr_net.c b/drivers/staging/netlogic/xlr_net.c
+index 781ef62..e05ae46 100644
+--- a/drivers/staging/netlogic/xlr_net.c
++++ b/drivers/staging/netlogic/xlr_net.c
+@@ -179,7 +179,10 @@ static int xlr_get_link_ksettings(struct net_device *ndev,
+ 
+ 	if (!phydev)
+ 		return -ENODEV;
+-	return phy_ethtool_ksettings_get(phydev, ecmd);
++
++	phy_ethtool_ksettings_get(phydev, ecmd);
++
++	return 0;
+ }
+ 
+ static int xlr_set_link_ksettings(struct net_device *ndev,
+diff --git a/include/linux/phy.h b/include/linux/phy.h
+index 4142422..e70360a 100644
+--- a/include/linux/phy.h
++++ b/include/linux/phy.h
+@@ -874,8 +874,8 @@ void phy_start_machine(struct phy_device *phydev);
+ void phy_stop_machine(struct phy_device *phydev);
+ void phy_trigger_machine(struct phy_device *phydev, bool sync);
+ int phy_ethtool_sset(struct phy_device *phydev, struct ethtool_cmd *cmd);
+-int phy_ethtool_ksettings_get(struct phy_device *phydev,
+-			      struct ethtool_link_ksettings *cmd);
++void phy_ethtool_ksettings_get(struct phy_device *phydev,
++			       struct ethtool_link_ksettings *cmd);
+ int phy_ethtool_ksettings_set(struct phy_device *phydev,
+ 			      const struct ethtool_link_ksettings *cmd);
+ int phy_mii_ioctl(struct phy_device *phydev, struct ifreq *ifr, int cmd);
+diff --git a/net/dsa/slave.c b/net/dsa/slave.c
+index 5f3caee..5e45ae5 100644
+--- a/net/dsa/slave.c
++++ b/net/dsa/slave.c
+@@ -387,12 +387,13 @@ dsa_slave_get_link_ksettings(struct net_device *dev,
+ 			     struct ethtool_link_ksettings *cmd)
+ {
+ 	struct dsa_slave_priv *p = netdev_priv(dev);
+-	int err = -EOPNOTSUPP;
+ 
+-	if (p->phy != NULL)
+-		err = phy_ethtool_ksettings_get(p->phy, cmd);
++	if (!p->phy)
++		return -EOPNOTSUPP;
+ 
+-	return err;
++	phy_ethtool_ksettings_get(p->phy, cmd);
++
++	return 0;
+ }
+ 
+ static int
 -- 
-2.7.4
+2.9.4
