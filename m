@@ -1,26 +1,20 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
- [IPv6:2607:f8b0:400e:c00::241])
+Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
+ [IPv6:2607:f8b0:400e:c00::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wn8g26qT4zDqL3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jun 2017 22:47:26 +1000 (AEST)
-Received: by mail-pf0-x241.google.com with SMTP id s66so6669847pfs.2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jun 2017 05:47:26 -0700 (PDT)
-Date: Tue, 13 Jun 2017 22:47:13 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wn94829npzDqL3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jun 2017 23:05:44 +1000 (AEST)
+Received: by mail-pf0-x244.google.com with SMTP id d5so9140637pfe.1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jun 2017 06:05:44 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
-To: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, "Gautham R . Shenoy"
- <ego@linux.vnet.ibm.com>, "Shreyas B . Prabhu" <shreyas@linux.vnet.ibm.com>
-Subject: Re: [PATCH 12/14] powerpc/64s: cpuidle no memory barrier after
- break from idle
-Message-ID: <20170613224713.2554e0c9@roar.ozlabs.ibm.com>
-In-Reply-To: <20170612174844.GC4340@drishya.in.ibm.com>
-References: <20170611235835.7400-1-npiggin@gmail.com>
- <20170611235835.7400-13-npiggin@gmail.com>
- <20170612174844.GC4340@drishya.in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Nicholas Piggin <npiggin@gmail.com>,
+ "Gautham R . Shenoy" <ego@linux.vnet.ibm.com>,
+ "Vaidyanathan Srinivasan" <svaidy@linux.vnet.ibm.com>
+Subject: [PATCH 00/13 v3] idle performance improvements
+Date: Tue, 13 Jun 2017 23:05:18 +1000
+Message-Id: <20170613130531.26197-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,73 +24,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 12 Jun 2017 23:18:44 +0530
-Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com> wrote:
+Since last time, I accounted for the various comments
+in reviews, most importantly fixed the miscalculation
+of SRR1 bit for the wakeup-interrupt. Verified it does
+the right thing and replays the right wakeup interrupt
+(e.g., decrementer) from __replay_interrupt stepping
+through the instructions in the simulator.
 
-> * Nicholas Piggin <npiggin@gmail.com> [2017-06-12 09:58:33]:
-> 
-> > A memory barrier is not required after the task wakes up,
-> > only if we clear the polling flag before waking. The case
-> > where we have work to do is the important one, so optimise
-> > for it.
-> > 
-> > Signed-off-by: Nicholas Piggin <npiggin@gmail.com>  
-> 
-> Reviewed-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-> 
-> 
-> > ---
-> >  drivers/cpuidle/cpuidle-powernv.c | 11 +++++++++--
-> >  drivers/cpuidle/cpuidle-pseries.c | 11 +++++++++--
-> >  2 files changed, 18 insertions(+), 4 deletions(-)
-> > 
-> > diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
-> > index 9d03326ac05e..37b0698b7193 100644
-> > --- a/drivers/cpuidle/cpuidle-powernv.c
-> > +++ b/drivers/cpuidle/cpuidle-powernv.c
-> > @@ -59,14 +59,21 @@ static int snooze_loop(struct cpuidle_device *dev,
-> >  	ppc64_runlatch_off();
-> >  	HMT_very_low();
-> >  	while (!need_resched()) {
-> > -		if (likely(snooze_timeout_en) && get_tb() > snooze_exit_time)
-> > +		if (likely(snooze_timeout_en) && get_tb() > snooze_exit_time) {
-> > +			/*
-> > +			 * Task has not woken up but we are exiting the polling
-> > +			 * loop anyway. Require a barrier after polling is
-> > +			 * cleared to order subsequent test of need_resched().
-> > +			 */
-> > +			clear_thread_flag(TIF_POLLING_NRFLAG);
-> > +			smp_mb();
-> >  			break;
-> > +		}
-> >  	}
-> > 
-> >  	HMT_medium();
-> >  	ppc64_runlatch_on();
-> >  	clear_thread_flag(TIF_POLLING_NRFLAG);
-> > -	smp_mb();  
-> 
-> If we reach here without executing if(snooze_timeout) with the
-> barrier+break, that means we have seen the need_resched flag and hence
-> we can avoid the barrier.  Clearing of the polling flag can be seen
-> (take affect) later as we will exit the idle loop and re-enter anyway
-> at this point.  The caller also will check for need_resched and exit
-> the idle loop.
-> 
-> Actually do_idle() has a __current_set_polling() and
-> __current_clr_polling() in the default idle loop.  Do we really need
-> to set/clear the TIF_POLLING_NRFLAG again in cpuidle driver?
+I've found that performance testing is a little difficult
+because the ping-pong test cases must sometimes get into
+synchronization and run concurrently without sleeping.
+Looking at context switch rates in vmstat, I run the
+context-switch ping-poing test with snooze idle disabled
+on a POWER8, and the numbers before and after this series
+are:
 
-We do because cpuidle drivers are entered with POLLING clear, don't
-they?
+         different thread   different core
+vanilla  600K/s             470K/s
+patched  780K/s             550K/s
 
-It would be nice to have the entire scheduler idle including cpuidle
-entry run with POLLING set. It would then be up to interrupt-based
-cpuidle drivers to clear POLLING before sleeping. I think that should
-remove... maybe 4 atomic ops from the most performance-critical idle
-states (the polling ones).
+(these are 2x what's reported by context_switch selftest
+because each step switches to and from idle thread)
 
-That's a bigger change though and will touch many archs and core code.
+It's still not a perfect measurement because if there is
+some unwanted concurrency happening then you can get
+different amount of userspace work per context switch,
+but there seems to be a decent speedup here.
 
 Thanks,
 Nick
+
+Nicholas Piggin (13):
+  powerpc/64s: idle move soft interrupt mask logic into C code
+  powerpc/64s: idle hotplug lazy-irq simplification
+  powerpc/64s: idle process interrupts from system reset wakeup
+  powerpc/64s: msgclr when handling doorbell exceptions
+  powerpc/64s: interrupt replay balance the return branch predictor
+  powerpc/64s: idle branch to handler with virtual mode offset
+  powerpc/64s: idle avoid SRR usage in idle sleep/wake paths
+  powerpc/64s: idle hmi wakeup is unlikely
+  powerpc/64s: cpuidle set polling before enabling irqs
+  powerpc/64s: cpuidle read mostly for common globals
+  powerpc/64s: cpuidle no memory barrier after break from idle
+  powerpc/64: runlatch CTRL[RUN] set optimisation
+  powerpc/64s: idle runlatch switch is done with MSR[EE]=0
+
+ arch/powerpc/include/asm/dbell.h         |  13 +++
+ arch/powerpc/include/asm/exception-64s.h |  13 +++
+ arch/powerpc/include/asm/hw_irq.h        |   5 ++
+ arch/powerpc/include/asm/machdep.h       |   1 +
+ arch/powerpc/include/asm/ppc-opcode.h    |   3 +
+ arch/powerpc/include/asm/processor.h     |  10 +--
+ arch/powerpc/kernel/asm-offsets.c        |   1 +
+ arch/powerpc/kernel/exceptions-64s.S     |  38 +++++++--
+ arch/powerpc/kernel/idle_book3s.S        | 135 +++++++++----------------------
+ arch/powerpc/kernel/irq.c                |  62 +++++++++++++-
+ arch/powerpc/kernel/process.c            |  12 +--
+ arch/powerpc/kvm/book3s_hv_rmhandlers.S  |   8 +-
+ arch/powerpc/platforms/powernv/idle.c    |  88 ++++++++++++++++++--
+ arch/powerpc/platforms/powernv/smp.c     |  31 ++++---
+ arch/powerpc/platforms/powernv/subcore.c |   3 +-
+ drivers/cpuidle/cpuidle-powernv.c        |  37 +++++----
+ drivers/cpuidle/cpuidle-pseries.c        |  22 +++--
+ 17 files changed, 315 insertions(+), 167 deletions(-)
+
+-- 
+2.11.0
