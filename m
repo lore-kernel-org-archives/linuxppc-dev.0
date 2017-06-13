@@ -1,22 +1,25 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
- [IPv6:2607:f8b0:400e:c00::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <agust@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wn95Y45x2zDqLs
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jun 2017 23:06:57 +1000 (AEST)
-Received: by mail-pf0-x244.google.com with SMTP id y7so21384375pfd.3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jun 2017 06:06:57 -0700 (PDT)
-From: Nicholas Piggin <npiggin@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Nicholas Piggin <npiggin@gmail.com>,
- "Gautham R . Shenoy" <ego@linux.vnet.ibm.com>,
- "Vaidyanathan Srinivasan" <svaidy@linux.vnet.ibm.com>
-Subject: [PATCH 13/13] powerpc/64s: idle runlatch switch is done with MSR[EE]=0
-Date: Tue, 13 Jun 2017 23:05:57 +1000
-Message-Id: <20170613130557.26315-14-npiggin@gmail.com>
-In-Reply-To: <20170613130557.26315-1-npiggin@gmail.com>
-References: <20170613130557.26315-1-npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wn9B36HtfzDqNK
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jun 2017 23:10:51 +1000 (AEST)
+Date: Tue, 13 Jun 2017 15:10:45 +0200
+From: Anatolij Gustschin <agust@denx.de>
+To: Michael Ellerman <mpe@ellerman.id.au>, Masahiro Yamada
+ <yamada.masahiro@socionext.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
+ <paulus@samba.org>, Mark Rutland <mark.rutland@arm.com>, Rob Herring
+ <robh+dt@kernel.org>, Linux Kernel Mailing List
+ <linux-kernel@vger.kernel.org>, devicetree@vger.kernel.org
+Subject: Re: [PATCH] powerpc: dts: use #include "..." to include local DT
+Message-ID: <20170613151045.1faa93e4@crub>
+In-Reply-To: <87r2yogpc6.fsf@concordia.ellerman.id.au>
+References: <1495602744-18874-1-git-send-email-yamada.masahiro@socionext.com>
+ <CAK7LNARnkHTyAMXjPZnOxOkP_b8vc6qvYOv-wf_Fn0eaPSdpeA@mail.gmail.com>
+ <87r2yogpc6.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,60 +29,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-2*mfmsr and 2*mtmsr can be avoided in the idle sleep/wake code
-because we know the MSR[EE] is clear.
+On Tue, 13 Jun 2017 20:21:45 +1000
+Michael Ellerman mpe@ellerman.id.au wrote:
 
-Acked-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
----
- arch/powerpc/platforms/powernv/idle.c | 12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
+>Masahiro Yamada <yamada.masahiro@socionext.com> writes:
+...
+>> Ping.
+>> I am not 100% sure who is responsible for this,
+>> but somebody, could take a look at this patch, please?  
+>
+>Have you tested it actually works?
+>
+>It sounds reasonable, and if it behaves as you describe there is no
+>change in behaviour, right?
 
-diff --git a/arch/powerpc/platforms/powernv/idle.c b/arch/powerpc/platforms/powernv/idle.c
-index 1028df82cd2f..2abee070373f 100644
---- a/arch/powerpc/platforms/powernv/idle.c
-+++ b/arch/powerpc/platforms/powernv/idle.c
-@@ -291,9 +291,9 @@ static unsigned long __power7_idle_type(unsigned long type)
- 	if (!prep_irq_for_idle_irqsoff())
- 		return 0;
- 
--	ppc64_runlatch_off();
-+	__ppc64_runlatch_off();
- 	srr1 = power7_idle_insn(type);
--	ppc64_runlatch_on();
-+	__ppc64_runlatch_on();
- 
- 	fini_irq_for_idle_irqsoff();
- 
-@@ -328,9 +328,9 @@ static unsigned long __power9_idle_type(unsigned long stop_psscr_val,
- 	psscr = mfspr(SPRN_PSSCR);
- 	psscr = (psscr & ~stop_psscr_mask) | stop_psscr_val;
- 
--	ppc64_runlatch_off();
-+	__ppc64_runlatch_off();
- 	srr1 = power9_idle_stop(psscr);
--	ppc64_runlatch_on();
-+	__ppc64_runlatch_on();
- 
- 	fini_irq_for_idle_irqsoff();
- 
-@@ -365,7 +365,7 @@ unsigned long pnv_cpu_offline(unsigned int cpu)
- 	unsigned long srr1;
- 	u32 idle_states = pnv_get_supported_cpuidle_states();
- 
--	ppc64_runlatch_off();
-+	__ppc64_runlatch_off();
- 
- 	if (cpu_has_feature(CPU_FTR_ARCH_300) && deepest_stop_found) {
- 		unsigned long psscr;
-@@ -392,7 +392,7 @@ unsigned long pnv_cpu_offline(unsigned int cpu)
- 		HMT_medium();
- 	}
- 
--	ppc64_runlatch_on();
-+	__ppc64_runlatch_on();
- 
- 	return srr1;
- }
--- 
-2.11.0
+yes, these dtbs build with this patch and I've tested with
+mpc5121ads.dtb.
+
+Thanks,
+Anatolij
