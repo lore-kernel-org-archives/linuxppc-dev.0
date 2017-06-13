@@ -3,14 +3,17 @@ Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
  [140.211.169.12])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wmzbs2npnzDqL5
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jun 2017 15:59:05 +1000 (AEST)
-Subject: patch "TTY: hvc: convert to use DRIVER_ATTR_RW" added to
- driver-core-next
-To: gregkh@linuxfoundation.org,jslaby@suse.com,linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wmzcD1xMCzDqNy
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jun 2017 15:59:24 +1000 (AEST)
+Subject: patch "powerpc: vio: use dev_groups and not dev_attrs for bus_type"
+ added to driver-core-next
+To: gregkh@linuxfoundation.org, aik@ozlabs.ru, bart.vanassche@sandisk.com,
+ benh@kernel.crashing.org, johan@kernel.org, jroedel@suse.de, krzk@kernel.org,
+ linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au, paulus@samba.org,
+ robin.murphy@arm.com, vgupta@synopsys.com
 From: <gregkh@linuxfoundation.org>
-Date: Tue, 13 Jun 2017 07:58:52 +0200
-Message-ID: <149733353215812@kroah.com>
+Date: Tue, 13 Jun 2017 07:59:03 +0200
+Message-ID: <14973335435310@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ANSI_X3.4-1968
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,7 +28,7 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 This is a note to let you know that I've just added the patch titled
 
-    TTY: hvc: convert to use DRIVER_ATTR_RW
+    powerpc: vio: use dev_groups and not dev_attrs for bus_type
 
 to my driver-core git tree which can be found at
     git://git.kernel.org/pub/scm/linux/kernel/git/gregkh/driver-core.git
@@ -40,50 +43,80 @@ during the merge window.
 If you have any questions about this process, please let me know.
 
 
->From 4e70a6fe6dc5d78939d9e155db3bd6cef28ec310 Mon Sep 17 00:00:00 2001
+>From 451e3f1a740d2b453c7358a07421d427315483e6 Mon Sep 17 00:00:00 2001
 From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Date: Fri, 9 Jun 2017 11:03:07 +0200
-Subject: TTY: hvc: convert to use DRIVER_ATTR_RW
+Date: Tue, 6 Jun 2017 14:26:12 +0200
+Subject: powerpc: vio: use dev_groups and not dev_attrs for bus_type
 
-We are trying to get rid of DRIVER_ATTR(), and the hvc driver's
-attribute can be trivially changed to use DRIVER_ATTR_RW().
+The dev_attrs field has long been "depreciated" and is finally being
+removed, so move the driver to use the "correct" dev_groups field
+instead for struct bus_type.
 
-Cc: Jiri Slaby <jslaby@suse.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Vineet Gupta <vgupta@synopsys.com>
+Cc: Bart Van Assche <bart.vanassche@sandisk.com>
+Cc: Robin Murphy <robin.murphy@arm.com>
+Cc: Joerg Roedel <jroedel@suse.de>
+Cc: Johan Hovold <johan@kernel.org>
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>
+Cc: Krzysztof Kozlowski <krzk@kernel.org>
 Cc: <linuxppc-dev@lists.ozlabs.org>
+Acked-by: Michael Ellerman <mpe@ellerman.id.au>
 Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 ---
- drivers/tty/hvc/hvcs.c | 7 +++----
- 1 file changed, 3 insertions(+), 4 deletions(-)
+ arch/powerpc/platforms/pseries/vio.c | 16 ++++++++++------
+ 1 file changed, 10 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/tty/hvc/hvcs.c b/drivers/tty/hvc/hvcs.c
-index 99bb875178d7..096ea5f511bd 100644
---- a/drivers/tty/hvc/hvcs.c
-+++ b/drivers/tty/hvc/hvcs.c
-@@ -484,13 +484,13 @@ static struct attribute_group hvcs_attr_group = {
- 	.attrs = hvcs_attrs,
+diff --git a/arch/powerpc/platforms/pseries/vio.c b/arch/powerpc/platforms/pseries/vio.c
+index 28b09fd797ec..b4f679e3ca3a 100644
+--- a/arch/powerpc/platforms/pseries/vio.c
++++ b/arch/powerpc/platforms/pseries/vio.c
+@@ -1537,6 +1537,7 @@ static ssize_t name_show(struct device *dev,
+ {
+ 	return sprintf(buf, "%s\n", to_vio_dev(dev)->name);
+ }
++static DEVICE_ATTR_RO(name);
+ 
+ static ssize_t devspec_show(struct device *dev,
+ 		struct device_attribute *attr, char *buf)
+@@ -1545,6 +1546,7 @@ static ssize_t devspec_show(struct device *dev,
+ 
+ 	return sprintf(buf, "%s\n", of_node_full_name(of_node));
+ }
++static DEVICE_ATTR_RO(devspec);
+ 
+ static ssize_t modalias_show(struct device *dev, struct device_attribute *attr,
+ 			     char *buf)
+@@ -1566,13 +1568,15 @@ static ssize_t modalias_show(struct device *dev, struct device_attribute *attr,
+ 
+ 	return sprintf(buf, "vio:T%sS%s\n", vio_dev->type, cp);
+ }
++static DEVICE_ATTR_RO(modalias);
+ 
+-static struct device_attribute vio_dev_attrs[] = {
+-	__ATTR_RO(name),
+-	__ATTR_RO(devspec),
+-	__ATTR_RO(modalias),
+-	__ATTR_NULL
++static struct attribute *vio_dev_attrs[] = {
++	&dev_attr_name.attr,
++	&dev_attr_devspec.attr,
++	&dev_attr_modalias.attr,
++	NULL,
  };
++ATTRIBUTE_GROUPS(vio_dev);
  
--static ssize_t hvcs_rescan_show(struct device_driver *ddp, char *buf)
-+static ssize_t rescan_show(struct device_driver *ddp, char *buf)
+ void vio_unregister_device(struct vio_dev *viodev)
  {
- 	/* A 1 means it is updating, a 0 means it is done updating */
- 	return snprintf(buf, PAGE_SIZE, "%d\n", hvcs_rescan_status);
- }
+@@ -1608,7 +1612,7 @@ static int vio_hotplug(struct device *dev, struct kobj_uevent_env *env)
  
--static ssize_t hvcs_rescan_store(struct device_driver *ddp, const char * buf,
-+static ssize_t rescan_store(struct device_driver *ddp, const char * buf,
- 		size_t count)
- {
- 	if ((simple_strtol(buf, NULL, 0) != 1)
-@@ -505,8 +505,7 @@ static ssize_t hvcs_rescan_store(struct device_driver *ddp, const char * buf,
- 	return count;
- }
- 
--static DRIVER_ATTR(rescan,
--	S_IRUGO | S_IWUSR, hvcs_rescan_show, hvcs_rescan_store);
-+static DRIVER_ATTR_RW(rescan);
- 
- static void hvcs_kick(void)
- {
+ struct bus_type vio_bus_type = {
+ 	.name = "vio",
+-	.dev_attrs = vio_dev_attrs,
++	.dev_groups = vio_dev_groups,
+ 	.uevent = vio_hotplug,
+ 	.match = vio_bus_match,
+ 	.probe = vio_bus_probe,
 -- 
 2.13.1
