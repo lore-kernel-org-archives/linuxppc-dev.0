@@ -1,43 +1,39 @@
-Return-Path: <andrew.donnellan@au1.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <ego@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wmtTt2HfGzDqL0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jun 2017 12:08:34 +1000 (AEST)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wmxbs3pclzDqL5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jun 2017 14:28:57 +1000 (AEST)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v5D23cw3100985
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Jun 2017 22:08:32 -0400
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2b26sx8csc-1
+ v5D4SaDe046893
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jun 2017 00:28:54 -0400
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2b1xphstkp-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Jun 2017 22:08:31 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jun 2017 00:28:54 -0400
 Received: from localhost
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
- Tue, 13 Jun 2017 12:08:28 +1000
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v5D28PjQ590226
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jun 2017 12:08:25 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v5D28OTV029454
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jun 2017 12:08:24 +1000
-Subject: Re: [PATCH V2] cxl: Fixes for Coherent Accelerator Interface
- Architecture 2.0
-To: Christophe Lombard <clombard@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, fbarrat@linux.vnet.ibm.com,
- vaibhav@linux.vnet.ibm.com
-References: <1497271559-28123-1-git-send-email-clombard@linux.vnet.ibm.com>
-From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Date: Tue, 13 Jun 2017 12:08:24 +1000
+ for <linuxppc-dev@lists.ozlabs.org> from <ego@linux.vnet.ibm.com>;
+ Mon, 12 Jun 2017 22:28:53 -0600
+Date: Tue, 13 Jun 2017 09:58:49 +0530
+From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+To: Nicholas Piggin <npiggin@gmail.com>
+Cc: Gautham R Shenoy <ego@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ Paul Mackerras <paulus@ozlabs.org>
+Subject: Re: [PATCH 01/14] powerpc/64s: idle move soft interrupt mask logic
+ into C code
+Reply-To: ego@linux.vnet.ibm.com
+References: <20170611235835.7400-1-npiggin@gmail.com>
+ <20170611235835.7400-2-npiggin@gmail.com>
+ <20170612083727.GA10921@in.ibm.com>
+ <20170613004602.2451e44e@roar.ozlabs.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <1497271559-28123-1-git-send-email-clombard@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <1e253946-f3d7-d137-1464-58041bb68056@au1.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20170613004602.2451e44e@roar.ozlabs.ibm.com>
+Message-Id: <20170613042849.GI10921@in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,306 +43,90 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 12/06/17 22:45, Christophe Lombard wrote:
-> A previous set of patches "cxl: Add support for Coherent Accelerator
-> Interface Architecture 2.0" has introduced a new support for the CAPI
-> cards. These patches have been tested on Simulation environment and
-> quite a bit of them have been tested on real hardware.
->
-> This patch brings new fixes after a series of tests carried out on
-> new equipment.
+On Tue, Jun 13, 2017 at 12:46:02AM +1000, Nicholas Piggin wrote:
+> Hi Gautham,
+> 
+> Thanks for the reviews.
+> 
+> On Mon, 12 Jun 2017 14:07:27 +0530
+> Gautham R Shenoy <ego@linux.vnet.ibm.com> wrote:
+> 
+> > Hi Nick,
+> > 
+> > (Added Paul Mackerass to the Cc)
+> > On Mon, Jun 12, 2017 at 09:58:22AM +1000, Nicholas Piggin wrote:
+> > > This simplifies the asm and fixes irq-off tracing over sleep
+> > > instructions.
+> > > 
+> > > Also move powersave_nap check for POWER8 into C code, and move
+> > > PSSCR register value calculation for POWER9 into C.
+> > >  
+> > 
+> > Thanks for doing this. Only one minor comment.
+> > 
+> > > Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> > > ---
+> > > index 98a6d07ecb5c..35cf5bb7daed 100644
+> > > --- a/arch/powerpc/kernel/idle_book3s.S
+> > > +++ b/arch/powerpc/kernel/idle_book3s.S  
+> > 
+> > [..snip..]
+> > 
+> > > @@ -109,13 +109,9 @@ core_idle_lock_held:
+> > >  /*
+> > >   * Pass requested state in r3:
+> > >   *	r3 - PNV_THREAD_NAP/SLEEP/WINKLE in POWER8
+> > > - *	   - Requested STOP state in POWER9
+> > > + *	   - Requested PSSCR value in POWER9
+> > >   *
+> > > - * To check IRQ_HAPPENED in r4
+> > > - * 	0 - don't check
+> > > - * 	1 - check
+> > > - *
+> > > - * Address to 'rfid' to in r5
+> > > + * Address of idle handler to 'rfid' to in r4
+> > >   */
+> > >  pnv_powersave_common:
+> > >  	/* Use r3 to pass state nap/sleep/winkle */
+> > > @@ -131,30 +127,7 @@ pnv_powersave_common:
+> > >  	std	r0,_LINK(r1)
+> > >  	std	r0,_NIP(r1)
+> > > 
+> > > -	/* Hard disable interrupts */
+> > > -	mfmsr	r9
+> > > -	rldicl	r9,r9,48,1
+> > > -	rotldi	r9,r9,16
+> > > -	mtmsrd	r9,1			/* hard-disable interrupts */
+> > > -
+> > > -	/* Check if something happened while soft-disabled */
+> > > -	lbz	r0,PACAIRQHAPPENED(r13)
+> > > -	andi.	r0,r0,~PACA_IRQ_HARD_DIS@l
+> > > -	beq	1f
+> > > -	cmpwi	cr0,r4,0  
+> > 
+> > There were callers to power7_nap() in the dynamic-core-split/unsplit
+> > which wanted nap to be forced irrespective of whether an irq was
+> > pending or not. With this new patch, there won't be a way to enforce
+> > that on POWER8.
+> 
+> Actually there are two APIs to sleep now, the low level one which
+> does not check lazy irq or nap disable is power7_idle_insn(). The
+> one which sets up the lazy irq state is power7_idle_type(). The
+> dynamic core split calls the former, so AFAIKS it should be
+> equivalent.
 
-This commit message could be more descriptive.
+Ah, I see. Yes, my bad. I didn't check which one we are calling in the
+dynamic split case.
 
-Also missing a Signed-off-by.
+Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
 
->
-> Changelog[v2]
->  - Rebase to latest upstream.
->  - Update cxl_is_page_fault() to handle the checkout response status.
->  - Add comments.
-> ---
->  drivers/misc/cxl/context.c |  6 +++---
->  drivers/misc/cxl/cxl.h     | 17 ++++-------------
->  drivers/misc/cxl/fault.c   | 19 ++++++++++++-------
->  drivers/misc/cxl/main.c    | 16 ++++++++++++----
->  drivers/misc/cxl/native.c  | 26 ++++++++++++++------------
->  drivers/misc/cxl/pci.c     | 11 ++++-------
->  6 files changed, 49 insertions(+), 46 deletions(-)
->
-> diff --git a/drivers/misc/cxl/context.c b/drivers/misc/cxl/context.c
-> index 4472ce1..8c32040 100644
-> --- a/drivers/misc/cxl/context.c
-> +++ b/drivers/misc/cxl/context.c
-> @@ -45,7 +45,7 @@ int cxl_context_init(struct cxl_context *ctx, struct cxl_afu *afu, bool master)
->  	mutex_init(&ctx->mapping_lock);
->  	ctx->mapping = NULL;
->
-> -	if (cxl_is_psl8(afu)) {
-> +	if (cxl_is_power8()) {
->  		spin_lock_init(&ctx->sste_lock);
->
->  		/*
-> @@ -189,7 +189,7 @@ int cxl_context_iomap(struct cxl_context *ctx, struct vm_area_struct *vma)
->  		if (start + len > ctx->afu->adapter->ps_size)
->  			return -EINVAL;
->
-> -		if (cxl_is_psl9(ctx->afu)) {
-> +		if (cxl_is_power9()) {
->  			/*
->  			 * Make sure there is a valid problem state
->  			 * area space for this AFU.
-> @@ -324,7 +324,7 @@ static void reclaim_ctx(struct rcu_head *rcu)
->  {
->  	struct cxl_context *ctx = container_of(rcu, struct cxl_context, rcu);
->
-> -	if (cxl_is_psl8(ctx->afu))
-> +	if (cxl_is_power8())
->  		free_page((u64)ctx->sstp);
->  	if (ctx->ff_page)
->  		__free_page(ctx->ff_page);
-> diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
-> index c8568ea..d516353 100644
-> --- a/drivers/misc/cxl/cxl.h
-> +++ b/drivers/misc/cxl/cxl.h
-> @@ -844,24 +844,15 @@ static inline bool cxl_is_power8(void)
->
->  static inline bool cxl_is_power9(void)
->  {
-> -	/* intermediate solution */
-> -	if (!cxl_is_power8() &&
-> -	   (cpu_has_feature(CPU_FTRS_POWER9) ||
-> -	    cpu_has_feature(CPU_FTR_POWER9_DD1)))
-> +	if (pvr_version_is(PVR_POWER9))
->  		return true;
->  	return false;
->  }
->
-> -static inline bool cxl_is_psl8(struct cxl_afu *afu)
-> +static inline bool cxl_is_power9_dd1(void)
->  {
-> -	if (afu->adapter->caia_major == 1)
-> -		return true;
-> -	return false;
-> -}
-> -
-> -static inline bool cxl_is_psl9(struct cxl_afu *afu)
-> -{
-> -	if (afu->adapter->caia_major == 2)
-> +	if ((pvr_version_is(PVR_POWER9)) &&
-> +	    cpu_has_feature(CPU_FTR_POWER9_DD1))
->  		return true;
->  	return false;
->  }
-> diff --git a/drivers/misc/cxl/fault.c b/drivers/misc/cxl/fault.c
-> index 5344448..a6e6a18 100644
-> --- a/drivers/misc/cxl/fault.c
-> +++ b/drivers/misc/cxl/fault.c
-> @@ -187,7 +187,7 @@ static struct mm_struct *get_mem_context(struct cxl_context *ctx)
->
->  static bool cxl_is_segment_miss(struct cxl_context *ctx, u64 dsisr)
->  {
-> -	if ((cxl_is_psl8(ctx->afu)) && (dsisr & CXL_PSL_DSISR_An_DS))
-> +	if ((cxl_is_power8() && (dsisr & CXL_PSL_DSISR_An_DS)))
->  		return true;
->
->  	return false;
-> @@ -195,15 +195,20 @@ static bool cxl_is_segment_miss(struct cxl_context *ctx, u64 dsisr)
->
->  static bool cxl_is_page_fault(struct cxl_context *ctx, u64 dsisr)
->  {
-> -	if ((cxl_is_psl8(ctx->afu)) && (dsisr & CXL_PSL_DSISR_An_DM))
-> +	u64 crs; /* Translation Checkout Response Status */
-> +
-> +	if ((cxl_is_power8()) && (dsisr & CXL_PSL_DSISR_An_DM))
->  		return true;
->
-> -	if ((cxl_is_psl9(ctx->afu)) &&
-> -	   ((dsisr & CXL_PSL9_DSISR_An_CO_MASK) &
-> -		(CXL_PSL9_DSISR_An_PF_SLR | CXL_PSL9_DSISR_An_PF_RGC |
-> -		 CXL_PSL9_DSISR_An_PF_RGP | CXL_PSL9_DSISR_An_PF_HRH |
-> -		 CXL_PSL9_DSISR_An_PF_STEG)))
-> +	if (cxl_is_power9()) {
-> +		crs = (dsisr & CXL_PSL9_DSISR_An_CO_MASK);
-> +		if ((crs == CXL_PSL9_DSISR_An_PF_SLR) ||
-> +		    (crs == CXL_PSL9_DSISR_An_PF_RGC) ||
-> +		    (crs == CXL_PSL9_DSISR_An_PF_RGP) ||
-> +		    (crs == CXL_PSL9_DSISR_An_PF_HRH) ||
-> +		    (crs == CXL_PSL9_DSISR_An_PF_STEG))
->  		return true;
-> +	}
->
->  	return false;
->  }
-> diff --git a/drivers/misc/cxl/main.c b/drivers/misc/cxl/main.c
-> index 1703655..d2d50e3 100644
-> --- a/drivers/misc/cxl/main.c
-> +++ b/drivers/misc/cxl/main.c
-> @@ -329,8 +329,14 @@ static int __init init_cxl(void)
->
->  	cxl_debugfs_init();
->
-> -	if ((rc = register_cxl_calls(&cxl_calls)))
-> -		goto err;
-> +	/*
-> +	 * we don't register the callbacks on P9. slb callack is only
+> 
+> Not the best names perhaps. Open to better suggestions.
+> 
+> Thanks,
+> Nick
+> 
 
-callback
-
-> +	 * used for the PSL8 MMU and CX4.
-> +	 */
-> +	if (cxl_is_power8()) {
-> +		if ((rc = register_cxl_calls(&cxl_calls)))
-> +			goto err;
-> +	}
->
->  	if (cpu_has_feature(CPU_FTR_HVMODE)) {
->  		cxl_ops = &cxl_native_ops;
-> @@ -347,7 +353,8 @@ static int __init init_cxl(void)
->
->  	return 0;
->  err1:
-> -	unregister_cxl_calls(&cxl_calls);
-> +	if (cxl_is_power8())
-> +		unregister_cxl_calls(&cxl_calls);
->  err:
->  	cxl_debugfs_exit();
->  	cxl_file_exit();
-> @@ -366,7 +373,8 @@ static void exit_cxl(void)
->
->  	cxl_debugfs_exit();
->  	cxl_file_exit();
-> -	unregister_cxl_calls(&cxl_calls);
-> +	if (cxl_is_power8())
-> +		unregister_cxl_calls(&cxl_calls);
->  	idr_destroy(&cxl_adapter_idr);
->  }
->
-> diff --git a/drivers/misc/cxl/native.c b/drivers/misc/cxl/native.c
-> index 8d6ea97..3a7725e 100644
-> --- a/drivers/misc/cxl/native.c
-> +++ b/drivers/misc/cxl/native.c
-> @@ -105,11 +105,13 @@ static int native_afu_reset(struct cxl_afu *afu)
->  			   CXL_AFU_Cntl_An_RS_MASK | CXL_AFU_Cntl_An_ES_MASK,
->  			   false);
->
-> -	/* Re-enable any masked interrupts */
-> -	serr = cxl_p1n_read(afu, CXL_PSL_SERR_An);
-> -	serr &= ~CXL_PSL_SERR_An_IRQ_MASKS;
-> -	cxl_p1n_write(afu, CXL_PSL_SERR_An, serr);
-> -
-> +	if (afu->current_mode == 0) {
-> +		/* Re-enable any masked interrupts when the AFU is not
-> +		 * activated */
-
-CodingStyle
-
-> +		serr = cxl_p1n_read(afu, CXL_PSL_SERR_An);
-> +		serr &= ~CXL_PSL_SERR_An_IRQ_MASKS;
-> +		cxl_p1n_write(afu, CXL_PSL_SERR_An, serr);
-> +	}
->
->  	return rc;
->  }
-> @@ -139,9 +141,9 @@ int cxl_psl_purge(struct cxl_afu *afu)
->
->  	pr_devel("PSL purge request\n");
->
-> -	if (cxl_is_psl8(afu))
-> +	if (cxl_is_power8())
->  		trans_fault = CXL_PSL_DSISR_TRANS;
-> -	if (cxl_is_psl9(afu))
-> +	if (cxl_is_power9())
->  		trans_fault = CXL_PSL9_DSISR_An_TF;
->
->  	if (!cxl_ops->link_ok(afu->adapter, afu)) {
-> @@ -603,7 +605,7 @@ static u64 calculate_sr(struct cxl_context *ctx)
->  		if (!test_tsk_thread_flag(current, TIF_32BIT))
->  			sr |= CXL_PSL_SR_An_SF;
->  	}
-> -	if (cxl_is_psl9(ctx->afu)) {
-> +	if (cxl_is_power9()) {
->  		if (radix_enabled())
->  			sr |= CXL_PSL_SR_An_XLAT_ror;
->  		else
-> @@ -1117,10 +1119,10 @@ static irqreturn_t native_handle_psl_slice_error(struct cxl_context *ctx,
->
->  static bool cxl_is_translation_fault(struct cxl_afu *afu, u64 dsisr)
->  {
-> -	if ((cxl_is_psl8(afu)) && (dsisr & CXL_PSL_DSISR_TRANS))
-> +	if ((cxl_is_power8()) && (dsisr & CXL_PSL_DSISR_TRANS))
->  		return true;
->
-> -	if ((cxl_is_psl9(afu)) && (dsisr & CXL_PSL9_DSISR_An_TF))
-> +	if ((cxl_is_power9()) && (dsisr & CXL_PSL9_DSISR_An_TF))
->  		return true;
->
->  	return false;
-> @@ -1194,10 +1196,10 @@ static void native_irq_wait(struct cxl_context *ctx)
->  		if (ph != ctx->pe)
->  			return;
->  		dsisr = cxl_p2n_read(ctx->afu, CXL_PSL_DSISR_An);
-> -		if (cxl_is_psl8(ctx->afu) &&
-> +		if (cxl_is_power8() &&
->  		   ((dsisr & CXL_PSL_DSISR_PENDING) == 0))
->  			return;
-> -		if (cxl_is_psl9(ctx->afu) &&
-> +		if (cxl_is_power9() &&
->  		   ((dsisr & CXL_PSL9_DSISR_PENDING) == 0))
->  			return;
->  		/*
-> diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
-> index 6dc1ee5..1eb9859 100644
-> --- a/drivers/misc/cxl/pci.c
-> +++ b/drivers/misc/cxl/pci.c
-> @@ -436,7 +436,7 @@ static int init_implementation_adapter_regs_psl9(struct cxl *adapter, struct pci
->  	/* nMMU_ID Defaults to: b’000001001’*/
->  	xsl_dsnctl |= ((u64)0x09 << (63-28));
->
-> -	if (cxl_is_power9() && !cpu_has_feature(CPU_FTR_POWER9_DD1)) {
-> +	if (!(cxl_is_power9_dd1())) {
->  		/*
->  		 * Used to identify CAPI packets which should be sorted into
->  		 * the Non-Blocking queues by the PHB. This field should match
-> @@ -491,7 +491,7 @@ static int init_implementation_adapter_regs_psl9(struct cxl *adapter, struct pci
->  	cxl_p1_write(adapter, CXL_PSL9_APCDEDTYPE, 0x40000003FFFF0000ULL);
->
->  	/* Disable vc dd1 fix */
-> -	if ((cxl_is_power9() && cpu_has_feature(CPU_FTR_POWER9_DD1)))
-> +	if (cxl_is_power9_dd1())
->  		cxl_p1_write(adapter, CXL_PSL9_GP_CT, 0x0400000000000001ULL);
->
->  	return 0;
-> @@ -1439,8 +1439,7 @@ int cxl_pci_reset(struct cxl *adapter)
->  	 * The adapter is about to be reset, so ignore errors.
->  	 * Not supported on P9 DD1
->  	 */
-> -	if ((cxl_is_power8()) ||
-> -	    ((cxl_is_power9() && !cpu_has_feature(CPU_FTR_POWER9_DD1))))
-> +	if ((cxl_is_power8()) || (!(cxl_is_power9_dd1())))
->  		cxl_data_cache_flush(adapter);
->
->  	/* pcie_warm_reset requests a fundamental pci reset which includes a
-> @@ -1750,7 +1749,6 @@ static const struct cxl_service_layer_ops psl9_ops = {
->  	.debugfs_add_adapter_regs = cxl_debugfs_add_adapter_regs_psl9,
->  	.debugfs_add_afu_regs = cxl_debugfs_add_afu_regs_psl9,
->  	.psl_irq_dump_registers = cxl_native_irq_dump_regs_psl9,
-> -	.err_irq_dump_registers = cxl_native_err_irq_dump_regs,
->  	.debugfs_stop_trace = cxl_stop_trace_psl9,
->  	.write_timebase_ctrl = write_timebase_ctrl_psl9,
->  	.timebase_read = timebase_read_psl9,
-> @@ -1889,8 +1887,7 @@ static void cxl_pci_remove_adapter(struct cxl *adapter)
->  	 * Flush adapter datacache as its about to be removed.
->  	 * Not supported on P9 DD1.
->  	 */
-> -	if ((cxl_is_power8()) ||
-> -	    ((cxl_is_power9() && !cpu_has_feature(CPU_FTR_POWER9_DD1))))
-> +	if ((cxl_is_power8()) || (!(cxl_is_power9_dd1())))
->  		cxl_data_cache_flush(adapter);
->
->  	cxl_deconfigure_adapter(adapter);
->
-
--- 
-Andrew Donnellan              OzLabs, ADL Canberra
-andrew.donnellan@au1.ibm.com  IBM Australia Limited
+--
+Thanks and Regards
+gautham.
