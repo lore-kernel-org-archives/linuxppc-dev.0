@@ -1,48 +1,43 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <andrew.donnellan@au1.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wmtM7177qzDqL0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jun 2017 12:02:42 +1000 (AEST)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wmtTt2HfGzDqL0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jun 2017 12:08:34 +1000 (AEST)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v5D1wnTT033768
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Jun 2017 22:02:40 -0400
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2b1xphkvnj-1
+ v5D23cw3100985
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Jun 2017 22:08:32 -0400
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2b26sx8csc-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Jun 2017 22:02:40 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Jun 2017 22:08:31 -0400
 Received: from localhost
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Tue, 13 Jun 2017 12:02:37 +1000
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v5D22Yiu8061288
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jun 2017 12:02:34 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v5D22QkJ011005
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jun 2017 12:02:26 +1000
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Ram Pai <linuxram@us.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- khandual@linux.vnet.ibm.com, bsingharora@gmail.com,
- dave.hansen@intel.com, hbabu@us.ibm.com
-Subject: Re: [RFC PATCH 1/7 v1]powerpc: Free up four PTE bits to accommodate
- memory keys
-In-Reply-To: <20170612222018.GA5524@ram.oc3035372033.ibm.com>
-References: <1496711109-4968-1-git-send-email-linuxram@us.ibm.com>
- <1496711109-4968-2-git-send-email-linuxram@us.ibm.com>
- <877f0h3d7b.fsf@skywalker.in.ibm.com>
- <20170612222018.GA5524@ram.oc3035372033.ibm.com>
-Date: Tue, 13 Jun 2017 07:32:24 +0530
+ for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
+ Tue, 13 Jun 2017 12:08:28 +1000
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v5D28PjQ590226
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jun 2017 12:08:25 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v5D28OTV029454
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jun 2017 12:08:24 +1000
+Subject: Re: [PATCH V2] cxl: Fixes for Coherent Accelerator Interface
+ Architecture 2.0
+To: Christophe Lombard <clombard@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, fbarrat@linux.vnet.ibm.com,
+ vaibhav@linux.vnet.ibm.com
+References: <1497271559-28123-1-git-send-email-clombard@linux.vnet.ibm.com>
+From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Date: Tue, 13 Jun 2017 12:08:24 +1000
 MIME-Version: 1.0
-Content-Type: text/plain
-Message-Id: <87zidc1w7j.fsf@skywalker.in.ibm.com>
+In-Reply-To: <1497271559-28123-1-git-send-email-clombard@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <1e253946-f3d7-d137-1464-58041bb68056@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,374 +47,306 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Ram Pai <linuxram@us.ibm.com> writes:
-
-> On Mon, Jun 12, 2017 at 12:27:44PM +0530, Aneesh Kumar K.V wrote:
->> Ram Pai <linuxram@us.ibm.com> writes:
->> 
->> > Rearrange  PTE   bits to  free  up  bits 3, 4, 5  and  6  for
->> > memory keys. Bit 3, 4, 5, 6 and 57  shall  be used for memory
->> > keys.
->> >
->> > The patch does the following change to the 64K PTE format
->> >
->> > H_PAGE_BUSY moves from bit 3 to bit 7
->> > H_PAGE_F_SECOND which occupied bit 4 moves to the second part
->> > 	of the pte.
->> > H_PAGE_F_GIX which  occupied bit 5, 6 and 7 also moves to the
->> > 	second part of the pte.
->> >
->> > The second part of the PTE will hold
->> >    a (H_PAGE_F_SECOND|H_PAGE_F_GIX)  for  64K page backed pte,
->> >    and sixteen (H_PAGE_F_SECOND|H_PAGE_F_GIX)  for 4k  backed
->> > 	pte.
->> >
->> > the four  bits((H_PAGE_F_SECOND|H_PAGE_F_GIX) that represent a slot
->> > is initialized to 0xF indicating a invalid slot. if a hashpage does
->> > get  allocated  to  the  0xF  slot, it is released and not used. In
->> > other words, even  though  0xF  is  a valid slot we discard it  and
->> > consider it as invalid slot(HPTE_SOFT_INVALID). This  gives  us  an
->> > opportunity to  not  depend on a bit in the primary PTE in order to
->> > determine the validity of a slot.
->> 
->> Do we need to do this for 64K hptes ? H_PAGE_HASHPTE indicates whether a
->> slot is valid or not. For 4K hptes, we do need this right ? ie, only
->> when H_PAGE_COMBO is set we need to consider 0xf as an invalid slot
+On 12/06/17 22:45, Christophe Lombard wrote:
+> A previous set of patches "cxl: Add support for Coherent Accelerator
+> Interface Architecture 2.0" has introduced a new support for the CAPI
+> cards. These patches have been tested on Simulation environment and
+> quite a bit of them have been tested on real hardware.
 >
-> for 64k hptes; you are right, we do not use 0xF to
-> track the validity of a slot. We just depend on H_PAGE_HASHPTE flag.
->
-> for 4k hptes, we need to depend on both H_PAGE_HASHPTE as well as the
-> value of the slot.  H_PAGE_HASHPTE tells if there exists any valid
-> 4k HPTEs, and the 4-bit values in the second-part-of-the-pte tells
-> us if they are valid values.
->
-> However in either case we do not need H_PAGE_COMBO. That flag is not
-> used for ptes.  But we continue to use that flag for pmd to track
-> hugepages, which is why I have not entirely divorced H_PAGE_COMBO from
-> the 64K pagesize case.
+> This patch brings new fixes after a series of tests carried out on
+> new equipment.
 
+This commit message could be more descriptive.
 
-Really ? May be i am missing that in the patch. H_PAGE_COMBO indicate
-whether a 64K linux page is mapped via 4k hash page table enries. I
-don't see you changing that in __hash_page_4k()
-
-we still continue to do.
-
-		new_pte = old_pte | H_PAGE_BUSY | _PAGE_ACCESSED | H_PAGE_COMBO;
-
-	/*
-	 * Check if the pte was already inserted into the hash table
-	 * as a 64k HW page, and invalidate the 64k HPTE if so.
-	 */
-	if (!(old_pte & H_PAGE_COMBO)) {
-		flush_hash_page(vpn, rpte, MMU_PAGE_64K, ssize, flags);
-
-
+Also missing a Signed-off-by.
 
 >
->> 
->> 
->> >
->> > When  we  release  a  0xF slot we also release a legitimate primary
->> > slot  and  unmap  that  entry. This  is  to  ensure  that we do get
->> > a legimate non-0xF slot the next time we retry for a slot.
->> 
->> Can you explain this more ? what is a primary slot here ?
+> Changelog[v2]
+>  - Rebase to latest upstream.
+>  - Update cxl_is_page_fault() to handle the checkout response status.
+>  - Add comments.
+> ---
+>  drivers/misc/cxl/context.c |  6 +++---
+>  drivers/misc/cxl/cxl.h     | 17 ++++-------------
+>  drivers/misc/cxl/fault.c   | 19 ++++++++++++-------
+>  drivers/misc/cxl/main.c    | 16 ++++++++++++----
+>  drivers/misc/cxl/native.c  | 26 ++++++++++++++------------
+>  drivers/misc/cxl/pci.c     | 11 ++++-------
+>  6 files changed, 49 insertions(+), 46 deletions(-)
 >
-> I may not be using the right terminology here. But when I say slot, i
-> mean the four bits that tell the position of the hpte in the hash
-> buckets. Bit 0, indicates if it the primary or secondary hash bucket.
-> and bit 1,2,3 indicates the entry in the hash bucket.
+> diff --git a/drivers/misc/cxl/context.c b/drivers/misc/cxl/context.c
+> index 4472ce1..8c32040 100644
+> --- a/drivers/misc/cxl/context.c
+> +++ b/drivers/misc/cxl/context.c
+> @@ -45,7 +45,7 @@ int cxl_context_init(struct cxl_context *ctx, struct cxl_afu *afu, bool master)
+>  	mutex_init(&ctx->mapping_lock);
+>  	ctx->mapping = NULL;
 >
-> So when i say primary slot, I mean a entry in the primary hash bucket.
+> -	if (cxl_is_psl8(afu)) {
+> +	if (cxl_is_power8()) {
+>  		spin_lock_init(&ctx->sste_lock);
 >
-> The idea is, when hpte_insert returns a hpte which is cached in the 7slot
-> of the secondary bucket i.e 0xF, we discard it, and also release a
-> random entry from the primary bucket, so that on retry we can get that
-> entry.
+>  		/*
+> @@ -189,7 +189,7 @@ int cxl_context_iomap(struct cxl_context *ctx, struct vm_area_struct *vma)
+>  		if (start + len > ctx->afu->adapter->ps_size)
+>  			return -EINVAL;
 >
+> -		if (cxl_is_psl9(ctx->afu)) {
+> +		if (cxl_is_power9()) {
+>  			/*
+>  			 * Make sure there is a valid problem state
+>  			 * area space for this AFU.
+> @@ -324,7 +324,7 @@ static void reclaim_ctx(struct rcu_head *rcu)
+>  {
+>  	struct cxl_context *ctx = container_of(rcu, struct cxl_context, rcu);
 >
->> 
->> >
->> > Though treating 0xF slot as invalid reduces the number of available
->> > slots and make have a effect on the performance, the probabilty
->> > of hitting a 0xF is extermely low.
->> >
->> > Compared  to the current scheme, the above described scheme reduces
->> > the number of false hash table updates  significantly  and  has the
->> > added  advantage  of  releasing  four  valuable  PTE bits for other
->> > purpose.
->> >
->> > This idea was jointly developed by Paul Mackerras, Aneesh, Michael
->> > Ellermen and myself.
->> >
->> > 4K PTE format remain unchanged currently.
->> >
->> > Signed-off-by: Ram Pai <linuxram@us.ibm.com>
->> > ---
->> >  arch/powerpc/include/asm/book3s/64/hash-4k.h  | 12 +++++
->> >  arch/powerpc/include/asm/book3s/64/hash-64k.h | 38 ++++++--------
->> >  arch/powerpc/include/asm/book3s/64/hash.h     |  8 ++-
->> >  arch/powerpc/include/asm/book3s/64/mmu-hash.h |  5 ++
->> >  arch/powerpc/mm/dump_linuxpagetables.c        |  3 +-
->> >  arch/powerpc/mm/hash64_4k.c                   | 12 ++---
->> >  arch/powerpc/mm/hash64_64k.c                  | 73 +++++++++------------------
->> >  arch/powerpc/mm/hash_utils_64.c               | 38 +++++++++++++-
->> >  arch/powerpc/mm/hugetlbpage-hash64.c          | 16 +++---
->> >  9 files changed, 107 insertions(+), 98 deletions(-)
->> >
->> > diff --git a/arch/powerpc/include/asm/book3s/64/hash-4k.h b/arch/powerpc/include/asm/book3s/64/hash-4k.h
->> > index b4b5e6b..223d318 100644
->> > --- a/arch/powerpc/include/asm/book3s/64/hash-4k.h
->> > +++ b/arch/powerpc/include/asm/book3s/64/hash-4k.h
->> > @@ -16,6 +16,18 @@
->> >  #define H_PUD_TABLE_SIZE	(sizeof(pud_t) << H_PUD_INDEX_SIZE)
->> >  #define H_PGD_TABLE_SIZE	(sizeof(pgd_t) << H_PGD_INDEX_SIZE)
->> >
->> > +
->> > +/*
->> > + * Only supported by 4k linux page size
->> 
->> that comment is confusing, you can drop that, it is part of hash-4k.h
->> which means these defines are local to 4k linux page size config.
->> 
->> > + */
+> -	if (cxl_is_psl8(ctx->afu))
+> +	if (cxl_is_power8())
+>  		free_page((u64)ctx->sstp);
+>  	if (ctx->ff_page)
+>  		__free_page(ctx->ff_page);
+> diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
+> index c8568ea..d516353 100644
+> --- a/drivers/misc/cxl/cxl.h
+> +++ b/drivers/misc/cxl/cxl.h
+> @@ -844,24 +844,15 @@ static inline bool cxl_is_power8(void)
 >
-> right. ok.
+>  static inline bool cxl_is_power9(void)
+>  {
+> -	/* intermediate solution */
+> -	if (!cxl_is_power8() &&
+> -	   (cpu_has_feature(CPU_FTRS_POWER9) ||
+> -	    cpu_has_feature(CPU_FTR_POWER9_DD1)))
+> +	if (pvr_version_is(PVR_POWER9))
+>  		return true;
+>  	return false;
+>  }
 >
->> > +#define H_PAGE_F_SECOND        _RPAGE_RSV2     /* HPTE is in 2ndary HPTEG */
->> > +#define H_PAGE_F_GIX           (_RPAGE_RSV3 | _RPAGE_RSV4 | _RPAGE_RPN44)
->> > +#define H_PAGE_F_GIX_SHIFT     56
->> > +
->> > +#define H_PAGE_BUSY	_RPAGE_RSV1     /* software: PTE & hash are busy */
->> > +#define H_PAGE_HASHPTE	_RPAGE_RPN43    /* PTE has associated HPTE */
->> > +
->> > +
->> >  /* PTE flags to conserve for HPTE identification */
->> >  #define _PAGE_HPTEFLAGS (H_PAGE_BUSY | H_PAGE_HASHPTE | \
->> >  			 H_PAGE_F_SECOND | H_PAGE_F_GIX)
->> > diff --git a/arch/powerpc/include/asm/book3s/64/hash-64k.h b/arch/powerpc/include/asm/book3s/64/hash-64k.h
->> > index 9732837..87ee22d 100644
->> > --- a/arch/powerpc/include/asm/book3s/64/hash-64k.h
->> > +++ b/arch/powerpc/include/asm/book3s/64/hash-64k.h
->> > @@ -10,23 +10,21 @@
->> >   * 64k aligned address free up few of the lower bits of RPN for us
->> >   * We steal that here. For more deatils look at pte_pfn/pfn_pte()
->> >   */
->> > -#define H_PAGE_COMBO	_RPAGE_RPN0 /* this is a combo 4k page */
->> > -#define H_PAGE_4K_PFN	_RPAGE_RPN1 /* PFN is for a single 4k page */
->> > +#define H_PAGE_COMBO   _RPAGE_RPN0 /* this is a combo 4k page */
->> > +#define H_PAGE_4K_PFN  _RPAGE_RPN1 /* PFN is for a single 4k page */
->> > +
->> > +#define H_PAGE_BUSY	_RPAGE_RPN44     /* software: PTE & hash are busy */
->> > +#define H_PAGE_HASHPTE	_RPAGE_RPN43    /* PTE has associated HPTE */
->> > +
->> >  /*
->> >   * We need to differentiate between explicit huge page and THP huge
->> >   * page, since THP huge page also need to track real subpage details
->> >   */
->> >  #define H_PAGE_THP_HUGE  H_PAGE_4K_PFN
->> >
->> > -/*
->> > - * Used to track subpage group valid if H_PAGE_COMBO is set
->> > - * This overloads H_PAGE_F_GIX and H_PAGE_F_SECOND
->> > - */
->> > -#define H_PAGE_COMBO_VALID	(H_PAGE_F_GIX | H_PAGE_F_SECOND)
->> > -
->> >  /* PTE flags to conserve for HPTE identification */
->> > -#define _PAGE_HPTEFLAGS (H_PAGE_BUSY | H_PAGE_F_SECOND | \
->> > -			 H_PAGE_F_GIX | H_PAGE_HASHPTE | H_PAGE_COMBO)
->> > +#define _PAGE_HPTEFLAGS (H_PAGE_BUSY | H_PAGE_HASHPTE)
->> > +
->> 
->> You drop H_PAGE_COMBO here. Is that intentional ?
+> -static inline bool cxl_is_psl8(struct cxl_afu *afu)
+> +static inline bool cxl_is_power9_dd1(void)
+>  {
+> -	if (afu->adapter->caia_major == 1)
+> -		return true;
+> -	return false;
+> -}
+> -
+> -static inline bool cxl_is_psl9(struct cxl_afu *afu)
+> -{
+> -	if (afu->adapter->caia_major == 2)
+> +	if ((pvr_version_is(PVR_POWER9)) &&
+> +	    cpu_has_feature(CPU_FTR_POWER9_DD1))
+>  		return true;
+>  	return false;
+>  }
+> diff --git a/drivers/misc/cxl/fault.c b/drivers/misc/cxl/fault.c
+> index 5344448..a6e6a18 100644
+> --- a/drivers/misc/cxl/fault.c
+> +++ b/drivers/misc/cxl/fault.c
+> @@ -187,7 +187,7 @@ static struct mm_struct *get_mem_context(struct cxl_context *ctx)
 >
-> Yes. that is intentional. See a downside?  We dont depend on
-> H_PAGE_COMBO for 64K pagesize PTE anymore.
+>  static bool cxl_is_segment_miss(struct cxl_context *ctx, u64 dsisr)
+>  {
+> -	if ((cxl_is_psl8(ctx->afu)) && (dsisr & CXL_PSL_DSISR_An_DS))
+> +	if ((cxl_is_power8() && (dsisr & CXL_PSL_DSISR_An_DS)))
+>  		return true;
 >
->> 
->> We have code which does
->> 
->> 		if (mmu_hash_ops.hpte_updatepp(slot, rflags, vpn, MMU_PAGE_64K,
->> 					       MMU_PAGE_64K, ssize,
->> 					       flags) == -1)
->> 			old_pte &= ~_PAGE_HPTEFLAGS;
->> 	
->> 
->> I guess they expect slot details to be cleared. With the above
->> _PAGE_HPTEFLAGS that is not true.
+>  	return false;
+> @@ -195,15 +195,20 @@ static bool cxl_is_segment_miss(struct cxl_context *ctx, u64 dsisr)
 >
-> since we dont depend on COMBO flag, it should be fine. Let me know if
-> you see a downside.
+>  static bool cxl_is_page_fault(struct cxl_context *ctx, u64 dsisr)
+>  {
+> -	if ((cxl_is_psl8(ctx->afu)) && (dsisr & CXL_PSL_DSISR_An_DM))
+> +	u64 crs; /* Translation Checkout Response Status */
+> +
+> +	if ((cxl_is_power8()) && (dsisr & CXL_PSL_DSISR_An_DM))
+>  		return true;
 >
->> 
->> 
->> >  /*
->> >   * we support 16 fragments per PTE page of 64K size.
->> >   */
->> > @@ -54,24 +52,18 @@ static inline real_pte_t __real_pte(pte_t pte, pte_t *ptep)
->> >  	unsigned long *hidxp;
->> >
->> >  	rpte.pte = pte;
->> > -	rpte.hidx = 0;
->> > -	if (pte_val(pte) & H_PAGE_COMBO) {
->> > -		/*
->> > -		 * Make sure we order the hidx load against the H_PAGE_COMBO
->> > -		 * check. The store side ordering is done in __hash_page_4K
->> > -		 */
->> > -		smp_rmb();
->> > -		hidxp = (unsigned long *)(ptep + PTRS_PER_PTE);
->> > -		rpte.hidx = *hidxp;
->> > -	}
->> > +	/*
->> > +	 * The store side ordering is done in __hash_page_4K
->> > +	 */
->> > +	smp_rmb();
->> > +	hidxp = (unsigned long *)(ptep + PTRS_PER_PTE);
->> > +	rpte.hidx = *hidxp;
->> >  	return rpte;
->> >  }
->> >
->> >  static inline unsigned long __rpte_to_hidx(real_pte_t rpte, unsigned long index)
->> >  {
->> > -	if ((pte_val(rpte.pte) & H_PAGE_COMBO))
->> > -		return (rpte.hidx >> (index<<2)) & 0xf;
->> > -	return (pte_val(rpte.pte) >> H_PAGE_F_GIX_SHIFT) & 0xf;
->> > +	return ((rpte.hidx >> (index<<2)) & 0xfUL);
->> >  }
->> >
->> >  #define __rpte_to_pte(r)	((r).pte)
->> > diff --git a/arch/powerpc/include/asm/book3s/64/hash.h b/arch/powerpc/include/asm/book3s/64/hash.h
->> > index 4e957b0..7742782 100644
->> > --- a/arch/powerpc/include/asm/book3s/64/hash.h
->> > +++ b/arch/powerpc/include/asm/book3s/64/hash.h
->> > @@ -8,11 +8,9 @@
->> >   *
->> >   */
->> >  #define H_PTE_NONE_MASK		_PAGE_HPTEFLAGS
->> > -#define H_PAGE_F_GIX_SHIFT	56
->> > -#define H_PAGE_BUSY		_RPAGE_RSV1 /* software: PTE & hash are busy */
->> > -#define H_PAGE_F_SECOND		_RPAGE_RSV2	/* HPTE is in 2ndary HPTEG */
->> > -#define H_PAGE_F_GIX		(_RPAGE_RSV3 | _RPAGE_RSV4 | _RPAGE_RPN44)
->> > -#define H_PAGE_HASHPTE		_RPAGE_RPN43	/* PTE has associated HPTE */
->> > +
->> > +#define INIT_HIDX (~0x0UL)
->> 
->> But then you use it like
->> 
->> 	rpte.hidx = INIT_HIDX;
->> 
->> A better would be INIT_HIDX = 0xF ?. Also may be INIT is the wrong name
->> there ?
+> -	if ((cxl_is_psl9(ctx->afu)) &&
+> -	   ((dsisr & CXL_PSL9_DSISR_An_CO_MASK) &
+> -		(CXL_PSL9_DSISR_An_PF_SLR | CXL_PSL9_DSISR_An_PF_RGC |
+> -		 CXL_PSL9_DSISR_An_PF_RGP | CXL_PSL9_DSISR_An_PF_HRH |
+> -		 CXL_PSL9_DSISR_An_PF_STEG)))
+> +	if (cxl_is_power9()) {
+> +		crs = (dsisr & CXL_PSL9_DSISR_An_CO_MASK);
+> +		if ((crs == CXL_PSL9_DSISR_An_PF_SLR) ||
+> +		    (crs == CXL_PSL9_DSISR_An_PF_RGC) ||
+> +		    (crs == CXL_PSL9_DSISR_An_PF_RGP) ||
+> +		    (crs == CXL_PSL9_DSISR_An_PF_HRH) ||
+> +		    (crs == CXL_PSL9_DSISR_An_PF_STEG))
+>  		return true;
+> +	}
 >
-> No. We are initializing all the entries in the second-part-of-the-pte to
-> 0xF. which essentially boils down to ~0x0UL.
+>  	return false;
+>  }
+> diff --git a/drivers/misc/cxl/main.c b/drivers/misc/cxl/main.c
+> index 1703655..d2d50e3 100644
+> --- a/drivers/misc/cxl/main.c
+> +++ b/drivers/misc/cxl/main.c
+> @@ -329,8 +329,14 @@ static int __init init_cxl(void)
+>
+>  	cxl_debugfs_init();
+>
+> -	if ((rc = register_cxl_calls(&cxl_calls)))
+> -		goto err;
+> +	/*
+> +	 * we don't register the callbacks on P9. slb callack is only
 
-that you unsigned long casting is what i was suggesting to remove. We
-may want to treat it as a 4 bits every where  ?
+callback
 
-
+> +	 * used for the PSL8 MMU and CX4.
+> +	 */
+> +	if (cxl_is_power8()) {
+> +		if ((rc = register_cxl_calls(&cxl_calls)))
+> +			goto err;
+> +	}
 >
->> 
->> > +#define HPTE_SOFT_INVALID(slot) ((slot & 0xfUL) == 0xfUL)
->> 
->> Can you do that as a static inline ?
+>  	if (cpu_has_feature(CPU_FTR_HVMODE)) {
+>  		cxl_ops = &cxl_native_ops;
+> @@ -347,7 +353,8 @@ static int __init init_cxl(void)
 >
-> ok.
+>  	return 0;
+>  err1:
+> -	unregister_cxl_calls(&cxl_calls);
+> +	if (cxl_is_power8())
+> +		unregister_cxl_calls(&cxl_calls);
+>  err:
+>  	cxl_debugfs_exit();
+>  	cxl_file_exit();
+> @@ -366,7 +373,8 @@ static void exit_cxl(void)
 >
->> 
->> >
->> >  #ifdef CONFIG_PPC_64K_PAGES
->> >  #include <asm/book3s/64/hash-64k.h>
->> > diff --git a/arch/powerpc/include/asm/book3s/64/mmu-hash.h b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
->> > index 6981a52..cfb8169 100644
->> > --- a/arch/powerpc/include/asm/book3s/64/mmu-hash.h
->> > +++ b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
->> > @@ -435,6 +435,11 @@ extern int __hash_page_4K(unsigned long ea, unsigned long access,
->> >  extern int __hash_page_64K(unsigned long ea, unsigned long access,
->> >  			   unsigned long vsid, pte_t *ptep, unsigned long trap,
->> >  			   unsigned long flags, int ssize);
->> > +extern unsigned long set_hidx_slot(pte_t *ptep, real_pte_t rpte,
->> > +			unsigned int subpg_index, unsigned long slot);
->> > +extern unsigned long get_hidx_slot(unsigned long vpn, unsigned long shift,
->> > +			int ssize, real_pte_t rpte, unsigned int subpg_index);
->> > +
->> >  struct mm_struct;
->> >  unsigned int hash_page_do_lazy_icache(unsigned int pp, pte_t pte, int trap);
->> >  extern int hash_page_mm(struct mm_struct *mm, unsigned long ea,
->> > diff --git a/arch/powerpc/mm/dump_linuxpagetables.c b/arch/powerpc/mm/dump_linuxpagetables.c
->> > index 44fe483..b832ed3 100644
->> > --- a/arch/powerpc/mm/dump_linuxpagetables.c
->> > +++ b/arch/powerpc/mm/dump_linuxpagetables.c
->> > @@ -213,7 +213,7 @@ struct flag_info {
->> >  		.val	= H_PAGE_4K_PFN,
->> >  		.set	= "4K_pfn",
->> >  	}, {
->> > -#endif
->> > +#else
->> >  		.mask	= H_PAGE_F_GIX,
->> >  		.val	= H_PAGE_F_GIX,
->> >  		.set	= "f_gix",
->> > @@ -224,6 +224,7 @@ struct flag_info {
->> >  		.val	= H_PAGE_F_SECOND,
->> >  		.set	= "f_second",
->> >  	}, {
->> > +#endif /* CONFIG_PPC_64K_PAGES */
->> >  #endif
->> >  		.mask	= _PAGE_SPECIAL,
->> >  		.val	= _PAGE_SPECIAL,
->> > diff --git a/arch/powerpc/mm/hash64_4k.c b/arch/powerpc/mm/hash64_4k.c
->> > index 6fa450c..5b16416 100644
->> > --- a/arch/powerpc/mm/hash64_4k.c
->> > +++ b/arch/powerpc/mm/hash64_4k.c
->> > @@ -20,6 +20,7 @@ int __hash_page_4K(unsigned long ea, unsigned long access, unsigned long vsid,
->> >  		   pte_t *ptep, unsigned long trap, unsigned long flags,
->> >  		   int ssize, int subpg_prot)
->> >  {
->> > +	real_pte_t rpte;
->> >  	unsigned long hpte_group;
->> >  	unsigned long rflags, pa;
->> >  	unsigned long old_pte, new_pte;
->> > @@ -54,6 +55,7 @@ int __hash_page_4K(unsigned long ea, unsigned long access, unsigned long vsid,
->> >  	 * need to add in 0x1 if it's a read-only user page
->> >  	 */
->> >  	rflags = htab_convert_pte_flags(new_pte);
->> > +	rpte = __real_pte(__pte(old_pte), ptep);
->> >
->> >  	if (cpu_has_feature(CPU_FTR_NOEXECUTE) &&
->> >  	    !cpu_has_feature(CPU_FTR_COHERENT_ICACHE))
->> > @@ -64,12 +66,7 @@ int __hash_page_4K(unsigned long ea, unsigned long access, unsigned long vsid,
->> >  		/*
->> >  		 * There MIGHT be an HPTE for this pte
->> >  		 */
->> > -		hash = hpt_hash(vpn, shift, ssize);
->> > -		if (old_pte & H_PAGE_F_SECOND)
->> > -			hash = ~hash;
->> > -		slot = (hash & htab_hash_mask) * HPTES_PER_GROUP;
->> > -		slot += (old_pte & H_PAGE_F_GIX) >> H_PAGE_F_GIX_SHIFT;
->> > -
->> > +		slot = get_hidx_slot(vpn, shift, ssize, rpte, 0);
->> 
->> 
->> This confused me, the rest of the code assume slot as the 4 bit value.
->> But get_hidx_slot is not exactly returning that.
+>  	cxl_debugfs_exit();
+>  	cxl_file_exit();
+> -	unregister_cxl_calls(&cxl_calls);
+> +	if (cxl_is_power8())
+> +		unregister_cxl_calls(&cxl_calls);
+>  	idr_destroy(&cxl_adapter_idr);
+>  }
 >
-> get_hidx_slot() is returning a 4bit value. no?
+> diff --git a/drivers/misc/cxl/native.c b/drivers/misc/cxl/native.c
+> index 8d6ea97..3a7725e 100644
+> --- a/drivers/misc/cxl/native.c
+> +++ b/drivers/misc/cxl/native.c
+> @@ -105,11 +105,13 @@ static int native_afu_reset(struct cxl_afu *afu)
+>  			   CXL_AFU_Cntl_An_RS_MASK | CXL_AFU_Cntl_An_ES_MASK,
+>  			   false);
+>
+> -	/* Re-enable any masked interrupts */
+> -	serr = cxl_p1n_read(afu, CXL_PSL_SERR_An);
+> -	serr &= ~CXL_PSL_SERR_An_IRQ_MASKS;
+> -	cxl_p1n_write(afu, CXL_PSL_SERR_An, serr);
+> -
+> +	if (afu->current_mode == 0) {
+> +		/* Re-enable any masked interrupts when the AFU is not
+> +		 * activated */
 
-It is not
-unsigned long get_hidx_slot(unsigned long vpn, unsigned long shift,
-			int ssize, real_pte_t rpte, unsigned int subpg_index)
-{
-	unsigned long hash, slot, hidx;
+CodingStyle
 
-	hash = hpt_hash(vpn, shift, ssize);
-	hidx = __rpte_to_hidx(rpte, subpg_index);
-	if (hidx & _PTEIDX_SECONDARY)
-		hash = ~hash;
-	slot = (hash & htab_hash_mask) * HPTES_PER_GROUP;
-	slot += hidx & _PTEIDX_GROUP_IX;
-	return slot;
-}
+> +		serr = cxl_p1n_read(afu, CXL_PSL_SERR_An);
+> +		serr &= ~CXL_PSL_SERR_An_IRQ_MASKS;
+> +		cxl_p1n_write(afu, CXL_PSL_SERR_An, serr);
+> +	}
+>
+>  	return rc;
+>  }
+> @@ -139,9 +141,9 @@ int cxl_psl_purge(struct cxl_afu *afu)
+>
+>  	pr_devel("PSL purge request\n");
+>
+> -	if (cxl_is_psl8(afu))
+> +	if (cxl_is_power8())
+>  		trans_fault = CXL_PSL_DSISR_TRANS;
+> -	if (cxl_is_psl9(afu))
+> +	if (cxl_is_power9())
+>  		trans_fault = CXL_PSL9_DSISR_An_TF;
+>
+>  	if (!cxl_ops->link_ok(afu->adapter, afu)) {
+> @@ -603,7 +605,7 @@ static u64 calculate_sr(struct cxl_context *ctx)
+>  		if (!test_tsk_thread_flag(current, TIF_32BIT))
+>  			sr |= CXL_PSL_SR_An_SF;
+>  	}
+> -	if (cxl_is_psl9(ctx->afu)) {
+> +	if (cxl_is_power9()) {
+>  		if (radix_enabled())
+>  			sr |= CXL_PSL_SR_An_XLAT_ror;
+>  		else
+> @@ -1117,10 +1119,10 @@ static irqreturn_t native_handle_psl_slice_error(struct cxl_context *ctx,
+>
+>  static bool cxl_is_translation_fault(struct cxl_afu *afu, u64 dsisr)
+>  {
+> -	if ((cxl_is_psl8(afu)) && (dsisr & CXL_PSL_DSISR_TRANS))
+> +	if ((cxl_is_power8()) && (dsisr & CXL_PSL_DSISR_TRANS))
+>  		return true;
+>
+> -	if ((cxl_is_psl9(afu)) && (dsisr & CXL_PSL9_DSISR_An_TF))
+> +	if ((cxl_is_power9()) && (dsisr & CXL_PSL9_DSISR_An_TF))
+>  		return true;
+>
+>  	return false;
+> @@ -1194,10 +1196,10 @@ static void native_irq_wait(struct cxl_context *ctx)
+>  		if (ph != ctx->pe)
+>  			return;
+>  		dsisr = cxl_p2n_read(ctx->afu, CXL_PSL_DSISR_An);
+> -		if (cxl_is_psl8(ctx->afu) &&
+> +		if (cxl_is_power8() &&
+>  		   ((dsisr & CXL_PSL_DSISR_PENDING) == 0))
+>  			return;
+> -		if (cxl_is_psl9(ctx->afu) &&
+> +		if (cxl_is_power9() &&
+>  		   ((dsisr & CXL_PSL9_DSISR_PENDING) == 0))
+>  			return;
+>  		/*
+> diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
+> index 6dc1ee5..1eb9859 100644
+> --- a/drivers/misc/cxl/pci.c
+> +++ b/drivers/misc/cxl/pci.c
+> @@ -436,7 +436,7 @@ static int init_implementation_adapter_regs_psl9(struct cxl *adapter, struct pci
+>  	/* nMMU_ID Defaults to: b’000001001’*/
+>  	xsl_dsnctl |= ((u64)0x09 << (63-28));
+>
+> -	if (cxl_is_power9() && !cpu_has_feature(CPU_FTR_POWER9_DD1)) {
+> +	if (!(cxl_is_power9_dd1())) {
+>  		/*
+>  		 * Used to identify CAPI packets which should be sorted into
+>  		 * the Non-Blocking queues by the PHB. This field should match
+> @@ -491,7 +491,7 @@ static int init_implementation_adapter_regs_psl9(struct cxl *adapter, struct pci
+>  	cxl_p1_write(adapter, CXL_PSL9_APCDEDTYPE, 0x40000003FFFF0000ULL);
+>
+>  	/* Disable vc dd1 fix */
+> -	if ((cxl_is_power9() && cpu_has_feature(CPU_FTR_POWER9_DD1)))
+> +	if (cxl_is_power9_dd1())
+>  		cxl_p1_write(adapter, CXL_PSL9_GP_CT, 0x0400000000000001ULL);
+>
+>  	return 0;
+> @@ -1439,8 +1439,7 @@ int cxl_pci_reset(struct cxl *adapter)
+>  	 * The adapter is about to be reset, so ignore errors.
+>  	 * Not supported on P9 DD1
+>  	 */
+> -	if ((cxl_is_power8()) ||
+> -	    ((cxl_is_power9() && !cpu_has_feature(CPU_FTR_POWER9_DD1))))
+> +	if ((cxl_is_power8()) || (!(cxl_is_power9_dd1())))
+>  		cxl_data_cache_flush(adapter);
+>
+>  	/* pcie_warm_reset requests a fundamental pci reset which includes a
+> @@ -1750,7 +1749,6 @@ static const struct cxl_service_layer_ops psl9_ops = {
+>  	.debugfs_add_adapter_regs = cxl_debugfs_add_adapter_regs_psl9,
+>  	.debugfs_add_afu_regs = cxl_debugfs_add_afu_regs_psl9,
+>  	.psl_irq_dump_registers = cxl_native_irq_dump_regs_psl9,
+> -	.err_irq_dump_registers = cxl_native_err_irq_dump_regs,
+>  	.debugfs_stop_trace = cxl_stop_trace_psl9,
+>  	.write_timebase_ctrl = write_timebase_ctrl_psl9,
+>  	.timebase_read = timebase_read_psl9,
+> @@ -1889,8 +1887,7 @@ static void cxl_pci_remove_adapter(struct cxl *adapter)
+>  	 * Flush adapter datacache as its about to be removed.
+>  	 * Not supported on P9 DD1.
+>  	 */
+> -	if ((cxl_is_power8()) ||
+> -	    ((cxl_is_power9() && !cpu_has_feature(CPU_FTR_POWER9_DD1))))
+> +	if ((cxl_is_power8()) || (!(cxl_is_power9_dd1())))
+>  		cxl_data_cache_flush(adapter);
+>
+>  	cxl_deconfigure_adapter(adapter);
+>
 
--aneesh
+-- 
+Andrew Donnellan              OzLabs, ADL Canberra
+andrew.donnellan@au1.ibm.com  IBM Australia Limited
