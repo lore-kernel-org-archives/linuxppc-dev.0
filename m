@@ -1,23 +1,33 @@
-Return-Path: <mark@klomp.org>
-Received: from gnu.wildebeest.org (wildebeest.demon.nl [212.238.236.112])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <thierry.reding@gmail.com>
+Received: from mail-wr0-x243.google.com (mail-wr0-x243.google.com
+ [IPv6:2a00:1450:400c:c0c::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wn7Rp4HsyzDqL3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jun 2017 21:52:38 +1000 (AEST)
-Message-ID: <1497354282.3755.201.camel@klomp.org>
-Subject: Re: [PATCH v2] perf: libdw support for powerpc [ping]
-From: Mark Wielaard <mark@klomp.org>
-To: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
-Cc: Paolo Bonzini <pbonzini@redhat.com>, linux-kernel@vger.kernel.org,
- acme@kernel.org, "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
-Date: Tue, 13 Jun 2017 13:44:42 +0200
-In-Reply-To: <593E81ED.8060606@linux.vnet.ibm.com>
-References: <1496312681-20133-1-git-send-email-pbonzini@redhat.com>
- <a44cf3bd-e868-a8d5-4518-2bea76be7f8f@redhat.com>
- <593E81ED.8060606@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wn8PX1lJczDqL3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jun 2017 22:35:44 +1000 (AEST)
+Received: by mail-wr0-x243.google.com with SMTP id g76so29618900wrd.2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jun 2017 05:35:44 -0700 (PDT)
+Date: Tue, 13 Jun 2017 14:35:38 +0200
+From: Thierry Reding <thierry.reding@gmail.com>
+To: Christoph Hellwig <hch@lst.de>
+Cc: x86@kernel.org, linux-arm-kernel@lists.infradead.org,
+ xen-devel@lists.xenproject.org, linux-c6x-dev@linux-c6x.org,
+ linux-hexagon@vger.kernel.org, linux-ia64@vger.kernel.org,
+ linux-mips@linux-mips.org, openrisc@lists.librecores.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
+ linux-xtensa@linux-xtensa.org, dmaengine@vger.kernel.org,
+ linux-tegra@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ linux-samsung-soc@vger.kernel.org, iommu@lists.linux-foundation.org,
+ netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 01/44] firmware/ivc: use dma_mapping_error
+Message-ID: <20170613123538.GB16758@ulmo.fritz.box>
+References: <20170608132609.32662-1-hch@lst.de>
+ <20170608132609.32662-2-hch@lst.de>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="2B/JsCI69OhZNC5r"
+In-Reply-To: <20170608132609.32662-2-hch@lst.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,73 +37,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Ravi,
 
-On Mon, 2017-06-12 at 17:28 +0530, Ravi Bangoria wrote:
-> So, I tested this patch along with Mark's patch[1] on elfutils an looks
-> like it's not working. Steps on what I did:
->=20
-> After applying Mark's patch on upstream elfutils:
->=20
->   $ aclocal
->   $ autoheader
->   $ autoconf
->   $ automake --add-missing
->   $ ./configure
->   $ make
->   $ make install DESTDIR=3D/home/ravi/elfutils-git
->=20
-> After applying your patch on upstream perf:
->=20
->   $ make
->   $ ./perf record --call-graph=3Ddwarf ls
->   $ LD_LIBRARY_PATH=3D/home/ravi/elfutils-git/usr/local/lib:\
->     /home/ravi/elfutils-git/usr/local/lib/elfutils/:$LD_LIBRARY_PATH \
->     ./perf script
->=20
->     ls 44159  1800.878468:     191408 cycles:u:
->=20
->     ls 44159  1800.878673:     419356 cycles:u:
->                        8a97c hpte_need_flush (/usr/lib/debug/lib/modules/=
-4.11.0-3.el7.ppc64le/vmlinux)
->                        835f4 flush_hash_page (/usr/lib/debug/lib/modules/=
-4.11.0-3.el7.ppc64le/vmlinux)
->                        8acec hpte_need_flush (/usr/lib/debug/lib/modules/=
-4.11.0-3.el7.ppc64le/vmlinux)
->                       3468f4 ptep_clear_flush (/usr/lib/debug/lib/modules=
-/4.11.0-3.el7.ppc64le/vmlinux)
->                       328b10 wp_page_copy (/usr/lib/debug/lib/modules/4.1=
-1.0-3.el7.ppc64le/vmlinux)
->                       32ebe4 do_wp_page (/usr/lib/debug/lib/modules/4.11.=
-0-3.el7.ppc64le/vmlinux)
->                       33434c __handle_mm_fault (/usr/lib/debug/lib/module=
-s/4.11.0-3.el7.ppc64le/vmlinux)
->                       335040 handle_mm_fault (/usr/lib/debug/lib/modules/=
-4.11.0-3.el7.ppc64le/vmlinux)
->                        7bf94 do_page_fault (/usr/lib/debug/lib/modules/4.=
-11.0-3.el7.ppc64le/vmlinux)
->                        1a4f8 handle_page_fault (/usr/lib/debug/lib/module=
-s/4.11.0-3.el7.ppc64le/vmlinux)
->=20
->     ls 44159  1800.878961:     430876 cycles:u:
->=20
->     ls 44159  1800.879195:     423785 cycles:u:
->=20
->     ls 44159  1800.879360:     427359 cycles:u:
->=20
-> Here I don't see userspace callchain getting unwound. Please let me know
-> if I'm doing anything wrong.
+--2B/JsCI69OhZNC5r
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I see the same on very short runs. But when doing a slightly longer run,
-even just using ls -lahR, which does some more work, then I do see user
-backtraces. They are still missing for some of the early samples though.
-It is as if there is a stack/memory address mismatch when the probe is
-"too early" in ld.so.
+On Thu, Jun 08, 2017 at 03:25:26PM +0200, Christoph Hellwig wrote:
+> DMA_ERROR_CODE is not supposed to be used by drivers.
+>=20
+> Signed-off-by: Christoph Hellwig <hch@lst.de>
+> ---
+>  drivers/firmware/tegra/ivc.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
 
-Could you do a test run on some program that does some more work to see
-if you never get any user stack traces, or if you only not get them for
-some specific probes?
+Acked-by: Thierry Reding <treding@nvidia.com>
 
-Thanks,
+--2B/JsCI69OhZNC5r
+Content-Type: application/pgp-signature; name="signature.asc"
 
-Mark
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCAAdFiEEiOrDCAFJzPfAjcif3SOs138+s6EFAlk/3BoACgkQ3SOs138+
+s6HPehAAsPH3WCVEat0HG8XtDXXMKUx9atqqkjijlfz3wzr3Yu8oeWJkmauxBI2J
+xWvBLcQSO632cLKWDXp9sfnjUN9McgOQi4LbbEnJZ3Wzovtn86aaPUXEtbrUImTw
+P57+RXkSbiFiGp8LlUECzxlshCYZHbzvOmqvdxpBqOTjQfv7fehxm+SVPJgkRflE
+EUuCItQsdBhnqBOtq743sf7Ck4QJ3Kz4pLGgntIDINnwiPxWjpMpI06SeVnvK2st
+d5lq46pyBdS3dliCsRcn6jukf79HzS/jStxG8r5YCEkRfCPvw0au5ds8iywvCZrZ
+hJYP0tumPW9j/x0ZC35a6j4dIbotmuhqCE2mYJUjG2mKDtAtdqZKVBvwKUmxzGok
+H7YKQDZN54UOBVg4Rzsbu80eyYc2jFZEWIhICrQUYVM534Psw7LGnA6hMiv5X8aS
+J4T7cOnL+71/iwE9Ey5EdvTbV22/mcx711OcyPbZ7q5Dv4AZE9HdJrPTF1rf1TeA
+WDqgA3BbY6JNflUayq5in0OxeyN8/qKbJr9ozhXgCNKNUUH5nihjT4LZxENEWV2p
+pRCppkKHw9Wmze/9cDuINms2Ef1DlEzxJ9BqE5mtiFFsCq1mn9EUxgMt4vbbfMqC
+Ynk0gIB134Hm0HIXoJcwdQ/27Ltko3nyeRm+28ka/gS8GVgYtec=
+=jGwQ
+-----END PGP SIGNATURE-----
+
+--2B/JsCI69OhZNC5r--
