@@ -1,60 +1,24 @@
-Return-Path: <mwb@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-qt0-x236.google.com (mail-qt0-x236.google.com
+ [IPv6:2607:f8b0:400d:c0d::236])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wnPPW3pl3zDqL5
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jun 2017 08:21:35 +1000 (AEST)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v5DMKp3o140489
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jun 2017 18:21:33 -0400
-Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2b2kbupefw-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jun 2017 18:21:32 -0400
-Received: from localhost
- by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
- Tue, 13 Jun 2017 18:21:32 -0400
-Subject: Re: RESEND Re: [Patch 2/2]: powerpc/hotplug/mm: Fix hot-add memory
- node assoc
-To: Michael Ellerman <mpe@ellerman.id.au>,
- Reza Arbab <arbab@linux.vnet.ibm.com>
-Cc: Balbir Singh <bsingharora@gmail.com>, linux-kernel@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Bharata B Rao <bharata@linux.vnet.ibm.com>,
- Shailendra Singh <shailendras@nvidia.com>,
- Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
- Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
- Michael Bringmann from Kernel Team <mbringm@us.ibm.com>
-References: <3bb44d92-b2ff-e197-4bdf-ec6d588d6dab@linux.vnet.ibm.com>
- <1c1d70e3-4e45-b035-0e75-1b0f531c111b@linux.vnet.ibm.com>
- <20170523214922.bns675oqzqj4pkhc@arbab-laptop.localdomain>
- <ee96df3d-ad0f-c4dc-e7d5-290018ec8afd@linux.vnet.ibm.com>
- <87poeya4dt.fsf@concordia.ellerman.id.au>
- <8e2417d8-d108-2949-40f2-997d53a3f367@linux.vnet.ibm.com>
- <87a861a25y.fsf@concordia.ellerman.id.au>
- <20170525151011.m4ae4ipxbqsj3mn7@arbab-laptop.localdomain>
- <87zie08ekt.fsf@concordia.ellerman.id.au>
- <20170526143147.z4lmtrs7vowucbkf@arbab-laptop.localdomain>
- <87lgpg6xe2.fsf@concordia.ellerman.id.au>
- <54877b2b-8446-20f6-e316-25af809ae11f@linux.vnet.ibm.com>
- <87tw402go0.fsf@concordia.ellerman.id.au>
- <54ebacf1-1249-cc6a-80a5-b293e581f401@linux.vnet.ibm.com>
- <8760g9qwfd.fsf@concordia.ellerman.id.au>
- <ba7d7010-44ed-cc20-661c-2078f0f522b7@linux.vnet.ibm.com>
- <87tw3sdmpj.fsf@concordia.ellerman.id.au>
- <d0027ac9-48cb-2d31-ce26-a29c0fc0a32c@linux.vnet.ibm.com>
- <87o9tsgo9b.fsf@concordia.ellerman.id.au>
-From: Michael Bringmann <mwb@linux.vnet.ibm.com>
-Date: Tue, 13 Jun 2017 17:21:22 -0500
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wnQ5l58t9zDqL5
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jun 2017 08:52:59 +1000 (AEST)
+Received: by mail-qt0-x236.google.com with SMTP id w1so191024886qtg.2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jun 2017 15:52:59 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <87o9tsgo9b.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <ca6ef126-4bc7-5b93-11d1-1342c46fa9b6@linux.vnet.ibm.com>
+In-Reply-To: <1497336599-17894-1-git-send-email-kamalesh@linux.vnet.ibm.com>
+References: <1497336599-17894-1-git-send-email-kamalesh@linux.vnet.ibm.com>
+From: Balbir Singh <bsingharora@gmail.com>
+Date: Wed, 14 Jun 2017 08:52:55 +1000
+Message-ID: <CAKTCnz=xeDFbyPwsdewq-5NK9cgQpBVCfCX_iL5f8u2-y7HwDw@mail.gmail.com>
+Subject: Re: [PATCH] recordmcount.pl: Add ppc64le to list of supported
+ architectures
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Cc: "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
+ <linuxppc-dev@lists.ozlabs.org>, Michael Ellerman <mpe@ellerman.id.au>
+Content-Type: multipart/alternative; boundary="001a11416730e2419f0551df4bef"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -64,74 +28,100 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On a related note, we are discussing the addition of 2 new device-tree properties
-with Pete Heyrman and his fellows that should simplify the determination of the
-set of required nodes.
+--001a11416730e2419f0551df4bef
+Content-Type: text/plain; charset="UTF-8"
 
-* One property would provide the total/max number of nodes needed by the kernel
-  on the current hardware.
-* A second property would provide the total/max number of nodes that the kernel
-  could use on any system to which it could be migrated.
+On Tue, Jun 13, 2017 at 4:49 PM, Kamalesh Babulal <
+kamalesh@linux.vnet.ibm.com> wrote:
 
-These properties aren't available, yet, and it takes time to define new properties
-in the PAPR and have them implemented in pHyp and the kernel.  As an intermediary
-step, the systems which are doing a lot of dynamic hot-add/hot-remove configuration
-could provide equivalent information to the PowerPC kernel with a command line
-parameter.  The 'numa.c' code would then read this value and fill in the necessary
-entries in the 'node_possible_map'.
+> Module make on ppc64le, fails with:
+>
+> make -C /root/kernel/linux M=/root/.kpatch/tmp/patch
+> kpatch-data-read-mostly.ko
+> make[1]: Entering directory '/root/kernel/linux'
+>   CC [M]  /root/.kpatch/tmp/patch/patch-hook.o
+> Arch ppc64le is not supported with CONFIG_FTRACE_MCOUNT_RECORD at
+> ./scripts/recordmcount.pl line 379.
+>
+> Fix it by adding 'ppc64le' to list of supported architectures
+> in recordmcount.pl script.
+>
+> Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> Cc: Balbir Singh <bsingharora@gmail.com>
+> ---
+>  scripts/recordmcount.pl | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/scripts/recordmcount.pl b/scripts/recordmcount.pl
+> index 1633c3e..683b8b5 100755
+> --- a/scripts/recordmcount.pl
+> +++ b/scripts/recordmcount.pl
+> @@ -264,7 +264,7 @@ if ($arch eq "x86_64") {
+>      $ld .= " -m shlelf_linux";
+>      $objcopy .= " -O elf32-sh-linux";
+>
+> -} elsif ($arch eq "powerpc") {
+> +} elsif ($arch eq "powerpc" || $arch eq "ppc64le") {
+>
 
-Would you foresee any problems with using such a feature?
+I don't get this, the arch should always be powerpc. Where did you get the
+ppc64le
+from? Am I missing anything?
 
-Thanks.
+Balbir Singh.
 
-On 06/13/2017 05:45 AM, Michael Ellerman wrote:
-> Michael Bringmann <mwb@linux.vnet.ibm.com> writes:
-> 
->> Here is the information from 2 different kernels.  I have not been able to retrieve
->> the information matching yesterday's attachments, yet, as those dumps were
->> acquired in April.
->>  
->> Attached please find 2 dumps of similar material from kernels running with my
->> current patches (Linux 4.4, Linux 4.12).
-> 
-> OK thanks.
-> 
-> I'd actually like to see the dmesg output from a kernel *without* your
-> patches.
-> 
-> Looking at the device tree properties:
-> 
-> ltcalpine2-lp9:/proc/device-tree/ibm,dynamic-reconfiguration-memory # lsprop ibm,associativity-lookup-arrays
-> ibm,associativity-lookup-arrays
-> 		 00000004 = 4 arrays
->                  00000004 = of 4 entries each
->                  00000000 00000000 00000000 00000000
-> 		 00000000 00000000 00000001 00000001
->                  00000000 00000003 00000006 00000006
->                  00000000 00000003 00000007 00000007
-> 
-> 
-> Which does tell us that nodes 0, 1, 6 and 7 exist.
-> 
-> So your idea of looking at that and setting any node found in there
-> online should work.
-> 
-> My only worry is that behaviour appears to be completely undocumented in
-> PAPR, ie. PAPR explicitly says that property only needs to contain
-> values for LMBs present at boot.
-> 
-> But possibly we can talk to the PowerVM/PAPR guys and have that changed
-> so that it becomes something we can rely on.
-> 
-> cheers
-> 
-> 
+--001a11416730e2419f0551df4bef
+Content-Type: text/html; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
--- 
-Michael W. Bringmann
-Linux Technology Center
-IBM Corporation
-Tie-Line  363-5196
-External: (512) 286-5196
-Cell:       (512) 466-0650
-mwb@linux.vnet.ibm.com
+<div dir=3D"ltr"><br><div class=3D"gmail_extra"><br><div class=3D"gmail_quo=
+te">On Tue, Jun 13, 2017 at 4:49 PM, Kamalesh Babulal <span dir=3D"ltr">&lt=
+;<a href=3D"mailto:kamalesh@linux.vnet.ibm.com" target=3D"_blank">kamalesh@=
+linux.vnet.ibm.com</a>&gt;</span> wrote:<br><blockquote class=3D"gmail_quot=
+e" style=3D"margin:0px 0px 0px 0.8ex;border-left:1px solid rgb(204,204,204)=
+;padding-left:1ex">Module make on ppc64le, fails with:<br>
+<br>
+make -C /root/kernel/linux M=3D/root/.kpatch/tmp/patch kpatch-data-read-mos=
+tly.ko<br>
+make[1]: Entering directory &#39;/root/kernel/linux&#39;<br>
+=C2=A0 CC [M]=C2=A0 /root/.kpatch/tmp/patch/patch-<wbr>hook.o<br>
+Arch ppc64le is not supported with CONFIG_FTRACE_MCOUNT_RECORD at ./scripts=
+/<a href=3D"http://recordmcount.pl" rel=3D"noreferrer" target=3D"_blank">re=
+cordmcount.pl</a> line 379.<br>
+<br>
+Fix it by adding &#39;ppc64le&#39; to list of supported architectures<br>
+in <a href=3D"http://recordmcount.pl" rel=3D"noreferrer" target=3D"_blank">=
+recordmcount.pl</a> script.<br>
+<br>
+Signed-off-by: Kamalesh Babulal &lt;<a href=3D"mailto:kamalesh@linux.vnet.i=
+bm.com">kamalesh@linux.vnet.ibm.com</a>&gt;<br>
+Cc: Michael Ellerman &lt;<a href=3D"mailto:mpe@ellerman.id.au">mpe@ellerman=
+.id.au</a>&gt;<br>
+Cc: Balbir Singh &lt;<a href=3D"mailto:bsingharora@gmail.com">bsingharora@g=
+mail.com</a>&gt;<br>
+---<br>
+=C2=A0scripts/<a href=3D"http://recordmcount.pl" rel=3D"noreferrer" target=
+=3D"_blank">recordmcount.pl</a> | 2 +-<br>
+=C2=A01 file changed, 1 insertion(+), 1 deletion(-)<br>
+<br>
+diff --git a/scripts/<a href=3D"http://recordmcount.pl" rel=3D"noreferrer" =
+target=3D"_blank">recordmcount.pl</a> b/scripts/<a href=3D"http://recordmco=
+unt.pl" rel=3D"noreferrer" target=3D"_blank">recordmcount.pl</a><br>
+index 1633c3e..683b8b5 100755<br>
+--- a/scripts/<a href=3D"http://recordmcount.pl" rel=3D"noreferrer" target=
+=3D"_blank">recordmcount.pl</a><br>
++++ b/scripts/<a href=3D"http://recordmcount.pl" rel=3D"noreferrer" target=
+=3D"_blank">recordmcount.pl</a><br>
+@@ -264,7 +264,7 @@ if ($arch eq &quot;x86_64&quot;) {<br>
+=C2=A0 =C2=A0 =C2=A0$ld .=3D &quot; -m shlelf_linux&quot;;<br>
+=C2=A0 =C2=A0 =C2=A0$objcopy .=3D &quot; -O elf32-sh-linux&quot;;<br>
+<br>
+-} elsif ($arch eq &quot;powerpc&quot;) {<br>
++} elsif ($arch eq &quot;powerpc&quot; || $arch eq &quot;ppc64le&quot;) {<b=
+r></blockquote><div><br></div><div>I don&#39;t get this, the arch should al=
+ways be powerpc. Where did you get the ppc64le</div><div>from? Am I missing=
+ anything?</div><div>=C2=A0<br></div><div>Balbir Singh.</div></div><br></di=
+v></div>
+
+--001a11416730e2419f0551df4bef--
