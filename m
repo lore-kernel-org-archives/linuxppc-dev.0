@@ -3,19 +3,19 @@ Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
  [IPv6:2607:f8b0:400e:c00::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wn94r0YkSzDqLd
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jun 2017 23:06:20 +1000 (AEST)
-Received: by mail-pf0-x241.google.com with SMTP id s66so6772401pfs.2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jun 2017 06:06:19 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wn9531md1zDqLl
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jun 2017 23:06:31 +1000 (AEST)
+Received: by mail-pf0-x241.google.com with SMTP id y7so21382076pfd.3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jun 2017 06:06:31 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Nicholas Piggin <npiggin@gmail.com>,
  "Gautham R . Shenoy" <ego@linux.vnet.ibm.com>,
  "Vaidyanathan Srinivasan" <svaidy@linux.vnet.ibm.com>
-Subject: [PATCH 03/13] powerpc/64s: idle process interrupts from system reset
- wakeup
-Date: Tue, 13 Jun 2017 23:05:47 +1000
-Message-Id: <20170613130557.26315-4-npiggin@gmail.com>
+Subject: [PATCH 06/13] powerpc/64s: idle branch to handler with virtual mode
+ offset
+Date: Tue, 13 Jun 2017 23:05:50 +1000
+Message-Id: <20170613130557.26315-7-npiggin@gmail.com>
 In-Reply-To: <20170613130557.26315-1-npiggin@gmail.com>
 References: <20170613130557.26315-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,129 +27,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When the CPU wakes from low power state, it begins at the system reset
-interrupt with the exception that caused the wakeup encoded in SRR1.
-
-Today, powernv idle wakeup ignores the wakeup reason (except a special
-case for HMI), and the regular interrupt corresponding to the
-exception will fire after the idle wakeup exits.
-
-Change this to replay the interrupt from the idle wakeup before
-interrupts are hard-enabled.
-
-Test on POWER8 of context_switch selftests benchmark with polling idle
-disabled (e.g., always nap, giving cross-CPU IPIs) gives the following
-results:
-
-                                original         wakeup direct
-Different threads, same core:   315k/s           264k/s
-Different cores:                235k/s           242k/s
-
-There is a slowdown for doorbell IPI (same core) case because system
-reset wakeup does not clear the message and the doorbell interrupt
-fires again needlessly.
+Have the system reset idle wakeup handlers branched to in real mode
+with the 0xc... kernel address applied. This allows simplifications of
+avoiding rfid when switching to virtual mode in the wakeup handler.
 
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/include/asm/hw_irq.h     |  2 ++
- arch/powerpc/kernel/irq.c             | 29 +++++++++++++++++++++++++++++
- arch/powerpc/platforms/powernv/idle.c | 10 ++++++++--
- 3 files changed, 39 insertions(+), 2 deletions(-)
+ arch/powerpc/include/asm/exception-64s.h | 13 +++++++++++++
+ arch/powerpc/kernel/exceptions-64s.S     |  6 ++++--
+ 2 files changed, 17 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/hw_irq.h b/arch/powerpc/include/asm/hw_irq.h
-index f06112cf8734..8366bdc69988 100644
---- a/arch/powerpc/include/asm/hw_irq.h
-+++ b/arch/powerpc/include/asm/hw_irq.h
-@@ -32,6 +32,7 @@
- #ifndef __ASSEMBLY__
+diff --git a/arch/powerpc/include/asm/exception-64s.h b/arch/powerpc/include/asm/exception-64s.h
+index 183d73b6ed99..33473cbc0986 100644
+--- a/arch/powerpc/include/asm/exception-64s.h
++++ b/arch/powerpc/include/asm/exception-64s.h
+@@ -236,6 +236,19 @@ END_FTR_SECTION_NESTED(ftr,ftr,943)
+ #define kvmppc_interrupt kvmppc_interrupt_pr
+ #endif
  
- extern void __replay_interrupt(unsigned int vector);
-+extern void __replay_wakeup_interrupt(unsigned long srr1);
- 
- extern void timer_interrupt(struct pt_regs *);
- extern void performance_monitor_exception(struct pt_regs *regs);
-@@ -130,6 +131,7 @@ static inline bool arch_irq_disabled_regs(struct pt_regs *regs)
- 
- extern bool prep_irq_for_idle(void);
- extern bool prep_irq_for_idle_irqsoff(void);
-+extern void irq_set_pending_from_srr1(unsigned long srr1);
- 
- #define fini_irq_for_idle_irqsoff() trace_hardirqs_off();
- 
-diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-index be32cec28107..76224869059d 100644
---- a/arch/powerpc/kernel/irq.c
-+++ b/arch/powerpc/kernel/irq.c
-@@ -348,6 +348,7 @@ bool prep_irq_for_idle(void)
- 	return true;
- }
- 
-+#ifdef CONFIG_PPC_BOOK3S
- /*
-  * This is for idle sequences that return with IRQs off, but the
-  * idle state itself wakes on interrupt. Tell the irq tracer that
-@@ -379,6 +380,34 @@ bool prep_irq_for_idle_irqsoff(void)
- }
- 
- /*
-+ * Take the SRR1 wakeup reason, index into this table to find the
-+ * appropriate irq_happened bit.
-+ */
-+static const u8 srr1_to_lazyirq[0x10] = {
-+	0, 0, 0,
-+	PACA_IRQ_DBELL,
-+	0,
-+	PACA_IRQ_DBELL,
-+	PACA_IRQ_DEC,
-+	0,
-+	PACA_IRQ_EE,
-+	PACA_IRQ_EE,
-+	PACA_IRQ_HMI,
-+	0, 0, 0, 0, 0 };
-+
-+void irq_set_pending_from_srr1(unsigned long srr1)
-+{
-+	unsigned int idx = (srr1 & SRR1_WAKEMASK_P8) >> 18;
-+
-+	/*
-+	 * The 0 index (SRR1[42:45]=b0000) must always evaluate to 0,
-+	 * so this can be called unconditionally with srr1 wake reason.
-+	 */
-+	local_paca->irq_happened |= srr1_to_lazyirq[idx];
-+}
-+#endif /* CONFIG_PPC_BOOK3S */
-+
 +/*
-  * Force a replay of the external interrupt handler on this CPU.
-  */
- void force_external_irq_replay(void)
-diff --git a/arch/powerpc/platforms/powernv/idle.c b/arch/powerpc/platforms/powernv/idle.c
-index f188d84d9c59..1028df82cd2f 100644
---- a/arch/powerpc/platforms/powernv/idle.c
-+++ b/arch/powerpc/platforms/powernv/idle.c
-@@ -302,7 +302,10 @@ static unsigned long __power7_idle_type(unsigned long type)
- 
- void power7_idle_type(unsigned long type)
- {
--	__power7_idle_type(type);
-+	unsigned long srr1;
++ * Branch to label using its 0xC000 address. This results in instruction
++ * address suitable for MSR[IR]=0 or 1, which allows relocation to be turned
++ * on using mtmsr rather than rfid.
++ *
++ * This could set the 0xc bits for !RELOCATABLE as an immediate, rather than
++ * load KBASE for a slight optimisation.
++ */
++#define BRANCH_TO_C000(reg, label)					\
++	__LOAD_HANDLER(reg, label);					\
++	mtctr	reg;							\
++	bctr
 +
-+	srr1 = __power7_idle_type(type);
-+	irq_set_pending_from_srr1(srr1);
- }
- 
- void power7_idle(void)
-@@ -337,7 +340,10 @@ static unsigned long __power9_idle_type(unsigned long stop_psscr_val,
- void power9_idle_type(unsigned long stop_psscr_val,
- 				      unsigned long stop_psscr_mask)
- {
--	__power9_idle_type(stop_psscr_val, stop_psscr_mask);
-+	unsigned long srr1;
-+
-+	srr1 = __power9_idle_type(stop_psscr_val, stop_psscr_mask);
-+	irq_set_pending_from_srr1(srr1);
- }
- 
- /*
+ #ifdef CONFIG_RELOCATABLE
+ #define BRANCH_TO_COMMON(reg, label)					\
+ 	__LOAD_HANDLER(reg, label);					\
+diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+index 31a9114860c4..ada0a20ef46c 100644
+--- a/arch/powerpc/kernel/exceptions-64s.S
++++ b/arch/powerpc/kernel/exceptions-64s.S
+@@ -99,7 +99,9 @@ EXC_VIRT_NONE(0x4000, 0x100)
+ #ifdef CONFIG_PPC_P7_NAP
+ 	/*
+ 	 * If running native on arch 2.06 or later, check if we are waking up
+-	 * from nap/sleep/winkle, and branch to idle handler.
++	 * from nap/sleep/winkle, and branch to idle handler. The idle wakeup
++	 * handler initially runs in real mode, but we branch to the 0xc000...
++	 * address so we can turn on relocation with mtmsr.
+ 	 */
+ #define IDLETEST(n)							\
+ 	BEGIN_FTR_SECTION ;						\
+@@ -107,7 +109,7 @@ EXC_VIRT_NONE(0x4000, 0x100)
+ 	rlwinm.	r10,r10,47-31,30,31 ;					\
+ 	beq-	1f ;							\
+ 	cmpwi	cr3,r10,2 ;						\
+-	BRANCH_TO_COMMON(r10, system_reset_idle_common) ;		\
++	BRANCH_TO_C000(r10, system_reset_idle_common) ;			\
+ 1:									\
+ 	END_FTR_SECTION_IFSET(CPU_FTR_HVMODE | CPU_FTR_ARCH_206)
+ #else
 -- 
 2.11.0
