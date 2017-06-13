@@ -1,32 +1,38 @@
-Return-Path: <clombard@linux.vnet.ibm.com>
+Return-Path: <ravi.bangoria@linux.vnet.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wnDWg0hGhzDqL3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jun 2017 01:41:18 +1000 (AEST)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v5DFdNVX062616
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jun 2017 11:41:15 -0400
-Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2b2hq7wssg-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wnDqy6Rn2zDqL3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jun 2017 01:55:26 +1000 (AEST)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v5DFrwiC119644
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jun 2017 11:55:24 -0400
+Received: from e14.ny.us.ibm.com (e14.ny.us.ibm.com [129.33.205.204])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2b2jef2fq3-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jun 2017 11:41:15 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jun 2017 11:55:23 -0400
 Received: from localhost
- by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e14.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <clombard@linux.vnet.ibm.com>;
- Tue, 13 Jun 2017 16:41:12 +0100
-From: Christophe Lombard <clombard@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, fbarrat@linux.vnet.ibm.com,
- vaibhav@linux.vnet.ibm.com, andrew.donnellan@au1.ibm.com
-Subject: [PATCH V3] cxl: Fixes for Coherent Accelerator Interface Architecture
- 2.0
-Date: Tue, 13 Jun 2017 17:41:05 +0200
+ for <linuxppc-dev@lists.ozlabs.org> from <ravi.bangoria@linux.vnet.ibm.com>;
+ Tue, 13 Jun 2017 11:55:23 -0400
+Subject: Re: [PATCH v2] perf: libdw support for powerpc [ping]
+To: Mark Wielaard <mark@klomp.org>
+References: <1496312681-20133-1-git-send-email-pbonzini@redhat.com>
+ <a44cf3bd-e868-a8d5-4518-2bea76be7f8f@redhat.com>
+ <593E81ED.8060606@linux.vnet.ibm.com> <1497354282.3755.201.camel@klomp.org>
+Cc: Paolo Bonzini <pbonzini@redhat.com>, linux-kernel@vger.kernel.org,
+ acme@kernel.org, "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org,
+ Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
+From: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
+Date: Tue, 13 Jun 2017 21:25:09 +0530
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Message-Id: <1497368465-13104-1-git-send-email-clombard@linux.vnet.ibm.com>
+In-Reply-To: <1497354282.3755.201.camel@klomp.org>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <59400ADD.4090709@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,321 +42,107 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-A previous set of patches "cxl: Add support for Coherent Accelerator
-Interface Architecture 2.0" has introduced a new support for the CAPI
-cards. These patches have been tested on Simulation environment and
-quite a bit of them have been tested on real hardware.
+Hi Mark,
 
-This patch brings new fixes after a series of tests carried out on
-new equipment:
-* Add POWER9 definition.
-* Re-enable any masked interrupts when the AFU is not activated after
-  resetting the AFU.
-* Remove the api cxl_is_psl8/9 which is no longer useful.
-* Do not dump CAPI1 registers.
-* Rewrite cxl_is_page_fault() function.
-* Do not register slb callack on P9.
+On Tuesday 13 June 2017 05:14 PM, Mark Wielaard wrote:
+> I see the same on very short runs. But when doing a slightly longer run,
+> even just using ls -lahR, which does some more work, then I do see user
+> backtraces. They are still missing for some of the early samples though.
+> It is as if there is a stack/memory address mismatch when the probe is
+> "too early" in ld.so.
+>
+> Could you do a test run on some program that does some more work to see
+> if you never get any user stack traces, or if you only not get them for
+> some specific probes?
 
-Changelog[v3]
- - Rebase to latest upstream.
- - Update the patch's header.
- - Add new test in cxl_is_page_fault().
+Thanks for checking. I tried a proper workload this time, but I still
+don't see any userspace callchain getting unwound.
 
-Changelog[v2]
- - Rebase to latest upstream.
- - Update cxl_is_page_fault() to handle the checkout response status.
- - Add comments.
+  $ ./perf record --call-graph=dwarf -- zip -q -r temp.zip .
+  [ perf record: Woken up 2891 times to write data ]
+  [ perf record: Captured and wrote 723.290 MB perf.data (87934 samples) ]
 
-Signed-off-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
----
- drivers/misc/cxl/context.c |  6 +++---
- drivers/misc/cxl/cxl.h     | 18 +++++-------------
- drivers/misc/cxl/fault.c   | 23 +++++++++++++++--------
- drivers/misc/cxl/main.c    | 17 +++++++++++++----
- drivers/misc/cxl/native.c  | 29 +++++++++++++++++------------
- drivers/misc/cxl/pci.c     | 11 ++++-------
- 6 files changed, 57 insertions(+), 47 deletions(-)
 
-diff --git a/drivers/misc/cxl/context.c b/drivers/misc/cxl/context.c
-index 4472ce1..8c32040 100644
---- a/drivers/misc/cxl/context.c
-+++ b/drivers/misc/cxl/context.c
-@@ -45,7 +45,7 @@ int cxl_context_init(struct cxl_context *ctx, struct cxl_afu *afu, bool master)
- 	mutex_init(&ctx->mapping_lock);
- 	ctx->mapping = NULL;
- 
--	if (cxl_is_psl8(afu)) {
-+	if (cxl_is_power8()) {
- 		spin_lock_init(&ctx->sste_lock);
- 
- 		/*
-@@ -189,7 +189,7 @@ int cxl_context_iomap(struct cxl_context *ctx, struct vm_area_struct *vma)
- 		if (start + len > ctx->afu->adapter->ps_size)
- 			return -EINVAL;
- 
--		if (cxl_is_psl9(ctx->afu)) {
-+		if (cxl_is_power9()) {
- 			/*
- 			 * Make sure there is a valid problem state
- 			 * area space for this AFU.
-@@ -324,7 +324,7 @@ static void reclaim_ctx(struct rcu_head *rcu)
- {
- 	struct cxl_context *ctx = container_of(rcu, struct cxl_context, rcu);
- 
--	if (cxl_is_psl8(ctx->afu))
-+	if (cxl_is_power8())
- 		free_page((u64)ctx->sstp);
- 	if (ctx->ff_page)
- 		__free_page(ctx->ff_page);
-diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
-index c8568ea..a03f8e7 100644
---- a/drivers/misc/cxl/cxl.h
-+++ b/drivers/misc/cxl/cxl.h
-@@ -357,6 +357,7 @@ static const cxl_p2n_reg_t CXL_PSL_WED_An     = {0x0A0};
- #define CXL_PSL9_DSISR_An_PF_RGP  0x0000000000000090ULL  /* PTE not found (Radix Guest (parent)) 0b10010000 */
- #define CXL_PSL9_DSISR_An_PF_HRH  0x0000000000000094ULL  /* PTE not found (HPT/Radix Host)       0b10010100 */
- #define CXL_PSL9_DSISR_An_PF_STEG 0x000000000000009CULL  /* PTE not found (STEG VA)              0b10011100 */
-+#define CXL_PSL9_DSISR_An_URTCH   0x00000000000000B4ULL  /* Unsupported Radix Tree Configuration 0b10110100 */
- 
- /****** CXL_PSL_TFC_An ******************************************************/
- #define CXL_PSL_TFC_An_A  (1ull << (63-28)) /* Acknowledge non-translation fault */
-@@ -844,24 +845,15 @@ static inline bool cxl_is_power8(void)
- 
- static inline bool cxl_is_power9(void)
- {
--	/* intermediate solution */
--	if (!cxl_is_power8() &&
--	   (cpu_has_feature(CPU_FTRS_POWER9) ||
--	    cpu_has_feature(CPU_FTR_POWER9_DD1)))
-+	if (pvr_version_is(PVR_POWER9))
- 		return true;
- 	return false;
- }
- 
--static inline bool cxl_is_psl8(struct cxl_afu *afu)
-+static inline bool cxl_is_power9_dd1(void)
- {
--	if (afu->adapter->caia_major == 1)
--		return true;
--	return false;
--}
--
--static inline bool cxl_is_psl9(struct cxl_afu *afu)
--{
--	if (afu->adapter->caia_major == 2)
-+	if ((pvr_version_is(PVR_POWER9)) &&
-+	    cpu_has_feature(CPU_FTR_POWER9_DD1))
- 		return true;
- 	return false;
- }
-diff --git a/drivers/misc/cxl/fault.c b/drivers/misc/cxl/fault.c
-index 5344448..c79e39b 100644
---- a/drivers/misc/cxl/fault.c
-+++ b/drivers/misc/cxl/fault.c
-@@ -187,7 +187,7 @@ static struct mm_struct *get_mem_context(struct cxl_context *ctx)
- 
- static bool cxl_is_segment_miss(struct cxl_context *ctx, u64 dsisr)
- {
--	if ((cxl_is_psl8(ctx->afu)) && (dsisr & CXL_PSL_DSISR_An_DS))
-+	if ((cxl_is_power8() && (dsisr & CXL_PSL_DSISR_An_DS)))
- 		return true;
- 
- 	return false;
-@@ -195,16 +195,23 @@ static bool cxl_is_segment_miss(struct cxl_context *ctx, u64 dsisr)
- 
- static bool cxl_is_page_fault(struct cxl_context *ctx, u64 dsisr)
- {
--	if ((cxl_is_psl8(ctx->afu)) && (dsisr & CXL_PSL_DSISR_An_DM))
--		return true;
-+	u64 crs; /* Translation Checkout Response Status */
- 
--	if ((cxl_is_psl9(ctx->afu)) &&
--	   ((dsisr & CXL_PSL9_DSISR_An_CO_MASK) &
--		(CXL_PSL9_DSISR_An_PF_SLR | CXL_PSL9_DSISR_An_PF_RGC |
--		 CXL_PSL9_DSISR_An_PF_RGP | CXL_PSL9_DSISR_An_PF_HRH |
--		 CXL_PSL9_DSISR_An_PF_STEG)))
-+	if ((cxl_is_power8()) && (dsisr & CXL_PSL_DSISR_An_DM))
- 		return true;
- 
-+	if (cxl_is_power9()) {
-+		crs = (dsisr & CXL_PSL9_DSISR_An_CO_MASK);
-+		if ((crs == CXL_PSL9_DSISR_An_PF_SLR) ||
-+		    (crs == CXL_PSL9_DSISR_An_PF_RGC) ||
-+		    (crs == CXL_PSL9_DSISR_An_PF_RGP) ||
-+		    (crs == CXL_PSL9_DSISR_An_PF_HRH) ||
-+		    (crs == CXL_PSL9_DSISR_An_PF_STEG) ||
-+		    (crs == CXL_PSL9_DSISR_An_URTCH)) {
-+			return true;
-+		}
-+	}
-+
- 	return false;
- }
- 
-diff --git a/drivers/misc/cxl/main.c b/drivers/misc/cxl/main.c
-index 1703655..c1ba0d4 100644
---- a/drivers/misc/cxl/main.c
-+++ b/drivers/misc/cxl/main.c
-@@ -329,8 +329,15 @@ static int __init init_cxl(void)
- 
- 	cxl_debugfs_init();
- 
--	if ((rc = register_cxl_calls(&cxl_calls)))
--		goto err;
-+	/*
-+	 * we don't register the callback on P9. slb callack is only
-+	 * used for the PSL8 MMU and CX4.
-+	 */
-+	if (cxl_is_power8()) {
-+		rc = register_cxl_calls(&cxl_calls);
-+		if (rc)
-+			goto err;
-+	}
- 
- 	if (cpu_has_feature(CPU_FTR_HVMODE)) {
- 		cxl_ops = &cxl_native_ops;
-@@ -347,7 +354,8 @@ static int __init init_cxl(void)
- 
- 	return 0;
- err1:
--	unregister_cxl_calls(&cxl_calls);
-+	if (cxl_is_power8())
-+		unregister_cxl_calls(&cxl_calls);
- err:
- 	cxl_debugfs_exit();
- 	cxl_file_exit();
-@@ -366,7 +374,8 @@ static void exit_cxl(void)
- 
- 	cxl_debugfs_exit();
- 	cxl_file_exit();
--	unregister_cxl_calls(&cxl_calls);
-+	if (cxl_is_power8())
-+		unregister_cxl_calls(&cxl_calls);
- 	idr_destroy(&cxl_adapter_idr);
- }
- 
-diff --git a/drivers/misc/cxl/native.c b/drivers/misc/cxl/native.c
-index 8d6ea97..2b2f889 100644
---- a/drivers/misc/cxl/native.c
-+++ b/drivers/misc/cxl/native.c
-@@ -105,11 +105,16 @@ static int native_afu_reset(struct cxl_afu *afu)
- 			   CXL_AFU_Cntl_An_RS_MASK | CXL_AFU_Cntl_An_ES_MASK,
- 			   false);
- 
--	/* Re-enable any masked interrupts */
--	serr = cxl_p1n_read(afu, CXL_PSL_SERR_An);
--	serr &= ~CXL_PSL_SERR_An_IRQ_MASKS;
--	cxl_p1n_write(afu, CXL_PSL_SERR_An, serr);
--
-+	/*
-+	 * Re-enable any masked interrupts when the AFU is not
-+	 * activated to avoid side effects after attaching a process
-+	 * in dedicated mode.
-+	 */
-+	if (afu->current_mode == 0) {
-+		serr = cxl_p1n_read(afu, CXL_PSL_SERR_An);
-+		serr &= ~CXL_PSL_SERR_An_IRQ_MASKS;
-+		cxl_p1n_write(afu, CXL_PSL_SERR_An, serr);
-+	}
- 
- 	return rc;
- }
-@@ -139,9 +144,9 @@ int cxl_psl_purge(struct cxl_afu *afu)
- 
- 	pr_devel("PSL purge request\n");
- 
--	if (cxl_is_psl8(afu))
-+	if (cxl_is_power8())
- 		trans_fault = CXL_PSL_DSISR_TRANS;
--	if (cxl_is_psl9(afu))
-+	if (cxl_is_power9())
- 		trans_fault = CXL_PSL9_DSISR_An_TF;
- 
- 	if (!cxl_ops->link_ok(afu->adapter, afu)) {
-@@ -603,7 +608,7 @@ static u64 calculate_sr(struct cxl_context *ctx)
- 		if (!test_tsk_thread_flag(current, TIF_32BIT))
- 			sr |= CXL_PSL_SR_An_SF;
- 	}
--	if (cxl_is_psl9(ctx->afu)) {
-+	if (cxl_is_power9()) {
- 		if (radix_enabled())
- 			sr |= CXL_PSL_SR_An_XLAT_ror;
- 		else
-@@ -1117,10 +1122,10 @@ static irqreturn_t native_handle_psl_slice_error(struct cxl_context *ctx,
- 
- static bool cxl_is_translation_fault(struct cxl_afu *afu, u64 dsisr)
- {
--	if ((cxl_is_psl8(afu)) && (dsisr & CXL_PSL_DSISR_TRANS))
-+	if ((cxl_is_power8()) && (dsisr & CXL_PSL_DSISR_TRANS))
- 		return true;
- 
--	if ((cxl_is_psl9(afu)) && (dsisr & CXL_PSL9_DSISR_An_TF))
-+	if ((cxl_is_power9()) && (dsisr & CXL_PSL9_DSISR_An_TF))
- 		return true;
- 
- 	return false;
-@@ -1194,10 +1199,10 @@ static void native_irq_wait(struct cxl_context *ctx)
- 		if (ph != ctx->pe)
- 			return;
- 		dsisr = cxl_p2n_read(ctx->afu, CXL_PSL_DSISR_An);
--		if (cxl_is_psl8(ctx->afu) &&
-+		if (cxl_is_power8() &&
- 		   ((dsisr & CXL_PSL_DSISR_PENDING) == 0))
- 			return;
--		if (cxl_is_psl9(ctx->afu) &&
-+		if (cxl_is_power9() &&
- 		   ((dsisr & CXL_PSL9_DSISR_PENDING) == 0))
- 			return;
- 		/*
-diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
-index 6dc1ee5..1eb9859 100644
---- a/drivers/misc/cxl/pci.c
-+++ b/drivers/misc/cxl/pci.c
-@@ -436,7 +436,7 @@ static int init_implementation_adapter_regs_psl9(struct cxl *adapter, struct pci
- 	/* nMMU_ID Defaults to: b’000001001’*/
- 	xsl_dsnctl |= ((u64)0x09 << (63-28));
- 
--	if (cxl_is_power9() && !cpu_has_feature(CPU_FTR_POWER9_DD1)) {
-+	if (!(cxl_is_power9_dd1())) {
- 		/*
- 		 * Used to identify CAPI packets which should be sorted into
- 		 * the Non-Blocking queues by the PHB. This field should match
-@@ -491,7 +491,7 @@ static int init_implementation_adapter_regs_psl9(struct cxl *adapter, struct pci
- 	cxl_p1_write(adapter, CXL_PSL9_APCDEDTYPE, 0x40000003FFFF0000ULL);
- 
- 	/* Disable vc dd1 fix */
--	if ((cxl_is_power9() && cpu_has_feature(CPU_FTR_POWER9_DD1)))
-+	if (cxl_is_power9_dd1())
- 		cxl_p1_write(adapter, CXL_PSL9_GP_CT, 0x0400000000000001ULL);
- 
- 	return 0;
-@@ -1439,8 +1439,7 @@ int cxl_pci_reset(struct cxl *adapter)
- 	 * The adapter is about to be reset, so ignore errors.
- 	 * Not supported on P9 DD1
- 	 */
--	if ((cxl_is_power8()) ||
--	    ((cxl_is_power9() && !cpu_has_feature(CPU_FTR_POWER9_DD1))))
-+	if ((cxl_is_power8()) || (!(cxl_is_power9_dd1())))
- 		cxl_data_cache_flush(adapter);
- 
- 	/* pcie_warm_reset requests a fundamental pci reset which includes a
-@@ -1750,7 +1749,6 @@ static const struct cxl_service_layer_ops psl9_ops = {
- 	.debugfs_add_adapter_regs = cxl_debugfs_add_adapter_regs_psl9,
- 	.debugfs_add_afu_regs = cxl_debugfs_add_afu_regs_psl9,
- 	.psl_irq_dump_registers = cxl_native_irq_dump_regs_psl9,
--	.err_irq_dump_registers = cxl_native_err_irq_dump_regs,
- 	.debugfs_stop_trace = cxl_stop_trace_psl9,
- 	.write_timebase_ctrl = write_timebase_ctrl_psl9,
- 	.timebase_read = timebase_read_psl9,
-@@ -1889,8 +1887,7 @@ static void cxl_pci_remove_adapter(struct cxl *adapter)
- 	 * Flush adapter datacache as its about to be removed.
- 	 * Not supported on P9 DD1.
- 	 */
--	if ((cxl_is_power8()) ||
--	    ((cxl_is_power9() && !cpu_has_feature(CPU_FTR_POWER9_DD1))))
-+	if ((cxl_is_power8()) || (!(cxl_is_power9_dd1())))
- 		cxl_data_cache_flush(adapter);
- 
- 	cxl_deconfigure_adapter(adapter);
--- 
-2.7.4
+With libdw:
+
+ $ LD_LIBRARY_PATH=/home/ravi/elfutils-git/usr/local/lib:\
+    /home/ravi/elfutils-git/usr/local/lib/elfutils/:$LD_LIBRARY_PATH\
+    ./perf script
+
+  zip 16699  6857.354633:      37371 cycles:u:
+                   ecedc xmon_core (/usr/lib/debug/lib/modules/4.11.0-3.el7.ppc64le/vmlinux)
+                   8c4fc __hash_page_64K (/usr/lib/debug/lib/modules/4.11.0-3.el7.ppc64le/vmlinux)
+                   83450 hash_preload (/usr/lib/debug/lib/modules/4.11.0-3.el7.ppc64le/vmlinux)
+                   7cc34 update_mmu_cache (/usr/lib/debug/lib/modules/4.11.0-3.el7.ppc64le/vmlinux)
+                  330064 alloc_set_pte (/usr/lib/debug/lib/modules/4.11.0-3.el7.ppc64le/vmlinux)
+                  330efc do_fault (/usr/lib/debug/lib/modules/4.11.0-3.el7.ppc64le/vmlinux)
+                  334580 __handle_mm_fault (/usr/lib/debug/lib/modules/4.11.0-3.el7.ppc64le/vmlinux)
+                  335040 handle_mm_fault (/usr/lib/debug/lib/modules/4.11.0-3.el7.ppc64le/vmlinux)
+                   7bf94 do_page_fault (/usr/lib/debug/lib/modules/4.11.0-3.el7.ppc64le/vmlinux)
+                   7bec4 do_page_fault (/usr/lib/debug/lib/modules/4.11.0-3.el7.ppc64le/vmlinux)
+                   7be78 do_page_fault (/usr/lib/debug/lib/modules/4.11.0-3.el7.ppc64le/vmlinux)
+                   1a4f8 handle_page_fault (/usr/lib/debug/lib/modules/4.11.0-3.el7.ppc64le/vmlinux)
+
+  zip 16699  6857.354663:     300677 cycles:u:
+
+  zip 16699  6857.354895:     584131 cycles:u:
+
+  zip 16699  6857.355312:     589687 cycles:u:
+
+  zip 16699  6857.355606:     560142 cycles:u:
+
+
+With libunwind:
+
+$ ./perf script
+
+  zip 16699  6857.354633:      37371 cycles:u:
+                     ecedc xmon_core (/usr/lib/debug/lib/modules/4.11.0-3.el7.ppc64le/vmlinux)
+                     8c4fc __hash_page_64K (/usr/lib/debug/lib/modules/4.11.0-3.el7.ppc64le/vmlinux)
+                     83450 hash_preload (/usr/lib/debug/lib/modules/4.11.0-3.el7.ppc64le/vmlinux)
+                     7cc34 update_mmu_cache (/usr/lib/debug/lib/modules/4.11.0-3.el7.ppc64le/vmlinux)
+                    330064 alloc_set_pte (/usr/lib/debug/lib/modules/4.11.0-3.el7.ppc64le/vmlinux)
+                    330efc do_fault (/usr/lib/debug/lib/modules/4.11.0-3.el7.ppc64le/vmlinux)
+                    334580 __handle_mm_fault (/usr/lib/debug/lib/modules/4.11.0-3.el7.ppc64le/vmlinux)
+                    335040 handle_mm_fault (/usr/lib/debug/lib/modules/4.11.0-3.el7.ppc64le/vmlinux)
+                     7bf94 do_page_fault (/usr/lib/debug/lib/modules/4.11.0-3.el7.ppc64le/vmlinux)
+                     7bec4 do_page_fault (/usr/lib/debug/lib/modules/4.11.0-3.el7.ppc64le/vmlinux)
+                     7be78 do_page_fault (/usr/lib/debug/lib/modules/4.11.0-3.el7.ppc64le/vmlinux)
+                     1a4f8 handle_page_fault (/usr/lib/debug/lib/modules/4.11.0-3.el7.ppc64le/vmlinux)
+                      1920 _start (/usr/lib64/ld-2.17.so)
+
+  zip 16699  6857.354663:     300677 cycles:u:
+                      fa38 _dl_new_object (/usr/lib64/ld-2.17.so)
+                      3073 dl_main (/usr/lib64/ld-2.17.so)
+                     2045b _dl_sysdep_start (/usr/lib64/ld-2.17.so)
+                      1c7f _dl_start_final (/usr/lib64/ld-2.17.so)
+                      5ce7 _dl_start (/usr/lib64/ld-2.17.so)
+                      1937 _start (/usr/lib64/ld-2.17.so)
+
+  zip 16699  6857.354895:     584131 cycles:u:
+                     103d0 _dl_relocate_object (/usr/lib64/ld-2.17.so)
+
+  zip 16699  6857.355312:     589687 cycles:u:
+                      df68 do_lookup_x (/usr/lib64/ld-2.17.so)
+                      e8d7 _dl_lookup_symbol_x (/usr/lib64/ld-2.17.so)
+                     14bb3 _dl_fixup (/usr/lib64/ld-2.17.so)
+                     1ef37 _dl_runtime_resolve (/usr/lib64/ld-2.17.so)
+                     20bf7 copy_args (/usr/bin/zip)
+                      286f main (/usr/bin/zip)
+                     2497f generic_start_main.isra.0 (/usr/lib64/libc-2.17.so)
+                     24b73 __libc_start_main (/usr/lib64/libc-2.17.so)
+
+  zip 16699  6857.355606:     560142 cycles:u:
+                     84764 _IO_getc (/usr/lib64/libc-2.17.so)
+                      c4d7 find_next_signature (/usr/bin/zip)
+                     15c8b readzipfile (/usr/bin/zip)
+                      3477 main (/usr/bin/zip)
+                     2497f generic_start_main.isra.0 (/usr/lib64/libc-2.17.so)
+                     24b73 __libc_start_main (/usr/lib64/libc-2.17.so)
+
+
+Right now, I'm busy with few other things so I'm not able to dig further.
+But I can look into this next week or so.
+
+Thanks,
+Ravi
