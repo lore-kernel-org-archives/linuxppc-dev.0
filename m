@@ -1,26 +1,45 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <kamalesh@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wncV51XclzDq5W
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jun 2017 16:41:17 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, "Shriya R . Kulkarni" <shriykul@in.ibm.com>,
- Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>,
- Ram Pai <linuxram@us.ibm.com>
-Subject: Re: [PATCH] powerpc64/hw_breakpoints: Handle data breakpoints in
- radix mode
-In-Reply-To: <a210ca06-d455-8893-a20b-82f169a1525c@linux.vnet.ibm.com>
-References: <20170613184200.22541-1-naveen.n.rao@linux.vnet.ibm.com>
- <87r2yn1d1g.fsf@skywalker.in.ibm.com>
- <20170614051109.GB16085@naverao1-tp.localdomain>
- <a210ca06-d455-8893-a20b-82f169a1525c@linux.vnet.ibm.com>
-Date: Wed, 14 Jun 2017 16:41:16 +1000
-Message-ID: <8737b33wc3.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wncVV6tgZzDqLC
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jun 2017 16:41:38 +1000 (AEST)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v5E6eivs027440
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jun 2017 02:41:36 -0400
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2b302rg11b-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jun 2017 02:41:36 -0400
+Received: from localhost
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <kamalesh@linux.vnet.ibm.com>;
+ Wed, 14 Jun 2017 16:41:33 +1000
+Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v5E6fLNs4784420
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jun 2017 16:41:30 +1000
+Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
+ by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v5E6evEb005129
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jun 2017 16:40:57 +1000
+Subject: Re: [PATCH] recordmcount.pl: Add ppc64le to list of supported
+ architectures
+To: Michael Ellerman <mpe@ellerman.id.au>, Balbir Singh <bsingharora@gmail.com>
+References: <1497336599-17894-1-git-send-email-kamalesh@linux.vnet.ibm.com>
+ <CAKTCnz=xeDFbyPwsdewq-5NK9cgQpBVCfCX_iL5f8u2-y7HwDw@mail.gmail.com>
+ <87a85b41ce.fsf@concordia.ellerman.id.au>
+Cc: "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
+ <linuxppc-dev@lists.ozlabs.org>
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Date: Wed, 14 Jun 2017 12:10:39 +0530
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <87a85b41ce.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Message-Id: <3a3a708b-a50a-c865-4e83-1d78b612ce27@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,43 +49,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> writes:
-> On Wednesday 14 June 2017 10:41 AM, Naveen N. Rao wrote:
->> On 2017/06/14 08:38AM, Aneesh Kumar K.V wrote:
->>> "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> writes:
->>>> diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
->>>> index ae418b85c17c..17ee701b8336 100644
->>>> --- a/arch/powerpc/kernel/exceptions-64s.S
->>>> +++ b/arch/powerpc/kernel/exceptions-64s.S
->>>> @@ -1411,10 +1411,8 @@ USE_TEXT_SECTION()
->>>>   	.balign	IFETCH_ALIGN_BYTES
->>>>   do_hash_page:
->>>>   #ifdef CONFIG_PPC_STD_MMU_64
->>>> -	andis.	r0,r4,0xa410		/* weird error? */
->>>> +	andis.	r0,r4,0xa450		/* weird error? */
->>>
->>> Can we convert that to a #define value. Ram did try to do that here.
->>>
->>> https://lists.ozlabs.org/pipermail/linuxppc-dev/2017-June/158607.html
->> 
->> Hmm... I feel it will be good to do that as part of Ram's series since
->> he has already coded it up :)
->> 
->> Ram's patches will anyway require a rebase and the change I do here for
->> detecting DAWR already has a #define, so it should be a simple matter of
->> including DSISR_DABRMATCH in DSISR_PAGE_FAULT_MASK.
->> 
->> But, if you really feel that I should make that change here, please do
->> let me know and I will re-spin with those changes.
->
-> The thing is that change from 0xa410 to 0xa450 is not clear at all. And 
-> it needs proper documentation. IMHO the best way to do that is switch to 
-> #define name for that constant.
+On Wednesday 14 June 2017 10:23 AM, Michael Ellerman wrote:
+>> I don't get this, the arch should always be powerpc.
+> Right. Something else is fubar for that to happen, we should fix
+> whatever it is.
 
-Not in this patch. It needs to be backported, so it should be as minimal
-as possible.
+Agree, ARCH over-ruling by reading the underlying architecture will
+not work, as the expectation is to have ARCH=powerpc for all of the 
+powerpc platform. Sorry for the noise, kindly ignore this patch.
 
-The change from 0xa410 to 0xa450 does need a mention in the changelog,
-I'll add that.
-
-cheers
+-- 
+cheers,
+Kamalesh.
