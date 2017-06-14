@@ -1,22 +1,19 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wnn0v61npzDqLs
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jun 2017 23:05:03 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wnn3C2hn4zDqL9
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jun 2017 23:07:03 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Nicholas Piggin <npiggin@gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Gautham R . Shenoy" <ego@linux.vnet.ibm.com>
-Subject: Re: [PATCH 09/13] powerpc/64s: cpuidle set polling before enabling
- irqs
-In-Reply-To: <20170614215042.45dced67@roar.ozlabs.ibm.com>
-References: <20170613130557.26315-1-npiggin@gmail.com>
- <20170613130557.26315-10-npiggin@gmail.com>
- <87efum3igr.fsf@concordia.ellerman.id.au>
- <20170614215042.45dced67@roar.ozlabs.ibm.com>
-Date: Wed, 14 Jun 2017 23:05:00 +1000
-Message-ID: <878tkupvnn.fsf@concordia.ellerman.id.au>
+To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [PATCH 2/4] powerpc/64: context switch avoid reservation-clearing
+ instruction
+In-Reply-To: <20170608153609.19217-2-npiggin@gmail.com>
+References: <20170608153609.19217-1-npiggin@gmail.com>
+ <20170608153609.19217-2-npiggin@gmail.com>
+Date: Wed, 14 Jun 2017 23:07:02 +1000
+Message-ID: <8760fypvk9.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -30,44 +27,25 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Nicholas Piggin <npiggin@gmail.com> writes:
 
-> On Wed, 14 Jun 2017 21:40:52 +1000
-> Michael Ellerman <mpe@ellerman.id.au> wrote:
->
->> Nicholas Piggin <npiggin@gmail.com> writes:
->> 
->> > local_irq_enable can cause interrupts to be taken which could
->> > take significant amount of processing time. The idle process
->> > should set its polling flag before this, so another process that
->> > wakes it during this time will not have to send an IPI.
->> >
->> > Expand the TIF_POLLING_NRFLAG coverage to as large as possible.
->> >
->> > Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
->> > Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
->> > ---
->> >  drivers/cpuidle/cpuidle-powernv.c | 4 +++-
->> >  drivers/cpuidle/cpuidle-pseries.c | 3 ++-
->> >  2 files changed, 5 insertions(+), 2 deletions(-)  
->> 
->> I don't think the cpuidle folks are really interested in these changes,
->> but we should Cc them to be polite.
->> 
->> Can you resend patches 9, 10, 11 with a subject like:
->> 
->>   "cpuidle: powernv: Set polling ..."
->> 
->> And Cc the cpuidle folks:
->> 
->> $ ./scripts/get_maintainer.pl -f drivers/cpuidle
->> rjw@rjwysocki.net
->> daniel.lezcano@linaro.org
->> linux-pm@vger.kernel.org
->> linux-kernel@vger.kernel.org
->
-> Yeah I can do that. I'll send them as thier own series. They don't
-> depend on any of the patches in this series, so I should have done
-> that in the first place.
+> diff --git a/kernel/sched/core.c b/kernel/sched/core.c
+> index 803c3bc274c4..1f0688ad09d7 100644
+> --- a/kernel/sched/core.c
+> +++ b/kernel/sched/core.c
+> @@ -2875,6 +2875,12 @@ context_switch(struct rq *rq, struct task_struct *prev,
+>  	rq_unpin_lock(rq, rf);
+>  	spin_release(&rq->lock.dep_map, 1, _THIS_IP_);
+>  
+> +	/*
+> +	 * Some architectures require that a spin lock is taken before
+> +	 * _switch. The rq_lock satisfies this condition. See powerpc
+> +	 * _switch for details.
+> +	 */
+> +
+>  	/* Here we just switch the register state and the stack. */
+>  	switch_to(prev, next, prev);
+>  	barrier();
 
-Great thanks.
+I dropped this hunk, if you want to merge it you can resend it and get
+an ack from Peterz.
 
 cheers
