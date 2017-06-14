@@ -1,53 +1,23 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-qk0-x243.google.com (mail-qk0-x243.google.com
- [IPv6:2607:f8b0:400d:c09::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mhiramat@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wnZpL3Cd4zDq5W
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jun 2017 15:25:14 +1000 (AEST)
-Received: by mail-qk0-x243.google.com with SMTP id r62so6493031qkf.3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jun 2017 22:25:13 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <ca6ef126-4bc7-5b93-11d1-1342c46fa9b6@linux.vnet.ibm.com>
-References: <3bb44d92-b2ff-e197-4bdf-ec6d588d6dab@linux.vnet.ibm.com>
- <1c1d70e3-4e45-b035-0e75-1b0f531c111b@linux.vnet.ibm.com>
- <20170523214922.bns675oqzqj4pkhc@arbab-laptop.localdomain>
- <ee96df3d-ad0f-c4dc-e7d5-290018ec8afd@linux.vnet.ibm.com>
- <87poeya4dt.fsf@concordia.ellerman.id.au>
- <8e2417d8-d108-2949-40f2-997d53a3f367@linux.vnet.ibm.com>
- <87a861a25y.fsf@concordia.ellerman.id.au>
- <20170525151011.m4ae4ipxbqsj3mn7@arbab-laptop.localdomain>
- <87zie08ekt.fsf@concordia.ellerman.id.au>
- <20170526143147.z4lmtrs7vowucbkf@arbab-laptop.localdomain>
- <87lgpg6xe2.fsf@concordia.ellerman.id.au>
- <54877b2b-8446-20f6-e316-25af809ae11f@linux.vnet.ibm.com>
- <87tw402go0.fsf@concordia.ellerman.id.au>
- <54ebacf1-1249-cc6a-80a5-b293e581f401@linux.vnet.ibm.com>
- <8760g9qwfd.fsf@concordia.ellerman.id.au>
- <ba7d7010-44ed-cc20-661c-2078f0f522b7@linux.vnet.ibm.com>
- <87tw3sdmpj.fsf@concordia.ellerman.id.au>
- <d0027ac9-48cb-2d31-ce26-a29c0fc0a32c@linux.vnet.ibm.com>
- <87o9tsgo9b.fsf@concordia.ellerman.id.au>
- <ca6ef126-4bc7-5b93-11d1-1342c46fa9b6@linux.vnet.ibm.com>
-From: Balbir Singh <bsingharora@gmail.com>
-Date: Wed, 14 Jun 2017 15:25:10 +1000
-Message-ID: <CAKTCnz==4vA4PevndTLF7p2PPKCM8ZkqpuCXPp9kFcjn+CqUKA@mail.gmail.com>
-Subject: Re: RESEND Re: [Patch 2/2]: powerpc/hotplug/mm: Fix hot-add memory
- node assoc
-To: Michael Bringmann <mwb@linux.vnet.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>,
- Reza Arbab <arbab@linux.vnet.ibm.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Paul Mackerras <paulus@samba.org>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Bharata B Rao <bharata@linux.vnet.ibm.com>,
- Shailendra Singh <shailendras@nvidia.com>,
- Thomas Gleixner <tglx@linutronix.de>,
- "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
- <linuxppc-dev@lists.ozlabs.org>,
- Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
- Michael Bringmann from Kernel Team <mbringm@us.ibm.com>
-Content-Type: multipart/alternative; boundary="94eb2c06686ab1e5d30551e4c6fa"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wnbMR0Y0wzDq5W
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jun 2017 15:50:27 +1000 (AEST)
+Date: Wed, 14 Jun 2017 14:50:21 +0900
+From: Masami Hiramatsu <mhiramat@kernel.org>
+To: Masami Hiramatsu <mhiramat@kernel.org>
+Cc: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>, Michael Ellerman
+ <mpe@ellerman.id.au>, Ingo Molnar <mingo@kernel.org>, Ananth N
+ Mavinakayanahalli <ananth@linux.vnet.ibm.com>,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] kernel/kprobes: Add test to validate pt_regs
+Message-Id: <20170614145021.c03516140569a1302969e0ec@kernel.org>
+In-Reply-To: <20170614114008.f9f4caffcb971751f2d00066@kernel.org>
+References: <20170608192308.22278-1-naveen.n.rao@linux.vnet.ibm.com>
+ <20170614114008.f9f4caffcb971751f2d00066@kernel.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -57,96 +27,490 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---94eb2c06686ab1e5d30551e4c6fa
-Content-Type: text/plain; charset="UTF-8"
+On Wed, 14 Jun 2017 11:40:08 +0900
+Masami Hiramatsu <mhiramat@kernel.org> wrote:
 
-On Wed, Jun 14, 2017 at 8:21 AM, Michael Bringmann <mwb@linux.vnet.ibm.com>
-wrote:
+> On Fri,  9 Jun 2017 00:53:08 +0530
+> "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
+> 
+> > Add a test to verify that the registers passed in pt_regs on kprobe
+> > (trap), optprobe (jump) and kprobe_on_ftrace (ftrace_caller) are
+> > accurate. The tests are exercized if KPROBES_SANITY_TEST is enabled.
+> 
+> Great!
+> 
+> > 
+> > Implemented for powerpc64. Other architectures will have to implement
+> > the relevant arch_* helpers and define HAVE_KPROBES_REGS_SANITY_TEST.
+> 
+> Hmm, why don't you define that in arch/powerpc/Kconfig ?
+> Also, could you split this into 3 patches for each case ?
+> 
+> > 
+> > Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+> > ---
+> >  arch/powerpc/include/asm/kprobes.h  |   4 +
+> >  arch/powerpc/lib/Makefile           |   3 +-
+> >  arch/powerpc/lib/test_kprobe_regs.S |  62 ++++++++++++
+> >  arch/powerpc/lib/test_kprobes.c     | 115 ++++++++++++++++++++++
+> >  include/linux/kprobes.h             |  11 +++
+> >  kernel/test_kprobes.c               | 183 ++++++++++++++++++++++++++++++++++++
+> >  6 files changed, 377 insertions(+), 1 deletion(-)
+> >  create mode 100644 arch/powerpc/lib/test_kprobe_regs.S
+> >  create mode 100644 arch/powerpc/lib/test_kprobes.c
+> > 
+> > diff --git a/arch/powerpc/include/asm/kprobes.h b/arch/powerpc/include/asm/kprobes.h
+> > index 566da372e02b..10c91d3132a1 100644
+> > --- a/arch/powerpc/include/asm/kprobes.h
+> > +++ b/arch/powerpc/include/asm/kprobes.h
+> > @@ -124,6 +124,10 @@ static inline int skip_singlestep(struct kprobe *p, struct pt_regs *regs,
+> >  	return 0;
+> >  }
+> >  #endif
+> > +#if defined(CONFIG_KPROBES_SANITY_TEST) && defined(CONFIG_PPC64)
+> > +#define HAVE_KPROBES_REGS_SANITY_TEST
+> > +void arch_kprobe_regs_set_ptregs(struct pt_regs *regs);
+> > +#endif
+> >  #else
+> >  static inline int kprobe_handler(struct pt_regs *regs) { return 0; }
+> >  static inline int kprobe_post_handler(struct pt_regs *regs) { return 0; }
+> > diff --git a/arch/powerpc/lib/Makefile b/arch/powerpc/lib/Makefile
+> > index 3c3146ba62da..8a0bb8e20179 100644
+> > --- a/arch/powerpc/lib/Makefile
+> > +++ b/arch/powerpc/lib/Makefile
+> > @@ -27,7 +27,8 @@ obj64-y	+= copypage_64.o copyuser_64.o mem_64.o hweight_64.o \
+> >  
+> >  obj64-$(CONFIG_SMP)	+= locks.o
+> >  obj64-$(CONFIG_ALTIVEC)	+= vmx-helper.o
+> > -obj64-$(CONFIG_KPROBES_SANITY_TEST) += test_emulate_step.o
+> > +obj64-$(CONFIG_KPROBES_SANITY_TEST) += test_emulate_step.o test_kprobe_regs.o \
+> > +				       test_kprobes.o
+> >  
+> >  obj-y			+= checksum_$(BITS).o checksum_wrappers.o
+> >  
+> > diff --git a/arch/powerpc/lib/test_kprobe_regs.S b/arch/powerpc/lib/test_kprobe_regs.S
+> > new file mode 100644
+> > index 000000000000..4e95eca6dcd3
+> > --- /dev/null
+> > +++ b/arch/powerpc/lib/test_kprobe_regs.S
+> > @@ -0,0 +1,62 @@
+> > +/*
+> > + * test_kprobe_regs: architectural helpers for validating pt_regs
+> > + *		     received on a kprobe.
+> > + *
+> > + * Copyright 2017 Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+> > + *		  IBM Corporation
+> > + *
+> > + * This program is free software; you can redistribute it and/or
+> > + * modify it under the terms of the GNU General Public License
+> > + * as published by the Free Software Foundation; version 2
+> > + * of the License.
+> > + */
+> > +
+> > +#include <asm/ppc_asm.h>
+> > +#include <asm/asm-offsets.h>
+> > +#include <asm/ptrace.h>
+> > +
+> > +_GLOBAL(arch_kprobe_regs_function)
+> > +	mflr	r0
+> > +	std	r0, LRSAVE(r1)
+> > +	stdu	r1, -SWITCH_FRAME_SIZE(r1)
+> > +
+> > +	/* Tell pre handler about our pt_regs location */
+> > +	addi	r3, r1, STACK_FRAME_OVERHEAD
+> > +	bl	arch_kprobe_regs_set_ptregs
+> > +
+> > +	/* Load back our true LR */
+> > +	ld	r0, (SWITCH_FRAME_SIZE + LRSAVE)(r1)
+> > +	mtlr	r0
+> > +
+> > +	/* Save all SPRs that we care about */
+> > +	mfctr	r0
+> > +	std	r0, _CTR(r1)
+> > +	mflr	r0
+> > +	std	r0, _LINK(r1)
+> > +	mfspr	r0, SPRN_XER
+> > +	std	r0, _XER(r1)
+> > +	mfcr	r0
+> > +	std	r0, _CCR(r1)
+> > +
+> > +	/* Now, save all GPRs */
+> > +	SAVE_2GPRS(0, r1)
+> > +	SAVE_10GPRS(2, r1)
+> > +	SAVE_10GPRS(12, r1)
+> > +	SAVE_10GPRS(22, r1)
+> > +
+> > +	/* We're now ready to be probed */
+> > +.global arch_kprobe_regs_probepoint
+> > +arch_kprobe_regs_probepoint:
+> > +	nop
+> > +
+> > +#ifdef CONFIG_KPROBES_ON_FTRACE
+> > +	/* Let's also test KPROBES_ON_FTRACE */
+> > +	bl	kprobe_regs_kp_on_ftrace_target
+> > +	nop
+> > +#endif
+> > +
+> > +	/* All done */
+> > +	addi	r1, r1, SWITCH_FRAME_SIZE
+> > +	ld	r0, LRSAVE(r1)
+> > +	mtlr	r0
+> > +	blr
+> > diff --git a/arch/powerpc/lib/test_kprobes.c b/arch/powerpc/lib/test_kprobes.c
+> > new file mode 100644
+> > index 000000000000..23f7a7ffcdd6
+> > --- /dev/null
+> > +++ b/arch/powerpc/lib/test_kprobes.c
+> > @@ -0,0 +1,115 @@
+> > +/*
+> > + * test_kprobes: architectural helpers for validating pt_regs
+> > + *		 received on a kprobe.
+> > + *
+> > + * Copyright 2017 Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+> > + *		  IBM Corporation
+> > + *
+> > + * This program is free software; you can redistribute it and/or
+> > + * modify it under the terms of the GNU General Public License
+> > + * as published by the Free Software Foundation; version 2
+> > + * of the License.
+> > + */
+> > +
+> > +#define pr_fmt(fmt) "Kprobe smoke test (regs): " fmt
+> > +
+> > +#include <asm/ptrace.h>
+> > +#include <linux/kernel.h>
+> > +#include <linux/kprobes.h>
+> > +
+> > +static struct pt_regs *r;
+> > +
+> > +void arch_kprobe_regs_set_ptregs(struct pt_regs *regs)
+> > +{
+> > +	r = regs;
+> > +}
+> > +
+> > +static int validate_regs(struct kprobe *p, struct pt_regs *regs,
+> > +					int kp_on_ftrace, int post_handler)
+> > +{
+> > +	int i, ret = 1;
+> > +
+> > +	if (!r) {
+> > +		pr_err("pt_regs not setup!\n");
+> > +		return 0;
+> > +	}
+> > +
+> > +	if (regs->gpr[1] + STACK_FRAME_OVERHEAD != (unsigned long)r) {
+> > +		/* We'll continue since this may just indicate an incorrect r1 */
+> > +		pr_err("pt_regs pointer/r1 doesn't point where we expect!\n");
+> > +		ret = 0;
+> > +	}
+> > +
+> > +	for (i = 0; i < 32; i++) {
+> > +		/* KPROBES_ON_FTRACE may have stomped r0 in the prologue */
+> > +		if (r->gpr[i] != regs->gpr[i] && (!kp_on_ftrace || i != 0)) {
+> > +			pr_err("gpr[%d] expected: 0x%lx, received: 0x%lx\n",
+> > +						i, r->gpr[i], regs->gpr[i]);
+> > +			ret = 0;
+> > +		}
+> > +	}
 
-> On a related note, we are discussing the addition of 2 new device-tree
-> properties
-> with Pete Heyrman and his fellows that should simplify the determination
-> of the
-> set of required nodes.
->
-> * One property would provide the total/max number of nodes needed by the
-> kernel
->   on the current hardware.
->
+Hmm, is this check really needed? See below(*)
 
-Yes, that would be nice to have
+> > +
+> > +	if (r->ctr != regs->ctr) {
+> > +		pr_err("ctr expected: 0x%lx, received: 0x%lx\n",
+> > +					r->ctr, regs->ctr);
+> > +		ret = 0;
+> > +	}
+> > +
+> > +	if (r->link != regs->link && !kp_on_ftrace) {
+> > +		pr_err("link expected: 0x%lx, received: 0x%lx\n",
+> > +					r->link, regs->link);
+> > +		ret = 0;
+> > +	}
+> > +
+> > +	/* KPROBES_ON_FTRACE *must* have clobbered link */
+> > +	if (r->link == regs->link && kp_on_ftrace) {
+> > +		pr_err("link register not clobbered for KPROBES_ON_FTRACE!\n");
+> > +		ret = 0;
+> > +	}
+> > +
+> > +	if (r->xer != regs->xer) {
+> > +		pr_err("xer expected: 0x%lx, received: 0x%lx\n",
+> > +					r->xer, regs->xer);
+> > +		ret = 0;
+> > +	}
+> > +
+> > +	if (r->ccr != regs->ccr) {
+> > +		pr_err("ccr expected: 0x%lx, received: 0x%lx\n",
+> > +					r->ccr, regs->ccr);
+> > +		ret = 0;
+> > +	}
+> > +
+> > +	if (!post_handler && regs->nip != (unsigned long)p->addr) {
+> > +		pr_err("nip expected: 0x%lx, received: 0x%lx\n",
+> > +					(unsigned long)p->addr, regs->nip);
+> > +		ret = 0;
+> > +	}
+> > +
+> > +	if (post_handler &&
+> > +		regs->nip != (unsigned long)p->addr + sizeof(kprobe_opcode_t)) {
+> > +		pr_err("post_handler: nip expected: 0x%lx, received: 0x%lx\n",
+> > +				(unsigned long)p->addr + sizeof(kprobe_opcode_t),
+> > +				regs->nip);
+> > +		ret = 0;
+> > +	}
+> > +
+> > +	return ret;
+> > +}
+> > +
+> > +int arch_kprobe_regs_pre_handler(struct kprobe *p, struct pt_regs *regs)
+> > +{
+> > +	return validate_regs(p, regs, 0, 0);
+> > +}
+> > +
+> > +int arch_kprobe_regs_post_handler(struct kprobe *p, struct pt_regs *regs,
+> > +							unsigned long flags)
+> > +{
+> > +	return validate_regs(p, regs, 0, 1);
+> > +}
+> > +
+> > +#ifdef CONFIG_KPROBES_ON_FTRACE
+> > +int arch_kp_on_ftrace_pre_handler(struct kprobe *p, struct pt_regs *regs)
+> > +{
+> > +	return validate_regs(p, regs, 1, 0);
+> > +}
+> > +#endif
+> > diff --git a/include/linux/kprobes.h b/include/linux/kprobes.h
+> > index 541df0b5b815..adfbb5b27acd 100644
+> > --- a/include/linux/kprobes.h
+> > +++ b/include/linux/kprobes.h
+> > @@ -253,6 +253,17 @@ static inline void kretprobe_assert(struct kretprobe_instance *ri,
+> >  
+> >  #ifdef CONFIG_KPROBES_SANITY_TEST
+> >  extern int init_test_probes(void);
+> > +#ifdef HAVE_KPROBES_REGS_SANITY_TEST
+> > +extern void arch_kprobe_regs_function(void);
+> > +extern void arch_kprobe_regs_probepoint(void);
+> > +extern int arch_kprobe_regs_pre_handler(struct kprobe *p, struct pt_regs *regs);
+> > +extern int arch_kprobe_regs_post_handler(struct kprobe *p, struct pt_regs *regs,
+> > +						unsigned long flags);
+> > +#ifdef CONFIG_KPROBES_ON_FTRACE
+> > +extern void kprobe_regs_kp_on_ftrace_target(void);
+> > +extern int arch_kp_on_ftrace_pre_handler(struct kprobe *p, struct pt_regs *regs);
+> > +#endif
+> > +#endif
+> >  #else
+> >  static inline int init_test_probes(void)
+> >  {
+> > diff --git a/kernel/test_kprobes.c b/kernel/test_kprobes.c
+> > index 0dbab6d1acb4..92011726cc69 100644
+> > --- a/kernel/test_kprobes.c
+> > +++ b/kernel/test_kprobes.c
+> > @@ -19,6 +19,7 @@
+> >  #include <linux/kernel.h>
+> >  #include <linux/kprobes.h>
+> >  #include <linux/random.h>
+> > +#include <linux/workqueue.h>
+> >  
+> >  #define div_factor 3
+> >  
+> > @@ -334,6 +335,166 @@ static int test_kretprobes(void)
+> >  }
+> >  #endif /* CONFIG_KRETPROBES */
+> >  
+> > +#ifdef HAVE_KPROBES_REGS_SANITY_TEST
+> > +static int kprobe_regs_pre_handler(struct kprobe *p, struct pt_regs *regs)
+> > +{
+> > +	/* architectural helper returns 0 if validation fails */
+> > +	preh_val = arch_kprobe_regs_pre_handler(p, regs);
+> > +	return 0;
+> > +}
+> > +
+> > +static void kprobe_regs_post_handler(struct kprobe *p, struct pt_regs *regs,
+> > +						unsigned long flags)
+> > +{
+> > +	posth_val = arch_kprobe_regs_post_handler(p, regs, flags);
+> > +}
+> > +
+> > +static struct kprobe kpr = {
+> > +	.symbol_name = "arch_kprobe_regs_probepoint",
+> > +	.pre_handler = kprobe_regs_pre_handler,
+> > +	.post_handler = kprobe_regs_post_handler,
+> > +};
+> > +
 
 
-> * A second property would provide the total/max number of nodes that the
-> kernel
->   could use on any system to which it could be migrated.
->
->
-Not sure about this one, are you suggesting more memory can be added
-depending on the migration target?
+> > +static int test_kprobe_regs(void)
+> > +{
+> > +	int ret;
+> > +	kprobe_opcode_t *addr;
+> > +
+> > +	preh_val = 0;
+> > +	posth_val = 0;
+> > +
+> > +	ret = register_kprobe(&kpr);
+> > +	if (ret < 0) {
+> > +		pr_err("register_kprobe returned %d\n", ret);
+> > +		return ret;
+> > +	}
+> > +
+> > +	/* Let's see if this probe was optimized */
+> > +	addr = kprobe_lookup_name(kpr.symbol_name, 0);
 
+What happen if addr == NULL?
+Since this already done in register_kprobe, you'd better use
+kpr.addr.
 
+> > +	if (addr && *addr != BREAKPOINT_INSTRUCTION) {
+> > +		pr_err("kprobe with post_handler optimized\n");
 
-> These properties aren't available, yet, and it takes time to define new
-> properties
-> in the PAPR and have them implemented in pHyp and the kernel.  As an
-> intermediary
-> step, the systems which are doing a lot of dynamic hot-add/hot-remove
-> configuration
-> could provide equivalent information to the PowerPC kernel with a command
-> line
-> parameter.  The 'numa.c' code would then read this value and fill in the
-> necessary
-> entries in the 'node_possible_map'.
->
-> Would you foresee any problems with using such a feature?
->
+Hmm, this message is not appropriate if the arch doesn't support
+optprobe. Moreover, using BREAKPOINT_INSTRUCTION or not depends
+on each arch. So, I suggest this as;
 
+if (kprobe_optimized(&kpr)) {
+	pr_err("kprobe with post_handler optimized\n");
+	goto error;
 
-Balbir Singh
+And if you would like to check the instruction, please use 
+probe_kernel_read(), and introduce arch-depend helper as
+below;
 
---94eb2c06686ab1e5d30551e4c6fa
-Content-Type: text/html; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+} else if (arch_kprobe_validate_insn(&kpr)) {
+	pr_err("kprobe breakpoint is not armed\n");
+	goto error;
+}
 
-<div dir=3D"ltr"><br><div class=3D"gmail_extra"><br><div class=3D"gmail_quo=
-te">On Wed, Jun 14, 2017 at 8:21 AM, Michael Bringmann <span dir=3D"ltr">&l=
-t;<a href=3D"mailto:mwb@linux.vnet.ibm.com" target=3D"_blank">mwb@linux.vne=
-t.ibm.com</a>&gt;</span> wrote:<br><blockquote class=3D"gmail_quote" style=
-=3D"margin:0 0 0 .8ex;border-left:1px #ccc solid;padding-left:1ex">On a rel=
-ated note, we are discussing the addition of 2 new device-tree properties<b=
-r>
-with Pete Heyrman and his fellows that should simplify the determination of=
- the<br>
-set of required nodes.<br>
-<br>
-* One property would provide the total/max number of nodes needed by the ke=
-rnel<br>
-=C2=A0 on the current hardware.<br></blockquote><div><br></div><div>Yes, th=
-at would be nice to have</div><div>=C2=A0</div><blockquote class=3D"gmail_q=
-uote" style=3D"margin:0 0 0 .8ex;border-left:1px #ccc solid;padding-left:1e=
-x">
-* A second property would provide the total/max number of nodes that the ke=
-rnel<br>
-=C2=A0 could use on any system to which it could be migrated.<br>
-<br></blockquote><div><br></div><div>Not sure about this one, are you sugge=
-sting more memory can be added</div><div>depending on the migration target?=
-</div><div><br></div><div>=C2=A0</div><blockquote class=3D"gmail_quote" sty=
-le=3D"margin:0 0 0 .8ex;border-left:1px #ccc solid;padding-left:1ex">
-These properties aren&#39;t available, yet, and it takes time to define new=
- properties<br>
-in the PAPR and have them implemented in pHyp and the kernel.=C2=A0 As an i=
-ntermediary<br>
-step, the systems which are doing a lot of dynamic hot-add/hot-remove confi=
-guration<br>
-could provide equivalent information to the PowerPC kernel with a command l=
-ine<br>
-parameter.=C2=A0 The &#39;numa.c&#39; code would then read this value and f=
-ill in the necessary<br>
-entries in the &#39;node_possible_map&#39;.<br>
-<br>
-Would you foresee any problems with using such a feature?<br></blockquote><=
-div><br></div><div><br></div><div>Balbir Singh=C2=A0</div></div></div></div=
->
+Where (typical case, like ppc), 
 
---94eb2c06686ab1e5d30551e4c6fa--
+int arch_kprobe_validate_insn(struct kprobe *kp)
+{
+	kprobe_opcode_t buf;
+	int ret;
+
+	ret = probe_kernel_read(&buf, kp->addr, sizeof(buf));
+	if (ret)
+		return ret;
+	if (buf != BREAKPOINT_INSTRUCTION)
+		return -EINVAL;
+	return 0;
+}
+
+> > +		unregister_kprobe(&kpr);
+> > +		return -1;
+> > +	}
+> > +
+> > +	arch_kprobe_regs_function();
+> > +	unregister_kprobe(&kpr);
+> > +
+> > +	if (preh_val == 0) {
+> > +		pr_err("kprobe pre_handler regs validation failed\n");
+> > +		handler_errors++;
+> > +	}
+> > +
+> > +	if (posth_val == 0) {
+> > +		pr_err("kprobe post_handler not called\n");
+> > +		handler_errors++;
+> > +	}
+> > +
+> > +	return 0;
+> > +}
+> > +
+
+> > +#ifdef CONFIG_KPROBES_ON_FTRACE
+> > +void kprobe_regs_kp_on_ftrace_target(void)
+> > +{
+> > +	posth_val = preh_val + div_factor;
+> > +}
+> > +
+> > +static int kp_on_ftrace_pre_handler(struct kprobe *p, struct pt_regs *regs)
+> > +{
+> > +	/* architectural helper returns 0 if validation fails */
+> > +	preh_val = arch_kp_on_ftrace_pre_handler(p, regs);
+
+Here, I think you'd better to call arch_kprobe_regs_pre_handler(p, regs);
+so that user can sure the handler's behavior has no difference.
+
+(*) If you would like to check the kprobe_on_ftrace arch inplementation,
+it should be a separated function, like
+
+arch_validate_kprobe_on_ftrace(p, regs);
+
+> > +	return 0;
+> > +}
+> > +
+> > +static struct kprobe kprf = {
+> > +	.symbol_name = "kprobe_regs_kp_on_ftrace_target",
+> > +	.pre_handler = kp_on_ftrace_pre_handler,
+
+Also, we'd better add post_handler here so that it is able to check
+compatibilty.
+
+> > +};
+> > +
+> > +static int test_kp_on_ftrace_regs(void)
+> > +{
+> > +	int ret;
+> > +
+> > +	preh_val = 0;
+> > +
+> > +	ret = register_kprobe(&kprf);
+> > +	if (ret < 0) {
+> > +		pr_err("register_kprobe returned %d\n", ret);
+> > +		return ret;
+> > +	}
+> > +
+> > +	arch_kprobe_regs_function();
+> > +	unregister_kprobe(&kprf);
+> > +
+> > +	if (preh_val == 0) {
+> > +		pr_err("kp_on_ftrace pre_handler regs validation failed\n");
+> > +		handler_errors++;
+> > +	}
+> > +
+> > +	return 0;
+> > +}
+> > +#endif
+> > +
+> > +#ifdef CONFIG_OPTPROBES
+> > +static void test_optprobe_regs(struct work_struct *work);
+> > +static DECLARE_DELAYED_WORK(test_optprobe_regs_work, test_optprobe_regs);
+> > +int kprobe_registered;
+> > +
+> > +static struct kprobe kpor = {
+> > +	.symbol_name = "arch_kprobe_regs_probepoint",
+> > +	.pre_handler = kprobe_regs_pre_handler,
+> > +};
+> > +
+> > +static void test_optprobe_regs_setup(void)
+> > +{
+> > +	int ret;
+> > +
+> > +	ret = register_kprobe(&kpor);
+> > +	if (ret < 0) {
+> > +		pr_err("register_kprobe returned %d\n", ret);
+> > +		return;
+> > +	}
+> > +
+> > +	kprobe_registered = 1;
+> > +}
+> > +
+> > +static void test_optprobe_regs(struct work_struct *work)
+> > +{
+> > +	kprobe_opcode_t *addr;
+> > +
+> > +	if (!kprobe_registered) {
+> > +		errors++;
+> > +		goto summary;
+> > +	}
+> > +
+> > +	/* Let's see if this probe was optimized */
+> > +	addr = kprobe_lookup_name(kpor.symbol_name, 0);
+> > +	if (addr && *addr == BREAKPOINT_INSTRUCTION) {
+
+Here, same as above, we need arch_optprobe_validate_insn(kp).
+
+Thank you,
+
+-- 
+Masami Hiramatsu <mhiramat@kernel.org>
