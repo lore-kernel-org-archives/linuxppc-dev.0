@@ -1,36 +1,20 @@
-Return-Path: <clombard@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wnnzs6ZVdzDq5W
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jun 2017 23:49:13 +1000 (AEST)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v5EDn8ZZ070475
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jun 2017 09:49:11 -0400
-Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2b329bnqye-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jun 2017 09:49:10 -0400
-Received: from localhost
- by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <clombard@linux.vnet.ibm.com>;
- Wed, 14 Jun 2017 14:49:02 +0100
-Subject: Re: [PATCH V3] cxl: Fixes for Coherent Accelerator Interface
- Architecture 2.0
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
- fbarrat@linux.vnet.ibm.com, vaibhav@linux.vnet.ibm.com,
- andrew.donnellan@au1.ibm.com
-References: <1497368465-13104-1-git-send-email-clombard@linux.vnet.ibm.com>
- <877f0f40yw.fsf@concordia.ellerman.id.au>
-From: christophe lombard <clombard@linux.vnet.ibm.com>
-Date: Wed, 14 Jun 2017 15:48:58 +0200
-MIME-Version: 1.0
-In-Reply-To: <877f0f40yw.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <16bc9059-a154-40bf-612e-18305b81d6d4@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wnq5B3QbyzDqKy
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Jun 2017 00:38:54 +1000 (AEST)
+Message-ID: <1497451124.2897.43.camel@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc/xive: Fix offset for store EOI MMIOs
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Michael Ellerman <michaele@au1.ibm.com>, linuxppc-dev
+ <linuxppc-dev@lists.ozlabs.org>
+Date: Thu, 15 Jun 2017 00:38:44 +1000
+In-Reply-To: <87d1a741r2.fsf@concordia.ellerman.id.au>
+References: <1497399565.2897.23.camel@kernel.crashing.org>
+ <87d1a741r2.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,342 +24,85 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Le 14/06/2017 à 07:01, Michael Ellerman a écrit :
-> Christophe Lombard <clombard@linux.vnet.ibm.com> writes:
->
->> A previous set of patches "cxl: Add support for Coherent Accelerator
->> Interface Architecture 2.0" has introduced a new support for the CAPI
->> cards.
-> Which commit is that?
->
+On Wed, 2017-06-14 at 14:44 +1000, Michael Ellerman wrote:
+> Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+> 
+> > Architecturally we should apply a 0x400 offset for these. Not doing
+> > it will break future HW implementations.
+> 
+> Can you elaborate a bit?
+> 
+> You're changing a write to 0x0 to be a write to 0x400, which at face
+> value appears like it breaks something, or is already broken?
+
+The code is broken today, I didn't read the spec properly. We never had
+a proper DD2 model to test until recently. The offset of 0 is supposed
+to remain for "triggers" though not all sources support both trigger
+and store EOI, and in P9 specifically, some sources will treat 0 as a
+store EOI :-) But future chips will not. So this makes us use the
+properly architected offset which should work always.
+
+Cheers,
+Ben.
+
+> 
 > cheers
-
-Here are the commit ids of the patchset:
-cxl: Add support for Coherent Accelerator Interface Architecture 2.0
-
-patch1: aba81433b50350fde68bf80fe9f75d671e15b5ae
-patch2: 66ef20c7834b7df18168b12a57ef01c6ae0d1a81
-patch3: 6dd2d23403396d8e6d153a6c9db56e1a1012bad8
-patch4: bdd2e7150644fee4de7167a3e08294ef32eeda11
-patch5: 64663f372c72cedeba1b1dc86df9cc159ae5a93d
-patch6: abd1d99bb3da42d6c7341c14986f5b8f4dcc6bd5
-patch7: f24be42aab37c6d07c05126673138e06223a6399
-
-Thanks
-
->> These patches have been tested on Simulation environment and
->> quite a bit of them have been tested on real hardware.
->>
->> This patch brings new fixes after a series of tests carried out on
->> new equipment:
->> * Add POWER9 definition.
->> * Re-enable any masked interrupts when the AFU is not activated after
->>    resetting the AFU.
->> * Remove the api cxl_is_psl8/9 which is no longer useful.
->> * Do not dump CAPI1 registers.
->> * Rewrite cxl_is_page_fault() function.
->> * Do not register slb callack on P9.
->>
->> Changelog[v3]
->>   - Rebase to latest upstream.
->>   - Update the patch's header.
->>   - Add new test in cxl_is_page_fault().
->>
->> Changelog[v2]
->>   - Rebase to latest upstream.
->>   - Update cxl_is_page_fault() to handle the checkout response status.
->>   - Add comments.
->>
->> Signed-off-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
->> ---
->>   drivers/misc/cxl/context.c |  6 +++---
->>   drivers/misc/cxl/cxl.h     | 18 +++++-------------
->>   drivers/misc/cxl/fault.c   | 23 +++++++++++++++--------
->>   drivers/misc/cxl/main.c    | 17 +++++++++++++----
->>   drivers/misc/cxl/native.c  | 29 +++++++++++++++++------------
->>   drivers/misc/cxl/pci.c     | 11 ++++-------
->>   6 files changed, 57 insertions(+), 47 deletions(-)
->>
->> diff --git a/drivers/misc/cxl/context.c b/drivers/misc/cxl/context.c
->> index 4472ce1..8c32040 100644
->> --- a/drivers/misc/cxl/context.c
->> +++ b/drivers/misc/cxl/context.c
->> @@ -45,7 +45,7 @@ int cxl_context_init(struct cxl_context *ctx, struct cxl_afu *afu, bool master)
->>   	mutex_init(&ctx->mapping_lock);
->>   	ctx->mapping = NULL;
->>   
->> -	if (cxl_is_psl8(afu)) {
->> +	if (cxl_is_power8()) {
->>   		spin_lock_init(&ctx->sste_lock);
->>   
->>   		/*
->> @@ -189,7 +189,7 @@ int cxl_context_iomap(struct cxl_context *ctx, struct vm_area_struct *vma)
->>   		if (start + len > ctx->afu->adapter->ps_size)
->>   			return -EINVAL;
->>   
->> -		if (cxl_is_psl9(ctx->afu)) {
->> +		if (cxl_is_power9()) {
->>   			/*
->>   			 * Make sure there is a valid problem state
->>   			 * area space for this AFU.
->> @@ -324,7 +324,7 @@ static void reclaim_ctx(struct rcu_head *rcu)
->>   {
->>   	struct cxl_context *ctx = container_of(rcu, struct cxl_context, rcu);
->>   
->> -	if (cxl_is_psl8(ctx->afu))
->> +	if (cxl_is_power8())
->>   		free_page((u64)ctx->sstp);
->>   	if (ctx->ff_page)
->>   		__free_page(ctx->ff_page);
->> diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
->> index c8568ea..a03f8e7 100644
->> --- a/drivers/misc/cxl/cxl.h
->> +++ b/drivers/misc/cxl/cxl.h
->> @@ -357,6 +357,7 @@ static const cxl_p2n_reg_t CXL_PSL_WED_An     = {0x0A0};
->>   #define CXL_PSL9_DSISR_An_PF_RGP  0x0000000000000090ULL  /* PTE not found (Radix Guest (parent)) 0b10010000 */
->>   #define CXL_PSL9_DSISR_An_PF_HRH  0x0000000000000094ULL  /* PTE not found (HPT/Radix Host)       0b10010100 */
->>   #define CXL_PSL9_DSISR_An_PF_STEG 0x000000000000009CULL  /* PTE not found (STEG VA)              0b10011100 */
->> +#define CXL_PSL9_DSISR_An_URTCH   0x00000000000000B4ULL  /* Unsupported Radix Tree Configuration 0b10110100 */
->>   
->>   /****** CXL_PSL_TFC_An ******************************************************/
->>   #define CXL_PSL_TFC_An_A  (1ull << (63-28)) /* Acknowledge non-translation fault */
->> @@ -844,24 +845,15 @@ static inline bool cxl_is_power8(void)
->>   
->>   static inline bool cxl_is_power9(void)
->>   {
->> -	/* intermediate solution */
->> -	if (!cxl_is_power8() &&
->> -	   (cpu_has_feature(CPU_FTRS_POWER9) ||
->> -	    cpu_has_feature(CPU_FTR_POWER9_DD1)))
->> +	if (pvr_version_is(PVR_POWER9))
->>   		return true;
->>   	return false;
->>   }
->>   
->> -static inline bool cxl_is_psl8(struct cxl_afu *afu)
->> +static inline bool cxl_is_power9_dd1(void)
->>   {
->> -	if (afu->adapter->caia_major == 1)
->> -		return true;
->> -	return false;
->> -}
->> -
->> -static inline bool cxl_is_psl9(struct cxl_afu *afu)
->> -{
->> -	if (afu->adapter->caia_major == 2)
->> +	if ((pvr_version_is(PVR_POWER9)) &&
->> +	    cpu_has_feature(CPU_FTR_POWER9_DD1))
->>   		return true;
->>   	return false;
->>   }
->> diff --git a/drivers/misc/cxl/fault.c b/drivers/misc/cxl/fault.c
->> index 5344448..c79e39b 100644
->> --- a/drivers/misc/cxl/fault.c
->> +++ b/drivers/misc/cxl/fault.c
->> @@ -187,7 +187,7 @@ static struct mm_struct *get_mem_context(struct cxl_context *ctx)
->>   
->>   static bool cxl_is_segment_miss(struct cxl_context *ctx, u64 dsisr)
->>   {
->> -	if ((cxl_is_psl8(ctx->afu)) && (dsisr & CXL_PSL_DSISR_An_DS))
->> +	if ((cxl_is_power8() && (dsisr & CXL_PSL_DSISR_An_DS)))
->>   		return true;
->>   
->>   	return false;
->> @@ -195,16 +195,23 @@ static bool cxl_is_segment_miss(struct cxl_context *ctx, u64 dsisr)
->>   
->>   static bool cxl_is_page_fault(struct cxl_context *ctx, u64 dsisr)
->>   {
->> -	if ((cxl_is_psl8(ctx->afu)) && (dsisr & CXL_PSL_DSISR_An_DM))
->> -		return true;
->> +	u64 crs; /* Translation Checkout Response Status */
->>   
->> -	if ((cxl_is_psl9(ctx->afu)) &&
->> -	   ((dsisr & CXL_PSL9_DSISR_An_CO_MASK) &
->> -		(CXL_PSL9_DSISR_An_PF_SLR | CXL_PSL9_DSISR_An_PF_RGC |
->> -		 CXL_PSL9_DSISR_An_PF_RGP | CXL_PSL9_DSISR_An_PF_HRH |
->> -		 CXL_PSL9_DSISR_An_PF_STEG)))
->> +	if ((cxl_is_power8()) && (dsisr & CXL_PSL_DSISR_An_DM))
->>   		return true;
->>   
->> +	if (cxl_is_power9()) {
->> +		crs = (dsisr & CXL_PSL9_DSISR_An_CO_MASK);
->> +		if ((crs == CXL_PSL9_DSISR_An_PF_SLR) ||
->> +		    (crs == CXL_PSL9_DSISR_An_PF_RGC) ||
->> +		    (crs == CXL_PSL9_DSISR_An_PF_RGP) ||
->> +		    (crs == CXL_PSL9_DSISR_An_PF_HRH) ||
->> +		    (crs == CXL_PSL9_DSISR_An_PF_STEG) ||
->> +		    (crs == CXL_PSL9_DSISR_An_URTCH)) {
->> +			return true;
->> +		}
->> +	}
->> +
->>   	return false;
->>   }
->>   
->> diff --git a/drivers/misc/cxl/main.c b/drivers/misc/cxl/main.c
->> index 1703655..c1ba0d4 100644
->> --- a/drivers/misc/cxl/main.c
->> +++ b/drivers/misc/cxl/main.c
->> @@ -329,8 +329,15 @@ static int __init init_cxl(void)
->>   
->>   	cxl_debugfs_init();
->>   
->> -	if ((rc = register_cxl_calls(&cxl_calls)))
->> -		goto err;
->> +	/*
->> +	 * we don't register the callback on P9. slb callack is only
->> +	 * used for the PSL8 MMU and CX4.
->> +	 */
->> +	if (cxl_is_power8()) {
->> +		rc = register_cxl_calls(&cxl_calls);
->> +		if (rc)
->> +			goto err;
->> +	}
->>   
->>   	if (cpu_has_feature(CPU_FTR_HVMODE)) {
->>   		cxl_ops = &cxl_native_ops;
->> @@ -347,7 +354,8 @@ static int __init init_cxl(void)
->>   
->>   	return 0;
->>   err1:
->> -	unregister_cxl_calls(&cxl_calls);
->> +	if (cxl_is_power8())
->> +		unregister_cxl_calls(&cxl_calls);
->>   err:
->>   	cxl_debugfs_exit();
->>   	cxl_file_exit();
->> @@ -366,7 +374,8 @@ static void exit_cxl(void)
->>   
->>   	cxl_debugfs_exit();
->>   	cxl_file_exit();
->> -	unregister_cxl_calls(&cxl_calls);
->> +	if (cxl_is_power8())
->> +		unregister_cxl_calls(&cxl_calls);
->>   	idr_destroy(&cxl_adapter_idr);
->>   }
->>   
->> diff --git a/drivers/misc/cxl/native.c b/drivers/misc/cxl/native.c
->> index 8d6ea97..2b2f889 100644
->> --- a/drivers/misc/cxl/native.c
->> +++ b/drivers/misc/cxl/native.c
->> @@ -105,11 +105,16 @@ static int native_afu_reset(struct cxl_afu *afu)
->>   			   CXL_AFU_Cntl_An_RS_MASK | CXL_AFU_Cntl_An_ES_MASK,
->>   			   false);
->>   
->> -	/* Re-enable any masked interrupts */
->> -	serr = cxl_p1n_read(afu, CXL_PSL_SERR_An);
->> -	serr &= ~CXL_PSL_SERR_An_IRQ_MASKS;
->> -	cxl_p1n_write(afu, CXL_PSL_SERR_An, serr);
->> -
->> +	/*
->> +	 * Re-enable any masked interrupts when the AFU is not
->> +	 * activated to avoid side effects after attaching a process
->> +	 * in dedicated mode.
->> +	 */
->> +	if (afu->current_mode == 0) {
->> +		serr = cxl_p1n_read(afu, CXL_PSL_SERR_An);
->> +		serr &= ~CXL_PSL_SERR_An_IRQ_MASKS;
->> +		cxl_p1n_write(afu, CXL_PSL_SERR_An, serr);
->> +	}
->>   
->>   	return rc;
->>   }
->> @@ -139,9 +144,9 @@ int cxl_psl_purge(struct cxl_afu *afu)
->>   
->>   	pr_devel("PSL purge request\n");
->>   
->> -	if (cxl_is_psl8(afu))
->> +	if (cxl_is_power8())
->>   		trans_fault = CXL_PSL_DSISR_TRANS;
->> -	if (cxl_is_psl9(afu))
->> +	if (cxl_is_power9())
->>   		trans_fault = CXL_PSL9_DSISR_An_TF;
->>   
->>   	if (!cxl_ops->link_ok(afu->adapter, afu)) {
->> @@ -603,7 +608,7 @@ static u64 calculate_sr(struct cxl_context *ctx)
->>   		if (!test_tsk_thread_flag(current, TIF_32BIT))
->>   			sr |= CXL_PSL_SR_An_SF;
->>   	}
->> -	if (cxl_is_psl9(ctx->afu)) {
->> +	if (cxl_is_power9()) {
->>   		if (radix_enabled())
->>   			sr |= CXL_PSL_SR_An_XLAT_ror;
->>   		else
->> @@ -1117,10 +1122,10 @@ static irqreturn_t native_handle_psl_slice_error(struct cxl_context *ctx,
->>   
->>   static bool cxl_is_translation_fault(struct cxl_afu *afu, u64 dsisr)
->>   {
->> -	if ((cxl_is_psl8(afu)) && (dsisr & CXL_PSL_DSISR_TRANS))
->> +	if ((cxl_is_power8()) && (dsisr & CXL_PSL_DSISR_TRANS))
->>   		return true;
->>   
->> -	if ((cxl_is_psl9(afu)) && (dsisr & CXL_PSL9_DSISR_An_TF))
->> +	if ((cxl_is_power9()) && (dsisr & CXL_PSL9_DSISR_An_TF))
->>   		return true;
->>   
->>   	return false;
->> @@ -1194,10 +1199,10 @@ static void native_irq_wait(struct cxl_context *ctx)
->>   		if (ph != ctx->pe)
->>   			return;
->>   		dsisr = cxl_p2n_read(ctx->afu, CXL_PSL_DSISR_An);
->> -		if (cxl_is_psl8(ctx->afu) &&
->> +		if (cxl_is_power8() &&
->>   		   ((dsisr & CXL_PSL_DSISR_PENDING) == 0))
->>   			return;
->> -		if (cxl_is_psl9(ctx->afu) &&
->> +		if (cxl_is_power9() &&
->>   		   ((dsisr & CXL_PSL9_DSISR_PENDING) == 0))
->>   			return;
->>   		/*
->> diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
->> index 6dc1ee5..1eb9859 100644
->> --- a/drivers/misc/cxl/pci.c
->> +++ b/drivers/misc/cxl/pci.c
->> @@ -436,7 +436,7 @@ static int init_implementation_adapter_regs_psl9(struct cxl *adapter, struct pci
->>   	/* nMMU_ID Defaults to: b’000001001’*/
->>   	xsl_dsnctl |= ((u64)0x09 << (63-28));
->>   
->> -	if (cxl_is_power9() && !cpu_has_feature(CPU_FTR_POWER9_DD1)) {
->> +	if (!(cxl_is_power9_dd1())) {
->>   		/*
->>   		 * Used to identify CAPI packets which should be sorted into
->>   		 * the Non-Blocking queues by the PHB. This field should match
->> @@ -491,7 +491,7 @@ static int init_implementation_adapter_regs_psl9(struct cxl *adapter, struct pci
->>   	cxl_p1_write(adapter, CXL_PSL9_APCDEDTYPE, 0x40000003FFFF0000ULL);
->>   
->>   	/* Disable vc dd1 fix */
->> -	if ((cxl_is_power9() && cpu_has_feature(CPU_FTR_POWER9_DD1)))
->> +	if (cxl_is_power9_dd1())
->>   		cxl_p1_write(adapter, CXL_PSL9_GP_CT, 0x0400000000000001ULL);
->>   
->>   	return 0;
->> @@ -1439,8 +1439,7 @@ int cxl_pci_reset(struct cxl *adapter)
->>   	 * The adapter is about to be reset, so ignore errors.
->>   	 * Not supported on P9 DD1
->>   	 */
->> -	if ((cxl_is_power8()) ||
->> -	    ((cxl_is_power9() && !cpu_has_feature(CPU_FTR_POWER9_DD1))))
->> +	if ((cxl_is_power8()) || (!(cxl_is_power9_dd1())))
->>   		cxl_data_cache_flush(adapter);
->>   
->>   	/* pcie_warm_reset requests a fundamental pci reset which includes a
->> @@ -1750,7 +1749,6 @@ static const struct cxl_service_layer_ops psl9_ops = {
->>   	.debugfs_add_adapter_regs = cxl_debugfs_add_adapter_regs_psl9,
->>   	.debugfs_add_afu_regs = cxl_debugfs_add_afu_regs_psl9,
->>   	.psl_irq_dump_registers = cxl_native_irq_dump_regs_psl9,
->> -	.err_irq_dump_registers = cxl_native_err_irq_dump_regs,
->>   	.debugfs_stop_trace = cxl_stop_trace_psl9,
->>   	.write_timebase_ctrl = write_timebase_ctrl_psl9,
->>   	.timebase_read = timebase_read_psl9,
->> @@ -1889,8 +1887,7 @@ static void cxl_pci_remove_adapter(struct cxl *adapter)
->>   	 * Flush adapter datacache as its about to be removed.
->>   	 * Not supported on P9 DD1.
->>   	 */
->> -	if ((cxl_is_power8()) ||
->> -	    ((cxl_is_power9() && !cpu_has_feature(CPU_FTR_POWER9_DD1))))
->> +	if ((cxl_is_power8()) || (!(cxl_is_power9_dd1())))
->>   		cxl_data_cache_flush(adapter);
->>   
->>   	cxl_deconfigure_adapter(adapter);
->> -- 
->> 2.7.4
+> 
+> > diff --git a/arch/powerpc/include/asm/xive.h b/arch/powerpc/include/asm/xive.h
+> > index c8a822a..c23ff43 100644
+> > --- a/arch/powerpc/include/asm/xive.h
+> > +++ b/arch/powerpc/include/asm/xive.h
+> > @@ -94,11 +94,13 @@ struct xive_q {
+> >   * store at 0 and some ESBs support doing a trigger via a
+> >   * separate trigger page.
+> >   */
+> > -#define XIVE_ESB_GET		0x800
+> > -#define XIVE_ESB_SET_PQ_00	0xc00
+> > -#define XIVE_ESB_SET_PQ_01	0xd00
+> > -#define XIVE_ESB_SET_PQ_10	0xe00
+> > -#define XIVE_ESB_SET_PQ_11	0xf00
+> > +#define XIVE_ESB_STORE_EOI	0x400 /* Store */
+> > +#define XIVE_ESB_LOAD_EOI	0x000 /* Load */
+> > +#define XIVE_ESB_GET		0x800 /* Load */
+> > +#define XIVE_ESB_SET_PQ_00	0xc00 /* Load */
+> > +#define XIVE_ESB_SET_PQ_01	0xd00 /* Load */
+> > +#define XIVE_ESB_SET_PQ_10	0xe00 /* Load */
+> > +#define XIVE_ESB_SET_PQ_11	0xf00 /* Load */
+> >  
+> >  #define XIVE_ESB_VAL_P		0x2
+> >  #define XIVE_ESB_VAL_Q		0x1
+> > diff --git a/arch/powerpc/kvm/book3s_xive_template.c b/arch/powerpc/kvm/book3s_xive_template.c
+> > index 023a311..4636ca6 100644
+> > --- a/arch/powerpc/kvm/book3s_xive_template.c
+> > +++ b/arch/powerpc/kvm/book3s_xive_template.c
+> > @@ -69,7 +69,7 @@ static void GLUE(X_PFX,source_eoi)(u32 hw_irq, struct xive_irq_data *xd)
+> >  {
+> >  	/* If the XIVE supports the new "store EOI facility, use it */
+> >  	if (xd->flags & XIVE_IRQ_FLAG_STORE_EOI)
+> > -		__x_writeq(0, __x_eoi_page(xd));
+> > +		__x_writeq(0, __x_eoi_page(xd) + XIVE_ESB_STORE_EOI);
+> >  	else if (hw_irq && xd->flags & XIVE_IRQ_FLAG_EOI_FW) {
+> >  		opal_int_eoi(hw_irq);
+> >  	} else {
+> > @@ -89,7 +89,7 @@ static void GLUE(X_PFX,source_eoi)(u32 hw_irq, struct xive_irq_data *xd)
+> >  		 * properly.
+> >  		 */
+> >  		if (xd->flags & XIVE_IRQ_FLAG_LSI)
+> > -			__x_readq(__x_eoi_page(xd));
+> > +			__x_readq(__x_eoi_page(xd) + XIVE_ESB_LOAD_EOI);
+> >  		else {
+> >  			eoi_val = GLUE(X_PFX,esb_load)(xd, XIVE_ESB_SET_PQ_00);
+> >  
+> > diff --git a/arch/powerpc/sysdev/xive/common.c b/arch/powerpc/sysdev/xive/common.c
+> > index 9138250..8f5e303 100644
+> > --- a/arch/powerpc/sysdev/xive/common.c
+> > +++ b/arch/powerpc/sysdev/xive/common.c
+> > @@ -297,7 +297,7 @@ void xive_do_source_eoi(u32 hw_irq, struct xive_irq_data *xd)
+> >  {
+> >  	/* If the XIVE supports the new "store EOI facility, use it */
+> >  	if (xd->flags & XIVE_IRQ_FLAG_STORE_EOI)
+> > -		out_be64(xd->eoi_mmio, 0);
+> > +		out_be64(xd->eoi_mmio + XIVE_ESB_STORE_EOI, 0);
+> >  	else if (hw_irq && xd->flags & XIVE_IRQ_FLAG_EOI_FW) {
+> >  		/*
+> >  		 * The FW told us to call it. This happens for some
