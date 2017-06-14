@@ -1,39 +1,54 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-qt0-x242.google.com (mail-qt0-x242.google.com
+ [IPv6:2607:f8b0:400d:c0d::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wnZY73d6qzDq5W
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jun 2017 15:13:47 +1000 (AEST)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v5E5ASJx127124
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jun 2017 01:13:44 -0400
-Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2b2wf0jrq5-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jun 2017 01:13:44 -0400
-Received: from localhost
- by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Tue, 13 Jun 2017 23:13:43 -0600
-Subject: Re: [PATCH] powerpc64/hw_breakpoints: Handle data breakpoints in
- radix mode
-To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
- "Shriya R . Kulkarni" <shriykul@in.ibm.com>,
- Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>,
- Ram Pai <linuxram@us.ibm.com>
-References: <20170613184200.22541-1-naveen.n.rao@linux.vnet.ibm.com>
- <87r2yn1d1g.fsf@skywalker.in.ibm.com>
- <20170614051109.GB16085@naverao1-tp.localdomain>
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Date: Wed, 14 Jun 2017 10:43:30 +0530
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wnZrx42QfzDq5W
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jun 2017 15:27:29 +1000 (AEST)
+Received: by mail-qt0-x242.google.com with SMTP id w1so38933971qtg.0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jun 2017 22:27:29 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <20170614051109.GB16085@naverao1-tp.localdomain>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <a210ca06-d455-8893-a20b-82f169a1525c@linux.vnet.ibm.com>
+In-Reply-To: <CAKTCnz==4vA4PevndTLF7p2PPKCM8ZkqpuCXPp9kFcjn+CqUKA@mail.gmail.com>
+References: <3bb44d92-b2ff-e197-4bdf-ec6d588d6dab@linux.vnet.ibm.com>
+ <1c1d70e3-4e45-b035-0e75-1b0f531c111b@linux.vnet.ibm.com>
+ <20170523214922.bns675oqzqj4pkhc@arbab-laptop.localdomain>
+ <ee96df3d-ad0f-c4dc-e7d5-290018ec8afd@linux.vnet.ibm.com>
+ <87poeya4dt.fsf@concordia.ellerman.id.au>
+ <8e2417d8-d108-2949-40f2-997d53a3f367@linux.vnet.ibm.com>
+ <87a861a25y.fsf@concordia.ellerman.id.au>
+ <20170525151011.m4ae4ipxbqsj3mn7@arbab-laptop.localdomain>
+ <87zie08ekt.fsf@concordia.ellerman.id.au>
+ <20170526143147.z4lmtrs7vowucbkf@arbab-laptop.localdomain>
+ <87lgpg6xe2.fsf@concordia.ellerman.id.au>
+ <54877b2b-8446-20f6-e316-25af809ae11f@linux.vnet.ibm.com>
+ <87tw402go0.fsf@concordia.ellerman.id.au>
+ <54ebacf1-1249-cc6a-80a5-b293e581f401@linux.vnet.ibm.com>
+ <8760g9qwfd.fsf@concordia.ellerman.id.au>
+ <ba7d7010-44ed-cc20-661c-2078f0f522b7@linux.vnet.ibm.com>
+ <87tw3sdmpj.fsf@concordia.ellerman.id.au>
+ <d0027ac9-48cb-2d31-ce26-a29c0fc0a32c@linux.vnet.ibm.com>
+ <87o9tsgo9b.fsf@concordia.ellerman.id.au>
+ <ca6ef126-4bc7-5b93-11d1-1342c46fa9b6@linux.vnet.ibm.com>
+ <CAKTCnz==4vA4PevndTLF7p2PPKCM8ZkqpuCXPp9kFcjn+CqUKA@mail.gmail.com>
+From: Balbir Singh <bsingharora@gmail.com>
+Date: Wed, 14 Jun 2017 15:27:26 +1000
+Message-ID: <CAKTCnzm7jB1doPjySSjBe6B6YhTOkU+Cm+DJA94PQ7rNyXpx4Q@mail.gmail.com>
+Subject: Re: RESEND Re: [Patch 2/2]: powerpc/hotplug/mm: Fix hot-add memory
+ node assoc
+To: Michael Bringmann <mwb@linux.vnet.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>,
+ Reza Arbab <arbab@linux.vnet.ibm.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Paul Mackerras <paulus@samba.org>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Bharata B Rao <bharata@linux.vnet.ibm.com>,
+ Shailendra Singh <shailendras@nvidia.com>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
+ <linuxppc-dev@lists.ozlabs.org>,
+ Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
+ Michael Bringmann from Kernel Team <mbringm@us.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,80 +58,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-
-On Wednesday 14 June 2017 10:41 AM, Naveen N. Rao wrote:
-> Hi Aneesh,
-> 
-> On 2017/06/14 08:38AM, Aneesh Kumar K.V wrote:
->> "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> writes:
+On Wed, Jun 14, 2017 at 3:25 PM, Balbir Singh <bsingharora@gmail.com> wrote:
+>
+>
+> On Wed, Jun 14, 2017 at 8:21 AM, Michael Bringmann <mwb@linux.vnet.ibm.com>
+> wrote:
 >>
->>> On P9, trying to use data breakpoints throws the splat shown below (*).
->>> This is because the check for a data breakpoint in DSISR is in
->>> do_hash_page(). Move this check to handle_page_fault() so as to catch
->>> data breakpoints in both hash and radix MMU modes.
->>>
->>> While at it, also remove the label '11' that was made redundant by
->>> commit a546498f3bf9aa ("powerpc: Call do_page_fault() with interrupts
->>> off")
->>>
->>> (*)
->>>      Unable to handle kernel paging request for data at address 0xc000000000e19218
->>>      Faulting instruction address: 0xc0000000001155e8
->>>      cpu 0x0: Vector: 300 (Data Access) at [c0000000ef1e7b20]
->>>      pc: c0000000001155e8: find_pid_ns+0x48/0xe0
->>>      lr: c000000000116ac4: find_task_by_vpid+0x44/0x90
->>>      sp: c0000000ef1e7da0
->>>      msr: 9000000000009033
->>>      dar: c000000000e19218
->>>      dsisr: 400000
->>>      current = 0xc0000000f1f59700
->>>      paca    = 0xc00000000fd40000 softe: 0 irq_happened: 0x01
->>>      pid   = 1192, comm = sh
->>>      Linux version 4.12.0-rc3-nnr (root@ea605ec2993c) (gcc version 5.4.0 20160609 (Ubuntu/IBM 5.4.0-6ubuntu1~16.04.1) ) #74 SMP Tue Jun 13 16:52:49 UTC 2017
->>>      enter ? for help
->>>      [c0000000ef1e7dc0] c000000000116ac4 find_task_by_vpid+0x44/0x90
->>>      [c0000000ef1e7de0] c000000000108800 SyS_setpgid+0x80/0x220
->>>      [c0000000ef1e7e30] c00000000000ba6c system_call+0x38/0xfc
->>>      --- Exception: c01 (System Call) at 00007fff94480890
->>>      SP (7fffd91e7260) is in userspace
->>>
->>> Fixes: caca285e5ab4a ("powerpc/mm/radix: Use STD_MMU_64 to properly
->>> isolate hash related code")
->>> Reported-by: Shriya R. Kulkarni <shriykul@in.ibm.com>
->>> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
->>> ---
->>>   arch/powerpc/kernel/exceptions-64s.S | 8 ++++----
->>>   1 file changed, 4 insertions(+), 4 deletions(-)
->>>
->>> diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
->>> index ae418b85c17c..17ee701b8336 100644
->>> --- a/arch/powerpc/kernel/exceptions-64s.S
->>> +++ b/arch/powerpc/kernel/exceptions-64s.S
->>> @@ -1411,10 +1411,8 @@ USE_TEXT_SECTION()
->>>   	.balign	IFETCH_ALIGN_BYTES
->>>   do_hash_page:
->>>   #ifdef CONFIG_PPC_STD_MMU_64
->>> -	andis.	r0,r4,0xa410		/* weird error? */
->>> +	andis.	r0,r4,0xa450		/* weird error? */
+>> On a related note, we are discussing the addition of 2 new device-tree
+>> properties
+>> with Pete Heyrman and his fellows that should simplify the determination
+>> of the
+>> set of required nodes.
 >>
->> Can we convert that to a #define value. Ram did try to do that here.
+>> * One property would provide the total/max number of nodes needed by the
+>> kernel
+>>   on the current hardware.
+>
+>
+
+Yes, that would be nice to have
+
+>
 >>
->> https://lists.ozlabs.org/pipermail/linuxppc-dev/2017-June/158607.html
-> 
-> Hmm... I feel it will be good to do that as part of Ram's series since
-> he has already coded it up :)
-> 
-> Ram's patches will anyway require a rebase and the change I do here for
-> detecting DAWR already has a #define, so it should be a simple matter of
-> including DSISR_DABRMATCH in DSISR_PAGE_FAULT_MASK.
-> 
-> But, if you really feel that I should make that change here, please do
-> let me know and I will re-spin with those changes.
-> 
+>> * A second property would provide the total/max number of nodes that the
+>> kernel
+>>   could use on any system to which it could be migrated.
+>>
+>
 
-The thing is that change from 0xa410 to 0xa450 is not clear at all. And 
-it needs proper documentation. IMHO the best way to do that is switch to 
-#define name for that constant.
+Not sure about this one, are you suggesting more memory can be added
+depending on the migration target?
 
--aneesh
+>
+>
+>>
+>> These properties aren't available, yet, and it takes time to define new
+>> properties
+>> in the PAPR and have them implemented in pHyp and the kernel.  As an
+>> intermediary
+>> step, the systems which are doing a lot of dynamic hot-add/hot-remove
+>> configuration
+>> could provide equivalent information to the PowerPC kernel with a command
+>> line
+>> parameter.  The 'numa.c' code would then read this value and fill in the
+>> necessary
+>> entries in the 'node_possible_map'.
+>>
+>> Would you foresee any problems with using such a feature?
+>
+>
+
+Sorry my mailer goofed up, resending
+
+Balbir Singh
