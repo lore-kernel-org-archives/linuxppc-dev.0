@@ -1,28 +1,22 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wngyJ2ZsvzDqKy
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jun 2017 19:17:28 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wnh9J6QjlzDqKy
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jun 2017 19:27:00 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Christoph Hellwig <hch@lst.de>, x86@kernel.org,
- linux-arm-kernel@lists.infradead.org, xen-devel@lists.xenproject.org,
- linux-c6x-dev@linux-c6x.org, linux-hexagon@vger.kernel.org,
- linux-ia64@vger.kernel.org, linux-mips@linux-mips.org,
- openrisc@lists.librecores.org, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
- sparclinux@vger.kernel.org, linux-xtensa@linux-xtensa.org,
- dmaengine@vger.kernel.org, linux-tegra@vger.kernel.org,
- dri-devel@lists.freedesktop.org, linux-samsung-soc@vger.kernel.org,
- iommu@lists.linux-foundation.org, netdev@vger.kernel.org,
- Alistair Popple  <apopple@au1.ibm.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 21/44] powerpc: implement ->mapping_error
-In-Reply-To: <20170608132609.32662-22-hch@lst.de>
-References: <20170608132609.32662-1-hch@lst.de>
- <20170608132609.32662-22-hch@lst.de>
-Date: Wed, 14 Jun 2017 19:17:27 +1000
-Message-ID: <87vanz2ajc.fsf@concordia.ellerman.id.au>
+To: Anshuman Khandual <khandual@linux.vnet.ibm.com>,
+ "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, "Shriya R . Kulkarni" <shriykul@in.ibm.com>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
+Subject: Re: [PATCH] powerpc64/hw_breakpoints: Handle data breakpoints in
+ radix mode
+In-Reply-To: <4b6d375c-cebc-16b9-f660-48ec51f98456@linux.vnet.ibm.com>
+References: <20170613184200.22541-1-naveen.n.rao@linux.vnet.ibm.com>
+ <4b6d375c-cebc-16b9-f660-48ec51f98456@linux.vnet.ibm.com>
+Date: Wed, 14 Jun 2017 19:27:00 +1000
+Message-ID: <87shj23onv.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -34,45 +28,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Christoph Hellwig <hch@lst.de> writes:
+Anshuman Khandual <khandual@linux.vnet.ibm.com> writes:
 
-> DMA_ERROR_CODE is going to go away, so don't rely on it.  Instead
-> define a ->mapping_error method for all IOMMU based dma operation
-> instances.  The direct ops don't ever return an error and don't
-> need a ->mapping_error method.
+> On 06/14/2017 12:12 AM, Naveen N. Rao wrote:
+>> On P9, trying to use data breakpoints throws the splat shown below (*).
+>> This is because the check for a data breakpoint in DSISR is in
+>> do_hash_page(). Move this check to handle_page_fault() so as to catch
+>> data breakpoints in both hash and radix MMU modes.
 >
-> Signed-off-by: Christoph Hellwig <hch@lst.de>
-> ---
->  arch/powerpc/include/asm/dma-mapping.h |  4 ----
->  arch/powerpc/include/asm/iommu.h       |  4 ++++
->  arch/powerpc/kernel/dma-iommu.c        |  6 ++++++
->  arch/powerpc/kernel/iommu.c            | 28 ++++++++++++++--------------
->  arch/powerpc/platforms/cell/iommu.c    |  1 +
->  arch/powerpc/platforms/pseries/vio.c   |  3 ++-
->  6 files changed, 27 insertions(+), 19 deletions(-)
+> Why cant we check for DSISR inside do_hash_page() on P9 ?
 
-I also see:
+We can.
 
-  arch/powerpc/kernel/dma.c:const struct dma_map_ops dma_direct_ops = {
+But we also need to check inside handle_page_fault(), because when we're
+in Radix mode we don't go via do_hash_page().
 
-Which you mentioned can't fail.
-
-  arch/powerpc/platforms/pseries/ibmebus.c:static const struct dma_map_ops ibmebus_dma_ops = {
-
-Which can't fail.
-
-And:
-
-  arch/powerpc/platforms/powernv/npu-dma.c:static const struct dma_map_ops dma_npu_ops = {
-  arch/powerpc/platforms/ps3/system-bus.c:static const struct dma_map_ops ps3_sb_dma_ops = {
-  arch/powerpc/platforms/ps3/system-bus.c:static const struct dma_map_ops ps3_ioc0_dma_ops = {
-
-All of which look like they definitely can fail, but return 0 on error
-and don't implement ->mapping_error.
-
-So I guess I'm acking this and adding a TODO to fix up the NPU code at
-least, the ps3 code is probably better left alone these days.
-
-Acked-by: Michael Ellerman <mpe@ellerman.id.au>
+So rather than doing it in two places, the patch changes the logic so we
+check in handle_page_fault(), and teaches the do_hash_page() code to go
+there if DSISR_DABRMATCH is set.
 
 cheers
