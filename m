@@ -1,22 +1,33 @@
-Return-Path: <mhiramat@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <frowand.list@gmail.com>
+Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
+ [IPv6:2607:f8b0:400e:c05::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wnW7x42QjzDqKy
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jun 2017 12:40:13 +1000 (AEST)
-Date: Wed, 14 Jun 2017 11:40:08 +0900
-From: Masami Hiramatsu <mhiramat@kernel.org>
-To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, Ingo Molnar <mingo@kernel.org>,
- Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>, Masami Hiramatsu
- <mhiramat@kernel.org>, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] kernel/kprobes: Add test to validate pt_regs
-Message-Id: <20170614114008.f9f4caffcb971751f2d00066@kernel.org>
-In-Reply-To: <20170608192308.22278-1-naveen.n.rao@linux.vnet.ibm.com>
-References: <20170608192308.22278-1-naveen.n.rao@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wnWMF6lsVzDq5W
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jun 2017 12:50:01 +1000 (AEST)
+Received: by mail-pg0-x241.google.com with SMTP id v18so21580761pgb.3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jun 2017 19:50:01 -0700 (PDT)
+From: frowand.list@gmail.com
+To: Rob Herring <robh+dt@kernel.org>,
+	Mark Rutland <mark.rutland@arm.com>
+Cc: =?UTF-8?q?Horia=20Geant=C4=83?= <horia.geanta@nxp.com>,
+ Dan Douglass <dan.douglass@nxp.com>,
+ Herbert Xu <herbert@gondor.apana.org.au>,
+ "David S. Miller" <davem@davemloft.net>,
+ Thomas Gleixner <tglx@linutronix.de>, Jason Cooper <jason@lakedaemon.net>,
+ Marc Zyngier <marc.zyngier@arm.com>, Scott Wood <oss@buserror.net>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Jonathan Corbet <corbet@lwn.net>, devicetree@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org,
+ netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org, linux-doc@vger.kernel.org
+Subject: [PATCH] of: update ePAPR references to point to Devicetree
+ Specification
+Date: Tue, 13 Jun 2017 19:49:04 -0700
+Message-Id: <1497408544-7383-1-git-send-email-frowand.list@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,499 +37,367 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri,  9 Jun 2017 00:53:08 +0530
-"Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
+From: Frank Rowand <frank.rowand@sony.com>
 
-> Add a test to verify that the registers passed in pt_regs on kprobe
-> (trap), optprobe (jump) and kprobe_on_ftrace (ftrace_caller) are
-> accurate. The tests are exercized if KPROBES_SANITY_TEST is enabled.
+The Devicetree Specification has superseded the ePAPR as the
+base specification for bindings.  Update files in Documentation
+to reference the new document.
 
-Great!
+Some files are not updated because there is no hypervisor chapter
+in the Devicetree Specification:
+   Documentation/devicetree/bindings/powerpc/fsl/msi-pic.txt
+   Documenation/virtual/kvm/api.txt
+   Documenation/virtual/kvm/ppc-pv.txt
 
-> 
-> Implemented for powerpc64. Other architectures will have to implement
-> the relevant arch_* helpers and define HAVE_KPROBES_REGS_SANITY_TEST.
+Signed-off-by: Frank Rowand <frank.rowand@sony.com>
+---
+ Documentation/devicetree/bindings/arm/cci.txt               | 12 ++++++------
+ Documentation/devicetree/bindings/arm/cpus.txt              | 13 +++++++------
+ Documentation/devicetree/bindings/arm/idle-states.txt       |  4 ++--
+ Documentation/devicetree/bindings/arm/l2c2x0.txt            |  4 ++--
+ Documentation/devicetree/bindings/arm/topology.txt          |  4 ++--
+ Documentation/devicetree/bindings/bus/simple-pm-bus.txt     |  2 +-
+ Documentation/devicetree/bindings/chosen.txt                |  3 ++-
+ Documentation/devicetree/bindings/common-properties.txt     |  2 +-
+ Documentation/devicetree/bindings/crypto/fsl-sec4.txt       |  4 ++--
+ Documentation/devicetree/bindings/crypto/fsl-sec6.txt       |  4 ++--
+ .../devicetree/bindings/interrupt-controller/open-pic.txt   |  5 ++---
+ Documentation/devicetree/bindings/net/ethernet.txt          |  9 ++++++---
+ Documentation/devicetree/bindings/powerpc/fsl/cpus.txt      |  6 +++---
+ Documentation/devicetree/bindings/powerpc/fsl/l2cache.txt   |  2 +-
+ Documentation/devicetree/bindings/powerpc/fsl/srio-rmu.txt  |  4 ++--
+ Documentation/devicetree/bindings/powerpc/fsl/srio.txt      |  3 ++-
+ Documentation/devicetree/booting-without-of.txt             |  2 +-
+ Documentation/devicetree/usage-model.txt                    |  2 +-
+ Documentation/xtensa/mmu.txt                                |  6 +++---
+ 19 files changed, 48 insertions(+), 43 deletions(-)
 
-Hmm, why don't you define that in arch/powerpc/Kconfig ?
-Also, could you split this into 3 patches for each case ?
-
-> 
-> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/include/asm/kprobes.h  |   4 +
->  arch/powerpc/lib/Makefile           |   3 +-
->  arch/powerpc/lib/test_kprobe_regs.S |  62 ++++++++++++
->  arch/powerpc/lib/test_kprobes.c     | 115 ++++++++++++++++++++++
->  include/linux/kprobes.h             |  11 +++
->  kernel/test_kprobes.c               | 183 ++++++++++++++++++++++++++++++++++++
->  6 files changed, 377 insertions(+), 1 deletion(-)
->  create mode 100644 arch/powerpc/lib/test_kprobe_regs.S
->  create mode 100644 arch/powerpc/lib/test_kprobes.c
-> 
-> diff --git a/arch/powerpc/include/asm/kprobes.h b/arch/powerpc/include/asm/kprobes.h
-> index 566da372e02b..10c91d3132a1 100644
-> --- a/arch/powerpc/include/asm/kprobes.h
-> +++ b/arch/powerpc/include/asm/kprobes.h
-> @@ -124,6 +124,10 @@ static inline int skip_singlestep(struct kprobe *p, struct pt_regs *regs,
->  	return 0;
->  }
->  #endif
-> +#if defined(CONFIG_KPROBES_SANITY_TEST) && defined(CONFIG_PPC64)
-> +#define HAVE_KPROBES_REGS_SANITY_TEST
-> +void arch_kprobe_regs_set_ptregs(struct pt_regs *regs);
-> +#endif
->  #else
->  static inline int kprobe_handler(struct pt_regs *regs) { return 0; }
->  static inline int kprobe_post_handler(struct pt_regs *regs) { return 0; }
-> diff --git a/arch/powerpc/lib/Makefile b/arch/powerpc/lib/Makefile
-> index 3c3146ba62da..8a0bb8e20179 100644
-> --- a/arch/powerpc/lib/Makefile
-> +++ b/arch/powerpc/lib/Makefile
-> @@ -27,7 +27,8 @@ obj64-y	+= copypage_64.o copyuser_64.o mem_64.o hweight_64.o \
->  
->  obj64-$(CONFIG_SMP)	+= locks.o
->  obj64-$(CONFIG_ALTIVEC)	+= vmx-helper.o
-> -obj64-$(CONFIG_KPROBES_SANITY_TEST) += test_emulate_step.o
-> +obj64-$(CONFIG_KPROBES_SANITY_TEST) += test_emulate_step.o test_kprobe_regs.o \
-> +				       test_kprobes.o
->  
->  obj-y			+= checksum_$(BITS).o checksum_wrappers.o
->  
-> diff --git a/arch/powerpc/lib/test_kprobe_regs.S b/arch/powerpc/lib/test_kprobe_regs.S
-> new file mode 100644
-> index 000000000000..4e95eca6dcd3
-> --- /dev/null
-> +++ b/arch/powerpc/lib/test_kprobe_regs.S
-> @@ -0,0 +1,62 @@
-> +/*
-> + * test_kprobe_regs: architectural helpers for validating pt_regs
-> + *		     received on a kprobe.
-> + *
-> + * Copyright 2017 Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
-> + *		  IBM Corporation
-> + *
-> + * This program is free software; you can redistribute it and/or
-> + * modify it under the terms of the GNU General Public License
-> + * as published by the Free Software Foundation; version 2
-> + * of the License.
-> + */
-> +
-> +#include <asm/ppc_asm.h>
-> +#include <asm/asm-offsets.h>
-> +#include <asm/ptrace.h>
-> +
-> +_GLOBAL(arch_kprobe_regs_function)
-> +	mflr	r0
-> +	std	r0, LRSAVE(r1)
-> +	stdu	r1, -SWITCH_FRAME_SIZE(r1)
-> +
-> +	/* Tell pre handler about our pt_regs location */
-> +	addi	r3, r1, STACK_FRAME_OVERHEAD
-> +	bl	arch_kprobe_regs_set_ptregs
-> +
-> +	/* Load back our true LR */
-> +	ld	r0, (SWITCH_FRAME_SIZE + LRSAVE)(r1)
-> +	mtlr	r0
-> +
-> +	/* Save all SPRs that we care about */
-> +	mfctr	r0
-> +	std	r0, _CTR(r1)
-> +	mflr	r0
-> +	std	r0, _LINK(r1)
-> +	mfspr	r0, SPRN_XER
-> +	std	r0, _XER(r1)
-> +	mfcr	r0
-> +	std	r0, _CCR(r1)
-> +
-> +	/* Now, save all GPRs */
-> +	SAVE_2GPRS(0, r1)
-> +	SAVE_10GPRS(2, r1)
-> +	SAVE_10GPRS(12, r1)
-> +	SAVE_10GPRS(22, r1)
-> +
-> +	/* We're now ready to be probed */
-> +.global arch_kprobe_regs_probepoint
-> +arch_kprobe_regs_probepoint:
-> +	nop
-> +
-> +#ifdef CONFIG_KPROBES_ON_FTRACE
-> +	/* Let's also test KPROBES_ON_FTRACE */
-> +	bl	kprobe_regs_kp_on_ftrace_target
-> +	nop
-> +#endif
-> +
-> +	/* All done */
-> +	addi	r1, r1, SWITCH_FRAME_SIZE
-> +	ld	r0, LRSAVE(r1)
-> +	mtlr	r0
-> +	blr
-> diff --git a/arch/powerpc/lib/test_kprobes.c b/arch/powerpc/lib/test_kprobes.c
-> new file mode 100644
-> index 000000000000..23f7a7ffcdd6
-> --- /dev/null
-> +++ b/arch/powerpc/lib/test_kprobes.c
-> @@ -0,0 +1,115 @@
-> +/*
-> + * test_kprobes: architectural helpers for validating pt_regs
-> + *		 received on a kprobe.
-> + *
-> + * Copyright 2017 Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
-> + *		  IBM Corporation
-> + *
-> + * This program is free software; you can redistribute it and/or
-> + * modify it under the terms of the GNU General Public License
-> + * as published by the Free Software Foundation; version 2
-> + * of the License.
-> + */
-> +
-> +#define pr_fmt(fmt) "Kprobe smoke test (regs): " fmt
-> +
-> +#include <asm/ptrace.h>
-> +#include <linux/kernel.h>
-> +#include <linux/kprobes.h>
-> +
-> +static struct pt_regs *r;
-> +
-> +void arch_kprobe_regs_set_ptregs(struct pt_regs *regs)
-> +{
-> +	r = regs;
-> +}
-> +
-> +static int validate_regs(struct kprobe *p, struct pt_regs *regs,
-> +					int kp_on_ftrace, int post_handler)
-> +{
-> +	int i, ret = 1;
-> +
-> +	if (!r) {
-> +		pr_err("pt_regs not setup!\n");
-> +		return 0;
-> +	}
-> +
-> +	if (regs->gpr[1] + STACK_FRAME_OVERHEAD != (unsigned long)r) {
-> +		/* We'll continue since this may just indicate an incorrect r1 */
-> +		pr_err("pt_regs pointer/r1 doesn't point where we expect!\n");
-> +		ret = 0;
-> +	}
-> +
-> +	for (i = 0; i < 32; i++) {
-> +		/* KPROBES_ON_FTRACE may have stomped r0 in the prologue */
-> +		if (r->gpr[i] != regs->gpr[i] && (!kp_on_ftrace || i != 0)) {
-> +			pr_err("gpr[%d] expected: 0x%lx, received: 0x%lx\n",
-> +						i, r->gpr[i], regs->gpr[i]);
-> +			ret = 0;
-> +		}
-> +	}
-> +
-> +	if (r->ctr != regs->ctr) {
-> +		pr_err("ctr expected: 0x%lx, received: 0x%lx\n",
-> +					r->ctr, regs->ctr);
-> +		ret = 0;
-> +	}
-> +
-> +	if (r->link != regs->link && !kp_on_ftrace) {
-> +		pr_err("link expected: 0x%lx, received: 0x%lx\n",
-> +					r->link, regs->link);
-> +		ret = 0;
-> +	}
-> +
-> +	/* KPROBES_ON_FTRACE *must* have clobbered link */
-> +	if (r->link == regs->link && kp_on_ftrace) {
-> +		pr_err("link register not clobbered for KPROBES_ON_FTRACE!\n");
-> +		ret = 0;
-> +	}
-> +
-> +	if (r->xer != regs->xer) {
-> +		pr_err("xer expected: 0x%lx, received: 0x%lx\n",
-> +					r->xer, regs->xer);
-> +		ret = 0;
-> +	}
-> +
-> +	if (r->ccr != regs->ccr) {
-> +		pr_err("ccr expected: 0x%lx, received: 0x%lx\n",
-> +					r->ccr, regs->ccr);
-> +		ret = 0;
-> +	}
-> +
-> +	if (!post_handler && regs->nip != (unsigned long)p->addr) {
-> +		pr_err("nip expected: 0x%lx, received: 0x%lx\n",
-> +					(unsigned long)p->addr, regs->nip);
-> +		ret = 0;
-> +	}
-> +
-> +	if (post_handler &&
-> +		regs->nip != (unsigned long)p->addr + sizeof(kprobe_opcode_t)) {
-> +		pr_err("post_handler: nip expected: 0x%lx, received: 0x%lx\n",
-> +				(unsigned long)p->addr + sizeof(kprobe_opcode_t),
-> +				regs->nip);
-> +		ret = 0;
-> +	}
-> +
-> +	return ret;
-> +}
-> +
-> +int arch_kprobe_regs_pre_handler(struct kprobe *p, struct pt_regs *regs)
-> +{
-> +	return validate_regs(p, regs, 0, 0);
-> +}
-> +
-> +int arch_kprobe_regs_post_handler(struct kprobe *p, struct pt_regs *regs,
-> +							unsigned long flags)
-> +{
-> +	return validate_regs(p, regs, 0, 1);
-> +}
-> +
-> +#ifdef CONFIG_KPROBES_ON_FTRACE
-> +int arch_kp_on_ftrace_pre_handler(struct kprobe *p, struct pt_regs *regs)
-> +{
-> +	return validate_regs(p, regs, 1, 0);
-> +}
-> +#endif
-> diff --git a/include/linux/kprobes.h b/include/linux/kprobes.h
-> index 541df0b5b815..adfbb5b27acd 100644
-> --- a/include/linux/kprobes.h
-> +++ b/include/linux/kprobes.h
-> @@ -253,6 +253,17 @@ static inline void kretprobe_assert(struct kretprobe_instance *ri,
->  
->  #ifdef CONFIG_KPROBES_SANITY_TEST
->  extern int init_test_probes(void);
-> +#ifdef HAVE_KPROBES_REGS_SANITY_TEST
-> +extern void arch_kprobe_regs_function(void);
-> +extern void arch_kprobe_regs_probepoint(void);
-> +extern int arch_kprobe_regs_pre_handler(struct kprobe *p, struct pt_regs *regs);
-> +extern int arch_kprobe_regs_post_handler(struct kprobe *p, struct pt_regs *regs,
-> +						unsigned long flags);
-> +#ifdef CONFIG_KPROBES_ON_FTRACE
-> +extern void kprobe_regs_kp_on_ftrace_target(void);
-> +extern int arch_kp_on_ftrace_pre_handler(struct kprobe *p, struct pt_regs *regs);
-> +#endif
-> +#endif
->  #else
->  static inline int init_test_probes(void)
->  {
-> diff --git a/kernel/test_kprobes.c b/kernel/test_kprobes.c
-> index 0dbab6d1acb4..92011726cc69 100644
-> --- a/kernel/test_kprobes.c
-> +++ b/kernel/test_kprobes.c
-> @@ -19,6 +19,7 @@
->  #include <linux/kernel.h>
->  #include <linux/kprobes.h>
->  #include <linux/random.h>
-> +#include <linux/workqueue.h>
->  
->  #define div_factor 3
->  
-> @@ -334,6 +335,166 @@ static int test_kretprobes(void)
->  }
->  #endif /* CONFIG_KRETPROBES */
->  
-> +#ifdef HAVE_KPROBES_REGS_SANITY_TEST
-> +static int kprobe_regs_pre_handler(struct kprobe *p, struct pt_regs *regs)
-> +{
-> +	/* architectural helper returns 0 if validation fails */
-> +	preh_val = arch_kprobe_regs_pre_handler(p, regs);
-> +	return 0;
-> +}
-> +
-> +static void kprobe_regs_post_handler(struct kprobe *p, struct pt_regs *regs,
-> +						unsigned long flags)
-> +{
-> +	posth_val = arch_kprobe_regs_post_handler(p, regs, flags);
-> +}
-> +
-> +static struct kprobe kpr = {
-> +	.symbol_name = "arch_kprobe_regs_probepoint",
-> +	.pre_handler = kprobe_regs_pre_handler,
-> +	.post_handler = kprobe_regs_post_handler,
-> +};
-> +
-> +static int test_kprobe_regs(void)
-> +{
-> +	int ret;
-> +	kprobe_opcode_t *addr;
-> +
-> +	preh_val = 0;
-> +	posth_val = 0;
-> +
-> +	ret = register_kprobe(&kpr);
-> +	if (ret < 0) {
-> +		pr_err("register_kprobe returned %d\n", ret);
-> +		return ret;
-> +	}
-> +
-> +	/* Let's see if this probe was optimized */
-> +	addr = kprobe_lookup_name(kpr.symbol_name, 0);
-> +	if (addr && *addr != BREAKPOINT_INSTRUCTION) {
-> +		pr_err("kprobe with post_handler optimized\n");
-> +		unregister_kprobe(&kpr);
-> +		return -1;
-> +	}
-> +
-> +	arch_kprobe_regs_function();
-> +	unregister_kprobe(&kpr);
-> +
-> +	if (preh_val == 0) {
-> +		pr_err("kprobe pre_handler regs validation failed\n");
-> +		handler_errors++;
-> +	}
-> +
-> +	if (posth_val == 0) {
-> +		pr_err("kprobe post_handler not called\n");
-> +		handler_errors++;
-> +	}
-> +
-> +	return 0;
-> +}
-> +
-> +#ifdef CONFIG_KPROBES_ON_FTRACE
-> +void kprobe_regs_kp_on_ftrace_target(void)
-> +{
-> +	posth_val = preh_val + div_factor;
-> +}
-> +
-> +static int kp_on_ftrace_pre_handler(struct kprobe *p, struct pt_regs *regs)
-> +{
-> +	/* architectural helper returns 0 if validation fails */
-> +	preh_val = arch_kp_on_ftrace_pre_handler(p, regs);
-> +	return 0;
-> +}
-> +
-> +static struct kprobe kprf = {
-> +	.symbol_name = "kprobe_regs_kp_on_ftrace_target",
-> +	.pre_handler = kp_on_ftrace_pre_handler,
-> +};
-> +
-> +static int test_kp_on_ftrace_regs(void)
-> +{
-> +	int ret;
-> +
-> +	preh_val = 0;
-> +
-> +	ret = register_kprobe(&kprf);
-> +	if (ret < 0) {
-> +		pr_err("register_kprobe returned %d\n", ret);
-> +		return ret;
-> +	}
-> +
-> +	arch_kprobe_regs_function();
-> +	unregister_kprobe(&kprf);
-> +
-> +	if (preh_val == 0) {
-> +		pr_err("kp_on_ftrace pre_handler regs validation failed\n");
-> +		handler_errors++;
-> +	}
-> +
-> +	return 0;
-> +}
-> +#endif
-> +
-> +#ifdef CONFIG_OPTPROBES
-> +static void test_optprobe_regs(struct work_struct *work);
-> +static DECLARE_DELAYED_WORK(test_optprobe_regs_work, test_optprobe_regs);
-> +int kprobe_registered;
-> +
-> +static struct kprobe kpor = {
-> +	.symbol_name = "arch_kprobe_regs_probepoint",
-> +	.pre_handler = kprobe_regs_pre_handler,
-> +};
-> +
-> +static void test_optprobe_regs_setup(void)
-> +{
-> +	int ret;
-> +
-> +	ret = register_kprobe(&kpor);
-> +	if (ret < 0) {
-> +		pr_err("register_kprobe returned %d\n", ret);
-> +		return;
-> +	}
-> +
-> +	kprobe_registered = 1;
-> +}
-> +
-> +static void test_optprobe_regs(struct work_struct *work)
-> +{
-> +	kprobe_opcode_t *addr;
-> +
-> +	if (!kprobe_registered) {
-> +		errors++;
-> +		goto summary;
-> +	}
-> +
-> +	/* Let's see if this probe was optimized */
-> +	addr = kprobe_lookup_name(kpor.symbol_name, 0);
-> +	if (addr && *addr == BREAKPOINT_INSTRUCTION) {
-> +		pr_info("kprobe not optimized yet... skipping optprobe test\n");
-
-Yes, this may take a while... you may need to wait for optimizer,
-like wait_for_kprobe_optimizer().
-
-Thank you,
-
-> +		unregister_kprobe(&kpor);
-> +		goto summary;
-> +	}
-> +
-> +	preh_val = 0;
-> +	arch_kprobe_regs_function();
-> +	unregister_kprobe(&kpor);
-> +
-> +	if (preh_val == 0) {
-> +		pr_err("optprobe pre_handler regs validation failed\n");
-> +		handler_errors++;
-> +	}
-> +
-> +summary:
-> +	if (errors)
-> +		pr_err("BUG: %d out of %d tests failed\n", errors, num_tests);
-> +	else if (handler_errors)
-> +		pr_err("BUG: %d error(s) running handlers\n", handler_errors);
-> +	else
-> +		pr_info("passed successfully\n");
-> +}
-> +#endif
-> +#endif
-> +
->  int init_test_probes(void)
->  {
->  	int ret;
-> @@ -378,12 +539,34 @@ int init_test_probes(void)
->  		errors++;
->  #endif /* CONFIG_KRETPROBES */
->  
-> +#ifdef HAVE_KPROBES_REGS_SANITY_TEST
-> +	num_tests++;
-> +	ret = test_kprobe_regs();
-> +	if (ret < 0)
-> +		errors++;
-> +
-> +#ifdef CONFIG_KPROBES_ON_FTRACE
-> +	num_tests++;
-> +	ret = test_kp_on_ftrace_regs();
-> +	if (ret < 0)
-> +		errors++;
-> +#endif
-> +
-> +#ifdef CONFIG_OPTPROBES
-> +	num_tests++;
-> +	test_optprobe_regs_setup();
-> +	schedule_delayed_work(&test_optprobe_regs_work, 10);
-> +#endif
-> +#endif
-> +
-> +#if !defined(HAVE_KPROBES_REGS_SANITY_TEST) || !defined(CONFIG_OPTPROBES)
->  	if (errors)
->  		pr_err("BUG: %d out of %d tests failed\n", errors, num_tests);
->  	else if (handler_errors)
->  		pr_err("BUG: %d error(s) running handlers\n", handler_errors);
->  	else
->  		pr_info("passed successfully\n");
-> +#endif
->  
->  	return 0;
->  }
-> -- 
-> 2.12.2
-> 
-
-
+diff --git a/Documentation/devicetree/bindings/arm/cci.txt b/Documentation/devicetree/bindings/arm/cci.txt
+index 0f2153e8fa7e..cc7621b204f4 100644
+--- a/Documentation/devicetree/bindings/arm/cci.txt
++++ b/Documentation/devicetree/bindings/arm/cci.txt
+@@ -11,9 +11,9 @@ clusters, through memory mapped interface, with a global control register
+ space and multiple sets of interface control registers, one per slave
+ interface.
+ 
+-Bindings for the CCI node follow the ePAPR standard, available from:
++Bindings for the CCI node follow the Devicetree Specification, available from:
+ 
+-www.power.org/documentation/epapr-version-1-1/
++https://www.devicetree.org/specifications/
+ 
+ with the addition of the bindings described in this document which are
+ specific to ARM.
+@@ -50,10 +50,10 @@ specific to ARM.
+ 			    as a tuple of cells, containing child address,
+ 			    parent address and the size of the region in the
+ 			    child address space.
+-		Definition: A standard property. Follow rules in the ePAPR for
+-			    hierarchical bus addressing. CCI interfaces
+-			    addresses refer to the parent node addressing
+-			    scheme to declare their register bases.
++		Definition: A standard property. Follow rules in the Devicetree
++			    Specification for hierarchical bus addressing. CCI
++			    interfaces addresses refer to the parent node
++			    addressing scheme to declare their register bases.
+ 
+ 	CCI interconnect node can define the following child nodes:
+ 
+diff --git a/Documentation/devicetree/bindings/arm/cpus.txt b/Documentation/devicetree/bindings/arm/cpus.txt
+index 1030f5f50207..283c520a2224 100644
+--- a/Documentation/devicetree/bindings/arm/cpus.txt
++++ b/Documentation/devicetree/bindings/arm/cpus.txt
+@@ -6,9 +6,9 @@ The device tree allows to describe the layout of CPUs in a system through
+ the "cpus" node, which in turn contains a number of subnodes (ie "cpu")
+ defining properties for every cpu.
+ 
+-Bindings for CPU nodes follow the ePAPR v1.1 standard, available from:
++Bindings for CPU nodes follow the Devicetree Specification, available from:
+ 
+-https://www.power.org/documentation/epapr-version-1-1/
++https://www.devicetree.org/specifications/
+ 
+ with updates for 32-bit and 64-bit ARM systems provided in this document.
+ 
+@@ -16,8 +16,8 @@ with updates for 32-bit and 64-bit ARM systems provided in this document.
+ Convention used in this document
+ ================================
+ 
+-This document follows the conventions described in the ePAPR v1.1, with
+-the addition:
++This document follows the conventions described in the Devicetree
++Specification, with the addition:
+ 
+ - square brackets define bitfields, eg reg[7:0] value of the bitfield in
+   the reg property contained in bits 7 down to 0
+@@ -26,8 +26,9 @@ the addition:
+ cpus and cpu node bindings definition
+ =====================================
+ 
+-The ARM architecture, in accordance with the ePAPR, requires the cpus and cpu
+-nodes to be present and contain the properties described below.
++The ARM architecture, in accordance with the Devicetree Specification,
++requires the cpus and cpu nodes to be present and contain the properties
++described below.
+ 
+ - cpus node
+ 
+diff --git a/Documentation/devicetree/bindings/arm/idle-states.txt b/Documentation/devicetree/bindings/arm/idle-states.txt
+index b8e41c148a3c..7a591333f2b1 100644
+--- a/Documentation/devicetree/bindings/arm/idle-states.txt
++++ b/Documentation/devicetree/bindings/arm/idle-states.txt
+@@ -695,5 +695,5 @@ cpus {
+ [4] ARM Architecture Reference Manuals
+     http://infocenter.arm.com/help/index.jsp
+ 
+-[5] ePAPR standard
+-    https://www.power.org/documentation/epapr-version-1-1/
++[5] Devicetree Specification
++    https://www.devicetree.org/specifications/
+diff --git a/Documentation/devicetree/bindings/arm/l2c2x0.txt b/Documentation/devicetree/bindings/arm/l2c2x0.txt
+index d9650c1788f4..fbe6cb21f4cf 100644
+--- a/Documentation/devicetree/bindings/arm/l2c2x0.txt
++++ b/Documentation/devicetree/bindings/arm/l2c2x0.txt
+@@ -4,8 +4,8 @@ ARM cores often have a separate L2C210/L2C220/L2C310 (also known as PL210/PL220/
+ PL310 and variants) based level 2 cache controller. All these various implementations
+ of the L2 cache controller have compatible programming models (Note 1).
+ Some of the properties that are just prefixed "cache-*" are taken from section
+-3.7.3 of the ePAPR v1.1 specification which can be found at:
+-https://www.power.org/wp-content/uploads/2012/06/Power_ePAPR_APPROVED_v1.1.pdf
++3.7.3 of the Devicetree Specification which can be found at:
++https://www.devicetree.org/specifications/
+ 
+ The ARM L2 cache representation in the device tree should be done as follows:
+ 
+diff --git a/Documentation/devicetree/bindings/arm/topology.txt b/Documentation/devicetree/bindings/arm/topology.txt
+index 1061faf5f602..de9eb0486630 100644
+--- a/Documentation/devicetree/bindings/arm/topology.txt
++++ b/Documentation/devicetree/bindings/arm/topology.txt
+@@ -29,9 +29,9 @@ corresponding to the system hierarchy; syntactically they are defined as device
+ tree nodes.
+ 
+ The remainder of this document provides the topology bindings for ARM, based
+-on the ePAPR standard, available from:
++on the Devicetree Specification, available from:
+ 
+-http://www.power.org/documentation/epapr-version-1-1/
++https://www.devicetree.org/specifications/
+ 
+ If not stated otherwise, whenever a reference to a cpu node phandle is made its
+ value must point to a cpu node compliant with the cpu node bindings as
+diff --git a/Documentation/devicetree/bindings/bus/simple-pm-bus.txt b/Documentation/devicetree/bindings/bus/simple-pm-bus.txt
+index d032237512c2..6f15037131ed 100644
+--- a/Documentation/devicetree/bindings/bus/simple-pm-bus.txt
++++ b/Documentation/devicetree/bindings/bus/simple-pm-bus.txt
+@@ -10,7 +10,7 @@ enabled for child devices connected to the bus (either on-SoC or externally)
+ to function.
+ 
+ While "simple-pm-bus" follows the "simple-bus" set of properties, as specified
+-in ePAPR, it is not an extension of "simple-bus".
++in the Devicetree Specification, it is not an extension of "simple-bus".
+ 
+ 
+ Required properties:
+diff --git a/Documentation/devicetree/bindings/chosen.txt b/Documentation/devicetree/bindings/chosen.txt
+index b5e39af4ddc0..dee3f5d9df26 100644
+--- a/Documentation/devicetree/bindings/chosen.txt
++++ b/Documentation/devicetree/bindings/chosen.txt
+@@ -10,7 +10,8 @@ stdout-path property
+ --------------------
+ 
+ Device trees may specify the device to be used for boot console output
+-with a stdout-path property under /chosen, as described in ePAPR, e.g.
++with a stdout-path property under /chosen, as described in the Devicetree
++Specification, e.g.
+ 
+ / {
+ 	chosen {
+diff --git a/Documentation/devicetree/bindings/common-properties.txt b/Documentation/devicetree/bindings/common-properties.txt
+index 3193979b1d05..697714f8d75c 100644
+--- a/Documentation/devicetree/bindings/common-properties.txt
++++ b/Documentation/devicetree/bindings/common-properties.txt
+@@ -1,6 +1,6 @@
+ Common properties
+ 
+-The ePAPR specification does not define any properties related to hardware
++The Devicetree Specification does not define any properties related to hardware
+ byteswapping, but endianness issues show up frequently in porting Linux to
+ different machine types.  This document attempts to provide a consistent
+ way of handling byteswapping across drivers.
+diff --git a/Documentation/devicetree/bindings/crypto/fsl-sec4.txt b/Documentation/devicetree/bindings/crypto/fsl-sec4.txt
+index 10a425f451fc..7aef0eae58d4 100644
+--- a/Documentation/devicetree/bindings/crypto/fsl-sec4.txt
++++ b/Documentation/devicetree/bindings/crypto/fsl-sec4.txt
+@@ -118,8 +118,8 @@ PROPERTIES
+       Definition: A list of clock name strings in the same order as the
+           clocks property.
+ 
+-   Note: All other standard properties (see the ePAPR) are allowed
+-   but are optional.
++   Note: All other standard properties (see the Devicetree Specification)
++   are allowed but are optional.
+ 
+ 
+ EXAMPLE
+diff --git a/Documentation/devicetree/bindings/crypto/fsl-sec6.txt b/Documentation/devicetree/bindings/crypto/fsl-sec6.txt
+index baf8a3c1b469..73b0eb950bb3 100644
+--- a/Documentation/devicetree/bindings/crypto/fsl-sec6.txt
++++ b/Documentation/devicetree/bindings/crypto/fsl-sec6.txt
+@@ -55,8 +55,8 @@ PROPERTIES
+            triplet that includes the child address, parent address, &
+            length.
+ 
+-   Note: All other standard properties (see the ePAPR) are allowed
+-   but are optional.
++   Note: All other standard properties (see the Devicetree Specification)
++   are allowed but are optional.
+ 
+ EXAMPLE
+ 	crypto@a0000 {
+diff --git a/Documentation/devicetree/bindings/interrupt-controller/open-pic.txt b/Documentation/devicetree/bindings/interrupt-controller/open-pic.txt
+index 909a902dff85..ccbbfdc53c72 100644
+--- a/Documentation/devicetree/bindings/interrupt-controller/open-pic.txt
++++ b/Documentation/devicetree/bindings/interrupt-controller/open-pic.txt
+@@ -92,7 +92,6 @@ Example 2:
+ 
+ * References
+ 
+-[1] Power.org (TM) Standard for Embedded Power Architecture (TM) Platform
+-    Requirements (ePAPR), Version 1.0, July 2008.
+-    (http://www.power.org/resources/downloads/Power_ePAPR_APPROVED_v1.0.pdf)
++[1] Devicetree Specification
++    (https://www.devicetree.org/specifications/)
+ 
+diff --git a/Documentation/devicetree/bindings/net/ethernet.txt b/Documentation/devicetree/bindings/net/ethernet.txt
+index 3a6916909d90..08dd263beeb9 100644
+--- a/Documentation/devicetree/bindings/net/ethernet.txt
++++ b/Documentation/devicetree/bindings/net/ethernet.txt
+@@ -8,7 +8,8 @@ The following properties are common to the Ethernet controllers:
+   property;
+ - max-speed: number, specifies maximum speed in Mbit/s supported by the device;
+ - max-frame-size: number, maximum transfer unit (IEEE defined MTU), rather than
+-  the maximum frame size (there's contradiction in ePAPR).
++  the maximum frame size (there's contradiction in the Devicetree
++  Specification).
+ - phy-mode: string, operation mode of the PHY interface. This is now a de-facto
+   standard property; supported values are:
+   * "mii"
+@@ -32,9 +33,11 @@ The following properties are common to the Ethernet controllers:
+   * "2000base-x",
+   * "2500base-x",
+   * "rxaui"
+-- phy-connection-type: the same as "phy-mode" property but described in ePAPR;
++- phy-connection-type: the same as "phy-mode" property but described in the
++  Devicetree Specification;
+ - phy-handle: phandle, specifies a reference to a node representing a PHY
+-  device; this property is described in ePAPR and so preferred;
++  device; this property is described in the Devicetree Specification and so
++  preferred;
+ - phy: the same as "phy-handle" property, not recommended for new bindings.
+ - phy-device: the same as "phy-handle" property, not recommended for new
+   bindings.
+diff --git a/Documentation/devicetree/bindings/powerpc/fsl/cpus.txt b/Documentation/devicetree/bindings/powerpc/fsl/cpus.txt
+index f8cd2397aa04..d63ab1dec16d 100644
+--- a/Documentation/devicetree/bindings/powerpc/fsl/cpus.txt
++++ b/Documentation/devicetree/bindings/powerpc/fsl/cpus.txt
+@@ -3,10 +3,10 @@ Power Architecture CPU Binding
+ Copyright 2013 Freescale Semiconductor Inc.
+ 
+ Power Architecture CPUs in Freescale SOCs are represented in device trees as
+-per the definition in ePAPR.
++per the definition in the Devicetree Specification.
+ 
+-In addition to the ePAPR definitions, the properties defined below may be
+-present on CPU nodes.
++In addition to the the Devicetree Specification definitions, the properties
++defined below may be present on CPU nodes.
+ 
+ PROPERTIES
+ 
+diff --git a/Documentation/devicetree/bindings/powerpc/fsl/l2cache.txt b/Documentation/devicetree/bindings/powerpc/fsl/l2cache.txt
+index dc9bb3182525..8a70696395a7 100644
+--- a/Documentation/devicetree/bindings/powerpc/fsl/l2cache.txt
++++ b/Documentation/devicetree/bindings/powerpc/fsl/l2cache.txt
+@@ -1,7 +1,7 @@
+ Freescale L2 Cache Controller
+ 
+ L2 cache is present in Freescale's QorIQ and QorIQ Qonverge platforms.
+-The cache bindings explained below are ePAPR compliant
++The cache bindings explained below are Devicetree Specification compliant
+ 
+ Required Properties:
+ 
+diff --git a/Documentation/devicetree/bindings/powerpc/fsl/srio-rmu.txt b/Documentation/devicetree/bindings/powerpc/fsl/srio-rmu.txt
+index b9a8a2bcfae7..0496ada4bba4 100644
+--- a/Documentation/devicetree/bindings/powerpc/fsl/srio-rmu.txt
++++ b/Documentation/devicetree/bindings/powerpc/fsl/srio-rmu.txt
+@@ -124,8 +124,8 @@ Port-Write Unit:
+ 		A single IRQ that handles port-write conditions is
+ 		specified by this property.  (Typically shared with error).
+ 
+-   Note: All other standard properties (see the ePAPR) are allowed
+-   but are optional.
++   Note: All other standard properties (see the Devicetree Specification)
++   are allowed but are optional.
+ 
+ Example:
+ 	rmu: rmu@d3000 {
+diff --git a/Documentation/devicetree/bindings/powerpc/fsl/srio.txt b/Documentation/devicetree/bindings/powerpc/fsl/srio.txt
+index 07abf0f2f440..86ee6ea73754 100644
+--- a/Documentation/devicetree/bindings/powerpc/fsl/srio.txt
++++ b/Documentation/devicetree/bindings/powerpc/fsl/srio.txt
+@@ -72,7 +72,8 @@ the following properties:
+ 		represents the LIODN associated with maintenance transactions
+ 		for the port.
+ 
+-Note: All other standard properties (see ePAPR) are allowed but are optional.
++Note: All other standard properties (see the Devicetree Specification)
++are allowed but are optional.
+ 
+ Example:
+ 
+diff --git a/Documentation/devicetree/booting-without-of.txt b/Documentation/devicetree/booting-without-of.txt
+index 280d283304bb..fb740445199f 100644
+--- a/Documentation/devicetree/booting-without-of.txt
++++ b/Documentation/devicetree/booting-without-of.txt
+@@ -1413,7 +1413,7 @@ Optional property:
+ 	from DMA operations originating from the bus. It provides a means of
+ 	defining a mapping or translation between the physical address space of
+ 	the bus and the physical address space of the parent of the bus.
+-	(for more information see ePAPR specification)
++	(for more information see the Devicetree Specification)
+ 
+ * DMA Bus child
+ Optional property:
+diff --git a/Documentation/devicetree/usage-model.txt b/Documentation/devicetree/usage-model.txt
+index 2b6b3d3f0388..33a8aaac02a8 100644
+--- a/Documentation/devicetree/usage-model.txt
++++ b/Documentation/devicetree/usage-model.txt
+@@ -387,7 +387,7 @@ static void __init harmony_init_machine(void)
+ 	of_platform_populate(NULL, of_default_bus_match_table, NULL, NULL);
+ }
+ 
+-"simple-bus" is defined in the ePAPR 1.0 specification as a property
++"simple-bus" is defined in the Devicetree Specification as a property
+ meaning a simple memory mapped bus, so the of_platform_populate() code
+ could be written to just assume simple-bus compatible nodes will
+ always be traversed.  However, we pass it in as an argument so that
+diff --git a/Documentation/xtensa/mmu.txt b/Documentation/xtensa/mmu.txt
+index 222a2c6748e6..5de8715d5bec 100644
+--- a/Documentation/xtensa/mmu.txt
++++ b/Documentation/xtensa/mmu.txt
+@@ -41,9 +41,9 @@ The scheme below assumes that the kernel is loaded below 0x40000000.
+  00..1F -> 00  -> 00  -> 00
+ 
+ The default location of IO peripherals is above 0xf0000000. This may be changed
+-using a "ranges" property in a device tree simple-bus node. See ePAPR 1.1, §6.5
+-for details on the syntax and semantic of simple-bus nodes. The following
+-limitations apply:
++using a "ranges" property in a device tree simple-bus node. See the Devicetree
++Specification, section 4.5 for details on the syntax and semantics of
++simple-bus nodes. The following limitations apply:
+ 
+ 1. Only top level simple-bus nodes are considered
+ 
 -- 
-Masami Hiramatsu <mhiramat@kernel.org>
+Frank Rowand <frank.rowand@sony.com>
