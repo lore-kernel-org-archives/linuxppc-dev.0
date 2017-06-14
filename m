@@ -1,26 +1,18 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <ruscur@russell.cc>
+Received: from out4-smtp.messagingengine.com (out4-smtp.messagingengine.com
+ [66.111.4.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wnXLX05KgzDq5W
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jun 2017 13:34:28 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- svaidy@linux.vnet.ibm.com, Nicholas Piggin <npiggin@gmail.com>
-Cc: "Gautham R . Shenoy" <ego@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org,
- "Shreyas B . Prabhu" <shreyas@linux.vnet.ibm.com>
-Subject: Re: [PATCH 13/14] powerpc/64: runlatch CTRL[RUN] set optimisation
-In-Reply-To: <1497361558.2897.12.camel@kernel.crashing.org>
-References: <20170611235835.7400-1-npiggin@gmail.com>
- <20170611235835.7400-14-npiggin@gmail.com>
- <20170612171138.GB4340@drishya.in.ibm.com>
- <87zidcgq50.fsf@concordia.ellerman.id.au>
- <1497361558.2897.12.camel@kernel.crashing.org>
-Date: Wed, 14 Jun 2017 13:34:27 +1000
-Message-ID: <87fuf344zg.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wnYMJ6Xb8zDqL9
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jun 2017 14:20:12 +1000 (AEST)
+From: Russell Currey <ruscur@russell.cc>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Russell Currey <ruscur@russell.cc>
+Subject: [PATCH v2 2/3] powerpc/powernv/pci: Dynamically allocate PHB diag data
+Date: Wed, 14 Jun 2017 14:19:59 +1000
+Message-Id: <20170614042000.1258-2-ruscur@russell.cc>
+In-Reply-To: <20170614042000.1258-1-ruscur@russell.cc>
+References: <20170614042000.1258-1-ruscur@russell.cc>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,27 +22,179 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+Diagnostic data for PHBs currently works by allocated a fixed-sized buffer.
+This is simple, but either wastes memory (though only a few kilobytes) or
+in the case of PHB4 isn't enough to fit the whole data blob.
 
-> On Tue, 2017-06-13 at 20:04 +1000, Michael Ellerman wrote:
->> > Good idea.=C2=A0 Writing to CTRL register can change only the RUN fiel=
-d.
->> > Was this any different in older generations?
->>=20
->> No AFAICS back to 2.02.
->>=20
->> > Anton and Ben kept the mfspr/mtspr part in earlier updates to this
->> > routine.
->>=20
->> Doing the read/modify write is forward compatible vs a new writable
->> field, whereas writing the whole register with a known value is not.
->
-> At this stage I wouldn't worry too much about it. What we can do is
-> write a pre-cooked value (from reading it earlier once at boot) if we
-> are paranoid or just do what Nick does and put the onus on future
-> designs that might want to re-use it for other things to add a mode
-> bits to configure the new feature in.
+For machines that don't describe the diagnostic data size in the device
+tree, use the hardcoded buffer size as before.  For those that do, only
+allocate exactly what's needed.
 
-Fine by me.
+In the special case of P7IOC (which has two types of diag data), the larger
+should be specified in the device tree.
 
-cheers
+Signed-off-by: Russell Currey <ruscur@russell.cc>
+---
+No changes from v1
+
+ arch/powerpc/platforms/powernv/eeh-powernv.c | 16 +++++++++++-----
+ arch/powerpc/platforms/powernv/pci-ioda.c    | 15 ++++++++++++---
+ arch/powerpc/platforms/powernv/pci.c         |  6 +++---
+ arch/powerpc/platforms/powernv/pci.h         | 10 +++-------
+ 4 files changed, 29 insertions(+), 18 deletions(-)
+
+diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
+index d12ea7b9fd47..3f48f6df1cf3 100644
+--- a/arch/powerpc/platforms/powernv/eeh-powernv.c
++++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
+@@ -48,6 +48,7 @@ static int pnv_eeh_init(void)
+ {
+ 	struct pci_controller *hose;
+ 	struct pnv_phb *phb;
++	int max_diag_size = PNV_PCI_DIAG_BUF_SIZE;
+ 
+ 	if (!firmware_has_feature(FW_FEATURE_OPAL)) {
+ 		pr_warn("%s: OPAL is required !\n",
+@@ -69,6 +70,9 @@ static int pnv_eeh_init(void)
+ 		if (phb->model == PNV_PHB_MODEL_P7IOC)
+ 			eeh_add_flag(EEH_ENABLE_IO_FOR_LOG);
+ 
++		if (phb->diag_data_size > max_diag_size)
++			max_diag_size = phb->diag_data_size;
++
+ 		/*
+ 		 * PE#0 should be regarded as valid by EEH core
+ 		 * if it's not the reserved one. Currently, we
+@@ -82,6 +86,8 @@ static int pnv_eeh_init(void)
+ 		break;
+ 	}
+ 
++	eeh_set_pe_aux_size(max_diag_size);
++
+ 	return 0;
+ }
+ 
+@@ -540,7 +546,7 @@ static void pnv_eeh_get_phb_diag(struct eeh_pe *pe)
+ 	s64 rc;
+ 
+ 	rc = opal_pci_get_phb_diag_data2(phb->opal_id, pe->data,
+-					 PNV_PCI_DIAG_BUF_SIZE);
++					 phb->diag_data_size);
+ 	if (rc != OPAL_SUCCESS)
+ 		pr_warn("%s: Failure %lld getting PHB#%x diag-data\n",
+ 			__func__, rc, pe->phb->global_number);
+@@ -1314,7 +1320,8 @@ static void pnv_eeh_dump_hub_diag_common(struct OpalIoP7IOCErrorData *data)
+ static void pnv_eeh_get_and_dump_hub_diag(struct pci_controller *hose)
+ {
+ 	struct pnv_phb *phb = hose->private_data;
+-	struct OpalIoP7IOCErrorData *data = &phb->diag.hub_diag;
++	struct OpalIoP7IOCErrorData *data =
++		(struct OpalIoP7IOCErrorData*)phb->diag_data;
+ 	long rc;
+ 
+ 	rc = opal_pci_get_hub_diag_data(phb->hub_id, data, sizeof(*data));
+@@ -1549,10 +1556,10 @@ static int pnv_eeh_next_error(struct eeh_pe **pe)
+ 
+ 				/* Dump PHB diag-data */
+ 				rc = opal_pci_get_phb_diag_data2(phb->opal_id,
+-					phb->diag.blob, PNV_PCI_DIAG_BUF_SIZE);
++					phb->diag_data, phb->diag_data_size);
+ 				if (rc == OPAL_SUCCESS)
+ 					pnv_pci_dump_phb_diag_data(hose,
+-							phb->diag.blob);
++							phb->diag_data);
+ 
+ 				/* Try best to clear it */
+ 				opal_pci_eeh_freeze_clear(phb->opal_id,
+@@ -1795,7 +1802,6 @@ static int __init eeh_powernv_init(void)
+ {
+ 	int ret = -EINVAL;
+ 
+-	eeh_set_pe_aux_size(PNV_PCI_DIAG_BUF_SIZE);
+ 	ret = eeh_ops_register(&pnv_eeh_ops);
+ 	if (!ret)
+ 		pr_info("EEH: PowerNV platform initialized\n");
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index 283caf1070c9..96d0156f48db 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -3123,13 +3123,13 @@ static int pnv_pci_diag_data_set(void *data, u64 val)
+ 	phb = hose->private_data;
+ 
+ 	/* Retrieve the diag data from firmware */
+-	ret = opal_pci_get_phb_diag_data2(phb->opal_id, phb->diag.blob,
+-					  PNV_PCI_DIAG_BUF_SIZE);
++	ret = opal_pci_get_phb_diag_data2(phb->opal_id, phb->diag_data,
++					  phb->diag_data_size);
+ 	if (ret != OPAL_SUCCESS)
+ 		return -EIO;
+ 
+ 	/* Print the diag data to the kernel log */
+-	pnv_pci_dump_phb_diag_data(phb->hose, phb->diag.blob);
++	pnv_pci_dump_phb_diag_data(phb->hose, phb->diag_data);
+ 	return 0;
+ }
+ 
+@@ -3725,6 +3725,15 @@ static void __init pnv_pci_init_ioda_phb(struct device_node *np,
+ 	else
+ 		phb->model = PNV_PHB_MODEL_UNKNOWN;
+ 
++	/* Initialize diagnostic data buffer */
++	prop32 = of_get_property(np, "ibm,phb-diag-data-size", NULL);
++	if (prop32)
++		phb->diag_data_size = be32_to_cpup(prop32);
++	else
++		phb->diag_data_size = PNV_PCI_DIAG_BUF_SIZE;
++
++	phb->diag_data = memblock_virt_alloc(phb->diag_data_size, 0);
++
+ 	/* Parse 32-bit and IO ranges (if any) */
+ 	pci_process_bridge_OF_ranges(hose, np, !hose->global_number);
+ 
+diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
+index 40071ad0bc42..209ad47a3383 100644
+--- a/arch/powerpc/platforms/powernv/pci.c
++++ b/arch/powerpc/platforms/powernv/pci.c
+@@ -456,8 +456,8 @@ static void pnv_pci_handle_eeh_config(struct pnv_phb *phb, u32 pe_no)
+ 	spin_lock_irqsave(&phb->lock, flags);
+ 
+ 	/* Fetch PHB diag-data */
+-	rc = opal_pci_get_phb_diag_data2(phb->opal_id, phb->diag.blob,
+-					 PNV_PCI_DIAG_BUF_SIZE);
++	rc = opal_pci_get_phb_diag_data2(phb->opal_id, phb->diag_data,
++					 phb->diag_data_size);
+ 	has_diag = (rc == OPAL_SUCCESS);
+ 
+ 	/* If PHB supports compound PE, to handle it */
+@@ -485,7 +485,7 @@ static void pnv_pci_handle_eeh_config(struct pnv_phb *phb, u32 pe_no)
+ 	 * with the normal errors generated when probing empty slots
+ 	 */
+ 	if (has_diag && ret)
+-		pnv_pci_dump_phb_diag_data(phb->hose, phb->diag.blob);
++		pnv_pci_dump_phb_diag_data(phb->hose, phb->diag_data);
+ 
+ 	spin_unlock_irqrestore(&phb->lock, flags);
+ }
+diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
+index 6abc77dd9261..f16bc403ec03 100644
+--- a/arch/powerpc/platforms/powernv/pci.h
++++ b/arch/powerpc/platforms/powernv/pci.h
+@@ -172,13 +172,9 @@ struct pnv_phb {
+ 		unsigned int		pe_rmap[0x10000];
+ 	} ioda;
+ 
+-	/* PHB and hub status structure */
+-	union {
+-		unsigned char			blob[PNV_PCI_DIAG_BUF_SIZE];
+-		struct OpalIoP7IOCPhbErrorData	p7ioc;
+-		struct OpalIoPhb3ErrorData	phb3;
+-		struct OpalIoP7IOCErrorData 	hub_diag;
+-	} diag;
++	/* PHB and hub diagnostics */
++	unsigned int		diag_data_size;
++	u8			*diag_data;
+ 
+ 	/* Nvlink2 data */
+ 	struct npu {
+-- 
+2.13.1
