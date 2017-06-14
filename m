@@ -1,35 +1,43 @@
-Return-Path: <fbarrat@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <bauerman@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wntq340nSzDqKy
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Jun 2017 03:26:55 +1000 (AEST)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v5EHNdQj121659
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jun 2017 13:26:52 -0400
-Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2b36pjs2n2-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wp1S36C5gzDqL3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Jun 2017 08:25:55 +1000 (AEST)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v5EMNftW122238
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jun 2017 18:25:53 -0400
+Received: from e24smtp05.br.ibm.com (e24smtp05.br.ibm.com [32.104.18.26])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2b36ms4v2j-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jun 2017 13:26:52 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jun 2017 18:25:53 -0400
 Received: from localhost
- by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e24smtp05.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
- Wed, 14 Jun 2017 18:26:50 +0100
-Subject: Re: [PATCH V3] cxl: Fixes for Coherent Accelerator Interface
- Architecture 2.0
-To: Christophe Lombard <clombard@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, vaibhav@linux.vnet.ibm.com,
- andrew.donnellan@au1.ibm.com
-References: <1497368465-13104-1-git-send-email-clombard@linux.vnet.ibm.com>
-From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-Date: Wed, 14 Jun 2017 19:26:47 +0200
+ for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.vnet.ibm.com>;
+ Wed, 14 Jun 2017 19:25:50 -0300
+Received: from d24av04.br.ibm.com (d24av04.br.ibm.com [9.8.31.97])
+ by d24relay02.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v5EMPdhA6029788
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jun 2017 19:25:39 -0300
+Received: from d24av04.br.ibm.com (localhost [127.0.0.1])
+ by d24av04.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v5EMPaZp007183
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jun 2017 19:25:36 -0300
+References: <1496350947-30951-1-git-send-email-bauerman@linux.vnet.ibm.com>
+ <1496350947-30951-8-git-send-email-bauerman@linux.vnet.ibm.com>
+ <20170614001350.GB12998@us.ibm.com>
+From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 7/8] powerpc/perf/hv-24x7: Support v2 of the hypervisor API
+In-reply-to: <20170614001350.GB12998@us.ibm.com>
+Date: Wed, 14 Jun 2017 19:25:29 -0300
 MIME-Version: 1.0
-In-Reply-To: <1497368465-13104-1-git-send-email-clombard@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <19148e83-7c59-5048-afe6-acdeef760baf@linux.vnet.ibm.com>
+Content-Type: text/plain
+Message-Id: <871sqmfbqe.fsf@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,328 +48,498 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
+Hello Suka,
 
-Le 13/06/2017 à 17:41, Christophe Lombard a écrit :
-> A previous set of patches "cxl: Add support for Coherent Accelerator
-> Interface Architecture 2.0" has introduced a new support for the CAPI
-> cards. These patches have been tested on Simulation environment and
-> quite a bit of them have been tested on real hardware.
-> 
-> This patch brings new fixes after a series of tests carried out on
-> new equipment:
-> * Add POWER9 definition.
-> * Re-enable any masked interrupts when the AFU is not activated after
->    resetting the AFU.
-> * Remove the api cxl_is_psl8/9 which is no longer useful.
-> * Do not dump CAPI1 registers.
-> * Rewrite cxl_is_page_fault() function.
-> * Do not register slb callack on P9.
-> 
-> Changelog[v3]
->   - Rebase to latest upstream.
->   - Update the patch's header.
->   - Add new test in cxl_is_page_fault().
-> 
-> Changelog[v2]
->   - Rebase to latest upstream.
->   - Update cxl_is_page_fault() to handle the checkout response status.
->   - Add comments.
-> 
-> Signed-off-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
-> ---
+Thanks for your review!
 
-Looks good to me, thanks!
-Acked-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com> writes:
+> Thiago Jung Bauermann [bauerman@linux.vnet.ibm.com] wrote:
+>> @@ -166,9 +174,12 @@ DEFINE_PER_CPU(struct hv_24x7_hw, hv_24x7_hw);
+>>  DEFINE_PER_CPU(char, hv_24x7_reqb[H24x7_DATA_BUFFER_SIZE]) __aligned(4096);
+>>  DEFINE_PER_CPU(char, hv_24x7_resb[H24x7_DATA_BUFFER_SIZE]) __aligned(4096);
+>> 
+>> -#define MAX_NUM_REQUESTS	((H24x7_DATA_BUFFER_SIZE -		       \
+>> +#define MAX_NUM_REQUESTS_V1	((H24x7_DATA_BUFFER_SIZE -		       \
+>> +					sizeof(struct hv_24x7_request_buffer)) \
+>> +					/ H24x7_REQUEST_SIZE_V1)
+>> +#define MAX_NUM_REQUESTS_V2	((H24x7_DATA_BUFFER_SIZE -		       \
+>>  					sizeof(struct hv_24x7_request_buffer)) \
+>> -					/ sizeof(struct hv_24x7_request))
+>> +					/ H24x7_REQUEST_SIZE_V2)
+>
+> Nit: Can we define MAX_NUM_REQUESTS(version) - with a version parameter ? It
+> will...
 
+That's a good idea. I created a function instead of a macro, I think it
+makes the code clearer since the macro would be a bit harder to read.
 
+>> @@ -1101,9 +1112,13 @@ static int add_event_to_24x7_request(struct perf_event *event,
+>>  {
+>>  	u16 idx;
+>>  	int i;
+>> +	size_t req_size;
+>>  	struct hv_24x7_request *req;
+>> 
+>> -	if (request_buffer->num_requests >= MAX_NUM_REQUESTS) {
+>> +	if ((request_buffer->interface_version == 1
+>> +	     && request_buffer->num_requests >= MAX_NUM_REQUESTS_V1)
+>> +	    || (request_buffer->interface_version > 1
+>> +		&& request_buffer->num_requests >= MAX_NUM_REQUESTS_V2)) {
+>>  		pr_devel("Too many requests for 24x7 HCALL %d\n",
+>
+> ...simplify this check to
+>
+> 	if (request->buffer->num_requests >= MAX_NUM_REQUESTS(version))
 
->   drivers/misc/cxl/context.c |  6 +++---
->   drivers/misc/cxl/cxl.h     | 18 +++++-------------
->   drivers/misc/cxl/fault.c   | 23 +++++++++++++++--------
->   drivers/misc/cxl/main.c    | 17 +++++++++++++----
->   drivers/misc/cxl/native.c  | 29 +++++++++++++++++------------
->   drivers/misc/cxl/pci.c     | 11 ++++-------
->   6 files changed, 57 insertions(+), 47 deletions(-)
-> 
-> diff --git a/drivers/misc/cxl/context.c b/drivers/misc/cxl/context.c
-> index 4472ce1..8c32040 100644
-> --- a/drivers/misc/cxl/context.c
-> +++ b/drivers/misc/cxl/context.c
-> @@ -45,7 +45,7 @@ int cxl_context_init(struct cxl_context *ctx, struct cxl_afu *afu, bool master)
->   	mutex_init(&ctx->mapping_lock);
->   	ctx->mapping = NULL;
-> 
-> -	if (cxl_is_psl8(afu)) {
-> +	if (cxl_is_power8()) {
->   		spin_lock_init(&ctx->sste_lock);
-> 
->   		/*
-> @@ -189,7 +189,7 @@ int cxl_context_iomap(struct cxl_context *ctx, struct vm_area_struct *vma)
->   		if (start + len > ctx->afu->adapter->ps_size)
->   			return -EINVAL;
-> 
-> -		if (cxl_is_psl9(ctx->afu)) {
-> +		if (cxl_is_power9()) {
->   			/*
->   			 * Make sure there is a valid problem state
->   			 * area space for this AFU.
-> @@ -324,7 +324,7 @@ static void reclaim_ctx(struct rcu_head *rcu)
->   {
->   	struct cxl_context *ctx = container_of(rcu, struct cxl_context, rcu);
-> 
-> -	if (cxl_is_psl8(ctx->afu))
-> +	if (cxl_is_power8())
->   		free_page((u64)ctx->sstp);
->   	if (ctx->ff_page)
->   		__free_page(ctx->ff_page);
-> diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
-> index c8568ea..a03f8e7 100644
-> --- a/drivers/misc/cxl/cxl.h
-> +++ b/drivers/misc/cxl/cxl.h
-> @@ -357,6 +357,7 @@ static const cxl_p2n_reg_t CXL_PSL_WED_An     = {0x0A0};
->   #define CXL_PSL9_DSISR_An_PF_RGP  0x0000000000000090ULL  /* PTE not found (Radix Guest (parent)) 0b10010000 */
->   #define CXL_PSL9_DSISR_An_PF_HRH  0x0000000000000094ULL  /* PTE not found (HPT/Radix Host)       0b10010100 */
->   #define CXL_PSL9_DSISR_An_PF_STEG 0x000000000000009CULL  /* PTE not found (STEG VA)              0b10011100 */
-> +#define CXL_PSL9_DSISR_An_URTCH   0x00000000000000B4ULL  /* Unsupported Radix Tree Configuration 0b10110100 */
-> 
->   /****** CXL_PSL_TFC_An ******************************************************/
->   #define CXL_PSL_TFC_An_A  (1ull << (63-28)) /* Acknowledge non-translation fault */
-> @@ -844,24 +845,15 @@ static inline bool cxl_is_power8(void)
-> 
->   static inline bool cxl_is_power9(void)
->   {
-> -	/* intermediate solution */
-> -	if (!cxl_is_power8() &&
-> -	   (cpu_has_feature(CPU_FTRS_POWER9) ||
-> -	    cpu_has_feature(CPU_FTR_POWER9_DD1)))
-> +	if (pvr_version_is(PVR_POWER9))
->   		return true;
->   	return false;
->   }
-> 
-> -static inline bool cxl_is_psl8(struct cxl_afu *afu)
-> +static inline bool cxl_is_power9_dd1(void)
->   {
-> -	if (afu->adapter->caia_major == 1)
-> -		return true;
-> -	return false;
-> -}
-> -
-> -static inline bool cxl_is_psl9(struct cxl_afu *afu)
-> -{
-> -	if (afu->adapter->caia_major == 2)
-> +	if ((pvr_version_is(PVR_POWER9)) &&
-> +	    cpu_has_feature(CPU_FTR_POWER9_DD1))
->   		return true;
->   	return false;
->   }
-> diff --git a/drivers/misc/cxl/fault.c b/drivers/misc/cxl/fault.c
-> index 5344448..c79e39b 100644
-> --- a/drivers/misc/cxl/fault.c
-> +++ b/drivers/misc/cxl/fault.c
-> @@ -187,7 +187,7 @@ static struct mm_struct *get_mem_context(struct cxl_context *ctx)
-> 
->   static bool cxl_is_segment_miss(struct cxl_context *ctx, u64 dsisr)
->   {
-> -	if ((cxl_is_psl8(ctx->afu)) && (dsisr & CXL_PSL_DSISR_An_DS))
-> +	if ((cxl_is_power8() && (dsisr & CXL_PSL_DSISR_An_DS)))
->   		return true;
-> 
->   	return false;
-> @@ -195,16 +195,23 @@ static bool cxl_is_segment_miss(struct cxl_context *ctx, u64 dsisr)
-> 
->   static bool cxl_is_page_fault(struct cxl_context *ctx, u64 dsisr)
->   {
-> -	if ((cxl_is_psl8(ctx->afu)) && (dsisr & CXL_PSL_DSISR_An_DM))
-> -		return true;
-> +	u64 crs; /* Translation Checkout Response Status */
-> 
-> -	if ((cxl_is_psl9(ctx->afu)) &&
-> -	   ((dsisr & CXL_PSL9_DSISR_An_CO_MASK) &
-> -		(CXL_PSL9_DSISR_An_PF_SLR | CXL_PSL9_DSISR_An_PF_RGC |
-> -		 CXL_PSL9_DSISR_An_PF_RGP | CXL_PSL9_DSISR_An_PF_HRH |
-> -		 CXL_PSL9_DSISR_An_PF_STEG)))
-> +	if ((cxl_is_power8()) && (dsisr & CXL_PSL_DSISR_An_DM))
->   		return true;
-> 
-> +	if (cxl_is_power9()) {
-> +		crs = (dsisr & CXL_PSL9_DSISR_An_CO_MASK);
-> +		if ((crs == CXL_PSL9_DSISR_An_PF_SLR) ||
-> +		    (crs == CXL_PSL9_DSISR_An_PF_RGC) ||
-> +		    (crs == CXL_PSL9_DSISR_An_PF_RGP) ||
-> +		    (crs == CXL_PSL9_DSISR_An_PF_HRH) ||
-> +		    (crs == CXL_PSL9_DSISR_An_PF_STEG) ||
-> +		    (crs == CXL_PSL9_DSISR_An_URTCH)) {
-> +			return true;
-> +		}
-> +	}
-> +
->   	return false;
->   }
-> 
-> diff --git a/drivers/misc/cxl/main.c b/drivers/misc/cxl/main.c
-> index 1703655..c1ba0d4 100644
-> --- a/drivers/misc/cxl/main.c
-> +++ b/drivers/misc/cxl/main.c
-> @@ -329,8 +329,15 @@ static int __init init_cxl(void)
-> 
->   	cxl_debugfs_init();
-> 
-> -	if ((rc = register_cxl_calls(&cxl_calls)))
-> -		goto err;
-> +	/*
-> +	 * we don't register the callback on P9. slb callack is only
-> +	 * used for the PSL8 MMU and CX4.
-> +	 */
-> +	if (cxl_is_power8()) {
-> +		rc = register_cxl_calls(&cxl_calls);
-> +		if (rc)
-> +			goto err;
-> +	}
-> 
->   	if (cpu_has_feature(CPU_FTR_HVMODE)) {
->   		cxl_ops = &cxl_native_ops;
-> @@ -347,7 +354,8 @@ static int __init init_cxl(void)
-> 
->   	return 0;
->   err1:
-> -	unregister_cxl_calls(&cxl_calls);
-> +	if (cxl_is_power8())
-> +		unregister_cxl_calls(&cxl_calls);
->   err:
->   	cxl_debugfs_exit();
->   	cxl_file_exit();
-> @@ -366,7 +374,8 @@ static void exit_cxl(void)
-> 
->   	cxl_debugfs_exit();
->   	cxl_file_exit();
-> -	unregister_cxl_calls(&cxl_calls);
-> +	if (cxl_is_power8())
-> +		unregister_cxl_calls(&cxl_calls);
->   	idr_destroy(&cxl_adapter_idr);
->   }
-> 
-> diff --git a/drivers/misc/cxl/native.c b/drivers/misc/cxl/native.c
-> index 8d6ea97..2b2f889 100644
-> --- a/drivers/misc/cxl/native.c
-> +++ b/drivers/misc/cxl/native.c
-> @@ -105,11 +105,16 @@ static int native_afu_reset(struct cxl_afu *afu)
->   			   CXL_AFU_Cntl_An_RS_MASK | CXL_AFU_Cntl_An_ES_MASK,
->   			   false);
-> 
-> -	/* Re-enable any masked interrupts */
-> -	serr = cxl_p1n_read(afu, CXL_PSL_SERR_An);
-> -	serr &= ~CXL_PSL_SERR_An_IRQ_MASKS;
-> -	cxl_p1n_write(afu, CXL_PSL_SERR_An, serr);
-> -
-> +	/*
-> +	 * Re-enable any masked interrupts when the AFU is not
-> +	 * activated to avoid side effects after attaching a process
-> +	 * in dedicated mode.
-> +	 */
-> +	if (afu->current_mode == 0) {
-> +		serr = cxl_p1n_read(afu, CXL_PSL_SERR_An);
-> +		serr &= ~CXL_PSL_SERR_An_IRQ_MASKS;
-> +		cxl_p1n_write(afu, CXL_PSL_SERR_An, serr);
-> +	}
-> 
->   	return rc;
->   }
-> @@ -139,9 +144,9 @@ int cxl_psl_purge(struct cxl_afu *afu)
-> 
->   	pr_devel("PSL purge request\n");
-> 
-> -	if (cxl_is_psl8(afu))
-> +	if (cxl_is_power8())
->   		trans_fault = CXL_PSL_DSISR_TRANS;
-> -	if (cxl_is_psl9(afu))
-> +	if (cxl_is_power9())
->   		trans_fault = CXL_PSL9_DSISR_An_TF;
-> 
->   	if (!cxl_ops->link_ok(afu->adapter, afu)) {
-> @@ -603,7 +608,7 @@ static u64 calculate_sr(struct cxl_context *ctx)
->   		if (!test_tsk_thread_flag(current, TIF_32BIT))
->   			sr |= CXL_PSL_SR_An_SF;
->   	}
-> -	if (cxl_is_psl9(ctx->afu)) {
-> +	if (cxl_is_power9()) {
->   		if (radix_enabled())
->   			sr |= CXL_PSL_SR_An_XLAT_ror;
->   		else
-> @@ -1117,10 +1122,10 @@ static irqreturn_t native_handle_psl_slice_error(struct cxl_context *ctx,
-> 
->   static bool cxl_is_translation_fault(struct cxl_afu *afu, u64 dsisr)
->   {
-> -	if ((cxl_is_psl8(afu)) && (dsisr & CXL_PSL_DSISR_TRANS))
-> +	if ((cxl_is_power8()) && (dsisr & CXL_PSL_DSISR_TRANS))
->   		return true;
-> 
-> -	if ((cxl_is_psl9(afu)) && (dsisr & CXL_PSL9_DSISR_An_TF))
-> +	if ((cxl_is_power9()) && (dsisr & CXL_PSL9_DSISR_An_TF))
->   		return true;
-> 
->   	return false;
-> @@ -1194,10 +1199,10 @@ static void native_irq_wait(struct cxl_context *ctx)
->   		if (ph != ctx->pe)
->   			return;
->   		dsisr = cxl_p2n_read(ctx->afu, CXL_PSL_DSISR_An);
-> -		if (cxl_is_psl8(ctx->afu) &&
-> +		if (cxl_is_power8() &&
->   		   ((dsisr & CXL_PSL_DSISR_PENDING) == 0))
->   			return;
-> -		if (cxl_is_psl9(ctx->afu) &&
-> +		if (cxl_is_power9() &&
->   		   ((dsisr & CXL_PSL9_DSISR_PENDING) == 0))
->   			return;
->   		/*
-> diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
-> index 6dc1ee5..1eb9859 100644
-> --- a/drivers/misc/cxl/pci.c
-> +++ b/drivers/misc/cxl/pci.c
-> @@ -436,7 +436,7 @@ static int init_implementation_adapter_regs_psl9(struct cxl *adapter, struct pci
->   	/* nMMU_ID Defaults to: b’000001001’*/
->   	xsl_dsnctl |= ((u64)0x09 << (63-28));
-> 
-> -	if (cxl_is_power9() && !cpu_has_feature(CPU_FTR_POWER9_DD1)) {
-> +	if (!(cxl_is_power9_dd1())) {
->   		/*
->   		 * Used to identify CAPI packets which should be sorted into
->   		 * the Non-Blocking queues by the PHB. This field should match
-> @@ -491,7 +491,7 @@ static int init_implementation_adapter_regs_psl9(struct cxl *adapter, struct pci
->   	cxl_p1_write(adapter, CXL_PSL9_APCDEDTYPE, 0x40000003FFFF0000ULL);
-> 
->   	/* Disable vc dd1 fix */
-> -	if ((cxl_is_power9() && cpu_has_feature(CPU_FTR_POWER9_DD1)))
-> +	if (cxl_is_power9_dd1())
->   		cxl_p1_write(adapter, CXL_PSL9_GP_CT, 0x0400000000000001ULL);
-> 
->   	return 0;
-> @@ -1439,8 +1439,7 @@ int cxl_pci_reset(struct cxl *adapter)
->   	 * The adapter is about to be reset, so ignore errors.
->   	 * Not supported on P9 DD1
->   	 */
-> -	if ((cxl_is_power8()) ||
-> -	    ((cxl_is_power9() && !cpu_has_feature(CPU_FTR_POWER9_DD1))))
-> +	if ((cxl_is_power8()) || (!(cxl_is_power9_dd1())))
->   		cxl_data_cache_flush(adapter);
-> 
->   	/* pcie_warm_reset requests a fundamental pci reset which includes a
-> @@ -1750,7 +1749,6 @@ static const struct cxl_service_layer_ops psl9_ops = {
->   	.debugfs_add_adapter_regs = cxl_debugfs_add_adapter_regs_psl9,
->   	.debugfs_add_afu_regs = cxl_debugfs_add_afu_regs_psl9,
->   	.psl_irq_dump_registers = cxl_native_irq_dump_regs_psl9,
-> -	.err_irq_dump_registers = cxl_native_err_irq_dump_regs,
->   	.debugfs_stop_trace = cxl_stop_trace_psl9,
->   	.write_timebase_ctrl = write_timebase_ctrl_psl9,
->   	.timebase_read = timebase_read_psl9,
-> @@ -1889,8 +1887,7 @@ static void cxl_pci_remove_adapter(struct cxl *adapter)
->   	 * Flush adapter datacache as its about to be removed.
->   	 * Not supported on P9 DD1.
->   	 */
-> -	if ((cxl_is_power8()) ||
-> -	    ((cxl_is_power9() && !cpu_has_feature(CPU_FTR_POWER9_DD1))))
-> +	if ((cxl_is_power8()) || (!(cxl_is_power9_dd1())))
->   		cxl_data_cache_flush(adapter);
-> 
->   	cxl_deconfigure_adapter(adapter);
-> 
+That's better indeed.
+
+>>  				request_buffer->num_requests);
+>>  		return -EINVAL;
+>> @@ -1120,8 +1135,11 @@ static int add_event_to_24x7_request(struct perf_event *event,
+>>  		idx = event_get_vcpu(event);
+>>  	}
+>> 
+>> +	req_size = request_buffer->interface_version == 1 ?
+>> +			   H24x7_REQUEST_SIZE_V1 : H24x7_REQUEST_SIZE_V2;
+>> +
+>
+> Maybe similarly, with H24x7_REQUEST_SIZE(version) ?
+
+I implement this suggestion too.
+
+>> +/**
+>> + * get_count_from_result - get event count from the given result
+>> + *
+>> + * @event:	Event associated with @res.
+>> + * @resb:	Result buffer containing @res.
+>> + * @res:	Result to work on.
+>> + * @countp:	Output variable containing the event count.
+>> + * @next:	Optional output variable pointing to the next result in @resb.
+>> + */
+>> +static int get_count_from_result(struct perf_event *event,
+>> +				 struct hv_24x7_data_result_buffer *resb,
+>> +				 struct hv_24x7_result *res, u64 *countp,
+>> +				 struct hv_24x7_result **next)
+>> +{
+>> +	u16 num_elements = be16_to_cpu(res->num_elements_returned);
+>> +	u16 data_size = be16_to_cpu(res->result_element_data_size);
+>> +	unsigned int data_offset;
+>> +	void *element_data;
+>> +	int ret = 0;
+>> +
+>> +	/*
+>> +	 * We can bail out early if the result is empty.
+>> +	 */
+>> +	if (!num_elements) {
+>> +		pr_debug("Result of request %hhu is empty, nothing to do\n",
+>> +			 res->result_ix);
+>> +
+>> +		if (next)
+>> +			*next = (struct hv_24x7_result *) res->elements;
+>> +
+>> +		return -ENODATA;
+>> +	}
+>> +
+>> +	/*
+>> +	 * This code assumes that a result has only one element.
+>> +	 */
+>> +	if (num_elements != 1) {
+>> +		pr_debug("Error: result of request %hhu has %hu elements\n",
+>> +			 res->result_ix, num_elements);
+>
+> Could this happen due to an user request or would this indicate a bug
+> in the way we submitted the request (perf should submit separate request
+> for each lpar/index - we set ->max_ix and ->max_num_lpars to cpu_be16(1).
+
+That's a good question. I don't know to be honest.
+
+> Minor inconsistency with proceeding, is that if the next element passes,
+> this return code is lost/over written. IOW, h_24x7_event_commit_txn()'s
+> return value depends on the last element we process, even if intermediate
+> ones encounter an error.
+
+Good point. Would it be better if h_24x7_event_commit_txn interrupted
+processing and returned an error instead of continuing?
+
+The version below addresses your comments, except the one above.
+
+Subject: [PATCH 7/8] powerpc/perf/hv-24x7: Support v2 of the hypervisor API
+
+POWER9 introduces a new version of the hypervisor API to access the 24x7
+perf counters. The new version changed some of the structures used for
+requests and results.
+
+Signed-off-by: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
+---
+ arch/powerpc/perf/hv-24x7.c            | 143 +++++++++++++++++++++++++++------
+ arch/powerpc/perf/hv-24x7.h            |  58 ++++++++++---
+ arch/powerpc/platforms/pseries/Kconfig |   2 +-
+ 3 files changed, 169 insertions(+), 34 deletions(-)
+
+diff --git a/arch/powerpc/perf/hv-24x7.c b/arch/powerpc/perf/hv-24x7.c
+index 043cbc78be98..35010403f191 100644
+--- a/arch/powerpc/perf/hv-24x7.c
++++ b/arch/powerpc/perf/hv-24x7.c
+@@ -18,6 +18,7 @@
+ #include <linux/slab.h>
+ #include <linux/vmalloc.h>
+ 
++#include <asm/cputhreads.h>
+ #include <asm/firmware.h>
+ #include <asm/hvcall.h>
+ #include <asm/io.h>
+@@ -27,6 +28,9 @@
+ #include "hv-24x7-catalog.h"
+ #include "hv-common.h"
+ 
++/* Version of the 24x7 hypervisor API that we should use in this machine. */
++static int interface_version;
++
+ static bool domain_is_valid(unsigned domain)
+ {
+ 	switch (domain) {
+@@ -74,7 +78,11 @@ static const char *domain_name(unsigned domain)
+ 
+ static bool catalog_entry_domain_is_valid(unsigned domain)
+ {
+-	return is_physical_domain(domain);
++	/* POWER8 doesn't support virtual domains. */
++	if (interface_version == 1)
++		return is_physical_domain(domain);
++	else
++		return domain_is_valid(domain);
+ }
+ 
+ /*
+@@ -166,9 +174,11 @@ DEFINE_PER_CPU(struct hv_24x7_hw, hv_24x7_hw);
+ DEFINE_PER_CPU(char, hv_24x7_reqb[H24x7_DATA_BUFFER_SIZE]) __aligned(4096);
+ DEFINE_PER_CPU(char, hv_24x7_resb[H24x7_DATA_BUFFER_SIZE]) __aligned(4096);
+ 
+-#define MAX_NUM_REQUESTS	((H24x7_DATA_BUFFER_SIZE -		       \
+-					sizeof(struct hv_24x7_request_buffer)) \
+-					/ sizeof(struct hv_24x7_request))
++static unsigned int max_num_requests(int interface_version)
++{
++	return (H24x7_DATA_BUFFER_SIZE - sizeof(struct hv_24x7_request_buffer))
++		/ H24x7_REQUEST_SIZE(interface_version);
++}
+ 
+ static char *event_name(struct hv_24x7_event_data *ev, int *len)
+ {
+@@ -1052,7 +1062,7 @@ static void init_24x7_request(struct hv_24x7_request_buffer *request_buffer,
+ 	memset(request_buffer, 0, H24x7_DATA_BUFFER_SIZE);
+ 	memset(result_buffer, 0, H24x7_DATA_BUFFER_SIZE);
+ 
+-	request_buffer->interface_version = HV_24X7_IF_VERSION_CURRENT;
++	request_buffer->interface_version = interface_version;
+ 	/* memset above set request_buffer->num_requests to 0 */
+ }
+ 
+@@ -1077,7 +1087,7 @@ static int make_24x7_request(struct hv_24x7_request_buffer *request_buffer,
+ 	if (ret) {
+ 		struct hv_24x7_request *req;
+ 
+-		req = &request_buffer->requests[0];
++		req = request_buffer->requests;
+ 		pr_notice_ratelimited("hcall failed: [%d %#x %#x %d] => ret 0x%lx (%ld) detail=0x%x failing ix=%x\n",
+ 				      req->performance_domain, req->data_offset,
+ 				      req->starting_ix, req->starting_lpar_ix,
+@@ -1101,9 +1111,11 @@ static int add_event_to_24x7_request(struct perf_event *event,
+ {
+ 	u16 idx;
+ 	int i;
++	size_t req_size;
+ 	struct hv_24x7_request *req;
+ 
+-	if (request_buffer->num_requests >= MAX_NUM_REQUESTS) {
++	if (request_buffer->num_requests >=
++	    max_num_requests(request_buffer->interface_version)) {
+ 		pr_devel("Too many requests for 24x7 HCALL %d\n",
+ 				request_buffer->num_requests);
+ 		return -EINVAL;
+@@ -1120,8 +1132,10 @@ static int add_event_to_24x7_request(struct perf_event *event,
+ 		idx = event_get_vcpu(event);
+ 	}
+ 
++	req_size = H24x7_REQUEST_SIZE(request_buffer->interface_version);
++
+ 	i = request_buffer->num_requests++;
+-	req = &request_buffer->requests[i];
++	req = (void *) request_buffer->requests + i * req_size;
+ 
+ 	req->performance_domain = event_get_domain(event);
+ 	req->data_size = cpu_to_be16(8);
+@@ -1131,14 +1145,97 @@ static int add_event_to_24x7_request(struct perf_event *event,
+ 	req->starting_ix = cpu_to_be16(idx);
+ 	req->max_ix = cpu_to_be16(1);
+ 
++	if (request_buffer->interface_version > 1 &&
++	    req->performance_domain != HV_PERF_DOMAIN_PHYS_CHIP) {
++		req->starting_thread_group_ix = idx % 2;
++		req->max_num_thread_groups = 1;
++	}
++
+ 	return 0;
+ }
+ 
++/**
++ * get_count_from_result - get event count from the given result
++ *
++ * @event:	Event associated with @res.
++ * @resb:	Result buffer containing @res.
++ * @res:	Result to work on.
++ * @countp:	Output variable containing the event count.
++ * @next:	Optional output variable pointing to the next result in @resb.
++ */
++static int get_count_from_result(struct perf_event *event,
++				 struct hv_24x7_data_result_buffer *resb,
++				 struct hv_24x7_result *res, u64 *countp,
++				 struct hv_24x7_result **next)
++{
++	u16 num_elements = be16_to_cpu(res->num_elements_returned);
++	u16 data_size = be16_to_cpu(res->result_element_data_size);
++	unsigned int data_offset;
++	void *element_data;
++	int ret = 0;
++
++	/*
++	 * We can bail out early if the result is empty.
++	 */
++	if (!num_elements) {
++		pr_debug("Result of request %hhu is empty, nothing to do\n",
++			 res->result_ix);
++
++		if (next)
++			*next = (struct hv_24x7_result *) res->elements;
++
++		return -ENODATA;
++	}
++
++	/*
++	 * This code assumes that a result has only one element.
++	 */
++	if (num_elements != 1) {
++		pr_debug("Error: result of request %hhu has %hu elements\n",
++			 res->result_ix, num_elements);
++
++		if (!next)
++			return -ENOTSUPP;
++
++		/*
++		 * We still need to go through the motions so that we can return
++		 * a pointer to the next result.
++		 */
++		ret = -ENOTSUPP;
++	}
++
++	if (data_size != sizeof(u64)) {
++		pr_debug("Error: result of request %hhu has data of %hu bytes\n",
++			 res->result_ix, data_size);
++
++		if (!next)
++			return -ENOTSUPP;
++
++		ret = -ENOTSUPP;
++	}
++
++	if (resb->interface_version == 1)
++		data_offset = offsetof(struct hv_24x7_result_element_v1,
++				       element_data);
++	else
++		data_offset = offsetof(struct hv_24x7_result_element_v2,
++				       element_data);
++
++	element_data = res->elements + data_offset;
++
++	if (!ret)
++		*countp = be64_to_cpu(*((u64 *) element_data));
++
++	/* The next result is after the result element. */
++	if (next)
++		*next = element_data + data_size;
++
++	return ret;
++}
++
+ static int single_24x7_request(struct perf_event *event, u64 *count)
+ {
+ 	int ret;
+-	u16 num_elements;
+-	struct hv_24x7_result *result;
+ 	struct hv_24x7_request_buffer *request_buffer;
+ 	struct hv_24x7_data_result_buffer *result_buffer;
+ 
+@@ -1158,14 +1255,9 @@ static int single_24x7_request(struct perf_event *event, u64 *count)
+ 	if (ret)
+ 		goto out;
+ 
+-	result = result_buffer->results;
+-
+-	/* This code assumes that a result has only one element. */
+-	num_elements = be16_to_cpu(result->num_elements_returned);
+-	WARN_ON_ONCE(num_elements != 1);
+-
+ 	/* process result from hcall */
+-	*count = be64_to_cpu(result->elements[0].element_data[0]);
++	ret = get_count_from_result(event, result_buffer,
++				    result_buffer->results, count, NULL);
+ 
+ out:
+ 	put_cpu_var(hv_24x7_reqb);
+@@ -1425,16 +1517,13 @@ static int h_24x7_event_commit_txn(struct pmu *pmu)
+ 	for (i = 0, res = result_buffer->results;
+ 	     i < result_buffer->num_results; i++, res = next_res) {
+ 		struct perf_event *event = h24x7hw->events[res->result_ix];
+-		u16 num_elements = be16_to_cpu(res->num_elements_returned);
+-		u16 data_size = be16_to_cpu(res->result_element_data_size);
+ 
+-		/* This code assumes that a result has only one element. */
+-		WARN_ON_ONCE(num_elements != 1);
++		ret = get_count_from_result(event, result_buffer, res, &count,
++					    &next_res);
++		if (ret)
++			continue;
+ 
+-		count = be64_to_cpu(res->elements[0].element_data[0]);
+ 		update_event_count(event, count);
+-
+-		next_res = (void *) res->elements[0].element_data + data_size;
+ 	}
+ 
+ 	put_cpu_var(hv_24x7_hw);
+@@ -1486,6 +1575,12 @@ static int hv_24x7_init(void)
+ 		return -ENODEV;
+ 	}
+ 
++	/* POWER8 only supports v1, while POWER9 only supports v2. */
++	if (cpu_has_feature(CPU_FTR_ARCH_300))
++		interface_version = 2;
++	else
++		interface_version = 1;
++
+ 	hret = hv_perf_caps_get(&caps);
+ 	if (hret) {
+ 		pr_debug("could not obtain capabilities, not enabling, rc=%ld\n",
+diff --git a/arch/powerpc/perf/hv-24x7.h b/arch/powerpc/perf/hv-24x7.h
+index b95909400b2a..5092c4a222a6 100644
+--- a/arch/powerpc/perf/hv-24x7.h
++++ b/arch/powerpc/perf/hv-24x7.h
+@@ -10,6 +10,8 @@ enum hv_perf_domains {
+ 	HV_PERF_DOMAIN_MAX,
+ };
+ 
++#define H24x7_REQUEST_SIZE(iface_version)	(iface_version == 1 ? 16 : 32)
++
+ struct hv_24x7_request {
+ 	/* PHYSICAL domains require enabling via phyp/hmc. */
+ 	__u8 performance_domain;
+@@ -42,19 +44,47 @@ struct hv_24x7_request {
+ 	/* chip, core, or virtual processor based on @performance_domain */
+ 	__be16 starting_ix;
+ 	__be16 max_ix;
++
++	/* The following fields were added in v2 of the 24x7 interface. */
++
++	__u8 starting_thread_group_ix;
++
++	/* -1 means all thread groups starting at @starting_thread_group_ix */
++	__u8 max_num_thread_groups;
++
++	__u8 reserved2[0xE];
+ } __packed;
+ 
+ struct hv_24x7_request_buffer {
+ 	/* 0 - ? */
+ 	/* 1 - ? */
+-#define HV_24X7_IF_VERSION_CURRENT 0x01
+ 	__u8 interface_version;
+ 	__u8 num_requests;
+ 	__u8 reserved[0xE];
+-	struct hv_24x7_request requests[1];
++	struct hv_24x7_request requests[];
++} __packed;
++
++struct hv_24x7_result_element_v1 {
++	__be16 lpar_ix;
++
++	/*
++	 * represents the core, chip, or virtual processor based on the
++	 * request's @performance_domain
++	 */
++	__be16 domain_ix;
++
++	/* -1 if @performance_domain does not refer to a virtual processor */
++	__be32 lpar_cfg_instance_id;
++
++	/* size = @result_element_data_size of containing result. */
++	__u64 element_data[];
+ } __packed;
+ 
+-struct hv_24x7_result_element {
++/*
++ * We need a separate struct for v2 because the offset of @element_data changed
++ * between versions.
++ */
++struct hv_24x7_result_element_v2 {
+ 	__be16 lpar_ix;
+ 
+ 	/*
+@@ -66,8 +96,12 @@ struct hv_24x7_result_element {
+ 	/* -1 if @performance_domain does not refer to a virtual processor */
+ 	__be32 lpar_cfg_instance_id;
+ 
++	__u8 thread_group_ix;
++
++	__u8 reserved[7];
++
+ 	/* size = @result_element_data_size of containing result. */
+-	__u64 element_data[1];
++	__u64 element_data[];
+ } __packed;
+ 
+ struct hv_24x7_result {
+@@ -94,10 +128,16 @@ struct hv_24x7_result {
+ 	__be16 result_element_data_size;
+ 	__u8 reserved[0x2];
+ 
+-	/* WARNING: only valid for first result element due to variable sizes
+-	 *          of result elements */
+-	/* struct hv_24x7_result_element[@num_elements_returned] */
+-	struct hv_24x7_result_element elements[1];
++	/*
++	 * Either
++	 *	struct hv_24x7_result_element_v1[@num_elements_returned]
++	 * or
++	 *	struct hv_24x7_result_element_v2[@num_elements_returned]
++	 *
++	 * depending on the interface_version field of the
++	 * struct hv_24x7_data_result_buffer containing this result.
++	 */
++	char elements[];
+ } __packed;
+ 
+ struct hv_24x7_data_result_buffer {
+@@ -113,7 +153,7 @@ struct hv_24x7_data_result_buffer {
+ 	__u8 reserved2[0x8];
+ 	/* WARNING: only valid for the first result due to variable sizes of
+ 	 *	    results */
+-	struct hv_24x7_result results[1]; /* [@num_results] */
++	struct hv_24x7_result results[]; /* [@num_results] */
+ } __packed;
+ 
+ #endif
+diff --git a/arch/powerpc/platforms/pseries/Kconfig b/arch/powerpc/platforms/pseries/Kconfig
+index 913c54e23eea..3a6dfd14f64b 100644
+--- a/arch/powerpc/platforms/pseries/Kconfig
++++ b/arch/powerpc/platforms/pseries/Kconfig
+@@ -124,7 +124,7 @@ config HV_PERF_CTRS
+ 	  Enable access to hypervisor supplied counters in perf. Currently,
+ 	  this enables code that uses the hcall GetPerfCounterInfo and 24x7
+ 	  interfaces to retrieve counters. GPCI exists on Power 6 and later
+-	  systems. 24x7 is available on Power 8 systems.
++	  systems. 24x7 is available on Power 8 and later systems.
+ 
+           If unsure, select Y.
+ 
+-- 
+2.7.4
