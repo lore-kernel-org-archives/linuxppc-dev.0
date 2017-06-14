@@ -3,14 +3,16 @@ Received: from out4-smtp.messagingengine.com (out4-smtp.messagingengine.com
  [66.111.4.28])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wnYMJ6VpczDqKy
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jun 2017 14:20:12 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wnYML1kKGzDqKy
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jun 2017 14:20:14 +1000 (AEST)
 From: Russell Currey <ruscur@russell.cc>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Russell Currey <ruscur@russell.cc>
-Subject: [PATCH v2 1/3] powerpc/powernv/pci: Reduce spam when dumping PEST
-Date: Wed, 14 Jun 2017 14:19:58 +1000
-Message-Id: <20170614042000.1258-1-ruscur@russell.cc>
+Subject: [PATCH v2 3/3] powerpc/powernv/pci: Add support for PHB4 diagnostics
+Date: Wed, 14 Jun 2017 14:20:00 +1000
+Message-Id: <20170614042000.1258-3-ruscur@russell.cc>
+In-Reply-To: <20170614042000.1258-1-ruscur@russell.cc>
+References: <20170614042000.1258-1-ruscur@russell.cc>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,138 +22,236 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Dumping the PE State Tables (PEST) can be highly verbose if a number of PEs
-are affected, especially in the case where the whole PHB is frozen and 512
-lines get printed.  Check for duplicates when dumping the PEST to reduce
-useless output.
-
-For example:
-
-    PE[0f8] A/B: 9700002600000000 80000080d00000f8
-    PE[0f9] A/B: 8000000000000000 0000000000000000
-    PE[..0fe] A/B: as above
-    PE[0ff] A/B: 8440002b00000000 0000000000000000
-
-instead of:
-
-    PE[0f8] A/B: 9700002600000000 80000080d00000f8
-    PE[0f9] A/B: 8000000000000000 0000000000000000
-    PE[0fa] A/B: 8000000000000000 0000000000000000
-    PE[0fb] A/B: 8000000000000000 0000000000000000
-    PE[0fc] A/B: 8000000000000000 0000000000000000
-    PE[0fd] A/B: 8000000000000000 0000000000000000
-    PE[0fe] A/B: 8000000000000000 0000000000000000
-    PE[0ff] A/B: 8440002b00000000 0000000000000000
-
-and you can imagine how much worse it can get for 512 PEs.
+As with P7IOC and PHB3, add kernel-side support for decoding and printing
+diagnostic data for PHB4.
 
 Signed-off-by: Russell Currey <ruscur@russell.cc>
 ---
-v2: Made a constant instead of ">> 63" grossness thanks to mpe & ajd
----
- arch/powerpc/platforms/powernv/pci.c | 51 ++++++++++++++++++++++--------------
- arch/powerpc/platforms/powernv/pci.h |  3 +++
- 2 files changed, 34 insertions(+), 20 deletions(-)
+No changes from v1
 
+ arch/powerpc/include/asm/opal-api.h  |  75 ++++++++++++++++++++++++-
+ arch/powerpc/platforms/powernv/pci.c | 105 +++++++++++++++++++++++++++++++++++
+ 2 files changed, 178 insertions(+), 2 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
+index cb3e6242a78c..0b543f0f54f5 100644
+--- a/arch/powerpc/include/asm/opal-api.h
++++ b/arch/powerpc/include/asm/opal-api.h
+@@ -667,12 +667,14 @@ enum {
+ 
+ enum {
+ 	OPAL_PHB_ERROR_DATA_TYPE_P7IOC = 1,
+-	OPAL_PHB_ERROR_DATA_TYPE_PHB3 = 2
++	OPAL_PHB_ERROR_DATA_TYPE_PHB3 = 2,
++	OPAL_PHB_ERROR_DATA_TYPE_PHB4 = 3
+ };
+ 
+ enum {
+ 	OPAL_P7IOC_NUM_PEST_REGS = 128,
+-	OPAL_PHB3_NUM_PEST_REGS = 256
++	OPAL_PHB3_NUM_PEST_REGS = 256,
++	OPAL_PHB4_NUM_PEST_REGS = 512
+ };
+ 
+ struct OpalIoPhbErrorCommon {
+@@ -802,6 +804,75 @@ struct OpalIoPhb3ErrorData {
+ 	__be64 pestB[OPAL_PHB3_NUM_PEST_REGS];
+ };
+ 
++struct OpalIoPhb4ErrorData {
++	struct OpalIoPhbErrorCommon common;
++
++	__be32 brdgCtl;
++
++	/* PHB4 cfg regs */
++	__be32 deviceStatus;
++	__be32 slotStatus;
++	__be32 linkStatus;
++	__be32 devCmdStatus;
++	__be32 devSecStatus;
++
++	/* cfg AER regs */
++	__be32 rootErrorStatus;
++	__be32 uncorrErrorStatus;
++	__be32 corrErrorStatus;
++	__be32 tlpHdr1;
++	__be32 tlpHdr2;
++	__be32 tlpHdr3;
++	__be32 tlpHdr4;
++	__be32 sourceId;
++
++	/* PHB4 ETU Error Regs */
++	__be64 nFir;				/* 000 */
++	__be64 nFirMask;			/* 003 */
++	__be64 nFirWOF;				/* 008 */
++	__be64 phbPlssr;			/* 120 */
++	__be64 phbCsr;				/* 110 */
++	__be64 lemFir;				/* C00 */
++	__be64 lemErrorMask;			/* C18 */
++	__be64 lemWOF;				/* C40 */
++	__be64 phbErrorStatus;			/* C80 */
++	__be64 phbFirstErrorStatus;		/* C88 */
++	__be64 phbErrorLog0;			/* CC0 */
++	__be64 phbErrorLog1;			/* CC8 */
++	__be64 phbTxeErrorStatus;		/* D00 */
++	__be64 phbTxeFirstErrorStatus;		/* D08 */
++	__be64 phbTxeErrorLog0;			/* D40 */
++	__be64 phbTxeErrorLog1;			/* D48 */
++	__be64 phbRxeArbErrorStatus;		/* D80 */
++	__be64 phbRxeArbFirstErrorStatus;	/* D88 */
++	__be64 phbRxeArbErrorLog0;		/* DC0 */
++	__be64 phbRxeArbErrorLog1;		/* DC8 */
++	__be64 phbRxeMrgErrorStatus;		/* E00 */
++	__be64 phbRxeMrgFirstErrorStatus;	/* E08 */
++	__be64 phbRxeMrgErrorLog0;		/* E40 */
++	__be64 phbRxeMrgErrorLog1;		/* E48 */
++	__be64 phbRxeTceErrorStatus;		/* E80 */
++	__be64 phbRxeTceFirstErrorStatus;	/* E88 */
++	__be64 phbRxeTceErrorLog0;		/* EC0 */
++	__be64 phbRxeTceErrorLog1;		/* EC8 */
++
++	/* PHB4 REGB Error Regs */
++	__be64 phbPblErrorStatus;		/* 1900 */
++	__be64 phbPblFirstErrorStatus;		/* 1908 */
++	__be64 phbPblErrorLog0;			/* 1940 */
++	__be64 phbPblErrorLog1;			/* 1948 */
++	__be64 phbPcieDlpErrorLog1;		/* 1AA0 */
++	__be64 phbPcieDlpErrorLog2;		/* 1AA8 */
++	__be64 phbPcieDlpErrorStatus;		/* 1AB0 */
++	__be64 phbRegbErrorStatus;		/* 1C00 */
++	__be64 phbRegbFirstErrorStatus;		/* 1C08 */
++	__be64 phbRegbErrorLog0;		/* 1C40 */
++	__be64 phbRegbErrorLog1;		/* 1C48 */
++
++	__be64 pestA[OPAL_PHB4_NUM_PEST_REGS];
++	__be64 pestB[OPAL_PHB4_NUM_PEST_REGS];
++};
++
+ enum {
+ 	OPAL_REINIT_CPUS_HILE_BE	= (1 << 0),
+ 	OPAL_REINIT_CPUS_HILE_LE	= (1 << 1),
 diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
-index 935ccb249a8a..40071ad0bc42 100644
+index 209ad47a3383..7905d179d036 100644
 --- a/arch/powerpc/platforms/powernv/pci.c
 +++ b/arch/powerpc/platforms/powernv/pci.c
-@@ -227,11 +227,39 @@ void pnv_teardown_msi_irqs(struct pci_dev *pdev)
+@@ -426,6 +426,108 @@ static void pnv_pci_dump_phb3_diag_data(struct pci_controller *hose,
+ 	pnv_pci_dump_pest(data->pestA, data->pestB, OPAL_PHB3_NUM_PEST_REGS);
  }
- #endif /* CONFIG_PCI_MSI */
  
-+/* Nicely print the contents of the PE State Tables (PEST). */
-+static void pnv_pci_dump_pest(__be64 pestA[], __be64 pestB[], int pest_size)
++static void pnv_pci_dump_phb4_diag_data(struct pci_controller *hose,
++					struct OpalIoPhbErrorCommon *common)
 +{
-+	__be64 prevA = ULONG_MAX, prevB = ULONG_MAX;
-+	bool dup = false;
-+	int i;
++	struct OpalIoPhb4ErrorData *data;
 +
-+	for (i = 0; i < pest_size; i++) {
-+		__be64 peA = be64_to_cpu(pestA[i]);
-+		__be64 peB = be64_to_cpu(pestB[i]);
++	data = (struct OpalIoPhb4ErrorData*)common;
++	pr_info("PHB4 PHB#%d Diag-data (Version: %d)\n",
++		hose->global_number, be32_to_cpu(common->version));
++	if (data->brdgCtl)
++		pr_info("brdgCtl:    %08x\n",
++			be32_to_cpu(data->brdgCtl));
++	if (data->deviceStatus || data->slotStatus   ||
++	    data->linkStatus   || data->devCmdStatus ||
++	    data->devSecStatus)
++		pr_info("RootSts:    %08x %08x %08x %08x %08x\n",
++			be32_to_cpu(data->deviceStatus),
++			be32_to_cpu(data->slotStatus),
++			be32_to_cpu(data->linkStatus),
++			be32_to_cpu(data->devCmdStatus),
++			be32_to_cpu(data->devSecStatus));
++	if (data->rootErrorStatus || data->uncorrErrorStatus ||
++	    data->corrErrorStatus)
++		pr_info("RootErrSts: %08x %08x %08x\n",
++			be32_to_cpu(data->rootErrorStatus),
++			be32_to_cpu(data->uncorrErrorStatus),
++			be32_to_cpu(data->corrErrorStatus));
++	if (data->tlpHdr1 || data->tlpHdr2 ||
++	    data->tlpHdr3 || data->tlpHdr4)
++		pr_info("RootErrLog: %08x %08x %08x %08x\n",
++			be32_to_cpu(data->tlpHdr1),
++			be32_to_cpu(data->tlpHdr2),
++			be32_to_cpu(data->tlpHdr3),
++			be32_to_cpu(data->tlpHdr4));
++	if (data->sourceId)
++		pr_info("sourceId:   %08x\n", be32_to_cpu(data->sourceId));
++	if (data->nFir)
++		pr_info("nFir:       %016llx %016llx %016llx\n",
++			be64_to_cpu(data->nFir),
++			be64_to_cpu(data->nFirMask),
++			be64_to_cpu(data->nFirWOF));
++	if (data->phbPlssr || data->phbCsr)
++		pr_info("PhbSts:     %016llx %016llx\n",
++			be64_to_cpu(data->phbPlssr),
++			be64_to_cpu(data->phbCsr));
++	if (data->lemFir)
++		pr_info("Lem:        %016llx %016llx %016llx\n",
++			be64_to_cpu(data->lemFir),
++			be64_to_cpu(data->lemErrorMask),
++			be64_to_cpu(data->lemWOF));
++	if (data->phbErrorStatus)
++		pr_info("PhbErr:     %016llx %016llx %016llx %016llx\n",
++			be64_to_cpu(data->phbErrorStatus),
++			be64_to_cpu(data->phbFirstErrorStatus),
++			be64_to_cpu(data->phbErrorLog0),
++			be64_to_cpu(data->phbErrorLog1));
++	if (data->phbTxeErrorStatus)
++		pr_info("PhbTxeErr:  %016llx %016llx %016llx %016llx\n",
++			be64_to_cpu(data->phbTxeErrorStatus),
++			be64_to_cpu(data->phbTxeFirstErrorStatus),
++			be64_to_cpu(data->phbTxeErrorLog0),
++			be64_to_cpu(data->phbTxeErrorLog1));
++	if (data->phbRxeArbErrorStatus)
++		pr_info("RxeArbErr:  %016llx %016llx %016llx %016llx\n",
++			be64_to_cpu(data->phbRxeArbErrorStatus),
++			be64_to_cpu(data->phbRxeArbFirstErrorStatus),
++			be64_to_cpu(data->phbRxeArbErrorLog0),
++			be64_to_cpu(data->phbRxeArbErrorLog1));
++	if (data->phbRxeMrgErrorStatus)
++		pr_info("RxeMrgErr:  %016llx %016llx %016llx %016llx\n",
++			be64_to_cpu(data->phbRxeMrgErrorStatus),
++			be64_to_cpu(data->phbRxeMrgFirstErrorStatus),
++			be64_to_cpu(data->phbRxeMrgErrorLog0),
++			be64_to_cpu(data->phbRxeMrgErrorLog1));
++	if (data->phbRxeTceErrorStatus)
++		pr_info("RxeTceErr:  %016llx %016llx %016llx %016llx\n",
++			be64_to_cpu(data->phbRxeTceErrorStatus),
++			be64_to_cpu(data->phbRxeTceFirstErrorStatus),
++			be64_to_cpu(data->phbRxeTceErrorLog0),
++			be64_to_cpu(data->phbRxeTceErrorLog1));
 +
-+		if (peA != prevA || peB != prevB) {
-+			if (dup) {
-+				pr_info("PE[..%03x] A/B: as above\n", i-1);
-+				dup = false;
-+			}
-+			prevA = peA;
-+			prevB = peB;
-+			if (peA & PNV_IODA_STOPPED_STATE ||
-+			    peB & PNV_IODA_STOPPED_STATE)
-+				pr_info("PE[%03x] A/B: %016llx %016llx\n",
-+					i, peA, peB);
-+		} else if (!dup && (peA & PNV_IODA_STOPPED_STATE ||
-+				    peB & PNV_IODA_STOPPED_STATE)) {
-+			dup = true;
-+		}
-+	}
++	if (data->phbPblErrorStatus)
++		pr_info("PblErr:     %016llx %016llx %016llx %016llx\n",
++			be64_to_cpu(data->phbPblErrorStatus),
++			be64_to_cpu(data->phbPblFirstErrorStatus),
++			be64_to_cpu(data->phbPblErrorLog0),
++			be64_to_cpu(data->phbPblErrorLog1));
++	if (data->phbPcieDlpErrorStatus)
++		pr_info("PcieDlp:    %016llx %016llx %016llx\n",
++			be64_to_cpu(data->phbPcieDlpErrorLog1),
++			be64_to_cpu(data->phbPcieDlpErrorLog2),
++			be64_to_cpu(data->phbPcieDlpErrorStatus));
++	if (data->phbRegbErrorStatus)
++		pr_info("RegbErr:    %016llx %016llx %016llx %016llx\n",
++			be64_to_cpu(data->phbRegbErrorStatus),
++			be64_to_cpu(data->phbRegbFirstErrorStatus),
++			be64_to_cpu(data->phbRegbErrorLog0),
++			be64_to_cpu(data->phbRegbErrorLog1));
++
++
++	pnv_pci_dump_pest(data->pestA, data->pestB, OPAL_PHB4_NUM_PEST_REGS);
 +}
 +
- static void pnv_pci_dump_p7ioc_diag_data(struct pci_controller *hose,
- 					 struct OpalIoPhbErrorCommon *common)
- {
- 	struct OpalIoP7IOCPhbErrorData *data;
--	int i;
- 
- 	data = (struct OpalIoP7IOCPhbErrorData *)common;
- 	pr_info("P7IOC PHB#%x Diag-data (Version: %d)\n",
-@@ -308,22 +336,13 @@ static void pnv_pci_dump_p7ioc_diag_data(struct pci_controller *hose,
- 			be64_to_cpu(data->dma1ErrorLog0),
- 			be64_to_cpu(data->dma1ErrorLog1));
- 
--	for (i = 0; i < OPAL_P7IOC_NUM_PEST_REGS; i++) {
--		if ((be64_to_cpu(data->pestA[i]) >> 63) == 0 &&
--		    (be64_to_cpu(data->pestB[i]) >> 63) == 0)
--			continue;
--
--		pr_info("PE[%3d] A/B: %016llx %016llx\n",
--			i, be64_to_cpu(data->pestA[i]),
--			be64_to_cpu(data->pestB[i]));
--	}
-+	pnv_pci_dump_pest(data->pestA, data->pestB, OPAL_P7IOC_NUM_PEST_REGS);
- }
- 
- static void pnv_pci_dump_phb3_diag_data(struct pci_controller *hose,
- 					struct OpalIoPhbErrorCommon *common)
- {
- 	struct OpalIoPhb3ErrorData *data;
--	int i;
- 
- 	data = (struct OpalIoPhb3ErrorData*)common;
- 	pr_info("PHB3 PHB#%x Diag-data (Version: %d)\n",
-@@ -404,15 +423,7 @@ static void pnv_pci_dump_phb3_diag_data(struct pci_controller *hose,
- 			be64_to_cpu(data->dma1ErrorLog0),
- 			be64_to_cpu(data->dma1ErrorLog1));
- 
--	for (i = 0; i < OPAL_PHB3_NUM_PEST_REGS; i++) {
--		if ((be64_to_cpu(data->pestA[i]) >> 63) == 0 &&
--		    (be64_to_cpu(data->pestB[i]) >> 63) == 0)
--			continue;
--
--		pr_info("PE[%3d] A/B: %016llx %016llx\n",
--				i, be64_to_cpu(data->pestA[i]),
--				be64_to_cpu(data->pestB[i]));
--	}
-+	pnv_pci_dump_pest(data->pestA, data->pestB, OPAL_PHB3_NUM_PEST_REGS);
- }
- 
  void pnv_pci_dump_phb_diag_data(struct pci_controller *hose,
-diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
-index 18c8a2fa03b8..6abc77dd9261 100644
---- a/arch/powerpc/platforms/powernv/pci.h
-+++ b/arch/powerpc/platforms/powernv/pci.h
-@@ -33,6 +33,9 @@ enum pnv_phb_model {
- #define PNV_IODA_PE_SLAVE	(1 << 4)	/* Slave PE in compound case	*/
- #define PNV_IODA_PE_VF		(1 << 5)	/* PE for one VF 		*/
- 
-+/* Indicates operations are frozen for a PE: MMIO in PESTA & DMA in PESTB. */
-+#define PNV_IODA_STOPPED_STATE	0x8000000000000000
-+
- /* Data associated with a PE, including IOMMU tracking etc.. */
- struct pnv_phb;
- struct pnv_ioda_pe {
+ 				unsigned char *log_buff)
+ {
+@@ -442,6 +544,9 @@ void pnv_pci_dump_phb_diag_data(struct pci_controller *hose,
+ 	case OPAL_PHB_ERROR_DATA_TYPE_PHB3:
+ 		pnv_pci_dump_phb3_diag_data(hose, common);
+ 		break;
++	case OPAL_PHB_ERROR_DATA_TYPE_PHB4:
++		pnv_pci_dump_phb4_diag_data(hose, common);
++		break;
+ 	default:
+ 		pr_warn("%s: Unrecognized ioType %d\n",
+ 			__func__, be32_to_cpu(common->ioType));
 -- 
 2.13.1
