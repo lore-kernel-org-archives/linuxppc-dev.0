@@ -1,49 +1,25 @@
-Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
+ [IPv6:2607:f8b0:400e:c05::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wnnqX18z4zDqM3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jun 2017 23:41:59 +1000 (AEST)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v5EDdPHT131471
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jun 2017 09:41:57 -0400
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2b32txune8-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jun 2017 09:41:56 -0400
-Received: from localhost
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Wed, 14 Jun 2017 23:41:46 +1000
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v5EDffx27078318
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jun 2017 23:41:41 +1000
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v5EDfdor012415
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jun 2017 23:41:40 +1000
-Date: Wed, 14 Jun 2017 19:11:39 +0530
-From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wnnt66ZWjzDq5j
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jun 2017 23:44:14 +1000 (AEST)
+Received: by mail-pg0-x244.google.com with SMTP id a70so139647pge.0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jun 2017 06:44:14 -0700 (PDT)
+Date: Wed, 14 Jun 2017 23:44:00 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, "Shriya R . Kulkarni" <shriykul@in.ibm.com>,
- Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>,
- Ram Pai <linuxram@us.ibm.com>
-Subject: Re: [PATCH] powerpc64/hw_breakpoints: Handle data breakpoints in
- radix mode
-References: <20170613184200.22541-1-naveen.n.rao@linux.vnet.ibm.com>
- <87r2yn1d1g.fsf@skywalker.in.ibm.com>
- <20170614051109.GB16085@naverao1-tp.localdomain>
- <a210ca06-d455-8893-a20b-82f169a1525c@linux.vnet.ibm.com>
- <8737b33wc3.fsf@concordia.ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org, "Gautham R . Shenoy"
+ <ego@linux.vnet.ibm.com>
+Subject: Re: [PATCH 12/13] powerpc/64: runlatch CTRL[RUN] set optimisation
+Message-ID: <20170614234400.214a1586@roar.ozlabs.ibm.com>
+In-Reply-To: <87h8zi3ikj.fsf@concordia.ellerman.id.au>
+References: <20170613130557.26315-1-npiggin@gmail.com>
+ <20170613130557.26315-13-npiggin@gmail.com>
+ <87h8zi3ikj.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <8737b33wc3.fsf@concordia.ellerman.id.au>
-Message-Id: <20170614134139.GC16085@naverao1-tp.localdomain>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -53,50 +29,116 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2017/06/14 04:41PM, Michael Ellerman wrote:
-> "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> writes:
-> > On Wednesday 14 June 2017 10:41 AM, Naveen N. Rao wrote:
-> >> On 2017/06/14 08:38AM, Aneesh Kumar K.V wrote:
-> >>> "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> writes:
-> >>>> diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-> >>>> index ae418b85c17c..17ee701b8336 100644
-> >>>> --- a/arch/powerpc/kernel/exceptions-64s.S
-> >>>> +++ b/arch/powerpc/kernel/exceptions-64s.S
-> >>>> @@ -1411,10 +1411,8 @@ USE_TEXT_SECTION()
-> >>>>   	.balign	IFETCH_ALIGN_BYTES
-> >>>>   do_hash_page:
-> >>>>   #ifdef CONFIG_PPC_STD_MMU_64
-> >>>> -	andis.	r0,r4,0xa410		/* weird error? */
-> >>>> +	andis.	r0,r4,0xa450		/* weird error? */
-> >>>
-> >>> Can we convert that to a #define value. Ram did try to do that here.
-> >>>
-> >>> https://lists.ozlabs.org/pipermail/linuxppc-dev/2017-June/158607.html
-> >> 
-> >> Hmm... I feel it will be good to do that as part of Ram's series since
-> >> he has already coded it up :)
-> >> 
-> >> Ram's patches will anyway require a rebase and the change I do here for
-> >> detecting DAWR already has a #define, so it should be a simple matter of
-> >> including DSISR_DABRMATCH in DSISR_PAGE_FAULT_MASK.
-> >> 
-> >> But, if you really feel that I should make that change here, please do
-> >> let me know and I will re-spin with those changes.
-> >
-> > The thing is that change from 0xa410 to 0xa450 is not clear at all. And 
-> > it needs proper documentation. IMHO the best way to do that is switch to 
-> > #define name for that constant.
+On Wed, 14 Jun 2017 21:38:36 +1000
+Michael Ellerman <mpe@ellerman.id.au> wrote:
+
+> Nicholas Piggin <npiggin@gmail.com> writes:
 > 
-> Not in this patch. It needs to be backported, so it should be as minimal
-> as possible.
-
-Ok.
-
+> > The CTRL register is read-only except bit 63 which is the run latch
+> > control. This means it can be updated with a mtspr rather than
+> > mfspr/mtspr.  
 > 
-> The change from 0xa410 to 0xa450 does need a mention in the changelog,
-> I'll add that.
+> Turns out this doesn't work on Cell.
+> 
+> There's an extra field in there:
+> 
+>   Thread enable bits (Read/Write)
+>   The hypervisor state can suspend its own thread by setting the TE bit
+>   for its thread to '0’. The hypervisor state can resume the opposite
+>   thread by setting the TE bit for the opposite thread to '1'. The
+>   hypervisor state cannot suspend the opposite thread by setting the TE
+>   bit for the opposite thread to ‘0’. This setting is ignored and does not
+>   cause an error.
+>   
+>   TE0 is the thread enable bit for thread 0.
+>   TE1 is the thread enable bit for thread 1.
+>   
+>   If thread 0 executes the mtctrl instruction, these are the bit values:
+>   
+>   [TE0 TE1] Description
+>     0   0   Disable or suspend thread 0; thread 1 unchanged.
+>     0   1   Disable or suspend thread 0; enable or resume thread 1 if it was disabled.
+>     1   0   Unchanged.
+>     1   1   Enable or resume thread 1 if it was disabled.
+>   
+>   If thread 1 executes the mtctrl instruction, these are the bit values:
+>   
+>   [TE0 TE1] Description
+>     0   0    Thread 0 unchanged; disable or suspend thread 1.
+>     0   1    Unchanged.
+>     1   0    Enable or resume thread 0 if it was disabled; disable or suspend thread 1.
+>     1   1    Enable or resume thread 0 if it was disabled.
+> 
+> 
+> So writing either 0 or CTRL_RUNLATCH (1) will disable the thread that
+> does the write - :D
+> 
+> For now I'll just drop this.
 
-Thanks, Michael!
-(emails just started flowing again...)
+Ouch, good catch, thanks. I'll go with something like this (below)
+instead, but I'll do some testing and get numbers first. So dropping
+it should be fine.
 
-- Naveen
+---
+ arch/powerpc/kernel/process.c | 35 +++++++++++++++++++++++++++--------
+ 1 file changed, 27 insertions(+), 8 deletions(-)
+
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index baae104b16c7..f587c1fdf981 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -1960,11 +1960,25 @@ void show_stack(struct task_struct *tsk, unsigned long *stack)
+ void notrace __ppc64_runlatch_on(void)
+ {
+ 	struct thread_info *ti = current_thread_info();
+-	unsigned long ctrl;
+ 
+-	ctrl = mfspr(SPRN_CTRLF);
+-	ctrl |= CTRL_RUNLATCH;
+-	mtspr(SPRN_CTRLT, ctrl);
++	if (cpu_has_feature(CPU_FTR_ARCH_206)) {
++		/*
++		 * Least significant bit (RUN) is the only writable bit of
++		 * the CTRL register, so we can avoid mfspr. 2.06 is not the
++		 * earliest ISA where this is the case, but it's convenient.
++		 */
++		mtspr(SPRN_CTRLT, CTRL_RUNLATCH);
++	} else {
++		unsigned long ctrl;
++
++		/*
++		 * Some architectures (e.g., Cell) have writable fields other
++		 * than RUN, so do the read-modify-write.
++		 */
++		ctrl = mfspr(SPRN_CTRLF);
++		ctrl |= CTRL_RUNLATCH;
++		mtspr(SPRN_CTRLT, ctrl);
++	}
+ 
+ 	ti->local_flags |= _TLF_RUNLATCH;
+ }
+@@ -1973,13 +1987,18 @@ void notrace __ppc64_runlatch_on(void)
+ void notrace __ppc64_runlatch_off(void)
+ {
+ 	struct thread_info *ti = current_thread_info();
+-	unsigned long ctrl;
+ 
+ 	ti->local_flags &= ~_TLF_RUNLATCH;
+ 
+-	ctrl = mfspr(SPRN_CTRLF);
+-	ctrl &= ~CTRL_RUNLATCH;
+-	mtspr(SPRN_CTRLT, ctrl);
++	if (cpu_has_feature(CPU_FTR_ARCH_206)) {
++		mtspr(SPRN_CTRLT, 0);
++	} else {
++		unsigned long ctrl;
++
++		ctrl = mfspr(SPRN_CTRLF);
++		ctrl &= ~CTRL_RUNLATCH;
++		mtspr(SPRN_CTRLT, ctrl);
++	}
+ }
+ #endif /* CONFIG_PPC64 */
+ 
+-- 
+2.11.0
