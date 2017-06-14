@@ -1,21 +1,26 @@
-Return-Path: <bp@alien8.de>
-Received: from mail.skyhub.de (mail.skyhub.de [5.9.137.197])
- by lists.ozlabs.org (Postfix) with ESMTP id 3wnlLc5cJFzDqKy
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jun 2017 21:50:16 +1000 (AEST)
-Date: Wed, 14 Jun 2017 13:50:08 +0200
-From: Borislav Petkov <bp@alien8.de>
-To: Thor Thayer <thor.thayer@linux.intel.com>,
- Chris Packham <chris.packham@alliedtelesis.co.nz>
-Cc: linux-edac@vger.kernel.org, mchehab@kernel.org, mpe@ellerman.id.au,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2 2/3] EDAC: altera: simplify calculation of total memory
-Message-ID: <20170614115008.vqapiwx3zvlfqndn@pd.tnic>
-References: <20170606235500.22772-1-chris.packham@alliedtelesis.co.nz>
- <20170606235500.22772-3-chris.packham@alliedtelesis.co.nz>
- <b052bfda-c5a3-7b23-682c-ab59c9c8ad3a@linux.intel.com>
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
+ [IPv6:2607:f8b0:400e:c00::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wnlpH3ZHmzDqKy
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jun 2017 22:10:47 +1000 (AEST)
+Received: by mail-pf0-x241.google.com with SMTP id d5so14249784pfe.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jun 2017 05:10:47 -0700 (PDT)
+Date: Wed, 14 Jun 2017 21:50:42 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org, "Gautham R . Shenoy"
+ <ego@linux.vnet.ibm.com>
+Subject: Re: [PATCH 09/13] powerpc/64s: cpuidle set polling before enabling
+ irqs
+Message-ID: <20170614215042.45dced67@roar.ozlabs.ibm.com>
+In-Reply-To: <87efum3igr.fsf@concordia.ellerman.id.au>
+References: <20170613130557.26315-1-npiggin@gmail.com>
+ <20170613130557.26315-10-npiggin@gmail.com>
+ <87efum3igr.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <b052bfda-c5a3-7b23-682c-ab59c9c8ad3a@linux.intel.com>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,24 +30,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jun 12, 2017 at 01:34:05PM -0500, Thor Thayer wrote:
-> On 06/06/2017 06:54 PM, Chris Packham wrote:
-> > Use of_address_to_resource() and resource_size() instead of manually
-> > parsing the "reg" property from the "memory" node(s).
-> > 
-> > Signed-off-by: Chris Packham <chris.packham@alliedtelesis.co.nz>
-> > ---
+On Wed, 14 Jun 2017 21:40:52 +1000
+Michael Ellerman <mpe@ellerman.id.au> wrote:
 
-...
-
-> Nice change! Tested on Cyclone5 DevKit & Arria10 DevKit.
+> Nicholas Piggin <npiggin@gmail.com> writes:
 > 
-> Tested-by: Thor Thayer <thor.thayer@linux.intel.com>
+> > local_irq_enable can cause interrupts to be taken which could
+> > take significant amount of processing time. The idle process
+> > should set its polling flag before this, so another process that
+> > wakes it during this time will not have to send an IPI.
+> >
+> > Expand the TIF_POLLING_NRFLAG coverage to as large as possible.
+> >
+> > Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+> > Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> > ---
+> >  drivers/cpuidle/cpuidle-powernv.c | 4 +++-
+> >  drivers/cpuidle/cpuidle-pseries.c | 3 ++-
+> >  2 files changed, 5 insertions(+), 2 deletions(-)  
+> 
+> I don't think the cpuidle folks are really interested in these changes,
+> but we should Cc them to be polite.
+> 
+> Can you resend patches 9, 10, 11 with a subject like:
+> 
+>   "cpuidle: powernv: Set polling ..."
+> 
+> And Cc the cpuidle folks:
+> 
+> $ ./scripts/get_maintainer.pl -f drivers/cpuidle
+> rjw@rjwysocki.net
+> daniel.lezcano@linaro.org
+> linux-pm@vger.kernel.org
+> linux-kernel@vger.kernel.org
 
-Applied, thanks.
+Yeah I can do that. I'll send them as thier own series. They don't
+depend on any of the patches in this series, so I should have done
+that in the first place.
 
--- 
-Regards/Gruss,
-    Boris.
-
-Good mailing practices for 400: avoid top-posting and trim the reply.
+Thanks,
+Nick
