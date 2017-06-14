@@ -1,20 +1,21 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wnlD05nPwzDqLH
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jun 2017 21:44:32 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Davide Caratti <dcaratti@redhat.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] powerpc/configs: fix default values for NF_CT_PROTO_*
-In-Reply-To: <1497356469.2604.18.camel@redhat.com>
-References: <eb1df478772aec9e4caa43f575df5579c1f4170a.1496668107.git.dcaratti@redhat.com>
- <87lgowgo2f.fsf@concordia.ellerman.id.au>
- <1497356469.2604.18.camel@redhat.com>
-Date: Wed, 14 Jun 2017 21:44:31 +1000
-Message-ID: <87bmpq3iao.fsf@concordia.ellerman.id.au>
+Return-Path: <bp@alien8.de>
+Received: from mail.skyhub.de (mail.skyhub.de [5.9.137.197])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3wnlLc5cJFzDqKy
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jun 2017 21:50:16 +1000 (AEST)
+Date: Wed, 14 Jun 2017 13:50:08 +0200
+From: Borislav Petkov <bp@alien8.de>
+To: Thor Thayer <thor.thayer@linux.intel.com>,
+ Chris Packham <chris.packham@alliedtelesis.co.nz>
+Cc: linux-edac@vger.kernel.org, mchehab@kernel.org, mpe@ellerman.id.au,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2 2/3] EDAC: altera: simplify calculation of total memory
+Message-ID: <20170614115008.vqapiwx3zvlfqndn@pd.tnic>
+References: <20170606235500.22772-1-chris.packham@alliedtelesis.co.nz>
+ <20170606235500.22772-3-chris.packham@alliedtelesis.co.nz>
+ <b052bfda-c5a3-7b23-682c-ab59c9c8ad3a@linux.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <b052bfda-c5a3-7b23-682c-ab59c9c8ad3a@linux.intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,37 +25,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Davide Caratti <dcaratti@redhat.com> writes:
+On Mon, Jun 12, 2017 at 01:34:05PM -0500, Thor Thayer wrote:
+> On 06/06/2017 06:54 PM, Chris Packham wrote:
+> > Use of_address_to_resource() and resource_size() instead of manually
+> > parsing the "reg" property from the "memory" node(s).
+> > 
+> > Signed-off-by: Chris Packham <chris.packham@alliedtelesis.co.nz>
+> > ---
 
-> On Tue, 2017-06-13 at 20:49 +1000, Michael Ellerman wrote:
->> Davide Caratti <dcaratti@redhat.com> writes:
->> 
->> > NF_CT_PROTO_{SCTP,UDPLITE,DCCP} can't be set to 'm' anymore, since they
->> > have been redefined as 'bool': fix defconfig for linkstation, mvme5100 and
->> > ppc6xx platforms accordingly.
->> 
->> Since when? ie. which commit changed the symbols to bool from tristate?
->
-> hello Michael,
->
-> the commits are:
->
-> a85406afeb3e ("netfilter: conntrack: built-in support for SCTP")
-> c51d39010a1b ("netfilter: conntrack: built-in support for DCCP")
-> 9b91c96c5d1f ("netfilter: conntrack: built-in support for UDPlite")
->
-> they were causing a "warning symbol value 'm' invalid" in kconfig: sorry
-> for not noticing this before.
+...
 
-No worries. Thanks for sending the fix.
+> Nice change! Tested on Cyclone5 DevKit & Arria10 DevKit.
+> 
+> Tested-by: Thor Thayer <thor.thayer@linux.intel.com>
 
-My auto builder did hit the warning, but it doesn't fail for those
-warnings, eg:
+Applied, thanks.
 
-http://kisskb.ellerman.id.au/kisskb/buildresult/13060278/
+-- 
+Regards/Gruss,
+    Boris.
 
-
-I'm actually going through our configs at the moment so I'll add this to
-that series and merge it for 4.13.
-
-cheers
+Good mailing practices for 400: avoid top-posting and trim the reply.
