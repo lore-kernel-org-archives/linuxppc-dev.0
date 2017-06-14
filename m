@@ -1,18 +1,33 @@
-Return-Path: <ruscur@russell.cc>
-Received: from out4-smtp.messagingengine.com (out4-smtp.messagingengine.com
- [66.111.4.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <sukadev@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wnYML1kKGzDqKy
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jun 2017 14:20:14 +1000 (AEST)
-From: Russell Currey <ruscur@russell.cc>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Russell Currey <ruscur@russell.cc>
-Subject: [PATCH v2 3/3] powerpc/powernv/pci: Add support for PHB4 diagnostics
-Date: Wed, 14 Jun 2017 14:20:00 +1000
-Message-Id: <20170614042000.1258-3-ruscur@russell.cc>
-In-Reply-To: <20170614042000.1258-1-ruscur@russell.cc>
-References: <20170614042000.1258-1-ruscur@russell.cc>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wnYfV653wzDqKy
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jun 2017 14:33:22 +1000 (AEST)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v5E4SYGS063778
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jun 2017 00:33:20 -0400
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2b2stx8rke-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jun 2017 00:33:19 -0400
+Received: from localhost
+ by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
+ Tue, 13 Jun 2017 22:33:19 -0600
+Date: Tue, 13 Jun 2017 21:33:15 -0700
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 0/8] Support for 24x7 hcall interface version 2
+References: <1496350947-30951-1-git-send-email-bauerman@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1496350947-30951-1-git-send-email-bauerman@linux.vnet.ibm.com>
+Message-Id: <20170614043315.GA3644@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,236 +37,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-As with P7IOC and PHB3, add kernel-side support for decoding and printing
-diagnostic data for PHB4.
+Thiago Jung Bauermann [bauerman@linux.vnet.ibm.com] wrote:
+> Hello,
+> 
+> The hypervisor interface to access 24x7 performance counters (which collect
+> performance information from system power on to system power off) has been
+> extended in POWER9 adding new fields to the request and result element
+> structures.
+> 
+> Also, results for some domains now return more than one result element and
+> those need to be added to get a total count.
+> 
+> The first two patches fix bugs in the existing code. The following 4
+> patches are code improvements and the last two finally implement support
+> for the changes in POWER9 described above.
+> 
+> POWER8 systems only support version 1 of the interface, while POWER9
+> systems only support version 2. I tested these patches on POWER8 to verify
+> that there are no regressions, and also on POWER9 DD1.
+> 
+> Thiago Jung Bauermann (8):
+>   powerpc/perf/hv-24x7: Fix passing of catalog version number
+>   powerpc/perf/hv-24x7: Fix off-by-one error in request_buffer check
+>   powerpc/perf/hv-24x7: Properly iterate through results
+>   powerpc-perf/hx-24x7: Don't log failed hcall twice
+>   powerpc/perf/hv-24x7: Fix return value of hcalls
+>   powerpc/perf/hv-24x7: Minor improvements
+>   powerpc/perf/hv-24x7: Support v2 of the hypervisor API
+>   powerpc/perf/hv-24x7: Aggregate result elements on POWER9 SMT8
+> 
+>  arch/powerpc/perf/hv-24x7.c            | 255 +++++++++++++++++++++++++--------
+>  arch/powerpc/perf/hv-24x7.h            |  70 +++++++--
+>  arch/powerpc/platforms/pseries/Kconfig |   2 +-
+>  3 files changed, 255 insertions(+), 72 deletions(-)
 
-Signed-off-by: Russell Currey <ruscur@russell.cc>
----
-No changes from v1
-
- arch/powerpc/include/asm/opal-api.h  |  75 ++++++++++++++++++++++++-
- arch/powerpc/platforms/powernv/pci.c | 105 +++++++++++++++++++++++++++++++++++
- 2 files changed, 178 insertions(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
-index cb3e6242a78c..0b543f0f54f5 100644
---- a/arch/powerpc/include/asm/opal-api.h
-+++ b/arch/powerpc/include/asm/opal-api.h
-@@ -667,12 +667,14 @@ enum {
- 
- enum {
- 	OPAL_PHB_ERROR_DATA_TYPE_P7IOC = 1,
--	OPAL_PHB_ERROR_DATA_TYPE_PHB3 = 2
-+	OPAL_PHB_ERROR_DATA_TYPE_PHB3 = 2,
-+	OPAL_PHB_ERROR_DATA_TYPE_PHB4 = 3
- };
- 
- enum {
- 	OPAL_P7IOC_NUM_PEST_REGS = 128,
--	OPAL_PHB3_NUM_PEST_REGS = 256
-+	OPAL_PHB3_NUM_PEST_REGS = 256,
-+	OPAL_PHB4_NUM_PEST_REGS = 512
- };
- 
- struct OpalIoPhbErrorCommon {
-@@ -802,6 +804,75 @@ struct OpalIoPhb3ErrorData {
- 	__be64 pestB[OPAL_PHB3_NUM_PEST_REGS];
- };
- 
-+struct OpalIoPhb4ErrorData {
-+	struct OpalIoPhbErrorCommon common;
-+
-+	__be32 brdgCtl;
-+
-+	/* PHB4 cfg regs */
-+	__be32 deviceStatus;
-+	__be32 slotStatus;
-+	__be32 linkStatus;
-+	__be32 devCmdStatus;
-+	__be32 devSecStatus;
-+
-+	/* cfg AER regs */
-+	__be32 rootErrorStatus;
-+	__be32 uncorrErrorStatus;
-+	__be32 corrErrorStatus;
-+	__be32 tlpHdr1;
-+	__be32 tlpHdr2;
-+	__be32 tlpHdr3;
-+	__be32 tlpHdr4;
-+	__be32 sourceId;
-+
-+	/* PHB4 ETU Error Regs */
-+	__be64 nFir;				/* 000 */
-+	__be64 nFirMask;			/* 003 */
-+	__be64 nFirWOF;				/* 008 */
-+	__be64 phbPlssr;			/* 120 */
-+	__be64 phbCsr;				/* 110 */
-+	__be64 lemFir;				/* C00 */
-+	__be64 lemErrorMask;			/* C18 */
-+	__be64 lemWOF;				/* C40 */
-+	__be64 phbErrorStatus;			/* C80 */
-+	__be64 phbFirstErrorStatus;		/* C88 */
-+	__be64 phbErrorLog0;			/* CC0 */
-+	__be64 phbErrorLog1;			/* CC8 */
-+	__be64 phbTxeErrorStatus;		/* D00 */
-+	__be64 phbTxeFirstErrorStatus;		/* D08 */
-+	__be64 phbTxeErrorLog0;			/* D40 */
-+	__be64 phbTxeErrorLog1;			/* D48 */
-+	__be64 phbRxeArbErrorStatus;		/* D80 */
-+	__be64 phbRxeArbFirstErrorStatus;	/* D88 */
-+	__be64 phbRxeArbErrorLog0;		/* DC0 */
-+	__be64 phbRxeArbErrorLog1;		/* DC8 */
-+	__be64 phbRxeMrgErrorStatus;		/* E00 */
-+	__be64 phbRxeMrgFirstErrorStatus;	/* E08 */
-+	__be64 phbRxeMrgErrorLog0;		/* E40 */
-+	__be64 phbRxeMrgErrorLog1;		/* E48 */
-+	__be64 phbRxeTceErrorStatus;		/* E80 */
-+	__be64 phbRxeTceFirstErrorStatus;	/* E88 */
-+	__be64 phbRxeTceErrorLog0;		/* EC0 */
-+	__be64 phbRxeTceErrorLog1;		/* EC8 */
-+
-+	/* PHB4 REGB Error Regs */
-+	__be64 phbPblErrorStatus;		/* 1900 */
-+	__be64 phbPblFirstErrorStatus;		/* 1908 */
-+	__be64 phbPblErrorLog0;			/* 1940 */
-+	__be64 phbPblErrorLog1;			/* 1948 */
-+	__be64 phbPcieDlpErrorLog1;		/* 1AA0 */
-+	__be64 phbPcieDlpErrorLog2;		/* 1AA8 */
-+	__be64 phbPcieDlpErrorStatus;		/* 1AB0 */
-+	__be64 phbRegbErrorStatus;		/* 1C00 */
-+	__be64 phbRegbFirstErrorStatus;		/* 1C08 */
-+	__be64 phbRegbErrorLog0;		/* 1C40 */
-+	__be64 phbRegbErrorLog1;		/* 1C48 */
-+
-+	__be64 pestA[OPAL_PHB4_NUM_PEST_REGS];
-+	__be64 pestB[OPAL_PHB4_NUM_PEST_REGS];
-+};
-+
- enum {
- 	OPAL_REINIT_CPUS_HILE_BE	= (1 << 0),
- 	OPAL_REINIT_CPUS_HILE_LE	= (1 << 1),
-diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
-index 209ad47a3383..7905d179d036 100644
---- a/arch/powerpc/platforms/powernv/pci.c
-+++ b/arch/powerpc/platforms/powernv/pci.c
-@@ -426,6 +426,108 @@ static void pnv_pci_dump_phb3_diag_data(struct pci_controller *hose,
- 	pnv_pci_dump_pest(data->pestA, data->pestB, OPAL_PHB3_NUM_PEST_REGS);
- }
- 
-+static void pnv_pci_dump_phb4_diag_data(struct pci_controller *hose,
-+					struct OpalIoPhbErrorCommon *common)
-+{
-+	struct OpalIoPhb4ErrorData *data;
-+
-+	data = (struct OpalIoPhb4ErrorData*)common;
-+	pr_info("PHB4 PHB#%d Diag-data (Version: %d)\n",
-+		hose->global_number, be32_to_cpu(common->version));
-+	if (data->brdgCtl)
-+		pr_info("brdgCtl:    %08x\n",
-+			be32_to_cpu(data->brdgCtl));
-+	if (data->deviceStatus || data->slotStatus   ||
-+	    data->linkStatus   || data->devCmdStatus ||
-+	    data->devSecStatus)
-+		pr_info("RootSts:    %08x %08x %08x %08x %08x\n",
-+			be32_to_cpu(data->deviceStatus),
-+			be32_to_cpu(data->slotStatus),
-+			be32_to_cpu(data->linkStatus),
-+			be32_to_cpu(data->devCmdStatus),
-+			be32_to_cpu(data->devSecStatus));
-+	if (data->rootErrorStatus || data->uncorrErrorStatus ||
-+	    data->corrErrorStatus)
-+		pr_info("RootErrSts: %08x %08x %08x\n",
-+			be32_to_cpu(data->rootErrorStatus),
-+			be32_to_cpu(data->uncorrErrorStatus),
-+			be32_to_cpu(data->corrErrorStatus));
-+	if (data->tlpHdr1 || data->tlpHdr2 ||
-+	    data->tlpHdr3 || data->tlpHdr4)
-+		pr_info("RootErrLog: %08x %08x %08x %08x\n",
-+			be32_to_cpu(data->tlpHdr1),
-+			be32_to_cpu(data->tlpHdr2),
-+			be32_to_cpu(data->tlpHdr3),
-+			be32_to_cpu(data->tlpHdr4));
-+	if (data->sourceId)
-+		pr_info("sourceId:   %08x\n", be32_to_cpu(data->sourceId));
-+	if (data->nFir)
-+		pr_info("nFir:       %016llx %016llx %016llx\n",
-+			be64_to_cpu(data->nFir),
-+			be64_to_cpu(data->nFirMask),
-+			be64_to_cpu(data->nFirWOF));
-+	if (data->phbPlssr || data->phbCsr)
-+		pr_info("PhbSts:     %016llx %016llx\n",
-+			be64_to_cpu(data->phbPlssr),
-+			be64_to_cpu(data->phbCsr));
-+	if (data->lemFir)
-+		pr_info("Lem:        %016llx %016llx %016llx\n",
-+			be64_to_cpu(data->lemFir),
-+			be64_to_cpu(data->lemErrorMask),
-+			be64_to_cpu(data->lemWOF));
-+	if (data->phbErrorStatus)
-+		pr_info("PhbErr:     %016llx %016llx %016llx %016llx\n",
-+			be64_to_cpu(data->phbErrorStatus),
-+			be64_to_cpu(data->phbFirstErrorStatus),
-+			be64_to_cpu(data->phbErrorLog0),
-+			be64_to_cpu(data->phbErrorLog1));
-+	if (data->phbTxeErrorStatus)
-+		pr_info("PhbTxeErr:  %016llx %016llx %016llx %016llx\n",
-+			be64_to_cpu(data->phbTxeErrorStatus),
-+			be64_to_cpu(data->phbTxeFirstErrorStatus),
-+			be64_to_cpu(data->phbTxeErrorLog0),
-+			be64_to_cpu(data->phbTxeErrorLog1));
-+	if (data->phbRxeArbErrorStatus)
-+		pr_info("RxeArbErr:  %016llx %016llx %016llx %016llx\n",
-+			be64_to_cpu(data->phbRxeArbErrorStatus),
-+			be64_to_cpu(data->phbRxeArbFirstErrorStatus),
-+			be64_to_cpu(data->phbRxeArbErrorLog0),
-+			be64_to_cpu(data->phbRxeArbErrorLog1));
-+	if (data->phbRxeMrgErrorStatus)
-+		pr_info("RxeMrgErr:  %016llx %016llx %016llx %016llx\n",
-+			be64_to_cpu(data->phbRxeMrgErrorStatus),
-+			be64_to_cpu(data->phbRxeMrgFirstErrorStatus),
-+			be64_to_cpu(data->phbRxeMrgErrorLog0),
-+			be64_to_cpu(data->phbRxeMrgErrorLog1));
-+	if (data->phbRxeTceErrorStatus)
-+		pr_info("RxeTceErr:  %016llx %016llx %016llx %016llx\n",
-+			be64_to_cpu(data->phbRxeTceErrorStatus),
-+			be64_to_cpu(data->phbRxeTceFirstErrorStatus),
-+			be64_to_cpu(data->phbRxeTceErrorLog0),
-+			be64_to_cpu(data->phbRxeTceErrorLog1));
-+
-+	if (data->phbPblErrorStatus)
-+		pr_info("PblErr:     %016llx %016llx %016llx %016llx\n",
-+			be64_to_cpu(data->phbPblErrorStatus),
-+			be64_to_cpu(data->phbPblFirstErrorStatus),
-+			be64_to_cpu(data->phbPblErrorLog0),
-+			be64_to_cpu(data->phbPblErrorLog1));
-+	if (data->phbPcieDlpErrorStatus)
-+		pr_info("PcieDlp:    %016llx %016llx %016llx\n",
-+			be64_to_cpu(data->phbPcieDlpErrorLog1),
-+			be64_to_cpu(data->phbPcieDlpErrorLog2),
-+			be64_to_cpu(data->phbPcieDlpErrorStatus));
-+	if (data->phbRegbErrorStatus)
-+		pr_info("RegbErr:    %016llx %016llx %016llx %016llx\n",
-+			be64_to_cpu(data->phbRegbErrorStatus),
-+			be64_to_cpu(data->phbRegbFirstErrorStatus),
-+			be64_to_cpu(data->phbRegbErrorLog0),
-+			be64_to_cpu(data->phbRegbErrorLog1));
-+
-+
-+	pnv_pci_dump_pest(data->pestA, data->pestB, OPAL_PHB4_NUM_PEST_REGS);
-+}
-+
- void pnv_pci_dump_phb_diag_data(struct pci_controller *hose,
- 				unsigned char *log_buff)
- {
-@@ -442,6 +544,9 @@ void pnv_pci_dump_phb_diag_data(struct pci_controller *hose,
- 	case OPAL_PHB_ERROR_DATA_TYPE_PHB3:
- 		pnv_pci_dump_phb3_diag_data(hose, common);
- 		break;
-+	case OPAL_PHB_ERROR_DATA_TYPE_PHB4:
-+		pnv_pci_dump_phb4_diag_data(hose, common);
-+		break;
- 	default:
- 		pr_warn("%s: Unrecognized ioType %d\n",
- 			__func__, be32_to_cpu(common->ioType));
--- 
-2.13.1
+Reviewed-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+> 
+> -- 
+> 2.7.4
