@@ -1,12 +1,12 @@
 Return-Path: <javier@dowhile0.org>
-Received: from mail-wr0-x242.google.com (mail-wr0-x242.google.com
- [IPv6:2a00:1450:400c:c0c::242])
+Received: from mail-wm0-x242.google.com (mail-wm0-x242.google.com
+ [IPv6:2a00:1450:400c:c09::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wpXkD4pJFzDqLM
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jun 2017 04:55:00 +1000 (AEST)
-Received: by mail-wr0-x242.google.com with SMTP id 77so4527382wrb.3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Jun 2017 11:55:00 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wpXkG3DTZzDqL9
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jun 2017 04:55:02 +1000 (AEST)
+Received: by mail-wm0-x242.google.com with SMTP id f90so1281480wmh.0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Jun 2017 11:55:02 -0700 (PDT)
 From: Javier Martinez Canillas <javier@dowhile0.org>
 To: linux-kernel@vger.kernel.org
 Cc: Wolfram Sang <wsa@the-dreams.de>, Rob Herring <robh@kernel.org>,
@@ -15,10 +15,10 @@ Cc: Wolfram Sang <wsa@the-dreams.de>, Rob Herring <robh@kernel.org>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Rob Herring <robh+dt@kernel.org>,
  Mark Rutland <mark.rutland@arm.com>, linuxppc-dev@lists.ozlabs.org
-Subject: [RESEND PATCH v5 15/16] powerpc/83xx: Add generic compatible string
+Subject: [RESEND PATCH v5 16/16] powerpc/44x: Add generic compatible string
  for I2C EEPROM
-Date: Thu, 15 Jun 2017 20:54:17 +0200
-Message-Id: <20170615185418.13980-16-javier@dowhile0.org>
+Date: Thu, 15 Jun 2017 20:54:18 +0200
+Message-Id: <20170615185418.13980-17-javier@dowhile0.org>
 In-Reply-To: <20170615185418.13980-1-javier@dowhile0.org>
 References: <20170615185418.13980-1-javier@dowhile0.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -45,9 +45,7 @@ Signed-off-by: Javier Martinez Canillas <javier@dowhile0.org>
 
 ---
 
-Changes in v5:
-- Only replace atmel variant but keep other EEPROM vendors (Geert Uytterhoeven).
-
+Changes in v5: None
 Changes in v4:
 - Only use the atmel manufacturer in the compatible string instead of
   keeping the deprecated ones (Rob Herring).
@@ -55,100 +53,21 @@ Changes in v4:
 Changes in v3: None
 Changes in v2: None
 
- arch/powerpc/boot/dts/mpc8308_p1m.dts  | 2 +-
- arch/powerpc/boot/dts/mpc8349emitx.dts | 4 ++--
- arch/powerpc/boot/dts/mpc8377_rdb.dts  | 2 +-
- arch/powerpc/boot/dts/mpc8377_wlan.dts | 2 +-
- arch/powerpc/boot/dts/mpc8378_rdb.dts  | 2 +-
- arch/powerpc/boot/dts/mpc8379_rdb.dts  | 2 +-
- 6 files changed, 7 insertions(+), 7 deletions(-)
+ arch/powerpc/boot/dts/warp.dts | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/boot/dts/mpc8308_p1m.dts b/arch/powerpc/boot/dts/mpc8308_p1m.dts
-index 57f86cdf9f36..cab933b3957a 100644
---- a/arch/powerpc/boot/dts/mpc8308_p1m.dts
-+++ b/arch/powerpc/boot/dts/mpc8308_p1m.dts
-@@ -123,7 +123,7 @@
- 			interrupt-parent = <&ipic>;
- 			dfsrr;
- 			fram@50 {
--				compatible = "ramtron,24c64";
-+				compatible = "ramtron,24c64", "atmel,24c64";
- 				reg = <0x50>;
+diff --git a/arch/powerpc/boot/dts/warp.dts b/arch/powerpc/boot/dts/warp.dts
+index e576ee85c42f..ea9053ef4819 100644
+--- a/arch/powerpc/boot/dts/warp.dts
++++ b/arch/powerpc/boot/dts/warp.dts
+@@ -238,7 +238,7 @@
+ 
+ 				/* This will create 52 and 53 */
+ 				at24@52 {
+-					compatible = "at,24c04";
++					compatible = "atmel,24c04";
+ 					reg = <0x52>;
+ 				};
  			};
- 		};
-diff --git a/arch/powerpc/boot/dts/mpc8349emitx.dts b/arch/powerpc/boot/dts/mpc8349emitx.dts
-index 90aed3ac2f69..648a85858eb5 100644
---- a/arch/powerpc/boot/dts/mpc8349emitx.dts
-+++ b/arch/powerpc/boot/dts/mpc8349emitx.dts
-@@ -92,7 +92,7 @@
- 			dfsrr;
- 
- 			eeprom: at24@50 {
--				compatible = "st,24c256";
-+				compatible = "st,24c256", "atmel,24c256";
- 				reg = <0x50>;
- 			};
- 
-@@ -130,7 +130,7 @@
- 			};
- 
- 			spd: at24@51 {
--				compatible = "at24,spd";
-+				compatible = "atmel,spd";
- 				reg = <0x51>;
- 			};
- 
-diff --git a/arch/powerpc/boot/dts/mpc8377_rdb.dts b/arch/powerpc/boot/dts/mpc8377_rdb.dts
-index e32613963ab0..5e85d8c93bca 100644
---- a/arch/powerpc/boot/dts/mpc8377_rdb.dts
-+++ b/arch/powerpc/boot/dts/mpc8377_rdb.dts
-@@ -150,7 +150,7 @@
- 				};
- 
- 				at24@50 {
--					compatible = "at24,24c256";
-+					compatible = "atmel,24c256";
- 					reg = <0x50>;
- 				};
- 
-diff --git a/arch/powerpc/boot/dts/mpc8377_wlan.dts b/arch/powerpc/boot/dts/mpc8377_wlan.dts
-index c0c790168b96..fee15fcbb46f 100644
---- a/arch/powerpc/boot/dts/mpc8377_wlan.dts
-+++ b/arch/powerpc/boot/dts/mpc8377_wlan.dts
-@@ -135,7 +135,7 @@
- 				dfsrr;
- 
- 				at24@50 {
--					compatible = "at24,24c256";
-+					compatible = "atmel,24c256";
- 					reg = <0x50>;
- 				};
- 
-diff --git a/arch/powerpc/boot/dts/mpc8378_rdb.dts b/arch/powerpc/boot/dts/mpc8378_rdb.dts
-index 71842fcd621f..e973d61956b9 100644
---- a/arch/powerpc/boot/dts/mpc8378_rdb.dts
-+++ b/arch/powerpc/boot/dts/mpc8378_rdb.dts
-@@ -150,7 +150,7 @@
- 				};
- 
- 				at24@50 {
--					compatible = "at24,24c256";
-+					compatible = "atmel,24c256";
- 					reg = <0x50>;
- 				};
- 
-diff --git a/arch/powerpc/boot/dts/mpc8379_rdb.dts b/arch/powerpc/boot/dts/mpc8379_rdb.dts
-index e442a29b2fe0..ed5d12ff2ee0 100644
---- a/arch/powerpc/boot/dts/mpc8379_rdb.dts
-+++ b/arch/powerpc/boot/dts/mpc8379_rdb.dts
-@@ -148,7 +148,7 @@
- 				};
- 
- 				at24@50 {
--					compatible = "at24,24c256";
-+					compatible = "atmel,24c256";
- 					reg = <0x50>;
- 				};
- 
 -- 
 2.9.3
