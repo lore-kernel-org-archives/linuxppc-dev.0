@@ -1,19 +1,27 @@
-Return-Path: <anton@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
+ [IPv6:2607:f8b0:400e:c05::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wp3FK0L1czDqKv
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Jun 2017 09:46:45 +1000 (AEST)
-From: Anton Blanchard <anton@ozlabs.org>
-To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- ravi.bangoria@linux.vnet.ibm.com, npiggin@gmail.com,
- naveen.n.rao@linux.vnet.ibm.com
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 2/2] powerpc: Fix emulation of mfocrf in emulate_step()
-Date: Thu, 15 Jun 2017 09:46:39 +1000
-Message-Id: <20170614234639.11997-2-anton@ozlabs.org>
-In-Reply-To: <20170614234639.11997-1-anton@ozlabs.org>
-References: <20170614234639.11997-1-anton@ozlabs.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wp3YR2FKkzDqKv
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Jun 2017 10:00:43 +1000 (AEST)
+Received: by mail-pg0-x244.google.com with SMTP id f127so1798802pgc.2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jun 2017 17:00:43 -0700 (PDT)
+Subject: Re: [PATCH kernel] powerpc/debug: Add missing warn flag to WARN_ON's
+ non-builtin path
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Peter Zijlstra <peterz@infradead.org>,
+ linux-kernel@vger.kernel.org,
+ "dan.carpenter@oracle.com" <dan.carpenter@oracle.com>
+References: <20170614030125.45899-1-aik@ozlabs.ru>
+ <87mv9a3k59.fsf@concordia.ellerman.id.au>
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+Message-ID: <bbdd8ae1-7489-db86-3121-58b94c797a28@ozlabs.ru>
+Date: Thu, 15 Jun 2017 10:00:33 +1000
+MIME-Version: 1.0
+In-Reply-To: <87mv9a3k59.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset=koi8-r
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,44 +31,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Anton Blanchard <anton@samba.org>
+On 14/06/17 21:04, Michael Ellerman wrote:
+> Alexey Kardashevskiy <aik@ozlabs.ru> writes:
+> 
+>> When trapped on WARN_ON(), report_bug() is expected to return
+>> BUG_TRAP_TYPE_WARN so the caller could increment NIP by 4 and continue.
+>> The __builtin_constant_p() path of the PPC's WARN_ON() calls (indirectly)
+>> __WARN_FLAGS() which has BUGFLAG_WARNING set, however the other branch
+>> does not which makes report_bug() report a bug rather than a warning.
+>>
+>> Fixes: 19d436268dde95389 ("debug: Add _ONCE() logic to report_bug()")
+>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+>> ---
+>>
+>> Actually 19d436268dde95389 replaced __WARN_TAINT() with __WARN_FLAGS()
+>> and lost BUGFLAG_TAINT() and this is not in the commit log so it is
+>> unclear:
+>> 1) why
+> 
+> I think the rename is because previously the argument was a taint value,
+> whereas now it is a flags value (which is a superset of taint).
+> 
+>> 2) whether this particular patch should be doing
+>>    BUGFLAG_WARNING|BUGFLAG_TAINT(TAINT_WARN)
+>>  or
+>>    BUGFLAG_WARNING|(flags)
+> 
+> There is no flags here so the latter won't work AFAICS.
+> 
+>> Any ideas? Thanks.
+> 
+> Your patch looks correct to me. I assume it works?
 
->From POWER4 onwards, mfocrf() only places the specified CR field into
-the destination GPR, and the rest of it is set to 0. The PowerPC AS
-from version 3.0 now requires this behaviour.
+Yes, it does.
 
-The emulation code currently puts the entire CR into the destination GPR.
-Fix it.
+> 
+> 
+> The bug isn't introduced by 19d436268dde ("debug: Add _ONCE() logic to
+> report_bug()") as far as I can see.
+> 
+> If you check out that revision you see that BUGFLAG_TAINT still contains
+> BUGFLAG_WARNING:
+> 
+> #define BUGFLAG_TAINT(taint)	(BUGFLAG_WARNING | ((taint) << 8))
+> 
+> But that was removed in f26dee15103f ("debug: Avoid setting
+> BUGFLAG_WARNING twice"). So I think the Fixes: tag should point at that
+> commit.
 
-Cc: stable@vger.kernel.org
-Signed-off-by: Anton Blanchard <anton@samba.org>
----
- arch/powerpc/lib/sstep.c | 13 +++++++++++++
- 1 file changed, 13 insertions(+)
+Ah, you're right. Should I repost the patch with the updated "fixes:" clause?
 
-diff --git a/arch/powerpc/lib/sstep.c b/arch/powerpc/lib/sstep.c
-index fb84f51b1f0b..ee33327686ae 100644
---- a/arch/powerpc/lib/sstep.c
-+++ b/arch/powerpc/lib/sstep.c
-@@ -966,6 +966,19 @@ int analyse_instr(struct instruction_op *op, struct pt_regs *regs,
- #endif
- 
- 		case 19:	/* mfcr */
-+			if ((instr >> 20) & 1) {
-+				imm = 0xf0000000UL;
-+				for (sh = 0; sh < 8; ++sh) {
-+					if (instr & (0x80000 >> sh)) {
-+						regs->gpr[rd] = regs->ccr & imm;
-+						break;
-+					}
-+					imm >>= 4;
-+				}
-+
-+				goto instr_done;
-+			}
-+
- 			regs->gpr[rd] = regs->ccr;
- 			regs->gpr[rd] &= 0xffffffffUL;
- 			goto instr_done;
+
+> 
+> cheers
+> 
+>> diff --git a/arch/powerpc/include/asm/bug.h b/arch/powerpc/include/asm/bug.h
+>> index f2c562a0a427..0151af6c2a50 100644
+>> --- a/arch/powerpc/include/asm/bug.h
+>> +++ b/arch/powerpc/include/asm/bug.h
+>> @@ -104,7 +104,7 @@
+>>  		"1:	"PPC_TLNEI"	%4,0\n"			\
+>>  		_EMIT_BUG_ENTRY					\
+>>  		: : "i" (__FILE__), "i" (__LINE__),		\
+>> -		  "i" (BUGFLAG_TAINT(TAINT_WARN)),		\
+>> +		  "i" (BUGFLAG_WARNING|BUGFLAG_TAINT(TAINT_WARN)),\
+>>  		  "i" (sizeof(struct bug_entry)),		\
+>>  		  "r" (__ret_warn_on));				\
+>>  	}							\
+>> -- 
+>> 2.11.0
+
+
 -- 
-2.11.0
+Alexey
