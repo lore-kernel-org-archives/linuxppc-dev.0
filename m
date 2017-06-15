@@ -1,25 +1,22 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <mark@klomp.org>
+Received: from gnu.wildebeest.org (wildebeest.demon.nl [212.238.236.112])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wpL6D1p0vzDqL8
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Jun 2017 20:56:35 +1000 (AEST)
-Message-ID: <1497524175.2897.75.camel@kernel.crashing.org>
-Subject: Re: [PATCH kernel 2/3] pci-ioda: Set PCI_BUS_FLAGS_MSI_REMAP for
- IODA host bridge
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Michael Ellerman <mpe@ellerman.id.au>, Alexey Kardashevskiy
- <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org
-Cc: kvm@vger.kernel.org, linux-pci@vger.kernel.org,
- linux-kernel@vger.kernel.org, Gavin Shan <gwshan@linux.vnet.ibm.com>,
- Yongji Xie <elohimes@gmail.com>, Alex Williamson
- <alex.williamson@redhat.com>, Paul Mackerras <paulus@samba.org>, Yongji Xie
- <xyjxie@linux.vnet.ibm.com>, David Gibson <david@gibson.dropbear.id.au>
-Date: Thu, 15 Jun 2017 20:56:15 +1000
-In-Reply-To: <877f0dppql.fsf@concordia.ellerman.id.au>
-References: <20170615054845.8428-1-aik@ozlabs.ru>
- <20170615054845.8428-3-aik@ozlabs.ru>
- <877f0dppql.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wpLYM2RLxzDqL8
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Jun 2017 21:16:38 +1000 (AEST)
+Message-ID: <1497525392.3755.307.camel@klomp.org>
+Subject: Re: [PATCH v2] perf: libdw support for powerpc [ping]
+From: Mark Wielaard <mark@klomp.org>
+To: Milian Wolff <milian.wolff@kdab.com>
+Cc: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>, Paolo Bonzini
+ <pbonzini@redhat.com>, linux-kernel@vger.kernel.org, acme@kernel.org,
+ "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
+Date: Thu, 15 Jun 2017 13:16:32 +0200
+In-Reply-To: <3621613.kMnvz8Tm3d@milian-kdab2>
+References: <1496312681-20133-1-git-send-email-pbonzini@redhat.com>
+ <1497354282.3755.201.camel@klomp.org> <59400ADD.4090709@linux.vnet.ibm.com>
+ <3621613.kMnvz8Tm3d@milian-kdab2>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -31,31 +28,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2017-06-15 at 19:25 +1000, Michael Ellerman wrote:
-> Alexey Kardashevskiy <aik@ozlabs.ru> writes:
-> 
-> > From: Yongji Xie <elohimes@gmail.com>
-> > 
-> > Any IODA host bridge have the capability of IRQ remapping.
-> > So we set PCI_BUS_FLAGS_MSI_REMAP when this kind of host birdge
-> > is detected.
-> 
-> Where's the code that actually enforces this property?
-> 
-> It would be good to have a comment in pnv_pci_ioda_root_bridge_prepare()
-> (probably), pointing to that code, so that we can remember the
-> relationship between the two.
+On Thu, 2017-06-15 at 10:46 +0200, Milian Wolff wrote:
+> Just a quick question: Have you guys applied my recent patch:
+>=20
+> commit 5ea0416f51cc93436bbe497c62ab49fd9cb245b6
+> Author: Milian Wolff <milian.wolff@kdab.com>
+> Date:   Thu Jun 1 23:00:21 2017 +0200
+>=20
+>     perf report: Include partial stacks unwound with libdw
+>    =20
+>     So far the whole stack was thrown away when any error occurred before
+>     the maximum stack depth was unwound. This is actually a very common
+>     scenario though. The stacks that got unwound so far are still
+>     interesting. This removes a large chunk of differences when comparing
+>     perf script output for libunwind and libdw perf unwinding.
+>=20
+> If not, then this could explain the issue you are seeing.
 
-Actually it's not so much remapping as:
-
- - The bridge can enforce that the interrupt is allowed for a given
-partition
-
- - Because the interrupts are handled via the hypervisor, the latter
-can do the remapping.
-
-But the effect is the same, so yes we want the flag. On P9 with XIVE
-exploitation we also have HW remapping on top.
+Thanks! No, I didn't have that patch (*) yet. It makes a huge
+difference. With that, Paolo's patch and the elfutils libdw powerpc64
+fallback unwinder patch, it looks like I get user stack traces for
+everything now on ppc64le.
 
 Cheers,
-Ben.
+
+Mark
+
+(*) It just this one-liner, but what a difference that makes:
+
+--- a/tools/perf/util/unwind-libdw.c
++++ b/tools/perf/util/unwind-libdw.c
+@@ -224,7 +224,7 @@ int unwind__get_entries(unwind_entry_cb_t cb, void *arg=
+,
+=20
+        err =3D dwfl_getthread_frames(ui->dwfl, thread->tid, frame_callback=
+, ui);
+=20
+-       if (err && !ui->max_stack)
++       if (err && ui->max_stack !=3D max_stack)
+                err =3D 0;
+=20
+        /*
