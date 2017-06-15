@@ -1,38 +1,26 @@
 Return-Path: <javier@dowhile0.org>
-Received: from mail-wm0-x244.google.com (mail-wm0-x244.google.com
- [IPv6:2a00:1450:400c:c09::244])
+Received: from mail-wm0-x242.google.com (mail-wm0-x242.google.com
+ [IPv6:2a00:1450:400c:c09::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wpXjf0VlCzDqL9
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jun 2017 04:54:29 +1000 (AEST)
-Received: by mail-wm0-x244.google.com with SMTP id d17so1277780wme.3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Jun 2017 11:54:29 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wpXk541nSzDqLV
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jun 2017 04:54:53 +1000 (AEST)
+Received: by mail-wm0-x242.google.com with SMTP id 70so1278833wme.1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Jun 2017 11:54:53 -0700 (PDT)
 From: Javier Martinez Canillas <javier@dowhile0.org>
 To: linux-kernel@vger.kernel.org
 Cc: Wolfram Sang <wsa@the-dreams.de>, Rob Herring <robh@kernel.org>,
- Javier Martinez Canillas <javier@dowhile0.org>,
- Florian Larysch <fl@n621.de>, David Lechner <david@lechnology.com>,
- Rob Herring <robh+dt@kernel.org>,
- Andy Shevchenko <andy.shevchenko@gmail.com>,
- Catalin Marinas <catalin.marinas@arm.com>,
- =?UTF-8?q?S=C3=B6ren=20Brinkmann?= <soren.brinkmann@xilinx.com>,
- Simon Horman <horms@verge.net.au>, Michal Simek <michal.simek@xilinx.com>,
- Dinh Nguyen <dinguyen@kernel.org>, Russell King <linux@armlinux.org.uk>,
- Will Deacon <will.deacon@arm.com>, devicetree@vger.kernel.org,
- Sekhar Nori <nsekhar@ti.com>, Scott Wood <oss@buserror.net>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Joachim Eastwood <manabian@gmail.com>, Mark Rutland <mark.rutland@arm.com>,
- linux-arm-kernel@lists.infradead.org,
- Masahiro Yamada <yamada.masahiro@socionext.com>,
+ Javier Martinez Canillas <javier@dowhile0.org>, devicetree@vger.kernel.org,
  Michael Ellerman <mpe@ellerman.id.au>,
- Santosh Shilimkar <ssantosh@kernel.org>, linux-renesas-soc@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, Magnus Damm <magnus.damm@gmail.com>,
- linuxppc-dev@lists.ozlabs.org,
- =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <kernel@pengutronix.de>,
- linux-i2c@vger.kernel.org
-Subject: [RESEND PATCH v5 00/16] eeprom: at24: Add OF device ID table
-Date: Thu, 15 Jun 2017 20:54:02 +0200
-Message-Id: <20170615185418.13980-1-javier@dowhile0.org>
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Rob Herring <robh+dt@kernel.org>,
+ Mark Rutland <mark.rutland@arm.com>, linuxppc-dev@lists.ozlabs.org
+Subject: [RESEND PATCH v5 12/16] powerpc/5200: Add generic compatible string
+ for I2C EEPROM
+Date: Thu, 15 Jun 2017 20:54:14 +0200
+Message-Id: <20170615185418.13980-13-javier@dowhile0.org>
+In-Reply-To: <20170615185418.13980-1-javier@dowhile0.org>
+References: <20170615185418.13980-1-javier@dowhile0.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,139 +30,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello Wolfram,
+The at24 driver allows to register I2C EEPROM chips using different vendor
+and devices, but the I2C subsystem does not take the vendor into account
+when matching using the I2C table since it only has device entries.
 
-This series is a follow-up to patch [0] that added an OF device ID table
-to the at24 EEPROM driver. As you suggested [1], this version instead of
-adding entries for every used <vendor,device> tuple, only adds a single
-entry for each chip type using the "atmel" vendor as a generic fallback.
+But when matching using an OF table, both the vendor and device has to be
+taken into account so the driver defines only a set of compatible strings
+using the "atmel" vendor as a generic fallback for compatible I2C devices.
 
-The first patch documents in the DT binding what's the correct vendor to
-use and what are the ones that are being deprecated. The second one adds
-the OF device ID table for the at24 driver and the next patches use this
-vendor in the compatible string to each DTS that defines a compatible I2C
-EEPROM device node.
+So add this generic fallback to the device node compatible string to make
+the device to match the driver using the OF device ID table.
 
-Patches can be applied independently since the DTS changes without driver
-changes are no-op and the OF table won't be used without the DTS changes.
+Signed-off-by: Javier Martinez Canillas <javier@dowhile0.org>
 
-[0]: https://lkml.org/lkml/2017/3/14/589
-[1]: https://lkml.org/lkml/2017/3/15/99
-
-Best regards,
-Javier
+---
 
 Changes in v5:
-- Only deprecate the atmel variants at25 and at (Geert Uytterhoeven).
-- Only replace atmel variant but keep other EEPROM vendors (Geert Uytterhoeven).
-- Only replace atmel variant but keep other EEPROM vendors (Geert Uytterhoeven).
-- Only replace atmel variant but keep other EEPROM vendors (Geert Uytterhoeven).
-- Only replace atmel variant but keep other EEPROM vendors (Geert Uytterhoeven).
-- Only replace atmel variant but keep other EEPROM vendors (Geert Uytterhoeven).
-- Only replace atmel variant but keep other EEPROM vendors (Geert Uytterhoeven).
-- Only replace atmel variant but keep other EEPROM vendors (Geert Uytterhoeven).
 - Only replace atmel variant but keep other EEPROM vendors (Geert Uytterhoeven).
 
 Changes in v4:
-- Document the manufacturers that have been deprecated (Rob Herring).
-- Only use the atmel manufacturer in the compatible string instead of
-  keeping the deprecated ones (Rob Herring).
-- Only use the atmel manufacturer in the compatible string instead of
-  keeping the deprecated ones (Rob Herring).
-- Only use the atmel manufacturer in the compatible string instead of
-  keeping the deprecated ones (Rob Herring).
-- Only use the atmel manufacturer in the compatible string instead of
-  keeping the deprecated ones (Rob Herring).
-- Only use the atmel manufacturer in the compatible string instead of
-  keeping the deprecated ones (Rob Herring).
-- Only use the atmel manufacturer in the compatible string instead of
-  keeping the deprecated ones (Rob Herring).
-- Only use the atmel manufacturer in the compatible string instead of
-  keeping the deprecated ones (Rob Herring).
-- Only use the atmel manufacturer in the compatible string instead of
-  keeping the deprecated ones (Rob Herring).
-- Only use the atmel manufacturer in the compatible string instead of
-  keeping the deprecated ones (Rob Herring).
-- Only use the atmel manufacturer in the compatible string instead of
-  keeping the deprecated ones (Rob Herring).
-- Only use the atmel manufacturer in the compatible string instead of
-  keeping the deprecated ones (Rob Herring).
-- Only use the atmel manufacturer in the compatible string instead of
-  keeping the deprecated ones (Rob Herring).
-- Only use the atmel manufacturer in the compatible string instead of
-  keeping the deprecated ones (Rob Herring).
 - Only use the atmel manufacturer in the compatible string instead of
   keeping the deprecated ones (Rob Herring).
 
-Changes in v3:
-- Fix wrong .data values for "atmel,24c02" and "atmel,24c64" entries.
-- Add Geert Uytterhoeven reviewed-by tag.
-- Add Geert Uytterhoeven reviewed-by tag.
+Changes in v3: None
+Changes in v2: None
 
-Changes in v2:
-- Only add a single OF device ID entry for each device type (Wolfram Sang).
+ arch/powerpc/boot/dts/digsy_mtc.dts | 2 +-
+ arch/powerpc/boot/dts/pcm030.dts    | 2 +-
+ arch/powerpc/boot/dts/pcm032.dts    | 2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
 
-Javier Martinez Canillas (16):
-  dt-bindings: i2c: eeprom: Document vendor to be used and deprecated
-    ones
-  eeprom: at24: Add OF device ID table
-  ARM: dts: efm32: Add generic compatible string for I2C EEPROM
-  ARM: dts: keystone: Add generic compatible string for I2C EEPROM
-  ARM: dts: lpc18xx: Add generic compatible string for I2C EEPROM
-  ARM: dts: r7s72100: Add generic compatible string for I2C EEPROM
-  ARM: dts: koelsch: Add generic compatible string for I2C EEPROM
-  ARM: dts: socfpga: Add generic compatible string for I2C EEPROM
-  ARM: dts: uniphier: Add generic compatible string for I2C EEPROM
-  ARM: dts: zynq: Add generic compatible string for I2C EEPROM
-  arm64: zynqmp: Add generic compatible string for I2C EEPROM
-  powerpc/5200: Add generic compatible string for I2C EEPROM
-  powerpc/fsl: Add generic compatible string for I2C EEPROM
-  powerpc/512x: Add generic compatible string for I2C EEPROM
-  powerpc/83xx: Add generic compatible string for I2C EEPROM
-  powerpc/44x: Add generic compatible string for I2C EEPROM
-
- .../devicetree/bindings/eeprom/eeprom.txt          |  6 +-
- arch/arm/boot/dts/efm32gg-dk3750.dts               |  2 +-
- arch/arm/boot/dts/keystone-k2e-evm.dts             |  2 +-
- arch/arm/boot/dts/keystone-k2hk-evm.dts            |  2 +-
- arch/arm/boot/dts/keystone-k2l-evm.dts             |  2 +-
- arch/arm/boot/dts/lpc4337-ciaa.dts                 |  6 +-
- arch/arm/boot/dts/lpc4350-hitex-eval.dts           |  2 +-
- arch/arm/boot/dts/lpc4357-ea4357-devkit.dts        |  2 +-
- arch/arm/boot/dts/r7s72100-genmai.dts              |  2 +-
- arch/arm/boot/dts/r8a7791-koelsch.dts              |  2 +-
- arch/arm/boot/dts/socfpga_cyclone5_vining_fpga.dts |  2 +-
- arch/arm/boot/dts/uniphier-pro4-ace.dts            |  2 +-
- arch/arm/boot/dts/uniphier-pro4-sanji.dts          |  2 +-
- arch/arm/boot/dts/uniphier-pxs2-gentil.dts         |  2 +-
- arch/arm/boot/dts/zynq-zc702.dts                   |  2 +-
- arch/arm/boot/dts/zynq-zc706.dts                   |  2 +-
- arch/arm64/boot/dts/xilinx/zynqmp-ep108.dts        |  4 +-
- arch/powerpc/boot/dts/digsy_mtc.dts                |  2 +-
- arch/powerpc/boot/dts/fsl/b4qds.dtsi               |  8 +--
- arch/powerpc/boot/dts/fsl/c293pcie.dts             |  2 +-
- arch/powerpc/boot/dts/fsl/p1010rdb.dtsi            |  2 +-
- arch/powerpc/boot/dts/fsl/p1023rdb.dts             |  2 +-
- arch/powerpc/boot/dts/fsl/p2041rdb.dts             |  4 +-
- arch/powerpc/boot/dts/fsl/p3041ds.dts              |  4 +-
- arch/powerpc/boot/dts/fsl/p4080ds.dts              |  4 +-
- arch/powerpc/boot/dts/fsl/p5020ds.dts              |  4 +-
- arch/powerpc/boot/dts/fsl/p5040ds.dts              |  4 +-
- arch/powerpc/boot/dts/fsl/t208xqds.dtsi            |  8 +--
- arch/powerpc/boot/dts/fsl/t4240qds.dts             | 12 ++--
- arch/powerpc/boot/dts/fsl/t4240rdb.dts             |  6 +-
- arch/powerpc/boot/dts/mpc5121ads.dts               |  2 +-
- arch/powerpc/boot/dts/mpc8308_p1m.dts              |  2 +-
- arch/powerpc/boot/dts/mpc8349emitx.dts             |  4 +-
- arch/powerpc/boot/dts/mpc8377_rdb.dts              |  2 +-
- arch/powerpc/boot/dts/mpc8377_wlan.dts             |  2 +-
- arch/powerpc/boot/dts/mpc8378_rdb.dts              |  2 +-
- arch/powerpc/boot/dts/mpc8379_rdb.dts              |  2 +-
- arch/powerpc/boot/dts/pcm030.dts                   |  2 +-
- arch/powerpc/boot/dts/pcm032.dts                   |  2 +-
- arch/powerpc/boot/dts/warp.dts                     |  2 +-
- drivers/misc/eeprom/at24.c                         | 65 +++++++++++++++++++++-
- 41 files changed, 130 insertions(+), 63 deletions(-)
-
+diff --git a/arch/powerpc/boot/dts/digsy_mtc.dts b/arch/powerpc/boot/dts/digsy_mtc.dts
+index 955bff629df3..c280e75c86bf 100644
+--- a/arch/powerpc/boot/dts/digsy_mtc.dts
++++ b/arch/powerpc/boot/dts/digsy_mtc.dts
+@@ -73,7 +73,7 @@
+ 
+ 		i2c@3d00 {
+ 			eeprom@50 {
+-				compatible = "at,24c08";
++				compatible = "atmel,24c08";
+ 				reg = <0x50>;
+ 			};
+ 
+diff --git a/arch/powerpc/boot/dts/pcm030.dts b/arch/powerpc/boot/dts/pcm030.dts
+index 192e66af0001..836e47cc4bed 100644
+--- a/arch/powerpc/boot/dts/pcm030.dts
++++ b/arch/powerpc/boot/dts/pcm030.dts
+@@ -71,7 +71,7 @@
+ 				reg = <0x51>;
+ 			};
+ 			eeprom@52 {
+-				compatible = "catalyst,24c32";
++				compatible = "catalyst,24c32", "atmel,24c32";
+ 				reg = <0x52>;
+ 				pagesize = <32>;
+ 			};
+diff --git a/arch/powerpc/boot/dts/pcm032.dts b/arch/powerpc/boot/dts/pcm032.dts
+index 96b139bf50e9..576249bf2fb9 100644
+--- a/arch/powerpc/boot/dts/pcm032.dts
++++ b/arch/powerpc/boot/dts/pcm032.dts
+@@ -75,7 +75,7 @@
+ 				reg = <0x51>;
+ 			};
+ 			eeprom@52 {
+-				compatible = "catalyst,24c32";
++				compatible = "catalyst,24c32", "atmel,24c32";
+ 				reg = <0x52>;
+ 				pagesize = <32>;
+ 			};
 -- 
 2.9.3
