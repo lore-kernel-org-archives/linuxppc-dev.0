@@ -1,25 +1,14 @@
-Return-Path: <mpe@ellerman.id.au>
+Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wpCzT1jpszDqL8
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Jun 2017 16:20:21 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wpD9g49ySzDqL8
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Jun 2017 16:29:11 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Peter Zijlstra <peterz@infradead.org>,
- linux-kernel@vger.kernel.org,
- "dan.carpenter\@oracle.com" <dan.carpenter@oracle.com>
-Subject: Re: [PATCH kernel] powerpc/debug: Add missing warn flag to WARN_ON's
- non-builtin path
-In-Reply-To: <bbdd8ae1-7489-db86-3121-58b94c797a28@ozlabs.ru>
-References: <20170614030125.45899-1-aik@ozlabs.ru>
- <87mv9a3k59.fsf@concordia.ellerman.id.au>
- <bbdd8ae1-7489-db86-3121-58b94c797a28@ozlabs.ru>
-Date: Thu, 15 Jun 2017 16:20:20 +1000
-Message-ID: <87h8zhpyaj.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] Revert "powerpc: Handle simultaneous interrupts at once"
+Date: Thu, 15 Jun 2017 16:28:55 +1000
+Message-Id: <1497508135-7016-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,58 +18,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Alexey Kardashevskiy <aik@ozlabs.ru> writes:
+This reverts commit 45cb08f4791ce6a15c54598b4cb73db4b4b8294f.
 
-> On 14/06/17 21:04, Michael Ellerman wrote:
->> Alexey Kardashevskiy <aik@ozlabs.ru> writes:
->> 
->>> When trapped on WARN_ON(), report_bug() is expected to return
->>> BUG_TRAP_TYPE_WARN so the caller could increment NIP by 4 and continue.
->>> The __builtin_constant_p() path of the PPC's WARN_ON() calls (indirectly)
->>> __WARN_FLAGS() which has BUGFLAG_WARNING set, however the other branch
->>> does not which makes report_bug() report a bug rather than a warning.
->>>
->>> Fixes: 19d436268dde95389 ("debug: Add _ONCE() logic to report_bug()")
->>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
->>> ---
->>>
->>> Actually 19d436268dde95389 replaced __WARN_TAINT() with __WARN_FLAGS()
->>> and lost BUGFLAG_TAINT() and this is not in the commit log so it is
->>> unclear:
->>> 1) why
->> 
->> I think the rename is because previously the argument was a taint value,
->> whereas now it is a flags value (which is a superset of taint).
->> 
->>> 2) whether this particular patch should be doing
->>>    BUGFLAG_WARNING|BUGFLAG_TAINT(TAINT_WARN)
->>>  or
->>>    BUGFLAG_WARNING|(flags)
->> 
->> There is no flags here so the latter won't work AFAICS.
->> 
->>> Any ideas? Thanks.
->> 
->> Your patch looks correct to me. I assume it works?
->
-> Yes, it does.
+For some reason this is causing IRQ problems on Freescale Book3E
+machines, eg on my p5020ds:
 
-Thanks.
+  irq 25: nobody cared (try booting with the "irqpoll" option)
+  CPU: 0 PID: 1 Comm: swapper/0 Not tainted 4.12.0-rc3-gcc-6.3.1-00037-g45cb08f4791c #624
+  Call Trace:
+  [c0000000fffdbb10] [c00000000049962c] .dump_stack+0xa8/0xe8 (unreliable)
+  [c0000000fffdbba0] [c0000000000babf4] .__report_bad_irq+0x54/0x140
+  [c0000000fffdbc40] [c0000000000bb11c] .note_interrupt+0x324/0x380
+  [c0000000fffdbd00] [c0000000000b7110] .handle_irq_event_percpu+0x68/0x88
+  [c0000000fffdbd90] [c0000000000b718c] .handle_irq_event+0x5c/0xa8
+  [c0000000fffdbe10] [c0000000000bc01c] .handle_fasteoi_irq+0xe4/0x298
+  [c0000000fffdbe90] [c0000000000b59c4] .generic_handle_irq+0x50/0x74
+  [c0000000fffdbf10] [c0000000000075d8] .__do_irq+0x74/0x1f0
+  [c0000000fffdbf90] [c0000000000189f8] .call_do_irq+0x14/0x24
+  [c0000000f7173060] [c0000000000077e4] .do_IRQ+0x90/0x120
+  [c0000000f7173100] [c00000000001d93c] exc_0x500_common+0xfc/0x100
+  --- interrupt: 501 at .prepare_to_wait_event+0xc/0x14c
+      LR = .fsl_elbc_run_command+0xc8/0x23c
+  [c0000000f71734d0] [c00000000065f418] .nand_reset+0xb8/0x168
+  [c0000000f7173560] [c00000000065fec4] .nand_scan_ident+0x2b0/0x1638
+  [c0000000f7173650] [c000000000666cd8] .fsl_elbc_nand_probe+0x34c/0x5f0
+  ata2: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
+  [c0000000f7173750] [c0000000005a3c60] .platform_drv_probe+0x64/0xb0
+  [c0000000f71737d0] [c0000000005a12e0] .really_probe+0x290/0x334
+  [c0000000f7173870] [c0000000005a14a0] .__driver_attach+0x11c/0x120
+  [c0000000f7173900] [c00000000059e6a0] .bus_for_each_dev+0x98/0xfc
+  [c0000000f71739a0] [c0000000005a0b3c] .driver_attach+0x34/0x4c
+  [c0000000f7173a20] [c0000000005a04b0] .bus_add_driver+0x1ac/0x2e0
+  [c0000000f7173ac0] [c0000000005a2170] .driver_register+0x94/0x160
+  [c0000000f7173b40] [c0000000005a3be0] .__platform_driver_register+0x60/0x7c
+  [c0000000f7173bc0] [c000000000d6aab4] .fsl_elbc_nand_driver_init+0x24/0x38
+  [c0000000f7173c30] [c000000000001934] .do_one_initcall+0x68/0x1b8
+  [c0000000f7173d00] [c000000000d210f8] .kernel_init_freeable+0x260/0x338
+  [c0000000f7173db0] [c0000000000021b0] .kernel_init+0x20/0xe70
+  [c0000000f7173e30] [c0000000000009bc] .ret_from_kernel_thread+0x58/0x9c
+  handlers:
+  [<c000000000ed85c8>] .fsl_lbc_ctrl_irq
+  Disabling IRQ #25
 
->> The bug isn't introduced by 19d436268dde ("debug: Add _ONCE() logic to
->> report_bug()") as far as I can see.
->> 
->> If you check out that revision you see that BUGFLAG_TAINT still contains
->> BUGFLAG_WARNING:
->> 
->> #define BUGFLAG_TAINT(taint)	(BUGFLAG_WARNING | ((taint) << 8))
->> 
->> But that was removed in f26dee15103f ("debug: Avoid setting
->> BUGFLAG_WARNING twice"). So I think the Fixes: tag should point at that
->> commit.
->
-> Ah, you're right. Should I repost the patch with the updated "fixes:" clause?
+Ben also had concerns with the implementation being potentially slow on
+some PICs, so revert it for now.
 
-No that's fine I can update it.
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/kernel/irq.c | 6 +-----
+ 1 file changed, 1 insertion(+), 5 deletions(-)
 
-cheers
+diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
+index ab2ed9afd3c2..5c291df30fe3 100644
+--- a/arch/powerpc/kernel/irq.c
++++ b/arch/powerpc/kernel/irq.c
+@@ -481,11 +481,7 @@ void __do_irq(struct pt_regs *regs)
+ 	if (unlikely(!irq))
+ 		__this_cpu_inc(irq_stat.spurious_irqs);
+ 	else
+-		do {
+-			generic_handle_irq(irq);
+-
+-			irq = ppc_md.get_irq();
+-		} while (irq);
++		generic_handle_irq(irq);
+ 
+ 	trace_irq_exit(regs);
+ 
+-- 
+2.7.4
