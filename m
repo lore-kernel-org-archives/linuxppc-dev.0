@@ -1,14 +1,22 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <anton@samba.org>
+Received: from hr2.samba.org (hr2.samba.org [IPv6:2a01:4f8:192:486::147:1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wpD9g49ySzDqL8
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Jun 2017 16:29:11 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] Revert "powerpc: Handle simultaneous interrupts at once"
-Date: Thu, 15 Jun 2017 16:28:55 +1000
-Message-Id: <1497508135-7016-1-git-send-email-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wpDbF4zz2zDqL8
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Jun 2017 16:47:53 +1000 (AEST)
+Date: Thu, 15 Jun 2017 16:47:29 +1000
+From: Anton Blanchard <anton@samba.org>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ ravi.bangoria@linux.vnet.ibm.com, npiggin@gmail.com,
+ naveen.n.rao@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 1/2] powerpc: Fix emulation of mcrf in emulate_step()
+Message-ID: <20170615164729.09f0f83a@kryten>
+In-Reply-To: <20170615041805.GB16550@gate.crashing.org>
+References: <20170614234639.11997-1-anton@ozlabs.org>
+ <20170615041805.GB16550@gate.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,72 +26,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This reverts commit 45cb08f4791ce6a15c54598b4cb73db4b4b8294f.
+Hi Segher,
 
-For some reason this is causing IRQ problems on Freescale Book3E
-machines, eg on my p5020ds:
+> On Thu, Jun 15, 2017 at 09:46:38AM +1000, Anton Blanchard wrote:
+> > The mcrf emulation code was looking at the CR fields in the reverse
+> > order. It also relied on reserved fields being zero which is
+> > somewhat fragile, so fix that too.  
+> 
+> It masked out the reserved bits.  I find the new code to be less
+> readable (but also more correct ;-) ). 
 
-  irq 25: nobody cared (try booting with the "irqpoll" option)
-  CPU: 0 PID: 1 Comm: swapper/0 Not tainted 4.12.0-rc3-gcc-6.3.1-00037-g45cb08f4791c #624
-  Call Trace:
-  [c0000000fffdbb10] [c00000000049962c] .dump_stack+0xa8/0xe8 (unreliable)
-  [c0000000fffdbba0] [c0000000000babf4] .__report_bad_irq+0x54/0x140
-  [c0000000fffdbc40] [c0000000000bb11c] .note_interrupt+0x324/0x380
-  [c0000000fffdbd00] [c0000000000b7110] .handle_irq_event_percpu+0x68/0x88
-  [c0000000fffdbd90] [c0000000000b718c] .handle_irq_event+0x5c/0xa8
-  [c0000000fffdbe10] [c0000000000bc01c] .handle_fasteoi_irq+0xe4/0x298
-  [c0000000fffdbe90] [c0000000000b59c4] .generic_handle_irq+0x50/0x74
-  [c0000000fffdbf10] [c0000000000075d8] .__do_irq+0x74/0x1f0
-  [c0000000fffdbf90] [c0000000000189f8] .call_do_irq+0x14/0x24
-  [c0000000f7173060] [c0000000000077e4] .do_IRQ+0x90/0x120
-  [c0000000f7173100] [c00000000001d93c] exc_0x500_common+0xfc/0x100
-  --- interrupt: 501 at .prepare_to_wait_event+0xc/0x14c
-      LR = .fsl_elbc_run_command+0xc8/0x23c
-  [c0000000f71734d0] [c00000000065f418] .nand_reset+0xb8/0x168
-  [c0000000f7173560] [c00000000065fec4] .nand_scan_ident+0x2b0/0x1638
-  [c0000000f7173650] [c000000000666cd8] .fsl_elbc_nand_probe+0x34c/0x5f0
-  ata2: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
-  [c0000000f7173750] [c0000000005a3c60] .platform_drv_probe+0x64/0xb0
-  [c0000000f71737d0] [c0000000005a12e0] .really_probe+0x290/0x334
-  [c0000000f7173870] [c0000000005a14a0] .__driver_attach+0x11c/0x120
-  [c0000000f7173900] [c00000000059e6a0] .bus_for_each_dev+0x98/0xfc
-  [c0000000f71739a0] [c0000000005a0b3c] .driver_attach+0x34/0x4c
-  [c0000000f7173a20] [c0000000005a04b0] .bus_add_driver+0x1ac/0x2e0
-  [c0000000f7173ac0] [c0000000005a2170] .driver_register+0x94/0x160
-  [c0000000f7173b40] [c0000000005a3be0] .__platform_driver_register+0x60/0x7c
-  [c0000000f7173bc0] [c000000000d6aab4] .fsl_elbc_nand_driver_init+0x24/0x38
-  [c0000000f7173c30] [c000000000001934] .do_one_initcall+0x68/0x1b8
-  [c0000000f7173d00] [c000000000d210f8] .kernel_init_freeable+0x260/0x338
-  [c0000000f7173db0] [c0000000000021b0] .kernel_init+0x20/0xe70
-  [c0000000f7173e30] [c0000000000009bc] .ret_from_kernel_thread+0x58/0x9c
-  handlers:
-  [<c000000000ed85c8>] .fsl_lbc_ctrl_irq
-  Disabling IRQ #25
+Thanks for that, not sure how I missed it :) I'll respin a simpler
+patch.
 
-Ben also had concerns with the implementation being potentially slow on
-some PICs, so revert it for now.
+> Maybe there should be (inline)
+> helper function to insert/extract CR fields?
 
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/kernel/irq.c | 6 +-----
- 1 file changed, 1 insertion(+), 5 deletions(-)
+That would be nice, there are quite a few places that could use it.
 
-diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-index ab2ed9afd3c2..5c291df30fe3 100644
---- a/arch/powerpc/kernel/irq.c
-+++ b/arch/powerpc/kernel/irq.c
-@@ -481,11 +481,7 @@ void __do_irq(struct pt_regs *regs)
- 	if (unlikely(!irq))
- 		__this_cpu_inc(irq_stat.spurious_irqs);
- 	else
--		do {
--			generic_handle_irq(irq);
--
--			irq = ppc_md.get_irq();
--		} while (irq);
-+		generic_handle_irq(irq);
- 
- 	trace_irq_exit(regs);
- 
--- 
-2.7.4
+Anton
+
+> Segher
+> 
+> 
+> > --- a/arch/powerpc/lib/sstep.c
+> > +++ b/arch/powerpc/lib/sstep.c
+> > @@ -683,8 +683,10 @@ int analyse_instr(struct instruction_op *op,
+> > struct pt_regs *regs, case 19:
+> >  		switch ((instr >> 1) & 0x3ff) {
+> >  		case 0:		/* mcrf */
+> > -			rd = (instr >> 21) & 0x1c;
+> > -			ra = (instr >> 16) & 0x1c;
+> > +			rd = 7 - ((instr >> 23) & 0x7);
+> > +			ra = 7 - ((instr >> 18) & 0x7);
+> > +			rd *= 4;
+> > +			ra *= 4;
+> >  			val = (regs->ccr >> ra) & 0xf;
+> >  			regs->ccr = (regs->ccr & ~(0xfUL << rd)) |
+> > (val << rd); goto instr_done;  
+> 
