@@ -1,22 +1,26 @@
-Return-Path: <segher@gate.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wpH7R4S5zzDqL8
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Jun 2017 18:42:27 +1000 (AEST)
-Date: Thu, 15 Jun 2017 03:41:34 -0500
-From: Segher Boessenkool <segher@kernel.crashing.org>
-To: Anton Blanchard <anton@samba.org>
-Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- ravi.bangoria@linux.vnet.ibm.com, npiggin@gmail.com,
- naveen.n.rao@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 1/2] powerpc: Fix emulation of mcrf in emulate_step()
-Message-ID: <20170615084134.GC16550@gate.crashing.org>
-References: <20170614234639.11997-1-anton@ozlabs.org>
- <20170615041805.GB16550@gate.crashing.org> <20170615164729.09f0f83a@kryten>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170615164729.09f0f83a@kryten>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wpJ4g5C2JzDqL8
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Jun 2017 19:25:07 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org
+Cc: kvm@vger.kernel.org, Alexey Kardashevskiy <aik@ozlabs.ru>,
+ linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>, Yongji Xie <elohimes@gmail.com>,
+ Alex Williamson <alex.williamson@redhat.com>,
+ Paul Mackerras <paulus@samba.org>, Yongji Xie <xyjxie@linux.vnet.ibm.com>,
+ David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: [PATCH kernel 2/3] pci-ioda: Set PCI_BUS_FLAGS_MSI_REMAP for IODA
+ host bridge
+In-Reply-To: <20170615054845.8428-3-aik@ozlabs.ru>
+References: <20170615054845.8428-1-aik@ozlabs.ru>
+ <20170615054845.8428-3-aik@ozlabs.ru>
+Date: Thu, 15 Jun 2017 19:25:06 +1000
+Message-ID: <877f0dppql.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,13 +30,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jun 15, 2017 at 04:47:29PM +1000, Anton Blanchard wrote:
-> > Maybe there should be (inline)
-> > helper function to insert/extract CR fields?
-> 
-> That would be nice, there are quite a few places that could use it.
+Alexey Kardashevskiy <aik@ozlabs.ru> writes:
 
-Like patch 2/2, hint hint.
+> From: Yongji Xie <elohimes@gmail.com>
+>
+> Any IODA host bridge have the capability of IRQ remapping.
+> So we set PCI_BUS_FLAGS_MSI_REMAP when this kind of host birdge
+> is detected.
 
+Where's the code that actually enforces this property?
 
-Segher
+It would be good to have a comment in pnv_pci_ioda_root_bridge_prepare()
+(probably), pointing to that code, so that we can remember the
+relationship between the two.
+
+cheers
