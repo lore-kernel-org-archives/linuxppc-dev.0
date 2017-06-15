@@ -1,24 +1,23 @@
-Return-Path: <mark@klomp.org>
-Received: from gnu.wildebeest.org (wildebeest.demon.nl [212.238.236.112])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wpLYM2RLxzDqL8
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Jun 2017 21:16:38 +1000 (AEST)
-Message-ID: <1497525392.3755.307.camel@klomp.org>
-Subject: Re: [PATCH v2] perf: libdw support for powerpc [ping]
-From: Mark Wielaard <mark@klomp.org>
-To: Milian Wolff <milian.wolff@kdab.com>
-Cc: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>, Paolo Bonzini
- <pbonzini@redhat.com>, linux-kernel@vger.kernel.org, acme@kernel.org,
- "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wpLc859FSzDqL8
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Jun 2017 21:19:04 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+Cc: Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>,
+ Masami Hiramatsu <mhiramat@kernel.org>, Steven Rostedt <rostedt@goodmis.org>,
  linuxppc-dev@lists.ozlabs.org
-Date: Thu, 15 Jun 2017 13:16:32 +0200
-In-Reply-To: <3621613.kMnvz8Tm3d@milian-kdab2>
-References: <1496312681-20133-1-git-send-email-pbonzini@redhat.com>
- <1497354282.3755.201.camel@klomp.org> <59400ADD.4090709@linux.vnet.ibm.com>
- <3621613.kMnvz8Tm3d@milian-kdab2>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+Subject: Re: [PATCH v2 3/4] powerpc/kprobes_on_ftrace: Skip
+ livepatch_handler() for jprobes
+In-Reply-To: <354168131ffd13a9109172f616255fe1e0983387.1496309487.git.naveen.n.rao@linux.vnet.ibm.com>
+References: <cover.1496309487.git.naveen.n.rao@linux.vnet.ibm.com>
+ <354168131ffd13a9109172f616255fe1e0983387.1496309487.git.naveen.n.rao@linux.vnet.ibm.com>
+Date: Thu, 15 Jun 2017 21:19:03 +1000
+Message-ID: <87y3sto5w8.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,44 +27,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2017-06-15 at 10:46 +0200, Milian Wolff wrote:
-> Just a quick question: Have you guys applied my recent patch:
->=20
-> commit 5ea0416f51cc93436bbe497c62ab49fd9cb245b6
-> Author: Milian Wolff <milian.wolff@kdab.com>
-> Date:   Thu Jun 1 23:00:21 2017 +0200
->=20
->     perf report: Include partial stacks unwound with libdw
->    =20
->     So far the whole stack was thrown away when any error occurred before
->     the maximum stack depth was unwound. This is actually a very common
->     scenario though. The stacks that got unwound so far are still
->     interesting. This removes a large chunk of differences when comparing
->     perf script output for libunwind and libdw perf unwinding.
->=20
-> If not, then this could explain the issue you are seeing.
+"Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> writes:
 
-Thanks! No, I didn't have that patch (*) yet. It makes a huge
-difference. With that, Paolo's patch and the elfutils libdw powerpc64
-fallback unwinder patch, it looks like I get user stack traces for
-everything now on ppc64le.
+> diff --git a/arch/powerpc/kernel/trace/ftrace_64_mprofile.S b/arch/powerpc/kernel/trace/ftrace_64_mprofile.S
+> index fa0921410fa4..e6837e85ec28 100644
+> --- a/arch/powerpc/kernel/trace/ftrace_64_mprofile.S
+> +++ b/arch/powerpc/kernel/trace/ftrace_64_mprofile.S
+> @@ -99,13 +99,37 @@ ftrace_call:
+>  	bl	ftrace_stub
+>  	nop
+>  
+> -	/* Load ctr with the possibly modified NIP */
+> -	ld	r3, _NIP(r1)
+> -	mtctr	r3
+> +	/* Load the possibly modified NIP */
+> +	ld	r15, _NIP(r1)
+> +
+>  #ifdef CONFIG_LIVEPATCH
+> -	cmpd	r14,r3		/* has NIP been altered? */
+> +	cmpd	r14, r15		/* has NIP been altered? */
+> +#endif
+> +
+> +#if defined(CONFIG_LIVEPATCH) && defined(CONFIG_KPROBES_ON_FTRACE)
+> +	beq	1f
+> +
+> +	/* Check if there is an active kprobe on us */
+> +	subi	r3, r14, 4
+> +	bl	is_current_kprobe_addr
+> +	nop
+> +
+> +	/*
+> +	 * If r3 == 1, then this is a kprobe/jprobe.
+> +	 * else, this is livepatched function.
+> +	 *
+> +	 * The subsequent conditional branch for livepatch_handler
+> +	 * will use the result of this compare. For kprobe/jprobe,
+> +	 * we just need to branch to the new NIP, so nothing special
+> +	 * is needed.
+> +	 */
+> +	cmpdi	r3, 1
+> +1:
+>  #endif
 
-Cheers,
+I added some more comments. Hopefully I got them right :D
 
-Mark
+ #if defined(CONFIG_LIVEPATCH) && defined(CONFIG_KPROBES_ON_FTRACE)
++       /* NIP has not been altered, skip over further checks */
+        beq     1f
+ 
+        /* Check if there is an active kprobe on us */
+@@ -118,10 +119,11 @@ ftrace_call:
+         * If r3 == 1, then this is a kprobe/jprobe.
+         * else, this is livepatched function.
+         *
+-        * The subsequent conditional branch for livepatch_handler
+-        * will use the result of this compare. For kprobe/jprobe,
+-        * we just need to branch to the new NIP, so nothing special
+-        * is needed.
++        * The conditional branch for livepatch_handler below will use the
++        * result of this comparison. For kprobe/jprobe, we just need to branch to
++        * the new NIP, not call livepatch_handler. The branch below is bne, so we
++        * want CR0[EQ] to be true if this is a kprobe/jprobe. Which means we want
++        * CR0[EQ] = (r3 == 1).
+         */
+        cmpdi   r3, 1
+ 1:
+@@ -147,7 +149,10 @@ ftrace_call:
+        addi r1, r1, SWITCH_FRAME_SIZE
+ 
+ #ifdef CONFIG_LIVEPATCH
+-        /* Based on the cmpd above, if the NIP was altered handle livepatch */
++        /*
++        * Based on the cmpd or cmpdi above, if the NIP was altered and we're
++        * not on a kprobe/jprobe, then handle livepatch.
++        */
+        bne-    livepatch_handler
+ #endif
 
-(*) It just this one-liner, but what a difference that makes:
 
---- a/tools/perf/util/unwind-libdw.c
-+++ b/tools/perf/util/unwind-libdw.c
-@@ -224,7 +224,7 @@ int unwind__get_entries(unwind_entry_cb_t cb, void *arg=
-,
-=20
-        err =3D dwfl_getthread_frames(ui->dwfl, thread->tid, frame_callback=
-, ui);
-=20
--       if (err && !ui->max_stack)
-+       if (err && ui->max_stack !=3D max_stack)
-                err =3D 0;
-=20
-        /*
+cheers
