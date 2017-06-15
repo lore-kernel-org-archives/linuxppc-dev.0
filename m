@@ -1,34 +1,41 @@
-Return-Path: <fbarrat@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <ravi.bangoria@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wpNKX0cZjzDqL8
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Jun 2017 22:36:31 +1000 (AEST)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v5FCYv34103931
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Jun 2017 08:36:30 -0400
-Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2b3skrt7an-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wpPvC5LXdzDqL8
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Jun 2017 23:47:19 +1000 (AEST)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v5FDhn40041358
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Jun 2017 09:47:16 -0400
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2b3ep5y34x-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Jun 2017 08:36:29 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Jun 2017 09:47:16 -0400
 Received: from localhost
- by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
- Thu, 15 Jun 2017 13:36:27 +0100
-Subject: Re: [PATCH V2] cxl: Export library to support IBM XSL
-To: Christophe Lombard <clombard@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, vaibhav@linux.vnet.ibm.com,
- andrew.donnellan@au1.ibm.com
-References: <1497446944-15759-1-git-send-email-clombard@linux.vnet.ibm.com>
-From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-Date: Thu, 15 Jun 2017 14:36:24 +0200
-MIME-Version: 1.0
-In-Reply-To: <1497446944-15759-1-git-send-email-clombard@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <f02ffd47-9de4-98e7-d455-de2be271d0bd@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <ravi.bangoria@linux.vnet.ibm.com>;
+ Thu, 15 Jun 2017 23:47:13 +1000
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v5FDlBhu65929462
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Jun 2017 23:47:11 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v5FDl8j2022773
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Jun 2017 23:47:09 +1000
+From: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
+To: mpe@ellerman.id.au
+Cc: benh@kernel.crashing.org, paulus@samba.org, mingo@kernel.org,
+ peterz@infradead.org, acme@kernel.org,
+ alexander.shishkin@linux.intel.com, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, naveen.n.rao@linux.vnet.ibm.com,
+ Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
+Subject: [PATCH] ppc64/perf: Fix oops when kthread execs user process
+Date: Thu, 15 Jun 2017 19:16:48 +0530
+Message-Id: <1497534408-4591-1-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,267 +45,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Salut Christophe,
+When a kthread makes a call_usermodehelper() call the steps are:
+ a. allocates current->mm
+ b. load_elf_binary()
+ c. populates current->thread.regs
 
-A few comments below, nothing major...
+While doing this, interrupts are not disabled. If there is a perf
+interrupt in the middle of this process (i.e. step 'a' has completed
+but not yet reached to step 'c') and if perf tries to read userspace
+regs, kernel oops with following log:
 
-Le 14/06/2017 à 15:29, Christophe Lombard a écrit :
-> This patch exports a in-kernel 'library' API which can be called by
-> other drivers to help interacting with an IBM XSL on a POWER9 system.
-> 
-> The XSL (Translation Service Layer) is a stripped down version of the
-> PSL (Power Service Layer) used in some cards such as the Mellanox CX5.
-> Like the PSL, it implements the CAIA architecture, but has a number
-> of differences, mostly in it's implementation dependent registers.
-> 
-> The XSL also uses a special DMA cxl mode, which uses a slightly
-> different init sequence for the CAPP and PHB.
-> 
-> Changelog[v2]
->   - Rebase to latest upstream.
->   - Return -EFAULT in case of NULL pointer in cxllib_handle_fault().
->   - Reverse parameters when copro_handle_mm_fault() is called.
-> 
+  [  131.217172] Unable to handle kernel paging request for data at address 0x00000000
+  [  131.217731] Faulting instruction address: 0xc0000000000da0fc
+  ...
+  [  131.235555] Call Trace:
+  [  131.235714] [c0000000bbaaad60] [c00000000025dedc] perf_output_sample_regs+0x6c/0xd0
+  [  131.236020] [c0000000bbaaadb0] [c000000000269b44] perf_output_sample+0x4e4/0x830
+  [  131.236362] [c0000000bbaaae40] [c00000000026a354] perf_event_output_forward+0x64/0x90
+  [  131.236668] [c0000000bbaaaeb0] [c00000000026298c] __perf_event_overflow+0x8c/0x1e0
+  [  131.236979] [c0000000bbaaaf00] [c0000000000dc330] record_and_restart+0x220/0x5c0
+  [  131.237306] [c0000000bbaab230] [c0000000000dd1d8] perf_event_interrupt+0x2d8/0x4d0
+  [  131.237611] [c0000000bbaab320] [c0000000000294a4] performance_monitor_exception+0x54/0x70
+  [  131.237891] [c0000000bbaab350] [c00000000000a0a8] performance_monitor_common+0x158/0x160
+  [  131.238208] --- interrupt: f01 at avtab_search_node+0x150/0x1a0
+  [  131.238208]     LR = avtab_search_node+0x100/0x1a0
+  [  131.238617] [c0000000bbaab640] [c000000000526770] context_struct_compute_av+0x220/0x5b0 (unreliable)
+  [  131.238948] [c0000000bbaab730] [c0000000005278b4] security_compute_av+0x174/0x390
+  [  131.239231] [c0000000bbaab7e0] [c0000000005050e4] avc_compute_av+0x84/0x260
+  [  131.239471] [c0000000bbaab890] [c000000000506198] avc_has_perm+0xf8/0x1c0
+  [  131.239708] [c0000000bbaab980] [c00000000050f32c] file_has_perm+0x6c/0xd0
+  [  131.239972] [c0000000bbaab9e0] [c0000000004ff0fc] security_mmap_file+0xac/0x140
+  [  131.240256] [c0000000bbaaba50] [c0000000002b1fc0] vm_mmap_pgoff+0x80/0x160
+  [  131.240532] [c0000000bbaabb30] [c0000000003f7db4] elf_map+0xa4/0x180
+  [  131.240771] [c0000000bbaabb90] [c0000000003f9a48] load_elf_binary+0x6e8/0x15a0
+  [  131.241060] [c0000000bbaabc90] [c000000000374f58] search_binary_handler+0xe8/0x290
+  [  131.241347] [c0000000bbaabd20] [c000000000375c14] do_execveat_common.isra.14+0x5f4/0x840
+  [  131.241631] [c0000000bbaabdf0] [c00000000010be70] call_usermodehelper_exec_async+0x170/0x210
+  [  131.241955] [c0000000bbaabe30] [c00000000000bae0] ret_from_kernel_thread+0x5c/0x7c
 
+Fix it by setting abi to PERF_SAMPLE_REGS_ABI_NONE when userspace
+pt_regs are not set. 
 
-The change log shouldn't be part of the commit message, but below the 
-next "---"
+Signed-off-by: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
+---
+Note: this should go to stable as well. I've not checked below 4.4
+kernel but I'm able to reproduce it with 4.4 kernel.
 
+ arch/powerpc/perf/perf_regs.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-> +++ b/drivers/misc/cxl/cxllib.c
-> @@ -0,0 +1,241 @@
-> +/*
-> + * Copyright 2016 IBM Corp.
-
-
-Year need to be updated
-
-
-> + *
-> + * This program is free software; you can redistribute it and/or
-> + * modify it under the terms of the GNU General Public License
-> + * as published by the Free Software Foundation; either version
-> + * 2 of the License, or (at your option) any later version.
-> + */
-> +
-> +#include <linux/hugetlb.h>
-> +#include <linux/sched/mm.h>
-> +#include "cxl.h"
-> +#include <misc/cxllib.h>
-> +#include <asm/pnv-pci.h>
-
-Ordering of the #include is messy:
-#include <linux/hugetlb.h>
-#include <linux/sched/mm.h>
-#include <asm/pnv-pci.h>
-#include <misc/cxllib.h>
-#include "cxl.h"
-
-
-
-> +int cxllib_set_device_dma(struct pci_dev *dev, unsigned long flags)
-> +{
-> +	int rc;
-> +
-> +	if (flags)
-> +		return -EINVAL;
-> +
-> +	rc = dma_set_mask(&dev->dev, DMA_BIT_MASK(64));
-> +	return rc;
-> +}
-> +EXPORT_SYMBOL_GPL(cxllib_set_device_dma);
-
-
-A comment in cxllib_set_device_dma() would help:
-	/*
-	 * When switching the PHB to capi mode, the TVT#1 entry for
-	 * the Partitionable Endpoint is set in bypass mode, like
-	 * in PCI mode.
-	 * Configure the device dma to use TVT#1, which is done
-	 * by calling dma_set_mask() with a mask large enough.
-	 */
-
-
-
-> +
-> +int cxllib_get_PE_attributes(struct task_struct *task,
-> +	     unsigned long translation_mode, struct cxllib_pe_attributes *attr)
-> +{
-> +	struct mm_struct *mm = NULL;
-> +
-> +	if (translation_mode != CXL_TRANSLATED_MODE &&
-> +		translation_mode != CXL_REAL_MODE)
-> +		return -EINVAL;
-> +
-> +	attr->sr = cxl_calculate_sr(false /* master */,
-> +				task == NULL /* kernel ctx */,
-> +				translation_mode == CXL_REAL_MODE,
-> +				true /* p9 */);
-> +	attr->lpid = mfspr(SPRN_LPID);
-> +	if (task) {
-> +		mm = get_task_mm(task);
-> +		if (mm == NULL)
-> +			return -EINVAL;
-> +		/*
-> +		 * Caller is keeping a reference on mm_users for as long
-> +		 * as XSL uses the memory context
-> +		 */
-> +		attr->pid = mm->context.id;
-> +		mmput(mm);
-> +	} else {
-> +		attr->pid = 0;
-> +	}
-> +	attr->tid = 0;
-
-
-We'll need to remember to patch that function as welll (attr->tid) when 
-we add support for as_notify (even though Mellanox is not expected to 
-use as_notify in capi mode, just pci I believe)
-
-
-
-> +int cxllib_handle_fault(struct mm_struct *mm, u64 addr, u64 size, u64 flags)
-> +{
-> +	int rc;
-> +	u64 dar;
-> +	struct vm_area_struct *vma = NULL;
-> +	unsigned long page_size;
-> +
-> +	if (mm == NULL)
-> +		return -EFAULT;
-> +
-> +	down_read(&mm->mmap_sem);
-> +
-> +	for (dar = addr; dar < addr + size; dar += page_size) {
-> +		if (!vma || dar < vma->vm_start || dar > vma->vm_end) {
-> +			vma = find_vma(mm, addr);
-> +			if (!vma) {
-> +				pr_err("Can't find vma for addr %016llx\n", addr);
-> +				rc = -EFAULT;
-> +				goto out;
-> +			}
-> +			/* get the size of the pages allocated */
-> +			page_size = vma_kernel_pagesize(vma);
-> +		}
-> +
-> +		rc = cxl_handle_page_fault(true, mm, flags, dar);
-
-
-Why do we pass "true" for kernel parameter?
-Actually do we even need a kernel input parameter for 
-cxl_handle_page_fault() ? It seems that we can infer it based on mm. If 
-NULL, then we are in kernel space.
-
-
-> diff --git a/drivers/misc/cxl/fault.c b/drivers/misc/cxl/fault.c
-> index c79e39b..9db63f3 100644
-> --- a/drivers/misc/cxl/fault.c
-> +++ b/drivers/misc/cxl/fault.c
-> @@ -132,18 +132,16 @@ static int cxl_handle_segment_miss(struct cxl_context *ctx,
->   	return IRQ_HANDLED;
->   }
-> 
-> -static void cxl_handle_page_fault(struct cxl_context *ctx,
-> -				  struct mm_struct *mm, u64 dsisr, u64 dar)
-> +int cxl_handle_page_fault(bool kernel_context,
-> +			  struct mm_struct *mm, u64 dsisr, u64 dar)
->   {
->   	unsigned flt = 0;
->   	int result;
->   	unsigned long access, flags, inv_flags = 0;
-> 
-> -	trace_cxl_pte_miss(ctx, dsisr, dar);
-> -
->   	if ((result = copro_handle_mm_fault(mm, dar, dsisr, &flt))) {
->   		pr_devel("copro_handle_mm_fault failed: %#x\n", result);
-> -		return cxl_ack_ae(ctx);
-> +		return result;
->   	}
-> 
->   	if (!radix_enabled()) {
-> @@ -156,7 +154,7 @@ static void cxl_handle_page_fault(struct cxl_context *ctx,
->   			access |= _PAGE_WRITE;
-> 
->   		access |= _PAGE_PRIVILEGED;
-> -		if ((!ctx->kernel) || (REGION_ID(dar) == USER_REGION_ID))
-> +		if (!kernel_context || (REGION_ID(dar) == USER_REGION_ID))
->   			access &= ~_PAGE_PRIVILEGED;
-> 
->   		if (dsisr & DSISR_NOHPTE)
-> @@ -166,8 +164,7 @@ static void cxl_handle_page_fault(struct cxl_context *ctx,
->   		hash_page_mm(mm, dar, access, 0x300, inv_flags);
->   		local_irq_restore(flags);
->   	}
-> -	pr_devel("Page fault successfully handled for pe: %i!\n", ctx->pe);
-> -	cxl_ops->ack_irq(ctx, CXL_PSL_TFC_An_R, 0);
-> +	return 0;
->   }
-> 
->   /*
-> @@ -261,9 +258,15 @@ void cxl_handle_fault(struct work_struct *fault_work)
-> 
->   	if (cxl_is_segment_miss(ctx, dsisr))
->   		cxl_handle_segment_miss(ctx, mm, dar);
-> -	else if (cxl_is_page_fault(ctx, dsisr))
-> -		cxl_handle_page_fault(ctx, mm, dsisr, dar);
-> -	else
-> +	else if (cxl_is_page_fault(ctx, dsisr)) {
-> +		trace_cxl_pte_miss(ctx, dsisr, dar);
-> +		if (cxl_handle_page_fault(ctx->kernel, mm, dsisr, dar)) {
-> +			cxl_ack_ae(ctx);
-> +		} else {
-> +			pr_devel("Page fault successfully handled for pe: %i!\n", ctx->pe);
-> +			cxl_ops->ack_irq(ctx, CXL_PSL_TFC_An_R, 0);
-> +		}
-
-
-Could we have that code in a wrapper before calling 
-cxl_handle_page_fault()? It would keep the code cleaner and in line with 
-what we do for cxl_handle_segment_miss().
-
-
-
-> +++ b/include/misc/cxllib.h
-> @@ -0,0 +1,132 @@
-> +/*
-> + * Copyright 2016 IBM Corp.
-
-
-Year update.
-
-
-> +/*
-> + * Get the Process Element structure for the given thread
-> + *
-> + * Input:
-> + *	pid: points the struct pid for the given thread (i.e. linux pid)
-> + *	translation_mode: whether addresses should be translated
-> + */
-> +struct cxllib_pe_attributes {
-> +	u64 sr;
-> +	u32 lpid;
-> +	u32 tid;
-> +	u32 pid;
-> +};
-> +#define CXL_TRANSLATED_MODE 0
-> +#define CXL_REAL_MODE 1
-> +
-> +int cxllib_get_PE_attributes(struct task_struct *task,
-> +	     unsigned long translation_mode, struct cxllib_pe_attributes *attr);
-
-
-Description in comment no longer matches reality.
-/*
-  * Get the Process Element structure for the given thread
-  *
-  * Input:
-  *	task: task_struct for the context of the translation
-  *	translation_mode: whether addresses should be translated
-  * Output:
-  *	attr: attributes to fill up the Process Element structure from CAIA
-  */
-
-
-Thanks,
-
-   Fred
+diff --git a/arch/powerpc/perf/perf_regs.c b/arch/powerpc/perf/perf_regs.c
+index cbd82fd..09ceea6 100644
+--- a/arch/powerpc/perf/perf_regs.c
++++ b/arch/powerpc/perf/perf_regs.c
+@@ -101,5 +101,6 @@ void perf_get_regs_user(struct perf_regs *regs_user,
+ 			struct pt_regs *regs_user_copy)
+ {
+ 	regs_user->regs = task_pt_regs(current);
+-	regs_user->abi  = perf_reg_abi(current);
++	regs_user->abi = (regs_user->regs) ? perf_reg_abi(current) :
++			 PERF_SAMPLE_REGS_ABI_NONE;
+ }
+-- 
+2.9.4
