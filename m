@@ -1,46 +1,51 @@
-Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <zohar@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wpSDl44bFzDqL8
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jun 2017 01:32:39 +1000 (AEST)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v5FFSwrC007578
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Jun 2017 11:32:37 -0400
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2b3vrwgjnf-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wpSt04BmdzDqL8
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jun 2017 02:01:28 +1000 (AEST)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v5FFwmrI005523
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Jun 2017 12:01:25 -0400
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2b3uwmck8e-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Jun 2017 11:32:36 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Jun 2017 12:01:24 -0400
 Received: from localhost
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Fri, 16 Jun 2017 01:32:34 +1000
+ for <linuxppc-dev@lists.ozlabs.org> from <zohar@linux.vnet.ibm.com>;
+ Fri, 16 Jun 2017 02:01:22 +1000
 Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v5FFWVgR64487450
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jun 2017 01:32:31 +1000
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v5FG1Iwf33685546
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jun 2017 02:01:18 +1000
 Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
  by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v5FFWNCV007187
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jun 2017 01:32:23 +1000
-Date: Thu, 15 Jun 2017 21:02:29 +0530
-From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>,
- Masami Hiramatsu <mhiramat@kernel.org>,
- Steven Rostedt <rostedt@goodmis.org>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v2 3/4] powerpc/kprobes_on_ftrace: Skip
- livepatch_handler() for jprobes
-References: <cover.1496309487.git.naveen.n.rao@linux.vnet.ibm.com>
- <354168131ffd13a9109172f616255fe1e0983387.1496309487.git.naveen.n.rao@linux.vnet.ibm.com>
- <87y3sto5w8.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <87y3sto5w8.fsf@concordia.ellerman.id.au>
-Message-Id: <20170615153229.GB2800@naverao1-tp.localdomain>
+ v5FG19A0030672
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jun 2017 02:01:10 +1000
+Subject: Re: [PATCH v2 2/6] ima: Simplify policy_func_show.
+From: Mimi Zohar <zohar@linux.vnet.ibm.com>
+To: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>,
+ linux-security-module@vger.kernel.org
+Cc: linux-ima-devel@lists.sourceforge.net, keyrings@vger.kernel.org,
+ linux-crypto@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Dmitry Kasatkin <dmitry.kasatkin@gmail.com>,
+ James Morris <james.l.morris@oracle.com>, "Serge E. Hallyn"
+ <serge@hallyn.com>, David Howells <dhowells@redhat.com>, David Woodhouse
+ <dwmw2@infradead.org>, Jessica Yu <jeyu@redhat.com>, Rusty Russell
+ <rusty@rustcorp.com.au>, Herbert Xu <herbert@gondor.apana.org.au>, "David
+ S. Miller" <davem@davemloft.net>, "AKASHI, Takahiro"
+ <takahiro.akashi@linaro.org>
+Date: Thu, 15 Jun 2017 12:00:50 -0400
+In-Reply-To: <1496886555-10082-3-git-send-email-bauerman@linux.vnet.ibm.com>
+References: <1496886555-10082-1-git-send-email-bauerman@linux.vnet.ibm.com>
+ <1496886555-10082-3-git-send-email-bauerman@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Message-Id: <1497542450.4287.56.camel@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,85 +55,147 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2017/06/15 09:19PM, Michael Ellerman wrote:
-> "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> writes:
+On Wed, 2017-06-07 at 22:49 -0300, Thiago Jung Bauermann wrote:
+> If the func_tokens array uses the same indices as enum ima_hooks,
+> policy_func_show can be a lot simpler, and the func_* enum becomes
+> unnecessary.
 > 
-> > diff --git a/arch/powerpc/kernel/trace/ftrace_64_mprofile.S b/arch/powerpc/kernel/trace/ftrace_64_mprofile.S
-> > index fa0921410fa4..e6837e85ec28 100644
-> > --- a/arch/powerpc/kernel/trace/ftrace_64_mprofile.S
-> > +++ b/arch/powerpc/kernel/trace/ftrace_64_mprofile.S
-> > @@ -99,13 +99,37 @@ ftrace_call:
-> >  	bl	ftrace_stub
-> >  	nop
-> >  
-> > -	/* Load ctr with the possibly modified NIP */
-> > -	ld	r3, _NIP(r1)
-> > -	mtctr	r3
-> > +	/* Load the possibly modified NIP */
-> > +	ld	r15, _NIP(r1)
-> > +
-> >  #ifdef CONFIG_LIVEPATCH
-> > -	cmpd	r14,r3		/* has NIP been altered? */
-> > +	cmpd	r14, r15		/* has NIP been altered? */
-> > +#endif
-> > +
-> > +#if defined(CONFIG_LIVEPATCH) && defined(CONFIG_KPROBES_ON_FTRACE)
-> > +	beq	1f
-> > +
-> > +	/* Check if there is an active kprobe on us */
-> > +	subi	r3, r14, 4
-> > +	bl	is_current_kprobe_addr
-> > +	nop
-> > +
-> > +	/*
-> > +	 * If r3 == 1, then this is a kprobe/jprobe.
-> > +	 * else, this is livepatched function.
-> > +	 *
-> > +	 * The subsequent conditional branch for livepatch_handler
-> > +	 * will use the result of this compare. For kprobe/jprobe,
-> > +	 * we just need to branch to the new NIP, so nothing special
-> > +	 * is needed.
-> > +	 */
-> > +	cmpdi	r3, 1
-> > +1:
-> >  #endif
+> Also, if we use the same macro trick used by kernel_read_file_id_str we can
+> use one hooks list for both the enum and the string array, making sure they
+> are always in sync (suggested by Mimi Zohar).
 > 
-> I added some more comments. Hopefully I got them right :D
+> Finally, by using the printf pattern for the function token directly
+> instead of using the pt macro we can simplify policy_func_show even further
+> and avoid needing a temporary buffer.
 > 
->  #if defined(CONFIG_LIVEPATCH) && defined(CONFIG_KPROBES_ON_FTRACE)
-> +       /* NIP has not been altered, skip over further checks */
->         beq     1f
-> 
->         /* Check if there is an active kprobe on us */
-> @@ -118,10 +119,11 @@ ftrace_call:
->          * If r3 == 1, then this is a kprobe/jprobe.
->          * else, this is livepatched function.
->          *
-> -        * The subsequent conditional branch for livepatch_handler
-> -        * will use the result of this compare. For kprobe/jprobe,
-> -        * we just need to branch to the new NIP, so nothing special
-> -        * is needed.
-> +        * The conditional branch for livepatch_handler below will use the
-> +        * result of this comparison. For kprobe/jprobe, we just need to branch to
-> +        * the new NIP, not call livepatch_handler. The branch below is bne, so we
-> +        * want CR0[EQ] to be true if this is a kprobe/jprobe. Which means we want
-> +        * CR0[EQ] = (r3 == 1).
->          */
->         cmpdi   r3, 1
->  1:
-> @@ -147,7 +149,10 @@ ftrace_call:
->         addi r1, r1, SWITCH_FRAME_SIZE
-> 
->  #ifdef CONFIG_LIVEPATCH
-> -        /* Based on the cmpd above, if the NIP was altered handle livepatch */
-> +        /*
-> +        * Based on the cmpd or cmpdi above, if the NIP was altered and we're
-> +        * not on a kprobe/jprobe, then handle livepatch.
-> +        */
->         bne-    livepatch_handler
->  #endif
+> Signed-off-by: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
 
-Oh yes, this makes the code logic a whole lot more clearer and explicit.  
-Thanks for expanding on it!
+Thank you.  Queued to be upstreamed.
 
-- Naveen
+Mimi
+> ---
+>  security/integrity/ima/ima.h        | 25 +++++++++-------
+>  security/integrity/ima/ima_policy.c | 58 ++++---------------------------------
+>  2 files changed, 21 insertions(+), 62 deletions(-)
+> 
+> diff --git a/security/integrity/ima/ima.h b/security/integrity/ima/ima.h
+> index 215a93c41b51..d52b487ad259 100644
+> --- a/security/integrity/ima/ima.h
+> +++ b/security/integrity/ima/ima.h
+> @@ -172,17 +172,22 @@ static inline unsigned long ima_hash_key(u8 *digest)
+>  	return hash_long(*digest, IMA_HASH_BITS);
+>  }
+> 
+> +#define __ima_hooks(hook)		\
+> +	hook(NONE)			\
+> +	hook(FILE_CHECK)		\
+> +	hook(MMAP_CHECK)		\
+> +	hook(BPRM_CHECK)		\
+> +	hook(POST_SETATTR)		\
+> +	hook(MODULE_CHECK)		\
+> +	hook(FIRMWARE_CHECK)		\
+> +	hook(KEXEC_KERNEL_CHECK)	\
+> +	hook(KEXEC_INITRAMFS_CHECK)	\
+> +	hook(POLICY_CHECK)		\
+> +	hook(MAX_CHECK)
+> +#define __ima_hook_enumify(ENUM)	ENUM,
+> +
+>  enum ima_hooks {
+> -	FILE_CHECK = 1,
+> -	MMAP_CHECK,
+> -	BPRM_CHECK,
+> -	POST_SETATTR,
+> -	MODULE_CHECK,
+> -	FIRMWARE_CHECK,
+> -	KEXEC_KERNEL_CHECK,
+> -	KEXEC_INITRAMFS_CHECK,
+> -	POLICY_CHECK,
+> -	MAX_CHECK
+> +	__ima_hooks(__ima_hook_enumify)
+>  };
+> 
+>  /* LIM API function definitions */
+> diff --git a/security/integrity/ima/ima_policy.c b/security/integrity/ima/ima_policy.c
+> index 949ad3858327..f4436626ccb7 100644
+> --- a/security/integrity/ima/ima_policy.c
+> +++ b/security/integrity/ima/ima_policy.c
+> @@ -972,23 +972,10 @@ static const char *const mask_tokens[] = {
+>  	"MAY_APPEND"
+>  };
+> 
+> -enum {
+> -	func_file = 0, func_mmap, func_bprm,
+> -	func_module, func_firmware, func_post,
+> -	func_kexec_kernel, func_kexec_initramfs,
+> -	func_policy
+> -};
+> +#define __ima_hook_stringify(str)	(#str),
+> 
+>  static const char *const func_tokens[] = {
+> -	"FILE_CHECK",
+> -	"MMAP_CHECK",
+> -	"BPRM_CHECK",
+> -	"MODULE_CHECK",
+> -	"FIRMWARE_CHECK",
+> -	"POST_SETATTR",
+> -	"KEXEC_KERNEL_CHECK",
+> -	"KEXEC_INITRAMFS_CHECK",
+> -	"POLICY_CHECK"
+> +	__ima_hooks(__ima_hook_stringify)
+>  };
+> 
+>  void *ima_policy_start(struct seq_file *m, loff_t *pos)
+> @@ -1025,49 +1012,16 @@ void ima_policy_stop(struct seq_file *m, void *v)
+> 
+>  #define pt(token)	policy_tokens[token + Opt_err].pattern
+>  #define mt(token)	mask_tokens[token]
+> -#define ft(token)	func_tokens[token]
+> 
+>  /*
+>   * policy_func_show - display the ima_hooks policy rule
+>   */
+>  static void policy_func_show(struct seq_file *m, enum ima_hooks func)
+>  {
+> -	char tbuf[64] = {0,};
+> -
+> -	switch (func) {
+> -	case FILE_CHECK:
+> -		seq_printf(m, pt(Opt_func), ft(func_file));
+> -		break;
+> -	case MMAP_CHECK:
+> -		seq_printf(m, pt(Opt_func), ft(func_mmap));
+> -		break;
+> -	case BPRM_CHECK:
+> -		seq_printf(m, pt(Opt_func), ft(func_bprm));
+> -		break;
+> -	case MODULE_CHECK:
+> -		seq_printf(m, pt(Opt_func), ft(func_module));
+> -		break;
+> -	case FIRMWARE_CHECK:
+> -		seq_printf(m, pt(Opt_func), ft(func_firmware));
+> -		break;
+> -	case POST_SETATTR:
+> -		seq_printf(m, pt(Opt_func), ft(func_post));
+> -		break;
+> -	case KEXEC_KERNEL_CHECK:
+> -		seq_printf(m, pt(Opt_func), ft(func_kexec_kernel));
+> -		break;
+> -	case KEXEC_INITRAMFS_CHECK:
+> -		seq_printf(m, pt(Opt_func), ft(func_kexec_initramfs));
+> -		break;
+> -	case POLICY_CHECK:
+> -		seq_printf(m, pt(Opt_func), ft(func_policy));
+> -		break;
+> -	default:
+> -		snprintf(tbuf, sizeof(tbuf), "%d", func);
+> -		seq_printf(m, pt(Opt_func), tbuf);
+> -		break;
+> -	}
+> -	seq_puts(m, " ");
+> +	if (func > 0 && func < MAX_CHECK)
+> +		seq_printf(m, "func=%s ", func_tokens[func]);
+> +	else
+> +		seq_printf(m, "func=%d ", func);
+>  }
+> 
+>  int ima_policy_show(struct seq_file *m, void *v)
