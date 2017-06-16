@@ -1,27 +1,22 @@
-Return-Path: <BATV+48ca1ab4adaecdf09dc3+5045+infradead.org+hch@bombadil.srs.infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org [65.50.211.133])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wq7mP0MhpzDq8M
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Jun 2017 04:13:57 +1000 (AEST)
-From: Christoph Hellwig <hch@lst.de>
-To: x86@kernel.org, linux-arm-kernel@lists.infradead.org,
- xen-devel@lists.xenproject.org, linux-c6x-dev@linux-c6x.org,
- linux-hexagon@vger.kernel.org, linux-ia64@vger.kernel.org,
- linux-mips@linux-mips.org, openrisc@lists.librecores.org,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
- linux-xtensa@linux-xtensa.org, dmaengine@vger.kernel.org,
- linux-tegra@vger.kernel.org, dri-devel@lists.freedesktop.org,
- linux-samsung-soc@vger.kernel.org, iommu@lists.linux-foundation.org,
- netdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 41/44] powerpc/cell: clean up fixed mapping dma_ops
- initialization
-Date: Fri, 16 Jun 2017 20:10:56 +0200
-Message-Id: <20170616181059.19206-42-hch@lst.de>
-In-Reply-To: <20170616181059.19206-1-hch@lst.de>
-References: <20170616181059.19206-1-hch@lst.de>
+Return-Path: <akpm@linux-foundation.org>
+Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
+ [140.211.169.12])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wq7ww3fQfzDq98
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Jun 2017 04:21:20 +1000 (AEST)
+Date: Fri, 16 Jun 2017 11:21:17 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Nicholas Piggin <npiggin@gmail.com>
+Cc: Don Zickus <dzickus@redhat.com>, Babu Moger <babu.moger@oracle.com>,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v4 2/5] watchdog: introduce arch_touch_nmi_watchdog()
+Message-Id: <20170616112117.a33b1096985a786777bc8b54@linux-foundation.org>
+In-Reply-To: <20170616065715.18390-3-npiggin@gmail.com>
+References: <20170616065715.18390-1-npiggin@gmail.com>
+ <20170616065715.18390-3-npiggin@gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,74 +26,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-By the time cell_pci_dma_dev_setup calls cell_dma_dev_setup no device can
-have the fixed map_ops set yet as it's only set by the set_dma_mask
-method.  So move the setup for the fixed case to be only called in that
-place instead of indirecting through cell_dma_dev_setup.
+On Fri, 16 Jun 2017 16:57:12 +1000 Nicholas Piggin <npiggin@gmail.com> wrote:
 
-Signed-off-by: Christoph Hellwig <hch@lst.de>
----
- arch/powerpc/platforms/cell/iommu.c | 27 +++++++--------------------
- 1 file changed, 7 insertions(+), 20 deletions(-)
+> For architectures that define HAVE_NMI_WATCHDOG, instead of having
+> them provide the complete touch_nmi_watchdog() function, just have
+> them provide arch_touch_nmi_watchdog().
+> 
+> This gives the generic code more flexibility in implementing this
+> function, and arch implementations don't miss out on touching the
+> softlockup watchdog or other generic details.
+> 
+> ...
+>
+> --- a/arch/blackfin/include/asm/nmi.h
+> +++ b/arch/blackfin/include/asm/nmi.h
+> @@ -9,4 +9,6 @@
+>  
+>  #include <linux/nmi.h>
+>  
+> +extern void arch_touch_nmi_watchdog(void);
 
-diff --git a/arch/powerpc/platforms/cell/iommu.c b/arch/powerpc/platforms/cell/iommu.c
-index 948086e33a0c..497bfbdbd967 100644
---- a/arch/powerpc/platforms/cell/iommu.c
-+++ b/arch/powerpc/platforms/cell/iommu.c
-@@ -663,14 +663,9 @@ static const struct dma_map_ops dma_iommu_fixed_ops = {
- 	.mapping_error	= dma_iommu_mapping_error,
- };
- 
--static void cell_dma_dev_setup_fixed(struct device *dev);
--
- static void cell_dma_dev_setup(struct device *dev)
- {
--	/* Order is important here, these are not mutually exclusive */
--	if (get_dma_ops(dev) == &dma_iommu_fixed_ops)
--		cell_dma_dev_setup_fixed(dev);
--	else if (get_pci_dma_ops() == &dma_iommu_ops)
-+	if (get_pci_dma_ops() == &dma_iommu_ops)
- 		set_iommu_table_base(dev, cell_get_iommu_table(dev));
- 	else if (get_pci_dma_ops() == &dma_direct_ops)
- 		set_dma_offset(dev, cell_dma_direct_offset);
-@@ -963,32 +958,24 @@ static int dma_set_mask_and_switch(struct device *dev, u64 dma_mask)
- 		return -EIO;
- 
- 	if (dma_mask == DMA_BIT_MASK(64) &&
--		cell_iommu_get_fixed_address(dev) != OF_BAD_ADDR)
--	{
-+	    cell_iommu_get_fixed_address(dev) != OF_BAD_ADDR) {
-+		u64 addr = cell_iommu_get_fixed_address(dev) +
-+			dma_iommu_fixed_base;
- 		dev_dbg(dev, "iommu: 64-bit OK, using fixed ops\n");
-+		dev_dbg(dev, "iommu: fixed addr = %llx\n", addr);
- 		set_dma_ops(dev, &dma_iommu_fixed_ops);
-+		set_dma_offset(dev, addr);
- 	} else {
- 		dev_dbg(dev, "iommu: not 64-bit, using default ops\n");
- 		set_dma_ops(dev, get_pci_dma_ops());
-+		cell_dma_dev_setup(dev);
- 	}
- 
--	cell_dma_dev_setup(dev);
--
- 	*dev->dma_mask = dma_mask;
- 
- 	return 0;
- }
- 
--static void cell_dma_dev_setup_fixed(struct device *dev)
--{
--	u64 addr;
--
--	addr = cell_iommu_get_fixed_address(dev) + dma_iommu_fixed_base;
--	set_dma_offset(dev, addr);
--
--	dev_dbg(dev, "iommu: fixed addr = %llx\n", addr);
--}
--
- static void insert_16M_pte(unsigned long addr, unsigned long *ptab,
- 			   unsigned long base_pte)
- {
--- 
-2.11.0
+Do we actually need to add this to the arch header files...
+
+>
+> ...
+>
+> --- a/include/linux/nmi.h
+> +++ b/include/linux/nmi.h
+> @@ -6,6 +6,9 @@
+>  
+>  #include <linux/sched.h>
+>  #include <asm/irq.h>
+> +#if defined(CONFIG_HAVE_NMI_WATCHDOG)
+> +#include <asm/nmi.h>
+> +#endif
+>  
+>  #ifdef CONFIG_LOCKUP_DETECTOR
+>  extern void touch_softlockup_watchdog_sched(void);
+> @@ -58,6 +61,18 @@ static inline void reset_hung_task_detector(void)
+>  #define NMI_WATCHDOG_ENABLED      (1 << NMI_WATCHDOG_ENABLED_BIT)
+>  #define SOFT_WATCHDOG_ENABLED     (1 << SOFT_WATCHDOG_ENABLED_BIT)
+>  
+> +#if defined(CONFIG_HARDLOCKUP_DETECTOR)
+> +extern void hardlockup_detector_disable(void);
+> +#else
+> +static inline void hardlockup_detector_disable(void) {}
+> +#endif
+> +
+> +#if defined(CONFIG_HARDLOCKUP_DETECTOR) || defined(CONFIG_HAVE_NMI_WATCHDOG)
+> +extern void arch_touch_nmi_watchdog(void);
+> +#else
+> +static inline void arch_touch_nmi_watchdog(void) {}
+> +#endif
+> +
+
+given that we have a global declaration here?
