@@ -1,23 +1,19 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
+ [IPv6:2607:f8b0:400e:c00::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wppW43ZTczDq88
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jun 2017 15:16:16 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- "Shriya R . Kulkarni" <shriykul@in.ibm.com>,
- Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] powerpc64/hw_breakpoints: Handle data breakpoints in
- radix mode
-In-Reply-To: <20170613184200.22541-1-naveen.n.rao@linux.vnet.ibm.com>
-References: <20170613184200.22541-1-naveen.n.rao@linux.vnet.ibm.com>
-Date: Fri, 16 Jun 2017 15:16:16 +1000
-Message-ID: <87d1a4wlzz.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wprlt1mc4zDq8B
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jun 2017 16:57:30 +1000 (AEST)
+Received: by mail-pf0-x243.google.com with SMTP id y7so4440815pfd.3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Jun 2017 23:57:30 -0700 (PDT)
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Don Zickus <dzickus@redhat.com>
+Cc: Nicholas Piggin <npiggin@gmail.com>, Babu Moger <babu.moger@oracle.com>,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v4 0/5] Improve watchdog config for arch watchdogs
+Date: Fri, 16 Jun 2017 16:57:10 +1000
+Message-Id: <20170616065715.18390-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,35 +23,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-"Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> writes:
+This is the latest series to make the hardlockup watchdog more
+easily replaceable by arch code. The last patch provides some
+justification for why we want to do this (existing sparc watchdog
+is another that could benefit).
 
-> diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-> index ae418b85c17c..17ee701b8336 100644
-> --- a/arch/powerpc/kernel/exceptions-64s.S
-> +++ b/arch/powerpc/kernel/exceptions-64s.S
-> @@ -1442,7 +1440,9 @@ do_hash_page:
->  
->  /* Here we have a page fault that hash_page can't handle. */
->  handle_page_fault:
-> -11:	ld	r4,_DAR(r1)
-> +	andis.  r0,r4,DSISR_DABRMATCH@h
-> +	bne-    handle_dabr_fault
+Since last time, we tidied up the Kconfig approach so it was not
+so jumbled -- Thanks Don and Babu for help and suggestions there.
 
-This broke hash. Please test hash! :)
+Since last posting the powerpc patch, I re-added the soft-NMI
+watchdog, but have it using the emergency stack so we can always
+avoid the process stacks when perf interrupts are soft-masked.
 
-I added:
+I'm not sure of the best strategy to merge this. The powerpc
+watchdog is too much to carry anywhere but powerpc tree now, and
+watchdog patches seem to go via Andrew...
 
-@@ -1438,11 +1436,16 @@ do_hash_page:
- 
-        /* Error */
-        blt-    13f
-+
-+       /* Reload DSISR into r4 for the DABR check below */
-+       ld      r4,_DSISR(r1)
- #endif /* CONFIG_PPC_STD_MMU_64 */
- 
- /* Here we have a page fault that hash_page can't handle. */
- handle_page_fault:
+Thanks,
+Nick
 
+Nicholas Piggin (5):
+  watchdog: remove unused declaration
+  watchdog: introduce arch_touch_nmi_watchdog()
+  watchdog: split up config options
+  watchdog: provide watchdog_reconfigure() for arch watchdogs
+  powerpc/64s: implement arch-specific hardlockup watchdog
 
-cheers
+ arch/Kconfig                               |  23 ++
+ arch/blackfin/include/asm/nmi.h            |   2 +
+ arch/blackfin/kernel/nmi.c                 |   2 +-
+ arch/mn10300/include/asm/nmi.h             |   2 +
+ arch/mn10300/kernel/mn10300-watchdog-low.S |   8 +-
+ arch/mn10300/kernel/mn10300-watchdog.c     |   2 +-
+ arch/powerpc/Kconfig                       |   6 +-
+ arch/powerpc/include/asm/nmi.h             |  11 +
+ arch/powerpc/include/asm/smp.h             |   2 +
+ arch/powerpc/kernel/Makefile               |   1 +
+ arch/powerpc/kernel/exceptions-64s.S       |  30 ++-
+ arch/powerpc/kernel/kvm.c                  |   7 +
+ arch/powerpc/kernel/setup_64.c             |  19 --
+ arch/powerpc/kernel/smp.c                  |  20 +-
+ arch/powerpc/kernel/watchdog.c             | 388 +++++++++++++++++++++++++++++
+ arch/sparc/include/asm/nmi.h               |   1 +
+ arch/sparc/kernel/nmi.c                    |   6 +-
+ arch/x86/Kconfig                           |   1 +
+ arch/x86/kernel/apic/hw_nmi.c              |   2 +-
+ include/linux/nmi.h                        |  57 +++--
+ kernel/Makefile                            |   2 +-
+ kernel/sysctl.c                            |  31 ++-
+ kernel/watchdog.c                          | 268 +++++++++++++-------
+ kernel/watchdog_hld.c                      |  37 +--
+ lib/Kconfig.debug                          |  45 ++--
+ 25 files changed, 763 insertions(+), 210 deletions(-)
+ create mode 100644 arch/powerpc/kernel/watchdog.c
+
+-- 
+2.11.0
