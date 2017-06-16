@@ -1,27 +1,22 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wpxbq06G6zDq88
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jun 2017 20:35:51 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wpyY62lffzDq88
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jun 2017 21:18:34 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: "Rowand\, Frank" <Frank.Rowand@sony.com>,
- Abdul Haleem <abdhalee@linux.vnet.ibm.com>,
- sachinp <sachinp@linux.vnet.ibm.com>, linux-next <linux-next@vger.kernel.org>,
- linux-kernel <linux-kernel@vger.kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Rob Herring <robh@kernel.org>
-Subject: Re: [Oops][next-20170614][] powerpc boot fails with WARNING: CPU: 12
- PID: 0 at mm/memblock.c
-In-Reply-To: <20170616133258.74900bc3@canb.auug.org.au>
-References: <1497506437.15415.60.camel@abdul.in.ibm.com>
- <1497518696.15415.68.camel@abdul.in.ibm.com>
- <ED290C750E1B324E972B0017C9D4BAB02E5A7EAF@USCULXMSG03.am.sony.com>
- <87injwwxzh.fsf@concordia.ellerman.id.au>
- <20170616111335.4e1a818a@canb.auug.org.au>
- <20170616133258.74900bc3@canb.auug.org.au>
-Date: Fri, 16 Jun 2017 20:35:49 +1000
-Message-ID: <8737b0w77e.fsf@concordia.ellerman.id.au>
+To: Ram Pai <linuxram@us.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Cc: benh@kernel.crashing.org, paulus@samba.org, khandual@linux.vnet.ibm.com,
+ aneesh.kumar@linux.vnet.ibm.com, bsingharora@gmail.com, dave.hansen@intel.com,
+ hbabu@us.ibm.com, linuxram@us.ibm.com
+Subject: Re: [RFC PATCH 7/7 v1]powerpc: Deliver SEGV signal on protection key
+ violation.
+In-Reply-To: <1496711109-4968-8-git-send-email-linuxram@us.ibm.com>
+References: <1496711109-4968-1-git-send-email-linuxram@us.ibm.com>
+ <1496711109-4968-8-git-send-email-linuxram@us.ibm.com>
+Date: Fri, 16 Jun 2017 21:18:29 +1000
+Message-ID: <87zid8uqnu.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -33,43 +28,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Stephen Rothwell <sfr@canb.auug.org.au> writes:
-> On Fri, 16 Jun 2017 11:13:35 +1000 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
->> On Fri, 16 Jun 2017 10:57:22 +1000 Michael Ellerman <mpe@ellerman.id.au> wrote:
->> > "Rowand, Frank" <Frank.Rowand@sony.com> writes:
->> > > On Thursday, June 15, 2017 2:25 AM, Abdul Haleem [mailto:abdhalee@linux.vnet.ibm.com]  wrote:    
->> > >> On Thu, 2017-06-15 at 11:30 +0530, Abdul Haleem wrote:    
->> > >>>
->> > >>> linux-next fails to boot on powerpc Bare-metal with these warnings.
->> > >>>
->> > >>> machine booted fine on next-20170613    
->> > >>
->> > >> Thanks Michael, Yes it is (75fe04e59 of: remove *phandle properties from
->> > >> expanded device tree)
->> > >>
->> > >> Frank, would you please take a look at the trace.
->> > >>
->> > >> Thanks    
->> > >
->> > > < snip >
->> > >
->> > > My patch series 'of: remove *phandle properties from expanded device tree'
->> > > in -next seems to have broken boot for a significant number of powerpc
->> > > systems.  I am actively working on understanding and fixing the problem.    
->> > 
->> > Thanks.
->> > 
->> > At least for me reverting that patch on top of linux-next gets things
->> > booting again.
->> > 
->> > Stephen can you revert that patch in linux-next today?  
->> 
->> OK.
->
-> Actually, Rob removed it from his tree before I merged it.
+Ram Pai <linuxram@us.ibm.com> writes:
+> diff --git a/arch/powerpc/include/uapi/asm/ptrace.h b/arch/powerpc/include/uapi/asm/ptrace.h
+> index 8036b38..109d0c2 100644
+> --- a/arch/powerpc/include/uapi/asm/ptrace.h
+> +++ b/arch/powerpc/include/uapi/asm/ptrace.h
+> @@ -49,6 +49,8 @@ struct pt_regs {
+>  	unsigned long dar;		/* Fault registers */
+>  	unsigned long dsisr;		/* on 4xx/Book-E used for ESR */
+>  	unsigned long result;		/* Result of a system call */
+> +	unsigned long dscr;		/* contents of the DSCR register */
+> +	unsigned long amr;		/* contents of AMR register */
+>  };
 
-Yep, just noticed that.
+You can't change pt_regs, it's ABI.
 
-Thanks all.
+> @@ -109,7 +111,8 @@ struct pt_regs {
+>  #define PT_DSISR 42
+>  #define PT_RESULT 43
+>  #define PT_DSCR 44
+> -#define PT_REGS_COUNT 44
+> +#define PT_AMR 45
+> +#define PT_REGS_COUNT 45
+
+You can add PT_AMR, but it has to be synthetic like DSCR, ie. not
+actually in pt_regs but available via ptrace.
+
+But do we want to do that? How does the x86 code export the key(s) of a
+process? Or doesn't it?
 
 cheers
