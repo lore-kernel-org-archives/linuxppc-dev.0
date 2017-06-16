@@ -2,8 +2,8 @@ Return-Path: <BATV+48ca1ab4adaecdf09dc3+5045+infradead.org+hch@bombadil.srs.infr
 Received: from bombadil.infradead.org (bombadil.infradead.org [65.50.211.133])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
  bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wq7lt6mR0zDq96
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Jun 2017 04:13:30 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wq7m05CjDzDq8M
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Jun 2017 04:13:35 +1000 (AEST)
 From: Christoph Hellwig <hch@lst.de>
 To: x86@kernel.org, linux-arm-kernel@lists.infradead.org,
  xen-devel@lists.xenproject.org, linux-c6x-dev@linux-c6x.org,
@@ -16,10 +16,9 @@ To: x86@kernel.org, linux-arm-kernel@lists.infradead.org,
  linux-samsung-soc@vger.kernel.org, iommu@lists.linux-foundation.org,
  netdev@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 37/44] mips/loongson64: implement ->dma_supported instead of
- ->set_dma_mask
-Date: Fri, 16 Jun 2017 20:10:52 +0200
-Message-Id: <20170616181059.19206-38-hch@lst.de>
+Subject: [PATCH 39/44] xen-swiotlb: remove xen_swiotlb_set_dma_mask
+Date: Fri, 16 Jun 2017 20:10:54 +0200
+Message-Id: <20170616181059.19206-40-hch@lst.de>
 In-Reply-To: <20170616181059.19206-1-hch@lst.de>
 References: <20170616181059.19206-1-hch@lst.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -31,50 +30,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Same behavior, less code duplication.
+This just duplicates the generic implementation.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- arch/mips/loongson64/common/dma-swiotlb.c | 19 +++++--------------
- 1 file changed, 5 insertions(+), 14 deletions(-)
+ drivers/xen/swiotlb-xen.c | 12 ------------
+ 1 file changed, 12 deletions(-)
 
-diff --git a/arch/mips/loongson64/common/dma-swiotlb.c b/arch/mips/loongson64/common/dma-swiotlb.c
-index 178ca17a5667..34486c138206 100644
---- a/arch/mips/loongson64/common/dma-swiotlb.c
-+++ b/arch/mips/loongson64/common/dma-swiotlb.c
-@@ -75,19 +75,11 @@ static void loongson_dma_sync_sg_for_device(struct device *dev,
- 	mb();
+diff --git a/drivers/xen/swiotlb-xen.c b/drivers/xen/swiotlb-xen.c
+index c3a04b2d7532..82fc54f8eb77 100644
+--- a/drivers/xen/swiotlb-xen.c
++++ b/drivers/xen/swiotlb-xen.c
+@@ -661,17 +661,6 @@ xen_swiotlb_dma_supported(struct device *hwdev, u64 mask)
+ 	return xen_virt_to_bus(xen_io_tlb_end - 1) <= mask;
  }
  
--static int loongson_dma_set_mask(struct device *dev, u64 mask)
-+static int loongson_dma_supported(struct device *dev, u64 mask)
- {
--	if (!dev->dma_mask || !dma_supported(dev, mask))
+-static int
+-xen_swiotlb_set_dma_mask(struct device *dev, u64 dma_mask)
+-{
+-	if (!dev->dma_mask || !xen_swiotlb_dma_supported(dev, dma_mask))
 -		return -EIO;
 -
--	if (mask > DMA_BIT_MASK(loongson_sysconf.dma_mask_bits)) {
--		*dev->dma_mask = DMA_BIT_MASK(loongson_sysconf.dma_mask_bits);
--		return -EIO;
--	}
--
--	*dev->dma_mask = mask;
+-	*dev->dma_mask = dma_mask;
 -
 -	return 0;
-+	if (mask > DMA_BIT_MASK(loongson_sysconf.dma_mask_bits))
-+		return 0;
-+	return swiotlb_dma_supported(dev, mask);
- }
- 
- dma_addr_t phys_to_dma(struct device *dev, phys_addr_t paddr)
-@@ -126,8 +118,7 @@ static const struct dma_map_ops loongson_dma_map_ops = {
- 	.sync_sg_for_cpu = swiotlb_sync_sg_for_cpu,
- 	.sync_sg_for_device = loongson_dma_sync_sg_for_device,
- 	.mapping_error = swiotlb_dma_mapping_error,
--	.dma_supported = swiotlb_dma_supported,
--	.set_dma_mask = loongson_dma_set_mask
-+	.dma_supported = loongson_dma_supported,
- };
- 
- void __init plat_swiotlb_setup(void)
+-}
+-
+ /*
+  * Create userspace mapping for the DMA-coherent memory.
+  * This function should be called with the pages from the current domain only,
+@@ -734,7 +723,6 @@ const struct dma_map_ops xen_swiotlb_dma_ops = {
+ 	.map_page = xen_swiotlb_map_page,
+ 	.unmap_page = xen_swiotlb_unmap_page,
+ 	.dma_supported = xen_swiotlb_dma_supported,
+-	.set_dma_mask = xen_swiotlb_set_dma_mask,
+ 	.mmap = xen_swiotlb_dma_mmap,
+ 	.get_sgtable = xen_swiotlb_get_sgtable,
+ 	.mapping_error	= xen_swiotlb_mapping_error,
 -- 
 2.11.0
