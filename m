@@ -1,24 +1,29 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wpxXt6s3dzDq88
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jun 2017 20:33:18 +1000 (AEST)
-Message-ID: <1497609181.2897.100.camel@kernel.crashing.org>
-Subject: Re: [RFC PATCH 7/7 v1]powerpc: Deliver SEGV signal on protection
- key violation.
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Anshuman Khandual <khandual@linux.vnet.ibm.com>, Ram Pai
- <linuxram@us.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Cc: dave.hansen@intel.com, paulus@samba.org, aneesh.kumar@linux.vnet.ibm.com
-Date: Fri, 16 Jun 2017 20:33:01 +1000
-In-Reply-To: <622d7abf-3d99-8897-5afb-ef8c4f950fc0@linux.vnet.ibm.com>
-References: <1496711109-4968-1-git-send-email-linuxram@us.ibm.com>
- <1496711109-4968-8-git-send-email-linuxram@us.ibm.com>
- <622d7abf-3d99-8897-5afb-ef8c4f950fc0@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wpxbq06G6zDq88
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jun 2017 20:35:51 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: "Rowand\, Frank" <Frank.Rowand@sony.com>,
+ Abdul Haleem <abdhalee@linux.vnet.ibm.com>,
+ sachinp <sachinp@linux.vnet.ibm.com>, linux-next <linux-next@vger.kernel.org>,
+ linux-kernel <linux-kernel@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Rob Herring <robh@kernel.org>
+Subject: Re: [Oops][next-20170614][] powerpc boot fails with WARNING: CPU: 12
+ PID: 0 at mm/memblock.c
+In-Reply-To: <20170616133258.74900bc3@canb.auug.org.au>
+References: <1497506437.15415.60.camel@abdul.in.ibm.com>
+ <1497518696.15415.68.camel@abdul.in.ibm.com>
+ <ED290C750E1B324E972B0017C9D4BAB02E5A7EAF@USCULXMSG03.am.sony.com>
+ <87injwwxzh.fsf@concordia.ellerman.id.au>
+ <20170616111335.4e1a818a@canb.auug.org.au>
+ <20170616133258.74900bc3@canb.auug.org.au>
+Date: Fri, 16 Jun 2017 20:35:49 +1000
+Message-ID: <8737b0w77e.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,16 +33,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2017-06-16 at 14:50 +0530, Anshuman Khandual wrote:
-> On 06/06/2017 06:35 AM, Ram Pai wrote:
-> > The value of the AMR register at the time of the exception
-> > is made available in gp_regs[PT_AMR] of the siginfo.
-> 
-> But its already available there in uctxt->uc_mcontext.regs->amr
-> while inside the signal delivery context in the user space. The
-> pt_regs already got updated with new AMR register. Then why we
-> need gp_regs to also contain AMR as well ?
+Stephen Rothwell <sfr@canb.auug.org.au> writes:
+> On Fri, 16 Jun 2017 11:13:35 +1000 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+>> On Fri, 16 Jun 2017 10:57:22 +1000 Michael Ellerman <mpe@ellerman.id.au> wrote:
+>> > "Rowand, Frank" <Frank.Rowand@sony.com> writes:
+>> > > On Thursday, June 15, 2017 2:25 AM, Abdul Haleem [mailto:abdhalee@linux.vnet.ibm.com]  wrote:    
+>> > >> On Thu, 2017-06-15 at 11:30 +0530, Abdul Haleem wrote:    
+>> > >>>
+>> > >>> linux-next fails to boot on powerpc Bare-metal with these warnings.
+>> > >>>
+>> > >>> machine booted fine on next-20170613    
+>> > >>
+>> > >> Thanks Michael, Yes it is (75fe04e59 of: remove *phandle properties from
+>> > >> expanded device tree)
+>> > >>
+>> > >> Frank, would you please take a look at the trace.
+>> > >>
+>> > >> Thanks    
+>> > >
+>> > > < snip >
+>> > >
+>> > > My patch series 'of: remove *phandle properties from expanded device tree'
+>> > > in -next seems to have broken boot for a significant number of powerpc
+>> > > systems.  I am actively working on understanding and fixing the problem.    
+>> > 
+>> > Thanks.
+>> > 
+>> > At least for me reverting that patch on top of linux-next gets things
+>> > booting again.
+>> > 
+>> > Stephen can you revert that patch in linux-next today?  
+>> 
+>> OK.
+>
+> Actually, Rob removed it from his tree before I merged it.
 
-Also changing gp_regs layout/size is a major ABI issue...
+Yep, just noticed that.
 
-Ben.
+Thanks all.
+
+cheers
