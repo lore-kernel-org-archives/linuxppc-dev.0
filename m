@@ -2,8 +2,8 @@ Return-Path: <BATV+48ca1ab4adaecdf09dc3+5045+infradead.org+hch@bombadil.srs.infr
 Received: from bombadil.infradead.org (bombadil.infradead.org [65.50.211.133])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
  bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wq7kR24XbzDq9m
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Jun 2017 04:12:15 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wq7kX3sFMzDq9H
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Jun 2017 04:12:19 +1000 (AEST)
 From: Christoph Hellwig <hch@lst.de>
 To: x86@kernel.org, linux-arm-kernel@lists.infradead.org,
  xen-devel@lists.xenproject.org, linux-c6x-dev@linux-c6x.org,
@@ -16,10 +16,9 @@ To: x86@kernel.org, linux-arm-kernel@lists.infradead.org,
  linux-samsung-soc@vger.kernel.org, iommu@lists.linux-foundation.org,
  netdev@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 17/44] hexagon: switch to use ->mapping_error for error
- reporting
-Date: Fri, 16 Jun 2017 20:10:32 +0200
-Message-Id: <20170616181059.19206-18-hch@lst.de>
+Subject: [PATCH 18/44] iommu/amd: implement ->mapping_error
+Date: Fri, 16 Jun 2017 20:10:33 +0200
+Message-Id: <20170616181059.19206-19-hch@lst.de>
 In-Reply-To: <20170616181059.19206-1-hch@lst.de>
 References: <20170616181059.19206-1-hch@lst.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -31,85 +30,90 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Signed-off-by: Christoph Hellwig <hch@lst.de>
-Acked-by: Richard Kuo <rkuo@codeaurora.org>
----
- arch/hexagon/include/asm/dma-mapping.h |  2 --
- arch/hexagon/kernel/dma.c              | 12 +++++++++---
- arch/hexagon/kernel/hexagon_ksyms.c    |  1 -
- 3 files changed, 9 insertions(+), 6 deletions(-)
+DMA_ERROR_CODE is going to go away, so don't rely on it.
 
-diff --git a/arch/hexagon/include/asm/dma-mapping.h b/arch/hexagon/include/asm/dma-mapping.h
-index d3a87bd9b686..00e3f10113b0 100644
---- a/arch/hexagon/include/asm/dma-mapping.h
-+++ b/arch/hexagon/include/asm/dma-mapping.h
-@@ -29,8 +29,6 @@
- #include <asm/io.h>
+Signed-off-by: Christoph Hellwig <hch@lst.de>
+---
+ drivers/iommu/amd_iommu.c | 18 +++++++++++++-----
+ 1 file changed, 13 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/iommu/amd_iommu.c b/drivers/iommu/amd_iommu.c
+index 63cacf5d6cf2..d41280e869de 100644
+--- a/drivers/iommu/amd_iommu.c
++++ b/drivers/iommu/amd_iommu.c
+@@ -54,6 +54,8 @@
+ #include "amd_iommu_types.h"
+ #include "irq_remapping.h"
  
- struct device;
--extern int bad_dma_address;
--#define DMA_ERROR_CODE bad_dma_address
- 
- extern const struct dma_map_ops *dma_ops;
- 
-diff --git a/arch/hexagon/kernel/dma.c b/arch/hexagon/kernel/dma.c
-index e74b65009587..71269dc0f225 100644
---- a/arch/hexagon/kernel/dma.c
-+++ b/arch/hexagon/kernel/dma.c
-@@ -25,11 +25,11 @@
- #include <linux/module.h>
- #include <asm/page.h>
- 
-+#define HEXAGON_MAPPING_ERROR	0
++#define AMD_IOMMU_MAPPING_ERROR	0
 +
- const struct dma_map_ops *dma_ops;
- EXPORT_SYMBOL(dma_ops);
+ #define CMD_SET_TYPE(cmd, t) ((cmd)->data[1] |= ((t) << 28))
  
--int bad_dma_address;  /*  globals are automatically initialized to zero  */
--
- static inline void *dma_addr_to_virt(dma_addr_t dma_addr)
- {
- 	return phys_to_virt((unsigned long) dma_addr);
-@@ -181,7 +181,7 @@ static dma_addr_t hexagon_map_page(struct device *dev, struct page *page,
- 	WARN_ON(size == 0);
+ #define LOOP_TIMEOUT	100000
+@@ -2394,7 +2396,7 @@ static dma_addr_t __map_single(struct device *dev,
+ 	paddr &= PAGE_MASK;
  
- 	if (!check_addr("map_single", dev, bus, size))
--		return bad_dma_address;
-+		return HEXAGON_MAPPING_ERROR;
+ 	address = dma_ops_alloc_iova(dev, dma_dom, pages, dma_mask);
+-	if (address == DMA_ERROR_CODE)
++	if (address == AMD_IOMMU_MAPPING_ERROR)
+ 		goto out;
  
- 	if (!(attrs & DMA_ATTR_SKIP_CPU_SYNC))
- 		dma_sync(dma_addr_to_virt(bus), size, dir);
-@@ -203,6 +203,11 @@ static void hexagon_sync_single_for_device(struct device *dev,
- 	dma_sync(dma_addr_to_virt(dma_handle), size, dir);
+ 	prot = dir2prot(direction);
+@@ -2431,7 +2433,7 @@ static dma_addr_t __map_single(struct device *dev,
+ 
+ 	dma_ops_free_iova(dma_dom, address, pages);
+ 
+-	return DMA_ERROR_CODE;
++	return AMD_IOMMU_MAPPING_ERROR;
  }
  
-+static int hexagon_mapping_error(struct device *dev, dma_addr_t dma_addr)
+ /*
+@@ -2483,7 +2485,7 @@ static dma_addr_t map_page(struct device *dev, struct page *page,
+ 	if (PTR_ERR(domain) == -EINVAL)
+ 		return (dma_addr_t)paddr;
+ 	else if (IS_ERR(domain))
+-		return DMA_ERROR_CODE;
++		return AMD_IOMMU_MAPPING_ERROR;
+ 
+ 	dma_mask = *dev->dma_mask;
+ 	dma_dom = to_dma_ops_domain(domain);
+@@ -2560,7 +2562,7 @@ static int map_sg(struct device *dev, struct scatterlist *sglist,
+ 	npages = sg_num_pages(dev, sglist, nelems);
+ 
+ 	address = dma_ops_alloc_iova(dev, dma_dom, npages, dma_mask);
+-	if (address == DMA_ERROR_CODE)
++	if (address == AMD_IOMMU_MAPPING_ERROR)
+ 		goto out_err;
+ 
+ 	prot = dir2prot(direction);
+@@ -2683,7 +2685,7 @@ static void *alloc_coherent(struct device *dev, size_t size,
+ 	*dma_addr = __map_single(dev, dma_dom, page_to_phys(page),
+ 				 size, DMA_BIDIRECTIONAL, dma_mask);
+ 
+-	if (*dma_addr == DMA_ERROR_CODE)
++	if (*dma_addr == AMD_IOMMU_MAPPING_ERROR)
+ 		goto out_free;
+ 
+ 	return page_address(page);
+@@ -2732,6 +2734,11 @@ static int amd_iommu_dma_supported(struct device *dev, u64 mask)
+ 	return check_device(dev);
+ }
+ 
++static int amd_iommu_mapping_error(struct device *dev, dma_addr_t dma_addr)
 +{
-+	return dma_addr == HEXAGON_MAPPING_ERROR;
++	return dma_addr == AMD_IOMMU_MAPPING_ERROR;
 +}
 +
- const struct dma_map_ops hexagon_dma_ops = {
- 	.alloc		= hexagon_dma_alloc_coherent,
- 	.free		= hexagon_free_coherent,
-@@ -210,6 +215,7 @@ const struct dma_map_ops hexagon_dma_ops = {
- 	.map_page	= hexagon_map_page,
- 	.sync_single_for_cpu = hexagon_sync_single_for_cpu,
- 	.sync_single_for_device = hexagon_sync_single_for_device,
-+	.mapping_error	= hexagon_mapping_error;
- 	.is_phys	= 1,
+ static const struct dma_map_ops amd_iommu_dma_ops = {
+ 	.alloc		= alloc_coherent,
+ 	.free		= free_coherent,
+@@ -2740,6 +2747,7 @@ static const struct dma_map_ops amd_iommu_dma_ops = {
+ 	.map_sg		= map_sg,
+ 	.unmap_sg	= unmap_sg,
+ 	.dma_supported	= amd_iommu_dma_supported,
++	.mapping_error	= amd_iommu_mapping_error,
  };
  
-diff --git a/arch/hexagon/kernel/hexagon_ksyms.c b/arch/hexagon/kernel/hexagon_ksyms.c
-index 00bcad9cbd8f..aa248f595431 100644
---- a/arch/hexagon/kernel/hexagon_ksyms.c
-+++ b/arch/hexagon/kernel/hexagon_ksyms.c
-@@ -40,7 +40,6 @@ EXPORT_SYMBOL(memset);
- /* Additional variables */
- EXPORT_SYMBOL(__phys_offset);
- EXPORT_SYMBOL(_dflt_cache_att);
--EXPORT_SYMBOL(bad_dma_address);
- 
- #define DECLARE_EXPORT(name)     \
- 	extern void name(void); EXPORT_SYMBOL(name)
+ static int init_reserved_iova_ranges(void)
 -- 
 2.11.0
