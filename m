@@ -1,26 +1,30 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <rkuo@codeaurora.org>
+Received: from smtp.codeaurora.org (smtp.codeaurora.org [198.145.29.96])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wpgbZ5Ct3zDq7c
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jun 2017 10:04:42 +1000 (AEST)
-Message-ID: <1497571456.2897.86.camel@kernel.crashing.org>
-Subject: Re: [Oops][next-20170614][] powerpc boot fails with WARNING: CPU:
- 12 PID: 0 at mm/memblock.c
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "Rowand, Frank" <Frank.Rowand@sony.com>, Abdul Haleem
- <abdhalee@linux.vnet.ibm.com>
-Cc: sachinp <sachinp@linux.vnet.ibm.com>, Stephen Rothwell
- <sfr@canb.auug.org.au>, linux-kernel <linux-kernel@vger.kernel.org>,
- linux-next <linux-next@vger.kernel.org>, linuxppc-dev
- <linuxppc-dev@lists.ozlabs.org>
-Date: Fri, 16 Jun 2017 10:04:16 +1000
-In-Reply-To: <ED290C750E1B324E972B0017C9D4BAB02E5A7EAF@USCULXMSG03.am.sony.com>
-References: <1497506437.15415.60.camel@abdul.in.ibm.com>
- <1497518696.15415.68.camel@abdul.in.ibm.com>
- <ED290C750E1B324E972B0017C9D4BAB02E5A7EAF@USCULXMSG03.am.sony.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wph2d1ClwzDq7h
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jun 2017 10:24:41 +1000 (AEST)
+Date: Thu, 15 Jun 2017 19:19:11 -0500
+From: Richard Kuo <rkuo@codeaurora.org>
+To: Christoph Hellwig <hch@lst.de>
+Cc: x86@kernel.org, linux-arm-kernel@lists.infradead.org,
+ xen-devel@lists.xenproject.org, linux-c6x-dev@linux-c6x.org,
+ linux-hexagon@vger.kernel.org, linux-ia64@vger.kernel.org,
+ linux-mips@linux-mips.org, openrisc@lists.librecores.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
+ linux-xtensa@linux-xtensa.org, dmaengine@vger.kernel.org,
+ linux-tegra@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ linux-samsung-soc@vger.kernel.org, iommu@lists.linux-foundation.org,
+ netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 17/44] hexagon: switch to use ->mapping_error for error
+ reporting
+Message-ID: <20170616001911.GA7343@codeaurora.org>
+References: <20170608132609.32662-1-hch@lst.de>
+ <20170608132609.32662-18-hch@lst.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20170608132609.32662-18-hch@lst.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,31 +34,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2017-06-15 at 17:06 +0000, Rowand, Frank wrote:
-> On Thursday, June 15, 2017 2:25 AM, Abdul Haleem [mailto:abdhalee@linux.vnet.ibm.com]  wrote:
-> > 
-> > On Thu, 2017-06-15 at 11:30 +0530, Abdul Haleem wrote:
-> > > Hi,
-> > > 
-> > > linux-next fails to boot on powerpc Bare-metal with these warnings.
-> > > 
-> > > machine booted fine on next-20170613
-> > 
-> > Thanks Michael, Yes it is (75fe04e59 of: remove *phandle properties from
-> > expanded device tree)
-> > 
-> > Frank, would you please take a look at the trace.
-> > 
-> > Thanks
+On Thu, Jun 08, 2017 at 03:25:42PM +0200, Christoph Hellwig wrote:
+> Signed-off-by: Christoph Hellwig <hch@lst.de>
+> ---
+>  arch/hexagon/include/asm/dma-mapping.h |  2 --
+>  arch/hexagon/kernel/dma.c              | 12 +++++++++---
+>  arch/hexagon/kernel/hexagon_ksyms.c    |  1 -
+>  3 files changed, 9 insertions(+), 6 deletions(-)
 > 
-> < snip >
-> 
-> My patch series 'of: remove *phandle properties from expanded device tree'
-> in -next seems to have broken boot for a significant number of powerpc
-> systems.  I am actively working on understanding and fixing the problem.
 
-I think kexec needs them in sysfs (or /proc) when building the fdt
-for the target kernel.
+Acked-by: Richard Kuo <rkuo@codeaurora.org>
 
-Cheers,
-Ben.
+-- 
+Qualcomm Innovation Center, Inc.
+The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum, 
+a Linux Foundation Collaborative Project
