@@ -1,21 +1,35 @@
-Return-Path: <babu.moger@oracle.com>
-Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <alexander.duyck@gmail.com>
+Received: from mail-qk0-x242.google.com (mail-qk0-x242.google.com
+ [IPv6:2607:f8b0:400d:c09::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wq6VP4dRxzDq8B
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Jun 2017 03:16:44 +1000 (AEST)
-Subject: Re: [PATCH v4 0/5] Improve watchdog config for arch watchdogs
-To: Don Zickus <dzickus@redhat.com>, Nicholas Piggin <npiggin@gmail.com>,
- Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-References: <20170616065715.18390-1-npiggin@gmail.com>
- <20170616145022.6vl452dpwgpw5q4f@redhat.com>
-From: Babu Moger <babu.moger@oracle.com>
-Message-ID: <df05fc50-bfa2-bcdd-89a2-7a50e9321b9e@oracle.com>
-Date: Fri, 16 Jun 2017 12:16:32 -0500
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wqC1T0ndtzDqLd
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Jun 2017 06:40:29 +1000 (AEST)
+Received: by mail-qk0-x242.google.com with SMTP id r62so45074qkf.3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jun 2017 13:40:28 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <20170616145022.6vl452dpwgpw5q4f@redhat.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+In-Reply-To: <20170616181059.19206-4-hch@lst.de>
+References: <20170616181059.19206-1-hch@lst.de>
+ <20170616181059.19206-4-hch@lst.de>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Fri, 16 Jun 2017 13:40:24 -0700
+Message-ID: <CAKgT0UdxrimWrxNVsLMQ9G6ABBJZwfWHTcP18qqd4rT0Fa-KWg@mail.gmail.com>
+Subject: Re: [PATCH 03/44] dmaengine: ioat: don't use DMA_ERROR_CODE
+To: Christoph Hellwig <hch@lst.de>
+Cc: "the arch/x86 maintainers" <x86@kernel.org>,
+ linux-arm-kernel@lists.infradead.org,
+ xen-devel@lists.xenproject.org, linux-c6x-dev@linux-c6x.org,
+ linux-hexagon@vger.kernel.org, linux-ia64@vger.kernel.org,
+ linux-mips@linux-mips.org, openrisc@lists.librecores.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
+ linux-xtensa@linux-xtensa.org, dmaengine@vger.kernel.org,
+ linux-tegra@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ linux-samsung-soc@vger.kernel.org,
+ "open list:INTEL IOMMU (VT-d)" <iommu@lists.linux-foundation.org>,
+ Netdev <netdev@vger.kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,80 +39,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Tested on sparc:
+On Fri, Jun 16, 2017 at 11:10 AM, Christoph Hellwig <hch@lst.de> wrote:
+> DMA_ERROR_CODE is not a public API and will go away.  Instead properly
+> unwind based on the loop counter.
+>
+> Signed-off-by: Christoph Hellwig <hch@lst.de>
+> Acked-by: Dave Jiang <dave.jiang@intel.com>
+> Acked-By: Vinod Koul <vinod.koul@intel.com>
+> ---
+>  drivers/dma/ioat/init.c | 24 +++++++-----------------
+>  1 file changed, 7 insertions(+), 17 deletions(-)
+>
+> diff --git a/drivers/dma/ioat/init.c b/drivers/dma/ioat/init.c
+> index 6ad4384b3fa8..ed8ed1192775 100644
+> --- a/drivers/dma/ioat/init.c
+> +++ b/drivers/dma/ioat/init.c
+> @@ -839,8 +839,6 @@ static int ioat_xor_val_self_test(struct ioatdma_device *ioat_dma)
+>                 goto free_resources;
+>         }
+>
+> -       for (i = 0; i < IOAT_NUM_SRC_TEST; i++)
+> -               dma_srcs[i] = DMA_ERROR_CODE;
+>         for (i = 0; i < IOAT_NUM_SRC_TEST; i++) {
+>                 dma_srcs[i] = dma_map_page(dev, xor_srcs[i], 0, PAGE_SIZE,
+>                                            DMA_TO_DEVICE);
+> @@ -910,8 +908,6 @@ static int ioat_xor_val_self_test(struct ioatdma_device *ioat_dma)
+>
+>         xor_val_result = 1;
+>
+> -       for (i = 0; i < IOAT_NUM_SRC_TEST + 1; i++)
+> -               dma_srcs[i] = DMA_ERROR_CODE;
+>         for (i = 0; i < IOAT_NUM_SRC_TEST + 1; i++) {
+>                 dma_srcs[i] = dma_map_page(dev, xor_val_srcs[i], 0, PAGE_SIZE,
+>                                            DMA_TO_DEVICE);
+> @@ -965,8 +961,6 @@ static int ioat_xor_val_self_test(struct ioatdma_device *ioat_dma)
+>         op = IOAT_OP_XOR_VAL;
+>
+>         xor_val_result = 0;
+> -       for (i = 0; i < IOAT_NUM_SRC_TEST + 1; i++)
+> -               dma_srcs[i] = DMA_ERROR_CODE;
+>         for (i = 0; i < IOAT_NUM_SRC_TEST + 1; i++) {
+>                 dma_srcs[i] = dma_map_page(dev, xor_val_srcs[i], 0, PAGE_SIZE,
+>                                            DMA_TO_DEVICE);
+> @@ -1017,18 +1011,14 @@ static int ioat_xor_val_self_test(struct ioatdma_device *ioat_dma)
+>         goto free_resources;
+>  dma_unmap:
+>         if (op == IOAT_OP_XOR) {
+> -               if (dest_dma != DMA_ERROR_CODE)
+> -                       dma_unmap_page(dev, dest_dma, PAGE_SIZE,
+> -                                      DMA_FROM_DEVICE);
+> -               for (i = 0; i < IOAT_NUM_SRC_TEST; i++)
+> -                       if (dma_srcs[i] != DMA_ERROR_CODE)
+> -                               dma_unmap_page(dev, dma_srcs[i], PAGE_SIZE,
+> -                                              DMA_TO_DEVICE);
+> +               while (--i >= 0)
+> +                       dma_unmap_page(dev, dma_srcs[i], PAGE_SIZE,
+> +                                      DMA_TO_DEVICE);
+> +               dma_unmap_page(dev, dest_dma, PAGE_SIZE, DMA_FROM_DEVICE);
+>         } else if (op == IOAT_OP_XOR_VAL) {
+> -               for (i = 0; i < IOAT_NUM_SRC_TEST + 1; i++)
+> -                       if (dma_srcs[i] != DMA_ERROR_CODE)
+> -                               dma_unmap_page(dev, dma_srcs[i], PAGE_SIZE,
+> -                                              DMA_TO_DEVICE);
+> +               while (--i >= 0)
+> +                       dma_unmap_page(dev, dma_srcs[i], PAGE_SIZE,
+> +                                      DMA_TO_DEVICE);
 
-Tested-by: Babu Moger <babu.moger@oracle.com>
+Wouldn't it make more sense to pull out the while loop and just call
+dma_unmap_page on dest_dma if "op == IOAT_OP_XOR"? Odds are it is what
+the compiler is already generating and will save a few lines of code
+so what you end up with is something like:
+    while (--i >= 0)
+        dma_unmap_page(dev, dma_srcs[i], PAGE_SIZE, DMA_TO_DEVICE);
+    if (op == IOAT_OP_XOR)
+        dma_unmap_page(dev, dest_dma, PAGE_SIZE, DMA_FROM_DEVICE);
 
-Reviewed  patch #1, #2, #3
-
-Reviewed-by: Babu Moger <babu.moger@oracle.com>
-
-
-On 6/16/2017 9:50 AM, Don Zickus wrote:
-> (adding Andrew)
+>         }
+>  free_resources:
+>         dma->device_free_chan_resources(dma_chan);
+> --
+> 2.11.0
 >
-> On Fri, Jun 16, 2017 at 04:57:10PM +1000, Nicholas Piggin wrote:
->> This is the latest series to make the hardlockup watchdog more
->> easily replaceable by arch code. The last patch provides some
->> justification for why we want to do this (existing sparc watchdog
->> is another that could benefit).
->>
->> Since last time, we tidied up the Kconfig approach so it was not
->> so jumbled -- Thanks Don and Babu for help and suggestions there.
-> Thanks Nick!  I think this version is good enough for now.
->
->> Since last posting the powerpc patch, I re-added the soft-NMI
->> watchdog, but have it using the emergency stack so we can always
->> avoid the process stacks when perf interrupts are soft-masked.
->>
->> I'm not sure of the best strategy to merge this. The powerpc
->> watchdog is too much to carry anywhere but powerpc tree now, and
->> watchdog patches seem to go via Andrew...
-> Andrew, suggestions here?
->
->
-> Reviewed-by: Don Zickus <dzickus@redhat.com>
-> Acked-by: Don Zickus <dzickus@redhat.com>
->
->
->> Thanks,
->> Nick
->>
->> Nicholas Piggin (5):
->>    watchdog: remove unused declaration
->>    watchdog: introduce arch_touch_nmi_watchdog()
->>    watchdog: split up config options
->>    watchdog: provide watchdog_reconfigure() for arch watchdogs
->>    powerpc/64s: implement arch-specific hardlockup watchdog
->>
->>   arch/Kconfig                               |  23 ++
->>   arch/blackfin/include/asm/nmi.h            |   2 +
->>   arch/blackfin/kernel/nmi.c                 |   2 +-
->>   arch/mn10300/include/asm/nmi.h             |   2 +
->>   arch/mn10300/kernel/mn10300-watchdog-low.S |   8 +-
->>   arch/mn10300/kernel/mn10300-watchdog.c     |   2 +-
->>   arch/powerpc/Kconfig                       |   6 +-
->>   arch/powerpc/include/asm/nmi.h             |  11 +
->>   arch/powerpc/include/asm/smp.h             |   2 +
->>   arch/powerpc/kernel/Makefile               |   1 +
->>   arch/powerpc/kernel/exceptions-64s.S       |  30 ++-
->>   arch/powerpc/kernel/kvm.c                  |   7 +
->>   arch/powerpc/kernel/setup_64.c             |  19 --
->>   arch/powerpc/kernel/smp.c                  |  20 +-
->>   arch/powerpc/kernel/watchdog.c             | 388 +++++++++++++++++++++++++++++
->>   arch/sparc/include/asm/nmi.h               |   1 +
->>   arch/sparc/kernel/nmi.c                    |   6 +-
->>   arch/x86/Kconfig                           |   1 +
->>   arch/x86/kernel/apic/hw_nmi.c              |   2 +-
->>   include/linux/nmi.h                        |  57 +++--
->>   kernel/Makefile                            |   2 +-
->>   kernel/sysctl.c                            |  31 ++-
->>   kernel/watchdog.c                          | 268 +++++++++++++-------
->>   kernel/watchdog_hld.c                      |  37 +--
->>   lib/Kconfig.debug                          |  45 ++--
->>   25 files changed, 763 insertions(+), 210 deletions(-)
->>   create mode 100644 arch/powerpc/kernel/watchdog.c
->>
->> -- 
->> 2.11.0
->>
