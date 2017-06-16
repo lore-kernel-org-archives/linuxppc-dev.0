@@ -2,8 +2,8 @@ Return-Path: <BATV+48ca1ab4adaecdf09dc3+5045+infradead.org+hch@bombadil.srs.infr
 Received: from bombadil.infradead.org (bombadil.infradead.org [65.50.211.133])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
  bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wq7mG1kZLzDq9D
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Jun 2017 04:13:50 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wq7mJ22vCzDqB7
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Jun 2017 04:13:52 +1000 (AEST)
 From: Christoph Hellwig <hch@lst.de>
 To: x86@kernel.org, linux-arm-kernel@lists.infradead.org,
  xen-devel@lists.xenproject.org, linux-c6x-dev@linux-c6x.org,
@@ -16,9 +16,9 @@ To: x86@kernel.org, linux-arm-kernel@lists.infradead.org,
  linux-samsung-soc@vger.kernel.org, iommu@lists.linux-foundation.org,
  netdev@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 43/44] dma-mapping: remove the set_dma_mask method
-Date: Fri, 16 Jun 2017 20:10:58 +0200
-Message-Id: <20170616181059.19206-44-hch@lst.de>
+Subject: [PATCH 44/44] powerpc: merge __dma_set_mask into dma_set_mask
+Date: Fri, 16 Jun 2017 20:10:59 +0200
+Message-Id: <20170616181059.19206-45-hch@lst.de>
 In-Reply-To: <20170616181059.19206-1-hch@lst.de>
 References: <20170616181059.19206-1-hch@lst.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -32,48 +32,52 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- arch/powerpc/kernel/dma.c   | 4 ----
- include/linux/dma-mapping.h | 6 ------
- 2 files changed, 10 deletions(-)
+ arch/powerpc/include/asm/dma-mapping.h |  1 -
+ arch/powerpc/kernel/dma.c              | 13 ++++---------
+ 2 files changed, 4 insertions(+), 10 deletions(-)
 
+diff --git a/arch/powerpc/include/asm/dma-mapping.h b/arch/powerpc/include/asm/dma-mapping.h
+index 73aedbe6c977..eaece3d3e225 100644
+--- a/arch/powerpc/include/asm/dma-mapping.h
++++ b/arch/powerpc/include/asm/dma-mapping.h
+@@ -112,7 +112,6 @@ static inline void set_dma_offset(struct device *dev, dma_addr_t off)
+ #define HAVE_ARCH_DMA_SET_MASK 1
+ extern int dma_set_mask(struct device *dev, u64 dma_mask);
+ 
+-extern int __dma_set_mask(struct device *dev, u64 dma_mask);
+ extern u64 __dma_get_required_mask(struct device *dev);
+ 
+ static inline bool dma_capable(struct device *dev, dma_addr_t addr, size_t size)
 diff --git a/arch/powerpc/kernel/dma.c b/arch/powerpc/kernel/dma.c
-index 41c749586bd2..466c9f07b288 100644
+index 466c9f07b288..4194bbbbdb10 100644
 --- a/arch/powerpc/kernel/dma.c
 +++ b/arch/powerpc/kernel/dma.c
-@@ -316,10 +316,6 @@ EXPORT_SYMBOL(dma_set_coherent_mask);
+@@ -314,14 +314,6 @@ EXPORT_SYMBOL(dma_set_coherent_mask);
  
- int __dma_set_mask(struct device *dev, u64 dma_mask)
+ #define PREALLOC_DMA_DEBUG_ENTRIES (1 << 16)
+ 
+-int __dma_set_mask(struct device *dev, u64 dma_mask)
+-{
+-	if (!dev->dma_mask || !dma_supported(dev, dma_mask))
+-		return -EIO;
+-	*dev->dma_mask = dma_mask;
+-	return 0;
+-}
+-
+ int dma_set_mask(struct device *dev, u64 dma_mask)
  {
--	const struct dma_map_ops *dma_ops = get_dma_ops(dev);
--
--	if ((dma_ops != NULL) && (dma_ops->set_dma_mask != NULL))
--		return dma_ops->set_dma_mask(dev, dma_mask);
- 	if (!dev->dma_mask || !dma_supported(dev, dma_mask))
- 		return -EIO;
- 	*dev->dma_mask = dma_mask;
-diff --git a/include/linux/dma-mapping.h b/include/linux/dma-mapping.h
-index 3e5908656226..527f2ed8c645 100644
---- a/include/linux/dma-mapping.h
-+++ b/include/linux/dma-mapping.h
-@@ -127,7 +127,6 @@ struct dma_map_ops {
- 				   enum dma_data_direction dir);
- 	int (*mapping_error)(struct device *dev, dma_addr_t dma_addr);
- 	int (*dma_supported)(struct device *dev, u64 mask);
--	int (*set_dma_mask)(struct device *dev, u64 mask);
- #ifdef ARCH_HAS_DMA_GET_REQUIRED_MASK
- 	u64 (*get_required_mask)(struct device *dev);
- #endif
-@@ -563,11 +562,6 @@ static inline int dma_supported(struct device *dev, u64 mask)
- #ifndef HAVE_ARCH_DMA_SET_MASK
- static inline int dma_set_mask(struct device *dev, u64 mask)
- {
--	const struct dma_map_ops *ops = get_dma_ops(dev);
--
--	if (ops->set_dma_mask)
--		return ops->set_dma_mask(dev, mask);
--
- 	if (!dev->dma_mask || !dma_supported(dev, mask))
- 		return -EIO;
- 	*dev->dma_mask = mask;
+ 	if (ppc_md.dma_set_mask)
+@@ -334,7 +326,10 @@ int dma_set_mask(struct device *dev, u64 dma_mask)
+ 			return phb->controller_ops.dma_set_mask(pdev, dma_mask);
+ 	}
+ 
+-	return __dma_set_mask(dev, dma_mask);
++	if (!dev->dma_mask || !dma_supported(dev, dma_mask))
++		return -EIO;
++	*dev->dma_mask = dma_mask;
++	return 0;
+ }
+ EXPORT_SYMBOL(dma_set_mask);
+ 
 -- 
 2.11.0
