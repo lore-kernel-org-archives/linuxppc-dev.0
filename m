@@ -1,19 +1,21 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <dzickus@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wpzBw55b1zDq88
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jun 2017 21:47:52 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: aik@ozlabs.ru, alistair@popple.id.au, benh@kernel.crashing.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: [GIT PULL] Please pull powerpc/linux.git powerpc-4.12-6 tag
-Date: Fri, 16 Jun 2017 21:47:50 +1000
-Message-ID: <87wp8cupax.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wq3FY1z4hzDq88
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Jun 2017 00:50:25 +1000 (AEST)
+Date: Fri, 16 Jun 2017 10:50:22 -0400
+From: Don Zickus <dzickus@redhat.com>
+To: Nicholas Piggin <npiggin@gmail.com>,
+ Andrew Morton <akpm@linux-foundation.org>
+Cc: Babu Moger <babu.moger@oracle.com>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v4 0/5] Improve watchdog config for arch watchdogs
+Message-ID: <20170616145022.6vl452dpwgpw5q4f@redhat.com>
+References: <20170616065715.18390-1-npiggin@gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="=-=-=";
- micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20170616065715.18390-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,76 +25,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---=-=-=
-Content-Type: text/plain
+(adding Andrew)
 
-Hi Linus,
+On Fri, Jun 16, 2017 at 04:57:10PM +1000, Nicholas Piggin wrote:
+> This is the latest series to make the hardlockup watchdog more
+> easily replaceable by arch code. The last patch provides some
+> justification for why we want to do this (existing sparc watchdog
+> is another that could benefit).
+> 
+> Since last time, we tidied up the Kconfig approach so it was not
+> so jumbled -- Thanks Don and Babu for help and suggestions there.
 
-Please pull some more powerpc fixes for 4.12:
+Thanks Nick!  I think this version is good enough for now.
 
-The following changes since commit c6ee9619e2edd9912316f7e2eaf9ffa14fafe9f9:
+> 
+> Since last posting the powerpc patch, I re-added the soft-NMI
+> watchdog, but have it using the emergency stack so we can always
+> avoid the process stacks when perf interrupts are soft-masked.
+> 
+> I'm not sure of the best strategy to merge this. The powerpc
+> watchdog is too much to carry anywhere but powerpc tree now, and
+> watchdog patches seem to go via Andrew...
 
-  powerpc/book3s64: Move PPC_DT_CPU_FTRs and enable it by default (2017-06-08 20:42:57 +1000)
+Andrew, suggestions here?
 
-are available in the git repository at:
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git tags/powerpc-4.12-6
+Reviewed-by: Don Zickus <dzickus@redhat.com>
+Acked-by: Don Zickus <dzickus@redhat.com>
 
-for you to fetch changes up to a093c92dc7f96a15de98ec8cfe38e6f7610a5969:
 
-  powerpc/debug: Add missing warn flag to WARN_ON's non-builtin path (2017-06-16 16:10:37 +1000)
-
-----------------------------------------------------------------
-powerpc fixes for 4.12 #6
-
-Three small fixes for recently merged code:
-
- - remove a spurious WARN_ON when a PCI device has no of_node, it's allowed in
-   some circumstances for there to be no of_node.
-
- - fix the offset for store EOI MMIOs in the XIVE interrupt controller.
-
- - fix non-const WARN_ONs which were becoming BUGs due to them losing
-   BUGFLAG_WARNING in a recent cleanup patch.
-
-Thanks to:
-  Alexey Kardashevskiy, Alistair Popple, Benjamin Herrenschmidt.
-
-----------------------------------------------------------------
-Alexey Kardashevskiy (1):
-      powerpc/debug: Add missing warn flag to WARN_ON's non-builtin path
-
-Alistair Popple (1):
-      powerpc/npu-dma: Remove spurious WARN_ON when a PCI device has no of_node
-
-Benjamin Herrenschmidt (1):
-      powerpc/xive: Fix offset for store EOI MMIOs
-
- arch/powerpc/include/asm/bug.h           |  2 +-
- arch/powerpc/include/asm/xive.h          | 12 +++++++-----
- arch/powerpc/kvm/book3s_xive_template.c  |  4 ++--
- arch/powerpc/platforms/powernv/npu-dma.c |  3 ++-
- arch/powerpc/sysdev/xive/common.c        |  2 +-
- 5 files changed, 13 insertions(+), 10 deletions(-)
-
---=-=-=
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJZQ8VnAAoJEFHr6jzI4aWAgHYP/15ZsjYnblvJe1eaDOK+xoGE
-t9hvtUflq9UnoeBrmLPefo3wTnyYyoZrT5L6j1EDZZJIoBrRimPuc4SEVjGbtQun
-kOB2nuWsSE1IM5R4HaXEaXpJJ2xTWjjq5inGs4/LQ9ZaeGcmcwj+xk2CaDQpbkGf
-/n5cJgnp3UHFNcEfYKkx+5x67CrifOuhKoB1fI9OheDf3mt+rsFOGaqzp6hkJ5kW
-ybMeEVnJAhFU4JXKg6UYpLN26EZuhOtC/5hNhRWGgL4RSDSKE1EbC5cN/zz+5UD4
-9Tae1/kzwWpTg31xX0zR+zoPQHIejO1zwM7ue+BbdRsZLv7Z5jXBLnVUle6biFev
-Ih0wZtdwjPu23Q2gvtdqGlpBlwTdsR+uRO/RxKGlWhery0LL7/I0wp5zi/r8adbI
-r+cdzy9kXZal/gsqPvQ0hqaqvO8ZHmEBgIxo8TV7OS+Vf4hSkFCnnKrODV2XcgOb
-cp9srApHN6I00yKyGam0QGNMYZjmMzPn7fxPOUMto01o9201H12A/9v7Qv/Q6aqU
-0Gva92+5dlc+1LtmptgEoQXxorgpQB1zD77/h5IIa5Egv3sG52jCknWtqhrcHxwo
-sGGyQuY4pIOq9XfMJiEYraP2Ip0UuS+s4HVQbpFh29p+ld7tI3CN76Md8lYae+wV
-aGFI8gbWpro95amJXr6A
-=brxe
------END PGP SIGNATURE-----
---=-=-=--
+> 
+> Thanks,
+> Nick
+> 
+> Nicholas Piggin (5):
+>   watchdog: remove unused declaration
+>   watchdog: introduce arch_touch_nmi_watchdog()
+>   watchdog: split up config options
+>   watchdog: provide watchdog_reconfigure() for arch watchdogs
+>   powerpc/64s: implement arch-specific hardlockup watchdog
+> 
+>  arch/Kconfig                               |  23 ++
+>  arch/blackfin/include/asm/nmi.h            |   2 +
+>  arch/blackfin/kernel/nmi.c                 |   2 +-
+>  arch/mn10300/include/asm/nmi.h             |   2 +
+>  arch/mn10300/kernel/mn10300-watchdog-low.S |   8 +-
+>  arch/mn10300/kernel/mn10300-watchdog.c     |   2 +-
+>  arch/powerpc/Kconfig                       |   6 +-
+>  arch/powerpc/include/asm/nmi.h             |  11 +
+>  arch/powerpc/include/asm/smp.h             |   2 +
+>  arch/powerpc/kernel/Makefile               |   1 +
+>  arch/powerpc/kernel/exceptions-64s.S       |  30 ++-
+>  arch/powerpc/kernel/kvm.c                  |   7 +
+>  arch/powerpc/kernel/setup_64.c             |  19 --
+>  arch/powerpc/kernel/smp.c                  |  20 +-
+>  arch/powerpc/kernel/watchdog.c             | 388 +++++++++++++++++++++++++++++
+>  arch/sparc/include/asm/nmi.h               |   1 +
+>  arch/sparc/kernel/nmi.c                    |   6 +-
+>  arch/x86/Kconfig                           |   1 +
+>  arch/x86/kernel/apic/hw_nmi.c              |   2 +-
+>  include/linux/nmi.h                        |  57 +++--
+>  kernel/Makefile                            |   2 +-
+>  kernel/sysctl.c                            |  31 ++-
+>  kernel/watchdog.c                          | 268 +++++++++++++-------
+>  kernel/watchdog_hld.c                      |  37 +--
+>  lib/Kconfig.debug                          |  45 ++--
+>  25 files changed, 763 insertions(+), 210 deletions(-)
+>  create mode 100644 arch/powerpc/kernel/watchdog.c
+> 
+> -- 
+> 2.11.0
+> 
