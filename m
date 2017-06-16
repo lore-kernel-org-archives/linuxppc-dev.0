@@ -1,35 +1,31 @@
-Return-Path: <fbarrat@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <hch@lst.de>
+Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wpsTF340qzDq8B
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jun 2017 17:29:53 +1000 (AEST)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v5G7OX0e091403
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jun 2017 03:29:50 -0400
-Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2b489xeskf-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jun 2017 03:29:50 -0400
-Received: from localhost
- by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
- Fri, 16 Jun 2017 08:29:48 +0100
-Subject: Re: [PATCH V2] cxl: Export library to support IBM XSL
-To: Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- Christophe Lombard <clombard@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, vaibhav@linux.vnet.ibm.com
-References: <1497446944-15759-1-git-send-email-clombard@linux.vnet.ibm.com>
- <3dba232a-2936-15df-decd-2bdefa0d7a8e@au1.ibm.com>
-From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-Date: Fri, 16 Jun 2017 09:29:45 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wptym1xfdzDq88
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jun 2017 18:37:03 +1000 (AEST)
+Date: Fri, 16 Jun 2017 10:37:00 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: Robin Murphy <robin.murphy@arm.com>
+Cc: Christoph Hellwig <hch@lst.de>, x86@kernel.org,
+ linux-arm-kernel@lists.infradead.org,
+ xen-devel@lists.xenproject.org, linux-c6x-dev@linux-c6x.org,
+ linux-hexagon@vger.kernel.org, linux-ia64@vger.kernel.org,
+ linux-mips@linux-mips.org, openrisc@lists.librecores.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
+ linux-xtensa@linux-xtensa.org, dmaengine@vger.kernel.org,
+ linux-tegra@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ linux-samsung-soc@vger.kernel.org, iommu@lists.linux-foundation.org,
+ netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 06/44] iommu/dma: don't rely on DMA_ERROR_CODE
+Message-ID: <20170616083700.GA10582@lst.de>
+References: <20170608132609.32662-1-hch@lst.de>
+ <20170608132609.32662-7-hch@lst.de>
+ <0bfb0841-f054-78de-628d-a0955336bcb4@arm.com>
 MIME-Version: 1.0
-In-Reply-To: <3dba232a-2936-15df-decd-2bdefa0d7a8e@au1.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <0a098395-a0b8-e63d-e43d-626eaa0270b9@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <0bfb0841-f054-78de-628d-a0955336bcb4@arm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,20 +35,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-
-Le 16/06/2017 à 09:13, Andrew Donnellan a écrit :
->>
->> +config CXL_LIB
->> +    bool
->> +    default n
->> +
+On Thu, Jun 08, 2017 at 02:59:07PM +0100, Robin Murphy wrote:
+> Hi Christoph,
 > 
-> How necessary is this? Are there any drivers using cxllib that we're 
-> trying to get in during this cycle?
+> On 08/06/17 14:25, Christoph Hellwig wrote:
+> > DMA_ERROR_CODE is not a public API and will go away soon.  dma dma-iommu
+> > driver already implements a proper ->mapping_error method, so it's only
+> > using the value internally.  Add a new local define using the value
+> > that arm64 which is the only current user of dma-iommu.
+> 
+> It would be fine to just use 0, since dma-iommu already makes sure that
+> that will never be allocated for a valid DMA address.
 
-That was a Mellanox request, so that they can enable code in their 
-driver. Like we've done previously, I expect we should be able to drop 
-it once their code is upstream.
+I'll change it to 0.
 
-   Fred
+> Otherwise, looks good!
+
+Can you give me a formal ACK or Reviewed-by: ?
