@@ -1,39 +1,23 @@
-Return-Path: <ravi.bangoria@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wpnJC23BnzDq88
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jun 2017 14:21:47 +1000 (AEST)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v5G4JEcp008499
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jun 2017 00:21:44 -0400
-Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2b42v3abmr-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jun 2017 00:21:44 -0400
-Received: from localhost
- by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ravi.bangoria@linux.vnet.ibm.com>;
- Fri, 16 Jun 2017 00:21:43 -0400
-Subject: Re: [PATCH v2] perf: libdw support for powerpc [ping]
-To: Mark Wielaard <mark@klomp.org>, Milian Wolff <milian.wolff@kdab.com>,
- Paolo Bonzini <pbonzini@redhat.com>
-References: <1496312681-20133-1-git-send-email-pbonzini@redhat.com>
- <1497354282.3755.201.camel@klomp.org> <59400ADD.4090709@linux.vnet.ibm.com>
- <3621613.kMnvz8Tm3d@milian-kdab2> <1497525392.3755.307.camel@klomp.org>
-Cc: linux-kernel@vger.kernel.org, acme@kernel.org,
- "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wppRF0NMbzDq88
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jun 2017 15:12:57 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
+Cc: benh@kernel.crashing.org, paulus@samba.org, mingo@kernel.org,
+ peterz@infradead.org, acme@kernel.org, alexander.shishkin@linux.intel.com,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ naveen.n.rao@linux.vnet.ibm.com,
  Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
-From: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
-Date: Fri, 16 Jun 2017 09:51:23 +0530
+Subject: Re: [PATCH] ppc64/perf: Fix oops when kthread execs user process
+In-Reply-To: <1497534408-4591-1-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
+References: <1497534408-4591-1-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
+Date: Fri, 16 Jun 2017 15:12:56 +1000
+Message-ID: <87fuf0wm5j.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <1497525392.3755.307.camel@klomp.org>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <59435CC3.9080007@linux.vnet.ibm.com>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,55 +27,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Works like a charm with Milian's patch.
+Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com> writes:
 
-Acked-by: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
+> When a kthread makes a call_usermodehelper() call the steps are:
+>  a. allocates current->mm
+>  b. load_elf_binary()
+>  c. populates current->thread.regs
+>
+> While doing this, interrupts are not disabled. If there is a perf
+> interrupt in the middle of this process (i.e. step 'a' has completed
+> but not yet reached to step 'c') and if perf tries to read userspace
+> regs, kernel oops with following log:
+>
+>   [  131.217172] Unable to handle kernel paging request for data at address 0x00000000
+>   [  131.217731] Faulting instruction address: 0xc0000000000da0fc
+>   ...
+>   [  131.235555] Call Trace:
+>   [  131.235714] [c0000000bbaaad60] [c00000000025dedc] perf_output_sample_regs+0x6c/0xd0
+>   [  131.236020] [c0000000bbaaadb0] [c000000000269b44] perf_output_sample+0x4e4/0x830
+>   [  131.236362] [c0000000bbaaae40] [c00000000026a354] perf_event_output_forward+0x64/0x90
+>   [  131.236668] [c0000000bbaaaeb0] [c00000000026298c] __perf_event_overflow+0x8c/0x1e0
+>   [  131.236979] [c0000000bbaaaf00] [c0000000000dc330] record_and_restart+0x220/0x5c0
+>   [  131.237306] [c0000000bbaab230] [c0000000000dd1d8] perf_event_interrupt+0x2d8/0x4d0
+>   [  131.237611] [c0000000bbaab320] [c0000000000294a4] performance_monitor_exception+0x54/0x70
+>   [  131.237891] [c0000000bbaab350] [c00000000000a0a8] performance_monitor_common+0x158/0x160
+>   [  131.238208] --- interrupt: f01 at avtab_search_node+0x150/0x1a0
+>   [  131.238208]     LR = avtab_search_node+0x100/0x1a0
+>   [  131.238617] [c0000000bbaab640] [c000000000526770] context_struct_compute_av+0x220/0x5b0 (unreliable)
+>   [  131.238948] [c0000000bbaab730] [c0000000005278b4] security_compute_av+0x174/0x390
+>   [  131.239231] [c0000000bbaab7e0] [c0000000005050e4] avc_compute_av+0x84/0x260
+>   [  131.239471] [c0000000bbaab890] [c000000000506198] avc_has_perm+0xf8/0x1c0
+>   [  131.239708] [c0000000bbaab980] [c00000000050f32c] file_has_perm+0x6c/0xd0
+>   [  131.239972] [c0000000bbaab9e0] [c0000000004ff0fc] security_mmap_file+0xac/0x140
+>   [  131.240256] [c0000000bbaaba50] [c0000000002b1fc0] vm_mmap_pgoff+0x80/0x160
+>   [  131.240532] [c0000000bbaabb30] [c0000000003f7db4] elf_map+0xa4/0x180
+>   [  131.240771] [c0000000bbaabb90] [c0000000003f9a48] load_elf_binary+0x6e8/0x15a0
+>   [  131.241060] [c0000000bbaabc90] [c000000000374f58] search_binary_handler+0xe8/0x290
+>   [  131.241347] [c0000000bbaabd20] [c000000000375c14] do_execveat_common.isra.14+0x5f4/0x840
+>   [  131.241631] [c0000000bbaabdf0] [c00000000010be70] call_usermodehelper_exec_async+0x170/0x210
+>   [  131.241955] [c0000000bbaabe30] [c00000000000bae0] ret_from_kernel_thread+0x5c/0x7c
+>
+> Fix it by setting abi to PERF_SAMPLE_REGS_ABI_NONE when userspace
+> pt_regs are not set. 
+>
+> Signed-off-by: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
+> ---
+> Note: this should go to stable as well. I've not checked below 4.4
+> kernel but I'm able to reproduce it with 4.4 kernel.
 
-Note:
-I still see very minor differences between libunwind and libdw. Also, second last
-function gets repeated two times in every callchain but it can be fixed later on.
-Otherwise all looks good!
+That function (perf_get_regs_user()) didn't exist until 4.7, ie:
 
-Thanks,
--Ravi
+ed4a4ef85cf5 ("powerpc/perf: Add support for sampling interrupt register state")
 
-On Thursday 15 June 2017 04:46 PM, Mark Wielaard wrote:
-> On Thu, 2017-06-15 at 10:46 +0200, Milian Wolff wrote:
->> Just a quick question: Have you guys applied my recent patch:
->>
->> commit 5ea0416f51cc93436bbe497c62ab49fd9cb245b6
->> Author: Milian Wolff <milian.wolff@kdab.com>
->> Date:   Thu Jun 1 23:00:21 2017 +0200
->>
->>     perf report: Include partial stacks unwound with libdw
->>     
->>     So far the whole stack was thrown away when any error occurred before
->>     the maximum stack depth was unwound. This is actually a very common
->>     scenario though. The stacks that got unwound so far are still
->>     interesting. This removes a large chunk of differences when comparing
->>     perf script output for libunwind and libdw perf unwinding.
->>
->> If not, then this could explain the issue you are seeing.
-> Thanks! No, I didn't have that patch (*) yet. It makes a huge
-> difference. With that, Paolo's patch and the elfutils libdw powerpc64
-> fallback unwinder patch, it looks like I get user stack traces for
-> everything now on ppc64le.
->
-> Cheers,
->
-> Mark
->
-> (*) It just this one-liner, but what a difference that makes:
->
-> --- a/tools/perf/util/unwind-libdw.c
-> +++ b/tools/perf/util/unwind-libdw.c
-> @@ -224,7 +224,7 @@ int unwind__get_entries(unwind_entry_cb_t cb, void *arg,
->  
->         err = dwfl_getthread_frames(ui->dwfl, thread->tid, frame_callback, ui);
->  
-> -       if (err && !ui->max_stack)
-> +       if (err && ui->max_stack != max_stack)
->                 err = 0;
->  
->         /*
->
+So there must be something else going on.
+
+I'll hold off on merging this until we've worked it out.
+
+cheers
