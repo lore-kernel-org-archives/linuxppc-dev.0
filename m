@@ -1,28 +1,39 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <ravi.bangoria@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wpmCt5rVHzDq5W
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jun 2017 13:32:58 +1000 (AEST)
-Date: Fri, 16 Jun 2017 13:32:58 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: "Rowand, Frank" <Frank.Rowand@sony.com>, Abdul Haleem
- <abdhalee@linux.vnet.ibm.com>, sachinp <sachinp@linux.vnet.ibm.com>,
- linux-next <linux-next@vger.kernel.org>, linux-kernel
- <linux-kernel@vger.kernel.org>, linuxppc-dev
- <linuxppc-dev@lists.ozlabs.org>, Rob Herring  <robh@kernel.org>
-Subject: Re: [Oops][next-20170614][] powerpc boot fails with WARNING: CPU:
- 12 PID: 0 at mm/memblock.c
-Message-ID: <20170616133258.74900bc3@canb.auug.org.au>
-In-Reply-To: <20170616111335.4e1a818a@canb.auug.org.au>
-References: <1497506437.15415.60.camel@abdul.in.ibm.com>
- <1497518696.15415.68.camel@abdul.in.ibm.com>
- <ED290C750E1B324E972B0017C9D4BAB02E5A7EAF@USCULXMSG03.am.sony.com>
- <87injwwxzh.fsf@concordia.ellerman.id.au>
- <20170616111335.4e1a818a@canb.auug.org.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wpnJC23BnzDq88
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jun 2017 14:21:47 +1000 (AEST)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v5G4JEcp008499
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jun 2017 00:21:44 -0400
+Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2b42v3abmr-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jun 2017 00:21:44 -0400
+Received: from localhost
+ by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ravi.bangoria@linux.vnet.ibm.com>;
+ Fri, 16 Jun 2017 00:21:43 -0400
+Subject: Re: [PATCH v2] perf: libdw support for powerpc [ping]
+To: Mark Wielaard <mark@klomp.org>, Milian Wolff <milian.wolff@kdab.com>,
+ Paolo Bonzini <pbonzini@redhat.com>
+References: <1496312681-20133-1-git-send-email-pbonzini@redhat.com>
+ <1497354282.3755.201.camel@klomp.org> <59400ADD.4090709@linux.vnet.ibm.com>
+ <3621613.kMnvz8Tm3d@milian-kdab2> <1497525392.3755.307.camel@klomp.org>
+Cc: linux-kernel@vger.kernel.org, acme@kernel.org,
+ "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org,
+ Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
+From: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
+Date: Fri, 16 Jun 2017 09:51:23 +0530
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+In-Reply-To: <1497525392.3755.307.camel@klomp.org>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <59435CC3.9080007@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,46 +43,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi all,
+Works like a charm with Milian's patch.
 
-On Fri, 16 Jun 2017 11:13:35 +1000 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+Acked-by: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
+
+Note:
+I still see very minor differences between libunwind and libdw. Also, second last
+function gets repeated two times in every callchain but it can be fixed later on.
+Otherwise all looks good!
+
+Thanks,
+-Ravi
+
+On Thursday 15 June 2017 04:46 PM, Mark Wielaard wrote:
+> On Thu, 2017-06-15 at 10:46 +0200, Milian Wolff wrote:
+>> Just a quick question: Have you guys applied my recent patch:
+>>
+>> commit 5ea0416f51cc93436bbe497c62ab49fd9cb245b6
+>> Author: Milian Wolff <milian.wolff@kdab.com>
+>> Date:   Thu Jun 1 23:00:21 2017 +0200
+>>
+>>     perf report: Include partial stacks unwound with libdw
+>>     
+>>     So far the whole stack was thrown away when any error occurred before
+>>     the maximum stack depth was unwound. This is actually a very common
+>>     scenario though. The stacks that got unwound so far are still
+>>     interesting. This removes a large chunk of differences when comparing
+>>     perf script output for libunwind and libdw perf unwinding.
+>>
+>> If not, then this could explain the issue you are seeing.
+> Thanks! No, I didn't have that patch (*) yet. It makes a huge
+> difference. With that, Paolo's patch and the elfutils libdw powerpc64
+> fallback unwinder patch, it looks like I get user stack traces for
+> everything now on ppc64le.
 >
-> On Fri, 16 Jun 2017 10:57:22 +1000 Michael Ellerman <mpe@ellerman.id.au> wrote:
-> >
-> > "Rowand, Frank" <Frank.Rowand@sony.com> writes:
-> >   
-> > > On Thursday, June 15, 2017 2:25 AM, Abdul Haleem [mailto:abdhalee@linux.vnet.ibm.com]  wrote:    
-> > >>
-> > >> On Thu, 2017-06-15 at 11:30 +0530, Abdul Haleem wrote:    
-> > >>>
-> > >>> linux-next fails to boot on powerpc Bare-metal with these warnings.
-> > >>>
-> > >>> machine booted fine on next-20170613    
-> > >>
-> > >> Thanks Michael, Yes it is (75fe04e59 of: remove *phandle properties from
-> > >> expanded device tree)
-> > >>
-> > >> Frank, would you please take a look at the trace.
-> > >>
-> > >> Thanks    
-> > >
-> > > < snip >
-> > >
-> > > My patch series 'of: remove *phandle properties from expanded device tree'
-> > > in -next seems to have broken boot for a significant number of powerpc
-> > > systems.  I am actively working on understanding and fixing the problem.    
-> > 
-> > Thanks.
-> > 
-> > At least for me reverting that patch on top of linux-next gets things
-> > booting again.
-> > 
-> > Stephen can you revert that patch in linux-next today?  
-> 
-> OK.
-
-Actually, Rob removed it from his tree before I merged it.
-
--- 
-Cheers,
-Stephen Rothwell
+> Cheers,
+>
+> Mark
+>
+> (*) It just this one-liner, but what a difference that makes:
+>
+> --- a/tools/perf/util/unwind-libdw.c
+> +++ b/tools/perf/util/unwind-libdw.c
+> @@ -224,7 +224,7 @@ int unwind__get_entries(unwind_entry_cb_t cb, void *arg,
+>  
+>         err = dwfl_getthread_frames(ui->dwfl, thread->tid, frame_callback, ui);
+>  
+> -       if (err && !ui->max_stack)
+> +       if (err && ui->max_stack != max_stack)
+>                 err = 0;
+>  
+>         /*
+>
