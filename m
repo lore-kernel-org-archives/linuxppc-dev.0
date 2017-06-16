@@ -2,7 +2,7 @@ Return-Path: <BATV+48ca1ab4adaecdf09dc3+5045+infradead.org+hch@bombadil.srs.infr
 Received: from bombadil.infradead.org (bombadil.infradead.org [65.50.211.133])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
  bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wq7jz25j1zDqBY
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wq7jz4w75zDqBY
  for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Jun 2017 04:11:51 +1000 (AEST)
 From: Christoph Hellwig <hch@lst.de>
 To: x86@kernel.org, linux-arm-kernel@lists.infradead.org,
@@ -16,9 +16,9 @@ To: x86@kernel.org, linux-arm-kernel@lists.infradead.org,
  linux-samsung-soc@vger.kernel.org, iommu@lists.linux-foundation.org,
  netdev@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 08/44] xen-swiotlb: implement ->mapping_error
-Date: Fri, 16 Jun 2017 20:10:23 +0200
-Message-Id: <20170616181059.19206-9-hch@lst.de>
+Subject: [PATCH 10/44] ia64: remove DMA_ERROR_CODE
+Date: Fri, 16 Jun 2017 20:10:25 +0200
+Message-Id: <20170616181059.19206-11-hch@lst.de>
 In-Reply-To: <20170616181059.19206-1-hch@lst.de>
 References: <20170616181059.19206-1-hch@lst.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -30,62 +30,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DMA_ERROR_CODE is going to go away, so don't rely on it.
+All ia64 dma_mapping_ops instances already have a mapping_error member.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
-Reviewed-by: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
 ---
- drivers/xen/swiotlb-xen.c | 12 ++++++++++--
- 1 file changed, 10 insertions(+), 2 deletions(-)
+ arch/ia64/include/asm/dma-mapping.h | 2 --
+ 1 file changed, 2 deletions(-)
 
-diff --git a/drivers/xen/swiotlb-xen.c b/drivers/xen/swiotlb-xen.c
-index a0f006daab48..c3a04b2d7532 100644
---- a/drivers/xen/swiotlb-xen.c
-+++ b/drivers/xen/swiotlb-xen.c
-@@ -67,6 +67,8 @@ static unsigned long dma_alloc_coherent_mask(struct device *dev,
- }
- #endif
+diff --git a/arch/ia64/include/asm/dma-mapping.h b/arch/ia64/include/asm/dma-mapping.h
+index 73ec3c6f4cfe..3ce5ab4339f3 100644
+--- a/arch/ia64/include/asm/dma-mapping.h
++++ b/arch/ia64/include/asm/dma-mapping.h
+@@ -12,8 +12,6 @@
  
-+#define XEN_SWIOTLB_ERROR_CODE	(~(dma_addr_t)0x0)
-+
- static char *xen_io_tlb_start, *xen_io_tlb_end;
- static unsigned long xen_io_tlb_nslabs;
- /*
-@@ -410,7 +412,7 @@ static dma_addr_t xen_swiotlb_map_page(struct device *dev, struct page *page,
- 	map = swiotlb_tbl_map_single(dev, start_dma_addr, phys, size, dir,
- 				     attrs);
- 	if (map == SWIOTLB_MAP_ERROR)
--		return DMA_ERROR_CODE;
-+		return XEN_SWIOTLB_ERROR_CODE;
+ #define ARCH_HAS_DMA_GET_REQUIRED_MASK
  
- 	dev_addr = xen_phys_to_bus(map);
- 	xen_dma_map_page(dev, pfn_to_page(map >> PAGE_SHIFT),
-@@ -425,7 +427,7 @@ static dma_addr_t xen_swiotlb_map_page(struct device *dev, struct page *page,
- 	attrs |= DMA_ATTR_SKIP_CPU_SYNC;
- 	swiotlb_tbl_unmap_single(dev, map, size, dir, attrs);
- 
--	return DMA_ERROR_CODE;
-+	return XEN_SWIOTLB_ERROR_CODE;
- }
- 
- /*
-@@ -715,6 +717,11 @@ xen_swiotlb_get_sgtable(struct device *dev, struct sg_table *sgt,
- 	return dma_common_get_sgtable(dev, sgt, cpu_addr, handle, size);
- }
- 
-+static int xen_swiotlb_mapping_error(struct device *dev, dma_addr_t dma_addr)
-+{
-+	return dma_addr == XEN_SWIOTLB_ERROR_CODE;
-+}
-+
- const struct dma_map_ops xen_swiotlb_dma_ops = {
- 	.alloc = xen_swiotlb_alloc_coherent,
- 	.free = xen_swiotlb_free_coherent,
-@@ -730,4 +737,5 @@ const struct dma_map_ops xen_swiotlb_dma_ops = {
- 	.set_dma_mask = xen_swiotlb_set_dma_mask,
- 	.mmap = xen_swiotlb_dma_mmap,
- 	.get_sgtable = xen_swiotlb_get_sgtable,
-+	.mapping_error	= xen_swiotlb_mapping_error,
- };
+-#define DMA_ERROR_CODE 0
+-
+ extern const struct dma_map_ops *dma_ops;
+ extern struct ia64_machine_vector ia64_mv;
+ extern void set_iommu_machvec(void);
 -- 
 2.11.0
