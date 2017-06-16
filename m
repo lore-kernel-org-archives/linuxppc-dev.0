@@ -2,11 +2,11 @@ Return-Path: <hch@lst.de>
 Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wpv6D2BHLzDq88
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jun 2017 18:43:32 +1000 (AEST)
-Date: Fri, 16 Jun 2017 10:43:28 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wpv8p2DR0zDq88
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jun 2017 18:45:45 +1000 (AEST)
+Date: Fri, 16 Jun 2017 10:45:42 +0200
 From: Christoph Hellwig <hch@lst.de>
-To: Russell King - ARM Linux <linux@armlinux.org.uk>
+To: Andreas Larsson <andreas@gaisler.com>
 Cc: Christoph Hellwig <hch@lst.de>, x86@kernel.org,
  linux-arm-kernel@lists.infradead.org,
  xen-devel@lists.xenproject.org, linux-c6x-dev@linux-c6x.org,
@@ -18,14 +18,13 @@ Cc: Christoph Hellwig <hch@lst.de>, x86@kernel.org,
  linux-tegra@vger.kernel.org, dri-devel@lists.freedesktop.org,
  linux-samsung-soc@vger.kernel.org, iommu@lists.linux-foundation.org,
  netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 25/44] arm: implement ->mapping_error
-Message-ID: <20170616084328.GC10582@lst.de>
+Subject: Re: [PATCH 27/44] sparc: remove leon_dma_ops
+Message-ID: <20170616084542.GD10582@lst.de>
 References: <20170608132609.32662-1-hch@lst.de>
- <20170608132609.32662-26-hch@lst.de>
- <20170608144313.GL4902@n2100.armlinux.org.uk>
+ <20170608132609.32662-28-hch@lst.de> <593E4B82.70306@gaisler.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170608144313.GL4902@n2100.armlinux.org.uk>
+In-Reply-To: <593E4B82.70306@gaisler.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,20 +34,10 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jun 08, 2017 at 03:43:14PM +0100, Russell King - ARM Linux wrote:
-> BOn Thu, Jun 08, 2017 at 03:25:50PM +0200, Christoph Hellwig wrote:
-> > +static int dmabounce_mapping_error(struct device *dev, dma_addr_t dma_addr)
-> > +{
-> > +	if (dev->archdata.dmabounce)
-> > +		return 0;
-> 
-> I'm not convinced that we need this check here:
-> 
->         dev->archdata.dmabounce = device_info;
->         set_dma_ops(dev, &dmabounce_ops);
-> 
-> There shouldn't be any chance of dev->archdata.dmabounce being NULL if
-> the dmabounce_ops has been set as the current device DMA ops.  So I
-> think that test can be killed.
+On Mon, Jun 12, 2017 at 10:06:26AM +0200, Andreas Larsson wrote:
+> Yes, it is needed. LEON systems are AMBA bus based. The common case here is 
+> DMA over AMBA buses. Some LEON systems have PCI bridges, but in general 
+> CONFIG_PCI is not a given.
 
-Ok, I'll fix it up.
+Ok, and even for AMBA we use the pci ops, so I'll leave it in and drop
+the comment from the commit.
