@@ -1,22 +1,42 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
- [IPv6:2607:f8b0:400e:c00::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <andrew.donnellan@au1.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wprmG0LBRzDqB7
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jun 2017 16:57:50 +1000 (AEST)
-Received: by mail-pf0-x244.google.com with SMTP id w12so4449367pfk.0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Jun 2017 23:57:49 -0700 (PDT)
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Don Zickus <dzickus@redhat.com>
-Cc: Nicholas Piggin <npiggin@gmail.com>, Babu Moger <babu.moger@oracle.com>,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v4 5/5] powerpc/64s: implement arch-specific hardlockup
- watchdog
-Date: Fri, 16 Jun 2017 16:57:15 +1000
-Message-Id: <20170616065715.18390-6-npiggin@gmail.com>
-In-Reply-To: <20170616065715.18390-1-npiggin@gmail.com>
-References: <20170616065715.18390-1-npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wps620RlpzDq8B
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jun 2017 17:13:13 +1000 (AEST)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v5G79mmJ123475
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jun 2017 03:13:12 -0400
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2b48hwnm19-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jun 2017 03:13:11 -0400
+Received: from localhost
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
+ Fri, 16 Jun 2017 17:13:07 +1000
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v5G7D4Th43516034
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jun 2017 17:13:04 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v5G7Ctab005596
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jun 2017 17:12:56 +1000
+Subject: Re: [PATCH V2] cxl: Export library to support IBM XSL
+To: Christophe Lombard <clombard@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, fbarrat@linux.vnet.ibm.com,
+ vaibhav@linux.vnet.ibm.com
+References: <1497446944-15759-1-git-send-email-clombard@linux.vnet.ibm.com>
+From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Date: Fri, 16 Jun 2017 17:13:03 +1000
+MIME-Version: 1.0
+In-Reply-To: <1497446944-15759-1-git-send-email-clombard@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <3dba232a-2936-15df-decd-2bdefa0d7a8e@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,648 +46,737 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Implement an arch-speicfic watchdog rather than use the perf-based
-hardlockup detector.
+On 14/06/17 23:29, Christophe Lombard wrote:
+> This patch exports a in-kernel 'library' API which can be called by
+> other drivers to help interacting with an IBM XSL on a POWER9 system.
+>
+> The XSL (Translation Service Layer) is a stripped down version of the
+> PSL (Power Service Layer) used in some cards such as the Mellanox CX5.
+> Like the PSL, it implements the CAIA architecture, but has a number
+> of differences, mostly in it's implementation dependent registers.
+>
+> The XSL also uses a special DMA cxl mode, which uses a slightly
+> different init sequence for the CAPP and PHB.
+>
+> Changelog[v2]
+>  - Rebase to latest upstream.
+>  - Return -EFAULT in case of NULL pointer in cxllib_handle_fault().
+>  - Reverse parameters when copro_handle_mm_fault() is called.
+>
+> Signed-off-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
 
-The new watchdog takes the soft-NMI directly, rather than going
-through perf. Perf interrupts are to be made maskable in future, so
-that would prevent the perf detector from working in those regions.
+For the parts of this I wrote:
 
-Additionally, implement a SMP based detector where all CPUs watch one
-another by pinging a shared cpumask. This is because powerpc Book3S
-does not have a true periodic local NMI, but some platforms do
-implement a true NMI IPI.
+Signed-off-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
 
-If a CPU is stuck with interrupts hard disabled, the soft-NMI watchdog
-does not work, but the SMP watchdog will. Even on platforms without a
-true NMI IPI to get a good trace from the stuck CPU, other CPUs will
-notice the lockup sufficiently to report it and panic.
+I'll skip the comments that Fred's already made, some minor comments below.
 
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
----
- arch/powerpc/Kconfig                 |   7 +-
- arch/powerpc/include/asm/nmi.h       |  11 +
- arch/powerpc/include/asm/smp.h       |   2 +
- arch/powerpc/kernel/Makefile         |   1 +
- arch/powerpc/kernel/exceptions-64s.S |  30 ++-
- arch/powerpc/kernel/kvm.c            |   7 +
- arch/powerpc/kernel/setup_64.c       |  19 --
- arch/powerpc/kernel/smp.c            |  20 +-
- arch/powerpc/kernel/watchdog.c       | 388 +++++++++++++++++++++++++++++++++++
- 9 files changed, 460 insertions(+), 25 deletions(-)
- create mode 100644 arch/powerpc/kernel/watchdog.c
+> ---
+>
+> This applies on top of this patch:
+> http://patchwork.ozlabs.org/patch/775322/
+> ---
+>  arch/powerpc/include/asm/opal-api.h |   1 +
+>  drivers/misc/cxl/Kconfig            |   5 +
+>  drivers/misc/cxl/Makefile           |   2 +-
+>  drivers/misc/cxl/cxl.h              |   7 ++
+>  drivers/misc/cxl/cxllib.c           | 241 ++++++++++++++++++++++++++++++++++++
+>  drivers/misc/cxl/fault.c            |  25 ++--
+>  drivers/misc/cxl/native.c           |  16 ++-
+>  drivers/misc/cxl/pci.c              |  41 +++---
+>  include/misc/cxllib.h               | 132 ++++++++++++++++++++
+>  9 files changed, 439 insertions(+), 31 deletions(-)
+>  create mode 100644 drivers/misc/cxl/cxllib.c
+>  create mode 100644 include/misc/cxllib.h
+>
+> diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
+> index cb3e624..3e0be78 100644
+> --- a/arch/powerpc/include/asm/opal-api.h
+> +++ b/arch/powerpc/include/asm/opal-api.h
+> @@ -877,6 +877,7 @@ enum {
+>  	OPAL_PHB_CAPI_MODE_SNOOP_OFF    = 2,
+>  	OPAL_PHB_CAPI_MODE_SNOOP_ON	= 3,
+>  	OPAL_PHB_CAPI_MODE_DMA		= 4,
+> +	OPAL_PHB_CAPI_MODE_DMA_TVT1	= 5,
+>  };
+>
+>  /* OPAL I2C request */
+> diff --git a/drivers/misc/cxl/Kconfig b/drivers/misc/cxl/Kconfig
+> index b75cf83..93397cb 100644
+> --- a/drivers/misc/cxl/Kconfig
+> +++ b/drivers/misc/cxl/Kconfig
+> @@ -11,11 +11,16 @@ config CXL_AFU_DRIVER_OPS
+>  	bool
+>  	default n
+>
+> +config CXL_LIB
+> +	bool
+> +	default n
+> +
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 7aba96ec3378..6b6ff76b18de 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -82,7 +82,7 @@ config NR_IRQS
- 
- config NMI_IPI
- 	bool
--	depends on SMP && (DEBUGGER || KEXEC_CORE)
-+	depends on SMP && (DEBUGGER || KEXEC_CORE || HARDLOCKUP_DETECTOR)
- 	default y
- 
- config STACKTRACE_SUPPORT
-@@ -197,12 +197,13 @@ config PPC
- 	select HAVE_MEMBLOCK
- 	select HAVE_MEMBLOCK_NODE_MAP
- 	select HAVE_MOD_ARCH_SPECIFIC
--	select HAVE_NMI				if PERF_EVENTS
-+	select HAVE_NMI				if PERF_EVENTS || (PPC64 && PPC_BOOK3S)
-+	select HAVE_HARDLOCKUP_DETECTOR_ARCH	if (PPC64 && PPC_BOOK3S)
- 	select HAVE_OPROFILE
- 	select HAVE_OPTPROBES			if PPC64
- 	select HAVE_PERF_EVENTS
- 	select HAVE_PERF_EVENTS_NMI		if PPC64
--	select HAVE_HARDLOCKUP_DETECTOR_PERF	if HAVE_PERF_EVENTS_NMI
-+	select HAVE_HARDLOCKUP_DETECTOR_PERF	if HAVE_PERF_EVENTS_NMI && !HAVE_HARDLOCKUP_DETECTOR_ARCH
- 	select HAVE_PERF_REGS
- 	select HAVE_PERF_USER_STACK_DUMP
- 	select HAVE_RCU_TABLE_FREE		if SMP
-diff --git a/arch/powerpc/include/asm/nmi.h b/arch/powerpc/include/asm/nmi.h
-index ff1ccb375e60..6f8e79cd35d8 100644
---- a/arch/powerpc/include/asm/nmi.h
-+++ b/arch/powerpc/include/asm/nmi.h
-@@ -1,4 +1,15 @@
- #ifndef _ASM_NMI_H
- #define _ASM_NMI_H
- 
-+#ifdef CONFIG_HARDLOCKUP_DETECTOR
-+extern void arch_touch_nmi_watchdog(void);
-+
-+extern void arch_trigger_cpumask_backtrace(const cpumask_t *mask,
-+					   bool exclude_self);
-+#define arch_trigger_cpumask_backtrace arch_trigger_cpumask_backtrace
-+
-+#else
-+static inline void arch_touch_nmi_watchdog(void) {}
-+#endif
-+
- #endif /* _ASM_NMI_H */
-diff --git a/arch/powerpc/include/asm/smp.h b/arch/powerpc/include/asm/smp.h
-index ebddb2111d87..8ea98504f900 100644
---- a/arch/powerpc/include/asm/smp.h
-+++ b/arch/powerpc/include/asm/smp.h
-@@ -55,6 +55,8 @@ struct smp_ops_t {
- 	int   (*cpu_bootable)(unsigned int nr);
- };
- 
-+extern void smp_flush_nmi_ipi(u64 delay_us);
-+extern int smp_send_nmi_ipi(int cpu, void (*fn)(struct pt_regs *), u64 delay_us);
- extern void smp_send_debugger_break(void);
- extern void start_secondary_resume(void);
- extern void smp_generic_give_timebase(void);
-diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
-index e132902e1f14..459c17bc5cf3 100644
---- a/arch/powerpc/kernel/Makefile
-+++ b/arch/powerpc/kernel/Makefile
-@@ -40,6 +40,7 @@ obj-$(CONFIG_PPC64)		+= setup_64.o sys_ppc32.o \
- 				   signal_64.o ptrace32.o \
- 				   paca.o nvram_64.o firmware.o
- obj-$(CONFIG_VDSO32)		+= vdso32/
-+obj-$(CONFIG_HARDLOCKUP_DETECTOR)	+= watchdog.o
- obj-$(CONFIG_HAVE_HW_BREAKPOINT)	+= hw_breakpoint.o
- obj-$(CONFIG_PPC_BOOK3S_64)	+= cpu_setup_ppc970.o cpu_setup_pa6t.o
- obj-$(CONFIG_PPC_BOOK3S_64)	+= cpu_setup_power.o
-diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-index ae418b85c17c..bde11f0dc69e 100644
---- a/arch/powerpc/kernel/exceptions-64s.S
-+++ b/arch/powerpc/kernel/exceptions-64s.S
-@@ -1273,6 +1273,31 @@ EXC_REAL_NONE(0x1800, 0x100)
- EXC_VIRT_NONE(0x5800, 0x100)
- #endif
- 
-+#if defined(CONFIG_HARDLOCKUP_DETECTOR) && defined(CONFIG_HAVE_HARDLOCKUP_DETECTOR_ARCH)
-+
-+#define MASKED_DEC_HANDLER_LABEL 3f
-+
-+#define MASKED_DEC_HANDLER(_H)				\
-+3: /* soft-nmi */					\
-+	std	r12,PACA_EXGEN+EX_R12(r13);		\
-+	GET_SCRATCH0(r10);				\
-+	std	r10,PACA_EXGEN+EX_R13(r13);		\
-+	EXCEPTION_PROLOG_PSERIES_1(soft_nmi_common, _H)
-+
-+EXC_COMMON_BEGIN(soft_nmi_common)
-+	mr	r10,r1
-+	ld	r1,PACAEMERGSP(r13)
-+	ld	r1,PACA_NMI_EMERG_SP(r13)
-+	subi	r1,r1,INT_FRAME_SIZE
-+	EXCEPTION_COMMON_NORET_STACK(PACA_EXGEN, 0x900,
-+			system_reset, soft_nmi_interrupt,
-+			ADD_NVGPRS;ADD_RECONCILE)
-+	b	ret_from_except
-+
-+#else
-+#define MASKED_DEC_HANDLER_LABEL 2f /* normal return */
-+#define MASKED_DEC_HANDLER(_H)
-+#endif
- 
- /*
-  * An interrupt came in while soft-disabled. We set paca->irq_happened, then:
-@@ -1295,7 +1320,7 @@ masked_##_H##interrupt:					\
- 	lis	r10,0x7fff;				\
- 	ori	r10,r10,0xffff;				\
- 	mtspr	SPRN_DEC,r10;				\
--	b	2f;					\
-+	b	MASKED_DEC_HANDLER_LABEL;		\
- 1:	cmpwi	r10,PACA_IRQ_DBELL;			\
- 	beq	2f;					\
- 	cmpwi	r10,PACA_IRQ_HMI;			\
-@@ -1310,7 +1335,8 @@ masked_##_H##interrupt:					\
- 	ld	r11,PACA_EXGEN+EX_R11(r13);		\
- 	GET_SCRATCH0(r13);				\
- 	##_H##rfid;					\
--	b	.
-+	b	.;					\
-+	MASKED_DEC_HANDLER(_H)
- 
- /*
-  * Real mode exceptions actually use this too, but alternate
-diff --git a/arch/powerpc/kernel/kvm.c b/arch/powerpc/kernel/kvm.c
-index 9ad37f827a97..1086ea37c832 100644
---- a/arch/powerpc/kernel/kvm.c
-+++ b/arch/powerpc/kernel/kvm.c
-@@ -25,6 +25,7 @@
- #include <linux/kvm_para.h>
- #include <linux/slab.h>
- #include <linux/of.h>
-+#include <linux/nmi.h> /* hardlockup_detector_disable() */
- 
- #include <asm/reg.h>
- #include <asm/sections.h>
-@@ -718,6 +719,12 @@ static __init void kvm_free_tmp(void)
- 
- static int __init kvm_guest_init(void)
- {
-+	/*
-+	 * The hardlockup detector is likely to get false positives in
-+	 * KVM guests, so disable it by default.
-+	 */
-+	hardlockup_detector_disable();
-+
- 	if (!kvm_para_available())
- 		goto free_tmp;
- 
-diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-index ab650905f75a..9c15b3b8ba4d 100644
---- a/arch/powerpc/kernel/setup_64.c
-+++ b/arch/powerpc/kernel/setup_64.c
-@@ -726,22 +726,3 @@ unsigned long memory_block_size_bytes(void)
- struct ppc_pci_io ppc_pci_io;
- EXPORT_SYMBOL(ppc_pci_io);
- #endif
--
--#ifdef CONFIG_HARDLOCKUP_DETECTOR_PERF
--u64 hw_nmi_get_sample_period(int watchdog_thresh)
--{
--	return ppc_proc_freq * watchdog_thresh;
--}
--
--/*
-- * The hardlockup detector breaks PMU event based branches and is likely
-- * to get false positives in KVM guests, so disable it by default.
-- */
--static int __init disable_hardlockup_detector(void)
--{
--	hardlockup_detector_disable();
--
--	return 0;
--}
--early_initcall(disable_hardlockup_detector);
--#endif
-diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
-index df2a41647d8e..5b602a284084 100644
---- a/arch/powerpc/kernel/smp.c
-+++ b/arch/powerpc/kernel/smp.c
-@@ -433,13 +433,31 @@ static void do_smp_send_nmi_ipi(int cpu)
- 	}
- }
- 
-+void smp_flush_nmi_ipi(u64 delay_us)
-+{
-+	unsigned long flags;
-+
-+	nmi_ipi_lock_start(&flags);
-+	while (nmi_ipi_busy_count) {
-+		nmi_ipi_unlock_end(&flags);
-+		udelay(1);
-+		if (delay_us) {
-+			delay_us--;
-+			if (!delay_us)
-+				return;
-+		}
-+		nmi_ipi_lock_start(&flags);
-+	}
-+	nmi_ipi_unlock_end(&flags);
-+}
-+
- /*
-  * - cpu is the target CPU (must not be this CPU), or NMI_IPI_ALL_OTHERS.
-  * - fn is the target callback function.
-  * - delay_us > 0 is the delay before giving up waiting for targets to
-  *   enter the handler, == 0 specifies indefinite delay.
-  */
--static int smp_send_nmi_ipi(int cpu, void (*fn)(struct pt_regs *), u64 delay_us)
-+int smp_send_nmi_ipi(int cpu, void (*fn)(struct pt_regs *), u64 delay_us)
- {
- 	unsigned long flags;
- 	int me = raw_smp_processor_id();
-diff --git a/arch/powerpc/kernel/watchdog.c b/arch/powerpc/kernel/watchdog.c
-new file mode 100644
-index 000000000000..4ed9cf37f369
---- /dev/null
-+++ b/arch/powerpc/kernel/watchdog.c
-@@ -0,0 +1,388 @@
-+/*
-+ * Watchdog support on powerpc systems.
-+ *
-+ * Copyright 2017, IBM Corporation.
-+ *
-+ * This uses code from arch/sparc/kernel/nmi.c and kernel/watchdog.c
-+ */
-+#include <linux/kernel.h>
-+#include <linux/param.h>
-+#include <linux/init.h>
-+#include <linux/percpu.h>
-+#include <linux/cpu.h>
-+#include <linux/nmi.h>
-+#include <linux/module.h>
-+#include <linux/export.h>
-+#include <linux/kprobes.h>
-+#include <linux/hardirq.h>
-+#include <linux/reboot.h>
-+#include <linux/slab.h>
-+#include <linux/kdebug.h>
-+#include <linux/sched/debug.h>
-+#include <linux/delay.h>
-+#include <linux/smp.h>
-+
-+#include <asm/paca.h>
-+
-+/*
-+ * The watchdog has a simple timer that runs on each CPU, once per timer
-+ * period. This is the heartbeat.
-+ *
-+ * Then there are checks to see if the heartbeat has not triggered on a CPU
-+ * for the panic timeout period. Currently the watchdog only supports an
-+ * SMP check, so the heartbeat only turns on when we have 2 or more CPUs.
-+ *
-+ * This is not an NMI watchdog, but Linux uses that name for a generic
-+ * watchdog in some cases, so NMI gets used in some places.
-+ */
-+
-+static cpumask_t wd_cpus_enabled __read_mostly;
-+
-+static u64 wd_panic_timeout_tb __read_mostly; /* timebase ticks until panic */
-+static u64 wd_smp_panic_timeout_tb __read_mostly; /* panic other CPUs */
-+
-+static u64 wd_timer_period_ms __read_mostly;  /* interval between heartbeat */
-+
-+static DEFINE_PER_CPU(struct timer_list, wd_timer);
-+static DEFINE_PER_CPU(u64, wd_timer_tb);
-+
-+/*
-+ * These are for the SMP checker. CPUs clear their pending bit in their
-+ * heartbeat. If the bitmask becomes empty, the time is noted and the
-+ * bitmask is refilled.
-+ *
-+ * All CPUs clear their bit in the pending mask every timer period.
-+ * Once all have cleared, the time is noted and the bits are reset.
-+ * If the time since all clear was greater than the panic timeout,
-+ * we can panic with the list of stuck CPUs.
-+ *
-+ * This will work best with NMI IPIs for crash code so the stuck CPUs
-+ * can be pulled out to get their backtraces.
-+ */
-+static unsigned long __wd_smp_lock = 0;
-+static cpumask_t wd_smp_cpus_pending;
-+static cpumask_t wd_smp_cpus_stuck;
-+static u64 wd_smp_last_reset_tb;
-+
-+static inline void wd_smp_lock(unsigned long *flags)
-+{
-+	/*
-+	 * Avoid locking layers if possible.
-+	 * This may be called from low level interrupt handlers at some
-+	 * point in future.
-+	 */
-+	local_irq_save(*flags);
-+	while (unlikely(test_and_set_bit_lock(0, &__wd_smp_lock)))
-+		cpu_relax();
-+}
-+
-+static inline void wd_smp_unlock(unsigned long *flags)
-+{
-+	clear_bit_unlock(0, &__wd_smp_lock);
-+	local_irq_restore(*flags);
-+}
-+
-+static void wd_lockup_ipi(struct pt_regs *regs)
-+{
-+	pr_emerg("Watchdog CPU:%d Hard LOCKUP\n", raw_smp_processor_id());
-+	print_modules();
-+	print_irqtrace_events(current);
-+	if (regs)
-+		show_regs(regs);
-+	else
-+		dump_stack();
-+
-+	if (hardlockup_panic)
-+		nmi_panic(regs, "Hard LOCKUP");
-+}
-+
-+static void set_cpu_stuck(int cpu, u64 tb)
-+{
-+	cpumask_set_cpu(cpu, &wd_smp_cpus_stuck);
-+	cpumask_clear_cpu(cpu, &wd_smp_cpus_pending);
-+	if (cpumask_empty(&wd_smp_cpus_pending)) {
-+		wd_smp_last_reset_tb = tb;
-+		cpumask_andnot(&wd_smp_cpus_pending,
-+				&wd_cpus_enabled,
-+				&wd_smp_cpus_stuck);
-+	}
-+}
-+
-+static void watchdog_smp_panic(int cpu, u64 tb)
-+{
-+	unsigned long flags;
-+	int c;
-+
-+	wd_smp_lock(&flags);
-+	/* Double check some things under lock */
-+	if ((s64)(tb - wd_smp_last_reset_tb) < (s64)wd_smp_panic_timeout_tb)
-+		goto out;
-+	if (cpumask_test_cpu(cpu, &wd_smp_cpus_pending))
-+		goto out;
-+	if (cpumask_weight(&wd_smp_cpus_pending) == 0)
-+		goto out;
-+
-+	pr_emerg("Watchdog CPU:%d detected Hard LOCKUP other CPUS:%*pbl\n",
-+			cpu, cpumask_pr_args(&wd_smp_cpus_pending));
-+
-+	/*
-+	 * Try to trigger the stuck CPUs.
-+	 */
-+	for_each_cpu(c, &wd_smp_cpus_pending) {
-+		if (c == cpu)
-+			continue;
-+		smp_send_nmi_ipi(c, wd_lockup_ipi, 1000000);
-+	}
-+	smp_flush_nmi_ipi(1000000);
-+
-+	/* Take the stuck CPU out of the watch group */
-+	for_each_cpu(c, &wd_smp_cpus_pending)
-+		set_cpu_stuck(c, tb);
-+
-+out:
-+	wd_smp_unlock(&flags);
-+
-+	printk_safe_flush();
-+	/*
-+	 * printk_safe_flush() seems to require another print
-+	 * before anything actually goes out to console.
-+	 */
-+	if (sysctl_hardlockup_all_cpu_backtrace)
-+		trigger_allbutself_cpu_backtrace();
-+
-+	if (hardlockup_panic)
-+		nmi_panic(NULL, "Hard LOCKUP");
-+}
-+
-+static void wd_smp_clear_cpu_pending(int cpu, u64 tb)
-+{
-+	if (!cpumask_test_cpu(cpu, &wd_smp_cpus_pending)) {
-+		if (unlikely(cpumask_test_cpu(cpu, &wd_smp_cpus_stuck))) {
-+			unsigned long flags;
-+
-+			pr_emerg("Watchdog CPU:%d became unstuck\n", cpu);
-+			wd_smp_lock(&flags);
-+			cpumask_clear_cpu(cpu, &wd_smp_cpus_stuck);
-+			wd_smp_unlock(&flags);
-+		}
-+		return;
-+	}
-+	cpumask_clear_cpu(cpu, &wd_smp_cpus_pending);
-+	if (cpumask_empty(&wd_smp_cpus_pending)) {
-+		unsigned long flags;
-+
-+		wd_smp_lock(&flags);
-+		if (cpumask_empty(&wd_smp_cpus_pending)) {
-+			wd_smp_last_reset_tb = tb;
-+			cpumask_andnot(&wd_smp_cpus_pending,
-+					&wd_cpus_enabled,
-+					&wd_smp_cpus_stuck);
-+		}
-+		wd_smp_unlock(&flags);
-+	}
-+}
-+
-+static void watchdog_timer_interrupt(int cpu)
-+{
-+	u64 tb = get_tb();
-+
-+	per_cpu(wd_timer_tb, cpu) = tb;
-+
-+	wd_smp_clear_cpu_pending(cpu, tb);
-+
-+	if ((s64)(tb - wd_smp_last_reset_tb) >= (s64)wd_smp_panic_timeout_tb)
-+		watchdog_smp_panic(cpu, tb);
-+}
-+
-+void soft_nmi_interrupt(struct pt_regs *regs)
-+{
-+	unsigned long flags;
-+	int cpu = raw_smp_processor_id();
-+	u64 tb;
-+
-+	if (!cpumask_test_cpu(cpu, &wd_cpus_enabled))
-+		return;
-+
-+	nmi_enter();
-+	tb = get_tb();
-+	if (tb - per_cpu(wd_timer_tb, cpu) >= wd_panic_timeout_tb) {
-+		per_cpu(wd_timer_tb, cpu) = tb;
-+
-+		wd_smp_lock(&flags);
-+		if (cpumask_test_cpu(cpu, &wd_smp_cpus_stuck)) {
-+			wd_smp_unlock(&flags);
-+			goto out;
-+		}
-+		set_cpu_stuck(cpu, tb);
-+
-+		pr_emerg("Watchdog CPU:%d Hard LOCKUP\n", cpu);
-+		print_modules();
-+		print_irqtrace_events(current);
-+		if (regs)
-+			show_regs(regs);
-+		else
-+			dump_stack();
-+
-+		wd_smp_unlock(&flags);
-+
-+		if (sysctl_hardlockup_all_cpu_backtrace)
-+			trigger_allbutself_cpu_backtrace();
-+
-+		if (hardlockup_panic)
-+			nmi_panic(regs, "Hard LOCKUP");
-+	}
-+	if (wd_panic_timeout_tb < 0x7fffffff)
-+		mtspr(SPRN_DEC, wd_panic_timeout_tb);
-+
-+out:
-+	nmi_exit();
-+}
-+
-+static void wd_timer_reset(unsigned int cpu, struct timer_list *t)
-+{
-+	t->expires = jiffies + msecs_to_jiffies(wd_timer_period_ms);
-+	if (wd_timer_period_ms > 1000)
-+		t->expires = __round_jiffies_up(t->expires, cpu);
-+	add_timer_on(t, cpu);
-+}
-+
-+static void wd_timer_fn(unsigned long data)
-+{
-+	struct timer_list *t = this_cpu_ptr(&wd_timer);
-+	int cpu = smp_processor_id();
-+
-+	watchdog_timer_interrupt(cpu);
-+
-+	wd_timer_reset(cpu, t);
-+}
-+
-+void arch_touch_nmi_watchdog(void)
-+{
-+	int cpu = smp_processor_id();
-+
-+	watchdog_timer_interrupt(cpu);
-+}
-+EXPORT_SYMBOL(arch_touch_nmi_watchdog);
-+
-+static void start_watchdog_timer_on(unsigned int cpu)
-+{
-+	struct timer_list *t = per_cpu_ptr(&wd_timer, cpu);
-+
-+	per_cpu(wd_timer_tb, cpu) = get_tb();
-+
-+	setup_pinned_timer(t, wd_timer_fn, 0);
-+	wd_timer_reset(cpu, t);
-+}
-+
-+static void stop_watchdog_timer_on(unsigned int cpu)
-+{
-+	struct timer_list *t = per_cpu_ptr(&wd_timer, cpu);
-+
-+	del_timer_sync(t);
-+}
-+
-+static int start_wd_on_cpu(unsigned int cpu)
-+{
-+	if (cpumask_test_cpu(cpu, &wd_cpus_enabled)) {
-+		WARN_ON(1);
-+		return 0;
-+	}
-+
-+	if (!cpumask_test_cpu(cpu, &watchdog_cpumask))
-+		return 0;
-+
-+	cpumask_set_cpu(cpu, &wd_cpus_enabled);
-+	if (cpumask_weight(&wd_cpus_enabled) == 1) {
-+		cpumask_set_cpu(cpu, &wd_smp_cpus_pending);
-+		wd_smp_last_reset_tb = get_tb();
-+	}
-+	smp_wmb();
-+	start_watchdog_timer_on(cpu);
-+
-+	return 0;
-+}
-+
-+static int stop_wd_on_cpu(unsigned int cpu)
-+{
-+	if (!cpumask_test_cpu(cpu, &wd_cpus_enabled)) {
-+		WARN_ON(1);
-+		return 0;
-+	}
-+
-+	stop_watchdog_timer_on(cpu);
-+
-+	cpumask_clear_cpu(cpu, &wd_cpus_enabled);
-+	wd_smp_clear_cpu_pending(cpu, get_tb());
-+
-+	return 0;
-+}
-+
-+static void watchdog_calc_timeouts(void)
-+{
-+	wd_panic_timeout_tb = watchdog_thresh * ppc_tb_freq;
-+
-+	/* Have the SMP detector trigger a bit later */
-+	wd_smp_panic_timeout_tb = wd_panic_timeout_tb * 3 / 2;
-+
-+	/* 2/5 is the factor that the perf based detector uses */
-+	wd_timer_period_ms = watchdog_thresh * 1000 * 2 / 5;
-+}
-+
-+void watchdog_nmi_reconfigure(void)
-+{
-+	int cpu;
-+
-+	watchdog_calc_timeouts();
-+
-+	for_each_cpu(cpu, &wd_cpus_enabled)
-+		stop_wd_on_cpu(cpu);
-+
-+	if (!(watchdog_enabled & NMI_WATCHDOG_ENABLED))
-+		return;
-+
-+	if (watchdog_suspended)
-+		return;
-+
-+	for_each_cpu_and(cpu, cpu_online_mask, &watchdog_cpumask)
-+		start_wd_on_cpu(cpu);
-+}
-+
-+/*
-+ * This runs after lockup_detector_init() which sets up watchdog_cpumask.
-+ */
-+static int __init powerpc_watchdog_init(void)
-+{
-+	int err;
-+
-+	watchdog_calc_timeouts();
-+
-+	err = cpuhp_setup_state(CPUHP_AP_ONLINE_DYN, "powerpc/watchdog:online",
-+				start_wd_on_cpu, stop_wd_on_cpu);
-+	if (err < 0)
-+		pr_warning("Watchdog could not be initialized");
-+
-+	return 0;
-+}
-+arch_initcall(powerpc_watchdog_init);
-+
-+static void handle_backtrace_ipi(struct pt_regs *regs)
-+{
-+	nmi_cpu_backtrace(regs);
-+}
-+
-+static void raise_backtrace_ipi(cpumask_t *mask)
-+{
-+	unsigned int cpu;
-+
-+	for_each_cpu(cpu, mask) {
-+		if (cpu == smp_processor_id())
-+			handle_backtrace_ipi(NULL);
-+		else
-+			smp_send_nmi_ipi(cpu, handle_backtrace_ipi, 1000000);
-+	}
-+}
-+
-+void arch_trigger_cpumask_backtrace(const cpumask_t *mask, bool exclude_self)
-+{
-+	nmi_trigger_cpumask_backtrace(mask, exclude_self, raise_backtrace_ipi);
-+}
+How necessary is this? Are there any drivers using cxllib that we're 
+trying to get in during this cycle?
+
+>  config CXL
+>  	tristate "Support for IBM Coherent Accelerators (CXL)"
+>  	depends on PPC_POWERNV && PCI_MSI && EEH
+>  	select CXL_BASE
+>  	select CXL_AFU_DRIVER_OPS
+> +	select CXL_LIB
+>  	default m
+>  	help
+>  	  Select this option to enable driver support for IBM Coherent
+> diff --git a/drivers/misc/cxl/Makefile b/drivers/misc/cxl/Makefile
+> index c14fd6b..0b5fd74 100644
+> --- a/drivers/misc/cxl/Makefile
+> +++ b/drivers/misc/cxl/Makefile
+> @@ -3,7 +3,7 @@ ccflags-$(CONFIG_PPC_WERROR)	+= -Werror
+>
+>  cxl-y				+= main.o file.o irq.o fault.o native.o
+>  cxl-y				+= context.o sysfs.o pci.o trace.o
+> -cxl-y				+= vphb.o phb.o api.o
+> +cxl-y				+= vphb.o phb.o api.o cxllib.o
+>  cxl-$(CONFIG_PPC_PSERIES)	+= flash.o guest.o of.o hcalls.o
+>  cxl-$(CONFIG_DEBUG_FS)		+= debugfs.o
+>  obj-$(CONFIG_CXL)		+= cxl.o
+> diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
+> index a03f8e7..81e01f0 100644
+> --- a/drivers/misc/cxl/cxl.h
+> +++ b/drivers/misc/cxl/cxl.h
+> @@ -1010,6 +1010,8 @@ static inline void cxl_debugfs_add_afu_regs_psl8(struct cxl_afu *afu, struct den
+>
+>  void cxl_handle_fault(struct work_struct *work);
+>  void cxl_prefault(struct cxl_context *ctx, u64 wed);
+> +int cxl_handle_page_fault(bool kernel_context, struct mm_struct *mm,
+> +			  u64 dsisr, u64 dar);
+>
+>  struct cxl *get_cxl_adapter(int num);
+>  int cxl_alloc_sst(struct cxl_context *ctx);
+> @@ -1061,6 +1063,11 @@ int cxl_afu_slbia(struct cxl_afu *afu);
+>  int cxl_data_cache_flush(struct cxl *adapter);
+>  int cxl_afu_disable(struct cxl_afu *afu);
+>  int cxl_psl_purge(struct cxl_afu *afu);
+> +int cxl_calc_capp_routing(struct pci_dev *dev, u64 *chipid,
+> +			  u32 *phb_index, u64 *capp_unit_id);
+> +int cxl_slot_is_switched(struct pci_dev *dev);
+> +int cxl_get_xsl9_dsnctl(u64 capp_unit_id, u64 *reg);
+> +u64 cxl_calculate_sr(bool master, bool kernel, bool real_mode, bool p9);
+>
+>  void cxl_native_irq_dump_regs_psl9(struct cxl_context *ctx);
+>  void cxl_native_irq_dump_regs_psl8(struct cxl_context *ctx);
+> diff --git a/drivers/misc/cxl/cxllib.c b/drivers/misc/cxl/cxllib.c
+> new file mode 100644
+> index 0000000..63b6280
+> --- /dev/null
+> +++ b/drivers/misc/cxl/cxllib.c
+> @@ -0,0 +1,241 @@
+> +/*
+> + * Copyright 2016 IBM Corp.
+> + *
+> + * This program is free software; you can redistribute it and/or
+> + * modify it under the terms of the GNU General Public License
+> + * as published by the Free Software Foundation; either version
+> + * 2 of the License, or (at your option) any later version.
+> + */
+> +
+> +#include <linux/hugetlb.h>
+> +#include <linux/sched/mm.h>
+> +#include "cxl.h"
+> +#include <misc/cxllib.h>
+> +#include <asm/pnv-pci.h>
+> +
+> +#define CXL_INVALID_DRA                 ~0ull
+> +#define CXL_DUMMY_READ_SIZE             128
+> +#define CXL_DUMMY_READ_ALIGN            8
+> +#define CXL_CAPI_WINDOW_START           0x2000000000000ull
+> +#define CXL_CAPI_WINDOW_LOG_SIZE        48
+> +#define CXL_XSL_CONFIG_CURRENT_VERSION  CXL_XSL_CONFIG_VERSION1
+> +
+> +
+> +bool cxllib_slot_is_supported(struct pci_dev *dev, unsigned long flags)
+> +{
+> +	int rc;
+> +	u32 phb_index;
+> +	u64 chip_id, capp_unit_id;
+> +
+> +	/* Currently none supported */
+
+"No flags currently supported" would be clearer
+
+> +	if (flags)
+> +		return false;
+> +
+> +	if (!cpu_has_feature(CPU_FTR_HVMODE))
+> +		return false;
+> +
+> +	if (!cxl_is_power9())
+> +		return false;
+> +
+> +	if (cxl_slot_is_switched(dev))
+> +		return false;
+> +
+> +	/* on p9, some pci slots are not connected to a CAPP unit */
+> +	rc = cxl_calc_capp_routing(dev, &chip_id, &phb_index, &capp_unit_id);
+> +	if (rc)
+> +		return false;
+> +
+> +	return true;
+> +}
+> +EXPORT_SYMBOL_GPL(cxllib_slot_is_supported);
+> +
+> +static DEFINE_MUTEX(dra_mutex);
+> +static u64 dummy_read_addr = CXL_INVALID_DRA;
+> +
+> +int allocate_dummy_read_buf(void)
+
+static?
+
+> +{
+> +	u64 buf, vaddr;
+> +	size_t buf_size;
+> +
+> +	/*
+> +	 * Dummy read buffer is 128-byte long, aligned on a
+> +	 * 256-byte boundary and we need the physical address.
+> +	 */
+> +	buf_size = CXL_DUMMY_READ_SIZE + (1ull << CXL_DUMMY_READ_ALIGN);
+> +	buf = (u64) kzalloc(buf_size, GFP_KERNEL);
+> +	if (!buf)
+> +		return -ENOMEM;
+> +
+> +	vaddr = (buf + (1ull << CXL_DUMMY_READ_ALIGN) - 1) &
+> +					(~0ull << CXL_DUMMY_READ_ALIGN);
+> +
+> +	WARN((vaddr + CXL_DUMMY_READ_SIZE) > (buf + buf_size),
+> +		"Dummy read buffer alignment issue");
+> +	dummy_read_addr = virt_to_phys((void *) vaddr);
+> +	return 0;
+> +}
+> +
+> +int cxllib_get_xsl_config(struct pci_dev *dev, struct cxllib_xsl_config *cfg)
+> +{
+> +	int rc;
+> +	u32 phb_index;
+> +	u64 chip_id, capp_unit_id;
+> +
+> +	if (!cpu_has_feature(CPU_FTR_HVMODE))
+> +		return -EINVAL;
+> +
+> +	mutex_lock(&dra_mutex);
+> +	if (dummy_read_addr == CXL_INVALID_DRA) {
+> +		rc = allocate_dummy_read_buf();
+> +		if (rc) {
+> +			mutex_unlock(&dra_mutex);
+> +			return rc;
+> +		}
+> +	}
+> +	mutex_unlock(&dra_mutex);
+> +
+> +	rc = cxl_calc_capp_routing(dev, &chip_id, &phb_index, &capp_unit_id);
+> +	if (rc)
+> +		return rc;
+> +
+> +	rc = cxl_get_xsl9_dsnctl(capp_unit_id, &cfg->dsnctl);
+> +	if (rc)
+> +		return rc;
+> +	if (cpu_has_feature(CPU_FTR_POWER9_DD1)) {
+> +		/* workaround for DD1 - nbwind = capiind */
+> +		cfg->dsnctl |= ((u64)0x02 << (63-47));
+> +	}
+> +
+> +	cfg->version  = CXL_XSL_CONFIG_CURRENT_VERSION;
+> +	cfg->log_bar_size = CXL_CAPI_WINDOW_LOG_SIZE;
+> +	cfg->bar_addr = CXL_CAPI_WINDOW_START;
+> +	cfg->dra = dummy_read_addr;
+> +	return 0;
+> +}
+> +EXPORT_SYMBOL_GPL(cxllib_get_xsl_config);
+> +
+> +
+> +int cxllib_switch_phb_mode(struct pci_dev *dev, enum cxllib_mode mode,
+> +			unsigned long flags)
+> +{
+> +	int rc = 0;
+> +
+> +	if (!cpu_has_feature(CPU_FTR_HVMODE))
+> +		return -EINVAL;
+> +
+> +	switch (mode) {
+> +	case CXL_MODE_PCI:
+> +		/*
+> +		 * We currently don't support going back to PCI mode
+> +		 * However, we'll turn the invalidations off, so that
+> +		 * the CX5 firmware doesn't have to ack them and can do
+> +		 * things like reset, etc.. with no worries.
+> +		 * So always return EPERM (can't go back to PCI) or
+> +		 * EBUSY if we couldn't even turn off snooping
+> +		 */
+
+This comment shouldn't be CX5 specific
+
+> +		rc = pnv_phb_to_cxl_mode(dev, OPAL_PHB_CAPI_MODE_SNOOP_OFF);
+> +		if (rc)
+> +			rc = -EBUSY;
+> +		else
+> +			rc = -EPERM;
+> +		break;
+> +	case CXL_MODE_CXL:
+> +		/* DMA only supported on TVT1 for the time being */
+> +		if (flags != CXL_MODE_DMA_TVT1)
+> +			return -EINVAL;
+> +		rc = pnv_phb_to_cxl_mode(dev, OPAL_PHB_CAPI_MODE_DMA_TVT1);
+> +		if (rc)
+> +			return rc;
+> +		rc = pnv_phb_to_cxl_mode(dev, OPAL_PHB_CAPI_MODE_SNOOP_ON);
+> +		break;
+> +	default:
+> +		rc = -EINVAL;
+> +	}
+> +	return rc;
+> +}
+> +EXPORT_SYMBOL_GPL(cxllib_switch_phb_mode);
+> +
+> +
+> +int cxllib_set_device_dma(struct pci_dev *dev, unsigned long flags)
+> +{
+> +	int rc;
+> +
+> +	if (flags)
+> +		return -EINVAL;
+> +
+> +	rc = dma_set_mask(&dev->dev, DMA_BIT_MASK(64));
+> +	return rc;
+> +}
+> +EXPORT_SYMBOL_GPL(cxllib_set_device_dma);
+> +
+> +
+> +int cxllib_get_PE_attributes(struct task_struct *task,
+> +	     unsigned long translation_mode, struct cxllib_pe_attributes *attr)
+> +{
+> +	struct mm_struct *mm = NULL;
+> +
+> +	if (translation_mode != CXL_TRANSLATED_MODE &&
+> +		translation_mode != CXL_REAL_MODE)
+> +		return -EINVAL;
+> +
+> +	attr->sr = cxl_calculate_sr(false /* master */,
+> +				task == NULL /* kernel ctx */,
+> +				translation_mode == CXL_REAL_MODE,
+> +				true /* p9 */);
+
+nitpicking: comments in the middle of a line feels slightly ugly to me :)
+
+> +	attr->lpid = mfspr(SPRN_LPID);
+> +	if (task) {
+> +		mm = get_task_mm(task);
+> +		if (mm == NULL)
+> +			return -EINVAL;
+> +		/*
+> +		 * Caller is keeping a reference on mm_users for as long
+> +		 * as XSL uses the memory context
+> +		 */
+> +		attr->pid = mm->context.id;
+> +		mmput(mm);
+> +	} else {
+> +		attr->pid = 0;
+> +	}
+> +	attr->tid = 0;
+> +	return 0;
+> +}
+> +EXPORT_SYMBOL_GPL(cxllib_get_PE_attributes);
+> +
+> +
+> +int cxllib_handle_fault(struct mm_struct *mm, u64 addr, u64 size, u64 flags)
+> +{
+> +	int rc;
+> +	u64 dar;
+> +	struct vm_area_struct *vma = NULL;
+> +	unsigned long page_size;
+> +
+> +	if (mm == NULL)
+> +		return -EFAULT;
+> +
+> +	down_read(&mm->mmap_sem);
+> +
+> +	for (dar = addr; dar < addr + size; dar += page_size) {
+> +		if (!vma || dar < vma->vm_start || dar > vma->vm_end) {
+> +			vma = find_vma(mm, addr);
+> +			if (!vma) {
+> +				pr_err("Can't find vma for addr %016llx\n", addr);
+> +				rc = -EFAULT;
+> +				goto out;
+> +			}
+> +			/* get the size of the pages allocated */
+> +			page_size = vma_kernel_pagesize(vma);
+> +		}
+> +
+> +		rc = cxl_handle_page_fault(true, mm, flags, dar);
+> +		if (rc) {
+> +			pr_err("_cxl_handle_page_fault failed %d", rc);
+
+Get rid of the initial underscore, that's just left over from an early 
+version of this code
+
+> +			rc = -EFAULT;
+> +			goto out;
+> +		}
+> +	}
+> +	rc = 0;
+> +out:
+> +	up_read(&mm->mmap_sem);
+> +	return rc;
+> +}
+> +EXPORT_SYMBOL_GPL(cxllib_handle_fault);
+> diff --git a/drivers/misc/cxl/fault.c b/drivers/misc/cxl/fault.c
+> index c79e39b..9db63f3 100644
+> --- a/drivers/misc/cxl/fault.c
+> +++ b/drivers/misc/cxl/fault.c
+> @@ -132,18 +132,16 @@ static int cxl_handle_segment_miss(struct cxl_context *ctx,
+>  	return IRQ_HANDLED;
+>  }
+>
+> -static void cxl_handle_page_fault(struct cxl_context *ctx,
+> -				  struct mm_struct *mm, u64 dsisr, u64 dar)
+> +int cxl_handle_page_fault(bool kernel_context,
+> +			  struct mm_struct *mm, u64 dsisr, u64 dar)
+
+If we don't get rid of kernel_context per Fred, it would look cleaner to 
+move it to the end of the argument list.
+
+>  {
+>  	unsigned flt = 0;
+>  	int result;
+>  	unsigned long access, flags, inv_flags = 0;
+>
+> -	trace_cxl_pte_miss(ctx, dsisr, dar);
+> -
+>  	if ((result = copro_handle_mm_fault(mm, dar, dsisr, &flt))) {
+>  		pr_devel("copro_handle_mm_fault failed: %#x\n", result);
+> -		return cxl_ack_ae(ctx);
+> +		return result;
+>  	}
+>
+>  	if (!radix_enabled()) {
+> @@ -156,7 +154,7 @@ static void cxl_handle_page_fault(struct cxl_context *ctx,
+>  			access |= _PAGE_WRITE;
+>
+>  		access |= _PAGE_PRIVILEGED;
+> -		if ((!ctx->kernel) || (REGION_ID(dar) == USER_REGION_ID))
+> +		if (!kernel_context || (REGION_ID(dar) == USER_REGION_ID))
+>  			access &= ~_PAGE_PRIVILEGED;
+
+While we're here...
+
+if (kernel_context && (REGION_ID(dar) != USER_REGION_ID))
+	access |= _PAGE_PRIVILEGED;
+
+>
+>  		if (dsisr & DSISR_NOHPTE)
+> @@ -166,8 +164,7 @@ static void cxl_handle_page_fault(struct cxl_context *ctx,
+>  		hash_page_mm(mm, dar, access, 0x300, inv_flags);
+>  		local_irq_restore(flags);
+>  	}
+> -	pr_devel("Page fault successfully handled for pe: %i!\n", ctx->pe);
+> -	cxl_ops->ack_irq(ctx, CXL_PSL_TFC_An_R, 0);
+> +	return 0;
+>  }
+>
+>  /*
+> @@ -261,9 +258,15 @@ void cxl_handle_fault(struct work_struct *fault_work)
+>
+>  	if (cxl_is_segment_miss(ctx, dsisr))
+>  		cxl_handle_segment_miss(ctx, mm, dar);
+> -	else if (cxl_is_page_fault(ctx, dsisr))
+> -		cxl_handle_page_fault(ctx, mm, dsisr, dar);
+> -	else
+> +	else if (cxl_is_page_fault(ctx, dsisr)) {
+> +		trace_cxl_pte_miss(ctx, dsisr, dar);
+> +		if (cxl_handle_page_fault(ctx->kernel, mm, dsisr, dar)) {
+> +			cxl_ack_ae(ctx);
+> +		} else {
+> +			pr_devel("Page fault successfully handled for pe: %i!\n", ctx->pe);
+> +			cxl_ops->ack_irq(ctx, CXL_PSL_TFC_An_R, 0);
+> +		}
+> +	} else
+>  		WARN(1, "cxl_handle_fault has nothing to handle\n");
+>
+>  	if (mm)
+> diff --git a/drivers/misc/cxl/native.c b/drivers/misc/cxl/native.c
+> index 2b2f889..4a82c31 100644
+> --- a/drivers/misc/cxl/native.c
+> +++ b/drivers/misc/cxl/native.c
+> @@ -586,17 +586,17 @@ static int activate_afu_directed(struct cxl_afu *afu)
+>  #define set_endian(sr) ((sr) &= ~(CXL_PSL_SR_An_LE))
+>  #endif
+>
+> -static u64 calculate_sr(struct cxl_context *ctx)
+> +u64 cxl_calculate_sr(bool master, bool kernel, bool real_mode, bool p9)
+>  {
+>  	u64 sr = 0;
+>
+>  	set_endian(sr);
+> -	if (ctx->master)
+> +	if (master)
+>  		sr |= CXL_PSL_SR_An_MP;
+>  	if (mfspr(SPRN_LPCR) & LPCR_TC)
+>  		sr |= CXL_PSL_SR_An_TC;
+> -	if (ctx->kernel) {
+> -		if (!ctx->real_mode)
+> +	if (kernel) {
+> +		if (!real_mode)
+>  			sr |= CXL_PSL_SR_An_R;
+>  		sr |= (mfmsr() & MSR_SF) | CXL_PSL_SR_An_HV;
+>  	} else {
+> @@ -608,7 +608,7 @@ static u64 calculate_sr(struct cxl_context *ctx)
+>  		if (!test_tsk_thread_flag(current, TIF_32BIT))
+>  			sr |= CXL_PSL_SR_An_SF;
+>  	}
+> -	if (cxl_is_power9()) {
+> +	if (p9) {
+>  		if (radix_enabled())
+>  			sr |= CXL_PSL_SR_An_XLAT_ror;
+>  		else
+> @@ -617,6 +617,12 @@ static u64 calculate_sr(struct cxl_context *ctx)
+>  	return sr;
+>  }
+>
+> +static u64 calculate_sr(struct cxl_context *ctx)
+> +{
+> +	return cxl_calculate_sr(ctx->master, ctx->kernel, ctx->real_mode,
+> +				cxl_is_power9());
+> +}
+> +
+>  static void update_ivtes_directed(struct cxl_context *ctx)
+>  {
+>  	bool need_update = (ctx->status == STARTED);
+> diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
+> index 1eb9859..d18b3d9 100644
+> --- a/drivers/misc/cxl/pci.c
+> +++ b/drivers/misc/cxl/pci.c
+> @@ -375,7 +375,7 @@ static u64 get_capp_unit_id(struct device_node *np, u32 phb_index)
+>  	return 0;
+>  }
+>
+> -static int calc_capp_routing(struct pci_dev *dev, u64 *chipid,
+> +int cxl_calc_capp_routing(struct pci_dev *dev, u64 *chipid,
+>  			     u32 *phb_index, u64 *capp_unit_id)
+>  {
+>  	int rc;
+> @@ -408,17 +408,9 @@ static int calc_capp_routing(struct pci_dev *dev, u64 *chipid,
+>  	return 0;
+>  }
+>
+> -static int init_implementation_adapter_regs_psl9(struct cxl *adapter, struct pci_dev *dev)
+> +int cxl_get_xsl9_dsnctl(u64 capp_unit_id, u64 *reg)
+>  {
+> -	u64 xsl_dsnctl, psl_fircntl;
+> -	u64 chipid;
+> -	u32 phb_index;
+> -	u64 capp_unit_id;
+> -	int rc;
+> -
+> -	rc = calc_capp_routing(dev, &chipid, &phb_index, &capp_unit_id);
+> -	if (rc)
+> -		return rc;
+> +	u64 xsl_dsnctl;
+>
+>  	/*
+>  	 * CAPI Identifier bits [0:7]
+> @@ -454,6 +446,27 @@ static int init_implementation_adapter_regs_psl9(struct cxl *adapter, struct pci
+>  		xsl_dsnctl |= ((u64)0x04 << (63-55));
+>  	}
+>
+> +	*reg = xsl_dsnctl;
+> +	return 0;
+> +}
+> +
+> +static int init_implementation_adapter_regs_psl9(struct cxl *adapter,
+> +						 struct pci_dev *dev)
+> +{
+> +	u64 xsl_dsnctl, psl_fircntl;
+> +	u64 chipid;
+> +	u32 phb_index;
+> +	u64 capp_unit_id;
+> +	int rc;
+> +
+> +	rc = cxl_calc_capp_routing(dev, &chipid, &phb_index, &capp_unit_id);
+> +	if (rc)
+> +		return rc;
+> +
+> +	rc = cxl_get_xsl9_dsnctl(capp_unit_id, &xsl_dsnctl);
+> +	if (rc)
+> +		return rc;
+> +
+>  	cxl_p1_write(adapter, CXL_XSL9_DSNCTL, xsl_dsnctl);
+>
+>  	/* Set fir_cntl to recommended value for production env */
+> @@ -505,7 +518,7 @@ static int init_implementation_adapter_regs_psl8(struct cxl *adapter, struct pci
+>  	u64 capp_unit_id;
+>  	int rc;
+>
+> -	rc = calc_capp_routing(dev, &chipid, &phb_index, &capp_unit_id);
+> +	rc = cxl_calc_capp_routing(dev, &chipid, &phb_index, &capp_unit_id);
+>  	if (rc)
+>  		return rc;
+>
+> @@ -538,7 +551,7 @@ static int init_implementation_adapter_regs_xsl(struct cxl *adapter, struct pci_
+>  	u64 capp_unit_id;
+>  	int rc;
+>
+> -	rc = calc_capp_routing(dev, &chipid, &phb_index, &capp_unit_id);
+> +	rc = cxl_calc_capp_routing(dev, &chipid, &phb_index, &capp_unit_id);
+>  	if (rc)
+>  		return rc;
+>
+> @@ -1897,7 +1910,7 @@ static void cxl_pci_remove_adapter(struct cxl *adapter)
+>
+>  #define CXL_MAX_PCIEX_PARENT 2
+>
+> -static int cxl_slot_is_switched(struct pci_dev *dev)
+> +int cxl_slot_is_switched(struct pci_dev *dev)
+>  {
+>  	struct device_node *np;
+>  	int depth = 0;
+> diff --git a/include/misc/cxllib.h b/include/misc/cxllib.h
+> new file mode 100644
+> index 0000000..d2f3358
+> --- /dev/null
+> +++ b/include/misc/cxllib.h
+> @@ -0,0 +1,132 @@
+> +/*
+> + * Copyright 2016 IBM Corp.
+> + *
+> + * This program is free software; you can redistribute it and/or
+> + * modify it under the terms of the GNU General Public License
+> + * as published by the Free Software Foundation; either version
+> + * 2 of the License, or (at your option) any later version.
+> + */
+> +
+> +#ifndef _MISC_CXLLIB_H
+> +#define _MISC_CXLLIB_H
+> +
+> +#include <linux/pci.h>
+> +#include <asm/reg.h>
+> +
+> +/*
+> + * cxl driver exports a in-kernel 'library' API which can be called by
+> + * other drivers to help interacting with an IBM XSL.
+> + */
+> +
+> +/*
+> + * tells whether capi is supported on the PCIe slot where the
+> + * device is seated
+> + *
+> + * Input:
+> + *	dev: device whose slot needs to be checked
+> + *	flags: 0 for the time being
+> + */
+> +bool cxllib_slot_is_supported(struct pci_dev *dev, unsigned long flags);
+> +
+> +
+> +/*
+> + * Returns the configuration parameters to be used by the XSL or device
+> + *
+> + * Input:
+> + *	dev: device, used to find PHB
+> + * Output:
+> + *	struct cxllib_xsl_config:
+> + *		version
+> + *		capi BAR address, i.e. 0x2000000000000-0x2FFFFFFFFFFFF
+> + *		capi BAR size
+> + *		data send control (XSL_DSNCTL)
+> + *		dummy read address (XSL_DRA)
+> + */
+> +#define CXL_XSL_CONFIG_VERSION1		1
+> +struct cxllib_xsl_config {
+> +	u32	version;     /* format version for register encoding */
+> +	u32	log_bar_size;/* log size of the capi_window */
+> +	u64	bar_addr;    /* address of the start of capi window */
+> +	u64	dsnctl;      /* matches definition of XSL_DSNCTL */
+> +	u64	dra;         /* real address that can be used for dummy read */
+> +};
+> +
+> +int cxllib_get_xsl_config(struct pci_dev *dev, struct cxllib_xsl_config *cfg);
+> +
+> +
+> +/*
+> + * Activate capi for the pci host bridge associated with the device.
+> + * Can be extended to deactivate once we know how to do it.
+> + * Device must be ready to accept messages from the CAPP unit and
+> + * respond accordingly (TLB invalidates, ...)
+> + *
+> + * PHB is switched to capi mode through calls to skiboot.
+> + * CAPP snooping is activated
+> + *
+> + * Input:
+> + *	dev: device whose PHB should switch mode
+> + *	mode: mode to switch to i.e. CAPI or PCI
+> + *	flags: options related to the mode
+> + */
+> +enum cxllib_mode {
+> +	CXL_MODE_CXL,
+> +	CXL_MODE_PCI,
+> +};
+> +
+> +#define CXL_MODE_NO_DMA       0
+> +#define CXL_MODE_DMA_TVT0     1
+> +#define CXL_MODE_DMA_TVT1     2
+> +
+> +int cxllib_switch_phb_mode(struct pci_dev *dev, enum cxllib_mode mode,
+> +			unsigned long flags);
+> +
+> +
+> +/*
+> + * Set the device for capi DMA.
+> + * Define its dma_ops and dma offset so that allocations will be using TVT#1
+> + *
+> + * Input:
+> + *	dev: device to set
+> + *	flags: options. CXL_MODE_DMA_TVT1 should be used
+> + */
+> +int cxllib_set_device_dma(struct pci_dev *dev, unsigned long flags);
+> +
+> +
+> +
+> +/*
+> + * Get the Process Element structure for the given thread
+> + *
+> + * Input:
+> + *	pid: points the struct pid for the given thread (i.e. linux pid)
+> + *	translation_mode: whether addresses should be translated
+> + */
+> +struct cxllib_pe_attributes {
+> +	u64 sr;
+> +	u32 lpid;
+> +	u32 tid;
+> +	u32 pid;
+> +};
+> +#define CXL_TRANSLATED_MODE 0
+> +#define CXL_REAL_MODE 1
+> +
+> +int cxllib_get_PE_attributes(struct task_struct *task,
+> +	     unsigned long translation_mode, struct cxllib_pe_attributes *attr);
+> +
+> +
+> +/*
+> + * Handle memory fault.
+> + * Fault in all the pages of the specified buffer for the permissions
+> + * provided in ‘flags’
+> + *
+> + * Shouldn't be called from interrupt context
+> + *
+> + * Input:
+> + *	mm: struct mm for the thread faulting the pages
+> + *	addr: base address of the buffer to page in
+> + *	size: size of the buffer to page in
+> + *	flags: permission requested (DSISR_ISSTORE...)
+> + */
+> +int cxllib_handle_fault(struct mm_struct *mm, u64 addr, u64 size, u64 flags);
+> +
+> +
+> +#endif /* _MISC_CXLLIB_H */
+>
+
 -- 
-2.11.0
+Andrew Donnellan              OzLabs, ADL Canberra
+andrew.donnellan@au1.ibm.com  IBM Australia Limited
