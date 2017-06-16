@@ -1,23 +1,38 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
- [140.211.169.12])
+Return-Path: <linuxram@us.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wq80B136gzDqJ1
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Jun 2017 04:24:10 +1000 (AEST)
-Date: Fri, 16 Jun 2017 11:24:07 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Nicholas Piggin <npiggin@gmail.com>
-Cc: Don Zickus <dzickus@redhat.com>, Babu Moger <babu.moger@oracle.com>,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v4 4/5] watchdog: provide watchdog_reconfigure() for
- arch watchdogs
-Message-Id: <20170616112407.e150c215209d86d7e8916a47@linux-foundation.org>
-In-Reply-To: <20170616065715.18390-5-npiggin@gmail.com>
-References: <20170616065715.18390-1-npiggin@gmail.com>
- <20170616065715.18390-5-npiggin@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wq92B1fRmzDqJg
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Jun 2017 05:10:57 +1000 (AEST)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v5GJAF48139732
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jun 2017 15:10:55 -0400
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2b4h6k9h1a-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jun 2017 15:10:54 -0400
+Received: from localhost
+ by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <linuxram@us.ibm.com>;
+ Fri, 16 Jun 2017 13:10:54 -0600
+Date: Fri, 16 Jun 2017 12:10:41 -0700
+From: Ram Pai <linuxram@us.ibm.com>
+To: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ dave.hansen@intel.com, paulus@samba.org, aneesh.kumar@linux.vnet.ibm.com
+Subject: Re: [RFC PATCH 7/7 v1]powerpc: Deliver SEGV signal on protection key
+ violation.
+Reply-To: Ram Pai <linuxram@us.ibm.com>
+References: <1496711109-4968-1-git-send-email-linuxram@us.ibm.com>
+ <1496711109-4968-8-git-send-email-linuxram@us.ibm.com>
+ <622d7abf-3d99-8897-5afb-ef8c4f950fc0@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <622d7abf-3d99-8897-5afb-ef8c4f950fc0@linux.vnet.ibm.com>
+Message-Id: <20170616191041.GA17588@ram.oc3035372033.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,27 +42,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 16 Jun 2017 16:57:14 +1000 Nicholas Piggin <npiggin@gmail.com> wrote:
-
-> After reconfiguring watchdog sysctls etc., architecture specific
-> watchdogs may not get all their parameters updated.
+On Fri, Jun 16, 2017 at 02:50:13PM +0530, Anshuman Khandual wrote:
+> On 06/06/2017 06:35 AM, Ram Pai wrote:
+> > The value of the AMR register at the time of the exception
+> > is made available in gp_regs[PT_AMR] of the siginfo.
 > 
-> watchdog_reconfigure() can be implemented to pull the new values
-> in and set the arch NMI watchdog.
-> 
+> But its already available there in uctxt->uc_mcontext.regs->amr
+> while inside the signal delivery context in the user space. The
+> pt_regs already got updated with new AMR register. Then why we
+> need gp_regs to also contain AMR as well ?
 
-I'll update the title and changelog to say "watchdog_nmi_reconfigure".
+It should not be available in uctxt->uc_mcontext.regs->amr.
+In fact that field itself should not be there.
 
-> --- a/kernel/watchdog.c
-> +++ b/kernel/watchdog.c
-> @@ -123,6 +123,11 @@ void __weak watchdog_nmi_disable(unsigned int cpu)
->  {
->  }
->  
-> +void __weak watchdog_nmi_reconfigure(void)
-> +{
-> +}
+The ideas was to use one of the unused fields in gp_regs; without
+extending gp_regs, to provide the contents of AMR. the 
+PT_AMR offset in gp_regs is currently not used, which I am using
+in this patch.
 
-Can we please get some documentation in here describing what it's for? 
-How arch maintainers might use this?  When and why it is called, what
-it must do?  etc.
+However this patch needs to be modified not to extend pt_regs,
+or uctxt->uc_mcontext.regs
+
+Thanks for initiating this concern.
+RP
+
+-- 
+Ram Pai
