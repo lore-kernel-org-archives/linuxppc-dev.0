@@ -2,8 +2,8 @@ Return-Path: <BATV+48ca1ab4adaecdf09dc3+5045+infradead.org+hch@bombadil.srs.infr
 Received: from bombadil.infradead.org (bombadil.infradead.org [65.50.211.133])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
  bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wq7lg0c6kzDq8W
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Jun 2017 04:13:19 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wq7lh5FYKzDqFS
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Jun 2017 04:13:20 +1000 (AEST)
 From: Christoph Hellwig <hch@lst.de>
 To: x86@kernel.org, linux-arm-kernel@lists.infradead.org,
  xen-devel@lists.xenproject.org, linux-c6x-dev@linux-c6x.org,
@@ -16,10 +16,9 @@ To: x86@kernel.org, linux-arm-kernel@lists.infradead.org,
  linux-samsung-soc@vger.kernel.org, iommu@lists.linux-foundation.org,
  netdev@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 33/44] openrisc: remove arch-specific dma_supported
- implementation
-Date: Fri, 16 Jun 2017 20:10:48 +0200
-Message-Id: <20170616181059.19206-34-hch@lst.de>
+Subject: [PATCH 34/44] arm: remove arch specific dma_supported implementation
+Date: Fri, 16 Jun 2017 20:10:49 +0200
+Message-Id: <20170616181059.19206-35-hch@lst.de>
 In-Reply-To: <20170616181059.19206-1-hch@lst.de>
 References: <20170616181059.19206-1-hch@lst.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -31,30 +30,105 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This implementation is simply bogus - openrisc only has a simple
-direct mapped DMA implementation and thus doesn't care about the
-address.
+And instead wire it up as method for all the dma_map_ops instances.
+
+Note that the code seems a little fishy for dmabounce and iommu, but
+for now I'd like to preserve the existing behavior 1:1.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- arch/openrisc/include/asm/dma-mapping.h | 7 -------
- 1 file changed, 7 deletions(-)
+ arch/arm/common/dmabounce.c        | 1 +
+ arch/arm/include/asm/dma-iommu.h   | 2 ++
+ arch/arm/include/asm/dma-mapping.h | 3 ---
+ arch/arm/mm/dma-mapping.c          | 7 +++++--
+ 4 files changed, 8 insertions(+), 5 deletions(-)
 
-diff --git a/arch/openrisc/include/asm/dma-mapping.h b/arch/openrisc/include/asm/dma-mapping.h
-index a4ea139c2ef9..f41bd3cb76d9 100644
---- a/arch/openrisc/include/asm/dma-mapping.h
-+++ b/arch/openrisc/include/asm/dma-mapping.h
-@@ -33,11 +33,4 @@ static inline const struct dma_map_ops *get_arch_dma_ops(struct bus_type *bus)
- 	return &or1k_dma_map_ops;
+diff --git a/arch/arm/common/dmabounce.c b/arch/arm/common/dmabounce.c
+index 4060378e0f14..6ecd5be5d37e 100644
+--- a/arch/arm/common/dmabounce.c
++++ b/arch/arm/common/dmabounce.c
+@@ -473,6 +473,7 @@ static const struct dma_map_ops dmabounce_ops = {
+ 	.sync_sg_for_device	= arm_dma_sync_sg_for_device,
+ 	.set_dma_mask		= dmabounce_set_mask,
+ 	.mapping_error		= dmabounce_mapping_error,
++	.dma_supported		= arm_dma_supported,
+ };
+ 
+ static int dmabounce_init_pool(struct dmabounce_pool *pool, struct device *dev,
+diff --git a/arch/arm/include/asm/dma-iommu.h b/arch/arm/include/asm/dma-iommu.h
+index 389a26a10ea3..c090ec675eac 100644
+--- a/arch/arm/include/asm/dma-iommu.h
++++ b/arch/arm/include/asm/dma-iommu.h
+@@ -35,5 +35,7 @@ int arm_iommu_attach_device(struct device *dev,
+ 					struct dma_iommu_mapping *mapping);
+ void arm_iommu_detach_device(struct device *dev);
+ 
++int arm_dma_supported(struct device *dev, u64 mask);
++
+ #endif /* __KERNEL__ */
+ #endif
+diff --git a/arch/arm/include/asm/dma-mapping.h b/arch/arm/include/asm/dma-mapping.h
+index 52a8fd5a8edb..8dabcfdf4505 100644
+--- a/arch/arm/include/asm/dma-mapping.h
++++ b/arch/arm/include/asm/dma-mapping.h
+@@ -20,9 +20,6 @@ static inline const struct dma_map_ops *get_arch_dma_ops(struct bus_type *bus)
+ 	return &arm_dma_ops;
  }
  
 -#define HAVE_ARCH_DMA_SUPPORTED 1
--static inline int dma_supported(struct device *dev, u64 dma_mask)
--{
--	/* Support 32 bit DMA mask exclusively */
--	return dma_mask == DMA_BIT_MASK(32);
--}
+-extern int dma_supported(struct device *dev, u64 mask);
 -
- #endif	/* __ASM_OPENRISC_DMA_MAPPING_H */
+ #ifdef __arch_page_to_dma
+ #error Please update to __arch_pfn_to_dma
+ #endif
+diff --git a/arch/arm/mm/dma-mapping.c b/arch/arm/mm/dma-mapping.c
+index 8f2c5a8a98f0..b9677ada421f 100644
+--- a/arch/arm/mm/dma-mapping.c
++++ b/arch/arm/mm/dma-mapping.c
+@@ -199,6 +199,7 @@ const struct dma_map_ops arm_dma_ops = {
+ 	.sync_sg_for_cpu	= arm_dma_sync_sg_for_cpu,
+ 	.sync_sg_for_device	= arm_dma_sync_sg_for_device,
+ 	.mapping_error		= arm_dma_mapping_error,
++	.dma_supported		= arm_dma_supported,
+ };
+ EXPORT_SYMBOL(arm_dma_ops);
+ 
+@@ -218,6 +219,7 @@ const struct dma_map_ops arm_coherent_dma_ops = {
+ 	.map_page		= arm_coherent_dma_map_page,
+ 	.map_sg			= arm_dma_map_sg,
+ 	.mapping_error		= arm_dma_mapping_error,
++	.dma_supported		= arm_dma_supported,
+ };
+ EXPORT_SYMBOL(arm_coherent_dma_ops);
+ 
+@@ -1184,11 +1186,10 @@ void arm_dma_sync_sg_for_device(struct device *dev, struct scatterlist *sg,
+  * during bus mastering, then you would pass 0x00ffffff as the mask
+  * to this function.
+  */
+-int dma_supported(struct device *dev, u64 mask)
++int arm_dma_supported(struct device *dev, u64 mask)
+ {
+ 	return __dma_supported(dev, mask, false);
+ }
+-EXPORT_SYMBOL(dma_supported);
+ 
+ #define PREALLOC_DMA_DEBUG_ENTRIES	4096
+ 
+@@ -2149,6 +2150,7 @@ const struct dma_map_ops iommu_ops = {
+ 	.unmap_resource		= arm_iommu_unmap_resource,
+ 
+ 	.mapping_error		= arm_dma_mapping_error,
++	.dma_supported		= arm_dma_supported,
+ };
+ 
+ const struct dma_map_ops iommu_coherent_ops = {
+@@ -2167,6 +2169,7 @@ const struct dma_map_ops iommu_coherent_ops = {
+ 	.unmap_resource	= arm_iommu_unmap_resource,
+ 
+ 	.mapping_error		= arm_dma_mapping_error,
++	.dma_supported		= arm_dma_supported,
+ };
+ 
+ /**
 -- 
 2.11.0
