@@ -2,8 +2,8 @@ Return-Path: <BATV+48ca1ab4adaecdf09dc3+5045+infradead.org+hch@bombadil.srs.infr
 Received: from bombadil.infradead.org (bombadil.infradead.org [65.50.211.133])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
  bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wq7lM4gLyzDqB9
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Jun 2017 04:13:03 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wq7lR6yH6zDqGt
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Jun 2017 04:13:07 +1000 (AEST)
 From: Christoph Hellwig <hch@lst.de>
 To: x86@kernel.org, linux-arm-kernel@lists.infradead.org,
  xen-devel@lists.xenproject.org, linux-c6x-dev@linux-c6x.org,
@@ -16,9 +16,10 @@ To: x86@kernel.org, linux-arm-kernel@lists.infradead.org,
  linux-samsung-soc@vger.kernel.org, iommu@lists.linux-foundation.org,
  netdev@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 30/44] dma-virt: remove dma_supported and mapping_error methods
-Date: Fri, 16 Jun 2017 20:10:45 +0200
-Message-Id: <20170616181059.19206-31-hch@lst.de>
+Subject: [PATCH 31/44] hexagon: remove arch-specific dma_supported
+ implementation
+Date: Fri, 16 Jun 2017 20:10:46 +0200
+Message-Id: <20170616181059.19206-32-hch@lst.de>
 In-Reply-To: <20170616181059.19206-1-hch@lst.de>
 References: <20170616181059.19206-1-hch@lst.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -30,39 +31,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-These just duplicate the default behavior if no method is provided.
+This implementation is simply bogus - hexagon only has a simple
+direct mapped DMA implementation and thus doesn't care about the
+address.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
+Acked-by: Richard Kuo <rkuo@codeaurora.org>
 ---
- lib/dma-virt.c | 12 ------------
- 1 file changed, 12 deletions(-)
+ arch/hexagon/include/asm/dma-mapping.h | 2 --
+ arch/hexagon/kernel/dma.c              | 9 ---------
+ 2 files changed, 11 deletions(-)
 
-diff --git a/lib/dma-virt.c b/lib/dma-virt.c
-index dcd4df1f7174..5c4f11329721 100644
---- a/lib/dma-virt.c
-+++ b/lib/dma-virt.c
-@@ -51,22 +51,10 @@ static int dma_virt_map_sg(struct device *dev, struct scatterlist *sgl,
- 	return nents;
+diff --git a/arch/hexagon/include/asm/dma-mapping.h b/arch/hexagon/include/asm/dma-mapping.h
+index 00e3f10113b0..9c15cb5271a6 100644
+--- a/arch/hexagon/include/asm/dma-mapping.h
++++ b/arch/hexagon/include/asm/dma-mapping.h
+@@ -37,8 +37,6 @@ static inline const struct dma_map_ops *get_arch_dma_ops(struct bus_type *bus)
+ 	return dma_ops;
  }
  
--static int dma_virt_mapping_error(struct device *dev, dma_addr_t dma_addr)
+-#define HAVE_ARCH_DMA_SUPPORTED 1
+-extern int dma_supported(struct device *dev, u64 mask);
+ extern int dma_is_consistent(struct device *dev, dma_addr_t dma_handle);
+ extern void dma_cache_sync(struct device *dev, void *vaddr, size_t size,
+ 			   enum dma_data_direction direction);
+diff --git a/arch/hexagon/kernel/dma.c b/arch/hexagon/kernel/dma.c
+index 71269dc0f225..9ff1b2041f85 100644
+--- a/arch/hexagon/kernel/dma.c
++++ b/arch/hexagon/kernel/dma.c
+@@ -35,15 +35,6 @@ static inline void *dma_addr_to_virt(dma_addr_t dma_addr)
+ 	return phys_to_virt((unsigned long) dma_addr);
+ }
+ 
+-int dma_supported(struct device *dev, u64 mask)
 -{
--	return false;
+-	if (mask == DMA_BIT_MASK(32))
+-		return 1;
+-	else
+-		return 0;
 -}
+-EXPORT_SYMBOL(dma_supported);
 -
--static int dma_virt_supported(struct device *dev, u64 mask)
--{
--	return true;
--}
--
- const struct dma_map_ops dma_virt_ops = {
- 	.alloc			= dma_virt_alloc,
- 	.free			= dma_virt_free,
- 	.map_page		= dma_virt_map_page,
- 	.map_sg			= dma_virt_map_sg,
--	.mapping_error		= dma_virt_mapping_error,
--	.dma_supported		= dma_virt_supported,
- };
- EXPORT_SYMBOL(dma_virt_ops);
+ static struct gen_pool *coherent_pool;
+ 
+ 
 -- 
 2.11.0
