@@ -1,24 +1,31 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
- [IPv6:2607:f8b0:400e:c05::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wqcCg613BzDq5W
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Jun 2017 22:35:43 +1000 (AEST)
-Received: by mail-pg0-x244.google.com with SMTP id j186so9941123pge.1
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Jun 2017 05:35:43 -0700 (PDT)
-Date: Sat, 17 Jun 2017 22:35:22 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Don Zickus <dzickus@redhat.com>, Babu Moger <babu.moger@oracle.com>,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v4 3/5] watchdog: split up config options
-Message-ID: <20170617223522.66c0ad88@roar.ozlabs.ibm.com>
-In-Reply-To: <20170616065715.18390-4-npiggin@gmail.com>
-References: <20170616065715.18390-1-npiggin@gmail.com>
- <20170616065715.18390-4-npiggin@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wqfmt0fzkzDq7W
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 18 Jun 2017 00:31:09 +1000 (AEST)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v5HETdAS014208
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Jun 2017 10:31:06 -0400
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2b54arks1a-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Jun 2017 10:31:06 -0400
+Received: from localhost
+ by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Sat, 17 Jun 2017 08:31:06 -0600
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ Ram Pai <linuxram@us.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH] powerpc/mm/hash: Free the subpage_prot_table correctly
+Date: Sat, 17 Jun 2017 20:00:55 +0530
+Message-Id: <1497709855-25788-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,75 +35,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 16 Jun 2017 16:57:13 +1000
-Nicholas Piggin <npiggin@gmail.com> wrote:
-
-> Split SOFTLOCKUP_DETECTOR from LOCKUP_DETECTOR, and split
-> HARDLOCKUP_DETECTOR_PERF from HARDLOCKUP_DETECTOR.
-> 
-> LOCKUP_DETECTOR implies the general boot, sysctl, and programming
-> interfaces for the lockup detectors.
-> 
-> An architecture that wants to use a hard lockup detector must define
-> HAVE_HARDLOCKUP_DETECTOR_PERF or HAVE_HARDLOCKUP_DETECTOR_ARCH.
-> 
-> Alternatively an arch can define HAVE_NMI_WATCHDOG, which provides
-> the minimum arch_touch_nmi_watchdog, and it otherwise does its own
-> thing and does not implement the LOCKUP_DETECTOR interfaces.
-> 
-> sparc is unusual in that it has started to implement some of the
-> interfaces, but not fully yet. It should probably be converted to
-> a full HAVE_HARDLOCKUP_DETECTOR_ARCH.
-> 
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-
-I haven't worked out the nm10300 Kconfig warning, but in the meantime
-Andrew can you fold this patch in please?
-
-Thanks,
-Nick
-
+Fixes: dad6f37c2602e ("powerpc: subpage_protect: Increase the array size to take care of 64TB")
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/Kconfig | 6 +-----
- 1 file changed, 1 insertion(+), 5 deletions(-)
+ arch/powerpc/mm/subpage-prot.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/Kconfig b/arch/Kconfig
-index 878addc6f141..d1cd10f1c087 100644
---- a/arch/Kconfig
-+++ b/arch/Kconfig
-@@ -198,9 +198,6 @@ config HAVE_KPROBES_ON_FTRACE
- config HAVE_NMI
- 	bool
- 
--config HAVE_NMI_WATCHDOG
--	depends on HAVE_NMI
--	bool
- #
- # An arch should select this if it provides all these things:
- #
-@@ -288,7 +285,6 @@ config HAVE_PERF_EVENTS_NMI
- 	  subsystem.  Also has support for calculating CPU cycle events
- 	  to determine how many clock cycles in a given period.
- 
--
- config HAVE_HARDLOCKUP_DETECTOR_PERF
- 	bool
- 	depends on HAVE_PERF_EVENTS_NMI
-@@ -297,6 +293,7 @@ config HAVE_HARDLOCKUP_DETECTOR_PERF
- 	  detector. Must define HAVE_PERF_EVENTS_NMI.
- 
- config HAVE_NMI_WATCHDOG
-+	depends on HAVE_NMI
- 	bool
- 	help
- 	  The arch provides a low level NMI watchdog. It provides
-@@ -310,7 +307,6 @@ config HAVE_HARDLOCKUP_DETECTOR_ARCH
- 	  a superset of the HAVE_NMI_WATCHDOG. It also conforms to config
- 	  interfaces and parameters provided by hardlockup detector subsystem.
- 
--
- config HAVE_PERF_REGS
- 	bool
- 	help
+diff --git a/arch/powerpc/mm/subpage-prot.c b/arch/powerpc/mm/subpage-prot.c
+index e94fbd4c8845..781532d7bc4d 100644
+--- a/arch/powerpc/mm/subpage-prot.c
++++ b/arch/powerpc/mm/subpage-prot.c
+@@ -36,7 +36,7 @@ void subpage_prot_free(struct mm_struct *mm)
+ 		}
+ 	}
+ 	addr = 0;
+-	for (i = 0; i < 2; ++i) {
++	for (i = 0; i < (TASK_SIZE_USER64 >> 43); ++i) {
+ 		p = spt->protptrs[i];
+ 		if (!p)
+ 			continue;
 -- 
-2.11.0
+2.7.4
