@@ -1,35 +1,30 @@
-Return-Path: <linuxram@us.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wqhm874MRzDq7W
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 18 Jun 2017 02:00:40 +1000 (AEST)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v5HFwdCd139488
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Jun 2017 12:00:37 -0400
-Received: from e16.ny.us.ibm.com (e16.ny.us.ibm.com [129.33.205.206])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2b57a80cyw-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Jun 2017 12:00:37 -0400
-Received: from localhost
- by e16.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <linuxram@us.ibm.com>;
- Sat, 17 Jun 2017 12:00:36 -0400
-Date: Sat, 17 Jun 2017 09:00:19 -0700
-From: Ram Pai <linuxram@us.ibm.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] powerpc/mm/hash: Free the subpage_prot_table correctly
-Reply-To: Ram Pai <linuxram@us.ibm.com>
-References: <1497709855-25788-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1497709855-25788-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Message-Id: <20170617160019.GB5845@ram.oc3035372033.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wqqCt2qFwzDq7c
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 18 Jun 2017 06:51:38 +1000 (AEST)
+Message-ID: <1497732627.2897.128.camel@kernel.crashing.org>
+Subject: Re: [PATCH 42/44] powerpc/cell: use the dma_supported method for
+ ops switching
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Christoph Hellwig <hch@lst.de>, x86@kernel.org,
+ linux-arm-kernel@lists.infradead.org, xen-devel@lists.xenproject.org,
+ linux-c6x-dev@linux-c6x.org, linux-hexagon@vger.kernel.org,
+ linux-ia64@vger.kernel.org, linux-mips@linux-mips.org,
+ openrisc@lists.librecores.org, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
+ sparclinux@vger.kernel.org, linux-xtensa@linux-xtensa.org,
+ dmaengine@vger.kernel.org, linux-tegra@vger.kernel.org,
+ dri-devel@lists.freedesktop.org, linux-samsung-soc@vger.kernel.org,
+ iommu@lists.linux-foundation.org, netdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Date: Sun, 18 Jun 2017 06:50:27 +1000
+In-Reply-To: <20170616181059.19206-43-hch@lst.de>
+References: <20170616181059.19206-1-hch@lst.de>
+ <20170616181059.19206-43-hch@lst.de>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,35 +34,100 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Fri, 2017-06-16 at 20:10 +0200, Christoph Hellwig wrote:
+> Besides removing the last instance of the set_dma_mask method this also
+> reduced the code duplication.
 
-This fix, resolved the OOM seen while running subpage_prot selftest, in a
-infinite loop.
+What is your rationale here ? (I have missed patch 0 it seems).
 
-Tested-by: Ram Pai <linuxram@us.ibm.com>
+dma_supported() was supposed to be pretty much a "const" function
+simply informing whether a given setup is possible. Having it perform
+an actual switch of ops seems to be pushing it...
 
+What if a driver wants to test various dma masks and then pick one ?
 
-On Sat, Jun 17, 2017 at 08:00:55PM +0530, Aneesh Kumar K.V wrote:
-> Fixes: dad6f37c2602e ("powerpc: subpage_protect: Increase the array size to take care of 64TB")
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+Where does the API documents that if a driver calls dma_supported() it
+then *must* set the corresponding mask and use that ?
+
+I don't like a function that is a "boolean query" like this one to have
+such a major side effect.
+
+>From an API standpoint, dma_set_mask() is when the mask is established,
+and thus when the ops switch should happen.
+
+Ben.
+
+> Signed-off-by: Christoph Hellwig <hch@lst.de>
 > ---
->  arch/powerpc/mm/subpage-prot.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>  arch/powerpc/platforms/cell/iommu.c | 25 +++++++++----------------
+>  1 file changed, 9 insertions(+), 16 deletions(-)
 > 
-> diff --git a/arch/powerpc/mm/subpage-prot.c b/arch/powerpc/mm/subpage-prot.c
-> index e94fbd4c8845..781532d7bc4d 100644
-> --- a/arch/powerpc/mm/subpage-prot.c
-> +++ b/arch/powerpc/mm/subpage-prot.c
-> @@ -36,7 +36,7 @@ void subpage_prot_free(struct mm_struct *mm)
->  		}
+> diff --git a/arch/powerpc/platforms/cell/iommu.c b/arch/powerpc/platforms/cell/iommu.c
+> index 497bfbdbd967..29d4f96ed33e 100644
+> --- a/arch/powerpc/platforms/cell/iommu.c
+> +++ b/arch/powerpc/platforms/cell/iommu.c
+> @@ -644,20 +644,14 @@ static void dma_fixed_unmap_sg(struct device *dev, struct scatterlist *sg,
+>  				   direction, attrs);
+>  }
+>  
+> -static int dma_fixed_dma_supported(struct device *dev, u64 mask)
+> -{
+> -	return mask == DMA_BIT_MASK(64);
+> -}
+> -
+> -static int dma_set_mask_and_switch(struct device *dev, u64 dma_mask);
+> +static int dma_suported_and_switch(struct device *dev, u64 dma_mask);
+>  
+>  static const struct dma_map_ops dma_iommu_fixed_ops = {
+>  	.alloc          = dma_fixed_alloc_coherent,
+>  	.free           = dma_fixed_free_coherent,
+>  	.map_sg         = dma_fixed_map_sg,
+>  	.unmap_sg       = dma_fixed_unmap_sg,
+> -	.dma_supported  = dma_fixed_dma_supported,
+> -	.set_dma_mask   = dma_set_mask_and_switch,
+> +	.dma_supported  = dma_suported_and_switch,
+>  	.map_page       = dma_fixed_map_page,
+>  	.unmap_page     = dma_fixed_unmap_page,
+>  	.mapping_error	= dma_iommu_mapping_error,
+> @@ -952,11 +946,8 @@ static u64 cell_iommu_get_fixed_address(struct device *dev)
+>  	return dev_addr;
+>  }
+>  
+> -static int dma_set_mask_and_switch(struct device *dev, u64 dma_mask)
+> +static int dma_suported_and_switch(struct device *dev, u64 dma_mask)
+>  {
+> -	if (!dev->dma_mask || !dma_supported(dev, dma_mask))
+> -		return -EIO;
+> -
+>  	if (dma_mask == DMA_BIT_MASK(64) &&
+>  	    cell_iommu_get_fixed_address(dev) != OF_BAD_ADDR) {
+>  		u64 addr = cell_iommu_get_fixed_address(dev) +
+> @@ -965,14 +956,16 @@ static int dma_set_mask_and_switch(struct device *dev, u64 dma_mask)
+>  		dev_dbg(dev, "iommu: fixed addr = %llx\n", addr);
+>  		set_dma_ops(dev, &dma_iommu_fixed_ops);
+>  		set_dma_offset(dev, addr);
+> -	} else {
+> +		return 1;
+> +	}
+> +
+> +	if (dma_iommu_dma_supported(dev, dma_mask)) {
+>  		dev_dbg(dev, "iommu: not 64-bit, using default ops\n");
+>  		set_dma_ops(dev, get_pci_dma_ops());
+>  		cell_dma_dev_setup(dev);
+> +		return 1;
 >  	}
->  	addr = 0;
-> -	for (i = 0; i < 2; ++i) {
-> +	for (i = 0; i < (TASK_SIZE_USER64 >> 43); ++i) {
->  		p = spt->protptrs[i];
->  		if (!p)
->  			continue;
-> -- 
-> 2.7.4
-
--- 
-Ram Pai
+>  
+> -	*dev->dma_mask = dma_mask;
+> -
+>  	return 0;
+>  }
+>  
+> @@ -1127,7 +1120,7 @@ static int __init cell_iommu_fixed_mapping_init(void)
+>  		cell_iommu_setup_window(iommu, np, dbase, dsize, 0);
+>  	}
+>  
+> -	dma_iommu_ops.set_dma_mask = dma_set_mask_and_switch;
+> +	dma_iommu_ops.dma_supported = dma_suported_and_switch;
+>  	set_pci_dma_ops(&dma_iommu_ops);
+>  
+>  	return 0;
