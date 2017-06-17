@@ -1,35 +1,25 @@
-Return-Path: <alexander.duyck@gmail.com>
-Received: from mail-qk0-x242.google.com (mail-qk0-x242.google.com
- [IPv6:2607:f8b0:400d:c09::242])
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
+ [IPv6:2607:f8b0:400e:c05::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wqC1T0ndtzDqLd
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Jun 2017 06:40:29 +1000 (AEST)
-Received: by mail-qk0-x242.google.com with SMTP id r62so45074qkf.3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jun 2017 13:40:28 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wqM4k4zjMzDq7c
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Jun 2017 12:43:49 +1000 (AEST)
+Received: by mail-pg0-x241.google.com with SMTP id u62so2951337pgb.0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jun 2017 19:43:49 -0700 (PDT)
+Date: Sat, 17 Jun 2017 12:43:25 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Don Zickus <dzickus@redhat.com>, Babu Moger <babu.moger@oracle.com>,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v4 2/5] watchdog: introduce arch_touch_nmi_watchdog()
+Message-ID: <20170617124325.58ad25cb@roar.ozlabs.ibm.com>
+In-Reply-To: <20170616112117.a33b1096985a786777bc8b54@linux-foundation.org>
+References: <20170616065715.18390-1-npiggin@gmail.com>
+ <20170616065715.18390-3-npiggin@gmail.com>
+ <20170616112117.a33b1096985a786777bc8b54@linux-foundation.org>
 MIME-Version: 1.0
-In-Reply-To: <20170616181059.19206-4-hch@lst.de>
-References: <20170616181059.19206-1-hch@lst.de>
- <20170616181059.19206-4-hch@lst.de>
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Fri, 16 Jun 2017 13:40:24 -0700
-Message-ID: <CAKgT0UdxrimWrxNVsLMQ9G6ABBJZwfWHTcP18qqd4rT0Fa-KWg@mail.gmail.com>
-Subject: Re: [PATCH 03/44] dmaengine: ioat: don't use DMA_ERROR_CODE
-To: Christoph Hellwig <hch@lst.de>
-Cc: "the arch/x86 maintainers" <x86@kernel.org>,
- linux-arm-kernel@lists.infradead.org,
- xen-devel@lists.xenproject.org, linux-c6x-dev@linux-c6x.org,
- linux-hexagon@vger.kernel.org, linux-ia64@vger.kernel.org,
- linux-mips@linux-mips.org, openrisc@lists.librecores.org,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
- linux-xtensa@linux-xtensa.org, dmaengine@vger.kernel.org,
- linux-tegra@vger.kernel.org, dri-devel@lists.freedesktop.org,
- linux-samsung-soc@vger.kernel.org,
- "open list:INTEL IOMMU (VT-d)" <iommu@lists.linux-foundation.org>,
- Netdev <netdev@vger.kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,84 +29,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Jun 16, 2017 at 11:10 AM, Christoph Hellwig <hch@lst.de> wrote:
-> DMA_ERROR_CODE is not a public API and will go away.  Instead properly
-> unwind based on the loop counter.
->
-> Signed-off-by: Christoph Hellwig <hch@lst.de>
-> Acked-by: Dave Jiang <dave.jiang@intel.com>
-> Acked-By: Vinod Koul <vinod.koul@intel.com>
-> ---
->  drivers/dma/ioat/init.c | 24 +++++++-----------------
->  1 file changed, 7 insertions(+), 17 deletions(-)
->
-> diff --git a/drivers/dma/ioat/init.c b/drivers/dma/ioat/init.c
-> index 6ad4384b3fa8..ed8ed1192775 100644
-> --- a/drivers/dma/ioat/init.c
-> +++ b/drivers/dma/ioat/init.c
-> @@ -839,8 +839,6 @@ static int ioat_xor_val_self_test(struct ioatdma_device *ioat_dma)
->                 goto free_resources;
->         }
->
-> -       for (i = 0; i < IOAT_NUM_SRC_TEST; i++)
-> -               dma_srcs[i] = DMA_ERROR_CODE;
->         for (i = 0; i < IOAT_NUM_SRC_TEST; i++) {
->                 dma_srcs[i] = dma_map_page(dev, xor_srcs[i], 0, PAGE_SIZE,
->                                            DMA_TO_DEVICE);
-> @@ -910,8 +908,6 @@ static int ioat_xor_val_self_test(struct ioatdma_device *ioat_dma)
->
->         xor_val_result = 1;
->
-> -       for (i = 0; i < IOAT_NUM_SRC_TEST + 1; i++)
-> -               dma_srcs[i] = DMA_ERROR_CODE;
->         for (i = 0; i < IOAT_NUM_SRC_TEST + 1; i++) {
->                 dma_srcs[i] = dma_map_page(dev, xor_val_srcs[i], 0, PAGE_SIZE,
->                                            DMA_TO_DEVICE);
-> @@ -965,8 +961,6 @@ static int ioat_xor_val_self_test(struct ioatdma_device *ioat_dma)
->         op = IOAT_OP_XOR_VAL;
->
->         xor_val_result = 0;
-> -       for (i = 0; i < IOAT_NUM_SRC_TEST + 1; i++)
-> -               dma_srcs[i] = DMA_ERROR_CODE;
->         for (i = 0; i < IOAT_NUM_SRC_TEST + 1; i++) {
->                 dma_srcs[i] = dma_map_page(dev, xor_val_srcs[i], 0, PAGE_SIZE,
->                                            DMA_TO_DEVICE);
-> @@ -1017,18 +1011,14 @@ static int ioat_xor_val_self_test(struct ioatdma_device *ioat_dma)
->         goto free_resources;
->  dma_unmap:
->         if (op == IOAT_OP_XOR) {
-> -               if (dest_dma != DMA_ERROR_CODE)
-> -                       dma_unmap_page(dev, dest_dma, PAGE_SIZE,
-> -                                      DMA_FROM_DEVICE);
-> -               for (i = 0; i < IOAT_NUM_SRC_TEST; i++)
-> -                       if (dma_srcs[i] != DMA_ERROR_CODE)
-> -                               dma_unmap_page(dev, dma_srcs[i], PAGE_SIZE,
-> -                                              DMA_TO_DEVICE);
-> +               while (--i >= 0)
-> +                       dma_unmap_page(dev, dma_srcs[i], PAGE_SIZE,
-> +                                      DMA_TO_DEVICE);
-> +               dma_unmap_page(dev, dest_dma, PAGE_SIZE, DMA_FROM_DEVICE);
->         } else if (op == IOAT_OP_XOR_VAL) {
-> -               for (i = 0; i < IOAT_NUM_SRC_TEST + 1; i++)
-> -                       if (dma_srcs[i] != DMA_ERROR_CODE)
-> -                               dma_unmap_page(dev, dma_srcs[i], PAGE_SIZE,
-> -                                              DMA_TO_DEVICE);
-> +               while (--i >= 0)
-> +                       dma_unmap_page(dev, dma_srcs[i], PAGE_SIZE,
-> +                                      DMA_TO_DEVICE);
+On Fri, 16 Jun 2017 11:21:17 -0700
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-Wouldn't it make more sense to pull out the while loop and just call
-dma_unmap_page on dest_dma if "op == IOAT_OP_XOR"? Odds are it is what
-the compiler is already generating and will save a few lines of code
-so what you end up with is something like:
-    while (--i >= 0)
-        dma_unmap_page(dev, dma_srcs[i], PAGE_SIZE, DMA_TO_DEVICE);
-    if (op == IOAT_OP_XOR)
-        dma_unmap_page(dev, dest_dma, PAGE_SIZE, DMA_FROM_DEVICE);
+> On Fri, 16 Jun 2017 16:57:12 +1000 Nicholas Piggin <npiggin@gmail.com> wrote:
+> 
+> > For architectures that define HAVE_NMI_WATCHDOG, instead of having
+> > them provide the complete touch_nmi_watchdog() function, just have
+> > them provide arch_touch_nmi_watchdog().
+> > 
+> > This gives the generic code more flexibility in implementing this
+> > function, and arch implementations don't miss out on touching the
+> > softlockup watchdog or other generic details.
+> > 
+> > ...
+> >
+> > --- a/arch/blackfin/include/asm/nmi.h
+> > +++ b/arch/blackfin/include/asm/nmi.h
+> > @@ -9,4 +9,6 @@
+> >  
+> >  #include <linux/nmi.h>
+> >  
+> > +extern void arch_touch_nmi_watchdog(void);  
+> 
+> Do we actually need to add this to the arch header files...
 
->         }
->  free_resources:
->         dma->device_free_chan_resources(dma_chan);
-> --
-> 2.11.0
->
+[snip]
+
+> > +#if defined(CONFIG_HARDLOCKUP_DETECTOR) || defined(CONFIG_HAVE_NMI_WATCHDOG)
+> > +extern void arch_touch_nmi_watchdog(void);
+> > +#else
+> > +static inline void arch_touch_nmi_watchdog(void) {}
+> > +#endif
+> > +  
+> 
+> given that we have a global declaration here?
+
+Probably not. I think it was a holdover from an earlier version where
+I tried to let the arch declare it (one of the little embedded ones
+had a comment somewhere saying it would be nice if they could make it
+inline).
+
+There was some difficulty with it, so yes let's remove these and do
+that next time.
+
+Thanks,
+Nick
