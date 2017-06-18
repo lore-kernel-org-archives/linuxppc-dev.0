@@ -1,32 +1,42 @@
-Return-Path: <BATV+3740c4db088a71c572a8+5047+infradead.org+hch@bombadil.srs.infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org [65.50.211.133])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wr51t5FVlzDq62
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 18 Jun 2017 17:13:54 +1000 (AEST)
-Date: Sun, 18 Jun 2017 00:13:44 -0700
-From: Christoph Hellwig <hch@infradead.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Christoph Hellwig <hch@lst.de>, x86@kernel.org,
- linux-arm-kernel@lists.infradead.org,
- xen-devel@lists.xenproject.org, linux-c6x-dev@linux-c6x.org,
- linux-hexagon@vger.kernel.org, linux-ia64@vger.kernel.org,
- linux-mips@linux-mips.org, openrisc@lists.librecores.org,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
- linux-xtensa@linux-xtensa.org, dmaengine@vger.kernel.org,
- linux-tegra@vger.kernel.org, dri-devel@lists.freedesktop.org,
- linux-samsung-soc@vger.kernel.org, iommu@lists.linux-foundation.org,
- netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 42/44] powerpc/cell: use the dma_supported method for ops
- switching
-Message-ID: <20170618071344.GB18526@infradead.org>
-References: <20170616181059.19206-1-hch@lst.de>
- <20170616181059.19206-43-hch@lst.de>
- <1497732627.2897.128.camel@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1497732627.2897.128.camel@kernel.crashing.org>
+Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wr8K50cs4zDqMP
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 18 Jun 2017 19:42:16 +1000 (AEST)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v5I9g8kJ028873
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 18 Jun 2017 05:42:14 -0400
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2b5q4ar02j-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 18 Jun 2017 05:42:13 -0400
+Received: from localhost
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
+ Sun, 18 Jun 2017 19:42:11 +1000
+Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v5I9g0Up49807586
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 18 Jun 2017 19:42:08 +1000
+Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
+ by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v5I9fZGe004752
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 18 Jun 2017 19:41:36 +1000
+From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org, "Shriya R . Kulkarni" <shriykul@in.ibm.com>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
+Subject: Re: [PATCH] powerpc64/hw_breakpoints: Handle data breakpoints in
+ radix mode
+Date: Sun, 18 Jun 2017 15:11:00 +0530
+In-Reply-To: <87d1a4wlzz.fsf@concordia.ellerman.id.au>
+References: <87d1a4wlzz.fsf@concordia.ellerman.id.au>
+Message-Id: <20170618094100.29795-1-naveen.n.rao@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,41 +46,99 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Jun 18, 2017 at 06:50:27AM +1000, Benjamin Herrenschmidt wrote:
-> What is your rationale here ? (I have missed patch 0 it seems).
-
-Less code duplication, more modular dma_map_ops insteance.
-
-> dma_supported() was supposed to be pretty much a "const" function
-> simply informing whether a given setup is possible. Having it perform
-> an actual switch of ops seems to be pushing it...
-
-dma_supported() is already gone from the public DMA API as it doesn't
-make sense to be called separately from set_dma_mask.  It will be
-entirely gone in the next series after this one.
-
-> What if a driver wants to test various dma masks and then pick one ?
+On 2017/06/16 03:16PM, Michael Ellerman wrote:
+> "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> writes:
 > 
-> Where does the API documents that if a driver calls dma_supported() it
-> then *must* set the corresponding mask and use that ?
-
-Where is the API document for _any_ of the dma routines? (A: work in
-progress by me, but I need to clean up the mess of arch hooks before
-it can make any sense)
-
-> I don't like a function that is a "boolean query" like this one to have
-> such a major side effect.
+> > diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+> > index ae418b85c17c..17ee701b8336 100644
+> > --- a/arch/powerpc/kernel/exceptions-64s.S
+> > +++ b/arch/powerpc/kernel/exceptions-64s.S
+> > @@ -1442,7 +1440,9 @@ do_hash_page:
+> >  
+> >  /* Here we have a page fault that hash_page can't handle. */
+> >  handle_page_fault:
+> > -11:	ld	r4,_DAR(r1)
+> > +	andis.  r0,r4,DSISR_DABRMATCH@h
+> > +	bne-    handle_dabr_fault
 > 
-> >From an API standpoint, dma_set_mask() is when the mask is established,
-> and thus when the ops switch should happen.
+> This broke hash. Please test hash! :)
 
-And that's exactly what happens at the driver API level.  It just turns
-out the dma_capable method is they way better place to actually
-implement it, as the ->set_dma_mask method requires lots of code
-duplication while not offering any actual benefit over ->dma_capable.
-And because of that it's gone after this series.
+Gah! :double-face-palm:
+I don't know how I missed this... (yes, I do)
 
-In theory we could rename ->dma_capable now, but it would require a
-_lot_ of churn.  Give me another merge window or two and we should
-be down to be about 2 handful of dma_map_ops instance, at which point
-we could do all this gratious renaming a lot more easily :)
+> 
+> I added:
+> 
+> @@ -1438,11 +1436,16 @@ do_hash_page:
+> 
+>         /* Error */
+>         blt-    13f
+> +
+> +       /* Reload DSISR into r4 for the DABR check below */
+> +       ld      r4,_DSISR(r1)
+>  #endif /* CONFIG_PPC_STD_MMU_64 */
+> 
+>  /* Here we have a page fault that hash_page can't handle. */
+>  handle_page_fault:
+
+As always, thanks Michael!
+
+I think we can optimize this a bit more to eliminate the loads in
+handle_page_fault. Here's an incremental patch above your changes for
+-next, this time boot-tested with radix and disable_radix.
+
+- Naveen
+
+-----
+[PATCH] powerpc64/exceptions64s: Eliminate a few un-necessary memory loads
+
+In do_hash_page(), we re-load DSISR from stack though it is still present
+in register r4. Eliminate the memory load by preserving this register.
+
+Furthermore, handler_page_fault() reloads DAR and DSISR from memory and
+this is only required if we fall through from do_hash_page().
+Otherwise, r3 and r4 already have DAR and DSISR loaded. Re-use those
+and have do_hash_page() reload those registers when falling-through.
+
+Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+---
+ arch/powerpc/kernel/exceptions-64s.S | 9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
+
+diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+index dd619faab862..b5182a1ef3d6 100644
+--- a/arch/powerpc/kernel/exceptions-64s.S
++++ b/arch/powerpc/kernel/exceptions-64s.S
+@@ -1426,8 +1426,8 @@ do_hash_page:
+ 	 *
+ 	 * at return r3 = 0 for success, 1 for page fault, negative for error
+ 	 */
++	mr	r6,r4
+         mr 	r4,r12
+-	ld      r6,_DSISR(r1)
+ 	bl	__hash_page		/* build HPTE if possible */
+         cmpdi	r3,0			/* see if __hash_page succeeded */
+ 
+@@ -1437,7 +1437,8 @@ do_hash_page:
+ 	/* Error */
+ 	blt-	13f
+ 
+-	/* Reload DSISR into r4 for the DABR check below */
++	/* Reload DAR/DSISR for handle_page_fault */
++	ld	r3,_DAR(r1)
+ 	ld      r4,_DSISR(r1)
+ #endif /* CONFIG_PPC_STD_MMU_64 */
+ 
+@@ -1445,8 +1446,8 @@ do_hash_page:
+ handle_page_fault:
+ 	andis.  r0,r4,DSISR_DABRMATCH@h
+ 	bne-    handle_dabr_fault
+-	ld	r4,_DAR(r1)
+-	ld	r5,_DSISR(r1)
++	mr	r5,r4
++	mr	r4,r3
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD
+ 	bl	do_page_fault
+ 	cmpdi	r3,0
+-- 
+2.13.1
