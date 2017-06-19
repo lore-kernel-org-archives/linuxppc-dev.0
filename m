@@ -1,16 +1,16 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wrqv448NlzDr0w
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Jun 2017 22:25:36 +1000 (AEST)
-In-Reply-To: <1496728137-19655-1-git-send-email-mpe@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wrqv53HpbzDqkM
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Jun 2017 22:25:37 +1000 (AEST)
+In-Reply-To: <20170608153505.18857-1-npiggin@gmail.com>
+To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: aneesh.kumar@linux.vnet.ibm.com
-Subject: Re: powerpc/mm/radix: Only add X for pages overlapping kernel text
-Message-Id: <3wrqv42DRXz9s89@ozlabs.org>
-Date: Mon, 19 Jun 2017 22:25:36 +1000 (AEST)
+Cc: Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [1/2] powerpc/64s: syscall optimize hypercall/syscall entry
+Message-Id: <3wrqv51dPqz9s8V@ozlabs.org>
+Date: Mon, 19 Jun 2017 22:25:37 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,41 +20,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2017-06-06 at 05:48:57 UTC, Michael Ellerman wrote:
-> Currently we map the whole linear mapping with PAGE_KERNEL_X. Instead we
-> should check if the page overlaps the kernel text and only then add
-> PAGE_KERNEL_X.
+On Thu, 2017-06-08 at 15:35:04 UTC, Nicholas Piggin wrote:
+> After bc3551257a ("powerpc/64: Allow for relocation-on interrupts from
+> guest to host"), a getppid() system call goes from 307 cycles to 358
+> cycles (+17%) on POWER8. This is due significantly to the scratch SPR
+> used by the hypercall check.
 > 
-> Note that we still use 1G pages if they're available, so this will
-> typically still result in a 1G executable page at KERNELBASE. So this fix is
-> primarily useful for catching stray branches to high linear mapping addresses.
+> It turns out there are a some volatile registers common to both system
+> call and hypercall (in particular, r12, cr0, ctr), which can be used to
+> avoid the SPR and some other overheads. This brings getppid to 320 cycles
+> (+4%).
 > 
-> Without this patch, we can execute at 1G in xmon using:
+> Testing hcall entry performance by running "sc 1" in guest userspace
+> before this patch is 854 cycles, afterwards is 826. Also a small win
+> there.
 > 
->   0:mon> m c000000040000000
->   c000000040000000  00 l
->   c000000040000000  00000000 01006038
->   c000000040000004  00000000 2000804e
->   c000000040000008  00000000 x
->   0:mon> di c000000040000000
->   c000000040000000  38600001      li      r3,1
->   c000000040000004  4e800020      blr
->   0:mon> p c000000040000000
->   return value is 0x1
+> POWER9 syscall is improved by about the same amount, hcall not tested.
 > 
-> After we get a 400 as expected:
-> 
->   0:mon> p c000000040000000
->   *** 400 exception occurred
-> 
-> Fixes: 2bfd65e45e87 ("powerpc/mm/radix: Add radix callbacks for early init routines")
-> Cc: stable@vger.kernel.org # v4.7+
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-> Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-> Acked-by: Balbir Singh <bsingharora@gmail.com>
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 
-Applied to powerpc next.
+Series applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/9abcc981de9775659a0f6e4a52a344
+https://git.kernel.org/powerpc/c/acd7d8cef01537062e318143d70035
 
 cheers
