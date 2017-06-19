@@ -1,26 +1,42 @@
-Return-Path: <clg@kaod.org>
-Received: from 19.mo4.mail-out.ovh.net (19.mo4.mail-out.ovh.net [87.98.179.66])
+Return-Path: <maddy@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wrrjg4WtVzDqgr
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Jun 2017 23:02:31 +1000 (AEST)
-Received: from player772.ha.ovh.net (b6.ovh.net [213.186.33.56])
- by mo4.mail-out.ovh.net (Postfix) with ESMTP id 9B0AB70E81
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Jun 2017 14:52:33 +0200 (CEST)
-Subject: Re: [PATCH] hwmon: (ibmpowernv) Add current(A) sensors
-To: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, linux@roeck-us.net,
- stewart@linux.vnet.ibm.com
-References: <1497864333-16969-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
-Cc: jdelvare@suse.com, benh@kernel.crashing.org, paulus@samba.org,
- mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, svaidy@linux.vnet.ibm.com,
- ego@linux.vnet.ibm.com, linux-hwmon@vger.kernel.org
-From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
-Message-ID: <56a39618-dc4f-385c-77c3-5c9be92e2d48@kaod.org>
-Date: Mon, 19 Jun 2017 14:52:16 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wrt6f4znlzDq7c
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jun 2017 00:05:46 +1000 (AEST)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v5JE4m5k049054
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Jun 2017 10:05:44 -0400
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2b64rsq1va-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Jun 2017 10:05:44 -0400
+Received: from localhost
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
+ Tue, 20 Jun 2017 00:05:41 +1000
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v5JE5cu58847622
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jun 2017 00:05:38 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v5JE5Zi8012256
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jun 2017 00:05:36 +1000
+Subject: Re: [PATCH] powerpc/perf: Fix POWER9 branch event
+To: Anton Blanchard <anton@ozlabs.org>, benh@kernel.crashing.org,
+ paulus@samba.org, mpe@ellerman.id.au, mikey@neuling.org
+Cc: linuxppc-dev@lists.ozlabs.org
+References: <20170619035526.7070-1-anton@ozlabs.org>
+From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+Date: Mon, 19 Jun 2017 19:35:27 +0530
 MIME-Version: 1.0
-In-Reply-To: <1497864333-16969-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=windows-1252
+In-Reply-To: <20170619035526.7070-1-anton@ozlabs.org>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <adadaf41-5a8b-0632-beff-c942081dbfe6@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,117 +46,118 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/19/2017 11:25 AM, Shilpasri G Bhat wrote:
-> This patch exports current(A) sensors in inband sensors copied to
-> main memory by OCC.
-> 
-> Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-> ---
->  drivers/hwmon/ibmpowernv.c | 4 +++-
->  1 file changed, 3 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/hwmon/ibmpowernv.c b/drivers/hwmon/ibmpowernv.c
-> index 862b832..e0557f9 100644
-> --- a/drivers/hwmon/ibmpowernv.c
-> +++ b/drivers/hwmon/ibmpowernv.c
-> @@ -50,6 +50,7 @@ enum sensors {
->  	TEMP,
->  	POWER_SUPPLY,
->  	POWER_INPUT,
-> +	CURRENT,
->  	MAX_SENSOR_TYPE,
->  };
->  
-> @@ -65,7 +66,8 @@ enum sensors {
->  	{"fan", "ibm,opal-sensor-cooling-fan"},
->  	{"temp", "ibm,opal-sensor-amb-temp"},
->  	{"in", "ibm,opal-sensor-power-supply"},
-> -	{"power", "ibm,opal-sensor-power"}
-> +	{"power", "ibm,opal-sensor-power"},
-> +	{"curr", "ibm,opal-sensor-current"},
->  };
->  
->  struct sensor_data {
-> 
 
 
-I know why you are doing that but that is the old (cr?@#!y) way to 
-define sensor types. we should try to improve thing a little more 
-and use the "sensor-type" property only.
+On Monday 19 June 2017 09:25 AM, Anton Blanchard wrote:
+> From: Anton Blanchard <anton@samba.org>
+>
+> The POWER9 branch event is wrong, and we always get a count of zero:
+>
+> ...
+>                   0      branches
+>                3844      branch-misses             #    0.00% of all branches
+>
+> Replace it with the correct event.
+Anton,
 
-I think the patch below should help you adding new types without 
-too much changes to your skiboot patchset. Could you please check ? 
+How about this patch,  this will force DD1 to use 0x10012 for
+branch and later to use 0x4d05e ?
 
-Thanks,
+diff --git a/arch/powerpc/perf/power9-events-list.h 
+b/arch/powerpc/perf/power9-events-list.h
+index 71a6bfee5c02..13bd159db300 100644
+--- a/arch/powerpc/perf/power9-events-list.h
++++ b/arch/powerpc/perf/power9-events-list.h
+@@ -16,7 +16,7 @@ EVENT(PM_CYC,                    0x0001e)
+  EVENT(PM_ICT_NOSLOT_CYC,            0x100f8)
+  EVENT(PM_CMPLU_STALL,                0x1e054)
+  EVENT(PM_INST_CMPL,                0x00002)
+-EVENT(PM_BRU_CMPL,                0x10012)
++EVENT(PM_BR_CMPL,                0x4d05e)
+  EVENT(PM_BR_MPRED_CMPL,                0x400f6)
 
-C. 
+  /* All L1 D cache load references counted at finish, gated by reject */
+@@ -56,3 +56,4 @@ EVENT(PM_RUN_CYC,                0x600f4)
+  /* Instruction Dispatched */
+  EVENT(PM_INST_DISP,                0x200f2)
+  EVENT(PM_INST_DISP_ALT,                0x300f2)
++EVENT(PM_BR_CMPL_ALT,                0x10012)
+diff --git a/arch/powerpc/perf/power9-pmu.c b/arch/powerpc/perf/power9-pmu.c
+index bb28e1a41257..485dacf30152 100644
+--- a/arch/powerpc/perf/power9-pmu.c
++++ b/arch/powerpc/perf/power9-pmu.c
+@@ -123,7 +123,7 @@ GENERIC_EVENT_ATTR(cpu-cycles, PM_CYC);
+  GENERIC_EVENT_ATTR(stalled-cycles-frontend,    PM_ICT_NOSLOT_CYC);
+  GENERIC_EVENT_ATTR(stalled-cycles-backend,    PM_CMPLU_STALL);
+  GENERIC_EVENT_ATTR(instructions,        PM_INST_CMPL);
+-GENERIC_EVENT_ATTR(branch-instructions,        PM_BRU_CMPL);
++GENERIC_EVENT_ATTR(branch-instructions,        PM_BR_CMPL);
+  GENERIC_EVENT_ATTR(branch-misses,        PM_BR_MPRED_CMPL);
+  GENERIC_EVENT_ATTR(cache-references,        PM_LD_REF_L1);
+  GENERIC_EVENT_ATTR(cache-misses,        PM_LD_MISS_L1_FIN);
+@@ -141,7 +141,7 @@ CACHE_EVENT_ATTR(LLC-prefetches, PM_L3_PREF_ALL);
+  CACHE_EVENT_ATTR(LLC-store-misses,        PM_L2_ST_MISS);
+  CACHE_EVENT_ATTR(LLC-stores,            PM_L2_ST);
+  CACHE_EVENT_ATTR(branch-load-misses,        PM_BR_MPRED_CMPL);
+-CACHE_EVENT_ATTR(branch-loads,            PM_BRU_CMPL);
++CACHE_EVENT_ATTR(branch-loads,            PM_BR_CMPL);
+  CACHE_EVENT_ATTR(dTLB-load-misses,        PM_DTLB_MISS);
+  CACHE_EVENT_ATTR(iTLB-load-misses,        PM_ITLB_MISS);
 
-From: Cédric Le Goater <clg@kaod.org>
-Subject: [PATCH] hwmon: (ibmpowernv) introduce a legacy_compatibles array
-Date: Mon, 19 Jun 2017 14:29:29 +0200
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-
-Today, the type of a PowerNV sensor system is determined with the
-"compatible" property for legacy Firmwares and with the "sensor-type"
-for newer ones. The same array of strings is used for both to do the
-matching and this raises some issue to introduce new sensor types.
-
-Let's introduce two different arrays (legacy and current) to make
-things easier for new sensor types.
-
-Signed-off-by: Cédric Le Goater <clg@kaod.org>
----
- drivers/hwmon/ibmpowernv.c |   26 ++++++++++++++++++--------
- 1 file changed, 18 insertions(+), 8 deletions(-)
-
-Index: linux.git/drivers/hwmon/ibmpowernv.c
-===================================================================
---- linux.git.orig/drivers/hwmon/ibmpowernv.c
-+++ linux.git/drivers/hwmon/ibmpowernv.c
-@@ -55,17 +55,27 @@ enum sensors {
- 
- #define INVALID_INDEX (-1U)
- 
-+/*
-+ * 'compatible' string properties for sensor types as defined in old
-+ * PowerNV firmware (skiboot). These are ordered as 'enum sensors'.
-+ */
-+static const char * const legacy_compatibles[] = {
-+	"ibm,opal-sensor-cooling-fan",
-+	"ibm,opal-sensor-amb-temp",
-+	"ibm,opal-sensor-power-supply",
-+	"ibm,opal-sensor-power"
-+};
-+
- static struct sensor_group {
--	const char *name;
--	const char *compatible;
-+	const char *name; /* matches property 'sensor-type' */
- 	struct attribute_group group;
- 	u32 attr_count;
- 	u32 hwmon_index;
- } sensor_groups[] = {
--	{"fan", "ibm,opal-sensor-cooling-fan"},
--	{"temp", "ibm,opal-sensor-amb-temp"},
--	{"in", "ibm,opal-sensor-power-supply"},
--	{"power", "ibm,opal-sensor-power"}
-+	{ "fan"   },
-+	{ "temp"  },
-+	{ "in"    },
-+	{ "power" }
- };
- 
- struct sensor_data {
-@@ -239,8 +249,8 @@ static int get_sensor_type(struct device
- 	enum sensors type;
- 	const char *str;
- 
--	for (type = 0; type < MAX_SENSOR_TYPE; type++) {
--		if (of_device_is_compatible(np, sensor_groups[type].compatible))
-+	for (type = 0; type < ARRAY_SIZE(legacy_compatibles); type++) {
-+		if (of_device_is_compatible(np, legacy_compatibles[type]))
- 			return type;
- 	}
- 
+@@ -150,7 +150,7 @@ static struct attribute *power9_events_attr[] = {
+      GENERIC_EVENT_PTR(PM_ICT_NOSLOT_CYC),
+      GENERIC_EVENT_PTR(PM_CMPLU_STALL),
+      GENERIC_EVENT_PTR(PM_INST_CMPL),
+-    GENERIC_EVENT_PTR(PM_BRU_CMPL),
++    GENERIC_EVENT_PTR(PM_BR_CMPL),
+      GENERIC_EVENT_PTR(PM_BR_MPRED_CMPL),
+      GENERIC_EVENT_PTR(PM_LD_REF_L1),
+      GENERIC_EVENT_PTR(PM_LD_MISS_L1_FIN),
+@@ -167,7 +167,7 @@ static struct attribute *power9_events_attr[] = {
+      CACHE_EVENT_PTR(PM_L2_ST_MISS),
+      CACHE_EVENT_PTR(PM_L2_ST),
+      CACHE_EVENT_PTR(PM_BR_MPRED_CMPL),
+-    CACHE_EVENT_PTR(PM_BRU_CMPL),
++    CACHE_EVENT_PTR(PM_BR_CMPL),
+      CACHE_EVENT_PTR(PM_DTLB_MISS),
+      CACHE_EVENT_PTR(PM_ITLB_MISS),
+      NULL
+@@ -231,7 +231,7 @@ static int power9_generic_events_dd1[] = {
+      [PERF_COUNT_HW_STALLED_CYCLES_FRONTEND] =    PM_ICT_NOSLOT_CYC,
+      [PERF_COUNT_HW_STALLED_CYCLES_BACKEND] =    PM_CMPLU_STALL,
+      [PERF_COUNT_HW_INSTRUCTIONS] =            PM_INST_DISP,
+-    [PERF_COUNT_HW_BRANCH_INSTRUCTIONS] =        PM_BRU_CMPL,
++    [PERF_COUNT_HW_BRANCH_INSTRUCTIONS] =        PM_BR_CMPL_ALT,
+      [PERF_COUNT_HW_BRANCH_MISSES] =            PM_BR_MPRED_CMPL,
+      [PERF_COUNT_HW_CACHE_REFERENCES] =        PM_LD_REF_L1,
+      [PERF_COUNT_HW_CACHE_MISSES] =            PM_LD_MISS_L1_FIN,
+@@ -242,7 +242,7 @@ static int power9_generic_events[] = {
+      [PERF_COUNT_HW_STALLED_CYCLES_FRONTEND] =    PM_ICT_NOSLOT_CYC,
+      [PERF_COUNT_HW_STALLED_CYCLES_BACKEND] =    PM_CMPLU_STALL,
+      [PERF_COUNT_HW_INSTRUCTIONS] =            PM_INST_CMPL,
+-    [PERF_COUNT_HW_BRANCH_INSTRUCTIONS] =        PM_BRU_CMPL,
++    [PERF_COUNT_HW_BRANCH_INSTRUCTIONS] =        PM_BR_CMPL,
+      [PERF_COUNT_HW_BRANCH_MISSES] =            PM_BR_MPRED_CMPL,
+      [PERF_COUNT_HW_CACHE_REFERENCES] =        PM_LD_REF_L1,
+      [PERF_COUNT_HW_CACHE_MISSES] =            PM_LD_MISS_L1_FIN,
+@@ -368,7 +368,7 @@ static int 
+power9_cache_events[C(MAX)][C(OP_MAX)][C(RESULT_MAX)] = {
+      },
+      [ C(BPU) ] = {
+          [ C(OP_READ) ] = {
+-            [ C(RESULT_ACCESS) ] = PM_BRU_CMPL,
++            [ C(RESULT_ACCESS) ] = PM_BR_CMPL,
+              [ C(RESULT_MISS)   ] = PM_BR_MPRED_CMPL,
+          },
+          [ C(OP_WRITE) ] = {
+@@ -453,6 +453,10 @@ static int __init init_power9_pmu(void)
+           * sampling scenarios in power9 DD1, instead use PM_INST_DISP.
+           */
+          EVENT_VAR(PM_INST_CMPL, _g).id = PM_INST_DISP;
++        /*
++         * This is a hack, but then this is only for DD1
++         */
++        EVENT_VAR(PM_BR_CMPL, _g).id = PM_BR_CMPL_ALT;
+          rc = register_power_pmu(&power9_isa207_pmu);
+      } else {
+          rc = register_power_pmu(&power9_pmu);
