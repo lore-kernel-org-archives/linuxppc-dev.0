@@ -1,25 +1,37 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
- [IPv6:2607:f8b0:400e:c00::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <linuxram@us.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wryRt69y0zDq7c
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jun 2017 03:20:58 +1000 (AEST)
-Received: by mail-pf0-x242.google.com with SMTP id d5so18259613pfe.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Jun 2017 10:20:58 -0700 (PDT)
-Date: Tue, 20 Jun 2017 03:20:43 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 3/9] powerpc/64s: SLB miss already has CTR saved for
- relocatable kernel
-Message-ID: <20170620032043.13bbd2fa@roar.ozlabs.ibm.com>
-In-Reply-To: <877f08urp9.fsf@concordia.ellerman.id.au>
-References: <20170521131550.25813-1-npiggin@gmail.com>
- <20170521131550.25813-4-npiggin@gmail.com>
- <877f08urp9.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wrzBn0pLczDq7c
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jun 2017 03:54:40 +1000 (AEST)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v5JHrlRw109038
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Jun 2017 13:54:37 -0400
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2b64sdsja5-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Jun 2017 13:54:37 -0400
+Received: from localhost
+ by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <linuxram@us.ibm.com>;
+ Mon, 19 Jun 2017 11:54:36 -0600
+Date: Mon, 19 Jun 2017 10:54:21 -0700
+From: Ram Pai <linuxram@us.ibm.com>
+To: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>, paulus@samba.org,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] powerpc/mm/hash: Free the subpage_prot_table correctlyy
+Reply-To: Ram Pai <linuxram@us.ibm.com>
+References: <1497709855-25788-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <20170617160019.GB5845@ram.oc3035372033.ibm.com>
+ <c73262b8-7be5-6816-c743-9cad10c045da@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <c73262b8-7be5-6816-c743-9cad10c045da@linux.vnet.ibm.com>
+Message-Id: <20170619175421.GC5845@ram.oc3035372033.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,41 +41,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 19 Jun 2017 21:45:06 +1000
-Michael Ellerman <mpe@ellerman.id.au> wrote:
-
-> Nicholas Piggin <npiggin@gmail.com> writes:
+On Mon, Jun 19, 2017 at 12:52:14PM +0530, Anshuman Khandual wrote:
+> On 06/17/2017 09:30 PM, Ram Pai wrote:
+> > 
+> > This fix, resolved the OOM seen while running subpage_prot selftest, in a
+> > infinite loop.
 > 
-> > The EXCEPTION_PROLOG_1 used by SLB miss already saves CTR when the
-> > kernel is built with CONFIG_RELOCATABLE. So it does not have to be
-> > saved and reloaded when branching to slb_miss_realmode. It can be
-> > restored from the PACA as usual.
-> >
-> > Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-> > ---
-> >  arch/powerpc/kernel/exceptions-64s.S | 13 +++++--------
-> >  1 file changed, 5 insertions(+), 8 deletions(-)
-> >
-> > diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-> > index a4a71bce35d6..486e205cc762 100644
-> > --- a/arch/powerpc/kernel/exceptions-64s.S
-> > +++ b/arch/powerpc/kernel/exceptions-64s.S
-> > @@ -519,7 +519,7 @@ EXC_REAL_BEGIN(data_access_slb, 0x380, 0x80)
-> >  	 * because the distance from here to there depends on where
-> >  	 * the kernel ends up being put.
-> >  	 */
-> > -	mfctr	r11
-> > +	/* CTR is saved if RELOCATABLE */
-> >  	LOAD_HANDLER(r10, slb_miss_realmode)
-> >  	mtctr	r10
-> >  	bctr  
-> 
-> AFAICS these can all use BRANCH_TO_COMMON().
-> 
-> So I'll drop all the comment additions from this and do a follow-up to
-> switch to BRANCH_TO_COMMON().
+> The OOM is caused because of memory leaks by wrong freeing
+> of the subpage_prot_table previously ?
 
-That will tidy up those ifdefs nicely. Good catch.
+No. Rather, not freeing up of the memory allocated previously
+and tracked through the subpage_prot_table.
 
-Thanks,
-Nick
+RP
