@@ -1,16 +1,20 @@
-Return-Path: <anton@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wrcZc07nJzDq7c
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Jun 2017 13:55:36 +1000 (AEST)
-From: Anton Blanchard <anton@ozlabs.org>
-To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- mikey@neuling.org, maddy@linux.vnet.ibm.com
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc/perf: Fix POWER9 branch event
-Date: Mon, 19 Jun 2017 13:55:26 +1000
-Message-Id: <20170619035526.7070-1-anton@ozlabs.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wrdlr1wC9zDq7c
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Jun 2017 14:48:40 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [PATCH 4/9] powerpc/64s: SLB miss handler avoid r3 save/restore
+In-Reply-To: <20170521131550.25813-5-npiggin@gmail.com>
+References: <20170521131550.25813-1-npiggin@gmail.com>
+ <20170521131550.25813-5-npiggin@gmail.com>
+Date: Mon, 19 Jun 2017 14:48:37 +1000
+Message-ID: <87tw3cvaze.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,103 +24,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Anton Blanchard <anton@samba.org>
+Nicholas Piggin <npiggin@gmail.com> writes:
 
-The POWER9 branch event is wrong, and we always get a count of zero:
+> diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+> index 486e205cc762..6ba4c4c6ae69 100644
+> --- a/arch/powerpc/kernel/exceptions-64s.S
+> +++ b/arch/powerpc/kernel/exceptions-64s.S
+> @@ -625,6 +625,9 @@ EXC_COMMON_BEGIN(slb_miss_realmode)
+>  	stw	r9,PACA_EXSLB+EX_CCR(r13)	/* save CR in exc. frame */
+>  	std	r10,PACA_EXSLB+EX_LR(r13)	/* save LR */
+>  
+> +	andi.	r11,r11,MSR_RI	/* check for unrecoverable exception */
+> +	beq-	2f
+> +
+>  	crset	4*cr0+eq
+>  #ifdef CONFIG_PPC_STD_MMU_64
+>  BEGIN_MMU_FTR_SECTION
+> @@ -638,9 +641,6 @@ END_MMU_FTR_SECTION_IFCLR(MMU_FTR_TYPE_RADIX)
+>  
+>  	beq-	8f		/* if bad address, make full stack frame */
+>  
+> -	andi.	r10,r12,MSR_RI	/* check for unrecoverable exception */
+> -	beq-	2f
+> -
 
-...
-                 0      branches
-              3844      branch-misses             #    0.00% of all branches
+Moving that check before slb_allocate_realmode() makes me a bit nervous.
 
-Replace it with the correct event.
+It's already a bug if we're taking an SLB miss with RI off, but I'm
+worried that by not doing the SLB allocate we might turn what would be a
+regular oops into an infinite loop of SLB misses. But my brain is too
+sleep deprived today to decide either way.
 
-Fixes: d89f473ff6f8 ("powerpc/perf: Fix PM_BRU_CMPL event code for power9")
-Cc: stable@vger.kernel.org
-Signed-off-by: Anton Blanchard <anton@samba.org>
----
- arch/powerpc/perf/power9-events-list.h |  2 +-
- arch/powerpc/perf/power9-pmu.c         | 14 +++++++-------
- 2 files changed, 8 insertions(+), 8 deletions(-)
-
-diff --git a/arch/powerpc/perf/power9-events-list.h b/arch/powerpc/perf/power9-events-list.h
-index e9e417eefa59..ebec41aa7c7d 100644
---- a/arch/powerpc/perf/power9-events-list.h
-+++ b/arch/powerpc/perf/power9-events-list.h
-@@ -16,7 +16,7 @@ EVENT(PM_CYC,					0x0001e)
- EVENT(PM_ICT_NOSLOT_CYC,			0x100f8)
- EVENT(PM_CMPLU_STALL,				0x1e054)
- EVENT(PM_INST_CMPL,				0x00002)
--EVENT(PM_BRU_CMPL,				0x10012)
-+EVENT(PM_BR_CMPL,				0x4d05e)
- EVENT(PM_BR_MPRED_CMPL,				0x400f6)
- 
- /* All L1 D cache load references counted at finish, gated by reject */
-diff --git a/arch/powerpc/perf/power9-pmu.c b/arch/powerpc/perf/power9-pmu.c
-index b9168163b2b2..90abbebf538f 100644
---- a/arch/powerpc/perf/power9-pmu.c
-+++ b/arch/powerpc/perf/power9-pmu.c
-@@ -125,7 +125,7 @@ GENERIC_EVENT_ATTR(cpu-cycles,			PM_CYC);
- GENERIC_EVENT_ATTR(stalled-cycles-frontend,	PM_ICT_NOSLOT_CYC);
- GENERIC_EVENT_ATTR(stalled-cycles-backend,	PM_CMPLU_STALL);
- GENERIC_EVENT_ATTR(instructions,		PM_INST_CMPL);
--GENERIC_EVENT_ATTR(branch-instructions,		PM_BRU_CMPL);
-+GENERIC_EVENT_ATTR(branch-instructions,		PM_BR_CMPL);
- GENERIC_EVENT_ATTR(branch-misses,		PM_BR_MPRED_CMPL);
- GENERIC_EVENT_ATTR(cache-references,		PM_LD_REF_L1);
- GENERIC_EVENT_ATTR(cache-misses,		PM_LD_MISS_L1_FIN);
-@@ -143,7 +143,7 @@ CACHE_EVENT_ATTR(LLC-prefetches,		PM_L3_PREF_ALL);
- CACHE_EVENT_ATTR(LLC-store-misses,		PM_L2_ST_MISS);
- CACHE_EVENT_ATTR(LLC-stores,			PM_L2_ST);
- CACHE_EVENT_ATTR(branch-load-misses,		PM_BR_MPRED_CMPL);
--CACHE_EVENT_ATTR(branch-loads,			PM_BRU_CMPL);
-+CACHE_EVENT_ATTR(branch-loads,			PM_BR_CMPL);
- CACHE_EVENT_ATTR(dTLB-load-misses,		PM_DTLB_MISS);
- CACHE_EVENT_ATTR(iTLB-load-misses,		PM_ITLB_MISS);
- 
-@@ -152,7 +152,7 @@ static struct attribute *power9_events_attr[] = {
- 	GENERIC_EVENT_PTR(PM_ICT_NOSLOT_CYC),
- 	GENERIC_EVENT_PTR(PM_CMPLU_STALL),
- 	GENERIC_EVENT_PTR(PM_INST_CMPL),
--	GENERIC_EVENT_PTR(PM_BRU_CMPL),
-+	GENERIC_EVENT_PTR(PM_BR_CMPL),
- 	GENERIC_EVENT_PTR(PM_BR_MPRED_CMPL),
- 	GENERIC_EVENT_PTR(PM_LD_REF_L1),
- 	GENERIC_EVENT_PTR(PM_LD_MISS_L1_FIN),
-@@ -169,7 +169,7 @@ static struct attribute *power9_events_attr[] = {
- 	CACHE_EVENT_PTR(PM_L2_ST_MISS),
- 	CACHE_EVENT_PTR(PM_L2_ST),
- 	CACHE_EVENT_PTR(PM_BR_MPRED_CMPL),
--	CACHE_EVENT_PTR(PM_BRU_CMPL),
-+	CACHE_EVENT_PTR(PM_BR_CMPL),
- 	CACHE_EVENT_PTR(PM_DTLB_MISS),
- 	CACHE_EVENT_PTR(PM_ITLB_MISS),
- 	NULL
-@@ -233,7 +233,7 @@ static int power9_generic_events_dd1[] = {
- 	[PERF_COUNT_HW_STALLED_CYCLES_FRONTEND] =	PM_ICT_NOSLOT_CYC,
- 	[PERF_COUNT_HW_STALLED_CYCLES_BACKEND] =	PM_CMPLU_STALL,
- 	[PERF_COUNT_HW_INSTRUCTIONS] =			PM_INST_DISP,
--	[PERF_COUNT_HW_BRANCH_INSTRUCTIONS] =		PM_BRU_CMPL,
-+	[PERF_COUNT_HW_BRANCH_INSTRUCTIONS] =		PM_BR_CMPL,
- 	[PERF_COUNT_HW_BRANCH_MISSES] =			PM_BR_MPRED_CMPL,
- 	[PERF_COUNT_HW_CACHE_REFERENCES] =		PM_LD_REF_L1,
- 	[PERF_COUNT_HW_CACHE_MISSES] =			PM_LD_MISS_L1_FIN,
-@@ -244,7 +244,7 @@ static int power9_generic_events[] = {
- 	[PERF_COUNT_HW_STALLED_CYCLES_FRONTEND] =	PM_ICT_NOSLOT_CYC,
- 	[PERF_COUNT_HW_STALLED_CYCLES_BACKEND] =	PM_CMPLU_STALL,
- 	[PERF_COUNT_HW_INSTRUCTIONS] =			PM_INST_CMPL,
--	[PERF_COUNT_HW_BRANCH_INSTRUCTIONS] =		PM_BRU_CMPL,
-+	[PERF_COUNT_HW_BRANCH_INSTRUCTIONS] =		PM_BR_CMPL,
- 	[PERF_COUNT_HW_BRANCH_MISSES] =			PM_BR_MPRED_CMPL,
- 	[PERF_COUNT_HW_CACHE_REFERENCES] =		PM_LD_REF_L1,
- 	[PERF_COUNT_HW_CACHE_MISSES] =			PM_LD_MISS_L1_FIN,
-@@ -370,7 +370,7 @@ static int power9_cache_events[C(MAX)][C(OP_MAX)][C(RESULT_MAX)] = {
- 	},
- 	[ C(BPU) ] = {
- 		[ C(OP_READ) ] = {
--			[ C(RESULT_ACCESS) ] = PM_BRU_CMPL,
-+			[ C(RESULT_ACCESS) ] = PM_BR_CMPL,
- 			[ C(RESULT_MISS)   ] = PM_BR_MPRED_CMPL,
- 		},
- 		[ C(OP_WRITE) ] = {
--- 
-2.11.0
+cheers
