@@ -1,20 +1,43 @@
-Return-Path: <herbert@gondor.apana.org.au>
-Received: from deadmen.hmeau.com (orcrist.hmeau.com [104.223.48.154])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <khandual@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wrhf10HXVzDq7c
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Jun 2017 16:58:48 +1000 (AEST)
-Date: Mon, 19 Jun 2017 14:38:24 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Martin Hicks <mort@bork.org>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-crypto@vger.kernel.org,
- stable@vger.kernel.org, horia.geanta@nxp.com
-Subject: Re: [PATCH v2] crypto: talitos: Extend max key length for
- SHA384/512-HMAC and AEAD
-Message-ID: <20170619063824.GA13667@gondor.apana.org.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wrj9R23CMzDq7c
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Jun 2017 17:22:34 +1000 (AEST)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v5J7JRVZ087367
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Jun 2017 03:22:32 -0400
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2b5uhb9y2y-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Jun 2017 03:22:32 -0400
+Received: from localhost
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
+ Mon, 19 Jun 2017 17:22:25 +1000
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v5J7MLcX6291878
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Jun 2017 17:22:21 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v5J7MDEd022460
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Jun 2017 17:22:13 +1000
+Subject: Re: [PATCH] powerpc/mm/hash: Free the subpage_prot_table correctly
+To: Ram Pai <linuxram@us.ibm.com>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+References: <1497709855-25788-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <20170617160019.GB5845@ram.oc3035372033.ibm.com>
+Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Date: Mon, 19 Jun 2017 12:52:14 +0530
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170502133835.GA17402@darwin.bork.org>
+In-Reply-To: <20170617160019.GB5845@ram.oc3035372033.ibm.com>
+Content-Type: text/plain; charset=windows-1252
+Message-Id: <c73262b8-7be5-6816-c743-9cad10c045da@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,21 +47,10 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Martin Hicks <mort@bork.org> wrote:
+On 06/17/2017 09:30 PM, Ram Pai wrote:
 > 
-> An updated patch that also handles the additional key length requirements
-> for the AEAD algorithms.
-> 
-> The max keysize is not 96.  For SHA384/512 it's 128, and for the AEAD
-> algorithms it's longer still.  Extend the max keysize for the
-> AEAD size for AES256 + HMAC(SHA512).
-> 
-> Cc: <stable@vger.kernel.org> # 3.6+
-> Fixes: 357fb60502ede ("crypto: talitos - add sha224, sha384 and sha512 to existing AEAD algorithms")
-> Signed-off-by: Martin Hicks <mort@bork.org>
+> This fix, resolved the OOM seen while running subpage_prot selftest, in a
+> infinite loop.
 
-Patch applied.  Thanks.
--- 
-Email: Herbert Xu <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+The OOM is caused because of memory leaks by wrong freeing
+of the subpage_prot_table previously ?
