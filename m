@@ -1,27 +1,24 @@
-Return-Path: <robin.murphy@arm.com>
-Received: from foss.arm.com (foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 3wrvbv20WvzDq7c
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jun 2017 01:12:42 +1000 (AEST)
-Subject: Re: [PATCH 06/44] iommu/dma: don't rely on DMA_ERROR_CODE
-To: Christoph Hellwig <hch@lst.de>, x86@kernel.org,
- linux-arm-kernel@lists.infradead.org, xen-devel@lists.xenproject.org,
- linux-c6x-dev@linux-c6x.org, linux-hexagon@vger.kernel.org,
- linux-ia64@vger.kernel.org, linux-mips@linux-mips.org,
- openrisc@lists.librecores.org, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
- sparclinux@vger.kernel.org, linux-xtensa@linux-xtensa.org,
- dmaengine@vger.kernel.org, linux-tegra@vger.kernel.org,
- dri-devel@lists.freedesktop.org, linux-samsung-soc@vger.kernel.org,
- iommu@lists.linux-foundation.org, netdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-References: <20170616181059.19206-1-hch@lst.de>
- <20170616181059.19206-7-hch@lst.de>
-From: Robin Murphy <robin.murphy@arm.com>
-Message-ID: <18ff1d49-4a13-3dea-8a4d-fb778aec37dc@arm.com>
-Date: Mon, 19 Jun 2017 16:12:32 +0100
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
+ [IPv6:2607:f8b0:400e:c05::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wrxsV6fc9zDq7c
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jun 2017 02:54:38 +1000 (AEST)
+Received: by mail-pg0-x243.google.com with SMTP id e187so8236499pgc.3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Jun 2017 09:54:38 -0700 (PDT)
+Date: Tue, 20 Jun 2017 02:54:25 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 4/9] powerpc/64s: SLB miss handler avoid r3 save/restore
+Message-ID: <20170620025425.3dc050c8@roar.ozlabs.ibm.com>
+In-Reply-To: <87tw3cvaze.fsf@concordia.ellerman.id.au>
+References: <20170521131550.25813-1-npiggin@gmail.com>
+ <20170521131550.25813-5-npiggin@gmail.com>
+ <87tw3cvaze.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <20170616181059.19206-7-hch@lst.de>
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,103 +28,100 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 16/06/17 19:10, Christoph Hellwig wrote:
-> DMA_ERROR_CODE is not a public API and will go away soon.  dma dma-iommu
-> driver already implements a proper ->mapping_error method, so it's only
-> using the value internally.  Add a new local define using the value
-> that arm64 which is the only current user of dma-iommu.
+On Mon, 19 Jun 2017 14:48:37 +1000
+Michael Ellerman <mpe@ellerman.id.au> wrote:
 
-I was angling at just open-coding 0/!dma_addr/etc. for simplicity rather
-than having anything #defined at all - nothing except the 4th and final
-hunks actually have any relevance to  dma_mapping_error(), and I reckon
-it's plenty clear enough in context. The rest is just proactively
-blatting address arguments with "arbitrary definitely-invalid value",
-which is more paranoia than anything else (and arguably unnecessary).
-
-It's not the biggest deal, though, so either way:
-
-Reviewed-by: Robin Murphy <robin.murphy@arm.com>
-
-> Signed-off-by: Christoph Hellwig <hch@lst.de>
-> ---
->  drivers/iommu/dma-iommu.c | 18 ++++++++++--------
->  1 file changed, 10 insertions(+), 8 deletions(-)
+> Nicholas Piggin <npiggin@gmail.com> writes:
 > 
-> diff --git a/drivers/iommu/dma-iommu.c b/drivers/iommu/dma-iommu.c
-> index 62618e77bedc..9403336f1fa6 100644
-> --- a/drivers/iommu/dma-iommu.c
-> +++ b/drivers/iommu/dma-iommu.c
-> @@ -31,6 +31,8 @@
->  #include <linux/scatterlist.h>
->  #include <linux/vmalloc.h>
->  
-> +#define IOMMU_MAPPING_ERROR	0
-> +
->  struct iommu_dma_msi_page {
->  	struct list_head	list;
->  	dma_addr_t		iova;
-> @@ -500,7 +502,7 @@ void iommu_dma_free(struct device *dev, struct page **pages, size_t size,
->  {
->  	__iommu_dma_unmap(iommu_get_domain_for_dev(dev), *handle, size);
->  	__iommu_dma_free_pages(pages, PAGE_ALIGN(size) >> PAGE_SHIFT);
-> -	*handle = DMA_ERROR_CODE;
-> +	*handle = IOMMU_MAPPING_ERROR;
->  }
->  
->  /**
-> @@ -533,7 +535,7 @@ struct page **iommu_dma_alloc(struct device *dev, size_t size, gfp_t gfp,
->  	dma_addr_t iova;
->  	unsigned int count, min_size, alloc_sizes = domain->pgsize_bitmap;
->  
-> -	*handle = DMA_ERROR_CODE;
-> +	*handle = IOMMU_MAPPING_ERROR;
->  
->  	min_size = alloc_sizes & -alloc_sizes;
->  	if (min_size < PAGE_SIZE) {
-> @@ -627,11 +629,11 @@ static dma_addr_t __iommu_dma_map(struct device *dev, phys_addr_t phys,
->  
->  	iova = iommu_dma_alloc_iova(domain, size, dma_get_mask(dev), dev);
->  	if (!iova)
-> -		return DMA_ERROR_CODE;
-> +		return IOMMU_MAPPING_ERROR;
->  
->  	if (iommu_map(domain, iova, phys - iova_off, size, prot)) {
->  		iommu_dma_free_iova(cookie, iova, size);
-> -		return DMA_ERROR_CODE;
-> +		return IOMMU_MAPPING_ERROR;
->  	}
->  	return iova + iova_off;
->  }
-> @@ -671,7 +673,7 @@ static int __finalise_sg(struct device *dev, struct scatterlist *sg, int nents,
->  
->  		s->offset += s_iova_off;
->  		s->length = s_length;
-> -		sg_dma_address(s) = DMA_ERROR_CODE;
-> +		sg_dma_address(s) = IOMMU_MAPPING_ERROR;
->  		sg_dma_len(s) = 0;
->  
->  		/*
-> @@ -714,11 +716,11 @@ static void __invalidate_sg(struct scatterlist *sg, int nents)
->  	int i;
->  
->  	for_each_sg(sg, s, nents, i) {
-> -		if (sg_dma_address(s) != DMA_ERROR_CODE)
-> +		if (sg_dma_address(s) != IOMMU_MAPPING_ERROR)
->  			s->offset += sg_dma_address(s);
->  		if (sg_dma_len(s))
->  			s->length = sg_dma_len(s);
-> -		sg_dma_address(s) = DMA_ERROR_CODE;
-> +		sg_dma_address(s) = IOMMU_MAPPING_ERROR;
->  		sg_dma_len(s) = 0;
->  	}
->  }
-> @@ -836,7 +838,7 @@ void iommu_dma_unmap_resource(struct device *dev, dma_addr_t handle,
->  
->  int iommu_dma_mapping_error(struct device *dev, dma_addr_t dma_addr)
->  {
-> -	return dma_addr == DMA_ERROR_CODE;
-> +	return dma_addr == IOMMU_MAPPING_ERROR;
->  }
->  
->  static struct iommu_dma_msi_page *iommu_dma_get_msi_page(struct device *dev,
+> > diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+> > index 486e205cc762..6ba4c4c6ae69 100644
+> > --- a/arch/powerpc/kernel/exceptions-64s.S
+> > +++ b/arch/powerpc/kernel/exceptions-64s.S
+> > @@ -625,6 +625,9 @@ EXC_COMMON_BEGIN(slb_miss_realmode)
+> >  	stw	r9,PACA_EXSLB+EX_CCR(r13)	/* save CR in exc. frame */
+> >  	std	r10,PACA_EXSLB+EX_LR(r13)	/* save LR */
+> >  
+> > +	andi.	r11,r11,MSR_RI	/* check for unrecoverable exception */
+> > +	beq-	2f
+> > +
+> >  	crset	4*cr0+eq
+> >  #ifdef CONFIG_PPC_STD_MMU_64
+> >  BEGIN_MMU_FTR_SECTION
+> > @@ -638,9 +641,6 @@ END_MMU_FTR_SECTION_IFCLR(MMU_FTR_TYPE_RADIX)
+> >  
+> >  	beq-	8f		/* if bad address, make full stack frame */
+> >  
+> > -	andi.	r10,r12,MSR_RI	/* check for unrecoverable exception */
+> > -	beq-	2f
+> > -  
 > 
+> Moving that check before slb_allocate_realmode() makes me a bit nervous.
+> 
+> It's already a bug if we're taking an SLB miss with RI off, but I'm
+> worried that by not doing the SLB allocate we might turn what would be a
+> regular oops into an infinite loop of SLB misses. But my brain is too
+> sleep deprived today to decide either way.
+
+After some offline back and forth over this, I think it's agreed we
+should try to install the SLB entry before exiting. If nothing else
+because that's what the existing code does.
+
+So this incremental patch should restore that behaviour.
+
+Some observations/comments:
+
+- The additional mtcrf instruction may be getting close to the point
+  where mtcr / mtcrf of multiple fields is faster. However it's not
+  obviously past there yet on either POWER8 or 9, so I've kept the
+  singe-field mtcrf for now.
+
+- unrecov_slb possibly should use the emergency stack. There's a
+  limit for how robust we can try to be, but with testing it wasn't
+  too hard to put the code (+/- this patch) into an infinite SLB
+  loop here by having something "interesting" in r1 when we take
+  an RI=0 SLB fault.
+
+Thanks,
+Nick
+
+---
+ arch/powerpc/kernel/exceptions-64s.S | 11 ++++++++++-
+ 1 file changed, 10 insertions(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+index 6ba4c4c6ae69..575eed979f41 100644
+--- a/arch/powerpc/kernel/exceptions-64s.S
++++ b/arch/powerpc/kernel/exceptions-64s.S
+@@ -625,8 +625,14 @@ EXC_COMMON_BEGIN(slb_miss_realmode)
+ 	stw	r9,PACA_EXSLB+EX_CCR(r13)	/* save CR in exc. frame */
+ 	std	r10,PACA_EXSLB+EX_LR(r13)	/* save LR */
+ 
++	/*
++	 * Test MSR_RI before calling slb_allocate_realmode, because the
++	 * MSR in r11 gets clobbered. However we still want to allocate
++	 * SLB in case MSR_RI=0, to minimise the risk of getting stuck in
++	 * recursive SLB faults. So use cr5 for this, which is preserved.
++	 */
+ 	andi.	r11,r11,MSR_RI	/* check for unrecoverable exception */
+-	beq-	2f
++	cmpdi	cr5,r11,MSR_RI
+ 
+ 	crset	4*cr0+eq
+ #ifdef CONFIG_PPC_STD_MMU_64
+@@ -641,11 +647,14 @@ END_MMU_FTR_SECTION_IFCLR(MMU_FTR_TYPE_RADIX)
+ 
+ 	beq-	8f		/* if bad address, make full stack frame */
+ 
++	bne-	cr5,2f		/* if unrecoverable exception, oops */
++
+ 	/* All done -- return from exception. */
+ 
+ .machine	push
+ .machine	"power4"
+ 	mtcrf	0x80,r9
++	mtcrf	0x04,r9		/* MSR[RI] indication is in cr5 */
+ 	mtcrf	0x02,r9		/* I/D indication is in cr6 */
+ 	mtcrf	0x01,r9		/* slb_allocate uses cr0 and cr7 */
+ .machine	pop
+-- 
+2.11.0
