@@ -3,21 +3,21 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ws4t61XzCzDqgf
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jun 2017 08:10:38 +1000 (AEST)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ws4xW4mqlzDqgX
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jun 2017 08:13:35 +1000 (AEST)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v5JM9JS2017476
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Jun 2017 18:10:36 -0400
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2b69tv7y6e-1
+ v5JMD9FQ072472
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Jun 2017 18:13:33 -0400
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2b6chd7p05-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Jun 2017 18:10:35 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Jun 2017 18:13:33 -0400
 Received: from localhost
- by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
- Mon, 19 Jun 2017 16:10:35 -0600
+ Mon, 19 Jun 2017 16:13:32 -0600
 To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
@@ -37,11 +37,11 @@ Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Rashmica Gupta <rashmicy@gmail.com>, Ingo Molnar <mingo@kernel.org>
 In-Reply-To: <081bb19d-3008-842d-6872-f51fccb94139@linux.vnet.ibm.com>
 From: Michael Bringmann <mwb@linux.vnet.ibm.com>
-Subject: [PATCH V6 1/2] powerpc/numa: Update CPU topology when VPHN enabled
-Date: Mon, 19 Jun 2017 17:10:29 -0500
+Subject: [PATCH V6 2/2] powerpc/numa: Update CPU topology when VPHN enabled
+Date: Mon, 19 Jun 2017 17:13:27 -0500
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Message-Id: <2b085918-be91-7654-9e1c-eacd9b8fa56b@linux.vnet.ibm.com>
+Message-Id: <c37014ef-9947-f0d2-02a3-e230dd9504b3@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -193,6 +193,14 @@ index e6ee829..164fbd5 100644
  		cpu = cpu_last_thread_sibling(cpu);
  	}
  
+-- 
+Michael W. Bringmann
+Linux Technology Center
+IBM Corporation
+Tie-Line  363-5196
+External: (512) 286-5196
+Cell:       (512) 466-0650
+mwb@linux.vnet.ibm.com
 +	if (i)
 +		updates[i-1].next = NULL;
 +
