@@ -2,21 +2,18 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wrp7V1nW5zDqgX
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Jun 2017 21:06:14 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wrq0Q4Ry6zDqMP
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Jun 2017 21:45:10 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Ram Pai <linuxram@us.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Cc: benh@kernel.crashing.org, paulus@samba.org, khandual@linux.vnet.ibm.com,
- aneesh.kumar@linux.vnet.ibm.com, bsingharora@gmail.com, dave.hansen@intel.com,
- hbabu@us.ibm.com, linuxram@us.ibm.com
-Subject: Re: [RFC v2 10/12] powerpc: Read AMR only if pkey-violation caused
- the exception.
-In-Reply-To: <1497671564-20030-11-git-send-email-linuxram@us.ibm.com>
-References: <1497671564-20030-1-git-send-email-linuxram@us.ibm.com>
- <1497671564-20030-11-git-send-email-linuxram@us.ibm.com>
-Date: Mon, 19 Jun 2017 21:06:13 +1000
-Message-ID: <87bmpkuti2.fsf@concordia.ellerman.id.au>
+To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [PATCH 3/9] powerpc/64s: SLB miss already has CTR saved for
+ relocatable kernel
+In-Reply-To: <20170521131550.25813-4-npiggin@gmail.com>
+References: <20170521131550.25813-1-npiggin@gmail.com>
+ <20170521131550.25813-4-npiggin@gmail.com>
+Date: Mon, 19 Jun 2017 21:45:06 +1000
+Message-ID: <877f08urp9.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,30 +25,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Ram Pai <linuxram@us.ibm.com> writes:
+Nicholas Piggin <npiggin@gmail.com> writes:
 
-> Signed-off-by: Ram Pai <linuxram@us.ibm.com>
+> The EXCEPTION_PROLOG_1 used by SLB miss already saves CTR when the
+> kernel is built with CONFIG_RELOCATABLE. So it does not have to be
+> saved and reloaded when branching to slb_miss_realmode. It can be
+> restored from the PACA as usual.
+>
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 > ---
->  arch/powerpc/kernel/exceptions-64s.S | 16 ++++++++++------
->  1 file changed, 10 insertions(+), 6 deletions(-)
+>  arch/powerpc/kernel/exceptions-64s.S | 13 +++++--------
+>  1 file changed, 5 insertions(+), 8 deletions(-)
 >
 > diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-> index 8db9ef8..a4de1b4 100644
+> index a4a71bce35d6..486e205cc762 100644
 > --- a/arch/powerpc/kernel/exceptions-64s.S
 > +++ b/arch/powerpc/kernel/exceptions-64s.S
-> @@ -493,13 +493,15 @@ EXC_COMMON_BEGIN(data_access_common)
->  	ld	r12,_MSR(r1)
->  	ld	r3,PACA_EXGEN+EX_DAR(r13)
->  	lwz	r4,PACA_EXGEN+EX_DSISR(r13)
-> +	std	r3,_DAR(r1)
-> +	std	r4,_DSISR(r1)
->  #ifdef CONFIG_PPC64_MEMORY_PROTECTION_KEYS
-> +	andis.  r0,r4,DSISR_KEYFAULT@h /* save AMR only if its a key fault */
-> +	beq+	1f
+> @@ -519,7 +519,7 @@ EXC_REAL_BEGIN(data_access_slb, 0x380, 0x80)
+>  	 * because the distance from here to there depends on where
+>  	 * the kernel ends up being put.
+>  	 */
+> -	mfctr	r11
+> +	/* CTR is saved if RELOCATABLE */
+>  	LOAD_HANDLER(r10, slb_miss_realmode)
+>  	mtctr	r10
+>  	bctr
 
-This seems to be incremental on top of one of your other patches.
+AFAICS these can all use BRANCH_TO_COMMON().
 
-But I don't see why, can you please just squash this into whatever patch
-adds this code in the first place.
+So I'll drop all the comment additions from this and do a follow-up to
+switch to BRANCH_TO_COMMON().
 
 cheers
