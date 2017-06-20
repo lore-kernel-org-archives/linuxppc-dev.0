@@ -1,43 +1,25 @@
-Return-Path: <shilpa.bhat@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-io0-x241.google.com (mail-io0-x241.google.com
+ [IPv6:2607:f8b0:4001:c06::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wsG8Z2xXSzDqjN
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jun 2017 15:08:46 +1000 (AEST)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v5K53p7F011585
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jun 2017 01:08:44 -0400
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2b6v07aqbc-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jun 2017 01:08:44 -0400
-Received: from localhost
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <shilpa.bhat@linux.vnet.ibm.com>;
- Tue, 20 Jun 2017 15:08:41 +1000
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v5K58cAc64946298
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jun 2017 15:08:38 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v5K58Tut021502
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jun 2017 15:08:30 +1000
-From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-To: linux@roeck-us.net, clg@kaod.org, stewart@linux.vnet.ibm.com
-Cc: jdelvare@suse.com, benh@kernel.crashing.org, paulus@samba.org,
- mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, svaidy@linux.vnet.ibm.com,
- ego@linux.vnet.ibm.com, linux-hwmon@vger.kernel.org,
- Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH V2 2/2] hwmon: (ibmpowernv) Add current(A) sensor
-Date: Tue, 20 Jun 2017 10:38:13 +0530
-In-Reply-To: <1497935293-31618-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
-References: <1497935293-31618-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
-Message-Id: <1497935293-31618-3-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wsGCV4VL4zDr3S
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jun 2017 15:11:18 +1000 (AEST)
+Received: by mail-io0-x241.google.com with SMTP id a96so13485678ioj.1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Jun 2017 22:11:18 -0700 (PDT)
+Message-ID: <1497935415.2255.1.camel@gmail.com>
+Subject: Re: [RFC v2 00/12] powerpc: Memory Protection Keys
+From: Balbir Singh <bsingharora@gmail.com>
+To: Ram Pai <linuxram@us.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ khandual@linux.vnet.ibm.com, aneesh.kumar@linux.vnet.ibm.com,
+ dave.hansen@intel.com, hbabu@us.ibm.com
+Date: Tue, 20 Jun 2017 15:10:15 +1000
+In-Reply-To: <1497671564-20030-1-git-send-email-linuxram@us.ibm.com>
+References: <1497671564-20030-1-git-send-email-linuxram@us.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,39 +29,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch exports current(A) sensors in inband sensors copied to
-main memory by OCC.
+On Fri, 2017-06-16 at 20:52 -0700, Ram Pai wrote:
+> Memory protection keys enable applications to protect its
+> address space from inadvertent access or corruption from
+> itself.
 
-Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
----
-Changes from V1:
-- Rebased on top of Cedric's patch to remove legay-compatible type for
-  the current(A) sensor.
+I presume by itself you mean protection between threads?
 
- drivers/hwmon/ibmpowernv.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+> 
+> The overall idea:
+> 
+>  A process allocates a   key  and associates it with
+>  a  address  range  within    its   address   space.
 
-diff --git a/drivers/hwmon/ibmpowernv.c b/drivers/hwmon/ibmpowernv.c
-index 6d8909c..9b11b13 100644
---- a/drivers/hwmon/ibmpowernv.c
-+++ b/drivers/hwmon/ibmpowernv.c
-@@ -50,6 +50,7 @@ enum sensors {
- 	TEMP,
- 	POWER_SUPPLY,
- 	POWER_INPUT,
-+	CURRENT,
- 	MAX_SENSOR_TYPE,
- };
- 
-@@ -75,7 +76,8 @@ enum sensors {
- 	{ "fan"   },
- 	{ "temp"  },
- 	{ "in"    },
--	{ "power" }
-+	{ "power" },
-+	{ "curr"  },
- };
- 
- struct sensor_data {
--- 
-1.8.3.1
+OK, so this is per VMA?
+
+>  The process  than  can  dynamically  set read/write 
+>  permissions on  the   key   without  involving  the 
+>  kernel.
+
+This bit is not clear, how can the key be set without
+involving the kernel? I presume you mean the key is set
+in the PTE's and the access protection values can be
+set without involving the kernel?
+
+ Any  code that  violates   the  permissions
+>  off the address space; as defined by its associated
+>  key, will receive a segmentation fault.
+> 
+> This patch series enables the feature on PPC64.
+> It is enabled on HPTE 64K-page platform.
+> 
+> ISA3.0 section 5.7.13 describes the detailed specifications.
+> 
+> 
+> Testing:
+> 	This patch series has passed all the protection key
+> 	tests available in  the selftests directory.
+> 	The tests are updated to work on both x86 and powerpc.
+
+Balbir
