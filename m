@@ -1,25 +1,15 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
- [IPv6:2607:f8b0:400e:c00::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wsQxF3kDbzDqhk
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jun 2017 21:44:33 +1000 (AEST)
-Received: by mail-pf0-x241.google.com with SMTP id s66so22299979pfs.2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jun 2017 04:44:33 -0700 (PDT)
-Date: Tue, 20 Jun 2017 21:44:16 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Abdul Haleem <abdhalee@linux.vnet.ibm.com>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, linux-kernel
- <linux-kernel@vger.kernel.org>, linux-next <linux-next@vger.kernel.org>,
- stephen Rothwell <sfr@canb.auug.org.au>, mpe <mpe@ellerman.id>,
- akpm@linux-foundation.org, sachinp <sachinp@linux.vnet.ibm.com>
-Subject: Re: [BUG][next-20170619][347de24] PowerPC boot fails with Oops
-Message-ID: <20170620214416.1d3b6373@roar.ozlabs.ibm.com>
-In-Reply-To: <1497943165.6789.10.camel@abdul.in.ibm.com>
-References: <1497943165.6789.10.camel@abdul.in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wsS3V0YwfzDqhk
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jun 2017 22:35:02 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: linuxppc-dev@ozlabs.org
+Cc: npiggin@gmail.com
+Subject: [PATCH 1/3] powerpc/64s: Use BRANCH_TO_COMMON() for slb_miss_realmode
+Date: Tue, 20 Jun 2017 22:34:55 +1000
+Message-Id: <1497962097-9402-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,42 +19,88 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 20 Jun 2017 12:49:25 +0530
-Abdul Haleem <abdhalee@linux.vnet.ibm.com> wrote:
+All the callers of slb_miss_realmode currently open code the #ifndef
+CONFIG_RELOCATABLE check and the branch via CTR in the RELOCATABLE case.
+We have a macro to do this, BRANCH_TO_COMMON(), so use it.
 
-> Hi,
-> 
-> commit: 347de24 (powerpc/64s: implement arch-specific hardlockup
-> watchdog)
-> 
-> linux-next fails to boot on PowerPC Bare-metal box.
-> 
-> Test: boot
-> Machine type: Power 8 Bare-metal
-> Kernel: 4.12.0-rc5-next-20170619
-> gcc: version 4.8.5
-> 
-> 
-> In file arch/powerpc/kernel/watchdog.c
-> 
-> void soft_nmi_interrupt(struct pt_regs *regs)
-> {
->     unsigned long flags;
->     int cpu = raw_smp_processor_id();
->     u64 tb;
-> 
->     if (!cpumask_test_cpu(cpu, &wd_cpus_enabled))
->         return;
-> 
-> >>> nmi_enter();  
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/kernel/exceptions-64s.S | 42 ++++--------------------------------
+ 1 file changed, 4 insertions(+), 38 deletions(-)
 
-Thanks for the report.
-
-This is due to emergency stacks not zeroing preempt_count, so they get
-garbage here, and it just trips the BUG_ON(in_nmi()) check.
-
-Don't think it's a bug in the proposed new powerpc watchdog. (at least
-I was able to reproduce your bug and fix it by fixing the stack init).
-
-Thanks,
-Nick
+diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+index ed8628c6f0f4..7bdfddbe0328 100644
+--- a/arch/powerpc/kernel/exceptions-64s.S
++++ b/arch/powerpc/kernel/exceptions-64s.S
+@@ -514,18 +514,7 @@ EXC_REAL_BEGIN(data_access_slb, 0x380, 0x80)
+ 	mfspr	r3,SPRN_DAR
+ 	mfspr	r11,SPRN_SRR1
+ 	crset	4*cr6+eq
+-#ifndef CONFIG_RELOCATABLE
+-	b	slb_miss_realmode
+-#else
+-	/*
+-	 * We can't just use a direct branch to slb_miss_realmode
+-	 * because the distance from here to there depends on where
+-	 * the kernel ends up being put.
+-	 */
+-	LOAD_HANDLER(r10, slb_miss_realmode)
+-	mtctr	r10
+-	bctr
+-#endif
++	BRANCH_TO_COMMON(r10, slb_miss_realmode)
+ EXC_REAL_END(data_access_slb, 0x380, 0x80)
+ 
+ EXC_VIRT_BEGIN(data_access_slb, 0x4380, 0x80)
+@@ -536,18 +525,7 @@ EXC_VIRT_BEGIN(data_access_slb, 0x4380, 0x80)
+ 	mfspr	r3,SPRN_DAR
+ 	mfspr	r11,SPRN_SRR1
+ 	crset	4*cr6+eq
+-#ifndef CONFIG_RELOCATABLE
+-	b	slb_miss_realmode
+-#else
+-	/*
+-	 * We can't just use a direct branch to slb_miss_realmode
+-	 * because the distance from here to there depends on where
+-	 * the kernel ends up being put.
+-	 */
+-	LOAD_HANDLER(r10, slb_miss_realmode)
+-	mtctr	r10
+-	bctr
+-#endif
++	BRANCH_TO_COMMON(r10, slb_miss_realmode)
+ EXC_VIRT_END(data_access_slb, 0x4380, 0x80)
+ TRAMP_KVM_SKIP(PACA_EXSLB, 0x380)
+ 
+@@ -580,13 +558,7 @@ EXC_REAL_BEGIN(instruction_access_slb, 0x480, 0x80)
+ 	mfspr	r3,SPRN_SRR0		/* SRR0 is faulting address */
+ 	mfspr	r11,SPRN_SRR1
+ 	crclr	4*cr6+eq
+-#ifndef CONFIG_RELOCATABLE
+-	b	slb_miss_realmode
+-#else
+-	LOAD_HANDLER(r10, slb_miss_realmode)
+-	mtctr	r10
+-	bctr
+-#endif
++	BRANCH_TO_COMMON(r10, slb_miss_realmode)
+ EXC_REAL_END(instruction_access_slb, 0x480, 0x80)
+ 
+ EXC_VIRT_BEGIN(instruction_access_slb, 0x4480, 0x80)
+@@ -597,13 +569,7 @@ EXC_VIRT_BEGIN(instruction_access_slb, 0x4480, 0x80)
+ 	mfspr	r3,SPRN_SRR0		/* SRR0 is faulting address */
+ 	mfspr	r11,SPRN_SRR1
+ 	crclr	4*cr6+eq
+-#ifndef CONFIG_RELOCATABLE
+-	b	slb_miss_realmode
+-#else
+-	LOAD_HANDLER(r10, slb_miss_realmode)
+-	mtctr	r10
+-	bctr
+-#endif
++	BRANCH_TO_COMMON(r10, slb_miss_realmode)
+ EXC_VIRT_END(instruction_access_slb, 0x4480, 0x80)
+ TRAMP_KVM(PACA_EXSLB, 0x480)
+ 
+-- 
+2.7.4
