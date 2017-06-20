@@ -1,18 +1,30 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <hch@lst.de>
+Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wsS3Y40qZzDqhy
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jun 2017 22:35:05 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org
-Cc: npiggin@gmail.com
-Subject: [PATCH 3/3] powerpc/64s: Rename slb_allocate_realmode() to
- slb_allocate()
-Date: Tue, 20 Jun 2017 22:34:57 +1000
-Message-Id: <1497962097-9402-3-git-send-email-mpe@ellerman.id.au>
-In-Reply-To: <1497962097-9402-1-git-send-email-mpe@ellerman.id.au>
-References: <1497962097-9402-1-git-send-email-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wsSCC6np1zDqhl
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jun 2017 22:41:43 +1000 (AEST)
+Date: Tue, 20 Jun 2017 14:41:40 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: Stephen Rothwell <sfr@canb.auug.org.au>,
+ Linus Torvalds <torvalds@linux-foundation.org>, x86@kernel.org,
+ linux-arm-kernel@lists.infradead.org,
+ xen-devel@lists.xenproject.org, linux-c6x-dev@linux-c6x.org,
+ linux-hexagon@vger.kernel.org, linux-ia64@vger.kernel.org,
+ linux-mips@linux-mips.org, openrisc@lists.librecores.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
+ linux-xtensa@linux-xtensa.org, dmaengine@vger.kernel.org,
+ linux-tegra@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ linux-samsung-soc@vger.kernel.org, iommu@lists.linux-foundation.org,
+ netdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Subject: new dma-mapping tree, was Re: clean up and modularize arch
+ dma_mapping interface V2
+Message-ID: <20170620124140.GA27163@lst.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20170616181059.19206-1-hch@lst.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,81 +34,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-As for slb_miss_realmode(), rename slb_allocate_realmode() to avoid
-confusion over whether it runs in real or virtual mode - it runs in
-both.
+On Fri, Jun 16, 2017 at 08:10:15PM +0200, Christoph Hellwig wrote:
+> I plan to create a new dma-mapping tree to collect all this work.
+> Any volunteers for co-maintainers, especially from the iommu gang?
 
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+Ok, I've created the new tree:
+
+   git://git.infradead.org/users/hch/dma-mapping.git for-next
+
+Gitweb:
+
+   http://git.infradead.org/users/hch/dma-mapping.git/shortlog/refs/heads/for-next
+
+And below is the patch to add the MAINTAINERS entry, additions welcome.
+
+Stephen, can you add this to linux-next?
+
 ---
- arch/powerpc/kernel/exceptions-64s.S |  2 +-
- arch/powerpc/mm/slb.c                | 10 +---------
- arch/powerpc/mm/slb_low.S            |  6 +++---
- 3 files changed, 5 insertions(+), 13 deletions(-)
+>From 335979c41912e6c101a20b719862b2d837370df1 Mon Sep 17 00:00:00 2001
+From: Christoph Hellwig <hch@lst.de>
+Date: Tue, 20 Jun 2017 11:17:30 +0200
+Subject: MAINTAINERS: add entry for dma mapping helpers
 
-diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-index 6ad755e0cb29..07b79c2c70f8 100644
---- a/arch/powerpc/kernel/exceptions-64s.S
-+++ b/arch/powerpc/kernel/exceptions-64s.S
-@@ -605,7 +605,7 @@ EXC_COMMON_BEGIN(slb_miss_common)
- 	crset	4*cr0+eq
- #ifdef CONFIG_PPC_STD_MMU_64
- BEGIN_MMU_FTR_SECTION
--	bl	slb_allocate_realmode
-+	bl	slb_allocate
- END_MMU_FTR_SECTION_IFCLR(MMU_FTR_TYPE_RADIX)
- #endif
+This code has been spread between getting in through arch trees, the iommu
+tree, -mm and the drivers tree.  There will be a lot of work in this area,
+including consolidating various arch implementations into more common
+code, so ensure we have a proper git tree that facilitates cooperation with
+the architecture maintainers.
+
+Signed-off-by: Christoph Hellwig <hch@lst.de>
+---
+ MAINTAINERS | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
+
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 09b5ab6a8a5c..56859d53a424 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -2595,6 +2595,19 @@ S:	Maintained
+ F:	net/bluetooth/
+ F:	include/net/bluetooth/
  
-diff --git a/arch/powerpc/mm/slb.c b/arch/powerpc/mm/slb.c
-index 654a0d7ba0e7..13cfe413b40d 100644
---- a/arch/powerpc/mm/slb.c
-+++ b/arch/powerpc/mm/slb.c
-@@ -33,15 +33,7 @@ enum slb_index {
- 	KSTACK_INDEX	= 2, /* Kernel stack map */
- };
- 
--extern void slb_allocate_realmode(unsigned long ea);
--
--static void slb_allocate(unsigned long ea)
--{
--	/* Currently, we do real mode for all SLBs including user, but
--	 * that will change if we bring back dynamic VSIDs
--	 */
--	slb_allocate_realmode(ea);
--}
-+extern void slb_allocate(unsigned long ea);
- 
- #define slb_esid_mask(ssize)	\
- 	(((ssize) == MMU_SEGSIZE_256M)? ESID_MASK: ESID_MASK_1T)
-diff --git a/arch/powerpc/mm/slb_low.S b/arch/powerpc/mm/slb_low.S
-index 9869b44a04dc..bde378559d01 100644
---- a/arch/powerpc/mm/slb_low.S
-+++ b/arch/powerpc/mm/slb_low.S
-@@ -65,7 +65,7 @@ MMU_FTR_SECTION_ELSE							\
- ALT_MMU_FTR_SECTION_END_IFCLR(MMU_FTR_68_BIT_VA)
- 
- 
--/* void slb_allocate_realmode(unsigned long ea);
-+/* void slb_allocate(unsigned long ea);
-  *
-  * Create an SLB entry for the given EA (user or kernel).
-  * 	r3 = faulting address, r13 = PACA
-@@ -73,7 +73,7 @@ ALT_MMU_FTR_SECTION_END_IFCLR(MMU_FTR_68_BIT_VA)
-  *	r3 is preserved.
-  * No other registers are examined or changed.
-  */
--_GLOBAL(slb_allocate_realmode)
-+_GLOBAL(slb_allocate)
- 	/*
- 	 * check for bad kernel/user address
- 	 * (ea & ~REGION_MASK) >= PGTABLE_RANGE
-@@ -309,7 +309,7 @@ slb_compare_rr_to_size:
- 	b	7b
- 
- 
--_ASM_NOKPROBE_SYMBOL(slb_allocate_realmode)
-+_ASM_NOKPROBE_SYMBOL(slb_allocate)
- _ASM_NOKPROBE_SYMBOL(slb_miss_kernel_load_linear)
- _ASM_NOKPROBE_SYMBOL(slb_miss_kernel_load_io)
- _ASM_NOKPROBE_SYMBOL(slb_compare_rr_to_size)
++DMA MAPPING HELPERS
++M:	Christoph Hellwig <hch@lst.de>
++L:	linux-kernel@vger.kernel.org
++T:	git git://git.infradead.org/users/hch/dma-mapping.git
++W:	http://git.infradead.org/users/hch/dma-mapping.git
++S:	Supported
++F:	lib/dma-debug.c
++F:	lib/dma-noop.c
++F:	lib/dma-virt.c
++F:	drivers/base/dma-mapping.c
++F:	drivers/base/dma-coherent.c
++F:	include/linux/dma-mapping.h
++
+ BONDING DRIVER
+ M:	Jay Vosburgh <j.vosburgh@gmail.com>
+ M:	Veaceslav Falico <vfalico@gmail.com>
 -- 
-2.7.4
+2.11.0
