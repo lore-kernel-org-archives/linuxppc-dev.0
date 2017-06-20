@@ -1,29 +1,29 @@
-Return-Path: <srs0=rc+b=5z=gmail.com=npiggin@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Return-Path: <sfr@canb.auug.org.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wsSV02YfWzDqhk
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jun 2017 22:54:32 +1000 (AEST)
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3wsSV024MPz8t4R
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jun 2017 22:54:32 +1000 (AEST)
-Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
- [IPv6:2607:f8b0:400e:c00::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3wsSTz5TDjz9s78
- for <linuxppc-dev@ozlabs.org>; Tue, 20 Jun 2017 22:54:31 +1000 (AEST)
-Received: by mail-pf0-x243.google.com with SMTP id d5so22809341pfe.1
- for <linuxppc-dev@ozlabs.org>; Tue, 20 Jun 2017 05:54:31 -0700 (PDT)
-Date: Tue, 20 Jun 2017 22:54:18 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 1/3] powerpc/64s: Use BRANCH_TO_COMMON() for
- slb_miss_realmode
-Message-ID: <20170620225418.73d862b8@roar.ozlabs.ibm.com>
-In-Reply-To: <1497962097-9402-1-git-send-email-mpe@ellerman.id.au>
-References: <1497962097-9402-1-git-send-email-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wsShy5ZMBzDqhk
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jun 2017 23:04:02 +1000 (AEST)
+Date: Tue, 20 Jun 2017 23:04:00 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Christoph Hellwig <hch@lst.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, x86@kernel.org,
+ linux-arm-kernel@lists.infradead.org, xen-devel@lists.xenproject.org,
+ linux-c6x-dev@linux-c6x.org, linux-hexagon@vger.kernel.org,
+ linux-ia64@vger.kernel.org, linux-mips@linux-mips.org,
+ openrisc@lists.librecores.org, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
+ sparclinux@vger.kernel.org, linux-xtensa@linux-xtensa.org,
+ dmaengine@vger.kernel.org, linux-tegra@vger.kernel.org,
+ dri-devel@lists.freedesktop.org, linux-samsung-soc@vger.kernel.org,
+ iommu@lists.linux-foundation.org, netdev@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Marek Szyprowski <m.szyprowski@samsung.com>,
+ Kyungmin Park <kyungmin.park@samsung.com>
+Subject: Re: new dma-mapping tree, was Re: clean up and modularize arch
+ dma_mapping interface V2
+Message-ID: <20170620230400.1a5ae889@canb.auug.org.au>
+In-Reply-To: <20170620124140.GA27163@lst.de>
+References: <20170616181059.19206-1-hch@lst.de> <20170620124140.GA27163@lst.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -35,15 +35,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 20 Jun 2017 22:34:55 +1000
-Michael Ellerman <mpe@ellerman.id.au> wrote:
+Hi Christoph,
 
-> All the callers of slb_miss_realmode currently open code the #ifndef
-> CONFIG_RELOCATABLE check and the branch via CTR in the RELOCATABLE case.
-> We have a macro to do this, BRANCH_TO_COMMON(), so use it.
+On Tue, 20 Jun 2017 14:41:40 +0200 Christoph Hellwig <hch@lst.de> wrote:
+>
+> On Fri, Jun 16, 2017 at 08:10:15PM +0200, Christoph Hellwig wrote:
+> > I plan to create a new dma-mapping tree to collect all this work.
+> > Any volunteers for co-maintainers, especially from the iommu gang?  
 > 
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> Ok, I've created the new tree:
+> 
+>    git://git.infradead.org/users/hch/dma-mapping.git for-next
+> 
+> Gitweb:
+> 
+>    http://git.infradead.org/users/hch/dma-mapping.git/shortlog/refs/heads/for-next
+> 
+> And below is the patch to add the MAINTAINERS entry, additions welcome.
+> 
+> Stephen, can you add this to linux-next?
 
-These 3 all look good to me.
+Added from tomorrow.
 
-Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
+I have another tree called dma-mapping:
+
+git://git.linaro.org/people/mszyprowski/linux-dma-mapping.git#dma-mapping-next
+
+Contacts: Marek Szyprowski and Kyungmin Park (cc'd)
+
+I have called your tree dma-mapping-hch for now.  The other tree has
+not been updated since 4.9-rc1 and I am not sure how general it is.
+Marek, Kyungmin, any comments?
+
+Thanks for adding your subsystem tree as a participant of linux-next.  As
+you may know, this is not a judgement of your code.  The purpose of
+linux-next is for integration testing and to lower the impact of
+conflicts between subsystems in the next merge window. 
+
+You will need to ensure that the patches/commits in your tree/series have
+been:
+     * submitted under GPL v2 (or later) and include the Contributor's
+        Signed-off-by,
+     * posted to the relevant mailing list,
+     * reviewed by you (or another maintainer of your subsystem tree),
+     * successfully unit tested, and 
+     * destined for the current or next Linux merge window.
+
+Basically, this should be just what you would send to Linus (or ask him
+to fetch).  It is allowed to be rebased if you deem it necessary.
+
+-- 
+Cheers,
+Stephen Rothwell 
+sfr@canb.auug.org.au
