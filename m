@@ -1,41 +1,24 @@
-Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <pavel@ucw.cz>
+Received: from atrey.karlin.mff.cuni.cz (atrey.karlin.mff.cuni.cz
+ [195.113.26.193])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wsJgR6yk9zDqhn
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jun 2017 17:02:11 +1000 (AEST)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v5K6xaE8096744
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jun 2017 03:02:09 -0400
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2b6hbhy9ds-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jun 2017 03:02:09 -0400
-Received: from localhost
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Tue, 20 Jun 2017 17:02:06 +1000
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v5K724BT53739652
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jun 2017 17:02:04 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v5K71tTj026438
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jun 2017 17:01:55 +1000
-Date: Tue, 20 Jun 2017 12:32:00 +0530
-From: "Naveen N . Rao" <naveen.n.rao@linux.vnet.ibm.com>
-To: Santosh Sivaraj <santosh@fossix.org>
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] powerpc/time: Fix tracing in time.c
-References: <20170620062045.1347-1-santosh@fossix.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wsJp34jwczDqhp
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jun 2017 17:07:54 +1000 (AEST)
+Date: Tue, 20 Jun 2017 09:07:49 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Ram Pai <linuxram@us.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ khandual@linux.vnet.ibm.com, aneesh.kumar@linux.vnet.ibm.com,
+ bsingharora@gmail.com, dave.hansen@intel.com, hbabu@us.ibm.com
+Subject: Re: [RFC PATCH 0/7 v1] powerpc: Memory Protection Keys
+Message-ID: <20170620070749.GC30728@amd>
+References: <1496711109-4968-1-git-send-email-linuxram@us.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170620062045.1347-1-santosh@fossix.org>
-Message-Id: <20170620070200.d53qywt6fce6b6e5@naverao1-tp.localdomain>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="oTHb8nViIGeoXxdp"
+In-Reply-To: <1496711109-4968-1-git-send-email-linuxram@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,72 +28,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2017/06/20 11:50AM, Santosh Sivaraj wrote:
-> Since trace_clock is in a different file and already marked with notrace,
-> enable tracing in time.c by removing it from the disabled list in Makefile.
-> Also annotate clocksource read functions and sched_clock with notrace.
-> 
-> Testing: Timer and ftrace selftests run with different trace clocks.
-> 
-> CC: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
-> Signed-off-by: Santosh Sivaraj <santosh@fossix.org>
 
-Thanks for doing this! Apart from the minor nit below:
-Acked-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+--oTHb8nViIGeoXxdp
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> ---
->  arch/powerpc/kernel/Makefile | 2 --
->  arch/powerpc/kernel/time.c   | 6 +++---
->  2 files changed, 3 insertions(+), 5 deletions(-)
-> 
-> diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
-> index e132902..0845eeb 100644
-> --- a/arch/powerpc/kernel/Makefile
-> +++ b/arch/powerpc/kernel/Makefile
-> @@ -25,8 +25,6 @@ CFLAGS_REMOVE_cputable.o = -mno-sched-epilog $(CC_FLAGS_FTRACE)
->  CFLAGS_REMOVE_prom_init.o = -mno-sched-epilog $(CC_FLAGS_FTRACE)
->  CFLAGS_REMOVE_btext.o = -mno-sched-epilog $(CC_FLAGS_FTRACE)
->  CFLAGS_REMOVE_prom.o = -mno-sched-epilog $(CC_FLAGS_FTRACE)
-> -# timers used by tracing
-> -CFLAGS_REMOVE_time.o = -mno-sched-epilog $(CC_FLAGS_FTRACE)
->  endif
-> 
->  obj-y				:= cputable.o ptrace.o syscalls.o \
-> diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
-> index 2b33cfa..6d10c5f 100644
-> --- a/arch/powerpc/kernel/time.c
-> +++ b/arch/powerpc/kernel/time.c
-> @@ -675,7 +675,7 @@ EXPORT_SYMBOL_GPL(tb_to_ns);
->   * the high 64 bits of a * b, i.e. (a * b) >> 64, where a and b
->   * are 64-bit unsigned numbers.
->   */
-> -unsigned long long sched_clock(void)
-> +unsigned long long notrace sched_clock(void)
+Hi!
 
-For the sake of consistency, it's probably better to add the notrace 
-annotation before the return values, though I see that the prototype in 
-include/sched.h has used this order.
+> Memory protection keys enable applications to protect its
+> address space from inadvertent access or corruption from
+> itself.
+>=20
+> The overall idea:
+>=20
+>  A process allocates a   key  and associates it with
+>  a  address  range  within    its   address   space.
+>  The process  than  can  dynamically  set read/write=20
+>  permissions on  the   key   without  involving  the=20
+>  kernel. Any  code that  violates   the  permissions
+>  off the address space; as defined by its associated
+>  key, will receive a segmentation fault.
 
-- Naveen
+Do you have some documentation how userspace should use this? Will it
+be possible to hide details in libc so that it works across
+architectures? Do you have some kind of library that hides them?
 
->  {
->  	if (__USE_RTC())
->  		return get_rtc();
-> @@ -823,12 +823,12 @@ void read_persistent_clock(struct timespec *ts)
->  }
-> 
->  /* clocksource code */
-> -static u64 rtc_read(struct clocksource *cs)
-> +static notrace u64 rtc_read(struct clocksource *cs)
->  {
->  	return (u64)get_rtc();
->  }
-> 
-> -static u64 timebase_read(struct clocksource *cs)
-> +static notrace u64 timebase_read(struct clocksource *cs)
->  {
->  	return (u64)get_tb();
->  }
-> -- 
-> 2.9.4
-> 
+Where would you like it to be used? Web browsers?
+
+How does it interact with ptrace()? With /dev/mem? With /proc/XXX/mem?
+Will it enable malware to become very hard to understand?
+
+									Pavel
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
+
+--oTHb8nViIGeoXxdp
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iEYEARECAAYFAllIycUACgkQMOfwapXb+vIfewCfRfyhEb2y0Gr9TeVhfXPG+sIk
+b5wAoKwnWJyjAdk99neXgO/s1nqNtq81
+=u4PP
+-----END PGP SIGNATURE-----
+
+--oTHb8nViIGeoXxdp--
