@@ -1,30 +1,31 @@
-Return-Path: <hch@lst.de>
-Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <srs0=rc+b=5z=gmail.com=npiggin@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wsSCC6np1zDqhl
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jun 2017 22:41:43 +1000 (AEST)
-Date: Tue, 20 Jun 2017 14:41:40 +0200
-From: Christoph Hellwig <hch@lst.de>
-To: Stephen Rothwell <sfr@canb.auug.org.au>,
- Linus Torvalds <torvalds@linux-foundation.org>, x86@kernel.org,
- linux-arm-kernel@lists.infradead.org,
- xen-devel@lists.xenproject.org, linux-c6x-dev@linux-c6x.org,
- linux-hexagon@vger.kernel.org, linux-ia64@vger.kernel.org,
- linux-mips@linux-mips.org, openrisc@lists.librecores.org,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
- linux-xtensa@linux-xtensa.org, dmaengine@vger.kernel.org,
- linux-tegra@vger.kernel.org, dri-devel@lists.freedesktop.org,
- linux-samsung-soc@vger.kernel.org, iommu@lists.linux-foundation.org,
- netdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Subject: new dma-mapping tree, was Re: clean up and modularize arch
- dma_mapping interface V2
-Message-ID: <20170620124140.GA27163@lst.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wsSV02YfWzDqhk
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jun 2017 22:54:32 +1000 (AEST)
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3wsSV024MPz8t4R
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jun 2017 22:54:32 +1000 (AEST)
+Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
+ [IPv6:2607:f8b0:400e:c00::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3wsSTz5TDjz9s78
+ for <linuxppc-dev@ozlabs.org>; Tue, 20 Jun 2017 22:54:31 +1000 (AEST)
+Received: by mail-pf0-x243.google.com with SMTP id d5so22809341pfe.1
+ for <linuxppc-dev@ozlabs.org>; Tue, 20 Jun 2017 05:54:31 -0700 (PDT)
+Date: Tue, 20 Jun 2017 22:54:18 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 1/3] powerpc/64s: Use BRANCH_TO_COMMON() for
+ slb_miss_realmode
+Message-ID: <20170620225418.73d862b8@roar.ozlabs.ibm.com>
+In-Reply-To: <1497962097-9402-1-git-send-email-mpe@ellerman.id.au>
+References: <1497962097-9402-1-git-send-email-mpe@ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170616181059.19206-1-hch@lst.de>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,62 +35,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Jun 16, 2017 at 08:10:15PM +0200, Christoph Hellwig wrote:
-> I plan to create a new dma-mapping tree to collect all this work.
-> Any volunteers for co-maintainers, especially from the iommu gang?
+On Tue, 20 Jun 2017 22:34:55 +1000
+Michael Ellerman <mpe@ellerman.id.au> wrote:
 
-Ok, I've created the new tree:
+> All the callers of slb_miss_realmode currently open code the #ifndef
+> CONFIG_RELOCATABLE check and the branch via CTR in the RELOCATABLE case.
+> We have a macro to do this, BRANCH_TO_COMMON(), so use it.
+> 
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
-   git://git.infradead.org/users/hch/dma-mapping.git for-next
+These 3 all look good to me.
 
-Gitweb:
-
-   http://git.infradead.org/users/hch/dma-mapping.git/shortlog/refs/heads/for-next
-
-And below is the patch to add the MAINTAINERS entry, additions welcome.
-
-Stephen, can you add this to linux-next?
-
----
->From 335979c41912e6c101a20b719862b2d837370df1 Mon Sep 17 00:00:00 2001
-From: Christoph Hellwig <hch@lst.de>
-Date: Tue, 20 Jun 2017 11:17:30 +0200
-Subject: MAINTAINERS: add entry for dma mapping helpers
-
-This code has been spread between getting in through arch trees, the iommu
-tree, -mm and the drivers tree.  There will be a lot of work in this area,
-including consolidating various arch implementations into more common
-code, so ensure we have a proper git tree that facilitates cooperation with
-the architecture maintainers.
-
-Signed-off-by: Christoph Hellwig <hch@lst.de>
----
- MAINTAINERS | 13 +++++++++++++
- 1 file changed, 13 insertions(+)
-
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 09b5ab6a8a5c..56859d53a424 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -2595,6 +2595,19 @@ S:	Maintained
- F:	net/bluetooth/
- F:	include/net/bluetooth/
- 
-+DMA MAPPING HELPERS
-+M:	Christoph Hellwig <hch@lst.de>
-+L:	linux-kernel@vger.kernel.org
-+T:	git git://git.infradead.org/users/hch/dma-mapping.git
-+W:	http://git.infradead.org/users/hch/dma-mapping.git
-+S:	Supported
-+F:	lib/dma-debug.c
-+F:	lib/dma-noop.c
-+F:	lib/dma-virt.c
-+F:	drivers/base/dma-mapping.c
-+F:	drivers/base/dma-coherent.c
-+F:	include/linux/dma-mapping.h
-+
- BONDING DRIVER
- M:	Jay Vosburgh <j.vosburgh@gmail.com>
- M:	Veaceslav Falico <vfalico@gmail.com>
--- 
-2.11.0
+Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
