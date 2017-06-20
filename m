@@ -1,24 +1,48 @@
-Return-Path: <pavel@ucw.cz>
-Received: from atrey.karlin.mff.cuni.cz (atrey.karlin.mff.cuni.cz
- [195.113.26.193])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <shilpa.bhat@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wsJp34jwczDqhp
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jun 2017 17:07:54 +1000 (AEST)
-Date: Tue, 20 Jun 2017 09:07:49 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Ram Pai <linuxram@us.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- khandual@linux.vnet.ibm.com, aneesh.kumar@linux.vnet.ibm.com,
- bsingharora@gmail.com, dave.hansen@intel.com, hbabu@us.ibm.com
-Subject: Re: [RFC PATCH 0/7 v1] powerpc: Memory Protection Keys
-Message-ID: <20170620070749.GC30728@amd>
-References: <1496711109-4968-1-git-send-email-linuxram@us.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wsJyd5Z3rzDqhp
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jun 2017 17:15:21 +1000 (AEST)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v5K7DbYk002047
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jun 2017 03:15:19 -0400
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2b6ckt8udx-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jun 2017 03:15:19 -0400
+Received: from localhost
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <shilpa.bhat@linux.vnet.ibm.com>;
+ Tue, 20 Jun 2017 17:15:16 +1000
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v5K7F8Cu9699702
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jun 2017 17:15:08 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v5K7F6Up022773
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jun 2017 17:15:06 +1000
+Subject: Re: [PATCH V2 1/2] hwmon: (ibmpowernv) introduce a legacy_compatibles
+ array
+To: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>, linux@roeck-us.net,
+ stewart@linux.vnet.ibm.com
+References: <1497935293-31618-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+ <1497935293-31618-2-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+ <3b82267d-c647-d523-12d8-496378ab240b@kaod.org>
+Cc: jdelvare@suse.com, benh@kernel.crashing.org, paulus@samba.org,
+ mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, svaidy@linux.vnet.ibm.com,
+ ego@linux.vnet.ibm.com, linux-hwmon@vger.kernel.org
+From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Date: Tue, 20 Jun 2017 12:45:00 +0530
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="oTHb8nViIGeoXxdp"
-In-Reply-To: <1496711109-4968-1-git-send-email-linuxram@us.ibm.com>
+In-Reply-To: <3b82267d-c647-d523-12d8-496378ab240b@kaod.org>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <5cc575c8-246c-9559-e990-348b13e9ddd3@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,52 +53,83 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---oTHb8nViIGeoXxdp
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi!
+On 06/20/2017 11:36 AM, Cédric Le Goater wrote:
+> On 06/20/2017 07:08 AM, Shilpasri G Bhat wrote:
+>> From: Cédric Le Goater <clg@kaod.org>
+>>
+>> Today, the type of a PowerNV sensor system is determined with the
+>> "compatible" property for legacy Firmwares and with the "sensor-type"
+>> for newer ones. The same array of strings is used for both to do the
+>> matching and this raises some issue to introduce new sensor types.
+>>
+>> Let's introduce two different arrays (legacy and current) to make
+>> things easier for new sensor types.
+>>
+>> Signed-off-by: Cédric Le Goater <clg@kaod.org>
+>> Tested-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+> 
+> Did you test on a Tuleta (IBM Power) system ? 
 
-> Memory protection keys enable applications to protect its
-> address space from inadvertent access or corruption from
-> itself.
->=20
-> The overall idea:
->=20
->  A process allocates a   key  and associates it with
->  a  address  range  within    its   address   space.
->  The process  than  can  dynamically  set read/write=20
->  permissions on  the   key   without  involving  the=20
->  kernel. Any  code that  violates   the  permissions
->  off the address space; as defined by its associated
->  key, will receive a segmentation fault.
+I have tested this patch on P9 FSP and Firestone.
 
-Do you have some documentation how userspace should use this? Will it
-be possible to hide details in libc so that it works across
-architectures? Do you have some kind of library that hides them?
-
-Where would you like it to be used? Web browsers?
-
-How does it interact with ptrace()? With /dev/mem? With /proc/XXX/mem?
-Will it enable malware to become very hard to understand?
-
-									Pavel
---=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
-
---oTHb8nViIGeoXxdp
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iEYEARECAAYFAllIycUACgkQMOfwapXb+vIfewCfRfyhEb2y0Gr9TeVhfXPG+sIk
-b5wAoKwnWJyjAdk99neXgO/s1nqNtq81
-=u4PP
------END PGP SIGNATURE-----
-
---oTHb8nViIGeoXxdp--
+> 
+> Thanks,
+> 
+> C. 
+> 
+>> ---
+>>  drivers/hwmon/ibmpowernv.c | 26 ++++++++++++++++++--------
+>>  1 file changed, 18 insertions(+), 8 deletions(-)
+>>
+>> diff --git a/drivers/hwmon/ibmpowernv.c b/drivers/hwmon/ibmpowernv.c
+>> index 862b832..6d8909c 100644
+>> --- a/drivers/hwmon/ibmpowernv.c
+>> +++ b/drivers/hwmon/ibmpowernv.c
+>> @@ -55,17 +55,27 @@ enum sensors {
+>>  
+>>  #define INVALID_INDEX (-1U)
+>>  
+>> +/*
+>> + * 'compatible' string properties for sensor types as defined in old
+>> + * PowerNV firmware (skiboot). These are ordered as 'enum sensors'.
+>> + */
+>> +static const char * const legacy_compatibles[] = {
+>> +	"ibm,opal-sensor-cooling-fan",
+>> +	"ibm,opal-sensor-amb-temp",
+>> +	"ibm,opal-sensor-power-supply",
+>> +	"ibm,opal-sensor-power"
+>> +};
+>> +
+>>  static struct sensor_group {
+>> -	const char *name;
+>> -	const char *compatible;
+>> +	const char *name; /* matches property 'sensor-type' */
+>>  	struct attribute_group group;
+>>  	u32 attr_count;
+>>  	u32 hwmon_index;
+>>  } sensor_groups[] = {
+>> -	{"fan", "ibm,opal-sensor-cooling-fan"},
+>> -	{"temp", "ibm,opal-sensor-amb-temp"},
+>> -	{"in", "ibm,opal-sensor-power-supply"},
+>> -	{"power", "ibm,opal-sensor-power"}
+>> +	{ "fan"   },
+>> +	{ "temp"  },
+>> +	{ "in"    },
+>> +	{ "power" }
+>>  };
+>>  
+>>  struct sensor_data {
+>> @@ -239,8 +249,8 @@ static int get_sensor_type(struct device_node *np)
+>>  	enum sensors type;
+>>  	const char *str;
+>>  
+>> -	for (type = 0; type < MAX_SENSOR_TYPE; type++) {
+>> -		if (of_device_is_compatible(np, sensor_groups[type].compatible))
+>> +	for (type = 0; type < ARRAY_SIZE(legacy_compatibles); type++) {
+>> +		if (of_device_is_compatible(np, legacy_compatibles[type]))
+>>  			return type;
+>>  	}
+>>  
+>>
+> 
