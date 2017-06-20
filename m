@@ -1,44 +1,29 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <srs0=ogv3=5z=fossix.org=santosh@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wsK9r4FbMzDqhn
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jun 2017 17:25:04 +1000 (AEST)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v5K7O2x9107657
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jun 2017 03:25:02 -0400
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2b69tvsqkx-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jun 2017 03:25:00 -0400
-Received: from localhost
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Tue, 20 Jun 2017 17:24:56 +1000
-Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v5K7OrUK7602602
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jun 2017 17:24:53 +1000
-Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
- by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v5K7Oq7C014385
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jun 2017 17:24:52 +1000
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Subject: Re: [RFC v2 08/12] powerpc: Handle exceptions caused by violation of
- pkey protection.
-To: Ram Pai <linuxram@us.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-References: <1497671564-20030-1-git-send-email-linuxram@us.ibm.com>
- <1497671564-20030-9-git-send-email-linuxram@us.ibm.com>
-Cc: dave.hansen@intel.com, paulus@samba.org, aneesh.kumar@linux.vnet.ibm.com
-Date: Tue, 20 Jun 2017 12:54:45 +0530
-MIME-Version: 1.0
-In-Reply-To: <1497671564-20030-9-git-send-email-linuxram@us.ibm.com>
-Content-Type: text/plain; charset=windows-1252
-Message-Id: <a288b72b-3e9c-7bf9-fff4-e5b08bad0374@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wsKcn5D8YzDqhn
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jun 2017 17:44:57 +1000 (AEST)
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3wsKcn1zqcz8t64
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jun 2017 17:44:57 +1000 (AEST)
+Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
+ [IPv6:2607:f8b0:400e:c00::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3wsKcm4bKBz9s7m
+ for <linuxppc-dev@ozlabs.org>; Tue, 20 Jun 2017 17:44:56 +1000 (AEST)
+Received: by mail-pf0-x242.google.com with SMTP id y7so21330366pfd.3
+ for <linuxppc-dev@ozlabs.org>; Tue, 20 Jun 2017 00:44:56 -0700 (PDT)
+From: Santosh Sivaraj <santosh@fossix.org>
+To: naveen.n.rao@linux.vnet.ibm.com
+Cc: mpe@ellerman.id.au,
+	linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc/time: Fix tracing in time.c
+Date: Tue, 20 Jun 2017 13:14:47 +0530
+Message-Id: <20170620074447.15532-1-santosh@fossix.org>
+In-Reply-To: <20170620070200.d53qywt6fce6b6e5@naverao1-tp.localdomain>
+References: <20170620070200.d53qywt6fce6b6e5@naverao1-tp.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,253 +33,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/17/2017 09:22 AM, Ram Pai wrote:
-> Handle Data and Instruction exceptions caused by memory
-> protection-key.
-> 
-> Signed-off-by: Ram Pai <linuxram@us.ibm.com>
-> (cherry picked from commit a5e5217619a0c475fe0cacc3b0cf1d3d33c79a09)
+Since trace_clock is in a different file and already marked with notrace,
+enable tracing in time.c by removing it from the disabled list in Makefile.
+Also annotate clocksource read functions and sched_clock with notrace.
 
-To which tree this commit belongs to ?
+Testing: Timer and ftrace selftests run with different trace clocks.
 
-> 
-> Conflicts:
-> 	arch/powerpc/include/asm/reg.h
-> 	arch/powerpc/kernel/exceptions-64s.S
-> ---
->  arch/powerpc/include/asm/mmu_context.h | 12 +++++
->  arch/powerpc/include/asm/pkeys.h       |  9 ++++
->  arch/powerpc/include/asm/reg.h         |  7 +--
->  arch/powerpc/mm/fault.c                | 21 +++++++-
->  arch/powerpc/mm/pkeys.c                | 90 ++++++++++++++++++++++++++++++++++
->  5 files changed, 134 insertions(+), 5 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/mmu_context.h b/arch/powerpc/include/asm/mmu_context.h
-> index da7e943..71fffe0 100644
-> --- a/arch/powerpc/include/asm/mmu_context.h
-> +++ b/arch/powerpc/include/asm/mmu_context.h
-> @@ -175,11 +175,23 @@ static inline void arch_bprm_mm_init(struct mm_struct *mm,
->  {
->  }
-> 
-> +#ifdef CONFIG_PPC64_MEMORY_PROTECTION_KEYS
-> +bool arch_pte_access_permitted(pte_t pte, bool write);
-> +bool arch_vma_access_permitted(struct vm_area_struct *vma,
-> +		bool write, bool execute, bool foreign);
-> +#else /* CONFIG_PPC64_MEMORY_PROTECTION_KEYS */
-> +static inline bool arch_pte_access_permitted(pte_t pte, bool write)
-> +{
-> +	/* by default, allow everything */
-> +	return true;
-> +}
->  static inline bool arch_vma_access_permitted(struct vm_area_struct *vma,
->  		bool write, bool execute, bool foreign)
->  {
->  	/* by default, allow everything */
->  	return true;
->  }
+Acked-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+Signed-off-by: Santosh Sivaraj <santosh@fossix.org>
+---
+ arch/powerpc/kernel/Makefile | 2 --
+ arch/powerpc/kernel/time.c   | 6 +++---
+ 2 files changed, 3 insertions(+), 5 deletions(-)
 
-Right, these are the two functions the core VM expects the
-arch to provide.
-
-> +#endif /* CONFIG_PPC64_MEMORY_PROTECTION_KEYS */
-> +
->  #endif /* __KERNEL__ */
->  #endif /* __ASM_POWERPC_MMU_CONTEXT_H */
-> diff --git a/arch/powerpc/include/asm/pkeys.h b/arch/powerpc/include/asm/pkeys.h
-> index 9b6820d..405e7db 100644
-> --- a/arch/powerpc/include/asm/pkeys.h
-> +++ b/arch/powerpc/include/asm/pkeys.h
-> @@ -14,6 +14,15 @@
->  			VM_PKEY_BIT3 | \
->  			VM_PKEY_BIT4)
-> 
-> +static inline u16 pte_flags_to_pkey(unsigned long pte_flags)
-> +{
-> +	return ((pte_flags & H_PAGE_PKEY_BIT4) ? 0x1 : 0x0) |
-> +		((pte_flags & H_PAGE_PKEY_BIT3) ? 0x2 : 0x0) |
-> +		((pte_flags & H_PAGE_PKEY_BIT2) ? 0x4 : 0x0) |
-> +		((pte_flags & H_PAGE_PKEY_BIT1) ? 0x8 : 0x0) |
-> +		((pte_flags & H_PAGE_PKEY_BIT0) ? 0x10 : 0x0);
-> +}
-
-Add defines for the above 0x1, 0x2, 0x4, 0x8 etc ?
-
-> +
->  #define pkey_to_vmflag_bits(key) (((key & 0x1UL) ? VM_PKEY_BIT0 : 0x0UL) | \
->  			((key & 0x2UL) ? VM_PKEY_BIT1 : 0x0UL) |	\
->  			((key & 0x4UL) ? VM_PKEY_BIT2 : 0x0UL) |	\
-> diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
-> index 2dcb8a1..a11977f 100644
-> --- a/arch/powerpc/include/asm/reg.h
-> +++ b/arch/powerpc/include/asm/reg.h
-> @@ -285,9 +285,10 @@
->  #define   DSISR_UNSUPP_MMU	0x00080000	/* Unsupported MMU config */
->  #define   DSISR_SET_RC		0x00040000	/* Failed setting of R/C bits */
->  #define   DSISR_PGDIRFAULT      0x00020000      /* Fault on page directory */
-> -#define   DSISR_PAGE_FAULT_MASK (DSISR_BIT32 | \
-> -				DSISR_PAGEATTR_CONFLT | \
-> -				DSISR_BADACCESS |       \
-> +#define   DSISR_PAGE_FAULT_MASK (DSISR_BIT32 |	\
-> +				DSISR_PAGEATTR_CONFLT |	\
-> +				DSISR_BADACCESS |	\
-> +				DSISR_KEYFAULT |	\
->  				DSISR_BIT43)
-
-This should have been cleaned up before adding new
-DSISR_KEYFAULT reason code into it. But I guess its
-okay.
-
->  #define SPRN_TBRL	0x10C	/* Time Base Read Lower Register (user, R/O) */
->  #define SPRN_TBRU	0x10D	/* Time Base Read Upper Register (user, R/O) */
-> diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
-> index 3a7d580..c31624f 100644
-> --- a/arch/powerpc/mm/fault.c
-> +++ b/arch/powerpc/mm/fault.c
-> @@ -216,9 +216,10 @@ int do_page_fault(struct pt_regs *regs, unsigned long address,
->  	 * bits we are interested in.  But there are some bits which
->  	 * indicate errors in DSISR but can validly be set in SRR1.
->  	 */
-> -	if (trap == 0x400)
-> +	if (trap == 0x400) {
->  		error_code &= 0x48200000;
-> -	else
-> +		flags |= FAULT_FLAG_INSTRUCTION;
-> +	} else
->  		is_write = error_code & DSISR_ISSTORE;
->  #else
-
-Why adding the FAULT_FLAG_INSTRUCTION here ?
-
->  	is_write = error_code & ESR_DST;
-> @@ -261,6 +262,13 @@ int do_page_fault(struct pt_regs *regs, unsigned long address,
->  	}
->  #endif
-> 
-> +#ifdef CONFIG_PPC64_MEMORY_PROTECTION_KEYS
-> +	if (error_code & DSISR_KEYFAULT) {
-> +		code = SEGV_PKUERR;
-> +		goto bad_area_nosemaphore;
-> +	}
-> +#endif /*  CONFIG_PPC64_MEMORY_PROTECTION_KEYS */
-> +
->  	/* We restore the interrupt state now */
->  	if (!arch_irq_disabled_regs(regs))
->  		local_irq_enable();
-> @@ -441,6 +449,15 @@ int do_page_fault(struct pt_regs *regs, unsigned long address,
->  		WARN_ON_ONCE(error_code & DSISR_PROTFAULT);
->  #endif /* CONFIG_PPC_STD_MMU */
-> 
-> +#ifdef CONFIG_PPC64_MEMORY_PROTECTION_KEYS
-> +	if (!arch_vma_access_permitted(vma, flags & FAULT_FLAG_WRITE,
-> +					flags & FAULT_FLAG_INSTRUCTION,
-> +					0)) {
-> +		code = SEGV_PKUERR;
-> +		goto bad_area;
-> +	}
-> +#endif /* CONFIG_PPC64_MEMORY_PROTECTION_KEYS */
-> +
-
-I am wondering why both the above checks are required ?
-
-* DSISR should contains DSISR_KEYFAULT
-
-* VMA pkey values whether they matched the fault cause
-
-
->  	/*
->  	 * If for any reason at all we couldn't handle the fault,
->  	 * make sure we exit gracefully rather than endlessly redo
-> diff --git a/arch/powerpc/mm/pkeys.c b/arch/powerpc/mm/pkeys.c
-> index 11a32b3..439241a 100644
-> --- a/arch/powerpc/mm/pkeys.c
-> +++ b/arch/powerpc/mm/pkeys.c
-> @@ -27,6 +27,37 @@ static inline bool pkey_allows_readwrite(int pkey)
->  	return !(read_amr() & ((AMR_AD_BIT|AMR_WD_BIT) << pkey_shift));
->  }
-> 
-> +static inline bool pkey_allows_read(int pkey)
-> +{
-> +	int pkey_shift = (arch_max_pkey()-pkey-1) * AMR_BITS_PER_PKEY;
-> +
-> +	if (!(read_uamor() & (0x3ul << pkey_shift)))
-> +		return true;
-> +
-> +	return !(read_amr() & (AMR_AD_BIT << pkey_shift));
-> +}
-
-Get read_amr() into a local variable and save some cycles if we
-have to do it again.
-
-> +
-> +static inline bool pkey_allows_write(int pkey)
-> +{
-> +	int pkey_shift = (arch_max_pkey()-pkey-1) * AMR_BITS_PER_PKEY;
-> +
-> +	if (!(read_uamor() & (0x3ul << pkey_shift)))
-> +		return true;
-> +
-> +	return !(read_amr() & (AMR_WD_BIT << pkey_shift));
-> +}
-> +
-
-Ditto
-
-> +static inline bool pkey_allows_execute(int pkey)
-> +{
-> +	int pkey_shift = (arch_max_pkey()-pkey-1) * AMR_BITS_PER_PKEY;
-> +
-> +	if (!(read_uamor() & (0x3ul << pkey_shift)))
-> +		return true;
-> +
-> +	return !(read_iamr() & (IAMR_EX_BIT << pkey_shift));
-> +}
-
-Ditto
-
-> +
-> +
->  /*
->   * set the access right in AMR IAMR and UAMOR register
->   * for @pkey to that specified in @init_val.
-> @@ -175,3 +206,62 @@ int __arch_override_mprotect_pkey(struct vm_area_struct *vma, int prot,
->  	 */
->  	return vma_pkey(vma);
->  }
-> +
-> +bool arch_pte_access_permitted(pte_t pte, bool write)
-> +{
-> +	int pkey = pte_flags_to_pkey(pte_val(pte));
-> +
-> +	if (!pkey_allows_read(pkey))
-> +		return false;
-> +	if (write && !pkey_allows_write(pkey))
-> +		return false;
-> +	return true;
-> +}
-> +
-> +/*
-> + * We only want to enforce protection keys on the current process
-> + * because we effectively have no access to AMR/IAMR for other
-> + * processes or any way to tell *which * AMR/IAMR in a threaded
-> + * process we could use.
-> + *
-> + * So do not enforce things if the VMA is not from the current
-> + * mm, or if we are in a kernel thread.
-> + */
-> +static inline bool vma_is_foreign(struct vm_area_struct *vma)
-> +{
-> +	if (!current->mm)
-> +		return true;
-> +	/*
-> +	 * if the VMA is from another process, then AMR/IAMR has no
-> +	 * relevance and should not be enforced.
-> +	 */
-> +	if (current->mm != vma->vm_mm)
-> +		return true;
-> +
-> +	return false;
-> +}
-> +
-
-This seems pretty generic, should not be moved to core MM ?
+diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
+index e132902..0845eeb 100644
+--- a/arch/powerpc/kernel/Makefile
++++ b/arch/powerpc/kernel/Makefile
+@@ -25,8 +25,6 @@ CFLAGS_REMOVE_cputable.o = -mno-sched-epilog $(CC_FLAGS_FTRACE)
+ CFLAGS_REMOVE_prom_init.o = -mno-sched-epilog $(CC_FLAGS_FTRACE)
+ CFLAGS_REMOVE_btext.o = -mno-sched-epilog $(CC_FLAGS_FTRACE)
+ CFLAGS_REMOVE_prom.o = -mno-sched-epilog $(CC_FLAGS_FTRACE)
+-# timers used by tracing
+-CFLAGS_REMOVE_time.o = -mno-sched-epilog $(CC_FLAGS_FTRACE)
+ endif
+ 
+ obj-y				:= cputable.o ptrace.o syscalls.o \
+diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
+index 2b33cfa..896ba1a 100644
+--- a/arch/powerpc/kernel/time.c
++++ b/arch/powerpc/kernel/time.c
+@@ -675,7 +675,7 @@ EXPORT_SYMBOL_GPL(tb_to_ns);
+  * the high 64 bits of a * b, i.e. (a * b) >> 64, where a and b
+  * are 64-bit unsigned numbers.
+  */
+-unsigned long long sched_clock(void)
++notrace unsigned long long sched_clock(void)
+ {
+ 	if (__USE_RTC())
+ 		return get_rtc();
+@@ -823,12 +823,12 @@ void read_persistent_clock(struct timespec *ts)
+ }
+ 
+ /* clocksource code */
+-static u64 rtc_read(struct clocksource *cs)
++static notrace u64 rtc_read(struct clocksource *cs)
+ {
+ 	return (u64)get_rtc();
+ }
+ 
+-static u64 timebase_read(struct clocksource *cs)
++static notrace u64 timebase_read(struct clocksource *cs)
+ {
+ 	return (u64)get_tb();
+ }
+-- 
+2.9.4
