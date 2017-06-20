@@ -1,32 +1,22 @@
-Return-Path: <daniel@ffwll.ch>
-Received: from mail-wr0-x244.google.com (mail-wr0-x244.google.com
- [IPv6:2a00:1450:400c:c0c::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wsMjW6CJ7zDqhk
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jun 2017 19:19:09 +1000 (AEST)
-Received: by mail-wr0-x244.google.com with SMTP id 77so16546690wrb.3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jun 2017 02:19:09 -0700 (PDT)
-Sender: Daniel Vetter <daniel.vetter@ffwll.ch>
-Date: Tue, 20 Jun 2017 11:19:02 +0200
-From: Daniel Vetter <daniel@ffwll.ch>
-To: Christoph Hellwig <hch@lst.de>
-Cc: x86@kernel.org, linux-arm-kernel@lists.infradead.org,
- xen-devel@lists.xenproject.org, linux-c6x-dev@linux-c6x.org,
- linux-hexagon@vger.kernel.org, linux-ia64@vger.kernel.org,
- linux-mips@linux-mips.org, openrisc@lists.librecores.org,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
- linux-xtensa@linux-xtensa.org, dmaengine@vger.kernel.org,
- linux-tegra@vger.kernel.org, dri-devel@lists.freedesktop.org,
- linux-samsung-soc@vger.kernel.org, iommu@lists.linux-foundation.org,
- netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: clean up and modularize arch dma_mapping interface
-Message-ID: <20170620091902.2dldmf43vhazq6yh@phenom.ffwll.local>
-References: <20170608132609.32662-1-hch@lst.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170608132609.32662-1-hch@lst.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wsNY639kWzDqhk
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jun 2017 19:56:58 +1000 (AEST)
+Message-ID: <1497952580.31581.51.camel@kernel.crashing.org>
+Subject: Re: [RFC v2 00/12] powerpc: Memory Protection Keys
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Balbir Singh <bsingharora@gmail.com>, Ram Pai <linuxram@us.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: paulus@samba.org, mpe@ellerman.id.au, khandual@linux.vnet.ibm.com,
+ aneesh.kumar@linux.vnet.ibm.com, dave.hansen@intel.com, hbabu@us.ibm.com
+Date: Tue, 20 Jun 2017 19:56:20 +1000
+In-Reply-To: <1497935415.2255.1.camel@gmail.com>
+References: <1497671564-20030-1-git-send-email-linuxram@us.ibm.com>
+ <1497935415.2255.1.camel@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,43 +26,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jun 08, 2017 at 03:25:25PM +0200, Christoph Hellwig wrote:
-> Hi all,
+On Tue, 2017-06-20 at 15:10 +1000, Balbir Singh wrote:
+> On Fri, 2017-06-16 at 20:52 -0700, Ram Pai wrote:
+> > Memory protection keys enable applications to protect its
+> > address space from inadvertent access or corruption from
+> > itself.
 > 
-> for a while we have a generic implementation of the dma mapping routines
-> that call into per-arch or per-device operations.  But right now there
-> still are various bits in the interfaces where don't clearly operate
-> on these ops.  This series tries to clean up a lot of those (but not all
-> yet, but the series is big enough).  It gets rid of the DMA_ERROR_CODE
-> way of signaling failures of the mapping routines from the
-> implementations to the generic code (and cleans up various drivers that
-> were incorrectly using it), and gets rid of the ->set_dma_mask routine
-> in favor of relying on the ->dma_capable method that can be used in
-> the same way, but which requires less code duplication.
-> 
-> Btw, we don't seem to have a tree every-growing amount of common dma
-> mapping code, and given that I have a fair amount of all over the tree
-> work in that area in my plate I'd like to start one.  Any good reason
-> to that?  Anyone willing to volunteer as co maintainer?
-> 
-> The whole series is also available in git:
-> 
->     git://git.infradead.org/users/hch/misc.git dma-map
+> I presume by itself you mean protection between threads?
 
-Ack for the 2 drm patches, but I can also pick them up through drm-misc if
-you prefer that (but then it'll be 4.14).
--Daniel
+Not necessarily. You could have for example a JIT that
+when it runs the JITed code, only "opens" the keys for
+the VM itself, preventing the JITed code from "leaking out"
 
+There are plenty of other usages...
 > 
-> Gitweb:
+> > The overall idea:
+> > 
+> >  A process allocates a   key  and associates it with
+> >  a  address  range  within    its   address   space.
 > 
->     http://git.infradead.org/users/hch/misc.git/shortlog/refs/heads/dma-map
-> _______________________________________________
-> dri-devel mailing list
-> dri-devel@lists.freedesktop.org
-> https://lists.freedesktop.org/mailman/listinfo/dri-devel
-
--- 
-Daniel Vetter
-Software Engineer, Intel Corporation
-http://blog.ffwll.ch
+> OK, so this is per VMA?
+> 
+> >  The process  than  can  dynamically  set read/write 
+> >  permissions on  the   key   without  involving  the 
+> >  kernel.
+> 
+> This bit is not clear, how can the key be set without
+> involving the kernel? I presume you mean the key is set
+> in the PTE's and the access protection values can be
+> set without involving the kernel?
+> 
+>  Any  code that  violates   the  permissions
+> >  off the address space; as defined by its associated
+> >  key, will receive a segmentation fault.
+> > 
+> > This patch series enables the feature on PPC64.
+> > It is enabled on HPTE 64K-page platform.
+> > 
+> > ISA3.0 section 5.7.13 describes the detailed specifications.
+> > 
+> > 
+> > Testing:
+> > 	This patch series has passed all the protection key
+> > 	tests available in  the selftests directory.
+> > 	The tests are updated to work on both x86 and powerpc.
+> 
+> Balbir
