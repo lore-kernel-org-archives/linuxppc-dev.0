@@ -1,19 +1,34 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
- [IPv6:2607:f8b0:400e:c00::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mwb@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wsTvV64ZkzDqhk
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jun 2017 23:58:14 +1000 (AEST)
-Received: by mail-pf0-x244.google.com with SMTP id y7so23273684pfd.3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jun 2017 06:58:14 -0700 (PDT)
-From: Nicholas Piggin <npiggin@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Nicholas Piggin <npiggin@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>,
- akpm@linux-foundation.org, Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: [PATCH] powerpc/64: Initialise thread_info for emergency stacks
-Date: Tue, 20 Jun 2017 23:58:01 +1000
-Message-Id: <20170620135801.13272-1-npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wsWbV6LYczDqhk
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jun 2017 01:14:30 +1000 (AEST)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v5KFDrcn132929
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jun 2017 11:14:28 -0400
+Received: from e16.ny.us.ibm.com (e16.ny.us.ibm.com [129.33.205.206])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2b6qenwx66-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jun 2017 11:14:28 -0400
+Received: from localhost
+ by e16.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
+ Tue, 20 Jun 2017 11:14:27 -0400
+To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Nathan Fontenot <nfont@linux.vnet.ibm.com>,
+ Michael Bringmann <mwb@linux.vnet.ibm.com>,
+ ltc-virtual-io@lists.linux.ibm.com
+From: Michael Bringmann <mwb@linux.vnet.ibm.com>
+Subject: [PATCH V6 0/2] powerpc/dlpar: Correct display of hot-add/hot-remove
+ CPUs and memory
+Date: Tue, 20 Jun 2017 10:14:23 -0500
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Message-Id: <b0e02344-965b-5298-4ef6-3ec67d1200c4@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,92 +38,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Emergency stacks have their thread_info mostly uninitialised, which in
-particular means garbage preempt_count values.
 
-Emergency stack code runs with interrupts disabled entirely, and is
-used very rarely, so this has been unnoticed so far. It was found by a
-proposed new powerpc watchdog that takes a soft-NMI directly from the
-masked_interrupt handler and using the emergency stack. That crashed at
-BUG_ON(in_nmi()) in nmi_enter(). preempt_count()s were found to be
-garbage.
+On Power systems with shared configurations of CPUs and memory, there
+are some issues with association of additional CPUs and memory to nodes
+when hot-adding resources.  These patches address some of those problems.
 
-Reported-by: Abdul Haleem <abdhalee@linux.vnet.ibm.com>
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+powerpc/hotplug: On systems like PowerPC which allow 'hot-add' of CPU
+or memory resources, it may occur that the new resources are to be
+inserted into nodes that were not used for these resources at bootup.
+In the kernel, any node that is used must be defined and initialized
+at boot.  In order to meet both needs, this patch adds a new kernel
+command line option (numnodes=<int>) for use by the PowerPC
+architecture-specific code that defines the maximum number of nodes
+that the kernel will ever need in its current hardware environment.
+The boot code that initializes nodes for PowerPC will read this value
+and use it to ensure that all of the desired nodes are setup in the
+'node_possible_map', and elsewhere.
+
+powerpc/numa: Correct the currently broken capability to set the
+topology for shared CPUs in LPARs.  At boot time for shared CPU
+lpars, the topology for each shared CPU is set to node zero, however,
+this is now updated correctly using the Virtual Processor Home Node
+(VPHN) capabilities information provided by the pHyp. The VPHN handling
+in Linux is disabled, if PRRN handling is present.
+
+Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
+
+Michael Bringmann (2):
+  powerpc/hotplug: Add option to define max nodes allowing dynamic
+      growth of resources.
+  powerpc/numa: Update CPU topology when VPHN enabled
 ---
-
-FYI, this bug looks to be breaking linux-next on some powerpc
-boxes due to interaction with a proposed new powerpc watchdog
-driver Andrew has in his tree:
-
-http://marc.info/?l=linuxppc-embedded&m=149794320519941&w=2
-
- arch/powerpc/include/asm/thread_info.h | 19 +++++++++++++++++++
- arch/powerpc/kernel/setup_64.c         |  6 +++---
- 2 files changed, 22 insertions(+), 3 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/thread_info.h b/arch/powerpc/include/asm/thread_info.h
-index a941cc6fc3e9..5995e4b2996d 100644
---- a/arch/powerpc/include/asm/thread_info.h
-+++ b/arch/powerpc/include/asm/thread_info.h
-@@ -54,6 +54,7 @@ struct thread_info {
- 	.task =		&tsk,			\
- 	.cpu =		0,			\
- 	.preempt_count = INIT_PREEMPT_COUNT,	\
-+	.local_flags =	0,			\
- 	.flags =	0,			\
- }
- 
-@@ -62,6 +63,24 @@ struct thread_info {
- 
- #define THREAD_SIZE_ORDER	(THREAD_SHIFT - PAGE_SHIFT)
- 
-+/*
-+ * Emergency stacks are used for a range of things, from asynchronous
-+ * NMIs (system reset, machine check) to synchronous, process context.
-+ * Set HARDIRQ_OFFSET because we don't know exactly what context we
-+ * come from or if it had a valid stack, which is about the best we
-+ * can do.
-+ * TODO: what to do with accounting?
-+ */
-+#define emstack_init_thread_info(ti, c)		\
-+do {						\
-+	(ti)->task = NULL;			\
-+	(ti)->cpu = (c);			\
-+	(ti)->preempt_count = HARDIRQ_OFFSET;	\
-+	(ti)->local_flags = 0;			\
-+	(ti)->flags = 0;			\
-+	klp_init_thread_info(ti);		\
-+} while (0)
-+
- /* how to get the thread information struct from C */
- static inline struct thread_info *current_thread_info(void)
- {
-diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-index f35ff9dea4fb..54c4336655f8 100644
---- a/arch/powerpc/kernel/setup_64.c
-+++ b/arch/powerpc/kernel/setup_64.c
-@@ -639,18 +639,18 @@ void __init emergency_stack_init(void)
- 	for_each_possible_cpu(i) {
- 		struct thread_info *ti;
- 		ti = __va(memblock_alloc_base(THREAD_SIZE, THREAD_SIZE, limit));
--		klp_init_thread_info(ti);
-+		emstack_init_thread_info(ti, i);
- 		paca[i].emergency_sp = (void *)ti + THREAD_SIZE;
- 
- #ifdef CONFIG_PPC_BOOK3S_64
- 		/* emergency stack for NMI exception handling. */
- 		ti = __va(memblock_alloc_base(THREAD_SIZE, THREAD_SIZE, limit));
--		klp_init_thread_info(ti);
-+		emstack_init_thread_info(ti, i);
- 		paca[i].nmi_emergency_sp = (void *)ti + THREAD_SIZE;
- 
- 		/* emergency stack for machine check exception handling. */
- 		ti = __va(memblock_alloc_base(THREAD_SIZE, THREAD_SIZE, limit));
--		klp_init_thread_info(ti);
-+		emstack_init_thread_info(ti, i);
- 		paca[i].mc_emergency_sp = (void *)ti + THREAD_SIZE;
- #endif
- 	}
--- 
-2.11.0
+Changes in V6:
+  -- Reorder some code to better eliminate unused functions in
+       conditional builds.
