@@ -1,43 +1,17 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <alistair@popple.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wsLRS5y05zDqhl
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jun 2017 18:21:56 +1000 (AEST)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v5K8IkQY074575
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jun 2017 04:21:54 -0400
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2b6qenb8gq-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jun 2017 04:21:53 -0400
-Received: from localhost
- by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Tue, 20 Jun 2017 18:21:50 +1000
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v5K8LmMl9044290
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jun 2017 18:21:48 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v5K8Ll3Y000382
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jun 2017 18:21:47 +1000
-Subject: Re: [RFC v2 06/12] powerpc: Program HPTE key protection bits.
-To: Ram Pai <linuxram@us.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-References: <1497671564-20030-1-git-send-email-linuxram@us.ibm.com>
- <1497671564-20030-7-git-send-email-linuxram@us.ibm.com>
-Cc: dave.hansen@intel.com, paulus@samba.org, aneesh.kumar@linux.vnet.ibm.com
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Date: Tue, 20 Jun 2017 13:51:45 +0530
-MIME-Version: 1.0
-In-Reply-To: <1497671564-20030-7-git-send-email-linuxram@us.ibm.com>
-Content-Type: text/plain; charset=windows-1252
-Message-Id: <645f057e-1599-3206-d8d7-b4118a89d3a0@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wsLnT3ZkJzDqhk
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jun 2017 18:37:33 +1000 (AEST)
+From: Alistair Popple <alistair@popple.id.au>
+To: linuxppc-dev@ozlabs.org,
+	mpe@ellerman.id.au
+Cc: mhairgrove@nvidia.com,
+	Alistair Popple <alistair@popple.id.au>
+Subject: [PATCH] powernv/npu-dma.c: Add explicit flush when sending an ATSD
+Date: Tue, 20 Jun 2017 18:37:28 +1000
+Message-Id: <1497947848-4625-1-git-send-email-alistair@popple.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,59 +21,227 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/17/2017 09:22 AM, Ram Pai wrote:
-> Map the PTE protection key bits to the HPTE key protection bits,
-> while creatiing HPTE  entries.
-> 
-> Signed-off-by: Ram Pai <linuxram@us.ibm.com>
-> ---
->  arch/powerpc/include/asm/book3s/64/mmu-hash.h | 5 +++++
->  arch/powerpc/include/asm/pkeys.h              | 7 +++++++
->  arch/powerpc/mm/hash_utils_64.c               | 5 +++++
->  3 files changed, 17 insertions(+)
-> 
-> diff --git a/arch/powerpc/include/asm/book3s/64/mmu-hash.h b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
-> index cfb8169..3d7872c 100644
-> --- a/arch/powerpc/include/asm/book3s/64/mmu-hash.h
-> +++ b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
-> @@ -90,6 +90,8 @@
->  #define HPTE_R_PP0		ASM_CONST(0x8000000000000000)
->  #define HPTE_R_TS		ASM_CONST(0x4000000000000000)
->  #define HPTE_R_KEY_HI		ASM_CONST(0x3000000000000000)
-> +#define HPTE_R_KEY_BIT0		ASM_CONST(0x2000000000000000)
-> +#define HPTE_R_KEY_BIT1		ASM_CONST(0x1000000000000000)
->  #define HPTE_R_RPN_SHIFT	12
->  #define HPTE_R_RPN		ASM_CONST(0x0ffffffffffff000)
->  #define HPTE_R_RPN_3_0		ASM_CONST(0x01fffffffffff000)
-> @@ -104,6 +106,9 @@
->  #define HPTE_R_C		ASM_CONST(0x0000000000000080)
->  #define HPTE_R_R		ASM_CONST(0x0000000000000100)
->  #define HPTE_R_KEY_LO		ASM_CONST(0x0000000000000e00)
-> +#define HPTE_R_KEY_BIT2		ASM_CONST(0x0000000000000800)
-> +#define HPTE_R_KEY_BIT3		ASM_CONST(0x0000000000000400)
-> +#define HPTE_R_KEY_BIT4		ASM_CONST(0x0000000000000200)
-> 
+NPU2 requires an extra explicit flush to an active GPU PID when sending
+address translation shoot downs (ATSDs) to reliably flush the GPU TLB. This
+patch adds just such a flush at the end of each sequence of ATSDs.
 
-Should we indicate/document how these 5 bits are not contiguous
-in the HPTE format for any given real page ?
+We can safely use PID 0 which is always reserved and active on the GPU. PID
+0 is only used for init_mm which will never be a user mm on the GPU. To
+enforce this we add a check in pnv_npu2_init_context() just in case someone
+tries to use PID 0 on the GPU.
 
->  #define HPTE_V_1TB_SEG		ASM_CONST(0x4000000000000000)
->  #define HPTE_V_VRMA_MASK	ASM_CONST(0x4001ffffff000000)
-> diff --git a/arch/powerpc/include/asm/pkeys.h b/arch/powerpc/include/asm/pkeys.h
-> index 0f3dca8..9b6820d 100644
-> --- a/arch/powerpc/include/asm/pkeys.h
-> +++ b/arch/powerpc/include/asm/pkeys.h
-> @@ -27,6 +27,13 @@
->  		((vm_flags & VM_PKEY_BIT3) ? H_PAGE_PKEY_BIT1 : 0x0UL) |     \
->  		((vm_flags & VM_PKEY_BIT4) ? H_PAGE_PKEY_BIT0 : 0x0UL))
-> 
-> +#define calc_pte_to_hpte_pkey_bits(pteflags)	\
-> +	(((pteflags & H_PAGE_PKEY_BIT0) ? HPTE_R_KEY_BIT0 : 0x0UL) |	\
-> +	((pteflags & H_PAGE_PKEY_BIT1) ? HPTE_R_KEY_BIT1 : 0x0UL) |	\
-> +	((pteflags & H_PAGE_PKEY_BIT2) ? HPTE_R_KEY_BIT2 : 0x0UL) |	\
-> +	((pteflags & H_PAGE_PKEY_BIT3) ? HPTE_R_KEY_BIT3 : 0x0UL) |	\
-> +	((pteflags & H_PAGE_PKEY_BIT4) ? HPTE_R_KEY_BIT4 : 0x0UL))
-> +
+Signed-off-by: Alistair Popple <alistair@popple.id.au>
+---
 
-We can drop calc_ in here. pte_to_hpte_pkey_bits should be
-sufficient.
+Michael,
+
+It turns out my assumptions about MMU_NO_CONTEXT were wrong so we have
+reverted to using HW context id/PID 0 (init_mm) as that is quite clearly
+reserved on hash and radix and it seems unlikely PID 0 would ever be used
+for anything else.
+
+That said if you feel strongly it would be easy enough to add functions to
+reserve a PID and an exported function for device drivers to call to find
+out what the reserved PID is. I was avoiding it because it would be more
+invasive adding code and an external API for something that I'm not sure
+will ever change, although if it does there is a check in
+pnv2_npu2_init_context() to flag it so it won't result in weird bugs.
+
+Anyway let me know which way you would like us to go here and I can update
+the patch as required, thanks!
+
+- Alistair
+
+arch/powerpc/platforms/powernv/npu-dma.c | 93 ++++++++++++++++++++++----------
+ 1 file changed, 64 insertions(+), 29 deletions(-)
+
+diff --git a/arch/powerpc/platforms/powernv/npu-dma.c b/arch/powerpc/platforms/powernv/npu-dma.c
+index e6f444b..9468064 100644
+--- a/arch/powerpc/platforms/powernv/npu-dma.c
++++ b/arch/powerpc/platforms/powernv/npu-dma.c
+@@ -449,7 +449,7 @@ static int mmio_launch_invalidate(struct npu *npu, unsigned long launch,
+ 	return mmio_atsd_reg;
+ }
+ 
+-static int mmio_invalidate_pid(struct npu *npu, unsigned long pid)
++static int mmio_invalidate_pid(struct npu *npu, unsigned long pid, bool flush)
+ {
+ 	unsigned long launch;
+ 
+@@ -465,12 +465,15 @@ static int mmio_invalidate_pid(struct npu *npu, unsigned long pid)
+ 	/* PID */
+ 	launch |= pid << PPC_BITLSHIFT(38);
+ 
++	/* No flush */
++	launch |= !flush << PPC_BITLSHIFT(39);
++
+ 	/* Invalidating the entire process doesn't use a va */
+ 	return mmio_launch_invalidate(npu, launch, 0);
+ }
+ 
+ static int mmio_invalidate_va(struct npu *npu, unsigned long va,
+-			unsigned long pid)
++			unsigned long pid, bool flush)
+ {
+ 	unsigned long launch;
+ 
+@@ -486,26 +489,60 @@ static int mmio_invalidate_va(struct npu *npu, unsigned long va,
+ 	/* PID */
+ 	launch |= pid << PPC_BITLSHIFT(38);
+ 
++	/* No flush */
++	launch |= !flush << PPC_BITLSHIFT(39);
++
+ 	return mmio_launch_invalidate(npu, launch, va);
+ }
+ 
+ #define mn_to_npu_context(x) container_of(x, struct npu_context, mn)
+ 
++struct mmio_atsd_reg {
++	struct npu *npu;
++	int reg;
++};
++
++static void mmio_invalidate_wait(
++	struct mmio_atsd_reg mmio_atsd_reg[NV_MAX_NPUS], bool flush)
++{
++	struct npu *npu;
++	int i, reg;
++
++	/* Wait for all invalidations to complete */
++	for (i = 0; i <= max_npu2_index; i++) {
++		if (mmio_atsd_reg[i].reg < 0)
++			continue;
++
++		/* Wait for completion */
++		npu = mmio_atsd_reg[i].npu;
++		reg = mmio_atsd_reg[i].reg;
++		while (__raw_readq(npu->mmio_atsd_regs[reg] + XTS_ATSD_STAT))
++			cpu_relax();
++
++		put_mmio_atsd_reg(npu, reg);
++
++		/*
++		 * The GPU requires two flush ATSDs to ensure all entries have
++		 * been flushed. We use PID 0 as it will never be used for a
++		 * process on the GPU.
++		 */
++		if (flush)
++			mmio_invalidate_pid(npu, 0, 1);
++	}
++}
++
+ /*
+  * Invalidate either a single address or an entire PID depending on
+  * the value of va.
+  */
+ static void mmio_invalidate(struct npu_context *npu_context, int va,
+-			unsigned long address)
++			unsigned long address, bool flush)
+ {
+-	int i, j, reg;
++	int i, j;
+ 	struct npu *npu;
+ 	struct pnv_phb *nphb;
+ 	struct pci_dev *npdev;
+-	struct {
+-		struct npu *npu;
+-		int reg;
+-	} mmio_atsd_reg[NV_MAX_NPUS];
++	struct mmio_atsd_reg mmio_atsd_reg[NV_MAX_NPUS];
+ 	unsigned long pid = npu_context->mm->context.id;
+ 
+ 	/*
+@@ -525,10 +562,11 @@ static void mmio_invalidate(struct npu_context *npu_context, int va,
+ 
+ 			if (va)
+ 				mmio_atsd_reg[i].reg =
+-					mmio_invalidate_va(npu, address, pid);
++					mmio_invalidate_va(npu, address, pid,
++							flush);
+ 			else
+ 				mmio_atsd_reg[i].reg =
+-					mmio_invalidate_pid(npu, pid);
++					mmio_invalidate_pid(npu, pid, flush);
+ 
+ 			/*
+ 			 * The NPU hardware forwards the shootdown to all GPUs
+@@ -544,18 +582,10 @@ static void mmio_invalidate(struct npu_context *npu_context, int va,
+ 	 */
+ 	flush_tlb_mm(npu_context->mm);
+ 
+-	/* Wait for all invalidations to complete */
+-	for (i = 0; i <= max_npu2_index; i++) {
+-		if (mmio_atsd_reg[i].reg < 0)
+-			continue;
+-
+-		/* Wait for completion */
+-		npu = mmio_atsd_reg[i].npu;
+-		reg = mmio_atsd_reg[i].reg;
+-		while (__raw_readq(npu->mmio_atsd_regs[reg] + XTS_ATSD_STAT))
+-			cpu_relax();
+-		put_mmio_atsd_reg(npu, reg);
+-	}
++	mmio_invalidate_wait(mmio_atsd_reg, flush);
++	if (flush)
++		/* Wait for the flush to complete */
++		mmio_invalidate_wait(mmio_atsd_reg, 0);
+ }
+ 
+ static void pnv_npu2_mn_release(struct mmu_notifier *mn,
+@@ -571,7 +601,7 @@ static void pnv_npu2_mn_release(struct mmu_notifier *mn,
+ 	 * There should be no more translation requests for this PID, but we
+ 	 * need to ensure any entries for it are removed from the TLB.
+ 	 */
+-	mmio_invalidate(npu_context, 0, 0);
++	mmio_invalidate(npu_context, 0, 0, 1);
+ }
+ 
+ static void pnv_npu2_mn_change_pte(struct mmu_notifier *mn,
+@@ -581,7 +611,7 @@ static void pnv_npu2_mn_change_pte(struct mmu_notifier *mn,
+ {
+ 	struct npu_context *npu_context = mn_to_npu_context(mn);
+ 
+-	mmio_invalidate(npu_context, 1, address);
++	mmio_invalidate(npu_context, 1, address, 1);
+ }
+ 
+ static void pnv_npu2_mn_invalidate_page(struct mmu_notifier *mn,
+@@ -590,7 +620,7 @@ static void pnv_npu2_mn_invalidate_page(struct mmu_notifier *mn,
+ {
+ 	struct npu_context *npu_context = mn_to_npu_context(mn);
+ 
+-	mmio_invalidate(npu_context, 1, address);
++	mmio_invalidate(npu_context, 1, address, 1);
+ }
+ 
+ static void pnv_npu2_mn_invalidate_range(struct mmu_notifier *mn,
+@@ -600,8 +630,11 @@ static void pnv_npu2_mn_invalidate_range(struct mmu_notifier *mn,
+ 	struct npu_context *npu_context = mn_to_npu_context(mn);
+ 	unsigned long address;
+ 
+-	for (address = start; address <= end; address += PAGE_SIZE)
+-		mmio_invalidate(npu_context, 1, address);
++	for (address = start; address < end; address += PAGE_SIZE)
++		mmio_invalidate(npu_context, 1, address, 0);
++
++	/* Do the flush only on the final addess == end */
++	mmio_invalidate(npu_context, 1, address, 1);
+ }
+ 
+ static const struct mmu_notifier_ops nv_nmmu_notifier_ops = {
+@@ -651,8 +684,10 @@ struct npu_context *pnv_npu2_init_context(struct pci_dev *gpdev,
+ 		/* No nvlink associated with this GPU device */
+ 		return ERR_PTR(-ENODEV);
+ 
+-	if (!mm) {
+-		/* kernel thread contexts are not supported */
++	if (!mm || mm->context.id == 0) {
++		/* kernel thread contexts are not supported and context id 0 is
++		 * reserved on the GPU.
++		 */
+ 		return ERR_PTR(-EINVAL);
+ 	}
+ 
+-- 
+2.1.4
