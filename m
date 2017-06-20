@@ -1,47 +1,46 @@
-Return-Path: <mwb@linux.vnet.ibm.com>
+Return-Path: <shilpa.bhat@linux.vnet.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ws4xW4mqlzDqgX
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jun 2017 08:13:35 +1000 (AEST)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wsFk46tRHzDqhk
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jun 2017 14:49:16 +1000 (AEST)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v5JMD9FQ072472
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Jun 2017 18:13:33 -0400
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2b6chd7p05-1
+ v5K4nEPF047319
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jun 2017 00:49:14 -0400
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2b69tvmp2s-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Jun 2017 18:13:33 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jun 2017 00:48:50 -0400
 Received: from localhost
- by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
- Mon, 19 Jun 2017 16:13:32 -0600
-To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Reza Arbab <arbab@linux.vnet.ibm.com>,
- Thomas Gleixner <tglx@linutronix.de>,
- Bharata B Rao <bharata@linux.vnet.ibm.com>,
- Balbir Singh <bsingharora@gmail.com>,
- Michael Bringmann <mwb@linux.vnet.ibm.com>,
- Shailendra Singh <shailendras@nvidia.com>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
- Nathan Fontenot <nfont@linux.vnet.ibm.com>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- John Allen <jallen@linux.vnet.ibm.com>,
- Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
- Sahil Mehta <sahilmehta17@gmail.com>,
- Rashmica Gupta <rashmicy@gmail.com>, Ingo Molnar <mingo@kernel.org>
-In-Reply-To: <081bb19d-3008-842d-6872-f51fccb94139@linux.vnet.ibm.com>
-From: Michael Bringmann <mwb@linux.vnet.ibm.com>
-Subject: [PATCH V6 2/2] powerpc/numa: Update CPU topology when VPHN enabled
-Date: Mon, 19 Jun 2017 17:13:27 -0500
+ for <linuxppc-dev@lists.ozlabs.org> from <shilpa.bhat@linux.vnet.ibm.com>;
+ Tue, 20 Jun 2017 14:48:47 +1000
+Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v5K4mavr61341756
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jun 2017 14:48:44 +1000
+Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
+ by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v5K4mBxG013101
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jun 2017 14:48:12 +1000
+Subject: Re: [PATCH] hwmon: (ibmpowernv) Add current(A) sensors
+To: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>, linux@roeck-us.net,
+ stewart@linux.vnet.ibm.com
+References: <1497864333-16969-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+ <56a39618-dc4f-385c-77c3-5c9be92e2d48@kaod.org>
+Cc: jdelvare@suse.com, benh@kernel.crashing.org, paulus@samba.org,
+ mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, svaidy@linux.vnet.ibm.com,
+ ego@linux.vnet.ibm.com, linux-hwmon@vger.kernel.org
+From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Date: Tue, 20 Jun 2017 10:17:48 +0530
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Message-Id: <c37014ef-9947-f0d2-02a3-e230dd9504b3@linux.vnet.ibm.com>
+In-Reply-To: <56a39618-dc4f-385c-77c3-5c9be92e2d48@kaod.org>
+Content-Type: text/plain; charset=windows-1252
+Message-Id: <77775369-f1d6-3dde-6985-ec35c176cdc3@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,264 +50,130 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hi Cedric,
 
-powerpc/numa: Correct the currently broken capability to set the
-topology for shared CPUs in LPARs.  At boot time for shared CPU
-lpars, the topology for each shared CPU is set to node zero, however,
-this is now updated correctly using the Virtual Processor Home Node
-(VPHN) capabilities information provided by the pHyp.
+On 06/19/2017 06:22 PM, Cédric Le Goater wrote:
+> On 06/19/2017 11:25 AM, Shilpasri G Bhat wrote:
+>> This patch exports current(A) sensors in inband sensors copied to
+>> main memory by OCC.
+>>
+>> Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+>> ---
+>>  drivers/hwmon/ibmpowernv.c | 4 +++-
+>>  1 file changed, 3 insertions(+), 1 deletion(-)
+>>
+>> diff --git a/drivers/hwmon/ibmpowernv.c b/drivers/hwmon/ibmpowernv.c
+>> index 862b832..e0557f9 100644
+>> --- a/drivers/hwmon/ibmpowernv.c
+>> +++ b/drivers/hwmon/ibmpowernv.c
+>> @@ -50,6 +50,7 @@ enum sensors {
+>>  	TEMP,
+>>  	POWER_SUPPLY,
+>>  	POWER_INPUT,
+>> +	CURRENT,
+>>  	MAX_SENSOR_TYPE,
+>>  };
+>>  
+>> @@ -65,7 +66,8 @@ enum sensors {
+>>  	{"fan", "ibm,opal-sensor-cooling-fan"},
+>>  	{"temp", "ibm,opal-sensor-amb-temp"},
+>>  	{"in", "ibm,opal-sensor-power-supply"},
+>> -	{"power", "ibm,opal-sensor-power"}
+>> +	{"power", "ibm,opal-sensor-power"},
+>> +	{"curr", "ibm,opal-sensor-current"},
+>>  };
+>>  
+>>  struct sensor_data {
+>>
+> 
+> 
+> I know why you are doing that but that is the old (cr?@#!y) way to 
+> define sensor types. we should try to improve thing a little more 
+> and use the "sensor-type" property only.
+> 
+> I think the patch below should help you adding new types without 
+> too much changes to your skiboot patchset. Could you please check ? 
+> 
 
-Also, update initialization checks for device-tree attributes to
-independently recognize PRRN or VPHN usage.
+Thanks for the patch. And yes this patch very neatly serves the purpose.
+I will repost my patch on top of your patch.
 
-Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
----
-Changes in V6:
-  -- Place extern of timed_topology_update() proto under additional #ifdef
-     for hotplug-cpu.
----
- arch/powerpc/include/asm/topology.h          |   16 +++++++
- arch/powerpc/mm/numa.c                       |   64 +++++++++++++++++++++++---
- arch/powerpc/platforms/pseries/dlpar.c       |    2 +
- arch/powerpc/platforms/pseries/hotplug-cpu.c |    2 +
- 4 files changed, 77 insertions(+), 7 deletions(-)
+Thanks and Regards,
+Shilpa
 
-diff --git a/arch/powerpc/include/asm/topology.h b/arch/powerpc/include/asm/topology.h
-index 9cc6ec9..ae3cdd0 100644
---- a/arch/powerpc/include/asm/topology.h
-+++ b/arch/powerpc/include/asm/topology.h
-@@ -79,6 +79,22 @@ static inline int prrn_is_enabled(void)
- }
- #endif /* CONFIG_NUMA && CONFIG_PPC_SPLPAR */
- 
-+#if defined(CONFIG_NUMA) && defined(CONFIG_PPC_SPLPAR) && \
-+	defined(CONFIG_HOTPLUG_CPU)
-+extern int timed_topology_update(int nsecs);
-+#else
-+static int timed_topology_update(int nsecs)
-+{
-+	return 0;
-+}
-+#endif /* CONFIG_NUMA && CONFIG_PPC_SPLPAR && CONFIG_HOTPLUG_CPU */
-+
-+#if defined(CONFIG_PPC_SPLPAR)
-+extern void shared_topology_update(void);
-+#else
-+#define	shared_topology_update()	0
-+#endif /* CONFIG_PPC_SPLPAR */
-+
- #include <asm-generic/topology.h>
- 
- #ifdef CONFIG_SMP
-diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-index e6ee829..164fbd5 100644
---- a/arch/powerpc/mm/numa.c
-+++ b/arch/powerpc/mm/numa.c
-@@ -29,6 +29,7 @@
- #include <linux/seq_file.h>
- #include <linux/uaccess.h>
- #include <linux/slab.h>
-+#include <linux/sched.h>
- #include <asm/cputhreads.h>
- #include <asm/sparsemem.h>
- #include <asm/prom.h>
-@@ -935,7 +936,7 @@ void __init initmem_init(void)
- 
- 	/*
- 	 * Reduce the possible NUMA nodes to the online NUMA nodes,
--	 * since we do not support node hotplug. This ensures that  we
-+	 * since we do not support node hotplug. This ensures that we
- 	 * lower the maximum NUMA node ID to what is actually present.
- 	 */
- 	nodes_and(node_possible_map, node_possible_map, node_online_map);
-@@ -1179,11 +1180,32 @@ struct topology_update_data {
- 	int new_nid;
- };
- 
-+#define	TOPOLOGY_DEF_TIMER_SECS		60
-+
- static u8 vphn_cpu_change_counts[NR_CPUS][MAX_DISTANCE_REF_POINTS];
- static cpumask_t cpu_associativity_changes_mask;
- static int vphn_enabled;
- static int prrn_enabled;
- static void reset_topology_timer(void);
-+static int topology_timer_secs = TOPOLOGY_DEF_TIMER_SECS;
-+static int topology_inited;
-+static int topology_update_needed;
-+
-+/*
-+ * Change polling interval for associativity changes.
-+ */
-+int timed_topology_update(int nsecs)
-+{
-+	if (nsecs > 0)
-+		topology_timer_secs = nsecs;
-+	else
-+		topology_timer_secs = TOPOLOGY_DEF_TIMER_SECS;
-+
-+	if (vphn_enabled)
-+		reset_topology_timer();
-+
-+	return 0;
-+}
- 
- /*
-  * Store the current values of the associativity change counters in the
-@@ -1277,6 +1299,12 @@ static long vphn_get_associativity(unsigned long cpu,
- 			"hcall_vphn() experienced a hardware fault "
- 			"preventing VPHN. Disabling polling...\n");
- 		stop_topology_update();
-+		break;
-+	case H_SUCCESS:
-+		printk(KERN_INFO
-+			"VPHN hcall succeeded. Reset polling...\n");
-+		timed_topology_update(0);
-+		break;
- 	}
- 
- 	return rc;
-@@ -1354,8 +1382,11 @@ int numa_update_cpu_topology(bool cpus_locked)
- 	struct device *dev;
- 	int weight, new_nid, i = 0;
- 
--	if (!prrn_enabled && !vphn_enabled)
-+	if (!prrn_enabled && !vphn_enabled) {
-+		if (!topology_inited)
-+			topology_update_needed = 1;
- 		return 0;
-+	}
- 
- 	weight = cpumask_weight(&cpu_associativity_changes_mask);
- 	if (!weight)
-@@ -1394,6 +1425,8 @@ int numa_update_cpu_topology(bool cpus_locked)
- 			cpumask_andnot(&cpu_associativity_changes_mask,
- 					&cpu_associativity_changes_mask,
- 					cpu_sibling_mask(cpu));
-+			pr_info("Assoc chg gives same node %d for cpu%d\n",
-+					new_nid, cpu);
- 			cpu = cpu_last_thread_sibling(cpu);
- 			continue;
- 		}
-@@ -1410,6 +1443,9 @@ int numa_update_cpu_topology(bool cpus_locked)
- 		cpu = cpu_last_thread_sibling(cpu);
- 	}
- 
--- 
-Michael W. Bringmann
-Linux Technology Center
-IBM Corporation
-Tie-Line  363-5196
-External: (512) 286-5196
-Cell:       (512) 466-0650
-mwb@linux.vnet.ibm.com
-+	if (i)
-+		updates[i-1].next = NULL;
-+
- 	pr_debug("Topology update for the following CPUs:\n");
- 	if (cpumask_weight(&updated_cpus)) {
- 		for (ud = &updates[0]; ud; ud = ud->next) {
-@@ -1465,6 +1501,7 @@ int numa_update_cpu_topology(bool cpus_locked)
- 
- out:
- 	kfree(updates);
-+	topology_update_needed = 0;
- 	return changed;
- }
- 
-@@ -1484,6 +1521,14 @@ static void topology_schedule_update(void)
- 	schedule_work(&topology_work);
- }
- 
-+void shared_topology_update(void)
-+{
-+	if (firmware_has_feature(FW_FEATURE_VPHN) &&
-+		   lppaca_shared_proc(get_lppaca()))
-+		topology_schedule_update();
-+}
-+EXPORT_SYMBOL(shared_topology_update);
-+
- static void topology_timer_fn(unsigned long ignored)
- {
- 	if (prrn_enabled && cpumask_weight(&cpu_associativity_changes_mask))
-@@ -1500,7 +1545,7 @@ static void topology_timer_fn(unsigned long ignored)
- static void reset_topology_timer(void)
- {
- 	topology_timer.data = 0;
--	topology_timer.expires = jiffies + 60 * HZ;
-+	topology_timer.expires = jiffies + topology_timer_secs * HZ;
- 	mod_timer(&topology_timer, topology_timer.expires);
- }
- 
-@@ -1550,15 +1595,14 @@ int start_topology_update(void)
- 	if (firmware_has_feature(FW_FEATURE_PRRN)) {
- 		if (!prrn_enabled) {
- 			prrn_enabled = 1;
--			vphn_enabled = 0;
- #ifdef CONFIG_SMP
- 			rc = of_reconfig_notifier_register(&dt_update_nb);
- #endif
- 		}
--	} else if (firmware_has_feature(FW_FEATURE_VPHN) &&
-+	}
-+	if (firmware_has_feature(FW_FEATURE_VPHN) &&
- 		   lppaca_shared_proc(get_lppaca())) {
- 		if (!vphn_enabled) {
--			prrn_enabled = 0;
- 			vphn_enabled = 1;
- 			setup_cpu_associativity_change_counters();
- 			init_timer_deferrable(&topology_timer);
-@@ -1581,7 +1625,8 @@ int stop_topology_update(void)
- #ifdef CONFIG_SMP
- 		rc = of_reconfig_notifier_unregister(&dt_update_nb);
- #endif
--	} else if (vphn_enabled) {
-+	}
-+	if (vphn_enabled) {
- 		vphn_enabled = 0;
- 		rc = del_timer_sync(&topology_timer);
- 	}
-@@ -1647,6 +1692,11 @@ static int topology_update_init(void)
- 	if (!proc_create("powerpc/topology_updates", 0644, NULL, &topology_ops))
- 		return -ENOMEM;
- 
-+	topology_inited = 1;
-+	if (topology_update_needed)
-+		bitmap_fill(cpumask_bits(&cpu_associativity_changes_mask),
-+					nr_cpumask_bits);
-+
- 	return 0;
- }
- device_initcall(topology_update_init);
-diff --git a/arch/powerpc/platforms/pseries/dlpar.c b/arch/powerpc/platforms/pseries/dlpar.c
-index bda18d8..0219cd3 100644
---- a/arch/powerpc/platforms/pseries/dlpar.c
-+++ b/arch/powerpc/platforms/pseries/dlpar.c
-@@ -592,6 +592,8 @@ static ssize_t dlpar_show(struct class *class, struct class_attribute *attr,
- 
- static int __init pseries_dlpar_init(void)
- {
-+	shared_topology_update();
-+
- 	pseries_hp_wq = alloc_workqueue("pseries hotplug workqueue",
- 					WQ_UNBOUND, 1);
- 	return sysfs_create_file(kernel_kobj, &class_attr_dlpar.attr);
-diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-index 7bc0e91..96c02d0 100644
---- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
-+++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-@@ -356,6 +356,7 @@ static int dlpar_online_cpu(struct device_node *dn)
- 			BUG_ON(get_cpu_current_state(cpu)
- 					!= CPU_STATE_OFFLINE);
- 			cpu_maps_update_done();
-+			timed_topology_update(1);
- 			rc = device_online(get_cpu_device(cpu));
- 			if (rc)
- 				goto out;
-@@ -522,6 +523,7 @@ static int dlpar_offline_cpu(struct device_node *dn)
- 				set_preferred_offline_state(cpu,
- 							    CPU_STATE_OFFLINE);
- 				cpu_maps_update_done();
-+				timed_topology_update(1);
- 				rc = device_offline(get_cpu_device(cpu));
- 				if (rc)
- 					goto out;
+> Thanks,
+> 
+> C. 
+> 
+> From: Cédric Le Goater <clg@kaod.org>
+> Subject: [PATCH] hwmon: (ibmpowernv) introduce a legacy_compatibles array
+> Date: Mon, 19 Jun 2017 14:29:29 +0200
+> MIME-Version: 1.0
+> Content-Type: text/plain; charset=UTF-8
+> Content-Transfer-Encoding: 8bit
+> 
+> Today, the type of a PowerNV sensor system is determined with the
+> "compatible" property for legacy Firmwares and with the "sensor-type"
+> for newer ones. The same array of strings is used for both to do the
+> matching and this raises some issue to introduce new sensor types.
+> 
+> Let's introduce two different arrays (legacy and current) to make
+> things easier for new sensor types.
+> 
+> Signed-off-by: Cédric Le Goater <clg@kaod.org>
+> ---
+
+
+>  drivers/hwmon/ibmpowernv.c |   26 ++++++++++++++++++--------
+>  1 file changed, 18 insertions(+), 8 deletions(-)
+> 
+> Index: linux.git/drivers/hwmon/ibmpowernv.c
+> ===================================================================
+> --- linux.git.orig/drivers/hwmon/ibmpowernv.c
+> +++ linux.git/drivers/hwmon/ibmpowernv.c
+> @@ -55,17 +55,27 @@ enum sensors {
+> 
+>  #define INVALID_INDEX (-1U)
+> 
+> +/*
+> + * 'compatible' string properties for sensor types as defined in old
+> + * PowerNV firmware (skiboot). These are ordered as 'enum sensors'.
+> + */
+> +static const char * const legacy_compatibles[] = {
+> +	"ibm,opal-sensor-cooling-fan",
+> +	"ibm,opal-sensor-amb-temp",
+> +	"ibm,opal-sensor-power-supply",
+> +	"ibm,opal-sensor-power"
+> +};
+> +
+>  static struct sensor_group {
+> -	const char *name;
+> -	const char *compatible;
+> +	const char *name; /* matches property 'sensor-type' */
+>  	struct attribute_group group;
+>  	u32 attr_count;
+>  	u32 hwmon_index;
+>  } sensor_groups[] = {
+> -	{"fan", "ibm,opal-sensor-cooling-fan"},
+> -	{"temp", "ibm,opal-sensor-amb-temp"},
+> -	{"in", "ibm,opal-sensor-power-supply"},
+> -	{"power", "ibm,opal-sensor-power"}
+> +	{ "fan"   },
+> +	{ "temp"  },
+> +	{ "in"    },
+> +	{ "power" }
+>  };
+> 
+>  struct sensor_data {
+> @@ -239,8 +249,8 @@ static int get_sensor_type(struct device
+>  	enum sensors type;
+>  	const char *str;
+> 
+> -	for (type = 0; type < MAX_SENSOR_TYPE; type++) {
+> -		if (of_device_is_compatible(np, sensor_groups[type].compatible))
+> +	for (type = 0; type < ARRAY_SIZE(legacy_compatibles); type++) {
+> +		if (of_device_is_compatible(np, legacy_compatibles[type]))
+>  			return type;
+>  	}
+> 
+> 
