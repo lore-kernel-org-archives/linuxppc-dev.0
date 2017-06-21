@@ -1,54 +1,25 @@
-Return-Path: <bauerman@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <acme@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wtBvB4dCxzDq88
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jun 2017 03:45:26 +1000 (AEST)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v5LHhjax108815
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jun 2017 13:45:22 -0400
-Received: from e24smtp01.br.ibm.com (e24smtp01.br.ibm.com [32.104.18.85])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2b7urxdbhg-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jun 2017 13:45:21 -0400
-Received: from localhost
- by e24smtp01.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.vnet.ibm.com>;
- Wed, 21 Jun 2017 14:45:15 -0300
-Received: from d24av01.br.ibm.com (d24av01.br.ibm.com [9.8.31.91])
- by d24relay02.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v5LHjDJu2883888
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jun 2017 14:45:13 -0300
-Received: from d24av01.br.ibm.com (localhost [127.0.0.1])
- by d24av01.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v5LHjC6G020981
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jun 2017 14:45:13 -0300
-References: <1496886555-10082-1-git-send-email-bauerman@linux.vnet.ibm.com>
- <1496886555-10082-7-git-send-email-bauerman@linux.vnet.ibm.com>
- <1497443972.4287.38.camel@linux.vnet.ibm.com>
-From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-To: Mimi Zohar <zohar@linux.vnet.ibm.com>
-Cc: linux-security-module@vger.kernel.org,
- linux-ima-devel@lists.sourceforge.net, keyrings@vger.kernel.org,
- linux-crypto@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Dmitry Kasatkin <dmitry.kasatkin@gmail.com>,
- James Morris <james.l.morris@oracle.com>,
- "Serge E. Hallyn" <serge@hallyn.com>, David Howells <dhowells@redhat.com>,
- David Woodhouse <dwmw2@infradead.org>, Jessica Yu <jeyu@redhat.com>,
- Rusty Russell <rusty@rustcorp.com.au>,
- Herbert Xu <herbert@gondor.apana.org.au>,
- "David S. Miller" <davem@davemloft.net>,
- "AKASHI\, Takahiro" <takahiro.akashi@linaro.org>
-Subject: Re: [PATCH v2 6/6] ima: Support module-style appended signatures for
- appraisal
-In-reply-to: <1497443972.4287.38.camel@linux.vnet.ibm.com>
-Date: Wed, 21 Jun 2017 14:45:02 -0300
-MIME-Version: 1.0
-Content-Type: text/plain
-Message-Id: <8760fpck0x.fsf@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wtCHT3mCrzDq88
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jun 2017 04:03:01 +1000 (AEST)
+From: Arnaldo Carvalho de Melo <acme@kernel.org>
+To: Ingo Molnar <mingo@kernel.org>
+Cc: linux-kernel@vger.kernel.org, Arnaldo Carvalho de Melo <acme@kernel.org>,
+ Adrian Hunter <adrian.hunter@intel.com>, Andi Kleen <ak@linux.intel.com>,
+ David Ahern <dsahern@gmail.com>, Jiri Olsa <jolsa@kernel.org>,
+ Kan Liang <kan.liang@intel.com>, linuxppc-dev@lists.ozlabs.org,
+ Milian Wolff <milian.wolff@kdab.com>, Namhyung Kim <namhyung@kernel.org>,
+ "Naveen N . Rao" <naveen.n.rao@linux.vnet.ibm.com>,
+ Paolo Bonzini <pbonzini@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
+ Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>,
+ Robert Elliott <elliott@hpe.com>, Stephane Eranian <eranian@google.com>,
+ Thomas Gleixner <tglx@linutronix.de>, Wang Nan <wangnan0@huawei.com>,
+ Arnaldo Carvalho de Melo <acme@redhat.com>
+Subject: [GIT PULL 00/25] perf/core improvements and fixes
+Date: Wed, 21 Jun 2017 15:02:20 -0300
+Message-Id: <20170621180245.23134-1-acme@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -58,286 +29,311 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hi Ingo,
 
-Hello Mimi,
+	Please consider pulling,
 
-Thanks for your review, and for queuing the other patches in this series.
+- Arnaldo
 
-Mimi Zohar <zohar@linux.vnet.ibm.com> writes:
-> On Wed, 2017-06-07 at 22:49 -0300, Thiago Jung Bauermann wrote:
->> This patch introduces the modsig keyword to the IMA policy syntax to
->> specify that a given hook should expect the file to have the IMA signature
->> appended to it.
->
-> Thank you, Thiago. Appended signatures seem to be working proper now
-> with multiple keys on the IMA keyring.
+Test results at the end of this message, as usual.
 
-Great news!
+The following changes since commit 007b811b4041989ec2dc91b9614aa2c41332723e:
 
-> The length of this patch description is a good indication that this
-> patch needs to be broken up for easier review. A few
-> comments/suggestions inline below.
+  Merge tag 'perf-core-for-mingo-4.13-20170719' of git://git.kernel.org/pub/scm/linux/kernel/git/acme/linux into perf/core (2017-06-20 10:49:08 +0200)
 
-Ok, I will try to break it up, and also patch 5 as you suggested.
+are available in the git repository at:
 
->> diff --git a/security/integrity/digsig.c b/security/integrity/digsig.c
->> index 06554c448dce..9190c9058f4f 100644
->> --- a/security/integrity/digsig.c
->> +++ b/security/integrity/digsig.c
->> @@ -48,11 +48,10 @@ static bool init_keyring __initdata;
->>  #define restrict_link_to_ima restrict_link_by_builtin_trusted
->>  #endif
->> 
->> -int integrity_digsig_verify(const unsigned int id, const char *sig, int siglen,
->> -			    const char *digest, int digestlen)
->> +struct key *integrity_keyring_from_id(const unsigned int id)
->>  {
->> -	if (id >= INTEGRITY_KEYRING_MAX || siglen < 2)
->> -		return -EINVAL;
->> +	if (id >= INTEGRITY_KEYRING_MAX)
->> +		return ERR_PTR(-EINVAL);
->> 
->
-> When splitting up this patch, the addition of this new function could
-> be a separate patch. The patch description would explain the need for
-> a new function.
+  git://git.kernel.org/pub/scm/linux/kernel/git/acme/linux.git tags/perf-core-for-mingo-4.13-20170621
 
-Ok, will do for v3.
+for you to fetch changes up to 701516ae3dec801084bc913d21e03fce15c61a0b:
 
->> @@ -229,10 +234,14 @@ int ima_appraise_measurement(enum ima_hooks func,
->>  		goto out;
->>  	}
->> 
->> -	status = evm_verifyxattr(dentry, XATTR_NAME_IMA, xattr_value, rc, iint);
->> -	if ((status != INTEGRITY_PASS) && (status != INTEGRITY_UNKNOWN)) {
->> -		if ((status == INTEGRITY_NOLABEL)
->> -		    || (status == INTEGRITY_NOXATTRS))
->> +	/* Appended signatures aren't protected by EVM. */
->> +	status = evm_verifyxattr(dentry, XATTR_NAME_IMA,
->> +				 xattr_value->type == IMA_MODSIG ?
->> +				 NULL : xattr_value, rc, iint);
->> +	if (status != INTEGRITY_PASS && status != INTEGRITY_UNKNOWN &&
->> +	    !(xattr_value->type == IMA_MODSIG &&
->> +	      (status == INTEGRITY_NOLABEL || status == INTEGRITY_NOXATTRS))) {
->
-> This was messy to begin with, and now it is even more messy. For
-> appended signatures, we're only interested in INTEGRITY_FAIL. Maybe
-> leave the existing "if" clause alone and define a new "if" clause.
+  perf script: Fix message because field list option is -F not -f (2017-06-21 11:35:53 -0300)
 
-Ok, is this what you had in mind?
+----------------------------------------------------------------
+perf/core improvements ad fixes:
 
-@@ -229,8 +237,14 @@ int ima_appraise_measurement(enum ima_hooks func,
- 		goto out;
- 	}
- 
--	status = evm_verifyxattr(dentry, XATTR_NAME_IMA, xattr_value, rc, iint);
--	if ((status != INTEGRITY_PASS) && (status != INTEGRITY_UNKNOWN)) {
-+	/* Appended signatures aren't protected by EVM. */
-+	status = evm_verifyxattr(dentry, XATTR_NAME_IMA,
-+				 xattr_value->type == IMA_MODSIG ?
-+				 NULL : xattr_value, rc, iint);
-+	if (xattr_value->type == IMA_MODSIG && status == INTEGRITY_FAIL) {
-+		cause = "invalid-HMAC";
-+		goto out;
-+	} else if (status != INTEGRITY_PASS && status != INTEGRITY_UNKNOWN) {
- 		if ((status == INTEGRITY_NOLABEL)
- 		    || (status == INTEGRITY_NOXATTRS))
- 			cause = "missing-HMAC";
+New features:
 
->> @@ -267,11 +276,18 @@ int ima_appraise_measurement(enum ima_hooks func,
->>  		status = INTEGRITY_PASS;
->>  		break;
->>  	case EVM_IMA_XATTR_DIGSIG:
->> +	case IMA_MODSIG:
->>  		iint->flags |= IMA_DIGSIG;
->> -		rc = integrity_digsig_verify(INTEGRITY_KEYRING_IMA,
->> -					     (const char *)xattr_value, rc,
->> -					     iint->ima_hash->digest,
->> -					     iint->ima_hash->length);
->> +
->> +		if (xattr_value->type == EVM_IMA_XATTR_DIGSIG)
->> +			rc = integrity_digsig_verify(INTEGRITY_KEYRING_IMA,
->> +						     (const char *)xattr_value,
->> +						     rc, iint->ima_hash->digest,
->> +						     iint->ima_hash->length);
->> +		else
->> +			rc = ima_modsig_verify(INTEGRITY_KEYRING_IMA,
->> +					       xattr_value);
->> +
->
-> Perhaps allowing IMA_MODSIG to flow into EVM_IMA_XATTR_DIGSIG on
-> failure, would help restore process_measurements() to the way it was.
-> Further explanation below.
+- Add support to measure SMI cost in 'perf stat' (Kan Liang)
 
-It's not possible to simply flow into EVM_IMA_XATTR_DIGSIG on failure
-because after calling ima_read_xattr we need to run again all the logic
-before the switch statement. Instead, I'm currently testing the
-following change for v3, what do you think?
+- Add support for unwinding callchains in powerpc with libdw (Paolo Bonzini)
 
-More about this code further below.
+Fixes:
 
-@@ -266,6 +280,44 @@ int ima_appraise_measurement(enum ima_hooks func,
- 		}
- 		status = INTEGRITY_PASS;
- 		break;
-+	case IMA_MODSIG:
-+		rc = ima_modsig_verify(INTEGRITY_KEYRING_IMA, xattr_value);
-+		if (!rc) {
-+			iint->flags |= IMA_DIGSIG;
-+			status = INTEGRITY_PASS;
-+			break;
-+		}
-+
-+		/*
-+		 * The appended signature failed verification. Let's try
-+		 * reading a signature from the extended attribute instead.
-+		 */
-+
-+		ima_free_xattr_data(xattr_value);
-+		xattr_value = NULL;
-+
-+		/* read 'security.ima' */
-+		xattr_len = ima_read_xattr(file_dentry(file), &xattr_value);
-+		algo = iint->ima_hash->algo;
-+
-+		if (!xattr_value || xattr_value->type == IMA_MODSIG ||
-+		    ima_get_hash_algo(xattr_value, xattr_len) != algo) {
-+			iint->flags |= IMA_DIGSIG;
-+
-+			if (rc == -EOPNOTSUPP)
-+				status = INTEGRITY_UNKNOWN;
-+			else {
-+				cause = "invalid-signature";
-+				status = INTEGRITY_FAIL;
-+			}
-+
-+			break;
-+		}
-+
-+		pr_debug("Trying the xattr signature\n");
-+
-+		return ima_appraise_measurement(func, iint, file, filename,
-+						xattr_value, xattr_len, opened);
- 	case EVM_IMA_XATTR_DIGSIG:
- 		iint->flags |= IMA_DIGSIG;
- 		rc = integrity_digsig_verify(INTEGRITY_KEYRING_IMA,
+- Fix message: cpu list option is -C not -c (Adrian Hunter)
 
->> @@ -406,7 +424,8 @@ int ima_inode_setxattr(struct dentry *dentry, const char *xattr_name,
->>  		if (!xattr_value_len || (xvalue->type >= IMA_XATTR_LAST))
->>  			return -EINVAL;
->>  		ima_reset_appraise_flags(d_backing_inode(dentry),
->> -			 (xvalue->type == EVM_IMA_XATTR_DIGSIG) ? 1 : 0);
->> +					 xvalue->type == EVM_IMA_XATTR_DIGSIG ||
->> +					 xvalue->type == IMA_MODSIG);
->
-> Probably easier to read if we set a variable, before calling
-> ima_reset_appraise_flags.
+- Fix 'perf script' message: field list option is -F not -f (Adrian Hunter)
 
-Ok, will do in v3.
+- Intel PT fixes: (Adrian Hunter)
 
->> @@ -226,30 +282,23 @@ static int process_measurement(struct file *file, char *buf, loff_t size,
->>  		goto out_digsig;
->>  	}
->> 
->> -	template_desc = ima_template_desc_current();
->> -	if ((action & IMA_APPRAISE_SUBMASK) ||
->> -		    strcmp(template_desc->name, IMA_TEMPLATE_IMA_NAME) != 0)
->> -		/* read 'security.ima' */
->> -		xattr_len = ima_read_xattr(file_dentry(file), &xattr_value);
->> -
->> -	hash_algo = ima_get_hash_algo(xattr_value, xattr_len);
->> -
->> -	rc = ima_collect_measurement(iint, file, buf, size, hash_algo);
->> -	if (rc != 0) {
->> -		if (file->f_flags & O_DIRECT)
->> -			rc = (iint->flags & IMA_PERMIT_DIRECTIO) ? 0 : -EACCES;
->> -		goto out_digsig;
->> -	}
->> -
->
-> There are four stages: collect measurement, store measurement,
-> appraise measurement and audit measurement. "Collect" needs to be
-> done if any one of the other stages is needed.
->
->>  	if (!pathbuf)	/* ima_rdwr_violation possibly pre-fetched */
->>  		pathname = ima_d_path(&file->f_path, &pathbuf, filename);
->> 
->> +	if (iint->flags & IMA_MODSIG_ALLOWED)
->> +		rc = measure_and_appraise(file, buf, size, func, opened, action,
->> +					  iint, &xattr_value, &xattr_len,
->> +					  pathname, true);
->> +	if (!xattr_len)
->> +		rc = measure_and_appraise(file, buf, size, func, opened, action,
->> +					  iint, &xattr_value, &xattr_len,
->> +					  pathname, false);
->
-> I would rather see "collect" extended to support an appended signature
-> rather than trying to combine "collect" and "appraise" together.
+  o Fix missing stack clear
+  o Ensure IP is zero when state is INTEL_PT_STATE_NO_IP
+  o Fix last_ip usage
+  o Ensure never to set 'last_ip' when packet 'count' is zero
+  o Clear FUP flag on error
+  o Fix transactions_sample_type
 
-I'm not sure I understand what you mean by "extend collect to support an
-appended signature", but the fundamental problem is that we don't know
-whether we need to fallback to the xattr sig until the appraise step
-because that's when we verify the signature, and by then the collect and
-store steps were already completed and would need to be done again if
-the hash algorithm in the xattr sig is different.
+Infrastructure:
 
-If we don't want to change the order of these steps what I suggest (and
-what the code I pasted above for ima_appraise_measurement does) is to
-only allow falling back to the xattr sig if the appended sig and the
-xattr sig use the same hash algorithm.
+- Intel PT cleanups/refactorings (Adrian Hunter)
 
-In that case, collect and store don't need to be redone nor the store
-step need to be moved after appraise. This is the only change that would
-be needed in process_measurement:
+  o Use FUP always when scanning for an IP
+  o Add missing __fallthrough
+  o Remove redundant initial_skip checks
+  o Allow decoding with branch tracing disabled
+  o Add default config for pass-through branch enable
+  o Add documentation for new config terms
+  o Add decoder support for ptwrite and power event packets
+  o Add reserved byte to CBR packet payload
+  o Add decoder support for CBR events
 
-@@ -227,10 +230,16 @@ static int process_measurement(struct file *file, char *buf, loff_t size,
- 	}
- 
- 	template_desc = ima_template_desc_current();
--	if ((action & IMA_APPRAISE_SUBMASK) ||
--		    strcmp(template_desc->name, IMA_TEMPLATE_IMA_NAME) != 0)
--		/* read 'security.ima' */
--		xattr_len = ima_read_xattr(file_dentry(file), &xattr_value);
-+	if (action & IMA_APPRAISE_SUBMASK ||
-+	    strcmp(template_desc->name, IMA_TEMPLATE_IMA_NAME) != 0) {
-+		if (iint->flags & IMA_MODSIG_ALLOWED)
-+			ima_read_modsig(buf, &size, &xattr_value, &xattr_len);
-+
-+		if (!xattr_len)
-+			/* read 'security.ima' */
-+			xattr_len = ima_read_xattr(file_dentry(file),
-+						   &xattr_value);
-+	}
- 
- 	hash_algo = ima_get_hash_algo(xattr_value, xattr_len);
- 
-@@ -257,7 +266,7 @@ static int process_measurement(struct file *file, char *buf, loff_t size,
- 	if ((mask & MAY_WRITE) && (iint->flags & IMA_DIGSIG) &&
- 	     !(iint->flags & IMA_NEW_FILE))
- 		rc = -EACCES;
--	kfree(xattr_value);
-+	ima_free_xattr_data(xattr_value);
- out_free:
- 	if (pathbuf)
- 		__putname(pathbuf);
+- Move  find_process() to the only place that uses it, skimming some
+  more fat from util.[ch] (Arnaldo Carvalho de Melo)
 
->
->> +	if (rc)
->> +		goto out_digsig;
->> +
->>  	if (action & IMA_MEASURE)
->>  		ima_store_measurement(iint, file, pathname,
->>  				      xattr_value, xattr_len, pcr);
->> -	if (action & IMA_APPRAISE_SUBMASK)
->> -		rc = ima_appraise_measurement(func, iint, file, pathname,
->> -					      xattr_value, xattr_len, opened);
->
-> Moving appraisal before storing the measurement, should be a separate
-> patch with a clear explanation as to why it is needed.
+- Do parameter validation earlier on fetch_kernel_version() (Arnaldo Carvalho de Melo)
 
-Ok, will do in v3 if you don't like the restriction of both the modsig
-and xattr sig having to use the same hash algorithm.
+- Remove unused _ALL_SOURCE define (Arnaldo Carvalho de Melo)
 
--- 
-Thiago Jung Bauermann
-IBM Linux Technology Center
+- Add sysfs__write_int function (Kan Liang)
+
+Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+
+----------------------------------------------------------------
+Adrian Hunter (19):
+      perf intel-pt: Move decoder error setting into one condition
+      perf intel-pt: Improve sample timestamp
+      perf intel-pt: Fix missing stack clear
+      perf intel-pt: Ensure IP is zero when state is INTEL_PT_STATE_NO_IP
+      perf intel-pt: Fix last_ip usage
+      perf intel-pt: Ensure never to set 'last_ip' when packet 'count' is zero
+      perf intel-pt: Use FUP always when scanning for an IP
+      perf intel-pt: Clear FUP flag on error
+      perf intel-pt: Add missing __fallthrough
+      perf intel-pt: Allow decoding with branch tracing disabled
+      perf intel-pt: Add default config for pass-through branch enable
+      perf intel-pt: Add documentation for new config terms
+      perf intel-pt: Add decoder support for ptwrite and power event packets
+      perf intel-pt: Add reserved byte to CBR packet payload
+      perf intel-pt: Add decoder support for CBR events
+      perf intel-pt: Remove redundant initial_skip checks
+      perf intel-pt: Fix transactions_sample_type
+      perf tools: Fix message because cpu list option is -C not -c
+      perf script: Fix message because field list option is -F not -f
+
+Arnaldo Carvalho de Melo (3):
+      perf evsel: Adopt find_process()
+      perf tools: Do parameter validation earlier on fetch_kernel_version()
+      perf tools: Remove unused _ALL_SOURCE define
+
+Kan Liang (2):
+      tools lib api fs: Add sysfs__write_int function
+      perf stat: Add support to measure SMI cost
+
+Paolo Bonzini (1):
+      perf unwind: Support for powerpc
+
+ tools/lib/api/fs/fs.c                              |  30 +++
+ tools/lib/api/fs/fs.h                              |   4 +
+ tools/perf/Documentation/intel-pt.txt              |  36 +++
+ tools/perf/Documentation/perf-stat.txt             |  14 +
+ tools/perf/Makefile.config                         |   2 +-
+ tools/perf/arch/powerpc/util/Build                 |   2 +
+ tools/perf/arch/powerpc/util/unwind-libdw.c        |  73 ++++++
+ tools/perf/arch/x86/util/intel-pt.c                |   5 +
+ tools/perf/builtin-script.c                        |   2 +-
+ tools/perf/builtin-stat.c                          |  49 ++++
+ tools/perf/util/evsel.c                            |  39 +++
+ .../perf/util/intel-pt-decoder/intel-pt-decoder.c  | 290 +++++++++++++++++++--
+ .../perf/util/intel-pt-decoder/intel-pt-decoder.h  |  13 +
+ .../util/intel-pt-decoder/intel-pt-pkt-decoder.c   | 110 +++++++-
+ .../util/intel-pt-decoder/intel-pt-pkt-decoder.h   |   7 +
+ tools/perf/util/intel-pt.c                         |  23 +-
+ tools/perf/util/session.c                          |   2 +-
+ tools/perf/util/stat-shadow.c                      |  33 +++
+ tools/perf/util/stat.c                             |   2 +
+ tools/perf/util/stat.h                             |   2 +
+ tools/perf/util/util.c                             |  52 +---
+ tools/perf/util/util.h                             |   3 -
+ 22 files changed, 710 insertions(+), 83 deletions(-)
+ create mode 100644 tools/perf/arch/powerpc/util/unwind-libdw.c
+
+Test results:
+
+The first ones are container (docker) based builds of tools/perf with and
+without libelf support, objtool where it is supported and samples/bpf/, ditto.
+Where clang is available, it is also used to build perf with/without libelf.
+
+Several are cross builds, the ones with -x-ARCH, and the android one, and those
+may not have all the features built, due to lack of multi-arch devel packages,
+available and being used so far on just a few, like
+debian:experimental-x-{arm64,mipsel}.
+
+The 'perf test' one will perform a variety of tests exercising
+tools/perf/util/, tools/lib/{bpf,traceevent,etc}, as well as run perf commands
+with a variety of command line event specifications to then intercept the
+sys_perf_event syscall to check that the perf_event_attr fields are set up as
+expected, among a variety of other unit tests.
+
+Then there is the 'make -C tools/perf build-test' ones, that build tools/perf/
+with a variety of feature sets, exercising the build with an incomplete set of
+features as well as with a complete one. It is planned to have it run on each
+of the containers mentioned above, using some container orchestration
+infrastructure. Get in contact if interested in helping having this in place.
+
+  # dm
+   1 alpine:3.4: Ok
+   2 alpine:3.5: Ok
+   3 alpine:3.6: Ok
+   4 alpine:edge: Ok
+   5 android-ndk:r12b-arm: Ok
+   6 archlinux:latest: Ok
+   7 centos:5: Ok
+   8 centos:6: Ok
+   9 centos:7: Ok
+  10 debian:7: Ok
+  11 debian:8: Ok
+  12 debian:9: Ok
+  13 debian:experimental: Ok
+  14 debian:experimental-x-arm64: Ok
+  15 debian:experimental-x-mips: Ok
+  16 debian:experimental-x-mips64: Ok
+  17 debian:experimental-x-mipsel: Ok
+  18 fedora:20: Ok
+  19 fedora:21: Ok
+  20 fedora:22: Ok
+  21 fedora:23: Ok
+  22 fedora:24: Ok
+  23 fedora:24-x-ARC-uClibc: Ok
+  24 fedora:25: Ok
+  25 fedora:rawhide: Ok
+  26 mageia:5: Ok
+  27 opensuse:13.2: Ok
+  28 opensuse:42.1: Ok
+  29 opensuse:tumbleweed: Ok
+  30 ubuntu:12.04.5: Ok
+  31 ubuntu:14.04.4: Ok
+  32 ubuntu:14.04.4-x-linaro-arm64: Ok
+  33 ubuntu:15.10: Ok
+  34 ubuntu:16.04: Ok
+  35 ubuntu:16.04-x-arm: Ok
+  36 ubuntu:16.04-x-arm64: Ok
+  37 ubuntu:16.04-x-powerpc: Ok
+  38 ubuntu:16.04-x-powerpc64: Ok
+  39 ubuntu:16.04-x-powerpc64el: Ok
+  40 ubuntu:16.04-x-s390: Ok
+  41 ubuntu:16.10: Ok
+  42 ubuntu:17.04: Ok
+  # 
+
+  # uname -a
+  Linux jouet 4.12.0-rc4+ #1 SMP Fri Jun 9 12:59:23 -03 2017 x86_64 x86_64 x86_64 GNU/Linux
+  # perf test
+   1: vmlinux symtab matches kallsyms            : Ok
+   2: Detect openat syscall event                : Ok
+   3: Detect openat syscall event on all cpus    : Ok
+   4: Read samples using the mmap interface      : Ok
+   5: Parse event definition strings             : Ok
+   6: Simple expression parser                   : Ok
+   7: PERF_RECORD_* events & perf_sample fields  : Ok
+   8: Parse perf pmu format                      : Ok
+   9: DSO data read                              : Ok
+  10: DSO data cache                             : Ok
+  11: DSO data reopen                            : Ok
+  12: Roundtrip evsel->name                      : Ok
+  13: Parse sched tracepoints fields             : Ok
+  14: syscalls:sys_enter_openat event fields     : Ok
+  15: Setup struct perf_event_attr               : Ok
+  16: Match and link multiple hists              : Ok
+  17: 'import perf' in python                    : Ok
+  18: Breakpoint overflow signal handler         : Ok
+  19: Breakpoint overflow sampling               : Ok
+  20: Number of exit events of a simple workload : Ok
+  21: Software clock events period values        : Ok
+  22: Object code reading                        : Ok
+  23: Sample parsing                             : Ok
+  24: Use a dummy software event to keep tracking: Ok
+  25: Parse with no sample_id_all bit set        : Ok
+  26: Filter hist entries                        : Ok
+  27: Lookup mmap thread                         : Ok
+  28: Share thread mg                            : Ok
+  29: Sort output of hist entries                : Ok
+  30: Cumulate child hist entries                : Ok
+  31: Track with sched_switch                    : Ok
+  32: Filter fds with revents mask in a fdarray  : Ok
+  33: Add fd to a fdarray, making it autogrow    : Ok
+  34: kmod_path__parse                           : Ok
+  35: Thread map                                 : Ok
+  36: LLVM search and compile                    :
+  36.1: Basic BPF llvm compile                    : Ok
+  36.2: kbuild searching                          : Ok
+  36.3: Compile source for BPF prologue generation: Ok
+  36.4: Compile source for BPF relocation         : Ok
+  37: Session topology                           : Ok
+  38: BPF filter                                 :
+  38.1: Basic BPF filtering                      : Ok
+  38.2: BPF pinning                              : Ok
+  38.3: BPF prologue generation                  : Ok
+  38.4: BPF relocation checker                   : Ok
+  39: Synthesize thread map                      : Ok
+  40: Remove thread map                          : Ok
+  41: Synthesize cpu map                         : Ok
+  42: Synthesize stat config                     : Ok
+  43: Synthesize stat                            : Ok
+  44: Synthesize stat round                      : Ok
+  45: Synthesize attr update                     : Ok
+  46: Event times                                : Ok
+  47: Read backward ring buffer                  : Ok
+  48: Print cpu map                              : Ok
+  49: Probe SDT events                           : Ok
+  50: is_printable_array                         : Ok
+  51: Print bitmap                               : Ok
+  52: perf hooks                                 : Ok
+  53: builtin clang support                      : Skip (not compiled in)
+  54: unit_number__scnprintf                     : Ok
+  55: x86 rdpmc                                  : Ok
+  56: Convert perf time to TSC                   : Ok
+  57: DWARF unwind                               : Ok
+  58: x86 instruction decoder - new instructions : Ok
+  59: Intel cqm nmi context read                 : Skip
+  #
+
+  $ make -C tools/perf build-test
+  make: Entering directory '/home/acme/git/linux/tools/perf'
+  - tarpkg: ./tests/perf-targz-src-pkg .
+               make_no_slang_O: make NO_SLANG=1
+              make_clean_all_O: make clean all
+                make_no_gtk2_O: make NO_GTK2=1
+             make_no_libperl_O: make NO_LIBPERL=1
+            make_no_auxtrace_O: make NO_AUXTRACE=1
+                    make_doc_O: make doc
+           make_no_libbionic_O: make NO_LIBBIONIC=1
+           make_no_backtrace_O: make NO_BACKTRACE=1
+              make_no_libelf_O: make NO_LIBELF=1
+            make_no_libaudit_O: make NO_LIBAUDIT=1
+             make_no_libnuma_O: make NO_LIBNUMA=1
+  make_no_libdw_dwarf_unwind_O: make NO_LIBDW_DWARF_UNWIND=1
+       make_util_pmu_bison_o_O: make util/pmu-bison.o
+            make_no_demangle_O: make NO_DEMANGLE=1
+             make_util_map_o_O: make util/map.o
+   make_install_prefix_slash_O: make install prefix=/tmp/krava/
+         make_with_clangllvm_O: make LIBCLANGLLVM=1
+           make_no_libunwind_O: make NO_LIBUNWIND=1
+           make_no_libpython_O: make NO_LIBPYTHON=1
+                 make_perf_o_O: make perf.o
+                   make_tags_O: make tags
+             make_no_scripts_O: make NO_LIBPYTHON=1 NO_LIBPERL=1
+            make_install_bin_O: make install-bin
+                  make_debug_O: make DEBUG=1
+              make_no_libbpf_O: make NO_LIBBPF=1
+        make_with_babeltrace_O: make LIBBABELTRACE=1
+                   make_pure_O: make
+                  make_no_ui_O: make NO_NEWT=1 NO_SLANG=1 NO_GTK2=1
+         make_install_prefix_O: make install prefix=/tmp/krava
+                make_install_O: make install
+                   make_help_O: make help
+                 make_static_O: make LDFLAGS=-static
+                make_minimal_O: make NO_LIBPERL=1 NO_LIBPYTHON=1 NO_NEWT=1 NO_GTK2=1 NO_DEMANGLE=1 NO_LIBELF=1 NO_LIBUNWIND=1 NO_BACKTRACE=1 NO_LIBNUMA=1 NO_LIBAUDIT=1 NO_LIBBIONIC=1 NO_LIBDW_DWARF_UNWIND=1 NO_AUXTRACE=1 NO_LIBBPF=1 NO_LIBCRYPTO=1 NO_SDT=1 NO_JVMTI=1
+                make_no_newt_O: make NO_NEWT=1
+  OK
+  make: Leaving directory '/home/acme/git/linux/tools/perf'
+  $ 
