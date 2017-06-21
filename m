@@ -3,42 +3,41 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wtD5F3hzMzDqj1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jun 2017 04:39:13 +1000 (AEST)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wtD5H3JxDzDqj1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jun 2017 04:39:15 +1000 (AEST)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v5LIcbqR056219
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jun 2017 14:39:12 -0400
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2b7w133ecw-1
+ v5LIcXCh035233
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jun 2017 14:39:13 -0400
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2b7v51x3sb-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jun 2017 14:39:11 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jun 2017 14:39:13 -0400
 Received: from localhost
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Thu, 22 Jun 2017 04:39:09 +1000
+ Thu, 22 Jun 2017 04:39:10 +1000
 Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v5LId5wf1376570
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jun 2017 04:39:05 +1000
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v5LId9K365142822
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jun 2017 04:39:09 +1000
 Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
  by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v5LId5ia017932
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jun 2017 04:39:05 +1000
+ v5LId8tu018037
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jun 2017 04:39:09 +1000
 From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
 Cc: Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>,
  Masami Hiramatsu <mhiramat@kernel.org>,
  Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v3 3/6] powerpc/64s: Blacklist system_call() and
- system_call_common() from kprobes
-Date: Thu, 22 Jun 2017 00:08:39 +0530
+Subject: [PATCH v3 4/6] powerpc/64s: Un-blacklist system_call() from kprobes
+Date: Thu, 22 Jun 2017 00:08:40 +0530
 In-Reply-To: <cover.1498069502.git.naveen.n.rao@linux.vnet.ibm.com>
 References: <cover.1498069502.git.naveen.n.rao@linux.vnet.ibm.com>
 In-Reply-To: <cover.1498069502.git.naveen.n.rao@linux.vnet.ibm.com>
 References: <cover.1498069502.git.naveen.n.rao@linux.vnet.ibm.com>
-Message-Id: <e602b626323ee22ac39de305b62385a2a0210018.1498069502.git.naveen.n.rao@linux.vnet.ibm.com>
+Message-Id: <d13eccaed4be643409abed29565dbdd8c7d5af6a.1498069502.git.naveen.n.rao@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,126 +47,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Convert some of the symbols into private symbols and blacklist
-system_call_common() and system_call() from kprobes. We can't take a
-trap at parts of these functions as either MSR_RI is unset or the kernel
-stack pointer is not yet setup.
+It is actually safe to probe system_call() in entry_64.S, but only till
+we unset MSR_RI. To allow this, add a new symbol system_call_exit()
+after the mtmsrd and blacklist that. Though the mtmsrd instruction
+itself is now whitelisted, we won't be allowed to probe on it as we
+don't allow probing on rfi and mtmsr instructions (checked for in
+arch_prepare_kprobe()).
 
-Reviewed-by: Masami Hiramatsu <mhiramat@kernel.org>
+Suggested-by: Michael Ellerman <mpe@ellerman.id.au>
 Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
 ---
- arch/powerpc/kernel/entry_64.S | 29 +++++++++++++++--------------
- 1 file changed, 15 insertions(+), 14 deletions(-)
+ arch/powerpc/kernel/entry_64.S | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
 diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-index da9486e2fd89..ef8e6615b8ba 100644
+index ef8e6615b8ba..feeeadc9aa71 100644
 --- a/arch/powerpc/kernel/entry_64.S
 +++ b/arch/powerpc/kernel/entry_64.S
-@@ -52,12 +52,11 @@ exception_marker:
- 	.section	".text"
- 	.align 7
+@@ -204,6 +204,7 @@ system_call:			/* label this so stack traces look sane */
+ 	mtmsrd	r11,1
+ #endif /* CONFIG_PPC_BOOK3E */
  
--	.globl system_call_common
--system_call_common:
-+_GLOBAL(system_call_common)
- #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
- BEGIN_FTR_SECTION
- 	extrdi.	r10, r12, 1, (63-MSR_TS_T_LG) /* transaction active? */
--	bne	tabort_syscall
-+	bne	.Ltabort_syscall
- END_FTR_SECTION_IFSET(CPU_FTR_TM)
- #endif
- 	andi.	r10,r12,MSR_PR
-@@ -152,9 +151,9 @@ END_FW_FTR_SECTION_IFSET(FW_FEATURE_SPLPAR)
- 	CURRENT_THREAD_INFO(r11, r1)
- 	ld	r10,TI_FLAGS(r11)
- 	andi.	r11,r10,_TIF_SYSCALL_DOTRACE
--	bne	syscall_dotrace		/* does not return */
-+	bne	.Lsyscall_dotrace		/* does not return */
- 	cmpldi	0,r0,NR_syscalls
--	bge-	syscall_enosys
-+	bge-	.Lsyscall_enosys
- 
- system_call:			/* label this so stack traces look sane */
- /*
-@@ -208,7 +207,7 @@ system_call:			/* label this so stack traces look sane */
++system_call_exit:
  	ld	r9,TI_FLAGS(r12)
  	li	r11,-MAX_ERRNO
  	andi.	r0,r9,(_TIF_SYSCALL_DOTRACE|_TIF_SINGLESTEP|_TIF_USER_WORK_MASK|_TIF_PERSYSCALL_MASK)
--	bne-	syscall_exit_work
-+	bne-	.Lsyscall_exit_work
- 
- 	/* If MSR_FP and MSR_VEC are set in user msr, then no need to restore */
- 	li	r7,MSR_FP
-@@ -217,12 +216,12 @@ system_call:			/* label this so stack traces look sane */
- #endif
- 	and	r0,r8,r7
- 	cmpd	r0,r7
--	bne	syscall_restore_math
-+	bne	.Lsyscall_restore_math
- .Lsyscall_restore_math_cont:
- 
- 	cmpld	r3,r11
- 	ld	r5,_CCR(r1)
--	bge-	syscall_error
-+	bge-	.Lsyscall_error
- .Lsyscall_error_cont:
- 	ld	r7,_NIP(r1)
- BEGIN_FTR_SECTION
-@@ -248,13 +247,13 @@ END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
- 	RFI
- 	b	.	/* prevent speculative execution */
- 
--syscall_error:	
-+.Lsyscall_error:
- 	oris	r5,r5,0x1000	/* Set SO bit in CR */
- 	neg	r3,r3
- 	std	r5,_CCR(r1)
- 	b	.Lsyscall_error_cont
- 
--syscall_restore_math:
-+.Lsyscall_restore_math:
- 	/*
- 	 * Some initial tests from restore_math to avoid the heavyweight
- 	 * C code entry and MSR manipulations.
-@@ -289,7 +288,7 @@ syscall_restore_math:
- 	b	.Lsyscall_restore_math_cont
- 
- /* Traced system call support */
--syscall_dotrace:
-+.Lsyscall_dotrace:
- 	bl	save_nvgprs
- 	addi	r3,r1,STACK_FRAME_OVERHEAD
- 	bl	do_syscall_trace_enter
-@@ -322,11 +321,11 @@ syscall_dotrace:
- 	b	.Lsyscall_exit
- 
- 
--syscall_enosys:
-+.Lsyscall_enosys:
- 	li	r3,-ENOSYS
- 	b	.Lsyscall_exit
- 	
--syscall_exit_work:
-+.Lsyscall_exit_work:
- #ifdef CONFIG_PPC_BOOK3S
- 	li	r10,MSR_RI
- 	mtmsrd	r10,1		/* Restore RI */
-@@ -386,7 +385,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
- 	b	ret_from_except
- 
- #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
--tabort_syscall:
-+.Ltabort_syscall:
- 	/* Firstly we need to enable TM in the kernel */
- 	mfmsr	r10
- 	li	r9, 1
-@@ -412,6 +411,8 @@ tabort_syscall:
- 	rfid
+@@ -412,7 +413,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
  	b	.	/* prevent speculative execution */
  #endif
-+_ASM_NOKPROBE_SYMBOL(system_call_common);
-+_ASM_NOKPROBE_SYMBOL(system_call);
+ _ASM_NOKPROBE_SYMBOL(system_call_common);
+-_ASM_NOKPROBE_SYMBOL(system_call);
++_ASM_NOKPROBE_SYMBOL(system_call_exit);
  
  /* Save non-volatile GPRs, if not already saved. */
  _GLOBAL(save_nvgprs)
