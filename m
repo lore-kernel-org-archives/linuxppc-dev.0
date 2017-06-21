@@ -1,33 +1,39 @@
-Return-Path: <mingo.kernel.org@gmail.com>
-Received: from mail-wr0-x241.google.com (mail-wr0-x241.google.com
- [IPv6:2a00:1450:400c:c0c::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wtCWd2dPZzDq88
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jun 2017 04:13:33 +1000 (AEST)
-Received: by mail-wr0-x241.google.com with SMTP id 77so28585239wrb.3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jun 2017 11:13:33 -0700 (PDT)
-Sender: Ingo Molnar <mingo.kernel.org@gmail.com>
-Date: Wed, 21 Jun 2017 20:13:27 +0200
-From: Ingo Molnar <mingo@kernel.org>
-To: Arnaldo Carvalho de Melo <acme@kernel.org>
-Cc: linux-kernel@vger.kernel.org, Adrian Hunter <adrian.hunter@intel.com>,
- Andi Kleen <ak@linux.intel.com>, David Ahern <dsahern@gmail.com>,
- Jiri Olsa <jolsa@kernel.org>, Kan Liang <kan.liang@intel.com>,
- linuxppc-dev@lists.ozlabs.org, Milian Wolff <milian.wolff@kdab.com>,
- Namhyung Kim <namhyung@kernel.org>,
- "Naveen N . Rao" <naveen.n.rao@linux.vnet.ibm.com>,
- Paolo Bonzini <pbonzini@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
- Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>,
- Robert Elliott <elliott@hpe.com>, Stephane Eranian <eranian@google.com>,
- Thomas Gleixner <tglx@linutronix.de>, Wang Nan <wangnan0@huawei.com>,
- Arnaldo Carvalho de Melo <acme@redhat.com>
-Subject: Re: [GIT PULL 00/25] perf/core improvements and fixes
-Message-ID: <20170621181327.f563kmznmtmaun3m@gmail.com>
-References: <20170621180245.23134-1-acme@kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170621180245.23134-1-acme@kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wtD530xnvzDqj1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jun 2017 04:39:02 +1000 (AEST)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v5LIcZOg004323
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jun 2017 14:38:59 -0400
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2b7p1kjs78-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jun 2017 14:38:59 -0400
+Received: from localhost
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
+ Thu, 22 Jun 2017 04:38:56 +1000
+Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v5LIcroh2163052
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jun 2017 04:38:53 +1000
+Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
+ by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v5LIcqPf017644
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jun 2017 04:38:53 +1000
+From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>,
+ Masami Hiramatsu <mhiramat@kernel.org>,
+ Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v3 0/6] powerpc: build out kprobes blacklist -- series 3
+Date: Thu, 22 Jun 2017 00:08:36 +0530
+Message-Id: <cover.1498069502.git.naveen.n.rao@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,137 +43,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+This is the third in the series of patches to build out an appropriate
+kprobes blacklist for powerpc. Since posting the second series (*),
+there have been related changes to the code and I have brought that
+series forward to account for those changes. As such, all patches from
+the second series are included in this patchset.
 
-* Arnaldo Carvalho de Melo <acme@kernel.org> wrote:
+This patchset now ensures that the newly added multiple kprobes test in
+the ftrace testsuite passes on powerpc64. Tested on both Elfv1 and
+Elfv2.
 
-> Hi Ingo,
-> 
-> 	Please consider pulling,
-> 
-> - Arnaldo
-> 
-> Test results at the end of this message, as usual.
-> 
-> The following changes since commit 007b811b4041989ec2dc91b9614aa2c41332723e:
-> 
->   Merge tag 'perf-core-for-mingo-4.13-20170719' of git://git.kernel.org/pub/scm/linux/kernel/git/acme/linux into perf/core (2017-06-20 10:49:08 +0200)
-> 
-> are available in the git repository at:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/acme/linux.git tags/perf-core-for-mingo-4.13-20170621
-> 
-> for you to fetch changes up to 701516ae3dec801084bc913d21e03fce15c61a0b:
-> 
->   perf script: Fix message because field list option is -F not -f (2017-06-21 11:35:53 -0300)
-> 
-> ----------------------------------------------------------------
-> perf/core improvements ad fixes:
-> 
-> New features:
-> 
-> - Add support to measure SMI cost in 'perf stat' (Kan Liang)
-> 
-> - Add support for unwinding callchains in powerpc with libdw (Paolo Bonzini)
-> 
-> Fixes:
-> 
-> - Fix message: cpu list option is -C not -c (Adrian Hunter)
-> 
-> - Fix 'perf script' message: field list option is -F not -f (Adrian Hunter)
-> 
-> - Intel PT fixes: (Adrian Hunter)
-> 
->   o Fix missing stack clear
->   o Ensure IP is zero when state is INTEL_PT_STATE_NO_IP
->   o Fix last_ip usage
->   o Ensure never to set 'last_ip' when packet 'count' is zero
->   o Clear FUP flag on error
->   o Fix transactions_sample_type
-> 
-> Infrastructure:
-> 
-> - Intel PT cleanups/refactorings (Adrian Hunter)
-> 
->   o Use FUP always when scanning for an IP
->   o Add missing __fallthrough
->   o Remove redundant initial_skip checks
->   o Allow decoding with branch tracing disabled
->   o Add default config for pass-through branch enable
->   o Add documentation for new config terms
->   o Add decoder support for ptwrite and power event packets
->   o Add reserved byte to CBR packet payload
->   o Add decoder support for CBR events
-> 
-> - Move  find_process() to the only place that uses it, skimming some
->   more fat from util.[ch] (Arnaldo Carvalho de Melo)
-> 
-> - Do parameter validation earlier on fetch_kernel_version() (Arnaldo Carvalho de Melo)
-> 
-> - Remove unused _ALL_SOURCE define (Arnaldo Carvalho de Melo)
-> 
-> - Add sysfs__write_int function (Kan Liang)
-> 
-> Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
-> 
-> ----------------------------------------------------------------
-> Adrian Hunter (19):
->       perf intel-pt: Move decoder error setting into one condition
->       perf intel-pt: Improve sample timestamp
->       perf intel-pt: Fix missing stack clear
->       perf intel-pt: Ensure IP is zero when state is INTEL_PT_STATE_NO_IP
->       perf intel-pt: Fix last_ip usage
->       perf intel-pt: Ensure never to set 'last_ip' when packet 'count' is zero
->       perf intel-pt: Use FUP always when scanning for an IP
->       perf intel-pt: Clear FUP flag on error
->       perf intel-pt: Add missing __fallthrough
->       perf intel-pt: Allow decoding with branch tracing disabled
->       perf intel-pt: Add default config for pass-through branch enable
->       perf intel-pt: Add documentation for new config terms
->       perf intel-pt: Add decoder support for ptwrite and power event packets
->       perf intel-pt: Add reserved byte to CBR packet payload
->       perf intel-pt: Add decoder support for CBR events
->       perf intel-pt: Remove redundant initial_skip checks
->       perf intel-pt: Fix transactions_sample_type
->       perf tools: Fix message because cpu list option is -C not -c
->       perf script: Fix message because field list option is -F not -f
-> 
-> Arnaldo Carvalho de Melo (3):
->       perf evsel: Adopt find_process()
->       perf tools: Do parameter validation earlier on fetch_kernel_version()
->       perf tools: Remove unused _ALL_SOURCE define
-> 
-> Kan Liang (2):
->       tools lib api fs: Add sysfs__write_int function
->       perf stat: Add support to measure SMI cost
-> 
-> Paolo Bonzini (1):
->       perf unwind: Support for powerpc
-> 
->  tools/lib/api/fs/fs.c                              |  30 +++
->  tools/lib/api/fs/fs.h                              |   4 +
->  tools/perf/Documentation/intel-pt.txt              |  36 +++
->  tools/perf/Documentation/perf-stat.txt             |  14 +
->  tools/perf/Makefile.config                         |   2 +-
->  tools/perf/arch/powerpc/util/Build                 |   2 +
->  tools/perf/arch/powerpc/util/unwind-libdw.c        |  73 ++++++
->  tools/perf/arch/x86/util/intel-pt.c                |   5 +
->  tools/perf/builtin-script.c                        |   2 +-
->  tools/perf/builtin-stat.c                          |  49 ++++
->  tools/perf/util/evsel.c                            |  39 +++
->  .../perf/util/intel-pt-decoder/intel-pt-decoder.c  | 290 +++++++++++++++++++--
->  .../perf/util/intel-pt-decoder/intel-pt-decoder.h  |  13 +
->  .../util/intel-pt-decoder/intel-pt-pkt-decoder.c   | 110 +++++++-
->  .../util/intel-pt-decoder/intel-pt-pkt-decoder.h   |   7 +
->  tools/perf/util/intel-pt.c                         |  23 +-
->  tools/perf/util/session.c                          |   2 +-
->  tools/perf/util/stat-shadow.c                      |  33 +++
->  tools/perf/util/stat.c                             |   2 +
->  tools/perf/util/stat.h                             |   2 +
->  tools/perf/util/util.c                             |  52 +---
->  tools/perf/util/util.h                             |   3 -
->  22 files changed, 710 insertions(+), 83 deletions(-)
->  create mode 100644 tools/perf/arch/powerpc/util/unwind-libdw.c
+Changes since series 2 v2:
+  - Patches 1, 2 and 6 are new.
+  - Patch 3 now additionally converts syscall_restore_math() to a local
+    symbol.
+  - Patch 5 additionally blacklists __replay_interrupt.
 
-Pulled, thanks a lot Arnaldo!
+(*)
+https://www.mail-archive.com/linuxppc-dev@lists.ozlabs.org/msg117562.html
 
-	Ingo
+
+- Naveen
+
+
+Naveen N. Rao (6):
+  powerpc64/elfv1: Validate function pointer address in the function
+    descriptor
+  powerpc/64s: Convert .L__replay_interrupt_return to a local label
+  powerpc/64s: Blacklist system_call() and system_call_common() from
+    kprobes
+  powerpc/64s: Un-blacklist system_call() from kprobes
+  powerpc/64s: Blacklist functions invoked on a trap
+  powerpc/64s: Blacklist rtas entry/exit from kprobes
+
+ arch/powerpc/include/asm/code-patching.h | 10 +++-
+ arch/powerpc/kernel/entry_64.S           | 81 ++++++++++++++++++--------------
+ arch/powerpc/kernel/exceptions-64s.S     |  6 ++-
+ arch/powerpc/kernel/traps.c              |  3 ++
+ 4 files changed, 63 insertions(+), 37 deletions(-)
+
+-- 
+2.13.1
