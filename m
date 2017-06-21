@@ -2,28 +2,19 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wt0PS3J8HzDq88
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jun 2017 19:52:28 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wt0Rs2Q9BzDq88
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jun 2017 19:54:33 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: Michael Bringmann <mwb@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
  linux-kernel@vger.kernel.org
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Bringmann <mwb@linux.vnet.ibm.com>,
- David Gibson <david@gibson.dropbear.id.au>,
- Reza Arbab <arbab@linux.vnet.ibm.com>, John Allen <jallen@linux.vnet.ibm.com>,
- Thomas Gleixner <tglx@linutronix.de>,
- Bharata B Rao <bharata@linux.vnet.ibm.com>,
- Shailendra Singh <shailendras@nvidia.com>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
- Rashmica Gupta <rashmicy@gmail.com>, Ingo Molnar <mingo@kernel.org>,
- Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
-Subject: Re: [PATCH V6 1/2] powerpc/hotplug: Ensure enough nodes avail for
- operations
-In-Reply-To: <b506c509-45c3-fc17-9b83-24b30110748b@linux.vnet.ibm.com>
-References: <b506c509-45c3-fc17-9b83-24b30110748b@linux.vnet.ibm.com>
-Date: Wed, 21 Jun 2017 19:52:27 +1000
-Message-ID: <878tklu0pw.fsf@concordia.ellerman.id.au>
+Cc: Nathan Fontenot <nfont@linux.vnet.ibm.com>,
+ Michael Bringmann <mwb@linux.vnet.ibm.com>, ltc-virtual-io@lists.linux.ibm.com
+Subject: Re: [PATCH V6 0/2] powerpc/dlpar: Correct display of
+ hot-add/hot-remove CPUs and memory
+In-Reply-To: <b0e02344-965b-5298-4ef6-3ec67d1200c4@linux.vnet.ibm.com>
+References: <b0e02344-965b-5298-4ef6-3ec67d1200c4@linux.vnet.ibm.com>
+Date: Wed, 21 Jun 2017 19:54:32 +1000
+Message-ID: <8760fpu0mf.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -37,16 +28,44 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Michael Bringmann <mwb@linux.vnet.ibm.com> writes:
 
+> On Power systems with shared configurations of CPUs and memory, there
+> are some issues with association of additional CPUs and memory to nodes
+> when hot-adding resources.  These patches address some of those problems.
+>
 > powerpc/hotplug: On systems like PowerPC which allow 'hot-add' of CPU
 > or memory resources, it may occur that the new resources are to be
 > inserted into nodes that were not used for these resources at bootup.
 > In the kernel, any node that is used must be defined and initialized
 > at boot.  In order to meet both needs, this patch adds a new kernel
-> command line option (numnodes=<int>) for use by the PowerPC architecture-
+> command line option (numnodes=<int>) for use by the PowerPC
+> architecture-specific code that defines the maximum number of nodes
+> that the kernel will ever need in its current hardware environment.
+> The boot code that initializes nodes for PowerPC will read this value
+> and use it to ensure that all of the desired nodes are setup in the
+> 'node_possible_map', and elsewhere.
+>
+> powerpc/numa: Correct the currently broken capability to set the
+> topology for shared CPUs in LPARs.  At boot time for shared CPU
+> lpars, the topology for each shared CPU is set to node zero, however,
+> this is now updated correctly using the Virtual Processor Home Node
+> (VPHN) capabilities information provided by the pHyp. The VPHN handling
+> in Linux is disabled, if PRRN handling is present.
+>
+> Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
+>
+> Michael Bringmann (2):
+>   powerpc/hotplug: Add option to define max nodes allowing dynamic
+>       growth of resources.
+>   powerpc/numa: Update CPU topology when VPHN enabled
+> ---
+> Changes in V6:
+>   -- Reorder some code to better eliminate unused functions in
+>        conditional builds.
 
-Sorry, that's a hack.
+What changed between yesterday's V6 and this V6?
 
-I thought you were going to use firmware properties to find the set of
-possible nodes. Did that not work?
+If you're going to resend, please bump the version number, we have tools
+that parse the subject and version, and resending multiple times with
+the same number breaks those.
 
 cheers
