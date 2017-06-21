@@ -1,40 +1,40 @@
 Return-Path: <linuxram@us.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wsvqd5mDzzDq88
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jun 2017 16:26:21 +1000 (AEST)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v5L6O1Rn084233
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jun 2017 02:26:18 -0400
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2b7j5nttda-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wsw1t2t2ZzDq88
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jun 2017 16:35:14 +1000 (AEST)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v5L6YT12118674
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jun 2017 02:35:12 -0400
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2b7an7jca9-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jun 2017 02:26:18 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jun 2017 02:35:08 -0400
 Received: from localhost
- by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <linuxram@us.ibm.com>;
- Wed, 21 Jun 2017 00:26:16 -0600
-Date: Tue, 20 Jun 2017 23:26:10 -0700
+ Wed, 21 Jun 2017 00:35:07 -0600
+Date: Tue, 20 Jun 2017 23:34:55 -0700
 From: Ram Pai <linuxram@us.ibm.com>
 To: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
  dave.hansen@intel.com, paulus@samba.org, aneesh.kumar@linux.vnet.ibm.com
-Subject: Re: [RFC v2 08/12] powerpc: Handle exceptions caused by violation of
- pkey protection.
+Subject: Re: [RFC v2 01/12] powerpc: Free up four 64K PTE bits in 4K backed
+ hpte pages.
 Reply-To: Ram Pai <linuxram@us.ibm.com>
 References: <1497671564-20030-1-git-send-email-linuxram@us.ibm.com>
- <1497671564-20030-9-git-send-email-linuxram@us.ibm.com>
- <a288b72b-3e9c-7bf9-fff4-e5b08bad0374@linux.vnet.ibm.com>
- <20170620234307.GJ17588@ram.oc3035372033.ibm.com>
- <1432d27a-4e28-dd74-4b75-0fd7a49bf5e4@linux.vnet.ibm.com>
+ <1497671564-20030-2-git-send-email-linuxram@us.ibm.com>
+ <e5cf3deb-36ef-2e0f-4c5a-98534c34d54e@linux.vnet.ibm.com>
+ <20170620232358.GF17588@ram.oc3035372033.ibm.com>
+ <a9d0c7c7-fa42-c65e-2cf4-bd118c407b05@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1432d27a-4e28-dd74-4b75-0fd7a49bf5e4@linux.vnet.ibm.com>
-Message-Id: <20170621062610.GG5845@ram.oc3035372033.ibm.com>
+In-Reply-To: <a9d0c7c7-fa42-c65e-2cf4-bd118c407b05@linux.vnet.ibm.com>
+Message-Id: <20170621063455.GH5845@ram.oc3035372033.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,271 +44,521 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jun 21, 2017 at 09:24:36AM +0530, Anshuman Khandual wrote:
-> On 06/21/2017 05:13 AM, Ram Pai wrote:
-> > On Tue, Jun 20, 2017 at 12:54:45PM +0530, Anshuman Khandual wrote:
+On Wed, Jun 21, 2017 at 11:05:33AM +0530, Anshuman Khandual wrote:
+> On 06/21/2017 04:53 AM, Ram Pai wrote:
+> > On Tue, Jun 20, 2017 at 03:50:25PM +0530, Anshuman Khandual wrote:
 > >> On 06/17/2017 09:22 AM, Ram Pai wrote:
-> >>> Handle Data and Instruction exceptions caused by memory
-> >>> protection-key.
+> >>> Rearrange 64K PTE bits to  free  up  bits 3, 4, 5  and  6
+> >>> in the 4K backed hpte pages. These bits continue to be used
+> >>> for 64K backed hpte pages in this patch, but will be freed
+> >>> up in the next patch.
+> >>
+> >> The counting 3, 4, 5 and 6 are in BE format I believe, I was
+> >> initially trying to see that from right to left as we normally
+> >> do in the kernel and was getting confused. So basically these
+> >> bits (which are only applicable for 64K mapping IIUC) are going
+> >> to be freed up from the PTE format.
+> >>
+> >> #define _RPAGE_RSV1		0x1000000000000000UL
+> >> #define _RPAGE_RSV2		0x0800000000000000UL
+> >> #define _RPAGE_RSV3		0x0400000000000000UL
+> >> #define _RPAGE_RSV4		0x0200000000000000UL
+> >>
+> >> As you have mentioned before this feature is available for 64K
+> >> page size only and not for 4K mappings. So I assume we support
+> >> both the combinations.
+> >>
+> >> * 64K mapping on 64K
+> >> * 64K mapping on 4K
+> > 
+> > yes.
+> > 
+> >>
+> >> These are the current users of the above bits
+> >>
+> >> #define H_PAGE_BUSY		_RPAGE_RSV1 /* software: PTE & hash are busy */
+> >> #define H_PAGE_F_SECOND		_RPAGE_RSV2	/* HPTE is in 2ndary HPTEG */
+> >> #define H_PAGE_F_GIX		(_RPAGE_RSV3 | _RPAGE_RSV4 | _RPAGE_RPN44)
+> >> #define H_PAGE_HASHPTE		_RPAGE_RPN43	/* PTE has associated HPTE */
+> >>
+> >>>
+> >>> The patch does the following change to the 64K PTE format
+> >>>
+> >>> H_PAGE_BUSY moves from bit 3 to bit 9
+> >>
+> >> and what is in there on bit 9 now ? This ?
+> >>
+> >> #define _RPAGE_SW2		0x00400
+> >>
+> >> which is used as 
+> >>
+> >> #define _PAGE_SPECIAL		_RPAGE_SW2 /* software: special page */
+> >>
+> >> which will not be required any more ?
+> > 
+> > i think you are reading bit 9 from right to left. the bit 9 i refer to
+> > is from left to right. Using the same numbering convention the ISA3.0 uses.
+> 
+> Right, my bad. Then it would be this one.
+> 
+> '#define _RPAGE_RPN42		0x0040000000000000UL'
+> 
+> > I know it is confusing, will make a mention in the comment of this
+> > patch, to read it the big-endian way.
+> 
+> Right.
+> 
+> > 
+> > BTW: Bit 9 is not used currently. so using it in this patch. But this is
+> > a temporary move. the H_PAGE_BUSY will move to bit 7 in the next patch.
+> > 
+> > Had to keep at bit 9, because bit 7 is not yet entirely freed up. it is
+> > used by 64K PTE backed by 64k htpe.
+> 
+> Got it.
+> 
+> > 
+> >>
+> >>> H_PAGE_F_SECOND which occupied bit 4 moves to the second part
+> >>> 	of the pte.
+> >>> H_PAGE_F_GIX which  occupied bit 5, 6 and 7 also moves to the
+> >>> 	second part of the pte.
+> >>>
+> >>> the four  bits((H_PAGE_F_SECOND|H_PAGE_F_GIX) that represent a slot
+> >>> is  initialized  to  0xF  indicating  an invalid  slot.  If  a hpte
+> >>> gets cached in a 0xF  slot(i.e  7th  slot  of  secondary),  it   is
+> >>> released immediately. In  other  words, even  though   0xF   is   a
+> >>
+> >> Release immediately means we attempt again for a new hash slot ?
+> > 
+> > yes.
+> > 
+> >>
+> >>> valid slot we discard  and consider it as an invalid
+> >>> slot;i.e hpte_soft_invalid(). This  gives  us  an opportunity to not
+> >>> depend on a bit in the primary PTE in order to determine the
+> >>> validity of a slot.
+> >>
+> >> So we have to see the slot number in the second half for each PTE to
+> >> figure out if it has got a valid slot in the hash page table.
+> > 
+> > yes.
+> > 
+> >>
+> >>>
+> >>> When  we  release  a    hpte   in the 0xF   slot we also   release a
+> >>> legitimate primary   slot  and    unmap    that  entry. This  is  to
+> >>> ensure  that we do get a   legimate   non-0xF  slot the next time we
+> >>> retry for a slot.
+> >>
+> >> Okay.
+> >>
+> >>>
+> >>> Though treating 0xF slot as invalid reduces the number of available
+> >>> slots  and  may  have an effect  on the performance, the probabilty
+> >>> of hitting a 0xF is extermely low.
+> >>
+> >> Why you say that ? I thought every slot number has the same probability
+> >> of hit from the hash function.
+> > 
+> > Every hash bucket has the same probability. But every slot within the
+> > hash bucket is filled in sequentially. so it takes 15 hptes to hash to
+> > the same bucket before we get to the 15th slot in the secondary.
+> 
+> Okay, would the last one be 16th instead ?
+> 
+> > 
+> >>
+> >>>
+> >>> Compared  to the current scheme, the above described scheme reduces
+> >>> the number of false hash table updates  significantly  and  has the
+> >>
+> >> How it reduces false hash table updates ?
+> > 
+> > earlier, we had 1 bit allocated in the first-part-of-the 64K-PTE 
+> > for four consecutive 4K hptes. If any one 4k hpte got hashed-in,
+> > the bit got set. Which means anytime it faulted on the remaining
+> > three 4k hpte, we saw the bit already set and tried to erroneously 
+> > update that hpte. So we had a 75% update error rate. Funcationally
+> > not bad, but bad from a performance point of view.
+> 
+> I am bit out of sync regarding these PTE bits, after Aneesh's radix
+> changes went in :) Will look into this bit closer.
+> 
+> > 
+> > With the current scheme, we decide if a 4k slot is valid by looking
+> > at its value rather than depending on a bit in the main-pte. So
+> > there is no chance of getting mislead. And hence no chance of trying
+> > to update a invalid hpte. Should improve performance and at the same
+> > time give us four valuable PTE bits.
+> 
+> I am not sure why you say 'invalid hpte'. IIUC
+
+I mean to say a entry which does not yet have a mapped hpte.
+
+> 
+> * We will require 16 '64K on 4K' mappings to actually cover 64K on 64K
+> 
+> * A single (64K on 4K)'s TLB can cover 64K on 64K as long as the TLB is
+>   present and not flushed. That gets us performance. Once flushed, a new
+>   HPTE entry covering new (64K on 4K) is inserted. As long as the PFN
+>   for the 4K is different HPTE will be different and it cannot collide
+>   with any existing ones and create problems (ERAT error ?)
+> 
+> As you are pointing out, I am not sure whether the existing design had
+> more probability for an invalid HPTE insert. Will look into this in
+> detail.
+> 
+> > 
+> > 
+> >>
+> >>> added  advantage  of  releasing  four  valuable  PTE bits for other
+> >>> purpose.
+> >>>
+> >>> This idea was jointly developed by Paul Mackerras, Aneesh, Michael
+> >>> Ellermen and myself.
+> >>>
+> >>> 4K PTE format remain unchanged currently.
 > >>>
 > >>> Signed-off-by: Ram Pai <linuxram@us.ibm.com>
-> >>> (cherry picked from commit a5e5217619a0c475fe0cacc3b0cf1d3d33c79a09)
-> > 
-> > Sorry. it was residue of a bad cleanup. It got cherry-picked from my own
-> > internal branch, but than i forgot to delete that line.
-> > 
-> >>
-> >> To which tree this commit belongs to ?
-> >>
-> >>>
-> >>> Conflicts:
-> >>> 	arch/powerpc/include/asm/reg.h
-> >>> 	arch/powerpc/kernel/exceptions-64s.S
-> > 
-> > same here. these two line are some residues of patching-up my tree with
-> > commits from other internal branches.
-> > 
 > >>> ---
-> >>>  arch/powerpc/include/asm/mmu_context.h | 12 +++++
-> >>>  arch/powerpc/include/asm/pkeys.h       |  9 ++++
-> >>>  arch/powerpc/include/asm/reg.h         |  7 +--
-> >>>  arch/powerpc/mm/fault.c                | 21 +++++++-
-> >>>  arch/powerpc/mm/pkeys.c                | 90 ++++++++++++++++++++++++++++++++++
-> >>>  5 files changed, 134 insertions(+), 5 deletions(-)
+> >>>  arch/powerpc/include/asm/book3s/64/hash-4k.h  | 20 +++++++
+> >>>  arch/powerpc/include/asm/book3s/64/hash-64k.h | 32 +++++++----
+> >>>  arch/powerpc/include/asm/book3s/64/hash.h     | 15 +++--
+> >>>  arch/powerpc/include/asm/book3s/64/mmu-hash.h |  5 ++
+> >>>  arch/powerpc/mm/dump_linuxpagetables.c        |  3 +-
+> >>>  arch/powerpc/mm/hash64_4k.c                   | 14 ++---
+> >>>  arch/powerpc/mm/hash64_64k.c                  | 81 ++++++++++++---------------
+> >>>  arch/powerpc/mm/hash_utils_64.c               | 30 +++++++---
+> >>>  8 files changed, 122 insertions(+), 78 deletions(-)
 > >>>
-> >>> diff --git a/arch/powerpc/include/asm/mmu_context.h b/arch/powerpc/include/asm/mmu_context.h
-> >>> index da7e943..71fffe0 100644
-> >>> --- a/arch/powerpc/include/asm/mmu_context.h
-> >>> +++ b/arch/powerpc/include/asm/mmu_context.h
-> >>> @@ -175,11 +175,23 @@ static inline void arch_bprm_mm_init(struct mm_struct *mm,
-> >>>  {
-> >>>  }
+> >>> diff --git a/arch/powerpc/include/asm/book3s/64/hash-4k.h b/arch/powerpc/include/asm/book3s/64/hash-4k.h
+> >>> index b4b5e6b..5ef1d81 100644
+> >>> --- a/arch/powerpc/include/asm/book3s/64/hash-4k.h
+> >>> +++ b/arch/powerpc/include/asm/book3s/64/hash-4k.h
+> >>> @@ -16,6 +16,18 @@
+> >>>  #define H_PUD_TABLE_SIZE	(sizeof(pud_t) << H_PUD_INDEX_SIZE)
+> >>>  #define H_PGD_TABLE_SIZE	(sizeof(pgd_t) << H_PGD_INDEX_SIZE)
 > >>>
-> >>> +#ifdef CONFIG_PPC64_MEMORY_PROTECTION_KEYS
-> >>> +bool arch_pte_access_permitted(pte_t pte, bool write);
-> >>> +bool arch_vma_access_permitted(struct vm_area_struct *vma,
-> >>> +		bool write, bool execute, bool foreign);
-> >>> +#else /* CONFIG_PPC64_MEMORY_PROTECTION_KEYS */
-> >>> +static inline bool arch_pte_access_permitted(pte_t pte, bool write)
-> >>> +{
-> >>> +	/* by default, allow everything */
-> >>> +	return true;
-> >>> +}
-> >>>  static inline bool arch_vma_access_permitted(struct vm_area_struct *vma,
-> >>>  		bool write, bool execute, bool foreign)
-> >>>  {
-> >>>  	/* by default, allow everything */
-> >>>  	return true;
-> >>>  }
-> >>
-> >> Right, these are the two functions the core VM expects the
-> >> arch to provide.
-> >>
-> >>> +#endif /* CONFIG_PPC64_MEMORY_PROTECTION_KEYS */
 > >>> +
-> >>>  #endif /* __KERNEL__ */
-> >>>  #endif /* __ASM_POWERPC_MMU_CONTEXT_H */
-> >>> diff --git a/arch/powerpc/include/asm/pkeys.h b/arch/powerpc/include/asm/pkeys.h
-> >>> index 9b6820d..405e7db 100644
-> >>> --- a/arch/powerpc/include/asm/pkeys.h
-> >>> +++ b/arch/powerpc/include/asm/pkeys.h
-> >>> @@ -14,6 +14,15 @@
-> >>>  			VM_PKEY_BIT3 | \
-> >>>  			VM_PKEY_BIT4)
-> >>>
-> >>> +static inline u16 pte_flags_to_pkey(unsigned long pte_flags)
-> >>> +{
-> >>> +	return ((pte_flags & H_PAGE_PKEY_BIT4) ? 0x1 : 0x0) |
-> >>> +		((pte_flags & H_PAGE_PKEY_BIT3) ? 0x2 : 0x0) |
-> >>> +		((pte_flags & H_PAGE_PKEY_BIT2) ? 0x4 : 0x0) |
-> >>> +		((pte_flags & H_PAGE_PKEY_BIT1) ? 0x8 : 0x0) |
-> >>> +		((pte_flags & H_PAGE_PKEY_BIT0) ? 0x10 : 0x0);
-> >>> +}
-> >>
-> >> Add defines for the above 0x1, 0x2, 0x4, 0x8 etc ?
-> > 
-> > hmm...not sure if it will make the code any better.
-> > 
-> >>
+> >>> +/*
+> >>> + * Only supported by 4k linux page size
+> >>> + */
+> >>> +#define H_PAGE_F_SECOND        _RPAGE_RSV2     /* HPTE is in 2ndary HPTEG */
+> >>> +#define H_PAGE_F_GIX           (_RPAGE_RSV3 | _RPAGE_RSV4 | _RPAGE_RPN44)
+> >>> +#define H_PAGE_F_GIX_SHIFT     56
 > >>> +
-> >>>  #define pkey_to_vmflag_bits(key) (((key & 0x1UL) ? VM_PKEY_BIT0 : 0x0UL) | \
-> >>>  			((key & 0x2UL) ? VM_PKEY_BIT1 : 0x0UL) |	\
-> >>>  			((key & 0x4UL) ? VM_PKEY_BIT2 : 0x0UL) |	\
-> >>> diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
-> >>> index 2dcb8a1..a11977f 100644
-> >>> --- a/arch/powerpc/include/asm/reg.h
-> >>> +++ b/arch/powerpc/include/asm/reg.h
-> >>> @@ -285,9 +285,10 @@
-> >>>  #define   DSISR_UNSUPP_MMU	0x00080000	/* Unsupported MMU config */
-> >>>  #define   DSISR_SET_RC		0x00040000	/* Failed setting of R/C bits */
-> >>>  #define   DSISR_PGDIRFAULT      0x00020000      /* Fault on page directory */
-> >>> -#define   DSISR_PAGE_FAULT_MASK (DSISR_BIT32 | \
-> >>> -				DSISR_PAGEATTR_CONFLT | \
-> >>> -				DSISR_BADACCESS |       \
-> >>> +#define   DSISR_PAGE_FAULT_MASK (DSISR_BIT32 |	\
-> >>> +				DSISR_PAGEATTR_CONFLT |	\
-> >>> +				DSISR_BADACCESS |	\
-> >>> +				DSISR_KEYFAULT |	\
-> >>>  				DSISR_BIT43)
+> >>> +#define H_PAGE_BUSY	_RPAGE_RSV1     /* software: PTE & hash are busy */
+> >>> +#define H_PAGE_HASHPTE	_RPAGE_RPN43    /* PTE has associated HPTE */
+> >>> +
+> >>> +
 > >>
-> >> This should have been cleaned up before adding new
-> >> DSISR_KEYFAULT reason code into it. But I guess its
-> >> okay.
-> >>
-> >>>  #define SPRN_TBRL	0x10C	/* Time Base Read Lower Register (user, R/O) */
-> >>>  #define SPRN_TBRU	0x10D	/* Time Base Read Upper Register (user, R/O) */
-> >>> diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
-> >>> index 3a7d580..c31624f 100644
-> >>> --- a/arch/powerpc/mm/fault.c
-> >>> +++ b/arch/powerpc/mm/fault.c
-> >>> @@ -216,9 +216,10 @@ int do_page_fault(struct pt_regs *regs, unsigned long address,
-> >>>  	 * bits we are interested in.  But there are some bits which
-> >>>  	 * indicate errors in DSISR but can validly be set in SRR1.
-> >>>  	 */
-> >>> -	if (trap == 0x400)
-> >>> +	if (trap == 0x400) {
-> >>>  		error_code &= 0x48200000;
-> >>> -	else
-> >>> +		flags |= FAULT_FLAG_INSTRUCTION;
-> >>> +	} else
-> >>>  		is_write = error_code & DSISR_ISSTORE;
-> >>>  #else
-> >>
-> >> Why adding the FAULT_FLAG_INSTRUCTION here ?
+> >> So we moved the common 64K definitions here.
 > > 
-> > 	later in this code, this flag is checked to see if execute-protection was
-> > 	violated.
-> 
-> 'is_exec' which is set for every 400 interrupt can be used for that
-> purpose ? I guess thats how we have been dealing with generic PROT_EXEC
-> based faults.
-> 
-This is right. Thanks for pointing it out. Yes 'is_exec' is sufficient to 
-achieve the purpose.
-
+> > yes.
 > >>
-> >>>  	is_write = error_code & ESR_DST;
-> >>> @@ -261,6 +262,13 @@ int do_page_fault(struct pt_regs *regs, unsigned long address,
-> >>>  	}
-
+> >>
+> >>>  /* PTE flags to conserve for HPTE identification */
+> >>>  #define _PAGE_HPTEFLAGS (H_PAGE_BUSY | H_PAGE_HASHPTE | \
+> >>>  			 H_PAGE_F_SECOND | H_PAGE_F_GIX)
+> >>> @@ -48,6 +60,14 @@ static inline int hash__hugepd_ok(hugepd_t hpd)
+> >>>  }
 > >>>  #endif
 > >>>
-> >>> +#ifdef CONFIG_PPC64_MEMORY_PROTECTION_KEYS
-> >>> +	if (error_code & DSISR_KEYFAULT) {
-> >>> +		code = SEGV_PKUERR;
-> >>> +		goto bad_area_nosemaphore;
-> >>> +	}
-> >>> +#endif /*  CONFIG_PPC64_MEMORY_PROTECTION_KEYS */
-> >>> +
-> >>>  	/* We restore the interrupt state now */
-> >>>  	if (!arch_irq_disabled_regs(regs))
-> >>>  		local_irq_enable();
-> >>> @@ -441,6 +449,15 @@ int do_page_fault(struct pt_regs *regs, unsigned long address,
-> >>>  		WARN_ON_ONCE(error_code & DSISR_PROTFAULT);
-> >>>  #endif /* CONFIG_PPC_STD_MMU */
-> >>>
-> >>> +#ifdef CONFIG_PPC64_MEMORY_PROTECTION_KEYS
-> >>> +	if (!arch_vma_access_permitted(vma, flags & FAULT_FLAG_WRITE,
-> >>> +					flags & FAULT_FLAG_INSTRUCTION,
-> >>> +					0)) {
-> >>> +		code = SEGV_PKUERR;
-> >>> +		goto bad_area;
-> >>> +	}
-> >>> +#endif /* CONFIG_PPC64_MEMORY_PROTECTION_KEYS */
-> >>> +
-> >>
-> >> I am wondering why both the above checks are required ?
-> > 
-> > Yes good question.  there are two cases here.
-> > 
-> > a) when a hpte is not yet hashed to pte.
-> > 
-> >  	in this case the fault is because the hpte is not yet mapped.
-> > 	However the access may have also violated the protection
-> > 	permissions of the key associated with that address. So we need
-> 
-> Both of these cannot be possible simultaneously. In this case
-> MMU will take a fault because of no HPTE is found for the access
-> not for the protection key irrespective of the pkey value and type
-> of the access. Are you saying that DSISR might have both DSISR_NOHPTE
-> and DSISR_KEYFAULT set for this case ? If not its not a good idea
-> to present SEGV_PKUERR as reason code during signal delivery.
-
-Both DSISR_NOHPTE and DSISR_KEYFAULT may not be set simultaneously.
-A HPTE needs to exist before a key can be programmed into it.
-
-However its still a key violation, if the fault was a
-DSISR_NOHPTE, and the faulting address has a key in the vma that
-is violated. There is a violation, it needs to be reported as
-SEG_PKUERR.  The hardware may not have detected it, but software
-is still responsible for detecting and reporting it.
-
-
-> 
-> > 	to a software check to determine if a key was violated.
-> > 
-> > 	if (!arch_vma_access_permitted(vma, flags & FAULT_FLAG_WRITE,...
-> > 
-> > 	handles this case.
-> > 
-> > 
-> > b) when the hpte is hashed to the pte and keys are programmed into
-> > 			the hpte.
-> > 
-> > 	in this case the hardware senses the key protection fault
-> > 	and we just have to check if that is the case.
-> > 
-> > 	if (error_code & DSISR_KEYFAULT) {....
-> > 
-> > 	handles this case.
-> 
-> This is correct.
-> 
-> > 
-> > 
-> >>
-> >> * DSISR should contains DSISR_KEYFAULT
-> >>
-> >> * VMA pkey values whether they matched the fault cause
-> >>
-> >>
-> >>>  	/*
-> >>>  	 * If for any reason at all we couldn't handle the fault,
-> >>>  	 * make sure we exit gracefully rather than endlessly redo
-> >>> diff --git a/arch/powerpc/mm/pkeys.c b/arch/powerpc/mm/pkeys.c
-> >>> index 11a32b3..439241a 100644
-> >>> --- a/arch/powerpc/mm/pkeys.c
-> >>> +++ b/arch/powerpc/mm/pkeys.c
-> >>> @@ -27,6 +27,37 @@ static inline bool pkey_allows_readwrite(int pkey)
-> >>>  	return !(read_amr() & ((AMR_AD_BIT|AMR_WD_BIT) << pkey_shift));
-> >>>  }
-> >>>
-> >>> +static inline bool pkey_allows_read(int pkey)
+> >>> +static inline unsigned long set_hidx_slot(pte_t *ptep, real_pte_t rpte,
+> >>> +			unsigned int subpg_index, unsigned long slot)
 > >>> +{
-> >>> +	int pkey_shift = (arch_max_pkey()-pkey-1) * AMR_BITS_PER_PKEY;
-> >>> +
-> >>> +	if (!(read_uamor() & (0x3ul << pkey_shift)))
-> >>> +		return true;
-> >>> +
-> >>> +	return !(read_amr() & (AMR_AD_BIT << pkey_shift));
+> >>> +	return (slot << H_PAGE_F_GIX_SHIFT) &
+> >>> +		(H_PAGE_F_SECOND | H_PAGE_F_GIX);
 > >>> +}
 > >>
-> >> Get read_amr() into a local variable and save some cycles if we
-> >> have to do it again.
+> >> Why we are passing the first 3 arguments of the function if we never
+> >> use it inside. Is the caller expected to take care of it ?
 > > 
-> > No. not really. the AMR can be changed by the process in userspace. So anything
-> > that we cache can go stale.
-> > Or maybe i do not understand your comment.
+> > trying to keep the same prototype for the 4K-pte and 64K-pte cases.
+> > Otherwise the caller has to wonder which parameter scheme to use.
+> > 
+> >>
+> >>> +
+> >>> +
+> >>>  #ifdef CONFIG_TRANSPARENT_HUGEPAGE
+> >>>
+> >>>  static inline char *get_hpte_slot_array(pmd_t *pmdp)
+> >>> diff --git a/arch/powerpc/include/asm/book3s/64/hash-64k.h b/arch/powerpc/include/asm/book3s/64/hash-64k.h
+> >>> index 9732837..0eb3c89 100644
+> >>> --- a/arch/powerpc/include/asm/book3s/64/hash-64k.h
+> >>> +++ b/arch/powerpc/include/asm/book3s/64/hash-64k.h
+> >>> @@ -10,23 +10,25 @@
+> >>>   * 64k aligned address free up few of the lower bits of RPN for us
+> >>>   * We steal that here. For more deatils look at pte_pfn/pfn_pte()
+> >>>   */
+> >>> -#define H_PAGE_COMBO	_RPAGE_RPN0 /* this is a combo 4k page */
+> >>> -#define H_PAGE_4K_PFN	_RPAGE_RPN1 /* PFN is for a single 4k page */
+> >>> +#define H_PAGE_COMBO   _RPAGE_RPN0 /* this is a combo 4k page */
+> >>> +#define H_PAGE_4K_PFN  _RPAGE_RPN1 /* PFN is for a single 4k page */
+> >>
+> >> Its the same thing, changes nothing.
+> > 
+> > it fixes some space/tab problem.
+> > 
+> >>
+> >>> +#define H_PAGE_F_SECOND	_RPAGE_RSV2	/* HPTE is in 2ndary HPTEG */
+> >>> +#define H_PAGE_F_GIX	(_RPAGE_RSV3 | _RPAGE_RSV4 | _RPAGE_RPN44)
+> >>> +#define H_PAGE_F_GIX_SHIFT	56
+> >>> +
+> >>> +
+> >>> +#define H_PAGE_BUSY	_RPAGE_RPN42     /* software: PTE & hash are busy */
+> >>> +#define H_PAGE_HASHPTE	_RPAGE_RPN43    /* PTE has associated HPTE */
+> >>
+> >> H_PAGE_BUSY seems to be differently defined here.
+> > 
+> > Yes. it is using two different bits depending on 4K hpte v/s 64k hpte
+> > case. But in the next patch all will be same and consistent.
+> > 
+> >>
+> >>> +
+> >>>  /*
+> >>>   * We need to differentiate between explicit huge page and THP huge
+> >>>   * page, since THP huge page also need to track real subpage details
+> >>>   */
+> >>>  #define H_PAGE_THP_HUGE  H_PAGE_4K_PFN
+> >>>
+> >>> -/*
+> >>> - * Used to track subpage group valid if H_PAGE_COMBO is set
+> >>> - * This overloads H_PAGE_F_GIX and H_PAGE_F_SECOND
+> >>> - */
+> >>> -#define H_PAGE_COMBO_VALID	(H_PAGE_F_GIX | H_PAGE_F_SECOND)
+> >>
+> >> H_PAGE_COMBO_VALID is not defined alternately ?
+> > 
+> > it is not needed anymore.
+> > 
+> >>
+> >>> -
+> >>>  /* PTE flags to conserve for HPTE identification */
+> >>> -#define _PAGE_HPTEFLAGS (H_PAGE_BUSY | H_PAGE_F_SECOND | \
+> >>> -			 H_PAGE_F_GIX | H_PAGE_HASHPTE | H_PAGE_COMBO)
+> >>> +#define _PAGE_HPTEFLAGS (H_PAGE_BUSY | H_PAGE_HASHPTE | H_PAGE_COMBO)
+> >>> +
+> >>
+> >> Slot information has moved to the second half, hence _PAGE_HPTEFLAGS
+> >> need not carry that.
+> > 
+> > yes.
+> > 
+> >>
+> >>>  /*
+> >>>   * we support 16 fragments per PTE page of 64K size.
+> >>>   */
+> >>> @@ -74,6 +76,16 @@ static inline unsigned long __rpte_to_hidx(real_pte_t rpte, unsigned long index)
+> >>>  	return (pte_val(rpte.pte) >> H_PAGE_F_GIX_SHIFT) & 0xf;
+> >>>  }
+> >>>
+> >>> +static inline unsigned long set_hidx_slot(pte_t *ptep, real_pte_t rpte,
+> >>> +		unsigned int subpg_index, unsigned long slot)
+> >>> +{
+> >>> +	unsigned long *hidxp = (unsigned long *)(ptep + PTRS_PER_PTE);
+> >>> +
+> >>> +	rpte.hidx &= ~(0xfUL << (subpg_index << 2));
+> >>> +	*hidxp = rpte.hidx  | (slot << (subpg_index << 2));
+> >>> +	return 0x0UL;
+> >>> +}
+> >>
+> >> New method to insert the slot information in the second half.
+> > 
+> > yes. well it basically trying to reduce code redundancy. Too many places
+> > using exactly the same code to accomplish the same thing. Makes sense to
+> > bring it all in one place.
 > 
-> I am not saying to cache the value. Just inside the function, if we have
-> a local variable holding read_amr() once, it can be used twice without
-> reading the register again. Just inside the function.
+> Right.
+> 
+> > 
+> >>
+> >>> +
+> >>>  #define __rpte_to_pte(r)	((r).pte)
+> >>>  extern bool __rpte_sub_valid(real_pte_t rpte, unsigned long index);
+> >>>  /*
+> >>> diff --git a/arch/powerpc/include/asm/book3s/64/hash.h b/arch/powerpc/include/asm/book3s/64/hash.h
+> >>> index 4e957b0..e7cf03a 100644
+> >>> --- a/arch/powerpc/include/asm/book3s/64/hash.h
+> >>> +++ b/arch/powerpc/include/asm/book3s/64/hash.h
+> >>> @@ -8,11 +8,8 @@
+> >>>   *
+> >>>   */
+> >>>  #define H_PTE_NONE_MASK		_PAGE_HPTEFLAGS
+> >>> -#define H_PAGE_F_GIX_SHIFT	56
+> >>> -#define H_PAGE_BUSY		_RPAGE_RSV1 /* software: PTE & hash are busy */
+> >>> -#define H_PAGE_F_SECOND		_RPAGE_RSV2	/* HPTE is in 2ndary HPTEG */
+> >>> -#define H_PAGE_F_GIX		(_RPAGE_RSV3 | _RPAGE_RSV4 | _RPAGE_RPN44)
+> >>> -#define H_PAGE_HASHPTE		_RPAGE_RPN43	/* PTE has associated HPTE */
+> >>
+> >> Removing the common definitions.
+> >>
+> >>> +
+> >>> +#define INIT_HIDX (~0x0UL)
+> >>>
+> >>>  #ifdef CONFIG_PPC_64K_PAGES
+> >>>  #include <asm/book3s/64/hash-64k.h>
+> >>> @@ -160,6 +157,14 @@ static inline int hash__pte_none(pte_t pte)
+> >>>  	return (pte_val(pte) & ~H_PTE_NONE_MASK) == 0;
+> >>>  }
+> >>>
+> >>> +static inline bool hpte_soft_invalid(unsigned long slot)
+> >>> +{
+> >>> +	return ((slot & 0xfUL) == 0xfUL);
+> >>> +}
+> >>> +
+> >>> +unsigned long get_hidx_gslot(unsigned long vpn, unsigned long shift,
+> >>> +		int ssize, real_pte_t rpte, unsigned int subpg_index);
+> >>> +
+> >>>  /* This low level function performs the actual PTE insertion
+> >>>   * Setting the PTE depends on the MMU type and other factors. It's
+> >>>   * an horrible mess that I'm not going to try to clean up now but
+> >>> diff --git a/arch/powerpc/include/asm/book3s/64/mmu-hash.h b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
+> >>> index 6981a52..cfb8169 100644
+> >>> --- a/arch/powerpc/include/asm/book3s/64/mmu-hash.h
+> >>> +++ b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
+> >>> @@ -435,6 +435,11 @@ extern int __hash_page_4K(unsigned long ea, unsigned long access,
+> >>>  extern int __hash_page_64K(unsigned long ea, unsigned long access,
+> >>>  			   unsigned long vsid, pte_t *ptep, unsigned long trap,
+> >>>  			   unsigned long flags, int ssize);
+> >>> +extern unsigned long set_hidx_slot(pte_t *ptep, real_pte_t rpte,
+> >>> +			unsigned int subpg_index, unsigned long slot);
+> >>> +extern unsigned long get_hidx_slot(unsigned long vpn, unsigned long shift,
+> >>> +			int ssize, real_pte_t rpte, unsigned int subpg_index);
+> >>
+> >> I wonder what purpose set_hidx_slot() defined previously, served.
+> >>
+> >>> +
+> >>>  struct mm_struct;
+> >>>  unsigned int hash_page_do_lazy_icache(unsigned int pp, pte_t pte, int trap);
+> >>>  extern int hash_page_mm(struct mm_struct *mm, unsigned long ea,
+> >>> diff --git a/arch/powerpc/mm/dump_linuxpagetables.c b/arch/powerpc/mm/dump_linuxpagetables.c
+> >>> index 44fe483..b832ed3 100644
+> >>> --- a/arch/powerpc/mm/dump_linuxpagetables.c
+> >>> +++ b/arch/powerpc/mm/dump_linuxpagetables.c
+> >>> @@ -213,7 +213,7 @@ struct flag_info {
+> >>>  		.val	= H_PAGE_4K_PFN,
+> >>>  		.set	= "4K_pfn",
+> >>>  	}, {
+> >>> -#endif
+> >>> +#else
+> >>>  		.mask	= H_PAGE_F_GIX,
+> >>>  		.val	= H_PAGE_F_GIX,
+> >>>  		.set	= "f_gix",
+> >>> @@ -224,6 +224,7 @@ struct flag_info {
+> >>>  		.val	= H_PAGE_F_SECOND,
+> >>>  		.set	= "f_second",
+> >>>  	}, {
+> >>> +#endif /* CONFIG_PPC_64K_PAGES */
+> >>
+> >> Are we adding H_PAGE_F_GIX as an element for 4K mapping ?
+> > 
+> > I think there is mistake here. 
+> > In the next patch when these bits are divorsed from
+> > 64K ptes entirely, we will not need the above code for 64K ptes.
+> > But good catch. Will fix the error in this patch.
+> > 
+> >>
+> >>>  #endif
+> >>>  		.mask	= _PAGE_SPECIAL,
+> >>>  		.val	= _PAGE_SPECIAL,
+> >>> diff --git a/arch/powerpc/mm/hash64_4k.c b/arch/powerpc/mm/hash64_4k.c
+> >>> index 6fa450c..c673829 100644
+> >>> --- a/arch/powerpc/mm/hash64_4k.c
+> >>> +++ b/arch/powerpc/mm/hash64_4k.c
+> >>> @@ -20,6 +20,7 @@ int __hash_page_4K(unsigned long ea, unsigned long access, unsigned long vsid,
+> >>>  		   pte_t *ptep, unsigned long trap, unsigned long flags,
+> >>>  		   int ssize, int subpg_prot)
+> >>>  {
+> >>> +	real_pte_t rpte;
+> >>>  	unsigned long hpte_group;
+> >>>  	unsigned long rflags, pa;
+> >>>  	unsigned long old_pte, new_pte;
+> >>> @@ -54,6 +55,7 @@ int __hash_page_4K(unsigned long ea, unsigned long access, unsigned long vsid,
+> >>>  	 * need to add in 0x1 if it's a read-only user page
+> >>>  	 */
+> >>>  	rflags = htab_convert_pte_flags(new_pte);
+> >>> +	rpte = __real_pte(__pte(old_pte), ptep);
+> >>>
+> >>>  	if (cpu_has_feature(CPU_FTR_NOEXECUTE) &&
+> >>>  	    !cpu_has_feature(CPU_FTR_COHERENT_ICACHE))
+> >>> @@ -64,13 +66,10 @@ int __hash_page_4K(unsigned long ea, unsigned long access, unsigned long vsid,
+> >>>  		/*
+> >>>  		 * There MIGHT be an HPTE for this pte
+> >>>  		 */
+> >>> -		hash = hpt_hash(vpn, shift, ssize);
+> >>> -		if (old_pte & H_PAGE_F_SECOND)
+> >>> -			hash = ~hash;
+> >>> -		slot = (hash & htab_hash_mask) * HPTES_PER_GROUP;
+> >>> -		slot += (old_pte & H_PAGE_F_GIX) >> H_PAGE_F_GIX_SHIFT;
+> >>> +		unsigned long gslot = get_hidx_gslot(vpn, shift,
+> >>> +						ssize, rpte, 0);
+> >>
+> >> I am wondering why there is a 'g' before the slot in all these
+> >> functions.
+> > 
+> > Right. even i was confused initially. :)
+> > 
+> > hash table slots are originized as one big table. 8 consecutive entires
+> > in that table form a bucket.  the term slot is used to refer to the
+> > slot within the bucket.  the term gslot is used to refer to an entry
+> > in the table.  roughly speaking slot 2 in bucket 2, will be gslot 2*8+2=18.
+> 
+> Global slot as it can point any where on that two dimensional table ?
+> 
+> > 
+> >>
+> >> Its already too much of changes in a single patch. Being a single
+> >> logical change it needs to be inside a single change but then we
+> >> need much more description in the commit message for some one to
+> >> understand what all changed and how.
+> > 
+> > I have further broken down this patch, one to introduce get_hidx_gslot()
+> > one to introduce set_hidx_slot() . Hopefully that will reduce the size
+> > of the patch to graspable level. let me know,
+> 
+> I did some experiments with the first two patches.
+> 
+> * First of all the first patch does not compile without this.
 
-O!. May be you are reading read_uamor() and read_amr() as the same thing?
-They are two different registers.
+its a warning that a variable is defined but not used. I have fixed it 
+in my new patch series; about to be launched soon.
+
+> 
+> --- a/arch/powerpc/mm/hash_utils_64.c
+> +++ b/arch/powerpc/mm/hash_utils_64.c
+> @@ -1612,7 +1612,7 @@ unsigned long get_hidx_gslot(unsigned long vpn, unsigned long shift,
+>  void flush_hash_page(unsigned long vpn, real_pte_t pte, int psize, int ssize,
+>                      unsigned long flags)
+>  {
+> -       unsigned long hash, index, shift, hidx, gslot;
+> +       unsigned long index, shift, gslot;
+>         int local = flags & HPTE_LOCAL_UPDATE;
+> 
+>         DBG_LOW("flush_hash_page(vpn=%016lx)\n", vpn);
+> 
+> * Though it boots the kernel, system is kind of unresponsive while attempting
+>   to compile a kernel. Though I did not dig further on this, seems like the
+>   first patch is not self sufficient yet.
+
+I wouldn't have broken the the patch into two, because there is too much
+coupling between the two. But Aneesh wanted it that way. And it makes
+sense to break it from a review point of view.
+
+> 
+> * With both first and second patch, the kernel boots fine and compiles a kernel.
+
+Yes. that meets my expectation.
+
+> 
+> We need to sort out issues in the first two patches before looking into
+> the rest of the patch series.
+
+I am not aware of any issues in the first two patches though. Do you see
+any?
 
 RP
-
 
 -- 
 Ram Pai
