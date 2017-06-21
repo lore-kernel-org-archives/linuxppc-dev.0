@@ -1,28 +1,20 @@
-Return-Path: <mark@klomp.org>
-Received: from gnu.wildebeest.org (wildebeest.demon.nl [212.238.236.112])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wsnHd0rrqzDq8c
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jun 2017 11:31:40 +1000 (AEST)
-Date: Wed, 21 Jun 2017 03:31:43 +0200
-From: Mark Wielaard <mark@klomp.org>
-To: Arnaldo Carvalho de Melo <acme@kernel.org>
-Cc: Milian Wolff <milian.wolff@kdab.com>,
- Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>,
- Paolo Bonzini <pbonzini@redhat.com>, linux-kernel@vger.kernel.org,
- "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v2] perf: libdw support for powerpc [ping]
-Message-ID: <20170621013143.GB17392@stream.lan>
-References: <1496312681-20133-1-git-send-email-pbonzini@redhat.com>
- <1497354282.3755.201.camel@klomp.org>
- <59400ADD.4090709@linux.vnet.ibm.com>
- <3621613.kMnvz8Tm3d@milian-kdab2>
- <1497525392.3755.307.camel@klomp.org>
- <20170621010635.GK13640@kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wsnyD0dHHzDq88
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jun 2017 12:01:40 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Nicholas Piggin <npiggin@gmail.com>, akpm@linux-foundation.org,
+ Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: [PATCH] powerpc/64: Initialise thread_info for emergency stacks
+In-Reply-To: <20170620135801.13272-1-npiggin@gmail.com>
+References: <20170620135801.13272-1-npiggin@gmail.com>
+Date: Wed, 21 Jun 2017 12:01:37 +1000
+Message-ID: <87shiut7y6.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170621010635.GK13640@kernel.org>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,35 +24,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jun 20, 2017 at 10:06:35PM -0300, Arnaldo Carvalho de Melo wrote:
-> Em Thu, Jun 15, 2017 at 01:16:32PM +0200, Mark Wielaard escreveu:
-> > On Thu, 2017-06-15 at 10:46 +0200, Milian Wolff wrote:
-> > > Just a quick question: Have you guys applied my recent patch:
-> > > 
-> > > commit 5ea0416f51cc93436bbe497c62ab49fd9cb245b6
-> > > Author: Milian Wolff <milian.wolff@kdab.com>
-> > > Date:   Thu Jun 1 23:00:21 2017 +0200
-> > > 
-> > >     perf report: Include partial stacks unwound with libdw
-> > >     
-> > >     So far the whole stack was thrown away when any error occurred before
-> > >     the maximum stack depth was unwound. This is actually a very common
-> > >     scenario though. The stacks that got unwound so far are still
-> > >     interesting. This removes a large chunk of differences when comparing
-> > >     perf script output for libunwind and libdw perf unwinding.
-> > > 
-> > > If not, then this could explain the issue you are seeing.
-> > 
-> > Thanks! No, I didn't have that patch (*) yet. It makes a huge
-> > difference. With that, Paolo's patch and the elfutils libdw powerpc64
-> > fallback unwinder patch, it looks like I get user stack traces for
-> > everything now on ppc64le.
-> 
-> Can I take that as a Tested-by: you?
+Nicholas Piggin <npiggin@gmail.com> writes:
 
-Sure.
-Tested-by: Mark Wielaard <mark@klomp.org>
+> diff --git a/arch/powerpc/include/asm/thread_info.h b/arch/powerpc/include/asm/thread_info.h
+> index a941cc6fc3e9..5995e4b2996d 100644
+> --- a/arch/powerpc/include/asm/thread_info.h
+> +++ b/arch/powerpc/include/asm/thread_info.h
+> @@ -62,6 +63,24 @@ struct thread_info {
+>  
+>  #define THREAD_SIZE_ORDER	(THREAD_SHIFT - PAGE_SHIFT)
+>  
+> +/*
+> + * Emergency stacks are used for a range of things, from asynchronous
+> + * NMIs (system reset, machine check) to synchronous, process context.
+> + * Set HARDIRQ_OFFSET because we don't know exactly what context we
+> + * come from or if it had a valid stack, which is about the best we
+> + * can do.
+> + * TODO: what to do with accounting?
+> + */
+> +#define emstack_init_thread_info(ti, c)		\
+> +do {						\
+> +	(ti)->task = NULL;			\
+> +	(ti)->cpu = (c);			\
+> +	(ti)->preempt_count = HARDIRQ_OFFSET;	\
+> +	(ti)->local_flags = 0;			\
+> +	(ti)->flags = 0;			\
+> +	klp_init_thread_info(ti);		\
+> +} while (0)
 
-Thanks,
+Why don't we just bzero() the whole thing? Like we do for the other
+stacks?
 
-Mark
+cheers
