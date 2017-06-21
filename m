@@ -1,24 +1,30 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wsssG2Bn5zDq88
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jun 2017 14:57:38 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: frowand.list@gmail.com, Rob Herring <robh+dt@kernel.org>,
- Nathan Fontenot  <nfont@linux.vnet.ibm.com>,
- Tyrel Datwyler  <tyreld@linux.vnet.ibm.com>
-Cc: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v6 1/4] of: remove *phandle properties from expanded
- device tree
-In-Reply-To: <1497996172-821-2-git-send-email-frowand.list@gmail.com>
-References: <1497996172-821-1-git-send-email-frowand.list@gmail.com>
- <1497996172-821-2-git-send-email-frowand.list@gmail.com>
-Date: Wed, 21 Jun 2017 14:57:35 +1000
-Message-ID: <87mv92szsw.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wstMZ6968zDq88
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jun 2017 15:20:26 +1000 (AEST)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v5L5J3mD146828
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jun 2017 01:20:24 -0400
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2b7jgv02ee-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jun 2017 01:20:23 -0400
+Received: from localhost
+ by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Tue, 20 Jun 2017 23:20:22 -0600
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH] powerpc/mm/radix: GR field got removed in ISA 3.0B
+Date: Wed, 21 Jun 2017 10:50:12 +0530
+Message-Id: <1498022412-30339-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,77 +34,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Frank,
+The bit position is now marked reserved. Hence don't set the bit to 1.
 
-frowand.list@gmail.com writes:
-> From: Frank Rowand <frank.rowand@sony.com>
->
-> Remove "phandle", "linux,phandle", and "ibm,phandle" properties from
-> the internal device tree.  The phandle will still be in the struct
-> device_node phandle field and will still be displayed as if it is
-> a property in /proc/device_tree.
->
-> This is to resolve the issue found by Stephen Boyd [1] when he changed
-> the type of struct property.value from void * to const void *.  As
-> a result of the type change, the overlay code had compile errors
-> where the resolver updates phandle values.
->
->   [1] http://lkml.iu.edu/hypermail/linux/kernel/1702.1/04160.html
->
-> - Add sysfs infrastructure to report np->phandle, as if it was a property.
-> - Do not create "phandle" "ibm,phandle", and "linux,phandle" properties
->   in the expanded device tree.
-> - Remove phandle properties in of_attach_node(), for nodes dynamically
->   attached to the live tree.  Add the phandle sysfs entry for these nodes.
-> - When creating an overlay changeset, duplicate the node phandle in
->   __of_node_dup().
-> - Remove no longer needed checks to exclude "phandle" and "linux,phandle"
->   properties in several locations.
-> - A side effect of these changes is that the obsolete "linux,phandle" and
->   "ibm,phandle" properties will no longer appear in /proc/device-tree (th=
-ey
->   will appear as "phandle").
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+---
+ arch/powerpc/include/asm/book3s/64/mmu.h | 1 -
+ arch/powerpc/kvm/book3s_hv.c             | 6 +-----
+ arch/powerpc/mm/pgtable-radix.c          | 2 +-
+ 3 files changed, 2 insertions(+), 7 deletions(-)
 
-Sorry but I don't think that can work for us.
-
-Our DLPAR (ie. CPU/memory/device hotplug) stuff on PowerVM uses
-"ibm,phandle", and it's not the same thing as "phandle" /
-"linux,phandle".
-
-I don't know the code well myself, but the spec (PAPR) says:
-
-  Note: If the =E2=80=9Cibm,phandle=E2=80=9D property exists, there are two=
- =E2=80=9Cphandle=E2=80=9D
-  namespaces which must be kept separate. One is that actually used by
-  the OF client interface, the other is properties in the device tree
-  making reference to device tree nodes. These requirements are written
-  to maintain backward compatibility with older FW versions predating
-  these requirements; if the =E2=80=9Cibm,phandle=E2=80=9D property is not =
-present, the
-  OS may assume that any device tree properties which refer to this node
-  will have a phandle value matching that returned by client interface
-  services.
-
-I have systems here that still use "ibm,phandle". I also see at least
-some of the userspace code that looks for "ibm,phandle", and nothing
-else.
-
-The note above actually implies that the current Linux code is wrong,
-when it uses "ibm,phandle" as the value of np->phandle.
-
-So sorry that's a big mess, but we can't just rip out those properties.
-
-I think the minimal change would be to treat "ibm,phandle" like a normal
-property, I think that would allow our tools to keep working?
-
-
-The other thing that worries me is that by renaming (effectively)
-"linux,phandle" to "phandle", we lose the ability to accurately
-regenerate the device tree from /proc/device-tree. In theory it
-shouldn't matter, but I worry that in practice something will break.
-
-What if we just kept a single bit flag somewhere indicating if the name of
-the phandle property we found was "phandle" or "linux,phandle", and
-create the sysfs phandle using that name?
-
-cheers
+diff --git a/arch/powerpc/include/asm/book3s/64/mmu.h b/arch/powerpc/include/asm/book3s/64/mmu.h
+index 77529a3e3811..e28ce2793e7d 100644
+--- a/arch/powerpc/include/asm/book3s/64/mmu.h
++++ b/arch/powerpc/include/asm/book3s/64/mmu.h
+@@ -55,7 +55,6 @@ extern struct patb_entry *partition_tb;
+ #define RPDS_MASK	0x1f		/* root page dir. size field */
+ 
+ /* Bits in patb1 field */
+-#define PATB_GR		(1UL << 63)	/* guest uses radix; must match HR */
+ #define PRTS_MASK	0x1f		/* process table size field */
+ #define PRTB_MASK	0x0ffffffffffff000UL
+ 
+diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+index 42b7a4fd57d9..657729a433f9 100644
+--- a/arch/powerpc/kvm/book3s_hv.c
++++ b/arch/powerpc/kvm/book3s_hv.c
+@@ -3185,7 +3185,7 @@ static void kvmppc_setup_partition_table(struct kvm *kvm)
+ 	} else {
+ 		dw0 = PATB_HR | radix__get_tree_size() |
+ 			__pa(kvm->arch.pgtable) | RADIX_PGD_INDEX_SIZE;
+-		dw1 = PATB_GR | kvm->arch.process_table;
++		dw1 = kvm->arch.process_table;
+ 	}
+ 
+ 	mmu_partition_table_set_entry(kvm->arch.lpid, dw0, dw1);
+@@ -3840,10 +3840,6 @@ static int kvmhv_configure_mmu(struct kvm *kvm, struct kvm_ppc_mmuv3_cfg *cfg)
+ 	if (radix != kvm_is_radix(kvm))
+ 		return -EINVAL;
+ 
+-	/* GR (guest radix) bit in process_table field must match */
+-	if (!!(cfg->process_table & PATB_GR) != radix)
+-		return -EINVAL;
+-
+ 	/* Process table size field must be reasonable, i.e. <= 24 */
+ 	if ((cfg->process_table & PRTS_MASK) > 24)
+ 		return -EINVAL;
+diff --git a/arch/powerpc/mm/pgtable-radix.c b/arch/powerpc/mm/pgtable-radix.c
+index 6e3d1518eef3..338d69a726b2 100644
+--- a/arch/powerpc/mm/pgtable-radix.c
++++ b/arch/powerpc/mm/pgtable-radix.c
+@@ -25,7 +25,7 @@
+ static int native_register_process_table(unsigned long base, unsigned long pg_sz,
+ 					 unsigned long table_size)
+ {
+-	unsigned long patb1 = base | table_size | PATB_GR;
++	unsigned long patb1 = base | table_size;
+ 
+ 	partition_tb->patb1 = cpu_to_be64(patb1);
+ 	return 0;
+-- 
+2.7.4
