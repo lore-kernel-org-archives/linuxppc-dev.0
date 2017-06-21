@@ -1,44 +1,32 @@
-Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <srs0=hv2q=52=linaro.org=john.stultz@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wtDLx40wDzDqj1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jun 2017 04:51:05 +1000 (AEST)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v5LIn6N4137649
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jun 2017 14:51:03 -0400
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2b7vn6w0tj-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jun 2017 14:51:03 -0400
-Received: from localhost
- by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Thu, 22 Jun 2017 04:51:01 +1000
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v5LIowOk61210746
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jun 2017 04:50:58 +1000
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v5LIonRu005104
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jun 2017 04:50:49 +1000
-From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>,
- Masami Hiramatsu <mhiramat@kernel.org>,
- Michael Ellerman <mpe@ellerman.id.au>, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 2/2] selftests/ftrace: Update multiple kprobes test for powerpc
-Date: Thu, 22 Jun 2017 00:20:28 +0530
-In-Reply-To: <cover.1498070485.git.naveen.n.rao@linux.vnet.ibm.com>
-References: <cover.1498070485.git.naveen.n.rao@linux.vnet.ibm.com>
-In-Reply-To: <cover.1498070485.git.naveen.n.rao@linux.vnet.ibm.com>
-References: <cover.1498070485.git.naveen.n.rao@linux.vnet.ibm.com>
-Message-Id: <f49dbddfbc7dee2f68a610bba468c39a4d017feb.1498070485.git.naveen.n.rao@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wtDMl0g4SzDqj1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jun 2017 04:51:47 +1000 (AEST)
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3wtDMl092bz8t1T
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jun 2017 04:51:47 +1000 (AEST)
+Received: from mail-wr0-x230.google.com (mail-wr0-x230.google.com
+ [IPv6:2a00:1450:400c:c0c::230])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3wtDMk2GgJz9s7M
+ for <linuxppc-dev@ozlabs.org>; Thu, 22 Jun 2017 04:51:46 +1000 (AEST)
+Received: by mail-wr0-x230.google.com with SMTP id r103so146933549wrb.0
+ for <linuxppc-dev@ozlabs.org>; Wed, 21 Jun 2017 11:51:45 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <20170527080452.GA14021@fergus.ozlabs.ibm.com>
+References: <20170527080452.GA14021@fergus.ozlabs.ibm.com>
+From: John Stultz <john.stultz@linaro.org>
+Date: Wed, 21 Jun 2017 11:51:42 -0700
+Message-ID: <CALAqxLXiDZyDKOYBKXYPk1No_=6jCuC65rZQrdYqpv7CoCpqPA@mail.gmail.com>
+Subject: Re: [PATCH] powerpc: Convert VDSO update function to use new
+ update_vsyscall interface
+To: Paul Mackerras <paulus@ozlabs.org>
+Cc: linuxppc-dev@ozlabs.org, Michael Ellerman <michael@ellerman.id.au>,
+ lkml <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,50 +36,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-KPROBES_ON_FTRACE is only available on powerpc64le. Update comment to
-clarify this.
+On Sat, May 27, 2017 at 1:04 AM, Paul Mackerras <paulus@ozlabs.org> wrote:
+> This converts the powerpc VDSO time update function to use the new
+> interface introduced in commit 576094b7f0aa ("time: Introduce new
+> GENERIC_TIME_VSYSCALL", 2012-09-11).  Where the old interface gave
+> us the time as of the last update in seconds and whole nanoseconds,
+> with the new interface we get the nanoseconds part effectively in
+> a binary fixed-point format with tk->tkr_mono.shift bits to the
+> right of the binary point.
+>
+> With the old interface, the fractional nanoseconds got truncated,
+> meaning that the value returned by the VDSO clock_gettime function
+> would have about 1ns of jitter in it compared to the value computed
+> by the generic timekeeping code in the kernel.
+>
+> The powerpc VDSO time functions (clock_gettime and gettimeofday)
+> already work in units of 2^-32 seconds, or 0.23283 ns, because that
+> makes it simple to split the result into seconds and fractional
+> seconds, and represent the fractional seconds in either microseconds
+> or nanoseconds.  This is good enough accuracy for now, so this patch
+> avoids changing how the VDSO works or the interface in the VDSO data
+> page.
+>
+> This patch converts the powerpc update_vsyscall_old to be called
+> update_vsyscall and use the new interface.  We convert the fractional
+> second to units of 2^-32 seconds without truncating to whole nanoseconds.
+> (There is still a conversion to whole nanoseconds for any legacy users
+> of the vdso_data/systemcfg stamp_xtime field.)
+>
+> In addition, this improves the accuracy of the computation of tb_to_xs
+> for those systems with high-frequency timebase clocks (>= 268.5 MHz)
+> by doing the right shift in two parts, one before the multiplication and
+> one after, rather than doing the right shift before the multiplication.
+> (We can't do all of the right shift after the multiplication unless we
+> use 128-bit arithmetic.)
+>
+> Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
 
-Also, we should use an offset of 8 to ensure that the probe does not
-fall on ftrace location. The current offset of 4 will fall before the
-function local entry point and won't fire, while an offset of 12 or 16
-will fall on ftrace location. Offset 8 is currently guaranteed to not be
-the ftrace location.
+Apologies again for missing this earlier.
 
-Finally, do not filter out symbols with a dot. Powerpc Elfv1 uses dot
-prefix for all functions and this prevents us from testing some of those
-symbols. Furthermore, with the patch to derive event names properly in
-the presence of ':' and '.', such names are accepted by kprobe_events
-and constitutes a good test for those symbols.
+So no objections from me. I can't say I really worked the whole thing
+out, but you're handling the xtime_nsec field properly and the rest
+looks reasonable and is well documented.
 
-Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
----
- tools/testing/selftests/ftrace/test.d/kprobe/multiple_kprobes.tc | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+So for what its worth:
+Acked-by: John Stultz <john.stultz@linaro.org>
 
-diff --git a/tools/testing/selftests/ftrace/test.d/kprobe/multiple_kprobes.tc b/tools/testing/selftests/ftrace/test.d/kprobe/multiple_kprobes.tc
-index f4d1ff785d67..d209c071b2c0 100644
---- a/tools/testing/selftests/ftrace/test.d/kprobe/multiple_kprobes.tc
-+++ b/tools/testing/selftests/ftrace/test.d/kprobe/multiple_kprobes.tc
-@@ -2,16 +2,16 @@
- # description: Register/unregister many kprobe events
- 
- # ftrace fentry skip size depends on the machine architecture.
--# Currently HAVE_KPROBES_ON_FTRACE defined on x86 and powerpc
-+# Currently HAVE_KPROBES_ON_FTRACE defined on x86 and powerpc64le
- case `uname -m` in
-   x86_64|i[3456]86) OFFS=5;;
--  ppc*) OFFS=4;;
-+  ppc64le) OFFS=8;;
-   *) OFFS=0;;
- esac
- 
- echo "Setup up to 256 kprobes"
--grep t /proc/kallsyms | cut -f3 -d" " | grep -v .*\\..* | \
--head -n 256 | while read i; do echo p ${i}+${OFFS} ; done > kprobe_events ||:
-+grep t /proc/kallsyms | cut -f3 -d" " | head -n 256 | \
-+while read i; do echo p ${i}+${OFFS} ; done > kprobe_events ||:
- 
- echo 1 > events/kprobes/enable
- echo 0 > events/kprobes/enable
--- 
-2.13.1
+Thanks again for making this update!
+-john
