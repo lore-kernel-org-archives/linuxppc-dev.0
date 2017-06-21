@@ -1,21 +1,25 @@
-Return-Path: <sboyd@codeaurora.org>
-Received: from smtp.codeaurora.org (smtp.codeaurora.org [198.145.29.96])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wtLvj1p1tzDqRW
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jun 2017 09:46:25 +1000 (AEST)
-Date: Wed, 21 Jun 2017 16:46:21 -0700
-From: Stephen Boyd <sboyd@codeaurora.org>
-To: frowand.list@gmail.com
-Cc: Rob Herring <robh+dt@kernel.org>, devicetree@vger.kernel.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v6 2/4] of: make __of_attach_node() static
-Message-ID: <20170621234621.GL4493@codeaurora.org>
-References: <1497996172-821-1-git-send-email-frowand.list@gmail.com>
- <1497996172-821-3-git-send-email-frowand.list@gmail.com>
+Return-Path: <chris@chris-wilson.co.uk>
+Received: from fireflyinternet.com (mail.fireflyinternet.com [109.228.58.192])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wtLyC403DzDqRW
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jun 2017 09:48:35 +1000 (AEST)
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1497996172-821-3-git-send-email-frowand.list@gmail.com>
+To: Tejun Heo <tj@kernel.org>, "David Airlie" <airlied@linux.ie>
+From: Chris Wilson <chris@chris-wilson.co.uk>
+In-Reply-To: <20170613135849.GB28327@htj.duckdns.org>
+Cc: "linuxppc-dev" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel" <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org,
+ "sachinp" <sachinp@linux.vnet.ibm.com>,
+ "Stephen Rothwell" <sfr@canb.auug.org.au>,
+ "Abdul Haleem" <abdhalee@linux.vnet.ibm.com>
+References: <1497278454.15415.50.camel@abdul.in.ibm.com>
+ <20170613135849.GB28327@htj.duckdns.org>
+Message-ID: <149808789548.17054.471609626305557642@mail.alporthouse.com>
+Subject: Re: [next-20170609] WARNING: CPU: 3 PID: 71167 at lib/idr.c:157
+ idr_replace
+Date: Thu, 22 Jun 2017 00:31:35 +0100
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,17 +29,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/20, frowand.list@gmail.com wrote:
-> From: Frank Rowand <frank.rowand@sony.com>
-> 
-> __of_attach_node() is not used outside of drivers/of/dynamic.c.  Make
-> it static and remove it from drivers/of/of_private.h.
-> 
-> Signed-off-by: Frank Rowand <frank.rowand@sony.com>
-> ---
+Quoting Tejun Heo (2017-06-13 14:58:49)
+> Cc'ing David Airlie.
+> =
 
-Reviewed-by: Stephen Boyd <sboyd@codeaurora.org>
+> This is from drm driver calling in idr_replace() w/ a negative id.
+> Probably a silly bug in error handling path?
 
--- 
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
+No, this is the validation of an invalid userspace handle. The drm ABI
+for handles is supposed to be a full u32 range with 0 reserved for an
+invalid handle (constrained by the idr_alloc ofc). The WARN was
+introduced by 0a835c4f090a.
+-Chris
