@@ -1,28 +1,36 @@
-Return-Path: <ram.n.pai@gmail.com>
-Received: from mail-qk0-x241.google.com (mail-qk0-x241.google.com
- [IPv6:2607:f8b0:400d:c09::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <ukrishn@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wtPRj1sBCzDr2H
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jun 2017 11:40:49 +1000 (AEST)
-Received: by mail-qk0-x241.google.com with SMTP id p21so370708qke.0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jun 2017 18:40:49 -0700 (PDT)
-Sender: Ram Pai <ram.n.pai@gmail.com>
-From: Ram Pai <linuxram@us.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- linux-arch@vger.kernel.org, linux-mm@kvack.org, x86@kernel.org,
- linux-doc@vger.kernel.org, linux-kselftest@vger.kernel.org
-Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- khandual@linux.vnet.ibm.com, aneesh.kumar@linux.vnet.ibm.com,
- bsingharora@gmail.com, dave.hansen@intel.com, hbabu@us.ibm.com,
- linuxram@us.ibm.com, arnd@arndb.de, akpm@linux-foundation.org,
- corbet@lwn.net, mingo@redhat.com
-Subject: [RFC v3 23/23] procfs: display the protection-key number associated
- with a vma
-Date: Wed, 21 Jun 2017 18:39:39 -0700
-Message-Id: <1498095579-6790-24-git-send-email-linuxram@us.ibm.com>
-In-Reply-To: <1498095579-6790-1-git-send-email-linuxram@us.ibm.com>
-References: <1498095579-6790-1-git-send-email-linuxram@us.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wtQ9B6P9ZzDsZr
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jun 2017 12:13:18 +1000 (AEST)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v5M2A712103222
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jun 2017 22:13:16 -0400
+Received: from e15.ny.us.ibm.com (e15.ny.us.ibm.com [129.33.205.205])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2b7vn7d6jj-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jun 2017 22:13:16 -0400
+Received: from localhost
+ by e15.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ukrishn@linux.vnet.ibm.com>;
+ Wed, 21 Jun 2017 22:13:15 -0400
+From: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
+To: linux-scsi@vger.kernel.org, James Bottomley <jejb@linux.vnet.ibm.com>,
+ "Martin K. Petersen" <martin.petersen@oracle.com>,
+ "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>,
+ "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Ian Munsie <imunsie@au1.ibm.com>,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
+ Christophe Lombard <clombard@linux.vnet.ibm.com>
+Subject: [PATCH 00/17] cxlflash: LUN provisioning support and miscellaneous
+ fixes
+Date: Wed, 21 Jun 2017 21:12:43 -0500
+Message-Id: <1498097563-8680-1-git-send-email-ukrishn@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,80 +40,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Display the pkey number associated with the vma in smaps of a task.
-The key will be seen as below:
+This patch series contains miscellaneous fixes and several enhancements
+such as LUN provisioning support, WS16 unmap and AFU debug capabilities.
 
-VmFlags: rd wr mr mw me dw ac key=0
+This series is intended for 4.13 and is bisectable.
 
-Signed-off-by: Ram Pai <linuxram@us.ibm.com>
----
- Documentation/filesystems/proc.txt |  3 ++-
- fs/proc/task_mmu.c                 | 22 +++++++++++-----------
- 2 files changed, 13 insertions(+), 12 deletions(-)
+Matthew R. Ochs (8):
+  cxlflash: Separate AFU internal command handling from AFU sync
+    specifics
+  cxlflash: Introduce host ioctl support
+  cxlflash: Refactor AFU capability checking
+  cxlflash: Support LUN provisioning
+  cxlflash: Support AFU debug
+  cxlflash: Support WS16 unmap
+  cxlflash: Remove zeroing of private command data
+  cxlflash: Update TMF command processing
 
-diff --git a/Documentation/filesystems/proc.txt b/Documentation/filesystems/proc.txt
-index 4cddbce..a8c74aa 100644
---- a/Documentation/filesystems/proc.txt
-+++ b/Documentation/filesystems/proc.txt
-@@ -423,7 +423,7 @@ SwapPss:               0 kB
- KernelPageSize:        4 kB
- MMUPageSize:           4 kB
- Locked:                0 kB
--VmFlags: rd ex mr mw me dw
-+VmFlags: rd ex mr mw me dw key=<num>
- 
- the first of these lines shows the same information as is displayed for the
- mapping in /proc/PID/maps.  The remaining lines show the size of the mapping
-@@ -491,6 +491,7 @@ manner. The codes are the following:
-     hg  - huge page advise flag
-     nh  - no-huge page advise flag
-     mg  - mergable advise flag
-+    key=<num> - the memory protection key number
- 
- Note that there is no guarantee that every flag and associated mnemonic will
- be present in all further kernel releases. Things get changed, the flags may
-diff --git a/fs/proc/task_mmu.c b/fs/proc/task_mmu.c
-index 2ddc298..d2eb096 100644
---- a/fs/proc/task_mmu.c
-+++ b/fs/proc/task_mmu.c
-@@ -1,4 +1,6 @@
- #include <linux/mm.h>
-+#include <linux/pkeys.h>
-+#include <linux/huge_mm.h>
- #include <linux/vmacache.h>
- #include <linux/hugetlb.h>
- #include <linux/huge_mm.h>
-@@ -666,22 +668,20 @@ static void show_smap_vma_flags(struct seq_file *m, struct vm_area_struct *vma)
- 		[ilog2(VM_MERGEABLE)]	= "mg",
- 		[ilog2(VM_UFFD_MISSING)]= "um",
- 		[ilog2(VM_UFFD_WP)]	= "uw",
--#ifdef CONFIG_ARCH_HAS_PKEYS
--		/* These come out via ProtectionKey: */
--		[ilog2(VM_PKEY_BIT0)]	= "",
--		[ilog2(VM_PKEY_BIT1)]	= "",
--		[ilog2(VM_PKEY_BIT2)]	= "",
--		[ilog2(VM_PKEY_BIT3)]	= "",
--#endif /* CONFIG_ARCH_HAS_PKEYS */
--#ifdef CONFIG_PPC64_MEMORY_PROTECTION_KEYS
--		/* Additional bit in ProtectionKey: */
--		[ilog2(VM_PKEY_BIT4)]	= "",
--#endif
- 	};
- 	size_t i;
- 
- 	seq_puts(m, "VmFlags: ");
- 	for (i = 0; i < BITS_PER_LONG; i++) {
-+#ifdef CONFIG_ARCH_HAS_PKEYS
-+		if (i == ilog2(VM_PKEY_BIT0)) {
-+			int keyvalue = vma_pkey(vma);
-+
-+			i += ilog2(arch_max_pkey())-1;
-+			seq_printf(m, "key=%d ", keyvalue);
-+			continue;
-+		}
-+#endif /* CONFIG_ARCH_HAS_PKEYS */
- 		if (!mnemonics[i][0])
- 			continue;
- 		if (vma->vm_flags & (1UL << i)) {
+Uma Krishnan (9):
+  cxlflash: Combine the send queue locks
+  cxlflash: Update cxlflash_afu_sync() to return errno
+  cxlflash: Reset hardware queue context via specified register
+  cxlflash: Schedule asynchronous reset of the host
+  cxlflash: Handle AFU sync failures
+  cxlflash: Track pending scsi commands in each hardware queue
+  cxlflash: Flush pending commands in cleanup path
+  cxlflash: Add scsi command abort handler
+  cxlflash: Create character device to provide host management interface
+
+ Documentation/ioctl/ioctl-number.txt |    2 +-
+ Documentation/powerpc/cxlflash.txt   |   76 ++-
+ drivers/scsi/cxlflash/common.h       |   48 +-
+ drivers/scsi/cxlflash/main.c         | 1008 ++++++++++++++++++++++++++++++----
+ drivers/scsi/cxlflash/main.h         |    7 +
+ drivers/scsi/cxlflash/sislite.h      |   27 +-
+ drivers/scsi/cxlflash/superpipe.c    |   34 +-
+ drivers/scsi/cxlflash/vlun.c         |   89 ++-
+ include/uapi/scsi/cxlflash_ioctl.h   |   85 ++-
+ 9 files changed, 1217 insertions(+), 159 deletions(-)
+
 -- 
-1.8.3.1
+2.1.0
