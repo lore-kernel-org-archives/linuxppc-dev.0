@@ -1,48 +1,28 @@
-Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <robherring2@gmail.com>
+Received: from mail-it0-f41.google.com (mail-it0-f41.google.com
+ [209.85.214.41])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wtm8S2SYjzDr11
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jun 2017 01:43:51 +1000 (AEST)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v5MFhklW045477
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jun 2017 11:43:49 -0400
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2b8beu0u8r-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jun 2017 11:43:49 -0400
-Received: from localhost
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Fri, 23 Jun 2017 01:43:41 +1000
-Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v5MFhc4o3604878
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jun 2017 01:43:38 +1000
-Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
- by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v5MFhbJl006233
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jun 2017 01:43:38 +1000
-Date: Thu, 22 Jun 2017 21:13:36 +0530
-From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-To: Nicholas Piggin <npiggin@gmail.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>,
- Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>,
- Masami Hiramatsu <mhiramat@kernel.org>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v3 4/6] powerpc/64s: Un-blacklist system_call() from
- kprobes
-References: <cover.1498069502.git.naveen.n.rao@linux.vnet.ibm.com>
- <d13eccaed4be643409abed29565dbdd8c7d5af6a.1498069502.git.naveen.n.rao@linux.vnet.ibm.com>
- <20170622134112.4bd32543@roar.ozlabs.ibm.com>
- <8737ass29e.fsf@concordia.ellerman.id.au>
- <20170622231411.75ef990b@roar.ozlabs.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wtmP31gQ0zDr2R
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jun 2017 01:54:47 +1000 (AEST)
+Received: by mail-it0-f41.google.com with SMTP id m47so52513280iti.1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jun 2017 08:54:47 -0700 (PDT)
+Date: Thu, 22 Jun 2017 10:54:43 -0500
+From: Rob Herring <robh@kernel.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: frowand.list@gmail.com, Nathan Fontenot <nfont@linux.vnet.ibm.com>,
+ Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
+ devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v6 1/4] of: remove *phandle properties from expanded
+ device tree
+Message-ID: <20170622155443.vyrozpzlydi32yzu@rob-hp-laptop>
+References: <1497996172-821-1-git-send-email-frowand.list@gmail.com>
+ <1497996172-821-2-git-send-email-frowand.list@gmail.com>
+ <87mv92szsw.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170622231411.75ef990b@roar.ozlabs.ibm.com>
-Message-Id: <20170622154336.z2q2wja35cvva4ms@naverao1-tp.localdomain>
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <87mv92szsw.fsf@concordia.ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,92 +32,85 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2017/06/22 11:14PM, Nicholas Piggin wrote:
-> On Thu, 22 Jun 2017 21:14:21 +1000
-> Michael Ellerman <mpe@ellerman.id.au> wrote:
+On Wed, Jun 21, 2017 at 02:57:35PM +1000, Michael Ellerman wrote:
+> Hi Frank,
 > 
-> > Nicholas Piggin <npiggin@gmail.com> writes:
-> > 
-> > > On Thu, 22 Jun 2017 00:08:40 +0530
-> > > "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
-> > >  
-> > >> It is actually safe to probe system_call() in entry_64.S, but only till
-> > >> we unset MSR_RI. To allow this, add a new symbol system_call_exit()
-> > >> after the mtmsrd and blacklist that. Though the mtmsrd instruction
-> > >> itself is now whitelisted, we won't be allowed to probe on it as we
-> > >> don't allow probing on rfi and mtmsr instructions (checked for in
-> > >> arch_prepare_kprobe()).  
-> > >
-> > > Can you add a little comment to say probes aren't allowed, and it's
-> > > located after the mtmsr in order to avoid contaminating traces?
-
-Hmm.. it's actually after the mtmsrd since we can probe until that 
-point. In v2, I converted .Lsyscall_exit() into a different label and 
-blacklisted all of it. But Michael prefers to only blacklist what we 
-must. It is helpful if we ever want to probe after returning from a 
-syscall. That said, please see further below (*)
-
-> > >
-> > > Also I wonder if a slightly different name would be more instructive?
-> > > I don't normally care, but the system_call_common code isn't trivial
-> > > to follow. system_call_exit might give the impression that it is the
-> > > entire exit path (which would pair with system_call for entry).  
-> > 
-> > It is the entire path in the happy case isn't it? I'm not sure I know
-> > what you mean.
+> frowand.list@gmail.com writes:
+> > From: Frank Rowand <frank.rowand@sony.com>
+> >
+> > Remove "phandle", "linux,phandle", and "ibm,phandle" properties from
+> > the internal device tree.  The phandle will still be in the struct
+> > device_node phandle field and will still be displayed as if it is
+> > a property in /proc/device_tree.
+> >
+> > This is to resolve the issue found by Stephen Boyd [1] when he changed
+> > the type of struct property.value from void * to const void *.  As
+> > a result of the type change, the overlay code had compile errors
+> > where the resolver updates phandle values.
+> >
+> >   [1] http://lkml.iu.edu/hypermail/linux/kernel/1702.1/04160.html
+> >
+> > - Add sysfs infrastructure to report np->phandle, as if it was a property.
+> > - Do not create "phandle" "ibm,phandle", and "linux,phandle" properties
+> >   in the expanded device tree.
+> > - Remove phandle properties in of_attach_node(), for nodes dynamically
+> >   attached to the live tree.  Add the phandle sysfs entry for these nodes.
+> > - When creating an overlay changeset, duplicate the node phandle in
+> >   __of_node_dup().
+> > - Remove no longer needed checks to exclude "phandle" and "linux,phandle"
+> >   properties in several locations.
+> > - A side effect of these changes is that the obsolete "linux,phandle" and
+> >   "ibm,phandle" properties will no longer appear in /proc/device-tree (they
+> >   will appear as "phandle").
 > 
-> Oh, yes you're right, I thought it was moved down further.
+> Sorry but I don't think that can work for us.
 > 
-> > If you're tracing etc. then you'll be in syscall_exit_work, isn't 
-> > that sufficient to differentiate the two?
+> Our DLPAR (ie. CPU/memory/device hotplug) stuff on PowerVM uses
+> "ibm,phandle", and it's not the same thing as "phandle" /
+> "linux,phandle".
+> 
+> I don't know the code well myself, but the spec (PAPR) says:
+> 
+>   Note: If the “ibm,phandle” property exists, there are two “phandle”
+>   namespaces which must be kept separate. One is that actually used by
+>   the OF client interface, the other is properties in the device tree
+>   making reference to device tree nodes. These requirements are written
+>   to maintain backward compatibility with older FW versions predating
+>   these requirements; if the “ibm,phandle” property is not present, the
+>   OS may assume that any device tree properties which refer to this node
+>   will have a phandle value matching that returned by client interface
+>   services.
+> 
+> I have systems here that still use "ibm,phandle". I also see at least
+> some of the userspace code that looks for "ibm,phandle", and nothing
+> else.
+> 
+> The note above actually implies that the current Linux code is wrong,
+> when it uses "ibm,phandle" as the value of np->phandle.
+> 
+> So sorry that's a big mess, but we can't just rip out those properties.
+> 
+> I think the minimal change would be to treat "ibm,phandle" like a normal
+> property, I think that would allow our tools to keep working?
+> 
+> 
+> The other thing that worries me is that by renaming (effectively)
+> "linux,phandle" to "phandle", we lose the ability to accurately
+> regenerate the device tree from /proc/device-tree. In theory it
+> shouldn't matter, but I worry that in practice something will break.
 
-Not sure how much this matters, but the new symbol (system_call_exit) is 
-actually a few instructions from after the syscall return 
-(.Lsyscall_exit). And I have converted syscall_exit_work to a private 
-symbol as well.
+The only scenario I can come up with is booting a kernel with this 
+change and kexec'ing to a kernel older than 2010 (when ePAPR phandle was 
+added). Some how I doubt that would work without this change.
 
-In general, from kprobes standpoint, there are places there where we can 
-probe safely but doing so may require new symbols to be introduced, 
-which could make traces look weird, as well as distribute samples among 
-different symbols.
+> What if we just kept a single bit flag somewhere indicating if the name of
+> the phandle property we found was "phandle" or "linux,phandle", and
+> create the sysfs phandle using that name?
 
-I'm not sure how best to proceed. In this current series, I pretty much 
-blacklist all of system_call_common() through to syscall_exit() except 
-for the small part in between in system_call(). All other symbols have 
-been made private, so nothing else apart from system_call_common(), 
-system_call() and system_call_exit() show up in traces.
+I'd like to move towards dropping 'linux,phandle' including changing 
+dtc to stop generating both properties by default. Perhaps we should 
+just be more explicit that we are doing that. Stop exposing it first and 
+then change how phandles are stored/managed a cycle later. Then we can 
+easily revert it if needed.
 
-We could probably retain syscall_dotrace(), syscall_enosys() and parts 
-of syscall_exit_work() after RI is restored, which will allow those to 
-be probed, but end up showing these symbols in traces.
-
-What would be preferable?
-
-
------
-(*)
-The other suggestion Michael had was to just put a nop after the bctrl 
-and to again make .Lsyscall_exit public and blacklist that (though he 
-wasn't all for it). I suppose it does solve this issue in a nice way - 
-the call traces when in a system call show the proper symbol and we do 
-have a 'nop' instruction on which we can probe to catch returns from 
-system calls. Is that something we can re-consider? Something like this 
-(along with converting other .Lsyscall_exit references):
-
---- a/arch/powerpc/kernel/entry_64.S
-+++ b/arch/powerpc/kernel/entry_64.S
-@@ -175,8 +175,9 @@ system_call:                        /* label this so stack traces look sane */
-        ldx     r12,r11,r0      /* Fetch system call handler [ptr] */
-        mtctr   r12
-        bctrl                   /* Call handler */
-+       nop
-
--.Lsyscall_exit:
-+system_call_exit:
-        std     r3,RESULT(r1)
-        CURRENT_THREAD_INFO(r12, r1)
-
-
-
-Thanks,
-Naveen
+Rob
