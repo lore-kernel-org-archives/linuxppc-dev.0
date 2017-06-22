@@ -1,46 +1,19 @@
-Return-Path: <dvhart@infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org [65.50.211.133])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wtSQh3tkBzDwKF
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jun 2017 13:55:08 +1000 (AEST)
-Date: Wed, 21 Jun 2017 20:53:37 -0700
-From: Darren Hart <dvhart@infradead.org>
-To: Jiri Slaby <jslaby@suse.cz>
-Cc: tglx@linutronix.de, mingo@redhat.com, peterz@infradead.org,
- linux-kernel@vger.kernel.org, Richard Henderson <rth@twiddle.net>,
- Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
- Matt Turner <mattst88@gmail.com>, Vineet Gupta <vgupta@synopsys.com>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Will Deacon <will.deacon@arm.com>,
- Richard Kuo <rkuo@codeaurora.org>, Tony Luck <tony.luck@intel.com>,
- Fenghua Yu <fenghua.yu@intel.com>, Michal Simek <monstr@monstr.eu>,
- Ralf Baechle <ralf@linux-mips.org>, Jonas Bonn <jonas@southpole.se>,
- Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
- Stafford Horne <shorne@gmail.com>,
- "James E.J. Bottomley" <jejb@parisc-linux.org>,
- Helge Deller <deller@gmx.de>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>,
- "David S. Miller" <davem@davemloft.net>,
- "H. Peter Anvin" <hpa@zytor.com>, Chris Zankel <chris@zankel.net>,
- Max Filippov <jcmvbkbc@gmail.com>, Arnd Bergmann <arnd@arndb.de>,
- x86@kernel.org, linux-alpha@vger.kernel.org,
- linux-snps-arc@lists.infradead.org,
- linux-arm-kernel@lists.infradead.org, linux-hexagon@vger.kernel.org,
- linux-ia64@vger.kernel.org, linux-mips@linux-mips.org,
- openrisc@lists.librecores.org, linux-parisc@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
- linux-xtensa@linux-xtensa.org, linux-arch@vger.kernel.org
-Subject: Re: [PATCH 1/1] futex: remove duplicated code and fix UB
-Message-ID: <20170622035337.GF25900@fury>
-References: <20170621115318.2781-1-jslaby@suse.cz>
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wtSWx1dm8zDrH4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jun 2017 13:59:41 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: victora <victora@linux.vnet.ibm.com>, alistair@popple.id.au, jk@ozlabs.org
+Cc: victora@br.ibm.com, mauricfo@linux.vnet.ibm.com, linuxppc-dev@ozlabs.org
+Subject: Re: 1M hugepage size being registered on Linux
+In-Reply-To: <322aa4a1a11ca79008a8c894c12a80d5@linux.vnet.ibm.com>
+References: <322aa4a1a11ca79008a8c894c12a80d5@linux.vnet.ibm.com>
+Date: Thu, 22 Jun 2017 13:59:40 +1000
+Message-ID: <87o9tgsmdv.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170621115318.2781-1-jslaby@suse.cz>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,30 +23,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jun 21, 2017 at 01:53:18PM +0200, Jiri Slaby wrote:
-> There is code duplicated over all architecture's headers for
-> futex_atomic_op_inuser. Namely op decoding, access_ok check for uaddr,
-> and comparison of the result.
-> 
-> Remove this duplication and leave up to the arches only the needed
-> assembly which is now in arch_futex_atomic_op_inuser.
-> 
-> This effectively distributes the Will Deacon's arm64 fix for undefined
-> behaviour reported by UBSAN to all architectures. The fix was done in
-> commit 5f16a046f8e1 (arm64: futex: Fix undefined behaviour with
-> FUTEX_OP_OPARG_SHIFT usage).  Look there for an example dump.
-> 
-> Note that s390 removed access_ok check in d12a29703 ("s390/uaccess:
-> remove pointless access_ok() checks") as access_ok there returns true.
-> We introduce it back to the helper for the sake of simplicity (it gets
-> optimized away anyway).
-> 
+Hi Victor,
 
-This required a minor manual merge for ARM on the tip of Linus' tree today. The
-reduced duplication is a welcome improvement.
+Someone refreshed my memory on this, coffee was involved ...
 
-Reviewed-by: Darren Hart (VMware) <dvhart@infradead.org>
+victora <victora@linux.vnet.ibm.com> writes:
+> Hi Alistair/Jeremy,
+>
+> I am working on a bug related to 1M hugepage size being registered on 
+> Linux (Power 8 Baremetal - Garrison).
 
--- 
-Darren Hart
-VMware Open Source Technology Center
+On those machines the property in the device tree comes straight from
+hostboot, and it includes 1M:
+
+# lsprop ibm,segment-page-sizes 
+ibm,segment-page-sizes
+		 0000000c  00000000  00000003  0000000c
+                 baseshift slbenc    lpnum     shift
+		 00000000  00000010  00000007  00000018
+                 penc      shift     penc      shift
+		 00000038  00000010  00000110  00000002
+                 penc      baseshift slbenc    lpnum
+		 00000010  00000001  00000018  00000008
+                 shift     penc      shift     penc
+		 00000014  00000130  00000001  00000014	<--- 1MB = 2^0x14
+                 baseshift slbenc    lpnum     shift
+		 00000002  00000018  00000100  00000001
+                 penc      baseshift slbenc    lpnum
+		 00000018  00000000  00000022  00000120
+                 shift     penc      baseshift slbenc
+		 00000001  00000022  00000003
+                 lpnum     shift     penc
+
+
+> I was checking dmesg and it seems that 1M page size is coming from 
+> firmware to Linux.
+>
+> [    0.000000] base_shift=20: shift=20, sllp=0x0130, avpnm=0x00000000, tlbiel=0, penc=2
+> [    1.528867] HugeTLB registered 1 MB page size, pre-allocated 0 pages
+
+Which is why you see that message.
+
+> Should Linux support this page size? As afar as I know, this was an 
+> unsupported page size in the past isn't it? If this should be supported 
+> now, is there any specific reason for that?
+
+It's unsupported in Linux because it doesn't match the page table
+geometry.
+
+We merged a patch from Aneesh to filter it out in 4.12-rc1:
+
+  a525108cf1cc ("powerpc/mm/hugetlb: Filter out hugepage size not supported by page table layout")
+
+I guess we should probably send that patch to stable et. al.
+
+cheers
