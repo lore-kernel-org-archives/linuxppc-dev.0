@@ -1,12 +1,12 @@
 Return-Path: <keescook@chromium.org>
-Received: from mail-pf0-x234.google.com (mail-pf0-x234.google.com
- [IPv6:2607:f8b0:400e:c00::234])
+Received: from mail-pf0-x230.google.com (mail-pf0-x230.google.com
+ [IPv6:2607:f8b0:400e:c00::230])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wtqKH0Q2rzDr27
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jun 2017 04:06:42 +1000 (AEST)
-Received: by mail-pf0-x234.google.com with SMTP id q86so12108104pfl.3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jun 2017 11:06:42 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wtqKH6GGbzDr2J
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jun 2017 04:06:43 +1000 (AEST)
+Received: by mail-pf0-x230.google.com with SMTP id q86so12108414pfl.3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jun 2017 11:06:43 -0700 (PDT)
 From: Kees Cook <keescook@chromium.org>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Kees Cook <keescook@chromium.org>, Russell King <linux@armlinux.org.uk>,
@@ -21,9 +21,9 @@ Cc: Kees Cook <keescook@chromium.org>, Russell King <linux@armlinux.org.uk>,
  linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
  linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
  kernel-hardening@lists.openwall.com
-Subject: [PATCH 3/4] powerpc: Reduce ELF_ET_DYN_BASE
-Date: Thu, 22 Jun 2017 11:06:31 -0700
-Message-Id: <1498154792-49952-4-git-send-email-keescook@chromium.org>
+Subject: [PATCH 4/4] s390: Reduce ELF_ET_DYN_BASE
+Date: Thu, 22 Jun 2017 11:06:32 -0700
+Message-Id: <1498154792-49952-5-git-send-email-keescook@chromium.org>
 In-Reply-To: <1498154792-49952-1-git-send-email-keescook@chromium.org>
 References: <1498154792-49952-1-git-send-email-keescook@chromium.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -43,32 +43,34 @@ pointers.
 
 Signed-off-by: Kees Cook <keescook@chromium.org>
 ---
- arch/powerpc/include/asm/elf.h | 13 +++++++------
- 1 file changed, 7 insertions(+), 6 deletions(-)
+ arch/s390/include/asm/elf.h | 15 +++++++--------
+ 1 file changed, 7 insertions(+), 8 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/elf.h b/arch/powerpc/include/asm/elf.h
-index 09bde6e34f5d..548d9a411a0d 100644
---- a/arch/powerpc/include/asm/elf.h
-+++ b/arch/powerpc/include/asm/elf.h
-@@ -23,12 +23,13 @@
+diff --git a/arch/s390/include/asm/elf.h b/arch/s390/include/asm/elf.h
+index e8f623041769..7c58d599f91b 100644
+--- a/arch/s390/include/asm/elf.h
++++ b/arch/s390/include/asm/elf.h
+@@ -161,14 +161,13 @@ extern unsigned int vdso_enabled;
  #define CORE_DUMP_USE_REGSET
- #define ELF_EXEC_PAGESIZE	PAGE_SIZE
+ #define ELF_EXEC_PAGESIZE	4096
  
 -/* This is the location that an ET_DYN program is loaded if exec'ed.  Typical
 -   use of this is to invoke "./ld.so someprog" to test out a new version of
 -   the loader.  We need to make sure that it is out of the way of the program
--   that it will "exec", and that there is sufficient room for the brk.  */
--
--#define ELF_ET_DYN_BASE	0x20000000
+-   that it will "exec", and that there is sufficient room for the brk. 64-bit
+-   tasks are aligned to 4GB. */
+-#define ELF_ET_DYN_BASE (is_compat_task() ? \
+-				(STACK_TOP / 3 * 2) : \
+-				(STACK_TOP / 3 * 2) & ~((1UL << 32) - 1))
 +/*
 + * This is the base location for PIE (ET_DYN with INTERP) loads. On
 + * 64-bit, this is raised to 4GB to leave the entire 32-bit address
 + * space open for things that want to use the area for 32-bit pointers.
 + */
-+#define ELF_ET_DYN_BASE		(is_32bit_task() ? 0x000400000UL : \
-+						   0x100000000UL)
++#define ELF_ET_DYN_BASE		(is_compat_task() ? 0x000400000UL : \
++						    0x100000000UL)
  
- #define ELF_CORE_EFLAGS (is_elf2_task() ? 2 : 0)
- 
+ /* This yields a mask that user programs can use to figure out what
+    instruction set this CPU supports. */
 -- 
 2.7.4
