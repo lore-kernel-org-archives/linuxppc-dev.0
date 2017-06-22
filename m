@@ -1,26 +1,38 @@
-Return-Path: <gnomes@lxorguk.ukuu.org.uk>
-Received: from fuzix.org (www.llwyncelyn.cymru [82.70.14.225])
+Return-Path: <leitao@debian.org>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wtt8z2PYwzDqj7
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jun 2017 06:14:42 +1000 (AEST)
-Date: Thu, 22 Jun 2017 21:14:31 +0100
-From: Alan Cox <gnomes@lxorguk.ukuu.org.uk>
-To: Logan Gunthorpe <logang@deltatee.com>
-Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
- linux-ntb@googlegroups.com, linux-alpha@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-crypto@vger.kernel.org,
- dri-devel@lists.freedesktop.org, Arnd Bergmann <arnd@arndb.de>, Greg
- Kroah-Hartman <gregkh@linuxfoundation.org>, Stephen Bates
- <sbates@raithlin.com>
-Subject: Re: [PATCH 3/7] asm-generic/io.h: make ioread64 and iowrite64
- universally available
-Message-ID: <20170622211431.14270378@alans-desktop>
-In-Reply-To: <20170622164817.25515-4-logang@deltatee.com>
-References: <20170622164817.25515-1-logang@deltatee.com>
- <20170622164817.25515-4-logang@deltatee.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wttRz5sK3zDqj8
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jun 2017 06:27:43 +1000 (AEST)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v5MKPrdk108225
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jun 2017 16:27:40 -0400
+Received: from e24smtp05.br.ibm.com (e24smtp05.br.ibm.com [32.104.18.26])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2b8magsnft-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jun 2017 16:27:40 -0400
+Received: from localhost
+ by e24smtp05.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <leitao@debian.org>;
+ Thu, 22 Jun 2017 17:27:38 -0300
+Received: from d24av04.br.ibm.com (d24av04.br.ibm.com [9.8.31.97])
+ by d24relay02.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v5MKRZiU16056412
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jun 2017 17:27:35 -0300
+Received: from d24av04.br.ibm.com (localhost [127.0.0.1])
+ by d24av04.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v5MKRZQU007649
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jun 2017 17:27:35 -0300
+From: Breno Leitao <leitao@debian.org>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Breno Leitao <leitao@debian.org>,
+ Gustavo Romero <gromero@linux.vnet.ibm.com>
+Subject: [PATCH] powerpc/kernel: Avoid redundancies on giveup_all
+Date: Thu, 22 Jun 2017 17:27:23 -0300
+Message-Id: <1498163243-22203-1-git-send-email-leitao@debian.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,43 +42,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 22 Jun 2017 10:48:13 -0600
-Logan Gunthorpe <logang@deltatee.com> wrote:
+Currently giveup_all() calls __giveup_fpu(), __giveup_altivec(), and
+__giveup_vsx(). But __giveup_vsx() also calls __giveup_fpu() and
+__giveup_altivec() again, in a redudant manner.
 
-> Currently, ioread64 and iowrite64 are only available io CONFIG_64BIT=y
-> and CONFIG_GENERIC_IOMAP=n. Thus, seeing the functions are not
-> universally available, it makes them unusable for driver developers.
-> This leads to ugly hacks such as those at the top of
-> 
-> drivers/ntb/hw/intel/ntb_hw_intel.c
-> 
-> This patch adds fallback implementations for when CONFIG_64BIT and
-> CONFIG_GENERIC_IOMAP are not set. These functions use two io32 based
-> calls to complete the operation.
-> 
-> Note, we do not use the volatile keyword in these functions like the
-> others in the same file. It is necessary to avoid a compiler warning
-> on arm.
+Other than giving up FP and Altivec, __giveup_vsx() also disables
+MSR_VSX on MSR, but this is already done by __giveup_{fpu,altivec}().
+As VSX can not be enabled alone on MSR (without FP and/or VEC
+enabled), this is also a redundancy. VSX is never enabled alone (without
+FP and VEC) because every time VSX is enabled, as through load_up_vsx()
+and restore_math(), FP is also enabled together.
 
-This is a really really bad idea as per the Alpha comment.
+This change improves giveup_all() in average just 3%, but since
+giveup_all() is called very frequently, around 8x per CPU per second on
+an idle machine, this change might show some noticeable improvement.
 
-ioread64 and iowrite64 generate a single 64bit bus transaction. There is
-hardware where mmio operations have side effects so simply using a pair
-of 32bit operations blindly does not work (consider something as trivial
-as reading a 64bit performance counter or incrementing pointer).
+Signed-off-by: Breno Leitao <leitao@debian.org>
+Signed-off-by: Gustavo Romero <gromero@linux.vnet.ibm.com>
+---
+ arch/powerpc/kernel/process.c | 4 ----
+ 1 file changed, 4 deletions(-)
 
-If a platform doesn't support 64bit I/O operations from the CPU then you
-either need to use some kind of platform/architecture specific interface
-if present or accept you don't have one.
-
-It's not safe to split it. Possibly for some use cases you could add an
-
-ioread64_maysplit()
-
-but you cannot blindly break ioread64/write64() and expect it to
-magically allow you to use drivers that depend upon it.
-
-What btw is the actual ARM compiler warning ? Is the compiler also trying
-to tell you it's a bad idea ?
-
-Alan
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index 2ad725ef4368..5d6af58270e6 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -494,10 +494,6 @@ void giveup_all(struct task_struct *tsk)
+ 	if (usermsr & MSR_VEC)
+ 		__giveup_altivec(tsk);
+ #endif
+-#ifdef CONFIG_VSX
+-	if (usermsr & MSR_VSX)
+-		__giveup_vsx(tsk);
+-#endif
+ #ifdef CONFIG_SPE
+ 	if (usermsr & MSR_SPE)
+ 		__giveup_spe(tsk);
+-- 
+2.11.0
