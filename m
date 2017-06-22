@@ -1,12 +1,12 @@
 Return-Path: <keescook@chromium.org>
-Received: from mail-pg0-x230.google.com (mail-pg0-x230.google.com
- [IPv6:2607:f8b0:400e:c05::230])
+Received: from mail-pf0-x234.google.com (mail-pf0-x234.google.com
+ [IPv6:2607:f8b0:400e:c00::234])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wtqKH20dpzDr2D
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jun 2017 04:06:43 +1000 (AEST)
-Received: by mail-pg0-x230.google.com with SMTP id f127so10968282pgc.0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jun 2017 11:06:43 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wtqKH0Q2rzDr27
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jun 2017 04:06:42 +1000 (AEST)
+Received: by mail-pf0-x234.google.com with SMTP id q86so12108104pfl.3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jun 2017 11:06:42 -0700 (PDT)
 From: Kees Cook <keescook@chromium.org>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Kees Cook <keescook@chromium.org>, Russell King <linux@armlinux.org.uk>,
@@ -21,9 +21,11 @@ Cc: Kees Cook <keescook@chromium.org>, Russell King <linux@armlinux.org.uk>,
  linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
  linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
  kernel-hardening@lists.openwall.com
-Subject: [PATCH 0/4] Reduce ELF_ET_DYN_BASE
-Date: Thu, 22 Jun 2017 11:06:28 -0700
-Message-Id: <1498154792-49952-1-git-send-email-keescook@chromium.org>
+Subject: [PATCH 3/4] powerpc: Reduce ELF_ET_DYN_BASE
+Date: Thu, 22 Jun 2017 11:06:31 -0700
+Message-Id: <1498154792-49952-4-git-send-email-keescook@chromium.org>
+In-Reply-To: <1498154792-49952-1-git-send-email-keescook@chromium.org>
+References: <1498154792-49952-1-git-send-email-keescook@chromium.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,17 +35,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is a follow-up to "binfmt_elf: Use ELF_ET_DYN_BASE only for PIE"[1],
-which allow ELF_ET_DYN_BASE to be reduced from high in the address space.
-That patch only changed x86, and this series changes arm, arm64, powerpc,
-and s390.
+Now that explicitly executed loaders are loaded in the mmap region,
+position PIE binaries lower in the address space to avoid possible
+collisions with mmap or stack regions. For 64-bit, align to 4GB to
+allow runtimes to use the entire 32-bit address space for 32-bit
+pointers.
 
-Since these depend on the mentioned patch (which I'm hoping akpm will
-pick up), I'm hoping to get arch-maintainer Acks for these (so they can
-be carried all together).
+Signed-off-by: Kees Cook <keescook@chromium.org>
+---
+ arch/powerpc/include/asm/elf.h | 13 +++++++------
+ 1 file changed, 7 insertions(+), 6 deletions(-)
 
-Thanks!
-
--Kees
-
-[1] https://patchwork.kernel.org/patch/9802387/
+diff --git a/arch/powerpc/include/asm/elf.h b/arch/powerpc/include/asm/elf.h
+index 09bde6e34f5d..548d9a411a0d 100644
+--- a/arch/powerpc/include/asm/elf.h
++++ b/arch/powerpc/include/asm/elf.h
+@@ -23,12 +23,13 @@
+ #define CORE_DUMP_USE_REGSET
+ #define ELF_EXEC_PAGESIZE	PAGE_SIZE
+ 
+-/* This is the location that an ET_DYN program is loaded if exec'ed.  Typical
+-   use of this is to invoke "./ld.so someprog" to test out a new version of
+-   the loader.  We need to make sure that it is out of the way of the program
+-   that it will "exec", and that there is sufficient room for the brk.  */
+-
+-#define ELF_ET_DYN_BASE	0x20000000
++/*
++ * This is the base location for PIE (ET_DYN with INTERP) loads. On
++ * 64-bit, this is raised to 4GB to leave the entire 32-bit address
++ * space open for things that want to use the area for 32-bit pointers.
++ */
++#define ELF_ET_DYN_BASE		(is_32bit_task() ? 0x000400000UL : \
++						   0x100000000UL)
+ 
+ #define ELF_CORE_EFLAGS (is_elf2_task() ? 2 : 0)
+ 
+-- 
+2.7.4
