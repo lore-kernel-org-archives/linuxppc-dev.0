@@ -1,28 +1,17 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
- [IPv6:2607:f8b0:400e:c00::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wthhv4HBpzDr34
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jun 2017 23:08:15 +1000 (AEST)
-Received: by mail-pf0-x242.google.com with SMTP id s66so2865107pfs.2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jun 2017 06:08:15 -0700 (PDT)
-Date: Thu, 22 Jun 2017 23:08:00 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>, Ananth N
- Mavinakayanahalli <ananth@linux.vnet.ibm.com>, Masami Hiramatsu
- <mhiramat@kernel.org>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v3 3/6] powerpc/64s: Blacklist system_call() and
- system_call_common() from kprobes
-Message-ID: <20170622230800.08369dce@roar.ozlabs.ibm.com>
-In-Reply-To: <87a850s2kd.fsf@concordia.ellerman.id.au>
-References: <cover.1498069502.git.naveen.n.rao@linux.vnet.ibm.com>
- <e602b626323ee22ac39de305b62385a2a0210018.1498069502.git.naveen.n.rao@linux.vnet.ibm.com>
- <20170622133640.66861cda@roar.ozlabs.ibm.com>
- <87a850s2kd.fsf@concordia.ellerman.id.au>
+Return-Path: <sebastian.huber@embedded-brains.de>
+Received: from dedi548.your-server.de (dedi548.your-server.de [85.10.215.148])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wthlW70gSzDr6v
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jun 2017 23:10:31 +1000 (AEST)
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Madalin Bucur <madalin.bucur@nxp.com>
+From: Sebastian Huber <sebastian.huber@embedded-brains.de>
+Subject: DPAA: Software Portal selection for network interface
+Message-ID: <14d11770-fdbb-4719-559a-924855957568@embedded-brains.de>
+Date: Thu, 22 Jun 2017 14:42:08 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,56 +21,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 22 Jun 2017 21:07:46 +1000
-Michael Ellerman <mpe@ellerman.id.au> wrote:
+Hello,
 
-> Nicholas Piggin <npiggin@gmail.com> writes:
-> 
-> > On Thu, 22 Jun 2017 00:08:39 +0530
-> > "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
-> >  
-> >> Convert some of the symbols into private symbols and blacklist
-> >> system_call_common() and system_call() from kprobes. We can't take a
-> >> trap at parts of these functions as either MSR_RI is unset or the kernel
-> >> stack pointer is not yet setup.
-> >> 
-> >> Reviewed-by: Masami Hiramatsu <mhiramat@kernel.org>
-> >> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>  
-> >
-> > I don't have a problem with this bunch of system call labels
-> > going private. They've never added much for me in profiles.
-> >
-> > Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
-> >
-> > Semi-related question, why is system_call: where it is?  
-> 
-> Ancient history.
-> 
-> We used to have:
-> 
-> 	bne	syscall_dotrace
-> syscall_dotrace_cont:
-> 	cmpldi	0,r0,NR_syscalls
-> 	bge-	syscall_enosys
-> 
-> system_call:			/* label this so stack traces look sane */
-> 
-> 
-> So it was there to hide syscall_dotrace_cont from back traces.
-> 
-> But we made syscall_dotrace_cont local in 2012 and then removed it
-> entirely in 2015.
-> 
-> > Should we move it up to right after the mtmsrd / wrteei instruction?
-> > (obviously for another patch). It's pretty common to get PMU
-> > interrupts coming in right after mtmsr and this makes profiles split
-> > the syscall into two which is annoying.  
-> 
-> Move it wherever makes sense and gives good back traces.
+as far as I understand the software portal selection for a network=20
+interface is done in
 
-I'd be in favour of moving it to right after the interurpt enable.
-I suppose you'd want a separate patch for that though. But we could
-put it in this series since we're changing a lot of labels.
+static int dpaa_eth_probe(struct platform_device *pdev)
+{
+     [...]
+     channel =3D dpaa_get_channel();
+     if (channel < 0) {
+         dev_err(dev, "dpaa_get_channel() failed\n");
+         err =3D channel;
+         goto get_channel_failed;
+     }
 
-Thanks,
-Nick
+     priv->channel =3D (u16)channel;
+
+     /* Start a thread that will walk the CPUs with affine portals
+      * and add this pool channel to each's dequeue mask.
+      */
+     dpaa_eth_add_channel(priv->channel);
+
+with
+
+static int dpaa_get_channel(void)
+{
+     spin_lock(&rx_pool_channel_init);
+     if (!rx_pool_channel) {
+         u32 pool;
+         int ret;
+
+         ret =3D qman_alloc_pool(&pool);
+
+         if (!ret)
+             rx_pool_channel =3D pool;
+     }
+     spin_unlock(&rx_pool_channel_init);
+     if (!rx_pool_channel)
+         return -ENOMEM;
+     return rx_pool_channel;
+}
+
+which always returns the same pool channel (e.g. 0x401) if successful.
+
+This means all the QMan portal_isr() are distributed round-robin to all=20
+affine portals. Is there some way to configure the software portal for a=20
+specific network interface, e.g. use processors 0, 1, 2, 3 for one=20
+interface,and 4, 5, 6, 7 for another?
+
+--=20
+Sebastian Huber, embedded brains GmbH
+
+Address : Dornierstr. 4, D-82178 Puchheim, Germany
+Phone   : +49 89 189 47 41-16
+Fax     : +49 89 189 47 41-09
+E-Mail  : sebastian.huber@embedded-brains.de
+PGP     : Public key available on request.
+
+Diese Nachricht ist keine gesch=C3=A4ftliche Mitteilung im Sinne des EHUG=
+.
